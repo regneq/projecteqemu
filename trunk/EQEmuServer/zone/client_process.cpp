@@ -397,22 +397,20 @@ bool Client::Process() {
 				Message_StringID(13,TRY_ATTACKING_SOMEONE);
 			}
 			else if(target->GetHP() > -10) {
-				float DualWieldProbability = (GetRawSkill(DUAL_WIELD) + GetLevel()) / 400.0f; // 78.0 max
+				float DualWieldProbability = (GetSkill(DUAL_WIELD) + GetLevel()) / 400.0f; // 78.0 max
 				if(GetAA(aaAmbidexterity))
 					DualWieldProbability += 0.1f;
 				//discipline effects:
 				DualWieldProbability += (spellbonuses.DualWeildChance + itembonuses.DualWeildChance) / 100.0f;
 				
 				float random = MakeRandomFloat(0, 1);
-				/*//if (random > 0.9)	//this dosent make sense...
-					CheckIncreaseSkill(DUAL_WIELD);*/
+				CheckIncreaseSkill(DUAL_WIELD);
 				if (random < DualWieldProbability){ // Max 78% of DW
 					if(CheckAAEffect(aaEffectRampage)) {
 						entity_list.AEAttack(this, 30, 14);
 					} else {
 						Attack(target, 14);	// Single attack with offhand
 					}
-					CheckIncreaseSkill(DUAL_WIELD);
 					
 					if( CanThisClassDoubleAttack() && CheckDoubleAttack()) {
 						if(CheckAAEffect(aaEffectRampage)) {
@@ -423,39 +421,6 @@ bool Client::Process() {
 						}
 					}
 				}
-				/*if (target && GetAA(aaFlurry) > 0) {
-					int flurrychance = 0;
-					switch (GetAA(aaFlurry)) {
-						case 1:
-							flurrychance += 15;
-							break;
-						case 2:
-							flurrychance += 30;
-							break;
-						case 3:
-							flurrychance += 50;
-							break;
-					}
-					switch (GetAA(183)) {
-						case 1:
-							flurrychance += 10;
-							break;
-						case 2:
-							flurrychance += 20;
-							break;
-						case 3:
-							flurrychance += 30;
-							break;
-					}
-					if (rand()%1000 < flurrychance) {
-						Message_StringID(MT_CritMelee, 128);
-						Attack(target, 13, true);
-						
-						//50% chance for yet another attack?
-						if(MakeRandomFloat(0, 1) < 0.5)
-							Attack(target, 13, true);
-					}
-				}*/
 			}
 		}
 		

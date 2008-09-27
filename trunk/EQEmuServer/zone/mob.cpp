@@ -439,21 +439,18 @@ bool Mob::IsInvisible(Mob* other) const
 }
 
 float Mob::_GetMovementSpeed(int mod) const {
+      // List of movement speed modifiers, including AAs & spells:
+	// http://everquest.allakhazam.com/db/item.html?item=1721;page=1;howmany=50#m10822246245352
 	if (IsRooted())
 		return 0.0f;
 	
 	float speed_mod = 1.0f;
 	
 	if (IsClient()){
-		int32 aa_item = CastToClient()->GetAA(aaInnateRunSpeed);
-		if (aa_item > 0 && aa_item < 4){
-			speed_mod += aa_item * 0.10;
-		}
-		//partial implementation of Fleet of Foot
-		aa_item = CastToClient()->GetAA(aaFleetofFoot);
-		if (aa_item > 0 && aa_item < 6){
-			speed_mod += aa_item * 0.10;
-		}
+            speed_mod += ((CastToClient()->GetAA(aaInnateRunSpeed) * 0.10)
+			+ (CastToClient()->GetAA(aaFleetofFoot) * 0.10)
+			+ (CastToClient()->GetAA(aaSwiftJourney) * 0.10)
+		);
 		//Selo's Enduring Cadence should be +7% per level
 	}
 	

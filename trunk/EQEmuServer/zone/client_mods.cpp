@@ -182,17 +182,14 @@ sint32 Client::LevelRegen()
 				hp+=10;
 		}
 	}
-	if (GetAA(aaInnateRegeneration) >= 1){
-		hp += GetAA(aaInnateRegeneration);
-	}
-	if (GetAA(aaInnateRegeneration2) >= 1){
-		hp += GetAA(aaInnateRegeneration2);
-	}
-	if (GetAA(aaNaturalHealing) >= 1){
-		hp += GetAA(aaNaturalHealing);
-	}
-	
-	hp += GetAA(aaBodyAndMindRejuvenation);
+	// AA Regens
+	hp += (GetAA(aaInnateRegeneration)
+		//+ GetAA(aaInnateRegeneration2) //not currently in the AA table anymore, so why bother?
+		+ GetAA(aaNaturalHealing)
+		+ GetAA(aaBodyAndMindRejuvenation)
+		+ GetAA(aaConvalescence)
+		+ GetAA(aaHealthyAura)
+	);
 	if (GetAppearance() == eaDead) {	//stunned/mezzed
 		hp /= 4;
 	}

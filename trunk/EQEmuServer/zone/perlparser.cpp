@@ -2167,8 +2167,8 @@ XS(XS__setinstflag)
 	if (items != 3)
 		Perl_croak(aTHX_ "Usage: setinstflag(charID, orginalZoneID, type)");
 
-	int32	charID = (int)SvIV(ST(0));
-	int32	orgZoneID = (int)SvIV(ST(1));
+	int		charID = (int)SvIV(ST(0));
+	int		orgZoneID = (int)SvIV(ST(1));
 	int		type = (int)SvIV(ST(2));
 
 	quest_manager.setinstflag(charID, orgZoneID, type);
@@ -2182,8 +2182,8 @@ XS(XS__setinstflagmanually)
 	if (items != 3)
 		Perl_croak(aTHX_ "Usage: setinstflagmanually(charID, orginalZoneID, instFlag)");
 
-	int32	charID = (int)SvIV(ST(0));
-	int32	orgZoneID = (int)SvIV(ST(1));
+	int		charID = (int)SvIV(ST(0));
+	int		orgZoneID = (int)SvIV(ST(1));
 	int		instFlag = (int)SvIV(ST(2));
 
 	quest_manager.setinstflagmanually(charID, orgZoneID, instFlag);

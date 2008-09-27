@@ -1470,7 +1470,7 @@ bool ZoneDatabase::LoadBlockedSpells(sint32 blockedSpellsCount, ZoneSpellsBlocke
 }
 
 int32 ZoneDatabase::GetInstType(int32 zoneid) {
-    char errbuf[MYSQL_ERRMSG_SIZE];
+	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
     MYSQL_RES *result;
     MYSQL_ROW row;
@@ -1495,7 +1495,7 @@ int32 ZoneDatabase::GetInstType(int32 zoneid) {
 	return 0;
 }
 bool ZoneDatabase::InstZoneLoaded(int32 charInstFlagNum){
-    char errbuf[MYSQL_ERRMSG_SIZE];
+	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
     MYSQL_RES *result;
     MYSQL_ROW row;
@@ -1518,7 +1518,6 @@ bool ZoneDatabase::InstZoneLoaded(int32 charInstFlagNum){
 	}
 	return 0;
 }
-
 
 
 //Copies original zones information into a new zone entry replacing the old zoneidnumber with the instflagnum

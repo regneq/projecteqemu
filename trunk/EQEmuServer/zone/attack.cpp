@@ -1032,13 +1032,22 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte)
 		}
 
 		//riposte
+		bool slippery_attack = false; // Part of hack to allow riposte to become a miss, but still allow a Strikethrough chance (like on Live)
 		if (damage == -3)  {
 			if (bRiposte) return false;
-			else DoRiposte(other);
+			else {
+				if (Hand == 14 && GetAA(aaSlipperyAttacks) > 0) {// Do we even have it & was attack with mainhand? If not, don't bother with other calculations
+					if (MakeRandomInt(0, 100) < (GetAA(aaSlipperyAttacks) * 20)) {
+						damage = 0; // Counts as a miss
+						slippery_attack = true;
+					} else DoRiposte(other);
+				}
+				else DoRiposte(other);
+			}
 		}
 
 		//strikethrough..
-		if (damage < 0 && !bRiposte) {
+		if (((damage < 0) || slippery_attack) && !bRiposte) { // Hack to still allow Strikethrough chance w/ Slippery Attacks AA
 			if(MakeRandomInt(0, 100) < (itembonuses.StrikeThrough + spellbonuses.StrikeThrough)) {
 				Message_StringID(MT_StrikeThrough, 9078); // You strike through your opponents defenses!
 				Attack(other, Hand, true); // Strikethrough only gives another attempted hit
@@ -3159,7 +3168,7 @@ void Mob::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 
 bool Mob::TryFinishingBlow(Mob *defender, SkillType skillinuse)
 {
-	int8 aa_item = GetAA(aaFinishingBlow) + GetAA(aaCoupdeGrace);
+	int8 aa_item = GetAA(aaFinishingBlow) + GetAA(aaCoupdeGrace) + GetAA(aaDeathblow);
 	if(aa_item && !defender->IsClient() && defender->GetHPRatio() < 10){
 		int chance = 0;
 		int levelreq = 0;
@@ -3188,6 +3197,18 @@ bool Mob::TryFinishingBlow(Mob *defender, SkillType skillinuse)
 		case 6:
 			chance = 7;
 			levelreq = 59;
+			break;
+            case 7:
+			chance = 7;
+			levelreq = 61;
+			break;
+		case 8:
+			chance = 7;
+			levelreq = 63;
+			break;
+		case 9:
+			chance = 7;
+			levelreq = 65;
 			break;
 		default:
 			break;
