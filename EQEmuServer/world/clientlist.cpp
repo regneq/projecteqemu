@@ -97,27 +97,65 @@ ClientListEntry* ClientList::GetCLE(int32 iID) {
 	return 0;
 }
 
- //Lieka Edit Begin:  Check current CLE Entry IPs against incoming connection
+//Lieka && Derision Edit Begin:  Check current CLE Entry IPs against incoming connection
 
 void ClientList::GetCLEIP(int32 iIP) {
-	ClientListEntry* countCLEIPs = 0;
-	LinkedListIterator<ClientListEntry*> iterator(clientlist);
 
-	int IPInstances = 0;
-	iterator.Reset();
-	while(iterator.MoreElements()) {
-		countCLEIPs = iterator.GetData();
-		if ((countCLEIPs->GetIP() == iIP) && ((countCLEIPs->Admin() <= (RuleI(World, ExemptMaxClientsStatus))) || (RuleI(World, ExemptMaxClientsStatus) < 0))) {
-			IPInstances++;
-			if (IPInstances > (RuleI(World, MaxClientsPerIP))){
-				countCLEIPs->SetOnline(CLE_Status_Offline);
-				iterator.RemoveCurrent();
-			}
-		}
-		iterator.Advance();
-	}
+        ClientListEntry* countCLEIPs = 0;
+        LinkedListIterator<ClientListEntry*> iterator(clientlist);
+
+        int IPInstances = 0;
+        iterator.Reset();
+
+        while(iterator.MoreElements()) {
+
+                countCLEIPs = iterator.GetData();
+
+                // If the IP matches, and the connection admin status is below the exempt status,
+                // or exempt status is less than 0 (no-one is exempt)
+
+                if ((countCLEIPs->GetIP() == iIP) &&
+                    ((countCLEIPs->Admin() < (RuleI(World, ExemptMaxClientsStatus))) ||
+                     (RuleI(World, ExemptMaxClientsStatus) < 0))) {
+
+                        // Increment the occurences of this IP address
+
+                        IPInstances++;
+
+                        // If the number of connections exceeds the lower limit
+
+                        if (IPInstances > (RuleI(World, MaxClientsPerIP))){
+
+                                // If the Admin status of the connection is not eligible for the higher limit,
+                                // or there is no higher limit (AddMaxClientStatus<0)
+
+                                if ((countCLEIPs->Admin() < (RuleI(World, AddMaxClientsStatus)) ||
+                                    (RuleI(World, AddMaxClientsStatus) < 0))) {
+
+                                        // Remove the connection
+
+                                        countCLEIPs->SetOnline(CLE_Status_Offline);
+                                        iterator.RemoveCurrent();
+                                        continue;
+
+                                }
+                                // else they are eligible for the higher limit, but if they exceed that
+
+                                else if (IPInstances > RuleI(World, AddMaxClientsPerIP)) {
+
+                                        // Remove the connection
+
+                                        countCLEIPs->SetOnline(CLE_Status_Offline);
+                                        iterator.RemoveCurrent();
+                                        continue;
+
+                                }
+                        }
+                }
+                iterator.Advance();
+        }
 }
-//Lieka Edit End
+//Lieka & Derision Edit End
 
 ClientListEntry* ClientList::FindCharacter(const char* name) {
 	LinkedListIterator<ClientListEntry*> iterator(clientlist);

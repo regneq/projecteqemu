@@ -1,6 +1,21 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==09/26/2008
+cavedude00: (AndMetal) Deathblow AA
+cavedude00: (AndMetal) Swift Journey AA
+cavedude00: (AndMetal) Convalescence and Healthy Aura AAs
+cavedude00: (AndMetal) Slippery Attacks AA
+cavedude00: (trevius) Additional IP limiting rules
+cavedude00: (Congdar) Further PC main and second hand attack fixes
+cavedude00: (Derision) Fix for percent heals
+cavedude00: (Theeper) Fix for quest:itemlink() 
+cavedude00: (Rocker8956) More work on zone instancing
+
+Optional SQL:
+Insert into rule_values values (0, 'World:AddMaxClientsPerIP', -1 );
+Insert into rule_values values (0, 'World:AddMaxClientsStatus', -1 );
+
 ==09/25/2008
 cavedude00: (trevius) IP Limiting Minor Fix
 cavedude00: (trevius) New Quest Command quest::clearspawntimers()

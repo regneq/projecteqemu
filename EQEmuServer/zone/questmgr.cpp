@@ -920,6 +920,7 @@ sprintf(hashstr, "%d%s%d%d", id, name, weight, booktype);
 	uint32 itemid = item_id;
 	item = database.GetItem(itemid);
 	initiator->Message(0, "%s tells you, %c%06X000000000000000000000000000000000000000%s%c",owner->GetCleanName(),0x12, item->ID, item->Name, 0x12);
+
 }
 
 void QuestManager::signalwith(int npc_id, int signal_id, int wait_ms) {
@@ -1564,19 +1565,37 @@ int QuestManager::completedtasksinset(int taskset) {
 	return -1;
 }
 
-void QuestManager::setinstflag(int32 charID, int32 orgZoneID, int type)
+void QuestManager::setinstflag(int charID, int orgZoneID, int type)
 {
+	int instFlag = database.getCurInstFlagNum();
+
 	if (type == 0)
-		database.setOneCharInstFlag(charID, orgZoneID);
+	{
+		database.setCharInstFlag(charID, orgZoneID, instFlag);
+		database.incrCurInstFlagNum(instFlag); // Increment the curInstFlagNum
+	}
 	else if(type == 1)
-		database.setGroupInstFlagNum(charID, orgZoneID);
+	{
+		database.setGroupInstFlagNum(charID, orgZoneID, instFlag);
+		database.incrCurInstFlagNum(instFlag); // Increment the curInstFlagNum
+	}
 	else if(type == 2)
-		database.setRaidInstFlagNum(charID, orgZoneID);
+	{
+		database.setRaidInstFlagNum(charID, orgZoneID, instFlag);
+		database.incrCurInstFlagNum(instFlag); // Increment the curInstFlagNum
+	}
+	else if(type == 3)
+	{
+		database.setCharInstFlag(charID, orgZoneID, instFlag);
+		database.setGroupInstFlagNum(charID, orgZoneID, instFlag);
+		database.setRaidInstFlagNum(charID, orgZoneID, instFlag);
+		database.incrCurInstFlagNum(instFlag); // Increment the curInstFlagNum
+	}
 }
 
-void QuestManager::setinstflagmanually(int32 charID, int32 orgZoneID, int instFlag)
+void QuestManager::setinstflagmanually(int charID, int orgZoneID, int instFlag)
 {
-	database.setCharInstFlag(charID, orgZoneID, instFlag);
+        database.setCharInstFlag(charID, orgZoneID, instFlag);
 }
 
 void QuestManager::clearspawntimers() {

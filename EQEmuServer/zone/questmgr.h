@@ -170,8 +170,8 @@ public:
 	int activespeakactivity(int taskid);
 	int activetasksinset(int taskset);
 	int completedtasksinset(int taskset);
-      void setinstflag(int32 charID, int32 orgZoneID, int type);
-      void setinstflagmanually(int32 charID, int32 orgZoneID, int instFlag);
+      void setinstflag(int charID, int orgZoneID, int type);
+	void setinstflagmanually(int charID, int orgZoneID, int instFlag);
       void clearspawntimers();
 	
 	//not in here because it retains perl types

@@ -2072,118 +2072,90 @@ void Database::DeleteInstZone(int32 instZoneID)
 		safe_delete_array(query);
 	}
 }
-
-void Database::setOneCharInstFlag(int32 charID, int32 orgZoneID)
-{
-	int instFlag = getCurInstFlagNum();
-	
-	// Set character's instZoneFlag
-	setCharInstFlag(charID, orgZoneID, instFlag);
-
-	// Increment the curInstFlagNum
-	incrCurInstFlagNum(instFlag);
-
-}
-
-void Database::setGroupInstFlagNum(int32 charID, int32 orgZoneID)
+//Rocker8956
+void Database::setGroupInstFlagNum(int charID, int orgZoneID, int instFlag)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
     MYSQL_RES *result;
     MYSQL_ROW row;
-	int32 groupid = 0;
-	int instFlag = getCurInstFlagNum();
-	int numCharsInGroup = 0; // Used to count number of characters in group
+	int groupid = 0;
 	
 	// Find out what group the character is in
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT groupid from group_id where charid=%i", charID), errbuf, &result)) {
-		if (mysql_num_rows(result) == 1) {
-				row = mysql_fetch_row(result);
-				groupid=atoi(row[0]);
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT groupid from group_id where charid=%i", charID), errbuf, &result)) 
+	{
+		if (mysql_num_rows(result) == 1)
+		{
+			row = mysql_fetch_row(result);
+			groupid=atoi(row[0]);
+			mysql_free_result(result);
+			safe_delete_array(query);
+			// Select the character IDs of the characters in the group
+			if (RunQuery(query, MakeAnyLenString(&query, "SELECT charid FROM group_id WHERE groupid=%i", groupid), errbuf, &result))
+			{
+				while((row = mysql_fetch_row(result))) 
+				{
+					charID = atoi(row[0]);
+					setCharInstFlag(charID, orgZoneID, instFlag);
+					Sleep(0);
+				}
+				safe_delete_array(query);
+				mysql_free_result(result);
+			}
 		}
 		else
+		{
 			printf("Unable to get group id, char not found!\n");
-		mysql_free_result(result);
+			mysql_free_result(result);
+			safe_delete_array(query);
+		}
 	}
 	else
-			printf("Unable to get group id: %s\n",errbuf);
-	safe_delete_array(query);
-	// Find out how many other characters are in the group
-	if (RunQuery(query, ("SELECT COUNT(charid) FROM group_id WHERE groupid=%i", groupid), errbuf, &result)) {
-		safe_delete_array(query);
-		row = mysql_fetch_row(result);
-		numCharsInGroup = atoi(row[0]);
-		mysql_free_result(result);
-	}
-	// Select the character IDs of the characters in the group
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT charid from group_id where groupid='%i'", groupid), errbuf, &result))
 	{
-		row = mysql_fetch_row(result);
-		
-		int i = 0;
-		// Set each group members instflag
-		while ((i <= numCharsInGroup)) 
-		{
-			charID = atoi(row[i]);
-			setCharInstFlag(charID, orgZoneID, instFlag);
-			i++;
-		}
-			safe_delete_array(query);
-			mysql_free_result(result);
+		printf("Unable to get group id: %s\n",errbuf);
+		mysql_free_result(result);
+		safe_delete_array(query);
 	}
-	// Increment the curInstFlagNum
-	incrCurInstFlagNum(instFlag);
+
 }
 
-void Database::setRaidInstFlagNum(int32 charID, int32 orgZoneID)
+void Database::setRaidInstFlagNum(int charID, int orgZoneID, int instFlag)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
     MYSQL_RES *result;
     MYSQL_ROW row;
-	int32 raidid = 0;
-	int instFlag = getCurInstFlagNum();
-	int numCharsInRaid = 0; // Used to count number of characters in raid
+	int raidid = 0;
 
 	// Find out what raid the character is in
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT raidid from raid_members where charid=%i", charID), errbuf, &result)) {
-		safe_delete_array(query);
-		if (mysql_num_rows(result) == 1) {
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT raidid from raid_members where charid=%i", charID), errbuf, &result)) 
+	{
+		if (mysql_num_rows(result) == 1) 
+		{
 			row = mysql_fetch_row(result);
 			raidid=atoi(row[0]);
 			mysql_free_result(result);
+			safe_delete_array(query);
+			// Select the character IDs of the characters in the raid
+			if (RunQuery(query, MakeAnyLenString(&query, "SELECT charid from raid_members where raidid=%i", raidid), errbuf, &result))
+			{
+				while((row = mysql_fetch_row(result))) 
+				{
+					charID = atoi(row[0]);
+					setCharInstFlag(charID, orgZoneID, instFlag);
+					Sleep(0);
+				}
+				safe_delete_array(query);
+				mysql_free_result(result);
+			}
 		}
-		else
-			printf("Unable to get raidid, char not found!\n");
-		mysql_free_result(result);
 	}
 	else
-			printf("Unable to get raid id: %s\n",errbuf);
-	safe_delete_array(query);
-	// Find out how many other characters are in the raid
-	if (RunQuery(query, ("SELECT COUNT(charid) FROM raid_members WHERE raidid=%i", raidid), errbuf, &result)) {
-		row = mysql_fetch_row(result);
-		numCharsInRaid = atoi(row[0]);
+	{
+		printf("Unable to get raid id: %s\n",errbuf);
 		mysql_free_result(result);
 		safe_delete_array(query);
 	}
-	// Select the character IDs of the characters in the raid
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT charid from raid_members where raidid='%i'", raidid), errbuf, &result))
-	{
-		int i = 0;
-		row = mysql_fetch_row(result);
-		// Set each group members instflag
-		while ((i <= numCharsInRaid)) 
-		{
-			charID = atoi(row[i]);
-			setCharInstFlag(charID, orgZoneID, instFlag);
-			i++;
-		}
-			safe_delete_array(query);
-			mysql_free_result(result);
-	}
-	// Increment the curInstFlagNum
-	incrCurInstFlagNum(instFlag);
 }
 
 void Database::incrCurInstFlagNum(int instFlag)
@@ -2202,8 +2174,10 @@ void Database::incrCurInstFlagNum(int instFlag)
 		safe_delete_array(query);
 		mysql_free_result(result);
 	}
-	else {
+	else 
+	{
 		cerr << "Error in incrCurInstFlagNum query '" << query << "' " << errbuf << endl;
+		mysql_free_result(result);
 		safe_delete_array(query);
 	}
 }
@@ -2219,28 +2193,32 @@ int Database::getCurInstFlagNum()
 	// Get the current instant flag number
 	if (RunQuery(query, MakeAnyLenString(&query, "SELECT value FROM variables WHERE varname = 'curInstFlagNum'"), errbuf, &result))
 	{
-		safe_delete_array(query);
-		if (mysql_num_rows(result) == 1) {
+		
+		if (mysql_num_rows(result) == 1)
+		{
 			row = mysql_fetch_row(result);
 			instFlag = atoi(row[0]);
 			mysql_free_result(result);
+			safe_delete_array(query);
 			return instFlag;
 		}
-		else{
-			mysql_free_result(result);
+		else
+		{
 			cerr << "Error in GetCurInstFlagNum query '" << query << "' " << errbuf << endl;
+			mysql_free_result(result);
 			safe_delete_array(query);
 			return instFlag;
 		}
 
 	}
-	else {
+	else 
+	{
 		cerr << "Error in GetCurInstFlagNum query '" << query << "' " << errbuf << endl;
 		safe_delete_array(query);
 		return instFlag;
 	}
 }
-void Database::setCharInstFlag(int32 charID, int32 orgZoneID, int instFlag)
+void Database::setCharInstFlag(int charID, int orgZoneID, int instFlag)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;

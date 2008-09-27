@@ -1062,7 +1062,7 @@ bool Mob::DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_ce
 
 	// seveian 2008-09-23
 	if(IsPlayerIllusionSpell(spell_id)
-		&& !spell_target // null ptr crash safeguard
+		&& spell_target != NULL // null ptr crash safeguard
 		&& !spell_target->IsNPC() // still self only if NPC targetted
 		&& IsClient()
 		&& IsGrouped() // still self only if not grouped

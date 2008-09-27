@@ -177,27 +177,29 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				break;
 			}
 
-			case SE_PercentalHeal:
-			{
+		      case SE_PercentalHeal:
+                        {
 #ifdef SPELL_EFFECT_SPAM
-				snprintf(effect_desc, _EDLEN, "Percental Heal: %+i (%d%% max)", spell.max[i], effect_value);
+                                snprintf(effect_desc, _EDLEN, "Percental Heal: %+i (%d%% max)", spell.max[i], effect_value);
 #endif
-				//im not 100% sure about this implementation.
-				//the spell value forumula dosent work for these... at least spell 3232 anyways
-				sint32 val = spell.max[i];
+                                //im not 100% sure about this implementation.
+                                //the spell value forumula dosent work for these... at least spell 3232 anyways
+                                sint32 val = spell.max[i];
 
-				if(caster)
-					val = caster->GetActSpellHealing(spell_id, val);
+                                if(caster)
+                                        val = caster->GetActSpellHealing(spell_id, val);
 
-				sint32 mhp = GetMaxHP();
-				sint32 chp = GetHP();
-				sint32 cap = mhp * spell.base[i] / 100;
-				if((chp + val) > cap)
-					val = cap - chp;
-				if(val > 0)
-					HealDamage(val, caster);
-				break;
-			}
+                                sint32 mhp = GetMaxHP();
+                                sint32 cap = mhp * spell.base[i] / 100;
+
+                                if(cap < val)
+                                        val = cap;
+
+                                if(val > 0)
+                                        HealDamage(val, caster);
+
+                                break;
+                        }
 
 			case SE_CompleteHeal:
 			{
