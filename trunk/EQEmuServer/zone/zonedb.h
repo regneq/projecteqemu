@@ -216,6 +216,7 @@ public:
 	bool    GetWaypoints(int32 grid, int16 zoneid, int32 num, wplist* wp);
 	void	AssignGrid(Client *client, float x, float y, int32 id);
 	int		GetHighestGrid(uint32 zoneid);
+	int		GetHighestWaypoint(uint32 zoneid, int32 gridid);
 	
 	/*
 	 * NPCs

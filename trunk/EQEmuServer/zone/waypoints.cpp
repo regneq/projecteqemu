@@ -1295,7 +1295,28 @@ int32 ZoneDatabase::GetFreeGrid(int16 zoneid) {
 	return 0;
 }
 
+int ZoneDatabase::GetHighestWaypoint(uint32 zoneid, int32 gridid) {
+	char *query = 0;
+	char errbuff[MYSQL_ERRMSG_SIZE];
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+	int res = 0;
+	if (RunQuery(query, MakeAnyLenString(&query,
+		"SELECT COALESCE(MAX(number), 0) FROM grid_entries WHERE zoneid = %i AND gridid = %i",
+		zoneid, gridid),errbuff,&result)) {
+		safe_delete_array(query);
+		if (mysql_num_rows(result) == 1) {
+			row = mysql_fetch_row(result);
+			res = atoi( row[0] );
+		}
+		mysql_free_result(result);
+	} else {
+		LogFile->write(EQEMuLog::Error, "Error in GetHighestWaypoint query '%s': %s", query, errbuff);
+		safe_delete_array(query);
+	}
 
+	return(res);
+}
 
 
 
