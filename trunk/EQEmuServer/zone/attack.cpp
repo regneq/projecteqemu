@@ -2016,6 +2016,13 @@ void Mob::DamageShield(Mob* attacker) {
 
 int8 Mob::GetWeaponDamageBonus( const Item_Struct *Weapon )
 {
+      if( GetLevel() < 28 || !IsWarriorClass() )
+	{
+		// Either the PC's level is less than 28 (damage bonuses do not begin to apply until level 28),
+		// or the PC is not a melee class (only melee classes receive a damage bonus).
+
+		return 0;
+	}
 	// This function calculates and returns the damage bonus for the weapon identified by the parameter "Weapon".
 	// Modified 9/21/2008 by Cantus
 
