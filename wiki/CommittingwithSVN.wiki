@@ -1,6 +1,6 @@
 There are many ways to submit code, but I am going to use TortoiseSVN (Windows) to guide you through. 
 
-1. Download and install TortoiseSVN. Reboot if necessary. http://tortoisesvn.net/downloads
+1. Download and install TortoiseSVN. Reboot if necessary. http://tortoisesvn.net/downloads ([http://www.visualsvn.com/visualsvn/download/tortoisesvn/ Mirror])
 
 2. Open up a command prompt (Start - Run - Type cmd)
 
