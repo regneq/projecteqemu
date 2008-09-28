@@ -1,6 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==9/28/2008
+AndMetal: Fixed exploit for pets ignoring Fear by using /pet commands
+AndMetal: #wp add will now use the highest value in the grid_entries table + 1 if you don't use a Waypoint # or use 0
+
 ==09/26/2008
 cavedude00: (AndMetal) Deathblow AA
 cavedude00: (AndMetal) Swift Journey AA

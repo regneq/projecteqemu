@@ -4938,6 +4938,8 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 			Message_StringID(10, CANNOT_WAKE, mypet->GetCleanName(), target->GetCleanName());
 			break;
 		}
+		if (mypet->IsFeared()) break; //AndMetal: prevent pet from attacking stuff while feared
+
 		if((mypet->GetPetType() == petAnimation && GetAA(aaAnimationEmpathy) >= 2) || mypet->GetPetType() != petAnimation) {
 			if (mypet->GetHateTop()==0 && target != this && DistNoRootNoZ(*target) <= (RuleR(Pets, AttackCommandRange)*RuleR(Pets, AttackCommandRange))) {
 				mypet->SetHeld(false); //break the hold and guard if we explicitly tell the pet to attack.
@@ -4950,6 +4952,8 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 		break;
 	}
 	case PET_BACKOFF: {
+		if (mypet->IsFeared()) break; //AndMetal: keeps pet running while feared
+
 		if((mypet->GetPetType() == petAnimation && GetAA(aaAnimationEmpathy) >= 3) || mypet->GetPetType() != petAnimation) {
 			mypet->Say_StringID(PET_CALMING);
 			mypet->WhipeHateList();
@@ -4993,80 +4997,94 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 		break;
 	}
 	case PET_GUARDHERE: {
+		if (mypet->IsFeared()) break; //AndMetal: could be exploited like PET_BACKOFF
+
 		if((mypet->GetPetType() == petAnimation && GetAA(aaAnimationEmpathy) >= 1) || mypet->GetPetType() != petAnimation) {
-		if(mypet->IsNPC()) {
-			mypet->SetHeld(false);
-			mypet->Say_StringID(PET_GUARDINGLIFE);
-			mypet->SetPetOrder(SPO_Guard);
-			mypet->CastToNPC()->SaveGuardSpot();
-		}
+			if(mypet->IsNPC()) {
+				mypet->SetHeld(false);
+				mypet->Say_StringID(PET_GUARDINGLIFE);
+				mypet->SetPetOrder(SPO_Guard);
+				mypet->CastToNPC()->SaveGuardSpot();
+			}
 		}
 		break;
 	}
 	case PET_FOLLOWME: {
+		if (mypet->IsFeared()) break; //AndMetal: could be exploited like PET_BACKOFF
+
 		if((mypet->GetPetType() == petAnimation && GetAA(aaAnimationEmpathy) >= 1) || mypet->GetPetType() != petAnimation) {
-		mypet->SetHeld(false);
-		mypet->Say_StringID(PET_FOLLOWING);
-		mypet->SetPetOrder(SPO_Follow);
-		mypet->SendAppearancePacket(AT_Anim, ANIM_STAND);
+			mypet->SetHeld(false);
+			mypet->Say_StringID(PET_FOLLOWING);
+			mypet->SetPetOrder(SPO_Follow);
+			mypet->SendAppearancePacket(AT_Anim, ANIM_STAND);
 		}
 		break;
 	}
 	case PET_TAUNT: {
 		if((mypet->GetPetType() == petAnimation && GetAA(aaAnimationEmpathy) >= 3) || mypet->GetPetType() != petAnimation) {
-		Message(0,"%s says, 'Now taunting foes, Master!",mypet->GetCleanName());
-		mypet->CastToNPC()->SetTaunting(true);
+			Message(0,"%s says, 'Now taunting foes, Master!",mypet->GetCleanName());
+			mypet->CastToNPC()->SetTaunting(true);
 		}
 		break;
 	}
 	case PET_NOTAUNT: {
 		if((mypet->GetPetType() == petAnimation && GetAA(aaAnimationEmpathy) >= 3) || mypet->GetPetType() != petAnimation) {
-		Message(0,"%s says, 'No longer taunting foes, Master!",mypet->GetCleanName());
-		mypet->CastToNPC()->SetTaunting(false);
+			Message(0,"%s says, 'No longer taunting foes, Master!",mypet->GetCleanName());
+			mypet->CastToNPC()->SetTaunting(false);
 		}
 		break;
 	}
 	case PET_GUARDME: {
+		if (mypet->IsFeared()) break; //AndMetal: could be exploited like PET_BACKOFF
+
 		if((mypet->GetPetType() == petAnimation && GetAA(aaAnimationEmpathy) >= 1) || mypet->GetPetType() != petAnimation) {
-		mypet->SetHeld(false);
-		mypet->Say_StringID(PET_GUARDME_STRING);
-		mypet->SetPetOrder(SPO_Follow);
-		mypet->SendAppearancePacket(AT_Anim, ANIM_STAND);
+			mypet->SetHeld(false);
+			mypet->Say_StringID(PET_GUARDME_STRING);
+			mypet->SetPetOrder(SPO_Follow);
+			mypet->SendAppearancePacket(AT_Anim, ANIM_STAND);
 		}
 		break;
 	}
 	case PET_SITDOWN: {
+		if (mypet->IsFeared()) break; //AndMetal: could be exploited like PET_BACKOFF
+
 		if((mypet->GetPetType() == petAnimation && GetAA(aaAnimationEmpathy) >= 3) || mypet->GetPetType() != petAnimation) {
-		mypet->Say_StringID(PET_SIT_STRING);
-		mypet->SetPetOrder(SPO_Sit);
-		mypet->SetRunAnimSpeed(0);
-		if(!mypet->UseBardSpellLogic())	// solar: maybe we can have a bard pet
-			mypet->InterruptSpell(); //Baron-Sprite: No cast 4 u. // neotokyo: i guess the pet should start casting
-		mypet->SendAppearancePacket(AT_Anim, ANIM_SIT);
+			mypet->Say_StringID(PET_SIT_STRING);
+			mypet->SetPetOrder(SPO_Sit);
+			mypet->SetRunAnimSpeed(0);
+			if(!mypet->UseBardSpellLogic())	// solar: maybe we can have a bard pet
+				mypet->InterruptSpell(); //Baron-Sprite: No cast 4 u. // neotokyo: i guess the pet should start casting
+			mypet->SendAppearancePacket(AT_Anim, ANIM_SIT);
 		}
 		break;
 	}
 	case PET_STANDUP: {
+		if (mypet->IsFeared()) break; //AndMetal: could be exploited like PET_BACKOFF
+
 		if((mypet->GetPetType() == petAnimation && GetAA(aaAnimationEmpathy) >= 3) || mypet->GetPetType() != petAnimation) {
-		mypet->Say_StringID(PET_SIT_STRING);
-		mypet->SetPetOrder(SPO_Follow);
-		mypet->SendAppearancePacket(AT_Anim, ANIM_STAND);
+			mypet->Say_StringID(PET_SIT_STRING);
+			mypet->SetPetOrder(SPO_Follow);
+			mypet->SendAppearancePacket(AT_Anim, ANIM_STAND);
 		}
 		break;
 	}
 	case PET_SLUMBER: {
+		if (mypet->IsFeared()) break; //AndMetal: could be exploited like PET_BACKOFF
+
 		if(mypet->GetPetType() != petAnimation) {
-		mypet->Say_StringID(PET_SIT_STRING);
-		mypet->SetPetOrder(SPO_Sit);
-		mypet->SetRunAnimSpeed(0);
-		if(!mypet->UseBardSpellLogic())	// solar: maybe we can have a bard pet
-			mypet->InterruptSpell(); //Baron-Sprite: No cast 4 u. // neotokyo: i guess the pet should start casting
-		mypet->SendAppearancePacket(AT_Anim, ANIM_DEATH);
+			mypet->Say_StringID(PET_SIT_STRING);
+			mypet->SetPetOrder(SPO_Sit);
+			mypet->SetRunAnimSpeed(0);
+			if(!mypet->UseBardSpellLogic())	// solar: maybe we can have a bard pet
+				mypet->InterruptSpell(); //Baron-Sprite: No cast 4 u. // neotokyo: i guess the pet should start casting
+			mypet->SendAppearancePacket(AT_Anim, ANIM_DEATH);
 		}
 		break;
 	}
 	case PET_HOLD: {
 		if(GetAA(aaPetDiscipline) && mypet->IsNPC()){
+			if (mypet->IsFeared()) break; //AndMetal: could be exploited like PET_BACKOFF
+
 			mypet->Say("I will hold until given an order, master.");
 			mypet->WhipeHateList();
 			mypet->SetHeld(true);

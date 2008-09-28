@@ -2344,10 +2344,15 @@ void command_grid(Client *c, const Seperator *sep)
 
 void command_wp(Client *c, const Seperator *sep)
 {
-	if (strcasecmp("add",sep->arg[1]) == 0)
-		database.AddWP(c, atoi(sep->arg[2]),atoi(sep->arg[4]), c->GetX(), c->GetY(), c->GetZ(), atoi(sep->arg[3]),zone->GetZoneID());
+	int wp = atoi(sep->arg[4]);
+
+	if (strcasecmp("add",sep->arg[1]) == 0) {
+		if (wp == 0) //AndMetal: default to highest if it's left blank, or we enter 0
+			wp = database.GetHighestWaypoint(zone->GetZoneID(), atoi(sep->arg[2])) + 1;
+		database.AddWP(c, atoi(sep->arg[2]),wp, c->GetX(), c->GetY(), c->GetZ(), atoi(sep->arg[3]),zone->GetZoneID());
+	}
 	else if (strcasecmp("delete",sep->arg[1]) == 0)
-		database.DeleteWaypoint(c, atoi(sep->arg[2]),atoi(sep->arg[4]),zone->GetZoneID());
+		database.DeleteWaypoint(c, atoi(sep->arg[2]),wp,zone->GetZoneID());
 	else
 		c->Message(0,"Usage: #wp add/delete grid_num pause wp_num");
 }
