@@ -75,19 +75,19 @@ sint16 Client::GetMaxCHA() const {
 	return GetMaxStat();
 }
 sint16 Client::GetMaxMR() const {
-	return GetMaxStat();
+	return GetMaxStat() + (GetAA(aaDiscordantDefiance) * 5);
 }
 sint16 Client::GetMaxPR() const {
-	return GetMaxStat();
+	return GetMaxStat() + (GetAA(aaDiscordantDefiance) * 5);
 }
 sint16 Client::GetMaxDR() const {
-	return GetMaxStat();
+	return GetMaxStat() + (GetAA(aaDiscordantDefiance) * 5);
 }
 sint16 Client::GetMaxCR() const {
-	return GetMaxStat();
+	return GetMaxStat() + (GetAA(aaDiscordantDefiance) * 5);
 }
 sint16 Client::GetMaxFR() const {
-	return GetMaxStat();
+	return GetMaxStat() + (GetAA(aaDiscordantDefiance) * 5);
 }
 sint32 Client::LevelRegen()
 {
@@ -880,6 +880,10 @@ int16 Client::CalcCurrentWeight() {
 			Total += TmpWeight;
 		}
 	}
+
+	if (GetAA(aaPackrat) > 0)
+		Total *= (GetAA(aaPackrat) * 10) / 100; //AndMetal: guessing 10% per level, up to 50%. description just indicates it affects gear, doesn't mention coin
+	
 	Total += (m_pp.platinum + m_pp.gold + m_pp.silver + m_pp.copper) / 4;
 	return Total;
 }
@@ -1474,10 +1478,9 @@ int16 Mob::GetInstrumentMod(int16 spell_id) const {
 	if(spells[spell_id].skill == SINGING)
 		effectmod += 2*GetAA(aaSingingMastery);
 	else
-	{
 		effectmod += 2*GetAA(aaInstrumentMastery);
-		effectmod += 2*GetAA(aaAyonaesTutelage);
-	}
+	effectmod += 2*GetAA(aaAyonaesTutelage); //singing & instruments
+
 
 	if(effectmod < 10)
 		effectmod = 10;

@@ -1566,8 +1566,12 @@ void Client::DoManaRegen() {
 		medding = false;
 		regen = 2+spellbonuses.ManaRegen+itembonuses.ManaRegen+(level/5);
 	}
-	regen += GetAA(aaMentalClarity);
-	regen += GetAA(aaBodyAndMindRejuvenation);
+
+	//AAs
+	regen += GetAA(aaMentalClarity) 
+		+ GetAA(aaBodyAndMindRejuvenation) 
+		+ GetAA(aaExpansiveMind);
+
 	regen = (regen * RuleI(Character, ManaRegenMultiplier)) / 100;
 	
 	SetMana(GetMana() + regen);
