@@ -77,6 +77,7 @@ RULE_INT ( World, MaxClientsPerIP, -1 ) //Lieka Edit: Maximum number of clients 
 RULE_INT ( World, ExemptMaxClientsStatus, -1 ) //Lieka Edit: Exempt accounts from the MaxClientsPerIP and AddMaxClientsStatus rules, if their status is >= this value.  Default value: -1 (feature disabled)
 RULE_INT ( World, AddMaxClientsPerIP, -1 ) //Trevius Edit: Maximum number of clients allowed to connect per IP address if account status is < ExemptMaxClientsStatus.  Default value: -1 (feature disabled)
 RULE_INT ( World, AddMaxClientsStatus, -1 ) //Trevius Edit: Accounts with status >= this rule will be allowed to use the amount of accounts defined in the AddMaxClientsPerIP.  Default value: -1 (feature disabled)
+RULE_BOOL ( World, ClearTempMerchantlist, true) //cavedude: Clears temp merchant items when world boots.
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Zone )
