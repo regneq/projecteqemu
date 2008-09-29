@@ -281,7 +281,10 @@ int main(int argc, char** argv) {
 			}
 		}
 	}
-	
+	if(RuleB(World, ClearTempMerchantlist)){
+        _log(WORLD__INIT, "Clearing temporary merchant lists..");
+		database.ClearMerchantTemp();
+      }
 	_log(WORLD__INIT, "Loading EQ time of day..");
 	if (!zoneserver_list.worldclock.loadFile(Config->EQTimeFile.c_str()))
 		_log(WORLD__INIT_ERR, "Unable to load %s", Config->EQTimeFile.c_str());
