@@ -297,14 +297,15 @@ bool Client::Process() {
 					//triple attack: rangers, monks, warriors, berserkers over level 60
 					if((((GetClass() == MONK || GetClass() == WARRIOR || GetClass() == RANGER || GetClass() == BERSERKER)
 						&& GetLevel() >= 60) || SpecAttacks[SPECATK_TRIPLE])
-					   && CheckDoubleAttack(false,true))
+					   /*&& CheckDoubleAttack(false,true))*/ //old Double Attack code
+					   && CheckDoubleAttack(true) //Congdar's new Double Attack code
 					{
                                     tripleAttackSuccess = true;
 						Attack(target, 13, true);
 					}
 					
 					//quad attack, does this belong here??
-					if(SpecAttacks[SPECATK_QUAD] && CheckDoubleAttack(false,true))
+					if(SpecAttacks[SPECATK_QUAD] && /*CheckDoubleAttack(false,true)*/ CheckDoubleAttack(true)) //Congdar's new Double Attack code
 					{
 						Attack(target, 13, true);
 					}
