@@ -4,7 +4,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==9/29/2008
 AndMetal: (Congdar) New Double Attack logic
 Angelox: Keyring code fix, so clicky portals that require keys will work too.
-AndMetal: Added AA's: Discordant Defiance, Blacksmithing Mastery, Baking Mastery, Brewing Mastery, Fletching Mastery, Pottery Mastery, Tailoring Mastery, Packrat, Expansive Mind, Veteran's Wrath
+AndMetal: Added AAs: Discordant Defiance, Blacksmithing Mastery, Baking Mastery, Brewing Mastery, Fletching Mastery, Pottery Mastery, Tailoring Mastery, Packrat, Expansive Mind, Veteran's Wrath, Advanced Fury of Magic Mastery, Destructive Fury
 AndMetal: Ayonae's Tutelage should now calculate bonus for Singing
 
 ==9/28/2008

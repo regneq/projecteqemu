@@ -473,6 +473,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Water Breathing");
 #endif
+				//handled by client
 				break;
 			}
 
