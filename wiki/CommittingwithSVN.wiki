@@ -21,3 +21,5 @@ There are many ways to submit code, but I am going to use TortoiseSVN (Windows) 
 - To add a new file to the repo, create the file in your working folder. Right click it, and click TortoiseSVN - Add. You can select multiple files and do this at once. Make sure all the added files are selected, and click OK. Then, do a SVN Commit to make the change on our repo.
 
 - Removing a file is the same deal, right click the file and select TortoiseSVN - Delete. Again, you must do a SVN Commit for it to take effect in our repo. 
+
+- To create a diff, change whatever files you are working with, but do not commit yet. Right click somewhere in the root directory of your source, and click TortoiseSVN - Create Patch... Make sure the files you changed are selected, and then click OK. Name and save the .patch file somewhere and SVN will create the patch for you. You can post that on the EQEmu forums, give it to other developers, etc. 
