@@ -3155,16 +3155,20 @@ void Mob::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 		{
 			damage = (damage * critMod) / 100;
 			//Veteran's Wrath AA
-			//first, make sure it's not a special attack
-			if (skill == _1H_BLUNT
-				|| skill == _2H_BLUNT
-				|| skill == _1H_SLASHING
-				|| skill == _2H_SLASHING
-				|| skill == PIERCING
-				|| skill == HAND_TO_HAND
-				/*|| skill == ARCHERY*/ //AndMetal: not sure if we should be giving this to rangers
-				)
-				damage *= GetAA(aaVeteransWrath) * 15; //AndMetal: guessing
+			//first, find out of we have it (don't multiply by 0 :-\ )
+			int32 AAdmgmod = GetAA(aaVeteransWrath);
+			if (AAdmgmod > 0) {
+				//now, make sure it's not a special attack
+				if (skill == _1H_BLUNT
+					|| skill == _2H_BLUNT
+					|| skill == _1H_SLASHING
+					|| skill == _2H_SLASHING
+					|| skill == PIERCING
+					|| skill == HAND_TO_HAND
+					/*|| skill == ARCHERY*/ //AndMetal: not sure if we should be giving this to rangers
+					)
+					damage *= (AAdmgmod * 15) / 100; //AndMetal: guessing
+			}
 
 			if(IsClient() && CastToClient()->berserk)
 			{
