@@ -149,7 +149,7 @@ typedef enum {	//AA IDs
 	aaInnateRunSpeed = 62,			//works
 	aaInnateRegeneration = 65,		//works
 	aaInnateMetabolism = 68,		
-	aaInnateLungCapacity = 71,		
+	aaInnateLungCapacity = 71,		//handled by client
 	aaFirstAid = 74,			//untested
 	aaHealingAdept = 77,			//untested
 	aaHealingGift = 80,			//untested
@@ -365,7 +365,7 @@ typedef enum {	//AA IDs
 	aaImprovedReclaimEnergy2 = 671,	//whats the difference? untetsed
 	aaSwiftJourney = 672,			
 	aaConvalescence = 674, //added 9/26/08
-	aaLastingBreath = 676,
+	aaLastingBreath = 676, //handled by client
 	aaPackrat = 678, //added 9/29/08
 	aaHeightenedEndurance = 683,
 	aaWeaponAffinity = 686,				//implemented
@@ -439,7 +439,7 @@ typedef enum {	//AA IDs
 	aaRosFlamingFamiliar = 921,		//DB
 	aaEcisIcyFamiliar = 922,		//DB
 	aaDruzzilsMysticalFamiliar = 923,	//DB
-	aaAdvancedFuryofMagicMastery = 924,	
+	aaAdvancedFuryofMagicMastery = 924,	//added 9/29/08
 	aaWardofDestruction = 926,		//DB
 	aaFrenziedDevastation = 931,		//DB
 	aaCombatFury2 = 934,	//whats the difference?
@@ -456,7 +456,7 @@ typedef enum {	//AA IDs
 	aaTouchofDecay = 967,
 	aaCalloftheAncients2 = 970,	//whats the difference?
 	aaImprovedVision = 975,
-	aaEternalBreath = 978,
+	aaEternalBreath = 978, //handled by client
 	aaBlacksmithingMastery = 979, //added 9/29/08
 	aaBakingMastery = 982, //added 9/29/08
 	aaBrewingMastery = 985, //added 9/29/08
@@ -520,7 +520,7 @@ typedef enum {	//AA IDs
 	aaCelestialRejuvination = 1203,
 	aaFerventBenediction = 1206,
 	aaSanctuary = 1209,
-	aaDestructiveFury = 1210,
+	aaDestructiveFury = 1210, //added 9/29/08
 	aaDestructiveFury2 = 1213,	//whats the difference?
 	aaBoonoftheForest = 1222,
 	aaSpiritoftheGrove = 1225,

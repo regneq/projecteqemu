@@ -44,6 +44,12 @@ float Client::GetActSpellRange(int16 spell_id, float range)
 }
 
 sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
+	// Important variables:
+	// value: the actual damage after resists, passed from Mob::SpellEffect
+	// modifier: modifier to damage (from spells & focus effects?)
+	// ratio: % of the modifier to apply (from AAs & natural bonus?)
+	// chance: critital chance %
+	
 //	int16 modspellid = 0;
 	
 	//all of the ordering and stacking in here might be wrong, but I dont care right now.
@@ -86,7 +92,7 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 	}
 	
 	//spell crits, dont make sense if cast on self.
-	if(spells[spell_id].targettype != ST_Self) {
+	if(tt != ST_Self) {
 		int chance = 0;
 		sint32 ratio = 0;
 
@@ -96,12 +102,6 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 			ratio += 15;
 		}
 		
-		//spell casting fury
-		uint8 aa_item = GetAA(aaSpellCastingFury);
-		if(aa_item == 1) {chance+=2; ratio += 33;}
-		else if(aa_item == 2) {chance+=5; ratio += 66;}
-		else if(aa_item == 3) {chance+=7; ratio += 100;}
-
 		//Normal EQ: no class that has ingenuity has reg spell crit AAs too but people
 		//are free to customize so lets make sure they don't stack oddly.
 		//afaik all ranks provide a 100% bonus in damage on critical
@@ -117,16 +117,45 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 			break;
 		}
 		
-		if(spells[spell_id].targettype == ST_Target || spells[spell_id].targettype == ST_Summoned ||spells[spell_id].targettype == ST_Undead) {
+		if(tt == ST_Target || tt == ST_Summoned || tt == ST_Undead) {
 			//DD spells only...
-			aa_item = GetAA(aaSpellCastingFuryMastery);
-			if(aa_item == 1) { chance+=3; }
-			else if(aa_item == 2) { chance+=5; }
-			else if(aa_item == 3) { chance+=7; }
+			//reference: http://www.graffe.com/AA/
+			switch (GetAA(aaSpellCastingFury)) //not sure why this was different from Mastery before, both are DD only
+			{
+				case 1:
+					chance += 2;
+					ratio += 33;
+					break;
+				case 2:
+					chance += 4; //some reports between 4.5% & 5%, AA description indicates 4%
+					ratio += 66;
+					break;
+				case 3:
+					chance += 7;
+					ratio += 100;
+					break;
+			}
+			switch (GetAA(aaSpellCastingFuryMastery)) //ratio should carry over from Spell Casting Fury, which is 100% for all ranks
+			{
+				case 1:
+					chance += 3; //10%, Graffe = 9%?
+					break;
+				case 2:
+					chance += 5; //12%, Graffe = 11%?
+					break;
+				case 3:
+					chance += 7; //14%, Graffe = 13%?
+					break;
+			}
+			chance += GetAA(aaFuryofMagic) * 2;  //doesn't look like this is used
+			chance += GetAA(aaFuryofMagicMastery) * 2; //doesn't look like this is used
+			chance += GetAA(aaFuryofMagicMastery2) * 2;	//this is the current one used in DB; 16%, 18%, 20%; Graffe guesses 18-19% max
+			chance += GetAA(aaAdvancedFuryofMagicMastery) * 2; //guessing, not much data on it
+
 			
 			if(ratio < 100)	//chance increase and ratio are made up, not confirmed
 				ratio = 100;
-		} else if(spells[spell_id].targettype == ST_Tap) {
+		} else if(tt == ST_Tap) {
 			if(ratio < 100)	//chance increase and ratio are made up, not confirmed
 				ratio = 100;
 			
@@ -146,13 +175,26 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 			}
 		}
 		
-
-		chance += GetAA(aaFuryofMagic) * 2;
-		chance += GetAA(aaFuryofMagicMastery) * 2;
-		chance += GetAA(aaFuryofMagicMastery2) * 2;	//just in case
-		chance += GetAA(aaIngenuity);
+		chance += GetAA(aaIngenuity); //nothing stating it's DD only, so we'll apply to all damage spells
 		
 		chance += GetFocusEffect(focusImprovedCritical, spell_id);
+
+		//crit damage modifiers
+		if (GetClass() == WIZARD) { //wizards get an additional bonus
+			ratio += GetAA(aaDestructiveFury) * 8; //108%, 116%, 124%, close to Graffe's 207%, 215%, & 225%
+		} else {
+			switch (GetAA(aaDestructiveFury)) //not quite linear
+			{
+				case 1:
+					ratio += 4; //104%, Graffe = 103%
+					break;
+				case 2:
+					ratio += 8; //108%, Graffe = 107%
+					break;
+				case 3:
+					ratio += 16; //116%, Graffe = 115%
+			}
+		}
 		
 		if(chance > 0 && MakeRandomInt(0,100) <= chance) {
 			modifier += modifier*ratio/100;
