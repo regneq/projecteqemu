@@ -685,6 +685,8 @@ bool Client::TradeskillExecute(DBTradeskillRecipe_Struct *spec) {
 	float res = MakeRandomFloat(0, 99);
 	int AAChance = 0;
 
+	//AA modifiers
+	//can we do this with nested switches?
 	if(spec->tradeskill == ALCHEMY){
 		switch(GetAA(aaAlchemyMastery)){
 		case 1:
@@ -701,6 +703,90 @@ bool Client::TradeskillExecute(DBTradeskillRecipe_Struct *spec) {
 
 	if(spec->tradeskill == JEWELRY_MAKING){
 		switch(GetAA(aaJewelCraftMastery)){
+		case 1:
+			AAChance = 10;
+			break;
+		case 2:
+			AAChance = 25;
+			break;
+		case 3:
+			AAChance = 50;
+			break;
+		}
+	}
+
+	if (spec->tradeskill == BLACKSMITHING) {
+		switch(GetAA(aaBlacksmithingMastery)) {
+		case 1:
+			AAChance = 10;
+			break;
+		case 2:
+			AAChance = 25;
+			break;
+		case 3:
+			AAChance = 50;
+			break;
+		}
+	}
+
+	if (spec->tradeskill == BAKING) {
+		switch(GetAA(aaBakingMastery)) {
+		case 1:
+			AAChance = 10;
+			break;
+		case 2:
+			AAChance = 25;
+			break;
+		case 3:
+			AAChance = 50;
+			break;
+		}
+	}
+
+	if (spec->tradeskill == BREWING) {
+		switch(GetAA(aaBrewingMastery)) {
+		case 1:
+			AAChance = 10;
+			break;
+		case 2:
+			AAChance = 25;
+			break;
+		case 3:
+			AAChance = 50;
+			break;
+		}
+	}
+
+	if (spec->tradeskill == FLETCHING) {
+		switch(GetAA(aaFletchingMastery2)) {
+		case 1:
+			AAChance = 10;
+			break;
+		case 2:
+			AAChance = 25;
+			break;
+		case 3:
+			AAChance = 50;
+			break;
+		}
+	}
+
+	if (spec->tradeskill == POTTERY) {
+		switch(GetAA(aaPotteryMastery)) {
+		case 1:
+			AAChance = 10;
+			break;
+		case 2:
+			AAChance = 25;
+			break;
+		case 3:
+			AAChance = 50;
+			break;
+		}
+	}
+
+	if (spec->tradeskill == TAILORING) {
+		switch(GetAA(aaTailoringMastery)) {
 		case 1:
 			AAChance = 10;
 			break;

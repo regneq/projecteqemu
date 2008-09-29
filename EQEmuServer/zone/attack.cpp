@@ -3154,6 +3154,18 @@ void Mob::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 		if(MakeRandomFloat(0, 1) <= critChance)
 		{
 			damage = (damage * critMod) / 100;
+			//Veteran's Wrath AA
+			//first, make sure it's not a special attack
+			if (skill == _1H_BLUNT
+				|| skill == _2H_BLUNT
+				|| skill == _1H_SLASHING
+				|| skill == _2H_SLASHING
+				|| skill == PIERCING
+				|| skill == HAND_TO_HAND
+				/*|| skill == ARCHERY*/ //AndMetal: not sure if we should be giving this to rangers
+				)
+				damage *= GetAA(aaVeteransWrath) * 15; //AndMetal: guessing
+
 			if(IsClient() && CastToClient()->berserk)
 			{
 				entity_list.MessageClose(this, false, 200, MT_CritMelee, "%s lands a crippling blow!(%d)", GetCleanName(), damage);
