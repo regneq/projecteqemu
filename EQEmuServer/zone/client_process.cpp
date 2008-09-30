@@ -298,7 +298,7 @@ bool Client::Process() {
 					if((((GetClass() == MONK || GetClass() == WARRIOR || GetClass() == RANGER || GetClass() == BERSERKER)
 						&& GetLevel() >= 60) || SpecAttacks[SPECATK_TRIPLE])
 					   /*&& CheckDoubleAttack(false,true))*/ //old Double Attack code
-					   && CheckDoubleAttack(true) //Congdar's new Double Attack code
+					   && CheckDoubleAttack(true)) //Congdar's new Double Attack code
 					{
                                     tripleAttackSuccess = true;
 						Attack(target, 13, true);
