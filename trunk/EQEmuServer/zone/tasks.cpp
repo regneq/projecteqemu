@@ -2406,7 +2406,7 @@ void TaskManager::SendTaskActivityLong(Client *c, int TaskID, int ActivityID, in
 
 	// We send our 'internal' types as ActivityUse1. text3 should be set to the activity description, so it makes
 	// no difference to the client. All activity updates will be done based on our interal activity types.
-	if(Tasks[TaskID]->Activity[ActivityID].Type < 100)
+	if((Tasks[TaskID]->Activity[ActivityID].Type > 0) &&  Tasks[TaskID]->Activity[ActivityID].Type < 100)
 		tah->ActivityType = Tasks[TaskID]->Activity[ActivityID].Type;
 	else
 		tah->ActivityType = ActivityUse1;

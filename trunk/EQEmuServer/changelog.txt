@@ -1,6 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==9/30/2008
+Derision: Task activities with an activitytype of <= 0 in the activities table will be sent with an activitytype of 11 to the client.
+
 ==9/29/2008
 cavedude00: Added rule World:ClearTempMerchantlist to control whether world clears temp merchant items when started or not.
 AndMetal: (Congdar) New Double Attack logic
