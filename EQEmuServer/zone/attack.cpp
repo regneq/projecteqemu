@@ -3228,7 +3228,7 @@ void Mob::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 					|| skill == HAND_TO_HAND
 					/*|| skill == ARCHERY*/ //AndMetal: not sure if we should be giving this to rangers
 					)
-					damage *= (AAdmgmod * 15) / 100; //AndMetal: guessing
+					damage *= ((AAdmgmod * 15) / 100) + 100; //AndMetal: guessing
 			}
 
 			if(IsClient() && CastToClient()->berserk)
