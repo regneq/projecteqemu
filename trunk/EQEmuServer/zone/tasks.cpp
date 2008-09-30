@@ -2563,7 +2563,7 @@ void TaskManager::SendActiveTaskDescription(Client *c, int TaskID, int SequenceN
 						 0x12, ItemID, Tasks[TaskID]->Reward,0x12);
 			}
 			else {
-				const Item_Struct *Item = database.GetItem(Tasks[TaskID]->RewardID);
+				const Item_Struct *Item = database.GetItem(ItemID);
 
 				if(Item) {
 					MakeAnyLenString(&RewardTmp, "%c%06X000000000000000000000000000000014505DC2%s%c", 
@@ -2571,13 +2571,16 @@ void TaskManager::SendActiveTaskDescription(Client *c, int TaskID, int SequenceN
 				}
 			}
 
-			RewardText += RewardTmp;
+			if(RewardTmp) RewardText += RewardTmp;
 			safe_delete_array(RewardTmp);
 		}
 		else {
 			RewardText += Tasks[TaskID]->Reward;	
 		}
 
+	}
+	else {
+		RewardText += Tasks[TaskID]->Reward;	
 	}
 	PacketLength += strlen(RewardText.c_str()) + 1;
 
