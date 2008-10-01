@@ -765,7 +765,7 @@ void Corpse::MakeLootRequestPackets(Client* client, const EQApplicationPacket* a
 				if (this->GetPlatinum()>10000)
 					this->RemoveCash();
 			#endif
-			if(client->IsGrouped() && client->AutoSplitEnabled() && client->GetGroup()) {
+			if(!IsPlayerCorpse() && client->IsGrouped() && client->AutoSplitEnabled() && client->GetGroup()) {
 				d->copper		= 0;
 				d->silver		= 0;
 				d->gold			= 0;
