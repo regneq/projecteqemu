@@ -4,6 +4,8 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==9/30/2008
 Derision: Task activities with an activitytype of <= 0 in the activities table will be sent with an activitytype of 9 to the client.
 Derision: The reward field in the task table will now be displayed even if rewardid=0
+cavedude00: (Rocker8956) Added quest function to get average group/raid level.
+cavedude00: (Rocker8956) Changes to setinstflagmanually to allow deletion of instance flags and to allow manual flagging of raids, groups, and individuals.
 
 ==9/29/2008
 cavedude00: Added rule World:ClearTempMerchantlist to control whether world clears temp merchant items when started or not.
@@ -13,7 +15,7 @@ AndMetal: Added AAs: Discordant Defiance, Blacksmithing Mastery, Baking Mastery,
 AndMetal: Ayonae's Tutelage should now calculate bonus for Singing
 
 Optional SQL:
-insert into rule_values values (0,'World:ClearTempMerchantlist,'true');
+insert into rule_values values (0,'World:ClearTempMerchantlist','true');
 
 ==9/28/2008
 AndMetal: Fixed exploit for pets ignoring Fear by using /pet commands

@@ -2179,14 +2179,15 @@ XS(XS__setinstflagmanually);
 XS(XS__setinstflagmanually)
 {
 	dXSARGS;
-	if (items != 3)
-		Perl_croak(aTHX_ "Usage: setinstflagmanually(charID, orginalZoneID, instFlag)");
+	if (items != 4)
+		Perl_croak(aTHX_ "Usage: setinstflagmanually(charID, orginalZoneID, instFlag, type)");
 
 	int		charID = (int)SvIV(ST(0));
 	int		orgZoneID = (int)SvIV(ST(1));
 	int		instFlag = (int)SvIV(ST(2));
+	int		type = (int)SvIV(ST(3));
 
-	quest_manager.setinstflagmanually(charID, orgZoneID, instFlag);
+	quest_manager.setinstflagmanually(charID, orgZoneID, instFlag, type);
 
 	XSRETURN_EMPTY;
 }
@@ -2200,6 +2201,24 @@ XS(XS__clearspawntimers)
 	quest_manager.clearspawntimers();
 
 	XSRETURN_EMPTY;
+}
+XS(XS__getlevel);
+XS(XS__getlevel)
+{
+    dXSARGS;
+    if (items != 2)
+        Perl_croak(aTHX_ "Usage: getlevel(charid, type)");
+
+    int		RETVAL;
+    dXSTARG;
+
+             int		charid = (int)SvIV(ST(0));
+	int		type = (int)SvIV(ST(1));
+
+	RETVAL = quest_manager.getlevel(charid, type);
+	XSprePUSH; PUSHu((IV)RETVAL);
+
+	XSRETURN(1);
 }
 /*
 This is the callback perl will look for to setup the
@@ -2350,6 +2369,7 @@ newXS(strcpy(buf, "popup"), XS__popup, file);
 newXS(strcpy(buf, "setinstflag"), XS__setinstflag, file);
 newXS(strcpy(buf, "setinstflagmanually"), XS__setinstflagmanually, file);
 newXS(strcpy(buf, "clearspawntimers"), XS__clearspawntimers, file);
+newXS(strcpy(buf, "getlevel"), XS__getlevel, file);
 	XSRETURN_YES;
 }
 
