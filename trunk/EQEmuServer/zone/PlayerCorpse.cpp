@@ -887,8 +887,11 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app)
 	
 	if (item != 0)
 	{
-		inst = database.CreateItem(item, item_data?item_data->charges:0, item_data->aug1, item_data->aug2, item_data->aug3, item_data->aug4, item_data->aug5);
-		
+		if(item_data)
+			inst = database.CreateItem(item, item_data?item_data->charges:0, item_data->aug1, item_data->aug2, item_data->aug3, item_data->aug4, item_data->aug5);
+		else
+			inst = database.CreateItem(item);
+
 		if(item_data && inst->IsStackable()) {
 			//Restore charges from the original item.
 			inst->SetCharges(item_data->charges);
@@ -971,7 +974,8 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app)
 		if(RuleB(TaskSystem, EnableTaskSystem))
 			client->UpdateTasksForItem(ActivityLoot, item->ID);
 		// now remove it from the corpse
-		RemoveItem(item_data->lootslot);
+		if(item_data)
+			RemoveItem(item_data->lootslot);
 		// remove bag contents too
 		if (item->ItemClass == ItemClassContainer && (GetPKItem()!=-1 || GetPKItem()!=1))
 		{
