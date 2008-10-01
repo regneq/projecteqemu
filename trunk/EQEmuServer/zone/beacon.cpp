@@ -26,7 +26,9 @@ target to center around.
 #include "../common/debug.h"
 #ifdef WIN32
 #define snprintf	_snprintf
-#define vsnprintf	_vsnprintf
+#if (_MSC_VER < 1500)
+	#define vsnprintf	_vsnprintf
+#endif
 #define strncasecmp	_strnicmp
 #define strcasecmp  _stricmp
 #endif

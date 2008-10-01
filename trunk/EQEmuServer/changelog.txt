@@ -1,6 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==10/01/2008
+Derision: (erde) VS2008 Compile Fix (#if (_MSC_VER < 1500) #define vsnprintf _vsnprintf #endif
+
 ==9/30/2008
 Derision: Task activities with an activitytype of <= 0 in the activities table will be sent with an activitytype of 9 to the client.
 Derision: The reward field in the task table will now be displayed even if rewardid=0
