@@ -2236,3 +2236,147 @@ void Database::setCharInstFlag(int charID, int orgZoneID, int instFlag)
 		safe_delete_array(query);
 	}
 }
+
+int Database::getCharLevel(int charID)
+{
+    char errbuf[MYSQL_ERRMSG_SIZE];
+    char *query = 0;
+    MYSQL_RES *result;
+    MYSQL_ROW row;
+	int level = 0;
+
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT level FROM character_ WHERE id=%i", charID), errbuf, &result))
+	{
+		if (mysql_num_rows(result) == 1) 
+		{
+			row = mysql_fetch_row(result);
+			level=atoi(row[0]);
+			safe_delete_array(query);
+			mysql_free_result(result);
+			return level;
+		}
+		else 
+		{
+			cerr << "Error in getCharLevel query '" << query << "' " << errbuf << endl;
+			safe_delete_array(query);
+			mysql_free_result(result);
+			return level; // This would return zero
+		}
+	}
+	else 
+	{
+		cerr << "Error in getCharLevel query '" << query << "' " << errbuf << endl;
+		safe_delete_array(query);
+		return level; // This would return zero
+	}
+}
+
+int Database::getRaidAvgLvl(int charID)
+{
+    char errbuf[MYSQL_ERRMSG_SIZE];
+    char *query = 0;
+    MYSQL_RES *result;
+    MYSQL_ROW row;
+	int raidid = 0;
+	double levelHolder = 0;
+
+	// Find out what raid the character is in
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT raidid from raid_members where charid=%i", charID), errbuf, &result)) 
+	{
+		if (mysql_num_rows(result) == 1) 
+		{
+			row = mysql_fetch_row(result);
+			raidid=atoi(row[0]);
+			mysql_free_result(result);
+			safe_delete_array(query);
+			// Select the character IDs of the characters in the raid
+			if (RunQuery(query, MakeAnyLenString(&query, "SELECT charid from raid_members where raidid=%i", raidid), errbuf, &result))
+			{
+				int i = 0; // track number of characters
+				while((row = mysql_fetch_row(result))) 
+				{
+					levelHolder = levelHolder + getCharLevel(atoi(row[0]));
+					i++;
+				}
+				levelHolder = ((levelHolder/i)+.5); // total levels divided by num of characters
+				safe_delete_array(query);
+				mysql_free_result(result);
+				return (int(levelHolder));
+			}
+			else
+			{
+				safe_delete_array(query);
+				mysql_free_result(result);
+				return 0;
+			}
+		}
+		else
+		{
+			safe_delete_array(query);
+			mysql_free_result(result);
+			return 0;
+		}
+	}
+	else
+	{
+		printf("Unable to get raid id: %s\n",errbuf);
+		mysql_free_result(result);
+		safe_delete_array(query);
+		return 0;
+	}
+}
+int Database::getGroupAvgLvl(int charID)
+{
+    char errbuf[MYSQL_ERRMSG_SIZE];
+    char *query = 0;
+    MYSQL_RES *result;
+    MYSQL_ROW row;
+	int groupid = 0;
+	double levelHolder = 0;
+
+	// Find out what group the character is in
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT groupid from group_id where charid=%i", charID), errbuf, &result)) 
+	{
+		if (mysql_num_rows(result) == 1)
+		{
+			row = mysql_fetch_row(result);
+			groupid=atoi(row[0]);
+			mysql_free_result(result);
+			safe_delete_array(query);
+			// Select the character IDs of the characters in the group
+			if (RunQuery(query, MakeAnyLenString(&query, "SELECT charid FROM group_id WHERE groupid=%i", groupid), errbuf, &result))
+			{
+				int i = 0; // track number of characters
+				while((row = mysql_fetch_row(result))) 
+				{
+					levelHolder = levelHolder + getCharLevel(atoi(row[0]));
+					i++;
+				}
+				levelHolder = ((levelHolder/i)+.5); // total levels divided by num of characters
+				
+				safe_delete_array(query);
+				mysql_free_result(result);
+				return (int(levelHolder));
+			}
+			else
+			{
+				safe_delete_array(query);
+				mysql_free_result(result);
+				return 0;
+			}
+		}
+		else
+		{
+			safe_delete_array(query);
+			mysql_free_result(result);
+			return 0;
+		}
+	}
+	else
+	{
+		printf("Unable to get group id: %s\n",errbuf);
+		mysql_free_result(result);
+		safe_delete_array(query);
+		return 0;
+	}
+}

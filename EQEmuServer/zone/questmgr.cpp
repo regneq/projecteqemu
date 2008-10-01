@@ -1565,31 +1565,25 @@ int QuestManager::completedtasksinset(int taskset) {
 	return -1;
 }
 
-void QuestManager::setinstflag(int charID, int orgZoneID, int type)
+void QuestManager::setinstflagmanually(int charID, int orgZoneID, int instFlag, int type)
 {
-	int instFlag = database.getCurInstFlagNum();
-
 	if (type == 0)
 	{
 		database.setCharInstFlag(charID, orgZoneID, instFlag);
-		database.incrCurInstFlagNum(instFlag); // Increment the curInstFlagNum
 	}
 	else if(type == 1)
 	{
 		database.setGroupInstFlagNum(charID, orgZoneID, instFlag);
-		database.incrCurInstFlagNum(instFlag); // Increment the curInstFlagNum
 	}
 	else if(type == 2)
 	{
 		database.setRaidInstFlagNum(charID, orgZoneID, instFlag);
-		database.incrCurInstFlagNum(instFlag); // Increment the curInstFlagNum
 	}
 	else if(type == 3)
 	{
 		database.setCharInstFlag(charID, orgZoneID, instFlag);
 		database.setGroupInstFlagNum(charID, orgZoneID, instFlag);
 		database.setRaidInstFlagNum(charID, orgZoneID, instFlag);
-		database.incrCurInstFlagNum(instFlag); // Increment the curInstFlagNum
 	}
 }
 
@@ -1605,4 +1599,36 @@ void QuestManager::clearspawntimers() {
 		database.RunQuery(query, MakeAnyLenString(&query, "UPDATE spawn2 SET timeleft=0 WHERE zone='%s'",zone->GetShortName()), errbuf);
 		safe_delete_array(query);
 	}
+}
+
+int QuestManager::getlevel(int charID, int type)
+{
+	if (type == 0)
+	{
+		return (database.getCharLevel(charID));
+	}
+	else if(type == 1)
+	{
+		return (database.getGroupAvgLvl(charID));
+
+	}
+	else if(type == 2)
+	{
+		return database.getRaidAvgLvl(charID);
+	}
+	else if(type == 3)
+	{
+		if(database.getRaidAvgLvl(charID) > 0) 
+		{
+			return (database.getRaidAvgLvl(charID));
+		}
+		else if(database.getGroupAvgLvl(charID) > 0) 
+		{
+			return (database.getGroupAvgLvl(charID));
+		}
+		else
+			return (database.getCharLevel(charID));
+	}
+	else
+		return 0;
 }
