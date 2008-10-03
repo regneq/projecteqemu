@@ -261,7 +261,7 @@ bool Client::Process() {
 		
 		Mob *auto_attack_target = target;
 		if (auto_attack && auto_attack_target != NULL && may_use_attacks && attack_timer.Check()) {
-			if (!CombatRange(target)) {
+			if (!CombatRange(auto_attack_target)) {
 				//Message(0,"Target's Name: %s",target->GetName());
 				//Message(0,"Target's X: %f, Your X: %f",target->CastToMob()->GetX(),GetX());
 				//Message(0,"Target's Y: %f, Your Y: %f",target->CastToMob()->GetY(),GetY());
@@ -348,7 +348,7 @@ bool Client::Process() {
 					}
 				}
 				
-				if (target && (GetAA(aaPunishingBlade) > 0 || GetAA(aaSpeedoftheKnight) > 0)) {
+				if (auto_attack_target && (GetAA(aaPunishingBlade) > 0 || GetAA(aaSpeedoftheKnight) > 0)) {
 					ItemInst *wpn = GetInv().GetItem(SLOT_PRIMARY);
 					if(wpn){
 						if(wpn->GetItem()->ItemType == ItemType2HS || 
