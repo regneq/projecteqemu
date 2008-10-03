@@ -652,8 +652,8 @@ public:
 	bool	CheckTradeLoreConflict(Client* other);
 	void	LinkDead();
 	void	Insight(int32 t_id);
-    //bool	CheckDoubleAttack(bool AAadd = false, bool Triple = false); //old Double Attack code
-	bool	CheckDoubleAttack(bool tripleAttack = false); //Congdar's new Double Attack code
+    bool	CheckDoubleAttack(bool AAadd = false, bool Triple = false);
+	
 	//remove charges/multiple objects from inventory:
 	//bool	DecreaseByType(int32 type, int8 amt);
 	bool	DecreaseByID(int32 type, int8 amt);
