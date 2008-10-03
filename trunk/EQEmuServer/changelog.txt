@@ -1,6 +1,12 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+Derision: Removed 'stepped' column from task table. See http://eqemulator.net/forums/showthread.php?p=157613
+Derision: Added display of Task Description to #task show to aid in debugging a reported problem.
+Derision: Lowered default required status for #task command from 250 to 150 for debugging purposes.
+
+Required SQL: ALTER TABLE `tasks` DROP `stepped` ;
+
 ==10/02/2008
 KLS: (Congdar) Update to Tech. of Master Wu AA.
 KLS: Revert of double attack change, people reporting non warriors were no longer double attacking properly.

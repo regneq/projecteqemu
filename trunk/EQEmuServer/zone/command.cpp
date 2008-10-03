@@ -387,7 +387,7 @@ int command_init(void) {
 		command_add("serverrules","- Read this server's rules",0,command_serverrules) ||
 		command_add("acceptrules","[acceptrules] - Accept the EQEmu Agreement",0,command_acceptrules) ||
 		command_add("rules","(subcommand) - Manage server rules", 250, command_rules) ||
-		command_add("task","(subcommand) - Task system commands", 250, command_task) ||
+		command_add("task","(subcommand) - Task system commands", 150, command_task) ||
 		command_add("guildcreate","[guildname] - Creates an approval setup for guild name specified",0,command_guildcreate) ||
 		command_add("guildapprove","[guildapproveid] - Approve a guild with specified ID (guild creator receives the id)",0,command_guildapprove) ||
 		command_add("guildlist","[guildapproveid] - Lists character names who have approved the guild specified by the approve id",0,command_guildlist) ||
