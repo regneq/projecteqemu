@@ -273,6 +273,9 @@ void Client::OPCombatAbility(const EQApplicationPacket *app) {
 //returns the reuse time in sec for the special attack used.
 int Mob::MonkSpecialAttack(Mob* other, int8 unchecked_type)
 {
+	if(!other)
+		return 0;
+
 	sint32 ndamage = 0;
 	sint32 max_dmg = 0;
 	sint32 min_dmg = 1;

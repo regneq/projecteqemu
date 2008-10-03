@@ -1894,6 +1894,9 @@ void Mob::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHel
 		return; 
 	}	
 
+	if(IsClient() && !IsAIControlled())
+		return;
+
 	if(IsFamiliar() || SpecAttacks[IMMUNE_AGGRO])
 		return;	
 
