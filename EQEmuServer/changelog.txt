@@ -6,7 +6,9 @@ Derision: Removed 'stepped' column from task table. See http://eqemulator.net/fo
 Derision: Added display of Task Description to #task show to aid in debugging a reported problem.
 Derision: Lowered default required status for #task command from 250 to 150 for debugging purposes.
 KLS: Removed some lingering printf from the raid stuff.
-KLS: 
+KLS: Auto attack code changed to not use target, instead we save the first target and now always use that.
+KLS: Hate list will no longer work for non ai controlloed player characters.
+KLS: Fix to crash in monk special attack function.
 
 Required SQL: ALTER TABLE `tasks` DROP `stepped` ;
 

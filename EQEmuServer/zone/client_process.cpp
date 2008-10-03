@@ -259,8 +259,8 @@ bool Client::Process() {
 			}
 		}
 		
-		
-		if (auto_attack && target != NULL && may_use_attacks && attack_timer.Check()) {
+		Mob *auto_attack_target = target;
+		if (auto_attack && auto_attack_target != NULL && may_use_attacks && attack_timer.Check()) {
 			if (!CombatRange(target)) {
 				//Message(0,"Target's Name: %s",target->GetName());
 				//Message(0,"Target's X: %f, Your X: %f",target->CastToMob()->GetX(),GetX());
@@ -269,7 +269,7 @@ bool Client::Process() {
 				Message_StringID(13,TARGET_TOO_FAR);
 				//Message(13,"Your target is too far away, get closer!");
 			}
-			else if (target == this) {
+			else if (auto_attack_target == this) {
 				Message_StringID(13,TRY_ATTACKING_SOMEONE);
 				//Message(13,"Try attacking someone else then yourself!");
 			}
@@ -277,22 +277,22 @@ bool Client::Process() {
 			else if (CantSee(target)) {
 				Message(13,"You can't see your target from here.");
 			}*/
-			else if (target->GetHP() > -10) { // -10 so we can watch people bleed in PvP
+			else if (auto_attack_target->GetHP() > -10) { // -10 so we can watch people bleed in PvP
 				if(CheckAAEffect(aaEffectRampage)){	//Dook- AA Destructive Force- AE attacks for duration
 					entity_list.AEAttack(this, 30);
 				} else {
-					Attack(target, 13); 	// Kaiyodo - added attacking hand to arguments
+					Attack(auto_attack_target, 13); 	// Kaiyodo - added attacking hand to arguments
 				}
 				// Kaiyodo - support for double attack. Chance based on formula from Monkly business
                         bool tripleAttackSuccess = false;
-				if( target && CanThisClassDoubleAttack() ) {
+				if( auto_attack_target && CanThisClassDoubleAttack() ) {
 					
 					if(CheckDoubleAttack(true)) {
 						//should we allow rampage on double attack?
 						if(CheckAAEffect(aaEffectRampage)) {
 							entity_list.AEAttack(this, 30);
 						} else {
-							Attack(target, 13, true);
+							Attack(auto_attack_target, 13, true);
 						}
 					}
 					
@@ -302,16 +302,16 @@ bool Client::Process() {
 					   && CheckDoubleAttack(false,true))
 					{
                                     tripleAttackSuccess = true;
-						Attack(target, 13, true);
+						Attack(auto_attack_target, 13, true);
 					}
 					
 					//quad attack, does this belong here??
 					if(SpecAttacks[SPECATK_QUAD] && CheckDoubleAttack(false,true)) 
 					{
-						Attack(target, 13, true);
+						Attack(auto_attack_target, 13, true);
 					}
 				}
-				if (target && GetAA(aaFlurry) > 0) {
+				if (auto_attack_target && GetAA(aaFlurry) > 0) {
 					int flurrychance = 0;
 					switch (GetAA(aaFlurry)) {
 						case 1:
@@ -340,11 +340,11 @@ bool Client::Process() {
 					}         
 					if (rand()%1000 < flurrychance) {
 						Message_StringID(MT_CritMelee, 128);
-						Attack(target, 13, true);
+						Attack(auto_attack_target, 13, true);
 						
 						//50% chance for yet another attack?
 						if(MakeRandomFloat(0, 1) < 0.5)
-							Attack(target, 13, true);
+							Attack(auto_attack_target, 13, true);
 					}
 				}
 				
@@ -359,7 +359,7 @@ bool Client::Process() {
 							extatk += GetAA(aaSpeedoftheKnight)*5;
 							if(MakeRandomInt(0, 100) < extatk)
 							{
-								Attack(target, 13, true);
+								Attack(auto_attack_target, 13, true);
 							}
 						}
 					}
@@ -385,20 +385,20 @@ bool Client::Process() {
 		}
 		
 		// Kaiyodo - Check offhand attack timer
-		if(auto_attack && may_use_attacks && target != NULL
+		if(auto_attack && may_use_attacks && auto_attack_target != NULL
 			&& CanThisClassDualWield() && attack_dw_timer.Check()) {
 			
 			// Range check
-			if(!CombatRange(target)) {
+			if(!CombatRange(auto_attack_target)) {
 				//Message(13,"Your target is too far away, get closer! (dual)");
 				Message_StringID(13,TARGET_TOO_FAR);
 			}
 			// Don't attack yourself
-			else if(target == this) {
+			else if(auto_attack_target == this) {
 				//Message(13,"Try attacking someone else then yourself! (dual)");
 				Message_StringID(13,TRY_ATTACKING_SOMEONE);
 			}
-			else if(target->GetHP() > -10) {
+			else if(auto_attack_target->GetHP() > -10) {
 				float DualWieldProbability = (GetSkill(DUAL_WIELD) + GetLevel()) / 400.0f; // 78.0 max
 				if(GetAA(aaAmbidexterity))
 					DualWieldProbability += 0.1f;
@@ -411,15 +411,15 @@ bool Client::Process() {
 					if(CheckAAEffect(aaEffectRampage)) {
 						entity_list.AEAttack(this, 30, 14);
 					} else {
-						Attack(target, 14);	// Single attack with offhand
+						Attack(auto_attack_target, 14);	// Single attack with offhand
 					}
 					
 					if( CanThisClassDoubleAttack() && CheckDoubleAttack()) {
 						if(CheckAAEffect(aaEffectRampage)) {
 							entity_list.AEAttack(this, 30, 14);
 						} else {
-							if(target && target->GetHP() > -10)
-								Attack(target, 14);	// Single attack with offhand
+							if(auto_attack_target && auto_attack_target->GetHP() > -10)
+								Attack(auto_attack_target, 14);	// Single attack with offhand
 						}
 					}
 				}
