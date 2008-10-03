@@ -743,5 +743,9 @@ bool IsGateSpell(int16 spell_id) {
 }
 // seveian 2008-09-23
 bool IsPlayerIllusionSpell(int16 spell_id) {
-	return (spells[spell_id].effectdescnum == 49);
+	if(IsEffectInSpell(spell_id, SE_Illusion) && spells[spell_id].targettype == ST_Self)
+		return true;
+	else
+		return false;
+
 }
