@@ -133,11 +133,11 @@ bool TaskManager::LoadTasks(int SingleTask) {
 	// If TaskID !=0, then just load the task specified.
 
 	const char *AllTaskQuery = "SELECT `id`, `duration`, `title`, `description`, `reward`, `rewardid`,"
-				   "`cashreward`, `xpreward`, `rewardmethod`, `startzone`, `stepped` "
+				   "`cashreward`, `xpreward`, `rewardmethod`, `startzone` "
 				   "from `tasks` WHERE `id` < %i";
 
 	const char *SingleTaskQuery = "SELECT `id`, `duration`, `title`, `description`, `reward`, `rewardid`,"
-				      "`cashreward`, `xpreward`, `rewardmethod`, `startzone`, `stepped` "
+				      "`cashreward`, `xpreward`, `rewardmethod`, `startzone` "
 				      "from `tasks` WHERE `id` = %i";
 
 	const char *AllActivityQuery = "SELECT `taskid`, `step`, `activityid`, `activitytype`, `text1`, `text2`,"
