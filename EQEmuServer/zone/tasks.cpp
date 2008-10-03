@@ -204,7 +204,7 @@ bool TaskManager::LoadTasks(int SingleTask) {
 			Tasks[TaskID]->RewardMethod = (TaskMethodType)atoi(row[8]);
 			Tasks[TaskID]->StartZone = atoi(row[9]);
 			Tasks[TaskID]->ActivityCount = 0;
-			Tasks[TaskID]->SequenceMode = (SequenceType)atoi(row[10]);
+			Tasks[TaskID]->SequenceMode = ActivitiesSequential;
 			Tasks[TaskID]->LastStep = 0;
 
 			_log(TASKS__GLOBALLOAD,"TaskID: %5i, Duration: %8i, StartZone: %3i Reward: %s",
@@ -246,6 +246,10 @@ bool TaskManager::LoadTasks(int SingleTask) {
 				continue;
 			}
 			Tasks[TaskID]->Activity[Tasks[TaskID]->ActivityCount].StepNumber = Step;
+
+			if(Step != 0)
+				Tasks[TaskID]->SequenceMode = ActivitiesStepped;
+
 			if(Step >Tasks[TaskID]->LastStep) Tasks[TaskID]->LastStep = Step;
 			
 			// Task Activities MUST be numbered sequentially from 0. If not, log an error
@@ -2019,6 +2023,7 @@ void  ClientTaskState::ShowClientTasks(Client *c) {
 			continue;
 
 		c->Message(0, "Task: %i %s", ActiveTasks[i].TaskID, taskmanager->Tasks[ActiveTasks[i].TaskID]->Title);
+		c->Message(0, "  Description: [%s]\n", taskmanager->Tasks[ActiveTasks[i].TaskID]->Description);
 		for(int j=0; j<taskmanager->GetActivityCount(ActiveTasks[i].TaskID); j++) {
 			c->Message(0, "  Activity: %2d, DoneCount: %2d, Status: %d (0=Hidden, 1=Active, 2=Complete)",
 			        ActiveTasks[i].Activity[j].ActivityID,
