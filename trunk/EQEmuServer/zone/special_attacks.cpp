@@ -76,17 +76,6 @@ void Mob::DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, si
 		}
 		else
 			who->AddToHateList(this, 0);
-	
-		if(max_damage > 0 && GetClass() == MONK && skill != THROWING)
-		{
-			int specl = GetAA(aaTechniqueofMasterWu) * 20;
-			if(specl == 100 || specl >= MakeRandomInt(0,100))
-			{
-			who->Damage(this, max_damage, SPELL_UNKNOWN, skill, false);
-				if(20 > MakeRandomInt(0,100))
-				who->Damage(this, max_damage, SPELL_UNKNOWN, skill, false);
-			}
-		}
 	}
 	who->Damage(this, max_damage, SPELL_UNKNOWN, skill, false);
 	
@@ -243,6 +232,15 @@ void Client::OPCombatAbility(const EQApplicationPacket *app) {
 		break;
 	case MONK: {
 		ReuseTime = MonkSpecialAttack(target, ca_atk->m_skill) - 1;
+
+		int specl = defender->GetAA(aaTechniqueofMasterWu) * 20;
+		if(specl == 100 || specl > MakeRandomInt(0,100)) {
+			ReuseTime = MonkSpecialAttack(target, ca_atk->m_skill) - 1;
+			if(20 > MakeRandomInt(0,100)) {
+				ReuseTime = MonkSpecialAttack(target, ca_atk->m_skill) - 1;
+			}
+		}
+
 		if(ReuseTime < 100) {
 			//hackish... but we return a huge reuse time if this is an 
 			// invalid skill, otherwise, we can safely assume it is a 
