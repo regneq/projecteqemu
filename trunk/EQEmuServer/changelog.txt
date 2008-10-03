@@ -5,6 +5,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 KLS: (Congdar) Update to Tech. of Master Wu AA.
 KLS: Revert of double attack change, people reporting non warriors were no longer double attacking properly.
 KLS: Compile Warning in Database::GetZoneName()
+KLS: Change to IsPlayerIllusionSpell() to make it more consistant, illusion spells can be more than 49 so we work off behavior and effect now.
 
 ==10/01/2008
 Derision: (erde) VS2008 Compile Fix (#if (_MSC_VER < 1500) #define vsnprintf _vsnprintf #endif
