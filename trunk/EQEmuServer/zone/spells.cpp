@@ -1067,6 +1067,7 @@ bool Mob::DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_ce
 		&& IsClient()
 		&& IsGrouped() // still self only if not grouped
 		&& CastToClient()->CheckAAEffect(aaEffectProjectIllusion)){
+			mlog(AA__MESSAGE, "Project Illusion overwrote target caster: %s spell id: %d was ON", GetName(), spell_id);
 			targetType = ST_GroupClient;
 	}
 
@@ -1406,10 +1407,15 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
 			}
 			SpellOnTarget(spell_id, spell_target);
 // seveian 2008-09-23
+
 			if(IsPlayerIllusionSpell(spell_id)
 			&& IsClient()
 			&& CastToClient()->CheckAAEffect(aaEffectProjectIllusion)){
+				mlog(AA__MESSAGE, "Effect Project Illusion for %s on spell id: %d was ON", GetName(), spell_id);
 				CastToClient()->DisableAAEffect(aaEffectProjectIllusion);
+			}
+			else{
+				mlog(AA__MESSAGE, "Effect Project Illusion for %s on spell id: %d was OFF", GetName(), spell_id);
 			}
 			break;
 		}
