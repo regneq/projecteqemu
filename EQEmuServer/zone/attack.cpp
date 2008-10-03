@@ -2559,8 +2559,7 @@ bool Mob::HasProcs() const
             return true;
     return false;
 }
-//old Double Attack code
-/*
+
 bool Client::CheckDoubleAttack(bool AAadd, bool Triple) {
 	int skill = 0;
 	if (Triple)
@@ -2598,66 +2597,6 @@ bool Client::CheckDoubleAttack(bool AAadd, bool Triple) {
 	{
 		return true;
 	}
-	return false;
-}
-
-*/
-
-//Congdar's new Double Attack code
-bool Client::CheckDoubleAttack(bool tripleAttack) {
-
-	// If you don't have the double attack skill, return
-	if(!HasSkill(DOUBLE_ATTACK))
-		return false;
-	
-	// You start with no chance of double attacking
-	int chance = 0;
-	
-	// Used for maxSkill and triple attack calcs
-	int classtype = GetClass();
-	
-	// The current skill level
-	int skill = GetSkill(DOUBLE_ATTACK);
-	
-	// Discipline bonuses give you 100% chance to double attack
-	int buffs = (spellbonuses.DoubleAttackChance + itembonuses.DoubleAttackChance) * 3;
-	
-	// The maximum value for the Class based on the database entry for level
-	int maxSkill = MaxSkill(DOUBLE_ATTACK, classtype, GetLevel());
-	
-	// AA bonuses for the melee classes
-	int aaBonus =
-		(GetAA(aaBestialFrenzy)*10) +
-		(GetAA(aaHarmoniousAttack)*10) +
-		(GetAA(aaKnightsAdvantage)*10) +
-		(GetAA(aaFerocity)*10) +
-		(GetAA(aaDanceofBlades)*10);
-	
-	// Half of Double Attack Skill used to check chance for Triple Attack
-	if(tripleAttack) {
-		// Only some Double Attack classes get Triple Attack
-		if((classtype == MONK) || (classtype == WARRIOR) || (classtype == RANGER) || (classtype == BERSERKER)) {
-			// We only get half the skill, but should get all the bonuses
-			chance = (skill/2) + buffs + aaBonus;
-		}
-		else {
-			return false;
-		}
-	}
-	else {
-		// This is the actual Double Attack chance
-		chance = skill + buffs + aaBonus;
-
-		// You can gain skill even if you don't successfully double attack,
-		// but put it here so you don't skill up on triple attacks
-		CheckIncreaseSkill(DOUBLE_ATTACK);
-	}
-	
-	// If your chance is greater than the RNG you are successful! Always have a 5% chance to fail.
-	if(chance > MakeRandomInt(0, ((maxSkill + itembonuses.DoubleAttackChance + aaBonus)*1.05))) {
-		return true;
-	}
-
 	return false;
 }
 

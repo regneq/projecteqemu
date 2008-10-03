@@ -1243,6 +1243,7 @@ const char* Database::GetZoneName(int32 zoneID, bool ErrorUnknown) {
 		{
 			cerr << "Error in instZOrgID query in database.cpp GetZoneName'" << query << "' " << errbuf << endl;
 			safe_delete_array(query);
+			return 0;
 		}
 	}
 	else if (zoneID <= max_zonename) {
@@ -1261,6 +1262,7 @@ const char* Database::GetZoneName(int32 zoneID, bool ErrorUnknown) {
 		else
 			return 0;
 	}
+	return 0;
 }
 
 bool Database::CheckNameFilter(const char* name) {

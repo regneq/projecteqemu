@@ -233,7 +233,7 @@ void Client::OPCombatAbility(const EQApplicationPacket *app) {
 	case MONK: {
 		ReuseTime = MonkSpecialAttack(target, ca_atk->m_skill) - 1;
 
-		int specl = defender->GetAA(aaTechniqueofMasterWu) * 20;
+		int specl = GetAA(aaTechniqueofMasterWu) * 20;
 		if(specl == 100 || specl > MakeRandomInt(0,100)) {
 			ReuseTime = MonkSpecialAttack(target, ca_atk->m_skill) - 1;
 			if(20 > MakeRandomInt(0,100)) {
