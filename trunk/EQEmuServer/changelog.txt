@@ -1,9 +1,12 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==10/03/2008
 Derision: Removed 'stepped' column from task table. See http://eqemulator.net/forums/showthread.php?p=157613
 Derision: Added display of Task Description to #task show to aid in debugging a reported problem.
 Derision: Lowered default required status for #task command from 250 to 150 for debugging purposes.
+KLS: Removed some lingering printf from the raid stuff.
+KLS: 
 
 Required SQL: ALTER TABLE `tasks` DROP `stepped` ;
 

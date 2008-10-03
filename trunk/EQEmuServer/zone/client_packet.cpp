@@ -7741,9 +7741,7 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 			Raid *r = entity_list.GetRaidByClient(this);
 			if(r)
 			{
-				printf("%s told us to make %s the group leader\n", GetName(), ri->leader_name);
 				if(strcmp(r->leadername, GetName()) == 0){
-					printf("setting leader...\n");
 					r->SetRaidLeader(GetName(), ri->leader_name);
 				}
 			}
