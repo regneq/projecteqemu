@@ -276,7 +276,7 @@ struct ServerClientList_Struct {
 	char	AccountName[30];
 	int32	LSAccountID;
 	char	lskey[30];
-	int8	race;
+	int16	race;
 	int8	class_;
 	int8	level;
 	int8	anon;

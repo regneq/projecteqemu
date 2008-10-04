@@ -6,6 +6,7 @@ Derision: Added minlevel and maxlevel fields to tasks table and new quest functi
 Derision: All tasks in a TaskSet with a taskid of 0 as one of it's entries are now available to a player, subject to level restrictions.
 Derision: (Spoon/Andmetal) Rez spells with effectdescnum != 82 or 39067 (6.2 spells_us) will give 100% Mana/HP restoration and no rez effects.
 Derision: Corrected message when interrupting a spell with Shift-S.
+Derision: Fix to display Frogloks correctly in /who all and /who all froglok (half of the change came from a post by Theeper on the forums).
 
 Required SQL: 
 ALTER TABLE `tasks` ADD `minlevel` TINYINT UNSIGNED NOT NULL DEFAULT '0',
