@@ -8795,7 +8795,7 @@ void command_bot(Client *c, const Seperator *sep) {
 			if((c->GetTarget() != NULL) && !c->GetTarget()->IsGrouped() && c->GetTarget()->IsBot())
             {
 				BotRaids *br = entity_list.GetBotRaidByMob(c->CastToMob());
-				if(br->RaidBotGroupsCount() >= MAX_BOT_RAID_GROUPS) {
+				if(br && (br->RaidBotGroupsCount() >= MAX_BOT_RAID_GROUPS)) {
 					Mob *kmob = c->GetTarget();
 					if(kmob != NULL) {
 						kmob->BotOwner = NULL;

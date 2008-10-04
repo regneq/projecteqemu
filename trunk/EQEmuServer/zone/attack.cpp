@@ -290,7 +290,6 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 	AA_mod += 2*GetAA(aaLightningReflexes);
 	AA_mod += GetAA(aaReflexiveMastery);
 	chancetohit -= chancetohit * AA_mod / 100;
-	
 
 #ifdef EQBOTS
 
@@ -1424,7 +1423,7 @@ bool NPC::BotAttackMelee(Mob* other, int Hand, bool bRiposte)
 			TryCriticalHit(other, skillinuse, damage);
 			mlog(COMBAT__DAMAGE, "Final damage after all reductions: %d", damage);
 
-			if(damage != 0){
+			if(damage > 0){
 				sint32 hate = max_hit;
 				mlog(COMBAT__HITS, "Generating hate %d towards %s", hate, GetName());
 				// now add done damage to the hate list
@@ -2087,10 +2086,6 @@ void NPC::Damage(Mob* other, sint32 damage, int16 spell_id, SkillType attack_ski
 				}
 			}
 		}
-		else {
-			entity_list.RemoveNPC(GetID());
-			SetID(0);
-		}
 	}
 
 #endif //EQBOTS
@@ -2113,6 +2108,11 @@ void NPC::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill) 
 	Mob* killer = GetHateDamageTop(this);
 	
 #ifdef EQBOTS
+
+	int16 botid = 0;
+	if(IsBot()) {
+		botid = GetID();
+	}
 
     //franck-add: EQoffline. If a bot kill a mob, the Killer is its leader.	
 	if(!IsBot()) {
@@ -2352,7 +2352,8 @@ void NPC::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill) 
                             }
                         }
 						// Delete from database
-						database.CleanBotLeaderEntries(GetID());
+						database.CleanBotLeaderEntries(botid);
+						entity_list.RemoveNPC(botid);
 
 						// delete from group data
 						g->membername[i][0] = '\0';
@@ -2369,7 +2370,6 @@ void NPC::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill) 
 								strcpy(g->membername[j-1], g->members[j]->GetName());
 								g->membername[j][0] = '\0';
 								memset(g->membername[j], 0, 64);
-								g->members[j]->BotOwner = NULL;
 								g->members[j] = NULL;
 							}
 						}
@@ -2459,7 +2459,6 @@ void Mob::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHel
 
 	// first add self
 	hate_list.Add(other, hate, damage, bFrenzy, !iBuffTic);
-	
 
 #ifdef EQBOTS
 
