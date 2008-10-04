@@ -356,8 +356,11 @@ void ClientList::SendWhoAll(int32 fromid,const char* to, sint16 admin, Who_All_S
 	//char LFG[10] = "";
 	//int32 x = 0;
 	int whomlen = 0;
-	if (whom)
+	if (whom) {
 		whomlen = strlen(whom->whom);
+		if(whom->wrace == 0x001A) // 0x001A is the old Froglok race number and is sent by the client for /who all froglok
+			whom->wrace = FROGLOK; // This is what EQEmu uses for the Froglok Race number.
+	}
 
 	char* output = 0;
 	int32 outsize = 0, outlen = 0;
