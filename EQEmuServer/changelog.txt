@@ -5,6 +5,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 Derision: Added minlevel and maxlevel fields to tasks table and new quest function istaskappropriate(task).
 Derision: All tasks in a TaskSet with a taskid of 0 as one of it's entries are now available to a player, subject to level restrictions.
 Derision: (Spoon/Andmetal) Rez spells with effectdescnum != 82 or 39067 (6.2 spells_us) will give 100% Mana/HP restoration and no rez effects.
+Derision: Corrected message when interrupting a spell with Shift-S.
 
 Required SQL: 
 ALTER TABLE `tasks` ADD `minlevel` TINYINT UNSIGNED NOT NULL DEFAULT '0',
