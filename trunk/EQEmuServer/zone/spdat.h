@@ -544,5 +544,6 @@ bool IsPlayerIllusionSpell(int16 spell_id); // seveian 2008-09-23
 
 int CalcPetHp(int levelb, int classb, int STA = 75);
 const char *GetRandPetName();
+int GetSpellEffectDescNum(int16 spell_id);
 
 #endif

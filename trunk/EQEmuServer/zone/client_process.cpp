@@ -929,9 +929,17 @@ void Client::OPRezzAnswer(const EQApplicationPacket* app) {
 				  this->name, (int16)spells[ra->spellid].base[0],
 				  ra->spellid);
 		this->BuffFadeAll();
-		SetMana(0);
-		SetHP(GetMaxHP()/5);
-            SpellOnTarget(756,this); // Rezz effects
+		int SpellEffectDescNum = GetSpellEffectDescNum(ra->spellid);
+		// Rez spells with Rez effects have this DescNum (first is Titanium, second is 6.2 Client)
+		if((SpellEffectDescNum == 82) || (SpellEffectDescNum == 39067)) {
+			SetMana(0);
+			SetHP(GetMaxHP()/5);
+			SpellOnTarget(756,this); // Rezz effects
+		}
+		else {
+			SetMana(GetMaxMana());
+			SetHP(GetMaxHP());
+		}
 		EQApplicationPacket* outapp = app->Copy();
 		// Send the OP_RezzComplete to the world server. This finds it's way to the zone that
 		// the rezzed corpse is in to mark the corpse as rezzed.
