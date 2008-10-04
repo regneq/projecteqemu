@@ -49,6 +49,13 @@ class Trap;
 class Entity;
 class EntityList;
 
+#ifdef EQBOTS
+
+//EQoffline
+class BotRaids;
+
+#endif //EQBOTS
+
 extern EntityList entity_list;
 
 void ProcessClientThreadSpawn(void *tmp);
@@ -130,6 +137,17 @@ public:
 	Raid*	GetRaidByClient(Client* client);
 	Raid*	GetRaidByID(int32 id);
 	Raid*	GetRaidByLeaderName(const char *leader);
+
+#ifdef EQBOTS
+
+	// EQoffline
+	BotRaids* GetBotRaidByMob(Mob *mr);
+	bool	RemoveBotRaid(int16 delete_id);
+	void    AddBotRaid(BotRaids *br);
+	void    AddBotRaid(BotRaids *br, int16 id);
+
+#endif //EQBOTS
+
 	Corpse*	GetCorpseByOwner(Client* client);
 	Corpse* GetCorpseByID(int16 id);
 	Corpse* GetCorpseByName(char* name);
@@ -305,6 +323,14 @@ public:
 	void    SaveAllClientsTaskState();
 	void    ReloadAllClientsTaskState(int TaskID=0);
 
+#ifdef EQBOTS
+
+	// franck-add: EQoffline
+	bool	Bot_AICheckCloseBeneficialSpells(NPC* caster, int8 iChance, float iRange, int16 iSpellTypes);
+	Mob*	GetBotMobByName(const char *name);
+
+#endif //EQBOTS
+
 protected:
 	friend class Zone;
 	void	Depop(bool StartSpawnTimer = true);
@@ -333,6 +359,14 @@ private:
 	LinkedList<NPC *> proximity_list;
 	list<Raid *> raid_list;
 	int16 last_insert_id;
+
+#ifdef EQBOTS
+
+	//EQoffline
+	list<BotRaids*> botraid_list;
+
+#endif //EQBOTS
+
 };
 
 class BulkZoneSpawnPacket {

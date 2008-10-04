@@ -43,7 +43,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="C:\perl\lib\core"
-				PreprocessorDefinitions="EMBPERL,EMBPERL_PLUGIN,SHAREMEM,i386,_WIN32_WINNT=0x0400,ZONE,INVERSEXY,WIN32,_CONSOLE,FIELD_ITEMS,EQDEBUG=5"
+				PreprocessorDefinitions="EMBPERL;EMBPERL_PLUGIN;SHAREMEM;i386;_WIN32_WINNT=0x0400;ZONE;INVERSEXY;WIN32;_CONSOLE;FIELD_ITEMS;EQDEBUG=5"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				PrecompiledHeaderFile=".\..\Build\ZonePerl/Zone.pch"
@@ -228,6 +228,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\botAI.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\botRaids.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\client.cpp"
 				>
 			</File>
@@ -396,6 +404,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\petAI.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\petitions.cpp"
 				>
 			</File>
@@ -510,6 +522,10 @@
 			>
 			<File
 				RelativePath=".\beacon.h"
+				>
+			</File>
+			<File
+				RelativePath=".\botRaids.h"
 				>
 			</File>
 			<File

@@ -12,3 +12,11 @@
 #include "trap.h"
 #include "beacon.h"
 #include "horse.h"
+
+#ifdef EQBOTS
+
+//EQoffline
+#include "botRaids.h"
+
+#endif //EQBOTS
+

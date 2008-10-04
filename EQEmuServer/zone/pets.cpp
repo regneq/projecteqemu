@@ -223,7 +223,17 @@ void Mob::MakePet(int16 spell_id, const char* pettype, const char *petname) {
 	
 	//this takes ownership of the npc_type data
 	Pet *npc = new Pet(npc_type, this, type, spell_id);
-	
+
+#ifdef EQBOTS
+
+	if(IsBot()) {
+		npc->SetTaunting(true);
+		npc->BotOwner = this->BotOwner;
+		npc->SetOwnerID(this->GetID());
+	}
+
+#endif //EQBOTS
+
 	entity_list.AddNPC(npc);
 	SetPetID(npc->GetID());
 }

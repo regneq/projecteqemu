@@ -692,6 +692,13 @@ static const uint32 MAX_PP_MEMSPELL		= 9;
 static const uint32 MAX_PP_SKILL		= 75;
 static const uint32 MAX_PP_AA_ARRAY		= 240;
 static const uint32 MAX_GROUP_MEMBERS	= 6;
+
+#ifdef EQBOTS
+
+static const uint32 MAX_BOT_RAID_GROUPS	= 12;
+
+#endif //EQBOTS
+
 /*
 showeq -> eqemu
 sed -e 's/_t//g' -e 's/MAX_AA/MAX_PP_AA_ARRAY/g' \

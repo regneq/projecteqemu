@@ -2055,6 +2055,43 @@ void Client::Handle_OP_Camp(const EQApplicationPacket *app)
 
 void Client::Handle_OP_Logout(const EQApplicationPacket *app)
 {
+
+#ifdef EQBOTS
+
+	Mob *clientmob = CastToMob();
+	if(clientmob) {
+		int16 cmid = GetID();
+		if(clientmob->IsBotRaiding()) {
+			BotRaids* br = entity_list.GetBotRaidByMob(clientmob);
+			if(br) {
+				br->RemoveRaidBots();
+				br = NULL;
+			}
+		}
+		if(clientmob->IsGrouped()) {
+			Group *g = entity_list.GetGroupByMob(clientmob);
+			if(g) {
+				bool hasBots = false;
+				for(int i=5; i>=0; i--) {
+					if(g->members[i] && g->members[i]->IsBot()) {
+						hasBots = true;
+						g->members[i]->BotOwner = NULL;
+						g->members[i]->Kill();
+					}
+				}
+				if(hasBots) {
+					hasBots = false;
+					if(g->BotGroupCount() <= 1) {
+						g->DisbandGroup();
+					}
+				}
+			}
+		}
+		database.CleanBotLeader(cmid);
+	}
+
+#endif //EQBOTS
+
 	//LogFile->write(EQEMuLog::Debug, "%s sent a logout packet.", GetName());
 	//we will save when we get destroyed soon anyhow
 	//Save();
@@ -4437,6 +4474,22 @@ void Client::Handle_OP_GroupInvite2(const EQApplicationPacket *app)
 
 	if(this->GetTarget() != 0 && this->GetTarget()->IsClient()) {
 		if(!GetTarget()->IsGrouped() && !GetTarget()->IsRaidGrouped()){
+
+#ifdef EQBOTS
+
+            Group *g = entity_list.GetGroupByClient(this);
+            if(g) {
+                for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
+                    if(g->members[i] && g->members[i]->IsBot()) {
+                        Message(15, "You currently have bots in your group. Cannot invite %s.", this->GetTarget()->GetCleanName());
+                        Message(15, "Bots must be the final group members invited.");
+                        return;
+                    }
+                }
+            }
+
+#endif //EQBOTS
+
 			if(app->GetOpcode() == OP_GroupInvite2)
 			{
 				//Make a new packet using all the same information but make sure it's a fixed GroupInvite opcode so we

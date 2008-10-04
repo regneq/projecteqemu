@@ -1504,6 +1504,55 @@ Group* EntityList::GetGroupByMob(Mob* mob)
 #endif
 	return 0; 
 }
+
+#ifdef EQBOTS
+
+// EQoffline
+BotRaids* EntityList::GetBotRaidByMob(Mob *mr) {
+	list<BotRaids *>::iterator iterator;
+	iterator = botraid_list.begin();
+	while(iterator != botraid_list.end()) {
+		if((*iterator)->IsBotRaidMember(mr)) {
+			return *iterator;
+		}
+		iterator++;
+	}
+	return 0;
+}
+
+void EntityList::AddBotRaid(BotRaids* br) {
+	if(br == NULL)
+		return;
+	
+	int16 gid = GetFreeID();
+	if(gid == 0) {
+		LogFile->write(EQEMuLog::Error, "Unable to get new Raid ID from world server. Raid is going to be broken.");
+		return;
+	}
+	
+	AddBotRaid(br, gid);
+}
+
+void EntityList::AddBotRaid(BotRaids* br, int16 gid) {
+	br->SetBotRaidID(gid);
+	botraid_list.push_back(br);
+}
+
+bool EntityList::RemoveBotRaid(int16 delete_id) {
+	list<BotRaids *>::iterator iterator;
+	iterator = botraid_list.begin();
+	while(iterator != botraid_list.end()) {
+		if((*iterator)->GetBotRaidID() == delete_id) {
+			botraid_list.remove (*iterator);
+			return true;
+		}
+		iterator++;
+	}
+	return false;
+}
+
+#endif //EQBOTS
+
 Group* EntityList::GetGroupByLeaderName(char* leader){
 	list<Group *>::iterator iterator;
 
@@ -2099,6 +2148,14 @@ void EntityList::RemoveEntity(int16 id)
 		return;
 	else if(entity_list.RemoveTrap(id))
 		return;
+
+#ifdef EQBOTS
+
+	else if(entity_list.RemoveBotRaid(id))
+		return;
+
+#endif //EQBOTS
+
 	else 
 		entity_list.RemoveObject(id);
 }

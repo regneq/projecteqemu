@@ -446,6 +446,14 @@ bool Mob::IsAttackAllowed(Mob *target)
 //	NPC *npc1, *npc2;
 	int reverse;
 
+#ifdef EQBOTS
+
+    //franck-add: a bot can't attack a bot. A bot can't attack its leader(client). You(client) can't attack your bots.
+	if((IsBot() && (target->IsBot() || target->IsClient())) || (IsClient() && target->IsBot()))
+		return false;    
+
+#endif //EQBOTS
+
 	if(!zone->CanDoCombat())
 		return false;
 
@@ -482,6 +490,23 @@ bool Mob::IsAttackAllowed(Mob *target)
 	// no need to compare pets to anything
 	mob1 = our_owner ? our_owner : this;
 	mob2 = target_owner ? target_owner : target;
+
+#ifdef EQBOTS
+
+    // franck-add: Bots pet can't attack others bots and there pets. Clients and their pet can't attack bot pets.
+	if(mob1->IsClient()) {
+		if(mob2->IsBot())
+			return false;
+	}
+	
+	else if(mob1->IsBot()){
+		if(mob2->IsBot())
+			return false;
+		else if(mob2->IsClient())
+			return false;
+	}
+
+#endif //EQBOTS
 
 	reverse = 0;
 	do
@@ -631,6 +656,18 @@ bool Mob::IsBeneficialAllowed(Mob *target)
 	if(!target)
 		return false;
 
+#ifdef EQBOTS
+
+    //franck-add: Eqoffline.
+	if(IsClient() && target->IsBot())
+		return true;
+	else if(IsBot() && target->IsClient())
+		return true;
+	else if(IsBot() && target->IsBot())
+		return true;
+
+#endif //EQBOTS
+
 	// solar: see IsAttackAllowed for notes
 	
 	// first figure out if we're pets.  we always look at the master's flags.
@@ -774,6 +811,45 @@ bool Mob::CombatRange(Mob* other)
 
 	if (other_size_mod > size_mod)
 		size_mod = other_size_mod;
+
+#ifdef EQBOTS
+
+	if(IsBot()) {
+		if(other->GetRace() == 49 || other->GetRace() == 158 || other->GetRace() == 196) { //For races with a fixed size
+			// have warrior bots get a little closer to the target
+			if(GetClass() == WARRIOR) {
+				size_mod = 45.0f;
+			}
+			else if((GetClass() == PALADIN) || (GetClass() == RANGER) || (GetClass() == SHADOWKNIGHT) || (GetClass() == MONK) || (GetClass() == ROGUE) || (GetClass() == BEASTLORD) || (GetClass() == BERSERKER) || (GetClass() == BARD)) {
+				size_mod = 50.0f;
+			}
+			else {
+				size_mod = 55.0f;
+			}
+		}
+		else {
+			// have warrior bots get a little closer to the target
+			if(GetClass() == WARRIOR) {
+				size_mod = 5.5f;
+			}
+			else if((GetClass() == PALADIN) || (GetClass() == RANGER) || (GetClass() == SHADOWKNIGHT) || (GetClass() == MONK) || (GetClass() == ROGUE) || (GetClass() == BEASTLORD) || (GetClass() == BERSERKER) || (GetClass() == BARD)) {
+				size_mod = 6.0f;
+			}
+			else {
+				size_mod = 7.0f;
+			}
+		}
+	}
+	if(IsPet() && GetOwner()->IsBot()) {
+		if(other->GetRace() == 49 || other->GetRace() == 158 || other->GetRace() == 196) { //For races with a fixed size
+			size_mod = 47.0f;
+		}
+		else {
+			size_mod = 5.7f;
+		}
+	}
+
+#endif //EQBOTS
 
 	size_mod *= size_mod * 4;
 	if (DistNoRootNoZ(*other) <= size_mod)
@@ -1193,6 +1269,23 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 		AggroAmount = AggroAmount * 80 / 100;
 		break;
 	}
+
+#ifdef EQBOTS
+
+	// Spell Casting Subtlety for Bots
+	if(IsBot()) {
+		if(GetLevel() >= 57) {
+			AggroAmount = AggroAmount * 95 / 100;
+		}
+		else if(GetLevel() >= 56) {
+			AggroAmount = AggroAmount * 90 / 100;
+		}
+		else if(GetLevel() >= 55) {
+			AggroAmount = AggroAmount * 80 / 100;
+		}
+	}
+
+#endif //EQBOTS
 
 	AggroAmount = (AggroAmount * RuleI(Aggro, SpellAggroMod))/100;
 	AggroAmount += spells[spell_id].HateAdded + spells[spell_id].bonushate + nonModifiedAggro;

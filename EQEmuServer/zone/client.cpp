@@ -1922,6 +1922,15 @@ void Client::SetFeigned(bool in_feigned) {
 		}
 		SetHorseId(0);
 		entity_list.ClearFeignAggro(this);
+
+#ifdef EQBOTS
+
+		// there seems to be a bug where the hate list doesn't get cleared, even if
+		// the mob forgets about the feigner.
+		hate_list.Wipe();
+
+#endif //EQBOTS
+
 		forget_timer.Start(FeignMemoryDuration);
 	} else {
 		forget_timer.Disable();

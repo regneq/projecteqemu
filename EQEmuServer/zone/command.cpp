@@ -62,6 +62,13 @@ Copyright (C) 2001-2002	EQEMu Development Team (http://eqemulator.net)
 #include "guild_mgr.h"
 #include "../common/patches/patches.h"
 
+#ifdef EQBOTS
+
+//EQoffline
+#include "botRaids.h"
+
+#endif //EQBOTS
+
 // these should be in the headers...
 extern WorldServer worldserver;	
 extern bool spells_loaded;
@@ -393,6 +400,13 @@ int command_init(void) {
 		command_add("guildlist","[guildapproveid] - Lists character names who have approved the guild specified by the approve id",0,command_guildlist) ||
 		command_add("altactivate", "[argument] - activates alternate advancement abilities, use altactivate help for more information", 0, command_altactivate) ||
 		command_add("refundaa", "Refunds your target's AA points, will disconnect them in the process as well.", 100, command_refundaa) ||
+
+#ifdef EQBOTS
+
+		command_add("bot"," Type \"#bot help\" to the see the list of available commands for bots.", 0, command_bot) ||
+
+#endif //EQBOTS
+
 		command_add("traindisc","[level] - Trains all the disciplines usable by the target, up to level specified. (may freeze client for a few seconds)",150,command_traindisc) ||
 		command_add("setgraveyard","[zone name] - Creates a graveyard for the specified zone based on your target's LOC.", 200, command_setgraveyard) ||
 		command_add("deletegraveyard","[zone name] - Deletes the graveyard for the specified zone.", 200, command_deletegraveyard) ||
@@ -7279,6 +7293,1844 @@ void command_refundaa(Client *c, const Seperator *sep){
 		refundee->Kick(); //client gets all buggy if we don't immediatly relog so just force it on them
 	}
 }
+
+#ifdef EQBOTS
+
+// Franck-add: EQoffline
+void command_bot(Client *c, const Seperator *sep) {
+	if(sep->arg[1][0] == '\0') {
+		c->Message(15, "Bad argument, type #bot help");
+		return;
+	}
+	if(!strcasecmp( sep->arg[1], "help") && !strcasecmp( sep->arg[2], "\0")){
+		c->Message(15, "List of commands availables for bots :");
+		c->Message(15, "#bot help - show this");
+		c->Message(15, "#bot create [name] [class (id)] [race (id)] [model (male/female)] - create a permanent bot. See #bot help create.");
+		c->Message(15, "#bot help create - show all the race/class id. (make it easier to create bots)");
+		c->Message(15, "#bot delete - completely destroy forever the targeted bot and all its items.");
+		c->Message(15, "#bot list - show your bots.");
+		c->Message(15, "#bot spawn [botid] - spawn a bot from its ID (use list to see all the bots). ");
+        c->Message(15, "#bot group add [target] - make the targetted bot joigning your group.");
+		c->Message(15, "#bot group remove [target} - kick the targetted bot from your group (it will die also).");
+		c->Message(15, "#bot group order [follow/guard/attack (target)] - Give orders [follow/guard/attack (target)] to your grouped bots.");
+		c->Message(15, "#bot inventory list [target] - show the inventory (and the slots IDs) of the targetted bot.");
+		c->Message(15, "#bot inventory remove [slotid] [target] - remove the item at the given slot in the inventory of the targetted bot.");
+		c->Message(15, "#bot update [target] - you must type that command once you gain a level.");
+		c->Message(15, "#bot group summon - It will summon all your grouped bots to you.");
+		c->Message(15, "#bot summon - It will summon your targeted bot to you.");
+		c->Message(15, "#bot ai mez [target] - If you're grouped with an enchanter, he will mez your target.");
+		c->Message(15, "#bot rogue picklock - You must have a targeted rogue bot in your group and be right on the door.");
+		c->Message(15, "#bot cure [poison|disease|curse|blindness] - You must have a Cleric in your group.");
+		c->Message(15, "#bot bindme - You must have a Cleric in your group to get Bind Affinity cast on you.");
+		c->Message(15, "#bot raid [commands] (#bot raid help will show some help).");
+		return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "create")) {
+		if(sep->arg[2][0] == '\0' || sep->arg[3][0] == '\0' || sep->arg[4][0] == '\0' || sep->arg[5][0] == '\0' || sep->arg[6][0] != '\0') {
+			c->Message(15, "Usage: #bot create [name] [class(id)] [race(id)] [gender (male/female)]");
+			return;
+		}
+		else if(strcasecmp(sep->arg[3],"1") && strcasecmp(sep->arg[3],"2") && strcasecmp(sep->arg[3],"3") && strcasecmp(sep->arg[3],"4") && strcasecmp(sep->arg[3],"5") && strcasecmp(sep->arg[3],"6") && strcasecmp(sep->arg[3],"7") && strcasecmp(sep->arg[3],"8") && strcasecmp(sep->arg[3],"9") && strcasecmp(sep->arg[3],"10") && strcasecmp(sep->arg[3],"11") && strcasecmp(sep->arg[3],"12") && strcasecmp(sep->arg[3],"13") && strcasecmp(sep->arg[3],"14") && strcasecmp(sep->arg[3],"15") && strcasecmp(sep->arg[3],"16")) {
+			c->Message(15, "Usage: #bot create [name] [class(id)] [race(id)] [gender (male/female)]");
+			return;
+		}		
+		else if(strcasecmp(sep->arg[4],"1") && strcasecmp(sep->arg[4],"2") && strcasecmp(sep->arg[4],"3") && strcasecmp(sep->arg[4],"4") && strcasecmp(sep->arg[4],"5") && strcasecmp(sep->arg[4],"6") && strcasecmp(sep->arg[4],"7") && strcasecmp(sep->arg[4],"8") && strcasecmp(sep->arg[4],"9") && strcasecmp(sep->arg[4],"10") && strcasecmp(sep->arg[4],"11") && strcasecmp(sep->arg[4],"12") && strcasecmp(sep->arg[4],"330") && strcasecmp(sep->arg[4],"128") && strcasecmp(sep->arg[4],"130")) {
+			c->Message(15, "Usage: #bot create [name] [class(1-16)] [race(1-12,128,130,330)] [gender (male/female)]");
+			return;
+		}
+		else if(strcasecmp(sep->arg[5],"male") && strcasecmp(sep->arg[5],"female")) {
+			c->Message(15, "Usage: #bot create [name] [class(1-16)] [race(1-12,128,130,330)] [gender (male/female)]");
+			return;
+		}
+
+		// Check Race/Class combos
+		int choosebclass = atoi(sep->arg[3]);
+        int iRace = atoi(sep->arg[4]);
+		bool isComboAllowed = false;
+        switch(iRace) {
+			case 1: // Human
+				switch(choosebclass) {
+					case 1: // Warrior
+					case 2: // Cleric
+					case 3: // Paladin
+					case 4: // Ranger
+					case 5: // Shadowknight
+					case 6: // Druid
+					case 7: // Monk
+					case 8: // Bard
+					case 9: // Rogue
+					case 11: // Necromancer
+					case 12: // Wizard
+					case 13: // Magician
+					case 14: // Enchanter
+						isComboAllowed = true;
+						break;
+				}
+				break;
+			case 2: // Barbarian
+				switch(choosebclass) {
+					case 1: // Warrior
+					case 9: // Rogue
+					case 10: // Shaman
+					case 15: // Beastlord
+					case 16: // Berserker
+						isComboAllowed = true;
+						break;
+				}
+				break;
+			case 3: // Erudite
+				switch(choosebclass) {
+					case 2: // Cleric
+					case 3: // Paladin
+					case 5: // Shadowknight
+					case 11: // Necromancer
+					case 12: // Wizard
+					case 13: // Magician
+					case 14: // Enchanter
+						isComboAllowed = true;
+						break;
+				}
+				break;
+			case 4: // Wood Elf
+				switch(choosebclass) {
+					case 1: // Warrior
+					case 4: // Ranger
+					case 6: // Druid
+					case 8: // Bard
+					case 9: // Rogue
+						isComboAllowed = true;
+						break;
+				}
+				break;
+			case 5: // High Elf
+				switch(choosebclass) {
+					case 2: // Cleric
+					case 3: // Paladin
+					case 12: // Wizard
+					case 13: // Magician
+					case 14: // Enchanter
+						isComboAllowed = true;
+						break;
+				}
+				break;
+			case 6: // Dark Elf
+				switch(choosebclass) {
+					case 1: // Warrior
+					case 2: // Cleric
+					case 5: // Shadowknight
+					case 9: // Rogue
+					case 11: // Necromancer
+					case 12: // Wizard
+					case 13: // Magician
+					case 14: // Enchanter
+						isComboAllowed = true;
+						break;
+				}
+				break;
+			case 7: // Half Elf
+				switch(choosebclass) {
+					case 1: // Warrior
+					case 3: // Paladin
+					case 4: // Ranger
+					case 6: // Druid
+					case 8: // Bard
+					case 9: // Rogue
+						isComboAllowed = true;
+						break;
+				}
+				break;
+			case 8: // Dwarf
+				switch(choosebclass) {
+					case 1: // Warrior
+					case 2: // Cleric
+					case 3: // Paladin
+					case 9: // Rogue
+					case 16: // Berserker
+						isComboAllowed = true;
+						break;
+				}
+				break;
+			case 9: // Troll
+				switch(choosebclass) {
+					case 1: // Warrior
+					case 5: // Shadowknight
+					case 10: // Shaman
+					case 15: // Beastlord
+					case 16: // Berserker
+						isComboAllowed = true;
+						break;
+				}
+				break;
+			case 10: // Ogre
+				switch(choosebclass) {
+					case 1: // Warrior
+					case 5: // Shadowknight
+					case 10: // Shaman
+					case 15: // Beastlord
+					case 16: // Berserker
+						isComboAllowed = true;
+						break;
+				}
+				break;
+			case 11: // Halfling
+				switch(choosebclass) {
+					case 1: // Warrior
+					case 2: // Cleric
+					case 3: // Paladin
+					case 4: // Ranger
+					case 6: // Druid
+					case 9: // Rogue
+						isComboAllowed = true;
+						break;
+				}
+				break;
+			case 12: // Gnome
+				switch(choosebclass) {
+					case 1: // Warrior
+					case 2: // Cleric
+					case 3: // Paladin
+					case 5: // Shadowknight
+					case 9: // Rogue
+					case 11: // Necromancer
+					case 12: // Wizard
+					case 13: // Magician
+					case 14: // Enchanter
+						isComboAllowed = true;
+						break;
+				}
+				break;
+			case 128: // Iksar
+				switch(choosebclass) {
+					case 1: // Warrior
+					case 5: // Shadowknight
+					case 7: // Monk
+					case 10: // Shaman
+					case 11: // Necromancer
+					case 15: // Beastlord
+						isComboAllowed = true;
+						break;
+				}
+				break;
+			case 130: // Vah Shir
+				switch(choosebclass) {
+					case 1: // Warrior
+					case 8: // Bard
+					case 9: // Rogue
+					case 10: // Shaman
+					case 15: // Beastlord
+					case 16: // Berserker
+						isComboAllowed = true;
+						break;
+				}
+				break;
+			case 330: // Froglok
+				switch(choosebclass) {
+					case 1: // Warrior
+					case 2: // Cleric
+					case 3: // Paladin
+					case 5: // Shadowknight
+					case 9: // Rogue
+					case 10: // Shaman
+					case 11: // Necromancer
+					case 12: // Wizard
+						isComboAllowed = true;
+						break;
+				}
+				break;
+        }
+		if(!isComboAllowed) {
+			c->Message(15, "That Race/Class combination cannot be created.");
+			return;
+		}
+
+		const char* botName = sep->arg[2];
+		if(!botName || (strlen(botName) < 4) || (strlen(botName) > 40)) {
+			c->Message(15, "%s is too many characters.", botName);
+			return;
+		}
+
+		for(int i=0; botName[i]; i++) {
+			if(!isalpha(botName[i])) {
+				if(botName[i] != '_') {
+					c->Message(15, "%s can only use A-Z, a-z and _ ", botName);
+					return;
+				}
+			}
+		}
+
+		int spellid = 0;
+		// base stats
+		uint16 bstr = 75;
+		uint16 bsta = 75;
+		uint16 bdex = 75;
+		uint16 bagi = 75;
+		uint16 bwis = 75;
+		uint16 bint = 75;
+		uint16 bcha = 75;
+		uint16 ATK = 5;
+		sint16 MR = 25;
+		sint16 FR = 25;
+		sint16 DR = 15;
+		sint16 PR = 15;
+		sint16 CR = 25;
+
+        switch(choosebclass) {
+            case 1: // Warrior
+				bstr += 10;
+				bsta += 20;
+				bagi += 10;
+				bdex += 10;
+				ATK += 12;
+				MR += (1 / 2 + 1);
+                break;
+            case 2: // Cleric
+                spellid = 701;
+				bstr += 5;
+				bsta += 5;
+				bagi += 10;
+				bwis += 30;
+				ATK += 8;
+                break;
+            case 3: // Paladin
+                spellid = 708;
+				bstr += 15;
+				bsta += 5;
+				bwis += 15;
+				bcha += 10;
+				bdex += 5;
+				ATK =+ 17;
+				DR += 8;
+                break;
+            case 4: // Ranger
+                spellid = 710;
+				bstr += 15;
+				bsta += 10;
+				bagi += 10;
+				bwis += 15;
+				ATK += 17;
+				FR += 4;
+				CR += 4;
+                break;
+            case 5: // Shadowknight
+                spellid = 709;
+				bstr += 10;
+				bsta += 15;
+				bint += 20;
+				bcha += 5;
+				ATK += 17;
+				PR += 4;
+				DR += 4;
+                break;
+            case 6: // Druid
+                spellid = 707;
+				bsta += 15;
+				bwis += 35;
+				ATK += 5;
+                break;
+            case 7: // Monk
+				bstr += 5;
+				bsta += 15;
+				bagi += 15;
+				bdex += 15;
+				ATK += 17;
+                break;
+            case 8: // Bard
+				spellid = 711;
+				bstr += 15;
+				bdex += 10;
+				bcha += 15;
+				bint += 10;
+				ATK += 17;
+                break;
+            case 9: // Rogue
+				bstr += 10;
+				bsta += 20;
+				bagi += 10;
+				bdex += 10;
+				ATK += 12;
+				PR += 8;
+                break;
+            case 10: // Shaman
+                spellid = 706;
+				bsta += 10;
+				bwis += 30;
+				bcha += 10;
+				ATK += 28;
+                break;
+            case 11: // Necromancer
+                spellid = 703;
+				bdex += 10;
+				bagi += 10;
+				bint += 30;
+				ATK += 5;
+                break;
+            case 12: // Wizard
+                spellid = 702;
+				bsta += 20;
+				bint += 30;
+				ATK += 5;
+                break;
+            case 13: // Magician
+                spellid = 704;
+				bsta += 20;
+				bint += 30;
+				ATK += 5;
+                break;
+            case 14: // Enchanter
+                spellid = 705;
+				bint += 25;
+				bcha += 25;
+				ATK += 5;
+                break;
+            case 15: // Beastlord
+                spellid = 712;
+				bsta += 10;
+				bagi += 10;
+				bdex += 5;
+				bwis += 20;
+				bcha += 5;
+				ATK += 31;
+				break;
+            case 16: // Berserker
+				bstr += 10;
+				bsta += 15;
+				bdex += 15;
+				bagi += 10;
+				ATK += 25;
+				break;
+        }
+
+		int gender = 0;
+		if(!strcasecmp(sep->arg[5], "female"))
+			gender = 1;
+
+		float bsize = 6;
+        switch(iRace) {
+			case 1: // Humans have no race bonus
+				break;
+			case 2: // Barbarian
+				bstr += 28;
+				bsta += 20;
+				bagi += 7;
+				bdex -= 5;
+				bwis -= 5;
+				bint -= 10;
+				bcha -= 20;
+				bsize = 7;
+				CR += 10;
+				break;
+			case 3: // Erudite
+				bstr -= 15;
+				bsta -= 5;
+				bagi -= 5;
+				bdex -= 5;
+				bwis += 8;
+				bint += 32;
+				bcha -= 5;
+				MR += 5;
+				DR -= 5;
+				break;
+			case 4: // Wood Elf
+				bstr -= 10;
+				bsta -= 10;
+				bagi += 20;
+				bdex += 5;
+				bwis += 5;
+                bsize = 5;
+				break;
+			case 5: // High Elf
+				bstr -= 20;
+				bsta -= 10;
+				bagi += 10;
+				bdex -= 5;
+				bwis += 20;
+				bint += 12;
+				bcha += 5;
+				break;
+			case 6: // Dark Elf
+				bstr -= 15;
+				bsta -= 10;
+				bagi += 15;
+				bwis += 8;
+				bint += 24;
+				bcha -= 15;
+                bsize = 5;
+				break;
+			case 7: // Half Elf
+				bstr -= 5;
+				bsta -= 5;
+				bagi += 15;
+				bdex += 10;
+				bwis -= 15;
+                bsize = 5.5;
+				break;
+			case 8: // Dwarf
+				bstr += 15;
+				bsta += 15;
+				bagi -= 5;
+				bdex += 15;
+				bwis += 8;
+				bint -= 15;
+				bcha -= 30;
+                bsize = 4;
+				MR -= 5;
+				PR += 5;
+				break;
+			case 9: // Troll
+				bstr += 33;
+				bsta += 34;
+				bagi += 8;
+				bwis -= 15;
+				bint -= 23;
+				bcha -= 35;
+                bsize = 8;
+				FR -= 20;
+				break;
+			case 10: // Ogre
+				bstr += 55;
+				bsta += 77;
+				bagi -= 5;
+				bdex -= 5;
+				bwis -= 8;
+				bint -= 15;
+				bcha -= 38;
+                bsize = 9;
+				break;
+			case 11: // Halfling
+				bstr -= 5;
+				bagi += 20;
+				bdex += 15;
+				bwis += 5;
+				bint -= 8;
+				bcha -= 25;
+                bsize = 3.5;
+				PR += 5;
+				DR += 5;
+				break;
+			case 12: // Gnome
+				bstr -= 15;
+				bsta -= 5;
+				bagi += 10;
+				bdex += 10;
+				bwis -= 8;
+				bint += 23;
+				bcha -= 15;
+                bsize = 3;
+				break;
+			case 128: // Iksar
+				bstr -= 5;
+				bsta -= 5;
+				bagi += 15;
+				bdex += 10;
+				bwis += 5;
+				bcha -= 20;
+				MR -= 5;
+				FR -= 5;
+				break;
+			case 130: // Vah Shir
+				bstr += 15;
+				bagi += 15;
+				bdex -= 5;
+				bwis -= 5;
+				bint -= 10;
+				bcha -= 10;
+                bsize = 7;
+				MR -= 5;
+				FR -= 5;
+				break;
+			case 330: // Froglok
+				bstr -= 5;
+				bsta += 5;
+				bagi += 25;
+				bdex += 25;
+				bcha -= 25;
+                bsize = 5;
+				MR -= 5;
+				FR -= 5;
+				break;
+        }
+
+		// Base AC
+		int bac = (1 * 3) * 4;
+		switch(choosebclass) {
+			case WARRIOR:
+			case SHADOWKNIGHT:
+			case PALADIN:
+				bac = bac*1.5;
+		}
+
+		// Calc Base Hit Points
+		int16 multiplier = 1;
+		switch(choosebclass) {
+			case WARRIOR:
+				multiplier = 220;
+				break;
+			case DRUID:
+			case CLERIC:
+			case SHAMAN:
+				multiplier = 150;
+				break;
+			case BERSERKER:
+			case PALADIN:
+			case SHADOWKNIGHT:
+				multiplier = 210;
+				break;
+			case MONK:
+			case BARD:
+			case ROGUE:
+			case BEASTLORD:
+				multiplier = 180;
+				break;
+			case RANGER:
+				multiplier = 200;
+				break;
+			case MAGICIAN:
+			case WIZARD:
+			case NECROMANCER:
+			case ENCHANTER:
+				multiplier = 120;
+				break;
+		}
+		int16 lm = multiplier;
+		int16 Post255;
+		if((bsta-255)/2 > 0)
+			Post255 = (bsta-255)/2;
+		else
+			Post255 = 0;
+		int base_hp = (5)+(1*lm/10) + (((bsta-Post255)*1*lm/3000));
+
+		// save bot to the database
+		char errbuf[MYSQL_ERRMSG_SIZE];
+		char *query = 0;
+		MYSQL_RES *result;
+		MYSQL_ROW row;
+		const char* lname = "Bot";
+
+		if(database.RunQuery(query, MakeAnyLenString(&query, "SELECT count(*) FROM npc_types WHERE name like '%s'", sep->arg[2]), errbuf, &result)) {
+			row = mysql_fetch_row(result);
+			if(atoi(row[0]) != 0) {
+				c->Message(15, "%s already exists, try a different name.", sep->arg[2]);
+			}
+			else if(database.RunQuery(query, MakeAnyLenString(&query, "SELECT count(*) FROM character_ WHERE name like '%s'", sep->arg[2]), errbuf, &result)) {
+				row = mysql_fetch_row(result);
+				if(atoi(row[0]) != 0) {
+					c->Message(15, "%s already exists, try a different name.", sep->arg[2]);
+				}
+				else if(database.RunQuery(query, MakeAnyLenString(&query, "INSERT INTO npc_types (name,lastname,level,race,class,bodytype,hp,gender,size,hp_regen_rate,mana_regen_rate,npc_spells_id,npc_faction_id,runspeed,MR,CR,DR,FR,PR,AC,STR,STA,DEX,AGI,_INT,WIS,CHA,isbot,ATK) VALUES ('%s','%s', %i, %i, %i, %i, %i, %i, %f, %i, %i, %i, %i, %f, %i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %i)", botName,lname,1,atoi(sep->arg[4]),atoi(sep->arg[3]),1,base_hp,gender,bsize,10,10,spellid,0,c->GetRunspeed(),MR,CR,DR,FR,PR,bac,bstr,bsta,bdex,bagi,bint,bwis,bcha,1,ATK), errbuf, 0)) {
+					if(database.RunQuery(query, MakeAnyLenString(&query, "SELECT MAX(id) from npc_types where name='%s' and isBot=1", sep->arg[2]), errbuf, &result)) {
+						if(row = mysql_fetch_row(result)) {
+							database.SetBotOwner(atoi(row[0]), c->AccountID());
+							c->Message(15, "Bot created: %s", row[0]);
+						}
+					}
+				}
+				else {
+					c->Message(15, "Error while creating your bot... %s", errbuf);
+				}
+			}
+		}
+		else {
+			c->Message(15, "Error while creating your bot... %s", errbuf);
+		}
+		safe_delete_array(query);
+		mysql_free_result(result);
+        return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "help") && !strcasecmp(sep->arg[2], "create") ){
+		c->Message(15, "Classes:  1(Warrior), 2(Cleric), 3(Paladin), 4(Ranger), 5(Sk), 6(Druid), 7(Monk), 8(Bard), 9(Rogue), 10(Shaman), 11(Necro), 12(Wiz), 13(Mag), 14(Ench), 15(Beast), 16(Bersek)");
+		c->Message(15, "------------------------------------------------------------------");
+		c->Message(15, "Races: 1(Human), 2(Barb), 3(Erudit), 4(Wood elf), 5(High elf), 6(Dark elf), 7(Half elf), 8(Dwarf), 9(Troll), 10(Ogre), 11(Halfling), 12(Gnome), 330(Froglok), 128(Iksar), 130(Vah shir)");
+		c->Message(15, "------------------------------------------------------------------");
+		c->Message(15, "Usage: #bot create [name] [class(1-16)] [race(1-12,128,130,330)] [gender (male/female)]");
+		return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "delete") ) {
+		if((c->GetTarget() == NULL) || !c->GetTarget()->IsBot())
+        {
+            c->Message(15, "You must target a bot!");
+			return;
+		}
+		else if(database.GetBotOwner(c->GetTarget()->GetNPCTypeID()) != c->AccountID())
+        {
+            c->Message(15, "You can't delete a bot that you don't own.");
+			return;
+		}
+
+		if(database.DeleteBot(c->GetTarget()->GetNPCTypeID())) {
+			c->GetTarget()->Say("...but why?!! We had such good adventures together! gaahhh...glrrrk...");
+			c->GetTarget()->BotOwner = NULL;
+			c->GetTarget()->Kill();
+			c->Message(15, "Bot successfully deleted!");
+		}
+		else {
+			c->Message(15, "Error deleting Bot!");
+		}
+	}
+
+	if(!strcasecmp(sep->arg[1], "list") ){
+		
+		char errbuf[MYSQL_ERRMSG_SIZE];
+		char *query = 0;
+		int32 affected_rows = 0;
+		MYSQL_RES *result;
+		MYSQL_ROW row;
+
+		if(database.RunQuery(query, MakeAnyLenString(&query, "SELECT id, name, class, race from npc_types where isbot=1"), errbuf, &result, &affected_rows))
+        {
+
+            while(row = mysql_fetch_row(result))
+            {
+                // change the class ID by the name
+				int irow = atoi(row[2]);
+				const char *crow;
+
+                switch(irow) {
+                    case 1:
+                        crow = "Warrior";
+                        break;
+                    case 2:
+                        crow = "Cleric";
+                        break;
+                    case 3:
+                        crow = "Paladin";
+                        break;
+                    case 4:
+                        crow = "Ranger";
+                        break;
+                    case 5:
+                        crow = "Shadows Knight";
+                        break;
+                    case 6:
+                        crow = "Druid";
+                        break;
+                    case 7:
+                        crow = "Monk";
+                        break;
+                    case 8:
+                        crow = "Bard";
+                        break;
+                    case 9:
+                        crow = "Rogue";
+                        break;
+                    case 10:
+                        crow = "Shaman";
+                        break;
+                    case 11:
+                        crow = "Necromancer";
+                        break;
+                    case 12:
+                        crow = "Wizard";
+                        break;
+                    case 13:
+                        crow = "Magician";
+                        break;
+                    case 14:
+                        crow = "Enchanter";
+                        break;
+                    case 15:
+                        crow = "Beastlord";
+                        break;
+                    case 16:
+                        crow = "Berserker";
+                        break;
+                    default:
+                        crow = "Warrior";
+                }
+			
+				// change the race ID by the name
+				int rrow = atoi(row[3]);
+				const char *rrrow;
+	
+                switch(rrow) {
+                    case 1:
+                        rrrow = "Human";
+                        break;
+                    case 2:
+                        rrrow = "Barbarian";
+                        break;
+                    case 3:
+                        rrrow = "Erudite";
+                        break;
+                    case 4:
+                        rrrow = "Wood Elf";
+                        break;
+                    case 5:
+                        rrrow = "High Elf";
+                        break;
+                    case 6:
+                        rrrow = "Dark Elf";
+                        break;
+                    case 7:
+                        rrrow = "Half Elf";
+                        break;
+                    case 8:
+                        rrrow = "Dwarf";
+                        break;
+                    case 9:
+                        rrrow = "Troll";
+                        break;
+                    case 10:
+                        rrrow = "Ogre";
+                        break;
+                    case 11:
+                        rrrow = "Halfling";
+                        break;
+                    case 12:
+                        rrrow = "Gnome";
+                        break;
+                    case 330:
+                        rrrow = "Froglok";
+                        break;
+                    case 128:
+                        rrrow = "Iksar";
+                        break;
+                    case 130:
+                        rrrow = "Vah Shir";
+                        break;
+                    default:
+                        rrrow = "Human";
+                }
+
+				if((database.GetBotOwner(atoi(row[0])) == c->CharacterID()) || (database.GetBotOwner(atoi(row[0])) == c->AccountID()))
+					c->Message(15,"(YOUR BOT) ID: %s -- Name: %s -- Class: %s -- Race: %s -- ", row[0], row[1], crow, rrrow);
+			}				
+		}
+		mysql_free_result(result);
+		safe_delete_array(query);
+		return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "spawn") ){
+		if(database.GetBotOwner(atoi(sep->arg[2])) == 0)
+        {
+			database.SetBotOwner(atoi(sep->arg[2]), c->AccountID());
+		}
+		else if(database.GetBotOwner(atoi(sep->arg[2])) == c->CharacterID())
+		{
+			database.UpdateBotOwner(c->AccountID(), c->CharacterID());
+		}
+		else if(database.GetBotOwner(atoi(sep->arg[2])) != c->AccountID())
+        {
+            c->Message(15,"You can't spawn a bot that you don't own.");
+			return;
+		}
+
+		if(c->IsEngaged() || c->GetFeigned())
+        {
+            c->Message(15, "You can't summon bots while you are engaged or feigned.");
+			return;
+		}
+		if(c->IsGrouped())
+        {
+			Group *g = entity_list.GetGroupByClient(c);
+			for (int i=0; i<MAX_GROUP_MEMBERS; i++)
+            {
+                if(g && g->members[i] && g->members[i]->IsEngaged())
+                {
+                    c->Message(15, "You can't summon bots while you are engaged.");
+					return;
+				}
+			}
+		}
+		
+		const NPCType* tmp = 0;
+		if ((tmp = database.GetNPCType(atoi(sep->arg[2]))))
+        {
+			Mob *mtmp = entity_list.GetMobByNpcTypeID(atoi(sep->arg[2]));
+			if(mtmp && entity_list.IsMobInZone(mtmp))
+            {
+				c->Message(15, "This bot is already in the zone.");
+				return;
+			}
+
+			NPC* npc = new NPC(tmp, 0, c->GetX(), c->GetY(), c->GetZ(), c->GetHeading());
+
+			// As the mob is in the DB, we need to calc its level, HP, Mana.
+			// First, the mob must have the same level as his leader
+			npc->SetLevel(c->GetLevel());
+			npc->CastToMob()->SetBotRaiding(false);
+			entity_list.AddNPC(npc);
+			npc->CastToMob()->Say("I am ready for battle.");
+		}
+		else {
+            c->Message(15, "BotID: %i not found", atoi(sep->arg[2]));
+        }
+        return;
+    }
+
+	if(!strcasecmp(sep->arg[1], "rogue") && !strcasecmp(sep->arg[2], "picklock")) {
+		if((c->GetTarget() == NULL) || (c->GetTarget() == c) || !c->GetTarget()->IsBot() || (c->GetTarget()->GetClass() != ROGUE)) {
+            c->Message(15, "You must target a rogue bot!");
+			return;
+		}
+		entity_list.OpenDoorsNear(c->GetTarget()->CastToNPC());
+	}
+
+	if(!strcasecmp(sep->arg[1], "summon")) {
+		if((c->GetTarget() == NULL) || (c->GetTarget() == c) || !c->GetTarget()->IsBot() || c->GetTarget()->IsPet())
+        {
+            c->Message(15, "You must target a bot!");
+			return;
+		}
+		if(c->GetTarget()->IsMob() && !c->GetTarget()->IsPet())
+        {
+            Mob *b = c->GetTarget();
+
+			// Is our target "botable" ?
+			if(b && !b->IsBot()){
+				c->Message(15, "You must target a bot!");
+				return;
+			}
+			if(b && (database.GetBotOwner(b->GetNPCTypeID()) != c->CharacterID()) && (database.GetBotOwner(b->GetNPCTypeID()) != c->AccountID()))
+			{
+				b->Say("You can only summon your own bots.");
+				return;
+			}
+			if(b) {
+				b->Warp(c->GetX(), c->GetY(), c->GetZ());
+			}
+		}
+	}
+
+	if(!strcasecmp(sep->arg[1], "group") && !strcasecmp(sep->arg[2], "add"))
+    {
+		if(c->IsEngaged() || c->GetFeigned()) {
+            c->Message(15, "You cannot create bot groups while engaged or feigned!");
+			return;
+		}
+
+		if((c->GetTarget() == NULL) || !c->GetTarget()->IsBot())
+        {
+            c->Message(15, "You must target a bot!");
+			return;
+		}
+
+		if(c->GetTarget()->IsClient())
+        {
+			c->Message(15, "You can't invite clients this way.");
+			return;
+		}
+
+		if ( c->IsGrouped() )
+        {
+            Group *g = entity_list.GetGroupByClient(c);
+			if(g && (g->BotGroupCount() > 5))
+            {
+                c->Message(15, "There is no more room in your group.");
+				Mob* kmob = c->GetTarget();
+				if(kmob != NULL) {
+					kmob->BotOwner = NULL;
+					kmob->Kill();
+				}
+				return;
+			}
+		}
+
+		if(c->IsGrouped()) {
+            Group *g = entity_list.GetGroupByClient(c);
+			if(g && (c->CastToMob() != g->members[0])) {
+				c->Message(15, "Only the group leader can invite bots.");
+				Mob* kmob = c->GetTarget();
+				if(kmob != NULL) {
+					kmob->BotOwner = NULL;
+					kmob->Kill();
+				}
+				return;
+			}
+		}
+
+		if(c->GetTarget()->IsMob() && !c->GetTarget()->IsPet())
+        {
+            Mob *b = c->GetTarget();
+
+			// Is our target "botable" ?
+			if(b && !b->IsBot()){
+				b->Say("I can't be a bot!");
+				return;
+			}
+
+			if((database.GetBotOwner(b->GetNPCTypeID()) != c->CharacterID()) && (database.GetBotOwner(b->GetNPCTypeID()) != c->AccountID()))
+            {
+                b->Say("I can't be your bot, you are not my owner.");
+				return;
+			}
+
+			// Is he already grouped ?
+			if(b->IsGrouped())
+            {
+                b->Say("I'm already grouped!");
+				return;
+			}
+
+			// else, we do:
+			//1: Set its leader
+			b->Say("I'm becoming %s\'s bot!", c->GetName());
+			database.SetBotLeader(b->GetID(), c->GetID());
+		
+			//2: Set the follow ID so he's following its leader
+			b->SetFollowID(c->GetID());
+			b->BotOwner = c->CastToMob();
+			b->SetOwnerID(0);
+			c->CastToMob()->SetOwnerID(0);
+			
+			//3:  invite it to the group
+			if(!c->IsGrouped()) {
+				Group *g = new Group(c->CastToMob());
+				g->AddMember(b);
+				entity_list.AddGroup(g);
+			}
+			else {
+				c->GetGroup()->AddMember(b);
+			}
+
+			if(c->IsBotRaiding()) {
+				b->SetBotRaiding(true);
+				b->SetBotRaidID(c->CastToMob()->GetBotRaidID());
+			}
+
+			int itemID = 0;
+			const Item_Struct* item2 = NULL;
+			for(int i=0; i<22; i++) {
+				itemID = database.GetBotItemBySlot(b->GetNPCTypeID(), i);
+				if(itemID != 0) {
+					item2 = database.GetItem(itemID);
+					switch(i) {
+						case 0:
+						case 1:
+						case 3:
+						case 4:
+						case 5:
+						case 6:
+						case 8:
+						case 11:
+						case 15:
+						case 16:
+						case 20:
+						case 21:
+							b->CastToNPC()->AddLootDrop(item2, &b->CastToNPC()->itemlist, 1, true, false);
+							break;
+						case 2:
+						case 7:
+						case 9:
+						case 10:
+						case 12:
+						case 13:
+						case 14:
+						case 17:
+						case 18:
+						case 19:
+							b->CastToNPC()->AddLootDrop(item2, &b->CastToNPC()->itemlist, 1, true, true);
+							break;
+					}
+				}
+			}
+			b->CalcBotStats();
+		}
+		return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "group") && !strcasecmp(sep->arg[2], "remove")) {
+        if(c->GetTarget() != NULL) {
+            if(c->IsGrouped() && c->GetTarget()->IsBot() && c->GetTarget()->IsGrouped() && (c->GetGroup() == entity_list.GetGroupByMob(c->GetTarget()))) {
+				int16 botID = c->GetTarget()->GetID();
+				c->GetTarget()->Say("Bot Deactivated");
+				c->GetTarget()->BotOwner = NULL;
+				c->GetTarget()->Kill();
+			}
+            else {
+                c->Message(15, "You must target a bot first.");
+            }
+        }
+        else {
+            c->Message(15, "You must target a bot first.");
+        }
+		return;
+	}
+
+    if(!strcasecmp(sep->arg[1], "group") && !strcasecmp(sep->arg[2], "order"))
+    {
+		if(!strcasecmp(sep->arg[3], "follow"))
+        {
+			if(c->IsBotRaiding()) {
+				BotRaids *br = entity_list.GetBotRaidByMob(c->CastToMob());
+				br->FollowGuardCmd(c, false);
+			}
+			else if(c->IsGrouped())
+            {
+				Group *g = c->GetGroup();
+				if(g) {
+					int32 botfollowid = 0;
+					const char* botfollowname;
+					for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
+						if(g->members[i] && g->members[i]->IsBot()) {
+							if(botfollowid == 0) {
+								botfollowid = g->members[i]->GetID();
+								botfollowname = g->members[i]->GetCleanName();
+								g->members[i]->SetFollowID(c->GetID());
+								g->members[i]->Say("Following %s.", c->GetName());
+							}
+							else {
+								g->members[i]->SetFollowID(botfollowid);
+							}
+							g->members[i]->WhipeHateList();
+							g->members[i]->Say("Following %s.", botfollowname);
+						}
+					}
+				}
+			}
+		}
+		else if(!strcasecmp(sep->arg[3], "guard"))
+        {
+			if(c->IsBotRaiding()) {
+				BotRaids *br = entity_list.GetBotRaidByMob(c->CastToMob());
+				br->FollowGuardCmd(c, true);
+			}
+			else if(c->IsGrouped())
+            {
+				Group *g = c->GetGroup();
+				if(g) {
+					for(int i=0; i<MAX_GROUP_MEMBERS; i++)
+					{
+						if(g->members[i] && g->members[i]->IsBot()) {
+                            g->members[i]->SetFollowID(0);
+							g->members[i]->WhipeHateList();
+							g->members[i]->Say("Guarding here.");
+						}
+					}
+				}
+			}
+		}
+		else if(!strcasecmp(sep->arg[3], "attack"))
+        {
+			if((c->GetTarget() != c->CastToMob()) && c->IsGrouped() && (c->GetTarget() != NULL) && c->IsAttackAllowed(c->GetTarget()))
+            {
+				Group *g = c->GetGroup();
+				if(g) {
+					for(int i=0; i<MAX_GROUP_MEMBERS; i++)
+					{
+						if(g->members[i] && g->members[i]->IsBot()) {
+							g->members[i]->WhipeHateList();
+							g->members[i]->Say("Attacking %s.", c->GetTarget()->GetCleanName());
+                            g->members[i]->AddToHateList(c->GetTarget(),150,150);
+						}
+					}
+				}
+			}
+            else {
+                c->Message(15, "You must target a monster.");
+            }
+        }
+        return;
+	}
+
+    if(!strcasecmp(sep->arg[1], "inventory") && !strcasecmp(sep->arg[2], "list"))
+    {
+        if(c->GetTarget() != NULL)
+        {
+            if(c->GetTarget()->IsBot() && (c->GetTarget()->BotOwner == c->CastToMob()))
+            {
+                Mob* b = c->GetTarget();	
+                int x = database.GetBotItemsNumber(b->GetNPCTypeID() );
+                for(int i=0; i<22 ; i++)
+                {
+                    if(database.GetBotItemBySlot(b->GetNPCTypeID(), i) == 0)
+                    {
+                        c->Message(15, "No item in the slot = %i",i);
+                        continue;
+                    }
+                    if(database.GetBotItemBySlot(b->GetNPCTypeID(),i) != 0 && i != 8 && i != 14) {
+                        const Item_Struct* item2 = database.GetItem(database.GetBotItemBySlot(b->GetNPCTypeID(), i));
+                        c->Message(15, "Equiped Item %s in the slot %i \n.",item2->Name ,i);
+                    }
+                    if(database.GetBotItemBySlot(b->GetNPCTypeID(), i) != 0 && i == 8) {
+                        const Item_Struct* item2 = database.GetItem(database.GetBotItemBySlot(b->GetNPCTypeID(), i));
+                        c->Message(15, "Equiped Item %s in the slot %i \n.",item2->Name ,i);
+                    }
+                    if ( database.GetBotItemBySlot(b->GetNPCTypeID(),i) != 0 && i == 14) {
+                        const Item_Struct* item2 = database.GetItem( database.GetBotItemBySlot(b->GetNPCTypeID(),i) );
+                        c->Message(15, "Equiped Item %s in the slot %i \n.", item2->Name ,i);
+                    }
+                }
+            }
+            else {
+                c->Message(15, "You must target a bot first.");
+            }
+        }
+        else {
+            c->Message(15, "You must target a bot first.");
+        }
+		return;
+	}
+	
+	if(!strcasecmp(sep->arg[1], "inventory") && !strcasecmp(sep->arg[2], "remove")) {
+        if((c->GetTarget() == NULL) || (sep->arg[3] == '\0') || !c->GetTarget()->IsBot())
+        {
+			c->Message(15, "Usage: #bot inventory remove [slotid] (You must have a bot targetted) ");
+			return;
+		}		
+		else if(c->GetTarget()->IsBot() && (c->GetTarget()->BotOwner == c->CastToMob()))
+        {
+			int sid = atoi(sep->arg[3]);
+			if(sid > 21 || sid < 0) {
+				c->Message(15, "A bot has 21 slots in its invent, please choose a slot between 0 and 21. (#bot inventory list [target])");
+				return;
+			}
+			if(database.GetBotItemBySlot(c->GetTarget()->GetNPCTypeID(), sid) != NULL)
+            {
+                const Item_Struct *itm = database.GetItem(database.GetBotItemBySlot(c->GetTarget()->GetNPCTypeID(), sid));
+				const ItemInst* itminst = new ItemInst(itm,0);
+				c->PushItemOnCursor(*itminst,true);
+                Mob *gearbot = c->GetTarget();
+				for(int i=0; i<9; i++)
+                {
+                    if(gearbot->GetEquipment(i) == database.GetBotItemBySlot(gearbot->GetNPCTypeID(), sid))
+                    {
+                        gearbot->CastToNPC()->RemoveItem(gearbot->GetEquipment(i));
+                        gearbot->CastToNPC()->BotRemoveEquipItem(i);
+                        break;
+					}
+				}
+				database.RemoveBotItemBySlot(gearbot->GetNPCTypeID(), sid);
+				gearbot->CalcBotStats();
+				gearbot->Say("My slot %i is now free, %s.",sid, c->GetName());
+			}
+			else {
+				c->GetTarget()->Say("The slot %i is already free.",sid);
+			}
+		}
+		return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "update")) {
+        // Congdar: add IsEngaged check for exploit to keep bots alive by repeatedly using #bot update.
+        if(c->GetTarget() != NULL)
+        {
+			if(c->GetTarget()->IsBot() && (c->GetLevel() <= c->GetTarget()->GetLevel())) {
+					c->Message(15, "This bot has already been updated.");
+					return;
+			}
+			if(c->GetTarget()->IsBot() && (c->GetTarget()->BotOwner == c->CastToMob()) && !c->GetTarget()->IsEngaged() && !c->GetFeigned()) {
+                Mob *bot = c->GetTarget();
+                bot->SetLevel(c->GetLevel());
+				bot->CalcBotStats();
+            }
+            else {
+				if(c->GetTarget()->IsEngaged() || c->GetFeigned()) {
+					c->Message(15, "You cannot update while engaged or feigned.");
+				}
+				else {
+					c->Message(15, "You must target a bot first");
+				}
+            }
+        }
+        else {
+			c->Message(15, "You must target a bot first");
+        }
+        return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "group") && !strcasecmp(sep->arg[2], "summon") ) {
+		if(c->IsBotRaiding()) {
+			BotRaids *brsummon = entity_list.GetBotRaidByMob(c->CastToMob());
+			if(brsummon) {
+				brsummon->SummonRaidBots(c->CastToMob(), false);
+			}
+		}
+		else if(c->IsGrouped())
+        {
+			Group *g = c->GetGroup();
+			if(g) {
+				for(int i=0; i<MAX_GROUP_MEMBERS; i++)
+				{
+					if(g->members[i] && g->members[i]->IsBot())
+					{
+						g->members[i]->GMMove(c->GetX(), c->GetY(), c->GetZ());
+						if(g->members[i]->HasPet()) {
+							g->members[i]->GetPet()->GMMove(c->GetX(), c->GetY(), c->GetZ());
+						}
+					}
+				}
+			}
+		}
+        return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "bindme")) {
+		Mob *binder = NULL;
+		bool hasbinder = false;
+		if(c->IsGrouped())
+		{
+			Group *g = c->GetGroup();
+			if(g) {
+				for(int i=0; i<MAX_GROUP_MEMBERS; i++)
+				{
+					if(g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == CLERIC))
+					{
+						hasbinder = true;
+						binder = g->members[i];
+					}
+				}
+				if(!hasbinder) {
+					c->Message(15, "You must have a Cleric in your group.");
+				}
+			}
+		}
+		if(hasbinder) {
+			binder->Say("Attempting to bind you %s.", c->GetName());
+			binder->CastToNPC()->CastSpell(35, c->GetID(), 1, -1, -1);
+		}
+	}
+	
+	if(!strcasecmp(sep->arg[1], "cure")) {
+		Mob *curer = NULL;
+		bool hascurer = false;
+		if(c->IsGrouped())
+		{
+			Group *g = c->GetGroup();
+			if(g) {
+				for(int i=0; i<MAX_GROUP_MEMBERS; i++)
+				{
+					if(g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == CLERIC))
+					{
+						hascurer = true;
+						curer = g->members[i];
+					}
+				}
+				if(!hascurer) {
+					c->Message(15, "You must have a Cleric in your group.");
+				}
+			}
+		}
+		if(hascurer) {
+			if(!strcasecmp(sep->arg[2], "poison")) {
+				curer->Say("Trying to cure us of %s.", sep->arg[2]);
+				curer->CastToNPC()->Bot_Command_Cure(1, curer->GetLevel());
+			}
+			else if(!strcasecmp(sep->arg[2], "disease")) {
+				curer->Say("Trying to cure us of %s.", sep->arg[2]);
+				curer->CastToNPC()->Bot_Command_Cure(2, curer->GetLevel());
+			}
+			else if(!strcasecmp(sep->arg[2], "curse")) {
+				curer->Say("Trying to cure us of %s.", sep->arg[2]);
+				curer->CastToNPC()->Bot_Command_Cure(3, curer->GetLevel());
+			}
+			else if(!strcasecmp(sep->arg[2], "blindness")) {
+				curer->Say("Trying to cure us of %s.", sep->arg[2]);
+				curer->CastToNPC()->Bot_Command_Cure(4, curer->GetLevel());
+			}
+		}
+		return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "ai") && !strcasecmp(sep->arg[2], "mez"))
+    {
+		Mob *target = c->GetTarget();
+        if(target == NULL || target == c || target->IsBot() || target->IsPet() && target->GetOwner()->IsBot())
+        {
+            c->Message(15, "You must select a monster");
+            return;
+        }
+		
+		if(c->IsGrouped())
+        {
+			bool hasmezzer = false;
+			Group *g = c->GetGroup();
+			for(int i=0; i<MAX_GROUP_MEMBERS; i++)
+            {
+				if(g && g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == ENCHANTER))
+                {
+					hasmezzer = true;
+					Mob *mezzer = g->members[i];
+                    mezzer->Say("Trying to mez %s \n", target->GetCleanName());
+					mezzer->CastToNPC()->Bot_Command_MezzTarget(target);
+				}
+			}
+			if(!hasmezzer) {
+				c->Message(15, "You must have an Enchanter in your group.");
+			}
+		}
+        return;
+	}
+	
+	// debug commands
+	if(!strcasecmp(sep->arg[1], "debug") && !strcasecmp(sep->arg[2], "inventory")) {
+		Mob *target = c->GetTarget();
+		if(target && target->IsBot())
+        {
+			for(int i=0; i<9; i++)
+            {
+				c->Message(15,"Equiped slot: %i , item: %i \n", i, target->CastToNPC()->GetEquipment(i));
+			}
+			if(target->CastToNPC()->GetEquipment(8) > 0)
+				c->Message(15,"This bot has an item in off-hand.");
+		}
+        return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "debug") && !strcasecmp(sep->arg[2], "botcaracs"))
+    {
+		Mob *target = c->GetTarget();
+		if(target && target->IsBot())
+        {
+			if(target->CanThisClassDualWield())
+                c->Message(15, "This class can dual wield.");
+			if(target->CanThisClassDoubleAttack())
+				c->Message(15, "This class can double attack.");
+		}
+		if(target->HasPet())
+			c->Message(15, "I've a pet and its name is %s", target->GetPet()->GetName() );
+        return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "debug") && !strcasecmp(sep->arg[2], "spells"))
+    {
+		Mob *target = c->GetTarget();
+		if(target && target->IsBot())
+        {
+            for(int i=0; i<16; i++)
+            {
+				if(target->CastToNPC()->BotGetSpells(i) != 0)
+                {
+					SPDat_Spell_Struct botspell = spells[target->CastToNPC()->BotGetSpells(i)];
+					c->Message(15, "(DEBUG) %s , Slot(%i), Spell (%s) Priority (%i) \n", target->GetName(), i, botspell.name, target->CastToNPC()->BotGetSpellPriority(i));
+				}
+			}
+		}
+        return;
+	}
+
+	// EQoffline - Raids
+	if(!strcasecmp(sep->arg[1], "raid") && !strcasecmp(sep->arg[2], "help"))
+    {
+		c->Message(15, "#bot raid help - will show this help");
+		c->Message(15, "#bot raid info - will give info of your raid.");
+		c->Message(15, "#bot raid create - will create your raid (you will be the raid leader)");
+		c->Message(15, "#bot raid group create [target] - create a group. Your target will be the leader.");
+		c->Message(15, "#bot raid invite bot [target] [group leader's name000] - Invite your target into your target leader000's group.");	
+//		c->Message(15, "#bot raid remove group [group leader's name] - Remove target's group from your raid.");
+		c->Message(15, "#bot raid disband - Disband the raid.");
+		c->Message(15, "#bot raid order maintank [target] - Your target will be flagged as the main tank.");
+		c->Message(15, "#bot raid order secondtank [target] - Your target will be flagged as the second tank.");
+		c->Message(15, "#bot raid order maintarget [target] - Your target will be flagged as the main raid's target.");
+		c->Message(15, "#bot raid order secondtarget [target] - Your target will be flagged as the second raid's target.");
+		c->Message(15, "#bot raid order grouptarget [group leader's name] [target] - Your target will be flagged as the target of a specific group.");
+		c->Message(15, "#bot raid order task [attack/guard] [group leader's name] - You will give a specific task [attack/guard].");
+		c->Message(15, "#bot raid order task [follow/assist] [group1 leader's name] [group2 leader's name] - Group 1 will [follow/assist] Group 2.");
+		c->Message(15, "#bot raid order task enraged - Tell your raid to stop attacking to defend against ENRAGED mobs.");
+        return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "raid"))
+    {
+
+		if(!strcasecmp(sep->arg[2], "info"))
+        {
+            if(c->CastToMob()->IsBotRaiding())
+            {
+				BotRaids *br = entity_list.GetBotRaidByMob(c->CastToMob());
+                if(br) { 
+                    br->BotRaidInfo(c);
+                }
+			}
+            else {
+                c->Message(15, "You are not in a bot raid.");
+            }
+            return;
+		}
+
+		else if(!strcasecmp(sep->arg[2], "create"))
+        {
+			if(c->IsBotRaiding())
+            {
+				c->Message(15, "You are already in a raid!");
+				return;
+			}
+			if(!c->IsGrouped() || ( c->IsGrouped() &&  entity_list.GetGroupByMob(c)->BotGroupCount() < 6))
+            {
+				c->Message(15, "You must be grouped and have a full group to create a raid.");
+				return;
+			}
+            else {
+				BotRaids *br = new BotRaids(c->CastToMob());
+				if(br) {
+					Group *g = c->GetGroup();
+					for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
+						if(g->members[i]) {
+							g->members[i]->SetBotRaidID(br->GetBotRaidID());
+							g->members[i]->SetBotRaiding(true);
+						}
+					}
+					br->AddBotGroup(g);
+				}
+			}
+            return;
+		}
+
+		else if(!strcasecmp(sep->arg[2], "group") && !strcasecmp(sep->arg[3], "create"))
+        {
+			if((c->GetTarget() == NULL) || !c->GetTarget()->IsBot() || c->IsEngaged() || c->GetFeigned()) {
+				return;
+			}
+
+			if(!c->CastToMob()->IsBotRaiding() && c->GetTarget()->IsBot())
+            {
+				c->Message(15, "You must have created your raid and your group must be full before doing that!");
+				Mob* kmob = c->GetTarget();
+				if(kmob != NULL) {
+					kmob->BotOwner = NULL;
+					kmob->Kill();
+				}
+				return;
+			}
+
+			if((database.GetBotOwner(c->GetTarget()->GetNPCTypeID()) != c->CharacterID()) && (database.GetBotOwner(c->GetTarget()->GetNPCTypeID()) != c->AccountID()))
+            {
+                c->GetTarget()->Say("I can't be your bot, you are not my owner.");
+				return;
+			}
+
+			if((c->GetTarget() != NULL) && !c->GetTarget()->IsGrouped() && c->GetTarget()->IsBot())
+            {
+				BotRaids *br = entity_list.GetBotRaidByMob(c->CastToMob());
+				if(br->RaidBotGroupsCount() >= MAX_BOT_RAID_GROUPS) {
+					Mob *kmob = c->GetTarget();
+					if(kmob != NULL) {
+						kmob->BotOwner = NULL;
+						kmob->Kill();
+					}
+					return;
+				}
+
+				Mob *gleader = c->GetTarget();
+				database.SetBotLeader(gleader->GetID(), c->GetID());
+				gleader->SetFollowID(c->GetID());
+				gleader->BotOwner = c->CastToMob();
+				gleader->SetOwnerID(0);
+				gleader->SetBotRaidID(br->GetBotRaidID());
+				gleader->SetBotRaiding(true);
+
+				Group *g = new Group(gleader);
+				entity_list.AddGroup(g);
+				br->AddBotGroup(g);
+
+				// load up leaders gear
+				int itemID = 0;
+				const Item_Struct* item2 = NULL;
+				for(int i=0; i<22; i++) {
+					itemID = database.GetBotItemBySlot(gleader->GetNPCTypeID(), i);
+					if(itemID != 0) {
+						item2 = database.GetItem(itemID);
+						switch(i) {
+							case 0:
+							case 1:
+							case 3:
+							case 4:
+							case 5:
+							case 6:
+							case 8:
+							case 11:
+							case 15:
+							case 16:
+							case 20:
+							case 21:
+								gleader->CastToNPC()->AddLootDrop(item2, &gleader->CastToNPC()->itemlist, 1, true, false);
+								break;
+							case 2:
+							case 7:
+							case 9:
+							case 10:
+							case 12:
+							case 13:
+							case 14:
+							case 17:
+							case 18:
+							case 19:
+								gleader->CastToNPC()->AddLootDrop(item2, &gleader->CastToNPC()->itemlist, 1, true, true);
+								break;
+						}
+					}
+				}
+				gleader->CalcBotStats();
+				c->Message(15, "-- RAID -- Group Leader is: %s\n", gleader->GetCleanName());
+            }
+            else {
+                c->Message(15, "You must target your bot first.");
+            }
+            return;
+        }
+
+        else if(!strcasecmp(sep->arg[2], "invite") && !strcasecmp(sep->arg[3], "bot"))
+        {
+            if(c->GetFeigned()) {
+                c->Message(15, "You cannot create raid groups while feigned.");
+            }
+
+			if((c->GetTarget() == NULL) || !c->GetTarget()->IsBot()) {
+                c->Message(15, "You must target a bot first.");
+				return;
+			}
+
+			if((database.GetBotOwner(c->GetTarget()->GetNPCTypeID()) != c->CharacterID()) && (database.GetBotOwner(c->GetTarget()->GetNPCTypeID()) != c->AccountID()))
+            {
+                c->GetTarget()->Say("I join your bot raid, you are not my owner.");
+				return;
+			}
+
+			Mob* sictar = entity_list.GetMob(sep->argplus[4]);
+			if(!sictar || !sictar->IsGrouped() || entity_list.GetGroupByMob(sictar) == NULL || entity_list.GetGroupByMob(sictar)->GetLeader() != sictar)
+            {
+				c->Message(15, "You didn't type the correct group leader name.");
+				Mob* kmob = c->GetTarget();
+				if(kmob != NULL) {
+					kmob->BotOwner = NULL;
+					kmob->Kill();
+				}
+				return;
+			}
+
+			if(c->GetTarget()->IsGrouped()) {
+                c->Message(15, "You must target an ungrouped bot first.");
+				Mob* kmob = c->GetTarget();
+				if(kmob != NULL) {
+					kmob->BotOwner = NULL;
+					kmob->Kill();
+				}
+                return;
+            }                
+			else {
+                Mob *inv = c->GetTarget();
+				
+				Group *g = entity_list.GetGroupByMob(sictar);
+				if(g && (g->BotGroupCount() > 5)) {
+					inv->Say("I can't get into the group, it's full already.");
+					inv->BotOwner = NULL;
+					inv->Kill();
+					return;
+				}
+				if(g && (g->BotGroupCount() < 6))
+                {
+					database.SetBotLeader(inv->GetID(), c->GetID());
+					inv->SetFollowID(sictar->GetID());
+					inv->BotOwner = c->CastToMob();
+					inv->SetOwnerID(0);
+                    g->AddMember(inv);
+					inv->SetBotRaiding(true);
+					inv->SetBotRaidID(sictar->GetBotRaidID());
+
+					// Equip newly raid grouped bot
+					int itemID = 0;
+					const Item_Struct* item2 = NULL;
+					for(int i=0; i<22; i++) {
+						itemID = database.GetBotItemBySlot(inv->GetNPCTypeID(), i);
+						if(itemID != 0) {
+							item2 = database.GetItem(itemID);
+							switch(i) {
+								case 0:
+								case 1:
+								case 3:
+								case 4:
+								case 5:
+								case 6:
+								case 8:
+								case 11:
+								case 15:
+								case 16:
+								case 20:
+								case 21:
+									inv->CastToNPC()->AddLootDrop(item2, &inv->CastToNPC()->itemlist, 1, true, false);
+									break;
+								case 2:
+								case 7:
+								case 9:
+								case 10:
+								case 12:
+								case 13:
+								case 14:
+								case 17:
+								case 18:
+								case 19:
+									inv->CastToNPC()->AddLootDrop(item2, &inv->CastToNPC()->itemlist, 1, true, true);
+									break;
+							}
+						}
+					}
+					inv->CalcBotStats();
+					inv->Say("I have joined %s's raid group.", g->GetLeader()->GetCleanName());
+				}
+				else
+					inv->Say("I can't join the group (You didn't enter the group leader's name or the group is full already. Type #bot raid info\n");
+			}
+            return;
+		}
+
+/*		else if(!strcasecmp(sep->arg[2], "remove") && !strcasecmp(sep->arg[3], "group")) {
+            // Congdar: rewrote due to zone crashing on me
+            if(entity_list.GetRaidByMob(c->CastToMob()) == NULL ) {
+				return;
+            }
+			else {
+				BotRaids *mybr = entity_list.GetRaidByMob(c->CastToMob());
+                Group *mygtr = entity_list.GetGroupByLeaderName(sep->arg[4]);
+                if(mybr && mygtr) {
+                    if(strcmp(mybr->GetLeader()->GetName(), mygtr->GetLeaderName()) == 0) {
+                        c->Message(15, "All bot groups are disbanded, use #bot raid disband\n");
+                    }
+                    else {
+                        mybr->RemoveGroup(mygtr);
+                    }
+                }
+			}
+            return;
+		}
+*/
+		else if(!strcasecmp(sep->arg[2], "disband"))
+        {
+			if(c->IsBotRaiding()) {
+				int16 cmid = c->GetID();
+				BotRaids *brd = entity_list.GetBotRaidByMob(c->CastToMob());
+				if(brd) {
+					brd->RemoveRaidBots();
+					brd = NULL;
+				}
+				if(c->IsGrouped()) {
+					Group *g = entity_list.GetGroupByMob(c->CastToMob());
+					if(g) {
+						bool hasBots = false;
+						for(int i=5; i>=0; i--) {
+							if(g->members[i] && g->members[i]->IsBot()) {
+								hasBots = true;
+								g->members[i]->BotOwner = NULL;
+								g->members[i]->Kill();
+							}
+						}
+						if(hasBots) {
+							hasBots = false;
+							if(g->BotGroupCount() <= 1) {
+								g->DisbandGroup();
+							}
+						}
+					}
+				}
+				database.CleanBotLeader(cmid);
+				c->Message(15, "Raid disbanded.");
+			}
+			return;
+		}
+
+		else if(!strcasecmp(sep->arg[2], "order"))
+        {
+			if(!strcasecmp(sep->arg[3], "maintank"))
+            {
+				if(c->GetTarget() == NULL)
+					return;
+				else {
+					BotRaids *brc = entity_list.GetBotRaidByMob(c->CastToMob());
+					BotRaids *brm = entity_list.GetBotRaidByMob(c->GetTarget());
+					if(brc == NULL || brm == NULL || brc != brm)
+                        return;
+					else {
+						brc->SetBotMainTank(c->GetTarget());
+						c->GetTarget()->Say("I am the Raid Primary Tank, /assist me!");
+					}
+				}
+			}
+			else if(!strcasecmp(sep->arg[3], "secondtank"))
+            {
+				if(c->GetTarget() == NULL)
+					return;
+				else {
+					BotRaids *brc = entity_list.GetBotRaidByMob(c->CastToMob());
+					BotRaids *brm = entity_list.GetBotRaidByMob(c->GetTarget());
+					if(brc == NULL || brm == NULL || brc != brm)
+                        return;
+					else {
+						brc->SetBotSecondTank(c->GetTarget());
+						c->GetTarget()->Say("I am the Raid Secondary Tank, /assist me if the Primary Tank dies!");
+					}
+				}
+			}
+			else if(!strcasecmp(sep->arg[3], "maintarget"))
+            {
+				if(entity_list.GetBotRaidByMob(c->CastToMob()) == NULL)
+					return;
+				else{
+					BotRaids *brc = entity_list.GetBotRaidByMob(c->CastToMob());
+					if( c->GetTarget() == NULL || !c->GetTarget()->IsAttackAllowed(c) || brc == NULL)
+						return;
+					else{
+						brc->SetBotMainTarget(c->GetTarget());
+					}
+				}
+			}
+			else if(!strcasecmp(sep->arg[3], "secondtarget"))
+            {
+				if(entity_list.GetBotRaidByMob(c->CastToMob()) == NULL)
+					return;
+				else {
+					BotRaids *brc = entity_list.GetBotRaidByMob(c->CastToMob());
+					if(c->GetTarget() == NULL || !c->GetTarget()->IsAttackAllowed(c) || brc == NULL)
+						return;
+					else {
+						brc->SetBotSecondTarget(c->GetTarget());
+					}
+				}
+			}
+			else if(!strcasecmp(sep->arg[3], "grouptarget"))
+            {
+				if(entity_list.GetBotRaidByMob(c->CastToMob()) == NULL)
+					return;
+				else {
+					BotRaids *brc = entity_list.GetBotRaidByMob(c->CastToMob());
+					if(c->GetTarget() == NULL ||c->GetTarget()->IsBot())
+                    {
+						c->Message(15, "You don't have a target or your target is a bot.");
+						return;
+                    }
+					if(brc) {
+						brc->SetBotGroupTarget(c->GetTarget(), entity_list.GetGroupByLeaderName(sep->arg[4]));
+					}
+				}
+			}
+			else if(!strcasecmp(sep->arg[3], "task"))
+            {
+				BotRaids *brc = entity_list.GetBotRaidByMob(c->CastToMob());
+				if(brc) {
+					if(!strcasecmp(sep->arg[4], "attack"))
+					{
+						Mob *ctarget = c->GetTarget();
+						if(ctarget != NULL) {
+							brc->GroupAssignTask(entity_list.GetGroupByLeaderName(sep->arg[5]), 2, ctarget);
+						}
+						else {
+							c->Message(15, "You must target a monster.");
+						}
+					}
+					else if(!strcasecmp(sep->arg[4], "guard"))
+					{
+						Mob *ctarget = NULL;
+						brc->GroupAssignTask(entity_list.GetGroupByLeaderName(sep->arg[5]), 4, ctarget);
+					}
+					else if(!strcasecmp(sep->arg[4], "assist"))
+					{
+						brc->GroupAssignTask(entity_list.GetGroupByLeaderName(sep->arg[5]), 3, entity_list.GetGroupByLeaderName(sep->arg[6]));
+					}				
+					else if(!strcasecmp(sep->arg[4], "follow"))
+					{
+						brc->GroupAssignTask(entity_list.GetGroupByLeaderName(sep->arg[5]), 1, entity_list.GetGroupByLeaderName(sep->arg[6]));
+					}
+					else if(!strcasecmp(sep->arg[4], "enraged")) {
+						brc->RaidDefendEnraged();
+					}
+				}
+			}
+		}
+	}	
+}
+
+#endif //EQBOTS
 
 void command_traindisc(Client *c, const Seperator *sep)
 {

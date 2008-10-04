@@ -321,6 +321,13 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 }
 void Doors::NPCOpen(NPC* sender)
 {
+
+#ifdef EQBOTS
+
+	if(!sender->IsBot())
+
+#endif //EQBOTS
+
 	if(GetTriggerType() == 255 || GetTriggerDoorID() > 0 || GetLockpick() != 0 || GetKeyItem() != 0 || opentype == 59 || opentype == 58) { // this object isnt triggered or door is locked - NPCs should not open locked doors!
 		return;
 	}

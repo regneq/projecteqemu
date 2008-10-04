@@ -384,7 +384,19 @@ void Mob::TryBackstab(Mob *other) {
 		}
 	}
 	
+
+#ifdef EQBOTS
+
+	// Until I can do some extensive Rogue bot ai work to get the bot around behind a mob
+	// I'm just going to do it this way
+	if(IsBot() || BehindMob(other, GetX(), GetY()))
+
+#else //EQBOTS
+
 	if (BehindMob(other, GetX(), GetY())) // Player is behind other
+
+#endif //EQBOTS
+
 	{
 		// solar - chance to assassinate
 		float chance = (10.0+(GetDEX()/10)); //18.5% chance at 85 dex 40% chance at 300 dex
@@ -997,6 +1009,16 @@ void NPC::DoClassAttacks(Mob *target) {
 		Taunt(target->CastToNPC(), false);
 	}
 	
+#ifdef EQBOTS
+
+    //franck-add: EQoffline. Warrior bots must taunt the target.
+	if(IsBot() && (GetClass() == WARRIOR) && target->IsNPC() && taunt_time) {
+        this->Say("Taunting %s", target->GetCleanName());
+		Taunt(target->CastToNPC(), false);
+	}
+	
+#endif //EQBOTS
+
 	if(!ca_time)
 		return;
 	
@@ -1034,6 +1056,36 @@ void NPC::DoClassAttacks(Mob *target) {
 				satype = ROUND_KICK;
 			}
 			reuse = MonkSpecialAttack(target, satype);
+
+#ifdef EQBOTS
+
+			if(IsBot()) { // Technique Of Master Wu AA
+				int specl = 0;
+				if(GetLevel() >= 65) {
+					specl = 100;
+				}
+				else if(GetLevel() >= 64) {
+					specl = 80;
+				}
+				else if(GetLevel() >= 63) {
+					specl = 60;
+				}
+				else if(GetLevel() >= 62) {
+					specl = 40;
+				}
+				else if(GetLevel() >= 61) {
+					specl = 20;
+				}
+				if(specl == 100 || specl > MakeRandomInt(0,100)) {
+					reuse = MonkSpecialAttack(target, satype);
+					if(20 > MakeRandomInt(0,100)) {
+						reuse = MonkSpecialAttack(target, satype);
+					}
+				}
+			}
+
+#endif //EQBOTS
+
 			reuse *= 1000;
 			did_attack = true;
 			break;
@@ -1225,6 +1277,23 @@ void Mob::Taunt(NPC* who, bool always_succeed) {
 			who->CastToNPC()->AddToHateList(this, (MakeRandomInt(5, 10)*level));
 		}
 	}
+	
+#ifdef EQBOTS
+
+    //Franck-add: little tweak for the warrior bot so they can taunt better
+	if(IsBot() && (GetClass() == WARRIOR)) {
+		if(IsBotRaiding()) {
+			BotRaids *br = entity_list.GetBotRaidByMob(this);
+			if(br && ((br->GetBotMainTank() && (br->GetBotMainTank() == this)) || (br->GetBotSecondTank() && (br->GetBotSecondTank() == this)))) {
+				who->CastToNPC()->AddToHateList(this, (who->GetNPCHate(hate_top) - who->GetNPCHate(this))+400);
+			}
+		}
+		else if(!IsBotRaiding() && IsGrouped())
+			who->CastToNPC()->AddToHateList(this, (who->GetNPCHate(hate_top) - who->GetNPCHate(this))+200);
+	}
+
+#endif //EQBOTS
+
 	
 	//generate at least some hate reguardless of the outcome.
 	who->CastToNPC()->AddToHateList(this, (MakeRandomInt(5, 10)*level));

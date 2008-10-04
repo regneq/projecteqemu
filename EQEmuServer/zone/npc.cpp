@@ -591,6 +591,17 @@ bool NPC::Process()
 		entity_list.AIYellForHelp(this, hated);
 	}
 	
+#ifdef EQBOTS
+
+    //Franck-add: EQoffline. If a bot spawns, it must use a special AI wich differs to standard NPC
+	if(IsBot())
+		BOT_Process();
+	else if(IsPet() && GetOwner()->IsBot())
+		PET_Process();
+	else
+
+#endif //EQBOTS
+
 	AI_Process();
 	
     return true;
