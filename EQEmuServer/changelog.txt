@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
 ==10/04/2008
+Congdar: Fix Bot follow bug when a bot gets killed
 Derision: Added minlevel and maxlevel fields to tasks table and new quest function istaskappropriate(task).
 Derision: All tasks in a TaskSet with a taskid of 0 as one of it's entries are now available to a player, subject to level restrictions.
 Derision: (Spoon/Andmetal) Rez spells with effectdescnum != 82 or 39067 (6.2 spells_us) will give 100% Mana/HP restoration and no rez effects.

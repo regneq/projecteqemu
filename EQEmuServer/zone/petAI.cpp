@@ -228,17 +228,15 @@ void Mob::PET_Process() {
 							break;
  
 						float dist = DistNoRoot(*owner);
-						float speed = owner->GetRunspeed();
-						if(dist >= 175) {
+						float speed = GetRunspeed();
+						if(dist >= 144) {
 							CalculateNewPosition2(owner->GetX(), owner->GetY(), owner->GetZ(), speed);
 						}
-						else {
+						else if(moved) {
 							SetHeading(owner->GetHeading());
-							if(moved) {
-								moved=false;
-								SetMoving(false);
-								SendPosition();
-							}
+							moved=false;
+							SetMoving(false);
+							SendPosition();
 						}
 						break;
 					}
