@@ -39,6 +39,15 @@ void Mob::CalcBonuses()
 {	
 	CalcSpellBonuses(&spellbonuses);
 
+#ifdef EQBOTS
+
+	if(CastToMob()->IsBot() || (CastToMob()->GetOwner() && CastToMob()->GetOwner()->IsBot())) {
+		return;
+	}
+
+#endif //EQBOTS
+
+
 	CalcMaxHP();
 	CalcMaxMana();
 	SetAttackTimer();
@@ -49,6 +58,14 @@ void Mob::CalcBonuses()
 void NPC::CalcBonuses()
 {
 	Mob::CalcBonuses();
+
+#ifdef EQBOTS
+
+	if(CastToMob()->IsBot() || (CastToMob()->GetOwner() && CastToMob()->GetOwner()->IsBot())) {
+		return;
+	}
+
+#endif //EQBOTS
 
 	if(RuleB(NPC, UseItemBonusesForNonPets)){
 		memset(&itembonuses, 0, sizeof(StatBonuses));
@@ -411,6 +428,15 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 
 	if(!IsValidSpell(spell_id))
 		return;
+
+#ifdef EQBOTS
+
+	if(IsBot()) {
+		caster = entity_list.GetMob(casterId);
+	}
+	else
+
+#endif //EQBOTS
 	
 	if(casterId > 0)
 		caster = entity_list.GetClientByID(casterId);

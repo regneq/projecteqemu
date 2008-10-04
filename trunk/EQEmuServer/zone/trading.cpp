@@ -333,15 +333,192 @@ void Client::ResetTrade() {
 void Client::FinishTrade(NPC* with){
 	int32 items[4]={0};
 	int8 charges[4]={0};
+
+#ifdef EQBOTS
+
+    bool botCanWear[4];
+	bool BotCanWear;
 	for (sint16 i=3000; i<=3003; i++){
+        BotCanWear = false;
+        botCanWear[i-3000] = BotCanWear;
+
 		const ItemInst* inst = m_inv[i];
 		if (inst) {
 			items[i-3000]=inst->GetItem()->ID;
 			charges[i-3000]=inst->GetCharges();
-			DeleteItemInInventory(i);
 		}
+		//EQoffline: will give the items to the bots and change the bot stats
+		if(inst && with->IsBot() && with->BotOwner == this->CastToMob()) {
+			const Item_Struct *mWeaponItem = inst->GetItem();
+			if(mWeaponItem && inst->IsEquipable(with->GetBaseRace(), with->GetClass()) && (with->GetLevel() >= mWeaponItem->ReqLevel)) { // Angelox
+				BotCanWear = true;
+                botCanWear[i-3000] = BotCanWear;
+
+				for(int j=0;j<22;j++) {
+					if(inst->IsSlotAllowed(j)) {
+                        if(j==1) { // earrings
+							if(database.GetBotItemBySlot(with->GetNPCTypeID(), 4) == 0) {
+								database.SetBotItemInSlot(with->GetNPCTypeID(), 4, inst->GetID());
+							}
+							else if(database.GetBotItemBySlot(with->GetNPCTypeID(), 1) == 0) {
+								database.SetBotItemInSlot(with->GetNPCTypeID(), 1, inst->GetID());
+							}
+							else {
+								const Item_Struct* itmtmp = database.GetItem(database.GetBotItemBySlot(with->GetNPCTypeID(), 1));
+								const ItemInst* insttmp = new ItemInst(itmtmp,0);
+								PushItemOnCursor(*insttmp, true);
+								database.RemoveBotItemBySlot(with->GetNPCTypeID(), 1);
+								database.SetBotItemInSlot(with->GetNPCTypeID(), 1, inst->GetID());
+							}
+							break;
+						}
+                        else if(j==9) { // bracers
+							if(database.GetBotItemBySlot(with->GetNPCTypeID(), 10) == 0) {
+								database.SetBotItemInSlot(with->GetNPCTypeID(), 10, inst->GetID());
+							}
+							else if(database.GetBotItemBySlot(with->GetNPCTypeID(), 9) == 0) {
+								database.SetBotItemInSlot(with->GetNPCTypeID(), 9, inst->GetID());
+							}
+							else {
+								const Item_Struct* itmtmp = database.GetItem(database.GetBotItemBySlot(with->GetNPCTypeID(), 9));
+								const ItemInst* insttmp = new ItemInst(itmtmp,0);
+								PushItemOnCursor(*insttmp, true);
+								database.RemoveBotItemBySlot(with->GetNPCTypeID(), 9);
+								database.SetBotItemInSlot(with->GetNPCTypeID(), 9, inst->GetID());
+							}
+							break;
+						}
+                        else if(j==13 || j==14) { // melee weapons
+							const Item_Struct* itmwp = database.GetItem(inst->GetID());
+							if((database.GetBotItemBySlot(with->GetNPCTypeID(), 13) == 0)  && inst->IsSlotAllowed(13)) {
+								database.SetBotItemInSlot(with->GetNPCTypeID(), 13, inst->GetID());
+								if((itmwp->ItemType == ItemType2HS) || (itmwp->ItemType == ItemType2HB) || (itmwp->ItemType == ItemType2HPierce)) {
+									if(database.GetBotItemBySlot(with->GetNPCTypeID(), 14) != 0) {
+										const Item_Struct* itmtmp = database.GetItem(database.GetBotItemBySlot(with->GetNPCTypeID(), 14));
+										const ItemInst* insttmp = new ItemInst(itmtmp,0);
+										PushItemOnCursor(*insttmp, true);
+										database.RemoveBotItemBySlot(with->GetNPCTypeID(), 14);
+									}
+								}
+							}
+							else if((database.GetBotItemBySlot(with->GetNPCTypeID(), 13) != 0)  && inst->IsSlotAllowed(13)) {
+								if((itmwp->ItemType == ItemType2HS) || (itmwp->ItemType == ItemType2HB) || (itmwp->ItemType == ItemType2HPierce)) {
+									const Item_Struct* itmtmp = database.GetItem(database.GetBotItemBySlot(with->GetNPCTypeID(), 13));
+									const ItemInst* insttmp = new ItemInst(itmtmp,0);
+									PushItemOnCursor(*insttmp, true);
+									database.RemoveBotItemBySlot(with->GetNPCTypeID(), 13);
+									database.SetBotItemInSlot(with->GetNPCTypeID(), 13, inst->GetID());
+									if((database.GetBotItemBySlot(with->GetNPCTypeID(), 14) != 0)) {
+										const Item_Struct* itmtmp = database.GetItem(database.GetBotItemBySlot(with->GetNPCTypeID(), 14));
+										const ItemInst* insttmp = new ItemInst(itmtmp,0);
+										PushItemOnCursor(*insttmp, true);
+										database.RemoveBotItemBySlot(with->GetNPCTypeID(), 14);
+									}
+								}
+								else if((database.GetBotItemBySlot(with->GetNPCTypeID(), 14) == 0)  && inst->IsSlotAllowed(14)) {
+									if(inst->IsWeapon() && with->GetLevel() < 13) {
+										with->Say("I don't have the requered level to use two weapons.");
+										PushItemOnCursor(*inst, true);
+										DeleteItemInInventory(i);
+										return;
+									}
+									database.SetBotItemInSlot(with->GetNPCTypeID(), 14, inst->GetID());
+									const Item_Struct* itmtmp = database.GetItem(database.GetBotItemBySlot(with->GetNPCTypeID(), 13));
+									if(itmtmp && (itmtmp->ItemType == ItemType2HS) || (itmtmp->ItemType == ItemType2HB) || (itmtmp->ItemType == ItemType2HPierce)) {
+										const ItemInst* insttmp = new ItemInst(itmtmp,0);
+										PushItemOnCursor(*insttmp, true);
+										database.RemoveBotItemBySlot(with->GetNPCTypeID(), 13);
+									}
+								}
+								else if((database.GetBotItemBySlot(with->GetNPCTypeID(), 14) != 0)  && inst->IsSlotAllowed(14)) {
+									const Item_Struct* itmtmp = database.GetItem(database.GetBotItemBySlot(with->GetNPCTypeID(), 14));
+									const ItemInst* insttmp = new ItemInst(itmtmp,0);
+									PushItemOnCursor(*insttmp, true);
+									database.RemoveBotItemBySlot(with->GetNPCTypeID(), 14);
+									database.SetBotItemInSlot(with->GetNPCTypeID(), 14, inst->GetID());
+								}
+								else {
+									with->Say("Use #bot remove inventory 13 to swap primary weapons when dual wielding.");
+									PushItemOnCursor(*inst, true);
+									DeleteItemInInventory(i);
+									return;
+								}
+							}
+							else if((database.GetBotItemBySlot(with->GetNPCTypeID(), 14) == 0)  && inst->IsSlotAllowed(14)) {
+								if(inst->IsWeapon() && with->GetLevel() < 13) {
+									with->Say("I don't have the required level to use two weapons.");
+									PushItemOnCursor(*inst, true);
+									DeleteItemInInventory(i);
+									return;
+								}
+								database.SetBotItemInSlot(with->GetNPCTypeID(), 14, inst->GetID());
+								const Item_Struct* itmtmp = database.GetItem(database.GetBotItemBySlot(with->GetNPCTypeID(), 13));
+								if(itmtmp && ((itmtmp->ItemType == ItemType2HS) || (itmtmp->ItemType == ItemType2HB) || (itmtmp->ItemType == ItemType2HPierce))) {
+									const ItemInst* insttmp = new ItemInst(itmtmp,0);
+									PushItemOnCursor(*insttmp, true);
+									database.RemoveBotItemBySlot(with->GetNPCTypeID(), 13);
+								}
+							}
+							else if((database.GetBotItemBySlot(with->GetNPCTypeID(), 14) != 0)  && inst->IsSlotAllowed(14)) {
+								const Item_Struct* itmtmp = database.GetItem(database.GetBotItemBySlot(with->GetNPCTypeID(), 14));
+								const ItemInst* insttmp = new ItemInst(itmtmp,0);
+								PushItemOnCursor(*insttmp, true);
+								database.RemoveBotItemBySlot(with->GetNPCTypeID(), 14);
+								database.SetBotItemInSlot(with->GetNPCTypeID(), 14, inst->GetID());
+							}
+							break;
+						}
+                        else if(j==15 || j==16) { // rings
+							if(database.GetBotItemBySlot(with->GetNPCTypeID(), 16) == 0) {
+								database.SetBotItemInSlot(with->GetNPCTypeID(), 16, inst->GetID());
+							}
+							else if(database.GetBotItemBySlot(with->GetNPCTypeID(), 15) == 0) {
+								database.SetBotItemInSlot(with->GetNPCTypeID(), 15, inst->GetID());
+							}
+							else {
+								const Item_Struct* itmtmp = database.GetItem(database.GetBotItemBySlot(with->GetNPCTypeID(), 15));
+								const ItemInst* insttmp = new ItemInst(itmtmp,0);
+								PushItemOnCursor(*insttmp, true);
+								database.RemoveBotItemBySlot(with->GetNPCTypeID(), 15);
+								database.SetBotItemInSlot(with->GetNPCTypeID(), 15, inst->GetID());
+							}
+							break;
+						}					
+						if(database.GetBotItemBySlot(with->GetNPCTypeID(), j) != 0) {
+							const Item_Struct* itmtmp = database.GetItem(database.GetBotItemBySlot(with->GetNPCTypeID(), j));
+							const ItemInst* insttmp = new ItemInst(itmtmp,0);
+							PushItemOnCursor(*insttmp, true);
+							database.RemoveBotItemBySlot(with->GetNPCTypeID(), j);
+						}
+						database.SetBotItemInSlot(with->GetNPCTypeID(), j, inst->GetID());
+						break;
+					}
+				}
+				with->CalcBotStats();
+			}
+		}
+        if(inst) {
+			if(with->IsBot() && !botCanWear[i-3000]) {
+				PushItemOnCursor(*inst, true);
+			}
+            DeleteItemInInventory(i);
+        }
 	}
-	
+	if(!with->IsBot()) {
+
+#else //EQBOTS
+
+    for (sint16 i=3000; i<=3003; i++) {
+        const ItemInst* inst = m_inv[i];
+        if (inst) {
+            items[i-3000]=inst->GetItem()->ID;
+            charges[i-3000]=inst->GetCharges();
+            DeleteItemInInventory(i);
+        }
+    }
+
+#endif //EQBOTS
+
 	//dont bother with this crap unless we have a quest...
 	//pets can have quests! (especially charmed NPCs)
 	bool did_quest = false;
@@ -404,6 +581,12 @@ void Client::FinishTrade(NPC* with){
 		if(!with->HasOwner() || with->GetPetType() != petCharmed)
 			return;
 	}
+
+#ifdef EQBOTS
+
+	}
+
+#endif //EQBOTS
 		
 	int xy = with->CountLoot();
 	
@@ -414,12 +597,31 @@ void Client::FinishTrade(NPC* with){
 		//NPC* npc=with->CastToNPC();
 		const Item_Struct* item2 = database.GetItem(items[y]);
 		if (item2) {
+
+#ifdef EQBOTS
+
 			//if was not no drop item, let the NPC have it
+			if((GetGM() && !with->IsBot()) || ((item2->NoDrop != 0) && !with->IsBot()))
+				with->AddLootDrop(item2, &with->itemlist, charges[y], true, true);
+			// franck-add: you can give nodrop items to bots
+			else if(with->IsBot() && botCanWear[y]) {
+				with->AddLootDrop(item2, &with->itemlist, charges[y], true, true);
+                with->Say("Thank you for the %s , %s.", item2->Name, with->BotOwner->GetName());
+			}
+			else if(with->IsBot() && !botCanWear[y]) {
+				with->Say("I can't use this %s!", item2->Name);
+			}
+
+#else //EQBOTS
+
+            //if was not no drop item, let the NPC have it
 			if(GetGM() || item2->NoDrop != 0)
 				with->AddLootDrop(item2, &with->itemlist, charges[y], true, true);
 			//else 
 			//	with->AddLootDrop(item2, NULL, charges[y], false, true);
-			
+
+#endif //EQBOTS
+
 		}
 	}
 

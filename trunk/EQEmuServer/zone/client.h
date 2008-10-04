@@ -43,8 +43,6 @@ class Client;
 #include "../common/guilds.h"
 #include <float.h>
 #include <set>
-#include <list>
-#include "tasks.h"
 
 #define CLIENT_TIMEOUT		90000
 #define CLIENT_LD_TIMEOUT	30000 // length of time client stays in zone after LDing

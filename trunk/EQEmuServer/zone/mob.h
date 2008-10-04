@@ -375,6 +375,18 @@ bool logpos;
 	virtual void GoToBind() {}
 	virtual void Gate();
 	virtual bool Attack(Mob* other, int Hand = 13, bool FromRiposte = false) { return false; }		// 13 = Primary (default), 14 = secondary
+
+#ifdef EQBOTS
+
+	//EQoffline-adds
+	virtual bool BotAttackMelee(Mob* other, int Hand = 13, bool FromRiposte = false) { return false; }
+	bool BotRaiding;
+	void SetBotRaiding(bool v) { BotRaiding = v; }
+	bool IsBotRaiding() const { return BotRaiding; }
+	bool CheckBotDoubleAttack(bool Triple = false);
+
+#endif //EQBOTS
+
 	virtual void Damage(Mob* from, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable = true, sint8 buffslot = -1, bool iBuffTic = false) {};
 	virtual void Heal();
 	virtual void HealDamage(uint32 ammount, Mob* caster = NULL);
@@ -500,7 +512,13 @@ bool logpos;
 	inline virtual sint16	GetDR()	const { return DR + itembonuses.DR + spellbonuses.DR; }
 	inline virtual sint16	GetPR()	const { return PR + itembonuses.PR + spellbonuses.PR; }
 	inline virtual sint16	GetCR() const { return CR + itembonuses.CR + spellbonuses.CR; }
+	
+#ifdef EQBOTS
 
+	void CalcBotStats();
+
+#endif //EQBOTS	
+	
 	inline virtual sint16  GetMaxSTR() const { return GetSTR(); }
 	inline virtual sint16  GetMaxSTA() const { return GetSTA(); }
 	inline virtual sint16  GetMaxDEX() const { return GetDEX(); }
@@ -681,6 +699,16 @@ bool logpos;
 	virtual void		AI_Start(int32 iMoveDelay = 0);
 	virtual void		AI_Stop();
 	void				AI_Process();
+
+#ifdef EQBOTS
+
+	/*Franck-add: EQoffline  */
+	void				BOT_Process();
+	void				PET_Process();
+	/*-----------------------*/
+	
+#endif //EQBOTS
+
 	void				AI_Event_Engaged(Mob* attacker, bool iYellForHelp = true);
 	void				AI_Event_NoLongerEngaged();
 
@@ -809,6 +837,23 @@ bool logpos;
 	inline float GetCWPP() const { return(cur_wp_pause); }
 	inline int GetCWP() const { return(cur_wp); }
 	virtual FACTION_VALUE GetReverseFactionCon(Mob* iOther) { return FACTION_INDIFFERENT; }
+	
+#ifdef EQBOTS
+
+    //franck-add: EQoffline
+	void MakeBot(Mob *m);
+	bool AmIaBot;
+	bool cast_last_time;
+	bool IsBot() { return AmIaBot; }
+	int GetBotLeader();
+	void BotMeditate(bool isSitting);
+	Mob *BotOwner;
+	int BotRaidID;
+	void SetBotRaidID( int rId ) { BotRaidID = rId; }
+	int GetBotRaidID() { return BotRaidID; }
+	
+#endif //EQBOTS
+
 	inline bool IsTrackable() const { return(trackable); }
 	inline bool HasRune() const { return m_hasRune; }
 	inline bool HasSpellRune() const { return m_hasSpellRune; }
@@ -827,7 +872,18 @@ protected:
 	virtual bool AI_EngagedCastCheck() { return(false); }
 	virtual bool AI_PursueCastCheck() { return(false); }
 	virtual bool AI_IdleCastCheck() { return(false); }
+	
+#ifdef EQBOTS
 
+	//franck-add:EQoffline
+	virtual bool Bot_AI_IdleCastCheck() { return(false); }
+	virtual bool Bot_AI_EngagedCastCheck() { return(false); }
+	virtual bool Bot_AI_PursueCastCheck() { return(false); }
+	virtual bool Bot_Command_MezzTarget(Mob *target) { return(false); }
+	virtual bool Bot_Command_Cure(int curetype, int level) { return(false); }
+
+#endif //EQBOTS
+	
 	//used by mlog() for VC6
 	#ifdef NO_VARIADIC_MACROS
 	void mob_log(LogType type, const char *fmt, ...);

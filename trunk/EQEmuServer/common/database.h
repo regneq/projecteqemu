@@ -201,6 +201,37 @@ public:
 	int8	GetSkillCap(int8 skillid, int8 in_race, int8 in_class, int16 in_level);
 	int8	GetRaceSkill(int8 skillid, int8 in_race);
 	
+#ifdef EQBOTS
+
+	//franck-adds: EQoffline ------------------
+	// 1:
+	void	AddBot(int32 mobidtmp);
+	void	RemoveBot(int32 mobidtmp);
+	
+	// 2:
+	bool	DeleteBot(int32 mobid);
+	int		GetBotStatus(int32 mobidtmp);
+	void	SetBotLeader(int32 mobidtmp, int32 leaderid);
+	int		GetBotLeader(int32 mobidtmp);
+	int		GetBotOwner(int32 mobid);
+	void	SetBotOwner(int32 mobid, int32 ownerid);
+	void	UpdateBotOwner(int32 accountid, int32 ownerid);
+	void	CleanBotLeader(int32 leaderid);
+	void    CleanBotLeaderEntries(int32 mobidtmp);
+	int		CountBots(int32 leaderid);
+
+    // 3:
+    // a)  Get and Set an item in the bot inventory
+    bool	BotHasAnItemInSlot(int32 botid, int32 slot);			// return true if it has an item in the invent and false if not
+    int		GetBotItemBySlot(int32 botid, int32 slot);				// return the item ID in the given slot
+    void	SetBotItemInSlot(int32 botid, int32 slot, int32 itemid);// add an item the in the slot
+    void	RemoveBotItemBySlot(int32 botid, int32 slot);			// remove an item in the given slot
+
+	// c) How many items do the bots have
+	int		GetBotItemsNumber(int32 botid);							// return the number of items that the bots have
+
+#endif //EQBOTS
+	
 	bool	LoadPTimers(uint32 charid, PTimerList &into);
 	void	ClearPTimers(uint32 charid);
 	void	ClearMerchantTemp();

@@ -174,6 +174,39 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 	chancetohit += (145 * level_difference / 100);
 	chancetohit -= ((float)defender->GetAGI() * 0.015);
 
+#ifdef EQBOTS
+
+	if(attacker->IsBot()){
+		int skilldiff = defender->GetSkill(DEFENSE) - attacker->GetSkill(skillinuse);
+		bonus = 0;
+		if(pvpmode){
+			if(skilldiff > 10){
+				bonus = -(2 + ((defender->GetSkill(DEFENSE) - attacker->GetSkill(skillinuse) - 10) / 10));
+			}
+			else if(skilldiff <= 10 && skilldiff > 0){
+				bonus = -(1 + ((defender->GetSkill(DEFENSE) - attacker->GetSkill(skillinuse)) / 25));
+			}
+			else{
+				bonus = (attacker->GetSkill(skillinuse) - defender->GetSkill(DEFENSE)) / 25;
+			}
+		}
+		else{
+			if(skilldiff > 10){
+				bonus = -(4 + ((defender->GetSkill(DEFENSE) - attacker->GetSkill(skillinuse) - 10) * 1 / 5));
+			}
+			else if(skilldiff <= 10 && skilldiff > 0){
+				bonus = -(2 + ((defender->GetSkill(DEFENSE) - attacker->GetSkill(skillinuse)) / 10));
+			}
+			else{
+				bonus = 1 + (((attacker->GetSkill(skillinuse) - defender->GetSkill(DEFENSE)) / 25));
+			}
+		}
+		chancetohit += bonus;
+	}
+	else
+
+#endif //EQBOTS
+
 	if(attacker->IsClient()){
 		int skilldiff = defender->GetSkill(DEFENSE) - attacker->GetSkill(skillinuse);
 		bonus = 0;
@@ -258,6 +291,44 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 	AA_mod += GetAA(aaReflexiveMastery);
 	chancetohit -= chancetohit * AA_mod / 100;
 	
+
+#ifdef EQBOTS
+
+	// Bot AA's for the above 3
+
+	if(IsBot()) {
+		if(GetLevel() >= 65) {
+			AA_mod = 23;
+		}
+		else if(GetLevel() >= 64) {
+			AA_mod = 21;
+		}
+		else if(GetLevel() >= 63) {
+			AA_mod = 19;
+		}
+		else if(GetLevel() >= 62) {
+			AA_mod = 17;
+		}
+		else if(GetLevel() >= 61) {
+			AA_mod = 15;
+		}
+		else if(GetLevel() >= 59) {
+			AA_mod = 13;
+		}
+		else if(GetLevel() >= 57) {
+			AA_mod = 10;
+		}
+		else if(GetLevel() >= 56) {
+			AA_mod = 5;
+		}
+		else if(GetLevel() >= 55) {
+			AA_mod = 2;
+		}
+		chancetohit -= chancetohit * AA_mod / 100;
+	}
+
+#endif //EQBOTS
+
 	//add in our hit chance bonuses if we are using the right skill
 	//does the hit chance cap apply to spell bonuses from disciplines?
 	if(attacker->spellbonuses.HitChanceSkill == 255 || attacker->spellbonuses.HitChanceSkill == skillinuse) {
@@ -294,6 +365,19 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 
 	float tohit_roll = MakeRandomFloat(0, 100);
 	
+
+#ifdef EQBOTS
+
+    // EQoffline - Raid mantank has a special defensive disc reducing by 50% the chance to be hitted.
+    if(defender->IsBot() && defender->IsBotRaiding()) {
+        BotRaids *br = entity_list.GetBotRaidByMob(defender);
+        if(br && br->GetBotMainTank() && ((br->GetBotMainTank() == defender) || (br->GetBotSecondTank() == defender))) {
+            chancetohit = chancetohit/2;
+        }
+    }
+	
+#endif //EQBOTS
+
 	mlog(COMBAT__TOHIT, "Final hit chance: %.2f%%. Hit roll %.2f", chancetohit, tohit_roll);
 	
 	return(tohit_roll <= chancetohit);
@@ -459,9 +543,54 @@ void Mob::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 	totalMit += GetAA(aaInnateDefense);
 	totalMit += GetAA(aaDefensiveInstincts)*0.5;
 
+#ifdef EQBOTS
+
+	// Bot AA's for the above 3
+	if(IsBot()) {
+		if(GetLevel() >= 65) {
+			totalMit = 19;
+		}
+		else if(GetLevel() >= 64) {
+			totalMit = 17;
+		}
+		else if(GetLevel() >= 63) {
+			totalMit = 17;
+		}
+		else if(GetLevel() >= 62) {
+			totalMit = 16;
+		}
+		else if(GetLevel() >= 61) {
+			totalMit = 15;
+		}
+		else if(GetLevel() >= 59) {
+			totalMit = 12;
+		}
+		else if(GetLevel() >= 57) {
+			totalMit = 10;
+		}
+		else if(GetLevel() >= 56) {
+			totalMit = 5;
+		}
+		else if(GetLevel() >= 55) {
+			totalMit = 2;
+		}
+	}
+
+#endif //EQBOTS
+
 	if(RuleB(Combat, UseIntervalAC)){
 		//AC Mitigation
 		sint32 attackRating = 0;
+
+#ifdef EQBOTS
+
+		if(attacker->IsBot()) {
+			attackRating = attacker->GetATK() + ((attacker->GetSTR() + attacker->GetSkill(OFFENSE)) * 9 / 10);
+		}
+		else
+
+#endif //EQBOTS
+
 		if(attacker->IsClient())
 			attackRating = attacker->GetATK() + ((attacker->GetSTR() + attacker->GetSkill(OFFENSE)) * 9 / 10);
 		else
@@ -1150,10 +1279,278 @@ void Client::Damage(Mob* other, sint32 damage, int16 spell_id, SkillType attack_
 	}
 }
 
+#ifdef EQBOTS
+
+bool NPC::BotAttackMelee(Mob* other, int Hand, bool bRiposte)
+{
+	_ZP(NPC_BotAttackMelee);
+
+	if (!other) {
+		SetTarget(NULL);
+		LogFile->write(EQEMuLog::Error, "A null Mob object was passed to NPC::BotAttackMelee for evaluation!");
+		return false;
+	}
+	
+	if(!GetTarget())
+		SetTarget(other);
+	
+	mlog(COMBAT__ATTACKS, "Attacking %s with hand %d %s", other?other->GetName():"(NULL)", Hand, bRiposte?"(this is a riposte)":"");
+	
+	if (
+		   (IsCasting() && GetClass() != BARD)
+		|| other == NULL
+		|| (GetHP() < 0)
+		|| (!IsAttackAllowed(other))
+		) {
+			if (this->GetOwnerID())
+				entity_list.MessageClose(this, 1, 200, 10, "%s says, 'That is not a legal target master.'", this->GetCleanName());
+			if(other)
+				RemoveFromHateList(other);
+			mlog(COMBAT__ATTACKS, "I am not allowed to attack %s", other->GetName());
+			return false;
+	}
+	if(DivineAura()) {//cant attack while invulnerable
+		mlog(COMBAT__ATTACKS, "Attack canceled, Divine Aura is in effect.");
+		Message(10,"You can't attack while invulnerable!");
+		return false;
+	}
+
+	float calcheading=CalculateHeadingToTarget(target->GetX(), target->GetY());
+	if((calcheading)!=GetHeading()){
+		SetHeading(calcheading);
+		FaceTarget(target, true);
+	}
+	
+	ItemInst* weapon = NULL;
+	const Item_Struct* botweapon = NULL;
+	if((Hand == SLOT_PRIMARY) && equipment[MATERIAL_PRIMARY])
+	    botweapon = database.GetItem(equipment[MATERIAL_PRIMARY]);
+	if((Hand == SLOT_SECONDARY) && equipment[MATERIAL_SECONDARY])
+	    botweapon = database.GetItem(equipment[MATERIAL_SECONDARY]);
+	if(botweapon != NULL)
+		weapon = new ItemInst(botweapon);
+
+	if(weapon != NULL) {
+		if (!weapon->IsWeapon()) {
+			mlog(COMBAT__ATTACKS, "Attack canceled, Item %s (%d) is not a weapon.", weapon->GetItem()->Name, weapon->GetID());
+			return(false);
+		}
+		mlog(COMBAT__ATTACKS, "Attacking with weapon: %s (%d)", weapon->GetItem()->Name, weapon->GetID());
+	} else {
+		mlog(COMBAT__ATTACKS, "Attacking without a weapon.");
+	}
+	
+	// calculate attack_skill and skillinuse depending on hand and weapon
+	// also send Packet to near clients
+	SkillType skillinuse;
+	AttackAnimation(skillinuse, Hand, weapon);
+	mlog(COMBAT__ATTACKS, "Attacking with %s in slot %d using skill %d", weapon?weapon->GetItem()->Name:"Fist", Hand, skillinuse);
+	
+	/// Now figure out damage
+	int damage = 0;
+	int weapon_damage = GetWeaponDamage(other, weapon);
+	
+	//if weapon damage > 0 then we know we can hit the target with this weapon
+	//otherwise we cannot and we set the damage to -5 later on
+	if(weapon_damage > 0){
+		
+		//Berserker Berserk damage bonus
+		if((GetHPRatio() < 30) && (GetClass() == BERSERKER)){
+			int bonus = 3 + GetLevel()/10;		//unverified
+			weapon_damage = weapon_damage * (100+bonus) / 100;
+			mlog(COMBAT__DAMAGE, "Berserker damage bonus increases DMG to %d", weapon_damage);
+		}
+
+		//try a finishing blow.. if successful end the attack
+		if(TryFinishingBlow(other, skillinuse))
+			return (true);
+		
+		//damage formula needs some work
+		int min_hit = 1;
+
+		int max_hit = (2*weapon_damage) + (weapon_damage*(GetSTR()+GetSkill(OFFENSE))/225);
+
+		if(GetLevel() < 10 && max_hit > 20)
+			max_hit = 20;
+		else if(GetLevel() < 20 && max_hit > 40)
+			max_hit = 40;
+
+		//monks are supposed to be a step ahead of other classes in
+		//toe to toe combat, small bonuses for hitting key levels too
+		int bonus = 0;
+		if(GetClass() == MONK)
+			bonus += 20;
+		if(GetLevel() > 50)
+			bonus += 15;
+		if(GetLevel() >= 55)
+			bonus += 15;
+		if(GetLevel() >= 60)
+			bonus += 15;
+		if(GetLevel() >= 65)
+			bonus += 15;
+		
+		min_hit += (min_hit * bonus / 100);
+		max_hit += (max_hit * bonus / 100);
+
+		//if mainhand only, get the bonus damage from level
+		if(Hand == SLOT_PRIMARY) {
+			int damage_bonus = GetWeaponDamageBonus(weapon ? weapon->GetItem() : (const Item_Struct*)NULL);
+			min_hit += damage_bonus;
+			max_hit += damage_bonus;
+		}
+
+		min_hit = min_hit * (100 + itembonuses.MinDamageModifier + spellbonuses.MinDamageModifier) / 100;
+
+		if(max_hit < min_hit)
+			max_hit = min_hit;
+
+		if(RuleB(Combat, UseIntervalAC))
+			damage = max_hit;
+		else
+			damage = MakeRandomInt(min_hit, max_hit);
+
+		mlog(COMBAT__DAMAGE, "Damage calculated to %d (min %d, max %d, str %d, skill %d, DMG %d, lv %d)", damage, min_hit, max_hit
+		, GetSTR(), GetSkill(skillinuse), weapon_damage, GetLevel());
+
+		//check to see if we hit..
+		if(!other->CheckHitChance(this, skillinuse, Hand)) {
+			mlog(COMBAT__ATTACKS, "Attack missed. Damage set to 0.");
+			damage = 0;
+			other->AddToHateList(this, 0);
+		} else {	//we hit, try to avoid it
+			other->AvoidDamage(this, damage);
+			other->MeleeMitigation(this, damage, min_hit);
+			ApplyMeleeDamageBonus(skillinuse, damage);
+			TryCriticalHit(other, skillinuse, damage);
+			mlog(COMBAT__DAMAGE, "Final damage after all reductions: %d", damage);
+
+			if(damage != 0){
+				sint32 hate = max_hit;
+				mlog(COMBAT__HITS, "Generating hate %d towards %s", hate, GetName());
+				// now add done damage to the hate list
+				other->AddToHateList(this, hate);
+			}
+			else
+				other->AddToHateList(this, 0);
+		}
+
+		//riposte
+		if (damage == -3)  {
+			if (bRiposte) return false;
+			else DoRiposte(other);
+		}
+
+		//strikethrough..
+		if (damage < 0 && !bRiposte) {
+			if(MakeRandomInt(0, 100) < (itembonuses.StrikeThrough + spellbonuses.StrikeThrough)) {
+				Message_StringID(MT_StrikeThrough, 9078); // You strike through your opponents defenses!
+				BotAttackMelee(other, Hand, true); // Strikethrough only gives another attempted hit
+				return false;
+			}
+		}
+	}
+	else{
+		damage = -5;
+	}
+	
+	///////////////////////////////////////////////////////////
+	//////    Send Attack Damage
+	///////////////////////////////////////////////////////////
+	other->Damage(this, damage, SPELL_UNKNOWN, skillinuse);
+	if(damage > 0 && (spellbonuses.MeleeLifetap || itembonuses.MeleeLifetap)) {
+		mlog(COMBAT__DAMAGE, "Melee lifetap healing for %d damage.", damage);
+		//heal self for damage done..
+		HealDamage(damage);
+	}
+	
+	//break invis when you attack
+	if(invisible) {
+		mlog(COMBAT__ATTACKS, "Removing invisibility due to melee attack.");
+		BuffFadeByEffect(SE_Invisibility);
+		BuffFadeByEffect(SE_Invisibility2);
+		invisible = false;
+	}
+	if(invisible_undead) {
+		mlog(COMBAT__ATTACKS, "Removing invisibility vs. undead due to melee attack.");
+		BuffFadeByEffect(SE_InvisVsUndead);
+		BuffFadeByEffect(SE_InvisVsUndead2);
+		invisible_undead = false;
+	}
+	if(invisible_animals){
+		mlog(COMBAT__ATTACKS, "Removing invisibility vs. animals due to melee attack.");
+		BuffFadeByEffect(SE_InvisVsAnimals);
+		invisible_animals = false;
+	}
+
+	if(hidden || improved_hidden){
+		hidden = false;
+		improved_hidden = false;
+		EQApplicationPacket* outapp = new EQApplicationPacket(OP_SpawnAppearance, sizeof(SpawnAppearance_Struct));
+		SpawnAppearance_Struct* sa_out = (SpawnAppearance_Struct*)outapp->pBuffer;
+		sa_out->spawn_id = GetID();
+		sa_out->type = 0x03;
+		sa_out->parameter = 0;
+		entity_list.QueueClients(this, outapp, true);
+		safe_delete(outapp);
+	}
+	
+	////////////////////////////////////////////////////////////
+	////////  PROC CODE
+	////////  Kaiyodo - Check for proc on weapon based on DEX
+	///////////////////////////////////////////////////////////
+	if(other->GetHP() > -10 && !bRiposte && this) {
+		TryWeaponProc(weapon, other);
+	}
+	
+	if (damage > 0)
+            return true;
+	else
+            return false;
+}
+
+#endif //EQBOTS
+
 void Client::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill)
 {
 	if(dead)
 		return;	//cant die more than once...
+
+#ifdef EQBOTS
+
+	Mob *clientmob = CastToMob();
+	if(clientmob) {
+		int16 cmid = GetID();
+		if(clientmob->IsBotRaiding()) {
+			BotRaids* br = entity_list.GetBotRaidByMob(clientmob);
+			if(br) {
+				br->RemoveRaidBots();
+				br = NULL;
+			}
+		}
+		if(clientmob->IsGrouped()) {
+			Group *g = entity_list.GetGroupByMob(clientmob);
+			if(g) {
+				bool hasBots = false;
+				for(int i=5; i>=0; i--) {
+					if(g->members[i] && g->members[i]->IsBot()) {
+						hasBots = true;
+						g->members[i]->BotOwner = NULL;
+						g->members[i]->Kill();
+					}
+				}
+				if(hasBots) {
+					hasBots = false;
+					if(g->BotGroupCount() <= 1) {
+						g->DisbandGroup();
+					}
+				}
+			}
+		}
+		database.CleanBotLeader(cmid);
+	}
+
+#endif //EQBOTS
+
 	int exploss;
 
 	mlog(COMBAT__HITS, "Fatal blow dealt by %s with %d damage, spell %d, skill %d", other->GetName(), damage, spell, attack_skill);
@@ -1673,6 +2070,31 @@ void NPC::Damage(Mob* other, sint32 damage, int16 spell_id, SkillType attack_ski
 		//see if we are gunna start fleeing
 		if(!IsPet()) CheckFlee();
 	}
+
+#ifdef EQBOTS
+
+    // franck-add: when a bot takes some dmg, its leader must see it in the group HP bar
+	if(IsBot() && IsGrouped()) {
+		if(GetHP() > 0) {
+			Group *g = entity_list.GetGroupByMob(this);
+			if(g) {
+				EQApplicationPacket hp_app;
+				CreateHPPacket(&hp_app);
+				for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
+					if(g->members[i] && g->members[i]->IsClient()) {
+						g->members[i]->CastToClient()->QueuePacket(&hp_app);
+					}
+				}
+			}
+		}
+		else {
+			entity_list.RemoveNPC(GetID());
+			SetID(0);
+		}
+	}
+
+#endif //EQBOTS
+
 }
 
 void NPC::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill) {
@@ -1690,6 +2112,20 @@ void NPC::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill) 
 	SetPet(0);
 	Mob* killer = GetHateDamageTop(this);
 	
+#ifdef EQBOTS
+
+    //franck-add: EQoffline. If a bot kill a mob, the Killer is its leader.	
+	if(!IsBot()) {
+		if((killer != NULL) && killer->AmIaBot && killer->qglobal) {
+			killer = other;
+		}
+		if((killer != NULL) && killer->BotOwner) {
+			killer = killer->BotOwner;
+		}
+	}
+
+#endif //EQBOTS
+
 	entity_list.RemoveFromTargets(this);
 
 	if(p_depop == true)
@@ -1725,6 +2161,21 @@ void NPC::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill) 
 	
 	
 	Mob *give_exp = hate_list.GetDamageTop(this);
+
+#ifdef EQBOTS
+
+    //franck-add: EQoffline. Same there, if a bot kill a mob, the exp goes to its leader.
+	if(!IsBot()) {
+		if((give_exp != NULL) && give_exp->AmIaBot && give_exp->qglobal) {
+			give_exp = other;
+		}
+		if((give_exp != NULL) && give_exp->BotOwner) {
+			give_exp = give_exp->BotOwner;
+		}
+	}
+
+#endif //EQBOTS
+
 	if(give_exp == NULL)
 		give_exp = killer;
 	if(give_exp && give_exp->GetOwner() != 0)
@@ -1802,6 +2253,16 @@ void NPC::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill) 
 		Corpse* corpse = new Corpse(this, &itemlist, GetNPCTypeID(), &NPCTypedata,level>54?RuleI(NPC,MajorNPCCorpseDecayTimeMS):RuleI(NPC,MinorNPCCorpseDecayTimeMS));
 		entity_list.LimitRemoveNPC(this);
 		entity_list.AddCorpse(corpse, this->GetID());
+
+#ifdef EQBOTS
+
+		//franck-add: Bot's corpses always disapear..
+		if(IsBot()) {
+			corpse->Depop();
+		}
+
+#endif //EQBOTS
+
 		this->SetID(0);
 		if(killer->GetOwner() != 0 && killer->GetOwner()->IsClient())
 			killer = killer->GetOwner();
@@ -1867,8 +2328,101 @@ void NPC::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill) 
 	p_depop = true;
 	if(other && other->GetTarget() == this) //we can kill things without having them targeted
 		other->SetTarget(NULL); //via AE effects and such..
-}
 
+#ifdef EQBOTS
+
+	// handle group removal for dead bots
+	if(IsBot()) {
+		Group *g = entity_list.GetGroupByMob(this);
+        if(g) {
+			for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
+                if(g->members[i]) {
+                    if(g->members[i] == this) {
+						// If the leader dies, make the next bot the leader
+						// and reset all bots followid
+                        if(g->IsLeader(g->members[i])) {
+                            if(g->members[i+1]) {
+                                g->SetLeader(g->members[i+1]);
+                                g->members[i+1]->SetFollowID(g->members[i]->GetFollowID());
+                                for(int j=0; j<MAX_GROUP_MEMBERS; j++) {
+                                    if(g->members[j] && (g->members[j] != g->members[i+1])) {
+                                        g->members[j]->SetFollowID(g->members[i+1]->GetID());
+                                    }
+                                }
+                            }
+                        }
+						// Delete from database
+						database.CleanBotLeaderEntries(GetID());
+
+						// delete from group data
+						g->membername[i][0] = '\0';
+						memset(g->membername[i], 0, 64);
+						g->members[i]->BotOwner = NULL;
+						g->members[i] = NULL;
+
+						// if group members exist below this one, move
+						// them all up one slot in the group list
+						int j = i+1;
+						for(; j<MAX_GROUP_MEMBERS; j++) {
+							if(g->members[j]) {
+								g->members[j-1] = g->members[j];
+								strcpy(g->membername[j-1], g->members[j]->GetName());
+								g->membername[j][0] = '\0';
+								memset(g->membername[j], 0, 64);
+								g->members[j]->BotOwner = NULL;
+								g->members[j] = NULL;
+							}
+						}
+
+						// update the client group
+						EQApplicationPacket* outapp = new EQApplicationPacket(OP_GroupUpdate, sizeof(GroupJoin_Struct));
+						GroupJoin_Struct* gu = (GroupJoin_Struct*)outapp->pBuffer;
+						gu->action = groupActLeave;
+						strcpy(gu->membername, GetName());
+						if(g) {
+							for(int k=0; k<MAX_GROUP_MEMBERS; k++) {
+								if(g->members[k] && g->members[k]->IsClient())
+									g->members[k]->CastToClient()->QueuePacket(outapp);
+							}
+						}
+						safe_delete(outapp);
+						Say("oof");
+
+						// now that's done, lets see if all we have left is the client
+						// and we can clean up the clients raid group and group
+						if(IsBotRaiding()) {
+							BotRaids* br = entity_list.GetBotRaidByMob(this);
+							if(br) {
+								if(this == br->botmaintank) {
+									br->botmaintank = NULL;
+								}
+								if(this == br->botsecondtank) {
+									br->botsecondtank = NULL;
+								}
+							}
+							if(g->BotGroupCount() == 0) {
+								int32 gid = g->GetID();
+								if(br) {
+									br->RemoveEmptyBotGroup();
+								}
+								entity_list.RemoveGroup(gid);
+							}
+							if(br && (br->RaidBotGroupsCount() == 1)) {
+								br->RemoveClientGroup(br->GetRaidBotLeader());
+							}
+							if(br && (br->RaidBotGroupsCount() == 0)) {
+								br->DisbandBotRaid();
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+#endif //EQBOTS
+
+}
 
 void Mob::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHelp, bool bFrenzy, bool iBuffTic) {
     assert(other != NULL);
@@ -1906,6 +2460,21 @@ void Mob::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHel
 	// first add self
 	hate_list.Add(other, hate, damage, bFrenzy, !iBuffTic);
 	
+
+#ifdef EQBOTS
+
+	// if other is a bot, add the bots client to the hate list
+	if(other->IsBot()) {
+		if(other->BotOwner && other->BotOwner->CastToClient()->GetFeigned()) {
+			AddFeignMemory(other->BotOwner->CastToClient());
+		}
+		else {
+			hate_list.Add(other->BotOwner, 0, 0, false, true);
+		}
+	}
+
+#endif //EQBOTS
+
 	// then add pet owner if there's one
 	if (owner) { // Other is a pet, add him and it
 		// EverHood 6/12/06
@@ -2443,6 +3012,27 @@ int Mob::GetMonkHandToHandDamage(void)
         14,14,15,15,15,15 };
 	
 	// Have a look to see if we have epic fists on
+
+#ifdef EQBOTS
+
+	uint32 botWeaponId = INVALID_ID;
+	if(IsBot()) {
+		botWeaponId = CastToNPC()->GetEquipment(MATERIAL_HANDS);
+		if(botWeaponId == 10652) { //Monk Epic ID
+			return 9;
+		}
+		else
+		{
+			int Level = GetLevel();
+			if(Level > 65)
+				return 19;
+			else
+				return damage[Level];
+		}
+	}
+
+#endif //EQBOTS
+
 	if (IsClient() && CastToClient()->GetItemIDAt(12) == 10652)
 		return(9);
 	else
@@ -2602,6 +3192,83 @@ bool Client::CheckDoubleAttack(bool AAadd, bool Triple) {
 	}
 	return false;
 }
+
+#ifdef EQBOTS
+
+bool Mob::CheckBotDoubleAttack(bool Triple) {
+	int skill = 0;
+	if(Triple)
+	{
+		if(!GetSkill(DOUBLE_ATTACK))
+			return(false);
+		
+		if((GetClass() == MONK) || (GetClass() == WARRIOR) || (GetClass() == RANGER) || (GetClass() == BERSERKER))
+		{
+			skill = GetSkill(DOUBLE_ATTACK)/2;
+		} else {
+			return(false);
+		}
+	}
+	else
+	{
+		int aaskill = 0;
+		uint8 aalevel = GetLevel();
+		if((GetClass() == BEASTLORD)||(GetClass() == BARD)) { // AA's Beastial Frenzy, Harmonious Attacks
+			if(aalevel >= 61) {
+				aaskill += 25;
+			}
+			if(aalevel >= 62) {
+				aaskill += 50;
+			}
+			if(aalevel >= 63) {
+				aaskill += 75;
+			}
+			if(aalevel >= 64) {
+				aaskill += 100;
+			}
+			if(aalevel >= 65) {
+				aaskill += 125;
+			}
+		}
+		if((GetClass() == PALADIN)||(GetClass() == SHADOWKNIGHT)) { // AA Knights Advantage
+			if(aalevel >= 61) {
+				aaskill += 25;
+			}
+			if(aalevel >= 63) {
+				aaskill += 50;
+			}
+			if(aalevel >= 65) {
+				aaskill += 75;
+			}
+		}
+		if((GetClass() == ROGUE)||(GetClass() == WARRIOR)||(GetClass() == RANGER)||(GetClass() == MONK)) { // AA Ferocity and Relentless Assault
+			if(aalevel >= 61) {
+				aaskill += 25;
+			}
+			if(aalevel >= 63) {
+				aaskill += 50;
+			}
+			if(aalevel >= 65) {
+				aaskill += 75;
+			}
+			if(aalevel >= 70) {
+				aaskill += 150;
+			}
+		}
+
+		skill = GetSkill(DOUBLE_ATTACK) + aaskill;
+		
+		//discipline effects
+		skill += (spellbonuses.DoubleAttackChance + itembonuses.DoubleAttackChance) * 3;
+	}
+	if(MakeRandomInt(0, 299) < skill)
+	{
+		return true;
+	}
+	return false;
+}
+
+#endif //EQBOTS
 
 void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, const SkillType skill_used, bool &avoidable, const sint8 buffslot, const bool iBuffTic) {
 	
@@ -2953,6 +3620,31 @@ float Mob::GetProcChances(float &ProcBonus, float &ProcChance) {
 				break;
 		}
 	}
+
+#ifdef EQBOTS
+
+	// Bot AA WeaponAffinity
+	else if(IsBot()) {
+		if(GetLevel() >= 55) {
+			AABonus += 5;
+		}
+		if(GetLevel() >= 56) {
+			AABonus += 5;
+		}
+		if(GetLevel() >= 57) {
+			AABonus += 5;
+		}
+		if(GetLevel() >= 58) {
+			AABonus += 5;
+		}
+		if(GetLevel() >= 59) {
+			AABonus += 5;
+		}
+	}
+
+#endif //EQBOTS
+
+
 	ProcBonus += float(itembonuses.ProcChance + spellbonuses.ProcChance) / 1000.0f;
 	
 	ProcChance = 0.05f + float(mydex) / 9000.0f;
@@ -3085,6 +3777,14 @@ void Mob::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 	if(IsClient())
 		critChance += RuleR(Combat, ClientBaseCritChance);	
 
+#ifdef EQBOTS
+
+	else if(IsBot()) {
+		critChance += RuleR(Combat, ClientBaseCritChance);	
+	}
+
+#endif //EQBOTS
+
 	uint16 critMod = 200; 
 	if((GetClass() == WARRIOR || GetClass() == BERSERKER) && GetLevel() >= 12 && IsClient()) 
 	{
@@ -3102,6 +3802,40 @@ void Mob::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 	if(skill == ARCHERY && GetClass() == RANGER && GetSkill(ARCHERY) >= 65){
 		critChance += 0.06f;
 	}
+
+#ifdef EQBOTS
+
+	if(IsBot() && (GetHPRatio() < 30) && (GetClass() == BERSERKER)) {
+		critChance += RuleR(Combat, BerserkBaseCritChance);
+		critMod = 400;
+	}
+	else if(IsBot() && (GetHPRatio() < 30) && (GetClass() == WARRIOR)) {
+		critChance += RuleR(Combat, WarBerBaseCritChance);
+	}
+
+	// Bot AA's for CombatFury and FuryoftheAges
+	if(IsBot()) {
+		if(GetLevel() >= 64) {
+			critChance += 0.12f;
+		}
+		else if(GetLevel() >= 63) {
+			critChance += 0.10f;
+		}
+		else if(GetLevel() >= 62) {
+			critChance += 0.08f;
+		}
+		else if(GetLevel() >= 57) {
+			critChance += 0.07f;
+		}
+		else if(GetLevel() >= 56) {
+			critChance += 0.04f;
+		}
+		else if(GetLevel() >= 55) {
+			critChance += 0.02f;
+		}
+	}
+  
+#endif //EQBOTS
 
 	switch(GetAA(aaCombatFury))
 	{
@@ -3153,6 +3887,27 @@ void Mob::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 		}
 	}
  
+#ifdef EQBOTS
+
+	// Paladin Bot Slay Undead AA
+	if(IsBot()) {
+		if(GetClass() == PALADIN) {
+			if(defender && defender->GetBodyType() == BT_Undead || defender->GetBodyType() == BT_SummonedUndead || defender->GetBodyType() == BT_Vampire) {
+				if(GetLevel() >= 61) {
+					critMod += 100;
+				}
+				else if(GetLevel() >= 60) {
+					critMod += 66;
+				}
+				else if(GetLevel() >= 59) {
+					critMod += 33;
+				}
+			}
+		}
+	}
+
+#endif //EQBOTS
+
 	if(critChance > 0){
 		if(MakeRandomFloat(0, 1) <= critChance)
 		{
@@ -3177,10 +3932,23 @@ void Mob::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 			{
 				entity_list.MessageClose(this, false, 200, MT_CritMelee, "%s lands a crippling blow!(%d)", GetCleanName(), damage);
 			}
-			else
-			{
+
+#ifdef EQBOTS
+
+			//EQoffline
+			else if(IsBot() && ((GetClass() == WARRIOR) || (GetClass() == BERSERKER)) && (GetHPRatio() < 30)) {
+				entity_list.MessageClose(this, false, 200, MT_CritMelee, "%s lands a crippling blow!(%d)", GetCleanName(), damage);
+			}
+			else if(IsBot()) {
 				entity_list.MessageClose(this, false, 200, MT_CritMelee, "%s scores a critical hit!(%d)", GetCleanName(), damage);
 			}
+
+#endif //EQBOTS
+
+            else
+            {
+                entity_list.MessageClose(this, false, 200, MT_CritMelee, "%s scores a critical hit!(%d)", GetCleanName(), damage);
+            }
 		}
 	}
 }
@@ -3188,6 +3956,32 @@ void Mob::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 bool Mob::TryFinishingBlow(Mob *defender, SkillType skillinuse)
 {
 	int8 aa_item = GetAA(aaFinishingBlow) + GetAA(aaCoupdeGrace) + GetAA(aaDeathblow);
+
+#ifdef EQBOTS
+
+	if(IsBot()) {
+		if(GetLevel() >= 55) {
+			aa_item += 1;	// Finishing Blow AA 1
+		}
+		if(GetLevel() >= 56) {
+			aa_item += 1;	// Finishing Blow AA 2
+		}
+		if(GetLevel() >= 57) {
+			aa_item += 1;	// Finishing Blow AA 3
+		}
+		if(GetLevel() >= 62) {
+			aa_item += 1;	// Coup de Grace AA 1
+		}
+		if(GetLevel() >= 63) {
+			aa_item += 1;	// Coup de Grace AA 2
+		}
+		if(GetLevel() >= 64) {
+			aa_item += 1;	// Coup de Grace AA 3
+		}
+	}
+
+#endif //EQBOTS
+
 	if(aa_item && !defender->IsClient() && defender->GetHPRatio() < 10){
 		int chance = 0;
 		int levelreq = 0;
@@ -3250,6 +4044,15 @@ bool Mob::TryFinishingBlow(Mob *defender, SkillType skillinuse)
 
 void Mob::DoRiposte(Mob *defender){
 		mlog(COMBAT__ATTACKS, "Preforming a riposte");
+
+#ifdef EQBOTS
+
+		if(defender->IsBot())
+			defender->BotAttackMelee(this, 13, true);
+		else
+
+#endif //EQBOTS
+
 	    defender->Attack(this, 13, true);
 	    
 		//double riposte
@@ -3268,8 +4071,43 @@ void Mob::DoRiposte(Mob *defender){
 
 		DoubleRipChance += 10*GetAA(aaFlashofSteel);
 
+#ifdef EQBOTS
+
+		// Bot AA for DoubleRiposte and FlashofSteel
+		if(defender->IsBot()) {
+			if(defender->GetLevel() >= 64) {
+				DoubleRipChance = 80;
+			}
+			else if(defender->GetLevel() >= 63) {
+				DoubleRipChance = 70;
+			}
+			else if(defender->GetLevel() >= 62) {
+				DoubleRipChance = 60;
+			}
+			else if(defender->GetLevel() >= 61) {
+				DoubleRipChance = 50;
+			}
+			else if(defender->GetLevel() >= 60) {
+				DoubleRipChance = 35;
+			}
+			else if(defender->GetLevel() >= 59) {
+				DoubleRipChance = 15;
+			}
+		}
+
+#endif //EQBOTS
+
 		if(DoubleRipChance >= MakeRandomInt(0, 100)) {
 			mlog(COMBAT__ATTACKS, "Preforming a double riposed (%d percent chance)", DoubleRipChance);
+
+#ifdef EQBOTS
+
+		if(defender->IsBot())
+			defender->BotAttackMelee(this, 13, true);
+		else
+
+#endif //EQBOTS
+
 			defender->Attack(this, 13, true);
 		}
 
@@ -3286,9 +4124,57 @@ void Mob::DoRiposte(Mob *defender){
 				ReturnKickChance = 50;
 				break;
 			}
+
+#ifdef EQBOTS
+
+			// Bot AA ReturnKick
+			if(defender->IsBot() && (defender->GetClass() == MONK)) {
+				if(defender->GetLevel() >= 61) {
+					ReturnKickChance = 50;
+				}
+				else if(defender->GetLevel() >= 60) {
+					ReturnKickChance = 35;
+				}
+				else if(defender->GetLevel() >= 59) {
+					ReturnKickChance = 25;
+				}
+			}
+
+#endif //EQBOTS
+
 			if(ReturnKickChance >= MakeRandomInt(0, 100)) {
 				mlog(COMBAT__ATTACKS, "Preforming a return kick (%d percent chance)", ReturnKickChance);
 				defender->MonkSpecialAttack(this, FLYING_KICK);
+
+#ifdef EQBOTS
+
+				if(defender->IsBot()) { // Technique Of Master Wu AA
+					int special = 0;
+					if(defender->GetLevel() >= 65) {
+						special = 100;
+					}
+					else if(defender->GetLevel() >= 64) {
+						special = 80;
+					}
+					else if(defender->GetLevel() >= 63) {
+						special = 60;
+					}
+					else if(defender->GetLevel() >= 62) {
+						special = 40;
+					}
+					else if(defender->GetLevel() >= 61) {
+						special = 20;
+					}
+					if(special == 100 || special > MakeRandomInt(0,100)) {
+						defender->MonkSpecialAttack(this, FLYING_KICK);
+						if(20 > MakeRandomInt(0,100)) {
+							defender->MonkSpecialAttack(this, FLYING_KICK);
+						}
+					}
+				}
+
+#endif //EQBOTS
+
 			}
 		}		
 }

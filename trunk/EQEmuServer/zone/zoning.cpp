@@ -33,6 +33,43 @@ extern Zone* zone;
 
 
 void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
+
+#ifdef EQBOTS
+
+	Mob *clientmob = CastToMob();
+	if(clientmob) {
+		int16 cmid = GetID();
+		if(clientmob->IsBotRaiding()) {
+			BotRaids* br = entity_list.GetBotRaidByMob(clientmob);
+			if(br) {
+				br->RemoveRaidBots();
+				br = NULL;
+			}
+		}
+		if(clientmob->IsGrouped()) {
+			Group *g = entity_list.GetGroupByMob(clientmob);
+			if(g) {
+				bool hasBots = false;
+				for(int i=5; i>=0; i--) {
+					if(g->members[i] && g->members[i]->IsBot()) {
+						hasBots = true;
+						g->members[i]->BotOwner = NULL;
+						g->members[i]->Kill();
+					}
+				}
+				if(hasBots) {
+					hasBots = false;
+					if(g->BotGroupCount() <= 1) {
+						g->DisbandGroup();
+					}
+				}
+			}
+		}
+		database.CleanBotLeader(cmid);
+	}
+
+#endif //EQBOTS
+
 	zoning = true;
 	if (app->size != sizeof(ZoneChange_Struct)) {
 		LogFile->write(EQEMuLog::Debug, "Wrong size: OP_ZoneChange, size=%d, expected %d", app->size, sizeof(ZoneChange_Struct));
@@ -419,6 +456,35 @@ void Client::ProcessMovePC(int32 zoneID, float x, float y, float z, float headin
 			GMMove(x, y, z);
 			return;
 		}
+
+#ifdef EQBOTS
+
+		if(IsBotRaiding()) {
+			BotRaids *brsummon = entity_list.GetBotRaidByMob(CastToMob());
+			if(brsummon) {
+				brsummon->SummonRaidBots(CastToMob(), true);
+			}
+		}
+		else if(IsGrouped())
+        {
+			Group *g = GetGroup();
+			if(g) {
+				for(int i=0; i<MAX_GROUP_MEMBERS; i++)
+				{
+					if(g->members[i] && g->members[i]->IsBot())
+					{
+						g->members[i]->WhipeHateList();
+						g->members[i]->GMMove(GetX(), GetY(), GetZ());
+						if(g->members[i]->HasPet()) {
+							g->members[i]->GetPet()->WhipeHateList();
+							g->members[i]->GetPet()->GMMove(GetX(), GetY(), GetZ());
+						}
+					}
+				}
+			}
+		}
+
+#endif //EQBOTS
 
 		if(GetPetID() != 0) {
 			//if they have a pet and they are staying in zone, move with them

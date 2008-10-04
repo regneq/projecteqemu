@@ -64,6 +64,18 @@ public:
 	void			AI_DoMovement();
 	bool			AI_AddNPCSpells(int32 iDBSpellsID);
 	virtual bool	AI_EngagedCastCheck();
+
+#ifdef EQBOTS
+
+	//franck-adds: EQoffline
+	virtual bool	Bot_AI_EngagedCastCheck();
+	virtual bool	Bot_AI_IdleCastCheck();
+	virtual bool	Bot_Command_MezzTarget(Mob *target);
+	virtual bool	Bot_Command_Cure(int curetype, int level);
+	virtual bool	Bot_AI_PursueCastCheck();
+
+#endif //EQBOTS
+
 	virtual bool	AI_PursueCastCheck();
 	virtual bool	AI_IdleCastCheck();
 	virtual void	AI_Event_SpellCastFinished(bool iCastSucceeded, int8 slot);
@@ -83,6 +95,15 @@ public:
 
 	// neotokyo: added frenzy
 	bool	Attack(Mob* other, int Hand = 13, bool = false);
+
+#ifdef EQBOTS
+
+	// EQoffline: special BotAttack function
+	bool	BotAttackMelee(Mob* other, int Hand = 13, bool = false);
+	void	BotRemoveEquipItem(int slot) { equipment[slot] = 0; }
+
+#endif //EQBOTS
+
 	void	Damage(Mob* other, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable = true, sint8 buffslot = -1, bool iBuffTic = false);
 	void	Death(Mob* other, sint32 damage, int16 spell_id, SkillType attack_skill);
 	bool	DatabaseCastAccepted(int spell_id);
@@ -273,6 +294,19 @@ protected:
 	AISpells_Struct	AIspells[MAX_AISPELLS]; // expected to be pre-sorted, best at low index
 	void AddSpellToNPCList(AISpells_Struct* AIspells, sint16 iPriority, sint16 iSpellID, uint16 iType, sint16 iManaCost, sint32 iRecastDelay);
 	bool AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes);
+
+#ifdef EQBOTS
+
+	//franck-add: EQoffline
+public:
+	int16 BotGetSpells(int spellslot) { return AIspells[spellslot].spellid; }
+    int16 BotGetSpellType(int spellslot) { return AIspells[spellslot].type; }
+    int16 BotGetSpellPriority(int spellslot) { return AIspells[spellslot].priority; }
+protected:
+	bool Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes);
+
+#endif //EQBOTS
+
 	void AIDoSpellCast(int8 i, Mob* tar, sint32 mana_cost, int32* oDontDoAgainBefore = 0);
 	
 	

@@ -323,6 +323,22 @@ Mob::Mob(const char*   in_name,
 	TempPets(false);
 	SetHasRune(false);
 	SetHasSpellRune(false);
+
+#ifdef EQBOTS
+
+	// eqoffline
+	if(database.GetBotStatus(GetNPCTypeID()) == 1) {
+		AmIaBot = true;
+	}
+	else {
+		AmIaBot = false;
+	}
+	cast_last_time = false;
+	BotOwner = NULL;
+	BotRaidID = 0;
+		
+#endif //EQBOTS
+
 }
 
 Mob::~Mob()
@@ -1861,7 +1877,24 @@ bool Mob::HateSummon() {
 			target->CastToClient()->MovePC(zone->GetZoneID(), x_pos, y_pos, z_pos, target->GetHeading(), 0, SummonPC);
 		}
 		else
+
+#ifdef EQBOTS
+
+             {
+                 if(target->IsBot()) {
+                     target->Warp(x_pos, y_pos, z_pos);
+                 }
+                 else {
+                     GetHateTop()->GMMove(x_pos, y_pos, z_pos, target->GetHeading());
+                 }
+        }
+
+#else //EQBOTS
+
 			GetHateTop()->GMMove(x_pos, y_pos, z_pos, target->GetHeading());
+
+#endif //EQBOTS
+
         return true;
 	}
 	return false;
@@ -2271,8 +2304,1123 @@ int Mob::GetHaste() {
 	h += spellbonuses.hastetype3;
 	h += ExtraHaste;	//GM granted haste.
 
+#ifdef EQBOTS
+
+    if(IsBot() && (GetClass() == ROGUE || GetClass() == MONK )) // jadams: EQOffline, Not commented
+        h += 15;
+
+#endif //EQBOTS
+
 	return(h); 
 }
+
+#ifdef EQBOTS
+
+// franck-add
+void Mob::MakeBot(Mob *m) { // fonction à revoir selon la méthode d'ajout des bots à la base (interface ?)
+    if(database.GetBotStatus( m->GetNPCTypeID() == 1 )) {
+		return;
+    }	
+	else {
+		database.AddBot( m->GetNPCTypeID());
+		database.SetBotLeader(m->GetNPCTypeID(), this->GetID());
+	}
+}
+
+int Mob::GetBotLeader() {
+	if((GetMaxHP()<0) || IsClient() || !IsBot())
+		return 0;
+	else {
+		return database.GetBotLeader(GetID());
+	}
+}
+
+void Mob::BotMeditate(bool isSitting) {
+
+	if(isSitting) {
+		// If the bot is a caster has less than 95% mana while its not engaged, he needs to sit to meditate
+		if(GetManaRatio() < 95.0f) {
+			if(mana_timer.Check(true)) {
+				SetAppearance(eaSitting, false);
+				if(!((int)GetManaRatio() % 12)) {
+					Say("Medding for Mana. I have %3.1f%% of %d mana. It is: %d", GetManaRatio(), GetMaxMana(), GetMana());
+				}
+				int32 level = GetLevel();
+				int32 regen = (((GetSkill(MEDITATE)/10)+(level-(level/4)))/4)+4;
+				spellbonuses.ManaRegen = 0;
+				for(int j=0; j<BUFF_COUNT; j++) {
+					if(buffs[j].spellid != 65535) {
+						const SPDat_Spell_Struct &spell = spells[buffs[j].spellid];
+						for(int i=0; i<EFFECT_COUNT; i++) {
+							if(IsBlankSpellEffect(buffs[j].spellid, i))
+								continue;
+							int effect = spell.effectid[i];
+							switch(effect) {
+								case SE_CurrentMana:
+									spellbonuses.ManaRegen += CalcSpellEffectValue(buffs[j].spellid, i, buffs[j].casterlevel);
+									break;
+							}
+						}
+					}
+				}
+				regen += (mana_regen + spellbonuses.ManaRegen + itembonuses.ManaRegen + (level/5));
+				if(level >= 55) {
+					regen += 1;//GetAA(aaMentalClarity);
+				}
+				if(level >= 56) {
+					regen += 1;//GetAA(aaMentalClarity);
+				}
+				if(level >= 57) {
+					regen += 1;//GetAA(aaMentalClarity);
+				}
+				if(level >= 71) {
+					regen += 1;//GetAA(aaBodyAndMindRejuvenation);
+				}
+				if(level >= 72) {
+					regen += 1;//GetAA(aaBodyAndMindRejuvenation);
+				}
+				if(level >= 73) {
+					regen += 1;//GetAA(aaBodyAndMindRejuvenation);
+				}
+				if(level >= 74) {
+					regen += 1;//GetAA(aaBodyAndMindRejuvenation);
+				}
+				if(level >= 75) {
+					regen += 1;//GetAA(aaBodyAndMindRejuvenation);
+				}
+				regen = ((regen * 150) / 100) / 2;
+				SetMana(GetMana() + regen);
+			}
+		}
+		else {
+			SetAppearance(eaStanding, false);
+		}
+	}
+	else {
+		// Let's check our mana in fights..
+		// if the mana is less than 20%, the bot will sit and meditate with a +1mana regen per bot process.
+		if(GetManaRatio() < 19.9f)
+		{
+			if(mana_timer.Check(true)) {
+				SetAppearance(eaSitting, false);
+				if(!((int)GetManaRatio() % 12)) {
+					Say("Medding for Mana. I have %3.1f%% of %d mana. It is: %d", GetManaRatio(), GetMaxMana(), GetMana());
+				}
+				int32 level = GetLevel();
+				spellbonuses.ManaRegen = 0;
+				for(int j=0; j<BUFF_COUNT; j++) {
+					if(buffs[j].spellid != 65535) {
+						const SPDat_Spell_Struct &spell = spells[buffs[j].spellid];
+						for(int i=0; i<EFFECT_COUNT; i++) {
+							if(IsBlankSpellEffect(buffs[j].spellid, i))
+								continue;
+							int effect = spell.effectid[i];
+							switch(effect) {
+								case SE_CurrentMana:
+									spellbonuses.ManaRegen += CalcSpellEffectValue(buffs[j].spellid, i, buffs[j].casterlevel);
+									break;
+							}
+						}
+					}
+				}
+				int32 regen = (1 + spellbonuses.ManaRegen + itembonuses.ManaRegen + (level/5));
+				if(level >= 55) {
+					regen += 1;//GetAA(aaMentalClarity);
+				}
+				if(level >= 56) {
+					regen += 1;//GetAA(aaMentalClarity);
+				}
+				if(level >= 57) {
+					regen += 1;//GetAA(aaMentalClarity);
+				}
+				if(level >= 71) {
+					regen += 1;//GetAA(aaBodyAndMindRejuvenation);
+				}
+				if(level >= 72) {
+					regen += 1;//GetAA(aaBodyAndMindRejuvenation);
+				}
+				if(level >= 73) {
+					regen += 1;//GetAA(aaBodyAndMindRejuvenation);
+				}
+				if(level >= 74) {
+					regen += 1;//GetAA(aaBodyAndMindRejuvenation);
+				}
+				if(level >= 75) {
+					regen += 1;//GetAA(aaBodyAndMindRejuvenation);
+				}
+				regen = ((regen * 150) / 100) / 2;
+				SetMana(GetMana() + regen);
+			}
+		}
+		SetAppearance(eaStanding, false);
+	}
+}
+
+void Mob::CalcBotStats() {
+	this->Say("I'm updating...");
+	// base stats
+	int brace = GetBaseRace(); // Angelox
+	int bclass = GetClass();
+	int blevel = GetLevel();
+	
+	// Check Race/Class combos
+	bool isComboAllowed = false;
+	switch(brace) {
+		case 1: // Human
+			switch(bclass) {
+				case 1: // Warrior
+				case 2: // Cleric
+				case 3: // Paladin
+				case 4: // Ranger
+				case 5: // Shadowknight
+				case 6: // Druid
+				case 7: // Monk
+				case 8: // Bard
+				case 9: // Rogue
+				case 11: // Necromancer
+				case 12: // Wizard
+				case 13: // Magician
+				case 14: // Enchanter
+					isComboAllowed = true;
+					break;
+			}
+			break;
+		case 2: // Barbarian
+			switch(bclass) {
+				case 1: // Warrior
+				case 9: // Rogue
+				case 10: // Shaman
+				case 15: // Beastlord
+				case 16: // Berserker
+					isComboAllowed = true;
+					break;
+			}
+			break;
+		case 3: // Erudite
+			switch(bclass) {
+				case 2: // Cleric
+				case 3: // Paladin
+				case 5: // Shadowknight
+				case 11: // Necromancer
+				case 12: // Wizard
+				case 13: // Magician
+				case 14: // Enchanter
+					isComboAllowed = true;
+					break;
+			}
+			break;
+		case 4: // Wood Elf
+			switch(bclass) {
+				case 1: // Warrior
+				case 4: // Ranger
+				case 6: // Druid
+				case 8: // Bard
+				case 9: // Rogue
+					isComboAllowed = true;
+					break;
+			}
+			break;
+		case 5: // High Elf
+			switch(bclass) {
+				case 2: // Cleric
+				case 3: // Paladin
+				case 12: // Wizard
+				case 13: // Magician
+				case 14: // Enchanter
+					isComboAllowed = true;
+					break;
+			}
+			break;
+		case 6: // Dark Elf
+			switch(bclass) {
+				case 1: // Warrior
+				case 2: // Cleric
+				case 5: // Shadowknight
+				case 9: // Rogue
+				case 11: // Necromancer
+				case 12: // Wizard
+				case 13: // Magician
+				case 14: // Enchanter
+					isComboAllowed = true;
+					break;
+			}
+			break;
+		case 7: // Half Elf
+			switch(bclass) {
+				case 1: // Warrior
+				case 3: // Paladin
+				case 4: // Ranger
+				case 6: // Druid
+				case 8: // Bard
+				case 9: // Rogue
+					isComboAllowed = true;
+					break;
+			}
+			break;
+		case 8: // Dwarf
+			switch(bclass) {
+				case 1: // Warrior
+				case 2: // Cleric
+				case 3: // Paladin
+				case 9: // Rogue
+				case 16: // Berserker
+					isComboAllowed = true;
+					break;
+			}
+			break;
+		case 9: // Troll
+			switch(bclass) {
+				case 1: // Warrior
+				case 5: // Shadowknight
+				case 10: // Shaman
+				case 15: // Beastlord
+				case 16: // Berserker
+					isComboAllowed = true;
+					break;
+			}
+			break;
+		case 10: // Ogre
+			switch(bclass) {
+				case 1: // Warrior
+				case 5: // Shadowknight
+				case 10: // Shaman
+				case 15: // Beastlord
+				case 16: // Berserker
+					isComboAllowed = true;
+					break;
+			}
+			break;
+		case 11: // Halfling
+			switch(bclass) {
+				case 1: // Warrior
+				case 2: // Cleric
+				case 3: // Paladin
+				case 4: // Ranger
+				case 6: // Druid
+				case 9: // Rogue
+					isComboAllowed = true;
+					break;
+			}
+			break;
+		case 12: // Gnome
+			switch(bclass) {
+				case 1: // Warrior
+				case 2: // Cleric
+				case 3: // Paladin
+				case 5: // Shadowknight
+				case 9: // Rogue
+				case 11: // Necromancer
+				case 12: // Wizard
+				case 13: // Magician
+				case 14: // Enchanter
+					isComboAllowed = true;
+					break;
+			}
+			break;
+		case 128: // Iksar
+			switch(bclass) {
+				case 1: // Warrior
+				case 5: // Shadowknight
+				case 7: // Monk
+				case 10: // Shaman
+				case 11: // Necromancer
+				case 15: // Beastlord
+					isComboAllowed = true;
+					break;
+			}
+			break;
+		case 130: // Vah Shir
+			switch(bclass) {
+				case 1: // Warrior
+				case 8: // Bard
+				case 9: // Rogue
+				case 10: // Shaman
+				case 15: // Beastlord
+				case 16: // Berserker
+					isComboAllowed = true;
+					break;
+			}
+			break;
+		case 330: // Froglok
+			switch(bclass) {
+				case 1: // Warrior
+				case 2: // Cleric
+				case 3: // Paladin
+				case 5: // Shadowknight
+				case 9: // Rogue
+				case 10: // Shaman
+				case 11: // Necromancer
+				case 12: // Wizard
+					isComboAllowed = true;
+					break;
+			}
+			break;
+	}
+	if(!isComboAllowed) {
+		this->BotOwner->Message(15, "A %s - %s bot was detected. Is this Race/Class combination allowed?.", GetRaceName(brace), GetEQClassName(bclass, blevel));
+		this->BotOwner->Message(15, "This is a warning for you to clear all the equipment from this bot.");
+		this->BotOwner->Message(15, "Previous Bots Code releases did not check Race/Class combinations during create.");
+		this->BotOwner->Message(15, "This message will be replaced with 'This Bot Deleted' in the next update(or maybe the one after that.");
+	}
+	isComboAllowed = false;
+
+	int spellid = 0;
+	// base stats
+	sint16 bstr = 75;
+	sint16 bsta = 75;
+	sint16 bdex = 75;
+	sint16 bagi = 75;
+	sint16 bwis = 75;
+	sint16 bint = 75;
+	sint16 bcha = 75;
+	sint16 bATK = 5;
+	sint16 bMR = 25;
+	sint16 bFR = 25;
+	sint16 bDR = 15;
+	sint16 bPR = 15;
+	sint16 bCR = 25;
+
+	switch(bclass) {
+		case 1: // Warrior
+			bstr += 10;
+			bsta += 20;
+			bagi += 10;
+			bdex += 10;
+			bATK += 12;
+			bMR += (blevel / 2 + 1);
+			break;
+		case 2: // Cleric
+			spellid = 701;
+			bstr += 5;
+			bsta += 5;
+			bagi += 10;
+			bwis += 30;
+			bATK += 8;
+			break;
+		case 3: // Paladin
+			spellid = 708;
+			bstr += 15;
+			bsta += 5;
+			bwis += 15;
+			bcha += 10;
+			bdex += 5;
+			bATK += 17;
+			bDR += 8;
+			if(blevel > 50) {
+				bDR += (blevel - 50);
+			}
+			break;
+		case 4: // Ranger
+			spellid = 710;
+			bstr += 15;
+			bsta += 10;
+			bagi += 10;
+			bwis += 15;
+			bATK += 17;
+			bFR += 4;
+			if(blevel > 50) {
+				bFR += (blevel - 50);
+			}
+			bCR += 4;
+			if(blevel > 50) {
+				bCR += (blevel - 50);
+			}
+			break;
+		case 5: // Shadowknight
+			spellid = 709;
+			bstr += 10;
+			bsta += 15;
+			bint += 20;
+			bcha += 5;
+			bATK += 17;
+			bPR += 4;
+			if(blevel > 50) {
+				bPR += (blevel - 50);
+			}
+			bDR += 4;
+			if(blevel > 50) {
+				bDR += (blevel - 50);
+			}
+			break;
+		case 6: // Druid
+			spellid = 707;
+			bsta += 15;
+			bwis += 35;
+			bATK += 5;
+			break;
+		case 7: // Monk
+			bstr += 5;
+			bsta += 15;
+			bagi += 15;
+			bdex += 15;
+			bATK += 17;
+			break;
+		case 8: // Bard
+			spellid = 711;
+			bstr += 15;
+			bdex += 10;
+			bcha += 15;
+			bint += 10;
+			bATK += 17;
+			break;
+		case 9: // Rogue
+			bstr += 10;
+			bsta += 20;
+			bagi += 10;
+			bdex += 10;
+			bATK += 12;
+			bPR += 8;
+			if(blevel > 50) {
+				bPR += (blevel - 50);
+			}
+			break;
+		case 10: // Shaman
+			spellid = 706;
+			bsta += 10;
+			bwis += 30;
+			bcha += 10;
+			bATK += 28;
+			break;
+		case 11: // Necromancer
+			spellid = 703;
+			bdex += 10;
+			bagi += 10;
+			bint += 30;
+			bATK += 5;
+			break;
+		case 12: // Wizard
+			spellid = 702;
+			bsta += 20;
+			bint += 30;
+			bATK += 5;
+			break;
+		case 13: // Magician
+			spellid = 704;
+			bsta += 20;
+			bint += 30;
+			bATK += 5;
+			break;
+		case 14: // Enchanter
+			spellid = 705;
+			bint += 25;
+			bcha += 25;
+			bATK += 5;
+			break;
+		case 15: // Beastlord
+			spellid = 712;
+			bsta += 10;
+			bagi += 10;
+			bdex += 5;
+			bwis += 20;
+			bcha += 5;
+			bATK += 31;
+			break;
+		case 16: // Berserker
+			bstr += 10;
+			bsta += 15;
+			bdex += 15;
+			bagi += 10;
+			bATK += 25;
+			break;
+	}
+
+	float bsize = 6.0;
+	switch(brace) {
+		case 1: // Humans have no race bonus
+			break;
+		case 2: // Barbarian
+			bstr += 28;
+			bsta += 20;
+			bagi += 7;
+			bdex -= 5;
+			bwis -= 5;
+			bint -= 10;
+			bcha -= 20;
+			bsize = 7;
+			bCR += 10;
+			break;
+		case 3: // Erudite
+			bstr -= 15;
+			bsta -= 5;
+			bagi -= 5;
+			bdex -= 5;
+			bwis += 8;
+			bint += 32;
+			bcha -= 5;
+			bMR += 5;
+			bDR -= 5;
+			break;
+		case 4: // Wood Elf
+			bstr -= 10;
+			bsta -= 10;
+			bagi += 20;
+			bdex += 5;
+			bwis += 5;
+			bsize = 5;
+			break;
+		case 5: // High Elf
+			bstr -= 20;
+			bsta -= 10;
+			bagi += 10;
+			bdex -= 5;
+			bwis += 20;
+			bint += 12;
+			bcha += 5;
+			break;
+		case 6: // Dark Elf
+			bstr -= 15;
+			bsta -= 10;
+			bagi += 15;
+			bwis += 8;
+			bint += 24;
+			bcha -= 15;
+			bsize = 5;
+			break;
+		case 7: // Half Elf
+			bstr -= 5;
+			bsta -= 5;
+			bagi += 15;
+			bdex += 10;
+			bwis -= 15;
+			bsize = 5.5;
+			break;
+		case 8: // Dwarf
+			bstr += 15;
+			bsta += 15;
+			bagi -= 5;
+			bdex += 15;
+			bwis += 8;
+			bint -= 15;
+			bcha -= 30;
+			bsize = 4;
+			bMR -= 5;
+			bPR += 5;
+			break;
+		case 9: // Troll
+			bstr += 33;
+			bsta += 34;
+			bagi += 8;
+			bwis -= 15;
+			bint -= 23;
+			bcha -= 35;
+			bsize = 8;
+			bFR -= 20;
+			break;
+		case 10: // Ogre
+			bstr += 55;
+			bsta += 77;
+			bagi -= 5;
+			bdex -= 5;
+			bwis -= 8;
+			bint -= 15;
+			bcha -= 38;
+			bsize = 9;
+			break;
+		case 11: // Halfling
+			bstr -= 5;
+			bagi += 20;
+			bdex += 15;
+			bwis += 5;
+			bint -= 8;
+			bcha -= 25;
+			bsize = 3.5;
+			bPR += 5;
+			bDR += 5;
+			break;
+		case 12: // Gnome
+			bstr -= 15;
+			bsta -= 5;
+			bagi += 10;
+			bdex += 10;
+			bwis -= 8;
+			bint += 23;
+			bcha -= 15;
+			bsize = 3;
+			break;
+		case 128: // Iksar
+			bstr -= 5;
+			bsta -= 5;
+			bagi += 15;
+			bdex += 10;
+			bwis += 5;
+			bcha -= 20;
+			bMR -= 5;
+			bFR -= 5;
+			break;
+		case 130: // Vah Shir
+			bstr += 15;
+			bagi += 15;
+			bdex -= 5;
+			bwis -= 5;
+			bint -= 10;
+			bcha -= 10;
+			bsize = 7;
+			bMR -= 5;
+			bFR -= 5;
+			break;
+		case 330: // Froglok
+			bstr -= 5;
+			bsta += 5;
+			bagi += 25;
+			bdex += 25;
+			bcha -= 25;
+			bsize = 5;
+			bMR -= 5;
+			bFR -= 5;
+			break;
+	}
+
+	// General AA bonus'
+	if(blevel >= 51 ) {
+		bstr += 2;	// Innate Strength AA 1
+		bsta += 2;	// Innate Stamina AA 1
+		bagi += 2;	// Innate Agility AA 1
+		bdex += 2;	// Innate Dexterity AA 1
+		bint += 2;	// Innate Intelligence AA 1
+		bwis += 2;	// Innate Wisdom AA 1
+		bcha += 2;	// Innate Charisma AA 1
+		bFR += 2;	// Innate Fire Protection AA 1
+		bCR += 2;	// Innate Cold Protection AA 1
+		bMR += 2;	// Innate Magic Protection AA 1
+		bPR += 2;	// Innate Poison Protection AA 1
+		bDR += 2;	// Innate Disease AA 1
+	}
+	if(blevel >= 52 ) {
+		bstr += 2;	// Innate Strength AA 2
+		bsta += 2;	// Innate Stamina AA 2
+		bagi += 2;	// Innate Agility AA 2
+		bdex += 2;	// Innate Dexterity AA 2
+		bint += 2;	// Innate Intelligence AA 2
+		bwis += 2;	// Innate Wisdom AA 2
+		bcha += 2;	// Innate Charisma AA 2
+		bFR += 2;	// Innate Fire Protection AA 2
+		bCR += 2;	// Innate Cold Protection AA 2
+		bMR += 2;	// Innate Magic Protection AA 2
+		bPR += 2;	// Innate Poison Protection AA 2
+		bDR += 2;	// Innate Disease AA 2
+	}
+	if(blevel >= 53 ) {
+		bstr += 2;	// Innate Strength AA 3
+		bsta += 2;	// Innate Stamina AA 3
+		bagi += 2;	// Innate Agility AA 3
+		bdex += 2;	// Innate Dexterity AA 3
+		bint += 2;	// Innate Intelligence AA 3
+		bwis += 2;	// Innate Wisdom AA 3
+		bcha += 2;	// Innate Charisma AA 3
+		bFR += 2;	// Innate Fire Protection AA 3
+		bCR += 2;	// Innate Cold Protection AA 3
+		bMR += 2;	// Innate Magic Protection AA 3
+		bPR += 2;	// Innate Poison Protection AA 3
+		bDR += 2;	// Innate Disease AA 3
+	}
+	if(blevel >= 54 ) {
+		bstr += 2;	// Innate Strength AA 4
+		bsta += 2;	// Innate Stamina AA 4
+		bagi += 2;	// Innate Agility AA 4
+		bdex += 2;	// Innate Dexterity AA 4
+		bint += 2;	// Innate Intelligence AA 4
+		bwis += 2;	// Innate Wisdom AA 4
+		bcha += 2;	// Innate Charisma AA 4
+		bFR += 2;	// Innate Fire Protection AA 4
+		bCR += 2;	// Innate Cold Protection AA 4
+		bMR += 2;	// Innate Magic Protection AA 4
+		bPR += 2;	// Innate Poison Protection AA 4
+		bDR += 2;	// Innate Disease AA 4
+	}
+	if(blevel >= 55 ) {
+		bstr += 2;	// Innate Strength AA 5
+		bsta += 2;	// Innate Stamina AA 5
+		bagi += 2;	// Innate Agility AA 5
+		bdex += 2;	// Innate Dexterity AA 5
+		bint += 2;	// Innate Intelligence AA 5
+		bwis += 2;	// Innate Wisdom AA 5
+		bcha += 2;	// Innate Charisma AA 5
+		bFR += 2;	// Innate Fire Protection AA 5
+		bCR += 2;	// Innate Cold Protection AA 5
+		bMR += 2;	// Innate Magic Protection AA 5
+		bPR += 2;	// Innate Poison Protection AA 5
+		bDR += 2;	// Innate Disease AA 5
+	}
+	if(blevel >= 61 ) {
+		bstr += 2;	// Advanced Innate Strength AA 1
+		bsta += 2;	// Advanced Innate Stamina AA 1
+		bagi += 2;	// Advanced Innate Agility AA 1
+		bdex += 2;	// Advanced Innate Dexterity AA 1
+		bint += 2;	// Advanced Innate Intelligence AA 1
+		bwis += 2;	// Advanced Innate Wisdom AA 1
+		bcha += 2;	// Advanced Innate Charisma AA 1
+		bFR += 2;	// Warding of Solusek AA 1
+		bCR += 2;	// Blessing of E'ci AA 1
+		bMR += 2;	// Marr's Protection AA 1
+		bPR += 2;	// Shroud of the Faceless AA 1
+		bDR += 2;	// Bertoxxulous' Gift AA 1
+	}
+	if(blevel >= 62 ) {
+		bstr += 2;	// Advanced Innate Strength AA 2
+		bsta += 2;	// Advanced Innate Stamina AA 2
+		bagi += 2;	// Advanced Innate Agility AA 2
+		bdex += 2;	// Advanced Innate Dexterity AA 2
+		bint += 2;	// Advanced Innate Intelligence AA 2
+		bwis += 2;	// Advanced Innate Wisdom AA 2
+		bcha += 2;	// Advanced Innate Charisma AA 2
+		bFR += 2;	// Warding of Solusek AA 2
+		bCR += 2;	// Blessing of E'ci AA 2
+		bMR += 2;	// Marr's Protection AA 2
+		bPR += 2;	// Shroud of the Faceless AA 2
+		bDR += 2;	// Bertoxxulous' Gift AA 2
+	}
+	if(blevel >= 63 ) {
+		bstr += 2;	// Advanced Innate Strength AA 3
+		bsta += 2;	// Advanced Innate Stamina AA 3
+		bagi += 2;	// Advanced Innate Agility AA 3
+		bdex += 2;	// Advanced Innate Dexterity AA 3
+		bint += 2;	// Advanced Innate Intelligence AA 3
+		bwis += 2;	// Advanced Innate Wisdom AA 3
+		bcha += 2;	// Advanced Innate Charisma AA 3
+		bFR += 2;	// Warding of Solusek AA 3
+		bCR += 2;	// Blessing of E'ci AA 3
+		bMR += 2;	// Marr's Protection AA 3
+		bPR += 2;	// Shroud of the Faceless AA 3
+		bDR += 2;	// Bertoxxulous' Gift AA 3
+	}
+	if(blevel >= 64 ) {
+		bstr += 2;	// Advanced Innate Strength AA 4
+		bsta += 2;	// Advanced Innate Stamina AA 4
+		bagi += 2;	// Advanced Innate Agility AA 4
+		bdex += 2;	// Advanced Innate Dexterity AA 4
+		bint += 2;	// Advanced Innate Intelligence AA 4
+		bwis += 2;	// Advanced Innate Wisdom AA 4
+		bcha += 2;	// Advanced Innate Charisma AA 4
+		bFR += 2;	// Warding of Solusek AA 4
+		bCR += 2;	// Blessing of E'ci AA 4
+		bMR += 2;	// Marr's Protection AA 4
+		bPR += 2;	// Shroud of the Faceless AA 4
+		bDR += 2;	// Bertoxxulous' Gift AA 4
+	}
+	if(blevel >= 65 ) {
+		bstr += 2;	// Advanced Innate Strength AA 5
+		bsta += 2;	// Advanced Innate Stamina AA 5
+		bagi += 2;	// Advanced Innate Agility AA 5
+		bdex += 2;	// Advanced Innate Dexterity AA 5
+		bint += 2;	// Advanced Innate Intelligence AA 5
+		bwis += 2;	// Advanced Innate Wisdom AA 5
+		bcha += 2;	// Advanced Innate Charisma AA 5
+		bFR += 2;	// Warding of Solusek AA 5
+		bCR += 2;	// Blessing of E'ci AA 5
+		bMR += 2;	// Marr's Protection AA 5
+		bPR += 2;	// Shroud of the Faceless AA 5
+		bDR += 2;	// Bertoxxulous' Gift AA 5
+	}
+	if(blevel >= 66 ) {
+		bstr += 2;	// Advanced Innate Strength AA 6
+		bsta += 2;	// Advanced Innate Stamina AA 6
+		bagi += 2;	// Advanced Innate Agility AA 6
+		bdex += 2;	// Advanced Innate Dexterity AA 6
+		bint += 2;	// Advanced Innate Intelligence AA 6
+		bwis += 2;	// Advanced Innate Wisdom AA 6
+		bcha += 2;	// Advanced Innate Charisma AA 6
+		bFR += 2;	// Warding of Solusek AA 6
+		bCR += 2;	// Blessing of E'ci AA 6
+		bMR += 2;	// Marr's Protection AA 6
+		bPR += 2;	// Shroud of the Faceless AA 6
+		bDR += 2;	// Bertoxxulous' Gift AA 6
+	}
+	if(blevel >= 67 ) {
+		bstr += 2;	// Advanced Innate Strength AA 7
+		bsta += 2;	// Advanced Innate Stamina AA 7
+		bagi += 2;	// Advanced Innate Agility AA 7
+		bdex += 2;	// Advanced Innate Dexterity AA 7
+		bint += 2;	// Advanced Innate Intelligence AA 7
+		bwis += 2;	// Advanced Innate Wisdom AA 7
+		bcha += 2;	// Advanced Innate Charisma AA 7
+		bFR += 2;	// Warding of Solusek AA 7
+		bCR += 2;	// Blessing of E'ci AA 7
+		bMR += 2;	// Marr's Protection AA 7
+		bPR += 2;	// Shroud of the Faceless AA 7
+		bDR += 2;	// Bertoxxulous' Gift AA 7
+	}
+	if(blevel >= 68 ) {
+		bstr += 2;	// Advanced Innate Strength AA 8
+		bsta += 2;	// Advanced Innate Stamina AA 8
+		bagi += 2;	// Advanced Innate Agility AA 8
+		bdex += 2;	// Advanced Innate Dexterity AA 8
+		bint += 2;	// Advanced Innate Intelligence AA 8
+		bwis += 2;	// Advanced Innate Wisdom AA 8
+		bcha += 2;	// Advanced Innate Charisma AA 8
+		bFR += 2;	// Warding of Solusek AA 8
+		bCR += 2;	// Blessing of E'ci AA 8
+		bMR += 2;	// Marr's Protection AA 8
+		bPR += 2;	// Shroud of the Faceless AA 8
+		bDR += 2;	// Bertoxxulous' Gift AA 8
+	}
+	if(blevel >= 69 ) {
+		bstr += 2;	// Advanced Innate Strength AA 9
+		bsta += 2;	// Advanced Innate Stamina AA 9
+		bagi += 2;	// Advanced Innate Agility AA 9
+		bdex += 2;	// Advanced Innate Dexterity AA 9
+		bint += 2;	// Advanced Innate Intelligence AA 9
+		bwis += 2;	// Advanced Innate Wisdom AA 9
+		bcha += 2;	// Advanced Innate Charisma AA 9
+		bFR += 2;	// Warding of Solusek AA 9
+		bCR += 2;	// Blessing of E'ci AA 9
+		bMR += 2;	// Marr's Protection AA 9
+		bPR += 2;	// Shroud of the Faceless AA 9
+		bDR += 2;	// Bertoxxulous' Gift AA 9
+	}
+	if(blevel >= 70 ) {
+		bstr += 2;	// Advanced Innate Strength AA 10
+		bsta += 2;	// Advanced Innate Stamina AA 10
+		bagi += 2;	// Advanced Innate Agility AA 10
+		bdex += 2;	// Advanced Innate Dexterity AA 10
+		bint += 2;	// Advanced Innate Intelligence AA 10
+		bwis += 2;	// Advanced Innate Wisdom AA 10
+		bcha += 2;	// Advanced Innate Charisma AA 10
+		bFR += 2;	// Warding of Solusek AA 10
+		bCR += 2;	// Blessing of E'ci AA 10
+		bMR += 2;	// Marr's Protection AA 10
+		bPR += 2;	// Shroud of the Faceless AA 10
+		bDR += 2;	// Bertoxxulous' Gift AA 10
+	}
+
+
+	// Base AC
+	int bac = (blevel * 3) * 4;
+	switch(bclass) {
+		case WARRIOR:
+		case SHADOWKNIGHT:
+		case PALADIN: bac = bac*1.5;
+	}
+
+	// Calc Base Hit Points
+	int16 lm = GetClassLevelFactor();
+	int16 Post255;
+	if((bsta-255)/2 > 0)
+		Post255 = (bsta-255)/2;
+	else
+		Post255 = 0;
+	sint32 bot_hp = (5)+(blevel*lm/10) + (((bsta-Post255)*blevel*lm/3000));
+
+
+	// Now, we need to calc the base mana.
+	sint32 bot_mana = 0;
+	switch (GetCasterClass()) {
+		case 'I':
+			bot_mana = (((bint/5)+2) * blevel);
+			break;
+		case 'W':
+			bot_mana = (((bwis/5)+2) * blevel);
+			break;
+		case 'N':
+		default:
+			bot_mana = 0;
+			break;
+	}
+
+	// Hitpoint AA's
+	int32 nd = 10000;
+	if(blevel >= 65) {
+		nd = 11650;	// Planar Durablility AA 3
+	}
+	else if(blevel >= 63) {
+		nd = 11500;	// Planar Durablility AA 2
+	}
+	else if(blevel >= 61) {
+		nd = 11350;	// Planar Durablility AA 1
+	}
+	else if(blevel >= 59) {
+		nd = 11200;	// Physical Enhancememt AA 1
+	}
+	else if(blevel >= 57) {
+		nd = 11000;	// Natural Durablility AA 3
+	}
+	else if(blevel >= 56) {
+		nd = 10500;	// Natural Durablility AA 2
+	}
+	else if(blevel >= 55) {
+		nd = 10200;	// Natural Durablility AA 1
+	}
+	bot_hp = bot_hp * nd / 10000;
+
+	base_hp = bot_hp;
+	max_mana = cur_mana = bot_mana;
+	AC = bac;
+	AGI = bagi;
+	ATK = bATK;
+	CHA = bcha;
+	CR = bCR;
+	DEX = bdex;
+	DR = bDR;
+	FR = bFR;
+	INT = bint;
+	MR = bMR;
+	PR = bPR;
+	STA = bsta;
+	STR = bstr;
+	WIS = bwis;
+
+	// Special Attacks
+	if(((GetClass() == MONK) || (GetClass() == WARRIOR) || (GetClass() == RANGER) || (GetClass() == BERSERKER))	&& (GetLevel() >= 60)) {
+		SpecAttacks[SPECATK_TRIPLE] = true;
+	}
+
+	Say("Base stats:");
+	Say("Level: %i HP: %i AC: %i Mana: %i STR: %i STA: %i DEX: %i AGI: %i INT: %i WIS: %i CHA: %i", blevel, base_hp, AC, max_mana, STR, STA, DEX, AGI, INT, WIS, CHA);
+	Say("Resists-- Magic: %i, Poison: %i, Fire: %i, Cold: %i, Disease: %i.",MR,PR,FR,CR,DR);
+
+	// Let's find the items in the bot inventory
+	sint32 items_hp = 0;
+	sint32 items_mana = 0;
+
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	MYSQL_RES* result;
+	MYSQL_ROW row;
+	bool ret = false;			
+
+	/* Update to the DB with base stats*/
+	if(database.RunQuery(query, MakeAnyLenString(&query, "update npc_types set level=%i, hp=%i, size=%f, npc_spells_id=%i, runspeed=%f, MR=%i, CR=%i, DR=%i, FR=%i, PR=%i, AC=%i, STR=%i, STA=%i, DEX=%i, AGI=%i, _INT=%i, WIS=%i, CHA=%i, ATK=%i where id=%i",blevel,base_hp,bsize,spellid,BotOwner->GetRunspeed(),MR,CR,DR,FR,PR,AC,STR,STA,DEX,AGI,INT,WIS,CHA,ATK,GetNPCTypeID()), errbuf)) {
+		safe_delete_array(query);
+	}
+	else {
+		Say("My database update failed!!!");
+	}
+
+	query = 0;
+	memset(&itembonuses, 0, sizeof(StatBonuses));
+	for(int i=0; i<22; i++) {
+		if(database.RunQuery(query, MakeAnyLenString(&query, "SELECT itemid FROM botinventory WHERE npctypeid=%i AND botslotid=%i", GetNPCTypeID(), i), errbuf, &result)) {
+			safe_delete_array(query);
+			if(mysql_num_rows(result) == 1) {
+				row = mysql_fetch_row(result);
+				int iteminslot = atoi(row[0]);
+				mysql_free_result(result);
+
+				if(iteminslot > 0) {
+					const Item_Struct *itemtmp = database.GetItem(iteminslot);
+					if(itemtmp->AC != 0)
+						itembonuses.AC += itemtmp->AC;
+					if(itemtmp->HP != 0)
+						itembonuses.HP += itemtmp->HP;
+					if(itemtmp->Mana != 0)
+						itembonuses.Mana += itemtmp->Mana;
+					if(itemtmp->Endur != 0)
+						itembonuses.Endurance += itemtmp->Endur;
+					if(itemtmp->AStr != 0)
+						itembonuses.STR += itemtmp->AStr;
+					if(itemtmp->ASta != 0)
+						itembonuses.STA += itemtmp->ASta;
+					if(itemtmp->ADex != 0)
+						itembonuses.DEX += itemtmp->ADex;
+					if(itemtmp->AAgi != 0)
+						itembonuses.AGI += itemtmp->AAgi;
+					if(itemtmp->AInt != 0)
+						itembonuses.INT += itemtmp->AInt;
+					if(itemtmp->AWis != 0)
+						itembonuses.WIS += itemtmp->AWis;
+					if(itemtmp->ACha != 0)
+						itembonuses.CHA += itemtmp->ACha;
+					if(itemtmp->MR != 0)
+						itembonuses.MR += itemtmp->MR;
+					if(itemtmp->FR != 0)
+						itembonuses.FR += itemtmp->FR;
+					if(itemtmp->CR != 0)
+						itembonuses.CR += itemtmp->CR;
+					if(itemtmp->PR != 0)
+						itembonuses.PR += itemtmp->PR;
+					if(itemtmp->DR != 0)
+						itembonuses.DR += itemtmp->DR;
+					if(itemtmp->Regen != 0)
+						itembonuses.HPRegen += itemtmp->Regen;
+					if(itemtmp->ManaRegen != 0)
+						itembonuses.ManaRegen += itemtmp->ManaRegen;
+					if(itemtmp->Attack != 0)
+						itembonuses.ATK += itemtmp->Attack;
+					if(itemtmp->DamageShield != 0)
+						itembonuses.DamageShield += itemtmp->DamageShield;
+					if(itemtmp->SpellShield != 0)
+						itembonuses.SpellDamageShield += itemtmp->SpellShield;
+					if(itemtmp->Shielding != 0)
+						itembonuses.MeleeMitigation += itemtmp->Shielding;
+					if(itemtmp->StunResist != 0)
+						itembonuses.StunResist += itemtmp->StunResist;
+					if(itemtmp->StrikeThrough != 0)
+						itembonuses.StrikeThrough += itemtmp->StrikeThrough;
+					if(itemtmp->Avoidance != 0)
+						itembonuses.AvoidMeleeChance += itemtmp->Avoidance;
+					if(itemtmp->Accuracy != 0)
+						itembonuses.HitChance += itemtmp->Accuracy;
+					if(itemtmp->CombatEffects != 0)
+						itembonuses.ProcChance += itemtmp->CombatEffects;
+					if ((itemtmp->Worn.Effect != 0) && (itemtmp->Worn.Type == ET_WornEffect)) { // latent effects
+						ApplySpellsBonuses(itemtmp->Worn.Effect, itemtmp->Worn.Level, &itembonuses);
+					}
+				}
+			}
+		}
+	}
+
+	bMR += itembonuses.MR;
+	bCR += itembonuses.CR;
+	bDR += itembonuses.DR;
+	bFR += itembonuses.FR;
+	bPR += itembonuses.PR;
+	bac += itembonuses.AC;
+	bstr += itembonuses.STR;
+	bsta += itembonuses.STA;
+	bdex += itembonuses.DEX;
+	bagi += itembonuses.AGI;
+	bint += itembonuses.INT;
+	bwis += itembonuses.WIS;
+	bcha += itembonuses.CHA;
+	bATK += itembonuses.ATK;
+
+	bMR += spellbonuses.MR;
+	bCR += spellbonuses.CR;
+	bDR += spellbonuses.DR;
+	bFR += spellbonuses.FR;
+	bPR += spellbonuses.PR;
+	bac += spellbonuses.AC;
+	bstr += spellbonuses.STR;
+	bsta += spellbonuses.STA;
+	bdex += spellbonuses.DEX;
+	bagi += spellbonuses.AGI;
+	bint += spellbonuses.INT;
+	bwis += spellbonuses.WIS;
+	bcha += spellbonuses.CHA;
+	bATK += spellbonuses.ATK;
+
+	if((bsta-255)/2 > 0)
+		Post255 = (bsta-255)/2;
+	else
+		Post255 = 0;
+	bot_hp = (5)+(blevel*lm/10) + (((bsta-Post255)*blevel*lm/3000));
+	bot_hp = bot_hp * nd / 10000;
+	base_hp = bot_hp;
+	bot_hp += itembonuses.HP;
+	bot_hp += spellbonuses.HP;
+	max_hp = cur_hp = bot_hp;
+
+	switch (GetCasterClass()) {
+		case 'I':
+			bot_mana = (((bint/2)+1) * blevel) + spellbonuses.Mana + itembonuses.Mana;
+			break;
+		case 'W':
+			bot_mana = (((bwis/2)+1) * blevel) + spellbonuses.Mana + itembonuses.Mana;
+			break;
+		case 'N':
+		default:
+			bot_mana = 0;
+			break;
+	}
+	max_mana = cur_mana = bot_mana;
+	CastToNPC()->AI_AddNPCSpells(spellid);
+
+	Say("I'm updated.");
+	Say("Level: %i HP: %i AC: %i Mana: %i STR: %i STA: %i DEX: %i AGI: %i INT: %i WIS: %i CHA: %i", blevel, max_hp, bac, max_mana, bstr, bsta, bdex, bagi, bint, bwis, bcha);
+	Say("Resists-- Magic: %i, Poison: %i, Fire: %i, Cold: %i, Disease: %i.",bMR,bPR,bFR,bCR,bDR);
+}
+
+#endif //EQBOTS
 
 void Mob::SetTarget(Mob* mob) {
 	if (target == mob) return;
