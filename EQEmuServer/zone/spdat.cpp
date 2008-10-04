@@ -749,3 +749,12 @@ bool IsPlayerIllusionSpell(int16 spell_id) {
 		return false;
 
 }
+
+int GetSpellEffectDescNum(int16 spell_id)
+{
+	if( (spell_id > 0) && (spell_id < SPDAT_RECORDS) ){
+		return spells[spell_id].effectdescnum;
+	} else {
+		return -1;
+	}
+}
