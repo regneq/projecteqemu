@@ -1,6 +1,14 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==10/04/2008
+Derision: Added minlevel and maxlevel fields to tasks table and new quest function istaskappropriate(task).
+Derision: All tasks in a TaskSet with a taskid of 0 as one of it's entries are now available to a player, subject to level restrictions.
+
+Required SQL: 
+ALTER TABLE `tasks` ADD `minlevel` TINYINT UNSIGNED NOT NULL DEFAULT '0',
+ADD `maxlevel` TINYINT UNSIGNED NOT NULL DEFAULT '0';
+
 ==10/03/2008
 Congdar: Add EQOffline Bot Source
 Derision: Removed 'stepped' column from task table. See http://eqemulator.net/forums/showthread.php?p=157613

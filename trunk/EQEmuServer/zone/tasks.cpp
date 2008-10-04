@@ -62,7 +62,7 @@ bool TaskManager::LoadTaskSets() {
 
 
 	const char *TaskSetQuery = "SELECT `id`, `taskid` from `tasksets` WHERE `id` > 0 AND `id` < %i "
-				   "AND `taskid` > 0 AND `taskid` < %i ORDER BY `id`, `taskid` ASC";
+				   "AND `taskid` >= 0 AND `taskid` < %i ORDER BY `id`, `taskid` ASC";
 
 	const char *ERR_MYSQLERROR = "[TASKS]Error in TaskManager::LoadTaskSets: %s";
 
@@ -133,11 +133,11 @@ bool TaskManager::LoadTasks(int SingleTask) {
 	// If TaskID !=0, then just load the task specified.
 
 	const char *AllTaskQuery = "SELECT `id`, `duration`, `title`, `description`, `reward`, `rewardid`,"
-				   "`cashreward`, `xpreward`, `rewardmethod`, `startzone` "
+				   "`cashreward`, `xpreward`, `rewardmethod`, `startzone`, `minlevel`, `maxlevel` "
 				   "from `tasks` WHERE `id` < %i";
 
 	const char *SingleTaskQuery = "SELECT `id`, `duration`, `title`, `description`, `reward`, `rewardid`,"
-				      "`cashreward`, `xpreward`, `rewardmethod`, `startzone` "
+				      "`cashreward`, `xpreward`, `rewardmethod`, `startzone`, `minlevel`, `maxlevel` "
 				      "from `tasks` WHERE `id` = %i";
 
 	const char *AllActivityQuery = "SELECT `taskid`, `step`, `activityid`, `activitytype`, `text1`, `text2`,"
@@ -203,12 +203,15 @@ bool TaskManager::LoadTasks(int SingleTask) {
 			Tasks[TaskID]->XPReward = atoi(row[7]);
 			Tasks[TaskID]->RewardMethod = (TaskMethodType)atoi(row[8]);
 			Tasks[TaskID]->StartZone = atoi(row[9]);
+			Tasks[TaskID]->MinLevel = atoi(row[10]);
+			Tasks[TaskID]->MaxLevel = atoi(row[11]);
 			Tasks[TaskID]->ActivityCount = 0;
 			Tasks[TaskID]->SequenceMode = ActivitiesSequential;
 			Tasks[TaskID]->LastStep = 0;
 
-			_log(TASKS__GLOBALLOAD,"TaskID: %5i, Duration: %8i, StartZone: %3i Reward: %s",
-			       TaskID, Tasks[TaskID]->Duration, Tasks[TaskID]->StartZone, Tasks[TaskID]->Reward);
+			_log(TASKS__GLOBALLOAD,"TaskID: %5i, Duration: %8i, StartZone: %3i Reward: %s MinLevel %i MaxLevel %i",
+			       TaskID, Tasks[TaskID]->Duration, Tasks[TaskID]->StartZone, Tasks[TaskID]->Reward,
+			       Tasks[TaskID]->MinLevel, Tasks[TaskID]->MaxLevel);
 			_log(TASKS__GLOBALLOAD,"Title:         %s ", Tasks[TaskID]->Title);
 			//_log(TASKS__GLOBALLOAD,"Description: %s ", Tasks[TaskID]->Description);
 
@@ -984,7 +987,7 @@ int ClientTaskState::ActiveTasksInSet(int TaskSetID) {
 
 	int Count = 0;
 
-	for(int i=0; i<taskmanager->TaskSets[TaskSetID].size(); i++) 
+	for(unsigned int i=0; i<taskmanager->TaskSets[TaskSetID].size(); i++) 
 		if(IsTaskActive(taskmanager->TaskSets[TaskSetID][i]))
 			Count++;
 
@@ -998,7 +1001,7 @@ int ClientTaskState::CompletedTasksInSet(int TaskSetID) {
 
 	int Count = 0;
 
-	for(int i=0; i<taskmanager->TaskSets[TaskSetID].size(); i++) 
+	for(unsigned int i=0; i<taskmanager->TaskSets[TaskSetID].size(); i++) 
 		if(IsTaskCompleted(taskmanager->TaskSets[TaskSetID][i]))
 			Count++;
 
@@ -1011,7 +1014,15 @@ int TaskManager::FirstTaskInSet(int TaskSetID) {
 
 	if(TaskSets[TaskSetID].size() == 0) return 0;
 
-	return TaskSets[TaskSetID][0];
+	vector<int>::iterator Iterator = TaskSets[TaskSetID].begin();
+
+	while(Iterator != TaskSets[TaskSetID].end()) {
+		if((*Iterator) > 0)
+			return (*Iterator);
+		Iterator++;
+	}
+
+	return 0;
 }
 
 int TaskManager::LastTaskInSet(int TaskSetID) {
@@ -1029,11 +1040,23 @@ int TaskManager::NextTaskInSet(int TaskSetID, int TaskID) {
 
 	if(TaskSets[TaskSetID].size() == 0) return 0;
 
-	for(int i=0; i<TaskSets[TaskSetID].size(); i++) {
+	for(unsigned int i=0; i<TaskSets[TaskSetID].size(); i++) {
 		if(TaskSets[TaskSetID][i] > TaskID) return TaskSets[TaskSetID][i];
 	}
 
 	return 0;
+}
+
+bool TaskManager::AppropriateLevel(int TaskID, int PlayerLevel) {
+
+	if(Tasks[TaskID] == NULL) return false;
+
+	if(Tasks[TaskID]->MinLevel && (PlayerLevel < Tasks[TaskID]->MinLevel)) return false;
+
+	if(Tasks[TaskID]->MaxLevel && (PlayerLevel > Tasks[TaskID]->MaxLevel)) return false;
+
+	return true;
+
 }
 
 void TaskManager::TaskSetSelector(Client *c, ClientTaskState *state, Mob *mob, int TaskSetID) {
@@ -1042,10 +1065,34 @@ void TaskManager::TaskSetSelector(Client *c, ClientTaskState *state, Mob *mob, i
 	unsigned int TaskSetIndex = 0;
 	int TaskList[MAXCHOOSERENTRIES];
 	int TaskListIndex = 0;
+	int PlayerLevel = c->GetLevel();
 
 	_log(TASKS__UPDATE, "TaskSetSelector called for taskset %i. EnableTaskSize is %i", TaskSetID, 
 			     state->EnabledTasks.size());
 	if((TaskSetID<=0) || (TaskSetID>=MAXTASKSETS)) return;
+
+	if(TaskSets[TaskSetID].size() > 0) {
+
+		// A TaskID of 0 in a TaskSet indicates that all Tasks in the set are enabled for all players.
+		
+		if(TaskSets[TaskSetID][0] == 0) {
+
+			_log(TASKS__UPDATE, "TaskSets[%i][0] == 0. All Tasks in Set enabled.", TaskSetID);
+			vector<int>::iterator Iterator = TaskSets[TaskSetID].begin();
+
+			while((Iterator != TaskSets[TaskSetID].end()) && (TaskListIndex < MAXCHOOSERENTRIES)) {
+				if(AppropriateLevel((*Iterator), PlayerLevel) && !state->IsTaskActive((*Iterator))) 
+					TaskList[TaskListIndex++] = (*Iterator);
+
+				Iterator++;
+			}
+			if(TaskListIndex > 0) 
+				SendTaskSelector(c, mob, TaskListIndex, TaskList);
+
+			return;
+		}
+	}
+
 
 	while((EnabledTaskIndex < state->EnabledTasks.size()) && (TaskSetIndex < TaskSets[TaskSetID].size()) &&
 	      (TaskListIndex < MAXCHOOSERENTRIES)) {
@@ -1054,12 +1101,18 @@ void TaskManager::TaskSetSelector(Client *c, ClientTaskState *state, Mob *mob, i
 			  EnabledTaskIndex, state->EnabledTasks[EnabledTaskIndex], TaskSetID, TaskSetIndex,
 			  TaskSets[TaskSetID][TaskSetIndex]);
 
-		if(state->EnabledTasks[EnabledTaskIndex] == TaskSets[TaskSetID][TaskSetIndex]) {
-			TaskList[TaskListIndex++] = TaskSets[TaskSetID][TaskSetIndex];
+		if((TaskSets[TaskSetID][TaskSetIndex] > 0) &&
+		   (state->EnabledTasks[EnabledTaskIndex] == TaskSets[TaskSetID][TaskSetIndex])) {
 
-			EnabledTaskIndex++;
-			TaskSetIndex++;
-			continue;
+			if(AppropriateLevel(TaskSets[TaskSetID][TaskSetIndex], PlayerLevel) &&
+			   !state->IsTaskActive(TaskSets[TaskSetID][TaskSetIndex])) {
+
+				TaskList[TaskListIndex++] = TaskSets[TaskSetID][TaskSetIndex];
+
+				EnabledTaskIndex++;
+				TaskSetIndex++;
+				continue;
+			}
 		}
 
 		if(state->EnabledTasks[EnabledTaskIndex] < TaskSets[TaskSetID][TaskSetIndex])
@@ -1079,6 +1132,7 @@ void TaskManager::SendTaskSelector(Client *c, Mob *mob, int TaskCount, int *Task
 	// Titanium OpCode: 0x5e7c
 	_log(TASKS__UPDATE, "TaskSelector for %i Tasks", TaskCount);
 	char *Ptr;
+	int PlayerLevel = c->GetLevel();
 
 	AvailableTaskHeader_Struct*	AvailableTaskHeader;
 	AvailableTaskData1_Struct* 	AvailableTaskData1;
@@ -1104,7 +1158,10 @@ void TaskManager::SendTaskSelector(Client *c, Mob *mob, int TaskCount, int *Task
 
 	for(int i=0; i<TaskCount; i++) {
 
-		if(Tasks[TaskList[i]] == NULL) continue;
+		if(!AppropriateLevel(TaskList[i], PlayerLevel)) continue;
+
+		if(c->IsTaskActive(TaskList[i])) continue;
+
 		ValidTasks++;
 		PacketLength = PacketLength + sizeof(AvailableTaskData1_Struct) + strlen(Tasks[TaskList[i]]->Title) + 1 +
 	                       strlen(Tasks[TaskList[i]]->Description) + 1 + sizeof(AvailableTaskData2_Struct) + 10 +
@@ -1129,7 +1186,9 @@ void TaskManager::SendTaskSelector(Client *c, Mob *mob, int TaskCount, int *Task
 
 	for(int i=0; i<TaskCount;i++) {
 
-		if(Tasks[TaskList[i]] == NULL) continue;
+		if(!AppropriateLevel(TaskList[i], PlayerLevel)) continue;
+
+		if(c->IsTaskActive(TaskList[i])) continue;
 
 		AvailableTaskData1 = (AvailableTaskData1_Struct*)Ptr;
 
@@ -1916,7 +1975,7 @@ void ClientTaskState::RewardTask(Client *c, TaskInformation *Task) {
 
 bool ClientTaskState::IsTaskActive(int TaskID) {
 
-	if(ActiveTaskCount == 0) return false;
+	if((ActiveTaskCount == 0) || (TaskID == 0)) return false;
 
 	for(int i=0; i<MAXACTIVETASKS; i++) {
 

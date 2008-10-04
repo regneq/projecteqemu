@@ -1565,6 +1565,13 @@ int QuestManager::completedtasksinset(int taskset) {
 	return -1;
 }
 
+bool QuestManager::istaskappropriate(int task) {
+
+	if(RuleB(TaskSystem, EnableTaskSystem) && initiator && taskmanager)
+		return taskmanager->AppropriateLevel(task, initiator->GetLevel());
+
+	return false;
+}
 void QuestManager::setinstflag(int charID, int orgZoneID, int type)
 {
 	int instFlag = database.getCurInstFlagNum();

@@ -125,6 +125,8 @@ struct TaskInformation {
 	int	ActivityCount;
 	SequenceType SequenceMode;
 	int	LastStep;
+	short	MinLevel;
+	short 	MaxLevel;
 	ActivityInformation Activity[MAXACTIVITIESPERTASK];
 };
 
@@ -226,6 +228,7 @@ public:
 	bool LoadClientState(Client *c, ClientTaskState *state);
 	bool SaveClientState(Client *c, ClientTaskState *state);
 	void SendTaskSelector(Client *c, Mob *mob, int TaskCount, int *TaskList);
+	bool AppropriateLevel(int TaskID, int PlayerLevel);
 	void TaskSetSelector(Client *c, ClientTaskState *state, Mob *mob, int TaskSetID);
 	void SendActiveTasksToClient(Client *c, bool TaskComplete=false);
 	void SendSingleActiveTaskToClient(Client *c, int TaskIndex, bool TaskComplete, bool BringUpTaskJournal=false);

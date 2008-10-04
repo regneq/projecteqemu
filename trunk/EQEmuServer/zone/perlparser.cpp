@@ -2149,6 +2149,26 @@ XS(XS__completedtasksinset)
 	XSRETURN(1);
 }
 
+
+XS(XS__istaskappropriate);
+XS(XS__istaskappropriate)
+{
+	dXSARGS;
+	bool        RETVAL;
+	dXSTARG;
+
+	if(items == 1) {
+		unsigned int task = (int)SvIV(ST(0));
+		RETVAL = quest_manager.istaskappropriate(task);
+	} else {
+		Perl_croak(aTHX_ "Usage: istaskaappropriate(task)");
+	}
+
+	XSprePUSH; PUSHu((IV)RETVAL);
+
+	XSRETURN(1);
+}
+
  XS(XS__popup); // prototype to pass -Wmissing-prototypes
  XS(XS__popup) {
         dXSARGS;
@@ -2365,6 +2385,7 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "activespeakactivity"), XS__activespeakactivity, file);
 		newXS(strcpy(buf, "activetasksinset"), XS__activetasksinset, file);
 		newXS(strcpy(buf, "completedtasksinset"), XS__completedtasksinset, file);
+		newXS(strcpy(buf, "istaskappropriate"), XS__istaskappropriate, file);
 newXS(strcpy(buf, "popup"), XS__popup, file);
 newXS(strcpy(buf, "setinstflag"), XS__setinstflag, file);
 newXS(strcpy(buf, "setinstflagmanually"), XS__setinstflagmanually, file);

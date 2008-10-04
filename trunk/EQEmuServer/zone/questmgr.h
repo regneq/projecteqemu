@@ -170,6 +170,7 @@ public:
 	int activespeakactivity(int taskid);
 	int activetasksinset(int taskset);
 	int completedtasksinset(int taskset);
+	bool istaskappropriate(int task);
       void setinstflag(int charID, int orgZoneID, int type);
 	void setinstflagmanually(int charID, int orgZoneID, int instFlag, int type);
       void clearspawntimers();
