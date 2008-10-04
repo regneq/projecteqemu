@@ -3049,7 +3049,11 @@ void Client::Handle_OP_ManaChange(const EQApplicationPacket *app)
 {
 	if(app->size == 0) {
 		// i think thats the sign to stop the songs
-		InterruptSpell(SONG_ENDS, 0x121);
+		if(IsBardSong(casting_spell_id))
+			InterruptSpell(SONG_ENDS, 0x121);
+		else
+			InterruptSpell(INTERRUPT_SPELL, 0x121);
+
 		return;
 	}
 	else	// solar: i don't think the client sends proper manachanges
