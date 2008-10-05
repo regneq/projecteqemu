@@ -3152,43 +3152,60 @@ bool Mob::HasProcs() const
     return false;
 }
 
-bool Client::CheckDoubleAttack(bool AAadd, bool Triple) {
-	int skill = 0;
-	if (Triple)
-	{
-		if(!HasSkill(DOUBLE_ATTACK))
-			return(false);
-		
-		if (GetClass() == MONK || GetClass() == WARRIOR || GetClass() == RANGER || GetClass() == BERSERKER)
-		{
-			skill = GetSkill(DOUBLE_ATTACK)/2;
-		} else {
-			return(false);
+bool Client::CheckDoubleAttack(bool tripleAttack) {
+
+	// If you don't have the double attack skill, return
+	if(!HasSkill(DOUBLE_ATTACK))
+		return false;
+	
+	// You start with no chance of double attacking
+	int chance = 0;
+	
+	// Used for maxSkill and triple attack calcs
+	int8 classtype = GetClass();
+	
+	// The current skill level
+	uint16 skill = GetSkill(DOUBLE_ATTACK);
+
+	// Discipline bonuses give you 100% chance to double attack
+	sint16 buffs = spellbonuses.DoubleAttackChance + itembonuses.DoubleAttackChance;
+	
+	// The maximum value for the Class based on the server rule of MaxLevel
+	int16 maxSkill = MaxSkill(DOUBLE_ATTACK, classtype, RuleI(Character, MaxLevel));
+
+	// AA bonuses for the melee classes
+	int32 aaBonus =
+		GetAA(aaBestialFrenzy) +
+		GetAA(aaHarmoniousAttack) +
+		GetAA(aaKnightsAdvantage)*10 +
+		GetAA(aaFerocity)*10 +
+		GetAA(aaDanceofBlades)*500;
+	
+	// Half of Double Attack Skill used to check chance for Triple Attack
+	if(tripleAttack) {
+		// Only some Double Attack classes get Triple Attack
+		if((classtype == MONK) || (classtype == WARRIOR) || (classtype == RANGER) || (classtype == BERSERKER)) {
+			// We only get half the skill, but should get all the bonuses
+			chance = (skill/2) + buffs + aaBonus;
 		}
-	}
-	else
-	{
-		
-		//should these stack with skill, or does that ever even happen?
-		int aaskill = GetAA(aaBestialFrenzy)*25 + GetAA(aaHarmoniousAttack)*25
-			+ GetAA(aaKnightsAdvantage)*25 + GetAA(aaFerocity)*25;
-			
-		if (!aaskill && !HasSkill(DOUBLE_ATTACK))
-		{
+		else {
 			return false;
 		}
-		skill = GetSkill(DOUBLE_ATTACK) + aaskill;
-		
-		//discipline effects
-		skill += (spellbonuses.DoubleAttackChance + itembonuses.DoubleAttackChance) * 3;
-		
-		if(skill < 300)	//only gain if we arnt garunteed
-			CheckIncreaseSkill(DOUBLE_ATTACK);
 	}
-	if(MakeRandomInt(0, 299) < skill)
-	{
+	else {
+		// This is the actual Double Attack chance
+		chance = skill + buffs + aaBonus;
+
+		// You can gain skill even if you don't successfully double attack,
+		// but put it here so you don't skill up on triple attacks
+		CheckIncreaseSkill(DOUBLE_ATTACK);
+	}
+	
+	// If your chance is greater than the RNG you are successful! Always have a 5% chance to fail at max skills+bonuses.
+	if(chance > MakeRandomInt(0, (maxSkill + itembonuses.DoubleAttackChance + aaBonus)*1.05)) {
 		return true;
 	}
+
 	return false;
 }
 

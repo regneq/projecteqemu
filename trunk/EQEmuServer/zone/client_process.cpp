@@ -284,10 +284,10 @@ bool Client::Process() {
 					Attack(auto_attack_target, 13); 	// Kaiyodo - added attacking hand to arguments
 				}
 				// Kaiyodo - support for double attack. Chance based on formula from Monkly business
-                        bool tripleAttackSuccess = false;
+				bool tripleAttackSuccess = false;
 				if( auto_attack_target && CanThisClassDoubleAttack() ) {
 					
-					if(CheckDoubleAttack(true)) {
+					if(CheckDoubleAttack()) {
 						//should we allow rampage on double attack?
 						if(CheckAAEffect(aaEffectRampage)) {
 							entity_list.AEAttack(this, 30);
@@ -299,14 +299,14 @@ bool Client::Process() {
 					//triple attack: rangers, monks, warriors, berserkers over level 60
 					if((((GetClass() == MONK || GetClass() == WARRIOR || GetClass() == RANGER || GetClass() == BERSERKER)
 						&& GetLevel() >= 60) || SpecAttacks[SPECATK_TRIPLE])
-					   && CheckDoubleAttack(false,true))
+					   && CheckDoubleAttack(true))
 					{
-                                    tripleAttackSuccess = true;
+						tripleAttackSuccess = true;
 						Attack(auto_attack_target, 13, true);
 					}
 					
 					//quad attack, does this belong here??
-					if(SpecAttacks[SPECATK_QUAD] && CheckDoubleAttack(false,true)) 
+					if(SpecAttacks[SPECATK_QUAD] && CheckDoubleAttack(true)) 
 					{
 						Attack(auto_attack_target, 13, true);
 					}
@@ -324,19 +324,19 @@ bool Client::Process() {
 							flurrychance += 30;
 							break;
 					}
-                              if(tripleAttackSuccess) {
+					if(tripleAttackSuccess) {
 						tripleAttackSuccess = false;
-					switch (GetAA(aaRagingFlurry)) {
-						case 1:
-							flurrychance += 10;
-							break;
-						case 2:
-							flurrychance += 20;
-							break;
-						case 3:
-							flurrychance += 30;
-							break;
-                                      }
+						switch (GetAA(aaRagingFlurry)) {
+							case 1:
+								flurrychance += 10;
+								break;
+							case 2:
+								flurrychance += 20;
+								break;
+							case 3:
+								flurrychance += 30;
+								break;
+						}
 					}         
 					if (rand()%1000 < flurrychance) {
 						Message_StringID(MT_CritMelee, 128);
