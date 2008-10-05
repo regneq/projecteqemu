@@ -6296,6 +6296,8 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 
 	conn_state = PlayerProfileLoaded;
 
+	TotalSecondsPlayed = m_pp.timePlayedMin * 60;
+
 	char temp1[64];
 	if (database.GetVariable("Max_AAXP", temp1, sizeof(temp1)-1)) {
 		max_AAXP = (atoi(temp1)*16)/10;
