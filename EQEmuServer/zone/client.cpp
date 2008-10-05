@@ -238,6 +238,7 @@ Client::Client(EQStreamInterface* ieqs)
 	tribute_master_id = 0xFFFFFFFF;
 	tribute_timer.Disable();
 	taskstate = NULL;
+	TotalSecondsPlayed = 0;
 	keyring.clear();
 
 	logging_enabled = CLIENT_DEFAULT_LOGGING_ENABLED;
@@ -449,7 +450,11 @@ bool Client::Save(int8 iCommitNow) {
 			m_pp.buffs[i].dmg_shield_remaining = 0;
 		}
 	}
-      m_pp.lastlogin = time(NULL);
+
+	TotalSecondsPlayed += (time(NULL) - m_pp.lastlogin);
+	m_pp.timePlayedMin = (TotalSecondsPlayed / 60);
+
+	m_pp.lastlogin = time(NULL);
 	if (pQueuedSaveWorkID) {
 		dbasync->CancelWork(pQueuedSaveWorkID);
 		pQueuedSaveWorkID = 0;

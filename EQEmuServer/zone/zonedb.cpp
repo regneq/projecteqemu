@@ -702,6 +702,8 @@ bool ZoneDatabase::GetCharacterInfoForLogin_result(MYSQL_RES* result,
 			pp->x = atof(row[3]);
 			pp->y = atof(row[4]);
 			pp->z = atof(row[5]);
+
+			pp->lastlogin = time(NULL);
 			
 			if (pp->x == -1 && pp->y == -1 && pp->z == -1)
 				GetSafePoints(pp->zone_id, &pp->x, &pp->y, &pp->z);

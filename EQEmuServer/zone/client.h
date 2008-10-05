@@ -993,6 +993,7 @@ private:
 	set<uint32> zone_flags;
 
 	ClientTaskState *taskstate;
+	int TotalSecondsPlayed;
 
 
 	//Connecting debug code.

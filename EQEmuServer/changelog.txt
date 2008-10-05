@@ -1,6 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==10/05/2008
+Derision: Total time playing <character> in /played now maintained across sessions.
+
 ==10/04/2008
 Congdar: Double Attack redo, tested working
 Congdar: Fix Bot follow bug when a bot gets killed
