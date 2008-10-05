@@ -1773,6 +1773,7 @@ bool Client::CheckIncreaseSkill(SkillType skillid, int chancemodi) {
 		return false;
 	int skillval = GetRawSkill(skillid);
 	int maxskill = GetMaxSkillAfterSpecializationRules(skillid, MaxSkill(skillid));
+
 	// Make sure we're not already at skill cap
 	if (skillval < maxskill)
 	{
