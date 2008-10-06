@@ -96,6 +96,7 @@ CommonProfiler _cp;
 #include "LauncherList.h"
 #include "wguild_mgr.h"
 
+TimeoutManager timeout_manager;
 EQStreamFactory eqsf(WorldStream,9000);
 EmuTCPServer tcps;
 ClientList client_list;

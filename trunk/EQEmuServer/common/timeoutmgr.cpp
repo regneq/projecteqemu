@@ -21,9 +21,6 @@
 
 #include "timeoutmgr.h"
 
-TimeoutManager timeout_manager;
-
-
 Timeoutable::Timeoutable(int32 check_frequency)
  : next_check(check_frequency)
 {

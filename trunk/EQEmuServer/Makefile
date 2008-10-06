@@ -5,11 +5,12 @@ all:
 	$(MAKE) -C world
 	$(MAKE) -C zone
 	$(MAKE) -C eqlaunch
-
+      $(MAKE) -C utils
 
 clean:
 	$(MAKE) -C EMuShareMem clean
 	$(MAKE) -C world clean
 	$(MAKE) -C zone clean
 	$(MAKE) -C eqlaunch clean
+      $(MAKE) -C utils clean
 
