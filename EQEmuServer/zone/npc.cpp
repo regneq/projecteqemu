@@ -298,6 +298,12 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 	if(!IsInteractive())
 		entity_list.MakeNameUnique(name);
 #else
+
+#ifdef EQBOTS
+// creates the bot with a clean name
+	if (!IsBot())
+#endif //EQBOTS
+
     entity_list.MakeNameUnique(name);
 #endif
 
