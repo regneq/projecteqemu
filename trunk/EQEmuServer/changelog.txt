@@ -1,5 +1,7 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==10/05/2008
+Angelox: Fix Bot names in group window (now is 'Mybot' instead of 'Mybot000')
 
 ==10/05/2008
 Derision: Total time playing <character> in /played now maintained across sessions.
