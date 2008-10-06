@@ -2,6 +2,8 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==10/06/2008
 Angelox: Fix Bot names in group window (now is 'Mybot' instead of 'Mybot000')
+cavedude00: (erde) Fix for world and zone crashing when compiled on VS 2008 in release mode.
+cavedude00: Added cleanipc to makefile.
 
 ==10/05/2008
 Derision: Total time playing <character> in /played now maintained across sessions.

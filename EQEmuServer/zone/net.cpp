@@ -101,6 +101,7 @@ extern volatile bool ZoneLoaded;
 #include "guild_mgr.h"
 #include "tasks.h"
 
+TimeoutManager          timeout_manager;
 NetConnection		net;
 EntityList			entity_list;
 WorldServer			worldserver;
