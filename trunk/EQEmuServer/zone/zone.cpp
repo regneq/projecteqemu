@@ -653,7 +653,7 @@ void Zone::LoadZoneDoors(const char* zone)
 
 Zone::Zone(int32 in_zoneid, const char* in_short_name)
 :	initgrids_timer(10000),
-	autoshutdown_timer(ZONE_AUTOSHUTDOWN_DELAY),
+	autoshutdown_timer((RuleI(Zone, AutoShutdownDelay))),
 	clientauth_timer(AUTHENTICATION_TIMEOUT * 1000),
 	spawn2_timer(1000)
 {
@@ -1121,6 +1121,10 @@ bool Zone::Process() {
 void Zone::StartShutdownTimer(int32 set_time) {
 	MZoneLock.lock();
 	if (set_time > autoshutdown_timer.GetRemainingTime()) {
+		if (set_time == (RuleI(Zone, AutoShutdownDelay)))
+		{
+			set_time = database.getZoneShutDownDelay(GetZoneID());
+		}
 		autoshutdown_timer.Start(set_time, false);
 	}
 	MZoneLock.unlock();

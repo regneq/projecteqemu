@@ -18,13 +18,12 @@
 #ifndef ZONE_H
 #define ZONE_H
 
-//#define ZONE_AUTOSHUTDOWN_DELAY		5000
-
 #include "../common/Mutex.h"
 #include "../common/linked_list.h"
 #include "../common/types.h"
 #include "../common/eqtime.h"
 #include "../common/servertalk.h"
+#include "../common/rulesys.h"
 #include "features.h"
 #include "spawngroup.h"
 //#include "mob.h"
@@ -126,7 +125,7 @@ public:
 	void	ShowEnabledSpawnStatus(Mob* client);
 	void    ShowDisabledSpawnStatus(Mob* client);
 	void    ShowSpawnStatusByID(Mob* client, uint32 spawnid);
-	void	StartShutdownTimer(int32 set_time = ZONE_AUTOSHUTDOWN_DELAY);
+	void	StartShutdownTimer(int32 set_time = (RuleI(Zone, AutoShutdownDelay)));
 	void	AddAuth(ServerZoneIncommingClient_Struct* szic);
 	void	RemoveAuth(const char* iCharName);
 	void	ResetAuth();

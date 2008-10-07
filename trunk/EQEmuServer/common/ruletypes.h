@@ -96,6 +96,7 @@ RULE_BOOL ( Zone, EnableMQGhostDetector, true ) //Lieka:  Enable the MQGhost Det
 RULE_REAL ( Zone, MQWarpDetectorDistance, 4900 ) //Lieka:  Distance a player must travel between client to server location updates before a warp is registered.  30 allows for beyond GM speed without lag.
 RULE_REAL ( Zone, MQWarpLagThreshold, 140 ) //Lieka:  Distance beyond the Zone:MQWarpDetectorDistance that a player must travel within the MQWarpThresholdTimer amount of time before tripping the MQWarp detector.  Set to 0 to disable this feature.
 RULE_REAL ( Zone, MQWarpThresholdTimer, 90000 ) //Lieka:  Amount of time before the warp_threshold resets to the Zone:MQWarpLagThreshold value.  Default: 90000 (900 seconds/15 minutes).  Set to -1 to disable this feature.
+RULE_INT ( Zone, AutoShutdownDelay, 5000 ) //How long a dynamic zone stays loaded while empty
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Map )

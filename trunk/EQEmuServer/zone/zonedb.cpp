@@ -1546,3 +1546,33 @@ void ZoneDatabase::LoadInstZone(int32 target_zone_ID, int32 instFlagNum){
 		safe_delete_array(query);
 	}
 }
+
+int ZoneDatabase::getZoneShutDownDelay(int32 zoneID)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+    char *query = 0;
+    MYSQL_RES *result;
+    MYSQL_ROW row;
+	
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT shutdowndelay FROM zone WHERE zoneidnumber=%i", zoneID), errbuf, &result))
+	{
+		if (mysql_num_rows(result) == 1) {
+			row = mysql_fetch_row(result);
+			mysql_free_result(result);
+			safe_delete_array(query);
+			return (atoi(row[0]));
+		}
+		else {
+			cerr << "Error in getZoneShutDownDelay (more than one result) query '" << query << "' " << errbuf << endl;
+			mysql_free_result(result);
+			safe_delete_array(query);
+			return (RuleI(Zone, AutoShutdownDelay));
+		}
+	}
+	else {
+		cerr << "Error in getZoneShutDownDelay query '" << query << "' " << errbuf << endl;
+		safe_delete_array(query);
+		mysql_free_result(result);
+	}
+	return (RuleI(Zone, AutoShutdownDelay));
+}

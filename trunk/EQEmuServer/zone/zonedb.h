@@ -181,6 +181,7 @@ public:
       int32   GetInstType(int32 zoneid);
       bool    InstZoneLoaded(int32 target_zone_ID);
       void    LoadInstZone(int32 target_zone_ID, int32 InstFlagNum);
+      int		getZoneShutDownDelay(int32 zoneID);
 	
 	/*
 	 * Item
