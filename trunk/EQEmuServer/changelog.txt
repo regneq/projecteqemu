@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==10/07/2008
 AndMetal: Web interface will now list open petitions.
+Derision: #title should now prefix the target player's name, e.g. #title Lord_Protector (underscores are replaced with spaces, max 31 chars)
 
 ==10/06/2008
 Angelox: Fix Bot names in group window (now is 'Mybot' instead of 'Mybot000')

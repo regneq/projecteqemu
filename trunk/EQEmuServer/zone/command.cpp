@@ -3527,13 +3527,24 @@ void command_title(Client *c, const Seperator *sep)
 			return;
 		}
 		Client *t = target_mob->CastToClient();
+
+		if(strlen(sep->arg[1]) > 31) {
+			c->Message(13, "Title must be 31 characters or less.");
+			return;
+		}
 		
 		bool removed = false;
 		if(!strcasecmp(sep->arg[1], "remove")) {
 			t->SetAATitle("");
 			removed = true;
-		} else
+		} else {
+			for(int i=0; i<strlen(sep->arg[1]); i++)
+				if(sep->arg[1][i]=='_')
+					sep->arg[1][i] = ' ';
+
 			t->SetAATitle(sep->arg[1]);
+		}
+
 		t->Save();
 		
 		if(removed) {
