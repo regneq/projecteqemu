@@ -1572,7 +1572,6 @@ int ZoneDatabase::getZoneShutDownDelay(int32 zoneID)
 	else {
 		cerr << "Error in getZoneShutDownDelay query '" << query << "' " << errbuf << endl;
 		safe_delete_array(query);
-		mysql_free_result(result);
 	}
 	return (RuleI(Zone, AutoShutdownDelay));
 }
