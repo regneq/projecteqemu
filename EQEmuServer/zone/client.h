@@ -595,7 +595,7 @@ public:
 	void  BuyAA(AA_Action* action);
 	// solar: this function is used by some AA stuff
 	void MemorizeSpell(int32 slot,int32 spellid,int32 scribing);
-	void	SetAATitle(const char *txt) { strncpy(m_pp.title, txt, 48); }
+	void	SetAATitle(const char *txt) { strcpy(m_pp.title, txt); }
 	inline int32	GetMaxAAXP(void) const { return max_AAXP; }
 	inline uint32  GetAAXP()   const { return m_pp.expAA; }
 	void SendAAStats();

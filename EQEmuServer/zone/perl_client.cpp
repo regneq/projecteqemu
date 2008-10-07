@@ -3516,6 +3516,9 @@ XS(XS_Client_SetAATitle)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
+		if(strlen(txt) > 31) 
+			Perl_croak(aTHX_ "Title must be 31 characters or less");
+
 		THIS->SetAATitle(txt);
 	}
 	XSRETURN_EMPTY;

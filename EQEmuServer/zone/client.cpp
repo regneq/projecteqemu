@@ -1413,7 +1413,7 @@ void Client::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho)
 //	ns->spawn.pvp		= GetPVP() ? 1 : 0;
 
 
-//	strncpy(ns->spawn.title, m_pp.title, 32);
+	strcpy(ns->spawn.title, m_pp.title);
 
 	if (IsBecomeNPC() == true)
 		ns->spawn.NPC = 1;
