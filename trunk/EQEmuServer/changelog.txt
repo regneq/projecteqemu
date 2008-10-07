@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==10/07/2008
+AndMetal: Web interface will now list open petitions.
+
 ==10/06/2008
 Angelox: Fix Bot names in group window (now is 'Mybot' instead of 'Mybot000')
 cavedude00: (erde) Fix for world and zone crashing when compiled on VS 2008 in release mode.
