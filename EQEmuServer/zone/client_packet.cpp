@@ -927,13 +927,15 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 	// this checking of heading/x_pos is cheap, and the result is
 	// subtle, but you'll notice your sense heading improve as you
 	// travel around
+	// Congdar: waste of processing, this skill is set to max on character creation
+	/*
 	if(
 		( (heading != ppu->heading) && !((int)heading % 3) ) ||	// turning
 		( (x_pos != ppu->x_pos) && !((int)x_pos % 6) )					// moving
 	)
 	{
 		CheckIncreaseSkill(SENSE_HEADING, -20);
-	}
+	}*/
 
 	if(proximity_timer.Check()) {
 		entity_list.ProcessMove(this, ppu->x_pos, ppu->y_pos, ppu->z_pos);
