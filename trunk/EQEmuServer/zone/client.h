@@ -596,6 +596,7 @@ public:
 	// solar: this function is used by some AA stuff
 	void MemorizeSpell(int32 slot,int32 spellid,int32 scribing);
 	void	SetAATitle(const char *txt) { strcpy(m_pp.title, txt); }
+	void	SetTitleSuffix(const char *txt) { strcpy(m_pp.suffix, txt); }
 	inline int32	GetMaxAAXP(void) const { return max_AAXP; }
 	inline uint32  GetAAXP()   const { return m_pp.expAA; }
 	void SendAAStats();
