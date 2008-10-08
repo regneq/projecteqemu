@@ -1,6 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==10/07/2008
+Congdar: Allow bot pets to be the main tank in a bot raid
+Congdar: Remove old Sense Heading skill check
 AndMetal: Web interface will now list open petitions.
 Derision: #title should now prefix the target player's name, e.g. #title Lord_Protector (underscores are replaced with spaces, max 31 chars)
 
