@@ -1414,6 +1414,7 @@ void Client::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho)
 
 
 	strcpy(ns->spawn.title, m_pp.title);
+	strcpy(ns->spawn.suffix, m_pp.suffix);
 
 	if (IsBecomeNPC() == true)
 		ns->spawn.NPC = 1;

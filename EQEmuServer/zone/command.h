@@ -175,6 +175,7 @@ void command_corpse(Client *c, const Seperator *sep);
 void command_fixmob(Client *c, const Seperator *sep);
 void command_gmspeed(Client *c, const Seperator *sep);
 void command_title(Client *c, const Seperator *sep);
+void command_titlesuffix(Client *c, const Seperator *sep);
 void command_spellinfo(Client *c, const Seperator *sep);
 void command_lastname(Client *c, const Seperator *sep);
 void command_memspell(Client *c, const Seperator *sep);

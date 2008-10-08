@@ -289,6 +289,7 @@ int command_init(void) {
 		command_add("fixmob","[nextrace|prevrace|gender|nexttexture|prevtexture|nexthelm|prevhelm] - Manipulate appearance of your NPC target",100,command_fixmob) ||
 		command_add("gmspeed","[on/off] - Turn GM speed hack on/off for you or your player target",100,command_gmspeed) ||
 		command_add("title","[text] - Set your or your player target's title",50,command_title) ||
+		command_add("titlesuffix","[text] - Set your or your player target's title suffix",50,command_titlesuffix) ||
 		command_add("spellinfo","[spellid] - Get detailed info about a spell",10,command_spellinfo) ||
 		command_add("lastname","[new lastname] - Set your or your player target's lastname",50,command_lastname) ||
 		command_add("memspell","[slotid] [spellid] - Memorize spellid in the specified slot",50,command_memspell) ||
@@ -3555,6 +3556,52 @@ void command_title(Client *c, const Seperator *sep)
 			c->Message(13, "%s's title has been changed to '%s'. They must zone for it to take effect.", t->GetName(), sep->arg[1]);
 			if(t != c)
 				t->Message(13, "Your title has been changed to '%s'. You must zone for it to take effect.", sep->arg[1]);
+		}
+	}
+}
+
+
+void command_titlesuffix(Client *c, const Seperator *sep)
+{
+	if (sep->arg[1][0]==0)
+		c->Message(0, "Usage: #titlesuffix [remove|text] - remove or set title suffix to 'text'");
+	else {
+		Mob *target_mob = c->GetTarget();
+		if(!target_mob)
+			target_mob = c;
+		if(!target_mob->IsClient()) {
+			c->Message(13, "#titlesuffix only works on players.");
+			return;
+		}
+		Client *t = target_mob->CastToClient();
+
+		if(strlen(sep->arg[1]) > 31) {
+			c->Message(13, "Title suffix must be 31 characters or less.");
+			return;
+		}
+		
+		bool removed = false;
+		if(!strcasecmp(sep->arg[1], "remove")) {
+			t->SetTitleSuffix("");
+			removed = true;
+		} else {
+			for(int i=0; i<strlen(sep->arg[1]); i++)
+				if(sep->arg[1][i]=='_')
+					sep->arg[1][i] = ' ';
+
+			t->SetTitleSuffix(sep->arg[1]);
+		}
+
+		t->Save();
+		
+		if(removed) {
+			c->Message(13, "%s's title suffix has been removed. They must zone for it to take effect.", t->GetName(), sep->arg[1]);
+			if(t != c)
+				t->Message(13, "Your title suffix has been removed. You must zone for it to take effect.", sep->arg[1]);
+		} else {
+			c->Message(13, "%s's title suffix has been changed to '%s'. They must zone for it to take effect.", t->GetName(), sep->arg[1]);
+			if(t != c)
+				t->Message(13, "Your title suffix has been changed to '%s'. You must zone for it to take effect.", sep->arg[1]);
 		}
 	}
 }
