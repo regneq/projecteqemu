@@ -5566,6 +5566,29 @@ XS(XS_Mob_ClearFeignMemory)
 	}
 	XSRETURN_EMPTY;
 }
+XS(XS_Mob_SetOOCRegen); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_SetOOCRegen)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Mob::SetOOCRegen(THIS, newoocregen)");
+	{
+		Mob *		THIS;
+		sint32		newoocregen = (sint32)SvIV(ST(1));
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->SetOOCRegen(newoocregen);
+	}
+	XSRETURN_EMPTY;
+}
 
 #ifdef __cplusplus
 extern "C"
@@ -5786,6 +5809,7 @@ XS(boot_Mob)
 		newXSproto(strcpy(buf, "AddFeignMemory"), XS_Mob_AddFeignMemory, file, "$$");
 		newXSproto(strcpy(buf, "RemoveFromFeignMemory"), XS_Mob_RemoveFromFeignMemory, file, "$$");
 		newXSproto(strcpy(buf, "ClearFeignMemory"), XS_Mob_ClearFeignMemory, file, "$");
+		newXSproto(strcpy(buf, "SetOOCRegen"), XS_Mob_SetOOCRegen, file, "$$");
 	XSRETURN_YES;
 }
 
