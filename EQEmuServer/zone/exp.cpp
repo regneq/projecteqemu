@@ -199,7 +199,11 @@ void Client::SetEXP(int32 set_exp, int32 set_aaxp, bool isrezzexp) {
 		//Message(15, "You now have %d skill points available to spend.", m_pp.aapoints);
 	}
 
-	int8 maxlevel = RuleI(Character, MaxLevel) + 1;
+	int8 maxlevel = RuleI(Character, MaxExpLevel) + 1;
+
+	if(maxlevel <= 1)
+		maxlevel = RuleI(Character, MaxLevel) + 1;
+	}
 	
 	if(check_level > maxlevel) {
 		check_level = maxlevel;
@@ -223,8 +227,8 @@ void Client::SetEXP(int32 set_exp, int32 set_aaxp, bool isrezzexp) {
 	}
 	
 	//If were at max level then stop gaining experience if we make it to the cap
-	if(GetLevel() == RuleI(Character, MaxLevel)){
-		int32 expneeded = GetEXPForLevel(RuleI(Character, MaxLevel) + 1);
+	if(GetLevel() == maxlevel - 1){
+		int32 expneeded = GetEXPForLevel(maxlevel);
 		if(set_exp > expneeded)
 		{
 			set_exp =  expneeded;

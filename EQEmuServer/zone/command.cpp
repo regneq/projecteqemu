@@ -9205,9 +9205,9 @@ void command_traindisc(Client *c, const Seperator *sep)
 
 	level = atoi(sep->arg[1]);
 
-	if(level < 1 || level > 70)
+	if(level < 1) //was: if(level < 1 || level > 70)
 	{
-		c->Message(0, "ERROR: Enter a level between 1 and 70 inclusive.");
+		c->Message(0, "ERROR: Enter a level greater than 1."); //was "ERROR: Enter a level between 1 and 70 inclusive."
 		return;
 	}
 
