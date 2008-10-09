@@ -374,6 +374,46 @@ Mob* EntityList::AICheckCloseAggro(Mob* sender, float iAggroRange, float iAssist
 	return(NULL);
 }
 
+int EntityList::GetHatedCount(Mob *attacker, Mob *exclude) {
+
+	// Return a list of how many non-feared, non-mezzed, non-green mobs, within aggro range, hate *attacker
+
+	if(!attacker) return 0;
+
+	int Count = 0;
+
+	LinkedListIterator<NPC*> iterator(npc_list);
+
+	for(iterator.Reset(); iterator.MoreElements(); iterator.Advance()) {
+
+		NPC* mob = iterator.GetData();
+
+		if(!mob || (mob == exclude)) continue;
+		
+		if(!mob->IsEngaged()) continue;
+
+		if(mob->IsFeared() || mob->IsMezzed()) continue;
+
+		if(attacker->GetLevelCon(mob->GetLevel()) == CON_GREEN) continue;
+
+		if(!mob->CheckAggro(attacker)) continue;
+
+		float AggroRange = mob->GetAggroRange();
+
+		// Square it because we will be using DistNoRoot
+			
+		AggroRange = AggroRange * AggroRange;
+
+		if(mob->DistNoRoot(*attacker) > AggroRange) continue;
+
+		Count++;
+
+	}
+
+	return Count;
+
+}
+
 void EntityList::AIYellForHelp(Mob* sender, Mob* attacker) {
 	_ZP(EntityList_AIYellForHelp);
 	if(!sender || !attacker)

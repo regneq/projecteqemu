@@ -5,6 +5,7 @@ Trevius: (AndMetal) Added quest Object SetOOCRegen() to adjust NPC Out of Combat
 Trevius: Relocated the Empty Corpse check code so that the Decay Time rule for it will now work.
 Trevius: Removed the Level 70 cap on the #traindisc <level> command.
 Trevius: Added optional rule to allow Max Level Attainable via experience to be set independant of other Max Level rule checks.
+Derision: Reworked code to stop mobs fleeing if they have buddies to account for recent hate_list changes.
 
 Optional SQL:
 Insert into rule_values values (0, 'Character:MaxExpLevel', 0);
