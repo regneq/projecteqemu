@@ -203,7 +203,6 @@ void Client::SetEXP(int32 set_exp, int32 set_aaxp, bool isrezzexp) {
 
 	if(maxlevel <= 1)
 		maxlevel = RuleI(Character, MaxLevel) + 1;
-	}
 	
 	if(check_level > maxlevel) {
 		check_level = maxlevel;
