@@ -116,6 +116,13 @@ void Mob::BOT_Process() {
 					}
 				}
 			}
+			if(!IsEngaged()) {
+				if(BotOwner && BotOwner->CastToClient()->auto_attack &&
+					BotOwner->GetTarget() && BotOwner->GetTarget()->IsNPC() &&
+					BotOwner->GetTarget()->GetHateAmount(BotOwner)) {
+						AddToHateList(BotOwner->GetTarget(), 1);
+				}
+			}
 		}
 	}
 
