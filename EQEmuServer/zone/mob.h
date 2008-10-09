@@ -397,6 +397,7 @@ bool logpos;
 
 	inline virtual void SetHP(sint32 hp) { if (hp >= max_hp) cur_hp = max_hp; else cur_hp = hp;}
 	bool ChangeHP(Mob* other, sint32 amount, int16 spell_id = 0, sint8 buffslot = -1, bool iBuffTic = false);
+	inline void SetOOCRegen(sint32 newoocregen) {oocregen = newoocregen;}
 	int MonkSpecialAttack(Mob* other, int8 skill_used);
 	void TryBackstab(Mob *other);
 	void DoAnim(const int animnum, int type=0, bool ackreq = true, eqFilterType filter = FilterNone);
@@ -926,6 +927,7 @@ protected:
 	sint32	max_mana;
 	sint16	hp_regen;
 	sint16	mana_regen;
+	sint32	oocregen; //Out of Combat Regen, % per tick
 	Buffs_Struct	buffs[BUFF_COUNT];
 	StatBonuses		itembonuses;
 	StatBonuses		spellbonuses;

@@ -1,6 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==10/08/2008
+Trevius: (AndMetal) Added quest Object SetOOCRegen() to adjust NPC Out of Combat Regen on the fly
+Trevius: Relocated the Empty Corpse check code so that the Decay Time rule for it will now work
+
+==10/08/2008
 Congdar: Fix orphaned bots when camping/zoning
 Congdar: Link bot assist with client auto attack
 Derision: Added #titlesuffix command to add a title after a player's name.

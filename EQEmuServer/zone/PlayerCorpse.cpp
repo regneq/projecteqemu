@@ -135,11 +135,6 @@ Corpse::Corpse(NPC* in_npc, ItemList* in_itemlist, int32 in_npctypeid, const NPC
 	
 	SetCash(in_npc->GetCopper(), in_npc->GetSilver(), in_npc->GetGold(), in_npc->GetPlatinum());
 	
-	if(IsEmpty())
-	{
-		corpse_decay_timer.SetTimer(RuleI(NPC,EmptyNPCCorpseDecayTimeMS)+1000);
-	}
-
 	npctype_id = in_npctypeid;
 	SetPKItem(0);
 	charid = 0;
@@ -153,6 +148,10 @@ Corpse::Corpse(NPC* in_npc, ItemList* in_itemlist, int32 in_npctypeid, const NPC
 			corpse_decay_timer.SetTimer(npcCorpseDecayTimes[count].seconds*1000);
 			break;
 		}
+	}
+	if(IsEmpty())
+	{
+		corpse_decay_timer.SetTimer(RuleI(NPC,EmptyNPCCorpseDecayTimeMS)+1000);
 	}
 	// Added By Hogie -- End
 	for (int i=0; i<MAX_LOOTERS; i++)

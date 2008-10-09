@@ -27,6 +27,7 @@ Copyright (C) 2001-2002  EQEMu Development Team (http://eqemu.org)
 #include "../common/skills.h"
 #include "map.h"
 #include "StringIDs.h"
+#include "../common/rulesys.h"
 
 #include "../common/emu_opcodes.h"
 #include "../common/eq_packet_structs.h"
@@ -205,6 +206,7 @@ Mob::Mob(const char*   in_name,
 	max_mana = 0;
 	hp_regen = in_hp_regen;
 	mana_regen = in_mana_regen;
+	oocregen = RuleI(NPC, OOCRegen); //default Out of Combat Regen
 	invisible = false;
 	invisible_undead = false;
 	invisible_animals = false;
