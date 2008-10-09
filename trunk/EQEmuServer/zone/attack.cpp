@@ -1517,8 +1517,8 @@ void Client::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skil
 #ifdef EQBOTS
 
 	Mob *clientmob = CastToMob();
+	database.CleanBotLeader(GetID());
 	if(clientmob) {
-		int16 cmid = GetID();
 		if(clientmob->IsBotRaiding()) {
 			BotRaids* br = entity_list.GetBotRaidByMob(clientmob);
 			if(br) {
@@ -1526,26 +1526,23 @@ void Client::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skil
 				br = NULL;
 			}
 		}
-		if(clientmob->IsGrouped()) {
-			Group *g = entity_list.GetGroupByMob(clientmob);
-			if(g) {
-				bool hasBots = false;
-				for(int i=5; i>=0; i--) {
-					if(g->members[i] && g->members[i]->IsBot()) {
-						hasBots = true;
-						g->members[i]->BotOwner = NULL;
-						g->members[i]->Kill();
-					}
+		Group *g = entity_list.GetGroupByMob(clientmob);
+		if(g) {
+			bool hasBots = false;
+			for(int i=5; i>=0; i--) {
+				if(g->members[i] && g->members[i]->IsBot()) {
+					hasBots = true;
+					g->members[i]->BotOwner = NULL;
+					g->members[i]->Kill();
 				}
-				if(hasBots) {
-					hasBots = false;
-					if(g->BotGroupCount() <= 1) {
-						g->DisbandGroup();
-					}
+			}
+			if(hasBots) {
+				hasBots = false;
+				if(g->BotGroupCount() <= 1) {
+					g->DisbandGroup();
 				}
 			}
 		}
-		database.CleanBotLeader(cmid);
 	}
 
 #endif //EQBOTS

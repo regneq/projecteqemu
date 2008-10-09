@@ -1,8 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==10/08/2008
-Derision: Added #titlesuffix command to add a title after a player's name.
+Congdar: Fix orphaned bots when camping/zoning
 Congdar: Link bot assist with client auto attack
+Derision: Added #titlesuffix command to add a title after a player's name.
 
 ==10/07/2008
 Congdar: Allow bot pets to be the main tank in a bot raid
