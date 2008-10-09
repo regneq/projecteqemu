@@ -454,7 +454,7 @@ bool Group::DelMember(Mob* oldmember,bool ignoresender){
 #ifdef EQBOTS
 
 	if(oldmember->IsClient() && (oldmember == GetLeader())) {
-		int16 omid = oldmember->CastToClient()->GetID();
+		database.CleanBotLeader(oldmember->CastToClient()->GetID());
 		if(oldmember->IsBotRaiding()) {
 			BotRaids* br = entity_list.GetBotRaidByMob(oldmember);
 			if(br) {
@@ -462,26 +462,23 @@ bool Group::DelMember(Mob* oldmember,bool ignoresender){
 				br = NULL;
 			}
 		}
-		if(oldmember->IsGrouped()) {
-			Group *g = entity_list.GetGroupByMob(oldmember);
-			if(g) {
-				bool hasBots = false;
-				for(int i=5; i>=0; i--) {
-					if(g->members[i] && g->members[i]->IsBot()) {
-						hasBots = true;
-						g->members[i]->BotOwner = NULL;
-						g->members[i]->Kill();
-					}
+		Group *g = entity_list.GetGroupByMob(oldmember);
+		if(g) {
+			bool hasBots = false;
+			for(int i=5; i>=0; i--) {
+				if(g->members[i] && g->members[i]->IsBot()) {
+					hasBots = true;
+					g->members[i]->BotOwner = NULL;
+					g->members[i]->Kill();
 				}
-				if(hasBots) {
-					hasBots = false;
-					if(g->BotGroupCount() <= 1) {
-						g->DisbandGroup();
-					}
+			}
+			if(hasBots) {
+				hasBots = false;
+				if(g->BotGroupCount() <= 1) {
+					g->DisbandGroup();
 				}
 			}
 		}
-		database.CleanBotLeader(omid);
 	}
 
 #endif //EQBOTS
@@ -1023,6 +1020,40 @@ void Group::GroupMessage_StringID(Mob* sender, int32 type, int32 string_id, cons
 
 
 void Client::LeaveGroup() {
+
+#ifdef EQBOTS
+
+	Mob *clientmob = CastToMob();
+	database.CleanBotLeader(GetID());
+	if(clientmob) {
+		if(clientmob->IsBotRaiding()) {
+			BotRaids* br = entity_list.GetBotRaidByMob(clientmob);
+			if(br) {
+				br->RemoveRaidBots();
+				br = NULL;
+			}
+		}
+		Group *g = entity_list.GetGroupByMob(clientmob);
+		if(g) {
+			bool hasBots = false;
+			for(int i=5; i>=0; i--) {
+				if(g->members[i] && g->members[i]->IsBot()) {
+					hasBots = true;
+					g->members[i]->BotOwner = NULL;
+					g->members[i]->Kill();
+				}
+			}
+			if(hasBots) {
+				hasBots = false;
+				if(g->BotGroupCount() <= 1) {
+					g->DisbandGroup();
+				}
+			}
+		}
+	}
+
+#endif //EQBOTS
+
 	Group *g = GetGroup();
 	
 	if(g) {

@@ -8767,7 +8767,7 @@ void command_bot(Client *c, const Seperator *sep) {
 		c->Message(15, "#bot raid info - will give info of your raid.");
 		c->Message(15, "#bot raid create - will create your raid (you will be the raid leader)");
 		c->Message(15, "#bot raid group create [target] - create a group. Your target will be the leader.");
-		c->Message(15, "#bot raid invite bot [target] [group leader's name000] - Invite your target into your target leader000's group.");	
+		c->Message(15, "#bot raid invite bot [target] [group leader's name] - Invite your target into your target leader's group.");	
 //		c->Message(15, "#bot raid remove group [group leader's name] - Remove target's group from your raid.");
 		c->Message(15, "#bot raid disband - Disband the raid.");
 		c->Message(15, "#bot raid order maintank [target] - Your target will be flagged as the main tank.");
@@ -9047,32 +9047,29 @@ void command_bot(Client *c, const Seperator *sep) {
 		else if(!strcasecmp(sep->arg[2], "disband"))
         {
 			if(c->IsBotRaiding()) {
-				int16 cmid = c->GetID();
+				database.CleanBotLeader(c->GetID());
 				BotRaids *brd = entity_list.GetBotRaidByMob(c->CastToMob());
 				if(brd) {
 					brd->RemoveRaidBots();
 					brd = NULL;
 				}
-				if(c->IsGrouped()) {
-					Group *g = entity_list.GetGroupByMob(c->CastToMob());
-					if(g) {
-						bool hasBots = false;
-						for(int i=5; i>=0; i--) {
-							if(g->members[i] && g->members[i]->IsBot()) {
-								hasBots = true;
-								g->members[i]->BotOwner = NULL;
-								g->members[i]->Kill();
-							}
+				Group *g = entity_list.GetGroupByMob(c->CastToMob());
+				if(g) {
+					bool hasBots = false;
+					for(int i=5; i>=0; i--) {
+						if(g->members[i] && g->members[i]->IsBot()) {
+							hasBots = true;
+							g->members[i]->BotOwner = NULL;
+							g->members[i]->Kill();
 						}
-						if(hasBots) {
-							hasBots = false;
-							if(g->BotGroupCount() <= 1) {
-								g->DisbandGroup();
-							}
+					}
+					if(hasBots) {
+						hasBots = false;
+						if(g->BotGroupCount() <= 1) {
+							g->DisbandGroup();
 						}
 					}
 				}
-				database.CleanBotLeader(cmid);
 				c->Message(15, "Raid disbanded.");
 			}
 			return;
