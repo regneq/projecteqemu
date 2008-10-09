@@ -1,8 +1,13 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
-==10/08/2008
-Trevius: (AndMetal) Added quest Object SetOOCRegen() to adjust NPC Out of Combat Regen on the fly
-Trevius: Relocated the Empty Corpse check code so that the Decay Time rule for it will now work
+==10/09/2008
+Trevius: (AndMetal) Added quest Object SetOOCRegen() to adjust NPC Out of Combat Regen on the fly.
+Trevius: Relocated the Empty Corpse check code so that the Decay Time rule for it will now work.
+Trevius: Removed the Level 70 cap on the #traindisc <level> command.
+Trevius: Added optional rule to allow Max Level Attainable via experience to be set independant of other Max Level rule checks.
+
+Optional SQL:
+Insert into rule_values values (0, 'Character:MaxExpLevel', 0);
 
 ==10/08/2008
 Congdar: Fix orphaned bots when camping/zoning
