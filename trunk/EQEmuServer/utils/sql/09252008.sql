@@ -123,7 +123,7 @@ insert into rule_values values (1,'TaskSystem:KeepOneRecordPerCompletedTask','tr
 insert into rule_values values (1,'TaskSystem:EnableTaskProximity','true');
 insert into rule_values values (1,'World:EnableTutorialButton','true');
 insert into rule_values values (1,'World:EnableReturnHomeButton','true');
-insert into rule_values values (1,'World;MaxLevelForTutorial','10');
+insert into rule_values values (1,'World:MaxLevelForTutorial','10');
 insert into rule_values values (1,'World:MinOfflineTimeToReturnHome','21600');
 Insert into rule_values values (1, 'World:AddMaxClientsPerIP', -1);
 Insert into rule_values values (1, 'World:AddMaxClientsStatus', -1);

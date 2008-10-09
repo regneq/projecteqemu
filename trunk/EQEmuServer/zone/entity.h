@@ -312,6 +312,7 @@ public:
 
 	void	CheckClientAggro(Client *around);
 	Mob*	AICheckCloseAggro(Mob* sender, float iAggroRange, float iAssistRange);
+	int	GetHatedCount(Mob *attacker, Mob *exclude);
 	void	AIYellForHelp(Mob* sender, Mob* attacker);
 	bool	AICheckCloseBeneficialSpells(NPC* caster, int8 iChance, float iRange, int16 iSpellTypes);
 
