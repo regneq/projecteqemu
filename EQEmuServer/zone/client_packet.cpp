@@ -6765,9 +6765,10 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 		MakePet(m_epp.pet_id, spells[m_epp.pet_id].teleport_zone, m_epp.pet_name);
 		if (GetPet() && GetPet()->IsNPC()) {
 			NPC *pet = GetPet()->CastToNPC();
+			pet->SetPetState(m_epp.pet_buffs, m_epp.pet_items);
+			pet->CalcBonuses();
 			pet->SetHP(m_epp.pet_hp);
 			pet->SetMana(m_epp.pet_mana);
-			pet->SetPetState(m_epp.pet_buffs, m_epp.pet_items);
 		}
 		m_epp.pet_id = 0;
 	}

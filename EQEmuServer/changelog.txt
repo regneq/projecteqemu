@@ -4,6 +4,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 Congdar: Fix low level bots hitting too hard
 Derision: Prevent two instances of possible zone crashes due to null pointers.
 Trevius: (Striat) Added quest commands for zone and world emotes - quest::ze() & quest::we()
+Derision: Recalculate Pet bonuses on zoning before setting Max HP/Mana.
 
 ==10/09/2008
 Congdar: Replace Client IsEngaged() checks in Bot Source with bot aggro check
