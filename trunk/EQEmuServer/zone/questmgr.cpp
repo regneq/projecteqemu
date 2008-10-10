@@ -1630,6 +1630,13 @@ void QuestManager::clearspawntimers() {
 		safe_delete_array(query);
 	}
 }
+void QuestManager::ze(int type, const char *str) {
+	entity_list.Message(0, type, str);
+}
+
+void QuestManager::we(int type, const char *str) {
+	worldserver.SendEmoteMessage(0, 0, type, str);
+}
 
 int QuestManager::getlevel(int charID, int type)
 {

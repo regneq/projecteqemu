@@ -71,7 +71,7 @@ public:
 //	void cumflag();
 //	void flagnpc(int32 flag_num, int8 flag_value);
 //	void flagcheck(int32 flag_to_check, int32 flag_to_set);
-	//bool isflagset(int flag_num);
+//  bool isflagset(int flag_num);
 	void changedeity(int diety_id);
 	void exp(int amt);
 	void level(int newlevel);
@@ -148,7 +148,7 @@ public:
 	void playergender(int gender_id);
 	void playersize(int newsize);
 	void playertexture(int newtexture);
-      void popup(char *title, char *text);
+    void popup(char *title, char *text);
 	void taskselector(int taskcount, int *tasks);
 	void tasksetselector(int tasksettid);
 	void enabletask(int taskcount, int *tasks);
@@ -171,10 +171,12 @@ public:
 	int activetasksinset(int taskset);
 	int completedtasksinset(int taskset);
 	bool istaskappropriate(int task);
-      void setinstflag(int charID, int orgZoneID, int type);
+    void setinstflag(int charID, int orgZoneID, int type);
 	void setinstflagmanually(int charID, int orgZoneID, int instFlag, int type);
-      void clearspawntimers();
-      int getlevel(int charID, int type);
+    void clearspawntimers();
+	void ze(int type, const char *str);
+	void we(int type, const char *str);
+    int getlevel(int charID, int type);
 	
 	//not in here because it retains perl types
 	//thing ChooseRandom(array_of_things)
