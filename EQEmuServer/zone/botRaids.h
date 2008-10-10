@@ -57,6 +57,7 @@ public:
 	void LearnBotMembers();
 	void BotRaidInfo(Client *c);
 	void AddBotRaidAggro(Mob *m);
+	bool GetBotRaidAggro();
 	void FollowGuardCmd(Client *c, bool isGuard);
 	void SummonRaidBots(Mob *m, bool wipe_hate);
 	//Group* FindGroup(int groupnumber);

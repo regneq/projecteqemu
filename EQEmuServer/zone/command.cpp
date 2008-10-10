@@ -8176,11 +8176,22 @@ void command_bot(Client *c, const Seperator *sep) {
 			return;
 		}
 
-		if(c->IsEngaged() || c->GetFeigned())
+		if(c->GetFeigned())
         {
-            c->Message(15, "You can't summon bots while you are engaged or feigned.");
+            c->Message(15, "You can't summon bots while you are feigned.");
 			return;
 		}
+
+		if(c->IsBotRaiding()) {
+			BotRaids *br = entity_list.GetBotRaidByMob(c->CastToMob());
+			if(br) {
+				if(br->GetBotRaidAggro()) {
+                    c->Message(15, "You can't summon bots while you are engaged.");
+					return;
+				}
+			}
+		}
+
 		if(c->IsGrouped())
         {
 			Group *g = entity_list.GetGroupByClient(c);
@@ -8255,9 +8266,32 @@ void command_bot(Client *c, const Seperator *sep) {
 
 	if(!strcasecmp(sep->arg[1], "group") && !strcasecmp(sep->arg[2], "add"))
     {
-		if(c->IsEngaged() || c->GetFeigned()) {
-            c->Message(15, "You cannot create bot groups while engaged or feigned!");
+		if(c->GetFeigned()) {
+            c->Message(15, "You can't create bot groups while feigned!");
 			return;
+		}
+
+		if(c->IsBotRaiding()) {
+			BotRaids *br = entity_list.GetBotRaidByMob(c->CastToMob());
+			if(br) {
+				if(br->GetBotRaidAggro()) {
+                    c->Message(15, "You can't create bot groups while you are engaged.");
+					return;
+				}
+			}
+		}
+
+		if(c->IsGrouped())
+        {
+			Group *g = entity_list.GetGroupByClient(c);
+			for (int i=0; i<MAX_GROUP_MEMBERS; i++)
+            {
+                if(g && g->members[i] && g->members[i]->IsEngaged())
+                {
+                    c->Message(15, "You can't create bot groups while you are engaged.");
+					return;
+				}
+			}
 		}
 
 		if((c->GetTarget() == NULL) || !c->GetTarget()->IsBot())
@@ -8564,23 +8598,46 @@ void command_bot(Client *c, const Seperator *sep) {
 
 	if(!strcasecmp(sep->arg[1], "update")) {
         // Congdar: add IsEngaged check for exploit to keep bots alive by repeatedly using #bot update.
-        if(c->GetTarget() != NULL)
-        {
-			if(c->GetTarget()->IsBot() && (c->GetLevel() <= c->GetTarget()->GetLevel())) {
+        if((c->GetTarget() != NULL) && c->GetTarget()->IsBot()) {
+			if(c->GetLevel() <= c->GetTarget()->GetLevel()) {
 					c->Message(15, "This bot has already been updated.");
 					return;
 			}
-			if(c->GetTarget()->IsBot() && (c->GetTarget()->BotOwner == c->CastToMob()) && !c->GetTarget()->IsEngaged() && !c->GetFeigned()) {
+			
+			if(c->IsBotRaiding()) {
+				BotRaids *br = entity_list.GetBotRaidByMob(c->CastToMob());
+				if(br) {
+					if(br->GetBotRaidAggro()) {
+						c->Message(15, "You can't update bots while you are engaged.");
+						return;
+					}
+				}
+			}
+
+			if(c->IsGrouped())
+			{
+				Group *g = entity_list.GetGroupByClient(c);
+				for (int i=0; i<MAX_GROUP_MEMBERS; i++)
+				{
+					if(g && g->members[i] && g->members[i]->IsEngaged())
+					{
+						c->Message(15, "You can't update bots while you are engaged.");
+						return;
+					}
+				}
+			}
+
+			if((c->GetTarget()->BotOwner == c->CastToMob()) && !c->GetFeigned()) {
                 Mob *bot = c->GetTarget();
                 bot->SetLevel(c->GetLevel());
 				bot->CalcBotStats();
             }
             else {
-				if(c->GetTarget()->IsEngaged() || c->GetFeigned()) {
-					c->Message(15, "You cannot update while engaged or feigned.");
+				if(c->GetFeigned()) {
+					c->Message(15, "You cannot update bots while feigned.");
 				}
 				else {
-					c->Message(15, "You must target a bot first");
+					c->Message(15, "You must target your bot first");
 				}
             }
         }
@@ -8829,8 +8886,31 @@ void command_bot(Client *c, const Seperator *sep) {
 
 		else if(!strcasecmp(sep->arg[2], "group") && !strcasecmp(sep->arg[3], "create"))
         {
-			if((c->GetTarget() == NULL) || !c->GetTarget()->IsBot() || c->IsEngaged() || c->GetFeigned()) {
+			if((c->GetTarget() == NULL) || !c->GetTarget()->IsBot() || c->GetFeigned()) {
 				return;
+			}
+
+			if(c->IsBotRaiding()) {
+				BotRaids *br = entity_list.GetBotRaidByMob(c->CastToMob());
+				if(br) {
+					if(br->GetBotRaidAggro()) {
+						c->Message(15, "You can't create bot groups while you are engaged.");
+						return;
+					}
+				}
+			}
+
+			if(c->IsGrouped())
+			{
+				Group *g = entity_list.GetGroupByClient(c);
+				for (int i=0; i<MAX_GROUP_MEMBERS; i++)
+				{
+					if(g && g->members[i] && g->members[i]->IsEngaged())
+					{
+						c->Message(15, "You can't create bot groups while you are engaged.");
+						return;
+					}
+				}
 			}
 
 			if(!c->CastToMob()->IsBotRaiding() && c->GetTarget()->IsBot())
