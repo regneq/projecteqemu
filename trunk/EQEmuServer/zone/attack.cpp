@@ -2458,8 +2458,13 @@ void Mob::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHel
 
 #ifdef EQBOTS
 
-	if((IsBot() && BotOwner && !BotOwner->CastToClient()->auto_attack) || (IsPet() && GetOwner() && GetOwner()->IsBot() && !GetOwner()->CastToClient()->auto_attack)) {
-		return;
+	if((IsBot() && BotOwner && !BotOwner->CastToClient()->auto_attack) || (IsPet() && GetOwner() && GetOwner()->IsBot() && !GetOwner()->BotOwner->CastToClient()->auto_attack)) {
+		if(BotOwner && BotOwner->IsOrderBotAttack()) {
+			// ok, cuz we said so
+		}
+		else {
+			return;
+		}
 	}
 
 #endif //EQBOTS

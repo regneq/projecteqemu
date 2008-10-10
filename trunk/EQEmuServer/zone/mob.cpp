@@ -339,6 +339,7 @@ Mob::Mob(const char*   in_name,
 	BotOwner = NULL;
 	BotRaidID = 0;
 	BotRaiding = false;
+	OrderBotAttack = false;
 		
 #endif //EQBOTS
 
