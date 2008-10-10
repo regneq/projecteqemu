@@ -2222,6 +2222,35 @@ XS(XS__clearspawntimers)
 
 	XSRETURN_EMPTY;
 }
+XS(XS__ze);
+XS(XS__ze)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: ze(type, str)");
+
+	int	type = (int)SvIV(ST(0));
+	char *		str = (char *)SvPV_nolen(ST(1));
+
+	quest_manager.ze(type, str);
+
+	XSRETURN_EMPTY;
+}
+
+XS(XS__we);
+XS(XS__we)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: we(type, str)");
+
+	int	type = (int)SvIV(ST(0));
+	char *		str = (char *)SvPV_nolen(ST(1));
+
+	quest_manager.we(type, str);
+
+	XSRETURN_EMPTY;
+}
 XS(XS__getlevel);
 XS(XS__getlevel)
 {
@@ -2386,11 +2415,13 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "activetasksinset"), XS__activetasksinset, file);
 		newXS(strcpy(buf, "completedtasksinset"), XS__completedtasksinset, file);
 		newXS(strcpy(buf, "istaskappropriate"), XS__istaskappropriate, file);
-newXS(strcpy(buf, "popup"), XS__popup, file);
-newXS(strcpy(buf, "setinstflag"), XS__setinstflag, file);
-newXS(strcpy(buf, "setinstflagmanually"), XS__setinstflagmanually, file);
-newXS(strcpy(buf, "clearspawntimers"), XS__clearspawntimers, file);
-newXS(strcpy(buf, "getlevel"), XS__getlevel, file);
+		newXS(strcpy(buf, "popup"), XS__popup, file);
+		newXS(strcpy(buf, "setinstflag"), XS__setinstflag, file);
+		newXS(strcpy(buf, "setinstflagmanually"), XS__setinstflagmanually, file);
+		newXS(strcpy(buf, "clearspawntimers"), XS__clearspawntimers, file);
+		newXS(strcpy(buf, "ze"), XS__ze, file);
+		newXS(strcpy(buf, "we"), XS__we, file);
+		newXS(strcpy(buf, "getlevel"), XS__getlevel, file);
 	XSRETURN_YES;
 }
 
