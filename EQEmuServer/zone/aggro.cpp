@@ -1400,6 +1400,8 @@ void Mob::ClearFeignMemory() {
 bool Mob::PassCharismaCheck(Mob* caster, Mob* spellTarget, int16 spell_id) {
 	bool Result = false;
 
+	if(!caster) return false;
+
 	if(spells[spell_id].ResistDiff <= -600)
 		return true;
 
