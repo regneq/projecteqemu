@@ -8506,7 +8506,9 @@ void command_bot(Client *c, const Seperator *sep) {
 						if(g->members[i] && g->members[i]->IsBot()) {
 							g->members[i]->WhipeHateList();
 							g->members[i]->Say("Attacking %s.", c->GetTarget()->GetCleanName());
+							c->SetOrderBotAttack(true);
                             g->members[i]->AddToHateList(c->GetTarget(),150,150);
+							c->SetOrderBotAttack(false);
 						}
 					}
 				}
@@ -9237,7 +9239,9 @@ void command_bot(Client *c, const Seperator *sep) {
 					{
 						Mob *ctarget = c->GetTarget();
 						if(ctarget != NULL) {
+							c->SetOrderBotAttack(true);
 							brc->GroupAssignTask(entity_list.GetGroupByLeaderName(sep->arg[5]), 2, ctarget);
+							c->SetOrderBotAttack(false);
 						}
 						else {
 							c->Message(15, "You must target a monster.");

@@ -381,8 +381,11 @@ bool logpos;
 	//EQoffline-adds
 	virtual bool BotAttackMelee(Mob* other, int Hand = 13, bool FromRiposte = false) { return false; }
 	bool BotRaiding;
+	bool OrderBotAttack;
 	void SetBotRaiding(bool v) { BotRaiding = v; }
+	void SetOrderBotAttack(bool v) { OrderBotAttack = v; }
 	bool IsBotRaiding() const { return BotRaiding; }
+	bool IsOrderBotAttack() const { return OrderBotAttack; }
 	bool CheckBotDoubleAttack(bool Triple = false);
 
 #endif //EQBOTS
