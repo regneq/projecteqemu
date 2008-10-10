@@ -1392,10 +1392,12 @@ bool NPC::BotAttackMelee(Mob* other, int Hand, bool bRiposte)
 		max_hit += (max_hit * bonus / 100);
 
 		//if mainhand only, get the bonus damage from level
-		if(Hand == SLOT_PRIMARY) {
-			int damage_bonus = GetWeaponDamageBonus(weapon ? weapon->GetItem() : (const Item_Struct*)NULL);
-			min_hit += damage_bonus;
-			max_hit += damage_bonus;
+		if((Hand == SLOT_PRIMARY) && (GetLevel() >= 28) && IsWarriorClass())
+		{
+			int8 ucDamageBonus = GetWeaponDamageBonus( weapon ? weapon->GetItem() : (const Item_Struct*) NULL );
+
+			min_hit += (int) ucDamageBonus;
+			max_hit += (int) ucDamageBonus;
 		}
 
 		min_hit = min_hit * (100 + itembonuses.MinDamageModifier + spellbonuses.MinDamageModifier) / 100;
@@ -1423,7 +1425,7 @@ bool NPC::BotAttackMelee(Mob* other, int Hand, bool bRiposte)
 			TryCriticalHit(other, skillinuse, damage);
 			mlog(COMBAT__DAMAGE, "Final damage after all reductions: %d", damage);
 
-			if(damage > 0){
+			if(damage != 0){
 				sint32 hate = max_hit;
 				mlog(COMBAT__HITS, "Generating hate %d towards %s", hate, GetName());
 				// now add done damage to the hate list
@@ -1434,13 +1436,41 @@ bool NPC::BotAttackMelee(Mob* other, int Hand, bool bRiposte)
 		}
 
 		//riposte
+		bool slippery_attack = false; // Part of hack to allow riposte to become a miss, but still allow a Strikethrough chance (like on Live)
 		if (damage == -3)  {
 			if (bRiposte) return false;
-			else DoRiposte(other);
+			else {
+				// Bot Slippery Attacks AA
+				int saChance = 0;
+				if(IsWarriorClass()) {
+					if(GetLevel() >= 70) {
+						saChance = 5;
+					}
+					else if(GetLevel() >= 69) {
+						saChance = 4;
+					}
+					else if(GetLevel() >= 68) {
+						saChance = 3;
+					}
+					else if(GetLevel() >= 67) {
+						saChance = 2;
+					}
+					else if(GetLevel() >= 66) {
+						saChance = 1;
+					}
+				}
+				if ((Hand == SLOT_SECONDARY) && saChance) {// Do we even have it & was attack with mainhand? If not, don't bother with other calculations
+					if (MakeRandomInt(0, 100) < (saChance * 20)) {
+						damage = 0; // Counts as a miss
+						slippery_attack = true;
+					} else DoRiposte(other);
+				}
+				else DoRiposte(other);
+			}
 		}
 
 		//strikethrough..
-		if (damage < 0 && !bRiposte) {
+		if (((damage < 0) || slippery_attack) && !bRiposte) { // Hack to still allow Strikethrough chance w/ Slippery Attacks AA
 			if(MakeRandomInt(0, 100) < (itembonuses.StrikeThrough + spellbonuses.StrikeThrough)) {
 				Message_StringID(MT_StrikeThrough, 9078); // You strike through your opponents defenses!
 				BotAttackMelee(other, Hand, true); // Strikethrough only gives another attempted hit
