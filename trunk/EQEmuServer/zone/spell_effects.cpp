@@ -2842,7 +2842,7 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 		}
 
 		case SE_Charm: {
-			if (!PassCharismaCheck(caster, this, spell_id)) {
+			if (!caster || !PassCharismaCheck(caster, this, spell_id)) {
 				BuffFadeByEffect(SE_Charm);
 			}
 

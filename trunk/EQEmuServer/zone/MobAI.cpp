@@ -582,6 +582,7 @@ void Mob::AI_Process() {
 				//make sure everybody knows were not moving, for appearance sake
 				if(IsMoving())
 				{
+					if(target)
 						SetHeading(CalculateHeadingToTarget(target->GetX(), target->GetY()));
 					SetRunAnimSpeed(0);
 					SendPosition();
