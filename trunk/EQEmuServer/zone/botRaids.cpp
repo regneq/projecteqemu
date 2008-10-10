@@ -220,6 +220,23 @@ void BotRaids::AddBotRaidAggro(Mob *m) {
 	}
 }
 
+bool BotRaids::GetBotRaidAggro() {
+	bool gotAggro = false;
+	for(int i=0; i<MAX_BOT_RAID_GROUPS; i++) {
+		if(BotRaidGroups[i]) {
+			for(int j=0; j<MAX_GROUP_MEMBERS; j++) {
+				if(BotRaidGroups[i]->members[j]) {
+					if(BotRaidGroups[i]->members[j]->IsEngaged()) {
+						gotAggro = true;
+						break;
+					}
+				}
+			}
+		}
+	}
+	return gotAggro;
+}
+
 void BotRaids::FollowGuardCmd(Client *c, bool isGuard) {
 	int32 followingID = 0;
 	for(int i=0; i<MAX_BOT_RAID_GROUPS; i++) {

@@ -1,6 +1,7 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==10/09/2008
+Congdar: Replace Client IsEngaged() checks in Bot Source with bot aggro check
 Trevius: (AndMetal) Added quest Object SetOOCRegen() to adjust NPC Out of Combat Regen on the fly.
 Trevius: Relocated the Empty Corpse check code so that the Decay Time rule for it will now work.
 Trevius: Removed the Level 70 cap on the #traindisc <level> command.
