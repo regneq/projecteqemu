@@ -442,13 +442,13 @@ void Client::ApplyAABonuses(SendAA_Struct* aa_struct, int32 slots, StatBonuses* 
 	int32 base2 = 0;	//only really used for SE_RaiseStatCap & SE_ReduceSkillTimer in aa_effects table
 	int8 i; //slot
 	for (i = 1; i <= slots; i++) {	//i guess this means we can ignore a slot if it is 0
-		//IsBlankSpellEffect
-		if (effect == SE_Blank || (effect == SE_CHA && base1 == 0) || effect == SE_StackingCommand_Block || effect == SE_StackingCommand_Overwrite)
-			continue;
-
 		effect = aa_struct->abilities[i].skill_id;
 		base1 = aa_struct->abilities[i].base1;
 		base2 = aa_struct->abilities[i].base2;
+
+		//IsBlankSpellEffect
+		if (effect == SE_Blank || (effect == SE_CHA && base1 == 0) || effect == SE_StackingCommand_Block || effect == SE_StackingCommand_Overwrite)
+			continue;
 
 		switch (effect)
 		{
