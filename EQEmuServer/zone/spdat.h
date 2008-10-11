@@ -447,7 +447,7 @@ typedef enum {
 #define SE_ManaBurn					350	//not implemented. no idea on the calculation
 										//from http://everquest.allakhazam.com/db/spell.html?spell=8452;page=1;howmany=50#m1184016444141306266 for Mana Blaze (base1 = 9000):
 										//"As a wizard with 1k AA's (all damage) and 13k mana, I always land this AA for 36k. It only seems to use about 10k mana."
-#define SE_PersistentEffect			351	//not implemented. creates a trap/totem that casts a spell (spell id + base1?) when anything comes near it
+#define SE_PersistentEffect			351	//not implemented. creates a trap/totem that casts a spell (spell id + base1?) when anything comes near it. can probably make a beacon for this
 #define SE_Unknown352				352	//not sure. looks to be some type of invulnerability? Test ITC (8755)
 #define SE_Unknown353				353	//not sure. looks to be some type of invulnerability? Test ISC (8756)
 #define SE_Unknown354				354	//not sure. looks to be some type of invulnerability? Test DAT (8757)

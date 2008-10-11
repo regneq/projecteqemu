@@ -133,6 +133,7 @@ struct Buffs_Struct {
 	int16	magic_rune;
 	int8	deathSaveSuccessChance;
 	int8	casterAARank;				// The idea here is if you need to know what the caster AA rank was for a buff long after is has been casted.
+	//todo: dot stacking?
 };
 
 struct StatBonuses {
@@ -934,6 +935,7 @@ protected:
 	Buffs_Struct	buffs[BUFF_COUNT];
 	StatBonuses		itembonuses;
 	StatBonuses		spellbonuses;
+	StatBonuses		aabonuses;	//AndMetal
 	int16			petid;
 	int16			ownerid;
 	PetType			typeofpet;

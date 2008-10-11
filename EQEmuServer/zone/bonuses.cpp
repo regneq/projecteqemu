@@ -89,6 +89,8 @@ void Client::CalcBonuses()
 	RecalcWeight();
 	
 	CalcSpellBonuses(&spellbonuses);
+
+//	CalcAABonuses(&aabonuses);	//we're not quite ready for this
 	
 	CalcAC();
 	CalcATK();
@@ -402,6 +404,141 @@ void Client::CalcEdibleBonuses(StatBonuses* newbon) {
 			AddItemBonuses(inst, newbon);
 		}
 	}
+}
+
+void Client::CalcAABonuses(StatBonuses* newbon) {
+
+	memset(newbon, 0, sizeof(StatBonuses));	//start fresh
+
+	int i;
+	SendAA_Struct* aa_struct = NULL;	//need a place to put the AA info
+	int32 slots = 0;	//
+	for (i = 0; i < aaHighestID; i++) {	//iterate through all of the client's AAs
+		if (aa[i]->AA > 0) {	//do we have the AA?
+			slots = database.GetTotalAALevels(i);	//find out how many effects from aa_effects table
+			if (slots > 0) { //and does it have any effects? may be able to put this above, not sure if it runs on each iteration
+													//todo: load GetTotalAALevels into memory, otherwise we run this query 1600+ times every time we calculate stats, not including queries from FillAAEffects
+				aa_struct->id = aa[i]->AA;	//since FillAAEffects pulls from aa_struct
+				aa_struct->current_level = aa[i]->value;	//not sure if we'll actually need this at any point
+				database.FillAAEffects(aa_struct);	//pull info about the AA so we can work with it, since we don't know anything about it
+				ApplyAABonuses(aa_struct, slots, newbon);	//add the bonuses
+				memset(aa_struct, 0, sizeof(SendAA_Struct));	//need to clear out the old info for the next loop. is there a better way to do this since we really just need to clear abilities?
+			}
+		}
+	}
+}
+
+
+//A lot of the normal spell functions are set for just spells. For now, we'll just put them directly into the code and comment with the corresponding normal function
+//Maybe we'll fix it later? :-D
+void Client::ApplyAABonuses(SendAA_Struct* aa_struct, int32 slots, StatBonuses* newbon) {
+
+	if (!(slots > 0))	//sanity check. why bother if no slots to fill?
+		return;
+
+	//really don't want to have to type all the junk. from AA_Ability struct
+	int32 effect = 0;
+	int32 base1 = 0;
+	int32 base2 = 0;	//only really used for SE_RaiseStatCap & SE_ReduceSkillTimer in aa_effects table
+	int8 i; //slot
+	for (i = 1; i <= slots; i++) {	//i guess this means we can ignore a slot if it is 0
+		//IsBlankSpellEffect
+		if (effect == SE_Blank || (effect == SE_CHA && base1 == 0) || effect == SE_StackingCommand_Block || effect == SE_StackingCommand_Overwrite)
+			continue;
+
+		effect = aa_struct->abilities[i].skill_id;
+		base1 = aa_struct->abilities[i].base1;
+		base2 = aa_struct->abilities[i].base2;
+
+		switch (effect)
+		{
+			case SE_CurrentHP: //regens
+				newbon->HPRegen += base1;
+				break;
+			case SE_MovementSpeed:
+				newbon->movementspeed += base1;	//should we let these stack?
+				/*if (base1 > newbon->movementspeed)	//or should we use a total value?
+					newbon->movementspeed = base1;*/
+				break;
+			case SE_STR:
+				newbon->STR += base1;
+				break;
+			case SE_DEX:
+				newbon->DEX += base1;
+				break;
+			case SE_AGI:
+				newbon->AGI += base1;
+				break;
+			case SE_STA:
+				newbon->STA += base1;
+				break;
+			case SE_INT:
+				newbon->INT += base1;
+				break;
+			case SE_WIS:
+				newbon->WIS += base1;
+				break;
+			case SE_CHA:
+				newbon->CHA += base1;
+				break;
+			case SE_WaterBreathing:
+				//handled by client
+				break;
+			case SE_CurrentMana:
+				break;
+			case SE_ResistFire:
+				newbon->FR += base1;
+				break;
+			case SE_ResistCold:
+				newbon->CR += base1;
+				break;
+			case SE_ResistPoison:
+				newbon->PR += base1;
+				break;
+			case SE_ResistDisease:
+				newbon->DR += base1;
+				break;
+			case SE_ResistMagic:
+				newbon->MR += base1;
+				break;
+			case SE_IncreaseSpellHaste:
+				break;
+			case SE_IncreaseRange:
+				break;
+			case SE_LimitEffect:
+				break;
+			case SE_LimitSpellType:
+				break;
+			case SE_LimitMinDur:
+				break;
+			case SE_LimitInstant:
+				break;
+			case SE_LimitCastTime:
+				break;
+			case SE_MaxHPChange:
+				break;
+			case SE_Packrat:
+				break;
+			case SE_TwoHandBash:
+				break;
+			case SE_ReduceSkillTimer:
+				break;
+			case SE_SetBreathLevel:
+				break;
+			case SE_RaiseStatCap:
+				break;
+			case SE_PetDiscipline2:
+				break;
+			case SE_BaseMovementSpeed:
+				break;
+			case SE_SpellSlotIncrease:
+				break;
+			case SE_MysticalAttune:
+				break;
+		}
+
+	}
+
 }
 
 void Mob::CalcSpellBonuses(StatBonuses* newbon)
