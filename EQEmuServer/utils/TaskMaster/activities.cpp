@@ -167,7 +167,7 @@ void MainFrame::DeleteActivity(wxCommandEvent& event)
 	{
 		if(mMysql){
 			char * mActQuery = 0;
-			MakeAnyLenString(&mActQuery, "Delete from activities where taskid=%u and activityid=%u",selAct->id, selAct->activityid);
+			MakeAnyLenString(&mActQuery, "DELETE FROM activities WHERE taskid=%u AND activityid=%u",selAct->id, selAct->activityid);
 			mErrorLog->Log(eqEmuLogSQL, "%s", mActQuery);
 			if (mysql_query(mMysql, mActQuery)) {
 				mErrorLog->Log(eqEmuLogBoth, "MySQL Error: %s", mysql_error(mMysql));
@@ -486,7 +486,7 @@ void MainFrame::SaveActivity(wxCommandEvent& event)
 	}
 
 	char * mQuery = 0;
-	MakeAnyLenString(&mQuery, "DELETE FROM activities where taskid=%u and activityid=%u", ourAct.id, ourAct.activityId);
+	MakeAnyLenString(&mQuery, "DELETE FROM activities WHERE taskid=%u AND activityid=%u", ourAct.id, ourAct.activityId);
 	mErrorLog->Log(eqEmuLogSQL, "%s", mQuery);
 	if (mysql_query(mMysql, mQuery)) {
 		mErrorLog->Log(eqEmuLogBoth, "MySQL Error: %s", mysql_error(mMysql));
@@ -550,7 +550,7 @@ void MainFrame::SaveActivity(wxCommandEvent& event)
 	getStr.Clear();
 
 	MakeAnyLenString(&mQuery, "INSERT INTO `activities` (`taskid`,`activityid`,`step`,`activitytype`,`text1`,`text2`,`text3`,`goalid`,`goalmethod`,`goalcount`,`delivertonpc`,`zoneid`,`optional`) VALUES (%u,%u,%u,%u,'%s','%s','%s',%u,%u,%u,%u,%u,%u)",
-			ourAct.id, ourAct.activityId, ourAct.step, ourAct.activityType, ourAct.text1, ourAct.text2, ourAct.text3, ourAct.goalid, ourAct.goalmethod, ourAct.goalcount, ourAct.deliverToNpc, ourAct.zoneid, ourAct.optional);
+		ourAct.id, ourAct.activityId, ourAct.step, ourAct.activityType, MakeStringSQLSafe(ourAct.text1).mb_str(), MakeStringSQLSafe(ourAct.text2).mb_str(), MakeStringSQLSafe(ourAct.text3).mb_str(), ourAct.goalid, ourAct.goalmethod, ourAct.goalcount, ourAct.deliverToNpc, ourAct.zoneid, ourAct.optional);
 	
 	mErrorLog->Log(eqEmuLogSQL, "%s", mQuery);
 	if (mysql_query(mMysql, mQuery)) {

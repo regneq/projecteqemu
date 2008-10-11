@@ -424,3 +424,11 @@ void MainFrame::SetZoneSelectionByIdProximity(int zid)
 	}
 	mProxZone->Select(0); //we have no valid zone
 }
+
+wxString MainFrame::MakeStringSQLSafe(const char * c)
+{
+	wxString ret;
+	ret.Printf("%s", c);
+	ret.Replace("\'", "\\\'");
+	return ret;
+}
