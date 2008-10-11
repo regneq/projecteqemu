@@ -523,7 +523,7 @@ public:
 	bool TradeskillExecute(DBTradeskillRecipe_Struct *spec);
 	void CheckIncreaseTradeskill(sint16 bonusstat, sint16 stat_modifier, float skillup_modifier, uint16 success_modifier, SkillType tradeskill);
 
-	int32	pendingrezzexp;
+	int	pendingrezzexp;
 	void	GMKill();
 	inline bool	IsMedding()	const {return medding;}
 	inline int16	GetDuelTarget() const { return duel_target; }
