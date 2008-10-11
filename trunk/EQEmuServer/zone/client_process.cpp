@@ -920,6 +920,7 @@ void Client::OPRezzAnswer(const EQApplicationPacket* app) {
 	if(pendingrezzexp < 0) {
 		// pendingrezexp is set to -1 if we are not expecting an OP_RezzAnswer
 		_log(SPELLS__REZ, "Unexpected OP_RezzAnswer. Ignoring it.");
+		Message(13, "You have already been resurrected.\n");
 		return;
 	}
 
