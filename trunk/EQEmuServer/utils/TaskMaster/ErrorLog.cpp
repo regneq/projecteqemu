@@ -61,7 +61,8 @@ void EQEmuErrorLog::Log(unsigned int mOutputType, const char *msg, ...)
 	if(mOutputType & eqEmuLogSQL)
 	{
 		if(mErrorLogSQL){
-			fprintf(mErrorLogSQL, "%s;\n", buffer);
+			fprintf(mErrorLogSQL, "# [%02d.%02d.%02d - %02d:%02d:%02d]\n", mTime->tm_mon+1, mTime->tm_mday, mTime->tm_year%100, mTime->tm_hour, mTime->tm_min, mTime->tm_sec);
+			fprintf(mErrorLogSQL, "%s;\n\n", buffer);
 		}
 	}
 }

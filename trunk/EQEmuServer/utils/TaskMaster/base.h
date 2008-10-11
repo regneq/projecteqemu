@@ -201,6 +201,7 @@ public:
 	void SetZoneSelectionById(int zid);
 	void SetZoneSelectionByIdActivity(int zid);
 	void SetZoneSelectionByIdProximity(int zid);
+	wxString MakeStringSQLSafe(const char * c);
 
 	void ContextClick(wxContextMenuEvent& event);
 	void ContextMenuTaskList();

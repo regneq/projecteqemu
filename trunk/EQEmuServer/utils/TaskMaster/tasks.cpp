@@ -245,7 +245,7 @@ void MainFrame::SaveTask(wxCommandEvent& event)
 		ourTask.startzone = *i;
 
 		char * mQuery = 0;
-		MakeAnyLenString(&mQuery, "DELETE FROM tasks where id=%u", (*Iter).id);
+		MakeAnyLenString(&mQuery, "DELETE FROM tasks WHERE id=%u", (*Iter).id);
 		mErrorLog->Log(eqEmuLogSQL, "%s", mQuery);
 		if (mysql_query(mMysql, mQuery)) {
 			mErrorLog->Log(eqEmuLogBoth, "MySQL Error: %s", mysql_error(mMysql));
@@ -253,7 +253,7 @@ void MainFrame::SaveTask(wxCommandEvent& event)
 		}
 
 		MakeAnyLenString(&mQuery, "INSERT INTO `tasks` (`id`,`duration`,`title`,`description`,`reward`,`rewardid`,`cashreward`,`xpreward`,`rewardmethod`,`startzone`, `minlevel`, `maxlevel`) VALUES (%u,%u,'%s','%s','%s',%u,%u,%u,%u,%u,%u,%u)",
-			ourTask.id, ourTask.duration, ourTask.title, ourTask.desc, ourTask.reward, ourTask.rewardid, ourTask.cashreward, ourTask.xpreward, ourTask.rewardmethod, ourTask.startzone, ourTask.level_min, ourTask.level_max);
+			ourTask.id, ourTask.duration, MakeStringSQLSafe(ourTask.title).mb_str(), MakeStringSQLSafe(ourTask.desc).mb_str(), MakeStringSQLSafe(ourTask.reward).mb_str(), ourTask.rewardid, ourTask.cashreward, ourTask.xpreward, ourTask.rewardmethod, ourTask.startzone, ourTask.level_min, ourTask.level_max);
 		
 		mErrorLog->Log(eqEmuLogSQL, "%s", mQuery);
 		if (mysql_query(mMysql, mQuery)) {
