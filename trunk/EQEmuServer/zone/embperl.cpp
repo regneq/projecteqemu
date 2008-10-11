@@ -114,7 +114,7 @@ void Embperl::DoInit() {
 #endif
 		"-e", "0;", NULL };
 	
-	
+	PL_perl_destruct_level = 1;
 	perl_construct(my_perl);
 	
 	
@@ -259,6 +259,7 @@ Embperl::~Embperl()
 
 void Embperl::Reinit() {
 	in_use = true;
+	PL_perl_destruct_level = 1;
 	perl_destruct(my_perl);
 	DoInit();
 	in_use = false;
