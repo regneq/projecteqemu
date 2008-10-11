@@ -356,7 +356,7 @@ void Client::GoFish()
 		DeleteItemInInventory(13,0,true);
 	}
 
-	CheckIncreaseSkill(FISHING);
+	CheckIncreaseSkill(FISHING,5);
 }
 
 void Client::ForageItem() {
@@ -427,6 +427,6 @@ void Client::ForageItem() {
 	/*float wisebonus =  (m_pp.WIS > 200) ? 20 + ((m_pp.WIS - 200) * 0.05) : m_pp.WIS * 0.1;
 	if ((55-(GetSkill(FORAGE)*0.236))+wisebonus > MakeRandomFloat(0, 100))
 		this->SetSkill(FORAGE,GetRawSkill(FORAGE)+1);*/
-	CheckIncreaseSkill(FORAGE);
+	CheckIncreaseSkill(FORAGE,5);
 	
 }

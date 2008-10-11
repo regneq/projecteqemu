@@ -477,31 +477,31 @@ void Client::CheckSongSkillIncrease(int16 spell_id){
 	switch(spells[spell_id].skill)
 	{
 	case SINGING:
-		CheckIncreaseSkill(SINGING, -20);
+		CheckIncreaseSkill(SINGING, -15);
 		break;
 	case PERCUSSION_INSTRUMENTS:
 		if(this->itembonuses.percussionMod > 0)
-			CheckIncreaseSkill(PERCUSSION_INSTRUMENTS, -20);
+			CheckIncreaseSkill(PERCUSSION_INSTRUMENTS, -15);
 		else
-			CheckIncreaseSkill(SINGING, -20);
+			CheckIncreaseSkill(SINGING, -15);
 		break;
 	case STRINGED_INSTRUMENTS:
 		if(this->itembonuses.stringedMod > 0)
-			CheckIncreaseSkill(STRINGED_INSTRUMENTS, -20);
+			CheckIncreaseSkill(STRINGED_INSTRUMENTS, -15);
 		else
-			CheckIncreaseSkill(SINGING, -20);
+			CheckIncreaseSkill(SINGING, -15);
 		break;
 	case WIND_INSTRUMENTS:
 		if(this->itembonuses.windMod > 0)
-			CheckIncreaseSkill(WIND_INSTRUMENTS, -20);
+			CheckIncreaseSkill(WIND_INSTRUMENTS, -15);
 		else
-			CheckIncreaseSkill(SINGING, -20);
+			CheckIncreaseSkill(SINGING, -15);
 		break;
 	case BRASS_INSTRUMENTS:
 		if(this->itembonuses.brassMod > 0)
-			CheckIncreaseSkill(BRASS_INSTRUMENTS, -20);
+			CheckIncreaseSkill(BRASS_INSTRUMENTS, -15);
 		else
-			CheckIncreaseSkill(SINGING, -20);
+			CheckIncreaseSkill(SINGING, -15);
 		break;
 	default:
 		break;

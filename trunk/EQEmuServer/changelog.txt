@@ -3,6 +3,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 
 ==10/11/2008
 Derision: Resurrection fix.
+KLS: Rebalanced skill ups.
 
 ==10/10/2008
 AndMetal: Added functions to calculate AA bonuses just like item & spell bonuses (not turned on yet)

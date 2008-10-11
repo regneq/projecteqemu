@@ -955,7 +955,7 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 
 	if(IsTracking && ((x_pos!=ppu->x_pos) || (y_pos!=ppu->y_pos))){
 		if(MakeRandomFloat(0, 100) < 70)//should be good
-			CheckIncreaseSkill(TRACKING,-10);
+			CheckIncreaseSkill(TRACKING,-20);
 	}
 
 #ifdef GUILDWARS
@@ -2148,7 +2148,7 @@ void Client::Handle_OP_FeignDeath(const EQApplicationPacket *app)
 		SetFeigned(true);
 	}
 
-	CheckIncreaseSkill(FEIGN_DEATH);
+	CheckIncreaseSkill(FEIGN_DEATH,5);
 	return;
 }
 
@@ -2178,7 +2178,7 @@ void Client::Handle_OP_Sneak(const EQApplicationPacket *app)
 		safe_delete(outapp);
 	}
 	else {
-		CheckIncreaseSkill(SNEAK,15);
+		CheckIncreaseSkill(SNEAK,5);
 	}
 	float hidechance = ((GetSkill(SNEAK)/300.0f) + .25) * 100;
 	float random = MakeRandomFloat(0, 100);
@@ -2222,7 +2222,7 @@ void Client::Handle_OP_Hide(const EQApplicationPacket *app)
 
 	float hidechance = ((GetSkill(HIDE)/250.0f) + .25) * 100;
 	float random = MakeRandomFloat(0, 100);
-	CheckIncreaseSkill(HIDE,15);
+	CheckIncreaseSkill(HIDE,5);
 	if (random < hidechance) {
 		EQApplicationPacket* outapp = new EQApplicationPacket(OP_SpawnAppearance, sizeof(SpawnAppearance_Struct));
 		SpawnAppearance_Struct* sa_out = (SpawnAppearance_Struct*)outapp->pBuffer;
@@ -3255,7 +3255,7 @@ void Client::Handle_OP_DeleteItem(const EQApplicationPacket *app)
 	const ItemInst *inst = GetInv().GetItem(alc->from_slot);
 	if (inst && inst->GetItem()->ItemType == ItemTypeAlcohol) {
 		//TODO: grant alcohol bonuses..?
-		CheckIncreaseSkill(ALCOHOL_TOLERANCE,200);
+		CheckIncreaseSkill(ALCOHOL_TOLERANCE,30);
 	}
 	DeleteItemInInventory(alc->from_slot, 1);
 
@@ -5518,7 +5518,7 @@ void Client::Handle_OP_Mend(const EQApplicationPacket *app)
 		Message_StringID(4,MEND_FAIL);
 	}
 
-	CheckIncreaseSkill(MEND);
+	CheckIncreaseSkill(MEND,10);
 	return;
 }
 
