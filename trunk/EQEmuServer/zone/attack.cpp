@@ -3802,6 +3802,7 @@ void Mob::TryWeaponProc(const Item_Struct* weapon, Mob *on) {
 
 	//now try our proc arrays
 	float procmod =  float(GetDEX()) / 100.0f + ProcBonus*100.0;	//did somebody think about this???
+																	//AndMetal: aren't we doing this in GetProcChances?
 
 	uint32 i;
 	for(i = 0; i < MAX_PROCS; i++) {
