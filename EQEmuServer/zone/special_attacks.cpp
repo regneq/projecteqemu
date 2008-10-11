@@ -141,7 +141,7 @@ void Client::OPCombatAbility(const EQApplicationPacket *app) {
 		if (target!=this) {
 			
 			if(!target->IsClient())
-				CheckIncreaseSkill(BASH);
+				CheckIncreaseSkill(BASH,10);
 			DoAnim(animTailRake);
 
 			if(GetWeaponDamage(target, GetInv().GetItem(SLOT_SECONDARY)) <= 0 &&
@@ -176,7 +176,7 @@ void Client::OPCombatAbility(const EQApplicationPacket *app) {
 	//It attempts to do an attack, for the next hit to succeed the previous must not of missed
 	if ((ca_atk->m_atk == 100) && (ca_atk->m_skill == FRENZY)) {
 		if(!target->IsClient())
-			CheckIncreaseSkill(FRENZY);
+			CheckIncreaseSkill(FRENZY,10);
 
 		int AtkNum = 1 + (GetSkill(FRENZY)/100);
 
@@ -208,7 +208,7 @@ void Client::OPCombatAbility(const EQApplicationPacket *app) {
 		}
 		if (target!=this) {
 			if(!target->IsClient())
-				CheckIncreaseSkill(KICK);
+				CheckIncreaseSkill(KICK,10);
 			DoAnim(animKick);
 
 			if(GetWeaponDamage(target, GetInv().GetItem(SLOT_FEET)) <= 0){
@@ -410,7 +410,7 @@ void Mob::TryBackstab(Mob *other) {
 			) {
 			entity_list.MessageClose_StringID(this, false, 200, MT_CritMelee, ASSASSINATES, GetName());
 			if(IsClient())
-				CastToClient()->CheckIncreaseSkill(BACKSTAB);
+				CastToClient()->CheckIncreaseSkill(BACKSTAB,10);
 			RogueAssassinate(other);
 		}
 		else {
@@ -424,7 +424,7 @@ void Mob::TryBackstab(Mob *other) {
 						RogueBackstab(other);
 			}
 			if(IsClient())
-				CastToClient()->CheckIncreaseSkill(BACKSTAB);
+				CastToClient()->CheckIncreaseSkill(BACKSTAB,10);
 		}
 	}
 	else if(GetAA(aaChaoticStab) > 0) {
@@ -433,7 +433,7 @@ void Mob::TryBackstab(Mob *other) {
 		if (level > 54) {
 			float DoubleAttackProbability = (GetSkill(DOUBLE_ATTACK) + GetLevel()) / 500.0f; // 62.4 max
 			if(IsClient())
-				CastToClient()->CheckIncreaseSkill(BACKSTAB);
+				CastToClient()->CheckIncreaseSkill(BACKSTAB,10);
 			// Check for double attack with main hand assuming maxed DA Skill (MS)
 			if(MakeRandomFloat(0, 1) < DoubleAttackProbability)		// Max 62.4 % chance of DA
 				if(other->GetHP() > 0)
@@ -730,7 +730,7 @@ void Client::RangedAttack(Mob* other) {
 		mlog(COMBAT__RANGED, "Endless Quiver prevented ammo consumption.");
 	}
 	
-	CheckIncreaseSkill(ARCHERY);
+	CheckIncreaseSkill(ARCHERY,-15);
 
 	//break invis when you attack
 	if(invisible) {
@@ -1217,7 +1217,7 @@ void Mob::Taunt(NPC* who, bool always_succeed) {
 		return;
 
 	if (!always_succeed && IsClient())
-		CastToClient()->CheckIncreaseSkill(TAUNT);
+		CastToClient()->CheckIncreaseSkill(TAUNT,10);
 	
 	int level = GetLevel();
 	
@@ -1315,7 +1315,7 @@ void Mob::InstillDoubt(Mob *who) {
 		return;
 	
 	if(IsClient()) {
-		CastToClient()->CheckIncreaseSkill(INTIMIDATION);
+		CastToClient()->CheckIncreaseSkill(INTIMIDATION,10);
 	}
 
 	//I think this formula needs work

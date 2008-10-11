@@ -422,7 +422,7 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage)
         skill = GetSkill(RIPOSTE);
 		if (IsClient()) {
         	if (!other->IsClient() && GetLevelCon(other->GetLevel()) != CON_GREEN)
-				this->CastToClient()->CheckIncreaseSkill(RIPOSTE);
+				this->CastToClient()->CheckIncreaseSkill(RIPOSTE, -10);
 		}
 		
 		if (!ghit) {	//if they are not using a garunteed hit discipline
@@ -440,7 +440,7 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage)
 		skill = CastToClient()->GetSkill(BLOCKSKILL);
 		if (IsClient()) {
 			if (!other->IsClient() && GetLevelCon(other->GetLevel()) != CON_GREEN)
-				this->CastToClient()->CheckIncreaseSkill(BLOCKSKILL);
+				this->CastToClient()->CheckIncreaseSkill(BLOCKSKILL, -10);
 		}
 		
 		if (!ghit) {	//if they are not using a garunteed hit discipline
@@ -460,7 +460,7 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage)
         skill = CastToClient()->GetSkill(PARRY);
 		if (IsClient()) {
 			if (!other->IsClient() && GetLevelCon(other->GetLevel()) != CON_GREEN)
-				this->CastToClient()->CheckIncreaseSkill(PARRY); 
+				this->CastToClient()->CheckIncreaseSkill(PARRY, -10); 
 		}
 		
 		bonus = (defender->spellbonuses.ParryChance + defender->itembonuses.ParryChance) / 100.0f;
@@ -482,7 +482,7 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage)
         skill = CastToClient()->GetSkill(DODGE);
 		if (IsClient()) {
 			if (!other->IsClient() && GetLevelCon(other->GetLevel()) != CON_GREEN)
-				this->CastToClient()->CheckIncreaseSkill(DODGE);
+				this->CastToClient()->CheckIncreaseSkill(DODGE, -10);
 		}
 		
 		bonus = (defender->spellbonuses.DodgeChance + defender->itembonuses.DodgeChance) / 100.0f;
@@ -1076,8 +1076,8 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte)
 		else if(GetLevel() < 20 && max_hit > 40)
 			max_hit = 40;
 
-		CheckIncreaseSkill(skillinuse, -10);
-		CheckIncreaseSkill(OFFENSE, -10);
+		CheckIncreaseSkill(skillinuse, -15);
+		CheckIncreaseSkill(OFFENSE, -15);
 
 		//monks are supposed to be a step ahead of other classes in
 		//toe to toe combat, small bonuses for hitting key levels too
@@ -1274,7 +1274,7 @@ void Client::Damage(Mob* other, sint32 damage, int16 spell_id, SkillType attack_
 	if (damage > 0) {
 		//if the other is not green, and this is not a spell
 		if (other && other->IsNPC() && (spell_id == SPELL_UNKNOWN) && GetLevelCon(other->GetLevel()) != CON_GREEN )
-			CheckIncreaseSkill(DEFENSE, -10);
+			CheckIncreaseSkill(DEFENSE, -15);
 	}
 }
 
@@ -3239,7 +3239,7 @@ bool Client::CheckDoubleAttack(bool tripleAttack) {
 
 		// You can gain skill even if you don't successfully double attack,
 		// but put it here so you don't skill up on triple attacks
-		CheckIncreaseSkill(DOUBLE_ATTACK);
+		CheckIncreaseSkill(DOUBLE_ATTACK, -15);
 	}
 	
 	// If your chance is greater than the RNG you are successful! Always have a 5% chance to fail at max skills+bonuses.

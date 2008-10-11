@@ -1785,9 +1785,10 @@ bool Client::CheckIncreaseSkill(SkillType skillid, int chancemodi) {
 	{
 		// the higher your current skill level, the harder it is
 		sint16 Chance = 10 + chancemodi + ((252 - skillval) / 20);
+		Chance = (Chance * RuleI(Character, SkillUpModifier) / 100);
 		if (Chance < 1)
 			Chance = 1; // Make it always possible
-		if(MakeRandomFloat(0, 99) < (Chance * RuleI(Character, SkillUpModifier) / 100))
+		if(MakeRandomFloat(0, 99) < Chance)
 		{
 			SetSkill(skillid, GetRawSkill(skillid) + 1);
 			_log(SKILLS__GAIN, "Skill %d at value %d successfully gain with %.4f%%chance (mod %d)", skillid, skillval, Chance, chancemodi);
