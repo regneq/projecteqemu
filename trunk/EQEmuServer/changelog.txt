@@ -4,6 +4,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==10/12/2008
 Derision: No more binding wounds while feigning death.
 Derision: (Rocker8956) Movegrp quest command fix.
+Derision: (LeftRoad) TEMPORARY(NORENT) items in a character inventory will be retained if you log back into that character within 30 minutes.
 
 ==10/11/2008
 Derision: Resurrection fix.
