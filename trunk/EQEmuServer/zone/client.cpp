@@ -2102,7 +2102,7 @@ bool Client::BindWound(Mob* bindmob, bool start, bool fail){
 			}
 
 			else {
-				if (bindmob->DistNoRoot(*this) <= 400) {
+				if (!GetFeigned() && (bindmob->DistNoRoot(*this) <= 400)) {
 					// send bindmob bind done
 					if(!bindmob->IsAIControlled() && bindmob != this ) {
 
@@ -2177,7 +2177,11 @@ bool Client::BindWound(Mob* bindmob, bool start, bool fail){
 				}
 				else {
 					// Send client bind failed
-					bind_out->type = 6; // They moved
+					if(bindmob != this)
+						bind_out->type = 6; // They moved
+					else
+						bind_out->type = 7; // Bandager moved
+
 					QueuePacket(outapp);
 					bind_out->type = 0;
 				}
