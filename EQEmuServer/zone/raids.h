@@ -151,9 +151,8 @@ public:
 	void	SplitMoney(uint32 copper, uint32 silver, uint32 gold, uint32 platinum, Client *splitter = NULL);
 	void	GroupBardPulse(Mob* caster, uint16 spellid, int32 gid);
 
-	//nyi
-	void	TeleportGroup(Mob* sender, int32 zoneID, float x, float y, float z, float heading, int32 gid) { }
-	void	TeleportRaid(Mob* sender, int32 zoneID, float x, float y, float z, float heading) { }
+	void	TeleportGroup(Mob* sender, int32 zoneID, float x, float y, float z, float heading, int32 gid);
+	void	TeleportRaid(Mob* sender, int32 zoneID, float x, float y, float z, float heading);
 
 	//updates the list of Client* objects based on who's in and not in the zone.
 	//also learns raid structure based on db.

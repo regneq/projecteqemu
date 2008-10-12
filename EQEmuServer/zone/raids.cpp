@@ -607,6 +607,32 @@ void Raid::GroupBardPulse(Mob* caster, uint16 spellid, int32 gid){
 	}
 }
 
+void Raid::TeleportGroup(Mob* sender, int32 zoneID, float x, float y, float z, float heading, int32 gid)
+{
+	for(int z = 0; z < MAX_RAID_MEMBERS; z++) 
+	{
+		if(members[z].member)
+		{
+			if(members[z].GroupNumber == gid)
+			{
+				members[z].member->MovePC((int)zoneID, x, y, z, heading, 0, ZoneSolicited);
+			}
+		}
+	
+	}
+}
+
+void Raid::TeleportRaid(Mob* sender, int32 zoneID, float x, float y, float z, float heading)
+{
+	for(int z = 0; z < MAX_RAID_MEMBERS; z++) 
+	{
+		if(members[z].member)
+		{
+			members[z].member->MovePC((int)zoneID, x, y, z, heading, 0, ZoneSolicited);
+		}
+	}
+}
+
 void Raid::ChangeLootType(int32 type)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
