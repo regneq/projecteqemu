@@ -9,7 +9,7 @@
 #include "items.h"
 #include <vector>
 
-#define TASK_MASTER_VERSION "1.0.3"
+#define TASK_MASTER_VERSION "1.0.4"
 
 class MainApp: public wxApp
 {

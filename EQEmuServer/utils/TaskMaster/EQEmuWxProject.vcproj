@@ -124,9 +124,6 @@
 				RelativePath=".\base_utility.cpp">
 			</File>
 			<File
-				RelativePath=".\database.cpp">
-			</File>
-			<File
 				RelativePath=".\ErrorLog.cpp">
 			</File>
 			<File
@@ -148,9 +145,6 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
 			<File
 				RelativePath=".\base.h">
-			</File>
-			<File
-				RelativePath=".\database.h">
 			</File>
 			<File
 				RelativePath=".\ErrorLog.h">

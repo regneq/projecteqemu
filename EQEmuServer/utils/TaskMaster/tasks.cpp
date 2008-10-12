@@ -1,4 +1,5 @@
 #include <wx/wx.h>
+#include <wx/numdlg.h>
 #include <mysql.h>
 #include <vector>
 #include "tasks.h"
@@ -25,6 +26,10 @@ void MainFrame::NewTask(wxCommandEvent& event)
 		newT.level_min = 0;
 		newT.level_max = 0;
 
+		int newID = wxGetNumberFromUser("", "ID:", "Input ID", (highestIndex+1), 0, 2147483600);
+
+		newT.id = newID;
+
 		char * mQuery = 0;
 		MakeAnyLenString(&mQuery, "INSERT INTO `tasks` (`id`,`duration`,`title`,`description`,`reward`,`rewardid`,`cashreward`,`xpreward`,`rewardmethod`,`startzone`, `minlevel`, `maxlevel`) VALUES (%u,%u,'%s','%s','%s',%u,%u,%u,%u,%u,%u,%u)",
 			newT.id, newT.duration, newT.title, newT.desc, newT.reward, newT.rewardid, newT.cashreward, newT.xpreward, newT.rewardmethod, newT.startzone, newT.level_min, newT.level_max);
@@ -37,9 +42,10 @@ void MainFrame::NewTask(wxCommandEvent& event)
 		taskList.push_back(newT);
 
 		wxString str;
-		str.Printf("%d:%s", (highestIndex+1), "Default Task Name");
+		str.Printf("%d:%s", newT.id, "Default Task Name");
 		ItemSelectionList->Append(str);
-		++highestIndex;
+		if(highestIndex < (newID + 1))
+			highestIndex = newID + 1;
 	}
 	else{
 		mErrorLog->Log(eqEmuLogBoth, "Error with new task create, mysql not initialized");
@@ -244,7 +250,18 @@ void MainFrame::SaveTask(wxCommandEvent& event)
 		int * i = (int*)mStartZone->GetClientData(mStartZone->GetSelection());
 		ourTask.startzone = *i;
 
+
 		char * mQuery = 0;
+		MakeAnyLenString(&mQuery, "UPDATE tasks SET duration=%u, title='%s', description='%s', reward='%s', rewardid=%u, cashreward=%u, xpreward=%u, rewardmethod=%u, startzone=%u, minlevel=%u, maxlevel=%u WHERE id=%u",
+			ourTask.duration, MakeStringSQLSafe(ourTask.title).mb_str(), MakeStringSQLSafe(ourTask.desc).mb_str(), MakeStringSQLSafe(ourTask.reward).mb_str(), ourTask.rewardid, ourTask.cashreward, ourTask.xpreward, ourTask.rewardmethod, ourTask.startzone, ourTask.level_min, ourTask.level_max, ourTask.id);
+		
+		mErrorLog->Log(eqEmuLogSQL, "%s", mQuery);
+		if (mysql_query(mMysql, mQuery)) {
+			mErrorLog->Log(eqEmuLogBoth, "MySQL Error: %s", mysql_error(mMysql));
+			return;
+		}
+
+		/*char * mQuery = 0;
 		MakeAnyLenString(&mQuery, "DELETE FROM tasks WHERE id=%u", (*Iter).id);
 		mErrorLog->Log(eqEmuLogSQL, "%s", mQuery);
 		if (mysql_query(mMysql, mQuery)) {
@@ -259,7 +276,7 @@ void MainFrame::SaveTask(wxCommandEvent& event)
 		if (mysql_query(mMysql, mQuery)) {
 			mErrorLog->Log(eqEmuLogBoth, "MySQL Error: %s", mysql_error(mMysql));
 			return;
-		}
+		}*/
 
 		(*Iter).cashreward = ourTask.cashreward;
 		strcpy((*Iter).desc, ourTask.desc);
