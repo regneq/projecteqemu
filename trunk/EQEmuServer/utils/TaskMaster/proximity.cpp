@@ -266,6 +266,7 @@ void MainFrame::SaveProximity(wxCommandEvent& event)
 	wxString inStr;
 	int explore = openedProximity.exploreid;
 	int zone = openedProximity.zoneid;
+	bool canUpdate = false;
 
 	inStr.Clear();
 	inStr = mProxId->GetValue();
@@ -351,21 +352,43 @@ void MainFrame::SaveProximity(wxCommandEvent& event)
 		return;
 	}
 
-	char * mQuery = 0;
-	MakeAnyLenString(&mQuery, "DELETE FROM proximities WHERE zoneid=%u AND exploreid=%u", zone, explore);
-	mErrorLog->Log(eqEmuLogSQL, "%s", mQuery);
-	if (mysql_query(mMysql, mQuery)) {
-		mErrorLog->Log(eqEmuLogBoth, "MySQL Error: %s", mysql_error(mMysql));
-		return;
+	if(openedProximity.exploreid == toSave.exploreid && openedProximity.zoneid == toSave.zoneid)
+	{
+		mErrorLog->Log(eqEmuLogBoth, "Can use UPDATE");
+	}
+	else{
+		mErrorLog->Log(eqEmuLogBoth, "Cannot use UPDATE must replace instead");
 	}
 
-	MakeAnyLenString(&mQuery, "INSERT INTO `proximities` (`zoneid`,`exploreid`,`minx`,`maxx`,`miny`,`maxy`,`minz`,`maxz`) VALUES (%u,%u,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f)"
-		, toSave.zoneid, toSave.exploreid, toSave.minx, toSave.maxx, toSave.miny, toSave.maxy, toSave.minz, toSave.maxz);
-	
-	mErrorLog->Log(eqEmuLogSQL, "%s", mQuery);
-	if (mysql_query(mMysql, mQuery)) {
-		mErrorLog->Log(eqEmuLogBoth, "MySQL Error: %s", mysql_error(mMysql));
-		return;
+	if(canUpdate){
+		char * mQuery = 0;
+		MakeAnyLenString(&mQuery, "UPDATE proximities SET minx=%.4f, maxx=%.4f, miny=%.4f, maxy=%.4f, minz=%.4f, maxz=%.4f) WHERE zoneid=%u AND exploreid=%u", 
+			toSave.minx, toSave.maxx, toSave.miny, toSave.maxy, toSave.minz, toSave.maxz, toSave.zoneid, toSave.exploreid);
+		
+		mErrorLog->Log(eqEmuLogSQL, "%s", mQuery);
+		if (mysql_query(mMysql, mQuery)) {
+			mErrorLog->Log(eqEmuLogBoth, "MySQL Error: %s", mysql_error(mMysql));
+			return;
+		}
+	}
+	else
+	{
+		char * mQuery = 0;
+		MakeAnyLenString(&mQuery, "DELETE FROM proximities WHERE zoneid=%u AND exploreid=%u", zone, explore);
+		mErrorLog->Log(eqEmuLogSQL, "%s", mQuery);
+		if (mysql_query(mMysql, mQuery)) {
+			mErrorLog->Log(eqEmuLogBoth, "MySQL Error: %s", mysql_error(mMysql));
+			return;
+		}
+
+		MakeAnyLenString(&mQuery, "INSERT INTO `proximities` (`zoneid`,`exploreid`,`minx`,`maxx`,`miny`,`maxy`,`minz`,`maxz`) VALUES (%u,%u,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f)"
+			, toSave.zoneid, toSave.exploreid, toSave.minx, toSave.maxx, toSave.miny, toSave.maxy, toSave.minz, toSave.maxz);
+		
+		mErrorLog->Log(eqEmuLogSQL, "%s", mQuery);
+		if (mysql_query(mMysql, mQuery)) {
+			mErrorLog->Log(eqEmuLogBoth, "MySQL Error: %s", mysql_error(mMysql));
+			return;
+		}
 	}
 
 	for(unsigned int x = 0; x < ProximitySelectionList->GetCount(); x++)
@@ -416,6 +439,7 @@ void MainFrame::SaveProximity(wxCommandEvent& event)
 
 	openedProximity.exploreid = toSave.exploreid;
 	openedProximity.zoneid = toSave.zoneid;
+	mErrorLog->Log(eqEmuLogBoth, "Save finished.");
 }
 
 void MainFrame::ContextMenuProximity()

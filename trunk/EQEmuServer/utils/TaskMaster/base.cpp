@@ -329,8 +329,8 @@ MainFrame::MainFrame(const wxString& title,
 	mActGoalID->Disable();
 
 	mActGoalCountLabel = new wxStaticText(MainPanel2, -1, "Goal Count:",  wxPoint(105,457), wxDefaultSize);
-	mActGoalCount = new wxTextCtrl(MainPanel2, -1, wxT(""), wxPoint(200,455), wxSize(25,20), wxTE_DONTWRAP, wxTextValidator(wxFILTER_NUMERIC));
-	mActGoalCount->SetMaxLength(2);
+	mActGoalCount = new wxTextCtrl(MainPanel2, -1, wxT(""), wxPoint(200,455), wxSize(60,20), wxTE_DONTWRAP, wxTextValidator(wxFILTER_NUMERIC));
+	mActGoalCount->SetMaxLength(8);
 	mActGoalCount->Disable();
 
 	/*Activities Page Elements End*/

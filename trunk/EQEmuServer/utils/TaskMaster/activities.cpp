@@ -485,14 +485,8 @@ void MainFrame::SaveActivity(wxCommandEvent& event)
 		}
 	}
 
-	char * mQuery = 0;
-	MakeAnyLenString(&mQuery, "DELETE FROM activities WHERE taskid=%u AND activityid=%u", ourAct.id, ourAct.activityId);
-	mErrorLog->Log(eqEmuLogSQL, "%s", mQuery);
-	if (mysql_query(mMysql, mQuery)) {
-		mErrorLog->Log(eqEmuLogBoth, "MySQL Error: %s", mysql_error(mMysql));
-		return;
-	}
-
+	int delid = openedActivity.activityid;
+	bool canUpdate = false;
 	wxString getStr;
 
 	getStr = mActText1->GetValue();
@@ -549,13 +543,42 @@ void MainFrame::SaveActivity(wxCommandEvent& event)
 	ourAct.goalcount = atoi(getStr.mb_str());
 	getStr.Clear();
 
-	MakeAnyLenString(&mQuery, "INSERT INTO `activities` (`taskid`,`activityid`,`step`,`activitytype`,`text1`,`text2`,`text3`,`goalid`,`goalmethod`,`goalcount`,`delivertonpc`,`zoneid`,`optional`) VALUES (%u,%u,%u,%u,'%s','%s','%s',%u,%u,%u,%u,%u,%u)",
-		ourAct.id, ourAct.activityId, ourAct.step, ourAct.activityType, MakeStringSQLSafe(ourAct.text1).mb_str(), MakeStringSQLSafe(ourAct.text2).mb_str(), MakeStringSQLSafe(ourAct.text3).mb_str(), ourAct.goalid, ourAct.goalmethod, ourAct.goalcount, ourAct.deliverToNpc, ourAct.zoneid, ourAct.optional);
-	
-	mErrorLog->Log(eqEmuLogSQL, "%s", mQuery);
-	if (mysql_query(mMysql, mQuery)) {
-		mErrorLog->Log(eqEmuLogBoth, "MySQL Error: %s", mysql_error(mMysql));
-		return;
+	if(ourAct.activityId == openedActivity.activityid && ourAct.id == openedActivity.id){
+		canUpdate = true;
+		mErrorLog->Log(eqEmuLogBoth, "Can use UPDATE.");
+	}
+	else{
+		mErrorLog->Log(eqEmuLogBoth, "Cannot use UPDATE must replace instead");
+	}
+
+	if(canUpdate)
+	{
+		char * mQuery = 0;
+		MakeAnyLenString(&mQuery, "UPDATE activities SET step=%u, activitytype=%u, text1='%s', text2='%s', text3='%s', goalid=%u, goalmethod=%u,goalcount=%u, delivertonpc=%u, zoneid=%u, optional=%u WHERE taskid=%u AND activityid =%u",
+			ourAct.step, ourAct.activityType, MakeStringSQLSafe(ourAct.text1).mb_str(), MakeStringSQLSafe(ourAct.text2).mb_str(), MakeStringSQLSafe(ourAct.text3).mb_str(), ourAct.goalid, ourAct.goalmethod, ourAct.goalcount, ourAct.deliverToNpc, ourAct.zoneid, ourAct.optional, ourAct.id, ourAct.activityId );
+		mErrorLog->Log(eqEmuLogSQL, "%s", mQuery);
+		if (mysql_query(mMysql, mQuery)) {
+			mErrorLog->Log(eqEmuLogBoth, "MySQL Error: %s", mysql_error(mMysql));
+			return;
+		}
+	}
+	else
+	{
+		char * mQuery = 0;
+		MakeAnyLenString(&mQuery, "DELETE FROM activities WHERE taskid=%u AND activityid=%u", ourAct.id, delid);
+		mErrorLog->Log(eqEmuLogSQL, "%s", mQuery);
+		if (mysql_query(mMysql, mQuery)) {
+			mErrorLog->Log(eqEmuLogBoth, "MySQL Error: %s", mysql_error(mMysql));
+			return;
+		}
+
+		MakeAnyLenString(&mQuery, "INSERT INTO `activities` (`taskid`,`activityid`,`step`,`activitytype`,`text1`,`text2`,`text3`,`goalid`,`goalmethod`,`goalcount`,`delivertonpc`,`zoneid`,`optional`) VALUES (%u,%u,%u,%u,'%s','%s','%s',%u,%u,%u,%u,%u,%u)",
+			ourAct.id, ourAct.activityId, ourAct.step, ourAct.activityType, MakeStringSQLSafe(ourAct.text1).mb_str(), MakeStringSQLSafe(ourAct.text2).mb_str(), MakeStringSQLSafe(ourAct.text3).mb_str(), ourAct.goalid, ourAct.goalmethod, ourAct.goalcount, ourAct.deliverToNpc, ourAct.zoneid, ourAct.optional);
+		mErrorLog->Log(eqEmuLogSQL, "%s", mQuery);
+		if (mysql_query(mMysql, mQuery)) {
+			mErrorLog->Log(eqEmuLogBoth, "MySQL Error: %s", mysql_error(mMysql));
+			return;
+		}
 	}
 
 	(*Iter).activityId = ourAct.activityId;

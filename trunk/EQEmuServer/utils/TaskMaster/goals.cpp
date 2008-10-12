@@ -340,7 +340,6 @@ void MainFrame::ChangeGoalValue(wxCommandEvent& event)
 		return;
 	}
 
-	int newVal = wxGetNumberFromUser("", "Value:", "Input Value", 0, 0, 9999999);
 	int changedId = openedGoal;
 	int changedGoal;
 	int * changedGoalPtr = (int*)GoalsValuesList->GetClientData(GoalsValuesList->GetSelection());
@@ -352,6 +351,8 @@ void MainFrame::ChangeGoalValue(wxCommandEvent& event)
 	}
 
 	changedGoal = *changedGoalPtr;
+
+	int newVal = wxGetNumberFromUser("", "Value:", "Input Value", changedGoal, 0, 9999999);
 
 	char * mQuery = 0;
 	MakeAnyLenString(&mQuery, "DELETE FROM goallists WHERE listid=%u AND entry=%u", changedId, changedGoal);
