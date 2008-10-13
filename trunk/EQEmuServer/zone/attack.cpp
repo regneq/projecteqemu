@@ -1122,6 +1122,14 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte)
 
 		min_hit = min_hit * (100 + itembonuses.MinDamageModifier + spellbonuses.MinDamageModifier) / 100;
 
+		if (Hand==14) {
+			if(GetAA(aaSinisterStrikes)) {
+				int sinisterBonus = 5;
+				min_hit += (min_hit * sinisterBonus / 100);
+				max_hit += (max_hit * sinisterBonus / 100);
+			}
+		}
+
 		if(max_hit < min_hit)
 			max_hit = min_hit;
 
