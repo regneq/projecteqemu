@@ -1,6 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==10/13/2008
+Derision: Looting your corpse while liched/wolf form etc should now auto-equip items
+
 ==10/12/2008
 Derision: No more binding wounds while feigning death.
 Derision: (Rocker8956) Movegrp quest command fix.

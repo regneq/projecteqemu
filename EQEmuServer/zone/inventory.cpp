@@ -383,7 +383,7 @@ bool Client::TryStacking(ItemInst* item, int8 type, bool try_worn, bool try_curs
 bool Client::AutoPutLootInInventory(ItemInst& inst, bool try_worn, bool try_cursor, ServerLootItem_Struct** bag_item_data)
 {
 	// #1: Try to auto equip
-	if (try_worn && inst.IsEquipable(GetRace(), GetClass()) && inst.GetItem()->ReqLevel<=level)
+	if (try_worn && inst.IsEquipable(GetBaseRace(), GetClass()) && inst.GetItem()->ReqLevel<=level)
 
 	{
 		for (sint16 i = 0; i < 22; i++)
