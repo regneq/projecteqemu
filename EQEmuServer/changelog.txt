@@ -6,6 +6,7 @@ Derision: No more binding wounds while feigning death.
 Derision: (Rocker8956) Movegrp quest command fix.
 Derision: (LeftRoad) TEMPORARY(NORENT) items in a character inventory will be retained if you log back into that character within 30 minutes.
 KLS: Implemented Raid::TeleportGroup() and Raid::TeleportRaid(), untested but should work.
+KLS: (seveianrex) Critical DoT and Sinister Strikes AA.
 
 ==10/11/2008
 Derision: Resurrection fix.

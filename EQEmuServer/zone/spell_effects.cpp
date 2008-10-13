@@ -2749,6 +2749,8 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 					}
 					else if(!caster->IsClient())
 						AddToHateList(caster, -effect_value);
+
+					TryDotCritical(spell_id, caster, effect_value);
 				}
 				effect_value = effect_value * modifier / 100;
 			}
@@ -3427,6 +3429,55 @@ bool Mob::TryDeathSave() {
 	return Result;
 }
 
+void Mob::TryDotCritical(int16 spell_id, Mob *caster, int &damage)
+{
+	if(!caster)
+		return;
 
+	float critChance = 0.00f;
+
+	switch(GetAA(aaCriticalAffliction))
+	{
+		case 1:
+			critChance += 0.03f;
+			break;
+		case 2:
+			critChance += 0.06f;
+			break;
+		case 3:
+			critChance += 0.10f;
+			break;
+		default:
+			break;
+	}
+
+	switch (GetAA(aaImprovedCriticalAffliction))
+	{
+		case 1:
+			critChance += 0.03f;
+			break;
+		case 2:
+			critChance += 0.06f;
+			break;
+		case 3:
+			critChance += 0.10f;
+			break;
+		default:
+			break;
+	}
+
+	// since DOTs are the Necromancer forte, give an innate bonus
+	// however, no chance to crit unless they've trained atleast one level in the AA first
+	if (GetClass() == NECROMANCER && critChance > 0.0f){
+		critChance += 0.05f;
+	}
+
+	if (critChance > 0.0f){
+		if (MakeRandomFloat(0, 1) <= critChance)
+		{
+			damage *= 2;
+		}
+	}
+}
 
 
