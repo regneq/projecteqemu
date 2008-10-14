@@ -3053,7 +3053,7 @@ bool Mob::IsImmuneToSpell(int16 spell_id, Mob *caster)
 		// check level limit of charm spell
 		effect_index = GetSpellEffectIndex(spell_id, SE_Charm);
 		assert(effect_index >= 0);
-		if(GetLevel() > spells[spell_id].max[effect_index])
+		if(GetLevel() > spells[spell_id].max[effect_index] && spells[spell_id].max[effect_index] != 0)
 		{
 			mlog(SPELLS__RESISTS, "Our level (%d) is higher than the limit of this Charm spell (%d)", GetLevel(), spells[spell_id].max[effect_index]);
 			caster->Message_StringID(MT_Shout, CANNOT_CHARM_YET);

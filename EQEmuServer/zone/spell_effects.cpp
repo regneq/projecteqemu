@@ -602,7 +602,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 					caster->Message(0, "Unable to cast charm on a corpse.");
 					break;
 				} else if(caster->GetPet() != NULL) {
-					caster->Message(0, "You cannot charm something when you allready have a pet.");
+					caster->Message(0, "You cannot charm something when you already have a pet.");
 					break;
 				}
 
