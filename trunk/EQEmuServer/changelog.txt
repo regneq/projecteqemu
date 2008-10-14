@@ -6,6 +6,7 @@ Derision: Player pets should no longer be fearable if npcspecialattks contains '
 cavedude00: (Rocker8956) Changes to quest::getlevel and quest::setinstflag/setinstflagmanually to reduce DB access
 cavedude00: (Rocker8956) Added quest::getinstflag
 KLS: Fixed crash in shutdown delay, please test things for crashes before adding them, this was pretty obvious.
+Derision: Removed requirement to be grouped for Translocate spells.
 
 ==10/13/2008
 Derision: Looting your corpse while liched/wolf form etc should now auto-equip items

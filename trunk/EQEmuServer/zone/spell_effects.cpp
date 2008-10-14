@@ -275,15 +275,9 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				if(IsClient())
 				{
 
-					if(caster) {
-						Group* group = entity_list.GetGroupByClient(this->CastToClient());
-						if((caster != this) && (!group || !group->IsGroupMember(caster))) {
-							caster->Message(13, "The target must be in your group to cast this spell");
-						break;
-						}
-
+					if(caster) 
 						CastToClient()->SendOPTranslocateConfirm(caster, spell_id);
-					}
+					
 				}
 				break;
 			}
