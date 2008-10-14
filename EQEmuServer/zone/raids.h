@@ -124,6 +124,7 @@ public:
 	int32	GetHighestLevel();
 	int32	GetLowestLevel();
 	int32	GetGroup(const char *name);
+      uint16 GetAvgLevel();
 
 	int32	GetLootType() { return LootType; }
 	void	ChangeLootType(int32 type);

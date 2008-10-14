@@ -245,10 +245,6 @@ public:
 	void	setRaidInstFlagNum(int charID, int orgZoneID, int instFlag);
 	void	incrCurInstFlagNum(int instFlag);
 	int		getCurInstFlagNum();
-      int		getCharLevel(int charID);
-	int		getRaidAvgLvl(int charID);
-	int		getGroupAvgLvl(int charID);
-
 	
 
 protected:

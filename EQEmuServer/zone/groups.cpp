@@ -1098,5 +1098,22 @@ void Group::BalanceHP(sint32 penalty)
 	}
 }
 
+uint16 Group::GetAvgLevel()
+{
+	double levelHolder = 0;
+	uint8 i = 0;
+	uint8 numMem = 0;
+	while(i < MAX_GROUP_MEMBERS)
+	{
+		if (members[i])
+		{
+			numMem++;
+			levelHolder = levelHolder + (members[i]->GetLevel());
+		}
+		i++;
+	}
+	levelHolder = ((levelHolder/numMem)+.5); // total levels divided by num of characters
+	return (uint16(levelHolder));
+}
 
 

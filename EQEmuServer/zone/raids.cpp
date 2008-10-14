@@ -1288,3 +1288,21 @@ void Raid::SendHPPacketsFrom(Client *c)
 		}
 	}
 }
+
+uint16 Raid::GetAvgLevel()
+{
+	double levelHolder = 0;
+	uint8 i = 0;
+	uint8 numMem = 0;
+	while(i < MAX_RAID_MEMBERS)
+	{
+		if(strlen(members[i].membername))
+		{
+			levelHolder = levelHolder + members[i].level;
+			numMem++;
+		}
+		i++;
+	}
+	levelHolder = ((levelHolder/(numMem))+.5); // total levels divided by num of characters
+	return (uint16(levelHolder));
+}

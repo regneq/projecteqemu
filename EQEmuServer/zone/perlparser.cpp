@@ -2185,13 +2185,12 @@ XS(XS__setinstflag)
 {
 	dXSARGS;
 	if (items != 3)
-		Perl_croak(aTHX_ "Usage: setinstflag(charID, orginalZoneID, type)");
+		Perl_croak(aTHX_ "Usage: setinstflag(orginalZoneID, type)");
 
-	int		charID = (int)SvIV(ST(0));
-	int		orgZoneID = (int)SvIV(ST(1));
-	int		type = (int)SvIV(ST(2));
+	int		orgZoneID = (int)SvIV(ST(0));
+	int		type = (int)SvIV(ST(1));
 
-	quest_manager.setinstflag(charID, orgZoneID, type);
+	quest_manager.setinstflag(orgZoneID, type);
 
 	XSRETURN_EMPTY;
 }
@@ -2199,15 +2198,14 @@ XS(XS__setinstflagmanually);
 XS(XS__setinstflagmanually)
 {
 	dXSARGS;
-	if (items != 4)
-		Perl_croak(aTHX_ "Usage: setinstflagmanually(charID, orginalZoneID, instFlag, type)");
+	if (items != 3)
+		Perl_croak(aTHX_ "Usage: setinstflagmanually(orginalZoneID, instFlag, type)");
 
-	int		charID = (int)SvIV(ST(0));
-	int		orgZoneID = (int)SvIV(ST(1));
-	int		instFlag = (int)SvIV(ST(2));
-	int		type = (int)SvIV(ST(3));
+	int		orgZoneID = (int)SvIV(ST(0));
+	int		instFlag = (int)SvIV(ST(1));
+	int		type = (int)SvIV(ST(2));
 
-	quest_manager.setinstflagmanually(charID, orgZoneID, instFlag, type);
+	quest_manager.setinstflagmanually(orgZoneID, instFlag, type);
 
 	XSRETURN_EMPTY;
 }
@@ -2255,20 +2253,35 @@ XS(XS__getlevel);
 XS(XS__getlevel)
 {
     dXSARGS;
-    if (items != 2)
-        Perl_croak(aTHX_ "Usage: getlevel(charid, type)");
+    if (items != 1)
+        Perl_croak(aTHX_ "Usage: getlevel(type)");
 
     int		RETVAL;
     dXSTARG;
 
-             int		charid = (int)SvIV(ST(0));
-	int		type = (int)SvIV(ST(1));
+	int		type = (int)SvIV(ST(0));
 
-	RETVAL = quest_manager.getlevel(charid, type);
+	RETVAL = quest_manager.getlevel(type);
 	XSprePUSH; PUSHu((IV)RETVAL);
 
 	XSRETURN(1);
 }
+XS(XS__getinstflag);
+XS(XS__getinstflag)
+{
+    dXSARGS;
+    if (items != 0)
+        Perl_croak(aTHX_ "Usage: getinstflag()");
+
+    int		RETVAL;
+    dXSTARG;
+
+	RETVAL = quest_manager.getinstflag();
+	XSprePUSH; PUSHu((IV)RETVAL);
+
+	XSRETURN(1);
+}
+
 /*
 This is the callback perl will look for to setup the
 quest package's XSUBs
@@ -2422,6 +2435,7 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "ze"), XS__ze, file);
 		newXS(strcpy(buf, "we"), XS__we, file);
 		newXS(strcpy(buf, "getlevel"), XS__getlevel, file);
+            newXS(strcpy(buf, "getinstflag"), XS__getinstflag, file);
 	XSRETURN_YES;
 }
 
