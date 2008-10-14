@@ -200,8 +200,6 @@ void Mob::MakePet(int16 spell_id, const char* pettype, const char *petname) {
 	} else if (this->IsClient()) {
 		//clients get a random pet name
 		strcpy(npc_type->name, GetRandPetName());
-		//client pets do not flee.
-		strcpy(npc_type->npc_attacks, "f");
 	} else {
 		strcpy(npc_type->name, this->GetCleanName());
 		npc_type->name[25] = '\0';
