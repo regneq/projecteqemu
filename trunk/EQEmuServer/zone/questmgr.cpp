@@ -1572,53 +1572,53 @@ bool QuestManager::istaskappropriate(int task) {
 
 	return false;
 }
-void QuestManager::setinstflag(int charID, int orgZoneID, int type)
+void QuestManager::setinstflag(int orgZoneID, int type)
 {
 	int instFlag = database.getCurInstFlagNum();
 
 	if (type == 0)
 	{
-		database.setCharInstFlag(charID, orgZoneID, instFlag);
+		database.setCharInstFlag(initiator->CharacterID(), orgZoneID, instFlag);
 		database.incrCurInstFlagNum(instFlag); // Increment the curInstFlagNum
 	}
 	else if(type == 1)
 	{
-		database.setGroupInstFlagNum(charID, orgZoneID, instFlag);
+		database.setGroupInstFlagNum(initiator->CharacterID(), orgZoneID, instFlag);
 		database.incrCurInstFlagNum(instFlag); // Increment the curInstFlagNum
 	}
 	else if(type == 2)
 	{
-		database.setRaidInstFlagNum(charID, orgZoneID, instFlag);
+		database.setRaidInstFlagNum(initiator->CharacterID(), orgZoneID, instFlag);
 		database.incrCurInstFlagNum(instFlag); // Increment the curInstFlagNum
 	}
 	else if(type == 3)
 	{
-		database.setCharInstFlag(charID, orgZoneID, instFlag);
-		database.setGroupInstFlagNum(charID, orgZoneID, instFlag);
-		database.setRaidInstFlagNum(charID, orgZoneID, instFlag);
+		database.setCharInstFlag(initiator->CharacterID(), orgZoneID, instFlag);
+		database.setGroupInstFlagNum(initiator->CharacterID(), orgZoneID, instFlag);
+		database.setRaidInstFlagNum(initiator->CharacterID(), orgZoneID, instFlag);
 		database.incrCurInstFlagNum(instFlag); // Increment the curInstFlagNum
 	}
 }
 
-void QuestManager::setinstflagmanually(int charID, int orgZoneID, int instFlag, int type)
+void QuestManager::setinstflagmanually(int orgZoneID, int instFlag, int type)
 {
 	if (type == 0)
 	{
-		database.setCharInstFlag(charID, orgZoneID, instFlag);
+		database.setCharInstFlag(initiator->CharacterID(), orgZoneID, instFlag);
 	}
 	else if(type == 1)
 	{
-		database.setGroupInstFlagNum(charID, orgZoneID, instFlag);
+		database.setGroupInstFlagNum(initiator->CharacterID(), orgZoneID, instFlag);
 	}
 	else if(type == 2)
 	{
-		database.setRaidInstFlagNum(charID, orgZoneID, instFlag);
+		database.setRaidInstFlagNum(initiator->CharacterID(), orgZoneID, instFlag);
 	}
 	else if(type == 3)
 	{
-		database.setCharInstFlag(charID, orgZoneID, instFlag);
-		database.setGroupInstFlagNum(charID, orgZoneID, instFlag);
-		database.setRaidInstFlagNum(charID, orgZoneID, instFlag);
+		database.setCharInstFlag(initiator->CharacterID(), orgZoneID, instFlag);
+		database.setGroupInstFlagNum(initiator->CharacterID(), orgZoneID, instFlag);
+		database.setRaidInstFlagNum(initiator->CharacterID(), orgZoneID, instFlag);
 	}
 }
 
@@ -1638,35 +1638,48 @@ void QuestManager::we(int type, const char *str) {
 	worldserver.SendEmoteMessage(0, 0, type, str);
 }
 
-int QuestManager::getlevel(int charID, int type)
+int QuestManager::getlevel(uint8 type)
 {
 	if (type == 0)
 	{
-		return (database.getCharLevel(charID));
+		return (initiator->GetLevel());
 	}
 	else if(type == 1)
 	{
-		return (database.getGroupAvgLvl(charID));
-
+		Group *g = entity_list.GetGroupByClient(initiator);
+       	if (g != NULL)
+			return (g->GetAvgLevel());
+		else
+			return 0;
 	}
 	else if(type == 2)
 	{
-		return database.getRaidAvgLvl(charID);
+		Raid *r = entity_list.GetRaidByClient(initiator);
+       	if (r != NULL)
+			return (r->GetAvgLevel());
+		else
+			return 0;
 	}
 	else if(type == 3)
 	{
-		if(database.getRaidAvgLvl(charID) > 0) 
+		Raid *r = entity_list.GetRaidByClient(initiator);
+		if(r != NULL)
 		{
-			return (database.getRaidAvgLvl(charID));
+			return (r->GetAvgLevel());
 		}
-		else if(database.getGroupAvgLvl(charID) > 0) 
+		Group *g = entity_list.GetGroupByClient(initiator);
+		if(g != NULL)
 		{
-			return (database.getGroupAvgLvl(charID));
+			return (g->GetAvgLevel());
 		}
 		else
-			return (database.getCharLevel(charID));
+			return (initiator->GetLevel());
 	}
 	else
 		return 0;
 }
 
+int QuestManager::getinstflag()
+{
+	return (database.GetCharInstFlagNum(initiator->CharacterID()));
+}
