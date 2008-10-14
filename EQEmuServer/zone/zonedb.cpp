@@ -1558,9 +1558,11 @@ int ZoneDatabase::getZoneShutDownDelay(int32 zoneID)
 	{
 		if (mysql_num_rows(result) == 1) {
 			row = mysql_fetch_row(result);
+			int retVal = atoi(row[0]);
+
 			mysql_free_result(result);
 			safe_delete_array(query);
-			return (atoi(row[0]));
+			return (retVal);
 		}
 		else {
 			cerr << "Error in getZoneShutDownDelay (more than one result) query '" << query << "' " << errbuf << endl;
