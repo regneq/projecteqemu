@@ -1,5 +1,7 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==10/14/2008
+Trevius: Charm Spells set to max level of 0 now have unlimited max level as they should
 
 ==10/13/2008
 Derision: Looting your corpse while liched/wolf form etc should now auto-equip items
