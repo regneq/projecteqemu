@@ -1870,7 +1870,7 @@ void Client::SendLevelAppearance(){
 	la->value4a = 1;
 	la->value4b = 1;
 	la->value5a = 2;
-	QueuePacket(outapp);
+	entity_list.QueueCloseClients(this,outapp);
 	safe_delete(outapp);
 }
 
