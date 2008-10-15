@@ -3254,8 +3254,8 @@ void Client::Handle_OP_DeleteItem(const EQApplicationPacket *app)
 	DeleteItem_Struct* alc = (DeleteItem_Struct*) app->pBuffer;
 	const ItemInst *inst = GetInv().GetItem(alc->from_slot);
 	if (inst && inst->GetItem()->ItemType == ItemTypeAlcohol) {
-		//TODO: grant alcohol bonuses..?
-		CheckIncreaseSkill(ALCOHOL_TOLERANCE,30);
+		entity_list.MessageClose_StringID(this, true, 50, 0, DRINKING_MESSAGE, GetName(), inst->GetItem()->Name);
+		CheckIncreaseSkill(ALCOHOL_TOLERANCE,25);
 	}
 	DeleteItemInInventory(alc->from_slot, 1);
 
