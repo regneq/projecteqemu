@@ -380,7 +380,7 @@ void Client::ForageItem() {
 		uint32 foragedfood = 0;
 		int32 stringid = FORAGE_NOEAT;
 		
-        if (MakeRandomInt(0,99) <= 25) {
+		if (MakeRandomInt(0,99) <= 25) {
 			foragedfood = database.GetZoneForage(m_pp.zone_id, skill_level);
 		}
 		
@@ -389,24 +389,33 @@ void Client::ForageItem() {
 			int8 index = 0;
 			index = rand()%MAX_COMMON_FOOD_IDS;
 			foragedfood = common_food_ids[index];
-			
-			switch(foragedfood){
-				case 13044:
-					stringid=FORAGE_WATER;
-					break;
-				case 13106:
-					stringid=FORAGE_GRUBS;
-					break;
-				default:
-					stringid=FORAGE_FOOD;
-					break;
-			}
 		}
 		
-		//could maybe be more intelligent about whats foraged up
-		//using the item use of the object.
-			
 		const Item_Struct* food_item = database.GetItem(foragedfood);
+
+		if(!food_item) {
+			LogFile->write(EQEMuLog::Error, "NULL returned from database.GetItem in ClientForageItem");
+			return;
+		}
+
+		if(foragedfood == 13106) 
+			stringid = FORAGE_GRUBS;
+		else
+			switch(food_item->ItemType) {
+
+				case ItemTypeFood: 
+					stringid = FORAGE_FOOD;
+					break;
+					
+				case ItemTypeDrink: 
+					if(strstr(food_item->Name, "ater")) 
+						stringid = FORAGE_WATER;
+					else
+						stringid = FORAGE_DRINK;
+					break;
+				default:
+					break;
+				}
 		
 		Message_StringID(MT_Skills, stringid);
 		const ItemInst* inst = database.CreateItem(food_item, 1);
@@ -421,12 +430,6 @@ void Client::ForageItem() {
 		Message_StringID(MT_Skills, FORAGE_FAILED);
 	}
 	
-	//why do we not use CheckIncreaseSkill??
-	
-	//See if the player increases their skill
-	/*float wisebonus =  (m_pp.WIS > 200) ? 20 + ((m_pp.WIS - 200) * 0.05) : m_pp.WIS * 0.1;
-	if ((55-(GetSkill(FORAGE)*0.236))+wisebonus > MakeRandomFloat(0, 100))
-		this->SetSkill(FORAGE,GetRawSkill(FORAGE)+1);*/
 	CheckIncreaseSkill(FORAGE,5);
 	
 }

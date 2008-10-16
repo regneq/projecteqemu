@@ -1,6 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==10/16/2008
+Derision: Cosmetic change to foraging to correctly identify food/drink items.
+
 ==10/15/2008
 Derision: Added OP_LevelAppearance to utils/patch_Titanium.conf and it is now sent to nearby clients (eye candy when you level)
 Derision: (seveianrex) Alcohol Drinking / Skillup Fix
