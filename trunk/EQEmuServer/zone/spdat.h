@@ -261,7 +261,7 @@ typedef enum {
 #define SE_AppraiseLDonChest		164
 #define SE_DisarmLDoNTrap			165
 #define SE_UnlockLDoNChest			166
-#define SE_PetPowerIncrease			167	//not implemented, base % increase of pet stuff
+#define SE_PetPowerIncrease			167	
 #define SE_MeleeMitigation			168	//not implemented, unlimited for duration
 #define SE_CriticalHitChance		169
 #define SE_SpellCritChance			170	//not implemented, +% to crit

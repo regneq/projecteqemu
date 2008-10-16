@@ -86,7 +86,8 @@ typedef enum {	//focus types
 	focusImprovedDamage,
 	focusImprovedDOT,		//i dont know about this...
 	focusImprovedCritical,
-	focusImprovedUndeadDamage
+	focusImprovedUndeadDamage,
+	focusPetPower,
 } focusType;
 
 #define SPELLBAR_UNLOCK 0x2bc

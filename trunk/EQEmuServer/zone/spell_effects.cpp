@@ -3282,6 +3282,12 @@ sint16 Client::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id) {
 				value = focus_spell.base[i];
 			}
 			break;
+		case SE_PetPowerIncrease:
+			if (type == focusPetPower && focus_spell.base[i] > value)
+			{
+				value = focus_spell.base[i];
+			}
+			break;
 #if EQDEBUG >= 6
 		//this spits up a lot of garbage when calculating spell focuses
 		//since they have all kinds of extra effects on them.
