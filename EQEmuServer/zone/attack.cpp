@@ -266,7 +266,7 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 	//subtract off avoidance by the defender
 	bonus = defender->spellbonuses.AvoidMeleeChance + defender->itembonuses.AvoidMeleeChance;
 	if(bonus > 0) {
-		chancetohit -= (bonus) / 10;
+		chancetohit -= ((bonus * chancetohit) / 100);
 		mlog(COMBAT__TOHIT, "Applied avoidance chance %.2f/10, yeilding %.2f", bonus, chancetohit);
 	}
 

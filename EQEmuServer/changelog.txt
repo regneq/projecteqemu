@@ -5,6 +5,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 Derision: Added OP_LevelAppearance to utils/patch_Titanium.conf and it is now sent to nearby clients (eye candy when you level)
 Derision: (seveianrex) Alcohol Drinking / Skillup Fix
 KLS: Change to proc code to correct some oddities with % chance to proc.
+KLS: Changed how avoidance bonuses are calculated to be like other melee bonuses.
 
 ==10/14/2008
 Trevius: Charm Spells set to max level of 0 now have unlimited max level as they should
