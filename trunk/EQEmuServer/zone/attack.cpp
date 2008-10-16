@@ -3663,25 +3663,25 @@ void Mob::HealDamage(uint32 amount, Mob* caster) {
 //proc chance includes proc bonus
 float Mob::GetProcChances(float &ProcBonus, float &ProcChance) {
 	int mydex = GetDEX();
-	int AABonus = 0;
+	float AABonus = 0;
 	ProcBonus = 0;
 	if(IsClient()) {
 		//increases based off 1 guys observed results.
 		switch(CastToClient()->GetAA(aaWeaponAffinity)) {
 			case 1:
-				AABonus = 5;
+				AABonus = 0.05;
 				break;
 			case 2:
-				AABonus = 10;
+				AABonus = 0.10;
 				break;
 			case 3:
-				AABonus = 15;
+				AABonus = 0.15;
 				break;
 			case 4:
-				AABonus = 20;
+				AABonus = 0.20;
 				break;
 			case 5:
-				AABonus = 25;
+				AABonus = 0.25;
 				break;
 		}
 	}
@@ -3691,30 +3691,29 @@ float Mob::GetProcChances(float &ProcBonus, float &ProcChance) {
 	// Bot AA WeaponAffinity
 	else if(IsBot()) {
 		if(GetLevel() >= 55) {
-			AABonus += 5;
+			AABonus += 0.05;
 		}
 		if(GetLevel() >= 56) {
-			AABonus += 5;
+			AABonus += 0.05;
 		}
 		if(GetLevel() >= 57) {
-			AABonus += 5;
+			AABonus += 0.05;
 		}
 		if(GetLevel() >= 58) {
-			AABonus += 5;
+			AABonus += 0.05;
 		}
 		if(GetLevel() >= 59) {
-			AABonus += 5;
+			AABonus += 0.05;
 		}
 	}
 
 #endif //EQBOTS
 
 
-	ProcBonus += float(itembonuses.ProcChance + spellbonuses.ProcChance) / 1000.0f;
-	
+	ProcBonus += (float(itembonuses.ProcChance + spellbonuses.ProcChance) / 1000.0f + AABonus);
+
 	ProcChance = 0.05f + float(mydex) / 9000.0f;
-	ProcBonus += (ProcChance * AABonus) / 100;
-	ProcChance += ProcBonus;
+	ProcChance = ProcChance + (ProcChance * ProcBonus);
 	mlog(COMBAT__PROCS, "Proc chance %.2f (%.2f from bonuses)", ProcChance, ProcBonus);
 	return ProcChance;
 }
