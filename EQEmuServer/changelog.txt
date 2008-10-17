@@ -5,6 +5,9 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 Derision: Cosmetic change to foraging to correctly identify food/drink items.
 cavedude00: Added rules to determine if /ooc and /auction should be server wide (true) or zone wide (false - Live Like).
 cavedude00: #peqzone can no longer be used if invulnerable.
+KLS: More changes to proc code.  Added an option of calc. proc rate based on speed of the weapon
+KLS: Added Rules: Combat:AdjustProcPerMinute(true), Combat:AvgProcsPerMinute(18.0), Combat:ProcPerMinDexContrib(0.075), Combat:BaseProcChance(0.035), Combat:ProcDexDivideBy(11000)
+KLS: Tweak to monster AI to hopefully save computation.
 
 Optional SQL:
 insert into rule_values values (0, 'Chat:ServerWideOOC', 'true');

@@ -64,6 +64,7 @@ public:
 	void			AI_DoMovement();
 	bool			AI_AddNPCSpells(int32 iDBSpellsID);
 	virtual bool	AI_EngagedCastCheck();
+	bool			AI_HasSpells() { return HasAISpell; }
 
 #ifdef EQBOTS
 
@@ -292,6 +293,7 @@ protected:
 	Timer*	AIautocastspell_timer;
 	int32*	pDontCastBefore_casting_spell;
 	AISpells_Struct	AIspells[MAX_AISPELLS]; // expected to be pre-sorted, best at low index
+	bool HasAISpell;
 	void AddSpellToNPCList(AISpells_Struct* AIspells, sint16 iPriority, sint16 iSpellID, uint16 iType, sint16 iManaCost, sint32 iRecastDelay);
 	bool AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes);
 

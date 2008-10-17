@@ -182,7 +182,7 @@ enum {	//reuse times
 
 enum {	//timer settings, all in milliseconds
 	AImovement_duration = 100,
-	AIthink_duration = 50,
+	AIthink_duration = 150,
 	AIscanarea_delay = 500,
 	AIfeignremember_delay = 500,
 	AIClientScanarea_delay = 750,	//used in REVERSE_AGGRO

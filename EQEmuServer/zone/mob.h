@@ -966,7 +966,7 @@ protected:
 	void TryWeaponProc(const Item_Struct* weapon, Mob *on);
 	void TryWeaponProc(const ItemInst* weapon, Mob *on);
 	void ExecWeaponProc(uint16 spell_id, Mob *on);
-	float GetProcChances(float &ProcBonus, float &ProcChance);
+	float GetProcChances(float &ProcBonus, float &ProcChance, uint16 weapon_speed = 30);
 	int GetWeaponDamage(Mob *against, const Item_Struct *weapon_item);
 	int GetWeaponDamage(Mob *against, const ItemInst *weapon_item);
 	int GetKickDamage() const;
