@@ -280,6 +280,7 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 	SetNPCFactionID(d->npc_faction_id);
 
 	npc_spells_id = 0;
+	HasAISpell = false;
 	memset(AIspells, 0, sizeof(AIspells));
 	for (int i=0; i<MAX_AISPELLS; i++) {
 		AIspells[i].spellid = SPELL_UNKNOWN;

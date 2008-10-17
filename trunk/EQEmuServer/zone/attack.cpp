@@ -3661,10 +3661,11 @@ void Mob::HealDamage(uint32 amount, Mob* caster) {
 }
 
 //proc chance includes proc bonus
-float Mob::GetProcChances(float &ProcBonus, float &ProcChance) {
+float Mob::GetProcChances(float &ProcBonus, float &ProcChance, int16 weapon_speed) {
 	int mydex = GetDEX();
 	float AABonus = 0;
 	ProcBonus = 0;
+	ProcChance = 0;
 	if(IsClient()) {
 		//increases based off 1 guys observed results.
 		switch(CastToClient()->GetAA(aaWeaponAffinity)) {
@@ -3712,8 +3713,18 @@ float Mob::GetProcChances(float &ProcBonus, float &ProcChance) {
 
 	ProcBonus += (float(itembonuses.ProcChance + spellbonuses.ProcChance) / 1000.0f + AABonus);
 
-	ProcChance = 0.05f + float(mydex) / 9000.0f;
-	ProcChance = ProcChance + (ProcChance * ProcBonus);
+	if(RuleB(Combat, AdjustProcPerMinute) == true)
+	{
+		ProcChance = ((float)weapon_speed * RuleR(Combat, AvgProcsPerMinute) / 6000.0f);
+		ProcBonus += float(mydex) * RuleR(Combat, ProcPerMinDexContrib) / 100.0f;
+		ProcChance = ProcChance + (ProcChance * ProcBonus);
+	}
+	else
+	{
+		ProcChance = RuleR(Combat, BaseProcChance) + float(mydex) / RuleR(Combat, ProcDexDivideBy);
+		ProcChance = ProcChance + (ProcChance * ProcBonus);
+	}
+
 	mlog(COMBAT__PROCS, "Proc chance %.2f (%.2f from bonuses)", ProcChance, ProcBonus);
 	return ProcChance;
 }
@@ -3742,7 +3753,7 @@ void Mob::TryWeaponProc(const ItemInst* weapon_g, Mob *on) {
 	//we have to calculate these again, oh well
 	int ourlevel = GetLevel();
 	float ProcChance, ProcBonus;
-	GetProcChances(ProcBonus, ProcChance);
+	GetProcChances(ProcBonus, ProcChance, weapon_g->GetItem()->Delay);
 	
 	//do augment procs
 	int r;
@@ -3777,12 +3788,15 @@ void Mob::TryWeaponProc(const Item_Struct* weapon, Mob *on) {
 	
 	int ourlevel = GetLevel();
 	float ProcChance, ProcBonus;
-	GetProcChances(ProcBonus, ProcChance);
+	if(weapon!=NULL)
+		GetProcChances(ProcBonus, ProcChance, weapon->Delay);
+	else
+		GetProcChances(ProcBonus, ProcChance);
 	
 	//give weapon a chance to proc first.
 	if(weapon != NULL) {
 		if (IsValidSpell(weapon->Proc.Effect) && (weapon->Proc.Type == ET_CombatProc)) {
-			float WPC = ProcChance*(100+weapon->ProcRate)/100;
+			float WPC = ProcChance*(100.0f+(float)weapon->ProcRate)/100.0f;
 			if (MakeRandomFloat(0, 1) <= WPC) {	// 255 dex = 0.084 chance of proc. No idea what this number should be really.
 				if(weapon->Proc.Level > ourlevel) {
 					mlog(COMBAT__PROCS, "Tried to proc (%s), but our level (%d) is lower than required (%d)", weapon->Name, ourlevel, weapon->Proc.Level);

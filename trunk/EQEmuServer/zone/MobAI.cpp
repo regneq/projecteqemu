@@ -73,6 +73,10 @@ bool NPC::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 // Faction isnt checked here, it's assumed you wouldnt pass a spell type you wouldnt want casted on the mob
 	if (!tar)
 		return false;
+
+	if(AI_HasSpells() == false)
+		return false;
+
 	if (iChance < 100) {
 		if (MakeRandomInt(0, 100) >= iChance)
 			return false;
@@ -333,6 +337,12 @@ bool EntityList::AICheckCloseBeneficialSpells(NPC* caster, int8 iChance, float i
 		return(false);
 	}
 	
+	if(!caster)
+		return false;
+
+	if(caster->AI_HasSpells() == false)
+		return false;
+
 	if (iChance < 100) {
 		int8 tmp = MakeRandomInt(0, 99);
 		if (tmp >= iChance)
@@ -1601,6 +1611,8 @@ void NPC::AddSpellToNPCList(AISpells_Struct* AIspells, sint16 iPriority, sint16 
 
 		return;
 	}
+
+	HasAISpell = true;
 
 #if MobAI_DEBUG_Spells >= 12
 	cout << "Adding spell #" << iSpellID;
