@@ -8468,7 +8468,7 @@ void command_bot(Client *c, const Seperator *sep) {
 							else {
 								g->members[i]->SetFollowID(botfollowid);
 							}
-							g->members[i]->WhipeHateList();
+							g->members[i]->WipeHateList();
 							g->members[i]->Say("Following %s.", botfollowname);
 						}
 					}
@@ -8489,7 +8489,7 @@ void command_bot(Client *c, const Seperator *sep) {
 					{
 						if(g->members[i] && g->members[i]->IsBot()) {
                             g->members[i]->SetFollowID(0);
-							g->members[i]->WhipeHateList();
+							g->members[i]->WipeHateList();
 							g->members[i]->Say("Guarding here.");
 						}
 					}
@@ -8505,7 +8505,7 @@ void command_bot(Client *c, const Seperator *sep) {
 					for(int i=0; i<MAX_GROUP_MEMBERS; i++)
 					{
 						if(g->members[i] && g->members[i]->IsBot()) {
-							g->members[i]->WhipeHateList();
+							g->members[i]->WipeHateList();
 							g->members[i]->Say("Attacking %s.", c->GetTarget()->GetCleanName());
 							c->SetOrderBotAttack(true);
                             g->members[i]->AddToHateList(c->GetTarget(),150,150);

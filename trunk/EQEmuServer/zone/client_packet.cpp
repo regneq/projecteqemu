@@ -4999,7 +4999,7 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 		if (mypet->IsFeared()) break; //AndMetal: prevent pet from attacking stuff while feared
 
 		if((mypet->GetPetType() == petAnimation && GetAA(aaAnimationEmpathy) >= 2) || mypet->GetPetType() != petAnimation) {
-			if (mypet->GetHateTop()==0 && target != this && DistNoRootNoZ(*target) <= (RuleR(Pets, AttackCommandRange)*RuleR(Pets, AttackCommandRange))) {
+			if (target != this && mypet->DistNoRootNoZ(*target) <= (RuleR(Pets, AttackCommandRange)*RuleR(Pets, AttackCommandRange))) {
 				mypet->SetHeld(false); //break the hold and guard if we explicitly tell the pet to attack.
 				mypet->SetPetOrder(SPO_Follow);
 				zone->AddAggroMob();
@@ -5014,7 +5014,7 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 
 		if((mypet->GetPetType() == petAnimation && GetAA(aaAnimationEmpathy) >= 3) || mypet->GetPetType() != petAnimation) {
 			mypet->Say_StringID(PET_CALMING);
-			mypet->WhipeHateList();
+			mypet->WipeHateList();
 		}
 		break;
 	}
@@ -5144,7 +5144,7 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 			if (mypet->IsFeared()) break; //AndMetal: could be exploited like PET_BACKOFF
 
 			mypet->Say("I will hold until given an order, master.");
-			mypet->WhipeHateList();
+			mypet->WipeHateList();
 			mypet->SetHeld(true);
 			mypet->SetPetOrder(SPO_Guard);
 			mypet->CastToNPC()->SaveGuardSpot();

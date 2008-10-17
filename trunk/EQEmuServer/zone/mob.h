@@ -745,7 +745,7 @@ bool logpos;
 	bool				HateSummon();
 	void				FaceTarget(Mob* MobToFace = 0, bool update = false);
 	void				SetHeading(float iHeading) { if (heading != iHeading) { pLastChange = Timer::GetCurrentTime(); heading = iHeading; } }
-	void				WhipeHateList(); //Wipe?
+	void				WipeHateList(); //Wipe?
 	// EverHood 6/14/06
 	// Mobs need to be able to remember more than one feigned attacker
 	void				AddFeignMemory(Client* attacker);

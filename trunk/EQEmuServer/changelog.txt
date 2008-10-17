@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==10/17/2008
+KLS: Tweaks to /pet attack
+KLS: Renamed WhipeHateList to WipeHateList so I never have to view that spelling monster ever again.
 
 ==10/16/2008
 Derision: Cosmetic change to foraging to correctly identify food/drink items.

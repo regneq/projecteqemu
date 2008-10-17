@@ -470,10 +470,10 @@ void Client::ProcessMovePC(int32 zoneID, float x, float y, float z, float headin
 				{
 					if(g->members[i] && g->members[i]->IsBot())
 					{
-						g->members[i]->WhipeHateList();
+						g->members[i]->WipeHateList();
 						g->members[i]->GMMove(GetX(), GetY(), GetZ());
 						if(g->members[i]->HasPet()) {
-							g->members[i]->GetPet()->WhipeHateList();
+							g->members[i]->GetPet()->WipeHateList();
 							g->members[i]->GetPet()->GMMove(GetX(), GetY(), GetZ());
 						}
 					}
