@@ -686,18 +686,32 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, const char* me
 		}
 		break;
 	}
-	case 3: // Shout
-	case 4: { // Auction
-
+	case 3: { // Shout
 		Mob *sender = this;
 		if (GetPet() && GetPet()->FindType(SE_VoiceGraft))
 			sender = GetPet();
 
 		entity_list.ChannelMessage(sender, chan_num, language, message);
+ 		break;
+ 	}
+	case 4: { // Auction
+        if(RuleB(Chat, ServerWideAuction)){
+            if (!worldserver.SendChannelMessage(this, 0, 4, 0, language, message))
+			Message(0, "Error: World server disconnected");
+		}
+		else if(!RuleB(Chat, ServerWideAuction)){
+			Mob *sender = this;
+
+		    if (GetPet() && GetPet()->FindType(SE_VoiceGraft))
+			sender = GetPet();
+
+		entity_list.ChannelMessage(sender, chan_num, language, message);
+		}
 		break;
 	}
 	case 5: { // OOC
-		if(!ooc_timer.Check())
+		if(RuleB(Chat, ServerWideOOC)){
+		    if(!ooc_timer.Check())
 		{
 			if(strlen(targetname)==0)
 			ChannelMessageReceived(5, language, message,"discard"); //Fast typer or spammer??
@@ -716,6 +730,15 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, const char* me
 		}
 		else if (!worldserver.SendChannelMessage(this, 0, 5, 0, language, message))
 			Message(0, "Error: World server disconnected");
+		}
+		else if(!RuleB(Chat, ServerWideOOC)){
+			Mob *sender = this;
+
+		    if (GetPet() && GetPet()->FindType(SE_VoiceGraft))
+			sender = GetPet();
+
+		entity_list.ChannelMessage(sender, chan_num, language, message);
+		}
 		break;
 	}
 	case 6: // Broadcast

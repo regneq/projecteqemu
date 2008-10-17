@@ -36,6 +36,7 @@ using namespace std;
 #include "../common/md5.h"
 #include "../common/files.h"
 #include "../common/opcodemgr.h"
+#include "../common/rulesys.h"
 #include "WorldConfig.h"
 #include "zoneserver.h"
 #include "zonelist.h"
@@ -90,10 +91,18 @@ bool Console::SendChannelMessage(const ServerChannelMessage_Struct* scm) {
 	if (!pAcceptMessages)
 		return false;
 	switch (scm->chan_num) {
+		if(RuleB(Chat, ServerWideAuction)){
+		case 4: {
+			SendMessage(1, "%s auctions, '%s'", scm->from, scm->message);
+			break;
+		}
+	}
+        if(RuleB(Chat, ServerWideOOC)){
 		case 5: {
 			SendMessage(1, "%s says ooc, '%s'", scm->from, scm->message);
 			break;
 		}
+	}
 		case 6: {
 			SendMessage(1, "%s BROADCASTS, '%s'", scm->from, scm->message);
 			break;
@@ -416,6 +425,7 @@ void Console::ProcessCommand(const char* command) {
 				SendMessage(1, "  broadcast [message]");
 				SendMessage(1, "  gmsay [message]");
 				SendMessage(1, "  ooc [message]");
+				SendMessage(1, "  auction [message]");
 				if (admin >= consoleKickStatus)
 					SendMessage(1, "  kick [charname]");
 				if (admin >= consoleLockStatus)
@@ -519,12 +529,22 @@ void Console::ProcessCommand(const char* command) {
 				strcpy(&tmpname[1], paccountname);
 				zoneserver_list.SendChannelMessage(tmpname, 0, 6, 0, sep.argplus[1]);
 			}
-			else if (strcasecmp(sep.arg[0], "ooc") == 0) {
+			else if(RuleB(Chat, ServerWideOOC)){
+			  if (strcasecmp(sep.arg[0], "ooc") == 0) {
 				char tmpname[64];
 				tmpname[0] = '*';
 				strcpy(&tmpname[1], paccountname);
 				zoneserver_list.SendChannelMessage(tmpname, 0, 5, 0, sep.argplus[1]);
 			}
+		}
+			else if(RuleB(Chat, ServerWideAuction)){
+			  if (strcasecmp(sep.arg[0], "auction") == 0) {
+				char tmpname[64];
+				tmpname[0] = '*';
+				strcpy(&tmpname[1], paccountname);
+				zoneserver_list.SendChannelMessage(tmpname, 0, 4, 0, sep.argplus[1]);
+			}
+		}
 			else if (strcasecmp(sep.arg[0], "gmsay") == 0 || strcasecmp(sep.arg[0], "pr") == 0) {
 				char tmpname[64];
 				tmpname[0] = '*';

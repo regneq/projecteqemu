@@ -3,6 +3,12 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 
 ==10/16/2008
 Derision: Cosmetic change to foraging to correctly identify food/drink items.
+cavedude00: Added rules to determine if /ooc and /auction should be server wide (true) or zone wide (false - Live Like).
+cavedude00: #peqzone can no longer be used if invulnerable.
+
+Optional SQL:
+insert into rule_values values (0, 'Chat:ServerWideOOC', 'true');
+insert into rule_values values (0, 'Chat:ServerWideAuction', 'true');
 
 ==10/15/2008
 Derision: Added OP_LevelAppearance to utils/patch_Titanium.conf and it is now sent to nearby clients (eye candy when you level)

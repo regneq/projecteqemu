@@ -190,7 +190,7 @@ int command_init(void) {
 		command_add("gm","- Turn player target's or your GM flag on or off",80,command_gm) ||
 		command_add("summon","[charname] - Summons your player/npc/corpse target, or charname if specified",80,command_summon) || 
 		command_add("zone","[zonename] [x] [y] [z] - Go to specified zone (coords optional)",50,command_zone) ||
-            command_add("peqzone","[zonename] - Go to specified zone, if you have > 75% health",0,command_peqzone) ||
+        command_add("peqzone","[zonename] - Go to specified zone, if you have > 75% health",0,command_peqzone) ||
 		command_add("showbuffs","- List buffs active on your target or you if no target",50,command_showbuffs) ||
 		command_add("movechar","[charname] [zonename] - Move charname to zonename",50,command_movechar) ||
 		command_add("viewpetition","[petition number] - View a petition",20,command_viewpetition) ||
@@ -1490,6 +1490,7 @@ void command_peqzone(Client *c, const Seperator *sep)
                || c->IsStunned()
                || c->IsMezzed()
                || c->AutoAttackEnabled()
+			   || c->GetInvul()
        ) {
                c->Message(0, "You cannot use this command in your current state. Settle down and wait.");
                return;

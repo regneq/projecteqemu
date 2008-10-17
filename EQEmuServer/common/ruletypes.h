@@ -179,6 +179,11 @@ RULE_BOOL ( TaskSystem, KeepOneRecordPerCompletedTask, true)
 RULE_BOOL ( TaskSystem, EnableTaskProximity, true)
 RULE_CATEGORY_END()
 
+RULE_CATEGORY ( Chat )
+RULE_BOOL ( Chat, ServerWideOOC, true)
+RULE_BOOL ( Chat, ServerWideAuction, true)
+RULE_CATEGORY_END()
+
 #undef RULE_CATEGORY
 #undef RULE_INT
 #undef RULE_REAL
