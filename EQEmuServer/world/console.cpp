@@ -529,22 +529,18 @@ void Console::ProcessCommand(const char* command) {
 				strcpy(&tmpname[1], paccountname);
 				zoneserver_list.SendChannelMessage(tmpname, 0, 6, 0, sep.argplus[1]);
 			}
-			else if(RuleB(Chat, ServerWideOOC)){
-			  if (strcasecmp(sep.arg[0], "ooc") == 0) {
+			else if (strcasecmp(sep.arg[0], "ooc") == 0) {
 				char tmpname[64];
 				tmpname[0] = '*';
 				strcpy(&tmpname[1], paccountname);
 				zoneserver_list.SendChannelMessage(tmpname, 0, 5, 0, sep.argplus[1]);
 			}
-		}
-			else if(RuleB(Chat, ServerWideAuction)){
-			  if (strcasecmp(sep.arg[0], "auction") == 0) {
+			else if (strcasecmp(sep.arg[0], "auction") == 0) {
 				char tmpname[64];
 				tmpname[0] = '*';
 				strcpy(&tmpname[1], paccountname);
 				zoneserver_list.SendChannelMessage(tmpname, 0, 4, 0, sep.argplus[1]);
 			}
-		}
 			else if (strcasecmp(sep.arg[0], "gmsay") == 0 || strcasecmp(sep.arg[0], "pr") == 0) {
 				char tmpname[64];
 				tmpname[0] = '*';
