@@ -1968,7 +1968,7 @@ bool Mob::RemoveFromHateList(Mob* mob) {
 		SetTarget(hate_list.GetTop(this));
 	return bFound;
 }
-void Mob::WhipeHateList() {
+void Mob::WipeHateList() {
 	if (this->IsEngaged()) {
 		AI_Event_NoLongerEngaged();
 	}

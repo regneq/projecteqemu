@@ -600,7 +600,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 					break;
 				}
 
-				WhipeHateList();
+				WipeHateList();
 				caster->SetPet(this);
 				SetOwnerID(caster->GetID());
 				SetPetOrder(SPO_Follow);
@@ -1089,7 +1089,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				{
 					if(IsAIControlled())
 					{
-						WhipeHateList();
+						WipeHateList();
 					}
 					Message(13, "Your mind fogs. Who are my friends? Who are my enemies?... it was all so clear a moment ago...");
 				}
@@ -3034,7 +3034,7 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 				{
 					// clear the hate list of the mobs
 					entity_list.ReplaceWithTarget(this, tempmob);
-					WhipeHateList();
+					WipeHateList();
 					if(tempmob)
 						AddToHateList(tempmob, 1, 0);
 					SendAppearancePacket(AT_Anim, ANIM_STAND);

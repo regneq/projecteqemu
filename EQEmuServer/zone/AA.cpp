@@ -342,7 +342,7 @@ void Client::HandleAAAction(aaID activate) {
 				//do we really need to cast a spell?
 				
 				Message(0,"You call your pet to your side.");
-				GetPet()->WhipeHateList();
+				GetPet()->WipeHateList();
 				GetPet()->GMMove(GetX(),GetY(),GetZ());
 				if (activate_val > 1)
 					entity_list.ClearFeignAggro(GetPet());
@@ -1813,7 +1813,7 @@ and I am not sure that it is all in the DB yet.
 				}
 				
 				Message(0,"You call your pet to your side.");
-				GetPet()->WhipeHateList();
+				GetPet()->WipeHateList();
 				GetPet()->GMMove(GetX(),GetY(),GetZ());
 				if (activate_val > 1)
 					entity_list.ClearFeignAggro(GetPet());

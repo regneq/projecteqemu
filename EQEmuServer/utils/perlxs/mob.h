@@ -207,7 +207,7 @@
 	bool HateSummon();
 	void FaceTarget(Mob* MobToFace = 0, bool update = false);
 	void SetHeading(float iHeading);
-	void WhipeHateList();
+	void WipeHateList();
 
 	inline bool	CheckAggro(Mob* other);
 

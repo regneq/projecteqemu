@@ -4809,12 +4809,12 @@ XS(XS_Mob_SetHeading)
 	XSRETURN_EMPTY;
 }
 
-XS(XS_Mob_WhipeHateList); /* prototype to pass -Wmissing-prototypes */
-XS(XS_Mob_WhipeHateList)
+XS(XS_Mob_WipeHateList); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_WipeHateList)
 {
 	dXSARGS;
 	if (items != 1)
-		Perl_croak(aTHX_ "Usage: Mob::WhipeHateList(THIS)");
+		Perl_croak(aTHX_ "Usage: Mob::WipeHateList(THIS)");
 	{
 		Mob *		THIS;
 
@@ -4827,7 +4827,7 @@ XS(XS_Mob_WhipeHateList)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		THIS->WhipeHateList();
+		THIS->WipeHateList();
 	}
 	XSRETURN_EMPTY;
 }
@@ -5782,7 +5782,7 @@ XS(boot_Mob)
 		newXSproto(strcpy(buf, "HateSummon"), XS_Mob_HateSummon, file, "$");
 		newXSproto(strcpy(buf, "FaceTarget"), XS_Mob_FaceTarget, file, "$;$$");
 		newXSproto(strcpy(buf, "SetHeading"), XS_Mob_SetHeading, file, "$$");
-		newXSproto(strcpy(buf, "WhipeHateList"), XS_Mob_WhipeHateList, file, "$");
+		newXSproto(strcpy(buf, "WipeHateList"), XS_Mob_WipeHateList, file, "$");
 		newXSproto(strcpy(buf, "CheckAggro"), XS_Mob_CheckAggro, file, "$$");
 		newXSproto(strcpy(buf, "CalculateHeadingToTarget"), XS_Mob_CalculateHeadingToTarget, file, "$$$");
 		newXSproto(strcpy(buf, "CalculateNewPosition"), XS_Mob_CalculateNewPosition, file, "$$$$$;$");

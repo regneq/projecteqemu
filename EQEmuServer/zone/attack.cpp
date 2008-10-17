@@ -2359,7 +2359,7 @@ void NPC::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill) 
 			parse->Event(EVENT_NPC_SLAY, this->GetNPCTypeID(), 0, oos->CastToNPC(), this);
 	}
 	
-	this->WhipeHateList();
+	this->WipeHateList();
 	p_depop = true;
 	if(other && other->GetTarget() == this) //we can kill things without having them targeted
 		other->SetTarget(NULL); //via AE effects and such..

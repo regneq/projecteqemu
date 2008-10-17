@@ -274,12 +274,12 @@ void BotRaids::SummonRaidBots(Mob *m, bool wipe_hate) {
 				if(BotRaidGroups[i]->members[j]) {
 					if(BotRaidGroups[i]->members[j]->IsBot()) {
 						if(wipe_hate) {
-							BotRaidGroups[i]->members[j]->WhipeHateList();
+							BotRaidGroups[i]->members[j]->WipeHateList();
 						}
 						BotRaidGroups[i]->members[j]->GMMove(m->GetX(), m->GetY(), m->GetZ());
 						if(BotRaidGroups[i]->members[j]->HasPet()) {
 							if(wipe_hate) {
-								BotRaidGroups[i]->members[j]->GetPet()->WhipeHateList();
+								BotRaidGroups[i]->members[j]->GetPet()->WipeHateList();
 							}
 							BotRaidGroups[i]->members[j]->GetPet()->GMMove(m->GetX(), m->GetY(), m->GetZ());
 						}
@@ -360,13 +360,13 @@ void BotRaids::GroupAssignTask(Group *g, int iTask, Mob *m) {
 	if((iTask == 2) && (m != NULL) && !m->IsBot()) {
 		Mob *gleader = g->GetLeader();
 		gleader->SetFollowID(gleader->BotOwner->GetID());
-		gleader->WhipeHateList();
+		gleader->WipeHateList();
 		gleader->Say("Attacking %s", m->GetCleanName());
         gleader->AddToHateList(m, 1, 1, false);
 		for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
 			if(g->members[i] && (g->members[i] != gleader)) {
 				g->members[i]->SetFollowID(gleader->GetID());
-				g->members[i]->WhipeHateList();
+				g->members[i]->WipeHateList();
 				g->members[i]->Say("Attacking %s", m->GetCleanName());
                 g->members[i]->AddToHateList(m, 1, 1, false);
 			}
@@ -377,7 +377,7 @@ void BotRaids::GroupAssignTask(Group *g, int iTask, Mob *m) {
 		for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
 			if(g->members[i]) {
 				g->members[i]->SetFollowID(0);
-                g->members[i]->WhipeHateList();
+                g->members[i]->WipeHateList();
 				g->members[i]->Say("Guarding here.");
 			}
 		}
@@ -391,7 +391,7 @@ void BotRaids::RaidDefendEnraged() {
 				if(BotRaidGroups[j]->members[i]) {
 					BotRaidGroups[j]->members[i]->Say("Enraged... stopping attacks.");
 					BotRaidGroups[j]->members[i]->SetFollowID(0);
-					BotRaidGroups[j]->members[i]->WhipeHateList();
+					BotRaidGroups[j]->members[i]->WipeHateList();
 				}
 			}
 		}
@@ -409,12 +409,12 @@ void BotRaids::GroupAssignTask(Group *g, int iTask, Group *g2) {
 
 	if(iTask == 1) {
 		gleader1->SetFollowID(gleader2->GetID());
-        gleader1->WhipeHateList();
+        gleader1->WipeHateList();
 		gleader1->Say("Following %s", gleader2->GetCleanName());
 		for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
 			if(g->members[i] && (g->members[i] != gleader1)) {
 				g->members[i]->SetFollowID(gleader1->GetID());
-                g->members[i]->WhipeHateList();
+                g->members[i]->WipeHateList();
 				g->members[i]->Say("Following %s", gleader2->GetCleanName());
 			}
 		}
