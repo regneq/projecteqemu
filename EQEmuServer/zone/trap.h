@@ -22,6 +22,15 @@
 //ID of the NPC type to spawn when a trap is set off, to do the damage
 #define TRAP_NPC_TYPE 1586
 
+enum TrapTypes
+{
+	trapTypeDebuff = 0,
+	trapTypeAlarm = 1,
+	trapTypeMysticSpawn = 2,
+	trapTypeBanditSpawn = 3,
+	trapTypeDamage = 4,
+};
+
 class Trap: public Entity
 {
 public:
@@ -31,10 +40,15 @@ public:
     virtual bool IsTrap() const { return true; }
 	void	Trigger(Mob* trigger);
 	
+	void	SpellOnTarget(Mob* trigger, int32 spell_id);
+
+	NPC * GetHiddenTrigger() { return hiddenTrigger; }
+	void SetHiddenTrigger(NPC* n) { hiddenTrigger = n; }
+	void CreateHiddenTrigger();
+	
 	//Trap data, leave this unprotected
 	Timer	respawn_timer; //Respawn Time when Trap's been disarmed
 	Timer	chkarea_timer;
-	int8    spawnchance;
 	int32	trap_id; //Database ID of trap
 	float	x; //X position
 	float	y; //Y position
@@ -46,9 +60,15 @@ public:
 	sint32	effectvalue; //Value of Effect
 	sint32	effectvalue2; //Value of Effect
 	uint8	skill; //Skill to detect/disarm with rogue.
+	uint8	level;
 	bool	detected;
 	bool	disarmed;
+	int32	respawn_time;
+	int32	respawn_var;
+
 	std::string message;
 protected:
+	NPC *hiddenTrigger;
+	bool ownHiddenTrigger;
 };
 

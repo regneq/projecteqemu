@@ -94,6 +94,7 @@ enum {
 	IMMUNE_MELEE_EXCEPT_BANE,	//O
 	IMMUNE_MELEE_NONMAGICAL,	//W
 	IMMUNE_AGGRO, //H, wont aggro, ever.
+	IMMUNE_TARGET, //G, can't be aggroed, ever
 	SPECATK_MAXNUM
 				//X,Y,Z are old interactive NPC codes
 };
@@ -517,6 +518,10 @@ bool logpos;
 	inline virtual sint16	GetDR()	const { return DR + itembonuses.DR + spellbonuses.DR; }
 	inline virtual sint16	GetPR()	const { return PR + itembonuses.PR + spellbonuses.PR; }
 	inline virtual sint16	GetCR() const { return CR + itembonuses.CR + spellbonuses.CR; }
+
+	inline StatBonuses GetItemBonuses() const { return itembonuses; }
+	inline StatBonuses GetSpellBonuses() const { return spellbonuses; }
+
 	
 #ifdef EQBOTS
 

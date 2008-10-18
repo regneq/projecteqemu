@@ -3327,7 +3327,7 @@ float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster)
 		else
 		{
 			mlog(SPELLS__RESISTS, "Spell %d: Roll of %.2f > fullchance %.2f, partially resisted, returned %.2f", spell_id, roll, fullchance, (100 * ((roll-fullchance)/(resistchance-fullchance))));
-			//Remove the lower range so it doesn't throw off the porportion.
+			//Remove the lower range so it doesn't throw off the proportion.
 			return(100 * ((roll-fullchance)/(resistchance-fullchance)));
 		}
 	}

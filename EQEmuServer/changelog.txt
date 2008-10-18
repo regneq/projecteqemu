@@ -1,5 +1,22 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+
+==10/18/2008
+KLS: Reworked classic style traps.
+KLS: Debuff style traps should function perfectly, the level field in the DB gives what level the caster is for resists in this case.
+KLS: Added respawn and respawn variance to traps.
+KLS: Increased range on sense traps.
+KLS: Sense trap will now point the player in the direction of the trap they are sensing.
+KLS: Disarm trap will no longer use sense trap's timer.
+KLS: Disarm trap will no longer fail to disarm traps on success.
+KLS: Increased range on disarm trap slightly.
+
+Required SQL:
+ALTER TABLE `traps` DROP `spawnchance`;
+ALTER TABLE `traps` ADD `respawn_time` INT(11) UNSIGNED DEFAULT '60' NOT NULL AFTER `skill`;
+ALTER TABLE `traps` ADD `level` MEDIUMINT(4) UNSIGNED DEFAULT '1' NOT NULL AFTER `skill`
+ALTER TABLE `traps` ADD `respawn_var` INT(11) UNSIGNED DEFAULT '0' NOT NULL AFTER `respawn_time`
+
 ==10/17/2008
 KLS: Tweaks to /pet attack
 KLS: Renamed WhipeHateList to WipeHateList so I never have to view that spelling monster ever again.

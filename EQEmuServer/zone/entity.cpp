@@ -2080,13 +2080,13 @@ bool EntityList::RemoveRaid(int32 delete_id){
 void EntityList::Clear()
 {
 	RemoveAllClients();
+	entity_list.RemoveAllTraps(); //we can have child npcs so we go first
 	entity_list.RemoveAllNPCs();
 	entity_list.RemoveAllMobs();
 	entity_list.RemoveAllCorpses();
 	entity_list.RemoveAllGroups();
 	entity_list.RemoveAllDoors();
 	entity_list.RemoveAllObjects();
-	entity_list.RemoveAllTraps();
 	entity_list.RemoveAllRaids();
 	entity_list.RemoveAllLocalities();
 	last_insert_id = 0;

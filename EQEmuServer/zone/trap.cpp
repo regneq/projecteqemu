@@ -60,14 +60,25 @@ Trap::Trap() :
 	effectvalue = 0;
 	effectvalue2 = 0;
 	skill = 0;
+	level = 0;
 	respawn_timer.Disable();
 	detected = false;
-	disarmed = true;
-	spawnchance = 0;
+	disarmed = false;
+	respawn_time = 0;
+	respawn_var = 0;
+	hiddenTrigger = NULL;
+	ownHiddenTrigger = false;
 }
 
 Trap::~Trap()
 {
+	if(ownHiddenTrigger)
+	{
+		if(hiddenTrigger)
+		{
+			hiddenTrigger->Depop(false);
+		}
+	}
 }
 
 bool Trap::Process()
@@ -97,7 +108,7 @@ void Trap::Trigger(Mob* trigger)
 	const NPCType* tmp = 0;
 	switch (effect)
 	{
-		case 0:
+		case trapTypeDebuff:
 			if(!message[0])
 			{
 				entity_list.MessageClose(trigger,false,100,13,"%s triggers a trap!",trigger->GetName());
@@ -106,17 +117,11 @@ void Trap::Trigger(Mob* trigger)
 			{
 				entity_list.MessageClose(trigger,false,100,13,"%s",message.c_str());
 			}
-
-			if ((tmp = database.GetNPCType(effectvalue)))			{
-				NPCType tmp2(*tmp);
-				tmp2.level = trigger->GetLevel();
-				NPC* new_npc = new NPC(&tmp2, 0, x, y, z, 0);
-				entity_list.AddNPC(new_npc);
-				new_npc->SpellFinished(effectvalue2,trigger,10,0);
-				new_npc->Depop();
+			if(hiddenTrigger){
+				hiddenTrigger->SpellFinished(effectvalue, trigger, 10);
 			}
 			break;
-		case 1:
+		case trapTypeAlarm:
 			if (!message[0])
 			{
 				entity_list.MessageClose(trigger,false,effectvalue,13,"A loud alarm rings out through the air...");
@@ -126,8 +131,9 @@ void Trap::Trigger(Mob* trigger)
 				entity_list.MessageClose(trigger,false,effectvalue,13,"%s",message.c_str());
 			}
 
-			entity_list.SendAlarm(this,trigger,effectvalue2);			break;
-		case 2:
+			entity_list.SendAlarm(this,trigger,effectvalue);			
+			break;
+		case trapTypeMysticSpawn:
 			if (!message[0])
 			{
 				entity_list.MessageClose(trigger,false,100,13,"The air shimmers...");
@@ -148,7 +154,7 @@ void Trap::Trigger(Mob* trigger)
 				}
 			}
 			break;
-		case 3:
+		case trapTypeBanditSpawn:
 			if (!message[0])
 			{
 				entity_list.MessageClose(trigger,false,100,13,"A bandit leaps out from behind a tree!");
@@ -169,7 +175,7 @@ void Trap::Trigger(Mob* trigger)
 				}
 			}
 			break;
-		case 4:
+		case trapTypeDamage:
 			if (!message[0])
 			{
 				entity_list.MessageClose(trigger,false,100,13,"%s triggers a trap!",trigger->GetName());
@@ -178,10 +184,23 @@ void Trap::Trigger(Mob* trigger)
 			{
 				entity_list.MessageClose(trigger,false,100,13,"%s",message.c_str());
 			}
-			trigger->Message(13,"A trap hits you for %i points of damage.",effectvalue);
-			trigger->SetHP(trigger->GetHP() - effectvalue);	
+			if(trigger->IsClient())
+			{
+				EQApplicationPacket* outapp = new EQApplicationPacket(OP_Damage, sizeof(CombatDamage_Struct));
+				CombatDamage_Struct* a = (CombatDamage_Struct*)outapp->pBuffer;
+				int dmg = MakeRandomInt(effectvalue, effectvalue2);
+				trigger->SetHP(trigger->GetHP() - dmg);
+				a->damage = dmg;
+				a->sequence = MakeRandomInt(0, 1234567);
+				a->source = GetHiddenTrigger()!=NULL ? GetHiddenTrigger()->GetID() : trigger->GetID();
+				a->spellid = 0;
+				a->target = trigger->GetID();
+				a->type = 253;
+				trigger->CastToClient()->QueuePacket(outapp);
+				safe_delete(outapp);
+			}
 	}
-	respawn_timer.Start(600000);
+	respawn_timer.Start((respawn_time + MakeRandomInt(0, respawn_var)) * 1000);
 	chkarea_timer.Disable();
 	disarmed = true;
 }
@@ -258,29 +277,29 @@ bool ZoneDatabase::LoadTraps(const char* zonename) {
 	//	int char_num = 0;
 	unsigned long* lengths;
 
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT id,x,y,z,effect,effectvalue,effectvalue2,skill,spawnchance,maxzdiff,radius,chance,message FROM traps WHERE zone='%s'", zonename), errbuf, &result)) {
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT id,x,y,z,effect,effectvalue,effectvalue2,skill,maxzdiff,radius,chance,message,respawn_time,respawn_var,level FROM traps WHERE zone='%s'", zonename), errbuf, &result)) {
 		safe_delete_array(query);
 		while ((row = mysql_fetch_row(result)))
 		{
-			if (MakeRandomInt(0,100) < atoi(row[8]))
-			{
-				lengths = mysql_fetch_lengths(result);
-				Trap* trap = new Trap();
-				trap->trap_id = atoi(row[0]);
-				trap->x = atof(row[1]);
-				trap->y = atof(row[2]);
-				trap->z = atof(row[3]);
-				trap->effect = atoi(row[4]);
-				trap->effectvalue = atoi(row[5]);
-				trap->effectvalue2 = atoi(row[6]);
-				trap->skill = atoi(row[7]);
-				trap->spawnchance = atoi(row[8]);
-				trap->maxzdiff = atof(row[9]);
-				trap->radius = atof(row[10]);
-				trap->chance = atoi(row[11]);
-				trap->message = row[12];
-				entity_list.AddTrap(trap);
-			}
+			lengths = mysql_fetch_lengths(result);
+			Trap* trap = new Trap();
+			trap->trap_id = atoi(row[0]);
+			trap->x = atof(row[1]);
+			trap->y = atof(row[2]);
+			trap->z = atof(row[3]);
+			trap->effect = atoi(row[4]);
+			trap->effectvalue = atoi(row[5]);
+			trap->effectvalue2 = atoi(row[6]);
+			trap->skill = atoi(row[7]);
+			trap->maxzdiff = atof(row[8]);
+			trap->radius = atof(row[9]);
+			trap->chance = atoi(row[10]);
+			trap->message = row[11];
+			trap->respawn_time = atoi(row[12]);
+			trap->respawn_var = atoi(row[13]);
+			trap->level = atoi(row[14]);
+			entity_list.AddTrap(trap);
+			trap->CreateHiddenTrigger();
 		}
 		mysql_free_result(result);
 	}
@@ -291,4 +310,33 @@ bool ZoneDatabase::LoadTraps(const char* zonename) {
 	}
 
 	return true;
+}
+
+void Trap::CreateHiddenTrigger()
+{
+	if(hiddenTrigger)
+		return;
+
+	const NPCType *base_type = database.GetNPCType(500);
+	NPCType *make_npc = new NPCType;
+	memcpy(make_npc, base_type, sizeof(NPCType));
+	make_npc->max_hp = 100000;
+	make_npc->cur_hp = 100000;
+	strcpy(make_npc->name, "a_trap");
+	make_npc->runspeed = 0.0f;
+	make_npc->bodytype = BT_Special;
+	make_npc->race = 127;
+	make_npc->gender = 0;
+	make_npc->loottable_id = 0;
+	make_npc->npc_spells_id = 0;
+	make_npc->d_meele_texture1 = 0;
+	make_npc->d_meele_texture2 = 0;
+	make_npc->level = level;
+	strcpy(make_npc->npc_attacks, "ABHG");
+	NPC* npca = new NPC(make_npc, 0, x, y, z, 0);
+	npca->GiveNPCTypeData(make_npc);
+	entity_list.AddNPC(npca);
+
+	hiddenTrigger = npca;
+	ownHiddenTrigger = true;
 }
