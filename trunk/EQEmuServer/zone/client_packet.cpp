@@ -5917,7 +5917,7 @@ void Client::Handle_OP_SenseTraps(const EQApplicationPacket *app)
 	}
 	p_timers.Start(pTimerSenseTraps, reuse-1);
 
-	Trap* trap = entity_list.FindNearbyTrap(this,100);
+	Trap* trap = entity_list.FindNearbyTrap(this,800);
 
 	CheckIncreaseSkill(SENSE_TRAPS);
 
@@ -5946,6 +5946,14 @@ void Client::Handle_OP_SenseTraps(const EQApplicationPacket *app)
 			else
 				Message(MT_Skills,"You sense a trap to the East.");
 			trap->detected = true;
+
+			float angle = CalculateHeadingToTarget(trap->x, trap->y);
+
+			if(angle < 0)
+				angle = (256+angle);
+
+			angle *= 2;
+			MovePC(GetX(), GetY(), GetZ(), angle);
 			return;
 		}
 	}
@@ -5958,11 +5966,11 @@ void Client::Handle_OP_DisarmTraps(const EQApplicationPacket *app)
 	if (!HasSkill(DISARM_TRAPS))
 		return;
 
-	if(!p_timers.Expired(&database, pTimerSenseTraps, false)) {
+	if(!p_timers.Expired(&database, pTimerDisarmTraps, false)) {
 		Message(13,"Ability recovery time not yet met.");
 		return;
 	}
-	int reuse = SenseTrapsReuseTime;
+	int reuse = DisarmTrapsReuseTime;
 	switch(GetAA(aaAdvTrapNegotiation)) {
 		case 1:
 			reuse -= 1;
@@ -5974,9 +5982,9 @@ void Client::Handle_OP_DisarmTraps(const EQApplicationPacket *app)
 			reuse -= 5;
 			break;
 	}
-	p_timers.Start(pTimerSenseTraps, reuse-1);
+	p_timers.Start(pTimerDisarmTraps, reuse-1);
 
-	Trap* trap = entity_list.FindNearbyTrap(this,40);
+	Trap* trap = entity_list.FindNearbyTrap(this,60);
 	if (trap && trap->detected)
 	{
 		int uskill = GetSkill(DISARM_TRAPS);
@@ -5984,12 +5992,18 @@ void Client::Handle_OP_DisarmTraps(const EQApplicationPacket *app)
 		{
 			Message(MT_Skills,"You disarm a trap.");
 			trap->disarmed = true;
-			trap->respawn_timer.Start(6000000);
+			trap->chkarea_timer.Disable();
+			trap->respawn_timer.Start((trap->respawn_time + MakeRandomInt(0, trap->respawn_var))*1000);
 		}
 		else
 		{
-			Message(MT_Skills,"You set off the trap while trying to disarm it!");
-			trap->Trigger(this);
+			if(MakeRandomInt(0, 99) < 25){
+				Message(MT_Skills,"You set off the trap while trying to disarm it!");
+				trap->Trigger(this);
+			}
+			else{
+				Message(MT_Skills,"You failed to disarm a trap.");
+			}
 		}
 		CheckIncreaseSkill(DISARM_TRAPS);
 		return;

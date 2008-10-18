@@ -2506,6 +2506,9 @@ void Mob::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHel
 	if (other == myowner)
 		return;
 
+	if(other->SpecAttacks[IMMUNE_TARGET])
+		return;
+
 	// first add self
 	hate_list.Add(other, hate, damage, bFrenzy, !iBuffTic);
 
