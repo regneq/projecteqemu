@@ -714,6 +714,7 @@ bool Client::TradeskillExecute(DBTradeskillRecipe_Struct *spec) {
 			break;
 		}
 	}
+      const Item_Struct* item = NULL;
 
 	if (spec->tradeskill == BLACKSMITHING) {
 		switch(GetAA(aaBlacksmithingMastery)) {
@@ -813,6 +814,11 @@ bool Client::TradeskillExecute(DBTradeskillRecipe_Struct *spec) {
 		while(itr != spec->onsuccess.end()) {
 			//should we check this crap?
 			SummonItem(itr->first, itr->second);
+                  item = database.GetItem(itr->first);
+			if (this->GetGroup())
+			{
+				entity_list.MessageGroup(this,false,MT_Skills,"%s has successfully fashioned %s!",GetName(),item->Name);
+			}
 			if(RuleB(TaskSystem, EnableTaskSystem))
 				UpdateTasksForItem(ActivityTradeSkill, itr->first, itr->second);
 			itr++;
@@ -827,6 +833,10 @@ bool Client::TradeskillExecute(DBTradeskillRecipe_Struct *spec) {
 		Message_StringID(4,TRADESKILL_FAILED);
 
 		_log(TRADESKILLS__TRACE, "Tradeskill failed");
+            if (this->GetGroup())
+		{
+			entity_list.MessageGroup(this,false,MT_Skills,"%s was unsuccessful in %s tradeskill attempt.",GetName(),GetGender() == 0 ? "his" : "her");
+		}
 		
 		itr = spec->onfail.begin();
 		while(itr != spec->onfail.end()) {

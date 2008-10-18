@@ -3852,6 +3852,7 @@ void Mob::TryWeaponProc(const Item_Struct* weapon, Mob *on) {
 
 void Mob::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 {
+      bool slayUndeadCrit = false;
 	if(damage < 1) //We can't critical hit if we don't hit.
 		return;
  
@@ -3967,6 +3968,7 @@ void Mob::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 				critMod += 100;
 				break;
 		}
+            slayUndeadCrit = true;
 	}
  
 #ifdef EQBOTS
@@ -3993,6 +3995,12 @@ void Mob::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 	if(critChance > 0){
 		if(MakeRandomFloat(0, 1) <= critChance)
 		{
+            if (slayUndeadCrit)
+			{
+				damage = (damage * (critMod * 1.65)) / 100;
+				entity_list.MessageClose(this, false, 200, MT_CritMelee, "%s cleanses %s target!(%d)", GetCleanName(), this->GetGender() == 0 ? "his" : "her", damage);
+				return;
+			}
 			//Veteran's Wrath AA
 			//first, find out of we have it (don't multiply by 0 :-\ )
 			int32 AAdmgmod = GetAA(aaVeteransWrath);

@@ -377,6 +377,7 @@ bool logpos;
 	virtual void GoToBind() {}
 	virtual void Gate();
 	virtual bool Attack(Mob* other, int Hand = 13, bool FromRiposte = false) { return false; }		// 13 = Primary (default), 14 = secondary
+      bool    AffectedExcludingSlot(int slot, int effect);
 
 #ifdef EQBOTS
 
@@ -520,7 +521,8 @@ bool logpos;
 	inline virtual sint16	GetCR() const { return CR + itembonuses.CR + spellbonuses.CR; }
 
 	inline StatBonuses GetItemBonuses() const { return itembonuses; }
-	inline StatBonuses GetSpellBonuses() const { return spellbonuses; }
+	inline StatBonuses GetSpellBonuses() const { return spellbonuses; 
+}
 
 	
 #ifdef EQBOTS
