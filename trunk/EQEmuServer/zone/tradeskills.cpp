@@ -1005,6 +1005,10 @@ bool ZoneDatabase::GetTradeRecipe(const ItemInst* container, uint8 c_type, uint3
 	if(qcount > 1)
 	{
 		//The recipe is not unique, so we need to compare the container were using.
+
+		if(!container->GetItem()) 
+			return false;
+		
 		uint32 containerId = container->GetID();
 
 		qlen = MakeAnyLenString(&query,"SELECT tre.recipe_id FROM tradeskill_recipe_entries as tre WHERE tre.recipe_id IN (%s)"
