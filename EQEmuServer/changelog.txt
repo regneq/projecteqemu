@@ -12,6 +12,10 @@ KLS: Disarm trap will no longer fail to disarm traps on success.
 KLS: Increased range on disarm trap slightly.
 KLS: Change to MakeRandomInt() and MakeRandomFloat()
 KLS: Int generation be nearly 100% or more faster in most cases and float generation should be slightly faster in most cases
+cavedude00: (seveianrex) Slay Undead Fix 
+cavedude00: (seveianrex) Levitate effect will no longer be removed in cases where you have two stacked lev spells and the first wears off. 
+cavedude00: (seveianrex) Hate list will now be cleared following CoH
+cavedude00: (seveianrex) Group members will now see tradeskill emotes. 
 
 Required SQL:
 ALTER TABLE `traps` DROP `spawnchance`;

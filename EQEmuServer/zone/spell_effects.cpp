@@ -1763,6 +1763,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 					CastToClient()->cheat_timer.Start(3500, false);
 					CastToClient()->MovePC(zone->GetZoneID(), caster->GetX(), caster->GetY(), caster->GetZ(), caster->GetHeading(), 2, SummonPC);
 					Message(15, "You have been summoned!");
+                              WipeHateList();
 				}
 				else
 					caster->Message(13, "This spell can only be cast on players.");
@@ -2956,7 +2957,8 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 
 			case SE_Levitate:
 			{
-				SendAppearancePacket(AT_Levitate, 0);
+				if (!AffectedExcludingSlot(slot, SE_Levitate))
+					SendAppearancePacket(AT_Levitate, 0);
 				break;
 			}
 
@@ -3480,4 +3482,16 @@ void Mob::TryDotCritical(int16 spell_id, Mob *caster, int &damage)
 	}
 }
 
+bool Mob::AffectedExcludingSlot(int slot, int effect)
+{
+	for (int i = 0; i <= EFFECT_COUNT; i++)
+	{
+		if (i == slot)
+			continue;
+
+		if (IsEffectInSpell(buffs[i].spellid, effect))
+			return true;
+	}
+	return false;
+}
 
