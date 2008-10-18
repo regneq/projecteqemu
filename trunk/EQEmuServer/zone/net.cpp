@@ -299,6 +299,9 @@ int main(int argc, char** argv) {
 		_log(ZONE__INIT_ERR, "Command loading FAILED");
 	else
 		_log(ZONE__INIT, "%d commands loaded", retval);
+
+	srand(time(0) * (time(0) % (retval+1)));
+
 	//rules:
 	{
 		char tmp[64];

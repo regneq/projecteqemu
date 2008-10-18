@@ -369,31 +369,20 @@ const char * itoa(int num, char* a,int b) {
  */
 int MakeRandomInt(int low, int high)
 {
-	if(low == high)
+	_CP(MakeRandomInt);
+	if(low >= high)
 		return(low);
-	return (int)MakeRandomFloat((double)low, (double)high + 0.999);
+
+	return (rand()%(high-low+1) + (low));
 }
 
 double MakeRandomFloat(double low, double high)
 {
 	_CP(MakeRandomFloat);
-	if(low == high)
+	if(low >= high)
 		return(low);
-	
-	static bool seeded=0;
-	double diff = high - low;
-  
-	if(!diff) return low;
-	if(diff < 0)
-		diff = 0 - diff;
 
-	if(!seeded)
-	{
-		srand(time(0) * (time(0) % (int)diff));
-		seeded = true;
-	}
-  
-	return (rand() / (double)RAND_MAX * diff + (low > high ? high : low));
+	return (rand() / (double)RAND_MAX * (high - low) + low);
 }
 
 // solar: removes the crap and turns the underscores into spaces.
