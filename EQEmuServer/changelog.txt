@@ -10,6 +10,8 @@ KLS: Sense trap will now point the player in the direction of the trap they are 
 KLS: Disarm trap will no longer use sense trap's timer.
 KLS: Disarm trap will no longer fail to disarm traps on success.
 KLS: Increased range on disarm trap slightly.
+KLS: Change to MakeRandomInt() and MakeRandomFloat()
+KLS: Int generation be nearly 100% or more faster in most cases and float generation should be slightly faster in most cases
 
 Required SQL:
 ALTER TABLE `traps` DROP `spawnchance`;
