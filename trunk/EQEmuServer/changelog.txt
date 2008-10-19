@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
 ==10/19/2008
+Angelox: Added a start to Bot tracking - Thanks Derision for all the help and know-how. 
 Derision: Altered damage shield message processing to be more like (the same?) as live.
 Derision: If it exists, damage shield types are read from a new table (damageshieldtypes)
 Derision: If no entry exists in the table, a default based on resist type is used.
@@ -27,8 +28,8 @@ cavedude00: (seveianrex) Group members will now see tradeskill emotes.
 Required SQL:
 ALTER TABLE `traps` DROP `spawnchance`;
 ALTER TABLE `traps` ADD `respawn_time` INT(11) UNSIGNED DEFAULT '60' NOT NULL AFTER `skill`;
-ALTER TABLE `traps` ADD `level` MEDIUMINT(4) UNSIGNED DEFAULT '1' NOT NULL AFTER `skill`
-ALTER TABLE `traps` ADD `respawn_var` INT(11) UNSIGNED DEFAULT '0' NOT NULL AFTER `respawn_time`
+ALTER TABLE `traps` ADD `level` MEDIUMINT(4) UNSIGNED DEFAULT '1' NOT NULL AFTER `skill`;
+ALTER TABLE `traps` ADD `respawn_var` INT(11) UNSIGNED DEFAULT '0' NOT NULL AFTER `respawn_time`;
 
 ==10/17/2008
 KLS: Tweaks to /pet attack

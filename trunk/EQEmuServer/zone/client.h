@@ -695,7 +695,7 @@ public:
 	int FindSpellBookSlotBySpellID(int16 spellid);
 	int GetNextAvailableSpellBookSlot();
 	int16	GetMaxSkillAfterSpecializationRules(SkillType skillid, int16 maxSkill);
-       void SendPopupToClient(char *Title, char *Text);
+       void SendPopupToClient(const char *Title, const char *Text);
        bool	PendingTranslocate;
  	bool	PendingSacrifice;
  	string	SacrificeCaster;
