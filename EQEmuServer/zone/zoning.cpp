@@ -531,6 +531,11 @@ void Client::ZonePC(int32 zoneID, float x, float y, float z, float heading, int8
 
 	pShortZoneName = database.GetZoneName(zoneID);
 	database.GetZoneLongName(pShortZoneName, &pZoneName);
+
+	if(!pZoneName) {
+		Message(13, "Invalid zone number specified");
+		return;
+	}
 	iZoneNameLength = strlen(pZoneName);
 		
 	switch(zm) {

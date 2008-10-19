@@ -472,6 +472,16 @@ void EntityList::MobProcess() {
 					cout << "Dropping client: Process=false, ip=" << inet_ntoa(in) << ", port=" << mob->CastToClient()->GetPort() << endl;
 #endif
 					zone->StartShutdownTimer();
+					Group *g = GetGroupByMob(mob);
+					if(g) {
+						LogFile->write(EQEMuLog::Error, "About to delete a client still in a group.");
+						g->DelMember(mob);
+					}
+					Raid *r = entity_list.GetRaidByClient(mob->CastToClient());
+					if(r) {
+						LogFile->write(EQEMuLog::Error, "About to delete a client still in a raid.");
+						r->MemberZoned(mob->CastToClient());
+					}
 					entity_list.RemoveClient(mob->GetID());
 			}
 			iterator.RemoveCurrent();
