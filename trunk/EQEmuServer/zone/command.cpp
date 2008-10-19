@@ -743,12 +743,6 @@ void command_resetaa(Client* c,const Seperator *sep){
 
 void command_sendop(Client *c,const Seperator *sep){
 
-
-	entity_list.ShowSpawnWindow(c, 1000, false);
-
-	return;
-
-	
 	int RezSpell = 0;
 
 	if(sep->arg[1][0]) {
