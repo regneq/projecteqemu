@@ -3439,7 +3439,7 @@ void Client::SetHoTT(int32 mobid) {
 	safe_delete(outapp);
 }
 
-void Client::SendPopupToClient(char *Title, char *Text) {
+void Client::SendPopupToClient(const char *Title, const char *Text) {
 
        EQApplicationPacket *outapp = new EQApplicationPacket(OP_OnLevelMessage, sizeof(OnLevelMessage_Struct));
        OnLevelMessage_Struct *olms = (OnLevelMessage_Struct *) outapp->pBuffer;

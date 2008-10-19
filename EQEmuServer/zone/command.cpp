@@ -743,8 +743,11 @@ void command_resetaa(Client* c,const Seperator *sep){
 
 void command_sendop(Client *c,const Seperator *sep){
 
-	// This part of the patch was just to allow me to test the rez confirmation box.
-	// #sendop <spellid> with the various rez spells to see the box with % rez included.
+
+	entity_list.ShowSpawnWindow(c, 1000, false);
+
+	return;
+
 	
 	int RezSpell = 0;
 
@@ -7382,6 +7385,7 @@ void command_bot(Client *c, const Seperator *sep) {
 		c->Message(15, "#bot cure [poison|disease|curse|blindness] - You must have a Cleric in your group.");
 		c->Message(15, "#bot bindme - You must have a Cleric in your group to get Bind Affinity cast on you.");
 		c->Message(15, "#bot raid [commands] (#bot raid help will show some help).");
+		c->Message(15, "#bot track [rare] (look at mobs in the zone - [rare] option for named mobs only).");
 		return;
 	}
 
@@ -8702,6 +8706,72 @@ void command_bot(Client *c, const Seperator *sep) {
 		}
 	}
 	
+	if(!strcasecmp(sep->arg[1], "track") && c->IsGrouped()) {
+		Mob *Tracker;
+		int32 TrackerClass = 0;
+
+		Group *g = c->GetGroup();
+		if(g) {
+			for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
+				if(g->members[i] && g->members[i]->IsBot()) {
+					switch(g->members[i]->GetClass()) {
+						case RANGER:
+							Tracker = g->members[i];
+							TrackerClass = RANGER;
+							break;
+						case DRUID:
+							// If we haven't found a tracker yet, use druid.
+							if(TrackerClass == 0) {
+								Tracker = g->members[i];
+								TrackerClass = DRUID;
+							}
+							break;
+						case BARD:
+							// Unless we have a ranger, bard is next best.
+							if(TrackerClass != RANGER) {
+								Tracker = g->members[i];
+								TrackerClass = BARD;
+							}
+							break;
+						default:
+							break;
+					}
+				}
+			}
+
+			int Range =1000;
+
+			switch(TrackerClass) {
+				case RANGER:
+					if(!strcasecmp(sep->arg[2], "all")) {
+						Tracker->Say("Tracking everything", c->GetName());
+						entity_list.ShowSpawnWindow(c, 3500, false);
+					}
+					else if(!strcasecmp(sep->arg[2], "rare")) { 
+						Tracker->Say("Selective tracking", c->GetName());
+						entity_list.ShowSpawnWindow(c, 3500, true);
+					}
+					else 
+						Tracker->Say("You want to [track all] or [track rare]?", c->GetName());
+						
+					break;
+
+				case DRUID:
+				case BARD:
+
+					if(TrackerClass = DRUID)
+						Range = 1500;
+
+					Tracker->Say("Tracking up", c->GetName());
+					entity_list.ShowSpawnWindow(c, Range, false);
+					break;
+
+				default:
+					c->Message(15, "You must have a Ranger, Druid, or Bard in your group.");
+					break;
+			}
+		}
+	}
 	if(!strcasecmp(sep->arg[1], "cure")) {
 		Mob *curer = NULL;
 		bool hascurer = false;

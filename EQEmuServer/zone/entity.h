@@ -329,6 +329,7 @@ public:
 	// franck-add: EQoffline
 	bool	Bot_AICheckCloseBeneficialSpells(NPC* caster, int8 iChance, float iRange, int16 iSpellTypes);
 	Mob*	GetBotMobByName(const char *name);
+	void    ShowSpawnWindow(Client* client, int Distance, bool NamedOnly = false);
 
 #endif //EQBOTS
 

@@ -41,6 +41,11 @@ using namespace std;
 #include "../common/MiscFunctions.h"
 
 
+#ifdef WIN32
+#define strncasecmp	_strnicmp
+#define strcasecmp  _stricmp
+#endif
+
 #ifndef NEW_LoadSPDat
 	extern SPDat_Spell_Struct spells[SPDAT_RECORDS];
 #endif
@@ -1119,4 +1124,93 @@ bool NPC::Bot_Command_MezzTarget(Mob *target) {
 	return false;
 }
 
+void EntityList::ShowSpawnWindow(Client* client, int Distance, bool NamedOnly) {
+
+	const char *WindowTitle = "Bot Tracking Window";
+
+	string WindowText;
+	int LastCon = -1;
+	int CurrentCon = 0;
+	
+	int32 array_counter = 0;
+	
+	LinkedListIterator<Mob*> iterator(mob_list);
+	iterator.Reset();
+
+	while(iterator.MoreElements())
+	{
+		if (iterator.GetData() && (iterator.GetData()->DistNoZ(*client)<=Distance))
+		{
+			if(iterator.GetData()->IsTrackable()) {
+				Mob* cur_entity = iterator.GetData();
+
+				if(NamedOnly) {
+					if(!strncasecmp(cur_entity->GetName(), "a_", 2) ||
+					   !strncasecmp(cur_entity->GetName(), "an_", 3)) {
+
+						iterator.Advance();
+					   	continue;
+					}
+				}
+
+
+				CurrentCon = client->GetLevelCon(cur_entity->GetLevel());
+
+				if(CurrentCon != LastCon) {
+
+					if(LastCon != -1)
+						WindowText += "</c>";
+
+					LastCon = CurrentCon;
+
+					switch(CurrentCon) {
+
+						case CON_GREEN: {
+							WindowText += "<c \"#00FF00\">";
+							break;
+						}
+
+						case CON_LIGHTBLUE: {
+							WindowText += "<c \"#8080FF\">";
+							break;
+						}
+						case CON_BLUE: {
+							WindowText += "<c \"#2020FF\">";
+							break;
+						}
+
+						case CON_YELLOW: {
+							WindowText += "<c \"#FFFF00\">";
+							break;
+						}
+						case CON_RED: {
+							WindowText += "<c \"#FF0000\">";
+							break;
+						}
+						default: {
+							WindowText += "<c \"#FFFFFF\">";
+							break;
+						}
+					}
+				}
+
+				WindowText += cur_entity->GetCleanName();
+				WindowText += "<br>";
+
+				if(strlen(WindowText.c_str()) > 4000) {
+					// Popup window is limited to 4096 characters.
+					WindowText += "</c><br><br>List truncated ... too many mobs to display";
+					break;
+				}
+			}
+		}
+
+		iterator.Advance();
+	}
+	WindowText += "</c>";
+
+	client->SendPopupToClient(WindowTitle, WindowText.c_str());
+
+	return; 
+}
 #endif //EQBOTS
