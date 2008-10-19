@@ -143,6 +143,11 @@ bool Client::Process() {
 		if(linkdead_timer.Check()){
 			Save();
 			LeaveGroup();
+			Raid *myraid = entity_list.GetRaidByClient(this);
+			if (myraid)
+			{
+				myraid->MemberZoned(this);
+			}
 			return false; //delete client
 		}
 
