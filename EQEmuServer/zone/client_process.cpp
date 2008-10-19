@@ -633,6 +633,11 @@ bool Client::Process() {
 void Client::OnDisconnect(bool hard_disconnect) {
 	if(hard_disconnect) {
 		LeaveGroup();
+
+		Raid *MyRaid = entity_list.GetRaidByClient(this);
+
+		if (MyRaid)
+			MyRaid->MemberZoned(this);
 	}
 	
 	//remove ourself from all proximities
