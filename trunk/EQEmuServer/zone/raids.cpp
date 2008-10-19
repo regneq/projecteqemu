@@ -77,9 +77,10 @@ void Raid::AddMember(Client *c, int32 group, bool rleader, bool groupleader, boo
     char* query = 0;
 	MYSQL_RES *result;
 	MYSQL_ROW row;
-	if (!database.RunQuery(query,MakeAnyLenString(&query, "INSERT INTO raid_members SET raidid=%lu, charid=%lu, groupid=%lu, _class=%d, level=%d, name='%s', isgroupleader=%d, israidleader=%d, islooter=%d", GetID(), c->CharacterID(), group, c->GetClass(), c->GetLevel(), c->GetName(), groupleader, rleader, looter ),errbuf,&result)){
+	if (database.RunQuery(query,MakeAnyLenString(&query, "INSERT INTO raid_members SET raidid=%lu, charid=%lu, groupid=%lu, _class=%d, level=%d, name='%s', isgroupleader=%d, israidleader=%d, islooter=%d", GetID(), c->CharacterID(), group, c->GetClass(), c->GetLevel(), c->GetName(), groupleader, rleader, looter ),errbuf,&result)){
 		mysql_free_result(result);
 	}
+
 	safe_delete_array(query);
 	LearnMembers();
 	VerifyRaid();
@@ -104,9 +105,10 @@ void Raid::RemoveMember(const char *c)
     char* query = 0;
 	MYSQL_RES *result;
 	MYSQL_ROW row;
-	if (!database.RunQuery(query,MakeAnyLenString(&query, "DELETE FROM raid_members where name='%s'", c ),errbuf,&result)){
+	if (database.RunQuery(query,MakeAnyLenString(&query, "DELETE FROM raid_members where name='%s'", c ),errbuf,&result)){
 		mysql_free_result(result);
 	}
+
 	Client *m = entity_list.GetClientByName(c);
 	safe_delete_array(query);
 	disbandCheck = true;
@@ -134,9 +136,10 @@ void Raid::DisbandRaid()
     char* query = 0;
 	MYSQL_RES *result;
 	MYSQL_ROW row;
-	if (!database.RunQuery(query,MakeAnyLenString(&query, "DELETE FROM raid_members WHERE raidid=%lu", GetID()),errbuf,&result)){
+	if (database.RunQuery(query,MakeAnyLenString(&query, "DELETE FROM raid_members WHERE raidid=%lu", GetID()),errbuf,&result)){
 		mysql_free_result(result);
 	}
+
 	safe_delete_array(query);
 	LearnMembers();
 	VerifyRaid();
@@ -159,9 +162,10 @@ void Raid::MoveMember(const char *name, int32 newGroup)
     char* query = 0;
 	MYSQL_RES *result;
 	MYSQL_ROW row;
-	if (!database.RunQuery(query,MakeAnyLenString(&query, "UPDATE raid_members SET groupid=%lu WHERE name='%s'", newGroup, name),errbuf,&result)){
+	if (database.RunQuery(query,MakeAnyLenString(&query, "UPDATE raid_members SET groupid=%lu WHERE name='%s'", newGroup, name),errbuf,&result)){
 		mysql_free_result(result);
 	}
+
 	safe_delete_array(query);
 	LearnMembers();
 	VerifyRaid();
@@ -182,9 +186,10 @@ void Raid::SetGroupLeader(const char *who, bool glFlag)
     char* query = 0;
 	MYSQL_RES *result;
 	MYSQL_ROW row;
-	if (!database.RunQuery(query,MakeAnyLenString(&query, "UPDATE raid_members SET isgroupleader=%lu WHERE name='%s'", glFlag, who),errbuf,&result)){
+	if (database.RunQuery(query,MakeAnyLenString(&query, "UPDATE raid_members SET isgroupleader=%lu WHERE name='%s'", glFlag, who),errbuf,&result)){
 		mysql_free_result(result);
 	}
+
 	safe_delete_array(query);
 	LearnMembers();
 	VerifyRaid();
@@ -210,15 +215,19 @@ void Raid::SetRaidLeader(const char *wasLead, const char *name)
 	MYSQL_ROW row;
 	if (!database.RunQuery(query,MakeAnyLenString(&query, "UPDATE raid_members SET israidleader=0 WHERE name='%s'", wasLead),errbuf,&result)){
 		printf("Set Raid Leader error: %s\n", errbuf);
-		mysql_free_result(result);
 	}
+	else
+		mysql_free_result(result);
+
 	safe_delete_array(query);
 	query = 0;
 
 	if (!database.RunQuery(query,MakeAnyLenString(&query, "UPDATE raid_members SET israidleader=1 WHERE name='%s'", name),errbuf,&result)){
 		printf("Set Raid Leader error: %s\n", errbuf);
-		mysql_free_result(result);
 	}
+	else
+		mysql_free_result(result);
+
 	safe_delete_array(query);
 
 	strncpy(leadername, name, 64);
@@ -258,9 +267,10 @@ void Raid::UpdateLevel(const char *name, int newLevel)
     char* query = 0;
 	MYSQL_RES *result;
 	MYSQL_ROW row;
-	if (!database.RunQuery(query,MakeAnyLenString(&query, "UPDATE raid_members SET level=%lu WHERE name='%s'", newLevel, name),errbuf,&result)){
+	if (database.RunQuery(query,MakeAnyLenString(&query, "UPDATE raid_members SET level=%lu WHERE name='%s'", newLevel, name),errbuf,&result)){
 		mysql_free_result(result);
 	}
+
 	safe_delete_array(query);
 	LearnMembers();
 	VerifyRaid();
@@ -639,9 +649,10 @@ void Raid::ChangeLootType(int32 type)
     char* query = 0;
 	MYSQL_RES *result;
 	MYSQL_ROW row;
-	if (!database.RunQuery(query,MakeAnyLenString(&query, "UPDATE raid_details SET loottype=%lu WHERE raidid=%lu", type, GetID()),errbuf,&result)){
+	if (database.RunQuery(query,MakeAnyLenString(&query, "UPDATE raid_details SET loottype=%lu WHERE raidid=%lu", type, GetID()),errbuf,&result)){
 		mysql_free_result(result);
 	}
+
 	safe_delete_array(query);
 	LootType = type;
 }
@@ -652,9 +663,10 @@ void Raid::AddRaidLooter(const char* looter)
     char* query = 0;
 	MYSQL_RES *result;
 	MYSQL_ROW row;
-	if (!database.RunQuery(query,MakeAnyLenString(&query, "UPDATE raid_members SET islooter=1 WHERE name='%s'", looter),errbuf,&result)){
+	if (database.RunQuery(query,MakeAnyLenString(&query, "UPDATE raid_members SET islooter=1 WHERE name='%s'", looter),errbuf,&result)){
 		mysql_free_result(result);
 	}
+
 	safe_delete_array(query);
 	
 	for(int x = 0; x < MAX_RAID_MEMBERS; x++)
@@ -679,9 +691,10 @@ void Raid::RemoveRaidLooter(const char* looter)
     char* query = 0;
 	MYSQL_RES *result;
 	MYSQL_ROW row;
-	if (!database.RunQuery(query,MakeAnyLenString(&query, "UPDATE raid_members SET islooter=0 WHERE name='%s'", looter),errbuf,&result)){
+	if (database.RunQuery(query,MakeAnyLenString(&query, "UPDATE raid_members SET islooter=0 WHERE name='%s'", looter),errbuf,&result)){
 		mysql_free_result(result);
 	}
+
 	safe_delete_array(query);
 	
 	for(int x = 0; x < MAX_RAID_MEMBERS; x++)
@@ -1124,9 +1137,10 @@ void Raid::LockRaid(bool lockFlag)
     char* query = 0;
 	MYSQL_RES *result;
 	MYSQL_ROW row;
-	if (!database.RunQuery(query,MakeAnyLenString(&query, "UPDATE raid_details SET locked=%d WHERE raidid=%lu", lockFlag, GetID()),errbuf,&result)){
+	if (database.RunQuery(query,MakeAnyLenString(&query, "UPDATE raid_details SET locked=%d WHERE raidid=%lu", lockFlag, GetID()),errbuf,&result)){
 		mysql_free_result(result);
 	}
+
 	safe_delete_array(query);
 	locked = lockFlag;
 	if(lockFlag)
@@ -1149,9 +1163,10 @@ void Raid::SetRaidDetails()
     char* query = 0;
 	MYSQL_RES *result;
 	MYSQL_ROW row;
-	if (!database.RunQuery(query,MakeAnyLenString(&query, "INSERT INTO raid_details SET raidid=%lu, loottype=1, locked=0", GetID()),errbuf,&result)){
+	if (database.RunQuery(query,MakeAnyLenString(&query, "INSERT INTO raid_details SET raidid=%lu, loottype=1, locked=0", GetID()),errbuf,&result)){
 		mysql_free_result(result);
 	}
+
 	safe_delete_array(query);
 }
 
@@ -1166,6 +1181,7 @@ void Raid::GetRaidDetails()
 		if(mysql_num_rows(result) < 1) {
 			mysql_free_result(result);
 			LogFile->write(EQEMuLog::Error, "Error getting raid details for raid %lu: %s", GetID(), errbuf);
+			return;
 		}
 		row = mysql_fetch_row(result);
 		if(row){
