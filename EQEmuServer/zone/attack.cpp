@@ -3979,8 +3979,8 @@ void Mob::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 		critChance = 0.01f; //Give them a small one so skills and items appear to have some effect.
  
 	critChance += ((critChance) * (CritBonus) / 100.0f); //crit chance is a % increase to your reg chance
-	
-	if(defender && defender->GetBodyType() == BT_Undead || defender->GetBodyType() == BT_SummonedUndead || defender->GetBodyType() == BT_Vampire){
+	if(GetAA(aaSlayUndead)){
+	  if(defender && defender->GetBodyType() == BT_Undead || defender->GetBodyType() == BT_SummonedUndead || defender->GetBodyType() == BT_Vampire){
 		switch(GetAA(aaSlayUndead)){
 			case 1:
 				critMod += 33;
@@ -3994,7 +3994,7 @@ void Mob::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 		}
             slayUndeadCrit = true;
 	}
- 
+}
 #ifdef EQBOTS
 
 	// Paladin Bot Slay Undead AA
