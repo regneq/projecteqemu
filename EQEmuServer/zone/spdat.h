@@ -89,6 +89,15 @@ typedef enum {
   ST_GroupClient		= 0x2b,
 } SpellTargetType;
 
+typedef enum  {
+	DS_DECAY = 244,
+	DS_CHILLED = 245,
+	DS_FREEZING = 246,
+	DS_TORMENT = 247,
+	DS_BURN = 248,
+	DS_THORNS = 249
+} DmgShieldType;
+
 //Spell Effect IDs
 #define SE_CurrentHP				0	// Heals and nukes, repeates every tic if in a buff
 #define SE_ArmorClass				1
@@ -554,6 +563,7 @@ struct SPDat_Spell_Struct
 /* 181 */ int spacing181[4];
 /* 185 */   int			can_mgb;
 /* 186 */	// last field is 185.
+	    int8		DamageShieldType; // This field does not exist in spells_us.txt
 };
 
 #ifdef NEW_LoadSPDat
@@ -632,5 +642,6 @@ bool IsPlayerIllusionSpell(int16 spell_id); // seveian 2008-09-23
 int CalcPetHp(int levelb, int classb, int STA = 75);
 const char *GetRandPetName();
 int GetSpellEffectDescNum(int16 spell_id);
+DmgShieldType GetDamageShieldType(int16 spell_id);
 
 #endif

@@ -1025,10 +1025,15 @@ This is hanging on freebsd for me, not sure why...
 
 		sp[tempid].can_mgb=atoi(sep.arg[185]);
 
+		sp[tempid].DamageShieldType = 0;
+
 	} 
 	_log(SPELLS__LOAD, "FileLoadSPDat() spells loaded: %i", counter);
 	//in.close();
 	fclose(sf);
+	// Now fill in the DamageShieldType from the damageshieldtypes table, if it exists.
+	//
+	database.DBLoadDamageShieldTypes(sp, iMaxSpellID);
 
 	return true;
 }

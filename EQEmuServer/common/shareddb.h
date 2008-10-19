@@ -5,6 +5,7 @@
 
 #include "database.h"
 #include "skills.h"
+#include "../zone/spdat.h"
 
 #include <list>
 
@@ -86,6 +87,7 @@ public:
 	bool	DBLoadNPCFactionLists(sint32 iNPCFactionListCount, uint32 iMaxNPCFactionListID);
 	bool	DBLoadLoot();
 	bool	DBLoadSkillCaps();
+	void	DBLoadDamageShieldTypes(SPDat_Spell_Struct* sp, sint32 iMaxSpellID);
 
 
 protected:

@@ -794,6 +794,7 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 			{
 				newbon->DamageShield += effect_value;
 				newbon->DamageShieldSpellID = spell_id;
+				newbon->DamageShieldType = GetDamageShieldType(spell_id);
 				break;
 			}
 			

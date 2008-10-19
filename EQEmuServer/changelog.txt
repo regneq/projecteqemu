@@ -1,6 +1,13 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==10/19/2008
+Derision: Altered damage shield message processing to be more like (the same?) as live.
+Derision: If it exists, damage shield types are read from a new table (damageshieldtypes)
+Derision: If no entry exists in the table, a default based on resist type is used.
+
+Optional SQL: See utils/sql/damageshieldtypes.sql
+
 ==10/18/2008
 KLS: Reworked classic style traps.
 KLS: Debuff style traps should function perfectly, the level field in the DB gives what level the caster is for resists in this case.

@@ -758,3 +758,32 @@ int GetSpellEffectDescNum(int16 spell_id)
 		return -1;
 	}
 }
+
+DmgShieldType GetDamageShieldType(int16 spell_id) 
+{
+
+	// If we have a DamageShieldType for this spell from the damageshieldtypes table, return that,
+	// else, make a guess, based on the resist type. Default return value is DS_THORNS
+	//
+	if( (spell_id > 0) && (spell_id < SPDAT_RECORDS) ){
+
+		_log(SPELLS__EFFECT_VALUES, "DamageShieldType for spell %i (%s) is %X\n", spell_id, 
+			spells[spell_id].name, spells[spell_id].DamageShieldType); 
+
+		if(spells[spell_id].DamageShieldType)
+			return (DmgShieldType) spells[spell_id].DamageShieldType;
+
+		switch(spells[spell_id].resisttype) {
+			case RESIST_COLD:
+				return DS_TORMENT;
+			case RESIST_FIRE:
+				return DS_BURN;
+			case RESIST_DISEASE:
+				return DS_DECAY;
+			default:
+				return DS_THORNS;
+		}
+	}
+
+	return DS_THORNS;
+}
