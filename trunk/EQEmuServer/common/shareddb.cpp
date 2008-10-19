@@ -1352,28 +1352,33 @@ uint8 SharedDatabase::GetTrainLevel(int8 Class_, SkillType Skill, int8 Level) {
 	}
 }
 
+void SharedDatabase::DBLoadDamageShieldTypes(SPDat_Spell_Struct* sp, sint32 iMaxSpellID) {
 
+	const char *DSQuery = "SELECT `spellid`, `type` from `damageshieldtypes` WHERE `spellid` >0 "
+	                         "AND `spellid` <= %i";
 
+	const char *ERR_MYSQLERROR = "Error in DBLoadDamageShieldTypes: %s %s";
 
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
 
+	if(RunQuery(query,MakeAnyLenString(&query,DSQuery,iMaxSpellID),errbuf,&result)) {
 
+		while((row = mysql_fetch_row(result))) {
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+			int SpellID = atoi(row[0]);
+			if((SpellID > 0) && (SpellID <= iMaxSpellID))  {
+				sp[SpellID].DamageShieldType = atoi(row[1]);
+			}
+		}
+		mysql_free_result(result);
+		safe_delete_array(query);
+	}
+	else {
+		LogFile->write(EQEMuLog::Error, ERR_MYSQLERROR, query, errbuf);
+		safe_delete_array(query);
+	}
+}
 

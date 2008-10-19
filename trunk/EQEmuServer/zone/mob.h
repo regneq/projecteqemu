@@ -160,6 +160,7 @@ struct StatBonuses {
 	sint16	DR;
 	uint16	DamageShieldSpellID;
 	int		DamageShield; // this is damage done to mobs that attack this
+	DmgShieldType	DamageShieldType;
 	int		SpellDamageShield;
 	int		ReverseDamageShield; // this is damage done to the mob when it attacks
 	int		movementspeed;

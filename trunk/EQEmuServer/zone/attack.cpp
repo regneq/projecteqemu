@@ -2564,6 +2564,8 @@ void Mob::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHel
 // and not when they're attacked
 void Mob::DamageShield(Mob* attacker) {
 	//a damage shield on a spell is a negative value but on an item it's a positive value so add the spell value and subtract the item value to get the end ds value
+	if(!attacker) return;
+
 	int DS = spellbonuses.DamageShield - itembonuses.DamageShield;
 	if(DS == 0)
 		return;
@@ -2579,8 +2581,20 @@ void Mob::DamageShield(Mob* attacker) {
 	//invert DS... spells yeild negative values for a true damage shield
 	if(DS < 0) {
 		attacker->Damage(this, -DS, spellid, ABJURE/*hackish*/, false);
-		// todo: send EnvDamage packet to the attacker
-		//entity_list.MessageClose(attacker, 0, 200, 10, "%s takes %d damage from %s's damage shield (%s)", attacker->GetName(), -spells[buffs[i].spellid].base[1], this->GetName(), spells[buffs[i].spellid].name);
+		//
+		// Only send the damage packet if we have a Damage Shield spell, not if our DS is from items only.
+		//
+		if(spellbonuses.DamageShield) {
+			EQApplicationPacket* outapp = new EQApplicationPacket(OP_Damage, sizeof(CombatDamage_Struct));
+			CombatDamage_Struct* cds = (CombatDamage_Struct*)outapp->pBuffer;
+			cds->target = attacker->GetID();
+			cds->source = GetID();
+			cds->type = spellbonuses.DamageShieldType;
+			cds->spellid = 0x0;
+			cds->damage = DS;
+			entity_list.QueueCloseClients(this, outapp);
+			safe_delete(outapp);
+		}
 	} else {
 		//we are healing the attacker...
 		attacker->HealDamage(DS);
@@ -3339,7 +3353,10 @@ bool Mob::CheckBotDoubleAttack(bool Triple) {
 #endif //EQBOTS
 
 void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, const SkillType skill_used, bool &avoidable, const sint8 buffslot, const bool iBuffTic) {
-	
+
+	// This method is called with skill_used=ABJURE for Damage Shield damage. 
+	bool FromDamageShield = (skill_used == ABJURE);
+
 	mlog(COMBAT__HITS, "Applying damage %d done by %s with skill %d and spell %d, avoidable? %s, is %sa buff tic in slot %d",
 		damage, attacker?attacker->GetName():"NOBODY", skill_used, spell_id, avoidable?"yes":"no", iBuffTic?"":"not ", buffslot);
 	
@@ -3355,7 +3372,7 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
     // damage shield calls this function with spell_id set, so its unavoidable
 	if (attacker && damage > 0 && spell_id == SPELL_UNKNOWN && skill_used != ARCHERY && skill_used != THROWING) {
 		this->DamageShield(attacker);
-		for(int bs = 0; bs < BUFF_COUNT; bs++){
+		for(uint32 bs = 0; bs < BUFF_COUNT; bs++){
 			if(buffs[bs].numhits > 0 && !IsDiscipline(buffs[bs].spellid)){
 				if(buffs[bs].numhits == 1){
 					BuffFadeBySlot(bs, true);
@@ -3538,7 +3555,7 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 			a->source = 0;
 		else
 			a->source = attacker->GetID();
-	    a->type = SkillDamageTypes[skill_used]; // was 0x1c
+		a->type = SkillDamageTypes[skill_used]; // was 0x1c
 		a->damage = damage;
 //		if (attack_skill != 231)
 //			a->spellid = SPELL_UNKNOWN;
@@ -3553,7 +3570,7 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 			//attacker is a pet, let pet owners see their pet's damage
 			Mob* owner = attacker->GetOwner();
 			if (owner && owner->IsClient()) {
-				if ((spell_id != SPELL_UNKNOWN) && damage>0) {
+				if (((spell_id != SPELL_UNKNOWN) || (FromDamageShield)) && damage>0) {
 					//special crap for spell damage, looks hackish to me
 					char val1[20]={0};
 					owner->Message_StringID(MT_NonMelee,OTHER_HIT_NONMELEE,GetCleanName(),ConvertArray(damage,val1));
@@ -3567,7 +3584,9 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 						filter = FilterNone;	//cant filter invulnerable
 					else
 						filter = FILTER_MYPETMISSES;
-					owner->CastToClient()->QueuePacket(outapp,true,CLIENT_CONNECTED,filter);
+
+					if(!FromDamageShield)
+						owner->CastToClient()->QueuePacket(outapp,true,CLIENT_CONNECTED,filter);
 				}
 			}
 			skip = owner;
@@ -3576,7 +3595,7 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 			
 			//if the attacker is a client, try them with the correct filter
 			if(attacker && attacker->IsClient()) {
-				if ((spell_id != SPELL_UNKNOWN) && damage>0) {
+				if (((spell_id != SPELL_UNKNOWN)||(FromDamageShield)) && damage>0) {
 					//special crap for spell damage, looks hackish to me
 					char val1[20]={0};
 					attacker->Message_StringID(MT_NonMelee,OTHER_HIT_NONMELEE,GetCleanName(),ConvertArray(damage,val1));
@@ -3590,6 +3609,7 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 						filter = FilterNone;	//cant filter invulnerable
 					else
 						filter = FILTER_MYMISSES;
+
 					attacker->CastToClient()->QueuePacket(outapp, true, CLIENT_CONNECTED, filter);
 				}
 			}
@@ -3609,12 +3629,16 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 		//make attacker (the attacker) send the packet so we can skip them and the owner
 		//this call will send the packet to `this` as well (using the wrong filter) (will not happen until PC charm works)
 //LogFile->write(EQEMuLog::Debug, "Queue damage to all except %s with filter %d (%d), type %d", skip->GetName(), filter, IsClient()?CastToClient()->GetFilter(filter):-1, a->type);
-		entity_list.QueueCloseClients(this, outapp, true, 200, skip, true, filter);
-		
-		//send the damage to ourself if we are a client
-		if(IsClient()) {
-			//I dont think any filters apply to damage affecting us
-			CastToClient()->QueuePacket(outapp);
+		//
+		// If this is Damage Shield damage, the correct OP_Damage packets will be sent from Mob::DamageShield, so 
+		// we don't send them here.
+		if(!FromDamageShield) {
+			entity_list.QueueCloseClients(this, outapp, true, 200, skip, true, filter);
+			//send the damage to ourself if we are a client
+			if(IsClient()) {
+				//I dont think any filters apply to damage affecting us
+				CastToClient()->QueuePacket(outapp);
+			}
 		}
 		
 		safe_delete(outapp);
