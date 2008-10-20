@@ -4,6 +4,8 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==10/20/2008
 AndMetal: (erde) Moved SVN SQL updates to utils/sql/svn. File name will start with the revision they were introduced & optional updates have optional somewhere at the beginning of the name
 Derision/Trevius: Implemented sub EVENT_AGGRO_SAY
+AndMetal: Implemented Reverse Damage Shield
+AndMetal: Fixed +Damage Shield on items so that it doesn't work without having a Damage Shield spell first
 
 ==10/19/2008
 Angelox: Added a start to Bot tracking - Thanks Derision for all the help and know-how. 

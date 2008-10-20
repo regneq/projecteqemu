@@ -807,6 +807,8 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 			case SE_ReverseDS:
 			{
 				newbon->ReverseDamageShield += effect_value;
+				newbon->ReverseDamageShieldSpellID = spell_id;
+				newbon->ReverseDamageShieldType = GetDamageShieldType(spell_id);
 				break;
 			}
 
