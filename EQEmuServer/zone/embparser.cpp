@@ -59,7 +59,8 @@ const char *QuestEventSubroutines[_LargestEventID] = {
 	"EVENT_LEVEL_UP",
 	"EVENT_KILLED_MERIT",
 	"EVENT_CAST_ON",
-	"EVENT_TASKACCEPTED"
+	"EVENT_TASKACCEPTED",
+	"EVENT_AGGRO_SAY"
 };
 
 PerlembParser::PerlembParser(void) : Parser()
@@ -506,6 +507,11 @@ void PerlembParser::Event(QuestEventID event, int32 npcid, const char * data, NP
 			break;
 		}		
 
+		case EVENT_AGGRO_SAY: {
+			ExportVar(packagename.c_str(), "data", npcid);
+			ExportVar(packagename.c_str(), "text", data);
+			break;
+		}
 		//nothing special about these events
 		case EVENT_DEATH:
 		case EVENT_SPAWN:
