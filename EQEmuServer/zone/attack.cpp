@@ -1235,7 +1235,7 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte)
 		entity_list.QueueClients(this, outapp, true);
 		safe_delete(outapp);
 	}
-	
+
 	////////////////////////////////////////////////////////////
 	////////  PROC CODE
 	////////  Kaiyodo - Check for proc on weapon based on DEX
@@ -2566,10 +2566,12 @@ void Mob::DamageShield(Mob* attacker) {
 	//a damage shield on a spell is a negative value but on an item it's a positive value so add the spell value and subtract the item value to get the end ds value
 	if(!attacker) return;
 
-	int DS = spellbonuses.DamageShield - itembonuses.DamageShield;
-	if(DS == 0)
+	int DS = spellbonuses.DamageShield;
+	int rev_ds = attacker->spellbonuses.ReverseDamageShield;
+
+	if(DS == 0 && rev_ds == 0)
 		return;
-		
+	
 	if(this == attacker) //I was crashing when I hit myself with melee with a DS on, not sure why but we shouldn't be reflecting damage onto ourselves anyway really.
 		return;
 	
@@ -2580,75 +2582,48 @@ void Mob::DamageShield(Mob* attacker) {
 		spellid = spellbonuses.DamageShieldSpellID;
 	//invert DS... spells yeild negative values for a true damage shield
 	if(DS < 0) {
+		DS -= itembonuses.DamageShield; //+Damage Shield should only work when you already have a DS spell
 		attacker->Damage(this, -DS, spellid, ABJURE/*hackish*/, false);
-		//
-		// Only send the damage packet if we have a Damage Shield spell, not if our DS is from items only.
-		//
-		if(spellbonuses.DamageShield) {
-			EQApplicationPacket* outapp = new EQApplicationPacket(OP_Damage, sizeof(CombatDamage_Struct));
-			CombatDamage_Struct* cds = (CombatDamage_Struct*)outapp->pBuffer;
-			cds->target = attacker->GetID();
-			cds->source = GetID();
-			cds->type = spellbonuses.DamageShieldType;
-			cds->spellid = 0x0;
-			cds->damage = DS;
-			entity_list.QueueCloseClients(this, outapp);
-			safe_delete(outapp);
-		}
+		//we can assume there is a spell now
+		EQApplicationPacket* outapp = new EQApplicationPacket(OP_Damage, sizeof(CombatDamage_Struct));
+		CombatDamage_Struct* cds = (CombatDamage_Struct*)outapp->pBuffer;
+		cds->target = attacker->GetID();
+		cds->source = GetID();
+		cds->type = spellbonuses.DamageShieldType;
+		cds->spellid = 0x0;
+		cds->damage = DS;
+		entity_list.QueueCloseClients(this, outapp);
+		safe_delete(outapp);
 	} else {
 		//we are healing the attacker...
 		attacker->HealDamage(DS);
 		//TODO: send a packet???
 	}
-	
-/*	int DS = 0;
-//	int DSRev = 0;
-	int effect_value, dmg, i, z;
 
-	for (i=0; i < BUFF_COUNT; i++)
-	{
-		if (buffs[i].spellid != SPELL_UNKNOWN)
-		{
-			for (z=0; z < EFFECT_COUNT; z++)
-			{
-				if(IsBlankSpellEffect(buffs[i].spellid, z))
-					continue;
-				
-				effect_value = CalcSpellEffectValue(buffs[i].spellid, z, buffs[i].casterlevel, this);
-				
-				switch(spells[buffs[i].spellid].effectid[z])
-				{
-					case SE_DamageShield:
-					{
-						dmg = effect_value;
-						DS += dmg;
-						spellid = buffs[i].spellid;
-						break;
-					}
-*/
-/*
-					case SE_ReverseDS:
-					{
-						dmg = effect_value;
-						DSRev += dmg;
-						spellid = buffs[i].spellid;
-						break;
-					}
-*/
-/*				}
-			}
-		}
+	//Reverse DS
+	//this is basically a DS, but the spell is on the attacker, not the attackee
+	//if we've gotten to this point, we know we know "attacker" hit "this" (us) for damage & we aren't invulnerable
+	uint16 rev_ds_spell_id = SPELL_UNKNOWN;
+
+	if(spellbonuses.ReverseDamageShieldSpellID != 0 && spellbonuses.ReverseDamageShieldSpellID != SPELL_UNKNOWN)
+		rev_ds_spell_id = spellbonuses.ReverseDamageShieldSpellID;
+
+	if(rev_ds < 0) {
+		mlog(COMBAT__HITS, "Applying Reverse Damage Shield of value %d to %s", rev_ds, attacker->GetName());
+		attacker->Damage(this, -rev_ds, rev_ds_spell_id, ABJURE/*hackish*/, false); //"this" (us) will get the hate, etc. not sure how this works on Live, but it'll works for now, and tanks will love us for this
+		//do we need to send a damage packet here also?
+		/*
+		EQApplicationPacket* outapp = new EQApplicationPacket(OP_Damage, sizeof(CombatDamage_Struct));
+		CombatDamage_Struct* cds = (CombatDamage_Struct*)outapp->pBuffer;
+		cds->target = attacker->GetID();
+		cds->source = GetID();
+		cds->type = attacker->spellbonuses.ReverseDamageShieldType;
+		cds->spellid = 0x0;
+		cds->damage = rev_ds;
+		entity_list.QueueCloseClients(this, outapp);
+		safe_delete(outapp);
+		*/
 	}
-	// there's somewhat of an issue here that the last (slot wise) damage shield
-	// will be the one whose spellid is set here
-	if (DS) {
-	}*/
-/*
-	if (DSRev)
-	{
-		this->ChangeHP(attacker, DSRev, spellid);
-	}
-*/
 }
 
 int8 Mob::GetWeaponDamageBonus( const Item_Struct *Weapon )
