@@ -477,6 +477,11 @@ void Parser::Event(QuestEventID event, int32 npcid, const char * data, NPC* npcm
 			SendCommands("event_exit", qstID, npcmob, mob);
 			break;
 		}
+		case EVENT_AGGRO_SAY: {
+			MakeVars(data, npcid);
+			SendCommands("event_aggro_say", qstID, npcmob, mob);
+			break;
+		}
 		default: {
 			// should we do anything here?
 			break;

@@ -769,37 +769,51 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, const char* me
 		if (sender != this)
 			break;
 
-		if (target != 0 && target->IsNPC() && !target->CastToNPC()->IsEngaged()) {
+		if (target != 0 && target->IsNPC()) {
+			if(!target->CastToNPC()->IsEngaged()) {
 #ifdef EMBPERL
-			if(((PerlembParser *)parse)->HasQuestSub(target->GetNPCTypeID(),"EVENT_SAY")){
+				if(((PerlembParser *)parse)->HasQuestSub(target->GetNPCTypeID(),"EVENT_SAY")){
 #endif
-				if (DistNoRootNoZ(*target) <= 200) {
+					if (DistNoRootNoZ(*target) <= 200) {
+						if(target->CastToNPC()->IsMoving() && !target->CastToNPC()->IsOnHatelist(target))
+							target->CastToNPC()->PauseWandering(RuleI(NPC, SayPauseTimeInSec));
+						parse->Event(EVENT_SAY, target->GetNPCTypeID(), message, target->CastToNPC(), this);
+					#ifdef IPC
+						if(target->CastToNPC()->IsInteractive()) {
+							target->CastToNPC()->InteractiveChat(chan_num,language,message,targetname,this);
+						}
+					#endif
+						//parse->Event(EVENT_SAY, target->GetNPCTypeID(), message, target->CastToNPC(), this);
+					}
+#ifdef EMBPERL
+				}	
+#endif
+
+				if (RuleB(TaskSystem, EnableTaskSystem) && DistNoRootNoZ(*target) <= 200) {
+
 					if(target->CastToNPC()->IsMoving() && !target->CastToNPC()->IsOnHatelist(target))
 						target->CastToNPC()->PauseWandering(RuleI(NPC, SayPauseTimeInSec));
-					parse->Event(EVENT_SAY, target->GetNPCTypeID(), message, target->CastToNPC(), this);
-				#ifdef IPC
-					if(target->CastToNPC()->IsInteractive()) {
-						target->CastToNPC()->InteractiveChat(chan_num,language,message,targetname,this);
+
+					if(UpdateTasksOnSpeakWith(target->GetNPCTypeID())) {
+						// If the client had an activity to talk to this NPC, make the NPC turn to face him if
+						// he isn't moving. Makes things look better.
+						if(!target->CastToNPC()->IsMoving())
+							target->FaceTarget(this);
 					}
-				#endif
-					//parse->Event(EVENT_SAY, target->GetNPCTypeID(), message, target->CastToNPC(), this);
 				}
+			}
+			else {
 #ifdef EMBPERL
-			}
+				if(((PerlembParser *)parse)->HasQuestSub(target->GetNPCTypeID(),"EVENT_AGGRO_SAY")) {
 #endif
-
-			if (RuleB(TaskSystem, EnableTaskSystem) && DistNoRootNoZ(*target) <= 200) {
-
-				if(target->CastToNPC()->IsMoving() && !target->CastToNPC()->IsOnHatelist(target))
-					target->CastToNPC()->PauseWandering(RuleI(NPC, SayPauseTimeInSec));
-
-				if(UpdateTasksOnSpeakWith(target->GetNPCTypeID())) {
-					// If the client had an activity to talk to this NPC, make the NPC turn to face him if
-					// he isn't moving. Makes things look better.
-					if(!target->CastToNPC()->IsMoving())
-						target->FaceTarget(this);
-				}
+					if (DistNoRootNoZ(*target) <= 200) {
+						parse->Event(EVENT_AGGRO_SAY, target->GetNPCTypeID(), message, target->CastToNPC(), this);
+					}
+#ifdef EMBPERL
+				}	
+#endif
 			}
+
 		}
 		break;
 	}
