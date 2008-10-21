@@ -3491,3 +3491,19 @@ void EntityList::GroupMessage(int32 gid, const char *from, const char *message)
 	} 
 }
 
+void EntityList::CreateGroundObject(int32 itemid, float x, float y, float z, float heading)
+{
+	const Item_Struct* is = database.GetItem(itemid);
+	if(is)
+	{
+		ItemInst *i = new ItemInst(is);
+		if(i)
+		{
+			Object* object = new Object(i,x,y,z,heading);
+			entity_list.AddObject(object, true);
+			object->StartDecay();
+			object->Save();
+			safe_delete(i);
+		}
+	}
+}

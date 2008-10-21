@@ -29,8 +29,11 @@ Copyright (C) 2001-2008 EQEMu Development Team (http://eqemulator.net)
 #include "../common/MiscFunctions.h"
 #include "../common/rulesys.h"
 #include "masterentity.h"
+#include "features.h"
 
-
+#ifdef EMBPERL
+#include "embparser.h"
+#endif
 
 
 TaskManager::TaskManager() {
@@ -1852,6 +1855,14 @@ void ClientTaskState::IncrementDoneCount(Client *c, TaskInformation* Task, int T
 			  ActiveTasks[TaskIndex].Activity[ActivityID].DoneCount,
 			  Task->Activity[ActivityID].GoalCount,
 			  ActivityID);
+
+#ifdef EMBPERL
+		char buf[24];
+		snprintf(buf, 23, "%d %d", ActiveTasks[TaskIndex].TaskID, ActiveTasks[TaskIndex].Activity[ActivityID].ActivityID);
+		buf[23] = '\0';
+		((PerlembParser*)parse)->Event(EVENT_TASK_STAGE_COMPLETE, 0, buf, (NPC*)NULL, c);
+#endif
+
 		// Flag the activity as complete
 		ActiveTasks[TaskIndex].Activity[ActivityID].State = ActivityCompleted;
 		// Unlock subsequent activities for this task

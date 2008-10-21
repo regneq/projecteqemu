@@ -60,7 +60,9 @@ const char *QuestEventSubroutines[_LargestEventID] = {
 	"EVENT_KILLED_MERIT",
 	"EVENT_CAST_ON",
 	"EVENT_TASKACCEPTED",
-	"EVENT_AGGRO_SAY"
+	"EVENT_TASK_STAGE_COMPLETE",
+	"EVENT_AGGRO_SAY",
+	"EVENT_PLAYER_PICKUP"
 };
 
 PerlembParser::PerlembParser(void) : Parser()
@@ -505,7 +507,20 @@ void PerlembParser::Event(QuestEventID event, int32 npcid, const char * data, NP
 		case EVENT_TASKACCEPTED:{
 			ExportVar(packagename.c_str(), "task_id", data);
 			break;
-		}		
+		}
+
+		case EVENT_TASK_STAGE_COMPLETE:{
+			Seperator *sep = new Seperator(data);
+			ExportVar(packagename.c_str(), "task_id", sep->arg[0]);
+			ExportVar(packagename.c_str(), "activity_id", sep->arg[1]);
+			safe_delete(sep);
+			break;
+		}
+
+		case EVENT_PLAYER_PICKUP:{
+			ExportVar(packagename.c_str(), "picked_up_id", data);
+			break;		
+		}
 
 		case EVENT_AGGRO_SAY: {
 			ExportVar(packagename.c_str(), "data", npcid);

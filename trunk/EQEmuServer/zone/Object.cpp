@@ -25,8 +25,13 @@
 #include "../common/packet_functions.h"
 #include "../common/packet_dump.h"
 #include "../common/MiscFunctions.h"
+#include "features.h"
 #include "StringIDs.h"
 using namespace std;
+
+#ifdef EMBPERL
+#include "embparser.h"
+#endif
 
 const char DEFAULT_OBJECT_NAME[] = "IT63_ACTORDEF";
 const char DEFAULT_OBJECT_NAME_SUFFIX[] = "_ACTORDEF";
@@ -37,7 +42,7 @@ extern EntityList entity_list;
 
 // Loading object from database
 Object::Object(uint32 id, uint32 type, uint32 icon, const Object_Struct& object, const ItemInst* inst)
- : respawn_timer(0), decay_timer(1800000)
+ : respawn_timer(0), decay_timer(300000)
 {
 	
 	user = NULL;
@@ -66,7 +71,7 @@ Object::Object(uint32 id, uint32 type, uint32 icon, const Object_Struct& object,
 
 //creating a re-ocurring ground spawn.
 Object::Object(const ItemInst* inst, char* name,float max_x,float min_x,float max_y,float min_y,float z,float heading,int32 respawntimer)
- : respawn_timer(respawntimer), decay_timer(1800000)
+ : respawn_timer(respawntimer), decay_timer(300000)
 {
 	
 	user = NULL;
@@ -103,7 +108,7 @@ Object::Object(const ItemInst* inst, char* name,float max_x,float min_x,float ma
 
 // Loading object from client dropping item on ground
 Object::Object(Client* client, const ItemInst* inst)
- : respawn_timer(0), decay_timer(1800000)
+ : respawn_timer(0), decay_timer(300000)
 {
 	user = NULL;
 	last_user = NULL;
@@ -121,6 +126,63 @@ Object::Object(Client* client, const ItemInst* inst)
 	m_data.x = client->GetX();
 	m_data.y = client->GetY();
 	m_data.z = client->GetZ();
+	m_data.zone_id = zone->GetZoneID();
+	
+	decay_timer.Start();
+	respawn_timer.Disable();
+
+	// Hardcoded portion for unknown members
+	m_data.unknown024	= 0x7f001194;
+	m_data.unknown064	= 0;	//0x0000000D;
+	m_data.unknown068	= 0;	//0x0000001E;
+	m_data.unknown072	= 0;	//0x000032ED;
+	m_data.unknown076	= 0x0000d5fe;
+	m_data.unknown084	= 0xFFFFFFFF;
+	
+	// Set object name
+	if (inst) {
+		const Item_Struct* item = inst->GetItem();
+		if (item && item->IDFile) {
+			if (strlen(item->IDFile) == 0) {
+				strcpy(m_data.object_name, DEFAULT_OBJECT_NAME);
+			}
+			else {
+				// Object name is idfile + _ACTORDEF
+				uint32 len_idfile = strlen(inst->GetItem()->IDFile);
+				uint32 len_copy = sizeof(m_data.object_name) - len_idfile - 1;
+				if (len_copy > sizeof(DEFAULT_OBJECT_NAME_SUFFIX)) {
+					len_copy = sizeof(DEFAULT_OBJECT_NAME_SUFFIX);
+				}
+				
+				memcpy(&m_data.object_name[0], inst->GetItem()->IDFile, len_idfile);
+				memcpy(&m_data.object_name[len_idfile], DEFAULT_OBJECT_NAME_SUFFIX, len_copy);
+			}
+		}
+		else {
+			strcpy(m_data.object_name, DEFAULT_OBJECT_NAME);
+		}
+	}
+}
+
+Object::Object(const ItemInst *inst, float x, float y, float z, float heading)
+ : respawn_timer(0), decay_timer(300000)
+{
+	user = NULL;
+	last_user = NULL;
+	
+	// Initialize members
+	m_id	= 0;
+	m_inst	= (inst) ? inst->Clone() : NULL;
+	m_type	= OT_DROPPEDITEM;
+	m_icon	= 0;
+	m_inuse	= false;
+	m_ground_spawn = false;
+	// Set as much struct data as we can
+	memset(&m_data, 0, sizeof(Object_Struct));
+	m_data.heading = heading;
+	m_data.x = x;
+	m_data.y = y;
+	m_data.z = z;
 	m_data.zone_id = zone->GetZoneID();
 	
 	decay_timer.Start();
@@ -330,12 +392,20 @@ bool Object::HandleClick(Client* sender, const ClickObject_Struct* click_object)
 	}
 	if (m_type == OT_DROPPEDITEM) {
 		if (m_inst && sender) {
+
+#ifdef EMBPERL
+			char buf[10];
+			snprintf(buf, 9, "%u", m_inst->GetItem()->ID);
+			buf[9] = '\0';
+			((PerlembParser *)parse)->Event(EVENT_PLAYER_PICKUP, 0, buf, (NPC*)NULL, sender);
+#endif		
+
 			// Transfer item to client
 			sender->PutItemInInventory(SLOT_CURSOR, *m_inst, false);
 			sender->SendItemPacket(SLOT_CURSOR, m_inst, ItemPacketTrade);
 			if(!m_ground_spawn)
 				safe_delete(m_inst);
-			
+
 			// No longer using a tradeskill object
 			sender->SetTradeskillObject(NULL);
 			user = NULL;

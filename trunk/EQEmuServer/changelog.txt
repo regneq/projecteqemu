@@ -1,6 +1,14 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==10/21/2008
+KLS: Some changes to make compiling with profiler enabled more error free.
+KLS: Added player quest event EVENT_TASK_STAGE_COMPLETE exports $task_id and $activity_id.
+KLS: Added player quest event EVENT_PICK_UP exports $picked_up_id for when a player picks up a ground spawn or dropped item.
+KLS: Added quest::CreateGroundObject(itemid, x, y, z, heading) which lets the quest script create ground objects in the zone like if they had been dropped.
+KLS: Objects should decay after they're loaded back into the world. Might want to backup your objects table till I can confirm this works 100%.
+KLS: Lowered ground object decay time from 30 min to 5 min.
+
 ==10/20/2008
 AndMetal: (erde) Moved SVN SQL updates to utils/sql/svn. File name will start with the revision they were introduced & optional updates have optional somewhere at the beginning of the name
 Derision/Trevius: Implemented sub EVENT_AGGRO_SAY

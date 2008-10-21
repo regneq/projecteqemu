@@ -171,13 +171,15 @@ public:
 	int activetasksinset(int taskset);
 	int completedtasksinset(int taskset);
 	bool istaskappropriate(int task);
-      void setinstflag(int orgZoneID, int type);
-      void setinstflagmanually(int orgZoneID, int instFlag, int type);
-      void clearspawntimers();
+    void setinstflag(int orgZoneID, int type);
+    void setinstflagmanually(int orgZoneID, int instFlag, int type);
+    void clearspawntimers();
 	void ze(int type, const char *str);
 	void we(int type, const char *str);
-      int getlevel(uint8 type);
-      int getinstflag();
+    int getlevel(uint8 type);
+    int getinstflag();
+
+	void CreateGroundObject(int32 itemid, float x, float y, float z, float heading);
 	
 	//not in here because it retains perl types
 	//thing ChooseRandom(array_of_things)
