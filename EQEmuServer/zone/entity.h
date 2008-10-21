@@ -326,6 +326,8 @@ public:
 	void    SaveAllClientsTaskState();
 	void    ReloadAllClientsTaskState(int TaskID=0);
 
+	void	CreateGroundObject(int32 itemid, float x, float y, float z, float heading);
+
 #ifdef EQBOTS
 
 	// franck-add: EQoffline

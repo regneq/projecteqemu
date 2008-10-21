@@ -25,7 +25,9 @@ typedef enum {
 	EVENT_KILLED_MERIT, //killed by a PC or group, gave experience; will repeat several times for groups
 	EVENT_CAST_ON,		//pc casted a spell on npc
 	EVENT_TASKACCEPTED,	//pc accepted a task
+	EVENT_TASK_STAGE_COMPLETE,
 	EVENT_AGGRO_SAY,
+	EVENT_PLAYER_PICKUP,
 	
 	_LargestEventID
 } QuestEventID;

@@ -1683,3 +1683,8 @@ int QuestManager::getinstflag()
 {
 	return (database.GetCharInstFlagNum(initiator->CharacterID()));
 }
+
+void QuestManager::CreateGroundObject(int32 itemid, float x, float y, float z, float heading)
+{
+	entity_list.CreateGroundObject(itemid, x, y, z, heading);
+}

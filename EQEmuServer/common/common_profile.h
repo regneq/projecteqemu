@@ -65,6 +65,9 @@ public:
 		Inventory_GetItem,
 		Inventory_HasItem,
 		
+		BaseTCPServerLoop,
+
+		MakeRandomInt,
 		MakeRandomFloat,
 		
 		Mutex_lock,

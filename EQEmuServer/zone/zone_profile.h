@@ -63,6 +63,7 @@ public:
 		EntityList_MobProcess,
 		EntityList_BeaconProcess,
 		EntityList_Process,
+		EntityList_RaidProcess,
 		EntityList_AICheckCloseAggro,
 		EntityList_AICheckCloseBeneficialSpells,
 		EntityList_CheckClientAggro,
@@ -74,6 +75,7 @@ public:
 		HateList_GetClosest,
 		HateList_GetTop,
 		HateList_IsEmpty,
+		HateList_GetMostHate,
 		
 		Mob_CheckWillAggro,
 		Mob_CheckLosFN,

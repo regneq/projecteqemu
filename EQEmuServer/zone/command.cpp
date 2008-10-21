@@ -415,7 +415,7 @@ int command_init(void) {
 		command_add("getplayerburriedcorpsecount","- Get the target's total number of burried player corpses.", 100, command_getplayerburriedcorpsecount) ||
 		command_add("summonburriedplayercorpse","- Summons the target's oldest burried corpse, if any exist.", 100, command_summonburriedplayercorpse) ||
 		command_add("refreshgroup","- Refreshes Group.", 0, command_refreshgroup) ||
-command_add("advnpcspawn","[maketype|makegroup|addgroupentry|addgroupspawn][removegroupspawn|movespawn|editgroupbox|cleargroupbox]",150,command_advnpcspawn)	
+		command_add("advnpcspawn","[maketype|makegroup|addgroupentry|addgroupspawn][removegroupspawn|movespawn|editgroupbox|cleargroupbox]",150,command_advnpcspawn)	
 		)
 	{
 		command_deinit();

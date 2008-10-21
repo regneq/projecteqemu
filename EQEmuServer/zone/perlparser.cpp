@@ -2282,6 +2282,24 @@ XS(XS__getinstflag)
 	XSRETURN(1);
 }
 
+XS(XS__CreateGroundObject);
+XS(XS__CreateGroundObject)
+{
+	dXSARGS;
+	if (items != 5)
+		Perl_croak(aTHX_ "Usage: CreateGroundObject(itemid, x, y, z, heading)");
+
+	int	itemid = (int)SvIV(ST(0));
+	float x = (float)SvNV(ST(1));
+	float y = (float)SvNV(ST(2));
+	float z = (float)SvNV(ST(3));
+	float heading = (float)SvNV(ST(4));
+
+	quest_manager.CreateGroundObject(itemid, x, y, z, heading);
+
+	XSRETURN_EMPTY;
+}
+
 /*
 This is the callback perl will look for to setup the
 quest package's XSUBs
@@ -2435,7 +2453,8 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "ze"), XS__ze, file);
 		newXS(strcpy(buf, "we"), XS__we, file);
 		newXS(strcpy(buf, "getlevel"), XS__getlevel, file);
-            newXS(strcpy(buf, "getinstflag"), XS__getinstflag, file);
+        newXS(strcpy(buf, "getinstflag"), XS__getinstflag, file);
+		newXS(strcpy(buf, "creategroundobject"), XS__CreateGroundObject, file);
 	XSRETURN_YES;
 }
 

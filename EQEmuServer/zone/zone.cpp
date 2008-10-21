@@ -240,6 +240,10 @@ bool Zone::LoadZoneObjects() {
 			
 			Object* object = new Object(id, type, icon, data, inst);
 			entity_list.AddObject(object, false);
+			if(type == OT_DROPPEDITEM && itemid != 0)
+			{
+				object->StartDecay();
+			}
 			safe_delete(inst);
 		}
 		mysql_free_result(result);
