@@ -391,6 +391,7 @@ int command_init(void) {
 		command_add("mlog","- Manage log settings",250,command_mlog) ||
 		command_add("aggro","(range) [-v] - Display aggro information for all mobs 'range' distance from your target. -v is verbose faction info.",80,command_aggro) ||
 		command_add("hatelist"," - Display hate list for target.", 80,command_hatelist) ||
+		command_add("aggrozone","[aggro] - Aggro every mob in the zone with X aggro. Default is 0. Not recommend if you're not invulnerable.",100,command_aggrozone) ||
 		command_add("npcemote","[message] - Make your NPC target emote a message.",150,command_npcemote) ||
 		command_add("serverrules","- Read this server's rules",0,command_serverrules) ||
 		command_add("acceptrules","[acceptrules] - Accept the EQEmu Agreement",0,command_acceptrules) ||
@@ -9683,3 +9684,17 @@ void command_advnpcspawn(Client *c, const Seperator *sep)
  			c->Message(0, "Usage: #advnpcspawn [removegroupspawn|movespawn|editgroupbox|cleargroupbox]");
  		}
  }
+
+void command_aggrozone(Client *c, const Seperator *sep) {
+	if(!c)
+		return;
+
+	Mob *m = c->CastToMob();
+
+	if (!m)
+		return;
+	
+	int hate = atoi(sep->arg[1]); //should default to 0 if we don't enter anything
+	entity_list.AggroZone(m,hate);
+	c->Message(0, "Train to you! Last chance to go invulnerable...");
+}

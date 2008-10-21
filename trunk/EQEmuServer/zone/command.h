@@ -254,6 +254,7 @@ void command_ginfo(Client *c, const Seperator *sep);
 void command_opcode(Client *c, const Seperator *sep);
 void command_aggro(Client *c, const Seperator *sep);
 void command_hatelist(Client *c, const Seperator *sep);
+void command_aggrozone(Client *c, const Seperator *sep);
 void command_reloadstatic(Client *c, const Seperator *sep);
 void command_flags(Client *c, const Seperator *sep);
 void command_flagedit(Client *c, const Seperator *sep);
