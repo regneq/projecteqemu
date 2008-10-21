@@ -7,6 +7,7 @@ Derision/Trevius: Implemented sub EVENT_AGGRO_SAY
 AndMetal: Implemented Reverse Damage Shield
 AndMetal: Fixed +Damage Shield on items so that it doesn't work without having a Damage Shield spell first
 AndMetal: (seveianrex) Hate w[h]iped on CoH
+AndMetal: (via Yeahlight) New command: #aggrozone. Requires 100 status by default
 
 ==10/19/2008
 Angelox: Added a start to Bot tracking - Thanks Derision for all the help and know-how. 

@@ -298,6 +298,7 @@ public:
 	void	ClearFeignAggro(Mob* targ);
 	// Everhood 6/17/06
 	void	ClearZoneFeignAggro(Client* targ);
+	void	AggroZone(Mob* who, int hate = 0);
 	
 	bool	Fighting(Mob* targ);
 	void    RemoveFromHateLists(Mob* mob, bool settoone = false);

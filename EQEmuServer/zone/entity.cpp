@@ -2815,6 +2815,15 @@ void EntityList::ClearZoneFeignAggro(Client* targ)
 	}
 }
 
+void EntityList::AggroZone(Mob* who, int hate) {
+	LinkedListIterator<NPC*> iterator(npc_list);
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		iterator.GetData()->AddToHateList(who, hate);
+		iterator.Advance();
+	}
+}
 
 // Signal Quest command function
 void EntityList::SignalMobsByNPCID(int32 snpc, int signal_id)
