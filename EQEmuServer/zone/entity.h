@@ -294,6 +294,7 @@ public:
 	void	UpdateHoTT(Mob* target);
 
     void    Process();
+	void	ClearAggro(Mob* targ);
 	void	ClearFeignAggro(Mob* targ);
 	// Everhood 6/17/06
 	void	ClearZoneFeignAggro(Client* targ);

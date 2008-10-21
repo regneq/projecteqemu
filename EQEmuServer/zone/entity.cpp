@@ -2768,6 +2768,18 @@ void EntityList::Evade(Mob *who)
 	}
 }
 
+//removes "targ" from all hate lists, including feigned, in the zone
+void EntityList::ClearAggro(Mob* targ) {
+	LinkedListIterator<NPC*> iterator(npc_list);
+	iterator.Reset();
+	while(iterator.MoreElements()) {
+		if (iterator.GetData()->CheckAggro(targ))
+			iterator.GetData()->RemoveFromHateList(targ);
+		iterator.GetData()->RemoveFromFeignMemory(targ->CastToClient()); //just in case we feigned
+		iterator.Advance();
+	}
+}
+
 void EntityList::ClearFeignAggro(Mob* targ)
 {
 	LinkedListIterator<NPC*> iterator(npc_list);

@@ -1763,7 +1763,9 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 					CastToClient()->cheat_timer.Start(3500, false);
 					CastToClient()->MovePC(zone->GetZoneID(), caster->GetX(), caster->GetY(), caster->GetZ(), caster->GetHeading(), 2, SummonPC);
 					Message(15, "You have been summoned!");
-                              WipeHateList();
+					entity_list.ClearAggro(this);
+					//WipeHateList();	//wipe client's hate list
+										//we're not currently using a client hate list, so we don't need to mess with this currently
 				}
 				else
 					caster->Message(13, "This spell can only be cast on players.");
