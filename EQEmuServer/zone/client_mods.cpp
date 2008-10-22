@@ -54,40 +54,71 @@ sint16 Client::GetMaxStat() const {
 }
 
 sint16 Client::GetMaxSTR() const {
-	return GetMaxStat();
+	return GetMaxStat()
+		+ itembonuses.STRCapMod
+		+ spellbonuses.STRCapMod;
 }
 sint16 Client::GetMaxSTA() const {
-	return GetMaxStat();
+	return GetMaxStat()
+		+ itembonuses.STACapMod
+		+ spellbonuses.STACapMod;
 }
 sint16 Client::GetMaxDEX() const {
-	return GetMaxStat();
+	return GetMaxStat()
+		+ itembonuses.DEXCapMod
+		+ spellbonuses.DEXCapMod;
 }
 sint16 Client::GetMaxAGI() const {
-	return GetMaxStat();
+	return GetMaxStat()
+		+ itembonuses.AGICapMod
+		+ spellbonuses.AGICapMod;
 }
 sint16 Client::GetMaxINT() const {
-	return GetMaxStat() + (GetAA(aaInnateEnlightenment) * 10);
+	return GetMaxStat()
+		+ itembonuses.INTCapMod
+		+ spellbonuses.INTCapMod
+		+ (GetAA(aaInnateEnlightenment) * 10);
 }
 sint16 Client::GetMaxWIS() const {
-	return GetMaxStat() + (GetAA(aaInnateEnlightenment) * 10);
+	return GetMaxStat()
+		+ itembonuses.WISCapMod
+		+ spellbonuses.WISCapMod
+		+ (GetAA(aaInnateEnlightenment) * 10);
 }
 sint16 Client::GetMaxCHA() const {
-	return GetMaxStat();
+	return GetMaxStat()
+		+ itembonuses.CHACapMod
+		+ spellbonuses.CHACapMod;
 }
 sint16 Client::GetMaxMR() const {
-	return GetMaxStat() + (GetAA(aaDiscordantDefiance) * 5);
+	return GetMaxStat()
+		+ itembonuses.MRCapMod
+		+ spellbonuses.MRCapMod
+		+ (GetAA(aaDiscordantDefiance) * 5);
 }
 sint16 Client::GetMaxPR() const {
-	return GetMaxStat() + (GetAA(aaDiscordantDefiance) * 5);
+	return GetMaxStat()
+		+ itembonuses.PRCapMod
+		+ spellbonuses.PRCapMod
+		+ (GetAA(aaDiscordantDefiance) * 5);
 }
 sint16 Client::GetMaxDR() const {
-	return GetMaxStat() + (GetAA(aaDiscordantDefiance) * 5);
+	return GetMaxStat()
+		+ itembonuses.DRCapMod
+		+ spellbonuses.DRCapMod
+		+ (GetAA(aaDiscordantDefiance) * 5);
 }
 sint16 Client::GetMaxCR() const {
-	return GetMaxStat() + (GetAA(aaDiscordantDefiance) * 5);
+	return GetMaxStat()
+		+ itembonuses.CRCapMod
+		+ spellbonuses.CRCapMod
+		+ (GetAA(aaDiscordantDefiance) * 5);
 }
 sint16 Client::GetMaxFR() const {
-	return GetMaxStat() + (GetAA(aaDiscordantDefiance) * 5);
+	return GetMaxStat()
+		+ itembonuses.FRCapMod
+		+ spellbonuses.FRCapMod
+		+ (GetAA(aaDiscordantDefiance) * 5);
 }
 sint32 Client::LevelRegen()
 {

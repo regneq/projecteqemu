@@ -1563,6 +1563,55 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				break;
 			}
 
+			case SE_RaiseStatCap:
+			{
+#ifdef SPELL_EFFECT_SPAM
+				const char *efstr = "Stat";
+				switch(spell.base2[i])
+				{
+					case 0:
+						efstr = "STR";
+						break;
+					case 1:
+						efstr = "STA";
+						break;
+					case 2: //agi
+						efstr = "AGI";
+						break;
+					case 3: //dex
+						efstr = "DEX";
+						break;
+					case 4: //wis
+						efstr = "WIS";
+						break;
+					case 5: //int
+						efstr = "INT";
+						break;
+					case 6: //cha
+						efstr = "CHA";
+						break;
+					case 7: //mr
+						efstr = "MR";
+						break;
+					case 8: //cr
+						efstr = "CR";
+						break;
+					case 9: //fr
+						efstr = "FR";
+						break;
+					case 10: //pr
+						efstr = "PR";
+						break;
+					case 11: //dr
+						efstr = "DR";
+						break;
+				}
+				snprintf(effect_desc, _EDLEN, "%s Cap: %+i", efstr, effect_value);
+#endif
+				//handled with bonuses
+				break;
+			}
+
 			case SE_CastingLevel:
 			{
 #ifdef SPELL_EFFECT_SPAM
