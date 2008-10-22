@@ -365,7 +365,7 @@ typedef enum  {
 #define SE_CombatStability			259 //aa effect
 #define SE_AddInstrumentMod			260
 //#define SE_Unknown261				261	//not used
-#define SE_RaiseStatCap				262 //not implemented
+#define SE_RaiseStatCap				262 //added 10/21/08
 #define	SE_TradeSkillMastery		263	//lets you raise more than one tradeskill above master.
 #define SE_HastenedAASkill			264 //aa skill
 #define SE_MasteryofPast			265 //aa skill, makes impossible to fizzle spell of base[x] level

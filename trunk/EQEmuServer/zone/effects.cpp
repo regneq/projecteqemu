@@ -93,13 +93,41 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 	
 	//spell crits, dont make sense if cast on self.
 	if(tt != ST_Self) {
-		int chance = 0;
-		sint32 ratio = 0;
+		int chance = RuleI(Spells, BaseCritChance);
+		sint32 ratio = RuleI(Spells, BaseCritRatio);
 
 		//normal spell crit
-		if(GetClass() == WIZARD && GetLevel() > 11) {
-			chance += 7;
-			ratio += 15;
+		//normally only wizards get a crit chance to begin with
+		//if you want to tweak it, just add to the cases
+		switch(GetClass())
+		{
+			case WARRIOR:
+			case CLERIC:
+			case PALADIN:
+			case RANGER:
+			case SHADOWKNIGHT:
+			case DRUID:
+			case MONK:
+			case BARD:
+			case ROGUE:
+			case SHAMAN:
+			case NECROMANCER:
+				break;
+
+			case WIZARD:
+			{
+				if (GetLevel() >= RuleI(Spells, WizCritLevel)) {
+					chance += RuleI(Spells, WizCritChance);
+					ratio += RuleI(Spells, WizCritRatio);
+				}
+				break;
+			}
+
+			case MAGICIAN:
+			case ENCHANTER:
+			case BEASTLORD:
+			case BERSERKER:
+				break;
 		}
 		
 		//Normal EQ: no class that has ingenuity has reg spell crit AAs too but people

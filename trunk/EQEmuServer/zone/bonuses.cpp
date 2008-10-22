@@ -526,6 +526,46 @@ void Client::ApplyAABonuses(SendAA_Struct* aa_struct, int32 slots, StatBonuses* 
 			case SE_SetBreathLevel:
 				break;
 			case SE_RaiseStatCap:
+				switch(base2)
+				{
+					//are these #define'd somewhere?
+					case 0: //str
+						newbon->STRCapMod += base1;
+						break;
+					case 1: //sta
+						newbon->STACapMod += base1;
+						break;
+					case 2: //agi
+						newbon->AGICapMod += base1;
+						break;
+					case 3: //dex
+						newbon->DEXCapMod += base1;
+						break;
+					case 4: //wis
+						newbon->WISCapMod += base1;
+						break;
+					case 5: //int
+						newbon->INTCapMod += base1;
+						break;
+					case 6: //cha
+						newbon->CHACapMod += base1;
+						break;
+					case 7: //mr
+						newbon->MRCapMod += base1;
+						break;
+					case 8: //cr
+						newbon->CRCapMod += base1;
+						break;
+					case 9: //fr
+						newbon->FRCapMod += base1;
+						break;
+					case 10: //pr
+						newbon->PRCapMod += base1;
+						break;
+					case 11: //dr
+						newbon->DRCapMod += base1;
+						break;
+				}
 				break;
 			case SE_PetDiscipline2:
 				break;
@@ -775,6 +815,51 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 				newbon->PR += effect_value;
 				newbon->CR += effect_value;
 				newbon->FR += effect_value;
+				break;
+			}
+
+			case SE_RaiseStatCap:
+			{
+				switch(spells[spell_id].base2[i])
+				{
+					//are these #define'd somewhere?
+					case 0: //str
+						newbon->STRCapMod += effect_value;
+						break;
+					case 1: //sta
+						newbon->STACapMod += effect_value;
+						break;
+					case 2: //agi
+						newbon->AGICapMod += effect_value;
+						break;
+					case 3: //dex
+						newbon->DEXCapMod += effect_value;
+						break;
+					case 4: //wis
+						newbon->WISCapMod += effect_value;
+						break;
+					case 5: //int
+						newbon->INTCapMod += effect_value;
+						break;
+					case 6: //cha
+						newbon->CHACapMod += effect_value;
+						break;
+					case 7: //mr
+						newbon->MRCapMod += effect_value;
+						break;
+					case 8: //cr
+						newbon->CRCapMod += effect_value;
+						break;
+					case 9: //fr
+						newbon->FRCapMod += effect_value;
+						break;
+					case 10: //pr
+						newbon->PRCapMod += effect_value;
+						break;
+					case 11: //dr
+						newbon->DRCapMod += effect_value;
+						break;
+				}
 				break;
 			}
 

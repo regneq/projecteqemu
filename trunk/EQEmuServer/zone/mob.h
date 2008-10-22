@@ -146,18 +146,31 @@ struct StatBonuses {
 	sint16	Mana;
 	sint32	Endurance;
 	sint16	ATK;
+	//would it be worth it to create a Stat_Struct?
 	sint16	STR;
+	sint16	STRCapMod;
 	sint16	STA;
+	sint16	STACapMod;
 	sint16	DEX;
+	sint16	DEXCapMod;
 	sint16	AGI;
+	sint16	AGICapMod;
 	sint16	INT;
+	sint16	INTCapMod;
 	sint16	WIS;
+	sint16	WISCapMod;
 	sint16	CHA;
+	sint16	CHACapMod;
 	sint16	MR;
+	sint16	MRCapMod;
 	sint16	FR;
+	sint16	FRCapMod;
 	sint16	CR;
+	sint16	CRCapMod;
 	sint16	PR;
+	sint16	PRCapMod;
 	sint16	DR;
+	sint16	DRCapMod;
 	uint16	DamageShieldSpellID;
 	int		DamageShield; // this is damage done to mobs that attack this
 	DmgShieldType	DamageShieldType;

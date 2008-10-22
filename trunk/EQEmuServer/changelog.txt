@@ -1,6 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==10/22/2008
+AndMetal: Support for +Stat Cap (Wunshi's Focusing, etc)
+AndMetal: New rules for tweaking spell crits: Spells:BaseCritChance(0), Spells:BaseCritRatio(0), Spells:WizCritLevel(12), Spells:WizCritChance(7), Spells:WizCritRatio(15)
+AndMetal: Loot messages will now have item links instead of just the item name
+
 ==10/21/2008
 KLS: Some changes to make compiling with profiler enabled more error free.
 KLS: Added player quest event EVENT_TASK_STAGE_COMPLETE exports $task_id and $activity_id.
