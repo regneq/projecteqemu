@@ -2,6 +2,8 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
 ==10/22/2008
+Angelox: Bot Tracking improves as levels increase.
+Angelox: Druid Bot is now next best tracker
 AndMetal: Support for +Stat Cap (Wunshi's Focusing, etc)
 AndMetal: New rules for tweaking spell crits: Spells:BaseCritChance(0), Spells:BaseCritRatio(0), Spells:WizCritLevel(12), Spells:WizCritChance(7), Spells:WizCritRatio(15)
 AndMetal: Loot messages will now have item links instead of just the item name

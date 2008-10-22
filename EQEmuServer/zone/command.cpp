@@ -8700,7 +8700,6 @@ void command_bot(Client *c, const Seperator *sep) {
 			binder->CastToNPC()->CastSpell(35, c->GetID(), 1, -1, -1);
 		}
 	}
-	
 	if(!strcasecmp(sep->arg[1], "track") && c->IsGrouped()) {
 		Mob *Tracker;
 		int32 TrackerClass = 0;
@@ -8714,18 +8713,18 @@ void command_bot(Client *c, const Seperator *sep) {
 							Tracker = g->members[i];
 							TrackerClass = RANGER;
 							break;
-						case DRUID:
-							// If we haven't found a tracker yet, use druid.
+						case BARD:
+							// If we haven't found a tracker yet, use bard.
 							if(TrackerClass == 0) {
 								Tracker = g->members[i];
-								TrackerClass = DRUID;
+								TrackerClass = BARD;
 							}
 							break;
-						case BARD:
-							// Unless we have a ranger, bard is next best.
+						case DRUID:
+							// Unless we have a ranger, druid is next best.
 							if(TrackerClass != RANGER) {
 								Tracker = g->members[i];
-								TrackerClass = BARD;
+								TrackerClass = DRUID;
 							}
 							break;
 						default:
@@ -8734,31 +8733,37 @@ void command_bot(Client *c, const Seperator *sep) {
 				}
 			}
 
-			int Range =1000;
-
+int Level = (c->GetLevel());
+int RangeR = (Level*80); //Ranger
+int RangeD = (Level*30); //Druid
+int RangeB = (Level*20); //Bard
 			switch(TrackerClass) {
 				case RANGER:
 					if(!strcasecmp(sep->arg[2], "all")) {
 						Tracker->Say("Tracking everything", c->GetName());
-						entity_list.ShowSpawnWindow(c, 3500, false);
+						entity_list.ShowSpawnWindow(c, RangeR, false);
 					}
 					else if(!strcasecmp(sep->arg[2], "rare")) { 
 						Tracker->Say("Selective tracking", c->GetName());
-						entity_list.ShowSpawnWindow(c, 3500, true);
+						entity_list.ShowSpawnWindow(c, RangeR, true);
 					}
 					else 
 						Tracker->Say("You want to [track all] or [track rare]?", c->GetName());
 						
 					break;
 
-				case DRUID:
 				case BARD:
 
-					if(TrackerClass = DRUID)
-						Range = 1500;
-
+					if(TrackerClass != RANGER)
 					Tracker->Say("Tracking up", c->GetName());
-					entity_list.ShowSpawnWindow(c, Range, false);
+					entity_list.ShowSpawnWindow(c, RangeB, false);
+					break;
+
+				case DRUID:
+
+					if(TrackerClass = BARD)
+					Tracker->Say("Tracking up", c->GetName());
+					entity_list.ShowSpawnWindow(c, RangeD, false);
 					break;
 
 				default:
@@ -8767,6 +8772,7 @@ void command_bot(Client *c, const Seperator *sep) {
 			}
 		}
 	}
+
 	if(!strcasecmp(sep->arg[1], "cure")) {
 		Mob *curer = NULL;
 		bool hascurer = false;
