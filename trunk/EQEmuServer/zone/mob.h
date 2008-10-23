@@ -911,6 +911,7 @@ protected:
 	virtual bool Bot_AI_PursueCastCheck() { return(false); }
 	virtual bool Bot_Command_MezzTarget(Mob *target) { return(false); }
 	virtual bool Bot_Command_Cure(int curetype, int level) { return(false); }
+	virtual bool Bot_Command_CalmTarget(Mob *target) { return(false); }
 
 #endif //EQBOTS
 	

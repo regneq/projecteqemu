@@ -7368,7 +7368,7 @@ void command_bot(Client *c, const Seperator *sep) {
 		c->Message(15, "#bot delete - completely destroy forever the targeted bot and all its items.");
 		c->Message(15, "#bot list - show your bots.");
 		c->Message(15, "#bot spawn [botid] - spawn a bot from its ID (use list to see all the bots). ");
-        c->Message(15, "#bot group add [target] - make the targetted bot joigning your group.");
+	        c->Message(15, "#bot group add [target] - make the targetted bot joigning your group.");
 		c->Message(15, "#bot group remove [target} - kick the targetted bot from your group (it will die also).");
 		c->Message(15, "#bot group order [follow/guard/attack (target)] - Give orders [follow/guard/attack (target)] to your grouped bots.");
 		c->Message(15, "#bot inventory list [target] - show the inventory (and the slots IDs) of the targetted bot.");
@@ -7381,7 +7381,8 @@ void command_bot(Client *c, const Seperator *sep) {
 		c->Message(15, "#bot cure [poison|disease|curse|blindness] - You must have a Cleric in your group.");
 		c->Message(15, "#bot bindme - You must have a Cleric in your group to get Bind Affinity cast on you.");
 		c->Message(15, "#bot raid [commands] (#bot raid help will show some help).");
-		c->Message(15, "#bot track [rare] (look at mobs in the zone - [rare] option for named mobs only).");
+		c->Message(15, "#bot track [rare] - look at mobs in the zone");
+		c->Message(15, "#bot target calm - attempts to pacify your target mob.");
 		return;
 	}
 
@@ -8844,7 +8845,43 @@ int RangeB = (Level*20); //Bard
 		}
         return;
 	}
-	
+//Angelox: I used two words; 'target' and 'calm', incase we want to make an 'ae calm' later on.
+//Angelox: Cleric and Enchanter are about 1 level difference on pacify spells, so I bundled them and left Paladin out.
+	if(!strcasecmp(sep->arg[1], "target") && !strcasecmp(sep->arg[2], "calm"))
+    {
+		Mob *target = c->GetTarget();
+        if(target == NULL || target == c || target->IsBot() || target->IsPet() && target->GetOwner()->IsBot())
+        {
+            c->Message(15, "You must select a monster");
+            return;
+        }
+		if(c->IsGrouped())
+        {
+			bool haspacer = false;
+			Group *g = c->GetGroup();
+			for(int i=0; i<MAX_GROUP_MEMBERS; i++)
+            {
+				if(g && g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == ENCHANTER) && (!haspacer))
+                {
+					haspacer = true;
+					Mob *pacer = g->members[i];
+                    pacer->Say("Trying to calm %s \n", target->GetCleanName());
+					pacer->CastToNPC()->Bot_Command_CalmTarget(target);
+				}
+				else if(g && g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == CLERIC) && (!haspacer))
+                	{
+					haspacer = true;
+					Mob *pacer = g->members[i];
+                    pacer->Say("Trying to calm %s \n", target->GetCleanName());
+					pacer->CastToNPC()->Bot_Command_CalmTarget(target);
+			}
+		}
+			if(!haspacer) {
+				c->Message(15, "You must have an Enchanter or Cleric in your group.");
+			}
+        return;
+	}
+}
 	// debug commands
 	if(!strcasecmp(sep->arg[1], "debug") && !strcasecmp(sep->arg[2], "inventory")) {
 		Mob *target = c->GetTarget();
