@@ -241,6 +241,7 @@ public:
 	void    SendZoneCorpses(Client*);
 	void    SendZoneCorpsesBulk(Client*);
 	void    SendZoneObjects(Client* client);
+	void	SendZoneAppearance(Client *c);
 	void	DuelMessage(Mob* winner, Mob* loser, bool flee);
 	void    QuestJournalledSayClose(Mob *sender, Client *QuestIntiator, float dist, const char* mobname, const char* message);
 	void	GroupMessage(int32 gid, const char *from, const char *message);
@@ -317,6 +318,7 @@ public:
 	int	GetHatedCount(Mob *attacker, Mob *exclude);
 	void	AIYellForHelp(Mob* sender, Mob* attacker);
 	bool	AICheckCloseBeneficialSpells(NPC* caster, int8 iChance, float iRange, int16 iSpellTypes);
+	Mob*	GetTargetForMez(Mob* caster);
 
 	Corpse* GetClosestCorpse(Mob* sender);
 	void	ForceGroupUpdate(int32 gid);
@@ -326,7 +328,7 @@ public:
 	void    SaveAllClientsTaskState();
 	void    ReloadAllClientsTaskState(int TaskID=0);
 
-	void	CreateGroundObject(int32 itemid, float x, float y, float z, float heading);
+	void	CreateGroundObject(int32 itemid, float x, float y, float z, float heading, int32 decay_time = 300000);
 
 #ifdef EQBOTS
 

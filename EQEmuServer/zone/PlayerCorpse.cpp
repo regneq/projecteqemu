@@ -1016,6 +1016,7 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app)
 	else
 	{
 		SendEndLootErrorPacket(client);
+		safe_delete(inst);
 		return;
 	}
 

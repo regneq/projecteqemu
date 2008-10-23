@@ -247,6 +247,9 @@ public:
 	sint32	GetAccuracyRating() { return (accuracy_rating); }
 	void	SetAccuracyRating(sint32 d) { accuracy_rating = d;}
 
+	void	ModifyNPCStat(const char *identifier, const char *newValue);
+	virtual void SetLevel(uint8 in_level, bool command = false);
+
 protected:
 	
 	const NPCType*	NPCTypedata;

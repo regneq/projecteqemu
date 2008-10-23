@@ -461,6 +461,11 @@ void EntityList::MobProcess() {
 	iterator.Reset();
 	while(iterator.MoreElements())
 	{
+		if(!iterator.GetData())
+		{
+			iterator.Advance();
+			continue;
+		}
 		if(!iterator.GetData()->Process()){
 			Mob* mob=iterator.GetData();
 			if(mob->IsNPC())
@@ -3491,7 +3496,7 @@ void EntityList::GroupMessage(int32 gid, const char *from, const char *message)
 	} 
 }
 
-void EntityList::CreateGroundObject(int32 itemid, float x, float y, float z, float heading)
+void EntityList::CreateGroundObject(int32 itemid, float x, float y, float z, float heading, int32 decay_time)
 {
 	const Item_Struct* is = database.GetItem(itemid);
 	if(is)
@@ -3499,11 +3504,79 @@ void EntityList::CreateGroundObject(int32 itemid, float x, float y, float z, flo
 		ItemInst *i = new ItemInst(is);
 		if(i)
 		{
-			Object* object = new Object(i,x,y,z,heading);
+			Object* object = new Object(i,x,y,z,heading,decay_time);
 			entity_list.AddObject(object, true);
 			object->StartDecay();
 			object->Save();
 			safe_delete(i);
 		}
+	}
+}
+
+Mob* EntityList::GetTargetForMez(Mob* caster)
+{
+	if(!caster)
+		return NULL;
+
+	LinkedListIterator<Mob*> iterator(mob_list); 
+	iterator.Reset();
+	//TODO: make this smarter and not mez targets being damaged by dots
+	while(iterator.MoreElements()) {
+		Mob* d = iterator.GetData();
+		if(d){
+			if(d == caster){ //caster can't pick himself
+				iterator.Advance();
+				continue;
+			}
+
+			if(caster->GetTarget() == d){ //caster can't pick his target
+				iterator.Advance();			
+				continue;
+			}
+
+			if(!caster->CheckAggro(d)){ //caster can't pick targets that aren't aggroed on himself
+				iterator.Advance();
+				continue;
+			}
+
+			if(caster->DistNoRoot(*d) > 22250){ //only pick targets within 150 range
+				iterator.Advance();
+				continue;
+			}
+
+			if(!caster->CheckLosFN(d)){ //this is wasteful but can't really think of another way to do it 
+				iterator.Advance();		//that wont have us trying to los the same target every time
+				continue;			   //it's only in combat so it's impact should be minimal.. but stil.
+			}
+			return d;
+		}
+		iterator.Advance();
+	}
+	return NULL;
+}
+
+void EntityList::SendZoneAppearance(Client *c)
+{
+	if(!c)
+		return;
+
+	LinkedListIterator<Mob*> iterator(mob_list); 
+	iterator.Reset();
+	while(iterator.MoreElements()) {
+		Mob *cur = iterator.GetData();
+
+		if(cur)
+		{
+			if(cur == c)
+			{
+				iterator.Advance();
+				continue;
+			}
+			if(cur->GetAppearance() != ANIM_STAND)
+			{
+				cur->SendAppearancePacket(AT_Anim, cur->GetAppearanceValue(cur->GetAppearance()), false, true, c);
+			}
+		}
+		iterator.Advance();
 	}
 }

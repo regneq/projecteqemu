@@ -2286,8 +2286,8 @@ XS(XS__CreateGroundObject);
 XS(XS__CreateGroundObject)
 {
 	dXSARGS;
-	if (items != 5)
-		Perl_croak(aTHX_ "Usage: CreateGroundObject(itemid, x, y, z, heading)");
+	if (items != 5 || items != 6)
+		Perl_croak(aTHX_ "Usage: CreateGroundObject(itemid, x, y, z, heading, [decay_time])");
 
 	int	itemid = (int)SvIV(ST(0));
 	float x = (float)SvNV(ST(1));
@@ -2295,7 +2295,25 @@ XS(XS__CreateGroundObject)
 	float z = (float)SvNV(ST(3));
 	float heading = (float)SvNV(ST(4));
 
-	quest_manager.CreateGroundObject(itemid, x, y, z, heading);
+
+	if(items == 5)
+		quest_manager.CreateGroundObject(itemid, x, y, z, heading);
+	else{
+		int32 decay_time = (int32)SvIV(ST(5));
+		quest_manager.CreateGroundObject(itemid, x, y, z, heading, decay_time);
+	}
+
+	XSRETURN_EMPTY;
+}
+
+XS(XS__ModifyNPCStat);
+XS(XS__ModifyNPCStat)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: ModifyNPCStat(identifier, newValue)");
+
+	quest_manager.ModifyNPCStat(SvPV_nolen(ST(0)), SvPV_nolen(ST(1)));
 
 	XSRETURN_EMPTY;
 }
@@ -2455,6 +2473,7 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "getlevel"), XS__getlevel, file);
         newXS(strcpy(buf, "getinstflag"), XS__getinstflag, file);
 		newXS(strcpy(buf, "creategroundobject"), XS__CreateGroundObject, file);
+		newXS(strcpy(buf, "modifynpcstat"), XS__ModifyNPCStat, file);
 	XSRETURN_YES;
 }
 

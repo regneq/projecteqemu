@@ -17,6 +17,8 @@ Copyright (C) 2001-2002  EQEMu Development Team (http://eqemu.org)
 */
 #include "../common/debug.h"
 #include <iostream>
+#include <string>
+#include <cctype>
 using namespace std;
 #include <math.h>
 #include "../common/moremath.h"
@@ -1398,6 +1400,176 @@ void NPC::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho) {
 		ns->spawn.unknown0167 = 3;
 	}
 */
+}
+
+void NPC::SetLevel(uint8 in_level, bool command)
+{
+	if(in_level > level)
+		SendLevelAppearance();
+	level = in_level;
+	SendAppearancePacket(AT_WhoLevel, in_level);
+}
+
+void NPC::ModifyNPCStat(const char *identifier, const char *newValue)
+{
+	std::string id = identifier;
+	std::string val = newValue;
+	for(int i = 0; i < id.length(); ++i)
+	{
+		id[i] = std::tolower(id[i]);
+	}
+
+	if(id == "ac")
+	{
+		AC = atoi(val.c_str());
+		return;
+	}
+	if(id == "str")
+	{
+		STR = atoi(val.c_str());
+		return;
+	}
+	if(id == "sta")
+	{
+		STA = atoi(val.c_str());
+		return;
+	}
+	if(id == "agi")
+	{
+		AGI = atoi(val.c_str());
+		return;
+	}
+	if(id == "dex")
+	{
+		DEX = atoi(val.c_str());
+		return;
+	}
+	if(id == "wis")
+	{
+		WIS = atoi(val.c_str());
+		CalcMaxMana();
+		return;
+	}
+	if(id == "int")
+	{
+		INT = atoi(val.c_str());
+		CalcMaxMana();
+		return;
+	}
+	if(id == "cha")
+	{
+		CHA = atoi(val.c_str());
+		return;
+	}
+	if(id == "max_hp")
+	{
+		max_hp = atoi(val.c_str());
+		if(cur_hp > max_hp)
+			cur_hp = max_hp;
+		return;
+	}
+	if(id == "mr")
+	{
+		MR = atoi(val.c_str());
+		return;
+	}
+	if(id == "fr")
+	{
+		FR = atoi(val.c_str());
+		return;
+	}
+	if(id == "cr")
+	{
+		CR = atoi(val.c_str());
+		return;
+	}
+	if(id == "pr")
+	{
+		PR = atoi(val.c_str());
+		return;
+	}
+	if(id == "dr")
+	{
+		DR = atoi(val.c_str());
+		return;
+	}
+	if(id == "runspeed")
+	{
+		runspeed = (float)atof(val.c_str());
+		CalcBonuses();
+		return;
+	}
+	if(id == "special_attacks")
+	{
+		NPCSpecialAttacks(val.c_str(), 0);
+		return;
+	}
+	if(id == "attack_speed")
+	{
+		attack_speed = (float)atof(val.c_str());
+		CalcBonuses();
+		return;
+	}
+	if(id == "atk")
+	{
+		ATK = atoi(val.c_str());
+		return;
+	}
+	if(id == "accuracy")
+	{
+		accuracy_rating = atoi(val.c_str());
+		return;
+	}
+	if(id == "trackable")
+	{
+		trackable = atoi(val.c_str());
+		return;
+	}
+	if(id == "min_hit")
+	{
+		min_dmg = atoi(val.c_str());
+		return;
+	}
+	if(id == "max_hit")
+	{
+		max_dmg = atoi(val.c_str());
+		return;
+	}
+	if(id == "see_invis")
+	{
+		see_invis = atoi(val.c_str());
+		return;
+	}
+	if(id == "see_invis_undead")
+	{
+		see_invis_undead = atoi(val.c_str());
+		return;
+	}
+	if(id == "see_hide")
+	{
+		see_hide = atoi(val.c_str());
+		return;
+	}
+	if(id == "see_improved_hide")
+	{
+		see_improved_hide = atoi(val.c_str());
+		return;
+	}
+	if(id == "hp_regen")
+	{
+		hp_regen = atoi(val.c_str());
+		return;
+	}
+	if(id == "mana_regen")
+	{
+		mana_regen = atoi(val.c_str());
+		return;
+	}
+	if(id == "level")
+	{
+		SetLevel(atoi(val.c_str()));
+		return;
+	}
 }
 
 

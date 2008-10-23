@@ -164,8 +164,8 @@ Object::Object(Client* client, const ItemInst* inst)
 	}
 }
 
-Object::Object(const ItemInst *inst, float x, float y, float z, float heading)
- : respawn_timer(0), decay_timer(300000)
+Object::Object(const ItemInst *inst, float x, float y, float z, float heading, int32 decay_time)
+ : respawn_timer(0), decay_timer(decay_time)
 {
 	user = NULL;
 	last_user = NULL;

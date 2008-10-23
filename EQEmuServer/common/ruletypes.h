@@ -135,6 +135,7 @@ RULE_INT ( Spells, BaseCritRatio, 0) //base % bonus to damage on a successful sp
 RULE_INT ( Spells, WizCritLevel, 12) //level wizards first get spell crits
 RULE_INT ( Spells, WizCritChance, 7) //wiz's crit chance, on top of BaseCritChance
 RULE_INT ( Spells, WizCritRatio, 15) //wiz's crit bonus, on top of BaseCritRatio
+RULE_INT (Spells, ResistPerLevelDiff, 85) //8.5 resist per level difference.
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Combat )
@@ -143,7 +144,7 @@ RULE_REAL ( Combat, WarBerBaseCritChance, 0.03 ) //The base crit chance for warr
 RULE_REAL ( Combat, BerserkBaseCritChance, 0.06 ) //The bonus base crit chance you get when you're berserk
 RULE_INT ( Combat, NPCBashKickLevel, 6 ) //The level that npcs can KICK/BASH
 RULE_REAL ( Combat, ClientBaseCritChance, 0.0 ) //The base crit chance for all clients, this will stack with warrior's/zerker's crit chance.
-RULE_BOOL ( Combat, UseIntervalAC, false)
+RULE_BOOL ( Combat, UseIntervalAC, true)
 RULE_INT ( Combat, PetAttackMagicLevel, 30)
 RULE_BOOL ( Combat, EnableFearPathing, true)
 RULE_INT ( Combat, FleeHPRatio, 25)
@@ -153,6 +154,9 @@ RULE_REAL ( Combat, AvgProcsPerMinute, 18.0)
 RULE_REAL ( Combat, ProcPerMinDexContrib, 0.075)
 RULE_REAL ( Combat, BaseProcChance, 0.035)
 RULE_REAL ( Combat, ProcDexDivideBy, 11000)
+RULE_REAL ( Combat, BaseHitChance, 54.0)
+RULE_INT ( Combat, HitPerLevelDiff, 145) //45% of level diff converted to chance to hit/miss
+RULE_REAL ( Combat, AgiHitFactor, 0.015)
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( NPC )
