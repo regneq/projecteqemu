@@ -410,7 +410,6 @@ public:
 	uint32  GetRaidEXP() { return(m_pp.raid_leadership_exp); }
 	uint32  GetGroupEXP() { return(m_pp.group_leadership_exp); }
 	virtual void SetLevel(uint8 set_level, bool command = false);
-	void	SendLevelAppearance();
 	void	GoToBind();
 	void	GoToSafeCoords(uint16 zone_id);
 	void	Gate();

@@ -1684,7 +1684,17 @@ int QuestManager::getinstflag()
 	return (database.GetCharInstFlagNum(initiator->CharacterID()));
 }
 
-void QuestManager::CreateGroundObject(int32 itemid, float x, float y, float z, float heading)
+void QuestManager::CreateGroundObject(int32 itemid, float x, float y, float z, float heading, int32 decay_time)
 {
-	entity_list.CreateGroundObject(itemid, x, y, z, heading);
+	entity_list.CreateGroundObject(itemid, x, y, z, heading, decay_time);
+}
+
+void QuestManager::ModifyNPCStat(const char *identifier, const char *newValue)
+{
+	if(owner){
+		if(owner->IsNPC())
+		{
+			owner->CastToNPC()->ModifyNPCStat(identifier, newValue);
+		}
+	}
 }

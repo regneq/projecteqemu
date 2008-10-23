@@ -1,6 +1,21 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==10/23/2008
+KLS: Zone appearance should update for players zoning.
+KLS: Added command #modifynpcstat
+KLS: Added quest::modifynpcstat(identifier, value)
+KLS: Fix potential crash in MobProcess
+KLS: Added decay option to CreateGroundObject
+KLS: Added spelltype mez(2048) and spelltype in combat buff(1024).
+KLS: Setting level for npcs will now update their spawn level too.
+KLS: Fix potential memory leak in item link code.
+KLS: Changed resists a bit.
+KLS: Added rule: Spells:ResistPerLevelDiff(85) 8.5 resist points per level diff
+KLS: Added rule: Combat:BaseHitChance(54.0)
+KLS: Added rule: Combat:HitPerLevelDiff(145) 45% per level diff
+KLS: Added rule: Combat:AgiHitFactor(0.015)
+
 ==10/22/2008
 AndMetal: Fix for item links to prevent occasional zone crashes
 AndMetal: Critical DOTs should now work correctly

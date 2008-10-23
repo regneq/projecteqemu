@@ -1168,6 +1168,26 @@ void Mob::SendAppearancePacket(int32 type, int32 value, bool WholeZone, bool iIg
 	safe_delete(outapp);
 }
 
+void Mob::SendLevelAppearance(){
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_LevelAppearance, sizeof(LevelAppearance_Struct));
+	LevelAppearance_Struct* la = (LevelAppearance_Struct*)outapp->pBuffer;
+	la->parm1 = 0x4D;
+	la->parm2 = la->parm1 + 1;
+	la->parm3 = la->parm2 + 1;
+	la->parm4 = la->parm3 + 1;
+	la->parm5 = la->parm4 + 1;
+	la->spawn_id = GetID();
+	la->value1a = 1;
+	la->value2a = 2;
+	la->value3a = 1;
+	la->value3b = 1;
+	la->value4a = 1;
+	la->value4b = 1;
+	la->value5a = 2;
+	entity_list.QueueCloseClients(this,outapp);
+	safe_delete(outapp);
+}
+
 const sint32& Mob::SetMana(sint32 amount)
 {
 	CalcMaxMana();

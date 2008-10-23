@@ -148,7 +148,7 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 */
 	Mob *attacker=other;
 	Mob *defender=this;
-	float chancetohit = 54.0f;
+	float chancetohit = RuleR(Combat, BaseHitChance);
 
 #if ATTACK_DEBUG>=11
 		LogFile->write(EQEMuLog::Debug, "CheckHitChance(%s) attacked by %s", defender->GetName(), attacker->GetName());
@@ -171,8 +171,8 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 	sint32 level_difference = attacker_level - defender_level;
 	if(level_difference < -20) level_difference = -20;
 	if(level_difference > 20) level_difference = 20;
-	chancetohit += (145 * level_difference / 100);
-	chancetohit -= ((float)defender->GetAGI() * 0.015);
+	chancetohit += (RuleI(Combat, HitPerLevelDiff) * level_difference / 100);
+	chancetohit -= ((float)defender->GetAGI() * RuleR(Combat, AgiHitFactor));
 
 #ifdef EQBOTS
 

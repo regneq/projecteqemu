@@ -379,6 +379,7 @@ bool logpos;
 	inline virtual bool InZone() const { return true; }
 	void	BuffProcess();
 	virtual void SetLevel(uint8 in_level, bool command = false) { level = in_level; }
+	void	SendLevelAppearance();
 
 	virtual inline sint32 GetPrimaryFaction() const { return 0; }
 	virtual uint16 GetSkill(SkillType skill_num) const { return 0; } //overloaded by things which actually have skill (NPC|client)

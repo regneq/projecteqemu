@@ -179,7 +179,8 @@ public:
     int getlevel(uint8 type);
     int getinstflag();
 
-	void CreateGroundObject(int32 itemid, float x, float y, float z, float heading);
+	void CreateGroundObject(int32 itemid, float x, float y, float z, float heading, int32 decay_time = 300000);
+	void ModifyNPCStat(const char *identifier, const char *newValue);
 	
 	//not in here because it retains perl types
 	//thing ChooseRandom(array_of_things)

@@ -3268,25 +3268,9 @@ float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster)
 	//This is our base resist chance given no resists and no level diff, set to a modest 2% by default
 	resistchance = RuleR(Spells, ResistChance); 
 	
-	//This is our difference in levels between the caster and target, if the caster is HIGHER than the target there is still some resist factored in but it is less than if he was LOWER than his target.
-	//Replaced the old system where resist chance was 1 + (leveldiff*leveldiff), this resulted in some pretty shoddy scaling especially at higher levels where you're dealing with a much larger range of NPC levels.
+	//changed this again, just straight 8.5 resist points per level above you
 	float lvldiff = caster_level - target_level;
-	if(caster && caster->IsClient()){ //levels are a bit more harsh to clients than they are to npcs
-		if((lvldiff) > 0){
-			resistchance -= (lvldiff)*0.6;
-		}
-		else{
-			resistchance -= (lvldiff)*2.0;
-		}
-	}
-	else{
-		if((lvldiff) > 0){
-			resistchance -= (lvldiff)*1.2;
-		}
-		else{
-			resistchance -= (lvldiff)*0.8;
-		}
-	}
+	resist += (RuleI(Spells, ResistPerLevelDiff) * (-lvldiff) / 10);
 
 	/*The idea is we come up with 3 ranges of numbers and a roll between 0 and 100
 	[[[Empty Space above the resistchance line]]] - If the roll lands up here the spell wasn't resisted, the lower the resist chance the larger this range is

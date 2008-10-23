@@ -7072,6 +7072,9 @@ void Client::CompleteConnect()
 		}
 	}
 
+	//sends appearances for all mobs not doing anim_stand aka sitting, looting, playing dead
+	entity_list.SendZoneAppearance(this);
+
 	cheat_timer.Start(2500,false);
 	client_data_loaded = true;
 	int x;

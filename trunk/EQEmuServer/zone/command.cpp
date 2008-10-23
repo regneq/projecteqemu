@@ -415,7 +415,8 @@ int command_init(void) {
 		command_add("getplayerburriedcorpsecount","- Get the target's total number of burried player corpses.", 100, command_getplayerburriedcorpsecount) ||
 		command_add("summonburriedplayercorpse","- Summons the target's oldest burried corpse, if any exist.", 100, command_summonburriedplayercorpse) ||
 		command_add("refreshgroup","- Refreshes Group.", 0, command_refreshgroup) ||
-		command_add("advnpcspawn","[maketype|makegroup|addgroupentry|addgroupspawn][removegroupspawn|movespawn|editgroupbox|cleargroupbox]",150,command_advnpcspawn)	
+		command_add("advnpcspawn","[maketype|makegroup|addgroupentry|addgroupspawn][removegroupspawn|movespawn|editgroupbox|cleargroupbox]",150,command_advnpcspawn) ||
+		command_add("modifynpcstat","Modifys a NPC's stats",150,command_modifynpcstat)	
 		)
 	{
 		command_deinit();
@@ -9703,4 +9704,18 @@ void command_aggrozone(Client *c, const Seperator *sep) {
 	int hate = atoi(sep->arg[1]); //should default to 0 if we don't enter anything
 	entity_list.AggroZone(m,hate);
 	c->Message(0, "Train to you! Last chance to go invulnerable...");
+}
+
+void command_modifynpcstat(Client *c, const Seperator *sep)
+{
+	if(!c)
+		return;
+
+	if(!c->GetTarget())
+		return;
+
+	if(!c->GetTarget()->IsNPC())
+		return;
+
+	c->GetTarget()->CastToNPC()->ModifyNPCStat(sep->arg[1], sep->arg[2]);
 }
