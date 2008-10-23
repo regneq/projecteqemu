@@ -7383,6 +7383,7 @@ void command_bot(Client *c, const Seperator *sep) {
 		c->Message(15, "#bot raid [commands] (#bot raid help will show some help).");
 		c->Message(15, "#bot track [rare] - look at mobs in the zone");
 		c->Message(15, "#bot target calm - attempts to pacify your target mob.");
+		c->Message(15, "#bot evac - transports your pc group to safe location in the current zone. bots are lost");
 		return;
 	}
 
@@ -8882,6 +8883,32 @@ int RangeB = (Level*20); //Bard
         return;
 	}
 }
+	if(!strcasecmp(sep->arg[1], "evac")) {
+		Mob *evac = NULL;
+		bool hasevac = false;
+		if(c->IsGrouped())
+		{
+			Group *g = c->GetGroup();
+			if(g) {
+				for(int i=0; i<MAX_GROUP_MEMBERS; i++)
+				{
+					if(g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == DRUID))
+					{
+						hasevac = true;
+						evac = g->members[i];
+					}
+				}
+				if(!hasevac) {
+					c->Message(15, "You must have a Druid in your group.");
+				}
+			}
+		}
+		if(hasevac) {
+			evac->Say("Attempting to Evac you %s.", c->GetName());
+			evac->CastToClient()->CastSpell(2183, c->GetID(), 1, -1, -1);
+		}
+	}
+
 	// debug commands
 	if(!strcasecmp(sep->arg[1], "debug") && !strcasecmp(sep->arg[2], "inventory")) {
 		Mob *target = c->GetTarget();
