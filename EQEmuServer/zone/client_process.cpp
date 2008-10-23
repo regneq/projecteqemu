@@ -1306,6 +1306,18 @@ void Client::OPMoveCoin(const EQApplicationPacket* app)
 	{
 		if(*to_bucket + amount_to_add > *to_bucket)	// overflow check
 			*to_bucket += amount_to_add;
+
+		//shared bank plat
+		if (RuleB(Character, SharedBankPlat))
+		{
+			if (to_bucket == &m_pp.platinum_shared || from_bucket == &m_pp.platinum_shared)
+			{
+				if (from_bucket == &m_pp.platinum_shared) 
+					amount_to_add = 0 - amount_to_take;
+
+				database.SetSharedPlatinum(AccountID(),amount_to_add);
+			}
+		}
 	}
 
 #ifdef SOLAR

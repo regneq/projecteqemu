@@ -284,6 +284,53 @@ bool SharedDatabase::SaveInventory(uint32 char_id, const ItemInst* inst, sint16 
 	return ret;
 }
 
+sint32 SharedDatabase::GetSharedPlatinum(int32 account_id)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT sharedplat FROM account WHERE id='%i'", account_id), errbuf, &result)) {
+		safe_delete_array(query);
+		if (mysql_num_rows(result) == 1)
+		{
+			row = mysql_fetch_row(result);
+			uint32 shared_platinum = atoi(row[0]);
+			mysql_free_result(result);
+			return shared_platinum;
+		}
+		else
+		{
+			mysql_free_result(result);
+			return 0;
+		}
+		mysql_free_result(result);
+	}
+	else
+	{
+		
+		cerr << "Error in GetSharedPlatinum query '" << query << "' " << errbuf << endl;
+		safe_delete_array(query);
+		return false;
+	}
+	
+	return 0;
+}
+
+bool SharedDatabase::SetSharedPlatinum(uint32 account_id, sint32 amount_to_add)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+    char *query = 0;
+
+	if (!RunQuery(query, MakeAnyLenString(&query, "UPDATE account SET sharedplat = sharedplat + %i WHERE id = %i", amount_to_add, account_id), errbuf)) {
+		cerr << "Error in SetSharedPlatinum query '" << query << "' " << errbuf << endl;
+		safe_delete_array(query);
+		return false;
+	}
+	
+	safe_delete_array(query);
+	return true;
+}
 
 bool SharedDatabase::SetStartingItems(PlayerProfile_Struct* pp, Inventory* inv, uint32 si_race, uint32 si_class, uint32 si_deity, uint32 si_current_zone, char* si_name, int admin_level)
 {

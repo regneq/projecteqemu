@@ -46,6 +46,8 @@ public:
 	bool	SaveInventory(uint32 char_id, const ItemInst* inst, sint16 slot_id);
 	bool	VerifyInventory(uint32 account_id, sint16 slot_id, const ItemInst* inst);
 	bool	GetSharedBank(uint32 id, Inventory* inv, bool is_charid);
+	sint32	GetSharedPlatinum(int32 account_id);
+	bool	SetSharedPlatinum(int32 account_id, sint32 amount_to_add);
 	bool	GetInventory(uint32 char_id, Inventory* inv);
 	bool	GetInventory(uint32 account_id, char* name, Inventory* inv);
 	bool    SetStartingItems(PlayerProfile_Struct* pp, Inventory* inv, uint32 si_race, uint32 si_class, uint32 si_deity, uint32 si_current_zone, char* si_name, int admin);

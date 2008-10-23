@@ -710,6 +710,8 @@ bool ZoneDatabase::GetCharacterInfoForLogin_result(MYSQL_RES* result,
 		}
 		
 		uint32 char_id = atoi(row[0]);
+		if (RuleB(Character, SharedBankPlat))
+			pp->platinum_shared = database.GetSharedPlatinum(GetAccountIDByChar(char_id));
 		if (character_id)
 			*character_id = char_id;
 		if (current_zone)
@@ -1324,7 +1326,7 @@ void ZoneDatabase::RefreshGroupFromDB(Client *c){
 
 	int index = 0;
 	if (RunQuery(query, MakeAnyLenString(&query, "SELECT name from group_id where groupid=%d", g->GetID()), errbuf, &result)) {
-		while(row = mysql_fetch_row(result)){
+		while((row = mysql_fetch_row(result))){
 			if(index < 6){
 				if(strcmp(c->GetName(), row[0]) != 0){
 					strcpy(gu->membername[index], row[0]);
@@ -1500,7 +1502,6 @@ bool ZoneDatabase::InstZoneLoaded(int32 charInstFlagNum){
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
     MYSQL_RES *result;
-    MYSQL_ROW row;
 	
 	if (RunQuery(query, MakeAnyLenString(&query, "SELECT zoneidnumber FROM zone WHERE zoneidnumber=%i", charInstFlagNum), errbuf, &result))
 	{
@@ -1526,8 +1527,6 @@ bool ZoneDatabase::InstZoneLoaded(int32 charInstFlagNum){
 void ZoneDatabase::LoadInstZone(int32 target_zone_ID, int32 instFlagNum){
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
-    MYSQL_RES *result;
-    MYSQL_ROW row;
 	int32 affected_rows = 0;
 	string tmpzonename = database.GetZoneName(target_zone_ID);
 	string temp;

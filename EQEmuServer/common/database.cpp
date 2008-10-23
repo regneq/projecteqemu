@@ -212,7 +212,6 @@ bool Database::CheckBannedIPs(const char* loginIP)
  	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
     MYSQL_RES *result;
-    MYSQL_ROW row;
  	//cout << "Checking against Banned IPs table."<< endl; //Lieka:  Debugging
  	if (RunQuery(query, MakeAnyLenString(&query, "SELECT ip_address FROM Banned_IPs WHERE ip_address='%s'", loginIP), errbuf, &result)) {
  		safe_delete_array(query);
@@ -1896,7 +1895,6 @@ int8 Database::GetAgreementFlag(int32 acctid)
 	char* query = 0;
 	MYSQL_RES* result;
 	MYSQL_ROW row;
-	bool ret = false;
 
 	if (RunQuery(query, MakeAnyLenString(&query, "SELECT rulesflag FROM account WHERE id=%i",acctid), errbuf, &result)) {
 		safe_delete_array(query);
@@ -2435,7 +2433,6 @@ void Database::incrCurInstFlagNum(int instFlag)
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
     MYSQL_RES *result;
-    MYSQL_ROW row;
 	// Increment the curInstFlagNum
 	instFlag++;
 	if (instFlag > 9999)
@@ -2495,7 +2492,6 @@ void Database::setCharInstFlag(int charID, int orgZoneID, int instFlag)
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
     MYSQL_RES *result;
-    MYSQL_ROW row;
 
 	if (RunQuery(query, MakeAnyLenString(&query, "UPDATE character_ SET instZflagNum=%i, instZOrgID=%i WHERE id=%i", instFlag, orgZoneID, charID), errbuf, &result))
 	{
