@@ -48,6 +48,7 @@ RULE_INT ( Character, ItemDoTShieldingCap, 35)
 RULE_INT ( Character, ItemStunResistCap, 35)
 RULE_INT ( Character, ItemStrikethroughCap, 35)
 RULE_INT ( Character, SkillUpModifier, 100) //skill ups are at 100%
+RULE_BOOL ( Character, SharedBankPlat, false) //off by default to prevent duping for now
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Guild )
@@ -124,16 +125,16 @@ RULE_REAL ( Watermap, FishingLineLength, 40)			// If water is more than this far
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Spells )
-RULE_INT (Spells, AutoResistDiff, 15)
-RULE_REAL (Spells, ResistChance, 2.0) //chance to resist given no resists and same level
-RULE_REAL (Spells, ResistMod, 0.40) //multiplier, chance to resist = this * ResistAmount
-RULE_REAL (Spells, PartialHitChance, 0.7) //The chance when a spell is resisted that it will partial hit.
-RULE_REAL (Spells, PartialHitChanceFear, 0.25) //The chance when a fear spell is resisted that it will partial hit.
-RULE_INT (Spells, BaseCritChance, 0) //base % chance that everyone has to crit a spell
-RULE_INT (Spells, BaseCritRatio, 0) //base % bonus to damage on a successful spell crit. 100 = 2x damage
-RULE_INT (Spells, WizCritLevel, 12) //level wizards first get spell crits
-RULE_INT (Spells, WizCritChance, 7) //wiz's crit chance, on top of BaseCritChance
-RULE_INT (Spells, WizCritRatio, 15) //wiz's crit bonus, on top of BaseCritRatio
+RULE_INT ( Spells, AutoResistDiff, 15)
+RULE_REAL ( Spells, ResistChance, 2.0) //chance to resist given no resists and same level
+RULE_REAL ( Spells, ResistMod, 0.40) //multiplier, chance to resist = this * ResistAmount
+RULE_REAL ( Spells, PartialHitChance, 0.7) //The chance when a spell is resisted that it will partial hit.
+RULE_REAL ( Spells, PartialHitChanceFear, 0.25) //The chance when a fear spell is resisted that it will partial hit.
+RULE_INT ( Spells, BaseCritChance, 0) //base % chance that everyone has to crit a spell
+RULE_INT ( Spells, BaseCritRatio, 0) //base % bonus to damage on a successful spell crit. 100 = 2x damage
+RULE_INT ( Spells, WizCritLevel, 12) //level wizards first get spell crits
+RULE_INT ( Spells, WizCritChance, 7) //wiz's crit chance, on top of BaseCritChance
+RULE_INT ( Spells, WizCritRatio, 15) //wiz's crit bonus, on top of BaseCritRatio
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Combat )

@@ -2,6 +2,11 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
 ==10/22/2008
+AndMetal: Fix for item links to prevent occasional zone crashes
+AndMetal: Critical DOTs should now work correctly
+AndMetal: Fixed sql/svn/125_aggrozone.sql to work with current command table schema
+AndMetal: (Theeper) Shared Bank platinum. Added rule Character:SharedBankPlat(false) to enable since it is possible to dupe plat with multiple characters logged in on the same account at the same time
+AndMetal: Fixed a few random compile warnings
 Angelox: Bot Tracking improves as levels increase.
 Angelox: Druid Bot is now next best tracker
 AndMetal: Support for +Stat Cap (Wunshi's Focusing, etc)

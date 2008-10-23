@@ -3489,7 +3489,7 @@ void Mob::TryDotCritical(int16 spell_id, Mob *caster, int &damage)
 
 	float critChance = 0.00f;
 
-	switch(GetAA(aaCriticalAffliction))
+	switch(caster->GetAA(aaCriticalAffliction))
 	{
 		case 1:
 			critChance += 0.03f;
@@ -3504,7 +3504,7 @@ void Mob::TryDotCritical(int16 spell_id, Mob *caster, int &damage)
 			break;
 	}
 
-	switch (GetAA(aaImprovedCriticalAffliction))
+	switch (caster->GetAA(aaImprovedCriticalAffliction))
 	{
 		case 1:
 			critChance += 0.03f;
@@ -3521,7 +3521,7 @@ void Mob::TryDotCritical(int16 spell_id, Mob *caster, int &damage)
 
 	// since DOTs are the Necromancer forte, give an innate bonus
 	// however, no chance to crit unless they've trained atleast one level in the AA first
-	if (GetClass() == NECROMANCER && critChance > 0.0f){
+	if (caster->GetClass() == NECROMANCER && critChance > 0.0f){
 		critChance += 0.05f;
 	}
 
