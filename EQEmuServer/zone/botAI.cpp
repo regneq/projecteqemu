@@ -1213,4 +1213,35 @@ void EntityList::ShowSpawnWindow(Client* client, int Distance, bool NamedOnly) {
 
 	return; 
 }
+
+bool NPC::Bot_Command_CalmTarget(Mob *target) {
+	if(target) {
+		int calmid = 0;
+		int calmlevel = GetLevel();
+		if((calmlevel >= 67) && (calmlevel <= 75)) {
+			calmid = 5274;
+		}
+		else if((calmlevel >= 62) && (calmlevel <= 66)) {
+			calmid = 3197;
+		}
+		else if((calmlevel >= 35) && (calmlevel <= 61)) {
+			calmid = 45;
+		}
+		else if((calmlevel >= 18) && (calmlevel <= 34)) {
+			calmid = 47;
+		}
+		else if((calmlevel >= 6) && (calmlevel <= 17)) {
+			calmid = 501;
+		}
+		else if((calmlevel >= 1) && (calmlevel <= 5)) {
+			calmid = 208;
+		}
+		if(calmid > 0) {
+			CastSpell(calmid, target->GetID(), 1, -1, -1, &target->pDontRootMeBefore);
+			return true;
+		}
+	}
+	return false;
+}
 #endif //EQBOTS
+
