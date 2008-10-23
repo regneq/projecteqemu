@@ -16,6 +16,11 @@ KLS: Added rule: Spells:ResistPerLevelDiff(85) 8.5 resist points per level diff
 KLS: Added rule: Combat:BaseHitChance(54.0)
 KLS: Added rule: Combat:HitPerLevelDiff(145) 45% per level diff
 KLS: Added rule: Combat:AgiHitFactor(0.015)
+Derision: Added 'Repeatable' column to to tasks table. Default 1 (true).
+
+Required SQL:
+
+ALTER TABLE `tasks` ADD `repeatable` TINYINT( 1 ) UNSIGNED NOT NULL DEFAULT '1';
 
 ==10/22/2008
 AndMetal: Fix for item links to prevent occasional zone crashes
