@@ -127,6 +127,7 @@ struct TaskInformation {
 	int	LastStep;
 	short	MinLevel;
 	short 	MaxLevel;
+	bool	Repeatable;
 	ActivityInformation Activity[MAXACTIVITIESPERTASK];
 };
 
@@ -240,6 +241,7 @@ public:
 	int FirstTaskInSet(int TaskSet);
 	int LastTaskInSet(int TaskSet);
 	int NextTaskInSet(int TaskSet, int TaskID);
+	bool IsTaskRepeatable(int TaskID);
 	friend class ClientTaskState;
 
 

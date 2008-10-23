@@ -136,11 +136,11 @@ bool TaskManager::LoadTasks(int SingleTask) {
 	// If TaskID !=0, then just load the task specified.
 
 	const char *AllTaskQuery = "SELECT `id`, `duration`, `title`, `description`, `reward`, `rewardid`,"
-				   "`cashreward`, `xpreward`, `rewardmethod`, `startzone`, `minlevel`, `maxlevel` "
+				   "`cashreward`, `xpreward`, `rewardmethod`, `startzone`, `minlevel`, `maxlevel`, `repeatable` "
 				   "from `tasks` WHERE `id` < %i";
 
 	const char *SingleTaskQuery = "SELECT `id`, `duration`, `title`, `description`, `reward`, `rewardid`,"
-				      "`cashreward`, `xpreward`, `rewardmethod`, `startzone`, `minlevel`, `maxlevel` "
+				      "`cashreward`, `xpreward`, `rewardmethod`, `startzone`, `minlevel`, `maxlevel`, `repeatable` "
 				      "from `tasks` WHERE `id` = %i";
 
 	const char *AllActivityQuery = "SELECT `taskid`, `step`, `activityid`, `activitytype`, `text1`, `text2`,"
@@ -208,13 +208,15 @@ bool TaskManager::LoadTasks(int SingleTask) {
 			Tasks[TaskID]->StartZone = atoi(row[9]);
 			Tasks[TaskID]->MinLevel = atoi(row[10]);
 			Tasks[TaskID]->MaxLevel = atoi(row[11]);
+			Tasks[TaskID]->Repeatable = atoi(row[12]);
 			Tasks[TaskID]->ActivityCount = 0;
 			Tasks[TaskID]->SequenceMode = ActivitiesSequential;
 			Tasks[TaskID]->LastStep = 0;
 
-			_log(TASKS__GLOBALLOAD,"TaskID: %5i, Duration: %8i, StartZone: %3i Reward: %s MinLevel %i MaxLevel %i",
+			_log(TASKS__GLOBALLOAD,"TaskID: %5i, Duration: %8i, StartZone: %3i Reward: %s MinLevel %i MaxLevel %i Repeatable: %s",
 			       TaskID, Tasks[TaskID]->Duration, Tasks[TaskID]->StartZone, Tasks[TaskID]->Reward,
-			       Tasks[TaskID]->MinLevel, Tasks[TaskID]->MaxLevel);
+			       Tasks[TaskID]->MinLevel, Tasks[TaskID]->MaxLevel,
+			       Tasks[TaskID]->Repeatable ? "Yes" : "No");
 			_log(TASKS__GLOBALLOAD,"Title:         %s ", Tasks[TaskID]->Title);
 			//_log(TASKS__GLOBALLOAD,"Description: %s ", Tasks[TaskID]->Description);
 
@@ -1084,7 +1086,8 @@ void TaskManager::TaskSetSelector(Client *c, ClientTaskState *state, Mob *mob, i
 			vector<int>::iterator Iterator = TaskSets[TaskSetID].begin();
 
 			while((Iterator != TaskSets[TaskSetID].end()) && (TaskListIndex < MAXCHOOSERENTRIES)) {
-				if(AppropriateLevel((*Iterator), PlayerLevel) && !state->IsTaskActive((*Iterator))) 
+				if(AppropriateLevel((*Iterator), PlayerLevel) && !state->IsTaskActive((*Iterator)) &&
+				   (IsTaskRepeatable((*Iterator)) || !state->IsTaskCompleted((*Iterator)))) 
 					TaskList[TaskListIndex++] = (*Iterator);
 
 				Iterator++;
@@ -1108,7 +1111,9 @@ void TaskManager::TaskSetSelector(Client *c, ClientTaskState *state, Mob *mob, i
 		   (state->EnabledTasks[EnabledTaskIndex] == TaskSets[TaskSetID][TaskSetIndex])) {
 
 			if(AppropriateLevel(TaskSets[TaskSetID][TaskSetIndex], PlayerLevel) &&
-			   !state->IsTaskActive(TaskSets[TaskSetID][TaskSetIndex])) {
+			   !state->IsTaskActive(TaskSets[TaskSetID][TaskSetIndex]) &&
+			   (IsTaskRepeatable(TaskSets[TaskSetID][TaskSetIndex]) ||
+			    !state->IsTaskCompleted(TaskSets[TaskSetID][TaskSetIndex]))) {
 
 				TaskList[TaskListIndex++] = TaskSets[TaskSetID][TaskSetIndex];
 
@@ -1165,6 +1170,8 @@ void TaskManager::SendTaskSelector(Client *c, Mob *mob, int TaskCount, int *Task
 
 		if(c->IsTaskActive(TaskList[i])) continue;
 
+		if(!IsTaskRepeatable(TaskList[i]) && c->IsTaskCompleted(TaskList[i])) continue;
+
 		ValidTasks++;
 		PacketLength = PacketLength + sizeof(AvailableTaskData1_Struct) + strlen(Tasks[TaskList[i]]->Title) + 1 +
 	                       strlen(Tasks[TaskList[i]]->Description) + 1 + sizeof(AvailableTaskData2_Struct) + 10 +
@@ -1192,6 +1199,8 @@ void TaskManager::SendTaskSelector(Client *c, Mob *mob, int TaskCount, int *Task
 		if(!AppropriateLevel(TaskList[i], PlayerLevel)) continue;
 
 		if(c->IsTaskActive(TaskList[i])) continue;
+
+		if(!IsTaskRepeatable(TaskList[i]) && c->IsTaskCompleted(TaskList[i])) continue;
 
 		AvailableTaskData1 = (AvailableTaskData1_Struct*)Ptr;
 
@@ -2144,6 +2153,17 @@ int ClientTaskState::IsTaskCompleted(int TaskID) {
 	}
 
 	return 0;
+}
+
+bool  TaskManager::IsTaskRepeatable(int TaskID) {
+
+	if((TaskID <= 0) || (TaskID >= MAXTASKS)) return false;
+
+	TaskInformation* Task = taskmanager->Tasks[TaskID];
+
+	if(Task == NULL) return false;
+
+	return Task->Repeatable;
 }
 
 bool ClientTaskState::TaskOutOfTime(int Index) {
