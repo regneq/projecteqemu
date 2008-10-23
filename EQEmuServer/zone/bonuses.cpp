@@ -1083,7 +1083,7 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 			{
 				//multiplier is to be compatible with item effects
 				//watching for overflow too
-				effect_value = effect_value<3000? effect_value * 10 : 30000;
+				effect_value = effect_value<3000? effect_value : 3000;
 				if(newbon->ProcChance < effect_value)
 					newbon->ProcChance = effect_value;
 				break;

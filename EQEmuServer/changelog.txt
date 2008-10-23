@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
 ==10/23/2008
+Trevius: Removed the * 10 multiplier from the SE_ProcChance since it isn't needed
 KLS: Zone appearance should update for players zoning.
 KLS: Added command #modifynpcstat
 KLS: Added quest::modifynpcstat(identifier, value)
