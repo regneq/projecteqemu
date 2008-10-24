@@ -8029,6 +8029,7 @@ void command_bot(Client *c, const Seperator *sep) {
 		else {
 			c->Message(15, "Error deleting Bot!");
 		}
+		return;
 	}
 
 	if(!strcasecmp(sep->arg[1], "list") ){
@@ -8239,6 +8240,7 @@ void command_bot(Client *c, const Seperator *sep) {
 			return;
 		}
 		entity_list.OpenDoorsNear(c->GetTarget()->CastToNPC());
+		return;
 	}
 
 	if(!strcasecmp(sep->arg[1], "summon")) {
@@ -8262,9 +8264,11 @@ void command_bot(Client *c, const Seperator *sep) {
 				return;
 			}
 			if(b) {
+				b->SetTarget(b->BotOwner);
 				b->Warp(c->GetX(), c->GetY(), c->GetZ());
 			}
 		}
+		return;
 	}
 
 	if(!strcasecmp(sep->arg[1], "group") && !strcasecmp(sep->arg[2], "add"))
@@ -8463,7 +8467,7 @@ void command_bot(Client *c, const Seperator *sep) {
 						if(g->members[i] && g->members[i]->IsBot()) {
 							if(botfollowid == 0) {
 								botfollowid = g->members[i]->GetID();
-								botfollowname = g->members[i]->GetCleanName();
+								botfollowname = g->members[i]->GetName();
 								g->members[i]->SetFollowID(c->GetID());
 								g->members[i]->Say("Following %s.", c->GetName());
 							}
@@ -8669,11 +8673,12 @@ void command_bot(Client *c, const Seperator *sep) {
 			if(g) {
 				for(int i=0; i<MAX_GROUP_MEMBERS; i++)
 				{
-					if(g->members[i] && g->members[i]->IsBot())
-					{
-						g->members[i]->GMMove(c->GetX(), c->GetY(), c->GetZ());
+					if(g->members[i] && g->members[i]->IsBot()) {
+						g->members[i]->SetTarget(g->members[i]->BotOwner);
+						g->members[i]->Warp(c->GetX(), c->GetY(), c->GetZ());
 						if(g->members[i]->HasPet()) {
-							g->members[i]->GetPet()->GMMove(c->GetX(), c->GetY(), c->GetZ());
+							g->members[i]->GetPet()->SetTarget(g->members[i]);
+							g->members[i]->GetPet()->Warp(c->GetX(), c->GetY(), c->GetZ());
 						}
 					}
 				}
@@ -8706,6 +8711,7 @@ void command_bot(Client *c, const Seperator *sep) {
 			binder->Say("Attempting to bind you %s.", c->GetName());
 			binder->CastToNPC()->CastSpell(35, c->GetID(), 1, -1, -1);
 		}
+		return;
 	}
 	if(!strcasecmp(sep->arg[1], "track") && c->IsGrouped()) {
 		Mob *Tracker;
@@ -9042,8 +9048,7 @@ int RangeB = (Level*20); //Bard
 					}
 				}
 			}
-
-			if(c->IsGrouped())
+			else if(c->IsGrouped())
 			{
 				Group *g = entity_list.GetGroupByClient(c);
 				for (int i=0; i<MAX_GROUP_MEMBERS; i++)
@@ -9135,7 +9140,7 @@ int RangeB = (Level*20); //Bard
 					}
 				}
 				gleader->CalcBotStats();
-				c->Message(15, "-- RAID -- Group Leader is: %s\n", gleader->GetCleanName());
+				c->Message(15, "-- RAID -- Group Leader is: %s\n", gleader->GetName());
             }
             else {
                 c->Message(15, "You must target your bot first.");
@@ -9239,7 +9244,7 @@ int RangeB = (Level*20); //Bard
 						}
 					}
 					inv->CalcBotStats();
-					inv->Say("I have joined %s's raid group.", g->GetLeader()->GetCleanName());
+					inv->Say("I have joined %s's raid group.", g->GetLeader()->GetName());
 				}
 				else
 					inv->Say("I can't join the group (You didn't enter the group leader's name or the group is full already. Type #bot raid info\n");
@@ -9407,7 +9412,8 @@ int RangeB = (Level*20); //Bard
 				}
 			}
 		}
-	}	
+		return;
+	}
 }
 
 #endif //EQBOTS

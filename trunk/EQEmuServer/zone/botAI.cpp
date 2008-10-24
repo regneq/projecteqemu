@@ -88,7 +88,10 @@ void Mob::BOT_Process() {
     if(!(AIthink_timer->Check() || attack_timer.Check(false)))
         return;
 
-    if(IsCasting() && (GetClass() != BARD))
+	int8 botClass = GetClass();
+	uint8 botLevel = GetLevel();
+
+    if(IsCasting() && (botClass != BARD))
         return;
 
     // A bot wont start its AI if not grouped
@@ -132,8 +135,8 @@ void Mob::BOT_Process() {
         // Else, it was causing the bot to aggro behind wall etc... causing massive trains.
         if(!CheckLosFN(target) || target->IsMezzed() || !IsAttackAllowed(target))
         {
-            SetTarget(this);
-            hate_list.Wipe();
+			WipeHateList();
+            CastToNPC()->SetTarget(BotOwner);
             return;
         }
 
@@ -142,7 +145,7 @@ void Mob::BOT_Process() {
         // We're engaged, each class type has a special AI
         // Only melee class will go to melee. Casters and healers will stop and stay behind.
         // We 're a melee or any other class lvl<12. Yes, because after it becomes hard to go into melee for casters.. even for bots..
-		if((GetLevel() <= 12) || (GetClass() == WARRIOR) || (GetClass() == PALADIN) || (GetClass() == RANGER) || (GetClass() == SHADOWKNIGHT) || (GetClass() == MONK) || (GetClass() == ROGUE) || (GetClass() == BEASTLORD) || (GetClass() == BERSERKER) || (GetClass() == BARD))
+		if((botLevel <= 12) || (botClass == WARRIOR) || (botClass == PALADIN) || (botClass == RANGER) || (botClass == SHADOWKNIGHT) || (botClass == MONK) || (botClass == ROGUE) || (botClass == BEASTLORD) || (botClass == BERSERKER) || (botClass == BARD))
 		{
 			cast_last_time = true;
 		}
@@ -155,9 +158,12 @@ void Mob::BOT_Process() {
             }
             if(IsMoving())
             {
-                SetMoving(false);
-                moved = false;
-                SendPosition();
+				SetHeading(target->GetHeading());
+				if(moved) {
+					moved=false;
+					SetMoving(false);
+					SendPosUpdate();
+				}
                 tar_ndx = 0;
             }
 
@@ -173,43 +179,42 @@ void Mob::BOT_Process() {
                 {
                     BotAttackMelee(target, SLOT_PRIMARY);
 					bool tripleSuccess = false;
-                    if(target && CanThisClassDoubleAttack()) {
+                    if(BotOwner && target && CanThisClassDoubleAttack()) {
 
-						if(CheckBotDoubleAttack()) {
+						if(BotOwner && CheckBotDoubleAttack()) {
 							BotAttackMelee(target, SLOT_PRIMARY, true);
 						}
-						if(target && SpecAttacks[SPECATK_TRIPLE] && CheckBotDoubleAttack(true)) {
+						if(BotOwner && target && SpecAttacks[SPECATK_TRIPLE] && CheckBotDoubleAttack(true)) {
 							tripleSuccess = true;
 							BotAttackMelee(target, SLOT_PRIMARY, true);
 						}
 						//quad attack, does this belong here??
-						if(target && SpecAttacks[SPECATK_QUAD] && CheckBotDoubleAttack(true)) {
+						if(BotOwner && target && SpecAttacks[SPECATK_QUAD] && CheckBotDoubleAttack(true)) {
 							BotAttackMelee(target, SLOT_PRIMARY, true);
 						}
                     }
 
-					uint8 currentLevel = GetLevel();
 					// Handle Flurrys
-					if((GetClass() == WARRIOR) && (currentLevel >= 59)) {
+					if((botClass == WARRIOR) && (botLevel >= 59)) {
 						int flurrychance = 0;
-						if(currentLevel >= 59) { // Flurry AA's
+						if(botLevel >= 59) { // Flurry AA's
 							flurrychance += 10;
 						}
-						if(currentLevel >= 60) {
+						if(botLevel >= 60) {
 							flurrychance += 10;
 						}
-						if(currentLevel >= 61) {
+						if(botLevel >= 61) {
 							flurrychance += 10;
 						}
 						if(tripleSuccess) {
 							tripleSuccess = false;
-							if(currentLevel >= 63) { // Raging Flurry AA's
+							if(botLevel >= 63) { // Raging Flurry AA's
 								flurrychance += 10;
 							}
-							if(currentLevel >= 64) {
+							if(botLevel >= 64) {
 								flurrychance += 10;
 							}
-							if(currentLevel >= 65) {
+							if(botLevel >= 65) {
 								flurrychance += 10;
 							}
 							tripleSuccess = false;
@@ -225,8 +230,8 @@ void Mob::BOT_Process() {
 					}
 
 					// Handle Punishing Blade and Speed of the Knight and Wicked Blade
-                    if((GetClass() == MONK)||(GetClass() == RANGER)||(GetClass() == WARRIOR)||(GetClass() == PALADIN)||(GetClass() == SHADOWKNIGHT)) {
-						if(currentLevel >= 61) {
+                    if((botClass == MONK)||(botClass == RANGER)||(botClass == WARRIOR)||(botClass == PALADIN)||(botClass == SHADOWKNIGHT)) {
+						if(botLevel >= 61) {
 							ItemInst* weapon = NULL;
 							const Item_Struct* botweapon = NULL;
 							botweapon = database.GetItem(CastToNPC()->GetEquipment(MATERIAL_PRIMARY));
@@ -239,16 +244,16 @@ void Mob::BOT_Process() {
 									weapon->GetItem()->ItemType == ItemType2HPierce )
 								{
 									int extatk = 0;
-									if(currentLevel >= 61) {
+									if(botLevel >= 61) {
 										extatk += 5;
 									}
-									if(currentLevel >= 63) {
+									if(botLevel >= 63) {
 										extatk += 5;
 									}
-									if(currentLevel >= 65) {
+									if(botLevel >= 65) {
 										extatk += 5;
 									}
-									if(currentLevel >= 70) {
+									if(botLevel >= 70) {
 										extatk += 15;
 									}
 									if(MakeRandomInt(0, 100) < extatk) {
@@ -264,7 +269,7 @@ void Mob::BOT_Process() {
                 if(target && attack_dw_timer.Check() && CanThisClassDualWield())
                 {
                     //can only dual weild without a weapon if you're a monk
-                    if(((GetEquipment(MATERIAL_SECONDARY) != 0) && (GetLevel() > 39)) || (GetClass() == MONK) || (GetClass() == MONKGM))
+                    if(((GetEquipment(MATERIAL_SECONDARY) != 0) && (botLevel > 39)) || (botClass == MONK))
                     {
 						const Item_Struct* weapon = NULL;
 						weapon = database.GetItem(CastToNPC()->GetEquipment(MATERIAL_PRIMARY));
@@ -275,8 +280,8 @@ void Mob::BOT_Process() {
 							bIsFist = false;
 						}
 						if(bIsFist || ((weapontype != ItemType2HS) && (weapontype != ItemType2HPierce) && (weapontype != ItemType2HB))) {
-							float DualWieldProbability = (GetSkill(DUAL_WIELD) + GetLevel()) / 400.0f;
-							if(GetLevel() >= 59) { // AA Ambidexterity
+							float DualWieldProbability = (GetSkill(DUAL_WIELD) + botLevel) / 400.0f;
+							if(botLevel >= 59) { // AA Ambidexterity
 								DualWieldProbability += 0.1f;
 							}
 							//discipline effects:
@@ -297,14 +302,14 @@ void Mob::BOT_Process() {
                 CastToNPC()->DoClassAttacks(target);
 
                 //Bard, rangers, SKs, Paladin can cast also
-				if(GetClass() == BARD || GetClass() == RANGER || GetClass() == SHADOWKNIGHT || GetClass() == PALADIN || GetClass() == BEASTLORD) {
+				if(botClass == BARD || botClass == RANGER || botClass == SHADOWKNIGHT || botClass == PALADIN || botClass == BEASTLORD) {
                     Bot_AI_EngagedCastCheck();
 					BotMeditate(false);
 				}
             }
         } //end is within combat range
         // Now, if we re casters, we have a particular AI.
-        if((GetClass() == CLERIC) || (GetClass() == DRUID) || (GetClass() == SHAMAN) || (GetClass() == NECROMANCER) || (GetClass() == WIZARD) || (GetClass() == MAGICIAN) || (GetClass() == ENCHANTER))
+        if((botClass == CLERIC) || (botClass == DRUID) || (botClass == SHAMAN) || (botClass == NECROMANCER) || (botClass == WIZARD) || (botClass == MAGICIAN) || (botClass == ENCHANTER))
         {
 			cast_last_time = true;
             // First, let's make them stop
@@ -314,9 +319,12 @@ void Mob::BOT_Process() {
             }
             if(IsMoving())
             {
-                SetMoving(false);
-                moved = false;
-                SendPosition();
+				SetHeading(target->GetHeading());
+				if(moved) {
+					moved=false;
+					SetMoving(false);
+					SendPosUpdate();
+				}
                 tar_ndx = 0;
             }
 
@@ -332,19 +340,20 @@ void Mob::BOT_Process() {
             {
                 //could not summon them, start pursuing...
                 // TODO: Check here for another person on hate list with close hate value
-                if(Bot_AI_PursueCastCheck())
+                if(target && Bot_AI_PursueCastCheck())
                 {}
-                else if(AImovement_timer->Check())
+                else if(target && AImovement_timer->Check())
                 {
                     if(!IsRooted()) {
                         mlog(AI__WAYPOINTS, "Pursuing %s while engaged.", target->GetName());
-                        CalculateNewPosition2(target->GetX(), target->GetY(), target->GetZ(), BotOwner->GetRunspeed());
-                    } else if(IsMoving()) {
-                        SetHeading(CalculateHeadingToTarget(target->GetX(), target->GetY()));
-                        SetRunAnimSpeed(0);
-                        SendPosition();
-                        SetMoving(false);
-                        moved = false;
+                        CalculateNewPosition2(target->GetX(), target->GetY(), target->GetZ(), GetRunspeed(), false);
+                    } else {
+						SetHeading(target->GetHeading());
+						if(moved) {
+							moved=false;
+							SetMoving(false);
+							SendPosUpdate();
+						}
                     }
                 }
             }
@@ -353,36 +362,33 @@ void Mob::BOT_Process() {
     else {
         // Franck: EQoffline
         // Ok if we're not engaged, what's happening..
-        if(!hate_list.IsEmpty())
-        {
-            hate_list.Wipe();
-            return;
-        }
-		BotMeditate(true);
-        Bot_AI_IdleCastCheck(); // let's rebuff, heal, etc..
+		if(target != BotOwner) {
+			CastToNPC()->SetTarget(BotOwner);
+		}
+		if(!IsMoving()) {
+			BotMeditate(true);
+			Bot_AI_IdleCastCheck(); // let's rebuff, heal, etc..
+		}
 
         // now the followID: that's what happening as the bots follow their leader.
         if(GetFollowID())
         {
-			Mob* follow = entity_list.GetMob(GetFollowID());
-			if(!follow) {
+			if(!target) {
 				SetFollowID(0);
 			}
-			else {
-				float dist2 = DistNoRoot(*follow);
-				float speed = GetWalkspeed();
-				if(dist2 >= 600) {
-					speed = GetRunspeed();
+			else if(AImovement_timer->Check()){
+				float dist2 = DistNoRoot(*target);
+				SetRunAnimSpeed(0);
+				if(dist2>184) {
+					CalculateNewPosition2(target->GetX(), target->GetY(), target->GetZ(), GetRunspeed(), false);
 				}
-				if(dist2>144) {
-					CalculateNewPosition2(follow->GetX(), follow->GetY(), follow->GetZ(), speed);
-				}
-				else if(moved) {
-					SetHeading(follow->GetHeading());
-					SetRunAnimSpeed(0);
-					SendPosUpdate();
-					SetMoving(false);
-					moved=false;
+				else {
+					SetHeading(target->GetHeading());
+					if(moved) {
+						moved=false;
+						SetMoving(false);
+						SendPosUpdate();
+					}
 				}
 			}
 		}
@@ -400,10 +406,13 @@ bool NPC::Bot_AI_EngagedCastCheck() {
 		_ZP(NPC_Bot_AI_EngagedCastCheck);
 		AIautocastspell_timer->Disable();	//prevent the timer from going off AGAIN while we are casting.
 		
+		int8 botClass = GetClass();
+		uint8 botLevel = GetLevel();
+
 		mlog(AI__SPELLS, "Engaged autocast check triggered. Trying to cast healing spells then maybe offensive spells.");
 
         BotRaids *br = entity_list.GetBotRaidByMob(this);
-		if(GetClass() == CLERIC)
+		if(botClass == CLERIC)
         {
 			if(br && IsBotRaiding())
             {
@@ -442,7 +451,7 @@ bool NPC::Bot_AI_EngagedCastCheck() {
 				}
 			}
 		}
-        else if((GetClass() == DRUID) || (GetClass() == SHAMAN) || (GetClass() == PALADIN) || (GetClass() == SHADOWKNIGHT) || (GetClass() == BEASTLORD) || (GetClass() == RANGER))
+        else if((botClass == DRUID) || (botClass == SHAMAN) || (botClass == PALADIN) || (botClass == SHADOWKNIGHT) || (botClass == BEASTLORD) || (botClass == RANGER))
         {
             if (!Bot_AICastSpell(this, 100, SpellType_Escape | SpellType_Pet)) {
 				if (!Bot_AICastSpell(this, 100, SpellType_Heal)) {
@@ -455,7 +464,7 @@ bool NPC::Bot_AI_EngagedCastCheck() {
 				}
 			}
         }
-		else if((GetClass() == WIZARD) || (GetClass() == MAGICIAN) || (GetClass() == NECROMANCER)) {
+		else if((botClass == WIZARD) || (botClass == MAGICIAN) || (botClass == NECROMANCER)) {
 			if (!Bot_AICastSpell(this, 100, SpellType_Escape | SpellType_Pet)) {
 				if(!Bot_AICastSpell(target, 100, SpellType_Root | SpellType_Snare | SpellType_DOT | SpellType_Nuke | SpellType_Lifetap | SpellType_Dispel)) {
 					//no spell to cast, try again soon.
@@ -466,7 +475,7 @@ bool NPC::Bot_AI_EngagedCastCheck() {
 		}
 
 		// TODO: Make enchanter to be able to mez
-		else if(GetClass() == ENCHANTER) {
+		else if(botClass == ENCHANTER) {
 			if (!Bot_AICastSpell(this, 100, SpellType_Escape | SpellType_Pet)) {
 				if(!Bot_AICastSpell(target, 100, SpellType_DOT | SpellType_Nuke | SpellType_Dispel)) {
 					AIautocastspell_timer->Start(RandomTimer(500, 2000), false);
@@ -474,7 +483,7 @@ bool NPC::Bot_AI_EngagedCastCheck() {
 				}
 			}
 		}
-		else if(GetClass() == BARD)
+		else if(botClass == BARD)
         {
 			if(!Bot_AICastSpell(target, 100, SpellType_Nuke | SpellType_Dispel | SpellType_Escape)) // Bards will use their debuff songs
             {
@@ -499,7 +508,7 @@ bool NPC::Bot_AI_EngagedCastCheck() {
 				}
 			}
 		}
-		if(GetClass() != BARD) {
+		if(botClass != BARD) {
 			AIautocastspell_timer->Start(RandomTimer(500, 2000), false);
 		}
 		return true;
@@ -522,7 +531,13 @@ bool EntityList::Bot_AICheckCloseBeneficialSpells(NPC* caster, int8 iChance, flo
 		_log(AI__ERROR, "Error: detrimental spells requested from AICheckCloseBeneficialSpells!!");
 		return(false);
 	}
-		
+	
+	if(!caster)
+		return false;
+
+	if(!caster->AI_HasSpells())
+		return false;
+
 	if (iChance < 100) {
 		int8 tmp = MakeRandomInt(0, 99);
 		if (tmp >= iChance)
@@ -531,16 +546,15 @@ bool EntityList::Bot_AICheckCloseBeneficialSpells(NPC* caster, int8 iChance, flo
 
 	// Franck: EQoffline.
 	// Ok, Beneficial spells depend of the class of the caster also..
+	int8 botCasterClass = caster->GetClass();;
 
 	// Heal and buffs spells might have a different chance, that's why I separe them .
-	if( caster->GetClass() == CLERIC || caster->GetClass() == DRUID || caster->GetClass() == SHAMAN || caster->GetClass() == PALADIN || caster->GetClass() == BEASTLORD || caster->GetClass() == RANGER)
+	if( botCasterClass == CLERIC || botCasterClass == DRUID || botCasterClass == SHAMAN || botCasterClass == PALADIN || botCasterClass == BEASTLORD || botCasterClass == RANGER)
 	{
 		//If AI_EngagedCastCheck() said to the healer that he had to heal
 		if( iSpellTypes == SpellType_Heal )	// 
 		{
 			// check raids
-			if( caster == NULL)
-				return false;
 			if( caster->CastToMob()->IsGrouped() && caster->CastToMob()->IsBotRaiding() && (entity_list.GetBotRaidByMob(caster) != NULL))
 			{
 				BotRaids *br = entity_list.GetBotRaidByMob(caster);
@@ -590,7 +604,7 @@ bool EntityList::Bot_AICheckCloseBeneficialSpells(NPC* caster, int8 iChance, flo
 	if( iSpellTypes == SpellType_Buff)
 	{
 		// Let's try to make Bard working...
-		if(caster->GetClass() == BARD)
+		if(botCasterClass == BARD)
 		{
 			if(caster->Bot_AICastSpell(caster, 100, SpellType_Buff))
 				return true;
@@ -629,7 +643,8 @@ bool NPC::Bot_AI_IdleCastCheck() {
 		
 		//Ok, IdleCastCheck depends of class. 
 		// Healers will check if a heal is needed before buffing.
-		if(GetClass() == CLERIC || GetClass() == PALADIN || GetClass() == RANGER)
+		int8 botClass = GetClass();
+		if(botClass == CLERIC || botClass == PALADIN || botClass == RANGER)
 		{
 			if (!Bot_AICastSpell(this, 100, SpellType_Heal | SpellType_Buff))
 			{
@@ -644,7 +659,7 @@ bool NPC::Bot_AI_IdleCastCheck() {
 			}
 		}
 		// Pets class will first cast their pet, then buffs
-		else if(GetClass() == DRUID || GetClass() == MAGICIAN || GetClass() == SHADOWKNIGHT || GetClass() == SHAMAN || GetClass() == NECROMANCER || GetClass() == ENCHANTER || GetClass() == BEASTLORD  || GetClass() == WIZARD)
+		else if(botClass == DRUID || botClass == MAGICIAN || botClass == SHADOWKNIGHT || botClass == SHAMAN || botClass == NECROMANCER || botClass == ENCHANTER || botClass == BEASTLORD  || botClass == WIZARD)
 		{			
 			if (!Bot_AICastSpell(this, 100, SpellType_Pet))
 			{
@@ -662,7 +677,7 @@ bool NPC::Bot_AI_IdleCastCheck() {
 			}
 		}		
 		// bard bots
-		else if(GetClass() == BARD)
+		else if(botClass == BARD)
 		{
 			Bot_AICastSpell(this, 100, SpellType_Heal);
 			AIautocastspell_timer->Start(3000, false);
@@ -693,12 +708,19 @@ bool NPC::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
     if (!tar){
 		return false;
 	}
+	
+	if(!AI_HasSpells())
+		return false;
+
 	if (iChance < 100) {
 		if (MakeRandomInt(0, 100) >= iChance){
 			return false;
 		}
 	}
 	
+	int8 botClass = GetClass();
+	uint8 botLevel = GetLevel();
+
 	float dist2;
 
 	if (iSpellTypes & SpellType_Escape) {
@@ -745,15 +767,15 @@ bool NPC::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 						if (
 							( (spells[AIspells[i].spellid].targettype==ST_GroupTeleport || spells[AIspells[i].spellid].targettype == ST_Target || tar == this)
 							&& tar->DontHealMeBefore() < Timer::GetCurrentTime()
-							&& tar->CanBuffStack(AIspells[i].spellid, GetLevel(), true) >= 0))
+							&& tar->CanBuffStack(AIspells[i].spellid, botLevel, true) >= 0))
 						{
-							if(GetClass() == BARD) {
+							if(botClass == BARD) {
 								if(IsEffectInSpell(AIspells[i].spellid, SE_MovementSpeed) && !zone->CanCastOutdoor()) {
 									break;
 								}
 							}
 							int8 hpr = (int8)tar->GetHPRatio();
-							if(hpr<= 80 || (tar->IsClient() && (hpr <= 99)) || (GetClass() == BARD))
+							if(hpr<= 80 || (tar->IsClient() && (hpr <= 99)) || (botClass == BARD))
 							{
 								if(tar->GetClass() == NECROMANCER) {
 									// Necro bots use too much cleric mana with thier
@@ -768,7 +790,7 @@ bool NPC::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 								// The first HoT is at level 19 and is priority 1
 								// The regular heal is priority 2
 								// Let the HoT heal for at least 3 tics before checking for the regular heal
-								if((GetClass() == CLERIC || GetClass() == PALADIN) && (GetLevel() >= 19) && (BotGetSpellPriority(i) == 1)) {
+								if((botClass == CLERIC || botClass == PALADIN) && (botLevel >= 19) && (BotGetSpellPriority(i) == 1)) {
 									tar->pDontHealMeBefore = (Timer::GetCurrentTime() + 18000);
 								}
 								return true;
@@ -780,7 +802,7 @@ bool NPC::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 						if (
 							!tar->IsRooted() 
 							&& tar->DontRootMeBefore() < Timer::GetCurrentTime()
-							&& tar->CanBuffStack(AIspells[i].spellid, GetLevel(), true) >= 0
+							&& tar->CanBuffStack(AIspells[i].spellid, botLevel, true) >= 0
 							) {
 							if(!checked_los) {
 								if(!CheckLosFN(tar))
@@ -797,7 +819,7 @@ bool NPC::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 							(spells[AIspells[i].spellid].targettype == ST_Target || tar == this)
 							&& tar->DontBuffMeBefore() < Timer::GetCurrentTime()
 							&& !tar->IsImmuneToSpell(AIspells[i].spellid, this)
-							&& (tar->CanBuffStack(AIspells[i].spellid, GetLevel(), true) >= 0)
+							&& (tar->CanBuffStack(AIspells[i].spellid, botLevel, true) >= 0)
 							&&  !(tar->IsPet() && tar->GetOwner()->IsClient() && this != tar)	//no buffing PC's pets, but they can buff themself
 
 							) {
@@ -810,7 +832,7 @@ bool NPC::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 								if(spells[AIspells[i].spellid].targettype == ST_Pet) {
 									Mob* newtar = GetPet();
 									if(newtar) {
-										if(!(newtar->CanBuffStack(AIspells[i].spellid, GetLevel(), true) >= 0)) {
+										if(!(newtar->CanBuffStack(AIspells[i].spellid, botLevel, true) >= 0)) {
 											break;
 										}
 									}
@@ -838,10 +860,10 @@ bool NPC::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 					}
 					case SpellType_Nuke: {
 						if (
-							((MakeRandomInt(1, 100) < 50) || (GetClass() == BARD))
+							((MakeRandomInt(1, 100) < 50) || (botClass == BARD))
 							&& ((tar->GetHPRatio()<=80.0f)||(!IsBotRaiding()))
 							&& !tar->IsImmuneToSpell(AIspells[i].spellid, this)
-							&& tar->CanBuffStack(AIspells[i].spellid, GetLevel(), true) >= 0
+							&& tar->CanBuffStack(AIspells[i].spellid, botLevel, true) >= 0
 							) {
 							if(!checked_los) {
 								if(!CheckLosFN(tar))
@@ -872,13 +894,13 @@ bool NPC::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 					case SpellType_Pet: {
 						 //keep mobs from recasting pets when they have them.
 						if (!IsPet() && !GetPetID()) {
-							if(GetClass() == MAGICIAN) {
+							if(botClass == MAGICIAN) {
 								// have the magician bot randomly summon
 								// the air, earth, fire or water pet
                                 // include monster summoning after they
                                 // become level 30 magicians
 								int randpets;
-								if(GetLevel() >= 30) {
+								if(botLevel >= 30) {
 									randpets = 4;
 								}
 								else {
@@ -895,7 +917,7 @@ bool NPC::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 						if (
 							((tar->GetHPRatio()<=80.0f)||(!IsBotRaiding()))
 							&& !tar->IsImmuneToSpell(AIspells[i].spellid, this)
-							&& tar->CanBuffStack(AIspells[i].spellid, GetLevel(), true) >= 0
+							&& tar->CanBuffStack(AIspells[i].spellid, botLevel, true) >= 0
 							) {
 							if(!checked_los) {
 								if(!CheckLosFN(tar))
@@ -912,7 +934,7 @@ bool NPC::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 							!tar->IsRooted()
 							&& !tar->IsImmuneToSpell(AIspells[i].spellid, this)
 							&& tar->DontSnareMeBefore() < Timer::GetCurrentTime()
-							&& tar->CanBuffStack(AIspells[i].spellid, GetLevel(), true) >= 0
+							&& tar->CanBuffStack(AIspells[i].spellid, botLevel, true) >= 0
 							) {
 							if(!checked_los) {
 								if(!CheckLosFN(tar))
@@ -929,7 +951,7 @@ bool NPC::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 							((tar->GetHPRatio()<=80.0f)||(!IsBotRaiding()))
 							&& !tar->IsImmuneToSpell(AIspells[i].spellid, this)
 							&& tar->DontDotMeBefore() < Timer::GetCurrentTime()
-							&& tar->CanBuffStack(AIspells[i].spellid, GetLevel(), true) >= 0
+							&& tar->CanBuffStack(AIspells[i].spellid, botLevel, true) >= 0
 							) {
 							if(!checked_los) {
 								if(!CheckLosFN(tar))

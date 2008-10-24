@@ -281,12 +281,14 @@ void BotRaids::SummonRaidBots(Mob *m, bool wipe_hate) {
 						if(wipe_hate) {
 							BotRaidGroups[i]->members[j]->WipeHateList();
 						}
-						BotRaidGroups[i]->members[j]->GMMove(m->GetX(), m->GetY(), m->GetZ());
+						BotRaidGroups[i]->members[j]->SetTarget(m);
+						BotRaidGroups[i]->members[j]->Warp(m->GetX(), m->GetY(), m->GetZ());
 						if(BotRaidGroups[i]->members[j]->HasPet()) {
 							if(wipe_hate) {
 								BotRaidGroups[i]->members[j]->GetPet()->WipeHateList();
 							}
-							BotRaidGroups[i]->members[j]->GetPet()->GMMove(m->GetX(), m->GetY(), m->GetZ());
+							BotRaidGroups[i]->members[j]->GetPet()->SetTarget(BotRaidGroups[i]->members[j]);
+							BotRaidGroups[i]->members[j]->GetPet()->Warp(m->GetX(), m->GetY(), m->GetZ());
 						}
 					}
 				}
@@ -415,12 +417,12 @@ void BotRaids::GroupAssignTask(Group *g, int iTask, Group *g2) {
 	if(iTask == 1) {
 		gleader1->SetFollowID(gleader2->GetID());
         gleader1->WipeHateList();
-		gleader1->Say("Following %s", gleader2->GetCleanName());
+		gleader1->Say("Following %s", gleader2->GetName());
 		for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
 			if(g->members[i] && (g->members[i] != gleader1)) {
 				g->members[i]->SetFollowID(gleader1->GetID());
                 g->members[i]->WipeHateList();
-				g->members[i]->Say("Following %s", gleader2->GetCleanName());
+				g->members[i]->Say("Following %s", gleader2->GetName());
 			}
 		}
 	}
@@ -431,7 +433,7 @@ void BotRaids::GroupAssignTask(Group *g, int iTask, Group *g2) {
 		else{
 			gleader1->CastToNPC()->SetTarget(gleader2->GetTarget());
 			this->SetAttackBotRaidRights(1);
-			gleader1->Say("Assisting %s", gleader2->GetCleanName());
+			gleader1->Say("Assisting %s", gleader2->GetName());
 		}
 	}
 }
@@ -494,10 +496,10 @@ void BotRaids::BotRaidInfo(Client *c) {
 				if(BotRaidGroups[i]) {
 					moredata = true;
 					c->Message(15, "Group %i (%i members)", i+1, BotRaidGroups[i]->BotGroupCount());
-					c->Message(15, "Group %i Leader: %s", i+1, BotRaidGroups[i]->members[0]->GetCleanName());
+					c->Message(15, "Group %i Leader: %s", i+1, BotRaidGroups[i]->members[0]->GetName());
 					for(int j=0; j<MAX_GROUP_MEMBERS; j++) {
 						if(BotRaidGroups[i]->members[j]) {
-							c->Message(15, "%s", BotRaidGroups[i]->members[j]->GetCleanName());
+							c->Message(15, "%s", BotRaidGroups[i]->members[j]->GetName());
 						}
 					}
 					c->Message(15, "---------");
@@ -506,13 +508,13 @@ void BotRaids::BotRaidInfo(Client *c) {
 			if(moredata) {
 				c->Message(15, "Raid Leader is %s", botrleader->GetName());
 				if(botmaintank) {
-					c->Message(15, "Main Tank is %s", botmaintank->GetCleanName());
+					c->Message(15, "Main Tank is %s", botmaintank->GetName());
 				}
 				else {
 					c->Message(15, "A Main Tank is not assigned.");
 				}
 				if(botsecondtank) {					
-					c->Message(15, "Secondary Tank is %s", botsecondtank->GetCleanName());
+					c->Message(15, "Secondary Tank is %s", botsecondtank->GetName());
 				}
 				else {
 					c->Message(15, "A Secondary Tank is not assigned.");

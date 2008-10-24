@@ -4094,10 +4094,10 @@ void Mob::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 
 			//EQoffline
 			else if(IsBot() && ((GetClass() == WARRIOR) || (GetClass() == BERSERKER)) && (GetHPRatio() < 30)) {
-				entity_list.MessageClose(this, false, 200, MT_CritMelee, "%s lands a crippling blow!(%d)", GetCleanName(), damage);
+				entity_list.MessageClose(this, false, 200, MT_CritMelee, "%s lands a crippling blow!(%d)", GetName(), damage);
 			}
 			else if(IsBot()) {
-				entity_list.MessageClose(this, false, 200, MT_CritMelee, "%s scores a critical hit!(%d)", GetCleanName(), damage);
+				entity_list.MessageClose(this, false, 200, MT_CritMelee, "%s scores a critical hit!(%d)", GetName(), damage);
 			}
 
 #endif //EQBOTS

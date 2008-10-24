@@ -25,6 +25,7 @@
 #include "entity.h"
 #include "mob.h"
 
+static const uint32 MAX_BOT_RAID_GROUPS	= 12;
 
 class BotRaids
 {
