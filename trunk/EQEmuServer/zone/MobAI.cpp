@@ -325,7 +325,7 @@ void NPC::AIDoSpellCast(int8 i, Mob* tar, sint32 mana_cost, int32* oDontDoAgainB
 	//stop moving if were casting a spell and were not a bard...
 	if(!IsBardSong(AIspells[i].spellid)) {
 		SetRunAnimSpeed(0);
-		SendPosition();
+		SendPosUpdate();
 		SetMoving(false);
 	}
 	
@@ -649,9 +649,9 @@ void Mob::AI_Process() {
 	{
 		_ZP(Mob_AI_Process_engaged);
 		if (IsRooted())
-			SetTarget(hate_list.GetClosest(this));
+			CastToNPC()->SetTarget(hate_list.GetClosest(this));
 		else
-			SetTarget(hate_list.GetTop(this));
+			CastToNPC()->SetTarget(hate_list.GetTop(this));
 
 		if (!target)
 			return;
@@ -673,15 +673,12 @@ void Mob::AI_Process() {
 			}
 			if(IsMoving())
 			{
-				SetMoving(false);
-				moved=false;
-				SetHeading(CalculateHeadingToTarget(target->GetX(), target->GetY()));
-				/*while(DistNoZ(*target)<10){ //dont want them too close
-					x_pos -= tar_vx*.2;
-					y_pos -= tar_vy*.2;
-					z_pos -= tar_vz*.2;
-				}*/
-				SendPosition();
+				SetHeading(target->GetHeading());
+				if(moved) {
+					moved=false;
+					SetMoving(false);
+					SendPosUpdate();
+				}
 				tar_ndx =0;
 			}
 			
@@ -780,12 +777,13 @@ void Mob::AI_Process() {
 					if(!IsRooted()) {
 						mlog(AI__WAYPOINTS, "Pursuing %s while engaged.", target->GetName());
 						CalculateNewPosition2(target->GetX(), target->GetY(), target->GetZ(), GetRunspeed());
-					} else if(IsMoving()) {
-						SetHeading(CalculateHeadingToTarget(target->GetX(), target->GetY()));
-						SetRunAnimSpeed(0);
-						SendPosition();
-						SetMoving(false);
-						moved=false;
+					} else {
+						SetHeading(target->GetHeading());
+						if(moved) {
+							moved=false;
+							SetMoving(false);
+							SendPosUpdate();
+						}
 					}
 				}
 			}
@@ -794,7 +792,7 @@ void Mob::AI_Process() {
 	else { // not engaged
 		//if (pStandingPetOrder == SPO_Follow && IsPet() && !IsStunned())
 			//SetHeading(CalculateHeadingToTarget(target->GetX(), target->GetY())*8);
-			//FaceTarget(GetOwner(), true);
+			//FaceTarget(GetOwner());
 		
 		if(AIfeignremember_timer->Check()) {
 			// EverHood - 6/14/06
@@ -878,7 +876,7 @@ void Mob::AI_Process() {
 							{
 								moved=false;
 								SetMoving(false);
-								SendPosition();
+								SendPosUpdate();
 							}
 						}
 					
@@ -889,7 +887,7 @@ void Mob::AI_Process() {
 							zdiff = 0 - zdiff;
 						if(zdiff > 2.0f) {
 							SendTo(GetX(), GetY(), owner->GetZ());
-							SendPosition();
+							SendPosUpdate();
 						}
 						
 						if(owner->IsClient())
@@ -900,7 +898,7 @@ void Mob::AI_Process() {
 					}
 					case SPO_Sit: 
 					{
-						SetAppearance(eaSitting, false);
+						SetAppearance(eaSitting);
 						break;
 					}
 					case SPO_Guard: 
@@ -929,11 +927,11 @@ void Mob::AI_Process() {
 					}
 					else
 					{
-						if(moved)
-						{
-							SendPosition();
+						SetHeading(follow->GetHeading());
+						if(moved) {
 							moved=false;
 							SetMoving(false);
+							SendPosUpdate();
 						}
 					}
 					
@@ -944,7 +942,7 @@ void Mob::AI_Process() {
 						zdiff = 0 - zdiff;
 					if(zdiff > 2.0f) {
 						SendTo(GetX(), GetY(), follow->GetZ());
-						SendPosition();
+						SendPosUpdate();
 					}
 					
 					if(follow->IsClient())
@@ -1020,7 +1018,7 @@ void NPC::AI_DoMovement() {
 			roambox_movingto_x = roambox_max_x + 1; // force update
 			pLastFightingDelayMoving = Timer::GetCurrentTime() + RandomTimer(roambox_delay, roambox_delay + 5000);
 			SetMoving(false);
-			SendPosition();	// makes mobs stop clientside
+			SendPosUpdate();	// makes mobs stop clientside
 		}
 	}
 	else if (roamer) 
@@ -1054,7 +1052,7 @@ void NPC::AI_DoMovement() {
 					}
 					
 					//not sure why we do this...
-					SetAppearance(eaStanding, false);
+					SetAppearance(eaStanding);
 					
 					//kick off event_waypoint
 					char temp[16]; 
@@ -1074,9 +1072,9 @@ void NPC::AI_DoMovement() {
 				{	// are we there yet? then stop
 					mlog(AI__WAYPOINTS, "We have reached waypoint %d (%.3f,%.3f,%.3f) on grid %d", cur_wp, GetX(), GetY(), GetZ(), GetGrid());
 					SetWaypointPause();
-					SetAppearance(eaStanding, false);
+					SetAppearance(eaStanding);
 					SetMoving(false);
-					SendPosition();
+					SendPosUpdate();
 					
 					// EverHood - wipe feign memory since we reached our first waypoint
 					if(cur_wp == 1)
@@ -1095,7 +1093,7 @@ void NPC::AI_DoMovement() {
 			{ // time to pause has ended
 				SetGrid( 0 - GetGrid()); // revert to AI control
 				mlog(QUESTS__PATHING, "Quest pathing is finished. Resuming on grid %d", GetGrid());
-				SetAppearance(eaStanding, false); 
+				SetAppearance(eaStanding); 
 				CalculateNewWaypoint();
 			}
 		}
@@ -1115,7 +1113,7 @@ void NPC::AI_DoMovement() {
 			{
 				SetHeading(guard_heading); 
 			} else { 
-				FaceTarget(GetTarget(), true); 
+				FaceTarget(GetTarget()); 
 			}
 			SendPosition();			
 		}
@@ -1151,7 +1149,7 @@ void Mob::AI_Event_NoLongerEngaged() {
 	if(IsMoving()){
 		SetRunAnimSpeed(0);
 		SetMoving(false);
-		SendPosition();
+		SendPosUpdate();
 	}
 	ClearRampage();
 }

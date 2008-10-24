@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
 ==10/23/2008
+Congdar: Lag reduction
 Congdar: Clone NoDrop removal code to NoRent, Lore, NoTrade.  Optionally enabled in the db Variables table DisasbleNoDrop=1 DisableNoRent=true DisableLore=1 DisableNoTrade=1
 Congdar: Bot code cleanup, method call reduction
 Congdar: Bot DoubleAttack method is more like clients

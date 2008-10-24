@@ -4746,7 +4746,7 @@ XS(XS_Mob_FaceTarget)
 {
 	dXSARGS;
 	if (items < 1 || items > 3)
-		Perl_croak(aTHX_ "Usage: Mob::FaceTarget(THIS, MobToFace= 0, update= false)");
+		Perl_croak(aTHX_ "Usage: Mob::FaceTarget(THIS, MobToFace = 0)");
 	{
 		Mob *		THIS;
 		Mob*		MobToFace;
@@ -4780,7 +4780,7 @@ XS(XS_Mob_FaceTarget)
 			update = (bool)SvTRUE(ST(2));
 		}
 
-		THIS->FaceTarget(MobToFace, update);
+		THIS->FaceTarget(MobToFace);
 	}
 	XSRETURN_EMPTY;
 }
