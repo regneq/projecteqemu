@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
 ==10/24/2008
+Trevius: Removed the Shield Block for Paladin/SK AA until code is revised and working
 Trevius: (Denivia) Possible fix for Advanced Theft of Life and Soul Thief for Necros and SKs
 Trevius: (Denivia) Added AA Death Peace
 Trevius: (Denivia) Blur of Axes and Vicious Strike fix for Berserkers
