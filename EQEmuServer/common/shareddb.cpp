@@ -701,9 +701,27 @@ bool SharedDatabase::DBLoadItems(sint32 iItemCount, uint32 iMaxItemID) {
 		return ret;
 	}
 	
-	bool disableNoDrop = false;
+	bool disableNoRent = false;
 	char ndbuffer[4];
+	if(GetVariable("disablenorent", ndbuffer, 4)) {
+		if(ndbuffer[0] == '1' && ndbuffer[1] == '\0') {
+			disableNoRent = true;
+		}
+	}
+	bool disableNoDrop = false;
 	if(GetVariable("disablenodrop", ndbuffer, 4)) {
+		if(ndbuffer[0] == '1' && ndbuffer[1] == '\0') {
+			disableNoDrop = true;
+		}
+	}
+	bool disableLoreGroup = false;
+	if(GetVariable("disablelore", ndbuffer, 4)) {
+		if(ndbuffer[0] == '1' && ndbuffer[1] == '\0') {
+			disableLoreGroup = true;
+		}
+	}
+	bool disableNoTransfer = false;
+	if(GetVariable("disablenotransfer", ndbuffer, 4)) {
 		if(ndbuffer[0] == '1' && ndbuffer[1] == '\0') {
 			disableNoDrop = true;
 		}
@@ -731,8 +749,8 @@ bool SharedDatabase::DBLoadItems(sint32 iItemCount, uint32 iMaxItemID) {
 			strcpy(item.IDFile,row[ItemField::idfile]);
 			item.ID = (uint32)atoul(row[ItemField::id]);
 			item.Weight = (uint8)atoi(row[ItemField::weight]);
-			item.NoRent = (uint8)atoi(row[ItemField::norent]);
-			item.NoDrop = (uint8)atoi(row[ItemField::nodrop]);
+            item.NoRent = disableNoRent ? (uint8)atoi("255") : (uint8)atoi(row[ItemField::norent]);
+			item.NoDrop = disableNoDrop ? (uint8)atoi("255") : (uint8)atoi(row[ItemField::nodrop]);
 			item.Size = (uint8)atoi(row[ItemField::size]);
 			item.Slots = (uint32)atoul(row[ItemField::slots]);
 			item.Price = (uint32)atoul(row[ItemField::price]);
@@ -835,7 +853,7 @@ bool SharedDatabase::DBLoadItems(sint32 iItemCount, uint32 iMaxItemID) {
 			strcpy(item.Filename,row[ItemField::filename]);
 			item.BaneDmgRaceAmt = (uint32)atoul(row[ItemField::banedmgraceamt]);
 			item.AugRestrict = (uint32)atoul(row[ItemField::augrestrict]);
-			item.LoreGroup = atoi(row[ItemField::loregroup]);
+			item.LoreGroup = disableLoreGroup ? (uint8)atoi("0") : atoi(row[ItemField::loregroup]);
 			item.LoreFlag = item.LoreGroup!=0;
 			item.PendingLoreFlag = (atoi(row[ItemField::pendingloreflag])==0) ? false : true;
 			item.ArtifactFlag = (atoi(row[ItemField::artifactflag])==0) ? false : true;
@@ -863,7 +881,7 @@ bool SharedDatabase::DBLoadItems(sint32 iItemCount, uint32 iMaxItemID) {
 			item.PotionBelt = (atoi(row[ItemField::potionbelt])==0) ? false : true;
 			item.PotionBeltSlots = (atoi(row[ItemField::potionbeltslots])==0) ? false : true;
 			item.StackSize = (uint8)atoi(row[ItemField::stacksize]);
-			item.NoTransfer = (atoi(row[ItemField::notransfer])==0) ? false : true;
+            item.NoTransfer = disableNoTransfer ? false : (atoi(row[ItemField::notransfer])==0) ? false : true;
 			item.Stackable = (atoi(row[ItemField::stackable])==0) ? false : true;
 			//item.Unk134 = (uint32)atoul(row[ItemField::UNK134]);
 			item.Click.Effect = (uint32)atoul(row[ItemField::clickeffect]);
