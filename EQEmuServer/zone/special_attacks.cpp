@@ -40,8 +40,8 @@ int Mob::GetKickDamage() const {
 	 ||GetClass() == BERSERKER || GetClass() == BERSERKERGM) {
 		dmg*=12/10;//small increase for warriors
 	}
-	
 	dmg /= 100;
+
 	return(dmg);
 }
 
@@ -56,7 +56,8 @@ int Mob::GetBashDamage() const {
 				) * multiple
 			  )
 			  + 600;	//Set a base of 6 damage, 1 seemed too low at the sub level 30 level.
-	dmg /= 100;		  
+	dmg /= 100;
+
 	return(dmg);
 }
 
@@ -344,6 +345,22 @@ int Mob::MonkSpecialAttack(Mob* other, int8 unchecked_type)
 		skill_type = FLYING_KICK;
 		max_dmg = ((GetSTR()+GetSkill(skill_type)) * 75 / 100) + (level);
 		min_dmg = ((level*8)/10);
+
+		if (IsClient() && CastToClient()->GetAA(aaKickMastery))
+		{
+			switch (CastToClient()->GetAA(aaKickMastery))
+			{
+			case 1:
+				min_dmg *= MakeRandomFloat(5,20);
+				break;
+			case 2:
+				min_dmg *= MakeRandomFloat(8,20);
+				break;
+			case 3:
+				min_dmg *= MakeRandomFloat(10,20);
+				break;
+			}
+		}
 
 		DoAnim(animFlyingKick);
 		reuse = FlyingKickReuseTime;
