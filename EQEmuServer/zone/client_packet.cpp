@@ -4484,7 +4484,7 @@ void Client::Handle_OP_GroupInvite2(const EQApplicationPacket *app)
             if(g) {
                 for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
                     if(g->members[i] && g->members[i]->IsBot()) {
-                        Message(15, "You currently have bots in your group. Cannot invite %s.", this->GetTarget()->GetCleanName());
+                        Message(15, "You currently have bots in your group. Cannot invite %s.", this->GetTarget()->GetName());
                         Message(15, "Bots must be the final group members invited.");
                         return;
                     }

@@ -110,8 +110,8 @@ void Mob::PET_Process() {
 		// If we don't, our hate_list is wiped.
 		// It causes some cpu stress but without it, it was causing the bot/pet to aggro behind wall, floor etc... 
         if(!CheckLosFN(target) || target->IsMezzed() || !IsAttackAllowed(target)) {
-            SetTarget(this);
-            hate_list.Wipe();
+			WipeHateList();
+            CastToNPC()->SetTarget(GetOwner());
             return;
         }
 
@@ -130,10 +130,12 @@ void Mob::PET_Process() {
 			}
 			if(IsMoving())
 			{
-				SetMoving(false);
-				moved=false;
-				SendPosition();
-				tar_ndx =0;
+				SetHeading(target->GetHeading());
+				if(moved) {
+					moved=false;
+					SetMoving(false);
+					SendPosUpdate();
+				}
 			}
 			// we can't fight if we don't have a target, are stun/mezzed or dead..
 			if(target && !IsStunned() && !IsMezzed() && GetAppearance() != eaDead ) 
@@ -153,7 +155,7 @@ void Mob::PET_Process() {
 					}
  
 					// Ok now, let's check pet's offhand. 
-					if (attack_dw_timer.Check() && ( GetOwner()->GetClass() == MAGICIAN || GetOwner()->GetClass() == NECROMANCER || GetOwner()->GetClass() == SHADOWKNIGHT ) ) 
+					if (attack_dw_timer.Check() && ( GetOwner()->GetClass() == MAGICIAN || GetOwner()->GetClass() == NECROMANCER || GetOwner()->GetClass() == SHADOWKNIGHT || GetOwner()->GetClass() == BEASTLORD ) ) 
 					{
 						if(GetOwner()->GetLevel() >= 24)
 						{
@@ -183,20 +185,22 @@ void Mob::PET_Process() {
 			// Now, if we cannot reach our target
 			if (!HateSummon()) 
 			{
-				if(Bot_AI_PursueCastCheck()) 
+				if(target && Bot_AI_PursueCastCheck()) 
 				{}
-				else if (AImovement_timer->Check()) 
+				else if (target && AImovement_timer->Check()) 
 				{
+					SetRunAnimSpeed(0);
 					if(!IsRooted()) {
 						mlog(AI__WAYPOINTS, "Pursuing %s while engaged.", target->GetName());
-						CalculateNewPosition2(target->GetX(), target->GetY(), target->GetZ(), GetOwner()->GetRunspeed());
+						CalculateNewPosition2(target->GetX(), target->GetY(), target->GetZ(), GetOwner()->GetRunspeed(), false);
 					}
-					else if(IsMoving()) {
-						SetHeading(CalculateHeadingToTarget(target->GetX(), target->GetY()));
-						SetRunAnimSpeed(0);
-						SendPosition();
-						SetMoving(false);
-						moved=false;
+					else {
+						SetHeading(target->GetHeading());
+						if(moved) {
+							moved=false;
+							SetMoving(false);
+							SendPosUpdate();
+						}
 					}
 				}
 			}
@@ -205,59 +209,40 @@ void Mob::PET_Process() {
 	else{
 		// Franck: EQoffline
 		// Ok if we're not engaged, what's happening..
-		
-		SetTarget(this);
-		hate_list.Wipe();
-		
-		if (AImovement_timer->Check() && !IsRooted())  // let's check the movement
-		{
-			_ZP(Mob_AI_Process_move);
-			SetRunAnimSpeed(0);
- 
-			if (IsPet()) // wich will be always the case in Pet_Process
-			{
-				_ZP(Mob_AI_Process_pet);
-
-				switch (pStandingPetOrder) 
-				{
-					case SPO_Follow: 
+		if(target != GetOwner()) {
+			CastToNPC()->SetTarget(GetOwner());
+		}
+		if(!IsMoving()) {
+			Bot_AI_IdleCastCheck();
+		}
+		if(AImovement_timer->Check()) {
+			switch(pStandingPetOrder) {
+				case SPO_Follow:
 					{
-						Mob* owner = GetOwner();
- 
-						if(owner == NULL)
-							break;
- 
-						float dist = DistNoRoot(*owner);
-						float speed = GetRunspeed();
-						if(dist >= 144) {
-							CalculateNewPosition2(owner->GetX(), owner->GetY(), owner->GetZ(), speed);
+						float dist = DistNoRoot(*target);
+						SetRunAnimSpeed(0);
+						if(dist > 184) {
+							CalculateNewPosition2(target->GetX(), target->GetY(), target->GetZ(), target->GetRunspeed(), false);
 						}
-						else if(moved) {
-							SetHeading(owner->GetHeading());
-							moved=false;
-							SetMoving(false);
-							SendPosition();
+						else {
+							SetHeading(target->GetHeading());
+							if(moved) {
+								moved=false;
+								SetMoving(false);
+								SendPosUpdate();
+							}
 						}
-						break;
 					}
-					case SPO_Sit: 
-					{
-						SetAppearance(eaSitting, false);
-						break;
-					}
-					case SPO_Guard: 
-					{
-						if(IsNPC()) {
-							CastToNPC()->NextGuardPosition();
-						}
-						break;
-					}
-				}
+					break;
+				case SPO_Sit:
+					SetAppearance(eaSitting);
+					break;
+				case SPO_Guard:
+					CastToNPC()->NextGuardPosition();
+					break;
 			}
 		}
-		Bot_AI_IdleCastCheck();
 	}
 }
 
 #endif //EQBOTS
-

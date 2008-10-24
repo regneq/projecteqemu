@@ -468,13 +468,14 @@ void Client::ProcessMovePC(int32 zoneID, float x, float y, float z, float headin
 			if(g) {
 				for(int i=0; i<MAX_GROUP_MEMBERS; i++)
 				{
-					if(g->members[i] && g->members[i]->IsBot())
-					{
+					if(g->members[i] && g->members[i]->IsBot()) {
 						g->members[i]->WipeHateList();
-						g->members[i]->GMMove(GetX(), GetY(), GetZ());
+						g->members[i]->SetTarget(BotOwner);
+						g->members[i]->Warp(GetX(), GetY(), GetZ());
 						if(g->members[i]->HasPet()) {
 							g->members[i]->GetPet()->WipeHateList();
-							g->members[i]->GetPet()->GMMove(GetX(), GetY(), GetZ());
+							g->members[i]->GetPet()->SetTarget(g->members[i]);
+							g->members[i]->GetPet()->Warp(GetX(), GetY(), GetZ());
 						}
 					}
 				}

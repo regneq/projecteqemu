@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
 ==10/23/2008
+Congdar: Bot code cleanup, method call reduction
 Congdar: Bot DoubleAttack method is more like clients
 Congdar: Remove AFK leveling with bots
 Angelox: Added command '#Bot evac' for Druid bots 

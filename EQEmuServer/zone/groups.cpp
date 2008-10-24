@@ -219,7 +219,7 @@ bool Group::AddMember(Mob* newmember)
 	
 		int z=1;
 		for(i=0; i<MAX_GROUP_MEMBERS; i++) {
-			if(members[i] && members[i]->CastToClient()->IsClient()) {
+			if(members[i] && members[i]->IsClient()) {
 				if(IsLeader(members[i])) {
 					strcpy(gj->yourname,members[i]->GetName());
 					strcpy(members[i]->CastToClient()->GetPP().groupMembers[0],members[i]->GetName());
