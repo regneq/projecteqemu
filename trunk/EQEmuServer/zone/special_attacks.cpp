@@ -172,6 +172,7 @@ void Client::OPCombatAbility(const EQApplicationPacket *app) {
 		return;
 	}
 
+	/* Commented this out to replace with Mob::GetFrenzyDamage above
 	//Frenzy, an instant attack that does up to 3 unmodified attacks before AA's and foci
 	//It attempts to do an attack, for the next hit to succeed the previous must not of missed
 	if ((ca_atk->m_atk == 100) && (ca_atk->m_skill == FRENZY)) {
@@ -197,6 +198,60 @@ void Client::OPCombatAbility(const EQApplicationPacket *app) {
 		return;
 	}
 	
+	*/
+
+   if ((ca_atk->m_atk == 100) && (ca_atk->m_skill == FRENZY)) {
+      if(!target->IsClient())
+         CheckIncreaseSkill(FRENZY,10);
+
+      int dmg = 1 + (GetSkill(FRENZY) / 100);
+
+      switch (GetAA(aaBlurofAxes)) {
+      case 1:
+         dmg *= 1.05;
+         break;
+      case 2:
+         dmg *= 1.15;
+         break;
+      case 3:
+         dmg *= 1.30;
+         break;
+      }
+
+      switch (GetAA(aaViciousFrenzy)) {
+      case 1:
+         dmg *= 1.05;
+         break;
+      case 2:
+         dmg *= 1.10;
+         break;
+      case 3:
+         dmg *= 1.15;
+         break;
+      case 4:
+         dmg *= 1.20;
+         break;
+      case 5:
+         dmg *= 1.25;
+         break;
+      }
+
+                while(dmg > 0 && target) {
+                        if(Attack(target))
+                                dmg--;
+                        else
+                                dmg = 0;
+                }
+               
+      DoSpecialAttackDamage(target, FRENZY, dmg);
+                ReuseTime = FrenzyReuseTime-1;
+                ReuseTime = (ReuseTime*HasteMod)/100;
+                if(ReuseTime > 0) {
+                        p_timers.Start(pTimerCombatAbility, ReuseTime);
+                }
+                return;
+        }
+
 	switch(GetClass())
 	{
 	case BERSERKER:
