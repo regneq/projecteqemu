@@ -25,14 +25,15 @@ void MainFrame::NewTask(wxCommandEvent& event)
 		newT.startzone = 0;
 		newT.level_min = 0;
 		newT.level_max = 0;
+		newT.repeatable = true;
 
 		int newID = wxGetNumberFromUser("", "ID:", "Input ID", (highestIndex+1), 0, 2147483600);
 
 		newT.id = newID;
 
 		char * mQuery = 0;
-		MakeAnyLenString(&mQuery, "INSERT INTO `tasks` (`id`,`duration`,`title`,`description`,`reward`,`rewardid`,`cashreward`,`xpreward`,`rewardmethod`,`startzone`, `minlevel`, `maxlevel`) VALUES (%u,%u,'%s','%s','%s',%u,%u,%u,%u,%u,%u,%u)",
-			newT.id, newT.duration, newT.title, newT.desc, newT.reward, newT.rewardid, newT.cashreward, newT.xpreward, newT.rewardmethod, newT.startzone, newT.level_min, newT.level_max);
+		MakeAnyLenString(&mQuery, "INSERT INTO `tasks` (`id`,`duration`,`title`,`description`,`reward`,`rewardid`,`cashreward`,`xpreward`,`rewardmethod`,`startzone`, `minlevel`, `maxlevel`, `repeatable`) VALUES (%u,%u,'%s','%s','%s',%u,%u,%u,%u,%u,%u,%u,%u)",
+			newT.id, newT.duration, newT.title, newT.desc, newT.reward, newT.rewardid, newT.cashreward, newT.xpreward, newT.rewardmethod, newT.startzone, newT.level_min, newT.level_max, newT.repeatable);
 
 		mErrorLog->Log(eqEmuLogSQL, "%s", mQuery);
 		if (mysql_query(mMysql, mQuery)) {
@@ -143,6 +144,9 @@ void MainFrame::DeleteTask(wxCommandEvent& event)
 			mStartZone->Select(0);
 			mStartZone->Disable();
 
+			mTaskRepeatable->SetValue(false);
+			mTaskRepeatable->Disable();
+
 			ShowRewardItems->Disable();
 			ShowRewardItems->Clear();
 			RefreshItems->Disable();
@@ -250,10 +254,12 @@ void MainFrame::SaveTask(wxCommandEvent& event)
 		int * i = (int*)mStartZone->GetClientData(mStartZone->GetSelection());
 		ourTask.startzone = *i;
 
+		ourTask.repeatable = mTaskRepeatable->GetValue();
+
 
 		char * mQuery = 0;
-		MakeAnyLenString(&mQuery, "UPDATE tasks SET duration=%u, title='%s', description='%s', reward='%s', rewardid=%u, cashreward=%u, xpreward=%u, rewardmethod=%u, startzone=%u, minlevel=%u, maxlevel=%u WHERE id=%u",
-			ourTask.duration, MakeStringSQLSafe(ourTask.title).mb_str(), MakeStringSQLSafe(ourTask.desc).mb_str(), MakeStringSQLSafe(ourTask.reward).mb_str(), ourTask.rewardid, ourTask.cashreward, ourTask.xpreward, ourTask.rewardmethod, ourTask.startzone, ourTask.level_min, ourTask.level_max, ourTask.id);
+		MakeAnyLenString(&mQuery, "UPDATE tasks SET duration=%u, title='%s', description='%s', reward='%s', rewardid=%u, cashreward=%u, xpreward=%u, rewardmethod=%u, startzone=%u, minlevel=%u, maxlevel=%u, repeatable=%u WHERE id=%u",
+			ourTask.duration, MakeStringSQLSafe(ourTask.title).mb_str(), MakeStringSQLSafe(ourTask.desc).mb_str(), MakeStringSQLSafe(ourTask.reward).mb_str(), ourTask.rewardid, ourTask.cashreward, ourTask.xpreward, ourTask.rewardmethod, ourTask.startzone, ourTask.level_min, ourTask.level_max, ourTask.repeatable, ourTask.id);
 		
 		mErrorLog->Log(eqEmuLogSQL, "%s", mQuery);
 		if (mysql_query(mMysql, mQuery)) {
@@ -289,6 +295,7 @@ void MainFrame::SaveTask(wxCommandEvent& event)
 		(*Iter).startzone = ourTask.startzone;
 		strcpy((*Iter).title, ourTask.title);
 		(*Iter).xpreward = ourTask.xpreward;
+		(*Iter).repeatable = ourTask.repeatable;
 
 		getStr.Printf("%u:%s", (*Iter).id, (*Iter).title);
         ItemSelectionList->SetString(openedIndex, getStr);

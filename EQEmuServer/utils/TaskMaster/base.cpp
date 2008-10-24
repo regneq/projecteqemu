@@ -213,6 +213,9 @@ MainFrame::MainFrame(const wxString& title,
 	mStartZone = new wxChoice(MainPanel1, -1, wxPoint(460, 60), wxDefaultSize, 0, NULL, wxCB_SORT);
 	mStartZone->Disable();
 
+	mTaskRepeatable = new wxCheckBox(MainPanel1, -1, "Repeatable:", wxPoint(375, 87), wxDefaultSize, wxCHK_2STATE | wxALIGN_RIGHT);
+	mTaskRepeatable->Disable();
+
 	/*General Page Elements End*/
 
 	/*Activities Page Elements*/
@@ -569,6 +572,9 @@ void MainFrame::ListBoxDoubleClick(wxCommandEvent& event)
 
 	mStartZone->Enable();
 	SetZoneSelectionById(mTask.startzone);
+
+	mTaskRepeatable->Enable();
+	mTaskRepeatable->SetValue(mTask.repeatable);
 
 	ClearActivities();
 	ActivitiesSelectionList->Enable();

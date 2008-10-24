@@ -153,7 +153,7 @@ bool MainFrame::LoadTasks()
 		MYSQL_RES *res;
 		MYSQL_ROW row;
 
-		if (mysql_query(mMysql, "SELECT id, title, description, reward, rewardid, cashreward, xpreward, rewardmethod, startzone, duration, minlevel, maxlevel FROM tasks")) {
+		if (mysql_query(mMysql, "SELECT id, title, description, reward, rewardid, cashreward, xpreward, rewardmethod, startzone, duration, minlevel, maxlevel, repeatable FROM tasks")) {
 			mErrorLog->Log(eqEmuLogBoth, "MySQL Connection Error: %s", mysql_error(mMysql));
 			return false;
 		}
@@ -186,6 +186,7 @@ bool MainFrame::LoadTasks()
 			newT.duration = atoi(row[9]);
 			newT.level_min = atoi(row[10]);
 			newT.level_max = atoi(row[11]);
+			newT.repeatable = (bool)atoi(row[12]);
 
 			taskList.push_back(newT);
 
