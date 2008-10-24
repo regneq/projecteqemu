@@ -100,33 +100,13 @@ void Mob::BOT_Process() {
 	if(!BotOwner)
 		return;
 
-    // check to see if one of the other group members is engaged
-	// If the bots are not in "guard" mode then they attack
 	if(!IsEngaged()) {
-		if(GetFollowID() != 0) {
-			if(IsBotRaiding()) {
-				BotRaids *br = entity_list.GetBotRaidByMob(this);
-				if(br) {
-					br->AddBotRaidAggro(this);
-				}
-			}
-			else {
-				Group *g = entity_list.GetGroupByMob(this);
-				if(g) {
-					for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
-						if(g->members[i] && g->members[i]->IsEngaged()) {
-							AddToHateList(g->members[i]->GetHateTop(), 1);
-							break;
-						}
-					}
-				}
-			}
-			if(!IsEngaged()) {
-				if(BotOwner && BotOwner->CastToClient()->auto_attack &&
-					BotOwner->GetTarget() && BotOwner->GetTarget()->IsNPC() &&
-					BotOwner->GetTarget()->GetHateAmount(BotOwner)) {
-						AddToHateList(BotOwner->GetTarget(), 1);
-				}
+		if(GetFollowID()) {
+			if(BotOwner && BotOwner->CastToClient()->AutoAttackEnabled() && BotOwner->GetTarget() &&
+				BotOwner->GetTarget()->IsNPC() && BotOwner->GetTarget()->GetHateAmount(BotOwner)) {
+					BotOwner->CastToClient()->SetOrderBotAttack(true);
+					AddToHateList(BotOwner->GetTarget(), 1);
+					BotOwner->CastToClient()->SetOrderBotAttack(false);
 			}
 		}
 	}

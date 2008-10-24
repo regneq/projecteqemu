@@ -8500,21 +8500,25 @@ void command_bot(Client *c, const Seperator *sep) {
 		}
 		else if(!strcasecmp(sep->arg[3], "attack"))
         {
-			if((c->GetTarget() != c->CastToMob()) && c->IsGrouped() && (c->GetTarget() != NULL) && c->IsAttackAllowed(c->GetTarget()))
-            {
-				Group *g = c->GetGroup();
-				if(g) {
-					for(int i=0; i<MAX_GROUP_MEMBERS; i++)
-					{
-						if(g->members[i] && g->members[i]->IsBot()) {
-							g->members[i]->WipeHateList();
-							g->members[i]->Say("Attacking %s.", c->GetTarget()->GetCleanName());
-							c->SetOrderBotAttack(true);
-                            g->members[i]->AddToHateList(c->GetTarget(),150,150);
-							c->SetOrderBotAttack(false);
+			if(c->IsGrouped() && (c->GetTarget() != NULL) && c->IsAttackAllowed(c->GetTarget())) {
+				c->SetOrderBotAttack(true);
+				if(c->IsBotRaiding()) {
+					BotRaids *br = entity_list.GetBotRaidByMob(c->CastToMob());
+					if(br) {
+						br->AddBotRaidAggro(c->GetTarget());
+					}
+				}
+				else {
+					Group *g = entity_list.GetGroupByMob(c->CastToMob());
+					if(g) {
+						for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
+							if(g->members[i] && g->members[i]->IsBot()) {
+								g->members[i]->AddToHateList(c->GetTarget(), 1);
+							}
 						}
 					}
 				}
+				c->SetOrderBotAttack(false);
 			}
             else {
                 c->Message(15, "You must target a monster.");

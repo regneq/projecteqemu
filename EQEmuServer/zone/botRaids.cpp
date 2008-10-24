@@ -210,9 +210,8 @@ void BotRaids::AddBotRaidAggro(Mob *m) {
 		if(BotRaidGroups[i]) {
 			for(int j=0; j<MAX_GROUP_MEMBERS; j++) {
 				if(BotRaidGroups[i]->members[j]) {
-					if(BotRaidGroups[i]->members[j]->IsEngaged()) {
-						m->AddToHateList(BotRaidGroups[i]->members[j]->GetHateTop(), 1);
-						break;
+					if(BotRaidGroups[i]->members[j]->IsBot()) {
+						BotRaidGroups[i]->members[j]->AddToHateList(m, 1);
 					}
 				}
 			}
@@ -229,6 +228,12 @@ bool BotRaids::GetBotRaidAggro() {
 					if(BotRaidGroups[i]->members[j]->IsEngaged()) {
 						gotAggro = true;
 						break;
+					}
+					if(BotRaidGroups[i]->members[j]->HasPet()) {
+						if(BotRaidGroups[i]->members[j]->GetPet()->IsEngaged()) {
+							gotAggro = true;
+							break;
+						}
 					}
 				}
 			}
@@ -368,7 +373,7 @@ void BotRaids::GroupAssignTask(Group *g, int iTask, Mob *m) {
 				g->members[i]->SetFollowID(gleader->GetID());
 				g->members[i]->WipeHateList();
 				g->members[i]->Say("Attacking %s", m->GetCleanName());
-                g->members[i]->AddToHateList(m, 1, 1, false);
+                g->members[i]->AddToHateList(m, 2000, 2000, false);
 			}
 		}
 	}
@@ -388,7 +393,7 @@ void BotRaids::RaidDefendEnraged() {
 	for(int j=0; j<MAX_BOT_RAID_GROUPS; j++) {
 		if(BotRaidGroups[j]) {
 			for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
-				if(BotRaidGroups[j]->members[i]) {
+				if(BotRaidGroups[j]->members[i] && BotRaidGroups[j]->members[i]->IsBot()) {
 					BotRaidGroups[j]->members[i]->Say("Enraged... stopping attacks.");
 					BotRaidGroups[j]->members[i]->SetFollowID(0);
 					BotRaidGroups[j]->members[i]->WipeHateList();
