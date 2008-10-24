@@ -386,7 +386,7 @@ void Client::HandleAAAction(aaID activate) {
 			spell_id = SPELL_HARM_TOUCH2;
 			EnableAAEffect(aaEffectLeechTouch, 1000);
 			break;
-		
+
 		default:
 			LogFile->write(EQEMuLog::Error, "Unknown AA nonspell action type %d", caa->action);
 			return;

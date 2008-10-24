@@ -282,10 +282,40 @@ sint32 Client::GetActSpellHealing(int16 spell_id, sint32 value) {
 		}
 		chance += GetAA(aaAdvancedHealingGift) * 2;
 
-		if(spells[spell_id].targettype == ST_Tap)
-		{
-			chance += GetAA(aaTheftofLife) * 3;
-		}
+   if(spells[spell_id].targettype == ST_Tap) {
+   switch(GetAA(aaTheftofLife)) {
+      case 1:
+         modifier += 2;
+         break;
+      case 2:
+         modifier += 5;
+         break;
+      case 3:
+         modifier += 10;
+         break;
+      }
+
+      switch(GetAA(aaAdvancedTheftofLife)) {
+      case 1:
+         modifier += 3;
+         break;
+      case 2:
+         modifier += 6;
+         break;
+      }
+   
+      switch(GetAA(aaSoulThief)) {
+      case 1:
+         modifier += 2;
+         break;
+      case 2:
+         modifier += 4;
+         break;
+      case 3:
+         modifier += 6;
+         break;
+      }
+   }
 		
 		if(MakeRandomInt(0,100) < chance) {
 			entity_list.MessageClose(this, false, 100, MT_SpellCrits, "%s performs an exceptional heal! (%d)", GetName(), ((value * modifier) / 50));		

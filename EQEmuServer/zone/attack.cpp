@@ -435,6 +435,7 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage)
 	///////////////////////////////////////////////////////	
 	// block
 	///////////////////////////////////////////////////////
+	/* Replaced this code with the code below
 	if (damage > 0 && CanThisClassBlock() && !other->BehindMob(this, other->GetX(), other->GetY()))
 	{
 		skill = CastToClient()->GetSkill(BLOCKSKILL);
@@ -451,6 +452,46 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage)
 	else{
 		RollTable[1] = RollTable[0];
 	}
+
+	*/
+
+	   if (damage > 0 && CanThisClassBlock() && !other->BehindMob(this, other->GetX(), other->GetY()))
+   {
+      skill = CastToClient()->GetSkill(BLOCKSKILL);
+      if (IsClient()) {
+         if (!other->IsClient() && GetLevelCon(other->GetLevel()) != CON_GREEN)
+            this->CastToClient()->CheckIncreaseSkill(BLOCKSKILL, -10);
+      }
+      
+      if (!ghit) {   //if they are not using a guaranteed hit discipline
+         bonus = 2.0 + skill/35.0 + (GetDEX()/200);
+         RollTable[1] = RollTable[0] + bonus;
+      }
+   }
+   else{
+      if (damage > 0 && !other->BehindMob(this, other->GetX(), other->GetY())) {
+                 if(IsClient()) {
+                         const ItemInst *wpn = CastToClient()->GetInv().GetItem(SLOT_SECONDARY);
+
+                            if((wpn->GetItem()->ItemType != ItemTypeShield)) {
+                           switch(GetAA(aaShieldBlock)) {
+                     case 1:
+                        RollTable[1] = RollTable[0] + 2.50;
+                        break;
+                     case 2:
+                        RollTable[1] = RollTable[0] + 5.00;
+                        break;
+                     case 3:
+                        RollTable[1] = RollTable[0] + 10.00;
+                        break;
+                     }
+                  }
+            }
+      }
+      else {
+         RollTable[1] = RollTable[0];
+      }
+   }
 	
 	//////////////////////////////////////////////////////		
 	// parry
