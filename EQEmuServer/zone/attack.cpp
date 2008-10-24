@@ -435,7 +435,7 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage)
 	///////////////////////////////////////////////////////	
 	// block
 	///////////////////////////////////////////////////////
-	/* Replaced this code with the code below
+
 	if (damage > 0 && CanThisClassBlock() && !other->BehindMob(this, other->GetX(), other->GetY()))
 	{
 		skill = CastToClient()->GetSkill(BLOCKSKILL);
@@ -453,8 +453,8 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage)
 		RollTable[1] = RollTable[0];
 	}
 
-	*/
 
+	/* Working to add AA Shield Block for Pal/SK
 	   if (damage > 0 && CanThisClassBlock() && !other->BehindMob(this, other->GetX(), other->GetY()))
    {
       skill = CastToClient()->GetSkill(BLOCKSKILL);
@@ -492,7 +492,8 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage)
          RollTable[1] = RollTable[0];
       }
    }
-	
+	*/
+
 	//////////////////////////////////////////////////////		
 	// parry
 	//////////////////////////////////////////////////////
