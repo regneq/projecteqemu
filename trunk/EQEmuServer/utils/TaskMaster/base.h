@@ -1,5 +1,5 @@
 #ifndef EQWX_BASE__H
-#define EQWC_BASE__H
+#define EQWX_BASE__H
 #include <wx/frame.h>
 #include <wx/textctrl.h>
 #include <wx/notebook.h>
@@ -57,6 +57,8 @@ public:
 	wxButton *RefreshItems;
 	wxStaticText *mStartZoneLabel;
 	wxChoice *mStartZone;
+
+	wxCheckBox *mTaskRepeatable;
 	/*General Panel Controls End*/
 
 	wxPanel *MainPanel2;

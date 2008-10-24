@@ -15,6 +15,7 @@ struct eqtask
 	unsigned int startzone; //i
 	unsigned short level_min; //i
 	unsigned short level_max; //i
+	bool repeatable;
 };
 
 struct eqtask_goallist
