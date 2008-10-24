@@ -285,34 +285,34 @@ sint32 Client::GetActSpellHealing(int16 spell_id, sint32 value) {
    if(spells[spell_id].targettype == ST_Tap) {
    switch(GetAA(aaTheftofLife)) {
       case 1:
-         modifier += 2;
+         chance += 2;
          break;
       case 2:
-         modifier += 5;
+         chance += 5;
          break;
       case 3:
-         modifier += 10;
+         chance += 10;
          break;
       }
 
       switch(GetAA(aaAdvancedTheftofLife)) {
       case 1:
-         modifier += 3;
+         chance += 3;
          break;
       case 2:
-         modifier += 6;
+         chance += 6;
          break;
       }
    
       switch(GetAA(aaSoulThief)) {
       case 1:
-         modifier += 2;
+         chance += 2;
          break;
       case 2:
-         modifier += 4;
+         chance += 4;
          break;
       case 3:
-         modifier += 6;
+         chance += 6;
          break;
       }
    }
