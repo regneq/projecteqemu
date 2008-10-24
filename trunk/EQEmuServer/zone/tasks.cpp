@@ -2862,6 +2862,7 @@ void ClientTaskState::AcceptNewTask(Client *c, int TaskID, int NPCID) {
 		}
 	}
 
+	if(!taskmanager->IsTaskRepeatable(TaskID) && IsTaskCompleted(TaskID)) return;
 
 	// We do it this way, because when the Client cancels a task, it retains the sequence number of the remaining
 	// tasks in it's window, until something causes the TaskDescription packets to be sent again. We could just

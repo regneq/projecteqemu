@@ -2305,47 +2305,52 @@ void NPC::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill) 
 	if(give_exp && give_exp->IsClient())
 		give_exp_client = give_exp->CastToClient();
 	
-	if(!(this->GetClass() == LDON_TREASURE))
+	bool IsLdonTreasure = (this->GetClass() == LDON_TREASURE);
+	if (give_exp_client && !IsCorpse() && MerchantType == 0)
 	{
-		// cb: if we're not a LDON treasure chest, we give XP
-		if (give_exp_client && !IsCorpse() && MerchantType == 0)
+		Group *kg = entity_list.GetGroupByClient(give_exp_client);
+		Raid *kr = entity_list.GetRaidByClient(give_exp_client);
+		if (give_exp_client->IsGrouped() && kg != NULL)
 		{
-			Group *kg = entity_list.GetGroupByClient(give_exp_client);
-			Raid *kr = entity_list.GetRaidByClient(give_exp_client);
-			if (give_exp_client->IsGrouped() && kg != NULL)
-			{
-				if(give_exp_client->GetAdventureID()>0){
-					AdventureInfo AF = database.GetAdventureInfo(give_exp_client->GetAdventureID());
-					if(zone->GetZoneID() == AF.zonedungeonid && AF.type==ADVENTURE_MASSKILL)
-						give_exp_client->SendAdventureUpdate();
-					else if(zone->GetZoneID() == AF.zonedungeonid && AF.type==ADVENTURE_NAMED && (AF.Objetive==GetNPCTypeID() || AF.ObjetiveValue==GetNPCTypeID()))
-						give_exp_client->SendAdventureFinish(1, AF.points,true);
-				}
+			if(give_exp_client->GetAdventureID()>0){
+				AdventureInfo AF = database.GetAdventureInfo(give_exp_client->GetAdventureID());
+				if(zone->GetZoneID() == AF.zonedungeonid && AF.type==ADVENTURE_MASSKILL && !IsLdonTreasure)
+					give_exp_client->SendAdventureUpdate();
+				else if(zone->GetZoneID() == AF.zonedungeonid && AF.type==ADVENTURE_NAMED &&
+					(AF.Objetive==GetNPCTypeID() || AF.ObjetiveValue==GetNPCTypeID()))
+					give_exp_client->SendAdventureFinish(1, AF.points,true);
+			}
+			if(!IsLdonTreasure)
 				kg->SplitExp((EXP_FORMULA), this);
 
-				/* Send the EVENT_KILLED_MERIT event and update kill tasks
-				 * for all group members */
-				for (int i = 0; i < MAX_GROUP_MEMBERS; i++) {
-					if (kg->members[i] != NULL && kg->members[i]->IsClient()) { // If Group Member is Client
-						Client *c = kg->members[i]->CastToClient();
-						parse->Event(EVENT_KILLED_MERIT, GetNPCTypeID(), "killed", this, c);
-						if(RuleB(TaskSystem, EnableTaskSystem))
-							c->UpdateTasksOnKill(GetNPCTypeID());
-					}
+			/* Send the EVENT_KILLED_MERIT event and update kill tasks
+			 * for all group members */
+			for (int i = 0; i < MAX_GROUP_MEMBERS; i++) {
+				if (kg->members[i] != NULL && kg->members[i]->IsClient()) { // If Group Member is Client
+					Client *c = kg->members[i]->CastToClient();
+					parse->Event(EVENT_KILLED_MERIT, GetNPCTypeID(), "killed", this, c);
+					if(RuleB(TaskSystem, EnableTaskSystem))
+						c->UpdateTasksOnKill(GetNPCTypeID());
 				}
 			}
-			else if(kr)
-			{
+		}
+		else if(kr)
+		{
+			if(!IsLdonTreasure)
 				kr->SplitExp((EXP_FORMULA), this);
-				/* Send the EVENT_KILLED_MERIT event for all raid members */
-				for (int i = 0; i < MAX_RAID_MEMBERS; i++) {
-					if (kr->members[i].member != NULL) { // If Group Member is Client
-						parse->Event(EVENT_KILLED_MERIT, GetNPCTypeID(), "killed", this, kr->members[i].member);
-					}
+
+			/* Send the EVENT_KILLED_MERIT event for all raid members */
+			for (int i = 0; i < MAX_RAID_MEMBERS; i++) {
+				if (kr->members[i].member != NULL) { // If Group Member is Client
+					parse->Event(EVENT_KILLED_MERIT, GetNPCTypeID(), "killed", this, kr->members[i].member);
+					if(RuleB(TaskSystem, EnableTaskSystem))
+						kr->members[i].member->UpdateTasksOnKill(GetNPCTypeID());
 				}
 			}
-			else
-			{
+		}
+		else
+		{
+			if(!IsLdonTreasure) {
 				int conlevel = give_exp->GetLevelCon(GetLevel());
 				if (conlevel != CON_GREEN)
 				{
@@ -2355,11 +2360,11 @@ void NPC::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill) 
 						give_exp_client->AddEXP((EXP_FORMULA), conlevel); // Pyro: Comment this if NPC death crashes zone
 					}
 				}
-				 /* Send the EVENT_KILLED_MERIT event */
-				parse->Event(EVENT_KILLED_MERIT, GetNPCTypeID(), "killed", this, give_exp_client);
-				if(RuleB(TaskSystem, EnableTaskSystem))
-					give_exp_client->UpdateTasksOnKill(GetNPCTypeID());
 			}
+			 /* Send the EVENT_KILLED_MERIT event */
+			parse->Event(EVENT_KILLED_MERIT, GetNPCTypeID(), "killed", this, give_exp_client);
+			if(RuleB(TaskSystem, EnableTaskSystem))
+				give_exp_client->UpdateTasksOnKill(GetNPCTypeID());
 		}
 	}
 	
