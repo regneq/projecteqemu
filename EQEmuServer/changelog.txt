@@ -8,6 +8,7 @@ Trevius: (Denivia) Added Advanced Theft of Life and Soul Thief for Necros and SK
 Trevius: (Denivia) Added Death Peace AA
 Trevius: (Denivia) Added Blur of Axes and Vicious Strike AAs for Berserkers
 Trevius: (Denivia) Added Shield Block AA for Paladin/SK
+Derision: 'Killing' LDoN chest type objects(e.g. Vermin Nests) will now update kill activities.
 
 ==10/23/2008
 Congdar: Lag reduction
