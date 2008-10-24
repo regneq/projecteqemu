@@ -1992,6 +1992,56 @@ bool NPC::Attack(Mob* other, int Hand, bool bRiposte)	 // Kaiyodo - base functio
 				ApplyMeleeDamageBonus(skillinuse, damage);
 				TryCriticalHit(other, skillinuse, damage);
 
+#ifdef EQBOTS
+
+                // If new mobs add to an existing fight, this adds them to the bot hate list
+				if(other->IsBot() && other->IsEngaged()) {
+					if(other->BotOwner) {
+						other->BotOwner->CastToClient()->SetOrderBotAttack(true);
+						if(other->IsBotRaiding()) {
+							BotRaids *br = entity_list.GetBotRaidByMob(other);
+							if(br) {
+								br->AddBotRaidAggro(this);
+							}
+						}
+						else {
+							Group *g = entity_list.GetGroupByMob(other);
+							if(g) {
+								for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
+									if(g->members[i] && g->members[i]->IsBot()) {
+										g->members[i]->AddToHateList(this, 1);
+									}
+								}
+							}
+						}
+						other->BotOwner->CastToClient()->SetOrderBotAttack(false);
+					}
+				}
+				else if(other->IsPet() && other->GetOwner() && other->GetOwner()->IsBot() && other->GetOwner()->IsEngaged()) {
+					if(other->GetOwner()->BotOwner) {
+						other->GetOwner()->BotOwner->CastToClient()->SetOrderBotAttack(true);
+						if(other->GetOwner()->IsBotRaiding()) {
+							BotRaids *br = entity_list.GetBotRaidByMob(other->GetOwner());
+							if(br) {
+								br->AddBotRaidAggro(this);
+							}
+						}
+						else {
+							Group *g = entity_list.GetGroupByMob(other->GetOwner());
+							if(g) {
+								for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
+									if(g->members[i] && g->members[i]->IsBot()) {
+										g->members[i]->AddToHateList(this, 1);
+									}
+								}
+							}
+						}
+						other->GetOwner()->BotOwner->CastToClient()->SetOrderBotAttack(false);
+					}
+				}
+
+#endif //EQBOTS
+
 				mlog(COMBAT__HITS, "Generating hate %d towards %s", hate, GetName());
 				// now add done damage to the hate list
 				if(damage != 0)
@@ -2466,13 +2516,8 @@ void Mob::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHel
 
 #ifdef EQBOTS
 
-	if((IsBot() && BotOwner && !BotOwner->CastToClient()->auto_attack) || (IsPet() && GetOwner() && GetOwner()->IsBot() && !GetOwner()->BotOwner->CastToClient()->auto_attack)) {
-		if(BotOwner && BotOwner->IsOrderBotAttack()) {
-			// ok, cuz we said so
-		}
-		else {
-			return;
-		}
+	if(IsBot() && BotOwner && !BotOwner->CastToClient()->IsOrderBotAttack()) {
+		return;
 	}
 
 #endif //EQBOTS
