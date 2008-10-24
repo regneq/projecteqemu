@@ -3264,8 +3264,12 @@ bool Client::CheckDoubleAttack(bool tripleAttack) {
 		GetAA(aaBestialFrenzy) +
 		GetAA(aaHarmoniousAttack) +
 		GetAA(aaKnightsAdvantage)*10 +
-		GetAA(aaFerocity)*10 +
-		GetAA(aaDanceofBlades)*500;
+		GetAA(aaFerocity)*10;
+	
+	// Bard Dance of Blades Double Attack bonus is not cumulative
+	if(GetAA(aaDanceofBlades)) {
+		aaBonus += 500;
+	}
 	
 	// Half of Double Attack Skill used to check chance for Triple Attack
 	if(tripleAttack) {
@@ -3297,76 +3301,95 @@ bool Client::CheckDoubleAttack(bool tripleAttack) {
 
 #ifdef EQBOTS
 
-bool Mob::CheckBotDoubleAttack(bool Triple) {
-	int skill = 0;
-	if(Triple)
-	{
-		if(!GetSkill(DOUBLE_ATTACK))
-			return(false);
-		
-		if((GetClass() == MONK) || (GetClass() == WARRIOR) || (GetClass() == RANGER) || (GetClass() == BERSERKER))
-		{
-			skill = GetSkill(DOUBLE_ATTACK)/2;
-		} else {
-			return(false);
-		}
-	}
-	else
-	{
-		int aaskill = 0;
-		uint8 aalevel = GetLevel();
-		if((GetClass() == BEASTLORD)||(GetClass() == BARD)) { // AA's Beastial Frenzy, Harmonious Attacks
-			if(aalevel >= 61) {
-				aaskill += 25;
-			}
-			if(aalevel >= 62) {
-				aaskill += 50;
-			}
-			if(aalevel >= 63) {
-				aaskill += 75;
-			}
-			if(aalevel >= 64) {
-				aaskill += 100;
-			}
-			if(aalevel >= 65) {
-				aaskill += 125;
-			}
-		}
-		if((GetClass() == PALADIN)||(GetClass() == SHADOWKNIGHT)) { // AA Knights Advantage
-			if(aalevel >= 61) {
-				aaskill += 25;
-			}
-			if(aalevel >= 63) {
-				aaskill += 50;
-			}
-			if(aalevel >= 65) {
-				aaskill += 75;
-			}
-		}
-		if((GetClass() == ROGUE)||(GetClass() == WARRIOR)||(GetClass() == RANGER)||(GetClass() == MONK)) { // AA Ferocity and Relentless Assault
-			if(aalevel >= 61) {
-				aaskill += 25;
-			}
-			if(aalevel >= 63) {
-				aaskill += 50;
-			}
-			if(aalevel >= 65) {
-				aaskill += 75;
-			}
-			if(aalevel >= 70) {
-				aaskill += 150;
-			}
-		}
+bool Mob::CheckBotDoubleAttack(bool tripleAttack) {
 
-		skill = GetSkill(DOUBLE_ATTACK) + aaskill;
-		
-		//discipline effects
-		skill += (spellbonuses.DoubleAttackChance + itembonuses.DoubleAttackChance) * 3;
+	// If you don't have the double attack skill, return
+	if(!GetSkill(DOUBLE_ATTACK))
+		return false;
+	
+	// You start with no chance of double attacking
+	int chance = 0;
+	
+	// Used for maxSkill and triple attack calcs
+	int8 classtype = GetClass();
+	
+	// The current skill level
+	uint16 skill = GetSkill(DOUBLE_ATTACK);
+
+	// Discipline bonuses give you 100% chance to double attack
+	sint16 buffs = spellbonuses.DoubleAttackChance + itembonuses.DoubleAttackChance;
+	
+	// The maximum value for the Class based on the server rule of MaxLevel
+	if(!BotOwner)
+		return false;
+	int16 maxSkill = BotOwner->CastToClient()->MaxSkill(DOUBLE_ATTACK, classtype, RuleI(Character, MaxLevel));
+
+	int32 aaBonus = 0;
+	uint8 aalevel = GetLevel();
+	if((classtype == BEASTLORD)||(classtype == BARD)) { // AA's Beastial Frenzy, Harmonious Attacks
+		if(aalevel >= 65) {
+			aaBonus += 5;
+		}
+		else if(aalevel >= 64) {
+			aaBonus += 4;
+		}
+		else if(aalevel >= 63) {
+			aaBonus += 3;
+		}
+		else if(aalevel >= 62) {
+			aaBonus += 2;
+		}
+		else if(aalevel >= 61) {
+			aaBonus += 1;
+		}
 	}
-	if(MakeRandomInt(0, 299) < skill)
-	{
+	if((classtype == PALADIN)||(classtype == SHADOWKNIGHT)) { // AA Knights Advantage
+		if(aalevel >= 65) {
+			aaBonus += 30;
+		}
+		else if(aalevel >= 63) {
+			aaBonus += 20;
+		}
+		else if(aalevel >= 61) {
+			aaBonus += 10;
+		}
+	}
+	if((classtype == ROGUE)||(classtype == WARRIOR)||(classtype == RANGER)||(classtype == MONK)) { // AA Ferocity and Relentless Assault
+		if(aalevel >= 70) {
+			aaBonus += 60;
+		}
+		else if(aalevel >= 65) {
+			aaBonus += 30;
+		}
+		else if(aalevel >= 63) {
+			aaBonus += 20;
+		}
+		else if(aalevel >= 61) {
+			aaBonus += 10;
+		}
+	}
+
+	// Half of Double Attack Skill used to check chance for Triple Attack
+	if(tripleAttack) {
+		// Only some Double Attack classes get Triple Attack
+		if((classtype == MONK) || (classtype == WARRIOR) || (classtype == RANGER) || (classtype == BERSERKER)) {
+			// We only get half the skill, but should get all the bonuses
+			chance = (skill/2) + buffs + aaBonus;
+		}
+		else {
+			return false;
+		}
+	}
+	else {
+		// This is the actual Double Attack chance
+		chance = skill + buffs + aaBonus;
+	}
+	
+	// If your chance is greater than the RNG you are successful! Always have a 5% chance to fail at max skills+bonuses.
+	if(chance > MakeRandomInt(0, (maxSkill + itembonuses.DoubleAttackChance + aaBonus)*1.05)) {
 		return true;
 	}
+
 	return false;
 }
 
