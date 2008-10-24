@@ -2,11 +2,12 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
 ==10/24/2008
+Trevius: Adjusted the new Frenzy AAs code to fix a crash
 Trevius: Removed the Shield Block for Paladin/SK AA until code is revised and working
-Trevius: (Denivia) Possible fix for Advanced Theft of Life and Soul Thief for Necros and SKs
-Trevius: (Denivia) Added AA Death Peace
-Trevius: (Denivia) Blur of Axes and Vicious Strike fix for Berserkers
-Trevius: (Denivia) Shield Block for Paladin/SK
+Trevius: (Denivia) Added Advanced Theft of Life and Soul Thief for Necros and SKs
+Trevius: (Denivia) Added Death Peace AA
+Trevius: (Denivia) Added Blur of Axes and Vicious Strike AAs for Berserkers
+Trevius: (Denivia) Added Shield Block AA for Paladin/SK
 
 ==10/23/2008
 Congdar: Lag reduction

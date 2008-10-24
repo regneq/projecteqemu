@@ -243,7 +243,7 @@ void Client::OPCombatAbility(const EQApplicationPacket *app) {
                                 dmg = 0;
                 }
                
-      DoSpecialAttackDamage(target, FRENZY, dmg);
+   //   DoSpecialAttackDamage(target, FRENZY, dmg);
                 ReuseTime = FrenzyReuseTime-1;
                 ReuseTime = (ReuseTime*HasteMod)/100;
                 if(ReuseTime > 0) {
