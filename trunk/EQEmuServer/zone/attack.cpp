@@ -4132,8 +4132,8 @@ void Mob::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 		{
             if (slayUndeadCrit)
 			{
-				damage = (damage * (critMod * 1.65)) / 100;
-				entity_list.MessageClose(this, false, 200, MT_CritMelee, "%s cleanses %s target!(%d)", GetCleanName(), this->GetGender() == 0 ? "his" : "her", damage);
+				damage = (damage * (critMod * 1.95)) / 100;
+				entity_list.MessageClose(this, false, 200, MT_CritMelee, "%s cleanses %s target!(%d)", GetCleanName(), this->GetGender() == 0 ? "his" : this->GetGender() == 1 ? "her" : "its", damage);
 				return;
 			}
 			//Veteran's Wrath AA
