@@ -1,9 +1,12 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==10/25/2008
+seveianrex: Slay Undead tweak + message gender fix, Tradeskill message gender fix
 Trevius: Updated SQL file for R142 to correct some altadv_vars AA table issues with AA requirements
 
 ==10/24/2008
+seveianrex: Implemented various GoD AAs: Coat of Thistles, Rapid Strikes, Elemental Durability, Subtlety2, Strengthened Strike, Vicious Smash
+seveianrex: Implemented GoD Monk AA "Kick Mastery"
 Trevius: Adjusted the new Frenzy AAs code to fix a crash
 Trevius: Removed the Shield Block for Paladin/SK AA until code is revised and working
 Trevius: (Denivia) Added Advanced Theft of Life and Soul Thief for Necros and SKs
