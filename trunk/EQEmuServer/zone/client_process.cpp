@@ -352,6 +352,39 @@ bool Client::Process() {
 							Attack(auto_attack_target, 13, true);
 					}
 				}
+
+				if (target && GetAA(aaRapidStrikes))
+				{
+					int chance_xhit1 = 0;
+					int chance_xhit2 = 0;
+					switch (GetAA(aaRapidStrikes))
+					{
+					case 1:
+						chance_xhit1 = 10;
+						chance_xhit2 = 2;
+						break;
+					case 2:
+						chance_xhit1 = 12;
+						chance_xhit2 = 4;
+						break;
+					case 3:
+						chance_xhit1 = 14;
+						chance_xhit2 = 6;
+						break;
+					case 4:
+						chance_xhit1 = 16;
+						chance_xhit2 = 8;
+						break;
+					case 5:
+						chance_xhit1 = 20;
+						chance_xhit2 = 10;
+						break;
+					}
+					if (MakeRandomInt(1,100) < chance_xhit1)
+						Attack(target, 13, true);
+					if (MakeRandomInt(1,100) < chance_xhit2)
+						Attack(target, 13, true);
+				}
 				
 				if (auto_attack_target && (GetAA(aaPunishingBlade) > 0 || GetAA(aaSpeedoftheKnight) > 0)) {
 					ItemInst *wpn = GetInv().GetItem(SLOT_PRIMARY);

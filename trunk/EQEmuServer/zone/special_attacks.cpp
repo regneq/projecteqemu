@@ -42,6 +42,19 @@ int Mob::GetKickDamage() const {
 	}
 	dmg /= 100;
 
+	switch (GetAA(aaStrengthenedStrike))
+	{
+	case 1:
+		dmg *= 1.05;
+		break;
+	case 2:
+		dmg *= 1.15;
+		break;
+	case 3:
+		dmg *= 1.30;
+		break;
+	}
+
 	return(dmg);
 }
 
@@ -57,6 +70,32 @@ int Mob::GetBashDamage() const {
 			  )
 			  + 600;	//Set a base of 6 damage, 1 seemed too low at the sub level 30 level.
 	dmg /= 100;
+
+	switch (GetAA(aaStrengthenedStrike))
+	{
+	case 1:
+		dmg *= 1.05;
+		break;
+	case 2:
+		dmg *= 1.15;
+		break;
+	case 3:
+		dmg *= 1.30;
+		break;
+	}
+
+	switch (GetAA(aaViciousSmash))
+	{
+	case 1:
+		dmg *= 1.05;
+		break;
+	case 2:
+		dmg *= 1.15;
+		break;
+	case 3:
+		dmg *= 1.30;
+		break;
+	}
 
 	return(dmg);
 }

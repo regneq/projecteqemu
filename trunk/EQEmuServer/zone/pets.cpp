@@ -200,6 +200,22 @@ void Mob::MakePet(int16 spell_id, const char* pettype, const char *petname) {
 		npc_type->size *= 1.15;
 	}
 
+	switch (GetAA(aaElementalDurability))
+	{
+	case 1:
+		npc_type->max_hp *= 1.02;
+		npc_type->cur_hp = npc_type->max_hp;
+		break;
+	case 2:
+		npc_type->max_hp *= 1.05;
+		npc_type->cur_hp = npc_type->max_hp;
+		break;
+	case 3:
+		npc_type->max_hp *= 1.10;
+		npc_type->cur_hp = npc_type->max_hp;
+		break;
+	}
+
 	//TODO: think about regen (engaged vs. not engaged)
 	
 	if(petname != NULL) {

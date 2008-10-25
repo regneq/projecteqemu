@@ -2665,8 +2665,29 @@ void Mob::DamageShield(Mob* attacker) {
 	int16 spellid = SPELL_UNKNOWN;
 	if(spellbonuses.DamageShieldSpellID != 0 && spellbonuses.DamageShieldSpellID != SPELL_UNKNOWN)
 		spellid = spellbonuses.DamageShieldSpellID;
-	//invert DS... spells yeild negative values for a true damage shield
+	//invert DS... spells yield negative values for a true damage shield
 	if(DS < 0) {
+		if (IsClient())
+		{
+			switch (CastToClient()->GetAA(aaCoatofThistles))
+			{
+			case 1:
+				DS *= 1.02;
+				break;
+			case 2:
+				DS *= 1.04;
+				break;
+			case 3:
+				DS *= 1.06;
+				break;
+			case 4:
+				DS *= 1.08;
+				break;
+			case 5:
+				DS *= 1.10;
+				break;
+			}
+		}
 		DS -= itembonuses.DamageShield; //+Damage Shield should only work when you already have a DS spell
 		attacker->Damage(this, -DS, spellid, ABJURE/*hackish*/, false);
 		//we can assume there is a spell now

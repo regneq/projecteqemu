@@ -1296,8 +1296,10 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 		AggroAmount = AggroAmount * RuleI(Aggro, SongAggroMod) / 100;
 	if (GetOwner())
 		AggroAmount = AggroAmount * RuleI(Aggro, PetSpellAggroMod) / 100;
-		
-	switch (GetAA(aaSpellCastingSubtlety))
+	
+	int aaSubtlety = ( GetAA(aaSpellCastingSubtlety) > GetAA(aaSpellCastingSubtlety2) ) ? GetAA(aaSpellCastingSubtlety) : GetAA(aaSpellCastingSubtlety2);
+
+	switch (aaSubtlety)
 	{
 	case 1:
 		AggroAmount = AggroAmount * 95 / 100;
