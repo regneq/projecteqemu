@@ -10,6 +10,7 @@ Trevius: (Denivia) Added Blur of Axes and Vicious Strike AAs for Berserkers
 Trevius: (Denivia) Added Shield Block AA for Paladin/SK
 Derision: 'Killing' LDoN chest type objects(e.g. Vermin Nests) will now update kill activities.
 KLS: Revert Lag fixes that were causing movement and facing abnormalities.
+KLS: Fix to a few problems with quest::creategroundobject that was causing it to not work in some situations.
 
 ==10/23/2008
 Congdar: Clone NoDrop removal code to NoRent, Lore, NoTrade.  Optionally enabled in the db Variables table DisasbleNoDrop=1 DisableNoRent=true DisableLore=1 DisableNoTrade=1

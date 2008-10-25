@@ -2286,7 +2286,7 @@ XS(XS__CreateGroundObject);
 XS(XS__CreateGroundObject)
 {
 	dXSARGS;
-	if (items != 5 || items != 6)
+	if (items != 5 && items != 6)
 		Perl_croak(aTHX_ "Usage: CreateGroundObject(itemid, x, y, z, heading, [decay_time])");
 
 	int	itemid = (int)SvIV(ST(0));
@@ -2294,7 +2294,6 @@ XS(XS__CreateGroundObject)
 	float y = (float)SvNV(ST(2));
 	float z = (float)SvNV(ST(3));
 	float heading = (float)SvNV(ST(4));
-
 
 	if(items == 5)
 		quest_manager.CreateGroundObject(itemid, x, y, z, heading);
