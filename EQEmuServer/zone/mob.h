@@ -767,7 +767,7 @@ bool logpos;
 	Mob*				GetHateMost()	{return hate_list.GetMostHate();}
 	bool				IsEngaged()   {return(!hate_list.IsEmpty()); }
 	bool				HateSummon();
-	void				FaceTarget(Mob* MobToFace = 0);
+	void				FaceTarget(Mob* MobToFace = 0, bool update = false);
 	void				SetHeading(float iHeading) { if (heading != iHeading) { pLastChange = Timer::GetCurrentTime(); heading = iHeading; } }
 	void				WipeHateList(); //Wipe?
 	// EverHood 6/14/06

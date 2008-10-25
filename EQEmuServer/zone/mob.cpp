@@ -1925,18 +1925,51 @@ bool Mob::HateSummon() {
 	return false;
 }
 
-void Mob::FaceTarget(Mob* MobToFace) {
+void Mob::FaceTarget(Mob* MobToFace, bool update) {
 	if (MobToFace == 0)
 		MobToFace = target;
 	if (MobToFace == 0 || MobToFace == this)
 		return;
 	// TODO: Simplify?
 	float oldheading = heading;
-	heading = CalculateHeadingToTarget(MobToFace->GetX(), MobToFace->GetY());
-	if(oldheading != heading) {
-		SendPosUpdate();
-		pLastChange = Timer::GetCurrentTime();
+	heading=(CalculateHeadingToTarget(MobToFace->GetX(),MobToFace->GetY()));
+//	EQApplicationPacket* outapp = new EQApplicationPacket(OP_ClientUpdate, sizeof(PlayerPositionUpdateServer_Struct));
+//	PlayerPositionUpdateServer_Struct* spu = (PlayerPositionUpdateServer_Struct*)outapp->pBuffer;
+//	MakeSpawnUpdate(spu);
+//	entity_list.QueueCloseClients(this, outapp, true, 300);
+//	safe_delete(outapp);
+	/*float angle;
+	
+	if (MobToFace->GetX()-x_pos > 0)
+		angle = - 90 + atan((double)(MobToFace->GetY()-y_pos) / (double)(MobToFace->GetX()-x_pos)) * 180 / M_PI;
+	else if (MobToFace->GetX()-x_pos < 0)
+		angle = + 90 + atan((double)(MobToFace->GetY()-y_pos) / (double)(MobToFace->GetX()-x_pos)) * 180 / M_PI;
+	else // Added?
+	{
+		if (MobToFace->GetY()-y_pos > 0)
+			angle = 0;
+		else
+			angle = 180;
 	}
+	//cout << "dX:" << MobToFace->GetX()-x_pos;
+	//cout << "dY:" << MobToFace->GetY()-y_pos;
+	//cout << "Angle:" << angle;
+	
+	if (angle < 0)
+		angle += 360;
+	if (angle > 360)
+		angle -= 360;
+	
+
+	float oldheading = heading;
+	heading = (sint8) (256*(360-angle)/360.0f);
+	//	return angle;
+	
+	//cout << "Heading:" << (int)heading << endl;
+	*/
+	SendPosUpdate();
+	if (update && oldheading != heading)
+		pLastChange = Timer::GetCurrentTime();
 }
 
 bool Mob::RemoveFromHateList(Mob* mob) {
@@ -2117,20 +2150,20 @@ void Mob::SetNextIncHPEvent( int inchpevent )
 	nextinchpevent = inchpevent;
 }
 //warp for quest function,from sandy
-void Mob::Warp( float x, float y, float z )
-{
-	x_pos = x;
-	y_pos = y;
-	z_pos = z;
-	
-	Mob* target = GetTarget();
-	if(target && (this != target)) {
-		FaceTarget(target);
-	}
-	else {
-		SendPosUpdate();
-	}
-} 
+void Mob::Warp( float x, float y, float z ) 
+{ 
+   x_pos = x; 
+   y_pos = y; 
+   z_pos = z; 
+
+   Mob* target = GetTarget(); 
+   if ( target ) { 
+      FaceTarget( target, true ); 
+   } 
+
+   SendPosition(); 
+
+}
 
 bool Mob::DivineAura() const
 {
@@ -2333,7 +2366,7 @@ void Mob::BotMeditate(bool isSitting) {
 		// If the bot is a caster has less than 95% mana while its not engaged, he needs to sit to meditate
 		if(GetManaRatio() < 95.0f) {
 			if(mana_timer.Check(true)) {
-				SetAppearance(eaSitting);
+				SetAppearance(eaSitting, false);
 				if(!((int)GetManaRatio() % 12)) {
 					Say("Medding for Mana. I have %3.1f%% of %d mana. It is: %d", GetManaRatio(), GetMaxMana(), GetMana());
 				}
@@ -2385,7 +2418,7 @@ void Mob::BotMeditate(bool isSitting) {
 			}
 		}
 		else {
-			SetAppearance(eaStanding);
+			SetAppearance(eaStanding, false);
 		}
 	}
 	else {
@@ -2394,7 +2427,7 @@ void Mob::BotMeditate(bool isSitting) {
 		if(GetManaRatio() < 19.9f)
 		{
 			if(mana_timer.Check(true)) {
-				SetAppearance(eaSitting);
+				SetAppearance(eaSitting, false);
 				if(!((int)GetManaRatio() % 12)) {
 					Say("Medding for Mana. I have %3.1f%% of %d mana. It is: %d", GetManaRatio(), GetMaxMana(), GetMana());
 				}
@@ -2444,7 +2477,7 @@ void Mob::BotMeditate(bool isSitting) {
 				SetMana(GetMana() + regen);
 			}
 		}
-		SetAppearance(eaStanding);
+		SetAppearance(eaStanding, false);
 	}
 }
 

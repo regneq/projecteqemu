@@ -410,7 +410,7 @@ bool Mob::DoCastSpell(int16 spell_id, int16 target_id, int16 slot,
 	{
 		SetRunAnimSpeed(0);
 		if(this != pMob)
-			this->FaceTarget(pMob);
+			this->FaceTarget(pMob, true);
 	}
 	
 	// if we got here we didn't fizzle, and are starting our cast

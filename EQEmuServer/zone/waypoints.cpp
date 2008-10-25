@@ -85,7 +85,7 @@ void NPC::StopWandering()
 {	// stops a mob from wandering, takes him off grid and sends him back to spawn point
 	roamer=false;
 	CastToNPC()->SetGrid(0);
-	SendPosUpdate();
+	SendPosition();
 	mlog(QUESTS__PATHING, "Stop Wandering requested.");
 	return;
 }
@@ -123,7 +123,7 @@ void NPC::ResumeWandering()
 			char temp[100];
 			itoa(cur_wp,temp,10);	//do this before updating to next waypoint
 			CalculateNewWaypoint(); 
-	        SetAppearance(eaStanding); 
+	        SetAppearance(eaStanding, false); 
 			parse->Event(EVENT_WAYPOINT,this->GetNPCTypeID(), temp, this, NULL); 
 		}	// if not currently at a waypoint, we continue on to the one we were headed to before the stop
 	}
@@ -141,7 +141,7 @@ void NPC::PauseWandering(int pausetime)
 	if (GetGrid() != 0)
 	{
 		mlog(QUESTS__PATHING, "Paused Wandering requested. Grid %d. Resuming in %d ms (0=not until told)", GetGrid(), pausetime);
-		SendPosUpdate();
+		SendPosition();
 		if (pausetime<1)
 		{	// negative grid number stops him dead in his tracks until ResumeWandering()
 			SetGrid( 0 - GetGrid());
@@ -574,7 +574,7 @@ bool Mob::CalculateNewPosition2(float x, float y, float z, float speed, bool che
 	delta_heading=0;
 
 	SendPosUpdate();
-	SetAppearance(eaStanding);
+	SetAppearance(eaStanding, false);
 	pLastChange = Timer::GetCurrentTime();
 	return true;
 }
@@ -594,7 +594,7 @@ bool Mob::CalculateNewPosition(float x, float y, float z, float speed, bool chec
     if (speed == 0.0) {
         SetHeading(CalculateHeadingToTarget(x, y));
 		if(moved){
-			SendPosUpdate();
+			SendPosition();
 			SetMoving(false);
 			moved=false;
 		}
@@ -682,7 +682,7 @@ bool Mob::CalculateNewPosition(float x, float y, float z, float speed, bool chec
 	tar_ndx++;
 	
     // now get new heading
-	SetAppearance(eaStanding); // make sure they're standing
+	SetAppearance(eaStanding, false); // make sure they're standing
     pLastChange = Timer::GetCurrentTime();
     return true;
 }
