@@ -1,5 +1,7 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==10/25/2008
+Trevius: Updated SQL file for R142 to correct some altadv_vars AA table issues with AA requirements
 
 ==10/24/2008
 Trevius: Adjusted the new Frenzy AAs code to fix a crash
