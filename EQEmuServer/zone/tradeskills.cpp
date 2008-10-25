@@ -835,7 +835,7 @@ bool Client::TradeskillExecute(DBTradeskillRecipe_Struct *spec) {
 		_log(TRADESKILLS__TRACE, "Tradeskill failed");
             if (this->GetGroup())
 		{
-			entity_list.MessageGroup(this,true,MT_Skills,"%s was unsuccessful in %s tradeskill attempt.",GetName(),GetGender() == 0 ? "his" : "her");
+			entity_list.MessageGroup(this,true,MT_Skills,"%s was unsuccessful in %s tradeskill attempt.",GetName(),this->GetGender() == 0 ? "his" : this->GetGender() == 1 ? "her" : "its");
 		}
 		
 		itr = spec->onfail.begin();
