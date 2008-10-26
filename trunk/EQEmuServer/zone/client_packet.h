@@ -221,4 +221,5 @@
 	void Handle_OP_TaskHistoryRequest(const EQApplicationPacket *app);
       void Handle_OP_KeyRing(const EQApplicationPacket *app); 
       void Handle_OP_FriendsWho(const EQApplicationPacket *app);
+      void Handle_OP_Bandolier(const EQApplicationPacket *app);
 

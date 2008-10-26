@@ -833,6 +833,12 @@ private:
 	void	OPGMSummon(const EQApplicationPacket *app);
 	void	OPCombatAbility(const EQApplicationPacket *app);
 
+	// Bandolier Methods
+	void	CreateBandolier(const EQApplicationPacket *app);
+	void	RemoveBandolier(const EQApplicationPacket *app);
+	void	SetBandolier(const EQApplicationPacket *app);
+	bool	BandolierReturnItemToInventory(ItemInst *BInst);
+
 	sint16    CalcAC();
 	sint16    CalcATK();
 	int      CalcHaste();

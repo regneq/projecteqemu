@@ -107,7 +107,8 @@ enum {
 	bagTypeSmallBag		= 0,
 	bagTypeLargeBag		= 1,
 	bagTypeQuiver		= 2,
-	bagTypeBeltPouch	= 3 
+	bagTypeBeltPouch	= 3,
+	bagTypeBandolier	= 8
 	//... there are 50 types
 };
 
