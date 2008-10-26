@@ -1239,6 +1239,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			}
 
 			case SE_ModelSize:
+			case SE_ChangeHeight:
 			{
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Model Size: %d%%", effect_value);
