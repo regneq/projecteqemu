@@ -318,13 +318,14 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_AutoFire] = &Client::Handle_OP_AutoFire;
 	ConnectedOpcodes[OP_Rewind] = &Client::Handle_OP_Rewind;
 	ConnectedOpcodes[OP_RaidInvite] = &Client::Handle_OP_RaidCommand;
-    ConnectedOpcodes[OP_Translocate] = &Client::Handle_OP_Translocate;
+	ConnectedOpcodes[OP_Translocate] = &Client::Handle_OP_Translocate;
 	ConnectedOpcodes[OP_Sacrifice] = &Client::Handle_OP_Sacrifice;
-    ConnectedOpcodes[OP_AcceptNewTask] = &Client::Handle_OP_AcceptNewTask;
+	ConnectedOpcodes[OP_AcceptNewTask] = &Client::Handle_OP_AcceptNewTask;
 	ConnectedOpcodes[OP_CancelTask] = &Client::Handle_OP_CancelTask;
 	ConnectedOpcodes[OP_TaskHistoryRequest] = &Client::Handle_OP_TaskHistoryRequest;
-    ConnectedOpcodes[OP_KeyRing] = &Client::Handle_OP_KeyRing;
-    ConnectedOpcodes[OP_FriendsWho] = &Client::Handle_OP_FriendsWho;
+	ConnectedOpcodes[OP_KeyRing] = &Client::Handle_OP_KeyRing;
+	ConnectedOpcodes[OP_FriendsWho] = &Client::Handle_OP_FriendsWho;
+	ConnectedOpcodes[OP_Bandolier] = &Client::Handle_OP_Bandolier;
 
 }
 
@@ -7942,4 +7943,33 @@ void Client::Handle_OP_TaskHistoryRequest(const EQApplicationPacket *app) {
 
 	if(RuleB(TaskSystem, EnableTaskSystem) && taskstate)
 		taskstate->SendTaskHistory(this, ths->TaskIndex);
+}
+
+void Client::Handle_OP_Bandolier(const EQApplicationPacket *app) {
+
+	// Although there are three different structs for OP_Bandolier, they are all the same size.
+	//
+	if(app->size != sizeof(BandolierCreate_Struct)) {
+		LogFile->write(EQEMuLog::Debug, "Size mismatch in OP_Bandolier expected %i got %i",
+		               sizeof(BandolierCreate_Struct), app->size);
+		DumpPacket(app);
+		return;
+	}
+
+	BandolierCreate_Struct *bs = (BandolierCreate_Struct*)app->pBuffer;
+
+	switch(bs->action) {
+		case BandolierCreate:
+			CreateBandolier(app);
+			break;
+		case BandolierRemove:
+			RemoveBandolier(app);
+			break;
+		case BandolierSet:
+			SetBandolier(app);
+			break;
+		default:
+			LogFile->write(EQEMuLog::Debug, "Uknown Bandolier action %i", bs->action);
+
+	}
 }

@@ -1159,6 +1159,321 @@ EQApplicationPacket* Client::ReturnItemPacket(sint16 slot_id, const ItemInst* in
 	return outapp;
 }
 
+static sint16 BandolierSlotToWeaponSlot(int BandolierSlot) {
 
+	switch(BandolierSlot) {
+		case bandolierMainHand:
+			return SLOT_PRIMARY;
+		case bandolierOffHand:
+			return SLOT_SECONDARY;
+		case bandolierRange:
+			return SLOT_RANGE;
+		default:
+			return SLOT_AMMO;
+	}
+}
 
+void Client::CreateBandolier(const EQApplicationPacket *app) {
+
+	// Store bandolier set with the number and name passed by the client, along with the items that are currently
+	// in the players weapon slots.
+
+	BandolierCreate_Struct *bs = (BandolierCreate_Struct*)app->pBuffer;
+
+	_log(INVENTORY__BANDOLIER, "Char: %s Creating Bandolier Set %i, Set Name: %s", GetName(), bs->number, bs->name);
+	strcpy(m_pp.bandoliers[bs->number].name, bs->name);
+
+	const ItemInst* InvItem;
+
+	const Item_Struct *BaseItem;
+
+	sint16 WeaponSlot;
+
+	for(int BandolierSlot = bandolierMainHand; BandolierSlot <= bandolierAmmo; BandolierSlot++) {
+		WeaponSlot = BandolierSlotToWeaponSlot(BandolierSlot);
+		InvItem = GetInv()[WeaponSlot];
+		if(InvItem) {
+			BaseItem = InvItem->GetItem();
+			_log(INVENTORY__BANDOLIER, "Char: %s adding item %s to slot %i", GetName(),BaseItem->Name, WeaponSlot);
+			m_pp.bandoliers[bs->number].items[BandolierSlot].item_id = BaseItem->ID;
+			m_pp.bandoliers[bs->number].items[BandolierSlot].icon = BaseItem->Icon;
+		}
+		else {
+			_log(INVENTORY__BANDOLIER, "Char: %s no item in slot %i", GetName(), WeaponSlot);
+			m_pp.bandoliers[bs->number].items[BandolierSlot].item_id = 0;
+			m_pp.bandoliers[bs->number].items[BandolierSlot].icon = 0;
+		}
+	}
+	Save();
+}
+
+void	Client::RemoveBandolier(const EQApplicationPacket *app) {
+
+	// Delete bandolier with the specified number
+
+	BandolierDelete_Struct *bds = (BandolierDelete_Struct*)app->pBuffer;
+	_log(INVENTORY__BANDOLIER, "Char: %s removing set", GetName(), bds->number);
+	memset(m_pp.bandoliers[bds->number].name, 0, 32);
+	for(int i = bandolierMainHand; i <= bandolierAmmo; i++) {
+		m_pp.bandoliers[bds->number].items[i].item_id = 0;
+		m_pp.bandoliers[bds->number].items[i].icon = 0;
+	}
+	Save();
+}
+
+void	Client::SetBandolier(const EQApplicationPacket *app) {
+
+	// Swap the weapons in the given bandolier set into the character's weapon slots and return
+	// any items currently in the weapon slots to inventory.
+
+	BandolierSet_Struct *bss = (BandolierSet_Struct*)app->pBuffer;
+	_log(INVENTORY__BANDOLIER, "Char: %s activating set %i", GetName(), bss->number);
+	sint16 slot;
+	sint16 WeaponSlot;
+	ItemInst *BandolierItems[4];  // Temporary holding area for the weapons we pull out of their inventory
+
+	// First we pull the items for this bandolier set out of their inventory, this makes space to put the
+	// currently equipped items back.
+	for(int BandolierSlot = bandolierMainHand; BandolierSlot <= bandolierAmmo; BandolierSlot++) {
+		// If this bandolier set has an item in this position
+		if(m_pp.bandoliers[bss->number].items[BandolierSlot].item_id) {
+			WeaponSlot = BandolierSlotToWeaponSlot(BandolierSlot);
+
+			// Check if the weapon is already in the required slot, otherwise things go wrong if the player
+			// is dual wielding two of the same weapon.
+			ItemInst *InvItem = m_inv.GetItem(WeaponSlot);
+			bool WeaponAlreadyInPlace = false;
+			if(InvItem && (InvItem->GetItem()->ID == m_pp.bandoliers[bss->number].items[BandolierSlot].item_id))
+				WeaponAlreadyInPlace = true;
+
+			// Check if the player has the item specified in the bandolier set on them.
+			//
+			slot = m_inv.HasItem(m_pp.bandoliers[bss->number].items[BandolierSlot].item_id, 1, 
+					     invWhereWorn|invWherePersonal|invWhereCursor);
+			// if the player has this item in their inventory, and it is not already where it needs to be
+			if(!WeaponAlreadyInPlace && (slot != SLOT_INVALID)) {
+				// Pull the item out of the inventory
+				BandolierItems[BandolierSlot] = m_inv.PopItem(slot);
+				// If ammo with charges, only take one charge out to put in the range slot, that is what
+				// the client does.
+					
+				if(((BandolierSlot == bandolierAmmo) || (BandolierSlot == bandolierRange)) && 
+				   BandolierItems[BandolierSlot] && BandolierItems[BandolierSlot]->IsStackable()){
+					int Charges = BandolierItems[BandolierSlot]->GetCharges();
+					// If there is more than one charge
+					if(Charges > 1) {
+						BandolierItems[BandolierSlot]->SetCharges(Charges-1);
+						// Take one charge out and put the rest back
+						m_inv.PutItem(slot, *BandolierItems[BandolierSlot]);
+						database.SaveInventory(character_id, BandolierItems[BandolierSlot], slot);
+						BandolierItems[BandolierSlot]->SetCharges(1);
+					}
+					else	// Remove the item from the inventory
+						database.SaveInventory(character_id, 0, slot);
+				}
+				else	// Remove the item from the inventory
+					database.SaveInventory(character_id, 0, slot);
+			}
+			else { // The required weapon is already in place, or the player doesn't have it
+				BandolierItems[BandolierSlot] = 0;
+			}
+		}
+	}
+
+	// Now we move the required weapons into the character weapon slots, and return any items we are replacing
+	// back to inventory.
+	//
+	for(int BandolierSlot = bandolierMainHand; BandolierSlot <= bandolierAmmo; BandolierSlot++) {
+
+		// Find the inventory slot corresponding to this bandolier slot
+		
+		WeaponSlot = BandolierSlotToWeaponSlot(BandolierSlot);
+
+		// if there is an item in this Bandolier slot ?
+		if(m_pp.bandoliers[bss->number].items[BandolierSlot].item_id) {
+			// if the player has this item in their inventory, and it is not already where it needs to be
+			if(BandolierItems[BandolierSlot]) {
+				// Pull the item that we are going to replace
+				ItemInst *InvItem = m_inv.PopItem(WeaponSlot);
+				// Put the item specified in the bandolier where it needs to be
+				m_inv.PutItem(WeaponSlot, *BandolierItems[BandolierSlot]);
+
+				safe_delete(BandolierItems[BandolierSlot]);
+				// Update the database, save the item now in the weapon slot
+				database.SaveInventory(character_id, m_inv.GetItem(WeaponSlot), WeaponSlot);
+
+				if(InvItem) {
+					// If there was already an item in that weapon slot that we replaced, find a place to put it
+					if(!BandolierReturnItemToInventory(InvItem)) 
+						_log(INVENTORY__BANDOLIER, "Char: %s, ERROR returning %s to inventory", GetName(),
+						     InvItem->GetItem()->Name);
+					safe_delete(InvItem);
+				}
+			}
+		}
+		else {
+			// This bandolier set has no item for this slot, so take whatever is in the weapon slot and
+			// put it in the player's inventory.
+			ItemInst *InvItem = m_inv.PopItem(WeaponSlot);
+			if(InvItem) {
+				// If there was an item in that weapon slot, put it in the inventory	
+				if(BandolierReturnItemToInventory(InvItem)) 
+					database.SaveInventory(character_id, 0, WeaponSlot);
+				else
+					_log(INVENTORY__BANDOLIER, "Char: %s, ERROR returning %s to inventory", GetName(),
+					     InvItem->GetItem()->Name);
+				safe_delete(InvItem);
+			}
+		}
+	}
+}
+
+static bool CanItemFitInContainer(const Item_Struct *ItemToTry, const Item_Struct *Container) {
+
+	if(!ItemToTry || !Container) return false;
+
+	if(ItemToTry->Size > Container->BagSize) return false;
+
+	if((Container->BagType == bagTypeQuiver) && (ItemToTry->ItemType != ItemTypeArrow)) return false;
+
+	if((Container->BagType == bagTypeBandolier) && (ItemToTry->ItemType != ItemTypeThrowingv2)) return false;
+
+	return true;
+}
+
+bool Client::BandolierReturnItemToInventory(ItemInst *ItemToReturn) {
+	
+	// This is a support function for Client::SetBandolier.
+	//
+	// When the client moves items around as Bandolier sets are activated, it does not send details to the 
+	// server of what item it has moved to which slot. It assumes the server knows what it will do.
+	//
+	// The standard EQEmu auto inventory routines do not behave as the client does when manipulating bandoliers. 
+	// The client will look in each main inventory slot. If it finds a bag in a slot, it will then look inside
+	// the bag for a free slot.
+	//
+	// This differs from the standard EQEmu method of looking in all 8 inventory slots first to find an empty slot, and
+	// then going back and looking in bags. There are also other differences related to how it moves stackable items back
+	// to inventory.
+	//
+	// Rather than alter the current auto inventory behaviour, just in case something
+	// depends on current behaviour, this routine operates the same as the client when moving items back to inventory when
+	// swapping bandolier sets.
+
+	if(!ItemToReturn) return false;
+
+	_log(INVENTORY__BANDOLIER,"Char: %s Returning %s to inventory", GetName(), ItemToReturn->GetItem()->Name);
+
+	int32 ItemID = ItemToReturn->GetItem()->ID;
+
+	// If the item is stackable (ammo in range slot), try stacking it with other items of the same type
+	//
+	if(ItemToReturn->IsStackable()) {
+
+		for (sint16 i=22; i<=29; i++) {
+
+			ItemInst* InvItem = m_inv.GetItem(i);
+
+			if(InvItem && (InvItem->GetItem()->ID == ItemID) && (InvItem->GetCharges() < InvItem->GetItem()->StackSize)) {
+				
+				int ChargeSlotsLeft = InvItem->GetItem()->StackSize - InvItem->GetCharges();
+
+				int ChargesToMove = ItemToReturn->GetCharges() < ChargeSlotsLeft ? ItemToReturn->GetCharges() : 
+												   ChargeSlotsLeft;
+
+				InvItem->SetCharges(InvItem->GetCharges() + ChargesToMove);
+
+				database.SaveInventory(character_id, m_inv.GetItem(i), i);
+
+				ItemToReturn->SetCharges(ItemToReturn->GetCharges() - ChargesToMove);
+				
+				if(!ItemToReturn->GetCharges()) 
+					return true;
+			}
+			// If there is a bag in this slot, look inside it.
+			//
+			if (InvItem && InvItem->IsType(ItemClassContainer)) {
+
+				sint16 BaseSlotID = Inventory::CalcSlotId(i, 0);
+
+				int8 BagSize=InvItem->GetItem()->BagSlots;
+
+				uint8 BagSlot;
+				for (BagSlot=0; BagSlot<BagSize; BagSlot++) {
+					InvItem = m_inv.GetItem(BaseSlotID + BagSlot);
+					if(InvItem && (InvItem->GetItem()->ID == ItemID) && 
+					   (InvItem->GetCharges() < InvItem->GetItem()->StackSize)) {
+
+						int ChargeSlotsLeft = InvItem->GetItem()->StackSize - InvItem->GetCharges();
+
+						int ChargesToMove = ItemToReturn->GetCharges() < ChargeSlotsLeft 
+								    ? ItemToReturn->GetCharges() : ChargeSlotsLeft;
+
+						InvItem->SetCharges(InvItem->GetCharges() + ChargesToMove);
+
+						database.SaveInventory(character_id, m_inv.GetItem(BaseSlotID + BagSlot), 
+								       BaseSlotID + BagSlot);
+
+						ItemToReturn->SetCharges(ItemToReturn->GetCharges() - ChargesToMove);
+
+						if(!ItemToReturn->GetCharges()) 
+							return true;
+					}		
+				}
+			}
+		}
+	}
+
+	// We have tried stacking items, now just try and find an empty slot.
+
+	for (sint16 i=22; i<=29; i++) {
+
+		ItemInst* InvItem = m_inv.GetItem(i);
+
+		if (!InvItem) {
+			// Found available slot in personal inventory
+			m_inv.PutItem(i, *ItemToReturn);
+
+			database.SaveInventory(character_id, m_inv.GetItem(i), i);
+
+			_log(INVENTORY__BANDOLIER, "Char: %s Storing in main inventory slot %i", GetName(), i);
+
+			return true;
+		}
+		if(InvItem->IsType(ItemClassContainer) && CanItemFitInContainer(ItemToReturn->GetItem(), InvItem->GetItem())) {
+
+			sint16 BaseSlotID = Inventory::CalcSlotId(i, 0);
+
+			int8 BagSize=InvItem->GetItem()->BagSlots;
+
+			for (uint8 BagSlot=0; BagSlot<BagSize; BagSlot++) {
+
+				InvItem = m_inv.GetItem(BaseSlotID + BagSlot);
+
+				if (!InvItem) {
+					// Found available slot within bag
+					m_inv.PutItem(BaseSlotID + BagSlot, *ItemToReturn);
+
+					database.SaveInventory(character_id, m_inv.GetItem(BaseSlotID + BagSlot), BaseSlotID + BagSlot);
+
+					_log(INVENTORY__BANDOLIER, "Char: %s Storing in bag slot %i", GetName(), BaseSlotID + BagSlot);
+
+					return true;
+				}
+			}
+		}
+	}
+	
+	// Store on the cursor
+	// 
+	_log(INVENTORY__BANDOLIER, "Char: %s No space, putting on the cursor", GetName());
+
+	m_inv.PutItem(SLOT_CURSOR, *ItemToReturn);
+
+	list<ItemInst*>::const_iterator s=m_inv.cursor_begin(),e=m_inv.cursor_end();
+
+	database.SaveCursor(character_id, s, e);
+
+	return true;
+}
 
