@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==10/26/2008
 Derision: Implemented Bandolier. Test thoroughly before trusting it with your Epic.
+Derision: Minor change to enable the spell Tiny Companion to work.
 
 ==10/25/2008
 seveianrex: Slay Undead tweak + message gender fix, Tradeskill message gender fix
