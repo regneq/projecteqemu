@@ -145,7 +145,7 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 			break;
 		}
 		
-		if(tt == ST_Target || tt == ST_Summoned || tt == ST_Undead) {
+		if(tt == ST_Target || tt == ST_Tap || tt == ST_Summoned || tt == ST_Undead) {
 			//DD spells only...
 			//reference: http://www.graffe.com/AA/
 			switch (GetAA(aaSpellCastingFury)) //not sure why this was different from Mastery before, both are DD only
