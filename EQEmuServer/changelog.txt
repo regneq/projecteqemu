@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==10/27/2008
+Trevius: (Denivia) Added Critical Spell Damage for Lifetaps with the proper AAs
+
 ==10/26/2008
 Derision: Implemented Bandolier. Test thoroughly before trusting it with your Epic.
 Derision: Minor change to enable the spell Tiny Companion to work.
