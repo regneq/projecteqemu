@@ -1,7 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==10/27/2008
+Angelox: (Cbodmer) Experience loss based on cbodmers formula with added rule to regulate loss amount
 Trevius: (Denivia) Added Critical Spell Damage for Lifetaps with the proper AAs
+
+Optional SQL (options are 0-10, defaults to 3):
+Insert into rule_values values (0, 'Character:DeathExpLossMultiplier', 3);
 
 ==10/26/2008
 Derision: Implemented Bandolier. Test thoroughly before trusting it with your Epic.
