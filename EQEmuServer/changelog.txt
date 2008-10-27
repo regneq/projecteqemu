@@ -1,6 +1,7 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==10/27/2008
+seveianrex: Added server-side code for WAR sturdiness AA
 Angelox: (Cbodmer) Experience loss based on cbodmers formula with added rule to regulate loss amount
 Trevius: (Denivia) Added Critical Spell Damage for Lifetaps with the proper AAs
 
