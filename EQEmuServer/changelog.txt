@@ -2,6 +2,10 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==10/29/2008
 Derision: Mobs in water should no longer sink to the bottom.
+cavedude00: Added rule to enable DeathExpLossMultiplier, or to use server code default.
+
+Optional SQL:
+Insert into rule_values values (0, 'Character:UseDeathExpLossMult', 'true');
 
 ==10/27/2008
 seveianrex: Added server-side code for WAR sturdiness AA
