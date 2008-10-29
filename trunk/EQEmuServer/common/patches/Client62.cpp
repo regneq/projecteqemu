@@ -447,6 +447,7 @@ ENCODE(OP_ZoneSpawns) {
 		eq->equip_chest2 = emu->equip_chest2;
 		eq->spawnId = emu->spawnId;
 		eq->lfg = emu->lfg;
+		eq->flymode = emu->flymode;
 	}
 	
 	//kill off the emu structure and send the eq packet.

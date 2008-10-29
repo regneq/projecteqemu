@@ -679,6 +679,13 @@ void Mob::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho)
 	ns->spawn.guildrank	= 0xFF;
 	ns->spawn.size			= size;
 	ns->spawn.bodytype = bodytype;
+	// The 'flymode' settings have the following effect:
+	// 0 - Mobs in water sink like a stone to the bottom
+	// 1 - Same as #flymode 1
+	// 2 - Same as #flymode 2
+	// 3 - Mobs in water do not sink. A value of 3 in this field appears to be the default setting for all mobs
+	//     (in water or not) according to 6.2 era packet collects.
+	ns->spawn.flymode = 3;
 	
 	ns->spawn.lastName[0] = '\0';
 	
