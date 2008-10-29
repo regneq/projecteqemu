@@ -276,7 +276,7 @@ struct Spawn_Struct {
 /*0330*/ uint8  light;          // Spawn's lightsource %%% wrong
 /*0331*/ uint8  class_;         // Player's class
 /*0332*/ uint8  eyecolor2;      // Left eye color
-/*0333*/ uint8 unknown0333;
+/*0333*/ uint8 flymode;
 /*0334*/ uint8  gender;         // Gender (0=male, 1=female)
 /*0335*/ uint8  bodytype;       // Bodytype
 /*0336*/ uint8 unknown0336[3];

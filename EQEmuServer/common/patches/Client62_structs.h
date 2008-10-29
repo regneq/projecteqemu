@@ -221,7 +221,7 @@ struct Spawn_Struct
 /*0164*/ uint8  eyecolor1;      // Player's left eye color
 /*0165*/ uint8	beard;			//not 100% verified, but slightly verified
 /*0166*/ uint8  is_npc;         // 0=no, 1=yes
-/*0167*/ uint8  unknown0167;	//seems to be 3 for 'useable' npc classes
+/*0167*/ uint8  flymode;	//seems to be 3 for 'useable' npc classes
 /*0168*/ uint32 guildID;        // Current guild
 /*0172*/ union 
          {

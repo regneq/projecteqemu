@@ -508,6 +508,7 @@ ENCODE(OP_ZoneSpawns) {
 		eq->class_ = emu->class_;
 		eq->eyecolor2 = emu->eyecolor2;
 //		eq->unknown0333 = emu->unknown0333;
+		eq->flymode = emu->flymode;
 		eq->gender = emu->gender;
 		eq->bodytype = emu->bodytype;
 //		eq->unknown0336[3] = emu->unknown0336[3];
