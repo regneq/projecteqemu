@@ -685,7 +685,10 @@ void Mob::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho)
 	// 2 - Same as #flymode 2
 	// 3 - Mobs in water do not sink. A value of 3 in this field appears to be the default setting for all mobs
 	//     (in water or not) according to 6.2 era packet collects.
-	ns->spawn.flymode = 3;
+	if(IsClient())
+		ns->spawn.flymode = 0;
+	else
+		ns->spawn.flymode = 3;
 	
 	ns->spawn.lastName[0] = '\0';
 	
