@@ -96,24 +96,10 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 		int chance = RuleI(Spells, BaseCritChance);
 		sint32 ratio = RuleI(Spells, BaseCritRatio);
 
-		//normal spell crit
-		//normally only wizards get a crit chance to begin with
-		//if you want to tweak it, just add to the cases
+		//here's an idea instead of bloating code with unused cases there's this thing called:
+		//case 'default'
 		switch(GetClass())
 		{
-			case WARRIOR:
-			case CLERIC:
-			case PALADIN:
-			case RANGER:
-			case SHADOWKNIGHT:
-			case DRUID:
-			case MONK:
-			case BARD:
-			case ROGUE:
-			case SHAMAN:
-			case NECROMANCER:
-				break;
-
 			case WIZARD:
 			{
 				if (GetLevel() >= RuleI(Spells, WizCritLevel)) {
@@ -123,10 +109,7 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 				break;
 			}
 
-			case MAGICIAN:
-			case ENCHANTER:
-			case BEASTLORD:
-			case BERSERKER:
+			default: 
 				break;
 		}
 		
@@ -145,60 +128,62 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 			break;
 		}
 		
-		if(tt == ST_Target || tt == ST_Tap || tt == ST_Summoned || tt == ST_Undead) {
-			//DD spells only...
-			//reference: http://www.graffe.com/AA/
-			switch (GetAA(aaSpellCastingFury)) //not sure why this was different from Mastery before, both are DD only
-			{
-				case 1:
-					chance += 2;
-					ratio += 33;
-					break;
-				case 2:
-					chance += 4; //some reports between 4.5% & 5%, AA description indicates 4%
-					ratio += 66;
-					break;
-				case 3:
-					chance += 7;
-					ratio += 100;
-					break;
-			}
-			switch (GetAA(aaSpellCastingFuryMastery)) //ratio should carry over from Spell Casting Fury, which is 100% for all ranks
-			{
-				case 1:
-					chance += 3; //10%, Graffe = 9%?
-					break;
-				case 2:
-					chance += 5; //12%, Graffe = 11%?
-					break;
-				case 3:
-					chance += 7; //14%, Graffe = 13%?
-					break;
-			}
-			chance += GetAA(aaFuryofMagic) * 2;  //doesn't look like this is used
-			chance += GetAA(aaFuryofMagicMastery) * 2; //doesn't look like this is used
-			chance += GetAA(aaFuryofMagicMastery2) * 2;	//this is the current one used in DB; 16%, 18%, 20%; Graffe guesses 18-19% max
-			chance += GetAA(aaAdvancedFuryofMagicMastery) * 2; //guessing, not much data on it
+		switch (GetAA(aaSpellCastingFury)) //not sure why this was different from Mastery before, both are DD only
+		{
+			case 1:
+				chance += 2;
+				ratio += 33;
+				break;
+			case 2:
+				chance += 4; //some reports between 4.5% & 5%, AA description indicates 4%
+				ratio += 66;
+				break;
+			case 3:
+				chance += 7;
+				ratio += 100;
+				break;
+		}		
+
+		switch (GetAA(aaSpellCastingFuryMastery)) //ratio should carry over from Spell Casting Fury, which is 100% for all ranks
+		{
+		case 1:
+			chance += 3; //10%, Graffe = 9%?
+			break;
+		case 2:
+			chance += 5; //12%, Graffe = 11%?
+			break;
+		case 3:
+			chance += 7; //14%, Graffe = 13%?
+			break;
+		}
+
+		chance += GetAA(aaFuryofMagic) * 2;  //doesn't look like this is used
+		chance += GetAA(aaFuryofMagicMastery) * 2; //doesn't look like this is used
+		chance += GetAA(aaFuryofMagicMastery2) * 2;	//this is the current one used in DB; 16%, 18%, 20%; Graffe guesses 18-19% max
+		chance += GetAA(aaAdvancedFuryofMagicMastery) * 2; //guessing, not much data on it
 
 			
-			if(ratio < 100)	//chance increase and ratio are made up, not confirmed
-				ratio = 100;
-		} else if(tt == ST_Tap) {
-			if(ratio < 100)	//chance increase and ratio are made up, not confirmed
-				ratio = 100;
+		if(ratio > 100)	//chance increase and ratio are made up, not confirmed
+			ratio = 100;
+
+
+		if(tt == ST_Tap) {
 			
 			if(spells[spell_id].classes[SHADOWKNIGHT-1] >= 254 && spell_id != SPELL_LEECH_TOUCH){
+				if(ratio < 100)	//chance increase and ratio are made up, not confirmed
+					ratio = 100;
+
 				switch (GetAA(aaSoulAbrasion)) //Soul Abrasion
 				{
-					case 1:
-						modifier += 100;
-						break;
-					case 2:
-						modifier += 200;
-						break;
-					case 3:
-						modifier += 300;
-						break;
+				case 1:
+					modifier += 100;
+					break;
+				case 2:
+					modifier += 200;
+					break;
+				case 3:
+					modifier += 300;
+					break;
 				}
 			}
 		}

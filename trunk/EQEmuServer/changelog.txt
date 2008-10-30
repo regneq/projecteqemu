@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+
+==10/30/2008
+KLS: Spell crits should work reasonably well once again.
+
 ==10/29/2008
 Derision: Mobs in water should no longer sink to the bottom.
 cavedude00: Added rule to enable DeathExpLossMultiplier, or to use server code default.
