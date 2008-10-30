@@ -65,4 +65,7 @@ void EQEmuErrorLog::Log(unsigned int mOutputType, const char *msg, ...)
 			fprintf(mErrorLogSQL, "%s;\n\n", buffer);
 		}
 	}
+	
+	if(buffer)
+		delete[] buffer;
 }
