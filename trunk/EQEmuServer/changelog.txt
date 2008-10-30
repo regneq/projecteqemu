@@ -3,6 +3,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 
 ==10/30/2008
 KLS: Spell crits should work reasonably well once again.
+Derision: Fixed inability to jump introduced in Rev161.
 
 ==10/29/2008
 Derision: Mobs in water should no longer sink to the bottom.
