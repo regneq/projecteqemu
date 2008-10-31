@@ -5494,28 +5494,26 @@ void Client::Handle_OP_Mend(const EQApplicationPacket *app)
 
 		if(MakeRandomInt(0,99) < criticalchance){
 			mendhp *= 2;
-			Message(4, "You perform a superior mend.");
+			Message_StringID(4,MEND_CRITICAL);
 		}
 		SetHP(GetHP() + mendhp);
 		SendHPUpdate();
 		Message_StringID(4,MEND_SUCCESS);
-		//Message(4, "You mend your wounds and heal some damage");
-	}
-	else if (MakeRandomInt(0, 149) < GetSkill(MEND)) {
-		if(currenthp > mendhp) {
-			SetHP(GetHP() - mendhp);
+	} else if (GetSkill(MEND) <= 75) {
+		/* the purpose of the following is to make the chance to worsen wounds much less common,
+		 which is more consistent with the way eq live works.
+		 according to my math, this should result in the following probability:
+		 0 skill - 25% chance to worsen
+		 20 skill - 23% chance to worsen
+		 50 skill - 16% chance to worsen */
+		if ((MakeRandomInt(GetSkill(MEND),100) < 75) &&
+			(MakeRandomInt(1, 3) == 1))
+		{
+			SetHP(currenthp > mendhp ? (GetHP() - mendhp) : 1);
 			SendHPUpdate();
-			//Message(4, "You fail to mend your wounds and damage yourself!");
-			Message_StringID(4,MEND_WORSEN);
-		} else {
-			SetHP(1);
-			SendHPUpdate();
-			//Message(4, "You fail to mend your wounds and damage yourself!");
 			Message_StringID(4,MEND_WORSEN);
 		}
-	}
-	else	{
-		//Message(4, "You fail to mend your wounds");
+	} else {
 		Message_StringID(4,MEND_FAIL);
 	}
 

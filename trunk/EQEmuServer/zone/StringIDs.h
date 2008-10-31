@@ -65,6 +65,7 @@
 #define PET_SIT_STRING 1130 //Changing position, Master.
 #define PETITION_NO_DELETE 5053 //You do not have a petition in the queue.
 #define PETITION_DELETED 5054 //Your petition was successfully deleted.
+#define MEND_CRITICAL 349 //You magically mend your wounds and heal considerable damage.
 #define MEND_SUCCESS 350 //You mend your wounds and heal some damage.
 #define MEND_WORSEN 351 //You have worsened your wounds!
 #define MEND_FAIL 352 //You have failed to mend your wounds.
