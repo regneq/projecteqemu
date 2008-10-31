@@ -694,8 +694,8 @@ public:
 	int FindSpellBookSlotBySpellID(int16 spellid);
 	int GetNextAvailableSpellBookSlot();
 	int16	GetMaxSkillAfterSpecializationRules(SkillType skillid, int16 maxSkill);
-       void SendPopupToClient(const char *Title, const char *Text);
-       bool	PendingTranslocate;
+	void SendPopupToClient(const char *Title, const char *Text, int32 PopupID = 0, int32 Buttons = 0);
+	bool	PendingTranslocate;
  	bool	PendingSacrifice;
  	string	SacrificeCaster;
  	struct	Translocate_Struct PendingTranslocateData;

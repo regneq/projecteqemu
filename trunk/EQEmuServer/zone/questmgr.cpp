@@ -1420,9 +1420,9 @@ void QuestManager::playertexture(int newtexture)
 {
 			initiator->SendIllusionPacket(initiator->GetRace(), 0xFF, newtexture);
 }
-void QuestManager::popup(char *title, char *text) 
+void QuestManager::popup(char *title, char *text, int32 popupid, int32 buttons) 
 {
-         if(initiator) initiator->SendPopupToClient(title, text);
+         if(initiator) initiator->SendPopupToClient(title, text, popupid, buttons);
 }
 void QuestManager::taskselector(int taskcount, int *tasks) {
 	if(RuleB(TaskSystem, EnableTaskSystem) && initiator && owner && taskmanager) 

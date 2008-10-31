@@ -4,6 +4,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==10/31/2008
 seveianrex: Monk updates: Strikethrough AA, Mend Worsen Frequency Tweak, Kick Mastery AA Fix
 seveianrex: Implemented Pet Flurries for MAG/BST/NEC
+Derision: Extended quest::popup to take optional PopupID and buttontype (OK or YES/NO) fields.
 
 ==10/30/2008
 KLS: Spell crits should work reasonably well once again.
