@@ -1410,6 +1410,11 @@ struct OnLevelMessage_Struct {
 /*4240*/       uint32  unknown4240;
 };
 
+struct PopupResponse_Struct {
+/*0000*/	int32	unknown0000;
+/*0004*/	int32	popupid;
+};
+
 struct GuildManageBanker_Struct {
 	uint32 unknown0;
 	char myname[64];

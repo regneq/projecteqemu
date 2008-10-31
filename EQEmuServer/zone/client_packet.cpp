@@ -326,6 +326,7 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_KeyRing] = &Client::Handle_OP_KeyRing;
 	ConnectedOpcodes[OP_FriendsWho] = &Client::Handle_OP_FriendsWho;
 	ConnectedOpcodes[OP_Bandolier] = &Client::Handle_OP_Bandolier;
+	ConnectedOpcodes[OP_PopupResponse] = &Client::Handle_OP_PopupResponse;
 
 }
 
@@ -7969,5 +7970,26 @@ void Client::Handle_OP_Bandolier(const EQApplicationPacket *app) {
 		default:
 			LogFile->write(EQEMuLog::Debug, "Uknown Bandolier action %i", bs->action);
 
+	}
+}
+
+void Client::Handle_OP_PopupResponse(const EQApplicationPacket *app) {
+
+	if(app->size != sizeof(PopupResponse_Struct)) {
+		LogFile->write(EQEMuLog::Debug, "Size mismatch in OP_PopupResponse expected %i got %i",
+		               sizeof(PopupResponse_Struct), app->size);
+		DumpPacket(app);
+		return;
+	}
+	PopupResponse_Struct *prs = (PopupResponse_Struct*)app->pBuffer;
+
+	Mob* Target = GetTarget();
+
+	if(Target && Target->IsNPC()) {
+		char *buf = 0;
+		MakeAnyLenString(&buf, "%d", prs->popupid);
+
+		parse->Event(EVENT_POPUPRESPONSE, Target->GetNPCTypeID(), buf, Target->CastToNPC(), this);
+		safe_delete_array(buf);
 	}
 }

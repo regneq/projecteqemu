@@ -2172,11 +2172,18 @@ XS(XS__istaskappropriate)
  XS(XS__popup); // prototype to pass -Wmissing-prototypes
  XS(XS__popup) {
         dXSARGS;
- 
-        if (items != 2)
+	int popupid = 0;
+	int buttons = 0;
+	if((items < 2) || (items > 4))
                 Perl_croak(aTHX_ "Usage: popup(windowtitle, text)");
+
+	if(items >= 3)
+		popupid = (int)SvIV(ST(2));
+
+	if(items == 4)
+		buttons = (int)SvIV(ST(3));
  
-        quest_manager.popup(SvPV_nolen(ST(0)), SvPV_nolen(ST(1)));
+        quest_manager.popup(SvPV_nolen(ST(0)), SvPV_nolen(ST(1)), popupid, buttons);
  
         XSRETURN_EMPTY;
  }

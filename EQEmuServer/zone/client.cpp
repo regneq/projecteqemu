@@ -3433,7 +3433,7 @@ void Client::SetHoTT(int32 mobid) {
 	safe_delete(outapp);
 }
 
-void Client::SendPopupToClient(const char *Title, const char *Text) {
+void Client::SendPopupToClient(const char *Title, const char *Text, int32 PopupID, int32 Buttons) {
 
        EQApplicationPacket *outapp = new EQApplicationPacket(OP_OnLevelMessage, sizeof(OnLevelMessage_Struct));
        OnLevelMessage_Struct *olms = (OnLevelMessage_Struct *) outapp->pBuffer;
@@ -3444,9 +3444,9 @@ void Client::SendPopupToClient(const char *Title, const char *Text) {
        strcpy(olms->Title, Title);
        strcpy(olms->Text, Text);
 
-       olms->Buttons = 0x00000000;
+       olms->Buttons = Buttons;
        olms->unknown4228 = 0xffffffff;
-       olms->PopupID = 0xffffffff;
+       olms->PopupID = PopupID;
        olms->unknown4236 = 0x00000000;
        olms->unknown4240 = 0xffffffff;
 
