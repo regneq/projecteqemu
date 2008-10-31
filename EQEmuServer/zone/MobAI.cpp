@@ -729,6 +729,40 @@ void Mob::AI_Process() {
 					    if (MakeRandomInt(0, 99) < 20)
 							Flurry();
 					}
+
+					if (IsPet() && GetOwner()->IsClient()) {
+						int aa_chance = 0;
+						// Magician AA
+						int aa_skill = GetOwner()->CastToClient()->GetAA(aaElementalAlacrity);
+						// Necromancer AA
+						if (aa_skill < 1) {
+							aa_skill = GetOwner()->CastToClient()->GetAA(aaQuickeningofDeath);
+						}
+						// Beastlord AA
+						if (aa_skill < 1) {
+							aa_skill = GetOwner()->CastToClient()->GetAA(aaWardersAlacrity);
+						}
+						switch (aa_skill)
+						{
+						case 1:
+							aa_chance = 2;
+							break;
+						case 2:
+							aa_chance = 4;
+							break;
+						case 3:
+							aa_chance = 6;
+							break;
+						case 4:
+							aa_chance = 8;
+							break;
+						case 5:
+							aa_chance = 10;
+							break;
+						}
+						if (MakeRandomInt(1, 100) < aa_chance)
+							Flurry();
+					}
 	
 					if (SpecAttacks[SPECATK_RAMPAGE]) {
 					    // perhaps get the values from the db?

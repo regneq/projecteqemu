@@ -1,6 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==10/31/2008
+seveianrex: Monk updates: Strikethrough AA, Mend Worsen Frequency Tweak, Kick Mastery AA Fix
+seveianrex: Implemented Pet Flurries for MAG/BST/NEC
+
 ==10/30/2008
 KLS: Spell crits should work reasonably well once again.
 Derision: Fixed inability to jump introduced in Rev161.
