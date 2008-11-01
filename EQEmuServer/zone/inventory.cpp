@@ -257,7 +257,14 @@ void Client::DeleteItemInInventory(sint16 slot_id, sint8 quantity, bool client_u
 		safe_delete(outapp);
 */
 		if (inst && inst->GetCharges()) {
-			EQApplicationPacket* outapp = new EQApplicationPacket(OP_DeleteItem, sizeof(MoveItem_Struct));
+			EQApplicationPacket* outapp;
+			if(!inst->IsStackable()) 
+				// Non stackable item with charges = Item with clicky spell effect ? Delete a charge.
+				outapp = new EQApplicationPacket(OP_DeleteCharge, sizeof(MoveItem_Struct));
+			else
+				// Stackable, arrows, etc ? Delete one from the stack
+				outapp = new EQApplicationPacket(OP_DeleteItem, sizeof(MoveItem_Struct));
+
 			DeleteItem_Struct* delitem	= (DeleteItem_Struct*)outapp->pBuffer;
 			delitem->from_slot			= slot_id;
 			delitem->to_slot			= 0xFFFFFFFF;
