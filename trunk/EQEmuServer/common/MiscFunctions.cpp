@@ -400,7 +400,7 @@ char *CleanMobName(const char *in, char *out)
 		}
 		else
 		{
-			if(isalpha(in[i]))	// numbers, #, or any other crap just gets skipped
+			if(isalpha(in[i]) || (in[i] == '`'))	// numbers, #, or any other crap just gets skipped
 				out[j++] = in[i];
 		}
 	}

@@ -1,6 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==11/01/2008
+Derision: Allow backtick through the CleanName filter.
+
 ==10/31/2008
 seveianrex: Monk updates: Strikethrough AA, Mend Worsen Frequency Tweak, Kick Mastery AA Fix
 seveianrex: Implemented Pet Flurries for MAG/BST/NEC
