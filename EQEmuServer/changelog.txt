@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
 ==11/01/2008
+seveianrex: GoD AA Implementations: [CLR] Touch of the Divine, [BRD] Internal Metronome, [SHD] Improved Consumption of the Soul
 Derision: Allow backtick through the CleanName filter.
 Derision: Pickpocket should no longer occasionally bug the UI.
 Derision: Pickpocketing money should no longer show twice the amount taken in the client.
