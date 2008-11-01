@@ -175,6 +175,11 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 						caster->CastToClient()->SetFeigned(true);
 						caster->SendAppearancePacket(AT_Anim, 115);
 					}
+				} else if (spell_id == 2766) // Improved Consumption of the Soul
+				{
+					if (caster->IsClient()) {
+						dmg += (500 * caster->GetAA(aaImprovedConsumptionofSoul));
+					}
 				}
 
 				//do any AAs apply to these spells?
@@ -3436,6 +3441,67 @@ uint16 Mob::GetProcID(uint16 spell_id, uint8 effect_index) {
 
 bool Mob::TryDeathSave() {
 	bool Result = false;
+
+	int aaClientTOTD = IsClient() ? CastToClient()->GetAA(aaTouchoftheDivine) : -1;
+
+	if (aaClientTOTD > 0) {
+		int aaChance = (1.2 * CastToClient()->GetAA(aaTouchoftheDivine));
+		
+		if (MakeRandomInt(0,100) < aaChance) {
+			Result = true;
+			/*
+			int touchHealSpellID = 4544;
+			switch (aaClientTOTD) {
+				case 1:
+					touchHealSpellID = 4544;
+					break;
+				case 2:
+					touchHealSpellID = 4545;
+					break;
+				case 3:
+					touchHealSpellID = 4546;
+					break;
+				case 4:
+					touchHealSpellID = 4547;
+					break;
+				case 5:
+					touchHealSpellID = 4548;
+					break;
+			} */
+
+			// The above spell effect is not currently working. So, do a manual heal instead:
+
+			float touchHealAmount = 0;
+			switch (aaClientTOTD) {
+				case 1:
+					touchHealAmount = 0.15;
+					break;
+				case 2:
+					touchHealAmount = 0.3;
+					break;
+				case 3:
+					touchHealAmount = 0.6;
+					break;
+				case 4:
+					touchHealAmount = 0.8;
+					break;
+				case 5:
+					touchHealAmount = 1.0;
+					break;
+			}
+
+			this->Message(0, "Divine power heals your wounds.");
+			SetHP(this->max_hp * touchHealAmount);
+
+			// and "Touch of the Divine", an Invulnerability/HoT/Purify effect, only one for all 5 levels
+			SpellOnTarget(4789, this);
+
+			// skip checking for DI fire if this goes off...
+			if (Result == true) {
+				return Result;
+			}
+		}
+	}
 
 	int buffSlot = GetBuffSlotFromType(SE_DeathSave);
 
