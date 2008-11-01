@@ -2291,6 +2291,16 @@ struct PickPocket_Struct {
  * Server to client packet
  */
 
+enum  {
+	PickPocketFailed = 0,
+	PickPocketPlatinum = 1,
+	PickPocketGold = 2,
+	PickPocketSilver = 3,
+	PickPocketCopper = 4,
+	PickPocketItem = 5
+};
+
+
 struct sPickPocket_Struct {
 	// Size 28 = coin/fail
 	uint32 to;

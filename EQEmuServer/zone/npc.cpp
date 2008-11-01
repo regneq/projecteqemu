@@ -1148,7 +1148,7 @@ void NPC::PickPocket(Client* thief) {
 	int olevel = GetLevel();
 	if(olevel > (thief->GetLevel() + THIEF_PICKPOCKET_OVER)) {
 		thief->Message(13, "You are too inexperienced to pick pocket this target");
-		thief->SendPickPocketResponce(this, 0, 0);
+		thief->SendPickPocketResponse(this, 0, PickPocketFailed);
 		//should we check aggro
 		return;
 	}
@@ -1157,7 +1157,7 @@ void NPC::PickPocket(Client* thief) {
 		AddToHateList(thief, 50);
 		Say("Stop thief!");
 		thief->Message(13, "You are noticed trying to steal!");
-		thief->SendPickPocketResponce(this, 0, 0);
+		thief->SendPickPocketResponse(this, 0, PickPocketFailed);
 		return;
 	}
 	
@@ -1220,8 +1220,10 @@ void NPC::PickPocket(Client* thief) {
 				thief->PutItemInInventory(slot[random], *inst);
 				thief->SendItemPacket(slot[random], inst, ItemPacketTrade);
 				RemoveItem(item->ID);
-				thief->SendPickPocketResponce(this, 0, 5, item);
+				thief->SendPickPocketResponse(this, 0, PickPocketItem, item);
 			}
+			else
+				steal_item = false;
 		}
 		else if (!no_coin)
 		{
@@ -1230,7 +1232,7 @@ void NPC::PickPocket(Client* thief) {
 		else
 		{
 			thief->Message(0, "This target's pockets are empty");
-			thief->SendPickPocketResponce(this, 0, 0);
+			thief->SendPickPocketResponse(this, 0, PickPocketFailed);
 		}
 	}
 	if (!steal_item) //Steal money
@@ -1258,39 +1260,39 @@ void NPC::PickPocket(Client* thief) {
 					if (amt > GetPlatinum())
 						amt = GetPlatinum();
 					SetPlatinum(GetPlatinum()-amt);
-					thief->AddMoneyToPP(0,0,0,amt,true);
-					thief->SendPickPocketResponce(this, amt, 1);
+					thief->AddMoneyToPP(0,0,0,amt,false);
+					thief->SendPickPocketResponse(this, amt, PickPocketPlatinum);
 					break;
 				   }
 			case 1:{
 					if (amt > GetGold())
 						amt = GetGold();
 					SetGold(GetGold()-amt);
-					thief->AddMoneyToPP(0,0,amt,0,true);
-					thief->SendPickPocketResponce(this, amt, 2);
+					thief->AddMoneyToPP(0,0,amt,0,false);
+					thief->SendPickPocketResponse(this, amt, PickPocketGold);
 					break;
 				   }
 			case 2:{
 					if (amt > GetSilver())
 						amt = GetSilver();
 					SetSilver(GetSilver()-amt);
-					thief->AddMoneyToPP(0,amt,0,0,true);
-					thief->SendPickPocketResponce(this, amt, 3);
+					thief->AddMoneyToPP(0,amt,0,0,false);
+					thief->SendPickPocketResponse(this, amt, PickPocketSilver);
 					break;
 				   }
 			case 3:{
 					if (amt > GetCopper())
 						amt = GetCopper();
 					SetCopper(GetCopper()-amt);
-					thief->AddMoneyToPP(amt,0,0,0,true);
-					thief->SendPickPocketResponce(this, amt, 4);
+					thief->AddMoneyToPP(amt,0,0,0,false);
+					thief->SendPickPocketResponse(this, amt, PickPocketCopper);
 					break;
 				   }
 			}
 		}
 		else
 		{
-			thief->SendPickPocketResponce(this, 0, 0);
+			thief->SendPickPocketResponse(this, 0, PickPocketFailed);
 		}
 	}
 	safe_delete(inst);
