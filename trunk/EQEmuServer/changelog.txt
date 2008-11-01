@@ -3,6 +3,8 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 
 ==11/01/2008
 Derision: Allow backtick through the CleanName filter.
+Derision: Pickpocket should no longer occasionally bug the UI.
+Derision: Pickpocketing money should no longer show twice the amount taken in the client.
 
 ==10/31/2008
 seveianrex: Monk updates: Strikethrough AA, Mend Worsen Frequency Tweak, Kick Mastery AA Fix

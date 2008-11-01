@@ -3408,13 +3408,17 @@ void Client::SendOPTranslocateConfirm(Mob *Caster, int16 SpellID) {
 
 	return;
 }
-void Client::SendPickPocketResponce(Mob *from, uint32 amt, int type, const Item_Struct* item){
+void Client::SendPickPocketResponse(Mob *from, uint32 amt, int type, const Item_Struct* item){
 		EQApplicationPacket* outapp = new EQApplicationPacket(OP_PickPocket, sizeof(sPickPocket_Struct));
 		sPickPocket_Struct* pick_out = (sPickPocket_Struct*) outapp->pBuffer;
 		pick_out->coin = amt;
 		pick_out->from = GetID();
 		pick_out->to = from->GetID();
 		pick_out->myskill = GetSkill(PICK_POCKETS);
+
+		if((type >= PickPocketPlatinum) && (type <= PickPocketCopper) && (amt == 0))
+			type = PickPocketFailed;
+
 		pick_out->type = type;
 		if(item)
 			strcpy(pick_out->itemname, item->Name);
