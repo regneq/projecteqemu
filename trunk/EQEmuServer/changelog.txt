@@ -7,6 +7,7 @@ Derision: Allow backtick through the CleanName filter.
 Derision: Pickpocket should no longer occasionally bug the UI.
 Derision: Pickpocketing money should no longer show twice the amount taken in the client.
 Derision: Looting stackable PVPItem now works.
+Derision: Client now updates correctly when a charge on an item with a right click effect is used. Update your patch_Titanium.conf
 
 ==10/31/2008
 seveianrex: Monk updates: Strikethrough AA, Mend Worsen Frequency Tweak, Kick Mastery AA Fix
