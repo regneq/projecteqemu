@@ -799,7 +799,7 @@ void Corpse::MakeLootRequestPackets(Client* client, const EQApplicationPacket* a
 			client->QueuePacket(app);
 			return;
 		}
-		
+
 		int i = 0;
 		const Item_Struct* item = 0;
 		ItemList::iterator cur,end;
@@ -891,9 +891,12 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app)
 		else
 			inst = database.CreateItem(item);
 
-		if(item_data && inst->IsStackable()) {
-			//Restore charges from the original item.
-			inst->SetCharges(item_data->charges);
+		if(inst->IsStackable()) {
+			if(item_data) 
+				//Restore charges from the original item.
+				inst->SetCharges(item_data->charges);
+			else
+				inst->SetCharges(1);
 		} else {
 			//default changes
 			if(item->MaxCharges == -1)
