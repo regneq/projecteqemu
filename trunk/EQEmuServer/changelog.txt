@@ -6,6 +6,7 @@ seveianrex: GoD AA Implementations: [CLR] Touch of the Divine, [BRD] Internal Me
 Derision: Allow backtick through the CleanName filter.
 Derision: Pickpocket should no longer occasionally bug the UI.
 Derision: Pickpocketing money should no longer show twice the amount taken in the client.
+Derision: Looting stackable PVPItem now works.
 
 ==10/31/2008
 seveianrex: Monk updates: Strikethrough AA, Mend Worsen Frequency Tweak, Kick Mastery AA Fix
