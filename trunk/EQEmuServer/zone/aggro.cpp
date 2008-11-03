@@ -852,9 +852,6 @@ bool Mob::CombatRange(Mob* other)
 	else if (other_size_mod < 6.0)
 		other_size_mod = 8.0f;
 
-	if (other_size_mod > size_mod)
-		size_mod = other_size_mod;
-
 #ifdef EQBOTS
 
 	if(IsBot()) {
@@ -894,9 +891,29 @@ bool Mob::CombatRange(Mob* other)
 
 #endif //EQBOTS
 
-	size_mod *= size_mod * 4;
+	if (other_size_mod > size_mod)
+	{
+		size_mod = other_size_mod;
+	}
+
+	// this could still use some work, but for now it's an improvement....
+
+	if (size_mod > 29)
+		size_mod *= size_mod;
+	else if (size_mod > 19)
+		size_mod *= size_mod * 2;
+	else
+		size_mod *= size_mod * 4;
+
+
+	// prevention of ridiculously sized hit boxes
+	if (size_mod > 10000)
+		size_mod = size_mod / 7;
+	
 	if (DistNoRootNoZ(*other) <= size_mod)
+	{
 		return true;
+	}
 	return false;
 }
 
