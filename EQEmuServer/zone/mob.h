@@ -754,6 +754,7 @@ bool logpos;
 	inline const bool	IsHeld() const { return held; }
 	inline const bool	IsRoamer() const { return roamer; }
 	inline const bool   IsRooted() const { return rooted || permarooted; }
+	int					GetSnaredAmount();
 
 	bool				RemoveFromHateList(Mob* mob);
     void				AddToHateList(Mob* other, sint32 hate = 0, sint32 damage = 0, bool iYellForHelp = true, bool bFrenzy = false, bool iBuffTic = false);

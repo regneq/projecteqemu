@@ -1,6 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==11/03/2008
+seveianrex: Added some scaling to the way NPC hitboxes are calculated. This corrects some of the issues with mobs like Wurms/Dragons who you could hit from miles away.
+seveianrex: NPCs who are 5% HP or lower, are fleeing, and have a decent snare on will no longer cover so much distance.
+seveianrex: Implemented Mob::GetSnaredAmount() function, utilized in the above. Returns the ABS() value of the snare.
+
 ==11/01/2008
 seveianrex: GoD AA Implementations: [CLR] Touch of the Divine, [BRD] Internal Metronome, [SHD] Improved Consumption of the Soul
 Derision: Allow backtick through the CleanName filter.

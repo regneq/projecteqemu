@@ -3507,3 +3507,28 @@ int Mob::CountDispellableBuffs()
 	}
 	return val;
 }
+
+// Returns the % that a mob is snared (as a positive value). -1 means not snared
+int Mob::GetSnaredAmount()
+{
+	int worst_snare = -1;
+
+	for (int i = 0; i < BUFF_COUNT; i++)
+	{
+		if (!IsValidSpell(buffs[i].spellid))
+			continue;
+
+		for(int j = 0; j < EFFECT_COUNT; j++)
+		{
+			if (spells[buffs[i].spellid].effectid[j] == SE_MovementSpeed)
+			{
+				int val = CalcSpellEffectValue_formula(spells[buffs[i].spellid].formula[j], spells[buffs[i].spellid].base[j], spells[buffs[i].spellid].max[j], buffs[i].casterlevel, buffs[i].spellid);
+				//int effect = CalcSpellEffectValue(buffs[i].spellid, spells[buffs[i].spellid].effectid[j], buffs[i].casterlevel);
+				if (val < 0 && abs(val) > worst_snare)
+					worst_snare = abs(val);
+			}
+		}
+	}
+
+	return worst_snare;
+}
