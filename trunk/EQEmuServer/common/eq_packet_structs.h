@@ -653,6 +653,12 @@ struct PotionBelt_Struct {
 	BandolierItem_Struct items[MAX_POTIONS_IN_BELT];
 };
 
+struct MovePotionToBelt_Struct {
+	uint32	Action;
+	uint32	SlotNumber;
+	uint32	ItemID;
+};
+
 static const uint32 MAX_GROUP_LEADERSHIP_AA_ARRAY = 16;
 static const uint32 MAX_RAID_LEADERSHIP_AA_ARRAY = 16;
 static const uint32 MAX_LEADERSHIP_AA_ARRAY = (MAX_GROUP_LEADERSHIP_AA_ARRAY+MAX_RAID_LEADERSHIP_AA_ARRAY);
