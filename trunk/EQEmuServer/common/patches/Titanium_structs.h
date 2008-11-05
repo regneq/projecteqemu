@@ -728,8 +728,9 @@ struct PlayerProfile_Struct
 /*00177*/ uint8   beard;              // Player beard type
 /*00178*/ uint8 unknown00178[10];
 /*00188*/ uint32  item_material[9];   // Item texture/material of worn items
-/*00224*/ uint8 unknown00224[48];
-/*00272*/ Color_Struct item_tint[9];    // RR GG BB 00
+/*00224*/ uint8 unknown00224[44];
+/*00268*/ Color_Struct item_tint[9];    // RR GG BB 00
+/*00304*/ uint32 unknown00304;
 /*00308*/ AA_Array  aa_array[MAX_PP_AA_ARRAY];   // AAs
 /*02220*/ uint8 unknown02220[4];
 /*02224*/ uint32  points;             // Unspent Practice points

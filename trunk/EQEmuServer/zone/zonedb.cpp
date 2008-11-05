@@ -741,6 +741,11 @@ bool ZoneDatabase::GetCharacterInfoForLogin_result(MYSQL_RES* result,
 		if(level)
 			*level = atoi(row[10]);
 		
+		// Fix use_tint, previously it was set to 1 for a dyed slot, client wants it set to 0xFF
+		for(int i = 0; i<9; i++)
+	                if(pp->item_tint[i].rgb.use_tint == 1)
+				pp->item_tint[i].rgb.use_tint = 0xFF;
+		
 		// Retrieve character inventory
 		return GetInventory(char_id, inv);
 	}

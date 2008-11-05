@@ -1476,42 +1476,42 @@ void Client::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho)
 	if ((inst = m_inv[SLOT_HANDS]) && inst->IsType(ItemClassCommon)) {
 		item = inst->GetItem();
 		ns->spawn.equipment[MATERIAL_HANDS]	= item->Material;
-		ns->spawn.colors[MATERIAL_HANDS].color	= item->Color;
+		ns->spawn.colors[MATERIAL_HANDS].color	= GetEquipmentColor(MATERIAL_HANDS);
 	}
 	if ((inst = m_inv[SLOT_HEAD]) && inst->IsType(ItemClassCommon)) {
 		item = inst->GetItem();
 		ns->spawn.equipment[MATERIAL_HEAD]	= item->Material;
-		ns->spawn.colors[MATERIAL_HEAD].color	= item->Color;
+		ns->spawn.colors[MATERIAL_HEAD].color	= GetEquipmentColor(MATERIAL_HEAD);
 	}
 	if ((inst = m_inv[SLOT_ARMS]) && inst->IsType(ItemClassCommon)) {
 		item = inst->GetItem();
 		ns->spawn.equipment[MATERIAL_ARMS]	= item->Material;
-		ns->spawn.colors[MATERIAL_ARMS].color	= item->Color;
+		ns->spawn.colors[MATERIAL_ARMS].color	= GetEquipmentColor(MATERIAL_ARMS);
 	}
 	if ((inst = m_inv[SLOT_BRACER01]) && inst->IsType(ItemClassCommon)) {
 		item = inst->GetItem();
 		ns->spawn.equipment[MATERIAL_BRACER]= item->Material;
-		ns->spawn.colors[MATERIAL_BRACER].color	= item->Color;
+		ns->spawn.colors[MATERIAL_BRACER].color	= GetEquipmentColor(MATERIAL_BRACER);
 	}
 	if ((inst = m_inv[SLOT_BRACER02]) && inst->IsType(ItemClassCommon)) {
 		item = inst->GetItem();
 		ns->spawn.equipment[MATERIAL_BRACER]= item->Material;
-		ns->spawn.colors[MATERIAL_BRACER].color	= item->Color;
+		ns->spawn.colors[MATERIAL_BRACER].color	= GetEquipmentColor(MATERIAL_BRACER);
 	}
 	if ((inst = m_inv[SLOT_CHEST]) && inst->IsType(ItemClassCommon)) {
 		item = inst->GetItem();
 		ns->spawn.equipment[MATERIAL_CHEST]	= item->Material;
-		ns->spawn.colors[MATERIAL_CHEST].color	= item->Color;
+		ns->spawn.colors[MATERIAL_CHEST].color	= GetEquipmentColor(MATERIAL_CHEST);
 	}
 	if ((inst = m_inv[SLOT_LEGS]) && inst->IsType(ItemClassCommon)) {
 		item = inst->GetItem();
 		ns->spawn.equipment[MATERIAL_LEGS]	= item->Material;
-		ns->spawn.colors[MATERIAL_LEGS].color	= item->Color;
+		ns->spawn.colors[MATERIAL_LEGS].color	= GetEquipmentColor(MATERIAL_LEGS);
 	}
 	if ((inst = m_inv[SLOT_FEET]) && inst->IsType(ItemClassCommon)) {
 		item = inst->GetItem();
 		ns->spawn.equipment[MATERIAL_FEET]	= item->Material;
-		ns->spawn.colors[MATERIAL_FEET].color	= item->Color;
+		ns->spawn.colors[MATERIAL_FEET].color	= GetEquipmentColor(MATERIAL_FEET);
 	}
 	if ((inst = m_inv[SLOT_PRIMARY]) && inst->IsType(ItemClassCommon)) {
 		item = inst->GetItem();
