@@ -327,6 +327,7 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_FriendsWho] = &Client::Handle_OP_FriendsWho;
 	ConnectedOpcodes[OP_Bandolier] = &Client::Handle_OP_Bandolier;
 	ConnectedOpcodes[OP_PopupResponse] = &Client::Handle_OP_PopupResponse;
+	ConnectedOpcodes[OP_PotionBelt] = &Client::Handle_OP_PotionBelt;
 
 }
 
@@ -3118,7 +3119,7 @@ void Client::Handle_OP_CastSpell(const EQApplicationPacket *app)
 #endif
 LogFile->write(EQEMuLog::Debug, "OP CastSpell: slot=%d, spell=%d, target=%d, inv=%lx", castspell->slot, castspell->spell_id, castspell->target_id, castspell->inventoryslot);
 
-	if (castspell->slot == USE_ITEM_SPELL_SLOT)	// this means item
+	if ((castspell->slot == USE_ITEM_SPELL_SLOT) || (castspell->slot == POTION_BELT_SPELL_SLOT))	// this means item
 	{
 		//discipline, using the item spell slot
 		if(castspell->inventoryslot == 0xFFFFFFFF) {
@@ -3128,7 +3129,7 @@ LogFile->write(EQEMuLog::Debug, "OP CastSpell: slot=%d, spell=%d, target=%d, inv
 			}
 			return;
 		}
-		else if (castspell->inventoryslot < 30)	// sanity check
+		else if ((castspell->inventoryslot < 30) || (castspell->slot == POTION_BELT_SPELL_SLOT))	// sanity check
 		{
 			const ItemInst* inst = m_inv[castspell->inventoryslot]; //@merth: slot values are sint16, need to check packet on this field
 			//bool cancast = true;
@@ -7992,4 +7993,29 @@ void Client::Handle_OP_PopupResponse(const EQApplicationPacket *app) {
 		parse->Event(EVENT_POPUPRESPONSE, Target->GetNPCTypeID(), buf, Target->CastToNPC(), this);
 		safe_delete_array(buf);
 	}
+}
+
+void Client::Handle_OP_PotionBelt(const EQApplicationPacket *app) {
+
+	if(app->size != sizeof(MovePotionToBelt_Struct)) {
+		LogFile->write(EQEMuLog::Debug, "Size mismatch in OP_PotionBelt expected %i got %i",
+		               sizeof(MovePotionToBelt_Struct), app->size);
+		DumpPacket(app);
+		return;
+	}
+	MovePotionToBelt_Struct *mptbs = (MovePotionToBelt_Struct*)app->pBuffer;
+	if(mptbs->Action == 0) {
+		const Item_Struct *BaseItem = database.GetItem(mptbs->ItemID);
+		if(BaseItem) {
+			m_pp.potionbelt.items[mptbs->SlotNumber].item_id = BaseItem->ID;
+			m_pp.potionbelt.items[mptbs->SlotNumber].icon = BaseItem->Icon;
+		}
+	}
+	else {
+		m_pp.potionbelt.items[mptbs->SlotNumber].item_id = 0;
+		m_pp.potionbelt.items[mptbs->SlotNumber].icon = 0;
+	}
+
+	Save();
+
 }

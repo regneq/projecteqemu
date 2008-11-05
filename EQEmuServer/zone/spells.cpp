@@ -259,7 +259,7 @@ bool Mob::CastSpell(int16 spell_id, int16 target_id, int16 slot,
 	with effects and clicking them
 	for benefits. - ndnet
 	---------------------------------*/
-	if(item_slot && IsClient() && slot == USE_ITEM_SPELL_SLOT)
+	if(item_slot && IsClient() && ((slot == USE_ITEM_SPELL_SLOT) || (slot == POTION_BELT_SPELL_SLOT)))
 	{
 		ItemInst *itm = CastToClient()->GetInv().GetItem(item_slot);
 		int bitmask = 1;
@@ -723,7 +723,7 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16
 {
 	_ZP(Mob_CastedSpellFinished);
 	
-	if(IsClient() && slot != USE_ITEM_SPELL_SLOT && spells[spell_id].recast_time > 1000) {	// 10 is item
+	if(IsClient() && slot != USE_ITEM_SPELL_SLOT && slot != POTION_BELT_SPELL_SLOT && spells[spell_id].recast_time > 1000) { // 10 is item
 		if(!CastToClient()->GetPTimers().Expired(&database, pTimerSpellStart + spell_id, false)) {
 			//should we issue a  message or send them a spell gem packet?
 			Message(13, "Spell reuse timer not expired yet.");
@@ -733,7 +733,7 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16
 		}
 	}
 
-	if(IsClient() && slot == USE_ITEM_SPELL_SLOT)
+	if(IsClient() && ((slot == USE_ITEM_SPELL_SLOT) || (slot == POTION_BELT_SPELL_SLOT)))
 	{
 		ItemInst *itm = CastToClient()->GetInv().GetItem(inventory_slot);
 		if(itm && itm->GetItem()->RecastDelay > 0)
@@ -943,7 +943,7 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16
 	//
 
 	// if this was cast from an inventory slot, check out the item that's there
-	if(IsClient() && slot == USE_ITEM_SPELL_SLOT 
+	if(IsClient() && ((slot == USE_ITEM_SPELL_SLOT) || (slot == POTION_BELT_SPELL_SLOT))
 		&& inventory_slot != 0xFFFFFFFF)	// 10 is an item
 	{
 		const ItemInst* inst = CastToClient()->GetInv()[inventory_slot];
@@ -1600,7 +1600,7 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
 	
 	// if this was a spell slot or an ability use up the mana for it
 	// CastSpell already reduced the cost for it if we're a client with focus
-	if(slot != USE_ITEM_SPELL_SLOT && mana_used > 0)
+	if(slot != USE_ITEM_SPELL_SLOT  && slot != POTION_BELT_SPELL_SLOT && mana_used > 0)
 	{
 		mlog(SPELLS__CASTING, "Spell %d: consuming %d mana", spell_id, mana_used);
 		SetMana(GetMana() - mana_used);
@@ -1621,7 +1621,7 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
 		CastToClient()->GetPTimers().Start(pTimerSpellStart + spell_id, recast);
 	}
 
-	if(IsClient() && slot == USE_ITEM_SPELL_SLOT)
+	if(IsClient() && ((slot == USE_ITEM_SPELL_SLOT) || (slot == POTION_BELT_SPELL_SLOT)))
 	{
 		ItemInst *itm = CastToClient()->GetInv().GetItem(inventory_slot);
 		if(itm && itm->GetItem()->RecastDelay > 0){

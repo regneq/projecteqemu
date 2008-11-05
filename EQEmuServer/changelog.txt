@@ -3,6 +3,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 
 ==11/05/2008
 Derision: Dyed armor color should now show up correctly to other players.
+Derision: Implemented the Potion Belt.
 
 ==11/03/2008
 seveianrex: Added some scaling to the way NPC hitboxes are calculated. This corrects some of the issues with mobs like Wurms/Dragons who you could hit from miles away.
