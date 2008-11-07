@@ -304,9 +304,9 @@ typedef enum  {
 #define SE_CurrentEnduranceOnce		198
 //#define SE_Unknown199				199	//Flutter Flight (9480). something with aggro?
 #define SE_ProcChance				200
-#define SE_RangedProc				201	//not implemented
-#define SE_IllusionOther			202	//not implemented
-#define SE_MassGroupBuff			203	//not implemented
+#define SE_RangedProc				201
+#define SE_IllusionOther			202	
+#define SE_MassGroupBuff			203	
 #define SE_GroupFearImmunity		204
 #define SE_Rampage					205
 #define SE_AETaunt					206
@@ -426,7 +426,7 @@ typedef enum  {
 //#define SE_Unknown320				320	//not used
 #define SE_ReduceHate				321 //not implemented
 #define SE_GateToHomeCity			322 //not implemented
-#define SE_DefensiveProc			323	//not implemented
+#define SE_DefensiveProc			323
 #define SE_HPToMana					324 //not implemented
 //#define SE_Unknown325				325	//not used
 #define SE_SpellSlotIncrease		326 //aa effect, increases your spell slot availability

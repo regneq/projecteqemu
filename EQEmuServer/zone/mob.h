@@ -325,6 +325,8 @@ bool logpos;
 	void	RogueAssassinate(Mob* other); // solar
 	bool	BehindMob(Mob* other = 0, float playerx = 0.0f, float playery = 0.0f) const;
 
+	void	TriggerDefensiveProcs(Mob *on);
+
 	Mob(const char*   in_name,
 	    const char*   in_lastname,
 	    sint32  in_cur_hp,
@@ -439,6 +441,14 @@ bool logpos;
 	virtual void FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho);
 	void CreateHPPacket(EQApplicationPacket* app);
 	void SendHPUpdate();
+
+	bool AddRangedProc(int16 spell_id, int8 iChance = 3);
+	bool RemoveRangedProc(int16 spell_id, bool bAll = false);
+	bool HasRangedProcs() const;
+
+	bool AddDefensiveProc(int16 spell_id, int8 iChance = 3);
+	bool RemoveDefensiveProc(int16 spell_id, bool bAll = false);
+	bool HasDefensiveProcs() const;
 
 	bool AddProcToWeapon(int16 spell_id, bool bPerma = false, int8 iChance = 3);
 	bool RemoveProcFromWeapon(int16 spell_id, bool bAll = false);
@@ -989,6 +999,7 @@ protected:
 	bool held;
 	void CalcSpellBonuses(StatBonuses* newbon);
 	virtual void CalcBonuses();
+	void TryDefensiveProc(Mob *on);
 	void TryWeaponProc(const Item_Struct* weapon, Mob *on);
 	void TryWeaponProc(const ItemInst* weapon, Mob *on);
 	void ExecWeaponProc(uint16 spell_id, Mob *on);
@@ -1005,6 +1016,8 @@ protected:
 	enum {MAX_PROCS = 4};
 	tProc PermaProcs[MAX_PROCS];
 	tProc SpellProcs[MAX_PROCS];
+	tProc DefensiveProcs[MAX_PROCS];
+	tProc RangedProcs[MAX_PROCS];
 
 	char    name[64];
 	char		clean_name[64];

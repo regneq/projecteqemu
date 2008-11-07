@@ -2171,8 +2171,11 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Ranged Proc: %+i", effect_value);
 #endif
-				if(caster) caster->Message(13, "Ranged Procs are not implemented yet.");
-				break;
+				uint16 procid = GetProcID(spell_id, i);
+
+				AddRangedProc(procid);
+				
+				break;		
 			}
 
 			case SE_Rampage:
@@ -2327,10 +2330,11 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 
 			case SE_DefensiveProc:
 			{
+				uint16 procid = GetProcID(spell_id, i);
 #ifdef SPELL_EFFECT_SPAM
-				snprintf(effect_desc, _EDLEN, "Defensive Proc: %+i", effect_value);
+				snprintf(effect_desc, _EDLEN, "Defensive Proc: %s (id %d)", spells[effect_value].name, procid);
 #endif
-				if(caster) caster->Message(13, "Defensive Procs are not implemented yet.");
+				AddDefensiveProc(procid);
 				break;
 			}
 
@@ -2966,6 +2970,20 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 			{
 				uint16 procid = GetProcID(buffs[slot].spellid, i);
 				RemoveProcFromWeapon(procid, false);
+				break;
+			}
+
+			case SE_DefensiveProc:
+			{
+				uint16 procid = GetProcID(buffs[slot].spellid, i);
+				RemoveDefensiveProc(procid);
+				break;
+			}
+
+			case SE_RangedProc:
+			{
+				uint16 procid = GetProcID(buffs[slot].spellid, i);
+				RemoveRangedProc(procid);
 				break;
 			}
 

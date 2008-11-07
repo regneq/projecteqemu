@@ -240,6 +240,11 @@ Client::Client(EQStreamInterface* ieqs)
 	taskstate = NULL;
 	TotalSecondsPlayed = 0;
 	keyring.clear();
+	melodystate = false;
+	for (int i = 0; i < MAX_PP_MEMSPELL; i++) {
+		melodygems[i] = -1;
+	}
+	melody_current_song = 0;
 
 	logging_enabled = CLIENT_DEFAULT_LOGGING_ENABLED;
 
@@ -3530,4 +3535,78 @@ if ((item = database.GetItem(*iter))!=NULL) {
 Message(4,item->Name);
 }
 }
+}
+
+void Client::MelodyAdvanceSong() {
+	// first, if we're at the end of the list then go back to 0...
+	if (melody_current_song == MAX_PP_MEMSPELL)
+		melody_current_song = 0;
+	else {
+		melody_current_song++;
+		if (IsValidSpell(MelodyGetSpellID(melodygems[melody_current_song]))) {
+			return;
+		}
+	}
+
+	// if we arrive here, we need to continue on down our list until we can find a useable gem.
+
+	int start_song = melody_current_song;
+	// start at the current song, work our way forward to the end of the list
+	for (int i = melody_current_song; i < MAX_PP_MEMSPELL; i++) {
+		melody_current_song = i;
+		if (IsValidSpell(MelodyGetSpellID(melodygems[melody_current_song]))) {
+			return;
+		}
+	}
+
+	// if still no luck, start at 0 and work forward to where the last loop began
+	for (int i = 0; i < start_song; i++) {
+		melody_current_song = i;
+		if (IsValidSpell(MelodyGetSpellID(melodygems[melody_current_song]))) {
+			return;
+		}
+	}
+
+	// if we get to this point, then chances are we can disable melody, as there are no valid spells
+	Message(0, "No valid songs found.");
+	this->MelodyClearSongs();
+	this->MelodySetState(false);
+}
+
+// re-initialize the melody gems array
+void Client::MelodyClearSongs() {
+	for (int i = 0; i < MAX_PP_MEMSPELL; i++)
+	{
+		this->melodygems[i] = -1;
+	}
+}
+
+// attempt to determine spell ID based on the gem provided
+int32 Client::MelodyGetSpellID(int gem_id) {
+	if (gem_id > -1 && gem_id < MAX_PP_MEMSPELL)
+		return this->m_pp.mem_spells[gem_id];
+	else
+		return SPELL_UNKNOWN;
+}
+
+bool Client::MelodySetSong(int gem_id, int slot) {
+
+	if (!(gem_id > -1 && gem_id < MAX_PP_MEMSPELL))
+		return false;
+
+	// if no slot is provided (defaults to -1), choose one and stick it in
+	if (slot == -1) {
+		for (int i = 0; i < MAX_PP_MEMSPELL; i++) {
+			if (melodygems[i] == -1) {
+				melodygems[i] = gem_id;
+				return true;
+			}
+		}
+
+		Message(0, "ERROR: We ran out of slots to auto-assign gem_id %d to!", gem_id);
+		return false;
+	}
+	else {
+		this->melodygems[slot] = gem_id;
+	}
 }

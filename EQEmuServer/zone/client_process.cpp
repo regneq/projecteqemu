@@ -162,6 +162,23 @@ bool Client::Process() {
 			this->stunned_timer.Disable();
 		}
 		
+		// Bard Melody twisting
+		if (this->MelodyIsActive())
+		{
+			// if we're not currently casting, we can move along to the next song
+			if (!this->IsCasting()) {
+				int16 songID = this->MelodyGetCurrentSpellID();
+
+				if (IsValidSpell(songID)) {
+					Mob *target = this->GetTarget() == NULL ? this->CastToMob() : this->GetTarget();
+					int32 cast_time = spells[songID].cast_time;
+					int16 mana_cost = spells[songID].mana;
+					this->DoCastSpell(songID, target->GetID(), 10, cast_time, mana_cost);
+				}
+			}
+				
+		}
+
 		if (bardsong_timer.Check() && bardsong != 0) {
 			//NOTE: this is kinda a heavy-handed check to make sure the mob still exists before
 			//doing the next pulse on them...
