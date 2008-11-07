@@ -1942,51 +1942,23 @@ bool Mob::HateSummon() {
 	return false;
 }
 
-void Mob::FaceTarget(Mob* MobToFace, bool update) {
-	if (MobToFace == 0)
-		MobToFace = target;
-	if (MobToFace == 0 || MobToFace == this)
-		return;
-	// TODO: Simplify?
-	float oldheading = heading;
-	heading=(CalculateHeadingToTarget(MobToFace->GetX(),MobToFace->GetY()));
-//	EQApplicationPacket* outapp = new EQApplicationPacket(OP_ClientUpdate, sizeof(PlayerPositionUpdateServer_Struct));
-//	PlayerPositionUpdateServer_Struct* spu = (PlayerPositionUpdateServer_Struct*)outapp->pBuffer;
-//	MakeSpawnUpdate(spu);
-//	entity_list.QueueCloseClients(this, outapp, true, 300);
-//	safe_delete(outapp);
-	/*float angle;
-	
-	if (MobToFace->GetX()-x_pos > 0)
-		angle = - 90 + atan((double)(MobToFace->GetY()-y_pos) / (double)(MobToFace->GetX()-x_pos)) * 180 / M_PI;
-	else if (MobToFace->GetX()-x_pos < 0)
-		angle = + 90 + atan((double)(MobToFace->GetY()-y_pos) / (double)(MobToFace->GetX()-x_pos)) * 180 / M_PI;
-	else // Added?
-	{
-		if (MobToFace->GetY()-y_pos > 0)
-			angle = 0;
-		else
-			angle = 180;
+void Mob::FaceTarget(Mob* MobToFace) {
+	Mob* facemob = MobToFace;
+	if(!facemob) {
+		if(!GetTarget()) {
+			return;
+		}
+		else {
+			facemob = GetTarget();
+		}
 	}
-	//cout << "dX:" << MobToFace->GetX()-x_pos;
-	//cout << "dY:" << MobToFace->GetY()-y_pos;
-	//cout << "Angle:" << angle;
-	
-	if (angle < 0)
-		angle += 360;
-	if (angle > 360)
-		angle -= 360;
-	
 
-	float oldheading = heading;
-	heading = (sint8) (256*(360-angle)/360.0f);
-	//	return angle;
-	
-	//cout << "Heading:" << (int)heading << endl;
-	*/
-	SendPosUpdate();
-	if (update && oldheading != heading)
-		pLastChange = Timer::GetCurrentTime();
+	float oldheading = GetHeading();
+	float newheading = CalculateHeadingToTarget(facemob->GetX(), facemob->GetY());
+	if(oldheading != newheading) {
+		SetHeading(newheading);
+		SendPosUpdate();
+	}
 }
 
 bool Mob::RemoveFromHateList(Mob* mob) {
@@ -2175,7 +2147,7 @@ void Mob::Warp( float x, float y, float z )
 
    Mob* target = GetTarget(); 
    if ( target ) { 
-      FaceTarget( target, true ); 
+      FaceTarget( target ); 
    } 
 
    SendPosition(); 

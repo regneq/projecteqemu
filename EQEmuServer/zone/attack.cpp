@@ -1381,13 +1381,9 @@ bool NPC::BotAttackMelee(Mob* other, int Hand, bool bRiposte)
 		Message(10,"You can't attack while invulnerable!");
 		return false;
 	}
-
-	float calcheading=CalculateHeadingToTarget(target->GetX(), target->GetY());
-	if((calcheading)!=GetHeading()){
-		SetHeading(calcheading);
-		FaceTarget(target, true);
-	}
 	
+	FaceTarget(target);
+
 	ItemInst* weapon = NULL;
 	const Item_Struct* botweapon = NULL;
 	if((Hand == SLOT_PRIMARY) && equipment[MATERIAL_PRIMARY])
@@ -1925,11 +1921,8 @@ bool NPC::Attack(Mob* other, int Hand, bool bRiposte)	 // Kaiyodo - base functio
 		mlog(COMBAT__ATTACKS, "I am not allowed to attack %s", other->GetName());
 		return false;
 	}
-	float calcheading=CalculateHeadingToTarget(target->GetX(), target->GetY());
-	if((calcheading)!=GetHeading()){
-		SetHeading(calcheading);
-		FaceTarget(target, true);
-	}
+	
+	FaceTarget(target);
 	
 	if(!combat_event) {
 		mlog(COMBAT__HITS, "Triggering EVENT_COMBAT due to attack on %s", other->GetName());

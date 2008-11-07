@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
 ==11/07/2008
+Congdar: make heading calculation more efficient, change sint8 to float for float calculations and heading variable
 seveianrex: Added #melody as a supplement for /melody until the OPcode can be located. Don't forget to:
 
 INSERT INTO commands (command, access, description) VALUES ('melody', 0, 'A supplement for /melody until the OP code is found.')

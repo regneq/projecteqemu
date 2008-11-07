@@ -380,7 +380,7 @@ int8 NPC::CalculateHeadingToNextWaypoint() {
     return CalculateHeadingToTarget(cur_wp_x, cur_wp_y);
 }
 */
-sint8 Mob::CalculateHeadingToTarget(float in_x, float in_y) {
+float Mob::CalculateHeadingToTarget(float in_x, float in_y) {
 	float angle;
 
 	if (in_x-x_pos > 0)
@@ -398,7 +398,7 @@ sint8 Mob::CalculateHeadingToTarget(float in_x, float in_y) {
 		angle += 360;
 	if (angle > 360)
 		angle -= 360;
-	return (sint8) (256*(360-angle)/360.0f);
+	return (256*(360-angle)/360.0f);
 }
 
 bool Mob::CalculateNewPosition2(float x, float y, float z, float speed, bool checkZ) {
