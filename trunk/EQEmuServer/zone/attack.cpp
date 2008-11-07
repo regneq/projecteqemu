@@ -1166,7 +1166,7 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte)
 
 		if (Hand==14) {
 			if(GetAA(aaSinisterStrikes)) {
-				int sinisterBonus = 5;
+				int sinisterBonus = MakeRandomInt(5, 10);
 				min_hit += (min_hit * sinisterBonus / 100);
 				max_hit += (max_hit * sinisterBonus / 100);
 			}

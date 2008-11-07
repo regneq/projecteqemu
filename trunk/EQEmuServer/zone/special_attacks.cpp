@@ -495,6 +495,43 @@ void Mob::TryBackstab(Mob *other) {
 		}
 	}
 	
+	bool tripleBackstab = false;
+	int tripleChance = 0;
+	if (IsClient() && CastToClient()->GetAA(aaTripleBackstab) > 0) {
+		switch (CastToClient()->GetAA(aaTripleBackstab)) {
+		case 1:
+			tripleChance = 10;
+			break;
+		case 2:
+			tripleChance = 20;
+			break;
+		case 3:
+			tripleChance = 30;
+			break;
+		}
+		if (tripleChance > MakeRandomInt(0, 100)) {
+			tripleBackstab = true;
+		}
+	}
+
+	bool seizedOpportunity = false;
+	int seizedChance = 0;
+	if (IsClient() && CastToClient()->GetAA(aaSeizedOpportunity) > 0) {
+		switch (CastToClient()->GetAA(aaSeizedOpportunity)) {
+			case 1:
+				seizedChance = 10;
+				break;
+			case 2:
+				seizedChance = 20;
+				break;
+			case 3:
+				seizedChance = 30;
+				break;
+		}
+		if (seizedChance > MakeRandomInt(0, 100)) {
+			seizedOpportunity = true;
+		}
+	}
 
 #ifdef EQBOTS
 
@@ -504,11 +541,15 @@ void Mob::TryBackstab(Mob *other) {
 
 #else //EQBOTS
 
-	if (BehindMob(other, GetX(), GetY())) // Player is behind other
+	if (BehindMob(other, GetX(), GetY()) || seizedOpportunity) // Player is behind other
 
 #endif //EQBOTS
 
 	{
+		if (seizedOpportunity) {
+			CastToClient()->Message(0,"Your fierce attack is executed with such grace, your target did not see it coming!");
+		}
+
 		// solar - chance to assassinate
 		float chance = (10.0+(GetDEX()/10)); //18.5% chance at 85 dex 40% chance at 300 dex
 		if(
@@ -533,6 +574,10 @@ void Mob::TryBackstab(Mob *other) {
 				if(MakeRandomFloat(0, 1) < DoubleAttackProbability)		// Max 62.4 % chance of DA
 					if(other->GetHP() > 0)
 						RogueBackstab(other);
+
+				if (tripleBackstab && other->GetHP() > 0) {
+					RogueBackstab(other);
+				}
 			}
 			if(IsClient())
 				CastToClient()->CheckIncreaseSkill(BACKSTAB,10);
@@ -549,6 +594,10 @@ void Mob::TryBackstab(Mob *other) {
 			if(MakeRandomFloat(0, 1) < DoubleAttackProbability)		// Max 62.4 % chance of DA
 				if(other->GetHP() > 0)
 					RogueBackstab(other, true);
+
+			if (tripleBackstab && other->GetHP() > 0) {
+					RogueBackstab(other);
+				}
 		}
 	}
 	else { //We do a single regular attack if we attack from the front without chaotic stab
