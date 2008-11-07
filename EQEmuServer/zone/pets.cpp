@@ -252,7 +252,7 @@ void Mob::MakePet(int16 spell_id, const char* pettype, const char *petname) {
 #ifdef EQBOTS
 
 	if(IsBot()) {
-		npc->SetTaunting(true);
+		npc->SetTaunting(false);
 		npc->BotOwner = this->BotOwner;
 		npc->SetOwnerID(this->GetID());
 		if(IsBotRaiding()) {

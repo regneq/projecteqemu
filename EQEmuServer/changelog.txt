@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
 ==11/07/2008
+Congdar: Bots: reduce spam, fix crash when fighting Dain, change mana/hp from npc to client like calcs
 Congdar: make heading calculation more efficient, change sint8 to float for float calculations and heading variable
 seveianrex: Added #melody as a supplement for /melody until the OPcode can be located. Don't forget to:
 
