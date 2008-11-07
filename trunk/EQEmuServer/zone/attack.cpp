@@ -3633,6 +3633,12 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 			
 			if(!IsSaved) {
 				SetHP(-100);
+
+				if(attacker && attacker->IsClient() && (spell_id != SPELL_UNKNOWN) && damage>0) {
+					char val1[20]={0};
+					attacker->Message_StringID(4,OTHER_HIT_NONMELEE,GetCleanName(),ConvertArray(damage,val1));
+				}
+
 				Death(attacker, damage, spell_id, skill_used);
 				return;
 			}
