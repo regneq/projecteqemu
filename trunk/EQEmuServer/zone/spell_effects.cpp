@@ -370,10 +370,11 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 
 #ifdef EQBOTS
 
-					if(IsBot() && ((spell_id == 1164) || (spell_id == 855))) {
+					if(IsBot() && ((spell_id == 1164) || (spell_id == 855) || (spell_id == 1476))) {
 						// Specific spell handler
 						// Crusader's Banishment
 						// Trakanon's Touch
+						// The Dain's Justice
 						target_zone = 0;
 					}
 					else

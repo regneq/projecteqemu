@@ -2471,7 +2471,7 @@ void Mob::BotMeditate(bool isSitting) {
 }
 
 void Mob::CalcBotStats() {
-	this->Say("I'm updating...");
+	BotOwner->Message(15, "Bot updating...");
 	// base stats
 	int brace = GetBaseRace(); // Angelox
 	int bclass = GetClass();
@@ -3217,43 +3217,50 @@ void Mob::CalcBotStats() {
 
 	// Now, we need to calc the base mana.
 	sint32 bot_mana = 0;
+	sint32 WisInt = 0;
+	sint32 MindLesserFactor, MindFactor;
 	switch (GetCasterClass()) {
 		case 'I':
-			bot_mana = (((bint/5)+2) * blevel);
+			WisInt = bint;
+			if((( WisInt - 199 ) / 2) > 0) {
+				MindLesserFactor = ( WisInt - 199 ) / 2;
+			}
+			else {
+				MindLesserFactor = 0;
+			}
+			MindFactor = WisInt - MindLesserFactor;
+			if(WisInt > 100) {
+				bot_mana = (((5 * (MindFactor + 20)) / 2) * 3 * blevel / 40);
+			}
+			else {
+				bot_mana = (((5 * (MindFactor + 200)) / 2) * 3 * blevel / 100);
+			}
+			bot_mana += (itembonuses.Mana + spellbonuses.Mana);
 			break;
+
 		case 'W':
-			bot_mana = (((bwis/5)+2) * blevel);
+			WisInt = bwis;
+			if((( WisInt - 199 ) / 2) > 0) {
+				MindLesserFactor = ( WisInt - 199 ) / 2;
+			}
+			else {
+				MindLesserFactor = 0;
+			}
+			MindFactor = WisInt - MindLesserFactor;
+			if(WisInt > 100) {
+				bot_mana = (((5 * (MindFactor + 20)) / 2) * 3 * blevel / 40);
+			}
+			else {
+				bot_mana = (((5 * (MindFactor + 200)) / 2) * 3 * blevel / 100);
+			}
+			bot_mana += (itembonuses.Mana + spellbonuses.Mana);
 			break;
+
 		case 'N':
 		default:
 			bot_mana = 0;
 			break;
 	}
-
-	// Hitpoint AA's
-	int32 nd = 10000;
-	if(blevel >= 65) {
-		nd = 11650;	// Planar Durablility AA 3
-	}
-	else if(blevel >= 63) {
-		nd = 11500;	// Planar Durablility AA 2
-	}
-	else if(blevel >= 61) {
-		nd = 11350;	// Planar Durablility AA 1
-	}
-	else if(blevel >= 59) {
-		nd = 11200;	// Physical Enhancememt AA 1
-	}
-	else if(blevel >= 57) {
-		nd = 11000;	// Natural Durablility AA 3
-	}
-	else if(blevel >= 56) {
-		nd = 10500;	// Natural Durablility AA 2
-	}
-	else if(blevel >= 55) {
-		nd = 10200;	// Natural Durablility AA 1
-	}
-	bot_hp = bot_hp * nd / 10000;
 
 	base_hp = bot_hp;
 	max_mana = cur_mana = bot_mana;
@@ -3273,13 +3280,13 @@ void Mob::CalcBotStats() {
 	WIS = bwis;
 
 	// Special Attacks
-	if(((GetClass() == MONK) || (GetClass() == WARRIOR) || (GetClass() == RANGER) || (GetClass() == BERSERKER))	&& (GetLevel() >= 60)) {
+	if(((bclass == MONK) || (bclass == WARRIOR) || (bclass == RANGER) || (bclass == BERSERKER))	&& (blevel >= 60)) {
 		SpecAttacks[SPECATK_TRIPLE] = true;
 	}
 
-	Say("Base stats:");
-	Say("Level: %i HP: %i AC: %i Mana: %i STR: %i STA: %i DEX: %i AGI: %i INT: %i WIS: %i CHA: %i", blevel, base_hp, AC, max_mana, STR, STA, DEX, AGI, INT, WIS, CHA);
-	Say("Resists-- Magic: %i, Poison: %i, Fire: %i, Cold: %i, Disease: %i.",MR,PR,FR,CR,DR);
+	BotOwner->Message(15, "Base stats:");
+	BotOwner->Message(15, "Level: %i HP: %i AC: %i Mana: %i STR: %i STA: %i DEX: %i AGI: %i INT: %i WIS: %i CHA: %i", blevel, base_hp, AC, max_mana, STR, STA, DEX, AGI, INT, WIS, CHA);
+	BotOwner->Message(15, "Resists-- Magic: %i, Poison: %i, Fire: %i, Cold: %i, Disease: %i.",MR,PR,FR,CR,DR);
 
 	// Let's find the items in the bot inventory
 	sint32 items_hp = 0;
@@ -3408,19 +3415,97 @@ void Mob::CalcBotStats() {
 	else
 		Post255 = 0;
 	bot_hp = (5)+(blevel*lm/10) + (((bsta-Post255)*blevel*lm/3000));
-	bot_hp = bot_hp * nd / 10000;
-	base_hp = bot_hp;
 	bot_hp += itembonuses.HP;
+
+	// Hitpoint AA's
+	int32 nd = 10000;
+	if(blevel >= 69) {
+		nd += 1650;	// Planar Durablility AA 3
+		if(bclass == WARRIOR) { // Sturdiness AA 5
+			nd += 500;
+		}
+	}
+	else if(blevel >= 68) {
+		nd += 1650;	// Planar Durablility AA 3
+		if(bclass == WARRIOR) { // Sturdiness AA 4
+			nd += 400;
+		}
+	}
+	else if(blevel >= 67) {
+		nd += 1650;	// Planar Durablility AA 3
+		if(bclass == WARRIOR) { // Sturdiness AA 3
+			nd += 300;
+		}
+	}
+	else if(blevel >= 66) {
+		nd += 1650;	// Planar Durablility AA 3
+		if(bclass == WARRIOR) { // Sturdiness AA 2
+			nd += 200;
+		}
+	}
+	else if(blevel >= 65) {
+		nd += 1650;	// Planar Durablility AA 3
+		if(bclass == WARRIOR) { // Sturdiness AA 1
+			nd += 100;
+		}
+	}
+	else if(blevel >= 63) {
+		nd += 1500;	// Planar Durablility AA 2
+	}
+	else if(blevel >= 61) {
+		nd += 1350;	// Planar Durablility AA 1
+	}
+	else if(blevel >= 59) {
+		nd += 1200;	// Physical Enhancememt AA 1
+	}
+	else if(blevel >= 57) {
+		nd += 1000;	// Natural Durablility AA 3
+	}
+	else if(blevel >= 56) {
+		nd += 500;	// Natural Durablility AA 2
+	}
+	else if(blevel >= 55) {
+		nd += 200;	// Natural Durablility AA 1
+	}
+	bot_hp = bot_hp * nd / 10000;
 	bot_hp += spellbonuses.HP;
 	max_hp = cur_hp = bot_hp;
 
 	switch (GetCasterClass()) {
 		case 'I':
-			bot_mana = (((bint/2)+1) * blevel) + spellbonuses.Mana + itembonuses.Mana;
+			WisInt = bint;
+			if((( WisInt - 199 ) / 2) > 0) {
+				MindLesserFactor = ( WisInt - 199 ) / 2;
+			}
+			else {
+				MindLesserFactor = 0;
+			}
+			MindFactor = WisInt - MindLesserFactor;
+			if(WisInt > 100) {
+				bot_mana = (((5 * (MindFactor + 20)) / 2) * 3 * blevel / 40);
+			}
+			else {
+				bot_mana = (((5 * (MindFactor + 200)) / 2) * 3 * blevel / 100);
+			}
 			break;
+
 		case 'W':
-			bot_mana = (((bwis/2)+1) * blevel) + spellbonuses.Mana + itembonuses.Mana;
+			WisInt = bwis;
+			if((( WisInt - 199 ) / 2) > 0) {
+				MindLesserFactor = ( WisInt - 199 ) / 2;
+			}
+			else {
+				MindLesserFactor = 0;
+			}
+			MindFactor = WisInt - MindLesserFactor;
+			if(WisInt > 100) {
+				bot_mana = (((5 * (MindFactor + 20)) / 2) * 3 * blevel / 40);
+			}
+			else {
+				bot_mana = (((5 * (MindFactor + 200)) / 2) * 3 * blevel / 100);
+			}
 			break;
+
 		case 'N':
 		default:
 			bot_mana = 0;
@@ -3429,9 +3514,9 @@ void Mob::CalcBotStats() {
 	max_mana = cur_mana = bot_mana;
 	CastToNPC()->AI_AddNPCSpells(spellid);
 
-	Say("I'm updated.");
-	Say("Level: %i HP: %i AC: %i Mana: %i STR: %i STA: %i DEX: %i AGI: %i INT: %i WIS: %i CHA: %i", blevel, max_hp, bac, max_mana, bstr, bsta, bdex, bagi, bint, bwis, bcha);
-	Say("Resists-- Magic: %i, Poison: %i, Fire: %i, Cold: %i, Disease: %i.",bMR,bPR,bFR,bCR,bDR);
+	BotOwner->Message(15, "I'm updated.");
+	BotOwner->Message(15, "Level: %i HP: %i AC: %i Mana: %i STR: %i STA: %i DEX: %i AGI: %i INT: %i WIS: %i CHA: %i", blevel, max_hp, bac, max_mana, bstr, bsta, bdex, bagi, bint, bwis, bcha);
+	BotOwner->Message(15, "Resists-- Magic: %i, Poison: %i, Fire: %i, Cold: %i, Disease: %i.",bMR,bPR,bFR,bCR,bDR);
 }
 
 #endif //EQBOTS
