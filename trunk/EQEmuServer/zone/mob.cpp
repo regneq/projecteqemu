@@ -231,6 +231,13 @@ Mob::Mob(const char*   in_name,
         PermaProcs[j].chance = 0;
         PermaProcs[j].pTimer = NULL;
         SpellProcs[j].spellID = SPELL_UNKNOWN;
+
+		DefensiveProcs[j].spellID = SPELL_UNKNOWN;
+		DefensiveProcs[j].chance = 0;
+		DefensiveProcs[j].pTimer = NULL;
+		RangedProcs[j].spellID = SPELL_UNKNOWN;
+		RangedProcs[j].chance = 0;
+		RangedProcs[j].pTimer = NULL;
     }
 
 	delta_heading = 0;
@@ -3531,4 +3538,13 @@ int Mob::GetSnaredAmount()
 	}
 
 	return worst_snare;
+}
+
+void Mob::TriggerDefensiveProcs(Mob *on)
+{
+	if (this->HasDefensiveProcs()) {
+		this->TryDefensiveProc(on);
+	}
+
+	return;
 }

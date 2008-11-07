@@ -1300,7 +1300,12 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte)
 	}
 	
 	if (damage > 0)
+	{
+		// Give the opportunity to throw back a defensive proc, if we are successful in affecting damage on our target
+		other->TriggerDefensiveProcs(this);
+		
         return true;
+	}
 	else
 		return false;
 }
@@ -2186,7 +2191,10 @@ bool NPC::Attack(Mob* other, int Hand, bool bRiposte)	 // Kaiyodo - base functio
 	}
 	
 	if (damage > 0)
+	{
+		other->TriggerDefensiveProcs(this);
         return true;
+	}
 	else
         return false;
 }
@@ -3329,6 +3337,22 @@ bool Mob::HasProcs() const
     return false;
 }
 
+bool Mob::HasDefensiveProcs() const
+{
+	for (int i = 0; i < MAX_PROCS; i++)
+        if (DefensiveProcs[i].spellID != SPELL_UNKNOWN)
+            return true;
+    return false;
+}
+
+bool Mob::HasRangedProcs() const
+{
+	for (int i = 0; i < MAX_PROCS; i++)
+        if (RangedProcs[i].spellID != SPELL_UNKNOWN)
+            return true;
+    return false;
+}
+
 bool Client::CheckDoubleAttack(bool tripleAttack) {
 
 	// If you don't have the double attack skill, return
@@ -3821,6 +3845,8 @@ void Mob::HealDamage(uint32 amount, Mob* caster) {
 	}
 }
 
+
+
 //proc chance includes proc bonus
 float Mob::GetProcChances(float &ProcBonus, float &ProcChance, int16 weapon_speed) {
 	int mydex = GetDEX();
@@ -3890,6 +3916,29 @@ float Mob::GetProcChances(float &ProcBonus, float &ProcChance, int16 weapon_spee
 	return ProcChance;
 }
 
+void Mob::TryDefensiveProc(Mob *on) {
+	// this should have already been checked, but just in case...
+	if (!this->HasDefensiveProcs())
+		return;
+
+	if (!on) {
+		SetTarget(NULL);
+		LogFile->write(EQEMuLog::Error, "A null Mob object was passed to Mob::TryDefensiveProc for evaluation!");
+		return;
+	}
+
+	// iterate through our defensive procs and try each of them
+	for (int i = 0; i < MAX_PROCS; i++) {
+		if (DefensiveProcs[i].spellID != SPELL_UNKNOWN &&
+			IsValidSpell(DefensiveProcs[i].spellID)) {
+				if (MakeRandomInt(0, 100) < MakeRandomInt(0, 20)) {
+					ExecWeaponProc(DefensiveProcs[i].spellID, on);
+				}
+		}
+	}
+
+	return;
+}
 
 void Mob::TryWeaponProc(const ItemInst* weapon_g, Mob *on) {
 	if(!on) {
@@ -3910,6 +3959,7 @@ void Mob::TryWeaponProc(const ItemInst* weapon_g, Mob *on) {
 	
 	//do main procs
 	TryWeaponProc(weapon_g->GetItem(), on);
+	
 	
 	//we have to calculate these again, oh well
 	int ourlevel = GetLevel();
@@ -3946,7 +3996,6 @@ void Mob::TryWeaponProc(const ItemInst* weapon_g, Mob *on) {
 }
 
 void Mob::TryWeaponProc(const Item_Struct* weapon, Mob *on) {
-	
 	int ourlevel = GetLevel();
 	float ProcChance, ProcBonus;
 	if(weapon!=NULL)
@@ -3986,6 +4035,13 @@ void Mob::TryWeaponProc(const Item_Struct* weapon, Mob *on) {
 	float procmod =  float(GetDEX()) / 100.0f + ProcBonus*100.0;	//did somebody think about this???
 																	//AndMetal: aren't we doing this in GetProcChances?
 
+
+	/*bool bRangedAttack = false;
+	if (weapon->ItemType == ItemTypeBow || weapon->ItemType == ItemTypeThrowing || weapon->ItemType == ItemTypeThrowingv2)
+	{
+		bRangedAttack = true;
+	}*/
+
 	uint32 i;
 	for(i = 0; i < MAX_PROCS; i++) {
 		if (PermaProcs[i].spellID != SPELL_UNKNOWN) {
@@ -4005,6 +4061,18 @@ void Mob::TryWeaponProc(const Item_Struct* weapon, Mob *on) {
 				mlog(COMBAT__PROCS, "Spell proc %d failed to proc %d (%d percent chance)", i, SpellProcs[i].spellID, chance);
 			}
 		}
+		/*if (bRangedAttack && RangedProcs[i].spellID != SPELL_UNKNOWN) {
+			int roll1 = MakeRandomInt(0, 100);
+			int roll2 = MakeRandomInt(0, 25);
+			Message(0, "RTB: %i , R: %i", roll1, roll2);
+			if(roll1 < roll2) {
+				mlog(COMBAT__PROCS, "Ranged proc %d procing spell %d", i, RangedProcs[i].spellID, RangedProcs[i].chance);
+				ExecWeaponProc(RangedProcs[i].spellID, on);
+			} else {
+				mlog(COMBAT__PROCS, "Ranged proc %d failed to proc %d", i, RangedProcs[i].spellID, RangedProcs[i].chance);
+			}
+		}*/
+	
 	}
 }
 

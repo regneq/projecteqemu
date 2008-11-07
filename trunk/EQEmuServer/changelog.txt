@@ -1,6 +1,13 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==11/07/2008
+seveianrex: Added #melody as a supplement for /melody until the OPcode can be located. Don't forget to:
+
+INSERT INTO commands (command, access, description) VALUES ('melody', 0, 'A supplement for /melody until the OP code is found.')
+
+seveianrex: Added support for defensive and ranged spell-effect based procs. Having some zone-crash issues with the ranged proc code for some reason, so it's commented out until I can fix it.
+
 ==11/05/2008
 Derision: Dyed armor color should now show up correctly to other players.
 Derision: Implemented the Potion Belt.

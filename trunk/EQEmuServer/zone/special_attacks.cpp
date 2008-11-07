@@ -831,7 +831,9 @@ void Client::RangedAttack(Mob* other) {
 	
 	//try proc on hits and misses
 	if(target && (target->GetHP() > -10))
+	{
 		TryWeaponProc(RangeWeapon, target);
+	}
 	
 	//consume ammo (should stay at the end, after we are done with everything)
 	if(!GetAA(aaEndlessQuiver)) {
