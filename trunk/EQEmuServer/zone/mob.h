@@ -778,7 +778,7 @@ bool logpos;
 	Mob*				GetHateMost()	{return hate_list.GetMostHate();}
 	bool				IsEngaged()   {return(!hate_list.IsEmpty()); }
 	bool				HateSummon();
-	void				FaceTarget(Mob* MobToFace = 0, bool update = false);
+	void				FaceTarget(Mob* MobToFace = 0);
 	void				SetHeading(float iHeading) { if (heading != iHeading) { pLastChange = Timer::GetCurrentTime(); heading = iHeading; } }
 	void				WipeHateList(); //Wipe?
 	// EverHood 6/14/06
@@ -801,7 +801,7 @@ bool logpos;
 	void CheckFlee();
 
 	inline bool			CheckAggro(Mob* other) {return hate_list.IsOnHateList(other);}
-    sint8				CalculateHeadingToTarget(float in_x, float in_y);
+    float				CalculateHeadingToTarget(float in_x, float in_y);
     bool				CalculateNewPosition(float x, float y, float z, float speed, bool checkZ = false);
 	bool				CalculateNewPosition2(float x, float y, float z, float speed, bool checkZ = true);
     float				CalculateDistance(float x, float y, float z);

@@ -828,7 +828,7 @@ void Mob::AI_Process() {
 	else { // not engaged
 		//if (pStandingPetOrder == SPO_Follow && IsPet() && !IsStunned())
 			//SetHeading(CalculateHeadingToTarget(target->GetX(), target->GetY())*8);
-			//FaceTarget(GetOwner(), true);
+			//FaceTarget(GetOwner());
 		
 		if(AIfeignremember_timer->Check()) {
 			// EverHood - 6/14/06
@@ -1149,7 +1149,7 @@ void NPC::AI_DoMovement() {
 			{
 				SetHeading(guard_heading); 
 			} else { 
-				FaceTarget(GetTarget(), true); 
+				FaceTarget(GetTarget()); 
 			}
 			SendPosition();			
 		}

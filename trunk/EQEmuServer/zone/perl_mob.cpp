@@ -4746,11 +4746,10 @@ XS(XS_Mob_FaceTarget)
 {
 	dXSARGS;
 	if (items < 1 || items > 3)
-		Perl_croak(aTHX_ "Usage: Mob::FaceTarget(THIS, MobToFace= 0, update= false)");
+		Perl_croak(aTHX_ "Usage: Mob::FaceTarget(THIS, MobToFace= 0)");
 	{
 		Mob *		THIS;
 		Mob*		MobToFace;
-		bool		update;
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -4774,13 +4773,7 @@ XS(XS_Mob_FaceTarget)
 				Perl_croak(aTHX_ "MobToFace is NULL, avoiding crash.");
 		}
 
-		if (items < 3)
-			update = false;
-		else {
-			update = (bool)SvTRUE(ST(2));
-		}
-
-		THIS->FaceTarget(MobToFace, update);
+		THIS->FaceTarget(MobToFace);
 	}
 	XSRETURN_EMPTY;
 }
