@@ -1417,8 +1417,6 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
 	if (IsClient() && CastToClient()->MelodyIsActive()) {
 		Client *c = CastToClient();
 		if (IsBardSong(spell_id)) {
-			// move the pointer to the next song!
-			c->Message(0, "Advancing Melody Pointer");
 			c->MelodyAdvanceSong();
 		}
 	}
