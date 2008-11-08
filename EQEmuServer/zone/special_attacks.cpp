@@ -537,7 +537,7 @@ void Mob::TryBackstab(Mob *other) {
 
 	// Until I can do some extensive Rogue bot ai work to get the bot around behind a mob
 	// I'm just going to do it this way
-	if(IsBot() || BehindMob(other, GetX(), GetY()))
+	if(IsBot() || BehindMob(other, GetX(), GetY()) || seizedOpportunity)
 
 #else //EQBOTS
 
