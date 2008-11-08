@@ -1413,13 +1413,6 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
 			return(false);
 		}
 	}
-	
-	if (IsClient() && CastToClient()->MelodyIsActive()) {
-		Client *c = CastToClient();
-		if (IsBardSong(spell_id)) {
-			c->MelodyAdvanceSong();
-		}
-	}
 
 	//
 	// solar: Switch #2 - execute the spell
@@ -1638,6 +1631,15 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
 	
 	if(IsNPC())
 		CastToNPC()->AI_Event_SpellCastFinished(true, slot);
+
+	if (IsClient() && CastToClient()->MelodyIsActive()) {
+		Client *c = CastToClient();
+		if (IsBardSong(spell_id)) {
+			c->InterruptSpell(0, 0, 0);
+			c->MelodyAdvanceSong();
+			c->MelodyTrySong();
+		}
+	}
 
 	return true;	
 }

@@ -325,6 +325,7 @@ public:
 	inline bool MelodyIsActive() const { return(melodystate); } // is activated
 	bool		MelodySetSong(int gem_id, int slot = -1); // set a specific song in the array
 	inline void MelodySetState(bool state) { melodystate = state; this->Message(0, "Melody %s.", state ? "activated" : "deactivated"); } // activate / deactivate melody
+	void		MelodyTrySong();
 	
 
 	
