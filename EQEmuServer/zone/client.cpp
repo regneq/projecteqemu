@@ -3610,3 +3610,20 @@ bool Client::MelodySetSong(int gem_id, int slot) {
 		this->melodygems[slot] = gem_id;
 	}
 }
+
+void Client::MelodyTrySong() {
+	// if we're not currently casting, we can move along to the next song
+	if (!this->IsCasting() && !this->HasDied()) {
+		int16 songID = this->MelodyGetCurrentSpellID();
+
+		if (IsValidSpell(songID) ) {
+			Mob *target = this->GetTarget() == NULL ? this->CastToMob() : this->GetTarget();
+			int32 cast_time = spells[songID].cast_time;
+			int16 mana_cost = spells[songID].mana;
+			this->CastSpell(songID, target->GetID(), 10, cast_time, mana_cost);
+			//this->DoCastSpell(songID, target->GetID(), 10, cast_time, mana_cost);
+		}
+	}
+
+	return;
+}

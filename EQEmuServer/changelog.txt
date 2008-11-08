@@ -1,6 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==11/08/2008
+seveianrex: Modified the way #melody works to improve the delay between songs being casted.
+
 ==11/07/2008
 seveianrex: GoD Rogue AA's: Seized Opportunity, Triple Backstab implemented
 seveianrex: (LeftRoad) Provide a damage message to client when mob is killed by a spell
