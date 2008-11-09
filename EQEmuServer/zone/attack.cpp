@@ -3664,7 +3664,7 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 				}
 			}
 		}
-		
+
 		if(spell_id != SPELL_UNKNOWN) {
 			//see if root will break
 			if (IsRooted()) { // neotoyko: only spells cancel root
@@ -4062,10 +4062,7 @@ void Mob::TryWeaponProc(const Item_Struct* weapon, Mob *on) {
 			}
 		}
 		if (bRangedAttack && RangedProcs[i].spellID != SPELL_UNKNOWN) {
-			int roll1 = MakeRandomInt(0, 100);
-			int roll2 = MakeRandomInt(0, 25);
-			Message(0, "RTB: %i , R: %i", roll1, roll2);
-			if(roll1 < roll2) {
+			if(MakeRandomInt(0, 100) < MakeRandomInt(0, 25)) {
 				mlog(COMBAT__PROCS, "Ranged proc %d procing spell %d", i, RangedProcs[i].spellID, RangedProcs[i].chance);
 				ExecWeaponProc(RangedProcs[i].spellID, on);
 			} else {
