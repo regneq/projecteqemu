@@ -454,36 +454,6 @@ void Client::ProcessMovePC(int32 zoneID, float x, float y, float z, float headin
 			return;
 		}
 
-#ifdef EQBOTS
-
-		if(IsBotRaiding()) {
-			BotRaids *brsummon = entity_list.GetBotRaidByMob(CastToMob());
-			if(brsummon) {
-				brsummon->SummonRaidBots(CastToMob(), true);
-			}
-		}
-		else if(IsGrouped())
-        {
-			Group *g = GetGroup();
-			if(g) {
-				for(int i=0; i<MAX_GROUP_MEMBERS; i++)
-				{
-					if(g->members[i] && g->members[i]->IsBot()) {
-						g->members[i]->WipeHateList();
-						g->members[i]->SetTarget(BotOwner);
-						g->members[i]->Warp(GetX(), GetY(), GetZ());
-						if(g->members[i]->HasPet()) {
-							g->members[i]->GetPet()->WipeHateList();
-							g->members[i]->GetPet()->SetTarget(g->members[i]);
-							g->members[i]->GetPet()->Warp(GetX(), GetY(), GetZ());
-						}
-					}
-				}
-			}
-		}
-
-#endif //EQBOTS
-
 		if(GetPetID() != 0) {
 			//if they have a pet and they are staying in zone, move with them
 			Mob *p = GetPet();
@@ -890,12 +860,3 @@ bool Client::CanBeInZone() {
 
 	return(true);
 }
-
-
-
-
-
-
-
-
-

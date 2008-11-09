@@ -7385,6 +7385,7 @@ void command_bot(Client *c, const Seperator *sep) {
 		c->Message(15, "#bot track [rare] - look at mobs in the zone");
 		c->Message(15, "#bot target calm - attempts to pacify your target mob.");
 		c->Message(15, "#bot evac - transports your pc group to safe location in the current zone. bots are lost");
+        c->Message(15, "#bot resurrectme - Your bot Cleric will rez you.");
 		return;
 	}
 
@@ -8746,11 +8747,11 @@ void command_bot(Client *c, const Seperator *sep) {
 					}
 				}
 			}
-
-int Level = (c->GetLevel());
-int RangeR = (Level*80); //Ranger
-int RangeD = (Level*30); //Druid
-int RangeB = (Level*20); //Bard
+			
+			int Level = (c->GetLevel());
+			int RangeR = (Level*80); //Ranger
+			int RangeD = (Level*30); //Druid
+			int RangeB = (Level*20); //Bard
 			switch(TrackerClass) {
 				case RANGER:
 					if(!strcasecmp(sep->arg[2], "all")) {
@@ -8857,6 +8858,38 @@ int RangeB = (Level*20); //Bard
 		}
         return;
 	}
+
+	if(!strcasecmp(sep->arg[1], "resurrectme"))
+    {
+		Mob *target = c->GetTarget();
+		if(target == NULL || !target->IsCorpse())
+        {
+            c->Message(15, "You must select a corpse");
+            return;
+        }
+		
+		if(c->IsGrouped())
+        {
+			bool hasrezzer = false;
+			Group *g = c->GetGroup();
+			for(int i=0; i<MAX_GROUP_MEMBERS; i++)
+            {
+				if(g && g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == CLERIC))
+                {
+					hasrezzer = true;
+					Mob *rezzer = g->members[i];
+                    rezzer->Say("Trying to rez %s", target->GetCleanName());
+					rezzer->CastToNPC()->Bot_Command_RezzTarget(target);
+					break;
+				}
+			}
+			if(!hasrezzer) {
+				c->Message(15, "You must have a Cleric in your group.");
+			}
+		}
+        return;
+	}
+
 //Angelox: I used two words; 'target' and 'calm', incase we want to make an 'ae calm' later on.
 //Angelox: Cleric and Enchanter are about 1 level difference on pacify spells, so I bundled them and left Paladin out.
 	if(!strcasecmp(sep->arg[1], "target") && !strcasecmp(sep->arg[2], "calm"))
