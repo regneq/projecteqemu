@@ -4035,11 +4035,12 @@ void Mob::TryWeaponProc(const Item_Struct* weapon, Mob *on) {
 																	//AndMetal: aren't we doing this in GetProcChances?
 
 
-	/*bool bRangedAttack = false;
-	if (weapon->ItemType == ItemTypeBow || weapon->ItemType == ItemTypeThrowing || weapon->ItemType == ItemTypeThrowingv2)
-	{
-		bRangedAttack = true;
-	}*/
+	bool bRangedAttack = false;
+	if (weapon != NULL) {
+		if (weapon->ItemType == ItemTypeBow || weapon->ItemType == ItemTypeThrowing || weapon->ItemType == ItemTypeThrowingv2) {
+			bRangedAttack = true;
+		}
+	}
 
 	uint32 i;
 	for(i = 0; i < MAX_PROCS; i++) {
@@ -4060,7 +4061,7 @@ void Mob::TryWeaponProc(const Item_Struct* weapon, Mob *on) {
 				mlog(COMBAT__PROCS, "Spell proc %d failed to proc %d (%d percent chance)", i, SpellProcs[i].spellID, chance);
 			}
 		}
-		/*if (bRangedAttack && RangedProcs[i].spellID != SPELL_UNKNOWN) {
+		if (bRangedAttack && RangedProcs[i].spellID != SPELL_UNKNOWN) {
 			int roll1 = MakeRandomInt(0, 100);
 			int roll2 = MakeRandomInt(0, 25);
 			Message(0, "RTB: %i , R: %i", roll1, roll2);
@@ -4070,7 +4071,7 @@ void Mob::TryWeaponProc(const Item_Struct* weapon, Mob *on) {
 			} else {
 				mlog(COMBAT__PROCS, "Ranged proc %d failed to proc %d", i, RangedProcs[i].spellID, RangedProcs[i].chance);
 			}
-		}*/
+		}
 	
 	}
 }
