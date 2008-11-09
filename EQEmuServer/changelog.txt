@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
 ==11/08/2008
+Congdar: Bots: modify heal ai, more mana calcs
 Congdar: Added Rule to allow melee to bind anywhere casters can bind, default is false
 optional sql:
 	insert into rule_values values (1, 'Character:BindAnywhere', true);

@@ -416,28 +416,22 @@ bool NPC::Bot_AI_EngagedCastCheck() {
         {
 			if(br && IsBotRaiding())
             {
-				if(!br->IsBeingHealed()) {
-					br->SetBeingHealed(true);
-					// try to heal the raid main tank
-					if(br->GetBotMainTank() && (br->GetBotMainTank()->GetHPRatio() < 80))
-					{
-						if(!Bot_AICastSpell(br->GetBotMainTank(), 100, SpellType_Heal)) {
-							AIautocastspell_timer->Start(RandomTimer(500, 2000), false);
-							br->SetBeingHealed(false);
-							return true;
-						}
+				// try to heal the raid main tank
+				if(br->GetBotMainTank() && (br->GetBotMainTank()->GetHPRatio() < 80))
+				{
+					if(!Bot_AICastSpell(br->GetBotMainTank(), 100, SpellType_Heal)) {
+						AIautocastspell_timer->Start(RandomTimer(500, 2000), false);
+						return true;
 					}
-					// try to heal the raid secondar tank
-					else if(br->GetBotSecondTank() && (br->GetBotSecondTank()->GetHPRatio() < 80))
+				}
+				// try to heal the raid secondar tank
+				else if(br->GetBotSecondTank() && (br->GetBotSecondTank()->GetHPRatio() < 80))
+				{
+					if(!Bot_AICastSpell(br->GetBotSecondTank(), 100, SpellType_Heal))
 					{
-						if(!Bot_AICastSpell(br->GetBotSecondTank(), 100, SpellType_Heal))
-						{
-							AIautocastspell_timer->Start(RandomTimer(500, 2000), false);
-							br->SetBeingHealed(false);
-							return true;
-						}
+						AIautocastspell_timer->Start(RandomTimer(500, 2000), false);
+						return true;
 					}
-					br->SetBeingHealed(false);
 				}
 			}
             if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 100, MobAISpellRange, SpellType_Heal)) {
@@ -559,23 +553,19 @@ bool EntityList::Bot_AICheckCloseBeneficialSpells(NPC* caster, int8 iChance, flo
 			{
 				BotRaids *br = entity_list.GetBotRaidByMob(caster);
 				// boolean trying to ai the heal rotation, prolly not working well.
-				if(br && !br->IsBeingHealed()) {
-					br->SetBeingHealed(true);
+				if(br) {
 					if(br->GetBotMainTank() && (br->GetBotMainTank()->GetHPRatio() < 80))
 					{
 						if(caster->Bot_AICastSpell(br->GetBotMainTank(), 100, SpellType_Heal)) {
-							br->SetBeingHealed(false);
 							return true;
 						}
 					}
 					else if(br->GetBotSecondTank() && (br->GetBotSecondTank()->GetHPRatio() < 80))
 					{
 						if(caster->Bot_AICastSpell(br->GetBotSecondTank(), 100, SpellType_Heal)) {
-							br->SetBeingHealed(false);
 							return true;
 						}
 					}
-					br->SetBeingHealed(false);
 				}
 			}
 
@@ -790,8 +780,12 @@ bool NPC::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 								// The first HoT is at level 19 and is priority 1
 								// The regular heal is priority 2
 								// Let the HoT heal for at least 3 tics before checking for the regular heal
+								// For non-HoT heals, do a 5 second delay
 								if((botClass == CLERIC || botClass == PALADIN) && (botLevel >= 19) && (BotGetSpellPriority(i) == 1)) {
 									tar->pDontHealMeBefore = (Timer::GetCurrentTime() + 18000);
+								}
+								else if((botClass == CLERIC || botClass == PALADIN) && (botLevel >= 19) && (BotGetSpellPriority(i) == 2)) {
+									tar->pDontHealMeBefore = (Timer::GetCurrentTime() + 5000);
 								}
 								return true;
 							}
@@ -861,7 +855,7 @@ bool NPC::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 					case SpellType_Nuke: {
 						if (
 							((MakeRandomInt(1, 100) < 50) || (botClass == BARD))
-							&& ((tar->GetHPRatio()<=80.0f)||(!IsBotRaiding()))
+							&& ((tar->GetHPRatio()<=90.0f)||(!IsBotRaiding()))
 							&& !tar->IsImmuneToSpell(AIspells[i].spellid, this)
 							&& tar->CanBuffStack(AIspells[i].spellid, botLevel, true) >= 0
 							) {

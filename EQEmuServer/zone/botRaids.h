@@ -37,9 +37,6 @@ public:
 	int16 raidID;
 	void SetBotRaidID(int16 rId) { raidID = rId; };
 	int	 GetBotRaidID() { return raidID; };
-	bool chealchain;
-	bool IsBeingHealed() { return chealchain; };
-	void SetBeingHealed(bool isBeingHealed) { chealchain = isBeingHealed; };
 	bool AddBotGroup(Group* gtoadd);
 	bool IsBotGroupInRaid(Group* gtocheck);
 	bool RemoveEmptyBotGroup();
