@@ -1120,6 +1120,42 @@ bool NPC::Bot_Command_MezzTarget(Mob *target) {
 	return false;
 }
 
+bool NPC::Bot_Command_RezzTarget(Mob *target) {
+	if(target) {
+		int rezid = 0;
+		int rezlevel = GetLevel();
+		if(rezlevel >= 56) {
+			rezid = 1524;
+		}
+		else if(rezlevel == 47) {
+			rezid = 392;
+		}
+		else if(rezlevel == 42) {
+			rezid = 2172;
+		}
+		else if(rezlevel >= 37) {
+			rezid = 388;
+		}
+		else if(rezlevel >= 32) {
+			rezid = 2171;
+		}
+		else if(rezlevel >= 27) {
+			rezid = 391;
+		}
+		else if(rezlevel >= 22) {
+			rezid = 2170;
+		}
+		else if(rezlevel >= 18) {
+			rezid = 2169;
+		}
+		if(rezid > 0) {
+			CastSpell(rezid, target->GetID(), 1, -1, -1, &target->pDontRootMeBefore);
+			return true;
+		}
+	}
+	return false;
+}
+
 void EntityList::ShowSpawnWindow(Client* client, int Distance, bool NamedOnly) {
 
 	const char *WindowTitle = "Bot Tracking Window";
