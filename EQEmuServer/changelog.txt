@@ -2,6 +2,9 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
 ==11/08/2008
+Congdar: Added Rule to allow melee to bind anywhere casters can bind, default is false
+optional sql:
+	insert into rule_values values (1, 'Character:BindAnywhere', true);
 seveianrex: Figured out what was crashing ranged procs. Is fixed and fully implemented now. Rangers rejoice..
 seveianrex: Modified the way #melody works to improve the delay between songs being casted. Bards rejoice..
 
