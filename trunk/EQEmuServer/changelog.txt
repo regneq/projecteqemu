@@ -2,7 +2,8 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
 ==11/08/2008
-seveianrex: Modified the way #melody works to improve the delay between songs being casted.
+seveianrex: Figured out what was crashing ranged procs. Is fixed and fully implemented now. Rangers rejoice..
+seveianrex: Modified the way #melody works to improve the delay between songs being casted. Bards rejoice..
 
 ==11/07/2008
 seveianrex: GoD Rogue AA's: Seized Opportunity, Triple Backstab implemented
