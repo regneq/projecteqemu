@@ -38,7 +38,6 @@ BotRaids::BotRaids(Mob *leader)
 		botrleader = leader;
 		botrleader->SetBotRaiding(true);
 		botrleader->SetBotRaidID(GetBotRaidID());
-		chealchain = false;
 		botmaintank = NULL;
 		botsecondtank = NULL;
 		botraidmaintarget = NULL;
