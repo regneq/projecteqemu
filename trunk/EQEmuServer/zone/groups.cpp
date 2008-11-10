@@ -437,6 +437,9 @@ void Group::MemberZoned(Mob* removemob) {
 	if (removemob == NULL)
 		return;
 
+	if(removemob == GetLeader())
+		SetLeader(NULL);
+
 	 for (i = 0; i < MAX_GROUP_MEMBERS; i++) {
 		  if (members[i] == removemob) {
 				members[i] = NULL;
@@ -444,6 +447,24 @@ void Group::MemberZoned(Mob* removemob) {
 				break;
 		  }
 	 }
+}
+
+bool Group::DelMemberOOZ(const char *Name) {
+
+	if(!Name) return false;
+
+	// If a member out of zone has disbanded, clear out their name.
+	//
+	for(unsigned int i = 0; i < MAX_GROUP_MEMBERS; i++) {
+		if(!strcasecmp(Name, membername[i]))
+			// This shouldn't be called if the member is in this zone.
+			if(!members[i]) {
+				memset(membername[i], 0, 64);
+				return true;
+			}
+	}
+
+	return false;
 }
 
 bool Group::DelMember(Mob* oldmember,bool ignoresender){
@@ -495,6 +516,7 @@ bool Group::DelMember(Mob* oldmember,bool ignoresender){
 						strcpy(gu->membername, members[nl]->GetName());
 						strcpy(gu->yourname, oldmember->GetName());
 						SetLeader(members[nl]);
+						database.SetGroupLeaderName(GetID(), members[nl]->GetName());
 						for (uint32 ld = 0; ld < MAX_GROUP_MEMBERS; ld++) {
 							if (members[ld] && members[ld] != oldmember) {
 								members[ld]->CastToClient()->QueuePacket(outapp);
@@ -764,12 +786,18 @@ void Group::DisbandGroup() {
 	GroupUpdate_Struct* gu = (GroupUpdate_Struct*) outapp->pBuffer;
 	gu->action = groupActDisband;
 
+	Client *Leader = NULL;
+
 	uint32 i;
-	 for (i = 0; i < MAX_GROUP_MEMBERS; i++) {
+	for (i = 0; i < MAX_GROUP_MEMBERS; i++) {
 		if (members[i] == NULL) {
 			continue;
 		}
+
 		if (members[i]->IsClient()) {
+			if(IsLeader(members[i]))
+				Leader = members[i]->CastToClient();
+
 			strcpy(gu->yourname, members[i]->GetName());
 			database.SetGroupID(members[i]->GetName(), 0, members[i]->CastToClient()->CharacterID());
 			members[i]->CastToClient()->QueuePacket(outapp);
@@ -789,6 +817,10 @@ void Group::DisbandGroup() {
 	entity_list.RemoveGroup(GetID());
 	if(GetID() != 0)
 		 database.ClearGroup(GetID());
+
+	if(Leader && (Leader->IsLFP())) {
+		Leader->UpdateLFP();
+	}
 
 	safe_delete(outapp);
 }
@@ -1072,7 +1104,7 @@ void Client::LeaveGroup() {
 void Group::BalanceHP(sint32 penalty)
 {
 	int dmgtaken = 0, numMem = 0;
-	int gi = 0;
+	unsigned int gi = 0;
 	for(; gi < MAX_GROUP_MEMBERS; gi++)
 	{
 		if(members[gi]){
@@ -1115,5 +1147,4 @@ uint16 Group::GetAvgLevel()
 	levelHolder = ((levelHolder/numMem)+.5); // total levels divided by num of characters
 	return (uint16(levelHolder));
 }
-
 

@@ -328,6 +328,9 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_Bandolier] = &Client::Handle_OP_Bandolier;
 	ConnectedOpcodes[OP_PopupResponse] = &Client::Handle_OP_PopupResponse;
 	ConnectedOpcodes[OP_PotionBelt] = &Client::Handle_OP_PotionBelt;
+	ConnectedOpcodes[OP_LFGGetMatchesRequest] = &Client::Handle_OP_LFGGetMatchesRequest;
+	ConnectedOpcodes[OP_LFPCommand] = &Client::Handle_OP_LFPCommand;
+	ConnectedOpcodes[OP_LFPGetMatchesRequest] = &Client::Handle_OP_LFPGetMatchesRequest;
 
 }
 
@@ -487,7 +490,7 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 		account_id));
 	//DO NOT FORGET TO EDIT ZoneDatabase::GetCharacterInfoForLogin if you change this
 	dbaw->AddQuery(2, &query, MakeAnyLenString(&query,
-		"SELECT id,profile,zonename,x,y,z,guild_id,rank,extprofile,class,level "
+		"SELECT id,profile,zonename,x,y,z,guild_id,rank,extprofile,class,level,lfp,lfg "
 		" FROM character_  LEFT JOIN guild_members ON id=char_id WHERE id=%i",
 		character_id));
 	dbaw->AddQuery(3, &query, MakeAnyLenString(&query,
@@ -2050,6 +2053,9 @@ void Client::Handle_OP_Camp(const EQApplicationPacket *app)
 	//LogFile->write(EQEMuLog::Debug, "%s sent a camp packet.", GetName());
 	if(GetAdventureID() > 0)
 		DeleteCharInAdventure(CharacterID(), GetAdventureID());
+
+	if(IsLFP())
+		worldserver.StopLFP(CharacterID());
 
 	if (GetGM()) {
 		OnDisconnect(true);
@@ -3674,14 +3680,29 @@ void Client::Handle_OP_LFGCommand(const EQApplicationPacket *app)
 
 	// Process incoming packet
 	LFG_Struct* lfg = (LFG_Struct*) app->pBuffer;
-	if (lfg->value == 1) {
-		LFG = true;
+
+	switch(lfg->value & 0xFF) {
+		case 0:
+			if(LFG) {
+				database.SetLFG(CharacterID(), false);
+				LFG = false;
+				LFGComments[0] = '\0';
+			}
+			break;
+		case 1: 
+			if(!LFG) {
+				LFG = true;
+				database.SetLFG(CharacterID(), true);
+			}
+			LFGFromLevel = lfg->FromLevel;
+			LFGToLevel = lfg->ToLevel;
+			LFGMatchFilter = lfg->MatchFilter;
+			strcpy(LFGComments, lfg->Comments);
+			break;
+		default:
+			Message(0, "Error: unknown LFG value %i", lfg->value);
 	}
-	else if (lfg->value == 0) {
-		LFG = false;
-	}
-	else
-		Message(0, "Error: unknown LFG value");
+
 	UpdateWho();
 
 	// Issue outgoing packet to notify other clients
@@ -4570,6 +4591,14 @@ void Client::Handle_OP_GroupFollow2(const EQApplicationPacket *app)
 			sizeof(GroupGeneric_Struct), app->size);
 		return;
 	}
+
+	if(LFP) {
+		// If we were looking for players to start our own group, but we accept an invitation to another
+		// group, turn LFP off.
+		database.SetLFP(CharacterID(), false);
+		worldserver.StopLFP(CharacterID());
+	}
+
 	GroupGeneric_Struct* gf = (GroupGeneric_Struct*) app->pBuffer;
 	Mob* inviter = entity_list.GetClientByName(gf->name1);
 
@@ -4654,7 +4683,7 @@ void Client::Handle_OP_GroupFollow2(const EQApplicationPacket *app)
 			GroupJoin_Struct* outgj=(GroupJoin_Struct*)outapp->pBuffer;
 			strcpy(outgj->membername, inviter->GetName());
 			strcpy(outgj->yourname, inviter->GetName());
-			outgj->action = 8;
+			outgj->action = groupActInviteInitial; // 'You have formed the group'.
 			inviter->CastToClient()->QueuePacket(outapp);
 			safe_delete(outapp);
 		}
@@ -4665,6 +4694,12 @@ void Client::Handle_OP_GroupFollow2(const EQApplicationPacket *app)
 
 		if(!group->AddMember(this))
 			return;
+
+		if(inviter->CastToClient()->IsLFP()) {
+			// If the player who invited us to a group is LFP, have them update world now that we have joined
+			// their group.
+			inviter->CastToClient()->UpdateLFP();
+		}
 
 		database.RefreshGroupFromDB(this);
 		group->SendHPPacketsTo(this);
@@ -4759,6 +4794,10 @@ void Client::Handle_OP_GroupDisband(const EQApplicationPacket *app)
 		else
 			LogFile->write(EQEMuLog::Error, "Failed to remove player from group. Unable to find player named %s in player group", gd->name2);
 	}
+	if(LFP) {
+		// If we are looking for players, update to show we are on our own now.
+		UpdateLFP();
+	}
 
 	return;
 }
@@ -4770,6 +4809,10 @@ void Client::Handle_OP_GroupDelete(const EQApplicationPacket *app)
 	Group* group = GetGroup();
 	if (group)
 		group->DisbandGroup();
+
+	if(LFP) 
+		UpdateLFP();
+
 	return;
 }
 
@@ -6297,7 +6340,7 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 			database.GetAccountInfoForLogin_result(result, 0, account_name, &lsaccountid, &gmspeed, &revoked, &gmhideme);
 		}
 		else if (dbaq->QPT() == 2) {
-			loaditems = database.GetCharacterInfoForLogin_result(result, 0, 0, &m_pp, &m_inv, &m_epp, &pplen, &guild_id, &guildrank, &class_, &level);
+			loaditems = database.GetCharacterInfoForLogin_result(result, 0, 0, &m_pp, &m_inv, &m_epp, &pplen, &guild_id, &guildrank, &class_, &level, &LFP, &LFG);
 		}
 		else if (dbaq->QPT() == 3) {
 			database.LoadFactionValues_result(result, factionvalues);
@@ -6679,6 +6722,7 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 	}
 
 	if(group){
+
 		if(!group->GetLeader()){
 			char ln[64];
 			memset(ln, 0, 64);
@@ -6688,6 +6732,11 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 				group->SetLeader(c);
 			}
 		}
+		LFG = false;
+	}
+	if(IsLFP()) {
+		// Update LFP in case any (or all) of our group disbanded while we were zoning.
+		UpdateLFP();
 	}
 
 	if(m_pp.z <= zone->newzone_data.underworld) {
@@ -8018,4 +8067,103 @@ void Client::Handle_OP_PotionBelt(const EQApplicationPacket *app) {
 
 	Save();
 
+}
+
+void Client::Handle_OP_LFGGetMatchesRequest(const EQApplicationPacket *app) {
+
+	LFGGetMatchesRequest_Struct* gmrs = (LFGGetMatchesRequest_Struct*)app->pBuffer;
+
+	if (!worldserver.Connected())
+		Message(0, "Error: World server disconnected");
+	else {
+		ServerPacket* pack = new ServerPacket(ServerOP_LFGMatches, sizeof(ServerLFGMatchesRequest_Struct));
+		ServerLFGMatchesRequest_Struct* smrs = (ServerLFGMatchesRequest_Struct*) pack->pBuffer;
+		smrs->FromID = GetID();
+		smrs->QuerierLevel = GetLevel();
+		strcpy(smrs->FromName, GetName());
+		smrs->FromLevel = gmrs->FromLevel;
+		smrs->ToLevel = gmrs->ToLevel;
+		smrs->Classes = gmrs->Classes;
+		worldserver.SendPacket(pack);
+		safe_delete(pack);
+	}
+}
+
+
+void Client::Handle_OP_LFPCommand(const EQApplicationPacket *app) {
+	
+	LFP_Struct *lfp = (LFP_Struct*)app->pBuffer;
+
+	LFP = lfp->Action != LFPOff;
+	database.SetLFP(CharacterID(), LFP);
+
+	if(!LFP) {
+		worldserver.StopLFP(CharacterID());
+		return;
+	}
+
+	GroupLFPMemberEntry LFPMembers[MAX_GROUP_MEMBERS];
+
+	for(unsigned int i=0; i<MAX_GROUP_MEMBERS; i++) {
+		LFPMembers[i].Name[0] = '\0';
+		LFPMembers[i].Class = 0;
+		LFPMembers[i].Level = 0;
+		LFPMembers[i].Zone = 0;
+		LFPMembers[i].GuildID = 0xFFFF;
+	}
+
+	Group *g = GetGroup();
+
+	// Slot 0 is always for the group leader, or the player if not in a group
+	strcpy(LFPMembers[0].Name, GetName());
+	LFPMembers[0].Class = GetClass();
+	LFPMembers[0].Level = GetLevel();
+	LFPMembers[0].Zone = zone->GetZoneID();
+	LFPMembers[0].GuildID = GuildID();
+
+	if(g) {
+		// This should not happen. The client checks if you are in a group and will not let you put LFP on if 
+		// you are not the leader.
+		if(!g->IsLeader(this)) {
+			LogFile->write(EQEMuLog::Error,"Client sent LFP on for character %s who is grouped but not leader.", GetName());
+			return;
+		}
+		// Fill the LFPMembers array with the rest of the group members, excluding ourself
+		// We don't fill in the class, level or zone, because we may not be able to determine 
+		// them if the other group members are not in this zone. World will fill in this information
+		// for us, if it can.
+		int NextFreeSlot = 1;
+		for(unsigned int i = 0; i < MAX_GROUP_MEMBERS; i++) {
+			if(strcasecmp(g->membername[i], LFPMembers[0].Name))
+				strcpy(LFPMembers[NextFreeSlot++].Name, g->membername[i]);
+		}
+	}
+
+
+	worldserver.UpdateLFP(CharacterID(), lfp->Action, lfp->MatchFilter, lfp->FromLevel, lfp->ToLevel, lfp->Classes, 
+			      lfp->Comments, LFPMembers);
+
+
+}
+
+void Client::Handle_OP_LFPGetMatchesRequest(const EQApplicationPacket *app) {
+
+	LFPGetMatchesRequest_Struct* gmrs = (LFPGetMatchesRequest_Struct*)app->pBuffer;
+
+	if (!worldserver.Connected())
+		Message(0, "Error: World server disconnected");
+	else {
+		ServerPacket* pack = new ServerPacket(ServerOP_LFPMatches, sizeof(ServerLFPMatchesRequest_Struct));
+		ServerLFPMatchesRequest_Struct* smrs = (ServerLFPMatchesRequest_Struct*) pack->pBuffer;
+		smrs->FromID = GetID();
+		smrs->FromLevel = gmrs->FromLevel;
+		smrs->ToLevel = gmrs->ToLevel;
+		smrs->QuerierLevel = GetLevel();
+		smrs->QuerierClass = GetClass();
+		strcpy(smrs->FromName, GetName());
+		worldserver.SendPacket(pack);
+		safe_delete(pack);
+	}
+
+	return;
 }

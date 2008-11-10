@@ -213,15 +213,18 @@
 	void Handle_OP_LoadSpellSet(const EQApplicationPacket *app);
 	void Handle_OP_AutoFire(const EQApplicationPacket *app);
 	void Handle_OP_Rewind(const EQApplicationPacket *app);
-      void Handle_OP_RaidCommand(const EQApplicationPacket *app);
+	void Handle_OP_RaidCommand(const EQApplicationPacket *app);
  	void Handle_OP_Translocate(const EQApplicationPacket *app);
  	void Handle_OP_Sacrifice(const EQApplicationPacket *app);
 	void Handle_OP_AcceptNewTask(const EQApplicationPacket *app);
 	void Handle_OP_CancelTask(const EQApplicationPacket *app);
 	void Handle_OP_TaskHistoryRequest(const EQApplicationPacket *app);
-      void Handle_OP_KeyRing(const EQApplicationPacket *app); 
-      void Handle_OP_FriendsWho(const EQApplicationPacket *app);
-      void Handle_OP_Bandolier(const EQApplicationPacket *app);
-      void Handle_OP_PopupResponse(const EQApplicationPacket *app);
-      void Handle_OP_PotionBelt(const EQApplicationPacket *app);
+	void Handle_OP_KeyRing(const EQApplicationPacket *app); 
+	void Handle_OP_FriendsWho(const EQApplicationPacket *app);
+	void Handle_OP_Bandolier(const EQApplicationPacket *app);
+	void Handle_OP_PopupResponse(const EQApplicationPacket *app);
+	void Handle_OP_PotionBelt(const EQApplicationPacket *app);
+	void Handle_OP_LFGGetMatchesRequest(const EQApplicationPacket *app);
+	void Handle_OP_LFPCommand(const EQApplicationPacket *app);
+	void Handle_OP_LFPGetMatchesRequest(const EQApplicationPacket *app);
 

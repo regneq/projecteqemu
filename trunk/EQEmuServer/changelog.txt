@@ -1,6 +1,15 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==11/10/2008
+Derision: Implemented Looking For Group/Looking For Players Window. patch_Titanium_conf has been updated.
+Derision: Visual Studio users should add world/lfplist.h and world/lfplist.cpp to their project.
+
+REQUIRED SQL:
+
+ALTER TABLE `character_` ADD `lfp` TINYINT( 1 ) UNSIGNED NOT NULL DEFAULT '0';
+ALTER TABLE `character_` ADD `lfg` TINYINT( 1 ) UNSIGNED NOT NULL DEFAULT '0';
+
 ==11/08/2008
 Congdar: Bots: add command #bot resurrectme
 Congdar: Bots: modify heal ai, more mana calcs

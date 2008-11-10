@@ -36,7 +36,8 @@ public:
 	//from ZSList
 	
 	void	SendWhoAll(int32 fromid,const char* to, sint16 admin, Who_All_Struct* whom, WorldTCPConnection* connection);
-      void	SendFriendsWho(ServerFriendsWho_Struct *FriendsWho, WorldTCPConnection* connection);
+	void	SendFriendsWho(ServerFriendsWho_Struct *FriendsWho, WorldTCPConnection* connection);
+	void	SendLFGMatches(ServerLFGMatchesRequest_Struct *LFGMatchesRequest);
 	void    ConsoleSendWhoAll(const char* to, sint16 admin, Who_All_Struct* whom, WorldTCPConnection* connection);
 	void	SendCLEList(const sint16& admin, const char* to, WorldTCPConnection* connection, const char* iName = 0);
 

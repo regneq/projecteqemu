@@ -636,7 +636,7 @@ void ZoneDatabase::DeleteTraderItem(uint32 char_id,int16 slot_id){
 bool ZoneDatabase::GetCharacterInfoForLogin(const char* name, uint32* character_id, 
 char* current_zone, PlayerProfile_Struct* pp, Inventory* inv, ExtendedProfile_Struct *ext, 
 uint32* pplen, uint32* guilddbid, int8* guildrank, 
-int8 *class_, int8 *level) {
+int8 *class_, int8 *level, bool *LFP, bool *LFG) {
 	_CP(Database_GetCharacterInfoForLogin);
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
@@ -650,17 +650,17 @@ int8 *class_, int8 *level) {
 	if (character_id && *character_id) {
 		// searching by ID should be a lil bit faster
 		querylen = MakeAnyLenString(&query, 
-			"SELECT id,profile,zonename,x,y,z,guild_id,rank,extprofile,class,level "
+			"SELECT id,profile,zonename,x,y,z,guild_id,rank,extprofile,class,level,lfp,lfg "
 			" FROM character_ LEFT JOIN guild_members ON id=char_id WHERE id=%i", *character_id);
 	}
 	else {
 		querylen = MakeAnyLenString(&query, 
-			"SELECT id,profile,zonename,x,y,z,guild_id,rank,extprofile,class,level "
+			"SELECT id,profile,zonename,x,y,z,guild_id,rank,extprofile,class,level,lfp,lfg "
 			" FROM character_ LEFT JOIN guild_members ON id=char_id WHERE name='%s'", name);
 	}
 	
 	if (RunQuery(query, querylen, errbuf, &result)) {
-		ret = GetCharacterInfoForLogin_result(result, character_id, current_zone, pp, inv, ext, pplen, guilddbid, guildrank, class_, level);
+		ret = GetCharacterInfoForLogin_result(result, character_id, current_zone, pp, inv, ext, pplen, guilddbid, guildrank, class_, level, LFP, LFG);
 		mysql_free_result(result);
 	}
 	else {
@@ -678,7 +678,7 @@ int8 *class_, int8 *level) {
 bool ZoneDatabase::GetCharacterInfoForLogin_result(MYSQL_RES* result, 
 	int32* character_id, char* current_zone, PlayerProfile_Struct* pp, Inventory* inv, 
 	ExtendedProfile_Struct *ext, uint32* pplen, uint32* guilddbid, int8* guildrank, 
-	int8 *class_, int8 *level) {
+	int8 *class_, int8 *level, bool *LFP, bool *LFG) {
 	_CP(Database_GetCharacterInfoForLogin_result);
 	
     MYSQL_ROW row;
@@ -740,7 +740,12 @@ bool ZoneDatabase::GetCharacterInfoForLogin_result(MYSQL_RES* result,
 		
 		if(level)
 			*level = atoi(row[10]);
+
+		if(LFP)
+			*LFP = atoi(row[11]);
 		
+		if(LFG)
+			*LFG = atoi(row[12]);
 		// Fix use_tint, previously it was set to 1 for a dyed slot, client wants it set to 0xFF
 		for(int i = 0; i<9; i++)
 	                if(pp->item_tint[i].rgb.use_tint == 1)

@@ -113,10 +113,12 @@ public:
 				int32* lsaccountid = 0, int8* gmspeed = 0, bool* revoked = 0, bool* gmhideme = false);
 	bool	GetCharacterInfoForLogin_result(MYSQL_RES* result, uint32* character_id = 0, char* current_zone = 0, 
 				PlayerProfile_Struct* pp = 0, Inventory* inv = 0, ExtendedProfile_Struct *ext = 0, uint32* pplen = 0, 
-				uint32* guilddbid = 0, int8* guildrank = 0, uint8 *class_=  0, uint8 *level = 0);
+				uint32* guilddbid = 0, int8* guildrank = 0, uint8 *class_=  0, uint8 *level = 0, bool *LFP = 0,
+				bool *LFG = 0);
 	bool	GetCharacterInfoForLogin(const char* name, uint32* character_id = 0, char* current_zone = 0, 
 				PlayerProfile_Struct* pp = 0, Inventory* inv = 0, ExtendedProfile_Struct *ext = 0, uint32* pplen = 0, 
-				uint32* guilddbid = 0, int8* guildrank = 0, uint8 *class_ = 0, uint8 *level = 0);
+				uint32* guilddbid = 0, int8* guildrank = 0, uint8 *class_ = 0, uint8 *level = 0, bool *LFP = 0,
+				bool *LFG = 0);
 	
 	/*
 	 * Character Inventory

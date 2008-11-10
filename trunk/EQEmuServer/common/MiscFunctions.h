@@ -27,6 +27,13 @@
 #define ERRBUF_SIZE		1024
 #endif
 
+// These are helper macros for dealing with packets of variable length, typically those that contain
+// variable length strings where it is not convenient to use a fixed length struct.
+//
+#define VARSTRUCT_DECODE_TYPE(Type, Buffer) *(Type *)Buffer; Buffer += sizeof(Type);
+#define VARSTRUCT_ENCODE_STRING(Buffer, String) sprintf(Buffer, String); Buffer += strlen(String) + 1;
+#define VARSTRUCT_ENCODE_TYPE(Type, Buffer, Value) *(Type *)Buffer = Value; Buffer += sizeof(Type);
+
 //////////////////////////////////////////////////////////////////////
 //
 //  MakeUpperString

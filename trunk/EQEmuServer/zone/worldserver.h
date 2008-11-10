@@ -19,6 +19,7 @@
 #define WORLDSERVER_H
 
 #include "../common/worldconn.h"
+#include "../common/eq_packet_structs.h"
 #include <string>
 
 struct GuildJoin_Struct;
@@ -48,6 +49,12 @@ public:
 	void SetLauncherName(const char *n) { m_launcherName = n; }
 	void SendReloadTasks(int Command, int TaskID=0);
 	void HandleReloadTasks(ServerPacket *pack);
+	void UpdateLFP(int32 LeaderID, int8 Action, int8 MatchFilter, uint32 FromLevel, uint32 ToLevel, uint32 Classes, const char *Comments,
+		       GroupLFPMemberEntry *LFPMembers);
+	void UpdateLFP(int32 LeaderID, GroupLFPMemberEntry *LFPMembers);
+	void StopLFP(int32 LeaderID);
+	void HandleLFGMatches(ServerPacket *pack);
+	void HandleLFPMatches(ServerPacket *pack);
 	
 private:
 	virtual void OnConnected();
