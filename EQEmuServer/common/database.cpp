@@ -1746,6 +1746,30 @@ bool Database::GetLiveChar(int32 account_id, char* cname) {
 	return false;
 }
 
+void Database::SetLFP(int32 CharID, bool LFP) {
+
+	char ErrBuf[MYSQL_ERRMSG_SIZE];
+	char *Query = 0;
+
+	if (!RunQuery(Query, MakeAnyLenString(&Query, "update character_ set lfp=%i where id=%i",LFP, CharID), ErrBuf))
+		LogFile->write(EQEMuLog::Error, "Error updating LFP for character %i : %s", CharID, ErrBuf);
+
+	safe_delete_array(Query);
+
+}
+
+void Database::SetLFG(int32 CharID, bool LFG) {
+
+	char ErrBuf[MYSQL_ERRMSG_SIZE];
+	char *Query = 0;
+
+	if (!RunQuery(Query, MakeAnyLenString(&Query, "update character_ set lfg=%i where id=%i",LFG, CharID), ErrBuf))
+		LogFile->write(EQEMuLog::Error, "Error updating LFP for character %i : %s", CharID, ErrBuf);
+
+	safe_delete_array(Query);
+
+}
+
 void  Database::SetGroupID(const char* name,int32 id, int32 charid){
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;

@@ -59,6 +59,7 @@ public:
 	bool	AddMember(Mob* newmember);
 	void	SendUpdate(int32 type,Mob* member);
 	void	SendWorldGroup(int32 zone_id,Mob* zoningmember);
+	bool	DelMemberOOZ(const char *Name);
 	bool	DelMember(Mob* oldmember,bool ignoresender = false);
 	void	DisbandGroup();
 	bool	IsGroupMember(Mob* client);
@@ -96,6 +97,7 @@ public:
 	bool	LearnMembers();
 	void	VerifyGroup();
 	void	BalanceHP(sint32 penalty);
+
 	
 #ifdef ENABLE_GROUP_LINKING
 	//linking methods

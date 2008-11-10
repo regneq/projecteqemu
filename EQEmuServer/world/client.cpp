@@ -498,8 +498,11 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 				clog(WORLD__CLIENT_ERR, "Zone not found in database zone_id=%i, moveing char to arena character:%s", zoneID, char_name);
 			}
 			
-			if(!pZoning)
+			if(!pZoning) {
 				database.SetGroupID(char_name, 0, charid);
+				database.SetLFP(charid, false);
+				database.SetLFG(charid, false);
+			}
 			else{
 				int32 groupid=database.GetGroupID(char_name);
 				if(groupid>0){

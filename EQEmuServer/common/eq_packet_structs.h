@@ -1548,10 +1548,41 @@ Wrong size on OP_LFG. Got: 80, Expected: 68
   64: 00 00 00 00 00 00 00 00 - 00 00 00 00 00 00 00 00  | ................
 */
 /*000*/	uint32 unknown000;
-/*004*/	uint32 value; // 0x00 = off 0x01 = on
-/*008*/	uint32 unknown008;
-/*012*/	uint32 unknown012;
-/*016*/	char	name[64];
+/*004*/	uint8 value; // 0x00 = off 0x01 = on
+/*005*/	uint8  MatchFilter;
+/*006*/	uint16 Unknown006;
+/*008*/	uint32 FromLevel;
+/*012*/	uint32 ToLevel;
+/*016*/	char Comments[64];
+};
+
+struct LFGGetMatchesRequest_Struct {
+/*000*/	uint32	Unknown000;
+/*004*/	uint32	FromLevel;
+/*008*/	uint32	ToLevel;
+/*012*/	uint32	Classes;
+};
+
+enum {	LFPOff = 0,
+	LFPOn = 1,
+	LFPMemberUpdate = 255 // Internal use, not sent by client
+};
+
+struct LFP_Struct {
+/*000*/	uint32	Unknown000;
+/*004*/	uint8	Action;
+/*005*/	uint8	MatchFilter;
+/*006*/	uint16	Unknown006;
+/*008*/	uint32	FromLevel;
+/*012*/	uint32	ToLevel;
+/*016*/	uint32	Classes;
+/*020*/	char	Comments[64];
+};
+
+struct LFPGetMatchesRequest_Struct {
+/*000*/	uint32	Unknown000;
+/*004*/	uint32	FromLevel;
+/*008*/	uint32	ToLevel;
 };
 
 /*
@@ -3493,13 +3524,13 @@ struct spawnShroudSelf
 #endif
 
 
-
-
-
-
-
-
-
+typedef struct {
+	char	Name[64];
+	uint16	Class;
+	uint16	Level;
+	uint16	Zone;
+	uint16	GuildID;
+} GroupLFPMemberEntry;
 
 //old structures live here:
 #include "eq_old_structs.h"

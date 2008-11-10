@@ -98,6 +98,9 @@
 
 #define ServerOP_WhoAll				0x0210
 #define ServerOP_FriendsWho			0x0211
+#define ServerOP_LFGMatches			0x0212
+#define ServerOP_LFPUpdate			0x0213
+#define ServerOP_LFPMatches			0x0214
 
 #define ServerOP_LSInfo				0x1000
 #define ServerOP_LSStatus			0x1001
@@ -284,6 +287,10 @@ struct ServerClientList_Struct {
 	int32	guild_id;
 	bool	LFG;
 	int8	gm;
+	int8	LFGFromLevel;
+	int8	LFGToLevel;
+	bool	LFGMatchFilter;
+	char	LFGComments[64];
 };
 
 struct ServerClientListKeepAlive_Struct {
@@ -692,6 +699,52 @@ struct ServerRaidMessage_Struct {
 	char message[0];
 };
 
+struct ServerLFGMatchesRequest_Struct {
+	int32	FromID;
+	int8	QuerierLevel;
+	char	FromName[64];
+	int8	FromLevel;
+	int8	ToLevel;
+	uint32	Classes;
+};
+
+struct ServerLFGMatchesResponse_Struct {
+	char Name[64];
+	int8 Level;
+	int8 Class_;
+	int16 Zone;
+	uint16 GuildID;
+	uint16 Anon;
+	char Comments[64];
+};
+
+struct ServerLFPUpdate_Struct {
+	int32 LeaderID;
+	int8 Action;
+	int8 MatchFilter;
+	uint32	FromLevel;
+	uint32	ToLevel;
+	uint32	Classes;
+	char	Comments[64];
+	GroupLFPMemberEntry Members[MAX_GROUP_MEMBERS];
+};
+
+struct ServerLFPMatchesResponse_Struct {
+	uint32	FromLevel;
+	uint32	ToLevel;
+	uint32	Classes;
+	GroupLFPMemberEntry Members[MAX_GROUP_MEMBERS];
+	char Comments[64];
+};
+
+struct ServerLFPMatchesRequest_Struct {
+	int32	FromID;
+	int8	FromLevel;
+	int8	ToLevel;
+	int8	QuerierClass;
+	int8	QuerierLevel;
+	char	FromName[64];
+};
 #pragma pack()
 
 #endif

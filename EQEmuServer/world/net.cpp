@@ -95,11 +95,13 @@ CommonProfiler _cp;
 #include "clientlist.h"
 #include "LauncherList.h"
 #include "wguild_mgr.h"
+#include "lfplist.h"
 
 TimeoutManager timeout_manager;
 EQStreamFactory eqsf(WorldStream,9000);
 EmuTCPServer tcps;
 ClientList client_list;
+GroupLFPList LFPGroupList;
 extern ConsoleList console_list;
 ZSList zoneserver_list;
 LoginServer loginserver;
@@ -404,6 +406,8 @@ int main(int argc, char** argv) {
 		zoneserver_list.Process();
 		
 		launcher_list.Process();
+
+		LFPGroupList.Process();
 		
 		if (InterserverTimer.Check()) {
 			InterserverTimer.Start();

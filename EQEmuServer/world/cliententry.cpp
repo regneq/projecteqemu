@@ -171,6 +171,13 @@ void ClientListEntry::Update(ZoneServer* iZS, ServerClientList_Struct* scl, sint
 	pguild_id = scl->guild_id;
 	pLFG = scl->LFG;
 	gm = scl->gm;
+	// Fields from the LFG Window
+	if((scl->LFGFromLevel != 0) && (scl->LFGToLevel != 0)) {
+		pLFGFromLevel = scl->LFGFromLevel;
+		pLFGToLevel = scl->LFGToLevel;
+		pLFGMatchFilter = scl->LFGMatchFilter;
+		memcpy(pLFGComments, scl->LFGComments, sizeof(pLFGComments));
+	}
 
 	SetOnline(iOnline);
 }

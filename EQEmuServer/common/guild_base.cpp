@@ -892,8 +892,10 @@ uint8 *BaseGuildManager::MakeGuildList(const char *head_name, uint32 &length) co
 	//a bit little better than memsetting the whole thing...
 	uint32 r,pos;
 	for(r = 0, pos = 0; r <= MAX_NUMBER_GUILDS; r++, pos += 64) {
-		strcpy((char *) buffer+pos, "BAD GUILD");
-//		buffer[pos] = '\0';
+		//strcpy((char *) buffer+pos, "BAD GUILD");
+		// These 'BAD GUILD' entries were showing in the drop-downs for selecting guilds in the LFP window,
+		// so just fill unused entries with an empty string instead.
+		buffer[pos] = '\0';
 	}
 	
 	strn0cpy((char *) buffer, head_name, 64);

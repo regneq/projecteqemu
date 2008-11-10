@@ -3433,9 +3433,10 @@ void EntityList::SendGroupLeave(int32 gid, const char *name) {
 	LinkedListIterator<Client*> iterator(client_list); 
 	iterator.Reset(); 
 	while(iterator.MoreElements()) {
-		if(iterator.GetData()){
+		Client *c = iterator.GetData();
+		if(c){
 			Group *g = NULL;
-			g = iterator.GetData()->GetGroup();
+			g = c->GetGroup();
 			if(g){
 				if(g->GetID() == gid)
 				{
@@ -3444,8 +3445,11 @@ void EntityList::SendGroupLeave(int32 gid, const char *name) {
 					strcpy(gj->membername, name);
 					gj->action = groupActLeave;
 					strcpy(gj->yourname, name);
-					iterator.GetData()->QueuePacket(outapp);
+					c->QueuePacket(outapp);
 					safe_delete(outapp);
+					g->DelMemberOOZ(name);
+					if(g->IsLeader(c) && c->IsLFP())
+						c->UpdateLFP();
 				}
 			}
 		}

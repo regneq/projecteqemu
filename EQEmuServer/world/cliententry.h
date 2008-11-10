@@ -73,6 +73,10 @@ public:
 	inline void			SetGM(int8 igm)	{ gm = igm; }
 	inline void			SetZone(int32 zone) { pzone = zone; }
 	inline bool	IsLocalClient() const { return plocal; }
+	inline int8			GetLFGFromLevel() const { return pLFGFromLevel; }
+	inline int8			GetLFGToLevel() const { return pLFGToLevel; }
+	inline bool			GetLFGMatchFilter() const { return pLFGMatchFilter; }
+	inline const char*		GetLFGComments() const { return pLFGComments; }
 
 private:
 	void	ClearVars(bool iAll = false);
@@ -108,6 +112,10 @@ private:
 	int32	pguild_id;
 	bool	pLFG;
 	int8	gm;
+	int8	pLFGFromLevel;
+	int8	pLFGToLevel;
+	bool	pLFGMatchFilter;
+	char	pLFGComments[64];
 };
 
 
