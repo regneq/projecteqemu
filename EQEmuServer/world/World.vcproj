@@ -248,6 +248,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\lfplist.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\LoginServer.cpp"
 				>
 			</File>
@@ -302,6 +306,10 @@
 			</File>
 			<File
 				RelativePath=".\console.h"
+				>
+			</File>
+			<File
+				RelativePath=".\lfplist.h"
 				>
 			</File>
 			<File
