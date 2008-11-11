@@ -266,73 +266,84 @@ void Client::SetEXP(int32 set_exp, int32 set_aaxp, bool isrezzexp) {
 
 void Client::SetLevel(int8 set_level, bool command)
 {
-	#ifdef GUILDWARS
-		if(set_level > SETLEVEL) {
-			Message(0,"You cannot exceed level %i on a GuildWars Server.",SETLEVEL);
-			return;
-		}
-	#endif
+        #ifdef GUILDWARS
+                if(set_level > SETLEVEL) {
+                        Message(0,"You cannot exceed level %i on a GuildWars Server.",SETLEVEL);
+                        return;
+                }
+        #endif
 
-	if (GetEXPForLevel(set_level) == 0xFFFFFFFF) {
-		LogFile->write(EQEMuLog::Error,"Client::SetLevel() GetEXPForLevel(%i) = 0xFFFFFFFF", set_level);
-		return;
-	}
+        if (GetEXPForLevel(set_level) == 0xFFFFFFFF) {
+                LogFile->write(EQEMuLog::Error,"Client::SetLevel() GetEXPForLevel(%i) = 0xFFFFFFFF", set_level);
+                return;
+        }
 
-	EQApplicationPacket* outapp = new EQApplicationPacket(OP_LevelUpdate, sizeof(LevelUpdate_Struct));
-	LevelUpdate_Struct* lu = (LevelUpdate_Struct*)outapp->pBuffer;
-	lu->level = set_level;
-	lu->level_old = level;
-	level = set_level;
+        EQApplicationPacket* outapp = new EQApplicationPacket(OP_LevelUpdate, sizeof(LevelUpdate_Struct));
+        LevelUpdate_Struct* lu = (LevelUpdate_Struct*)outapp->pBuffer;
+        lu->level = set_level;
+        if(m_pp.level2 != 0)
+                lu->level_old = m_pp.level2;
+        else
+                lu->level_old = level;
 
-	if(IsRaidGrouped())
-	{
-		Raid *r = this->GetRaid();
-		if(r){
-			r->UpdateLevel(GetName(), set_level);
-		}
-	}
+        level = set_level;
 
-	if(set_level > m_pp.level) { // Yes I am aware that you could delevel yourself and relevel this is just to test!
-		m_pp.points += 5 * (set_level - m_pp.level);
+        if(IsRaidGrouped())
+        {
+                Raid *r = this->GetRaid();
+                if(r){
+                        r->UpdateLevel(GetName(), set_level);
+                }
+        }
+        if(set_level > m_pp.level2)
+        {
+                if(m_pp.level2 == 0)
+                        m_pp.points += 5;
+                else
+                        m_pp.points += (5 * (set_level - m_pp.level2));
+
+                m_pp.level2 = set_level;
+        }
+        if(set_level > m_pp.level) {
 
 #ifdef EMBPERL
-		((PerlembParser*)parse)->Event(EVENT_LEVEL_UP, 0, "", (NPC*)NULL, this);
+                ((PerlembParser*)parse)->Event(EVENT_LEVEL_UP, 0, "", (NPC*)NULL, this);
 #endif
-	}
+        }
 
-	m_pp.level = set_level;
-	if (command){
-		m_pp.exp = GetEXPForLevel(set_level);
-		Message(15, "Welcome to level %i!", set_level);
-		lu->exp = 0;
-	}
-	else {
-		float tmpxp = (float) ( (float) m_pp.exp - GetEXPForLevel( GetLevel() )) /
-						( (float) GetEXPForLevel(GetLevel()+1) - GetEXPForLevel(GetLevel()));
-		lu->exp =  (int32)(330.0f * tmpxp);
+        m_pp.level = set_level;
+        if (command){
+                m_pp.exp = GetEXPForLevel(set_level);
+                Message(15, "Welcome to level %i!", set_level);
+                lu->exp = 0;
+        }
+        else {
+                float tmpxp = (float) ( (float) m_pp.exp - GetEXPForLevel( GetLevel() )) /
+                                                ( (float) GetEXPForLevel(GetLevel()+1) - GetEXPForLevel(GetLevel()));
+                lu->exp =  (int32)(330.0f * tmpxp);
     }
-	QueuePacket(outapp);
-	safe_delete(outapp);
-	this->SendAppearancePacket(AT_WhoLevel, set_level); // who level change
+        QueuePacket(outapp);
+        safe_delete(outapp);
+        this->SendAppearancePacket(AT_WhoLevel, set_level); // who level change
 
     LogFile->write(EQEMuLog::Normal,"Setting Level for %s to %i", GetName(), set_level);
 
-	CalcBonuses();
-	if(!RuleB(Character, HealOnLevel))
-	{
-		int mhp = CalcMaxHP();
-		if(GetHP() > mhp)
-			SetHP(mhp);
-	}
-	else
-	{
-		SetHP(CalcMaxHP());		// Why not, lets give them a free heal
-	}
+        CalcBonuses();
+        if(!RuleB(Character, HealOnLevel))
+        {
+                int mhp = CalcMaxHP();
+                if(GetHP() > mhp)
+                        SetHP(mhp);
+        }
+        else
+        {
+                SetHP(CalcMaxHP());             // Why not, lets give them a free heal
+        }
 
-	SendHPUpdate();
-	SetMana(CalcMaxMana());
-	UpdateWho();
-	Save();
+        SendHPUpdate();
+        SetMana(CalcMaxMana());
+        UpdateWho();
+        Save();
 }
 
 // Note: The client calculates exp separately, we cant change this function

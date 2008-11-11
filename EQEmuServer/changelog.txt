@@ -2,6 +2,9 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
 ==11/10/2008
+Trevius/Derision: Fix for GM Training Point exploit when de-leveling and leveling up again
+
+==11/10/2008
 Derision: Implemented Looking For Group/Looking For Players Window. patch_Titanium_conf has been updated.
 Derision: Visual Studio users should add world/lfplist.h and world/lfplist.cpp to their project.
 
