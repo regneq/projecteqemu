@@ -365,17 +365,22 @@ void BotRaids::GroupAssignTask(Group *g, int iTask, Mob *m) {
 
 	if((iTask == 2) && (m != NULL) && !m->IsBot()) {
 		Mob *gleader = g->GetLeader();
-		gleader->SetFollowID(gleader->BotOwner->GetID());
-		gleader->WipeHateList();
-		gleader->Say("Attacking %s", m->GetCleanName());
-        gleader->AddToHateList(m, 1, 1, false);
-		for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
-			if(g->members[i] && (g->members[i] != gleader)) {
-				g->members[i]->SetFollowID(gleader->GetID());
-				g->members[i]->WipeHateList();
-				g->members[i]->Say("Attacking %s", m->GetCleanName());
-                g->members[i]->AddToHateList(m, 2000, 2000, false);
+		if(gleader->IsBot()) {
+			gleader->SetFollowID(gleader->BotOwner->GetID());
+			gleader->WipeHateList();
+			gleader->Say("Attacking %s", m->GetCleanName());
+			gleader->AddToHateList(m, 2000, 2000, false);
+			for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
+				if(g->members[i] && (g->members[i] != gleader)) {
+					g->members[i]->SetFollowID(gleader->GetID());
+					g->members[i]->WipeHateList();
+					g->members[i]->Say("Attacking %s", m->GetCleanName());
+					g->members[i]->AddToHateList(m, 2000, 2000, false);
+				}
 			}
+		}
+		else {
+			gleader->Message(15, "Only bot groups can offtank.");
 		}
 	}
 	// Guard
@@ -398,6 +403,9 @@ void BotRaids::RaidDefendEnraged() {
 					BotRaidGroups[j]->members[i]->Say("Enraged... stopping attacks.");
 					BotRaidGroups[j]->members[i]->SetFollowID(0);
 					BotRaidGroups[j]->members[i]->WipeHateList();
+					if(BotRaidGroups[j]->members[i]->HasPet()) {
+						BotRaidGroups[j]->members[i]->GetPet()->WipeHateList();
+					}
 				}
 			}
 		}

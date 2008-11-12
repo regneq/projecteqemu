@@ -124,12 +124,10 @@ void Mob::PET_Process() {
 		// Ok, we 're a melee or any other class lvl<12. Yes, because after it becomes hard to go in melee for casters.. even for bots..
 		if( is_combat_range )
 		{
-			if (AImovement_timer->Check()) 
-			{
-				SetRunAnimSpeed(0);
-			}
+			AImovement_timer->Check();
 			if(IsMoving())
 			{
+				SetRunAnimSpeed(0);
 				SetHeading(target->GetHeading());
 				if(moved) {
 					moved=false;
@@ -155,7 +153,7 @@ void Mob::PET_Process() {
 					}
  
 					// Ok now, let's check pet's offhand. 
-					if (attack_dw_timer.Check() && ( GetOwner()->GetClass() == MAGICIAN || GetOwner()->GetClass() == NECROMANCER || GetOwner()->GetClass() == SHADOWKNIGHT || GetOwner()->GetClass() == BEASTLORD ) ) 
+					if (attack_dw_timer.Check() && GetOwnerID() && ( GetOwner()->GetClass() == MAGICIAN || GetOwner()->GetClass() == NECROMANCER || GetOwner()->GetClass() == SHADOWKNIGHT || GetOwner()->GetClass() == BEASTLORD ) ) 
 					{
 						if(GetOwner()->GetLevel() >= 24)
 						{
