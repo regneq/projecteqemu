@@ -152,12 +152,10 @@ void Mob::BOT_Process() {
         if(is_combat_range && cast_last_time)
         {
 			cast_last_time = false;
-            if(AImovement_timer->Check())
-            {
-                SetRunAnimSpeed(0);
-            }
+            AImovement_timer->Check();
             if(IsMoving())
             {
+                SetRunAnimSpeed(0);
 				SetHeading(target->GetHeading());
 				if(moved) {
 					moved=false;
@@ -313,12 +311,10 @@ void Mob::BOT_Process() {
         {
 			cast_last_time = true;
             // First, let's make them stop
-            if(AImovement_timer->Check())
-            {
-                SetRunAnimSpeed(0);
-            }
+            AImovement_timer->Check();
             if(IsMoving())
             {
+                SetRunAnimSpeed(0);
 				SetHeading(target->GetHeading());
 				if(moved) {
 					moved=false;
@@ -362,9 +358,7 @@ void Mob::BOT_Process() {
     else {
         // Franck: EQoffline
         // Ok if we're not engaged, what's happening..
-		if(target != BotOwner) {
-			CastToNPC()->SetTarget(BotOwner);
-		}
+		CastToNPC()->SetTarget(entity_list.GetMob(GetFollowID()));
 		if(!IsMoving()) {
 			BotMeditate(true);
 			Bot_AI_IdleCastCheck(); // let's rebuff, heal, etc..

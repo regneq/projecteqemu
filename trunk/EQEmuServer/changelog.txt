@@ -1,6 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==11/11/2008
+Congdar: Bots: fix ghosting when runnning up to targets
+
 ==11/10/2008
 Trevius/Derision: Fix for GM Training Point exploit when de-leveling and leveling up again
 
