@@ -1149,7 +1149,6 @@ bool NPC::Bot_Command_RezzTarget(Mob *target) {
 	}
 	return false;
 }
-
 void EntityList::ShowSpawnWindow(Client* client, int Distance, bool NamedOnly) {
 
 	const char *WindowTitle = "Bot Tracking Window";
@@ -1167,21 +1166,56 @@ void EntityList::ShowSpawnWindow(Client* client, int Distance, bool NamedOnly) {
 	{
 		if (iterator.GetData() && (iterator.GetData()->DistNoZ(*client)<=Distance))
 		{
-			if(iterator.GetData()->IsTrackable()) {
+			if(iterator.GetData()->IsTrackable()) {  //angelox
 				Mob* cur_entity = iterator.GetData();
-
-				if(NamedOnly) {
-					if(!strncasecmp(cur_entity->GetName(), "a_", 2) ||
-					   !strncasecmp(cur_entity->GetName(), "an_", 3)) {
-
-						iterator.Advance();
-					   	continue;
-					}
-				}
-
+				const char *const MyArray[] = {
+					"a_","an_","Innkeep_","Barkeep_",
+					"Guard_","Merchant_","Lieutenant_",
+					"Banker_","Centaur_","Aviak_","Baker_",
+					"Sir_","Armorer_","Deathfist_","Deputy_",
+					"Sentry_","Sentinel_","Leatherfoot_",
+					"Corporal_","goblin_","Bouncer_","Captain_",
+					"orc_","fire_","inferno_","young_","cinder_",
+					"flame_","gnomish_","CWG_","sonic_","greater_",
+					"ice_","dry_","Priest_","dark-boned_",
+					"Tentacle_","Basher_","Dar_","Greenblood_",
+					"clockwork_","guide_","rogue_","minotaur_",
+					"brownie_","Teir'","dark_","tormented_",
+					"mortuary_","lesser_","giant_","infected_",
+					"wharf_","Apprentice_","Scout_","Recruit_",
+					"Spiritist_","Pit_","Royal_","scalebone_",
+					"carrion_","Crusader_","Trooper_","hunter_",
+					"decaying_","iksar_","klok_","templar_","lord_",
+					"froglok_","war_","large_","charbone_","icebone_",
+					"Vicar_","Cavalier_","Heretic_","Reaver_","venomous_",
+					"Sheildbearer_","pond_","mountain_","plaguebone_","Brother_",
+					"great_","strathbone_","briarweb_","strathbone_","skeletal_",
+					"minion_","spectral_","myconid_","spurbone_","sabretooth_",
+					"Tin_","Iron_","Erollisi_","Petrifier_","Burynai_",
+					"undead_","decayed_","You_","smoldering_","gyrating_",
+					"lumpy_","Marshal_","Sheriff_","Chief_","Risen_",
+					"lascar_","tribal_","fungi_","Xi_","Legionnaire_",
+					"Centurion_","Zun_","Diabo_","Scribe_","Defender_","Capt_",
+					"_",""
+				};
+				unsigned int MyArraySize;
+				 for ( MyArraySize = 0; true; MyArraySize++) {   //Find empty string & get size
+				   if (!(*(MyArray[MyArraySize]))) break;   //Checks for null char in 1st pos
+				};
+				if (NamedOnly) {
+				   bool ContinueFlag = false;
+				   const char *CurEntityName = cur_entity->GetName();  //Call function once
+				   for (int Index = 0; Index < MyArraySize; Index++) {
+				      if (!strncasecmp(CurEntityName, MyArray[Index], strlen(MyArray[Index]))) {
+				         iterator.Advance();
+				         ContinueFlag = true;
+				         break;   //From Index for
+				       };
+				   };
+				  if (ContinueFlag) continue; //Moved here or would apply to Index for
+				};
 
 				CurrentCon = client->GetLevelCon(cur_entity->GetLevel());
-
 				if(CurrentCon != LastCon) {
 
 					if(LastCon != -1)

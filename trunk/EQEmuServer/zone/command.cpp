@@ -7382,7 +7382,7 @@ void command_bot(Client *c, const Seperator *sep) {
 		c->Message(15, "#bot cure [poison|disease|curse|blindness] - You must have a Cleric in your group.");
 		c->Message(15, "#bot bindme - You must have a Cleric in your group to get Bind Affinity cast on you.");
 		c->Message(15, "#bot raid [commands] (#bot raid help will show some help).");
-		c->Message(15, "#bot track [rare] - look at mobs in the zone");
+		c->Message(15, "#bot track - look at mobs in the zone (ranger has options)");
 		c->Message(15, "#bot target calm - attempts to pacify your target mob.");
 		c->Message(15, "#bot evac - transports your pc group to safe location in the current zone. bots are lost");
         c->Message(15, "#bot resurrectme - Your bot Cleric will rez you.");
@@ -8762,8 +8762,12 @@ void command_bot(Client *c, const Seperator *sep) {
 						Tracker->Say("Selective tracking", c->GetName());
 						entity_list.ShowSpawnWindow(c, RangeR, true);
 					}
+					else if(!strcasecmp(sep->arg[2], "near")) { 
+						Tracker->Say("Tracking mobs nearby", c->GetName());
+						entity_list.ShowSpawnWindow(c, RangeD, false);
+					}
 					else 
-						Tracker->Say("You want to [track all] or [track rare]?", c->GetName());
+						Tracker->Say("You want to [track all], [track near], or [track rare]?", c->GetName());
 						
 					break;
 
