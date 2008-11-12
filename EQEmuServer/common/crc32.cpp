@@ -167,8 +167,8 @@ uint32 CRC32::Update(const int8* buf, uint32 bufsize, uint32 crc32) {
 #elif defined(i386)
 		register uint32  val __asm ( "ax" );
 		val = crc32;
-
 __asm __volatile (
+		"push  %%ebx\n"
 		"xorl	%%ebx, %%ebx\n"
 		"movl	%1, %%esi\n" 
 		"movl	%2, %%ecx\n" 
@@ -232,9 +232,10 @@ __asm __volatile (
 		"xorb	2(%%esi), %%bl\n"
 		"xorl	(%%edi,%%ebx,4), %%eax\n"
 	"2:\n"
+		"pop  %%ebx\n" 
 		:
 		: "a" (val), "g" (buf), "g" (bufsize)
-		: "bx", "cx", "dx", "si", "di"
+		: "cx", "dx", "si", "di"
 	);
 	
 	return val;

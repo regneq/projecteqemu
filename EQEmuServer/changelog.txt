@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==11/12/2008
+Angelox: (Kobaz): Fix for 'PIC register bx clobbered in asm' error
+Angelox: Improved filtering on [bot track rare] option for Ranger
+Angelox: Added option [bot track near] for Ranger
 
 ==11/11/2008
 Congdar: Bots: fix ghosting when runnning up to targets
