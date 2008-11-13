@@ -438,7 +438,7 @@ void Client::FinishTrade(NPC* with){
 									database.SetBotItemInSlot(with->GetNPCTypeID(), 14, inst->GetID());
 								}
 								else {
-									with->Say("Use #bot remove inventory 13 to swap primary weapons when dual wielding.");
+									with->Say("Use #bot inventory remove 13 to swap primary weapons when dual wielding.");
 									PushItemOnCursor(*inst, true);
 									DeleteItemInInventory(i);
 									return;

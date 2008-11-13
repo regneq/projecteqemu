@@ -1,6 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+
 ==11/12/2008
+Congdar: Bots: add command #bot lore - Casts Identify on the item on your mouse pointer
 seveianrex: Tweaked the Slay Undead damage to once again. Damage should be in-line with live numbers now.
 Angelox: (Kobaz): Fix for 'PIC register bx clobbered in asm' error
 Angelox: Improved filtering on [bot track rare] option for Ranger
