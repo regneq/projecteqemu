@@ -8863,6 +8863,56 @@ void command_bot(Client *c, const Seperator *sep) {
         return;
 	}
 
+	if(!strcasecmp(sep->arg[1], "lore")) {
+		if(c->IsGrouped())
+        {
+			bool hascaster = false;
+			Group *g = c->GetGroup();
+			for(int i=0; i<MAX_GROUP_MEMBERS; i++)
+            {
+				if(g && g->members[i] && g->members[i]->IsBot()) {
+					uint8 casterlevel = g->members[i]->GetLevel();
+					switch(g->members[i]->GetClass()) {
+						case ENCHANTER:
+							if(casterlevel >= 15) {
+								hascaster = true;
+							}
+							break;
+						case WIZARD:
+							if(casterlevel >= 14) {
+								hascaster = true;
+							}
+							break;
+						case NECROMANCER:
+							if(casterlevel >= 17) {
+								hascaster = true;
+							}
+							break;
+						case MAGICIAN:
+							if(casterlevel >= 13) {
+								hascaster = true;
+							}
+							break;
+						default:
+							break;
+					}
+					if(hascaster) {
+						g->members[i]->Say("Trying to Identify your item...");
+						g->members[i]->CastSpell(305, c->GetID(), 1, -1, -1);
+						break;
+					}
+				}
+			}
+			if(!hascaster) {
+				c->Message(15, "You don't see anyone in your group that can cast Identify.");
+			}
+		}
+		else {
+			c->Message(15, "You don't see anyone in your group that can cast Identify.");
+		}
+		return;
+	}
+
 	if(!strcasecmp(sep->arg[1], "resurrectme"))
     {
 		Mob *target = c->GetTarget();
@@ -8890,6 +8940,9 @@ void command_bot(Client *c, const Seperator *sep) {
 			if(!hasrezzer) {
 				c->Message(15, "You must have a Cleric in your group.");
 			}
+		}
+		else {
+			c->Message(15, "You must have a Cleric in your group.");
 		}
         return;
 	}
@@ -8955,6 +9008,7 @@ void command_bot(Client *c, const Seperator *sep) {
 			evac->Say("Attempting to Evac you %s.", c->GetName());
 			evac->CastToClient()->CastSpell(2183, c->GetID(), 1, -1, -1);
 		}
+		return;
 	}
 
 	// debug commands
