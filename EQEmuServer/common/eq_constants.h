@@ -442,11 +442,14 @@ typedef enum {
 #define	STAT_INT		4
 #define	STAT_WIS		5
 #define	STAT_CHA		6
-#define	STAT_FIRE		7
+#define	STAT_MAGIC		7
 #define	STAT_COLD		8
-#define	STAT_MAGIC		9
+#define	STAT_FIRE		9
 #define	STAT_POISON		10
-#define	STAT_DISEASE	11
+#define	STAT_DISEASE		11
+#define	STAT_MANA		12
+#define	STAT_HP			13
+#define	STAT_AC			14
 
 
 

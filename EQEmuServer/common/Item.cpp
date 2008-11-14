@@ -29,6 +29,7 @@
 */
 #include <sstream>
 #include <iostream>
+#include <limits.h>
 #include "Item.h"
 #include "database.h"
 #include "misc.h"
@@ -37,6 +38,27 @@
 #include "classes.h"
 using namespace std;
 
+sint32 NextItemInstSerialNumber = 1;
+
+static inline sint32 GetNextItemInstSerialNumber() {
+
+	// The Bazaar relies on each item a client has up for Trade having a unique 
+	// identifier. This 'SerialNumber' is sent in Serialized item packets and
+	// is used in Bazaar packets to identify the item a player is buying or inspecting.
+	//
+	// E.g. A trader may have 3 Five dose cloudy potions, each with a different number of remaining charges
+	// up for sale with different prices.
+	//
+	// NextItemInstSerialNumber is the next one to hand out.
+	//
+	// It is very unlikely to reach 2,147,483,647. Maybe we should call abort(), rather than wrapping back to 1.
+	if(NextItemInstSerialNumber >= INT_MAX)
+		NextItemInstSerialNumber = 1;
+	else
+		NextItemInstSerialNumber++;
+
+	return NextItemInstSerialNumber;
+}
 
 ItemInst::ItemInst(const Item_Struct* item, sint16 charges) {
 	m_use_type = ItemUseNormal;
@@ -50,6 +72,7 @@ ItemInst::ItemInst(const Item_Struct* item, sint16 charges) {
 	else
 		m_color = 0;
 	m_merchantcount = 1;
+	m_SerialNumber = GetNextItemInstSerialNumber();
 }
 
 ItemInst::ItemInst(SharedDatabase *db, uint32 item_id, sint16 charges) {
@@ -64,6 +87,7 @@ ItemInst::ItemInst(SharedDatabase *db, uint32 item_id, sint16 charges) {
 	else
 		m_color = 0;
 	m_merchantcount = 1;
+	m_SerialNumber = GetNextItemInstSerialNumber();
 }
 
 ItemInstQueue::~ItemInstQueue() {
@@ -148,6 +172,7 @@ ItemInst::ItemInst(const ItemInst& copy)
 			m_contents[it->first] = inst_new;
 		}
 	}
+	m_SerialNumber = copy.m_SerialNumber;
 }
 
 // Clean up container contents

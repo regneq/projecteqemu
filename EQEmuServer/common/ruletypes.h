@@ -202,6 +202,11 @@ RULE_BOOL ( Chat, ServerWideOOC, true)
 RULE_BOOL ( Chat, ServerWideAuction, true)
 RULE_CATEGORY_END()
 
+RULE_CATEGORY ( Bazaar )
+RULE_BOOL ( Bazaar, AuditTrail, false)
+RULE_INT ( Bazaar, MaxSearchResults, 50)
+RULE_CATEGORY_END()
+
 #undef RULE_CATEGORY
 #undef RULE_INT
 #undef RULE_REAL

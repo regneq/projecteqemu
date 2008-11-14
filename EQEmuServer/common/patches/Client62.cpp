@@ -482,7 +482,6 @@ ENCODE(OP_ItemPacket) {
 
 	delete[] __emu_buffer;
 	safe_delete_array(serialized);
-
 	dest->FastQueuePacket(&in, ack_req);
 }
 
@@ -522,7 +521,6 @@ ENCODE(OP_CharInventory) {
 	memcpy(in->pBuffer,serial_string.c_str(),serial_string.length());
 
 	delete[] __emu_buffer;
-
 	dest->FastQueuePacket(&in, ack_req);
 }
 
@@ -678,20 +676,6 @@ DECODE(OP_CharacterCreate) {
 	FINISH_DIRECT_DECODE();
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 char *SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 depth) {
 	char *serialization = NULL;
 	char *instance = NULL;
@@ -712,7 +696,9 @@ char *SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 
 		inst->GetPrice(),
 		(merchant_slot==0) ? 1 : inst->GetMerchantCount(),
 		0,
-		merchant_slot,	//instance ID, bullshit for now
+		//merchant_slot,	//instance ID, bullshit for now
+		// The 'Merchant Slot' needs to be some unique id for bazaar to work properly
+		(merchant_slot==0) ? inst->GetSerialNumber() : merchant_slot,
 		inst->IsInstNoDrop() ? 1 : 0,		//not sure where this field is
 		(stackable ? ((inst->GetItem()->ItemType == ItemTypePotion) ? charges : 0) : charges),
 		0
