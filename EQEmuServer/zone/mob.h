@@ -470,6 +470,7 @@ bool logpos;
 	bool AvoidDamage(Mob* attacker, sint32 &damage);
 	bool CheckHitChance(Mob* attacker, SkillType skillinuse, int Hand);
 	void TryCriticalHit(Mob *defender, int16 skill, sint32 &damage);
+	void TryPetCriticalHit(Mob *defender, int16 skill, sint32 &damage);
 	bool TryFinishingBlow(Mob *defender, SkillType skillinuse);
 	bool TryHeadShot(Mob* defender, SkillType skillInUse);
 	void DoRiposte(Mob* defender);
