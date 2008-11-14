@@ -30,6 +30,7 @@
 #define LOOT_LORE_ERROR 371 //You cannot loot this Lore Item.  You already have one.
 #define SPELL_FIZZLE 173 // Your spell fizzles!
 #define SPELL_FIZZLE_OTHER 1218 // %1's spell fizzles!
+#define TRADER_BUSY 1468
 #define MISS_NOTE 180 // You miss a note, bringing your song to a close!
 #define MISS_NOTE_OTHER 1219 // A missed note brings %1's song to a close!
 #define INTERRUPT_SPELL 439 //Your spell is interrupted.

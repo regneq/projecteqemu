@@ -114,7 +114,7 @@
 	void Handle_OP_GMGoto(const EQApplicationPacket *app);
 	void Handle_OP_TraderShop(const EQApplicationPacket *app);
 	void Handle_OP_ShopRequest(const EQApplicationPacket *app);
-	void Handle_OP_Bazaar(const EQApplicationPacket *app);
+	void Handle_OP_BazaarSearch(const EQApplicationPacket *app);
 	void Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app);
 	void Handle_OP_ShopPlayerSell(const EQApplicationPacket *app);
 	void Handle_OP_ShopEnd(const EQApplicationPacket *app);

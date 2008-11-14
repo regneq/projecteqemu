@@ -2109,9 +2109,9 @@ struct EnvDamage2_Struct {
 //Bazaar Stuff =D
 
 struct BazaarWindowStart_Struct {
-	int8   action;
-	int8   unknown1;
-	int16  unknown2;
+	int8   Action;
+	int8   Unknown001;
+	int16  Unknown002;
 };
 
 
@@ -2133,6 +2133,8 @@ struct BazaarSearch_Struct {
 	char   name[64];
 	int32	minprice;
 	int32	maxprice;
+	int32	minlevel;
+	int32	maxlevel;
 };
 struct BazaarInspect_Struct{
 	int32 item_id;
@@ -2147,13 +2149,15 @@ struct BazaarReturnDone_Struct{
 	int32 unknown16;
 };
 struct BazaarSearchResults_Struct {
-	BazaarWindowStart_Struct beginning;
-	int32	numitems;
-	int32	item_id;
-	int32	seller_nr;
-	int32	cost;
-	int32	unknown20;
-	char	name[64];
+	BazaarWindowStart_Struct Beginning;
+	int32	SellerID;
+	int32   NumItems; // Don't know. Don't know the significance of this field.
+	int32   ItemID;
+	int32   Unknown016;
+	int32   Unknown020; // Something to do with stats as well
+	char	Name[64];
+	int32	Cost;
+	int32	ItemStat;
 };
 
 struct ServerSideFilters_Struct {
@@ -2329,16 +2333,18 @@ struct Trader_ShowItems_Struct{
 	int32 unknown08[3];
 };
 
-struct TraderBuy_Struct{
-	int32 unknown0;
-	int32 traderid;
-	int32 itemid;
-	int32 unknown8;
-	int32 price;
-	int32 quantity;
-	int32 slot_num;
-	char  itemname[60];
+struct TraderBuy_Struct {
+/*000*/ int32   Action;
+/*004*/ int32   Price;
+/*008*/ int32   TraderID;
+/*012*/ char    ItemName[64];
+/*076*/ int32   Unknown076;
+/*080*/ int32   ItemID;
+/*084*/ int32   AlreadySold;
+/*088*/ int32   Quantity;
+/*092*/ int32   Unknown092;
 };
+
 
 struct TraderItemUpdate_Struct{
 	int32 unknown0;

@@ -2235,53 +2235,79 @@ struct EnvDamage2_Struct {
 };
 
 //Bazaar Stuff =D
+//
+
+enum {
+	BazaarTrader_StartTraderMode = 1,
+	BazaarTrader_EndTraderMode = 2,
+	BazaarTrader_EndTransaction = 4,
+	BazaarSearchResults = 7,
+	BazaarWelcome = 9,
+	BazaarBuyItem = 10,
+	BazaarTrader_ShowItems = 11,
+	BazaarSearchDone = 12,
+	BazaarTrader_CustomerBrowsing = 13
+};
 
 struct BazaarWindowStart_Struct {
-	int8   action;
-	int8   unknown1;
-	int16  unknown2;
+	int8   Action;
+	int8   Unknown001;
+	int16  Unknown002;
 };
 
 
 struct BazaarWelcome_Struct {
-	BazaarWindowStart_Struct beginning;
-	int32  traders;
-	int32  items;
-	int8   unknown1[8];
+	BazaarWindowStart_Struct Beginning;
+	int32  Traders;
+	int32  Items;
+	int8   Unknown012[8];
 };
 
 struct BazaarSearch_Struct {
-	BazaarWindowStart_Struct beginning;
-	int32	traderid;
-	int32  class_;
-	int32  race;
-	int32  stat;
-	int32  slot;
-	int32  type;
-	char   name[64];
-	int32	minprice;
-	int32	maxprice;
+	BazaarWindowStart_Struct Beginning;
+	int32	TraderID;
+	int32	Class_;
+	int32	Race;
+	int32	ItemStat;
+	int32	Slot;
+	int32	Type;
+	char	Name[64];
+	int32	MinPrice;
+	int32	MaxPrice;
+	int32	Minlevel;
+	int32	MaxLlevel;
 };
 struct BazaarInspect_Struct{
-	int32 item_id;
-	int32 unknown;
-	char name[64];
+	int32 ItemID;
+	int32 Unknown004;
+	char Name[64];
 };
+
+struct NewBazaarInspect_Struct {
+/*000*/	BazaarWindowStart_Struct Beginning;
+/*004*/	char Name[64];
+/*068*/	int32 Unknown068;
+/*072*/	int32 Unknown072;
+/*076*/	int32 Unknown076;
+/*080*/	int32 SerialNumber;
+/*084*/	int32 Unknown084;
+};
+
 struct BazaarReturnDone_Struct{
-	int32 type;
-	int32 traderid;
-	int32 unknown8;
-	int32 unknown12;
-	int32 unknown16;
+	int32 Type;
+	int32 TraderID;
+	int32 Unknown008;
+	int32 Unknown012;
+	int32 Unknown016;
 };
 struct BazaarSearchResults_Struct {
-	BazaarWindowStart_Struct beginning;
-	int32	numitems;
-	int32	item_id;
-	int32	seller_nr;
-	int32	cost;
-	int32	unknown20;
-	char	name[64];
+	BazaarWindowStart_Struct Beginning;
+	int32	NumItems;
+	int32	ItemID;
+	int32	SellerID;
+	int32	Cost;
+	int32	ItemStat;
+	char	Name[64];
 };
 
 struct ServerSideFilters_Struct {
@@ -2475,50 +2501,52 @@ struct WhoAllReturnStruct {
 };
 
 struct Trader_Struct {
-	int32	code;
-	int32	itemid[160];
-	int32	unknown;
-	int32	itemcost[80];
+/*000*/	int32	Code;
+/*004*/	int32	Unknown004;
+/*008*/	uint64	Items[80];
+/*648*/	int32	ItemCost[80];
 };
 
 struct ClickTrader_Struct {
-	int32	code;
-	int32	unknown[161];//damn soe this is totally pointless :/ but at least your finally using memset! Good job :) -LE
-	int32	itemcost[80];
+/*000*/	int32	Code;
+/*004*/	int32	Unknown004;
+/*008*/	uint64	SerialNumber[80];
+/*648*/	int32	ItemCost[80];
 };
 
 struct GetItems_Struct{
-	int32	items[80];
+	int32	Items[80];
+	int32	SerialNumber[80];
+	sint32	Charges[80];
 };
 
 struct BecomeTrader_Struct{
-	int32 id;
-	int32 code;
+	int32 ID;
+	int32 Code;
 };
 
 struct Trader_ShowItems_Struct{
-	int32 code;
-	int32 traderid;
-	int32 unknown08[3];
+/*000*/	int32 Code;
+/*004*/	int32 TraderID;
+/*008*/	int32 Unknown08[3];
 };
 
 struct TraderBuy_Struct{
-	int32 unknown0;
-	int32 traderid;
-	int32 itemid;
-	int32 unknown8;
-	int32 price;
-	int32 quantity;
-	int32 slot_num;
-	char  itemname[60];
+/*000*/	int32 Action;
+/*004*/	int32 TraderID;
+/*008*/	int32 ItemID;
+/*012*/	int32 AlreadySold;
+/*016*/	int32 Price;
+/*020*/	int32 Quantity;
+/*024*/	char  ItemName[64];
 };
 
 struct TraderItemUpdate_Struct{
-	int32 unknown0;
-	int32 traderid;
-	int8  fromslot;
-	int8  toslot; //7?
-	int16 charges;
+	int32 Unknown000;
+	int32 TraderID;
+	int8  FromSlot;
+	int   ToSlot; //7?
+	int16 Charges;
 };
 
 struct MoneyUpdate_Struct{
@@ -2529,15 +2557,17 @@ struct MoneyUpdate_Struct{
 };
 
 struct TraderDelItem_Struct{
-	int32 slotid;
-	int32 quantity;
-	int32 unknown;
+	int32 Unknown000;
+	int32 TraderID;
+	int32 ItemID;
+	int32 Unknown012;
 };
 
 struct TraderClick_Struct{
-	int32 traderid;
-	int32 unknown4[2];
-	int32 approval;
+/*000*/	int32 TraderID;
+/*004*/	int32 Unknown004;
+/*008*/	int32 Unknown008;
+/*012*/	int32 Approval;
 };
 
 struct FormattedMessage_Struct{

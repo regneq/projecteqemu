@@ -945,14 +945,31 @@ void Client::BulkSendMerchantInventory(int merchant_id, int npcid) {
 //		safe_delete_array(cpi);
 }
 
-int8 Client::WithCustomer(){
-	if(this->withcustomer)
+int8 Client::WithCustomer(int16 NewCustomer){
+
+	if(NewCustomer == 0) {
+		CustomerID = 0;
 		return 0;
-	else{
-		this->withcustomer=true;
+	}
+
+	if(CustomerID == 0) {
+		CustomerID = NewCustomer;
 		return 1;
 	}
+
+	// Check that the player browsing our wares hasn't gone away.
+
+	Client* c = entity_list.GetClientByID(CustomerID);
+
+	if(!c) {
+		_log(TRADING__CLIENT, "Previous customer has gone away.");
+		CustomerID = NewCustomer;
+		return 1;
+	}
+
+	return 0;
 }
+
 void Client::OPRezzAnswer(const EQApplicationPacket* app) {
 
 	const Resurrect_Struct* ra = (const Resurrect_Struct*) app->pBuffer;

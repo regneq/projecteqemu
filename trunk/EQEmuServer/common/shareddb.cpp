@@ -581,8 +581,8 @@ bool SharedDatabase::GetInventory(uint32 account_id, char* name, Inventory* inv)
 			// Save ptr to item in inventory
 			if (put_slot_id == SLOT_INVALID) {
 				LogFile->write(EQEMuLog::Error,
-					"Warning: Invalid slot_id for item in inventory: acctid=%i, item_id=%i, slot_id=%i",
-					account_id, item_id, slot_id);
+					"Warning: Invalid slot_id for item in inventory: name=%s, acctid=%i, item_id=%i, slot_id=%i",
+					name, account_id, item_id, slot_id);
 			}
 		}
 		mysql_free_result(result);

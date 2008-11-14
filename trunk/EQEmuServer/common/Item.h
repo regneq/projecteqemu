@@ -333,7 +333,8 @@ public:
 	bool IsSlotAllowed(sint16 slot_id) const;
 
 	string Serialize(sint16 slot_id) const { InternalSerializedItem_Struct s; s.slot_id=slot_id; s.inst=(const void *)this; string ser; ser.assign((char *)&s,sizeof(InternalSerializedItem_Struct)); return ser; }
-
+	inline sint32 GetSerialNumber() const { return m_SerialNumber; }
+	inline void SetSerialNumber(sint32 id) { m_SerialNumber = id; }
 
 protected:
 	//////////////////////////
@@ -356,6 +357,7 @@ protected:
 	sint16				m_currentslot;
 	bool 				m_instnodrop;
 	sint32				m_merchantcount;		//number avaliable on the merchant, -1=unlimited
+	sint32				m_SerialNumber;	// Unique identifier for this instance of an item. Needed for Bazaar.
 	//
 	// Items inside of this item (augs or contents);
 	map<uint8, ItemInst*> m_contents; // Zero-based index: min=0, max=9

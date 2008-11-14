@@ -580,47 +580,146 @@ void ZoneDatabase::DeleteWorldContainer(uint32 parent_id,uint32 zone_id)
 
 Trader_Struct* ZoneDatabase::LoadTraderItem(uint32 char_id){
 	char errbuf[MYSQL_ERRMSG_SIZE];
-    char* query = 0;
+	char* query = 0;
 	MYSQL_RES *result;
 	MYSQL_ROW row;
 	Trader_Struct* loadti = new Trader_Struct;
 	memset(loadti,0,sizeof(Trader_Struct));
 	if (RunQuery(query,MakeAnyLenString(&query, "select * from trader where char_id=%i order by slot_id limit 80",char_id),errbuf,&result)){
 		safe_delete_array(query);
-		loadti->code=11;
+		loadti->Code = BazaarTrader_ShowItems;
 		while ((row = mysql_fetch_row(result))) {
-			if(atoi(row[3])>=80 || atoi(row[3])<0)
-				printf("Bad Slot number when trying to load trader information!\n");
+			if(atoi(row[5])>=80 || atoi(row[4])<0)
+				_log(TRADING__CLIENT, "Bad Slot number when trying to load trader information!\n");
 			else{
-				loadti->itemid[atoi(row[3])]=atoi(row[1]);
-				loadti->itemcost[atoi(row[3])]=atoi(row[2]);
+				loadti->Items[atoi(row[5])] = atoi(row[1]);
+				loadti->ItemCost[atoi(row[5])] = atoi(row[4]);
 			}
 		}
 		mysql_free_result(result);
 	}
 	else{
 		safe_delete_array(query);
-		printf("Failed to load trader information!\n");
+		_log(TRADING__CLIENT, "Failed to load trader information!\n");
 	}
 	return loadti;
 }
-void ZoneDatabase::SaveTraderItem(uint32 char_id,uint32 itemid,uint32 itemcost,int8 slot){
+
+TraderCharges_Struct* ZoneDatabase::LoadTraderItemWithCharges(uint32 char_id){
 	char errbuf[MYSQL_ERRMSG_SIZE];
-    char* query = 0;
-	if (!(RunQuery(query,MakeAnyLenString(&query, "replace INTO trader VALUES(%i,%i,%i,%i)",char_id, itemid, itemcost, slot),errbuf)))
-		printf("Failed to save trader item: %i for char_id: %i, the error was: %s\n",itemid,char_id,errbuf);
+	char* query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+	TraderCharges_Struct* loadti = new TraderCharges_Struct;
+	memset(loadti,0,sizeof(TraderCharges_Struct));
+	if (RunQuery(query,MakeAnyLenString(&query, "select * from trader where char_id=%i order by slot_id limit 80",char_id),errbuf,&result)){
+		safe_delete_array(query);
+		while ((row = mysql_fetch_row(result))) {
+			if(atoi(row[5])>=80 || atoi(row[5])<0)
+				_log(TRADING__CLIENT, "Bad Slot number when trying to load trader information!\n");
+			else{
+				loadti->ItemID[atoi(row[5])] = atoi(row[1]);
+				loadti->SerialNumber[atoi(row[5])] = atoi(row[2]);
+				loadti->Charges[atoi(row[5])] = atoi(row[3]);
+				loadti->ItemCost[atoi(row[5])] = atoi(row[4]);
+			}
+		}
+		mysql_free_result(result);
+	}
+	else{
+		safe_delete_array(query);
+		_log(TRADING__CLIENT, "Failed to load trader information!\n");
+	}
+	return loadti;
+}
+
+ItemInst* ZoneDatabase::LoadSingleTraderItem(uint32 CharID, int SerialNumber) {
+
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+
+	if (RunQuery(query,MakeAnyLenString(&query, "select * from trader where char_id=%i and serialnumber=%i order by slot_id limit 80",
+					   CharID, SerialNumber),errbuf,&result)){
+		safe_delete_array(query);
+
+		if (mysql_num_rows(result) != 1) {
+			_log(TRADING__CLIENT, "Bad result from query\n"); fflush(stdout);
+			return NULL;
+		}
+		row = mysql_fetch_row(result);
+		int ItemID = atoi(row[1]);
+		int Charges = atoi(row[3]);
+		int Cost = atoi(row[4]);
+		int Slot = atoi(row[5]);
+
+		const Item_Struct *item=database.GetItem(ItemID);
+
+		if(!item) {
+			_log(TRADING__CLIENT, "Unable to create item\n"); fflush(stdout);
+			return NULL;
+		}
+
+		if (item && (item->NoDrop!=0)) {
+			ItemInst* inst = database.CreateItem(item);
+			if(!inst) {
+				_log(TRADING__CLIENT, "Unable to create item instance\n"); fflush(stdout);
+				return NULL;
+			}
+
+			inst->SetCharges(Charges);
+			inst->SetSerialNumber(SerialNumber);
+			inst->SetMerchantSlot(SerialNumber);
+			inst->SetPrice(Cost);
+			if(inst->IsStackable())
+				inst->SetMerchantCount(Charges);
+
+			return inst;
+		}
+	}
+
+	return NULL;
+
+
+}
+
+void ZoneDatabase::SaveTraderItem(uint32 char_id,uint32 itemid,int32 uniqueid,sint32 charges,uint32 itemcost,int8 slot){
+
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	if (!(RunQuery(query,MakeAnyLenString(&query, "replace INTO trader VALUES(%i,%i,%i,%i,%i,%i)",
+					      char_id, itemid, uniqueid, charges,itemcost, slot),errbuf)))
+		_log(TRADING__CLIENT, "Failed to save trader item: %i for char_id: %i, the error was: %s\n",itemid,char_id,errbuf);
+
 	safe_delete_array(query);
 }
+
+void ZoneDatabase::UpdateTraderItemCharges(int char_id, uint32 ItemInstID, sint32 charges) {
+
+	_log(TRADING__CLIENT, "ZoneDatabase::UpdateTraderItemCharges(%i, %i, %i)", char_id, ItemInstID, charges);
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	if (!(RunQuery(query,MakeAnyLenString(&query, "update trader set charges=%i where char_id=%i and serialnumber=%i",
+					     charges, char_id, ItemInstID),errbuf)))
+		_log(TRADING__CLIENT, "Failed to update charges for  trader item: %i for char_id: %i, the error was: %s\n",
+				      ItemInstID,char_id,errbuf);
+
+	safe_delete_array(query);
+
+}
+
+
 void ZoneDatabase::DeleteTraderItem(uint32 char_id){
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char* query = 0;
 	if(char_id==0){
 		if (!(RunQuery(query,MakeAnyLenString(&query, "delete from trader"),errbuf)))
-			printf("Failed to delete all trader items data, the error was: %s\n",errbuf);
+			_log(TRADING__CLIENT, "Failed to delete all trader items data, the error was: %s\n",errbuf);
 	}
 	else{
 		if (!(RunQuery(query,MakeAnyLenString(&query, "delete from trader where char_id=%i",char_id),errbuf)))
-			printf("Failed to delete trader item data for char_id: %i, the error was: %s\n",char_id,errbuf);
+			_log(TRADING__CLIENT, "Failed to delete trader item data for char_id: %i, the error was: %s\n",char_id,errbuf);
 	}
 	safe_delete_array(query);
 }
@@ -628,7 +727,7 @@ void ZoneDatabase::DeleteTraderItem(uint32 char_id,int16 slot_id){
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char* query = 0;
 	if (!(RunQuery(query,MakeAnyLenString(&query, "delete from trader where char_id=%i and slot_id=%i",char_id,slot_id),errbuf)))
-		printf("Failed to delete trader item data for char_id: %i, the error was: %s\n",char_id,errbuf);
+		_log(TRADING__CLIENT, "Failed to delete trader item data for char_id: %i, the error was: %s\n",char_id,errbuf);
 	safe_delete_array(query);
 }
 

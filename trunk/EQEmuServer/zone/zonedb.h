@@ -61,6 +61,14 @@ struct ZoneSpellsBlocked {
 	char message[256];
 };
 
+struct TraderCharges_Struct {
+	int32 ItemID[80];
+	int32 SerialNumber[80];
+	int32 ItemCost[80];
+	sint32 Charges[80];
+};
+
+
 class ItemInst;
 struct FactionMods;
 struct FactionValue;
@@ -97,11 +105,14 @@ public:
 	/*
 	 * Traders
 	 */
-	void	SaveTraderItem(uint32 char_id,uint32 itemid,uint32 itemcost,int8 slot);
+
+	void    SaveTraderItem(uint32 char_id,uint32 itemid,int32 uniqueid, sint32 charges,uint32 itemcost,int8 slot);
+	void    UpdateTraderItemCharges(int char_id, uint32 ItemInstID, sint32 charges);
+	ItemInst* LoadSingleTraderItem(uint32 char_id, int uniqueid);
 	void	DeleteTraderItem(uint32 char_id);
 	void	DeleteTraderItem(uint32 char_id,int16 slot_id);
 	Trader_Struct* LoadTraderItem(uint32 char_id);
-	
+	TraderCharges_Struct* LoadTraderItemWithCharges(uint32 char_id);
 	/*
 	 * General Character Related Stuff
 	 */

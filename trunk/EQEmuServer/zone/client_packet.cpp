@@ -217,9 +217,10 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_GMToggle] = &Client::Handle_OP_GMToggle;
 	ConnectedOpcodes[OP_LFGCommand] = &Client::Handle_OP_LFGCommand;
 	ConnectedOpcodes[OP_GMGoto] = &Client::Handle_OP_GMGoto;
+	ConnectedOpcodes[OP_Trader] = &Client::Handle_OP_Trader;
 	ConnectedOpcodes[OP_TraderShop] = &Client::Handle_OP_TraderShop;
 	ConnectedOpcodes[OP_ShopRequest] = &Client::Handle_OP_ShopRequest;
-	ConnectedOpcodes[OP_Bazaar] = &Client::Handle_OP_Bazaar;
+	ConnectedOpcodes[OP_BazaarSearch] = &Client::Handle_OP_BazaarSearch;
 	ConnectedOpcodes[OP_ShopPlayerBuy] = &Client::Handle_OP_ShopPlayerBuy;
 	ConnectedOpcodes[OP_ShopPlayerSell] = &Client::Handle_OP_ShopPlayerSell;
 	ConnectedOpcodes[OP_ShopEnd] = &Client::Handle_OP_ShopEnd;
@@ -276,7 +277,6 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_Damage] = &Client::Handle_OP_Damage;
 	ConnectedOpcodes[OP_AAAction] = &Client::Handle_OP_AAAction;
 	ConnectedOpcodes[OP_TraderBuy] = &Client::Handle_OP_TraderBuy;
-	ConnectedOpcodes[OP_Trader] = &Client::Handle_OP_Trader;
 	ConnectedOpcodes[OP_GMFind] = &Client::Handle_OP_GMFind;
 	ConnectedOpcodes[OP_PickPocket] = &Client::Handle_OP_PickPocket;
 	ConnectedOpcodes[OP_Bind_Wound] = &Client::Handle_OP_Bind_Wound;
@@ -1952,7 +1952,8 @@ void Client::Handle_OP_BazaarInspect(const EQApplicationPacket *app)
 	}
 
 	BazaarInspect_Struct* bis = (BazaarInspect_Struct*)app->pBuffer;
-	const Item_Struct* item = database.GetItem(bis->item_id);
+
+	const Item_Struct* item = database.GetItem(bis->ItemID);
 
 	if (!item) {
 		Message(13, "Error: This item does not exist!");
@@ -1960,6 +1961,7 @@ void Client::Handle_OP_BazaarInspect(const EQApplicationPacket *app)
 	}
 
 	ItemInst* inst = database.CreateItem(item);
+
 	if (inst) {
 		SendItemPacket(0, inst, ItemPacketViewLink);
 		safe_delete(inst);
@@ -3148,6 +3150,8 @@ LogFile->write(EQEMuLog::Debug, "OP CastSpell: slot=%d, spell=%d, target=%d, inv
 					return;
 				}
 				//delete a charge from the item
+				/* No, this is done in CastedSpellFinished, plus OP_TraderDelItem is not the correct
+				 * Opcode to use for this purpose.
 				EQApplicationPacket* outapp = new EQApplicationPacket(OP_TraderDelItem,sizeof(TraderDelItem_Struct));
 				TraderDelItem_Struct* tdi = (TraderDelItem_Struct*)outapp->pBuffer;
 				tdi->quantity=0xFFFFFFFF;
@@ -3155,6 +3159,7 @@ LogFile->write(EQEMuLog::Debug, "OP CastSpell: slot=%d, spell=%d, target=%d, inv
 				tdi->slotid=castspell->slot;
 				QueuePacket(outapp);
 				safe_delete(outapp);
+				*/	
 				if ((item->Click.Type == ET_ClickEffect) || (item->Click.Type == ET_Expendable) || (item->Click.Type == ET_EquipClick) || (item->Click.Type == ET_ClickEffect2))
 				{
 					CastSpell(item->Click.Effect, castspell->target_id, castspell->slot, item->CastTime, 0, 0, castspell->inventoryslot);
@@ -3749,22 +3754,53 @@ void Client::Handle_OP_GMGoto(const EQApplicationPacket *app)
 
 void Client::Handle_OP_TraderShop(const EQApplicationPacket *app)
 {
+	// Bazaar Trader:
+	//
+	// This is when a potential purchaser right clicks on this client who is in Trader mode to
+	// browse their goods.
+	//
+	_pkt(TRADING__PACKETS, app);
+
 	TraderClick_Struct* tcs= (TraderClick_Struct*)app->pBuffer;
-	if(app->size!=sizeof(TraderClick_Struct))
+
+	if(app->size!=sizeof(TraderClick_Struct)) {
+
+		_log(TRADING__CLIENT, "Client::Handle_OP_TraderShop: Returning due to struct size mismatch");
+
 		return;
+	}
 
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_TraderShop, sizeof(TraderClick_Struct));
+
 	TraderClick_Struct* outtcs=(TraderClick_Struct*)outapp->pBuffer;
-	Client* tmp = entity_list.GetClientByID(tcs->traderid);
-	if (tmp)
-		outtcs->approval=tmp->WithCustomer();
-	else
+
+	Client* Customer = entity_list.GetClientByID(tcs->TraderID);
+
+	if (Customer)
+		outtcs->Approval = Customer->WithCustomer(GetID());
+	else {
+		_log(TRADING__CLIENT, "Client::Handle_OP_TraderShop: entity_list.GetClientByID(tcs->traderid)"
+				      " returned a NULL pointer");
 		return;
-	outtcs->traderid=tcs->traderid;
+	}
+
+	outtcs->TraderID = tcs->TraderID;
+
+	outtcs->Unknown008 = 0x3f800000;
+
 	QueuePacket(outapp);
-	if(outtcs->approval)
-		this->BulkSendTraderInventory(tmp->CharacterID());
+
+	_pkt(TRADING__PACKETS, outapp);
+
+	if(outtcs->Approval) {
+		this->BulkSendTraderInventory(Customer->CharacterID());
+		Customer->Trader_CustomerBrowsing(this);
+	}
+	else
+		Message_StringID(clientMessageYellow, TRADER_BUSY);
+
 	safe_delete(outapp);
+
 	return;
 }
 
@@ -3839,19 +3875,41 @@ void Client::Handle_OP_ShopRequest(const EQApplicationPacket *app)
 	return;
 }
 
-void Client::Handle_OP_Bazaar(const EQApplicationPacket *app)
+void Client::Handle_OP_BazaarSearch(const EQApplicationPacket *app)
 {
+	_pkt(TRADING__PACKETS, app);
+
 	if (app->size==sizeof(BazaarSearch_Struct)) {
+
 		BazaarSearch_Struct* bss= (BazaarSearch_Struct*)app->pBuffer;
-		this->SendBazaarResults(bss->traderid,bss->class_,bss->race,bss->stat,bss->slot,bss->type,bss->name,bss->minprice,bss->maxprice);
+
+		this->SendBazaarResults(bss->TraderID, bss->Class_, bss->Race, bss->ItemStat, bss->Slot, bss->Type, 
+					bss->Name, bss->MinPrice, bss->MaxPrice);
 	}
 	else if (app->size==sizeof(BazaarWelcome_Struct)) {
+
 		BazaarWelcome_Struct* bws = (BazaarWelcome_Struct*)app->pBuffer;
-		if (bws->beginning.action==9)
+
+		if (bws->Beginning.Action==BazaarWelcome)
 			SendBazaarWelcome();
 	}
-	else
-		LogFile->write(EQEMuLog::Error, "Malformed BazaarSearch_Struct packet received, ignoring...\n");
+	else if (app->size==sizeof(NewBazaarInspect_Struct)) {
+
+		NewBazaarInspect_Struct *nbis = (NewBazaarInspect_Struct*)app->pBuffer;
+
+		Client *c = entity_list.GetClientByName(nbis->Name);
+		if(c) {
+			ItemInst* inst = c->FindTraderItemBySerialNumber(nbis->SerialNumber);
+				if(inst) 
+					SendItemPacket(0, inst, ItemPacketViewLink);
+		}
+		return;
+	}
+	else    {
+			_log(TRADING__CLIENT, "Malformed BazaarSearch_Struct packe, Action %it received, ignoring...");
+			LogFile->write(EQEMuLog::Error, "Malformed BazaarSearch_Struct packet received, ignoring...\n");
+		}
+
 	return;
 }
 
@@ -5673,48 +5731,141 @@ void Client::Handle_OP_AAAction(const EQApplicationPacket *app)
 
 void Client::Handle_OP_TraderBuy(const EQApplicationPacket *app)
 {
+	// Bazaar Trader:
+	//
+	// Client has elected to buy an item from a Trader
+	//
+	_pkt(TRADING__PACKETS, app);
+
 	if(app->size==sizeof(TraderBuy_Struct)){
+
 		TraderBuy_Struct* tbs = (TraderBuy_Struct*)app->pBuffer;
-		if(Client* trader=entity_list.GetClientByID(tbs->traderid)){
-			BuyTraderItem(tbs,trader,app);
+
+		if(Client* Trader=entity_list.GetClientByID(tbs->TraderID)){
+
+			BuyTraderItem(tbs,Trader,app);
 		}
+		else {
+			_log(TRADING__CLIENT, "Client::Handle_OP_TraderBuy: Null Client Pointer");
+		}
+	}
+	else {
+		_log(TRADING__CLIENT, "Client::Handle_OP_TraderBuy: Struct size mismatch");
+
 	}
 	return;
 }
 
 void Client::Handle_OP_Trader(const EQApplicationPacket *app)
 {
+	// Bazaar Trader:
+	//
+	//
+
+	_pkt(TRADING__PACKETS, app);
+
 	if(app->size==sizeof(Trader_ShowItems_Struct)){ //Show Items
+
 		Trader_ShowItems_Struct* sis = (Trader_ShowItems_Struct*)app->pBuffer;
-		if(sis->code==2){//end trader
-			this->Trader_EndTrader();
-		}
-		else if(sis->code==4){ //end transaction
-			Client* tmp=entity_list.GetClientByID(sis->traderid);
-			if(tmp)
-				tmp->withcustomer=false;
-		}
-		else if(sis->code==11){
-			this->Trader_ShowItems();
+		
+		switch(sis->Code) {
+			
+			case BazaarTrader_EndTraderMode: {
+
+				Trader_EndTrader();
+				break;
+			}
+
+			case BazaarTrader_EndTransaction: {
+
+				Client* c=entity_list.GetClientByID(sis->TraderID);
+
+				if(c)
+					c->WithCustomer(0);
+				else
+					_log(TRADING__CLIENT, "Client::Handle_OP_TraderBuy: Null Client Pointer");
+
+				break;
+			}
+
+			case BazaarTrader_ShowItems: {
+
+				this->Trader_ShowItems();
+
+				break;
+
+			}
+
+			default: {
+				_log(TRADING__CLIENT, "Unhandled action code in OP_Trader ShowItems_Struct");
+
+				break;
+			}
 		}
 	}
 	else if(app->size==sizeof(ClickTrader_Struct)){
+
 		ClickTrader_Struct* ints = (ClickTrader_Struct*)app->pBuffer;
-		if(ints->code==1){
+
+		if(ints->Code==BazaarTrader_StartTraderMode){
+
 			GetItems_Struct* gis=GetTraderItems();
+
+			// Verify there are no NODROP or items with a zero price
+			bool TradeItemsValid = true;
+
+			for(int i=0; i<80; i++) {
+
+				if(gis->Items[i] == 0) break;
+
+				if(ints->ItemCost[i] == 0) {
+					Message(13, "Item in Trader Satchel with no price. Unable to start trader mode");
+					TradeItemsValid = false;
+					break;
+				}
+				const Item_Struct *Item = database.GetItem(gis->Items[i]);
+
+				if(!Item) {
+					Message(13, "Unexpected error. Unable to start trader mode");
+					TradeItemsValid = false;
+					break;
+				}
+
+				if(Item->NoDrop == 0) {
+					Message(13, "NODROP Item in Trader Satchel. Unable to start trader mode");
+					TradeItemsValid = false;
+					break;
+				}
+			}
+
+			if(!TradeItemsValid) {
+				Trader_EndTrader();
+				return;
+			}
+
 			for(int i=0;i<80;i++){
-				if(gis->items[i]>0 && gis->items[i]<database.GetMaxItem() && database.GetItem(gis->items[i])!=0)
-					database.SaveTraderItem(this->CharacterID(),gis->items[i],ints->itemcost[i],i);
-				else
-					return; //sony doesnt memset so assume done on first bad item
+				if(gis->Items[i]>0 && gis->Items[i]<database.GetMaxItem() && database.GetItem(gis->Items[i])!=0)
+					database.SaveTraderItem(this->CharacterID(),gis->Items[i],gis->SerialNumber[i],
+								gis->Charges[i],ints->ItemCost[i],i);
+				else {
+					//return; //sony doesnt memset so assume done on first bad item
+					break;
+				}
+
 			}
 			safe_delete(gis);
+
 			this->Trader_StartTrader();
 		}
-		else
-			LogFile->write(EQEMuLog::Error, "Unknown TraderStruct code of: %i\n", ints->code);
+		else {
+			_log(TRADING__CLIENT,"Client::Handle_OP_Trader: Unknown TraderStruct code of: %i\n",
+					     ints->Code);
+
+			LogFile->write(EQEMuLog::Error, "Unknown TraderStruct code of: %i\n", ints->Code);
+		}
 	}
-	else{
+	else {
+		_log(TRADING__CLIENT,"Unknown size for OP_Trader: %i\n", app->size);
 		LogFile->write(EQEMuLog::Error, "Unknown size for OP_Trader: %i\n", app->size);
 		DumpPacket(app);
 		return;

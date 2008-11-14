@@ -1,6 +1,34 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==11/14/2008
+Derision: Bazaar Trader mode (not Barter). Please test it well.
+
+REQUIRED SQL:
+
+DROP TABLE IF EXISTS `trader`;
+CREATE TABLE `trader` (
+  `char_id` int(10) unsigned NOT NULL default '0',
+  `item_id` int(10) unsigned NOT NULL default '0',
+  `serialnumber` int(10) unsigned NOT NULL default '0',
+  `charges` int(11) NOT NULL default '0',
+  `item_cost` int(10) unsigned NOT NULL default '0',
+  `slot_id` tinyint(3) unsigned NOT NULL default '0',
+  PRIMARY KEY  (`char_id`,`slot_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+DROP TABLE IF EXISTS `trader_audit`;
+CREATE TABLE `trader_audit` (
+  `time` datetime NOT NULL,
+  `seller` varchar(64) NOT NULL,
+  `buyer` varchar(64) NOT NULL,
+  `itemname` varchar(64) NOT NULL,
+  `quantity` int(11) NOT NULL,
+  `totalcost` int(11) NOT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+UPDATE doors set opentype=155 where opentype=154 and zone='bazaar';
+
 ==11/12/2008
 Congdar: Bots: add command #bot lore - Casts Identify on the item on your mouse pointer
 seveianrex: Tweaked the Slay Undead damage to once again. Damage should be in-line with live numbers now.

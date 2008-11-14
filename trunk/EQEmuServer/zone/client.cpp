@@ -173,7 +173,7 @@ Client::Client(EQStreamInterface* ieqs)
 	port = ntohs(eqs->GetRemotePort());
 	client_state = CLIENT_CONNECTING;
 	Trader=false;
-	withcustomer=false;
+	CustomerID = 0;
 	IsTracking=false;
 	WID = 0;
 	account_id = 0;

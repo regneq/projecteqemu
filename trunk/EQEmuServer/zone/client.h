@@ -182,9 +182,10 @@ public:
 	void	AI_Start(int32 iMoveDelay = 0);
 	void	AI_Stop();
 	void	Trader_ShowItems();
+	void    Trader_CustomerBrowsing(Client *Customer);
 	void	Trader_EndTrader();
 	void	Trader_StartTrader();
-	int8	WithCustomer();
+	int8	WithCustomer(int16 NewCustomer);
 	bool	CheckCheat();
 	void	CheatDetected(CheatTypes Cheat);
 	bool	WarpDetection(bool CTimer, float Distance);
@@ -206,11 +207,12 @@ public:
 	void	Message_StringID(int32 type, int32 string_id, const char* message,const char* message2=0,const char* message3=0,const char* message4=0,const char* message5=0,const char* message6=0,const char* message7=0,const char* message8=0,const char* message9=0, int32 distance = 0);
 	void	SendBazaarResults(int32 trader_id,int32 class_,int32 race,int32 stat,int32 slot,int32 type,char name[64],int32 minprice,int32 maxprice);
 	void	SendTraderItem(int32 item_id,int16 quantity);
-	int16	FindTraderItemCharges(int32 item_id);
-	int16	FindTraderItem(int32 item_id,int16 quantity);
+	int16	FindTraderItem(sint32 SerialNumber,int16 Quantity);
+	ItemInst* FindTraderItemBySerialNumber(sint32 SerialNumber);
 	void	FindAndNukeTraderItem(int32 item_id,int16 quantity,Client* customer,int16 traderslot);
-	void	NukeTraderItem(int16 slot,int16 charges,int16 quantity,Client* customer,int16 traderslot);
+	void    NukeTraderItem(int16 slot,int16 charges,int16 quantity,Client* customer,int16 traderslot, int uniqueid);
 	void	ReturnTraderReq(const EQApplicationPacket* app,int16 traderitemcharges);
+	void	TradeRequestFailed(const EQApplicationPacket* app);
 	void	BuyTraderItem(TraderBuy_Struct* tbs,Client* trader,const EQApplicationPacket* app);
 	void	TraderUpdate(int16 slot_id,int32 trader_id);
 	void	FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho);
@@ -302,6 +304,7 @@ public:
 
 	void	ServerFilter(SetServerFilter_Struct* filter);
 	void	BulkSendTraderInventory(int32 char_id);
+	void    SendSingleTraderItem(int32 char_id, int uniqueid);
 	void	BulkSendMerchantInventory(int merchant_id, int npcid);
 
 	inline int8	GetLanguageSkill(int16 n)	const { return m_pp.languages[n]; }
@@ -930,7 +933,7 @@ private:
 	bool				dead;
 	bool				IsOnBoat;
 	bool				IsTracking;
-	bool				withcustomer;
+	int16				CustomerID;
 	bool	Trader;
 	bool	cheater;
 	float	cheat_x;
