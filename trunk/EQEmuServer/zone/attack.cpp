@@ -4073,11 +4073,82 @@ void Mob::TryWeaponProc(const Item_Struct* weapon, Mob *on) {
 	}
 }
 
+void Mob::TryPetCriticalHit(Mob *defender, int16 skill, sint32 &damage)
+{
+	Client *owner = NULL;
+	float critChance = RuleR(Combat, BaseCritChance);
+	float CritBonus = spellbonuses.CriticalHitChance + itembonuses.CriticalHitChance;
+	uint16 critMod = 200;
+
+	if (damage < 1) //We can't critical hit if we don't hit.
+		return;
+
+	if (!this->IsPet() || !this->GetOwner()->IsClient())
+		return;
+
+	owner = this->GetOwner()->CastToClient();
+
+	sint16 aaClass = -1;
+	switch (owner->GetClass()) {
+		case NECROMANCER:
+			aaClass = aaDeathsFury;
+			break;
+		case MAGICIAN:
+			aaClass = aaElementalFury;
+			break;
+		case BEASTLORD:
+			aaClass = aaWardersFury;
+			break;
+	}
+
+	if (this->GetClass() == WARRIOR) {
+		critChance += RuleR(Combat, WarBerBaseCritChance);
+	}
+
+	switch (owner->GetAA(aaClass)) {
+	case 1:
+		critChance += 0.04f;
+		break;
+	case 2:
+		critChance += 0.08f;
+		break;
+	case 3:
+		critChance += 0.12f;
+		break;
+	case 4:
+		critChance += 0.16f;
+		break;
+	case 5:
+		critChance += 0.20f;
+		break;
+	}
+
+	if(CritBonus > 0.0 && critChance < 0.01) //If we have a bonus to crit in items or spells but no actual chance to crit
+		critChance = 0.01f; //Give them a small one so skills and items appear to have some effect.
+ 
+	critChance += ((critChance) * (CritBonus) / 100.0f); //crit chance is a % increase to your reg chance
+
+	if (critChance > 0) {
+		if (MakeRandomFloat(0, 1) <= critChance) {
+			damage = (damage * critMod) / 100;
+            entity_list.MessageClose(this, false, 200, MT_CritMelee, "%s scores a critical hit!(%d)", GetCleanName(), damage);
+		}
+	}
+}
+
 void Mob::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 {
-      bool slayUndeadCrit = false;
+	bool slayUndeadCrit = false;
+
 	if(damage < 1) //We can't critical hit if we don't hit.
 		return;
+
+	// decided to branch this into it's own function since it's going to be duplicating a lot of the
+	// code in here, but could lead to some confusion otherwise
+	if (this->IsPet() && this->GetOwner()->IsClient()) {
+		this->TryPetCriticalHit(defender,skill,damage);
+		return;
+	}
  
 	float critChance = RuleR(Combat, BaseCritChance);
 	if(IsClient())
