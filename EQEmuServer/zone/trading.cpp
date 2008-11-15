@@ -1170,6 +1170,17 @@ void Client::BuyTraderItem(TraderBuy_Struct* tbs,Client* Trader,const EQApplicat
 	else
 		outtbs->Quantity = tbs->Quantity;
 
+	if((tbs->Price * outtbs->Quantity) <= 0) {
+		Message(13, "Internal error. Aborting trade. Please report this to the ServerOP. Error code is 1");
+		Trader->Message(13, "Internal error. Aborting trade. Please report this to the ServerOP. Error code is 1");
+		LogFile->write(EQEMuLog::Error, "Bazaar: Zero price transaction between %s and %s aborted."
+						"Item: %s, Charges: %i, TBS: Qty %i, Price: %i",
+						GetName(), Trader->GetName(),
+						BuyItem->GetItem()->Name, BuyItem->GetCharges(), tbs->Quantity, tbs->Price);
+		TradeRequestFailed(app);
+		return;
+	}
+
 	ReturnTraderReq(app, outtbs->Quantity);
 
 	outtbs->TraderID = this->GetID();
