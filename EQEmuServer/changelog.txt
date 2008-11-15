@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
 ==11/14/2008
+seveianrex: Adjusted Coat of Thistles AA modifier.
 seveianrex: Implemented Pet Crits for NEC/MAG/BST (Deaths Fury, Elemental Fury, Warders Fury GoD era AAs)
 Derision: Bazaar Trader mode (not Barter). Please test it well.
 Derision: Updated OP_ShopDelItem for Titanium.
