@@ -339,6 +339,22 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 		mlog(COMBAT__TOHIT, "Applied item melee hit chance %d/15, yeilding %.2f", attacker->itembonuses.HitChance, chancetohit);
 	}
 
+	if (attacker->IsClient()) {
+		int modAA = 100;
+		switch (attacker->CastToClient()->GetAA(aaPrecisionofthePathfinder)) {
+			case 1:
+				modAA += 2;
+				break;
+			case 2:
+				modAA += 4;
+				break;
+			case 3:
+				modAA += 6;
+				break;
+		}
+		chancetohit = ((chancetohit * modAA) / 100);
+	}
+
 	// Chance to hit;   Max 95%, Min 30%
 	if(chancetohit > 1000) {
 		//if chance to hit is crazy high, that means a discipline is in use, and let it stay there
