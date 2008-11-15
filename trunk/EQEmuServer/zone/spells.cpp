@@ -1892,6 +1892,11 @@ int Mob::CalcBuffDuration(Mob *caster, Mob *target, int16 spell_id)
 	int res = 1 + CalcBuffDuration_formula(castlevel, formula, duration);
 	mlog(SPELLS__CASTING, "Spell %d: Casting level %d, formula %d, base_duration %d: result %d",
 		spell_id, castlevel, formula, duration, res);
+
+	// enchanter mesmerization mastery aa
+	if (caster->IsClient() && caster->CastToClient()->GetAA(aaMesmerizationMastery) > 0)
+		res *= 1.35;
+
 	return(res);
 }
 
