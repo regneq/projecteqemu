@@ -1178,6 +1178,7 @@ void Client::BuyTraderItem(TraderBuy_Struct* tbs,Client* Trader,const EQApplicat
 						GetName(), Trader->GetName(),
 						BuyItem->GetItem()->Name, BuyItem->GetCharges(), tbs->Quantity, tbs->Price);
 		TradeRequestFailed(app);
+		safe_delete(outapp);
 		return;
 	}
 
