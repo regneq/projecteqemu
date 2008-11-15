@@ -9,6 +9,7 @@ Derision: Using Find Trader in the Bazaar will teleport you to the Trader.
 Derision: Added Rule Bazaar:EnableWarpToTrader, default true.
 Derision: Added Rule World:TutorialZoneID, default 189 (tutorialb).
 Derision: MinPrice/MaxPrice in the Bazaar search window are now interpreted correctly as values in Platinum.
+Derision: Bazaar bug fix.
 
 ==11/14/2008
 seveianrex: Adjusted Coat of Thistles AA modifier.
