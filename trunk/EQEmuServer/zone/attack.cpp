@@ -436,8 +436,37 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage)
 	// block
 	///////////////////////////////////////////////////////
 
-	if (damage > 0 && CanThisClassBlock() && !other->BehindMob(this, other->GetX(), other->GetY()))
-	{
+	bool bBlockFromRear = false;
+
+	if (this->IsClient()) {
+		Client *c = CastToClient();
+		float aaChance = 0;
+
+		// a successful roll on this does not mean a successful block is forthcoming. only that a chance to block
+		// from a direction other than the rear is granted.
+		switch (aaHightenedAwareness) {
+		case 1:
+			aaChance = 8;
+			break;
+		case 2:
+			aaChance = 16;
+			break;
+		case 3:
+			aaChance = 24;
+			break;
+		case 4:
+			aaChance = 32;
+			break;
+		case 5:
+			aaChance = 40;
+			break;
+		}
+
+		if (aaChance > MakeRandomInt(1, 100))
+			bBlockFromRear = true;
+	}
+
+	if (damage > 0 && CanThisClassBlock() && (!other->BehindMob(this, other->GetX(), other->GetY()) || bBlockFromRear)) {
 		skill = CastToClient()->GetSkill(BLOCKSKILL);
 		if (IsClient()) {
 			if (!other->IsClient() && GetLevelCon(other->GetLevel()) != CON_GREEN)
@@ -2700,24 +2729,27 @@ void Mob::DamageShield(Mob* attacker) {
 	if(DS < 0) {
 		if (IsClient())
 		{
+			int dsMod = 100;
 			switch (CastToClient()->GetAA(aaCoatofThistles))
 			{
 			case 1:
-				DS *= 1.02;
+				dsMod = 110;
 				break;
 			case 2:
-				DS *= 1.04;
+				dsMod = 115;
 				break;
 			case 3:
-				DS *= 1.06;
+				dsMod = 120;
 				break;
 			case 4:
-				DS *= 1.08;
+				dsMod = 125;
 				break;
 			case 5:
-				DS *= 1.10;
+				dsMod = 130;
 				break;
 			}
+
+			DS = ((DS * dsMod) / 100);
 		}
 		DS -= itembonuses.DamageShield; //+Damage Shield should only work when you already have a DS spell
 		attacker->Damage(this, -DS, spellid, ABJURE/*hackish*/, false);
