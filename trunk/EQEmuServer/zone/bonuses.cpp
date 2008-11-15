@@ -452,6 +452,9 @@ void Client::ApplyAABonuses(SendAA_Struct* aa_struct, int32 slots, StatBonuses* 
 
 		switch (effect)
 		{
+			case SE_Accuracy:
+				newbon->HitChance += base1;
+				break;
 			case SE_CurrentHP: //regens
 				newbon->HPRegen += base1;
 				break;
