@@ -390,13 +390,13 @@ int Mob::MonkSpecialAttack(Mob* other, int8 unchecked_type)
 			switch (CastToClient()->GetAA(aaKickMastery))
 			{
 			case 1:
-				min_dmg += MakeRandomFloat(5,20);
+				min_dmg += MakeRandomFloat(10,50);
 				break;
 			case 2:
-				min_dmg += MakeRandomFloat(8,20);
+				min_dmg += MakeRandomFloat(20,60);
 				break;
 			case 3:
-				min_dmg += MakeRandomFloat(10,20);
+				min_dmg += MakeRandomFloat(30,70);
 				break;
 			}
 		}
