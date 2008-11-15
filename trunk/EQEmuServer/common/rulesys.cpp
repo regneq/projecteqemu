@@ -278,7 +278,7 @@ bool RuleManager::LoadRules(Database *db, const char *ruleset) {
 }
 
 void RuleManager::_SaveRule(Database *db, RuleType type, uint16 index) {
-	char vstr[16];
+	char vstr[100];
 
 	switch(type) {
 	case IntRule:
