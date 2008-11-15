@@ -488,8 +488,8 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 				zoneID = database.MoveCharacterToBind(charid);
 
 			if(!pZoning && (RuleB(World, EnableTutorialButton) && (ew->tutorial || StartInTutorial))) {
-				database.MoveCharacterToZone(charid, "tutorialb");
-				zoneID = 189;
+				zoneID = RuleI(World, TutorialZoneID);
+				database.MoveCharacterToZone(charid, database.GetZoneName(zoneID));
 			}
 
 			if (zoneID == 0 || !database.GetZoneName(zoneID)) {
