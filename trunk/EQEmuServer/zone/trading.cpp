@@ -1167,7 +1167,7 @@ void Client::BuyTraderItem(TraderBuy_Struct* tbs,Client* Trader,const EQApplicat
 	int ItemCharges = (BuyItem->GetCharges() > 0) ? BuyItem->GetCharges() : 1;
 
 	if(ItemCharges < (sint16)tbs->Quantity)
-		outtbs->Quantity = BuyItem->GetCharges();
+		outtbs->Quantity = ItemCharges;
 
 	else
 		outtbs->Quantity = tbs->Quantity;
