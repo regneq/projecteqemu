@@ -77,6 +77,7 @@ RULE_BOOL ( World, UseBannedIPsTable, false ) //Lieka Edit: Toggle whether or no
 RULE_BOOL ( World, EnableTutorialButton, true)
 RULE_BOOL ( World, EnableReturnHomeButton, true)
 RULE_INT  ( World, MaxLevelForTutorial, 10)
+RULE_INT  ( World, TutorialZoneID, 189)
 RULE_INT  ( World, MinOfflineTimeToReturnHome, 21600) // 21600 seconds is 6 Hours
 RULE_INT ( World, MaxClientsPerIP, -1 ) //Lieka Edit: Maximum number of clients allowed to connect per IP address if account status is < AddMaxClientsStatus.  Default value: -1 (feature disabled)
 RULE_INT ( World, ExemptMaxClientsStatus, -1 ) //Lieka Edit: Exempt accounts from the MaxClientsPerIP and AddMaxClientsStatus rules, if their status is >= this value.  Default value: -1 (feature disabled)
@@ -205,6 +206,7 @@ RULE_CATEGORY_END()
 RULE_CATEGORY ( Bazaar )
 RULE_BOOL ( Bazaar, AuditTrail, false)
 RULE_INT ( Bazaar, MaxSearchResults, 50)
+RULE_BOOL ( Bazaar, EnableWarpToTrader, true)
 RULE_CATEGORY_END()
 
 #undef RULE_CATEGORY

@@ -3884,7 +3884,7 @@ void Client::Handle_OP_BazaarSearch(const EQApplicationPacket *app)
 		BazaarSearch_Struct* bss= (BazaarSearch_Struct*)app->pBuffer;
 
 		this->SendBazaarResults(bss->TraderID, bss->Class_, bss->Race, bss->ItemStat, bss->Slot, bss->Type, 
-					bss->Name, bss->MinPrice, bss->MaxPrice);
+					bss->Name, bss->MinPrice*1000, bss->MaxPrice*1000);
 	}
 	else if (app->size==sizeof(BazaarWelcome_Struct)) {
 
@@ -6419,7 +6419,12 @@ void Client::Handle_OP_FindPersonRequest(const EQApplicationPacket *app)
 			return;
 		}
 
-		Message(13, "Found NPC '%s'\n", target->GetName());
+		if(RuleB(Bazaar, EnableWarpToTrader) && target->IsClient() && target->CastToClient()->Trader) {
+			Message(15, "Moving you to Trader %s", target->GetName());
+			MovePC(target->GetX(), target->GetY(),  target->GetZ() , 0.0f);
+		}
+		else
+			Message(13, "Found NPC '%s'\n", target->GetName());
 
 		//fill in the path array...
 		points.resize(2);
