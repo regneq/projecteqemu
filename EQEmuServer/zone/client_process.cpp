@@ -1653,9 +1653,7 @@ void Client::DoManaRegen() {
 	}
 
 	//AAs
-	regen += GetAA(aaMentalClarity) 
-		+ GetAA(aaBodyAndMindRejuvenation) 
-		+ GetAA(aaExpansiveMind);
+	regen += GetAA(aaMentalClarity) + GetAA(aaBodyAndMindRejuvenation);
 
 	regen = (regen * RuleI(Character, ManaRegenMultiplier)) / 100;
 	

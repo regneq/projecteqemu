@@ -159,8 +159,8 @@ void Client::CalcItemBonuses(StatBonuses* newbon) {
 	}
 	
 	//caps
-	if(newbon->ManaRegen > RuleI(Character, ItemManaRegenCap))
-		newbon->ManaRegen = RuleI(Character, ItemManaRegenCap);
+	if(newbon->ManaRegen > (RuleI(Character, ItemManaRegenCap) + GetAA(aaExpansiveMind)))
+		newbon->ManaRegen = RuleI(Character, ItemManaRegenCap) + GetAA(aaExpansiveMind);
 	if(newbon->HPRegen > RuleI(Character, ItemHealthRegenCap))
 		newbon->HPRegen = RuleI(Character, ItemHealthRegenCap);
 	
