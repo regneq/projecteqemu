@@ -210,8 +210,8 @@ public:
 	int16	FindTraderItem(sint32 SerialNumber,int16 Quantity);
 	ItemInst* FindTraderItemBySerialNumber(sint32 SerialNumber);
 	void	FindAndNukeTraderItem(int32 item_id,int16 quantity,Client* customer,int16 traderslot);
-	void    NukeTraderItem(int16 slot,int16 charges,int16 quantity,Client* customer,int16 traderslot, int uniqueid);
-	void	ReturnTraderReq(const EQApplicationPacket* app,int16 traderitemcharges);
+	void    NukeTraderItem(int16 slot,sint16 charges,int16 quantity,Client* customer,int16 traderslot, int uniqueid);
+	void	ReturnTraderReq(const EQApplicationPacket* app,sint16 traderitemcharges);
 	void	TradeRequestFailed(const EQApplicationPacket* app);
 	void	BuyTraderItem(TraderBuy_Struct* tbs,Client* trader,const EQApplicationPacket* app);
 	void	TraderUpdate(int16 slot_id,int32 trader_id);
