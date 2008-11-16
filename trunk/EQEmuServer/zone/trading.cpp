@@ -946,7 +946,7 @@ int16 Client::FindTraderItem(sint32 SerialNumber, int16 Quantity){
 				item = this->GetInv().GetItem(SlotID);
 
 				if(item && item->GetSerialNumber() == SerialNumber && 
-				   (item->GetCharges() >= Quantity || (item->GetCharges() == 0 && Quantity == 1))){
+				   (item->GetCharges() >= Quantity || (item->GetCharges() <= 0 && Quantity == 1))){
 
 					return SlotID;
 				}
@@ -959,10 +959,10 @@ int16 Client::FindTraderItem(sint32 SerialNumber, int16 Quantity){
 	return 0;
 }
 
-void Client::NukeTraderItem(int16 Slot,int16 Charges,int16 Quantity,Client* Customer,int16 TraderSlot, int SerialNumber) {
+void Client::NukeTraderItem(int16 Slot,sint16 Charges,int16 Quantity,Client* Customer,int16 TraderSlot, int SerialNumber) {
 
 	if(!Customer) return;
-
+	_log(TRADING__CLIENT, "NukeTraderItem(Slot %i, Charges %i, Quantity %i", Slot, Charges, Quantity);
 	if(Quantity < Charges)
 		Customer->SendSingleTraderItem(this->CharacterID(), SerialNumber);
 	else {
@@ -1029,7 +1029,7 @@ void Client::FindAndNukeTraderItem(int32 SerialNumber, int16 Quantity, Client* C
 
 	const ItemInst* item= NULL;
 	bool Stackable = false;
-	int16 Charges=0;
+	sint16 Charges=0;
 
 	int16 SlotID = FindTraderItem(SerialNumber, Quantity);
 	if(SlotID > 0){
@@ -1041,9 +1041,12 @@ void Client::FindAndNukeTraderItem(int32 SerialNumber, int16 Quantity, Client* C
 
 			Stackable = item->IsStackable();
 
-			if(!Stackable) Quantity = Charges;
+			if(!Stackable) 
+				Quantity = (Charges > 0) ? Charges : 1;
+
 		}
-		if(item && (Charges <= Quantity || (Charges == 0 && Quantity==1) || !Stackable)){
+		_log(TRADING__CLIENT, "FindAndNuke %s, Charges %i, Quantity %i", item->GetItem()->Name, Charges, Quantity);
+		if(item && (Charges <= Quantity || (Charges <= 0 && Quantity==1) || !Stackable)){
 			this->DeleteItemInInventory(SlotID, Quantity);
 
 			TraderCharges_Struct* GetSlot = database.LoadTraderItemWithCharges(this->CharacterID());
@@ -1081,7 +1084,7 @@ void Client::FindAndNukeTraderItem(int32 SerialNumber, int16 Quantity, Client* C
 			      Quantity,this->GetName());
 }
 
-void Client::ReturnTraderReq(const EQApplicationPacket* app, int16 TraderItemCharges){
+void Client::ReturnTraderReq(const EQApplicationPacket* app, sint16 TraderItemCharges){
 
 	TraderBuy_Struct* tbs = (TraderBuy_Struct*)app->pBuffer;
 
@@ -1164,13 +1167,25 @@ void Client::BuyTraderItem(TraderBuy_Struct* tbs,Client* Trader,const EQApplicat
 		return;
 	}
 
-	int ItemCharges = (BuyItem->GetCharges() > 0) ? BuyItem->GetCharges() : 1;
+	_log(TRADING__CLIENT, "Buyitem: Name: %s, IsStackable: %i, Requested Quantity: %i, Charges on Item %i",
+			      BuyItem->GetItem()->Name, BuyItem->IsStackable(), tbs->Quantity, BuyItem->GetCharges());
+	// If the item is not stackable, then we can only be buying one of them.
+	if(!BuyItem->IsStackable()) 
+		 outtbs->Quantity = tbs->Quantity;
+	else {
+		// Stackable items, arrows, diamonds, etc
+		int ItemCharges = BuyItem->GetCharges();
+		// ItemCharges for stackables should not be <= 0
+		if(ItemCharges <= 0)
+			outtbs->Quantity = 1;
+		// If the purchaser requested more than is in the stack, just sell them how many are actually in the stack.
+		else if(ItemCharges < (sint16)tbs->Quantity)
+			outtbs->Quantity = ItemCharges;
+		else
+			outtbs->Quantity = tbs->Quantity;
+	}
 
-	if(ItemCharges < (sint16)tbs->Quantity)
-		outtbs->Quantity = ItemCharges;
-
-	else
-		outtbs->Quantity = tbs->Quantity;
+	_log(TRADING__CLIENT, "Actual quantity that will be traded is %i", outtbs->Quantity);
 
 	if((tbs->Price * outtbs->Quantity) <= 0) {
 		Message(13, "Internal error. Aborting trade. Please report this to the ServerOP. Error code is 1");
