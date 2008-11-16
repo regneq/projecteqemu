@@ -242,6 +242,7 @@ void command_npcemote(Client *c, const Seperator *sep);
 void command_npcedit(Client *c, const Seperator *sep);
 void command_timers(Client *c, const Seperator *sep);
 void command_undye(Client *c, const Seperator *sep);
+void command_undyeme(Client *c, const Seperator *sep);
 void command_hp(Client *c, const Seperator *sep);
 void command_ginfo(Client *c, const Seperator *sep);
 void command_logs(Client *c, const Seperator *sep);

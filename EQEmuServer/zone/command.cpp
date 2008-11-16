@@ -417,7 +417,8 @@ int command_init(void) {
 		command_add("summonburriedplayercorpse","- Summons the target's oldest burried corpse, if any exist.", 100, command_summonburriedplayercorpse) ||
 		command_add("refreshgroup","- Refreshes Group.", 0, command_refreshgroup) ||
 		command_add("advnpcspawn","[maketype|makegroup|addgroupentry|addgroupspawn][removegroupspawn|movespawn|editgroupbox|cleargroupbox]",150,command_advnpcspawn) ||
-		command_add("modifynpcstat","Modifys a NPC's stats",150,command_modifynpcstat)	
+		command_add("modifynpcstat","Modifys a NPC's stats",150,command_modifynpcstat) ||
+		command_add("undyeme","Remove dye from all of your armor slots",0,command_undyeme)
 		)
 	{
 		command_deinit();
@@ -6498,9 +6499,10 @@ void Client::Undye() {
 			inst->SetColor(inst->GetItem()->Color);
 			database.SaveInventory(CharacterID(), inst, slot2);
 		}
-		m_pp.item_tint[cur_slot].rgb.use_tint = 0;
+		m_pp.item_tint[cur_slot].color = 0;
 		SendWearChange(cur_slot);
 	}
+	Save(0);
 }
 
 void command_undye(Client *c, const Seperator *sep)
@@ -6512,6 +6514,14 @@ void command_undye(Client *c, const Seperator *sep)
 	else
 	{
 		c->Message(0, "ERROR: Client target required");
+	}
+}
+
+void command_undyeme(Client *c, const Seperator *sep)
+{
+	if(c) {
+		c->Undye();
+		c->Message(13, "Dye removed from all slots. Please zone for the process to complete.");
 	}
 }
 
