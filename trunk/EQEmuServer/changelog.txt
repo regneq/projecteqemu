@@ -1,6 +1,13 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==11/16/2008
+Derision: Added command 'undyeme' to restore all a player's armor slots to their natural undyed state.
+
+Optional SQL:
+
+INSERT INTO commands (command, access, description) VALUES ('undyeme', 0, 'Remove dye from all of your armor slots');
+
 ==11/15/2008
 seveianrex: Implemented AA use of SE_Accuracy (Ranger GoD AA "Precision of the Pathfinder" will have an effect now)
 seveianrex: Implemented Enchanter GoD AA "Mesmerization Mastery"
