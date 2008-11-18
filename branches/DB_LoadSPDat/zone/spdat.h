@@ -39,7 +39,8 @@
    this number has to be 1 more than that.  if it's higher, your zone will
    NOT start up.  gonna autodetect this later..
 */
-#define NEW_LoadSPDat
+//#define NEW_LoadSPDat
+#define DB_LoadSPDat	//load from DB vs spells_us.txt. for now, we're piggybacking NEW_LoadSPDat, so it will take prescience
 
 #define EFFECT_COUNT 12
 
@@ -537,12 +538,24 @@ struct SPDat_Spell_Struct
 /* 121 */	int8		TargetAnim;
 /* 122 */	int32		TravelType;
 /* 123 */	int16		SpellAffectIndex;
-/* 124 */ int spacing124[23];
+/* 124 */ int spacing124[2];	// 124: high-end Yaulp spells (V, VI, VII, VIII [Rk 1, 2, & 3], & Gallenite's Bark of Fury
+								// 125: Words of the Skeptic
+/* 126 */	sint8		deities[16];	// Deity check. 201 - 216 per http://www.eqemulator.net/wiki/wikka.php?wakka=DeityList
+										// -1: Restrict to Deity; 1: Restrict to Deity, but only used on non-Live (Test Server "Blessing of ...") spells; 0: Don't restrict
+/* 142 */ int spacing142[2];	// 142: between 0 & 100
+								// 143: always set to 0
+/* 144 */	sint16		new_icon;	// Spell icon used by the client in uifiles/default/spells??.tga, both for spell gems & buff window. Looks to depreciate icon & memicon
+/* 145 */	sint16		spellanim;	// Doesn't look like it's the same as #doanim, so not sure what this is
+/* 146 */	sint8		uninterruptable;	// Looks like anything != 0 is uninterruptable. Values are mostly -1, 0, & 1 (Fetid Breath = 90?)
+
+
 /* 147 */	sint16		ResistDiff; 
 /* 148 */   int			dot_stacking_exempt;
 /* 149 */   int			deletable;
 /* 150 */	int16		RecourseLink;
-/* 151 */ int spacing151[4];
+/* 151 */ int spacing151[3];	// 151: -1, 0, or 1
+								// 152 & 153: all set to 0
+/* 154 */	sint8		short_buff_box;	// != 0, goes to short buff box. Not really supported in the server code
 /* 155 */   int			descnum; // eqstr of description of spell
 /* 156 */   int			typedescnum; // eqstr of type description
 /* 157 */   int			effectdescnum; // eqstr of effect description
@@ -561,12 +574,24 @@ struct SPDat_Spell_Struct
 /* 179 */   int			pvpresistcap;
 /* 180 */   int			spell_category;
 /* 181 */ int spacing181[4];
-/* 185 */   int			can_mgb;
+/* 185 */   int			can_mgb;	// 0=no, -1 or 1 = yes
 /* 186 */	// last field is 185.
-	    int8		DamageShieldType; // This field does not exist in spells_us.txt
+
+
+//shared memory errors
+/* 186 */	/*sint8		nodispell;*/	// 0=can be dispelled, -1=can't be dispelled at all, 1=most can be cancelled w/ a cure but not dispelled
+/* 187 */	/*uint8		npc_category;*/	// 0=not used, 1=AoE Detrimental, 2=DD, 3=Buffs, 4=Pets, 5=Healing, 6=Gate, 7=Debuff, 8=Dispell
+/* 188 */	/*uint32		npc_usefulness;*/	// higher number = more useful, lower number = less useful
+/* 189 */ /*int spacing189[18];*/
+/* 207 */	/*uint32		spellgroup;*/
+/* 208 */ /*int spacing208[7];*/
+// Might be newer fields in the live version, which is what some of the last fields are
+
+
+			int8		DamageShieldType; // This field does not exist in spells_us.txt
 };
 
-#ifdef NEW_LoadSPDat
+#if defined(NEW_LoadSPDat) || defined(DB_LoadSPDat)
 	extern const SPDat_Spell_Struct* spells; 
 	extern sint32 SPDAT_RECORDS;
 #else

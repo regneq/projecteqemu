@@ -77,7 +77,7 @@ using namespace std;
 extern Zone* zone;
 extern volatile bool ZoneLoaded;
 extern WorldServer worldserver;
-#ifndef NEW_LoadSPDat
+#if !defined(NEW_LoadSPDat) && !defined(DB_LoadSPDat)
 	extern SPDat_Spell_Struct spells[SPDAT_RECORDS];
 #endif
 extern bool spells_loaded;
@@ -2011,6 +2011,8 @@ void Client::Handle_OP_ItemLinkClick(const EQApplicationPacket *app)
 	}
 	DumpPacket(app);
 	ItemViewRequest_Struct* ivrs = (ItemViewRequest_Struct*)app->pBuffer;
+
+	//todo: verify ivrs->link_hash based on a rule, in case we don't care about people being able to sniff data from the item DB
 
 	const Item_Struct* item = database.GetItem(ivrs->item_id);
 	if (!item) {
@@ -7269,7 +7271,7 @@ void Client::CompleteConnect()
 					invisible_animals = true;
 					break;
 					}
-                        case SE_WeaponProc:
+                case SE_WeaponProc:
 					{
 					AddProcToWeapon(GetProcID(buffs[j1].spellid, x1));
 					break;

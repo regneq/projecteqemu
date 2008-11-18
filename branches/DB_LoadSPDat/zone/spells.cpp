@@ -104,7 +104,7 @@ extern GuildLocationList location_list;
 
 extern Zone* zone;
 extern volatile bool ZoneLoaded;
-#ifndef NEW_LoadSPDat
+#if !defined(NEW_LoadSPDat) && !defined(DB_LoadSPDat)
 	extern SPDat_Spell_Struct spells[SPDAT_RECORDS];
 #endif
 extern bool spells_loaded;

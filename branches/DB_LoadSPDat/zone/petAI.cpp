@@ -35,7 +35,7 @@ using namespace std;
 #include "../common/MiscFunctions.h"
 #include "../common/rulesys.h"
 
-#ifndef NEW_LoadSPDat
+#if !defined(NEW_LoadSPDat) && !defined(DB_LoadSPDat)
 	extern SPDat_Spell_Struct spells[SPDAT_RECORDS];
 #endif
 

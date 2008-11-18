@@ -37,7 +37,7 @@ Copyright (C) 2001-2004  EQEMu Development Team (http://eqemulator.net)
 #include "../common/logsys.h"
 #include "zonedb.h"
 #include "StringIDs.h"
-#ifndef NEW_LoadSPDat
+#if !defined(NEW_LoadSPDat) && !defined(DB_LoadSPDat)
 	extern SPDat_Spell_Struct spells[SPDAT_RECORDS];
 #endif
 
