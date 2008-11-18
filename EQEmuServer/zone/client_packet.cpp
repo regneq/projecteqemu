@@ -5864,6 +5864,11 @@ void Client::Handle_OP_Trader(const EQApplicationPacket *app)
 			LogFile->write(EQEMuLog::Error, "Unknown TraderStruct code of: %i\n", ints->Code);
 		}
 	}
+
+	else if(app->size==sizeof(TraderPriceUpdate_Struct)){
+
+		HandleTraderPriceUpdate(app);
+	}
 	else {
 		_log(TRADING__CLIENT,"Unknown size for OP_Trader: %i\n", app->size);
 		LogFile->write(EQEMuLog::Error, "Unknown size for OP_Trader: %i\n", app->size);

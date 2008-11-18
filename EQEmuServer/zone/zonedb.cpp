@@ -652,7 +652,6 @@ ItemInst* ZoneDatabase::LoadSingleTraderItem(uint32 CharID, int SerialNumber) {
 		int ItemID = atoi(row[1]);
 		int Charges = atoi(row[3]);
 		int Cost = atoi(row[4]);
-		int Slot = atoi(row[5]);
 
 		const Item_Struct *item=database.GetItem(ItemID);
 
@@ -684,31 +683,77 @@ ItemInst* ZoneDatabase::LoadSingleTraderItem(uint32 CharID, int SerialNumber) {
 
 }
 
-void ZoneDatabase::SaveTraderItem(uint32 char_id,uint32 itemid,int32 uniqueid,sint32 charges,uint32 itemcost,int8 slot){
+void ZoneDatabase::SaveTraderItem(uint32 CharID, uint32 ItemID, int32 SerialNumber, sint32 Charges, uint32 ItemCost, int8 Slot){
 
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char* query = 0;
 	if (!(RunQuery(query,MakeAnyLenString(&query, "replace INTO trader VALUES(%i,%i,%i,%i,%i,%i)",
-					      char_id, itemid, uniqueid, charges,itemcost, slot),errbuf)))
-		_log(TRADING__CLIENT, "Failed to save trader item: %i for char_id: %i, the error was: %s\n",itemid,char_id,errbuf);
+					      CharID, ItemID, SerialNumber, Charges, ItemCost, Slot),errbuf)))
+		_log(TRADING__CLIENT, "Failed to save trader item: %i for char_id: %i, the error was: %s\n", ItemID, CharID, errbuf);
 
 	safe_delete_array(query);
 }
 
-void ZoneDatabase::UpdateTraderItemCharges(int char_id, uint32 ItemInstID, sint32 charges) {
+void ZoneDatabase::UpdateTraderItemCharges(int CharID, uint32 SerialNumber, sint32 Charges) {
 
-	_log(TRADING__CLIENT, "ZoneDatabase::UpdateTraderItemCharges(%i, %i, %i)", char_id, ItemInstID, charges);
+	_log(TRADING__CLIENT, "ZoneDatabase::UpdateTraderItemCharges(%i, %i, %i)", CharID, SerialNumber, Charges);
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char* query = 0;
 	if (!(RunQuery(query,MakeAnyLenString(&query, "update trader set charges=%i where char_id=%i and serialnumber=%i",
-					     charges, char_id, ItemInstID),errbuf)))
+					     Charges, CharID, SerialNumber),errbuf)))
 		_log(TRADING__CLIENT, "Failed to update charges for  trader item: %i for char_id: %i, the error was: %s\n",
-				      ItemInstID,char_id,errbuf);
+				      SerialNumber, CharID, errbuf);
 
 	safe_delete_array(query);
 
 }
 
+void ZoneDatabase::UpdateTraderItemPrice(int CharID, int32 ItemID, int32 Charges, int32 NewPrice) {
+
+	_log(TRADING__CLIENT, "ZoneDatabase::UpdateTraderPrice(%i, %i, %i, %i)", CharID, ItemID, Charges, NewPrice);
+
+	const Item_Struct *item = database.GetItem(ItemID);
+
+	if(!item)
+		return;
+
+	char errbuf[MYSQL_ERRMSG_SIZE];
+
+	char* Query = 0;
+
+	if(NewPrice == 0) {
+		_log(TRADING__CLIENT, "Removing Trader items from the DB for CharID %i, ItemID %i", CharID, ItemID);
+
+		if (!(RunQuery(Query,MakeAnyLenString(&Query, "delete from trader where char_id=%i and item_id=%i",
+							       CharID, ItemID),errbuf)))
+	
+			_log(TRADING__CLIENT, "Failed to remove trader item(s): %i for char_id: %i, the error was: %s\n",
+					      ItemID, CharID, errbuf);
+
+		safe_delete_array(Query);
+		
+		return;
+	}
+	else {
+		if(!item->Stackable) {
+			if (!(RunQuery(Query,MakeAnyLenString(&Query, "update trader set item_cost=%i where char_id=%i and item_id=%i"
+								      " and charges=%i", NewPrice, CharID, ItemID, Charges),errbuf)))
+	
+				_log(TRADING__CLIENT, "Failed to update price for  trader item: %i for char_id: %i, the error was: %s\n",
+						      ItemID, CharID, errbuf);
+		}
+		else {
+			if (!(RunQuery(Query,MakeAnyLenString(&Query, "update trader set item_cost=%i where char_id=%i and item_id=%i",
+								      NewPrice, CharID, ItemID),errbuf)))
+	
+				_log(TRADING__CLIENT, "Failed to update price for  trader item: %i for char_id: %i, the error was: %s\n",
+						      ItemID, CharID, errbuf);
+		}
+
+		safe_delete_array(Query);
+	}
+
+}
 
 void ZoneDatabase::DeleteTraderItem(uint32 char_id){
 	char errbuf[MYSQL_ERRMSG_SIZE];
@@ -723,11 +768,11 @@ void ZoneDatabase::DeleteTraderItem(uint32 char_id){
 	}
 	safe_delete_array(query);
 }
-void ZoneDatabase::DeleteTraderItem(uint32 char_id,int16 slot_id){
+void ZoneDatabase::DeleteTraderItem(uint32 CharID,int16 SlotID){
 	char errbuf[MYSQL_ERRMSG_SIZE];
-    char* query = 0;
-	if (!(RunQuery(query,MakeAnyLenString(&query, "delete from trader where char_id=%i and slot_id=%i",char_id,slot_id),errbuf)))
-		_log(TRADING__CLIENT, "Failed to delete trader item data for char_id: %i, the error was: %s\n",char_id,errbuf);
+	char* query = 0;
+	if (!(RunQuery(query,MakeAnyLenString(&query, "delete from trader where char_id=%i and slot_id=%i",CharID, SlotID),errbuf)))
+		_log(TRADING__CLIENT, "Failed to delete trader item data for char_id: %i, the error was: %s\n",CharID, errbuf);
 	safe_delete_array(query);
 }
 

@@ -209,7 +209,7 @@ public:
 	void	SendTraderItem(int32 item_id,int16 quantity);
 	int16	FindTraderItem(sint32 SerialNumber,int16 Quantity);
 	ItemInst* FindTraderItemBySerialNumber(sint32 SerialNumber);
-	void	FindAndNukeTraderItem(int32 item_id,int16 quantity,Client* customer,int16 traderslot);
+	void	FindAndNukeTraderItem(sint32 item_id,int16 quantity,Client* customer,int16 traderslot);
 	void    NukeTraderItem(int16 slot,sint16 charges,int16 quantity,Client* customer,int16 traderslot, int uniqueid);
 	void	ReturnTraderReq(const EQApplicationPacket* app,sint16 traderitemcharges);
 	void	TradeRequestFailed(const EQApplicationPacket* app);
@@ -864,6 +864,7 @@ private:
 	void	RemoveBandolier(const EQApplicationPacket *app);
 	void	SetBandolier(const EQApplicationPacket *app);
 	bool	BandolierReturnItemToInventory(ItemInst *BInst);
+	void	HandleTraderPriceUpdate(const EQApplicationPacket *app);
 
 	sint16    CalcAC();
 	sint16    CalcATK();

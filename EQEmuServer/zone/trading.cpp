@@ -769,6 +769,35 @@ void Client::Trader_StartTrader() {
 
 void Client::Trader_EndTrader() {
 
+	// If someone is looking at our wares, remove all the items from the window.
+	//
+	if(CustomerID) {
+		Client* Customer = entity_list.GetClientByID(CustomerID);
+		GetItems_Struct* gis=GetTraderItems();
+
+		if(Customer && gis) {
+			EQApplicationPacket* outapp = new EQApplicationPacket(OP_TraderDelItem,sizeof(TraderDelItem_Struct));
+			TraderDelItem_Struct* tdis = (TraderDelItem_Struct*)outapp->pBuffer;
+
+			tdis->Unknown000 = 0;
+			tdis->TraderID = Customer->GetID();
+			tdis->Unknown012 = 0;
+			Customer->Message(13, "The Trader is no longer open for business");
+
+			for(int i = 0; i < 80; i++) {
+				if(gis->Items[i] != 0) {
+
+					tdis->ItemID = gis->SerialNumber[i];
+
+					Customer->QueuePacket(outapp);
+				}
+			}
+
+			safe_delete(outapp);
+			safe_delete(gis);
+		}
+	}
+
 	database.DeleteTraderItem(this->CharacterID());
 
 	// Notify other clients we are no longer in trader mode.
@@ -848,7 +877,7 @@ void Client::BulkSendTraderInventory(int32 char_id) {
 	TraderCharges_Struct* TraderItems = database.LoadTraderItemWithCharges(char_id);
 
 	for (int8 i = 0;i < 80; i++) {
-		if(TraderItems->ItemID[i] == 0) {
+		if((TraderItems->ItemID[i] == 0) || (TraderItems->ItemCost[i] <= 0)) {
 			continue;
 		}
 		else
@@ -1025,7 +1054,7 @@ void Client::TraderUpdate(int16 SlotID,int32 TraderID){
 	safe_delete(outapp);
 }
 
-void Client::FindAndNukeTraderItem(int32 SerialNumber, int16 Quantity, Client* Customer, int16 TraderSlot){
+void Client::FindAndNukeTraderItem(sint32 SerialNumber, int16 Quantity, Client* Customer, int16 TraderSlot){
 
 	const ItemInst* item= NULL;
 	bool Stackable = false;
@@ -1564,3 +1593,324 @@ void Client::SendBazaarResults(int32 TraderID, int32 Class_, int32 Race, int32 I
 		return;
 	}
 }
+
+static void UpdateTraderCustomerItemsAdded(int32 CustomerID,  TraderCharges_Struct* gis, int32 ItemID) {
+
+	// Send Item packets to the customer to update the Merchant window with the
+	// new items for sale, and give them a message in their chat window.
+
+	Client* Customer = entity_list.GetClientByID(CustomerID);
+
+	if(!Customer) return;
+
+	const Item_Struct *item = database.GetItem(ItemID);
+
+	if(!item) return;
+
+	ItemInst* inst = database.CreateItem(item);
+
+	if(!inst) return;
+
+	Customer->Message(13, "The Trader has put up %s for sale.", item->Name);
+
+	for(int i = 0; i < 80; i++) {
+
+		if(gis->ItemID[i] == ItemID) {
+
+			inst->SetCharges(gis->Charges[i]);
+
+			inst->SetPrice(gis->ItemCost[i]);
+
+			inst->SetSerialNumber(gis->SerialNumber[i]);
+
+			inst->SetMerchantSlot(gis->SerialNumber[i]);
+
+			if(inst->IsStackable())
+				inst->SetMerchantCount(gis->Charges[i]);
+
+			_log(TRADING__CLIENT, "Sending price update for %s, Serial No. %i with %i charges",
+					      item->Name, gis->SerialNumber[i], gis->Charges[i]);
+
+			Customer->SendItemPacket(30, inst, ItemPacketMerchant);
+		}
+	}
+
+	safe_delete(inst);
+}
+
+static void UpdateTraderCustomerPriceChanged(int32 CustomerID,  TraderCharges_Struct* gis, int32 ItemID, sint32 Charges, int32 NewPrice) {
+
+	// Send ItemPackets to update the customer's Merchant window with the new price (or remove the item if
+	// the new price is 0) and inform them with a chat message.
+
+	Client* Customer = entity_list.GetClientByID(CustomerID);
+
+	if(!Customer) return;
+
+	const Item_Struct *item = database.GetItem(ItemID);
+
+	if(!item) return;
+
+	if(NewPrice == 0) {
+		// If the new price is 0, remove the item(s) from the window.
+		EQApplicationPacket* outapp = new EQApplicationPacket(OP_TraderDelItem,sizeof(TraderDelItem_Struct));
+		TraderDelItem_Struct* tdis = (TraderDelItem_Struct*)outapp->pBuffer;
+
+		tdis->Unknown000 = 0;
+		tdis->TraderID = Customer->GetID();
+		tdis->Unknown012 = 0;
+		Customer->Message(13, "The Trader has withdrawn the %s from sale.", item->Name);
+
+		for(int i = 0; i < 80; i++) {
+
+			if(gis->ItemID[i] == ItemID) {
+
+				tdis->ItemID = gis->SerialNumber[i];
+				_log(TRADING__CLIENT, "Telling customer to remove item %i with %i charges and S/N %i",
+						      ItemID, Charges, gis->SerialNumber[i]);
+
+				_pkt(TRADING__PACKETS, outapp);
+
+				Customer->QueuePacket(outapp);
+			}
+		}
+
+		safe_delete(outapp);
+		return;
+	}
+
+	_log(TRADING__CLIENT, "Sending price updates to customer %s", Customer->GetName());
+
+	ItemInst* inst = database.CreateItem(item);
+
+	if(!inst) return;
+
+	if(Charges > 0)
+		inst->SetCharges(Charges);
+
+	inst->SetPrice(NewPrice);
+
+	if(inst->IsStackable())
+		inst->SetMerchantCount(Charges);
+
+	// Let the customer know the price in the window has suddenly just changed on them.
+	Customer->Message(13, "The Trader has changed the price of %s.", item->Name);
+
+	for(int i = 0; i < 80; i++) {
+		if((gis->ItemID[i] != ItemID) || 
+		   ((!item->Stackable) && (gis->Charges[i] != Charges))) 
+			continue;
+
+		inst->SetSerialNumber(gis->SerialNumber[i]);
+
+		inst->SetMerchantSlot(gis->SerialNumber[i]);
+
+		_log(TRADING__CLIENT, "Sending price update for %s, Serial No. %i with %i charges",
+				      item->Name, gis->SerialNumber[i], gis->Charges[i]);
+
+		Customer->SendItemPacket(30, inst, ItemPacketMerchant);
+	}
+	safe_delete(inst);
+}
+
+void Client::HandleTraderPriceUpdate(const EQApplicationPacket *app) {
+
+	// Handle price updates from the Trader and update a customer browsing our stuff if necessary
+	// This method also handles removing items from sale and adding them back up whilst still in
+	// Trader mode.
+	//
+	TraderPriceUpdate_Struct* tpus = (TraderPriceUpdate_Struct*)app->pBuffer;
+
+	_log(TRADING__CLIENT, "Received Price Update for %s, Item Serial No. %i, New Price %i",
+			      GetName(), tpus->SerialNumber, tpus->NewPrice);
+
+	// Pull the items this Trader currently has for sale from the trader table.
+	//
+	TraderCharges_Struct* gis = database.LoadTraderItemWithCharges(CharacterID());
+
+	if(!gis) {
+		_log(TRADING__CLIENT, "Error retrieving Trader items details to update price.");
+		return;
+	}
+
+	// The client only sends a single update with the Serial Number of the item whose price has been updated.
+	// We must update the price for all the Trader's items that are identical to that one item, i.e.
+	// if it is a stackable item like arrows, update the price for all stacks. If it is not stackable, then
+	// update the prices for all items that have the same number of charges.
+	//
+	int32 IDOfItemToUpdate = 0;
+
+	sint32 ChargesOnItemToUpdate = 0;
+
+	int32 OldPrice = 0;
+
+	for(int i = 0; i < 80; i++) {
+
+		if((gis->ItemID[i] > 0) && (gis->SerialNumber[i] == tpus->SerialNumber)) {
+			// We found the item that the Trader wants to change the price of (or add back up for sale).
+			//
+			_log(TRADING__CLIENT, "ItemID is %i, Charges is %i", gis->ItemID[i], gis->Charges[i]);
+
+			IDOfItemToUpdate = gis->ItemID[i];
+
+			ChargesOnItemToUpdate = gis->Charges[i];
+
+			OldPrice = gis->ItemCost[i];
+
+			break;
+		}
+	}
+
+	if(IDOfItemToUpdate == 0) {
+
+		// If the item is not currently in the trader table for this Trader, then they must have removed it from sale while
+		// still in Trader mode. Check if the item is in their Trader Satchels, and if so, put it back up.
+	
+		// Quick Sanity check. If the item is not currently up for sale, and the new price is zero, just ack the packet
+		// and do nothing.
+		if(tpus->NewPrice == 0) {
+			tpus->SubAction = BazaarPriceChange_RemoveItem;
+			QueuePacket(app);
+			safe_delete(gis);
+			return ;
+		}
+
+		_log(TRADING__CLIENT, "Unable to find item to update price for. Rechecking trader satchels");
+
+		// Find what is in their Trader Satchels
+		GetItems_Struct* newgis=GetTraderItems();
+
+		int32 IDOfItemToAdd = 0;
+
+		sint32 ChargesOnItemToAdd = 0;
+
+		for(int i = 0; i < 80; i++) {
+
+			if((newgis->Items[i] > 0) && (newgis->SerialNumber[i] == tpus->SerialNumber)) {
+
+				_log(TRADING__CLIENT, "Found new Item to Add, ItemID is %i, Charges is %i", newgis->Items[i], 
+						      newgis->Charges[i]);
+
+				IDOfItemToAdd = newgis->Items[i];
+				ChargesOnItemToAdd = newgis->Charges[i];
+
+				break;
+			}
+		}
+
+
+		const Item_Struct *item = 0;
+
+		if(IDOfItemToAdd)
+			item = database.GetItem(IDOfItemToAdd);
+
+		if(!IDOfItemToAdd || !item) {
+
+			_log(TRADING__CLIENT, "Item not found in Trader Satchels either.");
+			tpus->SubAction = BazaarPriceChange_Fail;
+			QueuePacket(app);
+			Trader_EndTrader();
+			safe_delete(gis);
+			safe_delete(newgis);
+			return;
+		}
+
+		// It is a limitation of the client that if you have multiple of the same item, but with different charges,
+		// although you can set different prices for them before entering Trader mode. If you Remove them and then
+		// add them back whilst still in Trader mode, they all go up for the same price. We check for this situation
+		// and give the Trader a warning message.
+		//
+		if(!item->Stackable) {
+
+			bool SameItemWithDifferingCharges = false;
+
+			for(int i = 0; i < 80; i++) {
+				if((newgis->Items[i] == IDOfItemToAdd) && (newgis->Charges[i] != ChargesOnItemToAdd)) {
+
+					SameItemWithDifferingCharges = true;
+					break;
+				}
+			}
+
+			if(SameItemWithDifferingCharges)
+				Message(13, "Warning: You have more than one %s with different charges. They have all been added for sale "
+					    "at the same price.", item->Name);
+		}
+
+		// Now put all Items with a matching ItemID up for trade.
+		//
+		for(int i = 0; i < 80; i++) {
+
+			if(newgis->Items[i] == IDOfItemToAdd) {
+
+				database.SaveTraderItem(CharacterID(), newgis->Items[i], newgis->SerialNumber[i], newgis->Charges[i],
+							tpus->NewPrice, i);
+
+				gis->ItemID[i] = newgis->Items[i];
+				gis->Charges[i] = newgis->Charges[i];
+				gis->SerialNumber[i] = newgis->SerialNumber[i];
+				gis->ItemCost[i] = tpus->NewPrice;
+
+				_log(TRADING__CLIENT, "Adding new item for %s. ItemID %i, SerialNumber %i, Charges %i, Price: %i, Slot %i",
+						     GetName(), newgis->Items[i], newgis->SerialNumber[i], newgis->Charges[i], 
+						     tpus->NewPrice, i);
+			}
+		}
+
+		// If we have a customer currently browsing, update them with the new items.
+		//
+		if(CustomerID)
+			UpdateTraderCustomerItemsAdded(CustomerID,  gis, IDOfItemToAdd);
+
+		safe_delete(gis);
+		safe_delete(newgis);
+
+		// Acknowledge to the client.
+		tpus->SubAction = BazaarPriceChange_AddItem;
+		QueuePacket(app);
+
+		return;
+	}
+
+	// This is a safeguard against a Trader increasing the price of an item while a customer is browsing and
+	// unwittingly buying it at a higher price than they were expecting to.
+	//
+	if((OldPrice != 0) && (tpus->NewPrice > OldPrice) && CustomerID) {
+
+		tpus->SubAction = BazaarPriceChange_Fail;
+		QueuePacket(app);
+		Trader_EndTrader();
+		Message(13, "You must remove the item from sale before you can increase the price while a customer is browsing.");
+		Message(13, "Click 'Begin Trader' to restart Trader mode with the increased price for this item.");
+		safe_delete(gis);
+		return;
+	}
+
+	// Send Acknowledgement back to the client.
+	if(OldPrice == 0) 
+		tpus->SubAction = BazaarPriceChange_AddItem;
+	else if(tpus->NewPrice != 0) 
+		tpus->SubAction = BazaarPriceChange_UpdatePrice;
+	else
+		tpus->SubAction = BazaarPriceChange_RemoveItem;
+	
+	QueuePacket(app);
+
+	if(OldPrice == tpus->NewPrice) {
+		_log(TRADING__CLIENT, "The new price is the same as the old one.");
+		safe_delete(gis);
+		return;
+	}
+	// Update the price for all items we have for sale that have this ItemID and number of charges, or remove
+	// them from the trader table if the new price is zero.
+	//
+	database.UpdateTraderItemPrice(CharacterID(), IDOfItemToUpdate, ChargesOnItemToUpdate, tpus->NewPrice);
+
+	// If a customer is browsing our goods, send them the updated prices / remove the items from the Merchant window
+	if(CustomerID)  
+		UpdateTraderCustomerPriceChanged(CustomerID, gis, IDOfItemToUpdate, ChargesOnItemToUpdate, tpus->NewPrice);
+
+	safe_delete(gis);
+
+}
+

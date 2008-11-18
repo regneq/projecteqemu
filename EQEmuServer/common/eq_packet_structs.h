@@ -2240,6 +2240,7 @@ struct EnvDamage2_Struct {
 enum {
 	BazaarTrader_StartTraderMode = 1,
 	BazaarTrader_EndTraderMode = 2,
+	BazaarTrader_UpdatePrice = 3,
 	BazaarTrader_EndTransaction = 4,
 	BazaarSearchResults = 7,
 	BazaarWelcome = 9,
@@ -2247,6 +2248,13 @@ enum {
 	BazaarTrader_ShowItems = 11,
 	BazaarSearchDone = 12,
 	BazaarTrader_CustomerBrowsing = 13
+};
+
+enum {
+	BazaarPriceChange_Fail = 0,
+	BazaarPriceChange_UpdatePrice = 1,
+	BazaarPriceChange_RemoveItem = 2,
+	BazaarPriceChange_AddItem = 3
 };
 
 struct BazaarWindowStart_Struct {
@@ -2289,7 +2297,7 @@ struct NewBazaarInspect_Struct {
 /*068*/	int32 Unknown068;
 /*072*/	int32 Unknown072;
 /*076*/	int32 Unknown076;
-/*080*/	int32 SerialNumber;
+/*080*/	sint32 SerialNumber;
 /*084*/	int32 Unknown084;
 };
 
@@ -2510,13 +2518,13 @@ struct Trader_Struct {
 struct ClickTrader_Struct {
 /*000*/	int32	Code;
 /*004*/	int32	Unknown004;
-/*008*/	uint64	SerialNumber[80];
+/*008*/	sint64	SerialNumber[80];
 /*648*/	int32	ItemCost[80];
 };
 
 struct GetItems_Struct{
 	int32	Items[80];
-	int32	SerialNumber[80];
+	sint32	SerialNumber[80];
 	sint32	Charges[80];
 };
 
@@ -2547,6 +2555,15 @@ struct TraderItemUpdate_Struct{
 	int8  FromSlot;
 	int   ToSlot; //7?
 	int16 Charges;
+};
+
+struct TraderPriceUpdate_Struct {
+/*000*/	int32	Action;
+/*004*/	int32	SubAction;
+/*008*/	sint32	SerialNumber;
+/*012*/	int32	Unknown012;
+/*016*/	int32	NewPrice;
+/*020*/	int32	Unknown016;
 };
 
 struct MoneyUpdate_Struct{
