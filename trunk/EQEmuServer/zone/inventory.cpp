@@ -576,16 +576,22 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 	}
 	if (Trader && srcitemid>0){
 		ItemInst* srcbag;
+		ItemInst* dstbag;
 		uint32 srcbagid =0;
+		uint32 dstbagid = 0;
 		if (src_slot_id>=250 && src_slot_id<330){
 			srcbag=m_inv.GetItem(((int)(src_slot_id/10))-3);
 			if(srcbag)
 				srcbagid=srcbag->GetItem()->ID;
 		}
-		
-		if (srcitemid==17899 || srcbagid==17899){
+		if (dst_slot_id>=250 && dst_slot_id<330){
+			dstbag=m_inv.GetItem(((int)(dst_slot_id/10))-3);
+			if(dstbag)
+				dstbagid=dstbag->GetItem()->ID;
+		}
+		if (srcitemid==17899 || srcbagid==17899 || dstitemid==17899 || dstbagid==17899){
 			this->Trader_EndTrader();
-			this->Message(15,"You cannot move items while trading!");
+			this->Message(13,"You cannot move your Trader Satchels, or items inside them, while Trading.");
 		}
 	}
 	

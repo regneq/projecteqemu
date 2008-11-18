@@ -63,7 +63,7 @@ struct ZoneSpellsBlocked {
 
 struct TraderCharges_Struct {
 	int32 ItemID[80];
-	int32 SerialNumber[80];
+	sint32 SerialNumber[80];
 	int32 ItemCost[80];
 	sint32 Charges[80];
 };
@@ -108,6 +108,7 @@ public:
 
 	void    SaveTraderItem(uint32 char_id,uint32 itemid,int32 uniqueid, sint32 charges,uint32 itemcost,int8 slot);
 	void    UpdateTraderItemCharges(int char_id, uint32 ItemInstID, sint32 charges);
+	void	UpdateTraderItemPrice(int CharID, int32 ItemID, int32 Charges, int32 NewPrice);
 	ItemInst* LoadSingleTraderItem(uint32 char_id, int uniqueid);
 	void	DeleteTraderItem(uint32 char_id);
 	void	DeleteTraderItem(uint32 char_id,int16 slot_id);

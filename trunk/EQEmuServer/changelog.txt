@@ -1,6 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==11/18/2008
+Derision: Bazaar: Added support for changing prices without ending Trader mode.
+
 ==11/16/2008
 Derision: Added command 'undyeme' to restore all a player's armor slots to their natural undyed state.
 Trevius: (Denivia) Changed Expansive Mind AA so that it raises the Worn Mana Regen Cap (as it should) instead of just increasing mana regen.
