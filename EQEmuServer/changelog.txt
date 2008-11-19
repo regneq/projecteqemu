@@ -1,6 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==11/19/2008
+AndMetal: zone-*.log files on Linux will allow read access to group members. You may need to erase any existing logs to see the change.
+AndMetal: Added some logging for spell crits (SPELLS__CRITS)
+
 ==11/18/2008
 Derision: Bazaar: Added support for changing prices without ending Trader mode.
 
