@@ -232,7 +232,7 @@ ProcLauncher::ProcRef ProcLauncher::Launch(Spec *&to_launch) {
 		//handle output redirection if requested.
 		if(it->logFile.length() > 0) {
 			//we will put their output directly into a file.
-			int outfd = creat(it->logFile.c_str(), S_IRUSR | S_IWUSR);
+			int outfd = creat(it->logFile.c_str(), S_IRUSR | S_IWUSR | S_IRGRP); // S_I + R/W/X + USR/GRP/OTH
 			if(outfd == -1) {
 				fprintf(stderr, "Unable to open log file %s: %s.\n", it->logFile.c_str(), strerror(errno));
 				close(STDOUT_FILENO);

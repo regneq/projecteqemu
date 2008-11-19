@@ -209,9 +209,14 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 			}
 		}
 		
-		if(chance > 0 && MakeRandomInt(0,100) <= chance) {
-			modifier += modifier*ratio/100;
-			entity_list.MessageClose(this, false, 100, MT_SpellCrits, "%s delivers a critical blast! (%d)", GetName(), ((-value * modifier) / 100));	
+		if (chance > 0) {
+			mlog(SPELLS__CRITS, "Attempting spell crit. Spell: %s (%d), Value: %d, Modifier: %d, Chance: %d, Ratio: %d", spells[spell_id].name, spell_id, value, modifier, chance, ratio);
+			if(MakeRandomInt(0,100) <= chance) {
+				modifier += modifier*ratio/100;
+				mlog(SPELLS__CRITS, "Spell crit successful. Final damage modifier: %d, Final Damage: %d", modifier, (value * modifier) / 100);
+				entity_list.MessageClose(this, false, 100, MT_SpellCrits, "%s delivers a critical blast! (%d)", GetName(), ((-value * modifier) / 100));	
+			} else 
+				mlog(SPELLS__CRITS, "Spell crit failed. Final Damage Modifier: %d, Final Damage: %d", modifier, (value * modifier) / 100);
 		}
 	}
 	
