@@ -2324,6 +2324,22 @@ XS(XS__ModifyNPCStat)
 	XSRETURN_EMPTY;
 }
 
+XS(XS__collectitems);
+XS(XS__collectitems)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: collectitems(item_id, remove?)");
+	
+	uint32 item_id = (int)SvIV(ST(0));
+	bool remove = ((int)SvIV(ST(1))) == 0?false:true;
+
+	int quantity =
+		quest_manager.collectitems(item_id, remove);
+
+	XSRETURN_IV(quantity);
+}
+
 /*
 This is the callback perl will look for to setup the
 quest package's XSUBs
@@ -2477,9 +2493,11 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "ze"), XS__ze, file);
 		newXS(strcpy(buf, "we"), XS__we, file);
 		newXS(strcpy(buf, "getlevel"), XS__getlevel, file);
-        newXS(strcpy(buf, "getinstflag"), XS__getinstflag, file);
+            newXS(strcpy(buf, "getinstflag"), XS__getinstflag, file);
 		newXS(strcpy(buf, "creategroundobject"), XS__CreateGroundObject, file);
 		newXS(strcpy(buf, "modifynpcstat"), XS__ModifyNPCStat, file);
+            newXS(strcpy(buf, "collectitems"), XS__collectitems, file);
+
 	XSRETURN_YES;
 }
 

@@ -125,7 +125,7 @@ float Mob::GetFearSpeed() {
         float ratio = GetHPRatio();
 
 		// mobs under 5% hp with a decent snare on them shouldn't be moving...
-		if (ratio <= 5 && GetSnaredAmount() > 50) {
+		if (ratio < 6 && GetSnaredAmount() > 50) {
 				return 0.0001f;
 		}
 

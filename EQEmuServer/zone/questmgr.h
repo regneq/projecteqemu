@@ -178,6 +178,8 @@ public:
 	void we(int type, const char *str);
     int getlevel(uint8 type);
     int getinstflag();
+      int collectitems(uint32 item_id, bool remove);
+      int collectitems_processSlot(sint16 slot_id, uint32 item_id, bool remove);
 
 	void CreateGroundObject(int32 itemid, float x, float y, float z, float heading, int32 decay_time = 300000);
 	void ModifyNPCStat(const char *identifier, const char *newValue);
