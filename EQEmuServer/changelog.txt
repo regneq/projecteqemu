@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
 ==11/19/2008
+seveianrex: (Varkalas) WAR Sturdiness AA Fix
 AndMetal: zone-*.log files on Linux will allow read access to group members. You may need to erase any existing logs to see the change.
 AndMetal: Added some logging for spell crits (SPELLS__CRITS)
 

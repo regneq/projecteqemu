@@ -253,9 +253,8 @@ sint32 Client::CalcMaxHP() {
 
 	nd += 150*GetAA(aaPlanarDurability);
 
-	nd += 100*GetAA(aaSturdiness);
-
 	max_hp = max_hp * nd / 10000;
+	max_hp += 100*GetAA(aaSturdiness);
 	max_hp += spellbonuses.HP;		
 	
 	if (cur_hp > max_hp)
