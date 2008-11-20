@@ -1232,7 +1232,7 @@ const char* Database::GetZoneName(int32 zoneID, bool ErrorUnknown) {
 			safe_delete_array(query);
 			if (mysql_num_rows(result) > 0) {
 				row = mysql_fetch_row(result);
-				int8 tmp = atoi(row[0]);
+				int32 tmp = atoi(row[0]);
 				mysql_free_result(result);
 				return zonename_array[tmp];
 			}

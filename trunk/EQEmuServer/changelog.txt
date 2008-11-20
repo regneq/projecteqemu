@@ -1,6 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==11/20/2008
+cavedude00: (aza77) Added quest::collectitems.
+cavedude00: (Rocker8956) Zones with IDs higher than 255 can now be instanced.
+
 ==11/19/2008
 seveianrex: (Varkalas) WAR Sturdiness AA Fix
 AndMetal: zone-*.log files on Linux will allow read access to group members. You may need to erase any existing logs to see the change.

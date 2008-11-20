@@ -1698,3 +1698,54 @@ void QuestManager::ModifyNPCStat(const char *identifier, const char *newValue)
 		}
 	}
 }
+
+int QuestManager::collectitems_processSlot(sint16 slot_id, uint32 item_id,
+	bool remove)
+{
+	ItemInst *item;
+	int quantity = 0;
+ 
+	item = initiator->GetInv().GetItem(slot_id);
+ 
+	// If we have found matching item, add quantity
+	if (item && item->GetID() == item_id)
+	{
+		// If item is stackable, add its charges (quantity)
+		if (item->IsStackable())
+		{
+			quantity = item->GetCharges();
+		}
+		else
+		{
+			quantity = 1;
+		}
+ 
+		// Remove item from inventory
+		if (remove)
+		{
+			initiator->DeleteItemInInventory(slot_id, 0, true);
+		}
+	}
+ 
+	return quantity;
+}
+ 
+// Returns number of item_id that exist in inventory
+// If remove is true, items are removed as they are counted.
+int QuestManager::collectitems(uint32 item_id, bool remove)
+{
+	int quantity = 0;
+	int slot_id;
+ 
+	for (slot_id = 22; slot_id <= 29; ++slot_id)
+	{
+		quantity += collectitems_processSlot(slot_id, item_id, remove);
+	}
+ 
+	for (slot_id = 251; slot_id <= 330; ++slot_id)
+	{
+		quantity += collectitems_processSlot(slot_id, item_id, remove);
+	}
+ 
+	return quantity;
+}
