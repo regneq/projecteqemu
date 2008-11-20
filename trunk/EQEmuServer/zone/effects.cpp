@@ -132,15 +132,12 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 		{
 			case 1:
 				chance += 2;
-				ratio += 33;
 				break;
 			case 2:
 				chance += 4; //some reports between 4.5% & 5%, AA description indicates 4%
-				ratio += 66;
 				break;
 			case 3:
 				chance += 7;
-				ratio += 100;
 				break;
 		}		
 
@@ -163,8 +160,10 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 		chance += GetAA(aaAdvancedFuryofMagicMastery) * 2; //guessing, not much data on it
 
 			
-		if(ratio > 100)	//chance increase and ratio are made up, not confirmed
-			ratio = 100;
+		if(ratio > 100)		//chance increase and ratio are made up, not confirmed
+			ratio = 100;	
+
+		// Anything that will boost the crit ratio to more than 2x (AA's for example) MUST be after this line, not before	
 
 
 		if(tt == ST_Tap) {
