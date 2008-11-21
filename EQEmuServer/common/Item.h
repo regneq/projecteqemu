@@ -166,6 +166,9 @@ public:
 	// Check whether item exists in inventory
 	// where argument specifies OR'd list of invWhere constants to look
 	sint16 HasItem(uint32 item_id, uint8 quantity=0, uint8 where=0xFF);
+
+	// Check whether there is space for the specified number of the specified item.
+	bool HasSpaceForItem(const Item_Struct *ItemToTry, uint8 Quantity);
 	
 	// Check whether item exists in inventory
 	// where argument specifies OR'd list of invWhere constants to look
@@ -181,6 +184,7 @@ public:
 	static sint16 CalcSlotFromMaterial(int8 material);
 	static int8 CalcMaterialFromSlot(sint16 equipslot);
 
+	static bool CanItemFitInContainer(const Item_Struct *ItemToTry, const Item_Struct *Container);
 
 	// Test whether a given slot can support a container item
 	static bool SupportsContainers(sint16 slot_id);

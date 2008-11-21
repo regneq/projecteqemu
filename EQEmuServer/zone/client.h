@@ -199,6 +199,7 @@ public:
 	void	CompleteConnect();
 	bool	TryStacking(ItemInst* item, int8 type = ItemPacketTrade, bool try_worn = true, bool try_cursor = true);
 	void	SendTraderPacket(Client* trader);
+	void	SendBuyerPacket(Client* Buyer);
 	GetItems_Struct* GetTraderItems();
 	void	SendBazaarWelcome();
 	void	DyeArmor(DyeStruct* dye);
@@ -215,6 +216,16 @@ public:
 	void	TradeRequestFailed(const EQApplicationPacket* app);
 	void	BuyTraderItem(TraderBuy_Struct* tbs,Client* trader,const EQApplicationPacket* app);
 	void	TraderUpdate(int16 slot_id,int32 trader_id);
+
+	void	SendBuyerResults(char *SearchQuery, uint32 SearchID);
+	void	ShowBuyLines(const EQApplicationPacket *app);
+	void	SellToBuyer(const EQApplicationPacket *app);
+	void	ToggleBuyerMode(bool TurnOn);
+	void	UpdateBuyLine(const EQApplicationPacket *app);
+	void	BuyerItemSearch(const EQApplicationPacket *app);
+	void	SetBuyerWelcomeMessage(const char* WelcomeMessage) { BuyerWelcomeMessage = WelcomeMessage; }
+	const 	char* GetBuyerWelcomeMessage() { return BuyerWelcomeMessage.c_str(); }
+
 	void	FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho);
 	virtual bool Process();
 	void	LogMerchant(Client* player, Mob* merchant, Merchant_Sell_Struct* mp, const Item_Struct* item, bool buying);
@@ -504,6 +515,7 @@ public:
 	bool	TakeMoneyFromPP(uint32 copper);
 	void	AddMoneyToPP(uint32 copper,bool updateclient);
 	void	AddMoneyToPP(uint32 copper, uint32 silver, uint32 gold,uint32 platinum,bool updateclient);
+	bool	HasMoney(uint32 copper);
 
 //	bool	SimpleCheckIncreaseSkill(int16 skillid,sint16 chancemodi = 0);
 	void	FinishTrade(Client* with);
@@ -662,7 +674,8 @@ public:
 	void	SendLootItemInPacket(const ItemInst* inst, sint16 slot_id);
 	void	SendItemPacket(sint16 slot_id, const ItemInst* inst, ItemPacketType packet_type);
 
-	bool	IsTrader() const { return(Trader); }
+	inline	bool IsTrader() const { return(Trader); }
+	inline	bool IsBuyer() const { return(Buyer); }
 	eqFilterMode	GetFilter(eqFilterType filter_id) const { return ClientFilters[filter_id]; }
 	void	SetFilter(eqFilterType filter_id, eqFilterMode value) { ClientFilters[filter_id]=value; }
 
@@ -845,6 +858,8 @@ protected:
 
 	sint16	GetFocusEffect(focusType type, int16 spell_id);
 	sint16	CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id);
+
+	bool	MoveItemToInventory(ItemInst *BInst, bool UpdateClient = false);
 private:
 	eqFilterMode ClientFilters[_FilterCount];
 	sint32	HandlePacket(const EQApplicationPacket *app);
@@ -863,7 +878,7 @@ private:
 	void	CreateBandolier(const EQApplicationPacket *app);
 	void	RemoveBandolier(const EQApplicationPacket *app);
 	void	SetBandolier(const EQApplicationPacket *app);
-	bool	BandolierReturnItemToInventory(ItemInst *BInst);
+
 	void	HandleTraderPriceUpdate(const EQApplicationPacket *app);
 
 	sint16    CalcAC();
@@ -936,6 +951,8 @@ private:
 	bool				IsTracking;
 	int16				CustomerID;
 	bool	Trader;
+	bool	Buyer;
+	string	BuyerWelcomeMessage;
 	bool	cheater;
 	float	cheat_x;
 	float	cheat_y;

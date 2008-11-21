@@ -227,4 +227,5 @@
 	void Handle_OP_LFGGetMatchesRequest(const EQApplicationPacket *app);
 	void Handle_OP_LFPCommand(const EQApplicationPacket *app);
 	void Handle_OP_LFPGetMatchesRequest(const EQApplicationPacket *app);
+	void Handle_OP_Barter(const EQApplicationPacket *app);
 

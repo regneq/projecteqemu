@@ -207,6 +207,7 @@ RULE_CATEGORY ( Bazaar )
 RULE_BOOL ( Bazaar, AuditTrail, false)
 RULE_INT ( Bazaar, MaxSearchResults, 50)
 RULE_BOOL ( Bazaar, EnableWarpToTrader, true)
+RULE_INT ( Bazaar, MaxBarterSearchResults, 200) // The max results returned in the /barter search
 RULE_CATEGORY_END()
 
 #undef RULE_CATEGORY

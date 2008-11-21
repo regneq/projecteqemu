@@ -2358,6 +2358,10 @@ void EntityList::SendTraders(Client* client){
 		trader=iterator.GetData();
 		if(trader->IsTrader())
 			client->SendTraderPacket(trader);
+
+		if(trader->IsBuyer())
+			client->SendBuyerPacket(trader);
+
 		iterator.Advance();
 	}
 }

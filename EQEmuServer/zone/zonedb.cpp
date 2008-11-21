@@ -776,6 +776,60 @@ void ZoneDatabase::DeleteTraderItem(uint32 CharID,int16 SlotID){
 	safe_delete_array(query);
 }
 
+void ZoneDatabase::DeleteBuyLines(uint32 CharID){
+
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	if(CharID==0){
+		if (!(RunQuery(query,MakeAnyLenString(&query, "delete from buyer"),errbuf)))
+			_log(TRADING__CLIENT, "Failed to delete all buyer items data, the error was: %s\n",errbuf);
+	}
+	else{
+		if (!(RunQuery(query,MakeAnyLenString(&query, "delete from buyer where charid=%i",CharID),errbuf)))
+			_log(TRADING__CLIENT, "Failed to delete buyer item data for charid: %i, the error was: %s\n",CharID,errbuf);
+	}
+	safe_delete_array(query);
+}
+
+void ZoneDatabase::AddBuyLine(uint32 CharID, uint32 BuySlot, uint32 ItemID, const char* ItemName, uint32 Quantity, uint32 Price) {
+
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	if (!(RunQuery(query,MakeAnyLenString(&query, "replace INTO buyer VALUES(%i,%i, %i,\"%s\",%i,%i)",
+					      CharID, BuySlot, ItemID, ItemName, Quantity, Price),errbuf)))
+		_log(TRADING__CLIENT, "Failed to save buline item: %i for char_id: %i, the error was: %s\n", ItemID, CharID, errbuf);
+
+	safe_delete_array(query);
+}
+
+void ZoneDatabase::RemoveBuyLine(uint32 CharID, uint32 BuySlot) {
+
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+
+	if (!(RunQuery(query,MakeAnyLenString(&query, "delete from buyer where charid=%i and buyslot=%i", CharID, BuySlot), errbuf)))
+		_log(TRADING__CLIENT, "Failed to delete buyslot %i for charid: %i, the error was: %s\n", BuySlot, CharID, errbuf);
+
+	safe_delete_array(query);
+}
+
+void ZoneDatabase::UpdateBuyLine(uint32 CharID, uint32 BuySlot, uint32 Quantity) {
+
+	if(Quantity <= 0) {
+		RemoveBuyLine(CharID, BuySlot);
+		return;
+	}
+
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+
+	if (!(RunQuery(query,MakeAnyLenString(&query, "update buyer set quantity=%i where charid=%i and buyslot=%i", 
+					      Quantity, CharID, BuySlot), errbuf)))
+		_log(TRADING__CLIENT, "Failed to update quantity in buyslot %i for charid: %i, the error was: %s\n", BuySlot, CharID, errbuf);
+
+	safe_delete_array(query);
+
+}
 
 bool ZoneDatabase::GetCharacterInfoForLogin(const char* name, uint32* character_id, 
 char* current_zone, PlayerProfile_Struct* pp, Inventory* inv, ExtendedProfile_Struct *ext, 

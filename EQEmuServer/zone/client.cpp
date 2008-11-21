@@ -173,6 +173,7 @@ Client::Client(EQStreamInterface* ieqs)
 	port = ntohs(eqs->GetRemotePort());
 	client_state = CLIENT_CONNECTING;
 	Trader=false;
+	Buyer = false;
 	CustomerID = 0;
 	IsTracking=false;
 	WID = 0;
@@ -267,6 +268,9 @@ Client::~Client() {
 
 	if(Trader)
 		database.DeleteTraderItem(this->CharacterID());
+
+	if(Buyer)
+		ToggleBuyerMode(false);
 
 	if(conn_state != ClientConnectFinished) {
 		LogFile->write(EQEMuLog::Debug, "Client '%s' was destroyed before reaching the connected state:", GetName());
@@ -1823,6 +1827,14 @@ void Client::SendMoneyUpdate() {
 	mus->copper = m_pp.copper;
 
 	FastQueuePacket(&outapp);
+}
+
+bool Client::HasMoney(uint32 Copper) {
+
+	if((m_pp.copper + (m_pp.silver * 10) + (m_pp.gold * 100) + (m_pp.platinum * 1000)) >= Copper)
+		return true;
+
+	return false;
 }
 
 bool Client::CheckIncreaseSkill(SkillType skillid, int chancemodi) {

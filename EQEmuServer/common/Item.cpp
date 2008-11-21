@@ -722,6 +722,101 @@ sint16 Inventory::HasItemByUse(uint8 use, uint8 quantity, uint8 where)
 	return slot_id;
 }
 
+bool Inventory::HasSpaceForItem(const Item_Struct *ItemToTry, uint8 Quantity) {
+
+	if(ItemToTry->Stackable) {
+
+		for(sint16 i = 22; i <= 29; i++) {
+	
+			ItemInst* InvItem = GetItem(i);
+
+			if(InvItem && (InvItem->GetItem()->ID == ItemToTry->ID) && (InvItem->GetCharges() < InvItem->GetItem()->StackSize)) {
+
+				int ChargeSlotsLeft = InvItem->GetItem()->StackSize - InvItem->GetCharges();
+		
+				if(Quantity <= ChargeSlotsLeft)
+					return true;
+
+				Quantity -= ChargeSlotsLeft;
+
+			}
+			if (InvItem && InvItem->IsType(ItemClassContainer)) {
+
+				sint16 BaseSlotID = Inventory::CalcSlotId(i, 0);
+				int8 BagSize=InvItem->GetItem()->BagSlots;
+				for (uint8 BagSlot = 0; BagSlot < BagSize; BagSlot++) {
+
+					InvItem = GetItem(BaseSlotID + BagSlot);
+
+					if(InvItem && (InvItem->GetItem()->ID == ItemToTry->ID) &&
+					   (InvItem->GetCharges() < InvItem->GetItem()->StackSize)) {
+
+						int ChargeSlotsLeft = InvItem->GetItem()->StackSize - InvItem->GetCharges();
+			
+						if(Quantity <= ChargeSlotsLeft)
+							return true;
+
+						Quantity -= ChargeSlotsLeft;
+					}
+				}
+			}
+		}
+	}
+
+	for (sint16 i = 22; i <= 29; i++) {
+
+		ItemInst* InvItem = GetItem(i);
+
+		if (!InvItem) {
+
+			if(!ItemToTry->Stackable) {
+
+				if(Quantity == 1)
+					return true;
+				else
+					Quantity--;
+			}
+			else {
+				if(Quantity <= ItemToTry->StackSize)
+					return true;
+				else
+					Quantity -= ItemToTry->StackSize;
+			}
+
+		}
+		else if(InvItem->IsType(ItemClassContainer) && CanItemFitInContainer(ItemToTry, InvItem->GetItem())) {
+
+			sint16 BaseSlotID = Inventory::CalcSlotId(i, 0);
+
+			int8 BagSize=InvItem->GetItem()->BagSlots;
+
+			for (uint8 BagSlot=0; BagSlot<BagSize; BagSlot++) {
+
+				InvItem = GetItem(BaseSlotID + BagSlot);
+
+				if(!InvItem) {
+					if(!ItemToTry->Stackable) {
+
+						if(Quantity == 1)
+							return true;
+						else
+							Quantity--;
+					}
+					else {
+						if(Quantity <= ItemToTry->StackSize)
+							return true;
+						else
+							Quantity -= ItemToTry->StackSize;
+					}
+				}
+			}
+		}
+	}
+
+	return false;
+
+}
+
 // Remove item from inventory (with memory delete)
 void Inventory::DeleteItem(sint16 slot_id, uint8 quantity)
 {
@@ -1320,4 +1415,18 @@ bool Inventory::SupportsContainers(sint16 slot_id)
 		(slot_id>=3000 && slot_id<=3007))	// Trade window
 		return true;
 	return false;
+}
+
+
+bool Inventory::CanItemFitInContainer(const Item_Struct *ItemToTry, const Item_Struct *Container) {
+
+	if(!ItemToTry || !Container) return false;
+
+	if(ItemToTry->Size > Container->BagSize) return false;
+
+	if((Container->BagType == bagTypeQuiver) && (ItemToTry->ItemType != ItemTypeArrow)) return false;
+
+	if((Container->BagType == bagTypeBandolier) && (ItemToTry->ItemType != ItemTypeThrowingv2)) return false;
+
+	return true;
 }
