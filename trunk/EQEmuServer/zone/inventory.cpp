@@ -1317,7 +1317,7 @@ void	Client::SetBandolier(const EQApplicationPacket *app) {
 
 				if(InvItem) {
 					// If there was already an item in that weapon slot that we replaced, find a place to put it
-					if(!BandolierReturnItemToInventory(InvItem)) 
+					if(!MoveItemToInventory(InvItem)) 
 						_log(INVENTORY__BANDOLIER, "Char: %s, ERROR returning %s to inventory", GetName(),
 						     InvItem->GetItem()->Name);
 					safe_delete(InvItem);
@@ -1330,7 +1330,7 @@ void	Client::SetBandolier(const EQApplicationPacket *app) {
 			ItemInst *InvItem = m_inv.PopItem(WeaponSlot);
 			if(InvItem) {
 				// If there was an item in that weapon slot, put it in the inventory	
-				if(BandolierReturnItemToInventory(InvItem)) 
+				if(MoveItemToInventory(InvItem)) 
 					database.SaveInventory(character_id, 0, WeaponSlot);
 				else
 					_log(INVENTORY__BANDOLIER, "Char: %s, ERROR returning %s to inventory", GetName(),
@@ -1341,22 +1341,9 @@ void	Client::SetBandolier(const EQApplicationPacket *app) {
 	}
 }
 
-static bool CanItemFitInContainer(const Item_Struct *ItemToTry, const Item_Struct *Container) {
-
-	if(!ItemToTry || !Container) return false;
-
-	if(ItemToTry->Size > Container->BagSize) return false;
-
-	if((Container->BagType == bagTypeQuiver) && (ItemToTry->ItemType != ItemTypeArrow)) return false;
-
-	if((Container->BagType == bagTypeBandolier) && (ItemToTry->ItemType != ItemTypeThrowingv2)) return false;
-
-	return true;
-}
-
-bool Client::BandolierReturnItemToInventory(ItemInst *ItemToReturn) {
+bool Client::MoveItemToInventory(ItemInst *ItemToReturn, bool UpdateClient) {
 	
-	// This is a support function for Client::SetBandolier.
+	// This is a support function for Client::SetBandolier, however it can be used anywhere it's functionality is required.
 	//
 	// When the client moves items around as Bandolier sets are activated, it does not send details to the 
 	// server of what item it has moved to which slot. It assumes the server knows what it will do.
@@ -1375,7 +1362,7 @@ bool Client::BandolierReturnItemToInventory(ItemInst *ItemToReturn) {
 
 	if(!ItemToReturn) return false;
 
-	_log(INVENTORY__BANDOLIER,"Char: %s Returning %s to inventory", GetName(), ItemToReturn->GetItem()->Name);
+	_log(INVENTORY__SLOTS,"Char: %s Returning %s to inventory", GetName(), ItemToReturn->GetItem()->Name);
 
 	int32 ItemID = ItemToReturn->GetItem()->ID;
 
@@ -1395,6 +1382,9 @@ bool Client::BandolierReturnItemToInventory(ItemInst *ItemToReturn) {
 												   ChargeSlotsLeft;
 
 				InvItem->SetCharges(InvItem->GetCharges() + ChargesToMove);
+
+				if(UpdateClient)
+					SendItemPacket(i, InvItem, ItemPacketTrade);
 
 				database.SaveInventory(character_id, m_inv.GetItem(i), i);
 
@@ -1424,6 +1414,10 @@ bool Client::BandolierReturnItemToInventory(ItemInst *ItemToReturn) {
 
 						InvItem->SetCharges(InvItem->GetCharges() + ChargesToMove);
 
+						if(UpdateClient)
+							SendItemPacket(BaseSlotID + BagSlot, m_inv.GetItem(BaseSlotID + BagSlot), 
+								       ItemPacketTrade);
+
 						database.SaveInventory(character_id, m_inv.GetItem(BaseSlotID + BagSlot), 
 								       BaseSlotID + BagSlot);
 
@@ -1447,13 +1441,16 @@ bool Client::BandolierReturnItemToInventory(ItemInst *ItemToReturn) {
 			// Found available slot in personal inventory
 			m_inv.PutItem(i, *ItemToReturn);
 
+			if(UpdateClient)
+				SendItemPacket(i, ItemToReturn, ItemPacketTrade);
+
 			database.SaveInventory(character_id, m_inv.GetItem(i), i);
 
-			_log(INVENTORY__BANDOLIER, "Char: %s Storing in main inventory slot %i", GetName(), i);
+			_log(INVENTORY__SLOTS, "Char: %s Storing in main inventory slot %i", GetName(), i);
 
 			return true;
 		}
-		if(InvItem->IsType(ItemClassContainer) && CanItemFitInContainer(ItemToReturn->GetItem(), InvItem->GetItem())) {
+		if(InvItem->IsType(ItemClassContainer) && Inventory::CanItemFitInContainer(ItemToReturn->GetItem(), InvItem->GetItem())) {
 
 			sint16 BaseSlotID = Inventory::CalcSlotId(i, 0);
 
@@ -1467,9 +1464,12 @@ bool Client::BandolierReturnItemToInventory(ItemInst *ItemToReturn) {
 					// Found available slot within bag
 					m_inv.PutItem(BaseSlotID + BagSlot, *ItemToReturn);
 
+					if(UpdateClient)
+						SendItemPacket(BaseSlotID + BagSlot, ItemToReturn, ItemPacketTrade);
+
 					database.SaveInventory(character_id, m_inv.GetItem(BaseSlotID + BagSlot), BaseSlotID + BagSlot);
 
-					_log(INVENTORY__BANDOLIER, "Char: %s Storing in bag slot %i", GetName(), BaseSlotID + BagSlot);
+					_log(INVENTORY__SLOTS, "Char: %s Storing in bag slot %i", GetName(), BaseSlotID + BagSlot);
 
 					return true;
 				}
@@ -1479,13 +1479,9 @@ bool Client::BandolierReturnItemToInventory(ItemInst *ItemToReturn) {
 	
 	// Store on the cursor
 	// 
-	_log(INVENTORY__BANDOLIER, "Char: %s No space, putting on the cursor", GetName());
+	_log(INVENTORY__SLOTS, "Char: %s No space, putting on the cursor", GetName());
 
-	m_inv.PutItem(SLOT_CURSOR, *ItemToReturn);
-
-	list<ItemInst*>::const_iterator s=m_inv.cursor_begin(),e=m_inv.cursor_end();
-
-	database.SaveCursor(character_id, s, e);
+	PushItemOnCursor(*ItemToReturn, UpdateClient);
 
 	return true;
 }

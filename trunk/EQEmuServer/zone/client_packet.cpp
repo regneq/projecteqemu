@@ -331,6 +331,7 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_LFGGetMatchesRequest] = &Client::Handle_OP_LFGGetMatchesRequest;
 	ConnectedOpcodes[OP_LFPCommand] = &Client::Handle_OP_LFPCommand;
 	ConnectedOpcodes[OP_LFPGetMatchesRequest] = &Client::Handle_OP_LFPGetMatchesRequest;
+	ConnectedOpcodes[OP_Barter] = &Client::Handle_OP_Barter;
 
 }
 
@@ -5771,7 +5772,6 @@ void Client::Handle_OP_Trader(const EQApplicationPacket *app)
 		switch(sis->Code) {
 			
 			case BazaarTrader_EndTraderMode: {
-
 				Trader_EndTrader();
 				break;
 			}
@@ -5804,6 +5804,12 @@ void Client::Handle_OP_Trader(const EQApplicationPacket *app)
 		}
 	}
 	else if(app->size==sizeof(ClickTrader_Struct)){
+
+		if(Buyer) {
+			Trader_EndTrader();
+			Message(13, "You cannot be a Trader and Buyer at the same time.");
+			return;
+		}
 
 		ClickTrader_Struct* ints = (ClickTrader_Struct*)app->pBuffer;
 
@@ -6424,7 +6430,8 @@ void Client::Handle_OP_FindPersonRequest(const EQApplicationPacket *app)
 			return;
 		}
 
-		if(RuleB(Bazaar, EnableWarpToTrader) && target->IsClient() && target->CastToClient()->Trader) {
+		if(RuleB(Bazaar, EnableWarpToTrader) && target->IsClient() && (target->CastToClient()->Trader ||
+									       target->CastToClient()->Buyer)) {
 			Message(15, "Moving you to Trader %s", target->GetName());
 			MovePC(target->GetX(), target->GetY(),  target->GetZ() , 0.0f);
 		}
@@ -8327,4 +8334,132 @@ void Client::Handle_OP_LFPGetMatchesRequest(const EQApplicationPacket *app) {
 	}
 
 	return;
+}
+
+void Client::Handle_OP_Barter(const EQApplicationPacket *app) {
+
+	if(app->size < 4) {
+		LogFile->write(EQEMuLog::Debug, "OP_Barter packet below minimum expected size. The packet was %i bytes.", app->size);
+		DumpPacket(app);
+		return;
+	}
+
+	char* Buf = (char *)app->pBuffer;
+
+	// The first 4 bytes of the packet determine the action. A lot of Barter packets require the
+	// packet the client sent, sent back to it as an acknowledgement.
+	//
+	int32 Action = VARSTRUCT_DECODE_TYPE(uint32, Buf);
+
+	_pkt(TRADING__BARTER, app);
+
+	switch(Action) {
+
+		case Barter_BuyerSearch:
+			BuyerItemSearch(app);
+			break;
+
+		case Barter_SellerSearch: {
+				BarterSearchRequest_Struct *bsr = (BarterSearchRequest_Struct*)app->pBuffer;
+				SendBuyerResults(bsr->SearchString, bsr->SearchID);
+				break;
+			}
+
+		case Barter_BuyerModeOn: {
+				if(!Trader) {
+					ToggleBuyerMode(true);
+				}
+				else {
+					Buf = (char *)app->pBuffer;
+					VARSTRUCT_ENCODE_TYPE(uint32, Buf, Barter_BuyerModeOff);
+					Message(13, "You cannot be a Trader and Buyer at the same time.");
+				}
+				QueuePacket(app);
+				break;
+			}
+
+		case Barter_BuyerModeOff:
+			QueuePacket(app);
+			ToggleBuyerMode(false);
+			break;
+
+		case Barter_BuyerItemUpdate:
+			UpdateBuyLine(app);
+			break;
+
+		case Barter_BuyerItemRemove: {
+				BuyerRemoveItem_Struct* bris = (BuyerRemoveItem_Struct*)app->pBuffer;
+				database.RemoveBuyLine(CharacterID(), bris->BuySlot);
+				QueuePacket(app);
+				break;
+			}
+
+		case Barter_SellItem:
+			SellToBuyer(app);
+			break;
+
+		case Barter_BuyerInspectBegin:
+			ShowBuyLines(app);
+			break;
+
+		case Barter_BuyerInspectEnd: {
+
+				BuyerInspectRequest_Struct* bir = ( BuyerInspectRequest_Struct*)app->pBuffer;
+				Client *Buyer = entity_list.GetClientByID(bir->BuyerID);
+				if(Buyer)
+					Buyer->WithCustomer(0);
+
+				break;
+			}
+
+		case Barter_BarterItemInspect: {
+				BarterItemSearchLinkRequest_Struct* bislr = (BarterItemSearchLinkRequest_Struct*)app->pBuffer;
+
+				const Item_Struct* item = database.GetItem(bislr->ItemID);
+	
+				if (!item) 
+					Message(13, "Error: This item does not exist!");
+				else {
+					ItemInst* inst = database.CreateItem(item);
+					if (inst) {
+						SendItemPacket(0, inst, ItemPacketViewLink);
+						safe_delete(inst);
+					}
+				}
+				break;
+			}
+
+		case Barter_Welcome:
+			SendBazaarWelcome();
+			break;
+
+		case Barter_WelcomeMessageUpdate: {
+				BuyerWelcomeMessageUpdate_Struct* bwmu = (BuyerWelcomeMessageUpdate_Struct*)app->pBuffer;
+				SetBuyerWelcomeMessage(bwmu->WelcomeMessage);
+				break;
+			}
+
+		case Barter_BuyerItemInspect: {
+
+				BuyerItemSearchLinkRequest_Struct* bislr = (BuyerItemSearchLinkRequest_Struct*)app->pBuffer;
+
+				const Item_Struct* item = database.GetItem(bislr->ItemID);
+
+				if (!item) 
+					Message(13, "Error: This item does not exist!");
+				else {
+					ItemInst* inst = database.CreateItem(item);
+					if (inst) {
+						SendItemPacket(0, inst, ItemPacketViewLink);
+						safe_delete(inst);
+					}
+				}
+				break;
+			}
+
+		default:
+			Message(13, "Unrecognised Barter action.");
+			_log(TRADING__BARTER, "Unrecognised Barter Action %i", Action);
+
+	}
 }

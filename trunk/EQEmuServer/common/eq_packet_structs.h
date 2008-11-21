@@ -2318,6 +2318,94 @@ struct BazaarSearchResults_Struct {
 	char	Name[64];
 };
 
+// Barter/Buyer
+//
+//
+enum {
+	Barter_BuyerSearch = 0,
+	Barter_SellerSearch = 1,
+	Barter_BuyerModeOn = 2,
+	Barter_BuyerModeOff = 3,
+	Barter_BuyerItemUpdate = 5,
+	Barter_BuyerItemRemove = 6,
+	Barter_SellItem = 7,
+	Barter_SellerTransactionComplete = 8,
+	Barter_BuyerTransactionComplete = 9,
+	Barter_BuyerInspectBegin = 10,
+	Barter_BuyerInspectEnd = 11,
+	Barter_BuyerAppearance = 12,
+	Barter_BuyerInspectWindow = 13,
+	Barter_BarterItemInspect = 14,
+	Barter_SellerBrowsing = 15,
+	Barter_BuyerSearchResults = 16,
+	Barter_Welcome = 17,
+	Barter_WelcomeMessageUpdate = 19,
+	Barter_BuyerItemInspect = 21
+};
+
+struct BuyerWelcomeMessageUpdate_Struct {
+/*000*/	uint32	Action;
+/*004*/	char	WelcomeMessage[256];
+};
+
+struct BuyerItemSearch_Struct {
+/*000*/	uint32	Unknown000;
+/*004*/	char	SearchString[64];
+};
+
+struct	BuyerItemSearchResultEntry_Struct {
+/*000*/	char	ItemName[64];
+/*064*/	uint32	ItemID;
+/*068*/	uint32	Unknown068;
+/*072*/	uint32	Unknown072;
+};
+
+#define MAX_BUYER_ITEMSEARCH_RESULTS 200
+
+struct	BuyerItemSearchResults_Struct {
+	uint32	Action;
+	uint32	ResultCount;
+	BuyerItemSearchResultEntry_Struct	Results[MAX_BUYER_ITEMSEARCH_RESULTS];
+};
+
+struct BarterSearchRequest_Struct {
+	uint32	Action;
+	char	SearchString[64];
+	uint32	SearchID;
+};
+
+struct BuyerItemSearchLinkRequest_Struct {
+/*000*/	uint32	Action;	// 0x00000015
+/*004*/	uint32	ItemID;	
+/*008*/	uint32	Unknown008;
+/*012*/	uint32	Unknown012;
+};
+
+struct BarterItemSearchLinkRequest_Struct {
+/*000*/	uint32	Action;	// 0x0000000E
+/*004*/	uint32	SearcherID;
+/*008*/	uint32	Unknown008;
+/*012*/	uint32	Unknown012;
+/*016*/	uint32	ItemID;
+/*020*/	uint32	Unknown020;
+};
+
+struct BuyerInspectRequest_Struct {
+	uint32	Action;
+	uint32	BuyerID;
+	uint32	Approval;
+};
+
+struct BuyerBrowsing_Struct {
+	uint32	Action;
+	char	PlayerName[64];
+};
+
+struct BuyerRemoveItem_Struct {
+	uint32	Action;
+	uint32	BuySlot;
+};
+
 struct ServerSideFilters_Struct {
 int8	clientattackfilters; // 0) No, 1) All (players) but self, 2) All (players) but group
 int8	npcattackfilters;	 // 0) No, 1) Ignore NPC misses (all), 2) Ignore NPC Misses + Attacks (all but self), 3) Ignores NPC Misses + Attacks (all but group)

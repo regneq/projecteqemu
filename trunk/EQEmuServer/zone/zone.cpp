@@ -828,8 +828,10 @@ bool Zone::Init(bool iStaticZone) {
 	zone->LoadBlockedSpells(zone->GetZoneID());
 	
 	//clear trader items if we are loading the bazaar
-	if(strncasecmp(short_name,"bazaar",6)==0)
+	if(strncasecmp(short_name,"bazaar",6)==0) {
 		database.DeleteTraderItem(0);
+		database.DeleteBuyLines(0);
+	}
 	
 	// Load exp modifier variables.
 	// Set default value for EXP modifiers 
