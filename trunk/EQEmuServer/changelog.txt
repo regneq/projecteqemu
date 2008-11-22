@@ -5,6 +5,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 Trevius/AndMetal: Corrected the output of #showstats to provide accurate Attack Rating calculations.
 Derision: Initialise animation to zero in the Mob constructor to prevent players sometimes appearing to run off when they first spawn.
 Derision: /buyer /barter fix.
+Trevius: Added Account Limiting to allow limiting how many characters can be logged in per account at once - See Optional SQL.
 
 ==11/20/2008
 Derision: Implemented /buyer (cash compensation only) and /barter. Update your patch_Titanium.conf from the utils directory.
