@@ -135,10 +135,10 @@ RULE_REAL ( Spells, ResistMod, 0.40) //multiplier, chance to resist = this * Res
 RULE_REAL ( Spells, PartialHitChance, 0.7) //The chance when a spell is resisted that it will partial hit.
 RULE_REAL ( Spells, PartialHitChanceFear, 0.25) //The chance when a fear spell is resisted that it will partial hit.
 RULE_INT ( Spells, BaseCritChance, 0) //base % chance that everyone has to crit a spell
-RULE_INT ( Spells, BaseCritRatio, 0) //base % bonus to damage on a successful spell crit. 100 = 2x damage
+RULE_INT ( Spells, BaseCritRatio, 100) //base % bonus to damage on a successful spell crit. 100 = 2x damage
 RULE_INT ( Spells, WizCritLevel, 12) //level wizards first get spell crits
 RULE_INT ( Spells, WizCritChance, 7) //wiz's crit chance, on top of BaseCritChance
-RULE_INT ( Spells, WizCritRatio, 15) //wiz's crit bonus, on top of BaseCritRatio
+RULE_INT ( Spells, WizCritRatio, 0) //wiz's crit bonus, on top of BaseCritRatio (should be 0 for Live-like)
 RULE_INT (Spells, ResistPerLevelDiff, 85) //8.5 resist per level difference.
 RULE_CATEGORY_END()
 
