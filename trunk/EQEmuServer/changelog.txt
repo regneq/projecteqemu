@@ -1,6 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==11/22/2008
+Trevius/AndMetal: Corrected the output of #showstats to provide accurate Attack Rating calculations.
+
 ==11/20/2008
 Derision: Implemented /buyer (cash compensation only) and /barter. Update your patch_Titanium.conf from the utils directory.
 
