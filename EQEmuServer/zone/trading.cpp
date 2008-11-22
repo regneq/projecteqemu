@@ -2184,10 +2184,6 @@ void Client::SellToBuyer(const EQApplicationPacket *app) {
 		return;
 	}
 
-	Buyer->TakeMoneyFromPP(Quantity * Price);
-
-	AddMoneyToPP(Quantity * Price, false);
-
 	if(!item->Stackable) {
 
 		for(uint32 i = 0; i < Quantity; i++) {
@@ -2196,6 +2192,12 @@ void Client::SellToBuyer(const EQApplicationPacket *app) {
 
 			// This shouldn't happen, as we already checked there was space in the Buyer's inventory
 			if(SellerSlot == SLOT_INVALID) {
+
+				if(i > 0) {
+					// Set the Quantity to the actual number we successfully transferred.
+					Quantity = i;
+					break;
+				}
 				_log(TRADING__BARTER, "Unexpected error while moving item from seller to buyer.");
 	   			Message(13, "Internal error while processing transaction.");
 				return;
@@ -2323,6 +2325,10 @@ void Client::SellToBuyer(const EQApplicationPacket *app) {
 
 	}
 	
+	Buyer->TakeMoneyFromPP(Quantity * Price);
+
+	AddMoneyToPP(Quantity * Price, false);
+
 	if(RuleB(Bazaar, AuditTrail))
 		BazaarAuditTrail(GetName(), Buyer->GetName(), ItemName, Quantity, Quantity * Price, 1);
 
