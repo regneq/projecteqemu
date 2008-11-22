@@ -244,6 +244,7 @@ Mob::Mob(const char*   in_name,
 	delta_x = 0;
 	delta_y = 0;
 	delta_z = 0;
+	animation = 0;
 
 	logging_enabled = false;
 	isgrouped = false;
