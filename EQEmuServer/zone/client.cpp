@@ -3690,3 +3690,83 @@ void Client::UpdateLFP() {
 	}
 	worldserver.UpdateLFP(CharacterID(), LFPMembers);
 }
+
+uint16 Client::GetPrimarySkillValue()
+{
+	SkillType skill = HIGHEST_SKILL;  //because NULL == 0, which is 1H Slashing, & we want it to return 0 from GetSkill
+	bool equiped = m_inv.GetItem(13);
+	
+	if (!equiped)
+		skill = HAND_TO_HAND;
+
+	else {
+
+		uint8 type = m_inv.GetItem(13)->GetItem()->ItemType;  //is this the best way to do this?
+
+		switch (type)
+		{
+			case ItemType1HS: // 1H Slashing
+			{
+				skill = _1H_SLASHING;
+				break;
+			}
+			case ItemType2HS: // 2H Slashing
+			{
+				skill = _2H_SLASHING;
+				break;
+			}
+			case ItemTypePierce: // Piercing
+			{
+				skill = PIERCING;
+				break;
+			}
+			case ItemType1HB: // 1H Blunt
+			{
+				skill = _1H_BLUNT;
+				break;
+			}
+			case ItemType2HB: // 2H Blunt
+			{
+				skill = _2H_BLUNT;
+				break;
+			}
+			case ItemType2HPierce: // 2H Piercing
+			{
+				skill = PIERCING;
+				break;
+			}
+			case ItemTypeHand2Hand: // Hand to Hand
+			{
+				skill = HAND_TO_HAND;
+				break;
+			}
+			default: // All other types default to Hand to Hand
+			{
+				skill = HAND_TO_HAND;
+				break;
+			}
+		}
+	}
+
+	return GetSkill(skill);
+}
+
+uint16 Client::GetTotalATK()
+{
+	int16 AttackRating = 0;
+	int16 WornCap = GetATK();
+
+	if(WornCap > 250)
+		WornCap = 250;
+
+	if(IsClient()) {
+		AttackRating = ((WornCap * 1.342) + (GetSkill(OFFENSE) * 1.345) + ((GetSTR() - 66) * 0.9) + (GetPrimarySkillValue() * 2.69));
+
+		if (AttackRating < 10)
+			AttackRating = 10;
+	}
+	else
+	AttackRating = GetATK() + (GetSTR() * 9 / 10);
+
+	return AttackRating;
+}

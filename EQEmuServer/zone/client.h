@@ -428,6 +428,10 @@ public:
 	//does the endurance upkeep
 	void DoEnduranceUpkeep();
 
+	//This calculates total Attack Rating to match very close to what the client should show
+	uint16 GetTotalATK();
+	//This gets the skill value of the item type equiped in the Primary Slot
+	uint16 GetPrimarySkillValue();
 
     bool Flurry();
     bool Rampage();

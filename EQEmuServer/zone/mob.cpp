@@ -972,9 +972,22 @@ void Mob::MakeSpawnUpdate(PlayerPositionUpdateServer_Struct* spu) {
 }
 
 void Mob::ShowStats(Client* client) {
+
+	int16 attackRating = 0;
+	int16 WornCap = GetATK();
+
+	if(IsClient())
+		attackRating = GetATK() + ((GetSTR() + GetSkill(OFFENSE)) * 9 / 10);
+	else
+		attackRating = GetATK() + (GetSTR() * 9 / 10);
+
+	if(WornCap > 250)
+		WornCap = 250;
+
 	client->Message(0, "Name: %s %s", GetName(), lastname);
 	client->Message(0, "  Level: %i  MaxHP: %i  CurHP: %i  AC: %i  Class: %i", GetLevel(), GetMaxHP(), GetHP(), GetAC(), GetClass());
-	client->Message(0, "  MaxMana: %i  CurMana: %i  ATK: %i  Size: %1.1f", GetMaxMana(), GetMana(), GetATK(), GetSize());
+	client->Message(0, "  MaxMana: %i  CurMana: %i  Size: %1.1f", GetMaxMana(), GetMana(), GetSize());
+	client->Message(0, "  Total ATK: %i  Worn ATK: %i  Worn ATK Capped: %i  Server Used ATK: %i", this->CastToClient()->GetTotalATK(), GetATK(), WornCap, attackRating);
 	client->Message(0, "  STR: %i  STA: %i  DEX: %i  AGI: %i  INT: %i  WIS: %i  CHA: %i", GetSTR(), GetSTA(), GetDEX(), GetAGI(), GetINT(), GetWIS(), GetCHA());
 	client->Message(0, "  MR: %i  PR: %i  FR: %i  CR: %i  DR: %i", GetMR(), GetPR(), GetFR(), GetCR(), GetDR());
 	client->Message(0, "  Race: %i  BaseRace: %i  Texture: %i  HelmTexture: %i  Gender: %i  BaseGender: %i", GetRace(), GetBaseRace(), GetTexture(), GetHelmTexture(), GetGender(), GetBaseGender());
