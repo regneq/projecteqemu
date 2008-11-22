@@ -97,6 +97,27 @@ ClientListEntry* ClientList::GetCLE(int32 iID) {
 	return 0;
 }
 
+//Account Limiting Code to limit the number of characters allowed on from a single account at once.
+void ClientList::GetCLEAccount(int32 iAccID) {
+	ClientListEntry* count_Chars_On = 0;
+	LinkedListIterator<ClientListEntry*> iterator(clientlist);
+
+	int Chars_On = 0;
+	iterator.Reset();
+	while(iterator.MoreElements()) {
+		count_Chars_On = iterator.GetData();
+		if ((count_Chars_On->AccountID() == iAccID) && ((count_Chars_On->Admin() <= (RuleI(World, ExemptAccountLimitStatus))) || (RuleI(World, ExemptAccountLimitStatus) < 0))) {
+			Chars_On++;
+			if (Chars_On > (RuleI(World, AccountSessionLimit))){
+				count_Chars_On->SetOnline(CLE_Status_Offline);
+				iterator.RemoveCurrent();
+			}
+		}
+		iterator.Advance();
+	}
+}
+
+
 //Lieka && Derision Edit Begin:  Check current CLE Entry IPs against incoming connection
 
 void ClientList::GetCLEIP(int32 iIP) {

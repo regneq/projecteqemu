@@ -54,6 +54,7 @@ public:
 	ClientListEntry* FindCLEByCharacterID(int32 iAccID);
 	ClientListEntry* GetCLE(int32 iID);
 	void	GetCLEIP(int32 iIP);
+	void	GetCLEAccount(int32 iAccID);
 	void	CLCheckStale();
 	void	CLEKeepAlive(int32 numupdates, int32* wid);
 	void	CLEAdd(int32 iLSID, const char* iLoginName, const char* iLoginKey, sint16 iWorldAdmin = 0, int32 ip = 0, uint8 local=0);

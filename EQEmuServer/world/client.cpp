@@ -461,8 +461,12 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 				break;
 			}
 
+			if (RuleI(World, AccountSessionLimit) >= 0) {
+				client_list.GetCLEAccount(this->GetAccountID());  //Check current CLE Accounts against incoming connection
+			}
+
 			if (RuleI(World, MaxClientsPerIP) >= 0) {
-            client_list.GetCLEIP(this->GetIP());  //Lieka Edit Begin:  Check current CLE Entry IPs against incoming connection
+	            client_list.GetCLEIP(this->GetIP());  //Lieka Edit Begin:  Check current CLE Entry IPs against incoming connection
             }
 
 			EnterWorld_Struct *ew=(EnterWorld_Struct *)app->pBuffer;
