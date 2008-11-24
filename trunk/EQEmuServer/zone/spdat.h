@@ -39,8 +39,8 @@
    this number has to be 1 more than that.  if it's higher, your zone will
    NOT start up.  gonna autodetect this later..
 */
-//#define NEW_LoadSPDat
-#define DB_LoadSPDat	//load from DB vs spells_us.txt. for now, we're piggybacking NEW_LoadSPDat, so it will take precedence
+#define NEW_LoadSPDat
+//#define DB_LoadSPDat	//load from DB vs spells_us.txt. for now, we're piggybacking NEW_LoadSPDat, so it will take precedence
 
 #define EFFECT_COUNT 12
 
