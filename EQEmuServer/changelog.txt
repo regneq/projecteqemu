@@ -1,6 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==11/24/2008==
+AndMetal: Spells can now be loaded from the database, and is now enabled by default. Use utils/import_spells.pl to import, utils/export_spells.pl to export. Use -h on either for usage.
+
+Required SQL: utils/sql/svn/229_spells_table.sql
+
 ==11/22/2008
 Trevius/AndMetal: Corrected the output of #showstats to provide accurate Attack Rating calculations.
 Derision: Initialise animation to zero in the Mob constructor to prevent players sometimes appearing to run off when they first spawn.

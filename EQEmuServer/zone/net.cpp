@@ -122,7 +122,7 @@ TaskManager *taskmanager = 0;
 
 bool zoneprocess;
 
-#ifdef NEW_LoadSPDat
+#if defined(NEW_LoadSPDat) || defined(DB_LoadSPDat)
 	// For NewLoadSPDat function
 	const SPDat_Spell_Struct* spells; 
 	SPDat_Spell_Struct* spells_delete; 
@@ -276,7 +276,7 @@ int main(int argc, char** argv) {
 		CheckEQEMuErrorAndPause();
 		return 0;
 	}
-	
+	_log(ZONE__INIT, "Loading spells");
 	LoadSPDat();
 
 	// New Load function.  keeping it commented till I figure out why its not working correctly in linux. Trump.
@@ -623,7 +623,7 @@ int main(int argc, char** argv) {
 	worldserver.Disconnect();
 	dbasync->CommitWrites();
 	dbasync->StopThread();
-#ifdef NEW_LoadSPDat
+#if defined(NEW_LoadSPDat) || defined(DB_LoadSPDat)
 	safe_delete(spells_delete);
 #endif
 	safe_delete(taskmanager);
@@ -735,8 +735,9 @@ bool chrcmpI(const char* a, const char* b) {
 		return true;
 }
 
-#ifdef NEW_LoadSPDat
+#if defined(NEW_LoadSPDat) || defined(DB_LoadSPDat)
 sint32 GetMaxSpellID() {
+#ifdef NEW_LoadSPDat
 	int tempid=0, oldid=-1;
 	char spell_line_start[2048];
 	char* spell_line = spell_line_start;
@@ -799,6 +800,29 @@ sint32 GetMaxSpellID() {
 	
 		
 	return oldid;
+
+#else	// defined(DB_LoadSPDat)
+	//load from DB
+	
+	char errbuf[MYSQL_ERRMSG_SIZE];
+    char *query = 0;
+    MYSQL_RES *result;
+    MYSQL_ROW row;
+	sint32 ret = 0;
+	if (database.RunQuery(query, MakeAnyLenString(&query, 
+		"SELECT MAX(id) FROM spells_new"), 
+		errbuf, &result)) {
+		safe_delete_array(query);
+		row = mysql_fetch_row(result);
+		ret = atoi(row[0]);
+		mysql_free_result(result);
+	} else {
+		_log(SPELLS__LOAD_ERR, "Error in GetMaxSpellID query '%s' %s", query, errbuf);
+		safe_delete_array(query);
+		ret = -1;
+	}
+	return ret;
+#endif
 }
 #ifdef SHAREMEM
 extern "C" bool extFileLoadSPDat(void* sp, sint32 iMaxSpellID) { return FileLoadSPDat((SPDat_Spell_Struct*) sp, iMaxSpellID); }
@@ -810,7 +834,11 @@ void LoadSPDat() {
 	}
 	sint32 MaxSpellID = GetMaxSpellID();
 	if (MaxSpellID == -1) {
+#ifdef NEW_LoadSPDat
 		_log(SPELLS__LOAD, "LoadSPDat() MaxSpellID == -1, %s missing?", ZoneConfig::get()->SpellsFile.c_str());
+#else	// defined(DB_LoadSPDat)
+		_log(SPELLS__LOAD, "LoadSPDat() MaxSpellID == -1, error in GetMaxSpellID()?");
+#endif
 		return;
 	}
 #ifdef SHAREMEM
@@ -841,6 +869,7 @@ void LoadSPDat() {
 }
 
 bool FileLoadSPDat(SPDat_Spell_Struct* sp, sint32 iMaxSpellID) {
+#ifdef NEW_LoadSPDat
 	int tempid=0;
 	int16 counter=0;
 	char spell_line[2048];
@@ -931,11 +960,11 @@ This is hanging on freebsd for me, not sure why...
 		sp[tempid].mana=atoi(sep.arg[19]);
 		
 		int y=0;
-		for(y=0; y< 12;y++)
+		for(y=0; y< EFFECT_COUNT;y++)
 			sp[tempid].base[y]=atoi(sep.arg[20+y]);
-		for(y=0; y < 12; y++)
+		for(y=0; y < EFFECT_COUNT; y++)
 			sp[tempid].base2[y]=atoi(sep.arg[32+y]);
-		for(y=0; y< 12;y++)
+		for(y=0; y< EFFECT_COUNT;y++)
 			sp[tempid].max[y]=atoi(sep.arg[44+y]);
 		
 		sp[tempid].icon=atoi(sep.arg[56]);
@@ -950,7 +979,7 @@ This is hanging on freebsd for me, not sure why...
 		for(y=0; y< 4;y++)
 			sp[tempid].NoexpendReagent[y]=atoi(sep.arg[66+y]);
 		
-		for(y=0; y< 12;y++)
+		for(y=0; y< EFFECT_COUNT;y++)
 			sp[tempid].formula[y]=atoi(sep.arg[70+y]);
 		
 		sp[tempid].LightType=atoi(sep.arg[82]);
@@ -980,17 +1009,27 @@ This is hanging on freebsd for me, not sure why...
 		sp[tempid].TravelType=atoi(sep.arg[122]);
 		sp[tempid].SpellAffectIndex=atoi(sep.arg[123]);
 
-		for(y = 0; y < 23;y++)
+		for(y = 0; y < 2;y++)
 			sp[tempid].spacing124[y]=atoi(sep.arg[124+y]);
-		
+
+		for (y = 0; y < 16; y++)
+			sp[tempid].deities[y]=atoi(sep.arg[126+y]);
+
+		for (y = 0; y < 2; y++)
+			sp[tempid].spacing142[y]=atoi(sep.arg[142+y]);
+
+		sp[tempid].new_icon=atoi(sep.arg[144]);
+		sp[tempid].spellanim=atoi(sep.arg[145]);
+		sp[tempid].uninterruptable=atoi(sep.arg[146]);
 		sp[tempid].ResistDiff=atoi(sep.arg[147]);
 		sp[tempid].dot_stacking_exempt=atoi(sep.arg[148]);
 		sp[tempid].deletable=atoi(sep.arg[149]);
 		sp[tempid].RecourseLink = atoi(sep.arg[150]);
 
-		for(y = 0; y < 4;y++)
+		for(y = 0; y < 3;y++)
 			sp[tempid].spacing151[y]=atoi(sep.arg[151+y]);
-				
+
+		sp[tempid].short_buff_box = atoi(sep.arg[154]);
 		sp[tempid].descnum = atoi(sep.arg[155]);
 		sp[tempid].typedescnum = atoi(sep.arg[156]);
 		sp[tempid].effectdescnum = atoi(sep.arg[157]);
@@ -1024,7 +1063,20 @@ This is hanging on freebsd for me, not sure why...
 			sp[tempid].spacing181[y]=atoi(sep.arg[181+y]);
 
 		sp[tempid].can_mgb=atoi(sep.arg[185]);
-
++		// May crash zone
++		/*
++		sp[tempid].nodispell=atoi(row[186]);
++		sp[tempid].npc_category=atoi(row[187]);
++		sp[tempid].npc_usefulness=atoi(row[188]);
++
++		for (y = 0; y < 18; y++)
++			sp[tempid].spacing189[y]=atoi(row[189+y]);
++
++		sp[tempid].spellgroup=atoi(row[207]);
++
++		for (y = 0; y < 18; y++)
++			sp[tempid].spacing208[y]=atoi(row[208+y]);
++		*/
 		sp[tempid].DamageShieldType = 0;
 
 	} 
@@ -1036,9 +1088,201 @@ This is hanging on freebsd for me, not sure why...
 	database.DBLoadDamageShieldTypes(sp, iMaxSpellID);
 
 	return true;
+
+#else	// defined(DB_LoadSPDat)
+	//load from db
+
+	char errbuf[MYSQL_ERRMSG_SIZE];
+    char *query = 0;
+    MYSQL_RES *result;
+    MYSQL_ROW row;
+
+	_log(SPELLS__LOAD,"FileLoadSPDat() Loading spells from database");
+
+	if (iMaxSpellID < 0) {
+		_log(SPELLS__LOAD_ERR,"FileLoadSPDat() Loading spells FAILED! iMaxSpellID:%i < 0", iMaxSpellID);
+		return false;
+	} else 
+		_log(SPELLS__LOAD,"FileLoadSPDat() Highest spell ID:%i", iMaxSpellID);
+	
+	if (database.RunQuery(query, MakeAnyLenString(&query, 
+		"SELECT * FROM spells_new ORDER BY id ASC"), 
+		errbuf, &result)) {
+		safe_delete_array(query);
+
+		int tempid = 0;
+		int16 counter = 0;
+
+		while (row = mysql_fetch_row(result)) {
+
+			tempid = atoi(row[0]);
+			if (tempid > iMaxSpellID) {	// Is this really needed?
+				_log(SPELLS__LOAD_ERR, "FATAL FileLoadSPDat() tempid:%i >= iMaxSpellID:%i", tempid, iMaxSpellID);
+				return false;
+			}
+
+			counter++;
+			// String fields
+			strcpy(sp[tempid].name, row[1]);
+			strcpy(sp[tempid].player_1, row[2]);
+			strcpy(sp[tempid].teleport_zone, row[3]);
+			strcpy(sp[tempid].you_cast,  row[4]);
+			strcpy(sp[tempid].other_casts, row[5]);
+			strcpy(sp[tempid].cast_on_you, row[6]);
+			strcpy(sp[tempid].cast_on_other, row[7]);
+			strcpy(sp[tempid].spell_fades, row[8]);
+
+			// Numeric fields (everything else)
+			sp[tempid].range=atof(row[9]);
+			sp[tempid].aoerange=atof(row[10]);
+			sp[tempid].pushback=atof(row[11]);
+			sp[tempid].pushup=atof(row[12]);
+			sp[tempid].cast_time=atoi(row[13]);
+			sp[tempid].recovery_time=atoi(row[14]);
+			sp[tempid].recast_time=atoi(row[15]);
+			sp[tempid].buffdurationformula=atoi(row[16]);
+			sp[tempid].buffduration=atoi(row[17]);
+			sp[tempid].AEDuration=atoi(row[18]);
+			sp[tempid].mana=atoi(row[19]);
+			
+			int y=0;
+			for(y=0; y< EFFECT_COUNT;y++)
+				sp[tempid].base[y]=atoi(row[20+y]);	// effect_base_value
+			for(y=0; y < EFFECT_COUNT; y++)
+				sp[tempid].base2[y]=atoi(row[32+y]);	// effect_limit_value
+			for(y=0; y< EFFECT_COUNT;y++)
+				sp[tempid].max[y]=atoi(row[44+y]);
+			
+			sp[tempid].icon=atoi(row[56]);
+			sp[tempid].memicon=atoi(row[57]);
+			
+			for(y=0; y< 4;y++)
+				sp[tempid].components[y]=atoi(row[58+y]);
+			
+			for(y=0; y< 4;y++)
+				sp[tempid].component_counts[y]=atoi(row[62+y]);
+			
+			for(y=0; y< 4;y++)
+				sp[tempid].NoexpendReagent[y]=atoi(row[66+y]);
+			
+			for(y=0; y< EFFECT_COUNT;y++)
+				sp[tempid].formula[y]=atoi(row[70+y]);
+			
+			sp[tempid].LightType=atoi(row[82]);
+			sp[tempid].goodEffect=atoi(row[83]);
+			sp[tempid].Activated=atoi(row[84]);
+			sp[tempid].resisttype=atoi(row[85]);
+			
+			for(y=0; y< EFFECT_COUNT;y++)
+				sp[tempid].effectid[y]=atoi(row[86+y]);
+			
+			sp[tempid].targettype = (SpellTargetType) atoi(row[98]);
+			sp[tempid].basediff=atoi(row[99]);
+			int tmp_skill = atoi(row[100]);;
+			if(tmp_skill < 0 || tmp_skill > HIGHEST_SKILL)
+				sp[tempid].skill = BEGGING;	/* not much better we can do. */
+			else
+				sp[tempid].skill = (SkillType) tmp_skill;
+			sp[tempid].zonetype=atoi(row[101]);
+			sp[tempid].EnvironmentType=atoi(row[102]);
+			sp[tempid].TimeOfDay=atoi(row[103]);
+			
+			for(y=0; y < PLAYER_CLASS_COUNT;y++)
+				sp[tempid].classes[y]=atoi(row[104+y]);
+			
+			sp[tempid].CastingAnim=atoi(row[120]);
+			sp[tempid].TargetAnim=atoi(row[121]);
+			sp[tempid].TravelType=atoi(row[122]);
+			sp[tempid].SpellAffectIndex=atoi(row[123]);
+
+			for(y = 0; y < 2;y++)
+				sp[tempid].spacing124[y]=atoi(row[124+y]);
+
+			for (y = 0; y < 16; y++)
+				sp[tempid].deities[y]=atoi(row[126+y]);
+
+			for (y = 0; y < 2; y++)
+				sp[tempid].spacing142[y]=atoi(row[142+y]);
+
+			sp[tempid].new_icon=atoi(row[144]);
+			sp[tempid].spellanim=atoi(row[145]);
+			sp[tempid].uninterruptable=atoi(row[146]);
+			sp[tempid].ResistDiff=atoi(row[147]);
+			sp[tempid].dot_stacking_exempt=atoi(row[148]);
+			sp[tempid].deletable=atoi(row[149]);
+			sp[tempid].RecourseLink = atoi(row[150]);
+
+			for(y = 0; y < 3;y++)
+				sp[tempid].spacing151[y]=atoi(row[151+y]);
+
+			sp[tempid].short_buff_box = atoi(row[154]);
+			sp[tempid].descnum = atoi(row[155]);
+			sp[tempid].typedescnum = atoi(row[156]);
+			sp[tempid].effectdescnum = atoi(row[157]);
+			
+			for(y = 0; y < 4;y++)
+				sp[tempid].spacing158[y]=atoi(row[158+y]);
+
+			sp[tempid].bonushate=atoi(row[162]);
+
+			for(y = 0; y < 3;y++)
+				sp[tempid].spacing163[y]=atoi(row[163+y]);
+
+			sp[tempid].EndurCost=atoi(row[166]);
+			sp[tempid].EndurTimerIndex=atoi(row[167]);
+
+			for(y = 0; y < 5;y++)
+				sp[tempid].spacing168[y]=atoi(row[168+y]);
+
+			sp[tempid].HateAdded=atoi(row[173]);
+			sp[tempid].EndurUpkeep=atoi(row[174]);
+
+			sp[tempid].spacing175=atoi(row[175]);
+			sp[tempid].numhits = atoi(row[176]);
+
+			sp[tempid].pvpresistbase=atoi(row[177]);
+			sp[tempid].pvpresistcalc=atoi(row[178]);
+			sp[tempid].pvpresistcap=atoi(row[179]);
+			sp[tempid].spell_category=atoi(row[180]);
+
+			for(y = 0; y < 4;y++)
+				sp[tempid].spacing181[y]=atoi(row[181+y]);
+
+			sp[tempid].can_mgb=atoi(row[185]);
+			// May crash zone
+/*
+			sp[tempid].nodispell=atoi(row[186]);
+			sp[tempid].npc_category=atoi(row[187]);
+			sp[tempid].npc_usefulness=atoi(row[188]);
+
+			for (y = 0; y < 18; y++)
+				sp[tempid].spacing189[y]=atoi(row[189+y]);
+
+			sp[tempid].spellgroup=atoi(row[207]);
+
+			for (y = 0; y < 18; y++)
+				sp[tempid].spacing208[y]=atoi(row[208+y]);
+*/
+			sp[tempid].DamageShieldType = 0;
+
+		}
+		mysql_free_result(result);
+		_log(SPELLS__LOAD, "FileLoadSPDat() spells loaded: %i", counter);
+		// Now fill in the DamageShieldType from the damageshieldtypes table, if it exists.
+		//
+		database.DBLoadDamageShieldTypes(sp, iMaxSpellID);
+		
+		return true;
+	} else {
+		_log(SPELLS__LOAD_ERR, "Error in FileLoadSPDat query '%s' %s", query, errbuf);
+		safe_delete_array(query);
+		return false;
+	}
+#endif
+
 }
 
-#endif
+#endif	//from just above GetMaxSpellID(): #if defined(NEW_LoadSPDat) || defined(DB_LoadSPDat)
 
 void UpdateWindowTitle(char* iNewTitle) {
 #ifdef WIN32

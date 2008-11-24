@@ -61,7 +61,7 @@ extern volatile bool ZoneLoaded;
 extern WorldServer worldserver;
 extern NetConnection net;
 extern int32 numclients;
-#ifndef NEW_LoadSPDat
+#if !defined(NEW_LoadSPDat) && !defined(DB_LoadSPDat)
 	extern SPDat_Spell_Struct spells[SPDAT_RECORDS];
 #endif
 extern bool spells_loaded;
