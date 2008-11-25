@@ -1063,20 +1063,20 @@ This is hanging on freebsd for me, not sure why...
 			sp[tempid].spacing181[y]=atoi(sep.arg[181+y]);
 
 		sp[tempid].can_mgb=atoi(sep.arg[185]);
-+		// May crash zone
-+		/*
-+		sp[tempid].nodispell=atoi(row[186]);
-+		sp[tempid].npc_category=atoi(row[187]);
-+		sp[tempid].npc_usefulness=atoi(row[188]);
-+
-+		for (y = 0; y < 18; y++)
-+			sp[tempid].spacing189[y]=atoi(row[189+y]);
-+
-+		sp[tempid].spellgroup=atoi(row[207]);
-+
-+		for (y = 0; y < 18; y++)
-+			sp[tempid].spacing208[y]=atoi(row[208+y]);
-+		*/
+		// May crash zone
+		/*
+		sp[tempid].nodispell=atoi(row[186]);
+		sp[tempid].npc_category=atoi(row[187]);
+		sp[tempid].npc_usefulness=atoi(row[188]);
+
+		for (y = 0; y < 18; y++)
+			sp[tempid].spacing189[y]=atoi(row[189+y]);
+
+		sp[tempid].spellgroup=atoi(row[207]);
+
+		for (y = 0; y < 18; y++)
+			sp[tempid].spacing208[y]=atoi(row[208+y]);
+		*/
 		sp[tempid].DamageShieldType = 0;
 
 	} 
