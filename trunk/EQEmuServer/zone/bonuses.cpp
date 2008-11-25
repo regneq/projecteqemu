@@ -173,21 +173,26 @@ void Client::AddItemBonuses(const ItemInst *inst, StatBonuses* newbon, bool isAu
 	{
 		return;
 	}
-	if (GetLevel() < inst->GetItem()->ReqLevel)
-	{
-		return;
-	}
-	if (!inst->IsEquipable(GetBaseRace(),GetClass()))
-	{
-		return;
-	}
+
 	if(inst->GetAugmentType()==0 && isAug == true)
 	{
 		return;
 	}
 
 	const Item_Struct *item = inst->GetItem();
-	if( GetLevel() >= item->RecLevel )
+
+	if(!inst->IsEquipable(GetBaseRace(),GetClass()))
+	{
+		if(item->ItemType != ItemTypeFood && item->ItemType != ItemTypeDrink)
+			return;
+	}
+
+	if(GetLevel() < item->ReqLevel)
+	{
+		return;
+	}
+
+	if(GetLevel() >= item->RecLevel)
 	{
 		newbon->AC += item->AC;
 		newbon->HP += item->HP;

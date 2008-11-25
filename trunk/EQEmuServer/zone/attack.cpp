@@ -482,6 +482,28 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage)
 			bBlockFromRear = true;
 	}
 
+/* Trying to add Shield Block AA, but this isn't working yet
+	if(damage > 0 && GetAA(aaShieldBlock) && (!other->BehindMob(this, other->GetX(), other->GetY()))) {
+		bool equiped = CastToClient()->m_inv.GetItem(14);
+		if(equiped) {
+			uint8 shield = CastToClient()->m_inv.GetItem(14)->GetItem()->ItemType;
+
+			if(shield == ItemTypeShield) {
+				switch(GetAA(aaShieldBlock)) {
+					 case 1:
+						RollTable[1] = RollTable[0] + 2.50;
+                        break;
+	                 case 2:
+		                RollTable[1] = RollTable[0] + 5.00;
+			            break;
+				     case 3:
+					    RollTable[1] = RollTable[0] + 10.00;
+						break;
+				}
+			}
+		}
+	}
+*/
 	if (damage > 0 && CanThisClassBlock() && (!other->BehindMob(this, other->GetX(), other->GetY()) || bBlockFromRear)) {
 		skill = CastToClient()->GetSkill(BLOCKSKILL);
 		if (IsClient()) {
@@ -497,47 +519,6 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage)
 	else{
 		RollTable[1] = RollTable[0];
 	}
-
-
-	/* Working to add AA Shield Block for Pal/SK
-	   if (damage > 0 && CanThisClassBlock() && !other->BehindMob(this, other->GetX(), other->GetY()))
-   {
-      skill = CastToClient()->GetSkill(BLOCKSKILL);
-      if (IsClient()) {
-         if (!other->IsClient() && GetLevelCon(other->GetLevel()) != CON_GREEN)
-            this->CastToClient()->CheckIncreaseSkill(BLOCKSKILL, -10);
-      }
-      
-      if (!ghit) {   //if they are not using a guaranteed hit discipline
-         bonus = 2.0 + skill/35.0 + (GetDEX()/200);
-         RollTable[1] = RollTable[0] + bonus;
-      }
-   }
-   else{
-      if (damage > 0 && !other->BehindMob(this, other->GetX(), other->GetY())) {
-                 if(IsClient()) {
-                         const ItemInst *wpn = CastToClient()->GetInv().GetItem(SLOT_SECONDARY);
-
-                            if((wpn->GetItem()->ItemType != ItemTypeShield)) {
-                           switch(GetAA(aaShieldBlock)) {
-                     case 1:
-                        RollTable[1] = RollTable[0] + 2.50;
-                        break;
-                     case 2:
-                        RollTable[1] = RollTable[0] + 5.00;
-                        break;
-                     case 3:
-                        RollTable[1] = RollTable[0] + 10.00;
-                        break;
-                     }
-                  }
-            }
-      }
-      else {
-         RollTable[1] = RollTable[0];
-      }
-   }
-	*/
 
 	//////////////////////////////////////////////////////		
 	// parry
