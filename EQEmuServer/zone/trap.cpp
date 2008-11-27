@@ -331,6 +331,7 @@ void Trap::CreateHiddenTrigger()
 	make_npc->npc_spells_id = 0;
 	make_npc->d_meele_texture1 = 0;
 	make_npc->d_meele_texture2 = 0;
+      make_npc->trackable = 0;
 	make_npc->level = level;
 	strcpy(make_npc->npc_attacks, "ABHG");
 	NPC* npca = new NPC(make_npc, 0, x, y, z, 0);
