@@ -1,12 +1,16 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==12/01/2008==
+Trevius: Moved mounts (Horses/Drogmors) into their own table instead of them being hard coded in the source.
+
+Required SQL: utils/sql/svn/235_horses_table.sql
 
 ==11/26/2008==
 cavedude00: Traps will no longer be trackable.
 
 ==11/24/2008==
 AndMetal: Spells can now be loaded from the database, and is now enabled by default. Use utils/import_spells.pl to import, utils/export_spells.pl to export. Use -h on either for usage.
-Trevius: Food and Drink will now actually give stats
+Trevius: Food and Drink will now actually give stats.
 
 Required SQL: utils/sql/svn/229_spells_table.sql
 

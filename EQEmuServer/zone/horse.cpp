@@ -24,6 +24,9 @@ Copyright (C) 2001-2002  EQEMu Development Team (http://eqemu.org)
 #include "../common/linked_list.h"
 #include <math.h>
 #include <assert.h>
+#include "../common/packet_functions.h"
+#include "../common/packet_dump.h"
+#include "worldserver.h"
 
 map<int16, const NPCType *> Horse::horse_types;
 LinkedList<NPCType *> horses_auto_delete;
@@ -74,231 +77,66 @@ const NPCType *Horse::GetHorseType(int16 spell_id) {
 
 const NPCType *Horse::BuildHorseType(int16 spell_id) {
 
+	const char* FileName = spells[spell_id].teleport_zone;
 
-	// Spell: 2862 Tan Rope
-	// Spell: 2863 Tan Leather
-	// Spell: 2864 Tan Silken
-	// Spell: 2865 Brown Chain
-	// Spell: 2866 Tan Ornate Chain
-	// Spell: 2867 White Rope
-	// Spell: 2868 White Leather
-	// Spell: 2869 White Silken
-	// Spell: 2870 White Chain
-	// Spell: 2871 White Ornate Chain
-	// Spell: 2872 Black Rope
-	// Spell: 2919 Tan Rope
-	// Spell: 2918 Guide
-	// Spell: 2917 Black Chain,		
-	
-	char mount_color=0;
-	
-	NPCType* npc_type = new NPCType;
-	memset(npc_type, 0, sizeof(NPCType));
-	strcpy(npc_type->name,"Unclaimed_Mount");	//this should never get used
-      strcpy(npc_type->npc_attacks,"ABH");
-	npc_type->cur_hp = 1; 
-	npc_type->max_hp = 1; 
-	npc_type->race = 216;
-	npc_type->gender = (spell_id >= 3813 && spell_id <= 3832) ? 1 : 0; // Drogmor's are female horses. Yuck.
-	npc_type->class_ = 1; 
-	npc_type->deity= 1;
-	npc_type->level = 1;
-	npc_type->npc_id = 0;
-	npc_type->loottable_id = 0;
+	char mount_color = 0;
 
-	switch(spell_id) {
-		case 2862:
-			mount_color=0;  // Brown horse
-			npc_type->runspeed=MOUNT_SLOW1_RUN;
-			break;
-		case 2863:
-			mount_color=0;  // Brown horse
-			npc_type->runspeed=MOUNT_SLOW2_RUN;
-			break;
-		case 2864:
-			mount_color=0;  // Brown horse
-			npc_type->runspeed=MOUNT_RUN1_RUN;
-			break;
-		case 2865:
-			mount_color=0;  // Brown horse
-			npc_type->runspeed=MOUNT_RUN2_RUN;
-			break;
-		case 2866:
-			mount_color=0;  // Brown horse
-			npc_type->runspeed=MOUNT_FAST_RUN;
-			break;
-		case 2867:
-			mount_color=1;  // White horse
-			npc_type->runspeed=MOUNT_SLOW1_RUN;
-			break;
-		case 2868:
-			mount_color=1;  // White horse
-			npc_type->runspeed=MOUNT_SLOW2_RUN;
-			break;
-		case 2869:
-			mount_color=1;  // White horse
-			npc_type->runspeed=MOUNT_RUN1_RUN;
-			break;
-		case 2870:
-			mount_color=1;  // White horse
-			npc_type->runspeed=MOUNT_RUN2_RUN;
-			break;
-		case 2871:
-			mount_color=1;  // White horse
-			npc_type->runspeed=MOUNT_FAST_RUN;
-			break;
-		case 2872:
-			mount_color=2;  // Black horse
-			npc_type->runspeed=MOUNT_SLOW1_RUN;
-			break;
-		case 2873:
-			mount_color=2;  // Black horse
-			npc_type->runspeed=MOUNT_SLOW2_RUN;
-			break;
-		case 2916:
-			mount_color=2;  // Black horse
-			npc_type->runspeed=MOUNT_RUN1_RUN;
-			break;
-		case 2917:
-			mount_color=2;  // Black horse
-			npc_type->runspeed=MOUNT_RUN2_RUN;
-			break;
-		case 2918:
-			mount_color=2;  // Black horse
-			npc_type->runspeed=MOUNT_FAST_RUN;
-			break;
-		case 2919:
-			mount_color=3;  // Tan horse
-			npc_type->runspeed=MOUNT_SLOW1_RUN;
-			break;
-		case 2920:
-			mount_color=3;  // Tan horse
-			npc_type->runspeed=MOUNT_SLOW2_RUN;
-			break;
-		case 2921:
-			mount_color=3;  // Tan horse
-			npc_type->runspeed=MOUNT_RUN1_RUN;
-			break;
-		case 2922:
-			mount_color=3;  // Tan horse
-			npc_type->runspeed=MOUNT_RUN2_RUN;
-			break;
-		case 2923:
-			mount_color=3;  // Tan horse
-			npc_type->runspeed=MOUNT_FAST_RUN;
-			break;
-		case 3813:
-			mount_color=0;  // White drogmor
-			npc_type->runspeed=MOUNT_SLOW1_RUN;
-			break;
-		case 3814:
-			mount_color=0;  // White drogmor
-			npc_type->runspeed=MOUNT_SLOW2_RUN;
-			break;
-		case 3815:
-			mount_color=0;  // White drogmor
-			npc_type->runspeed=MOUNT_RUN1_RUN;
-			break;
-		case 3816:
-			mount_color=0;  // White drogmor
-			npc_type->runspeed=MOUNT_RUN2_RUN;
-			break;
-		case 3817:
-			mount_color=0;  // White drogmor
-			npc_type->runspeed=MOUNT_FAST_RUN;
-			break;
-		case 3818:
-			mount_color=1;  // Black drogmor
-			npc_type->runspeed=MOUNT_SLOW1_RUN;
-			break;
-		case 3819:
-			mount_color=1;  // Black drogmor
-			npc_type->runspeed=MOUNT_SLOW2_RUN;
-			break;
-		case 3820:
-			mount_color=1;  // Black drogmor
-			npc_type->runspeed=MOUNT_RUN1_RUN;
-			break;
-		case 3821:
-			mount_color=1;  // Black drogmor
-			npc_type->runspeed=MOUNT_RUN2_RUN;
-			break;
-		case 3822:
-			mount_color=1;  // Black drogmor
-			npc_type->runspeed=MOUNT_FAST_RUN;
-			break;
-		case 3823:
-			mount_color=2;  // Green drogmor
-			npc_type->runspeed=MOUNT_SLOW1_RUN;
-			break;
-		case 3824:
-			mount_color=2;  // Green drogmor
-			npc_type->runspeed=MOUNT_SLOW2_RUN;
-			break;
-		case 3825:
-			mount_color=2;  // Green drogmor
-			npc_type->runspeed=MOUNT_RUN1_RUN;
-			break;
-		case 3826:
-			mount_color=2;  // Green drogmor
-			npc_type->runspeed=MOUNT_RUN2_RUN;
-			break;
-		case 3827:
-			mount_color=2;  // Green drogmor
-			npc_type->runspeed=MOUNT_FAST_RUN;
-			break;
-		case 3828:
-			mount_color=3;  // Red drogmor
-			npc_type->runspeed=MOUNT_SLOW1_RUN;
-			break;
-		case 3829:
-			mount_color=3;  // Red drogmor
-			npc_type->runspeed=MOUNT_SLOW2_RUN;
-			break;
-		case 3830:
-			mount_color=3;  // Red drogmor
-			npc_type->runspeed=MOUNT_RUN1_RUN;
-			break;
-		case 3831:
-			mount_color=3;  // Red drogmor
-			npc_type->runspeed=MOUNT_RUN2_RUN;
-			break;
-		case 3832:
-			mount_color=3;  // Red drogmor
-			npc_type->runspeed=MOUNT_FAST_RUN;
-			break;
-		case 2874:
-			npc_type->runspeed=MOUNT_FAST_RUN;
-			mount_color=1;
-			break;
-		case 2875:
-			npc_type->runspeed=MOUNT_FAST_RUN;
-			mount_color=2;
-			break;			
-		default:
-/*			Message(13,"I dont know what mount spell this is! (%i)", spell_id);
-			mount_color= 0;  // Brown horse
-			npc_type->walkspeed=MOUNT_SLOW1_WALK;
-			npc_type->runspeed=MOUNT_SLOW1_RUN;*/
-			LogFile->write(EQEMuLog::Error, "Unknown mount spell id %d", spell_id);
-			safe_delete(npc_type);
-			return(NULL);
-			break;
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+
+	if (database.RunQuery(query,MakeAnyLenString(&query, "SELECT race,gender,texture,mountspeed FROM horses WHERE filename='%s'", FileName), errbuf, &result)) {
+
+		safe_delete_array(query);
+		if (mysql_num_rows(result) == 1) {
+
+			row = mysql_fetch_row(result);
+
+			NPCType* npc_type = new NPCType;
+			memset(npc_type, 0, sizeof(NPCType));
+			strcpy(npc_type->name,"Unclaimed_Mount");	//this should never get used
+			strcpy(npc_type->npc_attacks,"ABH");
+			npc_type->cur_hp = 1; 
+			npc_type->max_hp = 1; 
+			npc_type->race = atoi(row[0]);
+			npc_type->gender = atoi(row[1]); // Drogmor's are female horses. Yuck.
+			npc_type->class_ = 1; 
+			npc_type->deity= 1;
+			npc_type->level = 1;
+			npc_type->npc_id = 0;
+			npc_type->loottable_id = 0;
+			npc_type->texture = atoi(row[2]);
+			npc_type->runspeed = atof(row[3]);
+
+			mount_color = atoi(row[2]);
+
+			npc_type->light = 0;
+			npc_type->STR = 75;
+			npc_type->STA = 75;
+			npc_type->DEX = 75;
+			npc_type->AGI = 75;
+			npc_type->INT = 75;
+			npc_type->WIS = 75;
+			npc_type->CHA = 75;
+	
+			horses_auto_delete.Insert(npc_type);
+	
+			return(npc_type);
+			mysql_free_result(result);
+		}
+		else {
+			LogFile->write(EQEMuLog::Error, "No Database entry for mount: %s, check the horses table", FileName);
+			//Message(13, "Unable to find data for mount %s", FileName);
+			safe_delete_array(query);
+		}
+		mysql_free_result(result);
 	}
-	npc_type->texture = mount_color;
-
-	npc_type->light = 0;
-	npc_type->STR = 75;
-	npc_type->STA = 75;
-	npc_type->DEX = 75;
-	npc_type->AGI = 75;
-	npc_type->INT = 75;
-	npc_type->WIS = 75;
-	npc_type->CHA = 75;
-	
-	horses_auto_delete.Insert(npc_type);
-	
-	return(npc_type);
+	else {
+		LogFile->write(EQEMuLog::Error, "Error in Mount query '%s': %s", query,  errbuf);
+		safe_delete_array(query);
+	}
+		
 }
 
 
