@@ -836,7 +836,7 @@ void EntityList::AEAttack(Mob *attacker, float dist, int Hand, int count) {
 		if(curmob->IsNPC()
 			&& curmob != attacker //this is not needed unless NPCs can use this
 			&&(attacker->IsAttackAllowed(curmob))
-			&& curmob->GetRace() != 216 /* dont attack horses */
+			&& curmob->GetRace() != 216 && curmob->GetRace() != 472 /* dont attack horses */
 			&& (curmob->DistNoRoot(*attacker) <= dist2)
 		) {
 			attacker->Attack(curmob, Hand); 
