@@ -24,18 +24,10 @@ Copyright (C) 2001-2002  EQEMu Development Team (http://eqemu.org)
 #include "../common/linked_list.h"
 #include <math.h>
 #include <assert.h>
-#include "../common/packet_functions.h"
-#include "../common/packet_dump.h"
 #include "worldserver.h"
 
 map<int16, const NPCType *> Horse::horse_types;
 LinkedList<NPCType *> horses_auto_delete;
-
-/*
-	After writting all this crap as an NPC, I think it would be possible
-	to inherit from mob. I left it this way since it better facilitates
-	loading horses from the database in the future.
-*/
 
 Horse::Horse(Client *_owner, int16 spell_id, float x, float y, float z, float heading) 
  : NPC(GetHorseType(spell_id), NULL, x, y, z, heading)
@@ -121,9 +113,9 @@ const NPCType *Horse::BuildHorseType(int16 spell_id) {
 			npc_type->CHA = 75;
 	
 			horses_auto_delete.Insert(npc_type);
-	
-			return(npc_type);
+
 			mysql_free_result(result);
+			return(npc_type);
 		}
 		else {
 			LogFile->write(EQEMuLog::Error, "No Database entry for mount: %s, check the horses table", FileName);
