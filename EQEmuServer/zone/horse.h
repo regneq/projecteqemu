@@ -25,14 +25,6 @@ Copyright (C) 2001-2002  EQEMu Development Team (http://eqemu.org)
 #include <map>
 using namespace std;
 
-/*
-#define MOUNT_SLOW1_RUN		0.75
-#define MOUNT_SLOW2_RUN		1
-#define MOUNT_RUN1_RUN		1.25
-#define MOUNT_RUN2_RUN		1.5
-#define MOUNT_FAST_RUN		1.75
-*/
-
 class Horse : public NPC {
 public:
 	Horse(Client *owner, int16 spell_id, float x, float y, float z, float heading);
