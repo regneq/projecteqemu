@@ -354,9 +354,10 @@ int command_init(void) {
 		command_add("giveitem","[itemid] [charges] - Summon an item onto your target's cursor.  Charges are optional.",200,command_giveitem) ||
 		command_add("gi",NULL,200,command_giveitem) ||
 		command_add("itemsearch","[search criteria] - Search for an item",10,command_itemsearch) ||
-		command_add("search",NULL,0,command_itemsearch) ||
+		command_add("search",NULL,10,command_itemsearch) ||
 		command_add("stun","[duration] - Stuns you or your target for duration",100,command_stun) ||
-		command_add("finditem",NULL,0,command_itemsearch) ||
+		command_add("finditem",NULL,10,command_itemsearch) ||
+		command_add("fi",NULL,10,command_itemsearch) ||
 #ifdef PACKET_PROFILER
 		command_add("packetprofile","- Dump packet profile for target or self.",250,command_packetprofile) || 
 #endif
@@ -5079,7 +5080,7 @@ void command_itemsearch(Client *c, const Seperator *sep)
 		if (Seperator::IsNumber(search_criteria)) {
 			item = database.GetItem(atoi(search_criteria));
 			if (item)
-				c->Message(0, "  %i: %s", (int) item->ID, item->Name);
+				c->Message(0, "  %i: %c%06X000000000000000000000000000000000000000%s%c",(int) item->ID,0x12, item->ID, item->Name, 0x12);
 			else
 				c->Message(0, "Item #%s not found", search_criteria);
 			return;
@@ -5098,14 +5099,14 @@ void command_itemsearch(Client *c, const Seperator *sep)
 			strupr(sName);
 			pdest = strstr(sName, sCriteria);
 			if (pdest != NULL) {
-				c->Message(0, "  %i: %s", (int) item->ID, item->Name);
+				c->Message(0, "  %i: %c%06X000000000000000000000000000000000000000%s%c",(int) item->ID,0x12, item->ID, item->Name, 0x12);
 				count++;
 			}
-			if (count == 20)
+			if (count == 50)
 				break;
 		}
-		if (count == 20)
-			c->Message(0, "20 items shown...too many results.");
+		if (count == 50)
+			c->Message(0, "50 items shown...too many results.");
 		else
 			c->Message(0, "%i items found", count);
 #endif
