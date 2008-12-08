@@ -1,5 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==12/08/2008==
+Trevius: Changed #itemsearch output to now place itemlinks for all items it outputs from the search
+Trevius: Increased the max results of #itemsearch from 20 up to 50
+Trevius: Added alias #fi as an abbreviation of #finditem, to shorten the command
+Trevius: Changed the default required status for accounts to access item search commands to min status of 10 (previously 0)
+
 ==12/01/2008==
 Trevius: Moved mounts (Horses/Drogmors) into their own table instead of them being hard coded in the source.
 
