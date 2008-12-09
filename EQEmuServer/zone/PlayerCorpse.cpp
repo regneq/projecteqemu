@@ -995,17 +995,15 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app)
 		
 		//now send messages to all interested parties
 
-		//creates a link for the item. we REALLY should get this into a function (not 'void Client::SendItemLink')
-		//old hash info: http://eqitems.13th-floor.org/phpBB2/viewtopic.php?t=70&postdays=0&postorder=asc
-		//new (Titanium+) hash info: http://eqitems.13th-floor.org/phpBB2/viewtopic.php?t=145
-		char *link = 0; //just like a db query  :-)
-		MakeAnyLenString(&link, "%c%06X%s%s%c", 
+		//creates a link for the item
+		char *link = 0, *link2 = 0; //just like a db query  :-)
+		client->MakeItemLink(link2, inst);
+		MakeAnyLenString(&link, "%c" "%s" "%s" "%c",
 			0x12,
-			item->ID,
-			"000000000000000000000000000000000000000", //something with augments & their item IDs, plus the hash?
+			link2,
 			item->Name,
-			0x12
-			);
+			0x12);
+		safe_delete_array(link2);
 
 		client->Message_StringID(MT_LootMessages, LOOTED_MESSAGE, link);
 		if(!IsPlayerCorpse()) {

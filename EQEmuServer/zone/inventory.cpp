@@ -477,6 +477,138 @@ void Client::MoveItemCharges(ItemInst &from, sint16 to_slot, int8 type)
 	}
 }
 
+bool Client::MakeItemLink(char* &ret_link, const ItemInst *inst) {
+	//we're sending back the entire "link", minus the null characters & item name
+	//that way, we can use it for regular links & Task links
+	//note: initiator needs to pass us ret_link
+
+/*
+	--- Usage ---
+	Chat: "%c" "%s" "%s" "%c", 0x12, ret_link, inst->GetItem()->name, 0x12
+	Task: "<a WndNotify=\"27," "%s" "\">" "%s" "</a>", ret_link, inst->GetItem()->name
+		<a WndNotify="27,00960F000000000000000000000000000000000000000">Master's Book of Wood Elven Culture</a>
+		http://eqitems.13th-floor.org/phpBB2/viewtopic.php?p=510#510
+*/
+	
+	if (!inst) //have to have an item to make the link
+		return false;
+
+	const Item_Struct* item = inst->GetItem();
+	//format:
+	//0	itemid	aug1	aug2	aug3	aug4	aug5	evolving?	loregroup	evolved level	hash
+	//0	00000	00000	00000	00000	00000	00000	0			0000		0				00000000
+	//length:
+	//1	5		5		5		5		5		5		1			4			1				8		= 45
+	//evolving item info: http://eqitems.13th-floor.org/phpBB2/viewtopic.php?t=145#558
+	int8 evolving = 0;
+	uint16 loregroup = 0;
+	int8 evolvedlevel = 0;
+	int hash = 0;
+	//int hash = GetItemLinkHash(inst);	//eventually this will work (currently crashes zone), but for now we'll skip the extra overhead
+	MakeAnyLenString(&ret_link, "%1X" "%05X" "%05X" "%05X" "%05X" "%05X" "%05X" "%1X" "%04X" "%1X" "%08X", 
+		0,
+		item->ID, 
+		inst->GetAugmentItemID(0), 
+		inst->GetAugmentItemID(1), 
+		inst->GetAugmentItemID(2), 
+		inst->GetAugmentItemID(3), 
+		inst->GetAugmentItemID(4), 
+		evolving, 
+		loregroup, 
+		evolvedlevel, 
+		hash
+	);
+
+	return true;
+}
+
+int Client::GetItemLinkHash(const ItemInst* inst) {
+	//pre-Titanium: http://eqitems.13th-floor.org/phpBB2/viewtopic.php?t=70&postdays=0&postorder=asc
+	//Titanium: http://eqitems.13th-floor.org/phpBB2/viewtopic.php?t=145
+	if (!inst)	//have to have an item to make the hash
+		return 0;
+	
+	const Item_Struct* item = inst->GetItem();
+	char* hash_str = 0;
+	/*register */int hash = 0;
+
+	//now the fun part, since different types of items use different hashes...
+	if (item->ItemClass == 0 && item->CharmFileID) {	//charm
+		MakeAnyLenString(&hash_str, "%d%s-1-1-1-1-1%d %d %d %d %d %d %d %d %d",
+			item->ID,
+			item->Name,
+			item->Light,
+			item->Icon,
+			item->Price,
+			item->Size,
+			item->Weight,
+			item->ItemClass,
+			item->ItemType,
+			item->Favor,
+			item->GuildFavor);
+	} else if (item->ItemClass == 2) {	//book
+		MakeAnyLenString(&hash_str, "%d%s%d%d%09X",
+			item->ID,
+			item->Name,
+			item->Weight,
+			item->BookType,
+			item->Price);
+	} else if (item->ItemClass == 1) {	//bag
+		MakeAnyLenString(&hash_str, "%d%s%x%d%09X%d",
+			item->ID,
+			item->Name,
+			item->BagSlots,
+			item->BagWR,
+			item->Price,
+			item->Weight);
+	} else {	//everything else
+		MakeAnyLenString(&hash_str, "%d%s-1-1-1-1-1%d %d %d %d %d %d %d %d %d %d %d %d %d",
+			item->ID,
+			item->Name,
+			item->Mana,
+			item->HP,
+			item->Favor,
+			item->Light,
+			item->Icon,
+			item->Price,
+			item->Weight,
+			item->ReqLevel,
+			item->Size,
+			item->ItemClass,
+			item->ItemType,
+			item->AC,
+			item->GuildFavor);
+	}
+
+	//this currently crashes zone, so someone feel free to fix this so we can work with hashes:
+	//*** glibc detected *** double free or corruption (out): 0xb2403470 ***
+
+	/*
+	while (*hash_str != '\0') {
+		register int c = toupper(*hash_str);
+
+		asm volatile("\
+			imul $31, %1, %1;\
+			movzx %%ax, %%edx;\
+			addl %%edx, %1;\
+			movl %1, %0;\
+			"
+			:"=r"(hash)
+			:"D"(hash), "a"(c)
+			:"%edx"
+			);
+
+		// This is what the inline asm is doing:
+		// hash *= 0x1f;
+		// hash += (int)c;
+		
+		hash_str++;
+	}
+	*/
+
+	safe_delete_array(hash_str);
+	return hash;
+}
 
 void Client::SendItemLink(const ItemInst* inst, bool send_to_all)
 {

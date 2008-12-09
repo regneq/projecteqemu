@@ -866,61 +866,11 @@ void QuestManager::settime(int8 new_hour, int8 new_min) {
 }
 
 void QuestManager::itemlink(int item_id) {
-	//I dont think this is right anymore, need the hash
-/*
-uint32_t calc_hash (const char *string)
-{
-    register hash = 0;
-
-    while (*string != '\0')
-    {
-        register c = toupper(*string);
-
-        asm volatile("
-            imul $31, %1, %1;
-            movzx %%ax, %%edx;
-            addl %%edx, %1;
-            movl %1, %0;
-            "
-            :"=r"(hash)
-            :"D"(hash), "a"(c)
-            :"%edx"
-             );
-
-        //This is what the inline asm is doing:
-        //hash *= 0x1f;
-        //hash += (int)c;
-
-        string++;
-    }
-
-    return hash;
-}
-
-
-Now the not so simple part, generating the string to feed into the hash function.
-
-The string for normal (unaugmented) items looks like this:
-Code:
-sprintf(hashstr, "%d%s%s%d %d %d %d %d %d %d %d", id, name, "-1-1-1-1-1", hp, mana, ac, light, icon, price, size, weight);
-
-
-The string for bags looks like this:
-Code:
-sprintf(hashstr, "%d%s%d%d%d%d", id, name, bagslots, bagwr, price, weight);
-
-
-The string for books looks like this:
-Code:
-sprintf(hashstr, "%d%s%d%d", id, name, weight, booktype);
-*/
-
-// MYRA - added itemlink(ID) command
-	const Item_Struct* item = 0;
-	uint32 itemid = item_id;
-	item = database.GetItem(itemid);
-	initiator->Message(0, "%s tells you, %c%06X000000000000000000000000000000000000000%s%c",owner->GetCleanName(),0x12, item->ID, item->Name, 0x12);
-
+	const ItemInst* inst = database.CreateItem(item_id, 20, 99999, 99999, 99999, 99999, 99998);
+	char* link = 0;
+	if (initiator->MakeItemLink(link, inst))
+		initiator->Message(0, "%s tells you, %c%s%s%c", owner->GetCleanName(), 0x12, link, inst->GetItem()->Name, 0x12);
+	safe_delete_array(link);
 }
 
 void QuestManager::signalwith(int npc_id, int signal_id, int wait_ms) {
