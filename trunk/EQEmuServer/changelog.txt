@@ -1,5 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+
+==12/09/2008==
+AndMetal: Added Client::MakeItemLink function, which allows for augments in Item Links. Can be used for Chat & Task windows. See zone/inventory.cpp for detailed notes on usage in the source.
+AndMetal: Updated quest::itemlink & loot drops to use MakeItemLink.
+AndMetal: (trevius) Fixed a small typo in utils/export_spells.pl.
+
 ==12/08/2008==
 Trevius: Changed #itemsearch output to now place itemlinks for all items it outputs from the search
 Trevius: Increased the max results of #itemsearch from 20 up to 50

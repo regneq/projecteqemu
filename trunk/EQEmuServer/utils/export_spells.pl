@@ -13,7 +13,7 @@ my $id = "id"; #default
 my $spellf = "spells_us.txt"; #default
 
 if ($opt_h) { #help (-h)
-	printf "\nUsage: import_spells.pl [-c path] [-t table] [-i column] [-s path] [-o]\n";
+	printf "\nUsage: export_spells.pl [-c path] [-t table] [-i column] [-s path] [-o]\n";
 	printf "  -c path	path/to/eqemu_config.xml. defaults to $conf\n";
 	printf "  -t table	table to load the spells from. defaults to $table\n";
 	printf "  -i column	name of the column in the database table to order by. defaults to $id\n";

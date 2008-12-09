@@ -674,6 +674,8 @@ public:
 	void	SetStats(int8 type,sint16 set_val);
 	void	IncStats(int8 type,sint16 increase_val);
 	void	DropItem(sint16 slot_id);
+	bool	MakeItemLink(char* &ret_link, const ItemInst* inst);
+	int		GetItemLinkHash(const ItemInst* inst);
 	void	SendItemLink(const ItemInst* inst, bool sendtoall=false);
 	void	SendLootItemInPacket(const ItemInst* inst, sint16 slot_id);
 	void	SendItemPacket(sint16 slot_id, const ItemInst* inst, ItemPacketType packet_type);
