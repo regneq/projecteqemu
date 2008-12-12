@@ -2362,12 +2362,20 @@ void Client::SellToBuyer(const EQApplicationPacket *app) {
 
 	// This next packet goes to the Buyer and produces the 'You've bought <Qty> <Item> from <Seller> for <money>'
 	//
-	// The structure is the same as the one above, bar the Action code, so we will use the packet we built above,
-	// and just change the action code.
 	
 	Buf = (char *)outapp->pBuffer;
 
 	VARSTRUCT_ENCODE_TYPE(uint32, Buf, Barter_BuyerTransactionComplete);
+	VARSTRUCT_ENCODE_TYPE(uint32,	Buf, Quantity);
+	VARSTRUCT_ENCODE_TYPE(uint32,	Buf, Quantity * Price);
+
+	sprintf(Buf, "%s", GetName()); Buf += 64;
+
+	VARSTRUCT_ENCODE_TYPE(uint32,	Buf, 0x00);
+	VARSTRUCT_ENCODE_TYPE(uint8,	Buf, 0x01);
+	VARSTRUCT_ENCODE_TYPE(uint32,	Buf, 0x00);
+
+	sprintf(Buf, "%s", ItemName); Buf += 64;
 
 	Buyer->QueuePacket(outapp);
 
