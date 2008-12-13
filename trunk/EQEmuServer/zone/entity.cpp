@@ -1956,6 +1956,23 @@ bool EntityList::RemoveMob(int16 delete_id){
 	}
 	return false;
 }
+
+bool EntityList::RemoveMob(Mob *delete_mob) {
+	if(delete_mob==0)
+		return true;
+	LinkedListIterator<Mob*> iterator(mob_list);
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		if(iterator.GetData()==delete_mob){
+			iterator.RemoveCurrent();
+			return true;
+		}
+		iterator.Advance();
+	}
+	return false;
+}
+
 bool EntityList::RemoveNPC(int16 delete_id){
 	LinkedListIterator<NPC*> iterator(npc_list);
 	iterator.Reset();

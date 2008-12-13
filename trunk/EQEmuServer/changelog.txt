@@ -1,6 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==12/13/2008==
+Derision: Fixed a couple of causes of combat related zone crashes.
+
 ==12/12/2008==
 Derision: Name of the seller now reported correctly in the /buyer window.
 

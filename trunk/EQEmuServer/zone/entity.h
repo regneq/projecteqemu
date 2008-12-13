@@ -190,6 +190,7 @@ public:
 	void	AddProximity(NPC *proximity_for);
 	void	Clear();
 	bool	RemoveMob(int16 delete_id);
+	bool	RemoveMob(Mob* delete_mob);
 	bool	RemoveClient(int16 delete_id);
 	bool	RemoveNPC(int16 delete_id);
 	bool	RemoveGroup(int32 delete_id);
