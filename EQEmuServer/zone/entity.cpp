@@ -2982,7 +2982,35 @@ void EntityList::AddHealAggro(Mob* target, Mob* caster, int16 thedam)
 	LinkedListIterator<NPC*> iterator(npc_list);
 
 	iterator.Reset();
-	NPC *cur;
+	NPC *cur = NULL;
+	int16 count = 0;
+	while(iterator.MoreElements())
+	{
+		cur = iterator.GetData();
+		iterator.Advance();
+
+		if(!cur->CheckAggro(target))
+		{
+			iterator.Advance();
+			continue;
+		}
+		if (!cur->IsMezzed() && !cur->IsStunned())
+		{
+			++count;
+		}
+	}
+
+	if(thedam > 1)
+	{
+		if(count > 0)
+			thedam = (thedam / count);
+
+		if(thedam < 1)
+			thedam = 1;
+	}
+
+	cur = NULL;
+	iterator.Reset();
 	while(iterator.MoreElements())
 	{
 		cur = iterator.GetData();

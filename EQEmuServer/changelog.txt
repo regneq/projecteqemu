@@ -1,5 +1,7 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==12/15/2008==
+KLS: Added 2nd pass to heal aggro to correctly divide aggro between those recieved not just give all recieved full aggro.
 
 ==12/13/2008==
 Derision: Fixed a couple of causes of combat related zone crashes.
