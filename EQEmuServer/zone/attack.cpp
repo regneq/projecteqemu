@@ -2323,9 +2323,7 @@ void NPC::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill) 
 	entity_list.QueueClients(other, app, false);
 	
 	if(respawn2) {
-		respawn2->Reset();
-		if(respawn2->spawn2_id!=0 && respawn2->respawn_!=0)
-		    database.UpdateSpawn2Timeleft(respawn2->spawn2_id, respawn2->respawn_);
+		respawn2->DeathReset();
 	}
 
 	if (other) {

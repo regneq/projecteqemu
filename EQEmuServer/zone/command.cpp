@@ -3766,12 +3766,13 @@ void command_repop(Client *c, const Seperator *sep)
 	if (sep->arg[1] && strcasecmp(sep->arg[1], "force") == 0) {
 		timearg++;
 		
-		char errbuf[MYSQL_ERRMSG_SIZE];
-		char *query = 0;
-		database.RunQuery(query, MakeAnyLenString(&query, "UPDATE spawn2 SET timeleft=0 WHERE zone='%s'",zone->GetShortName()), errbuf);
-		safe_delete_array(query);
+		//TODO: Dec 19, 2008, replace with code updated for current spawn timers.
+		//char errbuf[MYSQL_ERRMSG_SIZE];
+		//char *query = 0;
+		//database.RunQuery(query, MakeAnyLenString(&query, "UPDATE spawn2 SET timeleft=0 WHERE zone='%s'",zone->GetShortName()), errbuf);
+		//safe_delete_array(query);
 		
-		c->Message(0, "Zone depop: Force resetting spawn timers.");
+		//c->Message(0, "Zone depop: Force resetting spawn timers.");
 	}
 	if (sep->IsNumber(timearg)) {
 		c->Message(0, "Zone depoped. Repop in %i seconds", atoi(sep->arg[timearg]));

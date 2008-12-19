@@ -1574,10 +1574,11 @@ void QuestManager::setinstflagmanually(int orgZoneID, int instFlag, int type)
 
 void QuestManager::clearspawntimers() {
 	if(zone)  {
-		char errbuf[MYSQL_ERRMSG_SIZE];
-		char *query = 0;
-		database.RunQuery(query, MakeAnyLenString(&query, "UPDATE spawn2 SET timeleft=0 WHERE zone='%s'",zone->GetShortName()), errbuf);
-		safe_delete_array(query);
+		//TODO: Dec 19, 2008, replace with code updated for current spawn timers.
+		//char errbuf[MYSQL_ERRMSG_SIZE];
+		//char *query = 0;
+		//database.RunQuery(query, MakeAnyLenString(&query, "UPDATE spawn2 SET timeleft=0 WHERE zone='%s'",zone->GetShortName()), errbuf);
+		//safe_delete_array(query);
 	}
 }
 void QuestManager::ze(int type, const char *str) {

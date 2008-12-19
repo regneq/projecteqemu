@@ -143,16 +143,85 @@ bool ZoneDatabase::GetZoneCFG(int32 zoneid, NewZone_Struct *zone_data, bool &can
 	return(good);
 }
 
+//updates or clears the respawn time in the database for the current spawn id
 void ZoneDatabase::UpdateSpawn2Timeleft(int32 id, int32 timeleft)
 {
+	timeval tv;
+	gettimeofday(&tv, NULL);
+	int32 cur = tv.tv_sec;
+
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
-	//printf("id: %i timeleft: %i\n",id,timeleft);
-	if (!RunQuery(query, MakeAnyLenString(&query, "Update spawn2 set timeleft=(%i*1000) where id=%i",timeleft,id),errbuf))	{
-		LogFile->write(EQEMuLog::Error, "Error in UpdateTimeLeft query %s: %s", query, errbuf);
+	
+	//if we pass timeleft as 0 that means we clear from respawn time
+	//otherwise we update with a REPLACE INTO
+	if(timeleft == 0)
+	{
+		if (!RunQuery(query, MakeAnyLenString(&query, "DELETE FROM respawn_times WHERE id=%lu",id),errbuf))
+		{
+			LogFile->write(EQEMuLog::Error, "Error in UpdateTimeLeft query %s: %s", query, errbuf);
+		}
+		safe_delete_array(query);
 	}
-	safe_delete_array(query);
+	else
+	{
+		if (!RunQuery(query, MakeAnyLenString(&query, "REPLACE INTO respawn_times (id,start,duration) VALUES(%lu,%lu,%lu)",id, cur, timeleft),errbuf))
+		{
+			LogFile->write(EQEMuLog::Error, "Error in UpdateTimeLeft query %s: %s", query, errbuf);
+		}
+		safe_delete_array(query);
+	}
 	return;
+}
+
+//Gets the respawn time left in the database for the current spawn id
+int32 ZoneDatabase::GetSpawnTimeLeft(int32 id)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+
+	MakeAnyLenString(&query, "SELECT start, duration FROM respawn_times WHERE id=%lu", id);
+	
+	if (RunQuery(query, strlen(query), errbuf, &result))
+	{
+		safe_delete_array(query);
+		row = mysql_fetch_row(result);
+		if(row)
+		{
+			timeval tv;
+			gettimeofday(&tv, NULL);
+			int32 resStart = atoi(row[0]);
+			int32 resDuration = atoi(row[1]);
+
+			//compare our values to current time
+			if((resStart + resDuration) <= tv.tv_sec)
+			{
+				//our current time was expired
+				mysql_free_result(result);
+				return 0;
+			}
+			else
+			{
+				//we still have time left on this timer
+				mysql_free_result(result);
+				return ((resStart + resDuration) - tv.tv_sec);
+			}
+		}
+		else
+		{
+			mysql_free_result(result);
+			return 0;
+		}
+	}
+	else
+	{
+		LogFile->write(EQEMuLog::Error, "Error in GetSpawnTimeLeft query '%s': %s", query, errbuf);
+		safe_delete_array(query);
+		return 0;
+	}
+	return 0;
 }
 
 bool ZoneDatabase::logevents(const char* accountname,int32 accountid,int8 status,const char* charname, const char* target,const char* descriptiontype, const char* description,int event_nid){
