@@ -1133,6 +1133,25 @@ void WorldServer::Process() {
 			HandleLFPMatches(pack);
 			break;
 		}
+
+		case ServerOP_UpdateSpawn: {
+			UpdateSpawnTimer_Struct *ust = (UpdateSpawnTimer_Struct*)pack->pBuffer;
+			LinkedListIterator<Spawn2*> iterator(zone->spawn2_list);
+			iterator.Reset();
+			while (iterator.MoreElements()) 
+			{
+				if(iterator.GetData()->GetID() == ust->id)
+				{
+					if(!iterator.GetData()->NPCPointerValid())
+					{
+						iterator.GetData()->SetTimer(ust->duration);
+					}
+					break;
+				}
+				iterator.Advance();
+			}
+			break;
+		}
 		default: {
 			cout << " Unknown ZSopcode:" << (int)pack->opcode;
 			cout << " size:" << pack->size << endl;

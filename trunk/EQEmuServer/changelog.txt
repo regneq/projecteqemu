@@ -5,6 +5,10 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 KLS: Updated how spawn timers work, spawn timers will now be based off absolute time like regular timers which will allow them to tic down even when the server is offline.
 KLS: Quest::clearspawntimers() has been disabled for now, will be reactivated in next update on spawn timers.
 KLS: Likewise #repop force has been temp. disabled as well pending updated code.
+=Update=
+KLS: Enabled Quest::clearspawntimers() and #repop force once again.
+KLS: Added quest::updatespawntimer(id, duration) to update the respawn time of a dead mob, this only applies if the mob is dead and will only apply once: ie. once the mob repops and dies again it will use it's normal respawn time unless this is called again. Not completely tested.
+KLS: creategroundobject constructor should create objects with max charges now. Untested.
 
 Required SQL:
 DROP TABLE IF EXISTS `respawn_times`;
@@ -14,6 +18,8 @@ CREATE TABLE `respawn_times` (
   `duration` int(11) NOT NULL default '0',
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+ALTER TABLE `spawn2` DROP `timeleft`;
 
 ==12/15/2008==
 KLS: Added 2nd pass to heal aggro to correctly divide aggro between those recieved not just give all recieved full aggro.

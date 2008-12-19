@@ -3554,7 +3554,7 @@ void EntityList::CreateGroundObject(int32 itemid, float x, float y, float z, flo
 	const Item_Struct* is = database.GetItem(itemid);
 	if(is)
 	{
-		ItemInst *i = new ItemInst(is);
+		ItemInst *i = new ItemInst(is, is->MaxCharges);
 		if(i)
 		{
 			Object* object = new Object(i,x,y,z,heading,decay_time);
