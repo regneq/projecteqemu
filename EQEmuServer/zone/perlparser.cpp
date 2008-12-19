@@ -2340,6 +2340,21 @@ XS(XS__collectitems)
 	XSRETURN_IV(quantity);
 }
 
+XS(XS__UpdateSpawnTimer);
+XS(XS__UpdateSpawnTimer)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: UpdateSpawnTimer(Spawn2_ID, Updated_Time_Till_Repop)");
+
+	int32 id = (int)SvIV(ST(0));
+	int32 duration = (int)SvIV(ST(1));
+
+	quest_manager.UpdateSpawnTimer(id, duration);
+
+	XSRETURN_EMPTY;
+}
+
 /*
 This is the callback perl will look for to setup the
 quest package's XSUBs
@@ -2493,10 +2508,11 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "ze"), XS__ze, file);
 		newXS(strcpy(buf, "we"), XS__we, file);
 		newXS(strcpy(buf, "getlevel"), XS__getlevel, file);
-            newXS(strcpy(buf, "getinstflag"), XS__getinstflag, file);
+        newXS(strcpy(buf, "getinstflag"), XS__getinstflag, file);
 		newXS(strcpy(buf, "creategroundobject"), XS__CreateGroundObject, file);
 		newXS(strcpy(buf, "modifynpcstat"), XS__ModifyNPCStat, file);
-            newXS(strcpy(buf, "collectitems"), XS__collectitems, file);
+        newXS(strcpy(buf, "collectitems"), XS__collectitems, file);
+		newXS(strcpy(buf, "updatespawntimer"), XS__UpdateSpawnTimer, file);
 
 	XSRETURN_YES;
 }

@@ -204,7 +204,10 @@ public:
 //	LinkedList<Object*> object_list;
 	int32	numzonepoints;
 	
-	
+#ifndef GUILDWARS
+	LinkedList<Spawn2*> spawn2_list; // CODER new spawn list
+#endif	
+
 private:
 	int32	zoneid;
 	char*	short_name;
@@ -231,9 +234,6 @@ private:
 	/*
 		Spawn related things
 	*/
-#ifndef GUILDWARS
-	LinkedList<Spawn2*> spawn2_list; // CODER new spawn list
-#endif
 	sint32	aggroedmobs;
 	Timer initgrids_timer;	//delayed loading of initial grids.
 	

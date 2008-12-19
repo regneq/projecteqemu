@@ -59,6 +59,9 @@ public:
 	int32	GetSpawnCondition() { return condition_id; }
 	int32	spawn2_id;
 	int32	respawn_;
+
+	bool	NPCPointerValid() { return (npcthis!=NULL); }
+	void	SetTimer(int32 duration) { timer.Start(duration); }
 protected:
 	friend class Zone;
 	Timer	timer;

@@ -76,6 +76,7 @@
 #define ServerOP_OOZGroupMessage	0x0042
 #define ServerOP_DisbandGroup		0x0043 //for disbanding a whole group cross zone
 #define ServerOP_GroupJoin			0x0044 //for joining ooz folks
+#define ServerOP_UpdateSpawn		0x0045
 
 #define ServerOP_ReloadTasks          0x0060
 
@@ -745,6 +746,12 @@ struct ServerLFPMatchesRequest_Struct {
 	int8	QuerierLevel;
 	char	FromName[64];
 };
+
+struct UpdateSpawnTimer_Struct {
+	int32 id;
+	int32 duration;
+};
+
 #pragma pack()
 
 #endif

@@ -1575,10 +1575,16 @@ void QuestManager::setinstflagmanually(int orgZoneID, int instFlag, int type)
 void QuestManager::clearspawntimers() {
 	if(zone)  {
 		//TODO: Dec 19, 2008, replace with code updated for current spawn timers.
-		//char errbuf[MYSQL_ERRMSG_SIZE];
-		//char *query = 0;
-		//database.RunQuery(query, MakeAnyLenString(&query, "UPDATE spawn2 SET timeleft=0 WHERE zone='%s'",zone->GetShortName()), errbuf);
-		//safe_delete_array(query);
+		LinkedListIterator<Spawn2*> iterator(zone->spawn2_list);
+		iterator.Reset();
+		while (iterator.MoreElements()) 
+		{
+			char errbuf[MYSQL_ERRMSG_SIZE];
+			char *query = 0;
+			database.RunQuery(query, MakeAnyLenString(&query, "DELETE FROM respawn_times WHERE id=%lu",iterator.GetData()->GetID()), errbuf);
+			safe_delete_array(query);		
+			iterator.Advance();
+		}
 	}
 }
 void QuestManager::ze(int type, const char *str) {
@@ -1699,4 +1705,37 @@ int QuestManager::collectitems(uint32 item_id, bool remove)
 	}
  
 	return quantity;
+}
+
+void QuestManager::UpdateSpawnTimer(int32 id, int32 newTime)
+{
+	bool found = false;
+
+	LinkedListIterator<Spawn2*> iterator(zone->spawn2_list);
+	iterator.Reset();
+	while (iterator.MoreElements()) 
+	{
+		if(iterator.GetData()->GetID() == id)
+		{
+			if(!iterator.GetData()->NPCPointerValid())
+			{
+				iterator.GetData()->SetTimer(newTime);
+			}
+			found = true;
+			break;
+		}
+		iterator.Advance();
+	}
+
+	if(!found)
+	{
+		//Spawn wasn't in this zone...
+		//Tell the other zones to update their spawn time for this spawn point
+		ServerPacket *pack = new ServerPacket(ServerOP_UpdateSpawn, sizeof(UpdateSpawnTimer_Struct));
+		UpdateSpawnTimer_Struct *ust = (UpdateSpawnTimer_Struct*)pack->pBuffer;
+		ust->id = id;
+		ust->duration = newTime;
+		worldserver.SendPacket(pack);
+		safe_delete(pack);
+	}
 }
