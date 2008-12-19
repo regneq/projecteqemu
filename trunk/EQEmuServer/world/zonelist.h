@@ -63,7 +63,6 @@ protected:
 	uint16 LastAllocatedPort;
 	
 	
-	Timer spawntimeleft;
 };
 
 

@@ -222,6 +222,7 @@ public:
 	Spawn2*	LoadSpawn2(LinkedList<Spawn2*> &spawn2_list, int32 spawn2id, int32 timeleft);
 	bool	CreateSpawn2(Client *c, int32 spawngroup, const char* zone, float heading, float x, float y, float z, int32 respawn, int32 variance, uint16 condition, sint16 cond_value);
 	void	UpdateSpawn2Timeleft(int32 id,int32 timeleft);
+	int32	GetSpawnTimeLeft(int32 id);
 	
 	/*
 	 * Grids/Paths

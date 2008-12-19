@@ -355,21 +355,6 @@ bool WorldDatabase::GetStartZone(PlayerProfile_Struct* in_pp, CharCreate_Struct*
 	return true;
 }
 
-
-void WorldDatabase::UpdateSpawn2TimeleftWorld()
-{
-	char errbuf[MYSQL_ERRMSG_SIZE];
-    char *query = 0;
-	if (!RunQuery(query, MakeAnyLenString(&query, "Update spawn2 set timeleft=(timeleft-300000) where timeleft>=300000",errbuf)))	{
-		LogFile->write(EQEMuLog::Error, "Error in UpdateTimeLeftWorld query(1) %s: %s", query, errbuf);
-	}
-	else if (!RunQuery(query, MakeAnyLenString(&query, "Update spawn2 set timeleft=0 where timeleft<300000",errbuf)))	{
-		LogFile->write(EQEMuLog::Error, "Error in UpdateTimeLeftWorld query(2) %s: %s", query, errbuf);
-	}
-	safe_delete_array(query);
-	return;
-}
-
 void WorldDatabase::GetLauncherList(std::vector<std::string> &rl) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char* query = 0;

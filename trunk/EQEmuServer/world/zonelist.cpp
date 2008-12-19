@@ -31,7 +31,6 @@ extern ConsoleList		console_list;
 
 
 ZSList::ZSList()
-: spawntimeleft(300000)
 {
 	NextID = 1;
 	CurGroupID = 1;
@@ -76,8 +75,6 @@ void ZSList::KillAll() {
 }
 
 void ZSList::Process() {
-	if(spawntimeleft.Check())
-		database.UpdateSpawn2TimeleftWorld();
 	
 	if(shutdowntimer && shutdowntimer->Check()){
 		_log(WORLD__ZONELIST, "Shutdown timer has expired. Telling all zones to shut down and exiting. (fake sigint)");

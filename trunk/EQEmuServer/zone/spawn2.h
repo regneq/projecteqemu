@@ -45,6 +45,8 @@ public:
 	void	Depop();
 	void	Repop(int32 delay = 0);
 
+	void	DeathReset(); //resets the spawn in the case the npc dies, also updates db if needed
+
 	void	SpawnConditionChanged(const SpawnCondition &c, sint16 old_value);
 	int32	GetID()		{ return spawn2_id; }
 	float	GetX()		{ return x; }

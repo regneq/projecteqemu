@@ -32,7 +32,6 @@ public:
 	
     void	GetCharSelectInfo(int32 account_id, CharacterSelect_Struct*);
       int	MoveCharacterToBind(int CharID);
-	void	UpdateSpawn2TimeleftWorld();
 	
 	void	GetLauncherList(std::vector<std::string> &result);
 /*	bool	GetLauncherZone(const char *launcher_name, const char *zone_short, LauncherZone &result);

@@ -1,5 +1,20 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+
+==12/19/2008
+KLS: Updated how spawn timers work, spawn timers will now be based off absolute time like regular timers which will allow them to tic down even when the server is offline.
+KLS: Quest::clearspawntimers() has been disabled for now, will be reactivated in next update on spawn timers.
+KLS: Likewise #repop force has been temp. disabled as well pending updated code.
+
+Required SQL:
+DROP TABLE IF EXISTS `respawn_times`;
+CREATE TABLE `respawn_times` (
+  `id` int(11) NOT NULL default '0',
+  `start` int(11) NOT NULL default '0',
+  `duration` int(11) NOT NULL default '0',
+  PRIMARY KEY  (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
 ==12/15/2008==
 KLS: Added 2nd pass to heal aggro to correctly divide aggro between those recieved not just give all recieved full aggro.
 
