@@ -48,12 +48,7 @@ Group::Group(int32 gid)
 	memset(members,0,sizeof(Mob*) * MAX_GROUP_MEMBERS);
 	uint32 i;
 	for(i=0;i<MAX_GROUP_MEMBERS;i++)
-		memset(membername[i],0,64);
-#ifdef ENABLE_GROUP_LINKING
-	for (i = 0; i < MAX_GROUP_LINKS; i++) {
-		link[i] = 0;
-	}
-#endif		
+		memset(membername[i],0,64);	
 
 	if(gid != 0) {
 		if(!LearnMembers())
@@ -70,12 +65,6 @@ Group::Group(Mob* leader)
 	leader->SetGrouped(true);
 	SetLeader(leader);
 	uint32 i;
-#ifdef ENABLE_GROUP_LINKING
-	for (i = 0; i < MAX_GROUP_LINKS; i++) {
-		link[i] = 0;
-	}
-#endif
-
 	for(i=0;i<MAX_GROUP_MEMBERS;i++)
 		memset(membername[i],0,64);
 	strcpy(membername[0],leader->GetName());
@@ -623,43 +612,6 @@ void Group::CastGroupSpell(Mob* caster, uint16 spell_id) {
 
 	castspell = false;
 	disbandcheck = true;
-	
-/*
-#ifdef ENABLE_GROUP_LINKING
-	//dont give links with short spells...
-	//if(spells[spellid].buffduration < 150)
-	//	return;
-	
-	//cast on links
-	Group* lnkgrp = NULL;
-	int i;
-	for (i = 0; i < MAX_GROUP_LINKS; i++) {
-		if (link[i] == 0)
-			continue;
-		lnkgrp = entity_list.GetGroupByID(link[i]);
-		if(lnkgrp == NULL)
-			continue;
-		for(z=0; z < MAX_GROUP_MEMBERS; z++)
-		{
-			if(lnkgrp->members[z] != NULL)
-			{
-				distance = caster->DistNoRoot(*lnkgrp->members[z]);
-				if(distance <= range2) {
-					caster->SpellOnTarget(spell_id, lnkgrp->members[z]);
-					
-#ifdef GROUP_BUFF_PETS
-					if(lnkgrp->members[z]->GetPet() != NULL)
-						caster->SpellOnTarget(spell_id, lnkgrp->members[z]->GetPet());
-#endif
-				}
-#if EQDEBUG >= 5
-				else
-					caster->Message(0, "Group spell: %s is out of range %f at distance %f", lnkgrp->members[z]->GetName(), range, distance);
-#endif
-			}
-		}
-	}
-#endif*/
 }
 
 // does the caster + group
@@ -726,36 +678,6 @@ void Group::GroupMessage(Mob* sender, const char* message) {
 				//InteractiveChat(int8 chan_num, int8 language, const char * message, const char* targetname,Mob* sender);
   		 #endif
 	}
-
-#ifdef ENABLE_GROUP_LINKING
-	uint32 j;
-	for (j = 0; j < MAX_GROUP_LINKS; j++) {
-		if (link[j] == 0)
-			continue;
-		Group* lnkgrp = entity_list.GetGroupByID(link[j]);
-		if(lnkgrp == NULL) {
-			link[j] = 0;	//they are gone, why keep checking.
-			continue;
-		}
-		for (i = 0; i < MAX_GROUP_MEMBERS; i++)  {
-			if(!lnkgrp->members[i]) {
-				//they are not in zone, send using world.
-				if(strlen(lnkgrp->membername[i])>1){
-					worldserver.SendChannelMessage(sender->CastToClient(), lnkgrp->membername[i], 2, 0, 0, message);
-				}
-				continue;
-			}
-			
-			if (lnkgrp->members[i]->IsClient() && lnkgrp->members[i]->CastToClient()->GetFilter(FILTER_GROUP)!=0)
-				lnkgrp->members[i]->CastToClient()->ChannelMessageSend(sender->GetName(),lnkgrp->members[i]->GetName(),2,0,message);
-			#ifdef IPC
-			if (lnkgrp->members[i]->CastToNPC()->IsInteractive() && lnkgrp->members[i] != sender)
-				lnkgrp->members[i]->CastToNPC()->InteractiveChat(2,1,message,(sender->GetTarget() != NULL) ? sender->GetTarget()->GetName():sender->GetName(),sender);
-					//InteractiveChat(int8 chan_num, int8 language, const char * message, const char* targetname,Mob* sender);
-	  		 #endif
-		}
-	}
-#endif
 
 	ServerPacket* pack = new ServerPacket(ServerOP_OOZGroupMessage, sizeof(ServerGroupChannelMessage_Struct) + strlen(message) + 1);
 	ServerGroupChannelMessage_Struct* gcm = (ServerGroupChannelMessage_Struct*)pack->pBuffer;
@@ -906,51 +828,6 @@ uint32 i;
 	}
 	return level;
 }
-
-#ifdef ENABLE_GROUP_LINKING
-void Group::ClearLink(int32 clear_id, bool all)
-{
-	uint32 m;
-	for (m = 0; m < 8; m++)
-	{
-		if (all)
-		{
-			link[m] = 0;
-		}
-		else if (link[m] == clear_id)
-		{
-			link[m] = 0;
-			return;
-		}
-	}
-}
-
-bool Group::IsLinked(int32 link_id)
-{
-	uint32 m;
-	for (m = 0; m < 8; m++)
-	{
-		if (link[m] == link_id)
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
-void Group::EstablishLink(int32 link_id)
-{
-	uint32 m;
-	for (m = 0; m < 8; m++)
-	{
-		if (link[m] == 0)
-		{
-			link[m] = link_id;
-			return;
-		}
-	}
-}
-#endif
 
 void Group::TeleportGroup(Mob* sender, int32 zoneID, float x, float y, float z, float heading)
 {

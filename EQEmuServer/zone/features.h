@@ -77,10 +77,6 @@ Zone extensions and features
 
 */
 
-
-//Uncomment this to enable group linking:
-#define ENABLE_GROUP_LINKING 1
-
 //Uncomment this to enable the Winter's Roar pool looting system
 //#define POOLLOOTING
 

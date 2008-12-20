@@ -654,11 +654,7 @@ void Mob::CreateSpawnPacket(EQApplicationPacket* app, NewSpawn_Struct* ns) {
 	else if (ns->spawn.class_==BANKER)
 		strcpy(ns2->spawn.lastName, "EQEmu Banker");
 	else if (ns->spawn.class_==ADVENTUREMERCHANT)
-#ifdef GUILDWARS
-		strcpy(ns->spawn.lastName,"GuildWars Merchant");
-#else
 		strcpy(ns->spawn.lastName,"Adventure Merchant");
-#endif
 	else if (ns->spawn.class_==WARRIORGM)
 		strcpy(ns2->spawn.lastName, "GM Warrior");
 	else if (ns->spawn.class_==PALADINGM)

@@ -266,13 +266,6 @@ void Client::SetEXP(int32 set_exp, int32 set_aaxp, bool isrezzexp) {
 
 void Client::SetLevel(int8 set_level, bool command)
 {
-        #ifdef GUILDWARS
-                if(set_level > SETLEVEL) {
-                        Message(0,"You cannot exceed level %i on a GuildWars Server.",SETLEVEL);
-                        return;
-                }
-        #endif
-
         if (GetEXPForLevel(set_level) == 0xFFFFFFFF) {
                 LogFile->write(EQEMuLog::Error,"Client::SetLevel() GetEXPForLevel(%i) = 0xFFFFFFFF", set_level);
                 return;
@@ -435,30 +428,6 @@ void Group::SplitExp(uint32 exp, Mob* other) {
 	if(conlevel == CON_GREEN)
 		return;	//no exp for greenies...
 	
-#ifdef ENABLE_GROUP_LINKING
-	//links
-	Group* lnkgrp = NULL;
-	for (i = 0; i < MAX_GROUP_LINKS; i++) {
-		if (link[i] == 0)
-			continue;
-		lnkgrp = entity_list.GetGroupByID(link[i]);
-		if(lnkgrp == NULL)
-			continue;
-		for (i = 0; i < MAX_GROUP_MEMBERS; i++) 
-		{ 
-		  if (lnkgrp->members[i] != NULL) 
-		  { 
-			  if(lnkgrp->members[i]->GetLevel() > maxlevel) 
-				  maxlevel = lnkgrp->members[i]->GetLevel(); 
-			  //groupexp += exp/10; 
-			  groupexp += (uint32)(exp * zone->GetGroupEXPBonus()); 
-
-			  membercount++; 
-		  } 
-		}
-	}
-#endif
-
 	if (membercount == 0) 
 		return; 
 
@@ -481,32 +450,6 @@ void Group::SplitExp(uint32 exp, Mob* other) {
 //			} 
 		} 
 	}
-	
-#ifdef ENABLE_GROUP_LINKING
-	for (i = 0; i < MAX_GROUP_LINKS; i++) {
-		if (link[i] == 0)
-			continue;
-		lnkgrp = entity_list.GetGroupByID(link[i]);
-		if(lnkgrp == NULL)
-			continue;
-		for (i = 0; i < MAX_GROUP_MEMBERS; i++)  {
-			if (lnkgrp->members[i] != NULL && lnkgrp->members[i]->IsClient()) // If Group Member is Client
-			{
-				Client *cmember = lnkgrp->members[i]->CastToClient();
-//				if( cmember->GetLevelCon( other->GetLevel() ) != CON_GREEN ) // If Mob doesn't con green
-//				{ 
-					// add exp + exp cap 
-					sint16 diff = cmember->GetLevel() - maxlevel; 
-					if (diff >= -8) { /*Instead of person who killed the mob, the person who has the highest level in the group*/ 
-						uint32 tmp = (cmember->GetLevel()+3) * (cmember->GetLevel()+3) * 75 * 35 / 10;
-						uint32 tmp2 = groupexp / membercount;
-						cmember->AddEXP( tmp < tmp2 ? tmp : tmp2, conlevel ); 
-					} 
-//				} 
-			} 
-		}
-	}
-#endif
 }
 
 void Raid::SplitExp(uint32 exp, Mob* other) {

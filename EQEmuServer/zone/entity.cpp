@@ -71,13 +71,6 @@ extern DBAsync *dbasync;
 extern char  errorname[32];
 extern int16 adverrornum;
 
-#ifdef GUILDWARS
-#include "../GuildWars/GuildWars.h"
-extern GuildLocationList location_list;
-extern GuildWars guildwars;
-#endif
-
-
 Entity::Entity() {
 	id = 0;
 	pDBAsyncWorkID = 0;
@@ -2060,20 +2053,6 @@ bool EntityList::RemoveCorpse(int16 delete_id){
 bool EntityList::RemoveGroup(int32 delete_id){
 	list<Group *>::iterator iterator;
 
-#ifdef ENABLE_GROUP_LINKING
-	iterator = group_list.begin();
-
-	//remove delete_id from other peoples links
-	while(iterator != group_list.end())
-	{
-		Group *cg = *iterator;
-		if(cg->GetID() != delete_id) {
-			cg->ClearLink(delete_id, false);
-		}
-		iterator++;
-	}
-#endif
-
 	iterator = group_list.begin();
 
 	while(iterator != group_list.end())
@@ -2191,93 +2170,6 @@ void EntityList::RemoveEntity(int16 id)
 	else 
 		entity_list.RemoveObject(id);
 }
-
-#ifdef GUILDWARS
-Client* EntityList::FindRankingOfficial(int32 guild_id)
-{
-#ifdef GWDEBUG
-	printf("FindRankingOfficial(%i)",guild_id);
-#endif
-Client* highestrank = 0;
-	if (guild_id == 0)
-		return 0;
-	LinkedListIterator<Client*> iterator(client_list);
-	
-	iterator.Reset();
-	while(iterator.MoreElements())
-	{
-		if (iterator.GetData()->GuildDBID() == guild_id)
-		{
-		int8 rank = iterator.GetData()->GuildRank();
-#ifdef GWDEBUG
-		printf("Name: %s Rank: %i\n",iterator.GetData()->GetName(),rank);
-#endif
-		if(highestrank == 0 && rank == 1)
-			highestrank = iterator.GetData()->CastToClient();
-		else if(rank == 2)
-			return iterator.GetData()->CastToClient();
-		}
-		iterator.Advance();
-	}
-return highestrank;
-}
-
-Client* EntityList::FindRankingOfficialByLocation(float x,float y,float z,float dist,int32 guild_id)
-{
-Client* highestrank = 0;
-	LinkedListIterator<Client*> iterator(client_list);
-	
-	iterator.Reset();
-	int count = 0;
-	while(iterator.MoreElements())
-	{
-		if(iterator.GetData()->CastToClient()->GuildDBID() == guild_id && location_list.GetDistance(x,y,z,iterator.GetData()->GetX(),iterator.GetData()->GetY(),iterator.GetData()->GetZ()) <= dist)
-			count++;
-		else if (highestrank == 0 && iterator.GetData()->GuildDBID() != 0 && iterator.GetData()->CastToClient()->Admin() == 0 && location_list.GetDistance(x,y,z,iterator.GetData()->GetX(),iterator.GetData()->GetY(),iterator.GetData()->GetZ()) <= dist)
-		{
-			highestrank = iterator.GetData();
-		}
-		iterator.Advance();
-	}
-if(!count)
-return highestrank;
-
-return 0;
-}
-
-Client* EntityList::FindEnemiesAtLocation(float x,float y,float z,float dist,int32 notguild)
-{
-Client* highestrank = 0;
-	LinkedListIterator<Client*> iterator(client_list);
-	
-	iterator.Reset();
-	while(iterator.MoreElements())
-	{
-		if (iterator.GetData()->GuildDBID() != 0 && iterator.GetData()->GuildDBID() != notguild && iterator.GetData()->Admin() == 0 && location_list.GetDistance(x,y,z,iterator.GetData()->GetX(),iterator.GetData()->GetY(),iterator.GetData()->GetZ()) <= dist)
-		{
-		return iterator.GetData();
-		}
-		iterator.Advance();
-	}
-return 0;
-}
-
-void EntityList::GuildIntervalPoints(int32 guild_id,sint32 points)
-{
-	LinkedListIterator<Client*> iterator(client_list);
-	
-	iterator.Reset();
-	while(iterator.MoreElements())
-	{
-		if (iterator.GetData()->IsClient() && iterator.GetData()->GuildDBID() == guild_id && iterator.GetData()->Admin() == 0)
-		{
-		iterator.GetData()->UpdateLDoNPoints(points,0);
-		iterator.GetData()->CastToClient()->Message(0,"You have received %i points for defending a location.",points);
-		}
-		iterator.Advance();
-	}
-}
-#endif
 
 void EntityList::Process()
 {

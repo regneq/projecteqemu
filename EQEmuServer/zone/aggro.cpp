@@ -766,11 +766,7 @@ bool Mob::IsBeneficialAllowed(Mob *target)
 		{
 			if(_CLIENT(mob2))
 			{
-#ifdef GUILDWARS
-				return true;
-#else
 				return false;
-#endif
 			}
 			if(_NPC(mob2))						// npc to npc
 			{

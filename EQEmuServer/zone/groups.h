@@ -97,35 +97,14 @@ public:
 	bool	LearnMembers();
 	void	VerifyGroup();
 	void	BalanceHP(sint32 penalty);
-
-	
-#ifdef ENABLE_GROUP_LINKING
-	//linking methods
-	void	ClearLink(int32 clear_id, bool all = false);
-	bool	IsLinked(int32 link_id);
-	void	EstablishLink(int32 link_id);
-#endif
 	
 	Mob* members[MAX_GROUP_MEMBERS];
 	char	membername[MAX_GROUP_MEMBERS][64];
 	bool	disbandcheck;
 	bool	castspell;
 
-#ifdef GUILDWARS
-	void	CauseEXPLoss();
-	void	CauseFactionLoss(Mob* killed);
-	void	GivePoints(Client* killed);
-#endif
-
-#ifdef RAIDADDICTS
-	void	RASplitPointsAndEXP(uint32 exp, Mob* other);
-#endif
-
 private:
 	Mob*	leader;
-#ifdef ENABLE_GROUP_LINKING
-	int32	link[MAX_GROUP_LINKS];
-#endif
 };
 
 #endif

@@ -321,9 +321,6 @@ Client::~Client() {
 	safe_delete(taskstate);
 	numclients--;
 	UpdateWindowTitle();
-#ifdef GUILDWARS
-	guildwars.SetCurrentUsers(numclients);
-#endif
 	zone->RemoveAuth(GetName());
 
 	//let the stream factory know were done with this stream
@@ -960,8 +957,6 @@ void Client::SetMaxHP() {
 	Save();
 }
 
-#ifndef GUILDWARS
-
 bool Client::UpdateLDoNPoints(sint32 points, int32 theme)
 {
 
@@ -1086,9 +1081,6 @@ bool Client::UpdateLDoNPoints(sint32 points, int32 theme)
 		}
 	}
 	m_pp.ldon_points_available += points;
-#ifdef RAIDADDICTS
-	raidaddicts.UpdateRAPoints(points, theme, this);
-#endif
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventurePointsUpdate, sizeof(AdventurePoints_Update_Struct));
 	AdventurePoints_Update_Struct* apus = (AdventurePoints_Update_Struct*)outapp->pBuffer;
 	apus->ldon_available_points = m_pp.ldon_points_available;
@@ -1104,8 +1096,6 @@ bool Client::UpdateLDoNPoints(sint32 points, int32 theme)
 
 	return(false);
 }
-#endif
-
 
 void Client::SetSkill(SkillType skillid, int16 value) {
 	if (skillid > HIGHEST_SKILL)

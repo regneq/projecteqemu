@@ -44,12 +44,6 @@ using namespace std;
 #include "../common/MiscFunctions.h"
 #include "../common/rulesys.h"
 
-#ifdef GUILDWARS
-#include "../GuildWars/GuildWars.h"
-extern GuildLocationList location_list;
-extern GuildWars guildwars;
-#endif
-
 //#define SPELLQUEUE //Use only if you want to be spammed by spell testing
 
 
@@ -957,29 +951,6 @@ int32 ZoneDatabase::NPCSpawnDB(int8 command, const char* zone, Client *c, NPC* s
 			}
 			if(c) c->LogSQL(query);
 			safe_delete_array(query);
-
-#ifdef GUILDWARS
-			extern Zone* zone;
-#ifdef GWDEBUG
-			printf("Crash\n");
-#endif
-			SpawnGroup* newSpawnGroup = new SpawnGroup( last_insert_id, tmpstr, 0);
-			zone->spawn_group_list.AddSpawnGroup(newSpawnGroup);
-#ifdef GWDEBUG
-			printf("Crash2\n");
-#endif
-			SpawnEntry* newSpawnEntry = new SpawnEntry( spawn->GetNPCTypeID(), 100);
-			if (zone->spawn_group_list.GetSpawnGroup(last_insert_id))
-				zone->spawn_group_list.GetSpawnGroup(last_insert_id)->AddSpawnEntry(newSpawnEntry);
-#ifdef GWDEBUG
-			printf("Crash3\n");
-#endif
-			Spawn2* newSpawn = new Spawn2(spawnid, last_insert_id, spawn->GetX(), spawn->GetY(), spawn->GetZ(), spawn->GetHeading(), respawntime, 0);
-			zone->spawn2_list.Insert( newSpawn );
-#ifdef GWDEBUG
-			printf("Made it!\n");
-#endif
-#endif
 			return spawnid;
 			break;
 		}

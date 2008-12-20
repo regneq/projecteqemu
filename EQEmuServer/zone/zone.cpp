@@ -1065,10 +1065,6 @@ bool Zone::Process() {
 		}
 	}
 
-#ifdef GUILDWARS
-	if(db_update->Check())
-		guildwars.Update();
-#endif
 	if(Weather_Timer->Check()){
 		Weather_Timer->Disable();
 		int16 tmpweather = MakeRandomInt(0, 100);

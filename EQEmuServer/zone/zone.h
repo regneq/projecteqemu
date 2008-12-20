@@ -196,18 +196,10 @@ public:
 	const char *GetSpellBlockedMessage(int32 spell_id, float nx, float ny, float nz);
 	int			GetTotalBlockedSpells() { return totalBS; }
 
-#ifdef GUILDWARS
-	LinkedList<Spawn2*> spawn2_list; // CODER new spawn list
-	Timer* db_update;
-#endif
+	LinkedList<Spawn2*> spawn2_list;
 	LinkedList<ZonePoint*> zone_point_list;
-//	LinkedList<Object*> object_list;
 	int32	numzonepoints;
 	
-#ifndef GUILDWARS
-	LinkedList<Spawn2*> spawn2_list; // CODER new spawn list
-#endif	
-
 private:
 	int32	zoneid;
 	char*	short_name;
