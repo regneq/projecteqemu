@@ -53,12 +53,6 @@ extern EntityList entity_list;
 	extern SPDat_Spell_Struct spells[SPDAT_RECORDS];
 #endif
 
-#ifdef RAIDADDICTS
-#include "RaidAddicts.h"
-extern RaidAddicts raidaddicts;
-#endif
-
-
 extern Zone* zone;
 
 bool Mob::AttackAnimation(SkillType &skillinuse, int Hand, const ItemInst* weapon)

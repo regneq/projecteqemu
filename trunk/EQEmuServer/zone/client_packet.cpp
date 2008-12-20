@@ -965,29 +965,6 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 			CheckIncreaseSkill(TRACKING,-20);
 	}
 
-#ifdef GUILDWARS
-	if(animation > 65 && admin<80 && CheckCheat()){
-		if(cheater || cheatcount>0){
-			Message(15,"Cheater log updated...yup your busted,its not nice to cheat.");
-			char descript[50]={0};
-			sprintf(descript,"%s: %i","Player using a movement of",ppu->animation);
-			database.logevents(this->AccountName(),this->AccountID(),admin,this->GetName(),"none","Movement speed cheat",descript,15);
-			Damage(this,200,0,4,false);
-			if(cheater==false){
-				worldserver.SendEmoteMessage(0,0,0,13,"<Cheater Locator> We have found a cheater.  %s (Acct: %s) was just caught hacking, please show them what we think of hackers...",this->GetName(),this->AccountName());
-				cheater=true;
-			}
-			cheatcount=0;
-		}
-		else
-			cheatcount++;
-	}
-	else
-		cheatcount=0;
-	cheat_x=x_pos;
-	cheat_y=y_pos;
-#endif
-
 	if(ppu->y_pos != y_pos || ppu->x_pos != x_pos){
 	    if(!sneaking && !invisible){
 			hidden = false;
@@ -1899,13 +1876,6 @@ void Client::Handle_OP_SpawnAppearance(const EQApplicationPacket *app)
 			cerr << "Client " << name << " unknown Anon/Roleplay Switch " << (int)sa->parameter << endl;
 			return;
 		}
-#ifdef GUILDWARS
-		if(Admin() == 0)
-		{
-			m_pp.anon = 0;
-			sa->parameter = 0;
-		}
-#endif
 		entity_list.QueueClients(this, app, true);
 		UpdateWho();
 	}

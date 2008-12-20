@@ -92,10 +92,6 @@ public:
 	virtual void CalcBonuses();
 
 	
-#ifdef GUILDWARS
-	int32	GetGuildLocationID() { return guildlocationid; }
-#endif
-
 	// neotokyo: added frenzy
 	bool	Attack(Mob* other, int Hand = 13, bool = false);
 

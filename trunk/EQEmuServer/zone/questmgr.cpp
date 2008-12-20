@@ -224,7 +224,6 @@ void QuestManager::write(const char *file, const char *str) {
 
 int16 QuestManager::spawn2(int npc_type, int grid, int unused, float x, float y, float z, float heading) {
 	const NPCType* tmp = 0;
-	//int8 guildwarset = atoi(arglist[2]);
 	if ((tmp = database.GetNPCType(npc_type)))
 	{
 
@@ -257,7 +256,6 @@ int16 QuestManager::unique_spawn(int npc_type, int grid, int unused, float x, fl
 
 
 	const NPCType* tmp = 0;
-	//int8 guildwarset = atoi(arglist[2]);
 	if ((tmp = database.GetNPCType(npc_type)))
 	{
 
@@ -1156,7 +1154,6 @@ void QuestManager::respawn(int npc_type, int grid) {
 	depop_npc = true;
 
 	const NPCType* tmp = 0;
-	//int8 guildwarset = atoi(arglist[2]);
 	if ((tmp = database.GetNPCType(npc_type)))
 	{
 		owner = new NPC(tmp, 0, x, y, z, h);

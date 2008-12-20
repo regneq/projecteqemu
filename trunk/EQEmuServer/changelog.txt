@@ -1,6 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==12/20/2008
+KLS: Removed old unused Guildwars, RaidAddicts and GroupLinking code.
+
 ==12/19/2008
 KLS: Updated how spawn timers work, spawn timers will now be based off absolute time like regular timers which will allow them to tic down even when the server is offline.
 KLS: Quest::clearspawntimers() has been disabled for now, will be reactivated in next update on spawn timers.

@@ -124,9 +124,6 @@ int32 CheckEQEMuError() {
 }
 
 void CheckEQEMuErrorAndPause() {
-#ifdef GUILDWARS
-	exit(1);
-#endif
 #ifdef WIN32
 	if (CheckEQEMuError()) {
 		fprintf(stdout, "Hit any key to exit\n");

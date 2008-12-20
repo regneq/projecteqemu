@@ -32,17 +32,6 @@
 #include "StringIDs.h"
 #include "NpcAI.h"
 
-#ifdef GUILDWARS
-#include "../GuildWars/GuildWars.h"
-extern GuildWars guildwars;
-#endif
-
-#ifdef RAIDADDICTS
-#include "RaidAddicts.h"
-extern RaidAddicts raidaddicts;
-#endif
-
-
 
 // @merth: this needs to be touched up
 uint32 Client::NukeItem(uint32 itemnum) {

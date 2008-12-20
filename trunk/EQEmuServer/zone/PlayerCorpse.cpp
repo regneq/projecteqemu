@@ -760,10 +760,6 @@ void Corpse::MakeLootRequestPackets(Client* client, const EQApplicationPacket* a
 						client->LogLoot(client,this,0);	
 				}
 			}
-			#ifdef GUILDWARS
-				if (this->GetPlatinum()>10000)
-					this->RemoveCash();
-			#endif
 			if(!IsPlayerCorpse() && client->IsGrouped() && client->AutoSplitEnabled() && client->GetGroup()) {
 				d->copper		= 0;
 				d->silver		= 0;

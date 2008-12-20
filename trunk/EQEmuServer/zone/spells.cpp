@@ -94,11 +94,6 @@ Copyright (C) 2001-2002  EQEMu Development Team (http://eqemu.org)
 	#include "../common/packet_dump_file.h"
 #endif
 
-#ifdef GUILDWARS
-#include "../GuildWars/GuildWars.h"
-extern GuildWars guildwars;
-extern GuildLocationList location_list;
-#endif
 #include "StringIDs.h"
 
 
