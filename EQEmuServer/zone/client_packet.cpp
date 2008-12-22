@@ -5218,13 +5218,12 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 	}
 	case PET_HOLD: {
 		if(GetAA(aaPetDiscipline) && mypet->IsNPC()){
-			if (mypet->IsFeared()) break; //AndMetal: could be exploited like PET_BACKOFF
+			if (mypet->IsFeared())
+				break; //AndMetal: could be exploited like PET_BACKOFF
 
 			mypet->Say("I will hold until given an order, master.");
 			mypet->WipeHateList();
 			mypet->SetHeld(true);
-			mypet->SetPetOrder(SPO_Guard);
-			mypet->CastToNPC()->SaveGuardSpot();
 		}
 	}
 	default:

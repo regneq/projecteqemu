@@ -655,7 +655,13 @@ void Mob::AI_Process() {
 
 		if (!target)
 			return;
-		
+
+		if (target->IsCorpse())
+		{
+			RemoveFromHateList(this);
+			return;
+		}
+      
 		if(DivineAura())
 			return;
 

@@ -1,6 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==12/22/2008
+Trevius:(Denivia) Pets that are on Hold will now follow their master
+Trevius:(Denivia) Pets will no longer try to attack corpses
+
 ==12/20/2008
 KLS: Removed old unused Guildwars, RaidAddicts and GroupLinking code.
 
