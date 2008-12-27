@@ -47,6 +47,9 @@ typedef enum { //EQEmu internal opcodes list
 #ifdef MINILOGIN
 	#include "../../Private/MiniLogin/login_oplist.h"
 #endif
+#ifdef MAIL
+	#include "mail_oplist.h"
+#endif
 #undef N
 
 	_maxEmuOpcode

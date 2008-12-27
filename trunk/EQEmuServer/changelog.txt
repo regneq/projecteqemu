@@ -5,6 +5,25 @@ Trevius: Changed QueryLoot so that commands that use it (#npcstats & #npcloot sh
 Trevius: Added Item Links to #peekinv
 Trevius: Added new console command "LSReconnect" to allow manually restarting the auto Login Server connect loops if they stopped for any reason
 Trevius: Added a Reconnect option in the Web Tool to allow auto Login Server connect to restart if it has stopped and is not connected already.
+Derision: New program, mailserver, to implement in-game mail. See: http://www.eqemulator.net/wiki/wikka.php?wakka=MailServer,
+	  or mailserver/readme.txt
+
+Required SQL:
+
+CREATE TABLE `mail` (
+  `msgid` int(10) unsigned NOT NULL auto_increment,
+  `charid` int(10) unsigned NOT NULL,
+  `timestamp` int(11) NOT NULL default '0',
+  `from` varchar(100) NOT NULL,
+  `subject` varchar(200) NOT NULL,
+  `body` text NOT NULL,
+  `to` text NOT NULL,
+  `status` tinyint(4) NOT NULL,
+  PRIMARY KEY  (`msgid`),
+  KEY `charid` (`charid`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
+
+ALTER TABLE `character_` ADD `mailkey` CHAR( 16 ) NOT NULL ;
 
 ==12/22/2008
 Trevius:(Denivia) Pets that are on Hold will now follow their master

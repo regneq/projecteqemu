@@ -212,6 +212,12 @@ RULE_BOOL ( Bazaar, EnableWarpToTrader, true)
 RULE_INT ( Bazaar, MaxBarterSearchResults, 200) // The max results returned in the /barter search
 RULE_CATEGORY_END()
 
+RULE_CATEGORY ( Mail )
+RULE_BOOL ( Mail, EnableMailSystem, true) // If false, client won't bring up the Mail window.
+RULE_INT ( Mail, ExpireTrash, 0) // Time in seconds. 0 will delete all messages in the trash when the mailserver starts
+RULE_INT ( Mail, ExpireRead, 31536000 ) // 1 Year. Set to -1 for never
+RULE_INT ( Mail, ExpireUnread, 31536000 ) // 1 Year. Set to -1 for never
+
 #undef RULE_CATEGORY
 #undef RULE_INT
 #undef RULE_REAL
