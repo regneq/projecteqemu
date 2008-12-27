@@ -11,7 +11,7 @@
 <h2 align="center">World Management</h2>
 <hr/>
 <div align="center">
-<a href="action.html?action=rebootworld">Reboot World</a> - 
+<a href="action.html?action=rebootworld">Reboot World</a> -
 <a href="action.html?action=killworld">Kill World</a>
 </div>
 
@@ -21,6 +21,8 @@ if($act eq "unlock") {
 	$EQW->UnlockWorld();
 } elsif($act eq "lock") {
 	$EQW->LockWorld();
+} elsif($act eq "lsreconnect") {
+	$EQW->LSReconnect();
 }
 ?>
 <br><br>

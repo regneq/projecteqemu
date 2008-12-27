@@ -4,6 +4,7 @@
 	void UnlockWorld();
 	
 	bool LSConnected();
+	void LSReconnect();
 	
 	int  CountZones();
 	vector<string> ListBootedZones();	//returns an array of zone_refs (opaque)

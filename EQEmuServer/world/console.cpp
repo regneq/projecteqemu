@@ -57,6 +57,7 @@ extern uint32	numzones;
 extern LoginServer loginserver;
 extern ClientList client_list;
 extern LauncherList launcher_list;
+extern volatile bool	RunLoops;
 
 ConsoleList console_list;
 
@@ -446,6 +447,9 @@ void Console::ProcessCommand(const char* command) {
 				if (admin >= 201) {
 					SendMessage(1, "  IPLookup [name]");
 				}
+				if (admin >= 100) {
+					SendMessage(1, "  LSReconnect");
+				}
 			}
 			else if (strcasecmp(sep.arg[0], "ping") == 0) {
 				// do nothing
@@ -744,6 +748,17 @@ void Console::ProcessCommand(const char* command) {
 			}
 			else if (strcasecmp(sep.arg[0], "IPLookup") == 0 && admin >= 201) {
 				client_list.SendCLEList(admin, 0, this, sep.argplus[1]);
+			}
+			else if (strcasecmp(sep.arg[0], "LSReconnect") == 0 && admin >= 100) {
+				#ifdef WIN32
+					_beginthread(AutoInitLoginServer, 0, NULL);
+				#else
+					pthread_t thread;
+					pthread_create(&thread, NULL, &AutoInitLoginServer, NULL);
+				#endif
+				RunLoops = true;
+				SendMessage(1, "  Login Server Reconnect manually restarted by Console");
+				_log(WORLD__CONSOLE,"Login Server Reconnect manually restarted by Console");
 			}
 			else if (strcasecmp(sep.arg[0], "zonelock") == 0 && admin >= consoleZoneStatus) {
 				if (strcasecmp(sep.arg[1], "list") == 0) {
