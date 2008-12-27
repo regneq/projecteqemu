@@ -33,7 +33,7 @@ typedef const char Const_char;
 #include "EQW.h"
 
 #ifdef THIS	 /* this macro seems to leak out on some systems */
-#undef THIS		
+#undef THIS
 #endif
 
 
@@ -136,6 +136,29 @@ XS(XS_EQW_LSConnected)
 	XSRETURN(1);
 }
 
+XS(XS_EQW_LSReconnect); /* prototype to pass -Wmissing-prototypes */
+XS(XS_EQW_LSReconnect)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: EQW::LSReconnect(THIS)");
+	{
+		EQW *		THIS;
+
+		if (sv_derived_from(ST(0), "EQW")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(EQW *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type EQW");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->LSReconnect();
+	}
+	XSRETURN_EMPTY;
+}
+
 XS(XS_EQW_CountZones); /* prototype to pass -Wmissing-prototypes */
 XS(XS_EQW_CountZones)
 {
@@ -225,12 +248,12 @@ XS(XS_EQW_GetZoneDetails)
 		RETVAL = THIS->GetZoneDetails(zone_ref);
 		ST(0) = sv_newmortal();
 		if (RETVAL.begin()!=RETVAL.end())
-		{		
+		{
 				//NOTE: we are leaking the original ST(0) right now
 				HV *hv = newHV();
 				sv_2mortal((SV*)hv);
 				ST(0) = newRV((SV*)hv);
-				
+
 				map<string,string>::const_iterator cur, end;
 				cur = RETVAL.begin();
 				end = RETVAL.end();
@@ -362,12 +385,12 @@ XS(XS_EQW_GetPlayerDetails)
 		RETVAL = THIS->GetPlayerDetails(player_ref);
 		ST(0) = sv_newmortal();
 		if (RETVAL.begin()!=RETVAL.end())
-		{		
+		{
 				//NOTE: we are leaking the original ST(0) right now
 				HV *hv = newHV();
 				sv_2mortal((SV*)hv);
 				ST(0) = newRV((SV*)hv);
-				
+
 				map<string,string>::const_iterator cur, end;
 				cur = RETVAL.begin();
 				end = RETVAL.end();
@@ -813,7 +836,7 @@ XS(boot_EQW)
 	char file[256];
 	strncpy(file, __FILE__, 256);
 	file[255] = 0;
-	
+
 	if(items != 1)
 		fprintf(stderr, "boot_quest does not take any arguments.");
 	char buf[128];
@@ -828,6 +851,7 @@ XS(boot_EQW)
 		newXSproto(strcpy(buf, "LockWorld"), XS_EQW_LockWorld, file, "$");
 		newXSproto(strcpy(buf, "UnlockWorld"), XS_EQW_UnlockWorld, file, "$");
 		newXSproto(strcpy(buf, "LSConnected"), XS_EQW_LSConnected, file, "$");
+		newXSproto(strcpy(buf, "LSReconnect"), XS_EQW_LSReconnect, file, "$");
 		newXSproto(strcpy(buf, "CountZones"), XS_EQW_CountZones, file, "$");
 		newXSproto(strcpy(buf, "ListBootedZones"), XS_EQW_ListBootedZones, file, "$");
 		newXSproto(strcpy(buf, "GetZoneDetails"), XS_EQW_GetZoneDetails, file, "$$");

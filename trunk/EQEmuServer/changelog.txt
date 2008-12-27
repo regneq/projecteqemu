@@ -1,5 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==12/27/2008
+Trevius: Changed QueryLoot so that commands that use it (#npcstats & #npcloot show) will now show Item Links instead of just Item Names.
+Trevius: Added Item Links to #peekinv
+Trevius: Added new console command "LSReconnect" to allow manually restarting the auto Login Server connect loops if they stopped for any reason
+Trevius: Added a Reconnect option in the Web Tool to allow auto Login Server connect to restart if it has stopped and is not connected already.
 
 ==12/22/2008
 Trevius:(Denivia) Pets that are on Hold will now follow their master

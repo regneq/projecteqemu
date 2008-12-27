@@ -46,6 +46,7 @@ extern ClientList	client_list;
 extern uint32	numzones;
 extern LoginServer loginserver;
 extern LauncherList launcher_list;
+extern volatile bool	RunLoops;
 
 
 
@@ -257,6 +258,17 @@ EQLConfig * EQW::GetLauncher(Const_char *launcher_name) {
 
 void EQW::CreateLauncher(Const_char *launcher_name, int dynamic_count) {
 	launcher_list.CreateLauncher(launcher_name, dynamic_count);
+}
+
+void EQW::LSReconnect() {
+	#ifdef WIN32
+		_beginthread(AutoInitLoginServer, 0, NULL);
+	#else
+		pthread_t thread;
+		pthread_create(&thread, NULL, &AutoInitLoginServer, NULL);
+	#endif
+	RunLoops = true;
+	_log(WORLD__CONSOLE,"Login Server Reconnect manually restarted by Web Tool");
 }
 
 /*EQLConfig * EQW::FindLauncher(Const_char *zone_ref) {
