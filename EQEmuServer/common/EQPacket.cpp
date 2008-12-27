@@ -454,7 +454,11 @@ EQRawApplicationPacket::EQRawApplicationPacket(uint16 opcode, const unsigned cha
 EQRawApplicationPacket::EQRawApplicationPacket(const unsigned char *buf, const uint32 len)
 : EQApplicationPacket(OP_Unknown, buf+sizeof(uint16), len-sizeof(uint16))
 {
+#ifndef MAIL
 	opcode = *((const uint16 *) buf);
+#else
+	opcode = *((const uint8 *) buf);
+#endif
 }
 
 void DumpPacket(const EQApplicationPacket* app, bool iShowInfo) {

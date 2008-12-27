@@ -99,6 +99,10 @@ void Client::SendLogServer()
 	LogServer_Struct *l=(LogServer_Struct *)outapp->pBuffer;
 	const char *wsn=WorldConfig::get()->ShortName.c_str();
 	memcpy(l->worldshortname,wsn,strlen(wsn));
+
+	if(RuleB(Mail, EnableMailSystem))
+		l->enablemail = 1;
+
 	QueuePacket(outapp);
 	safe_delete(outapp);
 }
@@ -556,11 +560,17 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 			safe_delete(outapp2);
 
 			outapp2 = new EQApplicationPacket(OP_SetChatServer2);
-			sprintf(buffer,"%s,%i,%s.%s,%s",
+
+			int MailKey = MakeRandomInt(1, INT_MAX);
+
+			if(RuleB(Mail, EnableMailSystem))
+				database.SetMailKey(charid, GetIP(), MailKey);
+
+			sprintf(buffer,"%s,%i,%s.%s,%08X",
 				Config->MailHost.c_str(),
 				Config->MailPort,
 				Config->ShortName.c_str(),
-				this->GetCharName(),"067a79d4"
+				this->GetCharName(), MailKey
 			);
 			outapp2->size=strlen(buffer)+1;
 			outapp2->pBuffer = new uchar[outapp2->size];

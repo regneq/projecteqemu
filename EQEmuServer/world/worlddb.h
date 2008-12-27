@@ -34,6 +34,7 @@ public:
       int	MoveCharacterToBind(int CharID);
 	
 	void	GetLauncherList(std::vector<std::string> &result);
+	void	SetMailKey(int CharID, int IPAddress, int MailKey);
 /*	bool	GetLauncherZone(const char *launcher_name, const char *zone_short, LauncherZone &result);
 	bool	AddLauncherZone(const char *launcher_name, const LauncherZone &it);
 	bool	UpdateLauncherZone(const char *launcher_name, const LauncherZone &it);

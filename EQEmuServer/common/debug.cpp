@@ -90,6 +90,8 @@ bool EQEMuLog::open(LogIDs id) {
 	snprintf(exename, sizeof(exename), "_zone");
 #elif defined(LAUNCHER)
 	snprintf(exename, sizeof(exename), "_launch");
+#elif defined(MAIL)
+	snprintf(exename, sizeof(exename), "_mail");
 #endif
 	char filename[200];
 #ifndef NO_PIDLOG

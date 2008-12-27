@@ -377,6 +377,25 @@ void WorldDatabase::GetLauncherList(std::vector<std::string> &rl) {
 	}
 	safe_delete_array(query);
 }
+
+void WorldDatabase::SetMailKey(int CharID, int IPAddress, int MailKey) {
+
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+
+	char MailKeyString[17];
+
+	sprintf(MailKeyString, "%08X%08X", IPAddress, MailKey);
+
+	if (!RunQuery(query, MakeAnyLenString(&query, "UPDATE character_ SET mailkey = '%s' WHERE id='%i'", 
+					      MailKeyString, CharID), errbuf)) 
+
+		LogFile->write(EQEMuLog::Error, "WorldDatabase::SetMailKey(%i, %s) : %s", CharID, MailKeyString, errbuf);
+	
+	safe_delete_array(query);
+
+}
+
 /*
 void WorldDatabase::GetLauncherZones(const char *launcher_name, std::vector<LauncherZone> &rl) {
 }

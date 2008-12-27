@@ -239,7 +239,7 @@ void EQStreamFactory::CheckTimeout()
 				//give it a little time for everybody to finish with it
 			} else {
 				//everybody is done, we can delete it now
-				cout << "Removing connection" << endl;
+				//cout << "Removing connection" << endl;
 				map<string,EQStream *>::iterator temp=stream_itr;
 				stream_itr++;
 				//let whoever has the stream outside delete it
