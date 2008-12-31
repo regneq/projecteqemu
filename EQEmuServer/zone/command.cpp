@@ -7391,7 +7391,7 @@ void command_bot(Client *c, const Seperator *sep) {
 		c->Message(15, "#bot delete - completely destroy forever the targeted bot and all its items.");
 		c->Message(15, "#bot list - show your bots.");
 		c->Message(15, "#bot spawn [botid] - spawn a bot from its ID (use list to see all the bots). ");
-	        c->Message(15, "#bot group add [target] - make the targetted bot joigning your group.");
+		c->Message(15, "#bot group add [target] - make the targetted bot joigning your group.");
 		c->Message(15, "#bot group remove [target} - kick the targetted bot from your group (it will die also).");
 		c->Message(15, "#bot group order [follow/guard/attack (target)] - Give orders [follow/guard/attack (target)] to your grouped bots.");
 		c->Message(15, "#bot inventory list [target] - show the inventory (and the slots IDs) of the targetted bot.");
@@ -7400,7 +7400,7 @@ void command_bot(Client *c, const Seperator *sep) {
 		c->Message(15, "#bot group summon - It will summon all your grouped bots to you.");
 		c->Message(15, "#bot summon - It will summon your targeted bot to you.");
 		c->Message(15, "#bot ai mez [target] - If you're grouped with an enchanter, he will mez your target.");
-		c->Message(15, "#bot rogue picklock - You must have a targeted rogue bot in your group and be right on the door.");
+		c->Message(15, "#bot picklock - You must have a targeted rogue bot in your group and be right on the door.");
 		c->Message(15, "#bot cure [poison|disease|curse|blindness] - You must have a Cleric in your group.");
 		c->Message(15, "#bot bindme - You must have a Cleric in your group to get Bind Affinity cast on you.");
 		c->Message(15, "#bot raid [commands] (#bot raid help will show some help).");
@@ -7408,6 +7408,7 @@ void command_bot(Client *c, const Seperator *sep) {
 		c->Message(15, "#bot target calm - attempts to pacify your target mob.");
 		c->Message(15, "#bot evac - transports your pc group to safe location in the current zone. bots are lost");
         c->Message(15, "#bot resurrectme - Your bot Cleric will rez you.");
+        c->Message(15, "#bot lore - cast Identify on the item on your mouse pointer.");
 		return;
 	}
 
@@ -8002,7 +8003,7 @@ void command_bot(Client *c, const Seperator *sep) {
 				if(atoi(row[0]) != 0) {
 					c->Message(15, "%s already exists, try a different name.", sep->arg[2]);
 				}
-				else if(database.RunQuery(query, MakeAnyLenString(&query, "INSERT INTO npc_types (name,lastname,level,race,class,bodytype,hp,gender,size,hp_regen_rate,mana_regen_rate,npc_spells_id,npc_faction_id,runspeed,MR,CR,DR,FR,PR,AC,STR,STA,DEX,AGI,_INT,WIS,CHA,isbot,ATK) VALUES ('%s','%s', %i, %i, %i, %i, %i, %i, %f, %i, %i, %i, %i, %f, %i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %i)", botName,lname,1,atoi(sep->arg[4]),atoi(sep->arg[3]),1,base_hp,gender,bsize,10,10,spellid,0,2.501f,MR,CR,DR,FR,PR,bac,bstr,bsta,bdex,bagi,bint,bwis,bcha,1,ATK), errbuf, 0)) {
+				else if(database.RunQuery(query, MakeAnyLenString(&query, "INSERT INTO npc_types (name,lastname,level,race,class,bodytype,hp,gender,size,hp_regen_rate,mana_regen_rate,npc_spells_id,npc_faction_id,runspeed,MR,CR,DR,FR,PR,AC,STR,STA,DEX,AGI,_INT,WIS,CHA,isbot,ATK) VALUES ('%s','%s', %i, %i, %i, %i, %i, %i, %f, %i, %i, %i, %i, %f, %i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %i)", botName,lname,1,atoi(sep->arg[4]),atoi(sep->arg[3]),1,base_hp,gender,bsize,0,0,spellid,0,2.501f,MR,CR,DR,FR,PR,bac,bstr,bsta,bdex,bagi,bint,bwis,bcha,1,ATK), errbuf, 0)) {
 					if(database.RunQuery(query, MakeAnyLenString(&query, "SELECT MAX(id) from npc_types where name='%s' and isBot=1", sep->arg[2]), errbuf, &result)) {
 						if(row = mysql_fetch_row(result)) {
 							database.SetBotOwner(atoi(row[0]), c->AccountID());
@@ -8180,8 +8181,9 @@ void command_bot(Client *c, const Seperator *sep) {
                         rrrow = "Human";
                 }
 
-				if((database.GetBotOwner(atoi(row[0])) == c->CharacterID()) || (database.GetBotOwner(atoi(row[0])) == c->AccountID()))
+				if(database.GetBotOwner(atoi(row[0])) == c->AccountID()) {
 					c->Message(15,"(YOUR BOT) ID: %s -- Name: %s -- Class: %s -- Race: %s -- ", row[0], row[1], crow, rrrow);
+				}
 			}				
 		}
 		mysql_free_result(result);
@@ -8190,15 +8192,7 @@ void command_bot(Client *c, const Seperator *sep) {
 	}
 
 	if(!strcasecmp(sep->arg[1], "spawn") ){
-		if(database.GetBotOwner(atoi(sep->arg[2])) == 0)
-        {
-			database.SetBotOwner(atoi(sep->arg[2]), c->AccountID());
-		}
-		else if(database.GetBotOwner(atoi(sep->arg[2])) == c->CharacterID())
-		{
-			database.UpdateBotOwner(c->AccountID(), c->CharacterID());
-		}
-		else if(database.GetBotOwner(atoi(sep->arg[2])) != c->AccountID())
+		if(database.GetBotOwner(atoi(sep->arg[2])) != c->AccountID())
         {
             c->Message(15,"You can't spawn a bot that you don't own.");
 			return;
@@ -8225,9 +8219,12 @@ void command_bot(Client *c, const Seperator *sep) {
 			Group *g = entity_list.GetGroupByClient(c);
 			for (int i=0; i<MAX_GROUP_MEMBERS; i++)
             {
-                if(g && g->members[i] && g->members[i]->IsEngaged())
+				if(g && g->members[i] && !g->members[i]->qglobal && g->members[i]->IsEngaged())
                 {
                     c->Message(15, "You can't summon bots while you are engaged.");
+					return;
+				}
+				if(g && g->members[i] && g->members[i]->qglobal) {
 					return;
 				}
 			}
@@ -8258,7 +8255,7 @@ void command_bot(Client *c, const Seperator *sep) {
         return;
     }
 
-	if(!strcasecmp(sep->arg[1], "rogue") && !strcasecmp(sep->arg[2], "picklock")) {
+	if(!strcasecmp(sep->arg[1], "picklock")) {
 		if((c->GetTarget() == NULL) || (c->GetTarget() == c) || !c->GetTarget()->IsBot() || (c->GetTarget()->GetClass() != ROGUE)) {
             c->Message(15, "You must target a rogue bot!");
 			return;
@@ -8282,7 +8279,7 @@ void command_bot(Client *c, const Seperator *sep) {
 				c->Message(15, "You must target a bot!");
 				return;
 			}
-			if(b && (database.GetBotOwner(b->GetNPCTypeID()) != c->CharacterID()) && (database.GetBotOwner(b->GetNPCTypeID()) != c->AccountID()))
+			if(b && (database.GetBotOwner(b->GetNPCTypeID()) != c->AccountID()))
 			{
 				b->Say("You can only summon your own bots.");
 				return;
@@ -8375,7 +8372,7 @@ void command_bot(Client *c, const Seperator *sep) {
 				return;
 			}
 
-			if((database.GetBotOwner(b->GetNPCTypeID()) != c->CharacterID()) && (database.GetBotOwner(b->GetNPCTypeID()) != c->AccountID()))
+			if(database.GetBotOwner(b->GetNPCTypeID()) != c->AccountID())
             {
                 b->Say("I can't be your bot, you are not my owner.");
 				return;
@@ -9087,7 +9084,7 @@ void command_bot(Client *c, const Seperator *sep) {
 		c->Message(15, "#bot raid info - will give info of your raid.");
 		c->Message(15, "#bot raid create - will create your raid (you will be the raid leader)");
 		c->Message(15, "#bot raid group create [target] - create a group. Your target will be the leader.");
-		c->Message(15, "#bot raid invite bot [target] [group leader's name] - Invite your target into your target leader's group.");	
+		c->Message(15, "#bot raid invite bot [group leader's name] - Invite your target into that group leader's group.");	
 //		c->Message(15, "#bot raid remove group [group leader's name] - Remove target's group from your raid.");
 		c->Message(15, "#bot raid disband - Disband the raid.");
 		c->Message(15, "#bot raid order maintank [target] - Your target will be flagged as the main tank.");
@@ -9186,7 +9183,7 @@ void command_bot(Client *c, const Seperator *sep) {
 				return;
 			}
 
-			if((database.GetBotOwner(c->GetTarget()->GetNPCTypeID()) != c->CharacterID()) && (database.GetBotOwner(c->GetTarget()->GetNPCTypeID()) != c->AccountID()))
+			if(database.GetBotOwner(c->GetTarget()->GetNPCTypeID()) != c->AccountID())
             {
                 c->GetTarget()->Say("I can't be your bot, you are not my owner.");
 				return;
@@ -9273,9 +9270,9 @@ void command_bot(Client *c, const Seperator *sep) {
 				return;
 			}
 
-			if((database.GetBotOwner(c->GetTarget()->GetNPCTypeID()) != c->CharacterID()) && (database.GetBotOwner(c->GetTarget()->GetNPCTypeID()) != c->AccountID()))
+			if(database.GetBotOwner(c->GetTarget()->GetNPCTypeID()) != c->AccountID())
             {
-                c->GetTarget()->Say("I join your bot raid, you are not my owner.");
+                c->GetTarget()->Say("I can not join your bot raid, you are not my owner.");
 				return;
 			}
 

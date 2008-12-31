@@ -888,6 +888,7 @@ bool logpos;
 	bool cast_last_time;
 	bool IsBot() { return AmIaBot; }
 	int GetBotLeader();
+	sint32 GetBotActSpellDamage(int16 spell_id, sint32 value);
 	void BotMeditate(bool isSitting);
 	Mob *BotOwner;
 	int BotRaidID;

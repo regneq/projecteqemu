@@ -200,6 +200,15 @@ RULE_BOOL ( TaskSystem, KeepOneRecordPerCompletedTask, true)
 RULE_BOOL ( TaskSystem, EnableTaskProximity, true)
 RULE_CATEGORY_END()
 
+#ifdef EQBOTS
+
+RULE_CATEGORY ( EQOffline )
+RULE_REAL ( EQOffline, BotManaRegen, 1.0 ) // Adjust mana regen for bots, 1 is fast and higher numbers slow it down 3 is about the same as players.
+RULE_BOOL ( EQOffline, BotFinishBuffing, true ) // Allow for buffs to complete even if the bot caster is out of mana.  Only affects buffing out of combat.
+RULE_CATEGORY_END()
+
+#endif //EQBOTS
+
 RULE_CATEGORY ( Chat )
 RULE_BOOL ( Chat, ServerWideOOC, true)
 RULE_BOOL ( Chat, ServerWideAuction, true)
