@@ -730,11 +730,13 @@ bool NPC::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 				mana_cost = 0;
 			bool extraMana = false;
 			sint32 hasMana = GetMana();
-			if(mana_cost > hasMana) {
-				// Let's have the bots complete the buff time process
-				if(iSpellTypes & SpellType_Buff) {
-					SetMana(mana_cost + 10);
-					extraMana = true;
+			if(RuleB(EQOffline, BotFinishBuffing)) {
+				if(mana_cost > hasMana) {
+					// Let's have the bots complete the buff time process
+					if(iSpellTypes & SpellType_Buff) {
+						SetMana(mana_cost);
+						extraMana = true;
+					}
 				}
 			}
 			if (((((spells[AIspells[i].spellid].targettype==ST_GroupTeleport && AIspells[i].type==2)
@@ -742,9 +744,7 @@ bool NPC::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 				|| spells[AIspells[i].spellid].targettype==ST_Group
 				|| spells[AIspells[i].spellid].targettype==ST_AEBard)
 				&& dist2 <= spells[AIspells[i].spellid].aoerange*spells[AIspells[i].spellid].aoerange)
-				
 				|| dist2 <= spells[AIspells[i].spellid].range*spells[AIspells[i].spellid].range) && (mana_cost <= GetMana() || GetMana() == GetMaxMana())) {
-
 
 				switch (AIspells[i].type) {
 					case SpellType_Heal: {
@@ -774,12 +774,17 @@ bool NPC::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 								// The first HoT is at level 19 and is priority 1
 								// The regular heal is priority 2
 								// Let the HoT heal for at least 3 tics before checking for the regular heal
-								// For non-HoT heals, do a 5 second delay
+								// For non-HoT heals, do a 4 second delay
 								if((botClass == CLERIC || botClass == PALADIN) && (botLevel >= 19) && (BotGetSpellPriority(i) == 1)) {
 									tar->pDontHealMeBefore = (Timer::GetCurrentTime() + 18000);
 								}
 								else if((botClass == CLERIC || botClass == PALADIN) && (botLevel >= 19) && (BotGetSpellPriority(i) == 2)) {
-									tar->pDontHealMeBefore = (Timer::GetCurrentTime() + 5000);
+									if(AIspells[i].spellid == 13) { // Complete Heal 4 second rotation
+										tar->pDontHealMeBefore = (Timer::GetCurrentTime() + 4000);
+									}
+									else {
+										tar->pDontHealMeBefore = (Timer::GetCurrentTime() + 1000);
+									}
 								}
 								return true;
 							}
@@ -829,6 +834,13 @@ bool NPC::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 									}
 								}
 								AIDoSpellCast(i, tar, mana_cost, &tar->pDontBuffMeBefore);
+								if(extraMana) {
+									// If the bot is just looping through spells and not casting
+									// then don't let them keep the extra mana we gave them during
+									// buff time
+									SetMana(0);
+									extraMana = false;
+								}
 								return true;
 						}
 						break;

@@ -1,5 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==12/31/2008
+Congdar: Bots: Added rule EQOffline:BotManaRegen default 1.0 is fastest. 3.0 is closer to player regen rates
+Congdar: Bots: Added rule EQOffline:BotFinishBuffing default true. Allows out of combat buffing to complete even if the bot is out of mana.
+Congdar: Bots: Fixed bug where bot ownership could change to somebody else.
+Congdar: Bots: Added caster AA's for critical damage
+
 ==12/27/2008
 Trevius: Changed QueryLoot so that commands that use it (#npcstats & #npcloot show) will now show Item Links instead of just Item Names.
 Trevius: Added Item Links to #peekinv

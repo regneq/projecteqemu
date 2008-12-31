@@ -125,15 +125,15 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 					// take partial damage into account
 					dmg = (sint32) (dmg * partial / 100);
 
-//#ifdef EQBOTS     Congdar: Need to implement this for caster bot aa's
-//
-//					// Bot AA Casting Bonuses
-//					if(caster && caster->IsBot()) {
-//						dmg = caster->GetBotActSpellDamage(spell_id, dmg);
-//					}
-//					else
-//
-//#endif //EQBOTS
+#ifdef EQBOTS
+
+					// Bot AA Casting Bonuses
+					if(caster && caster->IsBot()) {
+						dmg = caster->GetBotActSpellDamage(spell_id, dmg);
+					}
+					else
+
+#endif //EQBOTS
 
 					//handles AAs and what not...
 					if(caster)

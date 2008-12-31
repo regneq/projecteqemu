@@ -2419,11 +2419,179 @@ int Mob::GetBotLeader() {
 	}
 }
 
+sint32 Mob::GetBotActSpellDamage(int16 spell_id, sint32 value) {
+	sint32 modifier = 100;
+	int8 casterClass = GetClass();
+	int8 casterLevel = GetLevel();
+
+	//Dunno if this makes sense:
+	if (spells[spell_id].resisttype > 0)
+		modifier += 5;
+	
+	
+	int tt = spells[spell_id].targettype;
+	if (tt == ST_UndeadAE || tt == ST_Undead || tt == ST_Summoned) {
+		//undead/summoned spells
+		modifier += 10;
+    } else {
+    	//damage spells.
+		modifier += 5;
+	}
+
+	//these spell IDs could be wrong
+	if (spell_id == SPELL_LEECH_TOUCH) {	//leech touch
+		if(casterLevel >= 65) { // Consumption of the Soul 3 AA
+			value -= 1500;
+		}
+		else if(casterLevel >= 63) { // Consumption of the Soul 2 AA
+			value -= 1000;
+		}
+		else if(casterLevel >= 61) { // Consumption of the Soul 1 AA
+			value -= 500;
+		}
+	}
+	if (spell_id == SPELL_IMP_HARM_TOUCH) {	//harm touch
+		if(casterLevel >= 65) { // Unholy Touch 3 AA
+			modifier += 75;
+		}
+		else if(casterLevel >= 63) { // Unholy Touch 2 AA
+			modifier += 50;
+		}
+		else if(casterLevel >= 61) { // Unholy Touch 1 AA
+			modifier += 25;
+		}
+	}
+	
+	//spell crits, dont make sense if cast on self.
+	if(tt != ST_Self) {
+		int chance = RuleI(Spells, BaseCritChance) + 1;
+		sint32 ratio = RuleI(Spells, BaseCritRatio);
+
+		//here's an idea instead of bloating code with unused cases there's this thing called:
+		//case 'default'
+		switch(casterClass)
+		{
+			case WIZARD:
+			{
+				if (casterLevel >= RuleI(Spells, WizCritLevel)) {
+					chance += RuleI(Spells, WizCritChance);
+					ratio += RuleI(Spells, WizCritRatio);
+				}
+				break;
+			}
+
+			default: 
+				break;
+		}
+		
+		if((casterClass == MONK) || (casterClass == ROGUE) || (casterClass == WARRIOR) || (casterClass == BERSERKER)) {
+			if(casterLevel >= 65) { // Ingenuity 3 AA
+				ratio += 100;
+				chance += 3;
+			}
+			else if(casterLevel >= 63) { // Ingenuity 2 AA
+				ratio += 75;
+				chance += 2;
+			}
+			else if(casterLevel >= 61) { // Ingenuity 1 AA
+				ratio += 50;
+				chance += 1;
+			}
+		}
+
+		if((casterClass != WARRIOR) && (casterClass != ROGUE) && (casterClass != MONK) && (casterClass != BERSERKER)) {
+			if(casterLevel >= 66) { // Advanced Fury of Magic 2 AA
+				chance += 20;
+			}
+			else if(casterLevel >= 65) { // Fury of Magic 3 AA or Advanced Fury of Magic 1 AA
+				chance += 18;
+			}
+			else if(casterLevel >= 63) { // Fury of Magic 2 AA
+				chance += 16;
+			}
+			else if(casterLevel >= 61) { // Fury of Magic 1 AA or Spell Casting Fury Mastery 3 AA
+				chance += 14;
+			}
+			else if(casterLevel >= 60) { // Spell Casting Fury Mastery 2 AA
+				chance += 12;
+			}
+			else if(casterLevel >= 59) { // Spell Casting Fury Mastery 1 AA
+				chance += 10;
+			}
+			else if(casterLevel >= 57) { // Spell Casting Fury 3 AA
+				chance += 7;
+			}
+			else if(casterLevel >= 56) { // Spell Casting Fury 2 AA
+				chance += 4;
+			}
+			else if(casterLevel >= 55) { // Spell Casting Fury 1 AA
+				chance += 2;
+			}
+		}
+
+		if(tt == ST_Tap) {
+			
+			if(spells[spell_id].classes[SHADOWKNIGHT-1] >= 254 && spell_id != SPELL_LEECH_TOUCH) {
+				if(ratio < 100)	//chance increase and ratio are made up, not confirmed
+					ratio = 100;
+
+				if(casterClass == SHADOWKNIGHT) {
+					if(casterLevel >= 61) { // Soul Abrasion 3 AA
+						modifier += 300;
+					}
+					else if(casterLevel >= 60) { // Soul Abrasion 2 AA
+						modifier += 200;
+					}
+					else if(casterLevel >= 59) { // Soul Abrasion1 AA
+						modifier += 100;
+					}
+				}
+			}
+		}
+
+		//crit damage modifiers
+		if (casterClass == WIZARD) { //wizards get an additional bonus
+			if(casterLevel >= 70) { // Destructive Fury 3 AA
+				ratio += 24;
+			}
+			else if(casterLevel >= 68) { // Destructive Fury 2 AA
+				ratio += 16;
+			}
+			else if(casterLevel >= 66) { // Destructive Fury 1 AA
+				ratio += 8;
+			}
+		}
+		else {
+			if(casterLevel >= 70) { // Destructive Fury 3 AA
+				ratio += 16;
+			}
+			else if(casterLevel >= 68) { // Destructive Fury 2 AA
+				ratio += 8;
+			}
+			else if(casterLevel >= 66) { // Destructive Fury 1 AA
+				ratio += 4;
+			}
+		}
+		
+		if (chance > 0) {
+			mlog(SPELLS__CRITS, "Attempting spell crit. Spell: %s (%d), Value: %d, Modifier: %d, Chance: %d, Ratio: %d", spells[spell_id].name, spell_id, value, modifier, chance, ratio);
+			if(MakeRandomInt(1,100) <= chance) {
+				modifier += modifier*ratio/100;
+				mlog(SPELLS__CRITS, "Spell crit successful. Final damage modifier: %d, Final Damage: %d", modifier, (value * modifier) / 100);
+				entity_list.MessageClose(this, false, 100, MT_SpellCrits, "%s delivers a critical blast! (%d)", GetName(), ((-value * modifier) / 100));	
+			} else 
+				mlog(SPELLS__CRITS, "Spell crit failed. Final Damage Modifier: %d, Final Damage: %d", modifier, (value * modifier) / 100);
+		}
+	}
+	
+	return (value * modifier) / 100;
+}
+
 void Mob::BotMeditate(bool isSitting) {
 
 	if(isSitting) {
-		// If the bot is a caster has less than 95% mana while its not engaged, he needs to sit to meditate
-		if(GetManaRatio() < 95.0f) {
+		// If the bot is a caster has less than 99% mana while its not engaged, he needs to sit to meditate
+		if(GetManaRatio() < 99.0f) {
 			if(mana_timer.Check(true)) {
 				SetAppearance(eaSitting, false);
 				if(!((int)GetManaRatio() % 12)) {
@@ -2447,7 +2615,7 @@ void Mob::BotMeditate(bool isSitting) {
 						}
 					}
 				}
-				regen += (mana_regen + spellbonuses.ManaRegen + itembonuses.ManaRegen + (level/5));
+				regen += (spellbonuses.ManaRegen + itembonuses.ManaRegen);
 				if(level >= 55) {
 					regen += 1;//GetAA(aaMentalClarity);
 				}
@@ -2472,7 +2640,14 @@ void Mob::BotMeditate(bool isSitting) {
 				if(level >= 75) {
 					regen += 1;//GetAA(aaBodyAndMindRejuvenation);
 				}
-				regen = ((regen * 150) / 100) / 2;
+				regen = (regen * RuleI(Character, ManaRegenMultiplier)) / 100;
+
+				float mana_regen_rate = RuleR(EQOffline, BotManaRegen);
+				if(mana_regen_rate < 1.0f)
+					mana_regen_rate = 1.0f;
+
+				regen = regen / mana_regen_rate;
+
 				SetMana(GetMana() + regen);
 			}
 		}
@@ -2482,61 +2657,62 @@ void Mob::BotMeditate(bool isSitting) {
 	}
 	else {
 		// Let's check our mana in fights..
-		// if the mana is less than 20%, the bot will sit and meditate with a +1mana regen per bot process.
-		if(GetManaRatio() < 19.9f)
-		{
-			if(mana_timer.Check(true)) {
-				SetAppearance(eaSitting, false);
-				if(!((int)GetManaRatio() % 12)) {
-					Say("Medding for Mana. I have %3.1f%% of %d mana. It is: %d", GetManaRatio(), GetMaxMana(), GetMana());
-				}
-				int32 level = GetLevel();
-				spellbonuses.ManaRegen = 0;
-				for(int j=0; j<BUFF_COUNT; j++) {
-					if(buffs[j].spellid != 65535) {
-						const SPDat_Spell_Struct &spell = spells[buffs[j].spellid];
-						for(int i=0; i<EFFECT_COUNT; i++) {
-							if(IsBlankSpellEffect(buffs[j].spellid, i))
-								continue;
-							int effect = spell.effectid[i];
-							switch(effect) {
-								case SE_CurrentMana:
-									spellbonuses.ManaRegen += CalcSpellEffectValue(buffs[j].spellid, i, buffs[j].casterlevel);
-									break;
-							}
+		if(mana_timer.Check(true)) {
+			if(!((int)GetManaRatio() % 12)) {
+				Say("Medding for Mana. I have %3.1f%% of %d mana. It is: %d", GetManaRatio(), GetMaxMana(), GetMana());
+			}
+			int32 level = GetLevel();
+			spellbonuses.ManaRegen = 0;
+			for(int j=0; j<BUFF_COUNT; j++) {
+				if(buffs[j].spellid != 65535) {
+					const SPDat_Spell_Struct &spell = spells[buffs[j].spellid];
+					for(int i=0; i<EFFECT_COUNT; i++) {
+						if(IsBlankSpellEffect(buffs[j].spellid, i))
+							continue;
+						int effect = spell.effectid[i];
+						switch(effect) {
+							case SE_CurrentMana:
+								spellbonuses.ManaRegen += CalcSpellEffectValue(buffs[j].spellid, i, buffs[j].casterlevel);
+								break;
 						}
 					}
 				}
-				int32 regen = (1 + spellbonuses.ManaRegen + itembonuses.ManaRegen + (level/5));
-				if(level >= 55) {
-					regen += 1;//GetAA(aaMentalClarity);
-				}
-				if(level >= 56) {
-					regen += 1;//GetAA(aaMentalClarity);
-				}
-				if(level >= 57) {
-					regen += 1;//GetAA(aaMentalClarity);
-				}
-				if(level >= 71) {
-					regen += 1;//GetAA(aaBodyAndMindRejuvenation);
-				}
-				if(level >= 72) {
-					regen += 1;//GetAA(aaBodyAndMindRejuvenation);
-				}
-				if(level >= 73) {
-					regen += 1;//GetAA(aaBodyAndMindRejuvenation);
-				}
-				if(level >= 74) {
-					regen += 1;//GetAA(aaBodyAndMindRejuvenation);
-				}
-				if(level >= 75) {
-					regen += 1;//GetAA(aaBodyAndMindRejuvenation);
-				}
-				regen = ((regen * 150) / 100) / 2;
-				SetMana(GetMana() + regen);
 			}
+			int32 regen = 2 + spellbonuses.ManaRegen + itembonuses.ManaRegen + (level/5);
+			if(level >= 55) {
+				regen += 1;//GetAA(aaMentalClarity);
+			}
+			if(level >= 56) {
+				regen += 1;//GetAA(aaMentalClarity);
+			}
+			if(level >= 57) {
+				regen += 1;//GetAA(aaMentalClarity);
+			}
+			if(level >= 71) {
+				regen += 1;//GetAA(aaBodyAndMindRejuvenation);
+			}
+			if(level >= 72) {
+				regen += 1;//GetAA(aaBodyAndMindRejuvenation);
+			}
+			if(level >= 73) {
+				regen += 1;//GetAA(aaBodyAndMindRejuvenation);
+			}
+			if(level >= 74) {
+				regen += 1;//GetAA(aaBodyAndMindRejuvenation);
+			}
+			if(level >= 75) {
+				regen += 1;//GetAA(aaBodyAndMindRejuvenation);
+			}
+			regen = (regen * RuleI(Character, ManaRegenMultiplier)) / 100;
+
+			float mana_regen_rate = RuleR(EQOffline, BotManaRegen);
+			if(mana_regen_rate < 1.0f)
+				mana_regen_rate = 1.0f;
+
+			regen = regen / mana_regen_rate;
+
+			SetMana(GetMana() + regen);
 		}
-		SetAppearance(eaStanding, false);
 	}
 }
 
