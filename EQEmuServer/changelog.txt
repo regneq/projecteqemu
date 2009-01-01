@@ -1,5 +1,22 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+
+==01/01/2009
+Derision: Added chatserver for Chat Channel support. mail_opcodes.conf updated in utils.
+Derision: See: http://www.eqemulator.net/wiki/wikka.php?wakka=ChatChannels
+
+REQUIRED SQL:
+
+CREATE TABLE `chatchannels` (
+  `name` varchar(64) NOT NULL,
+  `owner` varchar(64) NOT NULL,
+  `password` varchar(64) NOT NULL,
+  `minstatus` int(5) NOT NULL default '0',
+  PRIMARY KEY  (`name`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+also see utils/sql/svn/249_chatchannels.sql for suggested system channels.
+
 ==12/31/2008
 Congdar: Bots: Added rule EQOffline:BotManaRegen default 1.0 is fastest. 3.0 is closer to player regen rates
 Congdar: Bots: Added rule EQOffline:BotFinishBuffing default true. Allows out of combat buffing to complete even if the bot is out of mana.

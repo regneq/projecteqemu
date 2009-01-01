@@ -227,6 +227,11 @@ RULE_INT ( Mail, ExpireTrash, 0) // Time in seconds. 0 will delete all messages 
 RULE_INT ( Mail, ExpireRead, 31536000 ) // 1 Year. Set to -1 for never
 RULE_INT ( Mail, ExpireUnread, 31536000 ) // 1 Year. Set to -1 for never
 
+RULE_CATEGORY ( Channels )
+RULE_INT ( Channels, RequiredStatusAdmin, 251) // Required status to administer chat channels
+RULE_INT ( Channels, RequiredStatusListAll, 251) // Required status to list all chat channels
+RULE_INT ( Channels, DeleteTimer, 1440) // Empty password protected channels will be deleted after this many minutes
+
 #undef RULE_CATEGORY
 #undef RULE_INT
 #undef RULE_REAL
