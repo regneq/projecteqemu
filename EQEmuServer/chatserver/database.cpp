@@ -120,10 +120,14 @@ void Database::GetAccountStatus(Client *c) {
 		return;
 	}
 
+	safe_delete_array(query);
+
 	row = mysql_fetch_row(result);
 
 	c->SetAccountStatus(atoi(row[0]));
 	c->SetHideMe(atoi(row[1]));
+
+	mysql_free_result(result);
 
 	_log(CHANNELS__TRACE, "Set account status to %i and hideme to %i for %s", c->GetAccountStatus(), c->GetHideMe(), c->GetName().c_str());
 
