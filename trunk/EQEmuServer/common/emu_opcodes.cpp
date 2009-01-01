@@ -33,7 +33,7 @@ const char *OpcodeNames[_maxEmuOpcode+1] = {
 #ifdef MINILOGIN
 	#include "../../Private/MiniLogin/login_oplist.h"
 #endif
-#ifdef MAIL
+#if defined(MAIL) || defined(CHAT)
 	#include "mail_oplist.h"
 #endif
 #undef N

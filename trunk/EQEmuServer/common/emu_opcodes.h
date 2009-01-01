@@ -47,7 +47,7 @@ typedef enum { //EQEmu internal opcodes list
 #ifdef MINILOGIN
 	#include "../../Private/MiniLogin/login_oplist.h"
 #endif
-#ifdef MAIL
+#if defined(MAIL) || defined(CHAT)
 	#include "mail_oplist.h"
 #endif
 #undef N

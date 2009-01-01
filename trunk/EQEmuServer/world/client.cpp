@@ -545,13 +545,17 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 			QueuePacket(outapp);
 			safe_delete(outapp);
 
+			int MailKey = MakeRandomInt(1, INT_MAX);
+
+			database.SetMailKey(charid, GetIP(), MailKey);
+
 			EQApplicationPacket *outapp2 = new EQApplicationPacket(OP_SetChatServer);
 			char buffer[112];
-			sprintf(buffer,"%s,%i,%s.%s,%s",
+			sprintf(buffer,"%s,%i,%s.%s,%08X",
 				Config->ChatHost.c_str(),
 				Config->ChatPort,
 				Config->ShortName.c_str(),
-				this->GetCharName(),"067a79d4"
+				this->GetCharName(), MailKey
 			);
 			outapp2->size=strlen(buffer)+1;
 			outapp2->pBuffer = new uchar[outapp2->size];
@@ -560,11 +564,6 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 			safe_delete(outapp2);
 
 			outapp2 = new EQApplicationPacket(OP_SetChatServer2);
-
-			int MailKey = MakeRandomInt(1, INT_MAX);
-
-			if(RuleB(Mail, EnableMailSystem))
-				database.SetMailKey(charid, GetIP(), MailKey);
 
 			sprintf(buffer,"%s,%i,%s.%s,%08X",
 				Config->MailHost.c_str(),
