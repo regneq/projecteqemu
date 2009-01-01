@@ -96,9 +96,8 @@ Client::~Client() {
 
 	CloseConnection();
 
-	for(int i = 0; i < MAX_JOINED_CHANNELS ; i++)
-		if(JoinedChannels[i] != NULL)
-			JoinedChannels[i]->RemoveClient(this);
+	LeaveAllChannels(false);
+
 }
 
 void Client::CloseConnection() {
