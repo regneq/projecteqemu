@@ -12,5 +12,6 @@ DELETE FROM npc_spells_entries where (npc_spells_id >=701 and npc_spells_id <=71
 DELETE FROM npc_spells_entries where (npc_spells_id >=701 and npc_spells_id <=712) AND spellid=717;
 DELETE FROM npc_spells_entries where (npc_spells_id >=701 and npc_spells_id <=712) AND spellid=2605;
 DELETE FROM npc_spells_entries where (npc_spells_id >=701 and npc_spells_id <=712) AND spellid=2517;
+DELETE FROM npc_spells_entries where (npc_spells_id >=701 and npc_spells_id <=712) AND spellid=2894;
 
 INSERT INTO npc_spells_entries SET npc_spells_id=707, spellid=425, type=8, minlevel=20, maxlevel=255, manacost=-1, recast_delay=-1, priority=0;
