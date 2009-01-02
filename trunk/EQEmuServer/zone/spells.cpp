@@ -1288,8 +1288,6 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
 	if(!IsValidSpell(spell_id))
 		return false;
 
-	// qadar start
-
 	if( spells[spell_id].zonetype == 1 && !zone->CanCastOutdoor()){
 		if(IsClient()){
 				if(!CastToClient()->GetGM()){
@@ -1298,10 +1296,6 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
 				}
 			}
 		}
-
-	// qadar end
-
-	// angelox start
 
 	if(IsEffectInSpell(spell_id, SE_Levitate) && !zone->CanLevitate()){
 			if(IsClient()){
@@ -2518,6 +2512,21 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar)
 		(IsBot() && IsDetrimentalSpell(spell_id) && spelltar->IsClient()) ||
 		(IsClient() && IsDetrimentalSpell(spell_id) && spelltar->IsBot()))
 		return false;
+
+	//Angelox: Determine who the Bot spell affects 
+	typedef int ae_sp_type;
+	ae_sp_type ae_sp[] = {278,42,80,235,4054};
+	int ae_sp_size = sizeof(ae_sp)/sizeof(ae_sp_type);
+	bool result2 = false;
+	for (int i=0; i<ae_sp_size; i++) {
+	   if (spell_id==ae_sp[i]) {
+	     result2 = true;
+	     break;
+  }
+}
+		if ((IsBot() && result2 && spelltar ->IsBot()) ||
+		   (IsBot() && result2 && spelltar->IsPet() ))
+		   return false;
 
 #endif //EQBOTS
 

@@ -7407,8 +7407,13 @@ void command_bot(Client *c, const Seperator *sep) {
 		c->Message(15, "#bot track - look at mobs in the zone (ranger has options)");
 		c->Message(15, "#bot target calm - attempts to pacify your target mob.");
 		c->Message(15, "#bot evac - transports your pc group to safe location in the current zone. bots are lost");
-        c->Message(15, "#bot resurrectme - Your bot Cleric will rez you.");
-        c->Message(15, "#bot lore - cast Identify on the item on your mouse pointer.");
+		c->Message(15, "#bot resurrectme - Your bot Cleric will rez you.");
+		c->Message(15, "#bot lore - cast Identify on the item on your mouse pointer.");
+		c->Message(15, "#bot sow - Bot sow on you (Druid has options)");
+		c->Message(15, "#bot invis - Bot invisiblity (must have proper class in group)");
+		c->Message(15, "#bot levitate - Bot levitation (must have proper class in group)");
+		c->Message(15, "#bot resist - Bot resist buffs (must have proper class in group)");
+
 		return;
 	}
 
@@ -9030,6 +9035,375 @@ void command_bot(Client *c, const Seperator *sep) {
 		return;
 	}
 
+	if ((!strcasecmp(sep->arg[1], "sow")) && (c->IsGrouped())) {
+ 			Mob *Sower;
+			int32 SowerClass = 0;
+			Group *g = c->GetGroup();
+		if(g) {
+			for(int i=0; i<MAX_GROUP_MEMBERS; i++){
+				if(g->members[i] && g->members[i]->IsBot()) {
+					switch(g->members[i]->GetClass()) {
+						case DRUID:
+							  Sower = g->members[i];
+							  SowerClass = DRUID;
+							break;
+						case SHAMAN:
+							if (SowerClass == 0)
+							  Sower = g->members[i];
+							  SowerClass = SHAMAN;
+							break;
+						case RANGER:
+							if(SowerClass != DRUID)
+							  Sower = g->members[i];
+							  SowerClass = RANGER;
+							break;
+						case BEASTLORD:
+							if((SowerClass != DRUID) && (SowerClass != RANGER))
+							  Sower = g->members[i];
+							  SowerClass = BEASTLORD;
+							break;
+						default:
+							break;
+					}
+				}
+			}
+			switch(SowerClass) {
+				case DRUID:
+					if      ((!strcasecmp(sep->arg[2], "regular")) && (zone->CanCastOutdoor())  && (c->GetLevel() >= 10) ) {
+						Sower->Say("Casting sow...");
+						Sower->CastSpell(278, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "regular")) && (zone->CanCastOutdoor())  && (c->GetLevel() <= 10) ) {
+						Sower->Say("I'm not level 10 yet.");
+					}
+					else if ((!strcasecmp(sep->arg[2], "wolf")) && zone->CanCastOutdoor() && (c->GetLevel() >= 20)) {
+						Sower->Say("Casting group wolf...");
+						Sower->CastSpell(428, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "wolf")) && (c->GetLevel() <= 20)) {
+						Sower->Say("I'm not level 20 yet.");
+					}
+					else if ((!strcasecmp(sep->arg[2], "feral")) && (c->GetLevel() >= 50)) { 
+						Sower->Say("Casting Feral Pack...");
+						Sower->CastSpell(4058, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "feral")) && (c->GetLevel() <= 50)) {
+						Sower->Say("I'm not level 50 yet.");
+					}
+					else if ((!strcasecmp(sep->arg[2], "shrew")) && (c->GetLevel() >= 35)) { 
+						Sower->Say("Casting Pack Shrew...");
+						Sower->CastSpell(4055, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "wolf")) && (c->GetLevel() <= 35)) {
+						Sower->Say("I'm not level 35 yet.");
+					}
+					else if ((!zone->CanCastOutdoor()) && (!strcasecmp(sep->arg[2], "regular")) ||
+						(!zone->CanCastOutdoor()) && (!strcasecmp(sep->arg[2], "wolf"))) {
+						Sower->Say("I can't cast this spell indoors, try [sow shrew] if you're 35 or higher, or [sow feral] if you're 50 or higher,", c->GetName());
+					}
+					else if (!zone->CanCastOutdoor()) {
+						Sower->Say("I can't cast this spell indoors, try [sow shrew] if you're 35 or higher, or [sow feral] if you're 50 or higher,", c->GetName());
+					}
+					else if (zone->CanCastOutdoor()) {
+						Sower->Say("Do you want [sow regular] or [sow wolf]?", c->GetName());
+					}
+					else if (!zone->CanCastOutdoor()) {
+						Sower->Say("I can't cast this spell indoors, try [sow shrew] if you're 35 or higher, or [sow feral] if you're 50 or higher,", c->GetName());
+					}
+					break;
+
+				case SHAMAN:
+
+					if ((SowerClass != DRUID) && (zone->CanCastOutdoor()) && (c->GetLevel() >= 9)) { 
+						Sower->Say("Casting SoW...");
+						Sower->CastToClient()->CastSpell(278, c->GetID(), 1, -1, -1);
+					}
+					else if (!zone->CanCastOutdoor()) {
+						Sower->Say("I can't cast this spell indoors", c->GetName());
+					}
+					else if (c->GetLevel() <= 9) {
+						Sower->Say("I'm not level 9 yet.");
+					}
+					break;
+
+				case RANGER:
+
+					if((SowerClass = SHAMAN) && (zone->CanCastOutdoor()) && (c->GetLevel() >= 28)){
+						Sower->Say("Casting SoW...");
+						Sower->CastToClient()->CastSpell(278, c->GetID(), 1, -1, -1);
+					}
+					else if (!zone->CanCastOutdoor()) {
+						Sower->Say("I can't cast this spell indoors", c->GetName());
+					}
+					else if (c->GetLevel() <= 28) {
+						Sower->Say("I'm not level 28 yet.");
+					}
+					break;
+
+				case BEASTLORD:
+
+					if((SowerClass = SHAMAN) && (zone->CanCastOutdoor()) && (c->GetLevel() >= 24)) {
+						Sower->Say("Casting SoW...");
+						Sower->CastToClient()->CastSpell(278, c->GetID(), 1, -1, -1);
+					}
+					else if (!zone->CanCastOutdoor()) {
+						Sower->Say("I can't cast this spell indoors", c->GetName());
+					}
+					else if (c->GetLevel() <= 24) {
+						Sower->Say("I'm not level 24 yet.");
+					}
+					break;
+
+
+				default:
+					c->Message(15, "You must have a Druid, Shaman, Ranger,  or Beastlord in your group.");
+					break;
+			}
+		}
+	}
+
+
+	if(!strcasecmp(sep->arg[1], "invis")) {
+		if(c->IsGrouped())
+        {
+			bool hasinviser = false;
+			Group *g = c->GetGroup();
+			for(int i=0; i<MAX_GROUP_MEMBERS; i++)
+            {
+				if(g && g->members[i] && g->members[i]->IsBot()) {
+					uint8 casterlevel = g->members[i]->GetLevel();
+					switch(g->members[i]->GetClass()) {
+						case ENCHANTER:
+							if(casterlevel >= 4) {
+								hasinviser = true;
+							}
+							break;
+						case WIZARD:
+							if(casterlevel >= 16) {
+								hasinviser = true;
+							}
+							break;
+						case SHAMAN:
+							if(casterlevel >= 27) {
+								hasinviser = true;
+							}
+							break;
+						case MAGICIAN:
+							if(casterlevel >= 8) {
+								hasinviser = true;
+							}
+							break;
+						default:
+							break;
+					}
+					if ((!strcasecmp(sep->arg[2], "undead")) && (hasinviser)) {
+						g->members[i]->Say("Casting invis undead...");
+						g->members[i]->CastSpell(235, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "live")) && (hasinviser)) { 
+						g->members[i]->Say("Casting invisibilty...");
+						g->members[i]->CastSpell(42, c->GetID(), 1, -1, -1);
+					}
+					else if (hasinviser) {
+						g->members[i]->Say("Do you want [invis undead], or [invis live]?", c->GetName());
+						break;
+					}
+				}
+			}
+			if(!hasinviser) {
+				c->Message(15, "You don't have the needed caster class in your group.");
+			}
+		}
+		else {
+			c->Message(15, "You don't have the needed caster class in your group.");
+		}
+		return;
+	}
+	if(!strcasecmp(sep->arg[1], "levitate")) {
+		if(c->IsGrouped())
+        {
+			bool haslever = false;
+			Group *g = c->GetGroup();
+			for(int i=0; i<MAX_GROUP_MEMBERS; i++)
+            {
+				if(g && g->members[i] && g->members[i]->IsBot() && zone->CanCastOutdoor()) {
+					uint8 casterlevel = g->members[i]->GetLevel();
+					switch(g->members[i]->GetClass()) {
+						case ENCHANTER:
+							if(casterlevel >= 15) {
+								haslever = true;
+							}
+							break;
+						case WIZARD:
+							if(casterlevel >= 22) {
+								haslever = true;
+							}
+							break;
+						case SHAMAN:
+							if(casterlevel >= 10) {
+								haslever = true;
+							}
+							break;
+						case DRUID:
+							if(casterlevel >= 14) {
+								haslever = true;
+							}
+							break;
+						default:
+							break;
+					}
+					if(haslever) {
+						g->members[i]->Say("Casting Levitate...");
+						g->members[i]->CastSpell(261, c->GetID(), 1, -1, -1);
+						break;
+					}
+				}
+			}
+			if(zone->CanCastOutdoor() && !haslever) {
+				c->Message(15, "You don't have the needed caster class in your group.");
+			}
+			if(!zone->CanCastOutdoor()) {
+				c->Message(15, "You can't cast this spell indoors.");
+			}
+		}
+		else {
+			c->Message(15, "You don't have the needed caster class in your group.");
+		}
+		return;
+	}
+	if ((!strcasecmp(sep->arg[1], "resist")) && (c->IsGrouped())) {
+			Mob *Resister;
+			int32 ResisterClass = 0;
+			Group *g = c->GetGroup();
+		if(g) {
+			for(int i=0; i<MAX_GROUP_MEMBERS; i++){
+				if(g->members[i] && g->members[i]->IsBot()) {
+					switch(g->members[i]->GetClass()) {
+						case CLERIC:
+							  Resister = g->members[i];
+							  ResisterClass = CLERIC;
+							break;
+						case SHAMAN:
+							if (ResisterClass == 0)
+							  Resister = g->members[i];
+							  ResisterClass = SHAMAN;
+							break;
+						case DRUID:
+							if((ResisterClass != CLERIC) && (ResisterClass != SHAMAN))
+							  Resister = g->members[i];
+							  ResisterClass = DRUID;
+							break;
+						default:
+							break;
+					}
+				}
+			}
+			switch(ResisterClass) {
+				case CLERIC:
+					if	(!strcasecmp(sep->arg[2], "poison") && (c->GetLevel() >= 6))  {
+						Resister->Say("Casting poison protection...", sep->arg[2]);
+						Resister->CastToNPC()->Bot_Command_Resist(1, Resister->GetLevel());
+					}
+					else if (!strcasecmp(sep->arg[2], "disease") && (c->GetLevel() >= 11)) {
+						Resister->Say("Casting disease protection...", sep->arg[2]);
+						Resister->CastToNPC()->Bot_Command_Resist(2, Resister->GetLevel());
+					}
+					else if(!strcasecmp(sep->arg[2], "fire") && (c->GetLevel() >= 8)) {
+						Resister->Say("Casting fire protection...", sep->arg[2]);
+						Resister->CastToNPC()->Bot_Command_Resist(3, Resister->GetLevel());
+					}
+					else if(!strcasecmp(sep->arg[2], "cold") && (c->GetLevel() >= 13)) {
+						Resister->Say("Casting cold protection...", sep->arg[2]);
+						Resister->CastToNPC()->Bot_Command_Resist(4, Resister->GetLevel());
+					}
+					else if(!strcasecmp(sep->arg[2], "magic") && (c->GetLevel() >= 16)) {
+						Resister->Say("Casting magic protection...", sep->arg[2]);
+						Resister->CastToNPC()->Bot_Command_Resist(5, Resister->GetLevel());
+					}
+					else if (!strcasecmp(sep->arg[2], "magic") && (c->GetLevel() <= 16)
+					|| !strcasecmp(sep->arg[2], "cold") && (c->GetLevel() <= 13)
+					|| !strcasecmp(sep->arg[2], "fire") && (c->GetLevel() <= 8) 
+					|| !strcasecmp(sep->arg[2], "disease") && (c->GetLevel() <= 11)
+					|| !strcasecmp(sep->arg[2], "poison") && (c->GetLevel() <= 6)) {
+						Resister->Say("I don't have the needed level yet", sep->arg[2]);
+					}
+					else 
+					Resister->Say("Do you want [resist poison], [resist disease], [resist fire], [resist cold], or [resist magic]?", c->GetName());
+
+					break;
+
+				case SHAMAN:
+					if	(!strcasecmp(sep->arg[2], "poison") && (c->GetLevel() >= 20))  {
+						Resister->Say("Casting poison protection...", sep->arg[2]);
+						Resister->CastToNPC()->Bot_Command_Resist(12, Resister->GetLevel());
+					}
+					else if (!strcasecmp(sep->arg[2], "disease") && (c->GetLevel() >= 8)) {
+						Resister->Say("Casting disease protection...", sep->arg[2]);
+						Resister->CastToNPC()->Bot_Command_Resist(13, Resister->GetLevel());
+					}
+					else if(!strcasecmp(sep->arg[2], "fire") && (c->GetLevel() >= 5)) {
+						Resister->Say("Casting fire protection...", sep->arg[2]);
+						Resister->CastToNPC()->Bot_Command_Resist(14, Resister->GetLevel());
+					}
+					else if(!strcasecmp(sep->arg[2], "cold") && (c->GetLevel() >= 1)) {
+						Resister->Say("Casting cold protection...", sep->arg[2]);
+						Resister->CastToNPC()->Bot_Command_Resist(15, Resister->GetLevel());
+					}
+					else if(!strcasecmp(sep->arg[2], "magic") && (c->GetLevel() >= 19)) {
+						Resister->Say("Casting magic protection...", sep->arg[2]);
+						Resister->CastToNPC()->Bot_Command_Resist(16, Resister->GetLevel());
+					}
+					else if (!strcasecmp(sep->arg[2], "magic") && (c->GetLevel() <= 19)
+					|| !strcasecmp(sep->arg[2], "cold") && (c->GetLevel() <= 1)
+					|| !strcasecmp(sep->arg[2], "fire") && (c->GetLevel() <= 5) 
+					|| !strcasecmp(sep->arg[2], "disease") && (c->GetLevel() <= 8)
+					|| !strcasecmp(sep->arg[2], "poison") && (c->GetLevel() <= 20)) {
+						Resister->Say("I don't have the needed level yet", sep->arg[2]);
+					}
+					else 
+					Resister->Say("Do you want [resist poison], [resist disease], [resist fire], [resist cold], or [resist magic]?", c->GetName());
+
+					break;
+
+				case DRUID:
+
+					if	(!strcasecmp(sep->arg[2], "poison") && (c->GetLevel() >= 19)) {
+						Resister->Say("Casting poison protection...", sep->arg[2]);
+						Resister->CastToNPC()->Bot_Command_Resist(7, Resister->GetLevel());
+					}
+					else if (!strcasecmp(sep->arg[2], "disease") && (c->GetLevel() >= 19)) {
+						Resister->Say("Casting disease protection...", sep->arg[2]);
+						Resister->CastToNPC()->Bot_Command_Resist(8, Resister->GetLevel());
+					}
+					else if(!strcasecmp(sep->arg[2], "fire")) { // Fire level 1
+						Resister->Say("Casting fire protection...", sep->arg[2]);
+						Resister->CastToNPC()->Bot_Command_Resist(9, Resister->GetLevel());
+					}
+					else if(!strcasecmp(sep->arg[2], "cold") && (c->GetLevel() >= 13)) {
+						Resister->Say("Casting cold protection...", sep->arg[2]);
+						Resister->CastToNPC()->Bot_Command_Resist(10, Resister->GetLevel());
+					}
+					else if(!strcasecmp(sep->arg[2], "magic") && (c->GetLevel() >= 16)) {
+						Resister->Say("Casting magic protection...", sep->arg[2]);
+						Resister->CastToNPC()->Bot_Command_Resist(11, Resister->GetLevel());
+					}
+					else if (!strcasecmp(sep->arg[2], "magic") && (c->GetLevel() <= 16)
+					|| !strcasecmp(sep->arg[2], "cold") && (c->GetLevel() <= 9)
+					|| !strcasecmp(sep->arg[2], "disease") && (c->GetLevel() <= 19)
+					|| !strcasecmp(sep->arg[2], "poison") && (c->GetLevel() <= 19)) {
+						Resister->Say("I don't have the needed level yet", sep->arg[2]) ;
+					}
+					else 
+					Resister->Say("Do you want [resist poison], [resist disease], [resist fire], [resist cold], or [resist magic]?", c->GetName());
+
+					break;
+
+				default:
+					c->Message(15, "You must have a Cleric, Shaman, or Druid in your group.");
+					break;
+			}
+		}
+	}
 	// debug commands
 	if(!strcasecmp(sep->arg[1], "debug") && !strcasecmp(sep->arg[2], "inventory")) {
 		Mob *target = c->GetTarget();

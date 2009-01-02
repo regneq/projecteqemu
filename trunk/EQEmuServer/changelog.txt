@@ -2,6 +2,16 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
 ==01/01/2009
+Angelox: Bots: Added command '#Bot sow' (Druid has options) 
+Angelox: Bots: Added command '#Bot levitate'.
+Angelox: Bots: Added command '#bot invis' - (has options).
+
+Required SQL: utils/sql/svn/250_bot_spell_update.sql
+
+Angelox: Bots: Added command '#bot resist' (has options, don't use optional sql if you don't want).
+
+Optional SQL: utils/sql/svn/250_optional_bot_spell_update.sql
+
 Derision: Added chatserver for Chat Channel support. mail_opcodes.conf updated in utils.
 Derision: See: http://www.eqemulator.net/wiki/wikka.php?wakka=ChatChannels
 
