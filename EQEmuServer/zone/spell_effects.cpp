@@ -1015,8 +1015,8 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				else if(spell.base[i] == HALFLING || spell.base[i] == GNOME){
 					SendAppearancePacket(AT_Size, 3);
 				}
-                        else if(spell.base[i] == WOLF) {
-                              SendAppearancePacket(AT_Size, 3);
+	                        else if(spell.base[i] == WOLF) {
+                              SendAppearancePacket(AT_Size, 2);
                         }
 				else{
 					SendAppearancePacket(AT_Size, 6);

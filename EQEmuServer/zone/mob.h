@@ -926,6 +926,7 @@ protected:
 	virtual bool Bot_Command_RezzTarget(Mob *target) { return(false); }
 	virtual bool Bot_Command_Cure(int curetype, int level) { return(false); }
 	virtual bool Bot_Command_CalmTarget(Mob *target) { return(false); }
+	virtual bool Bot_Command_Resist(int resisttype, int level) { return(false); } 
 
 #endif //EQBOTS
 	

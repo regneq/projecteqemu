@@ -1075,6 +1075,170 @@ bool NPC::Bot_Command_Cure(int curetype, int level) {
 	return false;
 }
 
+bool NPC::Bot_Command_Resist(int resisttype, int level) {
+	int resistid = 0;
+	switch(resisttype) {
+		case 1: // Poison Cleric
+			if(level >= 30) {
+				resistid = 62;
+			}
+			else if(level >= 6) {
+				resistid = 227;
+			}
+			break;
+		case 2: // Disease Cleric
+			if(level >= 36) {
+				resistid = 63;
+			}
+			else if(level >= 11) {
+				resistid = 226;
+			}
+			break;
+		case 3: // Fire Cleric
+			if(level >= 33) {
+				resistid = 60;
+			}
+			else if(level >= 8) {
+				resistid = 224;
+			}
+			break;
+		case 4: // Cold Cleric
+			if(level >= 38) {
+				resistid = 61;
+			}
+			else if(level >= 13) {
+				resistid = 225;
+			}
+			break;
+		case 5: // Magic Cleric
+			if(level >= 43) {
+				resistid = 64;
+			}
+			else if(level >= 16) {
+				resistid = 228;
+			}
+			break;
+		case 6: // Magic Enchanter
+			if(level >= 37) {
+				resistid = 64;
+			}
+			else if(level >= 17) {
+				resistid = 228;
+			}
+			break;
+		case 7: // Poison Druid
+			if(level >= 44) {
+				resistid = 62;
+			}
+			else if(level >= 19) {
+				resistid = 227;
+			}
+			break;
+		case 8: // Disease Druid
+			if(level >= 44) {
+				resistid = 63;
+			}
+			else if(level >= 19) {
+				resistid = 226;
+			}
+			break;
+		case 9: // Fire Druid
+			if(level >= 20) {
+				resistid = 60;
+			}
+			else if(level >= 1) {
+				resistid = 224;
+			}
+			break;
+		case 10: // Cold Druid
+			if(level >= 30) {
+				resistid = 61;
+			}
+			else if(level >= 9) {
+				resistid = 225;
+			}
+			break;
+		case 11: // Magic Druid
+			if(level >= 49) {
+				resistid = 64;
+			}
+			else if(level >= 34) {
+				resistid = 228;
+			}
+			break;
+		case 12: // Poison Shaman
+			if(level >= 35) {
+				resistid = 62;
+			}
+			else if(level >= 20) {
+				resistid = 227;
+			}
+			break;
+		case 13: // Disease Shaman
+			if(level >= 30) {
+				resistid = 63;
+			}
+			else if(level >= 8) {
+				resistid = 226;
+			}
+			break;
+		case 14: // Fire Shaman
+			if(level >= 27) {
+				resistid = 60;
+			}
+			else if(level >= 5) {
+				resistid = 224;
+			}
+			break;
+		case 15: // Cold Shaman
+			if(level >= 24) {
+				resistid = 61;
+			}
+			else if(level >= 1) {
+				resistid = 225;
+			}
+			break;
+		case 16: // Magic Shaman
+			if(level >= 43) {
+				resistid = 64;
+			}
+			else if(level >= 19) {
+				resistid = 228;
+			}
+			break;
+	}
+	if(resistid > 0) {
+		if(IsBotRaiding()) {
+			BotRaids* br = entity_list.GetBotRaidByMob(this);
+			if(br) {
+				for(int i=0; i<MAX_BOT_RAID_GROUPS; i++) {
+					Group* gr = br->BotRaidGroups[i];
+					if(gr) {
+						for(int j=0; j<MAX_GROUP_MEMBERS; j++) {
+							if(gr->members[j]) {
+								CastSpell(resistid, gr->members[j]->GetID(), 1, -1, -1, &gr->members[j]->pDontHealMeBefore);
+							}
+						}
+					}
+				}
+			}
+		}
+		else {
+			Group* g = entity_list.GetGroupByMob(this);
+			if(g) {
+				for(int k=0; k<MAX_GROUP_MEMBERS; k++) {
+					if(g->members[k]) {
+						CastSpell(resistid, g->members[k]->GetID(), 1, -1, -1, &g->members[k]->pDontHealMeBefore);
+					}
+				}
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+
 bool NPC::Bot_Command_MezzTarget(Mob *target) {
 	if(target) {
 		int mezid = 0;
