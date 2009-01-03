@@ -1,5 +1,7 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==01/03/2009
+Angelox: Bots: remade/improved commands '#Bot levitate'and '#bot invis'
 
 ==01/02/2009
 Congdar: Bots: update command #bot inventory list   Now shows gear as item links.  Removed (Bot) as last name during bot creation.

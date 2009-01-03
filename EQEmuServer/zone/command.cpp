@@ -9162,115 +9162,237 @@ void command_bot(Client *c, const Seperator *sep) {
 		}
 	}
 
-
-	if(!strcasecmp(sep->arg[1], "invis")) {
-		if(c->IsGrouped())
-        {
-			bool hasinviser = false;
+	if ((!strcasecmp(sep->arg[1], "invis")) && (c->IsGrouped())) {
+ 			Mob *Inviser;
+			int32 InviserClass = 0;
 			Group *g = c->GetGroup();
-			for(int i=0; i<MAX_GROUP_MEMBERS; i++)
-            {
-				if(g && g->members[i] && g->members[i]->IsBot()) {
-					uint8 casterlevel = g->members[i]->GetLevel();
+		if(g) {
+			for(int i=0; i<MAX_GROUP_MEMBERS; i++){
+				if(g->members[i] && g->members[i]->IsBot()) {
 					switch(g->members[i]->GetClass()) {
 						case ENCHANTER:
-							if(casterlevel >= 4) {
-								hasinviser = true;
-							}
-							break;
-						case WIZARD:
-							if(casterlevel >= 16) {
-								hasinviser = true;
-							}
-							break;
-						case SHAMAN:
-							if(casterlevel >= 27) {
-								hasinviser = true;
-							}
+							  Inviser = g->members[i];
+							  InviserClass = ENCHANTER;
 							break;
 						case MAGICIAN:
-							if(casterlevel >= 8) {
-								hasinviser = true;
-							}
-							break;
-						default:
-							break;
-					}
-					if ((!strcasecmp(sep->arg[2], "undead")) && (hasinviser)) {
-						g->members[i]->Say("Casting invis undead...");
-						g->members[i]->CastSpell(235, c->GetID(), 1, -1, -1);
-					}
-					else if ((!strcasecmp(sep->arg[2], "live")) && (hasinviser)) { 
-						g->members[i]->Say("Casting invisibilty...");
-						g->members[i]->CastSpell(42, c->GetID(), 1, -1, -1);
-					}
-					else if (hasinviser) {
-						g->members[i]->Say("Do you want [invis undead], or [invis live]?", c->GetName());
-						break;
-					}
-				}
-			}
-			if(!hasinviser) {
-				c->Message(15, "You don't have the needed caster class in your group.");
-			}
-		}
-		else {
-			c->Message(15, "You don't have the needed caster class in your group.");
-		}
-		return;
-	}
-	if(!strcasecmp(sep->arg[1], "levitate")) {
-		if(c->IsGrouped())
-        {
-			bool haslever = false;
-			Group *g = c->GetGroup();
-			for(int i=0; i<MAX_GROUP_MEMBERS; i++)
-            {
-				if(g && g->members[i] && g->members[i]->IsBot() && zone->CanCastOutdoor()) {
-					uint8 casterlevel = g->members[i]->GetLevel();
-					switch(g->members[i]->GetClass()) {
-						case ENCHANTER:
-							if(casterlevel >= 15) {
-								haslever = true;
-							}
+							if (InviserClass != ENCHANTER)
+							  Inviser = g->members[i];
+							  InviserClass = MAGICIAN;
 							break;
 						case WIZARD:
-							if(casterlevel >= 22) {
-								haslever = true;
-							}
+							if((InviserClass != ENCHANTER) && (InviserClass != MAGICIAN))
+							  Inviser = g->members[i];
+							  InviserClass = WIZARD;
 							break;
-						case SHAMAN:
-							if(casterlevel >= 10) {
-								haslever = true;
-							}
+						case NECROMANCER:
+							if((InviserClass != ENCHANTER) && (InviserClass != WIZARD) && (InviserClass != MAGICIAN))
+							  Inviser = g->members[i];
+							  InviserClass = NECROMANCER;
 							break;
 						case DRUID:
-							if(casterlevel >= 14) {
-								haslever = true;
-							}
+							if((InviserClass != ENCHANTER) && (InviserClass != WIZARD) 
+							  && (InviserClass != MAGICIAN) &&(InviserClass != NECROMANCER))
+							  Inviser = g->members[i];
+							  InviserClass = DRUID;
 							break;
 						default:
 							break;
 					}
-					if(haslever) {
-						g->members[i]->Say("Casting Levitate...");
-						g->members[i]->CastSpell(261, c->GetID(), 1, -1, -1);
+				}
+			}
+			switch(InviserClass) {
+				case ENCHANTER:
+					if  ((c->GetLevel() <= 14) && (!strcasecmp(sep->arg[2], "undead"))) {
+						Inviser->Say("I'm not level 14 yet.");
+					}
+					else if ((c->GetLevel() >= 14) && (!strcasecmp(sep->arg[2], "undead"))) {
+						Inviser->Say("Casting invis undead...");
+						Inviser->CastSpell(235, c->GetID(), 1, -1, -1);
+					}
+					else if  ((c->GetLevel() <= 4) && (!strcasecmp(sep->arg[2], "live"))) {
+						Inviser->Say("I'm not level 4 yet.");
+					}
+					else if ((c->GetLevel() >= 4) && (!strcasecmp(sep->arg[2], "live"))) { 
+						Inviser->Say("Casting invisibilty...");
+						Inviser->CastSpell(42, c->GetID(), 1, -1, -1);
+					}
+					else {
+						Inviser->Say("Do you want [invis undead], or [invis live]?", c->GetName());
+					}
 						break;
+				case MAGICIAN:
+					if  (!strcasecmp(sep->arg[2], "undead")) {
+						Inviser->Say("I don't have that spell.");
+					}
+					else if  ((c->GetLevel() <= 8) && (!strcasecmp(sep->arg[2], "live"))) {
+						Inviser->Say("I'm not level 8 yet.");
+					}
+					else if ((c->GetLevel() >= 8) && (!strcasecmp(sep->arg[2], "live"))) { 
+						Inviser->Say("Casting invisibilty...");
+						Inviser->CastSpell(42, c->GetID(), 1, -1, -1);
+					}
+					else {
+						Inviser->Say("I only have [invis live]", c->GetName());
+					}
+						break;
+				case WIZARD:
+					if  ((c->GetLevel() <= 39) && (!strcasecmp(sep->arg[2], "undead"))) {
+						Inviser->Say("I'm not level 39 yet.");
+					}
+					else if ((c->GetLevel() >= 39) && (!strcasecmp(sep->arg[2], "undead"))) {
+						Inviser->Say("Casting invis undead...");
+						Inviser->CastSpell(235, c->GetID(), 1, -1, -1);
+					}
+					else if  ((c->GetLevel() <= 16) && (!strcasecmp(sep->arg[2], "live"))) {
+						Inviser->Say("I'm not level 16 yet.");
+					}
+					else if ((c->GetLevel() >= 16) && (!strcasecmp(sep->arg[2], "live"))) { 
+						Inviser->Say("Casting invisibilty...");
+						Inviser->CastSpell(42, c->GetID(), 1, -1, -1);
+					}
+					else {
+						Inviser->Say("Do you want [invis undead], or [invis live]?", c->GetName());
+					}
+						break;
+				case NECROMANCER:
+					if (!strcasecmp(sep->arg[2], "undead")) {
+						Inviser->Say("Casting invis undead...");
+						Inviser->CastSpell(235, c->GetID(), 1, -1, -1);
+					}
+					else if (!strcasecmp(sep->arg[2], "live")) { 
+						Inviser->Say("I don't have that spell...");
+//						Inviser->CastSpell(42, c->GetID(), 1, -1, -1);
+					}
+					else {
+						Inviser->Say("I only have [invis undead]", c->GetName());
+					}
+						break;
+				case DRUID:
+					if  (!strcasecmp(sep->arg[2], "undead")) {
+						Inviser->Say("I don't have that spell...");
+					}
+					else if  ((c->GetLevel() <= 4) && (!strcasecmp(sep->arg[2], "live"))) {
+						Inviser->Say("I'm not level 4 yet.");
+					}
+					else if ((c->GetLevel() >= 18) && (!strcasecmp(sep->arg[2], "live"))) { 
+						Inviser->Say("Casting Superior Camouflage...");
+						Inviser->CastSpell(34, c->GetID(), 1, -1, -1);
+					}
+					else if ((c->GetLevel() >= 4) && (!strcasecmp(sep->arg[2], "live")) && (zone->CanCastOutdoor())) { 
+						Inviser->Say("Casting Camouflage...");
+						Inviser->CastSpell(247, c->GetID(), 1, -1, -1);
+					}
+					else if ((c->GetLevel() >= 4) && (!strcasecmp(sep->arg[2], "live")) && (!zone->CanCastOutdoor())) { 
+						Inviser->Say("I can't cast this spell indoors...");
+					}
+					else {
+						Inviser->Say("I only have [invis live]", c->GetName());
+					}
+						break;
+				default:
+					c->Message(15, "You must have a Enchanter, Magician, Wizard, Druid, or Necromancer in your group.");
+					break;
+			}
+		}
+	}
+
+	if ((!strcasecmp(sep->arg[1], "levitate")) && (c->IsGrouped())) {
+ 			Mob *Lever;
+			int32 LeverClass = 0;
+			Group *g = c->GetGroup();
+		if(g) {
+			for(int i=0; i<MAX_GROUP_MEMBERS; i++){
+				if(g->members[i] && g->members[i]->IsBot()) {
+					switch(g->members[i]->GetClass()) {
+						case DRUID:
+							  Lever = g->members[i];
+							  LeverClass = DRUID;
+							break;
+						case SHAMAN:
+							if (LeverClass != DRUID)
+							  Lever = g->members[i];
+							  LeverClass = SHAMAN;
+							break;
+						case WIZARD:
+							if((LeverClass != DRUID) && (LeverClass != SHAMAN))
+							  Lever = g->members[i];
+							  LeverClass = WIZARD;
+							break;
+						case ENCHANTER:
+							if((LeverClass != DRUID) && (LeverClass != WIZARD) && (LeverClass != SHAMAN))
+							  Lever = g->members[i];
+							  LeverClass = ENCHANTER;
+							break;
+						default:
+							break;
 					}
 				}
 			}
-			if(zone->CanCastOutdoor() && !haslever) {
-				c->Message(15, "You don't have the needed caster class in your group.");
-			}
-			if(!zone->CanCastOutdoor()) {
-				c->Message(15, "You can't cast this spell indoors.");
+			switch(LeverClass) {
+				case DRUID:
+					if  (c->GetLevel() <= 14) {
+						Lever->Say("I'm not level 14 yet.");
+					}
+					else if (zone->CanCastOutdoor()) {
+						Lever->Say("Casting Levitate...");
+						Lever->CastSpell(261, c->GetID(), 1, -1, -1);
+						break;
+					}
+					else if (!zone->CanCastOutdoor()) {
+						Lever->Say("I can't cast this spell indoors", c->GetName());
+					}
+					break;
+
+				case SHAMAN:
+
+					if ((zone->CanCastOutdoor()) && (c->GetLevel() >= 10)) { 
+						Lever->Say("Casting Levitate...");
+						Lever->CastToClient()->CastSpell(261, c->GetID(), 1, -1, -1);
+					}
+					else if (!zone->CanCastOutdoor()) {
+						Lever->Say("I can't cast this spell indoors", c->GetName());
+					}
+					else if (c->GetLevel() <= 10) {
+						Lever->Say("I'm not level 10 yet.");
+					}
+					break;
+
+				case WIZARD:
+
+					if((zone->CanCastOutdoor()) && (c->GetLevel() >= 22)){
+						Lever->Say("Casting Levitate...");
+						Lever->CastToClient()->CastSpell(261, c->GetID(), 1, -1, -1);
+					}
+					else if (!zone->CanCastOutdoor()) {
+						Lever->Say("I can't cast this spell indoors", c->GetName());
+					}
+					else if (c->GetLevel() <= 22) {
+						Lever->Say("I'm not level 22 yet.");
+					}
+					break;
+
+				case ENCHANTER:
+
+					if((zone->CanCastOutdoor()) && (c->GetLevel() >= 15)) {
+						Lever->Say("Casting Levitate...");
+						Lever->CastToClient()->CastSpell(261, c->GetID(), 1, -1, -1);
+					}
+					else if (!zone->CanCastOutdoor()) {
+						Lever->Say("I can't cast this spell indoors", c->GetName());
+					}
+					else if (c->GetLevel() <= 15) {
+						Lever->Say("I'm not level 15 yet.");
+					}
+					break;
+
+
+				default:
+					c->Message(15, "You must have a Druid, Shaman, Wizard, or Enchanter in your group.");
+					break;
 			}
 		}
-		else {
-			c->Message(15, "You don't have the needed caster class in your group.");
-		}
-		return;
 	}
+
 	if ((!strcasecmp(sep->arg[1], "resist")) && (c->IsGrouped())) {
 			Mob *Resister;
 			int32 ResisterClass = 0;
