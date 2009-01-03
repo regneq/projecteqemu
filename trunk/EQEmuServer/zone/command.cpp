@@ -7996,7 +7996,7 @@ void command_bot(Client *c, const Seperator *sep) {
 		char *query = 0;
 		MYSQL_RES *result;
 		MYSQL_ROW row;
-		const char* lname = "Bot";
+		const char* lname = "";
 
 		if(database.RunQuery(query, MakeAnyLenString(&query, "SELECT count(*) FROM npc_types WHERE name like '%s'", sep->arg[2]), errbuf, &result)) {
 			row = mysql_fetch_row(result);
@@ -8565,24 +8565,24 @@ void command_bot(Client *c, const Seperator *sep) {
             {
                 Mob* b = c->GetTarget();	
                 int x = database.GetBotItemsNumber(b->GetNPCTypeID() );
+				const char* equiped[22] = {"Charm", "Left Ear", "Head", "Face", "Right Ear", "Neck", "Shoulders", "Arms", "Back",
+											"Left Wrist", "Right Wrist", "Range", "Hands", "Primary Hand", "Secondary Hand",
+											"Left Finger", "Right Finger", "Chest", "Legs", "Feet", "Waist", "Ammo" };
+				const Item_Struct* item2 = NULL;
                 for(int i=0; i<22 ; i++)
                 {
                     if(database.GetBotItemBySlot(b->GetNPCTypeID(), i) == 0)
                     {
-                        c->Message(15, "No item in the slot = %i",i);
+                        c->Message(15, "I need something for my %s", equiped[i]);
                         continue;
                     }
-                    if(database.GetBotItemBySlot(b->GetNPCTypeID(),i) != 0 && i != 8 && i != 14) {
-                        const Item_Struct* item2 = database.GetItem(database.GetBotItemBySlot(b->GetNPCTypeID(), i));
-                        c->Message(15, "Equiped Item %s in the slot %i \n.",item2->Name ,i);
+                    if((i == 0) || (i == 11) || (i == 13) || (i == 14) || (i == 21)) {
+                        item2 = database.GetItem(database.GetBotItemBySlot(b->GetNPCTypeID(), i));
+						c->Message(15, "Using %c%06X000000000000000000000000000000000000000%s%c in my %s", 0x12, item2->ID, item2->Name, 0x12, equiped[i]);
                     }
-                    if(database.GetBotItemBySlot(b->GetNPCTypeID(), i) != 0 && i == 8) {
-                        const Item_Struct* item2 = database.GetItem(database.GetBotItemBySlot(b->GetNPCTypeID(), i));
-                        c->Message(15, "Equiped Item %s in the slot %i \n.",item2->Name ,i);
-                    }
-                    if ( database.GetBotItemBySlot(b->GetNPCTypeID(),i) != 0 && i == 14) {
-                        const Item_Struct* item2 = database.GetItem( database.GetBotItemBySlot(b->GetNPCTypeID(),i) );
-                        c->Message(15, "Equiped Item %s in the slot %i \n.", item2->Name ,i);
+					else {
+                        item2 = database.GetItem(database.GetBotItemBySlot(b->GetNPCTypeID(), i));
+						c->Message(15, "Using %c%06X000000000000000000000000000000000000000%s%c on my %s", 0x12, item2->ID, item2->Name, 0x12, equiped[i]);
                     }
                 }
             }

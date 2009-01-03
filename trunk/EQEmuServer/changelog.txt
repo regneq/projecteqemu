@@ -1,6 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==01/02/2009
+Congdar: Bots: update command #bot inventory list   Now shows gear as item links.  Removed (Bot) as last name during bot creation.
+Optional SQL: update npc_types set lastname='' where isbot=1;
+
 ==01/01/2009
 Angelox: Bots: Added command '#Bot sow' (Druid has options) 
 Angelox: Bots: Added command '#Bot levitate'.
