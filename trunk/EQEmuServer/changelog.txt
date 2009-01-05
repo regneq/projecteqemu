@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==01/05/2009
+Angelox: Bots: Re-did command '#Bot cure'- one of three Curer class (Cleric is primary), will ask what you want if you use '#bot cure' alone.
+
 ==01/04/2009
 Angelox: Bots: Added command '#Bot endureb' (enduring breath).
 Angelox: Bots: Hopefully fixed bug where other sowers replaced primary sower (Druid).

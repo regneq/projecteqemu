@@ -8816,46 +8816,121 @@ void command_bot(Client *c, const Seperator *sep) {
 			}
 		}
 	}
-
-	if(!strcasecmp(sep->arg[1], "cure")) {
-		Mob *curer = NULL;
-		bool hascurer = false;
-		if(c->IsGrouped())
-		{
+//cure
+	if ((!strcasecmp(sep->arg[1], "cure")) && (c->IsGrouped())) {
+			Mob *Curer;
+			int32 CurerClass = 0;
 			Group *g = c->GetGroup();
-			if(g) {
-				for(int i=0; i<MAX_GROUP_MEMBERS; i++)
-				{
-					if(g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == CLERIC))
-					{
-						hascurer = true;
-						curer = g->members[i];
+		if(g) {
+			for(int i=0; i<MAX_GROUP_MEMBERS; i++){
+				if(g->members[i] && g->members[i]->IsBot()) {
+					switch(g->members[i]->GetClass()) {
+						case CLERIC:
+							  Curer = g->members[i];
+							  CurerClass = CLERIC;
+							break;
+						case SHAMAN:
+							if(CurerClass != CLERIC){
+							  Curer = g->members[i];
+							  CurerClass = SHAMAN;
+						}
+						case DRUID:
+							if (CurerClass == 0){
+							  Curer = g->members[i];
+							  CurerClass = DRUID;
+						}
+							break;
+							break;
+						default:
+							break;
 					}
 				}
-				if(!hascurer) {
-					c->Message(15, "You must have a Cleric in your group.");
-				}
+			}
+			switch(CurerClass) {
+				case CLERIC:
+					if	(!strcasecmp(sep->arg[2], "poison") && (c->GetLevel() >= 1))  {
+						Curer->Say("Trying to cure us of %s.", sep->arg[2]);
+						Curer->CastToNPC()->Bot_Command_Cure(1, Curer->GetLevel());
+					}
+					else if (!strcasecmp(sep->arg[2], "disease") && (c->GetLevel() >= 4)) {
+						Curer->Say("Trying to cure us of %s.", sep->arg[2]);
+						Curer->CastToNPC()->Bot_Command_Cure(2, Curer->GetLevel());
+					}
+					else if(!strcasecmp(sep->arg[2], "curse") && (c->GetLevel() >= 8)) {
+						Curer->Say("Trying to cure us of %s.", sep->arg[2]);
+						Curer->CastToNPC()->Bot_Command_Cure(3, Curer->GetLevel());
+					}
+					else if(!strcasecmp(sep->arg[2], "blindness") && (c->GetLevel() >= 3)) {
+						Curer->Say("Trying to cure us of %s.", sep->arg[2]);
+						Curer->CastToNPC()->Bot_Command_Cure(4, Curer->GetLevel());
+					}
+					else if (!strcasecmp(sep->arg[2], "curse") && (c->GetLevel() <= 8)
+					|| !strcasecmp(sep->arg[2], "blindness") && (c->GetLevel() <= 3) 
+					|| !strcasecmp(sep->arg[2], "disease") && (c->GetLevel() <= 4)
+					|| !strcasecmp(sep->arg[2], "poison") && (c->GetLevel() <= 1)) {
+						Curer->Say("I don't have the needed level yet", sep->arg[2]);
+					}
+					else
+					Curer->Say("Do you want [cure poison], [cure disease], [cure curse], or [cure blindness]?", c->GetName());
+
+					break;
+
+				case SHAMAN:
+					if	(!strcasecmp(sep->arg[2], "poison") && (c->GetLevel() >= 2))  {
+						Curer->Say("Trying to cure us of %s.", sep->arg[2]);
+						Curer->CastToNPC()->Bot_Command_Cure(1, Curer->GetLevel());
+					}
+					else if (!strcasecmp(sep->arg[2], "disease") && (c->GetLevel() >= 1)) {
+						Curer->Say("Trying to cure us of %s.", sep->arg[2]);
+						Curer->CastToNPC()->Bot_Command_Cure(2, Curer->GetLevel());
+					}
+					else if(!strcasecmp(sep->arg[2], "curse")) {
+						Curer->Say("I don't have that spell", sep->arg[2]);
+					}
+					else if(!strcasecmp(sep->arg[2], "blindness") && (c->GetLevel() >= 7)) {
+						Curer->Say("Trying to cure us of %s.", sep->arg[2]);
+						Curer->CastToNPC()->Bot_Command_Cure(4, Curer->GetLevel());
+					}
+					else if (!strcasecmp(sep->arg[2], "blindness") && (c->GetLevel() <= 7) 
+					|| !strcasecmp(sep->arg[2], "disease") && (c->GetLevel() <= 1)
+					|| !strcasecmp(sep->arg[2], "poison") && (c->GetLevel() <= 2)) {
+						Curer->Say("I don't have the needed level yet", sep->arg[2]);
+					}
+					else 
+					Curer->Say("Do you want [cure poison], [cure disease], or [cure blindness]?", c->GetName());
+
+					break;
+
+				case DRUID:
+
+					if	(!strcasecmp(sep->arg[2], "poison") && (c->GetLevel() >= 5)) {
+						Curer->Say("Trying to cure us of %s.", sep->arg[2]);
+						Curer->CastToNPC()->Bot_Command_Cure(1, Curer->GetLevel());
+					}
+					else if (!strcasecmp(sep->arg[2], "disease") && (c->GetLevel() >= 4)) {
+						Curer->Say("Trying to cure us of %s.", sep->arg[2]);
+						Curer->CastToNPC()->Bot_Command_Cure(2, Curer->GetLevel());
+					}
+					else if(!strcasecmp(sep->arg[2], "curse")) { // Fire level 1
+						Curer->Say("I don't have that spell", sep->arg[2]);
+					}
+					else if(!strcasecmp(sep->arg[2], "blindness") && (c->GetLevel() >= 13)) {
+						Curer->Say("I don't have that spell", sep->arg[2]);
+					}
+					else if (!strcasecmp(sep->arg[2], "disease") && (c->GetLevel() <= 4)
+					|| !strcasecmp(sep->arg[2], "poison") && (c->GetLevel() <= 5)) {
+						Curer->Say("I don't have the needed level yet", sep->arg[2]) ;
+					}
+					else 
+					Curer->Say("Do you want [cure poison], or [cure disease]?", c->GetName());
+
+					break;
+
+				default:
+					c->Message(15, "You must have a Cleric, Shaman, or Druid in your group.");
+					break;
 			}
 		}
-		if(hascurer) {
-			if(!strcasecmp(sep->arg[2], "poison")) {
-				curer->Say("Trying to cure us of %s.", sep->arg[2]);
-				curer->CastToNPC()->Bot_Command_Cure(1, curer->GetLevel());
-			}
-			else if(!strcasecmp(sep->arg[2], "disease")) {
-				curer->Say("Trying to cure us of %s.", sep->arg[2]);
-				curer->CastToNPC()->Bot_Command_Cure(2, curer->GetLevel());
-			}
-			else if(!strcasecmp(sep->arg[2], "curse")) {
-				curer->Say("Trying to cure us of %s.", sep->arg[2]);
-				curer->CastToNPC()->Bot_Command_Cure(3, curer->GetLevel());
-			}
-			else if(!strcasecmp(sep->arg[2], "blindness")) {
-				curer->Say("Trying to cure us of %s.", sep->arg[2]);
-				curer->CastToNPC()->Bot_Command_Cure(4, curer->GetLevel());
-			}
-		}
-		return;
 	}
 
 	if(!strcasecmp(sep->arg[1], "ai") && !strcasecmp(sep->arg[2], "mez"))
