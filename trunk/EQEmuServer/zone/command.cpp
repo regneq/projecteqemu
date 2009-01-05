@@ -7413,6 +7413,7 @@ void command_bot(Client *c, const Seperator *sep) {
 		c->Message(15, "#bot invis - Bot invisiblity (must have proper class in group)");
 		c->Message(15, "#bot levitate - Bot levitation (must have proper class in group)");
 		c->Message(15, "#bot resist - Bot resist buffs (must have proper class in group)");
+		c->Message(15, "#bot endureb - Bot enduring breath (must have proper class in group)");
 
 		return;
 	}
@@ -9035,6 +9036,7 @@ void command_bot(Client *c, const Seperator *sep) {
 		return;
 	}
 
+// Sow
 	if ((!strcasecmp(sep->arg[1], "sow")) && (c->IsGrouped())) {
  			Mob *Sower;
 			int32 SowerClass = 0;
@@ -9048,19 +9050,22 @@ void command_bot(Client *c, const Seperator *sep) {
 							  SowerClass = DRUID;
 							break;
 						case SHAMAN:
-							if (SowerClass == 0)
+							if (SowerClass != DRUID){
 							  Sower = g->members[i];
 							  SowerClass = SHAMAN;
+						}
 							break;
 						case RANGER:
-							if(SowerClass != DRUID)
+							if (SowerClass == 0){
 							  Sower = g->members[i];
 							  SowerClass = RANGER;
+						}
 							break;
 						case BEASTLORD:
-							if((SowerClass != DRUID) && (SowerClass != RANGER))
+							if (SowerClass == 0){
 							  Sower = g->members[i];
 							  SowerClass = BEASTLORD;
+						}
 							break;
 						default:
 							break;
@@ -9114,7 +9119,7 @@ void command_bot(Client *c, const Seperator *sep) {
 
 				case SHAMAN:
 
-					if ((SowerClass != DRUID) && (zone->CanCastOutdoor()) && (c->GetLevel() >= 9)) { 
+					if ((zone->CanCastOutdoor()) && (c->GetLevel() >= 9)) { 
 						Sower->Say("Casting SoW...");
 						Sower->CastToClient()->CastSpell(278, c->GetID(), 1, -1, -1);
 					}
@@ -9128,7 +9133,7 @@ void command_bot(Client *c, const Seperator *sep) {
 
 				case RANGER:
 
-					if((SowerClass = SHAMAN) && (zone->CanCastOutdoor()) && (c->GetLevel() >= 28)){
+					if ((zone->CanCastOutdoor()) && (c->GetLevel() >= 28)){
 						Sower->Say("Casting SoW...");
 						Sower->CastToClient()->CastSpell(278, c->GetID(), 1, -1, -1);
 					}
@@ -9142,7 +9147,7 @@ void command_bot(Client *c, const Seperator *sep) {
 
 				case BEASTLORD:
 
-					if((SowerClass = SHAMAN) && (zone->CanCastOutdoor()) && (c->GetLevel() >= 24)) {
+					if((zone->CanCastOutdoor()) && (c->GetLevel() >= 24)) {
 						Sower->Say("Casting SoW...");
 						Sower->CastToClient()->CastSpell(278, c->GetID(), 1, -1, -1);
 					}
@@ -9162,6 +9167,92 @@ void command_bot(Client *c, const Seperator *sep) {
 		}
 	}
 
+//Endure Breath
+	if ((!strcasecmp(sep->arg[1], "endureb")) && (c->IsGrouped())) {
+ 			Mob *Endurer;
+			int32 EndurerClass = 0;
+			Group *g = c->GetGroup();
+		if(g) {
+			for(int i=0; i<MAX_GROUP_MEMBERS; i++){
+				if(g->members[i] && g->members[i]->IsBot()) {
+					switch(g->members[i]->GetClass()) {
+						case DRUID:
+							  Endurer = g->members[i];
+							  EndurerClass = DRUID;
+							break;
+						case SHAMAN:
+							if (EndurerClass != DRUID){
+							  Endurer = g->members[i];
+							  EndurerClass = SHAMAN;
+						}
+							break;
+						case ENCHANTER:
+							if(EndurerClass == 0){
+							  Endurer = g->members[i];
+							  EndurerClass = ENCHANTER;
+						}
+							break;
+						case RANGER:
+							if(EndurerClass == 0) {
+							  Endurer = g->members[i];
+							  EndurerClass = RANGER;
+						}
+							break;
+						default:
+							break;
+					}
+				}
+			}
+			switch(EndurerClass) {
+				case DRUID:
+
+					if  (c->GetLevel() <= 6) {
+						Endurer->Say("I'm not level 6 yet.");
+					}
+					else if (zone->CanCastOutdoor()) {
+						Endurer->Say("Casting Enduring Breath...");
+						Endurer->CastSpell(86, c->GetID(), 1, -1, -1);
+						break;
+					}
+					break;
+				case SHAMAN:
+
+					if ((zone->CanCastOutdoor()) && (c->GetLevel() >= 12)) { 
+						Endurer->Say("Casting Enduring Breath...");
+						Endurer->CastToClient()->CastSpell(86, c->GetID(), 1, -1, -1);
+					}
+					else if (c->GetLevel() <= 12) {
+						Endurer->Say("I'm not level 12 yet.");
+					}
+					break;
+				case RANGER:
+
+					if((zone->CanCastOutdoor()) && (c->GetLevel() >= 20)){
+						Endurer->Say("Casting Enduring Breath...");
+						Endurer->CastToClient()->CastSpell(86, c->GetID(), 1, -1, -1);
+					}
+					else if (c->GetLevel() <= 20) {
+						Endurer->Say("I'm not level 20 yet.");
+					}
+					break;
+				case ENCHANTER:
+
+					if((zone->CanCastOutdoor()) && (c->GetLevel() >= 12)) {
+						Endurer->Say("Casting Enduring Breath...");
+						Endurer->CastToClient()->CastSpell(86, c->GetID(), 1, -1, -1);
+					}
+					else if (c->GetLevel() <= 12) {
+						Endurer->Say("I'm not level 12 yet.");
+					}
+					break;
+				default:
+					c->Message(15, "You must have a Druid, Shaman, Ranger, or Enchanter in your group.");
+					break;
+			}
+		}
+	}
+
+//Invisible
 	if ((!strcasecmp(sep->arg[1], "invis")) && (c->IsGrouped())) {
  			Mob *Inviser;
 			int32 InviserClass = 0;
@@ -9175,25 +9266,29 @@ void command_bot(Client *c, const Seperator *sep) {
 							  InviserClass = ENCHANTER;
 							break;
 						case MAGICIAN:
-							if (InviserClass != ENCHANTER)
+							if (InviserClass != ENCHANTER){
 							  Inviser = g->members[i];
 							  InviserClass = MAGICIAN;
+						}
 							break;
 						case WIZARD:
-							if((InviserClass != ENCHANTER) && (InviserClass != MAGICIAN))
+							if((InviserClass != ENCHANTER) || (InviserClass != MAGICIAN)){
 							  Inviser = g->members[i];
 							  InviserClass = WIZARD;
+						}
 							break;
 						case NECROMANCER:
-							if((InviserClass != ENCHANTER) && (InviserClass != WIZARD) && (InviserClass != MAGICIAN))
+							if(InviserClass == 0){
 							  Inviser = g->members[i];
 							  InviserClass = NECROMANCER;
+						}
 							break;
 						case DRUID:
-							if((InviserClass != ENCHANTER) && (InviserClass != WIZARD) 
-							  && (InviserClass != MAGICIAN) &&(InviserClass != NECROMANCER))
+							if((InviserClass != ENCHANTER) || (InviserClass != WIZARD)
+							  || (InviserClass != MAGICIAN)){
 							  Inviser = g->members[i];
 							  InviserClass = DRUID;
+						}
 							break;
 						default:
 							break;
@@ -9296,6 +9391,7 @@ void command_bot(Client *c, const Seperator *sep) {
 		}
 	}
 
+//Levitate
 	if ((!strcasecmp(sep->arg[1], "levitate")) && (c->IsGrouped())) {
  			Mob *Lever;
 			int32 LeverClass = 0;
@@ -9309,19 +9405,22 @@ void command_bot(Client *c, const Seperator *sep) {
 							  LeverClass = DRUID;
 							break;
 						case SHAMAN:
-							if (LeverClass != DRUID)
+							if (LeverClass != DRUID){
 							  Lever = g->members[i];
 							  LeverClass = SHAMAN;
+						}
 							break;
 						case WIZARD:
-							if((LeverClass != DRUID) && (LeverClass != SHAMAN))
+							if(LeverClass == 0){
 							  Lever = g->members[i];
 							  LeverClass = WIZARD;
+						}
 							break;
 						case ENCHANTER:
-							if((LeverClass != DRUID) && (LeverClass != WIZARD) && (LeverClass != SHAMAN))
+							if (LeverClass == 0) {
 							  Lever = g->members[i];
 							  LeverClass = ENCHANTER;
+						}
 							break;
 						default:
 							break;
@@ -9393,6 +9492,7 @@ void command_bot(Client *c, const Seperator *sep) {
 		}
 	}
 
+//Resists
 	if ((!strcasecmp(sep->arg[1], "resist")) && (c->IsGrouped())) {
 			Mob *Resister;
 			int32 ResisterClass = 0;
@@ -9406,14 +9506,16 @@ void command_bot(Client *c, const Seperator *sep) {
 							  ResisterClass = CLERIC;
 							break;
 						case SHAMAN:
-							if (ResisterClass == 0)
+							if(ResisterClass != CLERIC){
 							  Resister = g->members[i];
 							  ResisterClass = SHAMAN;
-							break;
+						}
 						case DRUID:
-							if((ResisterClass != CLERIC) && (ResisterClass != SHAMAN))
+							if (ResisterClass == 0){
 							  Resister = g->members[i];
 							  ResisterClass = DRUID;
+						}
+							break;
 							break;
 						default:
 							break;

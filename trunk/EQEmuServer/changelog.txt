@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==01/04/2009
+Angelox: Bots: Added command '#Bot endureb' (enduring breath).
+Angelox: Bots: Hopefully fixed bug where other sowers replaced primary sower (Druid).
+
 ==01/03/2009
 Angelox: Bots: remade/improved commands '#Bot levitate'and '#bot invis'
 
