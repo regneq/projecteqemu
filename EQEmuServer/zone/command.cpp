@@ -9125,7 +9125,8 @@ void command_bot(Client *c, const Seperator *sep) {
 			if(g) {
 				for(int i=0; i<MAX_GROUP_MEMBERS; i++)
 				{
-					if(g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == DRUID))
+					if((g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == DRUID)) 
+					|| (g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == WIZARD)))
 					{
 						hasevac = true;
 						evac = g->members[i];
@@ -9136,9 +9137,12 @@ void command_bot(Client *c, const Seperator *sep) {
 				}
 			}
 		}
-		if(hasevac) {
+		if((hasevac)  && (c->GetLevel() >= 18)) {
 			evac->Say("Attempting to Evac you %s.", c->GetName());
 			evac->CastToClient()->CastSpell(2183, c->GetID(), 1, -1, -1);
+		}
+		else if((hasevac)  && (c->GetLevel() <= 17)) {
+			evac->Say("I'm not level 18 yet.", c->GetName());
 		}
 		return;
 	}
@@ -9418,8 +9422,15 @@ void command_bot(Client *c, const Seperator *sep) {
 						Inviser->Say("Casting invisibilty...");
 						Inviser->CastSpell(42, c->GetID(), 1, -1, -1);
 					}
+					else if  ((c->GetLevel() <= 6) && (!strcasecmp(sep->arg[2], "see"))) {
+						Inviser->Say("I'm not level 6 yet.");
+					}
+					else if ((c->GetLevel() >= 6) && (!strcasecmp(sep->arg[2], "see"))) { 
+						Inviser->Say("Casting see invisible...");
+						Inviser->CastSpell(80, c->GetID(), 1, -1, -1);
+					}
 					else {
-						Inviser->Say("Do you want [invis undead], or [invis live]?", c->GetName());
+						Inviser->Say("Do you want [invis undead], [invis live] or [invis see] ?", c->GetName());
 					}
 						break;
 				case MAGICIAN:
@@ -9433,8 +9444,15 @@ void command_bot(Client *c, const Seperator *sep) {
 						Inviser->Say("Casting invisibilty...");
 						Inviser->CastSpell(42, c->GetID(), 1, -1, -1);
 					}
+					else if  ((c->GetLevel() <= 16) && (!strcasecmp(sep->arg[2], "see"))) {
+						Inviser->Say("I'm not level 16 yet.");
+					}
+					else if ((c->GetLevel() >= 16) && (!strcasecmp(sep->arg[2], "see"))) { 
+						Inviser->Say("Casting see invisible...");
+						Inviser->CastSpell(80, c->GetID(), 1, -1, -1);
+					}
 					else {
-						Inviser->Say("I only have [invis live]", c->GetName());
+						Inviser->Say("Do you want [invis live] or [invis see] ?", c->GetName());
 					}
 						break;
 				case WIZARD:
@@ -9452,8 +9470,15 @@ void command_bot(Client *c, const Seperator *sep) {
 						Inviser->Say("Casting invisibilty...");
 						Inviser->CastSpell(42, c->GetID(), 1, -1, -1);
 					}
+					else if  ((c->GetLevel() <= 4) && (!strcasecmp(sep->arg[2], "see"))) {
+						Inviser->Say("I'm not level 6 yet.");
+					}
+					else if ((c->GetLevel() >= 4) && (!strcasecmp(sep->arg[2], "see"))) { 
+						Inviser->Say("Casting see invisible...");
+						Inviser->CastSpell(80, c->GetID(), 1, -1, -1);
+					}
 					else {
-						Inviser->Say("Do you want [invis undead], or [invis live]?", c->GetName());
+						Inviser->Say("Do you want [invis undead], [invis live] or [invis see] ?", c->GetName());
 					}
 						break;
 				case NECROMANCER:
@@ -9461,9 +9486,11 @@ void command_bot(Client *c, const Seperator *sep) {
 						Inviser->Say("Casting invis undead...");
 						Inviser->CastSpell(235, c->GetID(), 1, -1, -1);
 					}
+					else if (!strcasecmp(sep->arg[2], "see")) { 
+						Inviser->Say("I don't have that spell...");
+					}
 					else if (!strcasecmp(sep->arg[2], "live")) { 
 						Inviser->Say("I don't have that spell...");
-//						Inviser->CastSpell(42, c->GetID(), 1, -1, -1);
 					}
 					else {
 						Inviser->Say("I only have [invis undead]", c->GetName());
@@ -9487,8 +9514,15 @@ void command_bot(Client *c, const Seperator *sep) {
 					else if ((c->GetLevel() >= 4) && (!strcasecmp(sep->arg[2], "live")) && (!zone->CanCastOutdoor())) { 
 						Inviser->Say("I can't cast this spell indoors...");
 					}
+					else if  ((c->GetLevel() <= 13) && (!strcasecmp(sep->arg[2], "see"))) {
+						Inviser->Say("I'm not level 13 yet.");
+					}
+					else if ((c->GetLevel() >= 13) && (!strcasecmp(sep->arg[2], "see"))) { 
+						Inviser->Say("Casting see invisible...");
+						Inviser->CastSpell(80, c->GetID(), 1, -1, -1);
+					}
 					else {
-						Inviser->Say("I only have [invis live]", c->GetName());
+						Inviser->Say("Do you want [invis live] or [invis see] ?", c->GetName());
 					}
 						break;
 				default:
