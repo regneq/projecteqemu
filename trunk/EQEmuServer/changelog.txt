@@ -1,22 +1,26 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==01/07/2009
+Angelox: Bots: Added command '#bot charm' (requires enchanter in group). Charm does not work while Chanter has pet so I added the grouped Chanters pet to '#bot group remove' (remove the pet before #bot charm).
+Angelox: Bots: '#bot sow wolf' should not affect pets anymore.
+
 ==01/05/2009
-Angelox: Bots: Re-did command '#Bot cure'- one of three Curer class (Cleric is primary), will ask what you want if you use '#bot cure' alone.
+Angelox: Bots: Re-did command '#bot cure'- one of three Curer class (Cleric is primary), will ask what you want if you use '#bot cure' alone.
 
 ==01/04/2009
-Angelox: Bots: Added command '#Bot endureb' (enduring breath).
+Angelox: Bots: Added command '#bot endureb' (enduring breath).
 Angelox: Bots: Hopefully fixed bug where other sowers replaced primary sower (Druid).
 
 ==01/03/2009
-Angelox: Bots: remade/improved commands '#Bot levitate'and '#bot invis'
+Angelox: Bots: remade/improved commands '#bot levitate'and '#bot invis'
 
 ==01/02/2009
 Congdar: Bots: update command #bot inventory list   Now shows gear as item links.  Removed (Bot) as last name during bot creation.
 Optional SQL: update npc_types set lastname='' where isbot=1;
 
 ==01/01/2009
-Angelox: Bots: Added command '#Bot sow' (Druid has options) 
-Angelox: Bots: Added command '#Bot levitate'.
+Angelox: Bots: Added command '#bot sow' (Druid has options) 
+Angelox: Bots: Added command '#bot levitate'.
 Angelox: Bots: Added command '#bot invis' - (has options).
 
 Required SQL: utils/sql/svn/250_bot_spell_update.sql

@@ -76,6 +76,7 @@ public:
 	virtual bool	Bot_Command_Cure(int curetype, int level);
 	virtual bool	Bot_AI_PursueCastCheck();
 	virtual bool	Bot_Command_CalmTarget(Mob *target);
+	virtual bool	Bot_Command_CharmTarget(Mob *target);
 	virtual bool	Bot_Command_Resist(int resisttype, int level);
 
 #endif //EQBOTS

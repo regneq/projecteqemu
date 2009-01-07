@@ -2525,8 +2525,22 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar)
   }
 }
 		if ((IsBot() && result2 && spelltar ->IsBot()) ||
-		   (IsBot() && result2 && spelltar->IsPet() ))
+		   (IsBot() && result2 && spelltar->IsPet()))
 		   return false;
+      // So pets keep form
+	typedef int ae_sp_typeb;
+	ae_sp_type ae_spb[] = {3579,428};
+	int ae_sp_sizeb = sizeof(ae_sp)/sizeof(ae_sp_type);
+	bool result3 = false;
+	for (int i=0; i<ae_sp_sizeb; i++) {
+	   if (spell_id==ae_spb[i]) {
+	     result3 = true;
+	     break;
+  }
+}
+		if (IsBot() && result3 && spelltar->IsPet())
+		   return false;
+
 
 #endif //EQBOTS
 
