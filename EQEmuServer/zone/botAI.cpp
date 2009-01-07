@@ -1479,5 +1479,39 @@ bool NPC::Bot_Command_CalmTarget(Mob *target) {
 	}
 	return false;
 }
+
+bool NPC::Bot_Command_CharmTarget(Mob *target) {
+	if(target) {
+		int charmid = 0;
+		int charmlevel = GetLevel();
+		if((charmlevel >= 64) && (charmlevel <= 75)) {
+			charmid = 3355;
+		}
+		else if((charmlevel >= 62) && (charmlevel <= 64)) {
+			charmid = 3347;
+		}
+		else if((charmlevel >= 60) && (charmlevel <= 62)) {
+			charmid = 1707;
+		}
+		else if((charmlevel >= 53) && (charmlevel <= 60)) {
+			charmid = 1705;
+		}
+		else if((charmlevel >= 37) && (charmlevel <= 53)) {
+			charmid = 183;
+		}
+		else if((charmlevel >= 23) && (charmlevel <= 37)) {
+			charmid = 182;
+		}
+		else if((charmlevel >= 11) && (charmlevel <= 23)) {
+			charmid = 300;
+		}
+		if(charmid > 0) {
+			CastSpell(charmid, target->GetID(), 1, -1, -1, &target->pDontRootMeBefore);
+			return true;
+		}
+	}
+	return false;
+}
+
 #endif //EQBOTS
 

@@ -63,7 +63,7 @@ Copyright (C) 2001-2002	EQEMu Development Team (http://eqemulator.net)
 #include "../common/patches/patches.h"
 
 #ifdef EQBOTS
-
+//#include "mob.h"
 //EQoffline
 #include "botRaids.h"
 
@@ -7401,7 +7401,7 @@ void command_bot(Client *c, const Seperator *sep) {
 		c->Message(15, "#bot summon - It will summon your targeted bot to you.");
 		c->Message(15, "#bot ai mez [target] - If you're grouped with an enchanter, he will mez your target.");
 		c->Message(15, "#bot picklock - You must have a targeted rogue bot in your group and be right on the door.");
-		c->Message(15, "#bot cure [poison|disease|curse|blindness] - You must have a Cleric in your group.");
+		c->Message(15, "#bot cure [poison|disease|curse|blindness] Cleric has most options");
 		c->Message(15, "#bot bindme - You must have a Cleric in your group to get Bind Affinity cast on you.");
 		c->Message(15, "#bot raid [commands] (#bot raid help will show some help).");
 		c->Message(15, "#bot track - look at mobs in the zone (ranger has options)");
@@ -7414,6 +7414,7 @@ void command_bot(Client *c, const Seperator *sep) {
 		c->Message(15, "#bot levitate - Bot levitation (must have proper class in group)");
 		c->Message(15, "#bot resist - Bot resist buffs (must have proper class in group)");
 		c->Message(15, "#bot endureb - Bot enduring breath (must have proper class in group)");
+		c->Message(15, "#bot charm - you need an Enchanter in your group)");
 
 		return;
 	}
@@ -8460,7 +8461,8 @@ void command_bot(Client *c, const Seperator *sep) {
 
 	if(!strcasecmp(sep->arg[1], "group") && !strcasecmp(sep->arg[2], "remove")) {
         if(c->GetTarget() != NULL) {
-            if(c->IsGrouped() && c->GetTarget()->IsBot() && c->GetTarget()->IsGrouped() && (c->GetGroup() == entity_list.GetGroupByMob(c->GetTarget()))) {
+           if(c->IsGrouped() && c->GetTarget()->IsBot() && c->GetTarget()->IsGrouped() && (c->GetGroup() == entity_list.GetGroupByMob(c->GetTarget()))
+	   || c->IsGrouped() && c->GetTarget()->IsPet() && c->GetTarget()->GetOwner()->IsBot() && c->GetTarget() ->IsAnimation()) { //angelox
 				int16 botID = c->GetTarget()->GetID();
 				c->GetTarget()->Say("Bot Deactivated");
 				c->GetTarget()->BotOwner = NULL;
@@ -9084,6 +9086,36 @@ void command_bot(Client *c, const Seperator *sep) {
         return;
 	}
 }
+//Charm
+	if(!strcasecmp(sep->arg[1], "Charm"))
+    {
+		Mob *target = c->GetTarget();
+        if(target == NULL || target == c || target->IsBot() || target->IsPet() && target->GetOwner()->IsBot())
+        {
+            c->Message(15, "You must select a monster");
+            return;
+        }
+		if(c->IsGrouped())
+        {
+			bool hascharmer = false;
+			Group *g = c->GetGroup();
+			for(int i=0; i<MAX_GROUP_MEMBERS; i++)
+            {
+				if(g && g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == ENCHANTER) && (!hascharmer))
+                {
+					hascharmer = true;
+					Mob *charmer = g->members[i];
+                    charmer->Say("Trying to charm %s \n", target->GetCleanName());
+					charmer->CastToNPC()->Bot_Command_CharmTarget(target);
+				}
+		}
+			if(!hascharmer) {
+				c->Message(15, "You must have an Enchanter in your group.");
+			}
+        return;
+	}
+}
+
 	if(!strcasecmp(sep->arg[1], "evac")) {
 		Mob *evac = NULL;
 		bool hasevac = false;
