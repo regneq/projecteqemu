@@ -3,6 +3,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==01/07/2009
 Angelox: Bots: Added command '#bot charm' (requires enchanter in group). Charm does not work while Chanter has pet so I added the grouped Chanters pet to '#bot group remove' (remove the pet before #bot charm).
 Angelox: Bots: '#bot sow wolf' should not affect pets anymore.
+Derision: Chatserver: Added some extra syntax error checking to prevent crashes.
 
 ==01/05/2009
 Angelox: Bots: Re-did command '#bot cure'- one of three Curer class (Cleric is primary), will ask what you want if you use '#bot cure' alone.

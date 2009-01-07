@@ -764,6 +764,9 @@ void Client::SendChannelMessage(string Message) {
 
 	string::size_type MessageStart = Message.find_first_of(" ");
 
+	if(MessageStart == string::npos)
+		return;
+
 	string ChannelName = Message.substr(1, MessageStart-1);
 
 	_log(CHANNELS__TRACE, "%s tells %s, [%s]", GetName().c_str(), ChannelName.c_str(), Message.substr(MessageStart + 1).c_str());
@@ -782,6 +785,9 @@ void Client::SendChannelMessage(string Message) {
 void Client::SendChannelMessageByNumber(string Message) {
 
 	string::size_type MessageStart = Message.find_first_of(" ");
+
+	if(MessageStart == string::npos)
+		return;
 
 	int ChannelNumber = atoi(Message.substr(0, MessageStart).c_str());
 
@@ -930,6 +936,12 @@ void Client::SetChannelPassword(string ChannelPassword) {
 
 	string::size_type ChannelStart = ChannelPassword.find_first_not_of(" ", Space);
 
+	if(ChannelStart == string::npos) {
+		string Message = "Incorrect syntax: /chat password <new password> <channel name>";
+		GeneralChannelMessage(Message);
+		return;
+	}
+
 	string ChannelName = ChannelPassword.substr(ChannelStart);
 
 	if((ChannelName.length() > 0) && isdigit(ChannelName[0]))
@@ -987,6 +999,12 @@ void Client::SetChannelOwner(string CommandString) {
 	string NewOwner = CapitaliseName(CommandString.substr(PlayerStart, Space - PlayerStart));
 
 	string::size_type ChannelStart = CommandString.find_first_not_of(" ", Space);
+
+	if(ChannelStart == string::npos) {
+		string Message = "Incorrect syntax: /chat setowner <player> <channel>";
+		GeneralChannelMessage(Message);
+		return;
+	}
 
 	string ChannelName = CapitaliseName(CommandString.substr(ChannelStart));
 
@@ -1069,6 +1087,12 @@ void Client::ChannelInvite(string CommandString) {
 	string Invitee = CapitaliseName(CommandString.substr(PlayerStart, Space - PlayerStart));
 
 	string::size_type ChannelStart = CommandString.find_first_not_of(" ", Space);
+
+	if(ChannelStart == string::npos) {
+		string Message = "Incorrect syntax: /chat invite <player> <channel>";
+		GeneralChannelMessage(Message);
+		return;
+	}
 
 	string ChannelName = CapitaliseName(CommandString.substr(ChannelStart));
 
@@ -1191,6 +1215,12 @@ void Client::ChannelGrantModerator(string CommandString) {
 
 	string::size_type ChannelStart = CommandString.find_first_not_of(" ", Space);
 
+	if(ChannelStart == string::npos) {
+
+		GeneralChannelMessage("Incorrect syntax: /chat grant <player> <channel>");
+		return;
+	}
+
 	string ChannelName = CapitaliseName(CommandString.substr(ChannelStart));
 
 	if((ChannelName.length() > 0) && isdigit(ChannelName[0]))
@@ -1266,6 +1296,11 @@ void Client::ChannelGrantVoice(string CommandString) {
 	string Voicee = CapitaliseName(CommandString.substr(PlayerStart, Space - PlayerStart));
 
 	string::size_type ChannelStart = CommandString.find_first_not_of(" ", Space);
+
+	if(ChannelStart == string::npos) {
+		GeneralChannelMessage("Incorrect syntax: /chat voice <player> <channel>");
+		return;
+	}
 
 	string ChannelName = CapitaliseName(CommandString.substr(ChannelStart));
 
@@ -1350,6 +1385,11 @@ void Client::ChannelKick(string CommandString) {
 
 	string::size_type ChannelStart = CommandString.find_first_not_of(" ", Space);
 
+	if(ChannelStart == string::npos) {
+
+		GeneralChannelMessage("Incorrect syntax: /chat kick <player> <channel>");
+		return;
+	}
 	string ChannelName = CapitaliseName(CommandString.substr(ChannelStart));
 
 	if((ChannelName.length() > 0) && isdigit(ChannelName[0]))
