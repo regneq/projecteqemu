@@ -102,6 +102,7 @@ public:
 	// EQoffline: special BotAttack function
 	bool	BotAttackMelee(Mob* other, int Hand = 13, bool = false);
 	void	BotRemoveEquipItem(int slot) { equipment[slot] = 0; }
+	void	BotAddEquipItem(int slot, uint32 id) { equipment[slot] = id; }
 
 #endif //EQBOTS
 

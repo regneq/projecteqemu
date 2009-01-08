@@ -7391,15 +7391,15 @@ void command_bot(Client *c, const Seperator *sep) {
 		c->Message(15, "#bot delete - completely destroy forever the targeted bot and all its items.");
 		c->Message(15, "#bot list - show your bots.");
 		c->Message(15, "#bot spawn [botid] - spawn a bot from its ID (use list to see all the bots). ");
-		c->Message(15, "#bot group add [target] - make the targetted bot joigning your group.");
+		c->Message(15, "#bot group add - make the targetted bot joigning your group.");
 		c->Message(15, "#bot group remove [target} - kick the targetted bot from your group (it will die also).");
 		c->Message(15, "#bot group order [follow/guard/attack (target)] - Give orders [follow/guard/attack (target)] to your grouped bots.");
-		c->Message(15, "#bot inventory list [target] - show the inventory (and the slots IDs) of the targetted bot.");
-		c->Message(15, "#bot inventory remove [slotid] [target] - remove the item at the given slot in the inventory of the targetted bot.");
-		c->Message(15, "#bot update [target] - you must type that command once you gain a level.");
+		c->Message(15, "#bot inventory list - show the inventory (and the slots IDs) of the targetted bot.");
+		c->Message(15, "#bot inventory remove [slotid] - remove the item at the given slot in the inventory of the targetted bot.");
+		c->Message(15, "#bot update - you must type that command once you gain a level.");
 		c->Message(15, "#bot group summon - It will summon all your grouped bots to you.");
 		c->Message(15, "#bot summon - It will summon your targeted bot to you.");
-		c->Message(15, "#bot ai mez [target] - If you're grouped with an enchanter, he will mez your target.");
+		c->Message(15, "#bot ai mez - If you're grouped with an enchanter, he will mez your target.");
 		c->Message(15, "#bot picklock - You must have a targeted rogue bot in your group and be right on the door.");
 		c->Message(15, "#bot cure [poison|disease|curse|blindness] Cleric has most options");
 		c->Message(15, "#bot bindme - You must have a Cleric in your group to get Bind Affinity cast on you.");
@@ -8418,40 +8418,13 @@ void command_bot(Client *c, const Seperator *sep) {
 				b->SetBotRaidID(c->CastToMob()->GetBotRaidID());
 			}
 
-			int itemID = 0;
+			uint32 itemID = 0;
 			const Item_Struct* item2 = NULL;
 			for(int i=0; i<22; i++) {
 				itemID = database.GetBotItemBySlot(b->GetNPCTypeID(), i);
 				if(itemID != 0) {
 					item2 = database.GetItem(itemID);
-					switch(i) {
-						case 0:
-						case 1:
-						case 3:
-						case 4:
-						case 5:
-						case 6:
-						case 8:
-						case 11:
-						case 15:
-						case 16:
-						case 20:
-						case 21:
-							b->CastToNPC()->AddLootDrop(item2, &b->CastToNPC()->itemlist, 1, true, false);
-							break;
-						case 2:
-						case 7:
-						case 9:
-						case 10:
-						case 12:
-						case 13:
-						case 14:
-						case 17:
-						case 18:
-						case 19:
-							b->CastToNPC()->AddLootDrop(item2, &b->CastToNPC()->itemlist, 1, true, true);
-							break;
-					}
+					c->BotTradeAddItem(itemID, item2->MaxCharges, item2->Slots, i, b->CastToNPC(), false);
 				}
 			}
 			b->CalcBotStats();
@@ -8502,9 +8475,9 @@ void command_bot(Client *c, const Seperator *sep) {
 							}
 							else {
 								g->members[i]->SetFollowID(botfollowid);
+								g->members[i]->Say("Following %s.", botfollowname);
 							}
 							g->members[i]->WipeHateList();
-							g->members[i]->Say("Following %s.", botfollowname);
 						}
 					}
 				}
@@ -8568,24 +8541,29 @@ void command_bot(Client *c, const Seperator *sep) {
             {
                 Mob* b = c->GetTarget();	
                 int x = database.GetBotItemsNumber(b->GetNPCTypeID() );
-				const char* equiped[22] = {"Charm", "Left Ear", "Head", "Face", "Right Ear", "Neck", "Shoulders", "Arms", "Back",
+				const char* equipped[22] = {"Charm", "Left Ear", "Head", "Face", "Right Ear", "Neck", "Shoulders", "Arms", "Back",
 											"Left Wrist", "Right Wrist", "Range", "Hands", "Primary Hand", "Secondary Hand",
 											"Left Finger", "Right Finger", "Chest", "Legs", "Feet", "Waist", "Ammo" };
 				const Item_Struct* item2 = NULL;
+				bool is2Hweapon = false;
                 for(int i=0; i<22 ; i++)
                 {
-                    if(database.GetBotItemBySlot(b->GetNPCTypeID(), i) == 0)
-                    {
-                        c->Message(15, "I need something for my %s", equiped[i]);
+                    if((i == 14) && is2Hweapon) {
                         continue;
                     }
+					item2 = database.GetItem(database.GetBotItemBySlot(b->GetNPCTypeID(), i));
+                    if(item2 == 0) {
+                        c->Message(15, "I need something for my %s", equipped[i]);
+                        continue;
+                    }
+					if((i == 13) && ((item2->ItemType == ItemType2HS) || (item2->ItemType == ItemType2HB) || (item2->ItemType == ItemType2HPierce))) {
+						is2Hweapon = true;
+					}
                     if((i == 0) || (i == 11) || (i == 13) || (i == 14) || (i == 21)) {
-                        item2 = database.GetItem(database.GetBotItemBySlot(b->GetNPCTypeID(), i));
-						c->Message(15, "Using %c%06X000000000000000000000000000000000000000%s%c in my %s", 0x12, item2->ID, item2->Name, 0x12, equiped[i]);
+						c->Message(15, "Using %c%06X000000000000000000000000000000000000000%s%c in my %s", 0x12, item2->ID, item2->Name, 0x12, equipped[i]);
                     }
 					else {
-                        item2 = database.GetItem(database.GetBotItemBySlot(b->GetNPCTypeID(), i));
-						c->Message(15, "Using %c%06X000000000000000000000000000000000000000%s%c on my %s", 0x12, item2->ID, item2->Name, 0x12, equiped[i]);
+						c->Message(15, "Using %c%06X000000000000000000000000000000000000000%s%c on my %s", 0x12, item2->ID, item2->Name, 0x12, equipped[i]);
                     }
                 }
             }
@@ -8607,32 +8585,86 @@ void command_bot(Client *c, const Seperator *sep) {
 		}		
 		else if(c->GetTarget()->IsBot() && (c->GetTarget()->BotOwner == c->CastToMob()))
         {
-			int sid = atoi(sep->arg[3]);
-			if(sid > 21 || sid < 0) {
-				c->Message(15, "A bot has 21 slots in its invent, please choose a slot between 0 and 21. (#bot inventory list [target])");
+			int slotId = atoi(sep->arg[3]);
+			if(slotId > 21 || slotId < 0) {
+				c->Message(15, "A bot has 21 slots in its inventory, please choose a slot between 0 and 21.");
 				return;
 			}
-			if(database.GetBotItemBySlot(c->GetTarget()->GetNPCTypeID(), sid) != NULL)
-            {
-                const Item_Struct *itm = database.GetItem(database.GetBotItemBySlot(c->GetTarget()->GetNPCTypeID(), sid));
-				const ItemInst* itminst = new ItemInst(itm,0);
-				c->PushItemOnCursor(*itminst,true);
+			const char* equipped[22] = {"Charm", "Left Ear", "Head", "Face", "Right Ear", "Neck", "Shoulders", "Arms", "Back",
+										"Left Wrist", "Right Wrist", "Range", "Hands", "Primary Hand", "Secondary Hand",
+										"Left Finger", "Right Finger", "Chest", "Legs", "Feet", "Waist", "Ammo" };
+			const Item_Struct *itm = database.GetItem(database.GetBotItemBySlot(c->GetTarget()->GetNPCTypeID(), slotId));
+			if(itm) {
+				const ItemInst* itminst = new ItemInst(itm, itm->MaxCharges);
+				c->PushItemOnCursor(*itminst, true);
+				safe_delete(itminst);
                 Mob *gearbot = c->GetTarget();
-				for(int i=0; i<9; i++)
-                {
-                    if(gearbot->GetEquipment(i) == database.GetBotItemBySlot(gearbot->GetNPCTypeID(), sid))
-                    {
-                        gearbot->CastToNPC()->RemoveItem(gearbot->GetEquipment(i));
-                        gearbot->CastToNPC()->BotRemoveEquipItem(i);
-                        break;
-					}
+				database.RemoveBotItemBySlot(gearbot->GetNPCTypeID(), slotId);
+				gearbot->CastToNPC()->RemoveItem(itm->ID);
+				int8 materialFromSlot = Inventory::CalcMaterialFromSlot(slotId);
+				if(materialFromSlot != 0xFF) {
+					gearbot->CastToNPC()->BotRemoveEquipItem(materialFromSlot);
+					gearbot->CastToNPC()->SendWearChange(materialFromSlot);
 				}
-				database.RemoveBotItemBySlot(gearbot->GetNPCTypeID(), sid);
 				gearbot->CalcBotStats();
-				gearbot->Say("My slot %i is now free, %s.",sid, c->GetName());
+				switch(slotId) {
+					case 0:
+					case 1:
+					case 2:
+					case 3:
+					case 4:
+					case 5:
+					case 8:
+					case 9:
+					case 10:
+					case 11:
+					case 13:
+					case 14:
+					case 15:
+					case 16:
+					case 17:
+					case 20:
+					case 21:
+						gearbot->Say("My %s is now unequipped.", equipped[slotId]);
+						break;
+					case 6:
+					case 7:
+					case 12:
+					case 18:
+					case 19:
+						gearbot->Say("My %s are now unequipped.", equipped[slotId]);
+						break;
+				}
 			}
 			else {
-				c->GetTarget()->Say("The slot %i is already free.",sid);
+				switch(slotId) {
+					case 0:
+					case 1:
+					case 2:
+					case 3:
+					case 4:
+					case 5:
+					case 8:
+					case 9:
+					case 10:
+					case 11:
+					case 13:
+					case 14:
+					case 15:
+					case 16:
+					case 17:
+					case 20:
+					case 21:
+						c->GetTarget()->Say("My %s is already unequipped.", equipped[slotId]);
+						break;
+					case 6:
+					case 7:
+					case 12:
+					case 18:
+					case 19:
+						c->GetTarget()->Say("My %s are already unequipped.", equipped[slotId]);
+						break;
+				}
 			}
 		}
 		return;
@@ -9822,15 +9854,15 @@ void command_bot(Client *c, const Seperator *sep) {
 		c->Message(15, "#bot raid help - will show this help");
 		c->Message(15, "#bot raid info - will give info of your raid.");
 		c->Message(15, "#bot raid create - will create your raid (you will be the raid leader)");
-		c->Message(15, "#bot raid group create [target] - create a group. Your target will be the leader.");
+		c->Message(15, "#bot raid group create - create a group. Your target will be the leader.");
 		c->Message(15, "#bot raid invite bot [group leader's name] - Invite your target into that group leader's group.");	
 //		c->Message(15, "#bot raid remove group [group leader's name] - Remove target's group from your raid.");
 		c->Message(15, "#bot raid disband - Disband the raid.");
-		c->Message(15, "#bot raid order maintank [target] - Your target will be flagged as the main tank.");
-		c->Message(15, "#bot raid order secondtank [target] - Your target will be flagged as the second tank.");
-		c->Message(15, "#bot raid order maintarget [target] - Your target will be flagged as the main raid's target.");
-		c->Message(15, "#bot raid order secondtarget [target] - Your target will be flagged as the second raid's target.");
-		c->Message(15, "#bot raid order grouptarget [group leader's name] [target] - Your target will be flagged as the target of a specific group.");
+		c->Message(15, "#bot raid order maintank - Your target will be flagged as the main tank.");
+		c->Message(15, "#bot raid order secondtank - Your target will be flagged as the second tank.");
+		c->Message(15, "#bot raid order maintarget - Your target will be flagged as the main raid's target.");
+		c->Message(15, "#bot raid order secondtarget - Your target will be flagged as the second raid's target.");
+		c->Message(15, "#bot raid order grouptarget [group leader's name] - Your target will be flagged as the target of a specific group.");
 		c->Message(15, "#bot raid order task [attack/guard] [group leader's name] - You will give a specific task [attack/guard].");
 		c->Message(15, "#bot raid order task [follow/assist] [group1 leader's name] [group2 leader's name] - Group 1 will [follow/assist] Group 2.");
 		c->Message(15, "#bot raid order task enraged - Tell your raid to stop attacking to defend against ENRAGED mobs.");
@@ -9953,40 +9985,13 @@ void command_bot(Client *c, const Seperator *sep) {
 				br->AddBotGroup(g);
 
 				// load up leaders gear
-				int itemID = 0;
+				uint32 itemID = 0;
 				const Item_Struct* item2 = NULL;
 				for(int i=0; i<22; i++) {
 					itemID = database.GetBotItemBySlot(gleader->GetNPCTypeID(), i);
 					if(itemID != 0) {
 						item2 = database.GetItem(itemID);
-						switch(i) {
-							case 0:
-							case 1:
-							case 3:
-							case 4:
-							case 5:
-							case 6:
-							case 8:
-							case 11:
-							case 15:
-							case 16:
-							case 20:
-							case 21:
-								gleader->CastToNPC()->AddLootDrop(item2, &gleader->CastToNPC()->itemlist, 1, true, false);
-								break;
-							case 2:
-							case 7:
-							case 9:
-							case 10:
-							case 12:
-							case 13:
-							case 14:
-							case 17:
-							case 18:
-							case 19:
-								gleader->CastToNPC()->AddLootDrop(item2, &gleader->CastToNPC()->itemlist, 1, true, true);
-								break;
-						}
+						c->BotTradeAddItem(itemID, item2->MaxCharges, item2->Slots, i, gleader->CastToNPC(), false);
 					}
 				}
 				gleader->CalcBotStats();
@@ -10057,40 +10062,13 @@ void command_bot(Client *c, const Seperator *sep) {
 					inv->SetBotRaidID(sictar->GetBotRaidID());
 
 					// Equip newly raid grouped bot
-					int itemID = 0;
+					uint32 itemID = 0;
 					const Item_Struct* item2 = NULL;
 					for(int i=0; i<22; i++) {
 						itemID = database.GetBotItemBySlot(inv->GetNPCTypeID(), i);
 						if(itemID != 0) {
 							item2 = database.GetItem(itemID);
-							switch(i) {
-								case 0:
-								case 1:
-								case 3:
-								case 4:
-								case 5:
-								case 6:
-								case 8:
-								case 11:
-								case 15:
-								case 16:
-								case 20:
-								case 21:
-									inv->CastToNPC()->AddLootDrop(item2, &inv->CastToNPC()->itemlist, 1, true, false);
-									break;
-								case 2:
-								case 7:
-								case 9:
-								case 10:
-								case 12:
-								case 13:
-								case 14:
-								case 17:
-								case 18:
-								case 19:
-									inv->CastToNPC()->AddLootDrop(item2, &inv->CastToNPC()->itemlist, 1, true, true);
-									break;
-							}
+							c->BotTradeAddItem(itemID, item2->MaxCharges, item2->Slots, i, inv->CastToNPC(), false);
 						}
 					}
 					inv->CalcBotStats();

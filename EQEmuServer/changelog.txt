@@ -9,6 +9,7 @@ Angelox: Bots: Added '#bot invis see' for see invisible
 Required SQL: 
 DELETE FROM npc_spells_entries where (npc_spells_id >=701 and npc_spells_id <=712) AND spellid=80;
 Congdar: Fix NPC::RemoveItem(uint16 item_id) to uint32 to work with items that have id's larger than 65535. '#npcloot remove [itemid]' will now successfully remove items with larger id's from npc loot.
+Congdar: Bots: Visible gear will now show correctly when trading/equipping bots.
 
 ==01/05/2009
 Angelox: Bots: Re-did command '#bot cure'- one of three Curer class (Cleric is primary), will ask what you want if you use '#bot cure' alone.
