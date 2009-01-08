@@ -71,7 +71,7 @@ public:
 	void ClearCharacters() { Characters.clear(); }
 	void SendMailBoxes();
 	inline void QueuePacket(const EQApplicationPacket *p, bool ack_req=true) { ClientStream->QueuePacket(p, ack_req); }
-	string GetName() { return Characters[0]; }
+	string GetName() { if(Characters.size()) return Characters[0]; else return ""; }
 	void JoinChannels(string ChannelList);
 	void LeaveChannels(string ChannelList);
 	void LeaveAllChannels(bool SendUpdatedChannelList = true);
