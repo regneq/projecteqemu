@@ -424,7 +424,7 @@ ServerLootItem_Struct* NPC::GetItem(int slot_id) {
 	return(NULL);
 }
 	  
-void NPC::RemoveItem(uint16 item_id, int16 quantity, int16 slot) {
+void NPC::RemoveItem(uint32 item_id, int16 quantity, int16 slot) {
 	ItemList::iterator cur,end;
 	cur = itemlist.begin();
 	end = itemlist.end();
