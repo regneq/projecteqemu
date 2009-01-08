@@ -153,7 +153,7 @@ XS(XS_NPC_RemoveItem)
 		Perl_croak(aTHX_ "Usage: NPC::RemoveItem(THIS, item_id, quantity= 0, slot= 0)");
 	{
 		NPC *		THIS;
-		uint16		item_id = (uint16)SvUV(ST(1));
+		uint32		item_id = (uint32)SvUV(ST(1));
 		int16		quantity;
 		int16		slot;
 

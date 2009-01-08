@@ -137,9 +137,8 @@ public:
 */	
 
 	void	DescribeAggro(Client *towho, Mob *mob, bool verbose);
-	void    RemoveItem(uint16 item_id, int16 quantity = 0, int16 slot = 0);
+	void    RemoveItem(uint32 item_id, int16 quantity = 0, int16 slot = 0);
 //	bool	AddNPCSpells(int32 iDBSpellsID, AISpells_Struct* AIspells);
-//	void	RemoveItem(uint16 item_id);
 	void	ClearItemList();
 	ServerLootItem_Struct*	GetItem(int slot_id);
 	void	AddCash(int16 in_copper, int16 in_silver, int16 in_gold, int16 in_platinum);
