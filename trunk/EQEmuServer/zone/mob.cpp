@@ -1533,6 +1533,16 @@ void Mob::SetAttackTimer() {
 
 bool Mob::CanThisClassDualWield(void) const //Dual wield not Duel, busy someone else fix it (fixed! bUsh)
 {
+
+#ifdef EQBOTS
+
+	if(IsBot()) {
+		// Do nothing cuz we don't want all Bots to dual wield just because they are npc's level 13+
+	}
+	else
+
+#endif //EQBOTS
+
 	// All npcs over level 13 can dual wield
 	if (this->IsNPC() && (this->GetLevel() >= 13))
 		return true;
@@ -2918,9 +2928,8 @@ void Mob::CalcBotStats() {
 	}
 	if(!isComboAllowed) {
 		this->BotOwner->Message(15, "A %s - %s bot was detected. Is this Race/Class combination allowed?.", GetRaceName(brace), GetEQClassName(bclass, blevel));
-		this->BotOwner->Message(15, "This is a warning for you to clear all the equipment from this bot.");
 		this->BotOwner->Message(15, "Previous Bots Code releases did not check Race/Class combinations during create.");
-		this->BotOwner->Message(15, "This message will be replaced with 'This Bot Deleted' in the next update(or maybe the one after that.");
+		this->BotOwner->Message(15, "Unless you are experiencing heavy lag, you should delete and remake this bot.");
 	}
 	isComboAllowed = false;
 

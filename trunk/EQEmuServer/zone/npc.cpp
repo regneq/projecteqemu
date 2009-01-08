@@ -1544,17 +1544,3 @@ void NPC::ModifyNPCStat(const char *identifier, const char *newValue)
 		return;
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

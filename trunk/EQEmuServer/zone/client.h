@@ -526,6 +526,13 @@ public:
 	void	FinishTrade(NPC* with);
 	bool	TGB() const { return tgb; }
 
+#ifdef EQBOTS
+
+	void	Client::BotTradeSwapItem(NPC* bot, sint16 lootSlot, uint32 id, sint16 maxCharges, uint32 equipableSlots, bool swap = true);
+	void	Client::BotTradeAddItem(uint32 id, sint16 maxCharges, uint32 equipableSlots, int16 lootSlot, NPC* bot, bool addToDb = true);
+
+#endif //EQBOTS
+
 	void	OnDisconnect(bool hard_disconnect);
 
 
