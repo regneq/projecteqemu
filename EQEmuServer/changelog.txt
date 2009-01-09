@@ -1,6 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==01/08/2009
+Congdar: Bots: Fix compile issue under linux for Visible Gear update.
+
 Angelox: Bots: Updated required SQL, utils/sql/svn/250_bot_spell_update.sql (some spells were still being auto-casted)
 Derision: Chatserver: Fix for crash when multiple connections are made in quick succession.
 
