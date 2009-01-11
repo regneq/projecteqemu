@@ -10,7 +10,11 @@
 #include "../common/opcodemgr.h"
 #include "../common/timer.h"
 
+#if !defined(MAIL) && !defined(CHAT)
 #define STREAM_TIMEOUT 45000 //in ms
+#else
+#define STREAM_TIMEOUT 135000
+#endif
 
 class EQStreamFactory : private Timeoutable {
 	private:

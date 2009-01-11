@@ -389,7 +389,7 @@ uint32 flag_offset=1,newlength;
 
 void EQProtocolPacket::ChatDecode(unsigned char *buffer, int size, int DecodeKey)
 {
-	if (buffer[1]!=0x01 && buffer[0]!=0x02 && buffer[0]!=0x1d) {
+	if ((size >= 2) && buffer[1]!=0x01 && buffer[0]!=0x02 && buffer[0]!=0x1d) {
 		int Key=DecodeKey;
 		unsigned char *test=(unsigned char *)malloc(size);
 		buffer+=2;

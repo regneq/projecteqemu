@@ -425,6 +425,8 @@ void Clientlist::Process() {
 
 					(*Iterator)->SendMailBoxes();
 
+					CheckForStaleConnections((*Iterator));
+
 					break;
 				}
 
@@ -640,7 +642,7 @@ void Client::SendNotification(int MailBoxNumber, string Subject, string From, in
 
 	sprintf(Sequence, "%i", 1);
 
-	int PacketLength = 20 + Subject.length() + strlen(sMessageID) + strlen(TimeStamp)+ From.length() + Subject.length();
+	int PacketLength = 8 + strlen(sMessageID) + strlen(TimeStamp)+ From.length() + Subject.length();
 
 	EQApplicationPacket *outapp = new EQApplicationPacket(OP_MailNew, PacketLength);
 
@@ -658,4 +660,30 @@ void Client::SendNotification(int MailBoxNumber, string Subject, string From, in
 	QueuePacket(outapp);
 
 	safe_delete(outapp);
+}
+
+void Clientlist::CheckForStaleConnections(Client *c) {
+
+	if(!c) return;
+
+	list<Client*>::iterator Iterator;
+
+	for(Iterator = ClientMailConnections.begin(); Iterator != ClientMailConnections.end(); Iterator++) {
+
+		if(((*Iterator) != c) && (c->GetName() == (*Iterator)->GetName())) {
+
+			_log(MAIL__CLIENT, "Removing old connection for %s", c->GetName().c_str());
+
+			struct in_addr  in;
+
+			in.s_addr = (*Iterator)->ClientStream->GetRemoteIP();
+
+			_log(MAIL__CLIENT, "Client connection from %s:%d closed.", inet_ntoa(in),
+										   ntohs((*Iterator)->ClientStream->GetRemotePort()));
+			
+			safe_delete((*Iterator));
+
+			Iterator = ClientMailConnections.erase(Iterator);
+		}
+	}
 }

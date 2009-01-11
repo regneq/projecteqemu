@@ -335,79 +335,59 @@ void Database::SendHeaders(Client *c) {
 
 	int NumRows = mysql_num_rows(result);
 
-	int PacketLength = 3;
+	int HeaderCountPacketLength = 0;
 	
 	sprintf(Buf, "%i", c->GetMailBoxNumber());
-	PacketLength += (strlen(Buf) + 1);
+	HeaderCountPacketLength += (strlen(Buf) + 1);
 
 	sprintf(Buf, "%i", UnknownField2);
-	PacketLength += (strlen(Buf) + 1);
+	HeaderCountPacketLength += (strlen(Buf) + 1);
 
 	sprintf(Buf, "%i", UnknownField3);
-	PacketLength += (strlen(Buf) + 1);
+	HeaderCountPacketLength += (strlen(Buf) + 1);
 
 	sprintf(Buf, "%i", NumRows);
-	PacketLength += (strlen(Buf) + 1);
+	HeaderCountPacketLength += (strlen(Buf) + 1);
 
-	PacketLength++; // uint8 0x00
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_MailHeaderCount, HeaderCountPacketLength);
+
+	char *PacketBuffer = (char *)outapp->pBuffer;
+
+	VARSTRUCT_ENCODE_INTSTRING(PacketBuffer, c->GetMailBoxNumber());
+	VARSTRUCT_ENCODE_INTSTRING(PacketBuffer, UnknownField2);
+	VARSTRUCT_ENCODE_INTSTRING(PacketBuffer, UnknownField3);
+	VARSTRUCT_ENCODE_INTSTRING(PacketBuffer, NumRows);
+
+	_pkt(MAIL__PACKETS, outapp);
+
+	c->QueuePacket(outapp);
+
+	safe_delete(outapp);
 
 	int RowNum = 0;
 
 	while((row = mysql_fetch_row(result))) {
 
-		PacketLength += 2;
 
-		sprintf(Buf, "%i", UnknownField1);
-		PacketLength += (strlen(Buf) + 1);
+		int HeaderPacketLength = 0;
 
+		sprintf(Buf, "%i", c->GetMailBoxNumber());
+		HeaderPacketLength = HeaderPacketLength + strlen(Buf) + 1;
 		sprintf(Buf, "%i", UnknownField2);
-		PacketLength += (strlen(Buf) + 1);
-
-		char Buf2[100];
-		sprintf(Buf2, "%i", RowNum++);
-
-		PacketLength = PacketLength + (strlen(Buf2) + 1);
-		PacketLength = PacketLength + strlen(row[0]) + 1;
-		PacketLength = PacketLength + strlen(row[1]) + 1;
-		PacketLength = PacketLength + strlen(row[4]) + 1;
-		PacketLength = PacketLength + GetMailPrefix().length() + strlen(row[2]) + 1;
-		PacketLength = PacketLength + strlen(row[3]) + 1;
-
-	}
-
-	mysql_data_seek(result, 0);
-
-	EQApplicationPacket *outapp = new EQApplicationPacket(OP_MailSendHeaders, PacketLength);
-
-	char *PacketBuffer = (char *)outapp->pBuffer;
-
-	VARSTRUCT_ENCODE_TYPE(uint8, PacketBuffer, 0x19);
-	VARSTRUCT_ENCODE_TYPE(uint16, PacketBuffer, 0x0d11);
-	VARSTRUCT_ENCODE_INTSTRING(PacketBuffer, c->GetMailBoxNumber());
-	VARSTRUCT_ENCODE_INTSTRING(PacketBuffer, UnknownField2);
-	VARSTRUCT_ENCODE_INTSTRING(PacketBuffer, UnknownField3);
-	VARSTRUCT_ENCODE_INTSTRING(PacketBuffer, NumRows);
-	VARSTRUCT_ENCODE_TYPE(uint8, PacketBuffer, 0x00);
-
-	RowNum = 0;
-
-	while((row = mysql_fetch_row(result))) {
-
-		int HeaderLength = 1;
-		sprintf(Buf, "%i", UnknownField1);
-		HeaderLength = HeaderLength + strlen(Buf) + 1;
-		sprintf(Buf, "%i", UnknownField2);
-		HeaderLength = HeaderLength + strlen(Buf) + 1;
+		HeaderPacketLength = HeaderPacketLength + strlen(Buf) + 1;
 		sprintf(Buf, "%i", RowNum);
-		HeaderLength = HeaderLength + strlen(Buf) + 1;
-		HeaderLength = HeaderLength + strlen(row[0]) + 1;
-		HeaderLength = HeaderLength + strlen(row[1]) + 1;
-		HeaderLength = HeaderLength + strlen(row[4]) + 1;
-		HeaderLength = HeaderLength + GetMailPrefix().length() + strlen(row[2]) + 1;
-		HeaderLength = HeaderLength + strlen(row[3]) + 1;
+		HeaderPacketLength = HeaderPacketLength + strlen(Buf) + 1;
 
-		VARSTRUCT_ENCODE_TYPE(uint8, PacketBuffer, HeaderLength);
-		VARSTRUCT_ENCODE_TYPE(uint8, PacketBuffer, 0x0e);
+		HeaderPacketLength = HeaderPacketLength + strlen(row[0]) + 1;
+		HeaderPacketLength = HeaderPacketLength + strlen(row[1]) + 1;
+		HeaderPacketLength = HeaderPacketLength + strlen(row[4]) + 1;
+		HeaderPacketLength = HeaderPacketLength + GetMailPrefix().length() + strlen(row[2]) + 1;
+		HeaderPacketLength = HeaderPacketLength + strlen(row[3]) + 1;
+
+		outapp = new EQApplicationPacket(OP_MailHeader, HeaderPacketLength);
+
+		PacketBuffer = (char *)outapp->pBuffer;
+
 		VARSTRUCT_ENCODE_INTSTRING(PacketBuffer, c->GetMailBoxNumber());
 		VARSTRUCT_ENCODE_INTSTRING(PacketBuffer, UnknownField2);
 		VARSTRUCT_ENCODE_INTSTRING(PacketBuffer, RowNum);
@@ -418,17 +398,16 @@ void Database::SendHeaders(Client *c) {
 		VARSTRUCT_ENCODE_STRING(PacketBuffer, row[2]);
 		VARSTRUCT_ENCODE_STRING(PacketBuffer, row[3]);
 
+		_pkt(MAIL__PACKETS, outapp);
+
+		c->QueuePacket(outapp);
+
+		safe_delete(outapp);
+
 		RowNum++;
 	}
 
 	mysql_free_result(result);
-
-	_pkt(MAIL__PACKETS, outapp);
-
-	c->QueuePacket(outapp);
-
-	safe_delete(outapp);
-
 
 }
 

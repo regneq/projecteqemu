@@ -38,6 +38,7 @@ public:
 	EQStream *ClientStream;
 	void AddCharacter(const char *CharacterName);
 	void ClearCharacters() { Characters.clear(); }
+	string GetName() { if(Characters.size()) return Characters[0]; else return ""; }
 	void SendMailBoxes();
 	int GetMailBoxNumber() { return CurrentMailBox; }
 	int GetMailBoxNumber(string CharacterName);
@@ -57,6 +58,7 @@ public:
 	Clientlist(int MailPort);
 	void	Process();
 	Client *IsCharacterOnline(string CharacterName);
+	void CheckForStaleConnections(Client *c);
 
 private:
 	EQStreamFactory *mailsf;
