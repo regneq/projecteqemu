@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==01/11/2009
+Angelox: Bots: Added rule 'EQOffline:BotCount' defaults to 5, for desired amount of bots in the group - values are 0-5 (0 means bots are disabled, max limit is 5). 
+
 ==01/08/2009
 Congdar: Bots: Fix compile issue under linux for Visible Gear update.
 
