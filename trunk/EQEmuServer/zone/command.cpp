@@ -8301,6 +8301,15 @@ void command_bot(Client *c, const Seperator *sep) {
 
 	if(!strcasecmp(sep->arg[1], "group") && !strcasecmp(sep->arg[2], "add"))
     {
+ 		if((RuleR(EQOffline, BotCount) ==0) && (c->GetTarget()->IsBot())) {
+            c->Message(15, "Bot groups are disabled on this server");
+		Mob* kmob = c->GetTarget();
+			if(kmob != NULL) {
+				kmob->BotOwner = NULL;
+				kmob->Kill();
+			}
+			return;
+		}
 		if(c->GetFeigned()) {
             c->Message(15, "You can't create bot groups while feigned!");
 			return;
@@ -8344,7 +8353,7 @@ void command_bot(Client *c, const Seperator *sep) {
 		if ( c->IsGrouped() )
         {
             Group *g = entity_list.GetGroupByClient(c);
-			if(g && (g->BotGroupCount() > 5))
+			if((g && (g->BotGroupCount() > 5)) || (g && (g->BotGroupCount() > RuleR(EQOffline, BotCount))))
             {
                 c->Message(15, "There is no more room in your group.");
 				Mob* kmob = c->GetTarget();
