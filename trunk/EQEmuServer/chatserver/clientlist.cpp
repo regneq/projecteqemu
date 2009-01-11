@@ -340,6 +340,9 @@ void Clientlist::Process() {
 						case CommandToggleInvites:
 							(*Iterator)->ToggleInvites();
 							break;
+
+						case CommandAFK:
+							break;
 				
 						default:
 							(*Iterator)->SendHelp();

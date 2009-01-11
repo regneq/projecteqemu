@@ -34,7 +34,7 @@
 
 enum { CommandJoin = 0, CommandLeaveAll, CommandLeave, CommandListAll, CommandList, CommandSet, CommandAnnounce, CommandSetOwner,
        CommandOPList, CommandInvite, CommandGrant, CommandModerate, CommandVoice, CommandKick, 
-       CommandPassword, CommandToggleInvites, CommandEndOfList };
+       CommandPassword, CommandToggleInvites, CommandAFK, CommandEndOfList };
 
 typedef struct CommandEntry {
 	const char *CommandString;
@@ -58,6 +58,7 @@ static const CommandEntry Commands[] = {
 					 { "kick", CommandKick },
 					 { "password", CommandPassword },
 					 { "toggleinvites", CommandToggleInvites },
+					 { "afk", CommandAFK },
 					 { "", CommandEndOfList } };
 
 class Client {
