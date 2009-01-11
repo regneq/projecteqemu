@@ -54,6 +54,26 @@ int LookupCommand(const char *ChatCommand) {
 	return -1;
 }
 
+void SendUptime(Client *c) {
+
+	if(!c) return;
+
+	int32 ms = Timer::GetCurrentTime();
+	int32 d = ms / 86400000;
+	ms -= d * 86400000;
+	int32 h = ms / 3600000;
+	ms -= h * 3600000;
+	int32 m = ms / 60000;
+	ms -= m * 60000;
+	int32 s = ms / 1000;
+
+	char Buffer[200];
+
+	sprintf(Buffer, "Chat Channel server has been up for %02id %02ih %02im %02is", d, h, m, s);
+
+	c->GeneralChannelMessage(Buffer);
+}
+
 Clientlist::Clientlist(int ChatPort) {
 
 	chatsf = new EQStreamFactory(ChatStream, ChatPort);
@@ -342,6 +362,10 @@ void Clientlist::Process() {
 							break;
 
 						case CommandAFK:
+							break;
+
+						case CommandUptime:
+							SendUptime((*Iterator));
 							break;
 				
 						default:

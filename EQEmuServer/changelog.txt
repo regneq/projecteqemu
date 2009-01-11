@@ -6,6 +6,7 @@ Derision: Mail/Chatchannels: Added sanity check on packet size in EQPacket::Chat
 Derision: Mail/Chatchannels: Increased stream timeout from 45 to 135 seconds.
 Derision: Mail: Use correct opcodes for sending Headers.  **utils/mail_opcodes.conf updated**
 Derision: Chatchannels: Recognise and ignore AFK command.
+Derision: Chatchannels: Added uptime command (usage ;uptime or /chat uptime).
 
 ==01/08/2009
 Congdar: Bots: Fix compile issue under linux for Visible Gear update.
