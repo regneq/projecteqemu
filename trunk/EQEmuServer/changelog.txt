@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+
+==01/12/2009
+Derision: Removed code that stole all your money if you logged on with more than 1 million of any denomination of coin on your person.
+
 ==01/11/2009
 Angelox: Bots: Added rule 'EQOffline:BotCount' defaults to 5, for desired amount of bots in the group - values are 0-5 (0 means bots are disabled, max limit is 5). 
 Derision: Mail/Chatchannels: Added sanity check on packet size in EQPacket::ChatDecode.
