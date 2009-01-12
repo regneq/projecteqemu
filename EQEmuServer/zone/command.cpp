@@ -8603,77 +8603,87 @@ void command_bot(Client *c, const Seperator *sep) {
 										"Left Wrist", "Right Wrist", "Range", "Hands", "Primary Hand", "Secondary Hand",
 										"Left Finger", "Right Finger", "Chest", "Legs", "Feet", "Waist", "Ammo" };
 			const Item_Struct *itm = database.GetItem(database.GetBotItemBySlot(c->GetTarget()->GetNPCTypeID(), slotId));
-			if(itm) {
-				const ItemInst* itminst = new ItemInst(itm, itm->MaxCharges);
-				c->PushItemOnCursor(*itminst, true);
-				safe_delete(itminst);
-                Mob *gearbot = c->GetTarget();
-				database.RemoveBotItemBySlot(gearbot->GetNPCTypeID(), slotId);
-				gearbot->CastToNPC()->RemoveItem(itm->ID);
-				int8 materialFromSlot = Inventory::CalcMaterialFromSlot(slotId);
-				if(materialFromSlot != 0xFF) {
-					gearbot->CastToNPC()->BotRemoveEquipItem(materialFromSlot);
-					gearbot->CastToNPC()->SendWearChange(materialFromSlot);
+			// Don't allow the player to remove a lore item they already possess and cause a crash
+			if(!c->CheckLoreConflict(itm)) {
+				if(itm) {
+					const ItemInst* itminst = new ItemInst(itm, itm->MaxCharges);
+					c->PushItemOnCursor(*itminst, true);
+					safe_delete(itminst);
+					Mob *gearbot = c->GetTarget();
+					database.RemoveBotItemBySlot(gearbot->GetNPCTypeID(), slotId);
+					gearbot->CastToNPC()->RemoveItem(itm->ID);
+					int8 materialFromSlot = Inventory::CalcMaterialFromSlot(slotId);
+					if(materialFromSlot != 0xFF) {
+						gearbot->CastToNPC()->BotRemoveEquipItem(materialFromSlot);
+						gearbot->CastToNPC()->SendWearChange(materialFromSlot);
+					}
+					gearbot->CalcBotStats();
+					switch(slotId) {
+						case 0:
+						case 1:
+						case 2:
+						case 3:
+						case 4:
+						case 5:
+						case 8:
+						case 9:
+						case 10:
+						case 11:
+						case 13:
+						case 14:
+						case 15:
+						case 16:
+						case 17:
+						case 20:
+						case 21:
+							gearbot->Say("My %s is now unequipped.", equipped[slotId]);
+							break;
+						case 6:
+						case 7:
+						case 12:
+						case 18:
+						case 19:
+							gearbot->Say("My %s are now unequipped.", equipped[slotId]);
+							break;
+						default:
+							break;
+					}
 				}
-				gearbot->CalcBotStats();
-				switch(slotId) {
-					case 0:
-					case 1:
-					case 2:
-					case 3:
-					case 4:
-					case 5:
-					case 8:
-					case 9:
-					case 10:
-					case 11:
-					case 13:
-					case 14:
-					case 15:
-					case 16:
-					case 17:
-					case 20:
-					case 21:
-						gearbot->Say("My %s is now unequipped.", equipped[slotId]);
-						break;
-					case 6:
-					case 7:
-					case 12:
-					case 18:
-					case 19:
-						gearbot->Say("My %s are now unequipped.", equipped[slotId]);
-						break;
+				else {
+					switch(slotId) {
+						case 0:
+						case 1:
+						case 2:
+						case 3:
+						case 4:
+						case 5:
+						case 8:
+						case 9:
+						case 10:
+						case 11:
+						case 13:
+						case 14:
+						case 15:
+						case 16:
+						case 17:
+						case 20:
+						case 21:
+							c->GetTarget()->Say("My %s is already unequipped.", equipped[slotId]);
+							break;
+						case 6:
+						case 7:
+						case 12:
+						case 18:
+						case 19:
+							c->GetTarget()->Say("My %s are already unequipped.", equipped[slotId]);
+							break;
+						default:
+							break;
+					}
 				}
 			}
 			else {
-				switch(slotId) {
-					case 0:
-					case 1:
-					case 2:
-					case 3:
-					case 4:
-					case 5:
-					case 8:
-					case 9:
-					case 10:
-					case 11:
-					case 13:
-					case 14:
-					case 15:
-					case 16:
-					case 17:
-					case 20:
-					case 21:
-						c->GetTarget()->Say("My %s is already unequipped.", equipped[slotId]);
-						break;
-					case 6:
-					case 7:
-					case 12:
-					case 18:
-					case 19:
-						c->GetTarget()->Say("My %s are already unequipped.", equipped[slotId]);
-						break;
-				}
+				c->Message(15, "Duplicate Lore item.");
 			}
 		}
 		return;
