@@ -6602,7 +6602,7 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 	if (m_pp.gm && admin < minStatusToBeGM)
 		m_pp.gm = 0;
 
-	if (m_pp.platinum < 0 || m_pp.gold < 0 || m_pp.silver < 0 || m_pp.copper < 0 || m_pp.platinum > 1000000 || m_pp.gold > 1000000 || m_pp.silver > 1000000 || m_pp.copper > 1000000)
+	if (m_pp.platinum < 0 || m_pp.gold < 0 || m_pp.silver < 0 || m_pp.copper < 0 )
 	{
 		m_pp.platinum = 0;
 		m_pp.gold = 0;
