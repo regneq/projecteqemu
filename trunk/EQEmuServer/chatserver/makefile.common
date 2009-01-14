@@ -14,7 +14,7 @@ SF= chatserver.o  clientlist.o ../common/timer.o ../common/packet_dump.o ../comm
    ../common/TCPServer.o ../common/EmuTCPConnection.o \
    ../common/SocketLib/Base64.o ../common/SocketLib/File.o  \
    ../common/dbcore.o database.o ../common/EQEmuConfig.o \
-   ../common/rulesys.o \
+   .obj/rulesys.o \
    ChatConfig.o chatchannel.o \
    ../common/XMLParser.o ../common/tinyxml/tinystr.o \
    ../common/tinyxml/tinyxml.o ../common/tinyxml/tinyxmlerror.o ../common/tinyxml/tinyxmlparser.o 
