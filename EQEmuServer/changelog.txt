@@ -1,6 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==01/14/2009
+Derision: Fixed makefile references for rulesys.o
+Derision: Mapped field in LogServer_Struct to allow voice macro window to be opened (needs work on Opcodes to make it functional).
+
 ==01/12/2009
 Derision: Removed code that stole all your money if you logged on with more than 1 million of any denomination of coin on your person.
 

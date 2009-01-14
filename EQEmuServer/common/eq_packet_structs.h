@@ -2486,7 +2486,7 @@ struct LogServer_Struct {
 /*176*/	uint32	unknown176;	// htonl(0x00002695)
 /*180*/	char	unknown180[80];	// 'eqdataexceptions@mail.station.sony.com' on live
 /*260*/	uint8	unknown260;	// 0x01 on live
-/*261*/	uint8	unknown261;	// 0x01 on live
+/*261*/	uint8	enablevoicemacros;
 /*262*/	uint8	enablemail;
 /*263*/	uint8	unknown263[1];
 /*264*/

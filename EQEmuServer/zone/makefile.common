@@ -21,7 +21,7 @@ SF= .obj/EQPacket.o .obj/EQStream.o .obj/EQStreamFactory.o .obj/CRC16.o \
    fearpath.o special_attacks.o ../common/timeoutmgr.o ../common/Condition.o \
    .obj/opcodemgr.o .obj/emu_opcodes.o ../common/SharedLibrary.o zoning.o \
    titles.o perlpacket.o perl_perlpacket.o zonedb.o ../common/shareddb.o \
-   ../common/logsys.o ../common/rulesys.o ../common/logsys_eqemu.o \
+   ../common/logsys.o .obj/rulesys.o ../common/logsys_eqemu.o \
    ../common/EQEmuConfig.o ZoneConfig.o ../common/XMLParser.o ../common/tinyxml/tinystr.o \
    ../common/tinyxml/tinyxml.o ../common/tinyxml/tinyxmlerror.o ../common/tinyxml/tinyxmlparser.o \
    ../common/EQStreamProxy.o ../common/patches/patches.o \

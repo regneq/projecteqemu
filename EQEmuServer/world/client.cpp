@@ -103,6 +103,9 @@ void Client::SendLogServer()
 	if(RuleB(Mail, EnableMailSystem))
 		l->enablemail = 1;
 
+	if(RuleB(Chat, EnableVoiceMacros))
+		l->enablevoicemacros = 1;
+
 	QueuePacket(outapp);
 	safe_delete(outapp);
 }

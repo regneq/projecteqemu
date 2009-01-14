@@ -213,6 +213,7 @@ RULE_CATEGORY_END()
 RULE_CATEGORY ( Chat )
 RULE_BOOL ( Chat, ServerWideOOC, true)
 RULE_BOOL ( Chat, ServerWideAuction, true)
+RULE_BOOL ( Chat, EnableVoiceMacros, false) // Not yet implemented, but need this set true to even bring up the Voice Macro window.
 RULE_CATEGORY_END()
 
 RULE_CATEGORY ( Bazaar )
