@@ -197,6 +197,71 @@ void WorldServer::Process() {
 			}
 			break;
 		}
+		case ServerOP_VoiceMacro: {
+
+			if (!ZoneLoaded) break;
+
+			ServerVoiceMacro_Struct* svm = (ServerVoiceMacro_Struct*) pack->pBuffer;
+
+			EQApplicationPacket* outapp = new EQApplicationPacket(OP_VoiceMacroOut,sizeof(VoiceMacroOut_Struct));
+
+			VoiceMacroOut_Struct* vmo = (VoiceMacroOut_Struct*)outapp->pBuffer;
+
+			strcpy(vmo->From, svm->From);
+
+			vmo->Type = svm->Type;
+
+			vmo->Voice =svm->Voice;
+
+			vmo->MacroNumber = svm->MacroNumber;
+
+			switch(svm->Type) {
+
+				case VoiceMacroTell: {
+
+					Client* c = entity_list.GetClientByName(svm->To);
+
+					if(!c) break;
+
+					c->QueuePacket(outapp);
+
+					break;
+	
+				}
+
+				case VoiceMacroGroup: {
+
+					Group* g = entity_list.GetGroupByID(svm->GroupID);
+
+					if(!g) break;
+
+					for(unsigned int i = 0; i < MAX_GROUP_MEMBERS; i++) {
+						if(g->members[i] && g->members[i]->IsClient())
+							g->members[i]->CastToClient()->QueuePacket(outapp);
+
+					}
+					break;
+				}
+
+				case VoiceMacroRaid: {
+
+					Raid *r = entity_list.GetRaidByID(svm->RaidID);
+
+					if(!r) break;
+
+					for(int i = 0; i < MAX_RAID_MEMBERS; i++)
+						if(r->members[i].member)
+							r->members[i].member->QueuePacket(outapp);
+
+					break;
+				}
+			}
+
+			safe_delete(outapp);
+
+			break;
+		}
+
 		case ServerOP_SpawnCondition: {
 			if(pack->size != sizeof(ServerSpawnCondition_Struct))
 				break;
@@ -1242,6 +1307,47 @@ bool WorldServer::SendEmoteMessage(const char* to, int32 to_guilddbid, sint16 to
 	bool ret = SendPacket(pack);
 	safe_delete(pack);
 	return ret;
+}
+
+bool WorldServer::SendVoiceMacro(Client* From, int32 Type, char* Target, int32 MacroNumber, int32 GroupOrRaidID) {
+
+	if(!worldserver.Connected() || !From)
+		return false;
+	
+	ServerPacket* pack = new ServerPacket(ServerOP_VoiceMacro, sizeof(ServerVoiceMacro_Struct));
+
+	ServerVoiceMacro_Struct* svm = (ServerVoiceMacro_Struct*) pack->pBuffer;
+	
+	strcpy(svm->From, From->GetName());
+
+	switch(Type) {
+
+		case VoiceMacroTell:
+			strcpy(svm->To, Target);
+			break;
+
+		case VoiceMacroGroup:
+			svm->GroupID = GroupOrRaidID;
+			break;
+
+		case VoiceMacroRaid:
+			svm->RaidID = GroupOrRaidID;
+			break;
+	}
+
+	svm->Type = Type;
+
+	svm->Voice = (GetArrayRace(From->GetRace()) * 2) + From->GetGender();
+
+	svm->MacroNumber = MacroNumber;
+
+	pack->Deflate();
+
+	bool Ret = SendPacket(pack);
+
+	safe_delete(pack);
+
+	return Ret;
 }
 
 bool WorldServer::RezzPlayer(EQApplicationPacket* rpack,int32 rezzexp, int16 opcode) {

@@ -28,7 +28,7 @@
 #define ServerOP_KickPlayer			0x000D  // #kick
 
 #define ServerOP_RefreshGuild		0x000E	// Notice to all zoneservers to refresh their guild cache for ID# in packet (ServerGuildRefresh_Struct)
-//#define ServerOP_GuildKickAll		0x000F	// Remove all clients from this guild
+#define ServerOP_VoiceMacro		0x000F
 //#define ServerOP_GuildInvite		0x0010
 #define ServerOP_DeleteGuild		0x0011	// ServerGuildID_Struct
 //#define ServerOP_GuildJoin		0x0012
@@ -266,6 +266,18 @@ struct ServerEmoteMessage_Struct {
 	sint16	minstatus;
 	int32	type;
 	char	message[0];
+};
+
+struct ServerVoiceMacro_Struct {
+	char	From[64];
+	union {
+		char	To[64];
+		int32	GroupID;
+		int32	RaidID;
+	};
+	int32	Type;
+	int32	Voice;
+	int32	MacroNumber;
 };
 
 struct ServerClientList_Struct {
