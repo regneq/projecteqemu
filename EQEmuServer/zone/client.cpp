@@ -3420,6 +3420,7 @@ void Client::SendOPTranslocateConfirm(Mob *Caster, int16 SpellID) {
 
 	PendingTranslocateData = *ts;
 	PendingTranslocate=true;
+	TranslocateTime = time(NULL);
 
 	QueuePacket(outapp);
 	safe_delete(outapp);

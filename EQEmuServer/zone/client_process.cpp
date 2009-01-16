@@ -1668,12 +1668,20 @@ void Client::DoStaminaUpdate() {
 	
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_Stamina, sizeof(Stamina_Struct));
 	Stamina_Struct* sta = (Stamina_Struct*)outapp->pBuffer;
-	if (m_pp.hunger_level > 0)
-		m_pp.hunger_level-=32;
-	if (m_pp.thirst_level > 0)
-		m_pp.thirst_level-=32;
-	sta->food = m_pp.hunger_level;
-	sta->water = m_pp.thirst_level;
+
+	if(zone->GetZoneID() != 151) {
+		if (m_pp.hunger_level > 0)
+			m_pp.hunger_level-=32;
+		if (m_pp.thirst_level > 0)
+			m_pp.thirst_level-=32;
+		sta->food = m_pp.hunger_level;
+		sta->water = m_pp.thirst_level;
+	}
+	else {
+		// No auto food/drink consumption in the Bazaar
+		sta->food = 6000;
+		sta->water = 6000;
+	}
 	FastQueuePacket(&outapp);
 }
 
