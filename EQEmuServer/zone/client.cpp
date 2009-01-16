@@ -3760,3 +3760,38 @@ uint16 Client::GetTotalATK()
 
 	return AttackRating;
 }
+
+void Client::VoiceMacroReceived(int32 Type, char *Target, int32 MacroNumber) {
+
+	int32 GroupOrRaidID = 0;
+
+	switch(Type) {
+
+		case VoiceMacroGroup: { 
+
+			Group* g = GetGroup();
+
+			if(g)
+				GroupOrRaidID = g->GetID();
+			else
+				return;
+
+			break;
+		}
+
+		case VoiceMacroRaid: { 
+
+			Raid* r = GetRaid();
+
+			if(r)
+				GroupOrRaidID = r->GetID();
+			else
+				return;
+
+			break;
+		}
+	}
+
+	if(!worldserver.SendVoiceMacro(this, Type, Target, MacroNumber, GroupOrRaidID))
+		Message(0, "Error: World server disconnected");
+}

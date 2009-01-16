@@ -3313,6 +3313,25 @@ struct TaskHistoryReplyData2_Struct {
 	uint32	unknown16;
 };
 
+enum { VoiceMacroTell = 1, VoiceMacroGroup = 2, VoiceMacroRaid = 3 };
+
+struct VoiceMacroIn_Struct {
+/*000*/	char	Unknown000[64];
+/*064*/	uint32	Type;	// 1 = Tell, 2 = Group, 3 = Raid
+/*068*/	char	Target[64];
+/*132*/	uint32	Unknown132;	// Seems to be 0x0000000c always
+/*136*/	uint32	MacroNumber;
+};
+
+struct VoiceMacroOut_Struct {
+/*000*/	char	From[64];
+/*064*/	uint32	Type;	// 1 = Tell, 2 = Group, 3 = Raid
+/*068*/	uint32	Unknown068;
+/*072*/	uint32	Voice;
+/*076*/	uint32	MacroNumber;
+/*080*/	char	Unknown080[60];
+};
+
 struct BankerChange_Struct {
 	uint32	platinum;
 	uint32	gold;

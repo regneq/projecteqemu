@@ -237,6 +237,7 @@ public:
 	void	ChannelMessageSend(const char* from, const char* to, int8 chan_num, int8 language, const char* message, ...);
 	void	Message(int32 type, const char* message, ...);
 	void    QuestJournalledMessage(const char *npcname, const char* message);
+	void	VoiceMacroReceived(int32 Type, char *Target, int32 MacroNumber);
 	void	SendSound();
 
 	int32   GetAdventureID() const {return 0/*m_pp.adventure_id*/; }

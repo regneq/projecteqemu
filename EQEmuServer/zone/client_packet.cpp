@@ -332,6 +332,7 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_LFPCommand] = &Client::Handle_OP_LFPCommand;
 	ConnectedOpcodes[OP_LFPGetMatchesRequest] = &Client::Handle_OP_LFPGetMatchesRequest;
 	ConnectedOpcodes[OP_Barter] = &Client::Handle_OP_Barter;
+	ConnectedOpcodes[OP_VoiceMacroIn] = &Client::Handle_OP_VoiceMacroIn;
 
 }
 
@@ -8434,3 +8435,24 @@ void Client::Handle_OP_Barter(const EQApplicationPacket *app) {
 
 	}
 }
+
+void Client::Handle_OP_VoiceMacroIn(const EQApplicationPacket *app) {
+
+	if(app->size != sizeof(VoiceMacroIn_Struct)) {
+
+		LogFile->write(EQEMuLog::Debug, "Size mismatch in OP_VoiceMacroIn expected %i got %i",
+		               sizeof(VoiceMacroIn_Struct), app->size);
+
+		DumpPacket(app);
+
+		return;
+	}
+
+	if(!RuleB(Chat, EnableVoiceMacros)) return;
+
+	VoiceMacroIn_Struct* vmi = (VoiceMacroIn_Struct*)app->pBuffer;
+
+	VoiceMacroReceived(vmi->Type, vmi->Target, vmi->MacroNumber);
+
+}
+

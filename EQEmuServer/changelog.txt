@@ -1,6 +1,13 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==01/16/2009
+Derision: Implemented voice macros (CTRL-V). Update your opcodes.
+
+Optional SQL: (Required to enable voice macro use on your server
+
+REPLACE INTO `rule_values` VALUES (0, 'Chat:EnableVoiceMacros', 'true');
+
 ==01/14/2009
 Derision: Fixed makefile references for rulesys.o
 Derision: Mapped field in LogServer_Struct to allow voice macro window to be opened (needs work on Opcodes to make it functional).
