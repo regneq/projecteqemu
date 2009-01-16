@@ -3,6 +3,8 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 
 ==01/16/2009
 Derision: Implemented voice macros (CTRL-V). Update your opcodes.
+Derision: Food and drink should no longer be auto-consumed in the Bazaar
+Derision: Added rule Spells:TranslocateTimeLimit. If >0, translocate must be accepted within this number of seconds.
 
 Optional SQL: (Required to enable voice macro use on your server
 

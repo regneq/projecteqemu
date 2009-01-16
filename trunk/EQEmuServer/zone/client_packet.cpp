@@ -8032,6 +8032,12 @@ void Client::Handle_OP_Translocate(const EQApplicationPacket *app) {
 
 	if(!PendingTranslocate) return;
 
+	if((RuleI(Spells, TranslocateTimeLimit) > 0) && (time(NULL) > (TranslocateTime + RuleI(Spells, TranslocateTimeLimit)))) {
+		Message(13, "You did not accept the Translocate within the required time limit.");
+		PendingTranslocate = false;
+		return;
+	}
+
 	if(its->Complete == 1) {
 
 		int SpellID = PendingTranslocateData.SpellID;
