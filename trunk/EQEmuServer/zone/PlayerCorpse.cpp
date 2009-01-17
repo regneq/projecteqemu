@@ -559,7 +559,7 @@ void Corpse::RemoveItem(ServerLootItem_Struct* item_data)
 	}
 }
 
-void Corpse::SetCash(int16 in_copper, int16 in_silver, int16 in_gold, int16 in_platinum) {
+void Corpse::SetCash(int32 in_copper, int32 in_silver, int32 in_gold, int32 in_platinum) {
 	this->copper = in_copper;
 	this->silver = in_silver;
 	this->gold = in_gold;

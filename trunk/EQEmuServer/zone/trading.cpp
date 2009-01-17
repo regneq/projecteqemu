@@ -25,6 +25,9 @@ Copyright (C) 2001-2002  EQEMu Development Team (http://eqemu.org)
 #include "embparser.h"
 #endif
 
+// The maximum amount of a single bazaar/barter transaction expressed in copper.
+// Equivalent to 2 Million plat
+#define MAX_TRANSACTION_VALUE 2000000000
 // ##########################################
 // Trade implementation
 // ##########################################
@@ -1179,7 +1182,7 @@ void Client::ReturnTraderReq(const EQApplicationPacket* app, sint16 TraderItemCh
 
 	memcpy(outtbs, tbs, app->size);
 
-	outtbs->Price = (tbs->Price * TraderItemCharges);
+	outtbs->Price = (tbs->Price * static_cast<int32>(TraderItemCharges));
 
 	outtbs->Quantity = TraderItemCharges;
 
@@ -1284,6 +1287,15 @@ void Client::BuyTraderItem(TraderBuy_Struct* tbs,Client* Trader,const EQApplicat
 		return;
 	}
 
+	uint64 TotalTransactionValue = static_cast<uint64>(tbs->Price) * static_cast<uint64>(outtbs->Quantity);
+
+	if(TotalTransactionValue > MAX_TRANSACTION_VALUE) {
+		Message(13, "That would exceed the single transaction limit of %u platinum.", MAX_TRANSACTION_VALUE / 1000);
+		TradeRequestFailed(app);
+		safe_delete(outapp);
+		return;
+	}
+
 	ReturnTraderReq(app, outtbs->Quantity);
 
 	outtbs->TraderID = this->GetID();
@@ -1303,7 +1315,8 @@ void Client::BuyTraderItem(TraderBuy_Struct* tbs,Client* Trader,const EQApplicat
 	EQApplicationPacket* outapp2 = new EQApplicationPacket(OP_MoneyUpdate,sizeof(MoneyUpdate_Struct));
 
 	MoneyUpdate_Struct* mus= (MoneyUpdate_Struct*)outapp2->pBuffer;
-	
+
+	// This cannot overflow assuming MAX_TRANSACTION_VALUE, checked above, is the default of 2000000000
 	int32 TotalCost = tbs->Price * outtbs->Quantity;
 
 	outtbs->Price = TotalCost;
@@ -1318,7 +1331,7 @@ void Client::BuyTraderItem(TraderBuy_Struct* tbs,Client* Trader,const EQApplicat
 
 	TotalCost -= (mus->gold * 100);
 
-	mus->silver = (int) TotalCost / 10;
+	mus->silver = TotalCost / 10;
 
 	TotalCost -= (mus->silver * 10);
 
@@ -2219,6 +2232,11 @@ void Client::SellToBuyer(const EQApplicationPacket *app) {
 
 	   	Message(13, "The Buyer does not have space for %i %s", Quantity, item->Name);
 
+		return;
+	}
+
+	if((static_cast<int64>(Quantity) * static_cast<int64>(Price)) > MAX_TRANSACTION_VALUE) {
+		Message(13, "That would exceed the single transaction limit of %u platinum.", MAX_TRANSACTION_VALUE / 1000);
 		return;
 	}
 

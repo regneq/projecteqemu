@@ -6062,7 +6062,10 @@ void Client::Handle_OP_Split(const EQApplicationPacket *app)
 		return;
 	}
 
-	if(!TakeMoneyFromPP(split->copper + 10 * split->silver + 100 * split->gold + 1000 * split->platinum)) {
+	if(!TakeMoneyFromPP(static_cast<int64>(split->copper) +
+			    10 * static_cast<int64>(split->silver) +
+			    100 * static_cast<int64>(split->gold) + 
+			    1000 * static_cast<int64>(split->platinum))) {
 		Message(13, "You do not have enough money to do that split.");
 		return;
 	}
@@ -7403,7 +7406,12 @@ void Client::Handle_OP_BankerChange(const EQApplicationPacket *app)
 
 	EQApplicationPacket *outapp=new EQApplicationPacket(OP_BankerChange,NULL,sizeof(BankerChange_Struct));
 	BankerChange_Struct *bc=(BankerChange_Struct *)outapp->pBuffer;
-	uint32 cp=m_pp.copper+(m_pp.silver*10)+(m_pp.gold*100)+(m_pp.platinum*1000);
+
+	uint64 cp = static_cast<uint64>(m_pp.copper) + 
+		    (static_cast<uint64>(m_pp.silver) * 10) + 
+		    (static_cast<uint64>(m_pp.gold) * 100) +
+		    (static_cast<uint64>(m_pp.platinum) * 1000);
+
 	m_pp.copper=cp%10;
 	cp/=10;
 	m_pp.silver=cp%10;
@@ -7412,7 +7420,11 @@ void Client::Handle_OP_BankerChange(const EQApplicationPacket *app)
 	cp/=10;
 	m_pp.platinum=cp;
 
-	cp=m_pp.copper_bank+(m_pp.silver_bank*10)+(m_pp.gold_bank*100)+(m_pp.platinum_bank*1000);
+	cp = static_cast<uint64>(m_pp.copper_bank) + 
+	     (static_cast<uint64>(m_pp.silver_bank) * 10) +
+	     (static_cast<uint64>(m_pp.gold_bank) * 100) +
+	     (static_cast<uint64>(m_pp.platinum_bank) * 1000);
+
 	m_pp.copper_bank=cp%10;
 	cp/=10;
 	m_pp.silver_bank=cp%10;

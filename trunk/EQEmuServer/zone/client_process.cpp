@@ -1137,7 +1137,7 @@ void Client::BreakInvis()
 	}
 }
 
-static int CoinTypeCoppers(uint32 type) {
+static int64 CoinTypeCoppers(uint32 type) {
 	switch(type) {
 	case COINTYPE_PP:
 		return(1000);
@@ -1155,7 +1155,7 @@ static int CoinTypeCoppers(uint32 type) {
 void Client::OPMoveCoin(const EQApplicationPacket* app)
 {
 	MoveCoin_Struct* mc = (MoveCoin_Struct*)app->pBuffer;
-	int value = 0, amount_to_take = 0, amount_to_add = 0;
+	int64 value = 0, amount_to_take = 0, amount_to_add = 0;
 	sint32 *from_bucket = 0, *to_bucket = 0;
 	Mob* trader = trade->With();
 	

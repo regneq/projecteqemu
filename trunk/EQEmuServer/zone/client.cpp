@@ -28,6 +28,7 @@ using namespace std;
 
 // Disgrace: for windows compile
 #ifdef WIN32
+#define abs64 _abs64
 #define snprintf	_snprintf
 #if (_MSC_VER < 1500)
 	#define vsnprintf	_vsnprintf
@@ -39,6 +40,7 @@ using namespace std;
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include "../common/unix.h"
+#define abs64 abs
 #endif
 
 extern volatile bool RunLoops;
@@ -1668,14 +1670,15 @@ void Client::SendClientMoneyUpdate(int8 type,int32 amount){
 	safe_delete(outapp);
 }
 
-bool Client::TakeMoneyFromPP(uint32 copper){
-	sint32 copperpp,silver,gold,platinum;
+bool Client::TakeMoneyFromPP(uint64 copper){
+	sint64 copperpp,silver,gold,platinum;
 	copperpp = m_pp.copper;
-	silver = m_pp.silver*10;
-	gold = m_pp.gold*100;
-	platinum = m_pp.platinum*1000;
+	silver = static_cast<sint64>(m_pp.silver) * 10;
+	gold = static_cast<sint64>(m_pp.gold) * 100;
+	platinum = static_cast<sint64>(m_pp.platinum) * 1000;
 
-	sint32 clienttotal = m_pp.copper+m_pp.silver*10+m_pp.gold*100+m_pp.platinum*1000;
+	sint64 clienttotal = copperpp + silver + gold + platinum;
+
 	clienttotal -= copper;
 	if(clienttotal < 0)
 	{
@@ -1686,7 +1689,7 @@ bool Client::TakeMoneyFromPP(uint32 copper){
 		copperpp -= copper;
 		if(copperpp <= 0)
 		{
-			copper = abs(copperpp);
+			copper = abs64(copperpp);
 			m_pp.copper = 0;
 		}
 		else
@@ -1698,7 +1701,7 @@ bool Client::TakeMoneyFromPP(uint32 copper){
 		silver -= copper;
 		if(silver <= 0)
 		{
-			copper = abs(silver);
+			copper = abs64(silver);
 			m_pp.silver = 0;
 		}
 		else
@@ -1713,15 +1716,15 @@ bool Client::TakeMoneyFromPP(uint32 copper){
 
 		if(gold <= 0)
 		{
-			copper = abs(gold);
+			copper = abs64(gold);
 			m_pp.gold = 0;
 		}
 		else
 		{
 			m_pp.gold = gold/100;
-			int32 silvertest = (gold-(m_pp.gold*100))/10;
+			int64 silvertest = (gold-(static_cast<int64>(m_pp.gold)*100))/10;
 			m_pp.silver += silvertest;
-			int32 coppertest = (gold-(m_pp.gold*100+silvertest*10));
+			int64 coppertest = (gold-(static_cast<int64>(m_pp.gold)*100+silvertest*10));
 			m_pp.copper += coppertest;
 			Save();
 			return true;
@@ -1732,11 +1735,11 @@ bool Client::TakeMoneyFromPP(uint32 copper){
 		//Impossible for plat to be negative, already checked above
 
 		m_pp.platinum = platinum/1000;
-		int32 goldtest = (platinum-(m_pp.platinum*1000))/100;
+		int64 goldtest = (platinum-(static_cast<int64>(m_pp.platinum)*1000))/100;
 		m_pp.gold += goldtest;
-		int32 silvertest = (platinum-(m_pp.platinum*1000+goldtest*100))/10;
+		int32 silvertest = (platinum-(static_cast<int64>(m_pp.platinum)*1000+goldtest*100))/10;
 		m_pp.silver += silvertest;
-		int32 coppertest = (platinum-(m_pp.platinum*1000+goldtest*100+silvertest*10));
+		int64 coppertest = (platinum-(static_cast<int64>(m_pp.platinum)*1000+goldtest*100+silvertest*10));
 		m_pp.copper = coppertest;
 		RecalcWeight();
 		Save();
@@ -1744,9 +1747,9 @@ bool Client::TakeMoneyFromPP(uint32 copper){
 	}
 }
 
-void Client::AddMoneyToPP(uint32 copper,bool updateclient){
-	uint32 tmp;
-	uint32 tmp2;
+void Client::AddMoneyToPP(uint64 copper,bool updateclient){
+	uint64 tmp;
+	uint64 tmp2;
 	tmp = copper;
 
 	// Add Amount of Platinum
@@ -1819,9 +1822,12 @@ void Client::SendMoneyUpdate() {
 	FastQueuePacket(&outapp);
 }
 
-bool Client::HasMoney(uint32 Copper) {
+bool Client::HasMoney(uint64 Copper) {
 
-	if((m_pp.copper + (m_pp.silver * 10) + (m_pp.gold * 100) + (m_pp.platinum * 1000)) >= Copper)
+	if((static_cast<int64>(m_pp.copper) +
+	   (static_cast<int64>(m_pp.silver) * 10) +
+	   (static_cast<int64>(m_pp.gold) * 100) +
+	   (static_cast<int64>(m_pp.platinum) * 1000)) >= Copper)
 		return true;
 
 	return false;
