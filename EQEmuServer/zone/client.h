@@ -517,10 +517,10 @@ public:
 	void	ReadBook(BookRequest_Struct *book);
 	void	SendClientMoneyUpdate(int8 type,int32 amount);
 	void	SendMoneyUpdate();
-	bool	TakeMoneyFromPP(uint32 copper);
-	void	AddMoneyToPP(uint32 copper,bool updateclient);
+	bool	TakeMoneyFromPP(uint64 copper);
+	void	AddMoneyToPP(uint64 copper,bool updateclient);
 	void	AddMoneyToPP(uint32 copper, uint32 silver, uint32 gold,uint32 platinum,bool updateclient);
-	bool	HasMoney(uint32 copper);
+	bool	HasMoney(uint64 copper);
 
 //	bool	SimpleCheckIncreaseSkill(int16 skillid,sint16 chancemodi = 0);
 	void	FinishTrade(Client* with);
