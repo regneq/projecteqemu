@@ -206,7 +206,7 @@ RULE_CATEGORY_END()
 RULE_CATEGORY ( EQOffline )
 RULE_REAL ( EQOffline, BotManaRegen, 1.0 ) // Adjust mana regen for bots, 1 is fast and higher numbers slow it down 3 is about the same as players.
 RULE_BOOL ( EQOffline, BotFinishBuffing, true ) // Allow for buffs to complete even if the bot caster is out of mana.  Only affects buffing out of combat.
-RULE_REAL ( EQOffline, BotCount, 5 ) // Desired amout of bots in group
+RULE_INT ( EQOffline, BotCount, 5 ) // Desired amout of bots in group
 RULE_CATEGORY_END()
 
 #endif //EQBOTS

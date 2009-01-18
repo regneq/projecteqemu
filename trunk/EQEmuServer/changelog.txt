@@ -3,6 +3,8 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 
 ==01/17/2009
 Derision: Fixed several cases of integer overflow relating to moving large amounts of money around.
+Angelox: Bots: Added command '#bot gate', for Druid Circles or Wizard Portals (Druid Primary).
+Angelox: Bots: Changed BotCount to RULE_INT.
 
 ==01/16/2009
 Derision: Implemented voice macros (CTRL-V). Update your opcodes.
