@@ -329,7 +329,7 @@ Client::~Client() {
 	eqs->Close();
 	eqs->ReleaseFromUse();
 
-	entity_list.RemoveClient(GetID());
+	entity_list.RemoveClient(this);
 }
 
 void Client::SendLogoutPackets() {

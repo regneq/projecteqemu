@@ -1998,6 +1998,21 @@ bool EntityList::RemoveClient(int16 delete_id){
 	}
 	return false;
 }
+
+bool EntityList::RemoveClient(Client *delete_client){
+	LinkedListIterator<Client*> iterator(client_list);
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		if(iterator.GetData()==delete_client){
+			iterator.RemoveCurrent(false);//Already Deleted
+			return true;
+		}
+		iterator.Advance();
+	}
+	return false;
+}
+
 bool EntityList::RemoveObject(int16 delete_id){
 	LinkedListIterator<Object*> iterator(object_list);
 	iterator.Reset();
