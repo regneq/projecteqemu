@@ -7415,6 +7415,7 @@ void command_bot(Client *c, const Seperator *sep) {
 		c->Message(15, "#bot resist - Bot resist buffs (must have proper class in group)");
 		c->Message(15, "#bot endureb - Bot enduring breath (must have proper class in group)");
 		c->Message(15, "#bot charm - you need an Enchanter in your group)");
+		c->Message(15, "#bot gate - you need a Druid or Wizard in your group)");
 
 		return;
 	}
@@ -8301,7 +8302,7 @@ void command_bot(Client *c, const Seperator *sep) {
 
 	if(!strcasecmp(sep->arg[1], "group") && !strcasecmp(sep->arg[2], "add"))
     {
- 		if((RuleR(EQOffline, BotCount) ==0) && (c->GetTarget()->IsBot())) {
+ 		if((RuleI(EQOffline, BotCount) ==0) && (c->GetTarget()->IsBot())) {
             c->Message(15, "Bot groups are disabled on this server");
 		Mob* kmob = c->GetTarget();
 			if(kmob != NULL) {
@@ -8353,7 +8354,7 @@ void command_bot(Client *c, const Seperator *sep) {
 		if ( c->IsGrouped() )
         {
             Group *g = entity_list.GetGroupByClient(c);
-			if((g && (g->BotGroupCount() > 5)) || (g && (g->BotGroupCount() > RuleR(EQOffline, BotCount))))
+			if((g && (g->BotGroupCount() > 5)) || (g && (g->BotGroupCount() > RuleI(EQOffline, BotCount))))
             {
                 c->Message(15, "There is no more room in your group.");
 				Mob* kmob = c->GetTarget();
@@ -9324,6 +9325,269 @@ void command_bot(Client *c, const Seperator *sep) {
 
 				default:
 					c->Message(15, "You must have a Druid, Shaman, Ranger,  or Beastlord in your group.");
+					break;
+			}
+		}
+	}
+
+// Gate
+	if ((!strcasecmp(sep->arg[1], "gate")) && (c->IsGrouped())) {
+ 			Mob *Gater;
+			int32 GaterClass = 0;
+			Group *g = c->GetGroup();
+		if(g) {
+			for(int i=0; i<MAX_GROUP_MEMBERS; i++){
+				if(g->members[i] && g->members[i]->IsBot()) {
+					switch(g->members[i]->GetClass()) {
+						case DRUID:
+							  Gater = g->members[i];
+							  GaterClass = DRUID;
+							break;
+						case WIZARD:
+							if (GaterClass == 0){
+							  Gater = g->members[i];
+							  GaterClass = WIZARD;
+						}
+							break;
+						default:
+							break;
+					}
+				}
+			}
+			switch(GaterClass) {
+				case DRUID:
+					if      ((!strcasecmp(sep->arg[2], "karana")) && (c->GetLevel() >= 25) ) {
+						Gater->Say("Casting Circle of Karana...");
+						Gater->CastSpell(550, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "commons")) && (c->GetLevel() >= 27)) {
+						Gater->Say("Casting Circle of Commons...");
+						Gater->CastSpell(551, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "tox")) && (c->GetLevel() >= 25)) { 
+						Gater->Say("Casting Circle of Toxxulia...");
+						Gater->CastSpell(552, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "butcher")) && (c->GetLevel() >= 25)) { 
+						Gater->Say("Casting Circle of Butcherblock...");
+						Gater->CastSpell(553, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "lava")) && (c->GetLevel() >= 30)) { 
+						Gater->Say("Casting Circle of Lavastorm...");
+						Gater->CastSpell(554, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "ro")) && (c->GetLevel() >= 32)) { 
+						Gater->Say("Casting Circle of Ro...");
+						Gater->CastSpell(555, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "feerrott")) && (c->GetLevel() >= 32)) { 
+						Gater->Say("Casting Circle of feerrott...");
+						Gater->CastSpell(556, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "steamfont")) && (c->GetLevel() >= 31)) { 
+						Gater->Say("Casting Circle of Steamfont...");
+						Gater->CastSpell(557, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "misty")) && (c->GetLevel() >= 36)) { 
+						Gater->Say("Casting Circle of Misty...");
+						Gater->CastSpell(558, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "wakening")) && (c->GetLevel() >= 40)) { 
+						Gater->Say("Casting Circle of Wakening Lands...");
+						Gater->CastSpell(1398, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "iceclad")) && (c->GetLevel() >= 32)) { 
+						Gater->Say("Casting Circle of Iceclad Ocean...");
+						Gater->CastSpell(1434, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "divide")) && (c->GetLevel() >= 36)) { 
+						Gater->Say("Casting Circle of The Great Divide...");
+						Gater->CastSpell(1438, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "cobalt")) && (c->GetLevel() >= 42)) { 
+						Gater->Say("Casting Circle of Cobalt Scar...");
+						Gater->CastSpell(1440, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "combines")) && (c->GetLevel() >= 33)) { 
+						Gater->Say("Casting Circle of The Combines...");
+						Gater->CastSpell(1517, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "surefall")) && (c->GetLevel() >= 26)) { 
+						Gater->Say("Casting Circle of Surefall Glade...");
+						Gater->CastSpell(2020, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "grimling")) && (c->GetLevel() >= 29)) { 
+						Gater->Say("Casting Circle of Grimling Forest...");
+						Gater->CastSpell(2419, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "twilight")) && (c->GetLevel() >= 33)) { 
+						Gater->Say("Casting Circle of Twilight...");
+						Gater->CastSpell(2424, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "dawnshroud")) && (c->GetLevel() >= 37)) { 
+						Gater->Say("Casting Circle of Dawnshroud...");
+						Gater->CastSpell(2429, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "nexus")) && (c->GetLevel() >= 26)) { 
+						Gater->Say("Casting Circle of The Nexus...");
+						Gater->CastSpell(2432, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "pok")) && (c->GetLevel() >= 38)) { 
+						Gater->Say("Casting Circle of Knowledge...");
+						Gater->CastSpell(3184, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "stonebrunt")) && (c->GetLevel() >= 28)) { 
+						Gater->Say("Casting Circle of Stonebrunt Mountains...");
+						Gater->CastSpell(3792, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "bloodfields")) && (c->GetLevel() >= 55)) { 
+						Gater->Say("Casting Circle of Bloodfields...");
+						Gater->CastSpell(6184, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "slaughter")) && (c->GetLevel() >= 64)) { 
+						Gater->Say("Casting Circle of Slaughter...");
+						Gater->CastSpell(6179, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "karana") 
+						|| !strcasecmp(sep->arg[2], "tox") 
+						|| !strcasecmp(sep->arg[2], "butcher") && (c->GetLevel() <= 25))
+					|| !strcasecmp(sep->arg[2], "commons") && (c->GetLevel() <= 27)
+				        || (!strcasecmp(sep->arg[2], "ro") 
+						|| !strcasecmp(sep->arg[2], "feerrott") && (c->GetLevel() <= 32))
+					|| !strcasecmp(sep->arg[2], "steamfont") && (c->GetLevel() <= 31)
+					|| !strcasecmp(sep->arg[2], "misty") && (c->GetLevel() <= 36)
+					|| !strcasecmp(sep->arg[2], "lava") && (c->GetLevel() <= 30)
+					|| !strcasecmp(sep->arg[2], "wakening") && (c->GetLevel() <= 40)
+					|| !strcasecmp(sep->arg[2], "iceclad") && (c->GetLevel() <= 32)
+					|| !strcasecmp(sep->arg[2], "divide") && (c->GetLevel() <= 38)
+					|| !strcasecmp(sep->arg[2], "cobalt") && (c->GetLevel() <= 42)
+					|| !strcasecmp(sep->arg[2], "combines") && (c->GetLevel() <= 33)
+					|| !strcasecmp(sep->arg[2], "surefall") && (c->GetLevel() <= 26)
+					|| !strcasecmp(sep->arg[2], "grimling") && (c->GetLevel() <= 29)
+					|| !strcasecmp(sep->arg[2], "twilight") && (c->GetLevel() <= 33)
+					|| !strcasecmp(sep->arg[2], "dawnshroud") && (c->GetLevel() <= 37)
+					|| !strcasecmp(sep->arg[2], "nexus") && (c->GetLevel() <= 26)
+					|| !strcasecmp(sep->arg[2], "pok") && (c->GetLevel() <= 38)
+					|| !strcasecmp(sep->arg[2], "stonebrunt") && (c->GetLevel() <= 28)
+					|| !strcasecmp(sep->arg[2], "bloodfields") && (c->GetLevel() <= 55)
+					|| !strcasecmp(sep->arg[2], "wos") && (c->GetLevel() <= 64)) {
+						Gater->Say("I don't have the needed level yet", sep->arg[2]);
+					}
+					else {
+						Gater->Say("With the proper level I can [gate] to [karana],[commons],[tox],[butcher],[lava],[ro],[feerrott],[steamfont],[misty],[wakening],[iceclad],[divide],[cobalt],[combine],[surefall],[grimling],[twilight],[dawnshroud],[nexus],[pok],[stonebrunt],[bloodfields] or [wos].", c->GetName());
+					}
+					break;
+
+				case WIZARD:
+
+					if      ((!strcasecmp(sep->arg[2], "commons")) && (c->GetLevel() >= 35) ) {
+						Gater->Say("Casting Common Portal...");
+						Gater->CastSpell(566, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "fay")) && (c->GetLevel() >= 27)) {
+						Gater->Say("Casting Fay Portal...");
+						Gater->CastSpell(563, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "ro")) && (c->GetLevel() >= 37)) {
+						Gater->Say("Casting Ro Portal...");
+						Gater->CastSpell(567, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "tox")) && (c->GetLevel() >= 25)) {
+						Gater->Say("Casting Toxxula Portal...");
+						Gater->CastSpell(561, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "nk")) && (c->GetLevel() >= 27)) {
+						Gater->Say("Casting North Karana Portal...");
+						Gater->CastSpell(562, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "nek")) && (c->GetLevel() >= 32)) {
+						Gater->Say("Casting Nektulos Portal...");
+						Gater->CastSpell(564, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "wakening")) && (c->GetLevel() >= 43)) {
+						Gater->Say("Casting Wakening Lands Portal...");
+						Gater->CastSpell(1399, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "iceclad")) && (c->GetLevel() >= 33)) {
+						Gater->Say("Casting Iceclad Ocean Portal...");
+						Gater->CastSpell(1418, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "divide")) && (c->GetLevel() >= 36)) {
+						Gater->Say("Casting Great Divide Portal...");
+						Gater->CastSpell(1423, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "cobalt")) && (c->GetLevel() >= 43)) {
+						Gater->Say("Casting Cobalt Scar Portal...");
+						Gater->CastSpell(1425, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "combines")) && (c->GetLevel() >= 34)) {
+						Gater->Say("Casting Combines Portal...");
+						Gater->CastSpell(1516, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "wk")) && (c->GetLevel() >= 27)) {
+						Gater->Say("Casting West Karana Portal...");
+						Gater->CastSpell(568, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "twilight")) && (c->GetLevel() >= 27)) {
+						Gater->Say("Casting Twilight Portal...");
+						Gater->CastSpell(2425, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "dawnshroud")) && (c->GetLevel() >= 27)) {
+						Gater->Say("Casting Dawnshroud Portal...");
+						Gater->CastSpell(2430, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "nexus")) && (c->GetLevel() >= 29)) {
+						Gater->Say("Casting Nexus Portal...");
+						Gater->CastSpell(2944, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "pok")) && (c->GetLevel() >= 27)) {
+						Gater->Say("Casting Plane of Knowledge Portal...");
+						Gater->CastSpell(3180, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "wos")) && (c->GetLevel() >= 27)) {
+						Gater->Say("Casting Wall of Slaughter Portal...");
+						Gater->CastSpell(6178, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "grimling")) && (c->GetLevel() >= 29)) {
+						Gater->Say("Casting Fay Portal...");
+						Gater->CastSpell(2420, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "bloodfields")) && (c->GetLevel() >= 55)) {
+						Gater->Say("Casting Bloodfields Portal...");
+						Gater->CastSpell(6183, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "stonebrunt")) && (c->GetLevel() >= 27)) {
+						Gater->Say("Casting Stonebrunt Portal...");
+						Gater->CastSpell(3793, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "commons") && (c->GetLevel() <= 35))
+					|| !strcasecmp(sep->arg[2], "fay") && (c->GetLevel() <= 27)
+				        || (!strcasecmp(sep->arg[2], "ro") && (c->GetLevel() <= 37))
+					|| !strcasecmp(sep->arg[2], "tox") && (c->GetLevel() <= 25)
+					|| !strcasecmp(sep->arg[2], "nk") && (c->GetLevel() <= 25)
+					|| !strcasecmp(sep->arg[2], "nek") && (c->GetLevel() <= 32)
+					|| !strcasecmp(sep->arg[2], "wakening") && (c->GetLevel() <= 43)
+					|| !strcasecmp(sep->arg[2], "iceclad") && (c->GetLevel() <= 33)
+					|| !strcasecmp(sep->arg[2], "divide") && (c->GetLevel() <= 36)
+					|| !strcasecmp(sep->arg[2], "cobalt") && (c->GetLevel() <= 43)
+					|| !strcasecmp(sep->arg[2], "combines") && (c->GetLevel() <= 34)
+					|| !strcasecmp(sep->arg[2], "wk") && (c->GetLevel() <= 37)
+					|| !strcasecmp(sep->arg[2], "twilight") && (c->GetLevel() <= 33)
+					|| !strcasecmp(sep->arg[2], "dawnshroud") && (c->GetLevel() <= 39)
+					|| !strcasecmp(sep->arg[2], "nexus") && (c->GetLevel() <= 29)
+					|| !strcasecmp(sep->arg[2], "pok") && (c->GetLevel() <= 38)
+					|| !strcasecmp(sep->arg[2], "grimling") && (c->GetLevel() <= 29)
+					|| !strcasecmp(sep->arg[2], "bloodfields") && (c->GetLevel() <= 55)
+					|| !strcasecmp(sep->arg[2], "stonebrunt") && (c->GetLevel() <= 27)
+					|| !strcasecmp(sep->arg[2], "wos") && (c->GetLevel() <= 64)) {
+						Gater->Say("I don't have the needed level yet", sep->arg[2]);
+					}
+					else {
+						Gater->Say("With the proper level I can [gate] to [commons],[fay],[ro],[tox],[nk],[wakening],[iceclad],[divide],[cobalt],[combines],[wk],[grimling],[twilight],[dawnshroud],[nexus],[pok],[stonebrunt],[bloodfields] or [wos].", c->GetName());
+					}
+					break;
+				default:
+					c->Message(15, "You must have a Druid or Wizard in your group.");
 					break;
 			}
 		}
