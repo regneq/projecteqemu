@@ -192,6 +192,7 @@ public:
 	bool	RemoveMob(int16 delete_id);
 	bool	RemoveMob(Mob* delete_mob);
 	bool	RemoveClient(int16 delete_id);
+	bool	RemoveClient(Client* delete_client);
 	bool	RemoveNPC(int16 delete_id);
 	bool	RemoveGroup(int32 delete_id);
 	bool	RemoveRaid(int32 delete_id);
