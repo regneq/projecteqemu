@@ -1,6 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==01/19/2009
+cavedude00: Increased itemid limit to 120,000.
+cavedude00: Meditate will now skill up at a more Live Like speed. 
+
 ==01/18/2009
 Derision: Fixed a cause of zone crashes.
 Congdar: Worn items with charges will no longer delete when the charges are used up.
