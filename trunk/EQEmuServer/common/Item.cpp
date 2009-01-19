@@ -818,7 +818,7 @@ bool Inventory::HasSpaceForItem(const Item_Struct *ItemToTry, uint8 Quantity) {
 }
 
 // Remove item from inventory (with memory delete)
-void Inventory::DeleteItem(sint16 slot_id, uint8 quantity)
+bool Inventory::DeleteItem(sint16 slot_id, uint8 quantity, bool isEquipment)
 {
 	// Pop item out of inventory map (or queue)
 	ItemInst* item_to_delete = PopItem(slot_id);
@@ -827,15 +827,16 @@ void Inventory::DeleteItem(sint16 slot_id, uint8 quantity)
 	// just a quantity of charges of the item can be deleted
 	if (item_to_delete && (quantity > 0)) {
 		item_to_delete->SetCharges(item_to_delete->GetCharges() - quantity);
-		if (item_to_delete->GetCharges() > 0) {
+		if((item_to_delete->GetCharges() > 0) || isEquipment) {
 			// Charges still exist!  Put back into inventory
 			_PutItem(slot_id, item_to_delete);
-			return;
+			return false;
 		}
 	}
 	
 	// Item can now be destroyed
 	safe_delete(item_to_delete);
+	return true;
 }
 
 // Checks All items in a bag for No Drop

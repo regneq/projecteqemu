@@ -303,11 +303,11 @@ void Corpse::MoveItemToCorpse(Client *client, ItemInst *item, sint16 equipslot)
 			if(interior_item)
 			{
 				AddItem(interior_item->GetItem()->ID, interior_item->GetCharges(), interior_slot, interior_item->GetAugmentItemID(0), interior_item->GetAugmentItemID(1), interior_item->GetAugmentItemID(2), interior_item->GetAugmentItemID(3), interior_item->GetAugmentItemID(4));
-				client->DeleteItemInInventory(interior_slot, interior_item->GetCharges(), false);
+				client->DeleteItemInInventory(interior_slot);
 			}
 		}
 	}
-	client->DeleteItemInInventory(equipslot, item->GetCharges(), false);
+	client->DeleteItemInInventory(equipslot);
 }
 
 // To be called from LoadFromDBData
@@ -897,8 +897,15 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app)
 			//default changes
 			if(item->MaxCharges == -1)
 				inst->SetCharges(1);
-			else
-				inst->SetCharges(item->MaxCharges);
+			else {
+				if(item_data) {
+					//Restore charges from the original item.
+					inst->SetCharges(item_data->charges);
+				}
+				else {
+					inst->SetCharges(item->MaxCharges);
+				}
+			}
 		}
 	}
 
