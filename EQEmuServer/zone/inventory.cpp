@@ -219,35 +219,34 @@ void Client::DeleteItemInInventory(sint16 slot_id, sint8 quantity, bool client_u
 	#if (EQDEBUG >= 5)
 		LogFile->write(EQEMuLog::Debug, "DeleteItemInInventory(%i, %i, %s)", slot_id, quantity, (client_update) ? "true":"false");
 	#endif
-	
-	// Nuke from inventory
-	m_inv.DeleteItem(slot_id, quantity);
-	
+
+	if(!m_inv[slot_id]) {
+		return;
+	}
+
+	bool isDeleted = false;
+	if((m_inv[slot_id]->GetItem()->Click.Type == ET_EquipClick) || (m_inv[slot_id]->IsWeapon())) {
+		isDeleted = m_inv.DeleteItem(slot_id, quantity, true);
+	}
+	else {
+		isDeleted = m_inv.DeleteItem(slot_id, quantity);
+	}
+
 	const ItemInst* inst=NULL;
 	if (slot_id==SLOT_CURSOR) {
 		list<ItemInst*>::const_iterator s=m_inv.cursor_begin(),e=m_inv.cursor_end();
 		database.SaveCursor(character_id, s, e);
-	} else {
+	}
+	else {
 		// Save change to database
 		inst = m_inv[slot_id];
 		database.SaveInventory(character_id, inst, slot_id);
 	}
-	
-	
-	if(client_update)
-	{
-/*
-		EQApplicationPacket *outapp = new EQApplicationPacket(OP_MoveItem, sizeof(MoveItem_Struct));
-		MoveItem_Struct *mi = (MoveItem_Struct *)outapp->pBuffer;
-		mi->from_slot = slot_id;
-		mi->to_slot = 256;
-		mi->number_in_stack = quantity;
-		QueuePacket(outapp);
-		safe_delete(outapp);
-*/
-		if (inst && inst->GetCharges()) {
-			EQApplicationPacket* outapp;
-			if(!inst->IsStackable()) 
+
+	if(client_update) {
+		EQApplicationPacket* outapp;
+		if(inst) {
+			if(!inst->IsStackable() && !isDeleted) 
 				// Non stackable item with charges = Item with clicky spell effect ? Delete a charge.
 				outapp = new EQApplicationPacket(OP_DeleteCharge, sizeof(MoveItem_Struct));
 			else
@@ -263,7 +262,7 @@ void Client::DeleteItemInInventory(sint16 slot_id, sint8 quantity, bool client_u
 			safe_delete(outapp);
 		}
 		else {
-			EQApplicationPacket* outapp = new EQApplicationPacket(OP_MoveItem, sizeof(MoveItem_Struct));
+			outapp = new EQApplicationPacket(OP_MoveItem, sizeof(MoveItem_Struct));
 			MoveItem_Struct* delitem	= (MoveItem_Struct*)outapp->pBuffer;
 			delitem->from_slot			= slot_id;
 			delitem->to_slot			= 0xFFFFFFFF;

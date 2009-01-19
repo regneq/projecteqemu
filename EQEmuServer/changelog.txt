@@ -3,6 +3,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 
 ==01/18/2009
 Derision: Fixed a cause of zone crashes.
+Congdar: Worn items with charges will no longer delete when the charges are used up.
 
 ==01/17/2009
 Derision: Fixed several cases of integer overflow relating to moving large amounts of money around.

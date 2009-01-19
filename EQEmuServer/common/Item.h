@@ -155,7 +155,7 @@ public:
 	void SwapItem(sint16 slot_a, sint16 slot_b);
 
 	// Remove item from inventory
-	void DeleteItem(sint16 slot_id, uint8 quantity=0);
+	bool DeleteItem(sint16 slot_id, uint8 quantity=0, bool isEquipment=false);
 
 	// Checks All items in a bag for No Drop
 	bool CheckNoDrop(sint16 slot_id);

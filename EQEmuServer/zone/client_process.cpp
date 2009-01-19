@@ -1075,8 +1075,8 @@ void Client::OPMemorizeSpell(const EQApplicationPacket* app)
 	switch(memspell->scribing)
 	{
 		case memSpellScribing:	{	// scribing spell to book
-			ItemInst* inst = m_inv.PopItem(SLOT_CURSOR);
-			
+			const ItemInst* inst = m_inv[SLOT_CURSOR];
+
 			if(inst && inst->IsType(ItemClassCommon))
 			{
 				const Item_Struct* item = inst->GetItem();
@@ -1084,18 +1084,7 @@ void Client::OPMemorizeSpell(const EQApplicationPacket* app)
 				if(item && item->Scroll.Effect == (sint32)(memspell->spell_id))
 				{
 					ScribeSpell(memspell->spell_id, memspell->slot);
-
-					// Destroy scroll on cursor
-					EQApplicationPacket* outapp = new EQApplicationPacket(OP_MoveItem, sizeof(MoveItem_Struct));
-					MoveItem_Struct* spellmoveitem = (MoveItem_Struct*) outapp->pBuffer;
-					spellmoveitem->from_slot = SLOT_CURSOR;
-					spellmoveitem->to_slot = SLOT_INVALID;
-					spellmoveitem->number_in_stack = 0;
-					QueuePacket(outapp);
-					safe_delete(outapp);
-
-					DeleteItemInInventory(SLOT_CURSOR);
-					
+					DeleteItemInInventory(SLOT_CURSOR, 1, true);
 				}
 				else 
 					Message(0,"Scribing spell: inst exists but item does not or spell ids do not match.");
@@ -1103,8 +1092,7 @@ void Client::OPMemorizeSpell(const EQApplicationPacket* app)
 			else
 				Message(0,"Scribing a spell without an inst on your cursor?");
 			break;
-
-			}
+		}
 		case memSpellMemorize:	{	// memming spell
 			MemSpell(memspell->spell_id, memspell->slot);
 			break;
