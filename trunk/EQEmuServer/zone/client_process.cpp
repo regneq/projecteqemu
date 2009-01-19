@@ -1630,7 +1630,7 @@ void Client::DoManaRegen() {
 			medding = true;
 			regen = (((GetSkill(MEDITATE)/10)+(level-(level/4)))/4)+4;
 			regen += spellbonuses.ManaRegen + itembonuses.ManaRegen;
-			CheckIncreaseSkill(MEDITATE, -20);
+			CheckIncreaseSkill(MEDITATE, -5);
 		}
 		else
 			regen = 2+spellbonuses.ManaRegen+itembonuses.ManaRegen+(level/5);
