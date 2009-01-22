@@ -1200,7 +1200,7 @@ void Client::WhoAll(Who_All_Struct* whom) {
 		whoall->fromid=this->GetID();
 		strcpy(whoall->from, this->GetName());
 		strncpy(whoall->whom, whom->whom, 63);
-		whoall->whom[64] = '\0';
+		whoall->whom[63] = '\0';
 		whoall->lvllow = whom->lvllow;
 		whoall->lvlhigh = whom->lvlhigh;
 		whoall->gmlookup = whom->gmlookup;
