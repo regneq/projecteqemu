@@ -1,6 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==01/22/2009
+Derision: Fixed a buffer overflow problem.
+
 ==01/19/2009
 cavedude00: Increased itemid limit to 120,000.
 cavedude00: Meditate will now skill up at a more Live Like speed. 

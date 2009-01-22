@@ -1190,6 +1190,7 @@ void Client::UpdateWho(int8 remove) {
 }
 
 void Client::WhoAll(Who_All_Struct* whom) {
+
 	if (!worldserver.Connected())
 		Message(0, "Error: World server disconnected");
 	else {
@@ -1198,7 +1199,8 @@ void Client::WhoAll(Who_All_Struct* whom) {
 		whoall->admin = this->Admin();
 		whoall->fromid=this->GetID();
 		strcpy(whoall->from, this->GetName());
-		strcpy(whoall->whom, whom->whom);
+		strncpy(whoall->whom, whom->whom, 63);
+		whoall->whom[64] = '\0';
 		whoall->lvllow = whom->lvllow;
 		whoall->lvlhigh = whom->lvlhigh;
 		whoall->gmlookup = whom->gmlookup;
