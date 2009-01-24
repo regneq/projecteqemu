@@ -607,6 +607,10 @@ void Client::Handle_Connect_OP_ReqClientSpawn(const EQApplicationPacket *app)
 	outapp = new EQApplicationPacket(OP_SendExpZonein, 0);
 	FastQueuePacket(&outapp);
 
+	// New for Secrets of Faydwer - Used in Place of OP_SendExpZonein
+	outapp = new EQApplicationPacket(OP_WorldObjectsSent, 0);
+	QueuePacket(outapp);
+
 	if(strncasecmp(zone->GetShortName(),"bazaar",6)==0)
 		SendBazaarWelcome();
 	if(GetAdventureID()>0){
