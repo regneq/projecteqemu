@@ -1,23 +1,25 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==01/24/2009==
+Trevius: Initial Addition of Secrets of Faydwer Patch files.  Must uncomment the #define in common/patches/patches.cpp to use SoF for now.
 
-==01/22/2009
+==01/22/2009==
 Derision: Fixed a buffer overflow problem.
 
-==01/19/2009
+==01/19/2009==
 cavedude00: Increased itemid limit to 120,000.
 cavedude00: Meditate will now skill up at a more Live Like speed. 
 
-==01/18/2009
+==01/18/2009==
 Derision: Fixed a cause of zone crashes.
 Congdar: Worn items with charges will no longer delete when the charges are used up.
 
-==01/17/2009
+==01/17/2009==
 Derision: Fixed several cases of integer overflow relating to moving large amounts of money around.
 Angelox: Bots: Added command '#bot gate', for Druid Circles or Wizard Portals (Druid Primary).
 Angelox: Bots: Changed BotCount to RULE_INT.
 
-==01/16/2009
+==01/16/2009==
 Derision: Implemented voice macros (CTRL-V). Update your opcodes.
 Derision: Food and drink should no longer be auto-consumed in the Bazaar
 Derision: Added rule Spells:TranslocateTimeLimit. If >0, translocate must be accepted within this number of seconds.
@@ -26,14 +28,14 @@ Optional SQL: (Required to enable voice macro use on your server
 
 REPLACE INTO `rule_values` VALUES (0, 'Chat:EnableVoiceMacros', 'true');
 
-==01/14/2009
+==01/14/2009==
 Derision: Fixed makefile references for rulesys.o
 Derision: Mapped field in LogServer_Struct to allow voice macro window to be opened (needs work on Opcodes to make it functional).
 
-==01/12/2009
+==01/12/2009==
 Derision: Removed code that stole all your money if you logged on with more than 1 million of any denomination of coin on your person.
 
-==01/11/2009
+==01/11/2009==
 Angelox: Bots: Added rule 'EQOffline:BotCount' defaults to 5, for desired amount of bots in the group - values are 0-5 (0 means bots are disabled, max limit is 5). 
 Derision: Mail/Chatchannels: Added sanity check on packet size in EQPacket::ChatDecode.
 Derision: Mail/Chatchannels: Increased stream timeout from 45 to 135 seconds.
@@ -42,13 +44,13 @@ Derision: Chatchannels: Recognise and ignore AFK command.
 Derision: Chatchannels: Added uptime command (usage ;uptime or /chat uptime).
 Congdar: Bots: Added Lore item check to command #bot inventory remove
 
-==01/08/2009
+==01/08/2009==
 Congdar: Bots: Fix compile issue under linux for Visible Gear update.
 
 Angelox: Bots: Updated required SQL, utils/sql/svn/250_bot_spell_update.sql (some spells were still being auto-casted)
 Derision: Chatserver: Fix for crash when multiple connections are made in quick succession.
 
-==01/07/2009
+==01/07/2009==
 Angelox: Bots: Added command '#bot charm' (requires enchanter in group). Charm does not work while Chanter has pet so I added the grouped Chanters pet to '#bot group remove' (remove the pet before #bot charm).
 Angelox: Bots: '#bot sow wolf' should not affect pets anymore.
 Derision: Chatserver: Added some extra syntax error checking to prevent crashes.
@@ -62,18 +64,18 @@ Congdar: Bots: Visible gear will now show correctly when trading/equipping bots.
 ==01/05/2009
 Angelox: Bots: Re-did command '#bot cure'- one of three Curer class (Cleric is primary), will ask what you want if you use '#bot cure' alone.
 
-==01/04/2009
+==01/04/2009==
 Angelox: Bots: Added command '#bot endureb' (enduring breath).
 Angelox: Bots: Hopefully fixed bug where other sowers replaced primary sower (Druid).
 
-==01/03/2009
+==01/03/2009==
 Angelox: Bots: remade/improved commands '#bot levitate'and '#bot invis'
 
-==01/02/2009
+==01/02/2009==
 Congdar: Bots: update command #bot inventory list   Now shows gear as item links.  Removed (Bot) as last name during bot creation.
 Optional SQL: update npc_types set lastname='' where isbot=1;
 
-==01/01/2009
+==01/01/2009==
 Angelox: Bots: Added command '#bot sow' (Druid has options) 
 Angelox: Bots: Added command '#bot levitate'.
 Angelox: Bots: Added command '#bot invis' - (has options).
@@ -99,13 +101,13 @@ CREATE TABLE `chatchannels` (
 
 also see utils/sql/svn/249_chatchannels.sql for suggested system channels.
 
-==12/31/2008
+==12/31/2008==
 Congdar: Bots: Added rule EQOffline:BotManaRegen default 1.0 is fastest. 3.0 is closer to player regen rates
 Congdar: Bots: Added rule EQOffline:BotFinishBuffing default true. Allows out of combat buffing to complete even if the bot is out of mana.
 Congdar: Bots: Fixed bug where bot ownership could change to somebody else.
 Congdar: Bots: Added caster AA's for critical damage
 
-==12/27/2008
+==12/27/2008==
 Trevius: Changed QueryLoot so that commands that use it (#npcstats & #npcloot show) will now show Item Links instead of just Item Names.
 Trevius: Added Item Links to #peekinv
 Trevius: Added new console command "LSReconnect" to allow manually restarting the auto Login Server connect loops if they stopped for any reason
@@ -130,14 +132,14 @@ CREATE TABLE `mail` (
 
 ALTER TABLE `character_` ADD `mailkey` CHAR( 16 ) NOT NULL ;
 
-==12/22/2008
+==12/22/2008==
 Trevius:(Denivia) Pets that are on Hold will now follow their master
 Trevius:(Denivia) Pets will no longer try to attack corpses
 
-==12/20/2008
+==12/20/2008==
 KLS: Removed old unused Guildwars, RaidAddicts and GroupLinking code.
 
-==12/19/2008
+==12/19/2008==
 KLS: Updated how spawn timers work, spawn timers will now be based off absolute time like regular timers which will allow them to tic down even when the server is offline.
 KLS: Quest::clearspawntimers() has been disabled for now, will be reactivated in next update on spawn timers.
 KLS: Likewise #repop force has been temp. disabled as well pending updated code.

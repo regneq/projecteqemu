@@ -298,4 +298,6 @@ void load_opcode_names()
 	opcode_map[0x0264]="LiveOP_ZoneServerInfo";
 	opcode_map[0x0017]="LiveOP_AckPacket";
 	opcode_map[0x012c]="LiveOP_WearChange";
+	opcode_map[0x1FA1]="LiveOP_WorldObjectsSent";
+	opcode_map[0x39C4]="LiveOP_BlockedBuffs";
 }

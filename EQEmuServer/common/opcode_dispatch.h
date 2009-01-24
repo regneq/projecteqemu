@@ -293,6 +293,7 @@ OUTz(OP_ClearObject);
 OUTz(OP_FinishTrade);		//follows OP_TradeAcceptClick
 OUTz(OP_GMEndTrainingResponse);	//follows OP_GMTraining
 OUTz(OP_LootComplete);		//follows OP_LootItem
+OUTz(OP_WorldObjectsSent);
 //OUTz(OP_TradeSkillCombine);
 
 //OUTv(OP_AdventureDetails, strlen(AF.text)+1);
