@@ -1199,8 +1199,7 @@ void Client::WhoAll(Who_All_Struct* whom) {
 		whoall->admin = this->Admin();
 		whoall->fromid=this->GetID();
 		strcpy(whoall->from, this->GetName());
-		strncpy(whoall->whom, whom->whom, 63);
-		whoall->whom[63] = '\0';
+		strn0cpy(whoall->whom, whom->whom, 64);
 		whoall->lvllow = whom->lvllow;
 		whoall->lvlhigh = whom->lvlhigh;
 		whoall->gmlookup = whom->gmlookup;
