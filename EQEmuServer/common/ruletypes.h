@@ -229,11 +229,13 @@ RULE_BOOL ( Mail, EnableMailSystem, true) // If false, client won't bring up the
 RULE_INT ( Mail, ExpireTrash, 0) // Time in seconds. 0 will delete all messages in the trash when the mailserver starts
 RULE_INT ( Mail, ExpireRead, 31536000 ) // 1 Year. Set to -1 for never
 RULE_INT ( Mail, ExpireUnread, 31536000 ) // 1 Year. Set to -1 for never
+RULE_CATEGORY_END()
 
 RULE_CATEGORY ( Channels )
 RULE_INT ( Channels, RequiredStatusAdmin, 251) // Required status to administer chat channels
 RULE_INT ( Channels, RequiredStatusListAll, 251) // Required status to list all chat channels
 RULE_INT ( Channels, DeleteTimer, 1440) // Empty password protected channels will be deleted after this many minutes
+RULE_CATEGORY_END()
 
 #undef RULE_CATEGORY
 #undef RULE_INT
