@@ -1073,8 +1073,7 @@ void Client::NukeTraderItem(int16 Slot,sint16 Charges,int16 Quantity,Client* Cus
 	m_inv.DeleteItem(Slot, Quantity);
 	const ItemInst* Inst = m_inv[Slot];
 
-	if(Inst)
-		database.SaveInventory(CharacterID(), Inst, Slot);
+	database.SaveInventory(CharacterID(), Inst, Slot);
 
 	EQApplicationPacket* outapp2;
 
