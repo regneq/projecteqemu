@@ -199,7 +199,7 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="RelaseBots|Win32"
+			Name="ReleaseBots|Win32"
 			OutputDirectory="$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
@@ -1279,7 +1279,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="RelaseBots|Win32"
+					Name="ReleaseBots|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
