@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==01/28/2009==
+Angelox: Bots: Added a directory with the BOT Makefiles for Windows and Linux.
+
 ==01/27/2009==
 Derision: Bazaar bug fix.
 Angelox: Bots: Added command '#bot runeme' (Enchanter Rune spells) 
