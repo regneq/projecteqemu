@@ -7413,6 +7413,7 @@ void command_bot(Client *c, const Seperator *sep) {
 		c->Message(15, "#bot invis - Bot invisiblity (must have proper class in group)");
 		c->Message(15, "#bot levitate - Bot levitation (must have proper class in group)");
 		c->Message(15, "#bot resist - Bot resist buffs (must have proper class in group)");
+		c->Message(15, "#bot runeme - Enchanter Bot cast Rune spell on you");
 		c->Message(15, "#bot endureb - Bot enduring breath (must have proper class in group)");
 		c->Message(15, "#bot charm - you need an Enchanter in your group)");
 		c->Message(15, "#bot gate - you need a Druid or Wizard in your group)");
@@ -8791,6 +8792,58 @@ void command_bot(Client *c, const Seperator *sep) {
 		if(hasbinder) {
 			binder->Say("Attempting to bind you %s.", c->GetName());
 			binder->CastToNPC()->CastSpell(35, c->GetID(), 1, -1, -1);
+		}
+		return;
+	}
+// Rune
+	if(!strcasecmp(sep->arg[1], "runeme")) {
+		Mob *runeer = NULL;
+		bool hasruneer = false;
+		if(c->IsGrouped())
+		{
+			Group *g = c->GetGroup();
+			if(g) {
+				for(int i=0; i<MAX_GROUP_MEMBERS; i++)
+				{
+					if(g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == ENCHANTER))
+					{
+						hasruneer = true;
+						runeer = g->members[i];
+					}
+				}
+				if(!hasruneer) {
+					c->Message(15, "You must have an Enchanter in your group.");
+				}
+			}
+		}
+		if(hasruneer) {
+			if      (c->GetLevel() <= 12) {
+				runeer->Say("I need to be level 13 or higher for this...");
+			}
+			else if ((c->GetLevel() >= 13) && (c->GetLevel() <= 21)) {
+				runeer->Say("Casting Rune I...");
+				runeer->CastSpell(481, c->GetID(), 1, -1, -1);
+			}
+			else if ((c->GetLevel() >= 22) && (c->GetLevel() <= 32)) {
+				runeer->Say("Casting Rune II...");
+				runeer->CastSpell(482, c->GetID(), 1, -1, -1);
+			}
+			else if ((c->GetLevel() >= 33) && (c->GetLevel() <= 39)) { 
+				runeer->Say("Casting Rune III...");
+				runeer->CastSpell(483, c->GetID(), 1, -1, -1);
+			}
+			else if ((c->GetLevel() >= 40) && (c->GetLevel() <= 51)) { 
+				runeer->Say("Casting Rune IV...");
+				runeer->CastSpell(484, c->GetID(), 1, -1, -1);
+			}
+			else if ((c->GetLevel() >= 52) && (c->GetLevel() <= 60)) { 
+				runeer->Say("Casting Rune V...");
+				runeer->CastSpell(1689, c->GetID(), 1, -1, -1);
+			}
+			else if (c->GetLevel() >= 61){ 
+				runeer->Say("Casting Rune of Zebuxoruk...");
+				runeer->CastSpell(3343, c->GetID(), 1, -1, -1);
+			}
 		}
 		return;
 	}

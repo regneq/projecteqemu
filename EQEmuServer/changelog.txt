@@ -2,6 +2,9 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==01/27/2009==
 Derision: Bazaar bug fix.
+Angelox: Bots: Added command '#bot runeme' (Enchanter Rune spells) 
+
+Optional SQL: utils/sql/svn/285_optional_bot_spell_update.sql (removes auto-runes)
 
 ==01/24/2009==
 Trevius: Initial Addition of Secrets of Faydwer Patch files.  Must uncomment the #define in common/patches/patches.cpp to use SoF for now.
