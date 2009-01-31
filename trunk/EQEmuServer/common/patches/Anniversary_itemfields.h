@@ -99,19 +99,19 @@ These fields must be in the order of how they are serialized!
 /* 082 */	I4(AugRestrict)		//?
 /* 082 */	I4(AugDistiller)		//?
 /* 083 */	I4(AugSlotType[0])
-/* 084 */	I1(AugSlotUnk[0])
+/* 084 */	I1(AugSlotVisible[0])
 /* 084 */	I1(AugSlotUnk2[0])
 /* 085 */	I4(AugSlotType[1])
-/* 086 */	I1(AugSlotUnk[1])
+/* 086 */	I1(AugSlotVisible[1])
 /* 086 */	I1(AugSlotUnk2[1])
 /* 087 */	I4(AugSlotType[2])
-/* 088 */	I1(AugSlotUnk[2])
+/* 088 */	I1(AugSlotVisible[2])
 /* 088 */	I1(AugSlotUnk2[2])
 /* 089 */	I4(AugSlotType[3])
-/* 090 */	I1(AugSlotUnk[3])
+/* 090 */	I1(AugSlotVisible[3])
 /* 090 */	I1(AugSlotUnk2[3])
 /* 091 */	I4(AugSlotType[4])
-/* 092 */	I1(AugSlotUnk[4])
+/* 092 */	I1(AugSlotVisible[4])
 /* 092 */	I1(AugSlotUnk2[4])
 /* 093 */	I4(PointType)
 /* 093 */	I4(LDoNTheme)
@@ -220,7 +220,7 @@ These fields must be in the order of how they are serialized!
 /* 143 */	C4(0)	//scrollunk5	(prolly ProcRate)
 /* 143 */	CS("")	//scrollunk6
 /* 143 */	C4(-1)	//scrollunk7
-/* 193 */	C4(0)	//Power Source Capacity 
+/* 193 */	C4(0)	//Power Source Capacity
 /* 194 */	C4(0)	//purity
 
 #else
@@ -312,19 +312,19 @@ These fields must be in the order of how they are serialized!
 /* 082 */	I(AugRestrict)
 /* 082 */	I(AugDistiller)
 /* 083 */	I(AugSlotType[0])
-/* 084 */	I(AugSlotUnk[0])
+/* 084 */	I(AugSlotVisible[0])
 /* 084 */	I(AugSlotUnk2[0])
 /* 085 */	I(AugSlotType[1])
-/* 086 */	I(AugSlotUnk[1])
+/* 086 */	I(AugSlotVisible[1])
 /* 086 */	I(AugSlotUnk2[1])
 /* 087 */	I(AugSlotType[2])
-/* 088 */	I(AugSlotUnk[2])
+/* 088 */	I(AugSlotVisible[2])
 /* 088 */	I(AugSlotUnk2[2])
 /* 089 */	I(AugSlotType[3])
-/* 090 */	I(AugSlotUnk[3])
+/* 090 */	I(AugSlotVisible[3])
 /* 090 */	I(AugSlotUnk2[3])
 /* 091 */	I(AugSlotType[4])
-/* 092 */	I(AugSlotUnk[4])
+/* 092 */	I(AugSlotVisible[4])
 /* 092 */	I(AugSlotUnk2[4])
 /* 093 */	I(PointType)
 /* 093 */	I(LDoNTheme)
@@ -421,7 +421,7 @@ These fields must be in the order of how they are serialized!
 /* 143 */	C("0")	//scrollunk5	(prolly ProcRate)
 /* 143 */	C("")	//scrollunk6
 /* 143 */	C("-1")	//scrollunk7
-/* 193 */	C("0")	//Power Source Capacity 
+/* 193 */	C("0")	//Power Source Capacity
 /* 194 */	C("0")	//purity
 #undef I
 #undef C

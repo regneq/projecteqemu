@@ -94,19 +94,19 @@ These fields must be in the order of how they are serialized!
 /* 083 */	I(AugRestrict)//augrestrict - Relocated
 /* 084 */	I(AugDistiller)//augdistiller - Relocated
 /* 085 */	I(AugSlotType[0])
-/* 086 */	I(AugSlotUnk[0])//augslot1visible - Default 1
+/* 086 */	I(AugSlotVisible[0])//augslot1visible - Default 1
 /* 087 */	C("0")//augslot1unk2 - Newly Added  - Default 0
 /* 088 */	I(AugSlotType[1])
-/* 089 */	I(AugSlotUnk[1])
+/* 089 */	I(AugSlotVisible[1])
 /* 090 */	C("0")//augslot2unk2 - Newly Added
 /* 091 */	I(AugSlotType[2])
-/* 092 */	I(AugSlotUnk[2])
+/* 092 */	I(AugSlotVisible[2])
 /* 093 */	C("0")//augslot3unk2 - Newly Added
 /* 094 */	I(AugSlotType[3])
-/* 095 */	I(AugSlotUnk[3])
+/* 095 */	I(AugSlotVisible[3])
 /* 096 */	C("0")//augslot4unk2 - Newly Added
 /* 097 */	I(AugSlotType[4])
-/* 098 */	I(AugSlotUnk[4])
+/* 098 */	I(AugSlotVisible[4])
 /* 099 */	C("0")//augslot5unk2 - Newly Added
 /* 100 */	I(PointType)//pointtype - Relocated
 /* 101 */	I(LDoNTheme)
@@ -318,19 +318,19 @@ These fields must be in the order of how they are serialized!
 /* 082 */	I(AugRestrict)
 /* 082 */	I(AugDistiller)
 /* 083 */	I(AugSlotType[0])
-/* 084 */	I(AugSlotUnk[0])
+/* 084 */	I(AugSlotVisible[0])
 /* 084 */	I(AugSlotUnk2[0])
 /* 085 */	I(AugSlotType[1])
-/* 086 */	I(AugSlotUnk[1])
+/* 086 */	I(AugSlotVisible[1])
 /* 086 */	I(AugSlotUnk2[1])
 /* 087 */	I(AugSlotType[2])
-/* 088 */	I(AugSlotUnk[2])
+/* 088 */	I(AugSlotVisible[2])
 /* 088 */	I(AugSlotUnk2[2])
 /* 089 */	I(AugSlotType[3])
-/* 090 */	I(AugSlotUnk[3])
+/* 090 */	I(AugSlotVisible[3])
 /* 090 */	I(AugSlotUnk2[3])
 /* 091 */	I(AugSlotType[4])
-/* 092 */	I(AugSlotUnk[4])
+/* 092 */	I(AugSlotVisible[4])
 /* 092 */	I(AugSlotUnk2[4])
 /* 093 */	I(PointType)
 /* 093 */	I(LDoNTheme)

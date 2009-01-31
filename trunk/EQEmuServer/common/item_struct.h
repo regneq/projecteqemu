@@ -104,7 +104,7 @@ struct Item_Struct {
 
 	uint8	BagType;		// 0:Small Bag, 1:Large Bag, 2:Quiver, 3:Belt Pouch ... there are 50 types
 	uint8	BagSlots;		// Number of slots: can only be 2, 4, 6, 8, or 10
-	uint8	BagSize;		// 0:TINY, 1:SMALL, 2:MEDIUM, 3:LARGE, 4:GIANT 
+	uint8	BagSize;		// 0:TINY, 1:SMALL, 2:MEDIUM, 3:LARGE, 4:GIANT
 	uint8	BagWR;			// 0->100
 
 	bool	BenefitFlag;
@@ -180,7 +180,7 @@ struct Item_Struct {
 	char	CharmFile[32];		// ?
 	uint32	AugType;
 	uint8	AugSlotType[MAX_AUGMENT_SLOTS];		// LDoN: Augment Slot 1-5 Type
-	uint8	AugSlotUnk[MAX_AUGMENT_SLOTS];		// LDoN: Augment Slot 1-5 Unknown
+	uint8	AugSlotVisible[MAX_AUGMENT_SLOTS];	// LDoN: Augment Slot 1-5 Visible
 	uint8	AugSlotUnk2[MAX_AUGMENT_SLOTS];		// LDoN: Augment Slot 1-5 Unknown
 	uint32	LDoNTheme;
 	uint32	LDoNPrice;
