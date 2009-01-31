@@ -1664,6 +1664,7 @@ struct Merchant_DelItem_Struct{
 /*000*/	int32	npcid;			// Merchant NPC's entity id
 /*004*/	int32	playerid;		// Player's entity id
 /*008*/	int32	itemslot;
+/*012*/	uint32	unknown012;
 };
 struct Adventure_Purchase_Struct {
 /*000*/	int32	some_flag;	//set to 1 generally...

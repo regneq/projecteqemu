@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==01/31/2009
+Derision: Tweaks to temp merchant list window updates.
+
 ==01/29/2009
 KLS: VC71 solution files.
 

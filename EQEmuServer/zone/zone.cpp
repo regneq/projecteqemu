@@ -289,7 +289,6 @@ bool Zone::LoadGroundSpawns() {
 
 int Zone::SaveTempItem(int32 merchantid, int32 npcid, int32 item, sint32 charges, bool sold){
 	int freeslot = 0;
-	
 	std::list<MerchantList> merlist = merchanttable[merchantid];
 	std::list<MerchantList>::const_iterator itr;
 	int32 i = 1;
@@ -313,8 +312,9 @@ int Zone::SaveTempItem(int32 merchantid, int32 npcid, int32 item, sint32 charges
 				freeslot = 0;
 				break;
 			}
-			if(ml.origslot==i)
+			if((ml.slot == i) || (ml.origslot==i)) {
 				freeslot=0;
+			}
 		}
 		i++;
 	}
@@ -340,6 +340,9 @@ int Zone::SaveTempItem(int32 merchantid, int32 npcid, int32 item, sint32 charges
 			database.DeleteMerchantTemp(npcid,ml.origslot);
 		}
 		tmpmerchanttable[npcid] = tmp_merlist;
+
+		if(sold)
+			return ml.slot;
 		
 	}
 	if(freeslot){
@@ -357,6 +360,18 @@ int Zone::SaveTempItem(int32 merchantid, int32 npcid, int32 item, sint32 charges
 		tmpmerchanttable[npcid] = tmp_merlist;
 	}
 	return freeslot;
+}
+
+uint32 Zone::GetTempMerchantQuantity(int32 NPCID, uint32 Slot) {
+
+ 	std::list<TempMerchantList> TmpMerchantList = tmpmerchanttable[NPCID]; 
+	std::list<TempMerchantList>::const_iterator Iterator;
+
+	for(Iterator = TmpMerchantList.begin(); Iterator != TmpMerchantList.end(); Iterator++) 
+		if((*Iterator).slot == Slot)
+			return (*Iterator).charges;
+
+	return 0;
 }
 
 void Zone::LoadTempMerchantData(){
