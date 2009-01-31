@@ -147,6 +147,7 @@ public:
 	void	GetMerchantDataForZoneLoad();
 	void	LoadNewMerchantData(uint32 merchantid);
 	void	LoadTempMerchantData();
+	uint32	GetTempMerchantQuantity(int32 NPCID, uint32 Slot);
 	void	LoadTempMerchantData_result(MYSQL_RES* result);
 	void	LoadMerchantData_result(MYSQL_RES* result);
 	int		SaveTempItem(int32 merchantid, int32 npcid, int32 item, sint32 charges, bool sold=false);

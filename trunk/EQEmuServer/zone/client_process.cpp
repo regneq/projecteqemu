@@ -872,6 +872,7 @@ void Client::BulkSendMerchantInventory(int merchant_id, int npcid) {
 					inst->SetCharges(charges);
 				else
 					inst->SetCharges(1);
+
 				SendItemPacket(ml.slot-1, inst, ItemPacketMerchant);
 				safe_delete(inst);
 			}

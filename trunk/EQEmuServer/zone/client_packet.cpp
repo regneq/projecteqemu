@@ -3989,7 +3989,7 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 	}
 
 	mpo->price = (item->Price*(1/.884)*Client::CalcPriceMod(tmp,false))*mp->quantity;
-	if(freeslotid == SLOT_INVALID || !TakeMoneyFromPP(mpo->price))
+	if(freeslotid == SLOT_INVALID || (mpo->price < 0 ) || !TakeMoneyFromPP(mpo->price))
 	{
 		safe_delete(outapp);
 		safe_delete(inst);
@@ -4007,7 +4007,6 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 	else if(!stacked){
 		LogFile->write(EQEMuLog::Error, "OP_ShopPlayerBuy: item->ItemClass Unknown! Type: %i", item->ItemClass);
 	}
-
 	QueuePacket(outapp);
 	if(inst && tmpmer_used){
 		sint32 new_charges = prevcharges - mp->quantity;
@@ -4021,6 +4020,15 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 			delitempacket->priority = 6;
 			entity_list.QueueClients(tmp,delitempacket); //que for anyone that could be using the merchant so they see the update
 			safe_delete(delitempacket);
+		}
+		else {
+			// Update the charges/quantity in the merchant window
+			inst->SetCharges(new_charges);
+			inst->SetPrice(mpo->price);
+			inst->SetMerchantSlot(mp->itemslot);
+			inst->SetMerchantCount(new_charges);
+
+			SendItemPacket(mp->itemslot, inst, ItemPacketMerchant);
 		}
 	}
 	safe_delete(inst);
@@ -4144,13 +4152,22 @@ void Client::Handle_OP_ShopPlayerSell(const EQApplicationPacket *app)
 	if(inst->IsStackable())
 		charges = mp->quantity;
 	else
-		charges = inst->GetCharges();
+		//charges = inst->GetCharges();
+		//FIXME: Temp merchant table uses 'charges' as the quantity, so doesn't properly handle charged items.
+		charges = 1;
+
 	if((freeslot = zone->SaveTempItem(vendor->CastToNPC()->MerchantType, vendor->GetNPCTypeID(),itemid,charges,true)) > 0){
 		ItemInst* inst2 = inst->Clone();
 		inst2->SetPrice(item->Price*(1/.884)*Client::CalcPriceMod(vendor,false));
 		inst2->SetMerchantSlot(freeslot);
-		if(inst2->IsStackable())
-			inst2->SetCharges(mp->quantity);
+
+		uint32 MerchantQuantity = zone->GetTempMerchantQuantity(vendor->GetNPCTypeID(), freeslot);
+
+		if(inst2->IsStackable()) {
+			inst2->SetCharges(MerchantQuantity);
+		}
+		inst2->SetMerchantCount(MerchantQuantity);
+
 		SendItemPacket(freeslot-1, inst2, ItemPacketMerchant);
 		safe_delete(inst2);
 	}
