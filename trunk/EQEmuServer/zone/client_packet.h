@@ -8,6 +8,7 @@
 	void Handle_Connect_0x3e33(const EQApplicationPacket *app);
 	void Handle_Connect_OP_ReqClientSpawn(const EQApplicationPacket *app);
 	void Handle_Connect_OP_SendExpZonein(const EQApplicationPacket *app);
+	void Handle_Connect_OP_WorldObjectsSent(const EQApplicationPacket *app);
 	void Handle_Connect_OP_ZoneComplete(const EQApplicationPacket *app);
 	void Handle_Connect_OP_ReqNewZone(const EQApplicationPacket *app);
 	void Handle_Connect_OP_SpawnAppearance(const EQApplicationPacket *app);

@@ -1,12 +1,22 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
-==01/31/2009
+==01/31/2009==
+Trevius: Adjusted the NewZone Structure for SoF - Players can now move and spawns appear in place
+Trevius: Adjusted the WearChange Structure for SoF - Armor shows, but need Tint to work still
+Trevius: Adjusted the Object Structure for SoF - Objects now load, but need more work
+Trevius: Added many new opcodes for SoF
+Trevius: Adjusted when SendExpZonein is sent for SoF only
+Trevius: Added new Opcode List file for SoF development purposes only
+
+Note: You must move the patch_SoF.conf file from /utils into your server directory for the opcode updates
+
+==01/31/2009==
 Derision: Tweaks to temp merchant list window updates.
 cavedude00: Renamed the AugSlotUnk items columns to AugSlotVisible.   
 
 Required SQL: utils/sql/svn/292_augslots.sql 
 
-==01/29/2009
+==01/29/2009==
 KLS: VC71 solution files.
 
 ==01/28/2009==
