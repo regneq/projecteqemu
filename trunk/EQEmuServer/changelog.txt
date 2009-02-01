@@ -1,6 +1,7 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==02/01/2009==
+Angelox: Bots:(leslamarch) corrected the'#bot gate [combines]' typo.
 Angelox: Bots: Added '#bot dire charm'.
 Angelox: Bots: Both 'charm' and 'dire charm' will now choose from three charmer classes.
 Angelox: Bots: Added '#bot pet remove' (can't charm a mob while sporting a pet).

@@ -9693,7 +9693,7 @@ void command_bot(Client *c, const Seperator *sep) {
 						Gater->Say("I don't have the needed level yet", sep->arg[2]);
 					}
 					else {
-						Gater->Say("With the proper level I can [gate] to [karana],[commons],[tox],[butcher],[lava],[ro],[feerrott],[steamfont],[misty],[wakening],[iceclad],[divide],[cobalt],[combine],[surefall],[grimling],[twilight],[dawnshroud],[nexus],[pok],[stonebrunt],[bloodfields] or [wos].", c->GetName());
+						Gater->Say("With the proper level I can [gate] to [karana],[commons],[tox],[butcher],[lava],[ro],[feerrott],[steamfont],[misty],[wakening],[iceclad],[divide],[cobalt],[combines],[surefall],[grimling],[twilight],[dawnshroud],[nexus],[pok],[stonebrunt],[bloodfields] or [wos].", c->GetName());
 					}
 					break;
 
