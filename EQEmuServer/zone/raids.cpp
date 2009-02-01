@@ -674,6 +674,15 @@ void Raid::AddRaidLooter(const char* looter)
 	rga->zoneid = zone->GetZoneID();
 	worldserver.SendPacket(pack);
 	safe_delete(pack);
+
+	/* For reference only at this time. This code adds a looter to the Raid Options Window.
+
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_RaidUpdate, sizeof(RaidGeneral_Struct));
+	RaidGeneral_Struct *rgs = (RaidGeneral_Struct*)outapp->pBuffer;
+	rgs->action = 33;
+	strcpy(rgs->leader_name, looter);
+	QueuePacket(outapp);
+	safe_delete(outapp); */
 }
 
 void Raid::RemoveRaidLooter(const char* looter)
@@ -701,6 +710,15 @@ void Raid::RemoveRaidLooter(const char* looter)
 	rga->zoneid = zone->GetZoneID();
 	worldserver.SendPacket(pack);
 	safe_delete(pack);
+
+	/* For reference only at this time. This code removes a looter from the Raid Options Window.
+
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_RaidUpdate, sizeof(RaidGeneral_Struct));
+	RaidGeneral_Struct *rgs = (RaidGeneral_Struct*)outapp->pBuffer;
+	rgs->action = 34;
+	strcpy(rgs->leader_name, looter);
+	QueuePacket(outapp);
+	safe_delete(outapp); */
 }
 
 bool Raid::IsRaidMember(const char *name){
