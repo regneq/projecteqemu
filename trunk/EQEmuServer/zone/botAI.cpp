@@ -1342,7 +1342,7 @@ void EntityList::ShowSpawnWindow(Client* client, int Distance, bool NamedOnly) {
 	{
 		if (iterator.GetData() && (iterator.GetData()->DistNoZ(*client)<=Distance))
 		{
-			if(iterator.GetData()->IsTrackable()) {  //angelox
+			if(iterator.GetData()->IsTrackable()) {
 				Mob* cur_entity = iterator.GetData();
 				const char *const MyArray[] = {
 					"a_","an_","Innkeep_","Barkeep_",
@@ -1480,38 +1480,116 @@ bool NPC::Bot_Command_CalmTarget(Mob *target) {
 	return false;
 }
 
-bool NPC::Bot_Command_CharmTarget(Mob *target) {
-	if(target) {
+bool NPC::Bot_Command_CharmTarget(int charmtype, Mob *target) {
 		int charmid = 0;
 		int charmlevel = GetLevel();
-		if((charmlevel >= 64) && (charmlevel <= 75)) {
-			charmid = 3355;
-		}
-		else if((charmlevel >= 62) && (charmlevel <= 64)) {
-			charmid = 3347;
-		}
-		else if((charmlevel >= 60) && (charmlevel <= 62)) {
-			charmid = 1707;
-		}
-		else if((charmlevel >= 53) && (charmlevel <= 60)) {
-			charmid = 1705;
-		}
-		else if((charmlevel >= 37) && (charmlevel <= 53)) {
-			charmid = 183;
-		}
-		else if((charmlevel >= 23) && (charmlevel <= 37)) {
-			charmid = 182;
-		}
-		else if((charmlevel >= 11) && (charmlevel <= 23)) {
-			charmid = 300;
-		}
-		if(charmid > 0) {
-			CastSpell(charmid, target->GetID(), 1, -1, -1, &target->pDontRootMeBefore);
-			return true;
+	if(target) {
+		switch(charmtype) {
+			case 1: // Enchanter
+				if((charmlevel >= 64) && (charmlevel <= 75)) {
+					charmid = 3355;
+				}
+				else if((charmlevel >= 62) && (charmlevel <= 63)) {
+					charmid = 3347;
+				}
+				else if((charmlevel >= 60) && (charmlevel <= 61)) {
+					charmid = 1707;
+				}
+				else if((charmlevel >= 53) && (charmlevel <= 59)) {
+					charmid = 1705;
+				}
+				else if((charmlevel >= 37) && (charmlevel <= 52)) {
+					charmid = 183;
+				}
+				else if((charmlevel >= 23) && (charmlevel <= 36)) {
+					charmid = 182;
+				}
+				else if((charmlevel >= 11) && (charmlevel <= 22)) {
+					charmid = 300;
+				}
+				break;
+			case 2: // Necromancer
+				if((charmlevel >= 60) && (charmlevel <= 75)) {
+					charmid = 1629;
+				}
+				else if((charmlevel >=47) && (charmlevel <= 59)) {
+					charmid = 198;
+				}
+				else if((charmlevel >= 31) && (charmlevel <= 46)) {
+					charmid = 197;
+				}
+				else if((charmlevel >= 18) && (charmlevel <= 30)) {
+					charmid = 196;
+				}
+				break;
+			case 3: // Druid
+				if((charmlevel >= 63) && (charmlevel <= 75)) {
+					charmid = 3445;
+				}
+				else if((charmlevel >= 55) && (charmlevel <= 62)) {
+					charmid = 1556;
+				}
+				else if((charmlevel >= 52) && (charmlevel <= 54)) {
+					charmid = 1553;
+				}
+				else if((charmlevel >= 43) && (charmlevel <= 51)) {
+					charmid = 142;
+				}
+				else if((charmlevel >= 33) && (charmlevel <= 42)) {
+					charmid = 141;
+				}
+				else if((charmlevel >= 23) && (charmlevel <= 32)) {
+					charmid = 260;
+				}
+				else if((charmlevel >= 13) && (charmlevel <= 22)) {
+					charmid = 242;
+				}
+				break;
+			}
+	if(charmid > 0) {
+		CastSpell(charmid, target->GetID(), 1, -1, -1, &target->pDontRootMeBefore);
+		return true;
 		}
 	}
 	return false;
 }
 
+bool NPC::Bot_Command_DireTarget(int diretype, Mob *target) {
+	int direid = 0;
+	int direlevel = GetLevel();
+	if(target) {
+		switch(diretype) {
+			case 1: // Enchanter
+			if(direlevel >= 65) {
+					direid = 5874;
+				}
+				else if(direlevel >= 55) {
+					direid = 2761;
+				}
+				break;
+			case 2: // Necromancer
+					if(direlevel >= 65) {
+					direid = 5876;
+				}
+				else if(direlevel >= 55) {
+					direid = 2759;
+				}
+				break;
+			case 3: // Druid
+				if(direlevel >= 65) {
+					direid = 5875;
+				}
+				else if(direlevel >= 55) {
+					direid = 2760;
+				}
+				break;
+			}
+	if(direid > 0) {
+		CastSpell(direid, target->GetID(), 1, -1, -1, &target->pDontRootMeBefore);
+		return true;
+		}
+	}
+	return false;
+}
 #endif //EQBOTS
 

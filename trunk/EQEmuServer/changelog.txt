@@ -1,6 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==02/01/2009==
+Angelox: Bots: Added '#bot dire charm'.
+Angelox: Bots: Both 'charm' and 'dire charm' will choose from three charmer classes.
+Angelox: Bots: Added '#bot pet remove' (can't charm a mob while sporting a pet).
+Angelox: Bots: Fixed exploit where player could remove charmed mobs at will.
 Derision: Merchant lists with gaps should now not cause problems wih temporary merchant lists.
 Derision: Logging to the eventlog table for trades with NPCs is now controlled by two rules rather than the loglevel variable.
 
