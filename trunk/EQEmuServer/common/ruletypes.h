@@ -237,6 +237,11 @@ RULE_INT ( Channels, RequiredStatusListAll, 251) // Required status to list all 
 RULE_INT ( Channels, DeleteTimer, 1440) // Empty password protected channels will be deleted after this many minutes
 RULE_CATEGORY_END()
 
+RULE_CATEGORY ( EventLog )
+RULE_BOOL ( EventLog, RecordSellToMerchant, false ) // Record sales from a player to an NPC merchant in eventlog table
+RULE_BOOL ( EventLog, RecordBuyFromMerchant, false ) // Record purchases by a player from an NPC merchant in eventlog table
+RULE_CATEGORY_END()
+
 #undef RULE_CATEGORY
 #undef RULE_INT
 #undef RULE_REAL
