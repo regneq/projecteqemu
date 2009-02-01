@@ -382,66 +382,61 @@ struct ServerZoneEntry_Struct //Adjusted from SEQ Everquest.h Struct
 };
 
 
-//New Zone Struct - 916 octets - was 920 octets
-struct NewZone_Struct { 
+//New Zone Struct - Size: 916
+struct NewZone_Struct {
 /*0000*/	char	char_name[64];			// Character Name
 /*0064*/	char	zone_short_name[32];	// Zone Short Name
-/*0096*/	char    unknown0096[96]; // All 00
+/*0096*/	char    unknown0096[96];
 /*0192*/	char	zone_long_name[278];	// Zone Long Name
 /*0470*/	uint8	ztype;					// Zone type (usually FF)
-/*0471*/	uint8	fog_red[4];				// Zone fog (red) 48 43 00 00
-/*0475*/	uint8	fog_green[4];			// Zone fog (green)
-/*0479*/	uint8	fog_blue[4];			// Zone fog (blue)
-/*0483*/	uint8	unknown323; //was [87] 00
-/*0484*/	float	fog_minclip[4]; //00 00 48 43
-/*0500*/	float	fog_maxclip[4]; //00 00 7a 44 
-/*0516*/	float	gravity; //cd cc cc 3e
-/*0520*/	int8	time_type; //03
-/*0521*/	uint8	unknown520[4]; // All 00
-/*0525*/	uint8	unknown523[4]; // All 18
-/*0529*/	uint8	unknown529[8]; // All 00
-/*0537*/	uint8	unknown521[32]; // All FF
-/*0569*/	uint8	unknown569[3]; // All 00 - Probably part of int32 sky
-/*0572*/	uint8	sky;					// Sky Type 04
-/*0573*/	uint32	unknown576; // 00 00 00 02 
-/*0587*/	uint8	unknown571[7];			// ***Placeholder All 00
+/*0471*/	uint8	fog_red[4];				// Zone fog (red)
+/*0475*/	uint8	fog_green[4];				// Zone fog (green)
+/*0479*/	uint8	fog_blue[4];				// Zone fog (blue)
+/*0483*/	uint8	unknown323;
+/*0484*/	float	fog_minclip[4];
+/*0500*/	float	fog_maxclip[4];
+/*0516*/	float	gravity;
+/*0520*/	int8	time_type;
+/*0521*/	uint8	unknown521[49];
+/*0570*/	uint32	sky;					// Sky Type
+/*0571*/	uint8	unknown571[10];			// ***Placeholder
 /*0584*/	float	zone_exp_multiplier;	// Experience Multiplier
 /*0588*/	float	safe_y;					// Zone Safe Y
 /*0592*/	float	safe_x;					// Zone Safe X
 /*0596*/	float	safe_z;					// Zone Safe Z
-/*0600*/	float   unknown0600;            // *** Placeholder - From SEQ 00 00 00 00 
-/*0604*/	float	max_z;					// Guessed 00 00 20 44
-/*0608*/	float	underworld;				// Underworld, min z (Not Sure?) 00 00 ff c3
-/*0612*/	float	minclip;				// Minimum View Distance
-/*0616*/	float	maxclip;				// Maximum View DIstance
-/*0620*/	int8	unknown_end[84];		// ***Placeholder lots of int32's
-/*0704*/	char	zone_short_name2[64];	//zone file name (shortname)
-/*0768*/	char	unknown672[32]; //was char	unknown672[32]; 
-/*0800*/	sint32	unknown796;	//seen -1
-/*0804*/	char	unknown800[40]; //was char	unknown800[32]; All 00
-/*0844*/	sint32	unknown840;	//seen 600
-/*0848*/	sint32	unknown844; //
-/*0852*/	uint16	zone_id;
-/*0854*/	uint16	zone_instance;
-/*0856*/	char	unknown852[24];           // *** Placeholder (02/21/2006) All 00
-/*0880*/	uint32	unknown876;	//seen 50 - 32 00 00 00 
-/*0884*/	uint32	unknown880;	//seen 10 - 0a 00 00 00
-/*0888*/	uint8	unknown884;	//seen 1 - 01 
-/*0889*/	uint8	unknown885;	//seen 0 (POK) or 1 (rujj) - 00
-/*0890*/	uint8	unknown886;	//seen 1 - 01 
-/*0891*/	uint8	unknown887;	//seen 0 - 00
-/*0892*/	uint8	unknown888;	//seen 0 - 00
+/*0600*/	float	max_z;					// Guessed
+/*0604*/	float	underworld;				// Underworld, min z (Not Sure?)
+/*0608*/	float	minclip;				// Minimum View Distance
+/*0612*/	float	maxclip;				// Maximum View DIstance
+/*0616*/	int8	unknown_end[84];		// ***Placeholder
+/*0700*/	char	zone_short_name2[96];	//zone file name? excludes instance number which can be in previous version.
+/*0796*/	sint32	unknown796;	//seen -1
+/*0800*/	char	unknown800[42]; //[40]
+/*0840*/	sint32	unknown840;	//seen 600
+/*0844*/	sint32	unknown844;
+/*0848*/	uint16	zone_id;
+/*0850*/	uint16	zone_instance;
+/*0852*/	char	unknown852[24];
+/*0876*/	uint32	unknown876;	//seen 50
+/*0880*/	uint32	unknown880;	//seen 10
+/*0884*/	uint8	unknown884;	//seen 1
+/*08841*/	uint8	unknown8841;	//seen 1
+/*08842*/	uint8	unknown8842;	//seen 1
+/*0885*/	uint8	unknown885;	//seen 0 (POK) or 1 (rujj)
+/*0886*/	uint8	unknown886;	//seen 1
+/*0887*/	uint8	unknown887;	//seen 0
+/*0888*/	uint8	unknown888;	//seen 0
 /*0893*/	uint8	unknown889;	//seen 0 - 00
 /*0894*/	uint8	unknown890;	//seen 1 - 01
 /*0895*/	uint8	unknown891;	//seen 0 - 00
-/*0896*/	uint32	unknown892;	//seen 180 - b4 00 00 00 
-/*0900*/	uint32	unknown896;	//seen 180 - b4 00 00 00 
-/*0904*/	uint32	unknown900;	//seen 180 - b4 00 00 00 
-/*0908*/	uint32	unknown904;	//seen 2 - 02 00 00 00
-/*0912*/	uint32	unknown908;	//seen 2 - 02 00 00 00
-/*0916*/
-
+/*0892*/	uint32	unknown892;	//seen 180
+/*0896*/	uint32	unknown896;	//seen 180
+/*0900*/	uint32	unknown900;	//seen 180
+/*0904*/	uint32	unknown904;	//seen 2
+/*0908*/	uint32	unknown908;	//seen 2
+/*0912*/
 };
+
 
 /*
 ** Memorize Spell Struct
@@ -1071,16 +1066,17 @@ struct SpecialMesg_Struct
 /*
 ** When somebody changes what they're wearing
 **      or give a pet a weapon (model changes)
-** Length: 16 Bytes
+** Length: 19 Bytes
 */
 struct WearChange_Struct{
 /*000*/ int16 spawn_id;
-/*002*/ Color_Struct color;
-/*006*/ int8 wear_slot_id;
-/*007*/ int8 material;
-/*008*/ uint8 unknown09; //was uint8 unknown09[6];[11]
-/*009*/
+/*002*/ int8 material;
+/*003*/ Color_Struct color;
+/*007*/ uint8 unknown09[11]; //was uint8 unknown09[6];[11]
+/*018*/ int8 wear_slot_id;
+/*019*/
 };
+
 
 /*
 ** Type:   Bind Wound Structure
@@ -1299,7 +1295,7 @@ struct PlayerPositionUpdateServer_Struct
 ** OpCode: PlayerPosCode
 */
 
-struct playerSpawnPosStruct
+struct playerSpawnPosStruct //From SEQ
 {
 /*0000*/ uint16_t spawnId;
 /*0002*/ signed   padding0000:12; // ***Placeholder
@@ -1325,7 +1321,7 @@ struct playerSpawnPosStruct
 ** OpCode: PlayerPosCode
 */
 
-struct playerSelfPosStruct
+struct playerSelfPosStruct //From SEQ
 {
 /*0000*/ uint16_t spawnId;        // Player's spawn id
 /*0002*/ uint8_t unknown0002[2];  // ***Placeholder (update time counter?)
@@ -1367,6 +1363,25 @@ struct PlayerPositionUpdateClient_Struct
 /*0032*/ float delta_y;            // Change in y
 /*0036*/ float z_pos;                 // z coord
 /*0040*/
+};
+
+struct PlayerPositionUpdateClient_Struct_WIP //from Client Packet Breakdown and testing
+{
+/*0000*/ uint16 spawn_id;			// Player's spawn id - Verified!
+/*0002*/ uint16	sequence;			//increments one each packet - Verified!
+/*0004*/ float delta_heading;		// Change in heading - Looks Accurate
+/*0008*/ float camera_angle;		//unused camera incline angle
+/*0012*/ float x_pos;				// x coord - Verified!
+/*0016*/ float heading;				//Heading - Looks Accurate
+/*0020*/ signed z_pos:10;			//Not Positive
+		 signed y_pos:10;			//Not Positive
+		 unsigned padding1:12;
+/*0024*/ float delta_z;				// Change in z - Looks Accurate
+/*0028*/ signed delta_y:20;			//Not Positive
+		 unsigned padding2:12;		// ***Placeholder
+/*0032*/ signed delta_x:20;			//Not Positive
+		 unsigned animation:12;		//Not Positive
+/*0036*/ 
 };
 
 /*
@@ -2254,21 +2269,26 @@ struct Object_Struct {
 /*12*/	uint32	drop_id;			// Unique object id for zone
 /*16*/	uint16	zone_id;			// Redudant, but: Zone the object appears in
 /*18*/	uint16	zone_instance;		//
-/*20*/	uint32	unknown020;			//
-/*24*/	uint32	unknown024;			//
-/*28*/	uint8	unknown028[12];		//
+/*20*/	uint32	unknown020;			// 00 00 00 00
+/*24*/	uint8	unknown024;			// 03 - 3
+/*25*/	uint8	unknown025;			// 4a - 74
+/*26*/	uint8	unknown026;			// 64 - Probably Size (100)
+/*27*/	uint8	unknown027;			// 7f - Maybe Incline (127)
+/*28*/	uint16	unknown028;			// 00 00
+/*30*/	uint8	unknown030;			// 7f or 80 - 127 or 128
+/*31*/	uint8	unknown031;			// 43 - 67
+/*32*/	int8	unknown032[8];		// 00 00 00 00 00 00 00 00
 /*40*/	float	heading;			// heading
 /*44*/	float	z;					// z coord
 /*48*/	float	x;					// x coord
 /*52*/	float	y;					// y coord
-/*56*/	char	object_name[20];	// Name of object, usually something like IT63_ACTORDEF was [20]
-/*76*/	float	unknown064;			// seems like coords, not always valid, all 0 on most world objects
-/*80*/	float	unknown068;			// seems like coords, not always valid, all 0 on most world objects
-/*84*/	float	unknown072;			// seems like coords, not always valid, all 0 on most world objects
-/*88*/	uint32	unknown076;			//
-//*88*/	uint32	unknown088;			//
+/*56*/	char	object_name[32];	// Name of object, usually something like IT63_ACTORDEF was [20]
+//*76*/	float	unknown064;			// seems like coords, not always valid, all 0 on most world objects
+//*80*/	float	unknown068;			// seems like coords, not always valid, all 0 on most world objects
+//*84*/	float	unknown072;			// seems like coords, not always valid, all 0 on most world objects
+/*88*/	uint32	unknown088;			// e6 0b 04 00 - decrements - Maybe countdown to loading a max number of ground spawns
 /*92*/	uint32	object_type;		// Type of object, not directly translated to OP_OpenObject
-/*96*/	uint32	unknown084;			// ff
+/*96*/	uint32	unknown096;			// ff ff ff ff
 /*100*/	uint32	spawn_id;			// Spawn Id of client interacting with object
 /*104*/
 };
