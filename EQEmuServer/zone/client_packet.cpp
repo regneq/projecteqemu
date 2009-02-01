@@ -4104,35 +4104,9 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 	safe_delete(inst);
 	safe_delete(outapp);
 
-	if (zone->merchantvar!=0){
-		if (zone->merchantvar==7){
-				LogMerchant(this,tmp,mpo,item,true);
-		}
-		else if ((admin>=10) && (admin<20)){
-			if ((zone->merchantvar<8) && (zone->merchantvar>5))
-				LogMerchant(this,tmp,mpo,item,true);
-		}
-		else if (admin<=20){
-			if ((zone->merchantvar<8) && (zone->merchantvar>4))
-				LogMerchant(this,tmp,mpo,item,true);
-		}
-		else if (admin<=80){
-			if ((zone->merchantvar<8) && (zone->merchantvar>3))
-				LogMerchant(this,tmp,mpo,item,true);
-		}
-		else if (admin<=100){
-			if ((zone->merchantvar<9) && (zone->merchantvar>2))
-				LogMerchant(this,tmp,mpo,item,true);
-		}
-		else if (admin<=150){
-			if (((zone->merchantvar<8) && (zone->merchantvar>1)) || (zone->merchantvar==9))
-				LogMerchant(this,tmp,mpo,item,true);
-		}
-		else if (admin<=255){
-			if ((zone->merchantvar<8) && (zone->merchantvar>0))
-				LogMerchant(this,tmp,mpo,item,true);
-		}
-	}
+	if (RuleB(EventLog, RecordBuyFromMerchant))
+		LogMerchant(this, tmp, mpo->quantity, mpo->price, item, true);
+
 	t1.stop();
 	cout << "At 1: " << t1.getDuration() << endl;
 	return;
@@ -4158,56 +4132,22 @@ void Client::Handle_OP_ShopPlayerSell(const EQApplicationPacket *app)
 		return;
 	const Item_Struct* item = database.GetItem(itemid);
 	ItemInst* inst = GetInv().GetItem(mp->itemslot);
-	if(!inst){
+	if(!item || !inst){
 		Message(13,"You seemed to have misplaced that item..");
 		return;
 	}
 	if(mp->quantity > 1 && (sint16)mp->quantity > inst->GetCharges())
 		return;
 
-	if (item && !item->NoDrop) {
+	if (!item->NoDrop) {
 		//Message(13,"%s tells you, 'LOL NOPE'", vendor->GetName());
 		return;
 	}
 
-	if (item){
-		price=(int)((item->Price*mp->quantity)*.884*Client::CalcPriceMod(vendor,true)+0.5); // need to round up, because client does it automatically when displaying price
-		AddMoneyToPP(price,false);
-		if (zone->merchantvar!=0){
-			if (zone->merchantvar==7) {
-				LogMerchant(this,vendor,mp,item,false);
-			}
-			else if ((admin>=10) && (admin<20)) {
-				if ((zone->merchantvar<8) && (zone->merchantvar>5))
-					LogMerchant(this,vendor,mp,item,false);
-			}
-			else if (admin<=20) {
-				if ((zone->merchantvar<8) && (zone->merchantvar>4))
-					LogMerchant(this,vendor,mp,item,false);
-			}
-			else if (admin<=80) {
-				if ((zone->merchantvar<8) && (zone->merchantvar>3))
-					LogMerchant(this,vendor,mp,item,false);
-			}
-			else if (admin<=100) {
-				if ((zone->merchantvar<9) && (zone->merchantvar>2))
-					LogMerchant(this,vendor,mp,item,false);
-			}
-			else if (admin<=150) {
-				if (((zone->merchantvar<8) && (zone->merchantvar>1)) || (zone->merchantvar==9))
-					LogMerchant(this,vendor,mp,item,false);
-			}
-			else if (admin<=255) {
-				if ((zone->merchantvar<8) && (zone->merchantvar>0))
-					LogMerchant(this,vendor,mp,item,false);
-			}
-		}
-	}
-	else
-		Message(0, "Error #1, item == 0");
+	price=(int)((item->Price*mp->quantity)*.884*Client::CalcPriceMod(vendor,true)+0.5); // need to round up, because client does it automatically when displaying price
+	AddMoneyToPP(price,false);
 
-
-	if (item && inst->IsStackable())
+	if (inst->IsStackable())
 	{
 		unsigned int i_quan = inst->GetCharges();
 		if (mp->quantity > i_quan)
@@ -4217,6 +4157,10 @@ void Client::Handle_OP_ShopPlayerSell(const EQApplicationPacket *app)
 	{
 		mp->quantity = 1;
 	}
+
+	if (RuleB(EventLog, RecordSellToMerchant))
+		LogMerchant(this, vendor, mp->quantity, price, item, false);
+
 	int freeslot = 0;
 	int charges = 0;
 	if(inst->IsStackable())

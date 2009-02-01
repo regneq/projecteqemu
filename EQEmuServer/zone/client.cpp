@@ -1988,62 +1988,32 @@ void Client::SetFeigned(bool in_feigned) {
 	feigned=in_feigned;
  }
 
-void Client::LogMerchant(Client* player, Mob* merchant, Merchant_Sell_Struct* mp, const Item_Struct* item, bool buying)
+void Client::LogMerchant(Client* player, Mob* merchant, int32 quantity, int32 price, const Item_Struct* item, bool buying)
 {
-	Merchant_Purchase_Struct* mps = new Merchant_Purchase_Struct;
-	mps->itemslot=mp->itemslot;
-	mps->npcid=mp->npcid;
-	mps->price=mp->price;
-	mps->quantity=mp->quantity;
-	LogMerchant(player,merchant,mps,item,buying);
-	safe_delete(mps);
-}
-void Client::LogMerchant(Client* player, Mob* merchant, Merchant_Purchase_Struct* mp, const Item_Struct* item, bool buying)
-{
-	char* logtext;
-	char itemid[100];
-	char itemcost[100];
-	char itemname[100];
-	char itemquantity[100];
+	if(!player || !merchant || !item)
+		return;
+
+	string LogText = "Qty: ";
+
+	char Buffer[255];
+	memset(Buffer, 0, sizeof(Buffer));
+
+	snprintf(Buffer, sizeof(Buffer)-1, "%3i", quantity); 
+	LogText += Buffer;
+	snprintf(Buffer, sizeof(Buffer)-1, "%10i", price); 
+	LogText += " TotalValue: ";
+	LogText += Buffer;
+	snprintf(Buffer, sizeof(Buffer)-1, " ItemID: %7i", item->ID); 
+	LogText += Buffer;
+	LogText += " ";
+	snprintf(Buffer, sizeof(Buffer)-1, " %s", item->Name);
+	LogText += Buffer;
+
 	if (buying==true) {
-		memset(itemid,0,sizeof(itemid));
-		memset(itemcost,0,sizeof(itemid));
-		memset(itemname,0,sizeof(itemid));
-		memset(itemquantity,0,sizeof(itemid));
-		itoa(mp->quantity,itemquantity,10);
-		itoa(item->ID,itemid,10);
-		itoa(mp->price,itemcost,20);
-		sprintf(itemname,"%s",item->Name);
-//		itoa(mp->price,itemcost,10);
-		logtext=itemname;
-		strcat(logtext,"(");
-		strcat(logtext,itemid);
-		strcat(logtext,"), Quantity: ");
-		strcat(logtext,itemquantity);
-		strcat(logtext,", Cost: ");
-		strcat(logtext,itemcost);
-		database.logevents(player->AccountName(),player->AccountID(),player->admin,player->GetName(),merchant->GetName(),"Buying from Merchant",logtext,2);
+		database.logevents(player->AccountName(),player->AccountID(),player->admin,player->GetName(),merchant->GetName(),"Buying from Merchant",LogText.c_str(),2);
 	}
 	else {
-		memset(itemid,0,sizeof(itemid));
-		memset(itemcost,0,sizeof(itemid));
-		memset(itemname,0,sizeof(itemid));
-		memset(itemquantity,0,sizeof(itemid));
-		itoa(mp->quantity,itemquantity,10);
-		itoa(item->ID,itemid,10);
-		sprintf(itemname,"%s",item->Name);
-		// @merth: struct change broke this
-		/*
-		itoa((int)(item->cost*((mp->quantity == 0) ? 1:mp->quantity))-(item->cost * ((mp->quantity == 0) ? 1:mp->quantity) *0.08),itemcost,10);
-		*/
-		logtext=itemname;
-		strcat(logtext,"(");
-		strcat(logtext,itemid);
-		strcat(logtext,"), Quantity: ");
-		strcat(logtext,itemquantity);
-		strcat(logtext,", Sell Total: ");
-		strcat(logtext,itemcost);
-		database.logevents(player->AccountName(),player->AccountID(),player->admin,player->GetName(),merchant->GetName(),"Selling to Merchant",logtext,3);
+		database.logevents(player->AccountName(),player->AccountID(),player->admin,player->GetName(),merchant->GetName(),"Selling to Merchant",LogText.c_str(),3);
 	}
 }
 

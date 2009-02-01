@@ -296,8 +296,11 @@ int Zone::SaveTempItem(int32 merchantid, int32 npcid, int32 item, sint32 charges
 		MerchantList ml = *itr;
 		if(ml.item == item)
 			return 0;
-		else
-			i++;
+
+		// Account for merchant lists with gaps in them.
+		if(ml.slot > i)
+			i = ml.slot + 1;
+
 	}
 	std::list<TempMerchantList> tmp_merlist = tmpmerchanttable[npcid];
 	std::list<TempMerchantList>::const_iterator tmp_itr;

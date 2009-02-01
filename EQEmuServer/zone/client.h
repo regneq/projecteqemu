@@ -228,8 +228,7 @@ public:
 
 	void	FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho);
 	virtual bool Process();
-	void	LogMerchant(Client* player, Mob* merchant, Merchant_Sell_Struct* mp, const Item_Struct* item, bool buying);
-	void	LogMerchant(Client* player, Mob* merchant, Merchant_Purchase_Struct* mp, const Item_Struct* item, bool buying);
+	void	LogMerchant(Client* player, Mob* merchant, int32 quantity, int32 price, const Item_Struct* item, bool buying);
 	void	SendPacketQueue(bool Block = true);
 	void	QueuePacket(const EQApplicationPacket* app, bool ack_req = true, CLIENT_CONN_STATUS = CLIENT_CONNECTINGALL, eqFilterType filter=FilterNone);
 	void	FastQueuePacket(EQApplicationPacket** app, bool ack_req = true, CLIENT_CONN_STATUS = CLIENT_CONNECTINGALL);
