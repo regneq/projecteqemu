@@ -2560,7 +2560,7 @@ void NPC::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill) 
 							}
 						}
 						safe_delete(outapp);
-						Say("oof");
+//						Say("oof");
 
 						// now that's done, lets see if all we have left is the client
 						// and we can clean up the clients raid group and group

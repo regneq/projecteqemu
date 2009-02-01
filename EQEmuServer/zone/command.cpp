@@ -7415,7 +7415,9 @@ void command_bot(Client *c, const Seperator *sep) {
 		c->Message(15, "#bot resist - Bot resist buffs (must have proper class in group)");
 		c->Message(15, "#bot runeme - Enchanter Bot cast Rune spell on you");
 		c->Message(15, "#bot endureb - Bot enduring breath (must have proper class in group)");
-		c->Message(15, "#bot charm - you need an Enchanter in your group)");
+		c->Message(15, "#bot charm - (must have proper class in group)");
+		c->Message(15, "#bot dire charm - (must have proper class in group)");
+		c->Message(15, "#bot pet remove - (remove pet before charm)");
 		c->Message(15, "#bot gate - you need a Druid or Wizard in your group)");
 
 		return;
@@ -8445,8 +8447,8 @@ void command_bot(Client *c, const Seperator *sep) {
 
 	if(!strcasecmp(sep->arg[1], "group") && !strcasecmp(sep->arg[2], "remove")) {
         if(c->GetTarget() != NULL) {
-           if(c->IsGrouped() && c->GetTarget()->IsBot() && c->GetTarget()->IsGrouped() && (c->GetGroup() == entity_list.GetGroupByMob(c->GetTarget()))
-	   || c->IsGrouped() && c->GetTarget()->IsPet() && c->GetTarget()->GetOwner()->IsBot() && c->GetTarget() ->IsAnimation()) { //angelox
+           if(c->IsGrouped() && c->GetTarget()->IsBot() && c->GetTarget()->IsGrouped() 
+			     && (c->GetGroup() == entity_list.GetGroupByMob(c->GetTarget()))) {
 				int16 botID = c->GetTarget()->GetID();
 				c->GetTarget()->Say("Bot Deactivated");
 				c->GetTarget()->BotOwner = NULL;
@@ -8769,6 +8771,7 @@ void command_bot(Client *c, const Seperator *sep) {
         return;
 	}
 
+//Bind
 	if(!strcasecmp(sep->arg[1], "bindme")) {
 		Mob *binder = NULL;
 		bool hasbinder = false;
@@ -8795,6 +8798,7 @@ void command_bot(Client *c, const Seperator *sep) {
 		}
 		return;
 	}
+
 // Rune
 	if(!strcasecmp(sep->arg[1], "runeme")) {
 		Mob *runeer = NULL;
@@ -8847,6 +8851,8 @@ void command_bot(Client *c, const Seperator *sep) {
 		}
 		return;
 	}
+
+//Tracking
 	if(!strcasecmp(sep->arg[1], "track") && c->IsGrouped()) {
 		Mob *Tracker;
 		int32 TrackerClass = 0;
@@ -8923,7 +8929,8 @@ void command_bot(Client *c, const Seperator *sep) {
 			}
 		}
 	}
-//cure
+
+//Cure
 	if ((!strcasecmp(sep->arg[1], "cure")) && (c->IsGrouped())) {
 			Mob *Curer;
 			int32 CurerClass = 0;
@@ -9040,6 +9047,7 @@ void command_bot(Client *c, const Seperator *sep) {
 		}
 	}
 
+//Mez
 	if(!strcasecmp(sep->arg[1], "ai") && !strcasecmp(sep->arg[2], "mez"))
     {
 		Mob *target = c->GetTarget();
@@ -9070,6 +9078,7 @@ void command_bot(Client *c, const Seperator *sep) {
         return;
 	}
 
+//Lore (Identify item)
 	if(!strcasecmp(sep->arg[1], "lore")) {
 		if(c->IsGrouped())
         {
@@ -9120,6 +9129,7 @@ void command_bot(Client *c, const Seperator *sep) {
 		return;
 	}
 
+//Resurrect
 	if(!strcasecmp(sep->arg[1], "resurrectme"))
     {
 		Mob *target = c->GetTarget();
@@ -9154,8 +9164,7 @@ void command_bot(Client *c, const Seperator *sep) {
         return;
 	}
 
-//Angelox: I used two words; 'target' and 'calm', incase we want to make an 'ae calm' later on.
-//Angelox: Cleric and Enchanter are about 1 level difference on pacify spells, so I bundled them and left Paladin out.
+//Pacify
 	if(!strcasecmp(sep->arg[1], "target") && !strcasecmp(sep->arg[2], "calm"))
     {
 		Mob *target = c->GetTarget();
@@ -9191,8 +9200,9 @@ void command_bot(Client *c, const Seperator *sep) {
         return;
 	}
 }
+
 //Charm
-	if(!strcasecmp(sep->arg[1], "Charm"))
+	if(!strcasecmp(sep->arg[1], "charm"))
     {
 		Mob *target = c->GetTarget();
         if(target == NULL || target == c || target->IsBot() || target->IsPet() && target->GetOwner()->IsBot())
@@ -9200,27 +9210,183 @@ void command_bot(Client *c, const Seperator *sep) {
             c->Message(15, "You must select a monster");
             return;
         }
-		if(c->IsGrouped())
-        {
-			bool hascharmer = false;
-			Group *g = c->GetGroup();
-			for(int i=0; i<MAX_GROUP_MEMBERS; i++)
-            {
-				if(g && g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == ENCHANTER) && (!hascharmer))
-                {
-					hascharmer = true;
-					Mob *charmer = g->members[i];
-                    charmer->Say("Trying to charm %s \n", target->GetCleanName());
-					charmer->CastToNPC()->Bot_Command_CharmTarget(target);
+		int32 DBtype = c->GetTarget()->GetBodyType();
+		Mob *Charmer;
+		int32 CharmerClass = 0;
+		Group *g = c->GetGroup();
+		if(g) {
+			for(int i=0; i<MAX_GROUP_MEMBERS; i++){
+				if(g->members[i] && g->members[i]->IsBot()) {
+					switch(g->members[i]->GetClass()) {
+						case ENCHANTER:
+							  Charmer = g->members[i];
+							  CharmerClass = ENCHANTER;
+							break;
+						case NECROMANCER:
+							if(CharmerClass != ENCHANTER){
+							  Charmer = g->members[i];
+							  CharmerClass = NECROMANCER;
+						}
+						case DRUID:
+							if (CharmerClass == 0){
+							  Charmer = g->members[i];
+							  CharmerClass = DRUID;
+						}
+							break;
+							break;
+						default:
+							break;
+					}
 				}
-		}
-			if(!hascharmer) {
-				c->Message(15, "You must have an Enchanter in your group.");
 			}
-        return;
-	}
-}
+			switch(CharmerClass) {
+				case ENCHANTER:
+					if	(c->GetLevel() >= 55) {
+						Charmer->Say("Trying to charm %s \n", target->GetCleanName(), sep->arg[2]);
+						Charmer->CastToNPC()->Bot_Command_CharmTarget (1,target);
+					}
+					else if (c->GetLevel() <= 55){
+						Charmer->Say("I don't have the needed level yet", sep->arg[2]);
+					}
+					else
+					Charmer->Say("Mob level is too high or can't be charmed", c->GetName());
+					break;
 
+				case NECROMANCER:
+					if	((c->GetLevel() >= 17) && (DBtype == 3)) {
+						Charmer->Say("Trying to Charm %s \n", target->GetCleanName(), sep->arg[2]);
+						Charmer->CastToNPC()->Bot_Command_CharmTarget (2,target);
+					}
+					else if (c->GetLevel() <= 17){
+						Charmer->Say("I don't have the needed level yet", sep->arg[2]);
+					}
+					else
+					Charmer->Say("Mob Is not undead...", c->GetName());
+					break;
+
+				case DRUID:
+					if	((c->GetLevel() >= 13) && (DBtype == 21)) {
+						Charmer->Say("Trying to charm %s \n", target->GetCleanName(), sep->arg[2]);
+						Charmer->CastToNPC()->Bot_Command_CharmTarget (3,target);
+					}
+					else if (c->GetLevel() <= 13){
+						Charmer->Say("I don't have the needed level yet", sep->arg[2]);
+					}
+					else
+					Charmer->Say("Mob is not an animal...", c->GetName());
+					break;
+
+				default:
+					c->Message(15, "You must have a Enchanter, Necromancer or Druid in your group.");
+					break;
+			}
+		}
+	}
+
+// Remove Bot's Pet
+	if(!strcasecmp(sep->arg[1], "pet") && !strcasecmp(sep->arg[2], "remove")) {
+        if(c->GetTarget() != NULL) {
+           if (c->IsGrouped() && c->GetTarget()->IsPet() && c->GetTarget()->GetOwner()->IsBot() && c->GetTarget()->GetNPCTypeID() <=700) {
+				int16 botID = c->GetTarget()->GetID();
+				c->GetTarget()->Say("As you wish, master.");
+				c->GetTarget()->Kill();
+			}
+            else if (c->IsGrouped() && c->GetTarget()->IsPet() && c->GetTarget()->GetOwner()->IsBot() && c->GetTarget()->GetNPCTypeID() >=700) {
+				c->GetTarget()->Say("You can't remove a charmed mob.");
+			}
+            else {
+                c->Message(15, "You must target a bot pet.");
+            }
+        }
+        else {
+            c->Message(15, "You must target a bot pet.");
+        }
+		return;
+	}
+
+//Dire Charm
+	if(!strcasecmp(sep->arg[1], "Dire") && !strcasecmp(sep->arg[2], "Charm"))
+    {
+		Mob *target = c->GetTarget();
+        if(target == NULL || target == c || target->IsBot() || target->IsPet() && target->GetOwner()->IsBot())
+        {
+            c->Message(15, "You must select a monster");
+            return;
+        }
+		int32 DBtype = c->GetTarget()->GetBodyType();
+		Mob *Direr;
+		int32 DirerClass = 0;
+		Group *g = c->GetGroup();
+		if(g) {
+			for(int i=0; i<MAX_GROUP_MEMBERS; i++){
+				if(g->members[i] && g->members[i]->IsBot()) {
+					switch(g->members[i]->GetClass()) {
+						case ENCHANTER:
+							  Direr = g->members[i];
+							  DirerClass = ENCHANTER;
+							break;
+						case NECROMANCER:
+							if(DirerClass != ENCHANTER){
+							  Direr = g->members[i];
+							  DirerClass = NECROMANCER;
+						}
+						case DRUID:
+							if (DirerClass == 0){
+							  Direr = g->members[i];
+							  DirerClass = DRUID;
+						}
+							break;
+							break;
+						default:
+							break;
+					}
+				}
+			}
+			switch(DirerClass) {
+				case ENCHANTER:
+					if	(c->GetLevel() >= 55) {
+						Direr->Say("Trying to dire charm %s \n", target->GetCleanName(), sep->arg[2]);
+						Direr->CastToNPC()->Bot_Command_DireTarget (1,target);
+					}
+					else if (c->GetLevel() <= 55){
+						Direr->Say("I don't have the needed level yet", sep->arg[2]);
+					}
+					else
+					Direr->Say("Mob level is too high or can't be charmed", c->GetName());
+					break;
+
+				case NECROMANCER:
+					if	((c->GetLevel() >= 55) && (DBtype == 3)) {
+						Direr->Say("Trying to dire charm %s \n", target->GetCleanName(), sep->arg[2]);
+						Direr->CastToNPC()->Bot_Command_DireTarget (2,target);
+					}
+					else if (c->GetLevel() <= 55){
+						Direr->Say("I don't have the needed level yet", sep->arg[2]);
+					}
+					else
+					Direr->Say("Mob Is not undead...", c->GetName());
+					break;
+
+				case DRUID:
+					if	((c->GetLevel() >= 55) && (DBtype == 21)) {
+						Direr->Say("Trying to dire charm %s \n", target->GetCleanName(), sep->arg[2]);
+						Direr->CastToNPC()->Bot_Command_DireTarget (3,target);
+					}
+					else if (c->GetLevel() <= 55){
+						Direr->Say("I don't have the needed level yet", sep->arg[2]);
+					}
+					else
+					Direr->Say("Mob is not an animal...", c->GetName());
+					break;
+
+				default:
+					c->Message(15, "You must have a Enchanter, Necromancer or Druid in your group.");
+					break;
+			}
+		}
+	}
+
+// Evacuate
 	if(!strcasecmp(sep->arg[1], "evac")) {
 		Mob *evac = NULL;
 		bool hasevac = false;
