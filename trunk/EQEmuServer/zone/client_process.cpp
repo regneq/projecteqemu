@@ -878,7 +878,7 @@ void Client::BulkSendMerchantInventory(int merchant_id, int npcid) {
 			}
 		}
 		// Account for merchant lists with gaps.
-		if(ml.slot > i)
+		if(ml.slot >= i)
 			i = ml.slot + 1;
 	}
 	std::list<TempMerchantList> origtmp_merlist = zone->tmpmerchanttable[npcid];

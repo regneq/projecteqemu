@@ -298,7 +298,7 @@ int Zone::SaveTempItem(int32 merchantid, int32 npcid, int32 item, sint32 charges
 			return 0;
 
 		// Account for merchant lists with gaps in them.
-		if(ml.slot > i)
+		if(ml.slot >= i)
 			i = ml.slot + 1;
 
 	}
