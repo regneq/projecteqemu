@@ -225,7 +225,8 @@ void Client::DeleteItemInInventory(sint16 slot_id, sint8 quantity, bool client_u
 	}
 
 	bool isDeleted = false;
-	if((m_inv[slot_id]->GetItem()->Click.Type == ET_EquipClick) || (m_inv[slot_id]->IsWeapon())) {
+	if(((m_inv[slot_id]->GetItem()->Click.Type == ET_EquipClick) || (m_inv[slot_id]->IsWeapon())) &&
+	    (!m_inv[slot_id]->IsAmmo())) {
 		isDeleted = m_inv.DeleteItem(slot_id, quantity, true);
 	}
 	else {

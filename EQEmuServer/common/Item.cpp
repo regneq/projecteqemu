@@ -317,6 +317,19 @@ bool ItemInst::IsWeapon() const
 		return ((m_item->Damage != 0) && (m_item->Delay != 0));
 }
 
+bool ItemInst::IsAmmo() const {
+
+	if(!m_item) return false;
+
+	if((m_item->ItemType == ItemTypeArrow) ||
+	   (m_item->ItemType == ItemTypeThrowing) ||
+	   (m_item->ItemType == ItemTypeThrowingv2))
+	   	return true;
+
+	return false;
+	
+}
+
 // Retrieve augment inside item
 ItemInst* ItemInst::GetAugment(uint8 slot) const
 {

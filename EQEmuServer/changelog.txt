@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==02/04/2009==
+Derision: Fixed ammo consumption.
+
 ==02/02/2009==
 Derision: Fix for temp merchantlists where a merchant has a single item with slotid=1
 
