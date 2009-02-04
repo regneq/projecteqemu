@@ -294,6 +294,7 @@ public:
 
 	// Has attack/delay?
 	virtual bool IsWeapon() const;
+	virtual bool IsAmmo() const;
 
 	// Accessors
 	const uint32 GetID() const { return m_item->ID; }
