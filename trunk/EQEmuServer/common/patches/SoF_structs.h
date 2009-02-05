@@ -1251,31 +1251,6 @@ struct BecomeCorpse_Struct {
 	float z;
 };
 
-/*
-** Spawn position update 22
-**	Struct sent from server->client to update position of
-**	another spawn's position update in zone (whether NPC or PC)
-**
-*/
-struct PlayerPositionUpdateServer_Struct_Old2
-{
-/*0000*/ uint16   spawn_id;
-/*0002*/ signed   padding0000:12; // ***Placeholder
-         signed   x_pos:19;           // x coord
-         signed   padding0002:1; // ***Placeholder
-/*0006*/ signed   delta_x:13;      // change in x
-         signed   delta_y:13;      // change in y
-         signed   padding0006:6;  // ***Placeholder
-/*0010*/ unsigned   z_pos:19;           // z coord
-         signed   delta_heading:10;// change in heading
-         unsigned   padding0014:3;  // ***Placeholder
-/*0014*/ signed   y_pos:19;           // y coord
-         signed   delta_z:13;      // change in z
-/*0018*/ signed   animation:10;   // animation
-         unsigned heading:12;     // heading
-         signed   padding0018:10;  // ***Placeholder
-/*0022*/
-};
 
 /*
 ** Spawn position update
@@ -1283,24 +1258,6 @@ struct PlayerPositionUpdateServer_Struct_Old2
 **	another spawn's position update in zone (whether NPC or PC)
 **
 */
-struct PlayerPositionUpdateServer_Struct_Old
-{
-/*0000*/ uint16		spawn_id;
-/*0002*/ sint32		delta_heading:10,  // change in heading
-         			x_pos:19,             // x coord
-         			padding0002:3;    // ***Placeholder
-/*0006*/ sint32		y_pos:19,             // y coord
-         			animation:10,     // animation
-         			padding0006:3;    // ***Placeholder
-/*0010*/ sint32		z_pos:19,             // z coord
-         			delta_y:13;        // change in y
-/*0014*/ sint32		delta_x:13,        // change in x
-        			heading:12,       // heading
-         			padding0014:7;    // ***Placeholder
-/*0018*/ sint32		delta_z:13,        // change in z
-         			padding0018:19;   // ***Placeholder
-/*0022*/
-};
 
 struct PlayerPositionUpdateServer_Struct
 {
@@ -1390,20 +1347,18 @@ struct PlayerPositionUpdateClient_Struct // Maybe this one from SEQ was correct 
 {
 /*0000*/ uint16 spawn_id;			// Player's spawn id - Verified!
 /*0002*/ uint16	sequence;			//increments one each packet - Verified!
-//*0004*/ uint8_t unknown0004[4];  // ***Placeholder
-/*0024*/ float z_pos;				// z - 
-/*0024*/ float delta_z;				// Change in z - Looks Accurate
+/*0004*/ uint8_t unknown0004[4];  // ***Placeholder
+/*0008*/ float delta_z;				// Change in z - Looks Accurate
 /*0012*/ float x_pos;				// x coord - Verified!
-/*0016*/ signed animation:10;  // change in heading
+/*0016*/ signed delta_heading:10;      // z coord (3rd loc value)
+		 signed animation:10;  // change in heading
          signed padding0028:12;     // animation
 /*0020*/ float y_pos;			// y coord - Verified!
 /*0024*/ float delta_x;            // Change in x
 /*0028*/ unsigned heading:12;     // Directional heading - Verified!
-         unsigned padding0029:20; // ***Placeholder
-/*0032*/ signed delta_y:12;            // Change in y
-/*0036*/ signed delta_heading:10;      // z coord (3rd loc value)
-         unsigned padding0016:10; // ***Placeholder
-/*0040*/
+         unsigned delta_y:20; // ***Placeholder
+/*0032*/ float z_pos;				//
+/*0036*/
 };
 
 /*
