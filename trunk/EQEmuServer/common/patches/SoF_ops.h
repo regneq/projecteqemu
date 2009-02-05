@@ -21,7 +21,7 @@ E(OP_GuildMemberList)
 E(OP_Illusion)
 E(OP_ManaChange)
 E(OP_WearChange)
-//E(OP_ClientUpdate)
+E(OP_ClientUpdate)
 E(OP_LeadershipExpUpdate)
 
 //E(OP_ZoneServerReady)

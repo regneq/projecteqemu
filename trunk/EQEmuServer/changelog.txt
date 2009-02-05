@@ -1,5 +1,14 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==02/05/2009==
+Trevius: NPC coning is now working in SoF.
+Trevuis: NPCs and Players can now be targeted in SoF.
+Trevius: Corrected the illusion packet structure in SoF so helm change will work with the #fixmob command
+Trevius: Adjusted the #fixmob and #race commands to allow up to 586 races (the max for SoF)
+Trevius: Client Self position updates now report correct X, Y, and Heading in SoF, but still need Z corrected.
+Trevius: All other position updates (NPC or other clients) now seems to be accurate.
+Trevius: Names are now viewable over NPC and Player's heads
+
 ==02/04/2009==
 Derision: Fixed ammo consumption.
 
