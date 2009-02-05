@@ -583,6 +583,7 @@ ENCODE(OP_ZoneSpawns) {
 		eq->guildID = emu->guildID;
 		eq->class_ = emu->class_;
 		eq->gm = emu->gm;
+		eq->helm = emu->helm;
 		eq->runspeed = emu->runspeed;
 		eq->light = emu->light;
 		eq->level = emu->level;
@@ -608,6 +609,70 @@ ENCODE(OP_ZoneSpawns) {
 		eq->anon = emu->anon;
 		eq->walkspeed = emu->walkspeed;
 
+		eq->targetable = 1; //New Field - Force NPCs to Targetable for now
+		eq->showname = 1; //New Field - Toggles Name Display on or off - 0 = off, 1 = on
+		eq->linkdead = 0; //New Field - Toggles LD on or off after name - 0 = off, 1 = on
+
+		//Hack Test for finding more fields in the Struct:
+		//memset(eq->unknown0001, 0x01, sizeof(eq->unknown0001)); // 16 - No Visible Change? 22
+		//memset(eq->unknown0005, 0x01, sizeof(eq->unknown0005)); // 15 - No Visible Change? 22
+		//memset(eq->unknown0008, 0x01, sizeof(eq->unknown0008)); // 13
+		//memset(eq->unknown0048, 0x01, sizeof(eq->unknown0048)); // 12 - No Visible Change? 22
+		//eq->unknown0820 = 1;	//Stand State - Stand/Sit/Crouch
+		//eq->unknown0059 = 1; // 1 Turned off on 6 - west bug?
+		//memset(eq->unknown0074, 0x01, sizeof(eq->unknown0074)); // 16 - No Visible Change? 22
+		//memset(eq->unknown0077, 0x01, sizeof(eq->unknown0077)); // 19 - Flymode 22
+		//memset(eq->unknown00771, 0x00, sizeof(eq->unknown00771)); // 20 - No Visible Change? 22
+		//memset(eq->unknown00772, 0x02, sizeof(eq->unknown00772)); // 20 - No Visible Change? 22
+		//memset(eq->unknown0078, 0x00, sizeof(eq->unknown0078)); // 18
+		//eq->unknown0078 = 1;
+		//memset(eq->unknown0079, 0x01, sizeof(eq->unknown0079)); // 18 - No Visible Change? 22
+		//memset(eq->unknown0080, 0x01, sizeof(eq->unknown0080)); // 18 - No Visible Change? 22
+		//memset(eq->unknown0106, 0x01, sizeof(eq->unknown0106)); // 11 - No Visible Change? 22
+		//memset(eq->unknown0107, 0x01, sizeof(eq->unknown0107)); // 20 21 - Flymode 22
+		//memset(eq->unknown0108, 0x01, sizeof(eq->unknown0108)); // 20 - LFG and Hair/Beard 22
+		//memset(eq->unknown0110, 0x01, sizeof(eq->unknown0110)); // 20 21 
+		//memset(eq->unknown01101, 0x00, sizeof(eq->unknown01101)); // 20
+		//eq->unknown0111 = 1; // 1 - No Visible Change?
+		//eq->unknown0613 = 0; //was bodytype
+		//memset(eq->unknown0154, 0x01, sizeof(eq->unknown0154)); // 2 - freeze in place?
+		//memset(eq->unknown0263, 0x01, sizeof(eq->unknown0263)); // 1 - no player character visible?
+		//memset(eq->unknown0281, 0x01, sizeof(eq->unknown0281)); // 2 3
+		//eq->unknown0307 = 1; // 9 10 11 - No Visible Change?
+		//memset(eq->unknown0308, 0x01, sizeof(eq->unknown0308)); // 22 - No Visible Change? 22
+		//memset(eq->unknown0309, 0x01, sizeof(eq->unknown0309)); // 8 - No Visible Change? 22
+		//memset(eq->unknown442, 0x01, sizeof(eq->unknown442)); // 6 - crash?
+		//eq->unknown443 = 1; // 1 turned off on 9 - No Visible Change? 22
+		//memset(eq->unknown0760, 0x01, sizeof(eq->unknown0760)); // 4 avatar height?
+		//eq->unknown0779 = 0; // 1 - int32 avatar height?
+		//memset(eq->unknown0496, 0x01, sizeof(eq->unknown0496)); // 4 5
+		
+
+		// 1 all set to one shows you at floor level
+		// 2 seems to cause invis and freeze in place and west bug
+		// 3 causes no player character, but spawns work and has west bug
+		// 4 looks just like 2 accept you can move and are at floor level
+		// 5 Looks like 3
+		// 6 Cuased a crash
+		// 7 west bug gone 
+		// 8 Looks normal accept no player character
+		// 9 Targetable mobs!!! Still no player character...
+		// 10 Narrowing down bodytype
+		// 11 Non-targetable again and narrowing down bodytype
+		// 12 Bodytype location identified!!!  Targeting works...  Nother other visible changes
+		// 13 Can target self but not spawns.  West bug again
+		// 14 Names showing and also LD showing!!!  Still West Bug though...
+		// 15 Show Names field now identified.  
+		// 16 No visible change
+		// 17 Looks like helm is in there somewhere...  Only 134 bytes to figure it out :P
+		// 18 helm location identified
+		// 19 fly mode on
+		// 20 fly mode on, LFG on, very slow walking, and hair changed
+		// 21 LFG on, hair changed
+		// 22 Makes everyone human with a ! in front of their name, target ring is off and con color is grey...
+
+
+
 	}
 	
 	
@@ -615,7 +680,7 @@ ENCODE(OP_ZoneSpawns) {
 	delete[] __emu_buffer;
 	
 	_log(NET__ERROR, "Sending zone spawns");
-	//_hex(NET__ERROR, in->pBuffer, in->size);
+	_hex(NET__ERROR, in->pBuffer, in->size);
 	
 	dest->FastQueuePacket(&in, ack_req);
 }
@@ -849,7 +914,7 @@ ENCODE(OP_GroundSpawn) {
 	eq->unknown028 = 0;
 	eq->unknown030 = 127;
 	eq->unknown031 = 67;
-	eq->unknown088 = 1;
+	eq->unknown088 = 100;
 	eq->unknown096 = -1;
 	FINISH_ENCODE();
 }
@@ -871,11 +936,24 @@ ENCODE(OP_Illusion) {
 	OUT(race);
 	OUT(unknown006[0]);
 	OUT(unknown006[1]);
+	//eq->unknown006 = 1; // These 2 make the name green with underscores and numbers after them
+	//eq->unknown007 = 1; // They also make everything into a bald human
 	OUT(gender);
 	OUT(texture);
-	OUT(helmtexture);
-	OUT(unknown011);
 	OUT(face);
+	eq->unknown011 = 1; // Size?
+	OUT(helmtexture);
+	//eq->unknown010 = 2; //
+	eq->unknown012 = 1; // Maybe Size?  Seems like it may be an int16
+	eq->unknown013 = 1; // Size?
+	eq->unknown014 = 1; // face hair with color for both
+	eq->unknown015 = 2; // face hair with color for both
+	eq->unknown016 = 1; // face hair with color for both
+	eq->unknown017 = 1; // face hair with color for both
+	eq->unknown018 = 3; // beard
+	eq->unknown019 = 1; // beard
+	eq->unknown020 = 0; ////testing - This moves the spawn into the ground partially?
+	//memset(eq->unknown022, 0x01, sizeof(eq->unknown022)); //testing
 	FINISH_ENCODE();
 }
 
@@ -889,23 +967,23 @@ ENCODE(OP_WearChange) {
 	FINISH_ENCODE();
 }
 
-/*
+
 ENCODE(OP_ClientUpdate) {
 	ENCODE_LENGTH_EXACT(PlayerPositionUpdateServer_Struct);
 	SETUP_DIRECT_ENCODE(PlayerPositionUpdateServer_Struct, structs::PlayerPositionUpdateServer_Struct);
 	OUT(spawn_id);
 	OUT(x_pos);
-	OUT(y_pos);
-	OUT(z_pos);
-	OUT(heading);
 	OUT(delta_x);
 	OUT(delta_y);
-	OUT(delta_z);
+	OUT(z_pos);
 	OUT(delta_heading);
+	OUT(y_pos);
+	OUT(delta_z);
 	OUT(animation);
+	OUT(heading);
 	FINISH_ENCODE();
 }
-*/
+
 
 
 
@@ -937,10 +1015,10 @@ DECODE(OP_Consider) {
 	IN(playerid);
 	IN(targetid);
 	IN(faction);
-	IN(level);
-	emu->cur_hp = 1;
-	emu->max_hp = 2;
-	emu->pvpcon = 0;
+	//IN(level);
+	//emu->cur_hp = 1;
+	//emu->max_hp = 2;
+	//emu->pvpcon = 0;
 	FINISH_DIRECT_DECODE();
 }
 
@@ -1002,7 +1080,7 @@ DECODE(OP_CharacterCreate) {
 
 
 
-sint32 NextItemInstSerialNumber = 1;
+int32 NextItemInstSerialNumber = 1;
 int32 MaxInstances = 2000000000;
 
 static inline sint32 GetNextItemInstSerialNumber() {
@@ -1037,7 +1115,7 @@ char *SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 
 	uint32 instnodrop = inst->IsInstNoDrop() ? 1 : 0;
 	uint32 typepotion = (stackable ? ((inst->GetItem()->ItemType == ItemTypePotion) ? 1 : 0) : charges);
 
-
+	
 	//not sure how these truely shifted, as this dosent seem right.
    MakeAnyLenString(&instance,
 	  //"%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|",
@@ -1059,6 +1137,7 @@ char *SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 
       zero
 
    );
+   
 
 	//not sure how these truely shifted, as this dosent seem right.
    /*

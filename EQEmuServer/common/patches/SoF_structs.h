@@ -227,7 +227,10 @@ showeq -> eqemu
 sed -e 's/_t//g' -e 's/seto_0xFF/set_to_0xFF/g'
 */
 struct Spawn_Struct {
-/*0000*/ uint8  unknown0000[9]; //was [5]
+/*0000*/ uint8  showname; //New Field - Toggles Name Display on or off - 0 = off, 1 = on
+/*0001*/ uint8  unknown0001[4]; //
+/*0005*/ uint8  linkdead; //New Field - Toggles LD on or off after name - 0 = off, 1 = on
+/*0006*/ uint8  unknown0005[3]; //
 /*0009*/ int16  deity;          // Player's Deity
 /*0011*/ uint8  unknown0008[11];
 /*0022*/ uint8  gender;         // Gender (0=male, 1=female)
@@ -253,27 +256,34 @@ struct Spawn_Struct {
 /*0137*/ uint32 guildID;        // Current guild
 /*0141*/ uint8  unknown0074[24]; //was [2]
 /*0165*/ uint8  class_;         // Player's class
-/*0166*/ uint8  unknown0077[201];
-/*%%% gm right this time? */
+/*0166*/ uint8  unknown0077[7]; // was 5
+/*0166*/ uint8  unknown00771[184];
+/*0166*/ uint8  unknown00772[10];
 /*0367*/ uint8  gm;
-/*0368*/ uint8  unknown0079[134];
+/*0368*/ uint8 helm;
+/*0368*/ uint8  unknown0079[123];
+/*0368*/ uint8  unknown0080[10];
 /*0502*/ float    runspeed;       // Speed when walking
 /*0506*/ uint8  light;          // Spawn's lightsource
 /*0507*/ uint8  unknown0106[4];
 /*0511*/ uint8  level;          // Spawn Level
-/*0512*/ uint8  unknown0107[23];
+/*0512*/ uint8  unknown0107[10];
+/*0512*/ uint8  unknown0108[13];
 /*0535*/ uint32 race;           // Spawn race
-/*0539*/ uint8  unknown0110[41];
+/*0539*/ uint8  unknown0110[20];
+/*0539*/ uint8  unknown01101[21];
 /*0580*/ char     suffix[32];     // Player's suffix (of Veeshan, etc.)
 /*0612*/ uint8  unknown0111;
-/*0613*/ uint8  bodytype;       // Bodytype
+/*0613*/ uint8  bodytype;    // was Bodytype
 /*0614*/ uint8  unknown0154[41];
 /*0655*/ uint8  curHp;          // Current hp
 /*0656*/ uint8  unknown0263[2];
 /*0658*/ char     lastName[32];   // Player's Lastname
-/*0690*/ uint8  unknown0281[2];
+/*0690*/ int8  unknown0281[2];
 /*0692*/ char     title[32];      // Title
-/*0724*/ uint8  unknown0307[6];
+/*0724*/ uint8  unknown0307;
+/*0725*/ uint8  targetable;		// 1 = Targetable 0 = Not Targetable
+/*0726*/ uint8  unknown0308[4];
 /*0730*/ uint8  NPC;            // 0=player,1=npc,2=pc corpse,3=npc corpse
 /*0731*/ uint8  unknown0309[12];
 /*0743*/ signed   padding0000:12; // ***Placeholder
@@ -1206,11 +1216,15 @@ struct Consider_Struct{
 /*000*/ uint32	playerid;               // PlayerID
 /*004*/ uint32	targetid;               // TargetID
 /*008*/ int32	faction;                // Faction
-/*0012*/ int32	level;                  // Level
+/*012*/ uint8	unknown16[8]; //
+/*020*/ 
+
+//*012*/ int32	level;                  // Level
 //*016*/ sint32	cur_hp;                  // Current Hitpoints
 //*020*/ sint32	max_hp;                  // Maximum Hitpoints
-/*024*/ int16 pvpcon;     // Pvp con flag 0/1 - was int8
-/*025*/ int16	unknown3[3]; // Was int8
+//*024*/ int8 pvpcon;     // Pvp con flag 0/1 - was int8
+//*025*/ int8	unknown3[3]; //
+
 };
 
 /*
@@ -1243,7 +1257,7 @@ struct BecomeCorpse_Struct {
 **	another spawn's position update in zone (whether NPC or PC)
 **
 */
-struct PlayerPositionUpdateServer_Struct_Old
+struct PlayerPositionUpdateServer_Struct_Old2
 {
 /*0000*/ uint16   spawn_id;
 /*0002*/ signed   padding0000:12; // ***Placeholder
@@ -1252,9 +1266,9 @@ struct PlayerPositionUpdateServer_Struct_Old
 /*0006*/ signed   delta_x:13;      // change in x
          signed   delta_y:13;      // change in y
          signed   padding0006:6;  // ***Placeholder
-/*0010*/ signed   z_pos:19;           // z coord
+/*0010*/ unsigned   z_pos:19;           // z coord
          signed   delta_heading:10;// change in heading
-         signed   padding0014:3;  // ***Placeholder
+         unsigned   padding0014:3;  // ***Placeholder
 /*0014*/ signed   y_pos:19;           // y coord
          signed   delta_z:13;      // change in z
 /*0018*/ signed   animation:10;   // animation
@@ -1269,7 +1283,7 @@ struct PlayerPositionUpdateServer_Struct_Old
 **	another spawn's position update in zone (whether NPC or PC)
 **
 */
-struct PlayerPositionUpdateServer_Struct
+struct PlayerPositionUpdateServer_Struct_Old
 {
 /*0000*/ uint16		spawn_id;
 /*0002*/ sint32		delta_heading:10,  // change in heading
@@ -1288,56 +1302,23 @@ struct PlayerPositionUpdateServer_Struct
 /*0022*/
 };
 
-
-/*
-** Player Position Update
-** Length: 22 Octets
-** OpCode: PlayerPosCode
-*/
-
-struct playerSpawnPosStruct //From SEQ
+struct PlayerPositionUpdateServer_Struct
 {
-/*0000*/ uint16_t spawnId;
+/*0000*/ uint16		spawn_id;
 /*0002*/ signed   padding0000:12; // ***Placeholder
-         signed   x:19;           // x coord
-         signed   padding0002:1; // ***Placeholder
-/*0006*/ signed   deltaX:13;      // change in x
-         signed   deltaY:13;      // change in y
-         signed   padding0006:6;  // ***Placeholder
-/*0010*/ signed   z:19;           // z coord
-         signed   deltaHeading:10;// change in heading
-         signed   padding0014:3;  // ***Placeholder
-/*0014*/ signed   y:19;           // y coord
-         signed   deltaZ:13;      // change in z
-/*0018*/ signed   animation:10;   // animation
-         unsigned heading:12;     // heading
-         signed   padding0018:10;  // ***Placeholder
-/*0022*/
-};
-
-/*
-** Self Position Update
-** Length: 40 Octets
-** OpCode: PlayerPosCode
-*/
-
-struct playerSelfPosStruct //From SEQ
-{
-/*0000*/ uint16_t spawnId;        // Player's spawn id
-/*0002*/ uint8_t unknown0002[2];  // ***Placeholder (update time counter?)
-/*0004*/ uint8_t unknown0004[4];  // ***Placeholder
-/*0008*/ float deltaZ;            // Change in z
-/*0012*/ float x;                 // x coord (2nd loc value)
-/*0016*/ signed deltaHeading:10;  // change in heading
-         signed animation:10;     // animation
-         unsigned padding0016:12; // ***Placeholder
-/*0020*/ float y;                 // y coord (1st loc value)
-/*0024*/ float deltaX;            // Change in x
-/*0028*/ unsigned heading:12;     // Directional heading
-         unsigned padding0028:20; // ***Placeholder
-/*0032*/ float deltaY;            // Change in y
-/*0036*/ float z;                 // z coord (3rd loc value)
-/*0040*/
+		 signed   x_pos:19;           // x coord
+		 signed   padding0290:1; // ***Placeholder
+/*0006*/ signed   delta_x:13;      // change in x
+		 signed   delta_y:13;      // change in y
+		 signed   padding0294:6;  // ***Placeholder
+/*0010*/ signed   z_pos:19;           // z coord
+		 signed   delta_heading:10;// change in heading
+		 signed   padding0298:3;  // ***Placeholder
+/*0014*/ signed   y_pos:19;           // y coord
+		 signed   delta_z:13;      // change in z
+/*0022*/ signed   animation:10;   // animation
+		 unsigned heading:12;     // heading
+		 signed   padding0302:10;  // ***Placeholder
 };
 
 /*
@@ -1346,7 +1327,7 @@ struct playerSelfPosStruct //From SEQ
 **	player position on server
 **
 */
-struct PlayerPositionUpdateClient_Struct
+struct PlayerPositionUpdateClient_Struct_Old  //from ShowEQ
 {
 /*0000*/ uint16 spawn_id;        // Player's spawn id
 /*0002*/ uint16	sequence;	//increments one each packet
@@ -1384,6 +1365,47 @@ struct PlayerPositionUpdateClient_Struct_WIP //from Client Packet Breakdown and 
 /*0036*/ 
 };
 
+struct PlayerPositionUpdateClient_Struct_WIP2 //from Client Packet Breakdown and testing
+{
+/*0000*/ uint16 spawn_id;			// Player's spawn id - Verified!
+/*0002*/ uint16	sequence;			//increments one each packet - Verified!
+//*0004*/ uint8_t unknown0004[4];  // ***Placeholder
+/*0012*/ float z_pos;				//
+/*0024*/ float delta_z;				// Change in z - Looks Accurate
+/*0012*/ float x_pos;				// x coord - Verified!
+/*0016*/ signed delta_heading:10;  // change in heading
+         signed animation:10;     // animation
+         unsigned padding0016:12; // ***Placeholder
+/*0020*/ float y_pos;			// y coord - Verified!
+/*0024*/ float delta_x;            // Change in x
+/*0028*/ unsigned heading:12;     // Directional heading
+         unsigned padding0029:20; // ***Placeholder
+/*0032*/ signed delta_y:13;            // Change in y
+		 signed padding0028:19;              // z coord (3rd loc value)
+/*0036*/
+
+};
+
+struct PlayerPositionUpdateClient_Struct // Maybe this one from SEQ was correct afterall...
+{
+/*0000*/ uint16 spawn_id;			// Player's spawn id - Verified!
+/*0002*/ uint16	sequence;			//increments one each packet - Verified!
+//*0004*/ uint8_t unknown0004[4];  // ***Placeholder
+/*0024*/ float z_pos;				// z - 
+/*0024*/ float delta_z;				// Change in z - Looks Accurate
+/*0012*/ float x_pos;				// x coord - Verified!
+/*0016*/ signed animation:10;  // change in heading
+         signed padding0028:12;     // animation
+/*0020*/ float y_pos;			// y coord - Verified!
+/*0024*/ float delta_x;            // Change in x
+/*0028*/ unsigned heading:12;     // Directional heading - Verified!
+         unsigned padding0029:20; // ***Placeholder
+/*0032*/ signed delta_y:12;            // Change in y
+/*0036*/ signed delta_heading:10;      // z coord (3rd loc value)
+         unsigned padding0016:10; // ***Placeholder
+/*0040*/
+};
+
 /*
 EQLive Packet Breakdown
 53 48
@@ -1409,7 +1431,7 @@ ff ff eb c1
 **	player position on server
 **
 */
-struct PlayerPositionUpdateClient_Struct_Old
+struct PlayerPositionUpdateClient_Struct_Old2
 {
 /*0000*/ uint16	spawn_id;
 /*0002*/ uint16	sequence;	//increments one each packet
@@ -1965,11 +1987,35 @@ struct Illusion_Struct {  //size: 256
 /*070*/	char	unknown006[2];
 /*072*/	uint8	gender;
 /*073*/	uint8	texture;
-/*074*/	uint8	helmtexture;
-/*075*/	uint8	unknown011;
 /*076*/	uint32	face;
-/*080*/	uint8	unknown020[176]; //was char	unknown020[176];
+/*075*/	uint8	unknown011; // was face
+/*074*/	uint8	helmtexture;
+/*075*/	uint8	unknown012;
+/*075*/	uint8	unknown013;
+/*075*/	uint8	unknown014;
+/*075*/	uint8	unknown015;
+/*075*/	uint8	unknown016;
+/*075*/	uint8	unknown017;
+/*075*/	uint8	unknown018;
+/*080*/	uint8	unknown019;
+/*080*/	uint8	unknown020;
+/*080*/	uint8	unknown021[167]; //was char	unknown020[176];
 /*256*/
+
+// first attempt with 76 made them shrink or drop below the ground so they can't be seen...
+// with 16, still the same effect
+// 6 Changes face and hair
+// 10 causes the shrink again
+// 8 Changes face, hair and beard
+// 9 
+
+//*000*/	uint32	spawnid;
+//*004*/		char charname[64];		//fix for 7-14-04 patch
+//*068*/	uint16	race; //was uint16	race;
+//*070*/	char	unknown006[2];
+//*072*/	uint8	gender;
+//*073*/	uint8	texture;
+
 };
 
 struct ZonePoint_Entry { //24 octets

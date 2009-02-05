@@ -2635,13 +2635,13 @@ void command_race(Client *c, const Seperator *sep)
   Mob *t=c->CastToMob();
 
 	// @merth: Need to figure out max race for LoY/LDoN: going with upper bound of 500 now for testing
-	if (sep->IsNumber(1) && atoi(sep->arg[1]) >= 0 && atoi(sep->arg[1]) <= 500) {
+	if (sep->IsNumber(1) && atoi(sep->arg[1]) >= 0 && atoi(sep->arg[1]) <= 586) {
 		if ((c->GetTarget()) && c->Admin() >= commandRaceOthers)
 			t=c->GetTarget();
 		t->SendIllusionPacket(atoi(sep->arg[1]));
 	}
 	else
-		c->Message(0, "Usage: #race [0-500]  (0 for back to normal)");
+		c->Message(0, "Usage: #race [0-586]  (0 for back to normal)");
 }
 
 void command_gender(Client *c, const Seperator *sep)
@@ -3432,7 +3432,7 @@ void command_fixmob(Client *c, const Seperator *sep)
 		c->Message(0,"Error: this command requires an NPC target");
 	else if (strcasecmp(sep->arg[1], "nextrace") == 0) {
 		// Set to next race
-		if (target->GetRace() == 473) {
+		if (target->GetRace() == 586) {
 			target->SendIllusionPacket(0);
 			c->Message(0, "Race=0");
 		}
@@ -3444,8 +3444,8 @@ void command_fixmob(Client *c, const Seperator *sep)
 	else if (strcasecmp(sep->arg[1], "prevrace") == 0) {
 		// Set to previous race
 		if (target->GetRace() == 0) {
-			target->SendIllusionPacket(473);
-			c->Message(0, "Race=%i",473);
+			target->SendIllusionPacket(586);
+			c->Message(0, "Race=%i",586);
 		}
 		else {
 			target->SendIllusionPacket(target->GetRace()-1);
