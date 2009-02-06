@@ -9241,11 +9241,11 @@ void command_bot(Client *c, const Seperator *sep) {
 			}
 			switch(CharmerClass) {
 				case ENCHANTER:
-					if	(c->GetLevel() >= 55) {
+					if	(c->GetLevel() >= 11) {
 						Charmer->Say("Trying to charm %s \n", target->GetCleanName(), sep->arg[2]);
 						Charmer->CastToNPC()->Bot_Command_CharmTarget (1,target);
 					}
-					else if (c->GetLevel() <= 55){
+					else if (c->GetLevel() <= 10){
 						Charmer->Say("I don't have the needed level yet", sep->arg[2]);
 					}
 					else
@@ -9253,7 +9253,7 @@ void command_bot(Client *c, const Seperator *sep) {
 					break;
 
 				case NECROMANCER:
-					if	((c->GetLevel() >= 17) && (DBtype == 3)) {
+					if	((c->GetLevel() >= 18) && (DBtype == 3)) {
 						Charmer->Say("Trying to Charm %s \n", target->GetCleanName(), sep->arg[2]);
 						Charmer->CastToNPC()->Bot_Command_CharmTarget (2,target);
 					}
@@ -9269,7 +9269,7 @@ void command_bot(Client *c, const Seperator *sep) {
 						Charmer->Say("Trying to charm %s \n", target->GetCleanName(), sep->arg[2]);
 						Charmer->CastToNPC()->Bot_Command_CharmTarget (3,target);
 					}
-					else if (c->GetLevel() <= 13){
+					else if (c->GetLevel() <= 12){
 						Charmer->Say("I don't have the needed level yet", sep->arg[2]);
 					}
 					else
