@@ -8,6 +8,7 @@ Trevius: Adjusted the #fixmob and #race commands to allow up to 586 races (the m
 Trevius: Client Self position updates now report correct X, Y, and Heading in SoF, but still need Z corrected.
 Trevius: All other position updates (NPC or other clients) now seems to be accurate.
 Trevius: Names are now viewable over NPC and Player's heads
+Angelox: Bots: charm level problem fixed.
 
 ==02/04/2009==
 Derision: Fixed ammo consumption.
