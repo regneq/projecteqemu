@@ -3,6 +3,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 
 ==02/07/2009==
 cavedude00: Added faction modifiers for Berserker and Froglok.
+Derision: Fixed item load failure when using MySQL 5.1.
 
 Required SQL:
 ALTER TABLE `faction_list` ADD COLUMN `mod_c16` smallint(6) NOT NULL default '0' AFTER `mod_c15`;

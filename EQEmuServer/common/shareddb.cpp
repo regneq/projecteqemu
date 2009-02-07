@@ -729,7 +729,7 @@ bool SharedDatabase::DBLoadItems(sint32 iItemCount, uint32 iMaxItemID) {
 	
 	// Retrieve all items from database
 	char query[] = "select source,"
-#define F(x) #x ","
+#define F(x) "`"#x"`,"
 #include "item_fieldlist.h"
 #undef F
 		"updated"
