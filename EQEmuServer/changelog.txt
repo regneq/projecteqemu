@@ -1,5 +1,13 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+
+==02/07/2009==
+cavedude00: Added faction modifiers for Berserker and Froglok.
+
+Required SQL:
+ALTER TABLE `faction_list` ADD COLUMN `mod_c16` smallint(6) NOT NULL default '0' AFTER `mod_c15`;
+ALTER TABLE `faction_list` ADD COLUMN `mod_r330` smallint(6) NOT NULL default '0' AFTER `mod_r161`;
+
 ==02/05/2009==
 Trevius: NPC coning is now working in SoF.
 Trevuis: NPCs and Players can now be targeted in SoF.
