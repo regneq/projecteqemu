@@ -891,31 +891,20 @@ ENCODE(OP_GroundSpawn) {
 	OUT(drop_id);
 	OUT(zone_id);
 	OUT(zone_instance);
-	//OUT(unknown020);
-	//OUT(unknown024);
 	OUT(heading);
 	OUT(x);
 	OUT(y);
 	OUT(z);
 	OUT_str(object_name);
-	//OUT(unknown064);
-	//OUT(unknown068);
-	//OUT(unknown072);
-	//OUT(unknown076);
 	OUT(object_type);
 	OUT(spawn_id);
 
     /*fill in some unknowns with observed values, hopefully it will help */
 	eq->unknown020 = 0;
-	eq->unknown024 = 3;
-	eq->unknown025 = 74;
-	eq->unknown026 = 100;
-	eq->unknown027 = 127;
-	eq->unknown028 = 0;
-	eq->unknown030 = 127;
-	eq->unknown031 = 67;
-	eq->unknown088 = 100;
-	eq->unknown096 = -1;
+	eq->unknown024 = 0;
+	eq->size = 1;	//This forces all objects to standard size for now
+	eq->unknown088 = 0;
+	memset(eq->unknown096, 0xFF, sizeof(eq->unknown096));
 	FINISH_ENCODE();
 }
 

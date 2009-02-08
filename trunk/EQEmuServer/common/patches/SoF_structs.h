@@ -1253,7 +1253,7 @@ struct BecomeCorpse_Struct {
 
 
 /*
-** Spawn position update
+** Spawn position update - Size: 26
 **	Struct sent from server->client to update position of
 **	another spawn's position update in zone (whether NPC or PC)
 **
@@ -1261,148 +1261,47 @@ struct BecomeCorpse_Struct {
 
 struct PlayerPositionUpdateServer_Struct
 {
-/*0000*/ uint16		spawn_id;
-/*0002*/ signed   padding0000:12; // ***Placeholder
-		 signed   x_pos:19;           // x coord
-		 signed   padding0290:1; // ***Placeholder
-/*0006*/ signed   delta_x:13;      // change in x
-		 signed   delta_y:13;      // change in y
-		 signed   padding0294:6;  // ***Placeholder
-/*0010*/ signed   z_pos:19;           // z coord
-		 signed   delta_heading:10;// change in heading
-		 signed   padding0298:3;  // ***Placeholder
-/*0014*/ signed   y_pos:19;           // y coord
-		 signed   delta_z:13;      // change in z
-/*0022*/ signed   animation:10;   // animation
-		 unsigned heading:12;     // heading
-		 signed   padding0302:10;  // ***Placeholder
+/*0000*/ uint16   spawn_id;			// Entity ID of the Spawn/Player
+/*0002*/ signed   padding0000:12;	// ***Placeholder
+		 signed   x_pos:19;			// x coord
+		 signed   padding0290:1;	// ***Placeholder
+/*0006*/ signed   delta_x:13;		// change in x
+		 signed   delta_y:13;		// change in y
+		 signed   padding0294:6;	// ***Placeholder
+/*0010*/ signed   z_pos:19;			// z coord
+		 signed   delta_heading:10;	// change in heading
+		 signed   padding0298:3;	// ***Placeholder
+/*0014*/ signed   y_pos:19;			// y coord
+		 signed   delta_z:13;		// change in z
+/*0022*/ signed   animation:10;		// animation
+		 unsigned heading:12;		// heading
+		 signed   padding0302:10;	// ***Placeholder
+/*0026*/
 };
 
 /*
-** Player position update
+** Player position update - Size: 40
 **	Struct sent from client->server to update
 **	player position on server
 **
 */
-struct PlayerPositionUpdateClient_Struct_Old  //from ShowEQ
+struct PlayerPositionUpdateClient_Struct
 {
-/*0000*/ uint16 spawn_id;        // Player's spawn id
-/*0002*/ uint16	sequence;	//increments one each packet
-/*0004*/ uint8 unknown0004[4];  // ***Placeholder
-/*0008*/ float delta_z;            // Change in z
-/*0012*/ float x_pos;                 // x coord
-/*0016*/ signed delta_heading:10;  // change in heading
-		 signed animation:10;     // animation
-         unsigned padding1:12;       // ***Placeholder (mostly 1)
-/*0020*/ float y_pos;                 // y coord
-/*0024*/ float delta_x;            // Change in x
-/*0028*/ unsigned heading:12;     // Directional heading
-         unsigned padding2:20;     // ***Placeholder
-/*0032*/ float delta_y;            // Change in y
-/*0036*/ float z_pos;                 // z coord
+/*0000*/ uint16 spawn_id;			// Player's Entity ID - Verified
+/*0002*/ uint16	sequence;			//increments one each packet - Verified
+/*0004*/ uint8 unknown0004[4];		// ***Placeholder
+/*0008*/ float delta_z;				// Change in z
+/*0012*/ float x_pos;				// x coord - Verified
+/*0016*/ signed delta_heading:10;	// Change in heading
+		 signed animation:10;		// Animation
+         unsigned padding0028:12;	// Seems to always be 0
+/*0020*/ float y_pos;				// y coord - Verified
+/*0024*/ float delta_x;				// Change in x
+/*0028*/ unsigned heading:12;		// Directional heading - Verified
+         unsigned padding0032:20;	// ***Placeholder - Some Static Number
+/*0032*/ float delta_y;				// Change in y
+/*0036*/ float z_pos;				// z coord - Verified
 /*0040*/
-};
-
-struct PlayerPositionUpdateClient_Struct_WIP //from Client Packet Breakdown and testing
-{
-/*0000*/ uint16 spawn_id;			// Player's spawn id - Verified!
-/*0002*/ uint16	sequence;			//increments one each packet - Verified!
-/*0004*/ float delta_heading;		// Change in heading - Looks Accurate
-/*0008*/ float camera_angle;		//unused camera incline angle
-/*0012*/ float x_pos;				// x coord - Verified!
-/*0016*/ float heading;				//Heading - Looks Accurate
-/*0020*/ signed z_pos:10;			//Not Positive
-		 signed y_pos:10;			//Not Positive
-		 unsigned padding1:12;
-/*0024*/ float delta_z;				// Change in z - Looks Accurate
-/*0028*/ signed delta_y:20;			//Not Positive
-		 unsigned padding2:12;		// ***Placeholder
-/*0032*/ signed delta_x:20;			//Not Positive
-		 unsigned animation:12;		//Not Positive
-/*0036*/ 
-};
-
-struct PlayerPositionUpdateClient_Struct_WIP2 //from Client Packet Breakdown and testing
-{
-/*0000*/ uint16 spawn_id;			// Player's spawn id - Verified!
-/*0002*/ uint16	sequence;			//increments one each packet - Verified!
-//*0004*/ uint8_t unknown0004[4];  // ***Placeholder
-/*0012*/ float z_pos;				//
-/*0024*/ float delta_z;				// Change in z - Looks Accurate
-/*0012*/ float x_pos;				// x coord - Verified!
-/*0016*/ signed delta_heading:10;  // change in heading
-         signed animation:10;     // animation
-         unsigned padding0016:12; // ***Placeholder
-/*0020*/ float y_pos;			// y coord - Verified!
-/*0024*/ float delta_x;            // Change in x
-/*0028*/ unsigned heading:12;     // Directional heading
-         unsigned padding0029:20; // ***Placeholder
-/*0032*/ signed delta_y:13;            // Change in y
-		 signed padding0028:19;              // z coord (3rd loc value)
-/*0036*/
-
-};
-
-struct PlayerPositionUpdateClient_Struct // Maybe this one from SEQ was correct afterall...
-{
-/*0000*/ uint16 spawn_id;			// Player's spawn id - Verified!
-/*0002*/ uint16	sequence;			//increments one each packet - Verified!
-/*0004*/ uint8_t unknown0004[4];  // ***Placeholder
-/*0008*/ float delta_z;				// Change in z - Looks Accurate
-/*0012*/ float x_pos;				// x coord - Verified!
-/*0016*/ signed delta_heading:10;      // z coord (3rd loc value)
-		 signed animation:10;  // change in heading
-         signed padding0028:12;     // animation
-/*0020*/ float y_pos;			// y coord - Verified!
-/*0024*/ float delta_x;            // Change in x
-/*0028*/ unsigned heading:12;     // Directional heading - Verified!
-         unsigned delta_y:20; // ***Placeholder
-/*0032*/ float z_pos;				//
-/*0036*/
-};
-
-/*
-EQLive Packet Breakdown
-53 48
-01 00
-fe f7 7a 00
-00 00 c8 41
-00 00 1a 41
-
-00 04 b1 00
-
-00 00 00 00
-00 00 00 00
-
-ff ff eb c1
-
-00 00 00 00
-00 00 10 00
-*/
-
-/*
-** Player position update
-**	Struct sent from client->server to update
-**	player position on server
-**
-*/
-struct PlayerPositionUpdateClient_Struct_Old2
-{
-/*0000*/ uint16	spawn_id;
-/*0002*/ uint16	sequence;	//increments one each packet
-/*0004*/ float y_pos;                 // y coord
-/*0008*/ float delta_z;            // Change in z
-/*0012*/ float delta_x;            // Change in x
-/*0016*/ float delta_y;            // Change in y
-/*0020*/ sint32 animation:10,     // animation
-         		delta_heading:10,  // change in heading
-         		padding0020:12;   // ***Placeholder (mostly 1)
-/*0024*/ float x_pos;                 // x coord
-/*0028*/ float z_pos;                 // z coord
-/*0032*/ uint16 heading:12,     // Directional heading
-         		padding0004:4;  // ***Placeholder
-/*0034*/ uint8 unknown0006[2];  // ***Placeholder
-/*0036*/
 };
 
 /*
@@ -2266,30 +2165,26 @@ struct BookRequest_Struct {
 */
 struct Object_Struct {
 /*00*/	uint32	linked_list_addr[2];// <Zaphod> They are, get this, prev and next, ala linked list
-/*08*/	uint16	unknown008[2];		//
+/*08*/	uint32	unknown008;			// Something related to the linked list?
 /*12*/	uint32	drop_id;			// Unique object id for zone
 /*16*/	uint16	zone_id;			// Redudant, but: Zone the object appears in
 /*18*/	uint16	zone_instance;		//
 /*20*/	uint32	unknown020;			// 00 00 00 00
-/*24*/	uint8	unknown024;			// 03 - 3
-/*25*/	uint8	unknown025;			// 4a - 74
-/*26*/	uint8	unknown026;			// 64 - Probably Size (100)
-/*27*/	uint8	unknown027;			// 7f - Maybe Incline (127)
-/*28*/	uint16	unknown028;			// 00 00
-/*30*/	uint8	unknown030;			// 7f or 80 - 127 or 128
-/*31*/	uint8	unknown031;			// 43 - 67
-/*32*/	int8	unknown032[8];		// 00 00 00 00 00 00 00 00
+/*24*/	uint32	unknown024;			// 53 9e f9 7e - same for all objects in the zone?
 /*40*/	float	heading;			// heading
+/*32*/	uint8	unknown032[8];		// 00 00 00 00 00 00 00 00
+/*28*/	float	size;			// Size - default 1
 /*44*/	float	z;					// z coord
 /*48*/	float	x;					// x coord
 /*52*/	float	y;					// y coord
-/*56*/	char	object_name[32];	// Name of object, usually something like IT63_ACTORDEF was [20]
-//*76*/	float	unknown064;			// seems like coords, not always valid, all 0 on most world objects
-//*80*/	float	unknown068;			// seems like coords, not always valid, all 0 on most world objects
-//*84*/	float	unknown072;			// seems like coords, not always valid, all 0 on most world objects
-/*88*/	uint32	unknown088;			// e6 0b 04 00 - decrements - Maybe countdown to loading a max number of ground spawns
+/*56*/	char	object_name[16];	// Name of object, usually something like IT63_ACTORDEF was [20]
+/*72*/	float	unknown072;			// seems like coords, not always valid, all 0 on most world objects
+/*76*/	float	unknown076;			// seems like coords, not always valid, all 0 on most world objects
+/*80*/	float	unknown080;			// seems like coords, not always valid, all 0 on most world objects
+/*84*/	float	unknown084;			// seems like coords, not always valid, all 0 on most world objects
+/*88*/	uint32	unknown088;			// unique ID?  Maybe for a table that includes the contents?
 /*92*/	uint32	object_type;		// Type of object, not directly translated to OP_OpenObject
-/*96*/	uint32	unknown096;			// ff ff ff ff
+/*96*/	uint8	unknown096[4];		// ff ff ff ff
 /*100*/	uint32	spawn_id;			// Spawn Id of client interacting with object
 /*104*/
 };
