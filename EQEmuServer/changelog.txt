@@ -4,6 +4,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 Trevius: Corrected Z Coordinate on clientupdates in SoF.  All Client and NPC positition structures should now be accurate
 Trevius: Corrected the Object structure in SoF.  Objects should now all load in the correct location and size.
 Trevius: Added a few new Opcodes for SoF.
+Trevius: Corrected the Opcode for OP_RequestClientZoneChange - Zoning is now fully functional including zone commands
 
 ==02/07/2009==
 cavedude00: Added faction modifiers for Berserker and Froglok.
