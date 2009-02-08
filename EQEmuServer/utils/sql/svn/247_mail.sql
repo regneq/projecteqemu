@@ -11,4 +11,4 @@ CREATE TABLE `mail` (
   KEY `charid` (`charid`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 
-ALTER TABLE `character_` ADD `mailkey` CHAR( 16 ) NOT NULL ;
+ALTER TABLE `character_` ADD `mailkey` CHAR( 16 ) NOT NULL default '0';
