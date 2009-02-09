@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==02/01/2009==
+Angelox: Bots:Added command '#bot corpse summon' for Necromancer.
+
 ==02/08/2009==
 Trevius: Corrected Z Coordinate on clientupdates in SoF.  All Client and NPC positition structures should now be accurate
 Trevius: Corrected the Object structure in SoF.  Objects should now all load in the correct location and size.
