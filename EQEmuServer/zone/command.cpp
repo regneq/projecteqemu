@@ -7408,6 +7408,7 @@ void command_bot(Client *c, const Seperator *sep) {
 		c->Message(15, "#bot target calm - attempts to pacify your target mob.");
 		c->Message(15, "#bot evac - transports your pc group to safe location in the current zone. bots are lost");
 		c->Message(15, "#bot resurrectme - Your bot Cleric will rez you.");
+		c->Message(15, "#bot corpse summon - Necromancers summon corpse.");
 		c->Message(15, "#bot lore - cast Identify on the item on your mouse pointer.");
 		c->Message(15, "#bot sow - Bot sow on you (Druid has options)");
 		c->Message(15, "#bot invis - Bot invisiblity (must have proper class in group)");
@@ -9162,6 +9163,47 @@ void command_bot(Client *c, const Seperator *sep) {
 			c->Message(15, "You must have a Cleric in your group.");
 		}
         return;
+	}
+
+//Summon Corpse
+	if(!strcasecmp(sep->arg[1], "corpse") && !strcasecmp(sep->arg[2], "summon"))
+	{
+     	   if (c->GetTarget() == NULL)
+     	   {
+    	     c->Message(15, "You must select player with his corpse in the zone.");
+   	     return;
+ 	   }
+		if (c->IsGrouped())
+		{
+			bool hassummoner = false;
+			Group *g = c->GetGroup();
+			for(int i=0; i<MAX_GROUP_MEMBERS; i++)
+ 			{
+				if(g && g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == NECROMANCER))
+				{
+					hassummoner = true;
+					Mob *summoner = g->members[i];
+					if((hassummoner)  && (c->GetLevel() >= 13) && (c->GetTarget()->IsClient())) {
+						summoner->Say("Attempting to summon %s corpse.", c->GetName());
+						summoner->CastToClient()->CastSpell(3, c->GetID(), 1, -1, -1);
+					}
+					else if((hassummoner)  && (c->GetLevel() <= 12)) {
+						summoner->Say("I'm not level 13 yet.", c->GetName());
+					}
+					else if((hassummoner)  && (!c->GetTarget()->IsClient())) {
+					summoner->Say("You have to target a player with a corpse in the zone", c->GetName());
+					}
+					else if(!hassummoner) {
+					c->Message(15, "You must have a Necromancer in your group.");
+					}
+					return;
+				}
+			}
+		if (!hassummoner) {
+		c->Message(15, "You must have a Necromancer in your group.");
+		}
+    	  	return;
+		}
 	}
 
 //Pacify
