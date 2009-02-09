@@ -1,6 +1,6 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
-==02/01/2009==
+==02/09/2009==
 Angelox: Bots:Added command '#bot corpse summon' for Necromancer.
 
 ==02/08/2009==
