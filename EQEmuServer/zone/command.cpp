@@ -9176,6 +9176,7 @@ void command_bot(Client *c, const Seperator *sep) {
 		if (c->IsGrouped())
 		{
 			bool hassummoner = false;
+			Mob *t = c->GetTarget();
 			Group *g = c->GetGroup();
 			for(int i=0; i<MAX_GROUP_MEMBERS; i++)
  			{
@@ -9183,14 +9184,14 @@ void command_bot(Client *c, const Seperator *sep) {
 				{
 					hassummoner = true;
 					Mob *summoner = g->members[i];
-					if((hassummoner)  && (c->GetLevel() >= 13) && (c->GetTarget()->IsClient())) {
-						summoner->Say("Attempting to summon %s corpse.", c->GetName());
+					if((hassummoner)  && (c->GetLevel() >= 13) && (t->IsClient())) {
+						summoner->Say("Attempting to summon %ss corpse.", t->GetCleanName());
 						summoner->CastToClient()->CastSpell(3, c->GetID(), 1, -1, -1);
 					}
 					else if((hassummoner)  && (c->GetLevel() <= 12)) {
 						summoner->Say("I'm not level 13 yet.", c->GetName());
 					}
-					else if((hassummoner)  && (!c->GetTarget()->IsClient())) {
+					else if((hassummoner)  && (!t->IsClient())) {
 					summoner->Say("You have to target a player with a corpse in the zone", c->GetName());
 					}
 					else if(!hassummoner) {
