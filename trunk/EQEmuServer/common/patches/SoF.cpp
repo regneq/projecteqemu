@@ -590,8 +590,10 @@ ENCODE(OP_ZoneSpawns) {
 		eq->race = emu->race;
 		strcpy(eq->suffix, emu->suffix);
 		eq->bodytype = emu->bodytype;
+		eq->equip_chest2 = emu->equip_chest2;
 		eq->curHp = emu->curHp;
 		strcpy(eq->lastName, emu->lastName);
+		eq->eyecolor1 = emu->eyecolor1;
 		strcpy(eq->title, emu->title);
 		eq->NPC = emu->NPC;
 		eq->x = emu->x;
@@ -606,10 +608,14 @@ ENCODE(OP_ZoneSpawns) {
 		eq->spawnId = emu->spawnId;
 		strcpy(eq->name, emu->name);
 		eq->petOwnerId = emu->petOwnerId;
+		for(k = 0; k < 9; k++) {
+			eq->colors[k].color = emu->colors[k].color;
+		}
 		eq->anon = emu->anon;
+		eq->size = emu->size;
 		eq->walkspeed = emu->walkspeed;
 
-		eq->targetable = 1; //New Field - Force NPCs to Targetable for now
+		eq->targetable = 1; //New Field - Toggle Targetable on or off - 0 = off, 1 = on
 		eq->showname = 1; //New Field - Toggles Name Display on or off - 0 = off, 1 = on
 		eq->linkdead = 0; //New Field - Toggles LD on or off after name - 0 = off, 1 = on
 

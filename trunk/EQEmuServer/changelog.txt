@@ -1,7 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==02/12/2009==
+Trevius: Identified the Size, Eye Color and Texture fields in the SoF spawn structure.
+Trevius: Added multiple Opcodes for SoF
 
-==02/12/2009
+==02/12/2009==
 cavedude00: Added #findzone (#fz) command to aid in getting a zone's short_name or id.
 cavedude00: #peqzone now accepts both short_name and zoneidnumber.
 
