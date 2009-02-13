@@ -268,6 +268,8 @@ int command_init(void) {
 		command_add("nukeitem","[itemid] - Remove itemid from your player target's inventory",150,command_nukeitem) ||
 		command_add("peekinv","[worn/cursor/inv/bank/trade/all] - Print out contents of your player target's inventory",100,command_peekinv) ||
 		command_add("findnpctype","[search criteria] - Search database NPC types",100,command_findnpctype) ||
+              command_add("findzone","[search criteria] - Search database zones",100,command_findzone) ||
+              command_add("fz",NULL,100,command_findzone) ||
 		command_add("viewnpctype","[npctype id] - Show info about an npctype",100,command_viewnpctype) ||
 		command_add("reloadstatic","- Reload Static Zone Data",150,command_reloadstatic) ||
 		command_add("reloadquest","- Clear quest cache",150,command_reloadqst) ||
@@ -1499,22 +1501,10 @@ void command_peqzone(Client *c, const Seperator *sep)
        }
 
        uint32 zoneid = 0;
-       if (sep->arg[1][0] == 0)
-       {
-               c->Message(0, "Usage: #peqzone [zonename]");
-               return;
-       } else {
-               if((strcasecmp(sep->arg[1], "cshome")==0) && (c->Admin() < commandZoneToSpecials)){
-                       c->Message(0, "Only Guides and above can goto that zone.");
-                       return;
-               }
-
-               zoneid = database.GetZoneID(sep->arg[1]);
-               if(zoneid == 0) {
-                       c->Message(0, "Unable to locate zone '%s'", sep->arg[1]);
-                       return;
-               }
-               if(zoneid == 39 ||zoneid == 187 || zoneid == 188 || zoneid == 71 || zoneid == 162 || zoneid == 76 || zoneid == 186 || zoneid == 105 || zoneid == 124 || zoneid == 89 || zoneid == 128 || zoneid == 189 || zoneid == 108 || zoneid == 158 || zoneid  == 200 || zoneid == 201 || zoneid > 228 || (zoneid > 203 && zoneid < 224)) {
+       if (sep->IsNumber(1))
+	{
+		 zoneid = atoi(sep->arg[1]);
+               if(zoneid == 0 || zoneid == 26 || zoneid == 39 || zoneid == 187 || zoneid == 188 || zoneid == 71 || zoneid == 162 || zoneid == 76 || zoneid == 186 || zoneid == 105 || zoneid == 124 || zoneid == 89 || zoneid == 128 || zoneid == 189 || zoneid == 108 || zoneid == 158 || zoneid  == 200 || zoneid == 201 || zoneid > 228 || (zoneid > 203 && zoneid < 224)) {
                        c->Message(13, "You cannot use this command to enter that zone!");
                        return;               
                }
@@ -1522,11 +1512,27 @@ void command_peqzone(Client *c, const Seperator *sep)
                        c->Message(13, "You cannot use this command on the zone you are in!");
                        return;
                }
-               if (sep->IsNumber(2) || sep->IsNumber(3) || sep->IsNumber(4) || sep->IsNumber(5)) {
-                       c->Message(0, "Usage: #peqzone [zonename]");
-			     return;
+	}
+       else if (sep->arg[1][0] == 0 || sep->IsNumber(2) || sep->IsNumber(3) || sep->IsNumber(4) || sep->IsNumber(5))
+       {
+               c->Message(0, "Usage: #peqzone [zonename]");
+               c->Message(0, "Optional Usage: #peqzone [zoneid]");
+               return;
+       } else {
+               zoneid = database.GetZoneID(sep->arg[1]);
+               if(zoneid == 0) {
+                       c->Message(0, "Unable to locate zone '%s'", sep->arg[1]);
+                       return;
                }
-       }
+               if(zoneid == 26 || zoneid == 39 || zoneid == 187 || zoneid == 188 || zoneid == 71 || zoneid == 162 || zoneid == 76 || zoneid == 186 || zoneid == 105 || zoneid == 124 || zoneid == 89 || zoneid == 128 || zoneid == 189 || zoneid == 108 || zoneid == 158 || zoneid  == 200 || zoneid == 201 || zoneid > 228 || (zoneid > 203 && zoneid < 224)) {
+                       c->Message(13, "You cannot use this command to enter that zone!");
+                       return;               
+               }
+               if(zoneid == zone->GetZoneID()) {
+                       c->Message(13, "You cannot use this command on the zone you are in!");
+                       return;
+               }
+       }       
  
        //a couple good ol cripling effects.
        c->SpellOnTarget(4454, c); //Cursed Keeper's Blight
@@ -3063,6 +3069,71 @@ void command_findnpctype(Client *c, const Seperator *sep)
                break;
             }
             c->Message (0, "  %s: %s", row[0], row[1]);
+         }
+
+         // If we did not hit the maxrows limit.
+         if (count <= maxrows)
+            c->Message (0, "Query complete. %i rows shown.", count);
+         // No matches found.
+         else if (count == 0)
+            c->Message (0, "No matches found for %s.", sep->arg[1]);
+
+         mysql_free_result(result);
+      }
+      // If query failed.
+      else
+      {
+         c->Message (0, "Error querying database.");
+         c->Message (0, query);
+      }
+
+	   safe_delete_array(query);
+   }
+}
+
+void command_findzone(Client *c, const Seperator *sep)
+{
+   if(sep->arg[1][0] == 0)
+      c->Message(0, "Usage: #findzone [search criteria]");
+   else
+   {
+      int id;
+      int count;
+      const int maxrows = 20;
+      char errbuf[MYSQL_ERRMSG_SIZE];
+	   char *query;
+	   MYSQL_RES *result;
+	   MYSQL_ROW row;
+
+      query = new char[256];
+
+      // If id evaluates to 0, then search as if user entered a string.
+      if ((id = atoi((const char *)sep->arg[1])) == 0)
+         MakeAnyLenString(&query,
+            "SELECT zoneidnumber,short_name,long_name"
+            " FROM zone WHERE long_name rLIKE '%s'",
+            sep->arg[1]);
+      // Otherwise, look for just that zoneidnumber.
+      else
+         MakeAnyLenString(&query,
+            "SELECT zoneidnumber,short_name,long_name FROM zone WHERE zoneidnumber=%i", id);
+
+      // If query runs successfully.
+      if (database.RunQuery(query, strlen(query), errbuf, &result))
+	   {
+         count = 0;
+
+         // Process each row returned.
+		   while((row = mysql_fetch_row(result)))
+		   {
+            // Limit to returning maxrows rows.
+            if (++count > maxrows)
+            {
+               c->Message (0,
+                  "%i zones shown. Too many results.", maxrows);
+               break;
+            }
+            c->Message (0, "  %s: %s, %s", row[0], row[1], row[2]);
          }
 
          // If we did not hit the maxrows limit.
@@ -7408,7 +7479,6 @@ void command_bot(Client *c, const Seperator *sep) {
 		c->Message(15, "#bot target calm - attempts to pacify your target mob.");
 		c->Message(15, "#bot evac - transports your pc group to safe location in the current zone. bots are lost");
 		c->Message(15, "#bot resurrectme - Your bot Cleric will rez you.");
-		c->Message(15, "#bot corpse summon - Necromancers summon corpse.");
 		c->Message(15, "#bot lore - cast Identify on the item on your mouse pointer.");
 		c->Message(15, "#bot sow - Bot sow on you (Druid has options)");
 		c->Message(15, "#bot invis - Bot invisiblity (must have proper class in group)");
@@ -9163,48 +9233,6 @@ void command_bot(Client *c, const Seperator *sep) {
 			c->Message(15, "You must have a Cleric in your group.");
 		}
         return;
-	}
-
-//Summon Corpse
-	if(!strcasecmp(sep->arg[1], "corpse") && !strcasecmp(sep->arg[2], "summon"))
-	{
-     	   if (c->GetTarget() == NULL)
-     	   {
-    	     c->Message(15, "You must select player with his corpse in the zone.");
-   	     return;
- 	   }
-		if (c->IsGrouped())
-		{
-			bool hassummoner = false;
-			Mob *t = c->GetTarget();
-			Group *g = c->GetGroup();
-			for(int i=0; i<MAX_GROUP_MEMBERS; i++)
- 			{
-				if(g && g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == NECROMANCER))
-				{
-					hassummoner = true;
-					Mob *summoner = g->members[i];
-					if((hassummoner)  && (c->GetLevel() >= 13) && (t->IsClient())) {
-						summoner->Say("Attempting to summon %ss corpse.", t->GetCleanName());
-						summoner->CastToClient()->CastSpell(3, c->GetID(), 1, -1, -1);
-					}
-					else if((hassummoner)  && (c->GetLevel() <= 12)) {
-						summoner->Say("I'm not level 13 yet.", c->GetName());
-					}
-					else if((hassummoner)  && (!t->IsClient())) {
-					summoner->Say("You have to target a player with a corpse in the zone", c->GetName());
-					}
-					else if(!hassummoner) {
-					c->Message(15, "You must have a Necromancer in your group.");
-					}
-					return;
-				}
-			}
-		if (!hassummoner) {
-		c->Message(15, "You must have a Necromancer in your group.");
-		}
-    	  	return;
-		}
 	}
 
 //Pacify
