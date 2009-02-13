@@ -158,6 +158,7 @@ void command_charbackup(Client *c, const Seperator *sep);
 void command_nukeitem(Client *c, const Seperator *sep);
 void command_peekinv(Client *c, const Seperator *sep);
 void command_findnpctype(Client *c, const Seperator *sep);
+void command_findzone(Client *c, const Seperator *sep);
 void command_viewnpctype(Client *c, const Seperator *sep);
 void command_reloadqst(Client *c, const Seperator *sep);
 void command_reloadzps(Client *c, const Seperator *sep);

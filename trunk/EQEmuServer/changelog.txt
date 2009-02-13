@@ -1,5 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+
+==02/12/2009
+cavedude00: Added #findzone (#fz) command to aid in getting a zone's short_name or id.
+cavedude00: #peqzone now accepts both short_name and zoneidnumber.
+
 ==02/09/2009==
 Angelox: Bots:Added command '#bot corpse summon' for Necromancer.
 
