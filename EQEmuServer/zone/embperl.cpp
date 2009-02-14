@@ -15,7 +15,7 @@ Eglin
 #include <cstdarg>
 #include <vector>
 #include "embperl.h"
-#include "embxs.h" 
+#include "embxs.h"
 #include "features.h"
 
 //#pragma message("You may want to ensure that you add perl\\lib\\CORE to your include path")
@@ -55,17 +55,17 @@ XS(XS_EQEmuIO_PRINT);
 
 //so embedded scripts can use xs extensions (ala 'use socket;')
 EXTERN_C void boot_DynaLoader(pTHX_ CV* cv);
-EXTERN_C void xs_init(pTHX) 
-{ 
+EXTERN_C void xs_init(pTHX)
+{
 	char file[256];
 	strncpy(file, __FILE__, 256);
 	file[255] = '\0';
-	
+
 	char buf[128];	//shouldent have any function names longer than this.
-	
+
 	//add the strcpy stuff to get rid of const warnings....
-	
-	newXS(strcpy(buf, "DynaLoader::boot_DynaLoader"), boot_DynaLoader, file); 
+
+	newXS(strcpy(buf, "DynaLoader::boot_DynaLoader"), boot_DynaLoader, file);
 	newXS(strcpy(buf, "quest::boot_qc"), boot_qc, file);
 #ifdef EMBPERL_XS
 	newXS(strcpy(buf, "quest::boot_quest"), boot_quest, file);
@@ -97,7 +97,7 @@ EXTERN_C void xs_init(pTHX)
 Embperl::Embperl()
 {
 	in_use = true;	//in case one of these files generates an event
-	
+
 	//setup perl...
 	my_perl = perl_alloc();
 	if(!my_perl)
@@ -106,31 +106,33 @@ Embperl::Embperl()
 }
 
 void Embperl::DoInit() {
-	
-	//arguments for interpreter start
-	char *args[] = { "",
+	const char *argv_eqemu[] = { "",
 #ifdef EMBPERL_IO_CAPTURE
-		"-w", "-W",		//only useful if the IO goes somewhere
+		"-w", "-W",
 #endif
 		"-e", "0;", NULL };
-	
-	PL_perl_destruct_level = 1;
-	perl_construct(my_perl);
-	
-	
-	if(perl_parse(my_perl, xs_init,
+
+	int argc = 3;
 #ifdef EMBPERL_IO_CAPTURE
-		5,
-#else
-		3,
+	argc = 5;
 #endif
-		(char **) args, NULL))
-		throw "perl_parse failed";
+
+	char **argv = (char **)argv_eqemu;
+	char **env = { NULL };
+
+	PL_perl_destruct_level = 1;
+
+	perl_construct(my_perl);
+
+	PERL_SYS_INIT3(&argc, &argv, &env);
+
+	perl_parse(my_perl, xs_init, argc, argv, env);
+
 	perl_run(my_perl);
-	
+
 	//a little routine we use a lot.
 	eval_pv("sub my_eval {eval $_[0];}", TRUE);	//dies on error
-	
+
 	//ruin the perl exit and command:
 	eval_pv("sub my_exit {}",TRUE);
 	eval_pv("sub my_sleep {}",TRUE);
@@ -142,18 +144,18 @@ void Embperl::DoInit() {
 		GvCV(sleepgp) = perl_get_cv("my_sleep", TRUE);	//dies on error
 		GvIMPORTED_CV_on(sleepgp);
 	}
-	
+
 	//declare our file eval routine.
 	try {
 		init_eval_file();
 	}
 	catch(const char *err)
-	{ 
+	{
 		//remember... lasterr() is no good if we crap out here, in construction
 		LogFile->write(EQEMuLog::Quest, "perl error: %s", err);
-		throw "failed to install eval_file hook"; 
+		throw "failed to install eval_file hook";
 	}
-	
+
 #ifdef EMBPERL_IO_CAPTURE
 	LogFile->write(EQEMuLog::Quest, "Tying perl output to eqemu logs");
 	//make a tieable class to capture IO and pass it into EQEMuLog
@@ -174,7 +176,7 @@ void Embperl::DoInit() {
   		"	tie *STDERR, 'EQEmuIO';"
   		,FALSE);
 #endif //EMBPERL_IO_CAPTURE
-	
+
 #ifdef EMBPERL_PLUGIN
 	eval_pv(
 		"package plugin; "
@@ -192,14 +194,14 @@ void Embperl::DoInit() {
 		throw "failed to install plugin printhook, do you lack IO::Scalar?";
 	}
 #endif
-	
+
 	LogFile->write(EQEMuLog::Quest, "Loading perlemb plugins.");
 	try
 	{
 		eval_pv("main::eval_file('plugin', 'plugin.pl');", FALSE);
 	}
 	catch(const char *err)
-	{ 
+	{
 		LogFile->write(EQEMuLog::Quest, "Warning - plugin.pl: %s", err);
 	}
 	try
@@ -217,7 +219,7 @@ void Embperl::DoInit() {
 		,FALSE);
 	}
 	catch(const char *err)
-	{ 
+	{
 		LogFile->write(EQEMuLog::Quest, "Perl warning: %s", err);
 	}
 #endif //EMBPERL_PLUGIN
@@ -232,7 +234,7 @@ void Embperl::DoInit() {
 		, FALSE);
 	}
 	catch(const char *err)
-	{ 
+	{
 		LogFile->write(EQEMuLog::Quest, "Warning - commands.pl: %s", err);
 	}
 #endif //EMBPERL_COMMANDS
@@ -317,7 +319,7 @@ void Embperl::dosub(const char * subname, const std::vector<std::string> * args,
 	{
 		for(std::vector<std::string>::const_iterator i = args->begin(); i != args->end(); ++i)
 		{/* push the arguments onto the perl stack  */
-			XPUSHs(sv_2mortal(newSVpv(i->c_str(), i->length()))); 
+			XPUSHs(sv_2mortal(newSVpv(i->c_str(), i->length())));
 		}
 	}
 	PUTBACK;                      /* make local stack pointer global */
@@ -329,7 +331,7 @@ void Embperl::dosub(const char * subname, const std::vector<std::string> * args,
 	}
 	FREETMPS;                       /* free temp values        */
 	LEAVE;                       /* ...and the XPUSHed "mortal" args.*/
-	
+
 	in_use = false;
 	if(err)
 	{
@@ -344,7 +346,7 @@ void Embperl::eval(const char * code)
 {
 	std::vector<std::string> arg;
 	arg.push_back(code);
-// MYRA - added EVAL & KEEPERR to eval per Eglin's recommendation	
+// MYRA - added EVAL & KEEPERR to eval per Eglin's recommendation
 	dosub("my_eval", &arg, G_SCALAR|G_DISCARD|G_EVAL|G_KEEPERR);
 //end Myra
 }

@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==02/13/2009==
+WildcardX: Compatibility for Perl 5.10. WIN32 compiles will still need to rename perl58.lib to perl510.lib.
+
 ==02/12/2009==
 Trevius: Identified the Size, Eye Color and Texture fields in the SoF spawn structure.
 Trevius: Added multiple Opcodes for SoF
