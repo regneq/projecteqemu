@@ -9,7 +9,7 @@
 #include "SoF.h"
 
 //Uncomment the line below to allow SoF Clients
-//#define SoF_Enable
+#define SoF_Enable
 
 void RegisterAllPatches(EQStreamIdentifier &into) {
 	Client62::Register(into);

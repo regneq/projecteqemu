@@ -23,6 +23,7 @@ E(OP_ManaChange)
 E(OP_WearChange)
 E(OP_ClientUpdate)
 E(OP_LeadershipExpUpdate)
+E(OP_ExpansionInfo)
 
 //E(OP_ZoneServerReady)
 //E(OP_BazaarSearch)

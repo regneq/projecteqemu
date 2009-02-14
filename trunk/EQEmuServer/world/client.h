@@ -82,7 +82,8 @@ private:
 	Timer	autobootup_timeout;
 	int32	pwaitingforbootup;
 
-      bool StartInTutorial;
+	bool StartInTutorial;
+	bool SoFClient;
 	bool OPCharCreate(char *name, CharCreate_Struct *cc);
 
 	void SetClassStartingSkills( PlayerProfile_Struct *pp );

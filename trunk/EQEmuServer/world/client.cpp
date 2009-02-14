@@ -52,6 +52,7 @@ using namespace std;
 #include "clientlist.h"
 #include "wguild_mgr.h"
 #include "../common/rulesys.h"
+#include "SoFCharCreateData.h"
 
 extern ZSList zoneserver_list;
 extern LoginServer loginserver;
@@ -78,7 +79,8 @@ Client::Client(EQStreamInterface* ieqs)
 	char_name[0] = 0;
 	charid = 0;
 	pwaitingforbootup = 0;
-      StartInTutorial = false;
+	StartInTutorial = false;
+	SoFClient = false;
 	numclients++;
 }
 
@@ -129,14 +131,14 @@ char char_name[32]= { 0 };
 }
 
 void Client::SendExpansionInfo() {
-	EQApplicationPacket *outapp = new EQApplicationPacket(OP_ExpansionInfo, 4);
-	uint32 *v = (uint32 *) outapp->pBuffer;
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_ExpansionInfo, sizeof(ExpansionInfo_Struct));
+	ExpansionInfo_Struct *eis = (ExpansionInfo_Struct*)outapp->pBuffer;
 	char val[20] = {0};
 	if (database.GetVariable("Expansions", val, 20)) {
-		*v = atoi(val);
+		eis->Expansions = atoi(val);
 	}
 	else {
-		*v = 0x1FF;
+		eis->Expansions = 0x1FF;
 	}
 	QueuePacket(outapp);
 	safe_delete(outapp);
@@ -424,6 +426,17 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 			break;
 
 		}
+		case OP_CharacterCreateRequest: {
+			// New OpCode in SoF
+			//
+			SoFClient = true;
+			EQApplicationPacket *outapp = new EQApplicationPacket(OP_CharacterCreateRequest, sizeof(SoFCharCreateInfo));
+			memcpy(outapp->pBuffer, &SoFCharCreateInfo, sizeof(SoFCharCreateInfo));
+			QueuePacket(outapp);
+			safe_delete(outapp);
+			break;
+		}
+
 		case OP_CharacterCreate: //Char create
 		{
 			if (GetAccountID() == 0)
@@ -1051,7 +1064,10 @@ if (cc->face == 0)       {pp.face = 99;}
 	}
 	else	// otherwise use normal starting zone logic
 	{
-		database.GetStartZone(&pp, cc);
+		if(!SoFClient)
+			database.GetStartZone(&pp, cc);
+		else
+			database.GetStartZoneSoF(&pp, cc);
 	}
 
 	if(!pp.zone_id)
@@ -1104,7 +1120,7 @@ bool CheckCharCreateInfo(CharCreate_Struct *cc)
 
 // solar: if this is increased you'll have to add a column to the classrace
 // table below
-#define _TABLE_RACES	15
+#define _TABLE_RACES	16
 
 	static const int BaseRace[_TABLE_RACES][7] =
 	{            /* STR  STA  AGI  DEX  WIS  INT  CHR */
@@ -1122,7 +1138,8 @@ bool CheckCharCreateInfo(CharCreate_Struct *cc)
 	{ /*Gnome*/      60,  70,  85,  85,  67,  98,  60},
 	{ /*Iksar*/      70,  70,  90,  85,  80,  75,  55},
 	{ /*Vah Shir*/   90,  75,  90,  70,  70,  65,  65},
-	{ /*Froglok*/    70,  80, 100, 100,  75,  75,  50} 
+	{ /*Froglok*/    70,  80, 100, 100,  75,  75,  50},
+	{ /*Drakkin*/    70,  80,  85,  75,  80,  85,  75} 
 	};
 
 	static const int BaseClass[PLAYER_CLASS_COUNT][8] =
@@ -1146,23 +1163,23 @@ bool CheckCharCreateInfo(CharCreate_Struct *cc)
 	};
 
 	static const bool ClassRaceLookupTable[PLAYER_CLASS_COUNT][_TABLE_RACES]= 
-	{                   /*Human  Barbarian Erudite Woodelf Highelf Darkelf Halfelf Dwarf  Troll  Ogre   Halfling Gnome  Iksar  Vahshir Froglok*/
-	{ /*Warrior*/         true,  true,     false,  true,   false,  true,   true,   true,  true,  true,  true,    true,  true,  true,   true},
-	{ /*Cleric*/          true,  false,    true,   false,  true,   true,   true,   true,  false, false, true,    true,  false, false,  true},  
-	{ /*Paladin*/         true,  false,    true,   false,  true,   false,  true,   true,  false, false, true,    true,  false, false,  true},
-	{ /*Ranger*/          true,  false,    false,  true,   false,  false,  true,   false, false, false, true,    false, false, false,  false},
-	{ /*ShadowKnight*/    true,  false,    true,   false,  false,  true,   false,  false, true,  true,  false,   true,  true,  false,  true},
-	{ /*Druid*/           true,  false,    false,  true,   false,  false,  true,   false, false, false, true,    false, false, false,  false},    
-	{ /*Monk*/            true,  false,    false,  false,  false,  false,  false,  false, false, false, false,   false, true,  false,  false},
-	{ /*Bard*/            true,  false,    false,  true,   false,  false,  true,   false, false, false, false,   false, false, true,   false},
-	{ /*Rogue*/           true,  true,     false,  true,   false,  true,   true,   true,  false, false, true,    true,  false, true,   true},
-	{ /*Shaman*/          false, true,     false,  false,  false,  false,  false,  false, true,  true,  false,   false, true,  true,   true},
-	{ /*Necromancer*/     true,  false,    true,   false,  false,  true,   false,  false, false, false, false,   true,  true,  false,  true},
-	{ /*Wizard*/          true,  false,    true,   false,  true,   true,   false,  false, false, false, false,   true,  false, false,  true},
-	{ /*Magician*/        true,  false,    true,   false,  true,   true,   false,  false, false, false, false,   true,  false, false,  false},
-	{ /*Enchanter*/       true,  false,    true,   false,  true,   true,   false,  false, false, false, false,   true,  false, false,  false},  
-	{ /*Beastlord*/       false, true,     false,  false,  false,  false,  false,  false, true,  true,  false,   false, true,  true,   false },
-	{ /*Berserker*/       false, true,     false,  false,  false,  false,  false,  true,  true,  true,  false,   false, false, true,   false }
+	{                   /*Human  Barbarian Erudite Woodelf Highelf Darkelf Halfelf Dwarf  Troll  Ogre   Halfling Gnome  Iksar  Vahshir Froglok Drakkin*/
+	{ /*Warrior*/         true,  true,     false,  true,   false,  true,   true,   true,  true,  true,  true,    true,  true,  true,   true,   true},
+	{ /*Cleric*/          true,  false,    true,   false,  true,   true,   true,   true,  false, false, true,    true,  false, false,  true,   true},  
+	{ /*Paladin*/         true,  false,    true,   false,  true,   false,  true,   true,  false, false, true,    true,  false, false,  true,   true},
+	{ /*Ranger*/          true,  false,    false,  true,   false,  false,  true,   false, false, false, true,    false, false, false,  false,  true},
+	{ /*ShadowKnight*/    true,  false,    true,   false,  false,  true,   false,  false, true,  true,  false,   true,  true,  false,  true,   true},
+	{ /*Druid*/           true,  false,    false,  true,   false,  false,  true,   false, false, false, true,    false, false, false,  false,  true},    
+	{ /*Monk*/            true,  false,    false,  false,  false,  false,  false,  false, false, false, false,   false, true,  false,  false,  true},
+	{ /*Bard*/            true,  false,    false,  true,   false,  false,  true,   false, false, false, false,   false, false, true,   false,  true},
+	{ /*Rogue*/           true,  true,     false,  true,   false,  true,   true,   true,  false, false, true,    true,  false, true,   true,   true},
+	{ /*Shaman*/          false, true,     false,  false,  false,  false,  false,  false, true,  true,  false,   false, true,  true,   true,   false},
+	{ /*Necromancer*/     true,  false,    true,   false,  false,  true,   false,  false, false, false, false,   true,  true,  false,  true,   true},
+	{ /*Wizard*/          true,  false,    true,   false,  true,   true,   false,  false, false, false, false,   true,  false, false,  true,   true},
+	{ /*Magician*/        true,  false,    true,   false,  true,   true,   false,  false, false, false, false,   true,  false, false,  false,  true},
+	{ /*Enchanter*/       true,  false,    true,   false,  true,   true,   false,  false, false, false, false,   true,  false, false,  false,  true},  
+	{ /*Beastlord*/       false, true,     false,  false,  false,  false,  false,  false, true,  true,  false,   false, true,  true,   false,  false},
+	{ /*Berserker*/       false, true,     false,  false,  false,  false,  false,  true,  true,  true,  false,   false, false, true,   false,  false}
 	};//Initial table by kathgar, editted by Wiz for accuracy, solar too
 
 	if(!cc) return false;
@@ -1175,6 +1192,7 @@ bool CheckCharCreateInfo(CharCreate_Struct *cc)
 	if (cc->race == FROGLOK) racetemp = 14;
 	if (cc->race == VAHSHIR) racetemp = 13;
 	if (cc->race == IKSAR) racetemp = 12;
+	if (cc->race == DRAKKIN) racetemp = 15;
 
 	// if out of range looking it up in the table would crash stuff
 	// so we return from these
