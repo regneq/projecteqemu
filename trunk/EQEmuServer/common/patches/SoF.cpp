@@ -959,24 +959,19 @@ ENCODE(OP_Illusion) {
 	OUT(race);
 	OUT(unknown006[0]);
 	OUT(unknown006[1]);
-	//eq->unknown006 = 1; // These 2 make the name green with underscores and numbers after them
-	//eq->unknown007 = 1; // They also make everything into a bald human
 	OUT(gender);
 	OUT(texture);
-	OUT(face);
-	eq->unknown011 = 1; // Size?
+	eq->unknown008 = 0;		//
+	eq->unknown009 = 0;		//
 	OUT(helmtexture);
-	//eq->unknown010 = 2; //
-	eq->unknown012 = 1; // Maybe Size?  Seems like it may be an int16
-	eq->unknown013 = 1; // Size?
-	eq->unknown014 = 1; // face hair with color for both
-	eq->unknown015 = 2; // face hair with color for both
-	eq->unknown016 = 1; // face hair with color for both
-	eq->unknown017 = 1; // face hair with color for both
-	eq->unknown018 = 3; // beard
-	eq->unknown019 = 1; // beard
-	eq->unknown020 = 0; ////testing - This moves the spawn into the ground partially?
-	//memset(eq->unknown022, 0x01, sizeof(eq->unknown022)); //testing
+	eq->unknown010 = 0;		//
+	eq->unknown011 = 0;		//
+	eq->unknown012 = 0;		//
+	OUT(face);				// This doesn't set face yet.  Illusion function needs to be corrected
+	eq->hairstyle = 0;		// hairstyle
+	eq->haircolor = 1;		// haircolor
+	eq->beard = 1;			// beard
+	eq->beardcolor = 1;		// beardcolor
 	FINISH_ENCODE();
 }
 

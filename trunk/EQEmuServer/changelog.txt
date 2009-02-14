@@ -1,13 +1,13 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==02/14/2009==
-Derision: SoF: New struct for OP_ExpansionInfo
-Derision: SoF: Character Creation now works.
-Derision: SoF support now compiled in by default.
+Derision: SoF - New struct for OP_ExpansionInfo
+Derision: SoF - Character Creation now works.
+Derision: SoF - support now compiled in by default.
 Derision: Small changes to compile SoF under Windows
-KLS: SoF initial inventory load.
+KLS: SoF - initial inventory load.
 KLS: Change to streams, streams will now initialize to an unestablished state instead of closed.  Prevents a race condition that would cause the client to hang on identification.
-
+Trevius: SoF - Identified most or all needed fields in the illusion struct for future use.
 
 ==02/13/2009==
 WildcardX: Compatibility for Perl 5.10. WIN32 compiles will still need to rename perl58.lib to perl510.lib.
