@@ -1849,40 +1849,24 @@ struct AdventureRequestResponse_Struct{
 */
 struct Illusion_Struct {  //size: 256
 /*000*/	uint32	spawnid;
-/*004*/		char charname[64];		//fix for 7-14-04 patch
-/*068*/	uint16	race; //was uint16	race;
+/*004*/	char charname[64];		//fix for 7-14-04 patch
+/*068*/	uint16	race;			// race
 /*070*/	char	unknown006[2];
 /*072*/	uint8	gender;
 /*073*/	uint8	texture;
-/*076*/	uint32	face;
-/*075*/	uint8	unknown011; // was face
-/*074*/	uint8	helmtexture;
-/*075*/	uint8	unknown012;
-/*075*/	uint8	unknown013;
-/*075*/	uint8	unknown014;
-/*075*/	uint8	unknown015;
-/*075*/	uint8	unknown016;
-/*075*/	uint8	unknown017;
-/*075*/	uint8	unknown018;
-/*080*/	uint8	unknown019;
-/*080*/	uint8	unknown020;
-/*080*/	uint8	unknown021[167]; //was char	unknown020[176];
+/*074*/	uint8	unknown008;		//
+/*075*/	uint8	unknown009;		//
+/*076*/	uint8	helmtexture;	// Verified
+/*077*/	uint8	unknown010;		//
+/*078*/	uint8	unknown011;		//
+/*079*/	uint8	unknown012;		//
+/*080*/	uint32	face;			// Verified
+/*084*/	uint8	hairstyle;		// Verified
+/*085*/	uint8	haircolor;		// Verified
+/*085*/	uint8	beard;			// Verified
+/*087*/	uint8	beardcolor;		// Verified
+/*088*/	uint8	unknown021[168]; //was char	unknown020[176];
 /*256*/
-
-// first attempt with 76 made them shrink or drop below the ground so they can't be seen...
-// with 16, still the same effect
-// 6 Changes face and hair
-// 10 causes the shrink again
-// 8 Changes face, hair and beard
-// 9 
-
-//*000*/	uint32	spawnid;
-//*004*/		char charname[64];		//fix for 7-14-04 patch
-//*068*/	uint16	race; //was uint16	race;
-//*070*/	char	unknown006[2];
-//*072*/	uint8	gender;
-//*073*/	uint8	texture;
-
 };
 
 struct ZonePoint_Entry { //24 octets
