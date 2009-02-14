@@ -3674,7 +3674,7 @@ struct spawnShroudSelf
 /*00004*/ Spawn_Struct spawn;           // Updated spawnStruct for you
 //this is a sub-struct of PlayerProfile, which we havent broken out yet.
 /*00586*/ playerProfileStruct profile; // Character profile for shrouded char
-/*13522*/ uint8_t items;               // Items on the player
+/*13522*/ uint8 items;               // Items on the player
 /*xxxxx*/
 };
 #endif

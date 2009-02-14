@@ -9,7 +9,8 @@ typedef enum {
 	ESTABLISHED,
 	CLOSING,		//waiting for pending data to flush.
 	DISCONNECTING,	//have sent disconnect, waiting for their disconnect reply.
-	CLOSED			//received a disconnect from remote side.
+	CLOSED,			//received a disconnect from remote side.
+	UNESTABLISHED
 } EQStreamState;
 
 class EQApplicationPacket;
