@@ -500,6 +500,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\SoFCharCreateData.h"
+				>
+			</File>
+			<File
 				RelativePath=".\WorldTCPConnection.h"
 				>
 			</File>
@@ -526,6 +530,10 @@
 			</File>
 			<File
 				RelativePath="..\common\patches\Patches.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\common\patches\SoF.cpp"
 				>
 			</File>
 			<File

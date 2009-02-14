@@ -979,8 +979,12 @@ ENCODE(OP_ClientUpdate) {
 	FINISH_ENCODE();
 }
 
-
-
+ENCODE(OP_ExpansionInfo) {
+	ENCODE_LENGTH_EXACT(ExpansionInfo_Struct);
+	SETUP_DIRECT_ENCODE(ExpansionInfo_Struct, structs::ExpansionInfo_Struct);
+	OUT(Expansions);
+	FINISH_ENCODE();
+}
 
 DECODE(OP_ItemLinkClick) {
 	DECODE_LENGTH_EXACT(structs::ItemViewRequest_Struct);

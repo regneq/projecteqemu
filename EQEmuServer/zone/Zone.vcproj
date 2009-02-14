@@ -1048,6 +1048,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\common\patches\SoF.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\common\patches\Titanium.cpp"
 				>
 			</File>

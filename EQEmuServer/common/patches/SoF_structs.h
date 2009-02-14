@@ -649,18 +649,18 @@ struct NameGeneration_Struct
 /*
 ** Character Creation struct
 ** Length: 140 Bytes
-** OpCode: 0x0113
+** OpCode: 0x009b
 */
 struct CharCreate_Struct
 {
 /*0000*/	int32	class_;
-/*0004*/	int32	haircolor;	// Might be hairstyle
-/*0008*/	int32	beardcolor;	// Might be beard
-/*0012*/	int32	beard;		// Might be beardcolor
+/*0004*/	int32	hairstyle;
+/*0008*/	int32	beard;	
+/*0012*/	int32	beardcolor;
 /*0016*/	int32	gender;
 /*0020*/	int32	race;
 /*0024*/	int32	start_zone;
-/*0028*/	int32	hairstyle;	// Might be haircolor
+/*0028*/	int32	haircolor;
 /*0032*/	int32	deity;
 /*0036*/	int32	STR;
 /*0040*/	int32	STA;
@@ -673,10 +673,10 @@ struct CharCreate_Struct
 /*0068*/	int32	eyecolor1;	//its possiable we could have these switched
 /*0073*/	int32	eyecolor2;	//since setting one sets the other we really can't check
 /*0076*/	int32	unknown0076;
-//*0080*/	int32	unknown0080;
-//*0084*/	int32	unknown0084;
-//*0088*/	int32	unknown0088;
-//*0092*/
+/*0080*/	int32	unknown0080;
+/*0084*/	int32	unknown0084;
+/*0088*/	int32	unknown0088;
+/*0092*/
 };
 
 /*
@@ -2072,7 +2072,7 @@ struct InspectResponse_Struct{//Cofruben:need to send two of this for the inspec
 /*1480*/int32 itemicons[22]; //was 21
 /*1568*/int32 unknown_zero2;
 /*1572*/char text[200];
-/*1772*/ uint8_t  unknown1772[88];        // ***Placeholder
+/*1772*/ uint8 unknown1772[88];        // ***Placeholder
 /*1860*/
 };
 
@@ -3476,6 +3476,11 @@ struct WorldObfuscator_Struct
 /*016*/ uint32 var2;
 /*020*/ uint32 Unknown4;
 /*024*/
+};
+
+struct ExpansionInfo_Struct {
+/*000*/	char	Unknown000[64];
+/*064*/	uint32	Expansions;
 };
 
 
