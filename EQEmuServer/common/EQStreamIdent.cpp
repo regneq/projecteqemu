@@ -56,9 +56,32 @@ void EQStreamIdentifier::Process() {
 		}
 		
 		//then make sure the stream is still active
-		if(!r->stream->CheckState(ESTABLISHED)) {
+		//if stream hasn't finished initializing then continue;
+		if(r->stream->GetState() == UNESTABLISHED)
+		{
+			continue;
+		}
+		if(r->stream->GetState() != ESTABLISHED) {
 			//the stream closed before it was identified.
 			_log(NET__IDENTIFY, "Unable to identify stream from %s:%d before it closed.", long2ip(r->stream->GetRemoteIP()).c_str(), ntohs(r->stream->GetRemotePort()));
+			switch(r->stream->GetState())
+			{
+			case ESTABLISHED:
+				_log(NET__IDENTIFY, "Stream state was Established");
+				break;
+			case CLOSING:
+				_log(NET__IDENTIFY, "Stream state was Closing");
+				break;
+			case DISCONNECTING:
+				_log(NET__IDENTIFY, "Stream state was Disconnecting");
+				break;
+			case CLOSED:
+				_log(NET__IDENTIFY, "Stream state was Closed");
+				break;
+			default:
+				_log(NET__IDENTIFY, "Stream state was Unestablished or unknown");
+				break;
+			}
 			r->stream->ReleaseFromUse();
 			delete r;
 			cur = m_streams.erase(cur);

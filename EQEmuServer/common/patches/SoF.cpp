@@ -11,13 +11,16 @@
 #include "../Item.h"
 #include "SoF_structs.h"
 
+#include <iostream>
+#include <sstream>
+
 namespace SoF {
 
 static const char *name = "SoF";
 static OpcodeManager *opcodes = NULL;
 static Strategy struct_strategy;
 
-char *SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 depth);
+char* SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 depth);
 	
 void Register(EQStreamIdentifier &into) {
 	//create our opcode manager if we havent already
@@ -698,12 +701,12 @@ ENCODE(OP_ItemPacket) {
 	*p = NULL;
 	
 	//store away the emu struct
-	unsigned char *__emu_buffer = in->pBuffer;
+	/*unsigned char *__emu_buffer = in->pBuffer;
 	ItemPacket_Struct *old_item_pkt=(ItemPacket_Struct *)__emu_buffer;
 	InternalSerializedItem_Struct *int_struct=(InternalSerializedItem_Struct *)(old_item_pkt->SerializedItem);
 
 	uint32 length;
-	char *serialized=SerializeItem((ItemInst *)int_struct->inst,int_struct->slot_id,&length,0);
+	unsigned char *serialized=SerializeItem((ItemInst *)int_struct->inst,int_struct->slot_id,&length,0);
 
 	if (!serialized) {
 		_log(NET__STRUCTS, "Serialization failed on item slot %d.",int_struct->slot_id);
@@ -717,7 +720,7 @@ ENCODE(OP_ItemPacket) {
 	memcpy(new_item_pkt->SerializedItem,serialized,length+1);
 
 	delete[] __emu_buffer;
-	safe_delete_array(serialized);
+	safe_delete_array(serialized);*/
 
 	dest->FastQueuePacket(&in, ack_req);
 }
@@ -726,16 +729,14 @@ ENCODE(OP_CharInventory) {
 	//consume the packet
 	EQApplicationPacket *in = *p;
 	*p = NULL;
-	//*
-	if(in->size == 0 || true) {
-		//send an empty packet for now...
+
+	if(in->size == 0) {
 		in->size = 4;
 		in->pBuffer = new uchar[in->size];
 		*((uint32 *) in->pBuffer) = 0;
 		dest->FastQueuePacket(&in, ack_req);
 		return;
 	}
-	//*/
 	
 	//store away the emu struct
 	unsigned char *__emu_buffer = in->pBuffer;
@@ -748,24 +749,51 @@ ENCODE(OP_CharInventory) {
 	}
 	InternalSerializedItem_Struct *eq = (InternalSerializedItem_Struct *) in->pBuffer;
 	
+	uchar *data = NULL;
+	uchar *dataptr = NULL;
+	uchar *tempdata = NULL;
+
 	//do the transform...
 	int r;
-	string serial_string;
-	for(r = 0; r < itemcount; r++, eq++) {
-		uint32 length;
-		char *serialized=SerializeItem((const ItemInst*)eq->inst,eq->slot_id,&length,0);
-		if (serialized) {
-			serial_string.append(serialized,length+1);
-			safe_delete_array(serialized);
-		} else {
-			_log(NET__STRUCTS, "Serialization failed on item slot %d during OP_CharInventory.  Item skipped.",eq->slot_id);
+
+	data = new uchar[4];
+	uint32 *item_opcode;
+	item_opcode = (uint32*)data;
+	*item_opcode = 0x35;
+
+
+	uint32 total_length = 4;
+	uint32 length = 0;
+
+	char* serialized = NULL;
+	for(r = 0; r < itemcount; r++, eq++) 
+	{
+		length = 0;
+		serialized = NULL;
+        serialized = SerializeItem((const ItemInst*)eq->inst,eq->slot_id,&length,0);
+		if(serialized)
+		{
+			tempdata = data;
+			data = NULL;
+			data = new uchar[total_length+length];
+			memcpy(data, tempdata, total_length);
+			memcpy(data+total_length, serialized, length);
+			
+			total_length += length;
+			delete[] tempdata;
+			tempdata = NULL;
+			delete[] serialized;
+			serialized = NULL;
 		}
-	
+		else
+		{
+			_log(NET__ERROR, "Serialization failed on item slot %d during OP_CharInventory.  Item skipped.",eq->slot_id);
+		}
 	}
 
-	in->size = serial_string.length();
+	in->size = total_length;
 	in->pBuffer = new unsigned char[in->size];
-	memcpy(in->pBuffer,serial_string.c_str(),serial_string.length());
+	memcpy(in->pBuffer, data, in->size);
 
 	delete[] __emu_buffer;
 
@@ -1094,127 +1122,272 @@ static inline sint32 GetNextItemInstSerialNumber() {
 
 
 
-char *SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 depth) {
+char* SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 depth) {
 	char *serialization = NULL;
-	char *instance = NULL;
-	const char *protection=(const char *)"\\\\\\\\\\";
-	char *sub_items[10] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
-	bool stackable=inst->IsStackable();
-	uint32 merchant_slot=inst->GetMerchantSlot();
-	sint16 charges=inst->GetCharges();
-	const Item_Struct *item=inst->GetItem();
-	int i;
-	uint32 sub_length;
-	uint32 stack = stackable ? charges : 1;
-	uint32 zero = 0;
-	uint32 price = inst->GetPrice();
-	uint32 slot = (merchant_slot==0) ? slot_id : merchant_slot;
-	uint32 merchcount = (merchant_slot==0) ? 1 : inst->GetMerchantCount();
-	uint32 serialnumber = GetNextItemInstSerialNumber();
-	uint32 instnodrop = inst->IsInstNoDrop() ? 1 : 0;
-	uint32 typepotion = (stackable ? ((inst->GetItem()->ItemType == ItemTypePotion) ? 1 : 0) : charges);
+	uint8 null_term = 0;
+	bool stackable = inst->IsStackable();
+	uint32 merchant_slot = inst->GetMerchantSlot();
+	sint16 charges = inst->GetCharges();
 
 	
-	//not sure how these truely shifted, as this dosent seem right.
-   MakeAnyLenString(&instance,
-	  //"%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|",
-      "%i%i%i%i%i%i%i%i%i%i%i%i%i%i%i",
-      stack,
-      zero,
-      price,
-	  slot,
-      merchcount,
-      zero,
-      serialnumber,
-      instnodrop,
-      typepotion,
-      zero,
-      zero,
-      zero,
-      zero,
-      zero,
-      zero
+	std::stringstream ss(std::stringstream::in | std::stringstream::out | std::stringstream::binary);
+	ss.clear();
 
-   );
-   
+	const Item_Struct *item = inst->GetItem();
+	SoF::structs::ItemSerializationHeader hdr;
+	hdr.stacksize = stackable ? charges: 1;
+	hdr.unknown004 = 0;
+	if(slot_id >= 22 && slot_id < 50)
+		slot_id += 1;
+	hdr.slot = (merchant_slot == 0) ? slot_id : merchant_slot;
+	hdr.price = inst->GetPrice();
+	hdr.merchant_slot = (merchant_slot == 0) ? 1 : inst->GetMerchantCount();
+	hdr.unknown020 = 0;
+	hdr.instance_id = (merchant_slot == 0) ? inst->GetSerialNumber() : merchant_slot;
+	hdr.inst_nodrop = inst->IsInstNoDrop() ? 1 : 0;
+	hdr.potion_type = (stackable ? ((inst->GetItem()->ItemType == ItemTypePotion) ? 1 : 0) : charges);//0;
+	hdr.unknown036 = 0xffffffff;
+	hdr.unknown040 = 0;
+	hdr.unknown044 = 0;
+	hdr.unknown048 = 0;
+	hdr.unknown052 = 0;
+	hdr.unknown056 = 0;
+	hdr.unknown060 = 0;
+	hdr.unknown061 = 0;
+	hdr.ItemClass = item->ItemClass;
 
-	//not sure how these truely shifted, as this dosent seem right.
-   /*
-   MakeAnyLenString(&instance,
-	  //"%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|",
-      "%i%i%i%i%i%i%i%i%i%i%i%i%i%i%i",
-      stackable ? charges : 1, //was 0
-      0,
-      inst->GetPrice(),
-	  (merchant_slot==0) ? slot_id : merchant_slot,
-      (merchant_slot==0) ? 1 : inst->GetMerchantCount(),
-      0,
-      GetNextItemInstSerialNumber(), //merchant_slot,   //instance ID, bullshit for now
-      inst->IsInstNoDrop() ? 1 : 0,      //not sure where this field is
-      (stackable ? ((inst->GetItem()->ItemType == ItemTypePotion) ? 1 : 0) : charges),
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
+	ss.write((const char*)&hdr, sizeof(SoF::structs::ItemSerializationHeader));
 
-   ); */
-
-	for(i=0;i<10;i++) {
-		ItemInst *sub=inst->GetItem(i);
-		if (sub) {
-			sub_items[i]=SerializeItem(sub,0,&sub_length,depth+1);
-		}
+	if(strlen(item->Name) > 0)
+	{
+		ss.write(item->Name, strlen(item->Name));
+		ss.write((const char*)&null_term, sizeof(uint8));
+	}
+	else
+	{
+		ss.write((const char*)&null_term, sizeof(uint8));
 	}
 
-	
-	*length=MakeAnyLenString(&serialization,
-		"%.*s%s"	// For leading quotes (and protection) if a subitem;
-		"%s"		// Instance data
-		"%.*s\""	// Quotes (and protection, if needed) around static data
-		"%i"		// item->ItemClass so we can do |%s instead of %s|
-#define I(field) "%i"
-#define C(field) "%s"
-#define S(field) "%s"
-#define F(field) "%f"
-#include "SoF_itemfields.h"
-		"%.*s\""	// Quotes (and protection, if needed) around static data
-		"%s%s%s%s%s%s%s%s%s%s"	// Sub items
-		"%.*s%s"	// For trailing quotes (and protection) if a subitem;
-		,depth ? depth-1 : 0,protection,(depth) ? "\"" : ""
-		,instance
-		,depth,protection
-		,item->ItemClass
-#define I(field) ,item->field
-#define C(field) ,field
-#define S(field) ,item->field
-#define F(field) ,item->field
-#include "SoF_itemfields.h"
-		,depth,protection
-		,sub_items[0] ? sub_items[0] : ""
-		,sub_items[1] ? sub_items[1] : ""
-		,sub_items[2] ? sub_items[2] : ""
-		,sub_items[3] ? sub_items[3] : ""
-		,sub_items[4] ? sub_items[4] : ""
-		,sub_items[5] ? sub_items[5] : ""
-		,sub_items[6] ? sub_items[6] : ""
-		,sub_items[7] ? sub_items[7] : ""
-		,sub_items[8] ? sub_items[8] : ""
-		,sub_items[9] ? sub_items[9] : ""
-		,(depth) ? depth-1 : 0,protection,(depth) ? "\"" : ""
-	);
-
-	for(i=0;i<10;i++) {
-		if (sub_items[i])
-			safe_delete_array(sub_items[i]);
+	if(strlen(item->Lore) > 0)
+	{
+		ss.write(item->Lore, strlen(item->Lore));
+		ss.write((const char*)&null_term, sizeof(uint8));
+	}
+	else
+	{
+		ss.write((const char*)&null_term, sizeof(uint8));
 	}
 
-	safe_delete_array(instance);
+	if(strlen(item->IDFile) > 0)
+	{
+		ss.write(item->IDFile, strlen(item->IDFile));
+		ss.write((const char*)&null_term, sizeof(uint8));
+	}
+	else
+	{
+		ss.write((const char*)&null_term, sizeof(uint8));
+	}
 
-printf("ITEM: \n%s\n", serialization);
+	SoF::structs::ItemBodyStruct ibs;
+	memset(&ibs, 0, sizeof(SoF::structs::ItemBodyStruct));
+
+	ibs.id = item->ID;
+	ibs.weight = item->Weight;
+	ibs.norent = item->NoRent;
+	ibs.nodrop = item->NoDrop;
+	ibs.size = item->Size;
+	ibs.slots = item->Slots;
+	ibs.price = item->Price;
+	ibs.icon = item->Icon;
+	ibs.unknown1 = 1;
+	ibs.unknown2 = 1;
+	ibs.BenefitFlag = item->BenefitFlag;
+	ibs.tradeskills = item->Tradeskills;
+	ibs.CR = item->CR;
+	ibs.DR = item->DR;
+	ibs.PR = item->PR;
+	ibs.MR = item->MR;
+	ibs.FR = item->FR;
+	ibs.Corruption = 0; //NYI
+	ibs.AStr = item->AStr;
+	ibs.ASta = item->ASta;
+	ibs.AAgi = item->AAgi;
+	ibs.ADex = item->ADex;
+	ibs.ACha = item->ACha;
+	ibs.AInt = item->AInt;
+	ibs.AWis = item->AWis;
+
+	ibs.HP = item->HP;
+	ibs.Mana = item->Mana;
+	ibs.Endur = item->Endur;
+	ibs.AC = item->AC;
+	ibs.unknown3 = 0;
+	ibs.unknown4 = 0;
+	ibs.unknown5 = 0;
+	ibs.Classes = item->Classes;
+	ibs.Races = item->Races;
+	ibs.Deity = item->Deity;
+	ibs.SkillModValue = item->SkillModValue;
+	ibs.unknown6 = 0;
+	ibs.SkillModType = item->SkillModType;
+	ibs.BaneDmgRace = item->BaneDmgRace;
+	ibs.BaneDmgBody = item->BaneDmgBody;
+	ibs.BaneDmgRaceAmt = item->BaneDmgRaceAmt;
+	ibs.BaneDmgAmt = item->BaneDmgAmt;
+	ibs.Magic = item->Magic;
+	ibs.CastTime_ = item->CastTime_;
+	ibs.ReqLevel = item->ReqLevel;
+	ibs.RecLevel = item->RecLevel;
+	ibs.RecSkill = item->RecSkill;
+	ibs.BardType = item->BardType;
+	ibs.BardValue = item->BardValue;
+	ibs.Light = item->Light;
+	ibs.Delay = item->Delay;
+	ibs.ElemDmgType = item->ElemDmgType;
+	ibs.ElemDmgAmt = item->ElemDmgAmt;
+	ibs.Range = item->Range;
+	ibs.Damage = item->Damage;
+	ibs.Color = item->Color;
+	ibs.ItemType = item->ItemType;
+	ibs.Material = item->Material;
+	ibs.unknown7 = 0;
+	ibs.unknown8 = 0;
+	ibs.SellRate = 0;
+
+	ibs.CombatEffects = item->CombatEffects;
+	ibs.Shielding = item->Shielding;
+	ibs.StunResist = item->StunResist;
+	ibs.StrikeThrough = item->StrikeThrough;
+	//ibs.unknown11 = item->ExtraDmgSkill; //ExtraDmgSkill
+	//ibs.unknown12 = item->ExtraDmgAmt; //ExtraDmgAmt
+	ibs.SpellShield = item->SpellShield;
+	ibs.Avoidance = item->Avoidance;
+	ibs.Accuracy = item->Accuracy;
+	ibs.FactionAmt1 = item->FactionAmt1;
+	ibs.FactionMod1 = item->FactionMod1;
+	ibs.FactionAmt2 = item->FactionAmt2;
+	ibs.FactionMod2 = item->FactionMod2;
+	ibs.FactionAmt3 = item->FactionAmt3;
+	ibs.FactionMod3 = item->FactionMod3;
+
+	ss.write((const char*)&ibs, sizeof(SoF::structs::ItemBodyStruct));
+
+	//charm text
+	if(strlen(item->CharmFile) > 0)
+	{
+		ss.write((const char*)item->CharmFile, strlen(item->CharmFile));
+		ss.write((const char*)&null_term, sizeof(uint8));
+	}
+	else
+	{
+		ss.write((const char*)&null_term, sizeof(uint8));
+	}
+
+	SoF::structs::ItemSecondaryBodyStruct isbs;
+	memset(&isbs, 0, sizeof(SoF::structs::ItemSecondaryBodyStruct));
+
+	isbs.augtype = item->AugType;
+	isbs.augrestrict = item->AugRestrict;
+	isbs.augdistil = item->AugDistiller;
+	for(int x = 0; x < 5; ++x)
+	{
+		isbs.augslots[x].type = item->AugSlotType[x];
+		isbs.augslots[x].visible = item->AugSlotVisible[x];
+		isbs.augslots[x].unknown = item->AugSlotUnk2[x];
+	}
+
+	isbs.ldonpoint_type = 0;
+	isbs.ldontheme = item->LDoNTheme;
+	isbs.ldonprice = item->LDoNPrice;
+	isbs.unk098 = 70;
+	isbs.ldonsold = item->LDoNSold;
+
+	isbs.bagtype = item->BagType;
+	isbs.bagslots = item->BagSlots;
+	isbs.bagsize = item->BagSize;
+	isbs.wreduction = item->BagWR;
+
+	isbs.book = item->Book;
+	isbs.booktype = item->BookType;
+
+	ss.write((const char*)&isbs, sizeof(SoF::structs::ItemSecondaryBodyStruct));
+
+	//todo if has filename and >= 4 replace this
+	if(strlen(item->Filename) >= 4)
+	{
+		ss.write((const char*)item->Filename, strlen(item->Filename));
+		ss.write((const char*)&null_term, sizeof(uint8));
+	}
+	else
+	{
+		uint32 null_filename = 0x00000000;
+		ss.write((const char*)&null_filename, sizeof(uint32));
+	}
+
+	SoF::structs::ItemTiertaryBodyStruct itbs;
+	memset(&itbs, 0, sizeof(SoF::structs::ItemTiertaryBodyStruct));
 	
-	return serialization;
+	itbs.loregroup = item->LoreGroup;
+	itbs.artifact = item->ArtifactFlag;
+	itbs.pendinglore = item->PendingLoreFlag;
+	itbs.favor = item->Favor;
+	itbs.guildfavor = item->GuildFavor;
+	itbs.fvnodrop = item->FVNoDrop;
+	itbs.dotshield = item->DotShielding;
+	itbs.atk = item->Attack;
+	itbs.regen = item->Regen;
+	itbs.mana_regen = item->ManaRegen;
+	itbs.end_regen = item->EnduranceRegen;
+	itbs.haste = item->Haste;
+	itbs.damage_shield = item->DamageShield;
+	itbs.attune = item->Attuneable;
+	itbs.no_pet = item->NoPet;
+
+	itbs.potion_belt_enabled = item->PotionBelt;
+	itbs.potion_belt_slots = item->PotionBeltSlots;
+	itbs.no_transfer = item->NoTransfer;
+	itbs.stacksize = item->StackSize;
+	itbs.quest_item = item->QuestItemFlag;
+
+	itbs.click_effect.effect = item->Click.Effect;
+	itbs.click_effect.level = item->Click.Level;
+	itbs.click_effect.recast = item->RecastDelay;
+	itbs.click_effect.recast_type = item->RecastType;
+	itbs.click_effect.type = item->Click.Type;
+	itbs.click_effect.max_charges = 0xffffffff; //todo: implement charges/expendable it's in there somewhere
+
+	itbs.proc_effect.effect = item->Proc.Effect;
+	itbs.proc_effect.level = item->Proc.Level;
+	itbs.proc_effect.level2 = item->Proc.Level2;
+	itbs.proc_effect.type = item->Proc.Type;
+	itbs.proc_effect.procrate = item->ProcRate;
+
+	itbs.worn_effect.effect = item->Worn.Effect;
+	itbs.worn_effect.level = item->Worn.Level;
+	itbs.worn_effect.level2 = item->Worn.Level2;
+	itbs.worn_effect.type = item->Worn.Type;
+
+	itbs.focus_effect.effect = item->Focus.Effect;
+	itbs.focus_effect.level = item->Focus.Level;
+	itbs.focus_effect.level2 = item->Focus.Level2;
+	itbs.focus_effect.type = item->Focus.Type;
+
+	itbs.scroll_effect.effect = item->Scroll.Effect;
+	itbs.scroll_effect.level = item->Scroll.Level;
+	itbs.scroll_effect.level2 = item->Scroll.Level2;
+	itbs.scroll_effect.type = item->Scroll.Type;
+
+	itbs.unknown15 = 0xffffffff;
+
+	ss.write((const char*)&itbs, sizeof(SoF::structs::ItemTiertaryBodyStruct));
+
+
+	char* item_serial = new char[ss.tellp()];
+	memset(item_serial, 0, ss.tellp());
+	memcpy(item_serial, ss.str().c_str(), ss.tellp());
+
+	*length = ss.tellp();
+	return item_serial;
 }
 
 } //end namespace SoF

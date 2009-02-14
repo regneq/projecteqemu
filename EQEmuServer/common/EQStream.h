@@ -182,8 +182,8 @@ class EQStream : public EQStreamInterface {
 		
 		void init();
 	public:
-		EQStream() { init(); remote_ip = 0; remote_port = 0; State=CLOSED; StreamType=UnknownStream; compressed=true; encoded=false; app_opcode_size=2; }
-		EQStream(sockaddr_in addr) { init(); remote_ip=addr.sin_addr.s_addr; remote_port=addr.sin_port; State=CLOSED; StreamType=UnknownStream; compressed=true; encoded=false; app_opcode_size=2; }
+		EQStream() { init(); remote_ip = 0; remote_port = 0; State=UNESTABLISHED; StreamType=UnknownStream; compressed=true; encoded=false; app_opcode_size=2; }
+		EQStream(sockaddr_in addr) { init(); remote_ip=addr.sin_addr.s_addr; remote_port=addr.sin_port; State=UNESTABLISHED; StreamType=UnknownStream; compressed=true; encoded=false; app_opcode_size=2; }
 		virtual ~EQStream() { RemoveData(); SetState(CLOSED); }
 //		inline void SetFactory(EQStreamFactory *f) { Factory=f; }
 		void SetMaxLen(uint32 length) { MaxLen=length; }

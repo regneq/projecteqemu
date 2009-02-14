@@ -283,6 +283,10 @@ uint32 processed=0,subpacket_length=0;
 #ifndef COLLECTOR
 			if (GetState()==ESTABLISHED) {
 				_log(NET__ERROR, _L "Received OP_SessionRequest in ESTABLISHED state (%d)" __L, GetState());
+				
+				/*RemoveData();
+				init(); 
+				State=UNESTABLISHED;*/ 
 				_SendDisconnect();
 				SetState(CLOSED);
 				break;
