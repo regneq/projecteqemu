@@ -2169,14 +2169,14 @@ int8	npccastfilters;		 // 0) No, 1) Ignore NPC Casts (all), 2) Ignore NPC Casts 
 
 /*
 ** Client requesting item statistics
-** Size: 32 bytes
+** Size: 44 bytes
 ** Used In: OP_ItemLinkClick
-** Last Updated: Sept-19-2003
+** Last Updated: 2/15/2009
 **
 */
 struct	ItemViewRequest_Struct {
 /*000*/	uint32	item_id;
-/*004*/	char	unknown004[20];	//im going to guess these are augments
+/*004*/	uint32	augments[5];
 /*024*/ uint32	link_hash;
 /*028*/	char	unknown028[16];
 };
