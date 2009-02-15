@@ -1967,17 +1967,17 @@ void Database::AddBot(int32 mobidtmp) {
 	safe_delete_array(query);
 }
 
-// Change the isbot field in the npc_types entries for a given mob: it will become 'not bottable'.
-// No use for this actually..
-void Database::RemoveBot(int32 mobidtmp) {
+MYSQL_RES* Database::ListSpawnedBots(int32 id) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
-	char *query = 0;
-	int32 affected_rows = 0;
+	char* query = 0;
+	MYSQL_RES* result;
+	MYSQL_ROW row;
 
-	if(!RunQuery(query, MakeAnyLenString(&query, "UPDATE npc_types SET isbot=0 where id=%i", mobidtmp), errbuf, 0, &affected_rows)) {
-		cerr << "Error in RemoveBot query '" << query << "' " << errbuf << endl;
+	if(!RunQuery(query, MakeAnyLenString(&query, "SELECT bot_name, zone_name FROM botleader WHERE leaderid=%i", id), errbuf, &result)) {
+		cerr << "Error in ListSpawnedBots query '" << query << "' " << errbuf << endl;
 	}
-	safe_delete_array(query);
+    safe_delete_array(query);
+	return result;
 }
 
 // See if a mob is bottable or no by checking the isbot field in the npc_types entrie.
@@ -2021,12 +2021,12 @@ bool Database::DeleteBot(int32 mobid) {
 }
 
 // Set the bot leader once it got invited in the group
-void Database::SetBotLeader(int32 mobidtmp, int32 leaderid) {
+void Database::SetBotLeader(int32 mobidtmp, int32 leaderid, const char* botName, const char* zoneName) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
 	int32 affected_rows = 0;
 
-	if(!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO botleader(botid, leaderid) values(%i, %i)", mobidtmp, leaderid), errbuf, 0, &affected_rows)) {
+	if(!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO botleader SET botid=%i, leaderid=%i, bot_name='%s', zone_name='%s'", mobidtmp, leaderid, botName, zoneName), errbuf, 0, &affected_rows)) {
 		cerr << "Error in SetBotLeader query '" << query << "' " << errbuf << endl;
 	}
 	safe_delete_array(query);
@@ -2052,6 +2052,72 @@ int Database::GetBotLeader(int32 mobidtmp) {
 	mysql_free_result(result);
     safe_delete_array(query);
     return botleader;
+}
+
+bool Database::IsBotSpawned(int32 id, int botid) {
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	MYSQL_RES* result;
+	MYSQL_ROW row;
+    bool isSpawned = false;
+
+	if(RunQuery(query, MakeAnyLenString(&query, "SELECT botid FROM botleader WHERE leaderid=%i", id), errbuf, &result)) {
+		if(mysql_num_rows(result) > 0) {
+			while(row = mysql_fetch_row(result)) {
+				if(botid == atoi(row[0])) {
+					isSpawned = true;
+				}
+			}
+		}
+	}
+	else {
+		cerr << "Error in AllowedBotSpawns query '" << query << "' " << errbuf << endl;
+	}
+	mysql_free_result(result);
+    safe_delete_array(query);
+    return isSpawned;
+}
+
+int Database::AllowedBotSpawns(int32 id) {
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	MYSQL_RES* result;
+	MYSQL_ROW row;
+    int numberAllowed = 0;
+
+	if(RunQuery(query, MakeAnyLenString(&query, "SELECT value FROM quest_globals WHERE name='bot_spawn_limit' and charid=%i", id), errbuf, &result)) {
+		if(mysql_num_rows(result) == 1) {
+			row = mysql_fetch_row(result);
+			numberAllowed = atoi(row[0]);
+		}
+	}
+	else {
+		cerr << "Error in AllowedBotSpawns query '" << query << "' " << errbuf << endl;
+	}
+	mysql_free_result(result);
+    safe_delete_array(query);
+    return numberAllowed;
+}
+
+int Database::SpawnedBotCount(int32 id) {
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	MYSQL_RES* result;
+	MYSQL_ROW row;
+    int spawnedBots = 0;
+
+	if(RunQuery(query, MakeAnyLenString(&query, "SELECT COUNT(*) FROM botleader WHERE leaderid=%i", id), errbuf, &result)) {
+		if(mysql_num_rows(result) == 1) {
+			row = mysql_fetch_row(result);
+			spawnedBots = atoi(row[0]);
+		}
+	}
+	else {
+		cerr << "Error in SpawnedBotCount query '" << query << "' " << errbuf << endl;
+	}
+	mysql_free_result(result);
+    safe_delete_array(query);
+    return spawnedBots;
 }
 
 int Database::GetBotOwner(int32 mobid) {
@@ -2121,18 +2187,18 @@ void Database::CleanBotLeaderEntries(int32 mobidtmp) {
 	safe_delete_array(query);
 }
 
-// How many bots does the leader have ?
-int Database::CountBots(int32 leaderid) {
+// How many bots have they created?
+int Database::CountBots(int32 accountID) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char* query = 0;
 	MYSQL_RES* result;
 	MYSQL_ROW row;
-    int botnbre = 0;
+    int botCount = 0;
 
-	if(RunQuery(query, MakeAnyLenString(&query, "SELECT COUNT(*) FROM botleader WHERE leaderid=%i", leaderid), errbuf, &result)) {
+	if(RunQuery(query, MakeAnyLenString(&query, "SELECT COUNT(*) FROM botsowners WHERE botleadercharacterid=%i", accountID), errbuf, &result)) {
 		if(mysql_num_rows(result) == 1) {
 			row = mysql_fetch_row(result);
-			botnbre = atoi(row[0]);
+			botCount = atoi(row[0]);
 		}
 	}
 	else {
@@ -2140,7 +2206,7 @@ int Database::CountBots(int32 leaderid) {
 	}
 	mysql_free_result(result);
     safe_delete_array(query);
-    return botnbre;
+    return botCount;
 }
 
 // Find an item in the bot inventory at a given slot

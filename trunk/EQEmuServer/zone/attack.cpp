@@ -1631,7 +1631,7 @@ void Client::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skil
 #ifdef EQBOTS
 
 	Mob *clientmob = CastToMob();
-	database.CleanBotLeader(GetID());
+	database.CleanBotLeader(CharacterID());
 	if(clientmob) {
 		if(clientmob->IsBotRaiding()) {
 			BotRaids* br = entity_list.GetBotRaidByMob(clientmob);
@@ -2280,8 +2280,10 @@ void NPC::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill) 
 	
 #ifdef EQBOTS
 
+	int32 botnpcid = 0;
 	int16 botid = 0;
 	if(IsBot()) {
+		botnpcid = GetNPCTypeID();
 		botid = GetID();
 	}
 
@@ -2525,9 +2527,6 @@ void NPC::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill) 
                                 }
                             }
                         }
-						// Delete from database
-						database.CleanBotLeaderEntries(botid);
-						entity_list.RemoveNPC(botid);
 
 						// delete from group data
 						g->membername[i][0] = '\0';
@@ -2561,6 +2560,10 @@ void NPC::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill) 
 						}
 						safe_delete(outapp);
 //						Say("oof");
+
+						// Delete from database
+						database.CleanBotLeaderEntries(botnpcid);
+						entity_list.RemoveMob(botid);
 
 						// now that's done, lets see if all we have left is the client
 						// and we can clean up the clients raid group and group

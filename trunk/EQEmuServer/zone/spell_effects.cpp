@@ -370,11 +370,18 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 
 #ifdef EQBOTS
 
-					if(IsBot() && ((spell_id == 1164) || (spell_id == 855) || (spell_id == 1476))) {
-						// Specific spell handler
-						// Crusader's Banishment
-						// Trakanon's Touch
-						// The Dain's Justice
+					// Bots don't like the interzone port proc spells some npc's have
+					if(IsBot() && ((spell_id == 1164) || (spell_id == 855) || (spell_id == 1476) || (spell_id == 2786) || (spell_id == 2204) ||
+						(spell_id == 2205) || (spell_id == 2212) || (spell_id == 853) || (spell_id == 854))) {
+						// Specific spell handler for:
+						// Crusader's Banishment - Skyshrine - Charayan and Susarrak
+						// Trakanon's  Banishing Touch - Old Sebilis - Trakanon
+						// The Dain's Justice - Icewell Keep - Dain Frostreaver IV
+						// In Irons - Sanctus - Sanctus Seru - Praesertum Bikun, Mapta, Rhugol and Vantorus
+						// Allure of the Pool - Acrylia Caverns Event
+						// Word of Passage - Acrylia Caverns Event
+						// Random Port 37 - Acrylia Caverns Event
+						// Burning Touch I/II - Burning Wood - Atheling Plague
 						target_zone = 0;
 					}
 					else

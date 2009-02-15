@@ -436,6 +436,13 @@ void Client::FinishTrade(NPC* with){
 									BotTradeAddItem(mWeaponItem->ID, mWeaponItem->MaxCharges, mWeaponItem->Slots, SLOT_SECONDARY, with);
 								}
 								else if((database.GetBotItemBySlot(with->GetNPCTypeID(), SLOT_SECONDARY) != 0) && inst->IsSlotAllowed(SLOT_SECONDARY) ) {
+									// Make sure to not equip weapons in the offhand of non-dual wielding classes
+									if(inst->IsWeapon() && !with->CanThisClassDualWield()) {
+										with->Say("I cannot dual wield.");
+										PushItemOnCursor(*inst, true);
+										DeleteItemInInventory(i);
+										return;
+									}
 									// the primary and secondary hands are equipped, swap out the secondary hand item with the new item
 									BotTradeSwapItem(with, SLOT_SECONDARY, inst->GetID(), mWeaponItem->MaxCharges, mWeaponItem->Slots);
 									with->Say("I was using this in my %s but OK, you can have it back.", equipped[SLOT_SECONDARY]);
