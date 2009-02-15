@@ -784,6 +784,34 @@ ENCODE(OP_CharInventory) {
 			tempdata = NULL;
 			delete[] serialized;
 			serialized = NULL;
+
+			if((const ItemInst*)eq->inst,eq->slot_id >= 22 && (const ItemInst*)eq->inst,eq->slot_id < 30)
+			{
+				for(int x = 0; x < 10; ++x)
+				{
+					serialized = NULL;
+					uint32 sub_length = 0;
+					const ItemInst* subitem = ((const ItemInst*)eq->inst)->GetItem(x);
+					if(subitem)
+					{
+						serialized = SerializeItem(subitem, (((eq->slot_id+3)*10)+x+1), &sub_length, 0);
+						if(serialized)
+						{
+							tempdata = data;
+							data = NULL;
+							data = new uchar[total_length+sub_length];
+							memcpy(data, tempdata, total_length);
+							memcpy(data+total_length, serialized, sub_length);
+							total_length += length;
+							delete[] tempdata;
+							tempdata = NULL;
+							delete[] serialized;
+							serialized = NULL;
+						}
+					}
+				}
+			}
+
 		}
 		else
 		{
@@ -796,6 +824,9 @@ ENCODE(OP_CharInventory) {
 	memcpy(in->pBuffer, data, in->size);
 
 	delete[] __emu_buffer;
+
+	_log(NET__ERROR, "Sending inventory to client");
+	_hex(NET__ERROR, in->pBuffer, in->size);
 
 	dest->FastQueuePacket(&in, ack_req);
 }
@@ -1009,6 +1040,41 @@ ENCODE(OP_ExpansionInfo) {
 	FINISH_ENCODE();
 }
 
+DECODE(OP_MoveItem)
+{
+	DECODE_LENGTH_EXACT(structs::MoveItem_Struct);
+	SETUP_DIRECT_DECODE(MoveItem_Struct, structs::MoveItem_Struct);
+
+	if(eq->from_slot >= 23 && eq->from_slot < 51)
+	{
+		emu->from_slot = eq->from_slot - 1;
+	}
+	else if(eq->from_slot >= 251 && eq->from_slot < 351)
+	{
+		emu->from_slot = eq->from_slot - 10;
+	}
+	else
+	{
+		IN(from_slot);
+	}
+
+	if(eq->to_slot >= 23 && eq->to_slot < 51)
+	{
+		emu->to_slot = eq->to_slot - 1;
+	}
+	else if(eq->to_slot >= 251 && eq->to_slot < 351)
+	{
+		emu->to_slot = eq->to_slot - 10;
+	}
+	else
+	{
+		IN(to_slot);
+	}
+	IN(number_in_stack);
+
+	FINISH_DIRECT_DECODE();
+}
+
 DECODE(OP_ItemLinkClick) {
 	DECODE_LENGTH_EXACT(structs::ItemViewRequest_Struct);
 	SETUP_DIRECT_DECODE(ItemViewRequest_Struct, structs::ItemViewRequest_Struct);
@@ -1132,8 +1198,12 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 
 	SoF::structs::ItemSerializationHeader hdr;
 	hdr.stacksize = stackable ? charges: 1;
 	hdr.unknown004 = 0;
+
 	if(slot_id >= 22 && slot_id < 50)
 		slot_id += 1;
+	else if(slot_id >= 251 && slot_id < 351)
+		slot_id += 10;
+
 	hdr.slot = (merchant_slot == 0) ? slot_id : merchant_slot;
 	hdr.price = inst->GetPrice();
 	hdr.merchant_slot = (merchant_slot == 0) ? 1 : inst->GetMerchantCount();
@@ -1253,8 +1323,8 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 
 	ibs.Shielding = item->Shielding;
 	ibs.StunResist = item->StunResist;
 	ibs.StrikeThrough = item->StrikeThrough;
-	//ibs.unknown11 = item->ExtraDmgSkill; //ExtraDmgSkill
-	//ibs.unknown12 = item->ExtraDmgAmt; //ExtraDmgAmt
+	ibs.ExtraDmgSkill = item->ExtraDmgSkill;
+	ibs.ExtraDmgAmt = item->ExtraDmgAmt;
 	ibs.SpellShield = item->SpellShield;
 	ibs.Avoidance = item->Avoidance;
 	ibs.Accuracy = item->Accuracy;

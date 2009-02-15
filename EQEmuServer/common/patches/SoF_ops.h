@@ -40,6 +40,7 @@ D(OP_ConsiderCorpse)
 D(OP_Consider)
 D(OP_WearChange)
 D(OP_ClientUpdate)
+D(OP_MoveItem)
 //D(OP_SendExpZonein) 
 //D(OP_TraderBuy)
 #undef E

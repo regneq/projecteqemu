@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==02/15/2009==
+KLS: SoF - Item movement and bag support.
+
 ==02/14/2009==
 Derision: SoF - New struct for OP_ExpansionInfo
 Derision: SoF - Character Creation now works.
