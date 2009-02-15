@@ -2,8 +2,10 @@
 
 #include "debug.h"
 #include "TCPServer.h"
-
 #include <stdio.h>
+#include <cstdlib>
+#include <cstring>
+
 #ifdef WIN32
 	#include <process.h>
 #else

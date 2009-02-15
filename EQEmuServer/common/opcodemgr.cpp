@@ -20,6 +20,8 @@
 #include "opcodemgr.h"
 #include "debug.h"
 #include "emu_opcodes.h"
+#include <cstdlib>
+#include <cstring>
 
 #ifdef SHARED_OPCODES
 #include "EMuShareMem.h"

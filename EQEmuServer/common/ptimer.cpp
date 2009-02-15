@@ -22,6 +22,8 @@
 #include "database.h"
 #include "MiscFunctions.h"
 #include <stdio.h>
+#include <cstdlib>
+#include <cstring>
 
 #ifdef WIN32
 	#include <windows.h>

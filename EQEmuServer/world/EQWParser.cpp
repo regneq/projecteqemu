@@ -32,7 +32,7 @@ using namespace std;
 
 //link against your Perl Lib
 #ifdef WIN32
-#pragma comment(lib, "perl58.lib")
+#pragma comment(lib, "perl510.lib")
 #endif
 
 XS(XS_EQWIO_PRINT);

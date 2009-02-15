@@ -9,6 +9,8 @@
 #include "guilds.h"
 #include "extprofile.h"
 #include <iostream>
+#include <cstring>
+#include <cstdlib>
 
 using namespace std;
 

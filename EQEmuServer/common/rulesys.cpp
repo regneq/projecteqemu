@@ -20,6 +20,8 @@
 #include "logsys.h"
 #include "database.h"
 #include "MiscFunctions.h"
+#include <cstdlib>
+#include <cstring>
 
 /*
 

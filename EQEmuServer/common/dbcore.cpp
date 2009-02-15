@@ -13,6 +13,7 @@ using namespace std;
 #include "dbcore.h"
 #include <string.h>
 #include "../common/MiscFunctions.h"
+#include <cstdlib>
 
 #ifdef WIN32
 	#define snprintf	_snprintf

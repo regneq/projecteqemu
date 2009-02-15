@@ -36,6 +36,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "HttpdCookies.h"
 #include "../types.h"
 #include <time.h>
+#include <cstdlib>
+#include <cstring>
 
 #ifdef SOCKETS_NAMESPACE
 namespace SOCKETS_NAMESPACE {

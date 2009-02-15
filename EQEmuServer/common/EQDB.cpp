@@ -19,6 +19,7 @@
 #include "EQDB.h"
 #include "database.h"
 #include <mysql.h>
+#include <cstring>
 
 EQDB EQDB::s_EQDB;
 
