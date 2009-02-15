@@ -164,6 +164,7 @@ RULE_REAL ( Combat, ProcDexDivideBy, 11000)
 RULE_REAL ( Combat, BaseHitChance, 54.0)
 RULE_INT ( Combat, HitPerLevelDiff, 145) //45% of level diff converted to chance to hit/miss
 RULE_REAL ( Combat, AgiHitFactor, 0.015)
+RULE_INT ( Combat, ChanceToHitDivideBy, 1250) //Originally was 100, but testing on TGC shows closer to 1250 is a more Live Like value. 
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( NPC )
