@@ -1081,7 +1081,12 @@ DECODE(OP_ItemLinkClick) {
 	MEMSET_IN(ItemViewRequest_Struct);
 	
 	IN(item_id);
+	int r;
+	for (r = 0; r < 5; r++) {
+		IN(augments[r]);
+	}
 	IN(link_hash);
+	IN(icon);
 	
 	FINISH_DIRECT_DECODE();
 }

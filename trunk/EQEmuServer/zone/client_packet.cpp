@@ -2066,7 +2066,7 @@ void Client::Handle_OP_ItemLinkClick(const EQApplicationPacket *app)
 		return;
 	}
 
-	ItemInst* inst = database.CreateItem(item);
+	ItemInst* inst = database.CreateItem(item, item->MaxCharges, ivrs->augments[0], ivrs->augments[1], ivrs->augments[2], ivrs->augments[3], ivrs->augments[4]);
 	if (inst) {
 		SendItemPacket(0, inst, ItemPacketViewLink);
 		safe_delete(inst);
