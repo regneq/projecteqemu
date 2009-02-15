@@ -9,7 +9,7 @@ KLS: SoF - initial inventory load.
 KLS: Change to streams, streams will now initialize to an unestablished state instead of closed.  Prevents a race condition that would cause the client to hang on identification.
 Trevius: SoF - Identified most or all needed fields in the illusion struct for future use.
 WildcardX: Made Perl v5.10 the default for WIN32 compiles.
-WildcardX: Added many header declarations to make gcc v4.3 happy.
+WildcardX: (Angelox) Added many header declarations to make gcc v4.3 happy.
 
 ==02/13/2009==
 WildcardX: Compatibility for Perl 5.10. WIN32 compiles will still need to rename perl58.lib to perl510.lib.
