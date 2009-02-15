@@ -3558,8 +3558,8 @@ struct ItemBodyStruct
 	sint32 Shielding;
 	sint32 StunResist;
 	sint32 StrikeThrough;
-	sint32 unknown11; //ExtraDmgSkill
-	sint32 unknown12; //ExtraDmgAmt
+	sint32 ExtraDmgSkill;
+	sint32 ExtraDmgAmt;
 	sint32 SpellShield;
 	sint32 Avoidance;
 	sint32 Accuracy;
