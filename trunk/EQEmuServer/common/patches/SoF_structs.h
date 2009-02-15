@@ -3481,14 +3481,14 @@ struct ItemSerializationHeader
 	uint32 instance_id; //unique instance id if not merchant item, else is merchant slot
 	uint32 inst_nodrop;
 	uint32 potion_type;
-	uint32 unknown036; //0xffffffff or 0x00000000
+	uint32 unknown036; //0xffffffff or 0x00000000 - Maybe potion_type?
 	uint32 unknown040; //0
 	uint32 unknown044; //0
 	uint32 unknown048; //0
 	uint32 unknown052; //0
 	uint32 unknown056; //0
 	uint8 unknown060; //0
-	uint8 unknown061; //0
+	uint8 unknown061; //0 - Add Evolving Item struct if this isn't set to 0?
 	uint8 ItemClass; //0, 1, or 2
 };
 
@@ -3503,8 +3503,8 @@ struct ItemBodyStruct
 	uint32 price;
 	uint32 icon;
 	uint8 unknown1;
-	uint32 unknown2;
-	uint8 BenefitFlag;
+	uint8 unknown2;
+	uint32 BenefitFlag; 
 	uint8 tradeskills;
 	sint8 CR;
 	sint8 DR;
@@ -3523,12 +3523,12 @@ struct ItemBodyStruct
 	sint32 Mana;
 	uint32 Endur;
 	sint32 AC;
-	sint32 unknown3;
-	sint32 unknown4;
-	sint32 unknown5;
-	sint32 Classes;
-	sint32 Races;
-	sint32 Deity;
+	uint32 unknown3;
+	uint32 unknown4;
+	uint32 unknown5;
+	uint32 Classes;
+	uint32 Races;
+	uint32 Deity;
 	sint32 SkillModValue;
 	uint32 unknown6;
 	uint32 SkillModType;
@@ -3538,25 +3538,23 @@ struct ItemBodyStruct
 	sint32 BaneDmgAmt;
 	uint8 Magic;
 	sint32 CastTime_;
-	uint8 ReqLevel;
-	uint8 RecLevel;
-	uint8 RecSkill;
+	uint32 ReqLevel;
+	uint32 RecLevel;
+	uint32 RecSkill;
 	uint32 BardType;
-	uint32 BardValue;
-	sint8 Light;
+	sint32 BardValue;
+	uint8 Light;
 	uint8 Delay;
-	uint32 ElemDmgType;
-	uint32 ElemDmgAmt;
-	uint32 Range;
+	uint8 ElemDmgType;
+	uint8 ElemDmgAmt;
+	uint8 Range;
 	uint32 Damage;
 	uint32 Color;
 	uint8 ItemType;
-	uint8 Material;
+	uint32 Material;
 	uint32 unknown7;
-	uint8 unknown8;
-	uint32 SellRate;
-	uint32 unknown9;
-	uint16 unknown10;
+	uint32 unknown8;
+	float SellRate; //was uint32
 	sint32 CombatEffects;
 	sint32 Shielding;
 	sint32 StunResist;
@@ -3567,54 +3565,56 @@ struct ItemBodyStruct
 	sint32 Avoidance;
 	sint32 Accuracy;
 	uint32 CharmFileID; //not sure the point of this; disables all stats on item if > 0
+	uint32	FactionMod1;
 	sint32	FactionAmt1;
-	sint32	FactionMod1;
+	uint32	FactionMod2;
 	sint32	FactionAmt2;
-	sint32	FactionMod2;
+	uint32  FactionMod3;
 	sint32	FactionAmt3;
-	sint32  FactionMod3;
+	//uint32  FactionMod4;
+	//sint32	FactionAmt4;
 	sint16 unknown14;
 	
 };
 
 struct AugSlotStruct
 {
-	uint8 type;
-	uint32 visible;
+	uint32 type;
+	uint8 visible;
 	uint8 unknown;
 };
 
 struct ClickEffectStruct
 {
-	uint32 unknown1;
-	uint32 effect;
-	uint8 level;
+	sint32 effect;
 	uint8 type;
-	uint32 cast_time;
-	uint32 max_charges;
+	uint8 unknown1; // level2?
+	uint32 level;
+	sint32 max_charges;
+	sint32 cast_time;
 	uint32 recast;
-	uint32 recast_type;
-	uint32 unknown2;
+	sint32 recast_type;
+	uint32 unknown2; //clickunk5
 	uint8 effect_string; //unused
+	sint32 clickunk7; // added from proc section
 };
 
 struct ProcEffectStruct
 {
-	uint32 unknown0;
-	uint32 unknown1;
 	uint32 effect;
 	uint32 type;
 	uint8 level2;
 	uint8 level;
+	uint32 unknown1;
 	uint32 unknown2;
 	uint32 unknown3;
 	uint32 unknown4;
-	uint32 unknown5;
 	uint32 procrate;
 	uint8 effect_string;
+	uint32 unknown5;
 };
 
-struct WornEffectStruct
+struct WornEffectStruct //worn, focus and scroll effect
 {
 	uint32 effect;
 	uint32 type;
@@ -3632,10 +3632,9 @@ struct WornEffectStruct
 
 struct ItemSecondaryBodyStruct{
 	uint32 augtype;
-	uint16 augrestrict;
-	uint16 augdistil;
-	uint32 unknown1;
-	uint8 unknown2[2];
+	uint32 augrestrict;
+	uint32 augdistil;
+	uint8 unknown2[2]; // Huh???
 	AugSlotStruct augslots[5];
 
 	uint32 ldonpoint_type;
@@ -3650,38 +3649,39 @@ struct ItemSecondaryBodyStruct{
 	uint8 wreduction;
 
 	uint8 book;
-	uint16 booktype;
+	uint8 booktype;
 	//sint32 filename; filename is either 0xffffffff/0x00000000 or the null term string ex: CREWizardNote\0
 
 };
 
 struct ItemTiertaryBodyStruct
 {
-	uint8 loregroup;
+	sint32 loregroup;
 	uint8 artifact;
 	uint8 pendinglore;
-	uint32 favor;
-	uint32 guildfavor;
+	uint16 favor; // was 32
+	uint16 guildfavor; // was 32
 	uint8 fvnodrop;
-	uint8 dotshield;
+	sint32 dotshield;
 	sint32 atk;
 	sint32 regen;
 	sint32 mana_regen;
 	sint32 end_regen;
-	sint8 haste;
-	sint8 damage_shield;
-	uint32 unknown4;
-	uint8 unknown5;
+	sint32 haste;
+	sint32 damage_shield;
+	sint32 unknown4;
+	uint16 unknown5; // 32
 	uint8 attune;
 	uint8 no_pet;
-	uint16 unknown6;
+	uint8 unknown6;
 
 	uint8 potion_belt_enabled;
 	uint32 potion_belt_slots;
 
+	uint8 stacksize; //32
 	uint8 no_transfer;
-	uint8 stacksize;
-	uint8 quest_item;
+	//uint32 unk129;
+	uint8 quest_item; //
 
 	uint8 unknown7;
 	uint32 unknown8; 
@@ -3698,13 +3698,8 @@ struct ItemTiertaryBodyStruct
 	WornEffectStruct focus_effect;
 	WornEffectStruct scroll_effect;
 
-	uint32 unknown15; //0xffffffff
-	uint32 unknown16;
-	uint16 questItem2;
-	uint16 unknown17; //something to do with power
-	uint8 unknown18;
+	uint32 unknown15; //0xffffffff - Power Source Capacity?
 	uint32 purity;
-	uint32 backstab;
 	uint32 dsmitigation;
 	sint32 heroic_str;
 	sint32 heroic_int;
@@ -3721,6 +3716,11 @@ struct ItemTiertaryBodyStruct
 	uint32 heroic_corr;
 	uint32 heal_amt;
 	uint32 spell_dmg;
+	uint32 unknown16; // clairvoyance?
+	uint32 backstab;
+	//uint16 questItem2;
+	//uint16 unknown17; //something to do with power - Power Source Capacity?
+	uint8 unknown18;
 	uint8 padding[8]; //some of this is null term for augs + end of item, shouldn't do this this way but for now
 };
 

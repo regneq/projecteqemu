@@ -3,6 +3,8 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==02/15/2009==
 KLS: SoF - Item movement and bag support.
 AndMetal: Augments are now visible when linking items.
+Trevius: SoF - Adjusted the new Item Structure to align more fields
+Trevius: SoF - Added OP_Consume and OP_LootRequest opcodes
 
 ==02/14/2009==
 Derision: SoF - New struct for OP_ExpansionInfo

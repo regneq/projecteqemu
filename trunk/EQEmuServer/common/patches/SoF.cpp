@@ -1187,7 +1187,6 @@ static inline sint32 GetNextItemInstSerialNumber() {
 }
 
 
-
 char* SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 depth) {
 	char *serialization = NULL;
 	uint8 null_term = 0;
@@ -1383,15 +1382,16 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 
 	ss.write((const char*)&isbs, sizeof(SoF::structs::ItemSecondaryBodyStruct));
 
 	//todo if has filename and >= 4 replace this
-	if(strlen(item->Filename) >= 4)
+	if(strlen(item->Filename) > 0)
 	{
 		ss.write((const char*)item->Filename, strlen(item->Filename));
 		ss.write((const char*)&null_term, sizeof(uint8));
 	}
 	else
 	{
-		uint32 null_filename = 0x00000000;
-		ss.write((const char*)&null_filename, sizeof(uint32));
+		//uint32 null_filename = 0x00000000;
+		//ss.write((const char*)&null_filename, sizeof(uint32));
+		ss.write((const char*)&null_term, sizeof(uint8));
 	}
 
 	SoF::structs::ItemTiertaryBodyStruct itbs;
