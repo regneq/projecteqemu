@@ -24,6 +24,7 @@
 #include "../common/dbasync.h"
 #include "../common/rulesys.h"
 #include <iostream>
+#include <cstdlib>
 
 using namespace std;
 

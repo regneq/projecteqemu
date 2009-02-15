@@ -17,7 +17,7 @@ DFLAGS=-DEQDEBUG=5 -DCATCH_CRASH -DNO_PIDLOG -DSHAREMEM -DFIELD_ITEMS -DCOMBINED
 PERL_FLAGS=perl -MExtUtils::Embed -e ccopts
 PERL_LIB=perl -MExtUtils::Embed -e ldopts
 DFLAGS+=-DEMBPERL -DEMBPERL_PLUGIN -DHAS_UNION_SEMUN
-WFLAGS=-Wall -Wuninitialized -Wwrite-strings -Wcast-qual -Wno-deprecated  -Wcomment -Wcast-align
+WFLAGS=-fpermissive -Wall -Wuninitialized -Wwrite-strings -Wcast-qual -Wno-deprecated  -Wcomment -Wcast-align
 COPTS=$(WFLAGS) -O -g -march=i686 -pthread -pipe -D_GNU_SOURCE -DINVERSEXY -DFX -DZONE $(DFLAGS) $(MYSQL_FLAGS) `$(PERL_FLAGS)`
 LINKOPTS=$(COPTS) -rdynamic -L. -lstdc++ -ldl $(MYSQL_LIB) `$(PERL_LIB)`
 

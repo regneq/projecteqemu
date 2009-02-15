@@ -21,6 +21,8 @@
 #include "LauncherLink.h"
 #include "LauncherList.h"
 #include "../common/MiscFunctions.h"
+#include <cstdlib>
+#include <cstring>
 
 extern LauncherList launcher_list;
 

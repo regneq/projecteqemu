@@ -31,6 +31,8 @@
 #include <list>
 #include <vector>
 #include <string>
+#include <cstdlib>
+#include <algorithm>
 
 using namespace std;
 

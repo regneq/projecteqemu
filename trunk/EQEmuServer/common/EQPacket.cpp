@@ -28,6 +28,8 @@
 #endif
 #include "packet_dump.h"
 #include "packet_functions.h"
+#include <cstdlib>
+#include <cstring>
 
 using namespace std;
 

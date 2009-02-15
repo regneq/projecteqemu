@@ -21,6 +21,8 @@
 #include "database.h"
 #include "logsys.h"
 #include "MiscFunctions.h"
+#include <cstdlib>
+#include <cstring>
 
 //until we move MAX_NUMBER_GUILDS
 #include "eq_packet_structs.h"

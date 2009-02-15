@@ -23,7 +23,7 @@ Eglin
 //link against your Perl Lib
 //#pragma comment(lib, "perl56.lib")
 #ifdef WIN32
-#pragma comment(lib, "perl58.lib")
+#pragma comment(lib, "perl510.lib")
 #endif
 
 #ifdef EMBPERL_XS

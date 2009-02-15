@@ -15,6 +15,8 @@
 #include <time.h>
 #include "misc.h"
 #include "types.h"
+#include <cstdlib>
+#include <cstring>
 
 using namespace std;
 

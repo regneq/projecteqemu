@@ -20,6 +20,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
+#include <cstdlib>
 
 #include "../common/files.h"
 #include "../common/rulesys.h"

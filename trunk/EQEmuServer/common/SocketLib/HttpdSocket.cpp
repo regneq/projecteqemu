@@ -37,6 +37,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../types.h"
 #include <time.h>
 #include <stdio.h>
+#include <cstdlib>
+#include <cstring>
 
 #define DEB(x)
 /*
