@@ -1267,6 +1267,11 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 
 	else if(slot_id >= 251 && slot_id < 351)
 		slot_id += 11;
 
+	// It looks like Power Source is slot 21 and Ammo got bumped to slot 22
+	// This will have to be changed somehow to handle slot 21 for Power Source items
+	//if(slot_id == 21)
+	//	slot_id == 22;
+
 	hdr.slot = (merchant_slot == 0) ? slot_id : merchant_slot;
 	hdr.price = inst->GetPrice();
 	hdr.merchant_slot = (merchant_slot == 0) ? 1 : inst->GetMerchantCount();
@@ -1323,6 +1328,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 
 	ibs.weight = item->Weight;
 	ibs.norent = item->NoRent;
 	ibs.nodrop = item->NoDrop;
+	ibs.attune = item->Attuneable;
 	ibs.size = item->Size;
 	ibs.slots = item->Slots;
 	ibs.price = item->Price;
@@ -1349,9 +1355,9 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 
 	ibs.Mana = item->Mana;
 	ibs.Endur = item->Endur;
 	ibs.AC = item->AC;
-	ibs.unknown3 = 0;
-	ibs.unknown4 = 0;
-	ibs.unknown5 = 0;
+	ibs.regen = item->Regen;
+	ibs.mana_regen = item->ManaRegen;
+	ibs.end_regen = item->EnduranceRegen;
 	ibs.Classes = item->Classes;
 	ibs.Races = item->Races;
 	ibs.Deity = item->Deity;
@@ -1397,6 +1403,8 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 
 	ibs.FactionMod2 = item->FactionMod2;
 	ibs.FactionAmt3 = item->FactionAmt3;
 	ibs.FactionMod3 = item->FactionMod3;
+	ibs.FactionAmt4 = item->FactionAmt4;
+	ibs.FactionMod4 = item->FactionMod4;
 
 	ss.write((const char*)&ibs, sizeof(SoF::structs::ItemBodyStruct));
 
@@ -1416,7 +1424,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 
 
 	isbs.augtype = item->AugType;
 	isbs.augrestrict = item->AugRestrict;
-	isbs.augdistil = item->AugDistiller;
+
 	for(int x = 0; x < 5; ++x)
 	{
 		isbs.augslots[x].type = item->AugSlotType[x];
@@ -1440,7 +1448,6 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 
 
 	ss.write((const char*)&isbs, sizeof(SoF::structs::ItemSecondaryBodyStruct));
 
-	//todo if has filename and >= 4 replace this
 	if(strlen(item->Filename) > 0)
 	{
 		ss.write((const char*)item->Filename, strlen(item->Filename));
@@ -1448,8 +1455,6 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 
 	}
 	else
 	{
-		//uint32 null_filename = 0x00000000;
-		//ss.write((const char*)&null_filename, sizeof(uint32));
 		ss.write((const char*)&null_term, sizeof(uint8));
 	}
 
@@ -1460,56 +1465,54 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 
 	itbs.artifact = item->ArtifactFlag;
 	itbs.pendinglore = item->PendingLoreFlag;
 	itbs.favor = item->Favor;
-	itbs.guildfavor = item->GuildFavor;
 	itbs.fvnodrop = item->FVNoDrop;
 	itbs.dotshield = item->DotShielding;
 	itbs.atk = item->Attack;
-	itbs.regen = item->Regen;
-	itbs.mana_regen = item->ManaRegen;
-	itbs.end_regen = item->EnduranceRegen;
 	itbs.haste = item->Haste;
 	itbs.damage_shield = item->DamageShield;
-	itbs.attune = item->Attuneable;
+	itbs.guildfavor = item->GuildFavor;
+	itbs.augdistil = item->AugDistiller;
 	itbs.no_pet = item->NoPet;
 
 	itbs.potion_belt_enabled = item->PotionBelt;
 	itbs.potion_belt_slots = item->PotionBeltSlots;
 	itbs.no_transfer = item->NoTransfer;
 	itbs.stacksize = item->StackSize;
-	itbs.quest_item = item->QuestItemFlag;
 
 	itbs.click_effect.effect = item->Click.Effect;
+	itbs.click_effect.type = item->Click.Type;
 	itbs.click_effect.level = item->Click.Level;
+	//itbs.click_effect.max_charges = 0xffffffff; //todo: implement charges/expendable it's in there somewhere
+	itbs.click_effect.max_charges = item->MaxCharges;
+	itbs.click_effect.cast_time = item->CastTime;
 	itbs.click_effect.recast = item->RecastDelay;
 	itbs.click_effect.recast_type = item->RecastType;
-	itbs.click_effect.type = item->Click.Type;
-	itbs.click_effect.max_charges = 0xffffffff; //todo: implement charges/expendable it's in there somewhere
 
 	itbs.proc_effect.effect = item->Proc.Effect;
-	itbs.proc_effect.level = item->Proc.Level;
 	itbs.proc_effect.level2 = item->Proc.Level2;
 	itbs.proc_effect.type = item->Proc.Type;
+	itbs.proc_effect.level = item->Proc.Level;
 	itbs.proc_effect.procrate = item->ProcRate;
 
 	itbs.worn_effect.effect = item->Worn.Effect;
-	itbs.worn_effect.level = item->Worn.Level;
 	itbs.worn_effect.level2 = item->Worn.Level2;
 	itbs.worn_effect.type = item->Worn.Type;
+	itbs.worn_effect.level = item->Worn.Level;
 
 	itbs.focus_effect.effect = item->Focus.Effect;
-	itbs.focus_effect.level = item->Focus.Level;
 	itbs.focus_effect.level2 = item->Focus.Level2;
 	itbs.focus_effect.type = item->Focus.Type;
+	itbs.focus_effect.level = item->Focus.Level;
 
 	itbs.scroll_effect.effect = item->Scroll.Effect;
-	itbs.scroll_effect.level = item->Scroll.Level;
 	itbs.scroll_effect.level2 = item->Scroll.Level2;
 	itbs.scroll_effect.type = item->Scroll.Type;
+	itbs.scroll_effect.level = item->Scroll.Level;
 
+	itbs.quest_item = item->QuestItemFlag;
 	itbs.unknown15 = 0xffffffff;
 
 	ss.write((const char*)&itbs, sizeof(SoF::structs::ItemTiertaryBodyStruct));
-
 
 	char* item_serial = new char[ss.tellp()];
 	memset(item_serial, 0, ss.tellp());
