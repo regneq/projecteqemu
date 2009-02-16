@@ -7,6 +7,7 @@ Trevius: SoF - Looting Items and Currency from Corpses is now functional
 Trevius: SoF - Item Links are now functional
 Trevius: SoF - Combat animation is now functional
 Trevius: SoF - More opcodes added/updated
+Trevius: SoF - Titanium users will now see Drakkens (and any race over 473) as a normal Human race
 
 ==02/15/2009==
 KLS: SoF - Item movement and bag support.

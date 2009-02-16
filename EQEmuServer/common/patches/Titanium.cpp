@@ -113,7 +113,10 @@ ENCODE(OP_SendCharInfo) {
 		OUT(eyecolor2[r]);
 		OUT(hair[r]);
 		OUT(primary[r]);
-		OUT(race[r]);
+		if(emu->race[r] > 473)
+			eq->race[r] = 1;
+		else
+			eq->race[r] = emu->race[r];
 		OUT(class_[r]);
 		OUT_str(name[r]);
 		OUT(gender[r]);
@@ -498,7 +501,10 @@ ENCODE(OP_ZoneSpawns) {
 		strcpy(eq->title, emu->title);
 //		eq->unknown0274 = emu->unknown0274;
 		eq->helm = emu->helm;
-		eq->race = emu->race;
+		if(emu->race > 473)
+			eq->race = 1;
+		else
+			eq->race = emu->race;
 //		eq->unknown0288 = emu->unknown0288;
 		strcpy(eq->lastName, emu->lastName);
 		eq->walkspeed = emu->walkspeed;
