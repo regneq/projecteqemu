@@ -700,28 +700,26 @@ ENCODE(OP_ItemPacket) {
 	EQApplicationPacket *in = *p;
 	*p = NULL;
 	
-	//store away the emu struct
-	/*unsigned char *__emu_buffer = in->pBuffer;
+	unsigned char *__emu_buffer = in->pBuffer;
 	ItemPacket_Struct *old_item_pkt=(ItemPacket_Struct *)__emu_buffer;
 	InternalSerializedItem_Struct *int_struct=(InternalSerializedItem_Struct *)(old_item_pkt->SerializedItem);
 
 	uint32 length;
-	unsigned char *serialized=SerializeItem((ItemInst *)int_struct->inst,int_struct->slot_id,&length,0);
+	char *serialized=SerializeItem((ItemInst *)int_struct->inst,int_struct->slot_id,&length,0);
 
 	if (!serialized) {
 		_log(NET__STRUCTS, "Serialization failed on item slot %d.",int_struct->slot_id);
 		delete in;
 		return;
 	}
-	in->size = length+5;	// ItemPacketType + Serialization + \0
+	in->size = length+4;
 	in->pBuffer = new unsigned char[in->size];
 	ItemPacket_Struct *new_item_pkt=(ItemPacket_Struct *)in->pBuffer;
 	new_item_pkt->PacketType=old_item_pkt->PacketType;
-	memcpy(new_item_pkt->SerializedItem,serialized,length+1);
+	memcpy(new_item_pkt->SerializedItem,serialized,length);
 
 	delete[] __emu_buffer;
-	safe_delete_array(serialized);*/
-
+	safe_delete_array(serialized);
 	dest->FastQueuePacket(&in, ack_req);
 }
 
@@ -749,7 +747,66 @@ ENCODE(OP_CharInventory) {
 	}
 	InternalSerializedItem_Struct *eq = (InternalSerializedItem_Struct *) in->pBuffer;
 	
-	uchar *data = NULL;
+	in->size = 4;
+	in->pBuffer = new uchar[in->size];
+	*((uint32 *) in->pBuffer) = 0;
+	dest->FastQueuePacket(&in, ack_req);
+
+	//EQApplicationPacket * outapp = new EQApplicationPacket((const EmuOpcode)0x78Cd);
+
+	int r;
+	char* serialized = NULL;
+	uint32 length = 0;
+	for(r = 0; r < itemcount; r++, eq++) 
+	{
+		length = 0;
+		serialized = NULL;
+        serialized = SerializeItem((const ItemInst*)eq->inst,eq->slot_id,&length,0);
+		if(serialized)
+		{
+			EQApplicationPacket * outapp = new EQApplicationPacket(OP_ItemPacket, length+4);
+			uint32 * type = (uint32*)outapp->pBuffer;
+			*type = ItemPacketTrade;
+			memcpy(outapp->pBuffer+4, serialized, length);
+
+			_log(NET__ERROR, "Sending item to client");
+			_hex(NET__ERROR, outapp->pBuffer, outapp->size);
+
+			dest->FastQueuePacket(&outapp);
+			delete[] serialized;
+			serialized = NULL;
+			if((const ItemInst*)eq->inst,eq->slot_id >= 22 && (const ItemInst*)eq->inst,eq->slot_id < 30)
+			{
+				for(int x = 0; x < 10; ++x)
+				{
+					const ItemInst* subitem = ((const ItemInst*)eq->inst)->GetItem(x);
+					if(subitem)
+					{
+						uint32 sub_length;
+						serialized = NULL;
+						serialized = SerializeItem(subitem, (((eq->slot_id+3)*10)+x+1), &sub_length, 0);
+						if(serialized)
+						{
+							EQApplicationPacket * suboutapp = new EQApplicationPacket(OP_ItemPacket, sub_length+4);
+							uint32 * subtype = (uint32*)suboutapp->pBuffer;
+							*subtype = ItemPacketTrade;
+							memcpy(suboutapp->pBuffer+4, serialized, sub_length);
+							_log(NET__ERROR, "Sending sub item to client");
+							_hex(NET__ERROR, suboutapp->pBuffer, suboutapp->size);
+							dest->FastQueuePacket(&suboutapp);
+							delete[] serialized;
+							serialized = NULL;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	//Proper way below crashing
+	//Workaround above
+	//Goal: get the item struct good enough that we don't need the workaround.
+	/*uchar *data = NULL;
 	uchar *dataptr = NULL;
 	uchar *tempdata = NULL;
 
@@ -759,7 +816,7 @@ ENCODE(OP_CharInventory) {
 	data = new uchar[4];
 	uint32 *item_opcode;
 	item_opcode = (uint32*)data;
-	*item_opcode = 0x35;
+	*item_opcode = 0x69;//0x35;
 
 
 	uint32 total_length = 4;
@@ -828,7 +885,7 @@ ENCODE(OP_CharInventory) {
 	_log(NET__ERROR, "Sending inventory to client");
 	_hex(NET__ERROR, in->pBuffer, in->size);
 
-	dest->FastQueuePacket(&in, ack_req);
+	dest->FastQueuePacket(&in, ack_req);*/
 }
 
 
@@ -1045,13 +1102,15 @@ DECODE(OP_MoveItem)
 	DECODE_LENGTH_EXACT(structs::MoveItem_Struct);
 	SETUP_DIRECT_DECODE(MoveItem_Struct, structs::MoveItem_Struct);
 
+	_log(NET__ERROR, "Moved item from %u to %u", eq->from_slot, eq->to_slot);
+
 	if(eq->from_slot >= 23 && eq->from_slot < 51)
 	{
 		emu->from_slot = eq->from_slot - 1;
 	}
 	else if(eq->from_slot >= 251 && eq->from_slot < 351)
 	{
-		emu->from_slot = eq->from_slot - 10;
+		emu->from_slot = eq->from_slot - 11;
 	}
 	else
 	{
@@ -1064,7 +1123,7 @@ DECODE(OP_MoveItem)
 	}
 	else if(eq->to_slot >= 251 && eq->to_slot < 351)
 	{
-		emu->to_slot = eq->to_slot - 10;
+		emu->to_slot = eq->to_slot - 11;
 	}
 	else
 	{
@@ -1200,13 +1259,13 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 
 
 	const Item_Struct *item = inst->GetItem();
 	SoF::structs::ItemSerializationHeader hdr;
-	hdr.stacksize = stackable ? charges: 1;
+	hdr.stacksize = stackable ? charges : 1;
 	hdr.unknown004 = 0;
 
 	if(slot_id >= 22 && slot_id < 50)
 		slot_id += 1;
 	else if(slot_id >= 251 && slot_id < 351)
-		slot_id += 10;
+		slot_id += 11;
 
 	hdr.slot = (merchant_slot == 0) ? slot_id : merchant_slot;
 	hdr.price = inst->GetPrice();
@@ -1214,7 +1273,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 
 	hdr.unknown020 = 0;
 	hdr.instance_id = (merchant_slot == 0) ? inst->GetSerialNumber() : merchant_slot;
 	hdr.inst_nodrop = inst->IsInstNoDrop() ? 1 : 0;
-	hdr.potion_type = (stackable ? ((inst->GetItem()->ItemType == ItemTypePotion) ? 1 : 0) : charges);//0;
+	hdr.potion_type = (stackable ? ((inst->GetItem()->ItemType == ItemTypePotion) ? 1 : 0) : charges);
 	hdr.unknown036 = 0xffffffff;
 	hdr.unknown040 = 0;
 	hdr.unknown044 = 0;

@@ -9,6 +9,8 @@ cavedude00: (AndMetal) AAs now use skill_id instead of index for prereqs.
 cavedude00: (demonstar55) Implemented Improved Instrument Mastery, Improved Singing Mastery, and Echo of Taelosia AAs.
 cavedude00: Created Combat:ChanceToHitDivideBy rule and increased default value to 1250.
 	Required and Optional SQL: utils/sql/svn/326_aas.sql
+KLS: SoF - Fix for item slots in bags.
+KLS: Added work around for client inventory, it should no longer crash and items shouldn't fail to load. *fingers crossed*
 Congdar: Bots - Expaneded BotCount Management
 	required sql: utils/sql/svn/328_bot_management.sql
 	optional sql: utils/sql/svn/328_optional_bot_management.sql
