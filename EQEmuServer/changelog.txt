@@ -2,6 +2,11 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==02/16/2009==
 Trevius: SoF - The Item Struct should be aligned almost perfectly now.
+Trevius: SoF - Merchant Lists, Buying and Selling are now all functional
+Trevius: SoF - Looting Items and Currency from Corpses is now functional
+Trevius: SoF - Item Links are now functional
+Trevius: SoF - Combat animation is now functional
+Trevius: SoF - More opcodes added/updated
 
 ==02/15/2009==
 KLS: SoF - Item movement and bag support.
