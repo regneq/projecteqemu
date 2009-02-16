@@ -10,7 +10,8 @@ cavedude00: (demonstar55) Implemented Improved Instrument Mastery, Improved Sing
 cavedude00: Created Combat:ChanceToHitDivideBy rule and increased default value to 1250.
 	Required and Optional SQL: utils/sql/svn/326_aas.sql
 KLS: SoF - Fix for item slots in bags.
-KLS: Added work around for client inventory, it should no longer crash and items shouldn't fail to load. *fingers crossed*
+KLS: SoF - Added work around for client inventory, it should no longer crash and items shouldn't fail to load. *fingers crossed*
+KLS: SoF - Implemented summon item packet.
 Congdar: Bots - Expaneded BotCount Management
 	required sql: utils/sql/svn/328_bot_management.sql
 	optional sql: utils/sql/svn/328_optional_bot_management.sql
