@@ -2017,13 +2017,14 @@ struct Who_All_Struct { // 76 length total
 /*000*/	char	whom[64];
 /*064*/	int32	wrace;		// FF FF = no race
 
-/*066*/	int32	wclass;		// FF FF = no class
-/*068*/	int32	lvllow;		// FF FF = no numbers
-/*070*/	int32	lvlhigh;	// FF FF = no numbers
-/*072*/	int32	gmlookup;	// FF FF = not doing /who all gm
-/*074*/	int32	unknown074;
-/*076*/	int8	unknown076[64];
-/*140*/
+/*068*/	int32	wclass;		// FF FF = no class
+/*072*/	int32	lvllow;		// FF FF = no numbers
+/*076*/	int32	lvlhigh;	// FF FF = no numbers
+/*080*/	int32	gmlookup;	// FF FF = not doing /who all gm
+/*084*/	int32	unknown084;
+/*088*/ int32	unknown088;
+/*092*/	int8	unknown076[64];
+/*156*/
 };
 
 struct Stun_Struct { // 4 bytes total

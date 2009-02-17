@@ -1099,6 +1099,21 @@ ENCODE(OP_ExpansionInfo) {
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_LogServer) {
+	ENCODE_LENGTH_EXACT(LogServer_Struct);
+ 	SETUP_DIRECT_ENCODE(LogServer_Struct, structs::LogServer_Struct);
+ 	strcpy(eq->worldshortname, emu->worldshortname);
+ 
+ 	OUT(enablevoicemacros);
+ 	OUT(enablemail);
+ 
+ 	// These next two need to be set like this for the Tutorial Button to work.
+ 	eq->unknown263[0] = 0;
+ 	eq->unknown263[2] = 1;
+ 
+ 	FINISH_ENCODE();
+}
+ 
 DECODE(OP_MoveItem)
 {
 	DECODE_LENGTH_EXACT(structs::MoveItem_Struct);
@@ -1234,6 +1249,21 @@ DECODE(OP_CharacterCreate) {
 	IN(face);
 	IN(eyecolor1);
 	IN(eyecolor2);
+	FINISH_DIRECT_DECODE();
+}
+
+
+DECODE(OP_WhoAllRequest) {
+	DECODE_LENGTH_EXACT(structs::Who_All_Struct);
+	SETUP_DIRECT_DECODE(Who_All_Struct, structs::Who_All_Struct);
+
+	memcpy(emu->whom, eq->whom, sizeof(emu->whom));
+	IN(wrace);
+	IN(wclass);
+	IN(lvllow);
+	IN(lvlhigh);
+	IN(gmlookup);
+	
 	FINISH_DIRECT_DECODE();
 }
 
@@ -1529,21 +1559,6 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 
 	return item_serial;
 }
 
-ENCODE(OP_LogServer) {
-	ENCODE_LENGTH_EXACT(LogServer_Struct);
- 	SETUP_DIRECT_ENCODE(LogServer_Struct, structs::LogServer_Struct);
- 	strcpy(eq->worldshortname, emu->worldshortname);
- 
- 	OUT(enablevoicemacros);
- 	OUT(enablemail);
- 
- 	// These next two need to be set like this for the Tutorial Button to work.
- 	eq->unknown263[0] = 0;
- 	eq->unknown263[2] = 1;
- 
- 	FINISH_ENCODE();
-}
- 
 } //end namespace SoF
 
 
