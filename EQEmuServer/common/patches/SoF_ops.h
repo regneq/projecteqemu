@@ -42,6 +42,7 @@ D(OP_Consider)
 D(OP_WearChange)
 D(OP_ClientUpdate)
 D(OP_MoveItem)
+D(OP_WhoAllRequest)
 //D(OP_SendExpZonein) 
 //D(OP_TraderBuy)
 #undef E
