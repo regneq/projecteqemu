@@ -5,6 +5,7 @@ Trevius: SoF - Added Drakkin race to the source so $race and probably other race
 Trevius: SoF - Added multiple opcodes
 Trevius: SoF - Cleaned up the patch_SoF.conf file some
 Derision: SoF - Enter Tutorial/Return Home buttons work - Enter Tutorial directly on char creation does not.
+Derision: SoF - OP_ZonePlayerToBind (no more disconnection on death).
 
 
 ==02/16/2009==
