@@ -10,6 +10,7 @@
 #include "../MiscFunctions.h"
 #include "../Item.h"
 #include "SoF_structs.h"
+#include "../rulesys.h"
 
 #include <iostream>
 #include <sstream>
@@ -160,10 +161,10 @@ ENCODE(OP_SendCharInfo) {
 			}
 			eq2->u13 = 0;
 			eq2->u14 = 0;
-			eq2->u15 = 0xFF;
+			eq2->tutorial = emu->tutorial[r]; // was u15
+			eq2->u15 = 0xff;
 			eq2->deity = emu->deity[r];
 			eq2->zone = emu->zone[r];
-			eq2->u18 = 1;
 			eq2->u19 = 0xFF;
 			eq2->race = emu->race[r];
 			eq2->gohome = emu->gohome[r];
@@ -177,7 +178,6 @@ ENCODE(OP_SendCharInfo) {
 		}
 		bufptr += sizeof(structs::CharacterSelectEntry_Struct);
 	}
-
 	
 	FINISH_ENCODE();
 	
@@ -1214,7 +1214,12 @@ DECODE(OP_CharacterCreate) {
 	IN(haircolor);
 	IN(gender);
 	IN(race);
-	IN(start_zone);
+
+	if(RuleB(World, EnableTutorialButton) && eq->tutorial)
+		emu->start_zone = RuleI(World, TutorialZoneID);
+	else
+		emu->start_zone = eq->start_zone;
+		
 	IN(hairstyle);
 	IN(deity);
 	IN(STR);
@@ -1522,6 +1527,21 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 
 	return item_serial;
 }
 
+ENCODE(OP_LogServer) {
+	ENCODE_LENGTH_EXACT(LogServer_Struct);
+ 	SETUP_DIRECT_ENCODE(LogServer_Struct, structs::LogServer_Struct);
+ 	strcpy(eq->worldshortname, emu->worldshortname);
+ 
+ 	OUT(enablevoicemacros);
+ 	OUT(enablemail);
+ 
+ 	// These next two need to be set like this for the Tutorial Button to work.
+ 	eq->unknown263[0] = 0;
+ 	eq->unknown263[2] = 1;
+ 
+ 	FINISH_ENCODE();
+}
+ 
 } //end namespace SoF
 
 

@@ -4,6 +4,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 Trevius: SoF - Added Drakkin race to the source so $race and probably other race related stuff can use it.
 Trevius: SoF - Added multiple opcodes
 Trevius: SoF - Cleaned up the patch_SoF.conf file some
+Derision: SoF - Enter Tutorial/Return Home buttons work - Enter Tutorial directly on char creation does not.
 
 
 ==02/16/2009==

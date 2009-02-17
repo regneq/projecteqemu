@@ -462,7 +462,7 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 				safe_delete(outapp);
 			}
                   else
-				StartInTutorial = true;
+			StartInTutorial = true;
 			SendCharInfo();
 
 			break;
@@ -514,6 +514,15 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 			if(!pZoning && (RuleB(World, EnableTutorialButton) && (ew->tutorial || StartInTutorial))) {
 				zoneID = RuleI(World, TutorialZoneID);
 				database.MoveCharacterToZone(charid, database.GetZoneName(zoneID));
+
+				// HACK: Entering the Tutorial directly from Character Creation (without going back to Char Select)
+				// does not work correctly yet in SoF, so bounce them back to Character Select first.
+				//
+				if(SoFClient && StartInTutorial) {
+					ZoneUnavail();
+					StartInTutorial = false;
+					break;
+				}
 			}
 
 			if (zoneID == 0 || !database.GetZoneName(zoneID)) {

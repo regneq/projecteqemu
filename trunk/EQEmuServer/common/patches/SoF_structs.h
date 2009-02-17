@@ -129,26 +129,27 @@ struct CharacterSelectEntry_Struct {
 /*0009*/	uint8 haircolor;	//edi+0F0h
 /*0010*/	uint8 gender;		//edi+4Ch
 /*0011*/	char name[1];		//variable length, edi+0
-uint8 beard;		//edi+0F1h (may be color)
-uint8 hair;		//edi+0ECh
-uint8 face;		//edi+4Dh
-CharSelectEquip	equip[9];
-uint32 u13;		//edi+0E4h
-uint32 u14;		//edi+0E8h
-uint8 u15;//0xff
-uint32 deity;		//edi+0F7h
-uint32 zone;		//edi+0E0h
-uint8 u18;		//edi+0F2h    seen 0x01 and 0x0
-uint8 u19;		//edi+0F4h    0xff
-uint32 race;		//edi+44h
-uint8 gohome;		//edi+0F3h guessed, 0x1
-uint8 class_;		//edi+41h
-uint8 eyecolor1;		//edi+0EFh
-uint8 beardcolor;		//edi+0EDh  0xff, guessed
-uint8 eyecolor2;		//edi+0EEh
-uint32 secondary;		//edi+0F8h
-uint32 primary;		//edi+0FCh
-uint32 u29;		//edi+100h
+		uint8 beard;		//edi+0F1h (may be color)
+		uint8 hair;		//edi+0ECh
+		uint8 face;		//edi+4Dh
+		CharSelectEquip	equip[9];
+		uint32 u13;		//edi+0E4h
+		uint32 u14;		//edi+0E8h
+		uint8 u15;//0xff
+		uint32 deity;		//edi+0F7h
+		uint16 zone;		//edi+0E0h
+		uint16 instance;
+		uint8 gohome;		//edi+0F2h    seen 0x01 and 0x0
+		uint8 u19;		//edi+0F4h    0xff
+		uint32 race;		//edi+44h
+		uint8 tutorial;		//edi+0F3h guessed, 0x1
+		uint8 class_;		//edi+41h
+		uint8 eyecolor1;		//edi+0EFh
+		uint8 beardcolor;		//edi+0EDh  0xff, guessed
+		uint8 eyecolor2;		//edi+0EEh
+		uint32 secondary;		//edi+0F8h
+		uint32 primary;		//edi+0FCh
+		uint32 u29;		//edi+100h
 };
 
 /*
@@ -672,7 +673,7 @@ struct CharCreate_Struct
 /*0064*/	int32	face;		// Could be unknown0076
 /*0068*/	int32	eyecolor1;	//its possiable we could have these switched
 /*0073*/	int32	eyecolor2;	//since setting one sets the other we really can't check
-/*0076*/	int32	unknown0076;
+/*0076*/	int32	tutorial;
 /*0080*/	int32	unknown0080;
 /*0084*/	int32	unknown0084;
 /*0088*/	int32	unknown0088;
@@ -2455,6 +2456,7 @@ struct sPickPocket_Struct {
 	char itemname[64];
 };
 
+
 struct LogServer_Struct {
 // Op_Code OP_LOGSERVER
 /*000*/	uint32	unknown000;
@@ -2471,9 +2473,10 @@ struct LogServer_Struct {
 /*176*/	uint32	unknown176;	// htonl(0x00002695)
 /*180*/	char	unknown180[80];	// 'eqdataexceptions@mail.station.sony.com' on live
 /*260*/	uint8	unknown260;	// 0x01 on live
-/*261*/	uint8	unknown261;	// 0x01 on live
-/*262*/	uint8	unknown262[2];
-/*264*/
+/*261*/	uint8	enablevoicemacros;
+/*262*/	uint8	enablemail;
+/*263*/	uint8	unknown263[16];
+/*279*/
 };
 
 struct ApproveWorld_Struct {

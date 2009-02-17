@@ -414,10 +414,15 @@ bool WorldDatabase::GetStartZoneSoF(PlayerProfile_Struct* in_pp, CharCreate_Stru
 	else
 	{
 		printf("No start_zones entry in database, using defaults\n");
-		in_pp->x = in_pp->binds[0].x = -51;
-		in_pp->y = in_pp->binds[0].y = -20;
-		in_pp->z = in_pp->binds[0].z = 0.79;
-		in_pp->zone_id = in_pp->binds[0].zoneId = 394; // Crescent Reach.
+
+		if(in_cc->start_zone == RuleI(World, TutorialZoneID))
+			in_pp->zone_id = in_cc->start_zone;
+		else {
+			in_pp->x = in_pp->binds[0].x = -51;
+			in_pp->y = in_pp->binds[0].y = -20;
+			in_pp->z = in_pp->binds[0].z = 0.79;
+			in_pp->zone_id = in_pp->binds[0].zoneId = 394; // Crescent Reach.
+		}
 
 	}
 
