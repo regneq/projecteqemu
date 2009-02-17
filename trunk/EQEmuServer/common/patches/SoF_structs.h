@@ -303,7 +303,8 @@ union
 /*0725*/ uint8  targetable;		// 1 = Targetable 0 = Not Targetable
 /*0726*/ uint8  unknown0308[4];
 /*0730*/ uint8  NPC;            // 0=player,1=npc,2=pc corpse,3=npc corpse
-/*0731*/ uint8  unknown0309[12];
+/*0731*/ uint8  unknown0309[11];
+/*0742*/ uint8	targetable_with_hotkey;
 /*0743*/ signed   padding0000:12; // ***Placeholder
 		 signed   x:19;           // x coord
 		 signed   padding0290:1; // ***Placeholder

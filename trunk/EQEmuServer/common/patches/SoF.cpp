@@ -619,6 +619,8 @@ ENCODE(OP_ZoneSpawns) {
 		eq->walkspeed = emu->walkspeed;
 
 		eq->targetable = 1; //New Field - Toggle Targetable on or off - 0 = off, 1 = on
+		eq->targetable_with_hotkey = 1;
+
 		eq->showname = 1; //New Field - Toggles Name Display on or off - 0 = off, 1 = on
 		eq->linkdead = 0; //New Field - Toggles LD on or off after name - 0 = off, 1 = on
 
