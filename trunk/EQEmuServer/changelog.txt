@@ -1,5 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==02/17/2009==
+Trevius: SoF - Added Drakkin race to the source so $race and probably other race related stuff can use it.
+Trevius: SoF - Added multiple opcodes
+Trevius: SoF - Cleaned up the patch_SoF.conf file some
+
+
 ==02/16/2009==
 Trevius: SoF - The Item Struct should be aligned almost perfectly now.
 Trevius: SoF - Merchant Lists, Buying and Selling are now all functional
