@@ -67,7 +67,8 @@
 #define gnome_1			2048
 #define iksar_1			4096
 #define vahshir_1		8192
-#define rall_1			16384
+#define rall_1			16384 //froglok?
+#define drakkin_1			32768
 
 const char* GetRaceName(int16 race);
 
@@ -91,8 +92,9 @@ int32 GetArrayRace(int16 race);
 #define Array_Race_NPC			15
 #define Array_Race_PET			16
 #define Array_Race_FROGLOK		17
-#define Count_Array_Race		18 // used for array defines, must be the max + 1
-#define PLAYER_RACE_COUNT		15 // The count of all player races
+#define Array_Race_DRAKKIN		18
+#define Count_Array_Race		19 // used for array defines, must be the max + 1
+#define PLAYER_RACE_COUNT		16 // The count of all player races
 
 /*
 
