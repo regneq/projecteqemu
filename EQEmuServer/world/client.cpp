@@ -1,6 +1,7 @@
 #include "../common/debug.h"
 #include "../common/EQPacket.h"
 #include "../common/EQStreamIntf.h"
+#include "../common/misc.h"
 #include <iostream>
 using namespace std;
 #include <iomanip>
@@ -181,6 +182,14 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 	if (!eqs->CheckState(ESTABLISHED)) {
 		clog(WORLD__CLIENT,"Client disconnected (net inactive on send)");
 		return false;
+	}
+	
+	// Voidd: Anti-GM Account hack, Checks source ip against valid GM Account IP Addresses
+	if (RuleB(World, GMAccountIPList) && this->GetAdmin() > 0) {
+		if(!database.CheckGMIPs(long2ip(this->GetIP()).c_str(), this->GetAccountID())) {
+			clog(WORLD__CLIENT,"GM Account not permited from source address %s and accountid %i", long2ip(this->GetIP()).c_str(), this->GetAccountID());
+			eqs->Close();
+		}
 	}
 	
 	if (GetAccountID() == 0 && opcode != OP_SendLoginInfo) {
