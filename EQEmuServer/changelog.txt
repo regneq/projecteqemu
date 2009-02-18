@@ -3,6 +3,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==02/18/2009==
 Trevius: SoF - Combat Damage message now show up in the chat window
 Trevius: SoF - GM Skill Trainers will now actually train skills
+Angelox: Bots: Added emerald, skyfire, hateplane, skyplane to command #bot gate.
 
 ==02/17/2009==
 Trevius: SoF - Added Drakkin race to the source so $race and probably other race related stuff can use it.

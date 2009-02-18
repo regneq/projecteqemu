@@ -9814,6 +9814,14 @@ void command_bot(Client *c, const Seperator *sep) {
 						Gater->Say("Casting Circle of Bloodfields...");
 						Gater->CastSpell(6184, c->GetID(), 1, -1, -1);
 					}
+					else if ((!strcasecmp(sep->arg[2], "emerald")) && (c->GetLevel() >= 39)) { 
+						Gater->Say("Casting Wind of the South...");
+						Gater->CastSpell(1737, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "skyfire")) && (c->GetLevel() >= 44)) { 
+						Gater->Say("Casting Wind of the North...");
+						Gater->CastSpell(1736, c->GetID(), 1, -1, -1);
+					}
 					else if ((!strcasecmp(sep->arg[2], "slaughter")) && (c->GetLevel() >= 64)) { 
 						Gater->Say("Casting Circle of Slaughter...");
 						Gater->CastSpell(6179, c->GetID(), 1, -1, -1);
@@ -9840,11 +9848,13 @@ void command_bot(Client *c, const Seperator *sep) {
 					|| !strcasecmp(sep->arg[2], "pok") && (c->GetLevel() <= 38)
 					|| !strcasecmp(sep->arg[2], "stonebrunt") && (c->GetLevel() <= 28)
 					|| !strcasecmp(sep->arg[2], "bloodfields") && (c->GetLevel() <= 55)
+					|| !strcasecmp(sep->arg[2], "emerald") && (c->GetLevel() <= 38)
+					|| !strcasecmp(sep->arg[2], "skyfire") && (c->GetLevel() <= 43)
 					|| !strcasecmp(sep->arg[2], "wos") && (c->GetLevel() <= 64)) {
 						Gater->Say("I don't have the needed level yet", sep->arg[2]);
 					}
 					else {
-						Gater->Say("With the proper level I can [gate] to [karana],[commons],[tox],[butcher],[lava],[ro],[feerrott],[steamfont],[misty],[wakening],[iceclad],[divide],[cobalt],[combines],[surefall],[grimling],[twilight],[dawnshroud],[nexus],[pok],[stonebrunt],[bloodfields] or [wos].", c->GetName());
+						Gater->Say("With the proper level I can [gate] to [karana],[commons],[tox],[butcher],[lava],[ro],[feerrott],[steamfont],[misty],[wakening],[iceclad],[divide],[cobalt],[combines],[surefall],[grimling],[twilight],[dawnshroud],[nexus],[pok],[stonebrunt],[bloodfields],[emerald],[skyfire] or [wos].", c->GetName());
 					}
 					break;
 
@@ -9922,6 +9932,22 @@ void command_bot(Client *c, const Seperator *sep) {
 						Gater->Say("Casting Fay Portal...");
 						Gater->CastSpell(2420, c->GetID(), 1, -1, -1);
 					}
+					else if ((!strcasecmp(sep->arg[2], "emerald")) && (c->GetLevel() >= 37)) {
+						Gater->Say("Porting to Emerald Jungle...");
+						Gater->CastSpell(1739, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "hateplane")) && (c->GetLevel() >= 39)) {
+						Gater->Say("Porting to Hate Plane...");
+						Gater->CastSpell(666, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "skyplane")) && (c->GetLevel() >= 39)) {
+						Gater->Say("Porting to skyplane...");
+						Gater->CastSpell(674, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "skyfire")) && (c->GetLevel() >= 36)) {
+						Gater->Say("Porting to Skyfire...");
+						Gater->CastSpell(1738, c->GetID(), 1, -1, -1);
+					}
 					else if ((!strcasecmp(sep->arg[2], "bloodfields")) && (c->GetLevel() >= 55)) {
 						Gater->Say("Casting Bloodfields Portal...");
 						Gater->CastSpell(6183, c->GetID(), 1, -1, -1);
@@ -9945,15 +9971,19 @@ void command_bot(Client *c, const Seperator *sep) {
 					|| !strcasecmp(sep->arg[2], "twilight") && (c->GetLevel() <= 33)
 					|| !strcasecmp(sep->arg[2], "dawnshroud") && (c->GetLevel() <= 39)
 					|| !strcasecmp(sep->arg[2], "nexus") && (c->GetLevel() <= 29)
-					|| !strcasecmp(sep->arg[2], "pok") && (c->GetLevel() <= 38)
+					|| (!strcasecmp(sep->arg[2], "pok")
+						 || !strcasecmp(sep->arg[2], "hateplane")
+						 || !strcasecmp(sep->arg[2], "skyplane") && (c->GetLevel() <= 38))
 					|| !strcasecmp(sep->arg[2], "grimling") && (c->GetLevel() <= 29)
 					|| !strcasecmp(sep->arg[2], "bloodfields") && (c->GetLevel() <= 55)
 					|| !strcasecmp(sep->arg[2], "stonebrunt") && (c->GetLevel() <= 27)
+					|| !strcasecmp(sep->arg[2], "emerald") && (c->GetLevel() <= 36)
+					|| !strcasecmp(sep->arg[2], "skyfire") && (c->GetLevel() <= 36)
 					|| !strcasecmp(sep->arg[2], "wos") && (c->GetLevel() <= 64)) {
 						Gater->Say("I don't have the needed level yet", sep->arg[2]);
 					}
 					else {
-						Gater->Say("With the proper level I can [gate] to [commons],[fay],[ro],[tox],[nk],[wakening],[iceclad],[divide],[cobalt],[combines],[wk],[grimling],[twilight],[dawnshroud],[nexus],[pok],[stonebrunt],[bloodfields] or [wos].", c->GetName());
+						Gater->Say("With the proper level I can [gate] to [commons],[fay],[ro],[tox],[nk],[wakening],[iceclad],[divide],[cobalt],[combines],[wk],[grimling],[twilight],[dawnshroud],[nexus],[pok],[stonebrunt],[bloodfields],[emerald],[skyfire],[hateplane],[skyplane] or [wos].", c->GetName());
 					}
 					break;
 				default:
