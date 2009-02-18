@@ -1407,6 +1407,7 @@ void Client::SetRaceStartingSkills( PlayerProfile_Struct *pp )
    case HUMAN:
    case OGRE:
    case TROLL:
+   case DRAKKIN:	//Drakkin are supposed to get a starting AA Skill
       {
          // No Race Specific Skills
          break;
@@ -1557,6 +1558,13 @@ void Client::SetRacialLanguages( PlayerProfile_Struct *pp )
          pp->languages[LANG_COMBINE_TONGUE] = 100;
          pp->languages[LANG_ERUDIAN] = 25;
          pp->languages[LANG_VAH_SHIR] = 100;
+         break;
+      }
+   case DRAKKIN:
+      {
+         pp->languages[LANG_COMMON_TONGUE] = 100;
+         pp->languages[LANG_ELDER_DRAGON] = 100;
+         pp->languages[LANG_DRAGON] = 100;
          break;
       }
    }

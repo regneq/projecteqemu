@@ -10,6 +10,8 @@ Derision: SoF - Target nearest NPC (F8) now works.
 Derision: SoF - /who all now works.
 cavedude00: SellRate column in items will now help determine an item's sell price.
 cybernine186: Optional system to ensure GMs are logging on from a known IP.
+Trevious: SoF - Drakkin now gain stats from items and weapons now work for combat
+Trevious: SoF - Drakkin now start with Common Tongue, Dragon and Elder Dragon Languages maxed
 
 Required SQL: utils/sql/svn/340_gm_ips.sql 
 
@@ -20,7 +22,7 @@ Trevius: SoF - Looting Items and Currency from Corpses is now functional
 Trevius: SoF - Item Links are now functional
 Trevius: SoF - Combat animation is now functional
 Trevius: SoF - More opcodes added/updated
-Trevius: SoF - Titanium users will now see Drakkens (and any race over 473) as a normal Human race
+Trevius: SoF - Titanium users will now see Drakkins (and any race over 473) as a normal Human race
 
 ==02/15/2009==
 KLS: SoF - Item movement and bag support.
