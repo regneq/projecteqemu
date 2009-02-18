@@ -1213,13 +1213,13 @@ struct CombatDamage_Struct
 {
 /* 00 */	int16	target;
 /* 02 */	int16	source;
-/* 04 */	int8	type; //slashing, etc.  231 (0xE7) for spells
+/* 04 */	int8	type;			//slashing, etc.  231 (0xE7) for spells
 /* 05 */	int16	spellid;
 /* 07 */	int32	damage;
-/* 11 */	int32 unknown11;
-/* 15 */	int32 sequence;	// see above notes in Action_Struct
-/* 19 */	int32	unknown19;
-/* 23 */
+/* 11 */	float	unknown11;		// cd cc cc 3d
+/* 15 */	int32	sequence;		// see above notes in Action_Struct
+/* 19 */	uint8	unknown19[9];	// 
+/* 28 */
 };
 
 /*
@@ -2252,33 +2252,21 @@ struct Door_Struct
 /*0044*/ float	 heading;
 /*0048*/ int32   incline;	// rotates the whole door
 /*0052*/ int16   size;			// 100 is normal, smaller number = smaller model
-/*0054*/ int8    unknown0038[6];
+/*0054*/ int8    unknown0054[6];
 /*0060*/ uint8   doorId;             // door's id #
 /*0061*/ uint8   opentype;
 /*0062*/ uint8  state_at_spawn;  //Size???
 /*0063*/ uint8  invert_state;	// if this is 1, the door is normally open
 /*0064*/ int32  door_param;
-/*0068*/ uint8  unknown0052[24]; // mostly 0s, the last 3 bytes are something tho
-/*0092*/
-};
-
-struct Door_Struct_Old
-{
-/*0000*/ char    name[32];            // Filename of Door // Was 10char long before... added the 6 in the next unknown to it: Daeken M. BlackBlade
-/*0032*/ float   yPos;               // y loc
-/*0036*/ float   xPos;               // x loc
-/*0040*/ float   zPos;               // z loc
-/*0044*/ float	 heading;
-/*0048*/ int32   incline;	// rotates the whole door
-/*0052*/ int8    unknown0033[4];
-/*0056*/ uint8  state_at_spawn;  //Size???
-/*0057*/ int8    unknown0038[3]; //was [6]
-/*0060*/ uint8   doorId;             // door's id #
-/*0061*/ uint8   opentype;
-/*0062*/ int16   size;			// 100 is normal, smaller number = smaller model
-/*0063*/ uint8  invert_state;	// if this is 1, the door is normally open
-/*0064*/ int32  door_param;
-/*0068*/ uint8  unknown0052[24]; // mostly 0s, the last 3 bytes are something tho
+/*0068*/ int32	unknown0068;
+/*0072*/ int32	unknown0072;
+/*0076*/ int8	unknown0076; // seen 1
+/*0077*/ int8	unknown0077; // seen 1
+/*0078*/ int8	unknown0078; // seen 0
+/*0079*/ int8	unknown0079; // seen 1
+/*0080*/ int8	unknown0080; // seen 0
+/*0081*/ int8	unknown0081; // seen 1
+/*0082*/ uint8  unknown0082[10]; // mostly 0s, the last 3 bytes are something tho
 /*0092*/
 };
 

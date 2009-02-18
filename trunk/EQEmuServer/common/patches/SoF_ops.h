@@ -25,7 +25,7 @@ E(OP_ClientUpdate)
 E(OP_LeadershipExpUpdate)
 E(OP_ExpansionInfo)
 E(OP_LogServer)
-
+E(OP_Damage)
 //E(OP_ZoneServerReady)
 //E(OP_BazaarSearch)
 //E(OP_Trader)
