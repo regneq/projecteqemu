@@ -230,7 +230,7 @@ bool ItemInst::IsEquipable(int16 race, int16 class_) const
 	race_ = GetArrayRace(race);
 	#endif
 
-	race_ = (race_==17? 15 : race_);
+	race_ = (race_==18? 16 : race_);
 	// @merth: can this be optimized?  i.e., will (race & common->Races) suffice?
 	for (int cur_class = 1; cur_class<=PLAYER_CLASS_COUNT; cur_class++) {
 		if (classes_ % 2 == 1) {
