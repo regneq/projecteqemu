@@ -140,6 +140,8 @@ public:
 	int32	GetCharacterID(const char *name);
 	bool	CheckBannedIPs(const char* loginIP); //Lieka Edit:  Check incomming connection against banned IP table.
  	bool	AddBannedIP(char* bannedIP, const char* notes); //Lieka Edit:  Add IP address to the Banned_IPs table.
+	bool	CheckGMIPs(const char* loginIP, int32 account_id);
+	bool	AddGMIP(char* ip_address, char* name);
 
 	/*
 	 * Account Related

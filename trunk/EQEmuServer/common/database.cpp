@@ -252,7 +252,42 @@ bool Database::AddBannedIP(char* bannedIP, const char* notes)
  	return true;
 }
  //End Lieka Edit
+ 
+ bool Database::CheckGMIPs(const char* ip_address, int32 account_id) {
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT * FROM `gm_ips` WHERE `ip_address` = '%s' AND `account_id` = %i", ip_address, account_id), errbuf, &result)) {
+		safe_delete_array(query);
+		if (mysql_num_rows(result) == 1) {
+			mysql_free_result(result);
+			return true;
+		} else {
+			mysql_free_result(result);
+			return false;
+		}
+		mysql_free_result(result);
 
+	} else {
+		safe_delete_array(query);
+		return false;
+	}
+	
+	return false;
+}
+
+bool Database::AddGMIP(char* ip_address, char* name) {
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+
+	if (!RunQuery(query, MakeAnyLenString(&query, "INSERT into `gm_ips` SET `ip_address` = '%s', `name` = '%s'", ip_address, name), errbuf)) {
+		safe_delete_array(query);
+		return false;
+	}
+	safe_delete_array(query);
+	return true;
+}
 
 sint16 Database::CheckStatus(int32 account_id)
 {

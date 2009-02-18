@@ -8,7 +8,10 @@ Derision: SoF - Enter Tutorial/Return Home buttons work - Enter Tutorial directl
 Derision: SoF - OP_ZonePlayerToBind (no more disconnection on death).
 Derision: SoF - Target nearest NPC (F8) now works.
 Derision: SoF - /who all now works.
+cavedude00: SellRate column in items will now help determine an item's sell price.
+cybernine186: Optional system to ensure GMs are logging on from a known IP.
 
+Required SQL: utils/sql/svn/340_gm_ips.sql 
 
 ==02/16/2009==
 Trevius: SoF - The Item Struct should be aligned almost perfectly now.

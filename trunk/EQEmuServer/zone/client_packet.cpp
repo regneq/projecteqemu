@@ -4058,7 +4058,7 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 		}
 	}
 
-	mpo->price = (item->Price*(1/.884)*Client::CalcPriceMod(tmp,false))*mp->quantity;
+	mpo->price = (item->Price*(1/.884)*item->SellRate*Client::CalcPriceMod(tmp,false))*mp->quantity;
 	if(freeslotid == SLOT_INVALID || (mpo->price < 0 ) || !TakeMoneyFromPP(mpo->price))
 	{
 		safe_delete(outapp);
@@ -4172,7 +4172,7 @@ void Client::Handle_OP_ShopPlayerSell(const EQApplicationPacket *app)
 
 	if((freeslot = zone->SaveTempItem(vendor->CastToNPC()->MerchantType, vendor->GetNPCTypeID(),itemid,charges,true)) > 0){
 		ItemInst* inst2 = inst->Clone();
-		inst2->SetPrice(item->Price*(1/.884)*Client::CalcPriceMod(vendor,false));
+		inst2->SetPrice(item->Price*(1/.884)*item->SellRate*Client::CalcPriceMod(vendor,false));
 		inst2->SetMerchantSlot(freeslot);
 
 		uint32 MerchantQuantity = zone->GetTempMerchantQuantity(vendor->GetNPCTypeID(), freeslot);
