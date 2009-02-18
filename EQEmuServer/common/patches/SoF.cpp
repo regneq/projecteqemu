@@ -1006,6 +1006,15 @@ ENCODE(OP_SpawnDoor) {
 		eq[r].invert_state = emu[r].invert_state;
 		eq[r].door_param = emu[r].door_param;
 	}
+		/*
+		//Some new fields that probably need to be understood for doors to open
+		eq->unknown0076 = 1;
+		eq->unknown0077 = 1;
+		eq->unknown0078 = 0;
+		eq->unknown0079 = 1;
+		eq->unknown0080 = 0;
+		eq->unknown0081 = 1;
+		*/
 	FINISH_ENCODE();
 }
 
@@ -1113,7 +1122,19 @@ ENCODE(OP_LogServer) {
  
  	FINISH_ENCODE();
 }
- 
+
+ENCODE(OP_Damage) {
+	ENCODE_LENGTH_EXACT(CombatDamage_Struct);
+	SETUP_DIRECT_ENCODE(CombatDamage_Struct, structs::CombatDamage_Struct);
+	OUT(target);
+	OUT(source);
+	OUT(type);
+	OUT(spellid);
+	OUT(damage);
+	OUT(sequence);
+	FINISH_ENCODE();
+}
+
 DECODE(OP_MoveItem)
 {
 	DECODE_LENGTH_EXACT(structs::MoveItem_Struct);
