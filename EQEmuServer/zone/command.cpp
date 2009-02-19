@@ -9940,8 +9940,8 @@ void command_bot(Client *c, const Seperator *sep) {
 						Gater->Say("Porting to Hate Plane...");
 						Gater->CastSpell(666, c->GetID(), 1, -1, -1);
 					}
-					else if ((!strcasecmp(sep->arg[2], "skyplane")) && (c->GetLevel() >= 39)) {
-						Gater->Say("Porting to skyplane...");
+					else if ((!strcasecmp(sep->arg[2], "airplane")) && (c->GetLevel() >= 39)) {
+						Gater->Say("Porting to airplane...");
 						Gater->CastSpell(674, c->GetID(), 1, -1, -1);
 					}
 					else if ((!strcasecmp(sep->arg[2], "skyfire")) && (c->GetLevel() >= 36)) {
@@ -9973,7 +9973,7 @@ void command_bot(Client *c, const Seperator *sep) {
 					|| !strcasecmp(sep->arg[2], "nexus") && (c->GetLevel() <= 29)
 					|| (!strcasecmp(sep->arg[2], "pok")
 						 || !strcasecmp(sep->arg[2], "hateplane")
-						 || !strcasecmp(sep->arg[2], "skyplane") && (c->GetLevel() <= 38))
+						 || !strcasecmp(sep->arg[2], "airplane") && (c->GetLevel() <= 38))
 					|| !strcasecmp(sep->arg[2], "grimling") && (c->GetLevel() <= 29)
 					|| !strcasecmp(sep->arg[2], "bloodfields") && (c->GetLevel() <= 55)
 					|| !strcasecmp(sep->arg[2], "stonebrunt") && (c->GetLevel() <= 27)
@@ -9983,7 +9983,7 @@ void command_bot(Client *c, const Seperator *sep) {
 						Gater->Say("I don't have the needed level yet", sep->arg[2]);
 					}
 					else {
-						Gater->Say("With the proper level I can [gate] to [commons],[fay],[ro],[tox],[nk],[wakening],[iceclad],[divide],[cobalt],[combines],[wk],[grimling],[twilight],[dawnshroud],[nexus],[pok],[stonebrunt],[bloodfields],[emerald],[skyfire],[hateplane],[skyplane] or [wos].", c->GetName());
+						Gater->Say("With the proper level I can [gate] to [commons],[fay],[ro],[tox],[nk],[wakening],[iceclad],[divide],[cobalt],[combines],[wk],[grimling],[twilight],[dawnshroud],[nexus],[pok],[stonebrunt],[bloodfields],[emerald],[skyfire],[hateplane],[airplane] or [wos].", c->GetName());
 					}
 					break;
 				default:
