@@ -1344,6 +1344,7 @@ void EntityList::ShowSpawnWindow(Client* client, int Distance, bool NamedOnly) {
 		{
 			if(iterator.GetData()->IsTrackable()) {
 				Mob* cur_entity = iterator.GetData();
+				int  Extras = (cur_entity->IsBot() || cur_entity->IsPet() || cur_entity->IsFamiliar() || cur_entity->IsClient());
 				/* if(cur_entity->IsBot() || cur_entity->IsPet() || cur_entity->IsFamiliar()) {
 					continue;
 				} */  //Angelox: this breaks tracking and crashes the zone
@@ -1385,7 +1386,7 @@ void EntityList::ShowSpawnWindow(Client* client, int Distance, bool NamedOnly) {
 				   bool ContinueFlag = false;
 				   const char *CurEntityName = cur_entity->GetName();  //Call function once
 				   for (int Index = 0; Index < MyArraySize; Index++) {
-				      if (!strncasecmp(CurEntityName, MyArray[Index], strlen(MyArray[Index]))) {
+				      if (!strncasecmp(CurEntityName, MyArray[Index], strlen(MyArray[Index])) || (Extras)) {
 				         iterator.Advance();
 				         ContinueFlag = true;
 				         break;   //From Index for
