@@ -3,6 +3,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==02/19/2009==
 KLS: SoF - Fix for ammo
 Angelox: Bots: Fixed '#bot track' command
+Angelox: Bots: Fixed broken entry in BotAI.cpp for '#bot track rare' command
 
 ==02/18/2009==
 Trevius: SoF - Combat Damage message now show up in the chat window
