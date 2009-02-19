@@ -1150,6 +1150,14 @@ DECODE(OP_MoveItem)
 	{
 		emu->from_slot = eq->from_slot - 11;
 	}
+	else if(eq->from_slot == 22)
+	{
+		emu->from_slot = 21;
+	}
+	else if(eq->from_slot == 21)
+	{
+		emu->from_slot = 22;//some power source slot TODO
+	}
 	else
 	{
 		IN(from_slot);
@@ -1162,6 +1170,14 @@ DECODE(OP_MoveItem)
 	else if(eq->to_slot >= 251 && eq->to_slot < 351)
 	{
 		emu->to_slot = eq->to_slot - 11;
+	}
+	else if(eq->to_slot == 22)
+	{
+		emu->to_slot = 21;
+	}
+	else if(eq->to_slot == 21)
+	{
+		emu->to_slot = 22;//some power source slot TODO
 	}
 	else
 	{
@@ -1324,6 +1340,9 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 
 		slot_id += 1;
 	else if(slot_id >= 251 && slot_id < 351)
 		slot_id += 11;
+	
+	if(slot_id == 21)
+		slot_id = 22;
 
 	// It looks like Power Source is slot 21 and Ammo got bumped to slot 22
 	// This will have to be changed somehow to handle slot 21 for Power Source items
@@ -1382,13 +1401,21 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 
 	SoF::structs::ItemBodyStruct ibs;
 	memset(&ibs, 0, sizeof(SoF::structs::ItemBodyStruct));
 
+	uint32 adjusted_slots = item->Slots;
+
+	if(item->Slots & (1 << 21))
+	{
+		adjusted_slots -= (1 << 21);
+		adjusted_slots += (1 << 22);
+	}
+
 	ibs.id = item->ID;
 	ibs.weight = item->Weight;
 	ibs.norent = item->NoRent;
 	ibs.nodrop = item->NoDrop;
 	ibs.attune = item->Attuneable;
 	ibs.size = item->Size;
-	ibs.slots = item->Slots;
+	ibs.slots = adjusted_slots;
 	ibs.price = item->Price;
 	ibs.icon = item->Icon;
 	ibs.unknown1 = 1;

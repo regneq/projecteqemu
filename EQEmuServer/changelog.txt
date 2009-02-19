@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==02/19/2009==
+KLS: SoF - Fix for ammo
+
 ==02/18/2009==
 Trevius: SoF - Combat Damage message now show up in the chat window
 Trevius: SoF - GM Skill Trainers will now actually train skills
