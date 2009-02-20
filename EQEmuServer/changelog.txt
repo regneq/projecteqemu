@@ -5,6 +5,7 @@ KLS: SoF - Fix for ammo
 Angelox: Bots: Fixed '#bot track' command
 Angelox: Bots: Fixed broken entry in BotAI.cpp for '#bot track rare' command
 Angelox: Bots: 'Fixed #bot gate airplane' typo
+Congdar: Fix for Flash of Steel AA
 
 ==02/18/2009==
 Trevius: SoF - Combat Damage message now show up in the chat window

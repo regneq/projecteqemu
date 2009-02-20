@@ -4477,7 +4477,7 @@ void Mob::DoRiposte(Mob *defender){
 			break;
 		}
 
-		DoubleRipChance += 10*GetAA(aaFlashofSteel);
+		DoubleRipChance += 10*defender->GetAA(aaFlashofSteel);
 
 #ifdef EQBOTS
 
