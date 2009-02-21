@@ -1,5 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+
+==2/21/2009==
+cavedude00: Removed Combat:ChanceToHitDivideBy rule. Default value is now Live Like.
+
+Required SQL: delete from rule_values where rule_name = 'Combat:ChanceToHitDivideBy';
+
 ==02/19/2009==
 Trevius: (Xinu) SoF - Many Opcodes filled in from the client
 Trevius: SoF - Aligned the Player Profile a bit more.  Should be pretty accurate now
