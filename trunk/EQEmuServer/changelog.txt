@@ -1,6 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==02/19/2009==
+Trevius: (Xinu) SoF - Many Opcodes filled in from the client
+Trevius: SoF - Aligned the Player Profile a bit more.  Should be pretty accurate now
+Trevius: SoF - Added Drakkin race again for use of equipment.  Should work correctly this time.
+
+==02/19/2009==
 KLS: SoF - Fix for ammo
 Angelox: Bots: Fixed '#bot track' command
 Angelox: Bots: Fixed broken entry in BotAI.cpp for '#bot track rare' command
