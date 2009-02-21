@@ -2120,7 +2120,7 @@ void Client::Handle_OP_Logout(const EQApplicationPacket *app)
 #ifdef EQBOTS
 
 	Mob *clientmob = CastToMob();
-	database.CleanBotLeader(CharacterID());
+	database.CleanBotLeader(GetID());
 	if(clientmob) {
 		if(clientmob->IsBotRaiding()) {
 			BotRaids* br = entity_list.GetBotRaidByMob(clientmob);

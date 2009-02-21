@@ -213,12 +213,8 @@ public:
 	// 2:
 	bool	DeleteBot(int32 mobid);
 	int		GetBotStatus(int32 mobidtmp);
-	void	SetBotLeader(int32 mobidtmp, int32 leaderid, const char* botName, const char* zoneName);
+	void	SetBotLeader(int32 mobidtmp, int32 leaderid);
 	int		GetBotLeader(int32 mobidtmp);
-	int		SpawnedBotCount(int32 id);
-	int		AllowedBotSpawns(int32 id);
-	bool	IsBotSpawned(int32 id, int botid);
-	MYSQL_RES*	ListSpawnedBots(int32 id);
 	int		GetBotOwner(int32 mobid);
 	void	SetBotOwner(int32 mobid, int32 ownerid);
 	void	UpdateBotOwner(int32 accountid, int32 ownerid);

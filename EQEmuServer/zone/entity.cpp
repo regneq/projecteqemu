@@ -1889,18 +1889,8 @@ void EntityList::RemoveAllClients(){
 void EntityList::RemoveAllNPCs(){
 	LinkedListIterator<NPC*> iterator(npc_list);
 	iterator.Reset();
-	while(iterator.MoreElements()) {
-
-#ifdef EQBOTS
-
-		if(iterator.GetData()->IsBot()) {
-			database.CleanBotLeaderEntries(iterator.GetData()->GetNPCTypeID());
-		}
-
-#endif //EQBOTS
-
+	while(iterator.MoreElements())
 		iterator.RemoveCurrent(false);
-	}
 	npc_limit_list.clear();
 }
 void EntityList::RemoveAllGroups(){
