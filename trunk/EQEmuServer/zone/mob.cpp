@@ -2410,11 +2410,22 @@ int Mob::GetHaste() {
 
 #ifdef EQBOTS
 
+// franck-add
+void Mob::MakeBot(Mob *m) { // fonction à revoir selon la méthode d'ajout des bots à la base (interface ?)
+    if(database.GetBotStatus( m->GetNPCTypeID() == 1 )) {
+		return;
+    }	
+	else {
+		database.AddBot( m->GetNPCTypeID());
+		database.SetBotLeader(m->GetNPCTypeID(), this->GetID());
+	}
+}
+
 int Mob::GetBotLeader() {
 	if((GetMaxHP()<0) || IsClient() || !IsBot())
 		return 0;
 	else {
-		return database.GetBotLeader(GetNPCTypeID());
+		return database.GetBotLeader(GetID());
 	}
 }
 

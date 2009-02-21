@@ -1774,54 +1774,6 @@ XS(XS__playertexture)
 	XSRETURN_EMPTY;
 }
 
-#ifdef EQBOTS
-
-XS(XS__createbotcount);
-XS(XS__createbotcount)
-{
-    dXSARGS;
-
-	int        RETVAL;
-
-    dXSTARG;
-
-	RETVAL = quest_manager.createbotcount();
-	XSprePUSH; PUSHu((IV)RETVAL);
-
-	XSRETURN(1);
-}
-
-XS(XS__spawnbotcount);
-XS(XS__spawnbotcount)
-{
-    dXSARGS;
-
-	int        RETVAL;
-
-    dXSTARG;
-
-	RETVAL = quest_manager.spawnbotcount();
-	XSprePUSH; PUSHu((IV)RETVAL);
-
-	XSRETURN(1);
-}
-
-XS(XS__botquest);
-XS(XS__botquest)
-{
-    dXSARGS;
-
-    bool        RETVAL;
-    dXSTARG;
-
-	RETVAL = quest_manager.botquest();
-	XSprePUSH; PUSHu((IV)RETVAL);
-
-	XSRETURN(1);
-}
-
-#endif //EQBOTS
-
 XS(XS__taskselector);
 XS(XS__taskselector)
 {
@@ -2527,15 +2479,6 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "playergender"), XS__playergender, file);
 		newXS(strcpy(buf, "playersize"), XS__playersize, file);
 		newXS(strcpy(buf, "playertexture"), XS__playertexture, file);
-
-#ifdef EQBOTS
-
-		newXS(strcpy(buf, "botquest"), XS__botquest, file);
-		newXS(strcpy(buf, "spawnbotcount"), XS__spawnbotcount, file);
-		newXS(strcpy(buf, "createbotcount"), XS__createbotcount, file);
-
-#endif //EQBOTS
-
 		newXS(strcpy(buf, "taskselector"), XS__taskselector, file);
 		newXS(strcpy(buf, "tasksetselector"), XS__tasksetselector, file);
 		newXS(strcpy(buf, "enabletask"), XS__enabletask, file);

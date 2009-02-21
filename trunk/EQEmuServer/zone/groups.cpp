@@ -464,7 +464,7 @@ bool Group::DelMember(Mob* oldmember,bool ignoresender){
 #ifdef EQBOTS
 
 	if(oldmember->IsClient() && (oldmember == GetLeader())) {
-		database.CleanBotLeader(oldmember->CastToClient()->CharacterID());
+		database.CleanBotLeader(oldmember->CastToClient()->GetID());
 		if(oldmember->IsBotRaiding()) {
 			BotRaids* br = entity_list.GetBotRaidByMob(oldmember);
 			if(br) {
@@ -933,7 +933,7 @@ void Client::LeaveGroup() {
 #ifdef EQBOTS
 
 	Mob *clientmob = CastToMob();
-	database.CleanBotLeader(CharacterID());
+	database.CleanBotLeader(GetID());
 	if(clientmob) {
 		if(clientmob->IsBotRaiding()) {
 			BotRaids* br = entity_list.GetBotRaidByMob(clientmob);

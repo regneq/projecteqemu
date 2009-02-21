@@ -7512,11 +7512,6 @@ void command_bot(Client *c, const Seperator *sep) {
 			c->Message(15, "Usage: #bot create [name] [class(1-16)] [race(1-12,128,130,330)] [gender (male/female)]");
 			return;
 		}
-		
-		if(database.CountBots(c->AccountID()) >= RuleI(EQOffline, CreateBotCount)) {
-			c->Message(15, "You cannot create more than %i bots.", RuleI(EQOffline, CreateBotCount));
-			return;
-		}
 
 		// Check Race/Class combos
 		int choosebclass = atoi(sep->arg[3]);
@@ -8327,47 +8322,6 @@ void command_bot(Client *c, const Seperator *sep) {
 				c->Message(15, "This bot is already in the zone.");
 				return;
 			}
-			
-			const int spawnedBots = database.SpawnedBotCount(c->CharacterID());
-			if(spawnedBots && database.IsBotSpawned(c->CharacterID(), atoi(sep->arg[2]))) {
-				c->Message(15, "That bot is already spawned.");
-				MYSQL_RES* total = database.ListSpawnedBots(c->CharacterID());
-				MYSQL_ROW row;
-				if(mysql_num_rows(total) == spawnedBots) {
-					for(int i=0; i<spawnedBots; i++) {
-						row = mysql_fetch_row(total);
-						c->Message(15, "%s is in %s", row[0], row[1]);
-					}
-				}
-				mysql_free_result(total);
-				return;
-			}
-
-			if(RuleB(EQOffline, BotQuest)) {
-				const int allowedBots = database.AllowedBotSpawns(c->CharacterID());
-				if(allowedBots == 0) {
-					c->Message(15, "You cannot spawn any bots.");
-					return;
-				}
-				if(spawnedBots >= allowedBots) {
-					c->Message(15, "You cannot spawn more than %i bot(s).", spawnedBots);
-					MYSQL_RES* total = database.ListSpawnedBots(c->CharacterID());
-					MYSQL_ROW row;
-					if(mysql_num_rows(total) == spawnedBots) {
-						for(int i=0; i<spawnedBots; i++) {
-							row = mysql_fetch_row(total);
-							c->Message(15, "%s is in %s", row[0], row[1]);
-						}
-					}
-					mysql_free_result(total);
-					return;
-				}
-			}
-
-			if(spawnedBots >= RuleI(EQOffline, SpawnBotCount)) {
-				c->Message(15, "You cannot spawn more than %i bots.", spawnedBots);
-				return;
-			}
 
 			NPC* npc = new NPC(tmp, 0, c->GetX(), c->GetY(), c->GetZ(), c->GetHeading());
 
@@ -8376,7 +8330,6 @@ void command_bot(Client *c, const Seperator *sep) {
 			npc->SetLevel(c->GetLevel());
 			npc->CastToMob()->SetBotRaiding(false);
 			entity_list.AddNPC(npc);
-			database.SetBotLeader(npc->GetNPCTypeID(), c->CharacterID(), npc->GetName(), zone->GetLongName());
 			npc->CastToMob()->Say("I am ready for battle.");
 		}
 		else {
@@ -8424,6 +8377,15 @@ void command_bot(Client *c, const Seperator *sep) {
 
 	if(!strcasecmp(sep->arg[1], "group") && !strcasecmp(sep->arg[2], "add"))
     {
+ 		if((RuleI(EQOffline, BotCount) ==0) && (c->GetTarget()->IsBot())) {
+            c->Message(15, "Bot groups are disabled on this server");
+		Mob* kmob = c->GetTarget();
+			if(kmob != NULL) {
+				kmob->BotOwner = NULL;
+				kmob->Kill();
+			}
+			return;
+		}
 		if(c->GetFeigned()) {
             c->Message(15, "You can't create bot groups while feigned!");
 			return;
@@ -8467,7 +8429,7 @@ void command_bot(Client *c, const Seperator *sep) {
 		if ( c->IsGrouped() )
         {
             Group *g = entity_list.GetGroupByClient(c);
-			if(g && (g->BotGroupCount() > 5))
+			if((g && (g->BotGroupCount() > 5)) || (g && (g->BotGroupCount() > RuleI(EQOffline, BotCount))))
             {
                 c->Message(15, "There is no more room in your group.");
 				Mob* kmob = c->GetTarget();
@@ -8518,6 +8480,7 @@ void command_bot(Client *c, const Seperator *sep) {
 			// else, we do:
 			//1: Set its leader
 			b->Say("I'm becoming %s\'s bot!", c->GetName());
+			database.SetBotLeader(b->GetID(), c->GetID());
 		
 			//2: Set the follow ID so he's following its leader
 			b->SetFollowID(c->GetID());
@@ -10656,6 +10619,7 @@ void command_bot(Client *c, const Seperator *sep) {
 				}
 
 				Mob *gleader = c->GetTarget();
+				database.SetBotLeader(gleader->GetID(), c->GetID());
 				gleader->SetFollowID(c->GetID());
 				gleader->BotOwner = c->CastToMob();
 				gleader->SetOwnerID(0);
@@ -10735,6 +10699,7 @@ void command_bot(Client *c, const Seperator *sep) {
 				}
 				if(g && (g->BotGroupCount() < 6))
                 {
+					database.SetBotLeader(inv->GetID(), c->GetID());
 					inv->SetFollowID(sictar->GetID());
 					inv->BotOwner = c->CastToMob();
 					inv->SetOwnerID(0);
@@ -10784,7 +10749,7 @@ void command_bot(Client *c, const Seperator *sep) {
 		else if(!strcasecmp(sep->arg[2], "disband"))
         {
 			if(c->IsBotRaiding()) {
-				database.CleanBotLeader(c->CharacterID());
+				database.CleanBotLeader(c->GetID());
 				BotRaids *brd = entity_list.GetBotRaidByMob(c->CastToMob());
 				if(brd) {
 					brd->RemoveRaidBots();

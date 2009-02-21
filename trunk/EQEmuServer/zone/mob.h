@@ -883,6 +883,7 @@ bool logpos;
 #ifdef EQBOTS
 
     //franck-add: EQoffline
+	void MakeBot(Mob *m);
 	bool AmIaBot;
 	bool cast_last_time;
 	bool IsBot() const { return AmIaBot; }

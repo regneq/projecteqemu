@@ -3,8 +3,11 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 
 ==2/21/2009==
 cavedude00: Removed Combat:ChanceToHitDivideBy rule. Default value is now Live Like.
-
-Required SQL: delete from rule_values where rule_name = 'Combat:ChanceToHitDivideBy';
+	Required SQL: delete from rule_values where rule_name = 'Combat:ChanceToHitDivideBy';
+Congdar: Bots: Revert svn328
+	Required SQl:	delete from rule_values where rule_name = 'EQOffline:SpawnBotCount';
+			delete from rule_values where rule_name = 'EQOffline:CreateBotCount';
+			delete from rule_values where rule_name = 'EQOffline:BotQuest';
 
 ==02/19/2009==
 Trevius: (Xinu) SoF - Many Opcodes filled in from the client
