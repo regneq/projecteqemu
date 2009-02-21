@@ -48,10 +48,11 @@
 #define IKSAR_SKELETON	161
 #define FROGLOK			330
 #define FROGLOK2		74	// Not sure why /who all reports race as 74 for frogloks
-#define DRAKKIN			522
-#define EMU_RACE_NPC	65533
-#define EMU_RACE_PET	65534
-#define EMU_RACE_UNKNOWN 65535
+#define DRAKKIN			522 // 32768
+#define EMU_RACE_NPC	131069 // was 65533
+#define EMU_RACE_PET	131070 // was 65534
+#define EMU_RACE_UNKNOWN 131071 // was 65535
+
 
 #define human_1			1
 #define barbarian_1		2
@@ -68,7 +69,7 @@
 #define iksar_1			4096
 #define vahshir_1		8192
 #define rall_1			16384 //froglok?
-#define drakkin_1			32768
+#define drakkin_1		32768
 
 const char* GetRaceName(int16 race);
 
@@ -89,10 +90,10 @@ int32 GetArrayRace(int16 race);
 #define Array_Race_GNOME		12
 #define Array_Race_IKSAR		13
 #define Array_Race_VAHSHIR		14
-#define Array_Race_NPC			15
-#define Array_Race_PET			16
-#define Array_Race_FROGLOK		17
-#define Array_Race_DRAKKIN		18
+#define Array_Race_FROGLOK		15
+#define Array_Race_DRAKKIN		16
+#define Array_Race_NPC			17
+#define Array_Race_PET			18
 #define Count_Array_Race		19 // used for array defines, must be the max + 1
 #define PLAYER_RACE_COUNT		16 // The count of all player races
 
