@@ -8,6 +8,10 @@ Congdar: Bots: Revert svn328
 	Required SQl:	delete from rule_values where rule_name = 'EQOffline:SpawnBotCount';
 			delete from rule_values where rule_name = 'EQOffline:CreateBotCount';
 			delete from rule_values where rule_name = 'EQOffline:BotQuest';
+Congdar: Bots: UN-Revert svn328 + bug fixes
+	(if you updated to svn354)
+	Required SQl:	328_bot_management.sql
+	Optional SQL:	328_optional_bot_management.sql
 
 ==02/19/2009==
 Trevius: (Xinu) SoF - Many Opcodes filled in from the client

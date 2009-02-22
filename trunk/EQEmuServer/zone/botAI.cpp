@@ -1345,9 +1345,6 @@ void EntityList::ShowSpawnWindow(Client* client, int Distance, bool NamedOnly) {
 			if(iterator.GetData()->IsTrackable()) {
 				Mob* cur_entity = iterator.GetData();
 				int  Extras = (cur_entity->IsBot() || cur_entity->IsPet() || cur_entity->IsFamiliar() || cur_entity->IsClient());
-				/* if(cur_entity->IsBot() || cur_entity->IsPet() || cur_entity->IsFamiliar()) {
-					continue;
-				} */  //Angelox: this breaks tracking and crashes the zone
 				const char *const MyArray[] = {
 					"a_","an_","Innkeep_","Barkeep_",
 					"Guard_","Merchant_","Lieutenant_",
