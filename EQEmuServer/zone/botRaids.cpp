@@ -500,7 +500,7 @@ void BotRaids::BotRaidInfo(Client *c) {
 		if(c->IsBotRaiding()) {
 			bool moredata = false;
 			for(int i=0; i<MAX_BOT_RAID_GROUPS; i++) {
-				if(BotRaidGroups[i]) {
+				if(BotRaidGroups[i] && BotRaidGroups[i]->members[0]) {
 					moredata = true;
 					c->Message(15, "Group %i (%i members)", i+1, BotRaidGroups[i]->BotGroupCount());
 					c->Message(15, "Group %i Leader: %s", i+1, BotRaidGroups[i]->members[0]->GetName());
