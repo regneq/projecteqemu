@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==2/23/2009==
+Trevius: (Xinu) SoF - Many more Opcodes filled in from the client
+Trevius: SoF - Doors are now able to open and clickable portals now function as well
+Trevius: SoF - Armor tint from dyes is now showing properly
 
 ==2/21/2009==
 cavedude00: Removed Combat:ChanceToHitDivideBy rule. Default value is now Live Like.
