@@ -1112,12 +1112,11 @@ struct SpecialMesg_Struct
 struct WearChange_Struct{
 /*000*/ int16 spawn_id;
 /*002*/ int8 material;
-/*003*/ Color_Struct color;
-/*007*/ uint8 unknown09[11]; //was uint8 unknown09[6];[11]
+/*003*/ uint8 unknown09[11];
+/*014*/ Color_Struct color;
 /*018*/ int8 wear_slot_id;
 /*019*/
 };
-
 
 /*
 ** Type:   Bind Wound Structure
@@ -1915,6 +1914,19 @@ struct ZoneUnavail_Struct {
 	sint16 unknown[4];
 };
 
+struct GroupInvite_Struct {
+	char invitee_name[64];
+	char inviter_name[64];
+//	int8	unknown128[65];
+};
+
+// size 152
+struct GroupInvite_Struct_New { // testing
+	char invitee_name[64];
+	char inviter_name[64];
+	int8	unknown128[24];
+};
+
 struct GroupGeneric_Struct {
 	char name1[64];
 	char name2[64];
@@ -1929,10 +1941,20 @@ struct GroupCancel_Struct {
 struct GroupUpdate_Struct {
 /*0000*/	int32	action;
 /*0004*/	char	yourname[64];
-/*0068*/	char	membername[64]; //was [5][64]
+/*0068*/	char	membername[5][64]; //was [64]
 /*0388*/	char	leadersname[64];
 /*0580*/	int8	unknown[256];
 };
+
+struct GroupUpdate_Struct_New { // testing
+/*0000*/	int32	action;
+/*0004*/	char	yourname[64];
+/*0068*/	char	membername[64];
+/*0132*/	char	leadersname[64];
+/*0196*/	int8	unknown[124];
+/*0320*/
+};
+
 
 struct GroupUpdate2_Struct {
 /*0000*/	int32	action;
@@ -1948,6 +1970,14 @@ struct GroupJoin_Struct {
 /*0004*/	char	yourname[64];
 /*0068*/	char	membername[64];
 /*0132*/	int8	unknown[84];
+};
+
+struct GroupJoin_Struct_New { // testing
+/*0000*/	char	membername[64];	// inviter
+/*0064*/	char	yourname[64];	// invitee
+/*0128*/	int8	unknown[20];
+/*0148*/	int32	action;
+/*0152*/
 };
 
 struct FaceChange_Struct {
@@ -2267,22 +2297,24 @@ struct Door_Struct
 /*0040*/ float   zPos;               // z loc
 /*0044*/ float	 heading;
 /*0048*/ int32   incline;	// rotates the whole door
-/*0052*/ int16   size;			// 100 is normal, smaller number = smaller model
-/*0054*/ int8    unknown0054[6];
+/*0052*/ int32   size;			// 100 is normal, smaller number = smaller model
+/*0054*/ int8    unknown0054[4]; // 00 00 00 00
 /*0060*/ uint8   doorId;             // door's id #
 /*0061*/ uint8   opentype;
-/*0062*/ uint8  state_at_spawn;  //Size???
+/*0062*/ uint8  state_at_spawn;  
 /*0063*/ uint8  invert_state;	// if this is 1, the door is normally open
-/*0064*/ int32  door_param;
-/*0068*/ int32	unknown0068;
-/*0072*/ int32	unknown0072;
-/*0076*/ int8	unknown0076; // seen 1
-/*0077*/ int8	unknown0077; // seen 1
-/*0078*/ int8	unknown0078; // seen 0
-/*0079*/ int8	unknown0079; // seen 1
-/*0080*/ int8	unknown0080; // seen 0
-/*0081*/ int8	unknown0081; // seen 1
-/*0082*/ uint8  unknown0082[10]; // mostly 0s, the last 3 bytes are something tho
+/*0064*/ int32  door_param; // normally ff ff ff ff (-1)
+/*0068*/ int32	unknown0068; // 00 00 00 00
+/*0072*/ int32	unknown0072; // 00 00 00 00
+/*0076*/ int8	unknown0076; // seen 1 or 0
+/*0077*/ int8	unknown0077; // seen 1 (always?)
+/*0078*/ int8	unknown0078; // seen 0 (always?)
+/*0079*/ int8	unknown0079; // seen 1 (always?)
+/*0080*/ int8	unknown0080; // seen 0 (always?)
+/*0081*/ int8	unknown0081; // seen 1 or 0 or rarely 2C or 90 or ED or 2D or A1
+/*0082*/ uint8  unknown0082; // seen 0 or rarely FF or FE or 10 or 5A or 82
+/*0083*/ uint8  unknown0083; // seen 0 or rarely 02 or 7C
+/*0084*/ uint8  unknown0084[8]; // mostly 0s, the last 3 bytes are something tho
 /*0092*/
 };
 
@@ -2517,6 +2549,22 @@ struct Track_Struct {
 struct Tracking_Struct {
 	Track_Struct Entrys[0];
 };
+
+// Looks like new tracking structures - Opcode: 0x57a7
+struct Tracking_Struct_New {
+	int16 totalcount;			// Total Count of mobs within tracking range
+	Track_Struct Entrys[0];
+};
+
+struct Track_Struct_New {
+	int16 entityid;				// Entity ID
+	int16 unknown002;			// 00 00
+	int32 unknown004;			// 
+	int8  level;				// level of mob
+	int8  unknown009;			// 01 maybe type of mob? player/npc?
+	char  name[1];				// name of mob
+};
+
 
 /*
 ** ZoneServerInfo_Struct
@@ -3328,12 +3376,6 @@ struct Save_Struct {
 struct GMToggle_Struct {
 	int8 unknown0[64];
 	uint32 toggle;
-};
-
-struct GroupInvite_Struct {
-	char invitee_name[64];
-	char inviter_name[64];
-//	int8	unknown128[65];
 };
 
 struct BuffFadeMsg_Struct {

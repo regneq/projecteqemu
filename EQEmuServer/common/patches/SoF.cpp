@@ -1012,16 +1012,14 @@ ENCODE(OP_SpawnDoor) {
 		eq[r].state_at_spawn = emu[r].state_at_spawn;
 		eq[r].invert_state = emu[r].invert_state;
 		eq[r].door_param = emu[r].door_param;
+		eq[r].unknown0076 = 0;
+		eq[r].unknown0077 = 1; // Both must be 1 to allow clicking doors
+		eq[r].unknown0078 = 0;
+		eq[r].unknown0079 = 1; // Both must be 1 to allow clicking doors
+		eq[r].unknown0080 = 0;
+		eq[r].unknown0081 = 0;
+		eq[r].unknown0082 = 0;
 	}
-		/*
-		//Some new fields that probably need to be understood for doors to open
-		eq->unknown0076 = 1;
-		eq->unknown0077 = 1;
-		eq->unknown0078 = 0;
-		eq->unknown0079 = 1;
-		eq->unknown0080 = 0;
-		eq->unknown0081 = 1;
-		*/
 	FINISH_ENCODE();
 }
 
