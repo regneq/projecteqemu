@@ -1,5 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==2/24/2009
+KLS: Added initial anti-spam features to global chat operations at popular request.
+KLS: Added option to turn off IP verification in chat and mail servers (for people who use internal networks and find it troublesome).
+Required SQL:
+ALTER TABLE `account` ADD `karma` INT(5) UNSIGNED DEFAULT '0' NOT NULL AFTER `revoked`
+
 ==2/23/2009==
 Trevius: (Xinu) SoF - Many more Opcodes filled in from the client
 Trevius: SoF - Doors are now able to open and clickable portals now function as well

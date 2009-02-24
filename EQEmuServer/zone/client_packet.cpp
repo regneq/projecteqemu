@@ -7339,6 +7339,8 @@ void Client::CompleteConnect()
 	if(zone)
 		zone->weatherSend();
 
+	TotalKarma = database.GetKarma(AccountID());
+
 #ifdef EMBPERL
 	((PerlembParser *)parse)->Event(EVENT_ENTERZONE, 0, "", (NPC*)NULL, this);
 #endif

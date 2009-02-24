@@ -53,7 +53,7 @@ public:
 	void GetAccountStatus(Client *c);
 	void SetChannelPassword(string ChannelName, string Password);
 	void SetChannelOwner(string ChannelName, string Owner);
-	
+	void UpdateKarma(Client *c);
 	
 
 protected:

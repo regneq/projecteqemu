@@ -92,13 +92,16 @@ public:
 	void GeneralChannelMessage(const char *Characters);
 	void SetChannelPassword(string ChannelPassword);
 	void ProcessChannelList(string CommandString);
+	void ProcessKarma();
 	int ChannelCount();
 	inline void SetAccountID(int inAccountID) { AccountID = inAccountID; }
 	inline int GetAccountID() { return AccountID; }
 	inline void SetAccountStatus(int inStatus) { Status = inStatus; }
 	inline void SetHideMe(bool inHideMe) { HideMe = inHideMe; }
+	inline void SetKarma(uint32 inKarma) { TotalKarma = inKarma; }
 	inline int GetAccountStatus() { return Status; }
 	inline bool GetHideMe() { return HideMe; }
+	inline uint32 GetKarma() { return TotalKarma; }
 	void SetChannelOwner(string CommandString);
 	void OPList(string CommandString);
 	void ChannelInvite(string CommandString);
@@ -122,6 +125,13 @@ private:
 	int Status;
 	bool HideMe;
 	bool AllowInvites;
+
+	//Anti Spam Stuff
+	Timer *KarmaGrabUpdateTimer;
+	uint32 TotalKarma;
+
+	Timer *GlobalChatLimiterTimer; //60 seconds
+	uint32 AttemptedMessages;
 };
 
 class Clientlist {

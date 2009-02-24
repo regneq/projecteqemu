@@ -186,9 +186,12 @@ bool Database::VerifyMailKey(string CharacterName, int IPAddress, string MailKey
 	//
 	char CombinedKey[17];
 
-	sprintf(CombinedKey, "%08X%s", IPAddress, MailKey.c_str());
+	if(RuleB(Chat, EnableMailKeyIPVerification) == true)
+		sprintf(CombinedKey, "%08X%s", IPAddress, MailKey.c_str());
+	else
+		sprintf(CombinedKey, "%s", MailKey.c_str());
 	
-	_log(MAIL__TRACE, "DB key is [%s], Client key is [%s]", row[0], CombinedKey);
+	_log(CHANNELS__TRACE, "DB key is [%s], Client key is [%s]", row[0], CombinedKey);
 
 	bool Valid = !strcmp(row[0], CombinedKey);
 
