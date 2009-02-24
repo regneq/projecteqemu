@@ -2620,41 +2620,41 @@ void Client::Escape()
 float Client::CalcPriceMod(Mob* other, bool reverse)
 {
 	float chaformula = 0;
-
-	if (GetCHA() > 100)
-	{
-		chaformula = (GetCHA() - 100)*-0.1;
-		if (chaformula < -5)
-			chaformula = -5;
-	}
-	else if (GetCHA() < 75)
-	{
-		chaformula = (75 - GetCHA())*0.1;
-		if (chaformula > 5)
-			chaformula = 5;
-	}
 	if (other)
 	{
 		int factionlvl = GetFactionLevel(CharacterID(), other->CastToNPC()->GetNPCTypeID(), GetRace(), GetClass(), GetDeity(), other->CastToNPC()->GetPrimaryFaction(), other);
-		switch (factionlvl)
+		if (factionlvl > 5) // Apprehensive or worse.
 		{
-		case 9: //Apprehensive
-			chaformula += 10;
-			break;
-		case 4: //Amiable
-			chaformula -= 3;
-			break;
-		case 3: //Warmly
-			chaformula -= 4;
-			break;
-		case 2: //Kindly
-			chaformula -= 5;
-			break;
-		case 1: //Ally
-			chaformula -= 6;
-			break;
+			if (GetCHA() > 103) 
+			{
+				chaformula = (GetCHA() - 103)*((-(RuleR(Merchant, ChaBonusMod))/100)*(RuleI(Merchant, PriceBonusPct))); // This will max out price bonus.
+				if (chaformula < -1*(RuleI(Merchant, PriceBonusPct)))
+					chaformula = -1*(RuleI(Merchant, PriceBonusPct));
+			}
+			else if (GetCHA() < 103)
+			{
+				chaformula = (103 - GetCHA())*(((RuleR(Merchant, ChaPenaltyMod))/100)*(RuleI(Merchant, PricePenaltyPct))); // This will bottom out price penalty.
+				if (chaformula > 1*(RuleI(Merchant, PricePenaltyPct))) 
+					chaformula = 1*(RuleI(Merchant, PricePenaltyPct));
+			}
+		}
+		if (factionlvl <= 5) // Indifferent or better.
+		{
+			if (GetCHA() > 75) 
+			{
+				chaformula = (GetCHA() - 75)*((-(RuleR(Merchant, ChaBonusMod))/100)*(RuleI(Merchant, PriceBonusPct))); // This will max out price bonus.
+				if (chaformula < -1*(RuleI(Merchant, PriceBonusPct)))
+					chaformula = -1*(RuleI(Merchant, PriceBonusPct));
+			}
+			else if (GetCHA() < 75) 
+			{
+				chaformula = (75 - GetCHA())*(((RuleR(Merchant, ChaPenaltyMod))/100)*(RuleI(Merchant, PricePenaltyPct))); // Faction modifier keeps up from reaching bottom price penalty.
+				if (chaformula > 1*(RuleI(Merchant, PricePenaltyPct))) 
+					chaformula = 1*(RuleI(Merchant, PricePenaltyPct));
+			}
 		}
 	}
+
 	if (reverse)
 		chaformula *= -1; //For selling
 	//Now we have, for example, 10

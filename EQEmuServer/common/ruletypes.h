@@ -229,7 +229,7 @@ RULE_CATEGORY_END()
 RULE_CATEGORY ( Chat )
 RULE_BOOL ( Chat, ServerWideOOC, true)
 RULE_BOOL ( Chat, ServerWideAuction, true)
-RULE_BOOL ( Chat, EnableVoiceMacros, false) // Not yet implemented, but need this set true to even bring up the Voice Macro window.
+RULE_BOOL ( Chat, EnableVoiceMacros, true)
 RULE_BOOL ( Chat, EnableMailKeyIPVerification, true)
 RULE_BOOL ( Chat, EnableAntiSpam, true)
 RULE_INT ( Chat, MinStatusToBypassAntiSpam, 100)
@@ -238,6 +238,16 @@ RULE_INT ( Chat, MaximumMessagesPerInterval, 12)
 RULE_INT ( Chat, MaxMessagesBeforeKick, 20)
 RULE_INT ( Chat, IntervalDurationMS, 60000)
 RULE_INT ( Chat, KarmaUpdateIntervalMS, 1200000)
+RULE_CATEGORY_END()
+
+RULE_CATEGORY ( Merchant )
+RULE_BOOL ( Merchant, UsePriceMod, true) // Use faction/charisma price modifiers.
+RULE_REAL ( Merchant, SellCostMod, 1.05) // Modifier for NPC sell price.
+RULE_REAL ( Merchant, BuyCostMod, 0.95) // Modifier for NPC buy price.
+RULE_INT ( Merchant, PriceBonusPct, 4) // Determines maximum price bonus from having good faction/CHA. Value is a percent.
+RULE_INT ( Merchant, PricePenaltyPct, 4) // Determines maximum price penalty from having bad faction/CHA. Value is a percent.
+RULE_REAL( Merchant, ChaBonusMod, 3.45) // Determines CHA cap, from 104 CHA. 3.45 is 132 CHA at apprehensive. 0.34 is 400 CHA at apprehensive.
+RULE_REAL ( Merchant, ChaPenaltyMod, 1.52) // Determines CHA bottom, up to 102 CHA. 1.52 is 37 CHA at apprehensive. 0.98 is 0 CHA at apprehensive.
 RULE_CATEGORY_END()
 
 RULE_CATEGORY ( Bazaar )

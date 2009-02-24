@@ -1299,6 +1299,29 @@ const char* Database::GetZoneName(int32 zoneID, bool ErrorUnknown) {
 	return 0;
 }
 
+int8 Database::GetPEQZone(int32 zoneID){
+	char errbuf[MYSQL_ERRMSG_SIZE];
+    char *query = 0;
+    MYSQL_RES *result;
+	MYSQL_ROW row;
+	int peqzone=0;
+
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT peqzone from zone where zoneidnumber='%i'", zoneID), errbuf, &result)) 
+	{
+		if (mysql_num_rows(result) == 1) {
+			row = mysql_fetch_row(result);
+			peqzone = atoi(row[0]);
+		}
+			mysql_free_result(result);
+		}
+		else
+		{
+			cerr << "Error in GetPEQZone query '" << query << "' " << errbuf << endl;
+	}
+	safe_delete_array(query);
+	return peqzone;
+}
+
 bool Database::CheckNameFilter(const char* name) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;

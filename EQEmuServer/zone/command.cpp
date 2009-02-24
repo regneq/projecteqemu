@@ -355,6 +355,7 @@ int command_init(void) {
 		command_add("si",NULL,200,command_summonitem) ||
 		command_add("giveitem","[itemid] [charges] - Summon an item onto your target's cursor.  Charges are optional.",200,command_giveitem) ||
 		command_add("gi",NULL,200,command_giveitem) ||
+		command_add("givemoney","[pp] [gp] [sp] [cp] - Gives specified amount of money to the target player.",200,command_givemoney) ||
 		command_add("itemsearch","[search criteria] - Search for an item",10,command_itemsearch) ||
 		command_add("search",NULL,10,command_itemsearch) ||
 		command_add("stun","[duration] - Stuns you or your target for duration",100,command_stun) ||
@@ -1477,10 +1478,13 @@ void command_showbuffs(Client *c, const Seperator *sep)
 	else
 		c->GetTarget()->CastToMob()->ShowBuffs(c);
 }
+
 void command_peqzone(Client *c, const Seperator *sep)
 {
+       int32 timeleft = c->GetPTimers().GetRemainingTime(pTimerPeqzoneReuse)/60;
+
        if(!c->GetPTimers().Expired(&database, pTimerPeqzoneReuse, false)) {
-               c->Message(13,"Ability recovery time not yet met.");
+               c->Message(13,"You must wait %i minute(s) before using this ability again.", timeleft);
                return;
        }
        if(c->GetHPRatio() < 75) {
@@ -1499,12 +1503,13 @@ void command_peqzone(Client *c, const Seperator *sep)
                c->Message(0, "You cannot use this command in your current state. Settle down and wait.");
                return;
        }
-
-       uint32 zoneid = 0;
+	   uint16 zoneid = 0;
+       uint8 destzone = 0;
        if (sep->IsNumber(1))
-	{
-		 zoneid = atoi(sep->arg[1]);
-               if(zoneid == 0 || zoneid == 26 || zoneid == 39 || zoneid == 187 || zoneid == 188 || zoneid == 71 || zoneid == 162 || zoneid == 76 || zoneid == 186 || zoneid == 105 || zoneid == 124 || zoneid == 89 || zoneid == 128 || zoneid == 189 || zoneid == 108 || zoneid == 158 || zoneid  == 200 || zoneid == 201 || zoneid > 228 || (zoneid > 203 && zoneid < 224)) {
+	   {
+			zoneid = atoi(sep->arg[1]);
+			destzone = database.GetPEQZone(zoneid);
+			if(destzone == 0){
                        c->Message(13, "You cannot use this command to enter that zone!");
                        return;               
                }
@@ -1512,21 +1517,22 @@ void command_peqzone(Client *c, const Seperator *sep)
                        c->Message(13, "You cannot use this command on the zone you are in!");
                        return;
                }
-	}
+	   }
        else if (sep->arg[1][0] == 0 || sep->IsNumber(2) || sep->IsNumber(3) || sep->IsNumber(4) || sep->IsNumber(5))
        {
                c->Message(0, "Usage: #peqzone [zonename]");
                c->Message(0, "Optional Usage: #peqzone [zoneid]");
                return;
        } else {
-               zoneid = database.GetZoneID(sep->arg[1]);
+			   zoneid = database.GetZoneID(sep->arg[1]);
+			   destzone = database.GetPEQZone(zoneid);
                if(zoneid == 0) {
                        c->Message(0, "Unable to locate zone '%s'", sep->arg[1]);
                        return;
                }
-               if(zoneid == 26 || zoneid == 39 || zoneid == 187 || zoneid == 188 || zoneid == 71 || zoneid == 162 || zoneid == 76 || zoneid == 186 || zoneid == 105 || zoneid == 124 || zoneid == 89 || zoneid == 128 || zoneid == 189 || zoneid == 108 || zoneid == 158 || zoneid  == 200 || zoneid == 201 || zoneid > 228 || (zoneid > 203 && zoneid < 224)) {
+               if(destzone == 0){
                        c->Message(13, "You cannot use this command to enter that zone!");
-                       return;               
+                       return;                          
                }
                if(zoneid == zone->GetZoneID()) {
                        c->Message(13, "You cannot use this command on the zone you are in!");
@@ -1534,7 +1540,7 @@ void command_peqzone(Client *c, const Seperator *sep)
                }
        }       
  
-       //a couple good ol cripling effects.
+       //a couple good ol cripling effects. This will not work in zones that are no combat.
        c->SpellOnTarget(4454, c); //Cursed Keeper's Blight
        c->SpellOnTarget(2209, c); //Tendrils of Apathy
 
@@ -5147,6 +5153,23 @@ void command_giveitem(Client *c, const Seperator *sep)
 		else {
 			t->SummonItem(itemid);
 		}
+	}
+}
+
+void command_givemoney(Client *c, const Seperator *sep)
+{
+	if (!sep->IsNumber(1) || !sep->IsNumber(2) || !sep->IsNumber(3) || !sep->IsNumber(4)) {
+		c->Message(13, "Usage: #Usage: #givemoney [pp] [gp] [sp] [cp]");
+    } 
+	else if(c->GetTarget() == NULL) {
+		c->Message(13, "You must target a player to give money to.");
+	} 
+	else if(!c->GetTarget()->IsClient()) {
+		c->Message(13, "You can only give money to players with this command.");
+	} 
+	else {
+		c->GetTarget()->CastToClient()->AddMoneyToPP(atoi(sep->arg[4]), atoi(sep->arg[3]), atoi(sep->arg[2]), atoi(sep->arg[1]), true);
+		c->Message(0, "Added %i Platinum, %i Gold, %i Silver, and %i Copper to %s's inventory.", atoi(sep->arg[1]), atoi(sep->arg[2]), atoi(sep->arg[3]), atoi(sep->arg[4]), c->GetTarget()->GetName());
 	}
 }
 
