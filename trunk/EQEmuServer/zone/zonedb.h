@@ -163,6 +163,8 @@ public:
 	int32	AddGraveyardIDToZone(int32 zone_id, int32 graveyard_id);
 	bool	DeleteGraveyard(int32 zone_id, int32 graveyard_id);
 	
+	int32	GetKarma(int32 acct_id);
+	void	UpdateKarma(int32 acct_id, int32 amount);
 	
 	/*
 	 * Faction
@@ -200,10 +202,10 @@ public:
 	bool	LoadStaticZonePoints(LinkedList<ZonePoint*>* zone_point_list,const char* zonename);
 	bool	UpdateZoneSafeCoords(const char* zonename, float x, float y, float z);
 	int8	GetUseCFGSafeCoords();
-      int32   GetInstType(int32 zoneid);
-      bool    InstZoneLoaded(int32 target_zone_ID);
-      void    LoadInstZone(int32 target_zone_ID, int32 InstFlagNum);
-      int		getZoneShutDownDelay(int32 zoneID);
+    int32   GetInstType(int32 zoneid);
+    bool    InstZoneLoaded(int32 target_zone_ID);
+    void    LoadInstZone(int32 target_zone_ID, int32 InstFlagNum);
+    int		getZoneShutDownDelay(int32 zoneID);
 	
 	/*
 	 * Item

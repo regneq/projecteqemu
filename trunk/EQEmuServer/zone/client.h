@@ -1072,6 +1072,14 @@ private:
 	int melody_current_song; // should be 0-5, this is an index of melodysongs[current_song]
 
 
+	//Anti Spam Stuff
+	Timer *KarmaUpdateTimer;
+	uint32 TotalKarma;
+
+	Timer *GlobalChatLimiterTimer; //60 seconds
+	uint32 AttemptedMessages;
+
+
 	//Connecting debug code.
 	enum { //connecting states, used for debugging only
 		NoPacketsReceived,		//havent gotten anything

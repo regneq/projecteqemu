@@ -111,6 +111,12 @@ Client::Client(EQStream *eqs) {
 
 	for(int i = 0; i < MAX_JOINED_CHANNELS ; i++)
 		JoinedChannels[i] = NULL;
+
+	TotalKarma = 0;
+	AttemptedMessages = 0;
+
+	KarmaGrabUpdateTimer = new Timer(120000); //check every 2 minutes
+	GlobalChatLimiterTimer = new Timer(RuleI(Chat, IntervalDurationMS));
 }
 
 Client::~Client() {
@@ -119,6 +125,17 @@ Client::~Client() {
 
 	LeaveAllChannels(false);
 
+	if(KarmaGrabUpdateTimer)
+	{
+		delete KarmaGrabUpdateTimer;
+		KarmaGrabUpdateTimer = NULL;
+	}
+
+	if(GlobalChatLimiterTimer)
+	{
+		delete GlobalChatLimiterTimer;
+		GlobalChatLimiterTimer = NULL;
+	}
 }
 
 void Client::CloseConnection() {
@@ -179,6 +196,7 @@ void Clientlist::Process() {
 
 	for(Iterator = ClientChatConnections.begin(); Iterator != ClientChatConnections.end(); Iterator++) {
 
+		(*Iterator)->ProcessKarma();
 		if((*Iterator)->ClientStream->CheckClosed()) {
 
 			struct in_addr  in;
@@ -802,11 +820,61 @@ void Client::SendChannelMessage(string Message) {
 	ChatChannel *RequiredChannel = ChannelList->FindChannel(ChannelName);
 
 	if(RequiredChannel)
-		if(!RequiredChannel->IsModerated() || RequiredChannel->HasVoice(GetName()) || RequiredChannel->IsOwner(GetName()) ||
-		    RequiredChannel->IsModerator(GetName()) || IsChannelAdmin())
-			RequiredChannel->SendMessageToChannel(Message.substr(MessageStart+1), this);
+		if(RuleB(Chat, EnableAntiSpam))
+		{
+			if(!RequiredChannel->IsModerated() || RequiredChannel->HasVoice(GetName()) || RequiredChannel->IsOwner(GetName()) ||
+				RequiredChannel->IsModerator(GetName()) || IsChannelAdmin())
+			{
+				if(GlobalChatLimiterTimer)
+				{
+					if(GlobalChatLimiterTimer->Check(false))
+					{
+						GlobalChatLimiterTimer->Start(RuleI(Chat, IntervalDurationMS));
+						AttemptedMessages = 0;
+					}
+				}
+				uint32 AllowedMessages = RuleI(Chat, MinimumMessagesPerInterval) + GetKarma();
+				AllowedMessages = AllowedMessages > RuleI(Chat, MaximumMessagesPerInterval) ? RuleI(Chat, MaximumMessagesPerInterval) : AllowedMessages; 
+				
+				if(RuleI(Chat, MinStatusToBypassAntiSpam) >= Status)
+					AllowedMessages = 10000;
+				
+				AttemptedMessages++;
+				if(AttemptedMessages > AllowedMessages)
+				{
+					//sometimes causes a crash
+					/*if(AttemptedMessages > RuleI(Chat, MaxMessagesBeforeKick))
+					{
+						ClientStream->Close();
+					}*/
+					if(GlobalChatLimiterTimer)
+					{
+						char TimeLeft[256];
+						sprintf(TimeLeft, "You are currently rate limited, you cannot send more messages for %i seconds.", 
+							(GlobalChatLimiterTimer->GetRemainingTime() / 1000));
+						GeneralChannelMessage(TimeLeft);
+					}
+					else
+					{
+						GeneralChannelMessage("You are currently rate limited, you cannot send more messages for up to 60 seconds.");
+					}
+				}
+				else
+				{
+					RequiredChannel->SendMessageToChannel(Message.substr(MessageStart+1), this);
+				}
+			}
+			else
+				GeneralChannelMessage("Channel " + ChannelName + " is moderated and you have not been granted a voice.");
+		}
 		else
-			GeneralChannelMessage("Channel " + ChannelName + " is moderated and you have not been granted a voice.");
+		{
+			if(!RequiredChannel->IsModerated() || RequiredChannel->HasVoice(GetName()) || RequiredChannel->IsOwner(GetName()) ||
+				RequiredChannel->IsModerator(GetName()) || IsChannelAdmin())
+				RequiredChannel->SendMessageToChannel(Message.substr(MessageStart+1), this);
+			else
+				GeneralChannelMessage("Channel " + ChannelName + " is moderated and you have not been granted a voice.");
+		}
 
 }
 
@@ -838,11 +906,64 @@ void Client::SendChannelMessageByNumber(string Message) {
 	_log(CHANNELS__TRACE, "%s tells %s, [%s]", GetName().c_str(), RequiredChannel->GetName().c_str(), 
 						   Message.substr(MessageStart + 1).c_str());
 
-	if(!RequiredChannel->IsModerated() || RequiredChannel->HasVoice(GetName()) || RequiredChannel->IsOwner(GetName()) ||
-	    RequiredChannel->IsModerator(GetName()))
-		RequiredChannel->SendMessageToChannel(Message.substr(MessageStart+1), this);
+	if(RuleB(Chat, EnableAntiSpam))
+	{
+		if(!RequiredChannel->IsModerated() || RequiredChannel->HasVoice(GetName()) || RequiredChannel->IsOwner(GetName()) ||
+			RequiredChannel->IsModerator(GetName()))
+		{
+				if(GlobalChatLimiterTimer)
+				{
+					if(GlobalChatLimiterTimer->Check(false))
+					{
+						GlobalChatLimiterTimer->Start(RuleI(Chat, IntervalDurationMS));
+						AttemptedMessages = 0;
+					}
+				}
+				else
+				{
+					printf("GlobalChatLimiterTimer does not exist Check 1\n");
+				}
+				uint32 AllowedMessages = RuleI(Chat, MinimumMessagesPerInterval) + GetKarma();
+				AllowedMessages = AllowedMessages > RuleI(Chat, MaximumMessagesPerInterval) ? RuleI(Chat, MaximumMessagesPerInterval) : AllowedMessages; 
+				if(RuleI(Chat, MinStatusToBypassAntiSpam) >= Status)
+					AllowedMessages = 10000;
+
+				AttemptedMessages++;
+				if(AttemptedMessages > AllowedMessages)
+				{
+					//sometimes causes crash
+					/*if(AttemptedMessages > RuleI(Chat, MaxMessagesBeforeKick))
+					{
+						ClientStream->Close();
+					}*/
+					if(GlobalChatLimiterTimer)
+					{
+						char TimeLeft[256];
+						sprintf(TimeLeft, "You are currently rate limited, you cannot send more messages for %i seconds.", 
+							(GlobalChatLimiterTimer->GetRemainingTime() / 1000));
+						GeneralChannelMessage(TimeLeft);
+					}
+					else
+					{
+						GeneralChannelMessage("You are currently rate limited, you cannot send more messages for up to 60 seconds.");
+					}
+				}
+				else
+				{
+					RequiredChannel->SendMessageToChannel(Message.substr(MessageStart+1), this);
+				}
+		}
+		else
+			GeneralChannelMessage("Channel " + RequiredChannel->GetName() + " is moderated and you have not been granted a voice.");
+	}
 	else
-		GeneralChannelMessage("Channel " + RequiredChannel->GetName() + " is moderated and you have not been granted a voice.");
+	{
+		if(!RequiredChannel->IsModerated() || RequiredChannel->HasVoice(GetName()) || RequiredChannel->IsOwner(GetName()) ||
+			RequiredChannel->IsModerator(GetName()))
+			RequiredChannel->SendMessageToChannel(Message.substr(MessageStart+1), this);
+		else
+			GeneralChannelMessage("Channel " + RequiredChannel->GetName() + " is moderated and you have not been granted a voice.");
+	}
 
 }
 
@@ -1513,4 +1634,15 @@ void Client::SendHelp() {
 	GeneralChannelMessage(";setowner, ;toggleinvites");
 }
 
+void Client::ProcessKarma()
+{
+	if(KarmaGrabUpdateTimer)
+	{
+		if(KarmaGrabUpdateTimer->Check(false))
+		{
+			KarmaGrabUpdateTimer->Start(120000);
+			database.UpdateKarma(this);
+		}
+	}
+}
 

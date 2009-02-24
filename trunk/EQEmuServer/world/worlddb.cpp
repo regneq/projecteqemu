@@ -466,7 +466,10 @@ void WorldDatabase::SetMailKey(int CharID, int IPAddress, int MailKey) {
 
 	char MailKeyString[17];
 
-	sprintf(MailKeyString, "%08X%08X", IPAddress, MailKey);
+	if(RuleB(Chat, EnableMailKeyIPVerification) == true)
+		sprintf(MailKeyString, "%08X%08X", IPAddress, MailKey);
+	else	
+		sprintf(MailKeyString, "%08X", MailKey);
 
 	if (!RunQuery(query, MakeAnyLenString(&query, "UPDATE character_ SET mailkey = '%s' WHERE id='%i'", 
 					      MailKeyString, CharID), errbuf)) 

@@ -192,6 +192,15 @@ bool Client::Process() {
 		if (bindwound_timer.Check() && bindwound_target != 0) {
 		    BindWound(bindwound_target, false);
 		}
+
+		if(KarmaUpdateTimer)
+		{
+			if(KarmaUpdateTimer->Check(false))
+			{
+				KarmaUpdateTimer->Start(RuleI(Chat, KarmaUpdateIntervalMS));
+				database.UpdateKarma(AccountID(), ++TotalKarma);
+			}
+		}
 		
 		bool may_use_attacks = false;
 		/*

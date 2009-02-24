@@ -1853,3 +1853,42 @@ int ZoneDatabase::getZoneShutDownDelay(int32 zoneID)
 	}
 	return (RuleI(Zone, AutoShutdownDelay));
 }
+
+int32 ZoneDatabase::GetKarma(int32 acct_id)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+	int32 ret_val = 0;
+
+	if (!RunQuery(query,MakeAnyLenString(&query, "select `karma` from `account` where `id`='%i' limit 1",
+		acct_id),errbuf,&result))
+	{
+		safe_delete_array(query);
+		return 0;
+	}
+
+	safe_delete_array(query);
+	row = mysql_fetch_row(result);
+
+	ret_val = atoi(row[0]);
+
+	mysql_free_result(result);
+
+	return ret_val;
+}
+
+void ZoneDatabase::UpdateKarma(int32 acct_id, int32 amount)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+    char *query = 0;
+	int32 affected_rows = 0;
+
+	if (RunQuery(query, MakeAnyLenString(&query, "UPDATE account set karma=%i where id=%i", amount, acct_id), errbuf, 0, &affected_rows)){
+		safe_delete_array(query);}
+	else {
+		cerr << "Error in UpdateKarma query '" << query << "' " << errbuf << endl;
+		safe_delete_array(query);
+	}
+}

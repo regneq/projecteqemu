@@ -259,8 +259,13 @@ Client::Client(EQStreamInterface* ieqs)
 	//for good measure:
 	memset(&m_pp, 0, sizeof(m_pp));
 	memset(&m_epp, 0, sizeof(m_epp));
-      PendingTranslocate = false;
+    PendingTranslocate = false;
 	PendingSacrifice = false;
+
+	KarmaUpdateTimer = new Timer(RuleI(Chat, KarmaUpdateIntervalMS));
+	GlobalChatLimiterTimer = new Timer(RuleI(Chat, IntervalDurationMS));
+	AttemptedMessages = 0;
+	TotalKarma = 0;
 }
 
 Client::~Client() {
@@ -672,6 +677,51 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, const char* me
 
 	if (targetname == NULL) {
 		targetname = (target==NULL) ? NULL : target->GetName();
+	}
+
+	if(RuleB(Chat, EnableAntiSpam))
+	{
+		if(strcmp(targetname, "discard") != 0)
+		{
+			if(chan_num == 3 || chan_num == 4 || chan_num == 5)
+			{
+				if(GlobalChatLimiterTimer)
+				{
+					if(GlobalChatLimiterTimer->Check(false))
+					{
+						GlobalChatLimiterTimer->Start(RuleI(Chat, IntervalDurationMS));
+						AttemptedMessages = 0;
+					}
+				}
+
+				uint32 AllowedMessages = RuleI(Chat, MinimumMessagesPerInterval) + TotalKarma;
+				AllowedMessages = AllowedMessages > RuleI(Chat, MaximumMessagesPerInterval) ? RuleI(Chat, MaximumMessagesPerInterval) : AllowedMessages; 
+				
+				if(RuleI(Chat, MinStatusToBypassAntiSpam) >= Admin())
+					AllowedMessages = 10000;
+
+				AttemptedMessages++;
+				if(AttemptedMessages > AllowedMessages)
+				{
+					if(AttemptedMessages > RuleI(Chat, MaxMessagesBeforeKick))
+					{
+						Kick();
+						return;
+					}
+					if(GlobalChatLimiterTimer)
+					{
+						Message(0, "You have been rate limited, you can send more messages in %i seconds.", 
+							GlobalChatLimiterTimer->GetRemainingTime() / 1000);
+						return;
+					}
+					else
+					{
+						Message(0, "You have been rate limited, you can send more messages in 60 seconds.");
+						return;
+					}
+				}
+			}
+		}
 	}
 
 	switch(chan_num)

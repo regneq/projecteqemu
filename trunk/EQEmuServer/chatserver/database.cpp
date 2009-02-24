@@ -110,7 +110,7 @@ void Database::GetAccountStatus(Client *c) {
 	MYSQL_RES *result;
 	MYSQL_ROW row;
 
-	if (!RunQuery(query,MakeAnyLenString(&query, "select `status`, `hideme` from `account` where `id`='%i' limit 1",
+	if (!RunQuery(query,MakeAnyLenString(&query, "select `status`, `hideme`, `karma` from `account` where `id`='%i' limit 1",
 					   c->GetAccountID()),errbuf,&result)){
 
 		_log(CHANNELS__ERROR, "Unable to get account status for character %s, error %s", c->GetName().c_str(), errbuf);
@@ -126,11 +126,37 @@ void Database::GetAccountStatus(Client *c) {
 
 	c->SetAccountStatus(atoi(row[0]));
 	c->SetHideMe(atoi(row[1]));
+	c->SetKarma(atoi(row[2]));
 
 	mysql_free_result(result);
 
-	_log(CHANNELS__TRACE, "Set account status to %i and hideme to %i for %s", c->GetAccountStatus(), c->GetHideMe(), c->GetName().c_str());
+	_log(CHANNELS__TRACE, "Set account status to %i, hideme to %i and karma to %i for %s", c->GetAccountStatus(), c->GetHideMe(), c->GetKarma(), c->GetName().c_str());
 
+}
+
+void Database::UpdateKarma(Client *c)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+
+	if (!RunQuery(query,MakeAnyLenString(&query, "select `karma` from `account` where `id`='%i' limit 1",
+		c->GetAccountID()),errbuf,&result)){
+
+		_log(CHANNELS__ERROR, "Unable to get Karma for account %i, error %s", c->GetAccountID(), errbuf);
+		safe_delete_array(query);
+		return;
+	}
+
+	safe_delete_array(query);
+	row = mysql_fetch_row(result);
+
+	c->SetKarma(atoi(row[0]));
+
+	mysql_free_result(result);
+
+	_log(CHANNELS__TRACE, "Updated Karma to %i for %s", c->GetKarma(), c->GetName().c_str());
 }
 
 int Database::FindAccount(const char *CharacterName, Client *c) {
@@ -218,7 +244,10 @@ bool Database::VerifyMailKey(string CharacterName, int IPAddress, string MailKey
 	//
 	char CombinedKey[17];
 
-	sprintf(CombinedKey, "%08X%s", IPAddress, MailKey.c_str());
+	if(RuleB(Chat, EnableMailKeyIPVerification) == true)
+		sprintf(CombinedKey, "%08X%s", IPAddress, MailKey.c_str());
+	else
+		sprintf(CombinedKey, "%s", MailKey.c_str());
 	
 	_log(CHANNELS__TRACE, "DB key is [%s], Client key is [%s]", row[0], CombinedKey);
 
