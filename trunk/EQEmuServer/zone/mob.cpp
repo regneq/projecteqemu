@@ -2410,7 +2410,7 @@ int Mob::GetHaste() {
 
 #ifdef EQBOTS
 
-int Mob::GetBotLeader() {
+int32 Mob::GetBotLeader() {
 	if((GetMaxHP()<0) || IsClient() || !IsBot())
 		return 0;
 	else {

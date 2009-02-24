@@ -2589,10 +2589,10 @@ void NPC::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill) 
 					}
 				}
 			}
-			// Delete from database
-			database.CleanBotLeaderEntries(botnpcid);
-			entity_list.RemoveNPC(botid);
 		}
+		// Delete from database
+		database.CleanBotLeaderEntries(botnpcid);
+		entity_list.RemoveNPC(botid);
 	}
 
 #endif //EQBOTS

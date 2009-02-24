@@ -2068,12 +2068,12 @@ void Database::SetBotLeader(int32 mobidtmp, int32 leaderid, const char* botName,
 }
 
 // Who's the bot leader ?
-int Database::GetBotLeader(int32 mobidtmp) {
+int32 Database::GetBotLeader(int32 mobidtmp) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char* query = 0;
 	MYSQL_RES* result;
 	MYSQL_ROW row;
-    int botleader = 0;
+    int32 botleader = 0;
 
 	if(RunQuery(query, MakeAnyLenString(&query, "SELECT leaderid FROM botleader WHERE botid=%i", mobidtmp), errbuf, &result)) {
 		if(mysql_num_rows(result) == 1) {

@@ -214,7 +214,7 @@ public:
 	bool	DeleteBot(int32 mobid);
 	int		GetBotStatus(int32 mobidtmp);
 	void	SetBotLeader(int32 mobidtmp, int32 leaderid, const char* botName, const char* zoneName);
-	int		GetBotLeader(int32 mobidtmp);
+	int32	GetBotLeader(int32 mobidtmp);
 	int		SpawnedBotCount(int32 id);
 	int		AllowedBotSpawns(int32 id);
 	bool	IsBotSpawned(int32 id, int botid);
