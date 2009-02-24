@@ -3911,7 +3911,11 @@ void Client::Handle_OP_ShopRequest(const EQApplicationPacket *app)
 	mco->npcid = mc->npcid;
 	mco->playerid = 0;
 	mco->command = action; // Merchant command 0x01 = open
-	mco->rate = 1/(.884*Client::CalcPriceMod(tmp,true)); // works
+	if (RuleB(Merchant, UsePriceMod)){
+	mco->rate = 1/((RuleR(Merchant, BuyCostMod))*Client::CalcPriceMod(tmp,true)); // works
+	}
+	else
+		mco->rate = 1/(RuleR(Merchant, BuyCostMod));
 
 	outapp->priority = 6;
 	QueuePacket(outapp);
@@ -4058,7 +4062,11 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 		}
 	}
 
-	mpo->price = (item->Price*(1/.884)*item->SellRate*Client::CalcPriceMod(tmp,false))*mp->quantity;
+	if (RuleB(Merchant, UsePriceMod)){
+	mpo->price = (item->Price*(RuleR(Merchant, SellCostMod))*item->SellRate*Client::CalcPriceMod(tmp,false))*mp->quantity;
+	}
+	else
+		mpo->price = (item->Price*(RuleR(Merchant, SellCostMod))*item->SellRate)*mp->quantity;
 	if(freeslotid == SLOT_INVALID || (mpo->price < 0 ) || !TakeMoneyFromPP(mpo->price))
 	{
 		safe_delete(outapp);
@@ -4143,8 +4151,11 @@ void Client::Handle_OP_ShopPlayerSell(const EQApplicationPacket *app)
 		//Message(13,"%s tells you, 'LOL NOPE'", vendor->GetName());
 		return;
 	}
-
-	price=(int)((item->Price*mp->quantity)*.884*Client::CalcPriceMod(vendor,true)+0.5); // need to round up, because client does it automatically when displaying price
+	if (RuleB(Merchant, UsePriceMod)){
+	price=(int)((item->Price*mp->quantity)*(RuleR(Merchant, BuyCostMod))*Client::CalcPriceMod(vendor,true)+0.5); // need to round up, because client does it automatically when displaying price
+	}
+	else
+		price=(int)((item->Price*mp->quantity)*(RuleR(Merchant, BuyCostMod))+0.5);
 	AddMoneyToPP(price,false);
 
 	if (inst->IsStackable())
@@ -4172,7 +4183,11 @@ void Client::Handle_OP_ShopPlayerSell(const EQApplicationPacket *app)
 
 	if((freeslot = zone->SaveTempItem(vendor->CastToNPC()->MerchantType, vendor->GetNPCTypeID(),itemid,charges,true)) > 0){
 		ItemInst* inst2 = inst->Clone();
-		inst2->SetPrice(item->Price*(1/.884)*item->SellRate*Client::CalcPriceMod(vendor,false));
+		if (RuleB(Merchant, UsePriceMod)){
+		inst2->SetPrice(item->Price*(RuleR(Merchant, SellCostMod))*item->SellRate*Client::CalcPriceMod(vendor,false));
+		}
+		else
+			inst2->SetPrice(item->Price*(RuleR(Merchant, SellCostMod))*item->SellRate);
 		inst2->SetMerchantSlot(freeslot);
 
 		uint32 MerchantQuantity = zone->GetTempMerchantQuantity(vendor->GetNPCTypeID(), freeslot);

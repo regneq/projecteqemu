@@ -874,7 +874,11 @@ void Client::BulkSendMerchantInventory(int merchant_id, int npcid) {
 				charges=item->MaxCharges;
 			ItemInst* inst = database.CreateItem(item, charges);
 			if (inst) {
-				inst->SetPrice((item->Price*(1/.884)*item->SellRate*Client::CalcPriceMod(merch,false)));
+				if (RuleB(Merchant, UsePriceMod)){
+				inst->SetPrice((item->Price*(RuleR(Merchant, SellCostMod))*item->SellRate*Client::CalcPriceMod(merch,false)));
+				}
+				else
+					inst->SetPrice((item->Price*(RuleR(Merchant, SellCostMod))*item->SellRate));
 				inst->SetMerchantSlot(ml.slot);
 				inst->SetMerchantCount(-1);		//unlimited
 				if(charges > 0)
@@ -908,7 +912,11 @@ void Client::BulkSendMerchantInventory(int merchant_id, int npcid) {
 			charges = item->MaxCharges;
 			ItemInst* inst = database.CreateItem(item, charges);
 			if (inst) {
-				inst->SetPrice((item->Price*(1/.884)*item->SellRate*Client::CalcPriceMod(merch,false)));
+				if (RuleB(Merchant, UsePriceMod)){
+				inst->SetPrice((item->Price*(RuleR(Merchant, SellCostMod))*item->SellRate*Client::CalcPriceMod(merch,false)));
+				}
+				else
+					inst->SetPrice((item->Price*(RuleR(Merchant, SellCostMod))*item->SellRate));
 				inst->SetMerchantSlot(ml.slot);
 				inst->SetMerchantCount(ml.charges);
 				if(charges > 0)

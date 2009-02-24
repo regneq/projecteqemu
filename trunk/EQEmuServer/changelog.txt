@@ -3,8 +3,16 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==2/24/2009
 KLS: Added initial anti-spam features to global chat operations at popular request.
 KLS: Added option to turn off IP verification in chat and mail servers (for people who use internal networks and find it troublesome).
+cavedude: Added peqzone column to zone to allow or deny access to zones using #peqzone.
+cavedude: #peqzone will give you the approximate time remaining before reusing.
+cavedude: Altered merchant price structure to better match Live. Created rules to govern its behaviour. See ruletypes.h for basic explanations!
+cavedude: Added command #givemoney.
+
 Required SQL:
-ALTER TABLE `account` ADD `karma` INT(5) UNSIGNED DEFAULT '0' NOT NULL AFTER `revoked`
+ALTER TABLE `account` ADD `karma` INT(5) UNSIGNED DEFAULT '0' NOT NULL AFTER `revoked`;
+ALTER table zone ADD column `peqzone` tinyint(4) NOT NULL default '1';
+
+Optional SQL: 360_peqzone.sql
 
 ==2/23/2009==
 Trevius: (Xinu) SoF - Many more Opcodes filled in from the client

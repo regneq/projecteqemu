@@ -196,6 +196,7 @@ public:
 	bool	GetZoneGraveyard(const int32 graveyard_id, int32* graveyard_zoneid = 0, float* graveyard_x = 0, float* graveyard_y = 0, float* graveyard_z = 0, float* graveyard_heading = 0);
 	int32	GetZoneGraveyardID(int32 zone_id);
 	int32	GetZoneID(const char* zonename);
+	int8    GetPEQZone(int32 zoneID);
 	const char*	GetZoneName(int32 zoneID, bool ErrorUnknown = false);
 	int8	GetServerType();
 	bool	GetSafePoints(const char* short_name, float* safe_x = 0, float* safe_y = 0, float* safe_z = 0, sint16* minstatus = 0, int8* minlevel = 0, char *flag_needed = NULL);

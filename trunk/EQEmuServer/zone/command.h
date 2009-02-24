@@ -226,6 +226,7 @@ void command_interrupt(Client *c, const Seperator *sep);
 void command_d1(Client *c, const Seperator *sep);
 void command_summonitem(Client *c, const Seperator *sep);
 void command_giveitem(Client *c, const Seperator *sep);
+void command_givemoney(Client *c, const Seperator *sep);
 void command_itemsearch(Client *c, const Seperator *sep);
 void command_datarate(Client *c, const Seperator *sep);
 void command_setaaxp(Client *c, const Seperator *sep);
