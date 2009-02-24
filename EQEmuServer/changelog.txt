@@ -6,6 +6,21 @@ Trevius: SoF - Doors are now able to open and clickable portals now function as 
 Trevius: SoF - Armor tint from dyes is now showing properly
 Congdar: Bots: '#bot group remove' now removes any of your spawned bots, if it's a group leader then that whole group
 
+KLS: Changes to combat:
+-AC has a slightly higher chance to mitigate into a miss than before
+-AC is no more effective per point but the bonus ac every character and npc gets in the calculation has been effectively increased.
+-The accuracy falloff from level is now more variable based on defender's level, this should address the issue where at higher levels you can grind npcs that are still blue or light blue at little risk.
+-The base chance to hit has been increased.
+-Added both hit and avoidance mods for class types that are adjustable by rules.
+-Archery now has an accuracy penalty that is rule adjustable, with ranger buffs the penalty should make it so archery is slightly more accurate than melee at default.
+-Skill is now a flat 0.33% chance to miss for every point under your max skill you are.
+-The benefit from agility to avoidance has been decreased by roughly 33%.
+-Maximum chance to hit is now 95%, down from 99%.
+KLS: Bug fix in skill up with the skill up mod rule.
+
+Recommended SQL and Optional SQL:
+356_combat.sql
+
 ==2/21/2009==
 cavedude00: Removed Combat:ChanceToHitDivideBy rule. Default value is now Live Like.
 	Required SQL: delete from rule_values where rule_name = 'Combat:ChanceToHitDivideBy';
