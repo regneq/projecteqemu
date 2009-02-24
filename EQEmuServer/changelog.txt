@@ -4,6 +4,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 Trevius: (Xinu) SoF - Many more Opcodes filled in from the client
 Trevius: SoF - Doors are now able to open and clickable portals now function as well
 Trevius: SoF - Armor tint from dyes is now showing properly
+Congdar: Bots: '#bot group remove' now removes any of your spawned bots, if it's a group leader then that whole group
 
 ==2/21/2009==
 cavedude00: Removed Combat:ChanceToHitDivideBy rule. Default value is now Live Like.

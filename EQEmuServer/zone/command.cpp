@@ -8567,12 +8567,42 @@ void command_bot(Client *c, const Seperator *sep) {
 
 	if(!strcasecmp(sep->arg[1], "group") && !strcasecmp(sep->arg[2], "remove")) {
         if(c->GetTarget() != NULL) {
-           if(c->IsGrouped() && c->GetTarget()->IsBot() && c->GetTarget()->IsGrouped() 
-			     && (c->GetGroup() == entity_list.GetGroupByMob(c->GetTarget()))) {
-				int16 botID = c->GetTarget()->GetID();
-				c->GetTarget()->Say("Bot Deactivated");
-				c->GetTarget()->BotOwner = NULL;
-				c->GetTarget()->Kill();
+			if(c->GetTarget()->IsBot() && (c->GetTarget()->GetBotLeader() == c->CharacterID())) {
+				if(c->GetTarget()->IsGrouped()) {
+					Group *g = entity_list.GetGroupByMob(c->GetTarget());
+					if(g && g->members[0]) {
+						if(g->members[0] == c->GetTarget()) {
+							for(int i=5; i>=0; i--) {
+								if(g->members[i]) {
+									g->members[i]->BotOwner = NULL;
+									g->members[i]->Kill();
+								}
+							}
+						}
+						else {
+							c->GetTarget()->BotOwner = NULL;
+							c->GetTarget()->Kill();
+						}
+					}
+				}
+				else {
+					c->GetTarget()->BotOwner = NULL;
+					c->GetTarget()->Kill();
+				}
+				if(c->IsBotRaiding()) {
+					if(database.SpawnedBotCount(c->CharacterID()) < 6) {
+						entity_list.RemoveBotRaid(c->CastToMob()->GetBotRaidID());
+						Group *g = c->GetGroup();
+						if(g) {
+							for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
+								if(g->members[i]) {
+									g->members[i]->SetBotRaidID(0);
+									g->members[i]->SetBotRaiding(false);
+								}
+							}
+						}
+					}
+				}
 			}
             else {
                 c->Message(15, "You must target a bot first.");
@@ -10550,7 +10580,6 @@ void command_bot(Client *c, const Seperator *sep) {
 		c->Message(15, "#bot raid create - will create your raid (you will be the raid leader)");
 		c->Message(15, "#bot raid group create - create a group. Your target will be the leader.");
 		c->Message(15, "#bot raid invite bot [group leader's name] - Invite your target into that group leader's group.");	
-//		c->Message(15, "#bot raid remove group [group leader's name] - Remove target's group from your raid.");
 		c->Message(15, "#bot raid disband - Disband the raid.");
 		c->Message(15, "#bot raid order maintank - Your target will be flagged as the main tank.");
 		c->Message(15, "#bot raid order secondtank - Your target will be flagged as the second tank.");
@@ -10771,27 +10800,6 @@ void command_bot(Client *c, const Seperator *sep) {
 			}
             return;
 		}
-
-/*		else if(!strcasecmp(sep->arg[2], "remove") && !strcasecmp(sep->arg[3], "group")) {
-            // Congdar: rewrote due to zone crashing on me
-            if(entity_list.GetRaidByMob(c->CastToMob()) == NULL ) {
-				return;
-            }
-			else {
-				BotRaids *mybr = entity_list.GetRaidByMob(c->CastToMob());
-                Group *mygtr = entity_list.GetGroupByLeaderName(sep->arg[4]);
-                if(mybr && mygtr) {
-                    if(strcmp(mybr->GetLeader()->GetName(), mygtr->GetLeaderName()) == 0) {
-                        c->Message(15, "All bot groups are disbanded, use #bot raid disband\n");
-                    }
-                    else {
-                        mybr->RemoveGroup(mygtr);
-                    }
-                }
-			}
-            return;
-		}
-*/
 		else if(!strcasecmp(sep->arg[2], "disband"))
         {
 			if(c->IsBotRaiding()) {
