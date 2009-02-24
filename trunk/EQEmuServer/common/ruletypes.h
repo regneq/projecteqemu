@@ -162,9 +162,21 @@ RULE_REAL ( Combat, AvgProcsPerMinute, 18.0)
 RULE_REAL ( Combat, ProcPerMinDexContrib, 0.075)
 RULE_REAL ( Combat, BaseProcChance, 0.035)
 RULE_REAL ( Combat, ProcDexDivideBy, 11000)
-RULE_REAL ( Combat, BaseHitChance, 54.0)
-RULE_INT ( Combat, HitPerLevelDiff, 145) //45% of level diff converted to chance to hit/miss
-RULE_REAL ( Combat, AgiHitFactor, 0.015) 
+RULE_REAL ( Combat, BaseHitChance, 69.0)
+RULE_REAL ( Combat, HitFalloffMinor, 5.0) //hit will fall off up to 5% over the initial level range
+RULE_REAL ( Combat, HitFalloffModerate, 7.0) //hit will fall off up to 7% over the three levels after the initial level range
+RULE_REAL ( Combat, HitFalloffMajor, 50.0) //hit will fall off sharply if we're outside the minor and moderate range
+RULE_REAL ( Combat, HitBonusPerLevel, 0.4) //You gain this % of hit for every level you are above your target
+RULE_REAL ( Combat, WeaponSkillFalloff, 0.33) //For every weapon skill point that's not maxed you lose this % of hit
+RULE_REAL ( Combat, ArcheryHitPenalty, 0.25) //Archery has a hit penalty to try to help balance it with the plethora of long term +hit modifiers for it
+RULE_REAL ( Combat, MeleeHitChanceMod, 1.0)
+RULE_REAL ( Combat, PriestHitChanceMod, 0.85)
+RULE_REAL ( Combat, CasterHitChanceMod, 0.7)
+RULE_REAL ( Combat, HeavyAvoidChanceMod, 1.0) //plate wearers
+RULE_REAL ( Combat, ModerateAvoidChanceMod, 0.96) //chain + leather melee
+RULE_REAL ( Combat, LightAvoidChanceMod, 0.91) //druid
+RULE_REAL ( Combat, UnarmoredAvoidChanceMod, 0.86) //rest
+RULE_REAL ( Combat, AgiHitFactor, 0.01) 
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( NPC )

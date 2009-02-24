@@ -162,91 +162,108 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 	int8 defender_level = defender->GetLevel() ? defender->GetLevel() : 1;
 
 	//Calculate the level difference
-	sint32 level_difference = attacker_level - defender_level;
-	if(level_difference < -20) level_difference = -20;
-	if(level_difference > 20) level_difference = 20;
-	chancetohit += (RuleI(Combat, HitPerLevelDiff) * level_difference / 100);
-	chancetohit -= ((float)defender->GetAGI() * RuleR(Combat, AgiHitFactor));
+	double level_difference = attacker_level - defender_level;
+	double range = defender->GetLevel();
+	range = ((range / 4) + 3);
 
-#ifdef EQBOTS
-
-	if(attacker->IsBot()){
-		int skilldiff = defender->GetSkill(DEFENSE) - attacker->GetSkill(skillinuse);
-		bonus = 0;
-		if(pvpmode){
-			if(skilldiff > 10){
-				bonus = -(2 + ((defender->GetSkill(DEFENSE) - attacker->GetSkill(skillinuse) - 10) / 10));
-			}
-			else if(skilldiff <= 10 && skilldiff > 0){
-				bonus = -(1 + ((defender->GetSkill(DEFENSE) - attacker->GetSkill(skillinuse)) / 25));
-			}
-			else{
-				bonus = (attacker->GetSkill(skillinuse) - defender->GetSkill(DEFENSE)) / 25;
-			}
+	if(level_difference < 0)
+	{
+		if(level_difference >= -range)
+		{
+			chancetohit += (level_difference / range) * RuleR(Combat,HitFalloffMinor); //5
 		}
-		else{
-			if(skilldiff > 10){
-				bonus = -(4 + ((defender->GetSkill(DEFENSE) - attacker->GetSkill(skillinuse) - 10) * 1 / 5));
-			}
-			else if(skilldiff <= 10 && skilldiff > 0){
-				bonus = -(2 + ((defender->GetSkill(DEFENSE) - attacker->GetSkill(skillinuse)) / 10));
-			}
-			else{
-				bonus = 1 + (((attacker->GetSkill(skillinuse) - defender->GetSkill(DEFENSE)) / 25));
-			}
+		else if (level_difference >= -(range+3.0))
+		{
+			chancetohit -= 15;
+			chancetohit += ((level_difference+range) / (3.0)) * RuleR(Combat,HitFalloffModerate); //7
 		}
-		chancetohit += bonus;
+		else
+		{
+			chancetohit -= 12;
+			chancetohit += ((level_difference+range+3.0)/12.0) * RuleR(Combat,HitFalloffMajor); //50
+		}
 	}
 	else
-
-#endif //EQBOTS
-
-	if(attacker->IsClient()){
-		int skilldiff = defender->GetSkill(DEFENSE) - attacker->GetSkill(skillinuse);
-		bonus = 0;
-		if(pvpmode){
-			if(skilldiff > 10){
-				bonus = -(2 + ((defender->GetSkill(DEFENSE) - attacker->GetSkill(skillinuse) - 10) / 10));
-			}
-			else if(skilldiff <= 10 && skilldiff > 0){
-				bonus = -(1 + ((defender->GetSkill(DEFENSE) - attacker->GetSkill(skillinuse)) / 25));
-			}
-			else{
-				bonus = (attacker->GetSkill(skillinuse) - defender->GetSkill(DEFENSE)) / 25;
-			}
-		}
-		else{
-			if(skilldiff > 10){
-				bonus = -(4 + ((defender->GetSkill(DEFENSE) - attacker->GetSkill(skillinuse) - 10) * 1 / 5));
-			}
-			else if(skilldiff <= 10 && skilldiff > 0){
-				bonus = -(2 + ((defender->GetSkill(DEFENSE) - attacker->GetSkill(skillinuse)) / 10));
-			}
-			else{
-				bonus = 1 + (((attacker->GetSkill(skillinuse) - defender->GetSkill(DEFENSE)) / 25));
-			}
-		}
-		chancetohit += bonus;
+	{
+		chancetohit += (RuleR(Combat,HitBonusPerLevel) * level_difference); 
 	}
-	else{
-		//some class combos have odd caps, base our attack skill based off of a warriors 1hslash since 
-		//it scales rather evenly across all levels for warriors, based on the defenders level so things like
-		//light blues can still hit their target.
-		uint16 atkSkill = (database.GetSkillCap(WARRIOR, (SkillType)_1H_SLASHING, defender->GetLevel()) + 5);
-		int skilldiff = defender->GetSkill(DEFENSE) - atkSkill;
-		bonus = 0;
-		if(skilldiff > 10){
-			bonus = -(4 + ((defender->GetSkill(DEFENSE) - atkSkill - 10) * 1 / 5));
+
+	chancetohit -= ((float)defender->GetAGI() * RuleR(Combat, AgiHitFactor));
+
+	double hit_chance_mod = 1.0;
+	double defense_chance_mod = 1.0;
+
+	if(attacker->IsClient())
+	{
+		chancetohit -= (RuleR(Combat,WeaponSkillFalloff) * (attacker->CastToClient()->MaxSkill(skillinuse) - attacker->GetSkill(skillinuse)));
+
+		switch(attacker->GetClass())
+		{
+		case WARRIOR:
+		case PALADIN:
+		case RANGER:
+		case SHADOWKNIGHT:
+		case MONK:
+		case BARD:
+		case ROGUE:
+		case BEASTLORD:
+		case BERSERKER:
+			hit_chance_mod = RuleR(Combat, MeleeHitChanceMod);
+			break;
+		case CLERIC:
+		case DRUID:
+		case SHAMAN:
+			hit_chance_mod = RuleR(Combat, PriestHitChanceMod);
+			break;
+		case WIZARD:
+		case ENCHANTER:
+		case MAGICIAN:
+		case NECROMANCER:
+			hit_chance_mod = RuleR(Combat, CasterHitChanceMod);
+			break;
+		default:
+			break;
 		}
-		else if(skilldiff <= 10 && skilldiff > 0){
-			bonus = -(2 + ((defender->GetSkill(DEFENSE) - atkSkill) / 10));
-		}
-		else{
-			bonus = 1 + ((atkSkill - defender->GetSkill(DEFENSE)) / 25);
-		}
-		chancetohit += bonus;
 	}
-		
+
+	if(skillinuse == ARCHERY)
+		hit_chance_mod -= RuleR(Combat, ArcheryHitPenalty);
+
+	if(defender->IsClient())
+	{
+		chancetohit += (RuleR(Combat,WeaponSkillFalloff) * (defender->CastToClient()->MaxSkill(DEFENSE) - defender->GetSkill(skillinuse)));
+
+		switch(defender->GetClass())
+		{
+		case WARRIOR:
+		case PALADIN:
+		case SHADOWKNIGHT:
+		case CLERIC:
+		case BARD:
+			defense_chance_mod = RuleR(Combat, HeavyAvoidChanceMod);
+			break;
+		case RANGER:
+		case ROGUE:
+		case BERSERKER:
+		case SHAMAN:
+		case MONK:
+		case BEASTLORD: //I treat the leather melee as moderate armor, change if you want but not a unintentional mistake.
+			defense_chance_mod = RuleR(Combat, ModerateAvoidChanceMod);
+			break;
+		case DRUID:
+			defense_chance_mod = RuleR(Combat, LightAvoidChanceMod);;
+			break;
+		case WIZARD:
+		case ENCHANTER:
+		case MAGICIAN:
+		case NECROMANCER:
+			defense_chance_mod = RuleR(Combat, UnarmoredAvoidChanceMod);;
+			break;
+		default:
+			break;
+		}
+	}
+
 	//I dont think this is 100% correct, but at least it does something...
 	if(attacker->spellbonuses.MeleeSkillCheckSkill == skillinuse || attacker->spellbonuses.MeleeSkillCheckSkill == 255) {
 		chancetohit += attacker->spellbonuses.MeleeSkillCheck;
@@ -348,13 +365,15 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 		}
 		chancetohit = ((chancetohit * modAA) / 100);
 	}
+	chancetohit = (chancetohit * hit_chance_mod) / defense_chance_mod;
+	chancetohit -= defender->GetAGI() * RuleR(Combat, AgiHitFactor);
 
 	// Chance to hit;   Max 95%, Min 30%
 	if(chancetohit > 1000) {
 		//if chance to hit is crazy high, that means a discipline is in use, and let it stay there
 	} 
-	else if(chancetohit > 99) {
-		chancetohit = 99;
+	else if(chancetohit > 95) {
+		chancetohit = 95;
 	} 
 	else if(chancetohit < 5) {
 		chancetohit = 5;
@@ -674,7 +693,7 @@ void Mob::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 			intervalUsed = MakeRandomInt(0, intervalsAllowed);
 		}
 		else{
-			intervalUsed = MakeRandomInt(0, 2);
+			intervalUsed = MakeRandomInt(0, 4);
 			//move the hardcoded value to a rule eventually, it impacts how lenient or strict the AC is
 			if(defender->GetLevel() != 0)
 				intervalUsed += ((intervalRoll * intervalsAllowed) / (19 * defender->GetLevel()));
@@ -684,7 +703,7 @@ void Mob::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 
 		mlog(COMBAT__DAMAGE, "attackRating: %d defenseRating: %d intervalRoll: %d intervalUsed: %d", attackRating, defenseRating, intervalRoll, intervalUsed);
 		if(intervalUsed > intervalsAllowed){
-			if((intervalUsed-intervalsAllowed) > 5)
+			if((intervalUsed-intervalsAllowed) > 1)
 				damage = 0;
 			else
 				damage = 1;
