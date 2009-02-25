@@ -7,6 +7,7 @@ cavedude: Added peqzone column to zone to allow or deny access to zones using #p
 cavedude: #peqzone will give you the approximate time remaining before reusing.
 cavedude: Altered merchant price structure to better match Live. Created rules to govern its behaviour. See ruletypes.h for basic explanations!
 cavedude: Added command #givemoney.
+Trevius: SoF - Corrected WearChange Struct so primary and secondary items now show properly after zoning and #wc works as well.
 
 Required SQL:
 ALTER TABLE `account` ADD `karma` INT(5) UNSIGNED DEFAULT '0' NOT NULL AFTER `revoked`;
