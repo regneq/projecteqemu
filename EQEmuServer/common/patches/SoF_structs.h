@@ -1111,8 +1111,8 @@ struct SpecialMesg_Struct
 */
 struct WearChange_Struct{
 /*000*/ int16 spawn_id;
-/*002*/ int8 material;
-/*003*/ uint8 unknown09[11];
+/*002*/ int32 material;
+/*003*/ uint8 unknown09[8];
 /*014*/ Color_Struct color;
 /*018*/ int8 wear_slot_id;
 /*019*/
