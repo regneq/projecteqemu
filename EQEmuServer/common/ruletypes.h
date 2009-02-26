@@ -178,6 +178,8 @@ RULE_REAL ( Combat, LightAvoidChanceMod, 0.91) //druid
 RULE_REAL ( Combat, UnarmoredAvoidChanceMod, 0.86) //rest
 RULE_REAL ( Combat, AgiHitFactor, 0.01) 
 RULE_INT ( Combat, MinRangedAttackDist, 25) //Minimum Distance to use Ranged Attacks 
+RULE_INT ( Combat, HitPerLevelDiff, 145) //Temporary Added Back in while chancetohit defines are in
+RULE_REAL ( Combat, AgiHitFactorOld, 0.015) //Temporary Added Back in while chancetohit defines are in
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( NPC )
