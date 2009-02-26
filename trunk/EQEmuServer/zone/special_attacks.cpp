@@ -782,7 +782,7 @@ void Client::RangedAttack(Mob* other) {
 		//target is out of range, client does a message
 		return;
 	}
-	else if(DistNoRootNoZ(*target) < (MIN_RANGED_ATK_RANGE*MIN_RANGED_ATK_RANGE)){
+	else if(DistNoRootNoZ(*target) < (RuleI(Combat, MinRangedAttackDist)*RuleI(Combat, MinRangedAttackDist))){
 		return;
 	}
 
@@ -983,7 +983,7 @@ void Client::ThrowingAttack(Mob* other) { //old was 51
 		//target is out of range, client does a message
 		return;
 	}
-	else if(DistNoRootNoZ(*target) < (MIN_RANGED_ATK_RANGE*MIN_RANGED_ATK_RANGE)){
+	else if(DistNoRootNoZ(*target) < (RuleI(Combat, MinRangedAttackDist)*RuleI(Combat, MinRangedAttackDist))){
 		return;
 	}
 
