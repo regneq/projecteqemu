@@ -697,7 +697,7 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, const char* me
 				uint32 AllowedMessages = RuleI(Chat, MinimumMessagesPerInterval) + TotalKarma;
 				AllowedMessages = AllowedMessages > RuleI(Chat, MaximumMessagesPerInterval) ? RuleI(Chat, MaximumMessagesPerInterval) : AllowedMessages; 
 				
-				if(RuleI(Chat, MinStatusToBypassAntiSpam) >= Admin())
+				if(RuleI(Chat, MinStatusToBypassAntiSpam) <= Admin())
 					AllowedMessages = 10000;
 
 				AttemptedMessages++;
