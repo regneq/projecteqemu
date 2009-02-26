@@ -47,6 +47,10 @@ using namespace std;
 #define strcasecmp  _stricmp
 #endif
 
+//Uncomment the line below to enable the Old Chance To Hit Code
+//#define OldHitChance
+//Uncomment the line below to enable the Old Chance To Hit Bonus Formula
+//#define OldCTHBonus
 
 extern EntityList entity_list;
 #if !defined(NEW_LoadSPDat) && !defined(DB_LoadSPDat)
@@ -162,6 +166,96 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 	int8 defender_level = defender->GetLevel() ? defender->GetLevel() : 1;
 
 	//Calculate the level difference
+
+#ifdef OldHitChance
+
+	sint32 level_difference = attacker_level - defender_level;
+	if(level_difference < -20) level_difference = -20;
+	if(level_difference > 20) level_difference = 20;
+	chancetohit += (RuleI(Combat, HitPerLevelDiff) * level_difference / 100);
+	chancetohit -= ((float)defender->GetAGI() * RuleR(Combat, AgiHitFactor));
+
+#ifdef EQBOTS
+
+	if(attacker->IsBot()){
+		int skilldiff = defender->GetSkill(DEFENSE) - attacker->GetSkill(skillinuse);
+		bonus = 0;
+		if(pvpmode){
+			if(skilldiff > 10){
+				bonus = -(2 + ((defender->GetSkill(DEFENSE) - attacker->GetSkill(skillinuse) - 10) / 10));
+			}
+			else if(skilldiff <= 10 && skilldiff > 0){
+				bonus = -(1 + ((defender->GetSkill(DEFENSE) - attacker->GetSkill(skillinuse)) / 25));
+			}
+			else{
+				bonus = (attacker->GetSkill(skillinuse) - defender->GetSkill(DEFENSE)) / 25;
+			}
+		}
+		else{
+			if(skilldiff > 10){
+				bonus = -(4 + ((defender->GetSkill(DEFENSE) - attacker->GetSkill(skillinuse) - 10) * 1 / 5));
+			}
+			else if(skilldiff <= 10 && skilldiff > 0){
+				bonus = -(2 + ((defender->GetSkill(DEFENSE) - attacker->GetSkill(skillinuse)) / 10));
+			}
+			else{
+				bonus = 1 + (((attacker->GetSkill(skillinuse) - defender->GetSkill(DEFENSE)) / 25));
+			}
+		}
+		chancetohit += bonus;
+	}
+	else
+
+#endif //EQBOTS
+
+	if(attacker->IsClient()){
+		int skilldiff = defender->GetSkill(DEFENSE) - attacker->GetSkill(skillinuse);
+		bonus = 0;
+		if(pvpmode){
+			if(skilldiff > 10){
+				bonus = -(2 + ((defender->GetSkill(DEFENSE) - attacker->GetSkill(skillinuse) - 10) / 10));
+			}
+			else if(skilldiff <= 10 && skilldiff > 0){
+				bonus = -(1 + ((defender->GetSkill(DEFENSE) - attacker->GetSkill(skillinuse)) / 25));
+			}
+			else{
+				bonus = (attacker->GetSkill(skillinuse) - defender->GetSkill(DEFENSE)) / 25;
+			}
+		}
+		else{
+			if(skilldiff > 10){
+				bonus = -(4 + ((defender->GetSkill(DEFENSE) - attacker->GetSkill(skillinuse) - 10) * 1 / 5));
+			}
+			else if(skilldiff <= 10 && skilldiff > 0){
+				bonus = -(2 + ((defender->GetSkill(DEFENSE) - attacker->GetSkill(skillinuse)) / 10));
+			}
+			else{
+				bonus = 1 + (((attacker->GetSkill(skillinuse) - defender->GetSkill(DEFENSE)) / 25));
+			}
+		}
+		chancetohit += bonus;
+	}
+	else{
+		//some class combos have odd caps, base our attack skill based off of a warriors 1hslash since 
+		//it scales rather evenly across all levels for warriors, based on the defenders level so things like
+		//light blues can still hit their target.
+		uint16 atkSkill = (database.GetSkillCap(WARRIOR, (SkillType)_1H_SLASHING, defender->GetLevel()) + 5);
+		int skilldiff = defender->GetSkill(DEFENSE) - atkSkill;
+		bonus = 0;
+		if(skilldiff > 10){
+			bonus = -(4 + ((defender->GetSkill(DEFENSE) - atkSkill - 10) * 1 / 5));
+		}
+		else if(skilldiff <= 10 && skilldiff > 0){
+			bonus = -(2 + ((defender->GetSkill(DEFENSE) - atkSkill) / 10));
+		}
+		else{
+			bonus = 1 + ((atkSkill - defender->GetSkill(DEFENSE)) / 25);
+		}
+		chancetohit += bonus;
+	}
+#endif
+
+#ifndef OldHitChance
 	double level_difference = attacker_level - defender_level;
 	double range = defender->GetLevel();
 	range = ((range / 4) + 3);
@@ -263,6 +357,7 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 			break;
 		}
 	}
+#endif
 
 	//I dont think this is 100% correct, but at least it does something...
 	if(attacker->spellbonuses.MeleeSkillCheckSkill == skillinuse || attacker->spellbonuses.MeleeSkillCheckSkill == 255) {
@@ -277,7 +372,12 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 	//subtract off avoidance by the defender
 	bonus = defender->spellbonuses.AvoidMeleeChance + defender->itembonuses.AvoidMeleeChance;
 	if(bonus > 0) {
+#ifdef OldCTHBonus
+		chancetohit -= (bonus) / 10;
+#endif
+#ifndef OldCTHBonus
 		chancetohit -= ((bonus * chancetohit) / 1000);
+#endif
 		mlog(COMBAT__TOHIT, "Applied avoidance chance %.2f/10, yeilding %.2f", bonus, chancetohit);
 	}
 
@@ -365,16 +465,24 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 		}
 		chancetohit = ((chancetohit * modAA) / 100);
 	}
+#ifndef OldHitChance
 	chancetohit = (chancetohit * hit_chance_mod) / defense_chance_mod;
 	chancetohit -= defender->GetAGI() * RuleR(Combat, AgiHitFactor);
-
+#endif
 	// Chance to hit;   Max 95%, Min 30%
 	if(chancetohit > 1000) {
 		//if chance to hit is crazy high, that means a discipline is in use, and let it stay there
 	} 
+#ifdef OldHitChance
+	else if(chancetohit > 99) {
+		chancetohit = 99;
+	} 
+#endif
+#ifndef OldHitChance
 	else if(chancetohit > 95) {
 		chancetohit = 95;
 	} 
+#endif
 	else if(chancetohit < 5) {
 		chancetohit = 5;
 	}
@@ -693,7 +801,12 @@ void Mob::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 			intervalUsed = MakeRandomInt(0, intervalsAllowed);
 		}
 		else{
+#ifdef OldHitChance
+			intervalUsed = MakeRandomInt(0, 2);
+#endif
+#ifndef OldHitChance
 			intervalUsed = MakeRandomInt(0, 4);
+#endif
 			//move the hardcoded value to a rule eventually, it impacts how lenient or strict the AC is
 			if(defender->GetLevel() != 0)
 				intervalUsed += ((intervalRoll * intervalsAllowed) / (19 * defender->GetLevel()));
@@ -703,10 +816,18 @@ void Mob::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 
 		mlog(COMBAT__DAMAGE, "attackRating: %d defenseRating: %d intervalRoll: %d intervalUsed: %d", attackRating, defenseRating, intervalRoll, intervalUsed);
 		if(intervalUsed > intervalsAllowed){
+#ifdef OldHitChance
+			if((intervalUsed-intervalsAllowed) > 5)
+				damage = 0;
+			else
+				damage = 1;
+#endif
+#ifndef OldHitChance
 			if((intervalUsed-intervalsAllowed) > 1)
 				damage = 0;
 			else
 				damage = 1;
+#endif
 		}
 		else{
 			if(intervalsAllowed != 0)
