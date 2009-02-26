@@ -174,12 +174,12 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 		}
 		else if (level_difference >= -(range+3.0))
 		{
-			chancetohit -= 15;
+			chancetohit -= RuleR(Combat,HitFalloffMinor);
 			chancetohit += ((level_difference+range) / (3.0)) * RuleR(Combat,HitFalloffModerate); //7
 		}
 		else
 		{
-			chancetohit -= 12;
+			chancetohit -= (RuleR(Combat,HitFalloffMinor) + RuleR(Combat,HitFalloffModerate));
 			chancetohit += ((level_difference+range+3.0)/12.0) * RuleR(Combat,HitFalloffMajor); //50
 		}
 	}
