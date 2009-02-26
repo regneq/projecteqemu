@@ -173,7 +173,7 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 	if(level_difference < -20) level_difference = -20;
 	if(level_difference > 20) level_difference = 20;
 	chancetohit += (RuleI(Combat, HitPerLevelDiff) * level_difference / 100);
-	chancetohit -= ((float)defender->GetAGI() * RuleR(Combat, AgiHitFactor));
+	chancetohit -= ((float)defender->GetAGI() * RuleR(Combat, AgiHitFactorOld));
 
 #ifdef EQBOTS
 
