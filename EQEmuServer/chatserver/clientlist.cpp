@@ -114,6 +114,7 @@ Client::Client(EQStream *eqs) {
 
 	TotalKarma = 0;
 	AttemptedMessages = 0;
+	ForceDisconnect = false;
 
 	KarmaGrabUpdateTimer = new Timer(120000); //check every 2 minutes
 	GlobalChatLimiterTimer = new Timer(RuleI(Chat, IntervalDurationMS));
@@ -220,7 +221,8 @@ void Clientlist::Process() {
 
 		bool KeyValid = true;
 
-		while( KeyValid && (app = (EQApplicationPacket *)(*Iterator)->ClientStream->PopPacket())) {
+		while( KeyValid && !(*Iterator)->GetForceDisconnect() &&
+		       (app = (EQApplicationPacket *)(*Iterator)->ClientStream->PopPacket())) {
 
 			_pkt(CHANNELS__PACKETS, app);
 
@@ -404,7 +406,15 @@ void Clientlist::Process() {
 			safe_delete(app);
 
 		}
-		if(!KeyValid) {
+		if(!KeyValid || (*Iterator)->GetForceDisconnect()) {
+
+			struct in_addr  in;
+
+			in.s_addr = (*Iterator)->ClientStream->GetRemoteIP();
+
+			_log(CHANNELS__TRACE, "Force disconnecting client: %s:%d, KeyValid=%i, GetForceDisconnect()=%i",
+					      inet_ntoa(in), ntohs((*Iterator)->ClientStream->GetRemotePort()),
+					      KeyValid, (*Iterator)->GetForceDisconnect());
 
 			(*Iterator)->ClientStream->Close();
 
@@ -844,7 +854,7 @@ void Client::SendChannelMessage(string Message) {
 				{
 					if(AttemptedMessages > RuleI(Chat, MaxMessagesBeforeKick))
 					{
-						CloseConnection();
+						ForceDisconnect = true;
 					}
 					if(GlobalChatLimiterTimer)
 					{
@@ -932,7 +942,7 @@ void Client::SendChannelMessageByNumber(string Message) {
 				{
 					if(AttemptedMessages > RuleI(Chat, MaxMessagesBeforeKick))
 					{
-						CloseConnection();
+						ForceDisconnect = true;
 					}
 					if(GlobalChatLimiterTimer)
 					{

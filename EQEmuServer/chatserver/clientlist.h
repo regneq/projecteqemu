@@ -115,6 +115,7 @@ public:
 	inline bool IsChannelAdmin() { return (Status >= RuleI(Channels, RequiredStatusAdmin)); }
 	inline bool CanListAllChannels() { return (Status >= RuleI(Channels, RequiredStatusListAll)); }
 	void SendHelp();
+	inline bool GetForceDisconnect() { return ForceDisconnect; }
 
 private:
 	int CurrentMailBox;
@@ -132,6 +133,7 @@ private:
 
 	Timer *GlobalChatLimiterTimer; //60 seconds
 	uint32 AttemptedMessages;
+	bool ForceDisconnect;
 };
 
 class Clientlist {
