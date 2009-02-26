@@ -836,17 +836,16 @@ void Client::SendChannelMessage(string Message) {
 				uint32 AllowedMessages = RuleI(Chat, MinimumMessagesPerInterval) + GetKarma();
 				AllowedMessages = AllowedMessages > RuleI(Chat, MaximumMessagesPerInterval) ? RuleI(Chat, MaximumMessagesPerInterval) : AllowedMessages; 
 				
-				if(RuleI(Chat, MinStatusToBypassAntiSpam) >= Status)
+				if(RuleI(Chat, MinStatusToBypassAntiSpam) <= Status)
 					AllowedMessages = 10000;
 				
 				AttemptedMessages++;
 				if(AttemptedMessages > AllowedMessages)
 				{
-					//sometimes causes a crash
-					/*if(AttemptedMessages > RuleI(Chat, MaxMessagesBeforeKick))
+					if(AttemptedMessages > RuleI(Chat, MaxMessagesBeforeKick))
 					{
-						ClientStream->Close();
-					}*/
+						CloseConnection();
+					}
 					if(GlobalChatLimiterTimer)
 					{
 						char TimeLeft[256];
@@ -925,17 +924,16 @@ void Client::SendChannelMessageByNumber(string Message) {
 				}
 				uint32 AllowedMessages = RuleI(Chat, MinimumMessagesPerInterval) + GetKarma();
 				AllowedMessages = AllowedMessages > RuleI(Chat, MaximumMessagesPerInterval) ? RuleI(Chat, MaximumMessagesPerInterval) : AllowedMessages; 
-				if(RuleI(Chat, MinStatusToBypassAntiSpam) >= Status)
+				if(RuleI(Chat, MinStatusToBypassAntiSpam) <= Status)
 					AllowedMessages = 10000;
 
 				AttemptedMessages++;
 				if(AttemptedMessages > AllowedMessages)
 				{
-					//sometimes causes crash
-					/*if(AttemptedMessages > RuleI(Chat, MaxMessagesBeforeKick))
+					if(AttemptedMessages > RuleI(Chat, MaxMessagesBeforeKick))
 					{
-						ClientStream->Close();
-					}*/
+						CloseConnection();
+					}
 					if(GlobalChatLimiterTimer)
 					{
 						char TimeLeft[256];
