@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==2/27/2009==
+Trevius: SoF - Corrected the NewZone struct a bit, which fixed Fall Damage and Environment Damage
+
 ==2/26/2009==
 Trevius: Added #define options in /zone/attack.cpp to allow an easy switch to use the old hit change code until the new code is finalized.
 Trevius: Added new rule MinRangedAttackDist for setting the Minimum Ranged Attack Distance

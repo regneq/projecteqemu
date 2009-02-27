@@ -407,7 +407,7 @@ struct ServerZoneEntry_Struct //Adjusted from SEQ Everquest.h Struct
 };
 
 
-//New Zone Struct - Size: 916
+//New Zone Struct - Size: 912
 struct NewZone_Struct {
 /*0000*/	char	char_name[64];			// Character Name
 /*0064*/	char	zone_short_name[32];	// Zone Short Name
@@ -436,7 +436,7 @@ struct NewZone_Struct {
 /*0616*/	int8	unknown_end[84];		// ***Placeholder
 /*0700*/	char	zone_short_name2[96];	//zone file name? excludes instance number which can be in previous version.
 /*0796*/	sint32	unknown796;	//seen -1
-/*0800*/	char	unknown800[42]; //[40]
+/*0800*/	char	unknown800[40]; //
 /*0840*/	sint32	unknown840;	//seen 600
 /*0844*/	sint32	unknown844;
 /*0848*/	uint16	zone_id;
@@ -445,14 +445,12 @@ struct NewZone_Struct {
 /*0876*/	uint32	unknown876;	//seen 50
 /*0880*/	uint32	unknown880;	//seen 10
 /*0884*/	uint8	unknown884;	//seen 1
-/*08841*/	uint8	unknown8841;	//seen 1
-/*08842*/	uint8	unknown8842;	//seen 1
 /*0885*/	uint8	unknown885;	//seen 0 (POK) or 1 (rujj)
 /*0886*/	uint8	unknown886;	//seen 1
 /*0887*/	uint8	unknown887;	//seen 0
 /*0888*/	uint8	unknown888;	//seen 0
 /*0893*/	uint8	unknown889;	//seen 0 - 00
-/*0894*/	uint8	unknown890;	//seen 1 - 01
+/*0894*/	uint8	fall_damage;	// 0 = Fall Damage on, 1 = Fall Damage off
 /*0895*/	uint8	unknown891;	//seen 0 - 00
 /*0892*/	uint32	unknown892;	//seen 180
 /*0896*/	uint32	unknown896;	//seen 180
