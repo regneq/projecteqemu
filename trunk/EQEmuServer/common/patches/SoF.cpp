@@ -538,7 +538,7 @@ ENCODE(OP_NewZone) {
 	eq->unknown887 = 0;
 	eq->unknown888 = 0;
 	eq->unknown889 = 0;
-	eq->unknown890 = 1;
+	eq->fall_damage = 0;	// 0 = Fall Damage on, 1 = Fall Damage off
 	eq->unknown891 = 0;
 	eq->unknown892 = 180;
 	eq->unknown896 = 180;
