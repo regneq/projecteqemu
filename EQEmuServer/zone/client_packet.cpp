@@ -334,7 +334,7 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_LFPGetMatchesRequest] = &Client::Handle_OP_LFPGetMatchesRequest;
 	ConnectedOpcodes[OP_Barter] = &Client::Handle_OP_Barter;
 	ConnectedOpcodes[OP_VoiceMacroIn] = &Client::Handle_OP_VoiceMacroIn;
-
+	ConnectedOpcodes[OP_ApplyPoison] = &Client::Handle_OP_ApplyPoison;
 }
 
 int Client::HandlePacket(const EQApplicationPacket *app)
@@ -8524,5 +8524,48 @@ void Client::Handle_OP_VoiceMacroIn(const EQApplicationPacket *app) {
 
 	VoiceMacroReceived(vmi->Type, vmi->Target, vmi->MacroNumber);
 
+}
+
+void Client::Handle_OP_ApplyPoison(const EQApplicationPacket *app) {
+	uint32 ApplyPoisonSuccessResult = 0;
+	ApplyPoison_Struct* ApplyPoisonData = (ApplyPoison_Struct*)app->pBuffer;
+	const ItemInst* PrimaryWeapon = GetInv().GetItem(SLOT_PRIMARY);
+	const ItemInst* SecondaryWeapon = GetInv().GetItem(SLOT_SECONDARY);
+
+	if(this->GetClass() == ROGUE) {
+		if((PrimaryWeapon && PrimaryWeapon->GetItem()->ItemType == ItemTypePierce) || (SecondaryWeapon && SecondaryWeapon->GetItem()->ItemType == ItemTypePierce)) {
+			float SuccessChance = (GetSkill(APPLY_POISON) + GetLevel()) / 400.0f;
+			double ChanceRoll = MakeRandomFloat(0, 1);
+		
+			CheckIncreaseSkill(APPLY_POISON, 10);
+				
+			if(ChanceRoll < SuccessChance) {
+				ApplyPoisonSuccessResult = 1;
+				const ItemInst* PoisonItemInstance = GetInv()[ApplyPoisonData->inventorySlot];
+				if(PoisonItemInstance){
+					// NOTE: Someone may want to tweak the chance to proc the poison effect that is added to the weapon here.
+					// My thinking was that DEX should be apart of the calculation.
+					AddProcToWeapon(PoisonItemInstance->GetItem()->Proc.Effect, false, (GetDEX()/100) + 3);
+				}
+				else {
+					mlog(SPELLS__CASTING_ERR, "Item used to cast spell effect from a poison item was missing from inventory slot %d after casting!", ApplyPoisonData->inventorySlot);
+					Message(0, "Error: item not found for inventory slot #%i", ApplyPoisonData->inventorySlot);
+				}
+			}
+			else
+				ApplyPoisonSuccessResult = 0;
+
+			DeleteItemInInventory(ApplyPoisonData->inventorySlot, 1, true);
+
+			LogFile->write(EQEMuLog::Debug, "Chance to Apply Poison was %f. Roll was %f. Result is %u.", SuccessChance, ChanceRoll, ApplyPoisonSuccessResult);
+		}
+	}
+
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_ApplyPoison, NULL, sizeof(ApplyPoison_Struct));
+	ApplyPoison_Struct* ApplyPoisonResult = (ApplyPoison_Struct*)outapp->pBuffer;
+	ApplyPoisonResult->success = ApplyPoisonSuccessResult;
+	ApplyPoisonResult->inventorySlot = ApplyPoisonData->inventorySlot;
+	
+	FastQueuePacket(&outapp);
 }
 
