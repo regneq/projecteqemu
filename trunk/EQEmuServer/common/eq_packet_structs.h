@@ -3661,6 +3661,11 @@ struct spawnShroudOther
 /*0586*/
 };
 
+struct ApplyPoison_Struct {
+	uint32 inventorySlot;
+	uint32 success;
+};
+
 /**
  * Shroud yourself. For yourself shrouding, this has your spawnId, spawnStruct,
  * bits of your charProfileStruct (no checksum, then charProfile up till
