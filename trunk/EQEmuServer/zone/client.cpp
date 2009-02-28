@@ -3114,20 +3114,20 @@ void Client::SendAdventureInfoRequest(const EQApplicationPacket* app){
 	Mob* tmp = entity_list.GetMob(eid->entity_id);
 	char* buffer1;
 	SetAdventureID(tmp->GetNPCTypeID());
-	char* p=database.GetAdventureNPCText(tmp->GetNPCTypeID());
+	char* p = NULL;
+	p = database.GetAdventureNPCText(tmp->GetNPCTypeID(), p);
 	if(p == NULL)
 		return;
 	buffer1=new char[strlen(p)+1];
 	strcpy(buffer1,p);
-	buffer1[strlen(p)]=0x00;
-	buffer1[strlen(p)+1]='\0';
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureInfo,strlen(buffer1)+1);
 	memset(outapp->pBuffer,0,outapp->size);
 	char* buffer=(char*)outapp->pBuffer;
 	memcpy(buffer,buffer1, strlen(buffer1)+1);
 	QueuePacket(outapp);
 	safe_delete(outapp);
-	safe_delete(buffer1);
+	safe_delete_array(buffer1);
+	safe_delete_array(p);
 }
 void Client::SendAdventureUpdate(){
 	AdventureInfo AF=database.GetAdventureInfo(GetAdventureID());

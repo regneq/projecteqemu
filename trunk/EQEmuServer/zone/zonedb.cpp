@@ -499,7 +499,7 @@ int32 ZoneDatabase::GetAdventureChar(int32 n,int32 questid){
 	safe_delete_array(query);
 	return 0;
 }
-char* ZoneDatabase::GetAdventureNPCText(uint32 NPCID){
+char* ZoneDatabase::GetAdventureNPCText(uint32 NPCID, char* adventureText){
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
 	MYSQL_RES *result;
@@ -507,13 +507,13 @@ char* ZoneDatabase::GetAdventureNPCText(uint32 NPCID){
 	if (RunQuery(query, MakeAnyLenString(&query, "Select Text from adventures_maintext where NPCID=%i",NPCID), errbuf, &result)) {
 		if (mysql_num_rows(result) == 1) {
 			row = mysql_fetch_row(result);
+			MakeAnyLenString(&adventureText, row[0]);
 			safe_delete_array(query);
 			mysql_free_result(result);
-			return row[0];	
+			return adventureText;
 		}
 	}
 	safe_delete_array(query);
-//	return "Error loading initial text";
 	return(NULL);
 }
 

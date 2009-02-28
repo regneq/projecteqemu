@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==2/28/2009==
+WildcardX: Begun work on LDoN expansion. Adventure Recruiter window is now operational.
+
 ==2/27/2009==
 Trevius: SoF - Corrected the NewZone struct a bit, which fixed Fall Damage and Environment Damage
 WildcardX: Implemented the rogue skill, Apply Poison. Includes support for the 6.0 client, Titanium and SoF.

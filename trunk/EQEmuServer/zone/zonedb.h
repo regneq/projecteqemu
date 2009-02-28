@@ -98,7 +98,7 @@ public:
 	AdventureInfo	GetAdventureInfo(int32 questid=0,int32 mobid=0,int8 advtype=0);
 	bool			IsLDoNDungeon(uint32 zoneid);
 	void			SetAdventureInfo(int32 questid,bool inuse,int32 status);
-	char*			GetAdventureNPCText(int32 npcid);
+	char*			GetAdventureNPCText(int32 npcid, char* adventureText);
 	void			SetAdventureChar(int32 n,int32 charid,int32 questid);
 	int32			GetAdventureChar(int32 n,int32 questid);
 	
