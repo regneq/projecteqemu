@@ -484,7 +484,7 @@ bool SharedDatabase::GetInventory(uint32 char_id, Inventory* inv) {
 				sint16 put_slot_id = SLOT_INVALID;
 				
 				ItemInst inst(item, charges);
-				if (instnodrop)
+				if (instnodrop || (slot_id >= 0 && slot_id <= 21 && inst.GetItem()->Attuneable))
 						inst.SetInstNoDrop(true);
 				if (color > 0)
 					inst.SetColor(color);

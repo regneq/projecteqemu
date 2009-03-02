@@ -1305,6 +1305,26 @@ int32 QuestManager::getplayerburriedcorpsecount(int32 char_id) {
 	return Result;
 }
 
+bool QuestManager::buryplayercorpse(int32 char_id) {
+	bool Result = false;
+
+	if(char_id > 0) {
+		int32 PlayerCorpse = database.GetFirstCorpseID(char_id);
+
+		if(PlayerCorpse > 0){
+			database.BuryPlayerCorpse(PlayerCorpse);
+			Corpse* CorpseEntity = entity_list.GetCorpseByDBID(PlayerCorpse);
+
+				if(CorpseEntity > 0){
+					CorpseEntity->Save();
+					CorpseEntity->DepopCorpse();
+					Result = true;
+		}
+		}
+	}
+	return Result;
+}
+
 void QuestManager::forcedooropen(int32 doorid) {
 	Doors* d = entity_list.FindDoor(doorid);
 	if(d){

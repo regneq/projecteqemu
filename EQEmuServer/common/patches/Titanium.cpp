@@ -878,9 +878,9 @@ char *SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 
 		0,
 		//merchant_slot,	//instance ID, bullshit for now
 		(merchant_slot==0) ? inst->GetSerialNumber() : merchant_slot,
-		inst->IsInstNoDrop() ? 1 : 0,		//not sure where this field is
-		(stackable ? ((inst->GetItem()->ItemType == ItemTypePotion) ? 1 : 0) : charges),
 		0,
+		(stackable ? ((inst->GetItem()->ItemType == ItemTypePotion) ? 1 : 0) : charges),
+		inst->IsInstNoDrop() ? 1 : 0,
 		0
 	);
 

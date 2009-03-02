@@ -68,6 +68,7 @@ public:
 	int32	CountItems();
 	void	Delete();
 	virtual void	Depop(bool StartSpawnTimer = true);
+	virtual void    DepopCorpse();
 
 	uint32	GetCopper()		{ return copper; }
 	uint32	GetSilver()		{ return silver; }
@@ -93,6 +94,7 @@ public:
 	char		orgname[64];
 	int32 GetEquipment(int8 material_slot) const;	// returns item id
 	uint32 GetEquipmentColor(int8 material_slot) const;
+
 protected:
 	void MoveItemToCorpse(Client *client, ItemInst *item, sint16 equipslot);
 private:

@@ -1024,7 +1024,20 @@ int Mob::GetWeaponDamage(Mob *against, const ItemInst *weapon_item)
 
 	if(against->SpecAttacks[IMMUNE_MELEE_NONMAGICAL]){
 		if(weapon_item){
-			if(weapon_item->GetItem() && weapon_item->GetItem()->Magic){
+			// check to see if the weapon is magic
+			bool MagicWeapon = false;
+			if(weapon_item->GetItem() && weapon_item->GetItem()->Magic) 
+				MagicWeapon = true;
+			else {					// if it isn't, check to see if a MagicWeapon buff is active
+				int buffs_i;
+				for (buffs_i = 0; buffs_i < BUFF_COUNT; buffs_i++)
+					if(IsEffectInSpell(buffs[buffs_i].spellid, SE_MagicWeapon)) { 
+						MagicWeapon = true;
+						break;		// no need to keep looking once we find one
+					}
+			}
+			
+			if(MagicWeapon) {
 
 				if(IsClient() && GetLevel() < weapon_item->GetItem()->RecLevel){
 					dmg = CastToClient()->CalcRecommendedLevelBonus(GetLevel(), weapon_item->GetItem()->RecLevel, weapon_item->GetItem()->Damage);
