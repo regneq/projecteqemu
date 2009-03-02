@@ -3,7 +3,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==3/02/2009==
 cavedude: (realityincarnate) Implemented Bard song Magical Monologue
 cavedude: (Theeper) Attuneable items will now save over zoning/camping and will no longer auto-loot from corpses.
-cavedude: Implemented quest::burycorpse, similar syntax as quest::getplayerburriedcorpsecount. This will bury and depop the oldest of a specified player's unburried coprses. It will bury all corpses, but it only depops corpses in the same zone, or in zones that aren't currently open. Hopefully, somebody else out there can finish this one up so corpse summoners can be implemented.
+cavedude: Implemented quest::buryplayercorpse, similar syntax as quest::getplayerburriedcorpsecount. This will bury and depop the oldest of a specified player's unburried coprses. It will bury all corpses, but it only depops corpses in the same zone, or in zones that aren't currently open. Hopefully, somebody else out there can finish this one up so corpse summoners can be implemented.
 
 ==2/28/2009==
 WildcardX: Begun work on LDoN expansion. Adventure Recruiter window is now operational.
