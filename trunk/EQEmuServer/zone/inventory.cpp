@@ -379,7 +379,7 @@ bool Client::TryStacking(ItemInst* item, int8 type, bool try_worn, bool try_curs
 bool Client::AutoPutLootInInventory(ItemInst& inst, bool try_worn, bool try_cursor, ServerLootItem_Struct** bag_item_data)
 {
 	// #1: Try to auto equip
-	if (try_worn && inst.IsEquipable(GetBaseRace(), GetClass()) && inst.GetItem()->ReqLevel<=level)
+	if (try_worn && inst.IsEquipable(GetBaseRace(), GetClass()) && inst.GetItem()->ReqLevel<=level && !inst.GetItem()->Attuneable)
 
 	{
 		for (sint16 i = 0; i < 22; i++)
@@ -891,8 +891,12 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 	}
 	else {
 		// Not dealing with charges - just do direct swap
-		if(src_inst && dst_slot_id<22 && dst_slot_id>0)
+		if(src_inst && dst_slot_id<22 && dst_slot_id>0) {
+			if (src_inst->GetItem()->Attuneable) {
+				src_inst->SetInstNoDrop(true);
+			}
 			SetMaterial(dst_slot_id,src_inst->GetItem()->ID);
+		}
 		mlog(INVENTORY__SLOTS, "Moving entire item from slot %d to slot %d", src_slot_id, dst_slot_id);
 		m_inv.SwapItem(src_slot_id, dst_slot_id);
 	}

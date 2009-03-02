@@ -162,6 +162,7 @@ public:
 	int32	NewGraveyardRecord(int32 graveyard_zoneid, float graveyard_x, float graveyard_y, float graveyard_z, float graveyard_heading);
 	int32	AddGraveyardIDToZone(int32 zone_id, int32 graveyard_id);
 	bool	DeleteGraveyard(int32 zone_id, int32 graveyard_id);
+	int32   GetFirstCorpseID(int32 char_id);
 	
 	int32	GetKarma(int32 acct_id);
 	void	UpdateKarma(int32 acct_id, int32 amount);

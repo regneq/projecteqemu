@@ -1590,6 +1590,24 @@ XS(XS__getplayerburriedcorpsecount)
     XSRETURN(1);
 }
 
+XS(XS__buryplayercorpse);
+XS(XS__buryplayercorpse)
+{
+    dXSARGS;
+    if (items != 1)
+        Perl_croak(aTHX_ "Usage: buryplayercorpse(char_id)");
+
+    int32        RETVAL;
+    dXSTARG;
+
+    int32    char_id = (int)SvIV(ST(0));
+
+    RETVAL = quest_manager.buryplayercorpse(char_id);
+    XSprePUSH; PUSHu((IV)RETVAL);
+
+    XSRETURN(1);
+}
+
 XS(XS__forcedooropen);
 XS(XS__forcedooropen)
 {
@@ -2508,6 +2526,7 @@ EXTERN_C XS(boot_quest)
         newXS(strcpy(buf, "clear_zone_flag"), XS__clear_zone_flag, file);
         newXS(strcpy(buf, "summonburriedplayercorpse"), XS__summonburriedplayercorpse, file);
 		newXS(strcpy(buf, "getplayerburriedcorpsecount"), XS__getplayerburriedcorpsecount, file);
+		newXS(strcpy(buf, "buryplayercorpse"), XS__buryplayercorpse, file);
 		newXS(strcpy(buf, "forcedooropen"), XS__forcedooropen, file);
 		newXS(strcpy(buf, "forcedoorclose"), XS__forcedoorclose, file);
 		newXS(strcpy(buf, "isdooropen"), XS__isdooropen, file);

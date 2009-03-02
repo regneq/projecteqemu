@@ -300,6 +300,7 @@ void Corpse::MoveItemToCorpse(Client *client, ItemInst *item, sint16 equipslot)
 		{
 			interior_slot = Inventory::CalcSlotId(equipslot, bagindex);
 			interior_item = client->GetInv().GetItem(interior_slot);
+
 			if(interior_item)
 			{
 				AddItem(interior_item->GetItem()->ID, interior_item->GetCharges(), interior_slot, interior_item->GetAugmentItemID(0), interior_item->GetAugmentItemID(1), interior_item->GetAugmentItemID(2), interior_item->GetAugmentItemID(3), interior_item->GetAugmentItemID(4));
@@ -444,6 +445,10 @@ void Corpse::Delete() {
 
 void Corpse::Depop(bool StartSpawnTimer) {
 	if (IsNPCCorpse())
+		p_depop = true;
+}
+
+void Corpse::DepopCorpse() {
 		p_depop = true;
 }
 
@@ -1441,6 +1446,31 @@ bool ZoneDatabase::LoadPlayerCorpses(int32 iZoneID) {
 	}
 	
 	return true;
+}
+
+int32 ZoneDatabase::GetFirstCorpseID(int32 char_id) {
+	char errbuf[MYSQL_ERRMSG_SIZE];
+    char *query = 0;
+    MYSQL_RES *result;
+    MYSQL_ROW row;
+	int32 CorpseID = 0;
+	
+	MakeAnyLenString(&query, "SELECT id FROM player_corpses WHERE charid='%u' AND IsBurried=0 ORDER BY timeofdeath LIMIT 1", char_id);
+		if (RunQuery(query, strlen(query), errbuf, &result)) {
+			if (mysql_num_rows(result)!= 0){
+				row = mysql_fetch_row(result);
+				CorpseID = atoi(row[0]);
+				mysql_free_result(result);
+	}
+		}
+	else {
+		cerr << "Error in GetFirstCorpseID query '" << query << "' " << errbuf << endl;
+		safe_delete_array(query);
+		return 0;
+	}
+	
+	safe_delete_array(query);
+	return CorpseID;
 }
 
 bool ZoneDatabase::BuryPlayerCorpse(int32 dbid) {

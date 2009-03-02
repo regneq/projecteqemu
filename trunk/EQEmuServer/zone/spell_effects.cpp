@@ -1895,9 +1895,6 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Magic Weapon");
 #endif
-				// solar: TODO implement this
-				const char *msg = "Magic Weapon is not implemented.";
-				if(caster) caster->Message(13, msg);
 				break;
 			}
 
