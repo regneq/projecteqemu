@@ -150,6 +150,7 @@ public:
 
 	Corpse*	GetCorpseByOwner(Client* client);
 	Corpse* GetCorpseByID(int16 id);
+	Corpse* GetCorpseByDBID(int32 dbid);
 	Corpse* GetCorpseByName(char* name);
 	bool IsMobInZone(Mob *who);
 	void ClearClientPetitionQueue();
