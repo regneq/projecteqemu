@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==3/03/2009==
+Angelox: Fixed most (if not all) npc pet ghosting at zone safepoints.
+
 ==3/02/2009==
 cavedude: (realityincarnate) Implemented Bard song Magical Monologue
 cavedude: (Theeper) Attuneable items will now save over zoning/camping and will no longer auto-loot from corpses.
