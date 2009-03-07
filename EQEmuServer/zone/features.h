@@ -126,9 +126,6 @@ Zone extensions and features
 //New aggro system to reduce overhead.
 #define REVERSE_AGGRO
 
-//Uncomment this to enable Race and Class based XP modifiers (removed from live)
-//#define USE_RACE_CLASS_XP_MODS
-
 //Enable spacial queue to manage NPC update packets
 //#define PACKET_UPDATE_MANAGER
 //#define MANAGE_HP_UPDATES

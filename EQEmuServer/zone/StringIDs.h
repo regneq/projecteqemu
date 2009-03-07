@@ -187,4 +187,8 @@
 #define CANNOT_BIND 105  // "You cannot form an affinity with this area.  Try a city."
 #define DIVINE_INTERVENTION 1029 // %1 has been rescued by divine intervention!
 #define	GAIN_RAIDEXP 5085
+#define SONG_NEEDS_DRUM 405	// You need to play a percussion instrument for this song
+#define SONG_NEEDS_WIND 406	// You need to play a wind instrument for this song
+#define SONG_NEEDS_STRINGS 407	// You need to play a stringed instrument for this song
+#define SONG_NEEDS_BRASS 408	// You need to play a brass instrument for this song
 #endif

@@ -184,10 +184,6 @@ public:
 	int8 tradevar;
 	int8 lootvar;
 
-	float   GetGroupEXPBonus() const { return GroupEXPBonus; } 
-	float   GetEXPMod()  const { return EXPMod; } 
-	float   GetAAXPMod() const { return AAXPMod; } 
-
 	bool	HasGraveyard();
 	void	SetGraveyard(int32 zoneid, int32 x, int32 y, int32 z, int32 heading);
 
@@ -229,12 +225,7 @@ private:
 	*/
 	sint32	aggroedmobs;
 	Timer initgrids_timer;	//delayed loading of initial grids.
-	
-	
-	
-	float  GroupEXPBonus;
-	float  EXPMod;
-	float  AAXPMod;
+
 
 	bool	staticzone;
 	bool	gottime;

@@ -410,7 +410,7 @@ void Raid::CastGroupSpell(Mob* caster, uint16 spellid, int32 gid)
 		if(members[x].member == caster) {
 			caster->SpellOnTarget(spellid, caster);
 #ifdef GROUP_BUFF_PETS
-			if(caster->GetPet() && caster->GetAA(aaPetAffinity))
+			if(caster->GetPet() && caster->GetAA(aaPetAffinity) && !caster->GetPet()->IsCharmed())
 				caster->SpellOnTarget(spellid, caster->GetPet());
 #endif
 		}
@@ -421,7 +421,7 @@ void Raid::CastGroupSpell(Mob* caster, uint16 spellid, int32 gid)
 				if(distance <= range2){
 					caster->SpellOnTarget(spellid, members[x].member);
 #ifdef GROUP_BUFF_PETS
-					if(members[x].member->GetPet() && members[x].member->GetAA(aaPetAffinity))
+					if(members[x].member->GetPet() && members[x].member->GetAA(aaPetAffinity) && !members[x].member->GetPet()->IsCharmed())
 						caster->SpellOnTarget(spellid, members[x].member->GetPet());
 #endif
 				}
@@ -589,7 +589,7 @@ void Raid::GroupBardPulse(Mob* caster, uint16 spellid, int32 gid){
 		if(members[z].member == caster) {
 			caster->BardPulse(spellid, caster);
 #ifdef GROUP_BUFF_PETS
-			if(caster->GetPet() && caster->GetAA(aaPetAffinity))
+			if(caster->GetPet() && caster->GetAA(aaPetAffinity) && !caster->GetPet()->IsCharmed())
 				caster->BardPulse(spellid, caster->GetPet());
 #endif
 		}
@@ -600,7 +600,7 @@ void Raid::GroupBardPulse(Mob* caster, uint16 spellid, int32 gid){
 				if(distance <= range2) {
 					members[z].member->BardPulse(spellid, caster);
 #ifdef GROUP_BUFF_PETS
-					if(members[z].member->GetPet() && members[z].member->GetAA(aaPetAffinity))
+					if(members[z].member->GetPet() && members[z].member->GetAA(aaPetAffinity) && !members[z].member->GetPet()->IsCharmed())
 						members[z].member->GetPet()->BardPulse(spellid, caster);
 #endif
 				} else
