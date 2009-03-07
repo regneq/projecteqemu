@@ -775,7 +775,7 @@ static const uint32 MAX_PP_LANGUAGE		= 25; //
 static const uint32 MAX_PP_SPELLBOOK	= 480; // Confirmed 60 pages on Live now
 static const uint32 MAX_PP_MEMSPELL		= 10; //was 9 now 10 on Live
 static const uint32 MAX_PP_SKILL		= 75;
-static const uint32 MAX_PP_AA_ARRAY		= 299; //was 299
+static const uint32 MAX_PP_AA_ARRAY		= 300; //was 299
 static const uint32 MAX_GROUP_MEMBERS	= 6;
 static const uint32 MAX_RECAST_TYPES	= 20;
 /*
@@ -869,9 +869,7 @@ struct PlayerProfile_Struct //23576 Octets
 	 };
 /*00336*/ uint8 unknown00224[156]; // Live Shows [160]
 /*00496*/ Color_Struct item_tint[9];    // RR GG BB 00
-/*00524*/ uint8 unknown00532[8]; // - 00 - New From Live
-/*00544*/ AA_Array  aa_array[MAX_PP_AA_ARRAY];   // [3588]AAs 8 octets - New looks like 12 each [299]
-/*04128*/ uint8 unknown02220[4];  //*****Temporary to help line up the struct*****
+/*00544*/ AA_Array  aa_array[MAX_PP_AA_ARRAY];   // [3600] AAs 12 bytes each
 /*04132*/ uint32  points;             // Unspent Practice points - RELOCATED???
 /*04136*/ uint32  mana;               // Current mana
 /*04140*/ uint32  cur_hp;              // Current HP without +HP equipment
@@ -1173,12 +1171,12 @@ struct Action_Struct
  /* 00 */	int16 target;	// id of target
  /* 02 */	int16 source;	// id of caster
  /* 04 */	uint16 level; // level of caster
- /* 06 */	uint16 unknown06;	// seems to be fixed to 0x0A
+ /* 06 */	uint16 instrument_mod;	// seems to be fixed to 0x0A
  /* 08 */	uint32 unknown08;
  /* 12 */	uint16 unknown16;
 // some kind of sequence that's the same in both actions
 // as well as the combat damage, to tie em together?
- /* 14 */	int32 sequence;
+ /* 14 */	float sequence;		// was int32
  /* 18 */	uint32 unknown18;
  /* 22 */	int8 type;		// 231 (0xE7) for spells
  /* 23 */	uint32 unknown23;
@@ -1189,33 +1187,31 @@ struct Action_Struct
  /* 31 */
 };
 
- struct Action2_Struct
- {
- /*0000*/ uint16 target; // Target ID
- /*0002*/ uint16 source; // Source ID
- /*0004*/ uint8 type; // Bash, kick, cast, etc.
- /*0005*/ int16 spell; // SpellID
- /*0007*/ int32 damage;
- /*0011*/ uint8  level;                  // Caster level
- /*0012*/ uint8 unknown0011[12]; // ***Placeholder [16]
- /*0024*/
- };
-
 // Starting with 2/21/2006, OP_Actions seem to come in pairs, duplicating
 // themselves, with the second one with slightly more information. Maybe this
 // has to do with buff blocking??
-struct ActionAlt_Struct
+struct ActionAlt_Struct // ActionAlt_Struct - Size: 56 bytes
 {
 /*0000*/ uint16 target;                 // Target ID
 /*0002*/ uint16 source;                 // SourceID
-/*0004*/ uint8  level;                  // Caster level
-/*0005*/ uint8  unknown0005[17];        // ***Placeholder
+/*0004*/ uint16 level;					// level of caster
+/*0006*/ uint16 instrument_mod;				// seems to be fixed to 0x0A
+/*0008*/ uint32 unknown08;
+/*0012*/ uint16 unknown16;
+/*0014*/ int32 sequence;
+/*0018*/ uint32 unknown18;
 /*0022*/ uint8  type;                   // Casts, Falls, Bashes, etc...
 /*0023*/ int32  damage;                 // Amount of Damage
 /*0027*/ int16  spell;                  // SpellID
-/*0029*/ uint8  unknown0029[2];         // ***Placeholder
-/*0031*/ uint32 unknown0031;
-/*0035*/ uint8 unknown0035[21];
+/*0029*/ uint8 unknown29;
+/*0030*/ int8 buff_unknown;				// if this is 4, a buff icon is made
+/*0031*/ uint32 unknown0031;			// seen 00 00 00 00
+/*0035*/ uint8 unknown0035;				// seen 00
+/*0036*/ uint32 unknown0036;			// seen ff ff ff ff
+/*0040*/ uint32 unknown0040;			// seen ff ff ff ff
+/*0044*/ uint32 unknown0044;			// seen ff ff ff ff
+/*0048*/ uint32 unknown0048;			// seen 00 00 00 00
+/*0052*/ uint32 unknown0052;			// seen 00 00 00 00
 /*0056*/
 };
 
@@ -1228,31 +1224,25 @@ struct CombatDamage_Struct
 /* 02 */	int16	source;
 /* 04 */	int8	type;			//slashing, etc.  231 (0xE7) for spells
 /* 05 */	int16	spellid;
-/* 07 */	int32	damage;
+/* 07 */	sint32	damage;
 /* 11 */	float	unknown11;		// cd cc cc 3d
-/* 15 */	int32	sequence;		// see above notes in Action_Struct
-/* 19 */	uint8	unknown19[9];	// 
+/* 15 */	float	sequence;		// see above notes in Action_Struct
+/* 19 */	uint8	unknown19[9];	// was [9]
 /* 28 */
 };
 
 /*
 ** Consider Struct
-** Length: 24 Bytes
-** OpCode: 3721
+** Length: 20 Bytes
 */
 struct Consider_Struct{
 /*000*/ uint32	playerid;               // PlayerID
 /*004*/ uint32	targetid;               // TargetID
 /*008*/ int32	faction;                // Faction
-/*012*/ uint8	unknown16[8]; //
+/*012*/ int32	level;					// Level
+/*016*/ int8	pvpcon;					// Pvp con flag 0/1
+/*017*/ int8	unknown017[3];			//
 /*020*/ 
-
-//*012*/ int32	level;                  // Level
-//*016*/ sint32	cur_hp;                  // Current Hitpoints
-//*020*/ sint32	max_hp;                  // Maximum Hitpoints
-//*024*/ int8 pvpcon;     // Pvp con flag 0/1 - was int8
-//*025*/ int8	unknown3[3]; //
-
 };
 
 /*
@@ -1913,28 +1903,25 @@ struct ZoneUnavail_Struct {
 };
 
 struct GroupInvite_Struct {
-	char invitee_name[64];
-	char inviter_name[64];
-//	int8	unknown128[65];
-};
-
-// size 152
-struct GroupInvite_Struct_New { // testing
-	char invitee_name[64];
-	char inviter_name[64];
-	int8	unknown128[24];
+/*0000*/	char invitee_name[64];
+/*0064*/	char inviter_name[64];
+/*0128*/
 };
 
 struct GroupGeneric_Struct {
-	char name1[64];
-	char name2[64];
+/*0000*/	char name1[64];
+/*0064*/	char name2[64];
+/*0128*/
 };
 
 struct GroupCancel_Struct {
-	char	name1[64];
-	char	name2[64];
-	uint8	toggle;
+/*0000*/	char	name1[64];
+/*0064*/	char	name2[64];
+/*0128*/	uint8	toggle;
+/*0129*/
 };
+
+// Trevius - Unsure which struct to use for SoF GroupUpdate yet:
 
 struct GroupUpdate_Struct {
 /*0000*/	int32	action;
@@ -1942,6 +1929,7 @@ struct GroupUpdate_Struct {
 /*0068*/	char	membername[5][64]; //was [64]
 /*0388*/	char	leadersname[64];
 /*0580*/	int8	unknown[256];
+/*0836*/
 };
 
 struct GroupUpdate_Struct_New { // testing
@@ -1953,6 +1941,20 @@ struct GroupUpdate_Struct_New { // testing
 /*0320*/
 };
 
+struct GroupUpdate_Struct_Titanium {	// From Titanium Structs
+/*0000*/	int32	action;
+/*0004*/	char	yourname[64];
+/*0068*/	char	membername[5][64];
+/*0388*/	char	leadersname[64];
+/*0452*/
+};
+
+struct GroupUpdate_Struct_Live {	// New test struct from Live
+/*0000*/	int32	action;
+/*0004*/	int8	unknown0004[9];
+/*0013*/	char	yourname[24];
+/*0037*/
+};
 
 struct GroupUpdate2_Struct {
 /*0000*/	int32	action;
@@ -1960,22 +1962,31 @@ struct GroupUpdate2_Struct {
 /*0068*/	char	membername[5][64];
 /*0388*/	char	leadersname[64];
 /*0452*/	GroupLeadershipAA_Struct leader_aas;
-/*0580*/	int8	unknown[252];
+/*0516*/	int8	unknown[252];	// Titanium uses [188] here
 /*0768*/
 };
-struct GroupJoin_Struct {
+
+struct GroupJoin_Struct_Titanium {
 /*0000*/	int32	action;
 /*0004*/	char	yourname[64];
 /*0068*/	char	membername[64];
 /*0132*/	int8	unknown[84];
+/*0216*/
 };
 
-struct GroupJoin_Struct_New { // testing
+struct GroupJoin_Struct_Live { // testing
 /*0000*/	char	membername[64];	// inviter
 /*0064*/	char	yourname[64];	// invitee
 /*0128*/	int8	unknown[20];
 /*0148*/	int32	action;
 /*0152*/
+};
+
+struct GroupJoin_Struct { // SoF Follow Struct
+/*0000*/	char	membername[64];	// inviter
+/*0064*/	char	yourname[64];	// invitee
+/*0128*/	int32	action;
+/*0132*/
 };
 
 struct FaceChange_Struct {
@@ -3420,7 +3431,7 @@ struct SendAA_Struct {
 /*0073*/	int32 next_id;
 /*0077*/	int32 cost2;
 /*0081*/	int8 unknown80[7]; //int32 unknown80[2]; 0s
-/*0088*/	int32 unknown0088; //03 00 00 00 (sometimes 0C or 0E)3, 12 or 14
+/*0088*/	int32 aa_expansion; //03 00 00 00 (sometimes 0C or 0E)3, 12 or 14
 /*0092*/	int32 unknown0092; //ff ff ff ff
 /*0096*/	int32 unknown0096; //00 00 00 00 
 /*0100*/	int32 total_abilities;
@@ -3439,8 +3450,8 @@ struct AA_Action {
 };
 
 struct AA_Skills {		//this should be removed and changed to AA_Array
-/*00*/	int32	aa_skill;
-/*04*/	int32	aa_value;
+/*00*/	int32	aa_spent;						// Total AAs Spent
+/*04*/ AA_Array  aa_array[MAX_PP_AA_ARRAY];
 };
 
 struct AAExpUpdate_Struct {
