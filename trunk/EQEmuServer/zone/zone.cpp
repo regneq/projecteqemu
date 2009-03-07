@@ -851,28 +851,6 @@ bool Zone::Init(bool iStaticZone) {
 		database.DeleteBuyLines(0);
 	}
 	
-	// Load exp modifier variables.
-	// Set default value for EXP modifiers 
-	EXPMod = (float)1;
-	GroupEXPBonus = 0.1;
-	AAXPMod = (float)1;
- 
-	char tmp[10];
-	char *tmp2;
-	// Look for database entries and use them if they exist 
-	if (database.GetVariable("EXPMod", tmp, 9)) 
-		EXPMod = strtod((const char*)tmp, &tmp2); 
-	if (database.GetVariable("GroupEXPBonus", tmp, 9)) 
-		GroupEXPBonus = strtod((const char*)tmp, &tmp2); 
-	if (database.GetVariable("AAXPMod", tmp, 9)) 
-		AAXPMod = strtod((const char*)tmp, &tmp2); 
-
-#if (EQDEBUG>=11)
-	LogFile->write(EQEMuLog::Debug, "EXPMod set to:%i", EXPMod);
-	LogFile->write(EQEMuLog::Debug, "GroupEXPBonus set to:%i", GroupEXPBonus);
-	LogFile->write(EQEMuLog::Debug, "AAEXPMod set to:%i", AAXPMod);
-#endif
-	
 	//Load AA information
 	adverrornum = 500;
 	LoadAAs();

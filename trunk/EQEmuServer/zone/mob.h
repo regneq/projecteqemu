@@ -668,6 +668,7 @@ bool logpos;
 	inline PetType GetPetType() const { return typeofpet; }
 	bool IsFamiliar() const { return(typeofpet == petFamiliar); }
 	bool IsAnimation() const { return(typeofpet == petAnimation); }
+	bool IsCharmed() const { return(typeofpet == petCharmed); }
 	void SetOwnerID(int16 NewOwnerID);
 	inline int16 GetOwnerID()	const			{ return ownerid; }
 	inline bool HasOwner() const { if(GetOwnerID()==0){return false;} return( entity_list.GetMob(GetOwnerID()) != 0); }

@@ -862,8 +862,8 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16
 	
 	
 	// Check for consumables and Reagent focus items
-	// first check for component reduction... we assume bard spells never have components
-	if(!bard_song_mode && IsClient()) {
+	// first check for component reduction
+	if(IsClient()) {
 		int reg_focus = CastToClient()->GetFocusEffect(focusReagentCost,spell_id);
 		if(MakeRandomInt(0, 100) <= reg_focus) {
 			mlog(SPELLS__CASTING, "Spell %d: Reagent focus item prevented reagent consumption (%d chance)", spell_id, reg_focus);
@@ -878,47 +878,105 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16
 	
 				if (component == -1)
 					continue;
-				if(c->GetInv().HasItem(component, component_count, invWhereWorn|invWherePersonal) == -1) // item not found
-				{
-					c->Message_StringID(13, MISSING_SPELL_COMP);
-	
-					const Item_Struct *item = database.GetItem(component);
-					if(item) {
-						c->Message_StringID(13, MISSING_SPELL_COMP_ITEM, item->Name);
-						mlog(SPELLS__CASTING_ERR, "Spell %d: Canceled. Missing required reagent %s (%d)", spell_id, component, item->Name);
-					}
-					else {
-						char TempItemName[64];
-						strcpy((char*)&TempItemName, "UNKNOWN");
-						mlog(SPELLS__CASTING_ERR, "Spell %d: Canceled. Missing required reagent %s (%d)", spell_id, component, TempItemName);
+
+				// bard components are requirements for a certain instrument type, not a specific item
+				if(bard_song_mode) {
+					bool HasInstrument = true;
+					
+					switch (component) {
+						// percussion songs (13000 = hand drum)
+						case 13000:
+							if(itembonuses.percussionMod == 0) {			// check for the appropriate instrument type
+								HasInstrument = false;
+								c->Message_StringID(13, SONG_NEEDS_DRUM);	// send an error message if missing
+							}
+							break;
+												
+						// wind songs (13001 = wooden flute)
+						case 13001:
+							if(itembonuses.windMod == 0) {
+								HasInstrument = false;
+								c->Message_StringID(13, SONG_NEEDS_WIND);
+							}
+							break;
+						
+						// string songs (13011 = lute)
+						case 13011:
+							if(itembonuses.stringedMod == 0) {
+								HasInstrument = false;
+								c->Message_StringID(13, SONG_NEEDS_STRINGS);
+							}
+							break;
+						
+						// brass songs (13012 = horn)
+						case 13012:
+							if(itembonuses.brassMod == 0) {
+								HasInstrument = false;
+								c->Message_StringID(13, SONG_NEEDS_BRASS);
+							}
+							break;
+						
+						default:	// some non-instrument component.  Let it go, but record it in the log
+							mlog(SPELLS__CASTING_ERR, "Something odd happened: Song %d required component %s", spell_id, component);
 					}
 					
-					if(c->GetGM())
-						c->Message(0, "Your GM status allows you to finish casting even though you're missing required components.");
-					else {
-						InterruptSpell();
-						return;
+					if(!HasInstrument) {	// if the instrument is missing, log it and interrupt the song
+						mlog(SPELLS__CASTING_ERR, "Song %d: Canceled. Missing required instrument %s", spell_id, component);
+						if(c->GetGM())
+							c->Message(0, "Your GM status allows you to finish casting even though you're missing a required instrument.");
+						else {
+							InterruptSpell();
+							return;
+						}
 					}
-				}
-				else
-				{
-					mlog(SPELLS__CASTING_ERR, "Spell %d: Consuming %d of spell component item id %d", spell_id, component, component_count);
-					// Components found, Deleteing
-					// now we go looking for and deleting the items one by one
-					for(int s = 0; s < component_count; s++)
+				}	// end bard component section
+
+
+				// handle the components for traditional casters
+				else {
+					if(c->GetInv().HasItem(component, component_count, invWhereWorn|invWherePersonal) == -1) // item not found
 					{
-						inv_slot_id = c->GetInv().HasItem(component, 1, invWhereWorn|invWherePersonal);
-						if(inv_slot_id != -1)
-						{
-							c->DeleteItemInInventory(inv_slot_id, 1, true);
+						c->Message_StringID(13, MISSING_SPELL_COMP);
+	
+						const Item_Struct *item = database.GetItem(component);
+						if(item) {
+							c->Message_StringID(13, MISSING_SPELL_COMP_ITEM, item->Name);
+							mlog(SPELLS__CASTING_ERR, "Spell %d: Canceled. Missing required reagent %s (%d)", spell_id, component, item->Name);
 						}
-						else
-						{	// some kind of error in the code if this happens
-							c->Message(13, "ERROR: reagent item disappeared while processing?");
+						else {
+							char TempItemName[64];
+							strcpy((char*)&TempItemName, "UNKNOWN");
+							mlog(SPELLS__CASTING_ERR, "Spell %d: Canceled. Missing required reagent %s (%d)", spell_id, component, TempItemName);
+						}
+
+						if(c->GetGM())
+							c->Message(0, "Your GM status allows you to finish casting even though you're missing required components.");
+						else {
+							InterruptSpell();
+							return;
+						}
+					
+					}
+					else
+					{
+						mlog(SPELLS__CASTING_ERR, "Spell %d: Consuming %d of spell component item id %d", spell_id, component, component_count);
+						// Components found, Deleteing
+						// now we go looking for and deleting the items one by one
+						for(int s = 0; s < component_count; s++)
+						{
+							inv_slot_id = c->GetInv().HasItem(component, 1, invWhereWorn|invWherePersonal);
+							if(inv_slot_id != -1)
+							{
+								c->DeleteItemInInventory(inv_slot_id, 1, true);
+							}
+							else
+							{	// some kind of error in the code if this happens
+								c->Message(13, "ERROR: reagent item disappeared while processing?");
+							}
 						}
 					}
-				}
-		    } // end reagent loop
+				} // end bard/not bard ifs
+			} // end reagent loop
 		} // end `focus did not help us`
 	} // end IsClient() for reagents
 	
@@ -1558,7 +1616,7 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
 						SpellOnTarget(spell_id, this);
 	#ifdef GROUP_BUFF_PETS
 						//pet too
-						if (GetPet() && GetAA(aaPetAffinity))
+						if (GetPet() && GetAA(aaPetAffinity) && !GetPet()->IsCharmed())
 							SpellOnTarget(spell_id, GetPet());
 	#endif					
 					}
@@ -1566,7 +1624,7 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
 					SpellOnTarget(spell_id, spell_target);
 	#ifdef GROUP_BUFF_PETS
 					//pet too
-					if (spell_target->GetPet() && GetAA(aaPetAffinity))
+					if (spell_target->GetPet() && GetAA(aaPetAffinity) && !spell_target->GetPet()->IsCharmed())
 						SpellOnTarget(spell_id, spell_target->GetPet());
 	#endif
 				}
@@ -1766,7 +1824,7 @@ bool Mob::ApplyNextBardPulse(int16 spell_id, Mob *spell_target, int16 slot) {
 					else{
 						BardPulse(spell_id, this);
 #ifdef GROUP_BUFF_PETS
-						if (GetPet())
+						if (GetPet() && GetAA(aaPetAffinity) && !GetPet()->IsCharmed())
 							GetPet()->BardPulse(spell_id, this);
 #endif
 					}
@@ -1776,7 +1834,7 @@ bool Mob::ApplyNextBardPulse(int16 spell_id, Mob *spell_target, int16 slot) {
 				mlog(SPELLS__BARDS, "Bard Song Pulse: spell %d, Group target without group. Affecting caster.", spell_id);
 				BardPulse(spell_id, this);
 #ifdef GROUP_BUFF_PETS
-				if (GetPet())
+				if (GetPet() && GetAA(aaPetAffinity) && !GetPet()->IsCharmed())
 					GetPet()->BardPulse(spell_id, this);
 #endif
 			}

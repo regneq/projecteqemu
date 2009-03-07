@@ -30,7 +30,10 @@ RULE_BOOL( Character, UseDeathExpLossMult, true ) //Adjust to use the above mult
 RULE_INT ( Character, CorpseDecayTimeMS, 10800000 )
 RULE_BOOL( Character, LeaveCorpses, false )
 RULE_BOOL( Character, LeaveNakedCorpses, false )
-RULE_REAL( Character, ExpMultiplier, 1.0 )
+RULE_REAL( Character, ExpMultiplier, 0.5 )
+RULE_REAL( Character, AAExpMultiplier, 0.5 )
+RULE_REAL( Character, GroupExpMultiplier, 0.5 )
+RULE_REAL( Character, RaidExpMultiplier, 0.2 )
 RULE_INT ( Character, AutosaveIntervalS, 300 )	//0=disabled
 RULE_INT ( Character, HPRegenMultiplier, 100)
 RULE_INT ( Character, ManaRegenMultiplier, 100)

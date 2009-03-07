@@ -26,15 +26,6 @@
 #include "embparser.h"
 #endif
 
-//experience modifiers based on race and class, used if USE_RACE_CLASS_XP_MODS is defined
-//                            hum     bar     eru     elf     hie     def     hef     dwa     tro     ogr     hal    gno     iks,    vah     frog
-float  race_modifiers[15] = { 100.0f, 105.0f, 100.0f, 100.0f, 100.0f, 100.0f, 100.0f, 100.0f, 120.0f, 115.0f, 95.0f, 100.0f, 120.0f, 100.0f, 100.0f}; // Quagmire - Guessed on iks and vah
-
-//                            war   cle    pal    ran    shd    dru    mnk    brd    rog    shm    nec    wiz    mag    enc    bst    bes
-float class_modifiers[16] = { 9.0f, 10.0f, 14.0f, 14.0f, 14.0f, 10.0f, 12.0f, 14.0f, 9.05f, 10.0f, 11.0f, 11.0f, 11.0f, 11.0f, 10.0f, 10.0f};
-
-
-
 void Client::AddEXP(int32 add_exp, int8 conlevel, bool resexp) {
 	if (m_epp.perAA<0 || m_epp.perAA>100)
 		m_epp.perAA=0;	// stop exploit with sanity check
@@ -49,20 +40,25 @@ void Client::AddEXP(int32 add_exp, int8 conlevel, bool resexp) {
 		add_exp -= add_aaxp;
 	
 		float totalmod = 1.0;
+		float zemmod = 1.0;
 		//get modifiers
-		if (zone->GetEXPMod() >= 0) {
-			totalmod = zone->GetEXPMod();
-		}
-
-		if(zone->newzone_data.zone_exp_multiplier >= 0){
-			totalmod *= zone->newzone_data.zone_exp_multiplier;
-		}
-
 		if(RuleR(Character, ExpMultiplier) >= 0){
 			totalmod *= RuleR(Character, ExpMultiplier);
 		}
 
-		add_exp = int32(float(add_exp) * totalmod);
+		if(zone->newzone_data.zone_exp_multiplier >= 0){
+			zemmod *= zone->newzone_data.zone_exp_multiplier;
+		}
+
+		if(GetBaseRace() == HALFLING){
+			totalmod *= 1.05;
+		}
+
+		if(GetClass() == ROGUE || GetClass() == WARRIOR){
+			totalmod *= 1.05;
+		}
+
+		add_exp = int32(float(add_exp) * totalmod * zemmod);
 	
 #ifdef CON_XP_SCALING
 		if (conlevel != 0xFF) {
@@ -92,24 +88,27 @@ void Client::AddEXP(int32 add_exp, int8 conlevel, bool resexp) {
 					add_exp = add_exp * 200/100;
 				break;
 			}
-			/*
-			if (otherlevel >= 65)
-			{
-				int add = add_exp*((otherlevel-49)*20/100);
-				add_exp += add_exp*((otherlevel-64))*2;
-				add_exp += add;
-			}
-			else if (otherlevel >= 50)
-			{
-				add_exp += add_exp*((otherlevel-49)*20/100);
-			}*/
 		}
 #endif
+
 	}	//end !resexp
+
+		float aatotalmod = 1.0;
+		if(zone->newzone_data.zone_exp_multiplier >= 0){
+			aatotalmod *= zone->newzone_data.zone_exp_multiplier;
+		}
+
+		if(GetBaseRace() == HALFLING){
+			aatotalmod *= 1.05;
+		}
+
+		if(GetClass() == ROGUE || GetClass() == WARRIOR){
+			aatotalmod *= 1.05;
+		}
 
 	int32 exp = GetEXP() + add_exp;
 
-	int32 aaexp = (int32)((zone->GetAAXPMod()) * add_aaxp);
+	int32 aaexp = (int32)(RuleR(Character, AAExpMultiplier) * add_aaxp * aatotalmod);
 	int32 had_aaexp = GetAAXP();
 	aaexp += had_aaexp;
 	if(aaexp < had_aaexp)
@@ -378,25 +377,8 @@ uint32 Client::GetEXPForLevel(int16 check_level)
 		mod = 3.1;
 	
 	float base = (check_levelm1)*(check_levelm1)*(check_levelm1);
-	
-#ifdef USE_RACE_CLASS_XP_MODS
-	int16 tmprace = GetBaseRace();
-	if (tmprace == IKSAR) // Quagmire, set these up so they read from array right
-		tmprace = 12;
-	else if (tmprace == VAHSHIR)
-		tmprace = 13;
-	else if ((tmprace == FROGLOK) || (tmprace == FROGLOK2))
-		tmprace = 14;
-	else
-		tmprace--;
 
-	if (tmprace >= sizeof(race_modifiers) || GetClass() < 1 || GetClass() - 1 >= PLAYER_CLASS_COUNT)
-		return 0xFFFFFFFF;
-	
-	mod *= class_modifiers[GetClass()-1]*race_modifiers[tmprace];
-#else
 	mod *= 1000;
-#endif
 	
 	return(uint32(base * mod));
 }
@@ -417,8 +399,23 @@ void Group::SplitExp(uint32 exp, Mob* other) {
 	  if (members[i] != NULL) { 
 		  if(members[i]->GetLevel() > maxlevel) 
 			  maxlevel = members[i]->GetLevel(); 
+
+	float groupmod;
+	if (i == 2)
+		groupmod = 1.2;
+	else if (i == 3)
+		groupmod = 1.4;
+	else if (i == 4)
+		groupmod = 1.6;
+	else if (i == 5)
+		groupmod = 1.8;
+	else if (i == 6)
+		groupmod = 2.16;
+	else
+		groupmod = 1.0;
+
 		  //groupexp += exp/10; 
-		  groupexp += (uint32)(exp * zone->GetGroupEXPBonus()); 
+		  groupexp += (uint32)(exp * groupmod * (RuleR(Character, GroupExpMultiplier)));
 
 		  membercount++; 
 	  } 
@@ -468,7 +465,7 @@ void Raid::SplitExp(uint32 exp, Mob* other) {
 			if(members[i].member->GetLevel() > maxlevel) 
 				maxlevel = members[i].member->GetLevel(); 
 			//groupexp += (uint32)(exp * zone->GetGroupEXPBonus());
-			groupexp -= (groupexp * 1 / 5);
+			groupexp -= (groupexp * (RuleR(Character, RaidExpMultiplier)));
 
 			membercount++; 
 		} 
