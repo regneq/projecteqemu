@@ -1,6 +1,12 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==3/03/2009==
+Trevius: SoF - AAs now show up in the AA window, but do not give bonuses yet.
+Trevius: SoF - Spent AA points are partially showing up, but still need work.
+Trevius: SoF - Updated some grouping structs, but grouping still isn't working just yet
+Trevius: SoF - Buffs can now be clicked off, but the duration still isn't working for them
+
+==3/03/2009==
 Angelox: Fixed most (if not all) npc pet ghosting at zone safepoints.
 
 ==3/02/2009==

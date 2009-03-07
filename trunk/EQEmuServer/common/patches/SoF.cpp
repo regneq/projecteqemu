@@ -235,6 +235,10 @@ ENCODE(OP_SendAATable) {
 	OUT(prereq_skill);
 	OUT(prereq_minpoints);
 	OUT(type);
+	if (emu->type < 4)
+		eq->type = emu->type;
+	if (emu->type > 4)
+		eq->type = 1;
 	OUT(spellid);
 	OUT(spell_type);
 	OUT(spell_refresh);
@@ -244,12 +248,10 @@ ENCODE(OP_SendAATable) {
 	OUT(last_id);
 	OUT(next_id);
 	OUT(cost2);
-	OUT(unknown80[0]);
-	//OUT(unknown80[1]);
-	//eq->unknown80 = 0;
-	eq->unknown0088 = 3;
+	//memset(eq->unknown80, 0x00, sizeof(eq->unknown80));
+	eq->aa_expansion = emu->type;
 	eq->unknown0092 = -1;
-	eq->unknown0096 = 0;
+	//eq->unknown0096 = 0;
 	OUT(total_abilities);
 	unsigned int r;
 	for(r = 0; r < emu->total_abilities; r++) {
@@ -1136,7 +1138,89 @@ ENCODE(OP_Damage) {
 	OUT(type);
 	OUT(spellid);
 	OUT(damage);
-	OUT(sequence);
+	eq->sequence = emu->sequence;
+	FINISH_ENCODE();
+}
+
+ENCODE(OP_Consider) {
+	ENCODE_LENGTH_EXACT(Consider_Struct);
+	SETUP_DIRECT_ENCODE(Consider_Struct, structs::Consider_Struct);
+	OUT(playerid);
+	OUT(targetid);
+	OUT(faction);
+	OUT(level);
+	OUT(pvpcon);
+	FINISH_ENCODE();
+}
+
+/*
+ENCODE(OP_GroupUpdate) {
+	ENCODE_LENGTH_EXACT(GroupUpdate2_Struct);
+	SETUP_DIRECT_ENCODE(GroupUpdate2_Struct, structs::GroupUpdate2_Struct);
+	int r;
+	OUT(action);
+	OUT_str(yourname);
+	for(r = 0; r < 5; r++) {
+		OUT_str(membername[r]);
+	}
+	OUT_str(leadersname);
+	for(r = 0; r < structs::MAX_GROUP_LEADERSHIP_AA_ARRAY; r++) {
+		OUT(leader_aas.ranks[r]);
+	}
+	FINISH_ENCODE();
+}
+*/
+
+ENCODE(OP_Action) {
+	ENCODE_LENGTH_EXACT(Action_Struct);
+	SETUP_DIRECT_ENCODE(Action_Struct, structs::Action_Struct);
+	OUT(target);
+	OUT(source);
+	OUT(level);
+	OUT(instrument_mod);
+	eq->sequence = emu->sequence;
+	OUT(type);
+	//OUT(damage);
+	OUT(spell);
+	OUT(buff_unknown); // if this is 4, a buff icon is made
+	//eq->unknown0036 = -1;
+	//eq->unknown0040 = -1;
+	//eq->unknown0044 = -1;
+	FINISH_ENCODE();
+}
+
+ENCODE(OP_Buff) {
+	ENCODE_LENGTH_EXACT(SpellBuffFade_Struct);
+	SETUP_DIRECT_ENCODE(SpellBuffFade_Struct, structs::SpellBuffFade_Struct);
+	OUT(entityid);
+	OUT(slot);
+	OUT(level);
+	OUT(effect);
+	//eq->unknown7 = 10;
+	OUT(spellid);
+	OUT(duration);
+	OUT(slotid);
+	OUT(bufffade);
+	FINISH_ENCODE();
+}
+
+ENCODE(OP_RespondAA) {
+	ENCODE_LENGTH_EXACT(AA_Skills);
+	SETUP_DIRECT_ENCODE(AA_Skills, structs::AA_Skills);
+	int aa_spent_total = 0;
+	int k;
+	for(k = 0; k < structs::MAX_PP_AA_ARRAY; k++) {
+		if (emu->aa_value !=0)
+			aa_spent_total++;
+	}
+	
+	eq->aa_spent = aa_spent_total;
+	int r;
+	for(r = 0; r < structs::MAX_PP_AA_ARRAY; r++) {
+		eq->aa_array[r].AA = emu->aa_skill;
+		eq->aa_array[r].value = emu->aa_value;
+		eq->aa_array[r].unknown08 = 0;
+	}
 	FINISH_ENCODE();
 }
 
@@ -1309,7 +1393,28 @@ DECODE(OP_WhoAllRequest) {
 	FINISH_DIRECT_DECODE();
 }
 
+DECODE(OP_GroupFollow2) {
+	DECODE_LENGTH_EXACT(structs::GroupJoin_Struct);
+	SETUP_DIRECT_DECODE(GroupJoin_Struct, structs::GroupJoin_Struct);
+	memcpy(emu->membername, eq->membername, sizeof(emu->membername));
+	memcpy(emu->yourname, eq->yourname, sizeof(emu->yourname));
+	IN(action);
+	FINISH_DIRECT_DECODE();
+}
 
+DECODE(OP_Buff) {
+	DECODE_LENGTH_EXACT(structs::SpellBuffFade_Struct);
+	SETUP_DIRECT_DECODE(SpellBuffFade_Struct, structs::SpellBuffFade_Struct);
+	IN(entityid);
+	IN(slot);
+	IN(level);
+	IN(effect);
+	IN(spellid);
+	IN(duration);
+	IN(slotid);
+	IN(bufffade);
+	FINISH_DIRECT_DECODE();
+}
 
 int32 NextItemInstSerialNumber = 1;
 int32 MaxInstances = 2000000000;
