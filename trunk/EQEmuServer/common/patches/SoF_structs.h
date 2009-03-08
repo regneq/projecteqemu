@@ -587,21 +587,6 @@ struct SpellBuffFade_Struct {
 /*036*/
 };
 
-struct ItemNamePacket_Struct {
-/*000*/	uint32 item_id;
-/*004*/	uint32 unkown004;
-/*008*/ char name[64];
-/*072*/
-};
-
-// Length: 10
-struct ItemProperties_Struct {
-
-int8	unknown01[2];
-int8	charges;
-int8	unknown02[13];
-};
-
 struct GMTrainee_Struct
 {
 	/*000*/ uint32 npcid;
@@ -1435,14 +1420,47 @@ struct Consume_Struct
 /*0008*/ int8  c_unknown1[4];
 /*0012*/ int8  type; // 0x01=Food 0x02=Water
 /*0013*/ int8  unknown13[3];
+/*0016*/
 };
 
+struct ItemNamePacket_Struct {
+/*000*/	uint32 item_id;
+/*004*/	uint32 unkown004;
+/*008*/ char name[64];
+/*072*/
+};
+
+// Length: 16
+struct ItemProperties_Struct_Old {
+
+/*000*/ int8	unknown01[2];
+/*002*/ int8	charges;
+/*003*/ int8	unknown02[13];
+/*016*/
+};
+
+// Length: 8
+struct ItemProperties_Struct {
+
+/*000*/ int8	unknown01[4];
+/*004*/ int8	charges;
+/*005*/ int8	unknown02[3];
+/*008*/
+};
+
+struct DeleteItem_Struct {
+/*0000*/ uint32 from_slot;
+/*0004*/ uint32 to_slot;
+/*0008*/ uint32 number_in_stack;
+/*0012*/
+};
 
 struct MoveItem_Struct
 {
 /*0000*/ uint32 from_slot;
 /*0004*/ uint32 to_slot;
 /*0008*/ uint32 number_in_stack;
+/*0012*/
 };
 
 //
@@ -1629,12 +1647,6 @@ struct CombatAbility_Struct {
 	int32 m_target;		//the ID of the target mob
 	int32 m_atk;
 	int32 m_skill;
-};
-
-struct DeleteItem_Struct {
-/*0000*/ uint32 from_slot;
-/*0004*/ uint32 to_slot;
-/*0008*/ uint32 number_in_stack;
 };
 
 //Instill Doubt
@@ -3541,7 +3553,7 @@ struct ItemSerializationHeader
 	uint32 instance_id; //unique instance id if not merchant item, else is merchant slot
 	uint32 inst_nodrop;
 	uint32 potion_type;
-	uint32 unknown036; //0xffffffff or 0x00000000 - Maybe potion_type?
+	uint32 charges; //Total Charges an item has (-1 for unlimited)
 	uint32 unknown040; //0
 	uint32 unknown044; //0
 	uint32 unknown048; //0

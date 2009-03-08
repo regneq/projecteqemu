@@ -1466,7 +1466,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 
 	hdr.instance_id = (merchant_slot == 0) ? inst->GetSerialNumber() : merchant_slot;
 	hdr.inst_nodrop = inst->IsInstNoDrop() ? 1 : 0;
 	hdr.potion_type = (stackable ? ((inst->GetItem()->ItemType == ItemTypePotion) ? 1 : 0) : charges);
-	hdr.unknown036 = 0xffffffff;
+	hdr.charges = charges;
 	hdr.unknown040 = 0;
 	hdr.unknown044 = 0;
 	hdr.unknown048 = 0;
@@ -1672,7 +1672,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 
 	itbs.potion_belt_enabled = item->PotionBelt;
 	itbs.potion_belt_slots = item->PotionBeltSlots;
 	itbs.no_transfer = item->NoTransfer;
-	itbs.stacksize = item->StackSize;
+	itbs.stacksize = stackable ? charges : 0;
 
 	itbs.click_effect.effect = item->Click.Effect;
 	itbs.click_effect.type = item->Click.Type;
