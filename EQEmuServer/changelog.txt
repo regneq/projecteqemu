@@ -1,6 +1,15 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==3/08/2009==
+Trevius: SoF - Corrected Item Struct to fix the issue with non-stackable items showing up as being stackable
+Trevius: SoF - Identified an unknown field in Item Serialization as being item charges and set it accordingly so that items should now show accurate current charges.
+Trevius/Xinu: SoF - Adjusted a few opcodes for more accuracy - No visible change yet
+
 ==3/07/2009==
+Trevius: SoF - AAs now show up in the AA window, but do not give bonuses yet.
+Trevius: SoF - Spent AA points are partially showing up, but still need work.
+Trevius: SoF - Updated some grouping structs, but grouping still isn't working just yet
+Trevius: SoF - Buffs can now be clicked off, but the duration still isn't working for them
 cavedude: Added new AA, group, and raid EXP multiplier rules. Removed the associated variables.
 cavedude: Removed the USE_RACE_CLASS_XP_MODS define as it was outdated and horribly broken.
 cavedude: Added group XP bonus. The larger the group, the higher the XP gain.
@@ -17,12 +26,6 @@ REPLACE INTO `rule_values` VALUES ('1', 'Character:ExpMultiplier', '0.5');
 INSERT INTO `rule_values` VALUES ('1', 'Character:AAExpMultiplier', '0.5');
 INSERT INTO `rule_values` VALUES ('1', 'Character:GroupExpMultiplier', '0.5');
 INSERT INTO `rule_values` VALUES ('1', 'Character:RaidExpMultiplier', '0.2');
-
-==3/03/2009==
-Trevius: SoF - AAs now show up in the AA window, but do not give bonuses yet.
-Trevius: SoF - Spent AA points are partially showing up, but still need work.
-Trevius: SoF - Updated some grouping structs, but grouping still isn't working just yet
-Trevius: SoF - Buffs can now be clicked off, but the duration still isn't working for them
 
 ==3/03/2009==
 Angelox: Fixed most (if not all) npc pet ghosting at zone safepoints.
