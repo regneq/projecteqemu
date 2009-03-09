@@ -1182,6 +1182,7 @@ ENCODE(OP_Action) {
 	OUT(type);
 	//OUT(damage);
 	OUT(spell);
+	eq->level2 = emu->level;
 	OUT(buff_unknown); // if this is 4, a buff icon is made
 	//eq->unknown0036 = -1;
 	//eq->unknown0040 = -1;

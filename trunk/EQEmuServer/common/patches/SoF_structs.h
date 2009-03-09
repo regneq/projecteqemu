@@ -1166,7 +1166,7 @@ struct Action_Struct
  /* 22 */	int8 type;		// 231 (0xE7) for spells
  /* 23 */	uint32 unknown23;
  /* 27 */	int16 spell;	// spell id being cast
- /* 29 */	int8 unknown29;
+ /* 29 */	int8 level2;	// level of caster again? Or maybe the castee
 // this field seems to be some sort of success flag, if it's 4
  /* 30 */	int8 buff_unknown;	// if this is 4, a buff icon is made
  /* 31 */

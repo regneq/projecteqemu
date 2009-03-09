@@ -1,6 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==3/08/2009==
+Trevius: SoF - Buffs and debuffs now last for the correct duration.
+
+==3/08/2009==
 Trevius: SoF - Corrected Item Struct to fix the issue with non-stackable items showing up as being stackable
 Trevius: SoF - Identified an unknown field in Item Serialization as being item charges and set it accordingly so that items should now show accurate current charges.
 Trevius/Xinu: SoF - Adjusted a few opcodes for more accuracy - No visible change yet
