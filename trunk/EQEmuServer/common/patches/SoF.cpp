@@ -1205,23 +1205,51 @@ ENCODE(OP_Buff) {
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_CancelTrade) {
+	ENCODE_LENGTH_EXACT(CancelTrade_Struct);
+	SETUP_DIRECT_ENCODE(CancelTrade_Struct, structs::CancelTrade_Struct);
+	OUT(fromid);
+	eq->action = -1;
+	FINISH_ENCODE();
+}
+
 ENCODE(OP_RespondAA) {
 	ENCODE_LENGTH_EXACT(AA_Skills);
 	SETUP_DIRECT_ENCODE(AA_Skills, structs::AA_Skills);
 	int aa_spent_total = 0;
 	int k;
 	for(k = 0; k < structs::MAX_PP_AA_ARRAY; k++) {
-		if (emu->aa_value !=0)
+		if (emu[k].aa_value !=0)
 			aa_spent_total++;
 	}
 	
 	eq->aa_spent = aa_spent_total;
 	int r;
 	for(r = 0; r < structs::MAX_PP_AA_ARRAY; r++) {
-		eq->aa_array[r].AA = emu->aa_skill;
-		eq->aa_array[r].value = emu->aa_value;
+		eq->aa_array[r].AA = emu[r].aa_skill;
+		eq->aa_array[r].value = emu[r].aa_value;
 		eq->aa_array[r].unknown08 = 0;
 	}
+	FINISH_ENCODE();
+}
+
+ENCODE(OP_ShopPlayerSell) {
+	ENCODE_LENGTH_EXACT(Merchant_Purchase_Struct);
+	SETUP_DIRECT_ENCODE(Merchant_Purchase_Struct, structs::Merchant_Purchase_Struct);
+	OUT(npcid);
+
+	int slot_id;
+	slot_id = emu->itemslot;
+
+	if(slot_id >= 21 && slot_id < 50)
+		slot_id += 1;
+	else if(slot_id >= 251 && slot_id < 351)
+		slot_id += 11;
+	
+	eq->itemslot = slot_id;
+
+	OUT(quantity);
+	OUT(price);
 	FINISH_ENCODE();
 }
 
@@ -1414,6 +1442,26 @@ DECODE(OP_Buff) {
 	IN(duration);
 	IN(slotid);
 	IN(bufffade);
+	FINISH_DIRECT_DECODE();
+}
+
+DECODE(OP_ShopPlayerSell) {
+	DECODE_LENGTH_EXACT(structs::Merchant_Purchase_Struct);
+	SETUP_DIRECT_DECODE(Merchant_Purchase_Struct, structs::Merchant_Purchase_Struct);
+	IN(npcid);
+
+	int slot_id;
+	slot_id = eq->itemslot;
+
+	if(slot_id >= 22 && slot_id < 51)
+		slot_id -= 1;
+	else if(slot_id >= 262 && slot_id < 351)
+		slot_id -= 11;
+
+	emu->itemslot = slot_id;
+
+	IN(quantity);
+	IN(price);
 	FINISH_DIRECT_DECODE();
 }
 
@@ -1673,12 +1721,11 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 
 	itbs.potion_belt_enabled = item->PotionBelt;
 	itbs.potion_belt_slots = item->PotionBeltSlots;
 	itbs.no_transfer = item->NoTransfer;
-	itbs.stacksize = stackable ? charges : 0;
+	itbs.stacksize = stackable ? item->StackSize : 0;
 
 	itbs.click_effect.effect = item->Click.Effect;
 	itbs.click_effect.type = item->Click.Type;
 	itbs.click_effect.level = item->Click.Level;
-	//itbs.click_effect.max_charges = 0xffffffff; //todo: implement charges/expendable it's in there somewhere
 	itbs.click_effect.max_charges = item->MaxCharges;
 	itbs.click_effect.cast_time = item->CastTime;
 	itbs.click_effect.recast = item->RecastDelay;
