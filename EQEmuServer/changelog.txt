@@ -1,6 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
-==3/08/2009==
+==3/10/2009==
+Trevius: SoF - PC to PC/NPC Trading now works, though canceling a trade will bug the character and require them to zone or relog
+Trevius: SoF - Players can now sell to merchants
+Trevius: SoF - Corrected a bug introduced in Revision 376 that was causing single stackable items to not be stackable
+
+==3/09/2009==
 Trevius: SoF - Buffs and debuffs now last for the correct duration.
 
 ==3/08/2009==
