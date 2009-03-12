@@ -133,8 +133,8 @@ struct CharacterSelectEntry_Struct {
 		uint8 hair;		//edi+0ECh
 		uint8 face;		//edi+4Dh
 		CharSelectEquip	equip[9];
-		uint32 u13;		//edi+0E4h
-		uint32 u14;		//edi+0E8h
+		uint32 secondary;		//edi+0F8h
+		uint32 primary;		//edi+0FCh
 		uint8 u15;//0xff
 		uint32 deity;		//edi+0F7h
 		uint16 zone;		//edi+0E0h
@@ -147,8 +147,8 @@ struct CharacterSelectEntry_Struct {
 		uint8 eyecolor1;		//edi+0EFh
 		uint8 beardcolor;		//edi+0EDh  0xff, guessed
 		uint8 eyecolor2;		//edi+0EEh
-		uint32 secondary;		//edi+0F8h
-		uint32 primary;		//edi+0FCh
+		uint32 u13;		//edi+0E4h
+		uint32 u14;		//edi+0E8h
 		uint32 u29;		//edi+100h
 };
 
@@ -3462,8 +3462,9 @@ struct AA_Action {
 };
 
 struct AA_Skills {		//this should be removed and changed to AA_Array
-/*00*/	int32	aa_spent;						// Total AAs Spent
-/*04*/ AA_Array  aa_array[MAX_PP_AA_ARRAY];
+/*00*/	int32	aa_skill;						// Total AAs Spent
+/*04*/  int32	aa_value;
+/*08*/  int32	unknown08;
 };
 
 struct AAExpUpdate_Struct {
@@ -3487,7 +3488,8 @@ struct PlayerAA_Struct {
 };
 
 struct AATable_Struct {
-	AA_Skills aa_list[MAX_PP_AA_ARRAY];
+/*00*/ sint32	aa_spent;						// Total AAs Spent
+/*04*/ AA_Skills aa_list[MAX_PP_AA_ARRAY];
 };
 
 struct Weather_Struct {

@@ -159,8 +159,8 @@ ENCODE(OP_SendCharInfo) {
 				eq2->equip[k].itemid = 0;
 				eq2->equip[k].color.color = emu->cs_colors[r][k].color;
 			}
-			eq2->u13 = 0;
-			eq2->u14 = 0;
+			eq2->secondary = emu->secondary[r];
+			eq2->primary = emu->primary[r];
 			eq2->tutorial = emu->tutorial[r]; // was u15
 			eq2->u15 = 0xff;
 			eq2->deity = emu->deity[r];
@@ -172,9 +172,9 @@ ENCODE(OP_SendCharInfo) {
 			eq2->eyecolor1 = emu->eyecolor1[r];
 			eq2->beardcolor = emu->beardcolor[r];
 			eq2->eyecolor2 = emu->eyecolor2[r];
-			eq2->secondary = emu->secondary[r];
-			eq2->primary = emu->primary[r];
-			eq2->u29 = 0;
+			eq2->u13 = 0; // Appears to be Drakkin Related
+			eq2->u14 = 0; // Appears to be Drakkin Related
+			eq2->u29 = 0; // Appears to be Drakkin Related
 		}
 		bufptr += sizeof(structs::CharacterSelectEntry_Struct);
 	}
@@ -1214,21 +1214,20 @@ ENCODE(OP_CancelTrade) {
 }
 
 ENCODE(OP_RespondAA) {
-	ENCODE_LENGTH_EXACT(AA_Skills);
-	SETUP_DIRECT_ENCODE(AA_Skills, structs::AA_Skills);
-	int aa_spent_total = 0;
-	int k;
-	for(k = 0; k < structs::MAX_PP_AA_ARRAY; k++) {
-		if (emu[k].aa_value !=0)
-			aa_spent_total++;
-	}
+	ENCODE_LENGTH_EXACT(AATable_Struct);
+	SETUP_DIRECT_ENCODE(AATable_Struct, structs::AATable_Struct);
 	
-	eq->aa_spent = aa_spent_total;
+	//int aa_spent_total = 0;
+	eq->aa_spent = 500; //aa_spent_total;
+
 	int r;
 	for(r = 0; r < structs::MAX_PP_AA_ARRAY; r++) {
-		eq->aa_array[r].AA = emu[r].aa_skill;
-		eq->aa_array[r].value = emu[r].aa_value;
-		eq->aa_array[r].unknown08 = 0;
+		OUT(aa_list[r].aa_skill);
+		OUT(aa_list[r].aa_value);
+		//eq->aa_list[r].aa_value = emu->aa_list[r].aa_value;
+		//if (emu->aa_list[r].aa_value)
+		//	aa_spent_total += emu->aa_list[r].aa_value;
+		eq->aa_list[r].unknown08 = 0;
 	}
 	FINISH_ENCODE();
 }
