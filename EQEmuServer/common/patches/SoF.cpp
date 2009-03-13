@@ -1252,6 +1252,99 @@ ENCODE(OP_ShopPlayerSell) {
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_DeleteItem) {
+	ENCODE_LENGTH_EXACT(DeleteItem_Struct);
+	SETUP_DIRECT_ENCODE(DeleteItem_Struct, structs::DeleteItem_Struct);
+	if(emu->from_slot >= 21 && emu->from_slot < 50)
+	{
+		eq->from_slot = emu->from_slot + 1;
+	}
+	else if(emu->from_slot >= 251 && emu->from_slot < 351)
+	{
+		eq->from_slot = emu->from_slot + 11;
+	}
+	else
+	{
+		OUT(from_slot);
+	}
+
+	if(emu->to_slot >= 21 && emu->to_slot < 50)
+	{
+		eq->to_slot = emu->to_slot + 1;
+	}
+	else if(emu->to_slot >= 251 && emu->to_slot < 351)
+	{
+		eq->to_slot = emu->to_slot + 11;
+	}
+	else
+	{
+		OUT(to_slot);
+	}
+	OUT(number_in_stack);
+	FINISH_ENCODE();
+}
+
+DECODE(OP_Consume) {
+	DECODE_LENGTH_EXACT(structs::Consume_Struct);
+	SETUP_DIRECT_DECODE(Consume_Struct, structs::Consume_Struct);
+	if(eq->slot >= 23 && eq->slot < 51)
+	{
+		emu->slot = eq->slot - 1;
+	}
+	else if(eq->slot >= 251 && eq->slot < 351)
+	{
+		emu->slot = eq->slot - 11;
+	}
+	else if(eq->slot == 22)
+	{
+		emu->slot = 21;
+	}
+	else if(eq->slot == 21)
+	{
+		emu->slot = 22;		//some power source slot TODO
+	}
+	else
+	{
+		IN(slot);
+	}
+	IN(auto_consumed);
+	//IN(c_unknown1);
+	IN(type);
+	//IN(unknown13);
+	FINISH_DIRECT_DECODE();
+}
+
+DECODE(OP_CastSpell) {
+	DECODE_LENGTH_EXACT(structs::CastSpell_Struct);
+	SETUP_DIRECT_DECODE(CastSpell_Struct, structs::CastSpell_Struct);
+	IN(slot);
+	IN(spell_id);
+
+	if(eq->inventoryslot >= 23 && eq->inventoryslot < 51)
+	{
+		emu->inventoryslot = eq->inventoryslot - 1;
+	}
+	else if(eq->inventoryslot >= 251 && eq->inventoryslot < 351)
+	{
+		emu->inventoryslot = eq->inventoryslot - 11;
+	}
+	else if(eq->inventoryslot == 22)
+	{
+		emu->inventoryslot = 21;
+	}
+	else if(eq->inventoryslot == 21)
+	{
+		emu->inventoryslot = 22;		//some power source slot TODO
+	}
+	else
+	{
+		IN(inventoryslot);
+	}
+	IN(target_id);
+	//IN(cs_unknown);
+	FINISH_DIRECT_DECODE();
+}
+
 DECODE(OP_MoveItem)
 {
 	DECODE_LENGTH_EXACT(structs::MoveItem_Struct);

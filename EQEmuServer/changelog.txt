@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==3/13/2009==
+Trevius: SoF - Added a few more encodes/decodes to resolve more slot change issues related to the addition of the Power Source Slot
+Trevius: SoF - Ammo now depletes properly when used.  Probably some other minor issues resolved by this change as well.
+
 ==3/12/2009==
 Trevius: SoF - AAs can now be trained and will update without needing to zone. Point Spent is still wrong.
 Trevius: SoF - Char Select now shows Primary and Secondary items properly.
