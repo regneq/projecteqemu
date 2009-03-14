@@ -584,6 +584,10 @@ ENCODE(OP_ZoneSpawns) {
 	int k;
 	for(r = 0; r < entrycount; r++, eq++, emu++) {
 
+		eq->showname = 1; //New Field - Toggles Name Display on or off - 0 = off, 1 = on
+		eq->linkdead = 0; //New Field - Toggles LD on or off after name - 0 = off, 1 = on
+		eq->showhelm = emu->showhelm;
+
 		eq->deity = emu->deity;
 		eq->gender = emu->gender;
 		for(k = 0; k < 9; k++) {
@@ -599,6 +603,7 @@ ENCODE(OP_ZoneSpawns) {
 		eq->runspeed = emu->runspeed;
 		eq->light = emu->light;
 		eq->level = emu->level;
+		eq->lfg = emu->lfg;
 		eq->race = emu->race;
 		strcpy(eq->suffix, emu->suffix);
 		eq->bodytype = emu->bodytype;
@@ -607,7 +612,10 @@ ENCODE(OP_ZoneSpawns) {
 		strcpy(eq->lastName, emu->lastName);
 		eq->eyecolor1 = emu->eyecolor1;
 		strcpy(eq->title, emu->title);
+		eq->beard = emu->beard;
+		eq->targetable = 1; //New Field - Toggle Targetable on or off - 0 = off, 1 = on
 		eq->NPC = emu->NPC;
+		eq->targetable_with_hotkey = 1;//New Field - Toggle Targetable on or off - 0 = off, 1 = on
 		eq->x = emu->x;
 		eq->deltaX = emu->deltaX;
 		eq->deltaY = emu->deltaY;
@@ -620,78 +628,51 @@ ENCODE(OP_ZoneSpawns) {
 		eq->spawnId = emu->spawnId;
 		strcpy(eq->name, emu->name);
 		eq->petOwnerId = emu->petOwnerId;
+		eq->pvp = 0;	// 0 = non-pvp colored name, 1 = red pvp name
 		for(k = 0; k < 9; k++) {
 			eq->colors[k].color = emu->colors[k].color;
 		}
 		eq->anon = emu->anon;
+		eq->face = emu->face;
 		eq->size = emu->size;
 		eq->walkspeed = emu->walkspeed;
-
-		eq->targetable = 1; //New Field - Toggle Targetable on or off - 0 = off, 1 = on
-		eq->targetable_with_hotkey = 1;
-
-		eq->showname = 1; //New Field - Toggles Name Display on or off - 0 = off, 1 = on
-		eq->linkdead = 0; //New Field - Toggles LD on or off after name - 0 = off, 1 = on
-
-		//Hack Test for finding more fields in the Struct:
-		//memset(eq->unknown0001, 0x01, sizeof(eq->unknown0001)); // 16 - No Visible Change? 22
-		//memset(eq->unknown0005, 0x01, sizeof(eq->unknown0005)); // 15 - No Visible Change? 22
-		//memset(eq->unknown0008, 0x01, sizeof(eq->unknown0008)); // 13
-		//memset(eq->unknown0048, 0x01, sizeof(eq->unknown0048)); // 12 - No Visible Change? 22
-		//eq->unknown0820 = 1;	//Stand State - Stand/Sit/Crouch
-		//eq->unknown0059 = 1; // 1 Turned off on 6 - west bug?
-		//memset(eq->unknown0074, 0x01, sizeof(eq->unknown0074)); // 16 - No Visible Change? 22
-		//memset(eq->unknown0077, 0x01, sizeof(eq->unknown0077)); // 19 - Flymode 22
-		//memset(eq->unknown00771, 0x00, sizeof(eq->unknown00771)); // 20 - No Visible Change? 22
-		//memset(eq->unknown00772, 0x02, sizeof(eq->unknown00772)); // 20 - No Visible Change? 22
-		//memset(eq->unknown0078, 0x00, sizeof(eq->unknown0078)); // 18
-		//eq->unknown0078 = 1;
-		//memset(eq->unknown0079, 0x01, sizeof(eq->unknown0079)); // 18 - No Visible Change? 22
-		//memset(eq->unknown0080, 0x01, sizeof(eq->unknown0080)); // 18 - No Visible Change? 22
-		//memset(eq->unknown0106, 0x01, sizeof(eq->unknown0106)); // 11 - No Visible Change? 22
-		//memset(eq->unknown0107, 0x01, sizeof(eq->unknown0107)); // 20 21 - Flymode 22
-		//memset(eq->unknown0108, 0x01, sizeof(eq->unknown0108)); // 20 - LFG and Hair/Beard 22
-		//memset(eq->unknown0110, 0x01, sizeof(eq->unknown0110)); // 20 21 
-		//memset(eq->unknown01101, 0x00, sizeof(eq->unknown01101)); // 20
-		//eq->unknown0111 = 1; // 1 - No Visible Change?
-		//eq->unknown0613 = 0; //was bodytype
-		//memset(eq->unknown0154, 0x01, sizeof(eq->unknown0154)); // 2 - freeze in place?
-		//memset(eq->unknown0263, 0x01, sizeof(eq->unknown0263)); // 1 - no player character visible?
-		//memset(eq->unknown0281, 0x01, sizeof(eq->unknown0281)); // 2 3
-		//eq->unknown0307 = 1; // 9 10 11 - No Visible Change?
-		//memset(eq->unknown0308, 0x01, sizeof(eq->unknown0308)); // 22 - No Visible Change? 22
-		//memset(eq->unknown0309, 0x01, sizeof(eq->unknown0309)); // 8 - No Visible Change? 22
-		//memset(eq->unknown442, 0x01, sizeof(eq->unknown442)); // 6 - crash?
-		//eq->unknown443 = 1; // 1 turned off on 9 - No Visible Change? 22
-		//memset(eq->unknown0760, 0x01, sizeof(eq->unknown0760)); // 4 avatar height?
-		//eq->unknown0779 = 0; // 1 - int32 avatar height?
-		//memset(eq->unknown0496, 0x01, sizeof(eq->unknown0496)); // 4 5
 		
-
-		// 1 all set to one shows you at floor level
-		// 2 seems to cause invis and freeze in place and west bug
-		// 3 causes no player character, but spawns work and has west bug
-		// 4 looks just like 2 accept you can move and are at floor level
-		// 5 Looks like 3
-		// 6 Cuased a crash
-		// 7 west bug gone 
-		// 8 Looks normal accept no player character
-		// 9 Targetable mobs!!! Still no player character...
-		// 10 Narrowing down bodytype
-		// 11 Non-targetable again and narrowing down bodytype
-		// 12 Bodytype location identified!!!  Targeting works...  Nother other visible changes
-		// 13 Can target self but not spawns.  West bug again
-		// 14 Names showing and also LD showing!!!  Still West Bug though...
-		// 15 Show Names field now identified.  
-		// 16 No visible change
-		// 17 Looks like helm is in there somewhere...  Only 134 bytes to figure it out :P
-		// 18 helm location identified
-		// 19 fly mode on
-		// 20 fly mode on, LFG on, very slow walking, and hair changed
-		// 21 LFG on, hair changed
-		// 22 Makes everyone human with a ! in front of their name, target ring is off and con color is grey...
-
-
+		//Hack Test for finding more fields in the Struct:
+		//memset(eq->unknown0001, 0x01, sizeof(eq->unknown0001));	// 
+		//memset(eq->unknown0006, 0x01, sizeof(eq->unknown0006));	// 
+		//memset(eq->unknown0011, 0x02, sizeof(eq->unknown0011));	// 
+		//memset(eq->unknown0048, 0x01, sizeof(eq->unknown0048));	// 
+		//eq->unknown0820 = 1;										// Stand State - Stand/Sit/Crouch
+		//eq->unknown0059 = 1;										// - west bug?
+		//memset(eq->unknown0074, 0x01, sizeof(eq->unknown0074));	// 
+		//memset(eq->unknown0077, 0x01, sizeof(eq->unknown0077));	// 
+		//memset(eq->unknown00771, 0x00, sizeof(eq->unknown00771));	// 
+		//memset(eq->unknown00772, 0x02, sizeof(eq->unknown00772));	// 
+		//memset(eq->unknown0078, 0x00, sizeof(eq->unknown0078));	// 
+		//memset(eq->unknown0079, 0x01, sizeof(eq->unknown0079));	// 
+		//memset(eq->unknown0080, 0x01, sizeof(eq->unknown0080));	// 
+		//memset(eq->unknown0106, 0x01, sizeof(eq->unknown0106));	// 
+		//memset(eq->unknown0107, 0x01, sizeof(eq->unknown0107));	// - Flymode
+		//memset(eq->unknown01071, 0x01, sizeof(eq->unknown01071));	//
+		//memset(eq->unknown0108, 0x00, sizeof(eq->unknown0108));	// - LFG and Hair/Beard
+		//memset(eq->unknown01081, 0x01, sizeof(eq->unknown01081));	// 
+		//memset(eq->unknown01082, 0x00, sizeof(eq->unknown01082));	//
+		//memset(eq->unknown0110, 0x01, sizeof(eq->unknown0110));	// 
+		//memset(eq->unknown01101, 0x00, sizeof(eq->unknown01101));	// 
+		//eq->unknown0111 = 2;										// 
+		//memset(eq->unknown0154, 0x01, sizeof(eq->unknown0154));	// - freeze in place?
+		//memset(eq->unknown0263, 0x01, sizeof(eq->unknown0263));	// - no player character visible?
+		//memset(eq->unknown0281, 0x01, sizeof(eq->unknown0281));	// 
+		//memset(eq->unknown0308, 0x02, sizeof(eq->unknown0308));	// 
+		//memset(eq->unknown0309, 0x02, sizeof(eq->unknown0309));	// 
+		//memset(eq->unknown442, 0x01, sizeof(eq->unknown442));		// - crash?
+		//memset(eq->unknown0760, 0x03, sizeof(eq->unknown0760));	// 
+		//eq->unknown0760 = 0;
+		//eq->unknown0761 = 1;
+		//eq->unknown0762 = 2;
+		//eq->unknown0763 = 3;
+		//eq->unknown0764 = 4;
+		//memset(eq->unknown0496, 0x02, sizeof(eq->unknown0496));	// 
 
 	}
 	
