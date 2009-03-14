@@ -231,9 +231,13 @@ struct Spawn_Struct {
 /*0000*/ uint8  showname; //New Field - Toggles Name Display on or off - 0 = off, 1 = on
 /*0001*/ uint8  unknown0001[4]; //
 /*0005*/ uint8  linkdead; //New Field - Toggles LD on or off after name - 0 = off, 1 = on
-/*0006*/ uint8  unknown0005[3]; //
+/*0006*/ uint8  unknown0006; //
+/*0007*/ uint8  showhelm; //
+/*0008*/ uint8  unknown0008; //
 /*0009*/ int16  deity;          // Player's Deity
-/*0011*/ uint8  unknown0008[11];
+/*0011*/ uint8  unknown0011[6];// was 5
+/*0011*/ uint8  unknown0009;	// 0 = animate, 1+ = freeze non-global races (statues)
+/*0011*/ uint8  unknown0010[4];// was 6
 /*0022*/ uint8  gender;         // Gender (0=male, 1=female)
 /*0023*/ uint8  unknown0048[4]; // was before equipment [4]
 /*0027*/ union
@@ -269,8 +273,11 @@ struct Spawn_Struct {
 /*0506*/ uint8  light;          // Spawn's lightsource
 /*0507*/ uint8  unknown0106[4];
 /*0511*/ uint8  level;          // Spawn Level
-/*0512*/ uint8  unknown0107[10];
-/*0512*/ uint8  unknown0108[13];
+/*0512*/ uint8  unknown0107[5];
+/*0512*/ uint8  unknown01071[5];
+/*0512*/ uint8  unknown0108[6];
+/*0512*/ uint8  lfg;
+/*0512*/ uint8  unknown01082[6];
 /*0535*/ uint32 race;           // Spawn race
 /*0539*/ uint8  unknown0110[20];
 /*0539*/ uint8  unknown01101[21];
@@ -299,7 +306,7 @@ union
 /*0690*/ int8	unknown0281;
 /*0690*/ int8	eyecolor1;
 /*0692*/ char	title[32];      // Title
-/*0724*/ uint8  unknown0307;
+/*0724*/ uint8  beard;
 /*0725*/ uint8  targetable;		// 1 = Targetable 0 = Not Targetable
 /*0726*/ uint8  unknown0308[4];
 /*0730*/ uint8  NPC;            // 0=player,1=npc,2=pc corpse,3=npc corpse
@@ -323,7 +330,7 @@ union
 /*0767*/ uint8	unknown442[8];
 /*0775*/ char	name[64];       // Player's Name
 /*0839*/ uint32 petOwnerId;     // If this is a pet, the spawn id of owner
-/*0843*/ uint8  unknown443;
+/*0843*/ uint8  pvp;			// 0 = normal name color, 2 = PVP name color
 /*0844*/ union
 	 {
 		struct
@@ -341,7 +348,12 @@ union
 		/*0844*/ Color_Struct colors[9]; // Array elements correspond to struct equipment_colors above
 	 };
 /*0005*/ uint8  anon;           // 0=normal, 1=anon, 2=roleplay/*0881*/ uint8  unknown0448[8];
-/*0760*/ uint8	unknown0760[6];
+/*0760*/ uint8	face;
+/*0760*/ uint8	unknown0760;
+/*0760*/ uint8	unknown0761;
+/*0760*/ uint8	unknown0762;
+/*0760*/ uint8	unknown0763;
+/*0760*/ uint8	unknown0764;
 /*0779*/ float	size;
 /*0891*/ float	walkspeed;      // Speed when running
 /*0895*/ uint8  unknown0496[2];
@@ -350,17 +362,13 @@ union
 
 //*0078*/ int8   aaitle;       // 0=none, 1=general, 2=archtype, 3=class
 //*0108*/ uint8 beardcolor;
-//*0109*/ uint8 beard;		//not sure.
 //*0495*/ uint8 eyecolor2;		//not sure, may be face
-//*0441*/ uint8 face;		//not sure, may be swapped with an eye color
 //*0774*/ uint8 haircolor;	//may be swapped with beardcolor
 //*0193*/ int8   guildrank;      // 0=normal, 1=officer, 2=leader
 //uint8 invis;
-//uint8 lfg;
 //uint8 hairstyle;
 //uint8 findable;
 //*0087*/ uint8  max_hp;         // (name prolly wrong)takes on the value 100 for players, 100 or 110 for NPCs and 120 for PC corpses...
-//*0139*/ uint8  showhelm;       // 0=no, 1=yes
 //*0144*/ uint8  is_npc;         // 0=no, 1=yes
 //*0036*/ uint8  afk;            // 0=no, 1=afk
 //*0329*/ uint8  is_pet;         // 0=no, 1=yes
