@@ -1414,6 +1414,22 @@ void	Client::SetBandolier(const EQApplicationPacket *app) {
 			}
 			else { // The required weapon is already in place, or the player doesn't have it
 				BandolierItems[BandolierSlot] = 0;
+				if(slot == SLOT_INVALID) {
+					_log(INVENTORY__BANDOLIER, "Character does not have required bandolier item for slot %i", WeaponSlot);
+					ItemInst *InvItem = m_inv.PopItem(WeaponSlot);
+					if(InvItem) {
+						// If there was an item in that weapon slot, put it in the inventory	
+						_log(INVENTORY__BANDOLIER, "returning item %s in weapon slot %i to inventory",
+									   InvItem->GetItem()->Name, WeaponSlot);
+						if(MoveItemToInventory(InvItem)) 
+							database.SaveInventory(character_id, 0, WeaponSlot);
+						else
+							_log(INVENTORY__BANDOLIER, "Char: %s, ERROR returning %s to inventory", GetName(),
+							     InvItem->GetItem()->Name);
+						safe_delete(InvItem);
+					}
+
+				}
 			}
 		}
 	}
@@ -1454,6 +1470,8 @@ void	Client::SetBandolier(const EQApplicationPacket *app) {
 			// put it in the player's inventory.
 			ItemInst *InvItem = m_inv.PopItem(WeaponSlot);
 			if(InvItem) {
+				_log(INVENTORY__BANDOLIER, "Bandolier has no item for slot %i, returning item %s to inventory",
+							   WeaponSlot, InvItem->GetItem()->Name);
 				// If there was an item in that weapon slot, put it in the inventory	
 				if(MoveItemToInventory(InvItem)) 
 					database.SaveInventory(character_id, 0, WeaponSlot);
