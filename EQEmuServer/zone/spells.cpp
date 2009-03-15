@@ -882,8 +882,12 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16
 				// bard components are requirements for a certain instrument type, not a specific item
 				if(bard_song_mode) {
 					bool HasInstrument = true;
-					
-					switch (component) {
+					int InstComponent = spells[spell_id].NoexpendReagent[0];
+															
+					switch (InstComponent) {
+						case -1:
+							continue;		// no instrument required, go to next component
+						
 						// percussion songs (13000 = hand drum)
 						case 13000:
 							if(itembonuses.percussionMod == 0) {			// check for the appropriate instrument type

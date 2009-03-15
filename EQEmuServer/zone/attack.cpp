@@ -465,6 +465,23 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 		}
 		chancetohit = ((chancetohit * modAA) / 100);
 	}
+	//Wolftousen - Add Berserker Dead Aim AA accuracy bonus for throwing
+	if(skillinuse == THROWING)
+	{
+		switch(GetAA(aaDeadAim))
+		{
+			case 1:
+				chancetohit = chancetohit * 105/100;
+				break;
+			case 2:
+				chancetohit = chancetohit * 110/100;
+				break;
+			case 3:
+				chancetohit = chancetohit * 115/100;
+				break;
+		}
+	}
+
 #ifndef OldHitChance
 	chancetohit = (chancetohit * hit_chance_mod) / defense_chance_mod;
 	chancetohit -= defender->GetAGI() * RuleR(Combat, AgiHitFactor);
@@ -1499,8 +1516,9 @@ void Client::Damage(Mob* other, sint32 damage, int16 spell_id, SkillType attack_
 		spell_id = SPELL_UNKNOWN;
 	
 	// cut all PVP spell damage to 2/3 -solar
-	// EverHood - Blasting ourselfs is considered PvP to
-	if(other && other->IsClient() && damage > 0) {
+	// EverHood - Blasting ourselfs is considered PvP 
+	//Don't do PvP mitigation if the caster is damaging himself
+	if(other && other->IsClient() && (other != this) && damage > 0) {
 		int PvPMitigation = 100;
 		if(attack_skill == ARCHERY)
 			PvPMitigation = 80;
@@ -4741,6 +4759,22 @@ void Mob::DoRiposte(Mob *defender){
 void Mob::ApplyMeleeDamageBonus(int16 skill, sint32 &damage){
 	if(damage < 1)
 		return;
+
+	if(skill == THROWING)
+	{
+	switch(GetAA(aaThrowingMastery))
+	{
+		case 1:
+			damage = damage * 115/100;
+			break;
+		case 2:
+			damage = damage * 125/100;
+			break;
+		case 3:
+			damage = damage * 150/100;
+			break;
+	}
+	}
 
 	if(!RuleB(Combat, UseIntervalAC)){
 		if(IsNPC()){ //across the board NPC damage bonuses.

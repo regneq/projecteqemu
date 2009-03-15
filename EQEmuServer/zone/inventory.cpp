@@ -1482,6 +1482,8 @@ void	Client::SetBandolier(const EQApplicationPacket *app) {
 			}
 		}
 	}
+	// finally, recalculate any stat bonuses from the item change
+	CalcBonuses();
 }
 
 bool Client::MoveItemToInventory(ItemInst *ItemToReturn, bool UpdateClient) {

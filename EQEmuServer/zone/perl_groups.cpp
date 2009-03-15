@@ -168,12 +168,13 @@ XS(XS_Group_GroupMessage); /* prototype to pass -Wmissing-prototypes */
 XS(XS_Group_GroupMessage)
 {
 	dXSARGS;
-	if (items != 3)
-		Perl_croak(aTHX_ "Usage: Group::GroupMessage(THIS, sender, message)");
+	if ((items != 3) && (items != 4))	// the 3 item version is kept for backwards compatability
+		Perl_croak(aTHX_ "Usage: Group::GroupMessage(THIS, sender, language, message)");
 	{
 		Group *		THIS;
 		Mob*		sender;
-		char*		message = (char *)SvPV_nolen(ST(2));
+		int8		language;
+		char*		message;
 
 		if (sv_derived_from(ST(0), "Group")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -193,7 +194,17 @@ XS(XS_Group_GroupMessage)
 		if(sender == NULL)
 			Perl_croak(aTHX_ "sender is NULL, avoiding crash.");
 
-		THIS->GroupMessage(sender, message);
+		if (items == 4) {
+			language = (int8)SvUV(ST(2));
+			if ((language >= MAX_PP_LANGUAGE) || (language < 0))
+				language = 0;
+			message = (char *)SvPV_nolen(ST(3));
+			THIS->GroupMessage(sender, language, 100, message);
+		}
+		else {	// if no language is specificed, send it in common
+			message = (char *)SvPV_nolen(ST(2));
+			THIS->GroupMessage(sender,0, 100, message);
+		}
 	}
 	XSRETURN_EMPTY;
 }

@@ -232,8 +232,9 @@ public:
 	void	SendPacketQueue(bool Block = true);
 	void	QueuePacket(const EQApplicationPacket* app, bool ack_req = true, CLIENT_CONN_STATUS = CLIENT_CONNECTINGALL, eqFilterType filter=FilterNone);
 	void	FastQueuePacket(EQApplicationPacket** app, bool ack_req = true, CLIENT_CONN_STATUS = CLIENT_CONNECTINGALL);
-	void	ChannelMessageReceived(int8 chan_num, int8 language, const char* message, const char* targetname=NULL);
+	void	ChannelMessageReceived(int8 chan_num, int8 language, int8 lang_skill, const char* message, const char* targetname=NULL);
 	void	ChannelMessageSend(const char* from, const char* to, int8 chan_num, int8 language, const char* message, ...);
+	void	ChannelMessageSend(const char* from, const char* to, int8 chan_num, int8 language, int8 lang_skill, const char* message, ...);
 	void	Message(int32 type, const char* message, ...);
 	void    QuestJournalledMessage(const char *npcname, const char* message);
 	void	VoiceMacroReceived(int32 Type, char *Target, int32 MacroNumber);
@@ -550,6 +551,7 @@ public:
 	void CheckSpecializeIncrease(int16 spell_id);
 	void CheckSongSkillIncrease(int16 spell_id);
 	bool	CheckIncreaseSkill(SkillType skillid, int chancemodi = 0);
+	void	CheckLanguageSkillIncrease(int8 langid, int8 TeacherSkill);
 	void    SetLanguageSkill(int langid, int value);
 	void	SetHoTT(int32 mobid);
 

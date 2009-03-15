@@ -2334,7 +2334,7 @@ void Client::Handle_OP_ChannelMessage(const EQApplicationPacket *app)
 		return;
 	}
 
-	ChannelMessageReceived(cm->chan_num, cm->language, cm->message, cm->targetname);
+	ChannelMessageReceived(cm->chan_num, cm->language, cm->skill_in_language, cm->message, cm->targetname);
 	return;
 }
 

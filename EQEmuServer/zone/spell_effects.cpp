@@ -806,7 +806,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				const char *itemname = item ? item->Name : "*Unknown Item*";
 				snprintf(effect_desc, _EDLEN, "Summon Item: %s (id %d)", itemname, spell.base[i]);
 #endif
-				if(IsClient())
+				if(IsClient()) 
 				{
 					Client *c=CastToClient();
 					if (c->CheckLoreConflict(item))  {
@@ -821,7 +821,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 						{
 							charges = CalcSpellEffectValue_formula(spell.formula[i], 0, 20, caster_level, spell_id);
 						}
-						charges = charges < 1 ? 1 : (charges > 20 ? 20 : charges);
+						charges = (spell.formula[i] < 100) ? charges : (charges > 20) ? 20 : (spell.max[i] < 1) ? item->MaxCharges : spell.max[i];
 						if (SummonedItem) {
 							c->PushItemOnCursor(*SummonedItem);
 							c->SendItemPacket(SLOT_CURSOR, SummonedItem, ItemPacketSummonItem);
@@ -2237,7 +2237,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 						itm = caster->CastToClient()->GetInv().GetItem(SLOT_RANGE);
 					}
 					if(itm)
-						dam = effect_value + itm->GetItem()->Damage * 2 + (itm->GetItem()->Damage * (GetSkill(spells[spell_id].skill) + GetDEX()) / 225);
+						dam = effect_value + itm->GetItem()->Damage * 2 + (itm->GetItem()->Damage * (GetSkill(spells[spell_id].skill) + spells[spell_id].base[i] + GetDEX()) / 225);
 					else
 						dam = effect_value;
 				}
@@ -2287,7 +2287,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				}
 				int wpnD = caster->GetWeaponDamage(this, itm);
 				if(wpnD){
-					if(CheckHitChance(caster, spells[spell_id].skill, 13))
+					if(spells[spell_id].base2[i] == 10000 || CheckHitChance(caster, spells[spell_id].skill, 13))
 					{
 						if(RuleB(Combat, UseIntervalAC))
 							caster->DoSpecialAttackDamage(this, spells[spell_id].skill, dam, 1);
