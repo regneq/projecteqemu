@@ -7,6 +7,7 @@ cavedude: (realityincarnate) Corrected some instances of Bard songs that were in
 cavedude: (Wolftousen) Fixes for Rage Volley, Blur of Axes, and Dead Aim.
 Derision: Spells that damage the caster will now do full damage.
 Congdar: Spells that summon items with charges will now summon said item fully charged.
+Angelox: Bots:Added a few more mobs to the "#bot track rare" filter.
 
 ==3/14/2009==
 Trevius: SoF - Tradeskill/Augment Combines in tradeskill containers/objects now works, but currently bugs players when they close the window.
