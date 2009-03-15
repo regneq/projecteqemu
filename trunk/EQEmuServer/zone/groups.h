@@ -68,7 +68,7 @@ public:
 	void	CastGroupSpell(Mob* caster,uint16 spellid);
 	void	GroupBardPulse(Mob* caster,uint16 spellid);
 	void	SplitExp(uint32 exp, Mob* other);
-	void	GroupMessage(Mob* sender,const char* message);
+	void	GroupMessage(Mob* sender,int8 language,int8 lang_skill,const char* message);
 	void	GroupMessage_StringID(Mob* sender, int32 type, int32 string_id, const char* message,const char* message2=0,const char* message3=0,const char* message4=0,const char* message5=0,const char* message6=0,const char* message7=0,const char* message8=0,const char* message9=0, int32 distance = 0);
 	int32	GetTotalGroupDamage(Mob* other);
 	void	SplitMoney(uint32 copper, uint32 silver, uint32 gold, uint32 platinum, Client *splitter = NULL);

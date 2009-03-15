@@ -236,6 +236,7 @@ public:
 	void	MessageClose_StringID(Mob *sender, bool skipsender, float dist, int32 type, int32 string_id, const char* message1=0,const char* message2=0,const char* message3=0,const char* message4=0,const char* message5=0,const char* message6=0,const char* message7=0,const char* message8=0,const char* message9=0);
 	void	ChannelMessageFromWorld(const char* from, const char* to, int8 chan_num, int32 guilddbid, int8 language, const char* message);
 	void    ChannelMessage(Mob* from, int8 chan_num, int8 language, const char* message, ...);
+	void    ChannelMessage(Mob* from, int8 chan_num, int8 language, int8 lang_skill, const char* message, ...);
 	void	ChannelMessageSend(Mob* to, int8 chan_num, int8 language, const char* message, ...);
 	void    SendZoneSpawns(Client*);
 	void	SendZonePVPUpdates(Client *);

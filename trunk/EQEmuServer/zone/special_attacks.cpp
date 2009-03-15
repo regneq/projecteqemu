@@ -248,13 +248,13 @@ void Client::OPCombatAbility(const EQApplicationPacket *app) {
 
       switch (GetAA(aaBlurofAxes)) {
       case 1:
-         dmg *= 1.05;
-         break;
-      case 2:
          dmg *= 1.15;
          break;
-      case 3:
+      case 2:
          dmg *= 1.30;
+         break;
+      case 3:
+         dmg *= 1.50;
          break;
       }
 
@@ -691,11 +691,10 @@ void Client::RangedAttack(Mob* other) {
 	//make sure the attack and ranged timers are up
 	//if the ranged timer is disabled, then they have no ranged weapon and shouldent be attacking anyhow
 	if((attack_timer.Enabled() && !attack_timer.Check(false)) || (ranged_timer.Enabled() && !ranged_timer.Check())) {
-		mlog(COMBAT__RANGED, "Ranged attack canceled. Timer not up. Attack %d, ranged %d", attack_timer.GetRemainingTime(), ranged_timer.GetRemainingTime());
-		Message(0, "Error: Timer not up. Attack %d, ranged %d", attack_timer.GetRemainingTime(), ranged_timer.GetRemainingTime());
-		return;
+	mlog(COMBAT__RANGED, "Throwing attack canceled. Timer not up. Attack %d, ranged %d", attack_timer.GetRemainingTime(), ranged_timer.GetRemainingTime());
+	Message(0, "Error: Timer not up. Attack %d, ranged %d", attack_timer.GetRemainingTime(), ranged_timer.GetRemainingTime());
+	return;
 	}
-	
 	const ItemInst* RangeWeapon = m_inv[SLOT_RANGE];
 	
 	//locate ammo
@@ -1002,7 +1001,7 @@ void Client::ThrowingAttack(Mob* other) { //old was 51
 	sint32 TotalDmg = 0;
 	
 	// Hit?
-	if (!target->CheckHitChance(this, ARCHERY, 13)) {
+	if (!target->CheckHitChance(this, THROWING, 13)) {
 		mlog(COMBAT__RANGED, "Ranged attack missed %s.", target->GetName());
 		target->Damage(this, 0, SPELL_UNKNOWN, THROWING);
 	} else {
@@ -1013,14 +1012,28 @@ void Client::ThrowingAttack(Mob* other) { //old was 51
 		if(WDmg > 0)
 		{
 			uint16 MaxDmg = (WDmg) * 2 + ((WDmg) * (GetDEX() + GetSkill(THROWING)) / 225);
+
+			switch(GetAA(aaThrowingMastery))
+			{
+			case 1:
+			MaxDmg = MaxDmg * 115/100;
+			break;
+			case 2:
+			MaxDmg = MaxDmg * 125/100;
+			break;
+			case 3:
+			MaxDmg = MaxDmg * 150/100;
+			break;
+			}
+
 			if (MaxDmg == 0)
 				MaxDmg = 1;
-
+			
 			if(RuleB(Combat, UseIntervalAC))
 				TotalDmg = MaxDmg;
 			else
 				TotalDmg = MakeRandomInt(1, MaxDmg);
-
+			
 			int minDmg = 1;
 			if(GetLevel() > 25){
 				TotalDmg += ((GetLevel()-25)/3);
@@ -1056,7 +1069,6 @@ void Client::ThrowingAttack(Mob* other) { //old was 51
 	
 	//consume ammo
 	DeleteItemInInventory(ammo_slot, 1, true);
-	
 	CheckIncreaseSkill(THROWING);
 
 	//break invis when you attack

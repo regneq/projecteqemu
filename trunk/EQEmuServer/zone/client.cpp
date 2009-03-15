@@ -670,7 +670,7 @@ void Client::FastQueuePacket(EQApplicationPacket** app, bool ack_req, CLIENT_CON
 	return;
 }
 
-void Client::ChannelMessageReceived(int8 chan_num, int8 language, const char* message, const char* targetname) {
+void Client::ChannelMessageReceived(int8 chan_num, int8 language, int8 lang_skill, const char* message, const char* targetname) {
 	#if EQDEBUG >= 11
 		LogFile->write(EQEMuLog::Debug,"Client::ChannelMessageReceived() Channel:%i message:'%s'", chan_num, message);
 	#endif
@@ -744,7 +744,7 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, const char* me
 
 		Group* group = GetGroup();
 		if(group != NULL) {
-			group->GroupMessage(this,(const char*) message);
+			group->GroupMessage(this,language,lang_skill,(const char*) message);
 		}
 		break;
 	}
@@ -760,7 +760,7 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, const char* me
 		if (GetPet() && GetPet()->FindType(SE_VoiceGraft))
 			sender = GetPet();
 
-		entity_list.ChannelMessage(sender, chan_num, language, message);
+		entity_list.ChannelMessage(sender, chan_num, language, lang_skill, message);
  		break;
  	}
 	case 4: { // Auction
@@ -783,7 +783,7 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, const char* me
 		    if(!ooc_timer.Check())
 		{
 			if(strlen(targetname)==0)
-			ChannelMessageReceived(5, language, message,"discard"); //Fast typer or spammer??
+			ChannelMessageReceived(5, language, lang_skill, message,"discard"); //Fast typer or spammer??
 			else
 			return;
 		}
@@ -833,7 +833,7 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, const char* me
 			sender = GetPet();
 
 		printf("Message: %s\n",message);
-		entity_list.ChannelMessage(sender, chan_num, language, message);
+		entity_list.ChannelMessage(sender, chan_num, language, lang_skill, message);
 
 		if (sender != this)
 			break;
@@ -892,7 +892,12 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, const char* me
 	}
 }
 
+// if no language skill is specified, call the function with a skill of 100.
 void Client::ChannelMessageSend(const char* from, const char* to, int8 chan_num, int8 language, const char* message, ...) {
+	ChannelMessageSend(from, to, chan_num, language, 100, message);
+}
+
+void Client::ChannelMessageSend(const char* from, const char* to, int8 chan_num, int8 language, int8 lang_skill, const char* message, ...) {
 	if ((chan_num==11 && !(this->GetGM())) || (chan_num==10 && this->Admin()<80)) // dont need to send /pr & /petition to everybody
 		return;
 	va_list argptr;
@@ -917,15 +922,30 @@ void Client::ChannelMessageSend(const char* from, const char* to, int8 chan_num,
 		strcpy(cm->targetname, m_pp.name);
 	else
 		cm->targetname[0] = 0;
+	
+	int8 ListenerSkill;
+	
 	if (language < MAX_PP_LANGUAGE) {
-		cm->skill_in_language = m_pp.languages[language];
+		ListenerSkill = m_pp.languages[language];
 		cm->language = language;
+		if ((chan_num == 2) && (ListenerSkill < 100)) {	// group message in unmastered language, check for skill up
+			if ((m_pp.languages[language] <= lang_skill) && (from != this->GetName() )) 
+				CheckLanguageSkillIncrease(language, lang_skill);
+		}
 	}
 	else {
-		cm->skill_in_language = 100;
+		ListenerSkill = m_pp.languages[0];
 		cm->language = 0;
 	}
-
+	
+	// set effective language skill = average of sender and receiver skills
+	sint32 EffSkill = (lang_skill + ListenerSkill)/2;
+	if (EffSkill < 1)	// effective skill has a minimum value of 1...
+		EffSkill = 1;
+	else if (EffSkill > 100)	// ...and a maximum value of 100
+		EffSkill;
+	cm->skill_in_language = EffSkill;
+	
 	cm->chan_num = chan_num;
 	strcpy(&cm->message[0], buffer);
 	QueuePacket(&app);
@@ -1918,6 +1938,25 @@ bool Client::CheckIncreaseSkill(SkillType skillid, int chancemodi) {
 		_log(SKILLS__GAIN, "Skill %d at value %d cannot increase due to maxmum %d", skillid, skillval, maxskill);
 	}
 	return false;
+}
+
+void Client::CheckLanguageSkillIncrease(int8 langid, int8 TeacherSkill) {
+	if (langid >= MAX_PP_LANGUAGE)
+		return;		// do nothing if langid is an invalid language
+
+	int LangSkill = m_pp.languages[langid];		// get current language skill
+
+	if (LangSkill < 100) {	// if the language isn't already maxed
+		sint16 Chance = 5 + ((TeacherSkill - LangSkill)/10);	// greater chance to learn if teacher's skill is much higher than yours
+		Chance = (Chance * RuleI(Character, SkillUpModifier)/100);
+
+		if(MakeRandomFloat(0,100) < Chance) {	// if they make the roll
+			SetLanguageSkill(langid, LangSkill+1);	// increase the language skill by 1
+			_log(SKILLS__GAIN, "Language %d at value %d successfully gain with %.4f%%chance", langid, LangSkill, Chance);
+		} 
+		else
+			_log(SKILLS__GAIN, "Language %d at value %d failed to gain with %.4f%%chance", langid, LangSkill, Chance);
+	}
 }
 
 bool Client::HasSkill(SkillType skill_id) const {

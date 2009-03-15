@@ -954,7 +954,12 @@ int16 EntityList::GetFreeID()
 	}
 }
 
+// if no language skill is specified, sent with 100 skill
 void EntityList::ChannelMessage(Mob* from, int8 chan_num, int8 language, const char* message, ...) {
+	ChannelMessage(from, chan_num, language, 100, message);
+}
+
+void EntityList::ChannelMessage(Mob* from, int8 chan_num, int8 language, int8 lang_skill, const char* message, ...) {
 	LinkedListIterator<Client*> iterator(client_list);
 	va_list argptr;
 	char buffer[4096];
@@ -976,7 +981,7 @@ void EntityList::ChannelMessage(Mob* from, int8 chan_num, int8 language, const c
 		if (chan_num != 8 || client->Dist(*from) < 200) // Only say is limited in range
 		{
 			if(filter==FilterNone || client->GetFilter(filter)!=FilterHide)
-				client->ChannelMessageSend(from->GetName(), 0, chan_num, language, buffer);
+				client->ChannelMessageSend(from->GetName(), 0, chan_num, language, lang_skill, buffer);
 		}
 		iterator.Advance();
 	}

@@ -664,14 +664,14 @@ bool Group::IsGroupMember(Mob* client)
 	return false;
 }
 
-void Group::GroupMessage(Mob* sender, const char* message) {
+void Group::GroupMessage(Mob* sender, int8 language, int8 lang_skill, const char* message) {
 	uint32 i;
 	for (i = 0; i < MAX_GROUP_MEMBERS; i++) {
 		if(!members[i])
 			continue;
 
 		if (members[i]->IsClient() && members[i]->CastToClient()->GetFilter(FILTER_GROUP)!=0)
-			members[i]->CastToClient()->ChannelMessageSend(sender->GetName(),members[i]->GetName(),2,0,message);
+			members[i]->CastToClient()->ChannelMessageSend(sender->GetName(),members[i]->GetName(),2,language,lang_skill,message);
 		#ifdef IPC
 		if (members[i]->CastToNPC()->IsInteractive() && members[i] != sender)
 			members[i]->CastToNPC()->InteractiveChat(2,1,message,(sender->GetTarget() != NULL) ? sender->GetTarget()->GetName():sender->GetName(),sender);
