@@ -196,8 +196,6 @@ bool Group::AddMember(Mob* newmember)
 		
 		// We copy the bot name in the group at the slot of the bot
 		strcpy(membername[i],newmember->GetName());
-
-		// Let's add the leader in its own list and if newmember is a bot, just add it to the leader group list
 		newmember->SetGrouped(true);
 
 		//build the template join packet
@@ -791,7 +789,7 @@ int8 Group::GroupCount() {
 
 int Group::BotGroupCount() {
 	int count = 0;
-	for(int i=count; i<MAX_GROUP_MEMBERS; i++) {
+	for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
 		if(members[i] && (members[i]->GetMaxHP()>0))
 			count++;
 	}
