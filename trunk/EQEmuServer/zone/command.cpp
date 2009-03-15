@@ -7514,7 +7514,9 @@ void command_bot(Client *c, const Seperator *sep) {
 		c->Message(15, "#bot dire charm - (must have proper class in group)");
 		c->Message(15, "#bot pet remove - (remove pet before charm)");
 		c->Message(15, "#bot gate - you need a Druid or Wizard in your group)");
-
+		c->Message(15, "#bot saveraid - Save your current group(s) of bots.");
+		c->Message(15, "#bot spawnraid - Spawns your saved bots.");
+		c->Message(15, "#bot groupraid - Groups your spawned bots.");
 		return;
 	}
 
@@ -8407,7 +8409,6 @@ void command_bot(Client *c, const Seperator *sep) {
 			// As the mob is in the DB, we need to calc its level, HP, Mana.
 			// First, the mob must have the same level as his leader
 			npc->SetLevel(c->GetLevel());
-			npc->CastToMob()->SetBotRaiding(false);
 			entity_list.AddNPC(npc);
 			database.SetBotLeader(npc->GetNPCTypeID(), c->CharacterID(), npc->GetName(), zone->GetLongName());
 			npc->CastToMob()->Say("I am ready for battle.");
@@ -8451,6 +8452,217 @@ void command_bot(Client *c, const Seperator *sep) {
 			if(b) {
 				b->SetTarget(b->BotOwner);
 				b->Warp(c->GetX(), c->GetY(), c->GetZ());
+			}
+		}
+		return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "groupraid")) {
+		if(c->GetFeigned())
+        {
+            c->Message(15, "You can't load your raid while you are feigned.");
+			return;
+		}
+
+		if(c->IsBotRaiding() || c->IsGrouped()) {
+			c->Message(15, "You cannot be in a group.");
+			return;
+		}
+
+		MYSQL_RES* groups = database.LoadBotGroups(c->CharacterID());
+		MYSQL_ROW row = 0;
+		int bots = mysql_num_rows(groups);
+		int group = 0;
+		int16 id = c->GetID();
+		Mob* mob = c->CastToMob();
+		mob->SetOwnerID(0);
+		Group *g = new Group(mob);
+		entity_list.AddGroup(g);
+		bool followid = false;
+		BotRaids *br = 0;
+		MYSQL_RES* itemIDs = 0;
+		MYSQL_ROW rows = 0;
+		const Item_Struct* item2 = NULL;
+		int numitems = 0;
+		uint32 itemID = 0;
+		Mob *mtmp = 0;
+		for(int i=0; i<bots; i++) {
+			row = mysql_fetch_row(groups);
+			if((g->BotGroupCount() < 6) && (atoi(row[0]) == group)) {
+				mtmp = entity_list.GetMobByNpcTypeID(atoi(row[1]));
+				if(mtmp) {
+					g->AddMember(mtmp);
+					if(!followid) {
+						mtmp->SetFollowID(id);
+						id = mtmp->GetID();
+						followid = true;
+					}
+					else {
+						mtmp->SetFollowID(id);
+					}
+					mtmp->BotOwner = mob;
+					mtmp->SetOwnerID(0);
+					if(br) {
+						mtmp->SetBotRaiding(true);
+						mtmp->SetBotRaidID(br->GetBotRaidID());
+					}
+					itemIDs = database.GetBotItems(mtmp->GetNPCTypeID());
+					if(itemIDs) {
+						numitems = mysql_num_rows(itemIDs);
+						for(int j=0; j<numitems; j++) {
+							rows = mysql_fetch_row(itemIDs);
+							itemID = atoi(rows[1]);
+							if(itemID != 0) {
+								item2 = database.GetItem(itemID);
+								c->BotTradeAddItem(itemID, item2->MaxCharges, item2->Slots, atoi(rows[0]), mtmp->CastToNPC(), false);
+							}
+						}
+						mtmp->CalcBotStats(false);
+					}
+					mysql_free_result(itemIDs);
+				}
+			}
+			else {
+				group++;
+				mtmp = entity_list.GetMobByNpcTypeID(atoi(row[1]));
+				if(mtmp) {
+					mtmp->SetFollowID(id);
+					id = mtmp->GetID();
+					mtmp->BotOwner = mob;
+					mtmp->SetOwnerID(0);
+					if(!br) {
+						br = new BotRaids(mob);
+					}
+					br->AddBotGroup(g);
+					for(int k=0; k<MAX_GROUP_MEMBERS; k++) {
+						if(g->members[k]) {
+							g->members[k]->SetBotRaiding(true);
+							g->members[k]->SetBotRaidID(br->GetBotRaidID());
+						}
+					}
+					g = new Group(mtmp);
+					entity_list.AddGroup(g);
+					br->AddBotGroup(g);
+					itemIDs = database.GetBotItems(mtmp->GetNPCTypeID());
+					if(itemIDs) {
+						numitems = mysql_num_rows(itemIDs);						
+						for(int j=0; j<numitems; j++) {
+							rows = mysql_fetch_row(itemIDs);
+							itemID = atoi(rows[1]);
+							if(itemID != 0) {
+								item2 = database.GetItem(itemID);
+								c->BotTradeAddItem(itemID, item2->MaxCharges, item2->Slots, atoi(rows[0]), mtmp->CastToNPC(), false);
+							}
+						}
+						mtmp->CalcBotStats(false);
+					}
+					mysql_free_result(itemIDs);
+				}
+			}
+		}
+		mysql_free_result(groups);
+		return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "spawnraid")) {
+		if(c->GetFeigned())
+        {
+            c->Message(15, "You can't load your raid while you are feigned.");
+			return;
+		}
+
+		const int spawnedBots = database.SpawnedBotCount(c->CharacterID());
+		if(c->IsBotRaiding() || c->IsGrouped() || spawnedBots) {
+			c->Message(15, "You already have spawned bots.");
+			MYSQL_RES* total = database.ListSpawnedBots(c->CharacterID());
+			MYSQL_ROW row;
+			if(mysql_num_rows(total) == spawnedBots) {
+				for(int i=0; i<spawnedBots; i++) {
+					row = mysql_fetch_row(total);
+					c->Message(15, "%s is in %s", row[0], row[1]);
+				}
+			}
+			mysql_free_result(total);
+			return;
+		}
+
+		MYSQL_RES* groups = database.LoadBotGroups(c->CharacterID());
+		MYSQL_ROW row;
+		int bots = mysql_num_rows(groups);
+		const NPCType* tmp = 0;
+		NPC* npc = 0;
+		float myX = c->GetX();
+		float myY = c->GetY();
+		float myZ = c->GetZ();
+		float myHeading = c->GetHeading();
+		uint8 myLevel = c->GetLevel();
+		for(int i=0; i<bots; i++) {
+			row = mysql_fetch_row(groups);
+			if(tmp = database.GetNPCType(atoi(row[1]))) {
+				npc = new NPC(tmp, 0, myX, myY, myZ, myHeading);
+				tmp = 0;
+				npc->SetLevel(myLevel);
+				entity_list.AddNPC(npc);
+				database.SetBotLeader(npc->GetNPCTypeID(), c->CharacterID(), npc->GetName(), zone->GetLongName());
+			}
+		}
+		mysql_free_result(groups);
+		return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "saveraid")) {
+		if(c->GetFeigned())
+        {
+            c->Message(15, "You can't save your raid while you are feigned.");
+			return;
+		}
+
+		if(c->IsBotRaiding()) {
+			BotRaids *br = entity_list.GetBotRaidByMob(c->CastToMob());
+			if(br) {
+				if(br->GetBotRaidAggro()) {
+                    c->Message(15, "You can't save your raid while you are engaged.");
+					return;
+				}
+			}
+		}
+
+		if(c->IsGrouped())
+        {
+			Group *g = entity_list.GetGroupByClient(c);
+			for (int i=0; i<MAX_GROUP_MEMBERS; i++)
+            {
+				if(g && g->members[i] && !g->members[i]->qglobal && g->members[i]->IsEngaged())
+                {
+                    c->Message(15, "You can't save your raid while you are engaged.");
+					return;
+				}
+				if(g && g->members[i] && g->members[i]->qglobal) {
+					return;
+				}
+			}
+		}
+		BotRaids *br = entity_list.GetBotRaidByMob(c->CastToMob());
+		if(br) {
+			br->SaveGroups(c);
+			c->Message(15, "Your raid is saved.");
+		}
+		else {
+			Group *g = entity_list.GetGroupByClient(c);
+			if(g) {
+				database.DeleteBotGroups(c->CharacterID());
+				for(int j=0; j<MAX_GROUP_MEMBERS; j++) {
+					if(g->members[j]) {
+						if(g->members[j]->IsClient()) {
+							continue;
+						}
+						database.SaveBotGroups(0, c->CharacterID(), g->members[j]->GetNPCTypeID(), j);
+					}
+				}
+				c->Message(15, "Your raid is saved.");
+			}
+			else {
+				c->Message(15, "You need to have a raid to save a raid.");
 			}
 		}
 		return;

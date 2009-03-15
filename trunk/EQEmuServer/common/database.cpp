@@ -2078,6 +2078,41 @@ bool Database::DeleteBot(int32 mobid) {
 	return success;
 }
 
+void Database::SaveBotGroups(int32 groupid, int32 charid, int32 botid, int16 slot) {
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	int32 affected_rows = 0;
+
+	if(!RunQuery(query, MakeAnyLenString(&query, "INSERT into botgroups (groupid, charid, botid, slot) values (%i, %i, %i, %i)", groupid, charid, botid, slot), errbuf, 0, &affected_rows)) {
+		cerr << "Error in SaveBotGroups query '" << query << "' " << errbuf << endl;
+	}
+	safe_delete_array(query);
+}
+
+void Database::DeleteBotGroups(int32 charid) {
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	int32 affected_rows = 0;
+
+	if(!RunQuery(query, MakeAnyLenString(&query, "DELETE FROM botgroups where charid=%i", charid), errbuf, 0, &affected_rows)) {
+		cerr << "Error in CleanBotLeader query '" << query << "' " << errbuf << endl;
+	}
+	safe_delete_array(query);
+}
+
+MYSQL_RES* Database::LoadBotGroups(int32 charid) {
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	MYSQL_RES* result;
+	MYSQL_ROW row;
+
+	if(!RunQuery(query, MakeAnyLenString(&query, "SELECT groupid, botid from botgroups WHERE charid=%i order by charid, groupid, slot", charid), errbuf, &result)) {
+		cerr << "Error in ListSpawnedBots query '" << query << "' " << errbuf << endl;
+	}
+    safe_delete_array(query);
+	return result;
+}
+
 // Set the bot leader once it got invited in the group
 void Database::SetBotLeader(int32 mobidtmp, int32 leaderid, const char* botName, const char* zoneName) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
@@ -2287,6 +2322,27 @@ int Database::GetBotItemBySlot(int32 botid, int32 slot) {
 	mysql_free_result(result);
     safe_delete_array(query);
     return iteminslot;
+}
+
+MYSQL_RES* Database::GetBotItems(int32 botid) {
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	MYSQL_RES* result;
+	MYSQL_ROW row;
+    int iteminslot = 0;
+
+	if(RunQuery(query, MakeAnyLenString(&query, "SELECT botslotid, itemid FROM botinventory WHERE npctypeid=%i order by botslotid", botid), errbuf, &result)) {
+		if(mysql_num_rows(result) > 0) {
+			safe_delete_array(query);
+			return result;
+		}
+	}
+	else {
+		cerr << "Error in GetBotItemBySlot query '" << query << "' " << errbuf << endl;
+	}
+	mysql_free_result(result);
+    safe_delete_array(query);
+    return 0;
 }
 
 // Remove an item in the given slot

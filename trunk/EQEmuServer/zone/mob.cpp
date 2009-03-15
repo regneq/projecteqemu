@@ -2715,8 +2715,10 @@ void Mob::BotMeditate(bool isSitting) {
 	}
 }
 
-void Mob::CalcBotStats() {
-	BotOwner->Message(15, "Bot updating...");
+void Mob::CalcBotStats(bool showtext) {
+	if(showtext) {
+		BotOwner->Message(15, "Bot updating...");
+	}
 	// base stats
 	int brace = GetBaseRace(); // Angelox
 	int bclass = GetClass();
@@ -3527,9 +3529,11 @@ void Mob::CalcBotStats() {
 		SpecAttacks[SPECATK_TRIPLE] = true;
 	}
 
-	BotOwner->Message(15, "Base stats:");
-	BotOwner->Message(15, "Level: %i HP: %i AC: %i Mana: %i STR: %i STA: %i DEX: %i AGI: %i INT: %i WIS: %i CHA: %i", blevel, base_hp, AC, max_mana, STR, STA, DEX, AGI, INT, WIS, CHA);
-	BotOwner->Message(15, "Resists-- Magic: %i, Poison: %i, Fire: %i, Cold: %i, Disease: %i.",MR,PR,FR,CR,DR);
+	if(showtext) {
+		BotOwner->Message(15, "Base stats:");
+		BotOwner->Message(15, "Level: %i HP: %i AC: %i Mana: %i STR: %i STA: %i DEX: %i AGI: %i INT: %i WIS: %i CHA: %i", blevel, base_hp, AC, max_mana, STR, STA, DEX, AGI, INT, WIS, CHA);
+		BotOwner->Message(15, "Resists-- Magic: %i, Poison: %i, Fire: %i, Cold: %i, Disease: %i.",MR,PR,FR,CR,DR);
+	}
 
 	// Let's find the items in the bot inventory
 	sint32 items_hp = 0;
@@ -3758,9 +3762,11 @@ void Mob::CalcBotStats() {
 	max_mana = cur_mana = bot_mana;
 	CastToNPC()->AI_AddNPCSpells(spellid);
 
-	BotOwner->Message(15, "I'm updated.");
-	BotOwner->Message(15, "Level: %i HP: %i AC: %i Mana: %i STR: %i STA: %i DEX: %i AGI: %i INT: %i WIS: %i CHA: %i", blevel, max_hp, bac, max_mana, bstr, bsta, bdex, bagi, bint, bwis, bcha);
-	BotOwner->Message(15, "Resists-- Magic: %i, Poison: %i, Fire: %i, Cold: %i, Disease: %i.",bMR,bPR,bFR,bCR,bDR);
+	if(showtext) {
+		BotOwner->Message(15, "I'm updated.");
+		BotOwner->Message(15, "Level: %i HP: %i AC: %i Mana: %i STR: %i STA: %i DEX: %i AGI: %i INT: %i WIS: %i CHA: %i", blevel, max_hp, bac, max_mana, bstr, bsta, bdex, bagi, bint, bwis, bcha);
+		BotOwner->Message(15, "Resists-- Magic: %i, Poison: %i, Fire: %i, Cold: %i, Disease: %i.",bMR,bPR,bFR,bCR,bDR);
+	}
 }
 
 #endif //EQBOTS

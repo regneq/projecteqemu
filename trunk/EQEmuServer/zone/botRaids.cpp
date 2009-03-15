@@ -26,7 +26,7 @@ Copyright (C) 2001-2002  EQEMu Development Team (http://eqemu.org)
 
 BotRaids::BotRaids(Mob *leader)
 {
-	if(!leader->IsGrouped() || (entity_list.GetGroupByMob(leader)->BotGroupCount() < 6))
+	if(!leader->IsGrouped())
 	{
 		if(leader->IsClient()) {
 			leader->Message(15, "You can't create a raid (not grouped or your group isn't full)");
@@ -492,6 +492,22 @@ int BotRaids::GetBotAttackRights() {
 		return abotAttack;
 	else{
 		return 0;
+	}
+}
+
+void BotRaids::SaveGroups(Client *c) {
+	database.DeleteBotGroups(c->CharacterID());
+	for(int i=0; i<MAX_BOT_RAID_GROUPS; i++) {
+		if(BotRaidGroups[i]) {
+			for(int j=0; j<MAX_GROUP_MEMBERS; j++) {
+				if(BotRaidGroups[i]->members[j]) {
+					if(BotRaidGroups[i]->members[j]->IsClient()) {
+						continue;
+					}
+					database.SaveBotGroups(i, c->CharacterID(), BotRaidGroups[i]->members[j]->GetNPCTypeID(), j);
+				}
+			}
+		}
 	}
 }
 

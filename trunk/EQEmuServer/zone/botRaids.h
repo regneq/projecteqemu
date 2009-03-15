@@ -53,6 +53,7 @@ public:
 	Mob* GetRaidBotLeader();
 	bool IsBotRaidLeader(Mob* leadertest) { return leadertest==botrleader; };
 	void LearnBotMembers();
+	void SaveGroups(Client *c);
 	void BotRaidInfo(Client *c);
 	void AddBotRaidAggro(Mob *m);
 	bool GetBotRaidAggro();

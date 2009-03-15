@@ -214,6 +214,9 @@ public:
 	// 2:
 	bool	DeleteBot(int32 mobid);
 	int		GetBotStatus(int32 mobidtmp);
+	void	DeleteBotGroups(int32 charid);
+	MYSQL_RES*	LoadBotGroups(int32 charid);
+	void	SaveBotGroups(int32 groupid, int32 charid, int32 botid, int16 slot);
 	void	SetBotLeader(int32 mobidtmp, int32 leaderid, const char* botName, const char* zoneName);
 	int32	GetBotLeader(int32 mobidtmp);
 	int		SpawnedBotCount(int32 id);
@@ -231,6 +234,7 @@ public:
     // a)  Get and Set an item in the bot inventory
     bool	BotHasAnItemInSlot(int32 botid, int32 slot);			// return true if it has an item in the invent and false if not
     int		GetBotItemBySlot(int32 botid, int32 slot);				// return the item ID in the given slot
+	MYSQL_RES* Database::GetBotItems(int32 botid);
     void	SetBotItemInSlot(int32 botid, int32 slot, int32 itemid);// add an item the in the slot
     void	RemoveBotItemBySlot(int32 botid, int32 slot);			// remove an item in the given slot
 

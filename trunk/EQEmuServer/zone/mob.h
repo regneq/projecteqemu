@@ -555,7 +555,7 @@ bool logpos;
 	
 #ifdef EQBOTS
 
-	void CalcBotStats();
+	void CalcBotStats(bool showtext = true);
 
 #endif //EQBOTS	
 	
