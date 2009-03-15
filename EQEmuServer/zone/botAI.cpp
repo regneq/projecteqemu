@@ -1373,7 +1373,7 @@ void EntityList::ShowSpawnWindow(Client* client, int Distance, bool NamedOnly) {
 					"lumpy_","Marshal_","Sheriff_","Chief_","Risen_",
 					"lascar_","tribal_","fungi_","Xi_","Legionnaire_",
 					"Centurion_","Zun_","Diabo_","Scribe_","Defender_","Capt_",
-					"_",""
+					"blazing_","Solusek_","imp_","stone_","lava_","_",""
 				};
 				unsigned int MyArraySize;
 				 for ( MyArraySize = 0; true; MyArraySize++) {   //Find empty string & get size
