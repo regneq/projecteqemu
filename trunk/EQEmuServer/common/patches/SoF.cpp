@@ -1265,6 +1265,49 @@ ENCODE(OP_DeleteItem) {
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_ItemVerifyReply) {
+	ENCODE_LENGTH_EXACT(ItemVerifyReply_Struct);
+	SETUP_DIRECT_ENCODE(ItemVerifyReply_Struct, structs::ItemVerifyReply_Struct);
+	if(emu->slot >= 21 && emu->slot < 50)
+	{
+		eq->slot = emu->slot + 1;
+	}
+	else if(emu->slot >= 251 && emu->slot < 351)
+	{
+		eq->slot = emu->slot + 11;
+	}
+	else
+	{
+		OUT(slot);
+	}
+	OUT(spell);
+	OUT(target);
+	FINISH_ENCODE();
+}
+
+DECODE(OP_ItemVerifyRequest) {
+	DECODE_LENGTH_EXACT(structs::ItemVerifyRequest_Struct);
+	SETUP_DIRECT_DECODE(ItemVerifyRequest_Struct, structs::ItemVerifyRequest_Struct);
+	if(eq->slot >= 22 && eq->slot < 51)
+	{
+		emu->slot = eq->slot - 1;
+	}
+	else if(eq->slot >= 251 && eq->slot < 351)
+	{
+		emu->slot = eq->slot - 11;
+	}
+	else if(eq->slot == 21)
+	{
+		emu->slot = 22;		//some power source slot TODO
+	}
+	else
+	{
+		IN(slot);
+	}
+	IN(target);
+	FINISH_DIRECT_DECODE();
+}
+
 DECODE(OP_Consume) {
 	DECODE_LENGTH_EXACT(structs::Consume_Struct);
 	SETUP_DIRECT_DECODE(Consume_Struct, structs::Consume_Struct);

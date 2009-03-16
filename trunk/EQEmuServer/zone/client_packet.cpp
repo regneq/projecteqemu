@@ -1406,19 +1406,59 @@ void Client::Handle_OP_ItemVerifyRequest(const EQApplicationPacket *app)
 		LogFile->write(EQEMuLog::Error, "OP size error: OP_ItemVerifyRequest expected:%i got:%i", sizeof(ItemVerifyRequest_Struct), app->size);
 		return;
 	}
+
+	if (IsAIControlled()) {
+		this->Message_StringID(13,NOT_IN_CONTROL);
+		//Message(13, "You cant cast right now, you arent in control of yourself!");
+		return;
+	}
+
 	ItemVerifyRequest_Struct* request = (ItemVerifyRequest_Struct*)app->pBuffer;
 
-	//ItemInst *myitem = GetInv().GetItem(request->slot);
-	//if(myitem == NULL) {
-	//	LogFile->write(EQEMuLog::Error, "Attempting to use item from empty slot %d", request->slot);
-	//	return;
-	//}
-
-	//const Item_Struct* click_item = myitem->GetItem();
-	int32 slot_id;
-	int32 target_id;
+	sint32 slot_id;
+	sint32 target_id;
+	int32 spell_id;
 	slot_id = request->slot;
 	target_id = request->target;
+
+	if(slot_id < 0) {
+		LogFile->write(EQEMuLog::Debug, "Unknown slot being used by %s, slot being used is: %i",GetName(),request->slot);
+		return;
+	}
+	else if ((slot_id < 30) || (slot_id == POTION_BELT_SPELL_SLOT))	// sanity check
+	{
+		const ItemInst* inst = m_inv[slot_id];
+		const Item_Struct* item = inst->GetItem();
+		spell_id = item->Click.Effect;
+		LogFile->write(EQEMuLog::Debug, "OP ItemVerifyRequest: spell=%i, target=%i, inv=%i", spell_id, target_id, slot_id);
+
+		if(spell_id <= 0) {
+			LogFile->write(EQEMuLog::Debug, "Item with no effect right clicked by %s",GetName());
+			return;
+		}
+		else if (inst && inst->IsType(ItemClassCommon))
+		{
+			if ((item->Click.Type == ET_ClickEffect) || (item->Click.Type == ET_Expendable) || (item->Click.Type == ET_EquipClick) || (item->Click.Type == ET_ClickEffect2))
+			{
+				CastSpell(item->Click.Effect, target_id, 0, item->CastTime, 0, 0, slot_id);
+			}
+			else
+			{
+				LogFile->write(EQEMuLog::Debug, "Error: unknown item->Click.Type (%i)", item->Click.Type);
+				//Message(0, "Error: unknown item->Click.Type (%i)", item->Click.Type);
+			}
+		}
+		else
+		{
+			Message(0, "Error: item not found in inventory slot #%i", slot_id);
+			InterruptSpell(spell_id);
+		}
+	}
+	else
+	{
+		Message(0, "Error: Inventory Slot >= 30 (inventory slot #%i)", slot_id);
+		InterruptSpell(spell_id);
+	}
 
 	EQApplicationPacket *outapp;
 	outapp = new EQApplicationPacket(OP_ItemVerifyReply, sizeof(ItemVerifyReply_Struct));
