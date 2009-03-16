@@ -3400,6 +3400,7 @@ struct AdventureMerchant_Struct {
 
 struct Save_Struct {
 	int8	unknown00[192];
+	int8	unknown0192[176];
 };
 
 struct GMToggle_Struct {
@@ -3550,6 +3551,19 @@ struct WorldObfuscator_Struct
 struct ExpansionInfo_Struct {
 /*000*/	char	Unknown000[64];
 /*064*/	uint32	Expansions;
+};
+
+struct ItemVerifyRequest_Struct {
+/*000*/	sint32	slot;		// Slot being Right Clicked
+/*004*/	uint32	target;		// Target Entity ID
+/*008*/
+};
+
+struct ItemVerifyReply_Struct {
+/*000*/	sint32	slot;		// Slot being Right Clicked
+/*004*/	uint32	spell;		// Spell ID to cast if different than item effect
+/*008*/	uint32	target;		// Target Entity ID
+/*012*/
 };
 
 struct ItemSerializationHeader

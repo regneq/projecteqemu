@@ -1,6 +1,12 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==3/15/2009==
+Trevius: SoF - Tradeskill Objects/Containers and Augment Pools should now be fully functional
+Trevius: SoF - PC to PC/NPC trading should now be fully functional without bugs
+Trevius: SoF - Auto-Consume and Right Click consume of food/drink is functional
+Trevius: SoF - Right Click Effects on Items now attempts to cast, but needs coding server-side to handle the new packets
+
+==3/15/2009==
 cavedude: (realityincarnate) Languages can now be taught to other players. Also implemented drunk speak.
 cavedude: (realityincarnate) Bonuses will now properly apply when switching items with bandolier.
 cavedude: (realityincarnate) Corrected some instances of Bard songs that were incorrectly requiring an instrument.
