@@ -57,6 +57,7 @@ D(OP_Buff)
 D(OP_ShopPlayerSell)
 D(OP_Consume)
 D(OP_CastSpell)
+D(OP_Save)
 
 //D(OP_SendExpZonein) 
 //D(OP_TraderBuy)

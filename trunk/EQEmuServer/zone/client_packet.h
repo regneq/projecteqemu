@@ -33,6 +33,7 @@
 	void Handle_OP_LDoNButton(const EQApplicationPacket *app);
 	void Handle_OP_LeaveAdventure(const EQApplicationPacket *app);
 	void Handle_OP_Consume(const EQApplicationPacket *app);
+	void Handle_OP_ItemVerifyRequest(const EQApplicationPacket *app);
 	void Handle_OP_AdventureMerchantRequest(const EQApplicationPacket *app);
 	void Handle_OP_AdventureMerchantPurchase(const EQApplicationPacket *app);
 	void Handle_OP_ConsiderCorpse(const EQApplicationPacket *app);

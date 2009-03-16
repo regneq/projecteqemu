@@ -187,6 +187,7 @@ IN(OP_ShopPlayerBuy, Merchant_Sell_Struct);
 IN(OP_ShopPlayerSell, Merchant_Purchase_Struct);
 INr(OP_ShopEnd);		//?
 IN(OP_CloseContainer, ClickObjectAction_Struct);
+IN(OP_ClickObjectAction, ClickObjectAction_Struct);
 IN(OP_ClickObject, ClickObject_Struct);
 IN(OP_RecipesFavorite, TradeskillFavorites_Struct);
 IN(OP_RecipesSearch, RecipesSearch_Struct);
@@ -282,7 +283,7 @@ INr(OP_ClearTitle);		//follows OP_SendTitleList
 INr(OP_BankerChange);
 IN(OP_SetTitle, SetTitle_Struct);
 INz(OP_RequestTitles);
-
+IN(OP_ItemVerifyRequest, ItemVerifyRequest_Struct);
 
 
 /*
@@ -294,6 +295,8 @@ OUTz(OP_FinishTrade);		//follows OP_TradeAcceptClick
 OUTz(OP_GMEndTrainingResponse);	//follows OP_GMTraining
 OUTz(OP_LootComplete);		//follows OP_LootItem
 OUTz(OP_WorldObjectsSent);
+OUTz(OP_FinishWindow);
+OUTz(OP_FinishWindow2);
 //OUTz(OP_TradeSkillCombine);
 
 //OUTv(OP_AdventureDetails, strlen(AF.text)+1);
@@ -319,6 +322,7 @@ OUTv(OP_SendTitleList, TitleList_Struct);
 //OUTv(OP_ItemLinkText, strlen(itemlink)+14+strlen(charname));
 //OUTv(OP_ItemLinkText, strlen(name2)+68);
 
+OUT(OP_ItemVerifyReply, ItemVerifyReply_Struct);
 OUT(OP_AnnoyingZoneUnknown, AnnoyingZoneUnknown_Struct);
 OUT(OP_SetTitleReply, SetTitleReply_Struct);
 OUT(OP_GuildMemberUpdate, GuildMemberUpdate_Struct);

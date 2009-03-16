@@ -138,6 +138,7 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_LDoNButton] = &Client::Handle_OP_LDoNButton;
 	ConnectedOpcodes[OP_LeaveAdventure] = &Client::Handle_OP_LeaveAdventure;
 	ConnectedOpcodes[OP_Consume] = &Client::Handle_OP_Consume;
+	ConnectedOpcodes[OP_ItemVerifyRequest] = &Client::Handle_OP_ItemVerifyRequest;
 	ConnectedOpcodes[OP_AdventureMerchantRequest] = &Client::Handle_OP_AdventureMerchantRequest;
 	ConnectedOpcodes[OP_AdventureMerchantPurchase] = &Client::Handle_OP_AdventureMerchantPurchase;
 	ConnectedOpcodes[OP_ConsiderCorpse] = &Client::Handle_OP_ConsiderCorpse;
@@ -1392,6 +1393,38 @@ void Client::Handle_OP_Consume(const EQApplicationPacket *app)
 	Stamina_Struct* sta = (Stamina_Struct*)outapp->pBuffer;
 	sta->food = m_pp.hunger_level;
 	sta->water = m_pp.thirst_level;
+
+	QueuePacket(outapp);
+	safe_delete(outapp);
+	return;
+}
+
+void Client::Handle_OP_ItemVerifyRequest(const EQApplicationPacket *app)
+{
+	if (app->size != sizeof(ItemVerifyRequest_Struct))
+	{
+		LogFile->write(EQEMuLog::Error, "OP size error: OP_ItemVerifyRequest expected:%i got:%i", sizeof(ItemVerifyRequest_Struct), app->size);
+		return;
+	}
+	ItemVerifyRequest_Struct* request = (ItemVerifyRequest_Struct*)app->pBuffer;
+
+	//ItemInst *myitem = GetInv().GetItem(request->slot);
+	//if(myitem == NULL) {
+	//	LogFile->write(EQEMuLog::Error, "Attempting to use item from empty slot %d", request->slot);
+	//	return;
+	//}
+
+	//const Item_Struct* click_item = myitem->GetItem();
+	int32 slot_id;
+	int32 target_id;
+	slot_id = request->slot;
+	target_id = request->target;
+
+	EQApplicationPacket *outapp;
+	outapp = new EQApplicationPacket(OP_ItemVerifyReply, sizeof(ItemVerifyReply_Struct));
+	ItemVerifyReply_Struct* reply = (ItemVerifyReply_Struct*)outapp->pBuffer;
+	reply->slot = slot_id;
+	reply->target = target_id;
 
 	QueuePacket(outapp);
 	safe_delete(outapp);
@@ -3448,6 +3481,11 @@ void Client::Handle_OP_CancelTrade(const EQApplicationPacket *app)
 		FinishTrade(this);
 		trade->Reset();
 	}
+	EQApplicationPacket end_trade1(OP_FinishWindow, 0);
+	QueuePacket(&end_trade1);
+
+	EQApplicationPacket end_trade2(OP_FinishWindow2, 0);
+	QueuePacket(&end_trade2);
 	return;
 }
 
@@ -4278,6 +4316,11 @@ void Client::Handle_OP_ClickObjectAction(const EQApplicationPacket *app)
 	} else {
 		LogFile->write(EQEMuLog::Error, "Invalid object %d in OP_ClickObjectAction", oos->drop_id);
 	}
+	EQApplicationPacket end_trade1(OP_FinishWindow, 0);
+	QueuePacket(&end_trade1);
+
+	EQApplicationPacket end_trade2(OP_FinishWindow2, 0);
+	QueuePacket(&end_trade2);
 	return;
 }
 

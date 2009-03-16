@@ -1538,6 +1538,13 @@ DECODE(OP_ShopPlayerSell) {
 	FINISH_DIRECT_DECODE();
 }
 
+DECODE(OP_Save) {
+	DECODE_LENGTH_EXACT(structs::Save_Struct);
+	SETUP_DIRECT_DECODE(Save_Struct, structs::Save_Struct);
+	memcpy(emu->unknown00, eq->unknown00, sizeof(emu->unknown00));
+	FINISH_DIRECT_DECODE();
+}
+
 int32 NextItemInstSerialNumber = 1;
 int32 MaxInstances = 2000000000;
 

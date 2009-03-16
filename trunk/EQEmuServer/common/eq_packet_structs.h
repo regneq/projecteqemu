@@ -3666,6 +3666,19 @@ struct ApplyPoison_Struct {
 	uint32 success;
 };
 
+struct ItemVerifyRequest_Struct {
+/*000*/	sint32	slot;		// Slot being Right Clicked
+/*004*/	uint32	target;		// Target Entity ID
+/*008*/
+};
+
+struct ItemVerifyReply_Struct {
+/*000*/	sint32	slot;		// Slot being Right Clicked
+/*004*/	uint32	spell;		// Spell ID to cast if different than item effect
+/*008*/	uint32	target;		// Target Entity ID
+/*012*/
+};
+
 /**
  * Shroud yourself. For yourself shrouding, this has your spawnId, spawnStruct,
  * bits of your charProfileStruct (no checksum, then charProfile up till
