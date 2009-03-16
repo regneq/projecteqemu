@@ -496,8 +496,8 @@ struct Charm_Struct {
 struct InterruptCast_Struct
 {
 	int32 spawnid;
-	//int32 messageid;
-	char	message[0];
+	int32 messageid;
+	//char	message[0];
 };
 
 struct DeleteSpell_Struct

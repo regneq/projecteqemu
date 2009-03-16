@@ -34,6 +34,7 @@ E(OP_CancelTrade)
 E(OP_ShopPlayerSell)
 E(OP_DeleteItem)
 E(OP_ItemVerifyReply)
+E(OP_InterruptCast)
 
 //E(OP_GroupUpdate)
 //E(OP_ZoneServerReady)
