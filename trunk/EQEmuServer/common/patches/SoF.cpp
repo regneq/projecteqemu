@@ -1194,6 +1194,14 @@ ENCODE(OP_CancelTrade) {
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_InterruptCast) {
+	ENCODE_LENGTH_EXACT(InterruptCast_Struct);
+	SETUP_DIRECT_ENCODE(InterruptCast_Struct, structs::InterruptCast_Struct);
+	OUT(spawnid);
+	OUT(messageid);
+	FINISH_ENCODE();
+}
+
 ENCODE(OP_RespondAA) {
 	ENCODE_LENGTH_EXACT(AATable_Struct);
 	SETUP_DIRECT_ENCODE(AATable_Struct, structs::AATable_Struct);
