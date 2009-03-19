@@ -1027,6 +1027,8 @@ void Client::AnnounceJoin(ChatChannel *Channel, Client *c) {
 	_pkt(CHANNELS__PACKETS, outapp);
 
 	QueuePacket(outapp);
+
+	safe_delete(outapp);
 }
 
 void Client::AnnounceLeave(ChatChannel *Channel, Client *c) {
@@ -1045,6 +1047,8 @@ void Client::AnnounceLeave(ChatChannel *Channel, Client *c) {
 	_pkt(CHANNELS__PACKETS, outapp);
 
 	QueuePacket(outapp);
+
+	safe_delete(outapp);
 }
 
 void Client::GeneralChannelMessage(const char *Characters) {
