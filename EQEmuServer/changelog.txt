@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==3/19/2009==
+Trevius: SoF - Grouping should now be fully functional
+Trevius: SoF - (Xinu) Added many missing opcodes
+
 ==3/15/2009==
 Trevius: SoF - Tradeskill Objects/Containers and Augment Pools should now be fully functional
 Trevius: SoF - PC to PC/NPC trading should now be fully functional without bugs

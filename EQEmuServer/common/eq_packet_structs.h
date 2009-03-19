@@ -1813,6 +1813,13 @@ struct GroupJoin_Struct {
 /*0132*/	int8	unknown[84];
 };
 
+struct GroupFollow_Struct { // SoF Follow Struct
+/*0000*/	char	name1[64];	// inviter
+/*0064*/	char	name2[64];	// invitee
+/*0128*/	int32	unknown0128;
+/*0132*/
+};
+
 struct FaceChange_Struct {
 /*000*/	int8	haircolor;
 /*001*/	int8	beardcolor;

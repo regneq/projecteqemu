@@ -1546,12 +1546,19 @@ DECODE(OP_WhoAllRequest) {
 	FINISH_DIRECT_DECODE();
 }
 
+DECODE(OP_GroupFollow) {
+	DECODE_LENGTH_EXACT(structs::GroupFollow_Struct);
+	SETUP_DIRECT_DECODE(GroupGeneric_Struct, structs::GroupFollow_Struct);
+	memcpy(emu->name1, eq->name1, sizeof(emu->name1));
+	memcpy(emu->name2, eq->name2, sizeof(emu->name2));
+	FINISH_DIRECT_DECODE();
+}
+
 DECODE(OP_GroupFollow2) {
-	DECODE_LENGTH_EXACT(structs::GroupJoin_Struct);
-	SETUP_DIRECT_DECODE(GroupJoin_Struct, structs::GroupJoin_Struct);
-	memcpy(emu->membername, eq->membername, sizeof(emu->membername));
-	memcpy(emu->yourname, eq->yourname, sizeof(emu->yourname));
-	IN(action);
+	DECODE_LENGTH_EXACT(structs::GroupFollow_Struct);
+	SETUP_DIRECT_DECODE(GroupGeneric_Struct, structs::GroupFollow_Struct);
+	memcpy(emu->name1, eq->name1, sizeof(emu->name1));
+	memcpy(emu->name2, eq->name2, sizeof(emu->name2));
 	FINISH_DIRECT_DECODE();
 }
 
