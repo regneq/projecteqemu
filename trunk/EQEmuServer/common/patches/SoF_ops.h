@@ -36,13 +36,11 @@ E(OP_DeleteItem)
 E(OP_ItemVerifyReply)
 E(OP_InterruptCast)
 
-//E(OP_GroupUpdate)
-//E(OP_ZoneServerReady)
 //E(OP_BazaarSearch)
 //E(OP_Trader)
 //E(OP_TraderBuy)
-//OP_AdventureData
-//OP_RaidUpdate
+//E(OP_AdventureData)
+//E(OP_RaidUpdate)
 
 //list of packets we need to decode on the way in:
 D(OP_SetServerFilter)
@@ -54,15 +52,15 @@ D(OP_WearChange)
 D(OP_ClientUpdate)
 D(OP_MoveItem)
 D(OP_WhoAllRequest)
-D(OP_GroupFollow2)
 D(OP_Buff)
 D(OP_ShopPlayerSell)
 D(OP_Consume)
 D(OP_CastSpell)
 D(OP_Save)
 D(OP_ItemVerifyRequest)
+D(OP_GroupFollow)
+D(OP_GroupFollow2)
 
-//D(OP_SendExpZonein) 
 //D(OP_TraderBuy)
 #undef E
 #undef D

@@ -1952,28 +1952,12 @@ struct GroupUpdate_Struct {
 /*0836*/
 };
 
-struct GroupUpdate_Struct_New { // testing
-/*0000*/	int32	action;
-/*0004*/	char	yourname[64];
-/*0068*/	char	membername[64];
-/*0132*/	char	leadersname[64];
-/*0196*/	int8	unknown[124];
-/*0320*/
-};
-
 struct GroupUpdate_Struct_Titanium {	// From Titanium Structs
 /*0000*/	int32	action;
 /*0004*/	char	yourname[64];
 /*0068*/	char	membername[5][64];
 /*0388*/	char	leadersname[64];
 /*0452*/
-};
-
-struct GroupUpdate_Struct_Live {	// New test struct from Live
-/*0000*/	int32	action;
-/*0004*/	int8	unknown0004[9];
-/*0013*/	char	yourname[24];
-/*0037*/
 };
 
 struct GroupUpdate2_Struct {
@@ -1986,7 +1970,7 @@ struct GroupUpdate2_Struct {
 /*0768*/
 };
 
-struct GroupJoin_Struct_Titanium {
+struct GroupJoin_Struct {
 /*0000*/	int32	action;
 /*0004*/	char	yourname[64];
 /*0068*/	char	membername[64];
@@ -1994,18 +1978,10 @@ struct GroupJoin_Struct_Titanium {
 /*0216*/
 };
 
-struct GroupJoin_Struct_Live { // testing
-/*0000*/	char	membername[64];	// inviter
-/*0064*/	char	yourname[64];	// invitee
-/*0128*/	int8	unknown[20];
-/*0148*/	int32	action;
-/*0152*/
-};
-
-struct GroupJoin_Struct { // SoF Follow Struct
-/*0000*/	char	membername[64];	// inviter
-/*0064*/	char	yourname[64];	// invitee
-/*0128*/	int32	action;
+struct GroupFollow_Struct { // SoF Follow Struct
+/*0000*/	char	name1[64];	// inviter
+/*0064*/	char	name2[64];	// invitee
+/*0128*/	int32	unknown0128;
 /*0132*/
 };
 
