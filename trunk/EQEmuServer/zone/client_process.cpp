@@ -750,7 +750,7 @@ void Client::BulkSendInventoryItems()
 		}
 	}
 	// Bank items
-	for (slot_id=2000; slot_id<=2015; slot_id++) {
+	for (slot_id=2000; slot_id<=2023; slot_id++) {
 		const ItemInst* inst = m_inv[slot_id];
 		if(inst && inst->IsSlotAllowed(slot_id) == 0)
 			inst = NULL;

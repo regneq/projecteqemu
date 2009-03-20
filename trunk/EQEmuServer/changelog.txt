@@ -1,5 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==3/20/2009==
+Trevius: SoF - Fixed a fairly major crashed caused when attempting to use the 8 new bank slots, or shared bank
+Trevius: SoF - Banking is now fully functional including the 8 new bank slots, shared bank and bag slots in the bank
+Trevius: SoF - Bandolier and Potion Belt are now both functional
+Trevius: SoF - Filled in multiple missing opcodes
+
 ==3/19/2009==
 Trevius: SoF - Grouping should now be fully functional
 Trevius: SoF - (Xinu) Added many missing opcodes

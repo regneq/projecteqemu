@@ -52,13 +52,13 @@ uint32 Client::NukeItem(uint32 itemnum) {
 			x++;
 		}
 	}
-	for (i=2000; i<=2015; i++) { // Bank slots
+	for (i=2000; i<=2023; i++) { // Bank slots
 		if (GetItemIDAt(i) == itemnum || (itemnum == 0xFFFE && GetItemIDAt(i) != INVALID_ID)) {
 			DeleteItemInInventory(i, 0, true);
 			x++;
 		}
 	}
-	for (i=2030; i<=2109; i++) { // Bank's containers
+	for (i=2031; i<=2270; i++) { // Bank's containers
 		if (GetItemIDAt(i) == itemnum || (itemnum == 0xFFFE && GetItemIDAt(i) != INVALID_ID)) {
 			DeleteItemInInventory(i, 0, true);
 			x++;
@@ -1089,7 +1089,7 @@ void Client::RemoveNoRent() {
 		if(TempItem->NoRent == 0)
 			DeleteItemInInventory(x,0,true);
 	}
-	for(x=2000; x <= 2015; x++)
+	for(x=2000; x <= 2023; x++)
 	{
 		TempItem = 0;
 		ins = GetInv().GetItem(x);
@@ -1101,7 +1101,7 @@ void Client::RemoveNoRent() {
 		if(TempItem->NoRent == 0)
 			DeleteItemInInventory(x,0,true);
 	}
-	for(x=2031; x <= 2190; x++)
+	for(x=2031; x <= 2270; x++)
 	{
 		TempItem = 0;
 		ins = GetInv().GetItem(x);
