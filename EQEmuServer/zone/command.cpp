@@ -2964,7 +2964,7 @@ void command_peekinv(Client *c, const Seperator *sep)
 		// Bank and shared bank items
 		bFound = true;
 		sint16 i = 0;
-		for (i=2000; i<=2015; i++) {
+		for (i=2000; i<=2023; i++) {
 			const ItemInst* inst = client->GetInv().GetItem(i);
 			item = (inst) ? inst->GetItem() : NULL;
 			c->Message((item==0), "BankSlot: %i, Item: %i (%c%06X000000000000000000000000000000000000000%s%c)", i,

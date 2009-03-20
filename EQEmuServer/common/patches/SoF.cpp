@@ -767,7 +767,7 @@ ENCODE(OP_CharInventory) {
 			dest->FastQueuePacket(&outapp);
 			delete[] serialized;
 			serialized = NULL;
-			if((const ItemInst*)eq->inst,eq->slot_id >= 22 && (const ItemInst*)eq->inst,eq->slot_id < 30)
+			if((const ItemInst*)eq->inst,eq->slot_id >= 22 && (const ItemInst*)eq->inst,eq->slot_id <= 30)
 			{
 				for(int x = 0; x < 10; ++x)
 				{
@@ -777,6 +777,56 @@ ENCODE(OP_CharInventory) {
 						uint32 sub_length;
 						serialized = NULL;
 						serialized = SerializeItem(subitem, (((eq->slot_id+3)*10)+x+1), &sub_length, 0);
+						if(serialized)
+						{
+							EQApplicationPacket * suboutapp = new EQApplicationPacket(OP_ItemPacket, sub_length+4);
+							uint32 * subtype = (uint32*)suboutapp->pBuffer;
+							*subtype = ItemPacketTrade;
+							memcpy(suboutapp->pBuffer+4, serialized, sub_length);
+							_log(NET__ERROR, "Sending sub item to client");
+							_hex(NET__ERROR, suboutapp->pBuffer, suboutapp->size);
+							dest->FastQueuePacket(&suboutapp);
+							delete[] serialized;
+							serialized = NULL;
+						}
+					}
+				}
+			}
+			else if((const ItemInst*)eq->inst,eq->slot_id >= 2000 && (const ItemInst*)eq->inst,eq->slot_id <= 2023)
+			{
+				for(int x = 0; x < 10; ++x)
+				{
+					const ItemInst* subitem = ((const ItemInst*)eq->inst)->GetItem(x);
+					if(subitem)
+					{
+						uint32 sub_length;
+						serialized = NULL;
+						serialized = SerializeItem(subitem, (((eq->slot_id-2000)*10)+2030+x+1), &sub_length, 0);
+						if(serialized)
+						{
+							EQApplicationPacket * suboutapp = new EQApplicationPacket(OP_ItemPacket, sub_length+4);
+							uint32 * subtype = (uint32*)suboutapp->pBuffer;
+							*subtype = ItemPacketTrade;
+							memcpy(suboutapp->pBuffer+4, serialized, sub_length);
+							_log(NET__ERROR, "Sending sub item to client");
+							_hex(NET__ERROR, suboutapp->pBuffer, suboutapp->size);
+							dest->FastQueuePacket(&suboutapp);
+							delete[] serialized;
+							serialized = NULL;
+						}
+					}
+				}
+			}
+			else if((const ItemInst*)eq->inst,eq->slot_id >= 2500 && (const ItemInst*)eq->inst,eq->slot_id <= 2501)
+			{
+				for(int x = 0; x < 10; ++x)
+				{
+					const ItemInst* subitem = ((const ItemInst*)eq->inst)->GetItem(x);
+					if(subitem)
+					{
+						uint32 sub_length;
+						serialized = NULL;
+						serialized = SerializeItem(subitem, (((eq->slot_id-2500)*10)+2530+x+1), &sub_length, 0);
 						if(serialized)
 						{
 							EQApplicationPacket * suboutapp = new EQApplicationPacket(OP_ItemPacket, sub_length+4);
@@ -1134,24 +1184,6 @@ ENCODE(OP_Consider) {
 	FINISH_ENCODE();
 }
 
-/*
-ENCODE(OP_GroupUpdate) {
-	ENCODE_LENGTH_EXACT(GroupUpdate2_Struct);
-	SETUP_DIRECT_ENCODE(GroupUpdate2_Struct, structs::GroupUpdate2_Struct);
-	int r;
-	OUT(action);
-	OUT_str(yourname);
-	for(r = 0; r < 5; r++) {
-		OUT_str(membername[r]);
-	}
-	OUT_str(leadersname);
-	for(r = 0; r < structs::MAX_GROUP_LEADERSHIP_AA_ARRAY; r++) {
-		OUT(leader_aas.ranks[r]);
-	}
-	FINISH_ENCODE();
-}
-*/
-
 ENCODE(OP_Action) {
 	ENCODE_LENGTH_EXACT(Action_Struct);
 	SETUP_DIRECT_ENCODE(Action_Struct, structs::Action_Struct);
@@ -1190,7 +1222,7 @@ ENCODE(OP_CancelTrade) {
 	ENCODE_LENGTH_EXACT(CancelTrade_Struct);
 	SETUP_DIRECT_ENCODE(CancelTrade_Struct, structs::CancelTrade_Struct);
 	OUT(fromid);
-	eq->action = -1;
+	OUT(action);
 	FINISH_ENCODE();
 }
 
@@ -1201,6 +1233,7 @@ ENCODE(OP_InterruptCast) {
 	OUT(messageid);
 	FINISH_ENCODE();
 }
+
 
 ENCODE(OP_RespondAA) {
 	ENCODE_LENGTH_EXACT(AATable_Struct);
@@ -1252,6 +1285,14 @@ ENCODE(OP_DeleteItem) {
 	{
 		eq->from_slot = emu->from_slot + 11;
 	}
+	else if(emu->from_slot >= 2031 && emu->from_slot < 2270)
+	{
+		eq->from_slot = emu->from_slot + 1;
+	}
+	else if(emu->from_slot >= 2531 && emu->from_slot < 2550)
+	{
+		eq->from_slot = emu->from_slot + 1;
+	}
 	else
 	{
 		OUT(from_slot);
@@ -1264,6 +1305,14 @@ ENCODE(OP_DeleteItem) {
 	else if(emu->to_slot >= 251 && emu->to_slot < 351)
 	{
 		eq->to_slot = emu->to_slot + 11;
+	}
+	else if(emu->to_slot >= 2031 && emu->to_slot < 2270)
+	{
+		eq->to_slot = emu->to_slot + 1;
+	}
+	else if(emu->to_slot >= 2531 && emu->to_slot < 2550)
+	{
+		eq->to_slot = emu->to_slot + 1;
 	}
 	else
 	{
@@ -1279,10 +1328,6 @@ ENCODE(OP_ItemVerifyReply) {
 	if(emu->slot >= 21 && emu->slot < 50)
 	{
 		eq->slot = emu->slot + 1;
-	}
-	else if(emu->slot >= 251 && emu->slot < 351)
-	{
-		eq->slot = emu->slot + 11;
 	}
 	else
 	{
@@ -1300,10 +1345,6 @@ DECODE(OP_ItemVerifyRequest) {
 	{
 		emu->slot = eq->slot - 1;
 	}
-	else if(eq->slot >= 251 && eq->slot < 351)
-	{
-		emu->slot = eq->slot - 11;
-	}
 	else if(eq->slot == 21)
 	{
 		emu->slot = 22;		//some power source slot TODO
@@ -1319,17 +1360,9 @@ DECODE(OP_ItemVerifyRequest) {
 DECODE(OP_Consume) {
 	DECODE_LENGTH_EXACT(structs::Consume_Struct);
 	SETUP_DIRECT_DECODE(Consume_Struct, structs::Consume_Struct);
-	if(eq->slot >= 23 && eq->slot < 51)
+	if(eq->slot >= 22 && eq->slot < 51)
 	{
 		emu->slot = eq->slot - 1;
-	}
-	else if(eq->slot >= 251 && eq->slot < 351)
-	{
-		emu->slot = eq->slot - 11;
-	}
-	else if(eq->slot == 22)
-	{
-		emu->slot = 21;
 	}
 	else if(eq->slot == 21)
 	{
@@ -1352,17 +1385,9 @@ DECODE(OP_CastSpell) {
 	IN(slot);
 	IN(spell_id);
 
-	if(eq->inventoryslot >= 23 && eq->inventoryslot < 51)
+	if(eq->inventoryslot >= 22 && eq->inventoryslot < 51)
 	{
 		emu->inventoryslot = eq->inventoryslot - 1;
-	}
-	else if(eq->inventoryslot >= 251 && eq->inventoryslot < 351)
-	{
-		emu->inventoryslot = eq->inventoryslot - 11;
-	}
-	else if(eq->inventoryslot == 22)
-	{
-		emu->inventoryslot = 21;
 	}
 	else if(eq->inventoryslot == 21)
 	{
@@ -1384,7 +1409,7 @@ DECODE(OP_MoveItem)
 
 	_log(NET__ERROR, "Moved item from %u to %u", eq->from_slot, eq->to_slot);
 
-	if(eq->from_slot >= 23 && eq->from_slot < 51)
+	if(eq->from_slot >= 22 && eq->from_slot < 51)
 	{
 		emu->from_slot = eq->from_slot - 1;
 	}
@@ -1392,9 +1417,13 @@ DECODE(OP_MoveItem)
 	{
 		emu->from_slot = eq->from_slot - 11;
 	}
-	else if(eq->from_slot == 22)
+	else if(eq->from_slot >= 2032 && eq->from_slot < 2271)
 	{
-		emu->from_slot = 21;
+		emu->from_slot = eq->from_slot - 1;
+	}
+	else if(eq->from_slot >= 2532 && eq->from_slot < 2551)
+	{
+		emu->from_slot = eq->from_slot - 1;
 	}
 	else if(eq->from_slot == 21)
 	{
@@ -1405,7 +1434,7 @@ DECODE(OP_MoveItem)
 		IN(from_slot);
 	}
 
-	if(eq->to_slot >= 23 && eq->to_slot < 51)
+	if(eq->to_slot >= 22 && eq->to_slot < 51)
 	{
 		emu->to_slot = eq->to_slot - 1;
 	}
@@ -1413,9 +1442,13 @@ DECODE(OP_MoveItem)
 	{
 		emu->to_slot = eq->to_slot - 11;
 	}
-	else if(eq->to_slot == 22)
+	else if(eq->to_slot >= 2031 && eq->to_slot < 2271)
 	{
-		emu->to_slot = 21;
+		emu->to_slot = eq->to_slot - 1;
+	}
+	else if(eq->to_slot >= 2532 && eq->to_slot < 2551)
+	{
+		emu->to_slot = eq->to_slot - 1;
 	}
 	else if(eq->to_slot == 21)
 	{
@@ -1463,7 +1496,7 @@ DECODE(OP_Consider) {
 	IN(playerid);
 	IN(targetid);
 	IN(faction);
-	//IN(level);
+	IN(level);
 	//emu->cur_hp = 1;
 	//emu->max_hp = 2;
 	//emu->pvpcon = 0;
@@ -1633,18 +1666,20 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 
 	hdr.stacksize = stackable ? charges : 1;
 	hdr.unknown004 = 0;
 
-	if(slot_id >= 22 && slot_id < 50)
+	if(slot_id >= 22 && slot_id < 50) // Ammo and Main Inventory
 		slot_id += 1;
-	else if(slot_id >= 251 && slot_id < 351)
+	else if(slot_id >= 251 && slot_id < 351) // Inventory Bg Slots
 		slot_id += 11;
-	
+	else if(slot_id >= 2031 && slot_id < 2270) // Bank Bag Slots
+		slot_id += 1;
+	else if(slot_id >= 2531 && slot_id < 2550) // Shared Bank Bag Slots
+		slot_id += 1;
+
 	if(slot_id == 21)
 		slot_id = 22;
 
 	// It looks like Power Source is slot 21 and Ammo got bumped to slot 22
 	// This will have to be changed somehow to handle slot 21 for Power Source items
-	//if(slot_id == 21)
-	//	slot_id == 22;
 
 	hdr.slot = (merchant_slot == 0) ? slot_id : merchant_slot;
 	hdr.price = inst->GetPrice();

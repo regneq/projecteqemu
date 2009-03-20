@@ -1695,34 +1695,6 @@ struct RandomReply_Struct {
 /* 76 */
 };
 
-struct LFG_Struct {
-/*
-Wrong size on OP_LFG. Got: 80, Expected: 68
-   0: 00 00 00 00 01 00 00 00 - 00 00 00 00 64 00 00 00  | ............d...
-  16: 00 00 00 00 00 00 00 00 - 00 00 00 00 00 00 00 00  | ................
-  32: 00 00 00 00 00 00 00 00 - 00 00 00 00 00 00 00 00  | ................
-  48: 00 00 00 00 00 00 00 00 - 00 00 00 00 00 00 00 00  | ................
-  64: 00 00 00 00 00 00 00 00 - 00 00 00 00 00 00 00 00  | ................
-Wrong size on OP_LFG. Got: 80, Expected: 68
-   0: 00 00 00 00 01 00 00 00 - 3F 00 00 00 41 00 00 00  | ........?...A...
-  16: 00 00 00 00 00 00 00 00 - 00 00 00 00 00 00 00 00  | ................
-  32: 00 00 00 00 00 00 00 00 - 00 00 00 00 00 00 00 00  | ................
-  48: 00 00 00 00 00 00 00 00 - 00 00 00 00 00 00 00 00  | ................
-  64: 00 00 00 00 00 00 00 00 - 00 00 00 00 00 00 00 00  | ................
-Wrong size on OP_LFG. Got: 80, Expected: 68
-   0: 00 00 00 00 01 00 00 00 - 3F 00 00 00 41 00 00 00  | ........?...A...
-  16: 46 72 75 62 20 66 72 75 - 62 20 66 72 75 62 00 00  | Frub frub frub..
-  32: 00 00 00 00 00 00 00 00 - 00 00 00 00 00 00 00 00  | ................
-  48: 00 00 00 00 00 00 00 00 - 00 00 00 00 00 00 00 00  | ................
-  64: 00 00 00 00 00 00 00 00 - 00 00 00 00 00 00 00 00  | ................
-*/
-/*016*/	char	name[64];
-/*004*/	uint32 value; // 0x00 = off 0x01 = on
-//*008*/	uint32 unknown008;
-//*012*/	uint32 unknown012;
-
-};
-
 /*
 ** LFG_Appearance_Struct
 ** Packet sent to clients to notify when someone in zone toggles LFG flag
@@ -1941,18 +1913,7 @@ struct GroupCancel_Struct {
 /*0129*/
 };
 
-// Trevius - Unsure which struct to use for SoF GroupUpdate yet:
-
-struct GroupUpdate_Struct {
-/*0000*/	int32	action;
-/*0004*/	char	yourname[64];
-/*0068*/	char	membername[5][64]; //was [64]
-/*0388*/	char	leadersname[64];
-/*0580*/	int8	unknown[256];
-/*0836*/
-};
-
-struct GroupUpdate_Struct_Titanium {	// From Titanium Structs
+struct GroupUpdate_Struct {	// From Titanium Structs
 /*0000*/	int32	action;
 /*0004*/	char	yourname[64];
 /*0068*/	char	membername[5][64];
@@ -1983,6 +1944,14 @@ struct GroupFollow_Struct { // SoF Follow Struct
 /*0064*/	char	name2[64];	// invitee
 /*0128*/	int32	unknown0128;
 /*0132*/
+};
+
+struct LFG_Struct {
+/*000*/	uint32 unknown000;
+/*004*/	uint32 value; // 0x00 = off 0x01 = on
+/*008*/	uint32 unknown008;
+/*012*/	uint32 unknown012;
+/*016*/	char	name[64];
 };
 
 struct FaceChange_Struct {

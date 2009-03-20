@@ -1445,7 +1445,6 @@ void Client::Handle_OP_ItemVerifyRequest(const EQApplicationPacket *app)
 			else
 			{
 				LogFile->write(EQEMuLog::Debug, "Error: unknown item->Click.Type (%i)", item->Click.Type);
-				//Message(0, "Error: unknown item->Click.Type (%i)", item->Click.Type);
 			}
 		}
 		else
