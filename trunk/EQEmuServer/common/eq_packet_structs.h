@@ -889,7 +889,8 @@ struct PlayerProfile_Struct
 /*12804*/	uint32				aapoints;	//avaliable, unspent
 /*12808*/	uint8				unknown12808[36];
 /*12844*/	Bandolier_Struct	bandoliers[MAX_PLAYER_BANDOLIER];
-/*14124*/	uint8				unknown14124[5120];
+/*14124*/	uint8				unknown14124[5116];
+/*19240*/	uint32				timeentitledonaccount;
 /*19244*/	PotionBelt_Struct	potionbelt;	//there should be 3 more of these
 /*19532*/	uint8				unknown19532[8];
 /*19540*/	uint32				currentRadCrystals; 	// Current count of radiant crystals

@@ -788,7 +788,8 @@ struct PlayerProfile_Struct
 /*13055*/ int8    guildrank;        // 0=member, 1=officer, 2=guildleader
 /*13056*/ uint8 unknown13054[12];
 /*13068*/ uint32  exp;                // Current Experience
-/*13072*/ uint8 unknown13072[12];
+/*13072*/ uint8 unknown13072[8];
+/*13080*/ uint32 timeentitledonaccount; // In days, displayed in /played
 /*13084*/ uint8   languages[MAX_PP_LANGUAGE]; // List of languages
 /*13109*/ uint8   unknown13109[4];    // All 0x00 (language buffer?)
 /*13116*/ float     x;                  // Players x position

@@ -7086,6 +7086,7 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 	if(zone->IsPVPZone())
 		m_pp.pvp=1;
 
+	m_pp.timeentitledonaccount = database.GetTotalTimeEntitledOnAccount(AccountID()) / 1440;
 
 	//This checksum should disappear once dynamic structs are in... each struct strategy will do it
 	CRC32::SetEQChecksum((unsigned char*)&m_pp, sizeof(PlayerProfile_Struct)-4);
