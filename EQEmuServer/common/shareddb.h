@@ -39,6 +39,8 @@ public:
 	sint32	DeleteStalePlayerCorpses();
 	sint32	DeleteStalePlayerBackups();
 
+	int32	GetTotalTimeEntitledOnAccount(uint32 AccountID);
+
 	/*
 	 * Character Inventory
 	 */

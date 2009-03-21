@@ -920,7 +920,8 @@ struct PlayerProfile_Struct //23576 Octets
 /*15247*/ int8    guildrank;        // 0=member, 1=officer, 2=guildleader
 /*15248*/ uint8 unknown13054[12];  //[12]
 /*15260*/ uint32  exp;                // Current Experience
-/*15264*/ uint8 unknown13072[12];
+/*15264*/ uint8 unknown13072[8];
+/*15272*/ uint32  timeentitledonaccount;
 /*15276*/ uint8   languages[MAX_PP_LANGUAGE]; // List of languages
 /*15301*/ uint8   unknown13109[7];    //#### uint8   unknown13109[4]; in Titanium ####[7]
 /*15308*/ float     y;                  // Players y position (NOT positive about this switch)

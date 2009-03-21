@@ -407,7 +407,8 @@ ENCODE(OP_PlayerProfile) {
 	OUT(guildrank);
 //	OUT(unknown13054[12]);
 	OUT(exp);
-//	OUT(unknown13072[12]);
+//	OUT(unknown13072[8]);
+	OUT(timeentitledonaccount);
 	OUT_array(languages, structs::MAX_PP_LANGUAGE);
 //	OUT(unknown13109[7]);
 	OUT(y); //reversed x and y

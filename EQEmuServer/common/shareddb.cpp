@@ -114,6 +114,34 @@ bool SharedDatabase::SetGMSpeed(int32 account_id, int8 gmspeed)
 	
 }
 
+int32 SharedDatabase::GetTotalTimeEntitledOnAccount(uint32 AccountID) {
+
+	uint32 EntitledTime = 0;
+
+	const char *EntitledQuery = "select sum(ascii(substring(profile, 237, 1)) + (ascii(substring(profile, 238, 1)) * 256) +"
+			   "(ascii(substring(profile, 239, 1)) * 65536) + (ascii(substring(profile, 240, 1)) * 16777216))"
+			   "from character_ where account_id = %i";
+
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+	if (RunQuery(query, MakeAnyLenString(&query, EntitledQuery, AccountID), errbuf, &result)) {
+
+		if (mysql_num_rows(result) == 1) {
+
+			row = mysql_fetch_row(result);
+
+			EntitledTime = atoi(row[0]);
+		}
+
+		mysql_free_result(result);
+	}
+
+	safe_delete_array(query);
+
+	return EntitledTime;
+}
 
 bool SharedDatabase::SaveCursor(uint32 char_id, list<ItemInst*>::const_iterator &start, list<ItemInst*>::const_iterator &end)
 {

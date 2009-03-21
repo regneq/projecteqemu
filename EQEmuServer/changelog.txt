@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==3/21/2009==
+Derision: Implemented 'Your total time entitled on this account' in /played.
+
 ==3/20/2009==
 Trevius: SoF - Fixed a fairly major crashed caused when attempting to use the 8 new bank slots, or shared bank
 Trevius: SoF - Banking is now fully functional including the 8 new bank slots, shared bank and bag slots in the bank
