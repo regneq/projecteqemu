@@ -1,5 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==3/23/2009==
+Trevius: SoF - Corrected Right Click item effects so they no longer fizzle
+Trevius: SoF - Right Clickable item effects with set recast delays now observe that delay properly
+Trevius: SoF - Item Effect Charges now get used and updated properly
+Trevius: SoF - Food and Drink are now consumed at the proper rates
+
 ==3/21/2009==
 Derision: Implemented 'Your total time entitled on this account' in /played.
 
