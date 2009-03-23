@@ -1440,7 +1440,7 @@ void Client::Handle_OP_ItemVerifyRequest(const EQApplicationPacket *app)
 		{
 			if ((item->Click.Type == ET_ClickEffect) || (item->Click.Type == ET_Expendable) || (item->Click.Type == ET_EquipClick) || (item->Click.Type == ET_ClickEffect2))
 			{
-				CastSpell(item->Click.Effect, target_id, 0, item->CastTime, 0, 0, slot_id);
+				CastSpell(item->Click.Effect, target_id, 10, item->CastTime, 0, 0, slot_id);
 			}
 			else
 			{

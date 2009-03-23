@@ -1323,6 +1323,55 @@ ENCODE(OP_DeleteItem) {
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_DeleteCharge) {  ENCODE_FORWARD(OP_MoveItem); }
+ENCODE(OP_MoveItem) {
+	ENCODE_LENGTH_EXACT(MoveItem_Struct);
+	SETUP_DIRECT_ENCODE(MoveItem_Struct, structs::MoveItem_Struct);
+	if(emu->from_slot >= 21 && emu->from_slot < 50)
+	{
+		eq->from_slot = emu->from_slot + 1;
+	}
+	else if(emu->from_slot >= 251 && emu->from_slot < 351)
+	{
+		eq->from_slot = emu->from_slot + 11;
+	}
+	else if(emu->from_slot >= 2031 && emu->from_slot < 2270)
+	{
+		eq->from_slot = emu->from_slot + 1;
+	}
+	else if(emu->from_slot >= 2531 && emu->from_slot < 2550)
+	{
+		eq->from_slot = emu->from_slot + 1;
+	}
+	else
+	{
+		OUT(from_slot);
+	}
+
+	if(emu->to_slot >= 21 && emu->to_slot < 50)
+	{
+		eq->to_slot = emu->to_slot + 1;
+	}
+	else if(emu->to_slot >= 251 && emu->to_slot < 351)
+	{
+		eq->to_slot = emu->to_slot + 11;
+	}
+	else if(emu->to_slot >= 2031 && emu->to_slot < 2270)
+	{
+		eq->to_slot = emu->to_slot + 1;
+	}
+	else if(emu->to_slot >= 2531 && emu->to_slot < 2550)
+	{
+		eq->to_slot = emu->to_slot + 1;
+	}
+	else
+	{
+		OUT(to_slot);
+	}
+	OUT(number_in_stack);
+	FINISH_ENCODE();
+}
+
 ENCODE(OP_ItemVerifyReply) {
 	ENCODE_LENGTH_EXACT(ItemVerifyReply_Struct);
 	SETUP_DIRECT_ENCODE(ItemVerifyReply_Struct, structs::ItemVerifyReply_Struct);
