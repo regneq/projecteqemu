@@ -89,7 +89,23 @@ Corpse* Corpse::LoadFromDBData(int32 in_dbid, int32 in_charid, char* in_charname
 		memcpy(tmp, &dbpc->items[i], sizeof(ServerLootItem_Struct));
 		itemlist.push_back(tmp);
 	}
-	Corpse* pc = new Corpse(in_dbid, in_charid, in_charname, &itemlist, dbpc->copper, dbpc->silver, dbpc->gold, dbpc->plat, in_x, in_y, in_z, in_heading, dbpc->size, dbpc->gender, dbpc->race, dbpc->class_, dbpc->deity, dbpc->level, dbpc->texture, dbpc->helmtexture,dbpc->exp, wasAtGraveyard);
+
+	// Little hack to account for the fact the race in the corpse struct is a uint8 and Froglok/Drakkin race number > 255
+	// and to maintain backwards compatability with existing corpses in the database.
+	int16 RealRace;
+
+	switch(dbpc->race) {
+		case 254:
+			RealRace = DRAKKIN;
+			break;
+		case 255:
+			RealRace = FROGLOK;
+			break;
+		default:
+			RealRace = dbpc->race;
+	}
+
+	Corpse* pc = new Corpse(in_dbid, in_charid, in_charname, &itemlist, dbpc->copper, dbpc->silver, dbpc->gold, dbpc->plat, in_x, in_y, in_z, in_heading, dbpc->size, dbpc->gender, RealRace, dbpc->class_, dbpc->deity, dbpc->level, dbpc->texture, dbpc->helmtexture,dbpc->exp, wasAtGraveyard);
 	if (dbpc->locked)
 		pc->Lock();
 
@@ -395,7 +411,23 @@ bool Corpse::Save() {
 	dbpc->silver = this->silver;
 	dbpc->gold = this->gold;
 	dbpc->plat = this->platinum;
-	dbpc->race = race;
+
+	// Little hack to account for the fact the race in the corpse struct is a uint8 and Froglok/Drakkin race number > 255
+	// and to maintain backwards compatability with existing corpses in the database.
+	int16 CorpseRace;
+
+	switch(race) {
+		case DRAKKIN:
+			CorpseRace = 254;
+			break;
+		case FROGLOK:
+			CorpseRace = 255;
+			break;
+		default:
+			CorpseRace = race;
+	}
+
+	dbpc->race = CorpseRace;
 	dbpc->class_ = class_;
 	dbpc->gender = gender;
 	dbpc->deity = deity;
