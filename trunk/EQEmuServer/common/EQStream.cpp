@@ -280,6 +280,11 @@ uint32 processed=0,subpacket_length=0;
 		}
 		break;
 		case OP_SessionRequest: {
+			if(p->Size() < sizeof(SessionRequest))
+			{
+				_log(NET__ERROR, _L "Received OP_SessionRequest that was of malformed size" __L);
+				break;
+			}
 #ifndef COLLECTOR
 			if (GetState()==ESTABLISHED) {
 				_log(NET__ERROR, _L "Received OP_SessionRequest in ESTABLISHED state (%d)" __L, GetState());
