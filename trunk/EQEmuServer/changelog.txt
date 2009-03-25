@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==3/25/2009==
+Derision: 'Hack' to display Froglok/Drakkin corpses correctly.
+Derision: SoF - OP_Translocate & OP_LevelAppearance
+
 ==3/23/2009==
 Trevius: SoF - Corrected Right Click item effects so they no longer fizzle
 Trevius: SoF - Right Clickable item effects with set recast delays now observe that delay properly
