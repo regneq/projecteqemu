@@ -3,6 +3,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==3/28/2009==
 Derision: SoF - Tasks now work.
 Derision: SoF - OP_Sacrifice, OP_Sound, OP_OnLevelMessage, OP_PopupResponse
+Derision: Item Links in Task Descriptions are now formatted correctly based on the client version.
 
 ==3/25/2009==
 Derision: 'Hack' to display Froglok/Drakkin corpses correctly.

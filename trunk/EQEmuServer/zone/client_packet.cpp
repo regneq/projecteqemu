@@ -457,6 +457,15 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 
 	conn_state = ReceivedZoneEntry;
 
+	string StreamDescription = Connection()->Describe();
+
+	if(StreamDescription == "Patch Titanium")
+		ClientVersion = EQClientTitanium;
+	else if(StreamDescription == "Patch 6.2")
+		ClientVersion = EQClient62;
+	else if(StreamDescription == "Patch SoF")
+		ClientVersion = EQClientSoF;
+
 	// Quagmire - Antighost code
 	// tmp var is so the search doesnt find this object
 	Client* client = entity_list.GetClientByName(cze->char_name);

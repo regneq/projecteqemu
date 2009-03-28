@@ -266,6 +266,7 @@ Client::Client(EQStreamInterface* ieqs)
 	GlobalChatLimiterTimer = new Timer(RuleI(Chat, IntervalDurationMS));
 	AttemptedMessages = 0;
 	TotalKarma = 0;
+	ClientVersion = EQClientUnknown;
 }
 
 Client::~Client() {
