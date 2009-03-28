@@ -2655,15 +2655,50 @@ void TaskManager::SendActiveTaskDescription(Client *c, int TaskID, int SequenceN
 		if(ItemID) {
 			char *RewardTmp = 0;
 			if(strlen(Tasks[TaskID]->Reward) != 0) {
-				MakeAnyLenString(&RewardTmp, "%c%06X000000000000000000000000000000014505DC2%s%c", 
-						 0x12, ItemID, Tasks[TaskID]->Reward,0x12);
+
+				switch(c->GetClientVersion()) {
+
+					case EQClientSoF:
+
+						MakeAnyLenString(&RewardTmp, "%c%06X00000000000000000000000000000000000014505DC2%s%c", 
+								 0x12, ItemID, Tasks[TaskID]->Reward,0x12);
+						break;
+
+					case EQClient62:
+
+						MakeAnyLenString(&RewardTmp, "%c%07i-00001-00001-00001-00001-000013E0ABA6B%s%c", 
+								 0x12, ItemID, Tasks[TaskID]->Reward,0x12);
+						break;
+
+					default:
+						MakeAnyLenString(&RewardTmp, "%c%06X000000000000000000000000000000014505DC2%s%c", 
+								 0x12, ItemID, Tasks[TaskID]->Reward,0x12);
+				}
+
 			}
 			else {
 				const Item_Struct *Item = database.GetItem(ItemID);
 
 				if(Item) {
-					MakeAnyLenString(&RewardTmp, "%c%06X000000000000000000000000000000014505DC2%s%c", 
-							 0x12, ItemID, Item->Name ,0x12);
+
+					switch(c->GetClientVersion()) {
+
+						case EQClientSoF:
+
+							MakeAnyLenString(&RewardTmp, "%c%06X00000000000000000000000000000000000014505DC2%s%c", 
+									 0x12, ItemID, Item->Name ,0x12);
+							break;
+
+						case EQClient62:
+
+							MakeAnyLenString(&RewardTmp, "%c%07i-00001-00001-00001-00001-000013E0ABA6B%s%c", 
+									 0x12, ItemID, Item->Name,0x12);
+							break;
+
+						default:
+							MakeAnyLenString(&RewardTmp, "%c%06X000000000000000000000000000000014505DC2%s%c", 
+									 0x12, ItemID, Item->Name ,0x12);
+					}
 				}
 			}
 

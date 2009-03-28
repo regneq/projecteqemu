@@ -163,6 +163,13 @@ typedef enum {
 	MQGhost
 } CheatTypes;
 
+typedef enum {
+	EQClientUnknown = 0,
+	EQClient62,
+	EQClientTitanium,
+	EQClientSoF
+} EQClientVersion;
+
 class ClientFactory {
 public:
 	Client *MakeClient(EQStream* ieqs);
@@ -860,6 +867,7 @@ public:
 	inline int CompletedTasksInSet(int TaskSet)
 	 	   { return (taskstate ? taskstate->CompletedTasksInSet(TaskSet) :0); }
 
+	inline EQClientVersion GetClientVersion() { return ClientVersion; }
 
 protected:
 	friend class Mob;
@@ -1080,6 +1088,8 @@ private:
 
 	Timer *GlobalChatLimiterTimer; //60 seconds
 	uint32 AttemptedMessages;
+
+	EQClientVersion ClientVersion;
 
 
 	//Connecting debug code.
