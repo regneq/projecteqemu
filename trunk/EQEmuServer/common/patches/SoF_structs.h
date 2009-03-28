@@ -3076,6 +3076,9 @@ struct SetTitleReply_Struct {
 	uint32	entity_id;
 };
 
+
+#if 0
+// Old struct not used by Task System implementation but left for reference
 struct TaskDescription_Struct {
 /*000*/	uint32	activity_count;		//not right.
 /*004*/	uint32	taskid;
@@ -3093,6 +3096,7 @@ struct TaskDescription_Struct {
 /*041*/	char	reward_link[1];	//variable length, 0 terminated
 /*042*/	uint32	unknown43;  //maybe crystal count?
 };
+#endif
 
 struct TaskMemberList_Struct {
 /*00*/  uint32  gopher_id;
@@ -3105,7 +3109,8 @@ struct TaskMemberList_Struct {
 */
 };
 
-
+#if 0
+// Old structs not used by Task System implentation but left for reference
 struct TaskActivity_Struct {
 /*000*/	uint32	activity_count;		//not right
 /*004*/	uint32	id3;
@@ -3137,18 +3142,22 @@ struct TaskHistory_Struct {
 	uint32 completed_count;
 	TaskHistoryEntry_Struct entries[0];
 };
+#endif
 
 struct AcceptNewTask_Struct {
+	uint32  unknown00;
 	uint32	task_id;		//set to 0 for 'decline'
 	uint32	task_master_id;	//entity ID
 };
 
 //was all 0's from client, server replied with same op, all 0's
 struct CancelTask_Struct {
-	uint32 unknown0;
-	uint32 unknown4;
+	uint32 SequenceNumber;
+	uint32 unknown4; // Only seen 0x00000002
 };
 
+#if 0
+// old struct, not used by Task System implementation but left for reference.
 struct AvaliableTask_Struct {
 	uint32	task_index;		//no idea, seen 0x1
 	uint32	task_master_id;	//entity ID
@@ -3167,7 +3176,134 @@ struct AvaliableTask_Struct {
 	uint32	unknown4;	//seen 0x16
 	uint8	unknown5;
 };
+#endif
 
+
+// Many of the Task System packets contain variable length strings, as well as variable numbers
+// of records, hence splitting them into multiple structs (header, middle, trailer) etc.
+//
+struct AvailableTaskHeader_Struct {
+	uint32	TaskCount;
+	uint32	unknown1;
+	uint32	TaskGiver;
+};
+
+struct AvailableTaskData1_Struct {
+	uint32	TaskID;
+	uint32	unknown1;
+	uint32	TimeLimit;
+	uint32	unknown2;
+};
+
+struct AvailableTaskData2_Struct {
+	uint32	unknown1,unknown2,unknown3,unknown4;
+};
+
+struct AvailableTaskTrailer_Struct {
+	uint32	ItemCount;
+	uint32	unknown1, unknown2;
+	uint32	StartZone;
+};
+
+struct TaskDescriptionHeader_Struct {
+	uint32	SequenceNumber; // The order the tasks appear in the journal. 0 for first task, 1 for second, etc.
+	uint32	TaskID;
+	uint32	unknown2;
+	uint32	unknown3;
+	uint8	unknown4;
+};
+
+struct TaskDescriptionData1_Struct {
+	uint32	Duration;
+	uint32	unknown2;
+	uint32	StartTime;
+};
+
+struct TaskDescriptionData2_Struct {
+	uint32	RewardCount; // ??
+	uint32	unknown1;
+	uint32	unknown2;
+	uint16	unknown3;
+	//uint8	unknown4;
+};
+
+struct TaskDescriptionTrailer_Struct {
+	//uint16  unknown1; // 0x0012
+	uint32	Points;
+};
+
+struct TaskActivityHeader_Struct {
+	uint32	TaskSequenceNumber;
+	uint32	unknown2; // Seen 0x00000002
+	uint32	TaskID;
+	uint32	ActivityID;
+	uint32	unknown3;
+	uint32	ActivityType;
+	uint32	Optional;
+	uint32	unknown5;
+};
+
+struct TaskActivityData1_Struct {
+	uint32	GoalCount;
+	uint32	unknown1; // 0xffffffff
+	uint32	unknown2; // 0xffffffff
+	uint32	ZoneID; // seen 0x36
+	uint32  unknown3;
+};
+
+struct TaskActivityTrailer_Struct {
+	uint32	DoneCount;
+	uint32	unknown1; // Seen 1
+};
+
+// The Short_Struct is sent for tasks that are hidden and act as a placeholder
+struct TaskActivityShort_Struct {
+	uint32	TaskSequenceNumber;
+	uint32	unknown2; // Seen 0x00000002
+	uint32	TaskID;
+	uint32	ActivityID;
+	uint32	unknown3;
+	uint32	ActivityType; // 0xffffffff for the short packet
+	uint32  unknown4;
+};
+
+struct TaskActivityComplete_Struct {
+	uint32	TaskIndex;
+	uint32	unknown2; // 0x00000002
+	uint32	unknown3;
+	uint32	ActivityID;
+	uint32	unknown4; // 0x00000001
+	uint32	unknown5; // 0x00000001
+};
+
+#if 0
+// This is a dupe of the CancelTask struct
+struct TaskComplete_Struct {
+	uint32	unknown00; // 0x00000000
+	uint32	unknown04; // 0x00000002
+};
+#endif
+
+struct TaskHistoryRequest_Struct {
+	uint32	TaskIndex; // This is the sequence the task was sent in the Completed Tasks packet.
+};
+
+struct TaskHistoryReplyHeader_Struct {
+	uint32	TaskID;
+	uint32	ActivityCount;
+};
+
+struct TaskHistoryReplyData1_Struct {
+	uint32	ActivityType;
+};
+
+struct TaskHistoryReplyData2_Struct {
+	uint32  GoalCount;
+	uint32	unknown04; // 0xffffffff
+	uint32	unknown08; // 0xffffffff
+	uint32	ZoneID;
+	uint32	unknown16;
+};
 
 struct BankerChange_Struct {
 	uint32	platinum;
