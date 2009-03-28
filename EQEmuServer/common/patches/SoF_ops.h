@@ -37,6 +37,7 @@ E(OP_ItemVerifyReply)
 E(OP_InterruptCast)
 E(OP_DeleteCharge)
 E(OP_MoveItem)
+E(OP_OpenNewTasksWindow)
 
 //E(OP_BazaarSearch)
 //E(OP_Trader)
