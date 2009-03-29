@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==3/29/2009==
+Derision: SoF - OP_PetBuffWindow, OP_Charm, OP_Stun
+
 ==3/28/2009==
 Derision: SoF - Tasks now work.
 Derision: SoF - OP_Sacrifice, OP_Sound, OP_OnLevelMessage, OP_PopupResponse
