@@ -257,7 +257,7 @@ struct Spawn_Struct {
 		/*0027*/ EquipStruct equipment[9];
 	 };
 
-/*0135*/ uint8	unknown0820; //*0135*/ uint8  state;          // stand state
+/*0135*/ uint8	StandState;	// Seems to be required to be set to 0x64 for normal animation.
 /*0136*/ uint8  unknown0059;
 /*0137*/ uint32	guildID;        // Current guild - was uint32
 /*0141*/ uint8  unknown0074[24]; //was [2]

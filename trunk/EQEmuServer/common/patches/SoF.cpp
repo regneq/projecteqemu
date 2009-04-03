@@ -710,6 +710,9 @@ ENCODE(OP_ZoneSpawns) {
 			eq->colors[k].color = emu->colors[k].color;
 		}
 		eq->guildID = emu->guildID;
+
+		eq->StandState = 0x64;
+		
 		eq->class_ = emu->class_;
 		eq->gm = emu->gm;
 		eq->helm = emu->helm;
@@ -749,7 +752,7 @@ ENCODE(OP_ZoneSpawns) {
 		eq->face = emu->face;
 		eq->size = emu->size;
 		eq->walkspeed = emu->walkspeed;
-		
+
 		//Hack Test for finding more fields in the Struct:
 		//memset(eq->unknown0001, 0x01, sizeof(eq->unknown0001));	// 
 		//memset(eq->unknown0006, 0x01, sizeof(eq->unknown0006));	// 
