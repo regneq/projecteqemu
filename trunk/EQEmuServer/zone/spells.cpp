@@ -326,6 +326,16 @@ bool Mob::DoCastSpell(int16 spell_id, int16 target_id, int16 slot,
 		// if there's a cast time, check if they have a modifier for it
 		if(cast_time)
 		{
+
+#ifdef EQBOTS
+
+			if(IsBot()) {
+				cast_time = GetBotActSpellCasttime(spell_id, cast_time);
+			}
+			else
+
+#endif //EQBOTS
+
 			cast_time = GetActSpellCasttime(spell_id, cast_time);
 			
 		}
@@ -351,6 +361,16 @@ bool Mob::DoCastSpell(int16 spell_id, int16 target_id, int16 slot,
 
 	if (mana_cost == -1) {
 		mana_cost = spell.mana;
+
+#ifdef EQBOTS
+
+		if(IsBot()) {
+			mana_cost = GetBotActSpellCost(spell_id, mana_cost);
+		}
+		else
+
+#endif //EQBOTS
+
 		mana_cost = GetActSpellCost(spell_id, mana_cost);
 	}
 
@@ -1446,6 +1466,16 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
 	float range = spells[spell_id].range;
 	if(IsClient() && CastToClient()->TGB() && IsTGBCompatibleSpell(spell_id) && IsGroupSpell(spell_id))
 		range = spells[spell_id].aoerange;
+
+#ifdef EQBOTS
+
+	if(IsBot()) {
+		range = GetBotActSpellRange(spell_id, range);
+	}
+	else
+
+#endif //EQBOTS
+
 	range = GetActSpellRange(spell_id, range);
 // seveian 2008-09-23
 	if(IsPlayerIllusionSpell(spell_id)
@@ -1748,7 +1778,18 @@ bool Mob::ApplyNextBardPulse(int16 spell_id, Mob *spell_target, int16 slot) {
 	}
 	
 	//range check our target, if we have one and it is not us
-	float range = GetActSpellRange(spell_id, spells[spell_id].range);
+	float range = 0.00f;
+
+#ifdef EQBOTS
+
+	if(IsBot()) {
+		range = GetBotActSpellRange(spell_id, spells[spell_id].range);
+	}
+	else
+
+#endif //EQBOTS
+
+	range = GetActSpellRange(spell_id, spells[spell_id].range);
 	if(spell_target != NULL && spell_target != this) {
 		//casting a spell on somebody but ourself, make sure they are in range
 		float dist2 = DistNoRoot(*spell_target);
@@ -2283,29 +2324,18 @@ int Mob::AddBuff(Mob *caster, int16 spell_id, int duration)
 	if(duration == 0)
 	{
 		duration = CalcBuffDuration(caster, this, spell_id);
-		if(caster)
-			duration = caster->GetActSpellDuration(spell_id, duration);
 
 #ifdef EQBOTS
 
-		if(caster->IsBot()) {
-			int32 level = caster->GetLevel();
-			if(level >= 59) {
-				duration = ((duration * 150) / 100); // Spell Casting Reinforcement Mastery
-			}
-			else if(level >= 57) {
-				duration = ((duration * 130) / 100); // Spell Casting Reinforcement 3
-			}
-			else if(level == 56) {
-				duration = ((duration * 115) / 100); // Spell Casting Reinforcement 2
-			}
-			else if(level == 55) {
-				duration = ((duration * 105) / 100); // Spell Casting Reinforcement 1
-			}
+		if(caster && caster->IsBot()) {
+			duration = caster->GetBotActSpellDuration(spell_id, duration);
 		}
+		else
 
 #endif //EQBOTS
 
+		if(caster)
+			duration = caster->GetActSpellDuration(spell_id, duration);
 	}
 
 	if(duration == 0) {
@@ -3459,6 +3489,37 @@ float Mob::GetAOERange(uint16 spell_id) {
 		
 		range = CastToClient()->GetActSpellRange(spell_id, range);
 	}
+
+#ifdef EQBOTS
+
+	else if(IsBot()) {
+		if(IsBardSong(spell_id)) {
+			if(GetLevel() >= 61) { // Extended Notes AA
+				mod += range * 0.25;
+			}
+			else if(GetLevel() == 60) {
+				mod += range * 0.15;
+			}
+			else if(GetLevel() == 59) {
+				mod += range * 0.10;
+			}
+
+			if(GetLevel() >= 65) { // Sionachies Crescendo AA
+				mod += range * 0.15;
+			}
+			else if(GetLevel() == 64) {
+				mod += range * 0.10;
+			}
+			else if(GetLevel() == 63) {
+				mod += range * 0.05;
+			}
+			range += mod;
+		}
+		
+		range = GetBotActSpellRange(spell_id, range);
+	}
+
+#endif //EQBOTS
 	
 	return(range);
 }

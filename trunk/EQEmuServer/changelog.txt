@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==4/03/2009==
+Congdar: Bots - Added Healing and Lifetap AA's and Focus Effect support
+
 ==3/29/2009==
 Derision: SoF - OP_PetBuffWindow, OP_Charm, OP_Stun
 

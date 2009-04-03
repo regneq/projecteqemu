@@ -234,7 +234,7 @@ public:
     // a)  Get and Set an item in the bot inventory
     bool	BotHasAnItemInSlot(int32 botid, int32 slot);			// return true if it has an item in the invent and false if not
     int		GetBotItemBySlot(int32 botid, int32 slot);				// return the item ID in the given slot
-	MYSQL_RES* Database::GetBotItems(int32 botid);
+	MYSQL_RES* GetBotItems(int32 botid);
     void	SetBotItemInSlot(int32 botid, int32 slot, int32 itemid);// add an item the in the slot
     void	RemoveBotItemBySlot(int32 botid, int32 slot);			// remove an item in the given slot
 

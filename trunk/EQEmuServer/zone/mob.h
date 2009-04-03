@@ -555,7 +555,26 @@ bool logpos;
 	
 #ifdef EQBOTS
 
+	typedef enum {	//focus types
+		focusSpellHaste = 1,
+		focusSpellDuration,
+		focusRange,
+		focusReagentCost,
+		focusManaCost,
+		focusImprovedHeal,
+		focusImprovedDamage,
+		focusImprovedDOT,		//i dont know about this...
+		focusImprovedCritical,
+		focusImprovedUndeadDamage,
+		focusPetPower,
+	} focusType;	
 	void CalcBotStats(bool showtext = true);
+	sint16 GetBotFocusEffect(focusType type, int16 spell_id);
+	sint16 CalcBotFocusEffect(focusType type, int16 focus_id, int16 spell_id);
+	sint32 GetBotActSpellCasttime(int16 spell_id, sint32 casttime);
+	sint32 GetBotActSpellCost(int16 spell_id, sint32 cost);
+	float GetBotActSpellRange(int16 spell_id, float range);
+	sint32 GetBotActSpellDuration(int16 spell_id, sint32 duration);
 
 #endif //EQBOTS	
 	
@@ -889,6 +908,7 @@ bool logpos;
 	bool IsBot() const { return AmIaBot; }
 	int32 GetBotLeader();
 	sint32 GetBotActSpellDamage(int16 spell_id, sint32 value);
+	sint32 GetBotActSpellHealing(int16 spell_id, sint32 value);
 	void BotMeditate(bool isSitting);
 	Mob *BotOwner;
 	int BotRaidID;

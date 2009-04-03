@@ -3621,7 +3621,7 @@ bool Mob::CheckBotDoubleAttack(bool tripleAttack) {
 	sint16 buffs = spellbonuses.DoubleAttackChance + itembonuses.DoubleAttackChance;
 	
 	// The maximum value for the Class based on the server rule of MaxLevel
-	if(!BotOwner)
+	if(!BotOwner || BotOwner->qglobal)
 		return false;
 	int16 maxSkill = BotOwner->CastToClient()->MaxSkill(DOUBLE_ATTACK, classtype, RuleI(Character, MaxLevel));
 
@@ -3751,6 +3751,17 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 			// if spell is lifetap add hp to the caster
 			if (spell_id != SPELL_UNKNOWN && IsLifetapSpell( spell_id )) {
 				int healed = damage;
+
+#ifdef EQBOTS
+
+				// Bot Liftap Heal
+				if(attacker && attacker->IsBot()) {
+					healed = attacker->GetBotActSpellHealing(spell_id, healed);
+				}
+				else
+
+#endif //EQBOTS
+
 				healed = attacker->GetActSpellHealing(spell_id, healed);				
 				mlog(COMBAT__DAMAGE, "Applying lifetap heal of %d to %s", healed, attacker->GetName());
 				attacker->HealDamage(healed);

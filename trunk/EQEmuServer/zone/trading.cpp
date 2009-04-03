@@ -492,7 +492,7 @@ void Client::FinishTrade(NPC* with){
 							}
 							else {
 								// both fingers are equipped, so swap out the left finger
-								BotTradeSwapItem(with, SLOT_RING01, inst->GetID(), mWeaponItem->MaxCharges, mWeaponItem->Slots, false);
+								BotTradeSwapItem(with, SLOT_RING01, inst->GetID(), mWeaponItem->MaxCharges, mWeaponItem->Slots);
 								with->Say("I was using this in my %s but OK, you can have it back.", equipped[SLOT_RING01]);
 							}
 							break;
@@ -631,7 +631,7 @@ void Client::FinishTrade(NPC* with){
 				with->AddLootDrop(item2, &with->itemlist, charges[y], true, true);
 			// franck-add: you can give nodrop items to bots
 			else if(with->IsBot() && botCanWear[y]) {
-				with->Say("Thank you for the %s , %s.", item2->Name,  this->GetName());
+				with->Say("Thank you for the %s, %s.", item2->Name,  this->GetName());
 			}
 			else if(with->IsBot() && !botCanWear[y]) {
 				with->Say("I can't use this %s!", item2->Name);
