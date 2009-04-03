@@ -138,6 +138,12 @@ public:
 	void    HateSummon();
 */	
 
+#ifdef EQBOTS
+
+	int16	GetItemID(int slot_id);
+
+#endif //EQBOTS
+
 	void	DescribeAggro(Client *towho, Mob *mob, bool verbose);
 	void    RemoveItem(uint32 item_id, int16 quantity = 0, int16 slot = 0);
 //	bool	AddNPCSpells(int32 iDBSpellsID, AISpells_Struct* AIspells);

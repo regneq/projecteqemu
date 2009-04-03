@@ -753,7 +753,7 @@ bool SharedDatabase::DBLoadItems(sint32 iItemCount, uint32 iMaxItemID) {
 	bool disableNoTransfer = false;
 	if(GetVariable("disablenotransfer", ndbuffer, 4)) {
 		if(ndbuffer[0] == '1' && ndbuffer[1] == '\0') {
-			disableNoDrop = true;
+			disableNoTransfer = true;
 		}
 	}
 	

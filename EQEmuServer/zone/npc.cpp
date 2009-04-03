@@ -423,6 +423,23 @@ ServerLootItem_Struct* NPC::GetItem(int slot_id) {
 	}
 	return(NULL);
 }
+
+#ifdef EQBOTS
+
+int16 NPC::GetItemID(int slot_id) {
+	ItemList::iterator cur,end;
+	cur = itemlist.begin();
+	end = itemlist.end();
+	for(; cur != end; cur++) {
+		ServerLootItem_Struct* item = *cur;
+		if (item->lootslot == slot_id) {
+			return item->item_id;
+		}
+	}
+	return(NULL);
+}
+
+#endif //EQBOTS
 	  
 void NPC::RemoveItem(uint32 item_id, int16 quantity, int16 slot) {
 	ItemList::iterator cur,end;

@@ -100,7 +100,7 @@ void Mob::BOT_Process() {
     }
 
 	// The bots need an owner
-	if(!BotOwner)
+	if(!BotOwner || BotOwner->qglobal)
 		return;
 
 	if(!IsEngaged()) {
@@ -267,7 +267,7 @@ void Mob::BOT_Process() {
                 if(target && attack_dw_timer.Check() && CanThisClassDualWield())
                 {
                     //can only dual weild without a weapon if you're a monk
-                    if(((GetEquipment(MATERIAL_SECONDARY) != 0) && (botLevel > 39)) || (botClass == MONK))
+                    if((GetEquipment(MATERIAL_SECONDARY) != 0) || (botClass == MONK))
                     {
 						const Item_Struct* weapon = NULL;
 						weapon = database.GetItem(CastToNPC()->GetEquipment(MATERIAL_PRIMARY));
@@ -570,12 +570,12 @@ bool EntityList::Bot_AICheckCloseBeneficialSpells(NPC* caster, int8 iChance, flo
 				if(g) {
 					for( int i = 0; i<MAX_GROUP_MEMBERS; i++)
 					{
-						if(g->members[i] && (g->members[i]->GetHPRatio() < 80))
+						if(g->members[i] && !g->members[i]->qglobal && (g->members[i]->GetHPRatio() < 80))
 						{
 							if(caster->Bot_AICastSpell(g->members[i], 100, SpellType_Heal))
 								return true;
 						}
-						if(g->members[i] && g->members[i]->HasPet() && (g->members[i]->GetPet()->GetHPRatio() < 60)) {
+						if(g->members[i] && !g->members[i]->qglobal && g->members[i]->HasPet() && (g->members[i]->GetPet()->GetHPRatio() < 60)) {
 							if(caster->Bot_AICastSpell(g->members[i]->GetPet(), 100, SpellType_Heal))
 								return true;
 						}

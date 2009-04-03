@@ -2418,6 +2418,338 @@ int32 Mob::GetBotLeader() {
 	}
 }
 
+sint16 Mob::CalcBotFocusEffect(focusType type, int16 focus_id, int16 spell_id) {
+
+	const SPDat_Spell_Struct &focus_spell = spells[focus_id];
+	const SPDat_Spell_Struct &spell = spells[spell_id];
+
+	sint16 value = 0;
+	int lvlModifier = 100;
+
+	for (int i = 0; i < EFFECT_COUNT; i++) {
+		switch (focus_spell.effectid[i]) {
+		case SE_Blank:
+			break;
+
+		//check limits
+
+		//missing limits:
+		//SE_LimitTarget
+
+		case SE_LimitResist:{
+			if(focus_spell.base[i]){
+				if(spell.resisttype != focus_spell.base[i])
+					return(0);
+			}
+			break;
+		}
+		case SE_LimitInstant:{
+			if(spell.buffduration)
+				return(0);
+			break;
+		}
+
+		case SE_LimitMaxLevel:{
+			int lvldiff = (spell.classes[(GetClass()%16) - 1]) - focus_spell.base[i];
+
+			if(lvldiff > 0){ //every level over cap reduces the effect by spell.base2[i] percent
+				lvlModifier -= spell.base2[i]*lvldiff;
+				if(lvlModifier < 1)
+					return 0;
+			}
+			break;
+		}
+
+		case SE_LimitMinLevel:
+			if (spell.classes[(GetClass()%16) - 1] < focus_spell.base[i])
+				return(0);
+			break;
+
+		case SE_LimitCastTime:
+			if (spells[spell_id].cast_time < (uint16)focus_spell.base[i])
+				return(0);
+			break;
+
+		case SE_LimitSpell:
+			if(focus_spell.base[i] < 0) {	//exclude spell
+				if (spell_id == (focus_spell.base[i]*-1))
+					return(0);
+			} else {
+				//this makes the assumption that only one spell can be explicitly included...
+				if (spell_id != focus_spell.base[i])
+					return(0);
+			}
+			break;
+
+		case SE_LimitMinDur:
+				if (focus_spell.base[i] > CalcBuffDuration_formula(GetLevel(), spell.buffdurationformula, spell.buffduration))
+					return(0);
+			break;
+
+		case SE_LimitEffect:
+			if(focus_spell.base[i] < 0){
+				if(IsEffectInSpell(spell_id,focus_spell.base[i])){ //we limit this effect, can't have
+					return 0;
+				}
+			}
+			else{
+				if(!IsEffectInSpell(spell_id,focus_spell.base[i])){ //we limit this effect, must have
+					return 0;
+				}
+			}
+			break;
+
+
+		case SE_LimitSpellType:
+			switch( focus_spell.base[i] )
+			{
+				case 0:
+					if (!IsDetrimentalSpell(spell_id))
+						return 0;
+					break;
+				case 1:
+					if (!IsBeneficialSpell(spell_id))
+						return 0;
+					break;
+				default:
+					LogFile->write(EQEMuLog::Normal, "CalcFocusEffect:  unknown limit spelltype %d", focus_spell.base[i]);
+			}
+			break;
+
+
+
+		//handle effects
+
+		case SE_ImprovedDamage:
+			switch (focus_spell.max[i])
+			{
+				case 0:
+					if (type == focusImprovedDamage && focus_spell.base[i] > value)
+					{
+						value = focus_spell.base[i];
+					}
+					break;
+				case 1:
+					if (type == focusImprovedCritical && focus_spell.base[i] > value)
+					{
+						value = focus_spell.base[i];
+					}
+					break;
+				case 2:
+					if (type == focusImprovedUndeadDamage && focus_spell.base[i] > value)
+					{
+						value = focus_spell.base[i];
+					}
+					break;
+				case 3:
+					if (type == 10 && focus_spell.base[i] > value)
+					{
+						value = focus_spell.base[i];
+					}
+					break;
+				default: //Resist stuff
+					if (type == (focusType)focus_spell.max[i] && focus_spell.base[i] > value)
+					{
+						value = focus_spell.base[i];
+					}
+					break;
+			}
+			break;
+		case SE_ImprovedHeal:
+			if (type == focusImprovedHeal && focus_spell.base[i] > value)
+			{
+				value = focus_spell.base[i];
+			}
+			break;
+		case SE_IncreaseSpellHaste:
+			if (type == focusSpellHaste && focus_spell.base[i] > value)
+			{
+				value = focus_spell.base[i];
+			}
+			break;
+		case SE_IncreaseSpellDuration:
+			if (type == focusSpellDuration && BeneficialSpell(spell_id) && focus_spell.base[i] > value)
+			{
+				value = focus_spell.base[i];
+			}
+			break;
+		case SE_IncreaseRange:
+			if (type == focusRange && focus_spell.base[i] > value)
+			{
+				value = focus_spell.base[i];
+			}
+			break;
+		case SE_ReduceReagentCost:
+			if (type == focusReagentCost && focus_spell.base[i] > value)
+			{
+				value = focus_spell.base[i];
+			}
+			break;
+		case SE_ReduceManaCost:
+			if (type == focusManaCost && focus_spell.base[i] > value)
+			{
+				value = focus_spell.base[i];
+			}
+			break;
+		case SE_PetPowerIncrease:
+			if (type == focusPetPower && focus_spell.base[i] > value)
+			{
+				value = focus_spell.base[i];
+			}
+			break;
+#if EQDEBUG >= 6
+		//this spits up a lot of garbage when calculating spell focuses
+		//since they have all kinds of extra effects on them.
+		default:
+			LogFile->write(EQEMuLog::Normal, "CalcFocusEffect:  unknown effectid %d", focus_spell.effectid[i]);
+#endif
+		}
+	}
+	return(value*lvlModifier/100);
+}
+
+sint16 Mob::GetBotFocusEffect(focusType type, int16 spell_id) {
+	if (IsBardSong(spell_id))
+		return 0;
+	const Item_Struct* TempItem = 0;
+	sint16 Total = 0;
+	sint16 realTotal = 0;
+
+	//item focus
+	for(int x=0; x<=21; x++)
+	{
+		TempItem = database.GetItem(this->CastToNPC()->GetItemID(x));
+		if (TempItem && TempItem->Focus.Effect > 0 && TempItem->Focus.Effect != SPELL_UNKNOWN) {
+			Total = CalcBotFocusEffect(type, TempItem->Focus.Effect, spell_id);
+			if(Total > realTotal) {
+				realTotal = Total;
+			}
+		}
+	}
+
+	//Spell Focus
+	sint16 Total2 = 0;
+	sint16 realTotal2 = 0;
+
+	for (int y = 0; y < BUFF_COUNT; y++) {
+		int16 focusspellid = buffs[y].spellid;
+		if (focusspellid == 0 || focusspellid >= SPDAT_RECORDS)
+			continue;
+
+		Total2 = CalcBotFocusEffect(type, focusspellid, spell_id);
+		if(Total2 > realTotal2) {
+			realTotal2 = Total2;
+		}
+	}
+
+	if(type == focusReagentCost && IsSummonPetSpell(spell_id) && GetAA(aaElementalPact))
+		return 100;
+
+	if(type == focusReagentCost && (IsEffectInSpell(spell_id, SE_SummonItem) || IsSacrificeSpell(spell_id))){
+		return 0;
+	//Summon Spells that require reagents are typically imbue type spells, enchant metal, sacrifice and shouldn't be affected
+	//by reagent conservation for obvious reasons.
+	}
+
+	return realTotal + realTotal2;
+}
+
+sint32 Mob::GetBotActSpellHealing(int16 spell_id, sint32 value) {
+
+	sint32 modifier = 100;
+	
+	modifier += GetBotFocusEffect(focusImprovedHeal, spell_id);
+						
+	if(spells[spell_id].buffduration < 1) {
+		uint8 botlevel = GetLevel();
+		int8 botclass = GetClass();
+		int chance = 0;
+
+		if((botclass == BEASTLORD)||(botclass == CLERIC)||(botclass == DRUID)||(botclass == PALADIN)||(botclass == RANGER)||(botclass == SHAMAN)) {
+			if(botlevel >= 57) { // Healing Adept AA
+				modifier += 10;
+			}
+			else if(botlevel == 56) {
+				modifier += 5;
+			}
+			else if(botlevel == 55) {
+				modifier += 2;
+			}
+
+			if(botlevel >= 64) { // Advanced Healing Adept AA
+				modifier += 9;
+			}
+			else if(botlevel == 63) {
+				modifier += 6;
+			}
+			else if(botlevel == 62) {
+				modifier += 3;
+			}
+
+			if(botlevel >= 57) { // Healing Gift AA
+				chance = 10;
+			}
+			else if(botlevel == 56) {
+				chance = 6;
+			}
+			else if(botlevel == 55) {
+				chance = 3;
+			}
+
+			if(botlevel >= 64) { // Advanced Healing Gift AA
+				chance += 6;
+			}
+			else if(botlevel == 63) {
+				chance += 4;
+			}
+			else if(botlevel == 62) {
+				chance += 2;
+			}
+		}
+
+		if((botclass == NECROMANCER)||(botclass == SHADOWKNIGHT)) {
+			if(spells[spell_id].targettype == ST_Tap) {
+				if(botlevel >= 65) { // Theft of Life
+					chance += 10;
+				}
+				else if(botlevel == 63) {
+					chance += 5;
+				}
+				else if(botlevel == 61) {
+					chance += 2;
+				}
+
+				if(botlevel >= 66) { // Advanced Theft of Life
+					chance += 6;
+				}
+				else if(botlevel == 65) {
+					chance += 3;
+				}
+
+				if(botlevel >= 69) { // Soul Thief
+					chance += 6;
+				}
+				else if(botlevel == 68) {
+					chance += 4;
+				}
+				else if(botlevel == 67) {
+					chance += 2;
+				}
+			}
+		}
+		
+		if(MakeRandomInt(1,100) < chance) {
+			entity_list.MessageClose(this, false, 100, MT_SpellCrits, "%s performs an exceptional heal! (%d)", GetName(), ((value * modifier) / 50));		
+			return (value * modifier) / 50;
+		}
+		else{
+			return (value * modifier) / 100;
+		}		
+	}
+					
+	return (value * modifier) / 100;
+}
+
 sint32 Mob::GetBotActSpellDamage(int16 spell_id, sint32 value) {
 	sint32 modifier = 100;
 	int8 casterClass = GetClass();
@@ -2713,6 +3045,162 @@ void Mob::BotMeditate(bool isSitting) {
 			SetMana(GetMana() + regen);
 		}
 	}
+}
+
+sint32 Mob::GetBotActSpellDuration(int16 spell_id, sint32 duration) {
+
+	int increase = 100;
+	increase += GetBotFocusEffect(focusSpellDuration, spell_id);
+
+	if(GetLevel() >= 57) { // Spell Casting Reinforcement AA
+		increase += 30;
+	}
+	else if(GetLevel() == 56) {
+		increase += 15;
+	}
+	else if(GetLevel() == 55) {
+		increase += 5;
+	}
+
+	if(GetLevel() >= 59) { // Spell Casting Reinforcement Mastery AA
+		increase += 20;
+	}
+	
+	return (duration * increase) / 100;
+}
+
+float Mob::GetBotActSpellRange(int16 spell_id, float range) {
+	float extrange = 100;
+	extrange += GetBotFocusEffect(focusRange, spell_id);
+	return (range * extrange) / 100;
+}
+
+sint32 Mob::GetBotActSpellCost(int16 spell_id, sint32 cost) {
+	sint32 Result = 0;
+
+	if(GetClass() == WIZARD || GetClass() == ENCHANTER || GetClass() == MAGICIAN || GetClass() == NECROMANCER || GetClass() == DRUID || GetClass() == SHAMAN || GetClass() == CLERIC || GetClass() == BARD) {
+		// This formula was derived from the following resource:
+		// http://www.eqsummoners.com/eq1/specialization-library.html
+		// WildcardX
+		float PercentManaReduction = 0;
+		float PercentOfMaxSpecializeSkill = 0;
+		float MaxSpecilizationSkillAllowed = GetSkill(spells[spell_id].skill);
+		float SpecializeSkill = GetSpecializeSkillValue(spell_id);
+		int SuccessChance = MakeRandomInt(1, 100);
+		
+		if(MaxSpecilizationSkillAllowed > 0)
+			PercentOfMaxSpecializeSkill = SpecializeSkill / MaxSpecilizationSkillAllowed;
+		
+		if(SuccessChance <= (PercentOfMaxSpecializeSkill * 100))
+			PercentManaReduction = (SpecializeSkill * .053) - 5.65;
+
+		if(GetLevel() >= 57) { // Spell Casting Mastery
+			PercentManaReduction += 30;
+		}
+		else if(GetLevel() == 56) {
+			PercentManaReduction += 15;
+		}
+		else if(GetLevel() == 55) {
+			PercentManaReduction += 5;
+		}
+		
+		PercentManaReduction += GetBotFocusEffect(focusManaCost, spell_id);
+		cost -= (cost * (PercentManaReduction / 100));
+	}
+
+	if(cost < 0)
+		cost = 0;
+
+	Result = cost;
+
+	return Result;
+}
+
+sint32 Mob::GetBotActSpellCasttime(int16 spell_id, sint32 casttime) {
+	
+	sint32 cast_reducer = 0;
+	cast_reducer += GetBotFocusEffect(focusSpellHaste, spell_id);
+
+	uint8 botlevel = GetLevel();
+	int8 botclass = GetClass();
+
+	if (botlevel >= 51 && casttime >= 3000 && !BeneficialSpell(spell_id) 
+		&& (botclass == SHADOWKNIGHT || botclass == RANGER || botclass == PALADIN || botclass == BEASTLORD ))
+		cast_reducer += (GetLevel()-50)*3;
+	
+	if((casttime >= 4000) && BeneficialSpell(spell_id) && (CalcBuffDuration(this, this, spell_id) > 0)) {
+		if((botclass == ENCHANTER)||(botclass == WIZARD)||(botclass == NECROMANCER)||(botclass == MAGICIAN)||(botclass == SHADOWKNIGHT)) {
+			if(botlevel >= 57) { // Spell Casting Deftness AA
+				cast_reducer += 25;
+			}
+			else if(botlevel == 56) {
+				cast_reducer += 10;
+			}
+			else if(botlevel == 55) {
+				cast_reducer += 5;
+			}
+		}
+
+		if((botclass == ENCHANTER)||(botclass == SHAMAN)) {
+			if(botlevel >= 61) { // Quick Buff AA
+				cast_reducer += 50;
+			}
+			else if(botlevel == 60) {
+				cast_reducer += 25;
+			}
+			else if(botlevel == 59) {
+				cast_reducer += 10;
+			}
+		}
+	}
+
+	if(IsSummonSpell(spell_id)) {
+		if(botclass == MAGICIAN) {
+			if(botlevel >= 61) { // Quick Summoning AA
+				cast_reducer += 50;
+			}
+			else if(botlevel == 60) {
+				cast_reducer += 25;
+			}
+			else if(botlevel == 59) {
+				cast_reducer += 10;
+			}
+		}
+	}
+
+	if(IsEvacSpell(spell_id)) {
+		if((botclass == DRUID)||(botclass == WIZARD)) {
+			if(botlevel >= 61) { // Quick Evacuation AA
+				cast_reducer += 50;
+			}
+			else if(botlevel == 60) {
+				cast_reducer += 25;
+			}
+			else if(botlevel == 59) {
+				cast_reducer += 10;
+			}
+		}
+	}
+
+	if(IsDamageSpell(spell_id) && spells[spell_id].cast_time >= 4000) {
+		if((botclass == DRUID)||(botclass == WIZARD)) {
+			if(botlevel >= 61) { // Quick Damage AA
+				cast_reducer += 10;
+			}
+			else if(botlevel == 60) {
+				cast_reducer += 5;
+			}
+			else if(botlevel == 59) {
+				cast_reducer += 2;
+			}
+		}
+	}
+	if (cast_reducer > 50)
+		cast_reducer = 50;	//is this just an arbitrary limit?
+	
+	casttime = (casttime*(100 - cast_reducer)/100);
+	
+	return casttime;
 }
 
 void Mob::CalcBotStats(bool showtext) {
