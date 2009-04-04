@@ -2807,6 +2807,7 @@ void EntityList::SignalMobsByNPCID(int32 snpc, int signal_id)
 
 bool EntityList::MakeTrackPacket(Client* client){
 	int32 distance = 0;
+	float MobDistance;
 
 	if(client->GetClass() == DRUID)
 		distance = (client->GetSkill(TRACKING)*10);
@@ -2838,15 +2839,13 @@ bool EntityList::MakeTrackPacket(Client* client){
 
 	while(iterator.MoreElements())
 	{
-		if (iterator.GetData() && (iterator.GetData()->DistNoZ(*client)<=distance))
+		if (iterator.GetData() && ((MobDistance = iterator.GetData()->DistNoZ(*client))<=distance))
 		{
 			if(iterator.GetData()->IsTrackable()) {
 				memset(track_ent, 0, sizeof(Track_Struct));
 				Mob* cur_entity = iterator.GetData();
 				track_ent->entityid = cur_entity->GetID();
-				track_ent->x=(int16)cur_entity->GetX();
-				track_ent->y=(int16)cur_entity->GetY();
-				track_ent->z=(int16)cur_entity->GetZ();
+				track_ent->distance = MobDistance;
 				memcpy(&track_array->Entrys[array_counter], track_ent, sizeof(Track_Struct));
 				array_counter++;
 			}

@@ -2528,9 +2528,8 @@ struct MobHealth
 
 struct Track_Struct {
 	int16 entityid;
-	int16 y;
-	int16 x;
-	int16 z;
+	int16 padding002;
+	float distance;
 };
 
 struct Tracking_Struct {

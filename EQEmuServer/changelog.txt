@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==4/04/2009==
+Derision: Tracking: Now works in SoF and as a side effect, Tracking 'sort by distance' works properly in 6.2 and Titanium clients.
+
 ==4/03/2009==
 Congdar: Bots - Added Healing and Lifetap AA's and Focus Effect support
 Derision: SoF - Fix for incorrect animation (NPCs frozen/walking while standing still).
