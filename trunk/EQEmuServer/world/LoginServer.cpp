@@ -54,6 +54,8 @@ using namespace std;
 	extern int errno;
 #endif
 
+#define IGNORE_LS_FATAL_ERROR
+
 #include "../common/servertalk.h"
 #include "LoginServer.h"
 #include "../common/eq_packet_structs.h"
@@ -153,8 +155,12 @@ bool LoginServer::Process() {
 			break;
 		}
 		case ServerOP_LSFatalError: {
+#ifndef IGNORE_LS_FATAL_ERROR
 			WorldConfig::DisableLoginserver();
 			_log(WORLD__LS_ERR, "Login server responded with FatalError. Disabling reconnect.");
+#else
+		_log(WORLD__LS_ERR, "Login server responded with FatalError.");
+#endif
 			if (pack->size > 1) {
 				_log(WORLD__LS_ERR, "     %s",pack->pBuffer);
 			}
