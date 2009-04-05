@@ -1189,6 +1189,20 @@ void Client::SetSkill(SkillType skillid, int16 value) {
 	safe_delete(outapp);
 }
 
+void    Client::IncreaseLanguageSkill(int skill_id, int value = 1) { 
+
+	if (skill_id > 25) return;
+
+	m_pp.languages[skill_id] += value;
+
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_SkillUpdate, sizeof(SkillUpdate_Struct));
+	SkillUpdate_Struct* skill = (SkillUpdate_Struct*)outapp->pBuffer;
+	skill->skillId = 100 + skill_id;
+	skill->value = m_pp.languages[skill_id];
+	QueuePacket(outapp);
+	safe_delete(outapp);
+}
+
 void Client::AddSkill(SkillType skillid, int16 value) {
 	if (skillid > HIGHEST_SKILL)
 		return;

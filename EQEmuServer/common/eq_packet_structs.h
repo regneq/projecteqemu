@@ -541,6 +541,15 @@ struct GMSkillChange_Struct {
 /*008*/ uint16		skill_id;
 /*010*/ int8		unknown3[2];
 };
+
+struct GMTrainSkillConfirm_Struct {	// SoF only
+/*000*/	uint32	SkillID;
+/*004*/	uint32	Cost;
+/*008*/	uint8	NewSkill;	// Set to 1 for 'You have learned the basics' message.
+/*009*/	char	TrainerName[64];
+/*073*/
+};
+
 struct ConsentResponse_Struct {
 	char grantname[64];
 	char ownername[64];
