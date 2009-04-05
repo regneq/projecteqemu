@@ -1491,6 +1491,8 @@ void Client::OPGMTrainSkill(const EQApplicationPacket *app)
 	if(!m_pp.points)
 		return;
 
+	int Cost = 0;
+
 	GMSkillChange_Struct* gmskill = (GMSkillChange_Struct*) app->pBuffer;
 	
 	Mob* pTrainer = entity_list.GetMob(gmskill->npcid);
@@ -1515,7 +1517,10 @@ void Client::OPGMTrainSkill(const EQApplicationPacket *app)
 			DumpPacket(app);
 			return;
 		}
-		cout << "Training language: " << gmskill->skill_id << endl;
+		int AdjustedSkillLevel = GetLanguageSkill(gmskill->skill_id) - 10;
+		if(AdjustedSkillLevel > 0)
+			Cost = AdjustedSkillLevel * AdjustedSkillLevel * AdjustedSkillLevel / 100;
+
 		IncreaseLanguageSkill(gmskill->skill_id);
 	}
 	else if (gmskill->skillbank == 0x00)
@@ -1564,10 +1569,45 @@ void Client::OPGMTrainSkill(const EQApplicationPacket *app)
 			default:
 				break;
 			}
-            // Client train a valid skill
+            		// Client train a valid skill
+	    		//
+			int AdjustedSkillLevel = skilllevel - 10;
+
+			if(AdjustedSkillLevel > 0)
+				Cost = AdjustedSkillLevel * AdjustedSkillLevel * AdjustedSkillLevel / 100;
+
 			SetSkill(skill, skilllevel + 1);
+
+
 		}
 	}
+
+	if(GetClientVersion() == EQClientSoF) {
+		// The following packet decreases the skill points left in the Training Window and
+		// produces the 'You have increased your skill / learned the basics of' message.
+		//
+		EQApplicationPacket* outapp = new EQApplicationPacket(OP_GMTrainSkillConfirm, sizeof(GMTrainSkillConfirm_Struct));
+
+		GMTrainSkillConfirm_Struct *gmtsc = (GMTrainSkillConfirm_Struct *)outapp->pBuffer;
+		gmtsc->SkillID = gmskill->skill_id;
+
+		if(gmskill->skillbank == 1) {
+			gmtsc->NewSkill = (GetLanguageSkill(gmtsc->SkillID) == 1);
+			gmtsc->SkillID += 100;
+		}
+		else
+			gmtsc->NewSkill = (GetSkill(gmtsc->SkillID) == 1);
+
+		gmtsc->Cost = Cost;
+
+		strcpy(gmtsc->TrainerName, pTrainer->GetName());
+		QueuePacket(outapp);
+		safe_delete(outapp);
+	}
+	
+	if(Cost)
+		TakeMoneyFromPP(Cost);
+
 	m_pp.points--;
 }
 
