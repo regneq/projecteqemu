@@ -6,6 +6,7 @@ Derision: GM Training: Points now update correctly in the Training Window for la
 Derision: GM Training: The correct amount of money is deducted from the player profile.
 Derision: SoF - Mapped findable field in Spawn struct and OP_FindPersonRequest/Reply.
 Derision: SoF - Duelling now works.
+KLS: Compile option to ignore login fatal errors in world.
 
 ==4/04/2009==
 Derision: Tracking: Now works in SoF and as a side effect, Tracking 'sort by distance' works properly in 6.2 and Titanium clients.
