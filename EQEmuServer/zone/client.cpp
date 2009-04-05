@@ -1189,7 +1189,7 @@ void Client::SetSkill(SkillType skillid, int16 value) {
 	safe_delete(outapp);
 }
 
-void    Client::IncreaseLanguageSkill(int skill_id, int value = 1) { 
+void    Client::IncreaseLanguageSkill(int skill_id, int value) { 
 
 	if (skill_id > 25) return;
 
