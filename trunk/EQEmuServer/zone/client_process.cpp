@@ -1596,7 +1596,7 @@ void Client::OPGMTrainSkill(const EQApplicationPacket *app)
 			gmtsc->SkillID += 100;
 		}
 		else
-			gmtsc->NewSkill = (GetSkill(gmtsc->SkillID) == 1);
+			gmtsc->NewSkill = (GetRawSkill((SkillType)gmtsc->SkillID) == 1);
 
 		gmtsc->Cost = Cost;
 
