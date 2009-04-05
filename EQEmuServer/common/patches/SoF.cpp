@@ -722,6 +722,7 @@ ENCODE(OP_ZoneSpawns) {
 		eq->lfg = emu->lfg;
 		eq->race = emu->race;
 		strcpy(eq->suffix, emu->suffix);
+		eq->findable = emu->findable;
 		eq->bodytype = emu->bodytype;
 		eq->equip_chest2 = emu->equip_chest2;
 		eq->curHp = emu->curHp;
@@ -1798,6 +1799,16 @@ DECODE(OP_Save) {
 	DECODE_LENGTH_EXACT(structs::Save_Struct);
 	SETUP_DIRECT_DECODE(Save_Struct, structs::Save_Struct);
 	memcpy(emu->unknown00, eq->unknown00, sizeof(emu->unknown00));
+	FINISH_DIRECT_DECODE();
+}
+
+DECODE(OP_FindPersonRequest) {
+	DECODE_LENGTH_EXACT(structs::FindPersonRequest_Struct);
+	SETUP_DIRECT_DECODE(FindPersonRequest_Struct, structs::FindPersonRequest_Struct);
+	IN(npc_id);
+	IN(client_pos.x);
+	IN(client_pos.y);
+	IN(client_pos.z);
 	FINISH_DIRECT_DECODE();
 }
 
