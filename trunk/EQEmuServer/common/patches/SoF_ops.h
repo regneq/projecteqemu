@@ -63,6 +63,7 @@ D(OP_Save)
 D(OP_ItemVerifyRequest)
 D(OP_GroupFollow)
 D(OP_GroupFollow2)
+D(OP_FindPersonRequest)
 
 //D(OP_TraderBuy)
 #undef E

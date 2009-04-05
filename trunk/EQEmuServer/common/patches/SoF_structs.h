@@ -282,7 +282,7 @@ struct Spawn_Struct {
 /*0539*/ uint8  unknown0110[20];
 /*0539*/ uint8  unknown01101[21];
 /*0580*/ char	suffix[32];     // Player's suffix (of Veeshan, etc.)
-/*0612*/ uint8  unknown0111;
+/*0612*/ uint8  findable;
 /*0613*/ uint8  bodytype;    // was Bodytype - Verified
 /*0614*/ uint8  unknown0154[4];
 /*0614*/ uint8  unknown0155[4];
@@ -3017,6 +3017,7 @@ struct FindPerson_Point {
 };
 
 struct FindPersonRequest_Struct {
+	uint32	unknown000;
 	uint32	npc_id;
 	FindPerson_Point client_pos;
 };
