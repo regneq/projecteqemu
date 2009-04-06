@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==4/06/2009==
 Derision: (Image): Check packet length is at least 4 bytes in EQStream::ProcessPacket
+Derision: (Image): EQStreamFactory::ReaderLoop - Assure that the incoming buffer contains an opcode to analyze.
 
 ==4/05/2009==
 Derision: GM Training: SoF - Points now update correctly in the Training Window.
