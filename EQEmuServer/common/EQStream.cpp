@@ -106,7 +106,8 @@ EQProtocolPacket *EQStream::MakeProtocolPacket(const unsigned char *buf, uint32 
 void EQStream::ProcessPacket(EQProtocolPacket *p)
 {
 uint32 processed=0,subpacket_length=0;
-	if (p == NULL)
+	// Packet size minimum size of at least 4
+	if (p == NULL || p->size < 4)
 		return;
 	// Raw Application packet
 	if (p->opcode > 0xff) {
