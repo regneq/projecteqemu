@@ -313,6 +313,12 @@ uint32 processed=0,subpacket_length=0;
 		}
 		break;
 		case OP_SessionResponse: {
+			if(p->Size() < sizeof(SessionResponse))
+			{
+				_log(NET__ERROR, _L "Received OP_SessionResponse that was of malformed size" __L);
+				break;
+			}
+
 			init();
 			OutboundQueueClear();
 			SessionResponse *Response=(SessionResponse *)p->pBuffer;
@@ -396,6 +402,11 @@ if(NextSequencedSend > SequencedQueue.size()) {
 		}
 		break;
 		case OP_SessionStatRequest: {
+			if(p->Size() < sizeof(SessionStats))
+			{
+				_log(NET__ERROR, _L "Received OP_SessionStatRequest that was of malformed size" __L);
+				break;
+			}
 #ifndef COLLECTOR
 			SessionStats *Stats=(SessionStats *)p->pBuffer;
 			_log(NET__NET_TRACE, _L "Received Stats: %lu packets received, %lu packets sent, Deltas: local %lu, (%lu <- %lu -> %lu) remote %lu" __L, 
