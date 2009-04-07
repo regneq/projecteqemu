@@ -806,7 +806,10 @@ void QuestManager::attacknpc(int npc_entity_id) {
 	if(it && owner->IsAttackAllowed(it)) {
 		owner->AddToHateList(it,1);
 	} else {
-		owner->Say("I am unable to attack %s.", it->GetName());
+		if(it)
+			owner->Say("I am unable to attack %s.", it->GetName());
+		else
+			owner->Say("I am unable to locate NPC entity %i", npc_entity_id);
 	}
 }
 
