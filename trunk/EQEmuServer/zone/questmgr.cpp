@@ -820,7 +820,10 @@ void QuestManager::attacknpctype(int npc_type_id) {
 	if(it && owner->IsAttackAllowed(it)) {
 		owner->AddToHateList(it,1);
 	} else {
-		owner->Say("I am unable to attack %s.", it->GetName());
+		if(it)
+			owner->Say("I am unable to attack %s.", it->GetName());
+		else
+			owner->Say("I am unable to locate NPC type %i", npc_type_id);
 	}
 }
 
