@@ -136,6 +136,11 @@ void Database::GetAccountStatus(Client *c) {
 
 void Database::UpdateKarma(Client *c)
 {
+	// If a client connects, but they crash before sending us login credentials, their AccountID will be 0, so don't
+	// try and update their karma.
+	//
+	if(c->GetAccountID() == 0) return;
+	
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char* query = 0;
 	MYSQL_RES *result;
@@ -150,6 +155,14 @@ void Database::UpdateKarma(Client *c)
 	}
 
 	safe_delete_array(query);
+
+	if (mysql_num_rows(result) != 1) {
+
+		mysql_free_result(result);
+
+		return;
+	}
+
 	row = mysql_fetch_row(result);
 
 	c->SetKarma(atoi(row[0]));
