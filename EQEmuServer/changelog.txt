@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==4/09/2009==
+Derision: Fix for Alchemy, Poison Making and Tinkering.
+
 ==4/08/2009==
 Derision: Added $client->GetClientVersion(). Returns: 1 (6.2 Client), 2 (Titanium), 3 (SoF)
 

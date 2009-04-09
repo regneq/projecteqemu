@@ -149,21 +149,26 @@ void Object::HandleCombine(Client* user, const NewCombine_Struct* in_combine, Ob
  	switch (spec.tradeskill)
 	{
  	case ALCHEMY:
- 		if (user_pp.class_ != SHAMAN)
+ 		if (user_pp.class_ != SHAMAN) {
 			user->Message(13, "This tradeskill can only be performed by a shaman.");
-		else if (user_pp.level < MIN_LEVEL_ALCHEMY)
+			return;
+		}
+		else if (user_pp.level < MIN_LEVEL_ALCHEMY) {
 			user->Message(13, "You cannot perform alchemy until you reach level %i.", MIN_LEVEL_ALCHEMY);
 			return;
+		}
 		break;
  	case TINKERING:
- 		if (user_pp.race != GNOME)
+ 		if (user_pp.race != GNOME) {
 			user->Message(13, "Only gnomes can tinker.");
 			return;
+		}
 		break; 
  	case MAKE_POISON:
- 		if (user_pp.class_ != ROGUE)
+ 		if (user_pp.class_ != ROGUE) {
 			user->Message(13, "Only rogues can mix poisons.");
 			return;
+		}
 		break;
 	}
 	
@@ -942,14 +947,14 @@ bool ZoneDatabase::GetTradeRecipe(const ItemInst* container, uint8 c_type, uint3
 		return(false);	//no items == no recipe
 	}
 
-	
+
 	qlen = MakeAnyLenString(&query, "SELECT tre.recipe_id "
 	" FROM tradeskill_recipe_entries AS tre"
 	" WHERE ( tre.item_id IN(%s) AND tre.componentcount>0 )"
  	"  OR ( tre.item_id %s AND tre.iscontainer=1 )"
  	" GROUP BY tre.recipe_id HAVING sum(tre.componentcount) = %u"
  	"  AND sum(tre.item_id * tre.componentcount) = %u", buf2, containers, count, sum);
-	
+
 	if (!RunQuery(query, qlen, errbuf, &result)) {
 		LogFile->write(EQEMuLog::Error, "Error in GetTradeRecipe search, query: %s", query);
 		safe_delete_array(query);
