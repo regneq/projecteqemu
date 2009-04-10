@@ -8,6 +8,7 @@ Derision: (realityincarnate): Prevent bard skillups for instruments they aren't 
 Derision: (realityincarnate): Implemented SE_Hunger (e.g. for Song of Sustenance).
 Derision: (realityincarnate): Undying armor by setting RGB to 255 255 255 fixed.
 Derision: (realityincarnate): Title suffix quest command, Syntax: $client->SetTitleSuffix(title)
+Derision: (erde): cleanipc fix for GCC 4.3.2
 
 ==4/09/2009==
 Derision: Fix for Alchemy, Poison Making and Tinkering.
