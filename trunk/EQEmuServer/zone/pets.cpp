@@ -224,6 +224,10 @@ void Mob::MakePet(int16 spell_id, const char* pettype, const char *petname) {
 		strcpy(npc_type->name, this->GetName());
 		npc_type->name[19] = '\0';
 		strcat(npc_type->name, "`s_familiar");
+	} else if (strncmp("BLpet",pettype, 5) == 0) {
+		strcpy(npc_type->name, this->GetName());
+		npc_type->name[21] = 0;
+		strcat(npc_type->name, "`s_Warder");
 	} else if (this->IsClient()) {
 		//clients get a random pet name
 		strcpy(npc_type->name, GetRandPetName());
