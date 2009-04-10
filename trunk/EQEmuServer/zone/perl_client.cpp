@@ -3550,6 +3550,32 @@ XS(XS_Client_GetClientVersion)
 	XSRETURN(1);
 }
 
+XS(XS_Client_SetTitleSuffix);
+XS(XS_Client_SetTitleSuffix) {
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Client::SetTitleSuffix(THIS, txt)");
+	{
+		Client *		THIS;
+		char *		txt = (char *)SvPV_nolen(ST(1));
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		if(strlen(txt) > 31) 
+			Perl_croak(aTHX_ "Title must be 31 characters or less");
+
+		THIS->SetTitleSuffix(txt);
+	}
+	XSRETURN_EMPTY;
+}
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -3702,6 +3728,7 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "LoadZoneFlags"), XS_Client_LoadZoneFlags, file, "$");
 		newXSproto(strcpy(buf, "SetAATitle"), XS_Client_SetAATitle, file, "$$");
 		newXSproto(strcpy(buf, "GetClientVersion"), XS_Client_GetClientVersion, file, "$");
+		newXSproto(strcpy(buf, "SetTitleSuffix"), XS_Client_SetTitleSuffix, file, "$$");
 	XSRETURN_YES;
 }
 

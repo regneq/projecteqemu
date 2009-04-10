@@ -1719,9 +1719,9 @@ void Client::DoStaminaUpdate() {
 
 	if(zone->GetZoneID() != 151) {
 		if (m_pp.hunger_level > 0)
-			m_pp.hunger_level-=32;
+			m_pp.hunger_level-=35;
 		if (m_pp.thirst_level > 0)
-			m_pp.thirst_level-=32;
+			m_pp.thirst_level-=35;
 		sta->food = m_pp.hunger_level;
 		sta->water = m_pp.thirst_level;
 	}

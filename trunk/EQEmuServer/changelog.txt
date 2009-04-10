@@ -4,6 +4,10 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 Derision: Tradeskill recipes involving weapons as an ingredient should no longer dupe the weapon.
 Derision: Expendable items with charges are now deleted when the last charge is used.
 Derision: Tradeskill skillups now based on unmodified skill level.
+Derision: (realityincarnate): Prevent bard skillups for instruments they aren't trained in.
+Derision: (realityincarnate): Implemented SE_Hunger (e.g. for Song of Sustenance).
+Derision: (realityincarnate): Undying armor by setting RGB to 255 255 255 fixed.
+Derision: (realityincarnate): Title suffix quest command, Syntax: $client->SetTitleSuffix(title)
 
 ==4/09/2009==
 Derision: Fix for Alchemy, Poison Making and Tinkering.

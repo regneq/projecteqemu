@@ -1465,6 +1465,8 @@ int16 Mob::GetInstrumentMod(int16 spell_id) const {
 		case PERCUSSION_INSTRUMENTS:
 			if(itembonuses.percussionMod == 0 && spellbonuses.percussionMod == 0)
 				effectmod = 10;
+			else if(GetSkill(PERCUSSION_INSTRUMENTS) == 0)
+				effectmod = 10;
 			else if(itembonuses.percussionMod > spellbonuses.percussionMod)
 				effectmod = itembonuses.percussionMod;
 			else
@@ -1472,6 +1474,8 @@ int16 Mob::GetInstrumentMod(int16 spell_id) const {
 			break;
 		case STRINGED_INSTRUMENTS:
 			if(itembonuses.stringedMod == 0 && spellbonuses.stringedMod == 0)
+				effectmod = 10;
+			else if(GetSkill(STRINGED_INSTRUMENTS) == 0)
 				effectmod = 10;
 			else if(itembonuses.stringedMod > spellbonuses.stringedMod)
 				effectmod = itembonuses.stringedMod;
@@ -1481,6 +1485,8 @@ int16 Mob::GetInstrumentMod(int16 spell_id) const {
 		case WIND_INSTRUMENTS:
 			if(itembonuses.windMod == 0 && spellbonuses.windMod == 0)
 				effectmod = 10;
+			else if(GetSkill(WIND_INSTRUMENTS) == 0)
+				effectmod = 10;
 			else if(itembonuses.windMod > spellbonuses.windMod)
 				effectmod = itembonuses.windMod;
 			else
@@ -1488,6 +1494,8 @@ int16 Mob::GetInstrumentMod(int16 spell_id) const {
 			break;
 		case BRASS_INSTRUMENTS:
 			if(itembonuses.brassMod == 0 && spellbonuses.brassMod == 0)
+				effectmod = 10;
+			else if(GetSkill(BRASS_INSTRUMENTS) == 0)
 				effectmod = 10;
 			else if(itembonuses.brassMod > spellbonuses.brassMod)
 				effectmod = itembonuses.brassMod;
