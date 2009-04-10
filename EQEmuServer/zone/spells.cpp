@@ -495,26 +495,42 @@ void Client::CheckSongSkillIncrease(int16 spell_id){
 		CheckIncreaseSkill(SINGING, -15);
 		break;
 	case PERCUSSION_INSTRUMENTS:
-		if(this->itembonuses.percussionMod > 0)
-			CheckIncreaseSkill(PERCUSSION_INSTRUMENTS, -15);
+		if(this->itembonuses.percussionMod > 0) {
+			if(GetRawSkill(PERCUSSION_INSTRUMENTS) > 0)	// no skill increases if not trained in the instrument
+				CheckIncreaseSkill(PERCUSSION_INSTRUMENTS, -15);
+			else
+				Message_StringID(13,NO_INSTRUMENT_SKILL);	// tell the client that they need instrument training
+		}
 		else
 			CheckIncreaseSkill(SINGING, -15);
 		break;
 	case STRINGED_INSTRUMENTS:
-		if(this->itembonuses.stringedMod > 0)
-			CheckIncreaseSkill(STRINGED_INSTRUMENTS, -15);
+		if(this->itembonuses.stringedMod > 0) {
+			if(GetRawSkill(STRINGED_INSTRUMENTS) > 0)
+				CheckIncreaseSkill(STRINGED_INSTRUMENTS, -15);
+			else
+				Message_StringID(13,NO_INSTRUMENT_SKILL);
+		}
 		else
 			CheckIncreaseSkill(SINGING, -15);
 		break;
 	case WIND_INSTRUMENTS:
-		if(this->itembonuses.windMod > 0)
-			CheckIncreaseSkill(WIND_INSTRUMENTS, -15);
+		if(this->itembonuses.windMod > 0) {
+			if(GetRawSkill(WIND_INSTRUMENTS) > 0)
+				CheckIncreaseSkill(WIND_INSTRUMENTS, -15);
+			else
+				Message_StringID(13,NO_INSTRUMENT_SKILL);
+		}
 		else
 			CheckIncreaseSkill(SINGING, -15);
 		break;
 	case BRASS_INSTRUMENTS:
-		if(this->itembonuses.brassMod > 0)
-			CheckIncreaseSkill(BRASS_INSTRUMENTS, -15);
+		if(this->itembonuses.brassMod > 0) {
+			if(GetRawSkill(BRASS_INSTRUMENTS) > 0)
+				CheckIncreaseSkill(BRASS_INSTRUMENTS, -15);
+			else
+				Message_StringID(13,NO_INSTRUMENT_SKILL);
+		}
 		else
 			CheckIncreaseSkill(SINGING, -15);
 		break;

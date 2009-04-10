@@ -919,9 +919,9 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 void Client::DyeArmor(DyeStruct* dye){
 	sint16 slot=0;
 	for(int i=0;i<7;i++){
-		if(dye->dye[i].rgb.use_tint && (m_pp.item_tint[i].rgb.blue!=dye->dye[i].rgb.blue ||
+		if(m_pp.item_tint[i].rgb.blue!=dye->dye[i].rgb.blue ||
 			m_pp.item_tint[i].rgb.red!=dye->dye[i].rgb.red ||
-			m_pp.item_tint[i].rgb.green != dye->dye[i].rgb.green)){
+			m_pp.item_tint[i].rgb.green != dye->dye[i].rgb.green){
 			slot = m_inv.HasItem(32557, 1, invWherePersonal);
 			if(slot != SLOT_INVALID){
 				DeleteItemInInventory(slot,1,true);
@@ -930,7 +930,10 @@ void Client::DyeArmor(DyeStruct* dye){
 				if(inst){
 					inst->SetColor((dye->dye[i].rgb.red*65536)+(dye->dye[i].rgb.green*256)+(dye->dye[i].rgb.blue));
 					database.SaveInventory(CharacterID(),inst,slot2);
-					m_pp.item_tint[i].rgb.use_tint = 0xFF;
+					if(dye->dye[i].rgb.use_tint) 
+						m_pp.item_tint[i].rgb.use_tint = 0xFF;
+					else 
+						m_pp.item_tint[i].rgb.use_tint=0x00;
 				}
 				m_pp.item_tint[i].rgb.blue=dye->dye[i].rgb.blue;
 				m_pp.item_tint[i].rgb.red=dye->dye[i].rgb.red;

@@ -1905,9 +1905,8 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Hunger");
 #endif
-				// solar: TODO implement this
-				const char *msg = "Hunger is not implemented.";
-				if(caster) caster->Message(13, msg);
+				// auto-eating is taken care of client side
+				// stamina is handled by DoBuffTic()
 				break;
 			}
 
@@ -2965,6 +2964,15 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 			break;
 		}
 
+		case SE_Hunger: {
+			// this procedure gets called 7 times for every once that the stamina update occurs so we add 1/7 of the subtraction.  
+			// It's far from perfect, but works without any unnecessary buff checks to bog down the server.
+			if(IsClient()) {
+				CastToClient()->m_pp.hunger_level += 5;
+				CastToClient()->m_pp.thirst_level += 5;
+			}
+			break;
+		 }
    /* case SE_Charm: { //Do it once in Effect instead of every tic
 		bool bBreak = false;
 
