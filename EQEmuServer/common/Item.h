@@ -155,7 +155,7 @@ public:
 	void SwapItem(sint16 slot_a, sint16 slot_b);
 
 	// Remove item from inventory
-	bool DeleteItem(sint16 slot_id, uint8 quantity=0, bool isEquipment=false);
+	bool DeleteItem(sint16 slot_id, uint8 quantity=0);
 
 	// Checks All items in a bag for No Drop
 	bool CheckNoDrop(sint16 slot_id);
@@ -267,6 +267,8 @@ public:
 	inline bool IsAugmentable() const { return m_item->AugSlotType[0]!=0; }
 	sint8 AvailableAugmentSlot(sint32 augtype) const;
 	inline sint32 GetAugmentType() const { return m_item->AugType; }
+
+	inline bool IsExpendable() const { return ((m_item->Click.Type == ET_Expendable ) || (m_item->ItemType == ItemTypePotion)); }
 
 	//
 	// Contents

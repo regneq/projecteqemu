@@ -833,7 +833,7 @@ bool Inventory::HasSpaceForItem(const Item_Struct *ItemToTry, uint8 Quantity) {
 }
 
 // Remove item from inventory (with memory delete)
-bool Inventory::DeleteItem(sint16 slot_id, uint8 quantity, bool isEquipment)
+bool Inventory::DeleteItem(sint16 slot_id, uint8 quantity)
 {
 	// Pop item out of inventory map (or queue)
 	ItemInst* item_to_delete = PopItem(slot_id);
@@ -841,17 +841,29 @@ bool Inventory::DeleteItem(sint16 slot_id, uint8 quantity, bool isEquipment)
 	// Determine if object should be fully deleted, or
 	// just a quantity of charges of the item can be deleted
 	if (item_to_delete && (quantity > 0)) {
+
 		item_to_delete->SetCharges(item_to_delete->GetCharges() - quantity);
-		if((item_to_delete->GetCharges() > 0) || isEquipment) {
-			// Charges still exist!  Put back into inventory
-			_PutItem(slot_id, item_to_delete);
-			return false;
+
+		// If there are no charges left on the item,
+		if(item_to_delete->GetCharges() <= 0) {
+			// If the item is stackable (e.g arrows), or
+			//    the item is not stackable, and is not a charged item, or is expendable, delete it
+			if(item_to_delete->IsStackable() ||
+			   (!item_to_delete->IsStackable() && 
+			    ((item_to_delete->GetItem()->MaxCharges == 0)  || item_to_delete->IsExpendable()))) {
+				// Item can now be destroyed
+				safe_delete(item_to_delete);
+				return true;
+			}
 		}
+
+		// Charges still exist, or it is a charged item that is not expendable.  Put back into inventory
+		_PutItem(slot_id, item_to_delete);
+		return false;
 	}
-	
-	// Item can now be destroyed
-	safe_delete(item_to_delete);
+
 	return true;
+	
 }
 
 // Checks All items in a bag for No Drop
