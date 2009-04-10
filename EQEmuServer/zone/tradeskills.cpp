@@ -659,13 +659,13 @@ bool Client::TradeskillExecute(DBTradeskillRecipe_Struct *spec) {
 		chance = (user_skill - spec->trivial) + 66;
 	}
 	
-	sint16 over_trivial = (sint16)user_skill - (sint16)spec->trivial;
+	sint16 over_trivial = (sint16)GetRawSkill(spec->tradeskill) - (sint16)spec->trivial;
 
 	//handle caps
 	if(spec->nofail) {
 		chance = 100;	//cannot fail.
 		_log(TRADESKILLS__TRACE, "...This combine cannot fail.");
-	} else if(over_trivial > 0) {
+	} else if(over_trivial >= 0) {
 		// At reaching trivial the chance goes to 95% going up an additional
 		// percent for every 40 skillpoints above the trivial.
 		// The success rate is not modified through stats.

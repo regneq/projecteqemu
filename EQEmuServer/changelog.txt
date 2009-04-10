@@ -3,6 +3,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==4/10/2009==
 Derision: Tradeskill recipes involving weapons as an ingredient should no longer dupe the weapon.
 Derision: Expendable items with charges are now deleted when the last charge is used.
+Derision: Tradeskill skillups now based on unmodified skill level.
 
 ==4/09/2009==
 Derision: Fix for Alchemy, Poison Making and Tinkering.
