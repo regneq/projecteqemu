@@ -1917,9 +1917,10 @@ struct Who_All_Struct { // 76 length total
 /*072*/	int32	lvllow;		// FF FF = no numbers
 /*076*/	int32	lvlhigh;	// FF FF = no numbers
 /*080*/	int32	gmlookup;	// FF FF = not doing /who all gm
-/*084*/	int32	unknown074;
+/*084*/	int32	guildid;
 /*088*/	int8	unknown076[64];
-/*152*/
+/*152*/	int32	type;		// New for SoF. 0 = /who 3 = /who all
+/*156*/
 };
 
 struct Stun_Struct { // 4 bytes total
@@ -2604,16 +2605,16 @@ struct	WhoAllPlayerPart4 {
 };
 
 struct WhoAllReturnStruct {
-	int32	id;
-	int32	playerineqstring;
-	char	line[27];
-	int8	unknown35; //0A
-	int32	unknown36;//0s
-	int32	playersinzonestring;
-	int32	unknown44[2]; //0s
-	int32	unknown52;//1
-	int32	unknown56;//1
-	int32	playercount;//1
+/*000*/	int32	id;
+/*004*/	int32	playerineqstring;
+/*008*/	char	line[27];
+/*035*/	int8	unknown35; //0A
+/*036*/	int32	unknown36;//0s
+/*040*/	int32	playersinzonestring;
+/*044*/	int32	unknown44[2]; //0s
+/*052*/	int32	unknown52;//1
+/*056*/	int32	unknown56;//1
+/*060*/	int32	playercount;//1
 	struct WhoAllPlayer player[0];
 };
 

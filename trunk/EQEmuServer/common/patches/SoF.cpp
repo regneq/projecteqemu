@@ -1741,6 +1741,8 @@ DECODE(OP_WhoAllRequest) {
 	IN(lvllow);
 	IN(lvlhigh);
 	IN(gmlookup);
+	IN(guildid);
+	IN(type);
 	
 	FINISH_DIRECT_DECODE();
 }

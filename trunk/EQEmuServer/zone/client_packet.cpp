@@ -2484,7 +2484,11 @@ void Client::Handle_OP_WhoAllRequest(const EQApplicationPacket *app)
 		return;
 	}
 	Who_All_Struct* whoall = (Who_All_Struct*) app->pBuffer;
-	WhoAll(whoall);
+
+	if(whoall->type == 0) // SoF only, for regular /who
+		entity_list.ZoneWho(this, whoall);
+	else
+		WhoAll(whoall);
 	return;
 }
 
