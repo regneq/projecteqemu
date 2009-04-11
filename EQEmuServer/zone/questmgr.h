@@ -194,6 +194,9 @@ public:
 	void CreateGroundObject(int32 itemid, float x, float y, float z, float heading, int32 decay_time = 300000);
 	void ModifyNPCStat(const char *identifier, const char *newValue);
 	void UpdateSpawnTimer(int32 id, int32 newTime);
+
+	void MerchantSetItem(int32 NPCid, int32 itemid, int32 quantity = 0);
+	int32 MerchantCountItem(int32 NPCid, int32 itemid);
 	
 	//not in here because it retains perl types
 	//thing ChooseRandom(array_of_things)

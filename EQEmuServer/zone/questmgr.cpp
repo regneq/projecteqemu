@@ -1780,3 +1780,44 @@ void QuestManager::UpdateSpawnTimer(int32 id, int32 newTime)
 		safe_delete(pack);
 	}
 }
+
+// used to set the number of an item in the selected merchant's temp item list.  Defaults to zero if no quantity is specified.
+void QuestManager::MerchantSetItem(int32 NPCid, int32 itemid, int32 quantity) {
+	Mob* merchant = entity_list.GetMobByNpcTypeID(NPCid);
+	
+	if (merchant == 0 || !merchant->IsNPC() || (merchant->GetClass() != MERCHANT)) 
+		return;	// don't do anything if NPCid isn't a merchant
+	
+	const Item_Struct* item = NULL;
+	item = database.GetItem(itemid);
+	if (!item) return;		// if the item id doesn't correspond to a real item, do nothing
+	
+	zone->SaveTempItem(merchant->CastToNPC()->MerchantType, NPCid, itemid, quantity);
+}
+
+int32 QuestManager::MerchantCountItem(int32 NPCid, int32 itemid) {
+	Mob* merchant = entity_list.GetMobByNpcTypeID(NPCid);
+	
+	if (merchant == 0 || !merchant->IsNPC() || (merchant->GetClass() != MERCHANT))
+		return 0;	// if it isn't a merchant, it doesn't have any items
+	
+	const Item_Struct* item = NULL;
+	item = database.GetItem(itemid);
+	if (!item) return 0;		// likewise, if it isn't a valid item, the merchant doesn't have any
+
+	// look for the item in the merchant's temporary list
+	std::list<TempMerchantList> MerchList = zone->tmpmerchanttable[NPCid];
+	std::list<TempMerchantList>::const_iterator itr;
+	TempMerchantList ml;
+	int32 Quant = 0;
+		
+	for(itr = MerchList.begin(); itr != MerchList.end(); itr++){
+		ml = *itr;
+		if (ml.item == itemid) {	// if this is the item we're looking for
+			Quant = ml.charges;
+			break;
+		}
+	}
+
+	return Quant;	// return the quantity of itemid (0 if it was never found)
+}

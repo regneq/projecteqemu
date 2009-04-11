@@ -237,6 +237,7 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 		{	// locked door and nothing to open it with
 		 //search for key on keyring
              if(sender->KeyRingCheck(keyneeded)){
+				playerkey = keyneeded;
 				sender->Message(4,"You got it open!");		// more debug spam
 				if( !IsDoorOpen() || opentype == 58 )
 				{ 
