@@ -2416,6 +2416,37 @@ XS(XS__UpdateSpawnTimer)
 	XSRETURN_EMPTY;
 }
 
+XS(XS__MerchantSetItem);
+XS(XS__MerchantSetItem) {
+	dXSARGS;
+	if (items != 2 && items != 3)
+		Perl_croak(aTHX_ "Usage: MerchantSetItem(NPCid, itemid [, quantity])");
+
+	int32 NPCid = (int)SvUV(ST(0));
+	int32 itemid = (int)SvUV(ST(1));
+	int32 quantity = 0;
+	if (items == 3)
+		quantity = (int)SvUV(ST(2));
+
+	quest_manager.MerchantSetItem(NPCid, itemid, quantity);
+
+	XSRETURN_EMPTY;
+}
+
+XS(XS__MerchantCountItem);
+XS(XS__MerchantCountItem) {
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: MerchantCountItem(NPCid, itemid)");
+
+	int32 NPCid = (int)SvUV(ST(0));
+	int32 itemid = (int)SvUV(ST(1));
+	int32 quantity = quest_manager.MerchantCountItem(NPCid, itemid);
+
+	XSRETURN_UV(quantity);
+}
+
+
 /*
 This is the callback perl will look for to setup the
 quest package's XSUBs
@@ -2584,12 +2615,11 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "modifynpcstat"), XS__ModifyNPCStat, file);
         newXS(strcpy(buf, "collectitems"), XS__collectitems, file);
 		newXS(strcpy(buf, "updatespawntimer"), XS__UpdateSpawnTimer, file);
+		newXS(strcpy(buf, "MerchantSetItem"), XS__MerchantSetItem, file);
+		newXS(strcpy(buf, "MerchantCountItem"), XS__MerchantCountItem, file);
 
 	XSRETURN_YES;
 }
-
-
-
 
 #endif
 #endif

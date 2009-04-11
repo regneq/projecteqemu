@@ -90,6 +90,7 @@ RULE_BOOL ( World, ClearTempMerchantlist, true) //cavedude: Clears temp merchant
 RULE_INT ( World, AccountSessionLimit, -1 )  //Max number of characters allowed on at once from a single account (-1 is disabled)
 RULE_INT ( World, ExemptAccountLimitStatus, -1 )  //Min status required to be exempt from multi-session per account limiting (-1 is disabled)
 RULE_BOOL ( World, GMAccountIPList, false) // Voidd: Check ip list against GM Accounts, AntiHack GM Accounts.
+RULE_INT ( World, MinGMAntiHackStatus, 1 ) //Minimum GM status to check against AntiHack list
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Zone )

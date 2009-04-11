@@ -2,6 +2,9 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==4/11/2009==
 Trevius: SoF - Stopped the bogus "Deleting Item" messages from being sent to SoF Clients
+cavedude: (Congdar): You can now safely delete a key item after its been added to your keyring.
+cavedude: (realityincarnate): Added quest::MerchantSetItem and quest::MerchantCountItem to add temp items to a merchantlist. See Wiki for usage.
+cavedude: Added rule World:MinGMAntiHackStatus to manage the min status checked against the GM AntiHack list.
 
 ==4/10/2009==
 Derision: Tradeskill recipes involving weapons as an ingredient should no longer dupe the weapon.

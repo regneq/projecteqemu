@@ -185,7 +185,7 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 	}
 	
 	// Voidd: Anti-GM Account hack, Checks source ip against valid GM Account IP Addresses
-	if (RuleB(World, GMAccountIPList) && this->GetAdmin() > 0) {
+	if (RuleB(World, GMAccountIPList) && this->GetAdmin() >= (RuleI(World, MinGMAntiHackStatus))) {
 		if(!database.CheckGMIPs(long2ip(this->GetIP()).c_str(), this->GetAccountID())) {
 			clog(WORLD__CLIENT,"GM Account not permited from source address %s and accountid %i", long2ip(this->GetIP()).c_str(), this->GetAccountID());
 			eqs->Close();
