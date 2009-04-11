@@ -712,7 +712,9 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 	// Step 2: Validate item in from_slot
 	// After this, we can assume src_inst is a valid ptr
 	if (!src_inst && (src_slot_id<4000 || src_slot_id>4009) ) {
-		Message(13, "Error: Server found no item in slot %i (->%i), Deleting Item!", src_slot_id, dst_slot_id);
+		if (GetClientVersion() != EQClientSoF)  // SoF client sends invalid slots regularly for an unknown use, so don't warn them about this.
+			Message(13, "Error: Server found no item in slot %i (->%i), Deleting Item!", src_slot_id, dst_slot_id);
+
 		LogFile->write(EQEMuLog::Debug, "Error: Server found no item in slot %i (->%i), Deleting Item!", src_slot_id, dst_slot_id);
 		this->DeleteItemInInventory(dst_slot_id,0,true);
 		return false;

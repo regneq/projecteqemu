@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==4/11/2009==
+Trevius: SoF - Stopped the bogus "Deleting Item" messages from being sent to SoF Clients
+
 ==4/10/2009==
 Derision: Tradeskill recipes involving weapons as an ingredient should no longer dupe the weapon.
 Derision: Expendable items with charges are now deleted when the last charge is used.
