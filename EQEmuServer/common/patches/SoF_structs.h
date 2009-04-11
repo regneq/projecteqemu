@@ -2042,10 +2042,9 @@ struct Who_All_Struct { // 76 length total
 /*072*/	int32	lvllow;		// FF FF = no numbers
 /*076*/	int32	lvlhigh;	// FF FF = no numbers
 /*080*/	int32	gmlookup;	// FF FF = not doing /who all gm
-/*084*/	int32	unknown084;
-/*088*/ int32	unknown088;
-/*092*/	int8	unknown076[64];
-/*156*/
+/*084*/	int32	guildid;	// Also used for Buyer/Trader/LFG
+/*088*/	int8	unknown088[64];
+/*156*/	int32	type;		// 0 = /who 3 = /who all
 };
 
 struct Stun_Struct { // 4 bytes total

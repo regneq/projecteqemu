@@ -18,6 +18,7 @@ E(OP_GuildMemberLevelUpdate)
 D(OP_SetServerFilter)
 D(OP_CharacterCreate)
 D(OP_ItemLinkClick)
+D(OP_WhoAllRequest)
 
 #undef E
 #undef D

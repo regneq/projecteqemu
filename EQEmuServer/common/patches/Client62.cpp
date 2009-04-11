@@ -680,6 +680,20 @@ DECODE(OP_CharacterCreate) {
 	FINISH_DIRECT_DECODE();
 }
 
+DECODE(OP_WhoAllRequest) {
+	DECODE_LENGTH_EXACT(structs::Who_All_Struct);
+	SETUP_DIRECT_DECODE(Who_All_Struct, structs::Who_All_Struct);
+
+	memcpy(emu->whom, eq->whom, sizeof(emu->whom));
+	IN(wrace);
+	IN(wclass);
+	IN(lvllow);
+	IN(lvlhigh);
+	IN(gmlookup);
+	emu->type = 3;
+	
+	FINISH_DIRECT_DECODE();
+}
 char *SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 depth) {
 	char *serialization = NULL;
 	char *instance = NULL;
