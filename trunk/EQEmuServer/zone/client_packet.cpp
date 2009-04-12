@@ -5878,7 +5878,8 @@ void Client::Handle_OP_Trader(const EQApplicationPacket *app)
 {
 	// Bazaar Trader:
 	//
-	//
+	// Derision: SoF sends 1 or more unhandled OP_Trader packets of size 96 when a trade has completed.
+	//           I don't know what they are for (yet), but it doesn't seem to matter that we ignore them.
 
 	_pkt(TRADING__PACKETS, app);
 
