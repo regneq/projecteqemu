@@ -3832,7 +3832,7 @@ struct ItemSecondaryBodyStruct{
 
 };
 
-struct ItemTiertaryBodyStruct
+struct ItemTertiaryBodyStruct
 {
 	sint32 loregroup;
 	uint8 artifact;
@@ -3901,7 +3901,8 @@ struct ItemTiertaryBodyStruct
 	//uint16 questItem2;
 	//uint16 unknown17; //something to do with power - Power Source Capacity?
 	//uint8 unknown18;
-	uint8 padding[8]; //some of this is null term for augs + end of item, shouldn't do this this way but for now
+	uint32 evolve_string; // Some String, but being evolution related is just a guess
+	uint32 subitem_count;
 };
 
 	};	//end namespace structs

@@ -797,8 +797,8 @@ ENCODE(OP_ZoneSpawns) {
 	//kill off the emu structure and send the eq packet.
 	delete[] __emu_buffer;
 	
-	_log(NET__ERROR, "Sending zone spawns");
-	_hex(NET__ERROR, in->pBuffer, in->size);
+	//_log(NET__ERROR, "Sending zone spawns");
+	//_hex(NET__ERROR, in->pBuffer, in->size);
 	
 	dest->FastQueuePacket(&in, ack_req);
 }
@@ -835,218 +835,81 @@ ENCODE(OP_ItemPacket) {
 ENCODE(OP_CharInventory) {
 	//consume the packet
 	EQApplicationPacket *in = *p;
+
 	*p = NULL;
 
 	if(in->size == 0) {
+
 		in->size = 4;
+
 		in->pBuffer = new uchar[in->size];
+
 		*((uint32 *) in->pBuffer) = 0;
+
 		dest->FastQueuePacket(&in, ack_req);
+
 		return;
 	}
 	
 	//store away the emu struct
 	unsigned char *__emu_buffer = in->pBuffer;
 
-	int itemcount = in->size / sizeof(InternalSerializedItem_Struct);
-	if(itemcount == 0 || (in->size % sizeof(InternalSerializedItem_Struct)) != 0) {
-		_log(NET__STRUCTS, "Wrong size on outbound %s: Got %d, expected multiple of %d", opcodes->EmuToName(in->GetOpcode()), in->size, sizeof(InternalSerializedItem_Struct));
+	int ItemCount = in->size / sizeof(InternalSerializedItem_Struct);
+
+	if(ItemCount == 0 || (in->size % sizeof(InternalSerializedItem_Struct)) != 0) {
+
+		_log(NET__STRUCTS, "Wrong size on outbound %s: Got %d, expected multiple of %d", 
+				   opcodes->EmuToName(in->GetOpcode()), in->size, sizeof(InternalSerializedItem_Struct));
+
 		delete in;
+
 		return;
 	}
+
 	InternalSerializedItem_Struct *eq = (InternalSerializedItem_Struct *) in->pBuffer;
+
+	in->pBuffer = new uchar[4];
+
+	*(uint32 *)in->pBuffer = ItemCount;
 	
 	in->size = 4;
-	in->pBuffer = new uchar[in->size];
-	*((uint32 *) in->pBuffer) = 0;
-	dest->FastQueuePacket(&in, ack_req);
 
-	//EQApplicationPacket * outapp = new EQApplicationPacket((const EmuOpcode)0x78Cd);
+	for(int r = 0; r < ItemCount; r++, eq++) {
 
-	int r;
-	char* serialized = NULL;
-	uint32 length = 0;
-	for(r = 0; r < itemcount; r++, eq++) 
-	{
-		length = 0;
-		serialized = NULL;
-        serialized = SerializeItem((const ItemInst*)eq->inst,eq->slot_id,&length,0);
-		if(serialized)
-		{
-			EQApplicationPacket * outapp = new EQApplicationPacket(OP_ItemPacket, length+4);
-			uint32 * type = (uint32*)outapp->pBuffer;
-			*type = ItemPacketTrade;
-			memcpy(outapp->pBuffer+4, serialized, length);
+		uint32 Length = 0;
 
-			_log(NET__ERROR, "Sending item to client");
-			_hex(NET__ERROR, outapp->pBuffer, outapp->size);
+		char* Serialized = SerializeItem((const ItemInst*)eq->inst, eq->slot_id, &Length, 0);
 
-			dest->FastQueuePacket(&outapp);
-			delete[] serialized;
-			serialized = NULL;
-			if((const ItemInst*)eq->inst,eq->slot_id >= 22 && (const ItemInst*)eq->inst,eq->slot_id <= 30)
-			{
-				for(int x = 0; x < 10; ++x)
-				{
-					const ItemInst* subitem = ((const ItemInst*)eq->inst)->GetItem(x);
-					if(subitem)
-					{
-						uint32 sub_length;
-						serialized = NULL;
-						serialized = SerializeItem(subitem, (((eq->slot_id+3)*10)+x+1), &sub_length, 0);
-						if(serialized)
-						{
-							EQApplicationPacket * suboutapp = new EQApplicationPacket(OP_ItemPacket, sub_length+4);
-							uint32 * subtype = (uint32*)suboutapp->pBuffer;
-							*subtype = ItemPacketTrade;
-							memcpy(suboutapp->pBuffer+4, serialized, sub_length);
-							_log(NET__ERROR, "Sending sub item to client");
-							_hex(NET__ERROR, suboutapp->pBuffer, suboutapp->size);
-							dest->FastQueuePacket(&suboutapp);
-							delete[] serialized;
-							serialized = NULL;
-						}
-					}
-				}
-			}
-			else if((const ItemInst*)eq->inst,eq->slot_id >= 2000 && (const ItemInst*)eq->inst,eq->slot_id <= 2023)
-			{
-				for(int x = 0; x < 10; ++x)
-				{
-					const ItemInst* subitem = ((const ItemInst*)eq->inst)->GetItem(x);
-					if(subitem)
-					{
-						uint32 sub_length;
-						serialized = NULL;
-						serialized = SerializeItem(subitem, (((eq->slot_id-2000)*10)+2030+x+1), &sub_length, 0);
-						if(serialized)
-						{
-							EQApplicationPacket * suboutapp = new EQApplicationPacket(OP_ItemPacket, sub_length+4);
-							uint32 * subtype = (uint32*)suboutapp->pBuffer;
-							*subtype = ItemPacketTrade;
-							memcpy(suboutapp->pBuffer+4, serialized, sub_length);
-							_log(NET__ERROR, "Sending sub item to client");
-							_hex(NET__ERROR, suboutapp->pBuffer, suboutapp->size);
-							dest->FastQueuePacket(&suboutapp);
-							delete[] serialized;
-							serialized = NULL;
-						}
-					}
-				}
-			}
-			else if((const ItemInst*)eq->inst,eq->slot_id >= 2500 && (const ItemInst*)eq->inst,eq->slot_id <= 2501)
-			{
-				for(int x = 0; x < 10; ++x)
-				{
-					const ItemInst* subitem = ((const ItemInst*)eq->inst)->GetItem(x);
-					if(subitem)
-					{
-						uint32 sub_length;
-						serialized = NULL;
-						serialized = SerializeItem(subitem, (((eq->slot_id-2500)*10)+2530+x+1), &sub_length, 0);
-						if(serialized)
-						{
-							EQApplicationPacket * suboutapp = new EQApplicationPacket(OP_ItemPacket, sub_length+4);
-							uint32 * subtype = (uint32*)suboutapp->pBuffer;
-							*subtype = ItemPacketTrade;
-							memcpy(suboutapp->pBuffer+4, serialized, sub_length);
-							_log(NET__ERROR, "Sending sub item to client");
-							_hex(NET__ERROR, suboutapp->pBuffer, suboutapp->size);
-							dest->FastQueuePacket(&suboutapp);
-							delete[] serialized;
-							serialized = NULL;
-						}
-					}
-				}
-			}
-		}
-	}
+		if(Serialized) {
 
-	//Proper way below crashing
-	//Workaround above
-	//Goal: get the item struct good enough that we don't need the workaround.
-	/*uchar *data = NULL;
-	uchar *dataptr = NULL;
-	uchar *tempdata = NULL;
+			uchar *OldBuffer = in->pBuffer;
 
-	//do the transform...
-	int r;
+			in->pBuffer = new uchar[in->size + Length];
 
-	data = new uchar[4];
-	uint32 *item_opcode;
-	item_opcode = (uint32*)data;
-	*item_opcode = 0x69;//0x35;
+			memcpy(in->pBuffer, OldBuffer, in->size);
 
+			safe_delete_array(OldBuffer);
 
-	uint32 total_length = 4;
-	uint32 length = 0;
+			memcpy(in->pBuffer + in->size, Serialized, Length);
 
-	char* serialized = NULL;
-	for(r = 0; r < itemcount; r++, eq++) 
-	{
-		length = 0;
-		serialized = NULL;
-        serialized = SerializeItem((const ItemInst*)eq->inst,eq->slot_id,&length,0);
-		if(serialized)
-		{
-			tempdata = data;
-			data = NULL;
-			data = new uchar[total_length+length];
-			memcpy(data, tempdata, total_length);
-			memcpy(data+total_length, serialized, length);
-			
-			total_length += length;
-			delete[] tempdata;
-			tempdata = NULL;
-			delete[] serialized;
-			serialized = NULL;
+			in->size += Length;
 
-			if((const ItemInst*)eq->inst,eq->slot_id >= 22 && (const ItemInst*)eq->inst,eq->slot_id < 30)
-			{
-				for(int x = 0; x < 10; ++x)
-				{
-					serialized = NULL;
-					uint32 sub_length = 0;
-					const ItemInst* subitem = ((const ItemInst*)eq->inst)->GetItem(x);
-					if(subitem)
-					{
-						serialized = SerializeItem(subitem, (((eq->slot_id+3)*10)+x+1), &sub_length, 0);
-						if(serialized)
-						{
-							tempdata = data;
-							data = NULL;
-							data = new uchar[total_length+sub_length];
-							memcpy(data, tempdata, total_length);
-							memcpy(data+total_length, serialized, sub_length);
-							total_length += length;
-							delete[] tempdata;
-							tempdata = NULL;
-							delete[] serialized;
-							serialized = NULL;
-						}
-					}
-				}
-			}
+			safe_delete_array(Serialized);
 
 		}
-		else
-		{
+		else {
 			_log(NET__ERROR, "Serialization failed on item slot %d during OP_CharInventory.  Item skipped.",eq->slot_id);
 		}
 	}
 
-	in->size = total_length;
-	in->pBuffer = new unsigned char[in->size];
-	memcpy(in->pBuffer, data, in->size);
-
 	delete[] __emu_buffer;
 
-	_log(NET__ERROR, "Sending inventory to client");
-	_hex(NET__ERROR, in->pBuffer, in->size);
+	//_log(NET__ERROR, "Sending inventory to client");
 
-	dest->FastQueuePacket(&in, ack_req);*/
+	//_hex(NET__ERROR, in->pBuffer, in->size);
+
+	dest->FastQueuePacket(&in, ack_req);
 }
-
 
 ENCODE(OP_GuildMemberList) {
 	//consume the packet
@@ -1828,8 +1691,7 @@ static inline sint32 GetNextItemInstSerialNumber() {
 }
 
 
-char* SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 depth) {
-	char *serialization = NULL;
+char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uint8 depth) {
 	uint8 null_term = 0;
 	bool stackable = inst->IsStackable();
 	uint32 merchant_slot = inst->GetMerchantSlot();
@@ -1840,9 +1702,12 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 
 	ss.clear();
 
 	const Item_Struct *item = inst->GetItem();
+	//_log(NET__ERROR, "Serialize called for: %s", item->Name);
 	SoF::structs::ItemSerializationHeader hdr;
 	hdr.stacksize = stackable ? charges : 1;
 	hdr.unknown004 = 0;
+
+	sint32 slot_id = slot_id_in;
 
 	if(slot_id >= 22 && slot_id < 50) // Ammo and Main Inventory
 		slot_id += 1;
@@ -2053,8 +1918,8 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 
 		ss.write((const char*)&null_term, sizeof(uint8));
 	}
 
-	SoF::structs::ItemTiertaryBodyStruct itbs;
-	memset(&itbs, 0, sizeof(SoF::structs::ItemTiertaryBodyStruct));
+	SoF::structs::ItemTertiaryBodyStruct itbs;
+	memset(&itbs, 0, sizeof(SoF::structs::ItemTertiaryBodyStruct));
 	
 	itbs.loregroup = item->LoreGroup;
 	itbs.artifact = item->ArtifactFlag;
@@ -2106,7 +1971,50 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 
 	itbs.quest_item = item->QuestItemFlag;
 	itbs.unknown15 = 0xffffffff;
 
-	ss.write((const char*)&itbs, sizeof(SoF::structs::ItemTiertaryBodyStruct));
+	itbs.subitem_count = 0;
+
+	char *SubSerializations[10];
+
+	uint32 SubLengths[10];
+
+	for(int x = 0; x < 10; ++x) {
+	
+		SubSerializations[x] = NULL;
+
+		const ItemInst* subitem = ((const ItemInst*)inst)->GetItem(x);
+
+		if(subitem) {
+
+			int SubSlotNumber;
+
+			itbs.subitem_count++;
+
+			if(slot_id_in >= 22 && slot_id_in < 30)
+				SubSlotNumber = (((slot_id_in + 3) * 10) + x + 1);
+			else if(slot_id_in >= 2000 && slot_id_in <= 2023)
+				SubSlotNumber = (((slot_id_in - 2000) * 10) + 2030 + x + 1);
+			else if(slot_id_in >= 2500 && slot_id_in <= 2501)
+				SubSlotNumber = (((slot_id_in - 2500) * 10) + 2530 + x + 1);
+			else
+				SubSlotNumber = slot_id_in; // ???????
+
+			SubSerializations[x] = SerializeItem(subitem, SubSlotNumber, &SubLengths[x], depth + 1);
+		}
+	}
+
+	ss.write((const char*)&itbs, sizeof(SoF::structs::ItemTertiaryBodyStruct));
+
+	for(int x = 0; x < 10; ++x) {
+
+		if(SubSerializations[x]) {
+
+			ss.write((const char*)&x, sizeof(uint32));
+
+			ss.write(SubSerializations[x], SubLengths[x]);
+
+			safe_delete_array(SubSerializations[x]);
+		}
+	}
 
 	char* item_serial = new char[ss.tellp()];
 	memset(item_serial, 0, ss.tellp());
