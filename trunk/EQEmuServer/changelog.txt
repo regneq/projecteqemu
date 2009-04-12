@@ -3,6 +3,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==4/12/2009==
 Trevius: SoF - Commands that return itemlinks will now show the full name instead of cutting off the first 5 characters
 Trevius/Derision: SoF - Fix for subitem serialization.
+Derision: SoF - Corrected money update opcodes.
 
 ==4/11/2009==
 Trevius: SoF - Stopped the bogus "Deleting Item" messages from being sent to SoF Clients
