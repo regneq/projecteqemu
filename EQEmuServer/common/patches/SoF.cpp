@@ -1367,6 +1367,87 @@ ENCODE(OP_ItemVerifyReply) {
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_BazaarSearch) {
+
+	if(((*p)->size == sizeof(BazaarReturnDone_Struct)) || ((*p)->size == sizeof(BazaarWelcome_Struct))) {
+
+		EQApplicationPacket *in = *p;
+		*p = NULL;
+		dest->FastQueuePacket(&in, ack_req);
+		return;
+	}
+
+	//consume the packet
+	EQApplicationPacket *in = *p;
+	*p = NULL;
+
+	//store away the emu struct
+	unsigned char *__emu_buffer = in->pBuffer;
+	BazaarSearchResults_Struct *emu = (BazaarSearchResults_Struct *) __emu_buffer;
+
+	//determine and verify length
+	int entrycount = in->size / sizeof(BazaarSearchResults_Struct);
+	if(entrycount == 0 || (in->size % sizeof(BazaarSearchResults_Struct)) != 0) {
+		_log(NET__STRUCTS, "Wrong size on outbound %s: Got %d, expected multiple of %d", 
+				   opcodes->EmuToName(in->GetOpcode()), in->size, sizeof(BazaarSearchResults_Struct));
+		delete in;
+		return;
+	}
+
+	//make the EQ struct.
+	in->size = sizeof(structs::BazaarSearchResults_Struct)*entrycount;
+	in->pBuffer = new unsigned char[in->size];
+	structs::BazaarSearchResults_Struct *eq = (structs::BazaarSearchResults_Struct *) in->pBuffer;
+
+	//zero out the packet. We could avoid this memset by setting all fields (including unknowns)
+	//in the loop.
+	memset(in->pBuffer, 0, in->size);
+
+	for(int i=0; i<entrycount; i++, eq++, emu++) {
+		eq->Beginning.Action = emu->Beginning.Action;
+		eq->Beginning.Unknown001 = emu->Beginning.Unknown001;
+		eq->Beginning.Unknown002 = emu->Beginning.Unknown002;
+		eq->NumItems = emu->NumItems;
+		eq->ItemID = emu->ItemID;
+		eq->SellerID = emu->SellerID;
+		eq->Cost = emu->Cost;
+		eq->ItemStat = emu->ItemStat;
+		strcpy(eq->Name, emu->Name);
+	}
+
+	delete[] __emu_buffer;
+	dest->FastQueuePacket(&in, ack_req);
+
+
+}
+
+ENCODE(OP_Trader) {
+
+	if((*p)->size != sizeof(TraderBuy_Struct)) {
+		EQApplicationPacket *in = *p;
+		*p = NULL;
+		dest->FastQueuePacket(&in, ack_req);
+		return;
+	}
+	ENCODE_FORWARD(OP_TraderBuy);
+}
+
+ENCODE(OP_TraderBuy) {
+
+	ENCODE_LENGTH_EXACT(TraderBuy_Struct);
+	SETUP_DIRECT_ENCODE(TraderBuy_Struct, structs::TraderBuy_Struct);
+
+	OUT(Action);
+	OUT(Price);
+	OUT(TraderID);
+	memcpy(eq->ItemName, emu->ItemName, sizeof(eq->ItemName));
+	OUT(ItemID);
+	OUT(Quantity);
+	OUT(AlreadySold);
+
+	FINISH_ENCODE();
+}
+
 DECODE(OP_ItemVerifyRequest) {
 	DECODE_LENGTH_EXACT(structs::ItemVerifyRequest_Struct);
 	SETUP_DIRECT_DECODE(ItemVerifyRequest_Struct, structs::ItemVerifyRequest_Struct);
@@ -1674,6 +1755,21 @@ DECODE(OP_FindPersonRequest) {
 	IN(client_pos.x);
 	IN(client_pos.y);
 	IN(client_pos.z);
+	FINISH_DIRECT_DECODE();
+}
+
+DECODE(OP_TraderBuy) {
+	DECODE_LENGTH_EXACT(structs::TraderBuy_Struct);
+	SETUP_DIRECT_DECODE(TraderBuy_Struct, structs::TraderBuy_Struct);
+	MEMSET_IN(TraderBuy_Struct);
+
+	IN(Action);
+	IN(Price);
+	IN(TraderID);
+	memcpy(emu->ItemName, eq->ItemName, sizeof(emu->ItemName));
+	IN(ItemID);
+	IN(Quantity);
+
 	FINISH_DIRECT_DECODE();
 }
 
