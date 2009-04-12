@@ -483,7 +483,14 @@ void NPC::QueryLoot(Client* to) {
 	for(; cur != end; cur++) {
 		const Item_Struct* item = database.GetItem((*cur)->item_id);
 		if (item)
-		    to->Message(0, "  %i: %c%06X000000000000000000000000000000000000000%s%c",(int) item->ID,0x12, item->ID, item->Name, 0x12);
+			if (to->GetClientVersion() == EQClientSoF)
+			{
+				to->Message(0, "  %i: %c%06X00000000000000000000000000000000000000000000%s%c",(int) item->ID,0x12, item->ID, item->Name, 0x12);
+			}
+			else
+			{
+				to->Message(0, "  %i: %c%06X000000000000000000000000000000000000000%s%c",(int) item->ID,0x12, item->ID, item->Name, 0x12);
+			}
 		else
 		    LogFile->write(EQEMuLog::Error, "Database error, invalid item");
 		x++;
