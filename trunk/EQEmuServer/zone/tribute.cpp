@@ -51,7 +51,6 @@ but I dont see a point to that right now, so I dont do it.
 
 */
 
-#define TRIBUTE_SLOT_START 400
 
 class TributeData {
 public:
@@ -133,7 +132,6 @@ void Client::DoTributeUpdate() {
 			tis->tiers[r] = 0;
 		}
 	}
-		
 	QueuePacket(&outapp);
 	
 	SendTributeTimer();
@@ -144,20 +142,20 @@ void Client::DoTributeUpdate() {
 			uint32 tid = m_pp.tributes[r].tribute;
 			if(tid == TRIBUTE_NONE) {
 				if(m_inv[TRIBUTE_SLOT_START+r])
-					DeleteItemInInventory(TRIBUTE_SLOT_START+r, 0, true);
+					DeleteItemInInventory(TRIBUTE_SLOT_START+r, 0, false);
 				continue;
 			}
 			
 			if(tribute_list.count(tid) != 1) {
 				if(m_inv[TRIBUTE_SLOT_START+r])
-					DeleteItemInInventory(TRIBUTE_SLOT_START+r, 0, true);
+					DeleteItemInInventory(TRIBUTE_SLOT_START+r, 0, false);
 				continue;
 			}
 			
 			//sanity check
 			if(m_pp.tributes[r].tier >= MAX_TRIBUTE_TIERS) {
 				if(m_inv[TRIBUTE_SLOT_START+r])
-					DeleteItemInInventory(TRIBUTE_SLOT_START+r, 0, true);
+					DeleteItemInInventory(TRIBUTE_SLOT_START+r, 0, false);
 				m_pp.tributes[r].tier = 0;
 				continue;
 			}
@@ -179,9 +177,10 @@ void Client::DoTributeUpdate() {
 		//unequip tribute items...
 		for(r = 0; r < MAX_PLAYER_TRIBUTES; r++) {
 			if(m_inv[TRIBUTE_SLOT_START+r])
-				DeleteItemInInventory(TRIBUTE_SLOT_START+r, 0, true);
+				DeleteItemInInventory(TRIBUTE_SLOT_START+r, 0, false);
 		}
 	}
+	CalcBonuses();
 }
 
 void Client::SendTributeTimer() {
@@ -334,7 +333,6 @@ void Client::SendTributes() {
 		
 		memcpy(tas->name, cur->second.name.c_str(), len);
 		tas->name[len] = '\0';
-		
 		QueuePacket(&outapp);
 	}
 }

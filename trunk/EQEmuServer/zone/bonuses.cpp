@@ -151,11 +151,11 @@ void Client::CalcItemBonuses(StatBonuses* newbon) {
 	}
 	
 	//tribute items
-	for (i = 400; i < 404; i++) {
-		const ItemInst* inst = m_inv[i];
+	for (i = 0; i < MAX_PLAYER_TRIBUTES; i++) {
+		const ItemInst* inst = m_inv[TRIBUTE_SLOT_START + i];
 		if(inst == 0)
 			continue;
-		AddItemBonuses(inst, newbon);
+		AddItemBonuses(inst, newbon, false, true);
 	}
 	
 	//caps
@@ -168,7 +168,7 @@ void Client::CalcItemBonuses(StatBonuses* newbon) {
 	SetAttackTimer();
 }
 		
-void Client::AddItemBonuses(const ItemInst *inst, StatBonuses* newbon, bool isAug) {
+void Client::AddItemBonuses(const ItemInst *inst, StatBonuses* newbon, bool isAug, bool isTribute) {
 	if(!inst || !inst->IsType(ItemClassCommon))
 	{
 		return;
@@ -181,7 +181,7 @@ void Client::AddItemBonuses(const ItemInst *inst, StatBonuses* newbon, bool isAu
 
 	const Item_Struct *item = inst->GetItem();
 
-	if(!inst->IsEquipable(GetBaseRace(),GetClass()))
+	if(!isTribute && !inst->IsEquipable(GetBaseRace(),GetClass()))
 	{
 		if(item->ItemType != ItemTypeFood && item->ItemType != ItemTypeDrink)
 			return;

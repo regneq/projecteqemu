@@ -3,6 +3,9 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==4/13/2009==
 Trevius: SoF - Corrected corpse looting slots so that the correct item is looted when there are multiple on a corpse
 Trevius: SoF - Item Links from corpse looting messages now display properly for both client versions
+Derision: Personal Tribute should now have an effect serverside, rather than just showing increased stats in the client.
+Derision: Deactivating Tribute should no longer crash the client.
+Derision: SoF - Personal Tribute should now work.
 
 ==4/12/2009==
 Trevius: SoF - Commands that return itemlinks will now show the full name instead of cutting off the first 5 characters

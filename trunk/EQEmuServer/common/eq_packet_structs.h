@@ -630,6 +630,7 @@ struct Disciplines_Struct {
 	uint32 values[MAX_PP_DISCIPLINES];
 };
 
+static const uint32 TRIBUTE_SLOT_START = 400;
 static const uint32 MAX_PLAYER_TRIBUTES = 5;
 static const uint32 MAX_PLAYER_BANDOLIER = 4;
 static const uint32 MAX_PLAYER_BANDOLIER_ITEMS = 4;
