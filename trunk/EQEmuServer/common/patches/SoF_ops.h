@@ -41,6 +41,7 @@ E(OP_OpenNewTasksWindow)
 E(OP_BazaarSearch)
 E(OP_Trader)
 E(OP_TraderBuy)
+E(OP_LootItem)
 //E(OP_AdventureData)
 //E(OP_RaidUpdate)
 
@@ -64,5 +65,6 @@ D(OP_GroupFollow)
 D(OP_GroupFollow2)
 D(OP_FindPersonRequest)
 D(OP_TraderBuy)
+D(OP_LootItem)
 #undef E
 #undef D
