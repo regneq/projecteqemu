@@ -1460,6 +1460,24 @@ ENCODE(OP_LootItem) {
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_TributeItem) {
+	ENCODE_LENGTH_EXACT(structs::TributeItem_Struct);
+	SETUP_DIRECT_ENCODE(TributeItem_Struct, structs::TributeItem_Struct);
+
+	if((emu->slot >= 21) && (emu->slot <= 29))
+		eq->slot = emu->slot + 1;
+	else if(emu->slot >= 251 && emu->slot <= 330) 
+		eq->slot = emu->slot + 11;
+	else
+		eq->slot = emu->slot;
+
+	OUT(quantity);
+	OUT(tribute_master_id);
+	OUT(tribute_points);
+
+	FINISH_ENCODE();
+}
+
 DECODE(OP_ItemVerifyRequest) {
 	DECODE_LENGTH_EXACT(structs::ItemVerifyRequest_Struct);
 	SETUP_DIRECT_DECODE(ItemVerifyRequest_Struct, structs::ItemVerifyRequest_Struct);
@@ -1796,6 +1814,23 @@ DECODE(OP_LootItem) {
 	FINISH_DIRECT_DECODE();
 }
 
+DECODE(OP_TributeItem) {
+	DECODE_LENGTH_EXACT(structs::TributeItem_Struct);
+	SETUP_DIRECT_DECODE(TributeItem_Struct, structs::TributeItem_Struct);
+
+	if((eq->slot >= 22) && (eq->slot <= 30))
+		emu->slot = eq->slot - 1;
+	else if(eq->slot >= 262 && eq->slot <= 341) 
+		emu->slot = eq->slot - 11;
+	else
+		emu->slot = eq->slot;
+
+	IN(quantity);
+	IN(tribute_master_id);
+	IN(tribute_points);
+
+	FINISH_DIRECT_DECODE();
+}
 
 int32 NextItemInstSerialNumber = 1;
 int32 MaxInstances = 2000000000;
