@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==4/13/2009==
+Trevius: SoF - Corrected corpse looting slots so that the correct item is looted when there are multiple on a corpse
+
 ==4/12/2009==
 Trevius: SoF - Commands that return itemlinks will now show the full name instead of cutting off the first 5 characters
 Trevius/Derision: SoF - Fix for subitem serialization.

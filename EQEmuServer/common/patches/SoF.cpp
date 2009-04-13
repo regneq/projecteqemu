@@ -1448,6 +1448,18 @@ ENCODE(OP_TraderBuy) {
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_LootItem) {
+
+	ENCODE_LENGTH_EXACT(LootingItem_Struct);
+	SETUP_DIRECT_ENCODE(LootingItem_Struct, structs::LootingItem_Struct);
+	OUT(lootee);
+	OUT(looter);
+	eq->slot_id = emu->slot_id + 1;
+	OUT(auto_loot);
+
+	FINISH_ENCODE();
+}
+
 DECODE(OP_ItemVerifyRequest) {
 	DECODE_LENGTH_EXACT(structs::ItemVerifyRequest_Struct);
 	SETUP_DIRECT_DECODE(ItemVerifyRequest_Struct, structs::ItemVerifyRequest_Struct);
@@ -1772,6 +1784,18 @@ DECODE(OP_TraderBuy) {
 
 	FINISH_DIRECT_DECODE();
 }
+
+DECODE(OP_LootItem) {
+	DECODE_LENGTH_EXACT(structs::LootingItem_Struct);
+	SETUP_DIRECT_DECODE(LootingItem_Struct, structs::LootingItem_Struct);
+	IN(lootee);
+	IN(looter);
+	emu->slot_id = eq->slot_id - 1;
+	IN(auto_loot);
+
+	FINISH_DIRECT_DECODE();
+}
+
 
 int32 NextItemInstSerialNumber = 1;
 int32 MaxInstances = 2000000000;
