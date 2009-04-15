@@ -287,9 +287,23 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 	double hit_chance_mod = 1.0;
 	double defense_chance_mod = 1.0;
 
+#ifdef EQBOTS
+
+	if(attacker->IsClient() || attacker->IsBot()) {
+		if(attacker->IsBot()) {
+			chancetohit -= (RuleR(Combat,WeaponSkillFalloff) * (attacker->GetSkill(skillinuse)));
+		}
+		else {
+			chancetohit -= (RuleR(Combat,WeaponSkillFalloff) * (attacker->CastToClient()->MaxSkill(skillinuse) - attacker->GetSkill(skillinuse)));
+		}
+
+#else
+
 	if(attacker->IsClient())
 	{
 		chancetohit -= (RuleR(Combat,WeaponSkillFalloff) * (attacker->CastToClient()->MaxSkill(skillinuse) - attacker->GetSkill(skillinuse)));
+
+#endif //EQBOTS
 
 		switch(attacker->GetClass())
 		{
@@ -323,9 +337,23 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 	if(skillinuse == ARCHERY)
 		hit_chance_mod -= RuleR(Combat, ArcheryHitPenalty);
 
+#ifdef EQBOTS
+
+	if(defender->IsClient() || defender->IsBot()) {
+		if(defender->IsBot()) {
+			chancetohit += (RuleR(Combat,WeaponSkillFalloff) * (defender->GetSkill(skillinuse)));
+		}
+		else {
+			chancetohit += (RuleR(Combat,WeaponSkillFalloff) * (defender->CastToClient()->MaxSkill(DEFENSE) - defender->GetSkill(skillinuse)));
+		}
+
+#else
+
 	if(defender->IsClient())
 	{
 		chancetohit += (RuleR(Combat,WeaponSkillFalloff) * (defender->CastToClient()->MaxSkill(DEFENSE) - defender->GetSkill(skillinuse)));
+
+#endif //EQBOTS
 
 		switch(defender->GetClass())
 		{
@@ -405,7 +433,6 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 #ifdef EQBOTS
 
 	// Bot AA's for the above 3
-
 	if(IsBot()) {
 		if(GetLevel() >= 65) {
 			AA_mod = 23;
@@ -449,6 +476,24 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 		chancetohit += (chancetohit * (attacker->itembonuses.HitChance / 15.0f) / 100);
 		mlog(COMBAT__TOHIT, "Applied item melee hit chance %d/15, yeilding %.2f", attacker->itembonuses.HitChance, chancetohit);
 	}
+
+#ifdef EQBOTS
+
+	if(attacker->IsBot() && (attacker->GetClass() == RANGER)) {
+		int modRangerBotAA = 100;
+		if(attacker->GetLevel() >= 67) {  // Precision of the Pathfinder 3
+			modRangerBotAA += 6;
+		}
+		else if(attacker->GetLevel() == 66) {  // Precision of the Pathfinder 2
+			modRangerBotAA += 4;
+		}
+		else if(attacker->GetLevel() == 65) {  // Precision of the Pathfinder 1
+			modRangerBotAA += 2;
+		}
+		chancetohit = ((chancetohit * modRangerBotAA) / 100);
+	}
+
+#endif //EQBOTS
 
 	if (attacker->IsClient()) {
 		int modAA = 100;

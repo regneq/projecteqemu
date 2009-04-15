@@ -556,21 +556,21 @@ bool logpos;
 #ifdef EQBOTS
 
 	typedef enum {	//focus types
-		focusSpellHaste = 1,
-		focusSpellDuration,
-		focusRange,
-		focusReagentCost,
-		focusManaCost,
-		focusImprovedHeal,
-		focusImprovedDamage,
-		focusImprovedDOT,		//i dont know about this...
-		focusImprovedCritical,
-		focusImprovedUndeadDamage,
-		focusPetPower,
-	} focusType;	
+		botfocusSpellHaste = 1,
+		botfocusSpellDuration,
+		botfocusRange,
+		botfocusReagentCost,
+		botfocusManaCost,
+		botfocusImprovedHeal,
+		botfocusImprovedDamage,
+		botfocusImprovedDOT,		//i dont know about this...
+		botfocusImprovedCritical,
+		botfocusImprovedUndeadDamage,
+		botfocusPetPower,
+	} botfocusType;	
 	void CalcBotStats(bool showtext = true);
-	sint16 GetBotFocusEffect(focusType type, int16 spell_id);
-	sint16 CalcBotFocusEffect(focusType type, int16 focus_id, int16 spell_id);
+	sint16 GetBotFocusEffect(botfocusType bottype, int16 spell_id);
+	sint16 CalcBotFocusEffect(botfocusType bottype, int16 focus_id, int16 spell_id);
 	sint32 GetBotActSpellCasttime(int16 spell_id, sint32 casttime);
 	sint32 GetBotActSpellCost(int16 spell_id, sint32 cost);
 	float GetBotActSpellRange(int16 spell_id, float range);
