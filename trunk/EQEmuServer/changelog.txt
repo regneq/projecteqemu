@@ -1,6 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==4/13/2009==
+Congdar: Bots - Fix release vs. debug compile for focus effects, updated bots to new attack code.
+
+==4/13/2009==
 Trevius: SoF - Corrected corpse looting slots so that the correct item is looted when there are multiple on a corpse
 Trevius: SoF - Item Links from corpse looting messages now display properly for both client versions
 Derision: Personal Tribute should now have an effect serverside, rather than just showing increased stats in the client.

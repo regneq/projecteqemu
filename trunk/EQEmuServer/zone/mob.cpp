@@ -2418,7 +2418,7 @@ int32 Mob::GetBotLeader() {
 	}
 }
 
-sint16 Mob::CalcBotFocusEffect(focusType type, int16 focus_id, int16 spell_id) {
+sint16 Mob::CalcBotFocusEffect(botfocusType bottype, int16 focus_id, int16 spell_id) {
 
 	const SPDat_Spell_Struct &focus_spell = spells[focus_id];
 	const SPDat_Spell_Struct &spell = spells[spell_id];
@@ -2524,31 +2524,31 @@ sint16 Mob::CalcBotFocusEffect(focusType type, int16 focus_id, int16 spell_id) {
 			switch (focus_spell.max[i])
 			{
 				case 0:
-					if (type == focusImprovedDamage && focus_spell.base[i] > value)
+					if (bottype == botfocusImprovedDamage && focus_spell.base[i] > value)
 					{
 						value = focus_spell.base[i];
 					}
 					break;
 				case 1:
-					if (type == focusImprovedCritical && focus_spell.base[i] > value)
+					if (bottype == botfocusImprovedCritical && focus_spell.base[i] > value)
 					{
 						value = focus_spell.base[i];
 					}
 					break;
 				case 2:
-					if (type == focusImprovedUndeadDamage && focus_spell.base[i] > value)
+					if (bottype == botfocusImprovedUndeadDamage && focus_spell.base[i] > value)
 					{
 						value = focus_spell.base[i];
 					}
 					break;
 				case 3:
-					if (type == 10 && focus_spell.base[i] > value)
+					if (bottype == 10 && focus_spell.base[i] > value)
 					{
 						value = focus_spell.base[i];
 					}
 					break;
 				default: //Resist stuff
-					if (type == (focusType)focus_spell.max[i] && focus_spell.base[i] > value)
+					if (bottype == (botfocusType)focus_spell.max[i] && focus_spell.base[i] > value)
 					{
 						value = focus_spell.base[i];
 					}
@@ -2556,43 +2556,43 @@ sint16 Mob::CalcBotFocusEffect(focusType type, int16 focus_id, int16 spell_id) {
 			}
 			break;
 		case SE_ImprovedHeal:
-			if (type == focusImprovedHeal && focus_spell.base[i] > value)
+			if (bottype == botfocusImprovedHeal && focus_spell.base[i] > value)
 			{
 				value = focus_spell.base[i];
 			}
 			break;
 		case SE_IncreaseSpellHaste:
-			if (type == focusSpellHaste && focus_spell.base[i] > value)
+			if (bottype == botfocusSpellHaste && focus_spell.base[i] > value)
 			{
 				value = focus_spell.base[i];
 			}
 			break;
 		case SE_IncreaseSpellDuration:
-			if (type == focusSpellDuration && BeneficialSpell(spell_id) && focus_spell.base[i] > value)
+			if (bottype == botfocusSpellDuration && BeneficialSpell(spell_id) && focus_spell.base[i] > value)
 			{
 				value = focus_spell.base[i];
 			}
 			break;
 		case SE_IncreaseRange:
-			if (type == focusRange && focus_spell.base[i] > value)
+			if (bottype == botfocusRange && focus_spell.base[i] > value)
 			{
 				value = focus_spell.base[i];
 			}
 			break;
 		case SE_ReduceReagentCost:
-			if (type == focusReagentCost && focus_spell.base[i] > value)
+			if (bottype == botfocusReagentCost && focus_spell.base[i] > value)
 			{
 				value = focus_spell.base[i];
 			}
 			break;
 		case SE_ReduceManaCost:
-			if (type == focusManaCost && focus_spell.base[i] > value)
+			if (bottype == botfocusManaCost && focus_spell.base[i] > value)
 			{
 				value = focus_spell.base[i];
 			}
 			break;
 		case SE_PetPowerIncrease:
-			if (type == focusPetPower && focus_spell.base[i] > value)
+			if (bottype == botfocusPetPower && focus_spell.base[i] > value)
 			{
 				value = focus_spell.base[i];
 			}
@@ -2608,7 +2608,7 @@ sint16 Mob::CalcBotFocusEffect(focusType type, int16 focus_id, int16 spell_id) {
 	return(value*lvlModifier/100);
 }
 
-sint16 Mob::GetBotFocusEffect(focusType type, int16 spell_id) {
+sint16 Mob::GetBotFocusEffect(botfocusType bottype, int16 spell_id) {
 	if (IsBardSong(spell_id))
 		return 0;
 	const Item_Struct* TempItem = 0;
@@ -2620,7 +2620,7 @@ sint16 Mob::GetBotFocusEffect(focusType type, int16 spell_id) {
 	{
 		TempItem = database.GetItem(this->CastToNPC()->GetItemID(x));
 		if (TempItem && TempItem->Focus.Effect > 0 && TempItem->Focus.Effect != SPELL_UNKNOWN) {
-			Total = CalcBotFocusEffect(type, TempItem->Focus.Effect, spell_id);
+			Total = CalcBotFocusEffect(bottype, TempItem->Focus.Effect, spell_id);
 			if(Total > realTotal) {
 				realTotal = Total;
 			}
@@ -2636,16 +2636,21 @@ sint16 Mob::GetBotFocusEffect(focusType type, int16 spell_id) {
 		if (focusspellid == 0 || focusspellid >= SPDAT_RECORDS)
 			continue;
 
-		Total2 = CalcBotFocusEffect(type, focusspellid, spell_id);
+		Total2 = CalcBotFocusEffect(bottype, focusspellid, spell_id);
 		if(Total2 > realTotal2) {
 			realTotal2 = Total2;
 		}
 	}
 
-	if(type == focusReagentCost && IsSummonPetSpell(spell_id) && GetAA(aaElementalPact))
+	int32 MagicianElementalPactAA = 0;
+	if((GetClass() == MAGICIAN) && (GetLevel() >= 59)) {
+		MagicianElementalPactAA = 1;
+	}
+
+	if(bottype == botfocusReagentCost && IsSummonPetSpell(spell_id) && MagicianElementalPactAA)
 		return 100;
 
-	if(type == focusReagentCost && (IsEffectInSpell(spell_id, SE_SummonItem) || IsSacrificeSpell(spell_id))){
+	if(bottype == botfocusReagentCost && (IsEffectInSpell(spell_id, SE_SummonItem) || IsSacrificeSpell(spell_id))){
 		return 0;
 	//Summon Spells that require reagents are typically imbue type spells, enchant metal, sacrifice and shouldn't be affected
 	//by reagent conservation for obvious reasons.
@@ -2658,7 +2663,7 @@ sint32 Mob::GetBotActSpellHealing(int16 spell_id, sint32 value) {
 
 	sint32 modifier = 100;
 	
-	modifier += GetBotFocusEffect(focusImprovedHeal, spell_id);
+	modifier += GetBotFocusEffect(botfocusImprovedHeal, spell_id);
 						
 	if(spells[spell_id].buffduration < 1) {
 		uint8 botlevel = GetLevel();
@@ -3050,7 +3055,7 @@ void Mob::BotMeditate(bool isSitting) {
 sint32 Mob::GetBotActSpellDuration(int16 spell_id, sint32 duration) {
 
 	int increase = 100;
-	increase += GetBotFocusEffect(focusSpellDuration, spell_id);
+	increase += GetBotFocusEffect(botfocusSpellDuration, spell_id);
 
 	if(GetLevel() >= 57) { // Spell Casting Reinforcement AA
 		increase += 30;
@@ -3071,7 +3076,7 @@ sint32 Mob::GetBotActSpellDuration(int16 spell_id, sint32 duration) {
 
 float Mob::GetBotActSpellRange(int16 spell_id, float range) {
 	float extrange = 100;
-	extrange += GetBotFocusEffect(focusRange, spell_id);
+	extrange += GetBotFocusEffect(botfocusRange, spell_id);
 	return (range * extrange) / 100;
 }
 
@@ -3104,7 +3109,7 @@ sint32 Mob::GetBotActSpellCost(int16 spell_id, sint32 cost) {
 			PercentManaReduction += 5;
 		}
 		
-		PercentManaReduction += GetBotFocusEffect(focusManaCost, spell_id);
+		PercentManaReduction += GetBotFocusEffect(botfocusManaCost, spell_id);
 		cost -= (cost * (PercentManaReduction / 100));
 	}
 
@@ -3119,7 +3124,7 @@ sint32 Mob::GetBotActSpellCost(int16 spell_id, sint32 cost) {
 sint32 Mob::GetBotActSpellCasttime(int16 spell_id, sint32 casttime) {
 	
 	sint32 cast_reducer = 0;
-	cast_reducer += GetBotFocusEffect(focusSpellHaste, spell_id);
+	cast_reducer += GetBotFocusEffect(botfocusSpellHaste, spell_id);
 
 	uint8 botlevel = GetLevel();
 	int8 botclass = GetClass();

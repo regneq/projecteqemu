@@ -6074,6 +6074,26 @@ void Client::Handle_OP_PickPocket(const EQApplicationPacket *app)
 		safe_delete(outapp);
 	}
 	else if (victim->IsNPC()){
+
+#ifdef EQBOTS
+
+		if(victim->IsBot()) {
+			Message(0,"Stealing from your own bots is just wrong.");
+			EQApplicationPacket* outapp = new EQApplicationPacket(OP_PickPocket, sizeof(sPickPocket_Struct));
+			sPickPocket_Struct* pick_out = (sPickPocket_Struct*) outapp->pBuffer;
+			pick_out->coin = 0;
+			pick_out->from = victim->GetID();
+			pick_out->to = GetID();
+			pick_out->myskill = GetSkill(PICK_POCKETS);
+			pick_out->type = 0;
+			//if we do not send this packet the client will lock up and require the player to relog.
+			QueuePacket(outapp);
+			safe_delete(outapp);
+		}
+		else
+
+#endif //EQBOTS
+
 		victim->CastToNPC()->PickPocket(this);
 	}
 	else{
