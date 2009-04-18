@@ -1058,8 +1058,10 @@ void Client::NukeTraderItem(int16 Slot,sint16 Charges,int16 Quantity,Client* Cus
 
 	if(!Customer) return;
 	_log(TRADING__CLIENT, "NukeTraderItem(Slot %i, Charges %i, Quantity %i", Slot, Charges, Quantity);
-	if(Quantity < Charges)
+	if(Quantity < Charges) {
 		Customer->SendSingleTraderItem(this->CharacterID(), SerialNumber);
+		m_inv.DeleteItem(Slot, Quantity);
+	}
 	else {
 		EQApplicationPacket* outapp = new EQApplicationPacket(OP_TraderDelItem,sizeof(TraderDelItem_Struct));
 		TraderDelItem_Struct* tdis = (TraderDelItem_Struct*)outapp->pBuffer;
@@ -1074,10 +1076,11 @@ void Client::NukeTraderItem(int16 Slot,sint16 Charges,int16 Quantity,Client* Cus
 		Customer->QueuePacket(outapp);
 		safe_delete(outapp);
 
+		m_inv.DeleteItem(Slot);
+
 	}
 	// This updates the trader. Removes it from his trading bags.
 	//
-	m_inv.DeleteItem(Slot, Quantity);
 	const ItemInst* Inst = m_inv[Slot];
 
 	database.SaveInventory(CharacterID(), Inst, Slot);
