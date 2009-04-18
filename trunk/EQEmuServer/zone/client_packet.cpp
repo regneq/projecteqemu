@@ -7122,6 +7122,9 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 
 	m_pp.timeentitledonaccount = database.GetTotalTimeEntitledOnAccount(AccountID()) / 1440;
 
+	if(m_pp.RestTimer > RuleI(Character, RestRegenTimeToActivate))
+		m_pp.RestTimer = 0;
+
 	//This checksum should disappear once dynamic structs are in... each struct strategy will do it
 	CRC32::SetEQChecksum((unsigned char*)&m_pp, sizeof(PlayerProfile_Struct)-4);
 
@@ -7130,6 +7133,8 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 	outapp->priority = 6;
 	FastQueuePacket(&outapp);
 
+	if(m_pp.RestTimer)
+		rest_timer.Start(m_pp.RestTimer * 1000);
 
 	//this was moved before the spawn packets are sent
 	//in hopes that it adds more consistency...

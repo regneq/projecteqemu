@@ -1,5 +1,15 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==4/18/2009==
+Derision: Changed Account Session Limiting to kick off the old connection and allow the new one.
+drakelord: Rest State HP and MP Bonus
+Derision: SoF - Combat/Rest state indicator now works.
+
+Optional SQL:
+
+INSERT INTO rule_values VALUES(0,'Character:RestRegenPercent',0);
+INSERT INTO rule_values VALUES(0,'Character:RestRegenTimeToActivate',30);
+
 ==4/13/2009==
 Congdar: Bots - Fix release vs. debug compile for focus effects, updated bots to new attack code.
 

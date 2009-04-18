@@ -57,10 +57,17 @@ void HateList::CheckFrenzyHate()
 
 void HateList::Wipe()
 {
-    LinkedListIterator<tHateEntry*> iterator(list);
-    iterator.Reset();
-	while(iterator.MoreElements())
-        iterator.RemoveCurrent();
+	LinkedListIterator<tHateEntry*> iterator(list);
+	iterator.Reset();
+
+	while(iterator.MoreElements()) {
+		Mob* m = iterator.GetData()->ent;
+
+        	iterator.RemoveCurrent();
+
+		if(m->IsClient())
+			m->CastToClient()->DecrementAggroCount();
+	}
 }
 
 bool HateList::IsOnHateList(Mob *mob)    
@@ -186,25 +193,33 @@ void HateList::Add(Mob *ent, sint32 in_hate, sint32 in_dam, bool bFrenzy, bool i
         p->hate = in_hate;
         p->bFrenzy = bFrenzy;
         list.Append(p);
+
+	if(ent->IsClient())
+		ent->CastToClient()->IncrementAggroCount();
     }
 }
 
 bool HateList::RemoveEnt(Mob *ent)
 {
 	bool found = false;
-    LinkedListIterator<tHateEntry*> iterator(list);
-    iterator.Reset();
+	LinkedListIterator<tHateEntry*> iterator(list);
+	iterator.Reset();
+
 	while(iterator.MoreElements())
-    {
-        if (iterator.GetData()->ent == ent)
-        {
-            iterator.RemoveCurrent();
+	{
+		if (iterator.GetData()->ent == ent)
+		{
+			iterator.RemoveCurrent();
 			found = true;
-        }
-        else
-            iterator.Advance();
-    }
-    return found;
+
+			if(ent->IsClient())
+				ent->CastToClient()->DecrementAggroCount();
+
+        	}
+		else
+			iterator.Advance();
+	}
+	return found;
 }
 
 void HateList::DoFactionHits(sint32 nfl_id) {
