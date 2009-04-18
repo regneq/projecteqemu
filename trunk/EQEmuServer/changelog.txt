@@ -4,6 +4,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 Derision: Changed Account Session Limiting to kick off the old connection and allow the new one.
 drakelord: Rest State HP and MP Bonus
 Derision: SoF - Combat/Rest state indicator now works.
+Derision: No longer need to zone for /corpse to work.
 
 Optional SQL:
 
