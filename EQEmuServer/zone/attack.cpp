@@ -1903,7 +1903,7 @@ void Client::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skil
 	Death_Struct* d = (Death_Struct*)app.pBuffer;
 	d->spawn_id = GetID();
 	d->killer_id = other ? other->GetID() : 0;
-	//d->unknown12 = 1;
+	d->corpseid=GetID();
 	d->bindzoneid = m_pp.binds[0].zoneId;
 	d->spell_id = spell == SPELL_UNKNOWN ? 0xffffffff : spell;
 	d->attack_skill = spell != SPELL_UNKNOWN ? 0xe7 : attack_skill;
