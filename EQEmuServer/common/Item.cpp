@@ -861,6 +861,8 @@ bool Inventory::DeleteItem(sint16 slot_id, uint8 quantity)
 		_PutItem(slot_id, item_to_delete);
 		return false;
 	}
+	
+	safe_delete(item_to_delete);
 
 	return true;
 	
