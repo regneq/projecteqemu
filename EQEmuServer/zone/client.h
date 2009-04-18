@@ -868,6 +868,8 @@ public:
 	 	   { return (taskstate ? taskstate->CompletedTasksInSet(TaskSet) :0); }
 
 	inline EQClientVersion GetClientVersion() { return ClientVersion; }
+	void IncrementAggroCount();
+	void DecrementAggroCount();
 
 protected:
 	friend class Mob;
@@ -927,6 +929,7 @@ private:
 	void DoHPRegen(/*SpawnAppearance_Struct* sa*/);
 	void DoManaRegen();
 	void DoStaminaUpdate();
+	void CalcRestState();
 
 	int32 pLastUpdate;
 	int32 pLastUpdateWZ;
@@ -1046,11 +1049,13 @@ private:
 #endif
 
 	Timer	proximity_timer;
+	Timer	TaskPeriodic_Timer;
+	Timer	rest_timer;
+
 	float	proximity_x;
 	float	proximity_y;
 	float	proximity_z;
 
-	Timer	TaskPeriodic_Timer;
 
 	void	BulkSendInventoryItems();
 
@@ -1071,6 +1076,11 @@ private:
 	bool instalog;
 	sint32	last_reported_mana;
 	sint32	last_reported_endur;
+
+	unsigned int  AggroCount; // How many mobs are aggro on us.
+
+	unsigned int	RestRegenHP;
+	unsigned int	RestRegenMana;
 
 	set<uint32> zone_flags;
 

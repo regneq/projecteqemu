@@ -588,6 +588,7 @@ ENCODE(OP_PlayerProfile) {
 //	OUT(unknown19575[5]);
 //	OUT(showhelm);
 	eq->showhelm = 1;
+	OUT(RestTimer);
 //	OUT(unknown19584[4]);
 //	OUT(unknown19588);
 

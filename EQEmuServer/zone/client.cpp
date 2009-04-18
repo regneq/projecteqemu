@@ -160,7 +160,8 @@ Client::Client(EQStreamInterface* ieqs)
 	update_manager(ieqs),
 #endif
 	proximity_timer(ClientProximity_interval),
-	TaskPeriodic_Timer(RuleI(TaskSystem, PeriodicCheckTimer) * 1000)
+	TaskPeriodic_Timer(RuleI(TaskSystem, PeriodicCheckTimer) * 1000),
+	rest_timer(1)
 {
 	for(int cf=0; cf < _FilterCount; cf++)
 		ClientFilters[cf] = FilterShow;
@@ -267,6 +268,9 @@ Client::Client(EQStreamInterface* ieqs)
 	AttemptedMessages = 0;
 	TotalKarma = 0;
 	ClientVersion = EQClientUnknown;
+	AggroCount = 0;
+	RestRegenHP = 0;
+	RestRegenMana = 0;
 }
 
 Client::~Client() {
@@ -478,7 +482,7 @@ bool Client::Save(int8 iCommitNow) {
 
 	TotalSecondsPlayed += (time(NULL) - m_pp.lastlogin);
 	m_pp.timePlayedMin = (TotalSecondsPlayed / 60);
-
+	m_pp.RestTimer = rest_timer.GetRemainingTime() / 1000;
 	m_pp.lastlogin = time(NULL);
 	if (pQueuedSaveWorkID) {
 		dbasync->CancelWork(pQueuedSaveWorkID);
@@ -3882,4 +3886,63 @@ void Client::VoiceMacroReceived(int32 Type, char *Target, int32 MacroNumber) {
 
 	if(!worldserver.SendVoiceMacro(this, Type, Target, MacroNumber, GroupOrRaidID))
 		Message(0, "Error: World server disconnected");
+}
+
+void Client::IncrementAggroCount() {
+
+	// This method is called when a client is added to a mob's hate list. It turns the clients aggro flag on so
+	// rest state regen is stopped, and for SoF, it sends the opcode to show the crossed swords in-combat indicator.
+	//
+	//
+	if(!RuleI(Character, RestRegenPercent))
+		return;
+
+	AggroCount++;
+
+	// If we already had aggro before this method was called, the combat indicator should already be up for SoF clients,
+	// so we don't need to send it again.
+	//
+	if(AggroCount > 1)
+		return;
+
+	if(GetClientVersion() == EQClientSoF) {
+
+		EQApplicationPacket *outapp = new EQApplicationPacket(OP_RestState, 1);
+		char *Buffer = (char *)outapp->pBuffer;
+		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0x01);
+		QueuePacket(outapp);
+		safe_delete(outapp);
+	}
+
+}
+
+void Client::DecrementAggroCount() {
+
+	// This should be called when a client is removed from a mob's hate list (it dies or is memblurred).
+	// It checks whether any other mob is aggro on the player, and if not, starts the rest timer.
+	// For SoF, the opcode to start the rest state countdown timer in the UI is sent.
+	//
+	if(!RuleI(Character, RestRegenPercent))
+		return;
+	
+	// If we didn't have aggro before, this method should not have been called.
+	if(!AggroCount)
+		return;
+
+	AggroCount--;
+
+	// Something else is still aggro on us, can't rest yet.
+	if(AggroCount) return;
+
+	rest_timer.Start(RuleI(Character, RestRegenTimeToActivate) * 1000);
+
+	if(GetClientVersion() == EQClientSoF) {
+
+		EQApplicationPacket *outapp = new EQApplicationPacket(OP_RestState, 5);
+		char *Buffer = (char *)outapp->pBuffer;
+		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0x00);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, RuleI(Character, RestRegenTimeToActivate));
+		QueuePacket(outapp);
+		safe_delete(outapp);
+	}
 }

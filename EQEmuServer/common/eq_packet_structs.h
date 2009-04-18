@@ -911,7 +911,7 @@ struct PlayerProfile_Struct
 /*19557*/	uint8				raidAutoconsent;    // 0=off, 1=on
 /*19558*/	uint8				guildAutoconsent;   // 0=off, 1=on
 /*19559*/	uint8				unknown19559[5];    // ***Placeholder (6/29/2005)
-/*19564*/	uint32				unknown15964;
+/*19564*/	uint32				RestTimer;
 /*19568*/
 };
 

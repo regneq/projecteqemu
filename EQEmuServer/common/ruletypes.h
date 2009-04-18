@@ -55,6 +55,8 @@ RULE_INT ( Character, ItemStrikethroughCap, 35)
 RULE_INT ( Character, SkillUpModifier, 100) //skill ups are at 100%
 RULE_BOOL ( Character, SharedBankPlat, false) //off by default to prevent duping for now
 RULE_BOOL ( Character, BindAnywhere, false)
+RULE_INT ( Character, RestRegenPercent, 0) // Set to >0 to enable rest state bonus HP and mana regen.
+RULE_INT ( Character, RestRegenTimeToActivate, 30) // Time in seconds for rest state regen to kick in.
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Guild )

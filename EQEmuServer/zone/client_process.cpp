@@ -542,6 +542,7 @@ bool Client::Process() {
 			CalcMaxHP();
 			CalcMaxMana();
 			CalcMaxEndurance();
+			CalcRestState();
 			DoHPRegen();
 			DoManaRegen();
 			DoEnduranceRegen();
@@ -1676,7 +1677,7 @@ void Client::DoHPRegen() {
 	sint32 spell_regen = spellbonuses.HPRegen;
 	sint32 total_regen = normal_regen + item_regen + spell_regen;
 	total_regen = (total_regen * RuleI(Character, HPRegenMultiplier)) / 100;
-	SetHP(GetHP() + total_regen);
+	SetHP(GetHP() + total_regen + RestRegenHP);
 	SendHPUpdate();
 }
 
@@ -1705,7 +1706,7 @@ void Client::DoManaRegen() {
 
 	regen = (regen * RuleI(Character, ManaRegenMultiplier)) / 100;
 	
-	SetMana(GetMana() + regen);
+	SetMana(GetMana() + regen + RestRegenMana);
 	SendManaUpdatePacket();
 }
 
@@ -1778,3 +1779,35 @@ void Client::DoEnduranceUpkeep() {
 		SetEndurance(GetEndurance() - upkeep_sum);
 }
 
+void Client::CalcRestState() {
+
+	// This method calculates rest state HP and mana regeneration.
+	// The client must have been out of combat for RuleI(Character, RestRegenTimeToActivate) seconds,
+	// must be sitting down, and must not have any detrimental spells affecting them.
+	//
+	if(!RuleI(Character, RestRegenPercent))
+		return;
+
+	RestRegenHP = RestRegenMana = 0;
+
+	if(AggroCount || !IsSitting())
+		return;
+
+	if(!rest_timer.Check(false))
+		return;
+
+	for (unsigned int j = 0; j < BUFF_COUNT; j++) {
+
+		if(buffs[j].spellid != SPELL_UNKNOWN) {
+
+			if(IsDetrimentalSpell(buffs[j].spellid) && (buffs[j].ticsremaining > 0)) {
+
+				return;
+			}
+		}
+	}
+
+	RestRegenHP = (GetMaxHP() * RuleI(Character, RestRegenPercent) / 100);
+
+	RestRegenMana = (GetMaxMana() * RuleI(Character, RestRegenPercent) / 100);
+}

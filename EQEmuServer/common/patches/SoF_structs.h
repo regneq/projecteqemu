@@ -981,7 +981,8 @@ struct PlayerProfile_Struct //23576 Octets
 /*22534*/ uint8  guildAutoconsent;    // 0=off, 1=on
 /*22535*/ uint8  unknown19575[5];     // ***Placeholder (6/29/2005)
 /*22540*/ uint32 showhelm;            // 0=no, 1=yes
-/*22544*/ uint8   unknown19584[1032]; // ***Placeholder (2/13/2007)[1032] - END of Struct
+/*22544*/ uint32 RestTimer;
+/*22544*/ uint8   unknown19584[1028]; // ***Placeholder (2/13/2007)[1032] - END of Struct
 /*23576*/
 };
 

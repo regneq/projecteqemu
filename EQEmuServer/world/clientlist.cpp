@@ -98,19 +98,43 @@ ClientListEntry* ClientList::GetCLE(int32 iID) {
 }
 
 //Account Limiting Code to limit the number of characters allowed on from a single account at once.
-void ClientList::GetCLEAccount(int32 iAccID) {
-	ClientListEntry* count_Chars_On = 0;
-	LinkedListIterator<ClientListEntry*> iterator(clientlist);
+void ClientList::EnforceSessionLimit(int32 iLSAccountID) {
 
-	int Chars_On = 0;
+	ClientListEntry* ClientEntry = 0;
+
+	LinkedListIterator<ClientListEntry*> iterator(clientlist, BACKWARD);
+
+	int CharacterCount = 0;
+
 	iterator.Reset();
+
 	while(iterator.MoreElements()) {
-		count_Chars_On = iterator.GetData();
-		if ((count_Chars_On->AccountID() == iAccID) && ((count_Chars_On->Admin() <= (RuleI(World, ExemptAccountLimitStatus))) || (RuleI(World, ExemptAccountLimitStatus) < 0))) {
-			Chars_On++;
-			if (Chars_On > (RuleI(World, AccountSessionLimit))){
-				count_Chars_On->SetOnline(CLE_Status_Offline);
+
+		ClientEntry = iterator.GetData();
+
+		if ((ClientEntry->LSAccountID() == iLSAccountID) &&
+		    ((ClientEntry->Admin() <= (RuleI(World, ExemptAccountLimitStatus))) || (RuleI(World, ExemptAccountLimitStatus) < 0))) {
+
+			CharacterCount++;
+
+			if (CharacterCount >= (RuleI(World, AccountSessionLimit))){
+				// If we have a char name, they are in a zone, so send a kick to the zone server
+				if(strlen(ClientEntry->name())) {
+
+					ServerPacket* pack = new ServerPacket(ServerOP_KickPlayer, sizeof(ServerKickPlayer_Struct));
+					ServerKickPlayer_Struct* skp = (ServerKickPlayer_Struct*) pack->pBuffer;
+					strcpy(skp->adminname, "SessionLimit");
+					strcpy(skp->name, ClientEntry->name());
+					skp->adminrank = 255;
+					zoneserver_list.SendPacket(pack);
+					safe_delete(pack);
+				}
+
+				ClientEntry->SetOnline(CLE_Status_Offline);
+
 				iterator.RemoveCurrent();
+
+				continue;
 			}
 		}
 		iterator.Advance();
