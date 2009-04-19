@@ -722,6 +722,7 @@ public:
 	void    RemoveNoRent();
 	void	RangedAttack(Mob* other);
 	void	ThrowingAttack(Mob* other);
+	uint16  GetThrownDamage(sint16 wDmg, sint32& TotalDmg, int& minDmg);
 
 	void	SetZoneFlag(uint32 zone_id);
 	void	ClearZoneFlag(uint32 zone_id);
@@ -974,7 +975,7 @@ private:
 	int16				weight;
 	bool				berserk;
 	bool				dead;
-	bool				IsOnBoat;
+	int16				BoatID;
 	bool				IsTracking;
 	int16				CustomerID;
 	bool	Trader;

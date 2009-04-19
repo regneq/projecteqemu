@@ -1174,9 +1174,9 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 			}
 			case SE_Stun: {
 				if (spells[spell_id].base[o] > 1)
-					AggroAmount+=((1 + slevel*4)*RuleI(Aggro, IncapacitateAggroMod)/100);
+					AggroAmount+=((1 + slevel*4)*RuleI(Aggro, StunAggroMod)/100);
 				else
-					AggroAmount+=((1 + slevel*2)*RuleI(Aggro, IncapacitateAggroMod)/100);
+					AggroAmount+=((1 + slevel*2)*RuleI(Aggro, StunAggroMod)/100);
 				break;
 			}
 			case SE_Blind: {
@@ -1282,7 +1282,10 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 			case SE_DamageModifier:
 			case SE_MinDamageModifier:
 			case SE_IncreaseBlockChance:
-			case SE_Accuracy:{
+			case SE_Accuracy:
+			case SE_DamageShield:
+			case SE_SpellDamageShield:
+			case SE_ReverseDS:{
 				AggroAmount += slevel*2;
 				break;
 			}

@@ -4302,7 +4302,7 @@ void Mob::TryWeaponProc(const Item_Struct* weapon, Mob *on) {
 			}
 		}
 		if (SpellProcs[i].spellID != SPELL_UNKNOWN) {
-			int chance = ProcChance + SpellProcs[i].chance;
+			int chance = ProcChance * (SpellProcs[i].chance/5);
 			if(MakeRandomInt(0, 100) < chance) {
 				mlog(COMBAT__PROCS, "Spell proc %d procing spell %d (%d percent chance)", i, SpellProcs[i].spellID, chance);
 				ExecWeaponProc(SpellProcs[i].spellID, on);

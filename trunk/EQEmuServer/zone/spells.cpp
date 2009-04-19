@@ -4242,7 +4242,7 @@ bool Mob::FindType(int8 type, bool bOffensive, int16 threshold) {
 	return false;
 }
 
-bool Mob::AddProcToWeapon(int16 spell_id, bool bPerma, int8 iChance) {
+bool Mob::AddProcToWeapon(int16 spell_id, bool bPerma, int16 iChance) {
 	if(spell_id == SPELL_UNKNOWN)
 		return(false);
 	
@@ -4286,7 +4286,7 @@ bool Mob::RemoveProcFromWeapon(int16 spell_id, bool bAll) {
     return true;
 }
 
-bool Mob::AddDefensiveProc(int16 spell_id, int8 iChance)
+bool Mob::AddDefensiveProc(int16 spell_id, int16 iChance)
 {
 	if(spell_id == SPELL_UNKNOWN)
 		return(false);
@@ -4318,7 +4318,7 @@ bool Mob::RemoveDefensiveProc(int16 spell_id, bool bAll)
     return true;
 }
 
-bool Mob::AddRangedProc(int16 spell_id, int8 iChance)
+bool Mob::AddRangedProc(int16 spell_id, int16 iChance)
 {
 	if(spell_id == SPELL_UNKNOWN)
 		return(false);
