@@ -106,7 +106,10 @@ void Mob::DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, si
 
 	sint32 hate = max_damage;
 	if(max_damage > 0) {
-		who->AvoidDamage(this, max_damage);
+		if(skill != THROWING && skill != ARCHERY)
+		{
+			who->AvoidDamage(this, max_damage);
+		}
 		who->MeleeMitigation(this, max_damage, min_damage);
 		ApplyMeleeDamageBonus(skill, max_damage);
 		TryCriticalHit(who, skill, max_damage);
@@ -925,6 +928,54 @@ void Client::RangedAttack(Mob* other) {
 	}
 }
 
+uint16 Client::GetThrownDamage(sint16 wDmg, sint32& TotalDmg, int& minDmg)
+{
+	uint16 MaxDmg = (wDmg) * 2 + ((wDmg) * (GetDEX() + GetSkill(THROWING)) / 225);
+
+	switch(GetAA(aaThrowingMastery))
+	{
+		case 1:
+			MaxDmg = MaxDmg * 115/100;
+			break;
+		case 2:
+			MaxDmg = MaxDmg * 125/100;
+			break;
+		case 3:
+			MaxDmg = MaxDmg * 150/100;
+			break;
+	}
+
+	if (MaxDmg == 0)
+		MaxDmg = 1;
+			
+	if(RuleB(Combat, UseIntervalAC))
+		TotalDmg = MaxDmg;
+	else
+		TotalDmg = MakeRandomInt(1, MaxDmg);
+
+	minDmg = 1;
+	if(GetLevel() > 25)
+	{
+		TotalDmg += ((GetLevel()-25)/3);
+		minDmg += ((GetLevel()-25)/3);
+	}
+
+	int bonus = 0;
+	if(GetLevel() > 50)
+		bonus += 15;
+	if(GetLevel() >= 55)
+		bonus += 15;
+	if(GetLevel() >= 60)
+		bonus += 15;
+	if(GetLevel() >= 65)
+		bonus += 15;
+
+	TotalDmg += (TotalDmg * bonus / 100);
+	minDmg += (minDmg * bonus / 100);
+	
+	return MaxDmg;
+}
+
 void Client::ThrowingAttack(Mob* other) { //old was 51
 	//conditions to use an attack checked before we are called
 	
@@ -997,8 +1048,7 @@ void Client::ThrowingAttack(Mob* other) { //old was 51
 	}
 	//send item animation, also does the throw animation
 	SendItemAnimation(target, item);
-	 
-	sint32 TotalDmg = 0;
+
 	
 	// Hit?
 	if (!target->CheckHitChance(this, THROWING, 13)) {
@@ -1011,47 +1061,9 @@ void Client::ThrowingAttack(Mob* other) { //old was 51
 
 		if(WDmg > 0)
 		{
-			uint16 MaxDmg = (WDmg) * 2 + ((WDmg) * (GetDEX() + GetSkill(THROWING)) / 225);
-
-			switch(GetAA(aaThrowingMastery))
-			{
-			case 1:
-			MaxDmg = MaxDmg * 115/100;
-			break;
-			case 2:
-			MaxDmg = MaxDmg * 125/100;
-			break;
-			case 3:
-			MaxDmg = MaxDmg * 150/100;
-			break;
-			}
-
-			if (MaxDmg == 0)
-				MaxDmg = 1;
-			
-			if(RuleB(Combat, UseIntervalAC))
-				TotalDmg = MaxDmg;
-			else
-				TotalDmg = MakeRandomInt(1, MaxDmg);
-			
+			sint32 TotalDmg = 0;
 			int minDmg = 1;
-			if(GetLevel() > 25){
-				TotalDmg += ((GetLevel()-25)/3);
-				minDmg += ((GetLevel()-25)/3);
-			}
-
-			int bonus = 0;
-			if(GetLevel() > 50)
-				bonus += 15;
-			if(GetLevel() >= 55)
-				bonus += 15;
-			if(GetLevel() >= 60)
-				bonus += 15;
-			if(GetLevel() >= 65)
-				bonus += 15;
-			
-			TotalDmg += (TotalDmg * bonus / 100);
-			minDmg += (minDmg * bonus / 100);
+			uint16 MaxDmg = GetThrownDamage(WDmg, TotalDmg, minDmg);
 
 			mlog(COMBAT__RANGED, "Item DMG %d. Max Damage %d. Hit for damage %d", WDmg, MaxDmg, TotalDmg);
 

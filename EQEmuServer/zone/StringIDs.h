@@ -192,4 +192,5 @@
 #define SONG_NEEDS_STRINGS 407	// You need to play a stringed instrument for this song
 #define SONG_NEEDS_BRASS 408	// You need to play a brass instrument for this song
 #define NO_INSTRUMENT_SKILL 269	// "Stick to singing until you learn to play this instrument."
+#define IN_USE 1406	// "Someone else is using that.  Try again later."
 #endif

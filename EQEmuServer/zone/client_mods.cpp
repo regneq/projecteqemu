@@ -375,7 +375,7 @@ sint32 Client::CalcBaseHP()
 	else
 		Post255 = 0;
 		
-	base_hp = (5)+(GetLevel()*lm/10) + (((GetSTA()-Post255)*GetLevel()*lm/3000));
+	base_hp = (5)+(GetLevel()*lm/10) + (((GetSTA()-Post255)*GetLevel()*lm/3000)) + ((Post255*GetLevel())*lm/6000);
 	return base_hp;
 }
 

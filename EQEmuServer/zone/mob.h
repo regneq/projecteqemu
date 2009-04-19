@@ -235,7 +235,7 @@ struct StatBonuses {
 typedef struct
 {
     int16 spellID;
-    int8 chance;
+    int16 chance;
     Timer *pTimer;
 } tProc;
 
@@ -428,7 +428,8 @@ bool logpos;
 	void DoAnim(const int animnum, int type=0, bool ackreq = true, eqFilterType filter = FilterNone);
 
 	void ChangeSize(float in_size, bool bNoRestriction = false);
-	virtual void GMMove(float x, float y, float z, float heading = 0.01);
+	virtual void GMMove(float x, float y, float z, float heading = 0.01, bool SendUpdate = true);
+	void SetDeltas(float delta_x, float delta_y, float delta_z, float delta_h);
 	void SendPosUpdate(int8 iSendToSelf = 0);
 	void MakeSpawnUpdateNoDelta(PlayerPositionUpdateServer_Struct* spu);
 	void MakeSpawnUpdate(PlayerPositionUpdateServer_Struct* spu);
@@ -442,15 +443,15 @@ bool logpos;
 	void CreateHPPacket(EQApplicationPacket* app);
 	void SendHPUpdate();
 
-	bool AddRangedProc(int16 spell_id, int8 iChance = 3);
+	bool AddRangedProc(int16 spell_id, int16 iChance = 3);
 	bool RemoveRangedProc(int16 spell_id, bool bAll = false);
 	bool HasRangedProcs() const;
 
-	bool AddDefensiveProc(int16 spell_id, int8 iChance = 3);
+	bool AddDefensiveProc(int16 spell_id, int16 iChance = 3);
 	bool RemoveDefensiveProc(int16 spell_id, bool bAll = false);
 	bool HasDefensiveProcs() const;
 
-	bool AddProcToWeapon(int16 spell_id, bool bPerma = false, int8 iChance = 3);
+	bool AddProcToWeapon(int16 spell_id, bool bPerma = false, int16 iChance = 3);
 	bool RemoveProcFromWeapon(int16 spell_id, bool bAll = false);
 	bool HasProcs() const;
 

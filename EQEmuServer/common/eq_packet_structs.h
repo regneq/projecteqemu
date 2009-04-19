@@ -3727,6 +3727,13 @@ typedef struct {
 	uint16	GuildID;
 } GroupLFPMemberEntry;
 
+struct ControlBoat_Struct {
+/*000*/	uint32	boatId;		// entitylist id of the boat
+/*004*/	bool	TakeControl;	// 01 if taking control, 00 if releasing it
+/*007*/ 				// no idea what these last three bytes represent
+};
+
+
 //old structures live here:
 #include "eq_old_structs.h"
 

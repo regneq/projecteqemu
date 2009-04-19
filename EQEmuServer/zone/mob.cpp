@@ -1088,7 +1088,7 @@ void Mob::ShowBuffList(Client* client) {
 	}
 }
 
-void Mob::GMMove(float x, float y, float z, float heading) {
+void Mob::GMMove(float x, float y, float z, float heading, bool SendUpdate) {
 	x_pos = x;
 	y_pos = y;
 	z_pos = z;
@@ -1096,7 +1096,8 @@ void Mob::GMMove(float x, float y, float z, float heading) {
 		this->heading = heading;
 	if(IsNPC())
 		CastToNPC()->SaveGuardSpot(true);
-	SendAllPosition();
+	if(SendUpdate)
+		SendAllPosition();
 	//SendPosUpdate(1);
 #ifdef PACKET_UPDATE_MANAGER
 	if(IsClient()) {
@@ -4347,4 +4348,11 @@ void Mob::TriggerDefensiveProcs(Mob *on)
 	}
 
 	return;
+}
+
+void Mob::SetDeltas(float dx, float dy, float dz, float dh) {
+	delta_x = dx;
+	delta_y = dy;
+	delta_z = dz;
+	delta_heading = dh;
 }

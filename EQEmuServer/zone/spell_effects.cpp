@@ -1364,7 +1364,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				snprintf(effect_desc, _EDLEN, "Weapon Proc: %s (id %d)", spells[effect_value].name, procid);
 #endif
 
-				AddProcToWeapon(procid);
+				AddProcToWeapon(procid, false, spells[spell_id].base2[i]); //add 50 b/c we are using INTs everywhere...
 				break;
 			}
 
@@ -2199,7 +2199,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #endif
 				uint16 procid = GetProcID(spell_id, i);
 
-				AddRangedProc(procid);
+				AddRangedProc(procid, spells[spell_id].base2[i]);
 				
 				break;		
 			}
@@ -2249,78 +2249,62 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				snprintf(effect_desc, _EDLEN, "Skill Attack");
 #endif
 				const ItemInst* itm = NULL;
-				sint32 dam = 0;
-				if(spells[spell_id].skill == ARCHERY || spells[spell_id].skill == THROWING)
+				sint32 tDmg = 0; //total damage done
+				int mDmg = 1; //minimume damage done
+				
+				/* for this, spells[spell_id].base2[i] is the damage for the attack "weapon damage" */
+				
+				//if we are a client, do stuff involving clients attacks
+				if(caster->IsClient())
 				{
-					if(caster->IsClient())
+					//which skill are we using, get the damage based on that skill
+					switch(spells[spell_id].skill)
 					{
-						itm = caster->CastToClient()->GetInv().GetItem(SLOT_RANGE);
+						case THROWING:
+							caster->CastToClient()->GetThrownDamage(spells[spell_id].base[i], tDmg, mDmg);
+							break;
+						case ARCHERY:
+							itm = caster->CastToClient()->GetInv().GetItem(SLOT_RANGE);
+							if(itm)
+								tDmg = effect_value + itm->GetItem()->Damage * 2 + (itm->GetItem()->Damage * (GetSkill(spells[spell_id].skill) + spells[spell_id].base[i] + GetDEX()) / 225);
+							break;
+						case BASH:
+							itm = caster->CastToClient()->GetInv().GetItem(SLOT_SECONDARY);
+							if(itm)
+								tDmg = effect_value + ((itm->GetItem()->AC/4)+1) * 2 + (((itm->GetItem()->AC/4)+1) * (GetSkill(spells[spell_id].skill) + GetSTR()) / 225);
+							break;
+						case KICK:
+						case FLYING_KICK:
+						case ROUND_KICK:
+							itm = caster->CastToClient()->GetInv().GetItem(SLOT_FEET);
+							if(itm)
+								tDmg = effect_value + ((itm->GetItem()->AC / 2) + 1) * 2 + (((itm->GetItem()->AC / 2) + 1) * (GetSkill(spells[spell_id].skill) + GetSTR()) / 225);
+							break;
+						case HAND_TO_HAND:
+						case EAGLE_STRIKE:
+						case TIGER_CLAW:
+							itm = caster->CastToClient()->GetInv().GetItem(SLOT_HANDS);
+							if(itm)
+								tDmg = effect_value + ((itm->GetItem()->AC / 2) + 1) + (((itm->GetItem()->AC / 2) + 1) * (GetSkill(spells[spell_id].skill) + GetSTR()) / 225);
+							break;
+						default:
+							itm = caster->CastToClient()->GetInv().GetItem(SLOT_PRIMARY);
+							if(itm)
+								tDmg = effect_value + itm->GetItem()->Damage * 2 + (itm->GetItem()->Damage * (GetSkill(spells[spell_id].skill) + GetSTR()) / 225);
+							break;
 					}
-					if(itm)
-						dam = effect_value + itm->GetItem()->Damage * 2 + (itm->GetItem()->Damage * (GetSkill(spells[spell_id].skill) + spells[spell_id].base[i] + GetDEX()) / 225);
-					else
-						dam = effect_value;
+					
 				}
-				else if (spells[spell_id].skill == BASH)
-				{
-					if(caster->IsClient())
-					{
-						itm = caster->CastToClient()->GetInv().GetItem(SLOT_SECONDARY);
-					}
-					if(itm)
-						dam = effect_value + ((itm->GetItem()->AC/4)+1) * 2 + (((itm->GetItem()->AC/4)+1) * (GetSkill(spells[spell_id].skill) + GetSTR()) / 225);
-					else
-						dam = effect_value;
-				}
-				else if (spells[spell_id].skill == KICK || spells[spell_id].skill == FLYING_KICK || spells[spell_id].skill == ROUND_KICK)
-				{
-					if(caster->IsClient())
-					{
-						itm = caster->CastToClient()->GetInv().GetItem(SLOT_FEET);
-					}
-					if(itm)
-						dam = effect_value + ((itm->GetItem()->AC / 2) + 1) * 2 + (((itm->GetItem()->AC / 2) + 1) * (GetSkill(spells[spell_id].skill) + GetSTR()) / 225);
-					else
-						dam = effect_value;
-				}
-				else if (spells[spell_id].skill == HAND_TO_HAND || spells[spell_id].skill == EAGLE_STRIKE || spells[spell_id].skill == TIGER_CLAW)
-				{
-					if(caster->IsClient())
-					{
-						itm = caster->CastToClient()->GetInv().GetItem(SLOT_HANDS);
-					}
-					if(itm)
-						dam = effect_value + ((itm->GetItem()->AC / 2) + 1) + (((itm->GetItem()->AC / 2) + 1) * (GetSkill(spells[spell_id].skill) + GetSTR()) / 225);
-					else
-						dam = effect_value;
-				}
+				
+				if(tDmg == 0)
+					tDmg = effect_value;
+				
+				//these are considered magical attacks, so we don't need to test that
+				//if they are resistable that's been taken care of, all these discs have a 10000 hit chance so they auto hit, no need to test
+				if(RuleB(Combat, UseIntervalAC))
+					caster->DoSpecialAttackDamage(this, spells[spell_id].skill, tDmg, mDmg);
 				else
-				{
-					if(caster->IsClient())
-					{
-						itm = caster->CastToClient()->GetInv().GetItem(SLOT_PRIMARY);
-					}
-					if(itm)
-						dam = effect_value + itm->GetItem()->Damage * 2 + (itm->GetItem()->Damage * (GetSkill(spells[spell_id].skill) + GetSTR()) / 225);
-					else
-						dam = effect_value;
-				}
-				int wpnD = caster->GetWeaponDamage(this, itm);
-				if(wpnD){
-					if(spells[spell_id].base2[i] == 10000 || CheckHitChance(caster, spells[spell_id].skill, 13))
-					{
-						if(RuleB(Combat, UseIntervalAC))
-							caster->DoSpecialAttackDamage(this, spells[spell_id].skill, dam, 1);
-						else
-							caster->DoSpecialAttackDamage(this, spells[spell_id].skill, MakeRandomInt(1, dam), 1);
-
-					}
-					else{
-						caster->DoSpecialAttackDamage(this, spells[spell_id].skill, 0, 1);
-					}
-				}
-				else
-					caster->DoSpecialAttackDamage(this, spells[spell_id].skill, -5, 1);
+				caster->DoSpecialAttackDamage(this, spells[spell_id].skill, MakeRandomInt(1, tDmg), mDmg);
 				break;
 			}
 
@@ -2360,7 +2344,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Defensive Proc: %s (id %d)", spells[effect_value].name, procid);
 #endif
-				AddDefensiveProc(procid);
+				AddDefensiveProc(procid, spells[spell_id].base2[i]);
 				break;
 			}
 

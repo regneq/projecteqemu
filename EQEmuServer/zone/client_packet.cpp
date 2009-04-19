@@ -947,9 +947,29 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 	}
 	PlayerPositionUpdateClient_Struct* ppu = (PlayerPositionUpdateClient_Struct*)app->pBuffer;
 
-	if(ppu->spawn_id != GetID())
-		return;
+	if(ppu->spawn_id != GetID()) {
+		// check if the id is for a boat the player is controlling
+		if (ppu->spawn_id == BoatID) {
+			Mob* boat = entity_list.GetMob(BoatID);
+			if (boat == 0) {	// if the boat ID is invalid, reset the id and abort
+				BoatID = 0;
+				return;
+			}
 
+			// set the boat's position deltas
+			boat->SetDeltas(ppu->delta_x, ppu->delta_y, ppu->delta_z, ppu->delta_heading);
+			// send an update to everyone nearby except the client controlling the boat
+			EQApplicationPacket* outapp = new EQApplicationPacket(OP_ClientUpdate, sizeof(PlayerPositionUpdateServer_Struct));
+			PlayerPositionUpdateServer_Struct* ppus = (PlayerPositionUpdateServer_Struct*)outapp->pBuffer;
+			boat->MakeSpawnUpdate(ppus);
+			entity_list.QueueCloseClients(boat,outapp,true,300,this,false);
+			safe_delete(outapp);
+			// update the boat's position on the server, without sending an update
+			boat->GMMove(ppu->x_pos, ppu->y_pos, ppu->z_pos, EQ19toFloat(ppu->heading), false);
+			return;
+		}
+		else return;	// if not a boat, do nothing
+	}
 
 	float dist = 0;
 	float tmp;
@@ -3595,19 +3615,25 @@ void Client::Handle_OP_TradeAcceptClick(const EQApplicationPacket *app)
 void Client::Handle_OP_BoardBoat(const EQApplicationPacket *app)
 {
 	char *boatname;
-	this->IsOnBoat=true;
-	boatname = new char[app->size-4];
-	memset(boatname, 0, app->size-4);
+	boatname = new char[app->size-3];
+	memset(boatname, 0, app->size-3);
 	memcpy(boatname, app->pBuffer, app->size-4);
-	printf("%s has gotten on the boat %s\n",GetName(),boatname);
-	//Mob* boat = entity_list.GetMob(boatname);
+	
+	Mob* boat = entity_list.GetMob(boatname);
+	if (boat)
+		this->BoatID = boat->GetID();	// set the client's BoatID to show that it's on this boat
 	safe_delete(boatname);
 	return;
 }
 
 void Client::Handle_OP_LeaveBoat(const EQApplicationPacket *app)
 {
-	this->IsOnBoat=false;
+	Mob* boat = entity_list.GetMob(this->BoatID);	// find the mob corresponding to the boat id
+	if (boat) {
+		if ((boat->GetTarget() == this) && boat->GetHateAmount(this) == 0)	// if the client somehow left while still controlling the boat (and the boat isn't attacking them)
+			boat->SetTarget(0);			// fix it to stop later problems
+	}
+	this->BoatID = 0;
 	return;
 }
 
@@ -5764,8 +5790,6 @@ void Client::Handle_OP_EnvDamage(const EQApplicationPacket *app)
 	int damage = ed->damage;
 
 	if (ed->dmgtype == 252) {
-		if(HasSkill(SAFE_FALL)) //safe fall is done client side, we don't reduce dmg here
-			CheckIncreaseSkill(SAFE_FALL); //but we do check to see if we get a skill up
 
 		switch(GetAA(aaAcrobatics)) { //Don't know what acrobatics effect is yet but it should be done client side via aa effect.. till then
 		case 1:
@@ -6526,6 +6550,29 @@ void Client::Handle_OP_CrashDump(const EQApplicationPacket *app)
 
 void Client::Handle_OP_ControlBoat(const EQApplicationPacket *app)
 {
+	ControlBoat_Struct* cbs = (ControlBoat_Struct*)app->pBuffer;
+	Mob* boat = entity_list.GetMob(cbs->boatId);
+	if (boat == 0) 
+		return;	// do nothing if the boat isn't valid
+	
+	if (cbs->TakeControl) {
+		// this uses the boat's target to indicate who has control of it.  It has to check hate to make sure the boat isn't actually attacking anyone.
+		if ((boat->GetTarget() == 0) || (boat->GetTarget() == this && boat->GetHateAmount(this) == 0)) {
+			boat->SetTarget(this);
+		}
+		else {
+			this->Message_StringID(13,IN_USE);
+			return;
+		}
+	}
+	else 
+		boat->SetTarget(0);
+		
+	EQApplicationPacket* outapp=new EQApplicationPacket(OP_ControlBoat,0);
+	FastQueuePacket(&outapp);
+	safe_delete(outapp);
+	// have the boat signal itself, so quests can be triggered by boat use
+	boat->CastToNPC()->SignalNPC(0);
 }
 
 void Client::Handle_OP_DumpName(const EQApplicationPacket *app)
@@ -6536,8 +6583,10 @@ void Client::Handle_OP_SetRunMode(const EQApplicationPacket *app)
 {
 }
 
-void Client::Handle_OP_SafeFallSuccess(const EQApplicationPacket *app)
+void Client::Handle_OP_SafeFallSuccess(const EQApplicationPacket *app)	// bit of a misnomer, sent whenever safe fall is used (success of fail)
 {
+  if(HasSkill(SAFE_FALL)) //this should only get called if the client has safe fall, but just in case...
+	CheckIncreaseSkill(SAFE_FALL); //check for skill up
 }
 
 void Client::Handle_OP_Heartbeat(const EQApplicationPacket *app)

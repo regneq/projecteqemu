@@ -332,40 +332,39 @@ bool Client::Process() {
 				}
 				if (auto_attack_target && GetAA(aaFlurry) > 0) {
 					int flurrychance = 0;
-					switch (GetAA(aaFlurry)) {
-						case 1:
-							flurrychance += 10;
-							break;
-						case 2:
-							flurrychance += 20;
-							break;
-						case 3:
-							flurrychance += 30;
-							break;
-					}
-					if(tripleAttackSuccess) {
-						tripleAttackSuccess = false;
-						switch (GetAA(aaRagingFlurry)) {
-							case 1:
-								flurrychance += 10;
-								break;
-							case 2:
-								flurrychance += 20;
-								break;
-							case 3:
-								flurrychance += 30;
-								break;
-						}
-					}         
-					if (rand()%1000 < flurrychance) {
-						Message_StringID(MT_CritMelee, 128);
-						Attack(auto_attack_target, 13, true);
-						
-						//50% chance for yet another attack?
-						if(MakeRandomFloat(0, 1) < 0.5)
-							Attack(auto_attack_target, 13, true);
-					}
-				}
+               //Wolftousen - flurry chance on live after Class AAs is about 5%, 10% after PoP AAs
+               switch (GetAA(aaFlurry)) {
+                  case 1:
+                     flurrychance += 10;
+                     break;
+                  case 2:
+                     flurrychance += 25;
+                     break;
+                  case 3:
+                     flurrychance += 50;
+                     break;
+               }
+               if(tripleAttackSuccess) {
+                  tripleAttackSuccess = false;
+                  switch (GetAA(aaRagingFlurry)) {
+                     case 1:
+                        flurrychance += 10;
+                        break;
+                     case 2:
+                        flurrychance += 25;
+                        break;
+                     case 3:
+                        flurrychance += 50;
+                        break;
+                  }
+               }         
+               if (rand()%1000 < flurrychance) {
+                  //Wolftousen - You get 2 attacks, the "up to 2 additional attacks" in the description is mis-leading as on live you always got 2,, also send proper text color
+                  Message_StringID(MT_Flurry, 128);
+                  Attack(auto_attack_target, 13, true);
+                  Attack(auto_attack_target, 13, true);
+               }
+            }
 
 				if (target && GetAA(aaRapidStrikes))
 				{
