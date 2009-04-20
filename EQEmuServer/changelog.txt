@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==4/20/2009==
+Derision: Added EVENT_PROXIMITY_SAY
+
 ==4/19/2009==
 Wolftousen: Player Flurry rate was slightly increased
 Wolftousen: Player Flurry messages will now show up as red text, but use the same filter as NPC flurry messages

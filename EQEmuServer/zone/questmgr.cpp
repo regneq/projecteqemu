@@ -91,6 +91,7 @@ QuestManager quest_manager;
 
 QuestManager::QuestManager() {
 	depop_npc = false;
+	HaveProximitySays = false;
 }
 
 QuestManager::~QuestManager() {
@@ -1184,6 +1185,11 @@ void QuestManager::set_proximity(float minx, float maxx, float miny, float maxy,
 	owner->CastToNPC()->proximity->max_y = maxy;
 	owner->CastToNPC()->proximity->min_z = minz;
 	owner->CastToNPC()->proximity->max_z = maxz;
+
+	owner->CastToNPC()->proximity->say = ((PerlembParser *)parse)->HasQuestSub(owner->CastToNPC()->GetNPCTypeID(),"EVENT_PROXIMITY_SAY");
+
+	if(owner->CastToNPC()->proximity->say)
+		HaveProximitySays = true;
 }
 
 void QuestManager::clear_proximity() {

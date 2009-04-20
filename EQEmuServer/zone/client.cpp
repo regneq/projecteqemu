@@ -843,6 +843,9 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, int8 lang_skil
 		if (sender != this)
 			break;
 
+		if(!target && quest_manager.ProximitySayInUse())
+			entity_list.ProcessProximitySay(message, this);
+
 		if (target != 0 && target->IsNPC()) {
 			if(!target->CastToNPC()->IsEngaged()) {
 #ifdef EMBPERL

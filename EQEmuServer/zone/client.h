@@ -41,6 +41,7 @@ class Client;
 #include "../common/Item.h"
 #include "updatemgr.h"
 #include "../common/guilds.h"
+#include "questmgr.h"
 #include <float.h>
 #include <set>
 

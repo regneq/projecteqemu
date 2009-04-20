@@ -43,6 +43,7 @@ typedef struct {
 	float max_y;
 	float min_z;
 	float max_z;
+	bool say;
 } NPCProximity;
 
 class NPC : public Mob

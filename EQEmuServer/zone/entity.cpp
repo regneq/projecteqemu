@@ -3110,6 +3110,28 @@ void EntityList::ProcessMove(Client *c, float x, float y, float z) {
 	
 }
 
+void EntityList::ProcessProximitySay(const char *Message, Client *c) {
+
+	if(!Message || !c)
+		return;
+
+	LinkedListIterator<NPC*> iterator(proximity_list);
+
+	for(iterator.Reset(); iterator.MoreElements(); iterator.Advance()) {
+		NPC *d = iterator.GetData();
+		NPCProximity *l = d->proximity;
+		if(l == NULL || !l->say)
+			continue;
+
+		if(   c->GetX() < l->min_x || c->GetX() > l->max_x
+		   || c->GetY() < l->min_y || c->GetY() > l->max_y
+		   || c->GetZ() < l->min_z || c->GetZ() > l->max_z )
+			continue;
+
+		parse->Event(EVENT_PROXIMITY_SAY, d->GetNPCTypeID(), Message, d, c);
+	}
+}
+
 void EntityList::SaveAllClientsTaskState() {
 
 	if(!taskmanager) return;
