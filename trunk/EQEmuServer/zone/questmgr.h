@@ -204,6 +204,8 @@ public:
 	inline Client *GetInitiator() const { return(initiator); }
 	inline NPC *GetNPC() const { return(owner->IsNPC()?owner->CastToNPC():NULL); }
 	inline Mob *GetOwner() const { return(owner); }
+	inline bool ProximitySayInUse() { return HaveProximitySays; }
+
 protected:
 	Mob *owner;	//NPC is never NULL when functions are called.
 	Client *initiator;	//this can be null.
@@ -211,6 +213,7 @@ protected:
 	bool depop_npc;	//true if EndQuest should depop the NPC
 	
 	Mutex quest_mutex;
+	bool HaveProximitySays;
 	
 	int QGVarDuration(const char *fmt);
 	int InsertQuestGlobal(int charid, int npcid, int zoneid, const char *name, const char *value, int expdate);

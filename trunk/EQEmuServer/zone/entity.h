@@ -172,6 +172,7 @@ public:
 	void	TrapProcess();
 	void	BeaconProcess();
 	void	ProcessMove(Client *c, float x, float y, float z);
+	void	ProcessProximitySay(const char *Message, Client *c);
 	void	SendAATimer(int32 charid,UseAA_Struct* uaa);
 	Doors*	FindDoor(int8 door_id);
 	bool	MakeDoorSpawnPacket(EQApplicationPacket* app);

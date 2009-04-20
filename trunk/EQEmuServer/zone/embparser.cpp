@@ -63,7 +63,8 @@ const char *QuestEventSubroutines[_LargestEventID] = {
 	"EVENT_TASK_STAGE_COMPLETE",
 	"EVENT_AGGRO_SAY",
 	"EVENT_PLAYER_PICKUP",
-	"EVENT_POPUPRESPONSE"
+	"EVENT_POPUPRESPONSE",
+	"EVENT_PROXIMITY_SAY"
 };
 
 PerlembParser::PerlembParser(void) : Parser()
@@ -530,6 +531,11 @@ void PerlembParser::Event(QuestEventID event, int32 npcid, const char * data, NP
 		}
 		case EVENT_POPUPRESPONSE:{
 			ExportVar(packagename.c_str(), "popupid", data);
+			break;
+		}
+		case EVENT_PROXIMITY_SAY: {
+			ExportVar(packagename.c_str(), "data", npcid);
+			ExportVar(packagename.c_str(), "text", data);
 			break;
 		}
 		//nothing special about these events
