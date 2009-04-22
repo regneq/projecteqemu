@@ -111,6 +111,7 @@ void Client::ToggleTribute(bool enabled) {
 		m_pp.tribute_active = 1;
 	} else {
 		m_pp.tribute_active = 0;
+		tribute_timer.Disable();
 	}
 	DoTributeUpdate();
 }
