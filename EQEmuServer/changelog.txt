@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==4/23/2009==
+Trevius: (realityincarnate) Added new quest command quest::varlink(item_id) for putting item links into variables. 
+
 ==4/22/2009==
 Derision: When Tribute is manually deactivated, it should stay deactivated.
 Derision: Tribute will not continually try and reactivate when you run out of tribute points.
