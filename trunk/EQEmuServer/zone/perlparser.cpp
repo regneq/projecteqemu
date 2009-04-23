@@ -2446,6 +2446,23 @@ XS(XS__MerchantCountItem) {
 	XSRETURN_UV(quantity);
 }
 
+XS(XS__varlink);
+XS(XS__varlink) {
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: varlink(itemID)");
+	dXSTARG;
+
+	Const_char * RETVAL;
+	char text[250];
+	uint32 itemID;
+	itemID = (int)SvUV(ST(0));
+	
+	RETVAL = quest_manager.varlink(text, itemID);
+
+	sv_setpv(TARG, RETVAL); XSprePUSH; PUSHTARG;
+	XSRETURN(1);
+}
 
 /*
 This is the callback perl will look for to setup the
@@ -2617,6 +2634,7 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "updatespawntimer"), XS__UpdateSpawnTimer, file);
 		newXS(strcpy(buf, "MerchantSetItem"), XS__MerchantSetItem, file);
 		newXS(strcpy(buf, "MerchantCountItem"), XS__MerchantCountItem, file);
+		newXS(strcpy(buf, "varlink"), XS__varlink, file);
 
 	XSRETURN_YES;
 }
