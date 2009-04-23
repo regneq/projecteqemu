@@ -54,7 +54,7 @@ inline const char* StaticGetZoneName(int32 zoneID) {
 		case 49: return "oggok";
 		case 50: return "rathemtn";
 		case 51: return "lakerathe";
-		case 52: return "gukta";
+		case 52: return "grobb";
 		case 53: return "aviak";
 		case 54: return "gfaydark";
 		case 55: return "akanon";
