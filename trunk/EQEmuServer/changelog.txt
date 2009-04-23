@@ -4,6 +4,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 Trevius: (realityincarnate) Added new quest command quest::varlink(item_id) for putting item links into variables. 
 Derision: Fix for Tradeskill combines where a LORE ingredient is returned.
 Derision: Fix for pet names containing spaces losing the space after zoning/camping.
+Derision: Fixed bug where Return Home sent players bound in Grobb to Qeynos/Unknown Zone.
 
 ==4/22/2009==
 Derision: When Tribute is manually deactivated, it should stay deactivated.
