@@ -351,7 +351,7 @@ void Mob::SetPetID(int16 NewPetID) {
 
 void NPC::GetPetState(SpellBuff_Struct *pet_buffs, int32 *items, char *name) {
 	//save the pet name
-	strncpy(name, GetCleanName(), 64);
+	strncpy(name, GetName(), 64);
 	name[63] = '\0';
 	
 	//save their items
