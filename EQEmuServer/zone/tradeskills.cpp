@@ -172,14 +172,11 @@ void Object::HandleCombine(Client* user, const NewCombine_Struct* in_combine, Ob
 		break;
 	}
 	
-	//do the check and send results...
-	bool success = user->TradeskillExecute(&spec);
-	
 	// Send acknowledgement packets to client
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_TradeSkillCombine, 0);
 	user->QueuePacket(outapp);
 	safe_delete(outapp);
-	
+
 	//now clean out the containers.
 	if(worldcontainer){
 		container->Clear();
@@ -187,10 +184,6 @@ void Object::HandleCombine(Client* user, const NewCombine_Struct* in_combine, Ob
 		user->QueuePacket(outapp);
 		safe_delete(outapp);
 		database.DeleteWorldContainer(worldo->m_id, zone->GetZoneID());
-		if(success && spec.replace_container) {
-			//should report this error, but we dont have the recipe ID, so its not very useful
-			LogFile->write(EQEMuLog::Error, "Replace container combine executed in a world container.");
-		}
 	} else{
 		for (uint8 i=0; i<10; i++){
 			const ItemInst* inst = container->GetItem(i);
@@ -199,9 +192,20 @@ void Object::HandleCombine(Client* user, const NewCombine_Struct* in_combine, Ob
 			}
 		}
 		container->Clear();
-		if(success && spec.replace_container) {
-			user->DeleteItemInInventory(in_combine->container_slot, 0, true);
+	}
+	//do the check and send results...
+	bool success = user->TradeskillExecute(&spec);
+
+	// Replace the container on success if required.
+	//
+	
+	if(success && spec.replace_container) {
+		if(worldcontainer){
+			//should report this error, but we dont have the recipe ID, so its not very useful
+			LogFile->write(EQEMuLog::Error, "Replace container combine executed in a world container.");
 		}
+		else
+			user->DeleteItemInInventory(in_combine->container_slot, 0, true);
 	}
 }
 
