@@ -43,6 +43,7 @@ E(OP_Trader)
 E(OP_TraderBuy)
 E(OP_LootItem)
 E(OP_TributeItem)
+E(OP_SomeItemPacketMaybe)
 //E(OP_AdventureData)
 //E(OP_RaidUpdate)
 

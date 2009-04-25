@@ -1462,7 +1462,7 @@ ENCODE(OP_LootItem) {
 }
 
 ENCODE(OP_TributeItem) {
-	ENCODE_LENGTH_EXACT(structs::TributeItem_Struct);
+	ENCODE_LENGTH_EXACT(TributeItem_Struct);
 	SETUP_DIRECT_ENCODE(TributeItem_Struct, structs::TributeItem_Struct);
 
 	if((emu->slot >= 21) && (emu->slot <= 29))
@@ -1475,6 +1475,35 @@ ENCODE(OP_TributeItem) {
 	OUT(quantity);
 	OUT(tribute_master_id);
 	OUT(tribute_points);
+
+	FINISH_ENCODE();
+}
+
+ENCODE(OP_SomeItemPacketMaybe) {
+	// This Opcode is not named very well. It is used for the animation of arrows leaving the player's bow
+	// and flying to the target.
+	//
+
+	ENCODE_LENGTH_EXACT(Arrow_Struct);
+	SETUP_DIRECT_ENCODE(Arrow_Struct, structs::Arrow_Struct);
+
+	OUT(src_y);
+	OUT(src_x);
+	OUT(src_z);
+	OUT(velocity);
+	OUT(launch_angle);
+	OUT(tilt);
+	OUT(arc);
+	OUT(source_id);
+	OUT(target_id);
+	OUT(item_id);
+
+	eq->unknown070 = 175; // This needs to be set to something, else we get a 1HS animation instead of ranged.
+
+	OUT(item_type);
+	OUT(skill);
+
+	strcpy(eq->model_name, emu->model_name);
 
 	FINISH_ENCODE();
 }

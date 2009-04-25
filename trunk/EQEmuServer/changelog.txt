@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==4/25/2009==
+Derision: SoF: Ranged attack animations.
+Derision: When shooting a bow, there is no longer a superfluous 1HS animation.
+
 ==4/23/2009==
 Trevius: (realityincarnate) Added new quest command quest::varlink(item_id) for putting item links into variables. 
 Derision: Fix for Tradeskill combines where a LORE ingredient is returned.

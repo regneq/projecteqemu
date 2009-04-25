@@ -798,8 +798,7 @@ void Client::RangedAttack(Mob* other) {
 		return;
 	}
 	
-	DoAnim(animShootBow);
-	SendItemAnimation(target, AmmoItem);
+	SendItemAnimation(target, AmmoItem, ARCHERY);
 		
 	// Hit?
 	if (!target->CheckHitChance(this, ARCHERY, 13)) {
@@ -1047,7 +1046,7 @@ void Client::ThrowingAttack(Mob* other) { //old was 51
 		return;
 	}
 	//send item animation, also does the throw animation
-	SendItemAnimation(target, item);
+	SendItemAnimation(target, item, THROWING);
 
 	
 	// Hit?
@@ -1115,7 +1114,7 @@ void Client::ThrowingAttack(Mob* other) { //old was 51
 	}
 }
 
-void Mob::SendItemAnimation(Mob *to, const Item_Struct *item) {
+void Mob::SendItemAnimation(Mob *to, const Item_Struct *item, SkillType skillInUse) {
 	EQApplicationPacket *outapp = new EQApplicationPacket(OP_SomeItemPacketMaybe, sizeof(Arrow_Struct));
 	Arrow_Struct *as = (Arrow_Struct *) outapp->pBuffer;
 	as->type = 1;
@@ -1125,6 +1124,10 @@ void Mob::SendItemAnimation(Mob *to, const Item_Struct *item) {
 	as->source_id = GetID();
 	as->target_id = to->GetID();
 	as->item_id = item->ID;
+
+	as->item_type = item->ItemType;
+	as->skill = (uint8)skillInUse;
+
 	strncpy(as->model_name, item->IDFile, 16);
 	
 
@@ -1142,7 +1145,8 @@ void Mob::SendItemAnimation(Mob *to, const Item_Struct *item) {
 	as->velocity = 4.0;
 
 	//these angle and tilt used together seem to make the arrow/knife throw as straight as I can make it
-	as->launch_angle = 32000; 
+
+	as->launch_angle = CalculateHeadingToTarget(to->GetX(), to->GetY()) * 2;
 	as->tilt = 150;
 	as->arc = 0;
 	

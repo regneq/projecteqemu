@@ -3449,26 +3449,27 @@ struct BandolierSet_Struct {
 };
 
 struct Arrow_Struct {
-/*000*/	uint32	type;		//unsure on name, seems to be 0x1, dosent matter
-/*005*/	int8	unknown004[12];
-/*016*/	float	src_y;
-/*020*/	float	src_x;
-/*024*/	float	src_z;
-/*028*/	int8	unknown028[12];
-/*040*/	float	velocity;		//4 is normal, 20 is quite fast
-/*044*/	float	launch_angle;	//0-450ish, not sure the units, 140ish is straight
-/*048*/	float	tilt;		//on the order of 125
-/*052*/	int8	unknown052[8];
-/*060*/	float	arc;
-/*064*/	int8	unknown064[12];
-/*076*/	uint32	source_id;
-/*080*/ uint32	target_id;	//entity ID
-/*084*/	uint32	item_id;	//1 to about 150ish
-/*088*/	uint32	unknown088;	//seen 125, dosent seem to change anything..
-/*092*/ uint32	unknown092;	//seen 16, dosent seem to change anything
-/*096*/	uint8	unknown096[5];
-/*101*/	char	model_name[16];
-/*117*/	int8	unknown117[19];
+/*000*/	float	src_y;
+/*004*/	float	src_x;
+/*008*/	float	src_z;
+/*012*/	int8	unknown012[12];
+/*024*/	float	velocity;		//4 is normal, 20 is quite fast
+/*028*/	float	launch_angle;	//0-450ish, not sure the units, 140ish is straight
+/*032*/	float	tilt;		//on the order of 125
+/*036*/	int8	unknown036[8];
+/*044*/	float	arc;
+/*048*/	uint32	source_id;
+/*052*/	uint32	target_id;	//entity ID
+/*056*/	uint32	item_id;
+/*060*/	uint32	unknown060;
+/*064*/	uint32	unknown064;
+/*068*/	uint8	unknown068;
+/*069*/	uint8	unknown069;
+/*070*/	uint8	unknown070;
+/*071*/	uint8	item_type;
+/*072*/	uint8	skill;
+/*073*/	char	model_name[43];
+/*116*/
 };
 
 //made a bunch of trivial structs for stuff for opcode finder to use

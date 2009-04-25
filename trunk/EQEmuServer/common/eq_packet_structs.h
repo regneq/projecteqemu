@@ -3506,7 +3506,10 @@ struct Arrow_Struct {
 /*084*/	uint32	item_id;	//1 to about 150ish
 /*088*/	uint32	unknown088;	//seen 125, dosent seem to change anything..
 /*092*/ uint32	unknown092;	//seen 16, dosent seem to change anything
-/*096*/	uint8	unknown096[5];
+/*096*/	uint8	unknown096[2];
+/*098*/	uint8	skill;
+/*099*/	uint8	item_type;
+/*100*/	uint8	unknown100;
 /*101*/	char	model_name[16];
 /*117*/	int8	unknown117[19];
 };
