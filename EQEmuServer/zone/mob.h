@@ -874,7 +874,7 @@ bool logpos;
   // HP Event
    inline int GetNextHPEvent() const { return nexthpevent; }
    void SetNextHPEvent( int hpevent );
-	void SendItemAnimation(Mob *to, const Item_Struct *item);
+	void SendItemAnimation(Mob *to, const Item_Struct *item, SkillType skillInUse);
 	inline int& GetNextIncHPEvent() { return nextinchpevent; }
 	void SetNextIncHPEvent( int inchpevent );
 
