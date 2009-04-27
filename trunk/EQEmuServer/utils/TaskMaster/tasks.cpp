@@ -250,10 +250,11 @@ void MainFrame::SaveTask(wxCommandEvent& event)
 		getStr = mRewardXP->GetValue();
 		ourTask.xpreward = atoi(getStr.mb_str());
 		getStr.Clear();
-
+		
 		int * i = (int*)mStartZone->GetClientData(mStartZone->GetSelection());
 		ourTask.startzone = *i;
 
+		ourTask.rewardmethod = mRewardMethod->GetSelection();
 		ourTask.repeatable = mTaskRepeatable->GetValue();
 
 
