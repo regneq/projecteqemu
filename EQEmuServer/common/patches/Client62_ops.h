@@ -13,12 +13,14 @@ E(OP_CharInventory)
 E(OP_GuildMemberList)
 E(OP_ZoneServerReady)
 E(OP_GuildMemberLevelUpdate)
+E(OP_ReadBook)
 
 //list of packets we need to decode on the way in:
 D(OP_SetServerFilter)
 D(OP_CharacterCreate)
 D(OP_ItemLinkClick)
 D(OP_WhoAllRequest)
+D(OP_ReadBook)
 
 #undef E
 #undef D

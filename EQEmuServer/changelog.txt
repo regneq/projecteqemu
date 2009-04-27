@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==4/27/2009==
+Derision: SoF: Reading books/notes/scrolls now works.
+
 ==4/25/2009==
 Derision: SoF: Ranged attack animations.
 Derision: When shooting a bow, there is no longer a superfluous 1HS animation.

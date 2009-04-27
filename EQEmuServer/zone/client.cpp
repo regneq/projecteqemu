@@ -1747,11 +1747,12 @@ void Client::ReadBook(BookRequest_Struct *book) {
 #if EQDEBUG >= 6
 		LogFile->write(EQEMuLog::Normal,"Client::ReadBook() textfile:%s Text:%s", txtfile, booktxt2.c_str());
 #endif
-		EQApplicationPacket* outapp = new EQApplicationPacket(OP_ReadBook, length + 3);
+		EQApplicationPacket* outapp = new EQApplicationPacket(OP_ReadBook, length + sizeof(BookText_Struct));
 
 		BookText_Struct *out = (BookText_Struct *) outapp->pBuffer;
 		out->unknown0 = book->unknown0;
 		out->type = book->type;
+		out->invslot = book->invslot;
 		memcpy(out->booktext, booktxt2.c_str(), length);
 
 		QueuePacket(outapp);
