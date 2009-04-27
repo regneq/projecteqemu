@@ -2159,9 +2159,9 @@ struct GMEmoteZone_Struct {
 	char text[512];
 };
 
-// This is where the Text is sent to the client.
-// Use ` as a newline character in the text.
-// Variable length.
+// The BookText_Struct is not used in  SoF and later clients.
+// The BookRequest_Struct is used instead for both request and reply.
+//
 struct BookText_Struct {
 	uint8 unknown0; //always 0xFF
 	uint8 type;             //type: 0=scroll, 1=book.. prolly others.
@@ -2171,9 +2171,12 @@ struct BookText_Struct {
 // This is just a "text file" on the server
 // or in our case, the 'name' column in our books table.
 struct BookRequest_Struct {
-	uint8 unknown0; //always 0xFF
-	uint8 type;             //type: 0=scroll, 1=book.. prolly others.
-	char txtfile[20];
+/*0000*/	uint32 unknown0000;	// always 0xFFFFFFFF
+/*0004*/	uint32 invslot;		// The inventory slot the book is in. Not used, but echoed in the response packet.
+/*0008*/	uint32 type;		// 0 = Scroll, 1 = Book, Possibly others
+/*0012*/	uint32 unknown0012;	
+/*0016*/	uint16 unknown0016;
+/*0018*/	char txtfile[8194];
 };
 
 /*

@@ -44,6 +44,7 @@ E(OP_TraderBuy)
 E(OP_LootItem)
 E(OP_TributeItem)
 E(OP_SomeItemPacketMaybe)
+E(OP_ReadBook)
 //E(OP_AdventureData)
 //E(OP_RaidUpdate)
 
@@ -69,5 +70,6 @@ D(OP_FindPersonRequest)
 D(OP_TraderBuy)
 D(OP_LootItem)
 D(OP_TributeItem)
+D(OP_ReadBook)
 #undef E
 #undef D

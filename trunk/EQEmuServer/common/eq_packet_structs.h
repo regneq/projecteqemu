@@ -2039,6 +2039,7 @@ struct GMEmoteZone_Struct {
 struct BookText_Struct {
 	uint8 unknown0; //always 0xFF
 	uint8 type;             //type: 0=scroll, 1=book.. prolly others.
+	uint32 invslot;	// Only used in SoF and later clients.
 	char booktext[1]; // Variable Length
 };
 // This is the request to read a book.
@@ -2047,6 +2048,7 @@ struct BookText_Struct {
 struct BookRequest_Struct {
 	uint8 unknown0; //always 0xFF
 	uint8 type;             //type: 0=scroll, 1=book.. prolly others.
+	uint32 invslot;	// Only used in Sof and later clients;
 	char txtfile[20];
 };
 

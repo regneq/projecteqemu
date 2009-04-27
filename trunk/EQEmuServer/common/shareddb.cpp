@@ -988,7 +988,6 @@ string SharedDatabase::GetBook(const char *txtfile)
 		}
 		else {
 			row = mysql_fetch_row(result);
-			LogFile->write(EQEMuLog::Normal, "Sending book (%s) Text: %s", txtfile,row[0]);
 			txtout.assign(row[0],strlen(row[0]));
 			mysql_free_result(result);
 			return txtout;

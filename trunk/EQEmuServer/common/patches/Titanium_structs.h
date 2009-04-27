@@ -1916,7 +1916,7 @@ struct BookText_Struct {
 struct BookRequest_Struct {
 	uint8 unknown0; //always 0xFF
 	uint8 type;             //type: 0=scroll, 1=book.. prolly others.
-	char txtfile[20];
+	char txtfile[1];	// Variable length
 };
 
 /*

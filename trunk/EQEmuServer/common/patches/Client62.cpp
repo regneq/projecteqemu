@@ -614,18 +614,30 @@ ENCODE(OP_GuildMemberList) {
 	dest->FastQueuePacket(&in, ack_req);
 }
 
+ENCODE(OP_ReadBook) {
 
+	EQApplicationPacket *in = *p;
+	*p = NULL;
+	
+	unsigned char *__emu_buffer = in->pBuffer;
+	
+	BookText_Struct *emu_BookText_Struct = (BookText_Struct *)__emu_buffer;
 
+	in->size = sizeof(structs::BookText_Struct) + strlen(emu_BookText_Struct->booktext);
 
+	in->pBuffer = new unsigned char[in->size];
 
+	structs::BookText_Struct *eq_BookText_Struct = (structs::BookText_Struct*)in->pBuffer;
 
+	eq_BookText_Struct->unknown0 = emu_BookText_Struct->unknown0;
+	eq_BookText_Struct->type = emu_BookText_Struct->type;
+	strcpy(eq_BookText_Struct->booktext, emu_BookText_Struct->booktext);
 
+	delete[] __emu_buffer;
 
+	dest->FastQueuePacket(&in, ack_req);
 
-
-
-
-
+}
 DECODE(OP_ItemLinkClick) {
 	DECODE_LENGTH_EXACT(structs::ItemViewRequest_Struct);
 	SETUP_DIRECT_DECODE(ItemViewRequest_Struct, structs::ItemViewRequest_Struct);
@@ -694,6 +706,18 @@ DECODE(OP_WhoAllRequest) {
 	
 	FINISH_DIRECT_DECODE();
 }
+
+DECODE(OP_ReadBook) {
+	DECODE_LENGTH_ATLEAST(structs::BookRequest_Struct);
+	SETUP_DIRECT_DECODE(BookRequest_Struct, structs::BookRequest_Struct);
+
+	IN(unknown0);
+	IN(type);
+	strn0cpy(emu->txtfile, eq->txtfile, sizeof(emu->txtfile));
+
+	FINISH_DIRECT_DECODE();
+}
+
 char *SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 depth) {
 	char *serialization = NULL;
 	char *instance = NULL;

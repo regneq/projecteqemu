@@ -1508,6 +1508,18 @@ ENCODE(OP_SomeItemPacketMaybe) {
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_ReadBook) {
+
+	ENCODE_LENGTH_ATLEAST(BookText_Struct);
+	SETUP_DIRECT_ENCODE(BookText_Struct, structs::BookRequest_Struct);
+
+	eq->unknown0000 = 0xFFFFFFFF;
+	OUT(type);
+	OUT(invslot);
+	strn0cpy(eq->txtfile, emu->booktext, sizeof(eq->txtfile));
+	FINISH_ENCODE();
+}
+
 DECODE(OP_ItemVerifyRequest) {
 	DECODE_LENGTH_EXACT(structs::ItemVerifyRequest_Struct);
 	SETUP_DIRECT_DECODE(ItemVerifyRequest_Struct, structs::ItemVerifyRequest_Struct);
@@ -1858,6 +1870,17 @@ DECODE(OP_TributeItem) {
 	IN(quantity);
 	IN(tribute_master_id);
 	IN(tribute_points);
+
+	FINISH_DIRECT_DECODE();
+}
+
+DECODE(OP_ReadBook) {
+	DECODE_LENGTH_EXACT(structs::BookRequest_Struct);
+	SETUP_DIRECT_DECODE(BookRequest_Struct, structs::BookRequest_Struct);
+
+	IN(type);
+	IN(invslot);
+	strn0cpy(emu->txtfile, eq->txtfile, sizeof(emu->txtfile));
 
 	FINISH_DIRECT_DECODE();
 }

@@ -5477,6 +5477,11 @@ void Client::Handle_OP_ReadBook(const EQApplicationPacket *app)
 {
 	BookRequest_Struct* book = (BookRequest_Struct*) app->pBuffer;
 	ReadBook(book);
+	if(GetClientVersion() == EQClientSoF)
+	{
+		EQApplicationPacket EndOfBook(OP_FinishWindow, 0);
+		QueuePacket(&EndOfBook);
+	}
 	return;
 }
 
