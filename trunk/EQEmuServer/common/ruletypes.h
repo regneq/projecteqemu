@@ -93,6 +93,7 @@ RULE_INT ( World, AccountSessionLimit, -1 )  //Max number of characters allowed 
 RULE_INT ( World, ExemptAccountLimitStatus, -1 )  //Min status required to be exempt from multi-session per account limiting (-1 is disabled)
 RULE_BOOL ( World, GMAccountIPList, false) // Voidd: Check ip list against GM Accounts, AntiHack GM Accounts.
 RULE_INT ( World, MinGMAntiHackStatus, 1 ) //Minimum GM status to check against AntiHack list
+RULE_INT ( World, SoFStartZoneID, -1 ) //Sets the Starting Zone for SoF Clients separate from Titanium Clients (-1 is disabled)
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Zone )

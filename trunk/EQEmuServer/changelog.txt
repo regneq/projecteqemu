@@ -1,5 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==4/29/2009==
+Trevius: SoF - Added rule for setting a startzone for SoF Clients separate from where Titanium Clients are set to start.  Set as Zone ID number.
+
+optional sql: utils\sql\svn\447_sof_startzone_rule.sql
+
 ==4/27/2009==
 Derision: SoF: Reading books/notes/scrolls now works.
 

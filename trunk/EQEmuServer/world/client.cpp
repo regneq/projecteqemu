@@ -1071,23 +1071,35 @@ if (cc->face == 0)       {pp.face = 99;}
 	
 	//If server is PVP by default, make all character set to it.
 	pp.pvp = database.GetServerType() == 1 ? 1 : 0;			
-		
-	// if there's a startzone variable put them in there
-	if(database.GetVariable("startzone", startzone, 50))
-	{
-		clog(WORLD__CLIENT,"Found 'startzone' variable setting: %s", startzone);
-		pp.zone_id = database.GetZoneID(startzone);
+
+	//If it is an SoF Client and the SoF Start Zone rule is set, send new chars there
+	if(SoFClient && (RuleI(World, SoFStartZoneID) > 0)) {
+		clog(WORLD__CLIENT,"Found 'SoFStartZoneID' rule setting: %i", (RuleI(World, SoFStartZoneID)));
+		pp.zone_id = (RuleI(World, SoFStartZoneID));
 		if(pp.zone_id)
 			database.GetSafePoints(pp.zone_id, &pp.x, &pp.y, &pp.z);
 		else
-			clog(WORLD__CLIENT_ERR,"Error getting zone id for '%s'", startzone);
+			clog(WORLD__CLIENT_ERR,"Error getting zone id for Zone ID %i", (RuleI(World, SoFStartZoneID)));
 	}
-	else	// otherwise use normal starting zone logic
+	else
 	{
-		if(!SoFClient)
-			database.GetStartZone(&pp, cc);
-		else
-			database.GetStartZoneSoF(&pp, cc);
+		// if there's a startzone variable put them in there
+		if(database.GetVariable("startzone", startzone, 50))
+		{
+			clog(WORLD__CLIENT,"Found 'startzone' variable setting: %s", startzone);
+			pp.zone_id = database.GetZoneID(startzone);
+			if(pp.zone_id)
+				database.GetSafePoints(pp.zone_id, &pp.x, &pp.y, &pp.z);
+			else
+				clog(WORLD__CLIENT_ERR,"Error getting zone id for '%s'", startzone);
+		}
+		else   // otherwise use normal starting zone logic
+		{
+			if(!SoFClient)
+				database.GetStartZone(&pp, cc);
+			else
+				database.GetStartZoneSoF(&pp, cc);
+		}
 	}
 
 	if(!pp.zone_id)
