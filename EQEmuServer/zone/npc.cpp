@@ -426,7 +426,7 @@ ServerLootItem_Struct* NPC::GetItem(int slot_id) {
 
 #ifdef EQBOTS
 
-int16 NPC::GetItemID(int slot_id) {
+uint32 NPC::GetItemID(int slot_id) {
 	ItemList::iterator cur,end;
 	cur = itemlist.begin();
 	end = itemlist.end();

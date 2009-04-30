@@ -291,7 +291,7 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 
 	if(attacker->IsClient() || attacker->IsBot()) {
 		if(attacker->IsBot()) {
-			chancetohit -= (RuleR(Combat,WeaponSkillFalloff) * (attacker->GetSkill(skillinuse)));
+			chancetohit -= (RuleR(Combat,WeaponSkillFalloff) * 5);
 		}
 		else {
 			chancetohit -= (RuleR(Combat,WeaponSkillFalloff) * (attacker->CastToClient()->MaxSkill(skillinuse) - attacker->GetSkill(skillinuse)));
@@ -341,7 +341,7 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 
 	if(defender->IsClient() || defender->IsBot()) {
 		if(defender->IsBot()) {
-			chancetohit += (RuleR(Combat,WeaponSkillFalloff) * (defender->GetSkill(skillinuse)));
+			chancetohit += (RuleR(Combat,WeaponSkillFalloff) * 5);
 		}
 		else {
 			chancetohit += (RuleR(Combat,WeaponSkillFalloff) * (defender->CastToClient()->MaxSkill(DEFENSE) - defender->GetSkill(skillinuse)));
@@ -1584,6 +1584,121 @@ void Client::Damage(Mob* other, sint32 damage, int16 spell_id, SkillType attack_
 
 #ifdef EQBOTS
 
+bool NPC::BotRangedAttack(Mob* other) {
+	//make sure the attack and ranged timers are up
+	//if the ranged timer is disabled, then they have no ranged weapon and shouldent be attacking anyhow
+	if((attack_timer.Enabled() && !attack_timer.Check(false)) || (ranged_timer.Enabled() && !ranged_timer.Check())) {
+		mlog(COMBAT__RANGED, "Bot Archery attack canceled. Timer not up. Attack %d, ranged %d", attack_timer.GetRemainingTime(), ranged_timer.GetRemainingTime());
+		Message(0, "Error: Timer not up. Attack %d, ranged %d", attack_timer.GetRemainingTime(), ranged_timer.GetRemainingTime());
+		return false;
+	}
+
+	const Item_Struct* RangeWeapon = database.GetItem(equipment[MATERIAL_SECONDARY]);
+	const Item_Struct* Ammo = database.GetItem(equipment[MATERIAL_PRIMARY]);
+	ItemInst* RangeItem = new ItemInst(RangeWeapon);
+	ItemInst* AmmoItem = new ItemInst(Ammo);
+	mlog(COMBAT__RANGED, "Shooting %s with bow %s (%d) and arrow %s (%d)", other->GetName(), RangeWeapon->Name, RangeWeapon->ID, Ammo->Name, Ammo->ID);
+	
+	if(!IsAttackAllowed(other) || 
+		IsCasting() || 
+		DivineAura() ||
+		IsStunned() ||
+		IsMezzed() ||
+		(GetAppearance() == eaDead))
+	{
+		safe_delete(RangeItem);
+		safe_delete(AmmoItem);
+		return false;
+	}
+	
+	SendItemAnimation(other, Ammo, ARCHERY);
+
+	// Hit?
+	if(!other->CheckHitChance(this, ARCHERY, SLOT_PRIMARY)) {
+		mlog(COMBAT__RANGED, "Ranged attack missed %s.", other->GetName());
+		other->Damage(this, 0, SPELL_UNKNOWN, ARCHERY);
+	}
+	else {
+		mlog(COMBAT__RANGED, "Ranged attack hit %s.", other->GetName());
+		
+		if(!TryHeadShot(other, ARCHERY)) {
+			sint16 WDmg = GetWeaponDamage(other, RangeWeapon);
+			sint16 ADmg = GetWeaponDamage(other, Ammo);
+			if((WDmg > 0) || (ADmg > 0)){
+				if(WDmg < 0)
+					WDmg = 0;
+				if(ADmg < 0)
+					ADmg = 0;
+
+				uint16 MaxDmg = (WDmg+ADmg) * 2 + ((WDmg+ADmg) * (GetDEX() + GetSkill(ARCHERY)) / 225);
+
+				if(GetLevel() >= 61) { // Archery Mastery 3 AA
+					MaxDmg = MaxDmg * 150/100;
+				}
+				else if(GetLevel() == 60) { // Archery Mastery 2 AA
+					MaxDmg = MaxDmg * 125/100;
+				}
+				else if(GetLevel() == 59) { // Archery Mastery 1 AA
+					MaxDmg = MaxDmg * 115/100;
+				}
+				mlog(COMBAT__RANGED, "Bow DMG %d, Arrow DMG %d, Max Damage %d.", WDmg, ADmg, MaxDmg);
+				
+				if(GetClass()==RANGER && other->IsNPC() && !other->IsMoving() && !other->IsRooted() && GetLevel() > 50){
+					MaxDmg *= 2;
+					mlog(COMBAT__RANGED, "Ranger. Target is stationary, doubling max damage to %d", MaxDmg);
+				}
+
+				sint32 TotalDmg = 0;
+
+				if (MaxDmg == 0)
+					MaxDmg = 1;
+
+				if(RuleB(Combat, UseIntervalAC))
+					TotalDmg = MaxDmg;
+				else
+					TotalDmg = MakeRandomInt(1, MaxDmg);
+
+				int minDmg = 1;
+				if(GetLevel() > 25){
+					//twice, for ammo and weapon
+					TotalDmg += (2*((GetLevel()-25)/3));
+					minDmg += (2*((GetLevel()-25)/3));
+				}
+
+				int bonus = 0;
+				if(GetLevel() > 50)
+					bonus += 15;
+				if(GetLevel() >= 55)
+					bonus += 15;
+				if(GetLevel() >= 60)
+					bonus += 15;
+				if(GetLevel() >= 65)
+					bonus += 15;
+
+				TotalDmg += (TotalDmg * bonus / 100);
+				minDmg += (minDmg * bonus / 100);
+
+				other->MeleeMitigation(this, TotalDmg, minDmg);
+				ApplyMeleeDamageBonus(ARCHERY, TotalDmg);
+				TryCriticalHit(other, ARCHERY, TotalDmg);
+				other->Damage(this, TotalDmg, SPELL_UNKNOWN, ARCHERY);
+			}
+			else {
+				other->Damage(this, -5, SPELL_UNKNOWN, ARCHERY);
+			}
+		}
+	}
+
+	//try proc on hits and misses
+	if(other && (other->GetHP() > -10)) {
+		TryWeaponProc(RangeWeapon, other);
+	}
+	
+	safe_delete(RangeItem);
+	safe_delete(AmmoItem);
+	return true;
+}
+
 bool NPC::BotAttackMelee(Mob* other, int Hand, bool bRiposte)
 {
 	_ZP(NPC_BotAttackMelee);
@@ -1632,6 +1747,7 @@ bool NPC::BotAttackMelee(Mob* other, int Hand, bool bRiposte)
 	if(weapon != NULL) {
 		if (!weapon->IsWeapon()) {
 			mlog(COMBAT__ATTACKS, "Attack canceled, Item %s (%d) is not a weapon.", weapon->GetItem()->Name, weapon->GetID());
+			safe_delete(weapon);
 			return(false);
 		}
 		mlog(COMBAT__ATTACKS, "Attacking with weapon: %s (%d)", weapon->GetItem()->Name, weapon->GetID());
@@ -1661,8 +1777,10 @@ bool NPC::BotAttackMelee(Mob* other, int Hand, bool bRiposte)
 		}
 
 		//try a finishing blow.. if successful end the attack
-		if(TryFinishingBlow(other, skillinuse))
+		if(TryFinishingBlow(other, skillinuse)) {
+			safe_delete(weapon);
 			return (true);
+		}
 		
 		//damage formula needs some work
 		int min_hit = 1;
@@ -1738,7 +1856,10 @@ bool NPC::BotAttackMelee(Mob* other, int Hand, bool bRiposte)
 		//riposte
 		bool slippery_attack = false; // Part of hack to allow riposte to become a miss, but still allow a Strikethrough chance (like on Live)
 		if (damage == -3)  {
-			if (bRiposte) return false;
+			if(bRiposte) {
+				safe_delete(weapon);
+				return false;
+			}
 			else {
 				// Bot Slippery Attacks AA
 				int saChance = 0;
@@ -1774,6 +1895,7 @@ bool NPC::BotAttackMelee(Mob* other, int Hand, bool bRiposte)
 			if(MakeRandomInt(0, 100) < (itembonuses.StrikeThrough + spellbonuses.StrikeThrough)) {
 				Message_StringID(MT_StrikeThrough, 9078); // You strike through your opponents defenses!
 				BotAttackMelee(other, Hand, true); // Strikethrough only gives another attempted hit
+				safe_delete(weapon);
 				return false;
 			}
 		}
@@ -1831,10 +1953,14 @@ bool NPC::BotAttackMelee(Mob* other, int Hand, bool bRiposte)
 		TryWeaponProc(weapon, other);
 	}
 	
-	if (damage > 0)
-            return true;
-	else
-            return false;
+	if(damage > 0) {
+		safe_delete(weapon);
+		return true;
+	}
+	else {
+		safe_delete(weapon);
+		return false;
+	}
 }
 
 #endif //EQBOTS
@@ -2501,6 +2627,7 @@ void NPC::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill) 
 	if(IsBot()) {
 		botnpcid = GetNPCTypeID();
 		botid = GetID();
+		SetAppearance(eaDead);
 	}
 
     //franck-add: EQoffline. If a bot kill a mob, the Killer is its leader.	
@@ -3666,7 +3793,7 @@ bool Mob::CheckBotDoubleAttack(bool tripleAttack) {
 	sint16 buffs = spellbonuses.DoubleAttackChance + itembonuses.DoubleAttackChance;
 	
 	// The maximum value for the Class based on the server rule of MaxLevel
-	if(!BotOwner || BotOwner->qglobal)
+	if(!BotOwner || BotOwner->qglobal || (GetAppearance() == eaDead))
 		return false;
 	int16 maxSkill = BotOwner->CastToClient()->MaxSkill(DOUBLE_ATTACK, classtype, RuleI(Character, MaxLevel));
 
@@ -3810,7 +3937,16 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 				healed = attacker->GetActSpellHealing(spell_id, healed);				
 				mlog(COMBAT__DAMAGE, "Applying lifetap heal of %d to %s", healed, attacker->GetName());
 				attacker->HealDamage(healed);
-				
+
+#ifdef EQBOTS
+
+				if(attacker->IsBot()) {
+					entity_list.MessageClose(this, true, 300, MT_Spells, "%s beams a smile at %s", attacker->GetCleanName(), this->GetCleanName() );
+				}
+				else
+
+#endif //EQBOTS
+
 				//we used to do a message to the client, but its gone now.
 				// emote goes with every one ... even npcs
 				entity_list.MessageClose(this, true, 300, MT_Emote, "%s beams a smile at %s", attacker->GetCleanName(), this->GetCleanName() );

@@ -395,6 +395,7 @@ void Client::FinishTrade(NPC* with){
 							break;
 						}
                         else if(j == SLOT_PRIMARY) { // primary melee weapons
+							with->SetBotArcher(false);
 							const Item_Struct* itmwp = database.GetItem(inst->GetID());
 							if((database.GetBotItemBySlot(with->GetNPCTypeID(), SLOT_PRIMARY) == 0)) {
 								// if the primary hand is empty, lets put the item there
@@ -457,6 +458,7 @@ void Client::FinishTrade(NPC* with){
 							break;
 						}
 						else if(j == SLOT_SECONDARY) { // Secondary Hand
+							with->SetBotArcher(false);
 							// Make sure to not equip weapons in the offhand of non-dual wielding classes
 							if(inst->IsWeapon() && !with->CanThisClassDualWield()) {
 								with->Say("I cannot dual wield.");
@@ -496,6 +498,9 @@ void Client::FinishTrade(NPC* with){
 								with->Say("I was using this in my %s but OK, you can have it back.", equipped[SLOT_RING01]);
 							}
 							break;
+						}
+						if((j == SLOT_AMMO) || (j == SLOT_RANGE)) {
+							with->SetBotArcher(false);
 						}
 						if(database.GetBotItemBySlot(with->GetNPCTypeID(), j) != 0) {
 							// remove existing item if equipped

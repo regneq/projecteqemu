@@ -2785,7 +2785,7 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 
 #ifdef EQBOTS
 
-	if(!caster) {
+	if(!caster || caster->IsCorpse()) {
 		return;
 	}
 

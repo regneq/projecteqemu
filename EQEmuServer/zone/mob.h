@@ -396,17 +396,24 @@ bool logpos;
 	virtual void GoToBind() {}
 	virtual void Gate();
 	virtual bool Attack(Mob* other, int Hand = 13, bool FromRiposte = false) { return false; }		// 13 = Primary (default), 14 = secondary
-      bool    AffectedExcludingSlot(int slot, int effect);
+	bool	AffectedExcludingSlot(int slot, int effect);
 
 #ifdef EQBOTS
 
 	//EQoffline-adds
 	virtual bool BotAttackMelee(Mob* other, int Hand = 13, bool FromRiposte = false) { return false; }
+	virtual bool BotRangedAttack(Mob* other) { return false; }
 	bool BotRaiding;
 	bool OrderBotAttack;
+	bool BotArchery;
+	uint32 BotArcheryRange;
+	void SetBotArcheryRange(uint32 r) { BotArcheryRange = r; }
+	uint32 GetBotArcheryRange() { return BotArcheryRange; }
+	void SetBotArcher(bool a) { BotArchery = a; }
 	void SetBotRaiding(bool v) { BotRaiding = v; }
 	void SetOrderBotAttack(bool v) { OrderBotAttack = v; }
 	bool IsBotRaiding() const { return BotRaiding; }
+	bool IsBotArcher() const { return BotArchery; }
 	bool IsOrderBotAttack() const { return OrderBotAttack; }
 	bool CheckBotDoubleAttack(bool Triple = false);
 
@@ -910,6 +917,7 @@ bool logpos;
 	int32 GetBotLeader();
 	sint32 GetBotActSpellDamage(int16 spell_id, sint32 value);
 	sint32 GetBotActSpellHealing(int16 spell_id, sint32 value);
+	void SendBotArcheryWearChange(int8 material_slot, uint32 material, uint32 color);
 	void BotMeditate(bool isSitting);
 	Mob *BotOwner;
 	int BotRaidID;

@@ -7635,6 +7635,7 @@ void command_bot(Client *c, const Seperator *sep) {
 		c->Message(15, "#bot saveraid - Save your current group(s) of bots.");
 		c->Message(15, "#bot spawnraid - Spawns your saved bots.");
 		c->Message(15, "#bot groupraid - Groups your spawned bots.");
+		c->Message(15, "#bot archery - Toggle Archery Skilled bots between using a Bow or using Melee weapons.");
 		return;
 	}
 
@@ -8215,7 +8216,7 @@ void command_bot(Client *c, const Seperator *sep) {
 			Post255 = (bsta-255)/2;
 		else
 			Post255 = 0;
-		int base_hp = (5)+(1*lm/10) + (((bsta-Post255)*1*lm/3000));
+		int base_hp = (5)+(1*lm/10) + (((bsta-Post255)*1*lm/3000)) + ((Post255*1)*lm/6000);
 
 		// save bot to the database
 		char errbuf[MYSQL_ERRMSG_SIZE];
@@ -8450,7 +8451,7 @@ void command_bot(Client *c, const Seperator *sep) {
 			Group *g = entity_list.GetGroupByClient(c);
 			for (int i=0; i<MAX_GROUP_MEMBERS; i++)
             {
-				if(g && g->members[i] && !g->members[i]->qglobal && g->members[i]->IsEngaged())
+				if(g && g->members[i] && !g->members[i]->qglobal && (g->members[i]->GetAppearance() != eaDead) && g->members[i]->IsEngaged())
                 {
                     c->Message(15, "You can't summon bots while you are engaged.");
 					return;
@@ -8537,6 +8538,66 @@ void command_bot(Client *c, const Seperator *sep) {
         }
         return;
     }
+
+	if(!strcasecmp(sep->arg[1], "archery")) {
+		if((c->GetTarget() == NULL) || (c->GetTarget() == c) || !c->GetTarget()->IsBot()) {
+            c->Message(15, "You must target a bot!");
+			return;
+		}
+		Mob *archerbot = c->GetTarget();
+		if((archerbot->GetClass()==WARRIOR)||(archerbot->GetClass()==PALADIN)||(archerbot->GetClass()==RANGER)||(archerbot->GetClass()==SHADOWKNIGHT)||(archerbot->GetClass()==ROGUE)) {
+			const Item_Struct* botweapon = database.GetItem(archerbot->CastToNPC()->GetItemID(SLOT_RANGE));
+			uint32 archeryMaterial;
+			uint32 archeryColor;
+			uint32 archeryBowID;
+			uint32 archeryAmmoID;
+			uint32 range = 0;
+			if(botweapon && (botweapon->ItemType == ItemTypeBow)) {
+				archeryMaterial = atoi(botweapon->IDFile+2);
+				archeryBowID = botweapon->ID;
+				archeryColor = botweapon->Color;
+				range =+ botweapon->Range;
+				botweapon = database.GetItem(archerbot->CastToNPC()->GetItemID(SLOT_AMMO));
+				if(!botweapon || (botweapon->ItemType != ItemTypeArrow)) {
+					archerbot->Say("I don't have any arrows.");
+					archerbot->SetBotArcheryRange(0);
+					return;
+				}
+				range += botweapon->Range;
+				archeryAmmoID = botweapon->ID;
+			}
+			else {
+				archerbot->Say("I don't have a bow.");
+				archerbot->SetBotArcheryRange(0);
+				return;
+			}
+			if(archerbot->IsBotArcher()) {
+				archerbot->SetBotArcher(false);
+				archerbot->Say("Using melee skills.");
+				archerbot->CastToNPC()->BotAddEquipItem(MATERIAL_PRIMARY, database.GetBotItemBySlot(archerbot->GetNPCTypeID(), SLOT_PRIMARY));
+				archerbot->CastToNPC()->SendWearChange(MATERIAL_PRIMARY);
+				archerbot->CastToNPC()->BotAddEquipItem(MATERIAL_SECONDARY, database.GetBotItemBySlot(archerbot->GetNPCTypeID(), SLOT_SECONDARY));
+				archerbot->CastToNPC()->SendWearChange(MATERIAL_SECONDARY);
+				archerbot->SetBotArcheryRange(0);
+			}
+			else {
+				archerbot->SetBotArcher(true);
+				archerbot->Say("Using archery skills.");
+				archerbot->CastToNPC()->BotRemoveEquipItem(MATERIAL_PRIMARY);
+				archerbot->SendWearChange(MATERIAL_PRIMARY);
+				archerbot->CastToNPC()->BotRemoveEquipItem(MATERIAL_SECONDARY);
+				archerbot->SendWearChange(MATERIAL_SECONDARY);
+				archerbot->CastToNPC()->BotAddEquipItem(MATERIAL_SECONDARY, archeryBowID);
+				archerbot->CastToNPC()->SendBotArcheryWearChange(MATERIAL_SECONDARY, archeryMaterial, archeryColor);
+				archerbot->CastToNPC()->BotAddEquipItem(MATERIAL_PRIMARY, archeryAmmoID);
+				archerbot->SetBotArcheryRange(range);
+			}
+		}
+		else {
+            archerbot->Say("I don't know how to use a bow.");
+		}
+		return;
+	}
 
 	if(!strcasecmp(sep->arg[1], "picklock")) {
 		if((c->GetTarget() == NULL) || (c->GetTarget() == c) || !c->GetTarget()->IsBot() || (c->GetTarget()->GetClass() != ROGUE)) {
@@ -8750,7 +8811,7 @@ void command_bot(Client *c, const Seperator *sep) {
 			Group *g = entity_list.GetGroupByClient(c);
 			for (int i=0; i<MAX_GROUP_MEMBERS; i++)
             {
-				if(g && g->members[i] && !g->members[i]->qglobal && g->members[i]->IsEngaged())
+				if(g && g->members[i] && !g->members[i]->qglobal && (g->members[i]->GetAppearance() != eaDead) && g->members[i]->IsEngaged())
                 {
                     c->Message(15, "You can't save your raid while you are engaged.");
 					return;
@@ -8935,6 +8996,9 @@ void command_bot(Client *c, const Seperator *sep) {
 						else {
 							c->GetTarget()->BotOwner = NULL;
 							c->GetTarget()->Kill();
+						}
+						if(g->BotGroupCount() < 2) {
+							g->DisbandGroup();
 						}
 					}
 				}
@@ -9131,6 +9195,9 @@ void command_bot(Client *c, const Seperator *sep) {
 					c->PushItemOnCursor(*itminst, true);
 					safe_delete(itminst);
 					Mob *gearbot = c->GetTarget();
+					if((slotId == SLOT_RANGE)||(slotId == SLOT_AMMO)||(slotId == SLOT_PRIMARY)||(slotId == SLOT_SECONDARY)) {
+						gearbot->SetBotArcher(false);
+					}
 					database.RemoveBotItemBySlot(gearbot->GetNPCTypeID(), slotId);
 					gearbot->CastToNPC()->RemoveItem(itm->ID);
 					int8 materialFromSlot = Inventory::CalcMaterialFromSlot(slotId);
@@ -9682,44 +9749,53 @@ void command_bot(Client *c, const Seperator *sep) {
 	}
 
 //Summon Corpse
-	if(!strcasecmp(sep->arg[1], "corpse") && !strcasecmp(sep->arg[2], "summon"))
-	{
-     	   if (c->GetTarget() == NULL)
-     	   {
-    	     c->Message(15, "You must select player with his corpse in the zone.");
-   	     return;
- 	   }
-		if (c->IsGrouped())
-		{
+	if(!strcasecmp(sep->arg[1], "corpse") && !strcasecmp(sep->arg[2], "summon")) {
+		if(c->GetTarget() == NULL) {
+			c->Message(15, "You must select player with his corpse in the zone.");
+			return;
+		}
+		if(c->IsGrouped()) {
 			bool hassummoner = false;
 			Mob *t = c->GetTarget();
 			Group *g = c->GetGroup();
-			for(int i=0; i<MAX_GROUP_MEMBERS; i++)
- 			{
-				if(g && g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == NECROMANCER))
-				{
+			int summonerlevel = 0;
+			for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
+				if(g && g->members[i] && g->members[i]->IsBot() && ((g->members[i]->GetClass() == NECROMANCER)||(g->members[i]->GetClass() == SHADOWKNIGHT))) {
 					hassummoner = true;
-					Mob *summoner = g->members[i];
-					if((hassummoner)  && (c->GetLevel() >= 13) && (t->IsClient())) {
-						summoner->Say("Attempting to summon %ss corpse.", t->GetCleanName());
-						summoner->CastToClient()->CastSpell(3, c->GetID(), 1, -1, -1);
+					summonerlevel = g->members[i]->GetLevel();
+					if(!t->IsClient()) {
+						g->members[i]->Say("You have to target a player with a corpse in the zone");
+						return;
 					}
-					else if((hassummoner)  && (c->GetLevel() <= 12)) {
-						summoner->Say("I'm not level 13 yet.", c->GetName());
+					else if(summonerlevel < 12) {
+						g->members[i]->Say("I don't have that spell yet.");
 					}
-					else if((hassummoner)  && (!t->IsClient())) {
-					summoner->Say("You have to target a player with a corpse in the zone", c->GetName());
+					else if((summonerlevel > 11) && (summonerlevel < 35)) {
+						g->members[i]->Say("Attempting to summon %s\'s corpse.", t->GetCleanName());
+						g->members[i]->CastSpell(2213, t->GetID(), 1, -1, -1);
+						return;
 					}
-					else if(!hassummoner) {
-					c->Message(15, "You must have a Necromancer in your group.");
+					else if((summonerlevel > 34) && (summonerlevel < 71)) {
+						g->members[i]->Say("Attempting to summon %s\'s corpse.", t->GetCleanName());
+						g->members[i]->CastSpell(3, t->GetID(), 1, -1, -1);
+						return;
 					}
-					return;
+					else if((summonerlevel > 70) && (summonerlevel < 76)) {
+						g->members[i]->Say("Attempting to summon %s\'s corpse.", t->GetCleanName());
+						g->members[i]->CastSpell(10042, t->GetID(), 1, -1, -1);
+						return;
+					}
+					else if((summonerlevel > 75) && (summonerlevel < 81)) {
+						g->members[i]->Say("Attempting to summon %s\'s corpse.", t->GetCleanName());
+						g->members[i]->CastSpell(14823, t->GetID(), 1, -1, -1);
+						return;
+					}
 				}
 			}
-		if (!hassummoner) {
-		c->Message(15, "You must have a Necromancer in your group.");
-		}
-    	  	return;
+			if (!hassummoner) {
+				c->Message(15, "You must have a Necromancer or Shadowknight in your group.");
+			}
+			return;
 		}
 	}
 
