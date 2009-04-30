@@ -138,7 +138,7 @@ bool IsSummonSpell(int16 spellid) {
 	for (int o = 0; o < EFFECT_COUNT; o++)
 	{
 		int32 tid = spells[spellid].effectid[o];
-		if(tid == SE_SummonPet || tid == SE_SummonItem)
+		if(tid == SE_SummonPet || tid == SE_SummonItem || tid == SE_SummonPC)
 		{
 			return true;
 		}
