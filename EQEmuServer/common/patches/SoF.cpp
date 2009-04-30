@@ -1224,7 +1224,7 @@ ENCODE(OP_RespondAA) {
 	eq->aa_spent = 500; //aa_spent_total;
 
 	int r;
-	for(r = 0; r < structs::MAX_PP_AA_ARRAY; r++) {
+	for(r = 0; r < MAX_PP_AA_ARRAY; r++) {
 		OUT(aa_list[r].aa_skill);
 		OUT(aa_list[r].aa_value);
 		//eq->aa_list[r].aa_value = emu->aa_list[r].aa_value;

@@ -3541,9 +3541,10 @@ struct SendAA_Struct {
 /*0081*/	int8 unknown80[7]; //int32 unknown80[2]; 0s
 /*0088*/	int32 aa_expansion; //03 00 00 00 (sometimes 0C or 0E)3, 12 or 14
 /*0092*/	int32 unknown0092; //ff ff ff ff
-/*0096*/	int32 unknown0096; //00 00 00 00 
-/*0100*/	int32 total_abilities;
-/*0104*/	AA_Ability abilities[0];
+/*0096*/	int8 unknown0096; //00
+/*0097*/	int8 unknown0097; //00
+/*0098*/	int32 total_abilities;
+/*0102*/	AA_Ability abilities[0];
 };
 
 struct AA_List {

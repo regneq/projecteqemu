@@ -2,6 +2,8 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==4/30/2009==
 Congdar: Bots - bots can now use bows, new command '#bot archery'. Added Ranger archery AA's. Reduced chat mana spam. Tweaked spell ai. Fixed memory leak. Updated '#bot corpse summon'. 
+Derision: SoF - AAs affecting stats now show the correct stats in the client.
+Derision: Tweaked base resists to match the client.
 
 ==4/29/2009==
 Trevius: SoF - Added rule for setting a startzone for SoF Clients separate from where Titanium Clients are set to start.  Set as Zone ID number.
