@@ -100,7 +100,7 @@ void Mob::BOT_Process() {
     }
 
 	// The bots need an owner
-	if(!BotOwner || BotOwner->qglobal)
+	if(!BotOwner || BotOwner->qglobal || (GetAppearance() == eaDead))
 		return;
 
 	if(!IsEngaged()) {
@@ -141,6 +141,34 @@ void Mob::BOT_Process() {
         }
 
         bool is_combat_range = CombatRange(target);
+		if(IsBotArcher()) {
+			float range = GetBotArcheryRange() + 5.0; //Fudge it a little, client will let you hit something at 0 0 0 when you are at 205 0 0
+			mlog(COMBAT__RANGED, "Calculated bow range to be %.1f", range);
+			range *= range;
+			if(DistNoRootNoZ(*target) > range) {
+				mlog(COMBAT__RANGED, "Ranged attack out of range... client should catch this. (%f > %f).\n", DistNoRootNoZ(*target), range);
+				//target is out of range, client does a message
+				is_combat_range = false;
+			}
+			else if(DistNoRootNoZ(*target) < (RuleI(Combat, MinRangedAttackDist)*RuleI(Combat, MinRangedAttackDist))) {
+				is_combat_range = false;
+				AImovement_timer->Check();
+				if(IsMoving())
+				{
+					SetRunAnimSpeed(0);
+					SetHeading(target->GetHeading());
+					if(moved) {
+						moved=false;
+						SetMoving(false);
+						SendPosUpdate();
+					}
+					tar_ndx = 0;
+				}
+			}
+			else {
+				is_combat_range = true;
+			}
+		}
 
         // We're engaged, each class type has a special AI
         // Only melee class will go to melee. Casters and healers will stop and stay behind.
@@ -165,9 +193,18 @@ void Mob::BOT_Process() {
                 tar_ndx = 0;
             }
 
+			if(IsBotArcher() && ranged_timer.Check(false)) {
+				if(MakeRandomInt(1, 100) > 95) {
+					Bot_AI_EngagedCastCheck();
+					BotMeditate(false);
+				}
+				else {
+					BotRangedAttack(target);
+				}
+			}
 
             // we can't fight if we don't have a target, are stun/mezzed or dead..
-            if(target && !IsStunned() && !IsMezzed() && (GetAppearance() != eaDead))
+            if(!IsBotArcher() && target && !IsStunned() && !IsMezzed() && (GetAppearance() != eaDead))
             {
                 //we should check to see if they die mid-attacks, previous
                 //crap of checking target for null was not gunna cut it
@@ -195,40 +232,65 @@ void Mob::BOT_Process() {
 					// Handle Flurrys
 					if((botClass == WARRIOR) && (botLevel >= 59)) {
 						int flurrychance = 0;
-						if(botLevel >= 59) { // Flurry AA's
-							flurrychance += 10;
+						if(botLevel >= 61) { // Flurry AA's
+							flurrychance += 50;
 						}
-						if(botLevel >= 60) {
-							flurrychance += 10;
+						else if(botLevel == 60) {
+							flurrychance += 25;
 						}
-						if(botLevel >= 61) {
+						else if(botLevel == 59) {
 							flurrychance += 10;
 						}
 						if(tripleSuccess) {
 							tripleSuccess = false;
-							if(botLevel >= 63) { // Raging Flurry AA's
+							if(botLevel >= 65) { // Raging Flurry AA's
+								flurrychance += 50;
+							}
+							else if(botLevel == 64) {
+								flurrychance += 25;
+							}
+							else if(botLevel == 63) {
 								flurrychance += 10;
 							}
-							if(botLevel >= 64) {
-								flurrychance += 10;
-							}
-							if(botLevel >= 65) {
-								flurrychance += 10;
-							}
-							tripleSuccess = false;
 						}
 						if(rand()%1000 < flurrychance) {
 							Message_StringID(MT_CritMelee, 128);
 							BotAttackMelee(target, SLOT_PRIMARY, true);
-
-							//50% chance for yet another attack?
-							if(MakeRandomFloat(0, 1) < 0.5)
-								BotAttackMelee(target, SLOT_PRIMARY, true);
+							BotAttackMelee(target, SLOT_PRIMARY, true);
 						}
 					}
 
+					if(target && (botClass == MONK)) { // Rapid Strikes AA
+						int chance_xhit1 = 0;
+						int chance_xhit2 = 0;
+						if(botLevel >= 69) {
+							chance_xhit1 = 20;
+							chance_xhit2 = 10;
+						}
+						else if(botLevel == 68) {
+							chance_xhit1 = 16;
+							chance_xhit2 = 8;
+						}
+						else if(botLevel == 67) {
+							chance_xhit1 = 14;
+							chance_xhit2 = 6;
+						}
+						else if(botLevel == 66) {
+							chance_xhit1 = 12;
+							chance_xhit2 = 4;
+						}
+						else if(botLevel == 65) {
+							chance_xhit1 = 10;
+							chance_xhit2 = 2;
+						}
+						if(MakeRandomInt(1,100) < chance_xhit1)
+							BotAttackMelee(target, SLOT_PRIMARY, true);
+						if(target && (MakeRandomInt(1,100) < chance_xhit2))
+							BotAttackMelee(target, SLOT_PRIMARY, true);
+					}
+
 					// Handle Punishing Blade and Speed of the Knight and Wicked Blade
-                    if((botClass == MONK)||(botClass == RANGER)||(botClass == WARRIOR)||(botClass == PALADIN)||(botClass == SHADOWKNIGHT)) {
+                    if(target && ((botClass == MONK)||(botClass == RANGER)||(botClass == WARRIOR)||(botClass == PALADIN)||(botClass == SHADOWKNIGHT))) {
 						if(botLevel >= 61) {
 							ItemInst* weapon = NULL;
 							const Item_Struct* botweapon = NULL;
@@ -332,7 +394,7 @@ void Mob::BOT_Process() {
         else {
             //we cannot reach our target...
             // See if we can summon the mob to us
-            if(!HateSummon())
+            if(!HateSummon() && !IsBotArcher())
             {
                 //could not summon them, start pursuing...
                 // TODO: Check here for another person on hate list with close hate value
@@ -431,7 +493,7 @@ bool NPC::Bot_AI_EngagedCastCheck() {
             if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 100, MobAISpellRange, SpellType_Heal)) {
 				if(!Bot_AICastSpell(this, 100, SpellType_Escape)) {
 					if(!Bot_AICastSpell(this, 100, SpellType_Heal)) {
-						if(!Bot_AICastSpell(target, 4, SpellType_DOT | SpellType_Nuke | SpellType_Lifetap | SpellType_Dispel)) {
+						if(!Bot_AICastSpell(target, 5, SpellType_DOT | SpellType_Nuke | SpellType_Lifetap | SpellType_Dispel)) {
 							AIautocastspell_timer->Start(RandomTimer(500, 2000), false);
 							return true;
 						}
@@ -527,8 +589,8 @@ bool EntityList::Bot_AICheckCloseBeneficialSpells(NPC* caster, int8 iChance, flo
 		return false;
 
 	if (iChance < 100) {
-		int8 tmp = MakeRandomInt(0, 99);
-		if (tmp >= iChance)
+		int8 tmp = MakeRandomInt(1, 100);
+		if (tmp > iChance)
 			return false;
 	}
 
@@ -570,12 +632,12 @@ bool EntityList::Bot_AICheckCloseBeneficialSpells(NPC* caster, int8 iChance, flo
 				if(g) {
 					for( int i = 0; i<MAX_GROUP_MEMBERS; i++)
 					{
-						if(g->members[i] && !g->members[i]->qglobal && (g->members[i]->GetHPRatio() < 80))
+						if(g->members[i] && !g->members[i]->qglobal && (g->members[i]->GetAppearance() != eaDead) && (g->members[i]->GetHPRatio() < 80))
 						{
 							if(caster->Bot_AICastSpell(g->members[i], 100, SpellType_Heal))
 								return true;
 						}
-						if(g->members[i] && !g->members[i]->qglobal && g->members[i]->HasPet() && (g->members[i]->GetPet()->GetHPRatio() < 60)) {
+						if(g->members[i] && !g->members[i]->qglobal && (g->members[i]->GetAppearance() != eaDead) && g->members[i]->HasPet() && (g->members[i]->GetPet()->GetHPRatio() < 60)) {
 							if(caster->Bot_AICastSpell(g->members[i]->GetPet(), 100, SpellType_Heal))
 								return true;
 						}
@@ -697,7 +759,7 @@ bool NPC::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 		return false;
 
 	if (iChance < 100) {
-		if (MakeRandomInt(0, 100) >= iChance){
+		if (MakeRandomInt(0, 100) > iChance){
 			return false;
 		}
 	}
@@ -776,7 +838,7 @@ bool NPC::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 								// Let the HoT heal for at least 3 tics before checking for the regular heal
 								// For non-HoT heals, do a 4 second delay
 								if((botClass == CLERIC || botClass == PALADIN) && (botLevel >= 19) && (BotGetSpellPriority(i) == 1)) {
-									tar->pDontHealMeBefore = (Timer::GetCurrentTime() + 18000);
+									tar->pDontHealMeBefore = (Timer::GetCurrentTime() + 12000);
 								}
 								else if((botClass == CLERIC || botClass == PALADIN) && (botLevel >= 19) && (BotGetSpellPriority(i) == 2)) {
 									if(AIspells[i].spellid == 13) { // Complete Heal 4 second rotation
@@ -793,7 +855,8 @@ bool NPC::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 					}
 					case SpellType_Root: {
 						if (
-							!tar->IsRooted() 
+							(tar->GetHPRatio() <= 20.0f)
+							&& !tar->IsRooted() 
 							&& tar->DontRootMeBefore() < Timer::GetCurrentTime()
 							&& tar->CanBuffStack(AIspells[i].spellid, botLevel, true) >= 0
 							) {
@@ -859,12 +922,11 @@ bool NPC::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 						break;
 					}
 					case SpellType_Nuke: {
-						if (
-							((MakeRandomInt(1, 100) < 50) || (botClass == BARD))
-							&& ((tar->GetHPRatio()<=90.0f)||(!IsBotRaiding()))
+						if(((MakeRandomInt(1, 100) < 50) || (botClass == BARD))
+							&& (tar->GetHPRatio() <= 95.0f)
 							&& !tar->IsImmuneToSpell(AIspells[i].spellid, this)
-							&& tar->CanBuffStack(AIspells[i].spellid, botLevel, true) >= 0
-							) {
+							&& (tar->CanBuffStack(AIspells[i].spellid, botLevel, true) >= 0))
+						{
 							if(!checked_los) {
 								if(!CheckLosFN(tar))
 									return(false);	//cannot see target... we assume that no spell is going to work since we will only be casting detrimental spells in this call
@@ -876,7 +938,7 @@ bool NPC::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 						break;
 					}
 					case SpellType_Dispel: {
-						if(MakeRandomInt(1, 100) < 15)
+						if(tar->GetHPRatio() > 95.0f)
 						{
 							if(!checked_los) {
 								if(!CheckLosFN(tar))
@@ -914,11 +976,10 @@ bool NPC::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 						break;
 					}
 					case SpellType_Lifetap: {
-						if (
-							((tar->GetHPRatio()<=80.0f)||(!IsBotRaiding()))
+						if ((tar->GetHPRatio() <= 90.0f)
 							&& !tar->IsImmuneToSpell(AIspells[i].spellid, this)
-							&& tar->CanBuffStack(AIspells[i].spellid, botLevel, true) >= 0
-							) {
+							&& (tar->CanBuffStack(AIspells[i].spellid, botLevel, true) >= 0))
+						{
 							if(!checked_los) {
 								if(!CheckLosFN(tar))
 									return(false);	//cannot see target... we assume that no spell is going to work since we will only be casting detrimental spells in this call
@@ -931,7 +992,8 @@ bool NPC::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 					}
 					case SpellType_Snare: {
 						if (
-							!tar->IsRooted()
+							(tar->GetHPRatio() <= 20.0f)
+							&& !tar->IsRooted()
 							&& !tar->IsImmuneToSpell(AIspells[i].spellid, this)
 							&& tar->DontSnareMeBefore() < Timer::GetCurrentTime()
 							&& tar->CanBuffStack(AIspells[i].spellid, botLevel, true) >= 0

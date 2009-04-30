@@ -1559,8 +1559,34 @@ bool Mob::TryHeadShot(Mob* defender, SkillType skillInUse) {
 		}
 	}
 
+#ifdef EQBOTS
+
+	else if(IsBot() && defender && (defender->GetBodyType() == BT_Humanoid) && (skillInUse == ARCHERY) && (GetClass() == RANGER) && (GetLevel() >= 62)) {
+		int defenderLevel = defender->GetLevel();
+		int rangerLevel = GetLevel();
+		// Bot Ranger Headshot AA through level 80(Secrets of Faydwer)
+		if( ((defenderLevel<=48)&&(rangerLevel>=62)) || ((defenderLevel<=50)&&(rangerLevel>=66)) || ((defenderLevel<=52)&&(rangerLevel>=68)) || ((defenderLevel<=54)&&(rangerLevel>=70)) || ((defenderLevel<=56)&&(rangerLevel>=71)) ||
+			((defenderLevel<=58)&&(rangerLevel>=73)) || ((defenderLevel<=60)&&(rangerLevel>=75)) || ((defenderLevel<=62)&&(rangerLevel>=76)) || ((defenderLevel<=64)&&(rangerLevel>=78)) || ((defenderLevel<=66)&&(rangerLevel>=80)) )
+		{
+			// WildcardX: These chance formula's below are arbitrary. If someone has a better formula that is more
+			// consistent with live, feel free to update these.
+			float AttackerChance = 0.20f + ((float)(rangerLevel - 51) * 0.005f);
+			float DefenderChance = (float)MakeRandomFloat(0.00f, 1.00f);
+			if(AttackerChance > DefenderChance) {
+				mlog(COMBAT__ATTACKS, "Landed a headshot: Attacker chance was %f and Defender chance was %f.", AttackerChance, DefenderChance);
+				// WildcardX: At the time I wrote this, there wasnt a string id for something like HEADSHOT_BLOW
+				//entity_list.MessageClose_StringID(this, false, 200, MT_CritMelee, FINISHING_BLOW, GetName());
+				entity_list.MessageClose(this, false, 200, MT_CritMelee, "%s has scored a leathal HEADSHOT!", GetName());
+				defender->Damage(this, (defender->GetMaxHP()+50), SPELL_UNKNOWN, skillInUse);
+				Result = true;
+			}
+			else {
+				mlog(COMBAT__ATTACKS, "FAILED a headshot: Attacker chance was %f and Defender chance was %f.", AttackerChance, DefenderChance);
+			}
+		}
+	}
+
+#endif //EQBOTS
+
 	return Result;
 }
-
-
-

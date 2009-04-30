@@ -349,7 +349,9 @@ Mob::Mob(const char*   in_name,
 	BotRaidID = 0;
 	BotRaiding = false;
 	OrderBotAttack = false;
-		
+	BotArchery = false;
+	BotArcheryRange = 0;
+
 #endif //EQBOTS
 
 }
@@ -2419,6 +2421,20 @@ int32 Mob::GetBotLeader() {
 	}
 }
 
+void Mob::SendBotArcheryWearChange(int8 material_slot, uint32 material, uint32 color)
+{
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_WearChange, sizeof(WearChange_Struct));
+	WearChange_Struct* wc = (WearChange_Struct*)outapp->pBuffer;
+
+	wc->spawn_id = GetID();
+	wc->material = material;
+	wc->color.color = color;
+	wc->wear_slot_id = material_slot;
+
+	entity_list.QueueClients(this, outapp);
+	safe_delete(outapp);
+}
+
 sint16 Mob::CalcBotFocusEffect(botfocusType bottype, int16 focus_id, int16 spell_id) {
 
 	const SPDat_Spell_Struct &focus_spell = spells[focus_id];
@@ -2931,7 +2947,7 @@ void Mob::BotMeditate(bool isSitting) {
 		if(GetManaRatio() < 99.0f) {
 			if(mana_timer.Check(true)) {
 				SetAppearance(eaSitting, false);
-				if(!((int)GetManaRatio() % 12)) {
+				if(!((int)GetManaRatio() % 24)) {
 					Say("Medding for Mana. I have %3.1f%% of %d mana. It is: %d", GetManaRatio(), GetMaxMana(), GetMana());
 				}
 				int32 level = GetLevel();
@@ -2995,7 +3011,7 @@ void Mob::BotMeditate(bool isSitting) {
 	else {
 		// Let's check our mana in fights..
 		if(mana_timer.Check(true)) {
-			if(!((int)GetManaRatio() % 12)) {
+			if((!((int)GetManaRatio() % 12)) && ((int)GetManaRatio() < 10)) {
 				Say("Medding for Mana. I have %3.1f%% of %d mana. It is: %d", GetManaRatio(), GetMaxMana(), GetMana());
 			}
 			int32 level = GetLevel();
@@ -3952,7 +3968,7 @@ void Mob::CalcBotStats(bool showtext) {
 		Post255 = (bsta-255)/2;
 	else
 		Post255 = 0;
-	sint32 bot_hp = (5)+(blevel*lm/10) + (((bsta-Post255)*blevel*lm/3000));
+	sint32 bot_hp = (5)+(blevel*lm/10) + (((bsta-Post255)*blevel*lm/3000)) + ((Post255*blevel)*lm/6000);
 
 
 	// Now, we need to calc the base mana.
