@@ -759,7 +759,7 @@ sint16 Client::acmod() {
 	}
 	else{
 		//seems about 21 agil per extra AC pt over 300...
-        return (65 + ((agility-300) / 21));
+	return (65 + ((agility-300) / 21));
 	}
 #if EQDEBUG >= 11
 	LogFile->write(EQEMuLog::Error, "Error in Client::acmod(): Agility: %i, Level: %i",agility,level);
@@ -1123,7 +1123,7 @@ sint16	Client::CalcMR()
 			MR = 25;
 			break;
 		case DWARF:
-			MR = 20;
+			MR = 30;
 			break;
 		case TROLL:
 			MR = 25;
@@ -1137,11 +1137,18 @@ sint16	Client::CalcMR()
 		case GNOME:
 			MR = 25;
 			break;
-		
-		//unknown for now
 		case IKSAR:
+			MR = 25;
+			break;
 		case VAHSHIR:
+			MR = 25;
+			break;
 		case FROGLOK:
+			MR = 30;
+			break;
+		case DRAKKIN:
+			MR = 35;
+			break;
 		default:
 			MR = 20;
 	}
@@ -1149,9 +1156,8 @@ sint16	Client::CalcMR()
 	MR += itembonuses.MR + spellbonuses.MR;
 	MR += (GetAA(aaInnateMagicProtection) + GetAA(aaMarrsProtection))*2;
 	
-	if(GetClass() == WARRIOR) {
-		MR += GetLevel() / 2 + 1;
-	}
+	if(GetClass() == WARRIOR)
+		MR += GetLevel() / 2;
 	
 	if(MR < 1)
 		MR = 1;
@@ -1199,11 +1205,18 @@ sint16	Client::CalcFR()
 		case GNOME:
 			FR = 25;
 			break;
-		
-		//unknown for now
 		case IKSAR:
+			FR = 30;
+			break;
 		case VAHSHIR:
+			FR = 25;
+			break;
 		case FROGLOK:
+			FR = 25;
+			break;
+		case DRAKKIN:
+			FR = 25;
+			break;
 		default:
 			FR = 20;
 	}
@@ -1213,13 +1226,12 @@ sint16	Client::CalcFR()
 		FR += 4;
 		
 		int l = GetLevel();
-		if(l > 50) {
-			FR += l - 50;
-		}
+		if(l > 49)
+			FR += l - 49;
 	}
 	
-    FR += itembonuses.FR + spellbonuses.FR;
-    FR += (GetAA(aaInnateFireProtection) + GetAA(aaWardingofSolusek))*2;
+	FR += itembonuses.FR + spellbonuses.FR;
+	FR += (GetAA(aaInnateFireProtection) + GetAA(aaWardingofSolusek))*2;
 	
 	if(FR < 1)
 		FR = 1;
@@ -1267,11 +1279,18 @@ sint16	Client::CalcDR()
 		case GNOME:
 			DR = 15;
 			break;
-		
-		//unknown for now
 		case IKSAR:
+			DR = 15;
+			break;
 		case VAHSHIR:
+			DR = 15;
+			break;
 		case FROGLOK:
+			DR = 15;
+			break;
+		case DRAKKIN:
+			DR = 15;
+			break;
 		default:
 			DR = 15;
 	}
@@ -1281,24 +1300,23 @@ sint16	Client::CalcDR()
 		DR += 8;
 		
 		int l = GetLevel();
-		if(l > 50) {
-			DR += l - 50;
-		}
+		if(l > 49)
+			DR += l - 49;
+
 	} else if(c == SHADOWKNIGHT) {
 		DR += 4;
 		
 		int l = GetLevel();
-		if(l > 50) {
-			DR += l - 50;
-		}
+		if(l > 49)
+			DR += l - 49;
 	}
 	
-    DR += itembonuses.DR + spellbonuses.DR;
-    DR += (GetAA(aaInnateDiseaseProtection) + GetAA(aaBertoxxulousGift))*2;
+	DR += itembonuses.DR + spellbonuses.DR;
+	DR += (GetAA(aaInnateDiseaseProtection) + GetAA(aaBertoxxulousGift))*2;
 	
 	if(DR < 1)
 		DR = 1;
-    
+
 	return(DR);
 }
 
@@ -1342,11 +1360,18 @@ sint16	Client::CalcPR()
 		case GNOME:
 			PR = 15;
 			break;
-		
-		//unknown for now
 		case IKSAR:
+			PR = 15;
+			break;
 		case VAHSHIR:
+			PR = 15;
+			break;
 		case FROGLOK:
+			PR = 30;
+			break;
+		case DRAKKIN:
+			PR = 15;
+			break;
 		default:
 			PR = 15;
 	}
@@ -1356,24 +1381,23 @@ sint16	Client::CalcPR()
 		PR += 8;
 		
 		int l = GetLevel();
-		if(l > 50) {
-			PR += l - 50;
-		}
+		if(l > 49)
+			PR += l - 49;
+
 	} else if(c == SHADOWKNIGHT) {
 		PR += 4;
 		
 		int l = GetLevel();
-		if(l > 50) {
-			PR += l - 50;
-		}
+		if(l > 49)
+			PR += l - 49;
 	}
 	
-    PR += itembonuses.PR + spellbonuses.PR;
-    PR += (GetAA(aaInnatePoisonProtection) + GetAA(aaShroudofTheFaceless))*2;
+	PR += itembonuses.PR + spellbonuses.PR;
+	PR += (GetAA(aaInnatePoisonProtection) + GetAA(aaShroudofTheFaceless))*2;
 	
 	if(PR < 1)
 		PR = 1;
-    
+
 	return(PR);
 }
 
@@ -1417,11 +1441,18 @@ sint16	Client::CalcCR()
 		case GNOME:
 			CR = 25;
 			break;
-		
-		//unknown for now
 		case IKSAR:
+			CR = 15;
+			break;
 		case VAHSHIR:
+			CR = 25;
+			break;
 		case FROGLOK:
+			CR = 25;
+			break;
+		case DRAKKIN:
+			CR = 25;
+			break;
 		default:
 			CR = 25;
 	}
@@ -1431,17 +1462,16 @@ sint16	Client::CalcCR()
 		CR += 4;
 		
 		int l = GetLevel();
-		if(l > 50) {
-			CR += l - 50;
-		}
+		if(l > 49)
+			CR += l - 49;
 	}
 	
-    CR += itembonuses.CR + spellbonuses.CR;
-    CR += (GetAA(aaInnateColdProtection) + GetAA(aaBlessingofEci))*2;
+	CR += itembonuses.CR + spellbonuses.CR;
+	CR += (GetAA(aaInnateColdProtection) + GetAA(aaBlessingofEci))*2;
 	
 	if(CR < 1)
 		CR = 1;
-    
+
 	return(CR);
 }
 
