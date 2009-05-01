@@ -855,8 +855,7 @@ bool NPC::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 					}
 					case SpellType_Root: {
 						if (
-							(tar->GetHPRatio() <= 20.0f)
-							&& !tar->IsRooted() 
+							!tar->IsRooted() 
 							&& tar->DontRootMeBefore() < Timer::GetCurrentTime()
 							&& tar->CanBuffStack(AIspells[i].spellid, botLevel, true) >= 0
 							) {
@@ -992,8 +991,7 @@ bool NPC::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 					}
 					case SpellType_Snare: {
 						if (
-							(tar->GetHPRatio() <= 20.0f)
-							&& !tar->IsRooted()
+							!tar->IsRooted()
 							&& !tar->IsImmuneToSpell(AIspells[i].spellid, this)
 							&& tar->DontSnareMeBefore() < Timer::GetCurrentTime()
 							&& tar->CanBuffStack(AIspells[i].spellid, botLevel, true) >= 0
