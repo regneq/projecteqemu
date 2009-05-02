@@ -336,6 +336,7 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_Barter] = &Client::Handle_OP_Barter;
 	ConnectedOpcodes[OP_VoiceMacroIn] = &Client::Handle_OP_VoiceMacroIn;
 	ConnectedOpcodes[OP_ApplyPoison] = &Client::Handle_OP_ApplyPoison;
+	ConnectedOpcodes[OP_AugmentInfo] = &Client::Handle_OP_AugmentInfo;
 }
 
 int Client::HandlePacket(const EQApplicationPacket *app)
@@ -621,6 +622,7 @@ void Client::Handle_Connect_OP_ReqClientSpawn(const EQApplicationPacket *app)
 	// New for Secrets of Faydwer - Used in Place of OP_SendExpZonein
 	outapp = new EQApplicationPacket(OP_WorldObjectsSent, 0);
 	QueuePacket(outapp);
+	safe_delete(outapp);
 
 	if(strncasecmp(zone->GetShortName(),"bazaar",6)==0)
 		SendBazaarWelcome();
@@ -790,6 +792,7 @@ void Client::Handle_Connect_OP_WorldObjectsSent(const EQApplicationPacket *app)
 	// New for Secrets of Faydwer - Used in Place of OP_SendExpZonein
 	outapp = new EQApplicationPacket(OP_WorldObjectsSent, 0);
 	QueuePacket(outapp);
+	safe_delete(outapp);
 
 	outapp = new EQApplicationPacket(OP_RaidUpdate, sizeof(ZoneInSendName_Struct));
 	ZoneInSendName_Struct* zonesendname=(ZoneInSendName_Struct*)outapp->pBuffer;
@@ -8745,3 +8748,48 @@ void Client::Handle_OP_ApplyPoison(const EQApplicationPacket *app) {
 	FastQueuePacket(&outapp);
 }
 
+
+void Client::Handle_OP_AugmentInfo(const EQApplicationPacket *app) {
+
+	// This packet is sent by the client when an Augment item information window is opened.
+	// We respond with an OP_ReadBook containing the type of distiller required to remove the augment.
+	// The OP_Augment packet includes a window parameter to determine which Item window in the UI the
+	// text is to be displayed in. out->type = 2 indicates the BookText_Struct contains item information.
+	//
+	
+	if(app->size != sizeof(AugmentInfo_Struct))
+	{
+		LogFile->write(EQEMuLog::Debug, "Size mismatch in OP_AugmentInfo expected %i got %i",
+		               sizeof(AugmentInfo_Struct), app->size);
+
+		DumpPacket(app);
+
+		return;
+	}
+	AugmentInfo_Struct* AugInfo = (AugmentInfo_Struct*) app->pBuffer;
+
+	char *outstring = NULL;
+
+	const Item_Struct * item = database.GetItem(AugInfo->itemid);
+
+	if (item)
+	{
+		MakeAnyLenString(&outstring, "You must use the solvent %s to remove this augment safely.", item->Name);
+	
+		EQApplicationPacket* outapp = new EQApplicationPacket(OP_ReadBook, strlen(outstring) + sizeof(BookText_Struct));
+
+		BookText_Struct *out = (BookText_Struct *) outapp->pBuffer;
+
+		out->window = AugInfo->window;
+
+		out->type = 2;
+
+		out->invslot = 0;
+
+		strcpy(out->booktext, outstring);
+
+		safe_delete_array(outstring);
+
+		FastQueuePacket(&outapp);
+	}
+}

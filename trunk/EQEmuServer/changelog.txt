@@ -1,5 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/02/2009==
+realityincarnate: Augment Item Info.
+Derision: Corrected a few memory leaks.
+Derision: 'Live'/Anniversary patches no longer registered.
+
 ==4/30/2009==
 Congdar: Bots - bots can now use bows, new command '#bot archery'. Added Ranger archery AA's. Reduced chat mana spam. Tweaked spell ai. Fixed memory leak. Updated '#bot corpse summon'. 
 Derision: SoF - AAs affecting stats now show the correct stats in the client.

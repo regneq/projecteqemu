@@ -1237,7 +1237,7 @@ SendAA_Struct* ZoneDatabase::GetAASkillVars(int32 skill_id)
 	SendAA_Struct* sendaa = NULL;
 	uchar* buffer;
 	if (RunQuery(query, MakeAnyLenString(&query, "SET @row = 0"), errbuf)) {	//initialize "row" variable in database for next query
-		query = 0;	//reset for next query
+		safe_delete_array(query);
 		MYSQL_RES *result;	//we don't really need these unless we get to this point, so why bother?
 		MYSQL_ROW row;
 

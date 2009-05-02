@@ -232,3 +232,4 @@
 	void Handle_OP_Barter(const EQApplicationPacket *app);
 	void Handle_OP_VoiceMacroIn(const EQApplicationPacket *app);
 	void Handle_OP_ApplyPoison(const EQApplicationPacket *app);
+	void Handle_OP_AugmentInfo(const EQApplicationPacket *app);

@@ -14,8 +14,8 @@
 void RegisterAllPatches(EQStreamIdentifier &into) {
 	Client62::Register(into);
 	Titanium::Register(into);
-	Anniversary::Register(into);
-	Live::Register(into);
+	//Anniversary::Register(into);
+	//Live::Register(into);
 #ifdef SoF_Enable
 	SoF::Register(into);
 #endif
@@ -24,8 +24,8 @@ void RegisterAllPatches(EQStreamIdentifier &into) {
 void ReloadAllPatches() {
 	Client62::Reload();
 	Titanium::Reload();
-	Anniversary::Reload();
-	Live::Reload();
+	//Anniversary::Reload();
+	//Live::Reload();
 #ifdef SoF_Enable
 	SoF::Reload();
 #endif

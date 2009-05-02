@@ -427,3 +427,5 @@ N(OP_ItemVerifyRequest),
 N(OP_ItemVerifyReply),
 N(OP_GMTrainSkillConfirm),
 N(OP_RestState),
+N(OP_AugmentInfo),
+
