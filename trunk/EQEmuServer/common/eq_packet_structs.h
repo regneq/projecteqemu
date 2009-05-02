@@ -3746,6 +3746,12 @@ struct AugmentInfo_Struct
 /*072*/
 };
 
+struct ClearObject_Struct
+{
+/*000*/	uint8	Clear;	// If this is not set to non-zero there is a random chance of a client crash.
+/*001*/	uint8	Unknown001[7];
+};
+
 //old structures live here:
 #include "eq_old_structs.h"
 

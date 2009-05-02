@@ -67,7 +67,9 @@ void Object::HandleAugmentation(Client* user, const AugmentItem_Struct* in_augme
 			tobe_auged->PutAugment(slot,*auged_with);
 			user->PushItemOnCursor(*tobe_auged,true);
 			container->Clear();
-			EQApplicationPacket* outapp = new EQApplicationPacket(OP_ClearObject,0);
+			EQApplicationPacket* outapp = new EQApplicationPacket(OP_ClearObject, sizeof(ClearObject_Struct));
+			ClearObject_Struct *cos = (ClearObject_Struct *)outapp->pBuffer;
+			cos->Clear = 1;
 			user->QueuePacket(outapp);
 			safe_delete(outapp);
 			database.DeleteWorldContainer(worldo->m_id, zone->GetZoneID());
@@ -86,7 +88,9 @@ void Object::HandleAugmentation(Client* user, const AugmentItem_Struct* in_augme
 		if (old_aug)
 			user->PushItemOnCursor(*old_aug,true);
 		container->Clear();
-		EQApplicationPacket* outapp = new EQApplicationPacket(OP_ClearObject,0);
+		EQApplicationPacket* outapp = new EQApplicationPacket(OP_ClearObject, sizeof(ClearObject_Struct));
+		ClearObject_Struct *cos = (ClearObject_Struct *)outapp->pBuffer;
+		cos->Clear = 1;
 		user->QueuePacket(outapp);
 		safe_delete(outapp);
 		database.DeleteWorldContainer(worldo->m_id, zone->GetZoneID());
@@ -180,7 +184,9 @@ void Object::HandleCombine(Client* user, const NewCombine_Struct* in_combine, Ob
 	//now clean out the containers.
 	if(worldcontainer){
 		container->Clear();
-		outapp = new EQApplicationPacket(OP_ClearObject,0);
+		outapp = new EQApplicationPacket(OP_ClearObject, sizeof(ClearObject_Struct));
+		ClearObject_Struct *cos = (ClearObject_Struct *)outapp->pBuffer;
+		cos->Clear = 1;
 		user->QueuePacket(outapp);
 		safe_delete(outapp);
 		database.DeleteWorldContainer(worldo->m_id, zone->GetZoneID());
