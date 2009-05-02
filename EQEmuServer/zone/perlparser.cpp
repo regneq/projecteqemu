@@ -210,10 +210,10 @@ XS(XS__echo); // prototype to pass -Wmissing-prototypes
 XS(XS__echo) {
 	dXSARGS;
 
-	if (items != 1)
-		Perl_croak(aTHX_ "Usage: say(str)");
+   if (items != 2)
+      Perl_croak(aTHX_ "Usage: echo(id#, str)"); 
 
-	quest_manager.echo(SvPV_nolen(ST(0)));
+	quest_manager.echo(SvUV(ST(0)), SvPV_nolen(ST(1)));
 
 	XSRETURN_EMPTY;
 }

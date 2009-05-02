@@ -75,20 +75,23 @@ EQWParser::EQWParser() {
 }
 
 void EQWParser::DoInit() {
-	
-	//arguments for interpreter start
-	const char *args[] = { "", "-w", "-W", "-e", "0;", NULL };
-	
-	
+	const char *argv_eqemu[] = { "",
+		"-w", "-W",
+		"-e", "0;", NULL };
+
+	int argc = 5;
+
+	char **argv = (char **)argv_eqemu;
+	char **env = { NULL };
+
+	PL_perl_destruct_level = 1;
+
 	perl_construct(my_perl);
-	
-	
-	if(perl_parse(my_perl, xs_init,
-		5,
-		(char **) args, NULL)) {
-		_log(WORLD__PERL_ERR, "Error: perl_parse failed!");
-		return;
-	}
+
+	PERL_SYS_INIT3(&argc, &argv, &env);
+
+	perl_parse(my_perl, xs_init, argc, argv, env);
+
 	perl_run(my_perl);
 	
 	//a little routine we use a lot.

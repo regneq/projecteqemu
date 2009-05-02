@@ -876,7 +876,7 @@ struct PlayerProfile_Struct
 /*7080*/	sint32				ldon_points_available;
 /*7084*/	uint8				unknown5940[112];
 /*7196*/	uint32				tribute_time_remaining;	//in miliseconds
-/*7200*/	uint32				unknown6048;
+/*7200*/	uint32				showhelm;
 /*7204*/	uint32				career_tribute_points;
 /*7208*/	uint32				unknown6056;
 /*7212*/	uint32				tribute_points;

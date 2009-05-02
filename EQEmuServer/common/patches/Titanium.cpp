@@ -382,8 +382,7 @@ ENCODE(OP_PlayerProfile) {
 	OUT(raidAutoconsent);
 	OUT(guildAutoconsent);
 //	OUT(unknown19575[5]);
-//	OUT(showhelm);
-	eq->showhelm = 1;
+	eq->showhelm = emu->showhelm;
 //	OUT(unknown19584[4]);
 //	OUT(unknown19588);
 
@@ -470,7 +469,7 @@ ENCODE(OP_ZoneSpawns) {
 //		eq->padding0070 = emu->padding0070;
 		eq->eyecolor1 = emu->eyecolor1;
 //		eq->unknown0115[24] = emu->unknown0115[24];
-		eq->showhelm = true;
+		eq->showhelm = emu->showhelm;
 //		eq->unknown0140[4] = emu->unknown0140[4];
 		eq->is_npc = emu->is_npc;
 		eq->hairstyle = emu->hairstyle;

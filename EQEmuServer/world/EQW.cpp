@@ -140,7 +140,7 @@ map<string,string> EQW::GetZoneDetails(Const_char *zone_ref) {
 	res["zone_id"] = itoa(zs->GetZoneID());
 	res["launch_name"] = zs->GetLaunchName();
 	res["short_name"] = zs->GetZoneName();
-	res["long_name"] = zs->GetZoneName();	//TODO: get this some day
+	res["long_name"] = zs->GetZoneLongName();
 	res["port"] = itoa(zs->GetCPort());
 	res["player_count"] = itoa(zs->NumPlayers());
 	

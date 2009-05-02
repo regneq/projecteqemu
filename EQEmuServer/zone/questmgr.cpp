@@ -190,8 +190,8 @@ void QuestManager::EndQuest() {
 
 
 //quest perl functions
-void QuestManager::echo(const char *str) {
-	printf("%s\n", str);
+void QuestManager::echo(int colour, const char *str) {
+   entity_list.MessageClose(initiator, false, 200, colour, str); 
 }
 
 void QuestManager::say(const char *str) {
