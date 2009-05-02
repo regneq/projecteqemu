@@ -2037,8 +2037,8 @@ struct GMEmoteZone_Struct {
 // Use ` as a newline character in the text.
 // Variable length.
 struct BookText_Struct {
-	uint8 unknown0; //always 0xFF
-	uint8 type;             //type: 0=scroll, 1=book.. prolly others.
+	uint8 window;	// where to display the text (0xFF means new window)
+	uint8 type;             //type: 0=scroll, 1=book, 2=item info.. prolly others.
 	uint32 invslot;	// Only used in SoF and later clients.
 	char booktext[1]; // Variable Length
 };
@@ -2046,8 +2046,8 @@ struct BookText_Struct {
 // This is just a "text file" on the server
 // or in our case, the 'name' column in our books table.
 struct BookRequest_Struct {
-	uint8 unknown0; //always 0xFF
-	uint8 type;             //type: 0=scroll, 1=book.. prolly others.
+	uint8 window;	// where to display the text (0xFF means new window)
+	uint8 type;             //type: 0=scroll, 1=book, 2=item info.. prolly others.
 	uint32 invslot;	// Only used in Sof and later clients;
 	char txtfile[20];
 };
@@ -3738,6 +3738,13 @@ struct ControlBoat_Struct {
 /*007*/ 				// no idea what these last three bytes represent
 };
 
+struct AugmentInfo_Struct
+{
+/*000*/ uint32	itemid;		// id of the solvent needed
+/*004*/ uint8	window;		// window to display the information in
+/*005*/	uint8	unknown005[67];	// total packet length 72, all the rest were always 00
+/*072*/
+};
 
 //old structures live here:
 #include "eq_old_structs.h"

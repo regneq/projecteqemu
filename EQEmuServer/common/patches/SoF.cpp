@@ -1223,7 +1223,7 @@ ENCODE(OP_RespondAA) {
 	//int aa_spent_total = 0;
 	eq->aa_spent = 500; //aa_spent_total;
 
-	int r;
+	unsigned int r;
 	for(r = 0; r < MAX_PP_AA_ARRAY; r++) {
 		OUT(aa_list[r].aa_skill);
 		OUT(aa_list[r].aa_value);
@@ -1513,7 +1513,10 @@ ENCODE(OP_ReadBook) {
 	ENCODE_LENGTH_ATLEAST(BookText_Struct);
 	SETUP_DIRECT_ENCODE(BookText_Struct, structs::BookRequest_Struct);
 
-	eq->unknown0000 = 0xFFFFFFFF;
+	if(emu->window == 0xFF)
+		eq->window = 0xFFFFFFFF;
+	else
+		eq->window = emu->window;
 	OUT(type);
 	OUT(invslot);
 	strn0cpy(eq->txtfile, emu->booktext, sizeof(eq->txtfile));
@@ -1880,7 +1883,18 @@ DECODE(OP_ReadBook) {
 
 	IN(type);
 	IN(invslot);
+	emu->window = (uint8) eq->window;
 	strn0cpy(emu->txtfile, eq->txtfile, sizeof(emu->txtfile));
+
+	FINISH_DIRECT_DECODE();
+}
+
+DECODE(OP_AugmentInfo) {
+	DECODE_LENGTH_EXACT(structs::AugmentInfo_Struct);
+	SETUP_DIRECT_DECODE(AugmentInfo_Struct, structs::AugmentInfo_Struct);
+
+	IN(itemid);
+	IN(window);
 
 	FINISH_DIRECT_DECODE();
 }

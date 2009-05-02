@@ -800,7 +800,7 @@ ENCODE(OP_ReadBook) {
 
 	structs::BookText_Struct *eq_BookText_Struct = (structs::BookText_Struct*)in->pBuffer;
 
-	eq_BookText_Struct->unknown0 = emu_BookText_Struct->unknown0;
+	eq_BookText_Struct->window = emu_BookText_Struct->window;
 	eq_BookText_Struct->type = emu_BookText_Struct->type;
 	strcpy(eq_BookText_Struct->booktext, emu_BookText_Struct->booktext);
 
@@ -895,7 +895,7 @@ DECODE(OP_ReadBook) {
 	DECODE_LENGTH_ATLEAST(structs::BookRequest_Struct);
 	SETUP_DIRECT_DECODE(BookRequest_Struct, structs::BookRequest_Struct);
 
-	IN(unknown0);
+	IN(window);
 	IN(type);
 	strn0cpy(emu->txtfile, eq->txtfile, sizeof(emu->txtfile));
 

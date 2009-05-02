@@ -71,5 +71,6 @@ D(OP_TraderBuy)
 D(OP_LootItem)
 D(OP_TributeItem)
 D(OP_ReadBook)
+D(OP_AugmentInfo)
 #undef E
 #undef D

@@ -1844,16 +1844,16 @@ struct GMEmoteZone_Struct {
 // Use ` as a newline character in the text.
 // Variable length.
 struct BookText_Struct {
-	uint8 unknown0; //always 0xFF
-	uint8 type;             //type: 0=scroll, 1=book.. prolly others.
+	uint8 window;	// where to display the text (0xFF means new window)
+	uint8 type;             //type: 0=scroll, 1=book, 2=item info.. prolly others.
 	char booktext[1]; // Variable Length
 };
 // This is the request to read a book.
 // This is just a "text file" on the server
 // or in our case, the 'name' column in our books table.
 struct BookRequest_Struct {
-	uint8 unknown0; //always 0xFF
-	uint8 type;             //type: 0=scroll, 1=book.. prolly others.
+	uint8 window;	// where to display the text (0xFF means new window)
+	uint8 type;             //type: 0=scroll, 1=book, 2=item info.. prolly others.
 	char txtfile[1]; // Variable Length
 };
 

@@ -2163,17 +2163,17 @@ struct GMEmoteZone_Struct {
 // The BookRequest_Struct is used instead for both request and reply.
 //
 struct BookText_Struct {
-	uint8 unknown0; //always 0xFF
-	uint8 type;             //type: 0=scroll, 1=book.. prolly others.
+	uint8 window;	// where to display the text (0xFF means new window)
+	uint8 type;             //type: 0=scroll, 1=book, 2=item info.. prolly
 	char booktext[1]; // Variable Length - was 1
 };
 // This is the request to read a book.
 // This is just a "text file" on the server
 // or in our case, the 'name' column in our books table.
 struct BookRequest_Struct {
-/*0000*/	uint32 unknown0000;	// always 0xFFFFFFFF
+/*0000*/	uint32 window;		// where to display the text (0xFFFFFFFF means new window).
 /*0004*/	uint32 invslot;		// The inventory slot the book is in. Not used, but echoed in the response packet.
-/*0008*/	uint32 type;		// 0 = Scroll, 1 = Book, Possibly others
+/*0008*/	uint32 type;		// 0 = Scroll, 1 = Book, 2 = Item Info. Possibly others
 /*0012*/	uint32 unknown0012;	
 /*0016*/	uint16 unknown0016;
 /*0018*/	char txtfile[8194];
@@ -3911,11 +3911,16 @@ struct ItemTertiaryBodyStruct
 	uint32 subitem_count;
 };
 
+struct AugmentInfo_Struct
+{
+/*000*/ uint32	itemid;		// id of the solvent needed
+/*004*/ uint8	window;		// window to display the information in
+/*005*/	uint8	unknown005[71];	// total packet length 76, all the rest were always 00
+/*076*/
+};
+
 	};	//end namespace structs
 };	//end namespace SoF
-
-
-
 
 #endif /*SoF_STRUCTS_H_*/
 
