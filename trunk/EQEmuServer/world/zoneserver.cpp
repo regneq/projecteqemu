@@ -64,6 +64,7 @@ bool ZoneServer::SetZone(int32 iZoneID, bool iStaticZone) {
 	BootingUp = false;
 	
 	const char* zn = MakeLowerString(database.GetZoneName(iZoneID));
+	char*	longname;
 
 	if (iZoneID)
 		zlog(WORLD__ZONE,"Setting to '%s' (%d)%s",(zn) ? zn : "",iZoneID,iStaticZone ? " (Static)" : "");
@@ -80,9 +81,21 @@ bool ZoneServer::SetZone(int32 iZoneID, bool iStaticZone) {
 	staticzone = iStaticZone;
 
 	if (zn)
+	{
 		strcpy(zone_name, zn);
+		if( database.GetZoneLongName( (char*)zone_name, &longname, NULL, NULL, NULL, NULL, NULL, NULL ) )
+		{
+			strcpy(long_name, longname);
+			safe_delete( longname );
+		}
+		else
+			strcpy(long_name, "");
+	}
 	else
+	{
 		strcpy(zone_name, "");
+		strcpy(long_name, "");
+	}	
 
 	client_list.ZoneBootup(this);
 	ls_zboot.Start();

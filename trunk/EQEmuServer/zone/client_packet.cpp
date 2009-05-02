@@ -2086,6 +2086,10 @@ void Client::Handle_OP_SpawnAppearance(const EQApplicationPacket *app)
 		// don't do anything with this, we tell the client when it's
 		// levitating, not the other way around
 	}
+	else if (sa->type == AT_ShowHelm) 
+	{
+		m_pp.showhelm = (sa->parameter == 1);
+	}
 	else {
 		cout << "Unknown SpawnAppearance type: 0x" << hex << setw(4) << setfill('0') << sa->type << dec
 			<< " value: 0x" << hex << setw(8) << setfill('0') << sa->parameter << dec << endl;

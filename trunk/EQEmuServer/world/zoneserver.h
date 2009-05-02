@@ -50,6 +50,7 @@ public:
 	void		SendGroupIDs();
 
 	inline const char*	GetZoneName() const	{ return zone_name; }
+	inline const char*	GetZoneLongName() const	{ return long_name; }
 	const char*			GetCompileTime() const{ return compiled; }
 	void				SetCompile(char* in_compile){ strcpy(compiled,in_compile); }
 	inline int32		GetZoneID() const	{ return zoneID; }
@@ -82,6 +83,7 @@ private:
 	int32	pNumPlayers;
 	char	compiled[25];
 	char	zone_name[16];
+	char	long_name[256];
 	int32	zoneID;
 	int32	oldZoneID;
 	Timer	ls_zboot;

@@ -1579,6 +1579,7 @@ void Client::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho)
 	}
 	ns->spawn.size			= 0; // Changing size works, but then movement stops! (wth?)
 	ns->spawn.runspeed		= (gmspeed == 0) ? runspeed : 3.125f;
+	if (!m_pp.showhelm) ns->spawn.showhelm = 0;
 
 	// @merth: pp also hold this info; should we pull from there or inventory?
 	// (update: i think pp should do it, as this holds LoY dye - plus, this is ugly code with Inventory!)

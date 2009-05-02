@@ -799,7 +799,7 @@ void Parser::ExCommands(string o_command, string parms, int argnums, int32 npcid
 			atof(arglist[3]), atof(arglist[4]), atof(arglist[5]), hdng);
 	}
 	else if (!strcmp(command,"echo")) {
-		quest_manager.echo(parms.c_str());
+		quest_manager.echo(atoi(arglist[0]), parms.c_str());
 	}
 	else if (!strcmp(command,"summonitem")) {
 		quest_manager.summonitem(atoi(arglist[0]));

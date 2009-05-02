@@ -586,8 +586,7 @@ ENCODE(OP_PlayerProfile) {
 	OUT(raidAutoconsent);
 	OUT(guildAutoconsent);
 //	OUT(unknown19575[5]);
-//	OUT(showhelm);
-	eq->showhelm = 1;
+	eq->showhelm = emu->showhelm;
 	OUT(RestTimer);
 //	OUT(unknown19584[4]);
 //	OUT(unknown19588);
