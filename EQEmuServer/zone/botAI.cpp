@@ -470,23 +470,27 @@ bool NPC::Bot_AI_EngagedCastCheck() {
         BotRaids *br = entity_list.GetBotRaidByMob(this);
 		if(botClass == CLERIC)
         {
-			if(br && IsBotRaiding())
-            {
+			if(br && IsBotRaiding()) {
 				// try to heal the raid main tank
-				if(br->GetBotMainTank() && (br->GetBotMainTank()->GetHPRatio() < 80))
-				{
+				if(br->GetBotMainTank() && (br->GetBotMainTank()->GetHPRatio() < 80)) {
 					if(!Bot_AICastSpell(br->GetBotMainTank(), 100, SpellType_Heal)) {
-						AIautocastspell_timer->Start(RandomTimer(500, 2000), false);
-						return true;
+						if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 100, MobAISpellRange, SpellType_Heal)) {
+							if(!Bot_AICastSpell(this, 100, SpellType_Heal)) {
+								AIautocastspell_timer->Start(RandomTimer(500, 2000), false);
+								return true;
+							}
+						}
 					}
 				}
 				// try to heal the raid secondar tank
-				else if(br->GetBotSecondTank() && (br->GetBotSecondTank()->GetHPRatio() < 80))
-				{
-					if(!Bot_AICastSpell(br->GetBotSecondTank(), 100, SpellType_Heal))
-					{
-						AIautocastspell_timer->Start(RandomTimer(500, 2000), false);
-						return true;
+				else if(br->GetBotSecondTank() && (br->GetBotSecondTank()->GetHPRatio() < 80)) {
+					if(!Bot_AICastSpell(br->GetBotSecondTank(), 100, SpellType_Heal)) {
+						if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 100, MobAISpellRange, SpellType_Heal)) {
+							if(!Bot_AICastSpell(this, 100, SpellType_Heal)) {
+								AIautocastspell_timer->Start(RandomTimer(500, 2000), false);
+								return true;
+							}
+						}
 					}
 				}
 			}

@@ -409,6 +409,15 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 		mlog(COMBAT__TOHIT, "Applied avoidance chance %.2f/10, yeilding %.2f", bonus, chancetohit);
 	}
 
+#ifdef EQBOTS
+
+	if(attacker->IsBot()) {
+		// Dont give bots the npc chancetohit calc
+	}
+	else
+
+#endif //EQBOTS
+
 	if(attacker->IsNPC())
 		chancetohit += (chancetohit * attacker->CastToNPC()->GetAccuracyRating() / 1000);
 
@@ -856,6 +865,14 @@ void Mob::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 		int intervalsAllowed = 20; 
 		if(defender->IsClient())
 			intervalsAllowed *= 2;
+
+#ifdef EQBOTS
+
+		if(defender->IsBot()) {
+			intervalsAllowed *= 2;
+		}
+
+#endif //EQBOTS
 
 		uint32 intervalUsed = 0;
 		uint32 intervalRoll = MakeRandomInt(0, (defenseRating - attackRating));

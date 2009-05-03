@@ -1586,10 +1586,11 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
 #ifdef EQBOTS
 
 			if(IsBot() && (GetClass() == BARD)) {
-				if(!ApplyNextBardPulse(bardsong, this, bardsong_slot))
+				if(!ApplyNextBardPulse(bardsong, this, bardsong_slot)) {
 					InterruptSpell(SONG_ENDS_ABRUPTLY, 0x121, bardsong);
+				}
+				break;
 			}
-			break;
 
 #endif //EQBOTS
 
