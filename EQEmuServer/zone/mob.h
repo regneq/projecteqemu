@@ -1130,6 +1130,7 @@ protected:
 	float	pAssistRange;
 	Timer*	AIthink_timer;
 	Timer*	AImovement_timer;
+	Timer*	AItarget_check_timer;
 	bool	movetimercompleted;
 	bool   permarooted;
 	Timer*	AIscanarea_timer;
