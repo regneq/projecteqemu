@@ -274,6 +274,7 @@ Mob *HateList::GetTop(Mob *center)
 					top = cur->ent;
 					hate = 0;
 				}
+				continue;
 			}
 
 			sint32 currentHate = cur->hate;
