@@ -1582,6 +1582,17 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
 		case AECaster:
 		case AETarget:
 		{
+
+#ifdef EQBOTS
+
+			if(IsBot() && (GetClass() == BARD)) {
+				if(!ApplyNextBardPulse(bardsong, this, bardsong_slot))
+					InterruptSpell(SONG_ENDS_ABRUPTLY, 0x121, bardsong);
+			}
+			break;
+
+#endif //EQBOTS
+
 			// we can't cast an AE spell without something to center it on
 			assert(ae_center != NULL);
 
