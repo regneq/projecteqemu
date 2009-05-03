@@ -428,6 +428,7 @@ void Mob::AI_Init() {
 	AIthink_timer = 0;
 	AIwalking_timer = 0;
 	AImovement_timer = 0;
+	AItarget_check_timer = 0;
 	AIfeignremember_timer = NULL;
 	AIscanarea_timer = 0;
 	pLastFightingDelayMoving = 0;
@@ -475,6 +476,7 @@ void Mob::AI_Start(int32 iMoveDelay) {
 	AIthink_timer->Trigger();
 	AIwalking_timer = new Timer(0);
 	AImovement_timer = new Timer(AImovement_duration);
+	AItarget_check_timer = new Timer(AItarget_check_duration);
 	AIfeignremember_timer = new Timer(AIfeignremember_delay);
 	AIscanarea_timer = new Timer(AIscanarea_delay);
 #ifdef REVERSE_AGGRO
@@ -552,6 +554,7 @@ void Mob::AI_Stop() {
 	safe_delete(AIthink_timer);
 	safe_delete(AIwalking_timer);
 	safe_delete(AImovement_timer);
+	safe_delete(AItarget_check_timer)
 	safe_delete(AIscanarea_timer);
 	safe_delete(AIfeignremember_timer);
 	hate_list.Wipe();
@@ -651,7 +654,12 @@ void Mob::AI_Process() {
 		if (IsRooted())
 			SetTarget(hate_list.GetClosest(this));
 		else
-			SetTarget(hate_list.GetTop(this));
+		{
+			if(AItarget_check_timer->Check())
+			{
+				SetTarget(hate_list.GetTop(this));
+			}
+		}
 
 		if (!target)
 			return;

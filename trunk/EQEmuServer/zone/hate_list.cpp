@@ -248,7 +248,7 @@ Mob *HateList::GetTop(Mob *center)
 	Mob* top = NULL;
 	sint32 hate = -1;
 	
-		if (RuleB(Aggro,SmartAggroList)){
+	if (RuleB(Aggro,SmartAggroList)){
 		Mob* topClientInRange = NULL;
 		sint32 hateClientInRange = -1;
 		LinkedListIterator<tHateEntry*> iterator(list);
@@ -268,6 +268,14 @@ Mob *HateList::GetTop(Mob *center)
 				continue;
 			}
 
+			if(cur->ent->DivineAura() || cur->ent->IsMezzed()){
+				if(hate == -1)
+				{
+					top = cur->ent;
+					hate = 0;
+				}
+			}
+
 			sint32 currentHate = cur->hate;
 
 			if(cur->ent->IsClient()){
@@ -277,12 +285,17 @@ Mob *HateList::GetTop(Mob *center)
 				}
 
 				if(center){
-					if(center->CombatRange(cur->ent)){
-						aggroMod += RuleI(Aggro, MeleeRangeAggroMod);
+					if(center->GetTarget() == cur->ent)
+						aggroMod += RuleI(Aggro, CurrentTargetAggroMod);
+					if(RuleI(Aggro, MeleeRangeAggroMod) != 0)
+					{
+						if(center->CombatRange(cur->ent)){
+							aggroMod += RuleI(Aggro, MeleeRangeAggroMod);
 
-						if(currentHate > hateClientInRange || cur->bFrenzy){
-							hateClientInRange = currentHate;
-							topClientInRange = cur->ent;
+							if(currentHate > hateClientInRange || cur->bFrenzy){
+								hateClientInRange = currentHate;
+								topClientInRange = cur->ent;
+							}
 						}
 					}
 				}
@@ -290,24 +303,19 @@ Mob *HateList::GetTop(Mob *center)
 			}
 			else{
 				if(center){
-					if(center->CombatRange(cur->ent)){
-						aggroMod += RuleI(Aggro, MeleeRangeAggroMod);
+					if(center->GetTarget() == cur->ent)
+						aggroMod += RuleI(Aggro, CurrentTargetAggroMod);
+					if(RuleI(Aggro, MeleeRangeAggroMod) != 0)
+					{
+						if(center->CombatRange(cur->ent)){
+							aggroMod += RuleI(Aggro, MeleeRangeAggroMod);
+						}
 					}
 				}
 			}
 
 			if(cur->ent->GetMaxHP() != 0 && ((cur->ent->GetHP()*100/cur->ent->GetMaxHP()) < 20)){
 				aggroMod += RuleI(Aggro, CriticallyWoundedAggroMod);
-			}
-
-			if(center){
-				if(center->GetTarget() == cur->ent)
-					aggroMod += RuleI(Aggro, CurrentTargetAggroMod);
-			}
-
-			if(cur->ent->DivineAura() || cur->ent->IsMezzed()){
-				aggroMod = 0;
-				currentHate = 0;
 			}
 
 			if(aggroMod){

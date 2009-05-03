@@ -179,6 +179,7 @@ enum {	//timer settings, all in milliseconds
 	AIthink_duration = 150,
 	AIscanarea_delay = 500,
 	AIfeignremember_delay = 500,
+	AItarget_check_duration = 500,
 	AIClientScanarea_delay = 750,	//used in REVERSE_AGGRO
 	AIassistcheck_delay = 3000,		//now often a fighting NPC will yell for help
 	ClientProximity_interval = 1000,

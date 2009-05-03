@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/03/2009==
+KLS: Some optimizations for the aggro code.  Added a timer for aggro checking will do it twice a second by default: lower AItarget_check_duration in features.h if aggro feels too sluggish for your tastes and recompile.
+
 ==05/02/2009==
 realityincarnate: Augment Item Info.
 realityincarnate: Show helm option will now save on camping/zoning.
