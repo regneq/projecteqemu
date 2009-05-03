@@ -2,6 +2,8 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==05/03/2009==
 KLS: Some optimizations for the aggro code.  Added a timer for aggro checking will do it twice a second by default: lower AItarget_check_duration in features.h if aggro feels too sluggish for your tastes and recompile.
+Derision: Increased reuse_time in AA_DBAction to a uint32 to support reuse timers greater than 18 hours.
+Derision: Code support for Chaotic Jester Veteran AA.
 
 ==05/02/2009==
 realityincarnate: Augment Item Info.

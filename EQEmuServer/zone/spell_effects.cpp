@@ -1969,9 +1969,14 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			case SE_TemporaryPets:         //Dook- swarms and wards:
 			{
 				// EverHood - this makes necro epic 1.5/2.0 proc work properly
-				char pet_name[64];
-				snprintf(pet_name, sizeof(pet_name), "%s`s pet", caster->GetCleanName());
-				caster->TemporaryPets(spell_id, this, pet_name);
+				if(spell_id != 6882) // Chaotic Jester Veteran AA
+				{
+					char pet_name[64];
+					snprintf(pet_name, sizeof(pet_name), "%s`s pet", caster->GetCleanName());
+					caster->TemporaryPets(spell_id, this, pet_name);
+				}
+				else
+					caster->TemporaryPets(spell_id, this, NULL);
 				break;
 			}
 

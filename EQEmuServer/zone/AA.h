@@ -694,7 +694,7 @@ typedef enum {	//AA IDs
 
 //Structure representing the database's AA actions
 struct AA_DBAction {
-	uint16 reuse_time;			//in seconds
+	uint32 reuse_time;			//in seconds
 	int16 spell_id;				//spell to cast, SPELL_UNKNOWN=no spell
 	aaTargetType target;		//from aaTargetType
 	aaNonspellAction action;	//non-spell action to take
