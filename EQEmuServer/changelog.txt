@@ -9,6 +9,7 @@ Derision: Fix for random client crashes when combining items in world containers
 BWStripes: Fix for quest::echo.
 erde: Added long zone name support to the web interface.
 Cripp: Fix for the web interface for those using Perl 5.10.
+Congdar: Bots - randomized face/hair etc. so they don't all look the same.  Fixed Bard AE songs.
 
 ==4/30/2009==
 Congdar: Bots - bots can now use bows, new command '#bot archery'. Added Ranger archery AA's. Reduced chat mana spam. Tweaked spell ai. Fixed memory leak. Updated '#bot corpse summon'. 

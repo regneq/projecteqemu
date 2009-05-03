@@ -533,18 +533,12 @@ bool NPC::Bot_AI_EngagedCastCheck() {
 				}
 			}
 		}
-		else if(botClass == BARD)
-        {
-			if(!Bot_AICastSpell(target, 100, SpellType_Nuke | SpellType_Dispel | SpellType_Escape)) // Bards will use their debuff songs
-            {
-				if(!Bot_AICastSpell(this, 100, SpellType_Buff | SpellType_Heal))
-                {
-					if (!entity_list.Bot_AICheckCloseBeneficialSpells(this, 100, MobAISpellRange, SpellType_Heal | SpellType_Buff))
-                    {
-						AIautocastspell_timer->Start(RandomTimer(500, 2000), false);
-						return true;
-					}					
-				}
+		else if(botClass == BARD) {
+			if(!Bot_AICastSpell(this, 100, SpellType_Buff)) {
+				if(!Bot_AICastSpell(target, 100, SpellType_Nuke | SpellType_Dispel | SpellType_Escape)) {// Bards will use their debuff songs
+					AIautocastspell_timer->Start(RandomTimer(10, 50), false);
+					return true;
+				}					
 			}
 		}
 		// And for all the others classes..
@@ -726,7 +720,7 @@ bool NPC::Bot_AI_IdleCastCheck() {
 		else if(botClass == BARD)
 		{
 			Bot_AICastSpell(this, 100, SpellType_Heal);
-			AIautocastspell_timer->Start(3000, false);
+			AIautocastspell_timer->Start(1000, false);
 			return true;
 		}
 
@@ -922,7 +916,7 @@ bool NPC::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 					}
 					case SpellType_Nuke: {
 						if(((MakeRandomInt(1, 100) < 50) || (botClass == BARD))
-							&& (tar->GetHPRatio() <= 95.0f)
+							&& ((tar->GetHPRatio() <= 95.0f) || (botClass == BARD))
 							&& !tar->IsImmuneToSpell(AIspells[i].spellid, this)
 							&& (tar->CanBuffStack(AIspells[i].spellid, botLevel, true) >= 0))
 						{
