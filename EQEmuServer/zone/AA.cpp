@@ -88,11 +88,39 @@ Credits for this function:
 	-Branks: Much updated info and a bunch of higher-numbered AAs
 
 */
+int Client::GetAATimerID(aaID activate)
+{
+	SendAA_Struct* aa2 = zone->FindAA(activate);
+
+	if(!aa2)
+	{
+		for(int i = 1;i < 5; ++i)
+		{
+			int a = activate - i;
+
+			if(a <= 0)
+				break;
+
+			aa2 = zone->FindAA(a);
+
+			if(aa2 != NULL)
+				break;
+		}
+	}
+
+	if(aa2)
+		return aa2->spell_type;
+
+	return 0;
+}
+
 void Client::ActivateAA(aaID activate){
 	if(activate < 0 || activate >= aaHighestID)
 		return;
 	if(IsStunned() || IsMezzed() || IsSitting())
 		return;
+
+	int AATimerID = GetAATimerID(activate);
 
 	aaID aaid = activate;
 	uint8 activate_val = GetAA(activate);
@@ -122,8 +150,8 @@ void Client::ActivateAA(aaID activate){
 		return;
 	}
 	
-	if(!p_timers.Expired(&database, pTimerAAStart + aaid)) {
-		uint32 aaremain = p_timers.GetRemainingTime(pTimerAAStart + aaid);
+	if(!p_timers.Expired(&database, AATimerID + pTimerAAStart)) {
+		uint32 aaremain = p_timers.GetRemainingTime(AATimerID + pTimerAAStart);
 		Message(13, "Ability recast time not met, usable in %d minutes and %d seconds.", aaremain/60, aaremain%60);	
 		return;
 	}
@@ -191,7 +219,8 @@ void Client::ActivateAA(aaID activate){
 	if(caa->spell_id > 0 && caa->spell_id < SPDAT_RECORDS) {
 		//I dont know when we need to mem and when we do not, if ever...
 		//MemorizeSpell(8, spell_id, 3);
-		CastSpell(caa->spell_id, target_id);
+		if(!CastSpell(caa->spell_id, target_id))
+			return;
 	}
 	
 	//set our re-use timer.
@@ -207,12 +236,12 @@ void Client::ActivateAA(aaID activate){
 			p_timers.Start(pTimerHarmTouch, HarmTouchReuseTime);	
 		
 		//start the usage timer
-		p_timers.Start(pTimerAAStart + aaid, timer_base);
+		p_timers.Start(AATimerID + pTimerAAStart, timer_base);
 		
 		//notify the client
 		//I do not know why we do not put the proper end time in here:
 		time_t timestamp = time(NULL);
-		SendAATimer(aaid, timestamp, timestamp);
+		SendAATimer(AATimerID, timestamp, timestamp);
 	}
 }
 
@@ -876,8 +905,8 @@ void Client::SendAATimers() {
 			continue;	//not an AA timer
 		//send timer
 		uaaout->begin = cur->GetStartTime();
-		uaaout->end = uaaout->begin + cur->GetTimerTime();
-		uaaout->ability = cur->GetType();
+		uaaout->end = time(NULL);
+		uaaout->ability = cur->GetType() - pTimerAAStart; // uuaaout->ability is really a shared timer number
 		QueuePacket(outapp);
 	}
 	
