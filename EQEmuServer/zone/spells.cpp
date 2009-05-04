@@ -1533,9 +1533,13 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
                 for(int i=0; i<16; i++)
                 {
                     int j = bot->BotGetSpells(i);
-					// if it's a targeted heal or escape spell or pet spell or it's self only buff, we only want to cast it once
-                    if((j == spell_id) && (((bot->BotGetSpellType(i) == 2) || (bot->BotGetSpellType(i) == 16) || (bot->BotGetSpellType(i) == 32))
-						|| ((bot->BotGetSpellType(i) == 8) && (spells[spell_id].targettype == ST_Self))))
+					// if it's a targeted heal or escape spell or pet spell or it's self only buff or self buff weapon proc, we only want to cast it once
+                    if((j == spell_id) && (((bot->BotGetSpellType(i) == 2)
+						|| (bot->BotGetSpellType(i) == 16)
+						|| (bot->BotGetSpellType(i) == 32))
+						|| ((bot->BotGetSpellType(i) == 8) && (spells[spell_id].targettype == ST_Self)))
+						|| (spells[spell_id].targettype == ST_Self)
+						)
                     {
                         SpellOnTarget(spell_id, spell_target);
                         noGroupSpell = true;
