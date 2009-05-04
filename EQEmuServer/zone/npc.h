@@ -324,8 +324,8 @@ protected:
 	void AIDoSpellCast(int8 i, Mob* tar, sint32 mana_cost, int32* oDontDoAgainBefore = 0);
 	
 	
-	int16	max_dmg;
-	int16	min_dmg;
+	int32	max_dmg;
+	int32	min_dmg;
 	sint32	accuracy_rating;
 	
 	//pet crap:

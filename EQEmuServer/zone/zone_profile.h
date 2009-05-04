@@ -54,6 +54,7 @@ public:
 		NPC_Attack,
 		NPC_GetReverseFactionCon,
 		NPC_Process,
+		NPC_Death,
 		
 		EntityList_TrapProcess,
 		EntityList_GroupProcess,
@@ -73,6 +74,7 @@ public:
 		HateList_Find,
 		HateList_GetDamageTop,
 		HateList_GetClosest,
+		HateList_DoFactionHits,
 		HateList_GetTop,
 		HateList_IsEmpty,
 		HateList_GetMostHate,
@@ -93,9 +95,16 @@ public:
 		Mob_IsImmuneToSpell,
 		Mob_CalculateNewPosition,
 		Mob_CalculateNewPosition2,
+		Mob_GetWeaponDamageA,
+		Mob_GetWeaponDamageB,
+		Mob_GetWeaponDamageBonus,
+		Mob_TryWeaponProcA,
+		Mob_TryWeaponProcB,
+		
 		Map_LineIntersectsZone,
 		Map_LineIntersectsNode,
 		Map_FindBestZ,
+
 		Mob_AI_Process,
 		Mob_AI_Process_engaged,
 		Mob_AI_Process_engaged_cast,
@@ -107,6 +116,7 @@ public:
 		Mob_AI_Process_roambox,
 		Mob_AI_Process_roamer,
 		Mob_AI_Process_guard,
+
 		
 		
 		Database_AddLootTableToNPC,

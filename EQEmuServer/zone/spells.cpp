@@ -139,7 +139,7 @@ void NPC::SpellProcess()
 			Depop();
 		}
 
-		if(GetSwarmInfo()->duration->Check())
+		if(GetSwarmInfo()->duration->Check(false))
 		{
 			Depop();
 		}
@@ -147,7 +147,7 @@ void NPC::SpellProcess()
 		Mob *targMob = entity_list.GetMob(GetSwarmInfo()->target);
 		if(GetSwarmInfo()->target != 0)
         {
-			if(!targMob)
+			if(!targMob || (targMob && targMob->IsCorpse()))
 				Depop();
 		}
 	}

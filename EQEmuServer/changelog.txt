@@ -6,6 +6,15 @@ Derision: Increased reuse_time in AA_DBAction to a uint32 to support reuse timer
 Derision: Code support for Chaotic Jester Veteran AA.
 Congdar: Bots - Improve Cleric healing ai, fix ae break, update attack code.
 Congdar: Bots - Fix sql error for bot table
+KLS: (Secrets) min/max damage updated to int32
+KLS: Fixed a bug with accuracy tweaks and finished them up.  The system should work fairly well now.
+KLS: Removal of several rules associated with the dual accuracy system and the old system for defensive and offensive accuracy bonus.
+KLS: Some warning fixes on MSVS.
+KLS: Fixed pets not getting sent into battle on attack.
+KLS: (theblaz) Pets who were previously guarding after a pet attack command will return to their guard spot; though it appears a stop moving packet is missing on the pet guard spot waypoint.
+KLS: Rampage will no longer hit the main tank unless the main tank is the only target in range.
+KLS: Swarm pets will once again disappear when their target dies.
+KLS: Added zone zone profiling stuff.
 
 ==05/02/2009==
 realityincarnate: Augment Item Info.

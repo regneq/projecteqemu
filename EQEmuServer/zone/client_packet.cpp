@@ -1449,7 +1449,7 @@ void Client::Handle_OP_ItemVerifyRequest(const EQApplicationPacket *app)
 
 	sint32 slot_id;
 	sint32 target_id;
-	int32 spell_id;
+	int32 spell_id = 0;
 	slot_id = request->slot;
 	target_id = request->target;
 
@@ -5257,7 +5257,8 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 		if((mypet->GetPetType() == petAnimation && GetAA(aaAnimationEmpathy) >= 2) || mypet->GetPetType() != petAnimation) {
 			if (target != this && mypet->DistNoRootNoZ(*target) <= (RuleR(Pets, AttackCommandRange)*RuleR(Pets, AttackCommandRange))) {
 				mypet->SetHeld(false); //break the hold and guard if we explicitly tell the pet to attack.
-				mypet->SetPetOrder(SPO_Follow);
+				if(mypet->GetPetOrder() != SPO_Guard)
+					mypet->SetPetOrder(SPO_Follow);
 				zone->AddAggroMob();
 				mypet->AddToHateList(target, 1);
 				Message_StringID(10, PET_ATTACKING, mypet->GetCleanName(), target->GetCleanName());

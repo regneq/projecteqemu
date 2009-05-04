@@ -82,8 +82,8 @@ struct NPCType
 	int8	luclinface; // and beard);
 	int8	beard;	// solar: this probably doesn't work right, was missing from here
 //	int8	aa_title;	////not loaded from DB
-	int16	min_dmg;
-	int16	max_dmg;
+	int32	min_dmg;
+	int32	max_dmg;
 	char	npc_attacks[30];
 //	float	fixedZ;
     int16	d_meele_texture1;

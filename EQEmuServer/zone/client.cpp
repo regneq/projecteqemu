@@ -3693,22 +3693,22 @@ int32 Client::MelodyGetSpellID(int gem_id) {
 		return SPELL_UNKNOWN;
 }
 
-bool Client::MelodySetSong(int gem_id, int slot) {
+void Client::MelodySetSong(int gem_id, int slot) {
 
 	if (!(gem_id > -1 && gem_id < MAX_PP_MEMSPELL))
-		return false;
+		return;
 
 	// if no slot is provided (defaults to -1), choose one and stick it in
 	if (slot == -1) {
 		for (int i = 0; i < MAX_PP_MEMSPELL; i++) {
 			if (melodygems[i] == -1) {
 				melodygems[i] = gem_id;
-				return true;
+				return;
 			}
 		}
 
 		Message(0, "ERROR: We ran out of slots to auto-assign gem_id %d to!", gem_id);
-		return false;
+		return;
 	}
 	else {
 		this->melodygems[slot] = gem_id;
