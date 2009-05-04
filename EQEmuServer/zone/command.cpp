@@ -8295,7 +8295,8 @@ void command_bot(Client *c, const Seperator *sep) {
 		c->Message(15, "------------------------------------------------------------------");
 		c->Message(15, "Races: 1(Human), 2(Barb), 3(Erudit), 4(Wood elf), 5(High elf), 6(Dark elf), 7(Half elf), 8(Dwarf), 9(Troll), 10(Ogre), 11(Halfling), 12(Gnome), 330(Froglok), 128(Iksar), 130(Vah shir)");
 		c->Message(15, "------------------------------------------------------------------");
-		c->Message(15, "Usage: #bot create [name] [class(1-16)] [race(1-12,128,130,330)] [gender (male/female)]");
+		c->Message(15, "Usage: #bot create [name] [class(1-16)] [race(1-12,128,130,330)] [gender(male/female)]");
+		c->Message(15, "Example: #bot create Gandolf 12 1 male");
 		return;
 	}
 
@@ -8516,7 +8517,11 @@ void command_bot(Client *c, const Seperator *sep) {
 				if(mysql_num_rows(total) == spawnedBots) {
 					for(int i=0; i<spawnedBots; i++) {
 						row = mysql_fetch_row(total);
-						c->Message(15, "%s is in %s", row[0], row[1]);
+						char* longname;
+						if(database.GetZoneLongName((char*)row[1], &longname, NULL, NULL, NULL, NULL, NULL, NULL)) {
+							c->Message(15, "%s is in %s", row[0], longname);
+							safe_delete(longname);
+						}
 					}
 				}
 				mysql_free_result(total);
@@ -8563,7 +8568,7 @@ void command_bot(Client *c, const Seperator *sep) {
 			// First, the mob must have the same level as his leader
 			npc->SetLevel(c->GetLevel());
 			entity_list.AddNPC(npc);
-			database.SetBotLeader(npc->GetNPCTypeID(), c->CharacterID(), npc->GetName(), zone->GetLongName());
+			database.SetBotLeader(npc->GetNPCTypeID(), c->CharacterID(), npc->GetName(), zone->GetShortName());
 			npc->CastToMob()->Say("I am ready for battle.");
 		}
 		else {
@@ -8816,7 +8821,7 @@ void command_bot(Client *c, const Seperator *sep) {
 				tmp = 0;
 				npc->SetLevel(myLevel);
 				entity_list.AddNPC(npc);
-				database.SetBotLeader(npc->GetNPCTypeID(), c->CharacterID(), npc->GetName(), zone->GetLongName());
+				database.SetBotLeader(npc->GetNPCTypeID(), c->CharacterID(), npc->GetName(), zone->GetShortName());
 			}
 		}
 		mysql_free_result(groups);

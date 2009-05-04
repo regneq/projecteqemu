@@ -37,7 +37,6 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 #ifdef EQBOTS
 
 	Mob *clientmob = CastToMob();
-	database.CleanBotLeader(CharacterID());
 	if(clientmob) {
 		if(clientmob->IsBotRaiding()) {
 			BotRaids* br = entity_list.GetBotRaidByMob(clientmob);
