@@ -2,7 +2,7 @@
 # The spell_type field in the altadv_vars table is used by the client as a timer ID and is
 # sent in OP_AAAction timer update packets.
 #
-# AAs on a shared timer should have the same spell_id. 
+# AAs on a shared timer should have the same spell_type. 
 #
 # Clean out any existing timers using the previous method of numbering AA Timers.
 #
