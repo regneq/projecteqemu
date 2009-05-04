@@ -6,8 +6,8 @@ Derision: Updated spell_type in altadv_vars table to reflect the shared reuse ti
 Derision: AA reuse timers should now display correctly with hotkeys remaining depressed when appropriate.
 KLS: Code block for pets getting sent into attack did not verify that other was not null, causing rare crashes the old way and a pretty common crash with it's new positioning.  This has been corrected.
 KLS: Added area rampage 'r' npc special attak code.
-
-REQUIRED SQL: utils/sql/svn/463_altadv_vars.sql
+	REQUIRED SQL: utils/sql/svn/463_altadv_vars.sql
+Congdar: Bots - Added Rogue Triple Backstab AA, Enhanced #bot list, Fixed beneficial weapon procs to not effect the entire group.
 
 ==05/03/2009==
 KLS: Some optimizations for the aggro code.  Added a timer for aggro checking will do it twice a second by default: lower AItarget_check_duration in features.h if aggro feels too sluggish for your tastes and recompile.

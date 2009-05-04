@@ -195,38 +195,31 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 
 	mlog(COMBAT__TOHIT, "Chance to hit after agil calc %.2f", chancetohit);
 
-#ifdef EQBOTS
-	if(attacker->IsBot()) 
-	{
-		chancetohit -= (RuleR(Combat,WeaponSkillFalloff) * 5);
-	}
-
-#endif
 	if(attacker->IsClient())
 	{
 		chancetohit -= (RuleR(Combat,WeaponSkillFalloff) * (attacker->CastToClient()->MaxSkill(skillinuse) - attacker->GetSkill(skillinuse)));
 		mlog(COMBAT__TOHIT, "Chance to hit after weapon falloff calc (attack) %.2f", chancetohit);
 	}
 
-#ifdef EQBOTS
-
-	if(defender->IsClient() || defender->IsBot()) {
-		if(defender->IsBot()) {
-			chancetohit += (RuleR(Combat,WeaponSkillFalloff) * 5);
-		}
-		else {
-			chancetohit += (RuleR(Combat,WeaponSkillFalloff) * (defender->CastToClient()->MaxSkill(DEFENSE) - defender->GetSkill(DEFENSE)));
-		}
-
-#else
-
 	if(defender->IsClient())
 	{
 		chancetohit += (RuleR(Combat,WeaponSkillFalloff) * (defender->CastToClient()->MaxSkill(DEFENSE) - defender->GetSkill(DEFENSE)));
 		mlog(COMBAT__TOHIT, "Chance to hit after weapon falloff calc (defense) %.2f", chancetohit);
-#endif //EQBOTS
-
 	}
+
+#ifdef EQBOTS
+
+	if(attacker->IsBot())
+	{
+		chancetohit -= (RuleR(Combat,WeaponSkillFalloff) * 5);
+	}
+
+	if(defender->IsBot())
+	{
+		chancetohit += (RuleR(Combat,WeaponSkillFalloff) * 5);
+	}
+
+#endif //EQBOTS
 
 	//I dont think this is 100% correct, but at least it does something...
 	if(attacker->spellbonuses.MeleeSkillCheckSkill == skillinuse || attacker->spellbonuses.MeleeSkillCheckSkill == 255) {

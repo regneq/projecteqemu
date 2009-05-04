@@ -206,8 +206,8 @@ void Mob::BOT_Process() {
             // we can't fight if we don't have a target, are stun/mezzed or dead..
             if(!IsBotArcher() && target && !IsStunned() && !IsMezzed() && (GetAppearance() != eaDead))
             {
-                //we should check to see if they die mid-attacks, previous
-                //crap of checking target for null was not gunna cut it
+                // First, special attack per class (kick, backstab etc..)
+                CastToNPC()->DoClassAttacks(target);
 
                 //try main hand first
                 if(attack_timer.Check())
@@ -357,9 +357,6 @@ void Mob::BOT_Process() {
 						}
                     }
                 }
-
-                // Now, special attack per class (kick, backstab etc..)
-                CastToNPC()->DoClassAttacks(target);
 
                 //Bard, rangers, SKs, Paladin can cast also
 				if(botClass == BARD || botClass == RANGER || botClass == SHADOWKNIGHT || botClass == PALADIN || botClass == BEASTLORD) {

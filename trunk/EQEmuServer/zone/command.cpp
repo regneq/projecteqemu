@@ -7601,7 +7601,7 @@ void command_bot(Client *c, const Seperator *sep) {
 		c->Message(15, "#bot create [name] [class (id)] [race (id)] [model (male/female)] - create a permanent bot. See #bot help create.");
 		c->Message(15, "#bot help create - show all the race/class id. (make it easier to create bots)");
 		c->Message(15, "#bot delete - completely destroy forever the targeted bot and all its items.");
-		c->Message(15, "#bot list - show your bots.");
+		c->Message(15, "#bot list [all/class(1-16)] - list your bots all or by class. Classes: 1(Warrior), 2(Cleric), 3(Paladin), 4(Ranger), 5(Sk), 6(Druid), 7(Monk), 8(Bard), 9(Rogue), 10(Shaman), 11(Necro), 12(Wiz), 13(Mag), 14(Ench), 15(Beast), 16(Bersek)");
 		c->Message(15, "#bot spawn [botid] - spawn a bot from its ID (use list to see all the bots). ");
 		c->Message(15, "#bot group add - make the targetted bot joigning your group.");
 		c->Message(15, "#bot group remove [target} - kick the targetted bot from your group (it will die also).");
@@ -8324,8 +8324,33 @@ void command_bot(Client *c, const Seperator *sep) {
 		return;
 	}
 
-	if(!strcasecmp(sep->arg[1], "list") ){
-		
+	if(!strcasecmp(sep->arg[1], "list")) {
+
+		bool listAll = true;
+		int iClass = atoi(sep->arg[2]);
+		switch(iClass) {
+			case 1:
+			case 2:
+			case 3:
+			case 4:
+			case 5:
+			case 6:
+			case 7:
+			case 8:
+			case 9:
+			case 10:
+			case 11:
+			case 12:
+			case 13:
+			case 14:
+			case 15:
+			case 16:
+				listAll = false;
+				break;
+			default:
+				break;
+		}
+
 		char errbuf[MYSQL_ERRMSG_SIZE];
 		char *query = 0;
 		int32 affected_rows = 0;
@@ -8448,8 +8473,11 @@ void command_bot(Client *c, const Seperator *sep) {
                         rrrow = "Human";
                 }
 
-				if(database.GetBotOwner(atoi(row[0])) == c->AccountID()) {
-					c->Message(15,"(YOUR BOT) ID: %s -- Name: %s -- Class: %s -- Race: %s -- ", row[0], row[1], crow, rrrow);
+				if(listAll && database.GetBotOwner(atoi(row[0])) == c->AccountID()) {
+					c->Message(15,"ID: %s -- Class: %s -- Name: %s -- Race: %s -- ", row[0], crow, row[1], rrrow);
+				}
+				else if((database.GetBotOwner(atoi(row[0])) == c->AccountID()) && (irow == iClass)) {
+					c->Message(15,"ID: %s -- Class: %s -- Name: %s -- Race: %s -- ", row[0], crow, row[1], rrrow);
 				}
 			}				
 		}
@@ -8545,7 +8573,11 @@ void command_bot(Client *c, const Seperator *sep) {
 					if(mysql_num_rows(total) == spawnedBots) {
 						for(int i=0; i<spawnedBots; i++) {
 							row = mysql_fetch_row(total);
-							c->Message(15, "%s is in %s", row[0], row[1]);
+							char* longname;
+							if(database.GetZoneLongName((char*)row[1], &longname, NULL, NULL, NULL, NULL, NULL, NULL)) {
+								c->Message(15, "%s is in %s", row[0], longname);
+								safe_delete(longname);
+							}
 						}
 					}
 					mysql_free_result(total);
@@ -8797,7 +8829,11 @@ void command_bot(Client *c, const Seperator *sep) {
 			if(mysql_num_rows(total) == spawnedBots) {
 				for(int i=0; i<spawnedBots; i++) {
 					row = mysql_fetch_row(total);
-					c->Message(15, "%s is in %s", row[0], row[1]);
+					char* longname;
+					if(database.GetZoneLongName((char*)row[1], &longname, NULL, NULL, NULL, NULL, NULL, NULL)) {
+						c->Message(15, "%s is in %s", row[0], longname);
+						safe_delete(longname);
+					}
 				}
 			}
 			mysql_free_result(total);

@@ -497,6 +497,19 @@ void Mob::TryBackstab(Mob *other) {
 			return;
 		}
 	}
+
+#ifdef EQBOTS
+
+	else if(IsBot()) {
+		const Item_Struct* botpiercer = NULL;
+	    botpiercer = database.GetItem(GetEquipment(MATERIAL_PRIMARY));
+		if(!botpiercer || (botpiercer->ItemType != ItemTypePierce)) {
+			Say("I can't backstab with this weapon!");
+			return;
+		}
+	}
+
+#endif //EQBOTS
 	
 	bool tripleBackstab = false;
 	int tripleChance = 0;
@@ -516,6 +529,25 @@ void Mob::TryBackstab(Mob *other) {
 			tripleBackstab = true;
 		}
 	}
+
+#ifdef EQBOTS
+
+	else if(IsBot()) {
+		if(GetLevel() >= 67) { // Triple Backstab AA 3
+			tripleChance = 30;
+		}
+		else if(GetLevel() == 66) { // Triple Backstab AA 2
+			tripleChance = 20;
+		}
+		else if(GetLevel() == 65) { // Triple Backstab AA 1
+			tripleChance = 10;
+		}
+		if (tripleChance > MakeRandomInt(1, 100)) {
+			tripleBackstab = true;
+		}
+	}
+
+#endif //EQBOTS
 
 	bool seizedOpportunity = false;
 	int seizedChance = 0;
@@ -614,9 +646,28 @@ void Mob::RogueBackstab(Mob* other, bool min_damage)
 	sint32 ndamage = 0;
 	sint32 max_hit = 0;
 	sint32 min_hit = 0;
-	int16 bs_skill = GetSkill(BACKSTAB);
-	
+	int16 bs_skill = GetSkill(BACKSTAB);	
 	sint16 primaryweapondamage = 0;
+
+#ifdef EQBOTS
+
+	if(IsBot()) {
+		const Item_Struct* botweaponStruct = database.GetItem(GetEquipment(MATERIAL_PRIMARY));
+		if(botweaponStruct) {
+			ItemInst* botweaponInst = new ItemInst(botweaponStruct);
+			if(botweaponInst) {
+				primaryweapondamage = GetWeaponDamage(other, botweaponInst);
+				safe_delete(botweaponInst);
+			}
+			else {
+				primaryweapondamage = (GetLevel()/7)+1; // fallback incase it's a npc without a weapon, 2 dmg at 10, 10 dmg at 65
+			}
+		}
+	}
+	else
+
+#endif //EQBOTS
+
 	if(IsClient()){
 		const ItemInst *wpn = NULL;
 		wpn = CastToClient()->GetInv().GetItem(SLOT_PRIMARY);
@@ -678,6 +729,28 @@ void Mob::RogueBackstab(Mob* other, bool min_damage)
 // solar - assassinate
 void Mob::RogueAssassinate(Mob* other)
 {
+
+#ifdef EQBOTS
+
+	if(IsBot()) {
+		const Item_Struct* botweaponStruct = database.GetItem(GetEquipment(MATERIAL_PRIMARY));
+		if(botweaponStruct) {
+			ItemInst* botweaponInst = new ItemInst(botweaponStruct);
+			if(botweaponInst) {
+				if(GetWeaponDamage(other, botweaponInst)) {
+					other->Damage(this, 32000, SPELL_UNKNOWN, BACKSTAB);
+				}
+				else {
+					other->Damage(this, -5, SPELL_UNKNOWN, BACKSTAB);
+				}
+				safe_delete(botweaponInst);
+			}
+		}
+	}
+	else
+
+#endif //EQBOTS
+
 	//can you dodge, parry, etc.. an assassinate??
 	//if so, use DoSpecialAttackDamage(other, BACKSTAB, 32000); instead
 	if(GetWeaponDamage(other, IsClient()?CastToClient()->GetInv().GetItem(SLOT_PRIMARY):(const ItemInst*)NULL) > 0){
