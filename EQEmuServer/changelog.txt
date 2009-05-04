@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/04/2009==
+KLS: Code block for pets getting sent into attack did not verify that other was not null, causing rare crashes the old way and a pretty common crash with it's new positioning.  This has been corrected.
+
 ==05/03/2009==
 KLS: Some optimizations for the aggro code.  Added a timer for aggro checking will do it twice a second by default: lower AItarget_check_duration in features.h if aggro feels too sluggish for your tastes and recompile.
 Derision: Increased reuse_time in AA_DBAction to a uint32 to support reuse timers greater than 18 hours.
