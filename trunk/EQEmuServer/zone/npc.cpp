@@ -1314,7 +1314,9 @@ void Mob::NPCSpecialAttacks(const char* parse, int permtag) {
 	    case 'R':
     	    SpecAttacks[SPECATK_RAMPAGE] = true;
     		break;
-
+		case 'r':
+			SpecAttacks[SPECATK_AREA_RAMPAGE] = true;
+			break;
 	    case 'S':
     	    SpecAttacks[SPECATK_SUMMON] = true;
             SpecAttackTimers[SPECATK_SUMMON] = new Timer(6000);

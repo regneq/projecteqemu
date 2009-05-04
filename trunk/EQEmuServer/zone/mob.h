@@ -79,6 +79,7 @@ enum {
 	SPECATK_SUMMON,		//S
 	SPECATK_ENRAGE,		//E
 	SPECATK_RAMPAGE,	//R
+	SPECATK_AREA_RAMPAGE,	//r
 	SPECATK_FLURRY,		//F
 	SPECATK_TRIPLE,		//T
 	SPECATK_QUAD,		//Q
@@ -758,6 +759,7 @@ bool logpos;
     bool Rampage();
     bool AddRampage(Mob*);
 	void ClearRampage();
+	void AreaRampage();
 
     void StartEnrage();
 	void ProcessEnrage();

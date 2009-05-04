@@ -4,6 +4,8 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 KLS: Code block for pets getting sent into attack did not verify that other was not null, causing rare crashes the old way and a pretty common crash with it's new positioning.  This has been corrected.
 Derision: Updated spell_type in altadv_vars table to reflect the shared reuse timer ID that it really is.
 Derision: AA reuse timers should now display correctly with hotkeys remaining depressed when appropriate.
+KLS: Code block for pets getting sent into attack did not verify that other was not null, causing rare crashes the old way and a pretty common crash with it's new positioning.  This has been corrected.
+KLS: Added area rampage 'r' npc special attak code.
 
 REQUIRED SQL: utils/sql/svn/463_altadv_vars.sql
 
