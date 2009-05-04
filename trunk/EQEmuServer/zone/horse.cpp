@@ -123,10 +123,12 @@ const NPCType *Horse::BuildHorseType(int16 spell_id) {
 			safe_delete_array(query);
 		}
 		mysql_free_result(result);
+		return NULL;
 	}
 	else {
 		LogFile->write(EQEMuLog::Error, "Error in Mount query '%s': %s", query,  errbuf);
 		safe_delete_array(query);
+		return NULL;
 	}
 		
 }

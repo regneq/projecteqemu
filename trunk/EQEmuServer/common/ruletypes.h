@@ -176,17 +176,8 @@ RULE_REAL ( Combat, HitFalloffMajor, 50.0) //hit will fall off sharply if we're 
 RULE_REAL ( Combat, HitBonusPerLevel, 0.4) //You gain this % of hit for every level you are above your target
 RULE_REAL ( Combat, WeaponSkillFalloff, 0.33) //For every weapon skill point that's not maxed you lose this % of hit
 RULE_REAL ( Combat, ArcheryHitPenalty, 0.25) //Archery has a hit penalty to try to help balance it with the plethora of long term +hit modifiers for it
-RULE_REAL ( Combat, MeleeHitChanceMod, 1.0)
-RULE_REAL ( Combat, PriestHitChanceMod, 0.85)
-RULE_REAL ( Combat, CasterHitChanceMod, 0.7)
-RULE_REAL ( Combat, HeavyAvoidChanceMod, 1.0) //plate wearers
-RULE_REAL ( Combat, ModerateAvoidChanceMod, 0.96) //chain + leather melee
-RULE_REAL ( Combat, LightAvoidChanceMod, 0.91) //druid
-RULE_REAL ( Combat, UnarmoredAvoidChanceMod, 0.86) //rest
 RULE_REAL ( Combat, AgiHitFactor, 0.01) 
 RULE_INT ( Combat, MinRangedAttackDist, 25) //Minimum Distance to use Ranged Attacks 
-RULE_INT ( Combat, HitPerLevelDiff, 145) //Temporary Added Back in while chancetohit defines are in
-RULE_REAL ( Combat, AgiHitFactorOld, 0.015) //Temporary Added Back in while chancetohit defines are in
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( NPC )

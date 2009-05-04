@@ -223,6 +223,7 @@ bool HateList::RemoveEnt(Mob *ent)
 }
 
 void HateList::DoFactionHits(sint32 nfl_id) {
+	_ZP(HateList_DoFactionHits);
 	if (nfl_id <= 0)
 		return;
     LinkedListIterator<tHateEntry*> iterator(list);

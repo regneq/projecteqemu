@@ -104,46 +104,6 @@ enum {	//scribing argument to MemorizeSpell
 #define DISCIPLINE_SPELL_SLOT 10
 #define ABILITY_SPELL_SLOT 9
 
-// this enum and discipline system is obsolete,
-//all this stuff should be handled by spells/bonuses now.
-typedef enum {	//disciplines for disc_inuse
-	discNone			= 0,
-	//general
-	discResistant		= 30,
-	discFearless		= 31,
-	discWhirlwind		= 6,	//Counterattack/Whirlwind/Furious
-	discFellstrike		= 14,	//Duelist/Innerflame/Fellstrike
-	discBlindingSpeed	= 15,	//Blindingspeed/Hundredfist		haste unknown
-	discDeadeye			= 16,	//Deadeye/Charge
-	//warrior
-	discEvasive			= 4,
-	discMightystrike	= 17,
-	discDefensive		= 3,	//values unknown
-	discPrecise			= 2,	//values unknown
-	discAggressive		= 1,	//values unknown
-	//monk
-	discStonestance		= 11,
-	discThunderkick		= 12,	//values unknown
-	discVoidance		= 13,
-	discSilentfist		= 20,	//values unknown
-	discAshenhand		= 5,	//values unknown
-	//rogue
-	discNimble			= 19,
-	discKinesthetics	= 21,
-	//paladin
-	discHolyforge		= 22,
-	discSanctification	= 23,	//not sure of exact effect
-	//ranger
-	discTrueshot		= 24,
-	discWeaponshield	= 25,
-	//bard
-	discDeftdance		= 28,
-	discPuretone		= 29,	//exact value unknown
-	//SK
-	discUnholyAura		= 26,	//dosent make un-resistable yet
-	discLeechCurse		= 27
-};
-
 //Modes for the zoning state of the client.
 typedef enum {
 	ZoneToSafeCoords,		// Always send ZonePlayerToBind_Struct to client: Succor/Evac
@@ -197,10 +157,10 @@ public:
 	bool	CheckCheat();
 	void	CheatDetected(CheatTypes Cheat);
 	bool	WarpDetection(bool CTimer, float Distance);
-	void KeyRingLoad();
-	void KeyRingAdd(int32 item_id);
-	bool KeyRingCheck(int32 item_id);
-    void KeyRingList();
+	void	KeyRingLoad();
+	void	KeyRingAdd(int32 item_id);
+	bool	KeyRingCheck(int32 item_id);
+    void	KeyRingList();
 	virtual bool IsClient() const { return true; }
 	virtual void DBAWComplete(int8 workpt_b1, DBAsyncWork* dbaw);
 	bool	FinishConnState2(DBAsyncWork* dbaw);
@@ -259,15 +219,15 @@ public:
 
 	EQApplicationPacket*	ReturnItemPacket(sint16 slot_id, const ItemInst* inst, ItemPacketType packet_type);
 
-	bool	GetRevoked() const { return revoked; }
-	void	SetRevoked(bool rev) { revoked = rev; }
+	bool			GetRevoked() const { return revoked; }
+	void			SetRevoked(bool rev) { revoked = rev; }
 	inline int32	GetIP()			const { return ip; }
-	inline bool	GetHideMe()			const { return gmhideme; }
-	void	SetHideMe(bool hm);
+	inline bool		GetHideMe()			const { return gmhideme; }
+	void			SetHideMe(bool hm);
 	inline int16	GetPort()		const { return port; }
-	bool	IsDead() const { return(dead); }
-	inline bool IsLFP() { return LFP; }
-	void UpdateLFP();
+	bool			IsDead() const { return(dead); }
+	inline bool		IsLFP() { return LFP; }
+	void			UpdateLFP();
 
 	virtual bool	Save() { return Save(0); }
 			bool	Save(int8 iCommitNow); // 0 = delayed, 1=async now, 2=sync now
@@ -287,8 +247,8 @@ public:
 	inline const Inventory& GetInv() const	{ return m_inv; }
 	bool	CheckAccess(sint16 iDBLevel, sint16 iDefaultLevel);
 
-	void CheckQuests(const char* zonename, const char* message, uint32 npc_id, uint32 item_id, Mob* other);
-	void LogLoot(Client* player,Corpse* corpse,const Item_Struct* item);
+	void	CheckQuests(const char* zonename, const char* message, uint32 npc_id, uint32 item_id, Mob* other);
+	void	LogLoot(Client* player,Corpse* corpse,const Item_Struct* item);
 	bool	AutoAttackEnabled() const { return auto_attack; }
 	bool	AutoFireEnabled() const { return auto_fire; }
 	bool	Attack(Mob* other, int Hand = 13, bool bRiposte = false);	// 13 = Primary (default), 14 = secondary
@@ -317,9 +277,9 @@ public:
 
 	inline int16	GetBaseRace()	const { return m_pp.race; }
 	inline int16	GetBaseClass()	const { return m_pp.class_; }
-	inline int8	GetBaseGender()	const { return m_pp.gender; }
-	inline int8	GetBaseFace()	const { return m_pp.face; }
-	sint32	CalcMaxMana();
+	inline int8		GetBaseGender()	const { return m_pp.gender; }
+	inline int8		GetBaseFace()	const { return m_pp.face; }
+	sint32			CalcMaxMana();
 	const sint32&	SetMana(sint32 amount);
 
 	void	ServerFilter(SetServerFilter_Struct* filter);
@@ -332,7 +292,7 @@ public:
 	void	SendPickPocketResponse(Mob *from, uint32 amt, int type, const Item_Struct* item = NULL);
 
 	inline const char*	GetLastName() const	{ return lastname; }
-	inline int32	GetLDoNPoints() { return 0; }
+	inline int32		GetLDoNPoints() { return 0; }
 
 	inline float ProximityX() const { return(proximity_x); }
 	inline float ProximityY() const { return(proximity_y); }
@@ -348,7 +308,7 @@ public:
 	int32		MelodyGetCurrentSpellID() { return MelodyGetSpellID(MelodyGetCurrentGem()); }
 	int32		MelodyGetSpellID(int gem_id); // lookup the spellid based on the client gem provided
 	inline bool MelodyIsActive() const { return(melodystate); } // is activated
-	bool		MelodySetSong(int gem_id, int slot = -1); // set a specific song in the array
+	void		MelodySetSong(int gem_id, int slot = -1); // set a specific song in the array
 	inline void MelodySetState(bool state) { melodystate = state; this->Message(0, "Melody %s.", state ? "activated" : "deactivated"); } // activate / deactivate melody
 	void		MelodyTrySong();
 	
@@ -497,13 +457,8 @@ public:
 
 	inline bool IsInAGuild() const { return(guild_id != GUILD_NONE && guild_id != 0); }
 	inline bool IsInGuild(uint32 in_gid) const { return(in_gid == guild_id && IsInAGuild()); }
-//	inline int32	GuildEQID()		{ return guildeqid; }
-//	inline int32	GuildDBID()		{ return guilddbid; }
 	inline int32	GuildID() const { return guild_id; }
 	inline int8	GuildRank()		const { return guildrank; }
-//	bool	SetGuild(int32 in_guilddbid, int8 in_rank);
-//	void	GuildChangeRank(int32 guild_id,int32 oldrank,int32 newrank);
-//	void	GuildChangeRank(const char* name,int32 guild_id,int32 oldrank,int32 newrank);
 	void	SendGuildMOTD();
 	void	SendGuildSpawnAppearance();
 	void	SendGuildMembers();
@@ -518,7 +473,7 @@ public:
 	int8	GetFace()		const { return m_pp.face; }
 	int32	PendingGuildInvite; // Used for /guildinvite
 	void	WhoAll(Who_All_Struct* whom);
-      void	FriendsWho(char *FriendsString);
+    void	FriendsWho(char *FriendsString);
 
 	void	Stun(int duration);
 	void	UnStun();
@@ -530,7 +485,6 @@ public:
 	void	AddMoneyToPP(uint32 copper, uint32 silver, uint32 gold,uint32 platinum,bool updateclient);
 	bool	HasMoney(uint64 copper);
 
-//	bool	SimpleCheckIncreaseSkill(int16 skillid,sint16 chancemodi = 0);
 	void	FinishTrade(Client* with);
 	void	FinishTrade(NPC* with);
 	bool	TGB() const { return tgb; }
@@ -551,13 +505,13 @@ public:
 	void	IncreaseSkill(int skill_id, int value = 1) { if (skill_id <= HIGHEST_SKILL) { m_pp.skills[skill_id] += value; } }
 	void	IncreaseLanguageSkill(int skill_id, int value = 1);
 	virtual uint16 GetSkill(SkillType skill_id) const { if (skill_id <= HIGHEST_SKILL) { return((itembonuses.skillmod[skill_id] > 0)? m_pp.skills[skill_id]*(100 + itembonuses.skillmod[skill_id])/100 : m_pp.skills[skill_id]); } return 0; }
-	uint32		GetRawSkill(SkillType skill_id) const { if (skill_id <= HIGHEST_SKILL) { return(m_pp.skills[skill_id]); } return 0; }
-	bool HasSkill(SkillType skill_id) const;
-	bool CanHaveSkill(SkillType skill_id) const;
-	void SetSkill(SkillType skill_num, int16 value); // socket 12-29-01
+	uint32	GetRawSkill(SkillType skill_id) const { if (skill_id <= HIGHEST_SKILL) { return(m_pp.skills[skill_id]); } return 0; }
+	bool	HasSkill(SkillType skill_id) const;
+	bool	CanHaveSkill(SkillType skill_id) const;
+	void	SetSkill(SkillType skill_num, int16 value); // socket 12-29-01
 	void	AddSkill(SkillType skillid, int16 value);
-	void CheckSpecializeIncrease(int16 spell_id);
-	void CheckSongSkillIncrease(int16 spell_id);
+	void	CheckSpecializeIncrease(int16 spell_id);
+	void	CheckSongSkillIncrease(int16 spell_id);
 	bool	CheckIncreaseSkill(SkillType skillid, int chancemodi = 0);
 	void	CheckLanguageSkillIncrease(int8 langid, int8 TeacherSkill);
 	void    SetLanguageSkill(int langid, int value);
@@ -566,16 +520,6 @@ public:
 	int16	MaxSkill(SkillType skillid, int16 class_, int16 level) const;
     inline	int16	MaxSkill(SkillType skillid) const { return MaxSkill(skillid, GetClass(), GetLevel()); }
     int8	SkillTrainLevel(SkillType skillid, int16 class_);
-	// Util functions for MaxSkill
-/*
-	int16	MaxSkill_weapon(int16 skillid, int16 class_, int16 level) const;
-    int16	MaxSkill_offensive(int16 skillid, int16 class_, int16 level) const;
-    int16	MaxSkill_defensive(int16 skillid, int16 class_, int16 level) const;
-    int16	MaxSkill_arcane(int16 skillid, int16 class_, int16 level) const;
-    int16	MaxSkill_class(int16 skillid, int16 class_, int16 level) const;
-*/
-
-
 
 	void TradeskillSearchResults(const char *query, unsigned long qlen, unsigned long objtype, unsigned long someid);
 	void SendTradeskillDetails(unsigned long  recipe_id);
@@ -612,19 +556,10 @@ public:
 	void DumpPacketProfile() { if(eqs) eqs->DumpPacketProfile(); }
 #endif
 	int32 GetEquipment(int8 material_slot) const;	// returns item id
-	//sint32 GetEquipmentMaterial(int8 material_slot);
 	uint32 GetEquipmentColor(int8 material_slot) const;
 
 	inline bool AutoSplitEnabled() { return(m_pp.autosplit); }
 
-/*    bool GetReduceManaCostItem(int16 &spell_id, char *itemname);
-    bool GetExtendedRangeItem(int16 &spell_id, char *itemname);
-    bool GetIncreaseSpellDurationItem(int16 &spell_id, char *itemname);
-    bool GetReduceCastTimeItem(int16 &spell_id, char *itemname);
-    bool GetImprovedHealingItem(int16 &spell_id, char *itemname);
-    bool GetImprovedDamageItem(int16 &spell_id, char *itemname);
-    sint32 GenericFocus(int16 spell_id, int16 modspellid);
-*/
 	void SummonHorse(int16 spell_id);
 	void SetHorseId(int16 horseid_in);
 	int16 GetHorseId() const { return horseId; }
@@ -669,8 +604,6 @@ public:
 	void HandleAAAction(aaID activate);
 	int32 GetAA(int32 aa_id) const;
 	bool SetAA(int32 aa_id, int32 new_value);
-	//void TemporaryPets(int16 spell_id, Mob *target, const char *name_override = NULL, uint32 duration_override = 0);
-
 
 	sint16 acmod();
 
@@ -928,7 +861,7 @@ private:
 	sint16	CalcCR();
 	sint32	CalcMaxHP();
 	sint32	CalcBaseHP();
-	void DoHPRegen(/*SpawnAppearance_Struct* sa*/);
+	void DoHPRegen();
 	void DoManaRegen();
 	void DoStaminaUpdate();
 	void CalcRestState();
@@ -949,7 +882,6 @@ private:
 	int32				lsaccountid;
 	char				lskey[30];
 	sint16				admin;
-//	int32				guilddbid; // guild's ID in the database
 	int32				guild_id;
 	int8				guildrank; // player's rank in the guild, 0-GUILD_MAX_RANK
 	int16				duel_target;
@@ -972,7 +904,6 @@ private:
 	bool				revoked;
 	int32				pQueuedSaveWorkID;
 	int16				pClientSideTarget;
-//	bool				auto_split;
 	int16				weight;
 	bool				berserk;
 	bool				dead;
@@ -995,7 +926,6 @@ private:
 	PlayerProfile_Struct		m_pp;
 	ExtendedProfile_Struct		m_epp;
 	Inventory					m_inv;
-//	ServerSideFilters_Struct	ssfs;
 	Object*						m_tradeskill_object;
 
 	void NPCSpawn(const Seperator* sep);
@@ -1014,7 +944,6 @@ private:
 	void DoZoneSuccess(ZoneChange_Struct *zc, uint16 zone_id, float dest_x, float dest_y, float dest_z, float dest_h, sint8 ignore_r);
 	void ZonePC(int32 zoneID, float x, float y, float z, float heading, int8 ignorerestrictions, ZoneMode zm);
 	void ProcessMovePC(int32 zoneID, float x, float y, float z, float heading, int8 ignorerestrictions = 0, ZoneMode zm = ZoneSolicited);
-	//	char	zonesummon_name[32];
 	float	zonesummon_x;
 	float	zonesummon_y;
 	float	zonesummon_z;
@@ -1031,7 +960,6 @@ private:
 	Timer	camp_timer;
 	Timer	process_timer;
 	Timer	stamina_timer;
-//	Timer	LDTimer;
 	Timer	zoneinpacket_timer;
 	Timer	linkdead_timer;
 	Timer	dead_timer;

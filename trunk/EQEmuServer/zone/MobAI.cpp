@@ -1381,12 +1381,17 @@ bool Mob::Rampage()
         Mob *target = entity_list.GetMob(RampageArray[i]);
         if(target)
         {
-            if (CombatRange(target)){
+			if(target == GetTarget())
+				continue;
+            if (CombatRange(target))
+			{
                 Attack(target);
 				index_hit++;
 			}
         }
     }
+	if(index_hit == 0)
+		Attack(GetTarget());
     return true;
 }
 
