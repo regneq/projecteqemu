@@ -54,6 +54,8 @@ public:
 	//Gets the target with the most hate regardless of things like frenzy etc.
 	Mob* GetMostHate();
 
+	int AreaRampage(Mob *caster, Mob *target);
+
     bool IsEmpty();
 	void PrintToClient(Client *c);
 

@@ -356,6 +356,7 @@ Mob *HateList::GetTop(Mob *center)
 
 Mob *HateList::GetMostHate(){
 	_ZP(HateList_GetMostHate);
+
 	Mob* top = NULL;
 	sint32 hate = -1;
 
@@ -444,3 +445,26 @@ void HateList::PrintToClient(Client *c)
 	}
 }
 
+int HateList::AreaRampage(Mob *caster, Mob *target)
+{
+	if(!target || !caster)
+		return 0;
+
+	int ret = 0;
+	LinkedListIterator<tHateEntry*> iterator(list);
+	iterator.Reset();
+	while (iterator.MoreElements())
+	{
+		if(iterator.GetData()->ent && iterator.GetData()->ent != caster)
+		{
+			if(caster->CombatRange(iterator.GetData()->ent))
+			{
+				caster->Attack(iterator.GetData()->ent);
+				++ret;
+			}
+		}
+
+		iterator.Advance();
+	}
+	return ret;
+}

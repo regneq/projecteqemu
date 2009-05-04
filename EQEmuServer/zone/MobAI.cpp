@@ -778,10 +778,19 @@ void Mob::AI_Process() {
 							Flurry();
 					}
 	
-					if (SpecAttacks[SPECATK_RAMPAGE]) {
-					    // perhaps get the values from the db?
-					    if (MakeRandomInt(0, 99) < 20)
+					if (SpecAttacks[SPECATK_RAMPAGE]) 
+					{
+					    //simply based off dex for now, probably a better calc
+					    if (MakeRandomInt(0, 99) < (GetDEX()/10))
 							Rampage();
+					}
+
+					if (SpecAttacks[SPECATK_AREA_RAMPAGE]) 
+					{
+
+						//simply based off dex for now, probably a better calc
+					    if (MakeRandomInt(0, 99) < (GetDEX()/10))
+							AreaRampage();
 					}
 				}
 				
@@ -1393,6 +1402,16 @@ bool Mob::Rampage()
 	if(index_hit == 0)
 		Attack(GetTarget());
     return true;
+}
+
+void Mob::AreaRampage()
+{
+	int index_hit = 0;
+	entity_list.MessageClose(this, true, 200, 13, "%s goes on a RAMPAGE!", GetCleanName());
+	index_hit = hate_list.AreaRampage(this, GetTarget());
+
+	if(index_hit == 0)
+		Attack(GetTarget());
 }
 
 int32 Mob::GetLevelCon(int8 mylevel, int8 iOtherLevel) {
