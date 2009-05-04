@@ -513,12 +513,6 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 				break;
 			}
 
-#ifdef EQBOTS
-
-			database.CleanBotLeader(charid);
-
-#endif //EQBOTS
-
 			if(!pZoning && ew->return_home)
 				zoneID = database.MoveCharacterToBind(charid);
 

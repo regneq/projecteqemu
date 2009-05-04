@@ -2095,7 +2095,7 @@ void Database::DeleteBotGroups(int32 charid) {
 	int32 affected_rows = 0;
 
 	if(!RunQuery(query, MakeAnyLenString(&query, "DELETE FROM botgroups where charid=%i", charid), errbuf, 0, &affected_rows)) {
-		cerr << "Error in CleanBotLeader query '" << query << "' " << errbuf << endl;
+		cerr << "Error in DeleteBotGroups query '" << query << "' " << errbuf << endl;
 	}
 	safe_delete_array(query);
 }

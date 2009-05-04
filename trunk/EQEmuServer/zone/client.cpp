@@ -326,12 +326,6 @@ Client::~Client() {
 	if(isgrouped && !zoning)
 		LeaveGroup();
 
-#ifdef EQBOTS
-
-	database.CleanBotLeader(CharacterID());
-
-#endif //EQBOTS
-
 	UpdateWho(2);
 	// we save right now, because the client might be zoning and the world
 	// will need this data right away
