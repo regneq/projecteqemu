@@ -91,7 +91,7 @@ bool Client::CheckLoreConflict(const Item_Struct* item) {
 		return true;
 
 	//Finally, if the item has a lore group, we check for other items with the same group and return the result
-	if (item->LoreGroup == 0) 
+	if (item->LoreGroup == 0 || item->LoreGroup == -1) 
 		return false;	
 	return (m_inv.HasItemByLoreGroup(item->LoreGroup) != SLOT_INVALID);
 }
