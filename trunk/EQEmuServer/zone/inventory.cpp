@@ -87,7 +87,13 @@ bool Client::CheckLoreConflict(const Item_Struct* item) {
 	if (!(item->LoreFlag))
 		return false;
 	
-	return (m_inv.HasItem(item->ID) != SLOT_INVALID);
+	if (m_inv.HasItem(item->ID) != SLOT_INVALID)
+		return true;
+
+	//Finally, if the item has a lore group, we check for other items with the same group and return the result
+	if (item->LoreGroup == 0) 
+		return false;	
+	return (m_inv.HasItemByLoreGroup(item->LoreGroup) != SLOT_INVALID);
 }
 
 void Client::SummonItem(uint32 item_id, sint8 charges, uint32 aug1, uint32 aug2, uint32 aug3, uint32 aug4, uint32 aug5) {

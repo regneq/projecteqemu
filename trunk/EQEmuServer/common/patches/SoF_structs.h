@@ -3663,10 +3663,10 @@ struct ItemSerializationHeader
 	uint32 merchant_slot; //1 if not a merchant item
 	uint32 unknown020; //0
 	uint32 instance_id; //unique instance id if not merchant item, else is merchant slot
-	uint32 inst_nodrop;
+	uint32 unknown028; //0
 	uint32 potion_type;
 	uint32 charges; //Total Charges an item has (-1 for unlimited)
-	uint32 unknown040; //0
+	uint32 inst_nodrop; // 1 if the item is no drop (attuned items)
 	uint32 unknown044; //0
 	uint32 unknown048; //0
 	uint32 unknown052; //0

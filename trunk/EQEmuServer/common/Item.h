@@ -173,6 +173,10 @@ public:
 	// Check whether item exists in inventory
 	// where argument specifies OR'd list of invWhere constants to look
 	sint16 HasItemByUse(uint8 use, uint8 quantity=0, uint8 where=0xFF);
+
+	// Check whether item exists in inventory
+	// where argument specifies OR'd list of invWhere constants to look
+	sint16 HasItemByLoreGroup(uint32 loregroup, uint8 where=0xFF);
 	
 	// Locate an available inventory slot
 	sint16 FindFreeSlot(bool for_bag, bool try_cursor, int8 min_size = 0);
@@ -207,6 +211,8 @@ protected:
 	sint16 _HasItem(ItemInstQueue& iqueue, uint32 item_id, uint8 quantity);
 	sint16 _HasItemByUse(map<sint16, ItemInst*>& bucket, uint8 use, uint8 quantity);
 	sint16 _HasItemByUse(ItemInstQueue& iqueue, uint8 use, uint8 quantity);
+	sint16 _HasItemByLoreGroup(map<sint16, ItemInst*>& bucket, uint32 loregroup);
+	sint16 _HasItemByLoreGroup(ItemInstQueue& iqueue, uint32 loregroup);
 	
 	
 	// Player inventory

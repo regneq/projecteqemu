@@ -1950,10 +1950,10 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	hdr.merchant_slot = (merchant_slot == 0) ? 1 : inst->GetMerchantCount();
 	hdr.unknown020 = 0;
 	hdr.instance_id = (merchant_slot == 0) ? inst->GetSerialNumber() : merchant_slot;
-	hdr.inst_nodrop = inst->IsInstNoDrop() ? 1 : 0;
+	hdr.unknown028 = 0;
 	hdr.potion_type = (stackable ? ((inst->GetItem()->ItemType == ItemTypePotion) ? 1 : 0) : charges);
 	hdr.charges = charges;
-	hdr.unknown040 = 0;
+	hdr.inst_nodrop = inst->IsInstNoDrop() ? 1 : 0;
 	hdr.unknown044 = 0;
 	hdr.unknown048 = 0;
 	hdr.unknown052 = 0;
