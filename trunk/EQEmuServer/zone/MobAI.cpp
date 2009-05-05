@@ -781,7 +781,7 @@ void Mob::AI_Process() {
 					if (SpecAttacks[SPECATK_RAMPAGE]) 
 					{
 					    //simply based off dex for now, probably a better calc
-					    if (MakeRandomInt(0, 99) < (GetDEX()/10))
+					    if (MakeRandomInt(0, 99) < ((GetDEX()/45) + 20))
 							Rampage();
 					}
 
@@ -789,7 +789,7 @@ void Mob::AI_Process() {
 					{
 
 						//simply based off dex for now, probably a better calc
-					    if (MakeRandomInt(0, 99) < (GetDEX()/10))
+					    if (MakeRandomInt(0, 99) < ((GetDEX()/45) + 20))
 							AreaRampage();
 					}
 				}
