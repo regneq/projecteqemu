@@ -97,7 +97,7 @@ void Mob::PET_Process() {
     
     if (IsEngaged())
 	{
-		_ZP(Mob_PET_Process_IsEngaged);
+		_ZP(Bot_PET_Process_IsEngaged);
         if (IsRooted())
             CastToNPC()->SetTarget(hate_list.GetClosest(this));
         else

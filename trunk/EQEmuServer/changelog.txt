@@ -9,6 +9,7 @@ KLS: Added area rampage 'r' npc special attak code.
 Congdar: Bots - Added Rogue Triple Backstab AA, Enhanced #bot list, Fixed beneficial weapon procs to not effect the entire group.
 realityincarnate: Fix for SoF attunable items
 realityincarnate: Added checks for multiple items in the same lore group
+Congdar: Bots - Fix Cleric resurrect spell selection, Added zone profiles, Fixed crash with bot follow
 
 REQUIRED SQL: utils/sql/svn/463_altadv_vars.sql
 
