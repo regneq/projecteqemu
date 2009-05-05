@@ -2048,8 +2048,13 @@ struct Who_All_Struct { // 76 length total
 /*156*/	int32	type;		// 0 = /who 3 = /who all
 };
 
-struct Stun_Struct { // 4 bytes total
-	int32 duration; // Duration of stun
+struct Stun_Struct { // 8 bytes total
+/*000*/	int32	duration; // Duration of stun
+/*004*/	int8	unknown004; // seen 0
+/*005*/	int8	unknown005; // seen 163
+/*006*/	int8	unknown006; // seen 67
+/*007*/	int8	unknown007; // seen 0
+/*008*/
 };
 
 struct AugmentItem_Struct {

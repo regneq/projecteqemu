@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/05/2009==
+Trevius: SoF - Melee stun/bash no longer causes you to spin
+Trevius: SoF - Spell Fizzles and Interrupts no longer cause abnormally long refresh times
+
 ==05/04/2009==
 KLS: Code block for pets getting sent into attack did not verify that other was not null, causing rare crashes the old way and a pretty common crash with it's new positioning.  This has been corrected.
 Derision: Updated spell_type in altadv_vars table to reflect the shared reuse timer ID that it really is.

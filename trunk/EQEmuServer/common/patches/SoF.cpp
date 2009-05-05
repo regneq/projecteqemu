@@ -1065,6 +1065,7 @@ ENCODE(OP_ManaChange) {
 	OUT(new_mana);
 	OUT(stamina);
 	OUT(spell_id);
+	eq->unknown16 = -1; // Self Interrupt/Success = -1, Fizzle = 1, Other Interrupt = 2?
 	FINISH_ENCODE();
 }
 
@@ -1519,6 +1520,17 @@ ENCODE(OP_ReadBook) {
 	OUT(type);
 	OUT(invslot);
 	strn0cpy(eq->txtfile, emu->booktext, sizeof(eq->txtfile));
+	FINISH_ENCODE();
+}
+
+ENCODE(OP_Stun) {
+
+	ENCODE_LENGTH_EXACT(Stun_Struct);
+	SETUP_DIRECT_ENCODE(Stun_Struct, structs::Stun_Struct);
+	OUT(duration);
+	eq->unknown005 = 163;
+	eq->unknown006 = 67;
+
 	FINISH_ENCODE();
 }
 
