@@ -737,6 +737,51 @@ sint16 Inventory::HasItemByUse(uint8 use, uint8 quantity, uint8 where)
 	return slot_id;
 }
 
+sint16 Inventory::HasItemByLoreGroup(uint32 loregroup, uint8 where) 
+{
+	sint16 slot_id = SLOT_INVALID;
+	
+	// Check each inventory bucket
+	if(where & invWhereWorn) {
+		slot_id = _HasItemByLoreGroup(m_worn, loregroup);
+		if (slot_id != SLOT_INVALID)
+			return slot_id;
+	}
+	
+	if(where & invWherePersonal) {
+		slot_id = _HasItemByLoreGroup(m_inv, loregroup);
+		if (slot_id != SLOT_INVALID)
+			return slot_id;
+	}
+		
+	if(where & invWhereBank) {
+		slot_id = _HasItemByLoreGroup(m_bank, loregroup);
+		if (slot_id != SLOT_INVALID)
+			return slot_id;
+	}
+		
+	if(where & invWhereSharedBank) {
+		slot_id = _HasItemByLoreGroup(m_shbank, loregroup);
+		if (slot_id != SLOT_INVALID)
+			return slot_id;
+	}
+		
+	if(where & invWhereTrading) {
+		slot_id = _HasItemByLoreGroup(m_trade, loregroup);
+		if (slot_id != SLOT_INVALID)
+			return slot_id;
+	}
+		
+	if(where & invWhereCursor) {
+		// Check cursor queue
+		slot_id = _HasItemByLoreGroup(m_cursor, loregroup);
+		if (slot_id != SLOT_INVALID)
+			return slot_id;
+	}
+	
+	return slot_id;
+}
+
 bool Inventory::HasSpaceForItem(const Item_Struct *ItemToTry, uint8 Quantity) {
 
 	if(ItemToTry->Stackable) {
@@ -1280,6 +1325,94 @@ sint16 Inventory::_HasItemByUse(ItemInstQueue& iqueue, uint8 use, uint8 quantity
 					if (quantity_found >= quantity)
 						return Inventory::CalcSlotId(SLOT_CURSOR, itb->first);
 				}
+			}
+		}
+	}
+	
+	// Not found
+	return SLOT_INVALID;
+}
+
+sint16 Inventory::_HasItemByLoreGroup(map<sint16, ItemInst*>& bucket, uint32 loregroup) 
+{
+	iter_inst it;
+	iter_contents itb;
+	ItemInst* inst = NULL;
+		
+	// Check item: After failed checks, check bag contents (if bag)
+	for (it=bucket.begin(); it!=bucket.end(); it++) {
+		inst = it->second;
+		if (inst) {
+			if (inst->GetItem()->LoreGroup == loregroup) 
+				return it->first;
+				
+			ItemInst* Aug;
+			for(int i = 0; i < MAX_AUGMENT_SLOTS; i++) {
+				Aug = inst->GetAugment(i);
+				if (Aug && Aug->GetItem()->LoreGroup == loregroup)
+					return SLOT_AUGMENT; // Only one augment per slot.
+			}
+		}
+		// Go through bag, if bag
+		if (inst && inst->IsType(ItemClassContainer)) {
+			
+			for (itb=inst->_begin(); itb!=inst->_end(); itb++) {
+				ItemInst* baginst = itb->second;
+				if (baginst && baginst->IsType(ItemClassCommon)&& baginst->GetItem()->LoreGroup == loregroup) 
+					return Inventory::CalcSlotId(it->first, itb->first);
+				
+				ItemInst* Aug2;
+				for(int i = 0; i < MAX_AUGMENT_SLOTS; i++) {
+					Aug2 = baginst->GetAugment(i);
+					if (Aug2 && Aug2->GetItem()->LoreGroup == loregroup)
+						return SLOT_AUGMENT; // Only one augment per slot.
+				}
+			}
+		}
+	}
+	
+	// Not found
+	return SLOT_INVALID;
+}
+
+// Internal Method: Checks an inventory queue type bucket for a particular item
+sint16 Inventory::_HasItemByLoreGroup(ItemInstQueue& iqueue, uint32 loregroup)
+{
+	iter_queue it;
+	iter_contents itb;
+	uint8 quantity_found = 0;
+	
+	// Read-only iteration of queue
+	for (it=iqueue.begin(); it!=iqueue.end(); it++) {
+		ItemInst* inst = *it;
+		if (inst)
+		{
+			if (inst->GetItem()->LoreGroup == loregroup) 
+				return SLOT_CURSOR;
+			
+			ItemInst* Aug;
+			for(int i = 0; i < MAX_AUGMENT_SLOTS; i++) {
+				Aug = inst->GetAugment(i);
+				if (Aug && Aug->GetItem()->LoreGroup == loregroup)
+					return SLOT_AUGMENT; // Only one augment per slot.
+			}
+		}
+		// Go through bag, if bag
+		if (inst && inst->IsType(ItemClassContainer)) {
+			
+			for (itb=inst->_begin(); itb!=inst->_end(); itb++) {
+				ItemInst* baginst = itb->second;
+				if (baginst && baginst->IsType(ItemClassCommon)&& baginst->GetItem()->LoreGroup == loregroup) 
+					return Inventory::CalcSlotId(SLOT_CURSOR, itb->first);
+				
+				
+				ItemInst* Aug2;
+				for(int i = 0; i < MAX_AUGMENT_SLOTS; i++) {
+					Aug2 = baginst->GetAugment(i);
+					if (Aug2 && Aug2->GetItem()->LoreGroup == loregroup)
+						return SLOT_AUGMENT; // Only one augment per slot.
+				}
+
 			}
 		}
 	}
