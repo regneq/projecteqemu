@@ -131,6 +131,7 @@ const char *__zp_names[ZoneProfiler::MaxZoneProfilerId] = {
 		"NPC_GetReverseFactionCon",
 		"NPC_Process",
 		"NPC_Death", 
+		"NPC_BotAttackMelee",
 		
 		"EntityList_TrapProcess",
 		"EntityList_GroupProcess",
@@ -145,6 +146,7 @@ const char *__zp_names[ZoneProfiler::MaxZoneProfilerId] = {
 		"EntityList_CheckClientAggro",
 		"EntityList_CheckClientAggro_Loop",
 		"EntityList_AIYellForHelp",
+		"EntityList_Bot_AICheckCloseBeneficialSpells",
 		
 		"HateList_Find",
 		"HateList_GetDamageTop",
@@ -175,6 +177,9 @@ const char *__zp_names[ZoneProfiler::MaxZoneProfilerId] = {
 		"Mob_GetWeaponDamageBonus",
 		"Mob_TryWeaponProcA",
 		"Mob_TryWeaponProcB",
+		"NPC_Bot_AICastSpell",
+		"Bot_AI_Process_pursue_cast",
+		"Bot_PET_Process_IsEngaged",
 
 		"Map_LineIntersectsZone",
 		"Map_LineIntersectsNode",
@@ -188,6 +193,10 @@ const char *__zp_names[ZoneProfiler::MaxZoneProfilerId] = {
 		"Mob_AI_Process_roambox",
 		"Mob_AI_Process_roamer",
 		"Mob_AI_Process_guard",
+		"Mob_BOT_Process",
+		"Mob_BOT_Process_IsEngaged",
+		"Bot_AI_Process_engaged_cast",
+		"NPC_Bot_AI_IdleCastCheck",
 		
 		
 		"Database_AddLootTableToNPC",

@@ -421,6 +421,9 @@ void BotRaids::GroupAssignTask(Group *g, int iTask, Group *g2) {
 	Mob *gleader1 = g->GetLeader();
 	Mob *gleader2 = g2->GetLeader();
 
+	if(!gleader1 || !gleader2)
+		return;
+
 	if(iTask == 1) {
 		gleader1->SetFollowID(gleader2->GetID());
         gleader1->WipeHateList();

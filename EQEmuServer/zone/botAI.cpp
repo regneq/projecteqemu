@@ -456,7 +456,7 @@ void Mob::BOT_Process() {
 // -- TODO : Enchanter will nuke untill it it sees if there is an add. 
 bool NPC::Bot_AI_EngagedCastCheck() {
 	if (target && AIautocastspell_timer->Check(false)) {
-		_ZP(NPC_Bot_AI_EngagedCastCheck);
+		_ZP(Bot_AI_Process_engaged_cast);
 		AIautocastspell_timer->Disable();	//prevent the timer from going off AGAIN while we are casting.
 		
 		int8 botClass = GetClass();
@@ -1352,10 +1352,10 @@ bool NPC::Bot_Command_RezzTarget(Mob *target) {
 		if(rezlevel >= 56) {
 			rezid = 1524;
 		}
-		else if(rezlevel == 47) {
+		else if(rezlevel >= 47) {
 			rezid = 392;
 		}
-		else if(rezlevel == 42) {
+		else if(rezlevel >= 42) {
 			rezid = 2172;
 		}
 		else if(rezlevel >= 37) {
@@ -1380,6 +1380,7 @@ bool NPC::Bot_Command_RezzTarget(Mob *target) {
 	}
 	return false;
 }
+
 void EntityList::ShowSpawnWindow(Client* client, int Distance, bool NamedOnly) {
 
 	const char *WindowTitle = "Bot Tracking Window";
