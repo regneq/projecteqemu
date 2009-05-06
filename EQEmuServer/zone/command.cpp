@@ -7627,6 +7627,7 @@ void command_bot(Client *c, const Seperator *sep) {
 		c->Message(15, "#bot levitate - Bot levitation (must have proper class in group)");
 		c->Message(15, "#bot resist - Bot resist buffs (must have proper class in group)");
 		c->Message(15, "#bot runeme - Enchanter Bot cast Rune spell on you");
+		c->Message(15, "#bot shrinkme - Shaman Bot will shrink you");
 		c->Message(15, "#bot endureb - Bot enduring breath (must have proper class in group)");
 		c->Message(15, "#bot charm - (must have proper class in group)");
 		c->Message(15, "#bot dire charm - (must have proper class in group)");
@@ -10254,6 +10255,60 @@ void command_bot(Client *c, const Seperator *sep) {
 
 				default:
 					c->Message(15, "You must have a Druid, Shaman, Ranger,  or Beastlord in your group.");
+					break;
+			}
+		}
+	}
+
+//Shrink
+	if ((!strcasecmp(sep->arg[1], "shrinkme")) && (c->IsGrouped())) {
+ 			Mob *Shrinker;
+			int32 ShrinkerClass = 0;
+			Group *g = c->GetGroup();
+		if(g) {
+			for(int i=0; i<MAX_GROUP_MEMBERS; i++){
+				if(g->members[i] && g->members[i]->IsBot()) {
+					switch(g->members[i]->GetClass()) {
+						case SHAMAN:
+							  Shrinker = g->members[i];
+							  ShrinkerClass = SHAMAN;
+							break;
+						case BEASTLORD:
+							if (ShrinkerClass != SHAMAN){
+							  Shrinker = g->members[i];
+							  ShrinkerClass = BEASTLORD;
+						}
+							break;
+						default:
+							break;
+					}
+				}
+			}
+			switch(ShrinkerClass) {
+				case SHAMAN:
+
+					if (c->GetLevel() >= 15) { 
+						Shrinker->Say("Casting Shrink...");
+						Shrinker->CastToClient()->CastSpell(345, c->GetID(), 1, -1, -1);
+					}
+					else if (c->GetLevel() <= 14) {
+						Shrinker->Say("I'm not level 15 yet.");
+					}
+					break;
+
+				case BEASTLORD:
+
+					if (c->GetLevel() >= 23) {
+						Shrinker->Say("Casting Shrink...");
+						Shrinker->CastToClient()->CastSpell(345, c->GetID(), 1, -1, -1);
+					}
+					else if (c->GetLevel() <= 22) {
+						Shrinker->Say("I'm not level 23 yet.");
+					}
+					break;
+
+				default:
+					c->Message(15, "You must have a Shaman or Beastlord in your group.");
 					break;
 			}
 		}
