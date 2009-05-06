@@ -823,6 +823,10 @@ int Mob::GetWeaponDamage(Mob *against, const Item_Struct *weapon_item) {
 				//it gives us an idea if we can hit due to the dual nature of this function
 				dmg = 1;						   
 			}
+			else if(SpecAttacks[SPECATK_MAGICAL])
+			{
+				dmg = 1;
+			}
 			else
 				return 0;
 		}
@@ -864,7 +868,10 @@ int Mob::GetWeaponDamage(Mob *against, const Item_Struct *weapon_item) {
 		}
 
 		if(!eledmg && !banedmg){
-			return 0;
+			if(!SpecAttacks[SPECATK_BANE])
+				return 0;
+			else
+				return 1;
 		}
 		else
 			dmg += banedmg;
@@ -958,6 +965,9 @@ int Mob::GetWeaponDamage(Mob *against, const ItemInst *weapon_item)
 			else if(GetOwner() && GetLevel() >= RuleI(Combat, PetAttackMagicLevel)){ //pets wouldn't actually use this but...
 				dmg = 1;						   //it gives us an idea if we can hit
 			}
+			else if(SpecAttacks[SPECATK_MAGICAL]){
+				dmg = 1;
+			}
 			else
 				return 0;
 		}
@@ -1049,8 +1059,12 @@ int Mob::GetWeaponDamage(Mob *against, const ItemInst *weapon_item)
 			}
 		}
 
-		if(!eledmg && !banedmg){
-			return 0;
+		if(!eledmg && !banedmg)
+		{
+			if(!SpecAttacks[SPECATK_BANE])
+				return 0;
+			else
+				return 1;
 		}
 		else
 			dmg += banedmg;
@@ -3883,7 +3897,7 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 			}
 		}
 
-		if(spell_id != SPELL_UNKNOWN) {
+		if(spell_id != SPELL_UNKNOWN && !iBuffTic) {
 			//see if root will break
 			if (IsRooted()) { // neotoyko: only spells cancel root
 				if(GetAA(aaEnhancedRoot))

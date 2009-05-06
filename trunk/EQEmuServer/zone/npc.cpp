@@ -1330,6 +1330,12 @@ void Mob::NPCSpecialAttacks(const char* parse, int permtag) {
             SpecAttacks[SPECATK_TRIPLE] = true;
             SpecAttacks[SPECATK_QUAD] = true;
             break;
+	    case 'b':
+            SpecAttacks[SPECATK_BANE] = true;
+            break;
+		case 'm':
+            SpecAttacks[SPECATK_MAGICAL] = true;
+            break;
 		case 'U':
 			SpecAttacks[UNSLOWABLE] = true;
 			break;
