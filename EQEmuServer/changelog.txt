@@ -4,6 +4,8 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 Trevius: SoF - Melee stun/bash no longer causes you to spin
 Trevius: SoF - Spell Fizzles and Interrupts no longer cause abnormally long refresh times
 realityincarnate: Fixed lore check bug with items in lore group -1
+KLS: DoTs should no longer break roots early.
+KLS: Added Special Attack hit magical 'm' and special attack hit bane 'b', will allow the mobs affected to hit things that require magical or bane weapons to hit.
 
 ==05/04/2009==
 KLS: Code block for pets getting sent into attack did not verify that other was not null, causing rare crashes the old way and a pretty common crash with it's new positioning.  This has been corrected.
