@@ -617,8 +617,8 @@ bool NPC::Process()
 	
 	//Handle assists...
 	Mob *hated = NULL;	//charmed NPCs dont ask for help.
-	if(assist_timer.Check() && !Charmed() && (hated = hate_list.GetTop(this)) != NULL) {
-		entity_list.AIYellForHelp(this, hated);
+	if(assist_timer.Check() && !Charmed() && GetTarget() != NULL) {
+		entity_list.AIYellForHelp(this, GetTarget());
 	}
 	
 #ifdef EQBOTS
