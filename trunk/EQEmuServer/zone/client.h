@@ -597,6 +597,7 @@ public:
 	void SendAATable();
 	void SendAATimers();
 	int  GetAATimerID(aaID activate);
+	int  CalcAAReuseTimer(const AA_DBAction *caa);
 	void ActivateAA(aaID activate);
 	void SendAATimer(int32 ability, int32 begin, int32 end);
 	void EnableAAEffect(aaEffectType type, int32 duration = 0);

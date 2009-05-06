@@ -702,6 +702,8 @@ struct AA_DBAction {
 	uint16 duration;			//duration of NON-SPELL effect, 0=N/A
 	aaID redux_aa;				//AA which reduces reuse time
 	sint32 redux_rate;			//%/point in redux_aa reduction in reuse time
+	aaID redux_aa2;				//AA which reduces reuse time
+	sint32 redux_rate2;			//%/point in redux_aa reduction in reuse time
 };
 
 //Structure representing the database's swarm pet configs

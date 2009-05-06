@@ -2,6 +2,17 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==05/06/2009==
 Angelox: Bots: Added command '#bot shrinkme' requires Shaman or Beastlord (defaults to Shaman). 
+Derision: Added redux_aa2, redux_rate2 fields to aa_actions.
+Derision: Improved Hasty Exit should now reduce the reuse time of Escape.
+Derision: The reuse timer in the AA window now shows the reuse time reduced by applicable AAs.
+	  (although if you purchase an AA that reduces the reuse time, you must camp before the reduced reuse time will be updated).
+
+REQUIRED SQL:
+
+ALTER TABLE `aa_actions` ADD `redux_aa2` MEDIUMINT( 8 ) UNSIGNED NOT NULL DEFAULT '0',
+ADD `redux_rate2` TINYINT( 4 ) NOT NULL DEFAULT '0';
+UPDATE `aa_actions` SET `redux_aa2` = '886',
+`redux_rate2` = '10' WHERE `aa_actions`.`aaid` =243 AND `aa_actions`.`rank` =0 LIMIT 1 ;
 
 ==05/05/2009==
 Trevius: SoF - Melee stun/bash no longer causes you to spin

@@ -114,6 +114,31 @@ int Client::GetAATimerID(aaID activate)
 	return 0;
 }
 
+int Client::CalcAAReuseTimer(const AA_DBAction *caa) {
+
+	if(!caa)
+		return;
+
+	int ReuseTime = caa->reuse_time;
+
+	if(ReuseTime > 0)
+	{
+		int ReductionPercentage;
+
+		if(caa->redux_aa > 0 && caa->redux_aa < aaHighestID)
+		{
+			ReductionPercentage = GetAA(caa->redux_aa) * caa->redux_rate;
+
+			if(caa->redux_aa2 > 0 && caa->redux_aa2 < aaHighestID)
+				ReductionPercentage += (GetAA(caa->redux_aa2) * caa->redux_rate2);
+
+			ReuseTime = caa->reuse_time * (100 - ReductionPercentage) / 100;
+		}
+		
+	}
+	return ReuseTime;
+}
+
 void Client::ActivateAA(aaID activate){
 	if(activate < 0 || activate >= aaHighestID)
 		return;
@@ -225,12 +250,8 @@ void Client::ActivateAA(aaID activate){
 	
 	//set our re-use timer.
 	if(caa->reuse_time > 0) {
-		int32 redux = 0;
-		if(caa->redux_aa > 0 && caa->redux_aa < aaHighestID) {
-			redux = GetAA(caa->redux_aa) * caa->redux_rate;
-		}
-		
-		int32 timer_base = caa->reuse_time * (100 - redux) / 100;
+
+		int32 timer_base = CalcAAReuseTimer(caa);
 
 		if(activate == aaImprovedHarmTouch || activate == aaLeechTouch)
 			p_timers.Start(pTimerHarmTouch, HarmTouchReuseTime);	
@@ -1010,6 +1031,15 @@ void Client::SendAA(int32 id, int seq) {
 		}
 	}
 	database.FillAAEffects(saa);
+
+	if(value > 0)
+	{
+		const AA_DBAction *caa = &AA_Actions[saa->id][value - 1];
+
+		if(caa && caa->reuse_time > 0)
+			saa->spell_refresh = CalcAAReuseTimer(caa);
+	}
+
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_SendAATable);
 	outapp->size=size;
 	outapp->pBuffer=(uchar*)saa;
@@ -1102,7 +1132,9 @@ bool ZoneDatabase::LoadAAEffects() {
 	
 	memset(AA_Actions, 0, sizeof(AA_Actions));	//I hope the compiler is smart about this size...
 	
-	const char *query = "SELECT aaid,rank,reuse_time,spell_id,target,nonspell_action,nonspell_mana,nonspell_duration,redux_aa,redux_rate FROM aa_actions";
+	const char *query = "SELECT aaid,rank,reuse_time,spell_id,target,nonspell_action,nonspell_mana,nonspell_duration,"
+			    "       redux_aa,redux_rate,redux_aa2,redux_rate2 FROM aa_actions";
+
 	if (RunQuery(query, strlen(query), errbuf, &result)) {
 		//safe_delete_array(query);
 		int r;
@@ -1122,6 +1154,8 @@ bool ZoneDatabase::LoadAAEffects() {
 			caction->duration = atoi(row[r++]);
 			caction->redux_aa = (aaID) atoi(row[r++]);
 			caction->redux_rate = atoi(row[r++]);
+			caction->redux_aa2 = (aaID) atoi(row[r++]);
+			caction->redux_rate2 = atoi(row[r++]);
 				
 		}
 		mysql_free_result(result);
