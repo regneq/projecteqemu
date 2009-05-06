@@ -499,7 +499,7 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 			
 			EQApplicationPacket *outapp;
 			int32 tmpaccid = 0;
-			charid = database.GetCharacterInfo(char_name, &tmpaccid, &zoneID);
+			charid = database.GetCharacterInfo(char_name, &tmpaccid, &zoneID, &instanceID);
 			if (charid == 0 || tmpaccid != GetAccountID()) {
 				clog(WORLD__CLIENT_ERR,"Could not get CharInfo for '%s'",char_name);
 				eqs->Close();
@@ -709,8 +709,22 @@ void Client::EnterWorld(bool TryBootup) {
 	if (zoneID == 0)
 		return;
 
-	zoneID = database.GetInstZoneID(zoneID, GetCharName());
-	ZoneServer* zs = zoneserver_list.FindByZoneID(zoneID);
+	//zoneID = database.GetInstZoneID(zoneID, GetCharName());
+	ZoneServer* zs = NULL;
+	if(instanceID > 0)
+	{
+		if(database.VerifyInstanceAlive(instanceID, GetCharID()))
+			zs = zoneserver_list.FindByInstanceID(instanceID);
+		else
+		{
+			//ideally we'd want to send them somewere else...
+			instanceID = 0;
+			zs = zoneserver_list.FindByZoneID(zoneID);
+		}
+	}
+	else
+		zs = zoneserver_list.FindByZoneID(zoneID);
+
 	const char *zone_name=database.GetZoneName(zoneID, true);
 	if (zs) {
 		// warn the world we're comming, so it knows not to shutdown

@@ -45,6 +45,7 @@ ZoneServer::ZoneServer(EmuTCPConnection* itcpc)
 	memset(zone_name, 0, sizeof(zone_name));
 	memset(compiled, 0, sizeof(compiled));
 	zoneID = 0;
+	instanceID = 0;
 
 	memset(clientaddress, 0, sizeof(clientaddress));
 	clientport = 0;
@@ -60,16 +61,18 @@ ZoneServer::~ZoneServer() {
 	tcpc->Free();
 }
 
-bool ZoneServer::SetZone(int32 iZoneID, bool iStaticZone) {
+bool ZoneServer::SetZone(int32 iZoneID, int32 iInstanceID, bool iStaticZone) {
 	BootingUp = false;
 	
 	const char* zn = MakeLowerString(database.GetZoneName(iZoneID));
 	char*	longname;
 
 	if (iZoneID)
-		zlog(WORLD__ZONE,"Setting to '%s' (%d)%s",(zn) ? zn : "",iZoneID,iStaticZone ? " (Static)" : "");
+		zlog(WORLD__ZONE,"Setting to '%s' (%d:%d)%s",(zn) ? zn : "",iZoneID, iInstanceID, 
+			iStaticZone ? " (Static)" : "");
 
 	zoneID = iZoneID;
+	instanceID = iInstanceID;
 	if(iZoneID!=0)
 		oldZoneID = iZoneID;
 	if (zoneID == 0) {
@@ -120,7 +123,7 @@ void ZoneServer::LSShutDownUpdate(int32 zoneid){
 		safe_delete(pack);
 	}
 }
-void ZoneServer::LSBootUpdate(int32 zoneid, bool startup){
+void ZoneServer::LSBootUpdate(int32 zoneid, int32 instanceid, bool startup){
 	if(WorldConfig::get()->UpdateStats){
 		ServerPacket* pack = new ServerPacket;
 		if(startup)
@@ -135,6 +138,7 @@ void ZoneServer::LSBootUpdate(int32 zoneid, bool startup){
 			strcpy(bootup->compile_time,GetCompileTime());
 		bootup->zone = zoneid;
 		bootup->zone_wid = GetID();
+		bootup->instance = instanceid;
 		loginserver.SendPacket(pack);
 		safe_delete(pack);
 	}
@@ -1088,7 +1092,7 @@ void ZoneServer::ChangeWID(int32 iCharID, int32 iWID) {
 }
 
 
-void ZoneServer::TriggerBootup(int32 iZoneID, const char* adminname, bool iMakeStatic) {
+void ZoneServer::TriggerBootup(int32 iZoneID, int32 iInstanceID, const char* adminname, bool iMakeStatic) {
 	BootingUp = true;
 	zoneID = iZoneID;
 
@@ -1103,6 +1107,7 @@ void ZoneServer::TriggerBootup(int32 iZoneID, const char* adminname, bool iMakeS
 	else
 		s->zoneid = iZoneID;
 
+	s->instanceid = iInstanceID;
 	s->makestatic = iMakeStatic;
 	SendPacket(pack);
 	delete pack;

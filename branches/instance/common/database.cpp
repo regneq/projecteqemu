@@ -1735,13 +1735,13 @@ int8 Database::GetSkillCap(int8 skillid, int8 in_race, int8 in_class, int16 in_l
 	return base_cap;
 }
 
-int32 Database::GetCharacterInfo(const char* iName, int32* oAccID, int32* oZoneID, float* oX, float* oY, float* oZ) {
+int32 Database::GetCharacterInfo(const char* iName, int32* oAccID, int32* oZoneID, int32* oInstanceID, float* oX, float* oY, float* oZ) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
     MYSQL_RES *result;
     MYSQL_ROW row;
 
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT id, account_id, zonename, x, y, z FROM character_ WHERE name='%s'", iName), errbuf, &result)) {
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT id, account_id, zonename, instanceid, x, y, z FROM character_ WHERE name='%s'", iName), errbuf, &result)) {
 		safe_delete_array(query);
 		if (mysql_num_rows(result) == 1) {
 			row = mysql_fetch_row(result);
@@ -1750,12 +1750,14 @@ int32 Database::GetCharacterInfo(const char* iName, int32* oAccID, int32* oZoneI
 				*oAccID = atoi(row[1]);
 			if (oZoneID)
 				*oZoneID = GetZoneID(row[2]);
+			if(oInstanceID)
+				*oInstanceID = atoi(row[3]);
 			if (oX)
-				*oX = atof(row[3]);
+				*oX = atof(row[4]);
 			if (oY)
-				*oY = atof(row[4]);
+				*oY = atof(row[5]);
 			if (oZ)
-				*oZ = atof(row[5]);
+				*oZ = atof(row[6]);
 			mysql_free_result(result);
 			return charid;
 		}
@@ -2446,6 +2448,124 @@ int32 Database::GetRaidID(const char* name){
 			printf("Unable to get raid id: %s\n",errbuf);
 	safe_delete_array(query);
 	return raidid;
+}
+
+bool Database::VerifyInstanceAlive(int32 instanceID, int32 charID)
+{
+	//first check to see if we're in instance_lockout_player with this id
+	//if so we check to see an entry exists in instance_lockout if not we:
+	//delete from instance_lockout_player where id = instanceID
+	//otherwise check if the timer is expired if so:
+	//delete from instance_lockout_player where id = instanceID
+	//delete from instance_lockout where id = instanceID
+
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+	bool lockout_instance_player = true;
+
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT charid FROM instance_lockout_player where id=%u AND charid=%u", instanceID, charID), errbuf, &result))
+	{
+		safe_delete_array(query);
+		if (mysql_num_rows(result) != 1) 
+		{
+			lockout_instance_player = false;
+		}
+		mysql_free_result(result);
+	}
+	else 
+	{
+		lockout_instance_player = false;
+		safe_delete_array(query);
+	}
+	if(!lockout_instance_player)
+	{
+		SetCharacterInstance(0, charID);
+		return false;
+	}
+
+	bool instance_lockout = true;
+	int32 start_time = 0;
+	int32 duration = 0;
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT start_time, duration FROM instance_lockout WHERE id=%u", instanceID), errbuf, &result))
+	{
+		safe_delete_array(query);
+		if (mysql_num_rows(result) == 1) 
+		{
+			row = mysql_fetch_row(result);
+			start_time = atoi(row[0]);
+			duration = atoi(row[1]);
+		}
+		else
+		{
+			instance_lockout = false;
+		}
+		mysql_free_result(result);
+	}
+	else 
+	{
+		instance_lockout = true;
+		safe_delete_array(query);
+	}
+
+	if(!instance_lockout)
+	{
+		if (RunQuery(query, MakeAnyLenString(&query, "DELETE FROM instance_lockout_player WHERE id=%u", instanceID), errbuf, &result))
+		{
+			safe_delete_array(query);
+			mysql_free_result(result);
+		}
+		else 
+		{
+			safe_delete_array(query);
+		}
+		SetCharacterInstance(0, charID);
+		return false;
+	}
+
+	timeval tv;
+	gettimeofday(&tv, NULL);
+	if((start_time + duration) <= tv.tv_sec)
+	{
+		if (RunQuery(query, MakeAnyLenString(&query, "DELETE FROM instance_lockout_player WHERE id=%u", instanceID), errbuf, &result))
+		{
+			safe_delete_array(query);
+			mysql_free_result(result);
+		}
+		else 
+		{
+			safe_delete_array(query);
+		}
+		if (RunQuery(query, MakeAnyLenString(&query, "DELETE FROM instance_lockout WHERE id=%u", instanceID), errbuf, &result))
+		{
+			safe_delete_array(query);
+			mysql_free_result(result);
+		}
+		else 
+		{
+			safe_delete_array(query);
+		}
+		SetCharacterInstance(0, charID);
+		return false;
+	}
+	return true;
+}
+
+void Database::SetCharacterInstance(int32 instanceID, int32 charID)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	if(RunQuery(query, MakeAnyLenString(&query, "UPDATE character_ SET instanceid=%u WHERE id=%u"), errbuf, &result))
+	{
+		safe_delete_array(query);
+		mysql_free_result(result);
+	}
+	else 
+	{
+		safe_delete_array(query);
+	}
 }
 
 int32 Database::GetDfltInstZFlag(){

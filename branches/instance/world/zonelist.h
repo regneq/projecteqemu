@@ -24,6 +24,7 @@ public:
 	ZoneServer* FindByID(int32 ZoneID);
 	ZoneServer* FindByZoneID(int32 ZoneID);
 	ZoneServer*	FindByPort(int16 port);
+	ZoneServer* FindByInstanceID(int32 InstanceID);
 	
 	void	SendChannelMessage(const char* from, const char* to, int8 chan_num, int8 language, const char* message, ...);
 	void	SendChannelMessageRaw(const char* from, const char* to, int8 chan_num, int8 language, const char* message);

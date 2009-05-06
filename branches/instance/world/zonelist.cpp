@@ -176,7 +176,7 @@ ZoneServer* ZSList::FindByZoneID(int32 ZoneID) {
 	while(iterator.MoreElements())
 	{
 		ZoneServer* tmp = iterator.GetData();
-		if (tmp->GetZoneID()==ZoneID) {
+		if (tmp->GetZoneID() == ZoneID  && tmp->GetInstanceID() == 0) {
 			return tmp;
 		}
 		iterator.Advance();
@@ -191,6 +191,22 @@ ZoneServer* ZSList::FindByPort(int16 port) {
 	while(iterator.MoreElements())
 	{
 		if (iterator.GetData()->GetCPort() == port) {
+			ZoneServer* tmp = iterator.GetData();
+			return tmp;
+		}
+		iterator.Advance();
+	}
+	return 0;
+}
+
+ZoneServer* ZSList::FindByInstanceID(int32 InstanceID)
+{
+	LinkedListIterator<ZoneServer*> iterator(list);
+
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		if (iterator.GetData()->GetInstanceID() == InstanceID) {
 			ZoneServer* tmp = iterator.GetData();
 			return tmp;
 		}
@@ -491,7 +507,7 @@ void ZSList::SOPZoneBootup(const char* adminname, int32 ZoneServerID, const char
 			if (zs2 != 0)
 				SendEmoteMessage(adminname, 0, 0, 0, "Error: SOP_ZoneBootup: zone '%s' already being hosted by ZoneServer #%i", zonename, zs2->GetID());
 			else {
-				zs->TriggerBootup(zoneid, adminname, iMakeStatic);
+				zs->TriggerBootup(zoneid, 0, adminname, iMakeStatic);
 			}
 		}
 	}

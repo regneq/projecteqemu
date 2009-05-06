@@ -136,12 +136,18 @@ public:
 	int32	GetAccountIDByName(const char* accname, sint16* status = 0, int32* lsid = 0);
 	void	GetAccountName(int32 accountid, char* name, int32* oLSAccountID = 0);
 	void	GetCharName(int32 char_id, char* name);
-	int32	GetCharacterInfo(const char* iName, int32* oAccID = 0, int32* oZoneID = 0, float* oX = 0, float* oY = 0, float* oZ = 0);
+	int32	GetCharacterInfo(const char* iName, int32* oAccID = 0, int32* oZoneID = 0, int32* oInstanceID = 0,float* oX = 0, float* oY = 0, float* oZ = 0);
 	int32	GetCharacterID(const char *name);
 	bool	CheckBannedIPs(const char* loginIP); //Lieka Edit:  Check incomming connection against banned IP table.
  	bool	AddBannedIP(char* bannedIP, const char* notes); //Lieka Edit:  Add IP address to the Banned_IPs table.
 	bool	CheckGMIPs(const char* loginIP, int32 account_id);
 	bool	AddGMIP(char* ip_address, char* name);
+
+	/*
+	 * Instancing Stuff
+	 */
+	bool VerifyInstanceAlive(int32 instanceID, int32 charID);
+	void SetCharacterInstance(int32 instanceID, int32 charID);
 
 	/*
 	 * Account Related

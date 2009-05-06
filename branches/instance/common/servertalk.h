@@ -222,6 +222,7 @@ struct ServerZoneStateChange_struct {
 	int32 ZoneServerID;
 	char adminname[64];
 	int32 zoneid;
+	int32 instanceid;
 	bool makestatic;
 };
 
@@ -382,15 +383,18 @@ struct ZoneInfo_Struct {
 };
 struct ZoneBoot_Struct {
 	uint32 zone;
+	uint32 instance;
 	char compile_time[25];
 	uint32 zone_wid;
 };
 struct ZoneShutdown_Struct {
 	uint32 zone;
+	uint32 instance;
 	uint32 zone_wid;
 };
 struct ServerLSZoneSleep_Struct {
 	uint32 zone;
+	uint32 instance;
 	uint32 zone_wid;
 };
 
