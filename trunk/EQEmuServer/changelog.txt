@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/06/2009==
+Angelox: Bots: Added command '#bot shrinkme' requires Shaman or Beastlord (defaults to Shaman). 
+
 ==05/05/2009==
 Trevius: SoF - Melee stun/bash no longer causes you to spin
 Trevius: SoF - Spell Fizzles and Interrupts no longer cause abnormally long refresh times
