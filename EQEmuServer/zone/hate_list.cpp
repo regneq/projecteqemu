@@ -275,6 +275,7 @@ Mob *HateList::GetTop(Mob *center)
 					top = cur->ent;
 					hate = 0;
 				}
+				iterator.Advance();
 				continue;
 			}
 
