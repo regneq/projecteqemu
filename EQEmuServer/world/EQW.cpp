@@ -139,6 +139,7 @@ map<string,string> EQW::GetZoneDetails(Const_char *zone_ref) {
 	res["type"] = zs->IsStaticZone()?"static":"dynamic";
 	res["zone_id"] = itoa(zs->GetZoneID());
 	res["launch_name"] = zs->GetLaunchName();
+	res["launched_name"] = zs->GetLaunchedName();
 	res["short_name"] = zs->GetZoneName();
 	res["long_name"] = zs->GetZoneLongName();
 	res["port"] = itoa(zs->GetCPort());
