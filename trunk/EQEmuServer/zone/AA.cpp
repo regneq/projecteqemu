@@ -117,7 +117,7 @@ int Client::GetAATimerID(aaID activate)
 int Client::CalcAAReuseTimer(const AA_DBAction *caa) {
 
 	if(!caa)
-		return;
+		return 0;
 
 	int ReuseTime = caa->reuse_time;
 
