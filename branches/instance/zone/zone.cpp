@@ -81,7 +81,7 @@ extern DBAsyncFinishedQueue MTdbafq;
 extern DBAsync *dbasync;
 void CleanupLoadZoneState(int32 spawn2_count, ZSDump_Spawn2** spawn2_dump, ZSDump_NPC** npc_dump, ZSDump_NPC_Loot** npcloot_dump, NPCType** gmspawntype_dump, Spawn2*** spawn2_loaded, NPC*** npc_loaded, MYSQL_RES** result);
 
-bool Zone::Bootup(int32 iZoneID, bool iStaticZone) {
+bool Zone::Bootup(int32 iZoneID, int32 iInstanceID, bool iStaticZone) {
 	_ZP(Zone_Bootup);
 	const char* zonename = database.GetZoneName(iZoneID);
 	
@@ -94,10 +94,10 @@ bool Zone::Bootup(int32 iZoneID, bool iStaticZone) {
 		return false;
 	}
 	
-	LogFile->write(EQEMuLog::Status, "Booting %s", zonename);
+	LogFile->write(EQEMuLog::Status, "Booting %s (%d:%d)", zonename, iZoneID, iInstanceID);
 	
 	numclients = 0;
-	zone = new Zone(iZoneID, zonename);
+	zone = new Zone(iZoneID, iInstanceID, zonename);
    
 	// Load all NPCs in for the current zone.
 	database.GetNPCType (0);
@@ -156,9 +156,9 @@ bool Zone::Bootup(int32 iZoneID, bool iStaticZone) {
 
 	ZoneLoaded = true;
 
-	worldserver.SetZone(iZoneID);
+	worldserver.SetZone(iZoneID, iInstanceID);
 	LogFile->write(EQEMuLog::Normal, "---- Zone server %s, listening on port:%i ----", zonename, ZoneConfig::get()->ZonePort);
-	LogFile->write(EQEMuLog::Status, "Zone Bootup: %s (%i)", zonename, iZoneID);
+	LogFile->write(EQEMuLog::Status, "Zone Bootup: %s (%i: %i)", zonename, iZoneID, iInstanceID);
 	UpdateWindowTitle();
 	zone->GetTimeSync();
 
@@ -673,13 +673,14 @@ void Zone::LoadZoneDoors(const char* zone)
 	delete[] dlist;
 }
 
-Zone::Zone(int32 in_zoneid, const char* in_short_name)
+Zone::Zone(int32 in_zoneid, int32 in_instanceid, const char* in_short_name)
 :	initgrids_timer(10000),
 	autoshutdown_timer((RuleI(Zone, AutoShutdownDelay))),
 	clientauth_timer(AUTHENTICATION_TIMEOUT * 1000),
 	spawn2_timer(1000)
 {
 	zoneid = in_zoneid;
+	instanceid = in_instanceid;
 	map = Map::LoadMapfile(in_short_name);
 	watermap = WaterMap::LoadWaterMapfile(in_short_name);
 	pathing = PathManager::LoadPathFile(in_short_name);

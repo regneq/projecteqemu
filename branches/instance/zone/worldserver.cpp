@@ -90,10 +90,11 @@ WorldServer::~WorldServer() {
 	safe_delete(pack);
 }*/
 
-void WorldServer::SetZone(int32 iZoneID) {
+void WorldServer::SetZone(int32 iZoneID, int32 iInstanceID) {
 	ServerPacket* pack = new ServerPacket(ServerOP_SetZone, sizeof(SetZone_Struct));
 	SetZone_Struct* szs = (SetZone_Struct*) pack->pBuffer;
 	szs->zoneid = iZoneID;
+	szs->instanceid = iInstanceID;
 	if (zone) {
 		szs->staticzone = zone->IsStaticZone();
 	}
@@ -121,7 +122,7 @@ void WorldServer::OnConnected() {
 	safe_delete(pack);
 	
 	if (ZoneLoaded) {
-		this->SetZone(zone->GetZoneID());
+		this->SetZone(zone->GetZoneID(), zone->GetInstanceID());
 		entity_list.UpdateWho(true);
 		this->SendEmoteMessage(0, 0, 15, "Zone connect: %s", zone->GetLongName());
             zone->GetTimeSync();
@@ -461,7 +462,7 @@ void WorldServer::Process() {
 			}
 			ServerZoneStateChange_struct* zst = (ServerZoneStateChange_struct *) pack->pBuffer;
 			if (ZoneLoaded) {
-				SetZone(zone->GetZoneID());
+				SetZone(zone->GetZoneID(), zone->GetInstanceID());
 				if (zst->zoneid == zone->GetZoneID()) {
 					// This packet also doubles as "incomming client" notification, lets not shut down before they get here
 					zone->StartShutdownTimer(AUTHENTICATION_TIMEOUT * 1000);
@@ -475,7 +476,7 @@ void WorldServer::Process() {
 			if (zst->adminname[0] != 0)
 				cout << "Zone bootup by " << zst->adminname << endl;
 			
-			if (!(Zone::Bootup(zst->zoneid, zst->makestatic))) {
+			if (!(Zone::Bootup(zst->zoneid, zst->instanceid, zst->makestatic))) {
 				SendChannelMessage(0, 0, 10, 0, 0, "%s:%i Zone::Bootup failed: %s", net.GetZoneAddress(), net.GetZonePort(), database.GetZoneName(zst->zoneid));
 			}
 			// Moved annoucement to ZoneBootup() - Quagmire
@@ -490,7 +491,7 @@ void WorldServer::Process() {
 			}
 			ServerZoneIncommingClient_Struct* szic = (ServerZoneIncommingClient_Struct*) pack->pBuffer;
 			if (ZoneLoaded) {
-				SetZone(zone->GetZoneID());
+				SetZone(zone->GetZoneID(), zone->GetInstanceID());
 				if (szic->zoneid == zone->GetZoneID()) {
 					zone->AddAuth(szic);
 					// This packet also doubles as "incomming client" notification, lets not shut down before they get here
@@ -498,7 +499,7 @@ void WorldServer::Process() {
 				}
 			}
 			else {
-				if ((Zone::Bootup(szic->zoneid))) {
+				if ((Zone::Bootup(szic->zoneid, szic->instanceid))) {
 					zone->AddAuth(szic);
 				}
 				else

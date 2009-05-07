@@ -69,10 +69,10 @@ class database;
 class Zone
 {
 public:
-	static bool Bootup(int32 iZoneID, bool iStaticZone = false);
+	static bool Bootup(int32 iZoneID, int32 iInstanceID, bool iStaticZone = false);
 	static void Shutdown(bool quite = false);
 	
-	Zone(int32 in_zoneid, const char* in_short_name);
+	Zone(int32 in_zoneid, int32 in_instanceid, const char* in_short_name);
 	~Zone();
 	bool	Init(bool iStaticZone);
 	bool	LoadZoneCFG(const char* filename, bool DontLoadDefault = false);
@@ -83,6 +83,7 @@ public:
 	inline const char*	GetFileName()	{ return file_name; }
 	inline const char*	GetShortName()	{ return short_name; }
 	inline const int32	GetZoneID() const { return zoneid; }
+	inline const int32	GetInstanceID() const { return instanceid; }
 
 	inline const float&	safe_x()		{ return psafe_x; }
 	inline const float&	safe_y()		{ return psafe_y; }
@@ -199,6 +200,7 @@ public:
 	
 private:
 	int32	zoneid;
+	int32	instanceid;
 	char*	short_name;
 	char	file_name[16];
 	char*	long_name;

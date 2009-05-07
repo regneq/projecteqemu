@@ -502,10 +502,10 @@ bool ZoneServer::Process() {
 			if(pack->size != sizeof(SetZone_Struct))
 				break;
 
-			SetZone_Struct* szs = (SetZone_Struct*) pack->pBuffer;
+			SetZone_Struct* szs = (SetZone_Struct*) pack->pBuffer;	
 			if (szs->zoneid != 0) {
 				if(database.GetZoneName(szs->zoneid))
-					SetZone(szs->zoneid, szs->staticzone);
+					SetZone(szs->zoneid, szs->instanceid, szs->staticzone);
 				else
 					SetZone(0);
 			}
@@ -1095,6 +1095,7 @@ void ZoneServer::ChangeWID(int32 iCharID, int32 iWID) {
 void ZoneServer::TriggerBootup(int32 iZoneID, int32 iInstanceID, const char* adminname, bool iMakeStatic) {
 	BootingUp = true;
 	zoneID = iZoneID;
+	instanceID = iInstanceID;
 
 	ServerPacket* pack = new ServerPacket(ServerOP_ZoneBootup, sizeof(ServerZoneStateChange_struct));
 	ServerZoneStateChange_struct* s = (ServerZoneStateChange_struct *) pack->pBuffer;
@@ -1111,7 +1112,7 @@ void ZoneServer::TriggerBootup(int32 iZoneID, int32 iInstanceID, const char* adm
 	s->makestatic = iMakeStatic;
 	SendPacket(pack);
 	delete pack;
-	LSBootUpdate(iZoneID);
+	LSBootUpdate(iZoneID, iInstanceID);
 }
 
 void ZoneServer::IncommingClient(Client* client) {
@@ -1119,6 +1120,7 @@ void ZoneServer::IncommingClient(Client* client) {
 	ServerPacket* pack = new ServerPacket(ServerOP_ZoneIncClient, sizeof(ServerZoneIncommingClient_Struct));
 	ServerZoneIncommingClient_Struct* s = (ServerZoneIncommingClient_Struct*) pack->pBuffer;
 	s->zoneid = GetZoneID();
+	s->instanceid = GetInstanceID();
 	s->wid = client->GetWID();
 	s->ip = client->GetIP();
 	s->accid = client->GetAccountID();

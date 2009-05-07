@@ -725,6 +725,7 @@ void Client::EnterWorld(bool TryBootup) {
 	else
 		zs = zoneserver_list.FindByZoneID(zoneID);
 
+
 	const char *zone_name=database.GetZoneName(zoneID, true);
 	if (zs) {
 		// warn the world we're comming, so it knows not to shutdown
@@ -732,9 +733,10 @@ void Client::EnterWorld(bool TryBootup) {
 	}
 	else {
 		if (TryBootup) {
-			clog(WORLD__CLIENT,"Attempting autobootup of %s (%d)",zone_name,zoneID);
+			clog(WORLD__CLIENT,"Attempting autobootup of %s (%d:%d)",zone_name,zoneID,instanceID);
 			autobootup_timeout.Start();
-			if (!(pwaitingforbootup = zoneserver_list.TriggerBootup(zoneID))) {
+			pwaitingforbootup = zoneserver_list.TriggerBootup(zoneID, instanceID);
+			if (pwaitingforbootup == 0) {
 				clog(WORLD__CLIENT_ERR,"No zoneserver available to boot up.");
 				ZoneUnavail();
 			}
@@ -750,7 +752,7 @@ void Client::EnterWorld(bool TryBootup) {
 	
 	cle->SetChar(charid, char_name);
 	database.UpdateLiveChar(char_name, GetAccountID());
-	clog(WORLD__CLIENT,"%s %s (%d)",seencharsel ? "Entering zone" : "Zoning to",zone_name,zoneID);
+	clog(WORLD__CLIENT,"%s %s (%d:%d)",seencharsel ? "Entering zone" : "Zoning to",zone_name,zoneID,instanceID);
 //	database.SetAuthentication(account_id, char_name, zone_name, ip);
 	
 	if (seencharsel) {
@@ -779,7 +781,15 @@ void Client::EnterWorld(bool TryBootup) {
 
 void Client::Clearance(sint8 response)
 {
-	ZoneServer* zs = zoneserver_list.FindByZoneID(zoneID);
+	ZoneServer* zs = NULL;
+	if(instanceID > 0)
+	{
+		zs = zoneserver_list.FindByInstanceID(instanceID);
+	}
+	else
+	{
+		zs = zoneserver_list.FindByZoneID(zoneID);
+	}
 	
     if(zs == 0 || response == -1 || response == 0)
     {
@@ -841,7 +851,7 @@ void Client::Clearance(sint8 response)
 	}
 	strcpy(zsi->ip, zs_addr);
 	zsi->port =zs->GetCPort();
-    	clog(WORLD__CLIENT,"Sending client to zone %s (%d) at %s:%d",zonename,zoneID,zsi->ip,zsi->port);
+	clog(WORLD__CLIENT,"Sending client to zone %s (%d:%d) at %s:%d",zonename,zoneID,instanceID,zsi->ip,zsi->port);
 	QueuePacket(outapp);
 	safe_delete(outapp);
 	

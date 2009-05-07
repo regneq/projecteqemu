@@ -41,7 +41,7 @@ public:
 	bool	SendPacket(uint32 zoneid, ServerPacket* pack);
 	inline int32	GetNextID()		{ return NextID++; }
 	void	RebootZone(const char* ip1,int16 port, const char* ip2, int32 skipid, int32 zoneid = 0);
-	int32	TriggerBootup(int32 iZoneID);
+	int32	TriggerBootup(int32 iZoneID, int32 iInstanceID = 0);
 	void	SOPZoneBootup(const char* adminname, int32 ZoneServerID, const char* zonename, bool iMakeStatic = false);
 	EQTime	worldclock;
 	bool	SetLockedZone(int16 iZoneID, bool iLock);

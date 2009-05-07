@@ -579,27 +579,53 @@ uint16	ZSList::GetAvailableZonePort()
 	return port;
 }
 
-int32 ZSList::TriggerBootup(int32 iZoneID) {
-	LinkedListIterator<ZoneServer*> iterator(list);
-	iterator.Reset();
-	while(iterator.MoreElements()) {
-		if(iterator.GetData()->GetZoneID() == iZoneID)
-		{
-			return iterator.GetData()->GetID();
+int32 ZSList::TriggerBootup(int32 iZoneID, int32 iInstanceID) {
+	if(iInstanceID > 0)
+	{
+		LinkedListIterator<ZoneServer*> iterator(list);
+		iterator.Reset();
+		while(iterator.MoreElements()) {
+			if(iterator.GetData()->GetInstanceID() == iInstanceID)
+			{
+				return iterator.GetData()->GetID();
+			}
+			iterator.Advance();
 		}
-		iterator.Advance();
-	}
 
-	iterator.Reset();
-	while(iterator.MoreElements()) {
-		if (iterator.GetData()->GetZoneID() == 0 && !iterator.GetData()->IsBootingUp()) {
-			ZoneServer* zone=iterator.GetData();
-			zone->TriggerBootup(iZoneID);
-			return zone->GetID();
+		iterator.Reset();
+		while(iterator.MoreElements()) {
+			if (iterator.GetData()->GetZoneID() == 0 && !iterator.GetData()->IsBootingUp()) {
+				ZoneServer* zone=iterator.GetData();
+				zone->TriggerBootup(iZoneID, iInstanceID);
+				return zone->GetID();
+			}
+			iterator.Advance();
 		}
-		iterator.Advance();
+		return 0;
 	}
-	return 0;
+	else
+	{
+		LinkedListIterator<ZoneServer*> iterator(list);
+		iterator.Reset();
+		while(iterator.MoreElements()) {
+			if(iterator.GetData()->GetZoneID() == iZoneID)
+			{
+				return iterator.GetData()->GetID();
+			}
+			iterator.Advance();
+		}
+
+		iterator.Reset();
+		while(iterator.MoreElements()) {
+			if (iterator.GetData()->GetZoneID() == 0 && !iterator.GetData()->IsBootingUp()) {
+				ZoneServer* zone=iterator.GetData();
+				zone->TriggerBootup(iZoneID);
+				return zone->GetID();
+			}
+			iterator.Advance();
+		}
+		return 0;
+	}
 	/*Old Random boot zones use this if your server is distributed across computers.
 	LinkedListIterator<ZoneServer*> iterator(list);
 
