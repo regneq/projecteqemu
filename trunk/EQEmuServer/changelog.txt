@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/07/2009==
+Trevius: (Erde) The Web Tool now shows the name of the process running each Dynamic zone (example: dynamic_01)
+
 ==05/06/2009==
 Angelox: Bots: Added command '#bot shrinkme' requires Shaman or Beastlord (defaults to Shaman). 
 Derision: Added redux_aa2, redux_rate2 fields to aa_actions.
