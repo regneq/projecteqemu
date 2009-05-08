@@ -21,7 +21,7 @@
 <h2 align="center">Zone List</h2>
 <hr/>
 <div align="center">
-<a href="action.html?action=rebootall">Reboot All Zones</a> - 
+<a href="action.html?action=rebootall">Reboot All Zones</a> -
 <a href="action.html?action=killall">Kill All Zones</a>
 </div>
 <hr/>
@@ -45,13 +45,13 @@ print "You have ".($#zones+1)." zones running.";
 		} elsif($zone->{error}) {
 			$zone->{long_name} = "ERROR: $zone->{error}";
 		}
-		
+
 		print "<tr>\n";
 		if($zone->{type} eq "dynamic") {
 			if($zone->{zone_id} == 0) {
-				print "\t<td><b>Dynamic:</b> <a href='zone.html?zone=$zone->{short_name}'>Idle</a></td>";
+				print "\t<td><b>$zone->{launched_name}:</b> <a href='zone.html?zone=$zone->{short_name}'>Idle</a></td>";
 			} else {
-				print "\t<td><b>Dynamic:</b> <a href='zone.html?zone=$zone->{short_name}'>$zone->{long_name}</a> ($zone->{short_name})</td>";
+				print "\t<td><b>$zone->{launched_name}:</b> <a href='zone.html?zone=$zone->{short_name}'>$zone->{long_name}</a> ($zone->{short_name})</td>";
 			}
 		} else {
 			print "<td><a href='zone.html?zone=$zone->{short_name}'>$zone->{long_name}</a> ($zone->{short_name})</td>";
