@@ -2043,7 +2043,10 @@ void Mob::FaceTarget(Mob* MobToFace) {
 	float newheading = CalculateHeadingToTarget(facemob->GetX(), facemob->GetY());
 	if(oldheading != newheading) {
 		SetHeading(newheading);
-		SendPosUpdate();
+		if(moving)
+			SendPosUpdate();
+		else
+			SendPosition();
 	}
 }
 

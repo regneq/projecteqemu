@@ -465,8 +465,10 @@ void Client::ProcessMovePC(int32 zoneID, int32 instance_id, float x, float y, fl
 		if(GetPetID() != 0) {
 			//if they have a pet and they are staying in zone, move with them
 			Mob *p = GetPet();
-			if(p != NULL)
+			if(p != NULL){
+				p->SetPetOrder(SPO_Follow);
 				p->GMMove(x+15, y, z);	//so it dosent have to run across the map.
+			}
 		}
 	}
 

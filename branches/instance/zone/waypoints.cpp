@@ -353,6 +353,15 @@ void NPC::NextGuardPosition() {
 		SetHeading(guard_heading);
 		mlog(AI__WAYPOINTS, "Unable to move to next guard position. Prolly rooted.");
 	}
+	else if((x_pos == guard_x) && (y_pos == guard_y) && (z_pos == guard_z))
+	{
+		if(moved)
+		{
+			moved=false;
+			SetMoving(false);
+			SendPosition();
+		}
+	}
 }
 
 /*
