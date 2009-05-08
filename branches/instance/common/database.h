@@ -146,11 +146,13 @@ public:
 	/*
 	 * Instancing Stuff
 	 */
+	bool VerifyZoneInstance(int32 zoneID, int32 instanceID);
 	bool VerifyInstanceAlive(int32 instanceID, int32 charID);
 	bool CharacterInInstanceGroup(int32 instanceID, int32 charID);
 	void SetCharacterInstance(int32 instanceID, int32 charID);
 	void DeleteInstance(uint32 instanceID);
-	bool MoveCharacterToInstanceZone(const char* charname, const char* zonename, int32 zoneid, int32 instanceID);
+	bool CheckInstanceExpired(uint32 instanceID);
+	int32 ZoneIDFromInstanceID(uint32 instanceID);
 	/*
 	 * Account Related
 	 */

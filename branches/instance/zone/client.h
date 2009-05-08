@@ -421,12 +421,13 @@ public:
 	uint32  GetGroupEXP() { return(m_pp.group_leadership_exp); }
 	virtual void SetLevel(uint8 set_level, bool command = false);
 	void	GoToBind();
-	void	GoToSafeCoords(uint16 zone_id);
+	void	GoToSafeCoords(uint16 zone_id, uint16 instance_id);
 	void	Gate();
 	void	SetBindPoint(int to_zone = -1, float new_x = 0.0f, float new_y = 0.0f, float new_z = 0.0f);
 	void	MovePC(const char* zonename, float x, float y, float z, float heading, int8 ignorerestrictions = 0, ZoneMode zm = ZoneSolicited);
 	void	MovePC(int32 zoneID, float x, float y, float z, float heading, int8 ignorerestrictions = 0, ZoneMode zm = ZoneSolicited);
 	void	MovePC(float x, float y, float z, float heading, int8 ignorerestrictions = 0, ZoneMode zm = ZoneSolicited);
+	void	MovePC(int32 zoneID, int32 instanceID, float x, float y, float z, float heading, int8 ignorerestrictions = 0, ZoneMode zm = ZoneSolicited);
 	void	WhoAll();
 	bool	CheckLoreConflict(const Item_Struct* item);
 	void	ChangeLastName(const char* in_lastname);
@@ -943,9 +944,9 @@ private:
 	//Zoning related stuff
 	void SendZoneCancel(ZoneChange_Struct *zc);
 	void SendZoneError(ZoneChange_Struct *zc, sint8 err);
-	void DoZoneSuccess(ZoneChange_Struct *zc, uint16 zone_id, float dest_x, float dest_y, float dest_z, float dest_h, sint8 ignore_r);
-	void ZonePC(int32 zoneID, float x, float y, float z, float heading, int8 ignorerestrictions, ZoneMode zm);
-	void ProcessMovePC(int32 zoneID, float x, float y, float z, float heading, int8 ignorerestrictions = 0, ZoneMode zm = ZoneSolicited);
+	void DoZoneSuccess(ZoneChange_Struct *zc, uint16 zone_id, int32 instance_id, float dest_x, float dest_y, float dest_z, float dest_h, sint8 ignore_r);
+	void ZonePC(int32 zoneID, int32 instance_id, float x, float y, float z, float heading, int8 ignorerestrictions, ZoneMode zm);
+	void ProcessMovePC(int32 zoneID, int32 instance_id, float x, float y, float z, float heading, int8 ignorerestrictions = 0, ZoneMode zm = ZoneSolicited);
 	float	zonesummon_x;
 	float	zonesummon_y;
 	float	zonesummon_z;

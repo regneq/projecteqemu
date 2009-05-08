@@ -925,7 +925,15 @@ void Client::CheatDetected(CheatTypes CheatType)
 			if (RuleB(Zone, EnableMQGateDetector)&& ((this->Admin() < RuleI(Zone, MQGateExemptStatus) || (RuleI(Zone, MQGateExemptStatus)) == -1))) {
 				Message(13, "Illegal gate request.");
 				database.SetMQDetectionFlag(this->account_name,this->name, "/MQGate", zone->GetShortName());
-				this->SetZone(this->GetZoneID()); //Lieka:  Prevent the player from zoning, place him back in the zone where he tried to originally /gate.
+				if(zone)
+				{
+					this->SetZone(this->GetZoneID(), zone->GetInstanceID()); //Lieka:  Prevent the player from zoning, place him back in the zone where he tried to originally /gate.
+				}
+				else
+				{
+					this->SetZone(this->GetZoneID(), 0); //Lieka:  Prevent the player from zoning, place him back in the zone where he tried to originally /gate.
+
+				}
 			}
 			break;
 		case MQGhost: //Lieka:  Not currently implemented, but the framework is in place - just needs detection scenarios identified
@@ -2587,7 +2595,7 @@ void Client::Handle_OP_GMZoneRequest2(const EQApplicationPacket *app)
 	}
 
 	int32 zonereq = *((int32 *)app->pBuffer);
-	GoToSafeCoords(zonereq);
+	GoToSafeCoords(zonereq, 0);
 	return;
 }
 
@@ -7531,7 +7539,7 @@ void Client::CompleteConnect()
 	//enforce some rules..
 	if(!CanBeInZone()) {
 		_log(CLIENT__ERROR, "Kicking char from zone, not allowed here");
-		GoToSafeCoords(database.GetZoneID("arena"));
+		GoToSafeCoords(database.GetZoneID("arena"), 0);
 		return;
 	}
 

@@ -2452,17 +2452,6 @@ int32 Database::GetRaidID(const char* name){
 
 bool Database::VerifyInstanceAlive(int32 instanceID, int32 charID)
 {
-	char errbuf[MYSQL_ERRMSG_SIZE];
-	char *query = 0;
-	MYSQL_RES *result;
-	MYSQL_ROW row;
-
-	//first check to see if we're in instance_lockout_player with this id
-	//if so we check to see an entry exists in instance_lockout if not we:
-	//delete from instance_lockout_player where id = instanceID
-	//otherwise check if the timer is expired if so:
-	//delete from instance_lockout_player where id = instanceID
-	//delete from instance_lockout where id = instanceID
 
 	//we are not saved to this instance so set our instance to 0
 	if(!CharacterInInstanceGroup(instanceID, charID))
@@ -2472,59 +2461,42 @@ bool Database::VerifyInstanceAlive(int32 instanceID, int32 charID)
 		return false;
 	}
 
-	bool instance_lockout = true;
-	int32 start_time = 0;
-	int32 duration = 0;
-	//get our timer from the instance table if exists
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT start_time, duration FROM instance_lockout WHERE id=%u", instanceID), errbuf, &result))
-	{
-		safe_delete_array(query);
-		if (mysql_num_rows(result) == 1) 
-		{
-			row = mysql_fetch_row(result);
-			start_time = atoi(row[0]);
-			duration = atoi(row[1]);
-		}
-		else
-		{
-			instance_lockout = false;
-		}
-		mysql_free_result(result);
-	}
-	else 
-	{
-		instance_lockout = true;
-		safe_delete_array(query);
-	}
-
-	//our instance table didn't exist... the tables are probably incomplete so lets clear it out to clean the corruption.
-	if(!instance_lockout)
-	{
-		printf("our instance table entries did not exist...\n");
-		if (RunQuery(query, MakeAnyLenString(&query, "DELETE FROM instance_lockout_player WHERE id=%u", instanceID), errbuf, &result))
-		{
-			safe_delete_array(query);
-			mysql_free_result(result);
-		}
-		else 
-		{
-			safe_delete_array(query);
-		}
-		SetCharacterInstance(0, charID);
-		return false;
-	}
-
-	timeval tv;
-	gettimeofday(&tv, NULL);
-	//our instance is expired so lets delete it.
-	printf("checking if %u + %u <= %u\n", start_time, duration, tv.tv_sec);
-	if((start_time + duration) <= tv.tv_sec)
+	if(CheckInstanceExpired(instanceID))
 	{
 		DeleteInstance(instanceID);
 		SetCharacterInstance(0, charID);
 		return false;
 	}
 	return true;
+}
+
+bool Database::VerifyZoneInstance(int32 zoneID, int32 instanceID)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT id FROM instance_lockout where id=%u AND zone=%u", instanceID, zoneID), errbuf, &result))
+	{
+		safe_delete_array(query);
+		if (mysql_num_rows(result) != 0) 
+		{
+			mysql_free_result(result);
+			return true;
+		}
+		else
+		{
+			mysql_free_result(result);
+			return false;
+		}
+	}
+	else 
+	{
+		safe_delete_array(query);
+		return false;
+	}
+	return false;
 }
 
 bool Database::CharacterInInstanceGroup(int32 instanceID, int32 charID)
@@ -2593,11 +2565,82 @@ void Database::DeleteInstance(uint32 instanceID)
 	}
 }
 
-bool Database::MoveCharacterToInstanceZone(const char* charname, const char* zonename, int32 zoneid, int32 instanceID)
+bool Database::CheckInstanceExpired(uint32 instanceID)
 {
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+
+	int32 start_time = 0;
+	int32 duration = 0;
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT start_time, duration FROM instance_lockout WHERE id=%u", instanceID), errbuf, &result))
+	{
+		safe_delete_array(query);
+		if (mysql_num_rows(result) != 0) 
+		{
+			row = mysql_fetch_row(result);
+			start_time = atoi(row[0]);
+			duration = atoi(row[1]);
+		}
+		else
+		{
+			mysql_free_result(result);
+			return true;
+		}
+		mysql_free_result(result);
+	}
+	else 
+	{
+		safe_delete_array(query);
+		return true;
+	}
+
+
+	timeval tv;
+	gettimeofday(&tv, NULL);
+	printf("checking if %u + %u <= %u\n", start_time, duration, tv.tv_sec);
+	if((start_time + duration) <= tv.tv_sec)
+	{
+		return true;
+	}
 	return false;
 }
 
+int32 Database::ZoneIDFromInstanceID(uint32 instanceID)
+{
+	printf("ZoneIDFromInstanceID()\n");
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT zone FROM instance_lockout where id=%u", instanceID), errbuf, &result))
+	{
+		safe_delete_array(query);
+		if (mysql_num_rows(result) != 0) 
+		{
+			row = mysql_fetch_row(result);
+			printf("ZoneIDFromInstanceID() return %u\n", atoi(row[0]));
+			int32 ret = atoi(row[0]);
+			mysql_free_result(result);
+			return ret;			
+		}
+		else
+		{
+			mysql_free_result(result);
+			printf("ZoneIDFromInstanceID() return %u\n", 0);
+			return 0;
+		}
+	}
+	else 
+	{
+		safe_delete_array(query);
+		printf("ZoneIDFromInstanceID() return %u\n", 0);
+		return 0;
+	}
+	printf("ZoneIDFromInstanceID() return %u\n", 0);
+	return 0;
+}
 
 
 

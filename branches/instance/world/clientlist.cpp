@@ -1071,7 +1071,8 @@ void ClientList::ZoneBootup(ZoneServer* zs) {
 	while(iterator.MoreElements())
 	{
 		if (iterator.GetData()->WaitingForBootup()) {
-			if (iterator.GetData()->GetZoneID() == zs->GetZoneID()) {
+			if (iterator.GetData()->GetZoneID() == zs->GetZoneID() 
+				&& iterator.GetData()->GetInstanceID() == zs->GetInstanceID()) {
 				iterator.GetData()->EnterWorld(false);
 			}
 			else if (iterator.GetData()->WaitingForBootup() == zs->GetID()) {

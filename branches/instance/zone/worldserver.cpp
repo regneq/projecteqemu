@@ -307,7 +307,8 @@ void WorldServer::Process() {
 				break;
 			ZoneToZone_Struct* ztz = (ZoneToZone_Struct*) pack->pBuffer;
 			
-			if(ztz->current_zone_id == zone->GetZoneID()) {
+			if(ztz->current_zone_id == zone->GetZoneID() 
+				&& ztz->current_instance_id == zone->GetInstanceID()) {
 				// it's a response
 				Entity* entity = entity_list.GetClientByName(ztz->name);
 				if(entity == 0)
@@ -319,18 +320,19 @@ void WorldServer::Process() {
 
 				if(ztz->response <= 0) {
 					zc2->success = ZONE_ERROR_NOTREADY;
-					entity->CastToMob()->SetZone(ztz->current_zone_id);
+					entity->CastToMob()->SetZone(ztz->current_zone_id, ztz->current_instance_id);
 				}
 				else {
 					entity->CastToClient()->UpdateWho(1);
 					strncpy(zc2->char_name,entity->CastToMob()->GetName(),64);
 					zc2->zoneID=ztz->requested_zone_id;
+					zc2->instanceID=ztz->requested_instance_id;
 					zc2->success = 1;
 
-					entity->CastToMob()->SetZone(ztz->requested_zone_id);
+					entity->CastToMob()->SetZone(ztz->requested_zone_id, ztz->requested_instance_id);
 
 					if(ztz->ignorerestrictions == 3)
-						entity->CastToClient()->GoToSafeCoords(ztz->requested_zone_id);
+						entity->CastToClient()->GoToSafeCoords(ztz->requested_zone_id, ztz->requested_instance_id);
 				}
 
 				outapp->priority = 6;

@@ -627,7 +627,7 @@ bool ZoneServer::Process() {
 			zlog(WORLD__ZONE,"ZoneToZone request for %s current zone %d req zone %d\n",
 				ztz->name, ztz->current_zone_id, ztz->requested_zone_id);
 
-			if(GetZoneID() == ztz->current_zone_id)	// this is a request from the egress zone
+			if(GetZoneID() == ztz->current_zone_id && GetInstanceID() == ztz->current_instance_id)	// this is a request from the egress zone
 			{
 				zlog(WORLD__ZONE,"Processing ZTZ for egress from zone for client %s\n", ztz->name);
 
@@ -643,8 +643,19 @@ bool ZoneServer::Process() {
 					break;
 				}
 
-                        ztz->requested_zone_id = database.GetInstZoneID(ztz->requested_zone_id, ztz->name);
-				ZoneServer *ingress_server = zoneserver_list.FindByZoneID(ztz->requested_zone_id);
+                ztz->requested_zone_id = database.GetInstZoneID(ztz->requested_zone_id, ztz->name);
+				
+				ZoneServer *ingress_server = NULL;
+				if(ztz->requested_instance_id > 0)
+				{
+					ingress_server = zoneserver_list.FindByInstanceID(ztz->requested_instance_id);
+				}
+				else
+				{
+					ingress_server = zoneserver_list.FindByZoneID(ztz->requested_zone_id);
+
+				}
+
 				if(ingress_server)	// found a zone already running
 				{
 					_log(WORLD__ZONE,"Found a zone already booted for %s\n", ztz->name);
@@ -653,8 +664,8 @@ bool ZoneServer::Process() {
 				else	// need to boot one
 				{
 					int server_id;
-                              ztz->requested_zone_id = database.GetInstZoneID(ztz->requested_zone_id, ztz->name);
-					if ((server_id = zoneserver_list.TriggerBootup(ztz->requested_zone_id))){
+                    ztz->requested_zone_id = database.GetInstZoneID(ztz->requested_zone_id, ztz->name);
+					if ((server_id = zoneserver_list.TriggerBootup(ztz->requested_zone_id, ztz->requested_instance_id))){
 						_log(WORLD__ZONE,"Successfully booted a zone for %s\n", ztz->name);
 						// bootup successful, ready to rock
 						ztz->response = 1;
@@ -678,8 +689,17 @@ bool ZoneServer::Process() {
 			else	// this is response from the ingress server, route it back to the egress server
 			{
 				zlog(WORLD__ZONE,"Processing ZTZ for ingress to zone for client %s\n", ztz->name);
-                        ztz->current_zone_id = database.GetInstZoneID(ztz->current_zone_id, ztz->name); //Rocker8956 possible fix for wrong zone shutdown
-				ZoneServer *egress_server = zoneserver_list.FindByZoneID(ztz->current_zone_id);
+                ztz->current_zone_id = database.GetInstZoneID(ztz->current_zone_id, ztz->name); //Rocker8956 possible fix for wrong zone shutdown
+				ZoneServer *egress_server = NULL;
+				if(ztz->current_instance_id > 0)
+				{
+					egress_server = zoneserver_list.FindByInstanceID(ztz->current_instance_id);
+				}
+				else
+				{
+					egress_server = zoneserver_list.FindByZoneID(ztz->current_zone_id);
+				}
+
 				if(egress_server)
 				{
 					egress_server->SendPacket(pack);

@@ -92,6 +92,7 @@ void command_log(Client *c, const Seperator *sep);
 void command_gm(Client *c, const Seperator *sep);
 void command_summon(Client *c, const Seperator *sep);
 void command_zone(Client *c, const Seperator *sep);
+void command_zone_instance(Client *c, const Seperator *sep);
 void command_peqzone(Client *c, const Seperator *sep);
 void command_showbuffs(Client *c, const Seperator *sep);
 void command_movechar(Client *c, const Seperator *sep);

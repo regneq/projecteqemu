@@ -318,6 +318,7 @@ void QuestManager::Zone(const char *zone_name) {
 		ZoneToZone_Struct* ztz = (ZoneToZone_Struct*) pack->pBuffer;
 		ztz->response = 0;
 		ztz->current_zone_id = zone->GetZoneID();
+		ztz->current_instance_id = zone->GetInstanceID();
 		ztz->requested_zone_id = database.GetZoneID(zone_name);
 		ztz->admin = initiator->Admin();
 		strcpy(ztz->name, initiator->GetName());
@@ -566,7 +567,7 @@ bool QuestManager::isdisctome(int item_id) {
 
 void QuestManager::safemove() {
 	if (initiator && initiator->IsClient())
-		initiator->GoToSafeCoords(zone->GetZoneID());
+		initiator->GoToSafeCoords(zone->GetZoneID(), 0);
 }
 
 void QuestManager::rain(int weather) {

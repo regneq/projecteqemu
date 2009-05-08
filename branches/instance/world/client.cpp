@@ -710,13 +710,22 @@ void Client::EnterWorld(bool TryBootup) {
 		return;
 
 	printf("trying to enter world (%u) %u\n", zoneID, instanceID);
-
-	//zoneID = database.GetInstZoneID(zoneID, GetCharName());
+	//todo: send to bind on failure
 	ZoneServer* zs = NULL;
 	if(instanceID > 0)
 	{
 		if(database.VerifyInstanceAlive(instanceID, GetCharID()))
-			zs = zoneserver_list.FindByInstanceID(instanceID);
+		{
+			if(database.VerifyZoneInstance(zoneID, instanceID))
+			{
+				zs = zoneserver_list.FindByInstanceID(instanceID);
+			}
+			else
+			{
+				instanceID = 0;
+				zs = zoneserver_list.FindByZoneID(zoneID);
+			}
+		}
 		else
 		{
 			//ideally we'd want to send them somewere else...

@@ -1396,10 +1396,13 @@ bool Mob::BehindMob(Mob* other, float playerx, float playery) const {
 		return false;
 }
 
-void Mob::SetZone(int32 zone_id)
+void Mob::SetZone(int32 zone_id, int32 instance_id)
 {
 	if(IsClient())
+	{
 		CastToClient()->GetPP().zone_id = zone_id;
+		CastToClient()->GetPP().zoneInstance = instance_id;
+	}
 	Save();
 }
 

@@ -538,7 +538,7 @@ bool logpos;
 	inline sint32	GetMana()		const { return cur_mana; }
 	virtual const sint32& SetMana(sint32 amount);
 	inline float	GetManaRatio()	const { return max_mana == 0 ? 100 : (((float)cur_mana/max_mana)*100); }
-	void			SetZone(int32 zone_id);
+	void			SetZone(int32 zone_id, int32 instance_id);
 
 	// neotokyo: moved from client to use in NPC too
 	char GetCasterClass() const;

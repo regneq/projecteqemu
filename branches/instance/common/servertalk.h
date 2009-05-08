@@ -514,7 +514,9 @@ struct ZoneToZone_Struct {
 	char	name[64];
 	int32	guild_id;
 	int32	requested_zone_id;
+	int32	requested_instance_id;
 	int32	current_zone_id;
+	int32	current_instance_id;
 	sint8	response;
 	sint16	admin;
 	int8	ignorerestrictions;
