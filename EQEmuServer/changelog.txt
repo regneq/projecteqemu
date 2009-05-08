@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/08/2009==
+Derision: Fixed a bug where a pet set to guard would appear not to stop on returning to it's guard spot after being ordered to attack.
+Derision: Fixed a bug where a mob aggroed would sometimes appear to run past it's target.
+
 ==05/07/2009==
 Trevius: (Erde) The Web Tool now shows the name of the process running each Dynamic zone (example: dynamic_01)
 
