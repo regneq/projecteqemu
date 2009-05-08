@@ -510,6 +510,7 @@ void WorldServer::Process() {
 		case ServerOP_ZonePlayer: {
 			ServerZonePlayer_Struct* szp = (ServerZonePlayer_Struct*) pack->pBuffer;
 			Client* client = entity_list.GetClientByName(szp->name);
+			printf("Zoning %s to %s(%u) - %u\n", client != NULL ? client->GetCleanName() : "Unknown", szp->zone, database.GetZoneID(szp->zone), szp->instance_id);
 			if (client != 0) {
 				if (strcasecmp(szp->adminname, szp->name) == 0)
 					client->Message(0, "Zoning to: %s", szp->zone);

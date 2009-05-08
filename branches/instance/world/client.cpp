@@ -709,6 +709,8 @@ void Client::EnterWorld(bool TryBootup) {
 	if (zoneID == 0)
 		return;
 
+	printf("trying to enter world (%u) %u\n", zoneID, instanceID);
+
 	//zoneID = database.GetInstZoneID(zoneID, GetCharName());
 	ZoneServer* zs = NULL;
 	if(instanceID > 0)

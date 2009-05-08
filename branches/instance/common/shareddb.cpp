@@ -1137,7 +1137,7 @@ bool SharedDatabase::DBLoadNPCFactionLists(sint32 iNPCFactionListCount, int32 iM
 // Get the player profile and inventory for the given account "account_id" and
 // character name "name".  Return true if the character was found, otherwise false.
 // False will also be returned if there is a database error.
-bool SharedDatabase::GetPlayerProfile(int32 account_id, char* name, PlayerProfile_Struct* pp, Inventory* inv, ExtendedProfile_Struct *ext, char* current_zone) {
+bool SharedDatabase::GetPlayerProfile(int32 account_id, char* name, PlayerProfile_Struct* pp, Inventory* inv, ExtendedProfile_Struct *ext, char* current_zone, uint32 *current_instance) {
 	_CP(Database_GetPlayerProfile);
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char* query = 0;
@@ -1147,7 +1147,7 @@ bool SharedDatabase::GetPlayerProfile(int32 account_id, char* name, PlayerProfil
 	
 	unsigned long* lengths;
 	
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT profile,zonename,x,y,z,extprofile FROM character_ WHERE account_id=%i AND name='%s'", account_id, name), errbuf, &result)) {
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT profile,zonename,x,y,z,extprofile,instanceid FROM character_ WHERE account_id=%i AND name='%s'", account_id, name), errbuf, &result)) {
 		if (mysql_num_rows(result) == 1) {	
 			row = mysql_fetch_row(result);
 			lengths = mysql_fetch_lengths(result);
@@ -1162,6 +1162,9 @@ bool SharedDatabase::GetPlayerProfile(int32 account_id, char* name, PlayerProfil
 				pp->z = atof(row[4]);
 				if (pp->x == -1 && pp->y == -1 && pp->z == -1)
 					GetSafePoints(pp->zone_id, &pp->x, &pp->y, &pp->z);
+
+				if(current_instance)
+					*current_instance = atoi(row[6]);
 				
 				if(ext) {
 					//SetExtendedProfile handles any conversion
@@ -1187,14 +1190,14 @@ bool SharedDatabase::GetPlayerProfile(int32 account_id, char* name, PlayerProfil
 	return ret;
 }
 
-bool SharedDatabase::SetPlayerProfile(uint32 account_id, uint32 charid, PlayerProfile_Struct* pp, Inventory* inv, ExtendedProfile_Struct *ext, uint32 current_zone) {
+bool SharedDatabase::SetPlayerProfile(uint32 account_id, uint32 charid, PlayerProfile_Struct* pp, Inventory* inv, ExtendedProfile_Struct *ext, uint32 current_zone, uint32 current_instance) {
 	_CP(Database_SetPlayerProfile);
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char* query = 0;
 	int32 affected_rows = 0;
 	bool ret = false;
     
-	if (RunQuery(query, SetPlayerProfile_MQ(&query, account_id, charid, pp, inv, ext, current_zone), errbuf, 0, &affected_rows)) {
+	if (RunQuery(query, SetPlayerProfile_MQ(&query, account_id, charid, pp, inv, ext, current_zone, current_instance), errbuf, 0, &affected_rows)) {
 		ret = (affected_rows != 0);
 	}
 	
@@ -1207,16 +1210,19 @@ bool SharedDatabase::SetPlayerProfile(uint32 account_id, uint32 charid, PlayerPr
 }
 
 // Generate SQL for updating player profile
-int32 SharedDatabase::SetPlayerProfile_MQ(char** query, uint32 account_id, uint32 charid, PlayerProfile_Struct* pp, Inventory* inv, ExtendedProfile_Struct *ext, uint32 current_zone) {
+int32 SharedDatabase::SetPlayerProfile_MQ(char** query, uint32 account_id, uint32 charid, PlayerProfile_Struct* pp, Inventory* inv, ExtendedProfile_Struct *ext, uint32 current_zone, uint32 current_instance) {
     *query = new char[376 + sizeof(PlayerProfile_Struct)*2 + sizeof(ExtendedProfile_Struct)*2 + 4];
 	char* end = *query;
 	if (!current_zone)
 		current_zone = pp->zone_id;
 
+	if (!current_instance)
+		current_instance = pp->zoneInstance;
+
 	if(strlen(pp->name) == 0) // Sanity check in case pp never loaded
 		return false;
 	
-	end += sprintf(end, "UPDATE character_ SET timelaston=unix_timestamp(now()),name=\'%s\', zonename=\'%s\', zoneid=%u, x = %f, y = %f, z = %f, profile=\'", pp->name, GetZoneName(current_zone), current_zone, pp->x, pp->y, pp->z);
+	end += sprintf(end, "UPDATE character_ SET timelaston=unix_timestamp(now()),name=\'%s\', zonename=\'%s\', zoneid=%u, instanceid=%u, x = %f, y = %f, z = %f, profile=\'", pp->name, GetZoneName(current_zone), current_zone, current_instance, pp->x, pp->y, pp->z);
 	end += DoEscapeString(end, (char*)pp, sizeof(PlayerProfile_Struct));
 	end += sprintf(end,"\', extprofile=\'");
 	end += DoEscapeString(end, (char*)ext, sizeof(ExtendedProfile_Struct));

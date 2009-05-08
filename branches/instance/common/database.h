@@ -125,7 +125,7 @@ public:
 	bool	StoreCharacter(uint32 account_id, PlayerProfile_Struct* pp, Inventory* inv, ExtendedProfile_Struct *ext);
 	bool	DeleteCharacter(char* name);
 	int8	CopyCharacter(const char* oldname, const char* newname, int32 acctid);
-	
+
 	/*
 	 * General Information Getting Queries
 	 */
@@ -147,8 +147,10 @@ public:
 	 * Instancing Stuff
 	 */
 	bool VerifyInstanceAlive(int32 instanceID, int32 charID);
+	bool CharacterInInstanceGroup(int32 instanceID, int32 charID);
 	void SetCharacterInstance(int32 instanceID, int32 charID);
-
+	void DeleteInstance(uint32 instanceID);
+	bool MoveCharacterToInstanceZone(const char* charname, const char* zonename, int32 zoneid, int32 instanceID);
 	/*
 	 * Account Related
 	 */

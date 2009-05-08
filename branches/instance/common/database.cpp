@@ -2452,6 +2452,11 @@ int32 Database::GetRaidID(const char* name){
 
 bool Database::VerifyInstanceAlive(int32 instanceID, int32 charID)
 {
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+
 	//first check to see if we're in instance_lockout_player with this id
 	//if so we check to see an entry exists in instance_lockout if not we:
 	//delete from instance_lockout_player where id = instanceID
@@ -2459,28 +2464,10 @@ bool Database::VerifyInstanceAlive(int32 instanceID, int32 charID)
 	//delete from instance_lockout_player where id = instanceID
 	//delete from instance_lockout where id = instanceID
 
-	char errbuf[MYSQL_ERRMSG_SIZE];
-	char *query = 0;
-	MYSQL_RES *result;
-	MYSQL_ROW row;
-	bool lockout_instance_player = true;
-
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT charid FROM instance_lockout_player where id=%u AND charid=%u", instanceID, charID), errbuf, &result))
+	//we are not saved to this instance so set our instance to 0
+	if(!CharacterInInstanceGroup(instanceID, charID))
 	{
-		safe_delete_array(query);
-		if (mysql_num_rows(result) != 1) 
-		{
-			lockout_instance_player = false;
-		}
-		mysql_free_result(result);
-	}
-	else 
-	{
-		lockout_instance_player = false;
-		safe_delete_array(query);
-	}
-	if(!lockout_instance_player)
-	{
+		printf("Character(%u) is not in instance group(%u)\n", charID, instanceID);
 		SetCharacterInstance(0, charID);
 		return false;
 	}
@@ -2488,6 +2475,7 @@ bool Database::VerifyInstanceAlive(int32 instanceID, int32 charID)
 	bool instance_lockout = true;
 	int32 start_time = 0;
 	int32 duration = 0;
+	//get our timer from the instance table if exists
 	if (RunQuery(query, MakeAnyLenString(&query, "SELECT start_time, duration FROM instance_lockout WHERE id=%u", instanceID), errbuf, &result))
 	{
 		safe_delete_array(query);
@@ -2509,8 +2497,10 @@ bool Database::VerifyInstanceAlive(int32 instanceID, int32 charID)
 		safe_delete_array(query);
 	}
 
+	//our instance table didn't exist... the tables are probably incomplete so lets clear it out to clean the corruption.
 	if(!instance_lockout)
 	{
+		printf("our instance table entries did not exist...\n");
 		if (RunQuery(query, MakeAnyLenString(&query, "DELETE FROM instance_lockout_player WHERE id=%u", instanceID), errbuf, &result))
 		{
 			safe_delete_array(query);
@@ -2526,30 +2516,39 @@ bool Database::VerifyInstanceAlive(int32 instanceID, int32 charID)
 
 	timeval tv;
 	gettimeofday(&tv, NULL);
+	//our instance is expired so lets delete it.
+	printf("checking if %u + %u <= %u\n", start_time, duration, tv.tv_sec);
 	if((start_time + duration) <= tv.tv_sec)
 	{
-		if (RunQuery(query, MakeAnyLenString(&query, "DELETE FROM instance_lockout_player WHERE id=%u", instanceID), errbuf, &result))
-		{
-			safe_delete_array(query);
-			mysql_free_result(result);
-		}
-		else 
-		{
-			safe_delete_array(query);
-		}
-		if (RunQuery(query, MakeAnyLenString(&query, "DELETE FROM instance_lockout WHERE id=%u", instanceID), errbuf, &result))
-		{
-			safe_delete_array(query);
-			mysql_free_result(result);
-		}
-		else 
-		{
-			safe_delete_array(query);
-		}
+		DeleteInstance(instanceID);
 		SetCharacterInstance(0, charID);
 		return false;
 	}
 	return true;
+}
+
+bool Database::CharacterInInstanceGroup(int32 instanceID, int32 charID)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+	bool lockout_instance_player = false;
+
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT charid FROM instance_lockout_player where id=%u AND charid=%u", instanceID, charID), errbuf, &result))
+	{
+		safe_delete_array(query);
+		if (mysql_num_rows(result) == 1) 
+		{
+			lockout_instance_player = true;
+		}
+		mysql_free_result(result);
+	}
+	else 
+	{
+		safe_delete_array(query);
+	}
+	return lockout_instance_player;
 }
 
 void Database::SetCharacterInstance(int32 instanceID, int32 charID)
@@ -2557,7 +2556,7 @@ void Database::SetCharacterInstance(int32 instanceID, int32 charID)
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
 	MYSQL_RES *result;
-	if(RunQuery(query, MakeAnyLenString(&query, "UPDATE character_ SET instanceid=%u WHERE id=%u"), errbuf, &result))
+	if(RunQuery(query, MakeAnyLenString(&query, "UPDATE character_ SET instanceid=%u WHERE id=%u", instanceID, charID), errbuf, &result))
 	{
 		safe_delete_array(query);
 		mysql_free_result(result);
@@ -2567,6 +2566,54 @@ void Database::SetCharacterInstance(int32 instanceID, int32 charID)
 		safe_delete_array(query);
 	}
 }
+
+void Database::DeleteInstance(uint32 instanceID)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	if(RunQuery(query, MakeAnyLenString(&query, "DELETE FROM instance_lockout WHERE id=%u"), errbuf, &result))
+	{
+		safe_delete_array(query);
+		mysql_free_result(result);
+	}
+	else 
+	{
+		safe_delete_array(query);
+	}
+
+	if(RunQuery(query, MakeAnyLenString(&query, "DELETE FROM instance_lockout_player WHERE id=%u"), errbuf, &result))
+	{
+		safe_delete_array(query);
+		mysql_free_result(result);
+	}
+	else 
+	{
+		safe_delete_array(query);
+	}
+}
+
+bool Database::MoveCharacterToInstanceZone(const char* charname, const char* zonename, int32 zoneid, int32 instanceID)
+{
+	return false;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 int32 Database::GetDfltInstZFlag(){
 char errbuf[MYSQL_ERRMSG_SIZE];

@@ -319,6 +319,7 @@ struct ServerZonePlayer_Struct {
 	int8	ignorerestrictions;
 	char	name[64];
 	char	zone[25];
+	int32	instance_id;
     float	x_pos;
     float	y_pos;
     float	z_pos;

@@ -393,6 +393,7 @@ void Client::DoZoneSuccess(ZoneChange_Struct *zc, uint16 zone_id, float dest_x, 
 	heading = dest_h; // Cripp: fix for zone heading
 	m_pp.heading = dest_h;
 	m_pp.zone_id = zone_id;
+	m_pp.zoneInstance = 0;
 	
 	//Force a save so its waiting for them when they zone
 	Save();
@@ -656,14 +657,14 @@ void Client::ZonePC(int32 zoneID, float x, float y, float z, float heading, int8
 #endif
     }
 	
-			EQApplicationPacket* outapp = new EQApplicationPacket(OP_RequestClientZoneChange, sizeof(RequestClientZoneChange_Struct));
+		EQApplicationPacket* outapp = new EQApplicationPacket(OP_RequestClientZoneChange, sizeof(RequestClientZoneChange_Struct));
 		RequestClientZoneChange_Struct* gmg = (RequestClientZoneChange_Struct*) outapp->pBuffer;
 		
 		gmg->zone_id = zoneID;
 		gmg->x = x;
 		gmg->y = y;
 		gmg->z = z;
-			gmg->heading = heading;
+		gmg->heading = heading;
 		gmg->type = 0x01;	//an observed value, not sure of meaning
 		
 	outapp->priority = 6;

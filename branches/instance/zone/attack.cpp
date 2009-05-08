@@ -2097,6 +2097,7 @@ if(!RuleB(Character, UseDeathExpLossMult)){
 	//
 
 	m_pp.zone_id = m_pp.binds[0].zoneId;
+	m_pp.zoneInstance = 0;
 	database.MoveCharacterToZone(this->CharacterID(), database.GetZoneName(m_pp.zone_id));
 		
 	Save();

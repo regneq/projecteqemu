@@ -111,6 +111,7 @@ bool Client::Process() {
 		if(dead && dead_timer.Check()) {
 			database.MoveCharacterToZone(GetName(),database.GetZoneName(m_pp.binds[0].zoneId));
 			m_pp.zone_id = m_pp.binds[0].zoneId;
+			m_pp.zoneInstance = 0;
 			m_pp.x = m_pp.binds[0].x;
 			m_pp.y = m_pp.binds[0].y;
 			m_pp.z = m_pp.binds[0].z;
