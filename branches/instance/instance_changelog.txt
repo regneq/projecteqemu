@@ -1,0 +1,3 @@
+KLS - May 9, 2009: 
+-Added changelog for instance branch.
+-Zoning updated to be more smooth, summoning in zone as well as evacuating and #goto now work if the zone is instanced.
