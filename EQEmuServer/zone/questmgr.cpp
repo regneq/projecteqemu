@@ -202,6 +202,10 @@ void QuestManager::say(const char *str) {
                owner->Say(str);
 }
 
+void QuestManager::say(const char *str, int8 language) {
+	entity_list.ChannelMessage(owner, 8, language, str);
+}
+
 void QuestManager::me(const char *str) {
 	if (!initiator)
 		return;

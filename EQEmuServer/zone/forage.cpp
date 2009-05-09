@@ -420,10 +420,15 @@ void Client::ForageItem() {
 		Message_StringID(MT_Skills, stringid);
 		const ItemInst* inst = database.CreateItem(food_item, 1);
 		if(inst != NULL) {
+			// check to make sure it isn't a foraged lore item
+			if(CheckLoreConflict(inst->GetItem())) 
+				this->Message_StringID(0,DUP_LORE);
+			else {
 			PushItemOnCursor(*inst);
 			SendItemPacket(SLOT_CURSOR, inst, ItemPacketSummonItem);
 			if(RuleB(TaskSystem, EnableTaskSystem))
 				UpdateTasksForItem(ActivityForage, foragedfood);
+			}
 		}
 		
 	} else {

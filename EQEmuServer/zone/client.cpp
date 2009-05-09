@@ -838,7 +838,7 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, int8 lang_skil
 			break;
 
 		if(!target && quest_manager.ProximitySayInUse())
-			entity_list.ProcessProximitySay(message, this);
+			entity_list.ProcessProximitySay(message, this, language);
 
 		if (target != 0 && target->IsNPC()) {
 			if(!target->CastToNPC()->IsEngaged()) {
@@ -848,7 +848,7 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, int8 lang_skil
 					if (DistNoRootNoZ(*target) <= 200) {
 						if(target->CastToNPC()->IsMoving() && !target->CastToNPC()->IsOnHatelist(target))
 							target->CastToNPC()->PauseWandering(RuleI(NPC, SayPauseTimeInSec));
-						parse->Event(EVENT_SAY, target->GetNPCTypeID(), message, target->CastToNPC(), this);
+						parse->Event(EVENT_SAY, target->GetNPCTypeID(), message, target->CastToNPC(), this, language);
 					#ifdef IPC
 						if(target->CastToNPC()->IsInteractive()) {
 							target->CastToNPC()->InteractiveChat(chan_num,language,message,targetname,this);
@@ -878,7 +878,7 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, int8 lang_skil
 				if(((PerlembParser *)parse)->HasQuestSub(target->GetNPCTypeID(),"EVENT_AGGRO_SAY")) {
 #endif
 					if (DistNoRootNoZ(*target) <= 200) {
-						parse->Event(EVENT_AGGRO_SAY, target->GetNPCTypeID(), message, target->CastToNPC(), this);
+						parse->Event(EVENT_AGGRO_SAY, target->GetNPCTypeID(), message, target->CastToNPC(), this, language);
 					}
 #ifdef EMBPERL
 				}	
@@ -940,12 +940,10 @@ void Client::ChannelMessageSend(const char* from, const char* to, int8 chan_num,
 		cm->language = 0;
 	}
 	
-	// set effective language skill = average of sender and receiver skills
-	sint32 EffSkill = (lang_skill + ListenerSkill)/2;
-	if (EffSkill < 1)	// effective skill has a minimum value of 1...
-		EffSkill = 1;
-	else if (EffSkill > 100)	// ...and a maximum value of 100
-		EffSkill;
+	// set effective language skill = lower of sender and receiver skills
+	sint32 EffSkill = (lang_skill < ListenerSkill ? lang_skill : ListenerSkill);
+	if (EffSkill > 100)	// maximum language skill is 100
+		EffSkill = 100;
 	cm->skill_in_language = EffSkill;
 	
 	cm->chan_num = chan_num;
