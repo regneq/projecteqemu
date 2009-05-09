@@ -637,9 +637,6 @@ std::map<uint32,NPCType *>::iterator itr;
 		}
 	}
 	zone->ResetAuth();
-      if (zone->GetZoneID() > database.GetDfltInstZFlag()){
-		database.DeleteInstZone(zone->GetZoneID());
-	}
 	safe_delete(zone);
 	dbasync->CommitWrites();
 	UpdateWindowTitle();

@@ -437,8 +437,9 @@ void Client::MovePC(const char* zonename, float x, float y, float z, float headi
 	ProcessMovePC(database.GetZoneID(zonename), 0, x, y, z, heading, ignorerestrictions, zm);
 }
 
+//designed for in zone moving
 void Client::MovePC(float x, float y, float z, float heading, int8 ignorerestrictions, ZoneMode zm) {
-	ProcessMovePC(zone->GetZoneID(), 0, x, y, z, heading, ignorerestrictions, zm);
+	ProcessMovePC(zone->GetZoneID(), zone->GetInstanceID(), x, y, z, heading, ignorerestrictions, zm);
 }
 
 void Client::MovePC(int32 zoneID, float x, float y, float z, float heading, int8 ignorerestrictions, ZoneMode zm) {
@@ -642,6 +643,7 @@ void Client::ZonePC(int32 zoneID, int32 instance_id, float x, float y, float z, 
 			gmg->y = y;
 			gmg->z = z;
 			gmg->heading = heading;
+			gmg->instance_id = instance_id;
 			gmg->type = 0x01;				// '0x01' was an observed value for the type field, not sure of meaning
 			
 			// we hide the real zoneid we want to evac/succor to here
@@ -676,6 +678,7 @@ void Client::ZonePC(int32 zoneID, int32 instance_id, float x, float y, float z, 
 			gmg->y = y;
 			gmg->z = z;
 			gmg->heading = heading;
+			gmg->instance_id = instance_id;
 			gmg->type = 0x01;	//an observed value, not sure of meaning
 			
 			outapp->priority = 6;

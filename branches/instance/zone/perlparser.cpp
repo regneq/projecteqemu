@@ -222,10 +222,12 @@ XS(XS__say); // prototype to pass -Wmissing-prototypes
 XS(XS__say) {
 	dXSARGS;
 
-	if (items != 1)
-		Perl_croak(aTHX_ "Usage: say(str)");
-
-	quest_manager.say(SvPV_nolen(ST(0)));
+	if (items == 1)
+		quest_manager.say(SvPV_nolen(ST(0)));
+	else if (items == 2) 
+		quest_manager.say(SvPV_nolen(ST(0)), (int)SvIV(ST(1)));
+	else
+		Perl_croak(aTHX_ "Usage: say(str [, language])");
 
 	XSRETURN_EMPTY;
 }
@@ -2248,35 +2250,6 @@ XS(XS__istaskappropriate)
  
         XSRETURN_EMPTY;
  }
-XS(XS__setinstflag);
-XS(XS__setinstflag)
-{
-	dXSARGS;
-	if (items != 3)
-		Perl_croak(aTHX_ "Usage: setinstflag(orginalZoneID, type)");
-
-	int		orgZoneID = (int)SvIV(ST(0));
-	int		type = (int)SvIV(ST(1));
-
-	quest_manager.setinstflag(orgZoneID, type);
-
-	XSRETURN_EMPTY;
-}
-XS(XS__setinstflagmanually);
-XS(XS__setinstflagmanually)
-{
-	dXSARGS;
-	if (items != 3)
-		Perl_croak(aTHX_ "Usage: setinstflagmanually(orginalZoneID, instFlag, type)");
-
-	int		orgZoneID = (int)SvIV(ST(0));
-	int		instFlag = (int)SvIV(ST(1));
-	int		type = (int)SvIV(ST(2));
-
-	quest_manager.setinstflagmanually(orgZoneID, instFlag, type);
-
-	XSRETURN_EMPTY;
-}
 XS(XS__clearspawntimers);
 XS(XS__clearspawntimers)
 {
@@ -2330,21 +2303,6 @@ XS(XS__getlevel)
 	int		type = (int)SvIV(ST(0));
 
 	RETVAL = quest_manager.getlevel(type);
-	XSprePUSH; PUSHu((IV)RETVAL);
-
-	XSRETURN(1);
-}
-XS(XS__getinstflag);
-XS(XS__getinstflag)
-{
-    dXSARGS;
-    if (items != 0)
-        Perl_croak(aTHX_ "Usage: getinstflag()");
-
-    int		RETVAL;
-    dXSTARG;
-
-	RETVAL = quest_manager.getinstflag();
 	XSprePUSH; PUSHu((IV)RETVAL);
 
 	XSRETURN(1);
@@ -2621,13 +2579,10 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "completedtasksinset"), XS__completedtasksinset, file);
 		newXS(strcpy(buf, "istaskappropriate"), XS__istaskappropriate, file);
 		newXS(strcpy(buf, "popup"), XS__popup, file);
-		newXS(strcpy(buf, "setinstflag"), XS__setinstflag, file);
-		newXS(strcpy(buf, "setinstflagmanually"), XS__setinstflagmanually, file);
 		newXS(strcpy(buf, "clearspawntimers"), XS__clearspawntimers, file);
 		newXS(strcpy(buf, "ze"), XS__ze, file);
 		newXS(strcpy(buf, "we"), XS__we, file);
 		newXS(strcpy(buf, "getlevel"), XS__getlevel, file);
-        newXS(strcpy(buf, "getinstflag"), XS__getinstflag, file);
 		newXS(strcpy(buf, "creategroundobject"), XS__CreateGroundObject, file);
 		newXS(strcpy(buf, "modifynpcstat"), XS__ModifyNPCStat, file);
         newXS(strcpy(buf, "collectitems"), XS__collectitems, file);

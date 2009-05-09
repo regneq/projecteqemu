@@ -303,20 +303,34 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 		}
 	}
 
-    if (opentype == 58 && strncmp(dest_zone,"NONE",strlen("NONE")) != 0 ){ // Teleport door! 
-        if (( strncmp(dest_zone,zone_name,strlen(zone_name)) == 0) && (keyneeded && keyneeded == playerkey)) {
-		sender->KeyRingAdd(playerkey);
-           	sender->MovePC(dest_x, dest_y, dest_z, dest_heading);
-	}
-        if (( strncmp(dest_zone,zone_name,strlen(zone_name)) == 0) && (!keyneeded)) {
-           	sender->MovePC(dest_x, dest_y, dest_z, dest_heading);
-	}
-       	else if (( !IsDoorOpen() || opentype == 58 ) && (keyneeded && keyneeded == playerkey)) {
-             	sender->KeyRingAdd(playerkey);
-		sender->MovePC(dest_zone, dest_x, dest_y, dest_z, dest_heading);
-	}
-       	if (( !IsDoorOpen() || opentype == 58 ) && (!keyneeded)) {  
-    		sender->MovePC(dest_zone, dest_x, dest_y, dest_z, dest_heading);
+	if (opentype == 58 && strncmp(dest_zone,"NONE",strlen("NONE")) != 0 ){ // Teleport door! 
+		if (( strncmp(dest_zone,zone_name,strlen(zone_name)) == 0) && (keyneeded && keyneeded == playerkey)) {
+			sender->KeyRingAdd(playerkey);
+			sender->MovePC(zone->GetZoneID(), zone->GetInstanceID(), dest_x, dest_y, dest_z, dest_heading);
+		}
+		if (( strncmp(dest_zone,zone_name,strlen(zone_name)) == 0) && (!keyneeded)) {
+			sender->MovePC(zone->GetZoneID(), zone->GetInstanceID(), dest_x, dest_y, dest_z, dest_heading);
+		}
+		else if (( !IsDoorOpen() || opentype == 58 ) && (keyneeded && keyneeded == playerkey)) {
+			sender->KeyRingAdd(playerkey);
+			if(database.GetZoneID(dest_zone) == zone->GetZoneID())
+			{
+				sender->MovePC(zone->GetZoneID(), zone->GetInstanceID(), dest_x, dest_y, dest_z, dest_heading);
+			}
+			else
+			{
+				sender->MovePC(dest_zone, dest_x, dest_y, dest_z, dest_heading);
+			}
+		}
+		if (( !IsDoorOpen() || opentype == 58 ) && (!keyneeded)) {
+			if(database.GetZoneID(dest_zone) == zone->GetZoneID())
+			{
+				sender->MovePC(zone->GetZoneID(), zone->GetInstanceID(), dest_x, dest_y, dest_z, dest_heading);
+			}
+			else
+			{
+				sender->MovePC(dest_zone, dest_x, dest_y, dest_z, dest_heading);
+			}
 		}
 	}
 }

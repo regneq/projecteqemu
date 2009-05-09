@@ -202,6 +202,10 @@ void QuestManager::say(const char *str) {
                owner->Say(str);
 }
 
+void QuestManager::say(const char *str, int8 language) {
+	entity_list.ChannelMessage(owner, 8, language, str);
+}
+
 void QuestManager::me(const char *str) {
 	if (!initiator)
 		return;
@@ -748,7 +752,7 @@ void QuestManager::movegrp(int zoneid, float x, float y, float z) {
 	{
 		Group *g = entity_list.GetGroupByClient(initiator);
        	if (g != NULL){
-			g->TeleportGroup(owner, zoneid, x, y, z, 0.0f);
+			g->TeleportGroup(owner, 0, zoneid, x, y, z, 0.0f);
 		}
 		else {
 			initiator->MovePC(zoneid, x, y, z, 0.0f);
@@ -1570,56 +1574,6 @@ bool QuestManager::istaskappropriate(int task) {
 
 	return false;
 }
-void QuestManager::setinstflag(int orgZoneID, int type)
-{
-	int instFlag = database.getCurInstFlagNum();
-
-	if (type == 0)
-	{
-		database.setCharInstFlag(initiator->CharacterID(), orgZoneID, instFlag);
-		database.incrCurInstFlagNum(instFlag); // Increment the curInstFlagNum
-	}
-	else if(type == 1)
-	{
-		database.setGroupInstFlagNum(initiator->CharacterID(), orgZoneID, instFlag);
-		database.incrCurInstFlagNum(instFlag); // Increment the curInstFlagNum
-	}
-	else if(type == 2)
-	{
-		database.setRaidInstFlagNum(initiator->CharacterID(), orgZoneID, instFlag);
-		database.incrCurInstFlagNum(instFlag); // Increment the curInstFlagNum
-	}
-	else if(type == 3)
-	{
-		database.setCharInstFlag(initiator->CharacterID(), orgZoneID, instFlag);
-		database.setGroupInstFlagNum(initiator->CharacterID(), orgZoneID, instFlag);
-		database.setRaidInstFlagNum(initiator->CharacterID(), orgZoneID, instFlag);
-		database.incrCurInstFlagNum(instFlag); // Increment the curInstFlagNum
-	}
-}
-
-void QuestManager::setinstflagmanually(int orgZoneID, int instFlag, int type)
-{
-	if (type == 0)
-	{
-		database.setCharInstFlag(initiator->CharacterID(), orgZoneID, instFlag);
-	}
-	else if(type == 1)
-	{
-		database.setGroupInstFlagNum(initiator->CharacterID(), orgZoneID, instFlag);
-	}
-	else if(type == 2)
-	{
-		database.setRaidInstFlagNum(initiator->CharacterID(), orgZoneID, instFlag);
-	}
-	else if(type == 3)
-	{
-		database.setCharInstFlag(initiator->CharacterID(), orgZoneID, instFlag);
-		database.setGroupInstFlagNum(initiator->CharacterID(), orgZoneID, instFlag);
-		database.setRaidInstFlagNum(initiator->CharacterID(), orgZoneID, instFlag);
-	}
-}
-
 void QuestManager::clearspawntimers() {
 	if(zone)  {
 		//TODO: Dec 19, 2008, replace with code updated for current spawn timers.
@@ -1682,11 +1636,6 @@ int QuestManager::getlevel(uint8 type)
 	}
 	else
 		return 0;
-}
-
-int QuestManager::getinstflag()
-{
-	return (database.GetCharInstFlagNum(initiator->CharacterID()));
 }
 
 void QuestManager::CreateGroundObject(int32 itemid, float x, float y, float z, float heading, int32 decay_time)

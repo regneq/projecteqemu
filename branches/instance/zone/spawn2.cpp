@@ -260,7 +260,6 @@ bool ZoneDatabase::PopulateZoneSpawnList(int32 zoneid, LinkedList<Spawn2*> &spaw
 	MYSQL_ROW row;
 	
 	const char *zone_name = database.GetZoneName(zoneid);
-	int32 dfltInstZFlag = database.GetDfltInstZFlag();
 
 	MakeAnyLenString(&query, "SELECT id, spawngroupID, x, y, z, heading, respawntime, variance, pathgrid, _condition, cond_value FROM spawn2 WHERE zone='%s'", zone_name);
 	
@@ -270,7 +269,7 @@ bool ZoneDatabase::PopulateZoneSpawnList(int32 zoneid, LinkedList<Spawn2*> &spaw
 		while((row = mysql_fetch_row(result)))
 		{
 			Spawn2* newSpawn = 0;
-			if (zoneid > dfltInstZFlag){
+			if (zone && zone->GetInstanceID() > 0){ //TEMPORARY
 				//int32 spawnLeft = GetSpawnTimeLeft(atoi(row[0]));
 				newSpawn = new Spawn2(atoi(row[0]), atoi(row[1]), atof(row[2]), atof(row[3]), atof(row[4]), atof(row[5]), atoi(row[6]), atoi(row[7]), 0, atoi(row[8]), atoi(row[9]), atoi(row[10]));
 			}

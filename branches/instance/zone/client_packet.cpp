@@ -3914,7 +3914,7 @@ void Client::Handle_OP_GMGoto(const EQApplicationPacket *app)
 	GMSummon_Struct* gmg = (GMSummon_Struct*) app->pBuffer;
 	Mob* gt = entity_list.GetMob(gmg->charname);
 	if (gt != NULL) {
-		this->MovePC(zone->GetZoneID(), gt->GetX(), gt->GetY(), gt->GetZ(), gt->GetHeading());
+		this->MovePC(zone->GetZoneID(), zone->GetInstanceID(), gt->GetX(), gt->GetY(), gt->GetZ(), gt->GetHeading());
 	}
 	else if (!worldserver.Connected())
 		Message(0, "Error: World server disconnected.");
@@ -6345,7 +6345,7 @@ void Client::Handle_OP_SenseTraps(const EQApplicationPacket *app)
 				angle = (256+angle);
 
 			angle *= 2;
-			MovePC(GetX(), GetY(), GetZ(), angle);
+			MovePC(zone->GetZoneID(), zone->GetInstanceID(), GetX(), GetY(), GetZ(), angle);
 			return;
 		}
 	}
@@ -6644,7 +6644,7 @@ void Client::Handle_OP_FindPersonRequest(const EQApplicationPacket *app)
 		if(RuleB(Bazaar, EnableWarpToTrader) && target->IsClient() && (target->CastToClient()->Trader ||
 									       target->CastToClient()->Buyer)) {
 			Message(15, "Moving you to Trader %s", target->GetName());
-			MovePC(target->GetX(), target->GetY(),  target->GetZ() , 0.0f);
+			MovePC(zone->GetZoneID(), zone->GetInstanceID(), target->GetX(), target->GetY(),  target->GetZ() , 0.0f);
 		}
 		else
 			Message(13, "Found NPC '%s'\n", target->GetName());
@@ -7753,7 +7753,7 @@ void Client::Handle_OP_Rewind(const EQApplicationPacket *app)
 	if ((rewind_timer.GetRemainingTime() > 1 && rewind_timer.Enabled())) {
 			Message_StringID(MT_System, 4059); //You must wait a bit longer before using the rewind command again.
 	} else {
-		CastToClient()->MovePC(zone->GetZoneID(), rewind_x, rewind_y, rewind_z, 0, 2, Rewind);
+		CastToClient()->MovePC(zone->GetZoneID(), zone->GetInstanceID(), rewind_x, rewind_y, rewind_z, 0, 2, Rewind);
 		rewind_timer.Start(30000, true);
 	}
 }

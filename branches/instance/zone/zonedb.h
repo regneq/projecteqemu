@@ -164,9 +164,6 @@ public:
 	bool	DeleteGraveyard(int32 zone_id, int32 graveyard_id);
 	int32   GetFirstCorpseID(int32 char_id);
 	
-	int32	GetKarma(int32 acct_id);
-	void	UpdateKarma(int32 acct_id, int32 amount);
-	
 	/*
 	 * Faction
 	 */
@@ -203,9 +200,6 @@ public:
 	bool	LoadStaticZonePoints(LinkedList<ZonePoint*>* zone_point_list,const char* zonename);
 	bool	UpdateZoneSafeCoords(const char* zonename, float x, float y, float z);
 	int8	GetUseCFGSafeCoords();
-    int32   GetInstType(int32 zoneid);
-    bool    InstZoneLoaded(int32 target_zone_ID);
-    void    LoadInstZone(int32 target_zone_ID, int32 InstFlagNum);
     int		getZoneShutDownDelay(int32 zoneID);
 	
 	/*
@@ -344,7 +338,8 @@ public:
 	 */
 	bool    logevents(const char* accountname,int32 accountid,int8 status,const char* charname,const char* target, const char* descriptiontype, const char* description,int event_nid);
 	void	GetEventLogs(const char* name,char* target,int32 account_id=0,int8 eventid=0,char* detail=0,char* timestamp=0, CharacterEventLog_Struct* cel=0);
-	
+	int32	GetKarma(int32 acct_id);
+	void	UpdateKarma(int32 acct_id, int32 amount);
 	
 	/*
 	 * Things which really dont belong here...

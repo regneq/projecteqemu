@@ -827,7 +827,7 @@ uint32 i;
 	return level;
 }
 
-void Group::TeleportGroup(Mob* sender, int32 zoneID, float x, float y, float z, float heading)
+void Group::TeleportGroup(Mob* sender, int32 zoneID, int16 instance_id, float x, float y, float z, float heading)
 {
 	uint32 i;
 	 for (i = 0; i < MAX_GROUP_MEMBERS; i++)
@@ -838,7 +838,7 @@ void Group::TeleportGroup(Mob* sender, int32 zoneID, float x, float y, float z, 
 		  if (members[i] != NULL && members[i]->IsClient() && members[i] != sender)
 	 #endif
 	 	{
-			members[i]->CastToClient()->MovePC(int(zoneID), x, y, z, heading, 0, ZoneSolicited);
+			members[i]->CastToClient()->MovePC(zoneID, instance_id, x, y, z, heading, 0, ZoneSolicited);
 		}
 	}	
 }

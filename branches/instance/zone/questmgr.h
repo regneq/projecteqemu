@@ -44,6 +44,7 @@ public:
 	//quest perl functions
 	void echo(int colour, const char *str);
 	void say(const char *str);
+	void say(const char *str, int8 language);
 	void me(const char *str);
 	void summonitem(int32 itemid, uint8 charges = 0);
 	//getZoneID(const char *short_name)
@@ -181,13 +182,10 @@ public:
 	int activetasksinset(int taskset);
 	int completedtasksinset(int taskset);
 	bool istaskappropriate(int task);
-    void setinstflag(int orgZoneID, int type);
-    void setinstflagmanually(int orgZoneID, int instFlag, int type);
     void clearspawntimers();
 	void ze(int type, const char *str);
 	void we(int type, const char *str);
     int getlevel(uint8 type);
-    int getinstflag();
     int collectitems(uint32 item_id, bool remove);
     int collectitems_processSlot(sint16 slot_id, uint32 item_id, bool remove);
 

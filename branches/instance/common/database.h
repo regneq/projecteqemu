@@ -259,16 +259,6 @@ public:
 	bool	LoadPTimers(uint32 charid, PTimerList &into);
 	void	ClearPTimers(uint32 charid);
 	void	ClearMerchantTemp();
-	int32	GetCharInstFlagNum(int32 charID);
-	int32	GetCharInstZOrgID(int32 charID);
-	int32   GetInstZoneID(int32 zoneID, const char* charName);
-	void	DeleteInstZone(int32 instZoneID);
-	int32   GetDfltInstZFlag();
-	void	setCharInstFlag(int charID, int  orgZoneID, int instFlag);
-	void	setGroupInstFlagNum(int charID, int orgZoneID, int instFlag);
-	void	setRaidInstFlagNum(int charID, int orgZoneID, int instFlag);
-	void	incrCurInstFlagNum(int instFlag);
-	int	getCurInstFlagNum();
 	void	SetLFP(int32 CharID, bool LFP); 
 	void	SetLFG(int32 CharID, bool LFG); 
 	

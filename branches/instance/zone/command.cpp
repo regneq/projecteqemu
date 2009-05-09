@@ -1398,6 +1398,9 @@ void command_summon(Client *c, const Seperator *sep)
 		return;
 	}
 
+	if(!t)
+		return;
+
 	if (t->IsNPC())
 	{ // npc target
 		c->Message(0, "Summoning NPC %s to %1.1f, %1.1f, %1.1f", t->GetName(), c->GetX(), c->GetY(), c->GetZ());
@@ -1418,7 +1421,7 @@ void command_summon(Client *c, const Seperator *sep)
 		}*/
 		t->CastToClient()->cheat_timer.Start(3500,false);
 		c->Message(0, "Summoning player %s to %1.1f, %1.1f, %1.1f", t->GetName(), c->GetX(), c->GetY(), c->GetZ());
-		t->CastToClient()->MovePC(zone->GetZoneID(), c->GetX(), c->GetY(), c->GetZ(), c->GetHeading(), 2, GMSummon);
+		t->CastToClient()->MovePC(zone->GetZoneID(), zone->GetInstanceID(), c->GetX(), c->GetY(), c->GetZ(), c->GetHeading(), 2, GMSummon);
 	}
 }
 
@@ -1472,6 +1475,7 @@ void command_zone(Client *c, const Seperator *sep)
 		c->MovePC(zoneid, 0.0f, 0.0f, 0.0f, 0.0f, 0, ZoneToSafeCoords);
 }
 
+//todo: fix this so it checks if you're in the instance set
 void command_zone_instance(Client *c, const Seperator *sep)
 {
  	if(c->Admin() < commandZoneToCoords &&
@@ -4352,11 +4356,11 @@ void command_goto(Client *c, const Seperator *sep)
 {
 	// Pyro's goto function
 	if (sep->arg[1][0] == '\0' && c->GetTarget())
-		c->MovePC(c->GetTarget()->GetX(), c->GetTarget()->GetY(), c->GetTarget()->GetZ(), c->GetTarget()->GetHeading());
+		c->MovePC(zone->GetZoneID(), zone->GetInstanceID(), c->GetTarget()->GetX(), c->GetTarget()->GetY(), c->GetTarget()->GetZ(), c->GetTarget()->GetHeading());
 	else if (!(sep->IsNumber(1) && sep->IsNumber(2) && sep->IsNumber(3)))
 		c->Message(0, "Usage: #goto [x y z]");
 	else
-		c->MovePC(atof(sep->arg[1]), atof(sep->arg[2]), atof(sep->arg[3]), 0.0f);
+		c->MovePC(zone->GetZoneID(), zone->GetInstanceID(), atof(sep->arg[1]), atof(sep->arg[2]), atof(sep->arg[3]), 0.0f);
 }
 
 #ifdef BUGTRACK

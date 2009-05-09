@@ -1993,7 +1993,7 @@ bool Mob::HateSummon() {
 
     // get summon target
     SetTarget(GetHateTop());
-    if( target)
+    if(target)
     {
 		if (target->IsClient())
 			target->CastToClient()->Message(15,"You have been summoned!");
@@ -2002,7 +2002,7 @@ bool Mob::HateSummon() {
 		// RangerDown - GMMove doesn't seem to be working well with players, so use MovePC for them, GMMove for NPC's
 		if (target->IsClient()) {
 			target->CastToClient()->cheat_timer.Start(3500,false); //Lieka:  Prevent Mob Summons from tripping hack detector.
-			target->CastToClient()->MovePC(zone->GetZoneID(), x_pos, y_pos, z_pos, target->GetHeading(), 0, SummonPC);
+			target->CastToClient()->MovePC(zone->GetZoneID(), zone->GetInstanceID(), x_pos, y_pos, z_pos, target->GetHeading(), 0, SummonPC);
 		}
 		else
 
