@@ -396,31 +396,30 @@ void Group::SplitExp(uint32 exp, Mob* other) {
 	int8 maxlevel = 1;
 	
 	for (i = 0; i < MAX_GROUP_MEMBERS; i++) { 
-	  if (members[i] != NULL) { 
-		  if(members[i]->GetLevel() > maxlevel) 
-			  maxlevel = members[i]->GetLevel(); 
+		if (members[i] != NULL) { 
+			if(members[i]->GetLevel() > maxlevel) 
+				maxlevel = members[i]->GetLevel(); 
 
+			membercount++;
+		} 
+	}
+	
 	float groupmod;
-	if (i == 2)
+	if (membercount == 2)
 		groupmod = 1.2;
-	else if (i == 3)
+	else if (membercount == 3)
 		groupmod = 1.4;
-	else if (i == 4)
+	else if (membercount == 4)
 		groupmod = 1.6;
-	else if (i == 5)
+	else if (membercount == 5)
 		groupmod = 1.8;
-	else if (i == 6)
+	else if (membercount == 6)
 		groupmod = 2.16;
 	else
 		groupmod = 1.0;
 
-		  //groupexp += exp/10; 
-		  groupexp += (uint32)(exp * groupmod * (RuleR(Character, GroupExpMultiplier)));
+	groupexp += (uint32)((float)exp * groupmod * (RuleR(Character, GroupExpMultiplier)));
 
-		  membercount++; 
-	  } 
-	}
-	
 	int conlevel = Mob::GetLevelCon(maxlevel, other->GetLevel());
 	if(conlevel == CON_GREEN)
 		return;	//no exp for greenies...
@@ -464,12 +463,12 @@ void Raid::SplitExp(uint32 exp, Mob* other) {
 		if (members[i].member != NULL) { 
 			if(members[i].member->GetLevel() > maxlevel) 
 				maxlevel = members[i].member->GetLevel(); 
-			//groupexp += (uint32)(exp * zone->GetGroupEXPBonus());
-			groupexp -= (groupexp * (RuleR(Character, RaidExpMultiplier)));
 
 			membercount++; 
 		} 
 	}
+
+	groupexp = (uint32)((float)groupexp * (1.0f-(RuleR(Character, RaidExpMultiplier))));
 
 	int conlevel = Mob::GetLevelCon(maxlevel, other->GetLevel());
 	if(conlevel == CON_GREEN)
@@ -527,14 +526,3 @@ void Client::SendLeadershipEXPUpdate() {
 	
 	FastQueuePacket(&outapp);
 }
-
-
-
-
-
-
-
-
-
-
-
