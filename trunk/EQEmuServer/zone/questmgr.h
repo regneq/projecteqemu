@@ -44,6 +44,7 @@ public:
 	//quest perl functions
 	void echo(int colour, const char *str);
 	void say(const char *str);
+	void say(const char *str, int8 language);
 	void me(const char *str);
 	void summonitem(int32 itemid, uint8 charges = 0);
 	//getZoneID(const char *short_name)

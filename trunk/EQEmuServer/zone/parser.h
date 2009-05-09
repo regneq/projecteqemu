@@ -65,7 +65,7 @@ public:
 	//void	Event(int event, int32 npcid, const char * data, Mob* npcmob, Mob* mob);
 	//changed - Eglin.  more reasonable (IMHO) than changing every single referance to the global pointer.
 	//that's what you get for using globals! :)
-	virtual void    Event(QuestEventID event, int32 npcid, const char * data, NPC* npcmob, Mob* mob);
+	virtual void    Event(QuestEventID event, int32 npcid, const char * data, NPC* npcmob, Mob* mob, int32 extradata = 0);
 
 	void	ExCommands(std::string command, std::string parms, int argnums, int32 npcid, Mob* other, Mob* mob );
 

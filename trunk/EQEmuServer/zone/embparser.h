@@ -36,6 +36,7 @@ struct EventRecord {
 	string data;
 	NPC* npcmob;
 	Mob* mob;
+	int32 extradata;
 };
 
 class PerlembParser : public Parser
@@ -63,7 +64,7 @@ public:
 	//todo, consider making the following two methods static (need to check for perl!=null, first, then)
 	bool isloaded(const char *packagename) const;
 //	bool isdefault(const char *packagename) const { return perl->geti(std::string("$").append(packagename).append("::isdefault").c_str()); }
-	void Event(QuestEventID event, int32 npcid, const char * data, NPC* npcmob, Mob* mob);
+	void Event(QuestEventID event, int32 npcid, const char * data, NPC* npcmob, Mob* mob, int32 extradata = 0);
 	int LoadScript(int npcid, const char * zone, Mob* activater=0);
 	int LoadPlayerScript(const char *zone);
 	

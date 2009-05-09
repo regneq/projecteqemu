@@ -222,10 +222,12 @@ XS(XS__say); // prototype to pass -Wmissing-prototypes
 XS(XS__say) {
 	dXSARGS;
 
-	if (items != 1)
-		Perl_croak(aTHX_ "Usage: say(str)");
-
-	quest_manager.say(SvPV_nolen(ST(0)));
+	if (items == 1)
+		quest_manager.say(SvPV_nolen(ST(0)));
+	else if (items == 2) 
+		quest_manager.say(SvPV_nolen(ST(0)), (int)SvIV(ST(1)));
+	else
+		Perl_croak(aTHX_ "Usage: say(str [, language])");
 
 	XSRETURN_EMPTY;
 }

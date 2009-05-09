@@ -3110,7 +3110,7 @@ void EntityList::ProcessMove(Client *c, float x, float y, float z) {
 	
 }
 
-void EntityList::ProcessProximitySay(const char *Message, Client *c) {
+void EntityList::ProcessProximitySay(const char *Message, Client *c, int8 language) {
 
 	if(!Message || !c)
 		return;
@@ -3128,7 +3128,7 @@ void EntityList::ProcessProximitySay(const char *Message, Client *c) {
 		   || c->GetZ() < l->min_z || c->GetZ() > l->max_z )
 			continue;
 
-		parse->Event(EVENT_PROXIMITY_SAY, d->GetNPCTypeID(), Message, d, c);
+		parse->Event(EVENT_PROXIMITY_SAY, d->GetNPCTypeID(), Message, d, c, language);
 	}
 }
 

@@ -391,7 +391,17 @@ bool Object::HandleClick(Client* sender, const ClickObject_Struct* click_object)
 			respawn_timer.Start();
 	}
 	if (m_type == OT_DROPPEDITEM) {
+		bool cursordelete = false;
 		if (m_inst && sender) {
+			// if there is a lore conflict, delete the offending item from the server inventory 
+			// the client updates itself and takes care of sending "duplicate lore item" messages
+			if(sender->CheckLoreConflict(m_inst->GetItem())) {
+				sint16 loreslot = sender->GetInv().HasItem(m_inst->GetItem()->ID, 0, invWhereBank);
+				if(loreslot != SLOT_INVALID) 	// if the duplicate is in the bank, delete it.
+					sender->DeleteItemInInventory(loreslot);
+				else
+					cursordelete = true;	// otherwise, we delete the new one
+			}
 
 #ifdef EMBPERL
 			char buf[10];
@@ -403,6 +413,10 @@ bool Object::HandleClick(Client* sender, const ClickObject_Struct* click_object)
 			// Transfer item to client
 			sender->PutItemInInventory(SLOT_CURSOR, *m_inst, false);
 			sender->SendItemPacket(SLOT_CURSOR, m_inst, ItemPacketTrade);
+			
+			if(cursordelete)	// delete the item if it's a duplicate lore.  We have to do this because the client expects the item packet
+				sender->DeleteItemInInventory(SLOT_CURSOR);	
+			
 			if(!m_ground_spawn)
 				safe_delete(m_inst);
 

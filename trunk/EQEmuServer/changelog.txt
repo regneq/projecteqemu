@@ -1,5 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/09/2009==
+realityincarnate: Modified quest::say to allow npcs to speak in other languages, added $langid quest variable
+realityincarnate: Made low language skill/drunkenness a bit less understandable
+realityincarnate: Duplicate lore items from foraging/ground spawns are now handled correctly
+realityincarnate: Lore items in the shared bank no longer trigger conflicts with items in individual inventories
+
 ==05/08/2009==
 Derision: Fixed a bug where a pet set to guard would appear not to stop on returning to it's guard spot after being ordered to attack.
 Derision: Fixed a bug where a mob aggroed would sometimes appear to run past it's target.

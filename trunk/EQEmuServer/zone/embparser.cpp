@@ -186,13 +186,13 @@ void PerlembParser::HandleQueue() {
 		EventRecord e = eventQueue.front();
 		eventQueue.pop();
 
-		Event(e.event, e.npcid, e.data.c_str(), e.npcmob, e.mob);
+		Event(e.event, e.npcid, e.data.c_str(), e.npcmob, e.mob, e.extradata);
 	}
 
 	eventQueueProcessing = false;
 }
 
-void PerlembParser::Event(QuestEventID event, int32 npcid, const char * data, NPC* npcmob, Mob* mob)
+void PerlembParser::Event(QuestEventID event, int32 npcid, const char * data, NPC* npcmob, Mob* mob, int32 extradata)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
@@ -214,6 +214,7 @@ void PerlembParser::Event(QuestEventID event, int32 npcid, const char * data, NP
 			e.data = data;
 		e.npcmob = npcmob;
 		e.mob = mob;
+		e.extradata = extradata;
 		eventQueue.push(e);
 		return;
 	}
@@ -438,6 +439,7 @@ void PerlembParser::Event(QuestEventID event, int32 npcid, const char * data, NP
 			npcmob->FaceTarget(mob);
 			ExportVar(packagename.c_str(), "data", npcid);
 			ExportVar(packagename.c_str(), "text", data);
+			ExportVar(packagename.c_str(), "langid", extradata);
 			break;
 		}
 		case EVENT_ITEM: {
@@ -527,6 +529,7 @@ void PerlembParser::Event(QuestEventID event, int32 npcid, const char * data, NP
 		case EVENT_AGGRO_SAY: {
 			ExportVar(packagename.c_str(), "data", npcid);
 			ExportVar(packagename.c_str(), "text", data);
+			ExportVar(packagename.c_str(), "langid", extradata);
 			break;
 		}
 		case EVENT_POPUPRESPONSE:{
@@ -536,6 +539,7 @@ void PerlembParser::Event(QuestEventID event, int32 npcid, const char * data, NP
 		case EVENT_PROXIMITY_SAY: {
 			ExportVar(packagename.c_str(), "data", npcid);
 			ExportVar(packagename.c_str(), "text", data);
+			ExportVar(packagename.c_str(), "langid", extradata);
 			break;
 		}
 		//nothing special about these events
