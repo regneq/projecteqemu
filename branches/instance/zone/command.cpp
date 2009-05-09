@@ -1490,16 +1490,11 @@ void command_zone_instance(Client *c, const Seperator *sep)
  	uint16 zoneid = 0;
 	uint16 instanceid = 0;
 
-	printf("Check 1\n");
 	if(sep->IsNumber(1))
 	{
-		printf("attempting to convert %s into integer\n", sep->arg[1]);
 		instanceid = atoi(sep->arg[1]);
-		printf("Converted %u\n", atoi(sep->arg[1]));
-
 		if(!instanceid)
 		{
-			printf("Check 2\n");
 			c->Message(0, "Must enter a valid instance id.");
 			return;
 		}
@@ -1507,34 +1502,23 @@ void command_zone_instance(Client *c, const Seperator *sep)
 		zoneid = database.ZoneIDFromInstanceID(instanceid);
 		if(!zoneid)
 		{
-			printf("Check 3\n");
 			c->Message(0, "Instance not found or zone is set to null.");
 			return;
-		}
-		else
-		{
-			printf("Check 3a\n");
 		}
 	}
 	else
 	{
-		printf("Check 4\n");
 		c->Message(0, "Must enter a valid instance id.");
 		return;
 	}
 
-	printf("Check 5\n");
 	if (sep->IsNumber(2) || sep->IsNumber(3) || sep->IsNumber(4)){
-		printf("Check 6\n");
 		//zone to specific coords
 		c->CastToClient()->cheat_timer.Start(3500,false);
 		c->MovePC(zoneid, instanceid, atof(sep->arg[2]), atof(sep->arg[3]), atof(sep->arg[4]), 0.0f, 0);
-		printf("Check 6\n");
 	}
 	else{
-		printf("Check 7\n");
 		c->MovePC(zoneid, instanceid, 0.0f, 0.0f, 0.0f, 0.0f, 0, ZoneToSafeCoords);
-		printf("Check 8\n");
 	}
 }
 

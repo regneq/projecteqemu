@@ -608,7 +608,7 @@ int32 ZSList::TriggerBootup(int32 iZoneID, int32 iInstanceID) {
 		LinkedListIterator<ZoneServer*> iterator(list);
 		iterator.Reset();
 		while(iterator.MoreElements()) {
-			if(iterator.GetData()->GetZoneID() == iZoneID)
+			if(iterator.GetData()->GetZoneID() == iZoneID && iterator.GetData()->GetInstanceID() == 0)
 			{
 				return iterator.GetData()->GetID();
 			}

@@ -734,7 +734,19 @@ Zone::Zone(int32 in_zoneid, int32 in_instanceid, const char* in_short_name)
 
 	aas = NULL;
 	totalAAs = 0;
-      gottime = false;
+    gottime = false;
+	
+	if(instanceid > 0)
+	{
+		int32 rem = database.GetTimeRemainingInstance(instanceid);
+		if(rem < 150) //give some leeway to people who are zoning in 2.5 minutes to finish zoning in and get ported out
+			rem = 150;
+		Instance_Timer = new Timer(rem * 1000);
+	}
+	else
+	{
+		Instance_Timer = NULL;
+	}
 }
 
 Zone::~Zone() {
@@ -753,7 +765,9 @@ Zone::~Zone() {
 	zone_point_list.Clear();
 	entity_list.Clear();
 	ClearBlockedSpells();
-//	safe_delete_array(aa_buffer);
+	
+	safe_delete(Instance_Timer);
+
 	if(aas != NULL) {
 		int r;
 		for(r = 0; r < totalAAs; r++) {

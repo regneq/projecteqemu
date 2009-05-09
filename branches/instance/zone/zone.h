@@ -85,6 +85,8 @@ public:
 	inline const int32	GetZoneID() const { return zoneid; }
 	inline const int32	GetInstanceID() const { return instanceid; }
 
+	inline Timer* GetInstanceTimer() { return Instance_Timer; }
+
 	inline const float&	safe_x()		{ return psafe_x; }
 	inline const float&	safe_y()		{ return psafe_y; }
 	inline const float&	safe_z()		{ return psafe_z; }
@@ -239,6 +241,7 @@ private:
 	Timer	clientauth_timer;
 	Timer	spawn2_timer;
 	Timer*  Weather_Timer;
+	Timer*	Instance_Timer;
 //	LinkedList<Spawn*> spawn_list;
 	LinkedList<ZoneClientAuth_Struct*> client_auth_list;
 	

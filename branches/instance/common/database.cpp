@@ -2450,7 +2450,7 @@ int32 Database::GetRaidID(const char* name){
 	return raidid;
 }
 
-bool Database::VerifyInstanceAlive(int32 instanceID, int32 charID)
+bool Database::VerifyInstanceAlive(int16 instanceID, int32 charID)
 {
 
 	//we are not saved to this instance so set our instance to 0
@@ -2470,7 +2470,7 @@ bool Database::VerifyInstanceAlive(int32 instanceID, int32 charID)
 	return true;
 }
 
-bool Database::VerifyZoneInstance(int32 zoneID, int32 instanceID)
+bool Database::VerifyZoneInstance(int32 zoneID, int16 instanceID)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
@@ -2499,7 +2499,7 @@ bool Database::VerifyZoneInstance(int32 zoneID, int32 instanceID)
 	return false;
 }
 
-bool Database::CharacterInInstanceGroup(int32 instanceID, int32 charID)
+bool Database::CharacterInInstanceGroup(int16 instanceID, int32 charID)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
@@ -2523,7 +2523,7 @@ bool Database::CharacterInInstanceGroup(int32 instanceID, int32 charID)
 	return lockout_instance_player;
 }
 
-void Database::SetCharacterInstance(int32 instanceID, int32 charID)
+void Database::SetCharacterInstance(int16 instanceID, int32 charID)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
@@ -2539,7 +2539,7 @@ void Database::SetCharacterInstance(int32 instanceID, int32 charID)
 	}
 }
 
-void Database::DeleteInstance(uint32 instanceID)
+void Database::DeleteInstance(uint16 instanceID)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
@@ -2565,7 +2565,7 @@ void Database::DeleteInstance(uint32 instanceID)
 	}
 }
 
-bool Database::CheckInstanceExpired(uint32 instanceID)
+bool Database::CheckInstanceExpired(uint16 instanceID)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
@@ -2607,42 +2607,138 @@ bool Database::CheckInstanceExpired(uint32 instanceID)
 	return false;
 }
 
-int32 Database::ZoneIDFromInstanceID(uint32 instanceID)
+int32 Database::ZoneIDFromInstanceID(uint16 instanceID)
 {
-	printf("ZoneIDFromInstanceID()\n");
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
 	MYSQL_RES *result;
 	MYSQL_ROW row;
+	int32 ret;
+
 	if (RunQuery(query, MakeAnyLenString(&query, "SELECT zone FROM instance_lockout where id=%u", instanceID), errbuf, &result))
 	{
 		safe_delete_array(query);
 		if (mysql_num_rows(result) != 0) 
 		{
 			row = mysql_fetch_row(result);
-			printf("ZoneIDFromInstanceID() return %u\n", atoi(row[0]));
-			int32 ret = atoi(row[0]);
+			ret = atoi(row[0]);
 			mysql_free_result(result);
 			return ret;			
 		}
 		else
 		{
 			mysql_free_result(result);
-			printf("ZoneIDFromInstanceID() return %u\n", 0);
 			return 0;
 		}
 	}
 	else 
 	{
 		safe_delete_array(query);
-		printf("ZoneIDFromInstanceID() return %u\n", 0);
 		return 0;
 	}
-	printf("ZoneIDFromInstanceID() return %u\n", 0);
 	return 0;
 }
 
+int32 Database::GetTimeRemainingInstance(uint16 instanceID)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
 
+	int32 start_time = 0;
+	int32 duration = 0;
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT start_time, duration FROM instance_lockout WHERE id=%u", instanceID), errbuf, &result))
+	{
+		safe_delete_array(query);
+		if (mysql_num_rows(result) != 0) 
+		{
+			row = mysql_fetch_row(result);
+			start_time = atoi(row[0]);
+			duration = atoi(row[1]);
+		}
+		else
+		{
+			mysql_free_result(result);
+			return 0;
+		}
+		mysql_free_result(result);
+	}
+	else 
+	{
+		safe_delete_array(query);
+		return 0;
+	}
+
+	timeval tv;
+	gettimeofday(&tv, NULL);
+	return ((start_time + duration) - tv.tv_sec);
+}
+
+bool Database::GetUnusedInstanceID(uint16 &instanceID)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+
+	sint32 id = 0;
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT MIN(id)-1 FROM instance_lockout a WHERE id >= 0 AND NOT EXISTS(SELECT 0 FROM instance_lockout b WHERE b.id = a.id + 1)"), errbuf, &result))
+	{
+		safe_delete_array(query);
+		if (mysql_num_rows(result) != 0) 
+		{
+			row = mysql_fetch_row(result);
+			id = atoi(row[0]);
+		}
+		else
+		{
+			mysql_free_result(result);
+		}
+		mysql_free_result(result);
+	}
+	else 
+	{
+		safe_delete_array(query);
+	}
+
+	if(id <= 0)
+	{
+		if (RunQuery(query, MakeAnyLenString(&query, "SELECT MIN(id)+1 FROM instance_lockout a WHERE id >= 0 AND NOT EXISTS(SELECT 0 FROM instance_lockout b WHERE b.id = a.id + 1)"), errbuf, &result))
+		{
+			safe_delete_array(query);
+			if (mysql_num_rows(result) != 0) 
+			{
+				row = mysql_fetch_row(result);
+				id = atoi(row[0]);
+			}
+			else
+			{
+				mysql_free_result(result);
+			}
+			mysql_free_result(result);
+		}
+		else 
+		{
+			safe_delete_array(query);
+		}
+
+		if(id > 65535) //max we can hold in uint16
+		{
+			return false;
+		}
+		else
+		{
+			instanceID = (int16)id;
+			return true;
+		}
+	}
+	else
+	{
+		instanceID = (int16)id;
+		return true;
+	}
+}
 
 
 

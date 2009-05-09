@@ -7551,6 +7551,51 @@ void Client::CompleteConnect()
 #ifdef EMBPERL
 	((PerlembParser *)parse)->Event(EVENT_ENTERZONE, 0, "", (NPC*)NULL, this);
 #endif
+
+		/*int32 day; int32 hour; int32 min; int32 sec; int32 ttime;
+		if ((ttime = tcorpse->GetDecayTime()) != 0) {
+			sec = (ttime/1000)%60; // Total seconds
+			min = (ttime/60000)%60; // Total seconds
+			hour = (ttime/3600000)%60; // Total hours
+			day = (ttime/86400000)%24; // Total Days
+			if(day)
+				Message(0, "This corpse will decay in %i days, %i hours, %i minutes and %i seconds.", day, hour, min, sec);
+			else if(hour)
+				Message(0, "This corpse will decay in %i hours, %i minutes and %i seconds.", hour, min, sec);
+			else
+				Message(0, "This corpse will decay in %i minutes and %i seconds.", min, sec);*/
+
+	if(zone)
+	{
+		if(zone->GetInstanceTimer())
+		{
+			int32 ttime = zone->GetInstanceTimer()->GetRemainingTime();
+			int32 day = (ttime/86400000)%24;
+			int32 hour = (ttime/3600000)%60;;
+			int32 minute = (ttime/60000)%60;
+			int32 second = (ttime/1000)%60;;
+			if(day)
+			{
+				Message(15, "%s(%u) will expire in %u days, %u hours, %u minutes, and %u seconds.",
+					zone->GetLongName(), zone->GetInstanceID(), day, hour, minute, second);
+			}
+			else if(hour)
+			{
+				Message(15, "%s(%u) will expire in %u hours, %u minutes, and %u seconds.",
+					zone->GetLongName(), zone->GetInstanceID(), hour, minute, second);
+			}
+			else if(minute)
+			{
+				Message(15, "%s(%u) will expire in %u minutes, and %u seconds.",
+					zone->GetLongName(), zone->GetInstanceID(), minute, second);
+			}
+			else
+			{
+				Message(15, "%s(%u) will expire in in %u seconds.",
+					zone->GetLongName(), zone->GetInstanceID(), second);
+			}
+		}
+	}
 }
 
 void Client::Handle_OP_KeyRing(const EQApplicationPacket *app) {
