@@ -291,7 +291,12 @@ bool Client::PushItemOnCursor(const ItemInst& inst, bool client_update)
 bool Client::PutItemInInventory(sint16 slot_id, const ItemInst& inst, bool client_update)
 {
 	mlog(INVENTORY__SLOTS, "Putting item %s (%d) into slot %d", inst.GetItem()->Name, inst.GetItem()->ID, slot_id);
-	m_inv.PutItem(slot_id, inst);
+	if (slot_id==SLOT_CURSOR) 
+	{
+		return PushItemOnCursor(inst,client_update);
+	}
+	else
+		m_inv.PutItem(slot_id, inst);
 	
 	if (client_update) {
 		SendItemPacket(slot_id, &inst, (slot_id==SLOT_CURSOR)?ItemPacketSummonItem:ItemPacketTrade);

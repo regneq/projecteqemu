@@ -534,7 +534,7 @@ void ZSList::RebootZone(const char* ip1,int16 port,const char* ip2, int32 skipid
 		_log(WORLD__ZONELIST,"Rebooting static zone with the ID of: %i",zoneid);
 	tmp[z]->SendPacket(pack);
 	delete pack;
-	safe_delete(tmp);
+	safe_delete_array(tmp);
 }
 
 uint16	ZSList::GetAvailableZonePort()

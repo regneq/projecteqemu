@@ -354,6 +354,7 @@ Corpse::Corpse(int32 in_dbid, int32 in_charid, char* in_charname, ItemList* in_i
 	in_itemlist->clear();
 
 	//we really should be loading the decay timer here...
+	LoadPlayerCorpseDecayTime(in_dbid);
 	
 	strcpy(orgname, in_charname);
 	strcpy(name, in_charname);
@@ -459,7 +460,7 @@ bool Corpse::Save() {
 		dbid = database.CreatePlayerCorpse(charid, orgname, zone->GetZoneID(), (uchar*) dbpc, tmpsize, x_pos, y_pos, z_pos, heading);
 	else
 		dbid = database.UpdatePlayerCorpse(dbid, charid, orgname, zone->GetZoneID(), (uchar*) dbpc, tmpsize, x_pos, y_pos, z_pos, heading,Rezzed());
-	safe_delete(dbpc);
+	safe_delete_array(dbpc);
 	if (dbid == 0) {
 		cout << "Error: Failed to save player corpse '" << this->GetName() << "'" << endl;
 		return false;
@@ -1578,6 +1579,27 @@ void Corpse::AddLooter(Mob* who)
 			break;
 		}
 	}
+}
+
+void Corpse::LoadPlayerCorpseDecayTime(int32 dbid){
+	if(!dbid)
+		return;
+	char errbuf[MYSQL_ERRMSG_SIZE];
+    char *query = 0;
+    MYSQL_RES *result;
+    MYSQL_ROW row;
+	if (database.RunQuery(query, MakeAnyLenString(&query, "SELECT (UNIX_TIMESTAMP() - UNIX_TIMESTAMP(timeofdeath)) FROM player_corpses WHERE id=%d and not timeofdeath=0", dbid), errbuf, &result)) {
+		safe_delete_array(query);
+		while (row = mysql_fetch_row(result)) {
+			if(atoi(row[0]) > 0 && RuleI(Character, CorpseDecayTimeMS) > (atoi(row[0]) * 1000))
+				corpse_decay_timer.SetTimer(RuleI(Character, CorpseDecayTimeMS) - (atoi(row[0]) * 1000));
+			else
+				corpse_decay_timer.SetTimer(5000);
+		}
+		mysql_free_result(result);
+	}
+	else
+		safe_delete_array(query);
 }
 
 /*

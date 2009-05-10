@@ -204,7 +204,7 @@ void Console::SendMessage(int8 newline, const char* message, ...) {
 			strcat(buffer, outbuf);
 	}
 	tcpc->Send((uchar*) buffer, strlen(buffer));
-	safe_delete(buffer);
+	safe_delete_array(buffer);
 }
 
 bool Console::Process() {

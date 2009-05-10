@@ -478,7 +478,7 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage)
 
 		// a successful roll on this does not mean a successful block is forthcoming. only that a chance to block
 		// from a direction other than the rear is granted.
-		switch (aaHightenedAwareness) {
+		switch (GetAA(aaHightenedAwareness)) {
 		case 1:
 			aaChance = 8;
 			break;

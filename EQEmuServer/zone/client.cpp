@@ -3245,7 +3245,7 @@ void Client::SendAdventureRequest(){
 	SetAdventureID(AF.QuestID);
 	QueuePacket(outapp);
 	safe_delete(outapp);
-	safe_delete(buffer1);
+	safe_delete_array(buffer1);
 
 }
 void Client::SendAdventureRequestData(Group* group,bool EnteredDungeon,bool EnteredZone,bool Zoned){
