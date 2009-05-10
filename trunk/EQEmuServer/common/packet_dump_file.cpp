@@ -129,7 +129,7 @@ void FileDumpPacketHex(const char* filename, const uchar* buf, int32 size, int32
 		logfile << "   ";
 	}
 	logfile << " | " << ascii << endl;
-	delete ascii;
+	delete[] ascii;
 }
 
 void FileDumpPacketHex(const char* filename, const EQApplicationPacket* app)
