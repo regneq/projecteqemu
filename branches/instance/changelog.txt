@@ -1,5 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/10/2009==
+KLS: Fix for a add/remove raid looter across zones error.
+KLS: Changed order of split raid exp, ensures amount given to a player is always at least 1.
+KLS: (tsowl) Various Fixes
+
 ==05/09/2009==
 realityincarnate: Modified quest::say to allow npcs to speak in other languages, added $langid quest variable
 realityincarnate: Made low language skill/drunkenness a bit less understandable

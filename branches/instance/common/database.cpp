@@ -2736,6 +2736,7 @@ bool Database::GetUnusedInstanceID(uint16 &instanceID)
 	return false;
 }
 
+//perhaps purge any expireds too
 bool Database::CreateInstance(uint16 instance_id, uint32 zone_id, uint32 version, uint32 duration)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];

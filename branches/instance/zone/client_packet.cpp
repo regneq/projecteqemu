@@ -1653,8 +1653,8 @@ void Client::Handle_OP_ConsiderCorpse(const EQApplicationPacket *app)
 		if ((ttime = tcorpse->GetDecayTime()) != 0) {
 			sec = (ttime/1000)%60; // Total seconds
 			min = (ttime/60000)%60; // Total seconds
-			hour = (ttime/3600000)%60; // Total hours
-			day = (ttime/86400000)%24; // Total Days
+			hour = (ttime/3600000)%24; // Total hours
+			day = ttime/86400000; // Total Days
 			if(day)
 				Message(0, "This corpse will decay in %i days, %i hours, %i minutes and %i seconds.", day, hour, min, sec);
 			else if(hour)
@@ -3637,7 +3637,7 @@ void Client::Handle_OP_BoardBoat(const EQApplicationPacket *app)
 	Mob* boat = entity_list.GetMob(boatname);
 	if (boat)
 		this->BoatID = boat->GetID();	// set the client's BoatID to show that it's on this boat
-	safe_delete(boatname);
+	safe_delete_array(boatname);
 	return;
 }
 
