@@ -669,7 +669,7 @@ void Raid::AddRaidLooter(const char* looter)
 		}
 	}
 	ServerPacket *pack = new ServerPacket(ServerOP_DetailsChange, sizeof(ServerRaidGeneralAction_Struct));
-	ServerRaidGeneralAction_Struct *rga = (ServerRaidGeneralAction_Struct*)pack;
+	ServerRaidGeneralAction_Struct *rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 	rga->rid = GetID();
 	rga->zoneid = zone->GetZoneID();
 	worldserver.SendPacket(pack);
@@ -705,7 +705,7 @@ void Raid::RemoveRaidLooter(const char* looter)
 		}
 	}
 	ServerPacket *pack = new ServerPacket(ServerOP_DetailsChange, sizeof(ServerRaidGeneralAction_Struct));
-	ServerRaidGeneralAction_Struct *rga = (ServerRaidGeneralAction_Struct*)pack;
+	ServerRaidGeneralAction_Struct *rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 	rga->rid = GetID();
 	rga->zoneid = zone->GetZoneID();
 	worldserver.SendPacket(pack);
