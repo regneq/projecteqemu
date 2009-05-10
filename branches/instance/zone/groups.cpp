@@ -526,6 +526,7 @@ bool Group::DelMember(Mob* oldmember,bool ignoresender){
 	ServerGroupLeave_Struct* gl = (ServerGroupLeave_Struct*)pack->pBuffer;
 	gl->gid = GetID();
 	gl->zoneid = zone->GetZoneID();
+	gl->instance_id = zone->GetInstanceID();
 	strcpy(gl->member_name, oldmember->GetName());
 	worldserver.SendPacket(pack);
 	safe_delete(pack);
@@ -681,6 +682,7 @@ void Group::GroupMessage(Mob* sender, int8 language, int8 lang_skill, const char
 	ServerGroupChannelMessage_Struct* gcm = (ServerGroupChannelMessage_Struct*)pack->pBuffer;
 	gcm->zoneid = zone->GetZoneID();
 	gcm->groupid = GetID();
+	gcm->instanceid = zone->GetInstanceID();
 	strcpy(gcm->from, sender->GetName());
 	strcpy(gcm->message, message);
 	worldserver.SendPacket(pack);
@@ -731,6 +733,7 @@ void Group::DisbandGroup() {
 	ServerDisbandGroup_Struct* dg = (ServerDisbandGroup_Struct*)pack->pBuffer;
 	dg->zoneid = zone->GetZoneID();
 	dg->groupid = GetID();
+	dg->instance_id = zone->GetInstanceID();
 	worldserver.SendPacket(pack);
 	safe_delete(pack);	
 

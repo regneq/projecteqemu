@@ -2817,3 +2817,29 @@ bool Database::RemoveClientFromInstance(uint16 instance_id, uint32 char_id)
 		return false;
 	}
 }
+
+bool Database::CheckInstanceExists(uint16 instance_id)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT * FROM instance_lockout where id=%u", instance_id), errbuf, &result))
+	{
+		safe_delete_array(query);
+		if (mysql_num_rows(result) != 0) 
+		{
+			mysql_free_result(result);
+			return true;
+		}
+		mysql_free_result(result);
+		return false;
+	}
+	else 
+	{
+		safe_delete_array(query);
+		return false;
+	}
+	return false;
+}

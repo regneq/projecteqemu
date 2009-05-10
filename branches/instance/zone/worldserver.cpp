@@ -200,41 +200,34 @@ void WorldServer::Process() {
 		}
 		case ServerOP_VoiceMacro: {
 
-			if (!ZoneLoaded) break;
+			if (!ZoneLoaded) 
+				break;
 
 			ServerVoiceMacro_Struct* svm = (ServerVoiceMacro_Struct*) pack->pBuffer;
 
 			EQApplicationPacket* outapp = new EQApplicationPacket(OP_VoiceMacroOut,sizeof(VoiceMacroOut_Struct));
-
 			VoiceMacroOut_Struct* vmo = (VoiceMacroOut_Struct*)outapp->pBuffer;
 
 			strcpy(vmo->From, svm->From);
-
 			vmo->Type = svm->Type;
-
 			vmo->Voice =svm->Voice;
-
 			vmo->MacroNumber = svm->MacroNumber;
 
 			switch(svm->Type) {
-
 				case VoiceMacroTell: {
-
 					Client* c = entity_list.GetClientByName(svm->To);
-
-					if(!c) break;
+					if(!c) 
+						break;
 
 					c->QueuePacket(outapp);
-
 					break;
-	
 				}
 
 				case VoiceMacroGroup: {
-
 					Group* g = entity_list.GetGroupByID(svm->GroupID);
 
-					if(!g) break;
+					if(!g) 
+						break;
 
 					for(unsigned int i = 0; i < MAX_GROUP_MEMBERS; i++) {
 						if(g->members[i] && g->members[i]->IsClient())
@@ -245,10 +238,10 @@ void WorldServer::Process() {
 				}
 
 				case VoiceMacroRaid: {
-
 					Raid *r = entity_list.GetRaidByID(svm->RaidID);
 
-					if(!r) break;
+					if(!r) 
+						break;
 
 					for(int i = 0; i < MAX_RAID_MEMBERS; i++)
 						if(r->members[i].member)
@@ -257,9 +250,7 @@ void WorldServer::Process() {
 					break;
 				}
 			}
-
 			safe_delete(outapp);
-
 			break;
 		}
 
@@ -790,7 +781,7 @@ void WorldServer::Process() {
 		case ServerOP_GroupLeave: {
 			ServerGroupLeave_Struct* gl = (ServerGroupLeave_Struct*)pack->pBuffer;
 			if(zone){
-				if(gl->zoneid == zone->GetZoneID())
+				if(gl->zoneid == zone->GetZoneID() && gl->instance_id == zone->GetInstanceID())
 					break;
 
 				entity_list.SendGroupLeave(gl->gid, gl->member_name);
@@ -801,7 +792,7 @@ void WorldServer::Process() {
 		case ServerOP_GroupJoin: {
 			ServerGroupJoin_Struct* gj = (ServerGroupJoin_Struct*)pack->pBuffer;
 			if(zone){
-				if(gj->zoneid == zone->GetZoneID())
+				if(gj->zoneid == zone->GetZoneID() && gj->instance_id == zone->GetInstanceID())
 					break;
 
 				entity_list.SendGroupJoin(gj->gid, gj->member_name);
@@ -812,7 +803,7 @@ void WorldServer::Process() {
 		case ServerOP_ForceGroupUpdate: {
 			ServerForceGroupUpdate_Struct* fgu = (ServerForceGroupUpdate_Struct*)pack->pBuffer;
 			if(zone){
-				if(fgu->origZoneID == zone->GetZoneID())
+				if(fgu->origZoneID == zone->GetZoneID()	&& fgu->instance_id == zone->GetInstanceID())
 					break;
 
 				entity_list.ForceGroupUpdate(fgu->gid);
@@ -823,7 +814,7 @@ void WorldServer::Process() {
 		case ServerOP_OOZGroupMessage: {
 			ServerGroupChannelMessage_Struct* gcm = (ServerGroupChannelMessage_Struct*)pack->pBuffer;
 			if(zone){
-				if(gcm->zoneid == zone->GetZoneID())
+				if(gcm->zoneid == zone->GetZoneID() && gcm->instanceid == zone->GetInstanceID())
 					break;
 
 				entity_list.GroupMessage(gcm->groupid, gcm->from, gcm->message);
@@ -833,7 +824,7 @@ void WorldServer::Process() {
 		case ServerOP_DisbandGroup: {
 			ServerDisbandGroup_Struct* sd = (ServerDisbandGroup_Struct*)pack->pBuffer;
 			if(zone){
-				if(sd->zoneid == zone->GetZoneID())
+				if(sd->zoneid == zone->GetZoneID() && sd->instance_id == zone->GetInstanceID())
 					break;
 
 				Group *g = entity_list.GetGroupByID(sd->groupid);
@@ -845,7 +836,7 @@ void WorldServer::Process() {
 		case ServerOP_RaidAdd:{
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if(zone){
-				if(rga->zoneid == zone->GetZoneID())
+				if(rga->zoneid == zone->GetZoneID() && rga->instance_id == zone->GetInstanceID())
 					break;
 				
 				Raid *r = entity_list.GetRaidByID(rga->rid);
@@ -861,7 +852,7 @@ void WorldServer::Process() {
 		case ServerOP_RaidRemove:{
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if(zone){
-				if(rga->zoneid == zone->GetZoneID())
+				if(rga->zoneid == zone->GetZoneID() && rga->instance_id == zone->GetInstanceID())
 					break;
 				
 				Raid *r = entity_list.GetRaidByID(rga->rid);
@@ -881,7 +872,7 @@ void WorldServer::Process() {
 		case ServerOP_RaidDisband:{
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if(zone){
-				if(rga->zoneid == zone->GetZoneID())
+				if(rga->zoneid == zone->GetZoneID() && rga->instance_id == zone->GetInstanceID())
 					break;
 				
 				Raid *r = entity_list.GetRaidByID(rga->rid);
@@ -897,7 +888,7 @@ void WorldServer::Process() {
 		case ServerOP_RaidLockFlag:{
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if(zone){
-				if(rga->zoneid == zone->GetZoneID())
+				if(rga->zoneid == zone->GetZoneID() && rga->instance_id == zone->GetInstanceID())
 					break;
 				
 				Raid *r = entity_list.GetRaidByID(rga->rid);
@@ -915,7 +906,7 @@ void WorldServer::Process() {
 		case ServerOP_RaidChangeGroup:{
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if(zone){
-				if(rga->zoneid == zone->GetZoneID())
+				if(rga->zoneid == zone->GetZoneID() && rga->instance_id == zone->GetInstanceID())
 					break;
 				
 				Raid *r = entity_list.GetRaidByID(rga->rid);
@@ -944,7 +935,7 @@ void WorldServer::Process() {
 		case ServerOP_UpdateGroup:{
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if(zone){
-				if(rga->zoneid == zone->GetZoneID())
+				if(rga->zoneid == zone->GetZoneID() && rga->instance_id == zone->GetInstanceID())
 					break;
 				
 				Raid *r = entity_list.GetRaidByID(rga->rid);
@@ -958,7 +949,7 @@ void WorldServer::Process() {
 		case ServerOP_RaidGroupLeader:{
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if(zone){
-				if(rga->zoneid == zone->GetZoneID())
+				if(rga->zoneid == zone->GetZoneID() && rga->instance_id == zone->GetInstanceID())
 					break;
 			}
 			break;
@@ -967,7 +958,7 @@ void WorldServer::Process() {
 		case ServerOP_RaidLeader:{
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if(zone){
-				if(rga->zoneid == zone->GetZoneID())
+				if(rga->zoneid == zone->GetZoneID() && rga->instance_id == zone->GetInstanceID())
 					break;
 				
 				Raid *r = entity_list.GetRaidByID(rga->rid);
@@ -988,7 +979,7 @@ void WorldServer::Process() {
 		case ServerOP_DetailsChange:{
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if(zone){
-				if(rga->zoneid == zone->GetZoneID())
+				if(rga->zoneid == zone->GetZoneID() && rga->instance_id == zone->GetInstanceID())
 					break;
 				
 				Raid *r = entity_list.GetRaidByID(rga->rid);
@@ -1004,7 +995,7 @@ void WorldServer::Process() {
 		case ServerOP_RaidGroupDisband:{
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if(zone){
-				if(rga->zoneid == zone->GetZoneID())
+				if(rga->zoneid == zone->GetZoneID() && rga->instance_id == zone->GetInstanceID())
 					break;
 				
 				Client *c = entity_list.GetClientByName(rga->playername);

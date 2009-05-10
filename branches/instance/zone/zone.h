@@ -242,6 +242,7 @@ private:
 	Timer	spawn2_timer;
 	Timer*  Weather_Timer;
 	Timer*	Instance_Timer;
+	Timer*	Instance_Shutdown_Timer;
 //	LinkedList<Spawn*> spawn_list;
 	LinkedList<ZoneClientAuth_Struct*> client_auth_list;
 	

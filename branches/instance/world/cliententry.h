@@ -61,6 +61,7 @@ public:
 	inline int32		CharID() const		{ return pcharid; }
 	inline const char*	name() const		{ return pname; }
 	inline int32		zone() const		{ return pzone; }
+	inline int16		instance() const	{ return pinstance; }
 	inline int8			level() const		{ return plevel; }
 	inline int8			class_() const		{ return pclass_; }
 	inline int16		race() const		{ return prace; }
@@ -102,6 +103,7 @@ private:
 	// Character info
 	ZoneServer* pzoneserver;
 	int32	pzone;
+	int16	pinstance;
 	int32	pcharid;
 	char	pname[64];
 	int8	plevel;

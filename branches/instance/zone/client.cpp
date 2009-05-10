@@ -1255,6 +1255,7 @@ void Client::UpdateWho(int8 remove) {
 	scl->LSAccountID = this->LSAccountID();
 	strn0cpy(scl->lskey, lskey, sizeof(scl->lskey));
 	scl->zone = zone->GetZoneID();
+	scl->instance_id = zone->GetInstanceID();
 	scl->race = this->GetRace();
 	scl->class_ = GetClass();
 	scl->level = GetLevel();

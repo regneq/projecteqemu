@@ -1517,11 +1517,11 @@ void command_zone_instance(Client *c, const Seperator *sep)
 		return;
 	}
 
-	/*if(!database.VerifyInstanceAlive(zone->GetInstanceID(), c->CharacterID()))
+	if(!database.VerifyInstanceAlive(instanceid, c->CharacterID()))
 	{
 		c->Message(0, "Instance ID expiried or you are not apart of this instance.");
 		return;
-	}*/
+	}
 
 	if (sep->IsNumber(2) || sep->IsNumber(3) || sep->IsNumber(4)){
 		//zone to specific coords
@@ -12085,6 +12085,13 @@ void command_instance(Client *c, const Seperator *sep)
 		if(id <= 0 || charid <= 0)
 		{
 			c->Message(0, "Must enter a valid instance id and player name.");
+			return;
+		}
+
+		if(!database.CheckInstanceExists(id))
+		{
+			c->Message(0, "Instance does not exist.");
+			return;
 		}
 
 		if(database.AddClientToInstance(id, charid))

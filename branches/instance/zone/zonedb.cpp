@@ -1828,18 +1828,22 @@ void ZoneDatabase::ListAllInstances(Client* c, int32 charid)
 	if(!c)
 		return;
 
+
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char* query = 0;
 	MYSQL_RES *result;
 	MYSQL_ROW row;
 
 
-	if (RunQuery(query,MakeAnyLenString(&query, "SELECT id, zone, version FROM instance_lockout a "
-		"WHERE a.id=(SELECT id FROM instance_lockout_player b WHERE charid=%lu)", charid),errbuf,&result))
+	if (RunQuery(query,MakeAnyLenString(&query, "SELECT instance_lockout.id, zone, version FROM instance_lockout JOIN"
+		" instance_lockout_player ON instance_lockout.id = instance_lockout_player.id"
+		" WHERE instance_lockout_player.charid=%lu", charid),errbuf,&result))
 	{
 		safe_delete_array(query);
 
-		c->Message(0, "Character %u is part of the following instances:", charid);
+		char name[64];
+		database.GetCharName(charid, name);
+		c->Message(0, "%s is part of the following instances:", name);
 		while(row = mysql_fetch_row(result))
 		{
 			c->Message(0, "%s - id: %lu, version: %lu", database.GetZoneName(atoi(row[1])), 

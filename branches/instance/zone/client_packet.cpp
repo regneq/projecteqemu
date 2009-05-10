@@ -4927,6 +4927,7 @@ void Client::Handle_OP_GroupFollow2(const EQApplicationPacket *app)
 		ServerGroupJoin_Struct* gj = (ServerGroupJoin_Struct*)pack->pBuffer;
 		gj->gid = group->GetID();
 		gj->zoneid = zone->GetZoneID();
+		gj->instance_id = zone->GetInstanceID();
 		strcpy(gj->member_name, GetName());
 		worldserver.SendPacket(pack);
 		safe_delete(pack);
@@ -7552,28 +7553,15 @@ void Client::CompleteConnect()
 	((PerlembParser *)parse)->Event(EVENT_ENTERZONE, 0, "", (NPC*)NULL, this);
 #endif
 
-		/*int32 day; int32 hour; int32 min; int32 sec; int32 ttime;
-		if ((ttime = tcorpse->GetDecayTime()) != 0) {
-			sec = (ttime/1000)%60; // Total seconds
-			min = (ttime/60000)%60; // Total seconds
-			hour = (ttime/3600000)%60; // Total hours
-			day = (ttime/86400000)%24; // Total Days
-			if(day)
-				Message(0, "This corpse will decay in %i days, %i hours, %i minutes and %i seconds.", day, hour, min, sec);
-			else if(hour)
-				Message(0, "This corpse will decay in %i hours, %i minutes and %i seconds.", hour, min, sec);
-			else
-				Message(0, "This corpse will decay in %i minutes and %i seconds.", min, sec);*/
-
 	if(zone)
 	{
 		if(zone->GetInstanceTimer())
 		{
 			int32 ttime = zone->GetInstanceTimer()->GetRemainingTime();
-			int32 day = (ttime/86400000)%24;
-			int32 hour = (ttime/3600000)%60;;
+			int32 day = (ttime/86400000);
+			int32 hour = (ttime/3600000)%24;
 			int32 minute = (ttime/60000)%60;
-			int32 second = (ttime/1000)%60;;
+			int32 second = (ttime/1000)%60;
 			if(day)
 			{
 				Message(15, "%s(%u) will expire in %u days, %u hours, %u minutes, and %u seconds.",
@@ -8097,6 +8085,7 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 					ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 					rga->rid = GetID();
 					rga->zoneid = zone->GetZoneID();
+					rga->instance_id = zone->GetInstanceID();
 					strncpy(rga->playername, ri->leader_name, 64);
 					worldserver.SendPacket(pack);
 					safe_delete(pack);
@@ -8152,6 +8141,7 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 												rga->rid = r->GetID();
 												strncpy(rga->playername, r->members[x].membername, 64);
 												rga->zoneid = zone->GetZoneID();
+												rga->instance_id = zone->GetInstanceID();
 												worldserver.SendPacket(pack);
 												safe_delete(pack);
 											}
@@ -8173,6 +8163,7 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 							ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 							rga->rid = r->GetID();
 							rga->zoneid = zone->GetZoneID();
+							rga->instance_id = zone->GetInstanceID();
 							strncpy(rga->playername, ri->leader_name, 64);
 							worldserver.SendPacket(pack);
 							safe_delete(pack);
@@ -8216,6 +8207,7 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 									rga->rid = r->GetID();
 									strncpy(rga->playername,r->members[x].membername, 64);
 									rga->zoneid = zone->GetZoneID();
+									rga->instance_id = zone->GetInstanceID();
 									worldserver.SendPacket(pack);
 									safe_delete(pack);
 								}
@@ -8232,6 +8224,7 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 						ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 						rga->rid = r->GetID();
 						rga->zoneid = zone->GetZoneID();
+						rga->instance_id = zone->GetInstanceID();
 						strncpy(rga->playername, ri->leader_name, 64);
 						worldserver.SendPacket(pack);
 						safe_delete(pack);

@@ -2552,7 +2552,21 @@ void NPC::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill) 
 	{
 		Group *kg = entity_list.GetGroupByClient(give_exp_client);
 		Raid *kr = entity_list.GetRaidByClient(give_exp_client);
-		if (give_exp_client->IsGrouped() && kg != NULL)
+		if(kr)
+		{
+			if(!IsLdonTreasure)
+				kr->SplitExp((EXP_FORMULA), this);
+
+			/* Send the EVENT_KILLED_MERIT event for all raid members */
+			for (int i = 0; i < MAX_RAID_MEMBERS; i++) {
+				if (kr->members[i].member != NULL) { // If Group Member is Client
+					parse->Event(EVENT_KILLED_MERIT, GetNPCTypeID(), "killed", this, kr->members[i].member);
+					if(RuleB(TaskSystem, EnableTaskSystem))
+						kr->members[i].member->UpdateTasksOnKill(GetNPCTypeID());
+				}
+			}
+		}
+		else if (give_exp_client->IsGrouped() && kg != NULL)
 		{
 			if(give_exp_client->GetAdventureID()>0){
 				AdventureInfo AF = database.GetAdventureInfo(give_exp_client->GetAdventureID());
@@ -2573,20 +2587,6 @@ void NPC::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill) 
 					parse->Event(EVENT_KILLED_MERIT, GetNPCTypeID(), "killed", this, c);
 					if(RuleB(TaskSystem, EnableTaskSystem))
 						c->UpdateTasksOnKill(GetNPCTypeID());
-				}
-			}
-		}
-		else if(kr)
-		{
-			if(!IsLdonTreasure)
-				kr->SplitExp((EXP_FORMULA), this);
-
-			/* Send the EVENT_KILLED_MERIT event for all raid members */
-			for (int i = 0; i < MAX_RAID_MEMBERS; i++) {
-				if (kr->members[i].member != NULL) { // If Group Member is Client
-					parse->Event(EVENT_KILLED_MERIT, GetNPCTypeID(), "killed", this, kr->members[i].member);
-					if(RuleB(TaskSystem, EnableTaskSystem))
-						kr->members[i].member->UpdateTasksOnKill(GetNPCTypeID());
 				}
 			}
 		}

@@ -160,6 +160,7 @@ public:
 	void PurgeExpiredInstances();
 	bool AddClientToInstance(uint16 instance_id, uint32 char_id);
 	bool RemoveClientFromInstance(uint16 instance_id, uint32 char_id);
+	bool CheckInstanceExists(uint16 instance_id);
 	//move all corpses in instance to non-instanced gy
 
 	/*

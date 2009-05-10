@@ -1,3 +1,8 @@
+KLS - May 10, 2009
+-Raid/Groups should work properly across instances.
+-Some more fixes.
+-More work on implementing raid lockout timers.
+
 KLS - May 9, 2009: 
 -Added changelog for instance branch.
 -Zoning updated to be more smooth, summoning in zone as well as evacuating and #goto now work if the zone is instanced.

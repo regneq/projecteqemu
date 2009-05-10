@@ -336,6 +336,8 @@ public:
 	void	CreateGroundObject(int32 itemid, float x, float y, float z, float heading, int32 decay_time = 300000);
 	void	ZoneWho(Client *c, Who_All_Struct* Who);
 
+	void	GateAllClients();
+
 #ifdef EQBOTS
 
 	// franck-add: EQoffline

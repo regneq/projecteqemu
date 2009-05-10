@@ -3801,3 +3801,19 @@ void EntityList::ZoneWho(Client *c, Who_All_Struct* Who) {
 
 	safe_delete(outapp);
 }
+
+
+void EntityList::GateAllClients()
+{
+	LinkedListIterator<Client*> iterator(client_list); 
+	iterator.Reset();
+	while(iterator.MoreElements()) 
+	{
+		Client *c = iterator.GetData();
+		if(c)
+		{
+			c->GoToBind();
+		}
+		iterator.Advance();
+	}
+}

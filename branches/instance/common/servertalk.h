@@ -287,6 +287,7 @@ struct ServerClientList_Struct {
 	int32	wid;
 	int32	IP;
 	int32	zone;
+	int16	instance_id;
 	sint16	Admin;
 	int32	charid;
 	char	name[64];
@@ -589,23 +590,27 @@ struct ServerGroupIDReply_Struct {
 
 struct ServerGroupLeave_Struct {
 	int32 zoneid;
+	int16 instance_id;
 	int32 gid;
 	char member_name[64];	//kick this member from the group
 };
 
 struct ServerGroupJoin_Struct {
 	int32 zoneid;
+	int16 instance_id;
 	int32 gid;
 	char member_name[64];	//this person is joining the group
 };
 
 struct ServerForceGroupUpdate_Struct {
 	int32 origZoneID;
+	int16 instance_id;
 	int32 gid;
 };
 
 struct ServerGroupChannelMessage_Struct {
 	int32 zoneid;
+	int16 instanceid;
 	int32 groupid;
     char  from[64];
 	char  message[0];
@@ -613,6 +618,7 @@ struct ServerGroupChannelMessage_Struct {
 
 struct ServerDisbandGroup_Struct {
 	int32 zoneid;
+	int16 instance_id;
 	int32 groupid;
 };
 
@@ -703,6 +709,7 @@ struct ReloadTasks_Struct {
 
 struct ServerRaidGeneralAction_Struct {
 	int32 zoneid;
+	int16 instance_id;
 	int32 rid;
 	int32 gid;
 	char playername[64];

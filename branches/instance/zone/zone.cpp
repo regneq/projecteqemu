@@ -733,6 +733,7 @@ Zone::Zone(int32 in_zoneid, int32 in_instanceid, const char* in_short_name)
 	totalAAs = 0;
     gottime = false;
 	
+	Instance_Shutdown_Timer = NULL;
 	if(instanceid > 0)
 	{
 		int32 rem = database.GetTimeRemainingInstance(instanceid);
@@ -764,6 +765,7 @@ Zone::~Zone() {
 	ClearBlockedSpells();
 	
 	safe_delete(Instance_Timer);
+	safe_delete(Instance_Shutdown_Timer);
 
 	if(aas != NULL) {
 		int r;
@@ -1068,6 +1070,27 @@ bool Zone::Process() {
 		if (autoshutdown_timer.Check()) {
 			StartShutdownTimer();
 			if (numclients == 0) {
+				return false;
+			}
+		}
+	}
+
+	if(GetInstanceID() > 0)
+	{
+		if(Instance_Timer != NULL && Instance_Shutdown_Timer == NULL)
+		{
+			if(Instance_Timer->Check())
+			{
+				entity_list.GateAllClients();
+				database.DeleteInstance(GetInstanceID());
+				Instance_Shutdown_Timer = new Timer(20000); //20 seconds
+			}
+		}
+		else if(Instance_Shutdown_Timer != NULL)
+		{
+			if(Instance_Shutdown_Timer->Check())
+			{
+				StartShutdownTimer();
 				return false;
 			}
 		}

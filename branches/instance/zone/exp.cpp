@@ -471,6 +471,9 @@ void Raid::SplitExp(uint32 exp, Mob* other) {
 	if(conlevel == CON_GREEN)
 		return;	//no exp for greenies...
 
+	printf("groupexp %d\n", groupexp);
+	printf("member count %d max level %d\n", membercount, maxlevel);
+
 	if (membercount == 0) 
 		return; 
 
@@ -481,11 +484,13 @@ void Raid::SplitExp(uint32 exp, Mob* other) {
 			// add exp + exp cap 
 			sint16 diff = cmember->GetLevel() - maxlevel;
 			sint16 maxdiff = -(cmember->GetLevel()*15/10 - cmember->GetLevel());
+			printf("diff %d maxdiff %d\n", diff, maxdiff);
 			if(maxdiff > -5)
 				maxdiff = -5;
 			if (diff >= (maxdiff)) { /*Instead of person who killed the mob, the person who has the highest level in the group*/ 				
 				uint32 tmp = (cmember->GetLevel()+3) * (cmember->GetLevel()+3) * 75 * 35 / 10;
-				uint32 tmp2 = groupexp / membercount;
+				uint32 tmp2 = (groupexp / membercount) + 1;
+				printf("tmp %d tmp2 %d\n", tmp, tmp2);
 				cmember->AddEXP( tmp < tmp2 ? tmp : tmp2, conlevel ); 
 			} 
 		} 
