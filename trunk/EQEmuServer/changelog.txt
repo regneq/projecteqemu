@@ -6,6 +6,7 @@ realityincarnate: Made low language skill/drunkenness a bit less understandable
 realityincarnate: Duplicate lore items from foraging/ground spawns are now handled correctly
 realityincarnate: Lore items in the shared bank no longer trigger conflicts with items in individual inventories
 KLS: Fix for Group:: and Raid:: splitexp bonus calculations happening once for every person in the group / raid, resulting in very high numbers for group and non-positive numbers for raid.
+Trevius: SoF - Corrected a minor issues with new mounts where they weren't setting helm texture properly.
 
 ==05/08/2009==
 Derision: Fixed a bug where a pet set to guard would appear not to stop on returning to it's guard spot after being ordered to attack.
