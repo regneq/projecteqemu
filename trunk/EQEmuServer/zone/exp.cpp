@@ -488,7 +488,7 @@ void Raid::SplitExp(uint32 exp, Mob* other) {
 				maxdiff = -5;
 			if (diff >= (maxdiff)) { /*Instead of person who killed the mob, the person who has the highest level in the group*/ 				
 				uint32 tmp = (cmember->GetLevel()+3) * (cmember->GetLevel()+3) * 75 * 35 / 10;
-				uint32 tmp2 = groupexp / membercount;
+				uint32 tmp2 = (groupexp / membercount) + 1;
 				cmember->AddEXP( tmp < tmp2 ? tmp : tmp2, conlevel ); 
 			} 
 		} 
