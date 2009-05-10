@@ -431,19 +431,16 @@ void Group::SplitExp(uint32 exp, Mob* other) {
 		if (members[i] != NULL && members[i]->IsClient()) // If Group Member is Client
 		{
 			Client *cmember = members[i]->CastToClient();
-//			if( cmember->GetLevelCon( other->GetLevel() ) != CON_GREEN ) // If Mob doesn't con green
-//			{ 
-				// add exp + exp cap 
-				sint16 diff = cmember->GetLevel() - maxlevel;
-				sint16 maxdiff = -(cmember->GetLevel()*15/10 - cmember->GetLevel());
-					if(maxdiff > -5)
-						maxdiff = -5;
-				if (diff >= (maxdiff)) { /*Instead of person who killed the mob, the person who has the highest level in the group*/ 				
-					uint32 tmp = (cmember->GetLevel()+3) * (cmember->GetLevel()+3) * 75 * 35 / 10;
-					uint32 tmp2 = groupexp / membercount;
-					cmember->AddEXP( tmp < tmp2 ? tmp : tmp2, conlevel ); 
-				} 
-//			} 
+			// add exp + exp cap 
+			sint16 diff = cmember->GetLevel() - maxlevel;
+			sint16 maxdiff = -(cmember->GetLevel()*15/10 - cmember->GetLevel());
+				if(maxdiff > -5)
+					maxdiff = -5;
+			if (diff >= (maxdiff)) { /*Instead of person who killed the mob, the person who has the highest level in the group*/ 				
+				uint32 tmp = (cmember->GetLevel()+3) * (cmember->GetLevel()+3) * 75 * 35 / 10;
+				uint32 tmp2 = groupexp / membercount;
+				cmember->AddEXP( tmp < tmp2 ? tmp : tmp2, conlevel ); 
+			} 
 		} 
 	}
 }

@@ -1583,7 +1583,8 @@ void QuestManager::clearspawntimers() {
 		{
 			char errbuf[MYSQL_ERRMSG_SIZE];
 			char *query = 0;
-			database.RunQuery(query, MakeAnyLenString(&query, "DELETE FROM respawn_times WHERE id=%lu",iterator.GetData()->GetID()), errbuf);
+			database.RunQuery(query, MakeAnyLenString(&query, "DELETE FROM respawn_times WHERE id=%lu AND "
+				"instance_id=%lu",iterator.GetData()->GetID(), zone->GetInstanceID()), errbuf);
 			safe_delete_array(query);		
 			iterator.Advance();
 		}

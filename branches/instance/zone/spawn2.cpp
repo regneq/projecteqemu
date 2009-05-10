@@ -170,7 +170,7 @@ bool Spawn2::Process() {
 		}
 
 		if(spawn2_id)
-			database.UpdateSpawn2Timeleft(spawn2_id, 0);
+			database.UpdateSpawn2Timeleft(spawn2_id, zone->GetInstanceID(), 0);
 		
 		currentnpcid = npcid;
 		NPC* npc = new NPC(tmp, this, x, y, z, heading);
@@ -247,7 +247,7 @@ void Spawn2::DeathReset()
 	//if we have a valid spawn id
 	if(spawn2_id)
 	{
-		database.UpdateSpawn2Timeleft(spawn2_id, (cur/1000));
+		database.UpdateSpawn2Timeleft(spawn2_id, zone->GetInstanceID(), (cur/1000));
 		_log(SPAWNS__MAIN, "Spawn2 %d: Spawn reset by death, repop in %d ms", spawn2_id, timer.GetRemainingTime());
 		//store it to database too
 	}
@@ -269,14 +269,19 @@ bool ZoneDatabase::PopulateZoneSpawnList(int32 zoneid, LinkedList<Spawn2*> &spaw
 		while((row = mysql_fetch_row(result)))
 		{
 			Spawn2* newSpawn = 0;
-			if (zone && zone->GetInstanceID() > 0){ //TEMPORARY
+
+			//TODO: Load Spawns From Special Table If Instance
+			int32 spawnLeft = (GetSpawnTimeLeft(atoi(row[0]), zone->GetInstanceID()) * 1000);
+			newSpawn = new Spawn2(atoi(row[0]), atoi(row[1]), atof(row[2]), atof(row[3]), atof(row[4]), atof(row[5]), atoi(row[6]), atoi(row[7]), spawnLeft, atoi(row[8]), atoi(row[9]), atoi(row[10]));
+
+			/*if (zone && zone->GetInstanceID() > 0){ //TEMPORARY
 				//int32 spawnLeft = GetSpawnTimeLeft(atoi(row[0]));
 				newSpawn = new Spawn2(atoi(row[0]), atoi(row[1]), atof(row[2]), atof(row[3]), atof(row[4]), atof(row[5]), atoi(row[6]), atoi(row[7]), 0, atoi(row[8]), atoi(row[9]), atoi(row[10]));
 			}
 			else {
 				int32 spawnLeft = (GetSpawnTimeLeft(atoi(row[0])) * 1000);
 				newSpawn = new Spawn2(atoi(row[0]), atoi(row[1]), atof(row[2]), atof(row[3]), atof(row[4]), atof(row[5]), atoi(row[6]), atoi(row[7]), spawnLeft, atoi(row[8]), atoi(row[9]), atoi(row[10]));
-			}
+			}*/
 			//newSpawn->Repop(repopdelay);
 			spawn2_list.Insert( newSpawn );
 		}

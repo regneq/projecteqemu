@@ -305,6 +305,9 @@ int main(int argc, char** argv) {
 	_log(WORLD__INIT, "Deleted %i stale player corpses from database", database.DeleteStalePlayerCorpses());
 	_log(WORLD__INIT, "Deleted %i stale player backups from database", database.DeleteStalePlayerBackups());
 
+	_log(WORLD__INIT, "Purging expired instances");
+	database.PurgeExpiredInstances();
+
 	char errbuf[TCPConnection_ErrorBufferSize];
 	if (tcps.Open(Config->WorldTCPPort, errbuf)) {
 		_log(WORLD__INIT,"Zone (TCP) listener started.");

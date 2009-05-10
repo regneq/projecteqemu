@@ -423,7 +423,8 @@ int command_init(void) {
 		command_add("refreshgroup","- Refreshes Group.", 0, command_refreshgroup) ||
 		command_add("advnpcspawn","[maketype|makegroup|addgroupentry|addgroupspawn][removegroupspawn|movespawn|editgroupbox|cleargroupbox]",150,command_advnpcspawn) ||
 		command_add("modifynpcstat","Modifys a NPC's stats",150,command_modifynpcstat) ||
-		command_add("undyeme","Remove dye from all of your armor slots",0,command_undyeme)
+		command_add("undyeme","Remove dye from all of your armor slots",0,command_undyeme) ||
+		command_add("instance","Modify Instances",200,command_instance)
 		)
 	{
 		command_deinit();
@@ -1515,6 +1516,12 @@ void command_zone_instance(Client *c, const Seperator *sep)
 		c->Message(0, "Must enter a valid instance id.");
 		return;
 	}
+
+	/*if(!database.VerifyInstanceAlive(zone->GetInstanceID(), c->CharacterID()))
+	{
+		c->Message(0, "Instance ID expiried or you are not apart of this instance.");
+		return;
+	}*/
 
 	if (sep->IsNumber(2) || sep->IsNumber(3) || sep->IsNumber(4)){
 		//zone to specific coords
@@ -4014,7 +4021,8 @@ void command_repop(Client *c, const Seperator *sep)
 		{
 			char errbuf[MYSQL_ERRMSG_SIZE];
 			char *query = 0;
-			database.RunQuery(query, MakeAnyLenString(&query, "DELETE FROM respawn_times WHERE id=%lu",iterator.GetData()->GetID()), errbuf);
+			database.RunQuery(query, MakeAnyLenString(&query, "DELETE FROM respawn_times WHERE id=%lu" 
+				"AND instance_id=%lu",iterator.GetData()->GetID(), zone->GetInstanceID()), errbuf);
 			safe_delete_array(query);		
 			iterator.Advance();
 		}
@@ -11989,4 +11997,145 @@ void command_melody(Client *c, const Seperator *sep)
 	c->MelodySetState(true);
 
 	return;
+}
+
+void command_instance(Client *c, const Seperator *sep)
+{
+	if(!c)
+		return;
+
+	//options:
+	//help
+	//create [zone_id] [version]
+	//destroy [instance_id]
+	//add [instance_id] [player_name]
+	//remove [instance_id] [player_name]
+	//list [player_name]
+
+	if(strcasecmp(sep->arg[1], "help") == 0) 
+	{
+		c->Message(0, "#instance usage:");
+		c->Message(0, "#instance create zone_id version duration - Creates an instance of version 'version' in the " 
+			"zone with id matching zone_id, will last for duration seconds.");
+		c->Message(0, "#instance destroy instance_id - Destroys the instance with id matching instance_id.");
+		c->Message(0, "#instance add instance_id player_name - adds the player 'player_name' to the instance "
+			"with id matching instance_id.");
+		c->Message(0, "#instance remove instance_id player_name - removes the player 'player_name' from the "
+			"instance with id matching instance_id.");
+		c->Message(0, "#instance list player_name - lists all the instances 'player_name' is apart of.");
+		return;
+	}
+	else if(strcasecmp(sep->arg[1], "create") == 0)
+	{
+		if(!sep->IsNumber(2) || !sep->IsNumber(3) || !sep->IsNumber(4))
+		{
+			c->Message(0, "#instance create zone_id version duration - Creates an instance of version 'version' in the " 
+				"zone with id matching zone_id, will last for duration seconds.");
+			return;
+		}
+		int32 zone_id = atoi(sep->arg[2]);
+		int32 version = atoi(sep->arg[3]);
+		int32 duration = atoi(sep->arg[4]);
+
+		const char * zn = database.GetZoneName(zone_id);
+		if(!zn)
+		{
+			c->Message(0, "Zone with id %lu was not found by the server.", zone_id);
+			return;
+		}
+
+		int16 id = 0;
+		if(!database.GetUnusedInstanceID(id))
+		{
+			c->Message(0, "Server was unable to find a free instance id.");
+			return;
+		}
+
+		if(!database.CreateInstance(id, zone_id, version, duration))
+		{
+			c->Message(0, "Server was unable to create a new instance.");
+			return;
+		}
+		
+		c->Message(0, "New instance %s was created with id %lu.", zn, id);
+	}
+	else if(strcasecmp(sep->arg[1], "destroy") == 0)
+	{
+		if(!sep->IsNumber(2))
+		{
+			c->Message(0, "#instance destroy instance_id - Destroys the instance with id matching instance_id.");
+			return;
+		}
+
+		uint16 id = atoi(sep->arg[2]);
+		database.DeleteInstance(id);
+	}
+	else if(strcasecmp(sep->arg[1], "add") == 0)
+	{
+		if(!sep->IsNumber(2))
+		{
+			c->Message(0, "#instance add instance_id player_name - adds the player 'player_name' to the instance "
+				"with id matching instance_id.");
+			return;
+		}
+
+		int16 id = atoi(sep->arg[2]);
+		int32 charid = database.GetCharacterID(sep->arg[3]);
+
+		if(id <= 0 || charid <= 0)
+		{
+			c->Message(0, "Must enter a valid instance id and player name.");
+		}
+
+		if(database.AddClientToInstance(id, charid))
+		{
+			c->Message(0, "Added client to instance.");
+		}
+		else
+		{
+			c->Message(0, "Failed to add client to instance.");
+		}
+	}
+	else if(strcasecmp(sep->arg[1], "remove") == 0)
+	{
+		if(!sep->IsNumber(2))
+		{
+			c->Message(0, "#instance remove instance_id player_name - removes the player 'player_name' from the "
+				"instance with id matching instance_id.");
+			return;
+		}
+
+		int16 id = atoi(sep->arg[2]);
+		int32 charid = database.GetCharacterID(sep->arg[3]);
+
+		if(id <= 0 || charid <= 0)
+		{
+			c->Message(0, "Must enter a valid instance id and player name.");
+		}
+
+		if(database.RemoveClientFromInstance(id, charid))
+		{
+			c->Message(0, "Removed client from instance.");
+		}
+		else
+		{
+			c->Message(0, "Failed to remove client from instance.");
+		}
+	}
+	else if(strcasecmp(sep->arg[1], "list") == 0)
+	{
+		int32 charid = database.GetCharacterID(sep->arg[2]);
+		if(charid <= 0)
+		{
+			c->Message(0, "Character not found.");
+			return;
+		}
+
+		database.ListAllInstances(c, charid);
+	}
+	else
+	{
+		c->Message(0, "Invalid Argument.");
+		return;
+	}
 }

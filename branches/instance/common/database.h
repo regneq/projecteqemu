@@ -155,6 +155,12 @@ public:
 	int32 ZoneIDFromInstanceID(uint16 instanceID);
 	int32 GetTimeRemainingInstance(uint16 instanceID);
 	bool GetUnusedInstanceID(uint16 &instanceID);
+	bool CreateInstance(uint16 instance_id, uint32 zone_id, uint32 version, uint32 duration);
+	void SetInstanceBooted(uint16 instance_id, int val);
+	void PurgeExpiredInstances();
+	bool AddClientToInstance(uint16 instance_id, uint32 char_id);
+	bool RemoveClientFromInstance(uint16 instance_id, uint32 char_id);
+	//move all corpses in instance to non-instanced gy
 
 	/*
 	 * Account Related

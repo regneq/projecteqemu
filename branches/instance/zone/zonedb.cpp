@@ -144,7 +144,7 @@ bool ZoneDatabase::GetZoneCFG(int32 zoneid, NewZone_Struct *zone_data, bool &can
 }
 
 //updates or clears the respawn time in the database for the current spawn id
-void ZoneDatabase::UpdateSpawn2Timeleft(int32 id, int32 timeleft)
+void ZoneDatabase::UpdateSpawn2Timeleft(int32 id, int16 instance_id, int32 timeleft)
 {
 	timeval tv;
 	gettimeofday(&tv, NULL);
@@ -157,7 +157,8 @@ void ZoneDatabase::UpdateSpawn2Timeleft(int32 id, int32 timeleft)
 	//otherwise we update with a REPLACE INTO
 	if(timeleft == 0)
 	{
-		if (!RunQuery(query, MakeAnyLenString(&query, "DELETE FROM respawn_times WHERE id=%lu",id),errbuf))
+		if (!RunQuery(query, MakeAnyLenString(&query, "DELETE FROM respawn_times WHERE id=%lu "
+			"AND instance_id=%lu",id, instance_id),errbuf))
 		{
 			LogFile->write(EQEMuLog::Error, "Error in UpdateTimeLeft query %s: %s", query, errbuf);
 		}
@@ -165,7 +166,8 @@ void ZoneDatabase::UpdateSpawn2Timeleft(int32 id, int32 timeleft)
 	}
 	else
 	{
-		if (!RunQuery(query, MakeAnyLenString(&query, "REPLACE INTO respawn_times (id,start,duration) VALUES(%lu,%lu,%lu)",id, cur, timeleft),errbuf))
+		if (!RunQuery(query, MakeAnyLenString(&query, "REPLACE INTO respawn_times (id,start,duration,instance_id) "
+			"VALUES(%lu,%lu,%lu,%lu)",id, cur, timeleft, instance_id),errbuf))
 		{
 			LogFile->write(EQEMuLog::Error, "Error in UpdateTimeLeft query %s: %s", query, errbuf);
 		}
@@ -175,14 +177,15 @@ void ZoneDatabase::UpdateSpawn2Timeleft(int32 id, int32 timeleft)
 }
 
 //Gets the respawn time left in the database for the current spawn id
-int32 ZoneDatabase::GetSpawnTimeLeft(int32 id)
+int32 ZoneDatabase::GetSpawnTimeLeft(int32 id, int16 instance_id)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char* query = 0;
 	MYSQL_RES *result;
 	MYSQL_ROW row;
 
-	MakeAnyLenString(&query, "SELECT start, duration FROM respawn_times WHERE id=%lu", id);
+	MakeAnyLenString(&query, "SELECT start, duration FROM respawn_times WHERE id=%lu AND instance_id=%lu",
+		id, zone->GetInstanceID());
 	
 	if (RunQuery(query, strlen(query), errbuf, &result))
 	{
@@ -1816,6 +1819,37 @@ void ZoneDatabase::UpdateKarma(int32 acct_id, int32 amount)
 		safe_delete_array(query);}
 	else {
 		cerr << "Error in UpdateKarma query '" << query << "' " << errbuf << endl;
+		safe_delete_array(query);
+	}
+}
+
+void ZoneDatabase::ListAllInstances(Client* c, int32 charid)
+{
+	if(!c)
+		return;
+
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+
+
+	if (RunQuery(query,MakeAnyLenString(&query, "SELECT id, zone, version FROM instance_lockout a "
+		"WHERE a.id=(SELECT id FROM instance_lockout_player b WHERE charid=%lu)", charid),errbuf,&result))
+	{
+		safe_delete_array(query);
+
+		c->Message(0, "Character %u is part of the following instances:", charid);
+		while(row = mysql_fetch_row(result))
+		{
+			c->Message(0, "%s - id: %lu, version: %lu", database.GetZoneName(atoi(row[1])), 
+				atoi(row[0]), atoi(row[2]));
+		}
+
+		mysql_free_result(result);
+	}
+	else
+	{
 		safe_delete_array(query);
 	}
 }

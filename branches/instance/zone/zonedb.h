@@ -218,8 +218,8 @@ public:
 	bool	PopulateZoneSpawnList(int32 zoneid, LinkedList<Spawn2*> &spawn2_list, int32 repopdelay = 0);
 	Spawn2*	LoadSpawn2(LinkedList<Spawn2*> &spawn2_list, int32 spawn2id, int32 timeleft);
 	bool	CreateSpawn2(Client *c, int32 spawngroup, const char* zone, float heading, float x, float y, float z, int32 respawn, int32 variance, uint16 condition, sint16 cond_value);
-	void	UpdateSpawn2Timeleft(int32 id,int32 timeleft);
-	int32	GetSpawnTimeLeft(int32 id);
+	void	UpdateSpawn2Timeleft(int32 id, int16 instance_id,int32 timeleft);
+	int32	GetSpawnTimeLeft(int32 id, int16 instance_id);
 	
 	/*
 	 * Grids/Paths
@@ -326,10 +326,12 @@ public:
 	/*
 	 * Raid
 	 */
-	//void RefresheRaidFromDB(Client *c);
 	int8 RaidGroupCount(int32 raidid, int32 groupid);
-	//void AddClientToRaid(Client *c, int32 groupid = 0xFFFFFFFF, bool isGroupLeader = false, bool isLooter = false);
 
+	/*
+	 * Instancing
+	 */
+	void ListAllInstances(Client* c, int32 charid);
 
 	/*
 	 * Misc stuff.
