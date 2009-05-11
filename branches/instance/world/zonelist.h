@@ -39,6 +39,7 @@ public:
 	void	KillAll();
 	bool	SendPacket(ServerPacket* pack);
 	bool	SendPacket(uint32 zoneid, ServerPacket* pack);
+	bool	SendPacket(uint32 zoneid, uint16 instanceid, ServerPacket* pack);
 	inline int32	GetNextID()		{ return NextID++; }
 	void	RebootZone(const char* ip1,int16 port, const char* ip2, int32 skipid, int32 zoneid = 0);
 	int32	TriggerBootup(int32 iZoneID, int32 iInstanceID = 0);

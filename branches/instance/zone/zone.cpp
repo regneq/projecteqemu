@@ -786,9 +786,14 @@ bool Zone::Init(bool iStaticZone) {
 	
 	//load up our spawn conditions before any spawn data, since the spawn
 	//data needs access to the spawn conditions to do its thing.
-	LogFile->write(EQEMuLog::Status, "Loading spawn conditions...");
-	if(!spawn_conditions.LoadSpawnConditions(short_name)) {
-		LogFile->write(EQEMuLog::Error, "Loading spawn conditions failed, continuing without them.");
+	//Because the spawn conditions system isn't compatible with instances atm we wont load if we're
+	//an instanced zone but it's something I'll revisit.
+	if(GetInstanceID() == 0)
+	{
+		LogFile->write(EQEMuLog::Status, "Loading spawn conditions...");
+		if(!spawn_conditions.LoadSpawnConditions(short_name)) {
+			LogFile->write(EQEMuLog::Error, "Loading spawn conditions failed, continuing without them.");
+		}
 	}
 	
 	LogFile->write(EQEMuLog::Status, "Loading static zone points...");
@@ -804,7 +809,7 @@ bool Zone::Init(bool iStaticZone) {
 	}
 	
 	//load up our existing spawn state or the regular spawn2 data
-	char pzs[3] = "";
+	/*char pzs[3] = "";
 	if (database.GetVariable("PersistentZoneState", pzs, 2) && pzs[0] == '1') {
 		LogFile->write(EQEMuLog::Status, "Loading saved zone state...");
 		sint8 tmp = database.LoadZoneState(short_name, spawn2_list);
@@ -828,6 +833,13 @@ bool Zone::Init(bool iStaticZone) {
 			LogFile->write(EQEMuLog::Error, "Loading spawn2 points failed.");
 			return false;
 		}
+	}*/
+
+	LogFile->write(EQEMuLog::Status, "Loading spawn2 points...");
+	if (!database.PopulateZoneSpawnList(zoneid, spawn2_list))
+	{
+		LogFile->write(EQEMuLog::Error, "Loading spawn2 points failed.");
+		return false;
 	}
 	
 	LogFile->write(EQEMuLog::Status, "Loading player corpses...");

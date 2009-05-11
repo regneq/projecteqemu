@@ -380,7 +380,7 @@ bool ZoneServer::Process() {
 				break;
 			//bounce the packet to the correct zone server, if its up
 			ServerSpawnCondition_Struct* ssc = (ServerSpawnCondition_Struct*)pack->pBuffer;
-			zoneserver_list.SendPacket(ssc->zoneID, pack);
+			zoneserver_list.SendPacket(ssc->zoneID, 0, pack);
 			break;
 		}
 		case ServerOP_SpawnEvent: {
@@ -388,7 +388,7 @@ bool ZoneServer::Process() {
 				break;
 			//bounce the packet to the correct zone server, if its up
 			ServerSpawnEvent_Struct* sse = (ServerSpawnEvent_Struct*)pack->pBuffer;
-			zoneserver_list.SendPacket(sse->zoneID, pack);
+			zoneserver_list.SendPacket(sse->zoneID, 0, pack);
 			break;
 		}
 		case ServerOP_ChannelMessage: {

@@ -1,3 +1,6 @@
+KLS - May 11, 2009
+-Instance expiration should work; still needs to move corpses somewhere... but first corpses have to work right.
+
 KLS - May 10, 2009
 -Raid/Groups should work properly across instances.
 -Some more fixes.

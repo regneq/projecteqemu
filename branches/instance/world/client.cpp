@@ -535,7 +535,22 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 				database.MoveCharacterToZone(charid, "arena");
 				clog(WORLD__CLIENT_ERR, "Zone not found in database zone_id=%i, moveing char to arena character:%s", zoneID, char_name);
 			}
-			
+
+
+			if(!database.VerifyInstanceAlive(instanceID, GetCharID()))
+			{
+				zoneID = database.MoveCharacterToBind(charid);
+				instanceID = 0;
+			}
+			else
+			{
+				if(!database.VerifyZoneInstance(zoneID, instanceID))
+				{
+					zoneID = database.MoveCharacterToBind(charid);
+					instanceID = 0;
+				}
+			}
+
 			if(!pZoning) {
 				database.SetGroupID(char_name, 0, charid);
 				database.SetLFP(charid, false);
@@ -710,7 +725,6 @@ void Client::EnterWorld(bool TryBootup) {
 		return;
 
 	printf("trying to enter world (%u) %u\n", zoneID, instanceID);
-	//todo: send to bind on failure
 	ZoneServer* zs = NULL;
 	if(instanceID > 0)
 	{
@@ -723,14 +737,19 @@ void Client::EnterWorld(bool TryBootup) {
 			else
 			{
 				instanceID = 0;
-				zs = zoneserver_list.FindByZoneID(zoneID);
+				zs = NULL;
+				database.MoveCharacterToBind(GetCharID());
+				ZoneUnavail();
+				return;
 			}
 		}
 		else
 		{
-			//ideally we'd want to send them somewere else...
 			instanceID = 0;
-			zs = zoneserver_list.FindByZoneID(zoneID);
+			zs = NULL;
+			database.MoveCharacterToBind(GetCharID());
+			ZoneUnavail();
+			return;
 		}
 	}
 	else

@@ -2520,31 +2520,28 @@ void Database::DeleteInstance(uint16 instanceID)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
-	MYSQL_RES *result;
-	if(RunQuery(query, MakeAnyLenString(&query, "DELETE FROM instance_lockout WHERE id=%u", instanceID), errbuf, &result))
+
+	if(RunQuery(query, MakeAnyLenString(&query, "DELETE FROM instance_lockout WHERE id=%u", instanceID), errbuf))
 	{
 		safe_delete_array(query);
-		mysql_free_result(result);
 	}
 	else 
 	{
 		safe_delete_array(query);
 	}
 
-	if(RunQuery(query, MakeAnyLenString(&query, "DELETE FROM instance_lockout_player WHERE id=%u", instanceID), errbuf, &result))
+	if(RunQuery(query, MakeAnyLenString(&query, "DELETE FROM instance_lockout_player WHERE id=%u", instanceID), errbuf))
 	{
 		safe_delete_array(query);
-		mysql_free_result(result);
 	}
 	else 
 	{
 		safe_delete_array(query);
 	}
 
-	if(RunQuery(query, MakeAnyLenString(&query, "DELETE FROM respawn_times WHERE instance_id=%u", instanceID), errbuf, &result))
+	if(RunQuery(query, MakeAnyLenString(&query, "DELETE FROM respawn_times WHERE instance_id=%u", instanceID), errbuf))
 	{
 		safe_delete_array(query);
-		mysql_free_result(result);
 	}
 	else 
 	{
@@ -2767,12 +2764,14 @@ void Database::PurgeExpiredInstances()
 			"(start_time+duration)<=UNIX_TIMESTAMP()"), errbuf, &result))
 	{
 		safe_delete_array(query);
-		if (mysql_num_rows(result) != 0) 
+		if (mysql_num_rows(result) > 0) 
 		{
-			while(row = mysql_fetch_row(result));
+			row = mysql_fetch_row(result);
+			while(row != NULL)
 			{
 				id = atoi(row[0]);
 				DeleteInstance(id);
+				row = mysql_fetch_row(result);
 			}
 		}
 		mysql_free_result(result);
