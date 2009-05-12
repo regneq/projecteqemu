@@ -6,6 +6,7 @@ Trevius: SoF - (Shendare) Identified hairstyle, haircolor, flymode, drakkinherit
 Trevius: SoF - (Shendare) Changed facial feature code for getting features slightly
 Trevius: SoF - Identified beardcolor, invis, and drakkinspikes in the spawn struct
 Trevius: SoF - Updated the OP_CastSpell to convert bag slot from Titanium to SoF for potion use
+KLS: Reverted player corpse changes from 5/10 as they caused shadow rest to stop functioning.
 
 ==05/11/2009==
 demonstar55: Added a function to allow Perl to check augments within items.
