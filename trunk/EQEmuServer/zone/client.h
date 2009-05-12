@@ -616,6 +616,7 @@ public:
 	void	SetMaterial(sint16 slot_id, uint32 item_id);
 	void	Undye();
 	uint32	GetItemIDAt(sint16 slot_id);
+	uint32	GetAugmentIDAt(sint16 slot_id, uint8 augslot);
 	bool	PutItemInInventory(sint16 slot_id, const ItemInst& inst, bool client_update = false);
 	bool	PushItemOnCursor(const ItemInst& inst, bool client_update = false);
 	void	DeleteItemInInventory(sint16 slot_id, sint8 quantity = 0, bool client_update = false);

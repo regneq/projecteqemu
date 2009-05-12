@@ -218,6 +218,18 @@ uint32 Client::GetItemIDAt(sint16 slot_id) {
 	return INVALID_ID;
 }
 
+// Returns an augment's ID that's in an item (returns INVALID_ID if not found)
+// Pass in the slot ID of the item and which augslot you want to check (0-4)
+uint32 Client::GetAugmentIDAt(sint16 slot_id, uint8 augslot) {
+	const ItemInst* inst = m_inv[slot_id];
+	if (inst)
+		if (inst->GetAugmentItemID(augslot))
+			return inst->GetAugmentItemID(augslot);
+
+	// None found
+	return INVALID_ID;
+}
+
 // Remove item from inventory
 void Client::DeleteItemInInventory(sint16 slot_id, sint8 quantity, bool client_update) {
 	#if (EQDEBUG >= 5)
