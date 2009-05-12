@@ -2656,6 +2656,34 @@ XS(XS_Client_GetItemIDAt)
 	XSRETURN(1);
 }
 
+XS(XS_Client_GetAugmentIDAt); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_GetAugmentIDAt)
+{
+	dXSARGS;
+	if (items != 3)
+		Perl_croak(aTHX_ "Usage: Client::GetAugmentIDAt(THIS, slot_id, augslot)");
+	{
+		Client *		THIS;
+		uint32		RETVAL;
+		dXSTARG;
+		sint16		slot_id = (sint16)SvIV(ST(1));
+		sint16		augslot = (uint8)SvIV(ST(2));
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetAugmentIDAt(slot_id, augslot);
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
 XS(XS_Client_DeleteItemInInventory); /* prototype to pass -Wmissing-prototypes */
 XS(XS_Client_DeleteItemInInventory)
 {
@@ -3695,6 +3723,7 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "SetMaterial"), XS_Client_SetMaterial, file, "$$$");
 		newXSproto(strcpy(buf, "Undye"), XS_Client_Undye, file, "$");
 		newXSproto(strcpy(buf, "GetItemIDAt"), XS_Client_GetItemIDAt, file, "$$");
+		newXSproto(strcpy(buf, "GetAugmentIDAt"), XS_Client_GetAugmentIDAt, file, "$$$");
 		newXSproto(strcpy(buf, "DeleteItemInInventory"), XS_Client_DeleteItemInInventory, file, "$$;$$");
 		newXSproto(strcpy(buf, "SummonItem"), XS_Client_SummonItem, file, "$$;$");
 		newXSproto(strcpy(buf, "SetStats"), XS_Client_SetStats, file, "$$$");

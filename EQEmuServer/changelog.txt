@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/11/2009==
+demonstar55: Added a function to allow Perl to check augments within items.
+cavedude: Increased bind wound skill up speed some.
+
 ==05/10/2009==
 KLS: Fix for a add/remove raid looter across zones error.
 KLS: Changed order of split raid exp, ensures amount given to a player is always at least 1.
