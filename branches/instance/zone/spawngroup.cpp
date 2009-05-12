@@ -170,7 +170,7 @@ bool ZoneDatabase::LoadSpawnGroups(const char* zone_name, SpawnGroupList* spawn_
 		"npc_types.spawn_limit AS sl "
 		"FROM spawnentry, spawn2, npc_types "
 		"WHERE spawnentry.npcID=npc_types.id AND spawnentry.spawngroupID=spawn2.spawngroupID "
-		"AND zone='%s' ORDER by chance", zone_name), errbuf, &result)) {
+		"AND zone='%s'", zone_name), errbuf, &result)) {
 		safe_delete_array(query);
 		while((row = mysql_fetch_row(result)))
 		{

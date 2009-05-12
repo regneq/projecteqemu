@@ -721,13 +721,13 @@ void Mob::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho)
 	ns->spawn.NPC		= IsClient() ? 0 : 1;
 	ns->spawn.petOwnerId	= ownerid;
 
-	ns->spawn.haircolor = haircolor ? haircolor : 0xFF;
-	ns->spawn.beardcolor = beardcolor ? beardcolor : 0xFF;
-	ns->spawn.eyecolor1 = eyecolor1 ? eyecolor1 : 0xFF;
-	ns->spawn.eyecolor2 = eyecolor2 ? eyecolor2 : 0xFF;
-	ns->spawn.hairstyle = hairstyle ? hairstyle : 0xFF;
+	ns->spawn.haircolor = haircolor;
+	ns->spawn.beardcolor = beardcolor;
+	ns->spawn.eyecolor1 = eyecolor1;
+	ns->spawn.eyecolor2 = eyecolor2;
+	ns->spawn.hairstyle = hairstyle;
 	ns->spawn.face = luclinface;
-	ns->spawn.beard = beard ? beard : 0xFF;
+	ns->spawn.beard = beard;
 	ns->spawn.equip_chest2  = texture;
 
 //	ns->spawn.invis2 = 0xff;//this used to be labeled beard.. if its not FF it will turn

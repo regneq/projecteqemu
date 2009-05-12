@@ -536,18 +536,20 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 				clog(WORLD__CLIENT_ERR, "Zone not found in database zone_id=%i, moveing char to arena character:%s", zoneID, char_name);
 			}
 
-
-			if(!database.VerifyInstanceAlive(instanceID, GetCharID()))
+			if(instanceID > 0)
 			{
-				zoneID = database.MoveCharacterToBind(charid);
-				instanceID = 0;
-			}
-			else
-			{
-				if(!database.VerifyZoneInstance(zoneID, instanceID))
+				if(!database.VerifyInstanceAlive(instanceID, GetCharID()))
 				{
 					zoneID = database.MoveCharacterToBind(charid);
 					instanceID = 0;
+				}
+				else
+				{
+					if(!database.VerifyZoneInstance(zoneID, instanceID))
+					{
+						zoneID = database.MoveCharacterToBind(charid);
+						instanceID = 0;
+					}
 				}
 			}
 

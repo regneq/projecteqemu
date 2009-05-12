@@ -1,3 +1,6 @@
+KLS - May 12, 2009
+-Instance id shouldn't persist in player profile if the instance was destroyed now.
+
 KLS - May 11, 2009
 -Instance expiration should work; still needs to move corpses somewhere... but first corpses have to work right.
 

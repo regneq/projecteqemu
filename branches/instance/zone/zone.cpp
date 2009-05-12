@@ -98,9 +98,6 @@ bool Zone::Bootup(int32 iZoneID, int32 iInstanceID, bool iStaticZone) {
 	
 	numclients = 0;
 	zone = new Zone(iZoneID, iInstanceID, zonename);
-   
-	// Load all NPCs in for the current zone.
-	database.GetNPCType (0);
 	
 	//init the zone, loads all the data, etc
 	if (!zone->Init(iStaticZone)) {
@@ -1185,7 +1182,6 @@ std::map<uint32,NPCType *>::iterator itr;
 		delete itr->second;
 		npctable.erase(itr);
    }
-   database.GetNPCType (0);
 
 	return true;
 }

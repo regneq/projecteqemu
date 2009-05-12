@@ -252,16 +252,47 @@ bool ZoneDatabase::logevents(const char* accountname,int32 accountid,int8 status
 
 void ZoneDatabase::UpdateBug(BugStruct* bug){
 	char errbuf[MYSQL_ERRMSG_SIZE];
-    char *query = 0;
+	char *query = 0;
+	
+
 	uint32 len = strlen(bug->bug);
-	char* bugtext = new char[2*len+1];
-	memset(bugtext, 0, 2*len+1);
-	DoEscapeString(bugtext, bug->bug, len);
-	if (!RunQuery(query, MakeAnyLenString(&query, "Insert into bugs (type,name,bugtext,flag,x,y,z,heading) values('%s','%s','%s',%i,%f,%f,%f,%f)",bug->chartype,bug->name,bugtext,bug->type,bug->x,bug->y,bug->z,bug->heading), errbuf))	{
+	char* bugtext = NULL;
+	if(len > 0)
+	{
+		bugtext = new char[2*len+1];
+		memset(bugtext, 0, 2*len+1);
+		DoEscapeString(bugtext, bug->bug, len);
+	}
+
+	len = strlen(bug->ui);
+	char* uitext = NULL;
+	if(len > 0)
+	{
+		uitext = new char[2*len+1];
+		memset(uitext, 0, 2*len+1);
+		DoEscapeString(uitext, bug->ui, len);
+	}
+
+	len = strlen(bug->target_name);
+	char* targettext = NULL;
+	if(len > 0)
+	{
+		targettext = new char[2*len+1];
+		memset(targettext, 0, 2*len+1);
++		DoEscapeString(targettext, bug->target_name, len);
+	}
+
+	//x and y are intentionally swapped because eq is inversexy coords
+	if (!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO bugs (zone, name, ui, x, y, z, type, flag, target, bug, date) "
+		"values('%s', '%s', '%s', '%.2f', '%.2f', '%.2f', '%s', %d, '%s', '%s', CURDATE())", zone->GetShortName(), bug->name, 
+		uitext==NULL?"":uitext, bug->y, bug->x, bug->z, bug->chartype, bug->type, targettext==NULL?"Unknown Target":targettext, 
+		bugtext==NULL?"":bugtext), errbuf)) {	
 		cerr << "Error in UpdateBug" << query << "' " << errbuf << endl;
 	}
 	safe_delete_array(query);
 	safe_delete_array(bugtext);
+	safe_delete_array(uitext);
+	safe_delete_array(targettext);	
 }
 
 void ZoneDatabase::UpdateBug(PetitionBug_Struct* bug){
@@ -920,12 +951,12 @@ int8 *class_, int8 *level, bool *LFP, bool *LFG) {
 	if (character_id && *character_id) {
 		// searching by ID should be a lil bit faster
 		querylen = MakeAnyLenString(&query, 
-			"SELECT id,profile,zonename,x,y,z,guild_id,rank,extprofile,class,level,lfp,lfg "
+			"SELECT id,profile,zonename,x,y,z,guild_id,rank,extprofile,class,level,lfp,lfg,instanceid "
 			" FROM character_ LEFT JOIN guild_members ON id=char_id WHERE id=%i", *character_id);
 	}
 	else {
 		querylen = MakeAnyLenString(&query, 
-			"SELECT id,profile,zonename,x,y,z,guild_id,rank,extprofile,class,level,lfp,lfg "
+			"SELECT id,profile,zonename,x,y,z,guild_id,rank,extprofile,class,level,lfp,lfg,instanceid "
 			" FROM character_ LEFT JOIN guild_members ON id=char_id WHERE name='%s'", name);
 	}
 	
@@ -968,6 +999,7 @@ bool ZoneDatabase::GetCharacterInfoForLogin_result(MYSQL_RES* result,
 			
 			*pplen = lengths[1];
 			pp->zone_id = GetZoneID(row[2]);
+			pp->zoneInstance = atoi(row[13]);
 			
 			pp->x = atof(row[3]);
 			pp->y = atof(row[4]);
@@ -1018,7 +1050,7 @@ bool ZoneDatabase::GetCharacterInfoForLogin_result(MYSQL_RES* result,
 			*LFG = atoi(row[12]);
 		// Fix use_tint, previously it was set to 1 for a dyed slot, client wants it set to 0xFF
 		for(int i = 0; i<9; i++)
-	                if(pp->item_tint[i].rgb.use_tint == 1)
+			if(pp->item_tint[i].rgb.use_tint == 1)
 				pp->item_tint[i].rgb.use_tint = 0xFF;
 		
 		// Retrieve character inventory
@@ -1085,12 +1117,12 @@ bool ZoneDatabase::DBSetItemStatus(int32 id, int8 status) {
  * the current zone, returning the last item added.
  */
 const NPCType* ZoneDatabase::GetNPCType (uint32 id) {
-   const NPCType *npc=NULL;
-   map<uint32,NPCType *>::iterator itr;
+	const NPCType *npc=NULL;
+	map<uint32,NPCType *>::iterator itr;
 
    // If NPC is already in tree, return it.
-   if ((itr=zone->npctable.find(id))!=zone->npctable.end())
-   	return itr->second;
+	if((itr = zone->npctable.find(id)) != zone->npctable.end())
+		return itr->second;
    
    // Otherwise, get NPCs from database.
 		char errbuf[MYSQL_ERRMSG_SIZE];
@@ -1159,15 +1191,8 @@ const NPCType* ZoneDatabase::GetNPCType (uint32 id) {
 			"npc_types.see_improved_hide,"
 			"npc_types.ATK,"
 			"npc_types.Accuracy";
-      if (id == 0)
-         MakeAnyLenString(&query,
-            "%s FROM npc_types,spawn2 WHERE spawn2.zone='%s'"
-            " AND npc_types.id=spawn2.id",
-            basic_query, zone->GetShortName());
-      // Otherwise, just load this specific NPC.
-      else
-         MakeAnyLenString(&query,
-            "%s FROM npc_types WHERE id=%d", basic_query, id);
+
+		MakeAnyLenString(&query, "%s FROM npc_types WHERE id=%d", basic_query, id);
 
 		if (RunQuery(query, strlen(query), errbuf, &result)) {
          // Process each row returned.

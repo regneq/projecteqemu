@@ -354,7 +354,6 @@ Corpse::Corpse(int32 in_dbid, int32 in_charid, char* in_charname, ItemList* in_i
 	in_itemlist->clear();
 
 	//we really should be loading the decay timer here...
-	LoadPlayerCorpseDecayTime(in_dbid);
 	
 	strcpy(orgname, in_charname);
 	strcpy(name, in_charname);
@@ -1581,7 +1580,7 @@ void Corpse::AddLooter(Mob* who)
 	}
 }
 
-void Corpse::LoadPlayerCorpseDecayTime(int32 dbid){
+/*void Corpse::LoadPlayerCorpseDecayTime(int32 dbid){
 	if(!dbid)
 		return;
 	char errbuf[MYSQL_ERRMSG_SIZE];
@@ -1600,7 +1599,7 @@ void Corpse::LoadPlayerCorpseDecayTime(int32 dbid){
 	}
 	else
 		safe_delete_array(query);
-}
+}*/
 
 /*
 void Corpse::CastRezz(int16 spellid, Mob* Caster){

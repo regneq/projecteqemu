@@ -1,5 +1,25 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/12/2009==
+Trevius: SoF - (Shendare) Added a temp commented out test section of code to spawn struct encode
+Trevius: SoF - (Shendare) Identified hairstyle, haircolor, flymode, drakkinheritage and drakkintattoo in the spawn struct
+Trevius: SoF - (Shendare) Changed facial feature code for getting features slightly
+Trevius: SoF - Identified beardcolor, invis, and drakkinspikes in the spawn struct
+Trevius: SoF - Updated the OP_CastSpell to convert bag slot from Titanium to SoF for potion use
+KLS: Reverted player corpse changes from 5/10 as they caused shadow rest to stop functioning.
+KLS: Fixed the /bug structure and updated the table to be more useful.
+
+Required SQL: .\utils\sql\svn\503_bugs.sql
+
+==05/11/2009==
+demonstar55: Added a function to allow Perl to check augments within items.
+cavedude: Increased bind wound skill up speed some.
+KLS: Fix for potentially dangerous typo in spawn conditions code.
+KLS: Removed some non-functioning but still taking up database resources database code.
+KLS: Change to a spawn2 table query to reduce disk writes.
+
+Suggested SQL: ALTER TABLE `spawn2` DROP INDEX `ZoneGroup`, ADD INDEX `ZoneGroup` (`zone`);
+
 ==05/10/2009==
 KLS: Fix for a add/remove raid looter across zones error.
 KLS: Changed order of split raid exp, ensures amount given to a player is always at least 1.

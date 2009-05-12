@@ -1160,11 +1160,12 @@ bool SharedDatabase::GetPlayerProfile(int32 account_id, char* name, PlayerProfil
 				pp->x = atof(row[2]);
 				pp->y = atof(row[3]);
 				pp->z = atof(row[4]);
+				pp->zoneInstance = atoi(row[6]);
 				if (pp->x == -1 && pp->y == -1 && pp->z == -1)
 					GetSafePoints(pp->zone_id, &pp->x, &pp->y, &pp->z);
 
 				if(current_instance)
-					*current_instance = atoi(row[6]);
+					*current_instance = pp->zoneInstance;
 				
 				if(ext) {
 					//SetExtendedProfile handles any conversion
