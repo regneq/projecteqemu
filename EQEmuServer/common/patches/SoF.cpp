@@ -699,9 +699,14 @@ ENCODE(OP_ZoneSpawns) {
 
 		eq->showname = 1; //New Field - Toggles Name Display on or off - 0 = off, 1 = on
 		eq->linkdead = 0; //New Field - Toggles LD on or off after name - 0 = off, 1 = on
+		eq->statue = 0; //New Field - 1 freezes animation
 		eq->showhelm = emu->showhelm;
 
 		eq->deity = emu->deity;
+		if (emu->race == 522)
+		{
+			eq->drakkinheritage = emu->face;	//temp setting to add variety to Drakkin
+		}
 		eq->gender = emu->gender;
 		for(k = 0; k < 9; k++) {
 			eq->equipment[k].equip0 = emu->equipment[k];
@@ -709,23 +714,37 @@ ENCODE(OP_ZoneSpawns) {
 			eq->equipment[k].itemId = 0;
 			eq->colors[k].color = emu->colors[k].color;
 		}
-		eq->guildID = emu->guildID;
-
 		eq->StandState = 0x64;
-		
+		eq->guildID = emu->guildID;
+		eq->spelleffect = 0;
+		eq->spelleffect2 = 0;
+		eq->spelleffect3 = 0;
+		eq->spelleffect4 = 0;
+		eq->spelleffect5 = 0;
+		eq->spelleffect6 = 0;
 		eq->class_ = emu->class_;
+		eq->flymode = emu->flymode;
 		eq->gm = emu->gm;
 		eq->helm = emu->helm;
+		if (emu->race == 522)
+		{
+			eq->drakkintattoo = emu->face;	//temp setting to add variety to Drakkin
+		}
+		eq->beardcolor = emu->beardcolor;
 		eq->runspeed = emu->runspeed;
 		eq->light = emu->light;
 		eq->level = emu->level;
 		eq->lfg = emu->lfg;
+		eq->hairstyle = emu->hairstyle;
+		eq->haircolor = emu->haircolor;
 		eq->race = emu->race;
 		strcpy(eq->suffix, emu->suffix);
 		eq->findable = emu->findable;
 		eq->bodytype = emu->bodytype;
+		eq->bodytype2 = 0;
 		eq->equip_chest2 = emu->equip_chest2;
 		eq->curHp = emu->curHp;
+		eq->invis = emu->invis;
 		strcpy(eq->lastName, emu->lastName);
 		eq->eyecolor1 = emu->eyecolor1;
 		strcpy(eq->title, emu->title);
@@ -743,6 +762,7 @@ ENCODE(OP_ZoneSpawns) {
 		eq->animation = emu->animation;
 		eq->heading = emu->heading;
 		eq->spawnId = emu->spawnId;
+		eq->nonvisible = 0;
 		strcpy(eq->name, emu->name);
 		eq->petOwnerId = emu->petOwnerId;
 		eq->pvp = 0;	// 0 = non-pvp colored name, 1 = red pvp name
@@ -751,46 +771,117 @@ ENCODE(OP_ZoneSpawns) {
 		}
 		eq->anon = emu->anon;
 		eq->face = emu->face;
+		if (emu->race == 522)
+		{
+			eq->drakkinspikes = emu->face;
+		}
 		eq->size = emu->size;
 		eq->walkspeed = emu->walkspeed;
-
+		/*
+		//Uncomment this section to use this hack test with NPC last names
 		//Hack Test for finding more fields in the Struct:
-		//memset(eq->unknown0001, 0x01, sizeof(eq->unknown0001));	// 
-		//memset(eq->unknown0006, 0x01, sizeof(eq->unknown0006));	// 
-		//memset(eq->unknown0011, 0x02, sizeof(eq->unknown0011));	// 
-		//memset(eq->unknown0048, 0x01, sizeof(eq->unknown0048));	// 
-		//eq->unknown0820 = 1;										// Stand State - Stand/Sit/Crouch
-		//eq->unknown0059 = 1;										// - west bug?
-		//memset(eq->unknown0074, 0x01, sizeof(eq->unknown0074));	// 
-		//memset(eq->unknown0077, 0x01, sizeof(eq->unknown0077));	// 
-		//memset(eq->unknown00771, 0x00, sizeof(eq->unknown00771));	// 
-		//memset(eq->unknown00772, 0x02, sizeof(eq->unknown00772));	// 
-		//memset(eq->unknown0078, 0x00, sizeof(eq->unknown0078));	// 
-		//memset(eq->unknown0079, 0x01, sizeof(eq->unknown0079));	// 
-		//memset(eq->unknown0080, 0x01, sizeof(eq->unknown0080));	// 
-		//memset(eq->unknown0106, 0x01, sizeof(eq->unknown0106));	// 
-		//memset(eq->unknown0107, 0x01, sizeof(eq->unknown0107));	// - Flymode
-		//memset(eq->unknown01071, 0x01, sizeof(eq->unknown01071));	//
-		//memset(eq->unknown0108, 0x00, sizeof(eq->unknown0108));	// - LFG and Hair/Beard
-		//memset(eq->unknown01081, 0x01, sizeof(eq->unknown01081));	// 
-		//memset(eq->unknown01082, 0x00, sizeof(eq->unknown01082));	//
-		//memset(eq->unknown0110, 0x01, sizeof(eq->unknown0110));	// 
-		//memset(eq->unknown01101, 0x00, sizeof(eq->unknown01101));	// 
-		//eq->unknown0111 = 2;										// 
-		//memset(eq->unknown0154, 0x01, sizeof(eq->unknown0154));	// - freeze in place?
-		//memset(eq->unknown0263, 0x01, sizeof(eq->unknown0263));	// - no player character visible?
-		//memset(eq->unknown0281, 0x01, sizeof(eq->unknown0281));	// 
-		//memset(eq->unknown0308, 0x02, sizeof(eq->unknown0308));	// 
-		//memset(eq->unknown0309, 0x02, sizeof(eq->unknown0309));	// 
-		//memset(eq->unknown442, 0x01, sizeof(eq->unknown442));		// - crash?
-		//memset(eq->unknown0760, 0x03, sizeof(eq->unknown0760));	// 
-		//eq->unknown0760 = 0;
-		//eq->unknown0761 = 1;
-		//eq->unknown0762 = 2;
-		//eq->unknown0763 = 3;
-		//eq->unknown0764 = 4;
-		//memset(eq->unknown0496, 0x02, sizeof(eq->unknown0496));	// 
+		if (emu->lastName[0] == '*') // Test NPC!
+		{
+			char code = emu->lastName[1];
+			size_t len = strlen(emu->lastName);
+			char* sep = (char*)memchr(&emu->lastName[2], '=', len - 2);
 
+			uint32 ofs;
+			uint32 val;
+			uint8 rnd = rand() & 0x0F;
+			if (sep == NULL)
+			{
+				ofs = 0;
+				if ((emu->lastName[2] < '0') || (emu->lastName[2] > '9'))
+				{
+					val = rnd;
+				}
+				else
+				{
+					val = atoi(&emu->lastName[2]);
+				}
+			}
+			else
+			{
+				sep[0] = NULL;
+				ofs = atoi(&emu->lastName[2]);
+				sep[0] = '=';
+				if ((sep[1] < '0') || (sep[1] > '9'))
+				{
+					val = rnd;
+				}
+				else
+				{
+					val = atoi(&sep[1]);
+				}
+			}
+
+			char hex[] = "0123456789ABCDEF";
+			
+			eq->lastName[len + 0] = ' ';
+			eq->lastName[len + 1] = code;
+			eq->lastName[len + 2] = '0' + ((ofs / 1000) % 10);
+			eq->lastName[len + 3] = '0' + ((ofs / 100) % 10);
+			eq->lastName[len + 4] = '0' + ((ofs / 10) % 10);
+			eq->lastName[len + 5] = '0' + (ofs % 10);
+			eq->lastName[len + 6] = '=';
+			eq->lastName[len + 7] = '0' + ((val / 100) % 10);
+			eq->lastName[len + 8] = '0' + ((val / 10) % 10);
+			eq->lastName[len + 9] = '0' + (val % 10);
+			eq->lastName[len + 10] = 0x00;
+
+			switch (code)
+			{
+				case 'a':
+					eq->unknown0001[ofs % 4] = val; break;
+				case 'b':
+					eq->unknown0008 = val; break;
+				case 'c':
+					eq->unknown0011[ofs % 3] = val; break;
+				case 'd':
+					eq->unknown0018[ofs % 4] = val; break;
+				case 'e':
+					eq->unknown0023[ofs % 4] = val; break;
+				case 'f':
+					eq->unknown0136 = val; break;
+				case 'g':
+					eq->unknown0166[ofs % 8] = val; break;
+				case 'h':
+					eq->unknown0175[ofs % 192] = val; break;
+				case 'i':
+					eq->unknown0370[ofs % 3] = val; break;
+				case 'j':
+					eq->unknown0374[ofs % 128] = val; break;
+				case 'k':
+					eq->unknown0507[ofs % 4] = val; break;
+				case 'l':
+					eq->unknown0512[ofs % 16] = val; break;
+				case 'm':
+					eq->unknown0529[ofs % 4] = val; break;
+				case 'n':
+					eq->unknown0539[ofs % 41] = val; break;
+				case 'o':
+					eq->unknown0614[ofs % 11] = val; break;
+				case 'p':
+					eq->unknown0626[ofs % 28] = val; break;
+				case 'q':
+					eq->unknown0690 = val; break;
+				case 'r':
+					eq->unknown0726[ofs % 4] = val; break;
+				case 's':
+					eq->unknown0731[ofs % 11] = val; break;
+				case 't':
+					eq->unknown0767[ofs % 3] = val; break;
+				case 'u':
+					eq->unknown0883[ofs % 4] = val; break;
+				case 'v':
+					eq->unknown0895[ofs % 2] = val; break;
+				case 'X':
+					((uint8*)eq)[ofs % 897] = val; break;
+				case 'Z':
+					eq->size = (float)val; break; // Test w/ size.
+			}
+		}*/
 	}
 	
 	
@@ -1584,6 +1675,10 @@ DECODE(OP_CastSpell) {
 	if(eq->inventoryslot >= 22 && eq->inventoryslot < 51)
 	{
 		emu->inventoryslot = eq->inventoryslot - 1;
+	}
+	else if(eq->inventoryslot >= 251 && eq->inventoryslot < 351)
+	{
+		emu->inventoryslot = eq->inventoryslot - 11;
 	}
 	else if(eq->inventoryslot == 21)
 	{
