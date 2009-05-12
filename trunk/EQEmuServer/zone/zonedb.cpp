@@ -249,16 +249,46 @@ bool ZoneDatabase::logevents(const char* accountname,int32 accountid,int8 status
 
 void ZoneDatabase::UpdateBug(BugStruct* bug){
 	char errbuf[MYSQL_ERRMSG_SIZE];
-    char *query = 0;
+	char *query = 0;
+	
 	uint32 len = strlen(bug->bug);
-	char* bugtext = new char[2*len+1];
-	memset(bugtext, 0, 2*len+1);
-	DoEscapeString(bugtext, bug->bug, len);
-	if (!RunQuery(query, MakeAnyLenString(&query, "Insert into bugs (type,name,bugtext,flag,x,y,z,heading) values('%s','%s','%s',%i,%f,%f,%f,%f)",bug->chartype,bug->name,bugtext,bug->type,bug->x,bug->y,bug->z,bug->heading), errbuf))	{
+	char* bugtext = NULL;
+	if(len > 0)
+	{
+		bugtext = new char[2*len+1];
+		memset(bugtext, 0, 2*len+1);
+		DoEscapeString(bugtext, bug->bug, len);
+	}
+
+	len = strlen(bug->ui);
+	char* uitext = NULL;
+	if(len > 0)
+	{
+		uitext = new char[2*len+1];
+		memset(uitext, 0, 2*len+1);
+		DoEscapeString(uitext, bug->ui, len);
+	}
+
+	len = strlen(bug->target_name);
+	char* targettext = NULL;
+	if(len > 0)
+	{
+		targettext = new char[2*len+1];
+		memset(targettext, 0, 2*len+1);
++		DoEscapeString(targettext, bug->target_name, len);
+	}
+
+	//x and y are intentionally swapped because eq is inversexy coords
+	if (!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO bugs (zone, name, ui, x, y, z, type, flag, target, bug, date) "
+		"values('%s', '%s', '%s', '%.2f', '%.2f', '%.2f', '%s', %d, '%s', '%s', CURDATE())", zone->GetShortName(), bug->name, 
+		uitext==NULL?"":uitext, bug->y, bug->x, bug->z, bug->chartype, bug->type, targettext==NULL?"Unknown Target":targettext, 
+		bugtext==NULL?"":bugtext), errbuf)) {	
 		cerr << "Error in UpdateBug" << query << "' " << errbuf << endl;
 	}
 	safe_delete_array(query);
 	safe_delete_array(bugtext);
+	safe_delete_array(uitext);
+	safe_delete_array(targettext);	
 }
 
 void ZoneDatabase::UpdateBug(PetitionBug_Struct* bug){

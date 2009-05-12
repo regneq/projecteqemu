@@ -7,6 +7,9 @@ Trevius: SoF - (Shendare) Changed facial feature code for getting features sligh
 Trevius: SoF - Identified beardcolor, invis, and drakkinspikes in the spawn struct
 Trevius: SoF - Updated the OP_CastSpell to convert bag slot from Titanium to SoF for potion use
 KLS: Reverted player corpse changes from 5/10 as they caused shadow rest to stop functioning.
+KLS: Fixed the /bug structure and updated the table to be more useful.
+
+Required SQL: .\utils\sql\svn\503_bugs.sql
 
 ==05/11/2009==
 demonstar55: Added a function to allow Perl to check augments within items.
