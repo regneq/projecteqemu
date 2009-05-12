@@ -3,6 +3,11 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==05/11/2009==
 demonstar55: Added a function to allow Perl to check augments within items.
 cavedude: Increased bind wound skill up speed some.
+KLS: Fix for potentially dangerous typo in spawn conditions code.
+KLS: Removed some non-functioning but still taking up database resources database code.
+KLS: Change to a spawn2 table query to reduce disk writes.
+
+Suggested SQL: ALTER TABLE `spawn2` DROP INDEX `ZoneGroup`, ADD INDEX `ZoneGroup` (`zone`);
 
 ==05/10/2009==
 KLS: Fix for a add/remove raid looter across zones error.
