@@ -201,22 +201,10 @@ struct EquipStruct {
 /*12*/
 };
 
-/*
-** Generic Spawn Struct
-** Length: 257 Bytes
-** Fields from old struct not yet found:
-**	float	size;
-**	float	walkspeed;	// probably one of the ff 33 33 33 3f
-**	float	runspeed;	// probably one of the ff 33 33 33 3f
-**	int8	traptype;	// 65 is disarmable trap, 66 and 67 are invis triggers/traps
-**	int8	npc_armor_graphic;	// 0xFF=Player, 0=none, 1=leather, 2=chain, 3=steelplate
-**	int8	npc_helm_graphic;	// 0xFF=Player, 0=none, 1=leather, 2=chain, 3=steelplate
-**
-*/
 
 /*
 ** Generic Spawn Struct
-** Length: 383 Octets
+** Length: 897 Octets
 ** Used in:
 **   spawnZoneStruct
 **   dbSpawnStruct
@@ -228,18 +216,18 @@ showeq -> eqemu
 sed -e 's/_t//g' -e 's/seto_0xFF/set_to_0xFF/g'
 */
 struct Spawn_Struct {
-/*0000*/ uint8  showname; //New Field - Toggles Name Display on or off - 0 = off, 1 = on
-/*0001*/ uint8  unknown0001[4]; //
-/*0005*/ uint8  linkdead; //New Field - Toggles LD on or off after name - 0 = off, 1 = on
-/*0006*/ uint8  unknown0006; //
-/*0007*/ uint8  showhelm; //
-/*0008*/ uint8  unknown0008; //
-/*0009*/ int16  deity;          // Player's Deity
-/*0011*/ uint8  unknown0011[6];// was 5
-/*0011*/ uint8  unknown0009;	// 0 = animate, 1+ = freeze non-global races (statues)
-/*0011*/ uint8  unknown0010[4];// was 6
-/*0022*/ uint8  gender;         // Gender (0=male, 1=female)
-/*0023*/ uint8  unknown0048[4]; // was before equipment [4]
+/*0000*/ uint8  showname;			//New Field - Toggles Name Display on or off - 0 = off, 1 = on
+/*0001*/ uint8  unknown0001[4];		//
+/*0005*/ uint8  linkdead;			//New Field - Toggles LD on or off after name - 0 = off, 1 = on
+/*0006*/ uint8  statue;				//New Field - Freezes NPC into a statue pose
+/*0007*/ uint8  showhelm;			//
+/*0008*/ uint8  unknown0008;		//
+/*0009*/ int16  deity;				// Player's Deity
+/*0011*/ uint8  unknown0011[3];		//
+/*0014*/ uint32	drakkinheritage;	//New Field - Heritage Color on Drakkin 0 - 6
+/*0018*/ uint8  unknown0018[4];		//
+/*0022*/ uint8  gender;				// Gender (0=male, 1=female, 2=monster)
+/*0023*/ uint8  unknown0023[4];		//
 /*0027*/ union
 	 {
 		struct
@@ -258,79 +246,79 @@ struct Spawn_Struct {
 	 };
 
 /*0135*/ uint8	StandState;	// Seems to be required to be set to 0x64 for normal animation.
-/*0136*/ uint8  unknown0059;
-/*0137*/ uint32	guildID;        // Current guild - was uint32
-/*0141*/ uint8  unknown0074[24]; //was [2]
-/*0165*/ uint8  class_;         // Player's class
-/*0166*/ uint8  unknown0077[7]; // was 5
-/*0166*/ uint8  unknown00771[184];
-/*0166*/ uint8  unknown00772[10];
+/*0136*/ uint8  unknown0136;
+/*0137*/ uint32	guildID;			// Current guild
+/*0141*/ uint32	spelleffect;	// Displays a spell effect on spawn
+/*0145*/ uint32	spelleffect2;	// Appears to be a duplicate of spelleffect
+/*0149*/ uint32	spelleffect3;	// Appears to be a duplicate of spelleffect
+/*0153*/ uint32	spelleffect4;	// Appears to be a duplicate of spelleffect
+/*0157*/ uint32	spelleffect5;	// Appears to be a duplicate of spelleffect
+/*0161*/ uint32	spelleffect6;	// Appears to be a duplicate of spelleffect
+/*0165*/ uint8  class_;				// Player's class
+/*0166*/ uint8  unknown0166[8];		//
+/*0174*/ uint8  flymode;			// 0 = flymode off, 1 = flymode on
+/*0175*/ uint8  unknown0175[192];
 /*0367*/ uint8  gm;
 /*0368*/ uint8	helm;
-/*0368*/ uint8  unknown0079[123];
-/*0368*/ uint8  unknown0080[10];
-/*0502*/ float	runspeed;       // Speed when walking
-/*0506*/ uint8  light;          // Spawn's lightsource
-/*0507*/ uint8  unknown0106[4];
-/*0511*/ uint8  level;          // Spawn Level
-/*0512*/ uint8  unknown0107[5];
-/*0512*/ uint8  unknown01071[5];
-/*0512*/ uint8  unknown0108[6];
-/*0512*/ uint8  lfg;
-/*0512*/ uint8  unknown01082[6];
-/*0535*/ uint32 race;           // Spawn race
-/*0539*/ uint8  unknown0110[20];
-/*0539*/ uint8  unknown01101[21];
-/*0580*/ char	suffix[32];     // Player's suffix (of Veeshan, etc.)
+/*0369*/ uint8  drakkintattoo;		//New Field - Tatoos on Drakkin 0 - 7
+/*0370*/ uint8  unknown0370[3];
+/*0373*/ uint8  beardcolor;			// Sets Beard Color
+/*0374*/ uint8  unknown0374[128];
+/*0502*/ float	runspeed;			// Speed when walking
+/*0506*/ uint8  light;				// Spawn's lightsource
+/*0507*/ uint8  unknown0507[4];
+/*0511*/ uint8  level;				// Spawn Level
+/*0512*/ uint8  unknown0512[16];
+/*0528*/ uint8  lfg;
+/*0529*/ uint8  unknown0529[4];
+/*0533*/ uint8  hairstyle;			// Sets the style of hair
+/*0534*/ uint8  haircolor;			// Sets Hair Color
+/*0535*/ uint32 race;				// Spawn race
+/*0539*/ uint8  unknown0539[41];
+/*0580*/ char	suffix[32];			// Player's suffix (of Veeshan, etc.)
 /*0612*/ uint8  findable;
-/*0613*/ uint8  bodytype;    // was Bodytype - Verified
-/*0614*/ uint8  unknown0154[4];
-/*0614*/ uint8  unknown0155[4];
-/*0614*/ uint8  unknown0156[4];
-/*0614*/ uint8  unknown0157[4];
-/*0614*/ uint8  unknown0158[4];
-/*0614*/ uint8  unknown0159[4];
-/*0614*/ uint8  unknown0160[4];
-/*0614*/ uint8  unknown0161[4];
-/*0614*/ uint8  unknown0162[4];
-/*0614*/ uint8  unknown0163[4];
+/*0613*/ uint8  bodytype;			// Sets the bodytype of NPCs
+/*0614*/ uint8  unknown0614[11];
+/*0625*/ uint8  bodytype2;			//New Field -  Seems to do the same thing as bodytype
+/*0626*/ uint8  unknown0626[28];
 union 
 {
-/*0339*/ int8 equip_chest2;     // This is Texture for NPCs
-/*0339*/ int8 mount_color;      // drogmor: 0=white, 1=black, 2=green, 3=red
-                                // horse: 0=brown, 1=white, 2=black, 3=tan
+/*0654*/ int8	equip_chest2;		// This is Texture for NPCs
+/*0654*/ int8	mount_color;		// This should be merged into 1 field, "texture"
 };
-/*0655*/ uint8  curHp;          // Current hp
-/*0656*/ uint8  unknown0263[2];
-/*0658*/ char	lastName[32];   // Player's Lastname
-/*0690*/ int8	unknown0281;
-/*0690*/ int8	eyecolor1;
-/*0692*/ char	title[32];      // Title
+/*0655*/ uint8	curHp;				// Current hp
+/*0656*/ uint8  invis;				// 0 = visible, 1 = invis/sneaking
+/*0657*/ uint8  unknown0657;
+/*0658*/ char	lastName[32];		// Player's Lastname
+/*0690*/ int8	unknown0690;
+/*0691*/ int8	eyecolor1;
+/*0692*/ char	title[32];			// Title
 /*0724*/ uint8  beard;
-/*0725*/ uint8  targetable;		// 1 = Targetable 0 = Not Targetable
-/*0726*/ uint8  unknown0308[4];
-/*0730*/ uint8  NPC;            // 0=player,1=npc,2=pc corpse,3=npc corpse
-/*0731*/ uint8  unknown0309[11];
+/*0725*/ uint8  targetable;			// 1 = Targetable 0 = Not Targetable (is_npc?)
+/*0726*/ uint8  unknown0726[4];
+/*0730*/ uint8  NPC;				// 0=player,1=npc,2=pc corpse,3=npc corpse
+/*0731*/ uint8  unknown0731[11];
 /*0742*/ uint8	targetable_with_hotkey;
-/*0743*/ signed   padding0000:12; // ***Placeholder
-		 signed   x:19;           // x coord
-		 signed   padding0290:1; // ***Placeholder
-/*0747*/ signed   deltaX:13;      // change in x
-		 signed   deltaY:13;      // change in y
-		 signed   padding0294:6;  // ***Placeholder
-/*0751*/ signed   z:19;           // z coord
-		 signed   deltaHeading:10;// change in heading
-		 signed   padding0298:3;  // ***Placeholder
-/*0755*/ signed   y:19;           // y coord
-		 signed   deltaZ:13;      // change in z
-/*0759*/ signed   animation:10;   // animation
-		 unsigned heading:12;     // heading
-		 signed   padding0302:10;  // ***Placeholder
-/*0763*/ uint32 spawnId;        // Spawn Id
-/*0767*/ uint8	unknown442[8];
-/*0775*/ char	name[64];       // Player's Name
-/*0839*/ uint32 petOwnerId;     // If this is a pet, the spawn id of owner
-/*0843*/ uint8  pvp;			// 0 = normal name color, 2 = PVP name color
+/*0743*/ signed   padding00:12;		// ***Placeholder
+		 signed   x:19;				// x coord
+		 signed   padding01:1;		// ***Placeholder
+/*0747*/ signed   deltaX:13;		// change in x
+		 signed   deltaY:13;		// change in y
+		 signed   padding02:6;		// ***Placeholder
+/*0751*/ signed   z:19;				// z coord
+		 signed   deltaHeading:10;	// change in heading
+		 signed   padding03:3;		// ***Placeholder
+/*0755*/ signed   y:19;				// y coord
+		 signed   deltaZ:13;		// change in z
+/*0759*/ signed   animation:10;		// animation
+		 unsigned heading:12;		// heading
+		 signed   padding04:10;		// ***Placeholder
+/*0763*/ uint32	spawnId;			// Spawn Id
+/*0767*/ uint8	unknown0767[4];
+/*0771*/ uint32	nonvisible;			//Non Visible NPC that can only be targeted with /target
+/*0775*/ char	name[64];			// Player's Name
+/*0839*/ uint32 petOwnerId;			// If this is a pet, the spawn id of owner
+/*0843*/ uint8  pvp;				// 0 = normal name color, 2 = PVP name color
 /*0844*/ union
 	 {
 		struct
@@ -347,33 +335,29 @@ union
 		} equipment_colors;
 		/*0844*/ Color_Struct colors[9]; // Array elements correspond to struct equipment_colors above
 	 };
-/*0005*/ uint8  anon;           // 0=normal, 1=anon, 2=roleplay/*0881*/ uint8  unknown0448[8];
-/*0760*/ uint8	face;
-/*0760*/ uint8	unknown0760;
-/*0760*/ uint8	unknown0761;
-/*0760*/ uint8	unknown0762;
-/*0760*/ uint8	unknown0763;
-/*0760*/ uint8	unknown0764;
-/*0779*/ float	size;
-/*0891*/ float	walkspeed;      // Speed when running
-/*0895*/ uint8  unknown0496[2];
+/*0880*/ uint8  anon;				// 0=normal, 1=anon, 2=roleplay
+/*0881*/ uint8	face;
+/*0882*/ uint8  drakkinspikes;		// Face Spikes on Drakkin 0 - 7
+/*0883*/ uint8	unknown0883[4];
+/*0887*/ float	size;
+/*0891*/ float	walkspeed;			// Speed when running
+/*0895*/ uint8  unknown0895[2];
 /*0897*/
 };
 
-//*0078*/ int8   aaitle;       // 0=none, 1=general, 2=archtype, 3=class
-//*0108*/ uint8 beardcolor;
-//*0495*/ uint8 eyecolor2;		//not sure, may be face
-//*0774*/ uint8 haircolor;	//may be swapped with beardcolor
-//*0193*/ int8   guildrank;      // 0=normal, 1=officer, 2=leader
-//uint8 invis;
-//uint8 hairstyle;
-//uint8 findable;
-//*0087*/ uint8  max_hp;         // (name prolly wrong)takes on the value 100 for players, 100 or 110 for NPCs and 120 for PC corpses...
-//*0144*/ uint8  is_npc;         // 0=no, 1=yes
-//*0036*/ uint8  afk;            // 0=no, 1=afk
-//*0329*/ uint8  is_pet;         // 0=no, 1=yes
-//*0333*/ uint8 flymode;
-//*0766*/ uint8 set_to_0xFF[8];
+
+/*
+** Generic Spawn Struct
+** Fields from old struct not yet found:
+**	int8	traptype;	// 65 is disarmable trap, 66 and 67 are invis triggers/traps
+**	uint8	is_pet;		// 0=no, 1=yes
+**	uint8	afk;		// 0=no, 1=afk
+**	uint8	is_npc;		// 0=no, 1=yes
+**	uint8	max_hp;		// (name prolly wrong)takes on the value 100 for players, 100 or 110 for NPCs and 120 for PC corpses...
+**	int8	guildrank;	// 0=normal, 1=officer, 2=leader
+**	uint8	eyecolor2;	//not sure, may be face
+**	int8	aaitle;		// 0=none, 1=general, 2=archtype, 3=class
+*/
 
 /*
 ** New Spawn
@@ -385,10 +369,6 @@ struct NewSpawn_Struct
 	struct Spawn_Struct spawn;	// Spawn Information
 };
 
-//struct ClientZoneEntry_Struct {
-//*0000*/	uint32	unknown00;
-//*0004*/	char	char_name[64];			// Character Name
-//};
 
 /*
 ** Client Zone Entry struct
