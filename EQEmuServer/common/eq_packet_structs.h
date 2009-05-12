@@ -2795,11 +2795,13 @@ struct BugStruct{
 /*0296*/	float	z;
 /*0300*/	float	heading;
 /*0304*/	int32	unknown304;
-/*0308*/	int32	type;
-/*0312*/	char	unknown312[2144];
-/*2456*/	char	bug[1024];
-/*3480*/	char	placeholder[2];
-/*3482*/	char	system_info[4098];
+/*0308*/	char	unknown308[160];
+/*0468*/	char	target_name[64];
+/*0532*/	int32	type;
+/*0536*/	char	unknown536[2052];
+/*2584*/	char	bug[2048];
+/*4632*/	char	unknown4632[6];
+/*4638*/	char	system_info[4094];
 };
 struct Make_Pet_Struct { //Simple struct for getting pet info
 	int8 level;

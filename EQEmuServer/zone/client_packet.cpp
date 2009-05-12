@@ -5131,8 +5131,7 @@ void Client::Handle_OP_PetitionBug(const EQApplicationPacket *app)
 	if(app->size!=sizeof(PetitionBug_Struct))
 		printf("Wrong size of BugStruct! Expected: %i, Got: %i\n",sizeof(PetitionBug_Struct),app->size);
 	else{
-		PetitionBug_Struct* bug=(PetitionBug_Struct*)app->pBuffer;
-		database.UpdateBug(bug);
+		Message(0, "Petition Bugs are not supported, please use /bug.");
 	}
 	return;
 }
@@ -5140,7 +5139,7 @@ void Client::Handle_OP_PetitionBug(const EQApplicationPacket *app)
 void Client::Handle_OP_Bug(const EQApplicationPacket *app)
 {
 	if(app->size!=sizeof(BugStruct))
-		printf("Wrong size of BugStruct!\n");
+		printf("Wrong size of BugStruct got %d expected %d!\n", app->size, sizeof(BugStruct));
 	else{
 		BugStruct* bug=(BugStruct*)app->pBuffer;
 		database.UpdateBug(bug);
