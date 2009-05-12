@@ -868,7 +868,7 @@ void SpawnConditionManager::SetCondition(const char *zone_short, uint16 conditio
 		
 		UpdateDBCondition(zone_short, condition_id, new_value);
 		
-		ServerPacket* pack = new ServerPacket(ServerOP_SpawnCondition, sizeof(ServerSpawnEvent_Struct));
+		ServerPacket* pack = new ServerPacket(ServerOP_SpawnCondition, sizeof(ServerSpawnCondition_Struct));
 		ServerSpawnCondition_Struct* ssc = (ServerSpawnCondition_Struct*)pack->pBuffer;
 		
 		ssc->zoneID = database.GetZoneID(zone_short);

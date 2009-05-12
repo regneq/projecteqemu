@@ -1082,12 +1082,12 @@ bool ZoneDatabase::DBSetItemStatus(int32 id, int8 status) {
  * the current zone, returning the last item added.
  */
 const NPCType* ZoneDatabase::GetNPCType (uint32 id) {
-   const NPCType *npc=NULL;
-   map<uint32,NPCType *>::iterator itr;
+	const NPCType *npc=NULL;
+	map<uint32,NPCType *>::iterator itr;
 
    // If NPC is already in tree, return it.
-   if ((itr=zone->npctable.find(id))!=zone->npctable.end())
-   	return itr->second;
+	if((itr = zone->npctable.find(id)) != zone->npctable.end())
+		return itr->second;
    
    // Otherwise, get NPCs from database.
 		char errbuf[MYSQL_ERRMSG_SIZE];
@@ -1156,15 +1156,8 @@ const NPCType* ZoneDatabase::GetNPCType (uint32 id) {
 			"npc_types.see_improved_hide,"
 			"npc_types.ATK,"
 			"npc_types.Accuracy";
-      if (id == 0)
-         MakeAnyLenString(&query,
-            "%s FROM npc_types,spawn2 WHERE spawn2.zone='%s'"
-            " AND npc_types.id=spawn2.id",
-            basic_query, zone->GetShortName());
-      // Otherwise, just load this specific NPC.
-      else
-         MakeAnyLenString(&query,
-            "%s FROM npc_types WHERE id=%d", basic_query, id);
+
+		MakeAnyLenString(&query, "%s FROM npc_types WHERE id=%d", basic_query, id);
 
 		if (RunQuery(query, strlen(query), errbuf, &result)) {
          // Process each row returned.
