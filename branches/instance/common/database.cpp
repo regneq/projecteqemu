@@ -2547,6 +2547,7 @@ void Database::DeleteInstance(uint16 instanceID)
 	{
 		safe_delete_array(query);
 	}
+	BuryCorpsesInInstance(instanceID);
 }
 
 bool Database::CheckInstanceExpired(uint16 instanceID)
@@ -2842,4 +2843,18 @@ bool Database::CheckInstanceExists(uint16 instance_id)
 		return false;
 	}
 	return false;
+}
+
+void Database::BuryCorpsesInInstance(uint16 instance_id)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+
+	if(RunQuery(query, MakeAnyLenString(&query, "UPDATE player_corpses SET IsBurried=1, instanceid=0 WHERE instanceid=%u", instance_id), errbuf, &result))
+	{
+		mysql_free_result(result);
+	}
+	safe_delete_array(query);
 }

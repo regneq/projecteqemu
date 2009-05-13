@@ -3046,6 +3046,7 @@ void Corpse::CastRezz(int16 spellid, Mob* Caster){
 	memcpy(rezz->corpse_name,this->name,30);
 	memcpy(rezz->rezzer_name,Caster->GetName(),30);
 	rezz->zone_id = zone->GetZoneID();
+	rezz->instance_id = zone->GetInstanceID();
 	rezz->spellid = spellid;
 	rezz->x = this->x_pos;
 	rezz->y = this->y_pos;

@@ -279,7 +279,7 @@ void ZoneDatabase::UpdateBug(BugStruct* bug){
 	{
 		targettext = new char[2*len+1];
 		memset(targettext, 0, 2*len+1);
-+		DoEscapeString(targettext, bug->target_name, len);
+		DoEscapeString(targettext, bug->target_name, len);
 	}
 
 	//x and y are intentionally swapped because eq is inversexy coords

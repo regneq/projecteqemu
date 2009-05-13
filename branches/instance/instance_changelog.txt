@@ -1,5 +1,7 @@
 KLS - May 12, 2009
 -Instance id shouldn't persist in player profile if the instance was destroyed now.
+-Implemented corpses in instances: corpses that are in instances when it expires are subsequently buried using the shadowrest system until we can work out something better.
+-Resurrection in instances will work now as well.
 
 KLS - May 11, 2009
 -Instance expiration should work; still needs to move corpses somewhere... but first corpses have to work right.

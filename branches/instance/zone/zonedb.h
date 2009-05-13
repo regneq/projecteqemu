@@ -149,16 +149,16 @@ public:
 	 * Corpses
 	 */
 	bool	GetDecayTimes(npcDecayTimes_Struct* npcCorpseDecayTimes);
-	int32	CreatePlayerCorpse(int32 charid, const char* charname, int32 zoneid, uchar* data, int32 datasize, float x, float y, float z, float heading);
-	int32	UpdatePlayerCorpse(int32 dbid, int32 charid, const char* charname, int32 zoneid, uchar* data, int32 datasize, float x, float y, float z, float heading, bool rezzed = false);
+	int32	CreatePlayerCorpse(int32 charid, const char* charname, int32 zoneid, int16 instanceid, uchar* data, int32 datasize, float x, float y, float z, float heading);
+	int32	UpdatePlayerCorpse(int32 dbid, int32 charid, const char* charname, int32 zoneid, int16 instanceid, uchar* data, int32 datasize, float x, float y, float z, float heading, bool rezzed = false);
 	bool	BuryPlayerCorpse(int32 dbid);
 	bool	DeletePlayerCorpse(int32 dbid);
 	int32	GetPlayerBurriedCorpseCount(int32 char_id);
-	Corpse* SummonBurriedPlayerCorpse(int32 char_id, int32 dest_zoneid, float dest_x, float dest_y, float dest_z, float dest_heading);
+	Corpse* SummonBurriedPlayerCorpse(int32 char_id, int32 dest_zoneid, int16 dest_instanceid, float dest_x, float dest_y, float dest_z, float dest_heading);
 	Corpse*	LoadPlayerCorpse(int32 player_corpse_id);
-	bool	UnburyPlayerCorpse(int32 dbid, int32 new_zoneid, float new_x, float new_y, float new_z, float new_heading);
-	bool	LoadPlayerCorpses(int32 iZoneID);
-	int32	GraveyardPlayerCorpse(int32 dbid, int32 zoneid, float x, float y, float z, float heading);
+	bool	UnburyPlayerCorpse(int32 dbid, int32 new_zoneid, int16 dest_instanceid, float new_x, float new_y, float new_z, float new_heading);
+	bool	LoadPlayerCorpses(int32 iZoneID, int16 iInstanceID);
+	int32	GraveyardPlayerCorpse(int32 dbid, int32 zoneid, int16 instanceid, float x, float y, float z, float heading);
 	int32	NewGraveyardRecord(int32 graveyard_zoneid, float graveyard_x, float graveyard_y, float graveyard_z, float graveyard_heading);
 	int32	AddGraveyardIDToZone(int32 zone_id, int32 graveyard_id);
 	bool	DeleteGraveyard(int32 zone_id, int32 graveyard_id);

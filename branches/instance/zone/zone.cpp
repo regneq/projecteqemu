@@ -840,7 +840,7 @@ bool Zone::Init(bool iStaticZone) {
 	}
 	
 	LogFile->write(EQEMuLog::Status, "Loading player corpses...");
-	if (!database.LoadPlayerCorpses(zoneid)) {
+	if (!database.LoadPlayerCorpses(zoneid, instanceid)) {
 		LogFile->write(EQEMuLog::Error, "Loading player corpses failed.");
 		return false;
 	}

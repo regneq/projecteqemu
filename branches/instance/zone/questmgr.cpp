@@ -1301,7 +1301,7 @@ bool QuestManager::summonburriedplayercorpse(int32 char_id, float dest_x, float 
 	bool Result = false;
 
 	if(char_id > 0) {
-		Corpse* PlayerCorpse = database.SummonBurriedPlayerCorpse(char_id, zone->GetZoneID(), dest_x, dest_y, dest_z, dest_heading);
+		Corpse* PlayerCorpse = database.SummonBurriedPlayerCorpse(char_id, zone->GetZoneID(), zone->GetInstanceID(), dest_x, dest_y, dest_z, dest_heading);
 		
 		if(PlayerCorpse) {
 			PlayerCorpse->Spawn();

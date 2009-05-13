@@ -307,6 +307,8 @@ int main(int argc, char** argv) {
 
 	_log(WORLD__INIT, "Purging expired instances");
 	database.PurgeExpiredInstances();
+	Timer PurgeInstanceTimer(450000);
+	PurgeInstanceTimer.Start(450000);
 
 	char errbuf[TCPConnection_ErrorBufferSize];
 	if (tcps.Open(Config->WorldTCPPort, errbuf)) {
@@ -397,6 +399,11 @@ int main(int argc, char** argv) {
 			in.s_addr = tcpc->GetrIP();
 			_log(WORLD__ZONE, "New TCP connection from %s:%d", inet_ntoa(in),tcpc->GetrPort());
 			console_list.Add(new Console(tcpc));
+		}
+
+		if(PurgeInstanceTimer.Check())
+		{
+			database.PurgeExpiredInstances();
 		}
 		
 		//check for timeouts in other threads

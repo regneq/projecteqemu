@@ -11717,7 +11717,7 @@ void command_summonburriedplayercorpse(Client *c, const Seperator *sep)
 		return;
 	}
 	
-	Corpse* PlayerCorpse = database.SummonBurriedPlayerCorpse(t->CharacterID(), t->GetZoneID(), t->GetX(), t->GetY(), t->GetZ(), t->GetHeading());
+	Corpse* PlayerCorpse = database.SummonBurriedPlayerCorpse(t->CharacterID(), t->GetZoneID(), zone->GetInstanceID(), t->GetX(), t->GetY(), t->GetZ(), t->GetHeading());
 
 	if(PlayerCorpse)
 		PlayerCorpse->Spawn();
