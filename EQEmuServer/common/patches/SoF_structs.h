@@ -125,31 +125,31 @@ struct CharSelectEquip {
 };
 
 struct CharacterSelectEntry_Struct {
-/*0008*/	uint8 level;		//edi+40h
-/*0009*/	uint8 haircolor;	//edi+0F0h
-/*0010*/	uint8 gender;		//edi+4Ch
-/*0011*/	char name[1];		//variable length, edi+0
-		uint8 beard;		//edi+0F1h (may be color)
-		uint8 hair;		//edi+0ECh
-		uint8 face;		//edi+4Dh
-		CharSelectEquip	equip[9];
-		uint32 secondary;		//edi+0F8h
-		uint32 primary;		//edi+0FCh
-		uint8 u15;//0xff
-		uint32 deity;		//edi+0F7h
-		uint16 zone;		//edi+0E0h
-		uint16 instance;
-		uint8 gohome;		//edi+0F2h    seen 0x01 and 0x0
-		uint8 u19;		//edi+0F4h    0xff
-		uint32 race;		//edi+44h
-		uint8 tutorial;		//edi+0F3h guessed, 0x1
-		uint8 class_;		//edi+41h
-		uint8 eyecolor1;		//edi+0EFh
-		uint8 beardcolor;		//edi+0EDh  0xff, guessed
-		uint8 eyecolor2;		//edi+0EEh
-		uint32 u13;		//edi+0E4h
-		uint32 u14;		//edi+0E8h
-		uint32 u29;		//edi+100h
+/*0000*/	uint8 level;				//
+/*0001*/	uint8 haircolor;			//
+/*0002*/	uint8 gender;				//
+/*0003*/	char name[1];				//variable length, edi+0
+/*0000*/	uint8 beard;				//
+/*0000*/	uint8 hair;					//
+/*0000*/	uint8 face;					//
+/*0000*/	CharSelectEquip	equip[9];
+/*0000*/	uint32 secondary;			//
+/*0000*/	uint32 primary;				//
+/*0000*/	uint8 u15;					// 0xff
+/*0000*/	uint32 deity;				//
+/*0000*/	uint16 zone;				//
+/*0000*/	uint16 instance;
+/*0000*/	uint8 gohome;				//
+/*0000*/	uint8 u19;					// 0xff
+/*0000*/	uint32 race;				//
+/*0000*/	uint8 tutorial;				//
+/*0000*/	uint8 class_;				//
+/*0000*/	uint8 eyecolor1;			//
+/*0000*/	uint8 beardcolor;			//
+/*0000*/	uint8 eyecolor2;			//
+/*0000*/	uint32 drakkin_heritage;	// Drakkin Heritage
+/*0000*/	uint32 drakkin_tattoo;		// Drakkin Tattoo
+/*0000*/	uint32 drakkin_details;		// Drakkin Details (Facial Spikes)
 };
 
 /*
@@ -1939,16 +1939,21 @@ struct LFG_Struct {
 struct FaceChange_Struct {
 /*000*/	int8	haircolor;
 /*001*/	int8	beardcolor;
-/*002*/	int8	eyecolor1; // the eyecolors always seem to be the same, maybe left and right eye?
+/*002*/	int8	eyecolor1;
 /*003*/	int8	eyecolor2;
 /*004*/	int8	hairstyle;
-/*005*/	int8	beard;	// vesuvias
+/*005*/	int8	beard;
 /*006*/	int8	face;
-//vesuvias:
+/*007*/ int8	unknown007;
+/*008*/ int32	heritage;
+/*012*/ int32	tattoo;
+/*016*/ int32	details;
+/*020*/ int32	unknown020;
+/*024*/
+};
 //there are only 10 faces for barbs changing woad just
 //increase the face value by ten so if there were 8 woad
 //designs then there would be 80 barb faces
-};
 
 /*
 ** Trade request from one client to another

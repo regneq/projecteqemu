@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/13/2009==
+Trevius: SoF - (Shendare) Corrected the FaceChange Structure and added an encode to make it work
+Trevius: SoF - Identified the Drakkin related fields of the Character Select Structure
+
 ==05/12/2009==
 Trevius: SoF - (Shendare) Added a temp commented out test section of code to spawn struct encode
 Trevius: SoF - (Shendare) Identified hairstyle, haircolor, flymode, drakkinheritage and drakkintattoo in the spawn struct

@@ -284,9 +284,9 @@ ENCODE(OP_SendCharInfo) {
 			eq2->eyecolor1 = emu->eyecolor1[r];
 			eq2->beardcolor = emu->beardcolor[r];
 			eq2->eyecolor2 = emu->eyecolor2[r];
-			eq2->u13 = 0; // Appears to be Drakkin Related
-			eq2->u14 = 0; // Appears to be Drakkin Related
-			eq2->u29 = 0; // Appears to be Drakkin Related
+			eq2->drakkin_heritage = 0;
+			eq2->drakkin_tattoo = 0;
+			eq2->drakkin_details = 0;
 		}
 		bufptr += sizeof(structs::CharacterSelectEntry_Struct);
 	}
@@ -2004,6 +2004,25 @@ DECODE(OP_AugmentInfo) {
 
 	FINISH_DIRECT_DECODE();
 }
+
+DECODE(OP_FaceChange) {
+
+	DECODE_LENGTH_EXACT(structs::FaceChange_Struct);
+	SETUP_DIRECT_DECODE(FaceChange_Struct, structs::FaceChange_Struct);
+	IN(haircolor);
+	IN(beardcolor);
+	IN(eyecolor1);
+	IN(eyecolor2);
+	IN(hairstyle);
+	IN(beard);
+	IN(face);
+	//emu->heritage = eq->heritage;
+	//emu->tattoo = eq->tattoo;
+	//emu->details = eq->details;
+
+	FINISH_DIRECT_DECODE();
+}
+
 
 int32 NextItemInstSerialNumber = 1;
 int32 MaxInstances = 2000000000;
