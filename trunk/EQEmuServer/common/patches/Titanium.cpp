@@ -111,7 +111,7 @@ ENCODE(OP_SendCharInfo) {
 		OUT(zone[r]);
 		OUT(eyecolor1[r]);
 		OUT(eyecolor2[r]);
-		OUT(hair[r]);
+		OUT(hairstyle[r]);
 		OUT(primary[r]);
 		if(emu->race[r] > 473)
 			eq->race[r] = 1;
@@ -474,9 +474,9 @@ ENCODE(OP_ZoneSpawns) {
 		eq->is_npc = emu->is_npc;
 		eq->hairstyle = emu->hairstyle;
 
-		if(emu->gender == 1){
-			eq->hairstyle = eq->hairstyle == 0xFF ? 0 : eq->hairstyle;
-		}
+		//if(emu->gender == 1){
+		//	eq->hairstyle = eq->hairstyle == 0xFF ? 0 : eq->hairstyle;
+		//}
 
 		eq->beard = emu->beard;
 //		eq->unknown0147[4] = emu->unknown0147[4];
@@ -522,14 +522,17 @@ ENCODE(OP_ZoneSpawns) {
 		eq->spawnId = emu->spawnId;
 //		eq->unknown0344[4] = emu->unknown0344[4];
 		eq->lfg = emu->lfg;
-            
-            if (emu->face == 99)	      {eq->face = 0;}
+        
+		/*
+		if (emu->face == 99)	      {eq->face = 0;}
 		if (emu->eyecolor1 == 99)  {eq->eyecolor1 = 0;}
 		if (emu->eyecolor2 == 99)  {eq->eyecolor2 = 0;}
 		if (emu->hairstyle == 99)  {eq->hairstyle = 0;}
 		if (emu->haircolor == 99)  {eq->haircolor = 0;}
 		if (emu->beard == 99)      {eq->beard = 0;}
 		if (emu->beardcolor == 99) {eq->beardcolor = 0;}
+		*/
+
 	}
 	
 	

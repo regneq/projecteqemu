@@ -364,7 +364,6 @@ bool logpos;
 		int8	in_eyecolor1, // the eyecolors always seem to be the same, maybe left and right eye?
 		int8	in_eyecolor2,
 		int8	in_hairstyle,
-// vesuvias - appearence fix
 		int8	in_luclinface,
 		int8	in_beard,
 		int8	in_aa_title,
@@ -1106,8 +1105,7 @@ protected:
 	int8	eyecolor1; // the eyecolors always seem to be the same, maybe left and right eye?
 	int8	eyecolor2;
 	int8	hairstyle;
-	int8	luclinface; // and beard
-// vesuvias - appearence fix
+	int8	luclinface; // 
 	int8	beard;
 
 	int8	aa_title;

@@ -262,7 +262,7 @@ ENCODE(OP_SendCharInfo) {
 		{	//post-name section...
 			structs::CharacterSelectEntry_Struct *eq2 = (structs::CharacterSelectEntry_Struct *) bufptr;
 			eq2->beard = emu->beard[r];
-			eq2->hair = emu->hair[r];
+			eq2->hairstyle = emu->hairstyle[r];
 			eq2->face = emu->face[r];
 			int k;
 			for(k = 0; k < MAX_MATERIALS; k++) {

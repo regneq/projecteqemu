@@ -1010,20 +1010,22 @@ bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 	pp.INT				= cc->INT;
 	pp.CHA				= cc->CHA;
 	pp.face				= cc->face;
-	pp.eyecolor1	= cc->eyecolor1;
-	pp.eyecolor2	= cc->eyecolor2;
-	pp.hairstyle	= cc->hairstyle;
-	pp.haircolor	= cc->haircolor;
+	pp.eyecolor1		= cc->eyecolor1;
+	pp.eyecolor2		= cc->eyecolor2;
+	pp.hairstyle		= cc->hairstyle;
+	pp.haircolor		= cc->haircolor;
 	pp.beard		 	= cc->beard;
-	pp.beardcolor	= cc->beardcolor;
-
-if (cc->face == 0)       {pp.face = 99;}
+	pp.beardcolor		= cc->beardcolor;
+	
+	/*
+	if (cc->face == 0)       {pp.face = 99;}
 	if (cc->eyecolor1 == 0)  {pp.eyecolor1 = 99;}
 	if (cc->eyecolor2 == 0)  {pp.eyecolor2 = 99;}
 	if (cc->hairstyle == 0)  {pp.hairstyle = 99;}
 	if (cc->haircolor == 0)  {pp.haircolor = 99;}
 	if (cc->beard == 0)      {pp.beard = 99;}
 	if (cc->beardcolor == 0) {pp.beardcolor = 99;}
+	*/
 
 	pp.birthday		= bday;
 	pp.lastlogin	= bday;

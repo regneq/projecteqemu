@@ -65,7 +65,7 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
       (bodyType)d->bodytype,
 	  d->deity,
 	  d->level,
-	  d->npc_id, // rembrant, Dec. 20, 2001
+	  d->npc_id,
 	  d->size,
 	  d->runspeed,
 	  heading,
@@ -89,7 +89,6 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 	  d->eyecolor1,
 	  d->eyecolor2,
 	  d->hairstyle,
-// vesuvias - appearence fix
 	  d->luclinface,
 	  d->beard,
 	  0,
@@ -99,7 +98,6 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 	  d->see_improved_hide,
 	  d->hp_regen,
 	  d->mana_regen,
-// SCORPIOUS2K - qglobal
 	  d->qglobal ),
 	attacked_timer(11000),
 	combat_event_timer(CombatEventTimer_expire),

@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/14/2009==
+Trevius: More work on Facial Features for Characters. Trying to get them functioning properly without hacks before adding SoF Features.
+
 ==05/13/2009==
 Trevius: SoF - (Shendare) Corrected the FaceChange Structure and added an encode to make it work
 Trevius: SoF - Identified the Drakkin related fields of the Character Select Structure

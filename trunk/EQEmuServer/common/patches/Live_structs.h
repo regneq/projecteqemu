@@ -123,7 +123,7 @@ struct CharacterSelect_Struct {
 /*0000*/	int32	race[10];			// Characters Race
 /*0040*/	Color_Struct	cs_colors[10][9];	// Characters Equipment Colors
 /*0400*/	int8	beardcolor[10];			// Characters beard Color
-/*0410*/	int8	hair[10];			// Characters hair style
+/*0410*/	int8	hairstyle[10];			// Characters hair style
 /*0420*/	int32	equip[10][9];			// 0=helm, 1=chest, 2=arm, 3=bracer, 4=hand, 5=leg, 6=boot, 7=melee1, 8=melee2  (Might not be)
 /*0780*/	int32	secondary[10];			// Characters secondary IDFile number
 /*0820*/	int8	unknown820[10];			// 10x ff
