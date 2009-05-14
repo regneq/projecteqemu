@@ -1012,7 +1012,7 @@ int Mob::GetWeaponDamage(Mob *against, const ItemInst *weapon_item)
 			}
 
 			if(eledmg)
-				dmg += (eledmg * against->ResistSpell(weapon_item->GetItem()->ElemDmgType, 0, this) / 100);		
+				dmg = (eledmg * against->ResistSpell(weapon_item->GetItem()->ElemDmgType, 0, this) / 100);		
 		}
 
 		if(weapon_item){
