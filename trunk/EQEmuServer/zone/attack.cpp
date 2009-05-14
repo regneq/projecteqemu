@@ -1012,15 +1012,16 @@ int Mob::GetWeaponDamage(Mob *against, const ItemInst *weapon_item)
 			}
 
 			if(eledmg)
-				dmg = (eledmg * against->ResistSpell(weapon_item->GetItem()->ElemDmgType, 0, this) / 100);		
+			{
+				eledmg = (eledmg * against->ResistSpell(weapon_item->GetItem()->ElemDmgType, 0, this) / 100);
+			}
 		}
 
 		if(weapon_item){
 			for(int x = 0; x < 5; x++){
 				if(weapon_item->GetAugment(x) && weapon_item->GetAugment(x)->GetItem()){
-					eledmg += weapon_item->GetAugment(x)->GetItem()->ElemDmgAmt;
 					if(weapon_item->GetAugment(x)->GetItem()->ElemDmgAmt)
-						dmg += (weapon_item->GetAugment(x)->GetItem()->ElemDmgAmt * against->ResistSpell(weapon_item->GetAugment(x)->GetItem()->ElemDmgType, 0, this) / 100);
+						eledmg += (weapon_item->GetAugment(x)->GetItem()->ElemDmgAmt * against->ResistSpell(weapon_item->GetAugment(x)->GetItem()->ElemDmgType, 0, this) / 100);
 				}
 			}
 		}
@@ -1067,7 +1068,7 @@ int Mob::GetWeaponDamage(Mob *against, const ItemInst *weapon_item)
 				return 1;
 		}
 		else
-			dmg += banedmg;
+			dmg += (banedmg + eledmg);
 	}
 	else{
 		if(weapon_item && weapon_item->GetItem()){
