@@ -120,7 +120,7 @@ struct CharacterSelect_Struct {
 /*0000*/	int32	zone[10];			// Characters Current Zone
 /*0040*/	int8	eyecolor1[10];			// Characters Eye Color
 /*0050*/	int8	eyecolor2[10];			// Characters Eye 2 Color
-/*0060*/	int8	hair[10];			// Characters hair style
+/*0060*/	int8	hairstyle[10];			// Characters hair style
 /*0070*/	int8	unknown0070[2];
 /*0072*/	int32	primary[10];			// Characters primary IDFile number
 /*0112*/	int32	race[10];			// Characters Race

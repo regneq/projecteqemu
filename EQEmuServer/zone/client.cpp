@@ -118,15 +118,13 @@ Client::Client(EQStreamInterface* ieqs)
 	0,	// int
 	0,	// wis
 	0,	// cha
-	0xff,	// Luclin Hair Colour
-	0xff,	// Luclin Beard Color
-	0xff,	// Luclin Eye1
-	0xff,	// Luclin Eye2
-	0xff,	// Luclin Hair Style
-// vesuvias - appearence fix
-	0xff,	// Luclin Beard
-
-	0xff,	// Luclin Face
+	0,	// Luclin Hair Colour
+	0,	// Luclin Beard Color
+	0,	// Luclin Eye1
+	0,	// Luclin Eye2
+	0,	// Luclin Hair Style
+	0,	// Luclin Face
+	0,	// Luclin Beard
 	0xff,	// AA Title
 	0,	// see_invis
 	0, // see_invis_undead

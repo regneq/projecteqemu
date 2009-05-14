@@ -130,7 +130,7 @@ struct CharacterSelectEntry_Struct {
 /*0002*/	uint8 gender;				//
 /*0003*/	char name[1];				//variable length, edi+0
 /*0000*/	uint8 beard;				//
-/*0000*/	uint8 hair;					//
+/*0000*/	uint8 hairstyle;					//
 /*0000*/	uint8 face;					//
 /*0000*/	CharSelectEquip	equip[9];
 /*0000*/	uint32 secondary;			//
@@ -160,34 +160,6 @@ struct CharacterSelect_Struct {
 /*0000*/	int32	char_count;		//number of chars in this packet
 /*0004*/	int32	total_chars;	//total number of chars allowed?
 /*0008*/	CharacterSelectEntry_Struct entries[0];
-};
-
-struct OLD_CharacterSelect_Struct {
-/*0000*/	int32	race[10];			// Characters Race
-/*0040*/	Color_Struct	cs_colors[10][9];	// Characters Equipment Colors
-/*0400*/	int8	beardcolor[10];			// Characters beard Color
-/*0410*/	int8	hair[10];			// Characters hair style
-/*0420*/	int32	equip[10][9];			// 0=helm, 1=chest, 2=arm, 3=bracer, 4=hand, 5=leg, 6=boot, 7=melee1, 8=melee2  (Might not be)
-/*0780*/	int32	secondary[10];			// Characters secondary IDFile number
-/*0820*/	int8	unknown820[10];			// 10x ff
-/*0830*/	int8	unknown830[2];			// 2x 00
-/*0832*/	int32	deity[10];			// Characters Deity
-/*0872*/	int8	gohome[10];			// 1=Go Home available, 0=not
-/*0882*/	int8	tutorial[10];			// 1=Tutorial available, 0=not
-/*0892*/	int8	beard[10];			// Characters Beard Type
-/*0902*/	int8	unknown902[10];			// 10x ff
-/*0912*/	int32	primary[10];			// Characters primary IDFile number
-/*0952*/	int8	haircolor[10];			// Characters Hair Color
-/*0962*/	int8	unknown0962[2];			// 2x 00
-/*0964*/	int32	zone[10];			// Characters Current Zone
-/*1004*/	int8	class_[10];			// Characters Classes
-/*1014*/	int8	face[10];			// Characters Face Type
-/*1024*/	char	name[10][64];			// Characters Names
-/*1664*/	int8	gender[10];			// Characters Gender
-/*1674*/	int8	eyecolor1[10];			// Characters Eye Color
-/*1684*/	int8	eyecolor2[10];			// Characters Eye 2 Color
-/*1694*/	int8	level[10];			// Characters Levels
-/*1704*/
 };
 
 /*
@@ -1809,23 +1781,6 @@ struct AdventureRequestResponse_Struct{
 	int8 iss_unknown001[6];
 };*/
 
-/*
-** Illusion_Struct
-** Changes client visible features
-** Size: 168 bytes
-** Used In: OP_Illusion, #face, Mob::SendIllusionPacket()
-** Fields from the deprecated struct:
-**	int8	unknown_26; //Always 26
-**	int8	haircolor;
-**	int8	beardcolor;
-**	int8	eyecolor1; // the eyecolors always seem to be the same, maybe left and right eye?
-**	int8	eyecolor2;
-**	int8	hairstyle;
-**	int8	aa_title;
-**	int8	luclinface; // and beard
-** Updated by Father Nitwit for 7-14-04 patch
-**
-*/
 struct Illusion_Struct {  //size: 256
 /*000*/	uint32	spawnid;
 /*004*/	char charname[64];		//fix for 7-14-04 patch

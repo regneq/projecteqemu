@@ -146,7 +146,7 @@ struct CharacterSelect_Struct {
 /*0000*/	int32	race[10];			// Characters Race
 /*0040*/	Color_Struct	cs_colors[10][9];	// Characters Equipment Colors
 /*0400*/	int8	beardcolor[10];			// Characters beard Color
-/*0410*/	int8	hair[10];			// Characters hair style
+/*0410*/	int8	hairstyle[10];			// Characters hair style
 /*0420*/	int32	equip[10][9];			// 0=helm, 1=chest, 2=arm, 3=bracer, 4=hand, 5=leg, 6=boot, 7=melee1, 8=melee2  (Might not be)
 /*0780*/	int32	secondary[10];			// Characters secondary IDFile number
 /*0820*/	int8	unknown820[10];			// 10x ff
@@ -1732,23 +1732,6 @@ struct AdventureRequestResponse_Struct{
 	int8 iss_unknown001[6];
 };*/
 
-/*
-** Illusion_Struct
-** Changes client visible features
-** Size: 168 bytes
-** Used In: OP_Illusion, #face, Mob::SendIllusionPacket()
-** Fields from the deprecated struct:
-**	int8	unknown_26; //Always 26
-**	int8	haircolor;
-**	int8	beardcolor;
-**	int8	eyecolor1; // the eyecolors always seem to be the same, maybe left and right eye?
-**	int8	eyecolor2;
-**	int8	hairstyle;
-**	int8	aa_title;
-**	int8	luclinface; // and beard
-** Updated by Father Nitwit for 7-14-04 patch
-**
-*/
 struct Illusion_Struct {
 /*000*/	uint32	spawnid;
 		char charname[64];		//fix for 7-14-04 patch
@@ -1837,9 +1820,8 @@ struct FaceChange_Struct {
 /*002*/	int8	eyecolor1; // the eyecolors always seem to be the same, maybe left and right eye?
 /*003*/	int8	eyecolor2;
 /*004*/	int8	hairstyle;
-/*005*/	int8	beard;	// vesuvias
+/*005*/	int8	beard;
 /*006*/	int8	face;
-//vesuvias:
 //there are only 10 faces for barbs changing woad just
 //increase the face value by ten so if there were 8 woad
 //designs then there would be 80 barb faces

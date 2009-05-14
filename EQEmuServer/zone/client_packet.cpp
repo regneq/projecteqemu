@@ -4678,16 +4678,17 @@ void Client::Handle_OP_FaceChange(const EQApplicationPacket *app)
 	m_pp.eyecolor2	= fc->eyecolor2;
 	m_pp.hairstyle	= fc->hairstyle;
 	m_pp.face		= fc->face;
-// vesuvias - appearence fix
 	m_pp.beard		= fc->beard;
-
-if (fc->face == 0)       {m_pp.face = 99;}
+	
+	/*
+	if (fc->face == 0)       {m_pp.face = 99;}
 	if (fc->eyecolor1 == 0)  {m_pp.eyecolor1 = 99;}
 	if (fc->eyecolor2 == 0)  {m_pp.eyecolor2 = 99;}
 	if (fc->hairstyle == 0)  {m_pp.hairstyle = 99;}
 	if (fc->haircolor == 0)  {m_pp.haircolor = 99;}
 	if (fc->beard == 0)      {m_pp.beard = 99;}
 	if (fc->beardcolor == 0) {m_pp.beardcolor = 99;}
+	*/
 
 	Save();
 	Message_StringID(13,FACE_ACCEPTED);
