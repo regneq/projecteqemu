@@ -3517,7 +3517,6 @@ void EntityList::CreateGroundObject(int32 itemid, float x, float y, float z, flo
 			Object* object = new Object(i,x,y,z,heading,decay_time);
 			entity_list.AddObject(object, true);
 			object->StartDecay();
-			object->Save();
 			safe_delete(i);
 		}
 	}

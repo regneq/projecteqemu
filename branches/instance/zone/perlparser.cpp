@@ -2422,6 +2422,133 @@ XS(XS__varlink) {
 	XSRETURN(1);
 }
 
+XS(XS__CreateInstance);
+XS(XS__CreateInstance) {
+	dXSARGS;
+	if (items != 3)
+		Perl_croak(aTHX_ "Usage: CreateInstance(zone_name, version, duration)");
+
+	char * zone = (char *)SvPV_nolen(ST(0));
+	int16 version = (int)SvUV(ST(1));
+	int16 duration = (int)SvUV(ST(2));
+	int32 id = quest_manager.CreateInstance(zone, version, duration);
+
+	XSRETURN_UV(id);
+}
+
+XS(XS__DestroyInstance);
+XS(XS__DestroyInstance) {
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: DestroyInstance(id)");
+
+	int16 id = (int)SvUV(ST(0));
+	quest_manager.DestroyInstance(id);
+
+	XSRETURN_EMPTY;
+}
+
+XS(XS__GetInstanceID);
+XS(XS__GetInstanceID) {
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: GetInstanceID(zone_name, version)");
+
+	char * zone = (char *)SvPV_nolen(ST(0));
+	int16 version = (int)SvUV(ST(1));
+	int16 id = quest_manager.GetInstanceID(zone, version);
+
+	XSRETURN_UV(id);
+}
+
+XS(XS__AssignToInstance);
+XS(XS__AssignToInstance) {
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: AssignToInstance(id)");
+
+	int16 id = (int)SvUV(ST(0));
+	quest_manager.AssignToInstance(id);
+
+	XSRETURN_EMPTY;
+}
+
+XS(XS__AssignGroupToInstance);
+XS(XS__AssignGroupToInstance) {
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: AssignGroupToInstance(id)");
+
+	int16 id = (int)SvUV(ST(0));
+	quest_manager.AssignGroupToInstance(id);
+
+	XSRETURN_EMPTY;
+}
+
+XS(XS__AssignRaidToInstance);
+XS(XS__AssignRaidToInstance) {
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: AssignRaidToInstance(id)");
+
+	int16 id = (int)SvUV(ST(0));
+	quest_manager.AssignRaidToInstance(id);
+
+	XSRETURN_EMPTY;
+}
+
+XS(XS__MovePCInstance);
+XS(XS__MovePCInstance)
+{
+	dXSARGS;
+	if (items != 5 && items != 6)
+		Perl_croak(aTHX_ "Usage: MovePCInstance(zone_id, instance_id, x, y, z [,heading])");
+
+	int	zoneid = (int)SvIV(ST(0));
+	int	instanceid = (int)SvIV(ST(1));
+	float	x = (float)SvNV(ST(2));
+	float	y = (float)SvNV(ST(3));
+	float	z = (float)SvNV(ST(4));
+
+	if (items == 4)
+	{
+		quest_manager.MovePCInstance(zoneid, instanceid, x, y, z, 0.0f);
+	}
+	else 
+	{
+		float heading = (float)SvNV(ST(5));
+		quest_manager.MovePCInstance(zoneid, instanceid, x, y, z, heading);
+	}
+
+	XSRETURN_EMPTY;
+}
+
+XS(XS__FlagInstanceByGroupLeader);
+XS(XS__FlagInstanceByGroupLeader) {
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: FlagInstanceByGroupLeader(zone, version)");
+
+	int32 zone = (int)SvUV(ST(0));
+	int16 version = (int)SvUV(ST(1));
+	quest_manager.FlagInstanceByGroupLeader(zone, version);
+
+	XSRETURN_EMPTY;
+}
+
+XS(XS__FlagInstanceByRaidLeader);
+XS(XS__FlagInstanceByRaidLeader) {
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: FlagInstanceByRaidLeader(zone, version)");
+
+	int32 zone = (int)SvUV(ST(0));
+	int16 version = (int)SvUV(ST(1));
+	quest_manager.FlagInstanceByRaidLeader(zone, version);
+
+	XSRETURN_EMPTY;
+}
+
 /*
 This is the callback perl will look for to setup the
 quest package's XSUBs
@@ -2590,7 +2717,15 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "MerchantSetItem"), XS__MerchantSetItem, file);
 		newXS(strcpy(buf, "MerchantCountItem"), XS__MerchantCountItem, file);
 		newXS(strcpy(buf, "varlink"), XS__varlink, file);
-
+		newXS(strcpy(buf, "CreateInstance"), XS__CreateInstance, file);
+		newXS(strcpy(buf, "DestroyInstance"), XS__DestroyInstance, file);
+		newXS(strcpy(buf, "GetInstanceID"), XS__GetInstanceID, file);
+		newXS(strcpy(buf, "AssignToInstance"), XS__AssignToInstance, file);
+		newXS(strcpy(buf, "AssignGroupToInstance"), XS__AssignGroupToInstance, file);
+		newXS(strcpy(buf, "AssignRaidToInstance"), XS__AssignRaidToInstance, file);
+		newXS(strcpy(buf, "MovePCInstance"), XS__MovePCInstance, file);
+		newXS(strcpy(buf, "FlagInstanceByGroupLeader"), XS__FlagInstanceByGroupLeader, file);
+		newXS(strcpy(buf, "FlagInstanceByRaidLeader"), XS__FlagInstanceByRaidLeader, file);
 	XSRETURN_YES;
 }
 

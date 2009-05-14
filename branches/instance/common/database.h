@@ -146,23 +146,30 @@ public:
 	/*
 	 * Instancing Stuff
 	 */
-	bool VerifyZoneInstance(int32 zoneID, int16 instanceID);
-	bool VerifyInstanceAlive(int16 instanceID, int32 charID);
-	bool CharacterInInstanceGroup(int16 instanceID, int32 charID);
-	void SetCharacterInstance(int16 instanceID, int32 charID);
-	void DeleteInstance(uint16 instanceID);
-	bool CheckInstanceExpired(uint16 instanceID);
-	int32 ZoneIDFromInstanceID(uint16 instanceID);
-	int32 GetTimeRemainingInstance(uint16 instanceID);
-	bool GetUnusedInstanceID(uint16 &instanceID);
+	bool VerifyZoneInstance(int32 zone_id, int16 instance_id);
+	bool VerifyInstanceAlive(int16 instance_id, int32 char_id);
+	bool CharacterInInstanceGroup(int16 instance_id, int32 char_id);
+	void SetCharacterInstance(int16 instance_id, int32 char_id);
+	void DeleteInstance(uint16 instance_id);
+	bool CheckInstanceExpired(uint16 instance_id);
+	int32 ZoneIDFromInstanceID(uint16 instance_id);
+	int32 VersionFromInstanceID(uint16 instance_id);
+	int32 GetTimeRemainingInstance(uint16 instance_id);
+	bool GetUnusedInstanceID(uint16 &instance_id);
 	bool CreateInstance(uint16 instance_id, uint32 zone_id, uint32 version, uint32 duration);
-	void SetInstanceBooted(uint16 instance_id, int val);
 	void PurgeExpiredInstances();
 	bool AddClientToInstance(uint16 instance_id, uint32 char_id);
 	bool RemoveClientFromInstance(uint16 instance_id, uint32 char_id);
 	bool CheckInstanceExists(uint16 instance_id);
 	void BuryCorpsesInInstance(uint16 instance_id);
-	//move all corpses in instance to non-instanced gy
+	int16 GetInstanceVersion(uint16 instance_id);
+	int16 GetInstanceID(const char* zone, int32 charid, int16 version);
+	int16 GetInstanceID(int32 zone, int32 charid, int16 version);
+	void AssignGroupToInstance(int32 gid, int32 instance_id);
+	void AssignRaidToInstance(int32 rid, int32 instance_id);
+	void FlagInstanceByGroupLeader(int32 zone, int16 version, int32 charid, int32 gid);
+	void FlagInstanceByRaidLeader(int32 zone, int16 version, int32 charid, int32 rid);
+
 
 	/*
 	 * Account Related
@@ -199,6 +206,7 @@ public:
 	void	ClearRaid(int32 rid = 0);
 	void	ClearRaidDetails(int32 rid = 0);
 	int32	GetRaidID(const char* name);
+	const char *GetRaidLeaderName(int32 rid);
 
 	/*
 	 * Database Varaibles

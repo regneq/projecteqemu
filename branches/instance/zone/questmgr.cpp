@@ -1793,3 +1793,107 @@ const char* QuestManager::varlink(char* perltext, int item_id) {
 	safe_delete_array(link);	// MakeItemLink() uses new also
 	return perltext;
 }
+
+int16 QuestManager::CreateInstance(const char *zone, int16 version, int32 duration)
+{
+	if(initiator)
+	{
+		int32 zone_id = database.GetZoneID(zone);
+		if(zone_id == 0)
+			return 0;
+
+		int16 id = 0;
+		if(!database.GetUnusedInstanceID(id))
+		{
+			initiator->Message(13, "Server was unable to find a free instance id.");
+			return 0;
+		}
+
+		if(!database.CreateInstance(id, zone_id, version, duration))
+		{
+			initiator->Message(13, "Server was unable to create a new instance.");
+			return 0;
+		}
+		return id;
+	}
+	return 0;
+}
+
+void QuestManager::DestroyInstance(int16 instance_id)
+{
+	database.DeleteInstance(instance_id);
+}
+
+int16 QuestManager::GetInstanceID(const char *zone, int16 version)
+{
+	if(initiator)
+	{
+		return database.GetInstanceID(zone, initiator->CharacterID(), version);
+	}
+	return 0;
+}
+
+void QuestManager::AssignToInstance(int16 instance_id)
+{
+	if(initiator)
+	{
+		database.AddClientToInstance(instance_id, initiator->CharacterID());
+	}
+}
+
+void QuestManager::AssignGroupToInstance(int16 instance_id)
+{
+	if(initiator)
+	{
+		Group *g = initiator->GetGroup();
+		if(g)
+		{
+			int32 gid = g->GetID();
+			database.AssignGroupToInstance(gid, instance_id);
+		}
+	}
+}
+
+void QuestManager::AssignRaidToInstance(int16 instance_id)
+{
+	if(initiator)
+	{
+		Raid *r = initiator->GetRaid();
+		if(r)
+		{
+			int32 rid = r->GetID();
+			database.AssignRaidToInstance(rid, instance_id);
+		}
+	}
+}
+
+void QuestManager::MovePCInstance(int zone_id, int instance_id, float x, float y, float z, float heading)
+{
+	if(initiator)
+	{
+		initiator->MovePC(zone_id, instance_id, x, y, z, heading);
+	}
+}
+
+void QuestManager::FlagInstanceByGroupLeader(int32 zone, int16 version)
+{
+	if(initiator)
+	{
+		Group *g = initiator->GetGroup();
+		if(g){
+			database.FlagInstanceByGroupLeader(zone, version, initiator->CharacterID(), g->GetID());
+		}
+	}
+}
+
+void QuestManager::FlagInstanceByRaidLeader(int32 zone, int16 version)
+{
+	if(initiator)
+	{
+		Raid *r = initiator->GetRaid();
+		if(r)
+		{
+			database.FlagInstanceByRaidLeader(zone, version, initiator->CharacterID(), r->GetID());
+		}
+	}
+}

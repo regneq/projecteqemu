@@ -84,6 +84,7 @@ public:
 	inline const char*	GetShortName()	{ return short_name; }
 	inline const int32	GetZoneID() const { return zoneid; }
 	inline const int32	GetInstanceID() const { return instanceid; }
+	inline const int16	GetInstanceVersion() const { return instanceversion; }
 
 	inline Timer* GetInstanceTimer() { return Instance_Timer; }
 
@@ -104,7 +105,7 @@ public:
 //	AA_List* GetAAList() { return aas; }
 	SendAA_Struct* GetAABySequence(int32 seq) { return aas[seq]; }
 	SendAA_Struct* FindAA(int32 id);
-	void	LoadZoneDoors(const char* zone);
+	void	LoadZoneDoors(const char* zone, int16 version);
 	bool	LoadZoneObjects();
 	bool	LoadGroundSpawns();
 	void	ReloadStaticData();
@@ -203,6 +204,7 @@ public:
 private:
 	int32	zoneid;
 	int32	instanceid;
+	int16	instanceversion;
 	char*	short_name;
 	char	file_name[16];
 	char*	long_name;

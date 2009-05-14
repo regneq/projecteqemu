@@ -222,13 +222,13 @@ struct ServerZoneStateChange_struct {
 	int32 ZoneServerID;
 	char adminname[64];
 	int32 zoneid;
-	int32 instanceid;
+	int16 instanceid;
 	bool makestatic;
 };
 
 struct ServerZoneIncommingClient_Struct {
 	int32	zoneid;		// in case the zone shut down, boot it back up
-	int32	instanceid; // instance id if it exists for booting up
+	int16	instanceid; // instance id if it exists for booting up
 	int32	ip;			// client's IP address
 	int32	wid;		// client's WorldID#
 	int32	accid;
@@ -341,7 +341,7 @@ struct ServerZoneReboot_Struct {
 };
 
 struct SetZone_Struct {
-	int32	instanceid;
+	int16	instanceid;
 	int32	zoneid;
 	bool	staticzone;
 };

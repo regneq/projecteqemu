@@ -721,12 +721,9 @@ bool Client::Process() {
 }
 
 void Client::EnterWorld(bool TryBootup) {
-	//int16 zone_port;
-	//char zone_address[255];
 	if (zoneID == 0)
 		return;
 
-	printf("trying to enter world (%u) %u\n", zoneID, instanceID);
 	ZoneServer* zs = NULL;
 	if(instanceID > 0)
 	{

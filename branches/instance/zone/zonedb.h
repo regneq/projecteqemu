@@ -90,7 +90,7 @@ public:
 	uint32	AddObject(uint32 type, uint32 icon, const Object_Struct& object, const ItemInst* inst);
 	void	UpdateObject(uint32 id, uint32 type, uint32 icon, const Object_Struct& object, const ItemInst* inst);
 	void	DeleteObject(uint32 id);
-	Ground_Spawns*	LoadGroundSpawns(int32 zone_id,Ground_Spawns* gs);
+	Ground_Spawns*	LoadGroundSpawns(int32 zone_id, int16 version, Ground_Spawns* gs);
 	
 	/*
 	 * Adventures
@@ -213,9 +213,9 @@ public:
 	/*
 	 * Spawns and Spawn Points
 	 */
-	bool	LoadSpawnGroups(const char* zone_name, SpawnGroupList* spawn_group_list);
-      bool	LoadSpawnGroupsByID(int spawngroupid, SpawnGroupList* spawn_group_list);
-	bool	PopulateZoneSpawnList(int32 zoneid, LinkedList<Spawn2*> &spawn2_list, int32 repopdelay = 0);
+	bool	LoadSpawnGroups(const char* zone_name, uint16 version, SpawnGroupList* spawn_group_list);
+    bool	LoadSpawnGroupsByID(int spawngroupid, SpawnGroupList* spawn_group_list);
+	bool	PopulateZoneSpawnList(int32 zoneid, LinkedList<Spawn2*> &spawn2_list, int16 version, int32 repopdelay = 0);
 	Spawn2*	LoadSpawn2(LinkedList<Spawn2*> &spawn2_list, int32 spawn2id, int32 timeleft);
 	bool	CreateSpawn2(Client *c, int32 spawngroup, const char* zone, float heading, float x, float y, float z, int32 respawn, int32 variance, uint16 condition, sint16 cond_value);
 	void	UpdateSpawn2Timeleft(int32 id, int16 instance_id,int32 timeleft);
@@ -287,12 +287,12 @@ public:
 	uint32  MaxDoors() { return max_door_type; }
 	bool	DoorIsOpen(int8 door_id,const char* zone_name);
 	void	SetDoorPlace(int8 value,int8 door_id,const char* zone_name);
-	bool	LoadDoors(sint32 iDoorCount, Door *into, const char *zone_name);
+	bool	LoadDoors(sint32 iDoorCount, Door *into, const char *zone_name, int16 version);
 	bool	CheckGuildDoor(int8 doorid,int16 guild_id, const char* zone);
 	bool	SetGuildDoor(int8 doorid,int16 guild_id, const char* zone);
 	int32	GetGuildEQID(int32 guilddbid);
 	void	UpdateDoorGuildID(int doorid, int guild_id);
-	sint32	GetDoorsCount(int32* oMaxID, const char *zone_name);
+	sint32	GetDoorsCount(int32* oMaxID, const char *zone_name, int16 version);
 	
 	/*
 	 * Blocked Spells
@@ -304,7 +304,7 @@ public:
 	/*
 	 * Traps
 	 */
-	bool	LoadTraps(const char* zonename);
+	bool	LoadTraps(const char* zonename, int16 version);
 	char*	GetTrapMessage(int32 trap_id);
 
 	/*

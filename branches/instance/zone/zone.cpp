@@ -171,9 +171,8 @@ bool Zone::LoadZoneObjects() {
 	
 	uint32 len_query = MakeAnyLenString(&query, "SELECT "
 		"id,zoneid,xpos,ypos,zpos,heading,itemid,charges,objectname,type,icon,"
-		"linked_list_addr_01,linked_list_addr_02,unknown08,unknown10,unknown20,"
-		"unknown24,unknown60,unknown64,unknown68,unknown72,unknown76,unknown88 "
-		"from object where zoneid=%i", zoneid);
+		"unknown08,unknown10,unknown20,unknown24,unknown60,unknown64,unknown68,"
+		"unknown72,unknown76 from object where zoneid=%i and version=%u", zoneid, instanceversion);
 	
 	if (database.RunQuery(query, len_query, errbuf, &result)) {
 		safe_delete_array(query);
@@ -199,8 +198,8 @@ bool Zone::LoadZoneObjects() {
 			type						= (int8)atoi(row[idx++]);
 			icon						= (uint32)atoi(row[idx++]);
 			data.object_type			= (uint32)atoi(row[idx++]);
-			data.linked_list_addr[0]	= (uint32)atoi(row[idx++]);
-			data.linked_list_addr[1]	= (uint32)atoi(row[idx++]);
+			data.linked_list_addr[0]	= 0;
+			data.linked_list_addr[1]	= 0;
 			data.unknown008[0]			= (uint32)atoi(row[idx++]);
 			data.unknown008[1]			= (uint32)atoi(row[idx++]);
 			data.unknown020				= (uint32)atoi(row[idx++]);
@@ -211,11 +210,11 @@ bool Zone::LoadZoneObjects() {
 			data.unknown068				= (uint32)atoi(row[idx++]);
 			data.unknown072				= (uint32)atoi(row[idx++]);
 			data.unknown076				= (uint32)atoi(row[idx++]);
-			data.unknown084				= (uint32)atoul(row[idx++]);
+			data.unknown084				= 0;
 			
 			ItemInst* inst = NULL;
-//FatherNitwit: this dosent seem to work...
-//tradeskill containers do not have an itemid of 0... at least what I am seeing
+			//FatherNitwit: this dosent seem to work...
+			//tradeskill containers do not have an itemid of 0... at least what I am seeing
 			if (itemid == 0) {
 				// Generic tradeskill container
 				inst = new ItemInst(ItemUseWorldContainer);
@@ -239,8 +238,9 @@ bool Zone::LoadZoneObjects() {
 			entity_list.AddObject(object, false);
 			if(type == OT_DROPPEDITEM && itemid != 0)
 			{
-				object->StartDecay();
+				entity_list.RemoveObject(object->GetID());
 			}
+
 			safe_delete(inst);
 		}
 		mysql_free_result(result);
@@ -260,7 +260,7 @@ bool Zone::LoadGroundSpawns() {
 	memset(&groundspawn, 0, sizeof(groundspawn));
 	int gsindex=0;
 	LogFile->write(EQEMuLog::Status, "Loading Ground Spawns from DB...");
-	database.LoadGroundSpawns(zoneid, &groundspawn);
+	database.LoadGroundSpawns(zoneid, GetInstanceVersion(), &groundspawn);
 	int32 ix=0;
 	char* name=0;
 	int32 gsnumber=0;
@@ -392,7 +392,7 @@ void Zone::LoadTempMerchantData(){
 		"where "
 		"	ml.npcid=se.npcid "
 		"	and se.spawngroupid=s2.spawngroupid "
-		"	and s2.zone='%s' ", GetShortName()));
+		"	and s2.zone='%s' and s2.version=%u", GetShortName(), GetInstanceVersion()));
 	if (!(pQueuedMerchantsWorkID = dbasync->AddWork(&dbaw))) {
 		safe_delete(dbaw);
 		LogFile->write(EQEMuLog::Error, "dbasync->AddWork() failed adding merchant list query");
@@ -515,9 +515,9 @@ void Zone::GetMerchantDataForZoneLoad(){
 		"select ml.merchantid,ml.slot,ml.item "
 		"from merchantlist ml, npc_types nt, spawnentry se, spawn2 s2 "
 		"where nt.merchant_id=ml.merchantid and nt.id=se.npcid "
-		"and se.spawngroupid=s2.spawngroupid and s2.zone='%s' "
+		"and se.spawngroupid=s2.spawngroupid and s2.zone='%s' and s2.version=%u "
 		//"group by ml.merchantid,slot order by merchantid,slot asc"		//this made the query use a temp table/filesort (very slow)... so we handle unsorted data on our end.
-		, GetShortName()));
+		, GetShortName(), GetInstanceVersion()));
 	if (!(pQueuedMerchantsWorkID = dbasync->AddWork(&dbaw))) {
 		safe_delete(dbaw);
 		LogFile->write(EQEMuLog::Error,"dbasync->AddWork() failed adding merchant list query");
@@ -639,12 +639,12 @@ std::map<uint32,NPCType *>::iterator itr;
 	UpdateWindowTitle();
 }
 
-void Zone::LoadZoneDoors(const char* zone)
+void Zone::LoadZoneDoors(const char* zone, int16 version)
 {
 	LogFile->write(EQEMuLog::Status, "Loading doors for %s ...", zone);
 	
 	int32 maxid;
-	sint32 count = database.GetDoorsCount(&maxid, zone);
+	sint32 count = database.GetDoorsCount(&maxid, zone, version);
 	if(count < 1) {
 		LogFile->write(EQEMuLog::Status, "... No doors loaded.");
 		return;
@@ -652,7 +652,7 @@ void Zone::LoadZoneDoors(const char* zone)
 	
 	Door *dlist = new Door[count];
 	
-	if(!database.LoadDoors(count, dlist, zone)) {
+	if(!database.LoadDoors(count, dlist, zone, version)) {
 		LogFile->write(EQEMuLog::Error, "... Failed to load doors.");
 		delete[] dlist;
 		return;
@@ -675,6 +675,7 @@ Zone::Zone(int32 in_zoneid, int32 in_instanceid, const char* in_short_name)
 {
 	zoneid = in_zoneid;
 	instanceid = in_instanceid;
+	instanceversion = database.GetInstanceVersion(instanceid);
 	map = Map::LoadMapfile(in_short_name);
 	watermap = WaterMap::LoadWaterMapfile(in_short_name);
 	pathing = PathManager::LoadPathFile(in_short_name);
@@ -800,40 +801,13 @@ bool Zone::Init(bool iStaticZone) {
 	}
 	
 	LogFile->write(EQEMuLog::Status, "Loading spawn groups...");
-	if (!database.LoadSpawnGroups(short_name, &spawn_group_list)) {
+	if (!database.LoadSpawnGroups(short_name, GetInstanceVersion(), &spawn_group_list)) {
 		LogFile->write(EQEMuLog::Error, "Loading spawn groups failed.");
 		return false;
 	}
 	
-	//load up our existing spawn state or the regular spawn2 data
-	/*char pzs[3] = "";
-	if (database.GetVariable("PersistentZoneState", pzs, 2) && pzs[0] == '1') {
-		LogFile->write(EQEMuLog::Status, "Loading saved zone state...");
-		sint8 tmp = database.LoadZoneState(short_name, spawn2_list);
-		if (tmp == 1) {
-			//success
-		} else if (tmp == -1) {
-			LogFile->write(EQEMuLog::Error, "Loading zone state failed.");
-			return false;
-		}
-		else if (tmp == 0) {
-			LogFile->write(EQEMuLog::Status, "No state saved, loading spawn2 points...");
-			if (!database.PopulateZoneSpawnList(zoneid, spawn2_list))
-				return false;
-		}
-		else
-			cout << "Unknown LoadZoneState return value" << endl;
-	} else {
-		LogFile->write(EQEMuLog::Status, "Loading spawn2 points...");
-		if (!database.PopulateZoneSpawnList(zoneid, spawn2_list))
-		{
-			LogFile->write(EQEMuLog::Error, "Loading spawn2 points failed.");
-			return false;
-		}
-	}*/
-
 	LogFile->write(EQEMuLog::Status, "Loading spawn2 points...");
-	if (!database.PopulateZoneSpawnList(zoneid, spawn2_list))
+	if (!database.PopulateZoneSpawnList(zoneid, spawn2_list, GetInstanceVersion()))
 	{
 		LogFile->write(EQEMuLog::Error, "Loading spawn2 points failed.");
 		return false;
@@ -846,7 +820,7 @@ bool Zone::Init(bool iStaticZone) {
 	}
 	
 	LogFile->write(EQEMuLog::Status, "Loading traps...");
-	if (!database.LoadTraps(short_name))
+	if (!database.LoadTraps(short_name, GetInstanceVersion()))
 	{
 		LogFile->write(EQEMuLog::Error, "Loading traps failed.");
 		return false;
@@ -865,7 +839,7 @@ bool Zone::Init(bool iStaticZone) {
 	}
 	
 	//load up the zone's doors (prints inside)
-	zone->LoadZoneDoors(zone->GetShortName());
+	zone->LoadZoneDoors(zone->GetShortName(), zone->GetInstanceVersion());
 	zone->LoadBlockedSpells(zone->GetZoneID());
 	
 	//clear trader items if we are loading the bazaar
@@ -915,7 +889,7 @@ void Zone::ReloadStaticData() {
 	
 	LogFile->write(EQEMuLog::Status, "Reloading traps...");
 	entity_list.RemoveAllTraps();
-	if (!database.LoadTraps(GetShortName()))
+	if (!database.LoadTraps(GetShortName(), GetInstanceVersion()))
 	{
 		LogFile->write(EQEMuLog::Error, "Reloading traps failed.");
 	}
@@ -934,7 +908,7 @@ void Zone::ReloadStaticData() {
 	}
 	
 	entity_list.RemoveAllDoors();
-	zone->LoadZoneDoors(zone->GetShortName());
+	zone->LoadZoneDoors(zone->GetShortName(), zone->GetInstanceVersion());
 
 	zone->LoadBlockedSpells(zone->GetZoneID());
 	
@@ -1199,7 +1173,7 @@ void Zone::Repop(int32 delay) {
 		iterator.RemoveCurrent();
 	}
 
-	if (!database.PopulateZoneSpawnList(zoneid, spawn2_list, delay))
+	if (!database.PopulateZoneSpawnList(zoneid, spawn2_list, GetInstanceVersion(), delay))
 		LogFile->write(EQEMuLog::Debug, "Error in Zone::Repop: database.PopulateZoneSpawnList failed");
 
 	MZoneLock.unlock();

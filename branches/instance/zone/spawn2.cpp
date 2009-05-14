@@ -253,7 +253,7 @@ void Spawn2::DeathReset()
 	}
 }
 
-bool ZoneDatabase::PopulateZoneSpawnList(int32 zoneid, LinkedList<Spawn2*> &spawn2_list, int32 repopdelay) {
+bool ZoneDatabase::PopulateZoneSpawnList(int32 zoneid, LinkedList<Spawn2*> &spawn2_list, int16 version, int32 repopdelay) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char* query = 0;
 	MYSQL_RES *result;
@@ -261,7 +261,7 @@ bool ZoneDatabase::PopulateZoneSpawnList(int32 zoneid, LinkedList<Spawn2*> &spaw
 	
 	const char *zone_name = database.GetZoneName(zoneid);
 
-	MakeAnyLenString(&query, "SELECT id, spawngroupID, x, y, z, heading, respawntime, variance, pathgrid, _condition, cond_value FROM spawn2 WHERE zone='%s'", zone_name);
+	MakeAnyLenString(&query, "SELECT id, spawngroupID, x, y, z, heading, respawntime, variance, pathgrid, _condition, cond_value FROM spawn2 WHERE zone='%s' AND version=%u", zone_name, version);
 	
 	if (RunQuery(query, strlen(query), errbuf, &result))
 	{
@@ -270,19 +270,8 @@ bool ZoneDatabase::PopulateZoneSpawnList(int32 zoneid, LinkedList<Spawn2*> &spaw
 		{
 			Spawn2* newSpawn = 0;
 
-			//TODO: Load Spawns From Special Table If Instance
 			int32 spawnLeft = (GetSpawnTimeLeft(atoi(row[0]), zone->GetInstanceID()) * 1000);
 			newSpawn = new Spawn2(atoi(row[0]), atoi(row[1]), atof(row[2]), atof(row[3]), atof(row[4]), atof(row[5]), atoi(row[6]), atoi(row[7]), spawnLeft, atoi(row[8]), atoi(row[9]), atoi(row[10]));
-
-			/*if (zone && zone->GetInstanceID() > 0){ //TEMPORARY
-				//int32 spawnLeft = GetSpawnTimeLeft(atoi(row[0]));
-				newSpawn = new Spawn2(atoi(row[0]), atoi(row[1]), atof(row[2]), atof(row[3]), atof(row[4]), atof(row[5]), atoi(row[6]), atoi(row[7]), 0, atoi(row[8]), atoi(row[9]), atoi(row[10]));
-			}
-			else {
-				int32 spawnLeft = (GetSpawnTimeLeft(atoi(row[0])) * 1000);
-				newSpawn = new Spawn2(atoi(row[0]), atoi(row[1]), atof(row[2]), atof(row[3]), atof(row[4]), atof(row[5]), atoi(row[6]), atoi(row[7]), spawnLeft, atoi(row[8]), atoi(row[9]), atoi(row[10]));
-			}*/
-			//newSpawn->Repop(repopdelay);
 			spawn2_list.Insert( newSpawn );
 		}
 		mysql_free_result(result);

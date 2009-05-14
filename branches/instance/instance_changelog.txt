@@ -1,3 +1,10 @@
+KLS - May 13, 2009
+-Added content versioning to several areas of the code.  You can now load up non-standard instances, 0 is the default and the same as the static zone.
+-Added many quest commands to interact with the instancing system.
+-Added .\utils\sql\svn\instance_branch_table_changes.sql to keep track of all the table changes I've made, even if not completely related to instancing.
+-Added .\instance_example_quest.pl to show how to use the quest commands.
+-Changed dropped objects to not save to the database.  This will address the issue of duping items via dropping items in instances.
+
 KLS - May 12, 2009
 -Instance id shouldn't persist in player profile if the instance was destroyed now.
 -Implemented corpses in instances: corpses that are in instances when it expires are subsequently buried using the shadowrest system until we can work out something better.

@@ -12027,17 +12027,29 @@ void command_instance(Client *c, const Seperator *sep)
 	}
 	else if(strcasecmp(sep->arg[1], "create") == 0)
 	{
-		if(!sep->IsNumber(2) || !sep->IsNumber(3) || !sep->IsNumber(4))
+		if(!sep->IsNumber(3) || !sep->IsNumber(4))
 		{
 			c->Message(0, "#instance create zone_id version duration - Creates an instance of version 'version' in the " 
 				"zone with id matching zone_id, will last for duration seconds.");
 			return;
 		}
-		int32 zone_id = atoi(sep->arg[2]);
+
+		const char * zn = NULL;
+		int32 zone_id = 0;
+
+		if(sep->IsNumber(2))
+		{
+			zone_id = atoi(sep->arg[2]);
+		}
+		else
+		{
+			zone_id = database.GetZoneID(sep->arg[2]);
+		}
+
 		int32 version = atoi(sep->arg[3]);
 		int32 duration = atoi(sep->arg[4]);
+		zn = database.GetZoneName(zone_id);
 
-		const char * zn = database.GetZoneName(zone_id);
 		if(!zn)
 		{
 			c->Message(0, "Zone with id %lu was not found by the server.", zone_id);
@@ -12094,13 +12106,23 @@ void command_instance(Client *c, const Seperator *sep)
 			return;
 		}
 
-		if(database.AddClientToInstance(id, charid))
+		int32 zone_id = database.ZoneIDFromInstanceID(id);
+		int32 version = database.VersionFromInstanceID(id);
+		int32 cur_id = database.GetInstanceID(zone_id, charid, version);
+		if(cur_id == 0)
 		{
-			c->Message(0, "Added client to instance.");
+			if(database.AddClientToInstance(id, charid))
+			{
+				c->Message(0, "Added client to instance.");
+			}
+			else
+			{
+				c->Message(0, "Failed to add client to instance.");
+			}
 		}
 		else
 		{
-			c->Message(0, "Failed to add client to instance.");
+			c->Message(0, "Client was already saved to %u which has uses the same zone and version as that instance.", cur_id);
 		}
 	}
 	else if(strcasecmp(sep->arg[1], "remove") == 0)
@@ -12134,8 +12156,13 @@ void command_instance(Client *c, const Seperator *sep)
 		int32 charid = database.GetCharacterID(sep->arg[2]);
 		if(charid <= 0)
 		{
-			c->Message(0, "Character not found.");
-			return;
+			if(c->GetTarget() == NULL || (c->GetTarget() && !c->GetTarget()->IsClient()))
+			{
+				c->Message(0, "Character not found.");
+				return;
+			}
+			else
+				charid = c->GetTarget()->CastToClient()->CharacterID();
 		}
 
 		database.ListAllInstances(c, charid);
@@ -12143,6 +12170,15 @@ void command_instance(Client *c, const Seperator *sep)
 	else
 	{
 		c->Message(0, "Invalid Argument.");
+		c->Message(0, "#instance usage:");
+		c->Message(0, "#instance create zone_id version duration - Creates an instance of version 'version' in the " 
+			"zone with id matching zone_id, will last for duration seconds.");
+		c->Message(0, "#instance destroy instance_id - Destroys the instance with id matching instance_id.");
+		c->Message(0, "#instance add instance_id player_name - adds the player 'player_name' to the instance "
+			"with id matching instance_id.");
+		c->Message(0, "#instance remove instance_id player_name - removes the player 'player_name' from the "
+			"instance with id matching instance_id.");
+		c->Message(0, "#instance list player_name - lists all the instances 'player_name' is apart of.");
 		return;
 	}
 }
