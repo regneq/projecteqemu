@@ -456,11 +456,12 @@ int HateList::AreaRampage(Mob *caster, Mob *target)
 	iterator.Reset();
 	while (iterator.MoreElements())
 	{
-		if(iterator.GetData()->ent && iterator.GetData()->ent != caster)
+		tHateEntry *h = iterator.GetData();
+		if(h && h->ent && h->ent != caster)
 		{
-			if(caster->CombatRange(iterator.GetData()->ent))
+			if(caster->CombatRange(h->ent))
 			{
-				caster->Attack(iterator.GetData()->ent);
+				caster->Attack(h->ent);
 				++ret;
 			}
 		}
