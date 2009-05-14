@@ -37,6 +37,7 @@ using namespace std;
 #else
 #include "unix.h"
 #include <netinet/in.h>
+#include <sys/time.h>
 #endif
 
 #include "database.h"
@@ -2608,7 +2609,6 @@ bool Database::CheckInstanceExpired(uint16 instance_id)
 		safe_delete_array(query);
 		return true;
 	}
-
 
 	timeval tv;
 	gettimeofday(&tv, NULL);
