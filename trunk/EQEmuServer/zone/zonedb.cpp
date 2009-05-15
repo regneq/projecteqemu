@@ -1175,6 +1175,9 @@ const NPCType* ZoneDatabase::GetNPCType (uint32 id) {
 			"npc_types.luclin_eyecolor2,"
             "npc_types.luclin_beardcolor,"
 			"npc_types.luclin_beard,"
+			"npc_types.drakkin_heritage,"
+			"npc_types.drakkin_tattoo,"
+			"npc_types.drakkin_details,"
             "npc_types.see_invis,"
 			"npc_types.see_invis_undead,"
             "npc_types.lastname,"
@@ -1257,6 +1260,9 @@ const NPCType* ZoneDatabase::GetNPCType (uint32 id) {
 				tmpNPCType->eyecolor2 = atoi(row[r++]);
 				tmpNPCType->beardcolor = atoi(row[r++]);
 				tmpNPCType->beard = atoi(row[r++]);
+				tmpNPCType->drakkin_heritage = atoi(row[r++]);
+				tmpNPCType->drakkin_tattoo = atoi(row[r++]);
+				tmpNPCType->drakkin_details = atoi(row[r++]);
 
 				tmpNPCType->see_invis = atoi(row[r++])==0?false:true;			// Mongrel: Set see_invis flag
 				tmpNPCType->see_invis_undead = atoi(row[r++])==0?false:true;	// Mongrel: Set see_invis_undead flag

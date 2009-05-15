@@ -904,6 +904,21 @@ DECODE(OP_ReadBook) {
 	FINISH_DIRECT_DECODE();
 }
 
+DECODE(OP_FaceChange) {
+
+	DECODE_LENGTH_EXACT(structs::FaceChange_Struct);
+	SETUP_DIRECT_DECODE(FaceChange_Struct, structs::FaceChange_Struct);
+	IN(haircolor);
+	IN(beardcolor);
+	IN(eyecolor1);
+	IN(eyecolor2);
+	IN(hairstyle);
+	IN(beard);
+	IN(face);
+
+	FINISH_DIRECT_DECODE();
+}
+
 char *SerializeItem(const ItemInst *inst, sint16 slot_id, uint32 *length, uint8 depth) {
 	char *serialization = NULL;
 	char *instance = NULL;

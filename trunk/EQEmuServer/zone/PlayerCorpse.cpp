@@ -119,6 +119,9 @@ Corpse* Corpse::LoadFromDBData(int32 in_dbid, int32 in_charid, char* in_charname
 	pc->hairstyle = dbpc->hairstyle;
 	pc->luclinface = dbpc->face;
 	pc->beard = dbpc->beard;
+	pc->drakkin_heritage = dbpc->drakkin_heritage;
+	pc->drakkin_tattoo = dbpc->drakkin_tattoo;
+	pc->drakkin_details = dbpc->drakkin_details;
 	pc->Rezzed(rezzed);
 	pc->become_npc = false;
 	return pc;
@@ -133,7 +136,7 @@ Corpse::Corpse(NPC* in_npc, ItemList* in_itemlist, int32 in_npctypeid, const NPC
 	 in_npc->GetHeading(),in_npc->GetX(),in_npc->GetY(),in_npc->GetZ(),0,
 	 in_npc->GetTexture(),in_npc->GetHelmTexture(),
 	 0,0,0,0,0,0,0,0,0,
-	 0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0,0,0,0,0,0,0),
+	 0,0,0,0,0,0,0,0,0,0,0xff,0,0,0,0,0,0,0),
 	 corpse_decay_timer(in_decaytime),
 	corpse_delay_timer(RuleI(NPC, CorpseUnlockTimer)),
 	corpse_graveyard_timer(0)
@@ -217,6 +220,9 @@ Corpse::Corpse(Client* client, sint32 in_rezexp)
 	client->GetPP().hairstyle,
 	client->GetPP().face,
 	client->GetPP().beard,
+	client->GetPP().drakkin_heritage,
+	client->GetPP().drakkin_tattoo,
+	client->GetPP().drakkin_details,
 	0xff,	// aa title
 	0,
 	0,
@@ -330,10 +336,9 @@ void Corpse::MoveItemToCorpse(Client *client, ItemInst *item, sint16 equipslot)
 // To be called from LoadFromDBData
 // Mongrel: added see_invis and see_invis_undead
 Corpse::Corpse(int32 in_dbid, int32 in_charid, char* in_charname, ItemList* in_itemlist, int32 in_copper, int32 in_silver, int32 in_gold, int32 in_plat, float in_x, float in_y, float in_z, float in_heading, float in_size, int8 in_gender, int16 in_race, int8 in_class, int8 in_deity, int8 in_level, int8 in_texture, int8 in_helmtexture,int32 in_rezexp, bool wasAtGraveyard)
-// vesuvias - appearence fix
  : Mob("Unnamed_Corpse","",0,0,in_gender, in_race, in_class, BT_Humanoid, in_deity, in_level,0, in_size, 0, in_heading, in_x, in_y, in_z,0,in_texture,in_helmtexture,
 	 0,0,0,0,0,0,0,0,0,
-	 0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
+	 0,0,0,0,0,0,0,0,0,0,0xff,
 	 0,0,0,0,0,0,0),
 	corpse_decay_timer(RuleI(Character, CorpseDecayTimeMS)),
 	corpse_delay_timer(RuleI(NPC, CorpseUnlockTimer)),
@@ -443,6 +448,9 @@ bool Corpse::Save() {
 	dbpc->hairstyle = hairstyle;
 	dbpc->face = luclinface;
 	dbpc->beard = beard;
+	dbpc->drakkin_heritage = drakkin_heritage;
+	dbpc->drakkin_tattoo = drakkin_tattoo;
+	dbpc->drakkin_details = drakkin_details;
 	
 	int32 x = 0;
 	ItemList::iterator cur,end;

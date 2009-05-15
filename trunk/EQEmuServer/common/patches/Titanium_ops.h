@@ -25,6 +25,6 @@ D(OP_ItemLinkClick)
 D(OP_TraderBuy)
 D(OP_WhoAllRequest)
 D(OP_ReadBook)
-
+D(OP_FaceChange)
 #undef E
 #undef D

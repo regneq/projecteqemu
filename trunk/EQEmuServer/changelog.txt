@@ -2,6 +2,9 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==05/15/2009==
 Trevius: (Trevius/Shendare) Swapped Beardcolor and Beard in the spawn struct for Titanium and Titanium Facial Features should be finalized now.
+Trevius: SoF - Drakkin Specific Features (Heritage, Tattoo and Details) should now be fully functional for NPCs and PCs
+
+Required SQL: .\utils\sql\svn\518_drakkin_npc_type_features.sql
 
 ==05/14/2009==
 Trevius: More work on Facial Features for Characters. Trying to get them functioning properly without hacks before adding SoF Features.
