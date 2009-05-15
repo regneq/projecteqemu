@@ -3,6 +3,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==05/15/2009==
 Trevius: (Trevius/Shendare) Swapped Beardcolor and Beard in the spawn struct for Titanium and Titanium Facial Features should be finalized now.
 Trevius: SoF - Drakkin Specific Features (Heritage, Tattoo and Details) should now be fully functional for NPCs and PCs
+Derision: Minimum 3% chance to proc from weapon proc buffs (e.g. vampiric embrace, call of sky etc.)
 
 Required SQL: .\utils\sql\svn\518_drakkin_npc_type_features.sql
 
