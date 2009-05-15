@@ -478,11 +478,11 @@ ENCODE(OP_ZoneSpawns) {
 		//	eq->hairstyle = eq->hairstyle == 0xFF ? 0 : eq->hairstyle;
 		//}
 
-		eq->beard = emu->beard;
+		eq->beardcolor = emu->beardcolor;
 //		eq->unknown0147[4] = emu->unknown0147[4];
 		eq->level = emu->level;
 //		eq->unknown0259[4] = emu->unknown0259[4];
-		eq->beardcolor = emu->beardcolor;
+		eq->beard = emu->beard;
 		strcpy(eq->suffix, emu->suffix);
 		eq->petOwnerId = emu->petOwnerId;
 		eq->guildrank = emu->guildrank;
