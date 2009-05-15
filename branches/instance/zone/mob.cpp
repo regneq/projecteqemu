@@ -53,10 +53,10 @@ Mob::Mob(const char*   in_name,
          int8    in_gender,
          uint16    in_race,
          int8    in_class,
-         bodyType in_bodytype,   // neotokyo targettype support 17-Nov-02
+         bodyType in_bodytype,
          int8    in_deity,
          int8    in_level,
-         int32	 in_npctype_id, // rembrant, Dec. 20, 2001
+         int32	 in_npctype_id,
 		 float	in_size,
 		 float	in_runspeed,
          float	in_heading,
@@ -81,12 +81,11 @@ Mob::Mob(const char*   in_name,
 		 int8	in_eyecolor1, // the eyecolors always seem to be the same, maybe left and right eye?
 		 int8	in_eyecolor2,
 		 int8	in_hairstyle,
-// vesuvias - appearence fix
 		 int8	in_luclinface,
 		 int8	in_beard,
 
 		 int8	in_aa_title,
-		 int8	in_see_invis,			// Mongrel: see through invis/ivu
+		 int8	in_see_invis,			// see through invis/ivu
 		 int8   in_see_invis_undead,
 		 int8   in_see_hide,
 		 int8   in_see_improved_hide,
@@ -176,7 +175,6 @@ Mob::Mob(const char*   in_name,
 	eyecolor1	= in_eyecolor1;
 	eyecolor2	= in_eyecolor2;
 	hairstyle	= in_hairstyle;
-// vesuvias - appearence fix
 	luclinface	= in_luclinface;
 	beard		= in_beard;
 	attack_speed= 0;
@@ -1165,6 +1163,8 @@ void Mob::SendIllusionPacket(int16 in_race, int8 in_gender, int16 in_texture, in
 	else{
 		this->helmtexture = 0;
 	}
+	// Features aren't implemented to illusion yet, but when they are,
+	// this section below will need to be corrected for all player races.
 	if ((race == 0 || race > 12) && race != 128 && race != 130) {
 		this->haircolor = in_haircolor;
 		this->beardcolor = in_beardcolor;
@@ -1172,7 +1172,6 @@ void Mob::SendIllusionPacket(int16 in_race, int8 in_gender, int16 in_texture, in
 		this->eyecolor2 = in_eyecolor2;
 		this->hairstyle = in_hairstyle;
 		this->luclinface = in_luclinface;
-// vesuvias - appearence fix
 		this->beard = in_beard;
 
 		this->aa_title = in_aa_title;
@@ -1184,7 +1183,6 @@ void Mob::SendIllusionPacket(int16 in_race, int8 in_gender, int16 in_texture, in
 		this->eyecolor2 = 0xFF;
 		this->hairstyle = 0xFF;
 		this->luclinface = 0xFF;
-// vesuvias - appearence fix
 		this->beard	= 0xFF;
 
 		this->aa_title = 0xFF;

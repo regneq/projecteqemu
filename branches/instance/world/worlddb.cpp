@@ -68,32 +68,35 @@ void WorldDatabase::GetCharSelectInfo(int32 account_id, CharacterSelect_Struct* 
 				
 				// Character information
 				if(lvl == 0)
-					cs->level[char_num]				= pp->level;	//no level in DB, trust PP
+					cs->level[char_num]		= pp->level;	//no level in DB, trust PP
 				else
-					cs->level[char_num]				= lvl;
+					cs->level[char_num]		= lvl;
 				if(clas == 0)
-					cs->class_[char_num]			= pp->class_;	//no class in DB, trust PP
+					cs->class_[char_num]	= pp->class_;	//no class in DB, trust PP
 				else
-					cs->class_[char_num]			= clas;
-				cs->race[char_num]				= pp->race;
-				cs->gender[char_num]			= pp->gender;
-				cs->deity[char_num]				= pp->deity;
-				cs->zone[char_num]				= GetZoneID(row[2]);
-				cs->face[char_num]				= pp->face;
+					cs->class_[char_num]	= clas;
+				cs->race[char_num]			= pp->race;
+				cs->gender[char_num]		= pp->gender;
+				cs->deity[char_num]			= pp->deity;
+				cs->zone[char_num]			= GetZoneID(row[2]);
+				cs->face[char_num]			= pp->face;
 				cs->haircolor[char_num]		= pp->haircolor;
 				cs->beardcolor[char_num]	= pp->beardcolor;
 				cs->eyecolor2[char_num] 	= pp->eyecolor2;
 				cs->eyecolor1[char_num] 	= pp->eyecolor1;
-				cs->hair[char_num]				= pp->hairstyle;
-				cs->beard[char_num]				= pp->beard;
-if (pp->face == 99)       {cs->face[char_num] = 0;}
-if (pp->eyecolor1 == 99)  {cs->eyecolor1[char_num] = 0;}
-if (pp->eyecolor2 == 99)  {cs->eyecolor2[char_num] = 0;}
-if (pp->hairstyle == 99)  {cs->hair[char_num] = 0;}
-if (pp->haircolor == 99)  {cs->haircolor[char_num] = 0;}
-if (pp->beard == 99)      {cs->beard[char_num] = 0;}
-if (pp->beardcolor == 99) {cs->beardcolor[char_num] = 0;}
-				
+				cs->hairstyle[char_num]		= pp->hairstyle;
+				cs->beard[char_num]			= pp->beard;
+
+				/*
+				if (pp->face == 99)       {cs->face[char_num] = 0;}
+				if (pp->eyecolor1 == 99)  {cs->eyecolor1[char_num] = 0;}
+				if (pp->eyecolor2 == 99)  {cs->eyecolor2[char_num] = 0;}
+				if (pp->hairstyle == 99)  {cs->hair[char_num] = 0;}
+				if (pp->haircolor == 99)  {cs->haircolor[char_num] = 0;}
+				if (pp->beard == 99)      {cs->beard[char_num] = 0;}
+				if (pp->beardcolor == 99) {cs->beardcolor[char_num] = 0;}
+				*/
+
 				if(RuleB(World, EnableTutorialButton) && (lvl <= RuleI(World, MaxLevelForTutorial)))
 					cs->tutorial[char_num] = 1;
 

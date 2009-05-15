@@ -108,7 +108,7 @@ ENCODE(OP_SendCharInfo) {
 		OUT(zone[r]);
 		OUT(eyecolor1[r]);
 		OUT(eyecolor2[r]);
-		OUT(hair[r]);
+		OUT(hairstyle[r]);
 		OUT(primary[r]);
 		OUT(race[r]);
 		OUT(class_[r]);
