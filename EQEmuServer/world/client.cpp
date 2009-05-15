@@ -351,7 +351,6 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 		}
 		case OP_RandomNameGenerator:
 		{
-// SCORPIOUS2K - added random name generator
 			// creates up to a 10 char name
 			char vowels[18]="aeiouyaeiouaeioe";
 			char cons[48]="bcdfghjklmnpqrstvwxzybcdgklmnprstvwbcdgkpstrkd";
@@ -1016,17 +1015,9 @@ bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 	pp.haircolor		= cc->haircolor;
 	pp.beard		 	= cc->beard;
 	pp.beardcolor		= cc->beardcolor;
-	
-	/*
-	if (cc->face == 0)       {pp.face = 99;}
-	if (cc->eyecolor1 == 0)  {pp.eyecolor1 = 99;}
-	if (cc->eyecolor2 == 0)  {pp.eyecolor2 = 99;}
-	if (cc->hairstyle == 0)  {pp.hairstyle = 99;}
-	if (cc->haircolor == 0)  {pp.haircolor = 99;}
-	if (cc->beard == 0)      {pp.beard = 99;}
-	if (cc->beardcolor == 0) {pp.beardcolor = 99;}
-	*/
-
+	pp.drakkin_heritage		= cc->drakkin_heritage;
+	pp.drakkin_tattoo		= cc->drakkin_tattoo;
+	pp.drakkin_details		= cc->drakkin_details;
 	pp.birthday		= bday;
 	pp.lastlogin	= bday;
 	pp.level			= 1;

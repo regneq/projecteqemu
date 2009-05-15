@@ -284,9 +284,9 @@ ENCODE(OP_SendCharInfo) {
 			eq2->eyecolor1 = emu->eyecolor1[r];
 			eq2->beardcolor = emu->beardcolor[r];
 			eq2->eyecolor2 = emu->eyecolor2[r];
-			eq2->drakkin_heritage = 0;
-			eq2->drakkin_tattoo = 0;
-			eq2->drakkin_details = 0;
+			eq2->drakkin_heritage = emu->drakkin_heritage[r];
+			eq2->drakkin_tattoo = emu->drakkin_tattoo[r];
+			eq2->drakkin_details = emu->drakkin_details[r];
 		}
 		bufptr += sizeof(structs::CharacterSelectEntry_Struct);
 	}
@@ -701,12 +701,8 @@ ENCODE(OP_ZoneSpawns) {
 		eq->linkdead = 0; //New Field - Toggles LD on or off after name - 0 = off, 1 = on
 		eq->statue = 0; //New Field - 1 freezes animation
 		eq->showhelm = emu->showhelm;
-
 		eq->deity = emu->deity;
-		if (emu->race == 522)
-		{
-			eq->drakkinheritage = emu->face;	//temp setting to add variety to Drakkin
-		}
+		eq->drakkin_heritage = emu->drakkin_heritage;
 		eq->gender = emu->gender;
 		for(k = 0; k < 9; k++) {
 			eq->equipment[k].equip0 = emu->equipment[k];
@@ -726,10 +722,7 @@ ENCODE(OP_ZoneSpawns) {
 		eq->flymode = emu->flymode;
 		eq->gm = emu->gm;
 		eq->helm = emu->helm;
-		if (emu->race == 522)
-		{
-			eq->drakkintattoo = emu->face;	//temp setting to add variety to Drakkin
-		}
+		eq->drakkin_tattoo = emu->drakkin_tattoo;
 		eq->beardcolor = emu->beardcolor;
 		eq->runspeed = emu->runspeed;
 		eq->light = emu->light;
@@ -771,10 +764,7 @@ ENCODE(OP_ZoneSpawns) {
 		}
 		eq->anon = emu->anon;
 		eq->face = emu->face;
-		if (emu->race == 522)
-		{
-			eq->drakkinspikes = emu->face;
-		}
+		eq->drakkin_details = emu->drakkin_details;
 		eq->size = emu->size;
 		eq->walkspeed = emu->walkspeed;
 		/*
@@ -1831,7 +1821,7 @@ DECODE(OP_CharacterCreate) {
 	IN(class_);
 	IN(beardcolor);
 	IN(beard);
-	IN(haircolor);
+	IN(hairstyle);
 	IN(gender);
 	IN(race);
 
@@ -1840,7 +1830,7 @@ DECODE(OP_CharacterCreate) {
 	else
 		emu->start_zone = eq->start_zone;
 		
-	IN(hairstyle);
+	IN(haircolor);
 	IN(deity);
 	IN(STR);
 	IN(STA);
@@ -1852,6 +1842,10 @@ DECODE(OP_CharacterCreate) {
 	IN(face);
 	IN(eyecolor1);
 	IN(eyecolor2);
+	IN(drakkin_heritage);
+	IN(drakkin_tattoo);
+	IN(drakkin_details);
+
 	FINISH_DIRECT_DECODE();
 }
 
@@ -2016,9 +2010,9 @@ DECODE(OP_FaceChange) {
 	IN(hairstyle);
 	IN(beard);
 	IN(face);
-	//emu->heritage = eq->heritage;
-	//emu->tattoo = eq->tattoo;
-	//emu->details = eq->details;
+	IN(drakkin_heritage);
+	IN(drakkin_tattoo);
+	IN(drakkin_details);
 
 	FINISH_DIRECT_DECODE();
 }
