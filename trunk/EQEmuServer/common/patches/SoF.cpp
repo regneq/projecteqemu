@@ -1215,6 +1215,8 @@ ENCODE(OP_LogServer) {
  
  	OUT(enablevoicemacros);
  	OUT(enablemail);
+	OUT(enable_pvp);
+	OUT(enable_FV);
  
  	// These next two need to be set like this for the Tutorial Button to work.
  	eq->unknown263[0] = 0;
