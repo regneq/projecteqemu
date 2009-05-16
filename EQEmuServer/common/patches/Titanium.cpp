@@ -812,6 +812,25 @@ ENCODE(OP_ReadBook) {
 
 }
 
+ENCODE(OP_Illusion) {
+	ENCODE_LENGTH_EXACT(Illusion_Struct);
+	SETUP_DIRECT_ENCODE(Illusion_Struct, structs::Illusion_Struct);
+	OUT(spawnid);
+	OUT_str(charname);
+	if(emu->race > 473){
+		eq->race = 1;
+	}
+	else {
+		OUT(race);
+	}
+	OUT(gender);
+	OUT(texture);
+	OUT(helmtexture);
+	OUT(face);
+
+	FINISH_ENCODE();
+}
+
 DECODE(OP_TraderBuy) {
 	DECODE_LENGTH_EXACT(structs::TraderBuy_Struct);
 	SETUP_DIRECT_DECODE(TraderBuy_Struct, structs::TraderBuy_Struct);
