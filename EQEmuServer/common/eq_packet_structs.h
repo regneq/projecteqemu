@@ -2520,8 +2520,14 @@ struct sPickPocket_Struct {
 struct LogServer_Struct {
 // Op_Code OP_LOGSERVER
 /*000*/	uint32	unknown000;
-/*004*/	uint32	unknown004;
-/*008*/	uint32	unknown008;
+/*004*/	uint8	enable_pvp;
+/*005*/	uint8	unknown005;
+/*006*/	uint8	unknown006;
+/*007*/	uint8	unknown007;
+/*008*/	uint8	enable_FV;
+/*009*/	uint8	unknown009;
+/*010*/	uint8	unknown010;
+/*011*/	uint8	unknown011;
 /*012*/	uint32	unknown012;	// htonl(1) on live
 /*016*/	uint32	unknown016;	// htonl(1) on live
 /*020*/	uint8	unknown020[12];
@@ -2532,10 +2538,10 @@ struct LogServer_Struct {
 /*126*/	uint8	unknown128[48];
 /*176*/	uint32	unknown176;	// htonl(0x00002695)
 /*180*/	char	unknown180[80];	// 'eqdataexceptions@mail.station.sony.com' on live
-/*260*/	uint8	unknown260;	// 0x01 on live
+/*260*/	uint8	enable_petition_wnd;
 /*261*/	uint8	enablevoicemacros;
 /*262*/	uint8	enablemail;
-/*263*/	uint8	unknown263[1];
+/*263*/	uint8	disable_tutorial_go_home;
 /*264*/
 };
 
