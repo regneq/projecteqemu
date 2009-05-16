@@ -143,6 +143,9 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 	Mob *defender=this;
 	float chancetohit = RuleR(Combat, BaseHitChance);
 
+	if(!attacker->IsClient() && !attacker->IsPet())
+		chancetohit += RuleR(Combat, NPCBonusHitChance);
+
 #if ATTACK_DEBUG>=11
 		LogFile->write(EQEMuLog::Debug, "CheckHitChance(%s) attacked by %s", defender->GetName(), attacker->GetName());
 #endif
@@ -683,49 +686,42 @@ void Mob::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 
 		sint32 defenseRating = defender->GetAC();
 		defenseRating += 125;
-		defenseRating = (defenseRating < attackRating)?attackRating:defenseRating;
 		defenseRating += (totalMit * defenseRating / 100);
 
-		//Add these to rules eventually
-		//double the clients intervals to make their damage output look right, move to rule eventually too
-		int intervalsAllowed = 20; 
-		if(defender->IsClient())
-			intervalsAllowed *= 2;
+		double d1_chance;
+		double d2_d19_chance;
 
-#ifdef EQBOTS
+		double combat_rating = (defenseRating - attackRating);
+		if(combat_rating < 0)
+			combat_rating = 0;
 
-		if(defender->IsBot()) {
-			intervalsAllowed *= 2;
+		combat_rating = 5.0 * ((combat_rating) / (defender->GetLevel() == 0 ? 1.0 : (double)defender->GetLevel()));
+		combat_rating > 60.0 ? 60 + ((combat_rating - 60)/10) : combat_rating;
+		combat_rating > 90.0 ? 90 + ((combat_rating - 90)/20) : combat_rating;
+
+		d1_chance = 6.0 + (((combat_rating * 0.39) / 3) * 2);
+		d2_d19_chance = 48.0 + ((combat_rating * 0.39) / 3);
+
+		double roll = MakeRandomFloat(0, 100);
+	
+		int interval_used = 0;
+		if(roll <= d1_chance)
+		{
+			interval_used = 1;
+		}
+		else if(roll <= (d2_d19_chance + d1_chance))
+		{
+			interval_used = 1 + (int)((((roll-d1_chance) / d2_d19_chance) * 18) + 1);
+		}
+		else
+		{
+			interval_used = 20;
 		}
 
-#endif //EQBOTS
-
-		uint32 intervalUsed = 0;
-		uint32 intervalRoll = MakeRandomInt(0, (defenseRating - attackRating));
-		if(MakeRandomInt(0, 9) < 1){ //still have a chance to hit for any value
-			intervalUsed = MakeRandomInt(0, intervalsAllowed);
-		}
-		else{
-			intervalUsed = MakeRandomInt(0, 4);
-
-			//move the hardcoded value to a rule eventually, it impacts how lenient or strict the AC is
-			if(defender->GetLevel() != 0)
-				intervalUsed += ((intervalRoll * intervalsAllowed) / (19 * defender->GetLevel()));
-			else
-				intervalUsed += ((intervalRoll * intervalsAllowed) / (19 * 1));
-		}
-
-		mlog(COMBAT__DAMAGE, "attackRating: %d defenseRating: %d intervalRoll: %d intervalUsed: %d", attackRating, defenseRating, intervalRoll, intervalUsed);
-		if(intervalUsed > intervalsAllowed){
-			if((intervalUsed-intervalsAllowed) > 1)
-				damage = 0;
-			else
-				damage = 1;
-		}
-		else{
-			if(intervalsAllowed != 0)
-				damage -= (((damage - minhit) * intervalUsed) / intervalsAllowed);
-		}
+		//PS: this looks WRONG but there's a method to the madness
+		int db = minhit;
+		double di = ((double)(damage-minhit)/19);
+		damage = db + (di * (interval_used - 1));
 	}
 	else{
 		////////////////////////////////////////////////////////
@@ -770,10 +766,11 @@ void Mob::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 		}
 
 		damage -= (totalMit * damage / 100);
+
+		if(damage != 0 && damage < minhit)
+			damage = minhit;
 	}
 
-	if(damage != 0 && damage < minhit)
-		damage = minhit;
 
 	//reduce the damage from shielding item and aa based on the min dmg
 	//spells offer pure mitigation
@@ -1190,11 +1187,8 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte)
 		if(TryFinishingBlow(other, skillinuse))
 			return (true);
 		
-		//damage formula needs some work
 		int min_hit = 1;
-
-		//old formula:  max_hit = (weapon_damage * ((GetSTR()*20) + (GetSkill(OFFENSE)*15) + (mylevel*10)) / 1000);
-		int max_hit = (2*weapon_damage) + (weapon_damage*(GetSTR()+GetSkill(OFFENSE))/225);
+		int max_hit = (2*weapon_damage*GetDamageTable(this, skillinuse)) / 100;
 
 		if(GetLevel() < 10 && max_hit > 20)
 			max_hit = 20;
@@ -1204,22 +1198,6 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte)
 		CheckIncreaseSkill(skillinuse, -15);
 		CheckIncreaseSkill(OFFENSE, -15);
 
-		//monks are supposed to be a step ahead of other classes in
-		//toe to toe combat, small bonuses for hitting key levels too
-		int bonus = 0;
-		if(GetClass() == MONK)
-			bonus += 20;
-		if(GetLevel() > 50)
-			bonus += 15;
-		if(GetLevel() >= 55)
-			bonus += 15;
-		if(GetLevel() >= 60)
-			bonus += 15;
-		if(GetLevel() >= 65)
-			bonus += 15;
-		
-		min_hit += (min_hit * bonus / 100);
-		max_hit += (max_hit * bonus / 100);
 
 		// ***************************************************************
 		// *** Calculate the damage bonus, if applicable, for this hit ***
@@ -4870,4 +4848,48 @@ bool Mob::HasDied() {
 		Result = true;
 
 	return Result;
+}
+
+int16 Mob::GetDamageTable(Client* c, SkillType skillinuse)
+{
+	if(!c)
+		return 0;
+
+	if(c->GetLevel() <= 51)
+	{
+		int16 ret_table = 0;
+		int str_over_75 = 0;
+		if(c->GetSTR() > 75)
+			str_over_75 = c->GetSTR() - 75;
+		if(str_over_75 > 255)
+			ret_table = (c->GetSkill(skillinuse)+255)/2;
+		else
+			ret_table = (c->GetSkill(skillinuse)+str_over_75)/2;
+
+		if(ret_table < 100)
+			return 100;
+
+		return ret_table;
+	}
+	else if(c->GetLevel() >= 90)
+	{
+		return 345;
+	}
+	else
+	{
+		int16 dmg_table[] = { 
+			275, 275, 275, 275, 275,
+			280, 280, 280, 280,	285,
+			285, 285, 290, 290, 295,
+			295, 300, 300, 300, 305, 
+			305, 305, 310, 310, 315,
+			315, 320, 320, 320, 325,
+			325, 325, 330, 330, 335, 
+			335, 340, 340, 340,
+		};
+		if(c->GetClass() == MONK)
+			return (dmg_table[c->GetLevel()-51]+10);
+		else
+			return dmg_table[c->GetLevel()-51];
+	}
 }

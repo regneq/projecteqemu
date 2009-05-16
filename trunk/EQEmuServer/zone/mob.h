@@ -734,7 +734,8 @@ bool logpos;
 	inline void	SetExtraHaste(int Haste) { ExtraHaste = Haste; }
 	virtual int GetHaste();
 
-	int8		GetWeaponDamageBonus(const Item_Struct* Weapon);
+	int8	GetWeaponDamageBonus(const Item_Struct* Weapon);
+	int16	GetDamageTable(Client* c, SkillType skillinuse);
 	int		GetMonkHandToHandDamage(void);
 
 	bool	CanThisClassDoubleAttack(void) const;
