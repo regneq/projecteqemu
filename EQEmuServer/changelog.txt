@@ -3,6 +3,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==05/16/2009==
 Trevius: (Shendare) Added armor tinting functionality for NPCs by setting it in the npc_types table
 Trevius: Added base support for illusions to use all facial features, but functionality still needs to be added.
+Derision: Reverted (Minimum 3% chance to proc from weapon proc buffs)
 
 ==05/15/2009==
 Trevius: (Trevius/Shendare) Swapped Beardcolor and Beard in the spawn struct for Titanium and Titanium Facial Features should be finalized now.
