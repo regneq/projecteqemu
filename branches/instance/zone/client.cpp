@@ -2243,7 +2243,7 @@ bool Client::BindWound(Mob* bindmob, bool start, bool fail){
 					bind_out->type = 1; // Done
 					QueuePacket(outapp);
 					bind_out->type = 0;
-					CheckIncreaseSkill(BIND_WOUND);
+					CheckIncreaseSkill(BIND_WOUND, 5);
 
 					int max_percent = 50 + 10 * GetAA(aaFirstAid);
 
