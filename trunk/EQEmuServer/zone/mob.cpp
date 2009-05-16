@@ -131,9 +131,9 @@ Mob::Mob(const char*   in_name,
 	AI_Init();
 	SetMoving(false);
 	moved=false;
- 	rewind_x = 0;		//Lieka: Stored x_pos for /rewind
- 	rewind_y = 0;		//Lieka: Stored y_pos for /rewind
- 	rewind_z = 0;		//Lieka: Stored z_pos for /rewind
+ 	rewind_x = 0;		//Stored x_pos for /rewind
+ 	rewind_y = 0;		//Stored y_pos for /rewind
+ 	rewind_z = 0;		//Stored z_pos for /rewind
 
 	warp_threshold = 140;
 	last_warp_distance = 0;	
@@ -1126,8 +1126,7 @@ void Mob::GMMove(float x, float y, float z, float heading, bool SendUpdate) {
 
 
 
-// vesuvias - appearence fix
-void Mob::SendIllusionPacket(int16 in_race, int8 in_gender, int16 in_texture, int16 in_helmtexture, int8 in_haircolor, int8 in_beardcolor, int8 in_eyecolor1, int8 in_eyecolor2, int8 in_hairstyle, int8 in_luclinface, int8 in_beard,int8 in_aa_title) {
+void Mob::SendIllusionPacket(int16 in_race, int8 in_gender, int16 in_texture, int16 in_helmtexture, int8 in_haircolor, int8 in_beardcolor, int8 in_eyecolor1, int8 in_eyecolor2, int8 in_hairstyle, int8 in_luclinface, int8 in_beard, int8 in_aa_title, int32 in_drakkin_heritage, int32 in_drakkin_tattoo, int32 in_drakkin_details, int32 in_armor_tint) {
 
 	if (in_race == 0) {
 		this->race = GetBaseRace();
@@ -1151,7 +1150,7 @@ void Mob::SendIllusionPacket(int16 in_race, int8 in_gender, int16 in_texture, in
 			gender = in_gender;
 	}
 	if (in_texture == 0xFFFF) {
-		if ((race == 0 || race > 12) && race != 128 && race != 130) {
+		if ((race == 0 || race > 12) && race != 128 && race != 130 && race != 330 && race != 522) {
 			if (GetTexture() == 0xFF)
 				this->texture = 0;
 		}
@@ -1166,7 +1165,7 @@ void Mob::SendIllusionPacket(int16 in_race, int8 in_gender, int16 in_texture, in
 	if (in_helmtexture == 0xFFFF) {
 		if (in_texture != 0xFFFF)
 			this->helmtexture = this->texture;
-		else if ((race == 0 || race > 12) && race != 128 && race != 130) {
+		else if ((race == 0 || race > 12) && race != 128 && race != 130 && race != 330 && race != 522) {
 			if (GetHelmTexture() == 0xFF)
 				this->helmtexture = 0;
 		}
@@ -1181,9 +1180,77 @@ void Mob::SendIllusionPacket(int16 in_race, int8 in_gender, int16 in_texture, in
 	else{
 		this->helmtexture = 0;
 	}
-	// Features aren't implemented to illusion yet, but when they are,
-	// this section below will need to be corrected for all player races.
-	if ((race == 0 || race > 12) && race != 128 && race != 130) {
+
+	if ((race == 0 || race > 12) && race != 128 && race != 130 && race != 330 && race != 522) {
+		this->haircolor = 0xFF;
+		this->beardcolor = 0xFF;
+		this->eyecolor1 = 0xFF;
+		this->eyecolor2 = 0xFF;
+		this->hairstyle = 0xFF;
+		this->luclinface = 0xFF;
+		this->beard	= 0xFF;
+		this->aa_title = 0xFF;
+		this->drakkin_heritage = 0xFFFFFFFF;
+		this->drakkin_tattoo = 0xFFFFFFFF;
+		this->drakkin_details = 0xFFFFFFFF;
+		this->armor_tint = 0xFFFFFFFF;
+	}
+	else if (this->IsClient() || this->IsPlayerCorpse()) {
+		if (in_haircolor == 0xFF)
+			this->haircolor = GetHairColor();
+		else
+			this->haircolor = in_haircolor;
+
+		if (in_beardcolor == 0xFF)
+			this->beardcolor = GetBeardColor();
+		else
+			this->beardcolor = in_beardcolor;
+
+		if (in_eyecolor1 == 0xFF)
+			this->eyecolor1 = GetEyeColor1();
+		else
+			this->eyecolor1 = in_eyecolor1;
+
+		if (in_eyecolor2 == 0xFF)
+			this->eyecolor2 = GetEyeColor2();
+		else
+			this->eyecolor2 = in_eyecolor2;
+
+		if (in_hairstyle == 0xFF)
+			this->hairstyle = GetHairStyle();
+		else
+			this->hairstyle = in_hairstyle;
+
+		if (in_luclinface == 0xFF)
+			this->luclinface = GetLuclinFace();
+		else
+			this->luclinface = in_luclinface;
+
+		if (in_beard == 0xFF)
+			this->beard	= GetBeard();
+		else
+			this->beard = in_beard;
+
+		this->aa_title = 0xFF;
+
+		if (in_drakkin_heritage == 0xFFFFFFFF)
+			this->drakkin_heritage = GetDrakkinHeritage();
+		else
+			this->drakkin_heritage = in_drakkin_heritage;
+
+		if (in_drakkin_tattoo == 0xFFFFFFFF)
+			this->drakkin_tattoo = GetDrakkinTattoo();
+		else
+			this->drakkin_tattoo = in_drakkin_tattoo;
+
+		if (in_drakkin_details == 0xFFFFFFFF)
+			this->drakkin_details = GetDrakkinDetails();
+		else
+			this->drakkin_details = in_drakkin_details;
+
+		this->armor_tint = 0xFFFFFFFF;
+	}
+	else {
 		this->haircolor = in_haircolor;
 		this->beardcolor = in_beardcolor;
 		this->eyecolor1 = in_eyecolor1;
@@ -1191,19 +1258,11 @@ void Mob::SendIllusionPacket(int16 in_race, int8 in_gender, int16 in_texture, in
 		this->hairstyle = in_hairstyle;
 		this->luclinface = in_luclinface;
 		this->beard = in_beard;
-
-		this->aa_title = in_aa_title;
-	}
-	else {
-		this->hairstyle = 0xFF;
-		this->beardcolor = 0xFF;
-		this->eyecolor1 = 0xFF;
-		this->eyecolor2 = 0xFF;
-		this->hairstyle = 0xFF;
-		this->luclinface = 0xFF;
-		this->beard	= 0xFF;
-
 		this->aa_title = 0xFF;
+		this->drakkin_heritage = in_drakkin_heritage;
+		this->drakkin_tattoo = in_drakkin_tattoo;
+		this->drakkin_details = in_drakkin_details;
+		this->armor_tint = in_armor_tint;
 	}
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_Illusion, sizeof(Illusion_Struct));
 	memset(outapp->pBuffer, 0, sizeof(outapp->pBuffer));
@@ -1214,16 +1273,18 @@ void Mob::SendIllusionPacket(int16 in_race, int8 in_gender, int16 in_texture, in
 	is->gender = this->gender;
 	is->texture = this->texture;
 	is->helmtexture = this->helmtexture;
-	/*is->haircolor = this->haircolor;
+	is->haircolor = this->haircolor;
 	is->beardcolor = this->beardcolor;
 	is->eyecolor1 = this->eyecolor1;
 	is->eyecolor2 = this->eyecolor2;
 	is->hairstyle = this->hairstyle;
-	is->luclinface = this->luclinface;
-	is->aa_title = this->aa_title;
-	is->unknown_26 = 26;
-	is->unknown016 = 0xffffffff;
-	*/
+	is->face = this->luclinface;
+	//is->aa_title = this->aa_title;
+	is->drakkin_heritage = this->drakkin_heritage;
+	is->drakkin_tattoo = this->drakkin_tattoo;
+	is->drakkin_details = this->drakkin_details;
+	is->armor_tint = this->armor_tint;
+
 	DumpPacket(outapp);
 	entity_list.QueueClients(this, outapp);
 	safe_delete(outapp);
@@ -1232,7 +1293,7 @@ void Mob::SendIllusionPacket(int16 in_race, int8 in_gender, int16 in_texture, in
 int8 Mob::GetDefaultGender(int16 in_race, int8 in_gender) {
 //cout << "Gender in:  " << (int)in_gender << endl;
 	if ((in_race > 0 && in_race <= GNOME )
-		|| in_race == IKSAR || in_race == VAHSHIR || in_race == FROGLOK
+		|| in_race == IKSAR || in_race == VAHSHIR || in_race == FROGLOK || in_race == DRAKKIN
 		|| in_race == 15 || in_race == 50 || in_race == 57 || in_race == 70 || in_race == 98 || in_race == 118) {
 		if (in_gender >= 2) {
 			// Female default for PC Races
@@ -1242,7 +1303,7 @@ int8 Mob::GetDefaultGender(int16 in_race, int8 in_gender) {
 			return in_gender;
 	}
 	else if (in_race == 44 || in_race == 52 || in_race == 55 || in_race == 65 || in_race == 67 || in_race == 88 || in_race == 117 || in_race == 127 ||
-		in_race == 77 || in_race == 78 || in_race == 81 || in_race == 90 || in_race == 92 || in_race == 93 || in_race == 94 || in_race == 106 || in_race == 112) {
+		in_race == 77 || in_race == 78 || in_race == 81 || in_race == 90 || in_race == 92 || in_race == 93 || in_race == 94 || in_race == 106 || in_race == 112 || in_race == 471) {
 		// Male only races
 		return 0;
 

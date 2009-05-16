@@ -1741,9 +1741,37 @@ struct AdventureRequestResponse_Struct{
 	int8 iss_unknown001[6];
 };*/
 
-struct Illusion_Struct {
+struct Illusion_Struct {  //size: 256 - SoF
 /*000*/	uint32	spawnid;
-		char charname[64];		//fix for 7-14-04 patch
+/*004*/	char charname[64];		//
+/*068*/	uint16	race;			// race
+/*070*/	char	unknown006[2];
+/*072*/	uint8	gender;
+/*073*/	uint8	texture;
+/*074*/	uint8	unknown008;		//
+/*075*/	uint8	unknown009;		//
+/*076*/	uint8	helmtexture;	// Verified
+/*077*/	uint8	unknown010;		//
+/*078*/	uint8	unknown011;		//
+/*079*/	uint8	unknown012;		//
+/*080*/	uint32	face;			// Verified
+/*084*/	uint8	hairstyle;		// Verified
+/*085*/	uint8	haircolor;		// Verified
+/*085*/	uint8	beard;			// Verified
+/*087*/	uint8	beardcolor;		// Verified
+/*088*/	uint32	drakkin_heritage;	// Temp Placeholder until field is identified in SoF
+/*092*/	uint32	drakkin_tattoo;		// Temp Placeholder until field is identified in SoF
+/*096*/	uint32	drakkin_details;	// Temp Placeholder until field is identified in SoF
+/*100*/	uint32	armor_tint;		// Temp Placeholder until field is identified in SoF
+/*104*/	uint8	eyecolor1;		// Temp Placeholder until field is identified in SoF
+/*105*/	uint8	eyecolor2;		// Temp Placeholder until field is identified in SoF
+/*106*/	uint8	unknown106[150];	//was uint8	unknown021[168];
+/*256*/
+};
+
+struct Illusion_Struct_Old {
+/*000*/	uint32	spawnid;
+		char charname[64];
 /**/	uint16	race;
 /**/	char	unknown006[2];
 /**/	uint8	gender;
