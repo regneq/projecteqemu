@@ -457,6 +457,7 @@ int HateList::AreaRampage(Mob *caster, Mob *target)
 	while (iterator.MoreElements())
 	{
 		tHateEntry *h = iterator.GetData();
+		iterator.Advance();		
 		if(h && h->ent && h->ent != caster)
 		{
 			if(caster->CombatRange(h->ent))
@@ -465,8 +466,6 @@ int HateList::AreaRampage(Mob *caster, Mob *target)
 				++ret;
 			}
 		}
-
-		iterator.Advance();
 	}
 	return ret;
 }
