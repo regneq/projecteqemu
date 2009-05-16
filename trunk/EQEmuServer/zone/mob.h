@@ -369,6 +369,7 @@ bool logpos;
 		int32	in_drakkin_heritage,
 		int32	in_drakkin_tattoo,
 		int32	in_drakkin_details,
+		int32	in_armor_tint,
 		int8	in_aa_title,
 		int8	in_see_invis,			// Mongrel: see through invis
 		int8	in_see_invis_undead,		// Mongrel: see through invis vs. undead
@@ -1113,6 +1114,7 @@ protected:
 	int32	drakkin_heritage;
 	int32	drakkin_tattoo;
 	int32	drakkin_details;
+	int32	armor_tint;
 
 	int8	aa_title;
 

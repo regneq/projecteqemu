@@ -128,9 +128,10 @@ Client::Client(EQStreamInterface* ieqs)
 	0,	// Drakkin Heritage
 	0,	// Drakkin Tattoo
 	0,	// Drakkin Details
+	0,	// Armor Tint
 	0xff,	// AA Title
 	0,	// see_invis
-	0, // see_invis_undead
+	0,	// see_invis_undead
 	0,
 	0,
 	0,
