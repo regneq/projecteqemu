@@ -86,16 +86,9 @@ void WorldDatabase::GetCharSelectInfo(int32 account_id, CharacterSelect_Struct* 
 				cs->eyecolor1[char_num] 	= pp->eyecolor1;
 				cs->hairstyle[char_num]		= pp->hairstyle;
 				cs->beard[char_num]			= pp->beard;
-
-				/*
-				if (pp->face == 99)       {cs->face[char_num] = 0;}
-				if (pp->eyecolor1 == 99)  {cs->eyecolor1[char_num] = 0;}
-				if (pp->eyecolor2 == 99)  {cs->eyecolor2[char_num] = 0;}
-				if (pp->hairstyle == 99)  {cs->hair[char_num] = 0;}
-				if (pp->haircolor == 99)  {cs->haircolor[char_num] = 0;}
-				if (pp->beard == 99)      {cs->beard[char_num] = 0;}
-				if (pp->beardcolor == 99) {cs->beardcolor[char_num] = 0;}
-				*/
+				cs->drakkin_heritage[char_num]	= pp->drakkin_heritage;
+				cs->drakkin_tattoo[char_num]	= pp->drakkin_tattoo;
+				cs->drakkin_details[char_num]	= pp->drakkin_details;
 
 				if(RuleB(World, EnableTutorialButton) && (lvl <= RuleI(World, MaxLevelForTutorial)))
 					cs->tutorial[char_num] = 1;

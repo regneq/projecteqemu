@@ -4687,17 +4687,9 @@ void Client::Handle_OP_FaceChange(const EQApplicationPacket *app)
 	m_pp.hairstyle	= fc->hairstyle;
 	m_pp.face		= fc->face;
 	m_pp.beard		= fc->beard;
-	
-	/*
-	if (fc->face == 0)       {m_pp.face = 99;}
-	if (fc->eyecolor1 == 0)  {m_pp.eyecolor1 = 99;}
-	if (fc->eyecolor2 == 0)  {m_pp.eyecolor2 = 99;}
-	if (fc->hairstyle == 0)  {m_pp.hairstyle = 99;}
-	if (fc->haircolor == 0)  {m_pp.haircolor = 99;}
-	if (fc->beard == 0)      {m_pp.beard = 99;}
-	if (fc->beardcolor == 0) {m_pp.beardcolor = 99;}
-	*/
-
+	m_pp.drakkin_heritage	= fc->drakkin_heritage;
+	m_pp.drakkin_tattoo		= fc->drakkin_tattoo;
+	m_pp.drakkin_details	= fc->drakkin_details;
 	Save();
 	Message_StringID(13,FACE_ACCEPTED);
 	//Message(13, "Facial features updated.");
@@ -6793,8 +6785,10 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 	eyecolor2	= m_pp.eyecolor2;
 	hairstyle	= m_pp.hairstyle;
 	luclinface	= m_pp.face;
-// vesuvias - appearence fix
 	beard		= m_pp.beard;
+	drakkin_heritage	= m_pp.drakkin_heritage;
+	drakkin_tattoo		= m_pp.drakkin_tattoo;
+	drakkin_details		= m_pp.drakkin_details;
 
 	cheat_timer.Start(2500,false);
 

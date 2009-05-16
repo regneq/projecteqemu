@@ -125,6 +125,9 @@ Client::Client(EQStreamInterface* ieqs)
 	0,	// Luclin Hair Style
 	0,	// Luclin Face
 	0,	// Luclin Beard
+	0,	// Drakkin Heritage
+	0,	// Drakkin Tattoo
+	0,	// Drakkin Details
 	0xff,	// AA Title
 	0,	// see_invis
 	0, // see_invis_undead

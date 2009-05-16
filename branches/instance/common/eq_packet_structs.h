@@ -143,31 +143,32 @@ struct Color_Struct
 **
 */
 struct CharacterSelect_Struct {
-/*0000*/	int32	race[10];			// Characters Race
+/*0000*/	int32	race[10];				// Characters Race
 /*0040*/	Color_Struct	cs_colors[10][9];	// Characters Equipment Colors
 /*0400*/	int8	beardcolor[10];			// Characters beard Color
 /*0410*/	int8	hairstyle[10];			// Characters hair style
 /*0420*/	int32	equip[10][9];			// 0=helm, 1=chest, 2=arm, 3=bracer, 4=hand, 5=leg, 6=boot, 7=melee1, 8=melee2  (Might not be)
 /*0780*/	int32	secondary[10];			// Characters secondary IDFile number
-/*0820*/	int8	unknown820[10];			// 10x ff
-/*0830*/	int8	unknown830[2];			// 2x 00
-/*0832*/	int32	deity[10];			// Characters Deity
-/*0872*/	int8	gohome[10];			// 1=Go Home available, 0=not
-/*0882*/	int8	tutorial[10];			// 1=Tutorial available, 0=not
-/*0892*/	int8	beard[10];			// Characters Beard Type
-/*0902*/	int8	unknown902[10];			// 10x ff
-/*0912*/	int32	primary[10];			// Characters primary IDFile number
-/*0952*/	int8	haircolor[10];			// Characters Hair Color
-/*0962*/	int8	unknown0962[2];			// 2x 00
-/*0964*/	int32	zone[10];			// Characters Current Zone
-/*1004*/	int8	class_[10];			// Characters Classes
-/*1014*/	int8	face[10];			// Characters Face Type
-/*1024*/	char	name[10][64];			// Characters Names
-/*1664*/	int8	gender[10];			// Characters Gender
-/*1674*/	int8	eyecolor1[10];			// Characters Eye Color
-/*1684*/	int8	eyecolor2[10];			// Characters Eye 2 Color
-/*1694*/	int8	level[10];			// Characters Levels
-/*1704*/
+/*0820*/	int32	drakkin_heritage[10];		// added for SoF
+/*0860*/	int32	drakkin_tattoo[10];			// added for SoF
+/*0900*/	int32	drakkin_details[10];		// added for SoF
+/*0940*/	int32	deity[10];				// Characters Deity
+/*0980*/	int8	gohome[10];				// 1=Go Home available, 0=not
+/*0990*/	int8	tutorial[10];			// 1=Tutorial available, 0=not
+/*1000*/	int8	beard[10];				// Characters Beard Type
+/*1010*/	int8	unknown902[10];			// 10x ff
+/*1020*/	int32	primary[10];			// Characters primary IDFile number
+/*1060*/	int8	haircolor[10];			// Characters Hair Color
+/*1070*/	int8	unknown0962[2];			// 2x 00
+/*1072*/	int32	zone[10];				// Characters Current Zone
+/*1112*/	int8	class_[10];				// Characters Classes
+/*1022*/	int8	face[10];				// Characters Face Type
+/*1032*/	char	name[10][64];			// Characters Names
+/*1672*/	int8	gender[10];				// Characters Gender
+/*1682*/	int8	eyecolor1[10];			// Characters Eye Color
+/*1692*/	int8	eyecolor2[10];			// Characters Eye 2 Color
+/*1702*/	int8	level[10];				// Characters Levels
+/*1712*/
 };
 
 /*
@@ -230,7 +231,10 @@ struct Spawn_Struct {
 /*0110*/ signed   deltaZ:13;      // change in z
          signed   padding0070:19; // ***Placeholder
 /*0114*/ uint8  eyecolor1;      // Player's left eye color
-/*0115*/ uint8 unknown0115[24];
+/*0115*/ uint8 unknown0115[12];	// Was [24]
+/*0127*/ uint32 drakkin_heritage;	// Added for SoF
+/*0131*/ uint32 drakkin_tattoo;		// Added for SoF
+/*0135*/ uint32 drakkin_details;	// Added for SoF
 /*0139*/ uint8  showhelm;       // 0=no, 1=yes
 /*0140*/ uint8 unknown0140[4];
 /*0144*/ uint8  is_npc;         // 0=no, 1=yes
@@ -610,8 +614,10 @@ struct CharCreate_Struct
 /*0064*/	int32	face;		// Could be unknown0076
 /*0068*/	int32	eyecolor1;	//its possiable we could have these switched
 /*0073*/	int32	eyecolor2;	//since setting one sets the other we really can't check
-/*0076*/	int32	unknown0076;	// Could be face
-/*0080*/
+/*0076*/	int32	drakkin_heritage;	// added for SoF
+/*0080*/	int32	drakkin_tattoo;		// added for SoF
+/*0084*/	int32	drakkin_details;	// added for SoF
+/*0088*/
 };
 
 /*
@@ -855,7 +861,10 @@ struct PlayerProfile_Struct
 /*5408*/	uint32				autosplit;			//not used right now
 /*5412*/	uint8				unknown4448[8];
 /*5420*/	int32				zone_change_count;      // Number of times user has zoned in their career (guessing)
-/*5424*/	uint8				unknown4460[28];	//
+/*5424*/	uint8				unknown4460[16];	//
+/*5440*/	uint32				drakkin_heritage;	//
+/*5444*/	uint32				drakkin_tattoo;		//
+/*5448*/	uint32				drakkin_details;	//
 /*5452*/	int32				expansions;		// expansion setting, bit field of expansions avaliable
 /*5456*/	sint32				toxicity;	//from drinking potions, seems to increase by 3 each time you drink
 /*5460*/	char				unknown4496[16];	//
@@ -1822,6 +1831,9 @@ struct FaceChange_Struct {
 /*004*/	int8	hairstyle;
 /*005*/	int8	beard;
 /*006*/	int8	face;
+/*007*/ int32	drakkin_heritage;
+/*011*/ int32	drakkin_tattoo;
+/*015*/ int32	drakkin_details;
 //there are only 10 faces for barbs changing woad just
 //increase the face value by ten so if there were 8 woad
 //designs then there would be 80 barb faces

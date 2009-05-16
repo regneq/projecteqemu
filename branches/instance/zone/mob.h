@@ -366,8 +366,10 @@ bool logpos;
 		int8	in_hairstyle,
 		int8	in_luclinface,
 		int8	in_beard,
+		int32	in_drakkin_heritage,
+		int32	in_drakkin_tattoo,
+		int32	in_drakkin_details,
 		int8	in_aa_title,
-
 		int8	in_see_invis,			// Mongrel: see through invis
 		int8	in_see_invis_undead,		// Mongrel: see through invis vs. undead
 		int8	in_see_hide,
@@ -1107,6 +1109,9 @@ protected:
 	int8	hairstyle;
 	int8	luclinface; // 
 	int8	beard;
+	int32	drakkin_heritage;
+	int32	drakkin_tattoo;
+	int32	drakkin_details;
 
 	int8	aa_title;
 

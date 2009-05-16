@@ -81,6 +81,9 @@ struct NPCType
 	int8	hairstyle;
 	int8	luclinface; // and beard);
 	int8	beard;	// solar: this probably doesn't work right, was missing from here
+	int32	drakkin_heritage;
+	int32	drakkin_tattoo;
+	int32	drakkin_details;
 //	int8	aa_title;	////not loaded from DB
 	int32	min_dmg;
 	int32	max_dmg;
@@ -182,6 +185,9 @@ struct DBPlayerCorpse_Struct {
 	int8 hairstyle;
 	int8 face;
 	int8 beard;
+	int32 drakkin_heritage;
+	int32 drakkin_tattoo;
+	int32 drakkin_details;
 	ServerLootItem_Struct	items[0];
 };
 

@@ -91,6 +91,9 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 	  d->hairstyle,
 	  d->luclinface,
 	  d->beard,
+	  d->drakkin_heritage,
+	  d->drakkin_tattoo,
+	  d->drakkin_details,
 	  0,
 	  d->see_invis,			// pass see_invis/see_ivu flags to mob constructor
 	  d->see_invis_undead,

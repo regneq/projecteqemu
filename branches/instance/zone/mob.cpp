@@ -83,6 +83,9 @@ Mob::Mob(const char*   in_name,
 		 int8	in_hairstyle,
 		 int8	in_luclinface,
 		 int8	in_beard,
+		 int32	in_drakkin_heritage,
+		 int32	in_drakkin_tattoo,
+		 int32	in_drakkin_details,
 
 		 int8	in_aa_title,
 		 int8	in_see_invis,			// see through invis/ivu
@@ -177,6 +180,9 @@ Mob::Mob(const char*   in_name,
 	hairstyle	= in_hairstyle;
 	luclinface	= in_luclinface;
 	beard		= in_beard;
+	drakkin_heritage	= in_drakkin_heritage;
+	drakkin_tattoo		= in_drakkin_tattoo;
+	drakkin_details		= in_drakkin_details;
 	attack_speed= 0;
 	findable	= false;
 	trackable	= true;
@@ -726,6 +732,9 @@ void Mob::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho)
 	ns->spawn.hairstyle = hairstyle;
 	ns->spawn.face = luclinface;
 	ns->spawn.beard = beard;
+	ns->spawn.drakkin_heritage = drakkin_heritage;
+	ns->spawn.drakkin_tattoo = drakkin_tattoo;
+	ns->spawn.drakkin_details = drakkin_details;
 	ns->spawn.equip_chest2  = texture;
 
 //	ns->spawn.invis2 = 0xff;//this used to be labeled beard.. if its not FF it will turn

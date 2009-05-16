@@ -478,11 +478,11 @@ ENCODE(OP_ZoneSpawns) {
 		//	eq->hairstyle = eq->hairstyle == 0xFF ? 0 : eq->hairstyle;
 		//}
 
-		eq->beard = emu->beard;
+		eq->beardcolor = emu->beardcolor;
 //		eq->unknown0147[4] = emu->unknown0147[4];
 		eq->level = emu->level;
 //		eq->unknown0259[4] = emu->unknown0259[4];
-		eq->beardcolor = emu->beardcolor;
+		eq->beard = emu->beard;
 		strcpy(eq->suffix, emu->suffix);
 		eq->petOwnerId = emu->petOwnerId;
 		eq->guildrank = emu->guildrank;
@@ -900,6 +900,21 @@ DECODE(OP_ReadBook) {
 	IN(window);
 	IN(type);
 	strn0cpy(emu->txtfile, eq->txtfile, sizeof(emu->txtfile));
+
+	FINISH_DIRECT_DECODE();
+}
+
+DECODE(OP_FaceChange) {
+
+	DECODE_LENGTH_EXACT(structs::FaceChange_Struct);
+	SETUP_DIRECT_DECODE(FaceChange_Struct, structs::FaceChange_Struct);
+	IN(haircolor);
+	IN(beardcolor);
+	IN(eyecolor1);
+	IN(eyecolor2);
+	IN(hairstyle);
+	IN(beard);
+	IN(face);
 
 	FINISH_DIRECT_DECODE();
 }

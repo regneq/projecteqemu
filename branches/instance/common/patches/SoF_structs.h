@@ -126,11 +126,11 @@ struct CharSelectEquip {
 
 struct CharacterSelectEntry_Struct {
 /*0000*/	uint8 level;				//
-/*0001*/	uint8 hairstyle;			//
+/*0000*/	uint8 hairstyle;			//
 /*0002*/	uint8 gender;				//
 /*0003*/	char name[1];				//variable length, edi+0
 /*0000*/	uint8 beard;				//
-/*0000*/	uint8 haircolor;			//
+/*0001*/	uint8 haircolor;			//
 /*0000*/	uint8 face;					//
 /*0000*/	CharSelectEquip	equip[9];
 /*0000*/	uint32 secondary;			//
@@ -196,7 +196,7 @@ struct Spawn_Struct {
 /*0008*/ uint8  unknown0008;		//
 /*0009*/ int16  deity;				// Player's Deity
 /*0011*/ uint8  unknown0011[3];		//
-/*0014*/ uint32	drakkinheritage;	//New Field - Heritage Color on Drakkin 0 - 6
+/*0014*/ uint32	drakkin_heritage;	// Heritage Color on Drakkin 0 - 6
 /*0018*/ uint8  unknown0018[4];		//
 /*0022*/ uint8  gender;				// Gender (0=male, 1=female, 2=monster)
 /*0023*/ uint8  unknown0023[4];		//
@@ -232,7 +232,7 @@ struct Spawn_Struct {
 /*0175*/ uint8  unknown0175[192];
 /*0367*/ uint8  gm;
 /*0368*/ uint8	helm;
-/*0369*/ uint8  drakkintattoo;		//New Field - Tatoos on Drakkin 0 - 7
+/*0369*/ uint8  drakkin_tattoo;		// Tattoos on Drakkin 0 - 7
 /*0370*/ uint8  unknown0370[3];
 /*0373*/ uint8  beardcolor;			// Sets Beard Color
 /*0374*/ uint8  unknown0374[128];
@@ -309,7 +309,7 @@ union
 	 };
 /*0880*/ uint8  anon;				// 0=normal, 1=anon, 2=roleplay
 /*0881*/ uint8	face;
-/*0882*/ uint8  drakkinspikes;		// Face Spikes on Drakkin 0 - 7
+/*0882*/ uint8  drakkin_details;		// Face Details (Spikes) on Drakkin 0 - 7
 /*0883*/ uint8	unknown0883[4];
 /*0887*/ float	size;
 /*0891*/ float	walkspeed;			// Speed when running
@@ -618,9 +618,9 @@ struct CharCreate_Struct
 /*0068*/	int32	eyecolor1;	//its possiable we could have these switched
 /*0073*/	int32	eyecolor2;	//since setting one sets the other we really can't check
 /*0076*/	int32	tutorial;
-/*0080*/	int32	unknown0080;
-/*0084*/	int32	unknown0084;
-/*0088*/	int32	unknown0088;
+/*0080*/	int32	drakkin_heritage;
+/*0084*/	int32	drakkin_tattoo;
+/*0088*/	int32	drakkin_details;
 /*0092*/
 };
 
@@ -1900,9 +1900,9 @@ struct FaceChange_Struct {
 /*005*/	int8	beard;
 /*006*/	int8	face;
 /*007*/ int8	unknown007;
-/*008*/ int32	heritage;
-/*012*/ int32	tattoo;
-/*016*/ int32	details;
+/*008*/ int32	drakkin_heritage;
+/*012*/ int32	drakkin_tattoo;
+/*016*/ int32	drakkin_details;
 /*020*/ int32	unknown020;
 /*024*/
 };
