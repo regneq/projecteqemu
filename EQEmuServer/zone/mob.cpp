@@ -86,6 +86,7 @@ Mob::Mob(const char*   in_name,
 		 int32	in_drakkin_heritage,
 		 int32	in_drakkin_tattoo,
 		 int32	in_drakkin_details,
+		 int32	in_armor_tint,
 
 		 int8	in_aa_title,
 		 int8	in_see_invis,			// see through invis/ivu
@@ -105,7 +106,7 @@ Mob::Mob(const char*   in_name,
 		threshold_timer(0),
 		mana_timer(2000),
 		spellend_timer(0),
-		rewind_timer(30000), //Lieka:  Timer used for determining amount of time between actual player position updates for /rewind.
+		rewind_timer(30000), //Timer used for determining amount of time between actual player position updates for /rewind.
 		stunned_timer(0),
 		bardsong_timer(6000),
 		flee_timer(FLEE_CHECK_TIMER),
@@ -183,6 +184,7 @@ Mob::Mob(const char*   in_name,
 	drakkin_heritage	= in_drakkin_heritage;
 	drakkin_tattoo		= in_drakkin_tattoo;
 	drakkin_details		= in_drakkin_details;
+	armor_tint	= in_armor_tint;
 	attack_speed= 0;
 	findable	= false;
 	trackable	= true;
@@ -770,7 +772,14 @@ void Mob::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho)
 	for(i = 0; i < MAX_MATERIALS; i++)
 	{
 		ns->spawn.equipment[i] = GetEquipmentMaterial(i);
-		ns->spawn.colors[i].color = GetEquipmentColor(i);
+		if (armor_tint)
+		{
+			ns->spawn.colors[i].color = armor_tint;
+		}
+		else
+		{
+			ns->spawn.colors[i].color = GetEquipmentColor(i);
+		}
 	}
 	
 	memset(ns->spawn.set_to_0xFF, 0xFF, sizeof(ns->spawn.set_to_0xFF));

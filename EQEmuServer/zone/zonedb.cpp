@@ -1178,6 +1178,9 @@ const NPCType* ZoneDatabase::GetNPCType (uint32 id) {
 			"npc_types.drakkin_heritage,"
 			"npc_types.drakkin_tattoo,"
 			"npc_types.drakkin_details,"
+			"npc_types.armortint_red,"
+			"npc_types.armortint_green,"
+			"npc_types.armortint_blue,"
             "npc_types.see_invis,"
 			"npc_types.see_invis_undead,"
             "npc_types.lastname,"
@@ -1263,9 +1266,13 @@ const NPCType* ZoneDatabase::GetNPCType (uint32 id) {
 				tmpNPCType->drakkin_heritage = atoi(row[r++]);
 				tmpNPCType->drakkin_tattoo = atoi(row[r++]);
 				tmpNPCType->drakkin_details = atoi(row[r++]);
+				tmpNPCType->armor_tint = (atoi(row[r++]) & 0xFF);
+				tmpNPCType->armor_tint |= (atoi(row[r++]) & 0xFF) << 8;
+				tmpNPCType->armor_tint |= (atoi(row[r++]) & 0xFF) << 16;
+				tmpNPCType->armor_tint |= (tmpNPCType->armor_tint) ? (0xFF << 24) : 0;
 
-				tmpNPCType->see_invis = atoi(row[r++])==0?false:true;			// Mongrel: Set see_invis flag
-				tmpNPCType->see_invis_undead = atoi(row[r++])==0?false:true;	// Mongrel: Set see_invis_undead flag
+				tmpNPCType->see_invis = atoi(row[r++])==0?false:true;			// Set see_invis flag
+				tmpNPCType->see_invis_undead = atoi(row[r++])==0?false:true;	// Set see_invis_undead flag
 				if (row[r] != NULL)
 					strncpy(tmpNPCType->lastname, row[r], 32);
 				r++;
