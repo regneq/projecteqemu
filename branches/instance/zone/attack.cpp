@@ -143,7 +143,17 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 	Mob *defender=this;
 	float chancetohit = RuleR(Combat, BaseHitChance);
 
+#ifdef EQBOTS
+
+	if(!attacker->IsClient() && !attacker->IsPet() && !attacker->IsBot())
+		// Bots spawn as npc's but they try to emulate clients
+
+#else
+
 	if(!attacker->IsClient() && !attacker->IsPet())
+
+#endif //EQBOTS
+
 		chancetohit += RuleR(Combat, NPCBonusHitChance);
 
 #if ATTACK_DEBUG>=11
@@ -476,7 +486,6 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage)
 	bool bBlockFromRear = false;
 
 	if (this->IsClient()) {
-		Client *c = CastToClient();
 		float aaChance = 0;
 
 		// a successful roll on this does not mean a successful block is forthcoming. only that a chance to block
@@ -669,16 +678,6 @@ void Mob::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 	if(RuleB(Combat, UseIntervalAC)){
 		//AC Mitigation
 		sint32 attackRating = 0;
-
-#ifdef EQBOTS
-
-		if(attacker->IsBot()) {
-			attackRating = attacker->GetATK() + ((attacker->GetSTR() + attacker->GetSkill(OFFENSE)) * 9 / 10);
-		}
-		else
-
-#endif //EQBOTS
-
 		uint16 ac_eq100 = 125;
 		if(defender->GetLevel() < 20)
 		{
@@ -701,7 +700,16 @@ void Mob::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 			ac_eq100 += (2325 + ((defender->GetLevel()-69)*125));
 		}
 
+#ifdef EQBOTS
+
+		if(attacker->IsClient() || attacker->IsBot())
+
+#else
+
 		if(attacker->IsClient())
+
+#endif //EQBOTS
+
 			attackRating = attacker->GetATK() + ((attacker->GetSTR() + attacker->GetSkill(OFFENSE)) * 9 / 10);
 		else
 			attackRating = attacker->GetATK() + (attacker->GetSTR() * 9 / 10);
@@ -1210,7 +1218,7 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte)
 			return (true);
 		
 		int min_hit = 1;
-		int max_hit = (2*weapon_damage*GetDamageTable(this, skillinuse)) / 100;
+		int max_hit = (2*weapon_damage*GetDamageTable(skillinuse)) / 100;
 
 		if(GetLevel() < 10 && max_hit > 20)
 			max_hit = 20;
@@ -1478,7 +1486,7 @@ bool NPC::BotRangedAttack(Mob* other) {
 				if(ADmg < 0)
 					ADmg = 0;
 
-				uint16 MaxDmg = (WDmg+ADmg) * 2 + ((WDmg+ADmg) * (GetDEX() + GetSkill(ARCHERY)) / 225);
+				uint32 MaxDmg = (2*(WDmg+ADmg)*GetDamageTable(ARCHERY)) / 100;
 
 				if(GetLevel() >= 61) { // Archery Mastery 3 AA
 					MaxDmg = MaxDmg * 150/100;
@@ -1632,8 +1640,7 @@ bool NPC::BotAttackMelee(Mob* other, int Hand, bool bRiposte)
 		
 		//damage formula needs some work
 		int min_hit = 1;
-
-		int max_hit = (2*weapon_damage) + (weapon_damage*(GetSTR()+GetSkill(OFFENSE))/225);
+		int max_hit = (2*weapon_damage*GetDamageTable(skillinuse)) / 100;
 
 		if(GetLevel() < 10 && max_hit > 20)
 			max_hit = 20;
@@ -4873,28 +4880,25 @@ bool Mob::HasDied() {
 	return Result;
 }
 
-int16 Mob::GetDamageTable(Client* c, SkillType skillinuse)
+int16 Mob::GetDamageTable(SkillType skillinuse)
 {
-	if(!c)
-		return 0;
-
-	if(c->GetLevel() <= 51)
+	if(GetLevel() <= 51)
 	{
 		int16 ret_table = 0;
 		int str_over_75 = 0;
-		if(c->GetSTR() > 75)
-			str_over_75 = c->GetSTR() - 75;
+		if(GetSTR() > 75)
+			str_over_75 = GetSTR() - 75;
 		if(str_over_75 > 255)
-			ret_table = (c->GetSkill(skillinuse)+255)/2;
+			ret_table = (GetSkill(skillinuse)+255)/2;
 		else
-			ret_table = (c->GetSkill(skillinuse)+str_over_75)/2;
+			ret_table = (GetSkill(skillinuse)+str_over_75)/2;
 
 		if(ret_table < 100)
 			return 100;
 
 		return ret_table;
 	}
-	else if(c->GetLevel() >= 90)
+	else if(GetLevel() >= 90)
 	{
 		return 345;
 	}
@@ -4910,9 +4914,9 @@ int16 Mob::GetDamageTable(Client* c, SkillType skillinuse)
 			325, 325, 330, 330, 335, 
 			335, 340, 340, 340,
 		};
-		if(c->GetClass() == MONK)
-			return (dmg_table[c->GetLevel()-51]+10);
+		if(GetClass() == MONK)
+			return (dmg_table[GetLevel()-51]+10);
 		else
-			return dmg_table[c->GetLevel()-51];
+			return dmg_table[GetLevel()-51];
 	}
 }

@@ -387,6 +387,13 @@ void Group::SplitExp(uint32 exp, Mob* other) {
 	if( other->CastToNPC()->MerchantType != 0 ) // Ensure NPC isn't a merchant
 	  return;
 
+#ifdef EQBOTS
+
+	if(other->GetOwner() && other->GetOwner()->IsBot()) // Ensure owner isn't a bot
+		return;
+
+#endif //EQBOTS
+
 	if(other->GetOwner() && other->GetOwner()->IsClient()) // Ensure owner isn't pc
 		return;
 	

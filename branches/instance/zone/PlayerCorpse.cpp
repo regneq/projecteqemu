@@ -73,58 +73,120 @@ Corpse* Corpse::LoadFromDBData(int32 in_dbid, int32 in_charid, char* in_charname
 		cout << "Corpse::LoadFromDBData: Corrupt data: in_datasize < sizeof(DBPlayerCorpse_Struct)" << endl;
 		return 0;
 	}
-	DBPlayerCorpse_Struct* dbpc = (DBPlayerCorpse_Struct*) in_data;
+	classic_db::DBPlayerCorpse_Struct* dbpc = (classic_db::DBPlayerCorpse_Struct*) in_data;
+	bool isSoF = true;
 	if (in_datasize != (sizeof(DBPlayerCorpse_Struct) + (dbpc->itemcount * sizeof(ServerLootItem_Struct)))) {
-		cout << "Corpse::LoadFromDBData: Corrupt data: in_datasize != expected size" << endl;
-		return 0;
-	}
-	if (dbpc->crc != CRC32::Generate(&((uchar*) dbpc)[4], in_datasize - 4)) {
-		cout << "Corpse::LoadFromDBData: Corrupt data: crc failure" << endl;
-		return 0;
-	}
-	ItemList itemlist;
-	ServerLootItem_Struct* tmp = 0;
-	for (unsigned int i=0; i < dbpc->itemcount; i++) {
-		tmp = new ServerLootItem_Struct;
-		memcpy(tmp, &dbpc->items[i], sizeof(ServerLootItem_Struct));
-		itemlist.push_back(tmp);
+		if (in_datasize != (sizeof(classic_db::DBPlayerCorpse_Struct) + (dbpc->itemcount * sizeof(ServerLootItem_Struct)))) {
+			cout << "Corpse::LoadFromDBData: Corrupt data: in_datasize != expected size" << endl;
+			return 0;
+		}
+		else
+		{
+			isSoF = false;
+		}
 	}
 
-	// Little hack to account for the fact the race in the corpse struct is a uint8 and Froglok/Drakkin race number > 255
-	// and to maintain backwards compatability with existing corpses in the database.
-	int16 RealRace;
+	if(isSoF)
+	{
+		DBPlayerCorpse_Struct* dbpcs = (DBPlayerCorpse_Struct*) in_data;
+		if (dbpcs->crc != CRC32::Generate(&((uchar*) dbpcs)[4], in_datasize - 4)) {
+			cout << "Corpse::LoadFromDBData: Corrupt data: crc failure" << endl;
+			return 0;
+		}
+		ItemList itemlist;
+		ServerLootItem_Struct* tmp = 0;
+		for (unsigned int i=0; i < dbpcs->itemcount; i++) {
+			tmp = new ServerLootItem_Struct;
+			memcpy(tmp, &dbpcs->items[i], sizeof(ServerLootItem_Struct));
+			itemlist.push_back(tmp);
+		}
 
-	switch(dbpc->race) {
-		case 254:
-			RealRace = DRAKKIN;
-			break;
-		case 255:
-			RealRace = FROGLOK;
-			break;
-		default:
-			RealRace = dbpc->race;
+		// Little hack to account for the fact the race in the corpse struct is a uint8 and Froglok/Drakkin race number > 255
+		// and to maintain backwards compatability with existing corpses in the database.
+		int16 RealRace;
+
+		switch(dbpcs->race) {
+			case 254:
+				RealRace = DRAKKIN;
+				break;
+			case 255:
+				RealRace = FROGLOK;
+				break;
+			default:
+				RealRace = dbpc->race;
+		}
+
+		Corpse* pc = new Corpse(in_dbid, in_charid, in_charname, &itemlist, dbpcs->copper, dbpcs->silver, dbpcs->gold, dbpcs->plat, in_x, in_y, in_z, in_heading, dbpcs->size, dbpcs->gender, RealRace, dbpcs->class_, dbpcs->deity, dbpcs->level, dbpcs->texture, dbpcs->helmtexture, dbpcs->exp, wasAtGraveyard);
+		if (dbpcs->locked)
+			pc->Lock();
+
+		// load tints
+		memcpy(pc->item_tint, dbpcs->item_tint, sizeof(pc->item_tint));
+		// appearance
+		pc->haircolor = dbpcs->haircolor;
+		pc->beardcolor = dbpcs->beardcolor;
+		pc->eyecolor1 = dbpcs->eyecolor1;
+		pc->eyecolor2 = dbpcs->eyecolor2;
+		pc->hairstyle = dbpcs->hairstyle;
+		pc->luclinface = dbpcs->face;
+		pc->beard = dbpcs->beard;
+		pc->drakkin_heritage = dbpcs->drakkin_heritage;
+		pc->drakkin_tattoo = dbpcs->drakkin_tattoo;
+		pc->drakkin_details = dbpcs->drakkin_details;
+		pc->Rezzed(rezzed);
+		pc->become_npc = false;
+		return pc;
 	}
+	else
+	{
+		if (dbpc->crc != CRC32::Generate(&((uchar*) dbpc)[4], in_datasize - 4)) {
+			cout << "Corpse::LoadFromDBData: Corrupt data: crc failure" << endl;
+			return 0;
+		}
+		ItemList itemlist;
+		ServerLootItem_Struct* tmp = 0;
+		for (unsigned int i=0; i < dbpc->itemcount; i++) {
+			tmp = new ServerLootItem_Struct;
+			memcpy(tmp, &dbpc->items[i], sizeof(ServerLootItem_Struct));
+			itemlist.push_back(tmp);
+		}
 
-	Corpse* pc = new Corpse(in_dbid, in_charid, in_charname, &itemlist, dbpc->copper, dbpc->silver, dbpc->gold, dbpc->plat, in_x, in_y, in_z, in_heading, dbpc->size, dbpc->gender, RealRace, dbpc->class_, dbpc->deity, dbpc->level, dbpc->texture, dbpc->helmtexture,dbpc->exp, wasAtGraveyard);
-	if (dbpc->locked)
-		pc->Lock();
+		// Little hack to account for the fact the race in the corpse struct is a uint8 and Froglok/Drakkin race number > 255
+		// and to maintain backwards compatability with existing corpses in the database.
+		int16 RealRace;
 
-	// load tints
-	memcpy(pc->item_tint, dbpc->item_tint, sizeof(pc->item_tint));
-	// appearance
-	pc->haircolor = dbpc->haircolor;
-	pc->beardcolor = dbpc->beardcolor;
-	pc->eyecolor1 = dbpc->eyecolor1;
-	pc->eyecolor2 = dbpc->eyecolor2;
-	pc->hairstyle = dbpc->hairstyle;
-	pc->luclinface = dbpc->face;
-	pc->beard = dbpc->beard;
-	pc->drakkin_heritage = dbpc->drakkin_heritage;
-	pc->drakkin_tattoo = dbpc->drakkin_tattoo;
-	pc->drakkin_details = dbpc->drakkin_details;
-	pc->Rezzed(rezzed);
-	pc->become_npc = false;
-	return pc;
+		switch(dbpc->race) {
+			case 254:
+				RealRace = DRAKKIN;
+				break;
+			case 255:
+				RealRace = FROGLOK;
+				break;
+			default:
+				RealRace = dbpc->race;
+		}
+
+		Corpse* pc = new Corpse(in_dbid, in_charid, in_charname, &itemlist, dbpc->copper, dbpc->silver, dbpc->gold, dbpc->plat, in_x, in_y, in_z, in_heading, dbpc->size, dbpc->gender, RealRace, dbpc->class_, dbpc->deity, dbpc->level, dbpc->texture, dbpc->helmtexture,dbpc->exp, wasAtGraveyard);
+		if (dbpc->locked)
+			pc->Lock();
+
+		// load tints
+		memcpy(pc->item_tint, dbpc->item_tint, sizeof(pc->item_tint));
+		// appearance
+		pc->haircolor = dbpc->haircolor;
+		pc->beardcolor = dbpc->beardcolor;
+		pc->eyecolor1 = dbpc->eyecolor1;
+		pc->eyecolor2 = dbpc->eyecolor2;
+		pc->hairstyle = dbpc->hairstyle;
+		pc->luclinface = dbpc->face;
+		pc->beard = dbpc->beard;
+		pc->drakkin_heritage = 0;
+		pc->drakkin_tattoo = 0;
+		pc->drakkin_details = 0;
+		pc->Rezzed(rezzed);
+		pc->become_npc = false;
+		return pc;
+	}
 }
 
 // To be used on NPC death and ZoneStateLoad
