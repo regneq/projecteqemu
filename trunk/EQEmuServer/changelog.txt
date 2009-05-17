@@ -9,6 +9,7 @@ KLS: Added AC scaling by level, will put it in a rule soon.
 KLS: Enabled both petition window 'p' and pvp window 'ctrl p' on titanium/sof; neither are functional but they're enabled now and we can work on that later.
 Congdar: Bots - fix compile error and update to current combat code
 Congdar: Bots - fix pet exploit
+KLS: Added backward compatibility to older corpses.
 
 ==05/15/2009==
 Trevius: (Trevius/Shendare) Swapped Beardcolor and Beard in the spawn struct for Titanium and Titanium Facial Features should be finalized now.
