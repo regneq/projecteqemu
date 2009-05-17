@@ -4263,9 +4263,6 @@ bool Mob::AddProcToWeapon(int16 spell_id, bool bPerma, int16 iChance) {
 	if(spell_id == SPELL_UNKNOWN)
 		return(false);
 
-	// 167 equates to a around base 3% chance to proc with no AAs.
-	if(iChance < 167)
-		iChance = 167;
 	int i;
 	if (bPerma) {
  		for (i = 0; i < MAX_PROCS; i++) {

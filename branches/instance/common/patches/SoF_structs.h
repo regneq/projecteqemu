@@ -2421,8 +2421,14 @@ struct sPickPocket_Struct {
 struct LogServer_Struct {
 // Op_Code OP_LOGSERVER
 /*000*/	uint32	unknown000;
-/*004*/	uint32	unknown004;
-/*008*/	uint32	unknown008;
+/*004*/	uint8	enable_pvp;
+/*005*/	uint8	unknown005;
+/*006*/	uint8	unknown006;
+/*007*/	uint8	unknown007;
+/*008*/	uint8	enable_FV;
+/*009*/	uint8	unknown009;
+/*010*/	uint8	unknown010;
+/*011*/	uint8	unknown011;
 /*012*/	uint32	unknown012;	// htonl(1) on live
 /*016*/	uint32	unknown016;	// htonl(1) on live
 /*020*/	uint8	unknown020[12];

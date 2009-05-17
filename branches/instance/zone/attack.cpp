@@ -679,6 +679,28 @@ void Mob::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 
 #endif //EQBOTS
 
+		uint16 ac_eq100 = 125;
+		if(defender->GetLevel() < 20)
+		{
+			ac_eq100 += 15 * defender->GetLevel();
+		}
+		else if(defender->GetLevel() < 50)
+		{
+			ac_eq100 += (285 + ((defender->GetLevel()-19)*30));
+		}
+		else if(defender->GetLevel() < 60)
+		{
+			ac_eq100 += (1185 + ((defender->GetLevel()-49)*60));
+		}
+		else if(defender->GetLevel() < 70)
+		{
+			ac_eq100 += (1785 + ((defender->GetLevel()-59)*90));
+		}
+		else
+		{
+			ac_eq100 += (2325 + ((defender->GetLevel()-69)*125));
+		}
+
 		if(attacker->IsClient())
 			attackRating = attacker->GetATK() + ((attacker->GetSTR() + attacker->GetSkill(OFFENSE)) * 9 / 10);
 		else
@@ -695,12 +717,12 @@ void Mob::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 		if(combat_rating < 0)
 			combat_rating = 0;
 
-		combat_rating = 5.0 * ((combat_rating) / (defender->GetLevel() == 0 ? 1.0 : (double)defender->GetLevel()));
+		combat_rating = 100 * combat_rating / (double)ac_eq100;
 		combat_rating > 60.0 ? 60 + ((combat_rating - 60)/10) : combat_rating;
 		combat_rating > 90.0 ? 90 + ((combat_rating - 90)/20) : combat_rating;
 
-		d1_chance = 6.0 + (((combat_rating * 0.39) / 3) * 2);
-		d2_d19_chance = 48.0 + ((combat_rating * 0.39) / 3);
+		d1_chance = 6.0 + (((combat_rating * 0.39) / 3));
+		d2_d19_chance = 48.0 + (((combat_rating * 0.39) / 3) * 2);
 
 		double roll = MakeRandomFloat(0, 100);
 	

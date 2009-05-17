@@ -76,14 +76,15 @@ struct NPCType
 	sint16	DR;
 	int8	haircolor;
 	int8	beardcolor;
-	int8	eyecolor1; // the eyecolors always seem to be the same, maybe left and right eye?
+	int8	eyecolor1;			// the eyecolors always seem to be the same, maybe left and right eye?
 	int8	eyecolor2;
 	int8	hairstyle;
-	int8	luclinface; // and beard);
-	int8	beard;	// solar: this probably doesn't work right, was missing from here
+	int8	luclinface;			//
+	int8	beard;				//
 	int32	drakkin_heritage;
 	int32	drakkin_tattoo;
 	int32	drakkin_details;
+	int32	armor_tint;
 //	int8	aa_title;	////not loaded from DB
 	int32	min_dmg;
 	int32	max_dmg;
