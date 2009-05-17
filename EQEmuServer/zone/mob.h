@@ -411,14 +411,17 @@ bool logpos;
 	bool BotRaiding;
 	bool OrderBotAttack;
 	bool BotArchery;
+	bool BotCharmer;
 	uint32 BotArcheryRange;
 	void SetBotArcheryRange(uint32 r) { BotArcheryRange = r; }
 	uint32 GetBotArcheryRange() { return BotArcheryRange; }
 	void SetBotArcher(bool a) { BotArchery = a; }
+	void SetBotCharmer(bool c) { BotCharmer = c; }
 	void SetBotRaiding(bool v) { BotRaiding = v; }
 	void SetOrderBotAttack(bool v) { OrderBotAttack = v; }
 	bool IsBotRaiding() const { return BotRaiding; }
 	bool IsBotArcher() const { return BotArchery; }
+	bool IsBotCharmer() const { return BotCharmer; }
 	bool IsOrderBotAttack() const { return OrderBotAttack; }
 	bool CheckBotDoubleAttack(bool Triple = false);
 
