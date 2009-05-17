@@ -192,6 +192,37 @@ struct DBPlayerCorpse_Struct {
 	ServerLootItem_Struct	items[0];
 };
 
+namespace classic_db
+{
+	struct DBPlayerCorpse_Struct {
+		int32	crc;
+		bool	locked;
+		int32	itemcount;
+		int32	exp;
+		float	size;
+		int8	level;
+		int8	race;
+		int8	gender;
+		int8	class_;
+		int8	deity;
+		int8	texture;
+		int8	helmtexture;
+		int32	copper;
+		int32	silver;
+		int32	gold;
+		int32	plat;
+		Color_Struct item_tint[9];
+		int8 haircolor;
+		int8 beardcolor;
+		int8 eyecolor1;
+		int8 eyecolor2;
+		int8 hairstyle;
+		int8 face;
+		int8 beard;
+		ServerLootItem_Struct	items[0];
+	};
+}
+
 struct Door {
 int32	db_id;
 int8	door_id;
