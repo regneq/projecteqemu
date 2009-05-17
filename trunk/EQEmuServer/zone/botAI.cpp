@@ -949,7 +949,7 @@ bool NPC::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 					}
 					case SpellType_Pet: {
 						 //keep mobs from recasting pets when they have them.
-						if (!IsPet() && !GetPetID()) {
+						if (!IsPet() && !GetPetID() && !IsBotCharmer()) {
 							if(botClass == MAGICIAN) {
 								// have the magician bot randomly summon
 								// the air, earth, fire or water pet

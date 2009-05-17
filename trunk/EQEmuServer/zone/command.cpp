@@ -9916,7 +9916,7 @@ void command_bot(Client *c, const Seperator *sep) {
 	if(!strcasecmp(sep->arg[1], "charm"))
     {
 		Mob *target = c->GetTarget();
-        if(target == NULL || target == c || target->IsBot() || target->IsPet() && target->GetOwner()->IsBot())
+		if(target == NULL || target->IsClient() || target->IsBot() || (target->IsPet() && target->GetOwner()->IsBot()))
         {
             c->Message(15, "You must select a monster");
             return;
@@ -9988,7 +9988,7 @@ void command_bot(Client *c, const Seperator *sep) {
 					break;
 
 				default:
-					c->Message(15, "You must have a Enchanter, Necromancer or Druid in your group.");
+					c->Message(15, "You must have an Enchanter, Necromancer or Druid in your group.");
 					break;
 			}
 		}
@@ -9997,20 +9997,28 @@ void command_bot(Client *c, const Seperator *sep) {
 // Remove Bot's Pet
 	if(!strcasecmp(sep->arg[1], "pet") && !strcasecmp(sep->arg[2], "remove")) {
         if(c->GetTarget() != NULL) {
-           if (c->IsGrouped() && c->GetTarget()->IsPet() && c->GetTarget()->GetOwner()->IsBot() && c->GetTarget()->GetNPCTypeID() <=700) {
-				int16 botID = c->GetTarget()->GetID();
-				c->GetTarget()->Say("As you wish, master.");
-				c->GetTarget()->Kill();
-			}
-            else if (c->IsGrouped() && c->GetTarget()->IsPet() && c->GetTarget()->GetOwner()->IsBot() && c->GetTarget()->GetNPCTypeID() >=700) {
-				c->GetTarget()->Say("You can't remove a charmed mob.");
+			if (c->IsGrouped() && c->GetTarget()->IsBot() && (database.GetBotOwner(c->GetTarget()->GetNPCTypeID()) == c->AccountID()) &&
+				((c->GetTarget()->GetClass() == NECROMANCER) || (c->GetTarget()->GetClass() == ENCHANTER) || (c->GetTarget()->GetClass() == DRUID))) {
+				if(c->GetTarget()->IsBotCharmer()) {
+					c->GetTarget()->SetBotCharmer(false);
+					c->GetTarget()->Say("Using a summoned pet.");
+				}
+				else {
+					if(c->GetTarget()->GetPet())
+					{
+						c->GetTarget()->GetPet()->Say_StringID(PET_GETLOST_STRING);
+						c->GetTarget()->GetPet()->Kill();
+					}
+					c->GetTarget()->SetBotCharmer(true);
+					c->GetTarget()->Say("Available for Dire Charm command.");
+				}
 			}
             else {
-                c->Message(15, "You must target a bot pet.");
+                c->Message(15, "You must target your Enchanter, Necromancer, or Druid bot.");
             }
         }
         else {
-            c->Message(15, "You must target a bot pet.");
+            c->Message(15, "You must target an Enchanter, Necromancer, or Druid bot.");
         }
 		return;
 	}
@@ -10019,7 +10027,7 @@ void command_bot(Client *c, const Seperator *sep) {
 	if(!strcasecmp(sep->arg[1], "Dire") && !strcasecmp(sep->arg[2], "Charm"))
     {
 		Mob *target = c->GetTarget();
-        if(target == NULL || target == c || target->IsBot() || target->IsPet() && target->GetOwner()->IsBot())
+		if(target == NULL || target->IsClient() || target->IsBot() || (target->IsPet() && target->GetOwner()->IsBot()))
         {
             c->Message(15, "You must select a monster");
             return;
@@ -10091,7 +10099,7 @@ void command_bot(Client *c, const Seperator *sep) {
 					break;
 
 				default:
-					c->Message(15, "You must have a Enchanter, Necromancer or Druid in your group.");
+					c->Message(15, "You must have an Enchanter, Necromancer or Druid in your group.");
 					break;
 			}
 		}

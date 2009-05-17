@@ -357,6 +357,7 @@ Mob::Mob(const char*   in_name,
 	OrderBotAttack = false;
 	BotArchery = false;
 	BotArcheryRange = 0;
+	BotCharmer = false;
 
 #endif //EQBOTS
 
