@@ -680,14 +680,34 @@ void Mob::RogueBackstab(Mob* other, bool min_damage)
 	if(primaryweapondamage > 0){
 		// formula is (weapon damage * 2) + 1 + (level - 25)/3 + (strength+skill)/100
 		if(level > 25){
+
+#ifdef EQBOTS
+
+			if(IsClient() || IsBot())
+
+#else
+
 			if(IsClient())
-				max_hit = (((2*primaryweapondamage*GetDamageTable(CastToClient(), BACKSTAB)) / 100) + 1 + ((level-25)/3));
+
+#endif //EQBOTS
+
+				max_hit = (((2*primaryweapondamage*GetDamageTable(BACKSTAB)) / 100) + 1 + ((level-25)/3));
 			else
 				max_hit = ((primaryweapondamage*2) + 1 + ((level-25)/3) + ((GetSTR()+GetDEX()+GetSkill(OFFENSE))/20));
 		}
 		else{
+
+#ifdef EQBOTS
+
+			if(IsClient() || IsBot())
+
+#else
+
 			if(IsClient())
-				max_hit = (((2*primaryweapondamage*GetDamageTable(CastToClient(), BACKSTAB)) / 100) + 1);
+
+#endif //EQBOTS
+
+				max_hit = (((2*primaryweapondamage*GetDamageTable(BACKSTAB)) / 100) + 1);
 			else
 				max_hit = ((primaryweapondamage*2) + 1 + ((GetSTR()+GetDEX()+GetSkill(OFFENSE))/20));
 		}
@@ -895,7 +915,7 @@ void Client::RangedAttack(Mob* other) {
 			if(ADmg < 0)
 				ADmg = 0;
 
-			uint32 MaxDmg = (2*(WDmg+ADmg)*GetDamageTable(this, ARCHERY)) / 100;
+			uint32 MaxDmg = (2*(WDmg+ADmg)*GetDamageTable(ARCHERY)) / 100;
 						
 			switch(GetAA(aaArcheryMastery)) {
 				case 1:
