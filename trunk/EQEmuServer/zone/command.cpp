@@ -288,7 +288,7 @@ int command_init(void) {
 		command_add("equipitem","[slotid(0-21)] - Equip the item on your cursor into the specified slot",50,command_equipitem) ||
 		command_add("zonelock","[list/lock/unlock] - Set/query lock flag for zoneservers",100,command_zonelock) ||
 		command_add("corpse","- Manipulate corpses, use with no arguments for help",50,command_corpse) ||
-		command_add("fixmob","[nextrace|prevrace|gender|nexttexture|prevtexture|nexthelm|prevhelm] - Manipulate appearance of your NPC target",100,command_fixmob) ||
+		command_add("fixmob","[race|gender|texture|helm|face|hair|haircolor|beard|beardcolor|heritage|tattoo|detail] [next|prev] - Manipulate appearance of your target",80,command_fixmob) ||
 		command_add("gmspeed","[on/off] - Turn GM speed hack on/off for you or your player target",100,command_gmspeed) ||
 		command_add("title","[text] - Set your or your player target's title",50,command_title) ||
 		command_add("titlesuffix","[text] - Set your or your player target's title suffix",50,command_titlesuffix) ||
@@ -344,7 +344,15 @@ int command_init(void) {
 		command_add("viewmessage","[id] - View messages in your tell queue",100,command_viewmessage) ||
 		command_add("viewmessages",NULL,0,command_viewmessage) ||
 		command_add("doanim","[animnum] [type] - Send an EmoteAnim for you or your target",50,command_doanim) ||
-		command_add("face","TODO: describe this command",250,command_face) ||
+		command_add("face","Change the face of your target",80,command_face) ||
+		command_add("helm","Change the helm of your target",80,command_helm) ||
+		command_add("hair","Change the hair style of your target",80,command_hair) ||
+		command_add("haircolor","Change the hair color of your target",80,command_haircolor) ||
+		command_add("beard","Change the beard of your target",80,command_beard) ||
+		command_add("beardcolor","Change the beard color of your target",80,command_beardcolor) ||
+		command_add("heritage","Change the heritage of your target (Drakkin Only)",80,command_heritage) ||
+		command_add("tattoo","Change the tattoo of your target (Drakkin Only)",80,command_tattoo) ||
+		command_add("details","Change the details of your target (Drakkin Only)",80,command_details) ||
 		command_add("scribespells","[level] - Scribe all spells for you or your player target that are usable by them, up to level specified. (may freeze client for a few seconds)",150,command_scribespells) ||
 		command_add("unscribespells","Clear out your or your player target's spell book.",180,command_unscribespells) ||
 		command_add("scribespell", "[spellid] - Scribe specified spell in your target's spell book.", 180, command_scribespell) ||
@@ -3606,89 +3614,223 @@ void command_corpse(Client *c, const Seperator *sep)
 void command_fixmob(Client *c, const Seperator *sep)
 {
 	Mob *target=c->GetTarget();
+	char* Usage = "Usage: #fixmob [race|gender|texture|helm|face|hair|haircolor|beard|beardcolor|heritage|tattoo|detail] [next|prev]";
 
 	if (!sep->arg[1])
-		c->Message(0,"Usage: #fixmob [nextrace|prevrace|gender|nexttexture|prevtexture|nexthelm|prevhelm]");
+		c->Message(0,Usage);
 	else if (!target)
-		c->Message(0,"Error: this command requires an NPC target");
-	else if (strcasecmp(sep->arg[1], "nextrace") == 0) {
-		// Set to next race
-		if (target->GetRace() == 586) {
-			target->SendIllusionPacket(0);
-			c->Message(0, "Race=0");
+		c->Message(0,"Error: this command requires a target");
+	else
+	{
+		
+		int32 Adjustment = 1;	// Previous or Next
+		char codeMove;
+
+		if (sep->arg[2]) 
+		{
+			char* command2 = sep->arg[2];
+			codeMove = (command2[0] | 0x20); // First character, lower-cased
+			if (codeMove == 'n')
+				Adjustment = 1;
+			else if (codeMove == 'p')
+				Adjustment = -1;
 		}
-		else {
-			target->SendIllusionPacket(target->GetRace()+1);
-			c->Message(0, "Race=%i",target->GetRace());
+	
+		int16 Race = target->GetRace();
+		int8 Gender = target->GetGender();
+		int8 Texture = target->GetTexture();
+		int8 HelmTexture = target->GetHelmTexture();
+		int8 HairColor = target->GetHairColor();
+		int8 BeardColor = target->GetBeardColor();
+		int8 EyeColor1 = target->GetEyeColor1();
+		int8 EyeColor2 = target->GetEyeColor2();
+		int8 HairStyle = target->GetHairStyle();
+		int8 LuclinFace = target->GetLuclinFace();
+		int8 Beard = target->GetBeard();
+		int32 DrakkinHeritage = target->GetDrakkinHeritage();
+		int32 DrakkinTattoo = target->GetDrakkinTattoo();
+		int32 DrakkinDetails = target->GetDrakkinDetails();
+
+		char* ChangeType = NULL; // If it's still NULL after processing, they didn't send a valid command
+		int32 ChangeSetting;
+		char* command = sep->arg[1];
+			
+		if (strcasecmp(command, "race") == 0)
+		{			
+			if (Race == 0 && codeMove == 'p')
+				Race = 586;
+			else if (Race >= 586 && codeMove != 'p')
+				Race = 0;
+			else
+				Race += Adjustment;
+			ChangeType = "Race";
+			ChangeSetting = Race;
 		}
-	}
-	else if (strcasecmp(sep->arg[1], "prevrace") == 0) {
-		// Set to previous race
-		if (target->GetRace() == 0) {
-			target->SendIllusionPacket(586);
-			c->Message(0, "Race=%i",586);
+		else if (strcasecmp(command, "gender") == 0)
+		{
+			if (Gender == 0 && codeMove == 'p')
+				Gender = 2;
+			else if (Gender >= 2 && codeMove != 'p')
+				Gender = 0;
+			else
+				Gender += Adjustment;
+			ChangeType = "Gender";
+			ChangeSetting = Gender;
 		}
-		else {
-			target->SendIllusionPacket(target->GetRace()-1);
-			c->Message(0, "Race=%i",target->GetRace());
+		else if (strcasecmp(command, "texture") == 0)
+		{
+			if (Texture == 0 && codeMove == 'p')
+				Texture = 25;
+			else if (Texture >= 25 && codeMove != 'p')
+				Texture = 0;
+			else
+				Texture += Adjustment;
+			ChangeType = "Texture";
+			ChangeSetting = Texture;
 		}
-	}
-	else if (strcasecmp(sep->arg[1], "gender") == 0) {
-		// Cycle through the 3 gender modes
-		if (target->GetGender() == 0) {
-			target->SendIllusionPacket(target->GetRace(), 2);
-			c->Message(0, "Gender=%i",2);
+		else if (strcasecmp(command, "helm") == 0)
+		{
+			if (HelmTexture == 0 && codeMove == 'p')
+				HelmTexture = 25;
+			else if (HelmTexture >= 25 && codeMove != 'p')
+				HelmTexture = 0;
+			else
+				HelmTexture += Adjustment;
+			ChangeType = "HelmTexture";
+			ChangeSetting = HelmTexture;
 		}
-		else {
-			target->SendIllusionPacket(target->GetRace(), target->GetGender()-1);
-			c->Message(0, "Gender=%i",target->GetGender());
+		else if (strcasecmp(command, "face") == 0)
+		{
+			if (LuclinFace == 0 && codeMove == 'p')
+				LuclinFace = 80;
+			else if (LuclinFace >= 80 && codeMove != 'p')
+				LuclinFace = 0;
+			else
+				LuclinFace += Adjustment;
+			ChangeType = "LuclinFace";
+			ChangeSetting = LuclinFace;
 		}
-	}
-	else if (strcasecmp(sep->arg[1], "nexttexture") == 0) {
-		// Set to next texture
-		if (target->GetTexture() == 25) {
-			target->SendIllusionPacket(target->GetRace(), target->GetGender(), 0);
-			c->Message(0, "Texture=0");
+		else if (strcasecmp(command, "hair") == 0)
+		{
+			if (HairStyle == 0 && codeMove == 'p')
+				HairStyle = 7;
+			else if (HairStyle >= 7 && codeMove != 'p')
+				HairStyle = 0;
+			else
+				HairStyle += Adjustment;
+			ChangeType = "HairStyle";
+			ChangeSetting = HairStyle;
 		}
-		else {
-			target->SendIllusionPacket(target->GetRace(), target->GetGender(), target->GetTexture()+1);
-			c->Message(0, "Texture=%i",target->GetTexture());
+		else if (strcasecmp(command, "haircolor") == 0)
+		{
+			if (HairColor == 0 && codeMove == 'p')
+				HairColor = 15;
+			else if (HairColor >= 15 && codeMove != 'p')
+				HairColor = 0;
+			else
+				HairColor += Adjustment;
+			ChangeType = "HairColor";
+			ChangeSetting = HairColor;
 		}
-	}
-	else if (strcasecmp(sep->arg[1], "prevtexture") == 0) {
-		// Set to previous texture
-		if (target->GetTexture() == 0) {
-			target->SendIllusionPacket(target->GetRace(), target->GetGender(), 25);
-			c->Message(0, "Texture=%i",25);
+		else if (strcasecmp(command, "beard") == 0)
+		{
+			if (Beard == 0 && codeMove == 'p')
+				Beard = 12;
+			else if (Beard >= 12 && codeMove != 'p')
+				Beard = 0;
+			else
+				Beard += Adjustment;
+			ChangeType = "Beard";
+			ChangeSetting = Beard;
 		}
-		else {
-			target->SendIllusionPacket(target->GetRace(), target->GetGender(), target->GetTexture()-1);
-			c->Message(0, "Texture=%i",target->GetTexture());
+		else if (strcasecmp(command, "beardcolor") == 0)
+		{
+			if (BeardColor == 0 && codeMove == 'p')
+				BeardColor = 20;
+			else if (BeardColor >= 20 && codeMove != 'p')
+				BeardColor = 0;
+			else
+				BeardColor += Adjustment;
+			ChangeType = "BeardColor";
+			ChangeSetting = BeardColor;
 		}
-	}
-	else if (strcasecmp(sep->arg[1], "nexthelm") == 0) {
-		// Set to next helm.  Only noticed a difference on giants.
-		if (target->GetHelmTexture() == 25) {
-			target->SendIllusionPacket(target->GetRace(), target->GetGender(), target->GetTexture(), 0);
-			c->Message(0, "HelmTexture=0");
+		else if (strcasecmp(command, "heritage") == 0)
+		{
+			if (DrakkinHeritage == 0 && codeMove == 'p')
+				DrakkinHeritage = 6;
+			else if (DrakkinHeritage >= 6 && codeMove != 'p')
+				DrakkinHeritage = 0;
+			else
+				DrakkinHeritage += Adjustment;
+			ChangeType = "DrakkinHeritage";
+			ChangeSetting = DrakkinHeritage;
 		}
-		else {
-			target->SendIllusionPacket(target->GetRace(), target->GetGender(), target->GetTexture(), target->GetHelmTexture()+1);
-			c->Message(0, "HelmTexture=%i",target->GetHelmTexture());
+		else if (strcasecmp(command, "tattoo") == 0)
+		{
+			if (DrakkinTattoo == 0 && codeMove == 'p')
+				DrakkinTattoo = 9;
+			else if (DrakkinTattoo >= 9 && codeMove != 'p')
+				DrakkinTattoo = 0;
+			else
+				DrakkinTattoo += Adjustment;
+			ChangeType = "DrakkinTattoo";
+			ChangeSetting = DrakkinTattoo;
 		}
-	}
-	else if (strcasecmp(sep->arg[1], "prevhelm") == 0) {
-		// Set to previous helm.  Only noticed a difference on giants.
-		if (target->GetHelmTexture() == 0) {
-			target->SendIllusionPacket(target->GetRace(), target->GetGender(), target->GetTexture(), 25);
-			c->Message(0, "HelmTexture=%i",25);
+		else if (strcasecmp(command, "detail") == 0)
+		{
+			if (DrakkinDetails == 0 && codeMove == 'p')
+				DrakkinDetails = 7;
+			else if (DrakkinDetails >= 7 && codeMove != 'p')
+				DrakkinDetails = 0;
+			else
+				DrakkinDetails += Adjustment;
+			ChangeType = "DrakkinDetails";
+			ChangeSetting = DrakkinDetails;
 		}
-		else {
-			target->SendIllusionPacket(target->GetRace(), target->GetGender(), target->GetTexture(), target->GetHelmTexture()-1);
-			c->Message(0, "HelmTexture=%i",target->GetHelmTexture());
+
+		// Hack to fix some races that base features from face
+		switch (Race)
+		{
+			case 2:	// Barbarian
+				if (LuclinFace > 10) {
+					LuclinFace -= ((DrakkinTattoo - 1) * 10);
+				}
+				LuclinFace += (DrakkinTattoo * 10);
+				break;
+			case 3: // Erudite
+				if (LuclinFace > 10) {
+					LuclinFace -= ((HairStyle - 1) * 10);
+				}
+				LuclinFace += (HairStyle * 10);
+				break;
+			case 5: // HighElf
+			case 6: // DarkElf
+			case 7: // HalfElf
+				if (LuclinFace > 10) {
+					LuclinFace -= ((Beard - 1) * 10);
+				}
+				LuclinFace += (Beard * 10);
+				break;
+			default:
+				break;
+		}
+
+
+		if (ChangeType == NULL)
+		{
+			c->Message(0,Usage);
+		}
+		else
+		{
+			target->SendIllusionPacket(Race, Gender, Texture, HelmTexture, HairColor, BeardColor,
+										EyeColor1, EyeColor2, HairStyle, LuclinFace, Beard, 0xFF,
+										DrakkinHeritage, DrakkinTattoo, DrakkinDetails);
+        
+			c->Message(0, "%s=%i", ChangeType, ChangeSetting);
 		}
 	}
 }
+
 void command_gmspeed(Client *c, const Seperator *sep)
 {
 	bool state=atobool(sep->arg[1]);
@@ -4976,29 +5118,281 @@ void command_doanim(Client *c, const Seperator *sep)
 
 void command_face(Client *c, const Seperator *sep)
 {
-	c->Message(0,"This command is not yet implemented.");
+	Mob *target=c->GetTarget();
+	if (!sep->IsNumber(1))
+		c->Message(0,"Usage: #face [number of face]");
+	else if (!target)
+		c->Message(0,"Error: this command requires a target");
+	else {
+		int16 Race = target->GetRace();
+		int8 Gender = target->GetGender();
+		int8 Texture = target->GetTexture();
+		int8 HelmTexture = target->GetHelmTexture();
+		int8 HairColor = target->GetHairColor();
+		int8 BeardColor = target->GetBeardColor();
+		int8 EyeColor1 = target->GetEyeColor1();
+		int8 EyeColor2 = target->GetEyeColor2();
+		int8 HairStyle = target->GetHairStyle();
+		int8 LuclinFace = atoi(sep->arg[1]);
+		int8 Beard = target->GetBeard();
+		int32 DrakkinHeritage = target->GetDrakkinHeritage();
+		int32 DrakkinTattoo = target->GetDrakkinTattoo();
+		int32 DrakkinDetails = target->GetDrakkinDetails();
 
-	EQApplicationPacket* outapp = new EQApplicationPacket(OP_Illusion, sizeof(Illusion_Struct));
-	Illusion_Struct* is = (Illusion_Struct*) outapp->pBuffer;
-		
-	strcpy(is->charname, c->GetPP().name);
-	is->race		= c->GetBaseRace();
-	is->gender		= c->GetBaseGender();
-		
-	// @merth: these need to be implemented
-	/*
-	is->texture		= 0x00;
-	is->helmtexture	= 0x00;
-	is->haircolor	= 0x00;
-	is->beardcolor	= c->GetFace();
-	is->eyecolor1	= 0xFF;
-	is->eyecolor2	= 0xFF;
-	is->hairstyle	= 0xFF;
-	is->luclinface	= 0xFF;
-	*/
-	
-	entity_list.QueueClients(c, outapp);
-	safe_delete(outapp);
+		target->SendIllusionPacket(Race, Gender, Texture, HelmTexture, HairColor, BeardColor,
+									EyeColor1, EyeColor2, HairStyle, LuclinFace, Beard, 0xFF,
+									DrakkinHeritage, DrakkinTattoo, DrakkinDetails);
+
+		c->Message(0,"Face = %i", atoi(sep->arg[1]));
+	}
+}
+
+void command_details(Client *c, const Seperator *sep)
+{
+	Mob *target=c->GetTarget();
+	if (!sep->IsNumber(1))
+		c->Message(0,"Usage: #details [number of drakkin detail]");
+	else if (!target)
+		c->Message(0,"Error: this command requires a target");
+	else {
+		int16 Race = target->GetRace();
+		int8 Gender = target->GetGender();
+		int8 Texture = target->GetTexture();
+		int8 HelmTexture = target->GetHelmTexture();
+		int8 HairColor = target->GetHairColor();
+		int8 BeardColor = target->GetBeardColor();
+		int8 EyeColor1 = target->GetEyeColor1();
+		int8 EyeColor2 = target->GetEyeColor2();
+		int8 HairStyle = target->GetHairStyle();
+		int8 LuclinFace = target->GetLuclinFace();
+		int8 Beard = target->GetBeard();
+		int32 DrakkinHeritage = target->GetDrakkinHeritage();
+		int32 DrakkinTattoo = target->GetDrakkinTattoo();
+		int32 DrakkinDetails = atoi(sep->arg[1]);
+
+		target->SendIllusionPacket(Race, Gender, Texture, HelmTexture, HairColor, BeardColor,
+									EyeColor1, EyeColor2, HairStyle, LuclinFace, Beard, 0xFF,
+									DrakkinHeritage, DrakkinTattoo, DrakkinDetails);
+
+		c->Message(0,"Details = %i", atoi(sep->arg[1]));
+	}
+}
+
+void command_heritage(Client *c, const Seperator *sep)
+{
+	Mob *target=c->GetTarget();
+	if (!sep->IsNumber(1))
+		c->Message(0,"Usage: #heritage [number of Drakkin heritage]");
+	else if (!target)
+		c->Message(0,"Error: this command requires a target");
+	else {
+		int16 Race = target->GetRace();
+		int8 Gender = target->GetGender();
+		int8 Texture = target->GetTexture();
+		int8 HelmTexture = target->GetHelmTexture();
+		int8 HairColor = target->GetHairColor();
+		int8 BeardColor = target->GetBeardColor();
+		int8 EyeColor1 = target->GetEyeColor1();
+		int8 EyeColor2 = target->GetEyeColor2();
+		int8 HairStyle = target->GetHairStyle();
+		int8 LuclinFace = target->GetLuclinFace();
+		int8 Beard = target->GetBeard();
+		int32 DrakkinHeritage = atoi(sep->arg[1]);
+		int32 DrakkinTattoo = target->GetDrakkinTattoo();
+		int32 DrakkinDetails = target->GetDrakkinDetails();
+
+		target->SendIllusionPacket(Race, Gender, Texture, HelmTexture, HairColor, BeardColor,
+									EyeColor1, EyeColor2, HairStyle, LuclinFace, Beard, 0xFF,
+									DrakkinHeritage, DrakkinTattoo, DrakkinDetails);
+
+		c->Message(0,"Heritage = %i", atoi(sep->arg[1]));
+	}
+}
+
+void command_tattoo(Client *c, const Seperator *sep)
+{
+	Mob *target=c->GetTarget();
+	if (!sep->IsNumber(1))
+		c->Message(0,"Usage: #tattoo [number of Drakkin tattoo]");
+	else if (!target)
+		c->Message(0,"Error: this command requires a target");
+	else {
+		int16 Race = target->GetRace();
+		int8 Gender = target->GetGender();
+		int8 Texture = target->GetTexture();
+		int8 HelmTexture = target->GetHelmTexture();
+		int8 HairColor = target->GetHairColor();
+		int8 BeardColor = target->GetBeardColor();
+		int8 EyeColor1 = target->GetEyeColor1();
+		int8 EyeColor2 = target->GetEyeColor2();
+		int8 HairStyle = target->GetHairStyle();
+		int8 LuclinFace = target->GetLuclinFace();
+		int8 Beard = target->GetBeard();
+		int32 DrakkinHeritage = target->GetDrakkinHeritage();
+		int32 DrakkinTattoo = atoi(sep->arg[1]);
+		int32 DrakkinDetails = target->GetDrakkinDetails();
+
+		target->SendIllusionPacket(Race, Gender, Texture, HelmTexture, HairColor, BeardColor,
+									EyeColor1, EyeColor2, HairStyle, LuclinFace, Beard, 0xFF,
+									DrakkinHeritage, DrakkinTattoo, DrakkinDetails);
+
+		c->Message(0,"Tattoo = %i", atoi(sep->arg[1]));
+	}
+}
+
+void command_helm(Client *c, const Seperator *sep)
+{
+	Mob *target=c->GetTarget();
+	if (!sep->IsNumber(1))
+		c->Message(0,"Usage: #helm [number of helm texture]");
+	else if (!target)
+		c->Message(0,"Error: this command requires a target");
+	else {
+		int16 Race = target->GetRace();
+		int8 Gender = target->GetGender();
+		int8 Texture = target->GetTexture();
+		int8 HelmTexture = atoi(sep->arg[1]);
+		int8 HairColor = target->GetHairColor();
+		int8 BeardColor = target->GetBeardColor();
+		int8 EyeColor1 = target->GetEyeColor1();
+		int8 EyeColor2 = target->GetEyeColor2();
+		int8 HairStyle = target->GetHairStyle();
+		int8 LuclinFace = target->GetLuclinFace();
+		int8 Beard = target->GetBeard();
+		int32 DrakkinHeritage = target->GetDrakkinHeritage();
+		int32 DrakkinTattoo = target->GetDrakkinTattoo();
+		int32 DrakkinDetails = target->GetDrakkinDetails();
+
+		target->SendIllusionPacket(Race, Gender, Texture, HelmTexture, HairColor, BeardColor,
+									EyeColor1, EyeColor2, HairStyle, LuclinFace, Beard, 0xFF,
+									DrakkinHeritage, DrakkinTattoo, DrakkinDetails);
+
+		c->Message(0,"Helm = %i", atoi(sep->arg[1]));
+	}
+}
+
+void command_hair(Client *c, const Seperator *sep)
+{
+	Mob *target=c->GetTarget();
+	if (!sep->IsNumber(1))
+		c->Message(0,"Usage: #hair [number of hair style]");
+	else if (!target)
+		c->Message(0,"Error: this command requires a target");
+	else {
+		int16 Race = target->GetRace();
+		int8 Gender = target->GetGender();
+		int8 Texture = target->GetTexture();
+		int8 HelmTexture = target->GetHelmTexture();
+		int8 HairColor = target->GetHairColor();
+		int8 BeardColor = target->GetBeardColor();
+		int8 EyeColor1 = target->GetEyeColor1();
+		int8 EyeColor2 = target->GetEyeColor2();
+		int8 HairStyle = atoi(sep->arg[1]);
+		int8 LuclinFace = target->GetLuclinFace();
+		int8 Beard = target->GetBeard();
+		int32 DrakkinHeritage = target->GetDrakkinHeritage();
+		int32 DrakkinTattoo = target->GetDrakkinTattoo();
+		int32 DrakkinDetails = target->GetDrakkinDetails();
+
+		target->SendIllusionPacket(Race, Gender, Texture, HelmTexture, HairColor, BeardColor,
+									EyeColor1, EyeColor2, HairStyle, LuclinFace, Beard, 0xFF,
+									DrakkinHeritage, DrakkinTattoo, DrakkinDetails);
+
+		c->Message(0,"Hair = %i", atoi(sep->arg[1]));
+	}
+}
+
+void command_haircolor(Client *c, const Seperator *sep)
+{
+	Mob *target=c->GetTarget();
+	if (!sep->IsNumber(1))
+		c->Message(0,"Usage: #haircolor [number of hair color]");
+	else if (!target)
+		c->Message(0,"Error: this command requires a target");
+	else {
+		int16 Race = target->GetRace();
+		int8 Gender = target->GetGender();
+		int8 Texture = target->GetTexture();
+		int8 HelmTexture = target->GetHelmTexture();
+		int8 HairColor = atoi(sep->arg[1]);
+		int8 BeardColor = target->GetBeardColor();
+		int8 EyeColor1 = target->GetEyeColor1();
+		int8 EyeColor2 = target->GetEyeColor2();
+		int8 HairStyle = target->GetHairStyle();
+		int8 LuclinFace = target->GetLuclinFace();
+		int8 Beard = target->GetBeard();
+		int32 DrakkinHeritage = target->GetDrakkinHeritage();
+		int32 DrakkinTattoo = target->GetDrakkinTattoo();
+		int32 DrakkinDetails = target->GetDrakkinDetails();
+
+		target->SendIllusionPacket(Race, Gender, Texture, HelmTexture, HairColor, BeardColor,
+									EyeColor1, EyeColor2, HairStyle, LuclinFace, Beard, 0xFF,
+									DrakkinHeritage, DrakkinTattoo, DrakkinDetails);
+
+		c->Message(0,"Hair Color = %i", atoi(sep->arg[1]));
+	}
+}
+
+void command_beard(Client *c, const Seperator *sep)
+{
+	Mob *target=c->GetTarget();
+	if (!sep->IsNumber(1))
+		c->Message(0,"Usage: #beard [number of beard style]");
+	else if (!target)
+		c->Message(0,"Error: this command requires a target");
+	else {
+		int16 Race = target->GetRace();
+		int8 Gender = target->GetGender();
+		int8 Texture = target->GetTexture();
+		int8 HelmTexture = target->GetHelmTexture();
+		int8 HairColor = target->GetHairColor();
+		int8 BeardColor = target->GetBeardColor();
+		int8 EyeColor1 = target->GetEyeColor1();
+		int8 EyeColor2 = target->GetEyeColor2();
+		int8 HairStyle = target->GetHairStyle();
+		int8 LuclinFace = target->GetLuclinFace();
+		int8 Beard = atoi(sep->arg[1]);
+		int32 DrakkinHeritage = target->GetDrakkinHeritage();
+		int32 DrakkinTattoo = target->GetDrakkinTattoo();
+		int32 DrakkinDetails = target->GetDrakkinDetails();
+
+		target->SendIllusionPacket(Race, Gender, Texture, HelmTexture, HairColor, BeardColor,
+									EyeColor1, EyeColor2, HairStyle, LuclinFace, Beard, 0xFF,
+									DrakkinHeritage, DrakkinTattoo, DrakkinDetails);
+
+		c->Message(0,"Beard = %i", atoi(sep->arg[1]));
+	}
+}
+
+void command_beardcolor(Client *c, const Seperator *sep)
+{
+	Mob *target=c->GetTarget();
+	if (!sep->IsNumber(1))
+		c->Message(0,"Usage: #beardcolor [number of beard color]");
+	else if (!target)
+		c->Message(0,"Error: this command requires a target");
+	else {
+		int16 Race = target->GetRace();
+		int8 Gender = target->GetGender();
+		int8 Texture = target->GetTexture();
+		int8 HelmTexture = target->GetHelmTexture();
+		int8 HairColor = target->GetHairColor();
+		int8 BeardColor = atoi(sep->arg[1]);
+		int8 EyeColor1 = target->GetEyeColor1();
+		int8 EyeColor2 = target->GetEyeColor2();
+		int8 HairStyle = target->GetHairStyle();
+		int8 LuclinFace = target->GetLuclinFace();
+		int8 Beard = target->GetBeard();
+		int32 DrakkinHeritage = target->GetDrakkinHeritage();
+		int32 DrakkinTattoo = target->GetDrakkinTattoo();
+		int32 DrakkinDetails = target->GetDrakkinDetails();
+
+		target->SendIllusionPacket(Race, Gender, Texture, HelmTexture, HairColor, BeardColor,
+									EyeColor1, EyeColor2, HairStyle, LuclinFace, Beard, 0xFF,
+									DrakkinHeritage, DrakkinTattoo, DrakkinDetails);
+
+		c->Message(0,"Beard Color = %i", atoi(sep->arg[1]));
+	}
 }
 
 void command_scribespells(Client *c, const Seperator *sep)

@@ -1160,17 +1160,16 @@ ENCODE(OP_Illusion) {
 	OUT(unknown006[1]);
 	OUT(gender);
 	OUT(texture);
-	eq->unknown008 = 0;		//
-	eq->unknown009 = 0;		//
 	OUT(helmtexture);
-	eq->unknown010 = 0;		//
-	eq->unknown011 = 0;		//
-	eq->unknown012 = 0;		//
-	OUT(face);				// This doesn't set face yet.  Illusion function needs to be corrected
-	eq->hairstyle = 0;		// hairstyle
-	eq->haircolor = 1;		// haircolor
-	eq->beard = 1;			// beard
-	eq->beardcolor = 1;		// beardcolor
+	OUT(face);
+	OUT(hairstyle);
+	OUT(haircolor);
+	OUT(beard);
+	OUT(beardcolor);
+	OUT(drakkin_heritage);
+	OUT(drakkin_tattoo);
+	OUT(drakkin_details);
+
 	FINISH_ENCODE();
 }
 
