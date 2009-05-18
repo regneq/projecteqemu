@@ -1,5 +1,6 @@
 ALTER TABLE `rule_values` ADD `notes` text NOT NULL AFTER `rule_value`;
 
+
 UPDATE `rule_values` SET notes = 'notation' WHERE rule_name = 'Character:MaxLevel';
 UPDATE `rule_values` SET notes = 'Sets the Max Level attainable via Experience' WHERE rule_name = 'Character:MaxExpLevel';	
 UPDATE `rule_values` SET notes = 'notation' WHERE rule_name = 'Character:DeathExpLossLevel';
@@ -17,7 +18,7 @@ UPDATE `rule_values` SET notes = '0=disabled' WHERE rule_name = 'Character:Autos
 UPDATE `rule_values` SET notes = 'notation' WHERE rule_name = 'Character:HPRegenMultiplier';
 UPDATE `rule_values` SET notes = 'notation' WHERE rule_name = 'Character:ManaRegenMultiplier';
 UPDATE `rule_values` SET notes = 'notation' WHERE rule_name = 'Character:EnduranceRegenMultiplier';
-UPDATE `rule_values` SET notes = 'item's hunger restored = this value * item's food level:100 = normal:50 = people eat 2x as fast:200 = people eat 2x as slow' WHERE rule_name = 'Character:ConsumptionMultiplier';	
+UPDATE `rule_values` SET notes = 'item\'s hunger restored = this value * item\'s food level:100 = normal:50 = people eat 2x as fast:200 = people eat 2x as slow' WHERE rule_name = 'Character:ConsumptionMultiplier';	
 UPDATE `rule_values` SET notes = 'notation' WHERE rule_name = 'Character:HealOnLevel';
 UPDATE `rule_values` SET notes = 'notation' WHERE rule_name = 'Character:FeignKillsPet';
 UPDATE `rule_values` SET notes = 'notation' WHERE rule_name = 'Character:ItemManaRegenCap';
@@ -36,7 +37,6 @@ UPDATE `rule_values` SET notes = 'off by default to prevent duping for now' WHER
 UPDATE `rule_values` SET notes = 'notation' WHERE rule_name = 'Character:BindAnywhere';
 UPDATE `rule_values` SET notes = 'Set to >0 to enable rest state bonus HP and mana regen.' WHERE rule_name = 'Character:RestRegenPercent';	 
 UPDATE `rule_values` SET notes = 'Time in seconds for rest state regen to kick in.' WHERE rule_name = 'Character:RestRegenTimeToActivate';	 
-
 
 UPDATE `rule_values` SET notes = 'Max number of members allowed in a single guild' WHERE rule_name = 'Guild:MaxMembers';
 UPDATE `rule_values` SET notes = 'Highest skill level that tradeskills can be trained to from GM Trainers' WHERE rule_name = 'Skills:MaxTrainTradeskills';
@@ -64,7 +64,7 @@ UPDATE `rule_values` SET notes = 'Sets the Starting Zone for SoF Clients separat
 
 UPDATE `rule_values` SET notes = 'ms between intervals of sending a position update to the entire zone.' WHERE rule_name = 'Zone: NPCGlobalPositionUpdateInterval';	
 UPDATE `rule_values` SET notes = 'the time a client remains link dead on the server after a sudden disconnection' WHERE rule_name = 'Zone: ClientLinkdeadMS';	
-UPDATE `rule_values` SET notes = 'ms time until a player corpse is moved to a zone's graveyard:if one is specified for the zone' WHERE rule_name = 'Zone: GraveyardTimeMS';	
+UPDATE `rule_values` SET notes = 'ms time until a player corpse is moved to a zone\'s graveyard:if one is specified for the zone' WHERE rule_name = 'Zone: GraveyardTimeMS';	
 UPDATE `rule_values` SET notes = ' enables or disables the shadowrest zone feature for player corpses. Default is turned off.' WHERE rule_name = 'Zone:EnableShadowrest';	
 UPDATE `rule_values` SET notes = 'Required status level to exempt the MQWarpDetector.  Set to -1 to disable this feature.' WHERE rule_name = 'Zone:MQWarpExemptStatus';	
 UPDATE `rule_values` SET notes = 'Required status level to exempt the MQZoneDetector.  Set to -1 to disable this feature.' WHERE rule_name = 'Zone:MQZoneExemptStatus';	
@@ -90,7 +90,7 @@ UPDATE `rule_values` SET notes = 'while loading each waypoint: max change in Z t
 
 UPDATE `rule_values` SET notes = 'Does not apply BestZ as waypoints are loaded if they are in water' WHERE rule_name = 'Watermap:CheckWaypointsInWaterWhenLoading';	 
 UPDATE `rule_values` SET notes = 'Check if a mob has moved into/out of water when at waypoints and sets flymode' WHERE rule_name = 'Watermap:CheckForWaterAtWaypoints'; 		 
-UPDATE `rule_values` SET notes = 'Checks if a mob has moved into/out of water each time it's loc is recalculated' WHERE rule_name = 'Watermap:CheckForWaterWhenMoving';		 
+UPDATE `rule_values` SET notes = 'Checks if a mob has moved into/out of water each time it\'s loc is recalculated' WHERE rule_name = 'Watermap:CheckForWaterWhenMoving';		 
 UPDATE `rule_values` SET notes = 'Checks if a mob has moved into/out of water on SendTo' WHERE rule_name = 'Watermap:CheckForWaterOnSendTo';		 
 UPDATE `rule_values` SET notes = 'Only lets a player fish near water (if a water map exists for the zone)' WHERE rule_name = 'Watermap:CheckForWaterWhenFishing';		 
 UPDATE `rule_values` SET notes = 'How far in front of player water must be for fishing to work' WHERE rule_name = 'Watermap:FishingRodLength';			 
@@ -104,21 +104,21 @@ UPDATE `rule_values` SET notes = 'The chance when a fear spell is resisted that 
 UPDATE `rule_values` SET notes = 'base % chance that everyone has to crit a spell' WHERE rule_name = 'Spells:BaseCritChance';	
 UPDATE `rule_values` SET notes = 'base % bonus to damage on a successful spell crit. 100 = 2x damage' WHERE rule_name = 'Spells:BaseCritRatio';	
 UPDATE `rule_values` SET notes = 'level wizards first get spell crits' WHERE rule_name = 'Spells:WizCritLevel';	
-UPDATE `rule_values` SET notes = 'wiz's crit chance:on top of BaseCritChance' WHERE rule_name = 'Spells:WizCritChance';	
-UPDATE `rule_values` SET notes = 'wiz's crit bonus:on top of BaseCritRatio (should be 0 for Live-like)' WHERE rule_name = 'Spells:WizCritRatio';	
+UPDATE `rule_values` SET notes = 'wiz\'s crit chance:on top of BaseCritChance' WHERE rule_name = 'Spells:WizCritChance';	
+UPDATE `rule_values` SET notes = 'wiz\'s crit bonus:on top of BaseCritRatio (should be 0 for Live-like)' WHERE rule_name = 'Spells:WizCritRatio';	
 UPDATE `rule_values` SET notes = '8.5 resist per level difference.' WHERE rule_name = 'Spells:ResistPerLevelDiff';	
 UPDATE `rule_values` SET notes = 'If not zero:time in seconds to accept a Translocate.' WHERE rule_name = 'Spells:TranslocateTimeLimit';	 
 
 UPDATE `rule_values` SET notes = 'The base crit chance for non warriors:NOTE: This will apply to NPCs as well' WHERE rule_name = 'Combat:BaseCritChance';	
 UPDATE `rule_values` SET notes = 'The base crit chance for warriors and berserkers:only applies to clients' WHERE rule_name = 'Combat:WarBerBaseCritChance';	
-UPDATE `rule_values` SET notes = 'The bonus base crit chance you get when you're berserk' WHERE rule_name = 'Combat:BerserkBaseCritChance';	
+UPDATE `rule_values` SET notes = 'The bonus base crit chance you get when you\'re berserk' WHERE rule_name = 'Combat:BerserkBaseCritChance';	
 UPDATE `rule_values` SET notes = 'The level that npcs can KICK/BASH' WHERE rule_name = 'Combat:NPCBashKickLevel';	
-UPDATE `rule_values` SET notes = 'The base crit chance for all clients:this will stack with warrior's/zerker's crit chance.' WHERE rule_name = 'Combat:ClientBaseCritChance';	
+UPDATE `rule_values` SET notes = 'The base crit chance for all clients:this will stack with warrior\'s/zerker\'s crit chance.' WHERE rule_name = 'Combat:ClientBaseCritChance';	
 UPDATE `rule_values` SET notes = 'notation' WHERE rule_name = 'Combat:UseIntervalAC';
 UPDATE `rule_values` SET notes = 'notation' WHERE rule_name = 'Combat:PetAttackMagicLevel';
 UPDATE `rule_values` SET notes = 'notation' WHERE rule_name = 'Combat:EnableFearPathing';
 UPDATE `rule_values` SET notes = 'notation' WHERE rule_name = 'Combat:FleeHPRatio';
-UPDATE `rule_values` SET notes = 'If false:mobs won't flee if other mobs are in combat with it.' WHERE rule_name = 'Combat:FleeIfNotAlone';	 
+UPDATE `rule_values` SET notes = 'If false:mobs won\'t flee if other mobs are in combat with it.' WHERE rule_name = 'Combat:FleeIfNotAlone';	 
 UPDATE `rule_values` SET notes = 'notation' WHERE rule_name = 'Combat:AdjustProcPerMinute';
 UPDATE `rule_values` SET notes = 'notation' WHERE rule_name = 'Combat:AvgProcsPerMinute';
 UPDATE `rule_values` SET notes = 'notation' WHERE rule_name = 'Combat:ProcPerMinDexContrib';
@@ -127,9 +127,9 @@ UPDATE `rule_values` SET notes = 'notation' WHERE rule_name = 'Combat:ProcDexDiv
 UPDATE `rule_values` SET notes = 'notation' WHERE rule_name = 'Combat:BaseHitChance';
 UPDATE `rule_values` SET notes = 'hit will fall off up to 5% over the initial level range' WHERE rule_name = 'Combat:HitFalloffMinor';	
 UPDATE `rule_values` SET notes = 'hit will fall off up to 7% over the three levels after the initial level range' WHERE rule_name = 'Combat:HitFalloffModerate';	
-UPDATE `rule_values` SET notes = 'hit will fall off sharply if we're outside the minor and moderate range' WHERE rule_name = 'Combat:HitFalloffMajor';	
+UPDATE `rule_values` SET notes = 'hit will fall off sharply if we\'re outside the minor and moderate range' WHERE rule_name = 'Combat:HitFalloffMajor';	
 UPDATE `rule_values` SET notes = 'You gain this % of hit for every level you are above your target' WHERE rule_name = 'Combat:HitBonusPerLevel';	
-UPDATE `rule_values` SET notes = 'For every weapon skill point that's not maxed you lose this % of hit' WHERE rule_name = 'Combat:WeaponSkillFalloff';	
+UPDATE `rule_values` SET notes = 'For every weapon skill point that\'s not maxed you lose this % of hit' WHERE rule_name = 'Combat:WeaponSkillFalloff';	
 UPDATE `rule_values` SET notes = 'Archery has a hit penalty to try to help balance it with the plethora of long term +hit modifiers for it' WHERE rule_name = 'Combat:ArcheryHitPenalty';	
 UPDATE `rule_values` SET notes = 'notation' WHERE rule_name = 'Combat:AgiHitFactor'; 
 UPDATE `rule_values` SET notes = 'Minimum Distance to use Ranged Attacks ' WHERE rule_name = 'Combat:MinRangedAttackDist';	
@@ -158,7 +158,7 @@ UPDATE `rule_values` SET notes = 'notation' WHERE rule_name = 'Aggro:PetSpellAgg
 UPDATE `rule_values` SET notes = 'notation' WHERE rule_name = 'Aggro:StunAggroMod';
 
 UPDATE `rule_values` SET notes = 'Globally enable or disable the Task system' WHERE rule_name = 'TaskSystem:EnableTaskSystem';	 
-UPDATE `rule_values` SET notes = 'Seconds between checks for failed tasks. Also used by the 'Touch' activity' WHERE rule_name = 'TaskSystem:PeriodicCheckTimer';	 
+UPDATE `rule_values` SET notes = 'Seconds between checks for failed tasks. Also used by the \'Touch\' activity' WHERE rule_name = 'TaskSystem:PeriodicCheckTimer';	 
 UPDATE `rule_values` SET notes = 'notation' WHERE rule_name = 'TaskSystem:RecordCompletedTasks';
 UPDATE `rule_values` SET notes = 'notation' WHERE rule_name = 'TaskSystem:RecordCompletedOptionalActivities';
 UPDATE `rule_values` SET notes = 'notation' WHERE rule_name = 'TaskSystem:KeepOneRecordPerCompletedTask';
@@ -205,4 +205,4 @@ UPDATE `rule_values` SET notes = 'Required status to list all chat channels' WHE
 UPDATE `rule_values` SET notes = 'Empty password protected channels will be deleted after this many minutes' WHERE rule_name = 'Channels:DeleteTimer';	 
 
 UPDATE `rule_values` SET notes = 'Record sales from a player to an NPC merchant in eventlog table' WHERE rule_name = 'EventLog:RecordSellToMerchant';	 
-UPDATE `rule_values` SET notes = 'Record purchases by a player from an NPC merchant in eventlog table' WHERE rule_name = 'EventLog:RecordBuyFromMerchant';	 
+UPDATE `rule_values` SET notes = 'Record purchases by a player from an NPC merchant in eventlog table' WHERE rule_name = 'EventLog:RecordBuyFromMerchant';

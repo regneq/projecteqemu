@@ -1785,7 +1785,7 @@ struct Illusion_Struct {  //size: 256
 /*000*/	uint32	spawnid;
 /*004*/	char charname[64];		//fix for 7-14-04 patch
 /*068*/	uint16	race;			// race
-/*070*/	char	unknown006[2];
+/*070*/	char	unknown006[2];	// Weird green name
 /*072*/	uint8	gender;
 /*073*/	uint8	texture;
 /*074*/	uint8	unknown008;		//
@@ -1797,9 +1797,14 @@ struct Illusion_Struct {  //size: 256
 /*080*/	uint32	face;			// Verified
 /*084*/	uint8	hairstyle;		// Verified
 /*085*/	uint8	haircolor;		// Verified
-/*085*/	uint8	beard;			// Verified
+/*086*/	uint8	beard;			// Verified
 /*087*/	uint8	beardcolor;		// Verified
-/*088*/	uint8	unknown021[168]; //was char	unknown020[176];
+/*088*/ int32	unknown088;		// small and in world
+/*092*/	uint8	unknown021[148];
+/*240*/ int32	unknown240;		// Removes armor?
+/*244*/ int32	drakkin_heritage;	// Verified
+/*248*/ int32	drakkin_tattoo;		// Verified
+/*252*/ int32	drakkin_details;	// Verified
 /*256*/
 };
 
