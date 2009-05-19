@@ -1,5 +1,13 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/19/2009==
+Trevius: Identified hairstyle, haircolor, beard, and beardcolor in the Titanium Illusion struct so the related commands now work in Titanium.
+
+==05/18/2009==
+Trevius: New Commands added: #face, #helm, #hair, #haircolor, #beard, #beardcolor, #heritage, #tattoo, #details
+Trevius: Adjusted the #fixmob command to use all features.  The new format is "#fixmob featurename prev/next"
+Trevius: Corrected the R524 optional SQL file
+
 ==05/16/2009==
 Trevius: (Shendare) Added armor tinting functionality for NPCs by setting it in the npc_types table
 Trevius: Added base support for illusions to use all facial features, but functionality still needs to be added.

@@ -523,6 +523,7 @@ bool logpos;
 	inline int8	GetDrakkinHeritage()		const { return drakkin_heritage; }
 	inline int8	GetDrakkinTattoo()			const { return drakkin_tattoo; }
 	inline int8	GetDrakkinDetails()			const { return drakkin_details; }
+	inline int32	GetArmorTint()			const { return armor_tint; }
 	inline int8	GetClass()					const { return class_; }
 	inline uint8	GetLevel()				const { return level; }
 	inline const char*	GetName()			const { return name; }

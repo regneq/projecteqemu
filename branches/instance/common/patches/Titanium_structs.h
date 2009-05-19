@@ -1611,16 +1611,20 @@ struct AdventureRequestResponse_Struct{
 
 struct Illusion_Struct {
 /*000*/	uint32	spawnid;
-		char charname[64];		//fix for 7-14-04 patch
-/**/	uint16	race;
-/**/	char	unknown006[2];
-/**/	uint8	gender;
-/**/	uint8	texture;	
-/**/	uint8	helmtexture;
-/**/	uint8	unknown011;
-/**/	uint32	face;
-/**/	char	unknown020[88];
-/**/
+/*004*/	char	charname[64];
+/*068*/	uint16	race;
+/*070*/	char	unknown070[2];
+/*072*/	uint8	gender;
+/*073*/	uint8	texture;	
+/*074*/	uint8	helmtexture;
+/*075*/	uint8	unknown075;
+/*076*/	uint32	face;
+/*080*/	uint8	hairstyle;
+/*081*/	uint8	haircolor;
+/*082*/	uint8	beard;
+/*083*/	uint8	beardcolor;
+/*084*/	char	unknown084[84];
+/*168*/
 };
 
 struct ZonePoint_Entry {
