@@ -69,7 +69,7 @@ void Corpse::SendLootReqErrorPacket(Client* client, int8 response) {
 }
 
 Corpse* Corpse::LoadFromDBData(int32 in_dbid, int32 in_charid, char* in_charname, uchar* in_data, int32 in_datasize, float in_x, float in_y, float in_z, float in_heading, char* timeofdeath, bool rezzed, bool wasAtGraveyard) {
-	if (in_datasize < sizeof(DBPlayerCorpse_Struct)) {
+	if (in_datasize < sizeof(classic_db::DBPlayerCorpse_Struct)) {
 		cout << "Corpse::LoadFromDBData: Corrupt data: in_datasize < sizeof(DBPlayerCorpse_Struct)" << endl;
 		return 0;
 	}
