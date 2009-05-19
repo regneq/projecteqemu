@@ -1416,19 +1416,12 @@ void	Client::SetBandolier(const EQApplicationPacket *app) {
 		if(m_pp.bandoliers[bss->number].items[BandolierSlot].item_id) {
 			WeaponSlot = BandolierSlotToWeaponSlot(BandolierSlot);
 
-			// Check if the weapon is already in the required slot, otherwise things go wrong if the player
-			// is dual wielding two of the same weapon.
-			ItemInst *InvItem = m_inv.GetItem(WeaponSlot);
-			bool WeaponAlreadyInPlace = false;
-			if(InvItem && (InvItem->GetItem()->ID == m_pp.bandoliers[bss->number].items[BandolierSlot].item_id))
-				WeaponAlreadyInPlace = true;
-
 			// Check if the player has the item specified in the bandolier set on them.
 			//
 			slot = m_inv.HasItem(m_pp.bandoliers[bss->number].items[BandolierSlot].item_id, 1, 
 					     invWhereWorn|invWherePersonal|invWhereCursor);
 			// if the player has this item in their inventory, and it is not already where it needs to be
-			if(!WeaponAlreadyInPlace && (slot != SLOT_INVALID)) {
+			if(slot != SLOT_INVALID) {
 				// Pull the item out of the inventory
 				BandolierItems[BandolierSlot] = m_inv.PopItem(slot);
 				// If ammo with charges, only take one charge out to put in the range slot, that is what
