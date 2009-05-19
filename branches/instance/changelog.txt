@@ -2,6 +2,10 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==05/19/2009==
 Trevius: Identified hairstyle, haircolor, beard, and beardcolor in the Titanium Illusion struct so the related commands now work in Titanium.
+KLS: PvP info will only be set if the server type is set to 1 (pvp)
+KLS: Adjusted chances on dodge/parry/riposte modifiers
+KLS: Made experience con scaling into a rule.
+KLS: Added Rules: (Character, UseXPConScaling), (Character, LightBlueModifier), (Character, BlueModifier), (Character, WhiteModifier), (Character, YellowModifier), (Character, RedModifier)
 
 ==05/18/2009==
 Trevius: New Commands added: #face, #helm, #hair, #haircolor, #beard, #beardcolor, #heritage, #tattoo, #details

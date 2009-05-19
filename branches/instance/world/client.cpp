@@ -108,9 +108,11 @@ void Client::SendLogServer()
 
 	if(RuleB(Chat, EnableVoiceMacros))
 		l->enablevoicemacros = 1;
-		
+	
+	if(database.GetServerType() == 1)
+		l->enable_pvp = 1;
+
 	l->enable_petition_wnd = 1;
-	l->enable_pvp = 1;
 
 	QueuePacket(outapp);
 	safe_delete(outapp);

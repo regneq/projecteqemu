@@ -473,8 +473,8 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage)
 		}
 		
 		if (!ghit) {	//if they are not using a garunteed hit discipline
-			bonus = (defender->spellbonuses.RiposteChance + defender->itembonuses.RiposteChance);
-			bonus += 2.0 + skill/35.0 + (GetDEX()/200);
+			bonus = 2.0 + skill/35.0 + (GetDEX()/200);
+			bonus = bonus * (defender->spellbonuses.RiposteChance + defender->itembonuses.RiposteChance) / 100.0f;
 			RollTable[0] = bonus;
 		}
 	}
@@ -561,9 +561,9 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage)
 				this->CastToClient()->CheckIncreaseSkill(PARRY, -10); 
 		}
 		
-		bonus = (defender->spellbonuses.ParryChance + defender->itembonuses.ParryChance) / 100.0f;
 		if (!ghit) {	//if they are not using a garunteed hit discipline
-			bonus += 2.0 + skill/35.0 + (GetDEX()/200);
+			bonus = 2.0 + skill/35.0 + (GetDEX()/200);
+			bonus = bonus * (defender->spellbonuses.ParryChance + defender->itembonuses.ParryChance) / 100.0f;
 			RollTable[2] = RollTable[1] + bonus;
 		}
 	}
@@ -583,9 +583,9 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage)
 				this->CastToClient()->CheckIncreaseSkill(DODGE, -10);
 		}
 		
-		bonus = (defender->spellbonuses.DodgeChance + defender->itembonuses.DodgeChance) / 100.0f;
 		if (!ghit) {	//if they are not using a garunteed hit discipline
-			bonus += 2.0 + skill/35.0 + (GetAGI()/200);
+			bonus = 2.0 + skill/35.0 + (GetAGI()/200);
+			bonus = bonus * (defender->spellbonuses.DodgeChance + defender->itembonuses.DodgeChance) / 100.0f;
 			RollTable[3] = RollTable[2] + bonus;
 		}
 	}
@@ -710,9 +710,9 @@ void Mob::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 
 #endif //EQBOTS
 
-			attackRating = attacker->GetATK() + ((attacker->GetSTR() + attacker->GetSkill(OFFENSE)) * 9 / 10);
+			attackRating = 10 + attacker->GetATK() + ((attacker->GetSTR() + attacker->GetSkill(OFFENSE)) * 9 / 10);
 		else
-			attackRating = attacker->GetATK() + (attacker->GetSTR() * 9 / 10);
+			attackRating = 10 + attacker->GetATK() + (attacker->GetSTR() * 9 / 10);
 
 		sint32 defenseRating = defender->GetAC();
 		defenseRating += 125;
