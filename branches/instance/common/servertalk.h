@@ -699,6 +699,7 @@ struct ServerOP_Consent_Struct {
 	char ownername[64];
 	int8 permission;
 	int32 zone_id;
+	int16 instance_id;
 	int32 message_string_id;
 };
 

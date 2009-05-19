@@ -1166,6 +1166,7 @@ void WorldServer::Process() {
 				strcpy(scs->ownername, s->ownername);
 				scs->permission = s->permission;
 				scs->zone_id = s->zone_id;
+				scs->instance_id = s->instance_id;
 				scs->message_string_id = TARGET_NOT_FOUND;
 				worldserver.SendPacket(pack);
 			}

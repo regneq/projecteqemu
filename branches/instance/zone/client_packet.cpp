@@ -1160,6 +1160,7 @@ void Client::Handle_OP_Consent(const EQApplicationPacket *app)
 			scs->message_string_id = 0;
 			scs->permission = 1;
 			scs->zone_id = zone->GetZoneID();
+			scs->instance_id = zone->GetInstanceID();
 			//consent_list.push_back(scs->grantname);
 			worldserver.SendPacket(pack);
 			safe_delete(pack);
@@ -1182,6 +1183,7 @@ void Client::Handle_OP_ConsentDeny(const EQApplicationPacket *app)
 		scs->message_string_id = 0;
 		scs->permission = 0;
 		scs->zone_id = zone->GetZoneID();
+		scs->instance_id = zone->GetInstanceID();
 		//consent_list.remove(scs->grantname);
 		worldserver.SendPacket(pack);
 		safe_delete(pack);
