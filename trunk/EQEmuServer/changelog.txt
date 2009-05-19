@@ -6,6 +6,8 @@ KLS: PvP info will only be set if the server type is set to 1 (pvp)
 KLS: Adjusted chances on dodge/parry/riposte modifiers
 KLS: Made experience con scaling into a rule.
 KLS: Added Rules: (Character, UseXPConScaling), (Character, LightBlueModifier), (Character, BlueModifier), (Character, WhiteModifier), (Character, YellowModifier), (Character, RedModifier)
+Derision: Bandolier bug fix.
+Derision: Equipped items that should confer an extra potion belt slot now do so in Titanium and the 6.2 client (was already working in SoF).
 
 ==05/18/2009==
 Trevius: New Commands added: #face, #helm, #hair, #haircolor, #beard, #beardcolor, #heritage, #tattoo, #details

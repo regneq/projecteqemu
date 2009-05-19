@@ -132,7 +132,7 @@ These fields must be in the order of how they are serialized!
 /* 121 */	C("0")
 /* 122 */	I(PointType)
 /* 123 */	I(PotionBelt)
-/* 124 */	C("0")
+/* 124 */	I(PotionBeltSlots)
 /* 125 */	I(StackSize)
 /* 126 */	I(Click.Effect)
 /* 127 */	I(Click.Type)
