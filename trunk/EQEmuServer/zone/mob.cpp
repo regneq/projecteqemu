@@ -1255,6 +1255,7 @@ void Mob::SendIllusionPacket(int16 in_race, int8 in_gender, int16 in_texture, in
 	is->helmtexture = this->helmtexture;
 	is->haircolor = this->haircolor;
 	is->beardcolor = this->beardcolor;
+	is->beard = this->beard;
 	is->eyecolor1 = this->eyecolor1;
 	is->eyecolor2 = this->eyecolor2;
 	is->hairstyle = this->hairstyle;

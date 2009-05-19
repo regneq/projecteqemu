@@ -827,9 +827,21 @@ ENCODE(OP_Illusion) {
 	OUT(texture);
 	OUT(helmtexture);
 	OUT(face);
-
+	OUT(hairstyle);
+	OUT(haircolor);
+	OUT(beard);
+	OUT(beardcolor);
+	/*
+	//Test code for identifying the structure
+	uint8 ofs;
+	uint8 val;
+	ofs = emu->texture;
+	val = emu->face;
+	((uint8*)eq)[ofs % 168] = val;
+	*/
 	FINISH_ENCODE();
 }
+
 
 DECODE(OP_TraderBuy) {
 	DECODE_LENGTH_EXACT(structs::TraderBuy_Struct);
