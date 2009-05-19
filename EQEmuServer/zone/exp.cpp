@@ -60,51 +60,52 @@ void Client::AddEXP(int32 add_exp, int8 conlevel, bool resexp) {
 
 		add_exp = int32(float(add_exp) * totalmod * zemmod);
 	
-#ifdef CON_XP_SCALING
-		if (conlevel != 0xFF) {
-			switch (conlevel)
-			{
-			case CON_GREEN:
-				//Message(15,"This creature is trivial to you and offers no experience.");
-				return;
-			case CON_LIGHTBLUE:
-					add_exp = add_exp * 2/10;
-				break;
-			case CON_BLUE:
-				//if (lvldiff >= 12)
-				//	add_exp = add_exp * 6/10;
-				//else if (lvldiff > 5)
-					add_exp = add_exp * 8/10;
-				//else if (lvldiff > 3)
-				//	add_exp = add_exp * 9/10;
-				break;
-			case CON_WHITE:
-					add_exp = add_exp * 125/100;
-				break;
-			case CON_YELLOW:
-					add_exp = add_exp * 150/100;
-				break;
-			case CON_RED:
-					add_exp = add_exp * 200/100;
-				break;
+		if(RuleB(Character,UseXPConScaling))
+		{
+			if (conlevel != 0xFF && !resexp) {
+				switch (conlevel)
+				{
+					case CON_GREEN:
+						add_exp = 0;
+						add_aaxp = 0;
+						return;
+					case CON_LIGHTBLUE:
+							add_exp = add_exp * RuleI(Character, LightBlueModifier)/100;
+							add_aaxp = add_aaxp * RuleI(Character, LightBlueModifier)/100;
+						break;
+					case CON_BLUE:
+							add_exp = add_exp * RuleI(Character, BlueModifier)/100;
+							add_aaxp = add_aaxp * RuleI(Character, BlueModifier)/100;
+						break;
+					case CON_WHITE:
+							add_exp = add_exp * RuleI(Character, WhiteModifier)/100;
+							add_aaxp = add_aaxp * RuleI(Character, WhiteModifier)/100;
+						break;
+					case CON_YELLOW:
+							add_exp = add_exp * RuleI(Character, YellowModifier)/100;
+							add_aaxp = add_aaxp * RuleI(Character, YellowModifier)/100;
+						break;
+					case CON_RED:
+							add_exp = add_exp * RuleI(Character, RedModifier)/100;
+							add_aaxp = add_aaxp * RuleI(Character, RedModifier)/100;
+						break;
+				}
 			}
 		}
-#endif
-
 	}	//end !resexp
 
-		float aatotalmod = 1.0;
-		if(zone->newzone_data.zone_exp_multiplier >= 0){
-			aatotalmod *= zone->newzone_data.zone_exp_multiplier;
-		}
+	float aatotalmod = 1.0;
+	if(zone->newzone_data.zone_exp_multiplier >= 0){
+		aatotalmod *= zone->newzone_data.zone_exp_multiplier;
+	}
 
-		if(GetBaseRace() == HALFLING){
-			aatotalmod *= 1.05;
-		}
+	if(GetBaseRace() == HALFLING){
+		aatotalmod *= 1.05;
+	}
 
-		if(GetClass() == ROGUE || GetClass() == WARRIOR){
-			aatotalmod *= 1.05;
-		}
+	if(GetClass() == ROGUE || GetClass() == WARRIOR){
+		aatotalmod *= 1.05;
+	}
 
 	int32 exp = GetEXP() + add_exp;
 
