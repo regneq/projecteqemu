@@ -1015,7 +1015,7 @@ void Client::RangedAttack(Mob* other) {
 
 uint16 Client::GetThrownDamage(sint16 wDmg, sint32& TotalDmg, int& minDmg)
 {
-	uint16 MaxDmg = (wDmg) * 2 + ((wDmg) * (GetDEX() + GetSkill(THROWING)) / 225);
+	uint16 MaxDmg = (((2 * wDmg) * GetDamageTable(THROWING)) / 100);
 
 	switch(GetAA(aaThrowingMastery))
 	{
@@ -1045,19 +1045,6 @@ uint16 Client::GetThrownDamage(sint16 wDmg, sint32& TotalDmg, int& minDmg)
 		minDmg += ((GetLevel()-25)/3);
 	}
 
-	int bonus = 0;
-	if(GetLevel() > 50)
-		bonus += 15;
-	if(GetLevel() >= 55)
-		bonus += 15;
-	if(GetLevel() >= 60)
-		bonus += 15;
-	if(GetLevel() >= 65)
-		bonus += 15;
-
-	TotalDmg += (TotalDmg * bonus / 100);
-	minDmg += (minDmg * bonus / 100);
-	
 	return MaxDmg;
 }
 
