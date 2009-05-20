@@ -138,7 +138,7 @@ These fields must be in the order of how they are serialized!
 /* 127 */	C("0")
 /* 128 */	I(PointType)
 /* 129 */	I(PotionBelt)
-/* 130 */	C("0")
+/* 130 */	I(PotionBeltSlots)
 /* 131 */	I(StackSize)
 /* 132 */	I(NoTransfer)
 /* 133 */	I(Stackable)
