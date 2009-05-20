@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/20/2009==
+Angelox: Bots- Bots can't stack invis-undead, invis-live, or any other invis type spell.
+
 ==05/19/2009==
 Trevius: Identified hairstyle, haircolor, beard, and beardcolor in the Titanium Illusion struct so the related commands now work in Titanium.
 KLS: PvP info will only be set if the server type is set to 1 (pvp)
@@ -8,8 +11,8 @@ KLS: Made experience con scaling into a rule.
 KLS: Added Rules: (Character, UseXPConScaling), (Character, LightBlueModifier), (Character, BlueModifier), (Character, WhiteModifier), (Character, YellowModifier), (Character, RedModifier)
 Derision: Bandolier bug fix.
 Derision: Equipped items that should confer an extra potion belt slot now do so in Titanium and the 6.2 client (was already working in SoF).
-Angelox: (Congdar) fixed Bot illusion / change form spells as to who is affected.
-Angelox: added check to Bot pacify for casting from a distance. 
+Angelox: Bots- (Congdar) fixed Bot illusion / change form spells as to who is affected.
+Angelox: Bots- added check to Bot pacify for casting from a distance. 
 
 
 ==05/18/2009==
