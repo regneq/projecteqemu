@@ -72,13 +72,8 @@ Trap::Trap() :
 
 Trap::~Trap()
 {
-	if(ownHiddenTrigger)
-	{
-		if(hiddenTrigger)
-		{
-			hiddenTrigger->Depop(false);
-		}
-	}
+	//don't need to clean up mob as traps are always cleaned up same time as NPCs
+	//cleaning up mob here can actually cause a crash via race condition
 }
 
 bool Trap::Process()

@@ -460,7 +460,19 @@ bool Mob::CalculateNewPosition2(float x, float y, float z, float speed, bool che
 					float newz = zone->map->FindBestZ(n, dest, NULL, NULL);
 					mlog(AI__WAYPOINTS, "BestZ returned %4.3f at %4.3f, %4.3f, %4.3f", newz,x_pos,y_pos,z_pos);
 					if( (newz > -2000) && ABS(newz-dest.z) < RuleR(Map, FixPathingZMaxDeltaMoving)) { // Sanity check.
-						z_pos = newz+1; 
+						if(ABS(x-x_pos) < 0.5 && ABS(y-y_pos) < 0.5)
+						{
+							if(ABS(z-z_pos) <= RuleR(Map, FixPathingZMaxDeltaMoving))
+							{
+								z_pos = z;
+							}
+							else
+								z_pos = newz+1;
+						}
+						else
+						{
+							z_pos = newz+1;
+						}
 					}
 				} 
 	        }
@@ -568,7 +580,19 @@ bool Mob::CalculateNewPosition2(float x, float y, float z, float speed, bool che
 				float newz = zone->map->FindBestZ(n, dest, NULL, NULL);
 				mlog(AI__WAYPOINTS, "BestZ returned %4.3f at %4.3f, %4.3f, %4.3f", newz,x_pos,y_pos,z_pos);
 				if( (newz > -2000) && ABS(newz-dest.z) < RuleR(Map, FixPathingZMaxDeltaMoving)) { // Sanity check.
-					z_pos = newz+1; 
+					if(ABS(x-x_pos) < 0.5 && ABS(y-y_pos) < 0.5)
+					{
+						if(ABS(z-z_pos) <= RuleR(Map, FixPathingZMaxDeltaMoving))
+						{
+							z_pos = z;
+						}
+						else
+							z_pos = newz+1;
+					}
+					else
+					{
+						z_pos = newz+1;
+					}
     			}
     	    }
 		}
@@ -671,7 +695,19 @@ bool Mob::CalculateNewPosition(float x, float y, float z, float speed, bool chec
 				float newz = zone->map->FindBestZ(n, dest, NULL, NULL);
 				mlog(AI__WAYPOINTS, "BestZ returned %4.3f at %4.3f, %4.3f, %4.3f", newz,x_pos,y_pos,z_pos);
 				if( (newz > -2000) && ABS(newz-dest.z) < RuleR(Map, FixPathingZMaxDeltaMoving)) { // Sanity check. 
-					z_pos = newz+1;
+					if(ABS(x-x_pos) < 0.5 && ABS(y-y_pos) < 0.5)
+					{
+						if(ABS(z-z_pos) <= RuleR(Map, FixPathingZMaxDeltaMoving))
+						{
+							z_pos = z;
+						}
+						else
+							z_pos = newz+1;
+					}
+					else
+					{
+						z_pos = newz+1;
+					}
 				}
 			}
 		}
