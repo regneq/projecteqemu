@@ -10290,6 +10290,7 @@ void command_bot(Client *c, const Seperator *sep) {
 					Mob *pacer = g->members[i];
                     pacer->Say("Trying to calm %s \n", target->GetCleanName());
 					pacer->CastToNPC()->Bot_Command_CalmTarget(target);
+					c->GetTarget()->CastToMob()->BotEffect(c);
 				}
 				else if(g && g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == CLERIC) && (!haspacer))
                 	{
@@ -10297,6 +10298,7 @@ void command_bot(Client *c, const Seperator *sep) {
 					Mob *pacer = g->members[i];
                     pacer->Say("Trying to calm %s \n", target->GetCleanName());
 					pacer->CastToNPC()->Bot_Command_CalmTarget(target);
+					c->GetTarget()->CastToMob()->BotEffect(c);
 			}
 		}
 			if(!haspacer) {
