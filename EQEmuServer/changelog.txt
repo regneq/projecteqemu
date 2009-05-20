@@ -8,6 +8,9 @@ KLS: Made experience con scaling into a rule.
 KLS: Added Rules: (Character, UseXPConScaling), (Character, LightBlueModifier), (Character, BlueModifier), (Character, WhiteModifier), (Character, YellowModifier), (Character, RedModifier)
 Derision: Bandolier bug fix.
 Derision: Equipped items that should confer an extra potion belt slot now do so in Titanium and the 6.2 client (was already working in SoF).
+Angelox: (Congdar) fixed Bot illusion / change form spells as to who is affected.
+Angelox: added check to Bot pacify for casting from a distance. 
+
 
 ==05/18/2009==
 Trevius: New Commands added: #face, #helm, #hair, #haircolor, #beard, #beardcolor, #heritage, #tattoo, #details
