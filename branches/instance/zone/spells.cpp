@@ -2637,34 +2637,14 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar)
 		(IsClient() && IsDetrimentalSpell(spell_id) && spelltar->IsBot()))
 		return false;
 
-	//Angelox: Determine who the Bot spell affects 
-	typedef int ae_sp_type;
-	ae_sp_type ae_sp[] = {278,42,80,235,4054};
-	int ae_sp_size = sizeof(ae_sp)/sizeof(ae_sp_type);
-	bool result2 = false;
-	for (int i=0; i<ae_sp_size; i++) {
-	   if (spell_id==ae_sp[i]) {
-	     result2 = true;
-	     break;
-  }
-}
-		if ((IsBot() && result2 && spelltar ->IsBot()) ||
-		   (IsBot() && result2 && spelltar->IsPet()))
-		   return false;
-      // So pets keep form
-	typedef int ae_sp_typeb;
-	ae_sp_type ae_spb[] = {3579,428};
-	int ae_sp_sizeb = sizeof(ae_sp)/sizeof(ae_sp_type);
-	bool result3 = false;
-	for (int i=0; i<ae_sp_sizeb; i++) {
-	   if (spell_id==ae_spb[i]) {
-	     result3 = true;
-	     break;
-  }
-}
-		if (IsBot() && result3 && spelltar->IsPet())
-		   return false;
-
+	if(IsBot() && spelltar->IsPet())
+	{
+	  for(int i=0; i<EFFECT_COUNT; ++i)
+	  {
+	     if(spells[spell_id].effectid[i] == SE_Illusion)
+		return false;
+	  }
+	}
 
 #endif //EQBOTS
 

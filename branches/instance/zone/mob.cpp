@@ -1091,6 +1091,24 @@ void Mob::ShowBuffs(Client* client) {
 	}
 }
 
+#ifdef EQBOTS //Angelox
+void Mob::BotEffect(Client* client) {
+	if (!spells_loaded)
+		return;
+	uint32 i;
+	for (i=0; i < BUFF_COUNT; i++) {
+		if ((buffs[i].spellid == 3197) ||
+		(buffs[i].spellid == 45) ||
+		(buffs[i].spellid == 47) ||
+		(buffs[i].spellid == 501) ||
+		(buffs[i].spellid == 208)) {
+		   client->Message(0, "Target pacified.");
+		}
+	}
+}
+#endif //EQBOTS	
+
+
 void Mob::ShowBuffList(Client* client) {
 	if (!spells_loaded)
 		return;

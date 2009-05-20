@@ -628,6 +628,11 @@ bool logpos;
 	uint16 GetSpecializeSkillValue(int16 spell_id) const;
 
 	void ShowStats(Client* client);
+
+#ifdef EQBOTS
+	void BotEffect(Client* client); //Angelox
+#endif //EQBOTS	
+
 	void ShowBuffs(Client* client);
 	void ShowBuffList(Client* client);
 	int32 GetNPCTypeID()			const { return npctype_id; } // rembrant, Dec. 20, 2001

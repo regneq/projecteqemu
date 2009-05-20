@@ -10422,6 +10422,7 @@ void command_bot(Client *c, const Seperator *sep) {
 					Mob *pacer = g->members[i];
                     pacer->Say("Trying to calm %s \n", target->GetCleanName());
 					pacer->CastToNPC()->Bot_Command_CalmTarget(target);
+					c->GetTarget()->CastToMob()->BotEffect(c);
 				}
 				else if(g && g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == CLERIC) && (!haspacer))
                 	{
@@ -10429,6 +10430,7 @@ void command_bot(Client *c, const Seperator *sep) {
 					Mob *pacer = g->members[i];
                     pacer->Say("Trying to calm %s \n", target->GetCleanName());
 					pacer->CastToNPC()->Bot_Command_CalmTarget(target);
+					c->GetTarget()->CastToMob()->BotEffect(c);
 			}
 		}
 			if(!haspacer) {
@@ -11274,14 +11276,14 @@ void command_bot(Client *c, const Seperator *sep) {
 					if  ((c->GetLevel() <= 14) && (!strcasecmp(sep->arg[2], "undead"))) {
 						Inviser->Say("I'm not level 14 yet.");
 					}
-					else if ((c->GetLevel() >= 14) && (!strcasecmp(sep->arg[2], "undead"))) {
+					else if ((!c->IsInvisible(c)) && (!c->invisible_undead) && (c->GetLevel() >= 14) && (!strcasecmp(sep->arg[2], "undead"))) {
 						Inviser->Say("Casting invis undead...");
 						Inviser->CastSpell(235, c->GetID(), 1, -1, -1);
 					}
 					else if  ((c->GetLevel() <= 4) && (!strcasecmp(sep->arg[2], "live"))) {
 						Inviser->Say("I'm not level 4 yet.");
 					}
-					else if ((c->GetLevel() >= 4) && (!strcasecmp(sep->arg[2], "live"))) { 
+					else if ((!c->IsInvisible(c))&& (!c->invisible_undead) && (c->GetLevel() >= 4) && (!strcasecmp(sep->arg[2], "live"))) { 
 						Inviser->Say("Casting invisibilty...");
 						Inviser->CastSpell(42, c->GetID(), 1, -1, -1);
 					}
@@ -11291,6 +11293,9 @@ void command_bot(Client *c, const Seperator *sep) {
 					else if ((c->GetLevel() >= 6) && (!strcasecmp(sep->arg[2], "see"))) { 
 						Inviser->Say("Casting see invisible...");
 						Inviser->CastSpell(80, c->GetID(), 1, -1, -1);
+					}
+					else if ((c->IsInvisible(c)) || (c->invisible_undead)) { 
+						Inviser->Say("I can't cast this if you're already invis-buffed...");
 					}
 					else {
 						Inviser->Say("Do you want [invis undead], [invis live] or [invis see] ?", c->GetName());
@@ -11303,7 +11308,7 @@ void command_bot(Client *c, const Seperator *sep) {
 					else if  ((c->GetLevel() <= 8) && (!strcasecmp(sep->arg[2], "live"))) {
 						Inviser->Say("I'm not level 8 yet.");
 					}
-					else if ((c->GetLevel() >= 8) && (!strcasecmp(sep->arg[2], "live"))) { 
+					else if ((!c->IsInvisible(c))&& (!c->invisible_undead) && (c->GetLevel() >= 8) && (!strcasecmp(sep->arg[2], "live"))) { 
 						Inviser->Say("Casting invisibilty...");
 						Inviser->CastSpell(42, c->GetID(), 1, -1, -1);
 					}
@@ -11314,6 +11319,9 @@ void command_bot(Client *c, const Seperator *sep) {
 						Inviser->Say("Casting see invisible...");
 						Inviser->CastSpell(80, c->GetID(), 1, -1, -1);
 					}
+					else if ((c->IsInvisible(c)) || (c->invisible_undead)) { 
+						Inviser->Say("I can't cast this if you're already invis-buffed...");
+					}
 					else {
 						Inviser->Say("Do you want [invis live] or [invis see] ?", c->GetName());
 					}
@@ -11322,14 +11330,14 @@ void command_bot(Client *c, const Seperator *sep) {
 					if  ((c->GetLevel() <= 39) && (!strcasecmp(sep->arg[2], "undead"))) {
 						Inviser->Say("I'm not level 39 yet.");
 					}
-					else if ((c->GetLevel() >= 39) && (!strcasecmp(sep->arg[2], "undead"))) {
+					else if ((!c->IsInvisible(c))&& (!c->invisible_undead) && (c->GetLevel() >= 39) && (!strcasecmp(sep->arg[2], "undead"))) {
 						Inviser->Say("Casting invis undead...");
 						Inviser->CastSpell(235, c->GetID(), 1, -1, -1);
 					}
 					else if  ((c->GetLevel() <= 16) && (!strcasecmp(sep->arg[2], "live"))) {
 						Inviser->Say("I'm not level 16 yet.");
 					}
-					else if ((c->GetLevel() >= 16) && (!strcasecmp(sep->arg[2], "live"))) { 
+					else if ((!c->IsInvisible(c))&& (!c->invisible_undead) && (c->GetLevel() >= 16) && (!strcasecmp(sep->arg[2], "live"))) { 
 						Inviser->Say("Casting invisibilty...");
 						Inviser->CastSpell(42, c->GetID(), 1, -1, -1);
 					}
@@ -11340,12 +11348,15 @@ void command_bot(Client *c, const Seperator *sep) {
 						Inviser->Say("Casting see invisible...");
 						Inviser->CastSpell(80, c->GetID(), 1, -1, -1);
 					}
+					else if ((c->IsInvisible(c)) || (c->invisible_undead)) { 
+						Inviser->Say("I can't cast this if you're already invis-buffed...");
+					}
 					else {
 						Inviser->Say("Do you want [invis undead], [invis live] or [invis see] ?", c->GetName());
 					}
 						break;
 				case NECROMANCER:
-					if (!strcasecmp(sep->arg[2], "undead")) {
+					if ((!c->IsInvisible(c))&& (!c->invisible_undead) && (!strcasecmp(sep->arg[2], "undead"))) {
 						Inviser->Say("Casting invis undead...");
 						Inviser->CastSpell(235, c->GetID(), 1, -1, -1);
 					}
@@ -11354,6 +11365,9 @@ void command_bot(Client *c, const Seperator *sep) {
 					}
 					else if (!strcasecmp(sep->arg[2], "live")) { 
 						Inviser->Say("I don't have that spell...");
+					}
+					else if ((c->IsInvisible(c))|| (c->invisible_undead)) { 
+						Inviser->Say("I can't cast this if you're already invis-buffed...");
 					}
 					else {
 						Inviser->Say("I only have [invis undead]", c->GetName());
@@ -11366,11 +11380,11 @@ void command_bot(Client *c, const Seperator *sep) {
 					else if  ((c->GetLevel() <= 4) && (!strcasecmp(sep->arg[2], "live"))) {
 						Inviser->Say("I'm not level 4 yet.");
 					}
-					else if ((c->GetLevel() >= 18) && (!strcasecmp(sep->arg[2], "live"))) { 
+					else if ((!c->IsInvisible(c))&& (!c->invisible_undead) && (c->GetLevel() >= 18) && (!strcasecmp(sep->arg[2], "live"))) { 
 						Inviser->Say("Casting Superior Camouflage...");
 						Inviser->CastSpell(34, c->GetID(), 1, -1, -1);
 					}
-					else if ((c->GetLevel() >= 4) && (!strcasecmp(sep->arg[2], "live")) && (zone->CanCastOutdoor())) { 
+					else if ((!c->IsInvisible(c))&& (!c->invisible_undead) && (c->GetLevel() >= 4) && (!strcasecmp(sep->arg[2], "live")) && (zone->CanCastOutdoor())) { 
 						Inviser->Say("Casting Camouflage...");
 						Inviser->CastSpell(247, c->GetID(), 1, -1, -1);
 					}
@@ -11383,6 +11397,9 @@ void command_bot(Client *c, const Seperator *sep) {
 					else if ((c->GetLevel() >= 13) && (!strcasecmp(sep->arg[2], "see"))) { 
 						Inviser->Say("Casting see invisible...");
 						Inviser->CastSpell(80, c->GetID(), 1, -1, -1);
+					}
+					else if ((c->IsInvisible(c)) || (c->invisible_undead)) { 
+						Inviser->Say("I can't cast this if you're already invis-buffed...");
 					}
 					else {
 						Inviser->Say("Do you want [invis live] or [invis see] ?", c->GetName());
