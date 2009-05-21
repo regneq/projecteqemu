@@ -1420,7 +1420,7 @@ void	Client::SetBandolier(const EQApplicationPacket *app) {
 			//
 			slot = m_inv.HasItem(m_pp.bandoliers[bss->number].items[BandolierSlot].item_id, 1, 
 					     invWhereWorn|invWherePersonal|invWhereCursor);
-			// if the player has this item in their inventory, and it is not already where it needs to be
+			// if the player has this item in their inventory,
 			if(slot != SLOT_INVALID) {
 				// Pull the item out of the inventory
 				BandolierItems[BandolierSlot] = m_inv.PopItem(slot);
@@ -1444,7 +1444,7 @@ void	Client::SetBandolier(const EQApplicationPacket *app) {
 				else	// Remove the item from the inventory
 					database.SaveInventory(character_id, 0, slot);
 			}
-			else { // The required weapon is already in place, or the player doesn't have it
+			else { // The player doesn't have the required weapon with them.
 				BandolierItems[BandolierSlot] = 0;
 				if(slot == SLOT_INVALID) {
 					_log(INVENTORY__BANDOLIER, "Character does not have required bandolier item for slot %i", WeaponSlot);

@@ -808,6 +808,7 @@ public:
 	inline EQClientVersion GetClientVersion() { return ClientVersion; }
 	void IncrementAggroCount();
 	void DecrementAggroCount();
+	void SendPVPStats();
 
 protected:
 	friend class Mob;
