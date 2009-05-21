@@ -2170,8 +2170,48 @@ void Client::Handle_OP_ItemLinkClick(const EQApplicationPacket *app)
 
 	const Item_Struct* item = database.GetItem(ivrs->item_id);
 	if (!item) {
-		Message(13, "Error: The item for the link you have clicked on does not exist!");
-		return;
+		if (ivrs->item_id > 500000)
+		{
+			char* response;
+			int sayid = ivrs->item_id - 500000;
+
+			if (sayid && sayid > 0) 
+			{
+				const char *ERR_MYSQLERROR = "Error in saylink phrase queries after clicking the link";
+				char errbuf[MYSQL_ERRMSG_SIZE];
+				char *query = 0;
+				MYSQL_RES *result;
+				MYSQL_ROW row;
+				
+
+				if(database.RunQuery(query,MakeAnyLenString(&query,"SELECT `phrase` FROM saylink WHERE `id` = '%i'", sayid),errbuf,&result))
+				{
+					if (mysql_num_rows(result) == 1)
+					{
+						row = mysql_fetch_row(result);
+						strcpy(response, row[0]);
+					}
+					mysql_free_result(result);	
+				}
+				else 
+				{
+					Message(13, "Error: The saylink (%s) was not found in the database.",response);
+					safe_delete_array(query);
+					return;
+				}
+				safe_delete_array(query);
+			}
+			
+			Message(7, "You say,'%s'",response);
+			if(this->GetTarget())
+				this->ChannelMessageReceived(8, 0, 100, response);
+			return;
+		}
+		else {
+			Message(13, "Error: The item for the link you have clicked on does not exist!");
+			return;
+		}
+
 	}
 
 	ItemInst* inst = database.CreateItem(item, item->MaxCharges, ivrs->augments[0], ivrs->augments[1], ivrs->augments[2], ivrs->augments[3], ivrs->augments[4]);

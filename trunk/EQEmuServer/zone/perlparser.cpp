@@ -2466,6 +2466,22 @@ XS(XS__varlink) {
 	XSRETURN(1);
 }
 
+XS(XS__saylink);
+XS(XS__saylink) {
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: saylink(phrase)");
+	dXSTARG;
+
+	Const_char * RETVAL;
+	char text[250];
+	strcpy(text,(char *)SvPV_nolen(ST(0)));
+
+	RETVAL = quest_manager.saylink(text);
+	sv_setpv(TARG, RETVAL); XSprePUSH; PUSHTARG;
+	XSRETURN(1);
+}
+
 /*
 This is the callback perl will look for to setup the
 quest package's XSUBs
@@ -2637,6 +2653,7 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "MerchantSetItem"), XS__MerchantSetItem, file);
 		newXS(strcpy(buf, "MerchantCountItem"), XS__MerchantCountItem, file);
 		newXS(strcpy(buf, "varlink"), XS__varlink, file);
+		newXS(strcpy(buf, "saylink"), XS__saylink, file);
 
 	XSRETURN_YES;
 }
