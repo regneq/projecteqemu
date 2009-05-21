@@ -4,6 +4,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 Angelox: Bots- Bots can't stack invis-undead, invis-live, or any other invis type spell.
 KLS: Fix for NPCs jumping in place when they have the fixpathingZ rules for movement enabled.
 KLS: Traps will no longer attempt to clean up their npcs, every time a trap is destroyed so are the NPCs so it's redundant and risky.
+Congdar: Bots - Added Magician AA Elemental Durability, Fixed #bot corpse summon, AI Tweak
 
 ==05/19/2009==
 Trevius: Identified hairstyle, haircolor, beard, and beardcolor in the Titanium Illusion struct so the related commands now work in Titanium.
