@@ -1846,3 +1846,64 @@ const char* QuestManager::varlink(char* perltext, int item_id) {
 	safe_delete_array(link);	// MakeItemLink() uses new also
 	return perltext;
 }
+
+const char* QuestManager::saylink(char* Phrase) {
+
+	const char *ERR_MYSQLERROR = "Error in saylink phrase queries";
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+	int sayid = 0;
+
+	// Query for an existing phrase and id in the saylink table
+	if(database.RunQuery(query,MakeAnyLenString(&query,"SELECT `id` FROM `saylink` WHERE `phrase` = '%s'", Phrase),errbuf,&result))
+	{
+		if (mysql_num_rows(result) >= 1)
+		{
+			while((row = mysql_fetch_row(result)))
+			{
+				sayid = atoi(row[0]);
+			}
+			mysql_free_result(result);
+		}
+		else   // Add a new saylink entry to the database and query it again for the new sayid number
+		{
+			safe_delete_array(query);
+
+			database.RunQuery(query,MakeAnyLenString(&query,"INSERT INTO `saylink` (`phrase`) VALUES ('%s')", Phrase),errbuf);
+			safe_delete_array(query);
+
+			if(database.RunQuery(query,MakeAnyLenString(&query,"SELECT `id` FROM saylink WHERE `phrase` = '%s'", Phrase),errbuf,&result))
+			{
+				if (mysql_num_rows(result) >= 1)
+				{
+					while((row = mysql_fetch_row(result)))
+					{
+						sayid = atoi(row[0]);
+					}
+					mysql_free_result(result);
+				}
+			}
+			else 
+			{
+				LogFile->write(EQEMuLog::Error, ERR_MYSQLERROR, errbuf);
+			}
+			safe_delete_array(query);
+		}
+	}
+	safe_delete_array(query);
+
+	//Create the say link as an item link hash
+	char linktext[250];
+	if (initiator->GetClientVersion() == EQClientSoF)
+	{
+		sprintf(linktext,"%c%06X%s%s%c",0x12,500000+sayid,"00000000000000000000000000000000000000000000",Phrase,0x12);
+	}
+	else
+	{
+		sprintf(linktext,"%c%06X%s%s%c",0x12,500000+sayid,"000000000000000000000000000000000000000",Phrase,0x12);
+	}
+	strcpy(Phrase,linktext);
+	return Phrase;
+}

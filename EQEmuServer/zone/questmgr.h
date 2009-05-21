@@ -200,6 +200,7 @@ public:
 	int32 MerchantCountItem(int32 NPCid, int32 itemid);
 	
 	const char* varlink(char* perltext, int item_id);
+	const char* saylink(char* Phrase);
 
 	//not in here because it retains perl types
 	//thing ChooseRandom(array_of_things)
