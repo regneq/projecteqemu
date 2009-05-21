@@ -233,3 +233,5 @@
 	void Handle_OP_VoiceMacroIn(const EQApplicationPacket *app);
 	void Handle_OP_ApplyPoison(const EQApplicationPacket *app);
 	void Handle_OP_AugmentInfo(const EQApplicationPacket *app);
+	void Handle_OP_PVPLeaderBoardRequest(const EQApplicationPacket *app);
+	void Handle_OP_PVPLeaderBoardDetailsRequest(const EQApplicationPacket *app);

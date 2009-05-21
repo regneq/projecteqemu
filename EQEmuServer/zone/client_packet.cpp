@@ -337,6 +337,8 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_VoiceMacroIn] = &Client::Handle_OP_VoiceMacroIn;
 	ConnectedOpcodes[OP_ApplyPoison] = &Client::Handle_OP_ApplyPoison;
 	ConnectedOpcodes[OP_AugmentInfo] = &Client::Handle_OP_AugmentInfo;
+	ConnectedOpcodes[OP_PVPLeaderBoardRequest] = &Client::Handle_OP_PVPLeaderBoardRequest;
+	ConnectedOpcodes[OP_PVPLeaderBoardDetailsRequest] = &Client::Handle_OP_PVPLeaderBoardDetailsRequest;
 }
 
 int Client::HandlePacket(const EQApplicationPacket *app)
@@ -7313,10 +7315,6 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 
 	////////////////////////////////////////////////////////////
 	// Task Packets
-	//TODO: send active tasks here
-	//TODO: send task history here
-	//EQApplicationPacket *taskpack = new EQApplicationPacket(OP_CompletedTasks, 4);
-	//FastQueuePacket(&taskpack);
 	LoadClientTaskState();
 
 	//////////////////////////////////////
@@ -8831,4 +8829,56 @@ void Client::Handle_OP_AugmentInfo(const EQApplicationPacket *app) {
 
 		FastQueuePacket(&outapp);
 	}
+}
+
+void Client::Handle_OP_PVPLeaderBoardRequest(const EQApplicationPacket *app)
+{
+	// This Opcode is sent by the client when the Leaderboard button on the PVP Stats window is pressed.
+	// 
+	// It has a single uint32 payload which is the sort method:
+	//
+	// PVPSortByKills = 0, PVPSortByPoints = 1, PVPSortByInfamy = 2
+	//
+	if(app->size != sizeof(PVPLeaderBoardRequest_Struct))
+	{
+		LogFile->write(EQEMuLog::Debug, "Size mismatch in OP_PVPLeaderBoardRequest expected %i got %i",
+		               sizeof(PVPLeaderBoardRequest_Struct), app->size);
+
+		DumpPacket(app);
+
+		return;
+	}
+	PVPLeaderBoardRequest_Struct *pvplbrs = (PVPLeaderBoardRequest_Struct *)app->pBuffer;
+
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_PVPLeaderBoardReply, sizeof(PVPLeaderBoard_Struct));
+	PVPLeaderBoard_Struct *pvplb = (PVPLeaderBoard_Struct *)outapp->pBuffer;
+	
+	// TODO: Record and send this data.
+	
+	QueuePacket(outapp);
+	safe_delete(outapp);
+}
+
+void Client::Handle_OP_PVPLeaderBoardDetailsRequest(const EQApplicationPacket *app)
+{
+	// This opcode is sent by the client when the player right clicks a name on the PVP leaderboard and sends
+	// further details about the selected player, e.g. Race/Class/AAs/Guild etc.
+	//
+	if(app->size != sizeof(PVPLeaderBoardDetailsRequest_Struct))
+	{
+		LogFile->write(EQEMuLog::Debug, "Size mismatch in OP_PVPLeaderBoardDetailsRequest expected %i got %i",
+		               sizeof(PVPLeaderBoardDetailsRequest_Struct), app->size);
+
+		DumpPacket(app);
+
+		return;
+	}
+
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_PVPLeaderBoardDetailsReply, sizeof(PVPLeaderBoardDetailsReply_Struct));
+	PVPLeaderBoardDetailsReply_Struct *pvplbdrs = (PVPLeaderBoardDetailsReply_Struct *)outapp->pBuffer;
+
+	// TODO: Record and send this data.
+	
+	QueuePacket(outapp);
+	safe_delete(outapp);
 }
