@@ -1521,19 +1521,6 @@ bool NPC::BotRangedAttack(Mob* other) {
 					minDmg += (2*((GetLevel()-25)/3));
 				}
 
-				int bonus = 0;
-				if(GetLevel() > 50)
-					bonus += 15;
-				if(GetLevel() >= 55)
-					bonus += 15;
-				if(GetLevel() >= 60)
-					bonus += 15;
-				if(GetLevel() >= 65)
-					bonus += 15;
-
-				TotalDmg += (TotalDmg * bonus / 100);
-				minDmg += (minDmg * bonus / 100);
-
 				other->MeleeMitigation(this, TotalDmg, minDmg);
 				ApplyMeleeDamageBonus(ARCHERY, TotalDmg);
 				TryCriticalHit(other, ARCHERY, TotalDmg);
