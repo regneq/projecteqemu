@@ -180,6 +180,9 @@ bool Mob::CastSpell(int16 spell_id, int16 target_id, int16 slot,
 
 #ifdef EQBOTS
 
+	if(IsBot() && (zone->IsSpellBlocked(spell_id, GetX(), GetY(), GetZ())))
+		return false;
+
 	if(IsBot() && (GetClass() == BARD)) {
 		// Do Nothing so Bard Bots can sing
 	}
@@ -1534,12 +1537,12 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
                 {
                     int j = bot->BotGetSpells(i);
 					// if it's a targeted heal or escape spell or pet spell or it's self only buff or self buff weapon proc, we only want to cast it once
-                    if((j == spell_id) && (((bot->BotGetSpellType(i) == 2)
-						|| (bot->BotGetSpellType(i) == 16)
-						|| (bot->BotGetSpellType(i) == 32))
-						|| ((bot->BotGetSpellType(i) == 8) && (spells[spell_id].targettype == ST_Self)))
-						|| (spells[spell_id].targettype == ST_Self)
-						)
+                    if((j == spell_id) &&
+						(((bot->BotGetSpellType(i) == 2) ||
+						(bot->BotGetSpellType(i) == 16) ||
+						(bot->BotGetSpellType(i) == 32)) ||
+						((bot->BotGetSpellType(i) == 8) && (spells[spell_id].targettype == ST_Self))) ||
+						((spells[spell_id].targettype == ST_Self) && (slot == USE_ITEM_SPELL_SLOT)))
                     {
                         SpellOnTarget(spell_id, spell_target);
                         noGroupSpell = true;

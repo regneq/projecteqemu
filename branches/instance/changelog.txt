@@ -1,9 +1,15 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/21/2009==
+Trevius: Added new quest command quest::saylink() to create itemlinks in quest text that can be clicked for a response
+
+Recommended SQL: .\utils\sql\svn\553_saylink_table.sql
+
 ==05/20/2009==
 Angelox: Bots- Bots can't stack invis-undead, invis-live, or any other invis type spell.
 KLS: Fix for NPCs jumping in place when they have the fixpathingZ rules for movement enabled.
 KLS: Traps will no longer attempt to clean up their npcs, every time a trap is destroyed so are the NPCs so it's redundant and risky.
+Congdar: Bots - Added Magician AA Elemental Durability, Fixed #bot corpse summon, AI Tweak
 
 ==05/19/2009==
 Trevius: Identified hairstyle, haircolor, beard, and beardcolor in the Titanium Illusion struct so the related commands now work in Titanium.
@@ -32,6 +38,8 @@ KLS: Enabled both petition window 'p' and pvp window 'ctrl p' on titanium/sof; n
 Congdar: Bots - fix compile error and update to current combat code
 Congdar: Bots - fix pet exploit
 KLS: Added backward compatibility to older corpses.
+
+Required SQL: .\utils\sql\svn\527_npc_armor_tint.sql
 
 ==05/15/2009==
 Trevius: (Trevius/Shendare) Swapped Beardcolor and Beard in the spawn struct for Titanium and Titanium Facial Features should be finalized now.

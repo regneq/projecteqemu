@@ -199,7 +199,8 @@ void Mob::BOT_Process() {
 					BotMeditate(false);
 				}
 				else {
-					BotRangedAttack(target);
+					if(target->GetHPRatio() < 98)
+						BotRangedAttack(target);
 				}
 			}
 
@@ -254,7 +255,7 @@ void Mob::BOT_Process() {
 							}
 						}
 						if(rand()%1000 < flurrychance) {
-							Message_StringID(MT_CritMelee, 128);
+							Message_StringID(MT_Flurry, 128);
 							BotAttackMelee(target, SLOT_PRIMARY, true);
 							BotAttackMelee(target, SLOT_PRIMARY, true);
 						}
@@ -687,11 +688,11 @@ bool NPC::Bot_AI_IdleCastCheck() {
 		int8 botClass = GetClass();
 		if(botClass == CLERIC || botClass == PALADIN || botClass == RANGER)
 		{
-			if (!Bot_AICastSpell(this, 100, SpellType_Heal | SpellType_Buff))
+			if (!Bot_AICastSpell(this, 50, SpellType_Heal | SpellType_Buff))
 			{
 				if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 100, MobAISpellRange, SpellType_Heal))
 				{
-					if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 100, MobAISpellRange, SpellType_Buff))
+					if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 50, MobAISpellRange, SpellType_Buff))
 					{
 						AIautocastspell_timer->Start(RandomTimer(1000, 5000), false);
 						return(true);
@@ -704,11 +705,11 @@ bool NPC::Bot_AI_IdleCastCheck() {
 		{			
 			if (!Bot_AICastSpell(this, 100, SpellType_Pet))
 			{
-				if (!Bot_AICastSpell(this, 100, SpellType_Heal | SpellType_Buff))
+				if (!Bot_AICastSpell(this, 50, SpellType_Heal | SpellType_Buff))
 				{
 					if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 100, MobAISpellRange, SpellType_Heal))
 					{
-						if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 100, MobAISpellRange, SpellType_Buff)) // then buff the group
+						if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 50, MobAISpellRange, SpellType_Buff)) // then buff the group
 						{
 							AIautocastspell_timer->Start(RandomTimer(1000, 5000), false);
 							return(true);
@@ -729,7 +730,7 @@ bool NPC::Bot_AI_IdleCastCheck() {
 		else {
 			if (!Bot_AICastSpell(this, 100, SpellType_Heal | SpellType_Buff | SpellType_Pet))
 			{
-				if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 100, MobAISpellRange, SpellType_Heal | SpellType_Buff)) {
+				if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 50, MobAISpellRange, SpellType_Heal | SpellType_Buff)) {
 					AIautocastspell_timer->Start(RandomTimer(1000, 5000), false);
 					return true;
 				}

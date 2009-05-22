@@ -337,6 +337,8 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_VoiceMacroIn] = &Client::Handle_OP_VoiceMacroIn;
 	ConnectedOpcodes[OP_ApplyPoison] = &Client::Handle_OP_ApplyPoison;
 	ConnectedOpcodes[OP_AugmentInfo] = &Client::Handle_OP_AugmentInfo;
+	ConnectedOpcodes[OP_PVPLeaderBoardRequest] = &Client::Handle_OP_PVPLeaderBoardRequest;
+	ConnectedOpcodes[OP_PVPLeaderBoardDetailsRequest] = &Client::Handle_OP_PVPLeaderBoardDetailsRequest;
 }
 
 int Client::HandlePacket(const EQApplicationPacket *app)
@@ -2170,8 +2172,48 @@ void Client::Handle_OP_ItemLinkClick(const EQApplicationPacket *app)
 
 	const Item_Struct* item = database.GetItem(ivrs->item_id);
 	if (!item) {
-		Message(13, "Error: The item for the link you have clicked on does not exist!");
-		return;
+		if (ivrs->item_id > 500000)
+		{
+			char response[64];
+			int sayid = ivrs->item_id - 500000;
+
+			if (sayid && sayid > 0) 
+			{
+				const char *ERR_MYSQLERROR = "Error in saylink phrase queries after clicking the link";
+				char errbuf[MYSQL_ERRMSG_SIZE];
+				char *query = 0;
+				MYSQL_RES *result;
+				MYSQL_ROW row;
+				
+
+				if(database.RunQuery(query,MakeAnyLenString(&query,"SELECT `phrase` FROM saylink WHERE `id` = '%i'", sayid),errbuf,&result))
+				{
+					if (mysql_num_rows(result) == 1)
+					{
+						row = mysql_fetch_row(result);
+						strcpy(response, row[0]);
+					}
+					mysql_free_result(result);	
+				}
+				else 
+				{
+					Message(13, "Error: The saylink (%s) was not found in the database.",response);
+					safe_delete_array(query);
+					return;
+				}
+				safe_delete_array(query);
+			}
+			
+			Message(7, "You say,'%s'",response);
+			if(this->GetTarget())
+				this->ChannelMessageReceived(8, 0, 100, response);
+			return;
+		}
+		else {
+			Message(13, "Error: The item for the link you have clicked on does not exist!");
+			return;
+		}
+
 	}
 
 	ItemInst* inst = database.CreateItem(item, item->MaxCharges, ivrs->augments[0], ivrs->augments[1], ivrs->augments[2], ivrs->augments[3], ivrs->augments[4]);
@@ -7277,10 +7319,6 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 
 	////////////////////////////////////////////////////////////
 	// Task Packets
-	//TODO: send active tasks here
-	//TODO: send task history here
-	//EQApplicationPacket *taskpack = new EQApplicationPacket(OP_CompletedTasks, 4);
-	//FastQueuePacket(&taskpack);
 	LoadClientTaskState();
 
 	//////////////////////////////////////
@@ -8832,4 +8870,56 @@ void Client::Handle_OP_AugmentInfo(const EQApplicationPacket *app) {
 
 		FastQueuePacket(&outapp);
 	}
+}
+
+void Client::Handle_OP_PVPLeaderBoardRequest(const EQApplicationPacket *app)
+{
+	// This Opcode is sent by the client when the Leaderboard button on the PVP Stats window is pressed.
+	// 
+	// It has a single uint32 payload which is the sort method:
+	//
+	// PVPSortByKills = 0, PVPSortByPoints = 1, PVPSortByInfamy = 2
+	//
+	if(app->size != sizeof(PVPLeaderBoardRequest_Struct))
+	{
+		LogFile->write(EQEMuLog::Debug, "Size mismatch in OP_PVPLeaderBoardRequest expected %i got %i",
+		               sizeof(PVPLeaderBoardRequest_Struct), app->size);
+
+		DumpPacket(app);
+
+		return;
+	}
+	PVPLeaderBoardRequest_Struct *pvplbrs = (PVPLeaderBoardRequest_Struct *)app->pBuffer;
+
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_PVPLeaderBoardReply, sizeof(PVPLeaderBoard_Struct));
+	PVPLeaderBoard_Struct *pvplb = (PVPLeaderBoard_Struct *)outapp->pBuffer;
+	
+	// TODO: Record and send this data.
+	
+	QueuePacket(outapp);
+	safe_delete(outapp);
+}
+
+void Client::Handle_OP_PVPLeaderBoardDetailsRequest(const EQApplicationPacket *app)
+{
+	// This opcode is sent by the client when the player right clicks a name on the PVP leaderboard and sends
+	// further details about the selected player, e.g. Race/Class/AAs/Guild etc.
+	//
+	if(app->size != sizeof(PVPLeaderBoardDetailsRequest_Struct))
+	{
+		LogFile->write(EQEMuLog::Debug, "Size mismatch in OP_PVPLeaderBoardDetailsRequest expected %i got %i",
+		               sizeof(PVPLeaderBoardDetailsRequest_Struct), app->size);
+
+		DumpPacket(app);
+
+		return;
+	}
+
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_PVPLeaderBoardDetailsReply, sizeof(PVPLeaderBoardDetailsReply_Struct));
+	PVPLeaderBoardDetailsReply_Struct *pvplbdrs = (PVPLeaderBoardDetailsReply_Struct *)outapp->pBuffer;
+
+	// TODO: Record and send this data.
+	
+	QueuePacket(outapp);
+	safe_delete(outapp);
 }

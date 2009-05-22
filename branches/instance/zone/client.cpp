@@ -3682,3 +3682,19 @@ void Client::DecrementAggroCount() {
 		safe_delete(outapp);
 	}
 }
+
+void Client::SendPVPStats()
+{
+	// This sends the data to the client to populate the PVP Stats Window.
+	//
+	// When the PVP Stats window is opened, no opcode is sent. Therefore this method should be called
+	// from Client::CompleteConnect, and also when the player makes a PVP kill.
+	//
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_PVPStats, sizeof(PVPStats_Struct));
+	PVPStats_Struct *pvps = (PVPStats_Struct *)outapp->pBuffer;
+
+	// TODO: Record and send PVP Stats
+
+	QueuePacket(outapp);
+	safe_delete(outapp);
+}

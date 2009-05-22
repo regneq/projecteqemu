@@ -207,6 +207,7 @@ public:
 	void FlagInstanceByRaidLeader(int32 zone, int16 version);
 	
 	const char* varlink(char* perltext, int item_id);
+	const char* saylink(char* Phrase);
 
 	//not in here because it retains perl types
 	//thing ChooseRandom(array_of_things)
