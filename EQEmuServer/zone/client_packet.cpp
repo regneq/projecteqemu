@@ -2174,7 +2174,7 @@ void Client::Handle_OP_ItemLinkClick(const EQApplicationPacket *app)
 	if (!item) {
 		if (ivrs->item_id > 500000)
 		{
-			char* response;
+			char response[64];
 			int sayid = ivrs->item_id - 500000;
 
 			if (sayid && sayid > 0) 
