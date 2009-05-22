@@ -208,15 +208,6 @@ public:
 	void	VoiceMacroReceived(int32 Type, char *Target, int32 MacroNumber);
 	void	SendSound();
 
-	int32   GetAdventureID() const {return 0/*m_pp.adventure_id*/; }
-	void    SetAdventureID(int32 i){ /*m_pp.adventure_id=i;*/ }
-	void	SendAdventureFinish(uint32 state=0,uint32 points=0,bool grouptoo=false);
-	void	SendAdventureInfoRequest(const EQApplicationPacket* app);
-	void	SendAdventureUpdate();
-	void	SendAdventureRequestData(Group* group = NULL,bool EnteredDungeon=false,bool EnteredZone=false,bool Zoned=false);
-	void	SendAdventureRequest();
-	void	DeleteCharInAdventure(int32 id,int32 qid);
-
 	EQApplicationPacket*	ReturnItemPacket(sint16 slot_id, const ItemInst* inst, ItemPacketType packet_type);
 
 	bool			GetRevoked() const { return revoked; }

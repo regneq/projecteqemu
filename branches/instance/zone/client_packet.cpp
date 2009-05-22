@@ -626,18 +626,8 @@ void Client::Handle_Connect_OP_ReqClientSpawn(const EQApplicationPacket *app)
 
 	if(strncasecmp(zone->GetShortName(),"bazaar",6)==0)
 		SendBazaarWelcome();
-	if(GetAdventureID()>0){
-		AdventureInfo ai=database.GetAdventureInfo(GetAdventureID());
-		if(zone->GetZoneID() == ai.zoneid) {
-			SendAdventureRequestData(entity_list.GetGroupByClient(this),false,true);
-		}
-		else if(zone->GetZoneID() == ai.zonedungeonid &&
-			database.IsLDoNDungeon(zone->GetZoneID()) ){
-			SendAdventureRequestData(entity_list.GetGroupByClient(this),true,false);
-		}
-		else
-			SendAdventureRequestData(NULL,false,false,true);
-	}
+
+	/*Adventure Data Send*/
 
 	conn_state = ZoneContentsSent;
 
@@ -1326,31 +1316,31 @@ void Client::Handle_OP_Jump(const EQApplicationPacket *app)
 
 void Client::Handle_OP_AdventureInfoRequest(const EQApplicationPacket *app)
 {
-	SendAdventureInfoRequest(app);
+	//SendAdventureInfoRequest(app);
 	return;
 }
 
 void Client::Handle_OP_AdventureRequest(const EQApplicationPacket *app)
 {
-	SendAdventureRequest();
+	//SendAdventureRequest();
 	return;
 }
 
 void Client::Handle_OP_LDoNButton(const EQApplicationPacket *app)
 {
-	bool* p=(bool*)app->pBuffer;
+	/*bool* p=(bool*)app->pBuffer;
 	if(*p == true ) {
 		Group* group=entity_list.GetGroupByClient(this);
 		SendAdventureRequestData(group);
 	}
 	else
-		SetAdventureID(0);
+		SetAdventureID(0);*/
 	return;
 }
 
 void Client::Handle_OP_LeaveAdventure(const EQApplicationPacket *app)
 {
-	uchar lol[4]={0x3F,0x2A,0x00,0x00};
+	/*uchar lol[4]={0x3F,0x2A,0x00,0x00};
 	EQApplicationPacket* outapp=new EQApplicationPacket(OP_AdventureFinish,4); // Doodman: Dunno if this is right or now
 	uchar* x=(uchar*)outapp->pBuffer;
 	memcpy(x,lol,4);
@@ -1363,7 +1353,7 @@ void Client::Handle_OP_LeaveAdventure(const EQApplicationPacket *app)
 	msg->color=0x000d;
 	FastQueuePacket(&outapp2);
 
-	SendAdventureFinish(0,0);
+	SendAdventureFinish(0,0);*/
 	return;
 
 }
@@ -2219,8 +2209,8 @@ void Client::Handle_OP_MoveItem(const EQApplicationPacket *app)
 void Client::Handle_OP_Camp(const EQApplicationPacket *app)
 {
 	//LogFile->write(EQEMuLog::Debug, "%s sent a camp packet.", GetName());
-	if(GetAdventureID() > 0)
-		DeleteCharInAdventure(CharacterID(), GetAdventureID());
+	//if(GetAdventureID() > 0)
+	//	DeleteCharInAdventure(CharacterID(), GetAdventureID());
 
 	if(IsLFP())
 		worldserver.StopLFP(CharacterID());

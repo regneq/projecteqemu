@@ -1069,12 +1069,7 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app)
 			}
 		}
 
-		if(client->CastToClient()->GetAdventureID()>0){
-			AdventureInfo AF=database.GetAdventureInfo(client->CastToClient()->GetAdventureID());
-			if((AF.type == ADVENTURE_COLLECT) && (zone->GetZoneID()== AF.zonedungeonid)
-				&& item_data->item_id == AF.Objetive)
-				client->CastToClient()->SendAdventureUpdate();
-		}
+		//Adventure Add Here
 		// first add it to the looter - this will do the bag contents too
 		if(lootitem->auto_loot)
 		{

@@ -847,90 +847,42 @@ void command_sendop(Client *c,const Seperator *sep){
 
 void command_optest(Client *c, const Seperator *sep)
 {
-	EQApplicationPacket *outapp = new EQApplicationPacket(OP_MoneyUpdate, sizeof(MoneyUpdate_Struct));
-	MoneyUpdate_Struct *mu = (MoneyUpdate_Struct *)outapp->pBuffer;
-	mu->platinum = sep->arg[1][0] ? atoi(sep->arg[1]) : 0;
-	mu->gold = sep->arg[2][0] ? atoi(sep->arg[2]): 0;
-	mu->silver = sep->arg[3][0] ? atoi(sep->arg[3]) : 0;
-	mu->copper = sep->arg[4][0] ? atoi(sep->arg[4]): 0;
-	c->QueuePacket(outapp);
-	safe_delete(outapp);
-
-/*
-	EQApplicationPacket outapp;
-	if(sep->arg[1][0])
+	if(sep->IsNumber(1))
 	{
-		c->CreateDespawnPacket(&outapp);
-	  DeleteSpawn_Struct* ds = (DeleteSpawn_Struct*)outapp.pBuffer;
-    ds->spawn_id = 1000;
+		switch(atoi(sep->arg[1]))
+		{
+			case 1:
+			{
+				EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureFinish, sizeof(AdventureFinish_Struct));
+				AdventureFinish_Struct *af = (AdventureFinish_Struct*)outapp->pBuffer;
+				af->win_lose = 1;
+				af->points = 125;
+				c->FastQueuePacket(&outapp);
+				break;
+			}
+			case 2:
+			{
+				EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureData, sizeof(AdventureRequestResponse_Struct));
+				AdventureRequestResponse_Struct *arr = (AdventureRequestResponse_Struct*)outapp->pBuffer;
+				arr->unknown000 = 0xBFC40100;
+				arr->risk = 1;
+				arr->showcompass = 1;
+				strcpy(arr->text, "This is some text for an adventure packet!\0");
+				arr->timeleft = 60*60;
+				//arr->timetoenter = 30*60;
+				arr->unknown2080=0x0A;
+				arr->x = c->GetY();
+				arr->y = c->GetX();
+				arr->z = c->GetZ();
+				c->FastQueuePacket(&outapp);
+				break;
+			}
+			default:
+			{		
+				break;
+			}
+		}
 	}
-	else
-	{
-		c->CreateSpawnPacket(&outapp, c);
-	 	NewSpawn_Struct* ns = (NewSpawn_Struct*)outapp.pBuffer;
-		ns->spawn.spawn_id = 1000;
-		ns->spawn.npc = 0;
-		ns->spawn.afk = 0xFF;
-		strcpy(ns->spawn.name, "Testing");
-		ns->spawn.x += 5;
-		ns->spawn.y += 5;
-	}
-
-	entity_list.QueueClients(c, &outapp);
-*/
-	
-
-/*
-	EQApplicationPacket* outapp = new EQApplicationPacket(OP_MemorizeSpell, sizeof(MemorizeSpell_Struct));
-	MemorizeSpell_Struct* mem = (MemorizeSpell_Struct*)outapp->pBuffer;
-	mem->slot = sep->arg[1][0] ? atoi(sep->arg[1]) : 0;
-	mem->spell_id = sep->arg[2][0] ? atoi(sep->arg[2]) : 15;
-	mem->scribing = 0;
-	c->QueuePacket(outapp);
-
-	EQApplicationPacket* outapp = new EQApplicationPacket(OP_Action, sizeof(Action_Struct));
-	Action_Struct *act = (Action_Struct *)outapp->pBuffer;
-	act->target = c->GetTarget() ? c->GetTarget()->GetID() : c->GetID();
-	act->source = c->GetID();
-	act->level = sep->arg[3][0] ? atoi(sep->arg[3]) : c->GetLevel();
-//	act->heading = sep->arg[4][0] ? atof(sep->arg[4]) : c->GetHeading() * 2;
-	int val = hextoi(sep->arg[4]);
-	memcpy(&act->heading, &val, 4);
-	act->type = sep->arg[1][0] ? atoi(sep->arg[1]) : 0;
-	act->spell = sep->arg[2][0] ? atoi(sep->arg[2]): 0;
-	act->unknown29 = sep->arg[5][0] ? atoi(sep->arg[5]): 0;
-	act->unknown23 = sep->arg[6][0] ? atoi(sep->arg[6]): 0;
-	act->unknown18 = sep->arg[7][0] ? atoi(sep->arg[7]): 0;
-	act->unknown16 = sep->arg[8][0] ? atoi(sep->arg[8]): 0;
-	act->unknown08 = sep->arg[9][0] ? atoi(sep->arg[9]): 0;
-	act->unknown06 = sep->arg[10][0] ? atoi(sep->arg[10]): 0x0A;
-	c->QueuePacket(outapp);
-	DumpPacket(outapp);
-	printf("\n");
-	safe_delete(outapp);
-*/
-
-/*
-	EQApplicationPacket *outapp = new EQApplicationPacket(OP_MoveDoor, sizeof(MoveDoor_Struct));
-	MoveDoor_Struct *md = (MoveDoor_Struct *)outapp->pBuffer;
-	md->doorid = sep->arg[1][0] ? atoi(sep->arg[1]) : 0;
-	md->action = sep->arg[2][0] ? atoi(sep->arg[2]): 0;
-	entity_list.QueueClients(c, outapp);
-	safe_delete(outapp);
-
-	EQApplicationPacket *outapp = new EQApplicationPacket(OP_Damage, sizeof(CombatDamage_Struct));
-	CombatDamage_Struct *cd = (CombatDamage_Struct *)outapp->pBuffer;
-	cd->target = c->GetTarget() ? c->GetTarget()->GetID() : c->GetID();
-	cd->source = c->GetID();
-	cd->type = sep->arg[1][0] ? atoi(sep->arg[1]) : 0;
-	cd->spellid = sep->arg[2][0] ? atoi(sep->arg[2]) : 0;
-	cd->damage = sep->arg[3][0] ? atoi(sep->arg[3]) : 0;
-	cd->unknown15[0] = sep->arg[4][0] ? atoi(sep->arg[4]) : 0;
-	cd->unknown15[1] = sep->arg[5][0] ? atoi(sep->arg[5]) : 0;
-	cd->unknown19 = sep->arg[6][0] ? atoi(sep->arg[6]) : 0;
-	entity_list.QueueClients(c, outapp);
-	safe_delete(outapp);
-*/
 }
 
 void command_help(Client *c, const Seperator *sep)

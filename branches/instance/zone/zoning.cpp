@@ -302,28 +302,8 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 		}
 	}
 	
-	//Enforce ldon doungeon entrance rules
-	if(myerror == 1 && database.IsLDoNDungeon(target_zone_id)
-	// && !ignorerestrictions
-	) {
-		//this zone is an ldon dungeon
-		int advid = GetAdventureID();
-		if(advid > 0){
-			//we are in an adventure... make sure its the right one
-			AdventureInfo ai = database.GetAdventureInfo(advid);
-			if(target_zone_id != ai.zonedungeonid) {
-				Message(13, "You are not allowed to enter this dungeon!");
-				LogFile->write(EQEMuLog::Error, "Zoning %s: Not allowed to enter dungeon '%s' (%d). Not in the right adventure.", GetName(), target_zone_name, target_zone_id);
-				SendZoneCancel(zc);
-				return;
-			}
-		} else {
-			Message(13, "You are not allowed to enter this dungeon!");
-			LogFile->write(EQEMuLog::Error, "Zoning %s: Not allowed to enter dungeon '%s' (%d). Not in any adventure.", GetName(), target_zone_name, target_zone_id);
-			SendZoneCancel(zc);
-			return;
-		}
-	}
+	//Enforce adventure entrance rules
+
 
 	if(myerror == 1) {
 		//we have successfully zoned

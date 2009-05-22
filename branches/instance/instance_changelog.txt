@@ -1,3 +1,6 @@
+KLS - May 22, 2009
+-Starting work on LDoN adventures.
+
 KLS - May 13, 2009
 -Added content versioning to several areas of the code.  You can now load up non-standard instances, 0 is the default and the same as the static zone.
 -Added many quest commands to interact with the instancing system.
