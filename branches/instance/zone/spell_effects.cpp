@@ -1367,7 +1367,10 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				snprintf(effect_desc, _EDLEN, "Weapon Proc: %s (id %d)", spells[effect_value].name, procid);
 #endif
 
-				AddProcToWeapon(procid, false, spells[spell_id].base2[i]); //add 50 b/c we are using INTs everywhere...
+				if(spells[spell_id].base2[i] == 0)
+					AddProcToWeapon(procid, false, 100);
+				else
+					AddProcToWeapon(procid, false, spells[spell_id].base2[i]);
 				break;
 			}
 

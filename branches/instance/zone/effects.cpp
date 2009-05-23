@@ -676,6 +676,15 @@ bool Client::UseDiscipline(int32 spell_id, int32 target) {
 	if(spell.recast_time > 0)
 	{
 		p_timers.Start(DiscTimer, spell.recast_time / 1000);
+		if(spells[spell_id].EndurTimerIndex < MAX_DISCIPLINE_TIMERS)
+		{
+			EQApplicationPacket *outapp = new EQApplicationPacket(OP_DisciplineTimer, sizeof(DisciplineTimer_Struct));
+			DisciplineTimer_Struct *dts = (DisciplineTimer_Struct *)outapp->pBuffer;
+			dts->TimerID = spells[spell_id].EndurTimerIndex;
+			dts->Duration = spell.recast_time / 1000;
+			QueuePacket(outapp);
+			safe_delete(outapp);
+		}	
 	}
 	return(true);
 }

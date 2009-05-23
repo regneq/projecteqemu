@@ -7670,6 +7670,8 @@ void Client::CompleteConnect()
 		zone->weatherSend();
 
 	TotalKarma = database.GetKarma(AccountID());
+	
+	SendDisciplineTimers();
 
 #ifdef EMBPERL
 	((PerlembParser *)parse)->Event(EVENT_ENTERZONE, 0, "", (NPC*)NULL, this);

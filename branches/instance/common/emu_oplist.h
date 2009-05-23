@@ -433,4 +433,5 @@ N(OP_PVPLeaderBoardRequest),
 N(OP_PVPLeaderBoardReply),
 N(OP_PVPLeaderBoardDetailsRequest),
 N(OP_PVPLeaderBoardDetailsReply),
+N(OP_DisciplineTimer),
 

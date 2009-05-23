@@ -638,6 +638,7 @@ struct AA_Array
 
 
 static const uint32 MAX_PP_DISCIPLINES = 100;
+static const uint32 MAX_DISCIPLINE_TIMERS = 20;
 
 struct Disciplines_Struct {
 	uint32 values[MAX_PP_DISCIPLINES];
@@ -3870,6 +3871,13 @@ struct PVPLeaderBoardDetailsReply_Struct
 /*160*/ uint32 Infamy;
 /*164*/ uint32 Points;
 /*168*/
+};
+
+struct DisciplineTimer_Struct
+{
+/*00*/ uint32  TimerID;
+/*04*/ uint32  Duration;
+/*08*/ uint32  Unknown08;
 };
 
 //old structures live here:

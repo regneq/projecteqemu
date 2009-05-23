@@ -801,6 +801,7 @@ public:
 	void IncrementAggroCount();
 	void DecrementAggroCount();
 	void SendPVPStats();
+	void SendDisciplineTimers();
 
 	/*Adventure Stuff*/
 	AdventureInfo* GetOfferedAdventure() { return m_offered_adventure; }
