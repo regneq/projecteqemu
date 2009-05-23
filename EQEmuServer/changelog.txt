@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/23/2009
+KLS: Spells with 0 spell mod will now act as if their mod was 100% or normal instead of 0% of normal.
+KLS: (Derision) Implemented discipline reuse timer's client side effects
+
 ==05/21/2009==
 Trevius: Added new quest command quest::saylink() to create itemlinks in quest text that can be clicked for a response
 

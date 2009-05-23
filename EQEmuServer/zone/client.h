@@ -809,6 +809,7 @@ public:
 	void IncrementAggroCount();
 	void DecrementAggroCount();
 	void SendPVPStats();
+	void SendDisciplineTimers();
 
 protected:
 	friend class Mob;
