@@ -49,6 +49,7 @@ Doors::Doors(const Door* door)
 	guild_id = door->guild_id;
 	lockpick = door->lockpick;
 	keyitem = door->keyitem;
+	nokeyring = door->nokeyring;
 	trigger_door = door->trigger_door;
 	trigger_type = door->trigger_type;
 	triggered=false;
@@ -84,14 +85,13 @@ bool Doors::Process()
 
 void Doors::HandleClick(Client* sender, int8 trigger)
 {
-
 	//door debugging info dump
 	_log(DOORS__INFO, "%s clicked door %s (dbid %d, eqid %d) at (%.4f,%.4f,%.4f @%.4f)", sender->GetName(), door_name, db_id, door_id, pos_x, pos_y, pos_z, heading);
-	_log(DOORS__INFO, "  incline %d, opentype %d, lockpick %d, key %d, trigger %d type %d, param %d", incline, opentype, lockpick, keyitem, trigger_door, trigger_type, door_param);
+	_log(DOORS__INFO, "  incline %d, opentype %d, lockpick %d, key %d, nokeyring %d, trigger %d type %d, param %d", incline, opentype, lockpick, keyitem, nokeyring, trigger_door, trigger_type, door_param);
 	_log(DOORS__INFO, "  size %d, invert %d, dest: %s (%.4f,%.4f,%.4f @%.4f)", size, invert_state, dest_zone, dest_x, dest_y, dest_z, dest_heading);
 
     EQApplicationPacket* outapp = new EQApplicationPacket(OP_MoveDoor, sizeof(MoveDoor_Struct));
-	MoveDoor_Struct* md=(MoveDoor_Struct*)outapp->pBuffer;
+	MoveDoor_Struct* md = (MoveDoor_Struct*)outapp->pBuffer;
 	//DumpPacket(app);
 	md->doorid = door_id;
 	/////////////////////////////////////////////////////////////////
@@ -99,7 +99,8 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 	//TODO: add check for other lockpick items
 	//////////////////////////////////////////////////////////////////
 
-	uint32 keyneeded=GetKeyItem();
+	uint32 keyneeded = GetKeyItem();
+	int8 keepoffkeyring = GetNoKeyring();
 	uint32 haskey = 0;
 	uint32 playerkey = 0;
 	const ItemInst *lockpicks = sender->GetInv().GetItem(SLOT_CURSOR);
@@ -107,11 +108,15 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 	haskey = sender->GetInv().HasItem(keyneeded, 1);
 
 	if(haskey != SLOT_INVALID)
+	{
 		playerkey = keyneeded;
+	}
 
-	if(GetTriggerType() == 255) { // this object isnt triggered
-		if(trigger == 1) { // this door is only triggered by an object
-			if( !IsDoorOpen() || opentype == 58)
+	if(GetTriggerType() == 255)
+	{ // this object isnt triggered
+		if(trigger == 1)
+		{ // this door is only triggered by an object
+			if(!IsDoorOpen() || (opentype == 58))
 			{
 				md->action = OPEN_DOOR;
 			}
@@ -125,14 +130,13 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 			return;
 		}
 	}
-
-// guild doors
-	if( (keyneeded==0 && GetLockpick() == 0 && guild_id==0)
-	   || (IsDoorOpen() && opentype == 58)
-	   || (guild_id>0 && guild_id==sender->GuildID()))
-
+	
+	// guild doors
+	if(((keyneeded == 0) && (GetLockpick() == 0) && (guild_id == 0)) ||
+		(IsDoorOpen() && (opentype == 58)) ||
+		((guild_id > 0) && (guild_id == sender->GuildID())))
 	{	//door not locked
-		if( !IsDoorOpen() || opentype == 58 )
+		if(!IsDoorOpen() || (opentype == 58))
 		{
 			md->action = OPEN_DOOR;
 		}
@@ -142,29 +146,28 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 		}
 	}
 	else
-	{
-// guild doors
-		if (guild_id>0 && !sender->GetGM())
+	{	// guild doors
+		if((guild_id > 0) && !sender->GetGM())
 		{
 			string tmp;
 			char tmpmsg[240]; // guild doors msgs
-			if (guild_mgr.GetGuildNameByID(guild_id, tmp))
+			if(guild_mgr.GetGuildNameByID(guild_id, tmp))
 			{
-				sprintf(tmpmsg,"Only members of the <%s> guild may enter here",tmp.c_str());
+				sprintf(tmpmsg, "Only members of the <%s> guild may enter here", tmp.c_str());
 			}
 			else
 			{
-				strcpy(tmpmsg,"Door is locked by an unknown guild");
+				strcpy(tmpmsg, "Door is locked by an unknown guild");
 			}
-			sender->Message(4,tmpmsg);
+			sender->Message(4, tmpmsg);
 			return;
 		}
 		// a key is required or the door is locked but can be picked or both
-		sender->Message(4,"This is locked...");		// debug spam - should probably go
-	    if (sender->GetGM())		// GM can always open locks - should probably be changed to require a key
+		sender->Message(4, "This is locked...");		// debug spam - should probably go
+	    if(sender->GetGM())		// GM can always open locks - should probably be changed to require a key
 		{
 			sender->Message_StringID(4,DOORS_GM);
-			if( !IsDoorOpen() || opentype == 58 )
+			if(!IsDoorOpen() || (opentype == 58))
 			{
 				md->action = OPEN_DOOR;
 			}
@@ -173,15 +176,16 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 				md->action = CLOSE_DOOR;
 			}
 		}
-		else if (playerkey)
+		else if(playerkey)
 		{	// they have something they are trying to open it with
-			if (keyneeded && keyneeded == playerkey)
+			if(keyneeded && (keyneeded == playerkey))
 			{	// key required and client is using the right key
-                        sender->KeyRingAdd(playerkey);
-				sender->Message(4,"You got it open!");
-		// more debug spam
-                        sender->KeyRingAdd(playerkey);
-				if( !IsDoorOpen() || opentype == 58 )
+				if(!keepoffkeyring)
+				{
+					sender->KeyRingAdd(playerkey);
+				}
+				sender->Message(4, "You got it open!");
+				if(!IsDoorOpen() || (opentype == 58))
 				{
 					md->action = OPEN_DOOR;
 				}
@@ -199,8 +203,9 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 				{
 					float modskill=sender->GetSkill(PICK_LOCK);
 					sender->CheckIncreaseSkill(PICK_LOCK, 1);
+
 #if EQDEBUG>=5
-					LogFile->write(EQEMuLog::Debug,"Client has lockpicks: skill=%f", modskill);
+					LogFile->write(EQEMuLog::Debug, "Client has lockpicks: skill=%f", modskill);
 #endif
 
 					if(GetLockpick() <= modskill)
@@ -213,33 +218,34 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 						{
 							md->action = CLOSE_DOOR;
 						}
-						sender->Message_StringID(4,DOORS_SUCCESSFUL_PICK);
+						sender->Message_StringID(4, DOORS_SUCCESSFUL_PICK);
 					}
 					else
 					{
-						sender->Message_StringID(4,DOORS_INSUFFICIENT_SKILL);
+						sender->Message_StringID(4, DOORS_INSUFFICIENT_SKILL);
 						return;
 					}
 				}
 				else
 				{
-					sender->Message_StringID(4,DOORS_NO_PICK);
+					sender->Message_StringID(4, DOORS_NO_PICK);
 					return;
 				}
 			}
 			else
 			{
-			sender->Message_StringID(4,DOORS_CANT_PICK);
+				sender->Message_StringID(4, DOORS_CANT_PICK);
 				return;
 			}
 		}
 		else
 		{	// locked door and nothing to open it with
-		 //search for key on keyring
-             if(sender->KeyRingCheck(keyneeded)){
+			// search for key on keyring
+			if(sender->KeyRingCheck(keyneeded))
+			{
 				playerkey = keyneeded;
-				sender->Message(4,"You got it open!");		// more debug spam
-				if( !IsDoorOpen() || opentype == 58 )
+				sender->Message(4, "You got it open!"); // more debug spam
+				if(!IsDoorOpen() || (opentype == 58))
 				{ 
 					md->action = OPEN_DOOR; 
 				} 
@@ -250,52 +256,54 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 			}
 			else 
 			{
-			sender->Message_StringID(4,DOORS_LOCKED);
-			return;
-		      }
+				sender->Message_StringID(4, DOORS_LOCKED);
+				return;
+			}
 		}
 	}
-
-
+	
 	entity_list.QueueClients(sender, outapp, false);
-	if(!IsDoorOpen() || opentype == 58) {
-        close_timer.Start();
-				SetOpenState(true);
-    }
-    else {
-        close_timer.Disable();
-				SetOpenState(false);
-    }
+	if(!IsDoorOpen() || (opentype == 58))
+	{
+		close_timer.Start();
+		SetOpenState(true);
+	}
+	else
+	{
+		close_timer.Disable();
+		SetOpenState(false);
+	}
 
 	//everything past this point assumes we opened the door
 	//and met all the reqs for opening
 	//everything to do with closed doors has already been taken care of
 	//we return because we don't want people using teleports on an unlocked door (exploit!)
 	safe_delete(outapp);
-	if(md->action == CLOSE_DOOR){
+	if(md->action == CLOSE_DOOR)
+	{
 		return;
 	}
 
-	if(GetTriggerDoorID() != 0 && GetTriggerType() == 1)
+	if((GetTriggerDoorID() != 0) && (GetTriggerType() == 1))
 	{
 		Doors* triggerdoor = entity_list.FindDoor(GetTriggerDoorID());
 		if(triggerdoor && !triggerdoor->triggered)
 		{
 			triggered=true;
-			triggerdoor->HandleClick(sender,1);
+			triggerdoor->HandleClick(sender, 1);
 		}
 		else
 		{
 			triggered=false;
 		}
 	}
-	else if(GetTriggerDoorID() != 0 && GetTriggerType() != 1)
+	else if((GetTriggerDoorID() != 0) && (GetTriggerType() != 1))
 	{
 		Doors* triggerdoor = entity_list.FindDoor(GetTriggerDoorID());
 		if(triggerdoor && !triggerdoor->triggered)
 		{
 			triggered=true;
-			triggerdoor->HandleClick(sender,0);
+			triggerdoor->HandleClick(sender, 0);
 		}
 		else
 		{
@@ -303,23 +311,35 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 		}
 	}
 
-    if (opentype == 58 && strncmp(dest_zone,"NONE",strlen("NONE")) != 0 ){ // Teleport door! 
-        if (( strncmp(dest_zone,zone_name,strlen(zone_name)) == 0) && (keyneeded && keyneeded == playerkey)) {
-		sender->KeyRingAdd(playerkey);
+    if((opentype == 58) && (strncmp(dest_zone, "NONE", strlen("NONE")) != 0))
+	{ // Teleport door! 
+        if((strncmp(dest_zone,zone_name,strlen(zone_name)) == 0) && (keyneeded && (keyneeded == playerkey)))
+		{
+			if(!keepoffkeyring)
+			{
+				sender->KeyRingAdd(playerkey);
+			}
            	sender->MovePC(dest_x, dest_y, dest_z, dest_heading);
-	}
-        if (( strncmp(dest_zone,zone_name,strlen(zone_name)) == 0) && (!keyneeded)) {
-           	sender->MovePC(dest_x, dest_y, dest_z, dest_heading);
-	}
-       	else if (( !IsDoorOpen() || opentype == 58 ) && (keyneeded && keyneeded == playerkey)) {
-             	sender->KeyRingAdd(playerkey);
-		sender->MovePC(dest_zone, dest_x, dest_y, dest_z, dest_heading);
-	}
-       	if (( !IsDoorOpen() || opentype == 58 ) && (!keyneeded)) {  
-    		sender->MovePC(dest_zone, dest_x, dest_y, dest_z, dest_heading);
+		}
+        if((strncmp(dest_zone,zone_name,strlen(zone_name)) == 0) && !keyneeded)
+		{
+			sender->MovePC(dest_x, dest_y, dest_z, dest_heading);
+		}
+       	else if((!IsDoorOpen() || (opentype == 58)) && (keyneeded && (keyneeded == playerkey)))
+		{
+			if(!keepoffkeyring)
+			{
+				sender->KeyRingAdd(playerkey);
+			}
+			sender->MovePC(dest_zone, dest_x, dest_y, dest_z, dest_heading);
+		}
+		if((!IsDoorOpen() || (opentype == 58)) && !keyneeded)
+		{
+			sender->MovePC(dest_zone, dest_x, dest_y, dest_z, dest_heading);
 		}
 	}
 }
+
 void Doors::NPCOpen(NPC* sender)
 {
 
@@ -392,8 +412,8 @@ void Doors::DumpDoor(){
         "db_id:%i door_id:%i zone_name:%s door_name:%s pos_x:%f pos_y:%f pos_z:%f heading:%f",
         db_id, door_id, zone_name, door_name, pos_x, pos_y, pos_z, heading);
     LogFile->write(EQEMuLog::Debug,
-        "opentype:%i guild_id:%i lockpick:%i keyitem:%i trigger_door:%i trigger_type:%i door_param:%i open:%s",
-        opentype, guild_id, lockpick, keyitem, trigger_door, trigger_type, door_param, (isopen) ? "open":"closed");
+		"opentype:%i guild_id:%i lockpick:%i keyitem:%i nokeyring:%i trigger_door:%i trigger_type:%i door_param:%i open:%s",
+        opentype, guild_id, lockpick, keyitem, nokeyring, trigger_door, trigger_type, door_param, (isopen) ? "open":"closed");
     LogFile->write(EQEMuLog::Debug,
         "dest_zone:%s dest_x:%f dest_y:%f dest_z:%f dest_heading:%f",
         dest_zone, dest_x, dest_y, dest_z, dest_heading);
@@ -474,7 +494,7 @@ bool ZoneDatabase::LoadDoors(sint32 iDoorCount, Door *into, const char *zone_nam
 
 //	Door tmpDoor;
 	MakeAnyLenString(&query, "SELECT id,doorid,zone,name,pos_x,pos_y,pos_z,heading,"
-		"opentype,guild,lockpick,keyitem,triggerdoor,triggertype,dest_zone,dest_x,"
+		"opentype,guild,lockpick,keyitem,nokeyring,triggerdoor,triggertype,dest_zone,dest_x,"
 		"dest_y,dest_z,dest_heading,door_param,invert_state,incline,size "
 		"FROM doors WHERE zone='%s' ORDER BY doorid asc", zone_name);
 	if (RunQuery(query, strlen(query), errbuf, &result)) {
@@ -498,17 +518,18 @@ bool ZoneDatabase::LoadDoors(sint32 iDoorCount, Door *into, const char *zone_nam
 			into[r].guild_id = atoi(row[9]);
 			into[r].lockpick = atoi(row[10]);
 			into[r].keyitem = atoi(row[11]);
-			into[r].trigger_door = atoi(row[12]);
-			into[r].trigger_type = atoi(row[13]);
-            strncpy(into[r].dest_zone,row[14],16);
-            into[r].dest_x = (float) atof(row[15]);
-            into[r].dest_y = (float) atof(row[16]);
-            into[r].dest_z = (float) atof(row[17]);
-            into[r].dest_heading = (float) atof(row[18]);
-			into[r].door_param=atoi(row[19]);
-			into[r].invert_state=atoi(row[20]);
-			into[r].incline=atoi(row[21]);
-			into[r].size=atoi(row[22]);
+			into[r].nokeyring = atoi(row[12]);
+			into[r].trigger_door = atoi(row[13]);
+			into[r].trigger_type = atoi(row[14]);
+            strncpy(into[r].dest_zone,row[15],16);
+            into[r].dest_x = (float) atof(row[16]);
+            into[r].dest_y = (float) atof(row[17]);
+            into[r].dest_z = (float) atof(row[18]);
+            into[r].dest_heading = (float) atof(row[19]);
+			into[r].door_param=atoi(row[20]);
+			into[r].invert_state=atoi(row[21]);
+			into[r].incline=atoi(row[22]);
+			into[r].size=atoi(row[23]);
 		}
 		mysql_free_result(result);
 	}
