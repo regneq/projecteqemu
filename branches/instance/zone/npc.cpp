@@ -253,6 +253,7 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
     SetMana(GetMaxMana());
 
 	MerchantType=d->merchanttype; // Yodason: merchant stuff
+	adventure_template_id = d->adventure_template;
 	org_x = x;
 	org_y = y;
 	org_z = z;

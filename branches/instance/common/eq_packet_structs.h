@@ -20,6 +20,7 @@
 
 #include "types.h"
 #include <string.h>
+#include <string>
 #include <time.h>
 #include "../common/version.h"
 //#include "../common/item_struct.h"
@@ -86,31 +87,37 @@ struct DuelResponse_Struct
 	int32 entity_id;
 	int32 unknown;
 };
-/*
-	Cofruben:
-	Adventure stuff,not a net one,just one for our use
-*/
-static const uint32 ADVENTURE_COLLECT		= 0;
-static const uint32 ADVENTURE_MASSKILL		= 1;
-static const uint32 ADVENTURE_NAMED			= 2;
-static const uint32 ADVENTURE_RESCUE		= 3;
 
-struct AdventureInfo {
-	int32 QuestID;
-	int32 NPCID;
-	bool in_use;
-	int32 status;
-	bool ShowCompass;
-	int32 Objetive;// can be item to collect,mobs to kill,boss to kill and someone to rescue.
-	int32 ObjetiveValue;// number of items,or number of needed mob kills.
-	char text[512];
-	int8 type;
-	int32 minutes;
-	int32 points;
-	float x;
-	float y;
-	int32 zoneid;
-	int32 zonedungeonid;
+//adventure stuff
+enum AdventureObjective
+{
+	Adventure_Collect = 1,
+	Adventure_Kill = 2,
+	Adventure_Assassinate = 3,
+	Adventure_Rescue = 4
+};
+
+struct AdventureInfo 
+{
+	uint32 id;
+	std::string zone_name;
+	uint16 zone_version;
+	uint16 zone_version_hard;
+	uint8 is_raid;
+	uint16 min_level;
+	uint16 max_level;
+	AdventureObjective type;
+	uint32 type_data;
+	uint16 type_count;
+	std::string text;
+	uint32 duration;
+	uint32 zone_in_time;
+	uint16 win_points;
+	uint16 lose_points;
+	uint16 zone_in_zone_id;
+	double zone_in_x;
+	double zone_in_y;
+	sint16 zone_in_object_id;
 };
 ///////////////////////////////////////////////////////////////////////////////
 

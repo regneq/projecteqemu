@@ -209,10 +209,6 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
-				RelativePath=".\Adventure.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\DLLMain.cpp"
 				>
 			</File>
@@ -277,10 +273,6 @@
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl"
 			>
-			<File
-				RelativePath=".\Adventure.h"
-				>
-			</File>
 			<File
 				RelativePath=".\Doors.h"
 				>

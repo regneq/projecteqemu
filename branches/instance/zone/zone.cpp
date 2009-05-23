@@ -608,16 +608,26 @@ void Zone::DBAWComplete(int8 workpt_b1, DBAsyncWork* dbaw) {
 	}
 }
 
-void Zone::Shutdown(bool quite) {
-std::map<uint32,NPCType *>::iterator itr;
+void Zone::Shutdown(bool quite) 
+{
 	if (!ZoneLoaded)
 		return;
 
-   while(zone->npctable.size()) {
+	std::map<uint32,NPCType *>::iterator itr;
+	while(zone->npctable.size()) {
 		itr=zone->npctable.begin();
 		delete itr->second;
 		zone->npctable.erase(itr);
-   }
+	}
+
+	std::map<uint32,AdventureInfo*>::iterator itr2;
+	while(zone->adventure_list.size()) 
+	{	
+		itr2 = zone->adventure_list.begin();
+		delete itr2->second;
+		zone->adventure_list.erase(itr2);
+	}
+	zone->adventure_entry_list.clear();
 
 	LogFile->write(EQEMuLog::Status, "Zone Shutdown: %s (%i)", zone->GetShortName(), zone->GetZoneID());
 	petition_list.ClearPetitions();
@@ -848,6 +858,9 @@ bool Zone::Init(bool iStaticZone) {
 		database.DeleteBuyLines(0);
 	}
 	
+	zone->LoadAdventures();
+	zone->LoadAdventureEntries();
+
 	//Load AA information
 	adverrornum = 500;
 	LoadAAs();
@@ -1916,4 +1929,101 @@ const char* Zone::GetSpellBlockedMessage(int32 spell_id, float nx, float ny, flo
 		}
 	}
 	return "Error: Message String Not Found\0";
+}
+
+void Zone::LoadAdventures()
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+
+	if(database.RunQuery(query,MakeAnyLenString(&query,"SELECT id, zone, zone_version, zone_version_hard, is_raid, min_level, max_level, "
+		"type, type_data, type_count, text, duration, zone_in_time, win_points, lose_points, zone_in_zone_id, zone_in_x, "
+		"zone_in_y, zone_in_object_id FROM adventure_template"),errbuf,&result)) {
+		while((row = mysql_fetch_row(result))) 
+		{
+			int8 x = 0;
+			AdventureInfo *ai = new AdventureInfo;
+			ai->id = atoi(row[x++]);
+			ai->zone_name = row[x++];
+			ai->zone_version = atoi(row[x++]);
+			ai->zone_version_hard = atoi(row[x++]);
+			ai->is_raid = atoi(row[x++]);
+			ai->min_level = atoi(row[x++]);
+			ai->max_level = atoi(row[x++]);
+			ai->type = (AdventureObjective)atoi(row[x++]);
+			ai->type_data = atoi(row[x++]);
+			ai->type_count = atoi(row[x++]);
+			ai->text = row[x++];
+			ai->duration = atoi(row[x++]);
+			ai->zone_in_time = atoi(row[x++]);
+			ai->win_points = atoi(row[x++]);
+			ai->lose_points = atoi(row[x++]);
+			ai->zone_in_zone_id = atoi(row[x++]);
+			ai->zone_in_x = atof(row[x++]);
+			ai->zone_in_y = atof(row[x++]);
+			ai->zone_in_object_id = atoi(row[x++]);
+			adventure_list[ai->id] = ai;
+		}
+		mysql_free_result(result);
+		safe_delete_array(query);
+	}
+	else
+	{
+		LogFile->write(EQEMuLog::Error, "Error in Zone::LoadAdventures: %s (%s)", query, errbuf);
+		safe_delete_array(query);
+		return;
+	}
+}
+
+void Zone::LoadAdventureEntries()
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+
+	if(database.RunQuery(query,MakeAnyLenString(&query,"SELECT id, template_id FROM adventure_template_entry"),errbuf,&result)) {
+		while((row = mysql_fetch_row(result))) 
+		{
+			int32 id = atoi(row[0]);
+			int32 template_id = atoi(row[1]);
+
+			AdventureInfo *ai = NULL;
+			std::map<uint32,AdventureInfo*>::iterator it;
+			it = adventure_list.find(template_id);
+			if(it == adventure_list.end())
+			{
+				continue;
+			}
+			else
+			{
+				ai = adventure_list[template_id];
+			}
+
+			std::list<AdventureInfo*> temp;
+			std::map<uint32,std::list<AdventureInfo*>>::iterator iter;
+
+			iter = adventure_entry_list.find(id);
+			if(iter == adventure_entry_list.end())
+			{
+				temp.push_back(ai);
+				adventure_entry_list[id] = temp;
+			}
+			else
+			{
+				temp = adventure_entry_list[id];
+				temp.push_back(ai);
+			}
+		}
+		mysql_free_result(result);
+		safe_delete_array(query);
+	}
+	else
+	{
+		LogFile->write(EQEMuLog::Error, "Error in Zone::LoadAdventureEntries: %s (%s)", query, errbuf);
+		safe_delete_array(query);
+		return;
+	}
 }

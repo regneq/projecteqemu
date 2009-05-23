@@ -56,6 +56,7 @@ struct NPCType
 	int32	npc_spells_id;
 	sint32	npc_faction_id;
 	uint32	merchanttype;
+	int32	adventure_template;
     int8    light;		//not loaded from DB
 //    int32    equipment[MAX_MATERIALS];		//not loaded from DB
 	

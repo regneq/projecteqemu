@@ -1318,7 +1318,78 @@ void Client::Handle_OP_Jump(const EQApplicationPacket *app)
 
 void Client::Handle_OP_AdventureInfoRequest(const EQApplicationPacket *app)
 {
-	//SendAdventureInfoRequest(app);
+	EntityId_Struct* ent = (EntityId_Struct*)app->pBuffer;
+	Mob* m = entity_list.GetMob(ent->entity_id);
+
+	/*if(is in ldon already)
+		return false;*/
+
+	if(!zone)
+	{
+		LogFile->write(EQEMuLog::Debug, "Handle_OP_AdventureInfoRequest: Zone did not exist");
+		return;
+	}
+
+	if(!m)
+	{
+		LogFile->write(EQEMuLog::Debug, "Handle_OP_AdventureInfoRequest: Mob did not exist");
+		return;
+	}
+
+	if(!m->IsNPC())
+	{
+		LogFile->write(EQEMuLog::Debug, "Handle_OP_AdventureInfoRequest: Mob was not a NPC");
+		return;
+	}
+
+	int32 temp_id = m->CastToNPC()->adventure_template_id;
+	if(temp_id == 0)
+	{
+		LogFile->write(EQEMuLog::Debug, "Handle_OP_AdventureInfoRequest: NPC had no template id");
+		return;
+	}
+
+	std::list<AdventureInfo*> cur_list;
+	std::map<uint32,std::list<AdventureInfo*>>::iterator iter;
+
+	iter = zone->adventure_entry_list.find(temp_id);
+
+	if(iter == zone->adventure_entry_list.end())
+	{
+		LogFile->write(EQEMuLog::Debug, "Handle_OP_AdventureInfoRequest: Our list was not found");
+		return;
+	}
+	else
+	{
+		cur_list = zone->adventure_entry_list[temp_id];
+		int32 rand_sel = MakeRandomInt(0, cur_list.size()-1);
+
+		std::list<AdventureInfo*>::iterator it;
+		it = cur_list.begin();
+		int x = 0;
+		while(x != rand_sel)
+		{
+			it++;
+			x++;
+		}
+		AdventureInfo *a = (*it);
+		if(!a)
+		{
+			LogFile->write(EQEMuLog::Debug, "Handle_OP_AdventureInfoRequest: Adventure info was null");
+			return;
+		}
+
+		if(a->text.size() == 0)
+		{
+			LogFile->write(EQEMuLog::Debug, "Handle_OP_AdventureInfoRequest: Adventure text size was 0");
+			return;
+		}
+
+		EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureInfo, (a->text.size() + 2));
+		strncpy((char*)outapp->pBuffer, a->text.c_str(), a->text.size());
+		FastQueuePacket(&outapp);
+	}
+
 	return;
 }
 
