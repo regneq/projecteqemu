@@ -1361,13 +1361,34 @@ void Client::Handle_OP_AdventureInfoRequest(const EQApplicationPacket *app)
 	}
 	else
 	{
+		std::list<AdventureInfo*> level_limited_list;
 		cur_list = zone->adventure_entry_list[temp_id];
-		int32 rand_sel = MakeRandomInt(0, cur_list.size()-1);
-
+		
 		std::list<AdventureInfo*>::iterator it;
 		it = cur_list.begin();
+		while(it != cur_list.end())
+		{
+			AdventureInfo* t = (*it);
+			if(t)
+			{
+				if(GetLevel() >= t->min_level && GetLevel() <= t->max_level)
+				{
+					level_limited_list.push_back(t);
+				}
+			}
+		}
+
+		if(level_limited_list.size() == 0)
+		{
+			LogFile->write(EQEMuLog::Debug, "Handle_OP_AdventureInfoRequest: no adventures in this level range found.");
+			return;
+		}
+
+		int32 rand_sel = MakeRandomInt(0, level_limited_list.size()-1);
+
+		it = level_limited_list.begin();
 		int x = 0;
-		LogFile->write(EQEMuLog::Debug, "Handle_OP_AdventureInfoRequest: Selection %u from a total of %u", rand_sel, cur_list.size()); 
+		LogFile->write(EQEMuLog::Debug, "Handle_OP_AdventureInfoRequest: Selection %u from a total of %u", rand_sel, level_limited_list.size()); 
 		while(x != rand_sel)
 		{
 			it++;
