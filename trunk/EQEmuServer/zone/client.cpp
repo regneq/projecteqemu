@@ -3961,3 +3961,24 @@ void Client::SendPVPStats()
 	QueuePacket(outapp);
 	safe_delete(outapp);
 }
+
+void Client::SendDisciplineTimers()
+{
+
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_DisciplineTimer, sizeof(DisciplineTimer_Struct));
+	DisciplineTimer_Struct *dts = (DisciplineTimer_Struct *)outapp->pBuffer;
+
+	for(int i = 0; i < MAX_DISCIPLINE_TIMERS; ++i)
+	{
+		int32 RemainingTime = p_timers.GetRemainingTime(pTimerDisciplineReuseStart + i);
+
+		if(RemainingTime > 0)
+		{
+			dts->TimerID = i;
+			dts->Duration = RemainingTime;
+			QueuePacket(outapp);
+		}
+	}
+
+	safe_delete(outapp);
+}
