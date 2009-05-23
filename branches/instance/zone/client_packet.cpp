@@ -1376,6 +1376,7 @@ void Client::Handle_OP_AdventureInfoRequest(const EQApplicationPacket *app)
 					level_limited_list.push_back(t);
 				}
 			}
+			it++;
 		}
 
 		if(level_limited_list.size() == 0)
