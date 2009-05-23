@@ -802,6 +802,10 @@ public:
 	void DecrementAggroCount();
 	void SendPVPStats();
 
+	/*Adventure Stuff*/
+	AdventureInfo* GetOfferedAdventure() { return m_offered_adventure; }
+	void SetOfferedAdventure(AdventureInfo* ai) { m_offered_adventure = ai; }
+
 protected:
 	friend class Mob;
 	void CalcItemBonuses(StatBonuses* newbon);
@@ -923,6 +927,8 @@ private:
 	ExtendedProfile_Struct		m_epp;
 	Inventory					m_inv;
 	Object*						m_tradeskill_object;
+	
+	AdventureInfo* m_offered_adventure;
 
 	void NPCSpawn(const Seperator* sep);
 	uint32 GetEXPForLevel(uint16 level);

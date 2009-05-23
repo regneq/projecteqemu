@@ -2015,6 +2015,7 @@ void Zone::LoadAdventureEntries()
 			{
 				temp = adventure_entry_list[id];
 				temp.push_back(ai);
+				adventure_entry_list[id] = temp;
 			}
 		}
 		mysql_free_result(result);

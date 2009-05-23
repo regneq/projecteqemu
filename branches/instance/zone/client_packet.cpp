@@ -1367,6 +1367,7 @@ void Client::Handle_OP_AdventureInfoRequest(const EQApplicationPacket *app)
 		std::list<AdventureInfo*>::iterator it;
 		it = cur_list.begin();
 		int x = 0;
+		LogFile->write(EQEMuLog::Debug, "Handle_OP_AdventureInfoRequest: Selection %u from a total of %u", rand_sel, cur_list.size()); 
 		while(x != rand_sel)
 		{
 			it++;
@@ -1385,6 +1386,7 @@ void Client::Handle_OP_AdventureInfoRequest(const EQApplicationPacket *app)
 			return;
 		}
 
+		SetOfferedAdventure(a);
 		EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureInfo, (a->text.size() + 2));
 		strncpy((char*)outapp->pBuffer, a->text.c_str(), a->text.size());
 		FastQueuePacket(&outapp);

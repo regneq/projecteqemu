@@ -239,6 +239,7 @@ Client::Client(EQStreamInterface* ieqs)
 	m_pp.autosplit = false;
 	// Kaiyodo - initialise haste variable
 	m_tradeskill_object = NULL;
+	m_offered_adventure = NULL;
 	delaytimer = false;
 	pendingrezzexp = 1;
 	numclients++;
