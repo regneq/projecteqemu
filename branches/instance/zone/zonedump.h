@@ -225,34 +225,32 @@ namespace classic_db
 }
 
 struct Door {
-int32	db_id;
-int8	door_id;
-char	zone_name[16];
-char	door_name[32];
-float	pos_x;
-float	pos_y;
-float	pos_z;
-float	heading;
-int incline;
-int8	opentype;
-int32	guild_id;
-int16	lockpick;
-uint32	keyitem;
-int8	trigger_door;
-int8	trigger_type;
-int32	door_param;
-int invert_state;
-int16	size;
-char    dest_zone[16];
-float   dest_x;
-float   dest_y;
-float   dest_z;
-float   dest_heading;
-
+	int32	db_id;
+	int8	door_id;
+	char	zone_name[16];
+	char	door_name[32];
+	float	pos_x;
+	float	pos_y;
+	float	pos_z;
+	float	heading;
+	int		incline;
+	int8	opentype;
+	int32	guild_id;
+	int16	lockpick;
+	uint32	keyitem;
+	int8	nokeyring;
+	int8	trigger_door;
+	int8	trigger_type;
+	int32	door_param;
+	int		invert_state;
+	int16	size;
+	char	dest_zone[16];
+	float	dest_x;
+	float	dest_y;
+	float	dest_z;
+	float	dest_heading;
 };
-
 
 #pragma pack()
 
 #endif
-
