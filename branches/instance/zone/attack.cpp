@@ -473,8 +473,8 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage)
 		}
 		
 		if (!ghit) {	//if they are not using a garunteed hit discipline
-			bonus = 2.0 + skill/35.0 + (GetDEX()/200);
-			bonus = bonus * (defender->spellbonuses.RiposteChance + defender->itembonuses.RiposteChance) / 100.0f;
+			bonus = 2.0 + skill/60.0 + (GetDEX()/200);
+			bonus = bonus * (100 + defender->spellbonuses.RiposteChance + defender->itembonuses.RiposteChance) / 100.0f;
 			RollTable[0] = bonus;
 		}
 	}
@@ -562,8 +562,8 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage)
 		}
 		
 		if (!ghit) {	//if they are not using a garunteed hit discipline
-			bonus = 2.0 + skill/35.0 + (GetDEX()/200);
-			bonus = bonus * (defender->spellbonuses.ParryChance + defender->itembonuses.ParryChance) / 100.0f;
+			bonus = 2.0 + skill/60.0 + (GetDEX()/200);
+			bonus = bonus * (100 + defender->spellbonuses.ParryChance + defender->itembonuses.ParryChance) / 100.0f;
 			RollTable[2] = RollTable[1] + bonus;
 		}
 	}
@@ -584,8 +584,8 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage)
 		}
 		
 		if (!ghit) {	//if they are not using a garunteed hit discipline
-			bonus = 2.0 + skill/35.0 + (GetAGI()/200);
-			bonus = bonus * (defender->spellbonuses.DodgeChance + defender->itembonuses.DodgeChance) / 100.0f;
+			bonus = 2.0 + skill/60.0 + (GetAGI()/200);
+			bonus = bonus * (100 + defender->spellbonuses.DodgeChance + defender->itembonuses.DodgeChance) / 100.0f;
 			RollTable[3] = RollTable[2] + bonus;
 		}
 	}
