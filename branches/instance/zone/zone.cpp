@@ -2003,7 +2003,7 @@ void Zone::LoadAdventureEntries()
 			}
 
 			std::list<AdventureInfo*> temp;
-			std::map<uint32,std::list<AdventureInfo*>>::iterator iter;
+			std::map<uint32,std::list<AdventureInfo*> >::iterator iter;
 
 			iter = adventure_entry_list.find(id);
 			if(iter == adventure_entry_list.end())
