@@ -1,6 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
-==05/23/2009
+==05/24/2009==
+KLS: Fixed dodge/parry/riposte, lowered their effectiveness from skill points slightly.
+
+==05/23/2009==
 KLS: Spells with 0 spell mod will now act as if their mod was 100% or normal instead of 0% of normal.
 KLS: (Derision) Implemented discipline reuse timer's client side effects
 Congdar: New feature to choose if a key should go on the keyring or not.
