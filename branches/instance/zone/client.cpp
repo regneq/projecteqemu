@@ -3768,6 +3768,60 @@ void Client::SendAdventureSelection(Mob* rec, int32 difficulty, int32 type)
 		std::list<AdventureInfo*> level_limited_list;
 		cur_list = zone->adventure_entry_list[temp_id];
 		
+		int32 avg_level = 0;
+		int32 lvl_range = 0;
+		int8 is_raid = 0xFF;
+
+		if(GetRaid())
+		{
+			int8 count = GetRaid()->RaidCount();
+			if(count >= RuleI(Adventure, MinNumberForGroup) && count <= RuleI(Adventure, MaxNumberForGroup))
+			{
+				is_raid = 0;
+			}
+			else if(count >= RuleI(Adventure, MinNumberForRaid) && count <= RuleI(Adventure, MaxNumberForRaid))
+			{
+				is_raid = 1;
+			}
+			else
+			{
+				SendAdventureError("No adventure was found for a group of this size.");
+				LogFile->write(EQEMuLog::Debug, "Client::SendAdventureSelection(): Group size was invalid.");
+				return;
+			}
+			database.RaidAdventureLevelAndRange(GetRaid()->GetID(), avg_level, lvl_range);
+			if(lvl_range > RuleI(Adventure, MaxLevelRange))
+			{
+				SendAdventureError("Adventurers must be within 9 levels of the highest member.");
+				LogFile->write(EQEMuLog::Debug, "Client::SendAdventureSelection(): Group range check failed.");
+				return;
+			}
+		}
+		else if(GetGroup())
+		{
+			int8 count = GetGroup()->GroupCount();
+			is_raid = 0;
+			if(count > RuleI(Adventure, MaxNumberForGroup) || count < RuleI(Adventure, MinNumberForGroup))
+			{
+				SendAdventureError("No adventure was found for a group of this size.");
+				LogFile->write(EQEMuLog::Debug, "Client::SendAdventureSelection(): Group size was invalid.");
+				return;
+			}
+			LogFile->write(EQEMuLog::Debug, "Client::SendAdventureSelection(): Range %u avg level %u", lvl_range, avg_level);
+			if(lvl_range > RuleI(Adventure, MaxLevelRange))
+			{
+				SendAdventureError("Adventurers must be within 9 levels of the highest member.");
+				LogFile->write(EQEMuLog::Debug, "Client::SendAdventureSelection(): Group range check failed.");
+				return;
+			}
+		}
+		else
+		{
+			SendAdventureError("Requesting an Adventure requires a group.");
+			LogFile->write(EQEMuLog::Debug, "Client::SendAdventureSelection(): Player was ungrouped.");
+			return;
+		}
+
 		std::list<AdventureInfo*>::iterator it;
 		it = cur_list.begin();
 		while(it != cur_list.end())
@@ -3775,23 +3829,26 @@ void Client::SendAdventureSelection(Mob* rec, int32 difficulty, int32 type)
 			AdventureInfo* t = (*it);
 			if(t)
 			{
-				if(GetLevel() >= t->min_level && GetLevel() <= t->max_level) //todo: get based off grp/raid lvl
-				{ //todo: check size for group/raid
-					if(type != 0)
+				if(t->is_raid == is_raid)
+				{
+					if(avg_level >= t->min_level && avg_level <= t->max_level)
 					{
-						if(type == t->type)
+						if(type != 0)
+						{
+							if(type == t->type)
+							{
+								if(difficulty == t->is_hard)
+								{
+									level_limited_list.push_back(t);
+								}
+							}
+						}
+						else
 						{
 							if(difficulty == t->is_hard)
 							{
 								level_limited_list.push_back(t);
 							}
-						}
-					}
-					else
-					{
-						if(difficulty == t->is_hard)
-						{
-							level_limited_list.push_back(t);
 						}
 					}
 				}

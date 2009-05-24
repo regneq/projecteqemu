@@ -3114,3 +3114,75 @@ void Database::FlagInstanceByRaidLeader(int32 zone, int16 version, int32 charid,
 
 	AddClientToInstance(l_id, charid);
 }
+
+void Database::GroupAdventureLevelAndRange(int32 gid, int32 &avg_level, int32 &range)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+	int16 m_avg_level = 0;
+	int8 num_in_group = 0;
+	int16 min_level = 2000;
+	int16 max_level = 0;
+
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT character_.level FROM character_, group_id"
+		" WHERE character_.id=group_id.charid AND group_id.groupid=%u", gid), errbuf, &result))
+	{
+		safe_delete_array(query);
+		while((row = mysql_fetch_row(result)) != NULL)
+		{
+			int16 m_lvl = atoi(row[0]);
+			m_avg_level += m_lvl;
+			if(m_lvl < min_level)
+				min_level = m_lvl;
+
+			if(m_lvl > max_level)
+				max_level = m_lvl;
+			num_in_group++;
+		}
+		mysql_free_result(result);
+	}
+	else 
+	{
+		safe_delete_array(query);
+	}
+	avg_level = (m_avg_level / num_in_group);
+	range = max_level-min_level;
+}
+
+void Database::RaidAdventureLevelAndRange(int32 rid, int32 &avg_level, int32 &range)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+	int16 m_avg_level = 0;
+	int8 num_in_group = 0;
+	int16 min_level = 2000;
+	int16 max_level = 0;
+
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT raid_members.level FROM raid_members "
+		"WHERE raid_members.raidid=%u", rid), errbuf, &result))
+	{
+		safe_delete_array(query);
+		while((row = mysql_fetch_row(result)) != NULL)
+		{
+			int16 m_lvl = atoi(row[0]);
+			m_avg_level += m_lvl;
+			if(m_lvl < min_level)
+				min_level = m_lvl;
+
+			if(m_lvl > max_level)
+				max_level = m_lvl;
+			num_in_group++;
+		}
+		mysql_free_result(result);
+	}
+	else 
+	{
+		safe_delete_array(query);
+	}
+	avg_level = (m_avg_level / num_in_group);
+	range = max_level-min_level;
+}

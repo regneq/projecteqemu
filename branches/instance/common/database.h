@@ -170,6 +170,11 @@ public:
 	void FlagInstanceByGroupLeader(int32 zone, int16 version, int32 charid, int32 gid);
 	void FlagInstanceByRaidLeader(int32 zone, int16 version, int32 charid, int32 rid);
 
+	/*
+	 * Adventure
+	 */
+	void GroupAdventureLevelAndRange(int32 gid, int32 &avg_level, int32 &range);
+	void RaidAdventureLevelAndRange(int32 rid, int32 &avg_level, int32 &range);
 
 	/*
 	 * Account Related

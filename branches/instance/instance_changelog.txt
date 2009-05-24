@@ -1,3 +1,6 @@
+KLS - May 24, 2009
+-More adventure recruiter refinement, moving onto adventure assignment soon.
+
 KLS - May 23, 2009
 -Adventure load from DB, adventure recruiter initial work.
 
