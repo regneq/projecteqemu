@@ -3753,7 +3753,7 @@ void Client::SendAdventureSelection(Mob* rec, int32 difficulty, int32 type)
 	}
 
 	std::list<AdventureInfo*> cur_list;
-	std::map<uint32,std::list<AdventureInfo*>>::iterator iter;
+	std::map<uint32,std::list<AdventureInfo*> >::iterator iter;
 
 	iter = zone->adventure_entry_list.find(temp_id);
 
