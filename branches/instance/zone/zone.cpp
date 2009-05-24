@@ -1938,7 +1938,7 @@ void Zone::LoadAdventures()
 	MYSQL_RES *result;
 	MYSQL_ROW row;
 
-	if(database.RunQuery(query,MakeAnyLenString(&query,"SELECT id, zone, zone_version, zone_version_hard, is_raid, min_level, max_level, "
+	if(database.RunQuery(query,MakeAnyLenString(&query,"SELECT id, zone, zone_version, is_hard, is_raid, min_level, max_level, "
 		"type, type_data, type_count, text, duration, zone_in_time, win_points, lose_points, zone_in_zone_id, zone_in_x, "
 		"zone_in_y, zone_in_object_id FROM adventure_template"),errbuf,&result)) {
 		while((row = mysql_fetch_row(result))) 
@@ -1948,7 +1948,7 @@ void Zone::LoadAdventures()
 			ai->id = atoi(row[x++]);
 			ai->zone_name = row[x++];
 			ai->zone_version = atoi(row[x++]);
-			ai->zone_version_hard = atoi(row[x++]);
+			ai->is_hard = atoi(row[x++]);
 			ai->is_raid = atoi(row[x++]);
 			ai->min_level = atoi(row[x++]);
 			ai->max_level = atoi(row[x++]);

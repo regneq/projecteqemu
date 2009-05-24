@@ -47,7 +47,7 @@ CREATE TABLE `adventure_template` (
   `id` int(10) unsigned NOT NULL,
   `zone` varchar(64) NOT NULL,
   `zone_version` tinyint(3) unsigned NOT NULL default '0',
-  `zone_version_hard` tinyint(3) unsigned NOT NULL default '0',
+  `is_hard` tinyint(3) unsigned NOT NULL default '0',
   `is_raid` tinyint(3) unsigned NOT NULL default '0',
   `min_level` tinyint(3) unsigned NOT NULL default '1',
   `max_level` tinyint(3) unsigned NOT NULL default '65',

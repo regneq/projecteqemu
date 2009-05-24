@@ -806,6 +806,8 @@ public:
 	/*Adventure Stuff*/
 	AdventureInfo* GetOfferedAdventure() { return m_offered_adventure; }
 	void SetOfferedAdventure(AdventureInfo* ai) { m_offered_adventure = ai; }
+	void SendAdventureSelection(Mob* rec, int32 difficulty, int32 type);
+	void SendAdventureError(const char* msg, ...);
 
 protected:
 	friend class Mob;

@@ -1319,108 +1319,23 @@ void Client::Handle_OP_Jump(const EQApplicationPacket *app)
 void Client::Handle_OP_AdventureInfoRequest(const EQApplicationPacket *app)
 {
 	EntityId_Struct* ent = (EntityId_Struct*)app->pBuffer;
-	Mob* m = entity_list.GetMob(ent->entity_id);
+	//Mob* m = entity_list.GetMob(ent->entity_id);
+	//if(m && m->IsNPC())
+	//	SetOfferedAdventureRecruiter(m);
 
-	/*if(is in ldon already)
-		return false;*/
-
-	if(!zone)
-	{
-		LogFile->write(EQEMuLog::Debug, "Handle_OP_AdventureInfoRequest: Zone did not exist");
-		return;
-	}
-
-	if(!m)
-	{
-		LogFile->write(EQEMuLog::Debug, "Handle_OP_AdventureInfoRequest: Mob did not exist");
-		return;
-	}
-
-	if(!m->IsNPC())
-	{
-		LogFile->write(EQEMuLog::Debug, "Handle_OP_AdventureInfoRequest: Mob was not a NPC");
-		return;
-	}
-
-	int32 temp_id = m->CastToNPC()->adventure_template_id;
-	if(temp_id == 0)
-	{
-		LogFile->write(EQEMuLog::Debug, "Handle_OP_AdventureInfoRequest: NPC had no template id");
-		return;
-	}
-
-	std::list<AdventureInfo*> cur_list;
-	std::map<uint32,std::list<AdventureInfo*>>::iterator iter;
-
-	iter = zone->adventure_entry_list.find(temp_id);
-
-	if(iter == zone->adventure_entry_list.end())
-	{
-		LogFile->write(EQEMuLog::Debug, "Handle_OP_AdventureInfoRequest: Our list was not found");
-		return;
-	}
-	else
-	{
-		std::list<AdventureInfo*> level_limited_list;
-		cur_list = zone->adventure_entry_list[temp_id];
-		
-		std::list<AdventureInfo*>::iterator it;
-		it = cur_list.begin();
-		while(it != cur_list.end())
-		{
-			AdventureInfo* t = (*it);
-			if(t)
-			{
-				if(GetLevel() >= t->min_level && GetLevel() <= t->max_level)
-				{
-					level_limited_list.push_back(t);
-				}
-			}
-			it++;
-		}
-
-		if(level_limited_list.size() == 0)
-		{
-			LogFile->write(EQEMuLog::Debug, "Handle_OP_AdventureInfoRequest: no adventures in this level range found.");
-			return;
-		}
-
-		int32 rand_sel = MakeRandomInt(0, level_limited_list.size()-1);
-
-		it = level_limited_list.begin();
-		int x = 0;
-		LogFile->write(EQEMuLog::Debug, "Handle_OP_AdventureInfoRequest: Selection %u from a total of %u", rand_sel, level_limited_list.size()); 
-		while(x != rand_sel)
-		{
-			it++;
-			x++;
-		}
-		AdventureInfo *a = (*it);
-		if(!a)
-		{
-			LogFile->write(EQEMuLog::Debug, "Handle_OP_AdventureInfoRequest: Adventure info was null");
-			return;
-		}
-
-		if(a->text.size() == 0)
-		{
-			LogFile->write(EQEMuLog::Debug, "Handle_OP_AdventureInfoRequest: Adventure text size was 0");
-			return;
-		}
-
-		SetOfferedAdventure(a);
-		EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureInfo, (a->text.size() + 2));
-		strncpy((char*)outapp->pBuffer, a->text.c_str(), a->text.size());
-		FastQueuePacket(&outapp);
-	}
-
-	return;
+	std::string text = "Choose your difficulty and preferred adventure type.";
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureInfo, (text.size() + 2));
+	strncpy((char*)outapp->pBuffer, text.c_str(), text.size());
+	FastQueuePacket(&outapp);
 }
 
 void Client::Handle_OP_AdventureRequest(const EQApplicationPacket *app)
 {
-	//SendAdventureRequest();
-	return;
+	AdventureRequest_Struct* ars = (AdventureRequest_Struct*)app->pBuffer;
+
+	Mob* m = entity_list.GetMob(ars->entity_id);
+	if(m && m->IsNPC())
+		SendAdventureSelection(m, (ars->risk-1), ars->type);
 }
 
 void Client::Handle_OP_LDoNButton(const EQApplicationPacket *app)

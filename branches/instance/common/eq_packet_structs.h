@@ -91,9 +91,10 @@ struct DuelResponse_Struct
 //adventure stuff
 enum AdventureObjective
 {
-	Adventure_Collect = 1,
+	Adventure_Random = 0,
+	Adventure_Assassinate = 1,
 	Adventure_Kill = 2,
-	Adventure_Assassinate = 3,
+	Adventure_Collect = 3,
 	Adventure_Rescue = 4
 };
 
@@ -102,7 +103,7 @@ struct AdventureInfo
 	uint32 id;
 	std::string zone_name;
 	uint16 zone_version;
-	uint16 zone_version_hard;
+	uint16 is_hard;
 	uint8 is_raid;
 	uint16 min_level;
 	uint16 max_level;
@@ -1726,6 +1727,7 @@ struct AdventureFinish_Struct{
 struct AdventureRequest_Struct{
 	int32 risk;//1 normal,2 hard.
 	int32 entity_id;
+	int32 type;
 };
 struct AdventureRequestResponse_Struct{
 	int32 unknown000;

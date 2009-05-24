@@ -3720,3 +3720,136 @@ void Client::SendDisciplineTimers()
 
 	safe_delete(outapp);
 }
+
+void Client::SendAdventureSelection(Mob* rec, int32 difficulty, int32 type)
+{
+	/*if(is in ldon already)
+		return false;*/
+
+	if(!zone)
+	{
+		LogFile->write(EQEMuLog::Debug, "Client::SendAdventureSelection(): Zone did not exist");
+		return;
+	}
+
+	if(!rec)
+	{
+		LogFile->write(EQEMuLog::Debug, "Client::SendAdventureSelection(): Mob did not exist");
+		return;
+	}
+
+	if(!rec->IsNPC())
+	{
+		LogFile->write(EQEMuLog::Debug, "Client::SendAdventureSelection(): Mob was not a NPC");
+		return;
+	}
+
+	int32 temp_id = rec->CastToNPC()->adventure_template_id;
+	if(temp_id == 0)
+	{
+		SendAdventureError("No adventures found for this npc.");
+		LogFile->write(EQEMuLog::Debug, "Client::SendAdventureSelection(): NPC had no template id");
+		return;
+	}
+
+	std::list<AdventureInfo*> cur_list;
+	std::map<uint32,std::list<AdventureInfo*>>::iterator iter;
+
+	iter = zone->adventure_entry_list.find(temp_id);
+
+	if(iter == zone->adventure_entry_list.end())
+	{
+		SendAdventureError("No adventures found for this npc.");
+		LogFile->write(EQEMuLog::Debug, "Client::SendAdventureSelection(): Our list was not found");
+		return;
+	}
+	else
+	{
+		std::list<AdventureInfo*> level_limited_list;
+		cur_list = zone->adventure_entry_list[temp_id];
+		
+		std::list<AdventureInfo*>::iterator it;
+		it = cur_list.begin();
+		while(it != cur_list.end())
+		{
+			AdventureInfo* t = (*it);
+			if(t)
+			{
+				if(GetLevel() >= t->min_level && GetLevel() <= t->max_level) //todo: get based off grp/raid lvl
+				{ //todo: check size for group/raid
+					if(type != 0)
+					{
+						if(type == t->type)
+						{
+							if(difficulty == t->is_hard)
+							{
+								level_limited_list.push_back(t);
+							}
+						}
+					}
+					else
+					{
+						if(difficulty == t->is_hard)
+						{
+							level_limited_list.push_back(t);
+						}
+					}
+				}
+			}
+			it++;
+		}
+
+		if(level_limited_list.size() == 0)
+		{
+			SendAdventureError("No adventures found.");
+			LogFile->write(EQEMuLog::Debug, "Client::SendAdventureSelection(): no adventures found matching criteria.");
+			return;
+		}
+
+		int32 rand_sel = MakeRandomInt(0, level_limited_list.size()-1);
+
+		it = level_limited_list.begin();
+		int x = 0;
+		while(x != rand_sel)
+		{
+			it++;
+			x++;
+		}
+		AdventureInfo *a = (*it);
+		if(!a)
+		{
+			SendAdventureError("Adventure selected was corrupt.");
+			LogFile->write(EQEMuLog::Debug, "Client::SendAdventureSelection(): Adventure info was null");
+			return;
+		}
+
+		if(a->text.size() == 0)
+		{
+			SendAdventureError("Adventure selected was corrupt.");
+			LogFile->write(EQEMuLog::Debug, "Client::SendAdventureSelection(): Adventure text size was 0");
+			return;
+		}
+
+		SetOfferedAdventure(a);
+		EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureDetails, (a->text.size() + 2));
+		strncpy((char*)outapp->pBuffer, a->text.c_str(), a->text.size());
+		FastQueuePacket(&outapp);
+	}
+}
+
+void Client::SendAdventureError(const char* msg, ...)
+{
+	va_list argptr;
+	char *buffer = new char[1024];
+	memset(buffer, 0, 1024);
+
+	va_start(argptr, msg);
+	vsnprintf(buffer, 1024, msg, argptr);
+	va_end(argptr);
+
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureInfo, (strlen(buffer) + 2));
+	strncpy((char*)outapp->pBuffer, buffer, strlen(buffer));
+
+	FastQueuePacket(&outapp);
+	safe_delete_array(buffer);
+}
