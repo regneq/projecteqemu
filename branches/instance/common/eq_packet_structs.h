@@ -120,6 +120,17 @@ struct AdventureInfo
 	double zone_in_y;
 	sint16 zone_in_object_id;
 };
+
+struct AdventureDetails
+{
+	uint32 id;
+	AdventureInfo *ai;
+	sint32 instance_id;
+	int32 count;
+	int8 status;
+	int32 time_created;
+	int32 time_zoned;
+};
 ///////////////////////////////////////////////////////////////////////////////
 
 

@@ -240,6 +240,7 @@ Client::Client(EQStreamInterface* ieqs)
 	// Kaiyodo - initialise haste variable
 	m_tradeskill_object = NULL;
 	m_offered_adventure = NULL;
+	m_current_adventure = NULL;
 	delaytimer = false;
 	pendingrezzexp = 1;
 	numclients++;
@@ -333,7 +334,10 @@ Client::~Client() {
 	// we save right now, because the client might be zoning and the world
 	// will need this data right away
 	Save(2); // This fails when database destructor is called first on shutdown
+
 	safe_delete(taskstate);
+	safe_delete(m_current_adventure);
+
 	numclients--;
 	UpdateWindowTitle();
 	zone->RemoveAuth(GetName());
@@ -3723,8 +3727,11 @@ void Client::SendDisciplineTimers()
 
 void Client::SendAdventureSelection(Mob* rec, int32 difficulty, int32 type)
 {
-	/*if(is in ldon already)
-		return false;*/
+	if(GetCurrentAdventure())
+	{
+		LogFile->write(EQEMuLog::Debug, "Client::SendAdventureSelection(): Client already in adventure");
+		return;
+	}
 
 	if(!zone)
 	{
@@ -3792,7 +3799,7 @@ void Client::SendAdventureSelection(Mob* rec, int32 difficulty, int32 type)
 			database.RaidAdventureLevelAndRange(GetRaid()->GetID(), avg_level, lvl_range);
 			if(lvl_range > RuleI(Adventure, MaxLevelRange))
 			{
-				SendAdventureError("Adventurers must be within 9 levels of the highest member.");
+				SendAdventureError("Adventurers must be within %u levels of the highest member.", RuleI(Adventure, MaxLevelRange));
 				LogFile->write(EQEMuLog::Debug, "Client::SendAdventureSelection(): Group range check failed.");
 				return;
 			}
@@ -3909,4 +3916,125 @@ void Client::SendAdventureError(const char* msg, ...)
 
 	FastQueuePacket(&outapp);
 	safe_delete_array(buffer);
+}
+
+void Client::AcceptAdventure()
+{
+	if(GetCurrentAdventure())
+		return;
+
+	AdventureInfo *t = GetOfferedAdventure();
+	if(t)
+	{
+		int32 adv_id = database.CreateAdventure(t->id);
+		if(adv_id != 0)
+		{
+			AdventureDetails *ad = new AdventureDetails;
+
+			timeval tv;
+			gettimeofday(&tv, NULL);
+
+			ad->ai = t;
+			ad->count = 0;
+			ad->id = adv_id;
+			ad->instance_id = -1;
+			ad->status = 0;
+			ad->time_created = tv.tv_sec;
+			ad->time_zoned = 0;
+
+			database.AddPlayerToAdventure(adv_id, CharacterID());
+			SetCurrentAdventure(ad);
+			SetOfferedAdventure(NULL);
+			SendAdventureDetail();
+		}
+	}
+}
+
+void Client::DeclineAdventure()
+{
+	//send whatever packets
+	//do whatever lockout.
+	SetOfferedAdventure(NULL);
+}
+
+void Client::LeaveAdventure()
+{
+	AdventureDetails *ad = GetCurrentAdventure();
+	if(ad)
+	{
+		database.RemovePlayerFromAdventure(ad->id, CharacterID());
+		if(database.CountPlayersInAdventure(ad->id) == 0)
+		{
+			database.DestroyAdventure(ad->id);
+		}
+		safe_delete(ad);
+		SetCurrentAdventure(NULL);
+		SendAdventureError("Choose your difficulty and preferred adventure type.");
+	}
+}
+
+void Client::SendAdventureDetail()
+{
+	AdventureDetails *ad = GetCurrentAdventure();
+
+	if(!ad)
+		return;
+
+	if(!ad->ai)
+		return;
+
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureData, sizeof(AdventureRequestResponse_Struct));
+	AdventureRequestResponse_Struct *arr = (AdventureRequestResponse_Struct*)outapp->pBuffer;
+	timeval tv;
+	gettimeofday(&tv, NULL);
+
+	arr->unknown000 = 0xBFC40100;
+	arr->risk = ad->ai->is_hard+1;
+	strncpy(arr->text, ad->ai->text.c_str(), ad->ai->text.size());
+	
+	if(ad->instance_id > 0)
+	{
+		arr->timeleft = (ad->time_zoned + ad->ai->duration) - tv.tv_sec;
+	}
+	else
+	{
+		arr->timetoenter = (ad->time_created + ad->ai->zone_in_time) - tv.tv_sec;
+	}
+	
+	if(zone->GetZoneID() == ad->ai->zone_in_zone_id)
+	{
+		arr->showcompass = 1;
+		arr->x = ad->ai->zone_in_y;
+		arr->y = ad->ai->zone_in_x;
+		arr->z = 0.0;
+	}
+	else
+	{
+		arr->showcompass = 0;
+		arr->x = 0.0;
+		arr->y = 0.0;
+		arr->z = 0.0;
+	}
+	arr->unknown2080=0x0A;
+	FastQueuePacket(&outapp);
+}
+
+void Client::SendAdventureFinish(bool win, int32 points)
+{
+	if(win)
+	{
+		EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureFinish, sizeof(AdventureFinish_Struct));
+		AdventureFinish_Struct *af = (AdventureFinish_Struct*)outapp->pBuffer;
+		af->win_lose = 1;
+		af->points = points;
+		FastQueuePacket(&outapp);
+	}
+	else
+	{
+		EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureFinish, sizeof(AdventureFinish_Struct));
+		AdventureFinish_Struct *af = (AdventureFinish_Struct*)outapp->pBuffer;
+		af->win_lose = 0;
+		af->points = 0;
+		FastQueuePacket(&outapp);
+	}
 }

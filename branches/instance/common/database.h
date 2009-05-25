@@ -175,6 +175,16 @@ public:
 	 */
 	void GroupAdventureLevelAndRange(int32 gid, int32 &avg_level, int32 &range);
 	void RaidAdventureLevelAndRange(int32 rid, int32 &avg_level, int32 &range);
+	int32 CreateAdventure(int32 adventure_id);
+	void AddPlayerToAdventure(int32 id, int32 charid);
+	void RemovePlayerFromAdventure(int32 id, int32 charid);
+	void AddGroupToAdventure(int32 id, int32 gid);
+	void AddRaidToAdventure(int32 id, int32 rid);
+	void DestroyAdventure(int32 id);
+
+	//todo:
+	int32 CountPlayersInAdventure(int32 id) { return 1; }
+	void PurgeAdventures() { }
 
 	/*
 	 * Account Related

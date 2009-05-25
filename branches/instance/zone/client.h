@@ -806,8 +806,17 @@ public:
 	/*Adventure Stuff*/
 	AdventureInfo* GetOfferedAdventure() { return m_offered_adventure; }
 	void SetOfferedAdventure(AdventureInfo* ai) { m_offered_adventure = ai; }
+
+	AdventureDetails* GetCurrentAdventure() { return m_current_adventure; }
+	void SetCurrentAdventure(AdventureDetails* ad) { m_current_adventure = ad; }
+
 	void SendAdventureSelection(Mob* rec, int32 difficulty, int32 type);
 	void SendAdventureError(const char* msg, ...);
+	void SendAdventureDetail();
+	void SendAdventureFinish(bool win, int32 points);
+	void AcceptAdventure();
+	void DeclineAdventure();
+	void LeaveAdventure();
 
 protected:
 	friend class Mob;
@@ -932,6 +941,7 @@ private:
 	Object*						m_tradeskill_object;
 	
 	AdventureInfo* m_offered_adventure;
+	AdventureDetails *m_current_adventure;
 
 	void NPCSpawn(const Seperator* sep);
 	uint32 GetEXPForLevel(uint16 level);

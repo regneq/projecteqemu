@@ -3186,3 +3186,138 @@ void Database::RaidAdventureLevelAndRange(int32 rid, int32 &avg_level, int32 &ra
 	avg_level = (m_avg_level / num_in_group);
 	range = max_level-min_level;
 }
+
+int32 Database::CreateAdventure(int32 adventure_id)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	int32 affected_rows = 0;
+	int32 last_insert_id = 0;
+
+	//INSERT INTO `adventure_details` SET adventure_id=%u, time_created=UNIX_TIMESTAMP()
+    if (!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO `adventure_details` SET adventure_id=%u,"
+		" time_created=UNIX_TIMESTAMP()", adventure_id), errbuf, 0, &affected_rows, &last_insert_id)) {
+		safe_delete_array(query);
+		return 0;
+    }
+	safe_delete_array(query);
+	
+	if (affected_rows == 0) 
+	{
+		return 0;
+	}
+
+	if (last_insert_id == 0) 
+	{
+		return 0;
+	}
+	return last_insert_id;
+}
+
+void Database::AddPlayerToAdventure(int32 id, int32 charid)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+
+	if(RunQuery(query, MakeAnyLenString(&query, "INSERT INTO `adventure_members` SET"
+		" id=%u, charid=%u", id, charid), errbuf))
+	{
+		safe_delete_array(query);
+	}
+	else
+	{
+		//error
+		safe_delete_array(query);
+	}
+}
+
+void Database::RemovePlayerFromAdventure(int32 id, int32 charid)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+
+	if(RunQuery(query, MakeAnyLenString(&query, "DELETE FROM `adventure_members` WHERE"
+		" id=%u AND charid=%u", id, charid), errbuf))
+	{
+		safe_delete_array(query);
+	}
+	else
+	{
+		//error
+		safe_delete_array(query);
+	}
+}
+
+void Database::AddGroupToAdventure(int32 id, int32 gid)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT charid FROM group_id "
+		"WHERE groupid=%u", gid), errbuf, &result))
+	{
+		safe_delete_array(query);
+		while((row = mysql_fetch_row(result)) != NULL)
+		{
+			int32 charid = atoi(row[0]);
+			AddPlayerToAdventure(id, charid);
+		}
+		mysql_free_result(result);
+	}
+	else 
+	{
+		safe_delete_array(query);
+	}
+}
+
+void Database::AddRaidToAdventure(int32 id, int32 rid)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT charid FROM raid_members "
+		"WHERE raidid=%u", rid), errbuf, &result))
+	{
+		safe_delete_array(query);
+		while((row = mysql_fetch_row(result)) != NULL)
+		{
+			int32 charid = atoi(row[0]);
+			AddPlayerToAdventure(id, charid);
+		}
+		mysql_free_result(result);
+	}
+	else 
+	{
+		safe_delete_array(query);
+	}
+}
+
+void Database::DestroyAdventure(int32 id)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+
+	if(RunQuery(query, MakeAnyLenString(&query, "DELETE FROM `adventure_details` WHERE id=%u", id), errbuf))
+	{
+		safe_delete_array(query);
+	}
+	else
+	{
+		//error
+		safe_delete_array(query);
+	}
+
+	if(RunQuery(query, MakeAnyLenString(&query, "DELETE FROM `adventure_members` WHERE id=%u", id), errbuf))
+	{
+		safe_delete_array(query);
+	}
+	else
+	{
+		//error
+		safe_delete_array(query);
+	}
+}

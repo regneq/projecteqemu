@@ -1340,18 +1340,22 @@ void Client::Handle_OP_AdventureRequest(const EQApplicationPacket *app)
 
 void Client::Handle_OP_LDoNButton(const EQApplicationPacket *app)
 {
-	/*bool* p=(bool*)app->pBuffer;
-	if(*p == true ) {
-		Group* group=entity_list.GetGroupByClient(this);
-		SendAdventureRequestData(group);
+	bool* p=(bool*)app->pBuffer;
+	if(*p == true ) 
+	{
+		AcceptAdventure();
 	}
 	else
-		SetAdventureID(0);*/
-	return;
+	{
+		DeclineAdventure();
+	}
 }
 
 void Client::Handle_OP_LeaveAdventure(const EQApplicationPacket *app)
 {
+	LeaveAdventure();
+
+
 	/*uchar lol[4]={0x3F,0x2A,0x00,0x00};
 	EQApplicationPacket* outapp=new EQApplicationPacket(OP_AdventureFinish,4); // Doodman: Dunno if this is right or now
 	uchar* x=(uchar*)outapp->pBuffer;
@@ -1366,8 +1370,7 @@ void Client::Handle_OP_LeaveAdventure(const EQApplicationPacket *app)
 	FastQueuePacket(&outapp2);
 
 	SendAdventureFinish(0,0);*/
-	return;
-
+	//return;
 }
 
 void Client::Handle_OP_Consume(const EQApplicationPacket *app)
