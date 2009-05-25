@@ -948,22 +948,49 @@ bool NPC::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 						}
 						break;
 					}
-					case SpellType_Pet: {
-						 //keep mobs from recasting pets when they have them.
-						if (!IsPet() && !GetPetID() && !IsBotCharmer()) {
-							if(botClass == MAGICIAN) {
-								// have the magician bot randomly summon
-								// the air, earth, fire or water pet
-                                // include monster summoning after they
-                                // become level 30 magicians
-								int randpets;
-								if(botLevel >= 30) {
-									randpets = 4;
+					case SpellType_Pet:
+					{
+						//keep mobs from recasting pets when they have them.
+						if (!IsPet() && !GetPetID() && !IsBotCharmer())
+						{
+							if(botClass == MAGICIAN)
+							{
+								if(IsPetChooser())
+								{
+									i = i - GetPetChooserID();
 								}
-								else {
-									randpets = 3;
+								else
+								{
+									// have the magician bot randomly summon
+									// the air, earth, fire or water pet
+									// include monster summoning after they
+									// become level 30 magicians
+									int randpets;
+									if(botLevel >= 30)
+									{
+										randpets = 4;
+									}
+									else
+									{
+										randpets = 3;
+									}
+									if(GetLevel() == 2)
+									{
+										// Do nothing
+									}
+									else if(GetLevel() == 3)
+									{
+										i = MakeRandomInt(i-1, i);
+									}
+									else if(GetLevel() == 4)
+									{
+										i = MakeRandomInt(i-2, i);
+									}
+									else
+									{
+										i = MakeRandomInt(i-randpets, i);
+									}
 								}
-								i = MakeRandomInt(i-randpets, i);
 							}
 							AIDoSpellCast(i, tar, mana_cost);
 							return true;
