@@ -8031,6 +8031,7 @@ void command_bot(Client *c, const Seperator *sep) {
 		c->Message(15, "#bot spawnraid - Spawns your saved bots.");
 		c->Message(15, "#bot groupraid - Groups your spawned bots.");
 		c->Message(15, "#bot archery - Toggle Archery Skilled bots between using a Bow or using Melee weapons.");
+		c->Message(15, "#bot magepet [earth|water|air|fire|monster] - Select the pet type you want your Mage bot to use.");
 		return;
 	}
 
@@ -8711,7 +8712,6 @@ void command_bot(Client *c, const Seperator *sep) {
 			c->GetTarget()->Say("...but why?!! We had such good adventures together! gaahhh...glrrrk...");
 			c->GetTarget()->BotOwner = NULL;
 			c->GetTarget()->Kill();
-			c->Message(15, "Bot successfully deleted!");
 		}
 		else {
 			c->Message(15, "Error deleting Bot!");
@@ -9781,6 +9781,7 @@ void command_bot(Client *c, const Seperator *sep) {
 			if((c->GetTarget()->BotOwner == c->CastToMob()) && !c->GetFeigned()) {
                 Mob *bot = c->GetTarget();
                 bot->SetLevel(c->GetLevel());
+				bot->SetPetChooser(false);
 				bot->CalcBotStats();
             }
             else {
@@ -10218,6 +10219,125 @@ void command_bot(Client *c, const Seperator *sep) {
         return;
 	}
 
+	if(!strcasecmp(sep->arg[1], "magepet"))
+	{
+		if(c->GetTarget() && c->GetTarget()->IsBot() && (c->GetTarget()->GetClass() == MAGICIAN))
+		{
+			if(database.GetBotOwner(c->GetTarget()->GetNPCTypeID()) == c->AccountID())
+			{
+				int botlevel = c->GetTarget()->GetLevel();
+				c->GetTarget()->SetPetChooser(true);
+				if(botlevel == 1)
+				{
+					c->GetTarget()->Say("I don't have any pets yet.");
+					return;
+				}
+				if(!strcasecmp(sep->arg[2], "monster"))
+				{
+					if(botlevel < 30)
+					{
+						c->GetTarget()->Say("I don't have that pet yet.");
+						return;
+					}
+					else
+					{
+						c->GetTarget()->SetPetChooserID(0);
+					}
+				}
+				else if(!strcasecmp(sep->arg[2], "earth"))
+				{
+					if(botlevel < 5)
+					{
+						c->GetTarget()->Say("I don't have that pet yet.");
+						return;
+					}
+					else if(botlevel < 30)
+					{
+						c->GetTarget()->SetPetChooserID(0);
+					}
+					else
+					{
+						c->GetTarget()->SetPetChooserID(1);
+					}
+				}
+				else if(!strcasecmp(sep->arg[2], "air"))
+				{
+					if(botlevel < 4)
+					{
+						c->GetTarget()->Say("I don't have that pet yet.");
+						return;
+					}
+					else if(botlevel == 4)
+					{
+						c->GetTarget()->SetPetChooserID(0);
+					}
+					else if(botlevel < 30)
+					{
+						c->GetTarget()->SetPetChooserID(1);
+					}
+					else
+					{
+						c->GetTarget()->SetPetChooserID(2);
+					}
+				}
+				else if(!strcasecmp(sep->arg[2], "fire"))
+				{
+					if(botlevel < 3)
+					{
+						c->GetTarget()->Say("I don't have that pet yet.");
+						return;
+					}
+					else if(botlevel == 3)
+					{
+						c->GetTarget()->SetPetChooserID(0);
+					}
+					else if(botlevel == 4)
+					{
+						c->GetTarget()->SetPetChooserID(1);
+					}
+					else if(botlevel < 30)
+					{
+						c->GetTarget()->SetPetChooserID(2);
+					}
+					else
+					{
+						c->GetTarget()->SetPetChooserID(3);
+					}
+				}
+				else if(!strcasecmp(sep->arg[2], "water"))
+				{
+					if(botlevel < 3)
+					{
+						c->GetTarget()->SetPetChooserID(0);
+					}
+					else if(botlevel < 4)
+					{
+						c->GetTarget()->SetPetChooserID(1);
+					}
+					else if(botlevel < 5)
+					{
+						c->GetTarget()->SetPetChooserID(2);
+					}
+					else if(botlevel < 30)
+					{
+						c->GetTarget()->SetPetChooserID(3);
+					}
+					else
+					{
+						c->GetTarget()->SetPetChooserID(4);
+					}
+				}
+				if(c->GetTarget()->GetPet())
+				{
+					c->GetTarget()->GetPet()->Say_StringID(PET_GETLOST_STRING);
+					c->GetTarget()->GetPet()->Kill();
+					c->GetTarget()->SetPetID(0);
+				}
+			}
+		}
+		return;
+	}
+
 //Summon Corpse
 	if(!strcasecmp(sep->arg[1], "corpse") && !strcasecmp(sep->arg[2], "summon")) {
 		if(c->GetTarget() == NULL) {
@@ -10273,7 +10393,7 @@ void command_bot(Client *c, const Seperator *sep) {
 	if(!strcasecmp(sep->arg[1], "target") && !strcasecmp(sep->arg[2], "calm"))
     {
 		Mob *target = c->GetTarget();
-        if(target == NULL || target == c || target->IsBot() || target->IsPet() && target->GetOwner()->IsBot())
+		if(target == NULL || target->IsClient() || target->IsBot() || target->IsPet() && target->GetOwner()->IsBot())
         {
             c->Message(15, "You must select a monster");
             return;
@@ -10404,6 +10524,7 @@ void command_bot(Client *c, const Seperator *sep) {
 					{
 						c->GetTarget()->GetPet()->Say_StringID(PET_GETLOST_STRING);
 						c->GetTarget()->GetPet()->Kill();
+						c->GetTarget()->SetPetID(0);
 					}
 					c->GetTarget()->SetBotCharmer(true);
 					c->GetTarget()->Say("Available for Dire Charm command.");
