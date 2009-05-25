@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/25/2009==
+cavedude: (gaeorn) Added a possible fix for some NPCs not always spawning.
+
 ==05/24/2009==
 KLS: Fixed dodge/parry/riposte, lowered their effectiveness from skill points slightly.
 Congdar: Bots - Added new command #bot magepet [earth|water|air|fire|monster] - Select the pet type you want your Mage bot to use.
