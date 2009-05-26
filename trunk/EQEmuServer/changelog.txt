@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==05/26/2009==
 WildcardX: Fixed a bug that displayed the name of a target being summoned in an incorrect format.
+Angelox: Bots- Weapons that proc'd rune-types were proc'ing for the whole group. 3 fighters with PGTs made you pretty much bullet-proof.
 
 ==05/25/2009==
 cavedude: (gaeorn) Added a possible fix for some NPCs not always spawning.

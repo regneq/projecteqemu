@@ -2640,11 +2640,24 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar)
 		(IsClient() && IsDetrimentalSpell(spell_id) && spelltar->IsBot()))
 		return false;
 
+	//Angelox: Bot weapons can't group-proc runes
+	if ((IsBot()) && ((GetClass() != ENCHANTER)))
+	{
+	  if (spelltar != this)
+	   {
+	     for(int i=0; i<EFFECT_COUNT; ++i)
+	     {
+	        if (spells[spell_id].effectid[i] == SE_Rune)
+		   return false;
+	     }
+	   }
+	}
+
 	if(IsBot() && spelltar->IsPet())
 	{
 	  for(int i=0; i<EFFECT_COUNT; ++i)
 	  {
-	     if(spells[spell_id].effectid[i] == SE_Illusion)
+	     if((spells[spell_id].effectid[i] == SE_Illusion) || (spells[spell_id].effectid[i] == SE_Rune))
 		return false;
 	  }
 	}
