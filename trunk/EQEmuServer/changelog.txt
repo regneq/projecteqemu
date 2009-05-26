@@ -3,6 +3,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==05/25/2009==
 cavedude: (gaeorn) Added a possible fix for some NPCs not always spawning.
 Congdar: Bots - Added PvP for bots.
+WildcardX: (erde) Added include for limits.h.
 
 ==05/24/2009==
 KLS: Fixed dodge/parry/riposte, lowered their effectiveness from skill points slightly.
