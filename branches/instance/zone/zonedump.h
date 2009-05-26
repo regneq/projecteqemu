@@ -249,6 +249,7 @@ struct Door {
 	float	dest_y;
 	float	dest_z;
 	float	dest_heading;
+	int8	is_ldon_door;
 };
 
 #pragma pack()

@@ -113,12 +113,17 @@ struct AdventureInfo
 	std::string text;
 	uint32 duration;
 	uint32 zone_in_time;
+	uint8 theme;
 	uint16 win_points;
 	uint16 lose_points;
 	uint16 zone_in_zone_id;
-	double zone_in_x;
-	double zone_in_y;
-	sint16 zone_in_object_id;
+	double zone_in_x; //loc of zone in object
+	double zone_in_y; //loc of zone in object
+	sint16 zone_in_object_id; //actually a global door id
+	double dest_x; //x we zone into
+	double dest_y; //y we zone into
+	double dest_z; //z we zone into
+	double dest_h; //h we zone into
 };
 
 struct AdventureDetails

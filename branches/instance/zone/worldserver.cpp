@@ -1213,6 +1213,12 @@ void WorldServer::Process() {
 			}
 			break;
 		}
+
+		case ServerOP_AdventureUpdate: {
+			UpdateAdventure_Struct *aus = (UpdateAdventure_Struct*)pack->pBuffer;
+
+			break;
+		}
 		default: {
 			cout << " Unknown ZSopcode:" << (int)pack->opcode;
 			cout << " size:" << pack->size << endl;

@@ -630,6 +630,35 @@ void Client::Handle_Connect_OP_ReqClientSpawn(const EQApplicationPacket *app)
 		SendBazaarWelcome();
 
 	/*Adventure Data Send*/
+	int32 adv_id = 0;
+	int32 adv_adventure_id = 0;
+	int32 adv_inst_id = 0;
+	int32 adv_count = 0;
+	int32 adv_status = 0;
+	int32 adv_time_c = 0;
+	int32 adv_time_z = 0;
+	if(database.GetAdventureDetails(CharacterID(), adv_id, adv_adventure_id, adv_inst_id, adv_count, adv_status, adv_time_c, adv_time_z) == true)
+	{
+		AdventureDetails* nd = new AdventureDetails;
+		nd->id = adv_id;
+		nd->instance_id = adv_inst_id;
+		nd->count = adv_count;
+		nd->status = adv_status;
+		nd->time_created = adv_time_c;
+		nd->time_zoned = adv_time_z;
+
+		AdventureInfo* ai = zone->adventure_list[adv_adventure_id];
+		if(!ai)
+		{
+			safe_delete(nd);
+		}
+		else
+		{
+			nd->ai = ai;
+			SetCurrentAdventure(nd);
+			SendAdventureDetail();
+		}
+	}
 
 	conn_state = ZoneContentsSent;
 

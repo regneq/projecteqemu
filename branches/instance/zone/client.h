@@ -817,6 +817,7 @@ public:
 	void AcceptAdventure();
 	void DeclineAdventure();
 	void LeaveAdventure();
+	bool AdventureExpired();
 
 protected:
 	friend class Mob;

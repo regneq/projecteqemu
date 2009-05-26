@@ -3321,3 +3321,162 @@ void Database::DestroyAdventure(int32 id)
 		safe_delete_array(query);
 	}
 }
+
+bool Database::GetAdventureDetails(int32 charid, int32 &id, int32 &adventure_id, int32 &instance_id, int32 &count, int32 &status, int32 &time_c, int32 &time_z)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+	int32 adv_id = 0;
+
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT `id` FROM `adventure_members` WHERE charid=%u LIMIT 1", 
+		charid), errbuf, &result))
+	{
+		safe_delete_array(query);
+		while((row = mysql_fetch_row(result)) != NULL)
+		{
+			adv_id = atoi(row[0]);
+		}
+		mysql_free_result(result);
+	}
+	else 
+	{
+		safe_delete_array(query);
+	}
+
+	if(adv_id == 0)
+		return false;
+
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT `adventure_id`, `instance_id`, `count`, `status`, "
+		"`time_created`, `time_zoned` FROM `adventure_details` WHERE id=%u LIMIT 1", adv_id), errbuf, &result))
+	{
+		safe_delete_array(query);
+		while((row = mysql_fetch_row(result)) != NULL)
+		{
+			adventure_id = atoi(row[0]);
+			instance_id = atoi(row[1]);
+			count = atoi(row[2]);
+			status = atoi(row[3]);
+			time_c = atoi(row[4]);
+			time_z = atoi(row[5]);
+			id = adv_id;
+		}
+		mysql_free_result(result);
+		return true;
+	}
+	else 
+	{
+		safe_delete_array(query);
+		return false;
+	}
+	
+}
+
+int32 Database::CountPlayersInAdventure(int32 id) 
+{ 
+	//SELECT `charid` FROM `adventure_members` WHERE id=%u
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+
+	int count = 0;
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT `charid` FROM `adventure_members` WHERE "
+		"id=%u", id), errbuf, &result))
+	{
+		safe_delete_array(query);
+		while((row = mysql_fetch_row(result)) != NULL)
+		{
+			count++;
+		}
+		mysql_free_result(result);
+	}
+	else 
+	{
+		safe_delete_array(query);
+	}
+	return count;
+}
+
+void Database::PurgeAdventures() 
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+
+	if(RunQuery(query, MakeAnyLenString(&query, "DELETE FROM `adventure_details`"), errbuf))
+	{
+		safe_delete_array(query);
+	}
+	else
+	{
+		//error
+		safe_delete_array(query);
+	}
+
+	if(RunQuery(query, MakeAnyLenString(&query, "DELETE FROM `adventure_members`"), errbuf))
+	{
+		safe_delete_array(query);
+	}
+	else
+	{
+		//error
+		safe_delete_array(query);
+	}
+}
+
+void Database::AddAdventureToInstance(int32 adv_id, int32 inst_id) 
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT `charid` FROM `adventure_members` WHERE id=%u", 
+		adv_id), errbuf, &result))
+	{
+		safe_delete_array(query);
+		while((row = mysql_fetch_row(result)) != NULL)
+		{
+			int32 id = atoi(row[0]);
+			AddClientToInstance(inst_id, id);
+		}
+		mysql_free_result(result);
+	}
+	else 
+	{
+		safe_delete_array(query);
+	}
+}
+
+void Database::UpdateAdventureStatus(int32 adv_id, int32 status) 
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	if(RunQuery(query, MakeAnyLenString(&query, "UPDATE `adventure_details` SET status=%u WHERE id=%u", 
+		status, adv_id), errbuf))
+	{
+		safe_delete_array(query);
+	}
+	else
+	{
+		//error
+		safe_delete_array(query);
+	}
+}
+
+void Database::UpdateAdventureInstance(int32 adv_id, int32 inst_id, int32 time) 
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	if(RunQuery(query, MakeAnyLenString(&query, "UPDATE `adventure_details` SET instance_id=%d, "
+		"time_zoned=%u WHERE id=%u", inst_id, time, adv_id), errbuf))
+	{
+		safe_delete_array(query);
+	}
+	else
+	{
+		//error
+		safe_delete_array(query);
+	}
+}

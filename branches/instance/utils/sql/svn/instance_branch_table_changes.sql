@@ -41,6 +41,8 @@ ALTER TABLE `object` DROP `unknown88`;
 DELETE FROM object WHERE object.type=1 AND object.itemid!=0;
 
 ALTER TABLE `doors` ADD `version` SMALLINT UNSIGNED DEFAULT '0' NOT NULL AFTER `zone`;
+ALTER TABLE `doors` ADD `is_ldon_door` TINYINT UNSIGNED DEFAULT '0' NOT NULL AFTER `dest_heading`
+
 ALTER TABLE `npc_types` ADD `adventure_template_id` INT UNSIGNED DEFAULT '0' NOT NULL AFTER `npc_faction_id`;
 
 CREATE TABLE `adventure_template` (
@@ -59,10 +61,15 @@ CREATE TABLE `adventure_template` (
   `zone_in_time` int(10) unsigned NOT NULL default '1800',
   `win_points` smallint(5) unsigned NOT NULL default '0',
   `lose_points` smallint(5) unsigned NOT NULL default '0',
+  `theme` tinyint(3) unsigned NOT NULL default '1',
   `zone_in_zone_id` smallint(5) unsigned NOT NULL default '0',
   `zone_in_x` float NOT NULL default '0',
   `zone_in_y` float NOT NULL default '0',
   `zone_in_object_id` smallint(4) NOT NULL default '0',
+  `dest_x` float unsigned NOT NULL default '0',
+  `dest_y` float unsigned NOT NULL default '0',
+  `dest_z` float unsigned NOT NULL default '0',
+  `dest_h` float unsigned NOT NULL default '0',
   PRIMARY KEY  (`id`),
   UNIQUE KEY `id` (`id`),
   KEY `id_2` (`id`)
@@ -74,3 +81,21 @@ CREATE TABLE `adventure_template_entry` (
   PRIMARY KEY  (`id`,`template_id`),
   KEY `id` (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+CREATE TABLE `adventure_details` (
+  `id` int(10) unsigned NOT NULL auto_increment,
+  `adventure_id` smallint(5) unsigned NOT NULL,
+  `instance_id` int(11) NOT NULL default '-1',
+  `count` smallint(5) unsigned NOT NULL default '0',
+  `status` tinyint(3) unsigned NOT NULL default '0',
+  `time_created` int(10) unsigned NOT NULL,
+  `time_zoned` int(10) unsigned NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `adventure_members` (
+  `id` int(10) unsigned NOT NULL,
+  `charid` int(10) unsigned NOT NULL,
+  PRIMARY KEY  (`charid`),
+  KEY `id` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

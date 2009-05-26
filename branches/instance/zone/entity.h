@@ -24,6 +24,7 @@
 #include "../common/eq_constants.h"
 #include "zonedump.h"
 #include "zonedbasync.h"
+#include "../common/servertalk.h"
 
 // max number of newspawns to send per bulk packet
 #define SPAWNS_PER_POINT_DATARATE 10
@@ -337,6 +338,7 @@ public:
 	void	ZoneWho(Client *c, Who_All_Struct* Who);
 
 	void	GateAllClients();
+	void	SendZoneAdventureUpdates(UpdateAdventure_Struct *aus);
 
 #ifdef EQBOTS
 

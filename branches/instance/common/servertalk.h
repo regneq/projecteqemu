@@ -96,6 +96,8 @@
 #define ServerOP_RaidGroupAdd		0x010D
 #define ServerOP_RaidGroupRemove	0x010E
 
+#define ServerOP_AdventureUpdate	0x0150
+#define ServerOP_AdventureExpire	0x0151
 
 #define ServerOP_WhoAll				0x0210
 #define ServerOP_FriendsWho			0x0211
@@ -779,6 +781,19 @@ struct ServerLFPMatchesRequest_Struct {
 struct UpdateSpawnTimer_Struct {
 	int32 id;
 	int32 duration;
+};
+
+struct UpdateAdventure_Struct
+{
+	uint32 id;
+	sint32 instance_id;
+	int8 status;
+	int32 time_zoned;
+};
+
+struct ExpireAdventure_Struct
+{
+	uint32 id;
 };
 
 #pragma pack()

@@ -1939,8 +1939,8 @@ void Zone::LoadAdventures()
 	MYSQL_ROW row;
 
 	if(database.RunQuery(query,MakeAnyLenString(&query,"SELECT id, zone, zone_version, is_hard, is_raid, min_level, max_level, "
-		"type, type_data, type_count, text, duration, zone_in_time, win_points, lose_points, zone_in_zone_id, zone_in_x, "
-		"zone_in_y, zone_in_object_id FROM adventure_template"),errbuf,&result)) {
+		"type, type_data, type_count, text, duration, zone_in_time, win_points, lose_points, theme, zone_in_zone_id, zone_in_x, "
+		"zone_in_y, zone_in_object_id, dest_x, dest_y, dest_z, dest_h FROM adventure_template"),errbuf,&result)) {
 		while((row = mysql_fetch_row(result))) 
 		{
 			int8 x = 0;
@@ -1960,10 +1960,15 @@ void Zone::LoadAdventures()
 			ai->zone_in_time = atoi(row[x++]);
 			ai->win_points = atoi(row[x++]);
 			ai->lose_points = atoi(row[x++]);
+			ai->theme = atoi(row[x++]);
 			ai->zone_in_zone_id = atoi(row[x++]);
 			ai->zone_in_x = atof(row[x++]);
 			ai->zone_in_y = atof(row[x++]);
 			ai->zone_in_object_id = atoi(row[x++]);
+			ai->dest_x = atof(row[x++]);
+			ai->dest_y = atof(row[x++]);
+			ai->dest_z = atof(row[x++]);
+			ai->dest_h = atof(row[x++]);
 			adventure_list[ai->id] = ai;
 		}
 		mysql_free_result(result);

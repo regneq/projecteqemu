@@ -48,6 +48,8 @@ public:
 	float	GetDestY() { return dest_y; }
 	float	GetDestZ() { return dest_z; }
 	float	GetDestHeading() { return dest_heading; }
+
+	int8	IsLDoNDoor() { return is_ldon_door; }
 	
 	void	NPCOpen(NPC* sender);
 	void	ForceOpen(Mob *sender);
@@ -84,4 +86,6 @@ private:
 	float	dest_y;
 	float	dest_z;
 	float	dest_heading;
+
+	int8	is_ldon_door;
 };

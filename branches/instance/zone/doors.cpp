@@ -21,6 +21,7 @@ Copyright (C) 2001-2002  EQEMu Development Team (http://eqemu.org)
 #include <string.h>
 using namespace std;
 #include "masterentity.h"
+#include "worldserver.h"
 #include "StringIDs.h"
 #include "zonedb.h"
 #include "../common/packet_functions.h"
@@ -32,6 +33,7 @@ using namespace std;
 #define CLOSE_DOOR 0x03
 
 extern EntityList entity_list;
+extern WorldServer worldserver;
 
 Doors::Doors(const Door* door)
 :    close_timer(5000)
@@ -66,6 +68,8 @@ Doors::Doors(const Door* door)
 	dest_z = door->dest_z;
 	dest_heading = door->dest_heading;
 
+	is_ldon_door = door->is_ldon_door;
+
 }
 
 Doors::~Doors()
@@ -98,6 +102,80 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 	//used_pawn: Locked doors! Rogue friendly too =)
 	//TODO: add check for other lockpick items
 	//////////////////////////////////////////////////////////////////
+
+	if(IsLDoNDoor())
+	{
+		if(sender)
+		{
+			AdventureDetails* ad = sender->GetCurrentAdventure();
+			if(ad)
+			{
+				if(ad->ai)
+				{
+					if(ad->ai->zone_in_object_id == GetDoorDBID())
+					{
+						int32 zone_id = database.GetZoneID(ad->ai->zone_name.c_str());
+						if(ad->instance_id == -1)
+						{
+							if(zone_id < 1)
+							{
+								sender->Message(0, "Server was unable to find that zone id.");
+								return;
+							}
+
+							int16 i_id = 0;
+							if(!database.GetUnusedInstanceID(i_id))
+							{
+								sender->Message(0, "Server was unable to find a free instance id.");
+								return;
+							}
+
+							if(!database.CreateInstance(i_id, zone_id, ad->ai->zone_version, ad->ai->duration+1800))
+							{
+								sender->Message(0, "Server was unable to create a new instance.");
+								return;
+							}
+
+							database.AddAdventureToInstance(ad->id, i_id);
+							ServerPacket* pack = new ServerPacket(ServerOP_AdventureUpdate, sizeof(UpdateAdventure_Struct));
+							UpdateAdventure_Struct* uas = (UpdateAdventure_Struct*) pack->pBuffer;
+							
+							timeval tv;
+							gettimeofday(&tv, NULL);
+							uas->time_zoned = tv.tv_sec;
+							uas->instance_id = i_id;
+							uas->status = 1;
+							uas->id = ad->id;
+							database.UpdateAdventureStatus(ad->id, 1);
+							database.UpdateAdventureInstance(ad->id, i_id, tv.tv_sec);						
+							database.AddAdventureToInstance(ad->id, i_id);
+							sender->MovePC(zone_id, i_id, ad->ai->dest_x, ad->ai->dest_y, ad->ai->dest_z, ad->ai->dest_h, 0, ZoneSolicited);
+							worldserver.SendPacket(pack);
+						}
+						else
+						{
+							sender->MovePC(zone_id, ad->instance_id, ad->ai->dest_x, ad->ai->dest_y, ad->ai->dest_z, ad->ai->dest_h, 0, ZoneSolicited);
+						}
+					}
+					else
+					{
+						sender->Message_StringID(13, 5143);
+						return;
+					}
+				}
+				else
+				{
+					sender->Message_StringID(13, 5141);
+					return;
+				}
+			}
+			else
+			{
+				sender->Message_StringID(13, 5141);
+				return;
+			}
+		}
+	}
 
 	uint32 keyneeded = GetKeyItem();
 	int8 keepoffkeyring = GetNoKeyring();
@@ -505,7 +583,7 @@ bool ZoneDatabase::LoadDoors(sint32 iDoorCount, Door *into, const char *zone_nam
 //	Door tmpDoor;
 	MakeAnyLenString(&query, "SELECT id,doorid,zone,name,pos_x,pos_y,pos_z,heading,"
 		"opentype,guild,lockpick,keyitem,nokeyring,triggerdoor,triggertype,dest_zone,dest_x,"
-		"dest_y,dest_z,dest_heading,door_param,invert_state,incline,size "
+		"dest_y,dest_z,dest_heading,door_param,invert_state,incline,size,is_ldon_door "
 		"FROM doors WHERE zone='%s' AND version=%u ORDER BY doorid asc", zone_name, version);
 	if (RunQuery(query, strlen(query), errbuf, &result)) {
 		safe_delete_array(query);
@@ -540,6 +618,7 @@ bool ZoneDatabase::LoadDoors(sint32 iDoorCount, Door *into, const char *zone_nam
 			into[r].invert_state=atoi(row[21]);
 			into[r].incline=atoi(row[22]);
 			into[r].size=atoi(row[23]);
+			into[r].is_ldon_door=atoi(row[24]);
 		}
 		mysql_free_result(result);
 	}

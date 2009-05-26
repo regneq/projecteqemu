@@ -3923,6 +3923,12 @@ void Client::AcceptAdventure()
 	if(GetCurrentAdventure())
 		return;
 
+	Group *g = GetGroup();
+	Raid *r = GetRaid();
+
+	if(!g && !r)
+		return;
+
 	AdventureInfo *t = GetOfferedAdventure();
 	if(t)
 	{
@@ -3942,7 +3948,45 @@ void Client::AcceptAdventure()
 			ad->time_created = tv.tv_sec;
 			ad->time_zoned = 0;
 
-			database.AddPlayerToAdventure(adv_id, CharacterID());
+			if(g)
+			{
+				int count = g->GroupCount();
+				if(t->is_raid)
+				{
+					safe_delete(ad)
+					return;
+				}
+				else
+				{
+					if(count < RuleI(Adventure, MinNumberForGroup) || count > RuleI(Adventure, MaxNumberForGroup))
+					{
+						safe_delete(ad)
+						return;
+					}
+				}
+				database.AddGroupToAdventure(adv_id, g->GetID());
+			}
+			else if(r)
+			{
+				int count = r->RaidCount();
+				if(t->is_raid)
+				{
+					if(count < RuleI(Adventure, MinNumberForRaid) || count > RuleI(Adventure, MaxNumberForRaid))
+					{
+						safe_delete(ad)
+						return;
+					}
+				}
+				else
+				{
+					if(count < RuleI(Adventure, MinNumberForGroup) || count > RuleI(Adventure, MaxNumberForGroup))
+					{
+						safe_delete(ad)
+						return;
+					}
+				}
+				database.AddRaidToAdventure(adv_id, r->GetID());
+			}
 			SetCurrentAdventure(ad);
 			SetOfferedAdventure(NULL);
 			SendAdventureDetail();
@@ -4037,4 +4081,30 @@ void Client::SendAdventureFinish(bool win, int32 points)
 		af->points = 0;
 		FastQueuePacket(&outapp);
 	}
+}
+
+bool Client::AdventureExpired()
+{
+	AdventureDetails* t = GetCurrentAdventure();
+	if(t)
+	{
+		if(t->ai)
+		{
+			if(t->instance_id == -1)
+			{
+				timeval tv;
+				gettimeofday(&tv, NULL);
+				if((t->time_created + t->ai->zone_in_time) >= tv.tv_sec)
+					return true;
+			}
+			else
+			{
+				timeval tv;
+				gettimeofday(&tv, NULL);
+				if((t->time_zoned + t->ai->duration) >= tv.tv_sec)
+					return true;
+			}
+		}
+	}
+	return false;
 }
