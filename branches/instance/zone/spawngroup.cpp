@@ -77,7 +77,7 @@ uint32 SpawnGroup::GetNPCType() {
 	
 	
 	sint32 roll = 0;
-	roll = MakeRandomInt(0, totalchance);
+	roll = MakeRandomInt(0, totalchance-1);
 	
 	cur = possible.begin();
 	end = possible.end();

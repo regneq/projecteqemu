@@ -412,14 +412,20 @@ bool logpos;
 	bool OrderBotAttack;
 	bool BotArchery;
 	bool BotCharmer;
+	bool PetChooser;
+	int8 PetChooserID;
 	uint32 BotArcheryRange;
 	void SetBotArcheryRange(uint32 r) { BotArcheryRange = r; }
+	void SetPetChooserID(int8 id) { PetChooserID = id; }
+	int8 GetPetChooserID() { return PetChooserID; }
 	uint32 GetBotArcheryRange() { return BotArcheryRange; }
 	void SetBotArcher(bool a) { BotArchery = a; }
 	void SetBotCharmer(bool c) { BotCharmer = c; }
 	void SetBotRaiding(bool v) { BotRaiding = v; }
+	void SetPetChooser(bool p) { PetChooser = p; }
 	void SetOrderBotAttack(bool v) { OrderBotAttack = v; }
 	bool IsBotRaiding() const { return BotRaiding; }
+	bool IsPetChooser() const { return PetChooser; }
 	bool IsBotArcher() const { return BotArchery; }
 	bool IsBotCharmer() const { return BotCharmer; }
 	bool IsOrderBotAttack() const { return OrderBotAttack; }
