@@ -10,6 +10,7 @@ using namespace std;
 #include <stdio.h>
 #include <stdlib.h>
 #include <zlib.h>
+#include <limits.h>
 
 //FatherNitwit: uncomment to enable my IP based authentication hack
 //#define IPBASED_AUTH_HACK
@@ -88,9 +89,9 @@ Client::Client(EQStreamInterface* ieqs)
 Client::~Client() {
 	if (RunLoops && cle && zoneID == 0)
 		cle->SetOnline(CLE_Status_Offline);
-	
+
 	numclients--;
-	
+
 	//let the stream factory know were done with this stream
 	eqs->Close();
 	eqs->ReleaseFromUse();
@@ -98,7 +99,7 @@ Client::~Client() {
 
 void Client::SendLogServer()
 {
-	EQApplicationPacket *outapp = new EQApplicationPacket(OP_LogServer, sizeof(LogServer_Struct)); 
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_LogServer, sizeof(LogServer_Struct));
 	LogServer_Struct *l=(LogServer_Struct *)outapp->pBuffer;
 	const char *wsn=WorldConfig::get()->ShortName.c_str();
 	memcpy(l->worldshortname,wsn,strlen(wsn));
@@ -108,7 +109,7 @@ void Client::SendLogServer()
 
 	if(RuleB(Chat, EnableVoiceMacros))
 		l->enablevoicemacros = 1;
-	
+
 	if(database.GetServerType() == 1)
 		l->enable_pvp = 1;
 
@@ -130,7 +131,7 @@ char char_name[32]= { 0 };
 		}
 	}
 
-	EQApplicationPacket *outapp = new EQApplicationPacket(OP_EnterWorld, strlen(char_name)+1); 
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_EnterWorld, strlen(char_name)+1);
 	memcpy(outapp->pBuffer,char_name,strlen(char_name)+1);
 	QueuePacket(outapp);
 	safe_delete(outapp);
@@ -154,16 +155,16 @@ void Client::SendCharInfo() {
 	if (cle) {
 		cle->SetOnline(CLE_Status_CharSelect);
 	}
-	
+
 	seencharsel = true;
-	
+
 
 	// Send OP_SendCharInfo
 	EQApplicationPacket *outapp = new EQApplicationPacket(OP_SendCharInfo, sizeof(CharacterSelect_Struct));
 	CharacterSelect_Struct* cs = (CharacterSelect_Struct*)outapp->pBuffer;
-	
+
 	database.GetCharSelectInfo(GetAccountID(), cs);
-	
+
 	QueuePacket(outapp);
 	safe_delete(outapp);
 }
@@ -183,12 +184,12 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 	_pkt(WORLD__CLIENT_TRACE,app);
 
 	bool ret = true;
-	
+
 	if (!eqs->CheckState(ESTABLISHED)) {
 		clog(WORLD__CLIENT,"Client disconnected (net inactive on send)");
 		return false;
 	}
-	
+
 	// Voidd: Anti-GM Account hack, Checks source ip against valid GM Account IP Addresses
 	if (RuleB(World, GMAccountIPList) && this->GetAdmin() >= (RuleI(World, MinGMAntiHackStatus))) {
 		if(!database.CheckGMIPs(long2ip(this->GetIP()).c_str(), this->GetAccountID())) {
@@ -196,7 +197,7 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 			eqs->Close();
 		}
 	}
-	
+
 	if (GetAccountID() == 0 && opcode != OP_SendLoginInfo) {
 		// Got a packet other than OP_SendLoginInfo when not logged in
 		clog(WORLD__CLIENT_ERR,"Expecting OP_SendLoginInfo, got %s", OpcodeNames[opcode]);
@@ -205,7 +206,7 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 	else if (opcode == OP_AckPacket) {
 		return true;
 	}
-	
+
 	switch(opcode)
 	{
 		case OP_CrashDump:
@@ -269,11 +270,11 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 					ret = false;
 					break;
 				}
-				
+
 				cle->SetOnline();
-				
+
 				clog(WORLD__CLIENT,"Logged in. Mode=%s",pZoning ? "(Zoning)" : "(CharSel)");
-				
+
 				if(minilogin){
 					WorldConfig::DisableStats();
 					clog(WORLD__CLIENT,"MiniLogin Account #%d",cle->AccountID());
@@ -293,7 +294,7 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 					loginserver.SendPacket(pack);
 					safe_delete(pack);
 				}
-				
+
 				if (!pZoning)
 					SendGuildList();
 				SendLogServer();
@@ -327,7 +328,7 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 			snprintf(char_name, 64, "%s", (char*)app->pBuffer);
 			uchar race = app->pBuffer[64];
 			uchar clas = app->pBuffer[68];
-			
+
 			clog(WORLD__CLIENT,"Name approval request.  Name=%s, race=%s, class=%s",char_name,GetRaceName(race),GetEQClassName(clas));
 
 			EQApplicationPacket *outapp;
@@ -352,7 +353,7 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 			outapp->pBuffer[0] = valid? 1 : 0;
 			QueuePacket(outapp);
 			safe_delete(outapp);
-			break;			
+			break;
 		}
 		case OP_RandomNameGenerator:
 		{
@@ -409,7 +410,7 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 						rndname[i]=cons[rndnum];
 					}
 				}
-				else	
+				else
 				{		// select a vowel
 					rndname[i]=vowels[rand()%17];
 				}
@@ -424,7 +425,7 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 					}
 				}
 			}
-			
+
 			rndname[0]=toupper(rndname[0]);
 			NameGeneration_Struct* ngs = (NameGeneration_Struct*)app->pBuffer;
 			memset(ngs->name,0,64);
@@ -500,7 +501,7 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 
 			EnterWorld_Struct *ew=(EnterWorld_Struct *)app->pBuffer;
 			strncpy(char_name, ew->name, 64);
-			
+
 			EQApplicationPacket *outapp;
 			int32 tmpaccid = 0;
 			charid = database.GetCharacterInfo(char_name, &tmpaccid, &zoneID);
@@ -509,7 +510,7 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 				eqs->Close();
 				break;
 			}
-			
+
 			// Make sure this account owns this character
 			if (tmpaccid != GetAccountID()) {
 				clog(WORLD__CLIENT_ERR,"This account does not own the character named '%s'",char_name);
@@ -539,7 +540,7 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 				database.MoveCharacterToZone(charid, "arena");
 				clog(WORLD__CLIENT_ERR, "Zone not found in database zone_id=%i, moveing char to arena character:%s", zoneID, char_name);
 			}
-			
+
 			if(!pZoning) {
 				database.SetGroupID(char_name, 0, charid);
 				database.SetLFP(charid, false);
@@ -569,7 +570,7 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 				outapp->pBuffer = new uchar[outapp->size];
 				memset(outapp->pBuffer,0,outapp->size);
 				strcpy((char*)outapp->pBuffer, tmp);
-					
+
 			} else {
 				// Null Message of the Day. :)
 				outapp->size = 1;
@@ -610,7 +611,7 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 			memcpy(outapp2->pBuffer,buffer,outapp2->size);
 			QueuePacket(outapp2);
 			safe_delete(outapp2);
-			
+
 			EnterWorld();
 			break;
 		}
@@ -678,14 +679,14 @@ bool Client::Process() {
 		if (cle)
 			cle->KeepAlive();
 	}
-    
+
 	/************ Get all packets from packet manager out queue and process them ************/
 	EQApplicationPacket *app = 0;
 	while(ret && (app = (EQApplicationPacket *)eqs->PopPacket())) {
 		ret = HandlePacket(app);
 
 		delete app;
-	}    
+	}
 
 	if (!eqs->CheckState(ESTABLISHED)) {
 		if(WorldConfig::get()->UpdateStats){
@@ -737,19 +738,19 @@ void Client::EnterWorld(bool TryBootup) {
 		}
 	}
 	pwaitingforbootup = 0;
-	
+
 	cle->SetChar(charid, char_name);
 	database.UpdateLiveChar(char_name, GetAccountID());
 	clog(WORLD__CLIENT,"%s %s (%d)",seencharsel ? "Entering zone" : "Zoning to",zone_name,zoneID);
 //	database.SetAuthentication(account_id, char_name, zone_name, ip);
-	
+
 	if (seencharsel) {
 		if (GetAdmin() < 80 && zoneserver_list.IsZoneLocked(zoneID)) {
 			clog(WORLD__CLIENT_ERR,"Enter world failed.  Zone is locked.");
 			ZoneUnavail();
 			return;
 		}
-		
+
 		ServerPacket* pack = new ServerPacket;
 		pack->opcode = ServerOP_AcceptWorldEntrance;
 		pack->size = sizeof(WorldToZone_Struct);
@@ -770,7 +771,7 @@ void Client::EnterWorld(bool TryBootup) {
 void Client::Clearance(sint8 response)
 {
 	ZoneServer* zs = zoneserver_list.FindByZoneID(zoneID);
-	
+
     if(zs == 0 || response == -1 || response == 0)
     {
         if (zs == 0)
@@ -779,32 +780,32 @@ void Client::Clearance(sint8 response)
         } else {
         	clog(WORLD__CLIENT_ERR, "Invalid response %d in Client::Clearance", response);
         }
-		
+
         ZoneUnavail();
         return;
     }
-	
+
 	EQApplicationPacket* outapp;
-	
+
     if (zs->GetCAddress() == NULL) {
         clog(WORLD__CLIENT_ERR, "Unable to do zs->GetCAddress() in Client::Clearance!!");
         ZoneUnavail();
-        return;    
+        return;
     }
-	
+
     if (zoneID == 0) {
         clog(WORLD__CLIENT_ERR, "zoneID is NULL in Client::Clearance!!");
         ZoneUnavail();
         return;
     }
-	
+
 	const char* zonename = database.GetZoneName(zoneID);
     if (zonename == 0) {
         clog(WORLD__CLIENT_ERR, "zonename is NULL in Client::Clearance!!");
         ZoneUnavail();
         return;
     }
-	
+
 	// @bp This is the chat server
 	/*
 	char packetData[] = "64.37.148.34.9876,MyServer,Testchar,23cd2c95";
@@ -813,7 +814,7 @@ void Client::Clearance(sint8 response)
 	QueuePacket(outapp);
 	delete outapp;
 	*/
-	
+
 	// Send zone server IP data
 	outapp = new EQApplicationPacket(OP_ZoneServerInfo, sizeof(ZoneServerInfo_Struct));
 	ZoneServerInfo_Struct* zsi = (ZoneServerInfo_Struct*)outapp->pBuffer;
@@ -834,7 +835,7 @@ void Client::Clearance(sint8 response)
     	clog(WORLD__CLIENT,"Sending client to zone %s (%d) at %s:%d",zonename,zoneID,zsi->ip,zsi->port);
 	QueuePacket(outapp);
 	safe_delete(outapp);
-	
+
 	if (cle)
 		cle->SetOnline(CLE_Status_Zoning);
 }
@@ -847,7 +848,7 @@ void Client::ZoneUnavail() {
 		strcpy(ua->zonename, zonename);
 	QueuePacket(outapp);
 	delete outapp;
-	
+
 	zoneID = 0;
 	pwaitingforbootup = 0;
 	autobootup_timeout.Disable();
@@ -864,7 +865,7 @@ bool Client::GenPassKey(char* key) {
 void Client::QueuePacket(const EQApplicationPacket* app, bool ack_req) {
 	clog(WORLD__CLIENT_TRACE, "Sending EQApplicationPacket OpCode 0x%04x",app->GetOpcode());
 	_pkt(WORLD__CLIENT_TRACE, app);
-	
+
 	ack_req = true;	// It's broke right now, dont delete this line till fix it. =P
 	eqs->QueuePacket(app, ack_req);
 }
@@ -872,17 +873,17 @@ void Client::QueuePacket(const EQApplicationPacket* app, bool ack_req) {
 void Client::SendGuildList() {
 	EQApplicationPacket *outapp;
 	outapp = new EQApplicationPacket(OP_GuildsList);
-	
+
 	//ask the guild manager to build us a nice guild list packet
 	outapp->pBuffer = guild_mgr.MakeGuildList("", outapp->size);
 	if(outapp->pBuffer == NULL) {
 		clog(GUILDS__ERROR, "Unable to make guild list!");
 		return;
 	}
-	
+
 	clog(GUILDS__OUT_PACKETS, "Sending OP_GuildsList of length %d", outapp->size);
 //	_pkt(GUILDS__OUT_PACKET_TRACE, outapp);
-	
+
 	eqs->FastQueuePacket((EQApplicationPacket **)&outapp);
 }
 
@@ -890,7 +891,7 @@ void Client::SendGuildList() {
 void Client::SendApproveWorld()
 {
 	EQApplicationPacket* outapp;
-	
+
 	// Send OPCode: OP_ApproveWorld, size: 544
 	outapp = new EQApplicationPacket(OP_ApproveWorld, sizeof(ApproveWorld_Struct));
 	ApproveWorld_Struct* aw = (ApproveWorld_Struct*)outapp->pBuffer;
@@ -952,7 +953,7 @@ void Client::SendApproveWorld()
 
 bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 {
-	PlayerProfile_Struct pp; 
+	PlayerProfile_Struct pp;
 	ExtendedProfile_Struct ext;
 	Inventory inv;
 	time_t bday = time(NULL);
@@ -960,8 +961,8 @@ bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 	uint32 i;
 	struct in_addr	in;
 
-			
-	int stats_sum = cc->STR + cc->STA + cc->AGI + cc->DEX + 
+
+	int stats_sum = cc->STR + cc->STA + cc->AGI + cc->DEX +
 		cc->WIS + cc->INT + cc->CHA;
 
 	in.s_addr = GetIP();
@@ -971,7 +972,7 @@ bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 		cc->race, cc->class_, cc->gender, cc->deity, cc->start_zone);
 	clog(WORLD__CLIENT,"STR  STA  AGI  DEX  WIS  INT  CHA    Total");
 	clog(WORLD__CLIENT,"%3d  %3d  %3d  %3d  %3d  %3d  %3d     %3d",
-		cc->STR, cc->STA, cc->AGI, cc->DEX, cc->WIS, cc->INT, cc->CHA, 
+		cc->STR, cc->STA, cc->AGI, cc->DEX, cc->WIS, cc->INT, cc->CHA,
 		stats_sum);
 	clog(WORLD__CLIENT,"Face: %d  Eye colors: %d %d", cc->face, cc->eyecolor1, cc->eyecolor2);
 	clog(WORLD__CLIENT,"Hairstyle: %d  Haircolor: %d", cc->hairstyle, cc->haircolor);
@@ -986,9 +987,9 @@ bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 
 	// Convert incoming cc_s to the new PlayerProfile_Struct
 	memset(&pp, 0, sizeof(PlayerProfile_Struct));	// start building the profile
-	
+
 	InitExtendedProfile(&ext);
-	
+
 	strncpy(pp.name, name, 63);
 	// clean the capitalization of the name
 #if 0	// on second thought, don't - this will just make the creation fail
@@ -999,7 +1000,7 @@ bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 			return false;
 		pp.name[i] = tolower(pp.name[i]);
 	}
-	pp.name[0] = toupper(pp.name[0]);	
+	pp.name[0] = toupper(pp.name[0]);
 #endif
 
 	pp.race				= cc->race;
@@ -1045,7 +1046,7 @@ bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 	// Some one fucking fix this to use a field name. -Doodman
 	//pp.unknown3596[28] = 15; // @bp: This is to enable disc usage
 //	strcpy(pp.servername, WorldConfig::get()->ShortName.c_str());
-			
+
 
 	for(i = 0; i < MAX_PP_SPELLBOOK; i++)
 		pp.spell_book[i] = 0xFFFFFFFF;
@@ -1056,13 +1057,13 @@ bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 	for(i = 0; i < BUFF_COUNT; i++)
 		pp.buffs[i].spellid = 0xFFFF;
 
-	
+
 	//was memset(pp.unknown3704, 0xffffffff, 8);
 	//but I dont think thats what you really wanted to do...
 	//memset is byte based
-	
+
 	//If server is PVP by default, make all character set to it.
-	pp.pvp = database.GetServerType() == 1 ? 1 : 0;			
+	pp.pvp = database.GetServerType() == 1 ? 1 : 0;
 
 	//If it is an SoF Client and the SoF Start Zone rule is set, send new chars there
 	if(SoFClient && (RuleI(World, SoFStartZoneID) > 0)) {
@@ -1109,7 +1110,7 @@ bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 		pp.binds[0].heading = pp.heading;
  	}
 
-		
+
 	clog(WORLD__CLIENT,"Current location: %s  %0.2f, %0.2f, %0.2f",
 		database.GetZoneName(pp.zone_id), pp.x, pp.y, pp.z);
 	clog(WORLD__CLIENT,"Bind location: %s  %0.2f, %0.2f, %0.2f",
@@ -1118,8 +1119,8 @@ bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 
 	// Starting Items inventory
 	database.SetStartingItems(&pp, &inv, pp.race, pp.class_, pp.deity, pp.zone_id, pp.name, GetAdmin());
-			
-			
+
+
 	// now we give the pp and the inv we made to StoreCharacter
 	// to see if we can store it
 	if (!database.StoreCharacter(GetAccountID(), &pp, &inv, &ext))
@@ -1153,7 +1154,7 @@ bool CheckCharCreateInfo(CharCreate_Struct *cc)
 	{ /*Erudite*/    60,  70,  70,  70,  83, 107,  70},
 	{ /*Wood Elf*/   65,  65,  95,  80,  80,  75,  75},
 	{ /*High Elf*/   55,  65,  85,  70,  95,  92,  80},
-	{ /*Dark Elf*/   60,  65,  90,  75,  83,  99,  60},                
+	{ /*Dark Elf*/   60,  65,  90,  75,  83,  99,  60},
 	{ /*Half Elf*/   70,  70,  90,  85,  60,  75,  75},
 	{ /*Dwarf*/      90,  90,  70,  90,  83,  60,  45},
 	{ /*Troll*/     108, 109,  83,  75,  60,  52,  40},
@@ -1163,7 +1164,7 @@ bool CheckCharCreateInfo(CharCreate_Struct *cc)
 	{ /*Iksar*/      70,  70,  90,  85,  80,  75,  55},
 	{ /*Vah Shir*/   90,  75,  90,  70,  70,  65,  65},
 	{ /*Froglok*/    70,  80, 100, 100,  75,  75,  50},
-	{ /*Drakkin*/    70,  80,  85,  75,  80,  85,  75} 
+	{ /*Drakkin*/    70,  80,  85,  75,  80,  85,  75}
 	};
 
 	static const int BaseClass[PLAYER_CLASS_COUNT][8] =
@@ -1174,7 +1175,7 @@ bool CheckCharCreateInfo(CharCreate_Struct *cc)
 	{ /*Ranger*/        5,  10,  10,   0,   5,   0,   0,  20},
 	{ /*ShadowKnight*/ 10,   5,   0,   0,   0,   10,  5,  20},
 	{ /*Druid*/         0,  10,   0,   0,  10,   0,   0,  30},
-	{ /*Monk*/          5,   5,  10,  10,   0,   0,   0,  20},                
+	{ /*Monk*/          5,   5,  10,  10,   0,   0,   0,  20},
 	{ /*Bard*/          5,   0,   0,  10,   0,   0,  10,  25},
 	{ /*Rouge*/         0,   0,  10,  10,   0,   0,   0,  30},
 	{ /*Shaman*/        0,   5,   0,   0,  10,   0,   5,  30},
@@ -1186,14 +1187,14 @@ bool CheckCharCreateInfo(CharCreate_Struct *cc)
 	{ /*Berserker*/    10,   5,   0,  10,   0,   0,   0,  25}
 	};
 
-	static const bool ClassRaceLookupTable[PLAYER_CLASS_COUNT][_TABLE_RACES]= 
+	static const bool ClassRaceLookupTable[PLAYER_CLASS_COUNT][_TABLE_RACES]=
 	{                   /*Human  Barbarian Erudite Woodelf Highelf Darkelf Halfelf Dwarf  Troll  Ogre   Halfling Gnome  Iksar  Vahshir Froglok Drakkin*/
 	{ /*Warrior*/         true,  true,     false,  true,   false,  true,   true,   true,  true,  true,  true,    true,  true,  true,   true,   true},
-	{ /*Cleric*/          true,  false,    true,   false,  true,   true,   true,   true,  false, false, true,    true,  false, false,  true,   true},  
+	{ /*Cleric*/          true,  false,    true,   false,  true,   true,   true,   true,  false, false, true,    true,  false, false,  true,   true},
 	{ /*Paladin*/         true,  false,    true,   false,  true,   false,  true,   true,  false, false, true,    true,  false, false,  true,   true},
 	{ /*Ranger*/          true,  false,    false,  true,   false,  false,  true,   false, false, false, true,    false, false, false,  false,  true},
 	{ /*ShadowKnight*/    true,  false,    true,   false,  false,  true,   false,  false, true,  true,  false,   true,  true,  false,  true,   true},
-	{ /*Druid*/           true,  false,    false,  true,   false,  false,  true,   false, false, false, true,    false, false, false,  false,  true},    
+	{ /*Druid*/           true,  false,    false,  true,   false,  false,  true,   false, false, false, true,    false, false, false,  false,  true},
 	{ /*Monk*/            true,  false,    false,  false,  false,  false,  false,  false, false, false, false,   false, true,  false,  false,  true},
 	{ /*Bard*/            true,  false,    false,  true,   false,  false,  true,   false, false, false, false,   false, false, true,   false,  true},
 	{ /*Rogue*/           true,  true,     false,  true,   false,  true,   true,   true,  false, false, true,    true,  false, true,   true,   true},
@@ -1201,7 +1202,7 @@ bool CheckCharCreateInfo(CharCreate_Struct *cc)
 	{ /*Necromancer*/     true,  false,    true,   false,  false,  true,   false,  false, false, false, false,   true,  true,  false,  true,   true},
 	{ /*Wizard*/          true,  false,    true,   false,  true,   true,   false,  false, false, false, false,   true,  false, false,  true,   true},
 	{ /*Magician*/        true,  false,    true,   false,  true,   true,   false,  false, false, false, false,   true,  false, false,  false,  true},
-	{ /*Enchanter*/       true,  false,    true,   false,  true,   true,   false,  false, false, false, false,   true,  false, false,  false,  true},  
+	{ /*Enchanter*/       true,  false,    true,   false,  true,   true,   false,  false, false, false, false,   true,  false, false,  false,  true},
 	{ /*Beastlord*/       false, true,     false,  false,  false,  false,  false,  false, true,  true,  false,   false, true,  true,   false,  false},
 	{ /*Berserker*/       false, true,     false,  false,  false,  false,  false,  true,  true,  true,  false,   false, false, true,   false,  false}
 	};//Initial table by kathgar, editted by Wiz for accuracy, solar too
@@ -1402,7 +1403,7 @@ void Client::SetClassStartingSkills( PlayerProfile_Struct *pp )
 }
 
 void Client::SetRaceStartingSkills( PlayerProfile_Struct *pp )
-{ 
+{
    switch( pp->race )
    {
    case BARBARIAN:
