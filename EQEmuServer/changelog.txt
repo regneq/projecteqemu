@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/26/2009==
+WildcardX: Fixed a bug that displayed the name of a target being summoned in an incorrect format.
+
 ==05/25/2009==
 cavedude: (gaeorn) Added a possible fix for some NPCs not always spawning.
 Congdar: Bots - Added PvP for bots.
