@@ -491,9 +491,35 @@ bool Mob::IsAttackAllowed(Mob *target)
 
 #ifdef EQBOTS
 
-    //franck-add: a bot can't attack a bot. A bot can't attack its leader(client). You(client) can't attack your bots.
+	if(IsBot() && BotOwner->CastToClient()->GetPVP())
+	{
+		if(target->IsBot() && target->BotOwner->CastToClient()->GetPVP())
+		{
+			if(target->BotOwner == BotOwner)
+			{
+				return false;
+			}
+			else
+			{
+				return true;
+			}
+		}
+		if(target->IsClient() && target->CastToClient()->GetPVP())
+		{
+			if(target == BotOwner)
+			{
+				return false;
+			}
+			else
+			{
+				return true;
+			}
+		}
+	}
 	if((IsBot() && (target->IsBot() || target->IsClient())) || (IsClient() && target->IsBot()))
+	{
 		return false;    
+	}
 
 #endif //EQBOTS
 
