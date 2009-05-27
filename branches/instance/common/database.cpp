@@ -3194,7 +3194,6 @@ int32 Database::CreateAdventure(int32 adventure_id)
 	int32 affected_rows = 0;
 	int32 last_insert_id = 0;
 
-	//INSERT INTO `adventure_details` SET adventure_id=%u, time_created=UNIX_TIMESTAMP()
     if (!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO `adventure_details` SET adventure_id=%u,"
 		" time_created=UNIX_TIMESTAMP()", adventure_id), errbuf, 0, &affected_rows, &last_insert_id)) {
 		safe_delete_array(query);
@@ -3322,7 +3321,7 @@ void Database::DestroyAdventure(int32 id)
 	}
 }
 
-bool Database::GetAdventureDetails(int32 charid, int32 &id, int32 &adventure_id, int32 &instance_id, int32 &count, int32 &status, int32 &time_c, int32 &time_z)
+bool Database::GetAdventureDetails(int32 charid, int32 &id, int32 &adventure_id, int32 &instance_id, int32 &count, int32 &status, int32 &time_c, int32 &time_z, int32 &time_comp)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
@@ -3349,7 +3348,7 @@ bool Database::GetAdventureDetails(int32 charid, int32 &id, int32 &adventure_id,
 		return false;
 
 	if (RunQuery(query, MakeAnyLenString(&query, "SELECT `adventure_id`, `instance_id`, `count`, `status`, "
-		"`time_created`, `time_zoned` FROM `adventure_details` WHERE id=%u LIMIT 1", adv_id), errbuf, &result))
+		"`time_created`, `time_zoned`, `time_completed` FROM `adventure_details` WHERE id=%u LIMIT 1", adv_id), errbuf, &result))
 	{
 		safe_delete_array(query);
 		while((row = mysql_fetch_row(result)) != NULL)
@@ -3360,6 +3359,7 @@ bool Database::GetAdventureDetails(int32 charid, int32 &id, int32 &adventure_id,
 			status = atoi(row[3]);
 			time_c = atoi(row[4]);
 			time_z = atoi(row[5]);
+			time_comp = atoi(row[6]);
 			id = adv_id;
 		}
 		mysql_free_result(result);
@@ -3471,6 +3471,22 @@ void Database::UpdateAdventureInstance(int32 adv_id, int32 inst_id, int32 time)
 	char *query = 0;
 	if(RunQuery(query, MakeAnyLenString(&query, "UPDATE `adventure_details` SET instance_id=%d, "
 		"time_zoned=%u WHERE id=%u", inst_id, time, adv_id), errbuf))
+	{
+		safe_delete_array(query);
+	}
+	else
+	{
+		//error
+		safe_delete_array(query);
+	}
+}
+
+void Database::UpdateAdventureCompleted(int32 adv_id, int32 time)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	if(RunQuery(query, MakeAnyLenString(&query, "UPDATE `adventure_details` SET time_completed=%d "
+		"WHERE id=%u", time, adv_id), errbuf))
 	{
 		safe_delete_array(query);
 	}

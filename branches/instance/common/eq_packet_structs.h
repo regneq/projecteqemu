@@ -135,6 +135,7 @@ struct AdventureDetails
 	int8 status;
 	int32 time_created;
 	int32 time_zoned;
+	int32 time_completed;
 };
 ///////////////////////////////////////////////////////////////////////////////
 

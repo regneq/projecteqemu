@@ -337,6 +337,8 @@ Client::~Client() {
 
 	safe_delete(taskstate);
 	safe_delete(m_current_adventure);
+	safe_delete(KarmaUpdateTimer);
+	safe_delete(GlobalChatLimiterTimer);
 
 	numclients--;
 	UpdateWindowTitle();
@@ -3814,7 +3816,7 @@ void Client::SendAdventureSelection(Mob* rec, int32 difficulty, int32 type)
 				LogFile->write(EQEMuLog::Debug, "Client::SendAdventureSelection(): Group size was invalid.");
 				return;
 			}
-			LogFile->write(EQEMuLog::Debug, "Client::SendAdventureSelection(): Range %u avg level %u", lvl_range, avg_level);
+			database.GroupAdventureLevelAndRange(GetGroup()->GetID(), avg_level, lvl_range);
 			if(lvl_range > RuleI(Adventure, MaxLevelRange))
 			{
 				SendAdventureError("Adventurers must be within 9 levels of the highest member.");
@@ -3987,9 +3989,66 @@ void Client::AcceptAdventure()
 				}
 				database.AddRaidToAdventure(adv_id, r->GetID());
 			}
-			SetCurrentAdventure(ad);
-			SetOfferedAdventure(NULL);
-			SendAdventureDetail();
+
+			zone->active_adventures[adv_id] = ad;
+
+			ServerPacket* pack = new ServerPacket(ServerOP_AdventureCreate, sizeof(ServerAdventureCreate_Struct));
+			ServerAdventureCreate_Struct *ac = (ServerAdventureCreate_Struct*)pack->pBuffer;
+			ac->id = ad->id;
+			ac->adv_template_id = ad->ai->id;
+			ac->instance_id = ad->instance_id;
+			ac->status = ad->status;
+			ac->count = ad->count;
+			ac->time_created = ad->time_created;
+			ac->time_zoned = ad->time_zoned;
+			ac->time_completed = ad->time_completed;
+			ac->from_zone_id = zone->GetZoneID();
+			ac->from_instance_id = zone->GetInstanceID();
+			worldserver.SendPacket(pack);
+			safe_delete(pack);
+
+			if(r)
+			{
+				for(int x = 0; x < MAX_RAID_MEMBERS; ++x)
+				{
+					if(r->members[x].member)
+					{
+						r->members[x].member->SetCurrentAdventure(ad);
+						r->members[x].member->SetOfferedAdventure(NULL);
+						r->members[x].member->SendAdventureDetail();
+					}
+					else if(strlen(r->members[x].membername) > 0)
+					{
+						ServerPacket* member_pack = new ServerPacket(ServerOP_AdventureAddPlayer, sizeof(ServerAdventureAddPlayer_Struct));
+						ServerAdventureAddPlayer_Struct *ap = (ServerAdventureAddPlayer_Struct*)member_pack->pBuffer;
+						ap->id = ad->id;
+						strcpy(ap->player_name, r->members[x].membername);
+						worldserver.SendPacket(member_pack);
+						safe_delete(member_pack);
+					}
+				}
+			}
+			else if(g)
+			{
+				for(int x = 0; x < MAX_GROUP_MEMBERS; ++x)
+				{
+					if(g->members[x] && g->members[x]->IsClient())
+					{
+						g->members[x]->CastToClient()->SetCurrentAdventure(ad);
+						g->members[x]->CastToClient()->SetOfferedAdventure(NULL);
+						g->members[x]->CastToClient()->SendAdventureDetail();
+					}
+					else if(strlen(g->membername[x]) > 0)
+					{
+						ServerPacket* member_pack = new ServerPacket(ServerOP_AdventureAddPlayer, sizeof(ServerAdventureAddPlayer_Struct));
+						ServerAdventureAddPlayer_Struct *ap = (ServerAdventureAddPlayer_Struct*)member_pack->pBuffer;
+						ap->id = ad->id;
+						strcpy(ap->player_name, g->membername[x]);
+						worldserver.SendPacket(member_pack);
+						safe_delete(member_pack);
+					}
+				}
+			}
 		}
 	}
 }
@@ -4011,7 +4070,7 @@ void Client::LeaveAdventure()
 		{
 			database.DestroyAdventure(ad->id);
 		}
-		safe_delete(ad);
+		//safe_delete(ad);
 		SetCurrentAdventure(NULL);
 		SendAdventureError("Choose your difficulty and preferred adventure type.");
 	}
@@ -4025,6 +4084,9 @@ void Client::SendAdventureDetail()
 		return;
 
 	if(!ad->ai)
+		return;
+
+	if(!ad->time_completed != 0)
 		return;
 
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureData, sizeof(AdventureRequestResponse_Struct));
@@ -4098,6 +4160,28 @@ bool Client::AdventureExpired()
 					return true;
 			}
 			else
+			{
+				if(t->time_completed > 0)
+				{
+					timeval tv;
+					gettimeofday(&tv, NULL);
+					if((t->time_completed + 1800) >= tv.tv_sec)
+						return true;
+				}
+			}
+		}
+	}
+	return false;
+}
+
+bool Client::AdventureTimeRanOut()
+{
+	AdventureDetails* t = GetCurrentAdventure();
+	if(t)
+	{
+		if(t->ai)
+		{
+			if(t->time_zoned > 0)
 			{
 				timeval tv;
 				gettimeofday(&tv, NULL);

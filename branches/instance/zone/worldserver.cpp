@@ -1169,6 +1169,7 @@ void WorldServer::Process() {
 				scs->instance_id = s->instance_id;
 				scs->message_string_id = TARGET_NOT_FOUND;
 				worldserver.SendPacket(pack);
+				safe_delete(pack);
 			}
 			break;
 		}
@@ -1214,11 +1215,45 @@ void WorldServer::Process() {
 			break;
 		}
 
-		case ServerOP_AdventureUpdate: {
-			UpdateAdventure_Struct *aus = (UpdateAdventure_Struct*)pack->pBuffer;
-
+		case ServerOP_AdventureCreate: {
+			ServerAdventureCreate_Struct *ac = (ServerAdventureCreate_Struct*)pack->pBuffer;
+			if(zone)
+			{
+				if(zone->GetZoneID() == ac->from_zone_id && zone->GetInstanceID() == ac->from_instance_id)
+					break;
+				else
+				{
+					AdventureDetails *ad = new AdventureDetails;
+					ad->ai = zone->adventure_list[ac->adv_template_id];
+					ad->id = ac->id;
+					ad->instance_id = ac->instance_id;
+					ad->status = ac->status;
+					ad->count = ac->count;
+					ad->time_created = ac->time_created;
+					ad->time_zoned = ac->time_zoned;
+					ad->time_completed = ac->time_completed;
+					zone->active_adventures[ac->id] = ad;
+				}
+			}
 			break;
 		}
+
+		case ServerOP_AdventureAddPlayer: {
+			ServerAdventureAddPlayer_Struct *ap = (ServerAdventureAddPlayer_Struct*)pack->pBuffer;
+			if(zone)
+			{
+				Client *c = entity_list.GetClientByName(ap->player_name);
+				if(c)
+				{
+					AdventureDetails *ad = zone->active_adventures[ap->id];
+					c->SetCurrentAdventure(ad);
+					c->SetOfferedAdventure(NULL);
+					c->SendAdventureDetail();
+				}
+			}
+			break;
+		}
+
 		default: {
 			cout << " Unknown ZSopcode:" << (int)pack->opcode;
 			cout << " size:" << pack->size << endl;

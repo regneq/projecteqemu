@@ -169,6 +169,7 @@ public:
 	void AssignRaidToInstance(int32 rid, int32 instance_id);
 	void FlagInstanceByGroupLeader(int32 zone, int16 version, int32 charid, int32 gid);
 	void FlagInstanceByRaidLeader(int32 zone, int16 version, int32 charid, int32 rid);
+	void SetInstanceDuration(int16 instance_id, int32 new_duration) { }
 
 	/*
 	 * Adventure
@@ -181,12 +182,13 @@ public:
 	void AddGroupToAdventure(int32 id, int32 gid);
 	void AddRaidToAdventure(int32 id, int32 rid);
 	void DestroyAdventure(int32 id);
-	bool GetAdventureDetails(int32 charid, int32 &id, int32 &adventure_id, int32 &instance_id, int32 &count, int32 &status, int32 &time_c, int32 &time_z);
+	bool GetAdventureDetails(int32 charid, int32 &id, int32 &adventure_id, int32 &instance_id, int32 &count, int32 &status, int32 &time_c, int32 &time_z, int32 &time_comp);
 	int32 CountPlayersInAdventure(int32 id);
 	void PurgeAdventures();
 	void AddAdventureToInstance(int32 adv_id, int32 inst_id);
 	void UpdateAdventureStatus(int32 adv_id, int32 status);
 	void UpdateAdventureInstance(int32 adv_id, int32 inst_id, int32 time);
+	void UpdateAdventureCompleted(int32 adv_id, int32 time);
 
 	/*
 	 * Account Related

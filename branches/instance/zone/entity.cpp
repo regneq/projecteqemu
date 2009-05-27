@@ -3816,35 +3816,3 @@ void EntityList::GateAllClients()
 		iterator.Advance();
 	}
 }
-
-void EntityList::SendZoneAdventureUpdates(UpdateAdventure_Struct *aus)
-{
-	if(!aus)
-		return;
-
-	LinkedListIterator<Client*> iterator(client_list); 
-	iterator.Reset();
-	while(iterator.MoreElements()) 
-	{
-		Client *c = iterator.GetData();
-		if(c)
-		{
-			AdventureDetails *ad = c->GetCurrentAdventure();
-			if(ad)
-			{
-				if(ad->id == aus->id)
-				{
-					if(aus->instance_id > 0)
-						ad->instance_id = aus->instance_id;
-					if(aus->status > 0)
-						ad->status = aus->status;
-					if(aus->time_zoned > 0)
-						ad->time_zoned = aus->time_zoned;
-					c->SetCurrentAdventure(ad);
-					c->SendAdventureDetail();
-				}
-			}
-		}
-		iterator.Advance();
-	}
-}

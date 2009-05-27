@@ -818,6 +818,9 @@ public:
 	void DeclineAdventure();
 	void LeaveAdventure();
 	bool AdventureExpired();
+	bool AdventureTimeRanOut();
+	void CompleteAdventure();
+	void FailAdventure();
 
 protected:
 	friend class Mob;

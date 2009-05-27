@@ -158,12 +158,14 @@ public:
 
 	void	LoadAdventures();
 	void	LoadAdventureEntries();
+	void	LoadActiveAdventures();
 	
 	map<uint32,NPCType *> npctable;
 	map<uint32,std::list<MerchantList> > merchanttable;
 	map<uint32,std::list<TempMerchantList> > tmpmerchanttable;
 	map<uint32,AdventureInfo*> adventure_list;
 	map<uint32,std::list<AdventureInfo*> > adventure_entry_list;
+	map<uint32, AdventureDetails*> active_adventures;
 	Map*	map;
 	WaterMap* watermap;
 	PathManager *pathing;

@@ -1086,7 +1086,11 @@ bool ZoneServer::Process() {
 			zoneserver_list.SendPacket(pack);
 			break;
 		}
-		case ServerOP_AdventureUpdate: {
+		case ServerOP_AdventureCreate: {
+			zoneserver_list.SendPacket(pack);
+			break;
+		}
+		case ServerOP_AdventureAddPlayer: {
 			zoneserver_list.SendPacket(pack);
 			break;
 		}

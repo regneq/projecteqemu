@@ -96,8 +96,12 @@
 #define ServerOP_RaidGroupAdd		0x010D
 #define ServerOP_RaidGroupRemove	0x010E
 
-#define ServerOP_AdventureUpdate	0x0150
-#define ServerOP_AdventureExpire	0x0151
+#define ServerOP_AdventureCreate	0x0150
+#define ServerOP_AdventureAddPlayer 0x0151
+#define ServerOP_AdventureDestroy	0x0152
+#define ServerOP_AdventureUpdate	0x0153
+#define ServerOP_AdventureStatus	0x0154
+#define ServerOP_AdventureFinish	0x0155
 
 #define ServerOP_WhoAll				0x0210
 #define ServerOP_FriendsWho			0x0211
@@ -783,17 +787,55 @@ struct UpdateSpawnTimer_Struct {
 	int32 duration;
 };
 
-struct UpdateAdventure_Struct
+struct ServerAdventureCreate_Struct
 {
-	uint32 id;
+	int32 from_zone_id;
+	int16 from_instance_id;
+	int32 id;
+	int32 adv_template_id;
 	sint32 instance_id;
+	int32 count;
 	int8 status;
+	int32 time_created;
 	int32 time_zoned;
+	int32 time_completed;
 };
 
-struct ExpireAdventure_Struct
+struct ServerAdventureAddPlayer_Struct
 {
-	uint32 id;
+	int32 id;
+	char player_name[64];
+};
+
+struct ServerAdventureDestroy_Struct
+{
+	int32 id;
+};
+
+struct ServerAdventureUpdate_Struct
+{
+	int32 id;
+	int8 new_inst;
+	int32 instance_id;
+	int8 new_status;
+	int32 status;
+	int8 new_timec;
+	int32 time_c;
+	int8 new_timez;
+	int32 time_z;
+};
+
+struct ServerAdventureStatus_Struct
+{
+	int32 id;
+	int32 new_count;
+};
+
+struct ServerAdventureFinish_Struct
+{
+	int32 id;
+	int8 win_lose;
+	int32 points;
 };
 
 #pragma pack()

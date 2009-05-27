@@ -630,16 +630,23 @@ void Client::Handle_Connect_OP_ReqClientSpawn(const EQApplicationPacket *app)
 		SendBazaarWelcome();
 
 	/*Adventure Data Send*/
-	int32 adv_id = 0;
+	//todo: fix the crashin'
+	/*int32 adv_id = 0;
 	int32 adv_adventure_id = 0;
 	int32 adv_inst_id = 0;
 	int32 adv_count = 0;
 	int32 adv_status = 0;
 	int32 adv_time_c = 0;
 	int32 adv_time_z = 0;
-	if(database.GetAdventureDetails(CharacterID(), adv_id, adv_adventure_id, adv_inst_id, adv_count, adv_status, adv_time_c, adv_time_z) == true)
+	int32 adv_time_comp = 0;
+	if(database.GetAdventureDetails(CharacterID(), adv_id, adv_adventure_id, adv_inst_id, adv_count, adv_status, adv_time_c, adv_time_z, adv_time_comp) == true)
 	{
-		AdventureDetails* nd = new AdventureDetails;
+		AdventureDetails* nd = zone->active_adventures[adv_id];
+		if(!nd)
+		{
+			nd = new AdventureDetails;
+		}
+
 		nd->id = adv_id;
 		nd->instance_id = adv_inst_id;
 		nd->count = adv_count;
@@ -647,6 +654,7 @@ void Client::Handle_Connect_OP_ReqClientSpawn(const EQApplicationPacket *app)
 		nd->time_created = adv_time_c;
 		nd->time_zoned = adv_time_z;
 
+		//this is prob the crash due to maps trying to initialize stuff for you if not found -.-
 		AdventureInfo* ai = zone->adventure_list[adv_adventure_id];
 		if(!ai)
 		{
@@ -655,10 +663,11 @@ void Client::Handle_Connect_OP_ReqClientSpawn(const EQApplicationPacket *app)
 		else
 		{
 			nd->ai = ai;
+			zone->active_adventures[adv_id] = nd;
 			SetCurrentAdventure(nd);
 			SendAdventureDetail();
 		}
-	}
+	}*/
 
 	conn_state = ZoneContentsSent;
 
@@ -1348,9 +1357,6 @@ void Client::Handle_OP_Jump(const EQApplicationPacket *app)
 void Client::Handle_OP_AdventureInfoRequest(const EQApplicationPacket *app)
 {
 	EntityId_Struct* ent = (EntityId_Struct*)app->pBuffer;
-	//Mob* m = entity_list.GetMob(ent->entity_id);
-	//if(m && m->IsNPC())
-	//	SetOfferedAdventureRecruiter(m);
 
 	std::string text = "Choose your difficulty and preferred adventure type.";
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureInfo, (text.size() + 2));
@@ -1383,23 +1389,6 @@ void Client::Handle_OP_LDoNButton(const EQApplicationPacket *app)
 void Client::Handle_OP_LeaveAdventure(const EQApplicationPacket *app)
 {
 	LeaveAdventure();
-
-
-	/*uchar lol[4]={0x3F,0x2A,0x00,0x00};
-	EQApplicationPacket* outapp=new EQApplicationPacket(OP_AdventureFinish,4); // Doodman: Dunno if this is right or now
-	uchar* x=(uchar*)outapp->pBuffer;
-	memcpy(x,lol,4);
-	QueuePacket(outapp);
-	safe_delete(outapp);
-
-	EQApplicationPacket* outapp2=new EQApplicationPacket(OP_SimpleMessage,sizeof(SimpleMessage_Struct));
-	SimpleMessage_Struct *msg=(SimpleMessage_Struct *)outapp2->pBuffer;
-	msg->string_id=5135;
-	msg->color=0x000d;
-	FastQueuePacket(&outapp2);
-
-	SendAdventureFinish(0,0);*/
-	//return;
 }
 
 void Client::Handle_OP_Consume(const EQApplicationPacket *app)

@@ -103,7 +103,7 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 	//TODO: add check for other lockpick items
 	//////////////////////////////////////////////////////////////////
 
-	if(IsLDoNDoor())
+	/*if(IsLDoNDoor())
 	{
 		if(sender)
 		{
@@ -175,7 +175,7 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 				return;
 			}
 		}
-	}
+	}*/
 
 	uint32 keyneeded = GetKeyItem();
 	int8 keepoffkeyring = GetNoKeyring();

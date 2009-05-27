@@ -1,3 +1,6 @@
+KLS - May 26, 2009
+-Refactored some of the adventure code, am taking it in a somewhat different direction than my orig. plans.
+
 KLS - May 24, 2009
 -More adventure recruiter refinement, moving onto adventure assignment soon.
 -Initial adventure assignment; Still needs work.

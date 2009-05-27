@@ -629,6 +629,14 @@ void Zone::Shutdown(bool quite)
 	}
 	zone->adventure_entry_list.clear();
 
+	std::map<uint32,AdventureDetails*>::iterator itr3;
+	while(zone->active_adventures.size()) 
+	{	
+		itr3 = zone->active_adventures.begin();
+		itr3->second;
+		zone->active_adventures.erase(itr3);
+	}
+
 	LogFile->write(EQEMuLog::Status, "Zone Shutdown: %s (%i)", zone->GetShortName(), zone->GetZoneID());
 	petition_list.ClearPetitions();
 	zone->GotCurTime(false);
@@ -860,6 +868,7 @@ bool Zone::Init(bool iStaticZone) {
 	
 	zone->LoadAdventures();
 	zone->LoadAdventureEntries();
+	zone->LoadActiveAdventures();
 
 	//Load AA information
 	adverrornum = 500;
@@ -2029,6 +2038,40 @@ void Zone::LoadAdventureEntries()
 	else
 	{
 		LogFile->write(EQEMuLog::Error, "Error in Zone::LoadAdventureEntries: %s (%s)", query, errbuf);
+		safe_delete_array(query);
+		return;
+	}
+}
+
+void Zone::LoadActiveAdventures()
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+
+	if(database.RunQuery(query,MakeAnyLenString(&query,"SELECT `id`, `adventure_id`, `instance_id`, `count`, `status`, "
+		"`time_created`, `time_zoned`, `time_completed` FROM `adventure_details`"),errbuf,&result)) {
+		while((row = mysql_fetch_row(result))) 
+		{
+			int8 x = 0;
+			AdventureDetails *ad = new AdventureDetails;
+			ad->id = atoi(row[x++]);
+			ad->ai = adventure_list[atoi(row[x++])];
+			ad->instance_id = atoi(row[x++]);
+			ad->count = atoi(row[x++]);
+			ad->status = atoi(row[x++]);
+			ad->time_created = atoi(row[x++]);
+			ad->time_zoned = atoi(row[x++]);
+			ad->time_completed = atoi(row[x++]);
+			active_adventures[ad->id] = ad;
+		}
+		mysql_free_result(result);
+		safe_delete_array(query);
+	}
+	else
+	{
+		LogFile->write(EQEMuLog::Error, "Error in Zone::LoadActiveAdventures: %s (%s)", query, errbuf);
 		safe_delete_array(query);
 		return;
 	}

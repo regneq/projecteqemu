@@ -864,13 +864,19 @@ void command_optest(Client *c, const Seperator *sep)
 			{
 				EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureData, sizeof(AdventureRequestResponse_Struct));
 				AdventureRequestResponse_Struct *arr = (AdventureRequestResponse_Struct*)outapp->pBuffer;
-				arr->unknown000 = 0xBFC40100;
+				if(sep->IsHexNumber(2))
+					arr->unknown000 = hextoi(sep->arg[2]);
+				else
+					arr->unknown000 = 0xBFC40100;
 				arr->risk = 1;
 				arr->showcompass = 1;
 				strcpy(arr->text, "This is some text for an adventure packet!\0");
 				arr->timeleft = 60*60;
 				//arr->timetoenter = 30*60;
-				arr->unknown2080=0x0A;
+				if(sep->IsHexNumber(3))
+					arr->unknown2080=hextoi(sep->arg[3]);
+				else
+					arr->unknown2080=0x0A;
 				arr->x = c->GetY();
 				arr->y = c->GetX();
 				arr->z = c->GetZ();

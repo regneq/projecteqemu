@@ -88,10 +88,11 @@ CREATE TABLE `adventure_details` (
   `instance_id` int(11) NOT NULL default '-1',
   `count` smallint(5) unsigned NOT NULL default '0',
   `status` tinyint(3) unsigned NOT NULL default '0',
-  `time_created` int(10) unsigned NOT NULL,
-  `time_zoned` int(10) unsigned NOT NULL,
+  `time_created` int(10) unsigned NOT NULL default '0',
+  `time_zoned` int(10) unsigned NOT NULL default '0',
+  `time_completed` int(10) unsigned NOT NULL default '0',
   PRIMARY KEY  (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
 
 CREATE TABLE `adventure_members` (
   `id` int(10) unsigned NOT NULL,
