@@ -46,6 +46,7 @@ E(OP_TributeItem)
 E(OP_SomeItemPacketMaybe)
 E(OP_ReadBook)
 E(OP_Stun)
+E(OP_ZonePlayerToBind)
 //E(OP_AdventureData)
 //E(OP_RaidUpdate)
 

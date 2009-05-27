@@ -1616,6 +1616,20 @@ ENCODE(OP_Stun) {
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_ZonePlayerToBind) {
+
+	ENCODE_LENGTH_ATLEAST(ZonePlayerToBind_Struct);
+	SETUP_DIRECT_ENCODE(ZonePlayerToBind_Struct, structs::ZonePlayerToBind_Struct);
+	OUT(bind_zone_id);
+	OUT(x);
+	OUT(y);
+	OUT(z);
+	OUT(heading);
+	strn0cpy(eq->zone_name, emu->zone_name, sizeof(emu->zone_name));
+
+	FINISH_ENCODE();
+}
+
 DECODE(OP_ItemVerifyRequest) {
 	DECODE_LENGTH_EXACT(structs::ItemVerifyRequest_Struct);
 	SETUP_DIRECT_DECODE(ItemVerifyRequest_Struct, structs::ItemVerifyRequest_Struct);
