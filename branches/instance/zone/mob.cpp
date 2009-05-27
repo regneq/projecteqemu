@@ -2076,7 +2076,7 @@ bool Mob::HateSummon() {
     {
 		if (target->IsClient())
 			target->CastToClient()->Message(15,"You have been summoned!");
-		entity_list.MessageClose(this, true, 500, 10, "%s says,'You will not evade me, %s!' ", GetCleanName(), GetHateTop()->GetName() );
+		entity_list.MessageClose(this, true, 500, 10, "%s says,'You will not evade me, %s!' ", GetCleanName(), GetHateTop()->GetCleanName() );
 
 		// RangerDown - GMMove doesn't seem to be working well with players, so use MovePC for them, GMMove for NPC's
 		if (target->IsClient()) {
