@@ -802,6 +802,7 @@ public:
 	void DecrementAggroCount();
 	void SendPVPStats();
 	void SendDisciplineTimers();
+	void SendRespawnBinds();
 
 	/*Adventure Stuff*/
 	AdventureInfo* GetOfferedAdventure() { return m_offered_adventure; }

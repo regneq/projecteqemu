@@ -3726,6 +3726,59 @@ void Client::SendDisciplineTimers()
 	safe_delete(outapp);
 }
 
+void Client::SendRespawnBinds()
+{
+	// This sends the data to the client to populate the Respawn from Death Window.
+	//
+	// This should be sent after OP_Death for SoF clients
+	// Client will respond with a 4 byte packet that includes the number of the selection made
+	//
+
+	int iZoneNameLength = 0;
+	const char*	pShortZoneName = NULL;
+	char* pZoneName = NULL;
+
+	pShortZoneName = database.GetZoneName(m_pp.binds[0].zoneId);
+
+	database.GetZoneLongName(pShortZoneName, &pZoneName);
+	pZoneName = "Bind Location";	// Temp Hack to force Bind Location as the zone name
+	iZoneNameLength = strlen(pZoneName);	// Zone Name Length
+
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_RespawnWindow, sizeof(RespawnWindow_Struct) + iZoneNameLength);
+	RespawnWindow_Struct *rws = (RespawnWindow_Struct *)outapp->pBuffer;
+
+	rws->time_remaining = 300000;
+	rws->total_binds = 1;
+	rws->bind_points.bind_number = 0;
+	rws->bind_points.bind_zone_id = m_pp.binds[0].zoneId;
+	rws->bind_points.x = m_pp.binds[0].x;
+	rws->bind_points.y = m_pp.binds[0].y;
+	rws->bind_points.z = m_pp.binds[0].z;
+	rws->bind_points.heading = 0;
+	strncpy(rws->bind_points.bind_zone_name, pZoneName, iZoneNameLength);	// Needs a NULL terminator added
+	rws->bind_points.validity = 0;
+	
+	/*
+	// Second bind_points iteration - Resurrection
+	rws->bind_points.bind_number = 1;
+	rws->bind_points.bind_zone_id = zone->GetZoneID();
+	rws->bind_points.x = GetX();
+	rws->bind_points.y = GetY();
+	rws->bind_points.z = GetZ();
+	rws->bind_points.heading = GetHeading();
+	strcpy(rws->bind_points.bind_zone_name, "Resurrect");
+	rws->bind_points.validity = 1;
+	*/
+
+	// TODO: Send Bind/Resurrection Points properly
+
+	_log(NET__ERROR, "Sending Respawn Window to client");
+	_hex(NET__ERROR, outapp->pBuffer, outapp->size);
+
+	QueuePacket(outapp);
+	safe_delete(outapp);
+}
+
 void Client::SendAdventureSelection(Mob* rec, int32 difficulty, int32 type)
 {
 	if(GetCurrentAdventure())

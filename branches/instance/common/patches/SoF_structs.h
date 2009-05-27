@@ -1216,6 +1216,39 @@ struct BecomeCorpse_Struct {
 	float z;
 };
 
+struct ZonePlayerToBind_Struct {
+/*000*/	uint32	bind_zone_id;
+/*004*/	float	x;
+/*008*/	float	y;
+/*012*/	float	z;
+/*016*/	float	heading;
+/*020*/	char	zone_name[1];  // Or "Bind Location"
+/*000*/	uint8	unknown021;	// Seen 1 - Maybe 0 would be to force a rezone and 1 is just respawn
+/*000*/	uint32	unknown022;	// Seen 32 or 59
+/*000*/	uint32	unknown023;	// Seen 0
+/*000*/	uint32	unknown024;	// Seen 21 or 43
+};
+
+typedef struct {
+/*000*/	uint32	bind_number;		// Number of this bind in the iteration
+/*004*/	uint32	bind_zone_id;		// ID of the zone for this bind point or resurect point
+/*008*/	float	x;					// X loc for this bind point
+/*012*/	float	y;					// Y loc for this bind point
+/*016*/	float	z;					// Z loc for this bind point
+/*020*/	float	heading;			// Heading for this bind point
+/*024*/	char	bind_zone_name[1];	// Or "Bind Location" or "Resurrect"
+/*000*/	uint8	validity;		// 0 = valid choice, 1 = not a valid choice at this time (resurrection)
+} RespawnOptions_Struct;
+
+struct RespawnWindow_Struct {
+/*000*/	uint32	unknown000;		// Seen 0
+/*004*/	uint32	time_remaining;	// Total time before respawn in milliseconds
+/*008*/	uint32	unknown008;		// Seen 0
+/*012*/	uint32	total_binds;	// Total Bind Point Options? - Seen 2
+/*016*/ RespawnOptions_Struct bind_points;
+// First bind point is "Bind Location" and the last one is "Ressurect"
+};
+
 
 /*
 ** Spawn position update - Size: 26

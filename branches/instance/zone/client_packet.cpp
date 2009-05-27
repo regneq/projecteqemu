@@ -339,6 +339,7 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_AugmentInfo] = &Client::Handle_OP_AugmentInfo;
 	ConnectedOpcodes[OP_PVPLeaderBoardRequest] = &Client::Handle_OP_PVPLeaderBoardRequest;
 	ConnectedOpcodes[OP_PVPLeaderBoardDetailsRequest] = &Client::Handle_OP_PVPLeaderBoardDetailsRequest;
+	ConnectedOpcodes[OP_RespawnWindow] = &Client::Handle_OP_RespawnWindow;
 }
 
 int Client::HandlePacket(const EQApplicationPacket *app)
@@ -8968,4 +8969,26 @@ void Client::Handle_OP_PVPLeaderBoardDetailsRequest(const EQApplicationPacket *a
 	
 	QueuePacket(outapp);
 	safe_delete(outapp);
+}
+
+void Client::Handle_OP_RespawnWindow(const EQApplicationPacket *app)
+{
+// This opcode is sent by the client when the player choses which bind to return to.
+// The client sends just a 4 byte packet with the selection number in it
+//
+	if(app->size != 4)
+	{
+		LogFile->write(EQEMuLog::Debug, "Size mismatch in OP_RespawnWindow expected %i got %i",
+						4, app->size);
+		DumpPacket(app);
+		return;
+	}
+
+	SendLogoutPackets();
+	GoToBind();
+
+	// TODO: Allow Multiple Choice Selections
+
+	//QueuePacket(outapp);
+	//safe_delete(outapp);
 }

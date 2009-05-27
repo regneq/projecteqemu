@@ -3726,6 +3726,25 @@ struct ZonePlayerToBind_Struct {
 /*020*/	char zone_name[1];
 };
 
+typedef struct {
+/*000*/	uint32	bind_number;		// Number of this bind in the iteration
+/*004*/	uint32	bind_zone_id;		// ID of the zone for this bind point or resurect point
+/*008*/	float	x;					// X loc for this bind point
+/*012*/	float	y;					// Y loc for this bind point
+/*016*/	float	z;					// Z loc for this bind point
+/*020*/	float	heading;			// Heading for this bind point
+/*024*/	char	bind_zone_name[1];	// Or "Bind Location" or "Resurrect"
+/*000*/	uint8	validity;		// 0 = valid choice, 1 = not a valid choice at this time (resurrection)
+} RespawnOptions_Struct;
+
+struct RespawnWindow_Struct {
+/*000*/	uint32	unknown000;		// Seen 0
+/*004*/	uint32	time_remaining;	// Total time before respawn in milliseconds
+/*008*/	uint32	unknown008;		// Seen 0
+/*012*/	uint32	total_binds;	// Total Bind Point Options? - Seen 2
+/*016*/ RespawnOptions_Struct bind_points;
+// First bind point is "Bind Location" and the last one is "Ressurect"
+};
 
 /**
  * Shroud spawn. For others shrouding, this has their spawnId and
