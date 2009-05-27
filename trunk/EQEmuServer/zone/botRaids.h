@@ -84,6 +84,7 @@ public:
 	void GroupAssignTask(Group *g, int iTask, Mob *m);
 	void GroupAssignTask(Group *g, int iTask, Group *g2);
 	void RaidDefendEnraged();
+	void SplitExp(uint32 exp, Mob* other);
 
 	// Raid and Groups in raid
 	Mob* botrleader;
