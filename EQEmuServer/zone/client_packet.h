@@ -235,3 +235,4 @@
 	void Handle_OP_AugmentInfo(const EQApplicationPacket *app);
 	void Handle_OP_PVPLeaderBoardRequest(const EQApplicationPacket *app);
 	void Handle_OP_PVPLeaderBoardDetailsRequest(const EQApplicationPacket *app);
+	void Handle_OP_RespawnWindow(const EQApplicationPacket *app);

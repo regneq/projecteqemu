@@ -810,6 +810,7 @@ public:
 	void DecrementAggroCount();
 	void SendPVPStats();
 	void SendDisciplineTimers();
+	void SendRespawnBinds();
 
 protected:
 	friend class Mob;
