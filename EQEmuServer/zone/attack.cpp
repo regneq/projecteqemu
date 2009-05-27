@@ -2546,6 +2546,38 @@ void NPC::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill) 
 	{
 		Group *kg = entity_list.GetGroupByClient(give_exp_client);
 		Raid *kr = entity_list.GetRaidByClient(give_exp_client);
+
+#ifdef EQBOTS
+
+		if(!kr && give_exp_client->IsClient() && give_exp_client->IsBotRaiding())
+		{
+			BotRaids *br = entity_list.GetBotRaidByMob(give_exp_client->CastToMob());
+			if(br)
+			{
+				if(!IsLdonTreasure)
+					br->SplitExp((EXP_FORMULA), this);
+
+				/* Send the EVENT_KILLED_MERIT event for all raid members */
+				if(br->BotRaidGroups[0])
+				{
+					for(int j=0; j<MAX_GROUP_MEMBERS; j++)
+					{
+						if(br->BotRaidGroups[0]->members[j]->IsClient())
+						{
+							parse->Event(EVENT_KILLED_MERIT, GetNPCTypeID(), "killed", this, br->BotRaidGroups[0]->members[j]);
+							if(RuleB(TaskSystem, EnableTaskSystem))
+							{
+								br->BotRaidGroups[0]->members[j]->CastToClient()->UpdateTasksOnKill(GetNPCTypeID());
+							}
+						}
+					}
+				}
+			}
+		}
+		else
+
+#endif //EQBOTS
+
 		if(kr)
 		{
 			if(!IsLdonTreasure)

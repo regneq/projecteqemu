@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==05/27/2009==
 Trevius: SoF - Added new opcode and structure to support the Respawn Window.  It isn't fully functional yet, but most of the code is there now.
+Congdar: Bots - Fixed botraid experience distribution.
 
 ==05/26/2009==
 WildcardX: Fixed a bug that displayed the name of a target being summoned in an incorrect format.

@@ -1534,18 +1534,18 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
                 bool noGroupSpell = false;
 
                 for(int i=0; i<16; i++)
-                {
-                    int j = bot->BotGetSpells(i);
-	   //if it's a targeted heal or escape spell or pet spell or it's self only buff or self buff weapon proc, we only want to cast it once
-                        if((j == spell_id) &&
-                      (((bot->BotGetSpellType(i) == 2) ||
-                      (bot->BotGetSpellType(i) == 16) ||
-                      (bot->BotGetSpellType(i) == 32)) ||
-                      ((bot->BotGetSpellType(i) == 8) && (spells[spell_id].targettype == ST_Self))) ||
-                      (slot == USE_ITEM_SPELL_SLOT))
-                        {
-                        SpellOnTarget(spell_id, spell_target);
-                        noGroupSpell = true;
+				{
+					int j = bot->BotGetSpells(i);
+					// if it's a targeted heal or escape spell or pet spell or it's self only buff or self buff weapon proc, we only want to cast it once
+					if((j == spell_id) &&
+						(((bot->BotGetSpellType(i) == 2) ||
+						(bot->BotGetSpellType(i) == 16) ||
+						(bot->BotGetSpellType(i) == 32)) ||
+						((bot->BotGetSpellType(i) == 8) && (spells[spell_id].targettype == ST_Self))) ||
+						(slot == USE_ITEM_SPELL_SLOT))
+					{
+						SpellOnTarget(spell_id, spell_target);
+						noGroupSpell = true;
 						break;
 					}
 				}
@@ -2644,7 +2644,7 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar)
 	{
 	  for(int i=0; i<EFFECT_COUNT; ++i)
 	  {
-	     if((spells[spell_id].effectid[i] == SE_Illusion) || (spells[spell_id].effectid[i] == SE_Rune))
+	     if(spells[spell_id].effectid[i] == SE_Illusion)
 		return false;
 	  }
 	}
