@@ -336,7 +336,6 @@ Client::~Client() {
 	Save(2); // This fails when database destructor is called first on shutdown
 
 	safe_delete(taskstate);
-	safe_delete(m_current_adventure);
 	safe_delete(KarmaUpdateTimer);
 	safe_delete(GlobalChatLimiterTimer);
 
@@ -3949,6 +3948,7 @@ void Client::AcceptAdventure()
 			ad->status = 0;
 			ad->time_created = tv.tv_sec;
 			ad->time_zoned = 0;
+			ad->time_completed = 0;
 
 			if(g)
 			{
@@ -4069,8 +4069,12 @@ void Client::LeaveAdventure()
 		if(database.CountPlayersInAdventure(ad->id) == 0)
 		{
 			database.DestroyAdventure(ad->id);
+			ServerPacket *pack = new ServerPacket(ServerOP_AdventureDestroy, sizeof(ServerAdventureDestroy_Struct));
+			ServerAdventureDestroy_Struct *adest = (ServerAdventureDestroy_Struct*)pack->pBuffer;
+			adest->id = ad->id;
+			worldserver.SendPacket(pack);
+			safe_delete(pack);
 		}
-		//safe_delete(ad);
 		SetCurrentAdventure(NULL);
 		SendAdventureError("Choose your difficulty and preferred adventure type.");
 	}
@@ -4081,13 +4085,20 @@ void Client::SendAdventureDetail()
 	AdventureDetails *ad = GetCurrentAdventure();
 
 	if(!ad)
+	{
 		return;
+	}
 
 	if(!ad->ai)
+	{
 		return;
+	}
 
-	if(!ad->time_completed != 0)
+	if(ad->time_completed != 0)
+	{
+		SendAdventureError("Your adventure is shutting down.");
 		return;
+	}
 
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureData, sizeof(AdventureRequestResponse_Struct));
 	AdventureRequestResponse_Struct *arr = (AdventureRequestResponse_Struct*)outapp->pBuffer;

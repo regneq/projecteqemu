@@ -631,7 +631,7 @@ void Client::Handle_Connect_OP_ReqClientSpawn(const EQApplicationPacket *app)
 
 	/*Adventure Data Send*/
 	//todo: fix the crashin'
-	/*int32 adv_id = 0;
+	int32 adv_id = 0;
 	int32 adv_adventure_id = 0;
 	int32 adv_inst_id = 0;
 	int32 adv_count = 0;
@@ -641,10 +641,15 @@ void Client::Handle_Connect_OP_ReqClientSpawn(const EQApplicationPacket *app)
 	int32 adv_time_comp = 0;
 	if(database.GetAdventureDetails(CharacterID(), adv_id, adv_adventure_id, adv_inst_id, adv_count, adv_status, adv_time_c, adv_time_z, adv_time_comp) == true)
 	{
-		AdventureDetails* nd = zone->active_adventures[adv_id];
-		if(!nd)
+		AdventureDetails* nd = NULL;
+		std::map<uint32, AdventureDetails*>::iterator ad_iter = zone->active_adventures.find(adv_id);
+		if(ad_iter == zone->active_adventures.end())
 		{
 			nd = new AdventureDetails;
+		}
+		else
+		{
+			nd = zone->active_adventures[adv_id];
 		}
 
 		nd->id = adv_id;
@@ -654,20 +659,28 @@ void Client::Handle_Connect_OP_ReqClientSpawn(const EQApplicationPacket *app)
 		nd->time_created = adv_time_c;
 		nd->time_zoned = adv_time_z;
 
-		//this is prob the crash due to maps trying to initialize stuff for you if not found -.-
-		AdventureInfo* ai = zone->adventure_list[adv_adventure_id];
-		if(!ai)
+		
+		std::map<uint32, AdventureInfo*>::iterator ai_iter = zone->adventure_list.find(adv_adventure_id);
+		if(ai_iter == zone->adventure_list.end())
 		{
 			safe_delete(nd);
 		}
 		else
 		{
-			nd->ai = ai;
-			zone->active_adventures[adv_id] = nd;
-			SetCurrentAdventure(nd);
-			SendAdventureDetail();
+			AdventureInfo* ai = zone->adventure_list[adv_adventure_id];
+			if(!ai)
+			{
+				safe_delete(nd);
+			}
+			else
+			{
+				nd->ai = ai;
+				zone->active_adventures[adv_id] = nd;
+				SetCurrentAdventure(nd);
+				SendAdventureDetail();
+			}
 		}
-	}*/
+	}
 
 	conn_state = ZoneContentsSent;
 

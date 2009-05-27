@@ -816,7 +816,7 @@ struct ServerAdventureUpdate_Struct
 {
 	int32 id;
 	int8 new_inst;
-	int32 instance_id;
+	sint32 instance_id;
 	int8 new_status;
 	int32 status;
 	int8 new_timec;

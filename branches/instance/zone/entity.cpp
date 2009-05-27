@@ -3816,3 +3816,22 @@ void EntityList::GateAllClients()
 		iterator.Advance();
 	}
 }
+
+void EntityList::SendAdventureUpdate(int32 a_id)
+{
+	LinkedListIterator<Client*> iterator(client_list); 
+	iterator.Reset();
+	while(iterator.MoreElements()) 
+	{
+		Client *c = iterator.GetData();
+		if(c)
+		{
+			AdventureDetails *ad = c->GetCurrentAdventure();
+			if(ad && ad->id == a_id)
+			{
+				c->SendAdventureDetail();
+			}
+		}
+		iterator.Advance();
+	}
+}

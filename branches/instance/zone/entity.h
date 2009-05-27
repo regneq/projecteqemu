@@ -338,6 +338,7 @@ public:
 	void	ZoneWho(Client *c, Who_All_Struct* Who);
 
 	void	GateAllClients();
+	void	SendAdventureUpdate(int32 a_id);
 
 #ifdef EQBOTS
 

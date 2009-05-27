@@ -1,3 +1,8 @@
+KLS - May 27, 2009
+-Adventure creation and zoning into adventures works for everyone in the group even across zones.
+-Fixed the crash with loading instances on zone.
+-Still need to track time for zone-in time out, complete full-points time out, complete time out and instance destruction time out.
+
 KLS - May 26, 2009
 -Refactored some of the adventure code, am taking it in a somewhat different direction than my orig. plans.
 

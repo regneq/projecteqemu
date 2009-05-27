@@ -1254,6 +1254,65 @@ void WorldServer::Process() {
 			break;
 		}
 
+		case ServerOP_AdventureDestroy: {
+			ServerAdventureDestroy_Struct *ap = (ServerAdventureDestroy_Struct*)pack->pBuffer;
+			if(zone)
+			{
+				std::map<int32, AdventureDetails*>::iterator iter = zone->active_adventures.find(ap->id);
+				if(iter != zone->active_adventures.end())
+				{
+					delete iter->second;
+					zone->active_adventures.erase(iter);
+				}
+			}
+			break;
+		}
+
+		case ServerOP_AdventureUpdate: {
+			ServerAdventureUpdate_Struct *au = (ServerAdventureUpdate_Struct*)pack->pBuffer;
+			if(zone)
+			{
+				std::map<int32, AdventureDetails*>::iterator iter = zone->active_adventures.find(au->id);
+				if(iter != zone->active_adventures.end())
+				{
+					AdventureDetails *ad = iter->second;
+					if(ad)
+					{
+						bool send_update = false;
+						if(au->new_inst == 1)
+						{
+							ad->instance_id = au->instance_id;
+							send_update = true;
+						}
+						
+						if(au->new_status == 1)
+						{
+							ad->status = au->status;
+							send_update = true;
+						}
+
+						if(au->new_timez == 1)
+						{
+							ad->time_zoned = au->time_z;
+							send_update = true;
+						}
+
+						if(au->new_timec == 1)
+						{
+							ad->time_completed = au->time_c;
+							send_update = true;
+						}
+						
+						if(send_update == true)
+						{
+							entity_list.SendAdventureUpdate(au->id);
+						}
+					}
+				}
+			}
+			break;
+		}
+
 		default: {
 			cout << " Unknown ZSopcode:" << (int)pack->opcode;
 			cout << " size:" << pack->size << endl;

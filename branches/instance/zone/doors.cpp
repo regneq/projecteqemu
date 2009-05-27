@@ -103,7 +103,7 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 	//TODO: add check for other lockpick items
 	//////////////////////////////////////////////////////////////////
 
-	/*if(IsLDoNDoor())
+	if(IsLDoNDoor())
 	{
 		if(sender)
 		{
@@ -137,20 +137,30 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 							}
 
 							database.AddAdventureToInstance(ad->id, i_id);
-							ServerPacket* pack = new ServerPacket(ServerOP_AdventureUpdate, sizeof(UpdateAdventure_Struct));
-							UpdateAdventure_Struct* uas = (UpdateAdventure_Struct*) pack->pBuffer;
+							ServerPacket* pack = new ServerPacket(ServerOP_AdventureUpdate, sizeof(ServerAdventureUpdate_Struct));
+							ServerAdventureUpdate_Struct* uas = (ServerAdventureUpdate_Struct*) pack->pBuffer;
 							
 							timeval tv;
 							gettimeofday(&tv, NULL);
-							uas->time_zoned = tv.tv_sec;
-							uas->instance_id = i_id;
-							uas->status = 1;
+
 							uas->id = ad->id;
+							
+							uas->new_timez = 1;
+							uas->time_z = tv.tv_sec;
+
+							uas->new_inst = 1;
+							uas->instance_id = i_id;
+
+							uas->new_status = 1;
+							uas->status = 1;
+
+							worldserver.SendPacket(pack);
+							safe_delete(pack);
+
 							database.UpdateAdventureStatus(ad->id, 1);
 							database.UpdateAdventureInstance(ad->id, i_id, tv.tv_sec);						
 							database.AddAdventureToInstance(ad->id, i_id);
 							sender->MovePC(zone_id, i_id, ad->ai->dest_x, ad->ai->dest_y, ad->ai->dest_z, ad->ai->dest_h, 0, ZoneSolicited);
-							worldserver.SendPacket(pack);
 						}
 						else
 						{
@@ -175,7 +185,7 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 				return;
 			}
 		}
-	}*/
+	}
 
 	uint32 keyneeded = GetKeyItem();
 	int8 keepoffkeyring = GetNoKeyring();
