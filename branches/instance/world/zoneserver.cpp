@@ -1092,6 +1092,7 @@ bool ZoneServer::Process() {
 		case ServerOP_AdventureUpdate:
 		case ServerOP_AdventureStatus:
 		case ServerOP_AdventureFinish:
+		case ServerOP_AdventureMessage:
 		{
 			zoneserver_list.SendPacket(pack);
 			break;

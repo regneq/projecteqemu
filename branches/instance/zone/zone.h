@@ -247,6 +247,7 @@ private:
 	Timer	autoshutdown_timer;
 	Timer	clientauth_timer;
 	Timer	spawn2_timer;
+	Timer	adventure_timer;
 	Timer*  Weather_Timer;
 	Timer*	Instance_Timer;
 	Timer*	Instance_Shutdown_Timer;

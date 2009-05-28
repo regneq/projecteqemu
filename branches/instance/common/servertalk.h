@@ -102,6 +102,7 @@
 #define ServerOP_AdventureUpdate	0x0153
 #define ServerOP_AdventureStatus	0x0154
 #define ServerOP_AdventureFinish	0x0155
+#define ServerOP_AdventureMessage	0x0156
 
 #define ServerOP_WhoAll				0x0210
 #define ServerOP_FriendsWho			0x0211
@@ -836,6 +837,12 @@ struct ServerAdventureFinish_Struct
 	int32 id;
 	int8 win_lose;
 	int32 points;
+};
+
+struct ServerAdventureMessage_Struct
+{
+	int32 id;
+	char message[0];
 };
 
 #pragma pack()

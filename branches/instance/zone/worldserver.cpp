@@ -584,6 +584,7 @@ void WorldServer::Process() {
 				strcpy(szp->adminname, gmg->myname);
 				strcpy(szp->name, gmg->myname);
 				strcpy(szp->zone, zone->GetShortName());
+				szp->instance_id = zone->GetInstanceID();
 				szp->x_pos = client->GetX();
 				szp->y_pos = client->GetY();
 				szp->z_pos = client->GetZ();
@@ -1258,9 +1259,11 @@ void WorldServer::Process() {
 			ServerAdventureDestroy_Struct *ap = (ServerAdventureDestroy_Struct*)pack->pBuffer;
 			if(zone)
 			{
+				entity_list.AdventureDestroy(ap->id);
 				std::map<int32, AdventureDetails*>::iterator iter = zone->active_adventures.find(ap->id);
 				if(iter != zone->active_adventures.end())
 				{
+					//todo: remove any players from this group
 					delete iter->second;
 					zone->active_adventures.erase(iter);
 				}
@@ -1313,6 +1316,23 @@ void WorldServer::Process() {
 			break;
 		}
 
+		case ServerOP_AdventureFinish: {
+			ServerAdventureFinish_Struct *af = (ServerAdventureFinish_Struct*)pack->pBuffer;
+			if(zone)
+			{
+				entity_list.AdventureFinish(af->id, af->win_lose, af->points);
+			}
+			break;
+		}
+
+		case ServerOP_AdventureMessage: {
+			ServerAdventureMessage_Struct *am = (ServerAdventureMessage_Struct*)pack->pBuffer;
+			if(zone)
+			{
+				entity_list.AdventureMessage(am->id, am->message);
+			}
+			break;
+		}
 		default: {
 			cout << " Unknown ZSopcode:" << (int)pack->opcode;
 			cout << " size:" << pack->size << endl;

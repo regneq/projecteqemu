@@ -3835,3 +3835,62 @@ void EntityList::SendAdventureUpdate(int32 a_id)
 		iterator.Advance();
 	}
 }
+
+void EntityList::AdventureMessage(int32 a_id, const char *msg)
+{
+	LinkedListIterator<Client*> iterator(client_list); 
+	iterator.Reset();
+	while(iterator.MoreElements()) 
+	{
+		Client *c = iterator.GetData();
+		if(c)
+		{
+			AdventureDetails *ad = c->GetCurrentAdventure();
+			if(ad && ad->id == a_id)
+			{
+				c->Message(13, msg);
+			}
+		}
+		iterator.Advance();
+	}
+}
+
+void EntityList::AdventureFinish(int32 a_id, int8 win_lose, int32 points)
+{
+	LinkedListIterator<Client*> iterator(client_list); 
+	iterator.Reset();
+	while(iterator.MoreElements()) 
+	{
+		Client *c = iterator.GetData();
+		if(c)
+		{
+			AdventureDetails *ad = c->GetCurrentAdventure();
+			if(ad && ad->id == a_id)
+			{
+				c->SendAdventureFinish(win_lose, points);
+			}
+		}
+		iterator.Advance();
+	}
+}
+
+void EntityList::AdventureDestroy(int32 a_id)
+{
+	printf("adventure destroy: %u\n", a_id);
+	LinkedListIterator<Client*> iterator(client_list); 
+	iterator.Reset();
+	while(iterator.MoreElements()) 
+	{
+		Client *c = iterator.GetData();
+		if(c)
+		{
+			AdventureDetails *ad = c->GetCurrentAdventure();
+			if(ad && ad->id == a_id)
+			{
+				c->SendAdventureError("You are not currently in an adventure.");
+				c->SetCurrentAdventure(NULL);
+			}
+		}
+		iterator.Advance();
+	}
+}

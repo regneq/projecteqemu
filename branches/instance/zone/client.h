@@ -814,14 +814,12 @@ public:
 	void SendAdventureSelection(Mob* rec, int32 difficulty, int32 type);
 	void SendAdventureError(const char* msg, ...);
 	void SendAdventureDetail();
-	void SendAdventureFinish(bool win, int32 points);
+	void SendAdventureFinish(int8 win, int32 points);
 	void AcceptAdventure();
 	void DeclineAdventure();
 	void LeaveAdventure();
 	bool AdventureExpired();
 	bool AdventureTimeRanOut();
-	void CompleteAdventure();
-	void FailAdventure();
 
 protected:
 	friend class Mob;

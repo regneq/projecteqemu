@@ -339,6 +339,9 @@ public:
 
 	void	GateAllClients();
 	void	SendAdventureUpdate(int32 a_id);
+	void	AdventureMessage(int32 a_id, const char *msg);
+	void	AdventureFinish(int32 a_id, int8 win_lose, int32 points);
+	void	AdventureDestroy(int32 a_id);
 
 #ifdef EQBOTS
 

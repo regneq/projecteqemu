@@ -4129,7 +4129,7 @@ void Client::LeaveAdventure()
 			safe_delete(pack);
 		}
 		SetCurrentAdventure(NULL);
-		SendAdventureError("Choose your difficulty and preferred adventure type.");
+		SendAdventureError("You are not currently in an adventure.");
 	}
 }
 
@@ -4189,10 +4189,11 @@ void Client::SendAdventureDetail()
 	FastQueuePacket(&outapp);
 }
 
-void Client::SendAdventureFinish(bool win, int32 points)
+void Client::SendAdventureFinish(int8 win, int32 points)
 {
-	if(win)
+	if(win > 0)
 	{
+		//todo: add points
 		EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureFinish, sizeof(AdventureFinish_Struct));
 		AdventureFinish_Struct *af = (AdventureFinish_Struct*)outapp->pBuffer;
 		af->win_lose = 1;

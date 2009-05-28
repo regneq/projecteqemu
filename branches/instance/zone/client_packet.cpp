@@ -678,6 +678,90 @@ void Client::Handle_Connect_OP_ReqClientSpawn(const EQApplicationPacket *app)
 				nd->ai = ai;
 				zone->active_adventures[adv_id] = nd;
 				SetCurrentAdventure(nd);
+
+				timeval tv;
+				gettimeofday(&tv, NULL);
+
+				if(nd->time_completed > 0)
+				{
+					if((1800 + nd->time_completed) <= tv.tv_sec)
+					{
+						database.DestroyAdventure(nd->id);
+						ServerPacket *pack = new ServerPacket(ServerOP_AdventureDestroy, sizeof(ServerAdventureDestroy_Struct));
+						ServerAdventureDestroy_Struct *adest = (ServerAdventureDestroy_Struct*)pack->pBuffer;
+						adest->id = nd->id;
+						worldserver.SendPacket(pack);
+						safe_delete(pack);
+					}
+				}
+				else if(nd->time_zoned > 0)
+				{
+					if(nd->status == 1)
+					{
+						if(((nd->ai->duration*3/4) + nd->time_zoned) <= tv.tv_sec)
+						{
+							database.UpdateAdventureStatus(nd->id, 2);
+
+							//send new status to all players
+							ServerPacket *pack = new ServerPacket(ServerOP_AdventureUpdate, sizeof(ServerAdventureUpdate_Struct));
+							ServerAdventureUpdate_Struct *au = (ServerAdventureUpdate_Struct*)pack->pBuffer;
+							au->id = nd->id;
+							au->new_status = 1;
+							au->status = 2;
+							worldserver.SendPacket(pack);
+							safe_delete(pack);
+
+							char msg[] = "You have failed your Adventure.\0";
+							ServerPacket *pack_msg = new ServerPacket(ServerOP_AdventureMessage, sizeof(ServerAdventureMessage_Struct) + strlen(msg) + 1);
+							ServerAdventureMessage_Struct *am = (ServerAdventureMessage_Struct*)pack_msg->pBuffer;
+							am->id = nd->id;
+							strncpy(am->message, msg, strlen(msg));
+							worldserver.SendPacket(pack_msg);
+							safe_delete(pack_msg);
+						}
+					}
+					else if(nd->status == 2)
+					{
+						if((nd->ai->duration + nd->time_zoned) <= tv.tv_sec)
+						{
+							database.UpdateAdventureCompleted(nd->id, tv.tv_sec);
+							database.UpdateAdventureStatus(nd->id, 3);
+
+							//send new status to all players
+							ServerPacket *pack = new ServerPacket(ServerOP_AdventureUpdate, sizeof(ServerAdventureUpdate_Struct));
+							ServerAdventureUpdate_Struct *au = (ServerAdventureUpdate_Struct*)pack->pBuffer;
+							au->id = nd->id;
+							au->new_timec = 1;
+							au->new_status = 1;
+							au->status = 3;
+							au->time_c = tv.tv_sec;
+							worldserver.SendPacket(pack);
+							safe_delete(pack);
+
+							//send failure to all players
+							ServerPacket *pack2 = new ServerPacket(ServerOP_AdventureFinish, sizeof(ServerAdventureFinish_Struct));
+							ServerAdventureFinish_Struct *afin = (ServerAdventureFinish_Struct*)pack2->pBuffer;
+							afin->id = nd->id;
+							afin->win_lose = 0;
+							afin->points = 0;
+							worldserver.SendPacket(pack2);
+							safe_delete(pack2);
+						}
+					}
+				}
+				else
+				{
+					if((nd->ai->zone_in_time + nd->time_created) <= tv.tv_sec)
+					{
+						//our time has run out and we didn't create an instance.
+						database.DestroyAdventure(nd->id);
+						ServerPacket *pack = new ServerPacket(ServerOP_AdventureDestroy, sizeof(ServerAdventureDestroy_Struct));
+						ServerAdventureDestroy_Struct *adest = (ServerAdventureDestroy_Struct*)pack->pBuffer;
+						adest->id = nd->id;
+						worldserver.SendPacket(pack);
+						safe_delete(pack);
+					}
+				}
 				SendAdventureDetail();
 			}
 		}
