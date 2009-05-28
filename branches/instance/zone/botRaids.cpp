@@ -395,6 +395,78 @@ void BotRaids::GroupAssignTask(Group *g, int iTask, Mob *m) {
 	}
 }
 
+void BotRaids::SplitExp(uint32 exp, Mob* other)
+{
+	if(other->CastToNPC()->MerchantType != 0) // Ensure NPC isn't a merchant
+	{
+		return;
+	}
+
+	if(other->GetOwner() && other->GetOwner()->IsClient()) // Ensure owner isn't pc
+	{
+		return;
+	}
+
+	uint32 groupexp = exp; 
+	int8 membercount = 0; 
+	int8 maxlevel = 1;
+
+	for(int i=0; i<MAX_BOT_RAID_GROUPS; i++)
+	{
+		if(BotRaidGroups[i])
+		{
+			for(int j=0; j<MAX_GROUP_MEMBERS; j++)
+			{
+				if(BotRaidGroups[i]->members[j])
+				{
+					if(BotRaidGroups[i]->members[j]->GetLevel() > maxlevel)
+					{
+						maxlevel = BotRaidGroups[i]->members[j]->GetLevel();
+					}
+					membercount++;
+				}
+			}
+		}
+	}
+
+	groupexp = (uint32)((float)groupexp * (1.0f-(RuleR(Character, RaidExpMultiplier))));
+
+	int conlevel = Mob::GetLevelCon(maxlevel, other->GetLevel());
+	if(conlevel == CON_GREEN)
+	{
+		return;	//no exp for greenies...
+	}
+
+	if(membercount == 0)
+	{
+		return;
+	}
+
+	for(int x=0; x<MAX_GROUP_MEMBERS; x++)
+	{
+		if(BotRaidGroups[0]->members[x] != NULL) // If Group Member is Client
+		{
+			if(BotRaidGroups[0]->members[x]->IsClient())
+			{
+				Client *cmember = BotRaidGroups[0]->members[x]->CastToClient();
+				// add exp + exp cap 
+				sint16 diff = cmember->GetLevel() - maxlevel;
+				sint16 maxdiff = -(cmember->GetLevel()*15/10 - cmember->GetLevel());
+				if(maxdiff > -5)
+				{
+					maxdiff = -5;
+				}
+				if(diff >= maxdiff) /*Instead of person who killed the mob, the person who has the highest level in the group*/
+				{
+					uint32 tmp = (cmember->GetLevel() + 3) * (cmember->GetLevel() + 3) * 75 * 35 / 10;
+					uint32 tmp2 = (groupexp / membercount) + 1;
+					cmember->AddEXP( tmp < tmp2 ? tmp : tmp2, conlevel ); 
+				}
+			}
+		} 
+	}
+}
+
 void BotRaids::RaidDefendEnraged() {
 	for(int j=0; j<MAX_BOT_RAID_GROUPS; j++) {
 		if(BotRaidGroups[j]) {
