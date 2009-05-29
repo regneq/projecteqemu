@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/28/2009==
+Congdar: Bots - updates to bot pvp, raidexp and magepet
+
 ==05/27/2009==
 Trevius: SoF - Added new opcode and structure to support the Respawn Window.  It isn't fully functional yet, but most of the code is there now.
 Congdar: Bots - Fixed botraid experience distribution.

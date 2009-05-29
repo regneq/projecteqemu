@@ -489,40 +489,6 @@ bool Mob::IsAttackAllowed(Mob *target)
 //	NPC *npc1, *npc2;
 	int reverse;
 
-#ifdef EQBOTS
-
-	if(IsBot() && BotOwner->CastToClient()->GetPVP())
-	{
-		if(target->IsBot() && target->BotOwner->CastToClient()->GetPVP())
-		{
-			if(target->BotOwner == BotOwner)
-			{
-				return false;
-			}
-			else
-			{
-				return true;
-			}
-		}
-		if(target->IsClient() && target->CastToClient()->GetPVP())
-		{
-			if(target == BotOwner)
-			{
-				return false;
-			}
-			else
-			{
-				return true;
-			}
-		}
-	}
-	if((IsBot() && (target->IsBot() || target->IsClient())) || (IsClient() && target->IsBot()))
-	{
-		return false;    
-	}
-
-#endif //EQBOTS
-
 	if(!zone->CanDoCombat())
 		return false;
 
@@ -561,6 +527,47 @@ bool Mob::IsAttackAllowed(Mob *target)
 	mob2 = target_owner ? target_owner : target;
 
 #ifdef EQBOTS
+
+	// some pvp checks
+	if(IsBot() && BotOwner && BotOwner->CastToClient()->GetPVP()) // i'm a bot and my owner is pvp
+	{
+		if(target->IsBot() && target->BotOwner && target->BotOwner->CastToClient()->GetPVP()) // my target is a bot and it's owner is pvp
+		{
+			if(target->BotOwner == BotOwner) // no attacking if my owner is my target
+			{
+				return false;
+			}
+			else
+			{
+				return true;
+			}
+		}
+		if(target->IsClient() && target->CastToClient()->GetPVP()) // my target is a player and it's pvp
+		{
+			if(target == BotOwner) // my target cannot be my owner
+			{
+				return false;
+			}
+			else
+			{
+				return true;
+			}
+		}
+	}
+	if(IsClient() &&
+		target->IsBot() &&
+		CastToClient()->GetPVP() &&
+		target->BotOwner &&
+		target->BotOwner->CastToClient()->GetPVP() &&
+		database.GetBotOwner(target->GetNPCTypeID()) != CastToClient()->AccountID())
+	{ // im a pvp player and i'm targeting a bot whos owner is pvp, and it's not my bot
+		return true;
+	}
+
+	if((IsBot() && (target->IsBot() || target->IsClient())) || (IsClient() && target->IsBot()))
+	{
+		return false;    
+	}
 
     // franck-add: Bots pet can't attack others bots and there pets. Clients and their pet can't attack bot pets.
 	if(mob1->IsClient()) {
