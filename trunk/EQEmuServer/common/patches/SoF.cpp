@@ -411,6 +411,7 @@ ENCODE(OP_PlayerProfile) {
 	OUT(deity);
 	OUT(intoxication);
 	OUT_array(spellSlotRefresh, structs::MAX_PP_MEMSPELL);
+	OUT(abilitySlotRefresh);
 	OUT(points); // Relocation Test
 //	OUT(unknown0166[4]);
 	OUT(haircolor);
