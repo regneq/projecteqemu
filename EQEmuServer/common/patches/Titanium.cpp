@@ -219,7 +219,7 @@ ENCODE(OP_PlayerProfile) {
 	OUT(deity);
 	OUT(intoxication);
 	OUT_array(spellSlotRefresh, structs::MAX_PP_MEMSPELL);
-//	OUT(unknown0166[4]);
+	OUT(abilitySlotRefresh);
 	OUT(haircolor);
 	OUT(beardcolor);
 	OUT(eyecolor1);

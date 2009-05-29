@@ -787,7 +787,7 @@ struct PlayerProfile_Struct //23576 Octets
 /*00160*/ uint32  deity;              // deity
 /*00164*/ uint32  intoxication;       // Alcohol level (in ticks till sober?)
 /*00168*/ uint32  spellSlotRefresh[MAX_PP_MEMSPELL]; // Refresh time (millis) - 4 Octets Each
-/*00208*/ uint8 unknown0166[4]; //#### used to be on in Titanium ####  - TEMP DISABLE
+/*00208*/ uint32  abilitySlotRefresh;
 /*00212*/ uint8   haircolor;          // Player hair color
 /*00213*/ uint8   beardcolor;         // Player beard color
 /*00214*/ uint8   eyecolor1;          // Player left eye color

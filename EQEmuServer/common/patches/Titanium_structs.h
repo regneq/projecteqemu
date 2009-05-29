@@ -719,7 +719,7 @@ struct PlayerProfile_Struct
 /*00124*/ uint32  deity;              // deity
 /*00128*/ uint32  intoxication;       // Alcohol level (in ticks till sober?)
 /*00132*/ uint32  spellSlotRefresh[MAX_PP_MEMSPELL]; // Refresh time (millis)
-/*00168*/ uint8 unknown0166[4];
+/*00168*/ uint32  abilitySlotRefresh;
 /*00172*/ uint8   haircolor;          // Player hair color
 /*00173*/ uint8   beardcolor;         // Player beard color
 /*00174*/ uint8   eyecolor1;          // Player left eye color

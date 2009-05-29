@@ -790,7 +790,7 @@ struct PlayerProfile_Struct
 /*0245*/	uint8				unknown0245[7];	//
 /*0252*/	uint32				intoxication;
 /*0256*/	uint32				spellSlotRefresh[MAX_PP_MEMSPELL];	//in ms
-/*0292*/	uint8                           unknown0392[4];
+/*0292*/	uint32				abilitySlotRefresh;
 /*0296*/	uint8				haircolor;			// Player hair color
 /*0297*/	uint8				beardcolor;			// Player beard color
 /*0298*/	uint8				eyecolor1;			// Player left eye color

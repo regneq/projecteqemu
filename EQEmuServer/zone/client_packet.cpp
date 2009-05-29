@@ -7153,48 +7153,6 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 		m_pp.z = zone->newzone_data.safe_z;
 	}
 
-//currently lost in PP
-/*	if(m_pp.class_==SHADOWKNIGHT || m_pp.class_==PALADIN){
-		int32 abilitynum=0;
-		if(m_pp.class_==SHADOWKNIGHT)
-			abilitynum = pTimerHarmTouch;
-		else
-			abilitynum = pTimerLayHands;
-		//int32 remaining = database.GetTimerRemaining(CharacterID(),abilitynum);
-
-		//returns 0 or 0xFFFFFFFF if timer is not set.
-		int32 remaining = p_timers.GetRemainingTime(abilitynum);
-
-		if(remaining > 0 && remaining < 15300){
-			m_pp.ability_down=1;
-			m_pp.ability_up=0;
-			m_pp.ability_number=abilitynum;
-			int8 minutes=0;
-			int8 hours=0;
-			if(remaining>3600){
-				hours=(remaining/3600);
-				remaining=remaining-(hours*3600);
-			}
-			if(remaining>60){
-				minutes=(remaining/60);
-				remaining=remaining-(minutes*60);
-			}
-			m_pp.ability_time_minutes=minutes;
-			m_pp.ability_time_seconds=remaining;
-			m_pp.ability_time_hours=hours;
-			AbilityTimer=true;
-		}
-		else{
-			m_pp.ability_down=0;
-			m_pp.ability_up=1;
-			m_pp.ability_number=0;
-			m_pp.ability_time_minutes=0;
-			m_pp.ability_time_seconds=0;
-			m_pp.ability_time_hours=0;
-		}
-	}
-*/
-
 	char val[20] = {0};
 	if (database.GetVariable("Expansions", val, 20))
 		m_pp.expansions = atoi(val);
@@ -7204,6 +7162,22 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 	p_timers.SetCharID(CharacterID());
 	if(!p_timers.Load(&database)) {
 		LogFile->write(EQEMuLog::Error, "Unable to load ability timers from the database for %s (%i)!", GetCleanName(), CharacterID());
+	}
+
+	if(m_pp.class_==SHADOWKNIGHT || m_pp.class_==PALADIN)
+	{
+		int32 abilitynum=0;
+		if(m_pp.class_==SHADOWKNIGHT)
+			abilitynum = pTimerHarmTouch;
+		else
+			abilitynum = pTimerLayHands;
+
+
+		int32 remaining = p_timers.GetRemainingTime(abilitynum);
+		if(remaining > 0 && remaining < 15300)
+			m_pp.abilitySlotRefresh = remaining * 1000;
+		else
+			m_pp.abilitySlotRefresh = 0;
 	}
 
 #ifdef _EQDEBUG
