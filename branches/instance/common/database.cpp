@@ -3115,6 +3115,22 @@ void Database::FlagInstanceByRaidLeader(int32 zone, int16 version, int32 charid,
 	AddClientToInstance(l_id, charid);
 }
 
+void Database::SetInstanceDuration(int16 instance_id, int32 new_duration)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+
+	if(RunQuery(query, MakeAnyLenString(&query, "UPDATE `instance_lockout` SET start_time=UNIX_TIMESTAMP(), duration=%u WHERE id=%u", new_duration, instance_id), errbuf))
+	{
+		safe_delete_array(query);
+	}
+	else
+	{
+		//error
+		safe_delete_array(query);
+	}
+}
+
 void Database::GroupAdventureLevelAndRange(int32 gid, int32 &avg_level, int32 &range)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];

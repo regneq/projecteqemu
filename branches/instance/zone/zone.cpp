@@ -1111,95 +1111,106 @@ bool Zone::Process() {
 			AdventureDetails *ad = aa_iter->second;
 			if(ad)
 			{
-				timeval tv;
-				gettimeofday(&tv, NULL);
-				if(ad->time_completed > 0)
+				if(ad->ai)
 				{
-					//if time is up then destroy this adventure
-					if((1800 + ad->time_completed) <= tv.tv_sec)
+					timeval tv;
+					gettimeofday(&tv, NULL);
+					if(ad->time_completed > 0)
 					{
-						printf("our completed time > 0 and 1800 + %u <= %u.\n", ad->time_completed, tv.tv_sec);
-						database.DestroyAdventure(ad->id);
-						ServerPacket *pack = new ServerPacket(ServerOP_AdventureDestroy, sizeof(ServerAdventureDestroy_Struct));
-						ServerAdventureDestroy_Struct *adest = (ServerAdventureDestroy_Struct*)pack->pBuffer;
-						adest->id = ad->id;
-						worldserver.SendPacket(pack);
-						safe_delete(pack);
-					}
-				}
-				else if(ad->time_zoned > 0)
-				{
-					//we're in the zone
-					//if status == 1 then check if we're 75% done for full points, if so inform player and set status to 2
-					//if status == 2 then check if we're done, if so then set time completed to now and send failure and 
-					//set status to 3
-					if(ad->status == 1)
-					{
-						if(((ad->ai->duration*3/4) + ad->time_zoned) <= tv.tv_sec)
+						//if time is up then destroy this adventure
+						if((1800 + ad->time_completed) <= tv.tv_sec)
 						{
-							database.UpdateAdventureStatus(ad->id, 2);
+							if(ad->status == 2)
+							{
+								ServerPacket *pack2 = new ServerPacket(ServerOP_AdventureFinish, sizeof(ServerAdventureFinish_Struct));
+								ServerAdventureFinish_Struct *afin = (ServerAdventureFinish_Struct*)pack2->pBuffer;
+								afin->id = ad->id;
+								afin->win_lose = 0;
+								afin->points = 0;
+								worldserver.SendPacket(pack2);
+								safe_delete(pack2);
 
-							//send new status to all players
-							ServerPacket *pack = new ServerPacket(ServerOP_AdventureUpdate, sizeof(ServerAdventureUpdate_Struct));
-							ServerAdventureUpdate_Struct *au = (ServerAdventureUpdate_Struct*)pack->pBuffer;
-							au->id = ad->id;
-							au->new_status = 1;
-							au->status = 2;
-							worldserver.SendPacket(pack);
-							safe_delete(pack);
-
-							//todo change msg to: 
-							//You failed to complete your adventure in time.  Complete your adventure goal within %1 minutes to receive a lesser reward.  This adventure will end in %1 minutes and your party will be ejected from the dungeon.
-							char msg[] = "You have failed your Adventure.\0";
-							ServerPacket *pack_msg = new ServerPacket(ServerOP_AdventureMessage, sizeof(ServerAdventureMessage_Struct) + strlen(msg) + 1);
-							ServerAdventureMessage_Struct *am = (ServerAdventureMessage_Struct*)pack_msg->pBuffer;
-							am->id = ad->id;
-							strncpy(am->message, msg, strlen(msg));
-							worldserver.SendPacket(pack_msg);
-							safe_delete(pack_msg);
+								database.DestroyAdventure(ad->id);
+								ServerPacket *pack = new ServerPacket(ServerOP_AdventureDestroy, sizeof(ServerAdventureDestroy_Struct));
+								ServerAdventureDestroy_Struct *adest = (ServerAdventureDestroy_Struct*)pack->pBuffer;
+								adest->id = ad->id;
+								worldserver.SendPacket(pack);
+								safe_delete(pack);
+							}
+							else
+							{
+								database.DestroyAdventure(ad->id);
+								ServerPacket *pack = new ServerPacket(ServerOP_AdventureDestroy, sizeof(ServerAdventureDestroy_Struct));
+								ServerAdventureDestroy_Struct *adest = (ServerAdventureDestroy_Struct*)pack->pBuffer;
+								adest->id = ad->id;
+								worldserver.SendPacket(pack);
+								safe_delete(pack);
+							}
 						}
 					}
-					else if(ad->status == 2)
+					else if(ad->time_zoned > 0)
 					{
-						if((ad->ai->duration + ad->time_zoned) <= tv.tv_sec)
+						if(ad->status == 1)
 						{
-							database.UpdateAdventureCompleted(ad->id, tv.tv_sec);
-							database.UpdateAdventureStatus(ad->id, 3);
+							if((ad->ai->duration + ad->time_zoned) <= tv.tv_sec)
+							{
+								sint32 time_since = tv.tv_sec - (ad->ai->duration + ad->time_zoned);
+								if(time_since >= 1800) //we're over time on our instance
+								{
+									database.DestroyAdventure(ad->id);
+									ServerPacket *pack = new ServerPacket(ServerOP_AdventureDestroy, sizeof(ServerAdventureDestroy_Struct));
+									ServerAdventureDestroy_Struct *adest = (ServerAdventureDestroy_Struct*)pack->pBuffer;
+									adest->id = ad->id;
+									worldserver.SendPacket(pack);
+									safe_delete(pack);
+								}
+								else
+								{
+									database.UpdateAdventureCompleted(ad->id, (tv.tv_sec-time_since));
+									database.UpdateAdventureStatus(ad->id, 3);
 
-							//send new status to all players
-							ServerPacket *pack = new ServerPacket(ServerOP_AdventureUpdate, sizeof(ServerAdventureUpdate_Struct));
-							ServerAdventureUpdate_Struct *au = (ServerAdventureUpdate_Struct*)pack->pBuffer;
-							au->id = ad->id;
-							au->new_timec = 1;
-							au->new_status = 1;
-							au->status = 3;
-							au->time_c = tv.tv_sec;
-							worldserver.SendPacket(pack);
-							safe_delete(pack);
+									//send new status to all players
+									ServerPacket *pack = new ServerPacket(ServerOP_AdventureUpdate, sizeof(ServerAdventureUpdate_Struct));
+									ServerAdventureUpdate_Struct *au = (ServerAdventureUpdate_Struct*)pack->pBuffer;
+									au->id = ad->id;
+									au->new_timec = 1;
+									au->new_status = 1;
+									au->status = 3;
+									au->time_c = (tv.tv_sec-time_since);
+									worldserver.SendPacket(pack);
+									safe_delete(pack);
 
-							//send failure to all players
-							ServerPacket *pack2 = new ServerPacket(ServerOP_AdventureFinish, sizeof(ServerAdventureFinish_Struct));
-							ServerAdventureFinish_Struct *afin = (ServerAdventureFinish_Struct*)pack2->pBuffer;
-							afin->id = ad->id;
-							afin->win_lose = 0;
-							afin->points = 0;
-							worldserver.SendPacket(pack2);
-							safe_delete(pack2);
+									char msg[] = "You failed to complete your adventure in time.  Complete your adventure goal within 30 minutes to receive a lesser reward.  This adventure will end in 30 minutes and your party will be ejected from the dungeon.\0";
+									ServerPacket *pack_msg = new ServerPacket(ServerOP_AdventureMessage, sizeof(ServerAdventureMessage_Struct) + strlen(msg) + 1);
+									ServerAdventureMessage_Struct *am = (ServerAdventureMessage_Struct*)pack_msg->pBuffer;
+									am->id = ad->id;
+									strncpy(am->message, msg, strlen(msg));
+									worldserver.SendPacket(pack_msg);
+									safe_delete(pack_msg);
+
+									//set time on instance to 30 min
+									database.SetInstanceDuration(ad->instance_id, (1800-time_since));
+									ServerPacket *instance_pack = new ServerPacket(ServerOP_InstanceUpdateTime, sizeof(ServerInstanceUpdateTime_Struct));
+									ServerInstanceUpdateTime_Struct *iut = (ServerInstanceUpdateTime_Struct*)instance_pack->pBuffer;
+									iut->instance_id = ad->instance_id;
+									iut->new_duration = (1800-time_since);
+									worldserver.SendPacket(instance_pack);
+									safe_delete(instance_pack);
+								}
+							}
 						}
 					}
-				}
-				else
-				{
-					if((ad->ai->zone_in_time + ad->time_created) <= tv.tv_sec)
+					else
 					{
-						//our time has run out and we didn't create an instance.
-						printf("our completed time == 0 and our zoned time == 0 and %u + %u <= %u.\n", ad->ai->zone_in_time, ad->time_created, tv.tv_sec);
-						database.DestroyAdventure(ad->id);
-						ServerPacket *pack = new ServerPacket(ServerOP_AdventureDestroy, sizeof(ServerAdventureDestroy_Struct));
-						ServerAdventureDestroy_Struct *adest = (ServerAdventureDestroy_Struct*)pack->pBuffer;
-						adest->id = ad->id;
-						worldserver.SendPacket(pack);
-						safe_delete(pack);
+						if((ad->ai->zone_in_time + ad->time_created) <= tv.tv_sec)
+						{
+							database.DestroyAdventure(ad->id);
+							ServerPacket *pack = new ServerPacket(ServerOP_AdventureDestroy, sizeof(ServerAdventureDestroy_Struct));
+							ServerAdventureDestroy_Struct *adest = (ServerAdventureDestroy_Struct*)pack->pBuffer;
+							adest->id = ad->id;
+							worldserver.SendPacket(pack);
+							safe_delete(pack);
+						}
 					}
 				}
 			}
@@ -2180,5 +2191,13 @@ void Zone::LoadActiveAdventures()
 		LogFile->write(EQEMuLog::Error, "Error in Zone::LoadActiveAdventures: %s (%s)", query, errbuf);
 		safe_delete_array(query);
 		return;
+	}
+}
+
+void Zone::SetInstanceTimer(int32 new_duration)
+{
+	if(Instance_Timer)
+	{
+		Instance_Timer->Start(new_duration * 1000);
 	}
 }

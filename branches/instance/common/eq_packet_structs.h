@@ -1759,7 +1759,11 @@ struct AdventureRequestResponse_Struct{
 	int32 unknown2080;
 };
 
-
+struct AdventureCountUpdate_Struct
+{
+	int32 current;
+	int32 total;
+};
 
 /*struct Item_Shop_Struct {
 	uint16 merchantid;

@@ -1086,11 +1086,21 @@ bool ZoneServer::Process() {
 			zoneserver_list.SendPacket(pack);
 			break;
 		}
+		case ServerOP_InstanceUpdateTime :
+		{
+			ServerInstanceUpdateTime_Struct *iut = (ServerInstanceUpdateTime_Struct*)pack->pBuffer;
+			ZoneServer *zm = zoneserver_list.FindByInstanceID(iut->instance_id);
+			if(zm)
+			{
+				zm->SendPacket(pack);
+			}
+			break;
+		}
 		case ServerOP_AdventureCreate:
 		case ServerOP_AdventureAddPlayer:
 		case ServerOP_AdventureDestroy: 
 		case ServerOP_AdventureUpdate:
-		case ServerOP_AdventureStatus:
+		case ServerOP_AdventureCount:
 		case ServerOP_AdventureFinish:
 		case ServerOP_AdventureMessage:
 		{

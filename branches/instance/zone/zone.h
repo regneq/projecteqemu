@@ -156,6 +156,7 @@ public:
 	void	LoadMerchantData_result(MYSQL_RES* result);
 	int		SaveTempItem(int32 merchantid, int32 npcid, int32 item, sint32 charges, bool sold=false);
 
+	void	SetInstanceTimer(int32 new_duration);
 	void	LoadAdventures();
 	void	LoadAdventureEntries();
 	void	LoadActiveAdventures();

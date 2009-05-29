@@ -815,11 +815,10 @@ public:
 	void SendAdventureError(const char* msg, ...);
 	void SendAdventureDetail();
 	void SendAdventureFinish(int8 win, int32 points);
+	void SendAdventureCountUpdate(int32 current, int32 total);
 	void AcceptAdventure();
 	void DeclineAdventure();
 	void LeaveAdventure();
-	bool AdventureExpired();
-	bool AdventureTimeRanOut();
 
 protected:
 	friend class Mob;

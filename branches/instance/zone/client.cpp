@@ -4147,12 +4147,6 @@ void Client::SendAdventureDetail()
 		return;
 	}
 
-	if(ad->time_completed != 0)
-	{
-		SendAdventureError("Your adventure is shutting down.");
-		return;
-	}
-
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureData, sizeof(AdventureRequestResponse_Struct));
 	AdventureRequestResponse_Struct *arr = (AdventureRequestResponse_Struct*)outapp->pBuffer;
 	timeval tv;
@@ -4162,7 +4156,11 @@ void Client::SendAdventureDetail()
 	arr->risk = ad->ai->is_hard+1;
 	strncpy(arr->text, ad->ai->text.c_str(), ad->ai->text.size());
 	
-	if(ad->instance_id > 0)
+	if(ad->time_completed > 0)
+	{
+		arr->timeleft = (ad->time_completed + 1800) - tv.tv_sec;
+	}
+	else if(ad->instance_id > 0)
 	{
 		arr->timeleft = (ad->time_zoned + ad->ai->duration) - tv.tv_sec;
 	}
@@ -4187,6 +4185,7 @@ void Client::SendAdventureDetail()
 	}
 	arr->unknown2080=0x0A;
 	FastQueuePacket(&outapp);
+	SendAdventureCountUpdate(ad->count, ad->ai->type_count);
 }
 
 void Client::SendAdventureFinish(int8 win, int32 points)
@@ -4210,50 +4209,11 @@ void Client::SendAdventureFinish(int8 win, int32 points)
 	}
 }
 
-bool Client::AdventureExpired()
+void Client::SendAdventureCountUpdate(int32 current, int32 total)
 {
-	AdventureDetails* t = GetCurrentAdventure();
-	if(t)
-	{
-		if(t->ai)
-		{
-			if(t->instance_id == -1)
-			{
-				timeval tv;
-				gettimeofday(&tv, NULL);
-				if((t->time_created + t->ai->zone_in_time) >= tv.tv_sec)
-					return true;
-			}
-			else
-			{
-				if(t->time_completed > 0)
-				{
-					timeval tv;
-					gettimeofday(&tv, NULL);
-					if((t->time_completed + 1800) >= tv.tv_sec)
-						return true;
-				}
-			}
-		}
-	}
-	return false;
-}
-
-bool Client::AdventureTimeRanOut()
-{
-	AdventureDetails* t = GetCurrentAdventure();
-	if(t)
-	{
-		if(t->ai)
-		{
-			if(t->time_zoned > 0)
-			{
-				timeval tv;
-				gettimeofday(&tv, NULL);
-				if((t->time_zoned + t->ai->duration) >= tv.tv_sec)
-					return true;
-			}
-		}
-	}
-	return false;
+		EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureUpdate, sizeof(AdventureCountUpdate_Struct));
+		AdventureCountUpdate_Struct *acu = (AdventureCountUpdate_Struct*)outapp->pBuffer;
+		acu->current = current;
+		acu->total = total;
+		FastQueuePacket(&outapp);
 }

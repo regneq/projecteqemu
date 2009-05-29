@@ -3876,7 +3876,6 @@ void EntityList::AdventureFinish(int32 a_id, int8 win_lose, int32 points)
 
 void EntityList::AdventureDestroy(int32 a_id)
 {
-	printf("adventure destroy: %u\n", a_id);
 	LinkedListIterator<Client*> iterator(client_list); 
 	iterator.Reset();
 	while(iterator.MoreElements()) 
@@ -3889,6 +3888,25 @@ void EntityList::AdventureDestroy(int32 a_id)
 			{
 				c->SendAdventureError("You are not currently in an adventure.");
 				c->SetCurrentAdventure(NULL);
+			}
+		}
+		iterator.Advance();
+	}
+}
+
+void EntityList::AdventureCountUpdate(int32 a_id, int32 current, int32 total)
+{
+	LinkedListIterator<Client*> iterator(client_list); 
+	iterator.Reset();
+	while(iterator.MoreElements()) 
+	{
+		Client *c = iterator.GetData();
+		if(c)
+		{
+			AdventureDetails *ad = c->GetCurrentAdventure();
+			if(ad && ad->id == a_id)
+			{
+				c->SendAdventureCountUpdate(current, total);
 			}
 		}
 		iterator.Advance();

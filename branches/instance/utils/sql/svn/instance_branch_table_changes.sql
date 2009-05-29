@@ -41,7 +41,7 @@ ALTER TABLE `object` DROP `unknown88`;
 DELETE FROM object WHERE object.type=1 AND object.itemid!=0;
 
 ALTER TABLE `doors` ADD `version` SMALLINT UNSIGNED DEFAULT '0' NOT NULL AFTER `zone`;
-ALTER TABLE `doors` ADD `is_ldon_door` TINYINT UNSIGNED DEFAULT '0' NOT NULL AFTER `dest_heading`
+ALTER TABLE `doors` ADD `is_ldon_door` TINYINT UNSIGNED DEFAULT '0' NOT NULL AFTER `dest_heading`;
 
 ALTER TABLE `npc_types` ADD `adventure_template_id` INT UNSIGNED DEFAULT '0' NOT NULL AFTER `npc_faction_id`;
 
@@ -92,7 +92,7 @@ CREATE TABLE `adventure_details` (
   `time_zoned` int(10) unsigned NOT NULL default '0',
   `time_completed` int(10) unsigned NOT NULL default '0',
   PRIMARY KEY  (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `adventure_members` (
   `id` int(10) unsigned NOT NULL,

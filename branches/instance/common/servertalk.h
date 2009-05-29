@@ -96,11 +96,12 @@
 #define ServerOP_RaidGroupAdd		0x010D
 #define ServerOP_RaidGroupRemove	0x010E
 
+#define ServerOP_InstanceUpdateTime 0x014F
 #define ServerOP_AdventureCreate	0x0150
 #define ServerOP_AdventureAddPlayer 0x0151
 #define ServerOP_AdventureDestroy	0x0152
 #define ServerOP_AdventureUpdate	0x0153
-#define ServerOP_AdventureStatus	0x0154
+#define ServerOP_AdventureCount		0x0154
 #define ServerOP_AdventureFinish	0x0155
 #define ServerOP_AdventureMessage	0x0156
 
@@ -788,6 +789,12 @@ struct UpdateSpawnTimer_Struct {
 	int32 duration;
 };
 
+struct ServerInstanceUpdateTime_Struct
+{
+	int16 instance_id;
+	int32 new_duration;
+};
+
 struct ServerAdventureCreate_Struct
 {
 	int32 from_zone_id;
@@ -826,7 +833,7 @@ struct ServerAdventureUpdate_Struct
 	int32 time_z;
 };
 
-struct ServerAdventureStatus_Struct
+struct ServerAdventureCount_Struct
 {
 	int32 id;
 	int32 new_count;

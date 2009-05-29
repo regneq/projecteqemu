@@ -169,7 +169,7 @@ public:
 	void AssignRaidToInstance(int32 rid, int32 instance_id);
 	void FlagInstanceByGroupLeader(int32 zone, int16 version, int32 charid, int32 gid);
 	void FlagInstanceByRaidLeader(int32 zone, int16 version, int32 charid, int32 rid);
-	void SetInstanceDuration(int16 instance_id, int32 new_duration) { }
+	void SetInstanceDuration(int16 instance_id, int32 new_duration);
 
 	/*
 	 * Adventure

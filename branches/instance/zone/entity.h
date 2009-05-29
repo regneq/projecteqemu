@@ -342,6 +342,7 @@ public:
 	void	AdventureMessage(int32 a_id, const char *msg);
 	void	AdventureFinish(int32 a_id, int8 win_lose, int32 points);
 	void	AdventureDestroy(int32 a_id);
+	void	AdventureCountUpdate(int32 a_id, int32 current, int32 total);
 
 #ifdef EQBOTS
 

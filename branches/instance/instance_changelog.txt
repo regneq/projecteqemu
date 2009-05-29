@@ -1,3 +1,7 @@
+KLS - May 28, 2009
+-Adventure timers should be working quite well
+-/goto should work for instances now
+
 KLS - May 27, 2009
 -Adventure creation and zoning into adventures works for everyone in the group even across zones.
 -Fixed the crash with loading instances on zone.

@@ -512,7 +512,7 @@ void WorldServer::Process() {
 				else {
 					SendEmoteMessage(szp->adminname, 0, 0, "Summoning %s to %s %1.1f, %1.1f, %1.1f", szp->name, szp->zone, szp->x_pos, szp->y_pos, szp->z_pos);
 				}
-				client->MovePC(szp->zone, szp->x_pos, szp->y_pos, szp->z_pos, client->GetHeading(), szp->ignorerestrictions, GMSummon);
+				client->MovePC(database.GetZoneID(szp->zone), szp->instance_id, szp->x_pos, szp->y_pos, szp->z_pos, client->GetHeading(), szp->ignorerestrictions, GMSummon);
 			}
 			break;
 		}
@@ -1216,6 +1216,19 @@ void WorldServer::Process() {
 			break;
 		}
 
+		case ServerOP_InstanceUpdateTime:
+		{
+			ServerInstanceUpdateTime_Struct *iut = (ServerInstanceUpdateTime_Struct*)pack->pBuffer;
+			if(zone)
+			{
+				if(zone->GetInstanceID() == iut->instance_id)
+				{
+					zone->SetInstanceTimer(iut->new_duration);
+				}
+			}
+			break;
+		}
+
 		case ServerOP_AdventureCreate: {
 			ServerAdventureCreate_Struct *ac = (ServerAdventureCreate_Struct*)pack->pBuffer;
 			if(zone)
@@ -1281,35 +1294,27 @@ void WorldServer::Process() {
 					AdventureDetails *ad = iter->second;
 					if(ad)
 					{
-						bool send_update = false;
 						if(au->new_inst == 1)
 						{
 							ad->instance_id = au->instance_id;
-							send_update = true;
 						}
 						
 						if(au->new_status == 1)
 						{
 							ad->status = au->status;
-							send_update = true;
 						}
 
 						if(au->new_timez == 1)
 						{
 							ad->time_zoned = au->time_z;
-							send_update = true;
 						}
 
 						if(au->new_timec == 1)
 						{
 							ad->time_completed = au->time_c;
-							send_update = true;
 						}
 						
-						if(send_update == true)
-						{
-							entity_list.SendAdventureUpdate(au->id);
-						}
+						entity_list.SendAdventureUpdate(au->id);
 					}
 				}
 			}
@@ -1330,6 +1335,25 @@ void WorldServer::Process() {
 			if(zone)
 			{
 				entity_list.AdventureMessage(am->id, am->message);
+			}
+			break;
+		}
+
+		case ServerOP_AdventureCount: {
+			ServerAdventureCount_Struct *ac = (ServerAdventureCount_Struct*)pack->pBuffer;
+			if(zone)
+			{
+				std::map<int32, AdventureDetails*>::iterator iter = zone->active_adventures.find(ac->id);
+				if(iter != zone->active_adventures.end())
+				{
+					AdventureDetails *ad = iter->second;
+					if(ad)
+					{
+						ad->count = ac->new_count;
+						if(ad->ai)
+							entity_list.AdventureCountUpdate(ac->id, ac->new_count, ad->ai->type_count);
+					}
+				}
 			}
 			break;
 		}
