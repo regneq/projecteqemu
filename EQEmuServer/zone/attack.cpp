@@ -2562,7 +2562,7 @@ void NPC::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill) 
 				{
 					for(int j=0; j<MAX_GROUP_MEMBERS; j++)
 					{
-						if(br->BotRaidGroups[0]->members[j]->IsClient())
+						if(br->BotRaidGroups[0]->members[j] && br->BotRaidGroups[0]->members[j]->IsClient())
 						{
 							parse->Event(EVENT_KILLED_MERIT, GetNPCTypeID(), "killed", this, br->BotRaidGroups[0]->members[j]);
 							if(RuleB(TaskSystem, EnableTaskSystem))
@@ -2810,6 +2810,10 @@ void NPC::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill) 
 		// Delete from database
 		database.CleanBotLeaderEntries(botnpcid);
 		entity_list.RemoveNPC(botid);
+	}
+	else if(IsPet() && GetOwner() && GetOwner()->IsBot())
+	{
+		GetOwner()->SetPetID(0);
 	}
 
 #endif //EQBOTS

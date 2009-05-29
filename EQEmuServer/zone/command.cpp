@@ -10232,28 +10232,16 @@ void command_bot(Client *c, const Seperator *sep) {
 					c->GetTarget()->Say("I don't have any pets yet.");
 					return;
 				}
-				if(!strcasecmp(sep->arg[2], "monster"))
+				if(!strcasecmp(sep->arg[2], "water"))
 				{
-					if(botlevel < 30)
-					{
-						c->GetTarget()->Say("I don't have that pet yet.");
-						return;
-					}
-					else
-					{
-						c->GetTarget()->SetPetChooserID(0);
-					}
+					c->GetTarget()->SetPetChooserID(0);
 				}
-				else if(!strcasecmp(sep->arg[2], "earth"))
+				else if(!strcasecmp(sep->arg[2], "fire"))
 				{
-					if(botlevel < 5)
+					if(botlevel < 3)
 					{
 						c->GetTarget()->Say("I don't have that pet yet.");
 						return;
-					}
-					else if(botlevel < 30)
-					{
-						c->GetTarget()->SetPetChooserID(0);
 					}
 					else
 					{
@@ -10267,60 +10255,29 @@ void command_bot(Client *c, const Seperator *sep) {
 						c->GetTarget()->Say("I don't have that pet yet.");
 						return;
 					}
-					else if(botlevel == 4)
-					{
-						c->GetTarget()->SetPetChooserID(0);
-					}
-					else if(botlevel < 30)
-					{
-						c->GetTarget()->SetPetChooserID(1);
-					}
 					else
 					{
 						c->GetTarget()->SetPetChooserID(2);
 					}
 				}
-				else if(!strcasecmp(sep->arg[2], "fire"))
+				else if(!strcasecmp(sep->arg[2], "earth"))
 				{
-					if(botlevel < 3)
+					if(botlevel < 5)
 					{
 						c->GetTarget()->Say("I don't have that pet yet.");
 						return;
 					}
-					else if(botlevel == 3)
-					{
-						c->GetTarget()->SetPetChooserID(0);
-					}
-					else if(botlevel == 4)
-					{
-						c->GetTarget()->SetPetChooserID(1);
-					}
-					else if(botlevel < 30)
-					{
-						c->GetTarget()->SetPetChooserID(2);
-					}
 					else
 					{
 						c->GetTarget()->SetPetChooserID(3);
 					}
 				}
-				else if(!strcasecmp(sep->arg[2], "water"))
+				else if(!strcasecmp(sep->arg[2], "monster"))
 				{
-					if(botlevel < 3)
+					if(botlevel < 30)
 					{
-						c->GetTarget()->SetPetChooserID(0);
-					}
-					else if(botlevel < 4)
-					{
-						c->GetTarget()->SetPetChooserID(1);
-					}
-					else if(botlevel < 5)
-					{
-						c->GetTarget()->SetPetChooserID(2);
-					}
-					else if(botlevel < 30)
-					{
-						c->GetTarget()->SetPetChooserID(3);
+						c->GetTarget()->Say("I don't have that pet yet.");
+						return;
 					}
 					else
 					{
@@ -10334,6 +10291,10 @@ void command_bot(Client *c, const Seperator *sep) {
 					c->GetTarget()->SetPetID(0);
 				}
 			}
+		}
+		else
+		{
+			c->Message(15, "You must target your Magician bot.");
 		}
 		return;
 	}
