@@ -100,7 +100,7 @@ void Mob::BOT_Process() {
     }
 
 	// The bots need an owner
-	if(!BotOwner || BotOwner->qglobal || (GetAppearance() == eaDead))
+	if(!BotOwner || BotOwner->qglobal || (GetAppearance() == eaDead) || BotOwner->AmIaBot)
 		return;
 
 	if(!IsEngaged()) {
@@ -957,7 +957,47 @@ bool NPC::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 							{
 								if(IsPetChooser())
 								{
-									i = i - GetPetChooserID();
+									bool ChoosePet = true;
+									while(ChoosePet)
+									{
+										switch(GetPetChooserID())
+										{
+											case 0:
+												if(!strncmp(spells[AIspells[i].spellid].teleport_zone, "SumWater", 8))
+												{
+													ChoosePet = false;
+												}
+												break;
+											case 1:
+												if(!strncmp(spells[AIspells[i].spellid].teleport_zone, "SumFire", 7))
+												{
+													ChoosePet = false;
+												}
+												break;
+											case 2:
+												if(!strncmp(spells[AIspells[i].spellid].teleport_zone, "SumAir", 6))
+												{
+													ChoosePet = false;
+												}
+												break;
+											case 3:
+												if(!strncmp(spells[AIspells[i].spellid].teleport_zone, "SumEarth", 8))
+												{
+													ChoosePet = false;
+												}
+												break;
+											default:
+												if(!strncmp(spells[AIspells[i].spellid].teleport_zone, "MonsterSum", 10))
+												{
+													ChoosePet = false;
+												}
+												break;
+										}
+										if(ChoosePet)
+										{
+											--i;
+										}
+									}
 								}
 								else
 								{
