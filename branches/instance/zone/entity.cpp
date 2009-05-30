@@ -367,6 +367,20 @@ void EntityList::GroupProcess() {
 #endif
 }
 
+void EntityList::QueueToGroupsForNPCHealthAA(Mob* sender, const EQApplicationPacket* app)
+{
+
+	list<Group *>::iterator iterator = group_list.begin();
+
+	_ZP(EntityList_QueueToGroupsForNPCHealthAA);
+
+	while(iterator != group_list.end())
+	{
+		(*iterator)->QueueHPPacketsForNPCHealthAA(sender, app);
+		iterator++;
+	}
+}
+
 void EntityList::RaidProcess() {
 	list<Raid *>::iterator iterator;
 	int32 count = 0;
@@ -3451,6 +3465,9 @@ void EntityList::SendGroupLeave(int32 gid, const char *name) {
 					strcpy(gj->membername, name);
 					gj->action = groupActLeave;
 					strcpy(gj->yourname, name);
+					Mob *Leader = g->GetLeader();
+					if(Leader)
+						Leader->CastToClient()->GetGroupAAs(&gj->leader_aas);					
 					c->QueuePacket(outapp);
 					safe_delete(outapp);
 					g->DelMemberOOZ(name);
@@ -3478,6 +3495,10 @@ void EntityList::SendGroupJoin(int32 gid, const char *name) {
 					strcpy(gj->membername, name);
 					gj->action = groupActJoin;
 					strcpy(gj->yourname, iterator.GetData()->GetName());
+					Mob *Leader = g->GetLeader();
+					if(Leader)
+						Leader->CastToClient()->GetGroupAAs(&gj->leader_aas);
+					
 					iterator.GetData()->QueuePacket(outapp);
 					safe_delete(outapp);
 				}
@@ -3801,6 +3822,30 @@ void EntityList::ZoneWho(Client *c, Who_All_Struct* Who) {
 	safe_delete(outapp);
 }
 
+void EntityList::UnMarkNPC(int16 ID) 
+{
+	// Designed to be called from the Mob destructor, this method calls Group::UnMarkNPC for
+	// each group to remove the dead mobs entity ID from the groups list of NPCs marked via the
+	// Group Leadership AA Mark NPC ability.
+	//
+	LinkedListIterator<Client*> iterator(client_list); 
+
+	iterator.Reset(); 
+
+	while(iterator.MoreElements())
+	{
+		if(iterator.GetData())
+		{
+			Group *g = NULL;
+
+			g = iterator.GetData()->GetGroup();
+
+			if(g)
+				g->UnMarkNPC(ID);
+		}
+		iterator.Advance(); 
+	} 
+}
 
 void EntityList::GateAllClients()
 {

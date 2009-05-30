@@ -3,6 +3,18 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==05/30/2009==
 KLS: Redid procs a bit, spell procs should work more consistently and ppm formula should be less broken and will also take into account haste now.
 Highly suggested you change your Combat:AvgProcsPerMinute rule to 2.0 if you want it to be live like.
+Derision: Group Leadership AA
+
+REQUIRED SQL:
+
+ALTER TABLE `group_leaders` ADD `assist` VARCHAR( 64 ) NOT NULL ,
+ADD `marknpc` VARCHAR( 64 ) NOT NULL ,
+ADD `leadershipaa` TINYBLOB NOT NULL ;
+
+OPTIONAL SQL:
+
+INSERT INTO `rule_values` VALUES (1,'Character:KillsPerRaidLeadershipAA','50','');
+INSERT INTO `rule_values` VALUES (1,'Character:KillsPerGroupLeadershipAA','50','');
 
 ==05/29/2009==
 Derision: Lay Hands/Harm Touch hot buttons now remain depressed across zoning until reuse timer is up.

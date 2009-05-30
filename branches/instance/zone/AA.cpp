@@ -1123,6 +1123,135 @@ void Client::ResetAA(){
 	map<int32,int8>::iterator itr;
 	for(itr=aa_points.begin();itr!=aa_points.end();itr++)
 		aa_points[itr->first] = 0;
+
+        for(int i = 0; i < _maxLeaderAA; ++i)
+		m_pp.leader_abilities.ranks[i] = 0;
+
+	m_pp.group_leadership_points = 0;
+	m_pp.raid_leadership_points = 0;
+	m_pp.group_leadership_exp = 0;
+	m_pp.raid_leadership_exp = 0;
+}
+
+int Client::GroupLeadershipAAHealthEnhancement()
+{
+	Group *g = GetGroup();
+
+	if(!g || (g->GroupCount() < 3))
+		return 0;
+
+	switch(g->GetLeadershipAA(groupAAHealthEnhancement))
+	{
+		case 0:
+			return 0;
+		case 1:
+			return 30;
+		case 2:
+			return 60;
+		case 3:
+			return 100;
+	}
+
+	return 0;
+}
+
+int Client::GroupLeadershipAAManaEnhancement()
+{
+	Group *g = GetGroup();
+
+	if(!g || (g->GroupCount() < 3))
+		return 0;
+
+	switch(g->GetLeadershipAA(groupAAManaEnhancement))
+	{
+		case 0:
+			return 0;
+		case 1:
+			return 30;
+		case 2:
+			return 60;
+		case 3:
+			return 100;
+	}
+
+	return 0;
+}
+
+int Client::GroupLeadershipAAHealthRegeneration()
+{
+	Group *g = GetGroup();
+
+	if(!g || (g->GroupCount() < 3))
+		return 0;
+
+	switch(g->GetLeadershipAA(groupAAHealthRegeneration))
+	{
+		case 0:
+			return 0;
+		case 1:
+			return 4;
+		case 2:
+			return 6;
+		case 3:
+			return 8;
+	}
+
+	return 0;
+}
+
+int Client::GroupLeadershipAAOffenseEnhancement()
+{
+	Group *g = GetGroup();
+
+	if(!g || (g->GroupCount() < 3))
+		return 0;
+
+	switch(g->GetLeadershipAA(groupAAOffenseEnhancement))
+	{
+		case 0:
+			return 0;
+		case 1:
+			return 10;
+		case 2:
+			return 19;
+		case 3:
+			return 28;
+		case 4:
+			return 34;
+		case 5:
+			return 40;
+	}
+	return 0;
+}
+
+void Client::InspectBuffs(Client* Inspector, int Rank)
+{
+	if(!Inspector || (Rank == 0)) return;
+
+	Inspector->Message_StringID(0, CURRENT_SPELL_EFFECTS, GetName());
+
+	for (uint32 i = 0; i < BUFF_COUNT; ++i)
+	{
+		if (buffs[i].spellid != SPELL_UNKNOWN)
+		{
+			if(Rank == 1)
+				Inspector->Message(0, "%s", spells[buffs[i].spellid].name);
+			else
+			{
+				if (buffs[i].durationformula == DF_Permanent)
+					Inspector->Message(0, "%s (Permanent)", spells[buffs[i].spellid].name);
+				else {
+					char *TempString = NULL;
+
+					MakeAnyLenString(&TempString, "%.1f", static_cast<float>(buffs[i].ticsremaining) / 10.0f);
+
+					Inspector->Message_StringID(0, BUFF_MINUTES_REMAINING, spells[buffs[i].spellid].name, TempString);
+
+					safe_delete_array(TempString);
+				}
+			}
+		}
+	}
 }
 
 bool ZoneDatabase::LoadAAEffects() {

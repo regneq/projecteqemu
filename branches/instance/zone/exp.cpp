@@ -26,6 +26,28 @@
 #include "embparser.h"
 #endif
 
+static int MaxBankedGroupLeadershipPoints(int Level)
+{
+	if(Level < 35)
+		return 4;
+
+	if(Level < 51)
+		return 6;
+
+	return 8;
+}
+
+static int MaxBankedRaidLeadershipPoints(int Level)
+{
+	if(Level < 45)
+		return 6;
+
+	if(Level < 55)
+		return 8;
+
+	return 10;
+}
+
 void Client::AddEXP(int32 add_exp, int8 conlevel, bool resexp) {
 	if (m_epp.perAA<0 || m_epp.perAA>100)
 		m_epp.perAA=0;	// stop exploit with sanity check
@@ -34,6 +56,7 @@ void Client::AddEXP(int32 add_exp, int8 conlevel, bool resexp) {
 	if(resexp) {
 		add_aaxp = 0;
 	} else {
+
 		//figure out how much of this goes to AAs
 		add_aaxp = add_exp * m_epp.perAA / 100;
 		//take that ammount away from regular exp
@@ -92,6 +115,35 @@ void Client::AddEXP(int32 add_exp, int8 conlevel, bool resexp) {
 				}
 			}
 		}
+
+		if(IsLeadershipEXPOn() && ((conlevel == CON_BLUE) || (conlevel == CON_YELLOW) || (conlevel == CON_RED))) {
+			add_exp = static_cast<float>(add_exp) * 0.8;
+
+			if(GetGroup())
+			{
+				if((m_pp.group_leadership_points < MaxBankedGroupLeadershipPoints(GetLevel()))
+				   && (RuleI(Character, KillsPerGroupLeadershipAA) > 0))
+				{
+					AddLeadershipEXP(GROUP_EXP_PER_POINT / RuleI(Character, KillsPerGroupLeadershipAA), 0);
+					Message_StringID(15, GAIN_GROUP_LEADERSHIP_EXP);
+				}
+				else
+					Message_StringID(15, MAX_GROUP_LEADERSHIP_POINTS);
+			}
+			else
+			{
+				if((m_pp.raid_leadership_points < MaxBankedRaidLeadershipPoints(GetLevel()))
+				   && (RuleI(Character, KillsPerRaidLeadershipAA) > 0))
+				{
+					AddLeadershipEXP(0, RAID_EXP_PER_POINT / RuleI(Character, KillsPerRaidLeadershipAA));
+					Message_StringID(15, GAIN_RAID_LEADERSHIP_EXP);
+				}
+				else
+					Message_StringID(15, MAX_RAID_LEADERSHIP_POINTS);
+			}
+
+		}
+
 	}	//end !resexp
 
 	float aatotalmod = 1.0;
@@ -504,10 +556,12 @@ void Client::SetLeadershipEXP(uint32 group_exp, uint32 raid_exp) {
 	while(group_exp >= GROUP_EXP_PER_POINT) {
 		group_exp -= GROUP_EXP_PER_POINT;
 		m_pp.group_leadership_points++;
+		Message_StringID(15, GAIN_GROUP_LEADERSHIP_POINT);
 	}
 	while(raid_exp >= RAID_EXP_PER_POINT) {
 		raid_exp -= RAID_EXP_PER_POINT;
 		m_pp.raid_leadership_points++;
+		Message_StringID(15, GAIN_RAID_LEADERSHIP_POINT);
 	}
 	
 	m_pp.group_leadership_exp = group_exp;

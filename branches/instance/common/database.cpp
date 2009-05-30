@@ -1895,30 +1895,48 @@ void Database::SetGroupLeaderName(int32 gid, const char* name){
 	safe_delete_array(query);
 }
 
-char *Database::GetGroupLeaderName(int32 gid, char* leaderbuf){
+char *Database::GetGroupLeadershipInfo(int32 gid, char* leaderbuf, char* assist, char *marknpc, GroupLeadershipAA_Struct* GLAA){
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char* query = 0;
 	MYSQL_RES* result;
 	MYSQL_ROW row;
-	//bool ret = false;
-	//char leaderbuf[64];
-	//memset(leaderbuf, 0, 64);
 
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT leadername FROM group_leaders WHERE gid=%i",gid), errbuf, &result)) {
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT leadername, assist, marknpc, leadershipaa FROM group_leaders WHERE gid=%i",gid),
+		     errbuf, &result)) {
+
 		safe_delete_array(query);
 
 		row = mysql_fetch_row(result);
 		if(row != NULL){
-			strcpy(leaderbuf, row[0]);
+
+			if(leaderbuf)
+				strcpy(leaderbuf, row[0]);
+
+			if(assist)
+				strcpy(assist, row[1]);
+
+			if(marknpc)
+				strcpy(marknpc, row[2]);
+
+			if(GLAA)
+				memcpy(GLAA, row[3], sizeof(GroupLeadershipAA_Struct));
+
 			mysql_free_result(result);
 			return leaderbuf;
 		}
 	}
 	else
-	{
 		safe_delete_array(query);
-	}
-	strcpy(leaderbuf, "UNKNOWN");
+
+	if(leaderbuf)
+		strcpy(leaderbuf, "UNKNOWN");
+
+	if(assist)
+		assist[0] = 0;
+
+	if(marknpc)
+		marknpc[0] = 0;
+
 	return leaderbuf;
 }
 
@@ -3090,7 +3108,7 @@ void Database::FlagInstanceByGroupLeader(int32 zone, int16 version, int32 charid
 
 	char ln[128];
 	memset(ln, 0, 128);
-	strcpy(ln, GetGroupLeaderName(gid, ln));
+	strcpy(ln, GetGroupLeadershipInfo(gid, ln));
 	int32 l_charid = GetCharacterID((const char*)ln);
 	int16 l_id = GetInstanceID(zone, l_charid, version);
 

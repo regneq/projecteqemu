@@ -196,7 +196,6 @@ ENCODE(OP_PlayerProfile) {
 	
 	uint32 r;
 	
-	
 	eq->available_slots=0xffffffff;
 	memset(eq->unknown4184, 0xff, sizeof(eq->unknown4184));
 	memset(eq->unknown04396, 0xff, sizeof(eq->unknown04396));
@@ -343,7 +342,8 @@ ENCODE(OP_PlayerProfile) {
 	strcpy(eq->groupLeader, emu->groupMembers[0]);
 //	OUT_str(groupLeader);
 //	OUT(unknown13728[660]);
-//	OUT(leadAAActive);
+	OUT(entityid);
+	OUT(leadAAActive);
 //	OUT(unknown14392[4]);
 	OUT(ldon_points_guk);
 	OUT(ldon_points_mir);
@@ -364,7 +364,6 @@ ENCODE(OP_PlayerProfile) {
 	}
 //	OUT(unknown14616[8]);
 	OUT(group_leadership_exp);
-//	OUT(unknown14628);
 	OUT(raid_leadership_exp);
 	OUT(group_leadership_points);
 	OUT(raid_leadership_points);
@@ -382,6 +381,7 @@ ENCODE(OP_PlayerProfile) {
 	OUT(raidAutoconsent);
 	OUT(guildAutoconsent);
 //	OUT(unknown19575[5]);
+	eq->level3 = emu->level;
 	eq->showhelm = emu->showhelm;
 //	OUT(unknown19584[4]);
 //	OUT(unknown19588);

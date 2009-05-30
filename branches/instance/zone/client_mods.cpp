@@ -220,6 +220,7 @@ sint32 Client::LevelRegen()
 		+ GetAA(aaBodyAndMindRejuvenation)
 		+ GetAA(aaConvalescence)
 		+ GetAA(aaHealthyAura)
+		+ GroupLeadershipAAHealthRegeneration()
 	);
 	if (GetAppearance() == eaDead) {	//stunned/mezzed
 		hp /= 4;
@@ -255,7 +256,9 @@ sint32 Client::CalcMaxHP() {
 
 	max_hp = max_hp * nd / 10000;
 	max_hp += 100*GetAA(aaSturdiness);
-	max_hp += spellbonuses.HP;		
+	max_hp += spellbonuses.HP;
+
+	max_hp += GroupLeadershipAAHealthEnhancement();
 	
 	if (cur_hp > max_hp)
 		cur_hp = max_hp;
@@ -833,7 +836,7 @@ sint32 Client::CalcMaxMana()
 			else
 				max_mana = (((5 * (MindFactor + 200)) / 2) * 3 * GetLevel() / 100);	
 			
-			max_mana += (itembonuses.Mana + spellbonuses.Mana);
+			max_mana += (itembonuses.Mana + spellbonuses.Mana + GroupLeadershipAAManaEnhancement());
 			break;
 
 		case 'W':
@@ -850,7 +853,7 @@ sint32 Client::CalcMaxMana()
 			else
 				max_mana = (((5 * (MindFactor + 200)) / 2) * 3 * GetLevel() / 100);	
 			
-			max_mana += (itembonuses.Mana + spellbonuses.Mana);
+			max_mana += (itembonuses.Mana + spellbonuses.Mana + GroupLeadershipAAManaEnhancement());
 			break;
 				
 		case 'N': {
@@ -1476,7 +1479,7 @@ sint16	Client::CalcCR()
 }
 
 sint16  Client::CalcATK() {
-	ATK = itembonuses.ATK + spellbonuses.ATK;
+	ATK = itembonuses.ATK + spellbonuses.ATK + GroupLeadershipAAOffenseEnhancement();
 	return(ATK);
 }
 

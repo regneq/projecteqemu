@@ -43,6 +43,7 @@
 	void Handle_OP_Surname(const EQApplicationPacket *app);
 	void Handle_OP_YellForHelp(const EQApplicationPacket *app);
 	void Handle_OP_Assist(const EQApplicationPacket *app);
+	void Handle_OP_AssistGroup(const EQApplicationPacket *app);
 	void Handle_OP_GMTraining(const EQApplicationPacket *app);
 	void Handle_OP_GMEndTraining(const EQApplicationPacket *app);
 	void Handle_OP_GMTrainSkill(const EQApplicationPacket *app);
@@ -231,6 +232,9 @@
 	void Handle_OP_LFPGetMatchesRequest(const EQApplicationPacket *app);
 	void Handle_OP_Barter(const EQApplicationPacket *app);
 	void Handle_OP_VoiceMacroIn(const EQApplicationPacket *app);
+	void Handle_OP_DoGroupLeadershipAbility(const EQApplicationPacket *app);
+	void Handle_OP_ClearNPCMarks(const EQApplicationPacket *app);
+	void Handle_OP_DelegateAbility(const EQApplicationPacket *app);
 	void Handle_OP_ApplyPoison(const EQApplicationPacket *app);
 	void Handle_OP_AugmentInfo(const EQApplicationPacket *app);
 	void Handle_OP_PVPLeaderBoardRequest(const EQApplicationPacket *app);

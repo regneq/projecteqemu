@@ -2676,6 +2676,7 @@ void NPC::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill) 
 
 #endif //EQBOTS
 
+		entity_list.UnMarkNPC(GetID());
 		this->SetID(0);
 		if(killer->GetOwner() != 0 && killer->GetOwner()->IsClient())
 			killer = killer->GetOwner();
