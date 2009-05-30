@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/29/2009==
+Derision: Lay Hands/Harm Touch hot buttons now remain depressed across zoning until reuse timer is up.
+
 ==05/28/2009==
 Congdar: Bots - updates to bot pvp, raidexp and magepet
 
