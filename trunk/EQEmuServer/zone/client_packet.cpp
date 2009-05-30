@@ -7499,7 +7499,7 @@ void Client::CompleteConnect()
 					}
                 case SE_WeaponProc:
 					{
-					AddProcToWeapon(GetProcID(buffs[j1].spellid, x1));
+					AddProcToWeapon(GetProcID(buffs[j1].spellid, x1), false, 100+spells[buffs[j1].spellid].base2[x1]);
 					break;
 					}
 			}
@@ -8738,7 +8738,7 @@ void Client::Handle_OP_ApplyPoison(const EQApplicationPacket *app) {
 				if(PoisonItemInstance){
 					// NOTE: Someone may want to tweak the chance to proc the poison effect that is added to the weapon here.
 					// My thinking was that DEX should be apart of the calculation.
-					AddProcToWeapon(PoisonItemInstance->GetItem()->Proc.Effect, false, (GetDEX()/100) + 3);
+					AddProcToWeapon(PoisonItemInstance->GetItem()->Proc.Effect, false, (GetDEX()/100) + 103);
 				}
 				else {
 					mlog(SPELLS__CASTING_ERR, "Item used to cast spell effect from a poison item was missing from inventory slot %d after casting!", ApplyPoisonData->inventorySlot);

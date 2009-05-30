@@ -1066,8 +1066,8 @@ protected:
 	void CalcSpellBonuses(StatBonuses* newbon);
 	virtual void CalcBonuses();
 	void TryDefensiveProc(Mob *on);
-	void TryWeaponProc(const Item_Struct* weapon, Mob *on);
-	void TryWeaponProc(const ItemInst* weapon, Mob *on);
+	void TryWeaponProc(const Item_Struct* weapon, Mob *on, int16 hand = 13);
+	void TryWeaponProc(const ItemInst* weapon, Mob *on, int16 hand = 13);
 	void ExecWeaponProc(uint16 spell_id, Mob *on);
 	float GetProcChances(float &ProcBonus, float &ProcChance, uint16 weapon_speed = 30);
 	int GetWeaponDamage(Mob *against, const Item_Struct *weapon_item);

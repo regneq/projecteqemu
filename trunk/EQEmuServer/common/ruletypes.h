@@ -171,7 +171,7 @@ RULE_BOOL ( Combat, EnableFearPathing, true)
 RULE_INT ( Combat, FleeHPRatio, 25)
 RULE_BOOL ( Combat, FleeIfNotAlone, false) // If false, mobs won't flee if other mobs are in combat with it.
 RULE_BOOL ( Combat, AdjustProcPerMinute, true)
-RULE_REAL ( Combat, AvgProcsPerMinute, 18.0)
+RULE_REAL ( Combat, AvgProcsPerMinute, 2.0)
 RULE_REAL ( Combat, ProcPerMinDexContrib, 0.075)
 RULE_REAL ( Combat, BaseProcChance, 0.035)
 RULE_REAL ( Combat, ProcDexDivideBy, 11000)

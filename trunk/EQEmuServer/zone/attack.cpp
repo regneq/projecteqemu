@@ -1387,7 +1387,7 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte)
 	////////  Kaiyodo - Check for proc on weapon based on DEX
 	///////////////////////////////////////////////////////////
 	if(other->GetHP() > -10 && !bRiposte && !IsDead()) {
-		TryWeaponProc(weapon, other);
+		TryWeaponProc(weapon, other, Hand);
 	}
 	
 	if (damage > 0)
@@ -2379,7 +2379,7 @@ bool NPC::Attack(Mob* other, int Hand, bool bRiposte)	 // Kaiyodo - base functio
 	
 	// Kaiyodo - Check for proc on weapon based on DEX
 	if( !bRiposte && other->GetHP() > 0 ) {
-		TryWeaponProc(weapon, other);	//no weapon
+		TryWeaponProc(weapon, other, Hand);	//no weapon
 	}
 	
 	// now check ripostes
@@ -4119,19 +4119,19 @@ float Mob::GetProcChances(float &ProcBonus, float &ProcChance, int16 weapon_spee
 		//increases based off 1 guys observed results.
 		switch(CastToClient()->GetAA(aaWeaponAffinity)) {
 			case 1:
-				AABonus = 0.05;
-				break;
-			case 2:
 				AABonus = 0.10;
 				break;
-			case 3:
-				AABonus = 0.15;
-				break;
-			case 4:
+			case 2:
 				AABonus = 0.20;
 				break;
+			case 3:
+				AABonus = 0.30;
+				break;
+			case 4:
+				AABonus = 0.40;
+				break;
 			case 5:
-				AABonus = 0.25;
+				AABonus = 0.50;
 				break;
 		}
 	}
@@ -4141,30 +4141,40 @@ float Mob::GetProcChances(float &ProcBonus, float &ProcChance, int16 weapon_spee
 	// Bot AA WeaponAffinity
 	else if(IsBot()) {
 		if(GetLevel() >= 55) {
-			AABonus += 0.05;
+			AABonus += 0.1;
 		}
 		if(GetLevel() >= 56) {
-			AABonus += 0.05;
+			AABonus += 0.1;
 		}
 		if(GetLevel() >= 57) {
-			AABonus += 0.05;
+			AABonus += 0.1;
 		}
 		if(GetLevel() >= 58) {
-			AABonus += 0.05;
+			AABonus += 0.1;
 		}
 		if(GetLevel() >= 59) {
-			AABonus += 0.05;
+			AABonus += 0.1;
 		}
 	}
 
 #endif //EQBOTS
+
+	float PermaHaste;
+	if(GetHaste() > 0)
+		PermaHaste = 1 / (1 + (float)GetHaste()/100);
+	else if(GetHaste() < 0)
+		PermaHaste = 1 * (1 - (float)GetHaste()/100);
+	else
+		PermaHaste = 1.0f;
+		
+	weapon_speed = ((int)(weapon_speed*(100.0f+attack_speed)*PermaHaste) / 100);
 
 
 	ProcBonus += (float(itembonuses.ProcChance + spellbonuses.ProcChance) / 1000.0f + AABonus);
 
 	if(RuleB(Combat, AdjustProcPerMinute) == true)
 	{
-		ProcChance = ((float)weapon_speed * RuleR(Combat, AvgProcsPerMinute) / 6000.0f);
+		ProcChance = ((float)weapon_speed * RuleR(Combat, AvgProcsPerMinute) / 600.0f);
 		ProcBonus += float(mydex) * RuleR(Combat, ProcPerMinDexContrib) / 100.0f;
 		ProcChance = ProcChance + (ProcChance * ProcBonus);
 	}
@@ -4202,7 +4212,7 @@ void Mob::TryDefensiveProc(Mob *on) {
 	return;
 }
 
-void Mob::TryWeaponProc(const ItemInst* weapon_g, Mob *on) {
+void Mob::TryWeaponProc(const ItemInst* weapon_g, Mob *on, int16 hand) {
 	_ZP(Mob_TryWeaponProcA);
 	if(!on) {
 		SetTarget(NULL);
@@ -4211,17 +4221,17 @@ void Mob::TryWeaponProc(const ItemInst* weapon_g, Mob *on) {
 	}
 
 	if(!weapon_g) {
-		TryWeaponProc((const Item_Struct*) NULL, on);
+		TryWeaponProc((const Item_Struct*) NULL, on, hand);
 		return;
 	}
 
 	if(!weapon_g->IsType(ItemClassCommon)) {
-		TryWeaponProc((const Item_Struct*) NULL, on);
+		TryWeaponProc((const Item_Struct*) NULL, on, hand);
 		return;
 	}
 	
 	//do main procs
-	TryWeaponProc(weapon_g->GetItem(), on);
+	TryWeaponProc(weapon_g->GetItem(), on, hand);
 	
 	
 	//we have to calculate these again, oh well
@@ -4258,7 +4268,7 @@ void Mob::TryWeaponProc(const ItemInst* weapon_g, Mob *on) {
 	}
 }
 
-void Mob::TryWeaponProc(const Item_Struct* weapon, Mob *on) {
+void Mob::TryWeaponProc(const Item_Struct* weapon, Mob *on, int16 hand) {
 	_ZP(Mob_TryWeaponProcB);
 	int ourlevel = GetLevel();
 	float ProcChance, ProcBonus;
@@ -4266,6 +4276,9 @@ void Mob::TryWeaponProc(const Item_Struct* weapon, Mob *on) {
 		GetProcChances(ProcBonus, ProcChance, weapon->Delay);
 	else
 		GetProcChances(ProcBonus, ProcChance);
+		
+	if(hand != 13)
+		ProcChance /= 2;	
 	
 	//give weapon a chance to proc first.
 	if(weapon != NULL) {
@@ -4295,11 +4308,6 @@ void Mob::TryWeaponProc(const Item_Struct* weapon, Mob *on) {
 		return;
 	}
 
-	//now try our proc arrays
-	float procmod =  float(GetDEX()) / 100.0f + ProcBonus*100.0;	//did somebody think about this???
-																	//AndMetal: aren't we doing this in GetProcChances?
-
-
 	bool bRangedAttack = false;
 	if (weapon != NULL) {
 		if (weapon->ItemType == ItemTypeBow || weapon->ItemType == ItemTypeThrowing || weapon->ItemType == ItemTypeThrowingv2) {
@@ -4318,7 +4326,7 @@ void Mob::TryWeaponProc(const Item_Struct* weapon, Mob *on) {
 			}
 		}
 		if (SpellProcs[i].spellID != SPELL_UNKNOWN) {
-			int chance = ProcChance * (SpellProcs[i].chance/5);
+			int chance = ProcChance * (SpellProcs[i].chance);
 			if(MakeRandomInt(0, 100) < chance) {
 				mlog(COMBAT__PROCS, "Spell proc %d procing spell %d (%d percent chance)", i, SpellProcs[i].spellID, chance);
 				ExecWeaponProc(SpellProcs[i].spellID, on);
