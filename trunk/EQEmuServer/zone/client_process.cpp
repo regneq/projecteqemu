@@ -540,6 +540,7 @@ bool Client::Process() {
 		if (tic_timer.Check() && !dead) {
 			CalcMaxHP();
 			CalcMaxMana();
+			CalcATK();
 			CalcMaxEndurance();
 			CalcRestState();
 			DoHPRegen();

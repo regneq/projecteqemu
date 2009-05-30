@@ -25,8 +25,8 @@
 #include "types.h"
 #include "dbcore.h"
 #include "linked_list.h"
-/*#include "eq_packet_structs.h"
-#include "EQStream.h"
+#include "eq_packet_structs.h"
+/*#include "EQStream.h"
 #include "guilds.h"
 #include "MiscFunctions.h"
 #include "Mutex.h"
@@ -169,7 +169,8 @@ public:
 	char*	GetGroupLeaderForLogin(const char* name,char* leaderbuf);
 	
 	void	SetGroupLeaderName(int32 gid, const char* name);
-	char	*GetGroupLeaderName(int32 gid, char* leaderbuf);
+	char*	GetGroupLeadershipInfo(int32 gid, char* leaderbuf, char* assist = NULL, char *marknpc = NULL,
+				       GroupLeadershipAA_Struct* GLAA = NULL);
 	void	ClearGroupLeader(int32 gid = 0);
 
 	/*

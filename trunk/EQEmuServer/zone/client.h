@@ -415,6 +415,13 @@ public:
 	void	SetLeadershipEXP(uint32 group_exp, uint32 raid_exp);
 	void	AddLeadershipEXP(uint32 group_exp, uint32 raid_exp);
 	void	SendLeadershipEXPUpdate();
+	bool	IsLeadershipEXPOn();
+	inline	int GetLeadershipAA(int AAID) { return  m_pp.leader_abilities.ranks[AAID]; }
+	int	GroupLeadershipAAHealthEnhancement();
+	int	GroupLeadershipAAManaEnhancement();
+	int	GroupLeadershipAAHealthRegeneration();
+	int	GroupLeadershipAAOffenseEnhancement();
+	void	InspectBuffs(Client* Inspector, int Rank);
 	uint32  GetRaidPoints() { return(m_pp.raid_leadership_points); }
 	uint32  GetGroupPoints() { return(m_pp.group_leadership_points); }
 	uint32  GetRaidEXP() { return(m_pp.raid_leadership_exp); }
@@ -431,6 +438,7 @@ public:
 	bool	CheckLoreConflict(const Item_Struct* item);
 	void	ChangeLastName(const char* in_lastname);
 	void	GetGroupAAs(GroupLeadershipAA_Struct *into) const;
+	void	ClearGroupAAs();
       void	SacrificeConfirm(Client* caster);
 	void	Sacrifice(Client* caster);
 	void	GoToDeath();

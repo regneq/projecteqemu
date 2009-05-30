@@ -259,6 +259,7 @@ public:
 	void	QueueClientsStatus(Mob* sender, const EQApplicationPacket* app, bool ignore_sender = false, int8 minstatus = 0, int8 maxstatus = 0);
 	void	QueueClientsGuild(Mob* sender, const EQApplicationPacket* app, bool ignore_sender = false, int32 guildeqid = 0);
 	void	QueueClientsByTarget(Mob* sender, const EQApplicationPacket* app, bool iSendToSender = true, Mob* SkipThisMob = 0, bool ackreq = true);
+	void	QueueToGroupsForNPCHealthAA(Mob* sender, const EQApplicationPacket* app);
 	void    QueueManaged(Mob* sender, const EQApplicationPacket* app, bool ignore_sender=false, bool ackreq = true);
 
 	void	AEAttack(Mob *attacker, float dist, int Hand = 13, int count = 0);
@@ -335,6 +336,7 @@ public:
 
 	void	CreateGroundObject(int32 itemid, float x, float y, float z, float heading, int32 decay_time = 300000);
 	void	ZoneWho(Client *c, Who_All_Struct* Who);
+	void	UnMarkNPC(int16 ID);
 
 #ifdef EQBOTS
 

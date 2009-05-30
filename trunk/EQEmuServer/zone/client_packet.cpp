@@ -148,6 +148,7 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_Surname] = &Client::Handle_OP_Surname;
 	ConnectedOpcodes[OP_YellForHelp] = &Client::Handle_OP_YellForHelp;
 	ConnectedOpcodes[OP_Assist] = &Client::Handle_OP_Assist;
+	ConnectedOpcodes[OP_AssistGroup] = &Client::Handle_OP_AssistGroup;
 	ConnectedOpcodes[OP_GMTraining] = &Client::Handle_OP_GMTraining;
 	ConnectedOpcodes[OP_GMEndTraining] = &Client::Handle_OP_GMEndTraining;
 	ConnectedOpcodes[OP_GMTrainSkill] = &Client::Handle_OP_GMTrainSkill;
@@ -335,6 +336,9 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_LFPGetMatchesRequest] = &Client::Handle_OP_LFPGetMatchesRequest;
 	ConnectedOpcodes[OP_Barter] = &Client::Handle_OP_Barter;
 	ConnectedOpcodes[OP_VoiceMacroIn] = &Client::Handle_OP_VoiceMacroIn;
+	ConnectedOpcodes[OP_DoGroupLeadershipAbility] = &Client::Handle_OP_DoGroupLeadershipAbility;
+	ConnectedOpcodes[OP_ClearNPCMarks] = &Client::Handle_OP_ClearNPCMarks;
+	ConnectedOpcodes[OP_DelegateAbility] = &Client::Handle_OP_DelegateAbility;
 	ConnectedOpcodes[OP_ApplyPoison] = &Client::Handle_OP_ApplyPoison;
 	ConnectedOpcodes[OP_AugmentInfo] = &Client::Handle_OP_AugmentInfo;
 	ConnectedOpcodes[OP_PVPLeaderBoardRequest] = &Client::Handle_OP_PVPLeaderBoardRequest;
@@ -1196,7 +1200,7 @@ void Client::Handle_OP_TargetCommand(const EQApplicationPacket *app)
 		return;
 	}
 	if(target)
-		target->IsTargeted(false);
+		target->IsTargeted(-1);
 
 	// Locate and cache new target
 	ClientTarget_Struct* ct=(ClientTarget_Struct*)app->pBuffer;
@@ -1208,6 +1212,11 @@ void Client::Handle_OP_TargetCommand(const EQApplicationPacket *app)
 	if (GetTarget() && GetTarget()->GetTarget()) SetHoTT(GetTarget()->GetTarget()->GetID());
 	else SetHoTT(0);
 
+	Group *g = GetGroup();
+
+	if(g && g->IsMainAssist(this))
+		g->SetGroupTarget(ct->new_target);
+
 	//ensure LOS to the target (image)
 	if((Admin() < 80) && (target != this && !CheckLosFN(target)))
 		return;
@@ -1217,7 +1226,7 @@ void Client::Handle_OP_TargetCommand(const EQApplicationPacket *app)
 		if (target && !target->CastToMob()->IsInvisible(this) && DistNoRoot(*target) <= TARGETING_RANGE*TARGETING_RANGE) {
 			QueuePacket(app);
 			EQApplicationPacket hp_app;
-			target->IsTargeted(true);
+			target->IsTargeted(1);
 			target->CreateHPPacket(&hp_app);
 			QueuePacket(&hp_app, false);
 		} else {
@@ -1226,14 +1235,14 @@ void Client::Handle_OP_TargetCommand(const EQApplicationPacket *app)
 			outapp->pBuffer[1] = 0x01;
 			outapp->pBuffer[4] = 0x0d;
 			if(target)
-				target->IsTargeted(false);
+				target->IsTargeted(-1);
 			QueuePacket(outapp);
 			safe_delete(outapp);
 		}
 	}
 	else{
 		if(target)
-			target->IsTargeted(true);
+			target->IsTargeted(1);
 	}
 	return;
 }
@@ -1849,6 +1858,16 @@ void Client::Handle_OP_Assist(const EQApplicationPacket *app)
 	}
 
 	FastQueuePacket(&outapp);
+	return;
+}
+
+void Client::Handle_OP_AssistGroup(const EQApplicationPacket *app)
+{
+	if (app->size != sizeof(EntityId_Struct)) {
+		LogFile->write(EQEMuLog::Debug, "Size mismatch in OP_AssistGroup expected %i got %i", sizeof(EntityId_Struct), app->size);
+		return;
+	}
+	QueuePacket(app);
 	return;
 }
 
@@ -4924,12 +4943,15 @@ void Client::Handle_OP_GroupFollow2(const EQApplicationPacket *app)
 			database.SetGroupID(inviter->GetName(), group->GetID(), inviter->CastToClient()->CharacterID());
 			database.SetGroupLeaderName(group->GetID(), inviter->GetName());
 
+			group->UpdateGroupAAs();
+
 			//Invite the inviter into the group first.....dont ask
 			EQApplicationPacket* outapp=new EQApplicationPacket(OP_GroupUpdate,sizeof(GroupJoin_Struct));
 			GroupJoin_Struct* outgj=(GroupJoin_Struct*)outapp->pBuffer;
 			strcpy(outgj->membername, inviter->GetName());
 			strcpy(outgj->yourname, inviter->GetName());
 			outgj->action = groupActInviteInitial; // 'You have formed the group'.
+			group->GetGroupAAs(&outgj->leader_aas);
 			inviter->CastToClient()->QueuePacket(outapp);
 			safe_delete(outapp);
 		}
@@ -7093,14 +7115,7 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 		}
 	}
 
-	CalcBonuses();
-	if (m_pp.cur_hp <= 0)
-		m_pp.cur_hp = GetMaxHP();
-
-	SetHP(m_pp.cur_hp);
-	Mob::SetMana(m_pp.mana);
-	SetEndurance(m_pp.endurance);
-    KeyRingLoad();
+	KeyRingLoad();
 
 //currently lost
 //	m_pp.zone_change_count++;
@@ -7130,18 +7145,38 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 	}
 
 	if(group){
-
+		// If the group leader is not set, pull the group leader infomrmation from the database.
 		if(!group->GetLeader()){
 			char ln[64];
+			char AssistName[64];
+			char NPCMarkerName[64];
+			GroupLeadershipAA_Struct GLAA;
 			memset(ln, 0, 64);
-			strcpy(ln, database.GetGroupLeaderName(group->GetID(), ln));
+			strcpy(ln, database.GetGroupLeadershipInfo(group->GetID(), ln, AssistName, NPCMarkerName, &GLAA));
 			Client *c = entity_list.GetClientByName(ln);
-			if(c){
+			if(c)
 				group->SetLeader(c);
-			}
+
+			group->SetMainAssist(AssistName);
+			group->SetNPCMarker(NPCMarkerName);
+			group->SetGroupAAs(&GLAA);
+			// If we are the leader, force an update of our group AAs to other members in the zone, in case
+			// we purchased a new one while out-of-zone.
+			if(group->IsLeader(this))
+				group->SendLeadershipAAUpdate();
+
 		}
 		LFG = false;
 	}
+
+	CalcBonuses();
+	if (m_pp.cur_hp <= 0)
+		m_pp.cur_hp = GetMaxHP();
+
+	SetHP(m_pp.cur_hp);
+	Mob::SetMana(m_pp.mana);
+	SetEndurance(m_pp.endurance);
+
 	if(IsLFP()) {
 		// Update LFP in case any (or all) of our group disbanded while we were zoning.
 		UpdateLFP();
@@ -7202,6 +7237,9 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 	CRC32::SetEQChecksum((unsigned char*)&m_pp, sizeof(PlayerProfile_Struct)-4);
 
 	outapp = new EQApplicationPacket(OP_PlayerProfile,sizeof(PlayerProfile_Struct));
+
+	// The entityid field in the Player Profile is used by the Client in relation to Group Leadership AA
+	m_pp.entityid = GetID();
 	memcpy(outapp->pBuffer,&m_pp,outapp->size);
 	outapp->priority = 6;
 	FastQueuePacket(&outapp);
@@ -7566,9 +7604,11 @@ void Client::Handle_OP_LeadershipExpToggle(const EQApplicationPacket *app) {
 	}
 	uint8 *mode = (uint8 *) app->pBuffer;
 	if(*mode) {
-		//TODO: enable leadership EXP
+		m_pp.leadAAActive = 1;
+		Save();
 	} else {
-		//TODO: disable leadership EXP
+		m_pp.leadAAActive = 0;
+		Save();
 	}
 }
 
@@ -7621,11 +7661,21 @@ void Client::Handle_OP_PurchaseLeadershipAA(const EQApplicationPacket *app) {
 	}
 
 	//success, send them an update
-	/*EQApplicationPacket *outapp = new EQApplicationPacket(OP_UpdateLeadershipAA, sizeof(UpdateLeadershipAA_Struct));
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_UpdateLeadershipAA, sizeof(UpdateLeadershipAA_Struct));
 	UpdateLeadershipAA_Struct *u = (UpdateLeadershipAA_Struct *) outapp->pBuffer;
 	u->ability_id = aaid;
 	u->new_rank = m_pp.leader_abilities.ranks[aaid];
-	FastQueuePacket(&outapp);*/
+	u->pointsleft = m_pp.group_leadership_points; // FIXME: Take into account raid abilities
+	FastQueuePacket(&outapp);
+	
+	Group *g = GetGroup();
+
+	// Update all group members with the new AA the leader has purchased.
+	if(g) {
+		g->UpdateGroupAAs();
+		g->SendLeadershipAAUpdate();
+	}
+	
 }
 
 void Client::Handle_OP_SetTitle(const EQApplicationPacket *app) {
@@ -8717,6 +8767,108 @@ void Client::Handle_OP_VoiceMacroIn(const EQApplicationPacket *app) {
 
 	VoiceMacroReceived(vmi->Type, vmi->Target, vmi->MacroNumber);
 
+}
+
+void Client::Handle_OP_DoGroupLeadershipAbility(const EQApplicationPacket *app) {
+
+	if(app->size != sizeof(DoGroupLeadershipAbility_Struct)) {
+
+		LogFile->write(EQEMuLog::Debug, "Size mismatch in OP_DoGroupLeadershipAbility expected %i got %i",
+		               sizeof(DoGroupLeadershipAbility_Struct), app->size);
+
+		DumpPacket(app);
+
+		return;
+	}
+
+	DoGroupLeadershipAbility_Struct* dglas = (DoGroupLeadershipAbility_Struct*)app->pBuffer;
+
+	switch(dglas->Ability)
+	{
+		case GroupLeadershipAbility_MarkNPC:
+		{
+			if(GetTarget())
+			{
+				Group* g = GetGroup();
+				if(g)
+					g->MarkNPC(GetTarget(), dglas->Parameter);
+			}
+			break;
+		}
+
+		case groupAAInspectBuffs:
+		{
+			Mob *Target = GetTarget();
+
+			if(!Target || !Target->IsClient())
+				return;
+
+			Group *g = GetGroup();
+
+			if(!g || (g->GroupCount() < 3))
+				return;
+
+			Target->CastToClient()->InspectBuffs(this, g->GetLeadershipAA(groupAAInspectBuffs));
+
+			break;
+		}
+
+		default:
+			break;
+	}
+}
+
+void Client::Handle_OP_ClearNPCMarks(const EQApplicationPacket *app) {
+
+	if(app->size != 0)
+	{
+		LogFile->write(EQEMuLog::Debug, "Size mismatch in OP_ClearNPCMarks expected 0 got %i",
+		               app->size);
+
+		DumpPacket(app);
+
+		return;
+	}
+
+	Group *g = GetGroup();
+
+	if(g)
+		g->ClearAllNPCMarks();
+}
+
+void Client::Handle_OP_DelegateAbility(const EQApplicationPacket *app) {
+
+	if(app->size != sizeof(DelegateAbility_Struct))
+	{
+		LogFile->write(EQEMuLog::Debug, "Size mismatch in OP_DelegateAbility expected %i got %i",
+		               sizeof(DelegateAbility_Struct), app->size);
+
+		DumpPacket(app);
+
+		return;
+	}
+
+	DelegateAbility_Struct* das = (DelegateAbility_Struct*)app->pBuffer;
+
+	Group *g = GetGroup();
+
+	if(!g) return;
+
+	switch(das->DelegateAbility)
+	{
+		case 0:
+		{
+			g->DelegateMainAssist(das->Name);
+			break;
+		}
+		case 1:
+		{
+			g->DelegateMarkNPC(das->Name);
+			break;
+		}
+		default:
+			break;
+	}
 }
 
 void Client::Handle_OP_ApplyPoison(const EQApplicationPacket *app) {

@@ -99,9 +99,9 @@ enum {	//leadership AA indexes
 static const int8 LeadershipAACosts[_maxLeaderAA][MAX_LEADERSHIP_TIERS] = { 
 { 1, 2, 3, 0, 0, 0 },	//groupAAMarkNPC
 { 2, 0, 0, 0, 0, 0 },	//groupAANPCHealth
+{ 4, 0, 0, 0, 0, 0 },	//groupAADelegateMainAssist - Have seen DelegateMainAssist come in with two different codes.
 { 4, 0, 0, 0, 0, 0 },	//groupAADelegateMainAssist
 { 4, 0, 0, 0, 0, 0 },	//groupAADelegateMarkNPC
-{ 0, 0, 0, 0, 0, 0 },	//groupAA4
 { 0, 0, 0, 0, 0, 0 },	//groupAA5
 { 4, 6, 0, 0, 0, 0 },	//groupAAInspectBuffs
 { 0, 0, 0, 0, 0, 0 },	//groupAA7

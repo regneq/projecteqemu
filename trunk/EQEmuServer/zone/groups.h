@@ -27,13 +27,16 @@
 #include "features.h"
 #include "../common/servertalk.h"
 
+#define MAX_MARKED_NPCS 3
+
 enum {	//Group  action fields
 	groupActJoin = 0,
 	groupActLeave = 1,
 	groupActDisband = 6,
 	groupActUpdate = 7,
 	groupActMakeLeader = 8,
-	groupActInviteInitial = 9
+	groupActInviteInitial = 9,
+	groupActAAUpdate = 10
 };
 
 class GroupIDConsumer {
@@ -54,10 +57,11 @@ class Group : public GroupIDConsumer {
 public:
 	Group(Mob* leader);
 	Group(int32 gid);
-	~Group() {}
+	~Group();
 	
 	bool	AddMember(Mob* newmember);
 	void	SendUpdate(int32 type,Mob* member);
+	void	SendLeadershipAAUpdate();
 	void	SendWorldGroup(int32 zone_id,Mob* zoningmember);
 	bool	DelMemberOOZ(const char *Name);
 	bool	DelMember(Mob* oldmember,bool ignoresender = false);
@@ -72,14 +76,14 @@ public:
 	void	GroupMessage_StringID(Mob* sender, int32 type, int32 string_id, const char* message,const char* message2=0,const char* message3=0,const char* message4=0,const char* message5=0,const char* message6=0,const char* message7=0,const char* message8=0,const char* message9=0, int32 distance = 0);
 	int32	GetTotalGroupDamage(Mob* other);
 	void	SplitMoney(uint32 copper, uint32 silver, uint32 gold, uint32 platinum, Client *splitter = NULL);
-	void	SetLeader(Mob* newleader){ leader=newleader; };
-	Mob*	GetLeader(){ return leader; };
-	char*	GetLeaderName(){ return membername[0]; };
+	inline	void SetLeader(Mob* newleader){ leader=newleader; };
+	inline	Mob* GetLeader(){ return leader; };
+	char*	GetLeaderName() { return membername[0]; };
 	void	SendHPPacketsTo(Mob* newmember);
 	void	SendHPPacketsFrom(Mob* newmember);
 	bool	UpdatePlayer(Mob* update);
 	void	MemberZoned(Mob* removemob);
-	bool	IsLeader(Mob* leadertest) { return leadertest==leader; };
+	inline	bool IsLeader(Mob* leadertest) { return leadertest==leader; };
 	int8	GroupCount();
 
 #ifdef EQBOTS
@@ -93,10 +97,33 @@ public:
 	int32	GetLowestLevel();
 	void	QueuePacket(const EQApplicationPacket *app, bool ack_req = true);
 	void	TeleportGroup(Mob* sender, int32 zoneID, float x, float y, float z, float heading);
-      uint16	GetAvgLevel();
+	uint16	GetAvgLevel();
 	bool	LearnMembers();
 	void	VerifyGroup();
 	void	BalanceHP(sint32 penalty);
+	inline	void SetGroupAAs(GroupLeadershipAA_Struct *From) { memcpy(&LeaderAbilities, From, sizeof(GroupLeadershipAA_Struct)); }
+	inline	void GetGroupAAs(GroupLeadershipAA_Struct *Into) { memcpy(Into, &LeaderAbilities, sizeof(GroupLeadershipAA_Struct)); }
+	void	UpdateGroupAAs();
+	void	SaveGroupLeaderAA();
+	void	MarkNPC(Mob* Target, int Number);
+	void	DelegateMainAssist(const char *NewMainAssistName);
+	void	UnDelegateMainAssist(const char *OldMainAssistName);
+	bool	IsMainAssist(Client *c);
+	bool	IsNPCMarker(Client *c);
+	void	SetGroupTarget(int EntityID);
+	void	NotifyTarget(Client *c);
+	void	DelegateMarkNPC(const char *NewNPCMarkerName);
+	void	UnDelegateMarkNPC(const char *OldNPCMarkerName);
+	void	NotifyMainAssist(Client *c);
+	void	NotifyMarkNPC(Client *c);
+	inline	uint32 GetNPCMarkerID() { return NPCMarkerID; }
+	inline	void SetMainAssist(char *NewMainAssistName) { MainAssistName = NewMainAssistName; }
+	void	SetNPCMarker(const char *NewNPCMarkerName);
+	void	UnMarkNPC(int16 ID);
+	void	SendMarkedNPCsToMember(Client *c, bool Clear = false);
+	inline  int GetLeadershipAA(int AAID) { return  LeaderAbilities.ranks[AAID]; }
+	void	ClearAllNPCMarks();
+	void	QueueHPPacketsForNPCHealthAA(Mob* sender, const EQApplicationPacket* app);
 	
 	Mob* members[MAX_GROUP_MEMBERS];
 	char	membername[MAX_GROUP_MEMBERS][64];
@@ -105,6 +132,13 @@ public:
 
 private:
 	Mob*	leader;
+	GroupLeadershipAA_Struct LeaderAbilities;
+	string	MainAssistName;
+	string	NPCMarkerName;
+	int16	NPCMarkerID;
+	int16	TargetID;
+	int16	MarkedNPCs[MAX_MARKED_NPCS];
+
 };
 
 #endif
