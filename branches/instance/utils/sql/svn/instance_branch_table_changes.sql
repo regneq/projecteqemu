@@ -87,6 +87,7 @@ CREATE TABLE `adventure_details` (
   `adventure_id` smallint(5) unsigned NOT NULL,
   `instance_id` int(11) NOT NULL default '-1',
   `count` smallint(5) unsigned NOT NULL default '0',
+  `assassinate_count` smallint(5) unsigned NOT NULL default '0',
   `status` tinyint(3) unsigned NOT NULL default '0',
   `time_created` int(10) unsigned NOT NULL default '0',
   `time_zoned` int(10) unsigned NOT NULL default '0',
