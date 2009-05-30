@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/30/2009==
+KLS: Redid procs a bit, spell procs should work more consistently and ppm formula should be less broken and will also take into account haste now.
+Highly suggested you change your Combat:AvgProcsPerMinute rule to 2.0 if you want it to be live like.
+
 ==05/29/2009==
 Derision: Lay Hands/Harm Touch hot buttons now remain depressed across zoning until reuse timer is up.
 
