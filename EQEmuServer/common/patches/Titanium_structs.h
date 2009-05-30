@@ -811,7 +811,8 @@ struct PlayerProfile_Struct
 /*13278*/ uint16  zoneInstance;       // Instance id
 /*13280*/ char      groupMembers[MAX_GROUP_MEMBERS][64];// all the members in group, including self 
 /*13664*/ char      groupLeader[64];    // Leader of the group ?
-/*13728*/ uint8 unknown13728[660];
+/*13728*/ uint8 unknown13728[656];
+/*14384*/ uint32  entityid;
 /*14388*/ uint32  leadAAActive;       // 0 = leader AA off, 1 = leader AA on
 /*14392*/ uint8 unknown14392[4];
 /*14396*/ sint32  ldon_points_guk;    // Earned GUK points
@@ -828,12 +829,11 @@ struct PlayerProfile_Struct
 /*14568*/ uint32  unknown7216;        // *** Placeholder
 /*14572*/ uint32  tribute_active;      // 0 = off, 1=on
 /*14576*/ Tribute_Struct tributes[MAX_PLAYER_TRIBUTES]; // Current tribute loadout
-/*14616*/ uint8 unknown14616[8];
-/*14624*/ uint32  group_leadership_exp;     // Current group lead exp points (format though??)
-/*14628*/ uint32 unknown14628;
-/*14632*/ uint32  raid_leadership_exp;      // Current raid lead AA exp points (format though??)
-/*14636*/ uint32  group_leadership_points; // Unspent group lead AA points
-/*14640*/ uint32  raid_leadership_points;  // Unspent raid lead AA points
+/*14616*/ uint32  unknown14616;
+/*14620*/ double  group_leadership_exp; 
+/*14628*/ double  raid_leadership_exp;
+/*14640*/ uint32  group_leadership_points; // Unspent group lead AA points
+/*14644*/ uint32  raid_leadership_points;  // Unspent raid lead AA points
 /*14644*/ LeadershipAA_Struct leader_abilities; // Leader AA ranks
 /*14772*/ uint8 unknown14772[128];
 /*14900*/ uint32  air_remaining;       // Air supply (seconds)
@@ -847,7 +847,8 @@ struct PlayerProfile_Struct
 /*19572*/ uint8  groupAutoconsent;    // 0=off, 1=on
 /*19573*/ uint8  raidAutoconsent;     // 0=off, 1=on
 /*19574*/ uint8  guildAutoconsent;    // 0=off, 1=on
-/*19575*/ uint8  unknown19575[5];     // ***Placeholder (6/29/2005)
+/*19575*/ uint8  unknown19575;     // ***Placeholder (6/29/2005)
+/*19576*/ uint32 level3;              // Titanium looks here to determine the max leadership points you can bank.
 /*19580*/ uint32 showhelm;            // 0=no, 1=yes
 /*19584*/ uint8  unknown19584[4];     // ***Placeholder (10/27/2005)
 /*19588*/ uint32 unknown19588;        // *** Placeholder
@@ -2852,16 +2853,17 @@ struct BankerChange_Struct {
 };
 
 struct LeadershipExpUpdate_Struct {
-/*00*/	uint32	group_leadership_exp;
-/*04*/	uint32	group_leadership_points;
-/*08*/	uint32	raid_leadership_exp;
-/*12*/	uint32	raid_leadership_points;
+/*00*/	double	group_leadership_exp;
+/*08*/	uint32	group_leadership_points;
+/*12*/	uint32	Unknown12;
+/*16*/	double	raid_leadership_exp;
+/*24*/	uint32	raid_leadership_points;
 };
 
 struct UpdateLeadershipAA_Struct {
 /*00*/	uint32	ability_id;
 /*04*/	uint32	new_rank;
-/*08*/	uint32	unknown08;
+/*08*/	uint32	pointsleft;
 /*12*/
 };
 

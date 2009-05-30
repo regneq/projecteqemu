@@ -135,6 +135,7 @@ const char *__zp_names[ZoneProfiler::MaxZoneProfilerId] = {
 		
 		"EntityList_TrapProcess",
 		"EntityList_GroupProcess",
+		"EntityList_QueueToGroupsForNPCHealthAA",
 		"EntityList_DoorProcess",
 		"EntityList_ObjectProcess",
 		"EntityList_CorpseProcess",

@@ -336,6 +336,8 @@ ENCODE(OP_PlayerProfile) {
 	OUT(raid_leadership_points);
 	OUT_array(leader_abilities.ranks, structs::MAX_LEADERSHIP_AA_ARRAY);
 	OUT(air_remaining);
+	OUT(entityid);
+	OUT(leadAAActive);
 	OUT(expAA);
 	OUT(currentRadCrystals);
 	OUT(careerRadCrystals);

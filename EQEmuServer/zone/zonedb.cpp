@@ -1627,15 +1627,13 @@ void ZoneDatabase::RefreshGroupFromDB(Client *c){
 	GroupUpdate2_Struct* gu = (GroupUpdate2_Struct*)outapp->pBuffer;	
 	gu->action = 7;
 	char errbuf[MYSQL_ERRMSG_SIZE];
-    char *query = 0;
-    MYSQL_RES *result;
+	char *query = 0;
+	MYSQL_RES *result;
 	MYSQL_ROW row;
 
-	char leadername[64];
-
 	strcpy(gu->yourname, c->GetName());
-	strcpy(leadername, GetGroupLeaderName(g->GetID(), leadername));
-	strcpy(gu->leadersname, leadername);
+	GetGroupLeadershipInfo(g->GetID(), gu->leadersname, NULL, NULL, &gu->leader_aas);
+	gu->NPCMarkerID = g->GetNPCMarkerID();
 
 	int index = 0;
 	if (RunQuery(query, MakeAnyLenString(&query, "SELECT name from group_id where groupid=%d", g->GetID()), errbuf, &result)) {
@@ -1655,28 +1653,13 @@ void ZoneDatabase::RefreshGroupFromDB(Client *c){
 	}
 	safe_delete_array(query);
 
-	//todo: fix this
-	/*char errbuf2[MYSQL_ERRMSG_SIZE];
-    char *query2 = 0;
-    MYSQL_RES *result2;
-	MYSQL_ROW row2;
-	PlayerProfile_Struct pp;
-	if (RunQuery(query2, MakeAnyLenString(&query, "SELECT profile from character_ where name='%s'", gu->leadersname), errbuf2, &result2)) {
-		row2 = mysql_fetch_row(result2);
-		unsigned long* lengths = mysql_fetch_lengths(result2);
-		if (lengths[0] == sizeof(PlayerProfile_Struct)) {
-			//memcpy(&pp, row2[0], sizeof(PlayerProfile_Struct));
-			//memcpy(&gu->leader_aas, &pp.leader_abilities, sizeof(GroupLeadershipAA_Struct));
-		}
-		mysql_free_result(result2);
-	}
-	else{
-			printf("Unable to get pp from leader: %s\n",errbuf2);
-	}
-	safe_delete_array(query2);*/
-
 	c->QueuePacket(outapp);
 	safe_delete(outapp);
+	//g->NotifyMainAssist(c);
+	//g->NotifyMarkNPC(c);
+	g->NotifyTarget(c);
+	g->SendMarkedNPCsToMember(c);
+
 }
 
 int8 ZoneDatabase::GroupCount(int32 groupid){

@@ -58,6 +58,7 @@ public:
 		
 		EntityList_TrapProcess,
 		EntityList_GroupProcess,
+		EntityList_QueueToGroupsForNPCHealthAA,
 		EntityList_DoorProcess,
 		EntityList_ObjectProcess,
 		EntityList_CorpseProcess,

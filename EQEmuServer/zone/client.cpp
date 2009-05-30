@@ -324,6 +324,9 @@ Client::~Client() {
 		shield_target = NULL;
 	}
 
+	if(target)
+		target->IsTargeted(-1);
+
 	//if we are in a group and we are not zoning, force leave the group
 	if(isgrouped && !zoning)
 		LeaveGroup();
@@ -2443,7 +2446,7 @@ void Client::Message_StringID(int32 type, int32 string_id, int32 distance)
 	sms->string_id=string_id;
 
 	sms->unknown8=0;
-
+	
 	if(distance>0)
 		entity_list.QueueCloseClients(this,outapp,false,distance);
 	else
@@ -2500,6 +2503,7 @@ void Client::Message_StringID(int32 type, int32 string_id,  const char* message1
 		bufptr += strlen(message_arg[i]) + 1;
 	}
 
+	
 	if(distance>0)
 		entity_list.QueueCloseClients(this,outapp,false,distance);
 	else
@@ -3885,6 +3889,39 @@ void Client::VoiceMacroReceived(int32 Type, char *Target, int32 MacroNumber) {
 
 	if(!worldserver.SendVoiceMacro(this, Type, Target, MacroNumber, GroupOrRaidID))
 		Message(0, "Error: World server disconnected");
+}
+
+void Client::ClearGroupAAs() {
+
+	for(int i = 0; i <  MAX_GROUP_LEADERSHIP_AA_ARRAY; i++)
+		m_pp.leader_abilities.ranks[i] = 0;
+
+	m_pp.group_leadership_points = 0;
+	m_pp.raid_leadership_points = 0;
+	m_pp.group_leadership_exp = 0;
+	m_pp.raid_leadership_exp = 0;
+
+	Save();
+}
+
+bool Client::IsLeadershipEXPOn()
+{
+
+	if(!m_pp.leadAAActive)
+		return false;
+
+	Group *g = GetGroup();
+
+	if(g && g->IsLeader(this) && (g->GroupCount() > 2))
+		return true;
+
+	Raid *r = GetRaid();
+
+	if(r && r->IsLeader(this) && (r->RaidCount() > 17))
+		return true;
+
+	return false;
+
 }
 
 void Client::IncrementAggroCount() {

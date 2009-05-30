@@ -548,7 +548,8 @@ ENCODE(OP_PlayerProfile) {
 	strcpy(eq->groupLeader, emu->groupMembers[0]);
 //	OUT_str(groupLeader);
 //	OUT(unknown13728[660]);
-//	OUT(leadAAActive);
+	OUT(entityid);
+	OUT(leadAAActive);
 //	OUT(unknown14392[4]);
 	OUT(ldon_points_guk);
 	OUT(ldon_points_mir);
@@ -587,6 +588,7 @@ ENCODE(OP_PlayerProfile) {
 	OUT(raidAutoconsent);
 	OUT(guildAutoconsent);
 //	OUT(unknown19575[5]);
+	eq->level3 = emu->level;
 	eq->showhelm = emu->showhelm;
 	OUT(RestTimer);
 //	OUT(unknown19584[4]);

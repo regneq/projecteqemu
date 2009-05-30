@@ -187,6 +187,14 @@
 #define CANNOT_BIND 105  // "You cannot form an affinity with this area.  Try a city."
 #define DIVINE_INTERVENTION 1029 // %1 has been rescued by divine intervention!
 #define	GAIN_RAIDEXP 5085
+#define GAIN_GROUP_LEADERSHIP_EXP 8788
+#define GAIN_RAID_LEADERSHIP_EXP 8789
+#define GAIN_GROUP_LEADERSHIP_POINT 8585
+#define GAIN_RAID_LEADERSHIP_POINT 8589
+#define MAX_GROUP_LEADERSHIP_POINTS 8584
+#define MAX_RAID_LEADERSHIP_POINTS 8591
+#define CURRENT_SPELL_EFFECTS 8757 // %1's current spell effects: 
+#define BUFF_MINUTES_REMAINING 8799 // %1 (%2 minutes remaining)
 #define SONG_NEEDS_DRUM 405	// You need to play a percussion instrument for this song
 #define SONG_NEEDS_WIND 406	// You need to play a wind instrument for this song
 #define SONG_NEEDS_STRINGS 407	// You need to play a stringed instrument for this song

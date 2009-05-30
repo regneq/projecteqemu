@@ -877,7 +877,10 @@ struct PlayerProfile_Struct
 /*5506*/	uint16				zoneInstance;			// Instance ID
 /*5508*/	SpellBuff_Struct	buffs[BUFF_COUNT];			// Buffs currently on the player
 /*6008*/	char 				groupMembers[6][64];		//
-/*6392*/	char				unknown6392[668];
+/*6392*/	char				unknown6392[656];
+/*7048*/	uint32				entityid;
+/*7052*/	uint32				leadAAActive;
+/*7056*/	uint32				unknown7056;
 /*7060*/	sint32				ldon_points_guk;		//client uses these as signed
 /*7064*/	sint32				ldon_points_mir;
 /*7068*/	sint32				ldon_points_mmc;
@@ -1835,14 +1838,20 @@ struct GroupUpdate2_Struct {
 /*0068*/	char	membername[5][64];
 /*0388*/	char	leadersname[64];
 /*0452*/	GroupLeadershipAA_Struct leader_aas;
-/*0580*/	int8	unknown[188];
-/*0768*/
+/*0580*/	int8	unknown580[196];
+/*0766*/	uint32	NPCMarkerID;	// EntityID of player delegated MarkNPC ability
+/*0780*/	int8	unknown780[56];
+/*0836*/
 };
 struct GroupJoin_Struct {
 /*0000*/	int32	action;
 /*0004*/	char	yourname[64];
 /*0068*/	char	membername[64];
-/*0132*/	int8	unknown[84];
+/*0132*/	GroupLeadershipAA_Struct leader_aas;
+/*0196*/	int8	unknown196[196];
+/*0392*/	uint32	NPCMarkerID;	// EntityID of player delegated MarkNPC ability
+/*0396*/	int8	unknown396[56];
+/*0452*/
 };
 
 struct GroupFollow_Struct { // SoF Follow Struct
@@ -3412,11 +3421,45 @@ struct LeadershipExpUpdate_Struct {
 struct UpdateLeadershipAA_Struct {
 /*00*/	uint32	ability_id;
 /*04*/	uint32	new_rank;
-/*08*/	uint32	unknown08;
+/*08*/	uint32	pointsleft;
 /*12*/
 };
 
+enum
+{
+	GroupLeadershipAbility_MarkNPC = 0
+};
 
+struct DoGroupLeadershipAbility_Struct
+{
+/*000*/	uint32	Ability;
+/*000*/	uint32	Parameter;
+};
+
+struct DelegateAbility_Struct
+{
+/*000*/	uint32	DelegateAbility;
+/*004*/	uint32	MemberNumber;
+/*008*/	uint32	Action;
+/*012*/	uint32	Unknown012;
+/*016*/	uint32	Unknown016;
+/*020*/	uint32	EntityID;
+/*024*/	uint32	Unknown024;
+/*028*/	char	Name[64];
+};
+
+struct GroupUpdateLeaderAA_Struct
+{
+/*000*/	char	Unknown000[64];
+/*064*/	GroupLeadershipAA_Struct LeaderAAs;
+/*128*/	char	unknown128[128];
+};
+
+struct MarkNPC_Struct
+{
+/*00*/	uint32	TargetID;	// Target EntityID
+/*04*/	uint32	Number;		// Number to mark them with (1, 2 or 3)
+};
 
 struct RaidGeneral_Struct {
 /*00*/	uint32		action;	//=10

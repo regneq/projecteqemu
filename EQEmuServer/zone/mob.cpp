@@ -113,7 +113,7 @@ Mob::Mob(const char*   in_name,
 		bindwound_timer(10000)
 	//	mezzed_timer(0)
 {
-	targeted = false;
+	targeted = 0;
 	logpos = false;
 	tar_ndx=0;
 	tar_vector=0;
@@ -397,6 +397,7 @@ Mob::~Mob()
 	if(HadTempPets()){
 		entity_list.DestroyTempPets(this);
 	}
+	entity_list.UnMarkNPC(GetID());
 }
 
 int32 Mob::GetAppearanceValue(EmuAppearance iAppearance) {
@@ -872,6 +873,7 @@ void Mob::SendHPUpdate()
 #else
 	// send to people who have us targeted
  	entity_list.QueueClientsByTarget(this, &hp_app, false, 0, false);
+	entity_list.QueueToGroupsForNPCHealthAA(this, &hp_app);
 
 	// send to group
 	if(IsGrouped())
@@ -1018,7 +1020,8 @@ void Mob::ShowStats(Client* client) {
 	client->Message(0, "  Race: %i  BaseRace: %i  Texture: %i  HelmTexture: %i  Gender: %i  BaseGender: %i", GetRace(), GetBaseRace(), GetTexture(), GetHelmTexture(), GetGender(), GetBaseGender());
 	client->Message(0, "  Last Warp Distance: %f Threshold Remaining: %f", GetLWDistance(), GetWarpThreshold());
 	if (client->Admin() >= 100) {
-		client->Message(0, "  EntityID: %i  PetID: %i  OwnerID: %i  AIControlled: %i", this->GetID(), this->GetPetID(), this->GetOwnerID(), this->IsAIControlled());
+		client->Message(0, "  EntityID: %i  PetID: %i  OwnerID: %i  AIControlled: %i  Targetted: %i", 
+				this->GetID(), this->GetPetID(), this->GetOwnerID(), this->IsAIControlled(), targeted);
 		if (this->IsClient()) {
 			client->Message(0, "  CharID: %i  PetID: %i", this->CastToClient()->CharacterID(), this->GetPetID());
 			client->Message(0, "  Endurance: %i, Max Endurance %i",client->GetEndurance(), client->GetMaxEndurance());

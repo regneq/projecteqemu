@@ -648,8 +648,8 @@ bool logpos;
 	float DistNoRoot(const Mob &) const;
 	float DistNoRootNoZ(const Mob &) const;
 
-	bool IsTargeted() const { return targeted; }
-	void IsTargeted(bool in_tar) { targeted = in_tar; }
+	bool IsTargeted() const { return (targeted > 0); }
+	inline void IsTargeted(int in_tar) { targeted += in_tar; if(targeted < 0) targeted = 0;}
 
 	inline const float	GetX() const		{ return x_pos; }
 	inline const float	GetY() const		{ return y_pos; }
@@ -1024,7 +1024,7 @@ protected:
 	sint16 DR;
 	sint16 PR;
 	bool moving;
-	bool targeted;
+	int targeted;
 	bool findable;
 	bool trackable;
 	sint32  cur_hp;
