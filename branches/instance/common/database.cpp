@@ -3337,7 +3337,7 @@ void Database::DestroyAdventure(int32 id)
 	}
 }
 
-bool Database::GetAdventureDetails(int32 charid, int32 &id, int32 &adventure_id, int32 &instance_id, int32 &count, int32 &status, int32 &time_c, int32 &time_z, int32 &time_comp)
+bool Database::GetAdventureDetails(int32 charid, int32 &id, int32 &adventure_id, int32 &instance_id, int32 &count, int32 &ass_count, int32 &status, int32 &time_c, int32 &time_z, int32 &time_comp)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
@@ -3363,7 +3363,7 @@ bool Database::GetAdventureDetails(int32 charid, int32 &id, int32 &adventure_id,
 	if(adv_id == 0)
 		return false;
 
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT `adventure_id`, `instance_id`, `count`, `status`, "
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT `adventure_id`, `instance_id`, `count`, `assassinate_count`, `status`, "
 		"`time_created`, `time_zoned`, `time_completed` FROM `adventure_details` WHERE id=%u LIMIT 1", adv_id), errbuf, &result))
 	{
 		safe_delete_array(query);
@@ -3372,10 +3372,11 @@ bool Database::GetAdventureDetails(int32 charid, int32 &id, int32 &adventure_id,
 			adventure_id = atoi(row[0]);
 			instance_id = atoi(row[1]);
 			count = atoi(row[2]);
-			status = atoi(row[3]);
-			time_c = atoi(row[4]);
-			time_z = atoi(row[5]);
-			time_comp = atoi(row[6]);
+			ass_count = atoi(row[3]);
+			status = atoi(row[4]);
+			time_c = atoi(row[5]);
+			time_z = atoi(row[6]);
+			time_comp = atoi(row[7]);
 			id = adv_id;
 		}
 		mysql_free_result(result);
@@ -3501,7 +3502,7 @@ void Database::UpdateAdventureCompleted(int32 adv_id, int32 time)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
-	if(RunQuery(query, MakeAnyLenString(&query, "UPDATE `adventure_details` SET time_completed=%d "
+	if(RunQuery(query, MakeAnyLenString(&query, "UPDATE `adventure_details` SET time_completed=%u "
 		"WHERE id=%u", time, adv_id), errbuf))
 	{
 		safe_delete_array(query);
@@ -3511,4 +3512,62 @@ void Database::UpdateAdventureCompleted(int32 adv_id, int32 time)
 		//error
 		safe_delete_array(query);
 	}
+}
+
+void Database::UpdateAdventureCount(int32 adv_id, int32 new_count)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	if(RunQuery(query, MakeAnyLenString(&query, "UPDATE `adventure_details` SET count=%u "
+		"WHERE id=%u", new_count, adv_id), errbuf))
+	{
+		safe_delete_array(query);
+	}
+	else
+	{
+		//error
+		safe_delete_array(query);
+	}
+}
+
+void Database::IncrementAdventureCount(int32 adv_id)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	if(RunQuery(query, MakeAnyLenString(&query, "UPDATE `adventure_details` SET count=count+1 "
+		"WHERE id=%u", adv_id), errbuf))
+	{
+		safe_delete_array(query);
+	}
+	else
+	{
+		//error
+		safe_delete_array(query);
+	}
+}
+
+int32 Database::GetAdventureCount(int32 adv_id)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT `count` FROM `adventure_details` WHERE id=%u", 
+		adv_id), errbuf, &result))
+	{
+		safe_delete_array(query);
+		while((row = mysql_fetch_row(result)) != NULL)
+		{
+			int32 count = atoi(row[0]);
+			return count;
+		}
+		mysql_free_result(result);
+	}
+	else 
+	{
+		safe_delete_array(query);
+		return 0;
+	}
+	return 0;	
 }

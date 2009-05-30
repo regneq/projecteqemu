@@ -1069,7 +1069,25 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app)
 			}
 		}
 
-		//Adventure Add Here
+		AdventureDetails *ad = client->GetCurrentAdventure();
+		if(ad && ad->ai)
+		{
+			if(ad->instance_id == zone->GetInstanceID())
+			{
+				if(!IsPlayerCorpse())
+				{
+					if(ad->ai->type == Adventure_Collect)
+					{
+						if(ad->ai->type_data == inst->GetItem()->ID)
+						{
+							//todo increment one for every item in stack.
+							zone->UpdateAdventureCount(ad);
+						}
+					}
+				}
+			}
+		}
+
 		// first add it to the looter - this will do the bag contents too
 		if(lootitem->auto_loot)
 		{

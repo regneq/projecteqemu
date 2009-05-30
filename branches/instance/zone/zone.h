@@ -160,6 +160,7 @@ public:
 	void	LoadAdventures();
 	void	LoadAdventureEntries();
 	void	LoadActiveAdventures();
+	void	UpdateAdventureCount(AdventureDetails *ad);
 	
 	map<uint32,NPCType *> npctable;
 	map<uint32,std::list<MerchantList> > merchanttable;

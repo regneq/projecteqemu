@@ -2516,6 +2516,33 @@ void NPC::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill) 
 
 	safe_delete(app);
 	
+	if(killer)
+	{
+		if(killer->IsClient())
+		{
+			AdventureDetails *ad = killer->CastToClient()->GetCurrentAdventure();
+			if(ad && ad->ai)
+			{
+				if(ad->instance_id == zone->GetInstanceID())
+				{
+					if(ad->ai->type == Adventure_Kill)
+					{
+						if(!IsPet() && GetClass() != LDON_TREASURE)
+						{
+							zone->UpdateAdventureCount(ad);
+						}
+					}
+					else if(ad->ai->type == Adventure_Assassinate)
+					{
+						if(GetNPCTypeID() == ad->ai->type_data)
+						{
+							zone->UpdateAdventureCount(ad);
+						}
+					}
+				}
+			}
+		}
+	}	
 	
 	Mob *give_exp = hate_list.GetDamageTop(this);
 

@@ -3867,7 +3867,18 @@ void EntityList::AdventureFinish(int32 a_id, int8 win_lose, int32 points)
 			AdventureDetails *ad = c->GetCurrentAdventure();
 			if(ad && ad->id == a_id)
 			{
-				c->SendAdventureFinish(win_lose, points);
+				if(win_lose == 1)
+				{
+					if(ad->status != 3)
+					{
+						ad->status = 3;
+						c->SendAdventureFinish(win_lose, points, ad->ai->theme);
+					}
+				}
+				else
+				{
+					c->SendAdventureFinish(win_lose, points, ad->ai->theme);
+				}
 			}
 		}
 		iterator.Advance();

@@ -814,7 +814,7 @@ public:
 	void SendAdventureSelection(Mob* rec, int32 difficulty, int32 type);
 	void SendAdventureError(const char* msg, ...);
 	void SendAdventureDetail();
-	void SendAdventureFinish(int8 win, int32 points);
+	void SendAdventureFinish(int8 win, int32 points, int32 theme);
 	void SendAdventureCountUpdate(int32 current, int32 total);
 	void AcceptAdventure();
 	void DeclineAdventure();

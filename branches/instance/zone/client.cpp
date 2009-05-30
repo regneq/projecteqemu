@@ -3783,6 +3783,7 @@ void Client::SendAdventureSelection(Mob* rec, int32 difficulty, int32 type)
 {
 	if(GetCurrentAdventure())
 	{
+		SendAdventureError("You are already in an adventure or your previous adventure is still shutting down.");
 		LogFile->write(EQEMuLog::Debug, "Client::SendAdventureSelection(): Client already in adventure");
 		return;
 	}
@@ -3996,6 +3997,7 @@ void Client::AcceptAdventure()
 
 			ad->ai = t;
 			ad->count = 0;
+			ad->assassinate_count = 0;
 			ad->id = adv_id;
 			ad->instance_id = -1;
 			ad->status = 0;
@@ -4116,8 +4118,10 @@ void Client::DeclineAdventure()
 void Client::LeaveAdventure()
 {
 	AdventureDetails *ad = GetCurrentAdventure();
-	if(ad)
+	if(ad && ad->ai)
 	{
+		if(ad->status >= 2)
+			return;	
 		database.RemovePlayerFromAdventure(ad->id, CharacterID());
 		if(database.CountPlayersInAdventure(ad->id) == 0)
 		{
@@ -4147,6 +4151,9 @@ void Client::SendAdventureDetail()
 		return;
 	}
 
+	if(ad->status >= 2)
+		return;	
+	
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureData, sizeof(AdventureRequestResponse_Struct));
 	AdventureRequestResponse_Struct *arr = (AdventureRequestResponse_Struct*)outapp->pBuffer;
 	timeval tv;
@@ -4188,11 +4195,11 @@ void Client::SendAdventureDetail()
 	SendAdventureCountUpdate(ad->count, ad->ai->type_count);
 }
 
-void Client::SendAdventureFinish(int8 win, int32 points)
+void Client::SendAdventureFinish(int8 win, int32 points, int32 theme)
 {
 	if(win > 0)
 	{
-		//todo: add points
+		UpdateLDoNPoints(points, theme);
 		EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureFinish, sizeof(AdventureFinish_Struct));
 		AdventureFinish_Struct *af = (AdventureFinish_Struct*)outapp->pBuffer;
 		af->win_lose = 1;

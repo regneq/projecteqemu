@@ -133,6 +133,7 @@ struct AdventureDetails
 	sint32 instance_id;
 	int32 count;
 	int8 status;
+	int32 assassinate_count;
 	int32 time_created;
 	int32 time_zoned;
 	int32 time_completed;
@@ -1717,6 +1718,14 @@ struct Adventure_Purchase_Struct {
 /*000*/	int32	npcid;
 /*004*/	int32	itemid;
 /*008*/	int32	variable;
+};
+
+struct Adventure_Sell_Struct {
+/*000*/	int32	unknown000;	//0x01
+/*004*/	int32	npcid;
+/*008*/	int32	slot;
+/*012*/	int32	charges;
+/*016*/	int32	sell_price;
 };
 
 

@@ -1347,11 +1347,10 @@ void WorldServer::Process() {
 				if(iter != zone->active_adventures.end())
 				{
 					AdventureDetails *ad = iter->second;
-					if(ad)
+					if(ad && ad->ai)
 					{
-						ad->count = ac->new_count;
-						if(ad->ai)
-							entity_list.AdventureCountUpdate(ac->id, ac->new_count, ad->ai->type_count);
+						ad->count = database.GetAdventureCount(ad->id);
+						entity_list.AdventureCountUpdate(ac->id, ad->count, ad->ai->type_count);
 					}
 				}
 			}

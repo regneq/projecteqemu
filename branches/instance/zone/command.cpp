@@ -6127,13 +6127,18 @@ void command_set_adventure_points(Client *c, const Seperator *sep)
 
 	if(!sep->arg[1][0])
 	{
-		c->Message(0, "Usage: #setadventurepoints [points]");
+		c->Message(0, "Usage: #setadventurepoints [points] [theme]");
 		return;
 	}
+	
+	if(!sep->IsNumber(1) || !sep->IsNumber(2))
+	{
+		c->Message(0, "Usage: #setadventurepoints [points] [theme]");
+		return;
+	}	
 
 	c->Message(0, "Updating adventure points for %s", t->GetName());
-//	t->GetPP().ldon_available_points=atoi(sep->arg[1]);
-	t->UpdateLDoNPoints(0, 1);
+	t->UpdateLDoNPoints(atoi(sep->arg[1]), atoi(sep->arg[2]));
 }
 
 void command_npcsay(Client *c, const Seperator *sep)

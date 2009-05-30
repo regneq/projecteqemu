@@ -1167,7 +1167,7 @@ bool Zone::Process() {
 								else
 								{
 									database.UpdateAdventureCompleted(ad->id, (tv.tv_sec-time_since));
-									database.UpdateAdventureStatus(ad->id, 3);
+									database.UpdateAdventureStatus(ad->id, 2);
 
 									//send new status to all players
 									ServerPacket *pack = new ServerPacket(ServerOP_AdventureUpdate, sizeof(ServerAdventureUpdate_Struct));
@@ -1175,10 +1175,18 @@ bool Zone::Process() {
 									au->id = ad->id;
 									au->new_timec = 1;
 									au->new_status = 1;
-									au->status = 3;
+									au->status = 2;
 									au->time_c = (tv.tv_sec-time_since);
 									worldserver.SendPacket(pack);
 									safe_delete(pack);
+									
+									ServerPacket *pack2 = new ServerPacket(ServerOP_AdventureFinish, sizeof(ServerAdventureFinish_Struct));
+									ServerAdventureFinish_Struct *afin = (ServerAdventureFinish_Struct*)pack2->pBuffer;
+									afin->id = ad->id;
+									afin->win_lose = 0;
+									afin->points = 0;
+									worldserver.SendPacket(pack2);
+									safe_delete(pack2);									
 
 									char msg[] = "You failed to complete your adventure in time.  Complete your adventure goal within 30 minutes to receive a lesser reward.  This adventure will end in 30 minutes and your party will be ejected from the dungeon.\0";
 									ServerPacket *pack_msg = new ServerPacket(ServerOP_AdventureMessage, sizeof(ServerAdventureMessage_Struct) + strlen(msg) + 1);
@@ -2167,7 +2175,7 @@ void Zone::LoadActiveAdventures()
 	MYSQL_RES *result;
 	MYSQL_ROW row;
 
-	if(database.RunQuery(query,MakeAnyLenString(&query,"SELECT `id`, `adventure_id`, `instance_id`, `count`, `status`, "
+	if(database.RunQuery(query,MakeAnyLenString(&query,"SELECT `id`, `adventure_id`, `instance_id`, `count`, `assassinate_count`, `status`, "
 		"`time_created`, `time_zoned`, `time_completed` FROM `adventure_details`"),errbuf,&result)) {
 		while((row = mysql_fetch_row(result))) 
 		{
@@ -2177,6 +2185,7 @@ void Zone::LoadActiveAdventures()
 			ad->ai = adventure_list[atoi(row[x++])];
 			ad->instance_id = atoi(row[x++]);
 			ad->count = atoi(row[x++]);
+			ad->assassinate_count = atoi(row[x++]);
 			ad->status = atoi(row[x++]);
 			ad->time_created = atoi(row[x++]);
 			ad->time_zoned = atoi(row[x++]);
@@ -2191,6 +2200,80 @@ void Zone::LoadActiveAdventures()
 		LogFile->write(EQEMuLog::Error, "Error in Zone::LoadActiveAdventures: %s (%s)", query, errbuf);
 		safe_delete_array(query);
 		return;
+	}
+}
+
+void Zone::UpdateAdventureCount(AdventureDetails *ad)
+{
+	if(ad && ad->ai)
+	{
+		if(ad->status == 3)
+			return;
+
+		database.IncrementAdventureCount(ad->id);
+		ServerPacket *pack = new ServerPacket(ServerOP_AdventureCount, sizeof(ServerAdventureCount_Struct));
+		ServerAdventureCount_Struct *ac = (ServerAdventureCount_Struct*)pack->pBuffer;
+		ac->id = ad->id;
+		worldserver.SendPacket(pack);
+		safe_delete(pack);
+
+		if(ad->ai->type_count == ad->count)
+		{
+			timeval tv;
+			gettimeofday(&tv, NULL);
+			database.UpdateAdventureStatus(ad->id, 3);
+
+			if(ad->status == 1)
+			{
+				database.UpdateAdventureCompleted(ad->id, tv.tv_sec);
+
+				ServerPacket *pack2 = new ServerPacket(ServerOP_AdventureFinish, sizeof(ServerAdventureFinish_Struct));
+				ServerAdventureFinish_Struct *afin = (ServerAdventureFinish_Struct*)pack2->pBuffer;
+				afin->id = ad->id;
+				afin->win_lose = 1;
+				afin->points = ad->ai->win_points;
+				worldserver.SendPacket(pack2);
+				safe_delete(pack2);
+
+				//send new status to all players
+				ServerPacket *pack = new ServerPacket(ServerOP_AdventureUpdate, sizeof(ServerAdventureUpdate_Struct));
+				ServerAdventureUpdate_Struct *au = (ServerAdventureUpdate_Struct*)pack->pBuffer;
+				au->id = ad->id;
+				au->new_timec = 1;
+				au->new_status = 1;
+				au->status = 3;
+				au->time_c = tv.tv_sec;
+				worldserver.SendPacket(pack);
+				safe_delete(pack);
+
+				database.SetInstanceDuration(ad->instance_id, 1800);
+				ServerPacket *instance_pack = new ServerPacket(ServerOP_InstanceUpdateTime, sizeof(ServerInstanceUpdateTime_Struct));
+				ServerInstanceUpdateTime_Struct *iut = (ServerInstanceUpdateTime_Struct*)instance_pack->pBuffer;
+				iut->instance_id = ad->instance_id;
+				iut->new_duration = 1800;
+				worldserver.SendPacket(instance_pack);
+				safe_delete(instance_pack);
+			}
+			else if(ad->status == 2)
+			{
+				ServerPacket *pack2 = new ServerPacket(ServerOP_AdventureFinish, sizeof(ServerAdventureFinish_Struct));
+				ServerAdventureFinish_Struct *afin = (ServerAdventureFinish_Struct*)pack2->pBuffer;
+				afin->id = ad->id;
+				afin->win_lose = 1;
+				afin->points = ad->ai->lose_points;
+				worldserver.SendPacket(pack2);
+				safe_delete(pack2);
+
+				//send new status to all players
+				ServerPacket *pack = new ServerPacket(ServerOP_AdventureUpdate, sizeof(ServerAdventureUpdate_Struct));
+				ServerAdventureUpdate_Struct *au = (ServerAdventureUpdate_Struct*)pack->pBuffer;
+				au->id = ad->id;
+				au->new_status = 1;
+				au->status = 3;
+				worldserver.SendPacket(pack);
+				safe_delete(pack);
+			}
+		}
 	}
 }
 

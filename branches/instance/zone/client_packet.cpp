@@ -340,6 +340,9 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_PVPLeaderBoardRequest] = &Client::Handle_OP_PVPLeaderBoardRequest;
 	ConnectedOpcodes[OP_PVPLeaderBoardDetailsRequest] = &Client::Handle_OP_PVPLeaderBoardDetailsRequest;
 	ConnectedOpcodes[OP_RespawnWindow] = &Client::Handle_OP_RespawnWindow;
+	ConnectedOpcodes[OP_AdventureMerchantSell] = &Client::Handle_OP_AdventureMerchantSell;
+	ConnectedOpcodes[OP_AdventureStatsRequest] = &Client::Handle_OP_AdventureStatsRequest;
+	ConnectedOpcodes[OP_AdventureLeaderboardRequest] = &Client::Handle_OP_AdventureLeaderboardRequest;	
 }
 
 int Client::HandlePacket(const EQApplicationPacket *app)
@@ -636,11 +639,12 @@ void Client::Handle_Connect_OP_ReqClientSpawn(const EQApplicationPacket *app)
 	int32 adv_adventure_id = 0;
 	int32 adv_inst_id = 0;
 	int32 adv_count = 0;
+	int32 adv_ass_count = 0;
 	int32 adv_status = 0;
 	int32 adv_time_c = 0;
 	int32 adv_time_z = 0;
 	int32 adv_time_comp = 0;
-	if(database.GetAdventureDetails(CharacterID(), adv_id, adv_adventure_id, adv_inst_id, adv_count, adv_status, adv_time_c, adv_time_z, adv_time_comp) == true)
+	if(database.GetAdventureDetails(CharacterID(), adv_id, adv_adventure_id, adv_inst_id, adv_count, adv_ass_count, adv_status, adv_time_c, adv_time_z, adv_time_comp) == true)
 	{
 		AdventureDetails* nd = NULL;
 		std::map<uint32, AdventureDetails*>::iterator ad_iter = zone->active_adventures.find(adv_id);
@@ -656,6 +660,7 @@ void Client::Handle_Connect_OP_ReqClientSpawn(const EQApplicationPacket *app)
 		nd->id = adv_id;
 		nd->instance_id = adv_inst_id;
 		nd->count = adv_count;
+		nd->assassinate_count = adv_ass_count;
 		nd->status = adv_status;
 		nd->time_created = adv_time_c;
 		nd->time_zoned = adv_time_z;
@@ -1587,7 +1592,7 @@ void Client::Handle_OP_AdventureMerchantRequest(const EQApplicationPacket *app)
 		{
 			//its possible that the 0 and 1 in here are supposed to be 'count'
 			cursor += sprintf(cursor,"^%s|%i|%i|%i|0|1|%d|%d",
-				item->Name,item->ID,item->LDoNPrice,item->LDoNTheme,
+				item->Name,item->ID,item->LDoNPrice,item->LDoNTheme > 5 ? 0 : item->LDoNTheme,
 				item->Races,item->Classes);
 			count++;
 		}
@@ -1656,8 +1661,16 @@ void Client::Handle_OP_AdventureMerchantPurchase(const EQApplicationPacket *app)
 	}
 
 	sint32 requiredpts = (sint32)item->LDoNPrice*-1;
-	if(!UpdateLDoNPoints(requiredpts,item->LDoNPrice))
-		return;
+	if(item->LDoNTheme > 5)
+	{
+		if(!UpdateLDoNPoints(requiredpts, 6))
+			return;
+	}
+	else
+	{
+		if(!UpdateLDoNPoints(requiredpts, item->LDoNTheme))
+			return;
+	}
 
 	sint8 charges=1;
 	if(item->MaxCharges != 0)
@@ -8969,6 +8982,111 @@ void Client::Handle_OP_PVPLeaderBoardDetailsRequest(const EQApplicationPacket *a
 	
 	QueuePacket(outapp);
 	safe_delete(outapp);
+}
+
+void Client::Handle_OP_AdventureMerchantSell(const EQApplicationPacket *app)
+{
+	if(app->size != sizeof(Adventure_Sell_Struct))
+	{
+		LogFile->write(EQEMuLog::Debug, "Size mismatch on OP_AdventureMerchantSell: got %u expected %u", 
+			app->size, sizeof(Adventure_Sell_Struct));
+		DumpPacket(app);
+		return;
+	}
+
+	DumpPacket(app);
+	Adventure_Sell_Struct *ams_in = (Adventure_Sell_Struct*)app->pBuffer;
+
+	Mob* vendor = entity_list.GetMob(ams_in->npcid);
+	if (vendor == 0 || !vendor->IsNPC() || vendor->GetClass() != ADVENTUREMERCHANT)
+	{
+		Message(13, "Vendor was not found.");
+		return;
+	}
+
+	if(DistNoRoot(*vendor) > USE_NPC_RANGE2)
+	{
+		Message(13, "Vendor is out of range.");
+		return;
+	}
+
+	int32 itemid = GetItemIDAt(ams_in->slot);
+
+	if(itemid == 0)
+	{
+		Message(13, "Found no item at that slot.");
+		return;
+	}
+
+	const Item_Struct* item = database.GetItem(itemid);
+	ItemInst* inst = GetInv().GetItem(ams_in->slot);
+	if(!item || !inst){
+		Message(13, "You seemed to have misplaced that item...");
+		return;
+	}
+
+	if(item->LDoNSold == 0)
+	{
+		Message(13, "The merchant does not want that item.");
+		return;
+	}
+
+	if(item->LDoNPrice == 0)
+	{
+		Message(13, "The merchant does not want that item.");
+		return;
+	}
+
+	sint32 price = item->LDoNPrice * 70 / 100;
+
+	if(price == 0)
+	{
+		Message(13, "The merchant does not want that item.");
+		return;
+	}
+
+	if (RuleB(EventLog, RecordSellToMerchant))
+		LogMerchant(this, vendor, ams_in->charges, price, item, false);
+
+	if(!inst->IsStackable())
+	{
+		DeleteItemInInventory(ams_in->slot, 0, false);
+	}
+	else
+	{
+		if(inst->GetCharges() < ams_in->charges)
+		{
+			ams_in->charges = inst->GetCharges();
+		}
+
+		if(ams_in->charges == 0)
+		{
+			Message(13, "Charge mismatch error.");
+			return;
+		}
+
+		DeleteItemInInventory(ams_in->slot, ams_in->charges, false);
+		price *= ams_in->charges;
+	}
+
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureMerchantSell, sizeof(Adventure_Sell_Struct));
+	Adventure_Sell_Struct *ams = (Adventure_Sell_Struct*)outapp->pBuffer;
+	ams->slot = ams_in->slot;
+	ams->unknown000 = 1;
+	ams->npcid = ams->npcid;
+	ams->charges = ams_in->charges;
+	ams->sell_price = price;
+	FastQueuePacket(&outapp);
+	UpdateLDoNPoints(price, 6);
+	Save(1);
+}
+
+void Client::Handle_OP_AdventureStatsRequest(const EQApplicationPacket *app)
+{
+}
+
+void Client::Handle_OP_AdventureLeaderboardRequest(const EQApplicationPacket *app)
+{
 }
 
 void Client::Handle_OP_RespawnWindow(const EQApplicationPacket *app)
