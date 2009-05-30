@@ -3857,31 +3857,39 @@ void EntityList::AdventureMessage(int32 a_id, const char *msg)
 
 void EntityList::AdventureFinish(int32 a_id, int8 win_lose, int32 points)
 {
-	LinkedListIterator<Client*> iterator(client_list); 
-	iterator.Reset();
-	while(iterator.MoreElements()) 
+	AdventureDetails *ad = NULL;
+
+	std::map<uint32, AdventureDetails*>::iterator aa_iter;
+	aa_iter = zone->active_adventures.find(a_id);
+
+	if(aa_iter == zone->active_adventures.end())
+		return;
+
+	ad = aa_iter->second;
+
+	if(!ad)
+		return;
+
+	if(!ad->ai)
+		return;
+
+	if(ad->status != 3)
 	{
-		Client *c = iterator.GetData();
-		if(c)
+		ad->status = 3;
+		LinkedListIterator<Client*> iterator(client_list); 
+		iterator.Reset();
+		while(iterator.MoreElements()) 
 		{
-			AdventureDetails *ad = c->GetCurrentAdventure();
-			if(ad && ad->id == a_id)
+			Client *c = iterator.GetData();
+			if(c)
 			{
-				if(win_lose == 1)
-				{
-					if(ad->status != 3)
-					{
-						ad->status = 3;
-						c->SendAdventureFinish(win_lose, points, ad->ai->theme);
-					}
-				}
-				else
+				if(ad && ad->id == a_id)
 				{
 					c->SendAdventureFinish(win_lose, points, ad->ai->theme);
 				}
 			}
+			iterator.Advance();
 		}
-		iterator.Advance();
 	}
 }
 

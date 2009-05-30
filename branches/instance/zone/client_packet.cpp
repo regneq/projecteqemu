@@ -27,6 +27,7 @@
 #include <math.h>
 #include <zlib.h>
 #include <assert.h>
+#include <sstream>
 
 #ifdef WIN32
 	#define snprintf	_snprintf
@@ -1562,14 +1563,11 @@ void Client::Handle_OP_AdventureMerchantRequest(const EQApplicationPacket *app)
 		return;
 	}
 
-	// Packet contains entity id
-	char *msg = new char[16000];
-	char *cursor = msg;
-	memset(msg,0,16000);
+	std::stringstream ss(std::stringstream::in | std::stringstream::out);
+
 	int8 count = 0;
 	AdventureMerchant_Struct* eid = (AdventureMerchant_Struct*)app->pBuffer;
 	int32 merchantid = 0;
-	//DumpPacket(app);
 
 	Mob* tmp = entity_list.GetMob(eid->entity_id);
 	if (tmp == 0 || !tmp->IsNPC() || tmp->GetClass() != ADVENTUREMERCHANT)
@@ -1585,26 +1583,53 @@ void Client::Handle_OP_AdventureMerchantRequest(const EQApplicationPacket *app)
 	const Item_Struct *item = 0;
 	std::list<MerchantList> merlist = zone->merchanttable[merchantid];
 	std::list<MerchantList>::const_iterator itr;
-	for(itr = merlist.begin();itr != merlist.end() && count<80;itr++){
+	for(itr = merlist.begin();itr != merlist.end() && count<255;itr++){
 		const MerchantList &ml = *itr;
 		item = database.GetItem(ml.item);
 		if(item)
 		{
-			//its possible that the 0 and 1 in here are supposed to be 'count'
-			cursor += sprintf(cursor,"^%s|%i|%i|%i|0|1|%d|%d",
-				item->Name,item->ID,item->LDoNPrice,item->LDoNTheme > 5 ? 0 : item->LDoNTheme,
-				item->Races,item->Classes);
+			int32 theme;
+			if(item->LDoNTheme & 16)
+			{
+				theme = 5;
+			} 
+			else if(item->LDoNTheme & 8)
+			{
+				theme = 4;
+			}
+			else if(item->LDoNTheme & 4)
+			{
+				theme = 3;
+			}
+			else if(item->LDoNTheme & 2)
+			{
+				theme = 2;
+			}
+			else if(item->LDoNTheme & 1)
+			{
+				theme = 1;
+			}
+			else
+			{
+				theme = 0;
+			}
+			ss << "^" << item->Name << "|";
+			ss << item->ID << "|";
+			ss << item->LDoNPrice << "|";
+			ss << theme << "|";
+			ss << "0|";
+			ss << "1|";
+			ss << item->Races << "|";
+			ss << item->Classes;
 			count++;
 		}
 	}
 	//Count
 	//^Item Name,Item ID,Cost in Points,Theme (0=none),0,1,races bit map,classes bitmap
-	EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureMerchantResponse,strlen(msg)+2);
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureMerchantResponse,ss.str().size()+2);
 	outapp->pBuffer[0] = count;
-	strncpy((char*)&outapp->pBuffer[1],msg,strlen(msg));
-	//DumpPacket(outapp);
+	strncpy((char*)&outapp->pBuffer[1],ss.str().c_str(),ss.str().size());
 	FastQueuePacket(&outapp);
-	safe_delete_array(msg);
 }
 
 void Client::Handle_OP_AdventureMerchantPurchase(const EQApplicationPacket *app)

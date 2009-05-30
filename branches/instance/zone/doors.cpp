@@ -161,10 +161,12 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 							database.UpdateAdventureInstance(ad->id, i_id, tv.tv_sec);						
 							database.AddAdventureToInstance(ad->id, i_id);
 							sender->MovePC(zone_id, i_id, ad->ai->dest_x, ad->ai->dest_y, ad->ai->dest_z, ad->ai->dest_h, 0, ZoneSolicited);
+							return;
 						}
 						else
 						{
 							sender->MovePC(zone_id, ad->instance_id, ad->ai->dest_x, ad->ai->dest_y, ad->ai->dest_z, ad->ai->dest_h, 0, ZoneSolicited);
+							return;
 						}
 					}
 					else

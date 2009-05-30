@@ -2217,7 +2217,7 @@ void Zone::UpdateAdventureCount(AdventureDetails *ad)
 		worldserver.SendPacket(pack);
 		safe_delete(pack);
 
-		if(ad->ai->type_count == ad->count)
+		if(ad->ai->type_count == (ad->count+1))
 		{
 			timeval tv;
 			gettimeofday(&tv, NULL);
