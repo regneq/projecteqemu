@@ -30,6 +30,7 @@ typedef enum {
 	EVENT_PLAYER_PICKUP,
 	EVENT_POPUPRESPONSE,
 	EVENT_PROXIMITY_SAY,
+	EVENT_CAST,
 	
 	_LargestEventID
 } QuestEventID;

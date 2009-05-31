@@ -1,5 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/31/2009==
+realityincarnate: Added EVENT_CAST to player quests
+realityincarnate: AA quest functions: $client->GetAAPoints(), $client->SetAAPoints(value)
+KLS: Procs will now only occure on a player's targeted mob.
+
 ==05/30/2009==
 KLS: Redid procs a bit, spell procs should work more consistently and ppm formula should be less broken and will also take into account haste now.
 Highly suggested you change your Combat:AvgProcsPerMinute rule to 2.0 if you want it to be live like.
