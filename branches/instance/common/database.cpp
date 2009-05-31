@@ -2431,7 +2431,8 @@ int32 Database::GetRaidID(const char* name){
     MYSQL_RES *result;
 	MYSQL_ROW row;
 	int32 raidid=0;
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT raidid from raid_members where name='%s'", name), errbuf, &result)) {
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT raidid from raid_members where name='%s'", name), 
+		errbuf, &result)) {
 		if((row = mysql_fetch_row(result)))
 		{
 			if(row[0])
@@ -2456,7 +2457,8 @@ const char *Database::GetRaidLeaderName(int32 rid)
     MYSQL_RES *result;
 	MYSQL_ROW row;
 	
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT name FROM raid_members WHERE raidid=%u AND israidleader=1", rid), errbuf, &result)) {
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT name FROM raid_members WHERE raidid=%u AND israidleader=1", 
+		rid), errbuf, &result)) {
 		if((row = mysql_fetch_row(result)) != NULL)
 		{
 			memset(name, 0, 128);
@@ -2501,7 +2503,8 @@ bool Database::VerifyZoneInstance(int32 zone_id, int16 instance_id)
 	MYSQL_RES *result;
 	MYSQL_ROW row;
 
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT id FROM instance_lockout where id=%u AND zone=%u", instance_id, zone_id), errbuf, &result))
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT id FROM instance_lockout where id=%u AND zone=%u", 
+		instance_id, zone_id), errbuf, &result))
 	{
 		safe_delete_array(query);
 		if (mysql_num_rows(result) != 0) 
@@ -2531,7 +2534,8 @@ bool Database::CharacterInInstanceGroup(int16 instance_id, int32 char_id)
 	MYSQL_ROW row;
 	bool lockout_instance_player = false;
 
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT charid FROM instance_lockout_player where id=%u AND charid=%u", instance_id, char_id), errbuf, &result))
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT charid FROM instance_lockout_player where id=%u AND charid=%u", 
+		instance_id, char_id), errbuf, &result))
 	{
 		safe_delete_array(query);
 		if (mysql_num_rows(result) == 1) 
@@ -2552,7 +2556,8 @@ void Database::SetCharacterInstance(int16 instance_id, int32 char_id)
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
 	MYSQL_RES *result;
-	if(RunQuery(query, MakeAnyLenString(&query, "UPDATE character_ SET instanceid=%u WHERE id=%u", instance_id, char_id), errbuf, &result))
+	if(RunQuery(query, MakeAnyLenString(&query, "UPDATE character_ SET instanceid=%u WHERE id=%u", instance_id, 
+		char_id), errbuf, &result))
 	{
 		safe_delete_array(query);
 		mysql_free_result(result);
@@ -2606,7 +2611,8 @@ bool Database::CheckInstanceExpired(uint16 instance_id)
 
 	int32 start_time = 0;
 	int32 duration = 0;
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT start_time, duration FROM instance_lockout WHERE id=%u", instance_id), errbuf, &result))
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT start_time, duration FROM instance_lockout WHERE id=%u", 
+		instance_id), errbuf, &result))
 	{
 		safe_delete_array(query);
 		if (mysql_num_rows(result) != 0) 
@@ -2645,7 +2651,8 @@ int32 Database::ZoneIDFromInstanceID(uint16 instance_id)
 	MYSQL_ROW row;
 	int32 ret;
 
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT zone FROM instance_lockout where id=%u", instance_id), errbuf, &result))
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT zone FROM instance_lockout where id=%u", instance_id), 
+		errbuf, &result))
 	{
 		safe_delete_array(query);
 		if (mysql_num_rows(result) != 0) 
@@ -2677,7 +2684,8 @@ int32 Database::VersionFromInstanceID(uint16 instance_id)
 	MYSQL_ROW row;
 	int32 ret;
 
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT version FROM instance_lockout where id=%u", instance_id), errbuf, &result))
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT version FROM instance_lockout where id=%u", instance_id), 
+		errbuf, &result))
 	{
 		safe_delete_array(query);
 		if (mysql_num_rows(result) != 0) 
@@ -2710,7 +2718,8 @@ int32 Database::GetTimeRemainingInstance(uint16 instance_id)
 	int32 start_time = 0;
 	int32 duration = 0;
 
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT start_time, duration FROM instance_lockout WHERE id=%u", instance_id), errbuf, &result))
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT start_time, duration FROM instance_lockout WHERE id=%u", 
+		instance_id), errbuf, &result))
 	{
 		safe_delete_array(query);
 		if (mysql_num_rows(result) != 0) 
@@ -2905,7 +2914,8 @@ bool Database::CheckInstanceExists(uint16 instance_id)
 	MYSQL_RES *result;
 	MYSQL_ROW row;
 
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT * FROM instance_lockout where id=%u", instance_id), errbuf, &result))
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT * FROM instance_lockout where id=%u", instance_id), 
+		errbuf, &result))
 	{
 		safe_delete_array(query);
 		if (mysql_num_rows(result) != 0) 
@@ -2931,7 +2941,8 @@ void Database::BuryCorpsesInInstance(uint16 instance_id)
 	MYSQL_RES *result;
 	MYSQL_ROW row;
 
-	if(RunQuery(query, MakeAnyLenString(&query, "UPDATE player_corpses SET IsBurried=1, instanceid=0 WHERE instanceid=%u", instance_id), errbuf, &result))
+	if(RunQuery(query, MakeAnyLenString(&query, "UPDATE player_corpses SET IsBurried=1, instanceid=0 WHERE instanceid=%u", 
+		instance_id), errbuf, &result))
 	{
 		mysql_free_result(result);
 	}
@@ -2949,7 +2960,8 @@ int16 Database::GetInstanceVersion(uint16 instance_id)
 	MYSQL_ROW row;
 	int32 ret;
 
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT version FROM instance_lockout where id=%u", instance_id), errbuf, &result))
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT version FROM instance_lockout where id=%u", instance_id), 
+		errbuf, &result))
 	{
 		safe_delete_array(query);
 		if (mysql_num_rows(result) != 0) 
@@ -3053,7 +3065,8 @@ void Database::AssignGroupToInstance(int32 gid, int32 instance_id)
 	int32 zone_id = ZoneIDFromInstanceID(instance_id);
 	int16 version = VersionFromInstanceID(instance_id);
 
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT charid FROM group_id WHERE groupid=%u", gid), errbuf, &result))
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT charid FROM group_id WHERE groupid=%u", gid), 
+		errbuf, &result))
 	{
 		safe_delete_array(query);
 		while((row = mysql_fetch_row(result)) != NULL)
@@ -3081,7 +3094,8 @@ void Database::AssignRaidToInstance(int32 rid, int32 instance_id)
 	int32 zone_id = ZoneIDFromInstanceID(instance_id);
 	int16 version = VersionFromInstanceID(instance_id);
 
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT charid FROM raid_members WHERE raidid=%u", rid), errbuf, &result))
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT charid FROM raid_members WHERE raidid=%u", rid), 
+		errbuf, &result))
 	{
 		safe_delete_array(query);
 		while((row = mysql_fetch_row(result)) != NULL)
@@ -3138,7 +3152,8 @@ void Database::SetInstanceDuration(int16 instance_id, int32 new_duration)
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
 
-	if(RunQuery(query, MakeAnyLenString(&query, "UPDATE `instance_lockout` SET start_time=UNIX_TIMESTAMP(), duration=%u WHERE id=%u", new_duration, instance_id), errbuf))
+	if(RunQuery(query, MakeAnyLenString(&query, "UPDATE `instance_lockout` SET start_time=UNIX_TIMESTAMP(), "
+		"duration=%u WHERE id=%u", new_duration, instance_id), errbuf))
 	{
 		safe_delete_array(query);
 	}
@@ -3355,7 +3370,8 @@ void Database::DestroyAdventure(int32 id)
 	}
 }
 
-bool Database::GetAdventureDetails(int32 charid, int32 &id, int32 &adventure_id, int32 &instance_id, int32 &count, int32 &ass_count, int32 &status, int32 &time_c, int32 &time_z, int32 &time_comp)
+bool Database::GetAdventureDetails(int32 charid, int32 &id, int32 &adventure_id, int32 &instance_id, int32 &count, 
+								   int32 &ass_count, int32 &status, int32 &time_c, int32 &time_z, int32 &time_comp)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
@@ -3405,7 +3421,6 @@ bool Database::GetAdventureDetails(int32 charid, int32 &id, int32 &adventure_id,
 		safe_delete_array(query);
 		return false;
 	}
-	
 }
 
 int32 Database::CountPlayersInAdventure(int32 id) 
@@ -3588,4 +3603,224 @@ int32 Database::GetAdventureCount(int32 adv_id)
 		return 0;
 	}
 	return 0;	
+}
+
+bool Database::AdventureStatsEntryExists(int32 char_id)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT `player_id` FROM `adventure_stats` WHERE player_id=%u", 
+		char_id), errbuf, &result))
+	{
+		safe_delete_array(query);
+		while((row = mysql_fetch_row(result)) != NULL)
+		{
+			return true;
+		}
+		mysql_free_result(result);
+	}
+	else
+	{
+		safe_delete_array(query);
+		return false;
+	}
+	return false;
+}
+
+bool Database::AdventureExists(int32 adv_id)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT `id` FROM `adventure_details` WHERE id=%u", 
+		adv_id), errbuf, &result))
+	{
+		safe_delete_array(query);
+		while((row = mysql_fetch_row(result)) != NULL)
+		{
+			return true;
+		}
+		mysql_free_result(result);
+	}
+	else
+	{
+		safe_delete_array(query);
+		return false;
+	}
+	return false;
+}
+
+void Database::UpdateAdventureStatsEntry(int32 char_id, int8 theme, bool win)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+
+	std::string field;
+
+	if(win)
+	{
+		switch(theme)
+		{
+			case 1:
+			{
+				field = "guk_wins";
+				break;
+			}
+			case 2:
+			{
+				field = "mir_wins";
+				break;
+			}
+			case 3:
+			{
+				field = "mmc_wins";
+				break;
+			}
+			case 4:
+			{
+				field = "ruj_wins";
+				break;
+			}
+			case 5:
+			{
+				field = "tak_wins";
+				break;
+			}
+			default:
+			{
+				return;
+			}
+		}
+	}
+	else
+	{
+		switch(theme)
+		{
+			case 1:
+			{
+				field = "guk_losses";
+				break;
+			}
+			case 2:
+			{
+				field = "mir_losses";
+				break;
+			}
+			case 3:
+			{
+				field = "mmc_losses";
+				break;
+			}
+			case 4:
+			{
+				field = "ruj_losses";
+				break;
+			}
+			case 5:
+			{
+				field = "tak_losses";
+				break;
+			}
+			default:
+			{
+				return;
+			}
+		}
+	}
+
+	if(AdventureStatsEntryExists(char_id))
+	{
+		if(RunQuery(query, MakeAnyLenString(&query, "UPDATE `adventure_stats` SET %s=%s+1 WHERE player_id=%u",
+			field.c_str(), field.c_str(), char_id), errbuf))
+		{
+			safe_delete_array(query);
+		}
+		else
+		{
+			//error
+			safe_delete_array(query);
+		}
+	}
+	else
+	{
+		if(RunQuery(query, MakeAnyLenString(&query, "INSERT INTO `adventure_stats` SET %s=1, player_id=%u",
+			field.c_str(), char_id), errbuf))
+		{
+			safe_delete_array(query);
+		}
+		else
+		{
+			//error
+			safe_delete_array(query);
+		}
+	}
+}
+
+void Database::UpdateAllAdventureStatsEntry(int32 adv_id, int8 theme, bool win)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+
+	if(!AdventureExists(adv_id))
+		return;
+
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT `charid` FROM `adventure_members` WHERE id=%u", 
+		adv_id), errbuf, &result))
+	{
+		safe_delete_array(query);
+		while((row = mysql_fetch_row(result)) != NULL)
+		{
+			int32 charid = atoi(row[0]);
+			UpdateAdventureStatsEntry(charid, theme, win);
+		}
+		mysql_free_result(result);
+	}
+	else
+	{
+		safe_delete_array(query);
+	}
+}
+
+bool Database::GetAdventureStats(int32 char_id, int32 &guk_w, int32 &mir_w, int32 &mmc_w, int32 &ruj_w, 
+								 int32 &tak_w, int32 &guk_l, int32 &mir_l, int32 &mmc_l, int32 &ruj_l, int32 &tak_l)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+	int32 adv_id = 0;
+
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT `guk_wins`, `mir_wins`, `mmc_wins`, `ruj_wins`, `tak_wins`, "
+		"`guk_losses`, `mir_losses`, `mmc_losses`, `ruj_losses`, `tak_losses` FROM `adventure_stats` WHERE player_id=%u", 
+		char_id), errbuf, &result))
+	{
+		safe_delete_array(query);
+		while((row = mysql_fetch_row(result)) != NULL)
+		{
+			guk_w = atoi(row[0]);
+			mir_w = atoi(row[1]);
+			mmc_w = atoi(row[2]);
+			ruj_w = atoi(row[3]);
+			tak_w = atoi(row[4]);
+			guk_l = atoi(row[5]);
+			mir_l = atoi(row[6]);
+			mmc_l = atoi(row[7]);
+			ruj_l = atoi(row[8]);
+			tak_l = atoi(row[9]);
+		}
+		mysql_free_result(result);
+		return true;
+	}
+	else 
+	{
+		safe_delete_array(query);
+		return false;
+	}
 }

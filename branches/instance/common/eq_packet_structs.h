@@ -1749,32 +1749,76 @@ struct AdventurePoints_Update_Struct {
 };
 
 struct AdventureFinish_Struct{
-	uint32 win_lose;//Cofruben: 00 is a lose,01 is win.
-	uint32 points;
+/*000*/ uint32 win_lose;//Cofruben: 00 is a lose,01 is win.
+/*004*/ uint32 points;
+/*008*/
 };
 //OP_AdventureRequest
 struct AdventureRequest_Struct{
-	int32 risk;//1 normal,2 hard.
-	int32 entity_id;
-	int32 type;
+/*000*/	int32 risk;//1 normal,2 hard.
+/*004*/	int32 entity_id;
+/*008*/	int32 type;
+/*012*/
 };
 struct AdventureRequestResponse_Struct{
-	int32 unknown000;
-	char text[2048];
-	int32 timetoenter;
-	int32 timeleft;
-	int32 risk;
-	float x;
-	float y;
-	float z;
-	int32 showcompass;
-	int32 unknown2080;
+/*0000*/ int32 unknown000;
+/*0004*/ char text[2048];
+/*2052*/ int32 timetoenter;
+/*2056*/ int32 timeleft;
+/*2060*/ int32 risk;
+/*2064*/ float x;
+/*2068*/ float y;
+/*2072*/ float z;
+/*2076*/ int32 showcompass;
+/*2080*/ int32 unknown2080;
+/*2084*/
 };
 
 struct AdventureCountUpdate_Struct
 {
-	int32 current;
-	int32 total;
+/*000*/ int32 current;
+/*004*/	int32 total;
+/*008*/
+};
+
+struct AdventureStatsColumn_Struct
+{
+/*000*/ int32 total;
+/*004*/	int32 guk;
+/*008*/	int32 mir;
+/*012*/	int32 mmc;
+/*016*/	int32 ruj;
+/*020*/	int32 tak;
+/*024*/
+};
+
+struct AdventureStats_Struct
+{
+/*000*/ AdventureStatsColumn_Struct success;
+/*024*/ AdventureStatsColumn_Struct failure;
+/*048*/	AdventureStatsColumn_Struct rank;
+/*072*/	AdventureStatsColumn_Struct rank2;
+/*096*/
+};
+
+//this is mostly right but something is off that causes the client to crash sometimes
+//I don't really care enough about the feature to work on it anymore though.
+struct AdventureLeaderboardEntry_Struct
+{
+/*004*/ char name[64];
+/*008*/ int32 success;
+/*012*/ int32 failure;
+/*016*/
+};
+
+struct AdventureLeaderboard_Struct
+{
+/*000*/ int32 unknown000;
+/*004*/ int32 unknown004;
+/*008*/ int32 success;
+/*012*/ int32 failure;
+/*016*/ int32 our_rank;
+/*020*/	
 };
 
 /*struct Item_Shop_Struct {

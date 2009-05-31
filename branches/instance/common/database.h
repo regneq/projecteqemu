@@ -182,7 +182,8 @@ public:
 	void AddGroupToAdventure(int32 id, int32 gid);
 	void AddRaidToAdventure(int32 id, int32 rid);
 	void DestroyAdventure(int32 id);
-	bool GetAdventureDetails(int32 charid, int32 &id, int32 &adventure_id, int32 &instance_id, int32 &count, int32 &ass_count, int32 &status, int32 &time_c, int32 &time_z, int32 &time_comp);
+	bool GetAdventureDetails(int32 charid, int32 &id, int32 &adventure_id, int32 &instance_id, int32 &count, 
+		int32 &ass_count, int32 &status, int32 &time_c, int32 &time_z, int32 &time_comp);
 	int32 CountPlayersInAdventure(int32 id);
 	void PurgeAdventures();
 	void AddAdventureToInstance(int32 adv_id, int32 inst_id);
@@ -192,6 +193,12 @@ public:
 	void UpdateAdventureCount(int32 adv_id, int32 new_count);
 	void IncrementAdventureCount(int32 adv_id);
 	int32 GetAdventureCount(int32 adv_id);
+	bool AdventureStatsEntryExists(int32 char_id);
+	bool AdventureExists(int32 adv_id);
+	void UpdateAdventureStatsEntry(int32 char_id, int8 theme, bool win);
+	void UpdateAllAdventureStatsEntry(int32 adv_id, int8 theme, bool win);
+	bool GetAdventureStats(int32 char_id, int32 &guk_w, int32 &mir_w, int32 &mmc_w, int32 &ruj_w, int32 &tak_w, 
+		int32 &guk_l, int32 &mir_l, int32 &mmc_l, int32 &ruj_l, int32 &tak_l);
 
 	/*
 	 * Account Related

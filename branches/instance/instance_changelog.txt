@@ -1,3 +1,8 @@
+KLS - May 30, 2009
+-More work on adventures. Stats window mostly implemented but still a bit buggy.
+-Support for needing an item to zone into ldon objects.
+-Various bug fixes.
+
 KLS - May 29, 2009
 -Adventure collect and kill should be implemented.
 

@@ -3820,7 +3820,7 @@ void Client::SendAdventureSelection(Mob* rec, int32 difficulty, int32 type)
 {
 	if(GetCurrentAdventure())
 	{
-		SendAdventureError("You are already in an adventure or your previous adventure is still shutting down.");
+		SendAdventureError("You cannot request an adventure because you are still resting from your last one.");
 		LogFile->write(EQEMuLog::Debug, "Client::SendAdventureSelection(): Client already in adventure");
 		return;
 	}
@@ -4158,7 +4158,9 @@ void Client::LeaveAdventure()
 	if(ad && ad->ai)
 	{
 		if(ad->status >= 2)
-			return;	
+			return;
+
+		database.UpdateAdventureStatsEntry(CharacterID(), ad->ai->theme, false);
 		database.RemovePlayerFromAdventure(ad->id, CharacterID());
 		if(database.CountPlayersInAdventure(ad->id) == 0)
 		{

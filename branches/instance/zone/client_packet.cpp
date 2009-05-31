@@ -639,7 +639,6 @@ void Client::Handle_Connect_OP_ReqClientSpawn(const EQApplicationPacket *app)
 		SendBazaarWelcome();
 
 	/*Adventure Data Send*/
-	//todo: fix the crashin'
 	int32 adv_id = 0;
 	int32 adv_adventure_id = 0;
 	int32 adv_inst_id = 0;
@@ -1057,7 +1056,7 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 	{
 		if ((WarpDetection(false, dist)) && ((admin <= RuleI(Zone, MQWarpExemptStatus)) || (RuleI(Zone, MQWarpExemptStatus) == -1))) //Exempt from warp detection if admin level is >  Rule:Zone:MQWarpExemptStatus
 		{
-			printf("Warping Detected by %S Acct: %s Distance: %f.", GetName(), AccountName(), GetLWDistance());
+			printf("Warping Detected by %s Acct: %s Distance: %f.", GetName(), AccountName(), GetLWDistance());
 			CheatDetected(MQWarp); //Lieka:  Execute MQWarp function on offending player
 		}
 	}
@@ -9234,6 +9233,17 @@ void Client::Handle_OP_AdventureMerchantSell(const EQApplicationPacket *app)
 
 void Client::Handle_OP_AdventureStatsRequest(const EQApplicationPacket *app)
 {
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureStatsReply, sizeof(AdventureStats_Struct));
+	AdventureStats_Struct *as = (AdventureStats_Struct*)outapp->pBuffer;
+
+	if(database.GetAdventureStats(CharacterID(), as->success.guk, as->success.mir, as->success.mmc, as->success.ruj,
+		as->success.tak, as->failure.guk, as->failure.mir, as->failure.mmc, as->failure.ruj, as->failure.tak))
+	{
+		as->failure.total = as->failure.guk + as->failure.mir + as->failure.mmc + as->failure.ruj + as->failure.tak;
+		as->success.total = as->success.guk + as->success.mir + as->success.mmc + as->success.ruj + as->success.tak;
+	}
+
+	FastQueuePacket(&outapp);
 }
 
 void Client::Handle_OP_AdventureLeaderboardRequest(const EQApplicationPacket *app)

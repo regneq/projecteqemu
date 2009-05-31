@@ -107,6 +107,13 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 	{
 		if(sender)
 		{
+			if(sender->GetInv().HasItem(RuleI(Adventure, ItemIDToEnablePorts)) == SLOT_INVALID)
+			{
+				sender->Message_StringID(13, 5141);
+				return;
+			}
+
+
 			AdventureDetails* ad = sender->GetCurrentAdventure();
 			if(ad)
 			{

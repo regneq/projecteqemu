@@ -101,3 +101,20 @@ CREATE TABLE `adventure_members` (
   PRIMARY KEY  (`charid`),
   KEY `id` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `adventure_stats` (
+  `player_id` int(10) unsigned NOT NULL,
+  `guk_wins` mediumint(8) unsigned NOT NULL default '0',
+  `mir_wins` mediumint(8) unsigned NOT NULL default '0',
+  `mmc_wins` mediumint(8) unsigned NOT NULL default '0',
+  `ruj_wins` mediumint(8) unsigned NOT NULL default '0',
+  `tak_wins` mediumint(8) unsigned NOT NULL default '0',
+  `guk_losses` mediumint(8) unsigned NOT NULL default '0',
+  `mir_losses` mediumint(8) unsigned NOT NULL default '0',
+  `mmc_losses` mediumint(8) unsigned NOT NULL default '0',
+  `ruj_losses` mediumint(8) unsigned NOT NULL default '0',
+  `tak_losses` mediumint(8) unsigned NOT NULL default '0',
+  PRIMARY KEY  (`player_id`),
+  UNIQUE KEY `player_id` (`player_id`),
+  KEY `player_id_2` (`player_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

@@ -292,6 +292,7 @@ RULE_INT ( Adventure, MaxNumberForGroup, 6 )
 RULE_INT ( Adventure, MinNumberForRaid, 18 )
 RULE_INT ( Adventure, MaxNumberForRaid, 36 )
 RULE_INT ( Adventure, MaxLevelRange, 9 )
+RULE_INT ( Adventure, ItemIDToEnablePorts, 41000 ) //0 to disable, otherwise using a LDoN portal will require the user to have this item.
 RULE_CATEGORY_END()
 
 #undef RULE_CATEGORY

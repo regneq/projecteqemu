@@ -1130,6 +1130,7 @@ bool Zone::Process() {
 								worldserver.SendPacket(pack2);
 								safe_delete(pack2);
 
+								database.UpdateAllAdventureStatsEntry(ad->id, ad->ai->theme, false);
 								database.DestroyAdventure(ad->id);
 								ServerPacket *pack = new ServerPacket(ServerOP_AdventureDestroy, sizeof(ServerAdventureDestroy_Struct));
 								ServerAdventureDestroy_Struct *adest = (ServerAdventureDestroy_Struct*)pack->pBuffer;
@@ -1157,6 +1158,7 @@ bool Zone::Process() {
 								sint32 time_since = tv.tv_sec - (ad->ai->duration + ad->time_zoned);
 								if(time_since >= 1800) //we're over time on our instance
 								{
+									database.UpdateAllAdventureStatsEntry(ad->id, ad->ai->theme, false);
 									database.DestroyAdventure(ad->id);
 									ServerPacket *pack = new ServerPacket(ServerOP_AdventureDestroy, sizeof(ServerAdventureDestroy_Struct));
 									ServerAdventureDestroy_Struct *adest = (ServerAdventureDestroy_Struct*)pack->pBuffer;
@@ -1212,6 +1214,7 @@ bool Zone::Process() {
 					{
 						if((ad->ai->zone_in_time + ad->time_created) <= tv.tv_sec)
 						{
+							database.UpdateAllAdventureStatsEntry(ad->id, ad->ai->theme, false);
 							database.DestroyAdventure(ad->id);
 							ServerPacket *pack = new ServerPacket(ServerOP_AdventureDestroy, sizeof(ServerAdventureDestroy_Struct));
 							ServerAdventureDestroy_Struct *adest = (ServerAdventureDestroy_Struct*)pack->pBuffer;
@@ -2222,6 +2225,7 @@ void Zone::UpdateAdventureCount(AdventureDetails *ad)
 			timeval tv;
 			gettimeofday(&tv, NULL);
 			database.UpdateAdventureStatus(ad->id, 3);
+			database.UpdateAllAdventureStatsEntry(ad->id, ad->ai->theme, true);
 
 			if(ad->status == 1)
 			{
