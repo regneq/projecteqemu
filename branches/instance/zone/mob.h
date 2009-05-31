@@ -272,7 +272,8 @@ typedef enum {
 	petFamiliar,		//only listens to /pet get lost
 	petAnimation,		//does not listen to any commands
 	petOther,
-	petCharmed
+	petCharmed,
+	petNPCFollow
 } PetType;
 
 class AA_SwarmPetInfo {
@@ -722,6 +723,7 @@ bool logpos;
 	void	SetPetID(int16 NewPetID);
 	inline int16	GetPetID()		const			{ return petid;  }
 	inline PetType GetPetType() const { return typeofpet; }
+	void SetPetType(PetType p) { typeofpet = p; } 
 	bool IsFamiliar() const { return(typeofpet == petFamiliar); }
 	bool IsAnimation() const { return(typeofpet == petAnimation); }
 	bool IsCharmed() const { return(typeofpet == petCharmed); }

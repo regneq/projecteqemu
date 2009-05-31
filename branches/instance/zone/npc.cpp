@@ -603,6 +603,36 @@ bool NPC::Process()
 		if(GetMana() < GetMaxMana()) {
 			SetMana(GetMana()+mana_regen+bonus);
 		}
+
+		Mob *o = GetOwner();
+		if(o && o->IsClient())
+		{
+			if(!p_depop)
+			{
+				Client *c = o->CastToClient();
+				AdventureDetails *ad = c->GetCurrentAdventure();
+				if(ad && ad->ai)
+				{
+					if(ad->ai->type == Adventure_Rescue)
+					{
+						if(GetNPCTypeID() == ad->ai->type_data)
+						{
+							float xDiff = ad->ai->dest_x - GetX();
+							float yDiff = ad->ai->dest_y - GetY();
+							float zDiff = ad->ai->dest_z - GetZ();
+							float dist = ((xDiff * xDiff) + (yDiff * yDiff) + (zDiff * zDiff));
+							if(dist < 10000)
+							{
+								zone->UpdateAdventureCount(ad);
+								Say("You don't know what this means to me. Thank you so much for finding and saving me from"
+									" this wretched place. I'll find my way from here.");
+								Depop();
+							}
+						}
+					}
+				}
+			}
+		}
     }
 
 	if (sendhpupdate_timer.Check() && (IsTargeted() || (IsPet() && GetOwner() && GetOwner()->IsClient()))) {

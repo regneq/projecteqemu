@@ -853,6 +853,8 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, int8 lang_skil
 
 		if (target != 0 && target->IsNPC()) {
 			if(!target->CastToNPC()->IsEngaged()) {
+
+				CheckLDoNHail(target);
 #ifdef EMBPERL
 				if(((PerlembParser *)parse)->HasQuestSub(target->GetNPCTypeID(),"EVENT_SAY")){
 #endif
@@ -4262,4 +4264,78 @@ void Client::SendAdventureCountUpdate(int32 current, int32 total)
 		acu->current = current;
 		acu->total = total;
 		FastQueuePacket(&outapp);
+}
+
+void Client::CheckLDoNHail(Mob *target)
+{
+	AdventureDetails *ad = GetCurrentAdventure();
+	if(ad && ad->ai)
+	{
+		if(ad->ai->type == Adventure_Rescue)
+		{
+			if(zone->GetInstanceID() == ad->instance_id && target->GetNPCTypeID() == ad->ai->type_data)
+			{
+				if(target->GetOwner() == NULL)
+				{
+					if(entity_list.CheckNPCsClose(target) == 0)
+					{
+						if(GetPet())
+						{
+							if(GetPet()->GetPetType() == petCharmed)
+							{
+								BuffFadeByEffect(SE_Charm);
+								SetPet(target);
+								target->SetOwnerID(GetID());
+								target->Say("Wonderful! Someone to set me free! I feared for my life for so long,"
+									" never knowing when they might choose to end my life. Now that you're here though"
+									" I can rest easy. Please help me find my way out of here as soon as you can" 
+									" I'll stay close behind you!");
+								Message(11, "You focus your attention on leading the hostage to saftey and lose your "
+									"connection to your summoned companion.");
+							}
+							else if(GetPet()->GetPetType() == petNPCFollow)
+							{
+								GetPet()->SetOwnerID(0);
+								SetPet(target);
+								target->SetOwnerID(GetID());
+								target->Say("Wonderful! Someone to set me free! I feared for my life for so long,"
+									" never knowing when they might choose to end my life. Now that you're here though"
+									" I can rest easy. Please help me find my way out of here as soon as you can" 
+									" I'll stay close behind you!");
+								Message(11, "You focus your attention on leading the hostage to saftey and lose your "
+									"connection to your summoned companion.");
+							}
+							else
+							{
+								GetPet()->Depop();
+								SetPet(target);
+								target->SetOwnerID(GetID());
+								target->Say("Wonderful! Someone to set me free! I feared for my life for so long,"
+									" never knowing when they might choose to end my life. Now that you're here though"
+									" I can rest easy. Please help me find my way out of here as soon as you can" 
+									" I'll stay close behind you!");
+								Message(11, "You focus your attention on leading the hostage to saftey and lose your "
+									"connection to your summoned companion.");
+							}
+						}
+						else
+						{
+							SetPet(target);
+							target->SetOwnerID(GetID());
+							target->Say("Wonderful! Someone to set me free! I feared for my life for so long,"
+								" never knowing when they might choose to end my life. Now that you're here though"
+								" I can rest easy. Please help me find my way out of here as soon as you can" 
+								" I'll stay close behind you!");
+						}
+					}
+					else
+					{
+						target->Say("You're here to save me? I couldn't possibly risk leaving yet. There are "
+							"far too many of those horrid things out there waiting to recapture me! Please get"
+							" rid of some more of those vermin and then we can try to leave.");
+					}
+				}
+			}
+		}
+	}
 }

@@ -207,6 +207,7 @@ public:
 	void    QuestJournalledMessage(const char *npcname, const char* message);
 	void	VoiceMacroReceived(int32 Type, char *Target, int32 MacroNumber);
 	void	SendSound();
+	void	CheckLDoNHail(Mob *target);
 
 	EQApplicationPacket*	ReturnItemPacket(sint16 slot_id, const ItemInst* inst, ItemPacketType packet_type);
 

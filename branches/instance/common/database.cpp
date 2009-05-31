@@ -3824,3 +3824,16 @@ bool Database::GetAdventureStats(int32 char_id, int32 &guk_w, int32 &mir_w, int3
 		return false;
 	}
 }
+
+int32 Database::AdventureGetAssassinateKills(int32 adv_id)
+{
+	return 0;
+}
+
+void Database::AdventureSetAssassinateKills(int32 adv_id, int32 kills)
+{
+}
+
+void Database::AdventureGetAssassinateLocation(int32 adv_template)
+{
+}

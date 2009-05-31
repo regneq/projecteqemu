@@ -199,6 +199,9 @@ public:
 	void UpdateAllAdventureStatsEntry(int32 adv_id, int8 theme, bool win);
 	bool GetAdventureStats(int32 char_id, int32 &guk_w, int32 &mir_w, int32 &mmc_w, int32 &ruj_w, int32 &tak_w, 
 		int32 &guk_l, int32 &mir_l, int32 &mmc_l, int32 &ruj_l, int32 &tak_l);
+	int32 AdventureGetAssassinateKills(int32 adv_id);
+	void AdventureSetAssassinateKills(int32 adv_id, int32 kills);
+	void AdventureGetAssassinateLocation(int32 adv_template);
 
 	/*
 	 * Account Related

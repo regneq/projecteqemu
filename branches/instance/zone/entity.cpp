@@ -3847,6 +3847,48 @@ void EntityList::UnMarkNPC(int16 ID)
 	} 
 }
 
+int32 EntityList::CheckNPCsClose(Mob *center)
+{
+    LinkedListIterator<NPC*> iterator(npc_list);
+    int32 count = 0;
+
+    iterator.Reset();
+    while(iterator.MoreElements())
+    {
+		NPC *current = iterator.GetData();
+		if(!current)
+		{
+			iterator.Advance();
+			continue;
+		}
+
+		if(current == center)
+		{
+			iterator.Advance();
+			continue;
+		}
+
+		if(current->IsPet())
+		{
+			iterator.Advance();
+			continue;
+		}
+
+		if(current->GetClass() == LDON_TREASURE)
+		{
+			iterator.Advance();
+			continue;
+		}
+
+		if(current->DistNoRootNoZ(*center) <= 5625.0f)
+		{
+			count++;
+		}
+		iterator.Advance();
+	}
+	return count;
+}
+
 void EntityList::GateAllClients()
 {
 	LinkedListIterator<Client*> iterator(client_list); 
@@ -3925,9 +3967,11 @@ void EntityList::AdventureFinish(int32 a_id, int8 win_lose, int32 points)
 		iterator.Reset();
 		while(iterator.MoreElements()) 
 		{
+			ad = NULL;
 			Client *c = iterator.GetData();
 			if(c)
 			{
+				ad = c->GetCurrentAdventure();
 				if(ad && ad->id == a_id)
 				{
 					c->SendAdventureFinish(win_lose, points, ad->ai->theme);

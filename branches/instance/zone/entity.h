@@ -326,6 +326,7 @@ public:
 	void	AIYellForHelp(Mob* sender, Mob* attacker);
 	bool	AICheckCloseBeneficialSpells(NPC* caster, int8 iChance, float iRange, int16 iSpellTypes);
 	Mob*	GetTargetForMez(Mob* caster);
+	int32	CheckNPCsClose(Mob *center);
 
 	Corpse* GetClosestCorpse(Mob* sender);
 	void	ForceGroupUpdate(int32 gid);

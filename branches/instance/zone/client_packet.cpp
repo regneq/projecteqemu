@@ -1597,6 +1597,10 @@ void Client::Handle_OP_AdventureMerchantRequest(const EQApplicationPacket *app)
 		if(item)
 		{
 			int32 theme;
+			if(item->LDoNTheme > 16)
+			{
+				theme = 0;
+			}
 			if(item->LDoNTheme & 16)
 			{
 				theme = 5;
@@ -1694,16 +1698,9 @@ void Client::Handle_OP_AdventureMerchantPurchase(const EQApplicationPacket *app)
 	}
 
 	sint32 requiredpts = (sint32)item->LDoNPrice*-1;
-	if(item->LDoNTheme > 5)
-	{
-		if(!UpdateLDoNPoints(requiredpts, 6))
-			return;
-	}
-	else
-	{
-		if(!UpdateLDoNPoints(requiredpts, item->LDoNTheme))
-			return;
-	}
+
+	if(!UpdateLDoNPoints(requiredpts, 6))
+		return;
 
 	sint8 charges=1;
 	if(item->MaxCharges != 0)
