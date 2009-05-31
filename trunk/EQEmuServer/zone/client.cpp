@@ -416,12 +416,20 @@ bool Client::Save(int8 iCommitNow) {
 	m_pp.z = z_pos;
 	m_pp.guildrank=guildrank;
 	m_pp.heading = heading;
+	
 	int spentpoints=0;
-	for(int a=0;a < MAX_PP_AA_ARRAY;a++)
-		if(aa[a])
-			spentpoints += aa[a]->value;
-
+	for(int a=0;a < MAX_PP_AA_ARRAY;a++) {
+		int32 points = aa[a]->value;
+		if (points > 0) {
+			SendAA_Struct* curAA = zone->FindAA(aa[a]->AA-aa[a]->value+1);
+			if(curAA) {
+				for (int rank=0; rank<points; rank++) 
+					spentpoints += (curAA->cost + (curAA->cost_inc * rank));
+			}
+		}
+	}
 	m_pp.aapoints_spent = spentpoints;
+
 	if (GetHP() <= 0) {
 		if (GetMaxHP() > 30000)
 			m_pp.cur_hp = 30000;
