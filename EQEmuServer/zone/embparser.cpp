@@ -837,7 +837,10 @@ int PerlembParser::LoadPlayerScript(const char *zone)
 		}
 	}
 
-	playerQuestLoaded[zone] = pQuestLoaded;
+	if(perl->SubExists(packagename.c_str(), "EVENT_CAST")) 
+		playerQuestLoaded[zone] = pQuestEventCast;
+	else 
+		playerQuestLoaded[zone] = pQuestLoaded;
 	return 1;
 }
 
@@ -895,6 +898,12 @@ bool PerlembParser::PlayerHasQuestSub(const char *subname) {
 	string packagename = "player_";
 	packagename += zone->GetShortName();
 
+	if(playerQuestLoaded.count(zone->GetShortName()) == 0)
+		LoadPlayerScript(zone->GetShortName());
+		
+	if(subname == "EVENT_CAST")
+		return (playerQuestLoaded[zone->GetShortName()] == pQuestEventCast);
+	
 	return(perl->SubExists(packagename.c_str(), subname));
 }
 

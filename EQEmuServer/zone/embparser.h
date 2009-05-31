@@ -27,7 +27,8 @@ typedef enum {
 
 typedef enum {
 	pQuestLoaded = 1,
-	pQuestUnloaded
+	pQuestUnloaded,
+	pQuestEventCast	// player.pl loaded, has an EVENT_CAST sub
 } playerQuestMode;
 
 struct EventRecord {
