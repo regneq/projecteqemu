@@ -64,7 +64,8 @@ const char *QuestEventSubroutines[_LargestEventID] = {
 	"EVENT_AGGRO_SAY",
 	"EVENT_PLAYER_PICKUP",
 	"EVENT_POPUPRESPONSE",
-	"EVENT_PROXIMITY_SAY"
+	"EVENT_PROXIMITY_SAY",
+	"EVENT_CAST"
 };
 
 PerlembParser::PerlembParser(void) : Parser()
@@ -503,7 +504,8 @@ void PerlembParser::Event(QuestEventID event, int32 npcid, const char * data, NP
 			break;
 		}
 		
-		case EVENT_CAST_ON:{
+		case EVENT_CAST_ON:
+		case EVENT_CAST:{
 			ExportVar(packagename.c_str(), "spell_id", data);
 			break;
 		}		
@@ -890,7 +892,8 @@ bool PerlembParser::HasQuestSub(int32 npcid, const char *subname) {
 
 bool PerlembParser::PlayerHasQuestSub(const char *subname) {
 
-	string packagename = "player";
+	string packagename = "player_";
+	packagename += zone->GetShortName();
 
 	return(perl->SubExists(packagename.c_str(), subname));
 }

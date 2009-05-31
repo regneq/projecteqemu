@@ -96,6 +96,9 @@ Copyright (C) 2001-2002  EQEMu Development Team (http://eqemu.org)
 
 #include "StringIDs.h"
 
+#ifdef EMBPERL
+#include "embparser.h"
+#endif
 
 extern Zone* zone;
 extern volatile bool ZoneLoaded;
@@ -1037,6 +1040,17 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16
 	//
 	// solar: at this point the spell has successfully been cast
 	//
+
+	// if the spell is cast by a client, trigger the EVENT_CAST player quest
+	if(this->IsClient()) {
+	#ifdef EMBPERL
+		if( ((PerlembParser*)parse)->PlayerHasQuestSub("EVENT_CAST") ) {
+			char temp[64];
+            sprintf(temp, "%d", spell_id);
+			((PerlembParser*)parse)->Event(EVENT_CAST, 0, temp, NULL, this->CastToClient());
+		}
+	#endif
+	}
 
 	// if this was cast from an inventory slot, check out the item that's there
 	if(IsClient() && ((slot == USE_ITEM_SPELL_SLOT) || (slot == POTION_BELT_SPELL_SLOT))
