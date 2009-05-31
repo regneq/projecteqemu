@@ -1130,7 +1130,6 @@ bool Zone::Process() {
 								worldserver.SendPacket(pack2);
 								safe_delete(pack2);
 
-								database.UpdateAllAdventureStatsEntry(ad->id, ad->ai->theme, false);
 								database.DestroyAdventure(ad->id);
 								ServerPacket *pack = new ServerPacket(ServerOP_AdventureDestroy, sizeof(ServerAdventureDestroy_Struct));
 								ServerAdventureDestroy_Struct *adest = (ServerAdventureDestroy_Struct*)pack->pBuffer;
@@ -1155,10 +1154,10 @@ bool Zone::Process() {
 						{
 							if((ad->ai->duration + ad->time_zoned) <= tv.tv_sec)
 							{
+								database.UpdateAllAdventureStatsEntry(ad->id, ad->ai->theme, false);
 								sint32 time_since = tv.tv_sec - (ad->ai->duration + ad->time_zoned);
 								if(time_since >= 1800) //we're over time on our instance
 								{
-									database.UpdateAllAdventureStatsEntry(ad->id, ad->ai->theme, false);
 									database.DestroyAdventure(ad->id);
 									ServerPacket *pack = new ServerPacket(ServerOP_AdventureDestroy, sizeof(ServerAdventureDestroy_Struct));
 									ServerAdventureDestroy_Struct *adest = (ServerAdventureDestroy_Struct*)pack->pBuffer;
