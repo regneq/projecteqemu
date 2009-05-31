@@ -3604,6 +3604,55 @@ XS(XS_Client_SetTitleSuffix) {
 	XSRETURN_EMPTY;
 }
 
+XS(XS_Client_SetAAPoints);
+XS(XS_Client_SetAAPoints) {
+	dXSARGS;
+	if(items != 2)
+		Perl_croak(aTHX_ "Usage: Client::SetAAPts(THIS, points)");
+	{
+		Client * THIS;
+		uint32 points = SvUV(ST(1));
+		
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->GetPP().aapoints = points;
+		THIS->SendAAStats();
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_Client_GetAAPoints);
+XS(XS_Client_GetAAPoints) {
+	dXSARGS;
+	if(items != 1)
+		Perl_croak(aTHX_ "Usage: Client::GetAAPts(THIS)");
+	dXSTARG;
+	{
+		Client * THIS;
+		uint32 RETVAL;
+				
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetPP().aapoints;
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -3758,6 +3807,8 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "SetAATitle"), XS_Client_SetAATitle, file, "$$");
 		newXSproto(strcpy(buf, "GetClientVersion"), XS_Client_GetClientVersion, file, "$");
 		newXSproto(strcpy(buf, "SetTitleSuffix"), XS_Client_SetTitleSuffix, file, "$$");
+		newXSproto(strcpy(buf, "SetAAPoints"), XS_Client_SetAAPoints, file, "$$");
+		newXSproto(strcpy(buf, "GetAAPoints"), XS_Client_GetAAPoints, file, "$$");
 	XSRETURN_YES;
 }
 
