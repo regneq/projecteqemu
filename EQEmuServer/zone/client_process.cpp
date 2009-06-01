@@ -111,6 +111,7 @@ bool Client::Process() {
 		if(dead && dead_timer.Check()) {
 			database.MoveCharacterToZone(GetName(),database.GetZoneName(m_pp.binds[0].zoneId));
 			m_pp.zone_id = m_pp.binds[0].zoneId;
+			m_pp.zoneInstance = 0;
 			m_pp.x = m_pp.binds[0].x;
 			m_pp.y = m_pp.binds[0].y;
 			m_pp.z = m_pp.binds[0].z;
@@ -129,6 +130,7 @@ bool Client::Process() {
 			}
 			return(false);
 		}
+		/*Adventure Timer
 		if((p_timers.Get(pTimerAdventureTimer) && p_timers.Expired(&database, pTimerAdventureTimer,false))){
 			p_timers.Disable(pTimerAdventureTimer);
 			SendAdventureFinish(0,0);
@@ -136,7 +138,7 @@ bool Client::Process() {
 		else if(p_timers.Get(pTimerStartAdventureTimer) && p_timers.Expired(&database, pTimerStartAdventureTimer,false)){
 			p_timers.Disable(pTimerStartAdventureTimer);
 			SendAdventureFinish(0,0);
-		}		
+		}*/
 		if(TaskPeriodic_Timer.Check() && taskstate)
 			taskstate->TaskPeriodicChecks(this);
 
@@ -695,10 +697,6 @@ void Client::OnDisconnect(bool hard_disconnect) {
 	
 	//remove ourself from all proximities
 	ClearAllProximities();
-	
-	if(GetAdventureID()>0)
-		DeleteCharInAdventure(CharacterID(),GetAdventureID());
-	
 	
 	EQApplicationPacket *outapp = new EQApplicationPacket(OP_LogoutReply);
 	FastQueuePacket(&outapp);
@@ -1633,7 +1631,7 @@ void Client::OPGMSummon(const EQApplicationPacket *app)
 			cheat_timer.Start(3500, false);
 			Message(0, "Local: Summoning %s to %f, %f, %f", gms->charname, gms->x, gms->y, gms->z);
 			if (st->IsClient() && (st->CastToClient()->GetAnon() != 1 || this->Admin() >= st->CastToClient()->Admin()))
-				st->CastToClient()->MovePC((float)gms->x, (float)gms->y, (float)gms->z, this->GetHeading(), true);
+				st->CastToClient()->MovePC(zone->GetZoneID(), zone->GetInstanceID(), (float)gms->x, (float)gms->y, (float)gms->z, this->GetHeading(), true);
 			else
 				st->GMMove(this->GetX(), this->GetY(), this->GetZ(),this->GetHeading());
 		}

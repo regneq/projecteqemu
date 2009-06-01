@@ -378,7 +378,7 @@ int main(int argc, char** argv) {
 #endif
 	if (!strlen(zone_name) || !strcmp(zone_name,".")) {
 		_log(ZONE__INIT, "Entering sleep mode");
-	} else if (!Zone::Bootup(database.GetZoneID(zone_name), true)) {
+	} else if (!Zone::Bootup(database.GetZoneID(zone_name), 0, true)) { //todo: go above and fix this to allow cmd line instance
 		_log(ZONE__INIT_ERR, "Zone bootup FAILED!");
 		zone = 0;
 	}

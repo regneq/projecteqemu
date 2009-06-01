@@ -263,7 +263,7 @@ Mob* EntityList::GetTrapTrigger(Trap* trap) {
 }
 
 //todo: rewrite this to not need direct access to trap members.
-bool ZoneDatabase::LoadTraps(const char* zonename) {
+bool ZoneDatabase::LoadTraps(const char* zonename, int16 version) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
     MYSQL_RES *result;
@@ -272,7 +272,7 @@ bool ZoneDatabase::LoadTraps(const char* zonename) {
 	//	int char_num = 0;
 	unsigned long* lengths;
 
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT id,x,y,z,effect,effectvalue,effectvalue2,skill,maxzdiff,radius,chance,message,respawn_time,respawn_var,level FROM traps WHERE zone='%s'", zonename), errbuf, &result)) {
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT id,x,y,z,effect,effectvalue,effectvalue2,skill,maxzdiff,radius,chance,message,respawn_time,respawn_var,level FROM traps WHERE zone='%s' AND version=%u", zonename, version), errbuf, &result)) {
 		safe_delete_array(query);
 		while ((row = mysql_fetch_row(result)))
 		{

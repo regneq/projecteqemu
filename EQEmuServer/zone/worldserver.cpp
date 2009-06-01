@@ -90,10 +90,11 @@ WorldServer::~WorldServer() {
 	safe_delete(pack);
 }*/
 
-void WorldServer::SetZone(int32 iZoneID) {
+void WorldServer::SetZone(int32 iZoneID, int32 iInstanceID) {
 	ServerPacket* pack = new ServerPacket(ServerOP_SetZone, sizeof(SetZone_Struct));
 	SetZone_Struct* szs = (SetZone_Struct*) pack->pBuffer;
 	szs->zoneid = iZoneID;
+	szs->instanceid = iInstanceID;
 	if (zone) {
 		szs->staticzone = zone->IsStaticZone();
 	}
@@ -121,7 +122,7 @@ void WorldServer::OnConnected() {
 	safe_delete(pack);
 	
 	if (ZoneLoaded) {
-		this->SetZone(zone->GetZoneID());
+		this->SetZone(zone->GetZoneID(), zone->GetInstanceID());
 		entity_list.UpdateWho(true);
 		this->SendEmoteMessage(0, 0, 15, "Zone connect: %s", zone->GetLongName());
             zone->GetTimeSync();
@@ -199,41 +200,34 @@ void WorldServer::Process() {
 		}
 		case ServerOP_VoiceMacro: {
 
-			if (!ZoneLoaded) break;
+			if (!ZoneLoaded) 
+				break;
 
 			ServerVoiceMacro_Struct* svm = (ServerVoiceMacro_Struct*) pack->pBuffer;
 
 			EQApplicationPacket* outapp = new EQApplicationPacket(OP_VoiceMacroOut,sizeof(VoiceMacroOut_Struct));
-
 			VoiceMacroOut_Struct* vmo = (VoiceMacroOut_Struct*)outapp->pBuffer;
 
 			strcpy(vmo->From, svm->From);
-
 			vmo->Type = svm->Type;
-
 			vmo->Voice =svm->Voice;
-
 			vmo->MacroNumber = svm->MacroNumber;
 
 			switch(svm->Type) {
-
 				case VoiceMacroTell: {
-
 					Client* c = entity_list.GetClientByName(svm->To);
-
-					if(!c) break;
+					if(!c) 
+						break;
 
 					c->QueuePacket(outapp);
-
 					break;
-	
 				}
 
 				case VoiceMacroGroup: {
-
 					Group* g = entity_list.GetGroupByID(svm->GroupID);
 
-					if(!g) break;
+					if(!g) 
+						break;
 
 					for(unsigned int i = 0; i < MAX_GROUP_MEMBERS; i++) {
 						if(g->members[i] && g->members[i]->IsClient())
@@ -244,10 +238,10 @@ void WorldServer::Process() {
 				}
 
 				case VoiceMacroRaid: {
-
 					Raid *r = entity_list.GetRaidByID(svm->RaidID);
 
-					if(!r) break;
+					if(!r) 
+						break;
 
 					for(int i = 0; i < MAX_RAID_MEMBERS; i++)
 						if(r->members[i].member)
@@ -256,9 +250,7 @@ void WorldServer::Process() {
 					break;
 				}
 			}
-
 			safe_delete(outapp);
-
 			break;
 		}
 
@@ -306,7 +298,8 @@ void WorldServer::Process() {
 				break;
 			ZoneToZone_Struct* ztz = (ZoneToZone_Struct*) pack->pBuffer;
 			
-			if(ztz->current_zone_id == zone->GetZoneID()) {
+			if(ztz->current_zone_id == zone->GetZoneID() 
+				&& ztz->current_instance_id == zone->GetInstanceID()) {
 				// it's a response
 				Entity* entity = entity_list.GetClientByName(ztz->name);
 				if(entity == 0)
@@ -318,18 +311,19 @@ void WorldServer::Process() {
 
 				if(ztz->response <= 0) {
 					zc2->success = ZONE_ERROR_NOTREADY;
-					entity->CastToMob()->SetZone(ztz->current_zone_id);
+					entity->CastToMob()->SetZone(ztz->current_zone_id, ztz->current_instance_id);
 				}
 				else {
 					entity->CastToClient()->UpdateWho(1);
 					strncpy(zc2->char_name,entity->CastToMob()->GetName(),64);
 					zc2->zoneID=ztz->requested_zone_id;
+					zc2->instanceID=ztz->requested_instance_id;
 					zc2->success = 1;
 
-					entity->CastToMob()->SetZone(ztz->requested_zone_id);
+					entity->CastToMob()->SetZone(ztz->requested_zone_id, ztz->requested_instance_id);
 
 					if(ztz->ignorerestrictions == 3)
-						entity->CastToClient()->GoToSafeCoords(ztz->requested_zone_id);
+						entity->CastToClient()->GoToSafeCoords(ztz->requested_zone_id, ztz->requested_instance_id);
 				}
 
 				outapp->priority = 6;
@@ -461,7 +455,7 @@ void WorldServer::Process() {
 			}
 			ServerZoneStateChange_struct* zst = (ServerZoneStateChange_struct *) pack->pBuffer;
 			if (ZoneLoaded) {
-				SetZone(zone->GetZoneID());
+				SetZone(zone->GetZoneID(), zone->GetInstanceID());
 				if (zst->zoneid == zone->GetZoneID()) {
 					// This packet also doubles as "incomming client" notification, lets not shut down before they get here
 					zone->StartShutdownTimer(AUTHENTICATION_TIMEOUT * 1000);
@@ -475,7 +469,7 @@ void WorldServer::Process() {
 			if (zst->adminname[0] != 0)
 				cout << "Zone bootup by " << zst->adminname << endl;
 			
-			if (!(Zone::Bootup(zst->zoneid, zst->makestatic))) {
+			if (!(Zone::Bootup(zst->zoneid, zst->instanceid, zst->makestatic))) {
 				SendChannelMessage(0, 0, 10, 0, 0, "%s:%i Zone::Bootup failed: %s", net.GetZoneAddress(), net.GetZonePort(), database.GetZoneName(zst->zoneid));
 			}
 			// Moved annoucement to ZoneBootup() - Quagmire
@@ -490,7 +484,7 @@ void WorldServer::Process() {
 			}
 			ServerZoneIncommingClient_Struct* szic = (ServerZoneIncommingClient_Struct*) pack->pBuffer;
 			if (ZoneLoaded) {
-				SetZone(zone->GetZoneID());
+				SetZone(zone->GetZoneID(), zone->GetInstanceID());
 				if (szic->zoneid == zone->GetZoneID()) {
 					zone->AddAuth(szic);
 					// This packet also doubles as "incomming client" notification, lets not shut down before they get here
@@ -498,7 +492,7 @@ void WorldServer::Process() {
 				}
 			}
 			else {
-				if ((Zone::Bootup(szic->zoneid))) {
+				if ((Zone::Bootup(szic->zoneid, szic->instanceid))) {
 					zone->AddAuth(szic);
 				}
 				else
@@ -509,6 +503,7 @@ void WorldServer::Process() {
 		case ServerOP_ZonePlayer: {
 			ServerZonePlayer_Struct* szp = (ServerZonePlayer_Struct*) pack->pBuffer;
 			Client* client = entity_list.GetClientByName(szp->name);
+			printf("Zoning %s to %s(%u) - %u\n", client != NULL ? client->GetCleanName() : "Unknown", szp->zone, database.GetZoneID(szp->zone), szp->instance_id);
 			if (client != 0) {
 				if (strcasecmp(szp->adminname, szp->name) == 0)
 					client->Message(0, "Zoning to: %s", szp->zone);
@@ -517,7 +512,7 @@ void WorldServer::Process() {
 				else {
 					SendEmoteMessage(szp->adminname, 0, 0, "Summoning %s to %s %1.1f, %1.1f, %1.1f", szp->name, szp->zone, szp->x_pos, szp->y_pos, szp->z_pos);
 				}
-				client->MovePC(szp->zone, szp->x_pos, szp->y_pos, szp->z_pos, client->GetHeading(), szp->ignorerestrictions, GMSummon);
+				client->MovePC(database.GetZoneID(szp->zone), szp->instance_id, szp->x_pos, szp->y_pos, szp->z_pos, client->GetHeading(), szp->ignorerestrictions, GMSummon);
 			}
 			break;
 		}
@@ -589,6 +584,7 @@ void WorldServer::Process() {
 				strcpy(szp->adminname, gmg->myname);
 				strcpy(szp->name, gmg->myname);
 				strcpy(szp->zone, zone->GetShortName());
+				szp->instance_id = zone->GetInstanceID();
 				szp->x_pos = client->GetX();
 				szp->y_pos = client->GetY();
 				szp->z_pos = client->GetZ();
@@ -786,7 +782,7 @@ void WorldServer::Process() {
 		case ServerOP_GroupLeave: {
 			ServerGroupLeave_Struct* gl = (ServerGroupLeave_Struct*)pack->pBuffer;
 			if(zone){
-				if(gl->zoneid == zone->GetZoneID())
+				if(gl->zoneid == zone->GetZoneID() && gl->instance_id == zone->GetInstanceID())
 					break;
 
 				entity_list.SendGroupLeave(gl->gid, gl->member_name);
@@ -797,7 +793,7 @@ void WorldServer::Process() {
 		case ServerOP_GroupJoin: {
 			ServerGroupJoin_Struct* gj = (ServerGroupJoin_Struct*)pack->pBuffer;
 			if(zone){
-				if(gj->zoneid == zone->GetZoneID())
+				if(gj->zoneid == zone->GetZoneID() && gj->instance_id == zone->GetInstanceID())
 					break;
 
 				entity_list.SendGroupJoin(gj->gid, gj->member_name);
@@ -808,7 +804,7 @@ void WorldServer::Process() {
 		case ServerOP_ForceGroupUpdate: {
 			ServerForceGroupUpdate_Struct* fgu = (ServerForceGroupUpdate_Struct*)pack->pBuffer;
 			if(zone){
-				if(fgu->origZoneID == zone->GetZoneID())
+				if(fgu->origZoneID == zone->GetZoneID()	&& fgu->instance_id == zone->GetInstanceID())
 					break;
 
 				entity_list.ForceGroupUpdate(fgu->gid);
@@ -819,7 +815,7 @@ void WorldServer::Process() {
 		case ServerOP_OOZGroupMessage: {
 			ServerGroupChannelMessage_Struct* gcm = (ServerGroupChannelMessage_Struct*)pack->pBuffer;
 			if(zone){
-				if(gcm->zoneid == zone->GetZoneID())
+				if(gcm->zoneid == zone->GetZoneID() && gcm->instanceid == zone->GetInstanceID())
 					break;
 
 				entity_list.GroupMessage(gcm->groupid, gcm->from, gcm->message);
@@ -829,7 +825,7 @@ void WorldServer::Process() {
 		case ServerOP_DisbandGroup: {
 			ServerDisbandGroup_Struct* sd = (ServerDisbandGroup_Struct*)pack->pBuffer;
 			if(zone){
-				if(sd->zoneid == zone->GetZoneID())
+				if(sd->zoneid == zone->GetZoneID() && sd->instance_id == zone->GetInstanceID())
 					break;
 
 				Group *g = entity_list.GetGroupByID(sd->groupid);
@@ -841,7 +837,7 @@ void WorldServer::Process() {
 		case ServerOP_RaidAdd:{
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if(zone){
-				if(rga->zoneid == zone->GetZoneID())
+				if(rga->zoneid == zone->GetZoneID() && rga->instance_id == zone->GetInstanceID())
 					break;
 				
 				Raid *r = entity_list.GetRaidByID(rga->rid);
@@ -857,7 +853,7 @@ void WorldServer::Process() {
 		case ServerOP_RaidRemove:{
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if(zone){
-				if(rga->zoneid == zone->GetZoneID())
+				if(rga->zoneid == zone->GetZoneID() && rga->instance_id == zone->GetInstanceID())
 					break;
 				
 				Raid *r = entity_list.GetRaidByID(rga->rid);
@@ -877,7 +873,7 @@ void WorldServer::Process() {
 		case ServerOP_RaidDisband:{
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if(zone){
-				if(rga->zoneid == zone->GetZoneID())
+				if(rga->zoneid == zone->GetZoneID() && rga->instance_id == zone->GetInstanceID())
 					break;
 				
 				Raid *r = entity_list.GetRaidByID(rga->rid);
@@ -893,7 +889,7 @@ void WorldServer::Process() {
 		case ServerOP_RaidLockFlag:{
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if(zone){
-				if(rga->zoneid == zone->GetZoneID())
+				if(rga->zoneid == zone->GetZoneID() && rga->instance_id == zone->GetInstanceID())
 					break;
 				
 				Raid *r = entity_list.GetRaidByID(rga->rid);
@@ -911,7 +907,7 @@ void WorldServer::Process() {
 		case ServerOP_RaidChangeGroup:{
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if(zone){
-				if(rga->zoneid == zone->GetZoneID())
+				if(rga->zoneid == zone->GetZoneID() && rga->instance_id == zone->GetInstanceID())
 					break;
 				
 				Raid *r = entity_list.GetRaidByID(rga->rid);
@@ -940,7 +936,7 @@ void WorldServer::Process() {
 		case ServerOP_UpdateGroup:{
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if(zone){
-				if(rga->zoneid == zone->GetZoneID())
+				if(rga->zoneid == zone->GetZoneID() && rga->instance_id == zone->GetInstanceID())
 					break;
 				
 				Raid *r = entity_list.GetRaidByID(rga->rid);
@@ -954,7 +950,7 @@ void WorldServer::Process() {
 		case ServerOP_RaidGroupLeader:{
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if(zone){
-				if(rga->zoneid == zone->GetZoneID())
+				if(rga->zoneid == zone->GetZoneID() && rga->instance_id == zone->GetInstanceID())
 					break;
 			}
 			break;
@@ -963,7 +959,7 @@ void WorldServer::Process() {
 		case ServerOP_RaidLeader:{
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if(zone){
-				if(rga->zoneid == zone->GetZoneID())
+				if(rga->zoneid == zone->GetZoneID() && rga->instance_id == zone->GetInstanceID())
 					break;
 				
 				Raid *r = entity_list.GetRaidByID(rga->rid);
@@ -984,7 +980,7 @@ void WorldServer::Process() {
 		case ServerOP_DetailsChange:{
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if(zone){
-				if(rga->zoneid == zone->GetZoneID())
+				if(rga->zoneid == zone->GetZoneID() && rga->instance_id == zone->GetInstanceID())
 					break;
 				
 				Raid *r = entity_list.GetRaidByID(rga->rid);
@@ -1000,7 +996,7 @@ void WorldServer::Process() {
 		case ServerOP_RaidGroupDisband:{
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if(zone){
-				if(rga->zoneid == zone->GetZoneID())
+				if(rga->zoneid == zone->GetZoneID() && rga->instance_id == zone->GetInstanceID())
 					break;
 				
 				Client *c = entity_list.GetClientByName(rga->playername);
@@ -1171,8 +1167,10 @@ void WorldServer::Process() {
 				strcpy(scs->ownername, s->ownername);
 				scs->permission = s->permission;
 				scs->zone_id = s->zone_id;
+				scs->instance_id = s->instance_id;
 				scs->message_string_id = TARGET_NOT_FOUND;
 				worldserver.SendPacket(pack);
+				safe_delete(pack);
 			}
 			break;
 		}
@@ -1214,6 +1212,147 @@ void WorldServer::Process() {
 					break;
 				}
 				iterator.Advance();
+			}
+			break;
+		}
+
+		case ServerOP_InstanceUpdateTime:
+		{
+			ServerInstanceUpdateTime_Struct *iut = (ServerInstanceUpdateTime_Struct*)pack->pBuffer;
+			if(zone)
+			{
+				if(zone->GetInstanceID() == iut->instance_id)
+				{
+					zone->SetInstanceTimer(iut->new_duration);
+				}
+			}
+			break;
+		}
+
+		case ServerOP_AdventureCreate: {
+			ServerAdventureCreate_Struct *ac = (ServerAdventureCreate_Struct*)pack->pBuffer;
+			if(zone)
+			{
+				if(zone->GetZoneID() == ac->from_zone_id && zone->GetInstanceID() == ac->from_instance_id)
+					break;
+				else
+				{
+					AdventureDetails *ad = new AdventureDetails;
+					ad->ai = zone->adventure_list[ac->adv_template_id];
+					ad->id = ac->id;
+					ad->instance_id = ac->instance_id;
+					ad->status = ac->status;
+					ad->count = ac->count;
+					ad->time_created = ac->time_created;
+					ad->time_zoned = ac->time_zoned;
+					ad->time_completed = ac->time_completed;
+					zone->active_adventures[ac->id] = ad;
+				}
+			}
+			break;
+		}
+
+		case ServerOP_AdventureAddPlayer: {
+			ServerAdventureAddPlayer_Struct *ap = (ServerAdventureAddPlayer_Struct*)pack->pBuffer;
+			if(zone)
+			{
+				Client *c = entity_list.GetClientByName(ap->player_name);
+				if(c)
+				{
+					AdventureDetails *ad = zone->active_adventures[ap->id];
+					c->SetCurrentAdventure(ad);
+					c->SetOfferedAdventure(NULL);
+					c->SendAdventureDetail();
+				}
+			}
+			break;
+		}
+
+		case ServerOP_AdventureDestroy: {
+			ServerAdventureDestroy_Struct *ap = (ServerAdventureDestroy_Struct*)pack->pBuffer;
+			if(zone)
+			{
+				entity_list.AdventureDestroy(ap->id);
+				std::map<int32, AdventureDetails*>::iterator iter = zone->active_adventures.find(ap->id);
+				if(iter != zone->active_adventures.end())
+				{
+					//todo: remove any players from this group
+					delete iter->second;
+					zone->active_adventures.erase(iter);
+				}
+			}
+			break;
+		}
+
+		case ServerOP_AdventureUpdate: {
+			ServerAdventureUpdate_Struct *au = (ServerAdventureUpdate_Struct*)pack->pBuffer;
+			if(zone)
+			{
+				std::map<int32, AdventureDetails*>::iterator iter = zone->active_adventures.find(au->id);
+				if(iter != zone->active_adventures.end())
+				{
+					AdventureDetails *ad = iter->second;
+					if(ad)
+					{
+						if(au->new_inst == 1)
+						{
+							ad->instance_id = au->instance_id;
+						}
+						
+						if(au->new_status == 1)
+						{
+							ad->status = au->status;
+						}
+
+						if(au->new_timez == 1)
+						{
+							ad->time_zoned = au->time_z;
+						}
+
+						if(au->new_timec == 1)
+						{
+							ad->time_completed = au->time_c;
+						}
+						
+						entity_list.SendAdventureUpdate(au->id);
+					}
+				}
+			}
+			break;
+		}
+
+		case ServerOP_AdventureFinish: {
+			ServerAdventureFinish_Struct *af = (ServerAdventureFinish_Struct*)pack->pBuffer;
+			if(zone)
+			{
+				entity_list.AdventureFinish(af->id, af->win_lose, af->points);
+			}
+			break;
+		}
+
+		case ServerOP_AdventureMessage: {
+			ServerAdventureMessage_Struct *am = (ServerAdventureMessage_Struct*)pack->pBuffer;
+			if(zone)
+			{
+				entity_list.AdventureMessage(am->id, am->message);
+			}
+			break;
+		}
+
+		case ServerOP_AdventureCount: {
+			ServerAdventureCount_Struct *ac = (ServerAdventureCount_Struct*)pack->pBuffer;
+			if(zone)
+			{
+				std::map<int32, AdventureDetails*>::iterator iter = zone->active_adventures.find(ac->id);
+				if(iter != zone->active_adventures.end())
+				{
+					AdventureDetails *ad = iter->second;
+					if(ad && ad->ai)
+					{
+						ad->count = database.GetAdventureCount(ad->id);
+						entity_list.AdventureCountUpdate(ac->id, ad->count, ad->ai->type_count);
+					}
+				}
 			}
 			break;
 		}

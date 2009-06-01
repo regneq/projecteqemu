@@ -3750,7 +3750,6 @@ XS(XS_Client_RefundAA) {
 	XSRETURN_EMPTY;
 }
 
-
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -3910,7 +3909,7 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "GetSpentAA"), XS_Client_GetSpentAA, file, "$$");
 		newXSproto(strcpy(buf, "AddAAPoints"), XS_Client_AddAAPoints, file, "$$");
 		newXSproto(strcpy(buf, "RefundAA"), XS_Client_RefundAA, file, "$$");
-
+		
 	XSRETURN_YES;
 }
 

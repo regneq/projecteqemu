@@ -190,7 +190,9 @@ int command_init(void) {
 		command_add("gm","- Turn player target's or your GM flag on or off",80,command_gm) ||
 		command_add("summon","[charname] - Summons your player/npc/corpse target, or charname if specified",80,command_summon) || 
 		command_add("zone","[zonename] [x] [y] [z] - Go to specified zone (coords optional)",50,command_zone) ||
+		command_add("zoneinstance","[instanceid] [x] [y] [z] - Go to specified instance zone (coords optional)",50,command_zone_instance) ||
         command_add("peqzone","[zonename] - Go to specified zone, if you have > 75% health",0,command_peqzone) ||
+		command_add("tgczone","[zonename] - Go to specified zone, if you have > 75% health",1,command_tgczone) ||
 		command_add("showbuffs","- List buffs active on your target or you if no target",50,command_showbuffs) ||
 		command_add("movechar","[charname] [zonename] - Move charname to zonename",50,command_movechar) ||
 		command_add("viewpetition","[petition number] - View a petition",20,command_viewpetition) ||
@@ -430,7 +432,8 @@ int command_init(void) {
 		command_add("refreshgroup","- Refreshes Group.", 0, command_refreshgroup) ||
 		command_add("advnpcspawn","[maketype|makegroup|addgroupentry|addgroupspawn][removegroupspawn|movespawn|editgroupbox|cleargroupbox]",150,command_advnpcspawn) ||
 		command_add("modifynpcstat","Modifys a NPC's stats",150,command_modifynpcstat) ||
-		command_add("undyeme","Remove dye from all of your armor slots",0,command_undyeme)
+		command_add("undyeme","Remove dye from all of your armor slots",0,command_undyeme) ||
+		command_add("instance","Modify Instances",200,command_instance)
 		)
 	{
 		command_deinit();
@@ -844,90 +847,48 @@ void command_sendop(Client *c,const Seperator *sep){
 
 void command_optest(Client *c, const Seperator *sep)
 {
-	EQApplicationPacket *outapp = new EQApplicationPacket(OP_MoneyUpdate, sizeof(MoneyUpdate_Struct));
-	MoneyUpdate_Struct *mu = (MoneyUpdate_Struct *)outapp->pBuffer;
-	mu->platinum = sep->arg[1][0] ? atoi(sep->arg[1]) : 0;
-	mu->gold = sep->arg[2][0] ? atoi(sep->arg[2]): 0;
-	mu->silver = sep->arg[3][0] ? atoi(sep->arg[3]) : 0;
-	mu->copper = sep->arg[4][0] ? atoi(sep->arg[4]): 0;
-	c->QueuePacket(outapp);
-	safe_delete(outapp);
-
-/*
-	EQApplicationPacket outapp;
-	if(sep->arg[1][0])
+	if(sep->IsNumber(1))
 	{
-		c->CreateDespawnPacket(&outapp);
-	  DeleteSpawn_Struct* ds = (DeleteSpawn_Struct*)outapp.pBuffer;
-    ds->spawn_id = 1000;
+		switch(atoi(sep->arg[1]))
+		{
+			case 1:
+			{
+				EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureFinish, sizeof(AdventureFinish_Struct));
+				AdventureFinish_Struct *af = (AdventureFinish_Struct*)outapp->pBuffer;
+				af->win_lose = 1;
+				af->points = 125;
+				c->FastQueuePacket(&outapp);
+				break;
+			}
+			case 2:
+			{
+				EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureData, sizeof(AdventureRequestResponse_Struct));
+				AdventureRequestResponse_Struct *arr = (AdventureRequestResponse_Struct*)outapp->pBuffer;
+				if(sep->IsHexNumber(2))
+					arr->unknown000 = hextoi(sep->arg[2]);
+				else
+					arr->unknown000 = 0xBFC40100;
+				arr->risk = 1;
+				arr->showcompass = 1;
+				strcpy(arr->text, "This is some text for an adventure packet!\0");
+				arr->timeleft = 60*60;
+				//arr->timetoenter = 30*60;
+				if(sep->IsHexNumber(3))
+					arr->unknown2080=hextoi(sep->arg[3]);
+				else
+					arr->unknown2080=0x0A;
+				arr->x = c->GetY();
+				arr->y = c->GetX();
+				arr->z = c->GetZ();
+				c->FastQueuePacket(&outapp);
+				break;
+			}
+			default:
+			{		
+				break;
+			}
+		}
 	}
-	else
-	{
-		c->CreateSpawnPacket(&outapp, c);
-	 	NewSpawn_Struct* ns = (NewSpawn_Struct*)outapp.pBuffer;
-		ns->spawn.spawn_id = 1000;
-		ns->spawn.npc = 0;
-		ns->spawn.afk = 0xFF;
-		strcpy(ns->spawn.name, "Testing");
-		ns->spawn.x += 5;
-		ns->spawn.y += 5;
-	}
-
-	entity_list.QueueClients(c, &outapp);
-*/
-	
-
-/*
-	EQApplicationPacket* outapp = new EQApplicationPacket(OP_MemorizeSpell, sizeof(MemorizeSpell_Struct));
-	MemorizeSpell_Struct* mem = (MemorizeSpell_Struct*)outapp->pBuffer;
-	mem->slot = sep->arg[1][0] ? atoi(sep->arg[1]) : 0;
-	mem->spell_id = sep->arg[2][0] ? atoi(sep->arg[2]) : 15;
-	mem->scribing = 0;
-	c->QueuePacket(outapp);
-
-	EQApplicationPacket* outapp = new EQApplicationPacket(OP_Action, sizeof(Action_Struct));
-	Action_Struct *act = (Action_Struct *)outapp->pBuffer;
-	act->target = c->GetTarget() ? c->GetTarget()->GetID() : c->GetID();
-	act->source = c->GetID();
-	act->level = sep->arg[3][0] ? atoi(sep->arg[3]) : c->GetLevel();
-//	act->heading = sep->arg[4][0] ? atof(sep->arg[4]) : c->GetHeading() * 2;
-	int val = hextoi(sep->arg[4]);
-	memcpy(&act->heading, &val, 4);
-	act->type = sep->arg[1][0] ? atoi(sep->arg[1]) : 0;
-	act->spell = sep->arg[2][0] ? atoi(sep->arg[2]): 0;
-	act->unknown29 = sep->arg[5][0] ? atoi(sep->arg[5]): 0;
-	act->unknown23 = sep->arg[6][0] ? atoi(sep->arg[6]): 0;
-	act->unknown18 = sep->arg[7][0] ? atoi(sep->arg[7]): 0;
-	act->unknown16 = sep->arg[8][0] ? atoi(sep->arg[8]): 0;
-	act->unknown08 = sep->arg[9][0] ? atoi(sep->arg[9]): 0;
-	act->unknown06 = sep->arg[10][0] ? atoi(sep->arg[10]): 0x0A;
-	c->QueuePacket(outapp);
-	DumpPacket(outapp);
-	printf("\n");
-	safe_delete(outapp);
-*/
-
-/*
-	EQApplicationPacket *outapp = new EQApplicationPacket(OP_MoveDoor, sizeof(MoveDoor_Struct));
-	MoveDoor_Struct *md = (MoveDoor_Struct *)outapp->pBuffer;
-	md->doorid = sep->arg[1][0] ? atoi(sep->arg[1]) : 0;
-	md->action = sep->arg[2][0] ? atoi(sep->arg[2]): 0;
-	entity_list.QueueClients(c, outapp);
-	safe_delete(outapp);
-
-	EQApplicationPacket *outapp = new EQApplicationPacket(OP_Damage, sizeof(CombatDamage_Struct));
-	CombatDamage_Struct *cd = (CombatDamage_Struct *)outapp->pBuffer;
-	cd->target = c->GetTarget() ? c->GetTarget()->GetID() : c->GetID();
-	cd->source = c->GetID();
-	cd->type = sep->arg[1][0] ? atoi(sep->arg[1]) : 0;
-	cd->spellid = sep->arg[2][0] ? atoi(sep->arg[2]) : 0;
-	cd->damage = sep->arg[3][0] ? atoi(sep->arg[3]) : 0;
-	cd->unknown15[0] = sep->arg[4][0] ? atoi(sep->arg[4]) : 0;
-	cd->unknown15[1] = sep->arg[5][0] ? atoi(sep->arg[5]) : 0;
-	cd->unknown19 = sep->arg[6][0] ? atoi(sep->arg[6]) : 0;
-	entity_list.QueueClients(c, outapp);
-	safe_delete(outapp);
-*/
 }
 
 void command_help(Client *c, const Seperator *sep)
@@ -1405,6 +1366,9 @@ void command_summon(Client *c, const Seperator *sep)
 		return;
 	}
 
+	if(!t)
+		return;
+
 	if (t->IsNPC())
 	{ // npc target
 		c->Message(0, "Summoning NPC %s to %1.1f, %1.1f, %1.1f", t->GetName(), c->GetX(), c->GetY(), c->GetZ());
@@ -1425,7 +1389,7 @@ void command_summon(Client *c, const Seperator *sep)
 		}*/
 		t->CastToClient()->cheat_timer.Start(3500,false);
 		c->Message(0, "Summoning player %s to %1.1f, %1.1f, %1.1f", t->GetName(), c->GetX(), c->GetY(), c->GetZ());
-		t->CastToClient()->MovePC(zone->GetZoneID(), c->GetX(), c->GetY(), c->GetZ(), c->GetHeading(), 2, GMSummon);
+		t->CastToClient()->MovePC(zone->GetZoneID(), zone->GetInstanceID(), c->GetX(), c->GetY(), c->GetZ(), c->GetHeading(), 2, GMSummon);
 	}
 }
 
@@ -1472,11 +1436,68 @@ void command_zone(Client *c, const Seperator *sep)
 	if (sep->IsNumber(2) || sep->IsNumber(3) || sep->IsNumber(4)){
 		//zone to specific coords
 		c->CastToClient()->cheat_timer.Start(3500,false);
-		c->MovePC(zoneid, atof(sep->arg[2]), atof(sep->arg[3]), atof(sep->arg[4]), 0.0f, 0);
+		c->MovePC(zoneid, (float)atof(sep->arg[2]), atof(sep->arg[3]), atof(sep->arg[4]), 0.0f, 0);
 		}
 	else
 		//zone to safe coords
 		c->MovePC(zoneid, 0.0f, 0.0f, 0.0f, 0.0f, 0, ZoneToSafeCoords);
+}
+
+//todo: fix this so it checks if you're in the instance set
+void command_zone_instance(Client *c, const Seperator *sep)
+{
+ 	if(c->Admin() < commandZoneToCoords &&
+ 		(sep->IsNumber(2) || sep->IsNumber(3) || sep->IsNumber(4))) {
+ 		c->Message(0, "Your status is not high enough to zone to specific coordinates.");
+ 		return;
+ 	}
+
+	if (sep->arg[1][0] == 0)
+	{
+		c->Message(0, "Usage: #zoneinstance [instance id]");
+		c->Message(0, "Optional Usage: #zoneinstance [instance id] y x z");
+		return;
+	}
+ 	
+ 	uint16 zoneid = 0;
+	uint16 instanceid = 0;
+
+	if(sep->IsNumber(1))
+	{
+		instanceid = atoi(sep->arg[1]);
+		if(!instanceid)
+		{
+			c->Message(0, "Must enter a valid instance id.");
+			return;
+		}
+
+		zoneid = database.ZoneIDFromInstanceID(instanceid);
+		if(!zoneid)
+		{
+			c->Message(0, "Instance not found or zone is set to null.");
+			return;
+		}
+	}
+	else
+	{
+		c->Message(0, "Must enter a valid instance id.");
+		return;
+	}
+
+	if(!database.VerifyInstanceAlive(instanceid, c->CharacterID()))
+	{
+		c->Message(0, "Instance ID expiried or you are not apart of this instance.");
+		return;
+	}
+
+	if (sep->IsNumber(2) || sep->IsNumber(3) || sep->IsNumber(4)){
+		//zone to specific coords
+		c->CastToClient()->cheat_timer.Start(3500,false);
+		c->MovePC(zoneid, instanceid, atof(sep->arg[2]), atof(sep->arg[3]), atof(sep->arg[4]), 0.0f, 0);
+	}
+	else{
+		c->MovePC(zoneid, instanceid, 0.0f, 0.0f, 0.0f, 0.0f, 0, ZoneToSafeCoords);
+	}
 }
 
 void command_showbuffs(Client *c, const Seperator *sep)
@@ -1557,6 +1578,74 @@ void command_peqzone(Client *c, const Seperator *sep)
        c->GetPTimers().Start(pTimerPeqzoneReuse, 900);
        c->MovePC(zoneid, 0.0f, 0.0f, 0.0f, 0.0f, 0, ZoneToSafeCoords);
 }
+
+void command_tgczone(Client *c, const Seperator *sep)
+{
+       int32 timeleft = c->GetPTimers().GetRemainingTime(pTimerPeqzoneReuse)/60;
+
+       if(!c->GetPTimers().Expired(&database, pTimerPeqzoneReuse, false)) {
+               c->Message(13,"You must wait %i minute(s) before using this ability again.", timeleft);
+               return;
+       }
+       if(c->GetHPRatio() < 75) {
+               c->Message(0, "You cannot use this command with less than 75 percent health.");
+               return;
+       }
+       //this isnt perfect, but its better...
+       if(
+                  c->IsInvisible(c)
+               || c->IsRooted()
+               || c->IsStunned()
+               || c->IsMezzed()
+               || c->AutoAttackEnabled()
+			   || c->GetInvul()
+       ) {
+               c->Message(0, "You cannot use this command in your current state. Settle down and wait.");
+               return;
+       }
+	   uint16 zoneid = 0;
+       uint8 destzone = 0;
+       if (sep->IsNumber(1))
+	   {
+			zoneid = atoi(sep->arg[1]);
+			destzone = database.GetPEQZone(zoneid);
+			if(destzone == 0){
+                       c->Message(13, "You cannot use this command to enter that zone!");
+                       return;               
+               }
+               if(zoneid == zone->GetZoneID()) {
+                       c->Message(13, "You cannot use this command on the zone you are in!");
+                       return;
+               }
+	   }
+       else if (sep->arg[1][0] == 0 || sep->IsNumber(2) || sep->IsNumber(3) || sep->IsNumber(4) || sep->IsNumber(5))
+       {
+               c->Message(0, "Usage: #peqzone [zonename]");
+               c->Message(0, "Optional Usage: #peqzone [zoneid]");
+               return;
+       } else {
+			   zoneid = database.GetZoneID(sep->arg[1]);
+			   destzone = database.GetPEQZone(zoneid);
+               if(zoneid == 0) {
+                       c->Message(0, "Unable to locate zone '%s'", sep->arg[1]);
+                       return;
+               }
+               if(destzone == 0){
+                       c->Message(13, "You cannot use this command to enter that zone!");
+                       return;                          
+               }
+               if(zoneid == zone->GetZoneID()) {
+                       c->Message(13, "You cannot use this command on the zone you are in!");
+                       return;
+               }
+       }       
+
+       //zone to safe coords
+       c->CastToClient()->cheat_timer.Start(3500,false);
+       c->GetPTimers().Start(pTimerPeqzoneReuse, 300);
+       c->MovePC(zoneid, 0.0f, 0.0f, 0.0f, 0.0f, 0, ZoneToSafeCoords);
+}
+
 void command_movechar(Client *c, const Seperator *sep)
 {
 	if(sep->arg[1][0]==0 || sep->arg[2][0] == 0)
@@ -4101,7 +4190,8 @@ void command_repop(Client *c, const Seperator *sep)
 		{
 			char errbuf[MYSQL_ERRMSG_SIZE];
 			char *query = 0;
-			database.RunQuery(query, MakeAnyLenString(&query, "DELETE FROM respawn_times WHERE id=%lu",iterator.GetData()->GetID()), errbuf);
+			database.RunQuery(query, MakeAnyLenString(&query, "DELETE FROM respawn_times WHERE id=%lu" 
+				"AND instance_id=%lu",iterator.GetData()->GetID(), zone->GetInstanceID()), errbuf);
 			safe_delete_array(query);		
 			iterator.Advance();
 		}
@@ -4443,11 +4533,11 @@ void command_goto(Client *c, const Seperator *sep)
 {
 	// Pyro's goto function
 	if (sep->arg[1][0] == '\0' && c->GetTarget())
-		c->MovePC(c->GetTarget()->GetX(), c->GetTarget()->GetY(), c->GetTarget()->GetZ(), c->GetTarget()->GetHeading());
+		c->MovePC(zone->GetZoneID(), zone->GetInstanceID(), c->GetTarget()->GetX(), c->GetTarget()->GetY(), c->GetTarget()->GetZ(), c->GetTarget()->GetHeading());
 	else if (!(sep->IsNumber(1) && sep->IsNumber(2) && sep->IsNumber(3)))
 		c->Message(0, "Usage: #goto [x y z]");
 	else
-		c->MovePC(atof(sep->arg[1]), atof(sep->arg[2]), atof(sep->arg[3]), 0.0f);
+		c->MovePC(zone->GetZoneID(), zone->GetInstanceID(), atof(sep->arg[1]), atof(sep->arg[2]), atof(sep->arg[3]), 0.0f);
 }
 
 #ifdef BUGTRACK
@@ -6037,13 +6127,18 @@ void command_set_adventure_points(Client *c, const Seperator *sep)
 
 	if(!sep->arg[1][0])
 	{
-		c->Message(0, "Usage: #setadventurepoints [points]");
+		c->Message(0, "Usage: #setadventurepoints [points] [theme]");
 		return;
 	}
+	
+	if(!sep->IsNumber(1) || !sep->IsNumber(2))
+	{
+		c->Message(0, "Usage: #setadventurepoints [points] [theme]");
+		return;
+	}	
 
 	c->Message(0, "Updating adventure points for %s", t->GetName());
-//	t->GetPP().ldon_available_points=atoi(sep->arg[1]);
-	t->UpdateLDoNPoints(0, 1);
+	t->UpdateLDoNPoints(atoi(sep->arg[1]), atoi(sep->arg[2]));
 }
 
 void command_npcsay(Client *c, const Seperator *sep)
@@ -12155,7 +12250,7 @@ void command_summonburriedplayercorpse(Client *c, const Seperator *sep)
 		return;
 	}
 	
-	Corpse* PlayerCorpse = database.SummonBurriedPlayerCorpse(t->CharacterID(), t->GetZoneID(), t->GetX(), t->GetY(), t->GetZ(), t->GetHeading());
+	Corpse* PlayerCorpse = database.SummonBurriedPlayerCorpse(t->CharacterID(), t->GetZoneID(), zone->GetInstanceID(), t->GetX(), t->GetY(), t->GetZ(), t->GetHeading());
 
 	if(PlayerCorpse)
 		PlayerCorpse->Spawn();
@@ -12435,4 +12530,188 @@ void command_melody(Client *c, const Seperator *sep)
 	c->MelodySetState(true);
 
 	return;
+}
+
+void command_instance(Client *c, const Seperator *sep)
+{
+	if(!c)
+		return;
+
+	//options:
+	//help
+	//create [zone_id] [version]
+	//destroy [instance_id]
+	//add [instance_id] [player_name]
+	//remove [instance_id] [player_name]
+	//list [player_name]
+
+	if(strcasecmp(sep->arg[1], "help") == 0) 
+	{
+		c->Message(0, "#instance usage:");
+		c->Message(0, "#instance create zone_id version duration - Creates an instance of version 'version' in the " 
+			"zone with id matching zone_id, will last for duration seconds.");
+		c->Message(0, "#instance destroy instance_id - Destroys the instance with id matching instance_id.");
+		c->Message(0, "#instance add instance_id player_name - adds the player 'player_name' to the instance "
+			"with id matching instance_id.");
+		c->Message(0, "#instance remove instance_id player_name - removes the player 'player_name' from the "
+			"instance with id matching instance_id.");
+		c->Message(0, "#instance list player_name - lists all the instances 'player_name' is apart of.");
+		return;
+	}
+	else if(strcasecmp(sep->arg[1], "create") == 0)
+	{
+		if(!sep->IsNumber(3) || !sep->IsNumber(4))
+		{
+			c->Message(0, "#instance create zone_id version duration - Creates an instance of version 'version' in the " 
+				"zone with id matching zone_id, will last for duration seconds.");
+			return;
+		}
+
+		const char * zn = NULL;
+		int32 zone_id = 0;
+
+		if(sep->IsNumber(2))
+		{
+			zone_id = atoi(sep->arg[2]);
+		}
+		else
+		{
+			zone_id = database.GetZoneID(sep->arg[2]);
+		}
+
+		int32 version = atoi(sep->arg[3]);
+		int32 duration = atoi(sep->arg[4]);
+		zn = database.GetZoneName(zone_id);
+
+		if(!zn)
+		{
+			c->Message(0, "Zone with id %lu was not found by the server.", zone_id);
+			return;
+		}
+
+		int16 id = 0;
+		if(!database.GetUnusedInstanceID(id))
+		{
+			c->Message(0, "Server was unable to find a free instance id.");
+			return;
+		}
+
+		if(!database.CreateInstance(id, zone_id, version, duration))
+		{
+			c->Message(0, "Server was unable to create a new instance.");
+			return;
+		}
+		
+		c->Message(0, "New instance %s was created with id %lu.", zn, id);
+	}
+	else if(strcasecmp(sep->arg[1], "destroy") == 0)
+	{
+		if(!sep->IsNumber(2))
+		{
+			c->Message(0, "#instance destroy instance_id - Destroys the instance with id matching instance_id.");
+			return;
+		}
+
+		uint16 id = atoi(sep->arg[2]);
+		database.DeleteInstance(id);
+	}
+	else if(strcasecmp(sep->arg[1], "add") == 0)
+	{
+		if(!sep->IsNumber(2))
+		{
+			c->Message(0, "#instance add instance_id player_name - adds the player 'player_name' to the instance "
+				"with id matching instance_id.");
+			return;
+		}
+
+		int16 id = atoi(sep->arg[2]);
+		int32 charid = database.GetCharacterID(sep->arg[3]);
+
+		if(id <= 0 || charid <= 0)
+		{
+			c->Message(0, "Must enter a valid instance id and player name.");
+			return;
+		}
+
+		if(!database.CheckInstanceExists(id))
+		{
+			c->Message(0, "Instance does not exist.");
+			return;
+		}
+
+		int32 zone_id = database.ZoneIDFromInstanceID(id);
+		int32 version = database.VersionFromInstanceID(id);
+		int32 cur_id = database.GetInstanceID(zone_id, charid, version);
+		if(cur_id == 0)
+		{
+			if(database.AddClientToInstance(id, charid))
+			{
+				c->Message(0, "Added client to instance.");
+			}
+			else
+			{
+				c->Message(0, "Failed to add client to instance.");
+			}
+		}
+		else
+		{
+			c->Message(0, "Client was already saved to %u which has uses the same zone and version as that instance.", cur_id);
+		}
+	}
+	else if(strcasecmp(sep->arg[1], "remove") == 0)
+	{
+		if(!sep->IsNumber(2))
+		{
+			c->Message(0, "#instance remove instance_id player_name - removes the player 'player_name' from the "
+				"instance with id matching instance_id.");
+			return;
+		}
+
+		int16 id = atoi(sep->arg[2]);
+		int32 charid = database.GetCharacterID(sep->arg[3]);
+
+		if(id <= 0 || charid <= 0)
+		{
+			c->Message(0, "Must enter a valid instance id and player name.");
+		}
+
+		if(database.RemoveClientFromInstance(id, charid))
+		{
+			c->Message(0, "Removed client from instance.");
+		}
+		else
+		{
+			c->Message(0, "Failed to remove client from instance.");
+		}
+	}
+	else if(strcasecmp(sep->arg[1], "list") == 0)
+	{
+		int32 charid = database.GetCharacterID(sep->arg[2]);
+		if(charid <= 0)
+		{
+			if(c->GetTarget() == NULL || (c->GetTarget() && !c->GetTarget()->IsClient()))
+			{
+				c->Message(0, "Character not found.");
+				return;
+			}
+			else
+				charid = c->GetTarget()->CastToClient()->CharacterID();
+		}
+
+		database.ListAllInstances(c, charid);
+	}
+	else
+	{
+		c->Message(0, "Invalid Argument.");
+		c->Message(0, "#instance usage:");
+		c->Message(0, "#instance create zone_id version duration - Creates an instance of version 'version' in the " 
+			"zone with id matching zone_id, will last for duration seconds.");
+		c->Message(0, "#instance destroy instance_id - Destroys the instance with id matching instance_id.");
+		c->Message(0, "#instance add instance_id player_name - adds the player 'player_name' to the instance "
+			"with id matching instance_id.");
+		c->Message(0, "#instance remove instance_id player_name - removes the player 'player_name' from the "
+			"instance with id matching instance_id.");
+		c->Message(0, "#instance list player_name - lists all the instances 'player_name' is apart of.");
+		return;
+	}
 }

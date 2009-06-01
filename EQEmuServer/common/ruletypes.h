@@ -286,6 +286,15 @@ RULE_BOOL ( EventLog, RecordSellToMerchant, false ) // Record sales from a playe
 RULE_BOOL ( EventLog, RecordBuyFromMerchant, false ) // Record purchases by a player from an NPC merchant in eventlog table
 RULE_CATEGORY_END()
 
+RULE_CATEGORY ( Adventure )
+RULE_INT ( Adventure, MinNumberForGroup, 2 )
+RULE_INT ( Adventure, MaxNumberForGroup, 6 )
+RULE_INT ( Adventure, MinNumberForRaid, 18 )
+RULE_INT ( Adventure, MaxNumberForRaid, 36 )
+RULE_INT ( Adventure, MaxLevelRange, 9 )
+RULE_INT ( Adventure, ItemIDToEnablePorts, 41000 ) //0 to disable, otherwise using a LDoN portal will require the user to have this item.
+RULE_CATEGORY_END()
+
 #undef RULE_CATEGORY
 #undef RULE_INT
 #undef RULE_REAL

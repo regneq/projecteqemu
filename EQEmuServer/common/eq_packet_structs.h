@@ -20,6 +20,7 @@
 
 #include "types.h"
 #include <string.h>
+#include <string>
 #include <time.h>
 #include "../common/version.h"
 //#include "../common/item_struct.h"
@@ -86,31 +87,56 @@ struct DuelResponse_Struct
 	int32 entity_id;
 	int32 unknown;
 };
-/*
-	Cofruben:
-	Adventure stuff,not a net one,just one for our use
-*/
-static const uint32 ADVENTURE_COLLECT		= 0;
-static const uint32 ADVENTURE_MASSKILL		= 1;
-static const uint32 ADVENTURE_NAMED			= 2;
-static const uint32 ADVENTURE_RESCUE		= 3;
 
-struct AdventureInfo {
-	int32 QuestID;
-	int32 NPCID;
-	bool in_use;
-	int32 status;
-	bool ShowCompass;
-	int32 Objetive;// can be item to collect,mobs to kill,boss to kill and someone to rescue.
-	int32 ObjetiveValue;// number of items,or number of needed mob kills.
-	char text[512];
-	int8 type;
-	int32 minutes;
-	int32 points;
-	float x;
-	float y;
-	int32 zoneid;
-	int32 zonedungeonid;
+//adventure stuff
+enum AdventureObjective
+{
+	Adventure_Random = 0,
+	Adventure_Assassinate = 1,
+	Adventure_Kill = 2,
+	Adventure_Collect = 3,
+	Adventure_Rescue = 4
+};
+
+struct AdventureInfo 
+{
+	uint32 id;
+	std::string zone_name;
+	uint16 zone_version;
+	uint16 is_hard;
+	uint8 is_raid;
+	uint16 min_level;
+	uint16 max_level;
+	AdventureObjective type;
+	uint32 type_data;
+	uint16 type_count;
+	std::string text;
+	uint32 duration;
+	uint32 zone_in_time;
+	uint8 theme;
+	uint16 win_points;
+	uint16 lose_points;
+	uint16 zone_in_zone_id;
+	double zone_in_x; //loc of zone in object
+	double zone_in_y; //loc of zone in object
+	sint16 zone_in_object_id; //actually a global door id
+	double dest_x; //x we zone into
+	double dest_y; //y we zone into
+	double dest_z; //z we zone into
+	double dest_h; //h we zone into
+};
+
+struct AdventureDetails
+{
+	uint32 id;
+	AdventureInfo *ai;
+	sint32 instance_id;
+	int32 count;
+	int8 status;
+	int32 assassinate_count;
+	int32 time_created;
+	int32 time_zoned;
+	int32 time_completed;
 };
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -1697,6 +1723,14 @@ struct Adventure_Purchase_Struct {
 /*008*/	int32	variable;
 };
 
+struct Adventure_Sell_Struct {
+/*000*/	int32	unknown000;	//0x01
+/*004*/	int32	npcid;
+/*008*/	int32	slot;
+/*012*/	int32	charges;
+/*016*/	int32	sell_price;
+};
+
 
 struct AdventurePoints_Update_Struct {
 /*000*/	uint32	ldon_available_points;		// Total available points
@@ -1715,28 +1749,77 @@ struct AdventurePoints_Update_Struct {
 };
 
 struct AdventureFinish_Struct{
-	uint32 win_lose;//Cofruben: 00 is a lose,01 is win.
-	uint32 points;
+/*000*/ uint32 win_lose;//Cofruben: 00 is a lose,01 is win.
+/*004*/ uint32 points;
+/*008*/
 };
 //OP_AdventureRequest
 struct AdventureRequest_Struct{
-	int32 risk;//1 normal,2 hard.
-	int32 entity_id;
+/*000*/	int32 risk;//1 normal,2 hard.
+/*004*/	int32 entity_id;
+/*008*/	int32 type;
+/*012*/
 };
 struct AdventureRequestResponse_Struct{
-	int32 unknown000;
-	char text[2048];
-	int32 timetoenter;
-	int32 timeleft;
-	int32 risk;
-	float x;
-	float y;
-	float z;
-	int32 showcompass;
-	int32 unknown2080;
+/*0000*/ int32 unknown000;
+/*0004*/ char text[2048];
+/*2052*/ int32 timetoenter;
+/*2056*/ int32 timeleft;
+/*2060*/ int32 risk;
+/*2064*/ float x;
+/*2068*/ float y;
+/*2072*/ float z;
+/*2076*/ int32 showcompass;
+/*2080*/ int32 unknown2080;
+/*2084*/
 };
 
+struct AdventureCountUpdate_Struct
+{
+/*000*/ int32 current;
+/*004*/	int32 total;
+/*008*/
+};
 
+struct AdventureStatsColumn_Struct
+{
+/*000*/ int32 total;
+/*004*/	int32 guk;
+/*008*/	int32 mir;
+/*012*/	int32 mmc;
+/*016*/	int32 ruj;
+/*020*/	int32 tak;
+/*024*/
+};
+
+struct AdventureStats_Struct
+{
+/*000*/ AdventureStatsColumn_Struct success;
+/*024*/ AdventureStatsColumn_Struct failure;
+/*048*/	AdventureStatsColumn_Struct rank;
+/*072*/	AdventureStatsColumn_Struct rank2;
+/*096*/
+};
+
+//this is mostly right but something is off that causes the client to crash sometimes
+//I don't really care enough about the feature to work on it anymore though.
+struct AdventureLeaderboardEntry_Struct
+{
+/*004*/ char name[64];
+/*008*/ int32 success;
+/*012*/ int32 failure;
+/*016*/
+};
+
+struct AdventureLeaderboard_Struct
+{
+/*000*/ int32 unknown000;
+/*004*/ int32 unknown004;
+/*008*/ int32 success;
+/*012*/ int32 failure;
+/*016*/ int32 our_rank;
+/*020*/	
+};
 
 /*struct Item_Shop_Struct {
 	uint16 merchantid;

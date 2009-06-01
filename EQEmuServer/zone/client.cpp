@@ -239,6 +239,8 @@ Client::Client(EQStreamInterface* ieqs)
 	m_pp.autosplit = false;
 	// Kaiyodo - initialise haste variable
 	m_tradeskill_object = NULL;
+	m_offered_adventure = NULL;
+	m_current_adventure = NULL;
 	delaytimer = false;
 	pendingrezzexp = 1;
 	numclients++;
@@ -335,7 +337,11 @@ Client::~Client() {
 	// we save right now, because the client might be zoning and the world
 	// will need this data right away
 	Save(2); // This fails when database destructor is called first on shutdown
+
 	safe_delete(taskstate);
+	safe_delete(KarmaUpdateTimer);
+	safe_delete(GlobalChatLimiterTimer);
+
 	numclients--;
 	UpdateWindowTitle();
 	zone->RemoveAuth(GetName());
@@ -855,6 +861,8 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, int8 lang_skil
 
 		if (target != 0 && target->IsNPC()) {
 			if(!target->CastToNPC()->IsEngaged()) {
+
+				CheckLDoNHail(target);
 #ifdef EMBPERL
 				if(((PerlembParser *)parse)->HasQuestSub(target->GetNPCTypeID(),"EVENT_SAY")){
 #endif
@@ -1268,6 +1276,7 @@ void Client::UpdateWho(int8 remove) {
 	scl->LSAccountID = this->LSAccountID();
 	strn0cpy(scl->lskey, lskey, sizeof(scl->lskey));
 	scl->zone = zone->GetZoneID();
+	scl->instance_id = zone->GetInstanceID();
 	scl->race = this->GetRace();
 	scl->class_ = GetClass();
 	scl->level = GetLevel();
@@ -3093,270 +3102,6 @@ void Client::LogSQL(const char *fmt, ...) {
 	va_end(argptr);
 }
 
-
-
-
-
-
-
-/*
-	Cofruben:Starting LDoN adventure system
-*/
-bool IsInAdventure(int32 id,int32 qid) {
-	for(int zo=0;zo<6;zo++){
-		if(database.GetAdventureChar(zo,qid) == id){
-			return true;
-		}
-		else
-			continue;
-	}
-	return false;
-}
-void Client::DeleteCharInAdventure(int32 id,int32 qid) {
-	int zo;
-	for(zo=0;zo<6;zo++){
-		if(database.GetAdventureChar(zo,qid) == id){
-			database.SetAdventureChar(zo,0,qid);
-			break;
-		}
-	}
-	int32 count=0;
-	for(zo=0;zo<6;zo++) {
-		int32 ac=database.GetAdventureChar(zo,GetAdventureID());
-		if(ac>0){
-			Client* z=NULL;
-			z=entity_list.GetClientByCharID(ac);
-			if(z!=NULL && z->IsClient())
-				count++;
-		}
-	}
-	if(count==0) {
-		database.SetAdventureInfo(GetAdventureID(),false,0);
-	}
-}
-void Client::SendAdventureFinish(uint32 state,uint32 points,bool grouptoo)
-{
-	if(GetAdventureID()==0)return;
-	EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureFinish,sizeof(AdventureFinish_Struct));
-	memset(outapp->pBuffer,0,outapp->size);
-	AdventureFinish_Struct* af=(AdventureFinish_Struct*)outapp->pBuffer;
-	AdventureInfo AI=database.GetAdventureInfo(GetAdventureID());
-	int32 advid=GetAdventureID();
-	if(grouptoo==true){//cambiar el grupo por los id's de char's de db
-		int z;
-		for(z=0;z<6;z++){
-			int32 id=database.GetAdventureChar(z,advid);
-			if( id > 0) {
-				Client* c=entity_list.GetClientByCharID(id);
-				if(c!=NULL && c->IsClient() && c->CastToClient()->GetAdventureID() == AI.QuestID ) {
-					c->CastToClient()->SendAdventureFinish(1,points,false);
-				}
-			}
-
-		}
-		for(z=0;z<6;z++)
-			database.SetAdventureChar(z,0,GetAdventureID());
-	}
-	else {
-		if(state==0){ //lose
-			af->points=0;
-			af->win_lose=0;
-		}
-		else { //win
-			af->points=points;
-			if(af->points==0)af->points=1;
-			af->win_lose=1;
-			UpdateLDoNPoints(points,0);
-		}
-		DumpPacket(outapp);
-		DeleteCharInAdventure(CharacterID(),GetAdventureID());
-
-		if(p_timers.Get(pTimerAdventureTimer))p_timers.Disable(pTimerAdventureTimer);
-		if(p_timers.Get(pTimerStartAdventureTimer))p_timers.Disable(pTimerStartAdventureTimer);
-		SetAdventureID(0);
-		QueuePacket(outapp);
-		safe_delete(outapp);
-	}
-}
-void Client::SendAdventureInfoRequest(const EQApplicationPacket* app){
-	EntityId_Struct* eid = (EntityId_Struct*)app->pBuffer;
-	Mob* tmp = entity_list.GetMob(eid->entity_id);
-	char* buffer1;
-	SetAdventureID(tmp->GetNPCTypeID());
-	char* p = NULL;
-	p = database.GetAdventureNPCText(tmp->GetNPCTypeID(), p);
-	if(p == NULL)
-		return;
-	buffer1=new char[strlen(p)+1];
-	strcpy(buffer1,p);
-	EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureInfo,strlen(buffer1)+1);
-	memset(outapp->pBuffer,0,outapp->size);
-	char* buffer=(char*)outapp->pBuffer;
-	memcpy(buffer,buffer1, strlen(buffer1)+1);
-	QueuePacket(outapp);
-	safe_delete(outapp);
-	safe_delete_array(buffer1);
-	safe_delete_array(p);
-}
-void Client::SendAdventureUpdate(){
-	AdventureInfo AF=database.GetAdventureInfo(GetAdventureID());
-	database.SetAdventureInfo(GetAdventureID(),true,AF.status+1);
-	AF.status+=1;
-	EQApplicationPacket* outapp=new EQApplicationPacket(OP_AdventureUpdate,8);
-	uchar* p=(uchar*)outapp->pBuffer;
-	memcpy(p,&AF.status,4);
-	p+=4;
-	memcpy(p,&AF.ObjetiveValue,4);
-	for(int o=0;o<6;o++) {
-		Client* id=NULL;
-		int32 cid=database.GetAdventureChar(o,GetAdventureID());
-		id=entity_list.GetClientByCharID(cid);
-		if(id!=NULL && id->CastToClient()->GetAdventureID()>0) {
-			id->CastToClient()->QueuePacket(outapp);
-		}
-	}
-	if(AF.ObjetiveValue == AF.status)SendAdventureFinish(1,AF.points,true);
-	safe_delete(outapp);
-}
-
-
-void Client::SendAdventureRequest(){
-	printf("Sending adventure info to %s...\n",GetName());
-	int rd=MakeRandomInt(0,3);
-	int count=0;
-	char* buffer1;
-	AdventureInfo AF=database.GetAdventureInfo(0,GetAdventureID(),rd);
-	EQApplicationPacket* outapp;
-	bool flag=AF.in_use;
-	while(flag==true && count!=20){
-		if(flag==0)break;
-		Sleep(2);
-		rd=MakeRandomInt(0,3);
-		AF=database.GetAdventureInfo(0,GetAdventureID(),rd);
-		flag=AF.in_use;
-		count++;
-		if(count>=20){
-			break;
-		}
-	}
-	if(count==20){
-		const char* p="There is no adventure available";
-//		printf("%s\n", p);
-		outapp=new EQApplicationPacket(OP_AdventureInfo,strlen(p)+1);
-		buffer1=new char[strlen(p)+1];
-		strcpy(buffer1,p);
-		buffer1[strlen(p)]=0x00;
-	}
-	else {
-		outapp = new EQApplicationPacket(OP_AdventureDetails,strlen(AF.text)+1);
-		buffer1=new char[strlen(AF.text)+1];
-		strcpy(buffer1,AF.text);
-		buffer1[strlen(AF.text)]=0x00;
-	}
-	char* buffer=(char*)outapp->pBuffer;
-	memset(outapp->pBuffer,0,outapp->size);
-	memcpy(buffer,buffer1, strlen(buffer1)+1);
-	SetAdventureID(AF.QuestID);
-	QueuePacket(outapp);
-	safe_delete(outapp);
-	safe_delete_array(buffer1);
-
-}
-void Client::SendAdventureRequestData(Group* group,bool EnteredDungeon,bool EnteredZone,bool Zoned){
-	bool send=false;
-	AdventureInfo AF=database.GetAdventureInfo(GetAdventureID());
-	if(strlen(AF.text)<2){
-		printf("adventure with id %i not found!\n",GetAdventureID());
-		return;
-	}
-	EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureData,sizeof(AdventureRequestResponse_Struct));
-	memset(outapp->pBuffer,0,outapp->size);
-	AdventureRequestResponse_Struct* adrr=(AdventureRequestResponse_Struct*)outapp->pBuffer;
-	adrr->risk=1;
-	adrr->unknown000=0xBFC40100;
-	strcpy(adrr->text,AF.text);
-	int32 ID=GetAdventureID();
-	adrr->x=AF.x;
-	adrr->y=AF.y;
-	adrr->z=0;
-	adrr->unknown2080=0x0A;
-	database.SetAdventureInfo(ID,true,0);
-	if(EnteredDungeon==false && EnteredZone==false && !p_timers.Enabled(pTimerStartAdventureTimer))
-	{
-		for(int z=0;z<6;z++)
-			database.SetAdventureChar(z,0,ID);
-		adrr->timeleft=30*60;
-	}
-	else if(EnteredDungeon==false && EnteredZone==false && p_timers.Enabled(pTimerStartAdventureTimer))
-	{
-		adrr->timeleft=p_timers.GetRemainingTime(pTimerStartAdventureTimer);
-		send=true;
-	}
-	else if(EnteredDungeon==true && !p_timers.Enabled(pTimerAdventureTimer)){
-		adrr->timeleft=AF.minutes*60;
-	}
-	else if(EnteredDungeon==true && p_timers.Enabled(pTimerAdventureTimer)){
-		adrr->timeleft=p_timers.GetRemainingTime(pTimerAdventureTimer);
-		send=true;
-	}
-	if(EnteredZone==true) {
-		adrr->showcompass=AF.ShowCompass;
-		printf("Client %s entered compass zone.\n", GetName());
-		Zoned=true;
-		send=true;
-	}
-	else
-		adrr->showcompass=0;
-	if(Zoned==true) {
-		send=true;
-		if(p_timers.Enabled(pTimerAdventureTimer)
-			&& p_timers.GetRemainingTime(pTimerAdventureTimer)>0)
-			adrr->timeleft=p_timers.GetRemainingTime(pTimerAdventureTimer);
-		else if(p_timers.Enabled(pTimerStartAdventureTimer)
-			&& p_timers.GetRemainingTime(pTimerStartAdventureTimer)>0)
-			adrr->timeleft=p_timers.GetRemainingTime(pTimerStartAdventureTimer);
-		else {
-			printf("zoned sin timer %i\n",ID);
-			EnteredZone=true;
-			SetAdventureID(0);
-			send=false;
-			return;
-		}
-	}
-	if(send==true){
-		QueuePacket(outapp);
-		safe_delete(outapp);
-		return;
-	}
-	for(int xx=0;xx<6;xx++){
-		if(EnteredDungeon==false && EnteredZone==false){
-			if(group && group->members[xx]!=NULL && group->members[xx]->IsClient() && !group->members[xx]->CastToClient()->p_timers.Enabled(pTimerStartAdventureTimer)){
-					group->members[xx]->CastToClient()->QueuePacket(outapp);
-					group->members[xx]->CastToClient()->SetAdventureID(ID);
-					group->members[xx]->CastToClient()->p_timers.Start(pTimerStartAdventureTimer,30*60);//* 60
-					database.SetAdventureChar(xx,group->members[xx]->CastToClient()->CharacterID(),ID);
-			}
-		}
-		else if(EnteredDungeon==true && EnteredZone==false){
-				int32 id=database.GetAdventureChar(xx,ID);
-				if(id==0)continue;
-				Client* c=entity_list.GetClientByCharID(id);
-				if(c==NULL || !c->IsClient())continue;
-				if(c->CastToClient()->p_timers.Enabled(pTimerAdventureTimer) == true)continue;
-				c->CastToClient()->QueuePacket(outapp);
-				printf("Client %s entered a dungeon\n",c->GetName());
-				c->CastToClient()->p_timers.Disable(pTimerStartAdventureTimer);
-				c->CastToClient()->p_timers.Start(pTimerAdventureTimer,AF.minutes*60);//* 60
-		}
-		if(group && group->members[xx]!=NULL && group->members[xx]->IsClient() &&
-			group->members[xx]->CastToClient()->GetAdventureID()==0){
-			group->members[xx]->CastToClient()->Message(0,"You should not be in this group,adventure error!");
-			group->members[xx]->CastToClient()->LeaveGroup();
-		}
-	}
-	safe_delete(outapp);
-}
-
 void Client::GetGroupAAs(GroupLeadershipAA_Struct *into) const {
 	memcpy(into, &m_pp.leader_abilities, sizeof(GroupLeadershipAA_Struct));
 }
@@ -4079,4 +3824,526 @@ void Client::SendRespawnBinds()
 
 	QueuePacket(outapp);
 	safe_delete(outapp);
+}
+
+void Client::SendAdventureSelection(Mob* rec, int32 difficulty, int32 type)
+{
+	if(GetCurrentAdventure())
+	{
+		SendAdventureError("You cannot request an adventure because you are still resting from your last one.");
+		LogFile->write(EQEMuLog::Debug, "Client::SendAdventureSelection(): Client already in adventure");
+		return;
+	}
+
+	if(!zone)
+	{
+		LogFile->write(EQEMuLog::Debug, "Client::SendAdventureSelection(): Zone did not exist");
+		return;
+	}
+
+	if(!rec)
+	{
+		LogFile->write(EQEMuLog::Debug, "Client::SendAdventureSelection(): Mob did not exist");
+		return;
+	}
+
+	if(!rec->IsNPC())
+	{
+		LogFile->write(EQEMuLog::Debug, "Client::SendAdventureSelection(): Mob was not a NPC");
+		return;
+	}
+
+	int32 temp_id = rec->CastToNPC()->adventure_template_id;
+	if(temp_id == 0)
+	{
+		SendAdventureError("No adventures found for this npc.");
+		LogFile->write(EQEMuLog::Debug, "Client::SendAdventureSelection(): NPC had no template id");
+		return;
+	}
+
+	std::list<AdventureInfo*> cur_list;
+	std::map<uint32,std::list<AdventureInfo*> >::iterator iter;
+
+	iter = zone->adventure_entry_list.find(temp_id);
+
+	if(iter == zone->adventure_entry_list.end())
+	{
+		SendAdventureError("No adventures found for this npc.");
+		LogFile->write(EQEMuLog::Debug, "Client::SendAdventureSelection(): Our list was not found");
+		return;
+	}
+	else
+	{
+		std::list<AdventureInfo*> level_limited_list;
+		cur_list = zone->adventure_entry_list[temp_id];
+		
+		int32 avg_level = 0;
+		int32 lvl_range = 0;
+		int8 is_raid = 0xFF;
+
+		if(GetRaid())
+		{
+			int8 count = GetRaid()->RaidCount();
+			if(count >= RuleI(Adventure, MinNumberForGroup) && count <= RuleI(Adventure, MaxNumberForGroup))
+			{
+				is_raid = 0;
+			}
+			else if(count >= RuleI(Adventure, MinNumberForRaid) && count <= RuleI(Adventure, MaxNumberForRaid))
+			{
+				is_raid = 1;
+			}
+			else
+			{
+				SendAdventureError("No adventure was found for a group of this size.");
+				LogFile->write(EQEMuLog::Debug, "Client::SendAdventureSelection(): Group size was invalid.");
+				return;
+			}
+			database.RaidAdventureLevelAndRange(GetRaid()->GetID(), avg_level, lvl_range);
+			if(lvl_range > RuleI(Adventure, MaxLevelRange))
+			{
+				SendAdventureError("Adventurers must be within %u levels of the highest member.", RuleI(Adventure, MaxLevelRange));
+				LogFile->write(EQEMuLog::Debug, "Client::SendAdventureSelection(): Group range check failed.");
+				return;
+			}
+		}
+		else if(GetGroup())
+		{
+			int8 count = GetGroup()->GroupCount();
+			is_raid = 0;
+			if(count > RuleI(Adventure, MaxNumberForGroup) || count < RuleI(Adventure, MinNumberForGroup))
+			{
+				SendAdventureError("No adventure was found for a group of this size.");
+				LogFile->write(EQEMuLog::Debug, "Client::SendAdventureSelection(): Group size was invalid.");
+				return;
+			}
+			database.GroupAdventureLevelAndRange(GetGroup()->GetID(), avg_level, lvl_range);
+			if(lvl_range > RuleI(Adventure, MaxLevelRange))
+			{
+				SendAdventureError("Adventurers must be within 9 levels of the highest member.");
+				LogFile->write(EQEMuLog::Debug, "Client::SendAdventureSelection(): Group range check failed.");
+				return;
+			}
+		}
+		else
+		{
+			SendAdventureError("Requesting an Adventure requires a group.");
+			LogFile->write(EQEMuLog::Debug, "Client::SendAdventureSelection(): Player was ungrouped.");
+			return;
+		}
+
+		std::list<AdventureInfo*>::iterator it;
+		it = cur_list.begin();
+		while(it != cur_list.end())
+		{
+			AdventureInfo* t = (*it);
+			if(t)
+			{
+				if(t->is_raid == is_raid)
+				{
+					if(avg_level >= t->min_level && avg_level <= t->max_level)
+					{
+						if(type != 0)
+						{
+							if(type == t->type)
+							{
+								if(difficulty == t->is_hard)
+								{
+									level_limited_list.push_back(t);
+								}
+							}
+						}
+						else
+						{
+							if(difficulty == t->is_hard)
+							{
+								level_limited_list.push_back(t);
+							}
+						}
+					}
+				}
+			}
+			it++;
+		}
+
+		if(level_limited_list.size() == 0)
+		{
+			SendAdventureError("No adventures found.");
+			LogFile->write(EQEMuLog::Debug, "Client::SendAdventureSelection(): no adventures found matching criteria.");
+			return;
+		}
+
+		int32 rand_sel = MakeRandomInt(0, level_limited_list.size()-1);
+
+		it = level_limited_list.begin();
+		int x = 0;
+		while(x != rand_sel)
+		{
+			it++;
+			x++;
+		}
+		AdventureInfo *a = (*it);
+		if(!a)
+		{
+			SendAdventureError("Adventure selected was corrupt.");
+			LogFile->write(EQEMuLog::Debug, "Client::SendAdventureSelection(): Adventure info was null");
+			return;
+		}
+
+		if(a->text.size() == 0)
+		{
+			SendAdventureError("Adventure selected was corrupt.");
+			LogFile->write(EQEMuLog::Debug, "Client::SendAdventureSelection(): Adventure text size was 0");
+			return;
+		}
+
+		SetOfferedAdventure(a);
+		EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureDetails, (a->text.size() + 2));
+		strncpy((char*)outapp->pBuffer, a->text.c_str(), a->text.size());
+		FastQueuePacket(&outapp);
+	}
+}
+
+void Client::SendAdventureError(const char* msg, ...)
+{
+	va_list argptr;
+	char *buffer = new char[1024];
+	memset(buffer, 0, 1024);
+
+	va_start(argptr, msg);
+	vsnprintf(buffer, 1024, msg, argptr);
+	va_end(argptr);
+
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureInfo, (strlen(buffer) + 2));
+	strncpy((char*)outapp->pBuffer, buffer, strlen(buffer));
+
+	FastQueuePacket(&outapp);
+	safe_delete_array(buffer);
+}
+
+void Client::AcceptAdventure()
+{
+	if(GetCurrentAdventure())
+		return;
+
+	Group *g = GetGroup();
+	Raid *r = GetRaid();
+
+	if(!g && !r)
+		return;
+
+	AdventureInfo *t = GetOfferedAdventure();
+	if(t)
+	{
+		int32 adv_id = database.CreateAdventure(t->id);
+		if(adv_id != 0)
+		{
+			AdventureDetails *ad = new AdventureDetails;
+
+			timeval tv;
+			gettimeofday(&tv, NULL);
+
+			ad->ai = t;
+			ad->count = 0;
+			ad->assassinate_count = 0;
+			ad->id = adv_id;
+			ad->instance_id = -1;
+			ad->status = 0;
+			ad->time_created = tv.tv_sec;
+			ad->time_zoned = 0;
+			ad->time_completed = 0;
+
+			if(g)
+			{
+				int count = g->GroupCount();
+				if(t->is_raid)
+				{
+					safe_delete(ad)
+					return;
+				}
+				else
+				{
+					if(count < RuleI(Adventure, MinNumberForGroup) || count > RuleI(Adventure, MaxNumberForGroup))
+					{
+						safe_delete(ad)
+						return;
+					}
+				}
+				database.AddGroupToAdventure(adv_id, g->GetID());
+			}
+			else if(r)
+			{
+				int count = r->RaidCount();
+				if(t->is_raid)
+				{
+					if(count < RuleI(Adventure, MinNumberForRaid) || count > RuleI(Adventure, MaxNumberForRaid))
+					{
+						safe_delete(ad)
+						return;
+					}
+				}
+				else
+				{
+					if(count < RuleI(Adventure, MinNumberForGroup) || count > RuleI(Adventure, MaxNumberForGroup))
+					{
+						safe_delete(ad)
+						return;
+					}
+				}
+				database.AddRaidToAdventure(adv_id, r->GetID());
+			}
+
+			zone->active_adventures[adv_id] = ad;
+
+			ServerPacket* pack = new ServerPacket(ServerOP_AdventureCreate, sizeof(ServerAdventureCreate_Struct));
+			ServerAdventureCreate_Struct *ac = (ServerAdventureCreate_Struct*)pack->pBuffer;
+			ac->id = ad->id;
+			ac->adv_template_id = ad->ai->id;
+			ac->instance_id = ad->instance_id;
+			ac->status = ad->status;
+			ac->count = ad->count;
+			ac->time_created = ad->time_created;
+			ac->time_zoned = ad->time_zoned;
+			ac->time_completed = ad->time_completed;
+			ac->from_zone_id = zone->GetZoneID();
+			ac->from_instance_id = zone->GetInstanceID();
+			worldserver.SendPacket(pack);
+			safe_delete(pack);
+
+			if(r)
+			{
+				for(int x = 0; x < MAX_RAID_MEMBERS; ++x)
+				{
+					if(r->members[x].member)
+					{
+						r->members[x].member->SetCurrentAdventure(ad);
+						r->members[x].member->SetOfferedAdventure(NULL);
+						r->members[x].member->SendAdventureDetail();
+					}
+					else if(strlen(r->members[x].membername) > 0)
+					{
+						ServerPacket* member_pack = new ServerPacket(ServerOP_AdventureAddPlayer, sizeof(ServerAdventureAddPlayer_Struct));
+						ServerAdventureAddPlayer_Struct *ap = (ServerAdventureAddPlayer_Struct*)member_pack->pBuffer;
+						ap->id = ad->id;
+						strcpy(ap->player_name, r->members[x].membername);
+						worldserver.SendPacket(member_pack);
+						safe_delete(member_pack);
+					}
+				}
+			}
+			else if(g)
+			{
+				for(int x = 0; x < MAX_GROUP_MEMBERS; ++x)
+				{
+					if(g->members[x] && g->members[x]->IsClient())
+					{
+						g->members[x]->CastToClient()->SetCurrentAdventure(ad);
+						g->members[x]->CastToClient()->SetOfferedAdventure(NULL);
+						g->members[x]->CastToClient()->SendAdventureDetail();
+					}
+					else if(strlen(g->membername[x]) > 0)
+					{
+						ServerPacket* member_pack = new ServerPacket(ServerOP_AdventureAddPlayer, sizeof(ServerAdventureAddPlayer_Struct));
+						ServerAdventureAddPlayer_Struct *ap = (ServerAdventureAddPlayer_Struct*)member_pack->pBuffer;
+						ap->id = ad->id;
+						strcpy(ap->player_name, g->membername[x]);
+						worldserver.SendPacket(member_pack);
+						safe_delete(member_pack);
+					}
+				}
+			}
+		}
+	}
+}
+
+void Client::DeclineAdventure()
+{
+	//send whatever packets
+	//do whatever lockout.
+	SetOfferedAdventure(NULL);
+}
+
+void Client::LeaveAdventure()
+{
+	AdventureDetails *ad = GetCurrentAdventure();
+	if(ad && ad->ai)
+	{
+		if(ad->status >= 2)
+			return;
+
+		database.UpdateAdventureStatsEntry(CharacterID(), ad->ai->theme, false);
+		database.RemovePlayerFromAdventure(ad->id, CharacterID());
+		if(database.CountPlayersInAdventure(ad->id) == 0)
+		{
+			database.DestroyAdventure(ad->id);
+			ServerPacket *pack = new ServerPacket(ServerOP_AdventureDestroy, sizeof(ServerAdventureDestroy_Struct));
+			ServerAdventureDestroy_Struct *adest = (ServerAdventureDestroy_Struct*)pack->pBuffer;
+			adest->id = ad->id;
+			worldserver.SendPacket(pack);
+			safe_delete(pack);
+		}
+		SetCurrentAdventure(NULL);
+		SendAdventureError("You are not currently in an adventure.");
+	}
+}
+
+void Client::SendAdventureDetail()
+{
+	AdventureDetails *ad = GetCurrentAdventure();
+
+	if(!ad)
+	{
+		return;
+	}
+
+	if(!ad->ai)
+	{
+		return;
+	}
+
+	if(ad->status >= 2)
+		return;	
+	
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureData, sizeof(AdventureRequestResponse_Struct));
+	AdventureRequestResponse_Struct *arr = (AdventureRequestResponse_Struct*)outapp->pBuffer;
+	timeval tv;
+	gettimeofday(&tv, NULL);
+
+	arr->unknown000 = 0xBFC40100;
+	arr->risk = ad->ai->is_hard+1;
+	strncpy(arr->text, ad->ai->text.c_str(), ad->ai->text.size());
+	
+	if(ad->time_completed > 0)
+	{
+		arr->timeleft = (ad->time_completed + 1800) - tv.tv_sec;
+	}
+	else if(ad->instance_id > 0)
+	{
+		arr->timeleft = (ad->time_zoned + ad->ai->duration) - tv.tv_sec;
+	}
+	else
+	{
+		arr->timetoenter = (ad->time_created + ad->ai->zone_in_time) - tv.tv_sec;
+	}
+	
+	if(zone->GetZoneID() == ad->ai->zone_in_zone_id)
+	{
+		arr->showcompass = 1;
+		arr->x = ad->ai->zone_in_y;
+		arr->y = ad->ai->zone_in_x;
+		arr->z = 0.0;
+	}
+	else
+	{
+		arr->showcompass = 0;
+		arr->x = 0.0;
+		arr->y = 0.0;
+		arr->z = 0.0;
+	}
+	arr->unknown2080=0x0A;
+	FastQueuePacket(&outapp);
+	SendAdventureCountUpdate(ad->count, ad->ai->type_count);
+}
+
+void Client::SendAdventureFinish(int8 win, int32 points, int32 theme)
+{
+	if(win > 0)
+	{
+		UpdateLDoNPoints(points, theme);
+		EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureFinish, sizeof(AdventureFinish_Struct));
+		AdventureFinish_Struct *af = (AdventureFinish_Struct*)outapp->pBuffer;
+		af->win_lose = 1;
+		af->points = points;
+		FastQueuePacket(&outapp);
+	}
+	else
+	{
+		EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureFinish, sizeof(AdventureFinish_Struct));
+		AdventureFinish_Struct *af = (AdventureFinish_Struct*)outapp->pBuffer;
+		af->win_lose = 0;
+		af->points = 0;
+		FastQueuePacket(&outapp);
+	}
+}
+
+void Client::SendAdventureCountUpdate(int32 current, int32 total)
+{
+		EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureUpdate, sizeof(AdventureCountUpdate_Struct));
+		AdventureCountUpdate_Struct *acu = (AdventureCountUpdate_Struct*)outapp->pBuffer;
+		acu->current = current;
+		acu->total = total;
+		FastQueuePacket(&outapp);
+}
+
+void Client::CheckLDoNHail(Mob *target)
+{
+	AdventureDetails *ad = GetCurrentAdventure();
+	if(ad && ad->ai)
+	{
+		if(ad->ai->type == Adventure_Rescue)
+		{
+			if(zone->GetInstanceID() == ad->instance_id && target->GetNPCTypeID() == ad->ai->type_data)
+			{
+				if(target->GetOwner() == NULL)
+				{
+					if(entity_list.CheckNPCsClose(target) == 0)
+					{
+						if(GetPet())
+						{
+							if(GetPet()->GetPetType() == petCharmed)
+							{
+								BuffFadeByEffect(SE_Charm);
+								SetPet(target);
+								target->SetOwnerID(GetID());
+								target->Say("Wonderful! Someone to set me free! I feared for my life for so long,"
+									" never knowing when they might choose to end my life. Now that you're here though"
+									" I can rest easy. Please help me find my way out of here as soon as you can" 
+									" I'll stay close behind you!");
+								Message(11, "You focus your attention on leading the hostage to saftey and lose your "
+									"connection to your summoned companion.");
+							}
+							else if(GetPet()->GetPetType() == petNPCFollow)
+							{
+								GetPet()->SetOwnerID(0);
+								SetPet(target);
+								target->SetOwnerID(GetID());
+								target->Say("Wonderful! Someone to set me free! I feared for my life for so long,"
+									" never knowing when they might choose to end my life. Now that you're here though"
+									" I can rest easy. Please help me find my way out of here as soon as you can" 
+									" I'll stay close behind you!");
+								Message(11, "You focus your attention on leading the hostage to saftey and lose your "
+									"connection to your summoned companion.");
+							}
+							else
+							{
+								GetPet()->Depop();
+								SetPet(target);
+								target->SetOwnerID(GetID());
+								target->Say("Wonderful! Someone to set me free! I feared for my life for so long,"
+									" never knowing when they might choose to end my life. Now that you're here though"
+									" I can rest easy. Please help me find my way out of here as soon as you can" 
+									" I'll stay close behind you!");
+								Message(11, "You focus your attention on leading the hostage to saftey and lose your "
+									"connection to your summoned companion.");
+							}
+						}
+						else
+						{
+							SetPet(target);
+							target->SetOwnerID(GetID());
+							target->Say("Wonderful! Someone to set me free! I feared for my life for so long,"
+								" never knowing when they might choose to end my life. Now that you're here though"
+								" I can rest easy. Please help me find my way out of here as soon as you can" 
+								" I'll stay close behind you!");
+						}
+					}
+					else
+					{
+						target->Say("You're here to save me? I couldn't possibly risk leaving yet. There are "
+							"far too many of those horrid things out there waiting to recapture me! Please get"
+							" rid of some more of those vermin and then we can try to leave.");
+					}
+				}
+			}
+		}
+	}
 }

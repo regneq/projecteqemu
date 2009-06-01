@@ -395,6 +395,8 @@ void PerlembParser::Event(QuestEventID event, int32 npcid, const char * data, NP
 		ExportVar(packagename.c_str(), "zoneid", zone->GetZoneID());
 		ExportVar(packagename.c_str(), "zoneln", zone->GetLongName());
 		ExportVar(packagename.c_str(), "zonesn", zone->GetShortName());
+		ExportVar(packagename.c_str(), "instanceid", zone->GetInstanceID());
+		ExportVar(packagename.c_str(), "instanceversion", zone->GetInstanceVersion());
 		TimeOfDay_Struct eqTime;
 		zone->zone_time.getEQTimeOfDay( time(0), &eqTime);
 		ExportVar(packagename.c_str(), "zonehour", eqTime.hour - 1);

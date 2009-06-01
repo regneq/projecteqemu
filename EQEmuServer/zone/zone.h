@@ -24,6 +24,7 @@
 #include "../common/eqtime.h"
 #include "../common/servertalk.h"
 #include "../common/rulesys.h"
+#include "../common/eq_packet_structs.h"
 #include "features.h"
 #include "spawngroup.h"
 //#include "mob.h"
@@ -69,10 +70,10 @@ class database;
 class Zone
 {
 public:
-	static bool Bootup(int32 iZoneID, bool iStaticZone = false);
+	static bool Bootup(int32 iZoneID, int32 iInstanceID, bool iStaticZone = false);
 	static void Shutdown(bool quite = false);
 	
-	Zone(int32 in_zoneid, const char* in_short_name);
+	Zone(int32 in_zoneid, int32 in_instanceid, const char* in_short_name);
 	~Zone();
 	bool	Init(bool iStaticZone);
 	bool	LoadZoneCFG(const char* filename, bool DontLoadDefault = false);
@@ -83,6 +84,10 @@ public:
 	inline const char*	GetFileName()	{ return file_name; }
 	inline const char*	GetShortName()	{ return short_name; }
 	inline const int32	GetZoneID() const { return zoneid; }
+	inline const int32	GetInstanceID() const { return instanceid; }
+	inline const int16	GetInstanceVersion() const { return instanceversion; }
+
+	inline Timer* GetInstanceTimer() { return Instance_Timer; }
 
 	inline const float&	safe_x()		{ return psafe_x; }
 	inline const float&	safe_y()		{ return psafe_y; }
@@ -98,10 +103,9 @@ public:
 
 	void	LoadAAs();
 	int		GetTotalAAs() { return totalAAs; }
-//	AA_List* GetAAList() { return aas; }
 	SendAA_Struct* GetAABySequence(int32 seq) { return aas[seq]; }
 	SendAA_Struct* FindAA(int32 id);
-	void	LoadZoneDoors(const char* zone);
+	void	LoadZoneDoors(const char* zone, int16 version);
 	bool	LoadZoneObjects();
 	bool	LoadGroundSpawns();
 	void	ReloadStaticData();
@@ -151,15 +155,23 @@ public:
 	void	LoadTempMerchantData_result(MYSQL_RES* result);
 	void	LoadMerchantData_result(MYSQL_RES* result);
 	int		SaveTempItem(int32 merchantid, int32 npcid, int32 item, sint32 charges, bool sold=false);
+
+	void	SetInstanceTimer(int32 new_duration);
+	void	LoadAdventures();
+	void	LoadAdventureEntries();
+	void	LoadActiveAdventures();
+	void	UpdateAdventureCount(AdventureDetails *ad);
 	
 	map<uint32,NPCType *> npctable;
 	map<uint32,std::list<MerchantList> > merchanttable;
 	map<uint32,std::list<TempMerchantList> > tmpmerchanttable;
+	map<uint32,AdventureInfo*> adventure_list;
+	map<uint32,std::list<AdventureInfo*> > adventure_entry_list;
+	map<uint32, AdventureDetails*> active_adventures;
 	Map*	map;
 	WaterMap* watermap;
 	PathManager *pathing;
 	NewZone_Struct	newzone_data;
-//	uchar	zone_header_data[142];
 	int8	zone_weather;
 
 	SpawnConditionManager spawn_conditions;
@@ -199,6 +211,8 @@ public:
 	
 private:
 	int32	zoneid;
+	int32	instanceid;
+	int16	instanceversion;
 	char*	short_name;
 	char	file_name[16];
 	char*	long_name;
@@ -218,7 +232,6 @@ private:
 	
 	int		totalAAs;
 	SendAA_Struct **aas;	//array of AA structs
-//	uchar*	aa_buffer;
 	
 	/*
 		Spawn related things
@@ -236,8 +249,10 @@ private:
 	Timer	autoshutdown_timer;
 	Timer	clientauth_timer;
 	Timer	spawn2_timer;
+	Timer	adventure_timer;
 	Timer*  Weather_Timer;
-//	LinkedList<Spawn*> spawn_list;
+	Timer*	Instance_Timer;
+	Timer*	Instance_Shutdown_Timer;
 	LinkedList<ZoneClientAuth_Struct*> client_auth_list;
 	
 	Mutex	MZoneLock;

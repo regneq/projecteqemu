@@ -24,6 +24,7 @@
 #include "../common/eq_constants.h"
 #include "zonedump.h"
 #include "zonedbasync.h"
+#include "../common/servertalk.h"
 
 // max number of newspawns to send per bulk packet
 #define SPAWNS_PER_POINT_DATARATE 10
@@ -325,6 +326,7 @@ public:
 	void	AIYellForHelp(Mob* sender, Mob* attacker);
 	bool	AICheckCloseBeneficialSpells(NPC* caster, int8 iChance, float iRange, int16 iSpellTypes);
 	Mob*	GetTargetForMez(Mob* caster);
+	int32	CheckNPCsClose(Mob *center);
 
 	Corpse* GetClosestCorpse(Mob* sender);
 	void	ForceGroupUpdate(int32 gid);
@@ -337,6 +339,13 @@ public:
 	void	CreateGroundObject(int32 itemid, float x, float y, float z, float heading, int32 decay_time = 300000);
 	void	ZoneWho(Client *c, Who_All_Struct* Who);
 	void	UnMarkNPC(int16 ID);
+
+	void	GateAllClients();
+	void	SendAdventureUpdate(int32 a_id);
+	void	AdventureMessage(int32 a_id, const char *msg);
+	void	AdventureFinish(int32 a_id, int8 win_lose, int32 points);
+	void	AdventureDestroy(int32 a_id);
+	void	AdventureCountUpdate(int32 a_id, int32 current, int32 total);
 
 #ifdef EQBOTS
 

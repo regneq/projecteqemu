@@ -24,6 +24,7 @@ public:
 	ZoneServer* FindByID(int32 ZoneID);
 	ZoneServer* FindByZoneID(int32 ZoneID);
 	ZoneServer*	FindByPort(int16 port);
+	ZoneServer* FindByInstanceID(int32 InstanceID);
 	
 	void	SendChannelMessage(const char* from, const char* to, int8 chan_num, int8 language, const char* message, ...);
 	void	SendChannelMessageRaw(const char* from, const char* to, int8 chan_num, int8 language, const char* message);
@@ -38,9 +39,10 @@ public:
 	void	KillAll();
 	bool	SendPacket(ServerPacket* pack);
 	bool	SendPacket(uint32 zoneid, ServerPacket* pack);
+	bool	SendPacket(uint32 zoneid, uint16 instanceid, ServerPacket* pack);
 	inline int32	GetNextID()		{ return NextID++; }
 	void	RebootZone(const char* ip1,int16 port, const char* ip2, int32 skipid, int32 zoneid = 0);
-	int32	TriggerBootup(int32 iZoneID);
+	int32	TriggerBootup(int32 iZoneID, int32 iInstanceID = 0);
 	void	SOPZoneBootup(const char* adminname, int32 ZoneServerID, const char* zonename, bool iMakeStatic = false);
 	EQTime	worldclock;
 	bool	SetLockedZone(int16 iZoneID, bool iLock);

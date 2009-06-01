@@ -96,6 +96,14 @@
 #define ServerOP_RaidGroupAdd		0x010D
 #define ServerOP_RaidGroupRemove	0x010E
 
+#define ServerOP_InstanceUpdateTime 0x014F
+#define ServerOP_AdventureCreate	0x0150
+#define ServerOP_AdventureAddPlayer 0x0151
+#define ServerOP_AdventureDestroy	0x0152
+#define ServerOP_AdventureUpdate	0x0153
+#define ServerOP_AdventureCount		0x0154
+#define ServerOP_AdventureFinish	0x0155
+#define ServerOP_AdventureMessage	0x0156
 
 #define ServerOP_WhoAll				0x0210
 #define ServerOP_FriendsWho			0x0211
@@ -222,11 +230,13 @@ struct ServerZoneStateChange_struct {
 	int32 ZoneServerID;
 	char adminname[64];
 	int32 zoneid;
+	int16 instanceid;
 	bool makestatic;
 };
 
 struct ServerZoneIncommingClient_Struct {
 	int32	zoneid;		// in case the zone shut down, boot it back up
+	int16	instanceid; // instance id if it exists for booting up
 	int32	ip;			// client's IP address
 	int32	wid;		// client's WorldID#
 	int32	accid;
@@ -285,6 +295,7 @@ struct ServerClientList_Struct {
 	int32	wid;
 	int32	IP;
 	int32	zone;
+	int16	instance_id;
 	sint16	Admin;
 	int32	charid;
 	char	name[64];
@@ -317,6 +328,7 @@ struct ServerZonePlayer_Struct {
 	int8	ignorerestrictions;
 	char	name[64];
 	char	zone[25];
+	int32	instance_id;
     float	x_pos;
     float	y_pos;
     float	z_pos;
@@ -337,6 +349,7 @@ struct ServerZoneReboot_Struct {
 };
 
 struct SetZone_Struct {
+	int16	instanceid;
 	int32	zoneid;
 	bool	staticzone;
 };
@@ -382,15 +395,18 @@ struct ZoneInfo_Struct {
 };
 struct ZoneBoot_Struct {
 	uint32 zone;
+	uint32 instance;
 	char compile_time[25];
 	uint32 zone_wid;
 };
 struct ZoneShutdown_Struct {
 	uint32 zone;
+	uint32 instance;
 	uint32 zone_wid;
 };
 struct ServerLSZoneSleep_Struct {
 	uint32 zone;
+	uint32 instance;
 	uint32 zone_wid;
 };
 
@@ -507,7 +523,9 @@ struct ZoneToZone_Struct {
 	char	name[64];
 	int32	guild_id;
 	int32	requested_zone_id;
+	int32	requested_instance_id;
 	int32	current_zone_id;
+	int32	current_instance_id;
 	sint8	response;
 	sint16	admin;
 	int8	ignorerestrictions;
@@ -580,23 +598,27 @@ struct ServerGroupIDReply_Struct {
 
 struct ServerGroupLeave_Struct {
 	int32 zoneid;
+	int16 instance_id;
 	int32 gid;
 	char member_name[64];	//kick this member from the group
 };
 
 struct ServerGroupJoin_Struct {
 	int32 zoneid;
+	int16 instance_id;
 	int32 gid;
 	char member_name[64];	//this person is joining the group
 };
 
 struct ServerForceGroupUpdate_Struct {
 	int32 origZoneID;
+	int16 instance_id;
 	int32 gid;
 };
 
 struct ServerGroupChannelMessage_Struct {
 	int32 zoneid;
+	int16 instanceid;
 	int32 groupid;
     char  from[64];
 	char  message[0];
@@ -604,6 +626,7 @@ struct ServerGroupChannelMessage_Struct {
 
 struct ServerDisbandGroup_Struct {
 	int32 zoneid;
+	int16 instance_id;
 	int32 groupid;
 };
 
@@ -684,6 +707,7 @@ struct ServerOP_Consent_Struct {
 	char ownername[64];
 	int8 permission;
 	int32 zone_id;
+	int16 instance_id;
 	int32 message_string_id;
 };
 
@@ -694,6 +718,7 @@ struct ReloadTasks_Struct {
 
 struct ServerRaidGeneralAction_Struct {
 	int32 zoneid;
+	int16 instance_id;
 	int32 rid;
 	int32 gid;
 	char playername[64];
@@ -762,6 +787,68 @@ struct ServerLFPMatchesRequest_Struct {
 struct UpdateSpawnTimer_Struct {
 	int32 id;
 	int32 duration;
+};
+
+struct ServerInstanceUpdateTime_Struct
+{
+	int16 instance_id;
+	int32 new_duration;
+};
+
+struct ServerAdventureCreate_Struct
+{
+	int32 from_zone_id;
+	int16 from_instance_id;
+	int32 id;
+	int32 adv_template_id;
+	sint32 instance_id;
+	int32 count;
+	int8 status;
+	int32 time_created;
+	int32 time_zoned;
+	int32 time_completed;
+};
+
+struct ServerAdventureAddPlayer_Struct
+{
+	int32 id;
+	char player_name[64];
+};
+
+struct ServerAdventureDestroy_Struct
+{
+	int32 id;
+};
+
+struct ServerAdventureUpdate_Struct
+{
+	int32 id;
+	int8 new_inst;
+	sint32 instance_id;
+	int8 new_status;
+	int32 status;
+	int8 new_timec;
+	int32 time_c;
+	int8 new_timez;
+	int32 time_z;
+};
+
+struct ServerAdventureCount_Struct
+{
+	int32 id;
+};
+
+struct ServerAdventureFinish_Struct
+{
+	int32 id;
+	int8 win_lose;
+	int32 points;
+};
+
+struct ServerAdventureMessage_Struct
+{
+	int32 id;
+	char message[0];
 };
 
 #pragma pack()

@@ -2093,6 +2093,7 @@ if(!RuleB(Character, UseDeathExpLossMult)){
 	//
 
 	m_pp.zone_id = m_pp.binds[0].zoneId;
+	m_pp.zoneInstance = 0;
 	database.MoveCharacterToZone(this->CharacterID(), database.GetZoneName(m_pp.zone_id));
 		
 	Save();
@@ -2516,6 +2517,33 @@ void NPC::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill) 
 
 	safe_delete(app);
 	
+	if(killer)
+	{
+		if(killer->IsClient())
+		{
+			AdventureDetails *ad = killer->CastToClient()->GetCurrentAdventure();
+			if(ad && ad->ai)
+			{
+				if(ad->instance_id == zone->GetInstanceID())
+				{
+					if(ad->ai->type == Adventure_Kill)
+					{
+						if(!IsPet() && GetClass() != LDON_TREASURE)
+						{
+							zone->UpdateAdventureCount(ad);
+						}
+					}
+					else if(ad->ai->type == Adventure_Assassinate)
+					{
+						if(GetNPCTypeID() == ad->ai->type_data)
+						{
+							zone->UpdateAdventureCount(ad);
+						}
+					}
+				}
+			}
+		}
+	}	
 	
 	Mob *give_exp = hate_list.GetDamageTop(this);
 
@@ -2595,14 +2623,6 @@ void NPC::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill) 
 		}
 		else if (give_exp_client->IsGrouped() && kg != NULL)
 		{
-			if(give_exp_client->GetAdventureID()>0){
-				AdventureInfo AF = database.GetAdventureInfo(give_exp_client->GetAdventureID());
-				if(zone->GetZoneID() == AF.zonedungeonid && AF.type==ADVENTURE_MASSKILL && !IsLdonTreasure)
-					give_exp_client->SendAdventureUpdate();
-				else if(zone->GetZoneID() == AF.zonedungeonid && AF.type==ADVENTURE_NAMED &&
-					(AF.Objetive==GetNPCTypeID() || AF.ObjetiveValue==GetNPCTypeID()))
-					give_exp_client->SendAdventureFinish(1, AF.points,true);
-			}
 			if(!IsLdonTreasure)
 				kg->SplitExp((EXP_FORMULA), this);
 

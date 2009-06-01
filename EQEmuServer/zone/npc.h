@@ -180,6 +180,7 @@ public:
 	int32 GetGrid() const { return grid; }
 	int32 GetSp2() const { return spawn_group; }
 
+	uint32	adventure_template_id;
 	uint32	MerchantType;
 	void	Depop(bool StartSpawnTimer = true);
 	void	Stun(int duration);

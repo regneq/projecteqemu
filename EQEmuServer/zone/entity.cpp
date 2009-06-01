@@ -3467,7 +3467,7 @@ void EntityList::SendGroupLeave(int32 gid, const char *name) {
 					strcpy(gj->yourname, name);
 					Mob *Leader = g->GetLeader();
 					if(Leader)
-						Leader->CastToClient()->GetGroupAAs(&gj->leader_aas);
+						Leader->CastToClient()->GetGroupAAs(&gj->leader_aas);					
 					c->QueuePacket(outapp);
 					safe_delete(outapp);
 					g->DelMemberOOZ(name);
@@ -3498,7 +3498,7 @@ void EntityList::SendGroupJoin(int32 gid, const char *name) {
 					Mob *Leader = g->GetLeader();
 					if(Leader)
 						Leader->CastToClient()->GetGroupAAs(&gj->leader_aas);
-
+					
 					iterator.GetData()->QueuePacket(outapp);
 					safe_delete(outapp);
 				}
@@ -3538,7 +3538,6 @@ void EntityList::CreateGroundObject(int32 itemid, float x, float y, float z, flo
 			Object* object = new Object(i,x,y,z,heading,decay_time);
 			entity_list.AddObject(object, true);
 			object->StartDecay();
-			object->Save();
 			safe_delete(i);
 		}
 	}
@@ -3848,3 +3847,176 @@ void EntityList::UnMarkNPC(int16 ID)
 	} 
 }
 
+int32 EntityList::CheckNPCsClose(Mob *center)
+{
+    LinkedListIterator<NPC*> iterator(npc_list);
+    int32 count = 0;
+
+    iterator.Reset();
+    while(iterator.MoreElements())
+    {
+		NPC *current = iterator.GetData();
+		if(!current)
+		{
+			iterator.Advance();
+			continue;
+		}
+
+		if(current == center)
+		{
+			iterator.Advance();
+			continue;
+		}
+
+		if(current->IsPet())
+		{
+			iterator.Advance();
+			continue;
+		}
+
+		if(current->GetClass() == LDON_TREASURE)
+		{
+			iterator.Advance();
+			continue;
+		}
+
+		if(current->DistNoRootNoZ(*center) <= 5625.0f)
+		{
+			count++;
+		}
+		iterator.Advance();
+	}
+	return count;
+}
+
+void EntityList::GateAllClients()
+{
+	LinkedListIterator<Client*> iterator(client_list); 
+	iterator.Reset();
+	while(iterator.MoreElements()) 
+	{
+		Client *c = iterator.GetData();
+		if(c)
+		{
+			c->GoToBind();
+		}
+		iterator.Advance();
+	}
+}
+
+void EntityList::SendAdventureUpdate(int32 a_id)
+{
+	LinkedListIterator<Client*> iterator(client_list); 
+	iterator.Reset();
+	while(iterator.MoreElements()) 
+	{
+		Client *c = iterator.GetData();
+		if(c)
+		{
+			AdventureDetails *ad = c->GetCurrentAdventure();
+			if(ad && ad->id == a_id)
+			{
+				c->SendAdventureDetail();
+			}
+		}
+		iterator.Advance();
+	}
+}
+
+void EntityList::AdventureMessage(int32 a_id, const char *msg)
+{
+	LinkedListIterator<Client*> iterator(client_list); 
+	iterator.Reset();
+	while(iterator.MoreElements()) 
+	{
+		Client *c = iterator.GetData();
+		if(c)
+		{
+			AdventureDetails *ad = c->GetCurrentAdventure();
+			if(ad && ad->id == a_id)
+			{
+				c->Message(13, msg);
+			}
+		}
+		iterator.Advance();
+	}
+}
+
+void EntityList::AdventureFinish(int32 a_id, int8 win_lose, int32 points)
+{
+	AdventureDetails *ad = NULL;
+
+	std::map<uint32, AdventureDetails*>::iterator aa_iter;
+	aa_iter = zone->active_adventures.find(a_id);
+
+	if(aa_iter == zone->active_adventures.end())
+		return;
+
+	ad = aa_iter->second;
+
+	if(!ad)
+		return;
+
+	if(!ad->ai)
+		return;
+
+	if(ad->status != 3)
+	{
+		ad->status = 3;
+		LinkedListIterator<Client*> iterator(client_list); 
+		iterator.Reset();
+		while(iterator.MoreElements()) 
+		{
+			ad = NULL;
+			Client *c = iterator.GetData();
+			if(c)
+			{
+				ad = c->GetCurrentAdventure();
+				if(ad && ad->id == a_id)
+				{
+					c->SendAdventureFinish(win_lose, points, ad->ai->theme);
+				}
+			}
+			iterator.Advance();
+		}
+	}
+}
+
+void EntityList::AdventureDestroy(int32 a_id)
+{
+	LinkedListIterator<Client*> iterator(client_list); 
+	iterator.Reset();
+	while(iterator.MoreElements()) 
+	{
+		Client *c = iterator.GetData();
+		if(c)
+		{
+			AdventureDetails *ad = c->GetCurrentAdventure();
+			if(ad && ad->id == a_id)
+			{
+				c->SendAdventureError("You are not currently in an adventure.");
+				c->SetCurrentAdventure(NULL);
+			}
+		}
+		iterator.Advance();
+	}
+}
+
+void EntityList::AdventureCountUpdate(int32 a_id, int32 current, int32 total)
+{
+	LinkedListIterator<Client*> iterator(client_list); 
+	iterator.Reset();
+	while(iterator.MoreElements()) 
+	{
+		Client *c = iterator.GetData();
+		if(c)
+		{
+			AdventureDetails *ad = c->GetCurrentAdventure();
+			if(ad && ad->id == a_id)
+			{
+				c->SendAdventureCountUpdate(current, total);
+			}
+		}
+		iterator.Advance();
+	}
+}

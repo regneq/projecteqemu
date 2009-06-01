@@ -355,7 +355,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 						LogFile->write(EQEMuLog::Debug, "Succor/Evacuation Spell In Same Zone.");
 #endif
 						if(IsClient())
-							CastToClient()->MovePC(target_zone, x, y, z, heading, 0, EvacToSafeCoords);
+							CastToClient()->MovePC(zone->GetZoneID(), zone->GetInstanceID(), x, y, z, heading, 0, EvacToSafeCoords);
 						else
 							GMMove(x, y, z, heading);
 					}
@@ -437,7 +437,10 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #endif
 				if(IsClient())
 				{
-					CastToClient()->MovePC(target_zone, x, y, z, heading);
+					if(!target_zone)
+						CastToClient()->MovePC(zone->GetZoneID(), zone->GetInstanceID(), x, y, z, heading);
+					else
+						CastToClient()->MovePC(target_zone, x, y, z, heading);
 				}
 				else{
 					if(!target_zone)
@@ -1849,7 +1852,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			{
 			if(IsClient()){
 					CastToClient()->cheat_timer.Start(3500, false);
-					CastToClient()->MovePC(zone->GetZoneID(), caster->GetX(), caster->GetY(), caster->GetZ(), caster->GetHeading(), 2, SummonPC);
+					CastToClient()->MovePC(zone->GetZoneID(), zone->GetInstanceID(), caster->GetX(), caster->GetY(), caster->GetZ(), caster->GetHeading(), 2, SummonPC);
 					Message(15, "You have been summoned!");
 					entity_list.ClearAggro(this);
 					//WipeHateList();	//wipe client's hate list

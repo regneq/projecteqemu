@@ -182,13 +182,10 @@ public:
 	int activetasksinset(int taskset);
 	int completedtasksinset(int taskset);
 	bool istaskappropriate(int task);
-    void setinstflag(int orgZoneID, int type);
-    void setinstflagmanually(int orgZoneID, int instFlag, int type);
     void clearspawntimers();
 	void ze(int type, const char *str);
 	void we(int type, const char *str);
     int getlevel(uint8 type);
-    int getinstflag();
     int collectitems(uint32 item_id, bool remove);
     int collectitems_processSlot(sint16 slot_id, uint32 item_id, bool remove);
 
@@ -198,6 +195,16 @@ public:
 
 	void MerchantSetItem(int32 NPCid, int32 itemid, int32 quantity = 0);
 	int32 MerchantCountItem(int32 NPCid, int32 itemid);
+
+	int16 CreateInstance(const char *zone, int16 version, int32 duration);
+	void DestroyInstance(int16 instance_id);
+	int16 GetInstanceID(const char *zone, int16 version);
+	void AssignToInstance(int16 instance_id);
+	void AssignGroupToInstance(int16 instance_id);
+	void AssignRaidToInstance(int16 instance_id);
+	void MovePCInstance(int zone_id, int instance_id, float x, float y, float z, float heading);
+	void FlagInstanceByGroupLeader(int32 zone, int16 version);
+	void FlagInstanceByRaidLeader(int32 zone, int16 version);
 	
 	const char* varlink(char* perltext, int item_id);
 	const char* saylink(char* Phrase);

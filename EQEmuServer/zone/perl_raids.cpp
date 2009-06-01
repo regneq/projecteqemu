@@ -468,7 +468,7 @@ XS(XS_Raid_TeleportGroup)
 		if(sender == NULL)
 			Perl_croak(aTHX_ "sender is NULL, avoiding crash.");
 
-		THIS->TeleportGroup(sender, zoneID, x, y, z, heading, gid);
+		THIS->TeleportGroup(sender, zoneID, 0, x, y, z, heading, gid);
 	}
 	XSRETURN_EMPTY;
 }
@@ -506,7 +506,7 @@ XS(XS_Raid_TeleportRaid)
 		if(sender == NULL)
 			Perl_croak(aTHX_ "sender is NULL, avoiding crash.");
 
-		THIS->TeleportRaid(sender, zoneID, x, y, z, heading);
+		THIS->TeleportRaid(sender, zoneID, 0, x, y, z, heading);
 	}
 	XSRETURN_EMPTY;
 }

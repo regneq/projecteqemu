@@ -92,7 +92,9 @@ void command_log(Client *c, const Seperator *sep);
 void command_gm(Client *c, const Seperator *sep);
 void command_summon(Client *c, const Seperator *sep);
 void command_zone(Client *c, const Seperator *sep);
+void command_zone_instance(Client *c, const Seperator *sep);
 void command_peqzone(Client *c, const Seperator *sep);
+void command_tgczone(Client *c, const Seperator *sep);
 void command_showbuffs(Client *c, const Seperator *sep);
 void command_movechar(Client *c, const Seperator *sep);
 void command_viewpetition(Client *c, const Seperator *sep);
@@ -299,6 +301,7 @@ void command_scribespell(Client *c, const Seperator *sep);
 void command_refreshgroup(Client *c, const Seperator *sep);
 void command_advnpcspawn(Client *c, const Seperator *sep);
 void command_modifynpcstat(Client *c, const Seperator *sep);
+void command_instance(Client *c, const Seperator *sep);
 
 #ifdef EMBPERL
 void command_embperl_plugin(Client *c, const Seperator *sep);

@@ -193,7 +193,7 @@ int WorldDatabase::MoveCharacterToBind(int CharID) {
 
 	if(!strcmp(BindZoneName, "UNKNWN")) return pp.zone_id;
 
-	if (!RunQuery(query, MakeAnyLenString(&query, "UPDATE character_ SET zonename = '%s',zoneid=%i,x=%f, y=%f, z=%f WHERE id='%i'", 
+	if (!RunQuery(query, MakeAnyLenString(&query, "UPDATE character_ SET zonename = '%s',zoneid=%i,x=%f, y=%f, z=%f, instanceid=0 WHERE id='%i'", 
 					      BindZoneName, pp.binds[0].zoneId, pp.binds[0].x, pp.binds[0].y, pp.binds[0].z,
 					      CharID), errbuf, 0,&affected_rows)) {
 
