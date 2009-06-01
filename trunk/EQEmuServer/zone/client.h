@@ -207,15 +207,7 @@ public:
 	void    QuestJournalledMessage(const char *npcname, const char* message);
 	void	VoiceMacroReceived(int32 Type, char *Target, int32 MacroNumber);
 	void	SendSound();
-
-	int32   GetAdventureID() const {return 0/*m_pp.adventure_id*/; }
-	void    SetAdventureID(int32 i){ /*m_pp.adventure_id=i;*/ }
-	void	SendAdventureFinish(uint32 state=0,uint32 points=0,bool grouptoo=false);
-	void	SendAdventureInfoRequest(const EQApplicationPacket* app);
-	void	SendAdventureUpdate();
-	void	SendAdventureRequestData(Group* group = NULL,bool EnteredDungeon=false,bool EnteredZone=false,bool Zoned=false);
-	void	SendAdventureRequest();
-	void	DeleteCharInAdventure(int32 id,int32 qid);
+	void	CheckLDoNHail(Mob *target);
 
 	EQApplicationPacket*	ReturnItemPacket(sint16 slot_id, const ItemInst* inst, ItemPacketType packet_type);
 
@@ -428,12 +420,13 @@ public:
 	uint32  GetGroupEXP() { return(m_pp.group_leadership_exp); }
 	virtual void SetLevel(uint8 set_level, bool command = false);
 	void	GoToBind();
-	void	GoToSafeCoords(uint16 zone_id);
+	void	GoToSafeCoords(uint16 zone_id, uint16 instance_id);
 	void	Gate();
 	void	SetBindPoint(int to_zone = -1, float new_x = 0.0f, float new_y = 0.0f, float new_z = 0.0f);
 	void	MovePC(const char* zonename, float x, float y, float z, float heading, int8 ignorerestrictions = 0, ZoneMode zm = ZoneSolicited);
 	void	MovePC(int32 zoneID, float x, float y, float z, float heading, int8 ignorerestrictions = 0, ZoneMode zm = ZoneSolicited);
 	void	MovePC(float x, float y, float z, float heading, int8 ignorerestrictions = 0, ZoneMode zm = ZoneSolicited);
+	void	MovePC(int32 zoneID, int32 instanceID, float x, float y, float z, float heading, int8 ignorerestrictions = 0, ZoneMode zm = ZoneSolicited);
 	void	WhoAll();
 	bool	CheckLoreConflict(const Item_Struct* item);
 	void	ChangeLastName(const char* in_lastname);
@@ -820,6 +813,22 @@ public:
 	void SendDisciplineTimers();
 	void SendRespawnBinds();
 
+	/*Adventure Stuff*/
+	AdventureInfo* GetOfferedAdventure() { return m_offered_adventure; }
+	void SetOfferedAdventure(AdventureInfo* ai) { m_offered_adventure = ai; }
+
+	AdventureDetails* GetCurrentAdventure() { return m_current_adventure; }
+	void SetCurrentAdventure(AdventureDetails* ad) { m_current_adventure = ad; }
+
+	void SendAdventureSelection(Mob* rec, int32 difficulty, int32 type);
+	void SendAdventureError(const char* msg, ...);
+	void SendAdventureDetail();
+	void SendAdventureFinish(int8 win, int32 points, int32 theme);
+	void SendAdventureCountUpdate(int32 current, int32 total);
+	void AcceptAdventure();
+	void DeclineAdventure();
+	void LeaveAdventure();
+
 protected:
 	friend class Mob;
 	void CalcItemBonuses(StatBonuses* newbon);
@@ -941,6 +950,9 @@ private:
 	ExtendedProfile_Struct		m_epp;
 	Inventory					m_inv;
 	Object*						m_tradeskill_object;
+	
+	AdventureInfo* m_offered_adventure;
+	AdventureDetails *m_current_adventure;
 
 	void NPCSpawn(const Seperator* sep);
 	uint32 GetEXPForLevel(uint16 level);
@@ -955,9 +967,9 @@ private:
 	//Zoning related stuff
 	void SendZoneCancel(ZoneChange_Struct *zc);
 	void SendZoneError(ZoneChange_Struct *zc, sint8 err);
-	void DoZoneSuccess(ZoneChange_Struct *zc, uint16 zone_id, float dest_x, float dest_y, float dest_z, float dest_h, sint8 ignore_r);
-	void ZonePC(int32 zoneID, float x, float y, float z, float heading, int8 ignorerestrictions, ZoneMode zm);
-	void ProcessMovePC(int32 zoneID, float x, float y, float z, float heading, int8 ignorerestrictions = 0, ZoneMode zm = ZoneSolicited);
+	void DoZoneSuccess(ZoneChange_Struct *zc, uint16 zone_id, int32 instance_id, float dest_x, float dest_y, float dest_z, float dest_h, sint8 ignore_r);
+	void ZonePC(int32 zoneID, int32 instance_id, float x, float y, float z, float heading, int8 ignorerestrictions, ZoneMode zm);
+	void ProcessMovePC(int32 zoneID, int32 instance_id, float x, float y, float z, float heading, int8 ignorerestrictions = 0, ZoneMode zm = ZoneSolicited);
 	float	zonesummon_x;
 	float	zonesummon_y;
 	float	zonesummon_z;

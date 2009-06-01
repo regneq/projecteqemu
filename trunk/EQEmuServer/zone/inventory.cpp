@@ -180,7 +180,6 @@ void Client::DropItem(sint16 slot_id)
 	Object* object = new Object(this, inst);
 	entity_list.AddObject(object, true);
 	object->StartDecay();
-	object->Save();
 	
 	safe_delete(inst);
 }
@@ -205,7 +204,6 @@ void Client::DropInst(const ItemInst* inst)
 	Object* object = new Object(this, inst);
 	entity_list.AddObject(object, true);
 	object->StartDecay();
-	object->Save();
 }
 
 // Returns a slot's item ID (returns INVALID_ID if not found)

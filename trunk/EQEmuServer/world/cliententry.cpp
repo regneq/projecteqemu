@@ -42,6 +42,8 @@ ClientListEntry::ClientListEntry(int32 in_id, int32 iLSID, const char* iLoginNam
 	strn0cpy(plskey, iLoginKey, sizeof(plskey));
 	pworldadmin = iWorldAdmin;
 	plocal=(local==1);
+
+	pinstance = 0;
 }
 
 ClientListEntry::ClientListEntry(int32 in_id, int32 iAccID, const char* iAccName, MD5& iMD5Pass, sint16 iAdmin)
@@ -57,6 +59,8 @@ ClientListEntry::ClientListEntry(int32 in_id, int32 iAccID, const char* iAccName
 	strn0cpy(paccountname, iAccName, sizeof(paccountname));
 	pMD5Pass = iMD5Pass;
 	padmin = iAdmin;
+
+	pinstance = 0;
 }
 
 ClientListEntry::ClientListEntry(int32 in_id, ZoneServer* iZS, ServerClientList_Struct* scl, sint8 iOnline)
@@ -73,6 +77,8 @@ ClientListEntry::ClientListEntry(int32 in_id, ZoneServer* iZS, ServerClientList_
 	paccountid = scl->AccountID;
 	strn0cpy(paccountname, scl->AccountName, sizeof(paccountname));
 	padmin = scl->Admin;
+
+	pinstance = 0;
 
 	if (iOnline >= CLE_Status_Zoning)
 		Update(iZS, scl, iOnline);
@@ -151,6 +157,7 @@ void ClientListEntry::Update(ZoneServer* iZS, ServerClientList_Struct* scl, sint
 	}
 	pzoneserver = iZS;
 	pzone = scl->zone;
+	pinstance = scl->instance_id;
 	pcharid = scl->charid;
 
 	strcpy(pname, scl->name);

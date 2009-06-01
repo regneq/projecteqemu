@@ -94,6 +94,7 @@ void Raid::AddMember(Client *c, int32 group, bool rleader, bool groupleader, boo
 	rga->rid = GetID();
 	strncpy(rga->playername, c->GetName(), 64);
 	rga->zoneid = zone->GetZoneID();
+	rga->instance_id = zone->GetInstanceID();
 	worldserver.SendPacket(pack);
 	safe_delete(pack);
 }
@@ -122,6 +123,7 @@ void Raid::RemoveMember(const char *c)
 	ServerPacket *pack = new ServerPacket(ServerOP_RaidRemove, sizeof(ServerRaidGeneralAction_Struct));
 	ServerRaidGeneralAction_Struct *rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 	rga->rid = GetID();
+	rga->instance_id = zone->GetInstanceID();
 	strncpy(rga->playername, c, 64);
 	rga->zoneid = zone->GetZoneID();
 	worldserver.SendPacket(pack);
@@ -147,6 +149,7 @@ void Raid::DisbandRaid()
 	rga->rid = GetID();
 	strncpy(rga->playername, " ", 64);
 	rga->zoneid = zone->GetZoneID();
+	rga->instance_id = zone->GetInstanceID();
 	worldserver.SendPacket(pack);
 	safe_delete(pack);
 
@@ -172,6 +175,7 @@ void Raid::MoveMember(const char *name, int32 newGroup)
 	rga->rid = GetID();
 	strncpy(rga->playername, name, 64);
 	rga->zoneid = zone->GetZoneID();
+	rga->instance_id = zone->GetInstanceID();
 	worldserver.SendPacket(pack);
 	safe_delete(pack);
 }
@@ -198,6 +202,7 @@ void Raid::SetGroupLeader(const char *who, bool glFlag)
 	rga->rid = GetID();
 	strncpy(rga->playername, who, 64);
 	rga->zoneid = zone->GetZoneID();
+	rga->instance_id = zone->GetInstanceID();
 	worldserver.SendPacket(pack);
 	safe_delete(pack);
 }
@@ -239,6 +244,7 @@ void Raid::SetRaidLeader(const char *wasLead, const char *name)
 	rga->rid = GetID();
 	strncpy(rga->playername, name, 64);
 	rga->zoneid = zone->GetZoneID();
+	rga->instance_id = zone->GetInstanceID();
 	worldserver.SendPacket(pack);
 	safe_delete(pack);
 }
@@ -610,7 +616,7 @@ void Raid::GroupBardPulse(Mob* caster, uint16 spellid, int32 gid){
 	}
 }
 
-void Raid::TeleportGroup(Mob* sender, int32 zoneID, float x, float y, float z, float heading, int32 gid)
+void Raid::TeleportGroup(Mob* sender, int32 zoneID, int16 instance_id, float x, float y, float z, float heading, int32 gid)
 {
 	for(int z = 0; z < MAX_RAID_MEMBERS; z++) 
 	{
@@ -618,20 +624,20 @@ void Raid::TeleportGroup(Mob* sender, int32 zoneID, float x, float y, float z, f
 		{
 			if(members[z].GroupNumber == gid)
 			{
-				members[z].member->MovePC((int)zoneID, x, y, z, heading, 0, ZoneSolicited);
+				members[z].member->MovePC(zoneID, instance_id, x, y, z, heading, 0, ZoneSolicited);
 			}
 		}
 	
 	}
 }
 
-void Raid::TeleportRaid(Mob* sender, int32 zoneID, float x, float y, float z, float heading)
+void Raid::TeleportRaid(Mob* sender, int32 zoneID, int16 instance_id, float x, float y, float z, float heading)
 {
 	for(int z = 0; z < MAX_RAID_MEMBERS; z++) 
 	{
 		if(members[z].member)
 		{
-			members[z].member->MovePC((int)zoneID, x, y, z, heading, 0, ZoneSolicited);
+			members[z].member->MovePC(zoneID, instance_id, x, y, z, heading, 0, ZoneSolicited);
 		}
 	}
 }
@@ -672,6 +678,7 @@ void Raid::AddRaidLooter(const char* looter)
 	ServerRaidGeneralAction_Struct *rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 	rga->rid = GetID();
 	rga->zoneid = zone->GetZoneID();
+	rga->instance_id = zone->GetInstanceID();
 	worldserver.SendPacket(pack);
 	safe_delete(pack);
 
@@ -708,6 +715,7 @@ void Raid::RemoveRaidLooter(const char* looter)
 	ServerRaidGeneralAction_Struct *rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 	rga->rid = GetID();
 	rga->zoneid = zone->GetZoneID();
+	rga->instance_id = zone->GetInstanceID();
 	worldserver.SendPacket(pack);
 	safe_delete(pack);
 
@@ -1051,6 +1059,7 @@ void Raid::GroupUpdate(int32 gid, bool initial)
 		rga->gid = gid;
 		rga->rid = GetID();
 		rga->zoneid = zone->GetZoneID();
+		rga->instance_id = zone->GetInstanceID();
 		worldserver.SendPacket(pack);
 		safe_delete(pack);
 	}
@@ -1160,6 +1169,7 @@ void Raid::LockRaid(bool lockFlag)
 	rga->rid = GetID();
 	rga->zoneid = zone->GetZoneID();
 	rga->gid = lockFlag;
+	rga->instance_id = zone->GetInstanceID();
 	worldserver.SendPacket(pack);
 	safe_delete(pack);
 }

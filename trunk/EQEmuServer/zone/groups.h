@@ -96,7 +96,7 @@ public:
 	int32	GetHighestLevel();
 	int32	GetLowestLevel();
 	void	QueuePacket(const EQApplicationPacket *app, bool ack_req = true);
-	void	TeleportGroup(Mob* sender, int32 zoneID, float x, float y, float z, float heading);
+	void	TeleportGroup(Mob* sender, int32 zoneID, int16 instance_id, float x, float y, float z, float heading);
 	uint16	GetAvgLevel();
 	bool	LearnMembers();
 	void	VerifyGroup();

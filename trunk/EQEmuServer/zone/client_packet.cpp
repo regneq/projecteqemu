@@ -27,6 +27,7 @@
 #include <math.h>
 #include <zlib.h>
 #include <assert.h>
+#include <sstream>
 
 #ifdef WIN32
 	#define snprintf	_snprintf
@@ -344,6 +345,9 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_PVPLeaderBoardRequest] = &Client::Handle_OP_PVPLeaderBoardRequest;
 	ConnectedOpcodes[OP_PVPLeaderBoardDetailsRequest] = &Client::Handle_OP_PVPLeaderBoardDetailsRequest;
 	ConnectedOpcodes[OP_RespawnWindow] = &Client::Handle_OP_RespawnWindow;
+	ConnectedOpcodes[OP_AdventureMerchantSell] = &Client::Handle_OP_AdventureMerchantSell;
+	ConnectedOpcodes[OP_AdventureStatsRequest] = &Client::Handle_OP_AdventureStatsRequest;
+	ConnectedOpcodes[OP_AdventureLeaderboardRequest] = &Client::Handle_OP_AdventureLeaderboardRequest;	
 }
 
 int Client::HandlePacket(const EQApplicationPacket *app)
@@ -633,17 +637,59 @@ void Client::Handle_Connect_OP_ReqClientSpawn(const EQApplicationPacket *app)
 
 	if(strncasecmp(zone->GetShortName(),"bazaar",6)==0)
 		SendBazaarWelcome();
-	if(GetAdventureID()>0){
-		AdventureInfo ai=database.GetAdventureInfo(GetAdventureID());
-		if(zone->GetZoneID() == ai.zoneid) {
-			SendAdventureRequestData(entity_list.GetGroupByClient(this),false,true);
-		}
-		else if(zone->GetZoneID() == ai.zonedungeonid &&
-			database.IsLDoNDungeon(zone->GetZoneID()) ){
-			SendAdventureRequestData(entity_list.GetGroupByClient(this),true,false);
+
+	/*Adventure Data Send*/
+	int32 adv_id = 0;
+	int32 adv_adventure_id = 0;
+	int32 adv_inst_id = 0;
+	int32 adv_count = 0;
+	int32 adv_ass_count = 0;
+	int32 adv_status = 0;
+	int32 adv_time_c = 0;
+	int32 adv_time_z = 0;
+	int32 adv_time_comp = 0;
+	if(database.GetAdventureDetails(CharacterID(), adv_id, adv_adventure_id, adv_inst_id, adv_count, adv_ass_count, adv_status, adv_time_c, adv_time_z, adv_time_comp) == true)
+	{
+		AdventureDetails* nd = NULL;
+		std::map<uint32, AdventureDetails*>::iterator ad_iter = zone->active_adventures.find(adv_id);
+		if(ad_iter == zone->active_adventures.end())
+		{
+			nd = new AdventureDetails;
 		}
 		else
-			SendAdventureRequestData(NULL,false,false,true);
+		{
+			nd = zone->active_adventures[adv_id];
+		}
+
+		nd->id = adv_id;
+		nd->instance_id = adv_inst_id;
+		nd->count = adv_count;
+		nd->assassinate_count = adv_ass_count;
+		nd->status = adv_status;
+		nd->time_created = adv_time_c;
+		nd->time_zoned = adv_time_z;
+
+		
+		std::map<uint32, AdventureInfo*>::iterator ai_iter = zone->adventure_list.find(adv_adventure_id);
+		if(ai_iter == zone->adventure_list.end())
+		{
+			safe_delete(nd);
+		}
+		else
+		{
+			AdventureInfo* ai = zone->adventure_list[adv_adventure_id];
+			if(!ai)
+			{
+				safe_delete(nd);
+			}
+			else
+			{
+				nd->ai = ai;
+				zone->active_adventures[adv_id] = nd;
+				SetCurrentAdventure(nd);
+				SendAdventureDetail();
+			}
+		}
 	}
 
 	conn_state = ZoneContentsSent;
@@ -932,7 +978,15 @@ void Client::CheatDetected(CheatTypes CheatType)
 			if (RuleB(Zone, EnableMQGateDetector)&& ((this->Admin() < RuleI(Zone, MQGateExemptStatus) || (RuleI(Zone, MQGateExemptStatus)) == -1))) {
 				Message(13, "Illegal gate request.");
 				database.SetMQDetectionFlag(this->account_name,this->name, "/MQGate", zone->GetShortName());
-				this->SetZone(this->GetZoneID()); //Lieka:  Prevent the player from zoning, place him back in the zone where he tried to originally /gate.
+				if(zone)
+				{
+					this->SetZone(this->GetZoneID(), zone->GetInstanceID()); //Lieka:  Prevent the player from zoning, place him back in the zone where he tried to originally /gate.
+				}
+				else
+				{
+					this->SetZone(this->GetZoneID(), 0); //Lieka:  Prevent the player from zoning, place him back in the zone where he tried to originally /gate.
+
+				}
 			}
 			break;
 		case MQGhost: //Lieka:  Not currently implemented, but the framework is in place - just needs detection scenarios identified
@@ -1002,7 +1056,7 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 	{
 		if ((WarpDetection(false, dist)) && ((admin <= RuleI(Zone, MQWarpExemptStatus)) || (RuleI(Zone, MQWarpExemptStatus) == -1))) //Exempt from warp detection if admin level is >  Rule:Zone:MQWarpExemptStatus
 		{
-			printf("Warping Detected by %S Acct: %s Distance: %f.", GetName(), AccountName(), GetLWDistance());
+			printf("Warping Detected by %s Acct: %s Distance: %f.", GetName(), AccountName(), GetLWDistance());
 			CheatDetected(MQWarp); //Lieka:  Execute MQWarp function on offending player
 		}
 	}
@@ -1159,6 +1213,7 @@ void Client::Handle_OP_Consent(const EQApplicationPacket *app)
 			scs->message_string_id = 0;
 			scs->permission = 1;
 			scs->zone_id = zone->GetZoneID();
+			scs->instance_id = zone->GetInstanceID();
 			//consent_list.push_back(scs->grantname);
 			worldserver.SendPacket(pack);
 			safe_delete(pack);
@@ -1181,6 +1236,7 @@ void Client::Handle_OP_ConsentDeny(const EQApplicationPacket *app)
 		scs->message_string_id = 0;
 		scs->permission = 0;
 		scs->zone_id = zone->GetZoneID();
+		scs->instance_id = zone->GetInstanceID();
 		//consent_list.remove(scs->grantname);
 		worldserver.SendPacket(pack);
 		safe_delete(pack);
@@ -1328,46 +1384,39 @@ void Client::Handle_OP_Jump(const EQApplicationPacket *app)
 
 void Client::Handle_OP_AdventureInfoRequest(const EQApplicationPacket *app)
 {
-	SendAdventureInfoRequest(app);
-	return;
+	EntityId_Struct* ent = (EntityId_Struct*)app->pBuffer;
+
+	std::string text = "Choose your difficulty and preferred adventure type.";
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureInfo, (text.size() + 2));
+	strncpy((char*)outapp->pBuffer, text.c_str(), text.size());
+	FastQueuePacket(&outapp);
 }
 
 void Client::Handle_OP_AdventureRequest(const EQApplicationPacket *app)
 {
-	SendAdventureRequest();
-	return;
+	AdventureRequest_Struct* ars = (AdventureRequest_Struct*)app->pBuffer;
+
+	Mob* m = entity_list.GetMob(ars->entity_id);
+	if(m && m->IsNPC())
+		SendAdventureSelection(m, (ars->risk-1), ars->type);
 }
 
 void Client::Handle_OP_LDoNButton(const EQApplicationPacket *app)
 {
 	bool* p=(bool*)app->pBuffer;
-	if(*p == true ) {
-		Group* group=entity_list.GetGroupByClient(this);
-		SendAdventureRequestData(group);
+	if(*p == true ) 
+	{
+		AcceptAdventure();
 	}
 	else
-		SetAdventureID(0);
-	return;
+	{
+		DeclineAdventure();
+	}
 }
 
 void Client::Handle_OP_LeaveAdventure(const EQApplicationPacket *app)
 {
-	uchar lol[4]={0x3F,0x2A,0x00,0x00};
-	EQApplicationPacket* outapp=new EQApplicationPacket(OP_AdventureFinish,4); // Doodman: Dunno if this is right or now
-	uchar* x=(uchar*)outapp->pBuffer;
-	memcpy(x,lol,4);
-	QueuePacket(outapp);
-	safe_delete(outapp);
-
-	EQApplicationPacket* outapp2=new EQApplicationPacket(OP_SimpleMessage,sizeof(SimpleMessage_Struct));
-	SimpleMessage_Struct *msg=(SimpleMessage_Struct *)outapp2->pBuffer;
-	msg->string_id=5135;
-	msg->color=0x000d;
-	FastQueuePacket(&outapp2);
-
-	SendAdventureFinish(0,0);
-	return;
-
+	LeaveAdventure();
 }
 
 void Client::Handle_OP_Consume(const EQApplicationPacket *app)
@@ -1522,14 +1571,11 @@ void Client::Handle_OP_AdventureMerchantRequest(const EQApplicationPacket *app)
 		return;
 	}
 
-	// Packet contains entity id
-	char *msg = new char[16000];
-	char *cursor = msg;
-	memset(msg,0,16000);
+	std::stringstream ss(std::stringstream::in | std::stringstream::out);
+
 	int8 count = 0;
 	AdventureMerchant_Struct* eid = (AdventureMerchant_Struct*)app->pBuffer;
 	int32 merchantid = 0;
-	//DumpPacket(app);
 
 	Mob* tmp = entity_list.GetMob(eid->entity_id);
 	if (tmp == 0 || !tmp->IsNPC() || tmp->GetClass() != ADVENTUREMERCHANT)
@@ -1545,26 +1591,57 @@ void Client::Handle_OP_AdventureMerchantRequest(const EQApplicationPacket *app)
 	const Item_Struct *item = 0;
 	std::list<MerchantList> merlist = zone->merchanttable[merchantid];
 	std::list<MerchantList>::const_iterator itr;
-	for(itr = merlist.begin();itr != merlist.end() && count<80;itr++){
+	for(itr = merlist.begin();itr != merlist.end() && count<255;itr++){
 		const MerchantList &ml = *itr;
 		item = database.GetItem(ml.item);
 		if(item)
 		{
-			//its possible that the 0 and 1 in here are supposed to be 'count'
-			cursor += sprintf(cursor,"^%s|%i|%i|%i|0|1|%d|%d",
-				item->Name,item->ID,item->LDoNPrice,item->LDoNTheme,
-				item->Races,item->Classes);
+			int32 theme;
+			if(item->LDoNTheme > 16)
+			{
+				theme = 0;
+			}
+			if(item->LDoNTheme & 16)
+			{
+				theme = 5;
+			} 
+			else if(item->LDoNTheme & 8)
+			{
+				theme = 4;
+			}
+			else if(item->LDoNTheme & 4)
+			{
+				theme = 3;
+			}
+			else if(item->LDoNTheme & 2)
+			{
+				theme = 2;
+			}
+			else if(item->LDoNTheme & 1)
+			{
+				theme = 1;
+			}
+			else
+			{
+				theme = 0;
+			}
+			ss << "^" << item->Name << "|";
+			ss << item->ID << "|";
+			ss << item->LDoNPrice << "|";
+			ss << theme << "|";
+			ss << "0|";
+			ss << "1|";
+			ss << item->Races << "|";
+			ss << item->Classes;
 			count++;
 		}
 	}
 	//Count
 	//^Item Name,Item ID,Cost in Points,Theme (0=none),0,1,races bit map,classes bitmap
-	EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureMerchantResponse,strlen(msg)+2);
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureMerchantResponse,ss.str().size()+2);
 	outapp->pBuffer[0] = count;
-	strncpy((char*)&outapp->pBuffer[1],msg,strlen(msg));
-	//DumpPacket(outapp);
+	strncpy((char*)&outapp->pBuffer[1],ss.str().c_str(),ss.str().size());
 	FastQueuePacket(&outapp);
-	safe_delete_array(msg);
 }
 
 void Client::Handle_OP_AdventureMerchantPurchase(const EQApplicationPacket *app)
@@ -1621,7 +1698,8 @@ void Client::Handle_OP_AdventureMerchantPurchase(const EQApplicationPacket *app)
 	}
 
 	sint32 requiredpts = (sint32)item->LDoNPrice*-1;
-	if(!UpdateLDoNPoints(requiredpts,item->LDoNPrice))
+
+	if(!UpdateLDoNPoints(requiredpts, 6))
 		return;
 
 	sint8 charges=1;
@@ -2271,8 +2349,8 @@ void Client::Handle_OP_MoveItem(const EQApplicationPacket *app)
 void Client::Handle_OP_Camp(const EQApplicationPacket *app)
 {
 	//LogFile->write(EQEMuLog::Debug, "%s sent a camp packet.", GetName());
-	if(GetAdventureID() > 0)
-		DeleteCharInAdventure(CharacterID(), GetAdventureID());
+	//if(GetAdventureID() > 0)
+	//	DeleteCharInAdventure(CharacterID(), GetAdventureID());
 
 	if(IsLFP())
 		worldserver.StopLFP(CharacterID());
@@ -2649,7 +2727,7 @@ void Client::Handle_OP_GMZoneRequest2(const EQApplicationPacket *app)
 	}
 
 	int32 zonereq = *((int32 *)app->pBuffer);
-	GoToSafeCoords(zonereq);
+	GoToSafeCoords(zonereq, 0);
 	return;
 }
 
@@ -3968,7 +4046,7 @@ void Client::Handle_OP_GMGoto(const EQApplicationPacket *app)
 	GMSummon_Struct* gmg = (GMSummon_Struct*) app->pBuffer;
 	Mob* gt = entity_list.GetMob(gmg->charname);
 	if (gt != NULL) {
-		this->MovePC(zone->GetZoneID(), gt->GetX(), gt->GetY(), gt->GetZ(), gt->GetHeading());
+		this->MovePC(zone->GetZoneID(), zone->GetInstanceID(), gt->GetX(), gt->GetY(), gt->GetZ(), gt->GetHeading());
 	}
 	else if (!worldserver.Connected())
 		Message(0, "Error: World server disconnected.");
@@ -4977,6 +5055,7 @@ void Client::Handle_OP_GroupFollow2(const EQApplicationPacket *app)
 		ServerGroupJoin_Struct* gj = (ServerGroupJoin_Struct*)pack->pBuffer;
 		gj->gid = group->GetID();
 		gj->zoneid = zone->GetZoneID();
+		gj->instance_id = zone->GetInstanceID();
 		strcpy(gj->member_name, GetName());
 		worldserver.SendPacket(pack);
 		safe_delete(pack);
@@ -6394,7 +6473,7 @@ void Client::Handle_OP_SenseTraps(const EQApplicationPacket *app)
 				angle = (256+angle);
 
 			angle *= 2;
-			MovePC(GetX(), GetY(), GetZ(), angle);
+			MovePC(zone->GetZoneID(), zone->GetInstanceID(), GetX(), GetY(), GetZ(), angle);
 			return;
 		}
 	}
@@ -6693,7 +6772,7 @@ void Client::Handle_OP_FindPersonRequest(const EQApplicationPacket *app)
 		if(RuleB(Bazaar, EnableWarpToTrader) && target->IsClient() && (target->CastToClient()->Trader ||
 									       target->CastToClient()->Buyer)) {
 			Message(15, "Moving you to Trader %s", target->GetName());
-			MovePC(target->GetX(), target->GetY(),  target->GetZ() , 0.0f);
+			MovePC(zone->GetZoneID(), zone->GetInstanceID(), target->GetX(), target->GetY(),  target->GetZ() , 0.0f);
 		}
 		else
 			Message(13, "Found NPC '%s'\n", target->GetName());
@@ -6780,6 +6859,9 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 	}
 
 	conn_state = PlayerProfileLoaded;
+
+	m_pp.zone_id = zone->GetZoneID();
+	m_pp.zoneInstance = zone->GetInstanceID();
 
 	TotalSecondsPlayed = m_pp.timePlayedMin * 60;
 
@@ -7576,7 +7658,7 @@ void Client::CompleteConnect()
 	//enforce some rules..
 	if(!CanBeInZone()) {
 		_log(CLIENT__ERROR, "Kicking char from zone, not allowed here");
-		GoToSafeCoords(database.GetZoneID("arena"));
+		GoToSafeCoords(database.GetZoneID("arena"), 0);
 		return;
 	}
 
@@ -7590,6 +7672,38 @@ void Client::CompleteConnect()
 #ifdef EMBPERL
 	((PerlembParser *)parse)->Event(EVENT_ENTERZONE, 0, "", (NPC*)NULL, this);
 #endif
+
+	if(zone)
+	{
+		if(zone->GetInstanceTimer())
+		{
+			int32 ttime = zone->GetInstanceTimer()->GetRemainingTime();
+			int32 day = (ttime/86400000);
+			int32 hour = (ttime/3600000)%24;
+			int32 minute = (ttime/60000)%60;
+			int32 second = (ttime/1000)%60;
+			if(day)
+			{
+				Message(15, "%s(%u) will expire in %u days, %u hours, %u minutes, and %u seconds.",
+					zone->GetLongName(), zone->GetInstanceID(), day, hour, minute, second);
+			}
+			else if(hour)
+			{
+				Message(15, "%s(%u) will expire in %u hours, %u minutes, and %u seconds.",
+					zone->GetLongName(), zone->GetInstanceID(), hour, minute, second);
+			}
+			else if(minute)
+			{
+				Message(15, "%s(%u) will expire in %u minutes, and %u seconds.",
+					zone->GetLongName(), zone->GetInstanceID(), minute, second);
+			}
+			else
+			{
+				Message(15, "%s(%u) will expire in in %u seconds.",
+					zone->GetLongName(), zone->GetInstanceID(), second);
+			}
+		}
+	}
 }
 
 void Client::Handle_OP_KeyRing(const EQApplicationPacket *app) {
@@ -7759,7 +7873,7 @@ void Client::Handle_OP_Rewind(const EQApplicationPacket *app)
 	if ((rewind_timer.GetRemainingTime() > 1 && rewind_timer.Enabled())) {
 			Message_StringID(MT_System, 4059); //You must wait a bit longer before using the rewind command again.
 	} else {
-		CastToClient()->MovePC(zone->GetZoneID(), rewind_x, rewind_y, rewind_z, 0, 2, Rewind);
+		CastToClient()->MovePC(zone->GetZoneID(), zone->GetInstanceID(), rewind_x, rewind_y, rewind_z, 0, 2, Rewind);
 		rewind_timer.Start(30000, true);
 	}
 }
@@ -8103,6 +8217,7 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 					ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 					rga->rid = GetID();
 					rga->zoneid = zone->GetZoneID();
+					rga->instance_id = zone->GetInstanceID();
 					strncpy(rga->playername, ri->leader_name, 64);
 					worldserver.SendPacket(pack);
 					safe_delete(pack);
@@ -8158,6 +8273,7 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 												rga->rid = r->GetID();
 												strncpy(rga->playername, r->members[x].membername, 64);
 												rga->zoneid = zone->GetZoneID();
+												rga->instance_id = zone->GetInstanceID();
 												worldserver.SendPacket(pack);
 												safe_delete(pack);
 											}
@@ -8179,6 +8295,7 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 							ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 							rga->rid = r->GetID();
 							rga->zoneid = zone->GetZoneID();
+							rga->instance_id = zone->GetInstanceID();
 							strncpy(rga->playername, ri->leader_name, 64);
 							worldserver.SendPacket(pack);
 							safe_delete(pack);
@@ -8222,6 +8339,7 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 									rga->rid = r->GetID();
 									strncpy(rga->playername,r->members[x].membername, 64);
 									rga->zoneid = zone->GetZoneID();
+									rga->instance_id = zone->GetInstanceID();
 									worldserver.SendPacket(pack);
 									safe_delete(pack);
 								}
@@ -8238,6 +8356,7 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 						ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 						rga->rid = r->GetID();
 						rga->zoneid = zone->GetZoneID();
+						rga->instance_id = zone->GetInstanceID();
 						strncpy(rga->playername, ri->leader_name, 64);
 						worldserver.SendPacket(pack);
 						safe_delete(pack);
@@ -9010,6 +9129,122 @@ void Client::Handle_OP_PVPLeaderBoardDetailsRequest(const EQApplicationPacket *a
 	
 	QueuePacket(outapp);
 	safe_delete(outapp);
+}
+
+void Client::Handle_OP_AdventureMerchantSell(const EQApplicationPacket *app)
+{
+	if(app->size != sizeof(Adventure_Sell_Struct))
+	{
+		LogFile->write(EQEMuLog::Debug, "Size mismatch on OP_AdventureMerchantSell: got %u expected %u", 
+			app->size, sizeof(Adventure_Sell_Struct));
+		DumpPacket(app);
+		return;
+	}
+
+	DumpPacket(app);
+	Adventure_Sell_Struct *ams_in = (Adventure_Sell_Struct*)app->pBuffer;
+
+	Mob* vendor = entity_list.GetMob(ams_in->npcid);
+	if (vendor == 0 || !vendor->IsNPC() || vendor->GetClass() != ADVENTUREMERCHANT)
+	{
+		Message(13, "Vendor was not found.");
+		return;
+	}
+
+	if(DistNoRoot(*vendor) > USE_NPC_RANGE2)
+	{
+		Message(13, "Vendor is out of range.");
+		return;
+	}
+
+	int32 itemid = GetItemIDAt(ams_in->slot);
+
+	if(itemid == 0)
+	{
+		Message(13, "Found no item at that slot.");
+		return;
+	}
+
+	const Item_Struct* item = database.GetItem(itemid);
+	ItemInst* inst = GetInv().GetItem(ams_in->slot);
+	if(!item || !inst){
+		Message(13, "You seemed to have misplaced that item...");
+		return;
+	}
+
+	if(item->LDoNSold == 0)
+	{
+		Message(13, "The merchant does not want that item.");
+		return;
+	}
+
+	if(item->LDoNPrice == 0)
+	{
+		Message(13, "The merchant does not want that item.");
+		return;
+	}
+
+	sint32 price = item->LDoNPrice * 70 / 100;
+
+	if(price == 0)
+	{
+		Message(13, "The merchant does not want that item.");
+		return;
+	}
+
+	if (RuleB(EventLog, RecordSellToMerchant))
+		LogMerchant(this, vendor, ams_in->charges, price, item, false);
+
+	if(!inst->IsStackable())
+	{
+		DeleteItemInInventory(ams_in->slot, 0, false);
+	}
+	else
+	{
+		if(inst->GetCharges() < ams_in->charges)
+		{
+			ams_in->charges = inst->GetCharges();
+		}
+
+		if(ams_in->charges == 0)
+		{
+			Message(13, "Charge mismatch error.");
+			return;
+		}
+
+		DeleteItemInInventory(ams_in->slot, ams_in->charges, false);
+		price *= ams_in->charges;
+	}
+
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureMerchantSell, sizeof(Adventure_Sell_Struct));
+	Adventure_Sell_Struct *ams = (Adventure_Sell_Struct*)outapp->pBuffer;
+	ams->slot = ams_in->slot;
+	ams->unknown000 = 1;
+	ams->npcid = ams->npcid;
+	ams->charges = ams_in->charges;
+	ams->sell_price = price;
+	FastQueuePacket(&outapp);
+	UpdateLDoNPoints(price, 6);
+	Save(1);
+}
+
+void Client::Handle_OP_AdventureStatsRequest(const EQApplicationPacket *app)
+{
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureStatsReply, sizeof(AdventureStats_Struct));
+	AdventureStats_Struct *as = (AdventureStats_Struct*)outapp->pBuffer;
+
+	if(database.GetAdventureStats(CharacterID(), as->success.guk, as->success.mir, as->success.mmc, as->success.ruj,
+		as->success.tak, as->failure.guk, as->failure.mir, as->failure.mmc, as->failure.ruj, as->failure.tak))
+	{
+		as->failure.total = as->failure.guk + as->failure.mir + as->failure.mmc + as->failure.ruj + as->failure.tak;
+		as->success.total = as->success.guk + as->success.mir + as->success.mmc + as->success.ruj + as->success.tak;
+	}
+
+	FastQueuePacket(&outapp);
+}
+
+void Client::Handle_OP_AdventureLeaderboardRequest(const EQApplicationPacket *app)
+{
 }
 
 void Client::Handle_OP_RespawnWindow(const EQApplicationPacket *app)

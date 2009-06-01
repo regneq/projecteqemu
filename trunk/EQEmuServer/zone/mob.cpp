@@ -663,7 +663,7 @@ void Mob::CreateSpawnPacket(EQApplicationPacket* app, NewSpawn_Struct* ns) {
 	else if (ns->spawn.class_==ADVENTURERECRUITER)
 		strcpy(ns2->spawn.lastName, "Adventure Recruiter");
 	else if (ns->spawn.class_==BANKER)
-		strcpy(ns2->spawn.lastName, "EQEmu Banker");
+		strcpy(ns2->spawn.lastName, "Banker");
 	else if (ns->spawn.class_==ADVENTUREMERCHANT)
 		strcpy(ns->spawn.lastName,"Adventure Merchant");
 	else if (ns->spawn.class_==WARRIORGM)
@@ -1478,10 +1478,13 @@ bool Mob::BehindMob(Mob* other, float playerx, float playery) const {
 		return false;
 }
 
-void Mob::SetZone(int32 zone_id)
+void Mob::SetZone(int32 zone_id, int32 instance_id)
 {
 	if(IsClient())
+	{
 		CastToClient()->GetPP().zone_id = zone_id;
+		CastToClient()->GetPP().zoneInstance = instance_id;
+	}
 	Save();
 }
 
@@ -2072,7 +2075,7 @@ bool Mob::HateSummon() {
 
     // get summon target
     SetTarget(GetHateTop());
-    if( target)
+    if(target)
     {
 		if (target->IsClient())
 			target->CastToClient()->Message(15,"You have been summoned!");
@@ -2081,7 +2084,7 @@ bool Mob::HateSummon() {
 		// RangerDown - GMMove doesn't seem to be working well with players, so use MovePC for them, GMMove for NPC's
 		if (target->IsClient()) {
 			target->CastToClient()->cheat_timer.Start(3500,false); //Lieka:  Prevent Mob Summons from tripping hack detector.
-			target->CastToClient()->MovePC(zone->GetZoneID(), x_pos, y_pos, z_pos, target->GetHeading(), 0, SummonPC);
+			target->CastToClient()->MovePC(zone->GetZoneID(), zone->GetInstanceID(), x_pos, y_pos, z_pos, target->GetHeading(), 0, SummonPC);
 		}
 		else
 

@@ -3,8 +3,9 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==05/31/2009==
 realityincarnate: Added EVENT_CAST to player quests
 realityincarnate: AA $quest functions: $client->GetAAPoints(), SetAAPoints(value), AddAAPoints(number), RefundAA(), GetSpentAA()
-KLS: Procs will now only occure on a player's targeted mob.
+KLS: Procs will now only occur on a player's targeted mob.
 realityincarnate: fixed a calculation error with spent AA's
+KLS: Merged instance branch to trunk.
 
 ==05/30/2009==
 KLS: Redid procs a bit, spell procs should work more consistently and ppm formula should be less broken and will also take into account haste now.

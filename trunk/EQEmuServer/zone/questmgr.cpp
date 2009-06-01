@@ -322,6 +322,7 @@ void QuestManager::Zone(const char *zone_name) {
 		ZoneToZone_Struct* ztz = (ZoneToZone_Struct*) pack->pBuffer;
 		ztz->response = 0;
 		ztz->current_zone_id = zone->GetZoneID();
+		ztz->current_instance_id = zone->GetInstanceID();
 		ztz->requested_zone_id = database.GetZoneID(zone_name);
 		ztz->admin = initiator->Admin();
 		strcpy(ztz->name, initiator->GetName());
@@ -570,7 +571,7 @@ bool QuestManager::isdisctome(int item_id) {
 
 void QuestManager::safemove() {
 	if (initiator && initiator->IsClient())
-		initiator->GoToSafeCoords(zone->GetZoneID());
+		initiator->GoToSafeCoords(zone->GetZoneID(), 0);
 }
 
 void QuestManager::rain(int weather) {
@@ -751,7 +752,7 @@ void QuestManager::movegrp(int zoneid, float x, float y, float z) {
 	{
 		Group *g = entity_list.GetGroupByClient(initiator);
        	if (g != NULL){
-			g->TeleportGroup(owner, zoneid, x, y, z, 0.0f);
+			g->TeleportGroup(owner, 0, zoneid, x, y, z, 0.0f);
 		}
 		else {
 			initiator->MovePC(zoneid, x, y, z, 0.0f);
@@ -1300,7 +1301,7 @@ bool QuestManager::summonburriedplayercorpse(int32 char_id, float dest_x, float 
 	bool Result = false;
 
 	if(char_id > 0) {
-		Corpse* PlayerCorpse = database.SummonBurriedPlayerCorpse(char_id, zone->GetZoneID(), dest_x, dest_y, dest_z, dest_heading);
+		Corpse* PlayerCorpse = database.SummonBurriedPlayerCorpse(char_id, zone->GetZoneID(), zone->GetInstanceID(), dest_x, dest_y, dest_z, dest_heading);
 		
 		if(PlayerCorpse) {
 			PlayerCorpse->Spawn();
@@ -1573,56 +1574,6 @@ bool QuestManager::istaskappropriate(int task) {
 
 	return false;
 }
-void QuestManager::setinstflag(int orgZoneID, int type)
-{
-	int instFlag = database.getCurInstFlagNum();
-
-	if (type == 0)
-	{
-		database.setCharInstFlag(initiator->CharacterID(), orgZoneID, instFlag);
-		database.incrCurInstFlagNum(instFlag); // Increment the curInstFlagNum
-	}
-	else if(type == 1)
-	{
-		database.setGroupInstFlagNum(initiator->CharacterID(), orgZoneID, instFlag);
-		database.incrCurInstFlagNum(instFlag); // Increment the curInstFlagNum
-	}
-	else if(type == 2)
-	{
-		database.setRaidInstFlagNum(initiator->CharacterID(), orgZoneID, instFlag);
-		database.incrCurInstFlagNum(instFlag); // Increment the curInstFlagNum
-	}
-	else if(type == 3)
-	{
-		database.setCharInstFlag(initiator->CharacterID(), orgZoneID, instFlag);
-		database.setGroupInstFlagNum(initiator->CharacterID(), orgZoneID, instFlag);
-		database.setRaidInstFlagNum(initiator->CharacterID(), orgZoneID, instFlag);
-		database.incrCurInstFlagNum(instFlag); // Increment the curInstFlagNum
-	}
-}
-
-void QuestManager::setinstflagmanually(int orgZoneID, int instFlag, int type)
-{
-	if (type == 0)
-	{
-		database.setCharInstFlag(initiator->CharacterID(), orgZoneID, instFlag);
-	}
-	else if(type == 1)
-	{
-		database.setGroupInstFlagNum(initiator->CharacterID(), orgZoneID, instFlag);
-	}
-	else if(type == 2)
-	{
-		database.setRaidInstFlagNum(initiator->CharacterID(), orgZoneID, instFlag);
-	}
-	else if(type == 3)
-	{
-		database.setCharInstFlag(initiator->CharacterID(), orgZoneID, instFlag);
-		database.setGroupInstFlagNum(initiator->CharacterID(), orgZoneID, instFlag);
-		database.setRaidInstFlagNum(initiator->CharacterID(), orgZoneID, instFlag);
-	}
-}
-
 void QuestManager::clearspawntimers() {
 	if(zone)  {
 		//TODO: Dec 19, 2008, replace with code updated for current spawn timers.
@@ -1632,7 +1583,8 @@ void QuestManager::clearspawntimers() {
 		{
 			char errbuf[MYSQL_ERRMSG_SIZE];
 			char *query = 0;
-			database.RunQuery(query, MakeAnyLenString(&query, "DELETE FROM respawn_times WHERE id=%lu",iterator.GetData()->GetID()), errbuf);
+			database.RunQuery(query, MakeAnyLenString(&query, "DELETE FROM respawn_times WHERE id=%lu AND "
+				"instance_id=%lu",iterator.GetData()->GetID(), zone->GetInstanceID()), errbuf);
 			safe_delete_array(query);		
 			iterator.Advance();
 		}
@@ -1685,11 +1637,6 @@ int QuestManager::getlevel(uint8 type)
 	}
 	else
 		return 0;
-}
-
-int QuestManager::getinstflag()
-{
-	return (database.GetCharInstFlagNum(initiator->CharacterID()));
 }
 
 void QuestManager::CreateGroundObject(int32 itemid, float x, float y, float z, float heading, int32 decay_time)
@@ -1845,6 +1792,110 @@ const char* QuestManager::varlink(char* perltext, int item_id) {
 	}
 	safe_delete_array(link);	// MakeItemLink() uses new also
 	return perltext;
+}
+
+int16 QuestManager::CreateInstance(const char *zone, int16 version, int32 duration)
+{
+	if(initiator)
+	{
+		int32 zone_id = database.GetZoneID(zone);
+		if(zone_id == 0)
+			return 0;
+
+		int16 id = 0;
+		if(!database.GetUnusedInstanceID(id))
+		{
+			initiator->Message(13, "Server was unable to find a free instance id.");
+			return 0;
+		}
+
+		if(!database.CreateInstance(id, zone_id, version, duration))
+		{
+			initiator->Message(13, "Server was unable to create a new instance.");
+			return 0;
+		}
+		return id;
+	}
+	return 0;
+}
+
+void QuestManager::DestroyInstance(int16 instance_id)
+{
+	database.DeleteInstance(instance_id);
+}
+
+int16 QuestManager::GetInstanceID(const char *zone, int16 version)
+{
+	if(initiator)
+	{
+		return database.GetInstanceID(zone, initiator->CharacterID(), version);
+	}
+	return 0;
+}
+
+void QuestManager::AssignToInstance(int16 instance_id)
+{
+	if(initiator)
+	{
+		database.AddClientToInstance(instance_id, initiator->CharacterID());
+	}
+}
+
+void QuestManager::AssignGroupToInstance(int16 instance_id)
+{
+	if(initiator)
+	{
+		Group *g = initiator->GetGroup();
+		if(g)
+		{
+			int32 gid = g->GetID();
+			database.AssignGroupToInstance(gid, instance_id);
+		}
+	}
+}
+
+void QuestManager::AssignRaidToInstance(int16 instance_id)
+{
+	if(initiator)
+	{
+		Raid *r = initiator->GetRaid();
+		if(r)
+		{
+			int32 rid = r->GetID();
+			database.AssignRaidToInstance(rid, instance_id);
+		}
+	}
+}
+
+void QuestManager::MovePCInstance(int zone_id, int instance_id, float x, float y, float z, float heading)
+{
+	if(initiator)
+	{
+		initiator->MovePC(zone_id, instance_id, x, y, z, heading);
+	}
+}
+
+void QuestManager::FlagInstanceByGroupLeader(int32 zone, int16 version)
+{
+	if(initiator)
+	{
+		Group *g = initiator->GetGroup();
+		if(g){
+			database.FlagInstanceByGroupLeader(zone, version, initiator->CharacterID(), g->GetID());
+		}
+	}
+}
+
+void QuestManager::FlagInstanceByRaidLeader(int32 zone, int16 version)
+{
+	if(initiator)
+	{
+		Raid *r = initiator->GetRaid();
+		if(r)
+		{
+			database.FlagInstanceByRaidLeader(zone, version, initiator->CharacterID(), r->GetID());
+		}
+	}
 }
 
 const char* QuestManager::saylink(char* Phrase) {

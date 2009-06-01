@@ -35,14 +35,13 @@ public:
 	
 	bool		Process();
 	bool		SendPacket(ServerPacket* pack) { return tcpc->SendPacket(pack); }
-//	bool		SendPacket(TCPConnection::TCPNetPacket_Struct* tnps) { return tcpc->SendPacket(tnps); }
 	void		SendEmoteMessage(const char* to, int32 to_guilddbid, sint16 to_minstatus, int32 type, const char* message, ...);
 	void		SendEmoteMessageRaw(const char* to, int32 to_guilddbid, sint16 to_minstatus, int32 type, const char* message);
-	bool		SetZone(int32 iZoneID, bool iStaticZone = false);
-	void		TriggerBootup(int32 iZoneID = 0, const char* iAdminName = 0, bool iMakeStatic = false);
+	bool		SetZone(int32 iZoneID, int32 iInstanceID = 0,  bool iStaticZone = false);
+	void		TriggerBootup(int32 iZoneID = 0, int32 iInstanceID = 0, const char* iAdminName = 0, bool iMakeStatic = false);
 	void		Disconnect() { tcpc->Disconnect(); }
 	void		IncommingClient(Client* client);
-	void		LSBootUpdate(int32 zoneid, bool startup = false);
+	void		LSBootUpdate(int32 zoneid, int32 iInstanceID = 0, bool startup = false);
 	void		LSSleepUpdate(int32 zoneid);
 	void		LSShutDownUpdate(int32 zoneid);
 	int32		GetPrevZoneID() { return oldZoneID; }
@@ -66,6 +65,9 @@ public:
 	inline void			RemovePlayer() 		{ pNumPlayers--; }
 	inline const char * GetLaunchName() const { return(launcher_name.c_str()); }
 	inline const char * GetLaunchedName() const { return(launched_name.c_str()); }
+
+	inline int32		GetInstanceID() { return instanceID; }
+	inline void			SetInstanceID(int32 i) { instanceID = i; }
 	//
 	//used by wlog() for VC6
 	#ifdef NO_VARIADIC_MACROS
@@ -87,6 +89,7 @@ private:
 	int32	zoneID;
 	int32	oldZoneID;
 	Timer	ls_zboot;
+	int32	instanceID;	//instance ids contain a zone id, and a zone version
 	std::string launcher_name;	//the launcher which started us
 	std::string launched_name;	//the name of the zone we launched.
 };

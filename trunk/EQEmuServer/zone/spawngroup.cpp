@@ -140,7 +140,7 @@ bool SpawnGroupList::RemoveSpawnGroup(uint32 in_id) {
 	return(true);
 }
 
-bool ZoneDatabase::LoadSpawnGroups(const char* zone_name, SpawnGroupList* spawn_group_list) {
+bool ZoneDatabase::LoadSpawnGroups(const char* zone_name, uint16 version, SpawnGroupList* spawn_group_list) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
 	MYSQL_RES *result;
@@ -148,7 +148,7 @@ bool ZoneDatabase::LoadSpawnGroups(const char* zone_name, SpawnGroupList* spawn_
 		
 	// CODER new spawn code
 	query = 0;
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT DISTINCT(spawngroupID), spawngroup.name, spawngroup.spawn_limit, spawngroup.dist, spawngroup.max_x, spawngroup.min_x, spawngroup.max_y, spawngroup.min_y, spawngroup.delay FROM spawn2,spawngroup WHERE spawn2.spawngroupID=spawngroup.ID and zone='%s'", zone_name), errbuf, &result))
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT DISTINCT(spawngroupID), spawngroup.name, spawngroup.spawn_limit, spawngroup.dist, spawngroup.max_x, spawngroup.min_x, spawngroup.max_y, spawngroup.min_y, spawngroup.delay FROM spawn2,spawngroup WHERE spawn2.spawngroupID=spawngroup.ID and spawn2.version=%u and zone='%s'", version, zone_name), errbuf, &result))
 	{
 		safe_delete_array(query);
 		while((row = mysql_fetch_row(result))) {

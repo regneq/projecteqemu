@@ -125,7 +125,7 @@ public:
 	bool	StoreCharacter(uint32 account_id, PlayerProfile_Struct* pp, Inventory* inv, ExtendedProfile_Struct *ext);
 	bool	DeleteCharacter(char* name);
 	int8	CopyCharacter(const char* oldname, const char* newname, int32 acctid);
-	
+
 	/*
 	 * General Information Getting Queries
 	 */
@@ -136,12 +136,72 @@ public:
 	int32	GetAccountIDByName(const char* accname, sint16* status = 0, int32* lsid = 0);
 	void	GetAccountName(int32 accountid, char* name, int32* oLSAccountID = 0);
 	void	GetCharName(int32 char_id, char* name);
-	int32	GetCharacterInfo(const char* iName, int32* oAccID = 0, int32* oZoneID = 0, float* oX = 0, float* oY = 0, float* oZ = 0);
+	int32	GetCharacterInfo(const char* iName, int32* oAccID = 0, int32* oZoneID = 0, int32* oInstanceID = 0,float* oX = 0, float* oY = 0, float* oZ = 0);
 	int32	GetCharacterID(const char *name);
 	bool	CheckBannedIPs(const char* loginIP); //Lieka Edit:  Check incomming connection against banned IP table.
  	bool	AddBannedIP(char* bannedIP, const char* notes); //Lieka Edit:  Add IP address to the Banned_IPs table.
 	bool	CheckGMIPs(const char* loginIP, int32 account_id);
 	bool	AddGMIP(char* ip_address, char* name);
+
+	/*
+	 * Instancing Stuff
+	 */
+	bool VerifyZoneInstance(int32 zone_id, int16 instance_id);
+	bool VerifyInstanceAlive(int16 instance_id, int32 char_id);
+	bool CharacterInInstanceGroup(int16 instance_id, int32 char_id);
+	void SetCharacterInstance(int16 instance_id, int32 char_id);
+	void DeleteInstance(uint16 instance_id);
+	bool CheckInstanceExpired(uint16 instance_id);
+	int32 ZoneIDFromInstanceID(uint16 instance_id);
+	int32 VersionFromInstanceID(uint16 instance_id);
+	int32 GetTimeRemainingInstance(uint16 instance_id);
+	bool GetUnusedInstanceID(uint16 &instance_id);
+	bool CreateInstance(uint16 instance_id, uint32 zone_id, uint32 version, uint32 duration);
+	void PurgeExpiredInstances();
+	bool AddClientToInstance(uint16 instance_id, uint32 char_id);
+	bool RemoveClientFromInstance(uint16 instance_id, uint32 char_id);
+	bool CheckInstanceExists(uint16 instance_id);
+	void BuryCorpsesInInstance(uint16 instance_id);
+	int16 GetInstanceVersion(uint16 instance_id);
+	int16 GetInstanceID(const char* zone, int32 charid, int16 version);
+	int16 GetInstanceID(int32 zone, int32 charid, int16 version);
+	void AssignGroupToInstance(int32 gid, int32 instance_id);
+	void AssignRaidToInstance(int32 rid, int32 instance_id);
+	void FlagInstanceByGroupLeader(int32 zone, int16 version, int32 charid, int32 gid);
+	void FlagInstanceByRaidLeader(int32 zone, int16 version, int32 charid, int32 rid);
+	void SetInstanceDuration(int16 instance_id, int32 new_duration);
+
+	/*
+	 * Adventure
+	 */
+	void GroupAdventureLevelAndRange(int32 gid, int32 &avg_level, int32 &range);
+	void RaidAdventureLevelAndRange(int32 rid, int32 &avg_level, int32 &range);
+	int32 CreateAdventure(int32 adventure_id);
+	void AddPlayerToAdventure(int32 id, int32 charid);
+	void RemovePlayerFromAdventure(int32 id, int32 charid);
+	void AddGroupToAdventure(int32 id, int32 gid);
+	void AddRaidToAdventure(int32 id, int32 rid);
+	void DestroyAdventure(int32 id);
+	bool GetAdventureDetails(int32 charid, int32 &id, int32 &adventure_id, int32 &instance_id, int32 &count, 
+		int32 &ass_count, int32 &status, int32 &time_c, int32 &time_z, int32 &time_comp);
+	int32 CountPlayersInAdventure(int32 id);
+	void PurgeAdventures();
+	void AddAdventureToInstance(int32 adv_id, int32 inst_id);
+	void UpdateAdventureStatus(int32 adv_id, int32 status);
+	void UpdateAdventureInstance(int32 adv_id, int32 inst_id, int32 time);
+	void UpdateAdventureCompleted(int32 adv_id, int32 time);
+	void UpdateAdventureCount(int32 adv_id, int32 new_count);
+	void IncrementAdventureCount(int32 adv_id);
+	int32 GetAdventureCount(int32 adv_id);
+	bool AdventureStatsEntryExists(int32 char_id);
+	bool AdventureExists(int32 adv_id);
+	void UpdateAdventureStatsEntry(int32 char_id, int8 theme, bool win);
+	void UpdateAllAdventureStatsEntry(int32 adv_id, int8 theme, bool win);
+	bool GetAdventureStats(int32 char_id, int32 &guk_w, int32 &mir_w, int32 &mmc_w, int32 &ruj_w, int32 &tak_w, 
+		int32 &guk_l, int32 &mir_l, int32 &mmc_l, int32 &ruj_l, int32 &tak_l);
+	int32 AdventureGetAssassinateKills(int32 adv_id);
+	void AdventureSetAssassinateKills(int32 adv_id, int32 kills);
+	void AdventureGetAssassinateLocation(int32 adv_template);
 
 	/*
 	 * Account Related
@@ -179,6 +239,7 @@ public:
 	void	ClearRaid(int32 rid = 0);
 	void	ClearRaidDetails(int32 rid = 0);
 	int32	GetRaidID(const char* name);
+	const char *GetRaidLeaderName(int32 rid);
 
 	/*
 	 * Database Varaibles
@@ -247,16 +308,6 @@ public:
 	bool	LoadPTimers(uint32 charid, PTimerList &into);
 	void	ClearPTimers(uint32 charid);
 	void	ClearMerchantTemp();
-	int32	GetCharInstFlagNum(int32 charID);
-	int32	GetCharInstZOrgID(int32 charID);
-	int32   GetInstZoneID(int32 zoneID, const char* charName);
-	void	DeleteInstZone(int32 instZoneID);
-	int32   GetDfltInstZFlag();
-	void	setCharInstFlag(int charID, int  orgZoneID, int instFlag);
-	void	setGroupInstFlagNum(int charID, int orgZoneID, int instFlag);
-	void	setRaidInstFlagNum(int charID, int orgZoneID, int instFlag);
-	void	incrCurInstFlagNum(int instFlag);
-	int	getCurInstFlagNum();
 	void	SetLFP(int32 CharID, bool LFP); 
 	void	SetLFG(int32 CharID, bool LFG); 
 	

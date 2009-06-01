@@ -144,7 +144,7 @@ bool ZoneDatabase::GetZoneCFG(int32 zoneid, NewZone_Struct *zone_data, bool &can
 }
 
 //updates or clears the respawn time in the database for the current spawn id
-void ZoneDatabase::UpdateSpawn2Timeleft(int32 id, int32 timeleft)
+void ZoneDatabase::UpdateSpawn2Timeleft(int32 id, int16 instance_id, int32 timeleft)
 {
 	timeval tv;
 	gettimeofday(&tv, NULL);
@@ -157,7 +157,8 @@ void ZoneDatabase::UpdateSpawn2Timeleft(int32 id, int32 timeleft)
 	//otherwise we update with a REPLACE INTO
 	if(timeleft == 0)
 	{
-		if (!RunQuery(query, MakeAnyLenString(&query, "DELETE FROM respawn_times WHERE id=%lu",id),errbuf))
+		if (!RunQuery(query, MakeAnyLenString(&query, "DELETE FROM respawn_times WHERE id=%lu "
+			"AND instance_id=%lu",id, instance_id),errbuf))
 		{
 			LogFile->write(EQEMuLog::Error, "Error in UpdateTimeLeft query %s: %s", query, errbuf);
 		}
@@ -165,7 +166,8 @@ void ZoneDatabase::UpdateSpawn2Timeleft(int32 id, int32 timeleft)
 	}
 	else
 	{
-		if (!RunQuery(query, MakeAnyLenString(&query, "REPLACE INTO respawn_times (id,start,duration) VALUES(%lu,%lu,%lu)",id, cur, timeleft),errbuf))
+		if (!RunQuery(query, MakeAnyLenString(&query, "REPLACE INTO respawn_times (id,start,duration,instance_id) "
+			"VALUES(%lu,%lu,%lu,%lu)",id, cur, timeleft, instance_id),errbuf))
 		{
 			LogFile->write(EQEMuLog::Error, "Error in UpdateTimeLeft query %s: %s", query, errbuf);
 		}
@@ -175,14 +177,15 @@ void ZoneDatabase::UpdateSpawn2Timeleft(int32 id, int32 timeleft)
 }
 
 //Gets the respawn time left in the database for the current spawn id
-int32 ZoneDatabase::GetSpawnTimeLeft(int32 id)
+int32 ZoneDatabase::GetSpawnTimeLeft(int32 id, int16 instance_id)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char* query = 0;
 	MYSQL_RES *result;
 	MYSQL_ROW row;
 
-	MakeAnyLenString(&query, "SELECT start, duration FROM respawn_times WHERE id=%lu", id);
+	MakeAnyLenString(&query, "SELECT start, duration FROM respawn_times WHERE id=%lu AND instance_id=%lu",
+		id, zone->GetInstanceID());
 	
 	if (RunQuery(query, strlen(query), errbuf, &result))
 	{
@@ -251,6 +254,7 @@ void ZoneDatabase::UpdateBug(BugStruct* bug){
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
 	
+
 	uint32 len = strlen(bug->bug);
 	char* bugtext = NULL;
 	if(len > 0)
@@ -432,141 +436,6 @@ void ZoneDatabase::GetEventLogs(const char* name,char* target,int32 account_id,i
 /*
 	Cofruben:Starting adventure database functions.
 */
-
-AdventureInfo ZoneDatabase::GetAdventureInfo(int32 questid,int32 mobid,int8 advtype){
-	char errbuf[MYSQL_ERRMSG_SIZE];
-    char *query = 0;
-	MYSQL_RES *result;
-	MYSQL_ROW row;
-	AdventureInfo rvalue;
-	if(questid>0){
-		if (RunQuery(query, MakeAnyLenString(&query, "Select NPCID,Type,Objetive,ObjetiveValue,Text,Minutes,Points,x,y,in_use,ShowCompass,zonedungeonid,zoneid,status,QuestID from adventures where QuestID=%i", questid), errbuf, &result)) {
-			if ((row = mysql_fetch_row(result))) {
-				safe_delete_array(query);
-				rvalue.NPCID=atoi(row[0]);
-				rvalue.type=atoi(row[1]);
-				rvalue.Objetive=atoi(row[2]);
-				rvalue.ObjetiveValue=atoi(row[3]);
-				strcpy(rvalue.text,row[4]);
-				rvalue.minutes=atoi(row[5]);
-				rvalue.points=atoi(row[6]);
-				rvalue.x=atof(row[7]);
-				rvalue.y=atof(row[8]);
-				rvalue.in_use=atoi(row[9]);
-				rvalue.ShowCompass=atoi(row[10]);
-				rvalue.zonedungeonid=atoi(row[11]);
-				rvalue.zoneid=atoi(row[12]);
-				rvalue.status=atoi(row[13]);
-				rvalue.QuestID=atoi(row[14]);
-				mysql_free_result(result);
-			}
-		}
-		else
-			printf("Q.GetAdvInfo error: %s\n",errbuf);
-	}
-	else {
-		if (RunQuery(query, MakeAnyLenString(&query, "Select NPCID,Type,Objetive,ObjetiveValue,Text,Minutes,Points,x,y,in_use,ShowCompass,zonedungeonid,zoneid,status,QuestID from adventures where NPCID=%i and type=%i", mobid,advtype), errbuf, &result)) {
-			if ((row = mysql_fetch_row(result))) {
-				mysql_free_result(result);
-				rvalue.NPCID=atoi(row[0]);
-				rvalue.type=atoi(row[1]);
-				rvalue.Objetive=atoi(row[2]);
-				rvalue.ObjetiveValue=atoi(row[3]);
-				strcpy(rvalue.text,row[4]);
-				rvalue.minutes=atoi(row[5]);
-				rvalue.points=atoi(row[6]);
-				rvalue.x=atof(row[7]);
-				rvalue.y=atof(row[8]);
-				rvalue.in_use=atoi(row[9]);
-				rvalue.ShowCompass=atoi(row[10]);
-				rvalue.zonedungeonid=atoi(row[11]);
-				rvalue.zoneid=atoi(row[12]);
-				rvalue.status=atoi(row[13]);
-				rvalue.QuestID=atoi(row[14]);
-				safe_delete_array(query);
-			}
-			else {
-				memset(&rvalue,0,sizeof(rvalue));
-				rvalue.in_use=true;
-			}
-		}
-		else
-			printf("etAdvInfo error: %s\n",errbuf);
-	}
-	safe_delete_array(query);
-	return rvalue;
-}
-void ZoneDatabase::SetAdventureInfo(int32 questid,bool inuse,int32 status){
-	char errbuf[MYSQL_ERRMSG_SIZE];
-    char *query = 0;
-	if (!RunQuery(query, MakeAnyLenString(&query, "update adventures set in_use=%i,status=%i where QuestID=%i", inuse,status,questid), errbuf)) {
-		printf("Error updating adventures: %s\n",errbuf);
-	}
-	safe_delete_array(query);
-	return;
-}
-void ZoneDatabase::SetAdventureChar(int32 n,int32 charid,int32 questid){
-	char errbuf[MYSQL_ERRMSG_SIZE];
-    char *query = 0;
-	if (!RunQuery(query, MakeAnyLenString(&query, "update adventures set char%i=%i where QuestID=%i", n+1,charid,questid), errbuf)) {
-		printf("Error updating adventure characters: %s\n",errbuf);
-	}
-	safe_delete_array(query);
-}
-int32 ZoneDatabase::GetAdventureChar(int32 n,int32 questid){
-	char errbuf[MYSQL_ERRMSG_SIZE];
-    char *query = 0;
-	MYSQL_RES *result;
-	MYSQL_ROW row;
-	if (RunQuery(query, MakeAnyLenString(&query, "Select char%i from adventures where QuestID=%i",n+1, questid), errbuf, &result)) {
-		if (mysql_num_rows(result) == 1) {
-			row = mysql_fetch_row(result);
-			safe_delete_array(query);
-			mysql_free_result(result);
-			return atoi(row[0]);
-		}
-	}
-	safe_delete_array(query);
-	return 0;
-}
-char* ZoneDatabase::GetAdventureNPCText(uint32 NPCID, char* adventureText){
-	char errbuf[MYSQL_ERRMSG_SIZE];
-    char *query = 0;
-	MYSQL_RES *result;
-	MYSQL_ROW row;
-	if (RunQuery(query, MakeAnyLenString(&query, "Select Text from adventures_maintext where NPCID=%i",NPCID), errbuf, &result)) {
-		if (mysql_num_rows(result) == 1) {
-			row = mysql_fetch_row(result);
-			MakeAnyLenString(&adventureText, row[0]);
-			safe_delete_array(query);
-			mysql_free_result(result);
-			return adventureText;
-		}
-	}
-	safe_delete_array(query);
-	return(NULL);
-}
-
-bool ZoneDatabase::IsLDoNDungeon(uint32 zoneid){
-	char errbuf[MYSQL_ERRMSG_SIZE];
-    char *query = 0;
-	MYSQL_RES *result;
-	MYSQL_ROW row;
-	if (RunQuery(query, MakeAnyLenString(&query, "Select ldondungeon from zone where zoneidnumber=%i", zoneid), errbuf, &result)) {
-		safe_delete_array(query);
-		if (mysql_num_rows(result) == 1) {
-			row = mysql_fetch_row(result);
-			int res = atoi(row[0]);
-			mysql_free_result(result);
-			if(res == 0)
-				return false;
-			else
-				return true;
-		}
-	}
-	return false;
-}
-
 
 // Load child objects for a world container (i.e., forge, bag dropped to ground, etc)
 void ZoneDatabase::LoadWorldContainer(uint32 parentid, ItemInst* container)
@@ -947,12 +816,12 @@ int8 *class_, int8 *level, bool *LFP, bool *LFG) {
 	if (character_id && *character_id) {
 		// searching by ID should be a lil bit faster
 		querylen = MakeAnyLenString(&query, 
-			"SELECT id,profile,zonename,x,y,z,guild_id,rank,extprofile,class,level,lfp,lfg "
+			"SELECT id,profile,zonename,x,y,z,guild_id,rank,extprofile,class,level,lfp,lfg,instanceid "
 			" FROM character_ LEFT JOIN guild_members ON id=char_id WHERE id=%i", *character_id);
 	}
 	else {
 		querylen = MakeAnyLenString(&query, 
-			"SELECT id,profile,zonename,x,y,z,guild_id,rank,extprofile,class,level,lfp,lfg "
+			"SELECT id,profile,zonename,x,y,z,guild_id,rank,extprofile,class,level,lfp,lfg,instanceid "
 			" FROM character_ LEFT JOIN guild_members ON id=char_id WHERE name='%s'", name);
 	}
 	
@@ -995,6 +864,7 @@ bool ZoneDatabase::GetCharacterInfoForLogin_result(MYSQL_RES* result,
 			
 			*pplen = lengths[1];
 			pp->zone_id = GetZoneID(row[2]);
+			pp->zoneInstance = atoi(row[13]);
 			
 			pp->x = atof(row[3]);
 			pp->y = atof(row[4]);
@@ -1045,7 +915,7 @@ bool ZoneDatabase::GetCharacterInfoForLogin_result(MYSQL_RES* result,
 			*LFG = atoi(row[12]);
 		// Fix use_tint, previously it was set to 1 for a dyed slot, client wants it set to 0xFF
 		for(int i = 0; i<9; i++)
-	                if(pp->item_tint[i].rgb.use_tint == 1)
+			if(pp->item_tint[i].rgb.use_tint == 1)
 				pp->item_tint[i].rgb.use_tint = 0xFF;
 		
 		// Retrieve character inventory
@@ -1141,6 +1011,7 @@ const NPCType* ZoneDatabase::GetNPCType (uint32 id) {
             "npc_types.size,"
 			"npc_types.loottable_id,"
             "npc_types.merchant_id,"
+			"npc_types.adventure_template_id,"
 			"npc_types.attack_speed,"
             "npc_types.STR,"
 			"npc_types.STA,"
@@ -1218,6 +1089,7 @@ const NPCType* ZoneDatabase::GetNPCType (uint32 id) {
 				tmpNPCType->size = atof(row[r++]);
 				tmpNPCType->loottable_id = atoi(row[r++]);
 				tmpNPCType->merchanttype = atoi(row[r++]);
+				tmpNPCType->adventure_template = atoi(row[r++]);
 				tmpNPCType->attack_speed = atof(row[r++]);
 				tmpNPCType->STR = atoi(row[r++]);
 				tmpNPCType->STA = atoi(row[r++]);
@@ -1769,79 +1641,6 @@ bool ZoneDatabase::LoadBlockedSpells(sint32 blockedSpellsCount, ZoneSpellsBlocke
 	return true;
 }
 
-int32 ZoneDatabase::GetInstType(int32 zoneid) {
-	char errbuf[MYSQL_ERRMSG_SIZE];
-    char *query = 0;
-    MYSQL_RES *result;
-    MYSQL_ROW row;
-	
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT insttype FROM zone WHERE zoneidnumber=%i", zoneid), errbuf, &result))
-	{
-		safe_delete_array(query);
-		if (mysql_num_rows(result) == 1) {
-			row = mysql_fetch_row(result);
-			int8 tmp = atoi(row[0]);
-			mysql_free_result(result);
-			return tmp;
-
-		}
-		mysql_free_result(result);
-	}
-
-	else {
-		cerr << "Error in GetInstType query '" << query << "' " << errbuf << endl;
-		safe_delete_array(query);
-	}
-	return 0;
-}
-bool ZoneDatabase::InstZoneLoaded(int32 charInstFlagNum){
-	char errbuf[MYSQL_ERRMSG_SIZE];
-    char *query = 0;
-    MYSQL_RES *result;
-	
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT zoneidnumber FROM zone WHERE zoneidnumber=%i", charInstFlagNum), errbuf, &result))
-	{
-		safe_delete_array(query);
-		if (mysql_num_rows(result) == 1) {
-			return true;
-		}
-		else if (mysql_num_rows(result) == 0) {
-			return false;
-		}
-		mysql_free_result(result);
-	}
-
-	else {
-		cerr << "Error in isInstZoneLoad query '" << query << "' " << errbuf << endl;
-		safe_delete_array(query);
-	}
-	return 0;
-}
-
-
-//Copies original zones information into a new zone entry replacing the old zoneidnumber with the instflagnum
-void ZoneDatabase::LoadInstZone(int32 target_zone_ID, int32 instFlagNum){
-	char errbuf[MYSQL_ERRMSG_SIZE];
-    char *query = 0;
-	int32 affected_rows = 0;
-	string tmpzonename = database.GetZoneName(target_zone_ID);
-	string temp;
-	const char* temp2;
-	stringstream tmpFlag; // used for converting int32 instFlagNum to a string
-
-	tmpFlag << instFlagNum;
-	temp = tmpFlag.str();
-	temp.append(tmpzonename);
-	temp2 = temp.c_str();
-
-	if (RunQuery(query, MakeAnyLenString(&query, "INSERT INTO zone (short_name, file_name, long_name, safe_x, safe_y, safe_z, graveyard_id, min_level, min_status, zoneidnumber, timezone, maxclients, weather, note, underworld, minclip, maxclip, fog_minclip, fog_maxclip, fog_blue, fog_red, fog_green, sky, ztype, zone_exp_multiplier, walkspeed, time_type, fog_red1, fog_green1, fog_blue1, fog_minclip1, fog_maxclip1, fog_red2, fog_green2, fog_blue2, fog_minclip2, fog_maxclip2, fog_red3, fog_green3, fog_blue3, fog_minclip3, fog_maxclip3, fog_red4, fog_green4, fog_blue4, fog_minclip4, fog_maxclip4, flag_needed, canbind, cancombat, canlevitate, castoutdoor, insttype, insttimer, shutdowndelay) SELECT '%s', file_name, long_name, safe_x, safe_y, safe_z, graveyard_id, min_level, min_status, %i, timezone, maxclients, weather, note, underworld, minclip, maxclip, fog_minclip, fog_maxclip, fog_blue, fog_red, fog_green, sky, ztype, zone_exp_multiplier, walkspeed, time_type, fog_red1, fog_green1, fog_blue1, fog_minclip1, fog_maxclip1, fog_red2, fog_green2, fog_blue2, fog_minclip2, fog_maxclip2, fog_red3, fog_green3, fog_blue3, fog_minclip3, fog_maxclip3, fog_red4, fog_green4, fog_blue4, fog_minclip4, fog_maxclip4, flag_needed, canbind, cancombat, canlevitate, castoutdoor, insttype, insttimer, shutdowndelay FROM zone WHERE zoneidnumber =%i", temp2,instFlagNum,target_zone_ID), errbuf, 0, &affected_rows)){
-		safe_delete_array(query);}
-	else {
-		cerr << "Error in LoadInstZone query '" << query << "' " << errbuf << endl;
-		safe_delete_array(query);
-	}
-}
-
 int ZoneDatabase::getZoneShutDownDelay(int32 zoneID)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
@@ -1908,6 +1707,41 @@ void ZoneDatabase::UpdateKarma(int32 acct_id, int32 amount)
 		safe_delete_array(query);}
 	else {
 		cerr << "Error in UpdateKarma query '" << query << "' " << errbuf << endl;
+		safe_delete_array(query);
+	}
+}
+
+void ZoneDatabase::ListAllInstances(Client* c, int32 charid)
+{
+	if(!c)
+		return;
+
+
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+
+
+	if (RunQuery(query,MakeAnyLenString(&query, "SELECT instance_lockout.id, zone, version FROM instance_lockout JOIN"
+		" instance_lockout_player ON instance_lockout.id = instance_lockout_player.id"
+		" WHERE instance_lockout_player.charid=%lu", charid),errbuf,&result))
+	{
+		safe_delete_array(query);
+
+		char name[64];
+		database.GetCharName(charid, name);
+		c->Message(0, "%s is part of the following instances:", name);
+		while(row = mysql_fetch_row(result))
+		{
+			c->Message(0, "%s - id: %lu, version: %lu", database.GetZoneName(atoi(row[1])), 
+				atoi(row[0]), atoi(row[2]));
+		}
+
+		mysql_free_result(result);
+	}
+	else
+	{
 		safe_delete_array(query);
 	}
 }

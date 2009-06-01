@@ -272,7 +272,8 @@ typedef enum {
 	petFamiliar,		//only listens to /pet get lost
 	petAnimation,		//does not listen to any commands
 	petOther,
-	petCharmed
+	petCharmed,
+	petNPCFollow
 } PetType;
 
 class AA_SwarmPetInfo {
@@ -560,7 +561,7 @@ bool logpos;
 	inline sint32	GetMana()		const { return cur_mana; }
 	virtual const sint32& SetMana(sint32 amount);
 	inline float	GetManaRatio()	const { return max_mana == 0 ? 100 : (((float)cur_mana/max_mana)*100); }
-	void			SetZone(int32 zone_id);
+	void			SetZone(int32 zone_id, int32 instance_id);
 
 	// neotokyo: moved from client to use in NPC too
 	char GetCasterClass() const;
@@ -722,6 +723,7 @@ bool logpos;
 	void	SetPetID(int16 NewPetID);
 	inline int16	GetPetID()		const			{ return petid;  }
 	inline PetType GetPetType() const { return typeofpet; }
+	void SetPetType(PetType p) { typeofpet = p; } 
 	bool IsFamiliar() const { return(typeofpet == petFamiliar); }
 	bool IsAnimation() const { return(typeofpet == petAnimation); }
 	bool IsCharmed() const { return(typeofpet == petCharmed); }

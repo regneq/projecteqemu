@@ -544,7 +544,7 @@ XS(XS_Group_TeleportGroup)
 		if(sender == NULL)
 			Perl_croak(aTHX_ "sender is NULL, avoiding crash.");
 
-		THIS->TeleportGroup(sender, zoneID, x, y, z, heading);
+		THIS->TeleportGroup(sender, zoneID, 0, x, y, z, heading);
 	}
 	XSRETURN_EMPTY;
 }

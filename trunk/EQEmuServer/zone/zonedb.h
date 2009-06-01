@@ -90,17 +90,11 @@ public:
 	uint32	AddObject(uint32 type, uint32 icon, const Object_Struct& object, const ItemInst* inst);
 	void	UpdateObject(uint32 id, uint32 type, uint32 icon, const Object_Struct& object, const ItemInst* inst);
 	void	DeleteObject(uint32 id);
-	Ground_Spawns*	LoadGroundSpawns(int32 zone_id,Ground_Spawns* gs);
+	Ground_Spawns*	LoadGroundSpawns(int32 zone_id, int16 version, Ground_Spawns* gs);
 	
 	/*
 	 * Adventures
 	 */
-	AdventureInfo	GetAdventureInfo(int32 questid=0,int32 mobid=0,int8 advtype=0);
-	bool			IsLDoNDungeon(uint32 zoneid);
-	void			SetAdventureInfo(int32 questid,bool inuse,int32 status);
-	char*			GetAdventureNPCText(int32 npcid, char* adventureText);
-	void			SetAdventureChar(int32 n,int32 charid,int32 questid);
-	int32			GetAdventureChar(int32 n,int32 questid);
 	
 	/*
 	 * Traders
@@ -149,23 +143,20 @@ public:
 	 * Corpses
 	 */
 	bool	GetDecayTimes(npcDecayTimes_Struct* npcCorpseDecayTimes);
-	int32	CreatePlayerCorpse(int32 charid, const char* charname, int32 zoneid, uchar* data, int32 datasize, float x, float y, float z, float heading);
-	int32	UpdatePlayerCorpse(int32 dbid, int32 charid, const char* charname, int32 zoneid, uchar* data, int32 datasize, float x, float y, float z, float heading, bool rezzed = false);
+	int32	CreatePlayerCorpse(int32 charid, const char* charname, int32 zoneid, int16 instanceid, uchar* data, int32 datasize, float x, float y, float z, float heading);
+	int32	UpdatePlayerCorpse(int32 dbid, int32 charid, const char* charname, int32 zoneid, int16 instanceid, uchar* data, int32 datasize, float x, float y, float z, float heading, bool rezzed = false);
 	bool	BuryPlayerCorpse(int32 dbid);
 	bool	DeletePlayerCorpse(int32 dbid);
 	int32	GetPlayerBurriedCorpseCount(int32 char_id);
-	Corpse* SummonBurriedPlayerCorpse(int32 char_id, int32 dest_zoneid, float dest_x, float dest_y, float dest_z, float dest_heading);
+	Corpse* SummonBurriedPlayerCorpse(int32 char_id, int32 dest_zoneid, int16 dest_instanceid, float dest_x, float dest_y, float dest_z, float dest_heading);
 	Corpse*	LoadPlayerCorpse(int32 player_corpse_id);
-	bool	UnburyPlayerCorpse(int32 dbid, int32 new_zoneid, float new_x, float new_y, float new_z, float new_heading);
-	bool	LoadPlayerCorpses(int32 iZoneID);
-	int32	GraveyardPlayerCorpse(int32 dbid, int32 zoneid, float x, float y, float z, float heading);
+	bool	UnburyPlayerCorpse(int32 dbid, int32 new_zoneid, int16 dest_instanceid, float new_x, float new_y, float new_z, float new_heading);
+	bool	LoadPlayerCorpses(int32 iZoneID, int16 iInstanceID);
+	int32	GraveyardPlayerCorpse(int32 dbid, int32 zoneid, int16 instanceid, float x, float y, float z, float heading);
 	int32	NewGraveyardRecord(int32 graveyard_zoneid, float graveyard_x, float graveyard_y, float graveyard_z, float graveyard_heading);
 	int32	AddGraveyardIDToZone(int32 zone_id, int32 graveyard_id);
 	bool	DeleteGraveyard(int32 zone_id, int32 graveyard_id);
 	int32   GetFirstCorpseID(int32 char_id);
-	
-	int32	GetKarma(int32 acct_id);
-	void	UpdateKarma(int32 acct_id, int32 amount);
 	
 	/*
 	 * Faction
@@ -203,9 +194,6 @@ public:
 	bool	LoadStaticZonePoints(LinkedList<ZonePoint*>* zone_point_list,const char* zonename);
 	bool	UpdateZoneSafeCoords(const char* zonename, float x, float y, float z);
 	int8	GetUseCFGSafeCoords();
-    int32   GetInstType(int32 zoneid);
-    bool    InstZoneLoaded(int32 target_zone_ID);
-    void    LoadInstZone(int32 target_zone_ID, int32 InstFlagNum);
     int		getZoneShutDownDelay(int32 zoneID);
 	
 	/*
@@ -219,13 +207,13 @@ public:
 	/*
 	 * Spawns and Spawn Points
 	 */
-	bool	LoadSpawnGroups(const char* zone_name, SpawnGroupList* spawn_group_list);
-      bool	LoadSpawnGroupsByID(int spawngroupid, SpawnGroupList* spawn_group_list);
-	bool	PopulateZoneSpawnList(int32 zoneid, LinkedList<Spawn2*> &spawn2_list, int32 repopdelay = 0);
+	bool	LoadSpawnGroups(const char* zone_name, uint16 version, SpawnGroupList* spawn_group_list);
+    bool	LoadSpawnGroupsByID(int spawngroupid, SpawnGroupList* spawn_group_list);
+	bool	PopulateZoneSpawnList(int32 zoneid, LinkedList<Spawn2*> &spawn2_list, int16 version, int32 repopdelay = 0);
 	Spawn2*	LoadSpawn2(LinkedList<Spawn2*> &spawn2_list, int32 spawn2id, int32 timeleft);
 	bool	CreateSpawn2(Client *c, int32 spawngroup, const char* zone, float heading, float x, float y, float z, int32 respawn, int32 variance, uint16 condition, sint16 cond_value);
-	void	UpdateSpawn2Timeleft(int32 id,int32 timeleft);
-	int32	GetSpawnTimeLeft(int32 id);
+	void	UpdateSpawn2Timeleft(int32 id, int16 instance_id,int32 timeleft);
+	int32	GetSpawnTimeLeft(int32 id, int16 instance_id);
 	
 	/*
 	 * Grids/Paths
@@ -293,12 +281,12 @@ public:
 	uint32  MaxDoors() { return max_door_type; }
 	bool	DoorIsOpen(int8 door_id,const char* zone_name);
 	void	SetDoorPlace(int8 value,int8 door_id,const char* zone_name);
-	bool	LoadDoors(sint32 iDoorCount, Door *into, const char *zone_name);
+	bool	LoadDoors(sint32 iDoorCount, Door *into, const char *zone_name, int16 version);
 	bool	CheckGuildDoor(int8 doorid,int16 guild_id, const char* zone);
 	bool	SetGuildDoor(int8 doorid,int16 guild_id, const char* zone);
 	int32	GetGuildEQID(int32 guilddbid);
 	void	UpdateDoorGuildID(int doorid, int guild_id);
-	sint32	GetDoorsCount(int32* oMaxID, const char *zone_name);
+	sint32	GetDoorsCount(int32* oMaxID, const char *zone_name, int16 version);
 	
 	/*
 	 * Blocked Spells
@@ -310,7 +298,7 @@ public:
 	/*
 	 * Traps
 	 */
-	bool	LoadTraps(const char* zonename);
+	bool	LoadTraps(const char* zonename, int16 version);
 	char*	GetTrapMessage(int32 trap_id);
 
 	/*
@@ -332,10 +320,12 @@ public:
 	/*
 	 * Raid
 	 */
-	//void RefresheRaidFromDB(Client *c);
 	int8 RaidGroupCount(int32 raidid, int32 groupid);
-	//void AddClientToRaid(Client *c, int32 groupid = 0xFFFFFFFF, bool isGroupLeader = false, bool isLooter = false);
 
+	/*
+	 * Instancing
+	 */
+	void ListAllInstances(Client* c, int32 charid);
 
 	/*
 	 * Misc stuff.
@@ -344,7 +334,8 @@ public:
 	 */
 	bool    logevents(const char* accountname,int32 accountid,int8 status,const char* charname,const char* target, const char* descriptiontype, const char* description,int event_nid);
 	void	GetEventLogs(const char* name,char* target,int32 account_id=0,int8 eventid=0,char* detail=0,char* timestamp=0, CharacterEventLog_Struct* cel=0);
-	
+	int32	GetKarma(int32 acct_id);
+	void	UpdateKarma(int32 acct_id, int32 amount);
 	
 	/*
 	 * Things which really dont belong here...
