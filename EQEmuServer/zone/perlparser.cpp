@@ -2733,6 +2733,7 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "MerchantSetItem"), XS__MerchantSetItem, file);
 		newXS(strcpy(buf, "MerchantCountItem"), XS__MerchantCountItem, file);
 		newXS(strcpy(buf, "varlink"), XS__varlink, file);
+		newXS(strcpy(buf, "saylink"), XS__saylink, file);
 		newXS(strcpy(buf, "CreateInstance"), XS__CreateInstance, file);
 		newXS(strcpy(buf, "DestroyInstance"), XS__DestroyInstance, file);
 		newXS(strcpy(buf, "GetInstanceID"), XS__GetInstanceID, file);
