@@ -3608,7 +3608,7 @@ XS(XS_Client_SetAAPoints);
 XS(XS_Client_SetAAPoints) {
 	dXSARGS;
 	if(items != 2)
-		Perl_croak(aTHX_ "Usage: Client::SetAAPts(THIS, points)");
+		Perl_croak(aTHX_ "Usage: Client::SetAAPoints(THIS, points)");
 	{
 		Client * THIS;
 		uint32 points = SvUV(ST(1));
@@ -3632,7 +3632,7 @@ XS(XS_Client_GetAAPoints);
 XS(XS_Client_GetAAPoints) {
 	dXSARGS;
 	if(items != 1)
-		Perl_croak(aTHX_ "Usage: Client::GetAAPts(THIS)");
+		Perl_croak(aTHX_ "Usage: Client::GetAAPoints(THIS)");
 	dXSTARG;
 	{
 		Client * THIS;
@@ -3651,6 +3651,103 @@ XS(XS_Client_GetAAPoints) {
 		XSprePUSH; PUSHu((UV)RETVAL);
 	}
 	XSRETURN(1);
+}
+
+XS(XS_Client_GetSpentAA);
+XS(XS_Client_GetSpentAA) {
+	dXSARGS;
+	if(items != 1)
+		Perl_croak(aTHX_ "Usage: Client::GetSpentAA(THIS)");
+	dXSTARG;
+	{
+		Client * THIS;
+		uint32 RETVAL;
+				
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetPP().aapoints_spent;
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Client_AddAAPoints);
+XS(XS_Client_AddAAPoints) {
+	dXSARGS;
+	if(items != 2)
+		Perl_croak(aTHX_ "Usage: Client::AddAAPoints(THIS, number)");
+	{
+		Client * THIS;
+		uint32 points = SvUV(ST(1));
+		
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->GetPP().aapoints += points;
+		THIS->SendAAStats();
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_Client_RefundAA);
+XS(XS_Client_RefundAA) {
+	dXSARGS;
+	if(items != 1)
+		Perl_croak(aTHX_ "Usage: Client::RefundAA(THIS)");
+	{
+		Client * THIS;
+				
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		int curpt = 0;
+		bool refunded = false;
+
+		for(int x1=0;x1<aaHighestID;x1++){
+			curpt = THIS->GetAA(x1);
+			if(curpt > 0){
+				SendAA_Struct* curaa = zone->FindAA(x1);
+				if(curaa){
+					THIS->SetAA(x1, 0);
+					for(int x2=0;x2<curpt;x2++){ //add up all the AA points pt by pt to get the correct cost
+						THIS->GetPP().aapoints += curaa->cost + (curaa->cost_inc * x2);
+						refunded = true;
+					}
+				}
+				else //aa doesn't exist.. but if they bought it then it had at least a cost of 1 point each
+				{ //so give back what we can
+					THIS->GetPP().aapoints += curpt;
+					THIS->SetAA(x1, 0);
+					refunded = true;
+				}
+			}
+		}
+
+		if(refunded){
+			THIS->Save(); //save of course
+			THIS->Kick(); //client gets all buggy if we don't immediatly relog so just force it on them
+		}
+	}
+	XSRETURN_EMPTY;
 }
 
 #ifdef __cplusplus
@@ -3809,6 +3906,10 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "SetTitleSuffix"), XS_Client_SetTitleSuffix, file, "$$");
 		newXSproto(strcpy(buf, "SetAAPoints"), XS_Client_SetAAPoints, file, "$$");
 		newXSproto(strcpy(buf, "GetAAPoints"), XS_Client_GetAAPoints, file, "$$");
+		newXSproto(strcpy(buf, "GetSpentAA"), XS_Client_GetSpentAA, file, "$$");
+		newXSproto(strcpy(buf, "AddAAPoints"), XS_Client_AddAAPoints, file, "$$");
+		newXSproto(strcpy(buf, "RefundAA"), XS_Client_RefundAA, file, "$$");
+		
 	XSRETURN_YES;
 }
 
