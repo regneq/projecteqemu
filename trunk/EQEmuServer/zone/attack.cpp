@@ -381,8 +381,6 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 		}
 	}
 
-	chancetohit -= defender->GetAGI() * RuleR(Combat, AgiHitFactor);
-
 	if(skillinuse == ARCHERY)
 		chancetohit -= (chancetohit * RuleR(Combat, ArcheryHitPenalty)) / 100.0f;
 
@@ -722,8 +720,6 @@ void Mob::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 		double d2_d19_chance;
 
 		double combat_rating = (defenseRating - attackRating);
-		if(combat_rating < 0)
-			combat_rating = 0;
 
 		combat_rating = 100 * combat_rating / (double)ac_eq100;
 		combat_rating > 60.0 ? 60 + ((combat_rating - 60)/10) : combat_rating;
@@ -731,6 +727,12 @@ void Mob::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 
 		d1_chance = 6.0 + (((combat_rating * 0.39) / 3));
 		d2_d19_chance = 48.0 + (((combat_rating * 0.39) / 3) * 2);
+
+		if(d1_chance < 1.0)
+			d1_chance = 1.0;
+
+		if(d2_d19_chance < 5.0)
+			d2_d19_chance = 5.0;
 
 		double roll = MakeRandomFloat(0, 100);
 	
@@ -2539,6 +2541,32 @@ void NPC::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill) 
 						{
 							zone->UpdateAdventureCount(ad);
 						}
+						else
+						{
+							if(!IsPet() && GetClass() != LDON_TREASURE)
+							{
+								if(ad->status != 3)
+								{
+									int32 c = database.AdventureGetAssassinateKills(ad->id);
+									c++;
+									if(c == RuleI(Adventure, NumberKillsForBossSpawn))
+									{
+										const NPCType* nt = NULL;
+										if(nt = database.GetNPCType(ad->ai->type_data)) 
+										{
+											NPC* npc = new NPC(nt, 0, ad->ai->assa_x, ad->ai->assa_y, ad->ai->assa_z, ad->ai->assa_h);
+											npc->AddLootTable();
+											entity_list.AddNPC(npc);
+										}
+										database.AdventureSetAssassinateKills(ad->id, c);
+									}
+									else if(c < RuleI(Adventure, NumberKillsForBossSpawn))
+									{
+										database.AdventureSetAssassinateKills(ad->id, c);
+									}
+								}
+							}
+						}
 					}
 				}
 			}
@@ -3973,7 +4001,8 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 				}			
 			}
 		}
-		else{
+		else if(spell_id != SPELL_UNKNOWN)
+		{
 			//increment chances of interrupting
 			if(IsCasting()) { //shouldnt interrupt on regular spell damage
 				attacked_count++;

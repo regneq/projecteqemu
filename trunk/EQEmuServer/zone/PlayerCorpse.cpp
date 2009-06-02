@@ -422,6 +422,7 @@ Corpse::Corpse(int32 in_dbid, int32 in_charid, char* in_charname, ItemList* in_i
 	in_itemlist->clear();
 
 	//we really should be loading the decay timer here...
+	LoadPlayerCorpseDecayTime(in_dbid);
 	
 	strcpy(orgname, in_charname);
 	strcpy(name, in_charname);
@@ -1493,8 +1494,8 @@ bool ZoneDatabase::UnburyPlayerCorpse(int32 dbid, int32 new_zoneid, int16 new_in
 	int32 affected_rows = 0;
 	bool Result = false;
 	
-	end += sprintf(end, "UPDATE player_corpses SET IsBurried=0, zoneid=%u, instanceid=%u, x=%f, y=%f, z=%f, heading=%f, WasAtGraveyard=0 WHERE id=%u", new_zoneid, new_instanceid, new_x, new_y, new_z, new_heading, dbid);
-	
+	end += sprintf(end, "UPDATE player_corpses SET IsBurried=0, zoneid=%u, instanceid=%u, x=%f, y=%f, z=%f, heading=%f, timeofdeath=Now(), WasAtGraveyard=0 WHERE id=%u", new_zoneid, new_instanceid, new_x, new_y, new_z, new_heading, dbid);
+		
 	if (RunQuery(query, (int32) (end - query), errbuf, 0, &affected_rows)) {
         if (affected_rows == 1)
 			Result = true;
@@ -1666,7 +1667,7 @@ void Corpse::AddLooter(Mob* who)
 	}
 }
 
-/*void Corpse::LoadPlayerCorpseDecayTime(int32 dbid){
+void Corpse::LoadPlayerCorpseDecayTime(int32 dbid){
 	if(!dbid)
 		return;
 	char errbuf[MYSQL_ERRMSG_SIZE];
@@ -1685,7 +1686,7 @@ void Corpse::AddLooter(Mob* who)
 	}
 	else
 		safe_delete_array(query);
-}*/
+}
 
 /*
 void Corpse::CastRezz(int16 spellid, Mob* Caster){

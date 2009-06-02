@@ -3827,13 +3827,42 @@ bool Database::GetAdventureStats(int32 char_id, int32 &guk_w, int32 &mir_w, int3
 
 int32 Database::AdventureGetAssassinateKills(int32 adv_id)
 {
-	return 0;
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+	int32 ret_val = 0;
+
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT `assassinate_count` FROM"
+		" `adventure_details` WHERE id=%u", adv_id), errbuf, &result))
+	{
+		safe_delete_array(query);
+		while((row = mysql_fetch_row(result)) != NULL)
+		{
+			ret_val = atoi(row[0]);
+		}
+		mysql_free_result(result);
+		return ret_val;
+	}
+	else 
+	{
+		safe_delete_array(query);
+		return ret_val;
+	}
 }
 
 void Database::AdventureSetAssassinateKills(int32 adv_id, int32 kills)
 {
-}
-
-void Database::AdventureGetAssassinateLocation(int32 adv_template)
-{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	if(RunQuery(query, MakeAnyLenString(&query, "UPDATE `adventure_details` SET assassinate_count=%u "
+		"WHERE id=%u", kills, adv_id), errbuf))
+	{
+		safe_delete_array(query);
+	}
+	else
+	{
+		//error
+		safe_delete_array(query);
+	}
 }

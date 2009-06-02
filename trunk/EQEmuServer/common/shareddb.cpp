@@ -1280,14 +1280,20 @@ sint32 SharedDatabase::DeleteStalePlayerCorpses() {
 
 	if(RuleB(Zone, EnableShadowrest))
 	{
-		if (!RunQuery(query, MakeAnyLenString(&query, "UPDATE player_corpses SET IsBurried = 1 WHERE (UNIX_TIMESTAMP() - UNIX_TIMESTAMP(timeofdeath)) > %d and not timeofdeath=0", RuleI(Character, CorpseDecayTimeMS)), errbuf, 0, &affected_rows)) {
+		if (!RunQuery(query, MakeAnyLenString(&query, "UPDATE player_corpses SET IsBurried = 1 WHERE IsBurried=0 and "
+			"(UNIX_TIMESTAMP() - UNIX_TIMESTAMP(timeofdeath)) > %d and not timeofdeath=0", 
+			(RuleI(Character, CorpseDecayTimeMS) / 1000)), errbuf, 0, &affected_rows)) 
+		{
 			safe_delete_array(query);
 			return -1;
 		}
 	}
 	else
 	{
-		if (!RunQuery(query, MakeAnyLenString(&query, "Delete from player_corpses where (UNIX_TIMESTAMP() - UNIX_TIMESTAMP(timeofdeath)) > %d and not timeofdeath=0", RuleI(Character, CorpseDecayTimeMS)), errbuf, 0, &affected_rows)) {
+		if (!RunQuery(query, MakeAnyLenString(&query, "Delete from player_corpses where (UNIX_TIMESTAMP() - "
+			"UNIX_TIMESTAMP(timeofdeath)) > %d and not timeofdeath=0", (RuleI(Character, CorpseDecayTimeMS) / 1000)), 
+			errbuf, 0, &affected_rows)) 
+		{
 			safe_delete_array(query);
 			return -1;
 		}

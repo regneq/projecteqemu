@@ -621,7 +621,7 @@ bool NPC::Process()
 							float yDiff = ad->ai->dest_y - GetY();
 							float zDiff = ad->ai->dest_z - GetZ();
 							float dist = ((xDiff * xDiff) + (yDiff * yDiff) + (zDiff * zDiff));
-							if(dist < 10000)
+							if(dist < RuleR(Adventure, DistanceForRescueComplete))
 							{
 								zone->UpdateAdventureCount(ad);
 								Say("You don't know what this means to me. Thank you so much for finding and saving me from"

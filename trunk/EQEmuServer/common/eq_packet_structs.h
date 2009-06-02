@@ -110,6 +110,10 @@ struct AdventureInfo
 	AdventureObjective type;
 	uint32 type_data;
 	uint16 type_count;
+	double assa_x;
+	double assa_y;
+	double assa_z;
+	double assa_h;
 	std::string text;
 	uint32 duration;
 	uint32 zone_in_time;

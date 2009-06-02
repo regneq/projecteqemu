@@ -179,6 +179,9 @@ void HateList::Add(Mob *ent, sint32 in_hate, sint32 in_dam, bool bFrenzy, bool i
 	if(!ent)
         return;
 
+	if(ent->IsCorpse())
+		return;
+
     tHateEntry *p = Find(ent);
     if (p)
     {
