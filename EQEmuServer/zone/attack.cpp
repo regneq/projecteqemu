@@ -4001,7 +4001,7 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 				}			
 			}
 		}
-		else if(spell_id != SPELL_UNKNOWN)
+		else if(spell_id == SPELL_UNKNOWN)
 		{
 			//increment chances of interrupting
 			if(IsCasting()) { //shouldnt interrupt on regular spell damage
