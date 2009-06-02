@@ -628,6 +628,7 @@ void Zone::Shutdown(bool quite)
 		zone->adventure_list.erase(itr2);
 	}
 	zone->adventure_entry_list.clear();
+	zone->adventure_entry_list_flavor.clear();
 
 	std::map<uint32,AdventureDetails*>::iterator itr3;
 	while(zone->active_adventures.size()) 
@@ -869,6 +870,7 @@ bool Zone::Init(bool iStaticZone) {
 	
 	zone->LoadAdventures();
 	zone->LoadAdventureEntries();
+	zone->LoadAdventureFlavor();
 	zone->LoadActiveAdventures();
 
 	//Load AA information
@@ -2172,6 +2174,31 @@ void Zone::LoadAdventureEntries()
 	else
 	{
 		LogFile->write(EQEMuLog::Error, "Error in Zone::LoadAdventureEntries: %s (%s)", query, errbuf);
+		safe_delete_array(query);
+		return;
+	}
+}
+
+void Zone::LoadAdventureFlavor()
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+
+	if(database.RunQuery(query,MakeAnyLenString(&query,"SELECT id, text FROM adventure_template_entry_flavor"),errbuf,&result)) {
+		while((row = mysql_fetch_row(result))) 
+		{
+			int32 id = atoi(row[0]);
+			std::string in_str = row[1];
+			adventure_entry_list_flavor[id] = in_str;
+		}
+		mysql_free_result(result);
+		safe_delete_array(query);
+	}
+	else
+	{
+		LogFile->write(EQEMuLog::Error, "Error in Zone::LoadAdventureFlavor: %s (%s)", query, errbuf);
 		safe_delete_array(query);
 		return;
 	}

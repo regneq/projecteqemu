@@ -159,6 +159,7 @@ public:
 	void	SetInstanceTimer(int32 new_duration);
 	void	LoadAdventures();
 	void	LoadAdventureEntries();
+	void	LoadAdventureFlavor();
 	void	LoadActiveAdventures();
 	void	UpdateAdventureCount(AdventureDetails *ad);
 	
@@ -167,6 +168,7 @@ public:
 	map<uint32,std::list<TempMerchantList> > tmpmerchanttable;
 	map<uint32,AdventureInfo*> adventure_list;
 	map<uint32,std::list<AdventureInfo*> > adventure_entry_list;
+	map<uint32,std::string> adventure_entry_list_flavor;
 	map<uint32, AdventureDetails*> active_adventures;
 	Map*	map;
 	WaterMap* watermap;

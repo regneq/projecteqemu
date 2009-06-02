@@ -2,6 +2,9 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==06/02/2009==
 KLS: Forgot to update .conf files with the merge. Please update yours if haven't.
+KLS: Added settable flavor text to adventure recruiter entries.
+
+Required sql: 619_Adventure_Recruiter_Flavor.sql
 
 ==06/01/2009==
 KLS: (takatok) Fix for agil being factored twice in to-hit calc.
