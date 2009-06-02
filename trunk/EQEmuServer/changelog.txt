@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/02/2009==
+KLS: Forgot to update .conf files with the merge. Please update yours if haven't.
+
 ==06/01/2009==
 KLS: (takatok) Fix for agil being factored twice in to-hit calc.
 KLS: (tsowl) Reimplemented corpse reloading timer fix.  Should work with burried corpses now. (Sorry it took so long to get back to).
