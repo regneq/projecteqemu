@@ -752,7 +752,7 @@ void QuestManager::movegrp(int zoneid, float x, float y, float z) {
 	{
 		Group *g = entity_list.GetGroupByClient(initiator);
        	if (g != NULL){
-			g->TeleportGroup(owner, 0, zoneid, x, y, z, 0.0f);
+			g->TeleportGroup(owner, zoneid, 0, x, y, z, 0.0f);
 		}
 		else {
 			initiator->MovePC(zoneid, x, y, z, 0.0f);
