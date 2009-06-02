@@ -3880,7 +3880,19 @@ int32 EntityList::CheckNPCsClose(Mob *center)
 			continue;
 		}
 
-		if(current->DistNoRootNoZ(*center) <= 5625.0f)
+		if(current->GetBodyType() == BT_NoTarget ||
+			current->GetBodyType() == BT_Special)
+		{
+			iterator.Advance();
+			continue;
+		}
+
+		float xDiff = current->GetX() - center->GetX();
+		float yDiff = current->GetY() - center->GetY();
+		float zDiff = current->GetZ() - center->GetZ();
+		float dist = ((xDiff * xDiff) + (yDiff * yDiff) + (zDiff * zDiff));
+
+		if(dist <= RuleR(Adventure, DistanceForRescueAccept))
 		{
 			count++;
 		}

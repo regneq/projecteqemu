@@ -1,5 +1,16 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/01/2009==
+KLS: (takatok) Fix for agil being factored twice in to-hit calc.
+KLS: (tsowl) Reimplemented corpse reloading timer fix.  Should work with burried corpses now. (Sorry it took so long to get back to).
+KLS: Finished implementing Assassinate and Rescue adventure type
+KLS: AC in calc will now not cap at 0.  What this means: A level 65 hitting a level 1 will now hit for a majority of attacks at or near maximum damage, it should affect any other situations.
+KLS: Spells shouldn't cause interrupts any longer.
+KLS: LDoN theme "ALL" items should show up properly now.
+KLS: Added sanity check on adventure merchant for both lore items and trying to purchase items of one theme that has a min point requirement while not meeting that requirement.
+KLS: Rule Adventure:ItemIDToEnablePorts will now actually cause the door to ignore this rule if it is set to 0.
+KLS: Changed the evacuate work around to use zone 1 and zone 2 instead of plane zones that probably have requirements set on them.
+
 ==05/31/2009==
 realityincarnate: Added EVENT_CAST to player quests
 realityincarnate: AA $quest functions: $client->GetAAPoints(), SetAAPoints(value), AddAAPoints(number), RefundAA(), GetSpentAA()

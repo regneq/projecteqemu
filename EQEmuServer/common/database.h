@@ -201,7 +201,6 @@ public:
 		int32 &guk_l, int32 &mir_l, int32 &mmc_l, int32 &ruj_l, int32 &tak_l);
 	int32 AdventureGetAssassinateKills(int32 adv_id);
 	void AdventureSetAssassinateKills(int32 adv_id, int32 kills);
-	void AdventureGetAssassinateLocation(int32 adv_template);
 
 	/*
 	 * Account Related

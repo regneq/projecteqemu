@@ -688,6 +688,31 @@ void Client::Handle_Connect_OP_ReqClientSpawn(const EQApplicationPacket *app)
 				zone->active_adventures[adv_id] = nd;
 				SetCurrentAdventure(nd);
 				SendAdventureDetail();
+
+				//if we're in our adv zone and it's type assassinate and we're not 
+				//complete but we have enough kills and boss isn't up then spawn our boss
+				if(nd->ai->type == Adventure_Assassinate && zone->GetInstanceID() == nd->instance_id)
+				{
+					if(nd->status != 3)
+					{
+						int32 c = database.AdventureGetAssassinateKills(nd->id);
+						if(c >= RuleI(Adventure, NumberKillsForBossSpawn))
+						{
+							Mob* n = entity_list.GetMobByNpcTypeID(nd->ai->type_data);
+							if(!n)
+							{
+								const NPCType* nt = NULL;
+								if(nt = database.GetNPCType(nd->ai->type_data)) 
+								{
+									NPC* npc = new NPC(nt, 0, nd->ai->assa_x, nd->ai->assa_y, 
+										nd->ai->assa_z, nd->ai->assa_h);
+									npc->AddLootTable();
+									entity_list.AddNPC(npc);
+								}
+							}
+						}
+					}
+				}
 			}
 		}
 	}
@@ -1601,7 +1626,7 @@ void Client::Handle_OP_AdventureMerchantRequest(const EQApplicationPacket *app)
 			{
 				theme = 0;
 			}
-			if(item->LDoNTheme & 16)
+			else if(item->LDoNTheme & 16)
 			{
 				theme = 5;
 			} 
@@ -1694,6 +1719,56 @@ void Client::Handle_OP_AdventureMerchantPurchase(const EQApplicationPacket *app)
 
 	if(m_pp.ldon_points_available < sint32(item->LDoNPrice)) {
 		Message(13, "You cannot afford that item.");
+		return;
+	}
+
+	if(item->LDoNTheme <= 16)
+	{
+		if(item->LDoNTheme & 16)
+		{
+			if(m_pp.ldon_points_tak < sint32(item->LDoNPrice))
+			{
+				Message(13, "You need at least %u points in tak to purchase this item.", sint32(item->LDoNPrice));
+				return;
+			}
+		}
+		else if(item->LDoNTheme & 8)
+		{
+			if(m_pp.ldon_points_ruj < sint32(item->LDoNPrice))
+			{
+				Message(13, "You need at least %u points in ruj to purchase this item.", sint32(item->LDoNPrice));
+				return;
+			}
+		}
+		else if(item->LDoNTheme & 4)
+		{
+			if(m_pp.ldon_points_mmc < sint32(item->LDoNPrice))
+			{
+				Message(13, "You need at least %u points in mmc to purchase this item.", sint32(item->LDoNPrice));
+				return;
+			}
+		}
+		else if(item->LDoNTheme & 2)
+		{
+			if(m_pp.ldon_points_mir < sint32(item->LDoNPrice))
+			{
+				Message(13, "You need at least %u points in mir to purchase this item.", sint32(item->LDoNPrice));
+				return;
+			}
+		}
+		else if(item->LDoNTheme & 1)
+		{
+			if(m_pp.ldon_points_guk < sint32(item->LDoNPrice))
+			{
+				Message(13, "You need at least %u points in guk to purchase this item.", sint32(item->LDoNPrice));
+				return;
+			}
+		}
+	}
+
+	if(CheckLoreConflict(item))
+	{
+		Message(15,"You can only have one of a lore item.");
 		return;
 	}
 
