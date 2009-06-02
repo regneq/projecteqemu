@@ -1410,11 +1410,33 @@ void Client::Handle_OP_Jump(const EQApplicationPacket *app)
 void Client::Handle_OP_AdventureInfoRequest(const EQApplicationPacket *app)
 {
 	EntityId_Struct* ent = (EntityId_Struct*)app->pBuffer;
+	Mob * m = entity_list.GetMob(ent->entity_id);
 
-	std::string text = "Choose your difficulty and preferred adventure type.";
-	EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureInfo, (text.size() + 2));
-	strncpy((char*)outapp->pBuffer, text.c_str(), text.size());
-	FastQueuePacket(&outapp);
+	if(m && m->IsNPC())
+	{
+		std::map<uint32,std::string>::iterator it;
+		it = zone->adventure_entry_list_flavor.find(m->CastToNPC()->adventure_template_id);
+		if(it != zone->adventure_entry_list_flavor.end())
+		{
+			EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureInfo, (it->second.size() + 2));
+			strncpy((char*)outapp->pBuffer, it->second.c_str(), it->second.size());
+			FastQueuePacket(&outapp);
+		}
+		else
+		{
+			std::string text = "Choose your difficulty and preferred adventure type.";
+			EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureInfo, (text.size() + 2));
+			strncpy((char*)outapp->pBuffer, text.c_str(), text.size());
+			FastQueuePacket(&outapp);
+		}
+	}
+	else
+	{
+		std::string text = "Choose your difficulty and preferred adventure type.";
+		EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureInfo, (text.size() + 2));
+		strncpy((char*)outapp->pBuffer, text.c_str(), text.size());
+		FastQueuePacket(&outapp);
+	}
 }
 
 void Client::Handle_OP_AdventureRequest(const EQApplicationPacket *app)
