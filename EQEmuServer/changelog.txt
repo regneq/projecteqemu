@@ -1,6 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==06/02/2009==
+Trevius: Updated the new Adventure Opcodes for SoF
+
+==06/02/2009==
 KLS: Forgot to update .conf files with the merge. Please update yours if haven't.
 KLS: Added settable flavor text to adventure recruiter entries.
 
