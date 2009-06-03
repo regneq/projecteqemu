@@ -7887,9 +7887,11 @@ void Client::Handle_OP_LeadershipExpToggle(const EQApplicationPacket *app) {
 	if(*mode) {
 		m_pp.leadAAActive = 1;
 		Save();
+		Message_StringID(clientMessageYellow, LEADERSHIP_EXP_ON);
 	} else {
 		m_pp.leadAAActive = 0;
 		Save();
+		Message_StringID(clientMessageYellow, LEADERSHIP_EXP_OFF);
 	}
 }
 

@@ -1907,6 +1907,8 @@ char *Database::GetGroupLeadershipInfo(int32 gid, char* leaderbuf, char* assist,
 		safe_delete_array(query);
 
 		row = mysql_fetch_row(result);
+		unsigned long* Lengths = mysql_fetch_lengths(result);
+
 		if(row != NULL){
 
 			if(leaderbuf)
@@ -1918,7 +1920,7 @@ char *Database::GetGroupLeadershipInfo(int32 gid, char* leaderbuf, char* assist,
 			if(marknpc)
 				strcpy(marknpc, row[2]);
 
-			if(GLAA)
+			if(GLAA && (Lengths[3] == sizeof(GroupLeadershipAA_Struct)))
 				memcpy(GLAA, row[3], sizeof(GroupLeadershipAA_Struct));
 
 			mysql_free_result(result);

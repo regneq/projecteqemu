@@ -482,6 +482,12 @@ bool Group::DelMemberOOZ(const char *Name) {
 		if(!strcasecmp(Name, membername[i]))
 			// This shouldn't be called if the member is in this zone.
 			if(!members[i]) {
+				if(!strncmp(GetLeaderName(), Name, 64))
+				{
+					//TODO: Transfer leadership if leader disbands OOZ.
+					UpdateGroupAAs();
+				}
+
 				memset(membername[i], 0, 64);
 				if(GroupCount() < 3)
 				{
@@ -500,7 +506,6 @@ bool Group::DelMember(Mob* oldmember,bool ignoresender){
 	if (oldmember == NULL){
 		return false;
 	}
-
 #ifdef EQBOTS
 
 	if(oldmember->IsClient() && (oldmember == GetLeader())) {
@@ -545,9 +550,9 @@ bool Group::DelMember(Mob* oldmember,bool ignoresender){
 						strcpy(gu->membername, members[nl]->GetName());
 						strcpy(gu->yourname, oldmember->GetName());
 						SetLeader(members[nl]);
+						database.SetGroupLeaderName(GetID(), members[nl]->GetName());
 						UpdateGroupAAs();
 						gu->leader_aas = LeaderAbilities;
-						database.SetGroupLeaderName(GetID(), members[nl]->GetName());
 						for (uint32 ld = 0; ld < MAX_GROUP_MEMBERS; ld++) {
 							if (members[ld] && members[ld] != oldmember) {
 								members[ld]->CastToClient()->QueuePacket(outapp);
@@ -1494,10 +1499,9 @@ void Group::SaveGroupLeaderAA()
 	End += sprintf(End,"' WHERE gid=%i LIMIT 1", GetID());
 
 	char errbuff[MYSQL_ERRMSG_SIZE];
-
 	if (!database.RunQuery(Query, End - Query, errbuff))
 		LogFile->write(EQEMuLog::Error, "Unable to store LeadershipAA: %s\n", errbuff);
-
+	
 	safe_delete_array(Query);
 }
 

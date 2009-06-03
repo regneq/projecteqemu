@@ -193,6 +193,8 @@
 #define GAIN_RAID_LEADERSHIP_POINT 8589
 #define MAX_GROUP_LEADERSHIP_POINTS 8584
 #define MAX_RAID_LEADERSHIP_POINTS 8591
+#define LEADERSHIP_EXP_ON 8653
+#define LEADERSHIP_EXP_OFF 8654
 #define CURRENT_SPELL_EFFECTS 8757 // %1's current spell effects: 
 #define BUFF_MINUTES_REMAINING 8799 // %1 (%2 minutes remaining)
 #define SONG_NEEDS_DRUM 405	// You need to play a percussion instrument for this song
