@@ -2316,7 +2316,9 @@ bool NPC::Attack(Mob* other, int Hand, bool bRiposte)	 // Kaiyodo - base functio
 				mlog(COMBAT__HITS, "Generating hate %d towards %s", hate, GetName());
 				// now add done damage to the hate list
 				if(damage != 0)
+				{
 					other->AddToHateList(this, hate);
+				}
 				else
 					other->AddToHateList(this, 0);
 			}
@@ -2512,9 +2514,8 @@ void NPC::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill) 
 	}
 
 	if (other) {
-//		if (other->IsClient())
-//			other->CastToClient()->QueuePacket(app);
-		hate_list.Add(other, damage);
+		if(GetClass() != LDON_TREASURE)
+			hate_list.Add(other, damage);
 	}
 
 	safe_delete(app);
@@ -3827,6 +3828,15 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 				}
 			}
 		}		
+	}
+
+	if(IsNPC() && GetClass() == LDON_TREASURE)
+	{
+		if(CastToNPC()->GetLDoNTrapType() > 0)
+		{
+			if(CastToNPC()->IsLDoNLocked() || CastToNPC()->IsLDoNTrapped())
+				damage = -5;
+		}
 	}
 	
 	if(attacker){

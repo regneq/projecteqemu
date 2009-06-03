@@ -758,7 +758,7 @@ void EntityList::AESpell(Mob *caster, Mob *center, int16 spell_id, bool affect_c
 		}
 		//finally, make sure they are within range
 		if(bad) {
-			if(!caster->IsAttackAllowed(curmob))
+			if(!caster->IsAttackAllowed(curmob, true))
 				continue;
 			if(!center->CheckLosFN(curmob))
 				continue;

@@ -167,6 +167,10 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_Logout] = &Client::Handle_OP_Logout;
 //	ConnectedOpcodes[OP_SenseHeading] = &Client::Handle_OP_SenseHeading;
 	ConnectedOpcodes[OP_LDoNOpen] = &Client::Handle_OP_LDoNOpen;
+	ConnectedOpcodes[OP_LDoNSenseTraps] = &Client::Handle_OP_LDoNSenseTraps;
+	ConnectedOpcodes[OP_LDoNDisarmTraps] = &Client::Handle_OP_LDoNDisarmTraps;
+	ConnectedOpcodes[OP_LDoNInspect] = &Client::Handle_OP_LDoNInspect;
+	ConnectedOpcodes[OP_LDoNPickLock] = &Client::Handle_OP_LDoNPickLock;
 	ConnectedOpcodes[OP_FeignDeath] = &Client::Handle_OP_FeignDeath;
 	ConnectedOpcodes[OP_Sneak] = &Client::Handle_OP_Sneak;
 	ConnectedOpcodes[OP_Hide] = &Client::Handle_OP_Hide;
@@ -1860,6 +1864,13 @@ void Client::Handle_OP_Consider(const EQApplicationPacket *app)
 	Mob* tmob = entity_list.GetMob(conin->targetid);
 	if (tmob == 0)
 		return;
+
+	if(tmob->GetClass() == LDON_TREASURE)
+	{
+		Message(15, "%s", tmob->GetCleanName());
+		return;
+	}
+
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_Consider, sizeof(Consider_Struct));
 	Consider_Struct* con = (Consider_Struct*)outapp->pBuffer;
 	con->playerid = GetID();
@@ -1899,6 +1910,10 @@ void Client::Handle_OP_Begging(const EQApplicationPacket *app)
 {
 	if(!HasSkill(BEGGING))
 		return;
+
+	if(GetTarget() && GetTarget()->GetClass() == LDON_TREASURE)
+		return;
+
 	int ran=MakeRandomInt(0,100);
 	int chancetoattack=0;
 	if(this->GetLevel() > this->GetTarget()->GetLevel())
@@ -2445,10 +2460,6 @@ void Client::Handle_OP_MoveItem(const EQApplicationPacket *app)
 
 void Client::Handle_OP_Camp(const EQApplicationPacket *app)
 {
-	//LogFile->write(EQEMuLog::Debug, "%s sent a camp packet.", GetName());
-	//if(GetAdventureID() > 0)
-	//	DeleteCharInAdventure(CharacterID(), GetAdventureID());
-
 	if(IsLFP())
 		worldserver.StopLFP(CharacterID());
 
@@ -2906,13 +2917,72 @@ void Client::Handle_OP_LootRequest(const EQApplicationPacket *app)
 void Client::Handle_OP_LDoNOpen(const EQApplicationPacket *app)
 {
 	Mob * target = GetTarget();
-	if(target)
+	if(target->IsNPC())
+		HandleLDoNOpen(target->CastToNPC());
+}
+
+void Client::Handle_OP_LDoNSenseTraps(const EQApplicationPacket *app)
+{
+	Mob * target = GetTarget();
+	if(target->IsNPC())
 	{
-		if(target->IsMob() && target->GetClass()==LDON_TREASURE)
-			target->Damage(this, target->GetMaxHP()*2, SPELL_UNKNOWN, HAND_TO_HAND, false);
+		if(HasSkill(SENSE_TRAPS))
+		{
+			if(DistNoRootNoZ(*target) > RuleI(Adventure, LDoNTrapDistanceUse))
+			{
+				Message(13, "%s is too far away.", target->GetCleanName());
+				return;
+			}
+			HandleLDoNSenseTraps(target->CastToNPC(), GetSkill(SENSE_TRAPS), LDoNTypeMechanical);
+		}
 		else
-		  Message(13, "Illegal target: OP_LDoNOpen expects mob class %d, please report this NPC to the server op.", LDON_TREASURE);
+			Message(13, "You do not have the sense traps skill.");
 	}
+}
+
+void Client::Handle_OP_LDoNDisarmTraps(const EQApplicationPacket *app)
+{
+	Mob * target = GetTarget();
+	if(target->IsNPC())
+	{
+		if(HasSkill(DISARM_TRAPS))
+		{
+			if(DistNoRootNoZ(*target) > RuleI(Adventure, LDoNTrapDistanceUse))
+			{
+				Message(13, "%s is too far away.", target->GetCleanName());
+				return;
+			}
+			HandleLDoNDisarm(target->CastToNPC(), GetSkill(DISARM_TRAPS), LDoNTypeMechanical);
+		}
+		else
+			Message(13, "You do not have the disarm trap skill.");
+	}
+}
+
+void Client::Handle_OP_LDoNPickLock(const EQApplicationPacket *app)
+{
+	Mob * target = GetTarget();
+	if(target->IsNPC())
+	{
+		if(HasSkill(PICK_LOCK))
+		{
+			if(DistNoRootNoZ(*target) > RuleI(Adventure, LDoNTrapDistanceUse))
+			{
+				Message(13, "%s is too far away.", target->GetCleanName());
+				return;
+			}
+			HandleLDoNPickLock(target->CastToNPC(), GetSkill(PICK_LOCK), LDoNTypeMechanical);
+		}
+		else
+			Message(13, "You do not have the pick locks skill.");
+	}
+}
+
+void Client::Handle_OP_LDoNInspect(const EQApplicationPacket *app)
+{
+	Mob * target = GetTarget();
+	if(target && target->GetClass() == LDON_TREASURE)
+		Message(15, "%s", target->GetCleanName());
 }
 
 void Client::Handle_OP_Dye(const EQApplicationPacket *app)

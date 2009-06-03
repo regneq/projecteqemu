@@ -1374,6 +1374,78 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				break;
 			}
 
+			case SE_AppraiseLDonChest:
+			{
+				if(IsNPC())
+				{
+					int check = spell.max[0];
+					int target = spell.targettype;
+					if(target == ST_LDoNChest_Cursed)
+					{
+						if(caster && caster->IsClient())
+						{
+							caster->CastToClient()->HandleLDoNSenseTraps(CastToNPC(), check, LDoNTypeCursed);
+						}
+					}
+					else if(target == ST_Target)
+					{
+						if(caster && caster->IsClient())
+						{
+							caster->CastToClient()->HandleLDoNSenseTraps(CastToNPC(), check, LDoNTypeMagical);
+						}
+					}
+				}			
+				break;
+			}
+
+			case  SE_DisarmLDoNTrap:
+			{
+				if(IsNPC())
+				{
+					int check = spell.max[0];
+					int target = spell.targettype;
+					if(target == ST_LDoNChest_Cursed)
+					{
+						if(caster && caster->IsClient())
+						{
+							caster->CastToClient()->HandleLDoNDisarm(CastToNPC(), check, LDoNTypeCursed);
+						}
+					}
+					else if(target == ST_Target)
+					{
+						if(caster && caster->IsClient())
+						{
+							caster->CastToClient()->HandleLDoNDisarm(CastToNPC(), check, LDoNTypeMagical);
+						}
+					}
+				}	
+				break;
+			}
+
+			case SE_UnlockLDoNChest:
+			{
+				if(IsNPC())
+				{
+					int check = spell.max[0];
+					int target = spell.targettype;
+					if(target == ST_LDoNChest_Cursed)
+					{
+						if(caster && caster->IsClient())
+						{
+							caster->CastToClient()->HandleLDoNPickLock(CastToNPC(), check, LDoNTypeCursed);
+						}
+					}
+					else if(target == ST_Target)
+					{
+						if(caster && caster->IsClient())
+						{
+							caster->CastToClient()->HandleLDoNPickLock(CastToNPC(), check, LDoNTypeMagical);
+						}
+					}
+				}	
+				break;
+			}
+
 			case SE_Hate2:
 			case SE_Calm:	// cinder jolt, enraging blow, handled in the aggro code
 			{

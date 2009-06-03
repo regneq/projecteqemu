@@ -551,7 +551,7 @@ public:
 	void	SetFeigned(bool in_feigned);
 	// EverHood 6/16/06
 	/// this cures timing issues cuz dead animation isn't done but server side feigning is?
-	inline bool    GetFeigned()	const {return(feigned); }
+	inline bool    GetFeigned()	const { return(feigned); }
 	EQStreamInterface* Connection() { return eqs; }
 #ifdef PACKET_PROFILER
 	void DumpPacketProfile() { if(eqs) eqs->DumpPacketProfile(); }
@@ -828,6 +828,12 @@ public:
 	void AcceptAdventure();
 	void DeclineAdventure();
 	void LeaveAdventure();
+
+	void HandleLDoNOpen(NPC *target);
+	void HandleLDoNSenseTraps(NPC *target, int16 skill, int8 type);
+	void HandleLDoNDisarm(NPC *target, int16 skill, int8 type);
+	void HandleLDoNPickLock(NPC *target, int16 skill, int8 type);
+	int	LDoNChest_SkillCheck(NPC *target, int skill);
 
 protected:
 	friend class Mob;

@@ -787,3 +787,18 @@ DmgShieldType GetDamageShieldType(int16 spell_id)
 
 	return DS_THORNS;
 }
+
+bool IsLDoNObjectSpell(int16 spell_id) 
+{
+	if(IsEffectInSpell(spell_id, SE_AppraiseLDonChest) || 
+		IsEffectInSpell(spell_id, SE_DisarmLDoNTrap) || 
+		IsEffectInSpell(spell_id, SE_UnlockLDoNChest))
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+
+}

@@ -296,6 +296,9 @@ RULE_INT ( Adventure, NumberKillsForBossSpawn, 45)
 RULE_REAL ( Adventure, DistanceForRescueAccept, 10000.0)
 RULE_REAL ( Adventure, DistanceForRescueComplete, 2500.0)
 RULE_INT ( Adventure, ItemIDToEnablePorts, 41000 ) //0 to disable, otherwise using a LDoN portal will require the user to have this item.
+RULE_INT ( Adventure, LDoNTrapDistanceUse, 100 )
+RULE_REAL ( Adventure, LDoNBaseTrapDifficulty, 15.0 )
+RULE_REAL ( Adventure, LDoNCriticalFailTrapThreshold, 10.0 )
 RULE_CATEGORY_END()
 
 #undef RULE_CATEGORY

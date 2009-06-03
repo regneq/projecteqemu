@@ -1012,6 +1012,7 @@ const NPCType* ZoneDatabase::GetNPCType (uint32 id) {
 			"npc_types.loottable_id,"
             "npc_types.merchant_id,"
 			"npc_types.adventure_template_id,"
+			"npc_types.trap_template,"
 			"npc_types.attack_speed,"
             "npc_types.STR,"
 			"npc_types.STA,"
@@ -1090,6 +1091,7 @@ const NPCType* ZoneDatabase::GetNPCType (uint32 id) {
 				tmpNPCType->loottable_id = atoi(row[r++]);
 				tmpNPCType->merchanttype = atoi(row[r++]);
 				tmpNPCType->adventure_template = atoi(row[r++]);
+				tmpNPCType->trap_template = atoi(row[r++]);
 				tmpNPCType->attack_speed = atof(row[r++]);
 				tmpNPCType->STR = atoi(row[r++]);
 				tmpNPCType->STA = atoi(row[r++]);

@@ -162,6 +162,8 @@ public:
 	void	LoadAdventureFlavor();
 	void	LoadActiveAdventures();
 	void	UpdateAdventureCount(AdventureDetails *ad);
+	void	LoadLDoNTraps();
+	void	LoadLDoNTrapEntries();
 	
 	map<uint32,NPCType *> npctable;
 	map<uint32,std::list<MerchantList> > merchanttable;
@@ -169,7 +171,10 @@ public:
 	map<uint32,AdventureInfo*> adventure_list;
 	map<uint32,std::list<AdventureInfo*> > adventure_entry_list;
 	map<uint32,std::string> adventure_entry_list_flavor;
-	map<uint32, AdventureDetails*> active_adventures;
+	map<uint32,AdventureDetails*> active_adventures;
+	map<uint32,LDoNTrapTemplate*> ldon_trap_list;
+	map<uint32,std::list<LDoNTrapTemplate*> > ldon_trap_entry_list;
+
 	Map*	map;
 	WaterMap* watermap;
 	PathManager *pathing;

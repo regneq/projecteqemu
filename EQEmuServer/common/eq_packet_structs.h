@@ -142,6 +142,23 @@ struct AdventureDetails
 	int32 time_zoned;
 	int32 time_completed;
 };
+
+typedef enum
+{
+	LDoNTypeMechanical = 1,
+	LDoNTypeMagical = 2,
+	LDoNTypeCursed = 3,
+} LDoNChestTypes;
+
+struct LDoNTrapTemplate
+{
+	int32 id;
+	LDoNChestTypes type;
+	int32 spell_id;
+	int16 skill;
+	int8 locked;
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 
 

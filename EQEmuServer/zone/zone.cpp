@@ -634,9 +634,18 @@ void Zone::Shutdown(bool quite)
 	while(zone->active_adventures.size()) 
 	{	
 		itr3 = zone->active_adventures.begin();
-		itr3->second;
+		delete itr3->second;
 		zone->active_adventures.erase(itr3);
 	}
+
+	std::map<uint32,LDoNTrapTemplate*>::iterator itr4;
+	while(zone->ldon_trap_list.size()) 
+	{	
+		itr4 = zone->ldon_trap_list.begin();
+		delete itr4->second;
+		zone->ldon_trap_list.erase(itr4);
+	}
+	zone->ldon_trap_entry_list.clear();
 
 	LogFile->write(EQEMuLog::Status, "Zone Shutdown: %s (%i)", zone->GetShortName(), zone->GetZoneID());
 	petition_list.ClearPetitions();
@@ -872,6 +881,9 @@ bool Zone::Init(bool iStaticZone) {
 	zone->LoadAdventureEntries();
 	zone->LoadAdventureFlavor();
 	zone->LoadActiveAdventures();
+	zone->LoadLDoNTraps();
+	zone->LoadLDoNTrapEntries();
+
 
 	//Load AA information
 	adverrornum = 500;
@@ -2319,5 +2331,89 @@ void Zone::SetInstanceTimer(int32 new_duration)
 	if(Instance_Timer)
 	{
 		Instance_Timer->Start(new_duration * 1000);
+	}
+}
+
+void Zone::LoadLDoNTraps()
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+
+	if(database.RunQuery(query,MakeAnyLenString(&query,"SELECT id, type, spell_id, "
+		"skill, locked FROM ldon_trap_templates"), errbuf, &result)) 
+	{
+		while((row = mysql_fetch_row(result))) 
+		{
+			int8 x = 0;
+			LDoNTrapTemplate *lt = new LDoNTrapTemplate;
+			lt->id = atoi(row[x++]);
+			lt->type = (LDoNChestTypes)atoi(row[x++]);
+			lt->spell_id = atoi(row[x++]);
+			lt->skill = atoi(row[x++]);
+			lt->locked = atoi(row[x++]);
+			ldon_trap_list[lt->id] = lt;
+		}
+		mysql_free_result(result);
+		safe_delete_array(query);
+	}
+	else
+	{
+		LogFile->write(EQEMuLog::Error, "Error in Zone::LoadLDoNTraps: %s (%s)", query, errbuf);
+		safe_delete_array(query);
+		return;
+	}
+}
+
+void Zone::LoadLDoNTrapEntries()
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+
+	if(database.RunQuery(query,MakeAnyLenString(&query,"SELECT id, trap_id FROM ldon_trap_entries"),errbuf,&result)) {
+		while((row = mysql_fetch_row(result))) 
+		{
+			int32 id = atoi(row[0]);
+			int32 trap_id = atoi(row[1]);
+
+			LDoNTrapTemplate *tt = NULL;
+			std::map<uint32,LDoNTrapTemplate*>::iterator it;
+			it = ldon_trap_list.find(trap_id);
+			if(it == ldon_trap_list.end())
+			{
+				continue;
+			}
+			else
+			{
+				tt = ldon_trap_list[trap_id];
+			}
+
+			std::list<LDoNTrapTemplate*> temp;
+			std::map<uint32,std::list<LDoNTrapTemplate*> >::iterator iter;
+
+			iter = ldon_trap_entry_list.find(id);
+			if(iter == ldon_trap_entry_list.end())
+			{
+				temp.push_back(tt);
+				ldon_trap_entry_list[id] = temp;
+			}
+			else
+			{
+				temp = ldon_trap_entry_list[id];
+				temp.push_back(tt);
+				ldon_trap_entry_list[id] = temp;
+			}
+		}
+		mysql_free_result(result);
+		safe_delete_array(query);
+	}
+	else
+	{
+		LogFile->write(EQEMuLog::Error, "Error in Zone::LoadLDoNTrapEntries: %s (%s)", query, errbuf);
+		safe_delete_array(query);
+		return;
 	}
 }

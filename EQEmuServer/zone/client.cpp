@@ -4347,3 +4347,235 @@ void Client::CheckLDoNHail(Mob *target)
 		}
 	}
 }
+
+void Client::HandleLDoNOpen(NPC *target)
+{
+	if(target)
+	{
+		if(target->GetClass() != LDON_TREASURE)
+		{
+			LogFile->write(EQEMuLog::Debug, "%s tried to open %s but %s was not a treasure chest.", 
+				GetName(), target->GetName(), target->GetName());
+			return;
+		}
+
+		if(DistNoRootNoZ(*target) > RuleI(Adventure, LDoNTrapDistanceUse))
+		{
+			LogFile->write(EQEMuLog::Debug, "%s tried to open %s but %s was out of range", 
+				GetName(), target->GetName(), target->GetName());
+			Message(13, "Treasure chest out of range.");
+			return;
+		}
+
+		if(target->IsLDoNTrapped())
+		{
+			if(target->GetLDoNTrapSpellID() != 0)
+			{
+				Message_StringID(13, LDON_ACCIDENT_SETOFF2);
+				target->SpellFinished(target->GetLDoNTrapSpellID(), this, 10, 0);
+				target->SetLDoNTrapSpellID(0);
+				target->SetLDoNTrapped(false);
+				target->SetLDoNTrapDetected(false);
+			}
+			else
+			{
+				target->SetLDoNTrapSpellID(0);
+				target->SetLDoNTrapped(false);
+				target->SetLDoNTrapDetected(false);
+			}
+		}
+			
+		if(target->IsLDoNLocked())
+		{
+			Message_StringID(MT_Skills, LDON_STILL_LOCKED, target->GetCleanName());
+			return;
+		}
+		else
+		{
+			target->AddToHateList(this, 0, 500000, false, false, false);
+			if(target->GetLDoNTrapType() != 0)
+			{
+				if(GetRaid())
+				{
+					GetRaid()->SplitExp(target->GetLevel()*target->GetLevel()*2625/10, target);
+				}
+				else if(GetGroup())
+				{
+					GetGroup()->SplitExp(target->GetLevel()*target->GetLevel()*2625/10, target);
+				}
+				else
+				{
+					AddEXP(target->GetLevel()*target->GetLevel()*2625/10, GetLevelCon(target->GetLevel()));
+				}
+			}
+			target->Death(this, 1, SPELL_UNKNOWN, HAND_TO_HAND);
+		}
+	}
+}
+
+void Client::HandleLDoNSenseTraps(NPC *target, int16 skill, int8 type)
+{
+	if(target && target->GetClass() == LDON_TREASURE)
+	{
+		if(target->IsLDoNTrapped())
+		{
+			if(type != target->GetLDoNTrapType())
+			{
+				Message_StringID(MT_Skills, LDON_CANT_DETERMINE_TRAP, target->GetCleanName());
+				return;
+			}
+
+			if(target->IsLDoNTrapDetected())
+			{
+				Message_StringID(MT_Skills, LDON_CERTAIN_TRAP, target->GetCleanName());
+			}
+			else
+			{
+				int check = LDoNChest_SkillCheck(target, skill);
+				switch(check)
+				{
+				case -1:
+				case 0:
+					Message_StringID(MT_Skills,  LDON_DONT_KNOW_TRAPPED, target->GetCleanName());
+					break;
+				case 1:
+					Message_StringID(MT_Skills,  LDON_CERTAIN_TRAP, target->GetCleanName());
+					target->SetLDoNTrapDetected(true);
+					break;
+				default:
+					break;
+				}
+			}
+		}
+		else
+		{
+			Message_StringID(MT_Skills, LDON_CERTAIN_NOT_TRAP, target->GetCleanName());
+		}
+	}
+}
+
+void Client::HandleLDoNDisarm(NPC *target, int16 skill, int8 type)
+{
+	if(target)
+	{
+		if(target->GetClass() == LDON_TREASURE)
+		{
+			if(!target->IsLDoNTrapped())
+			{
+				Message_StringID(MT_Skills, LDON_WAS_NOT_TRAPPED, target->GetCleanName());
+				return;
+			}
+
+			if(type != target->GetLDoNTrapType())
+			{
+				Message_StringID(MT_Skills, LDON_HAVE_NOT_DISARMED, target->GetCleanName());
+				return;
+			}
+
+			int check = 0;
+			if(target->IsLDoNTrapDetected())
+			{
+				check = LDoNChest_SkillCheck(target, skill);
+			}
+			else
+			{
+				check = LDoNChest_SkillCheck(target, skill*33/100);
+			}
+			switch(check)
+			{
+			case 1:
+				target->SetLDoNTrapDetected(false);
+				target->SetLDoNTrapped(false);
+				target->SetLDoNTrapSpellID(0);
+				Message_StringID(MT_Skills, LDON_HAVE_DISARMED, target->GetCleanName());
+				break;
+			case 0:
+				Message_StringID(MT_Skills, LDON_HAVE_NOT_DISARMED, target->GetCleanName());
+				break;
+			case -1:
+				Message_StringID(13, LDON_ACCIDENT_SETOFF2);
+				target->SpellFinished(target->GetLDoNTrapSpellID(), this, 10, 0);
+				target->SetLDoNTrapSpellID(0);
+				target->SetLDoNTrapped(false);
+				target->SetLDoNTrapDetected(false);
+				break;
+			}
+		}
+	}
+}
+
+void Client::HandleLDoNPickLock(NPC *target, int16 skill, int8 type)
+{
+	if(target)
+	{
+		if(target->GetClass() == LDON_TREASURE)
+		{
+			if(target->IsLDoNTrapped())
+			{
+				Message_StringID(13, LDON_ACCIDENT_SETOFF2);
+				target->SpellFinished(target->GetLDoNTrapSpellID(), this, 10, 0);
+				target->SetLDoNTrapSpellID(0);
+				target->SetLDoNTrapped(false);
+				target->SetLDoNTrapDetected(false);
+			}
+
+			if(!target->IsLDoNLocked())
+			{
+				Message_StringID(MT_Skills, LDON_WAS_NOT_LOCKED, target->GetCleanName());
+			}
+
+			if(type != target->GetLDoNTrapType())
+			{
+				Message_StringID(MT_Skills, LDON_PICKLOCK_FAILURE, target->GetCleanName());
+				return;
+			}
+
+			int check = LDoNChest_SkillCheck(target, skill);
+
+			switch(check)
+			{
+			case 0:
+			case -1:
+				Message_StringID(MT_Skills, LDON_PICKLOCK_FAILURE, target->GetCleanName());
+				break;
+			case 1:
+				target->SetLDoNLocked(false);
+				Message_StringID(MT_Skills, LDON_PICKLOCK_SUCCESS, target->GetCleanName());
+				break;
+			}
+		}
+	}
+}
+
+int	Client::LDoNChest_SkillCheck(NPC *target, int skill)
+{
+	if(!target)
+		return -1;
+
+	int	chest_difficulty = target->GetLevel() * 5;
+	float base_difficulty = RuleR(Adventure, LDoNBaseTrapDifficulty);
+
+	if(chest_difficulty == 0)
+		chest_difficulty = 5;
+
+
+	float chance=((100.0f-base_difficulty)*((float)skill/(float)chest_difficulty));
+
+	if(chance > (100.0f - base_difficulty))
+	{
+		chance = 100.0f - base_difficulty;
+	}
+
+	float d100 = (float)MakeRandomFloat(0, (100-base_difficulty)) + base_difficulty;
+
+
+	if(d100 <= chance)
+		return 1;
+	else
+	{
+		if(d100 > (chance + RuleR(Adventure, LDoNCriticalFailTrapThreshold)))
+			return -1;
+	}
+
+	return 0;
+}

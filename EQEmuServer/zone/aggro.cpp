@@ -482,7 +482,7 @@ to see how the decision is made.  Yea, it could be condensed and made
 faster, but I'm doing it this way to make it readable and easy to modify
 */
 
-bool Mob::IsAttackAllowed(Mob *target)
+bool Mob::IsAttackAllowed(Mob *target, bool isSpellAttack)
 {
 	Mob *mob1, *mob2, *tempmob;
 	Client *c1, *c2, *becomenpc;
@@ -512,14 +512,17 @@ bool Mob::IsAttackAllowed(Mob *target)
 
 	if(bt == BT_NoTarget || bt == BT_NoTarget2)
 		return(false);
+
+	if(!isSpellAttack)
+	{
+		if(GetClass() == LDON_TREASURE)
+		{
+			return false;
+		}
+	}
 	
 	// solar: the format here is a matrix of mob type vs mob type.
 	// redundant ones are omitted and the reverse is tried if it falls through.
-
-	// cb: LDoN Treasure chests dont fight
-	if(this->GetClass() == LDON_TREASURE)
-		return(false);
-
 	
 	// first figure out if we're pets.  we always look at the master's flags.
 	// no need to compare pets to anything
