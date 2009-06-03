@@ -260,6 +260,24 @@ public:
 	void	ModifyNPCStat(const char *identifier, const char *newValue);
 	virtual void SetLevel(uint8 in_level, bool command = false);
 
+	bool IsLDoNTrapped() { return (ldon_trapped); }
+	void SetLDoNTrapped(bool n) { ldon_trapped = n; }
+
+	int8 GetLDoNTrapType() { return (ldon_trap_type); }
+	void SetLDoNTrapType(int8 n) { ldon_trap_type = n; }
+
+	int16 GetLDoNTrapSpellID() { return (ldon_spell_id); }
+	void SetLDoNTrapSpellID(int16 n) { ldon_spell_id = n; }
+
+	bool IsLDoNLocked() { return (ldon_locked); }
+	void SetLDoNLocked(bool n) { ldon_locked = n; }
+
+	int16 GetLDoNLockedSkill() { return (ldon_locked_skill); }
+	void SetLDoNLockedSkill(int16 n) { ldon_locked_skill = n; }
+
+	bool IsLDoNTrapDetected() { return (ldon_trap_detected); }
+	void SetLDoNTrapDetected(bool n) { ldon_trap_detected = n; }
+
 protected:
 	
 	const NPCType*	NPCTypedata;
@@ -363,6 +381,13 @@ protected:
 
 	AA_SwarmPetInfo *swarmInfoPtr;
 	
+	bool ldon_trapped;
+	int8 ldon_trap_type;
+	int16 ldon_spell_id;
+	bool ldon_locked;
+	int16 ldon_locked_skill;
+	bool ldon_trap_detected;
+
 private:
 	int32	loottable_id;
 	bool	p_depop;

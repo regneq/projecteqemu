@@ -147,7 +147,7 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 	guard_z = 0;
 	guard_heading = 0;
 	swarmInfoPtr = NULL;
-	
+
 //	SaveSpawnSpot();
 
 	logging_enabled = NPC_DEFAULT_LOGGING_ENABLED;
@@ -337,6 +337,81 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 	int skil;
 	for(r = 0; r <= HIGHEST_SKILL; r++) {
 		skills[r] = database.GetSkillCap(GetClass(),(SkillType)r,moblevel);
+	}
+
+	if(d->trap_template > 0)
+	{
+		std::map<uint32,std::list<LDoNTrapTemplate*> >::iterator trap_ent_iter; 
+		std::list<LDoNTrapTemplate*> trap_list;
+
+		trap_ent_iter = zone->ldon_trap_entry_list.find(d->trap_template);
+		if(trap_ent_iter != zone->ldon_trap_entry_list.end())
+		{
+			trap_list = trap_ent_iter->second;
+			if(trap_list.size() > 0)
+			{
+				int16 count = MakeRandomInt(0, (trap_list.size()-1));
+				std::list<LDoNTrapTemplate*>::iterator trap_list_iter = trap_list.begin();
+				for(int x = 0; x < count; ++x)
+				{
+					trap_list_iter++;
+				}
+				LDoNTrapTemplate* tt = (*trap_list_iter);
+				if(tt)
+				{
+					if((int8)tt->spell_id > 0)
+					{
+						ldon_trapped = true;
+						ldon_spell_id = tt->spell_id;
+					}
+					else
+					{
+						ldon_trapped = false;
+						ldon_spell_id = 0;
+					}
+
+					ldon_trap_type = (int8)tt->type;
+					if(tt->locked > 0)
+					{
+						ldon_locked = true;
+						ldon_locked_skill = tt->skill;
+					}
+					else
+					{
+						ldon_locked = false;
+						ldon_locked_skill = 0;
+					}
+					ldon_trap_detected = 0;
+				}
+			}
+			else
+			{
+				ldon_trapped = false;
+				ldon_trap_type = 0;
+				ldon_spell_id = 0;
+				ldon_locked = false;
+				ldon_locked_skill = 0;
+				ldon_trap_detected = 0;
+			}
+		}
+		else
+		{
+			ldon_trapped = false;
+			ldon_trap_type = 0;
+			ldon_spell_id = 0;
+			ldon_locked = false;
+			ldon_locked_skill = 0;
+			ldon_trap_detected = 0;
+		}
+	}
+	else
+	{
+		ldon_trapped = false;
+		ldon_trap_type = 0;
+		ldon_spell_id = 0;
+		ldon_locked = false;
+		ldon_locked_skill = 0;
+		ldon_trap_detected = 0;
 	}
 }
 	  

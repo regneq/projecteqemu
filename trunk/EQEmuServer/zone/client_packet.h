@@ -61,6 +61,10 @@
 	void Handle_OP_Logout(const EQApplicationPacket *app);
 	void Handle_OP_SenseHeading(const EQApplicationPacket *app);
 	void Handle_OP_LDoNOpen(const EQApplicationPacket *app);
+	void Handle_OP_LDoNDisarmTraps(const EQApplicationPacket *app);
+	void Handle_OP_LDoNSenseTraps(const EQApplicationPacket *app);
+	void Handle_OP_LDoNInspect(const EQApplicationPacket *app);
+	void Handle_OP_LDoNPickLock(const EQApplicationPacket *app);
 	void Handle_OP_FeignDeath(const EQApplicationPacket *app);
 	void Handle_OP_Sneak(const EQApplicationPacket *app);
 	void Handle_OP_Hide(const EQApplicationPacket *app);

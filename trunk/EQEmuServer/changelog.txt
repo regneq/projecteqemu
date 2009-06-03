@@ -1,5 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/03/2009==
+KLS: Used Cbodmer old ldon trap code as a base for ldon trap implementation. About 50% of the code for this system was his so I figured he deserves credit too.
+
+Required sql: 621_LDoNTraps.sql
+Updated titanium .conf file for ldon opcodes. Will look at other clients later.
+
 ==06/02/2009==
 Trevius: Updated the new Adventure Opcodes for SoF
 

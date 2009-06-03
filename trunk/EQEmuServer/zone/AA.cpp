@@ -142,7 +142,7 @@ int Client::CalcAAReuseTimer(const AA_DBAction *caa) {
 void Client::ActivateAA(aaID activate){
 	if(activate < 0 || activate >= aaHighestID)
 		return;
-	if(IsStunned() || IsMezzed() || IsSitting())
+	if(IsStunned() || IsMezzed() || IsSitting() || GetFeigned())
 		return;
 
 	int AATimerID = GetAATimerID(activate);

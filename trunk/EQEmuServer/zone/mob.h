@@ -546,7 +546,7 @@ bool logpos;
 	void EnableLogging() { logging_enabled = true; }
 	void DisableLogging() { logging_enabled = false; }
 	bool IsWarriorClass() const;
-	bool IsAttackAllowed(Mob *target);
+	bool IsAttackAllowed(Mob *target, bool isSpellAttack = false);
 	bool IsBeneficialAllowed(Mob *target);
 
 	inline sint32	GetHP()			const { return cur_hp; }

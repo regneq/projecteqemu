@@ -202,4 +202,24 @@
 #define NO_INSTRUMENT_SKILL 269	// "Stick to singing until you learn to play this instrument."
 #define IN_USE 1406	// "Someone else is using that.  Try again later."
 #define DUP_LORE 290 // "Duplicate lore items are not allowed." 
+
+#define LDON_DONT_KNOW_TRAPPED	7552 // You do not know if this object is trapped.
+#define LDON_HAVE_DISARMED	7553 // You have disarmed %1!
+#define LDON_ACCIDENT_SETOFF	7554 // You accidentally set off the trap!
+#define LDON_HAVE_NOT_DISARMED 7555 // You have not disarmed %1.
+#define LDON_ACCIDENT_SETOFF2	7556 // You accidentally set off the trap!
+#define LDON_CERTAIN_TRAP	7557 // You are certain that %1 is trapped.
+#define LDON_CERTAIN_NOT_TRAP	7558 // You are certain that %1 is not trapped.
+#define LDON_CANT_DETERMINE_TRAP	7559 // You are unable to determine if %1 is trapped.
+#define LDON_PICKLOCK_SUCCESS	7560	// You have successfully picked %1!
+#define LDON_PICKLOCK_FAILURE	7561 // You have failed to pick %1.
+#define LDON_STILL_LOCKED	7562 // You cannot open %1, it is locked.
+#define LDON_BASH_CHEST	7563 // %1 try to %2 %3, but do no damage.
+#define LDON_NO_LOCKPICK	7564 // You must have a lock pick in your inventory to do this.
+#define LDON_WAS_NOT_LOCKED 7565 // %1 was not locked.
+#define LDON_WAS_NOT_TRAPPED 7566 // %1 was not trapped
+#define LDON_SENSE_TRAP1 306 // You do not Sense any traps.
+#define LDON_SENSE_TRAP2 367 // You have not detected any traps.
+#define LDON_SENSE_TRAP3 12476 // You don't sense any traps.
+
 #endif

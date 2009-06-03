@@ -87,6 +87,7 @@ typedef enum {
   ST_Summoned			= 0x0b, // NEOTOKYO: see spells_en.txt -> seems to be value 11 not 25
   ST_Corpse				= 0x0f,
   ST_UndeadAE			= 0x18,
+  ST_LDoNChest_Cursed   = 0x22,
   ST_GroupClient		= 0x2b,
 } SpellTargetType;
 
@@ -661,6 +662,7 @@ bool IsSuccorSpell(int16 spell_id);
 bool IsTeleportSpell(int16 spell_id);
 bool IsGateSpell(int16 spell_id);
 bool IsPlayerIllusionSpell(int16 spell_id); // seveian 2008-09-23
+bool IsLDoNObjectSpell(int16 spell_id);
 
 int CalcPetHp(int levelb, int classb, int STA = 75);
 const char *GetRandPetName();
