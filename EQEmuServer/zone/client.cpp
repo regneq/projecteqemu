@@ -4552,12 +4552,11 @@ int	Client::LDoNChest_SkillCheck(NPC *target, int skill)
 	if(!target)
 		return -1;
 
-	int	chest_difficulty = target->GetLevel() * 5;
+	int	chest_difficulty = target->GetLDoNLockedSkill() == 0 ? (target->GetLevel() * 5) : target->GetLDoNLockedSkill();
 	float base_difficulty = RuleR(Adventure, LDoNBaseTrapDifficulty);
 
 	if(chest_difficulty == 0)
 		chest_difficulty = 5;
-
 
 	float chance=((100.0f-base_difficulty)*((float)skill/(float)chest_difficulty));
 
