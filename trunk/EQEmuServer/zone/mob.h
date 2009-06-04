@@ -505,6 +505,7 @@ bool logpos;
 	bool	FindType(int8 type, bool bOffensive = false, int16 threshold = 100);
 	sint8	GetBuffSlotFromType(int8 type);
 	int		CountDispellableBuffs();
+	bool	HasBuffIcon(Mob* caster, Mob* target, int16 spell_id);
 
 	void	MakePet(int16 spell_id, const char* pettype, const char *petname = NULL);
 //	inline void	MakePetType(int16 spell_id, const char* pettype, const char *petname = NULL) { MakePet(spell_id, pettype, petname); }	//for perl
