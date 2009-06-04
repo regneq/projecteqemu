@@ -1721,8 +1721,8 @@ void Client::DoStaminaUpdate() {
 			m_pp.hunger_level-=35;
 		if (m_pp.thirst_level > 0)
 			m_pp.thirst_level-=35;
-		sta->food = m_pp.hunger_level;
-		sta->water = m_pp.thirst_level;
+		sta->food = m_pp.hunger_level > 6000 ? 6000 : m_pp.hunger_level;
+		sta->water = m_pp.thirst_level> 6000 ? 6000 : m_pp.thirst_level;
 	}
 	else {
 		// No auto food/drink consumption in the Bazaar

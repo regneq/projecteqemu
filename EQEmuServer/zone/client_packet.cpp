@@ -1478,6 +1478,38 @@ void Client::Handle_OP_Consume(const EQApplicationPacket *app)
 		return;
 	}
 	Consume_Struct* pcs = (Consume_Struct*)app->pBuffer;
+	if(pcs->type == 0x01)
+	{
+		if(m_pp.hunger_level > 6000)
+		{
+			EQApplicationPacket *outapp;
+			outapp = new EQApplicationPacket(OP_Stamina, sizeof(Stamina_Struct));
+			Stamina_Struct* sta = (Stamina_Struct*)outapp->pBuffer;
+			sta->food = m_pp.hunger_level > 6000 ? 6000 : m_pp.hunger_level;
+			sta->water = m_pp.thirst_level > 6000 ? 6000 : m_pp.thirst_level;
+
+			QueuePacket(outapp);
+			safe_delete(outapp);
+			return;
+		}
+	}
+	else if(pcs->type == 0x02)
+	{
+		if(m_pp.thirst_level > 6000)
+		{
+			EQApplicationPacket *outapp;
+			outapp = new EQApplicationPacket(OP_Stamina, sizeof(Stamina_Struct));
+			Stamina_Struct* sta = (Stamina_Struct*)outapp->pBuffer;
+			sta->food = m_pp.hunger_level > 6000 ? 6000 : m_pp.hunger_level;
+			sta->water = m_pp.thirst_level > 6000 ? 6000 : m_pp.thirst_level;
+
+			QueuePacket(outapp);
+			safe_delete(outapp);
+			return;
+		}
+	}
+
+
 	uint16 cons_mod = 180;
 
 	switch(GetAA(aaInnateMetabolism)){
@@ -1528,15 +1560,15 @@ void Client::Handle_OP_Consume(const EQApplicationPacket *app)
 		LogFile->write(EQEMuLog::Error, "OP_Consume: unknown type, type:%i", (int)pcs->type);
 		return;
 	}
-	if (m_pp.hunger_level > 6000)
-		m_pp.hunger_level = 6000;
-	if (m_pp.thirst_level > 6000)
-		m_pp.thirst_level = 6000;
+	if (m_pp.hunger_level > 50000)
+		m_pp.hunger_level = 50000;
+	if (m_pp.thirst_level > 50000)
+		m_pp.thirst_level = 50000;
 	EQApplicationPacket *outapp;
 	outapp = new EQApplicationPacket(OP_Stamina, sizeof(Stamina_Struct));
 	Stamina_Struct* sta = (Stamina_Struct*)outapp->pBuffer;
-	sta->food = m_pp.hunger_level;
-	sta->water = m_pp.thirst_level;
+	sta->food = m_pp.hunger_level > 6000 ? 6000 : m_pp.hunger_level;
+	sta->water = m_pp.thirst_level > 6000 ? 6000 : m_pp.thirst_level;
 
 	QueuePacket(outapp);
 	safe_delete(outapp);
