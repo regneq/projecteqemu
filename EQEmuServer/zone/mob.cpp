@@ -4460,3 +4460,12 @@ void Mob::SetDeltas(float dx, float dy, float dz, float dh) {
 	delta_z = dz;
 	delta_heading = dh;
 }
+
+
+bool Mob::HasBuffIcon(Mob *caster, Mob *target, int16 spell_id)
+{
+	if((caster->CalcBuffDuration(caster, target, spell_id)-1) != 0)
+		return true;
+	else
+		return false;
+}

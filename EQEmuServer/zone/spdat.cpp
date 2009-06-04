@@ -802,11 +802,3 @@ bool IsLDoNObjectSpell(int16 spell_id)
 	}
 
 }
-
-bool HasBuffIcon(Mob *caster, Mob *target, int16 spell_id)
-{
-	if((caster->CalcBuffDuration(caster, target, spell_id)-1) != 0)
-		return true;
-	else
-		return false;
-}
