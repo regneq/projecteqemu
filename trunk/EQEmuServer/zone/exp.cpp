@@ -116,7 +116,7 @@ void Client::AddEXP(int32 add_exp, int8 conlevel, bool resexp) {
 			}
 		}
 
-		if(IsLeadershipEXPOn() && ((conlevel == CON_BLUE) || (conlevel == CON_YELLOW) || (conlevel == CON_RED))) {
+		if(IsLeadershipEXPOn() && ((conlevel == CON_BLUE) || (conlevel == CON_WHITE) || (conlevel == CON_YELLOW) || (conlevel == CON_RED))) {
 			add_exp = static_cast<float>(add_exp) * 0.8;
 
 			if(GetGroup())
