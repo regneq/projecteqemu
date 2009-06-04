@@ -736,8 +736,17 @@ ENCODE(OP_ZoneSpawns) {
 		eq->race = emu->race;
 		strcpy(eq->suffix, emu->suffix);
 		eq->findable = emu->findable;
-		eq->bodytype = emu->bodytype;
-		eq->bodytype2 = 0;
+		if(emu->bodytype >= 66)
+		{
+			eq->bodytype = 11;	//non-targetable
+			eq->showname = 0;	//no visible name
+			eq->race = 127;		//invisible
+		}
+		else
+		{
+			eq->bodytype = emu->bodytype;
+		}
+		//eq->bodytype2 = 0;
 		eq->equip_chest2 = emu->equip_chest2;
 		eq->curHp = emu->curHp;
 		eq->invis = emu->invis;
