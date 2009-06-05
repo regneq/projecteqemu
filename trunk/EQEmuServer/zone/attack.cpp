@@ -284,38 +284,85 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 	chancetohit -= chancetohit * AA_mod / 100;
 
 	mlog(COMBAT__TOHIT, "Chance to hit after AA calc %.2f", chancetohit);
+
 #ifdef EQBOTS
 
-	// Bot AA's for the above 3
-	if(IsBot()) {
-		if(GetLevel() >= 65) {
-			AA_mod = 23;
-		}
-		else if(GetLevel() >= 64) {
-			AA_mod = 21;
-		}
-		else if(GetLevel() >= 63) {
-			AA_mod = 19;
-		}
-		else if(GetLevel() >= 62) {
-			AA_mod = 17;
-		}
-		else if(GetLevel() >= 61) {
-			AA_mod = 15;
-		}
-		else if(GetLevel() >= 59) {
-			AA_mod = 13;
-		}
-		else if(GetLevel() >= 57) {
+	if(IsBot())
+	{
+		int8 botclass = GetClass();
+		uint8 botlevel = GetLevel();
+
+		// Everyone gets Combat Agility AA
+		if(botlevel >= 57)
+		{
 			AA_mod = 10;
 		}
-		else if(GetLevel() >= 56) {
+		else if(botlevel >= 56)
+		{
 			AA_mod = 5;
 		}
-		else if(GetLevel() >= 55) {
+		else if(botlevel >= 55)
+		{
 			AA_mod = 2;
 		}
-		chancetohit -= chancetohit * AA_mod / 100;
+
+		// All Melee get Physical Enhancement AA
+		if((botclass != WIZARD) &&
+			(botclass != NECROMANCER) &&
+			(botclass != MAGICIAN) &&
+			(botclass != ENCHANTER) &&
+			(botclass != DRUID) &&
+			(botclass != SHAMAN))
+		{
+			if(botlevel >= 59)
+			{ // Physical Enhancement AA
+				AA_mod += 3;
+			}
+		}
+
+		// Everyone gets Lightning Reflexes AA
+		if(botlevel >= 65)
+		{ // Lightning Reflexes AA 5
+			AA_mod += 10;
+		}
+		else if(botlevel >= 64)
+		{ // Lightning Reflexes AA 4
+			AA_mod += 8;
+		}
+		else if(botlevel >= 63)
+		{ // Lightning Reflexes AA 3
+			AA_mod += 6;
+		}
+		else if(botlevel >= 62)
+		{ // Lightning Reflexes AA 2
+			AA_mod += 4;
+		}
+		else if(botlevel >= 61)
+		{ // Lightning Reflexes AA 1
+			AA_mod += 2;
+		}
+
+		// Everyone gets Reflexive Mastery AA
+		if(botlevel >= 70)
+		{ // Reflexive Mastery AA 5
+			AA_mod += 5;
+		}
+		else if(botlevel >= 69)
+		{ // Reflexive Mastery AA 4
+			AA_mod += 4;
+		}
+		else if(botlevel >= 68)
+		{ // Reflexive Mastery AA 3
+			AA_mod += 3;
+		}
+		else if(botlevel >= 67)
+		{ // Reflexive Mastery AA 2
+			AA_mod += 2;
+		}
+		else if(botlevel >= 66)
+		{ // Reflexive Mastery AA 1
+			AA_mod += 1;
+		}
 	}
 
 #endif //EQBOTS
@@ -403,25 +450,26 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 		LogFile->write(EQEMuLog::Debug, "3 FINAL calculated chance to hit is: %5.2f", chancetohit);
 	#endif
 
+#ifdef EQBOTS
+
+    // EQoffline - Raid mantank has a special defensive disc reducing by 50% the chance to be hitted.
+    if(defender->IsBot() && defender->IsBotRaiding()) {
+        BotRaids *br = entity_list.GetBotRaidByMob(defender);
+        if(br && (br->GetBotMainTank() && (br->GetBotMainTank() == defender)) ||
+			(br->GetBotSecondTank() && (br->GetBotSecondTank() == defender)))
+		{
+            chancetohit = chancetohit/2;
+        }
+    }
+
+#endif //EQBOTS
+
 	//
 	// Did we hit?
 	//
 
 	float tohit_roll = MakeRandomFloat(0, 100);
 	
-
-#ifdef EQBOTS
-
-    // EQoffline - Raid mantank has a special defensive disc reducing by 50% the chance to be hitted.
-    if(defender->IsBot() && defender->IsBotRaiding()) {
-        BotRaids *br = entity_list.GetBotRaidByMob(defender);
-        if(br && br->GetBotMainTank() && ((br->GetBotMainTank() == defender) || (br->GetBotSecondTank() == defender))) {
-            chancetohit = chancetohit/2;
-        }
-    }
-	
-#endif //EQBOTS
-
 	mlog(COMBAT__TOHIT, "Final hit chance: %.2f%%. Hit roll %.2f", chancetohit, tohit_roll);
 	
 	return(tohit_roll <= chancetohit);
@@ -640,34 +688,80 @@ void Mob::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 
 #ifdef EQBOTS
 
-	// Bot AA's for the above 3
-	if(IsBot()) {
-		if(GetLevel() >= 65) {
-			totalMit = 19;
+	if(IsBot())
+	{
+		int8 botclass = GetClass();
+		uint8 botlevel = GetLevel();
+
+		// Everyone gets Combat Stability AA
+		if(botlevel >= 57)
+		{ // Combat Stability AA 3
+			totalMit += 10;
 		}
-		else if(GetLevel() >= 64) {
-			totalMit = 17;
+		else if(botlevel >= 56)
+		{ // Combat Stability AA 2
+			totalMit += 5;
 		}
-		else if(GetLevel() >= 63) {
-			totalMit = 17;
+		else if(botlevel >= 55)
+		{ // Combat Stability AA 1
+			totalMit += 2;
 		}
-		else if(GetLevel() >= 62) {
-			totalMit = 16;
+
+		// All Melee get Physical Enhancement AA
+		if((botclass != WIZARD) &&
+			(botclass != NECROMANCER) &&
+			(botclass != MAGICIAN) &&
+			(botclass != ENCHANTER) &&
+			(botclass != DRUID) &&
+			(botclass != SHAMAN))
+		{
+			if(botlevel >= 59)
+			{ // Physical Enhancement AA
+				totalMit += 2;
+			}
 		}
-		else if(GetLevel() >= 61) {
-			totalMit = 15;
+		
+		// Everyone gets Innate Defense AA
+		if(botlevel >= 65)
+		{ // Innate Defense AA 5
+			totalMit += 5;
 		}
-		else if(GetLevel() >= 59) {
-			totalMit = 12;
+		else if(botlevel >= 64)
+		{ // Innate Defense AA 4
+			totalMit += 4;
 		}
-		else if(GetLevel() >= 57) {
-			totalMit = 10;
+		else if(botlevel >= 63)
+		{ // Innate Defense AA 3
+			totalMit += 3;
 		}
-		else if(GetLevel() >= 56) {
-			totalMit = 5;
+		else if(botlevel >= 62)
+		{ // Innate Defense AA 2
+			totalMit += 2;
 		}
-		else if(GetLevel() >= 55) {
-			totalMit = 2;
+		else if(botlevel >= 61)
+		{ // Innate Defense AA 1
+			totalMit += 1;
+		}
+
+		// All but pure casters get Defensive Instincts AA
+		if((botclass != WIZARD) && (botclass != NECROMANCER) && (botclass != MAGICIAN) && (botclass != ENCHANTER))
+		{
+			// Clients get this AA multiplied by a float to equal an int(totalMit)?  Unfair rounding
+			if(botlevel >= 70) { // Defensive Instincts AA 5
+				totalMit += 5;
+			}
+			else if(botlevel >= 69) { // Defensive Instincts AA 4
+				totalMit += 4;
+			}
+			else if(botlevel >= 68) { // Defensive Instincts AA 3
+				totalMit += 3;
+			}
+			else if(botlevel >= 67) { // Defensive Instincts AA 2
+				totalMit += 2;
+			}
+			else if(botlevel >= 66) { // Defensive Instincts AA 1
+				totalMit += 1;
+			}
 		}
 	}
 
@@ -1560,22 +1654,21 @@ bool NPC::BotAttackMelee(Mob* other, int Hand, bool bRiposte)
 	
 	mlog(COMBAT__ATTACKS, "Attacking %s with hand %d %s", other?other->GetName():"(NULL)", Hand, bRiposte?"(this is a riposte)":"");
 	
-	if (
-		   (IsCasting() && GetClass() != BARD)
-		|| other == NULL
-		|| (GetHP() < 0)
-		|| (!IsAttackAllowed(other))
-		) {
-			if (this->GetOwnerID())
-				entity_list.MessageClose(this, 1, 200, 10, "%s says, 'That is not a legal target master.'", this->GetCleanName());
-			if(other)
-				RemoveFromHateList(other);
-			mlog(COMBAT__ATTACKS, "I am not allowed to attack %s", other->GetName());
-			return false;
+	if ((IsCasting() && (GetClass() != BARD)) ||
+		other == NULL ||
+		(GetHP() < 0) ||
+		(!IsAttackAllowed(other)))
+	{
+		if(this->GetOwnerID())
+			entity_list.MessageClose(this, 1, 200, 10, "%s says, 'That is not a legal target master.'", this->GetCleanName());
+		if(other)
+			RemoveFromHateList(other);
+		mlog(COMBAT__ATTACKS, "I am not allowed to attack %s", other->GetName());
+		return false;
 	}
+
 	if(DivineAura()) {//cant attack while invulnerable
 		mlog(COMBAT__ATTACKS, "Attack canceled, Divine Aura is in effect.");
-		Message(10,"You can't attack while invulnerable!");
 		return false;
 	}
 	
@@ -1637,23 +1730,6 @@ bool NPC::BotAttackMelee(Mob* other, int Hand, bool bRiposte)
 		else if(GetLevel() < 20 && max_hit > 40)
 			max_hit = 40;
 
-		//monks are supposed to be a step ahead of other classes in
-		//toe to toe combat, small bonuses for hitting key levels too
-		int bonus = 0;
-		if(GetClass() == MONK)
-			bonus += 20;
-		if(GetLevel() > 50)
-			bonus += 15;
-		if(GetLevel() >= 55)
-			bonus += 15;
-		if(GetLevel() >= 60)
-			bonus += 15;
-		if(GetLevel() >= 65)
-			bonus += 15;
-		
-		min_hit += (min_hit * bonus / 100);
-		max_hit += (max_hit * bonus / 100);
-
 		//if mainhand only, get the bonus damage from level
 		if((Hand == SLOT_PRIMARY) && (GetLevel() >= 28) && IsWarriorClass())
 		{
@@ -1665,6 +1741,23 @@ bool NPC::BotAttackMelee(Mob* other, int Hand, bool bRiposte)
 
 		min_hit = min_hit * (100 + itembonuses.MinDamageModifier + spellbonuses.MinDamageModifier) / 100;
 
+		if(Hand == SLOT_SECONDARY) {
+			if((GetClass() == WARRIOR) ||
+				(GetClass() == ROGUE) ||
+				(GetClass() == MONK) ||
+				(GetClass() == RANGER) ||
+				(GetClass() == BARD) ||
+				(GetClass() == BEASTLORD))
+			{
+				if(GetLevel() >= 65)
+				{ // Sinister Strikes AA
+					int sinisterBonus = MakeRandomInt(5, 10);
+					min_hit += (min_hit * sinisterBonus / 100);
+					max_hit += (max_hit * sinisterBonus / 100);
+				}
+			}
+		}
+
 		if(max_hit < min_hit)
 			max_hit = min_hit;
 
@@ -1673,8 +1766,8 @@ bool NPC::BotAttackMelee(Mob* other, int Hand, bool bRiposte)
 		else
 			damage = MakeRandomInt(min_hit, max_hit);
 
-		mlog(COMBAT__DAMAGE, "Damage calculated to %d (min %d, max %d, str %d, skill %d, DMG %d, lv %d)", damage, min_hit, max_hit
-		, GetSTR(), GetSkill(skillinuse), weapon_damage, GetLevel());
+		mlog(COMBAT__DAMAGE, "Damage calculated to %d (min %d, max %d, str %d, skill %d, DMG %d, lv %d)",
+			damage, min_hit, max_hit, GetSTR(), GetSkill(skillinuse), weapon_damage, GetLevel());
 
 		//check to see if we hit..
 		if(!other->CheckHitChance(this, skillinuse, Hand)) {
@@ -1706,22 +1799,27 @@ bool NPC::BotAttackMelee(Mob* other, int Hand, bool bRiposte)
 				return false;
 			}
 			else {
-				// Bot Slippery Attacks AA
+				
 				int saChance = 0;
 				if(IsWarriorClass()) {
-					if(GetLevel() >= 70) {
+					if(GetLevel() >= 70)
+					{ // Slippery Attacks AA 5
 						saChance = 5;
 					}
-					else if(GetLevel() >= 69) {
+					else if(GetLevel() >= 69)
+					{ // Slippery Attacks AA 4
 						saChance = 4;
 					}
-					else if(GetLevel() >= 68) {
+					else if(GetLevel() >= 68)
+					{ // Slippery Attacks AA 3
 						saChance = 3;
 					}
-					else if(GetLevel() >= 67) {
+					else if(GetLevel() >= 67)
+					{ // Slippery Attacks AA 2
 						saChance = 2;
 					}
-					else if(GetLevel() >= 66) {
+					else if(GetLevel() >= 66)
+					{ // Slippery Attacks AA 1
 						saChance = 1;
 					}
 				}
@@ -1734,11 +1832,27 @@ bool NPC::BotAttackMelee(Mob* other, int Hand, bool bRiposte)
 				else DoRiposte(other);
 			}
 		}
+		
+		int aaStrikethroughBonus = 0;
+		if(GetClass() == MONK)
+		{
+			if(GetLevel() >= 67)
+			{ // Strikethrough AA 3
+				aaStrikethroughBonus = 6;
+			}
+			else if(GetLevel() >= 66)
+			{ // Strikethrough AA 2
+				aaStrikethroughBonus = 4;
+			}
+			else if(GetLevel() >= 65)
+			{ // Strikethrough AA 1
+				aaStrikethroughBonus = 2;
+			}
+		}
 
 		//strikethrough..
 		if (((damage < 0) || slippery_attack) && !bRiposte) { // Hack to still allow Strikethrough chance w/ Slippery Attacks AA
-			if(MakeRandomInt(0, 100) < (itembonuses.StrikeThrough + spellbonuses.StrikeThrough)) {
-				Message_StringID(MT_StrikeThrough, 9078); // You strike through your opponents defenses!
+			if(MakeRandomInt(0, 100) < (itembonuses.StrikeThrough + spellbonuses.StrikeThrough + aaStrikethroughBonus)) {
 				BotAttackMelee(other, Hand, true); // Strikethrough only gives another attempted hit
 				safe_delete(weapon);
 				return false;
@@ -1799,6 +1913,8 @@ bool NPC::BotAttackMelee(Mob* other, int Hand, bool bRiposte)
 	}
 	
 	if(damage > 0) {
+		// Give the opportunity to throw back a defensive proc, if we are successful in affecting damage on our target
+		other->TriggerDefensiveProcs(this);
 		safe_delete(weapon);
 		return true;
 	}
@@ -2280,7 +2396,9 @@ bool NPC::Attack(Mob* other, int Hand, bool bRiposte)	 // Kaiyodo - base functio
 							if(g) {
 								for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
 									if(g->members[i] && g->members[i]->IsBot()) {
+										g->members[i]->BotOwner->CastToClient()->SetOrderBotAttack(true);
 										g->members[i]->AddToHateList(this, 1);
+										g->members[i]->BotOwner->CastToClient()->SetOrderBotAttack(false);
 									}
 								}
 							}
@@ -2302,7 +2420,9 @@ bool NPC::Attack(Mob* other, int Hand, bool bRiposte)	 // Kaiyodo - base functio
 							if(g) {
 								for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
 									if(g->members[i] && g->members[i]->IsBot()) {
+										g->members[i]->BotOwner->CastToClient()->SetOrderBotAttack(true);
 										g->members[i]->AddToHateList(this, 1);
+										g->members[i]->BotOwner->CastToClient()->SetOrderBotAttack(false);
 									}
 								}
 							}
@@ -2614,6 +2734,9 @@ void NPC::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill) 
 			{
 				if(!IsLdonTreasure)
 					br->SplitExp((EXP_FORMULA), this);
+
+				if(br->GetBotMainTarget() == this)
+					br->SetBotMainTarget(NULL);
 
 				/* Send the EVENT_KILLED_MERIT event for all raid members */
 				if(br->BotRaidGroups[0])
@@ -2927,7 +3050,8 @@ void Mob::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHel
 			AddFeignMemory(other->BotOwner->CastToClient());
 		}
 		else {
-			hate_list.Add(other->BotOwner, 0, 0, false, true);
+			if(!hate_list.IsOnHateList(other->BotOwner))
+				hate_list.Add(other->BotOwner, 0, 0, false, true);
 		}
 	}
 

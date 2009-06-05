@@ -734,7 +734,7 @@ bool NPC::Process()
     //Franck-add: EQoffline. If a bot spawns, it must use a special AI wich differs to standard NPC
 	if(IsBot())
 		BOT_Process();
-	else if(IsPet() && GetOwner()->IsBot())
+	else if(IsPet() && GetOwner() && GetOwner()->IsBot())
 		PET_Process();
 	else
 

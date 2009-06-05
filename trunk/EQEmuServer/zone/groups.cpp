@@ -506,6 +506,7 @@ bool Group::DelMember(Mob* oldmember,bool ignoresender){
 	if (oldmember == NULL){
 		return false;
 	}
+
 #ifdef EQBOTS
 
 	if(oldmember->IsClient() && (oldmember == GetLeader())) {
