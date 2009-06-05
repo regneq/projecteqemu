@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/05/2009==
+Derision: SoF - Adventure OPCode updates
+
 ==06/04/2009==
 Trevius: SoF - Added conversion for bodytypes 66 and 67 so they are now untargetable, invisible and have no showing name as they should be.
 Congdar: Bots - Implemented raid maintarget, updates to magepet and pvp.  Added Sinister Strikes & Strikethrough AAs and several other updates.
