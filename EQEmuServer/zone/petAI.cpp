@@ -78,9 +78,11 @@ void Mob::PET_Process() {
 	if( !IsPet() || !GetOwner() )
 		return;
 
-	if( !GetOwner() )
+	if(!GetOwner() || !GetID() || !GetOwnerID() || !BotOwner)
+	{
 		Kill();
- 
+		return;
+	} 
 	
 	if (!IsAIControlled())
 		return;
@@ -115,7 +117,26 @@ void Mob::PET_Process() {
             return;
         }
 
-        bool is_combat_range = CombatRange(target);
+		// Lets see if we can let the main tank build a little aggro
+		if(GetBotRaidID())
+		{
+			BotRaids *br = entity_list.GetBotRaidByMob(GetOwner());
+			if(br)
+			{
+				if(br->GetBotMainTank() && (br->GetBotMainTank() != this))
+				{
+					if(br->GetBotMainTarget() && (br->GetBotMainTarget()->GetHateAmount(br->GetBotMainTank()) < 5000))
+					{
+						if(target == br->GetBotMainTarget())
+						{
+							return;
+						}
+					}
+				}
+			}
+		}
+
+		bool is_combat_range = CombatRange(target);
  
 		// Ok, we're engaged, each class type has a special AI
 		// Only melee class will go to melee. Casters and healers will stay behind, following the leader by default.
@@ -136,7 +157,7 @@ void Mob::PET_Process() {
 				}
 			}
 			// we can't fight if we don't have a target, are stun/mezzed or dead..
-			if(target && !IsStunned() && !IsMezzed() && GetAppearance() != eaDead ) 
+			if(target && !IsStunned() && !IsMezzed() && (GetAppearance() != eaDead)) 
 			{
 				if(attack_timer.Check())  // check the delay on the attack
 				{		
@@ -153,7 +174,7 @@ void Mob::PET_Process() {
 					}
  
 					// Ok now, let's check pet's offhand. 
-					if (attack_dw_timer.Check() && GetOwnerID() && ( GetOwner()->GetClass() == MAGICIAN || GetOwner()->GetClass() == NECROMANCER || GetOwner()->GetClass() == SHADOWKNIGHT || GetOwner()->GetClass() == BEASTLORD ) ) 
+					if (attack_dw_timer.Check() && GetOwnerID() && GetOwner() && ((GetOwner()->GetClass() == MAGICIAN) || (GetOwner()->GetClass() == NECROMANCER) || (GetOwner()->GetClass() == SHADOWKNIGHT) || (GetOwner()->GetClass() == BEASTLORD))) 
 					{
 						if(GetOwner()->GetLevel() >= 24)
 						{
@@ -172,6 +193,9 @@ void Mob::PET_Process() {
 							}
 						}
 					}
+					if(!GetOwner())
+						return;
+
 					// Special attack
 					CastToNPC()->DoClassAttacks(target); 
 				}

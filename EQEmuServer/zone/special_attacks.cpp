@@ -1548,11 +1548,11 @@ void Mob::Taunt(NPC* who, bool always_succeed) {
 		if(IsBotRaiding()) {
 			BotRaids *br = entity_list.GetBotRaidByMob(this);
 			if(br && ((br->GetBotMainTank() && (br->GetBotMainTank() == this)) || (br->GetBotSecondTank() && (br->GetBotSecondTank() == this)))) {
-				who->CastToNPC()->AddToHateList(this, (who->GetNPCHate(hate_top) - who->GetNPCHate(this))+400);
+				who->CastToNPC()->AddToHateList(this, (who->GetNPCHate(hate_top) - who->GetNPCHate(this))+(MakeRandomInt(5, 10) * level));
 			}
 		}
 		else if(!IsBotRaiding() && IsGrouped())
-			who->CastToNPC()->AddToHateList(this, (who->GetNPCHate(hate_top) - who->GetNPCHate(this))+200);
+			who->CastToNPC()->AddToHateList(this, (who->GetNPCHate(hate_top) - who->GetNPCHate(this))+(MakeRandomInt(5, 10) * level));
 	}
 
 #endif //EQBOTS

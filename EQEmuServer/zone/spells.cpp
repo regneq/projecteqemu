@@ -1596,7 +1596,7 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
 						for(int i=0; i<MAX_GROUP_MEMBERS;i++) {
 							if(g->members[i]) {
 								SpellOnTarget(spell_id, g->members[i]);
-								if(g->members[i]->HasPet()) {
+								if(g->members[i]->GetPetID()) {
 									SpellOnTarget(spell_id, g->members[i]->GetPet());
 								}
 							}
@@ -1676,7 +1676,7 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
 					for(int i=0; i<MAX_GROUP_MEMBERS;i++) {
 						if(g->members[i]) {
 							SpellOnTarget(spell_id, g->members[i]);
-							if(g->members[i]->HasPet()) {
+							if(g->members[i]->GetPetID()) {
 								SpellOnTarget(spell_id, g->members[i]->GetPet());
 							}
 						}
@@ -2643,6 +2643,19 @@ int Mob::CanBuffStack(int16 spellid, int8 caster_level, bool iFailIfOverwrite)
 //
 bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar)
 {
+	EQApplicationPacket *action_packet, *message_packet;
+	float spell_effectiveness;
+
+	if(!IsValidSpell(spell_id))
+		return false;
+
+	// well we can't cast a spell on target without a target
+	if(!spelltar)
+	{
+		mlog(SPELLS__CASTING_ERR, "Unable to apply spell %d without a target", spell_id);
+		Message(13, "SOT: You must have a target for this spell.");
+		return false;
+	}
 
 #ifdef EQBOTS
 
@@ -2738,21 +2751,6 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar)
 
 #endif //EQBOTS
 
-	EQApplicationPacket *action_packet, *message_packet;
-	float spell_effectiveness;
-
-	if(!IsValidSpell(spell_id))
-		return false;
-
-	// well we can't cast a spell on target without a target
-	if(!spelltar)
-	{
-		mlog(SPELLS__CASTING_ERR, "Unable to apply spell %d without a target", spell_id);
-		Message(13, "SOT: You must have a target for this spell.");
-		return false;
-	}
-	
-	
 	int16 caster_level = GetCasterLevel(spell_id);
 	
 	mlog(SPELLS__CASTING, "Casting spell %d on %s with effective caster level %d", spell_id, spelltar->GetName(), caster_level);

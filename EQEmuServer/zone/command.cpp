@@ -9226,7 +9226,7 @@ void command_bot(Client *c, const Seperator *sep) {
 		int numitems = 0;
 		uint32 itemID = 0;
 		Mob *mtmp = 0;
-		for(int i=0; i<bots; i++) {
+		for(int i=0; i<bots; ++i) {
 			row = mysql_fetch_row(groups);
 			if((g->BotGroupCount() < 6) && (atoi(row[0]) == group)) {
 				mtmp = entity_list.GetMobByNpcTypeID(atoi(row[1]));
@@ -9249,7 +9249,7 @@ void command_bot(Client *c, const Seperator *sep) {
 					itemIDs = database.GetBotItems(mtmp->GetNPCTypeID());
 					if(itemIDs) {
 						numitems = mysql_num_rows(itemIDs);
-						for(int j=0; j<numitems; j++) {
+						for(int j=0; j<numitems; ++j) {
 							rows = mysql_fetch_row(itemIDs);
 							itemID = atoi(rows[1]);
 							if(itemID != 0) {
@@ -9273,20 +9273,29 @@ void command_bot(Client *c, const Seperator *sep) {
 					if(!br) {
 						br = new BotRaids(mob);
 					}
-					br->AddBotGroup(g);
-					for(int k=0; k<MAX_GROUP_MEMBERS; k++) {
+					for(int k=0; k<MAX_GROUP_MEMBERS; ++k) {
 						if(g->members[k]) {
 							g->members[k]->SetBotRaiding(true);
 							g->members[k]->SetBotRaidID(br->GetBotRaidID());
 						}
 					}
+					br->AddBotGroup(g);
 					g = new Group(mtmp);
 					entity_list.AddGroup(g);
+					if(g->members[0] && !g->members[0]->IsBotRaiding())
+					{
+						for(int n=0; n<MAX_GROUP_MEMBERS; ++n) {
+							if(g->members[n]) {
+								g->members[n]->SetBotRaiding(true);
+								g->members[n]->SetBotRaidID(br->GetBotRaidID());
+							}
+						}
+					}
 					br->AddBotGroup(g);
 					itemIDs = database.GetBotItems(mtmp->GetNPCTypeID());
 					if(itemIDs) {
 						numitems = mysql_num_rows(itemIDs);						
-						for(int j=0; j<numitems; j++) {
+						for(int j=0; j<numitems; ++j) {
 							rows = mysql_fetch_row(itemIDs);
 							itemID = atoi(rows[1]);
 							if(itemID != 0) {
@@ -9656,7 +9665,9 @@ void command_bot(Client *c, const Seperator *sep) {
 				if(c->IsBotRaiding()) {
 					BotRaids *br = entity_list.GetBotRaidByMob(c->CastToMob());
 					if(br) {
+						c->SetOrderBotAttack(true);
 						br->AddBotRaidAggro(c->GetTarget());
+						c->SetOrderBotAttack(false);
 					}
 				}
 				else {
@@ -9664,7 +9675,9 @@ void command_bot(Client *c, const Seperator *sep) {
 					if(g) {
 						for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
 							if(g->members[i] && g->members[i]->IsBot()) {
+								c->SetOrderBotAttack(true);
 								g->members[i]->AddToHateList(c->GetTarget(), 1);
+								c->SetOrderBotAttack(false);
 							}
 						}
 					}
@@ -9910,7 +9923,7 @@ void command_bot(Client *c, const Seperator *sep) {
 					if(g->members[i] && g->members[i]->IsBot()) {
 						g->members[i]->SetTarget(g->members[i]->BotOwner);
 						g->members[i]->Warp(c->GetX(), c->GetY(), c->GetZ());
-						if(g->members[i]->HasPet()) {
+						if(g->members[i]->GetPetID()) {
 							g->members[i]->GetPet()->SetTarget(g->members[i]);
 							g->members[i]->GetPet()->Warp(c->GetX(), c->GetY(), c->GetZ());
 						}
@@ -10381,9 +10394,10 @@ void command_bot(Client *c, const Seperator *sep) {
 				}
 				if(c->GetTarget()->GetPet())
 				{
-					c->GetTarget()->GetPet()->Say_StringID(PET_GETLOST_STRING);
-					c->GetTarget()->GetPet()->Kill();
+					// cast reclaim energy
+					int16 id = c->GetTarget()->GetPetID();
 					c->GetTarget()->SetPetID(0);
+					c->GetTarget()->CastSpell(331, id);
 				}
 			}
 		}
@@ -10843,22 +10857,23 @@ void command_bot(Client *c, const Seperator *sep) {
 
 //Shrink
 	if ((!strcasecmp(sep->arg[1], "shrinkme")) && (c->IsGrouped())) {
- 			Mob *Shrinker;
-			int32 ShrinkerClass = 0;
-			Group *g = c->GetGroup();
+		Mob *Shrinker;
+		int32 ShrinkerClass = 0;
+		Group *g = c->GetGroup();
+
 		if(g) {
 			for(int i=0; i<MAX_GROUP_MEMBERS; i++){
 				if(g->members[i] && g->members[i]->IsBot()) {
 					switch(g->members[i]->GetClass()) {
 						case SHAMAN:
-							  Shrinker = g->members[i];
-							  ShrinkerClass = SHAMAN;
+							Shrinker = g->members[i];
+							ShrinkerClass = SHAMAN;
 							break;
 						case BEASTLORD:
 							if (ShrinkerClass != SHAMAN){
-							  Shrinker = g->members[i];
-							  ShrinkerClass = BEASTLORD;
-						}
+								Shrinker = g->members[i];
+								ShrinkerClass = BEASTLORD;
+							}
 							break;
 						default:
 							break;
@@ -10870,7 +10885,7 @@ void command_bot(Client *c, const Seperator *sep) {
 
 					if (c->GetLevel() >= 15) { 
 						Shrinker->Say("Casting Shrink...");
-						Shrinker->CastToClient()->CastSpell(345, c->GetID(), 1, -1, -1);
+						Shrinker->CastToNPC()->BotRaidSpell(345);
 					}
 					else if (c->GetLevel() <= 14) {
 						Shrinker->Say("I'm not level 15 yet.");
@@ -10881,7 +10896,7 @@ void command_bot(Client *c, const Seperator *sep) {
 
 					if (c->GetLevel() >= 23) {
 						Shrinker->Say("Casting Shrink...");
-						Shrinker->CastToClient()->CastSpell(345, c->GetID(), 1, -1, -1);
+						Shrinker->CastToNPC()->BotRaidSpell(345);
 					}
 					else if (c->GetLevel() <= 22) {
 						Shrinker->Say("I'm not level 23 yet.");
@@ -11719,7 +11734,7 @@ void command_bot(Client *c, const Seperator *sep) {
 			if(target->CanThisClassDoubleAttack())
 				c->Message(15, "This class can double attack.");
 		}
-		if(target->HasPet())
+		if(target->GetPetID())
 			c->Message(15, "I've a pet and its name is %s", target->GetPet()->GetName() );
         return;
 	}
@@ -11799,6 +11814,11 @@ void command_bot(Client *c, const Seperator *sep) {
 						if(g->members[i]) {
 							g->members[i]->SetBotRaidID(br->GetBotRaidID());
 							g->members[i]->SetBotRaiding(true);
+							if(g->members[i]->GetPetID())
+							{
+								g->members[i]->GetPet()->SetBotRaidID(br->GetBotRaidID());
+								g->members[i]->GetPet()->SetBotRaiding(true);
+							}
 						}
 					}
 					br->AddBotGroup(g);
@@ -11997,6 +12017,9 @@ void command_bot(Client *c, const Seperator *sep) {
 				}
 				c->Message(15, "Raid disbanded.");
 			}
+			c->SetBotRaidID(0);
+			c->SetBotRaiding(false);
+			database.CleanBotLeader(c->CharacterID());
 			return;
 		}
 
@@ -12038,10 +12061,16 @@ void command_bot(Client *c, const Seperator *sep) {
 					return;
 				else{
 					BotRaids *brc = entity_list.GetBotRaidByMob(c->CastToMob());
-					if( c->GetTarget() == NULL || !c->GetTarget()->IsAttackAllowed(c) || brc == NULL)
+					if(!brc || !c->GetTarget() || !c->IsAttackAllowed(c->GetTarget()))
+					{
+						if(brc)
+							brc->SetBotMainTarget(NULL);
 						return;
-					else{
+					}
+					else
+					{
 						brc->SetBotMainTarget(c->GetTarget());
+						c->Message(15, "Main target is %s", c->GetTarget()->GetCleanName());
 					}
 				}
 			}

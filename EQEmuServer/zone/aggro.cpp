@@ -884,45 +884,6 @@ bool Mob::CombatRange(Mob* other)
 	else if (other_size_mod < 6.0)
 		other_size_mod = 8.0f;
 
-#ifdef EQBOTS
-
-	if(IsBot()) {
-		if(other->GetRace() == 49 || other->GetRace() == 158 || other->GetRace() == 196) { //For races with a fixed size
-			// have warrior bots get a little closer to the target
-			if(GetClass() == WARRIOR) {
-				size_mod = 45.0f;
-			}
-			else if((GetClass() == PALADIN) || (GetClass() == RANGER) || (GetClass() == SHADOWKNIGHT) || (GetClass() == MONK) || (GetClass() == ROGUE) || (GetClass() == BEASTLORD) || (GetClass() == BERSERKER) || (GetClass() == BARD)) {
-				size_mod = 50.0f;
-			}
-			else {
-				size_mod = 55.0f;
-			}
-		}
-		else {
-			// have warrior bots get a little closer to the target
-			if(GetClass() == WARRIOR) {
-				size_mod = 5.5f;
-			}
-			else if((GetClass() == PALADIN) || (GetClass() == RANGER) || (GetClass() == SHADOWKNIGHT) || (GetClass() == MONK) || (GetClass() == ROGUE) || (GetClass() == BEASTLORD) || (GetClass() == BERSERKER) || (GetClass() == BARD)) {
-				size_mod = 6.0f;
-			}
-			else {
-				size_mod = 7.0f;
-			}
-		}
-	}
-	if(IsPet() && GetOwner()->IsBot()) {
-		if(other->GetRace() == 49 || other->GetRace() == 158 || other->GetRace() == 196) { //For races with a fixed size
-			size_mod = 47.0f;
-		}
-		else {
-			size_mod = 5.7f;
-		}
-	}
-
-#endif //EQBOTS
-
 	if (other_size_mod > size_mod)
 	{
 		size_mod = other_size_mod;

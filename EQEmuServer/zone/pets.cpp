@@ -280,8 +280,8 @@ void Mob::MakePet(int16 spell_id, const char* pettype, const char *petname) {
 
 	if(IsBot()) {
 		npc->SetTaunting(false);
-		npc->BotOwner = this->BotOwner;
-		npc->SetOwnerID(this->GetID());
+		npc->BotOwner = BotOwner;
+		npc->SetOwnerID(GetID());
 		if(IsBotRaiding()) {
 			npc->SetBotRaidID(GetBotRaidID());
 		}
@@ -289,7 +289,7 @@ void Mob::MakePet(int16 spell_id, const char* pettype, const char *petname) {
 
 #endif //EQBOTS
 
-	entity_list.AddNPC(npc);
+	entity_list.AddNPC(npc, true, true);
 	SetPetID(npc->GetID());
 }
 /* Angelox: This is why the pets ghost - pets were being spawned too far away from its npc owner and some

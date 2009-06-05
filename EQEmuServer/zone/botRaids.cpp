@@ -228,7 +228,7 @@ bool BotRaids::GetBotRaidAggro() {
 						gotAggro = true;
 						break;
 					}
-					if(BotRaidGroups[i]->members[j]->HasPet()) {
+					if(BotRaidGroups[i]->members[j]->GetPetID()) {
 						if(BotRaidGroups[i]->members[j]->GetPet()->IsEngaged()) {
 							gotAggro = true;
 							break;
@@ -282,7 +282,7 @@ void BotRaids::SummonRaidBots(Mob *m, bool wipe_hate) {
 						}
 						BotRaidGroups[i]->members[j]->SetTarget(m);
 						BotRaidGroups[i]->members[j]->Warp(m->GetX(), m->GetY(), m->GetZ());
-						if(BotRaidGroups[i]->members[j]->HasPet()) {
+						if(BotRaidGroups[i]->members[j]->GetPetID()) {
 							if(wipe_hate) {
 								BotRaidGroups[i]->members[j]->GetPet()->WipeHateList();
 							}
@@ -345,6 +345,8 @@ void BotRaids::SetBotSecondTank(Mob *stank) {
 void BotRaids::SetBotMainTarget(Mob *target) {
 	if(target && !IsBotRaidMember(target))
 		botraidmaintarget = target;
+	else
+		botraidmaintarget = NULL;
 }
 
 void BotRaids::SetBotSecondTarget(Mob *starget) {
@@ -398,6 +400,11 @@ void BotRaids::GroupAssignTask(Group *g, int iTask, Mob *m) {
 void BotRaids::SplitExp(uint32 exp, Mob* other)
 {
 	if(other->CastToNPC()->MerchantType != 0) // Ensure NPC isn't a merchant
+	{
+		return;
+	}
+
+	if(other->GetOwner() && other->GetOwner()->IsBot()) // Ensure owner isn't a bot
 	{
 		return;
 	}
@@ -475,7 +482,7 @@ void BotRaids::RaidDefendEnraged() {
 					BotRaidGroups[j]->members[i]->Say("Enraged... stopping attacks.");
 					BotRaidGroups[j]->members[i]->SetFollowID(0);
 					BotRaidGroups[j]->members[i]->WipeHateList();
-					if(BotRaidGroups[j]->members[i]->HasPet()) {
+					if(BotRaidGroups[j]->members[i]->GetPetID()) {
 						BotRaidGroups[j]->members[i]->GetPet()->WipeHateList();
 					}
 				}
@@ -597,7 +604,23 @@ void BotRaids::BotRaidInfo(Client *c) {
 					c->Message(15, "Group %i Leader: %s", i+1, BotRaidGroups[i]->members[0]->GetName());
 					for(int j=0; j<MAX_GROUP_MEMBERS; j++) {
 						if(BotRaidGroups[i]->members[j]) {
-							c->Message(15, "%s", BotRaidGroups[i]->members[j]->GetName());
+							int memberClass = BotRaidGroups[i]->members[j]->GetClass();
+							if((memberClass == MONK) || (memberClass == WARRIOR) || (memberClass == BERSERKER) || (memberClass == ROGUE))
+							{
+								c->Message(15, "%s,  hp: %i | %i",
+									BotRaidGroups[i]->members[j]->GetName(),
+									BotRaidGroups[i]->members[j]->GetHP(),
+									BotRaidGroups[i]->members[j]->GetMaxHP());
+							}
+							else
+							{
+								c->Message(15, "%s,  hp: %i | %i  mana: %i | %i",
+									BotRaidGroups[i]->members[j]->GetName(),
+									BotRaidGroups[i]->members[j]->GetHP(),
+									BotRaidGroups[i]->members[j]->GetMaxHP(),
+									BotRaidGroups[i]->members[j]->GetMana(),
+									BotRaidGroups[i]->members[j]->GetMaxMana());
+							}
 						}
 					}
 					c->Message(15, "---------");
@@ -617,12 +640,12 @@ void BotRaids::BotRaidInfo(Client *c) {
 				else {
 					c->Message(15, "A Secondary Tank is not assigned.");
 				}
-				//			if(raidmaintarget) {
-				//				c->Message(15, "Main Raid Target is %s", raidmaintarget->GetCleanName());
-				//			}
-				//			else {
-				//				c->Message(15, "A Main Raid Target is not assigned.");
-				//			}
+				if(botraidmaintarget) {
+					c->Message(15, "Main Raid Target is %s", botraidmaintarget->GetCleanName());
+				}
+				else {
+					c->Message(15, "A Main Raid Target is not assigned.");
+				}
 				//			if(raidsecondtarget) {
 				//				c->Message(15, "Secondary Raid Target is %s", raidsecondtarget->GetCleanName());
 				//			}
