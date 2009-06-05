@@ -2949,7 +2949,7 @@ void Client::Handle_OP_LootRequest(const EQApplicationPacket *app)
 void Client::Handle_OP_LDoNOpen(const EQApplicationPacket *app)
 {
 	Mob * target = GetTarget();
-	if(target->IsNPC())
+	if(target && target->IsNPC())
 		HandleLDoNOpen(target->CastToNPC());
 }
 
@@ -6118,6 +6118,12 @@ void Client::Handle_OP_Mend(const EQApplicationPacket *app)
 
 void Client::Handle_OP_EnvDamage(const EQApplicationPacket *app)
 {
+	if(!ClientFinishedLoading())
+	{
+		SetHP(GetHP()-1);
+		return;
+	}
+
 	if(app->size != sizeof(EnvDamage2_Struct)) {
 		LogFile->write(EQEMuLog::Error, "Received invalid sized OP_EnvDamage: got %d, expected %d", app->size,
 			sizeof(EnvDamage2_Struct));

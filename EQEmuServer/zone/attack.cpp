@@ -1928,6 +1928,9 @@ bool NPC::BotAttackMelee(Mob* other, int Hand, bool bRiposte)
 
 void Client::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill)
 {
+	if(!ClientFinishedLoading())
+		return;
+
 	if(dead)
 		return;	//cant die more than once...
 
@@ -3923,6 +3926,12 @@ bool Mob::CheckBotDoubleAttack(bool tripleAttack) {
 #endif //EQBOTS
 
 void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, const SkillType skill_used, bool &avoidable, const sint8 buffslot, const bool iBuffTic) {
+
+	if(IsClient())
+	{
+		if(!CastToClient()->ClientFinishedLoading())
+			damage = -5;
+	}
 
 	// This method is called with skill_used=ABJURE for Damage Shield damage. 
 	bool FromDamageShield = (skill_used == ABJURE);

@@ -3,6 +3,9 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==06/04/2009==
 Trevius: SoF - Added conversion for bodytypes 66 and 67 so they are now untargetable, invisible and have no showing name as they should be.
 Congdar: Bots - Implemented raid maintarget, updates to magepet and pvp.  Added Sinister Strikes & Strikethrough AAs and several other updates.
+KLS: Pets will no longer gain aggro from their owners before their owners load in. Fixes both a dupe and crash issue.
+KLS: Players will no longer take damage or die before they finish loading into the game.
+KLS: Fixed a crash in /open.
 
 ==06/03/2009==
 KLS: Used Cbodmer old ldon trap code as a base for ldon trap implementation. About 50% of the code for this system was his so I figured he deserves credit too.

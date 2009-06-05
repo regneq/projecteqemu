@@ -245,6 +245,10 @@ bool Mob::CheckWillAggro(Mob *mob) {
 	if(mob->IsClient() && !mob->CastToClient()->ClientFinishedLoading())
 		return false;
 	
+	Mob *ownr = mob->GetOwner();
+	if(ownr && ownr->IsClient() && !ownr->CastToClient()->ClientFinishedLoading())
+		return false;
+
 	float iAggroRange = GetAggroRange();
 	
 	// Check If it's invisible and if we can see invis
