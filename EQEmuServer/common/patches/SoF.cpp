@@ -271,8 +271,8 @@ ENCODE(OP_SendCharInfo) {
 				eq2->equip[k].itemid = 0;
 				eq2->equip[k].color.color = emu->cs_colors[r][k].color;
 			}
-			eq2->secondary = emu->secondary[r];
 			eq2->primary = emu->primary[r];
+			eq2->secondary = emu->secondary[r];
 			eq2->tutorial = emu->tutorial[r]; // was u15
 			eq2->u15 = 0xff;
 			eq2->deity = emu->deity[r];
@@ -740,7 +740,8 @@ ENCODE(OP_ZoneSpawns) {
 		{
 			eq->bodytype = 11;	//non-targetable
 			eq->showname = 0;	//no visible name
-			eq->race = 127;		//invisible
+			eq->race = 127;		//invisible man
+			eq->gender = 0;		//invisible men are gender 0
 		}
 		else
 		{
