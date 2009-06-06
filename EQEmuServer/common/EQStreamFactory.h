@@ -10,7 +10,7 @@
 #include "../common/opcodemgr.h"
 #include "../common/timer.h"
 
-#if !defined(MAIL) && !defined(CHAT)
+#if !defined(MAIL) && !defined(CHAT) && !defined(UCS)
 #define STREAM_TIMEOUT 45000 //in ms
 #else
 #define STREAM_TIMEOUT 135000

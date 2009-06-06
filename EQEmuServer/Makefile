@@ -7,6 +7,7 @@ all:
 	$(MAKE) -C eqlaunch
 	$(MAKE) -C mailserver
 	$(MAKE) -C chatserver
+	$(MAKE) -C ucs
 	$(MAKE) -C utils
 
 clean:
@@ -16,5 +17,6 @@ clean:
 	$(MAKE) -C eqlaunch clean
 	$(MAKE) -C mailserver clean
 	$(MAKE) -C chatserver clean
+	$(MAKE) -C ucs clean
 	$(MAKE) -C utils clean
 
