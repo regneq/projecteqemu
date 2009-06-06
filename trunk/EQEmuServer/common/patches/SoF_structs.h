@@ -133,8 +133,8 @@ struct CharacterSelectEntry_Struct {
 /*0001*/	uint8 haircolor;			//
 /*0000*/	uint8 face;					//
 /*0000*/	CharSelectEquip	equip[9];
-/*0000*/	uint32 secondary;			//
 /*0000*/	uint32 primary;				//
+/*0000*/	uint32 secondary;			//
 /*0000*/	uint8 u15;					// 0xff
 /*0000*/	uint32 deity;				//
 /*0000*/	uint16 zone;				//
