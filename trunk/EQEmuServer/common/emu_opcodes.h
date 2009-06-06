@@ -38,7 +38,7 @@ typedef enum { //EQEmu internal opcodes list
 
 //a preprocessor hack so we dont have to maintain two lists
 #define N(x) x
-#if !defined(LOGIN) && !defined(CHAT) && !defined(MAIL) && !defined(MINILOGIN)
+#if !defined(LOGIN) && !defined(CHAT) && !defined(MAIL) && !defined(UCS) && !defined(MINILOGIN)
 	#include "emu_oplist.h"
 #endif
 #ifdef LOGIN
@@ -47,7 +47,7 @@ typedef enum { //EQEmu internal opcodes list
 #ifdef MINILOGIN
 	#include "../../Private/MiniLogin/login_oplist.h"
 #endif
-#if defined(MAIL) || defined(CHAT)
+#if defined(MAIL) || defined(CHAT) || defined(UCS)
 	#include "mail_oplist.h"
 #endif
 #undef N

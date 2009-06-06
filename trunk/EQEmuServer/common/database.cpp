@@ -536,6 +536,16 @@ bool Database::DeleteCharacter(char *name)
 	}
 
 #if DEBUG >= 5
+	printf(" friends");
+#endif
+	RunQuery(query, MakeAnyLenString(&query, "DELETE from friends WHERE charid='%d'", charid), errbuf, NULL, &affected_rows);
+	if(query)
+	{
+		safe_delete_array(query);
+		query = NULL;
+	}
+
+#if DEBUG >= 5
 	printf(" ptimers");
 #endif
 	RunQuery(query, MakeAnyLenString(&query, "DELETE from timers WHERE char_id='%d'", charid), errbuf, NULL, &affected_rows);

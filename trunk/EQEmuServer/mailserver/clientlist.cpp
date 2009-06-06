@@ -399,6 +399,12 @@ void Clientlist::Process() {
 					char Key[64];
 
 					VARSTRUCT_DECODE_STRING(MailBox, PacketBuffer);
+
+					// Check to see if we are running with a version of world that inserts a Connection Type
+					// indicator at the start of the mailkey, and skip past it if so.
+					if(strlen(PacketBuffer) == 9)
+						PacketBuffer++;
+
 					VARSTRUCT_DECODE_STRING(Key, PacketBuffer);
 
 					string MailBoxString = MailBox, CharacterName;

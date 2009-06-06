@@ -218,6 +218,11 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 				break;
 			}
 
+			string StreamDescription = eqs->Describe();
+
+			if(StreamDescription == "Patch SoF")
+				SoFClient = true;
+
 			LoginInfo_Struct *li=(LoginInfo_Struct *)app->pBuffer;
 
 			// Quagmire - max len for name is 18, pass 15
@@ -601,13 +606,15 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 
 			database.SetMailKey(charid, GetIP(), MailKey);
 
+			char ConnectionType = (SoFClient ? 'S' : 'C');
+
 			EQApplicationPacket *outapp2 = new EQApplicationPacket(OP_SetChatServer);
 			char buffer[112];
-			sprintf(buffer,"%s,%i,%s.%s,%08X",
+			sprintf(buffer,"%s,%i,%s.%s,%c%08X",
 				Config->ChatHost.c_str(),
 				Config->ChatPort,
 				Config->ShortName.c_str(),
-				this->GetCharName(), MailKey
+				this->GetCharName(), ConnectionType, MailKey
 			);
 			outapp2->size=strlen(buffer)+1;
 			outapp2->pBuffer = new uchar[outapp2->size];
@@ -617,11 +624,14 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 
 			outapp2 = new EQApplicationPacket(OP_SetChatServer2);
 
-			sprintf(buffer,"%s,%i,%s.%s,%08X",
+			if(!SoFClient)
+				ConnectionType = 'M';
+
+			sprintf(buffer,"%s,%i,%s.%s,%c%08X",
 				Config->MailHost.c_str(),
 				Config->MailPort,
 				Config->ShortName.c_str(),
-				this->GetCharName(), MailKey
+				this->GetCharName(), ConnectionType, MailKey
 			);
 			outapp2->size=strlen(buffer)+1;
 			outapp2->pBuffer = new uchar[outapp2->size];

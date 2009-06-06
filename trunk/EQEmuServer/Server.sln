@@ -12,6 +12,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "chatserver", "chatserver\ch
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mailserver", "mailserver\mailserver.vcproj", "{43F55C6E-770A-49C9-BBEE-2C8FB7638E40}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ucs", "ucs\ucs.vcproj", "{A49B3EAF-553A-42F6-B343-A1EDEE6EBE4D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -68,6 +70,14 @@ Global
 		{43F55C6E-770A-49C9-BBEE-2C8FB7638E40}.Release|Win32.Build.0 = Release|Win32
 		{43F55C6E-770A-49C9-BBEE-2C8FB7638E40}.ReleaseBots|Win32.ActiveCfg = Release|Win32
 		{43F55C6E-770A-49C9-BBEE-2C8FB7638E40}.ReleaseBots|Win32.Build.0 = Release|Win32
+		{A49B3EAF-553A-42F6-B343-A1EDEE6EBE4D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A49B3EAF-553A-42F6-B343-A1EDEE6EBE4D}.Debug|Win32.Build.0 = Debug|Win32
+		{A49B3EAF-553A-42F6-B343-A1EDEE6EBE4D}.DebugBots|Win32.ActiveCfg = Debug|Win32
+		{A49B3EAF-553A-42F6-B343-A1EDEE6EBE4D}.DebugBots|Win32.Build.0 = Debug|Win32
+		{A49B3EAF-553A-42F6-B343-A1EDEE6EBE4D}.Release|Win32.ActiveCfg = Release|Win32
+		{A49B3EAF-553A-42F6-B343-A1EDEE6EBE4D}.Release|Win32.Build.0 = Release|Win32
+		{A49B3EAF-553A-42F6-B343-A1EDEE6EBE4D}.ReleaseBots|Win32.ActiveCfg = Release|Win32
+		{A49B3EAF-553A-42F6-B343-A1EDEE6EBE4D}.ReleaseBots|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
