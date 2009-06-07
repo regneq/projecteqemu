@@ -1499,7 +1499,7 @@ void ZoneDatabase::RefreshGroupFromDB(Client *c){
 
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_GroupUpdate,sizeof(GroupUpdate2_Struct));
 	GroupUpdate2_Struct* gu = (GroupUpdate2_Struct*)outapp->pBuffer;	
-	gu->action = 7;
+	gu->action = groupActUpdate;
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
 	MYSQL_RES *result;
