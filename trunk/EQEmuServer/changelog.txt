@@ -6,6 +6,7 @@ Trevius: SoF - Added gender to the conversion for bodytypes 66 and 67, which sho
 Derision: New Universal Chat Server combining both mail and chat server functionality.
           Required to support mail, chat and friends/ignore for SoF clients.
           See http://www.eqemulator.net/wiki/wikka.php?wakka=UCS
+WildcardX: Corrected the project file for eqlaunch. This should allow eqlaunch to execute correctly for Windows XP and Windows 2003 Server.
 
 REQUIRED SQL:
 
