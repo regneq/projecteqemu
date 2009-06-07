@@ -227,7 +227,7 @@ bool Group::AddMember(Mob* newmember)
 		EQApplicationPacket* outapp = new EQApplicationPacket(OP_GroupUpdate,sizeof(GroupJoin_Struct));
 		GroupJoin_Struct* gj = (GroupJoin_Struct*) outapp->pBuffer;	
 		strcpy(gj->membername, newmember->GetName());
-		gj->action = 0;
+		gj->action = groupActJoin;
 	
 		int z=1;
 		for(i=0; i<MAX_GROUP_MEMBERS; i++) {
@@ -245,7 +245,14 @@ bool Group::AddMember(Mob* newmember)
 			z++;
 		}
 
-		safe_delete(outapp);			
+		safe_delete(outapp);
+
+		// Need to send this only once when a group is formed with a bot so the client knows it is also the group leader
+		if(GroupCount() == 2) {
+			Mob *TempLeader = GetLeader();
+			SendUpdate(groupActUpdate, TempLeader);
+		}
+
 		return true;
 	}
 	// end of EQoffline
@@ -545,7 +552,7 @@ bool Group::DelMember(Mob* oldmember,bool ignoresender){
 			if (oldmember == GetLeader() && GroupCount() > 2) {
 				EQApplicationPacket* outapp = new EQApplicationPacket(OP_GroupUpdate,sizeof(GroupJoin_Struct));
 				GroupJoin_Struct* gu = (GroupJoin_Struct*) outapp->pBuffer;
-				gu->action = 8;
+				gu->action = groupActMakeLeader;
 				for (uint32 nl = 0; nl < MAX_GROUP_MEMBERS; nl++) {
 					if (members[nl] && members[nl] != oldmember) {
 						strcpy(gu->membername, members[nl]->GetName());
@@ -793,7 +800,9 @@ void Group::DisbandGroup() {
 			database.SetGroupID(members[i]->GetName(), 0, members[i]->CastToClient()->CharacterID());
 			members[i]->CastToClient()->QueuePacket(outapp);
 			SendMarkedNPCsToMember(members[i]->CastToClient(), true);
+			
 		}
+
 		members[i]->SetGrouped(false);
 		members[i] = NULL;
 		membername[i][0] = '\0';

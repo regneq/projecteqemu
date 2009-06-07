@@ -358,7 +358,7 @@ void Client::SendLogoutPackets() {
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_CancelTrade, sizeof(CancelTrade_Struct));
 	CancelTrade_Struct* ct = (CancelTrade_Struct*) outapp->pBuffer;
 	ct->fromid = GetID();
-	ct->action = 7;
+	ct->action = groupActUpdate;
 	FastQueuePacket(&outapp);
 
 	outapp = new EQApplicationPacket(OP_PreLogoutReply);
