@@ -1,5 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+
+==06/07/2009==
+Derision: Check for duplicate lore items when fishing.
+Derision: Fixed a memory leak in fishing/foraging code.
+
 ==06/06/2009==
 Trevius: SoF - Corrected Char select Primary/Secondary slot display order.
 Trevius: SoF - Added gender to the conversion for bodytypes 66 and 67, which should resolve any remaining issues with it.
