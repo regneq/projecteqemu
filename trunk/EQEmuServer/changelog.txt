@@ -7,6 +7,7 @@ Derision: New Universal Chat Server combining both mail and chat server function
           Required to support mail, chat and friends/ignore for SoF clients.
           See http://www.eqemulator.net/wiki/wikka.php?wakka=UCS
 WildcardX: Corrected the project file for eqlaunch. This should allow eqlaunch to execute correctly for Windows XP and Windows 2003 Server.
+WildcardX: Corrected database table definition that created a bug which prevented a BOT from being created.
 
 REQUIRED SQL:
 
@@ -16,6 +17,8 @@ CREATE TABLE `friends` (
   `name` varchar(64) NOT NULL,
   PRIMARY KEY  (`charid`,`type`,`name`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+634_TrapTemplateDefaultValue.sql
 
 ==06/05/2009==
 Derision: SoF - Adventure OPCode updates
