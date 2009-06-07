@@ -678,38 +678,11 @@ void Mob::RogueBackstab(Mob* other, bool min_damage)
 	}
 	
 	if(primaryweapondamage > 0){
-		// formula is (weapon damage * 2) + 1 + (level - 25)/3 + (strength+skill)/100
 		if(level > 25){
-
-#ifdef EQBOTS
-
-			if(IsClient() || IsBot())
-
-#else
-
-			if(IsClient())
-
-#endif //EQBOTS
-
-				max_hit = (((2*primaryweapondamage*GetDamageTable(BACKSTAB)) / 100) + 1 + ((level-25)/3));
-			else
-				max_hit = ((primaryweapondamage*2) + 1 + ((level-25)/3) + ((GetSTR()+GetDEX()+GetSkill(OFFENSE))/20));
+			max_hit = (2*primaryweapondamage) * ((GetDamageTable(BACKSTAB)+GetSkill(BACKSTAB)*100/25)/100) + ((level-25)/3) + 1;
 		}
 		else{
-
-#ifdef EQBOTS
-
-			if(IsClient() || IsBot())
-
-#else
-
-			if(IsClient())
-
-#endif //EQBOTS
-
-				max_hit = (((2*primaryweapondamage*GetDamageTable(BACKSTAB)) / 100) + 1);
-			else
-				max_hit = ((primaryweapondamage*2) + 1 + ((GetSTR()+GetDEX()+GetSkill(OFFENSE))/20));
+			max_hit = (2*primaryweapondamage) * ((GetDamageTable(BACKSTAB)+GetSkill(BACKSTAB)*100/25)/100) + 1;
 		}
 
 		// determine minimum hits
@@ -732,7 +705,6 @@ void Mob::RogueBackstab(Mob* other, bool min_damage)
 			}
 			else
 			{
-				max_hit = (max_hit * ((bs_skill*100)/25)) / 100;
 				if (max_hit < min_hit)
 					max_hit = min_hit;
 

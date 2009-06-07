@@ -306,7 +306,7 @@ void Client::AddItemBonuses(const ItemInst *inst, StatBonuses* newbon, bool isAu
 		else
 			newbon->DoTShielding += item->DotShielding;
 	}
-	else if (item->Worn.Effect>0 && (item->Worn.Type == ET_WornEffect)) { // latent effects
+	if (item->Worn.Effect>0 && (item->Worn.Type == ET_WornEffect)) { // latent effects
 		ApplySpellsBonuses(item->Worn.Effect, item->Worn.Level, newbon);
 	}
 	switch(item->BardType)
