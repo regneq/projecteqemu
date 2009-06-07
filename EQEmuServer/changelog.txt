@@ -10,6 +10,8 @@ WildcardX: Traded static integer values for the appropriate enumeration that def
 WildcardX: A Player grouping with one or more BOTS will now correctly be set as the group leader.
 WildcardX: You can now target your BOT to disband it from the group just as you would a player. This does not call the logic that #bot group remove does, though. Keep using the BOT command for now.
 WildcardX: A group of one Player and a BOT can now request a LDoN Adventure, but doing so will crash the zone.
+KLS: Change to BS formula: moved backstab bonus to damage table. Still might be off but I have another change in mind if so.
+KLS: Fix for bug in client calcbonuses.
 
 ==06/06/2009==
 Trevius: SoF - Corrected Char select Primary/Secondary slot display order.
