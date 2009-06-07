@@ -331,10 +331,18 @@ void Client::GoFish()
 		Message_StringID(MT_Skills, FISHING_SUCCESS);
 		const ItemInst* inst = database.CreateItem(food_item, 1);
 		if(inst != NULL) {
-			PutItemInInventory(SLOT_CURSOR, *inst);
-			SendItemPacket(SLOT_CURSOR,inst,ItemPacketSummonItem);
-			if(RuleB(TaskSystem, EnableTaskSystem))
-				UpdateTasksForItem(ActivityFish, food_id);
+			if(CheckLoreConflict(inst->GetItem())) 
+			{
+				this->Message_StringID(0,DUP_LORE);
+			}
+			else
+			{
+				PutItemInInventory(SLOT_CURSOR, *inst);
+				SendItemPacket(SLOT_CURSOR,inst,ItemPacketSummonItem);
+				if(RuleB(TaskSystem, EnableTaskSystem))
+					UpdateTasksForItem(ActivityFish, food_id);
+			}
+			safe_delete(inst);
 		}
 	}
 	else
@@ -422,13 +430,16 @@ void Client::ForageItem() {
 		if(inst != NULL) {
 			// check to make sure it isn't a foraged lore item
 			if(CheckLoreConflict(inst->GetItem())) 
+			{
 				this->Message_StringID(0,DUP_LORE);
-			else {
-			PushItemOnCursor(*inst);
-			SendItemPacket(SLOT_CURSOR, inst, ItemPacketSummonItem);
-			if(RuleB(TaskSystem, EnableTaskSystem))
-				UpdateTasksForItem(ActivityForage, foragedfood);
 			}
+			else {
+				PushItemOnCursor(*inst);
+				SendItemPacket(SLOT_CURSOR, inst, ItemPacketSummonItem);
+				if(RuleB(TaskSystem, EnableTaskSystem))
+					UpdateTasksForItem(ActivityForage, foragedfood);
+			}
+			safe_delete(inst);
 		}
 		
 	} else {
