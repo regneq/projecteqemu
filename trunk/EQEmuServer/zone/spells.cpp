@@ -268,8 +268,6 @@ bool Mob::CastSpell(int16 spell_id, int16 target_id, int16 slot,
 		if( itm && itm->GetItem()->Classes != 65535 && (itm->GetItem()->Click.Type == ET_EquipClick) && !( itm->GetItem()->Classes & bitmask ) ){
 			// They are casting a spell on an item that requires equipping but shouldn't let them equip it
 			LogFile->write(EQEMuLog::Error, "HACKER: %s (account: %s) attempted to click an equip-only effect on item %s (id: %d) which they shouldn't be able to equip!", CastToClient()->GetCleanName(), CastToClient()->AccountName(), itm->GetItem()->Name, itm->GetItem()->ID);
-
-      //CastToClient()->DeleteItemInInventory(inventory_slot,0,false);
 			database.SetHackerFlag(CastToClient()->AccountName(), CastToClient()->GetCleanName(), "Clicking equip-only item with an invalid class");
 			return(false);
 		}
@@ -2082,7 +2080,7 @@ void Mob::BardPulse(uint16 spell_id, Mob *caster) {
 // even be created depending on the types of mobs involved
 //
 // right now this is just an outline, working on this..
-int Mob::CalcBuffDuration(Mob *caster, Mob *target, int16 spell_id)
+int Mob::CalcBuffDuration(Mob *caster, Mob *target, int16 spell_id, sint32 caster_level_override)
 {
 	int formula, duration;
 
@@ -2103,6 +2101,9 @@ int Mob::CalcBuffDuration(Mob *caster, Mob *target, int16 spell_id)
 
 	//add one tic because we seem to fade at least one tic too soon
 	int castlevel = caster->GetCasterLevel(spell_id);
+	if(caster_level_override > 0)
+		castlevel = caster_level_override;
+
 	int res = 1 + CalcBuffDuration_formula(castlevel, formula, duration);
 	mlog(SPELLS__CASTING, "Spell %d: Casting level %d, formula %d, base_duration %d: result %d",
 		spell_id, castlevel, formula, duration, res);
@@ -2434,14 +2435,17 @@ int Mob::CheckStackConflict(int16 spellid1, int caster_level1, int16 spellid2, i
 // stacking problems, and -2 if this is not a buff
 // if caster is null, the buff will be added with the caster level being
 // the level of the mob
-int Mob::AddBuff(Mob *caster, int16 spell_id, int duration)
+int Mob::AddBuff(Mob *caster, int16 spell_id, int duration, sint32 level_override)
 {
 	
 	int buffslot, ret, caster_level, emptyslot = -1;
 	bool will_overwrite = false;
 	vector<int> overwrite_slots;
 	
-	caster_level = caster ? caster->GetCasterLevel(spell_id) : GetCasterLevel(spell_id);
+	if(level_override > 0)
+		caster_level = level_override;
+	else
+		caster_level = caster ? caster->GetCasterLevel(spell_id) : GetCasterLevel(spell_id);
     
 	if(duration == 0)
 	{
@@ -2559,8 +2563,14 @@ int Mob::AddBuff(Mob *caster, int16 spell_id, int duration)
 	buffs[emptyslot].numhits = spells[spell_id].numhits;
 	buffs[emptyslot].client = caster ? caster->IsClient() : 0;
 
-	if(buffs[emptyslot].ticsremaining > (1+CalcBuffDuration_formula(caster_level, spells[spell_id].buffdurationformula, spells[spell_id].buffduration)))
+	if(level_override > 0)
+	{
 		buffs[emptyslot].UpdateClient = true;
+	}
+	else{ 
+		if(buffs[emptyslot].ticsremaining > (1+CalcBuffDuration_formula(caster_level, spells[spell_id].buffdurationformula, spells[spell_id].buffduration)))
+			buffs[emptyslot].UpdateClient = true;
+	}
 		
 	mlog(SPELLS__BUFFS, "Buff %d added to slot %d with caster level %d", spell_id, emptyslot, caster_level);
 	if(IsPet() && GetOwner() && GetOwner()->IsClient()) {
