@@ -6,6 +6,7 @@
 #include "database.h"
 #include "skills.h"
 #include "../zone/spdat.h"
+#include "item.h"
 
 #include <list>
 
@@ -62,7 +63,7 @@ public:
 	 */
 	ItemInst* CreateItem(uint32 item_id, sint16 charges=0, uint32 aug1=0, uint32 aug2=0, uint32 aug3=0, uint32 aug4=0, uint32 aug5=0);
 	ItemInst* CreateItem(const Item_Struct* item, sint16 charges=0, uint32 aug1=0, uint32 aug2=0, uint32 aug3=0, uint32 aug4=0, uint32 aug5=0);
-	
+	ItemInst* CreateBaseItem(const Item_Struct* item, sint16 charges=0);
 	
 	/*
 	 * Shared Memory crap
@@ -72,7 +73,8 @@ public:
 	inline const int32	GetMaxLootDropID()		{ return lootdrop_max; }
 	inline const int32	GetMaxNPCType()			{ return max_npc_type; }
 	inline const int32  GetMaxNPCFactionList()	{ return npcfactionlist_max; }
-	const Item_Struct*		GetItem(uint32 id);
+	const Item_Struct*	GetItem(uint32 id);
+	const EvolveInfo*	GetEvolveInfo(uint32 loregroup);
 	const NPCFactionList*	GetNPCFactionEntry(uint32 id);
 	int16	GetSkillCap(int8 Class_, SkillType Skill, int8 Level);
 	int8	GetTrainLevel(int8 Class_, SkillType Skill, int8 Level);

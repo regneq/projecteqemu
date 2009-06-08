@@ -367,8 +367,9 @@ void ItemInst::PutAugment(uint8 slot, const ItemInst& augment)
 void ItemInst::PutAugment(SharedDatabase *db, uint8 slot, uint32 item_id)
 {
 	if (item_id != 0) {
-		const ItemInst aug(db, item_id);
-		PutAugment(slot,aug);
+		const ItemInst* aug = db->CreateItem(item_id);
+		PutAugment(slot,*aug);
+		safe_delete(aug);
 	}
 }
 
@@ -1592,4 +1593,230 @@ bool Inventory::CanItemFitInContainer(const Item_Struct *ItemToTry, const Item_S
 	if((Container->BagType == bagTypeBandolier) && (ItemToTry->ItemType != ItemTypeThrowingv2)) return false;
 
 	return true;
+}
+
+// Methods for EvoItemInst, the extended ItemInst for evolving/scaling items
+// Copy constructors
+EvoItemInst::EvoItemInst(const EvoItemInst &copy) {
+	m_use_type=copy.m_use_type;
+	m_item=copy.m_item;
+	m_charges=copy.m_charges;
+	m_price=copy.m_price;
+	m_color=copy.m_color;
+	m_merchantslot=copy.m_merchantslot;
+	m_currentslot=copy.m_currentslot;
+	m_instnodrop=copy.m_instnodrop;
+	m_merchantcount=copy.m_merchantcount;
+	// Copy container contents
+	iter_contents it;
+	for (it=copy.m_contents.begin(); it!=copy.m_contents.end(); it++) {
+		ItemInst* inst_old = it->second;
+		ItemInst* inst_new = NULL;
+		
+		if (inst_old) {
+			inst_new = inst_old->Clone();
+		}
+		
+		if (inst_new != NULL) {
+			m_contents[it->first] = inst_new;
+		}
+	}
+	m_SerialNumber = copy.m_SerialNumber;
+	m_exp = copy.m_exp;
+	m_evolveLvl = copy.m_evolveLvl;
+	m_activated = copy.m_activated;
+	m_evolveInfo = NULL;
+	if (copy.m_scaledItem)
+		m_scaledItem = new Item_Struct(*copy.m_scaledItem);
+	else
+		m_scaledItem = NULL;
+}
+
+EvoItemInst::EvoItemInst(const ItemInst &basecopy) {
+	EvoItemInst* copy = (EvoItemInst*)&basecopy;
+	
+	m_use_type=copy->m_use_type;
+	m_item=copy->m_item;
+	m_charges=copy->m_charges;
+	m_price=copy->m_price;
+	m_color=copy->m_color;
+	m_merchantslot=copy->m_merchantslot;
+	m_currentslot=copy->m_currentslot;
+	m_instnodrop=copy->m_instnodrop;
+	m_merchantcount=copy->m_merchantcount;
+	// Copy container contents
+	iter_contents it;
+	for (it=copy->m_contents.begin(); it!=copy->m_contents.end(); it++) {
+		ItemInst* inst_old = it->second;
+		ItemInst* inst_new = NULL;
+		
+		if (inst_old) {
+			inst_new = inst_old->Clone();
+		}
+		
+		if (inst_new != NULL) {
+			m_contents[it->first] = inst_new;
+		}
+	}
+	m_SerialNumber = copy->m_SerialNumber;
+	m_exp = 0;
+	m_evolveLvl = 0;
+	m_activated = false;
+	m_evolveInfo = NULL;
+	m_scaledItem = NULL;
+}
+
+EvoItemInst::EvoItemInst(const Item_Struct* item, sint16 charges) {
+	m_use_type = ItemUseNormal;
+	m_item = item;
+	m_charges = charges;
+	m_price = 0;
+	m_instnodrop = false;
+	m_merchantslot = 0;
+	if(m_item &&m_item->ItemClass == ItemClassCommon)
+		m_color = m_item->Color;
+	else
+		m_color = 0;
+	m_merchantcount = 1;
+	m_SerialNumber = GetNextItemInstSerialNumber();
+	m_exp = 0;
+	m_evolveLvl = 0;
+	m_activated = false;
+	m_evolveInfo = NULL;
+	m_scaledItem = NULL;
+}
+
+EvoItemInst::~EvoItemInst() {
+	safe_delete(m_scaledItem); 
+}
+
+EvoItemInst* EvoItemInst::Clone() const {
+	return new EvoItemInst(*this);
+}
+
+const Item_Struct* EvoItemInst::GetItem() const {
+	if(!m_scaledItem)
+		return m_item;
+	else
+		return m_scaledItem;
+}
+
+const Item_Struct* EvoItemInst::GetUnscaledItem() const {
+	return m_item;
+}
+
+void EvoItemInst::Initialize(SharedDatabase *db) {
+	// if there's no actual item, don't do anything
+	if(!m_item) return;
+
+	// initialize scaling items
+	if (m_item->CharmFileID != 0) {
+		m_evolveLvl = -1;
+		this->ScaleItem();
+	}
+
+	// initialize evolving items
+	else if ((db) && m_item->LoreGroup >= 1000 && m_item->LoreGroup != -1) {
+		// not complete yet
+	}
+}
+
+void EvoItemInst::ScaleItem() {
+	// free memory from any previously scaled item data
+	safe_delete(m_scaledItem);
+	
+	m_scaledItem = new Item_Struct(*m_item);
+	float Mult = (float)(GetExp())/10000;	// scaling is determined by exp, with 10,000 being full stats
+
+	m_scaledItem->AStr = m_item->AStr*Mult;
+	m_scaledItem->ASta = m_item->ASta*Mult;
+	m_scaledItem->AAgi = m_item->AAgi*Mult;
+	m_scaledItem->ADex = m_item->ADex*Mult;
+	m_scaledItem->AInt = m_item->AInt*Mult;
+	m_scaledItem->AWis = m_item->AWis*Mult;
+	m_scaledItem->ACha = m_item->ACha*Mult;
+
+	m_scaledItem->MR = m_item->MR*Mult;
+	m_scaledItem->PR = m_item->PR*Mult;
+	m_scaledItem->DR = m_item->DR*Mult;
+	m_scaledItem->CR = m_item->CR*Mult;
+	m_scaledItem->FR = m_item->FR*Mult;
+	
+	m_scaledItem->HP = m_item->HP*Mult;
+	m_scaledItem->Mana = m_item->Mana*Mult;
+	m_scaledItem->AC = m_item->AC*Mult;
+
+	m_scaledItem->SkillModValue= m_item->SkillModValue*Mult;
+	m_scaledItem->BaneDmgAmt= m_item->BaneDmgAmt*Mult;
+	m_scaledItem->BardValue= m_item->BardValue*Mult;
+	m_scaledItem->ElemDmgAmt= m_item->ElemDmgAmt*Mult;
+	m_scaledItem->Damage = m_item->Damage*Mult;
+
+	m_scaledItem->CombatEffects= m_item->CombatEffects*Mult;
+	m_scaledItem->Shielding = m_item->Shielding*Mult;
+	m_scaledItem->StunResist = m_item->StunResist*Mult;
+	m_scaledItem->StrikeThrough = m_item->StrikeThrough*Mult;
+	m_scaledItem->ExtraDmgAmt= m_item->ExtraDmgAmt*Mult;
+	m_scaledItem->SpellShield = m_item->SpellShield*Mult;
+	m_scaledItem->Avoidance = m_item->Avoidance*Mult;
+	m_scaledItem->Accuracy= m_item->Accuracy*Mult;
+
+	m_scaledItem->FactionAmt1= m_item->FactionAmt1*Mult;
+	m_scaledItem->FactionAmt2= m_item->FactionAmt2*Mult;
+	m_scaledItem->FactionAmt3= m_item->FactionAmt3*Mult;
+	m_scaledItem->FactionAmt4= m_item->FactionAmt4*Mult;
+
+	m_scaledItem->Endur = m_item->Endur*Mult;
+	m_scaledItem->DotShielding = m_item->DotShielding*Mult;
+	m_scaledItem->Attack = m_item->Attack*Mult;
+	m_scaledItem->Regen = m_item->Regen*Mult;
+	m_scaledItem->ManaRegen = m_item->ManaRegen*Mult;
+	m_scaledItem->EnduranceRegen = m_item->EnduranceRegen*Mult;
+	m_scaledItem->Haste = m_item->Haste*Mult;
+	m_scaledItem->DamageShield = m_item->DamageShield*Mult;
+	
+	
+	m_scaledItem->CharmFileID = 0;	// this stops the client from trying to scale the item itself.
+}
+
+bool EvoItemInst::EvolveOnAllKills() const {
+	return (m_evolveInfo && m_evolveInfo->AllKills);
+}
+
+sint8 EvoItemInst::GetMaxEvolveLvl() const {
+	if(m_evolveInfo)
+		return m_evolveInfo->MaxLvl;
+	else 
+		return 0;
+}
+
+uint32 EvoItemInst::GetKillsNeeded(uint8 currentlevel) {
+	uint32 kills = -1;	// default to -1 (max uint32 value) because this value is usually divided by, so we don't want to ever return zero.
+	if (m_evolveInfo) 
+		if (currentlevel != m_evolveInfo->MaxLvl) 
+			kills = m_evolveInfo->LvlKills[currentlevel-1];
+
+	if (kills == 0)
+		kills = -1;
+
+	return kills;
+}
+
+EvolveInfo::EvolveInfo() {
+	// nothing here yet
+}
+
+EvolveInfo::EvolveInfo(uint32 first, uint8 max, bool allkills, uint32 L2, uint32 L3, uint32 L4, uint32 L5, uint32 L6, uint32 L7, uint32 L8, uint32 L9, uint32 L10) {
+	FirstItem = first;
+	MaxLvl = max;
+	AllKills = allkills;
+	LvlKills[0] = L2;
+	LvlKills[1] = L3;
+	LvlKills[2] = L4;
+	LvlKills[3] = L5;
+	LvlKills[4] = L6;
+	LvlKills[5] = L7;
+	LvlKills[6] = L8;
+	LvlKills[7] = L9;
+	LvlKills[8] = L10;
 }

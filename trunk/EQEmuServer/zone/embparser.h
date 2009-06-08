@@ -26,6 +26,13 @@ typedef enum {
 } questMode;
 
 typedef enum {
+	itemQuestUnloaded = 1,
+	itemQuestScale,
+	itemQuestLore,
+	itemQuestID
+} itemQuestMode;
+
+typedef enum {
 	pQuestLoaded = 1,
 	pQuestUnloaded,
 	pQuestEventCast	// player.pl loaded, has an EVENT_CAST sub
@@ -33,9 +40,10 @@ typedef enum {
 
 struct EventRecord {
 	QuestEventID event;
-	int32 npcid;
+	int32 objid;
 	string data;
 	NPC* npcmob;
+	ItemInst* iteminst;
 	Mob* mob;
 	int32 extradata;
 };
@@ -49,11 +57,14 @@ protected:
 	//if they do not have a quest or the default.
 	map<int32, questMode> hasQuests;	//npcid -> questMode
 	map<std::string, playerQuestMode> playerQuestLoaded; //zone shortname -> playerQuestMode
+	map<std::string, itemQuestMode> itemQuestLoaded;		// package name - > itemQuestMode
 
 	queue<EventRecord> eventQueue;		//for events that happen when perl is in use.
 	bool eventQueueProcessing;
 	
 	void HandleQueue();
+
+	void EventCommon(QuestEventID event, int32 objid, const char * data, NPC* npcmob, ItemInst* iteminst, Mob* mob, int32 extradata);
 	
 	Embperl * perl;
 	//export a symbol table of sorts
@@ -65,9 +76,11 @@ public:
 	//todo, consider making the following two methods static (need to check for perl!=null, first, then)
 	bool isloaded(const char *packagename) const;
 //	bool isdefault(const char *packagename) const { return perl->geti(std::string("$").append(packagename).append("::isdefault").c_str()); }
-	void Event(QuestEventID event, int32 npcid, const char * data, NPC* npcmob, Mob* mob, int32 extradata = 0);
+	void Event(QuestEventID event, int32 itemid, const char * data, NPC* npcmob, Mob* mob, int32 extradata = 0);
+	void Event(QuestEventID event, int32 itemid, const char * data, ItemInst* iteminst, Mob* mob, int32 extradata = 0);
 	int LoadScript(int npcid, const char * zone, Mob* activater=0);
 	int LoadPlayerScript(const char *zone);
+	int LoadItemScript(ItemInst* iteminst, string packagename, itemQuestMode Qtype);
 	
 	//expose a var to the script (probably parallels addvar))
 	//i.e. exportvar("qst1234", "name", "somemob"); 
@@ -85,7 +98,7 @@ public:
 	std::string GetPkgPrefix(int32 npcid, bool defaultOK = true);
 	//call the appropriate perl handler. afterwards, parse and dispatch the command queue
 	//SendCommands("qst1234", "EVENT_SAY") would trigger sub EVENT_SAY() from the qst1234.pl file
-	virtual void SendCommands(const char * pkgprefix, const char *event, int32 npcid, Mob* other, Mob* mob);
+	virtual void SendCommands(const char * pkgprefix, const char *event, int32 npcid, Mob* other, Mob* mob, ItemInst* iteminst);
 	virtual void ReloadQuests();
 	
 	int	HasQuestFile(int32 npcid);

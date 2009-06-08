@@ -36,6 +36,7 @@ EXTERN_C XS(boot_Corpse);
 EXTERN_C XS(boot_EntityList);
 EXTERN_C XS(boot_Group);
 EXTERN_C XS(boot_Raid);
+EXTERN_C XS(boot_QuestItem);
 EXTERN_C XS(boot_PerlPacket);
 /*XS(XS_Client_new);
 //XS(XS_Mob_new);
@@ -84,6 +85,7 @@ EXTERN_C void xs_init(pTHX)
 	newXS(strcpy(buf, "PerlPacket::boot_PerlPacket"), boot_PerlPacket, file);
 	newXS(strcpy(buf, "Group::boot_Group"), boot_Group, file);
 	newXS(strcpy(buf, "Raid::boot_Raid"), boot_Raid, file);
+	newXS(strcpy(buf, "QuestItem::boot_QuestItem"), boot_QuestItem, file);
 #endif
 #endif
 #ifdef EMBPERL_COMMANDS

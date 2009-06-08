@@ -44,6 +44,7 @@ class Client;
 #include "questmgr.h"
 #include <float.h>
 #include <set>
+#include "../common/item_struct.h"
 
 #define CLIENT_TIMEOUT		90000
 #define CLIENT_LD_TIMEOUT	30000 // length of time client stays in zone after LDing
@@ -439,6 +440,7 @@ public:
 	FACTION_VALUE	GetReverseFactionCon(Mob* iOther);
     FACTION_VALUE   GetFactionLevel(int32 char_id, int32 npc_id, int32 p_race, int32 p_class, int32 p_deity, sint32 pFaction, Mob* tnpc);
 	sint32	GetCharacterFactionLevel(sint32 faction_id);
+	sint32  GetModCharacterFactionLevel(sint32 faction_id);
 
 	void	SetFactionLevel(int32 char_id, int32 npc_id, int8 char_class, int8 char_race, int8 char_deity);
 	void    SetFactionLevel2(int32 char_id, sint32 faction_id, int8 char_class, int8 char_race, int8 char_deity, sint32 value);
@@ -829,11 +831,19 @@ public:
 	void DeclineAdventure();
 	void LeaveAdventure();
 
+	int32 GetLDoNWins() { return database.GetAdventureWins(CharacterID()); }
+	int32 GetLDoNLosses() { return database.GetAdventureLosses(CharacterID()); }
+	int32 GetLDoNWinsTheme(int32 t) { return database.GetAdventureWinsTheme(CharacterID(), t); }
+	int32 GetLDoNLossesTheme(int32 t) { return database.GetAdventureLossesTheme(CharacterID(), t); }
+
 	void HandleLDoNOpen(NPC *target);
 	void HandleLDoNSenseTraps(NPC *target, int16 skill, int8 type);
 	void HandleLDoNDisarm(NPC *target, int16 skill, int8 type);
 	void HandleLDoNPickLock(NPC *target, int16 skill, int8 type);
 	int	LDoNChest_SkillCheck(NPC *target, int skill);
+
+	void CalcItemScale();
+	bool CalcItemScale(int32 slot_x, int32 slot_y);
 
 protected:
 	friend class Mob;
@@ -1005,6 +1015,7 @@ private:
 	Timer	scanarea_timer;
 #endif
 	Timer	tribute_timer;
+	Timer	charm_update_timer;
 
 #ifdef PACKET_UPDATE_MANAGER
 	UpdateManager update_manager;

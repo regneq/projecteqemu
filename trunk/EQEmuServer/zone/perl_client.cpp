@@ -3750,6 +3750,139 @@ XS(XS_Client_RefundAA) {
 	XSRETURN_EMPTY;
 }
 
+XS(XS_Client_GetModCharacterFactionLevel); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_GetModCharacterFactionLevel)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Client::GetModCharacterFactionLevel(THIS, faction_id)");
+	{
+		Client *	THIS;
+		sint32		RETVAL;
+		dXSTARG;
+		sint32		faction_id = (sint32)SvIV(ST(1));
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetModCharacterFactionLevel(faction_id);
+		XSprePUSH; PUSHi((IV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Client_GetLDoNWins); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_GetLDoNWins)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Client::GetLDoNWins(THIS)");
+	{
+		Client *		THIS;
+		int32		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetLDoNWins();
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Client_GetLDoNLosses); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_GetLDoNLosses)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Client::GetLDoNLosses(THIS)");
+	{
+		Client *		THIS;
+		int32		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetLDoNLosses();
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Client_GetLDoNWinsTheme); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_GetLDoNWinsTheme)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Client::GetLDoNWinsTheme(THIS, theme)");
+	{
+		Client *		THIS;
+		int32		RETVAL;
+		dXSTARG;
+		sint32 theme_out = (sint32)SvIV(ST(1));
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetLDoNWinsTheme(theme_out);
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Client_GetLDoNLossesTheme); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_GetLDoNLossesTheme)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Client::GetLDoNLossesTheme(THIS, theme)");
+	{
+		Client *		THIS;
+		int32		RETVAL;
+		dXSTARG;
+		sint32 theme_out = (sint32)SvIV(ST(1));
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetLDoNLossesTheme(theme_out);
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -3909,6 +4042,11 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "GetSpentAA"), XS_Client_GetSpentAA, file, "$$");
 		newXSproto(strcpy(buf, "AddAAPoints"), XS_Client_AddAAPoints, file, "$$");
 		newXSproto(strcpy(buf, "RefundAA"), XS_Client_RefundAA, file, "$$");
+		newXSproto(strcpy(buf, "GetModCharacterFactionLevel"), XS_Client_GetModCharacterFactionLevel, file, "$$");
+		newXSproto(strcpy(buf, "GetLDoNWins"), XS_Client_GetLDoNWins, file, "$");
+		newXSproto(strcpy(buf, "GetLDoNLosses"), XS_Client_GetLDoNLosses, file, "$");
+		newXSproto(strcpy(buf, "GetLDoNWinsTheme"), XS_Client_GetLDoNWinsTheme, file, "$$");
+		newXSproto(strcpy(buf, "GetLDoNLossesTheme"), XS_Client_GetLDoNLossesTheme, file, "$$");
 		
 	XSRETURN_YES;
 }

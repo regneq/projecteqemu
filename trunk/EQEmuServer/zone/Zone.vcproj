@@ -4,6 +4,7 @@
 	Version="9.00"
 	Name="Zone"
 	ProjectGUID="{197A661B-390A-46D6-94FC-E99F93280695}"
+	RootNamespace="Zone"
 	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
@@ -572,6 +573,10 @@
 			</File>
 			<File
 				RelativePath=".\perl_PlayerCorpse.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\perl_questitem.cpp"
 				>
 			</File>
 			<File

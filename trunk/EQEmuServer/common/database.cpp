@@ -3878,3 +3878,161 @@ void Database::AdventureSetAssassinateKills(int32 adv_id, int32 kills)
 		safe_delete_array(query);
 	}
 }
+
+int32 Database::GetAdventureWins(int32 char_id)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+	int32 ret_val = 0;
+
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT `guk_wins`, `mir_wins`, "
+		"`mmc_wins`, `ruj_wins`, `tak_wins` FROM `adventure_stats` WHERE player_id=%u", 
+		char_id), errbuf, &result))
+	{
+		safe_delete_array(query);
+		while((row = mysql_fetch_row(result)) != NULL)
+		{
+			ret_val = atoi(row[0]) + atoi(row[1]) + atoi(row[2]) + atoi(row[3]) + atoi(row[4]);
+		}
+		mysql_free_result(result);
+		return ret_val;
+	}
+	else 
+	{
+		safe_delete_array(query);
+		return ret_val;
+	}
+}
+
+int32 Database::GetAdventureLosses(int32 char_id)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+	int32 ret_val = 0;
+
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT `guk_losses`, `mir_losses`, "
+		"`mmc_losses`, `ruj_losses`, `tak_losses` FROM `adventure_stats` WHERE player_id=%u", 
+		char_id), errbuf, &result))
+	{
+		safe_delete_array(query);
+		while((row = mysql_fetch_row(result)) != NULL)
+		{
+			ret_val = atoi(row[0]) + atoi(row[1]) + atoi(row[2]) + atoi(row[3]) + atoi(row[4]);
+		}
+		mysql_free_result(result);
+		printf("ret val: %u\n", ret_val);
+		return ret_val;
+	}
+	else 
+	{
+		printf("query error\n%s\n%s\n", query, errbuf);
+		safe_delete_array(query);
+		return ret_val;
+	}
+}
+
+int32 Database::GetAdventureWinsTheme(int32 char_id, int32 theme)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+	int32 ret_val = 0;
+
+	std::string theme_str;
+
+	switch(theme)
+	{
+	case 1:
+		theme_str = "guk";
+		break;
+	case 2:
+		theme_str = "mir";
+		break;
+	case 3:
+		theme_str = "mmc";
+		break;
+	case 4:
+		theme_str = "ruj";
+		break;
+	case 5:
+		theme_str = "tak";
+		break;
+	default:
+		return 0;
+		break;
+	}
+
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT `%s_wins` FROM "
+		"`adventure_stats` WHERE player_id=%u", 
+		theme_str.c_str(), char_id), errbuf, &result))
+	{
+		safe_delete_array(query);
+		while((row = mysql_fetch_row(result)) != NULL)
+		{
+			ret_val = atoi(row[0]);
+		}
+		mysql_free_result(result);
+		return ret_val;
+	}
+	else 
+	{
+		safe_delete_array(query);
+		return ret_val;
+	}
+}
+
+int32 Database::GetAdventureLossesTheme(int32 char_id, int32 theme)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+	int32 ret_val = 0;
+
+	std::string theme_str;
+
+	switch(theme)
+	{
+	case 1:
+		theme_str = "guk";
+		break;
+	case 2:
+		theme_str = "mir";
+		break;
+	case 3:
+		theme_str = "mmc";
+		break;
+	case 4:
+		theme_str = "ruj";
+		break;
+	case 5:
+		theme_str = "tak";
+		break;
+	default:
+		return 0;
+		break;
+	}
+
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT `%s_losses` FROM "
+		"`adventure_stats` WHERE player_id=%u", 
+		theme_str.c_str(), char_id), errbuf, &result))
+	{
+		safe_delete_array(query);
+		while((row = mysql_fetch_row(result)) != NULL)
+		{
+			ret_val = atoi(row[0]);
+		}
+		mysql_free_result(result);
+		return ret_val;
+	}
+	else 
+	{
+		safe_delete_array(query);
+		return ret_val;
+	}
+}

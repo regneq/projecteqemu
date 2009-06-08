@@ -575,6 +575,42 @@ XS(XS_Group_GetID)
 	XSRETURN(1);
 }
 
+XS(XS_Group_GetMember);
+XS(XS_Group_GetMember) 
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Group::GetMember(THIS, index)");
+	{
+		Group * THIS;
+		Mob* member;
+		Client*	RETVAL = NULL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Group")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Group *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Group");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		int index = (int)SvUV(ST(1));
+		if (index < 0 || index > 5) 
+			RETVAL = NULL;
+		else {
+			member = THIS->members[index];
+			if (member != NULL)
+				RETVAL = member->CastToClient();
+		}
+
+		ST(0) = sv_newmortal();
+		sv_setref_pv(ST(0), "Client", (void*)RETVAL);
+	}
+	XSRETURN(1);
+}
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -613,6 +649,7 @@ XS(boot_Group)
 		newXSproto(strcpy(buf, "GetHighestLevel"), XS_Group_GetHighestLevel, file, "$");
 		newXSproto(strcpy(buf, "TeleportGroup"), XS_Group_TeleportGroup, file, "$$$$$$$");
 		newXSproto(strcpy(buf, "GetID"), XS_Group_GetID, file, "$");
+		newXSproto(strcpy(buf, "GetMember"), XS_Group_GetMember, file, "$");
 	XSRETURN_YES;
 }
 

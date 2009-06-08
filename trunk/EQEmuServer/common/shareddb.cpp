@@ -394,10 +394,11 @@ bool SharedDatabase::SetStartingItems(PlayerProfile_Struct* pp, Inventory* inv, 
 		myitem = GetItem(itemid);
 		if(!myitem)
 			continue;
-		ItemInst myinst(myitem, charges);
+		ItemInst* myinst = CreateBaseItem(myitem, charges);	
 		if(slot < 0)
 			slot = inv->FindFreeSlot(0,0);
-		inv->PutItem(slot, myinst);
+		inv->PutItem(slot, *myinst);
+		safe_delete(myinst);
 	}
 
 	if(result) mysql_free_result(result);
@@ -442,15 +443,16 @@ bool SharedDatabase::GetSharedBank(uint32 id, Inventory* inv, bool is_charid) {
 			if (item) {
 				sint16 put_slot_id = SLOT_INVALID;
 				
-				ItemInst inst(item, charges);
+				ItemInst* inst = CreateBaseItem(item, charges);
 				if (item->ItemClass == ItemClassCommon) {
 					for(int i=0;i<5;i++) {
 						if (aug[i]) {
-							inst.PutAugment(this, i, aug[i]);
+							inst->PutAugment(this, i, aug[i]);
 						}
 					}
 				}
-				put_slot_id = inv->PutItem(slot_id, inst);
+				put_slot_id = inv->PutItem(slot_id, *inst);
+				safe_delete(inst);
 				
 				// Save ptr to item in inventory
 				if (put_slot_id == SLOT_INVALID) {
@@ -511,28 +513,30 @@ bool SharedDatabase::GetInventory(uint32 char_id, Inventory* inv) {
 			if (item) {
 				sint16 put_slot_id = SLOT_INVALID;
 				
-				ItemInst inst(item, charges);
-				if (instnodrop || (slot_id >= 0 && slot_id <= 21 && inst.GetItem()->Attuneable))
-						inst.SetInstNoDrop(true);
+				ItemInst* inst = CreateBaseItem(item, charges);
+				
+				if (instnodrop || (slot_id >= 0 && slot_id <= 21 && inst->GetItem()->Attuneable))
+						inst->SetInstNoDrop(true);
 				if (color > 0)
-					inst.SetColor(color);
+					inst->SetColor(color);
 				if(charges==255)
-					inst.SetCharges(-1);
+					inst->SetCharges(-1);
 				else
-					inst.SetCharges(charges);
+					inst->SetCharges(charges);
 
 				if (item->ItemClass == ItemClassCommon) {
 					for(int i=0;i<5;i++) {
 						if (aug[i]) {
-							inst.PutAugment(this, i, aug[i]);
+							inst->PutAugment(this, i, aug[i]);
 						}
 					}
 				}
 
 				if (slot_id>=8000 && slot_id <= 8999)
-					put_slot_id = inv->PushCursor(inst);
+					put_slot_id = inv->PushCursor(*inst);
 				else 
-					put_slot_id = inv->PutItem(slot_id, inst);
+					put_slot_id = inv->PutItem(slot_id, *inst);
+				safe_delete(inst);
 				
 				// Save ptr to item in inventory
 				if (put_slot_id == SLOT_INVALID) {
@@ -590,23 +594,25 @@ bool SharedDatabase::GetInventory(uint32 account_id, char* name, Inventory* inv)
 			if(!item)
 				continue;
 
-			ItemInst inst(item, charges);
-			inst.SetInstNoDrop(instnodrop);
+			ItemInst* inst = CreateBaseItem(item, charges);			
+			inst->SetInstNoDrop(instnodrop);
+
 			if (color > 0)
-				inst.SetColor(color);
-			inst.SetCharges(charges);
+				inst->SetColor(color);
+			inst->SetCharges(charges);
 
 			if (item->ItemClass == ItemClassCommon) {
 				for(int i=0;i<5;i++) {
 					if (aug[i]) {
-						inst.PutAugment(this, i, aug[i]);
+						inst->PutAugment(this, i, aug[i]);
 					}
 				}
 			}
 			if (slot_id>=8000 && slot_id <= 8999)
-				put_slot_id = inv->PushCursor(inst);
+				put_slot_id = inv->PushCursor(*inst);
 			else 
-				put_slot_id = inv->PutItem(slot_id, inst);
+				put_slot_id = inv->PutItem(slot_id, *inst);
+			safe_delete(inst);
 			
 			// Save ptr to item in inventory
 			if (put_slot_id == SLOT_INVALID) {
@@ -1241,7 +1247,7 @@ ItemInst* SharedDatabase::CreateItem(uint32 item_id, sint16 charges, uint32 aug1
 	ItemInst* inst = NULL;
 	item = GetItem(item_id);
 	if (item) {
-		inst = new ItemInst(item, charges);
+		inst = CreateBaseItem(item, charges);
 		inst->PutAugment(this, 0, aug1);
 		inst->PutAugment(this, 1, aug2);
 		inst->PutAugment(this, 2, aug3);
@@ -1261,7 +1267,7 @@ ItemInst* SharedDatabase::CreateItem(const Item_Struct* item, sint16 charges, ui
 	if (item) {
 		if (charges == 0)
 			charges = item->MaxCharges;
-		inst = new ItemInst(item, charges);
+		inst = CreateBaseItem(item, charges);
 		inst->PutAugment(this, 0, aug1);
 		inst->PutAugment(this, 1, aug2);
 		inst->PutAugment(this, 2, aug3);
@@ -1270,6 +1276,22 @@ ItemInst* SharedDatabase::CreateItem(const Item_Struct* item, sint16 charges, ui
 		inst->SetCharges(charges);
 	}
 	
+	return inst;
+}
+
+ItemInst* SharedDatabase::CreateBaseItem(const Item_Struct* item, sint16 charges) {
+	ItemInst* inst = NULL;
+	if (item) {
+		if (charges == 0)
+			charges = item->MaxCharges;
+
+		if(item->CharmFileID != 0 || (item->LoreGroup >= 1000 && item->LoreGroup != -1)) {
+			inst = new EvoItemInst(item, charges);
+			((EvoItemInst*)inst)->Initialize(this);
+		}
+		else 
+			inst = new ItemInst(item, charges);		
+	}
 	return inst;
 }
 
@@ -1489,3 +1511,6 @@ void SharedDatabase::DBLoadDamageShieldTypes(SPDat_Spell_Struct* sp, sint32 iMax
 	}
 }
 
+const EvolveInfo* SharedDatabase::GetEvolveInfo(uint32 loregroup) {
+	return NULL;	// nothing here for now... database and/or sharemem pulls later
+}
