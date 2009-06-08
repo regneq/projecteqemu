@@ -26,6 +26,7 @@ Copyright (C) 2001-2004  EQEMu Development Team (http://eqemu.org)
 #include "../common/bodytypes.h"
 #include "../common/classes.h"
 #include "../common/rulesys.h"
+#include "embparser.h"
 #include <math.h>
 #include <assert.h>
 #ifndef WIN32
@@ -1175,4 +1176,81 @@ void NPC::CalcItemBonuses(StatBonuses *newbon)
 		}
 	
 	}
+}
+
+void Client::CalcItemScale()
+{
+	bool changed = false;
+
+	if(CalcItemScale(0, 21))
+		changed = true;
+
+	if(CalcItemScale(22, 30))
+		changed = true;
+
+	if(CalcItemScale(251, 341))
+		changed = true;
+
+	if(CalcItemScale(400, 405))
+		changed = true;
+
+	if(changed)
+	{
+		CalcBonuses();
+	}
+}
+
+bool Client::CalcItemScale(int32 slot_x, int32 slot_y)
+{
+	bool changed = false;
+	int i;
+	for (i = slot_x; i < slot_y; i++) {
+		const ItemInst* inst = m_inv[i];
+		if(inst == 0)
+			continue;
+		
+		bool update_slot = false;
+		if(inst->IsScaling())
+		{
+			EvoItemInst* e_inst = (EvoItemInst*)inst;
+			uint16 oldexp = e_inst->GetExp();
+#ifdef EMBPERL
+			((PerlembParser *)parse)->Event(EVENT_SCALE_CALC, e_inst->GetID(), "", e_inst, this);
+#endif
+			if (e_inst->GetExp() != oldexp) {	// if the scaling factor changed, rescale the item and update the client
+				e_inst->ScaleItem();
+				changed = true;
+				update_slot = true;
+			}
+		}
+
+		//iterate all augments
+		for(int x = 0; x < MAX_AUGMENT_SLOTS; ++x) 
+		{
+			ItemInst * a_inst = inst->GetAugment(x);
+			if(!a_inst)
+				continue;
+
+			if(a_inst->IsScaling())
+			{
+				EvoItemInst* e_inst = (EvoItemInst*)a_inst;
+				uint16 oldexp = e_inst->GetExp();
+#ifdef EMBPERL
+				((PerlembParser *)parse)->Event(EVENT_SCALE_CALC, e_inst->GetID(), "", e_inst, this);
+#endif
+				if (e_inst->GetExp() != oldexp) 
+				{
+					e_inst->ScaleItem();
+					changed = true;
+					update_slot = true;
+				}
+			}
+		}
+
+		if(update_slot)
+		{
+			SendItemPacket(i, inst, ItemPacketCharmUpdate);
+		}
+	}
+	return changed;
 }

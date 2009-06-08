@@ -130,15 +130,12 @@ bool Client::Process() {
 			}
 			return(false);
 		}
-		/*Adventure Timer
-		if((p_timers.Get(pTimerAdventureTimer) && p_timers.Expired(&database, pTimerAdventureTimer,false))){
-			p_timers.Disable(pTimerAdventureTimer);
-			SendAdventureFinish(0,0);
+		
+		if(charm_update_timer.Check())
+		{
+			CalcItemScale();
 		}
-		else if(p_timers.Get(pTimerStartAdventureTimer) && p_timers.Expired(&database, pTimerStartAdventureTimer,false)){
-			p_timers.Disable(pTimerStartAdventureTimer);
-			SendAdventureFinish(0,0);
-		}*/
+
 		if(TaskPeriodic_Timer.Check() && taskstate)
 			taskstate->TaskPeriodicChecks(this);
 

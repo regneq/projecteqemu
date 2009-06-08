@@ -41,7 +41,7 @@ SvPV_nolen == string with no length restriction
 */
 
 PerlXSParser::PerlXSParser() : PerlembParser() {
-	//we cannot rely on PerlembParser to call the rigth map_funs because
+	//we cannot rely on PerlembParser to call the right map_funs because
 	//our virtual table is not set up until after we call them, so we need to move
 	//the call to ReloadQuests out of the constructor.
 }
@@ -83,22 +83,25 @@ void PerlXSParser::map_funs() {
 
 	"package Raid;"
 	"&boot_Raid;"		//load our Raid XS
+
+	"package QuestItem;"
+	"&boot_QuestItem;"	// load quest item XS
 #endif
 	"package main;"
 	"}"
 	);//eval
 }
 
-void PerlXSParser::SendCommands(const char * pkgprefix, const char *event, int32 npcid, Mob* other, Mob* mob)
+void PerlXSParser::SendCommands(const char * pkgprefix, const char *event, int32 npcid, Mob* other, Mob* mob, ItemInst* iteminst)
 {
 	if(!perl)
 		return;
 	_ZP(PerlXSParser_SendCommands);
 
 	if(mob && mob->IsClient())
-		quest_manager.StartQuest(other, mob->CastToClient());
+		quest_manager.StartQuest(other, mob->CastToClient(), iteminst);
 	else
-		quest_manager.StartQuest(other, NULL);
+		quest_manager.StartQuest(other, NULL, NULL);
 
 	try {
 
@@ -125,6 +128,14 @@ void PerlXSParser::SendCommands(const char * pkgprefix, const char *event, int32
 			snprintf(namebuf, 64, "%s::npc", pkgprefix);
 			SV *npc = get_sv(namebuf, true);
 			sv_setref_pv(npc, "NPC", curn);
+		}
+
+		//only export QuestItem if it's an item quest
+		if(iteminst) {
+			ItemInst* curi = quest_manager.GetQuestItem();
+			snprintf(namebuf, 64, "%s::questitem", pkgprefix);
+			SV *questitem = get_sv(namebuf, true);
+			sv_setref_pv(questitem, "QuestItem", curi);
 		}
 
 		snprintf(namebuf, 64, "%s::entity_list", pkgprefix);
@@ -200,6 +211,24 @@ XS(XS_EntityList_new)
 		if(RETVAL)
 			sv_setref_pv(ST(0), "EntityList", (void*)RETVAL);
 	}
+	XSRETURN(1);
+}
+
+//Any creation of new quest items gets the current quest item
+XS(XS_QuestItem_new);
+XS(XS_QuestItem_new) 
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: QuestItem::new()");
+
+	ItemInst* RETVAL;
+
+	RETVAL = quest_manager.GetQuestItem();
+	ST(0) = sv_newmortal();
+	if(RETVAL)
+		sv_setref_pv(ST(0), "QuestItem", (void*)RETVAL);
+
 	XSRETURN(1);
 }
 

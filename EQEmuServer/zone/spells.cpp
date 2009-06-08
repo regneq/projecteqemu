@@ -1047,7 +1047,7 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16
 		if( ((PerlembParser*)parse)->PlayerHasQuestSub("EVENT_CAST") ) {
 			char temp[64];
             sprintf(temp, "%d", spell_id);
-			((PerlembParser*)parse)->Event(EVENT_CAST, 0, temp, NULL, this->CastToClient());
+			((PerlembParser*)parse)->Event(EVENT_CAST, 0, temp, (NPC*)NULL, this->CastToClient());
 		}
 	#endif
 	}

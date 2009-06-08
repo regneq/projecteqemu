@@ -7909,6 +7909,8 @@ void Client::CompleteConnect()
 			}
 		}
 	}
+
+	CalcItemScale();
 }
 
 void Client::Handle_OP_KeyRing(const EQApplicationPacket *app) {

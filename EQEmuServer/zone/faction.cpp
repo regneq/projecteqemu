@@ -633,6 +633,18 @@ sint32 Client::GetCharacterFactionLevel(sint32 faction_id)
 	return(res->second);
 }
 
+// returns the character's faction level, adjusted for racial, class, and deity modifiers
+sint32 Client::GetModCharacterFactionLevel(sint32 faction_id) {
+	sint32 Modded = GetCharacterFactionLevel(faction_id);
+	FactionMods fm;
+	if(database.GetFactionData(&fm,GetClass(),GetRace(),GetDeity(),faction_id)) 
+		Modded += fm.base + fm.class_mod + fm.race_mod + fm.deity_mod;
+	if (Modded > MAX_FACTION)
+		Modded = MAX_FACTION;
+
+	return Modded;
+}
+
 bool ZoneDatabase::GetFactionData(FactionMods* fm, uint32 class_mod, uint32 race_mod, uint32 deity_mod, sint32 faction_id) {
 	if (faction_id <= 0 || faction_id > (sint32) max_faction)
 		return false;	

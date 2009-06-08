@@ -1,5 +1,13 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/08/2009==
+KLS(realityincarnate): Charms: Added charm item scaling with scriping support and initial work on evolving items.
+KLS(realityincarnate): Added perl method $client->GetModCharacterFactionLevel(FactionID)
+KLS(realityincarnate): Added perl method $group->GetMember(index)
+KLS: Added perl method $client->GetLDoNWins()
+KLS: Added perl method $client->GetLDoNLosses()
+KLS: Added perl method $client->GetLDoNWinsTheme(theme 1-5)
+KLS: Added perl method $client->GetLDoNLossesTheme(theme 1-5)
 
 ==06/07/2009==
 NOTE (WildcardX): This version of the server code is a little dangerous for BOT enabled servers. I do not recommend using this revision for BOT enabled servers. Most of the existing BOT code is going to be re-implemented as a "BOT" object in the server code so until I complete this architecture change the BOT code may become somewhat unstable. I apologize for the inconvience but this is necessary to allow the server code for the BOTs to be more flexible and extensible than it is now.

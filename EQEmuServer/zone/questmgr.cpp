@@ -157,10 +157,11 @@ void QuestManager::Process() {
 	}
 }
 
-void QuestManager::StartQuest(Mob *_owner, Client *_initiator) {
+void QuestManager::StartQuest(Mob *_owner, Client *_initiator, ItemInst* _questitem) {
 	quest_mutex.lock();
 	owner = _owner;
 	initiator = _initiator;
+	questitem = _questitem;
 	depop_npc = false;
 }
 

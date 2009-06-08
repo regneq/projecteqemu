@@ -32,7 +32,7 @@ public:
 	PerlXSParser();
 //	~PerlXSParser();
 
-	virtual void SendCommands(const char * pkgprefix, const char *event, int32 npcid, Mob* other, Mob* mob);
+	virtual void SendCommands(const char * pkgprefix, const char *event, int32 npcid, Mob* other, Mob* mob, ItemInst* iteminst);
 	
 protected:
 	void map_funs();
