@@ -774,28 +774,27 @@ sed -e 's/_t//g' -e 's/MAX_AA/MAX_PP_AA_ARRAY/g' \
 
 struct PlayerProfile_Struct //23576 Octets
 {
-/*00000*/ uint32  checksum;           //
+/*00000*/ uint32  checksum;				//
 //BEGIN SUB-STRUCT used for shrouding stuff...
-/*00004*/ uint32  gender;             // Player Gender - 0 Male, 1 Female
-/*00008*/ uint32  race;               // Player race
-/*00012*/ uint32  class_;             // Player class
-/*00016*/ uint8  unknown00016[40];       // #### uint32  unknown00016;   in Titanium ####uint8[40]
-/*00056*/ uint8   level;              // Level of player
-/*00057*/ uint8   level1;             // Level of player (again?)
-/*00058*/ uint8   unknown00022[2];    // ***Placeholder
-/*00060*/ BindStruct binds[5];          // Bind points (primary is first)
-/*00160*/ uint32  deity;              // deity
-/*00164*/ uint32  intoxication;       // Alcohol level (in ticks till sober?)
+/*00004*/ uint32  gender;				// Player Gender - 0 Male, 1 Female
+/*00008*/ uint32  race;					// Player race
+/*00012*/ uint32  class_;				// Player class
+/*00016*/ uint8  unknown00016[40];		// #### uint32  unknown00016;   in Titanium ####uint8[40]
+/*00056*/ uint8   level;				// Level of player
+/*00057*/ uint8   level1;				// Level of player (again?)
+/*00058*/ uint8   unknown00022[2];		// ***Placeholder
+/*00060*/ BindStruct binds[5];			// Bind points (primary is first)
+/*00160*/ uint32  deity;				// deity
+/*00164*/ uint32  intoxication;			// Alcohol level (in ticks till sober?)
 /*00168*/ uint32  spellSlotRefresh[MAX_PP_MEMSPELL]; // Refresh time (millis) - 4 Octets Each
 /*00208*/ uint32  abilitySlotRefresh;
-/*00212*/ uint8   haircolor;          // Player hair color
-/*00213*/ uint8   beardcolor;         // Player beard color
-/*00214*/ uint8   eyecolor1;          // Player left eye color
-/*00215*/ uint8   eyecolor2;          // Player right eye color
-/*00216*/ uint8   hairstyle;          // Player hair style
-/*00217*/ uint8   beard;              // Player beard type
-/*00218*/ uint8 unknown00178[10]; //[10]14 on Live?
-//*00228*/ uint32  item_material[9];   // Item texture/material of worn items
+/*00212*/ uint8   haircolor;			// Player hair color
+/*00213*/ uint8   beardcolor;			// Player beard color
+/*00214*/ uint8   eyecolor1;			// Player left eye color
+/*00215*/ uint8   eyecolor2;			// Player right eye color
+/*00216*/ uint8   hairstyle;			// Player hair style
+/*00217*/ uint8   beard;				// Player beard type
+/*00218*/ uint8 unknown00178[10];		//[10]14 on Live?
 /*00228*/ union
 	 {
 		struct
@@ -812,54 +811,54 @@ struct PlayerProfile_Struct //23576 Octets
 		} equip;
 		/*00228*/ EquipStruct equipment[9]; //Live Shows [108] for this part
 	 };
-/*00336*/ uint8 unknown00224[156]; // Live Shows [160]
-/*00496*/ Color_Struct item_tint[9];    // RR GG BB 00
-/*00544*/ AA_Array  aa_array[MAX_PP_AA_ARRAY];   // [3600] AAs 12 bytes each
-/*04132*/ uint32  points;             // Unspent Practice points - RELOCATED???
-/*04136*/ uint32  mana;               // Current mana
-/*04140*/ uint32  cur_hp;              // Current HP without +HP equipment
-/*04144*/ uint32  STR;                // Strength - 6e 00 00 00 - 110
-/*04148*/ uint32  STA;                // Stamina - 73 00 00 00 - 115
-/*04152*/ uint32  CHA;                // Charisma - 37 00 00 00 - 55
-/*04156*/ uint32  DEX;                // Dexterity - 50 00 00 00 - 80
-/*04160*/ uint32  INT;                // Intelligence - 3c 00 00 00 - 60
-/*04164*/ uint32  AGI;                // Agility - 5f 00 00 00 - 95
-/*04168*/ uint32  WIS;                // Wisdom - 46 00 00 00 - 70
-/*04172*/ uint8   face;               // Player face
-/*04173*/ uint8 unknown02264[139];   // Live Shows [139]
-/*04312*/ int32   spell_book[MAX_PP_SPELLBOOK];    // List of the Spells in spellbook 480 = 60 pages
-/*06232*/ uint8   unknown4184[136];   // Live Shows [164]
+/*00336*/ uint8 unknown00224[156];		// Live Shows [160]
+/*00496*/ Color_Struct item_tint[9];	// RR GG BB 00
+/*00544*/ AA_Array  aa_array[MAX_PP_AA_ARRAY];	// [3600] AAs 12 bytes each
+/*04132*/ uint32  points;				// Unspent Practice points - RELOCATED???
+/*04136*/ uint32  mana;					// Current mana
+/*04140*/ uint32  cur_hp;				// Current HP without +HP equipment
+/*04144*/ uint32  STR;					// Strength - 6e 00 00 00 - 110
+/*04148*/ uint32  STA;					// Stamina - 73 00 00 00 - 115
+/*04152*/ uint32  CHA;					// Charisma - 37 00 00 00 - 55
+/*04156*/ uint32  DEX;					// Dexterity - 50 00 00 00 - 80
+/*04160*/ uint32  INT;					// Intelligence - 3c 00 00 00 - 60
+/*04164*/ uint32  AGI;					// Agility - 5f 00 00 00 - 95
+/*04168*/ uint32  WIS;					// Wisdom - 46 00 00 00 - 70
+/*04172*/ uint8   face;					// Player face
+/*04173*/ uint8 unknown02264[147];		// was [139]
+/*04312*/ int32   spell_book[MAX_PP_SPELLBOOK];	// List of the Spells in spellbook 480 = 60 pages
+/*06232*/ uint8   unknown4184[128];		// was [136]
 /*06396*/ int32   mem_spells[MAX_PP_MEMSPELL]; // List of spells memorized
-/*06436*/ uint8 unknown04396[28];    //#### uint8 unknown04396[32]; in Titanium ####[28]
-/*06464*/ uint32  platinum;           // Platinum Pieces on player
-/*06468*/ uint32  gold;               // Gold Pieces on player
-/*06472*/ uint32  silver;             // Silver Pieces on player
-/*06476*/ uint32  copper;             // Copper Pieces on player
-/*06480*/ uint32  platinum_cursor;    // Platinum Pieces on cursor
-/*06484*/ uint32  gold_cursor;        // Gold Pieces on cursor
-/*06488*/ uint32  silver_cursor;      // Silver Pieces on cursor
-/*06492*/ uint32  copper_cursor;      // Copper Pieces on cursor
-/*06496*/ uint32  skills[MAX_PP_SKILL]; // [300] List of skills
+/*06436*/ uint8 unknown04396[28];		//#### uint8 unknown04396[32]; in Titanium ####[28]
+/*06464*/ uint32  platinum;				// Platinum Pieces on player
+/*06468*/ uint32  gold;					// Gold Pieces on player
+/*06472*/ uint32  silver;				// Silver Pieces on player
+/*06476*/ uint32  copper;				// Copper Pieces on player
+/*06480*/ uint32  platinum_cursor;		// Platinum Pieces on cursor
+/*06484*/ uint32  gold_cursor;			// Gold Pieces on cursor
+/*06488*/ uint32  silver_cursor;		// Silver Pieces on cursor
+/*06492*/ uint32  copper_cursor;		// Copper Pieces on cursor
+/*06496*/ uint32  skills[MAX_PP_SKILL];	// [300] List of skills
 /*06796*/ uint8 unknown04760[236];
-/*07032*/ uint32  toxicity;           // Potion Toxicity (15=too toxic, each potion adds 3)
-/*07036*/ uint32  thirst_level;             // Drink (ticks till next drink)
-/*07040*/ uint32  hunger_level;             // Food (ticks till next eat)
-/*07044*/ SpellBuff_Struct buffs[BUFF_COUNT];   // [600]Buffs currently on the player
-/*07644*/ Disciplines_Struct  disciplines; // [400] Known disciplines
+/*07032*/ uint32  toxicity;				// Potion Toxicity (15=too toxic, each potion adds 3)
+/*07036*/ uint32  thirst_level;			// Drink (ticks till next drink)
+/*07040*/ uint32  hunger_level;			// Food (ticks till next eat)
+/*07044*/ SpellBuff_Struct buffs[BUFF_COUNT];	// [600]Buffs currently on the player
+/*07644*/ Disciplines_Struct  disciplines;	// [400] Known disciplines
 /*08044*/ uint8 unknown05008[160];
 /*08204*/ uint32 recastTimers[MAX_RECAST_TYPES]; // Timers (GMT of last use)
-/*08284*/ uint32  endurance;          // Current endurance
-/*08288*/ uint32  aapoints_spent;           // Number of spent AA points
-/*08292*/ uint32  aapoints;         // Unspent AA points
+/*08284*/ uint32  endurance;			// Current endurance
+/*08288*/ uint32  aapoints_spent;		// Number of spent AA points
+/*08292*/ uint32  aapoints;				// Unspent AA points
 /*08296*/ uint8 unknown06160[4];
 /*08300*/ Bandolier_Struct bandoliers[MAX_PLAYER_BANDOLIER]; // [6400] bandolier contents
-/*14700*/ PotionBelt_Struct  potionbelt; // [360] potion belt 72 extra octets by adding 1 more belt slot
+/*14700*/ PotionBelt_Struct  potionbelt;	// [360] potion belt 72 extra octets by adding 1 more belt slot
 /*15060*/ uint8 unknown12852[8];
 /*15068*/ uint32 available_slots;
-/*15072*/ uint8 unknown12864[80]; //#### uint8 uint8 unknown12864[76]; in Titanium ####[80]
+/*15072*/ uint8 unknown12864[80];		//#### uint8 uint8 unknown12864[76]; in Titanium ####[80]
 //END SUB-STRUCT used for shrouding.
-/*15120*/ char    name[64];           // Name of player
-/*15184*/ char    last_name[32];       // Last name of player
+/*15120*/ char    name[64];				// Name of player
+/*15184*/ char    last_name[32];		// Last name of player
 /*15216*/ uint8   unknown19588[12];  //#### Not In Titanium #### new to SoF[12]
 /*15228*/ int32   guild_id;            // guildid
 /*15232*/ uint32  birthday;       // character birthday

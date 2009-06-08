@@ -103,6 +103,72 @@ std::string Strategy::Describe() const {
 
 #include "SSDefine.h"
 
+
+// Converts Titanium Slot IDs to SoF Slot IDs for use in Encodes
+static inline int32 TitaniumToSoFSlot(int32 TitaniumSlot) {
+	int32 SoFSlot = 0;
+
+	if(TitaniumSlot >= 21 && TitaniumSlot <= 50)	// Cursor/Ammo/Power Source and Normal Inventory Slots
+	{
+		SoFSlot = TitaniumSlot + 1;
+	}
+	else if(TitaniumSlot >= 251 && TitaniumSlot <= 340)		// Bag Slots for Normal Inventory and Cursor 
+	{
+		SoFSlot = TitaniumSlot + 11;
+	}
+	else if(TitaniumSlot >= 2031 && TitaniumSlot <= 2270)	// Bank Bag Slots
+	{
+		SoFSlot = TitaniumSlot + 1;
+	}
+	else if(TitaniumSlot >= 2531 && TitaniumSlot <= 2550)	// Shared Bank Bag Slots
+	{
+		SoFSlot = TitaniumSlot + 1;
+	}
+	else if(TitaniumSlot == 9999)	//Unused slot ID to give a place to save Power Slot
+	{
+		SoFSlot = 21;
+	}
+	else
+	{
+		SoFSlot = TitaniumSlot;
+	}	
+	
+	return SoFSlot;
+}
+
+// Converts Sof Slot IDs to Titanium Slot IDs for use in Decodes
+static inline int32 SoFToTitaniumSlot(int32 SoFSlot) {
+	int32 TitaniumSlot = 0;
+	
+	if(SoFSlot >= 22 && SoFSlot <= 51)	// Cursor/Ammo/Power Source and Normal Inventory Slots
+	{
+		TitaniumSlot = SoFSlot - 1;
+	}
+	else if(SoFSlot >= 262 && SoFSlot <= 351)	// Bag Slots for Normal Inventory and Cursor 
+	{
+		TitaniumSlot = SoFSlot - 11;
+	}
+	else if(SoFSlot >= 2032 && SoFSlot <= 2271)	// Bank Bag Slots
+	{
+		TitaniumSlot = SoFSlot - 1;
+	}
+	else if(SoFSlot >= 2532 && SoFSlot <= 2551)	// Shared Bank Bag Slots
+	{
+		TitaniumSlot = SoFSlot - 1;
+	}
+	else if(SoFSlot == 21)
+	{
+		TitaniumSlot = 9999;	//Unused slot ID to give a place to save Power Slot
+	}
+	else
+	{
+		TitaniumSlot = SoFSlot;
+	}
+
+	return TitaniumSlot;
+}
+
+
 ENCODE(OP_OpenNewTasksWindow) {
 
 	AvailableTaskHeader_Struct*	__emu_AvailableTaskHeader;
@@ -1334,17 +1400,7 @@ ENCODE(OP_ShopPlayerSell) {
 	ENCODE_LENGTH_EXACT(Merchant_Purchase_Struct);
 	SETUP_DIRECT_ENCODE(Merchant_Purchase_Struct, structs::Merchant_Purchase_Struct);
 	OUT(npcid);
-
-	int slot_id;
-	slot_id = emu->itemslot;
-
-	if(slot_id >= 21 && slot_id < 50)
-		slot_id += 1;
-	else if(slot_id >= 251 && slot_id < 351)
-		slot_id += 11;
-	
-	eq->itemslot = slot_id;
-
+	eq->itemslot = TitaniumToSoFSlot(emu->itemslot);
 	OUT(quantity);
 	OUT(price);
 	FINISH_ENCODE();
@@ -1353,48 +1409,11 @@ ENCODE(OP_ShopPlayerSell) {
 ENCODE(OP_DeleteItem) {
 	ENCODE_LENGTH_EXACT(DeleteItem_Struct);
 	SETUP_DIRECT_ENCODE(DeleteItem_Struct, structs::DeleteItem_Struct);
-	if(emu->from_slot >= 21 && emu->from_slot < 50)
-	{
-		eq->from_slot = emu->from_slot + 1;
-	}
-	else if(emu->from_slot >= 251 && emu->from_slot < 351)
-	{
-		eq->from_slot = emu->from_slot + 11;
-	}
-	else if(emu->from_slot >= 2031 && emu->from_slot < 2270)
-	{
-		eq->from_slot = emu->from_slot + 1;
-	}
-	else if(emu->from_slot >= 2531 && emu->from_slot < 2550)
-	{
-		eq->from_slot = emu->from_slot + 1;
-	}
-	else
-	{
-		OUT(from_slot);
-	}
 
-	if(emu->to_slot >= 21 && emu->to_slot < 50)
-	{
-		eq->to_slot = emu->to_slot + 1;
-	}
-	else if(emu->to_slot >= 251 && emu->to_slot < 351)
-	{
-		eq->to_slot = emu->to_slot + 11;
-	}
-	else if(emu->to_slot >= 2031 && emu->to_slot < 2270)
-	{
-		eq->to_slot = emu->to_slot + 1;
-	}
-	else if(emu->to_slot >= 2531 && emu->to_slot < 2550)
-	{
-		eq->to_slot = emu->to_slot + 1;
-	}
-	else
-	{
-		OUT(to_slot);
-	}
+	eq->from_slot = TitaniumToSoFSlot(emu->from_slot);
+	eq->to_slot = TitaniumToSoFSlot(emu->to_slot);
 	OUT(number_in_stack);
+
 	FINISH_ENCODE();
 }
 
@@ -1402,64 +1421,22 @@ ENCODE(OP_DeleteCharge) {  ENCODE_FORWARD(OP_MoveItem); }
 ENCODE(OP_MoveItem) {
 	ENCODE_LENGTH_EXACT(MoveItem_Struct);
 	SETUP_DIRECT_ENCODE(MoveItem_Struct, structs::MoveItem_Struct);
-	if(emu->from_slot >= 21 && emu->from_slot < 50)
-	{
-		eq->from_slot = emu->from_slot + 1;
-	}
-	else if(emu->from_slot >= 251 && emu->from_slot < 351)
-	{
-		eq->from_slot = emu->from_slot + 11;
-	}
-	else if(emu->from_slot >= 2031 && emu->from_slot < 2270)
-	{
-		eq->from_slot = emu->from_slot + 1;
-	}
-	else if(emu->from_slot >= 2531 && emu->from_slot < 2550)
-	{
-		eq->from_slot = emu->from_slot + 1;
-	}
-	else
-	{
-		OUT(from_slot);
-	}
 
-	if(emu->to_slot >= 21 && emu->to_slot < 50)
-	{
-		eq->to_slot = emu->to_slot + 1;
-	}
-	else if(emu->to_slot >= 251 && emu->to_slot < 351)
-	{
-		eq->to_slot = emu->to_slot + 11;
-	}
-	else if(emu->to_slot >= 2031 && emu->to_slot < 2270)
-	{
-		eq->to_slot = emu->to_slot + 1;
-	}
-	else if(emu->to_slot >= 2531 && emu->to_slot < 2550)
-	{
-		eq->to_slot = emu->to_slot + 1;
-	}
-	else
-	{
-		OUT(to_slot);
-	}
+	eq->from_slot = TitaniumToSoFSlot(emu->from_slot);
+	eq->to_slot = TitaniumToSoFSlot(emu->to_slot);
 	OUT(number_in_stack);
+
 	FINISH_ENCODE();
 }
 
 ENCODE(OP_ItemVerifyReply) {
 	ENCODE_LENGTH_EXACT(ItemVerifyReply_Struct);
 	SETUP_DIRECT_ENCODE(ItemVerifyReply_Struct, structs::ItemVerifyReply_Struct);
-	if(emu->slot >= 21 && emu->slot < 50)
-	{
-		eq->slot = emu->slot + 1;
-	}
-	else
-	{
-		OUT(slot);
-	}
+
+	eq->slot = TitaniumToSoFSlot(emu->slot);
 	OUT(spell);
 	OUT(target);
+
 	FINISH_ENCODE();
 }
 
@@ -1560,13 +1537,7 @@ ENCODE(OP_TributeItem) {
 	ENCODE_LENGTH_EXACT(TributeItem_Struct);
 	SETUP_DIRECT_ENCODE(TributeItem_Struct, structs::TributeItem_Struct);
 
-	if((emu->slot >= 21) && (emu->slot <= 29))
-		eq->slot = emu->slot + 1;
-	else if(emu->slot >= 251 && emu->slot <= 330) 
-		eq->slot = emu->slot + 11;
-	else
-		eq->slot = emu->slot;
-
+	eq->slot = TitaniumToSoFSlot(emu->slot);
 	OUT(quantity);
 	OUT(tribute_master_id);
 	OUT(tribute_points);
@@ -1646,68 +1617,33 @@ ENCODE(OP_ZonePlayerToBind) {
 DECODE(OP_ItemVerifyRequest) {
 	DECODE_LENGTH_EXACT(structs::ItemVerifyRequest_Struct);
 	SETUP_DIRECT_DECODE(ItemVerifyRequest_Struct, structs::ItemVerifyRequest_Struct);
-	if(eq->slot >= 22 && eq->slot < 51)
-	{
-		emu->slot = eq->slot - 1;
-	}
-	else if(eq->slot == 21)
-	{
-		emu->slot = 22;		//some power source slot TODO
-	}
-	else
-	{
-		IN(slot);
-	}
+
+	emu->slot = SoFToTitaniumSlot(eq->slot);
 	IN(target);
+
 	FINISH_DIRECT_DECODE();
 }
 
 DECODE(OP_Consume) {
 	DECODE_LENGTH_EXACT(structs::Consume_Struct);
 	SETUP_DIRECT_DECODE(Consume_Struct, structs::Consume_Struct);
-	if(eq->slot >= 22 && eq->slot < 51)
-	{
-		emu->slot = eq->slot - 1;
-	}
-	else if(eq->slot == 21)
-	{
-		emu->slot = 22;		//some power source slot TODO
-	}
-	else
-	{
-		IN(slot);
-	}
+
+	emu->slot = SoFToTitaniumSlot(eq->slot);
 	IN(auto_consumed);
-	//IN(c_unknown1);
 	IN(type);
-	//IN(unknown13);
+
 	FINISH_DIRECT_DECODE();
 }
 
 DECODE(OP_CastSpell) {
 	DECODE_LENGTH_EXACT(structs::CastSpell_Struct);
 	SETUP_DIRECT_DECODE(CastSpell_Struct, structs::CastSpell_Struct);
+
 	IN(slot);
 	IN(spell_id);
-
-	if(eq->inventoryslot >= 22 && eq->inventoryslot < 51)
-	{
-		emu->inventoryslot = eq->inventoryslot - 1;
-	}
-	else if(eq->inventoryslot >= 251 && eq->inventoryslot < 351)
-	{
-		emu->inventoryslot = eq->inventoryslot - 11;
-	}
-	else if(eq->inventoryslot == 21)
-	{
-		emu->inventoryslot = 22;		//some power source slot TODO
-	}
-	else
-	{
-		IN(inventoryslot);
-	}
+	emu->inventoryslot = SoFToTitaniumSlot(eq->inventoryslot);
 	IN(target_id);
-	//IN(cs_unknown);
+
 	FINISH_DIRECT_DECODE();
 }
 
@@ -1718,55 +1654,8 @@ DECODE(OP_MoveItem)
 
 	_log(NET__ERROR, "Moved item from %u to %u", eq->from_slot, eq->to_slot);
 
-	if(eq->from_slot >= 22 && eq->from_slot < 51)
-	{
-		emu->from_slot = eq->from_slot - 1;
-	}
-	else if(eq->from_slot >= 251 && eq->from_slot < 351)
-	{
-		emu->from_slot = eq->from_slot - 11;
-	}
-	else if(eq->from_slot >= 2032 && eq->from_slot < 2271)
-	{
-		emu->from_slot = eq->from_slot - 1;
-	}
-	else if(eq->from_slot >= 2532 && eq->from_slot < 2551)
-	{
-		emu->from_slot = eq->from_slot - 1;
-	}
-	else if(eq->from_slot == 21)
-	{
-		emu->from_slot = 22;//some power source slot TODO
-	}
-	else
-	{
-		IN(from_slot);
-	}
-
-	if(eq->to_slot >= 22 && eq->to_slot < 51)
-	{
-		emu->to_slot = eq->to_slot - 1;
-	}
-	else if(eq->to_slot >= 251 && eq->to_slot < 351)
-	{
-		emu->to_slot = eq->to_slot - 11;
-	}
-	else if(eq->to_slot >= 2031 && eq->to_slot < 2271)
-	{
-		emu->to_slot = eq->to_slot - 1;
-	}
-	else if(eq->to_slot >= 2532 && eq->to_slot < 2551)
-	{
-		emu->to_slot = eq->to_slot - 1;
-	}
-	else if(eq->to_slot == 21)
-	{
-		emu->to_slot = 22;//some power source slot TODO
-	}
-	else
-	{
-		IN(to_slot);
-	}
+	emu->from_slot = SoFToTitaniumSlot(eq->from_slot);
+	emu->to_slot = SoFToTitaniumSlot(eq->to_slot);
 	IN(number_in_stack);
 
 	FINISH_DIRECT_DECODE();
@@ -1927,20 +1816,12 @@ DECODE(OP_Buff) {
 DECODE(OP_ShopPlayerSell) {
 	DECODE_LENGTH_EXACT(structs::Merchant_Purchase_Struct);
 	SETUP_DIRECT_DECODE(Merchant_Purchase_Struct, structs::Merchant_Purchase_Struct);
+
 	IN(npcid);
-
-	int slot_id;
-	slot_id = eq->itemslot;
-
-	if(slot_id >= 22 && slot_id < 51)
-		slot_id -= 1;
-	else if(slot_id >= 262 && slot_id < 351)
-		slot_id -= 11;
-
-	emu->itemslot = slot_id;
-
+	emu->itemslot = SoFToTitaniumSlot(eq->itemslot);
 	IN(quantity);
 	IN(price);
+
 	FINISH_DIRECT_DECODE();
 }
 
@@ -1991,13 +1872,7 @@ DECODE(OP_TributeItem) {
 	DECODE_LENGTH_EXACT(structs::TributeItem_Struct);
 	SETUP_DIRECT_DECODE(TributeItem_Struct, structs::TributeItem_Struct);
 
-	if((eq->slot >= 22) && (eq->slot <= 30))
-		emu->slot = eq->slot - 1;
-	else if(eq->slot >= 262 && eq->slot <= 341) 
-		emu->slot = eq->slot - 11;
-	else
-		emu->slot = eq->slot;
-
+	emu->slot = SoFToTitaniumSlot(eq->slot);
 	IN(quantity);
 	IN(tribute_master_id);
 	IN(tribute_points);
@@ -2076,19 +1951,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	hdr.stacksize = stackable ? charges : 1;
 	hdr.unknown004 = 0;
 
-	sint32 slot_id = slot_id_in;
-
-	if(slot_id >= 22 && slot_id < 50) // Ammo and Main Inventory
-		slot_id += 1;
-	else if(slot_id >= 251 && slot_id < 351) // Inventory Bg Slots
-		slot_id += 11;
-	else if(slot_id >= 2031 && slot_id < 2270) // Bank Bag Slots
-		slot_id += 1;
-	else if(slot_id >= 2531 && slot_id < 2550) // Shared Bank Bag Slots
-		slot_id += 1;
-
-	if(slot_id == 21)
-		slot_id = 22;
+	sint32 slot_id = TitaniumToSoFSlot(slot_id_in);
 
 	// It looks like Power Source is slot 21 and Ammo got bumped to slot 22
 	// This will have to be changed somehow to handle slot 21 for Power Source items
