@@ -22,15 +22,10 @@
 #include "../common/debug.h"
 #include "embperl.h"
 
-#include "../common/item.h"
+#include "../common/Item.h"
 
 #ifdef THIS		/* this macro seems to leak out on some systems */
 #undef THIS
-#endif
-
-
-#ifdef __cplusplus
-extern "C"
 #endif
 
 XS(XS_QuestItem_GetName);
@@ -115,9 +110,9 @@ XS(XS_QuestItem_ItemSay)
 	XSRETURN_EMPTY;
 }
 
-
-
-
+#ifdef __cplusplus
+extern "C"
+#endif
 
 XS(boot_QuestItem);
 XS(boot_QuestItem) 

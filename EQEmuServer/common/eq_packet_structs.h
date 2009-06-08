@@ -757,7 +757,7 @@ struct BindStruct {
 ** OpCode: 0x006a
  */
 static const uint32 MAX_PP_LANGUAGE		= 28;
-static const uint32 MAX_PP_SPELLBOOK	= 400;
+static const uint32 MAX_PP_SPELLBOOK	= 480;	// Increased to 480 to support SoF
 static const uint32 MAX_PP_MEMSPELL		= 9;
 static const uint32 MAX_PP_SKILL		= 75;
 static const uint32 MAX_PP_AA_ARRAY		= 240;
@@ -876,7 +876,7 @@ struct PlayerProfile_Struct
 /*2552*/	uint8				languages[MAX_PP_LANGUAGE];
 /*2580*/	uint8				unknown1620[4];
 /*2584*/	int32				spell_book[MAX_PP_SPELLBOOK];
-/*4184*/	uint8				unknown3224[448];	// all 0xff
+/*4184*/	uint8				unknown3224[128];	// Was [428] all 0xff
 /*4632*/	int32				mem_spells[MAX_PP_MEMSPELL];
 /*4668*/	uint8				unknown3704[32];	//
 /*4700*/	float				y;					// Player y position

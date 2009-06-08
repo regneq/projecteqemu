@@ -6,7 +6,7 @@
 #include "database.h"
 #include "skills.h"
 #include "../zone/spdat.h"
-#include "item.h"
+#include "Item.h"
 
 #include <list>
 
