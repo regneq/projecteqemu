@@ -65,15 +65,52 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 
 	const SPDat_Spell_Struct &spell = spells[spell_id];
 
-	if((CalcBuffDuration(caster,this,spell_id)-1) != 0){
-		buffslot = AddBuff(caster, spell_id);
-		if(buffslot == -1)	// stacking failure
-			return false;
-	} else {
-		buffslot = -2;	//represents not a buff I guess
+	bool c_override = false;
+	if(caster && caster->IsClient() && GetCastedSpellInvSlot() > 0)
+	{
+		const ItemInst* inst = caster->CastToClient()->GetInv().GetItem(GetCastedSpellInvSlot());
+		if(inst)
+		{
+			if(inst->GetItem()->Click.Level > 0)
+			{
+				caster_level = inst->GetItem()->Click.Level;
+				c_override = true;
+			}
+			else
+			{
+				caster_level = caster ? caster->GetCasterLevel(spell_id) : GetCasterLevel(spell_id);
+			}
+		}
+		else
+			caster_level = caster ? caster->GetCasterLevel(spell_id) : GetCasterLevel(spell_id);
 	}
+	else
+		caster_level = caster ? caster->GetCasterLevel(spell_id) : GetCasterLevel(spell_id);
 
-	caster_level = caster ? caster->GetCasterLevel(spell_id) : GetCasterLevel(spell_id);
+	if(c_override)
+	{
+		int durat = CalcBuffDuration(caster, this, spell_id, caster_level);
+		if((durat-1) > 0)
+		{
+			buffslot = AddBuff(caster, spell_id, durat, caster_level);
+			if(buffslot == -1)	// stacking failure
+				return false;
+		}
+		else
+		{
+			buffslot = -2;
+		}
+	}
+	else
+	{
+		if((CalcBuffDuration(caster,this,spell_id)-1) > 0){
+			buffslot = AddBuff(caster, spell_id);
+			if(buffslot == -1)	// stacking failure
+				return false;
+		} else {
+			buffslot = -2;	//represents not a buff I guess
+		}
+	}
 
 #ifdef SPELL_EFFECT_SPAM
 		Message(0, "You are affected by spell '%s' (id %d)", spell.name, spell_id);

@@ -3645,6 +3645,7 @@ LogFile->write(EQEMuLog::Debug, "OP CastSpell: slot=%d, spell=%d, target=%d, inv
 				const Item_Struct* item = inst->GetItem();
 				if(item->Click.Effect != (int32)castspell->spell_id)
 				{
+					database.SetMQDetectionFlag(account_name, name, "OP_CastSpell with item, tried to cast a different spell.", zone->GetShortName());
 					InterruptSpell(castspell->spell_id);	//CHEATER!!
 					return;
 				}
@@ -3661,7 +3662,23 @@ LogFile->write(EQEMuLog::Debug, "OP CastSpell: slot=%d, spell=%d, target=%d, inv
 				*/	
 				if ((item->Click.Type == ET_ClickEffect) || (item->Click.Type == ET_Expendable) || (item->Click.Type == ET_EquipClick) || (item->Click.Type == ET_ClickEffect2))
 				{
-					CastSpell(item->Click.Effect, castspell->target_id, castspell->slot, item->CastTime, 0, 0, castspell->inventoryslot);
+					if(item->Click.Level2 > 0)
+					{
+						if(GetLevel() >= item->Click.Level2)
+						{
+							CastSpell(item->Click.Effect, castspell->target_id, castspell->slot, item->CastTime, 0, 0, castspell->inventoryslot);
+						}
+						else
+						{
+							database.SetMQDetectionFlag(account_name, name, "OP_CastSpell with item, did not meet req level.", zone->GetShortName());
+							Message(0, "Error: level not high enough.", castspell->inventoryslot);
+							InterruptSpell(castspell->spell_id);
+						}					
+					}
+					else
+					{
+						CastSpell(item->Click.Effect, castspell->target_id, castspell->slot, item->CastTime, 0, 0, castspell->inventoryslot);
+					}
 				}
 				else
 				{

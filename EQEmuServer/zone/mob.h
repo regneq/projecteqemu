@@ -688,10 +688,10 @@ bool logpos;
 	bool	ApplyNextBardPulse(int16 spell_id, Mob *spell_target, int16 slot);
 	void	BardPulse(uint16 spell_id, Mob *caster);
 	bool	DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_center, CastAction_type &CastAction);
-	int		CalcBuffDuration(Mob *caster, Mob *target, int16 spell_id);
+	int		CalcBuffDuration(Mob *caster, Mob *target, int16 spell_id, sint32 caster_level_override = -1);
 	void	SendPetBuffsToClient();
 //	int		CheckAddBuff(Mob* caster, const int16& spell_id, const int& caster_level, int* buffdur, int ticsremaining = -1);
-	int		AddBuff(Mob *caster, const int16 spell_id, int duration = 0);
+	int		AddBuff(Mob *caster, const int16 spell_id, int duration = 0, sint32 level_override = -1);
 	bool	SpellEffect(Mob* caster, int16 spell_id, float partial = 100);
 	bool	IsImmuneToSpell(int16 spell_id, Mob *caster);
 	void	DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob* caster = 0);
@@ -907,6 +907,7 @@ bool logpos;
 	int CalcSpellEffectValue(int16 spell_id, int effect_id, int caster_level = 1, Mob *caster = NULL, int ticsremaining = 0);
 	int CalcSpellEffectValue_formula(int formula, int base, int max, int caster_level, int16 spell_id, int ticsremaining = 0);
 	int CheckStackConflict(int16 spellid1, int caster_level1, int16 spellid2, int caster_level2, Mob* caster1 = NULL, Mob* caster2 = NULL);
+	int32 GetCastedSpellInvSlot() const { return casting_spell_inventory_slot; }
 
 //	inline EGNode *GetEGNode() { return(_egnode); }
 //	inline void SetEGNode(EGNode *s) { _egnode = s; }
