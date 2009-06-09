@@ -186,7 +186,8 @@ RULE_REAL ( Combat, HitBonusPerLevel, 1.2) //You gain this % of hit for every le
 RULE_REAL ( Combat, WeaponSkillFalloff, 0.33) //For every weapon skill point that's not maxed you lose this % of hit
 RULE_REAL ( Combat, ArcheryHitPenalty, 0.25) //Archery has a hit penalty to try to help balance it with the plethora of long term +hit modifiers for it
 RULE_REAL ( Combat, AgiHitFactor, 0.01) 
-RULE_INT ( Combat, MinRangedAttackDist, 25) //Minimum Distance to use Ranged Attacks 
+RULE_INT ( Combat, MinRangedAttackDist, 25) //Minimum Distance to use Ranged Attacks
+RULE_REAL ( Combat, ArcheryStationaryPenalty, 1.0)	//Damage Penalty for moving or rooted targets.  1 = 50% penalty (Default), 2 = no penalty, 0 = 100% penalty
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( NPC )

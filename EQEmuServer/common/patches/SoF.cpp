@@ -2010,10 +2010,24 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 
 	uint32 adjusted_slots = item->Slots;
 
-	if(item->Slots & (1 << 21))
+	// Conversions for Ammo and Power Source Slots
+	if(item->Slots & (1 << 21) & (1 << 22))
 	{
-		adjusted_slots -= (1 << 21);
-		adjusted_slots += (1 << 22);
+		// Do nothing
+	}
+	else
+	{
+		if(item->Slots & (1 << 21))	// Ammo Slot from Database
+		{
+			adjusted_slots -= (1 << 21);	// Ammo Slot in Titanium
+			adjusted_slots += (1 << 22);	// Ammo Slot in SoF
+		}
+
+		if(item->Slots & (1 << 22))	// Power Source Slot from Database
+		{
+			adjusted_slots -= (1 << 22);	// Non Existant Worn Slot in Titanium
+			adjusted_slots += (1 << 21);	// Power Source Slot in SoF
+		}
 	}
 
 	ibs.id = item->ID;

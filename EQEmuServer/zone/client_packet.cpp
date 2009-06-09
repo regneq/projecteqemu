@@ -1601,7 +1601,7 @@ void Client::Handle_OP_ItemVerifyRequest(const EQApplicationPacket *app)
 		LogFile->write(EQEMuLog::Debug, "Unknown slot being used by %s, slot being used is: %i",GetName(),request->slot);
 		return;
 	}
-	else if ((slot_id < 30) || (slot_id == POTION_BELT_SPELL_SLOT))	// sanity check
+	else if ((slot_id < 30) || (slot_id == 9999) || (slot_id == POTION_BELT_SPELL_SLOT))	// sanity check
 	{
 		const ItemInst* inst = m_inv[slot_id];
 		const Item_Struct* item = inst->GetItem();

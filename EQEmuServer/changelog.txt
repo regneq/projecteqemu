@@ -1,5 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/09/2009==
+Trevius: Added rule Combat:ArcheryStationaryPenalty to allow adjustment of the Archery damage penalty for moving or rooted targets.
+
+Optional SQL: \utils\sql\svn\646_archery_penalty_rule.sql
+
 ==06/08/2009==
 KLS(realityincarnate): Charms: Added charm item scaling with scriping support and initial work on evolving items.
 KLS(realityincarnate): Added perl method $client->GetModCharacterFactionLevel(FactionID)
