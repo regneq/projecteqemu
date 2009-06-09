@@ -368,8 +368,11 @@ void ItemInst::PutAugment(SharedDatabase *db, uint8 slot, uint32 item_id)
 {
 	if (item_id != 0) {
 		const ItemInst* aug = db->CreateItem(item_id);
-		PutAugment(slot,*aug);
-		safe_delete(aug);
+		if(aug)
+		{
+			PutAugment(slot,*aug);
+			safe_delete(aug);
+		}
 	}
 }
 
@@ -390,16 +393,6 @@ void ItemInst::PutItem(uint8 index, const ItemInst& inst)
 	// Clean up item already in slot (if exists)
 	DeleteItem(index);
 	
-	if (!inst) {
-		// User must be effectively deleting the item
-		// in the slot, why hold a null ptr in map<>?
-		return;
-	}
-
-//	if (index<0 || index>9) {
-//		LogFile->write(EQEMuLog::Error, "ItemInst::PutItem: Invalid index specified (%i)", index);
-//		return;
-//	}
 	
 	// Delegate to internal method
 	_PutItem(index, inst.Clone());
