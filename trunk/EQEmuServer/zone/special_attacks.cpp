@@ -902,11 +902,14 @@ void Client::RangedAttack(Mob* other) {
 			}
 			
 			mlog(COMBAT__RANGED, "Bow DMG %d, Arrow DMG %d, Max Damage %d.", WDmg, ADmg, MaxDmg);
-			
-			
+
 			if(GetClass()==RANGER && target->IsNPC() && !target->IsMoving() && !target->IsRooted() && GetLevel() > 50){
 				MaxDmg *= 2;
 				mlog(COMBAT__RANGED, "Ranger. Target is stationary, doubling max damage to %d", MaxDmg);
+			}
+			else
+			{
+				MaxDmg *= (RuleR(Combat, ArcheryStationaryPenalty));
 			}
 			
 			sint32 TotalDmg = 0;
