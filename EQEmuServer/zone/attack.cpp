@@ -2643,60 +2643,6 @@ void NPC::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill) 
 
 	safe_delete(app);
 	
-	if(killer)
-	{
-		if(killer->IsClient())
-		{
-			AdventureDetails *ad = killer->CastToClient()->GetCurrentAdventure();
-			if(ad && ad->ai)
-			{
-				if(ad->instance_id == zone->GetInstanceID())
-				{
-					if(ad->ai->type == Adventure_Kill)
-					{
-						if(!IsPet() && GetClass() != LDON_TREASURE)
-						{
-							zone->UpdateAdventureCount(ad);
-						}
-					}
-					else if(ad->ai->type == Adventure_Assassinate)
-					{
-						if(GetNPCTypeID() == ad->ai->type_data)
-						{
-							zone->UpdateAdventureCount(ad);
-						}
-						else
-						{
-							if(!IsPet() && GetClass() != LDON_TREASURE)
-							{
-								if(ad->status != 3)
-								{
-									int32 c = database.AdventureGetAssassinateKills(ad->id);
-									c++;
-									if(c == RuleI(Adventure, NumberKillsForBossSpawn))
-									{
-										const NPCType* nt = NULL;
-										if(nt = database.GetNPCType(ad->ai->type_data)) 
-										{
-											NPC* npc = new NPC(nt, 0, ad->ai->assa_x, ad->ai->assa_y, ad->ai->assa_z, ad->ai->assa_h);
-											npc->AddLootTable();
-											entity_list.AddNPC(npc);
-										}
-										database.AdventureSetAssassinateKills(ad->id, c);
-									}
-									else if(c < RuleI(Adventure, NumberKillsForBossSpawn))
-									{
-										database.AdventureSetAssassinateKills(ad->id, c);
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}	
-	
 	Mob *give_exp = hate_list.GetDamageTop(this);
 
 #ifdef EQBOTS
@@ -2721,7 +2667,58 @@ void NPC::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill) 
 	Client *give_exp_client = NULL;
 	if(give_exp && give_exp->IsClient())
 		give_exp_client = give_exp->CastToClient();
-	
+
+	if(give_exp_client)
+	{
+		AdventureDetails *ad = give_exp_client->GetCurrentAdventure();
+		if(ad && ad->ai)
+		{
+			if(ad->instance_id == zone->GetInstanceID())
+			{
+				if(ad->ai->type == Adventure_Kill)
+				{
+					if(!IsPet() && GetClass() != LDON_TREASURE)
+					{
+						zone->UpdateAdventureCount(ad);
+					}
+				}
+				else if(ad->ai->type == Adventure_Assassinate)
+				{
+					if(GetNPCTypeID() == ad->ai->type_data)
+					{
+						zone->UpdateAdventureCount(ad);
+					}
+					else
+					{
+						if(!IsPet() && GetClass() != LDON_TREASURE)
+						{
+							if(ad->status != 3)
+							{
+								int32 c = database.AdventureGetAssassinateKills(ad->id);
+								c++;
+								if(c == RuleI(Adventure, NumberKillsForBossSpawn))
+								{
+									const NPCType* nt = NULL;
+									if(nt = database.GetNPCType(ad->ai->type_data)) 
+									{
+										NPC* npc = new NPC(nt, 0, ad->ai->assa_x, ad->ai->assa_y, ad->ai->assa_z, ad->ai->assa_h);
+										npc->AddLootTable();
+										entity_list.AddNPC(npc);
+									}
+									database.AdventureSetAssassinateKills(ad->id, c);
+								}
+								else if(c < RuleI(Adventure, NumberKillsForBossSpawn))
+								{
+									database.AdventureSetAssassinateKills(ad->id, c);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}	
+
 	bool IsLdonTreasure = (this->GetClass() == LDON_TREASURE);
 	if (give_exp_client && !IsCorpse() && MerchantType == 0)
 	{
