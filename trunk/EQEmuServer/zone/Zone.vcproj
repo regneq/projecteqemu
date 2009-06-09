@@ -412,6 +412,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\bot.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\botAI.cpp"
 				>
 			</File>
@@ -713,7 +717,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\bot.h"
+				>
+			</File>
+			<File
 				RelativePath=".\botRaids.h"
+				>
+			</File>
+			<File
+				RelativePath=".\botStructs.h"
 				>
 			</File>
 			<File
