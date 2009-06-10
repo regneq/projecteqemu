@@ -110,6 +110,33 @@ XS(XS_QuestItem_ItemSay)
 	XSRETURN_EMPTY;
 }
 
+XS(XS_QuestItem_IsType); /* prototype to pass -Wmissing-prototypes */
+XS(XS_QuestItem_IsType)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: QuestItem::IsType(THIS, type)");
+	{
+		ItemInst*		THIS;
+		bool		RETVAL;
+		uint32 type = (sint32)SvIV(ST(1));
+
+		if (sv_derived_from(ST(0), "QuestItem")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(ItemInst *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type ItemInst");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->IsType((ItemClass)type);
+		ST(0) = boolSV(RETVAL);
+		sv_2mortal(ST(0));
+	}
+	XSRETURN(1);
+}
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -133,6 +160,7 @@ XS(boot_QuestItem)
 		newXSproto(strcpy(buf, "GetName"), XS_QuestItem_GetName, file, "$");
 		newXSproto(strcpy(buf, "SetScale"), XS_QuestItem_SetScale, file, "$");
 		newXSproto(strcpy(buf, "ItemSay"), XS_QuestItem_ItemSay, file, "$");
+		newXSproto(strcpy(buf, "IsType"), XS_QuestItem_IsType, file, "$$");
 
 	XSRETURN_YES;
 }
