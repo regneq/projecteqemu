@@ -1359,7 +1359,6 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 sint32 Mob::CheckHealAggroAmount(int16 spellid) {
 	int16 spell_id = spellid;
 	sint32 AggroAmount = 0;
-	int16 slevel = GetLevel();
 
 	for (int o = 0; o < EFFECT_COUNT; o++) {
 		switch(spells[spell_id].effectid[o]) {

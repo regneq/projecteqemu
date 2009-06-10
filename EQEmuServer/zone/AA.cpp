@@ -370,7 +370,6 @@ void Client::HandleAAAction(aaID activate) {
 		
 		case aaActionActOfValor:
 			if(GetTarget() != NULL) {
-				int heal = GetHP();
 				int curhp = GetTarget()->GetHP();
 				target = aaTargetCurrent;
 				GetTarget()->HealDamage(curhp, this);

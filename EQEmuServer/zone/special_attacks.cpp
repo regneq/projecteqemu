@@ -646,7 +646,6 @@ void Mob::RogueBackstab(Mob* other, bool min_damage)
 	sint32 ndamage = 0;
 	sint32 max_hit = 0;
 	sint32 min_hit = 0;
-	int16 bs_skill = GetSkill(BACKSTAB);	
 	sint16 primaryweapondamage = 0;
 
 #ifdef EQBOTS
@@ -1539,7 +1538,7 @@ void Mob::Taunt(NPC* who, bool always_succeed) {
 
 void Mob::InstillDoubt(Mob *who) {
 	//make sure we can use this skill
-	int skill = GetSkill(INTIMIDATION);
+	/*int skill = GetSkill(INTIMIDATION);*/	//unused
 	
 	//make sure our target is an NPC
 	if(!who || !who->IsNPC())

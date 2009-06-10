@@ -3703,7 +3703,7 @@ void command_corpse(Client *c, const Seperator *sep)
 void command_fixmob(Client *c, const Seperator *sep)
 {
 	Mob *target=c->GetTarget();
-	char* Usage = "Usage: #fixmob [race|gender|texture|helm|face|hair|haircolor|beard|beardcolor|heritage|tattoo|detail] [next|prev]";
+	const char* Usage = "Usage: #fixmob [race|gender|texture|helm|face|hair|haircolor|beard|beardcolor|heritage|tattoo|detail] [next|prev]";
 
 	if (!sep->arg[1])
 		c->Message(0,Usage);
@@ -12329,11 +12329,7 @@ void command_advnpcspawn(Client *c, const Seperator *sep)
  	Mob *target=c->GetTarget();
  	char errbuf[MYSQL_ERRMSG_SIZE];
  	char *query = 0;
- 	MYSQL_RES *result;
-     MYSQL_ROW row;
- 	int32 tmp = 0;
- 	int32 tmp2 = 0;
-     int32 last_insert_id = 0;
+	int32 last_insert_id = 0;
  
  		if (strcasecmp(sep->arg[1], "maketype") == 0){
  			if(target && target->IsNPC())
