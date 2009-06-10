@@ -5121,7 +5121,10 @@ int16 Mob::GetDamageTable(SkillType skillinuse)
 	}
 	else if(GetLevel() >= 90)
 	{
-		return 345;
+		if(GetClass() == MONK)
+			return 379;
+		else
+			return 345;
 	}
 	else
 	{
@@ -5136,7 +5139,7 @@ int16 Mob::GetDamageTable(SkillType skillinuse)
 			335, 340, 340, 340,
 		};
 		if(GetClass() == MONK)
-			return (dmg_table[GetLevel()-51]+10);
+			return (dmg_table[GetLevel()-51]*110/100);
 		else
 			return dmg_table[GetLevel()-51];
 	}
