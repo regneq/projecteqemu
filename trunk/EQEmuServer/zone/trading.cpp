@@ -2207,19 +2207,19 @@ void Client::SellToBuyer(const EQApplicationPacket *app) {
 	
 	char ItemName[64];
 
-	uint32	Action		= VARSTRUCT_DECODE_TYPE(uint32, Buf);
+	/*uint32	Action		=*/ VARSTRUCT_DECODE_TYPE(uint32, Buf);	//unused
 	uint32	Quantity	= VARSTRUCT_DECODE_TYPE(uint32, Buf);
 	uint32	BuyerID		= VARSTRUCT_DECODE_TYPE(uint32, Buf);
 	uint32	BuySlot		= VARSTRUCT_DECODE_TYPE(uint32, Buf);
 	uint32	UnknownByte	= VARSTRUCT_DECODE_TYPE(uint8, Buf);
 	uint32	ItemID		= VARSTRUCT_DECODE_TYPE(uint32, Buf);
 	/* ItemName  */		  VARSTRUCT_DECODE_STRING(ItemName, Buf);
-	uint32	Unknown2	= VARSTRUCT_DECODE_TYPE(uint32, Buf);
+	/*uint32	Unknown2	=*/ VARSTRUCT_DECODE_TYPE(uint32, Buf);	//unused
 	uint32	QtyBuyerWants	= VARSTRUCT_DECODE_TYPE(uint32, Buf);
 		UnknownByte	= VARSTRUCT_DECODE_TYPE(uint8, Buf);
 	uint32	Price		= VARSTRUCT_DECODE_TYPE(uint32, Buf);
-	uint32	BuyerID2	= VARSTRUCT_DECODE_TYPE(uint32, Buf);
-	uint32	Unknown3	= VARSTRUCT_DECODE_TYPE(uint32, Buf);
+	/*uint32	BuyerID2	=*/ VARSTRUCT_DECODE_TYPE(uint32, Buf);	//unused
+	/*uint32	Unknown3	=*/ VARSTRUCT_DECODE_TYPE(uint32, Buf);	//unused
 
 	const Item_Struct *item = database.GetItem(ItemID);
 
@@ -2595,7 +2595,7 @@ void Client::UpdateBuyLine(const EQApplicationPacket *app) {
 
 	char ItemName[64];
 
-	uint32 Action		= VARSTRUCT_DECODE_TYPE(uint32, Buf);
+	/*uint32 Action		=*/ VARSTRUCT_DECODE_TYPE(uint32, Buf);	//unused
 	uint32 BuySlot		= VARSTRUCT_DECODE_TYPE(uint32, Buf);
 	uint8  Unknown009	= VARSTRUCT_DECODE_TYPE(uint8, Buf);
 	uint32 ItemID		= VARSTRUCT_DECODE_TYPE(uint32, Buf);
@@ -2604,7 +2604,7 @@ void Client::UpdateBuyLine(const EQApplicationPacket *app) {
 	uint32 Quantity		= VARSTRUCT_DECODE_TYPE(uint32, Buf);
 	uint8  ToggleOnOff	= VARSTRUCT_DECODE_TYPE(uint8, Buf);
 	uint32 Price		= VARSTRUCT_DECODE_TYPE(uint32, Buf);
-	uint32 UnknownZ		= VARSTRUCT_DECODE_TYPE(uint32, Buf);
+	/*uint32 UnknownZ		=*/ VARSTRUCT_DECODE_TYPE(uint32, Buf);	//unused
 	uint32 ItemCount	= VARSTRUCT_DECODE_TYPE(uint32, Buf);
 
 	const Item_Struct *item = database.GetItem(ItemID);

@@ -1100,7 +1100,6 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 //Lieka:  Check to see if PPU should trigger an update to the rewind position.
 	float rewind_x_diff = 0;
 	float rewind_y_diff = 0;
-	float rewind_z_diff = 0;
 
 	rewind_x_diff = ppu->x_pos - rewind_x;
 	rewind_x_diff *= rewind_x_diff;
@@ -2421,7 +2420,6 @@ void Client::Handle_OP_ItemLinkClick(const EQApplicationPacket *app)
 
 			if (sayid && sayid > 0) 
 			{
-				const char *ERR_MYSQLERROR = "Error in saylink phrase queries after clicking the link";
 				char errbuf[MYSQL_ERRMSG_SIZE];
 				char *query = 0;
 				MYSQL_RES *result;
@@ -8462,7 +8460,6 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 				if(ri->parameter < 12) //moving to a group
 				{
 					int8 grpcount = r->GroupCount(ri->parameter);
-					bool allUp = false;
 
 					if(grpcount < 6)
 					{
@@ -9322,10 +9319,10 @@ void Client::Handle_OP_PVPLeaderBoardRequest(const EQApplicationPacket *app)
 
 		return;
 	}
-	PVPLeaderBoardRequest_Struct *pvplbrs = (PVPLeaderBoardRequest_Struct *)app->pBuffer;
+	/*PVPLeaderBoardRequest_Struct *pvplbrs = (PVPLeaderBoardRequest_Struct *)app->pBuffer;*/	//unused
 
 	EQApplicationPacket *outapp = new EQApplicationPacket(OP_PVPLeaderBoardReply, sizeof(PVPLeaderBoard_Struct));
-	PVPLeaderBoard_Struct *pvplb = (PVPLeaderBoard_Struct *)outapp->pBuffer;
+	/*PVPLeaderBoard_Struct *pvplb = (PVPLeaderBoard_Struct *)outapp->pBuffer;*/	//unused
 	
 	// TODO: Record and send this data.
 	

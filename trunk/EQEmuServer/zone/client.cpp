@@ -3745,7 +3745,7 @@ void Client::SendPVPStats()
 	// from Client::CompleteConnect, and also when the player makes a PVP kill.
 	//
 	EQApplicationPacket *outapp = new EQApplicationPacket(OP_PVPStats, sizeof(PVPStats_Struct));
-	PVPStats_Struct *pvps = (PVPStats_Struct *)outapp->pBuffer;
+	/*PVPStats_Struct *pvps = (PVPStats_Struct *)outapp->pBuffer;*/	//unused until we record & send PVP Stats
 
 	// TODO: Record and send PVP Stats
 

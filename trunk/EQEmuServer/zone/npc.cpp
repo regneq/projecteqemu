@@ -334,7 +334,6 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 	
 	//give NPCs skill values...
 	int r;
-	int skil;
 	for(r = 0; r <= HIGHEST_SKILL; r++) {
 		skills[r] = database.GetSkillCap(GetClass(),(SkillType)r,moblevel);
 	}
@@ -724,7 +723,6 @@ bool NPC::Process()
 	}
 	
 	//Handle assists...
-	Mob *hated = NULL;	//charmed NPCs dont ask for help.
 	if(assist_timer.Check() && !Charmed() && GetTarget() != NULL) {
 		entity_list.AIYellForHelp(this, GetTarget());
 	}
@@ -1173,9 +1171,7 @@ int32 ZoneDatabase::NPCSpawnDB(int8 command, const char* zone, Client *c, NPC* s
 			return true;
 			break;
 		}
-case 5: { // add a spawn from spawngroup - Ailia
-			char tmpstr[64];
-			//char tmpstr2[64];
+		case 5: { // add a spawn from spawngroup - Ailia
 			if (!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO spawn2 (zone, x, y, z, respawntime, heading, spawngroupID) values('%s', %f, %f, %f, %i, %f, %i)", zone, c->GetX(), c->GetY(), c->GetZ(), 120, c->GetHeading(), extra), errbuf, 0, 0, &tmp)) {
 				safe_delete(query);
 				return false;
@@ -1187,7 +1183,7 @@ case 5: { // add a spawn from spawngroup - Ailia
 			break;
 			}
 		case 6: { // add npc_type - Ailia
-			int32 npc_type_id, spawngroupid;
+			int32 npc_type_id;
 			char tmpstr[64];
 			//char tmpstr2[64];
 			EntityList::RemoveNumbers(strn0cpy(tmpstr, spawn->GetName(), sizeof(tmpstr)));
@@ -1207,8 +1203,6 @@ case 5: { // add a spawn from spawngroup - Ailia
 
 sint32 NPC::GetEquipmentMaterial(int8 material_slot) const
 {
-	const Item_Struct *item;
-
 	if(equipment[material_slot] == 0) {
 		switch(material_slot) {
 		case MATERIAL_HEAD:

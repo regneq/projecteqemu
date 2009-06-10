@@ -252,7 +252,7 @@ void Client::SetEXP(int32 set_exp, int32 set_aaxp, bool isrezzexp) {
 		//set_aaxp = m_pp.expAA % max_AAXP;
 		
 		//figure out how many points were actually gained
-		uint32 gained = m_pp.aapoints - last_unspentAA;
+		/*uint32 gained = m_pp.aapoints - last_unspentAA;*/	//unused
 		
 		//Message(15, "You have gained %d skill points!!", m_pp.aapoints - last_unspentAA);
 		char val1[20]={0};

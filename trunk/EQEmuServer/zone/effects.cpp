@@ -635,8 +635,8 @@ bool Client::UseDiscipline(int32 spell_id, int32 target) {
 	//Check the disc timer
 	pTimerType DiscTimer = pTimerDisciplineReuseStart + spells[spell_id].EndurTimerIndex;
 	if(!p_timers.Expired(&database, DiscTimer)) {
-		char val1[20]={0};
-		char val2[20]={0};
+		/*char val1[20]={0};*/	//unused
+		/*char val2[20]={0};*/	//unused
 		int32 remain = p_timers.GetRemainingTime(DiscTimer);
 		//Message_StringID(0, DISCIPLINE_CANUSEIN, ConvertArray((remain)/60,val1), ConvertArray(remain%60,val2));
 		Message(0, "You can use this discipline in %d minutes %d seconds.", ((remain)/60), (remain%60));

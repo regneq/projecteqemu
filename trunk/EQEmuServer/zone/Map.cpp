@@ -892,7 +892,6 @@ bool Map::LineIntersectsZoneNoZLeaps(VERTEX start, VERTEX end, float step_mag, V
 	
 	NodeRef cnode, lnode;
 	lnode = NULL;
-	int i = 0;
 	//while we are not past end
 	//always do this once, even if start == end.
 	while(cur.x != end.x || cur.y != end.y || cur.z != end.z)

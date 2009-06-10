@@ -150,9 +150,8 @@ void Object::HandleCombine(Client* user, const NewCombine_Struct* in_combine, Ob
  		return;
  	}
  	
- 	switch (spec.tradeskill)
-	{
- 	case ALCHEMY:
+	//changing from a switch to string of if's since we don't need to iterate through all of the skills in the SkillType enum
+	if (spec.tradeskill == ALCHEMY) {
  		if (user_pp.class_ != SHAMAN) {
 			user->Message(13, "This tradeskill can only be performed by a shaman.");
 			return;
@@ -161,19 +160,18 @@ void Object::HandleCombine(Client* user, const NewCombine_Struct* in_combine, Ob
 			user->Message(13, "You cannot perform alchemy until you reach level %i.", MIN_LEVEL_ALCHEMY);
 			return;
 		}
-		break;
- 	case TINKERING:
+	}
+	else if (spec.tradeskill == TINKERING) {
  		if (user_pp.race != GNOME) {
 			user->Message(13, "Only gnomes can tinker.");
 			return;
 		}
-		break; 
- 	case MAKE_POISON:
+	}
+	else if (spec.tradeskill == MAKE_POISON) {
  		if (user_pp.class_ != ROGUE) {
 			user->Message(13, "Only rogues can mix poisons.");
 			return;
 		}
-		break;
 	}
 	
 	// Send acknowledgement packets to client

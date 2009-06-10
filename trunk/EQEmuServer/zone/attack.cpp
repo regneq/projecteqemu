@@ -1295,7 +1295,6 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte)
 	/// Now figure out damage
 	int damage = 0;
 	int8 mylevel = GetLevel() ? GetLevel() : 1;
-	int8 otherlevel = other->GetLevel() ? other->GetLevel() : 1;
 	int weapon_damage = GetWeaponDamage(other, weapon);
 	
 	//if weapon damage > 0 then we know we can hit the target with this weapon
