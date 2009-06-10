@@ -3883,6 +3883,72 @@ XS(XS_Client_GetLDoNLossesTheme)
 	XSRETURN(1);
 }
 
+XS(XS_Client_GetItemAt); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_GetItemAt)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Client::GetItemAt(THIS, slot)");
+	{
+		Client *		THIS;
+		ItemInst *		RETVAL;
+		dXSTARG;
+		uint32 slot = (sint32)SvIV(ST(1));
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetInv().GetItem(slot);
+		ST(0) = sv_newmortal();
+		sv_setref_pv(ST(0), "QuestItem", (void*)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Client_GetAugmentAt); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_GetAugmentAt)
+{
+	dXSARGS;
+	if (items != 3)
+		Perl_croak(aTHX_ "Usage: Client::GetAugmentAt(THIS, slot, aug_slot)");
+	{
+		Client *		THIS;
+		ItemInst *		RETVAL;
+		dXSTARG;
+		uint32 slot = (sint32)SvIV(ST(1));
+		uint32 aug_slot = (sint32)SvIV(ST(1));
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		ItemInst * inst = THIS->GetInv().GetItem(slot);
+		if(inst)
+		{
+			RETVAL = inst->GetAugment(aug_slot);
+		}
+		else
+		{
+			RETVAL = NULL;
+		}
+
+		ST(0) = sv_newmortal();
+		sv_setref_pv(ST(0), "QuestItem", (void*)RETVAL);
+	}
+	XSRETURN(1);
+}
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -4047,6 +4113,8 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "GetLDoNLosses"), XS_Client_GetLDoNLosses, file, "$");
 		newXSproto(strcpy(buf, "GetLDoNWinsTheme"), XS_Client_GetLDoNWinsTheme, file, "$$");
 		newXSproto(strcpy(buf, "GetLDoNLossesTheme"), XS_Client_GetLDoNLossesTheme, file, "$$");
+		newXSproto(strcpy(buf, "GetItemAt"), XS_Client_GetItemAt, file, "$$");
+		newXSproto(strcpy(buf, "GetAugmentAt"), XS_Client_GetAugmentAt, file, "$$$");
 		
 	XSRETURN_YES;
 }
