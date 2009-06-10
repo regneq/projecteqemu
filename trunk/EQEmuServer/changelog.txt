@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==06/09/2009==
 Trevius: Added rule Combat:ArcheryStationaryPenalty to allow adjustment of the Archery damage penalty for moving or rooted targets.
+KLS: Backstab tweak again.
 
 Optional SQL: \utils\sql\svn\646_archery_penalty_rule.sql
 

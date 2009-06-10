@@ -679,10 +679,10 @@ void Mob::RogueBackstab(Mob* other, bool min_damage)
 	
 	if(primaryweapondamage > 0){
 		if(level > 25){
-			max_hit = (2*primaryweapondamage) * ((GetDamageTable(BACKSTAB)+GetSkill(BACKSTAB)*100/25)/100) + ((level-25)/3) + 1;
+			max_hit = (((2*primaryweapondamage) * GetDamageTable(BACKSTAB) / 100) * 10 * GetSkill(BACKSTAB) / 355)  + ((level-25)/3) + 1;
 		}
 		else{
-			max_hit = (2*primaryweapondamage) * ((GetDamageTable(BACKSTAB)+GetSkill(BACKSTAB)*100/25)/100) + 1;
+			max_hit = (((2*primaryweapondamage) * GetDamageTable(BACKSTAB) / 100) * 10 * GetSkill(BACKSTAB) / 355) + 1;
 		}
 
 		// determine minimum hits
