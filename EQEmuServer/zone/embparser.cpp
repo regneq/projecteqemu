@@ -426,6 +426,7 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 		ExportVar(packagename.c_str(), "zonehour", eqTime.hour - 1);
 		ExportVar(packagename.c_str(), "zonemin", eqTime.minute);
 		ExportVar(packagename.c_str(), "zonetime", (eqTime.hour - 1) * 100 + eqTime.minute);
+		ExportVar(packagename.c_str(), "zoneweather", zone->zone_weather);
 	}
 
 // $hasitem - compliments of smogo
