@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/11/2009==
+AndMetal: Rule values can be viewed and modified through the web interface. They're updated into the database only, so they won't go into effect until you restart the server.
+
 ==06/10/2009==
 realityincarnate: Added /makeleader command functionality
 realityincarnate: Non-leaders can no longer kick members from the group
