@@ -258,7 +258,6 @@ bool Database::AddBannedIP(char* bannedIP, const char* notes)
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
 	MYSQL_RES *result;
-	MYSQL_ROW row;
 	if (RunQuery(query, MakeAnyLenString(&query, "SELECT * FROM `gm_ips` WHERE `ip_address` = '%s' AND `account_id` = %i", ip_address, account_id), errbuf, &result)) {
 		safe_delete_array(query);
 		if (mysql_num_rows(result) == 1) {
@@ -2513,7 +2512,6 @@ bool Database::VerifyZoneInstance(int32 zone_id, int16 instance_id)
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
 	MYSQL_RES *result;
-	MYSQL_ROW row;
 
 	if (RunQuery(query, MakeAnyLenString(&query, "SELECT id FROM instance_lockout where id=%u AND zone=%u", 
 		instance_id, zone_id), errbuf, &result))
@@ -2543,7 +2541,6 @@ bool Database::CharacterInInstanceGroup(int16 instance_id, int32 char_id)
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
 	MYSQL_RES *result;
-	MYSQL_ROW row;
 	bool lockout_instance_player = false;
 
 	if (RunQuery(query, MakeAnyLenString(&query, "SELECT charid FROM instance_lockout_player where id=%u AND charid=%u", 
@@ -2924,7 +2921,6 @@ bool Database::CheckInstanceExists(uint16 instance_id)
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
 	MYSQL_RES *result;
-	MYSQL_ROW row;
 
 	if (RunQuery(query, MakeAnyLenString(&query, "SELECT * FROM instance_lockout where id=%u", instance_id), 
 		errbuf, &result))
@@ -2951,7 +2947,6 @@ void Database::BuryCorpsesInInstance(uint16 instance_id)
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
 	MYSQL_RES *result;
-	MYSQL_ROW row;
 
 	if(RunQuery(query, MakeAnyLenString(&query, "UPDATE player_corpses SET IsBurried=1, instanceid=0 WHERE instanceid=%u", 
 		instance_id), errbuf, &result))
@@ -3807,7 +3802,6 @@ bool Database::GetAdventureStats(int32 char_id, int32 &guk_w, int32 &mir_w, int3
 	char *query = 0;
 	MYSQL_RES *result;
 	MYSQL_ROW row;
-	int32 adv_id = 0;
 
 	if (RunQuery(query, MakeAnyLenString(&query, "SELECT `guk_wins`, `mir_wins`, `mmc_wins`, `ruj_wins`, `tak_wins`, "
 		"`guk_losses`, `mir_losses`, `mmc_losses`, `ruj_losses`, `tak_losses` FROM `adventure_stats` WHERE player_id=%u", 

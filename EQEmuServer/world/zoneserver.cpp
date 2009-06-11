@@ -518,7 +518,6 @@ bool ZoneServer::Process() {
 			if (pack->size != sizeof(ServerConnectInfo))
 					break;
 			ServerConnectInfo* sci = (ServerConnectInfo*) pack->pBuffer;
-			const WorldConfig *Config=WorldConfig::get();
 
 			if (!sci->port) {
 				clientport=zoneserver_list.GetAvailableZonePort();
