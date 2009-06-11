@@ -309,7 +309,7 @@ bool Database::SendMail(string Recipient, string From, string Subject, string Bo
 
 void Database::SendHeaders(Client *c) {
 
-	int UnknownField1 = 0;
+	/*int UnknownField1 = 0;*/	//unused
 	int UnknownField2 = 25015275;
 	int UnknownField3 = 1;
 

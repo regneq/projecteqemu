@@ -1374,7 +1374,6 @@ sint16 Inventory::_HasItemByLoreGroup(ItemInstQueue& iqueue, uint32 loregroup)
 {
 	iter_queue it;
 	iter_contents itb;
-	uint8 quantity_found = 0;
 	
 	// Read-only iteration of queue
 	for (it=iqueue.begin(); it!=iqueue.end(); it++) {

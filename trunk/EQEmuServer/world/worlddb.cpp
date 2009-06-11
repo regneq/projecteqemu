@@ -187,8 +187,6 @@ int WorldDatabase::MoveCharacterToBind(int CharID) {
 
 	if(!PPValid) return 0;
 
-	int now = time(NULL);
-
 	const char *BindZoneName = StaticGetZoneName(pp.binds[0].zoneId);
 
 	if(!strcmp(BindZoneName, "UNKNWN")) return pp.zone_id;
