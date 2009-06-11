@@ -548,35 +548,21 @@ bool Group::DelMember(Mob* oldmember,bool ignoresender){
 
 	for (uint32 i = 0; i < MAX_GROUP_MEMBERS; i++) {
 		if (members[i] == oldmember) {
-			//handle leader quitting group gracefully
-			if (oldmember == GetLeader() && GroupCount() > 2) {
-				EQApplicationPacket* outapp = new EQApplicationPacket(OP_GroupUpdate,sizeof(GroupJoin_Struct));
-				GroupJoin_Struct* gu = (GroupJoin_Struct*) outapp->pBuffer;
-				gu->action = groupActMakeLeader;
-				for (uint32 nl = 0; nl < MAX_GROUP_MEMBERS; nl++) {
-					if (members[nl] && members[nl] != oldmember) {
-						strcpy(gu->membername, members[nl]->GetName());
-						strcpy(gu->yourname, oldmember->GetName());
-						SetLeader(members[nl]);
-						database.SetGroupLeaderName(GetID(), members[nl]->GetName());
-						UpdateGroupAAs();
-						gu->leader_aas = LeaderAbilities;
-						for (uint32 ld = 0; ld < MAX_GROUP_MEMBERS; ld++) {
-							if (members[ld] && members[ld] != oldmember) {
-								members[ld]->CastToClient()->QueuePacket(outapp);
-							}
-						}
-						break;
-					}
-				}
-				
-				safe_delete(outapp);
-			}
 			members[i] = NULL;
 			membername[i][0] = '\0';
 			memset(membername[i],0,64);
 			break;
 		  }
+	}
+
+	//handle leader quitting group gracefully
+	if (oldmember == GetLeader() && GroupCount() > 2) {
+		for(uint32 nl = 0; nl < MAX_GROUP_MEMBERS; nl++) {
+			if(members[nl]) {
+				ChangeLeader(members[nl]);
+				break;
+			}
+		}
 	}
 
 	ServerPacket* pack = new ServerPacket(ServerOP_GroupLeave, sizeof(ServerGroupLeave_Struct));
@@ -1639,3 +1625,32 @@ void Group::QueueHPPacketsForNPCHealthAA(Mob* sender, const EQApplicationPacket*
 		}
 
 }
+
+void Group::ChangeLeader(Mob* newleader)
+{
+	// this changes the current group leader, notifies other members, and updates leadship AA
+
+	// if the new leader is invalid, do nothing
+	if (!newleader) 
+		return;
+	
+	Mob* oldleader = GetLeader();
+	
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_GroupUpdate,sizeof(GroupJoin_Struct));
+	GroupJoin_Struct* gu = (GroupJoin_Struct*) outapp->pBuffer;
+	gu->action = groupActMakeLeader;
+	
+	strcpy(gu->membername, newleader->GetName());
+	strcpy(gu->yourname, oldleader->GetName());
+	SetLeader(newleader);
+	database.SetGroupLeaderName(GetID(), newleader->GetName());
+	UpdateGroupAAs();
+	gu->leader_aas = LeaderAbilities;
+	for (uint32 i = 0; i < MAX_GROUP_MEMBERS; i++) {
+		if (members[i] && members[i]->IsClient()) {
+			members[i]->CastToClient()->QueuePacket(outapp);
+		}
+	}
+	safe_delete(outapp);
+}
+

@@ -124,6 +124,7 @@ public:
 	inline  int GetLeadershipAA(int AAID) { return  LeaderAbilities.ranks[AAID]; }
 	void	ClearAllNPCMarks();
 	void	QueueHPPacketsForNPCHealthAA(Mob* sender, const EQApplicationPacket* app);
+	void	ChangeLeader(Mob* newleader);
 	
 	Mob* members[MAX_GROUP_MEMBERS];
 	char	membername[MAX_GROUP_MEMBERS][64];

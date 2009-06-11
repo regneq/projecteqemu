@@ -352,6 +352,7 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_AdventureMerchantSell] = &Client::Handle_OP_AdventureMerchantSell;
 	ConnectedOpcodes[OP_AdventureStatsRequest] = &Client::Handle_OP_AdventureStatsRequest;
 	ConnectedOpcodes[OP_AdventureLeaderboardRequest] = &Client::Handle_OP_AdventureLeaderboardRequest;	
+	ConnectedOpcodes[OP_GroupUpdate] = &Client::Handle_OP_GroupUpdate;
 }
 
 int Client::HandlePacket(const EQApplicationPacket *app)
@@ -5349,8 +5350,11 @@ void Client::Handle_OP_GroupDisband(const EQApplicationPacket *app)
 		if(!memberToDisband)
 			memberToDisband = entity_list.GetMob(gd->name2);
 
-		if(memberToDisband){
-			group->DelMember(memberToDisband,false);
+		if(memberToDisband ){
+			if(group->IsLeader(this))	// the group leader can kick other members out of the group...
+				group->DelMember(memberToDisband,false);
+			else						// ...but other members can only remove themselves
+				group->DelMember(this,false);
 		}
 		else
 			LogFile->write(EQEMuLog::Error, "Failed to remove player from group. Unable to find player named %s in player group", gd->name2);
@@ -9490,4 +9494,43 @@ void Client::Handle_OP_RespawnWindow(const EQApplicationPacket *app)
 
 	//QueuePacket(outapp);
 	//safe_delete(outapp);
+}
+
+void Client::Handle_OP_GroupUpdate(const EQApplicationPacket *app) 
+{
+	if(app->size != sizeof(GroupUpdate_Struct))
+	{
+		LogFile->write(EQEMuLog::Debug, "Size mismatch on OP_GroupUpdate: got %u expected %u", 
+			app->size, sizeof(GroupUpdate_Struct));
+		DumpPacket(app);
+		return;
+	}
+	
+	GroupUpdate_Struct* gu = (GroupUpdate_Struct*)app->pBuffer;
+
+	switch(gu->action) {
+		case groupActMakeLeader: 
+		{
+			Mob* newleader = entity_list.GetClientByName(gu->membername[0]);
+			Group* group = this->GetGroup();
+			
+			if (newleader && group) {
+				// the client only sends this if it's the group leader, but check anyway
+				if(group->IsLeader(this)) 
+					group->ChangeLeader(newleader);
+				else {
+					LogFile->write(EQEMuLog::Debug, "Group /makeleader request originated from non-leader member: %s",GetName());
+					DumpPacket(app);
+				}
+			}
+			break;
+		}
+
+		default: 
+		{
+			LogFile->write(EQEMuLog::Debug, "Received unhandled OP_GroupUpdate requesting action %u", gu->action);
+			DumpPacket(app);
+			return;
+		}		
+	}
 }
