@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/10/2009==
+realityincarnate: Added /makeleader command functionality
+realityincarnate: Non-leaders can no longer kick members from the group
+
 ==06/09/2009==
 Trevius: Added rule Combat:ArcheryStationaryPenalty to allow adjustment of the Archery damage penalty for moving or rooted targets.
 KLS: Backstab tweak again.

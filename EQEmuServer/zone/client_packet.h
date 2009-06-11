@@ -247,3 +247,4 @@
 	void Handle_OP_AdventureStatsRequest(const EQApplicationPacket *app);
 	void Handle_OP_AdventureLeaderboardRequest(const EQApplicationPacket *app);	
 	void Handle_OP_RespawnWindow(const EQApplicationPacket *app);
+	void Handle_OP_GroupUpdate(const EQApplicationPacket *app);
