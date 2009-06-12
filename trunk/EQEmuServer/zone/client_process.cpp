@@ -767,6 +767,18 @@ void Client::BulkSendInventoryItems()
 			size+=packet.length();
 		}
 	}
+	if(GetClientVersion() == EQClientSoF)
+	{	
+		slot_id = 9999;
+		const ItemInst* inst = m_inv[slot_id];
+		if(inst && inst->IsSlotAllowed(slot_id) == 0)
+			inst = NULL;
+		if (inst){
+			string packet = inst->Serialize(slot_id);
+			ser_items[i++] = packet;
+			size+=packet.length();
+		}
+	}
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_CharInventory,size);
 	uchar* ptr = outapp->pBuffer;
 	for(itr=ser_items.begin();itr!=ser_items.end();itr++){
