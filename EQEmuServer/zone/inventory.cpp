@@ -40,7 +40,7 @@ uint32 Client::NukeItem(uint32 itemnum) {
 	uint32 x = 0;
 	
 	int i;
-	for (i=0; i<=29; i++) { // Equipped and personal inventory
+	for (i=0; i<=30; i++) { // Equipped, personal inventory, and cursor
 		if (GetItemIDAt(i) == itemnum || (itemnum == 0xFFFE && GetItemIDAt(i) != INVALID_ID)) {
 			DeleteItemInInventory(i, 0, true);
 			x++;
@@ -76,7 +76,11 @@ uint32 Client::NukeItem(uint32 itemnum) {
 			x++;
 		}
 	}
-	
+	// Power Source Slot
+	if (GetItemIDAt(9999) == itemnum || (itemnum == 0xFFFE && GetItemIDAt(9999) != INVALID_ID)) {
+		DeleteItemInInventory(9999, 0, true);
+		x = 1;
+	}	
 	return x;
 }
 
@@ -750,7 +754,7 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 	
 	// Step 2: Validate item in from_slot
 	// After this, we can assume src_inst is a valid ptr
-	if (!src_inst && (src_slot_id<4000 || src_slot_id>4009) ) {
+	if (!src_inst && (src_slot_id<4000 || src_slot_id>4009)) {
 		if (GetClientVersion() != EQClientSoF)  // SoF client sends invalid slots regularly for an unknown use, so don't warn them about this.
 			Message(13, "Error: Server found no item in slot %i (->%i), Deleting Item!", src_slot_id, dst_slot_id);
 
@@ -761,7 +765,7 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 	//verify shared bank transactions in the database
 	if(src_inst && src_slot_id >= 2500 && src_slot_id <= 2550) {
 		if(!database.VerifyInventory(account_id, src_slot_id, src_inst)) {
-			LogFile->write(EQEMuLog::Error, "Player %s on account %s was found exploting the shared bank. They have been banned until further review.\n", account_name, GetName());
+			LogFile->write(EQEMuLog::Error, "Player %s on account %s was found exploiting the shared bank. They have been banned until further review.\n", account_name, GetName());
 			DeleteItemInInventory(dst_slot_id,0,true);
 			return(false);
 		}
@@ -925,7 +929,7 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 	}
 	else {
 		// Not dealing with charges - just do direct swap
-		if(src_inst && dst_slot_id<22 && dst_slot_id>0) {
+		if(src_inst && (dst_slot_id < 22 || dst_slot_id == 9999) && dst_slot_id >= 0) {
 			if (src_inst->GetItem()->Attuneable) {
 				src_inst->SetInstNoDrop(true);
 			}
@@ -1173,6 +1177,18 @@ void Client::RemoveNoRent() {
 			continue;
 		if(TempItem->NoRent == 0)
 			DeleteItemInInventory(x,0,true);
+	}
+	if(GetClientVersion() == EQClientSoF)
+	{
+		TempItem = 0;
+		ins = GetInv().GetItem(9999);
+		if(ins)	{
+			TempItem = ins->GetItem();
+			if(TempItem) {
+				if(TempItem->NoRent == 0)
+					DeleteItemInInventory(9999,0,true);
+			}
+		}
 	}
 }
 

@@ -151,6 +151,14 @@ void Client::CalcItemBonuses(StatBonuses* newbon) {
 		AddItemBonuses(inst, newbon);
 	}
 	
+	//Power Source Slot
+	if (GetClientVersion() == EQClientSoF)
+	{
+		const ItemInst* inst = m_inv[9999];
+		if(inst)
+			AddItemBonuses(inst, newbon);
+	}
+
 	//tribute items
 	for (i = 0; i < MAX_PLAYER_TRIBUTES; i++) {
 		const ItemInst* inst = m_inv[TRIBUTE_SLOT_START + i];

@@ -262,12 +262,19 @@ bool ItemInst::IsEquipable(sint16 slot_id) const
 	if (!m_item)
 		return false;
 	
-	if (slot_id < 22) {
+	if(slot_id == 9999) {
+		slot_id = 22;
 		uint32 slot_mask = (1 << slot_id);
 		if (slot_mask & m_item->Slots)
 			return true;
 	}
 	
+	if (slot_id < 22) {
+		uint32 slot_mask = (1 << slot_id);
+		if (slot_mask & m_item->Slots)
+			return true;
+	}
+
 	return false;
 }
 
@@ -541,7 +548,7 @@ ItemInst* Inventory::GetItem(sint16 slot_id) const
 		// Personal inventory slots
 		result = _GetItem(m_inv, slot_id);
 	}
-	else if ((slot_id>=0 && slot_id<=21) || (slot_id >= 400 && slot_id<=404)) {
+	else if ((slot_id>=0 && slot_id<=21) || (slot_id >= 400 && slot_id<=404) || (slot_id == 9999)) {
 		// Equippable slots (on body)
 		result = _GetItem(m_worn, slot_id);
 	}
@@ -930,7 +937,7 @@ ItemInst* Inventory::PopItem(sint16 slot_id)
 	if (slot_id==SLOT_CURSOR) { // Cursor
 		p = m_cursor.pop();
 	}
-	else if ((slot_id>=0 && slot_id<=21) || (slot_id >= 400 && slot_id<=404)) { // Worn slots
+	else if ((slot_id>=0 && slot_id<=21) || (slot_id >= 400 && slot_id<=404) || (slot_id == 9999)) { // Worn slots
 		p = m_worn[slot_id];
 		m_worn.erase(slot_id);
 	}
@@ -1131,7 +1138,7 @@ sint16 Inventory::_PutItem(sint16 slot_id, ItemInst* inst)
 		m_cursor.push_front(inst);
 		result = slot_id;
 	}
-	else if ((slot_id>=0 && slot_id<=21) || (slot_id >= 400 && slot_id<=404)) { // Worn slots
+	else if ((slot_id>=0 && slot_id<=21) || (slot_id >= 400 && slot_id<=404) || (slot_id == 9999)) { // Worn slots
 		m_worn[slot_id] = inst;
 		result = slot_id;
 	}
@@ -1416,6 +1423,8 @@ sint16 Inventory::_HasItemByLoreGroup(ItemInstQueue& iqueue, uint32 loregroup)
 
 bool ItemInst::IsSlotAllowed(sint16 slot_id) const
 {
+	if(slot_id == 9999)
+		slot_id = 22;
 	if(!m_item)
 		return false;
 	else if(Inventory::SupportsContainers(slot_id))
