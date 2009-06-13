@@ -1356,6 +1356,16 @@ void WorldServer::Process() {
 			}
 			break;
 		}
+		case ServerOP_DepopAllPlayersCorpses:
+		{
+			ServerDepopAllPlayersCorpses_Struct *sdapcs = (ServerDepopAllPlayersCorpses_Struct *)pack->pBuffer;
+
+			if(zone && !((zone->GetZoneID() == sdapcs->ZoneID) && (zone->GetInstanceID() == sdapcs->InstanceID)))
+				entity_list.RemoveAllCorpsesByCharID(sdapcs->CharacterID);
+
+			break;
+
+		}
 		default: {
 			cout << " Unknown ZSopcode:" << (int)pack->opcode;
 			cout << " size:" << pack->size << endl;

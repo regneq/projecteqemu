@@ -4654,3 +4654,37 @@ int	Client::LDoNChest_SkillCheck(NPC *target, int skill)
 
 	return 0;
 }
+
+void Client::SummonAndRezzAllCorpses()
+{
+	pendingrezzexp = -1;
+
+	ServerPacket *Pack = new ServerPacket(ServerOP_DepopAllPlayersCorpses, sizeof(ServerDepopAllPlayersCorpses_Struct));
+
+	ServerDepopAllPlayersCorpses_Struct *sdapcs = (ServerDepopAllPlayersCorpses_Struct*)Pack->pBuffer;
+
+	sdapcs->CharacterID = CharacterID();
+	sdapcs->ZoneID = zone->GetZoneID();
+	sdapcs->InstanceID = zone->GetInstanceID();
+
+	worldserver.SendPacket(Pack);
+
+	safe_delete(Pack);
+
+	entity_list.RemoveAllCorpsesByCharID(CharacterID());
+
+	int CorpseCount = database.SummonAllPlayerCorpses(CharacterID(), zone->GetZoneID(), zone->GetInstanceID(),
+								  GetX(), GetY(), GetZ(), GetHeading());
+	if(CorpseCount <= 0)
+	{
+		Message(clientMessageYellow, "You have no corpses to summnon.");
+		return;
+	}
+
+	int RezzExp = entity_list.RezzAllCorpsesByCharID(CharacterID());
+
+	if(RezzExp > 0)
+		SetEXP(GetEXP() + RezzExp, GetAAXP(), true);
+
+	Message(clientMessageYellow, "All your corpses have been summoned to your feet and have received a 100% resurrection.");
+}

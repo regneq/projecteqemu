@@ -96,6 +96,7 @@ public:
 	char		orgname[64];
 	int32 GetEquipment(int8 material_slot) const;	// returns item id
 	uint32 GetEquipmentColor(int8 material_slot) const;
+	inline int GetRezzExp() { return rezzexp; }
 
 protected:
 	void MoveItemToCorpse(Client *client, ItemInst *item, sint16 equipslot);

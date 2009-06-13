@@ -4,6 +4,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 Derision: Implemented SE_PercentXPIncrease and Resist caps.
 Trevius: Removing an Illusion should now restore all features to their original settings in most cases.
 Trevius: SoF - Adjusted Power Source code some to remove a bug with using the slot.
+Derision: Implemented SE_SummonAndResAllCorpses
 
 ==06/12/2009==
 Trevius: The #nukeitem command and related quest commands is now able to remove items on the cursor and within bag slots of the cursor.

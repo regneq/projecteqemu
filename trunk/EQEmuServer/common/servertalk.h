@@ -77,8 +77,8 @@
 #define ServerOP_DisbandGroup		0x0043 //for disbanding a whole group cross zone
 #define ServerOP_GroupJoin			0x0044 //for joining ooz folks
 #define ServerOP_UpdateSpawn		0x0045
-
-#define ServerOP_ReloadTasks          0x0060
+#define ServerOP_ReloadTasks		0x0060
+#define ServerOP_DepopAllPlayersCorpses	0x0061
 
 #define ServerOP_RaidAdd			0x0100 //in use
 #define ServerOP_RaidRemove			0x0101 //in use
@@ -714,6 +714,13 @@ struct ServerOP_Consent_Struct {
 struct ReloadTasks_Struct {
 	uint32 Command;
 	uint32 Parameter;
+};
+
+struct ServerDepopAllPlayersCorpses_Struct
+{
+	uint32 CharacterID;
+	int32 ZoneID;
+	int16 InstanceID;
 };
 
 struct ServerRaidGeneralAction_Struct {
