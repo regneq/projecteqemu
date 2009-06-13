@@ -2659,6 +2659,14 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				break;
 			}
 
+			case SE_SummonAndResAllCorpses:
+			{
+				if(IsClient())
+					CastToClient()->SummonAndRezzAllCorpses();
+
+				break;
+			}
+
 			case SE_ImprovedDamage:
 			case SE_ImprovedHeal:
 			case SE_IncreaseSpellHaste:

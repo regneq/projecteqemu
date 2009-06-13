@@ -853,6 +853,7 @@ public:
 
 	void CalcItemScale();
 	bool CalcItemScale(int32 slot_x, int32 slot_y);
+	void SummonAndRezzAllCorpses();
 
 protected:
 	friend class Mob;

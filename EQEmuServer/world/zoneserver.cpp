@@ -1106,6 +1106,11 @@ bool ZoneServer::Process() {
 			zoneserver_list.SendPacket(pack);
 			break;
 		}
+		case ServerOP_DepopAllPlayersCorpses:
+		{
+			zoneserver_list.SendPacket(pack);
+			break;
+		}
 		default:
 		{
 			zlog(WORLD__ZONE_ERR,"Unknown ServerOPcode from zone 0x%04x, size %d",pack->opcode,pack->size);

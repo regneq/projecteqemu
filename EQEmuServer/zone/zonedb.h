@@ -149,6 +149,7 @@ public:
 	bool	DeletePlayerCorpse(int32 dbid);
 	int32	GetPlayerBurriedCorpseCount(int32 char_id);
 	Corpse* SummonBurriedPlayerCorpse(int32 char_id, int32 dest_zoneid, int16 dest_instanceid, float dest_x, float dest_y, float dest_z, float dest_heading);
+	bool	SummonAllPlayerCorpses(int32 char_id, int32 dest_zoneid, int16 dest_instanceid, float dest_x, float dest_y, float dest_z, float dest_heading);
 	Corpse*	LoadPlayerCorpse(int32 player_corpse_id);
 	bool	UnburyPlayerCorpse(int32 dbid, int32 new_zoneid, int16 dest_instanceid, float new_x, float new_y, float new_z, float new_heading);
 	bool	LoadPlayerCorpses(int32 iZoneID, int16 iInstanceID);

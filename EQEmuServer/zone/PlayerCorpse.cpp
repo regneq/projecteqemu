@@ -1487,6 +1487,51 @@ Corpse* ZoneDatabase::SummonBurriedPlayerCorpse(int32 char_id, int32 dest_zoneid
 	return NewCorpse;
 }
 
+bool ZoneDatabase::SummonAllPlayerCorpses(int32 char_id, int32 dest_zoneid, int16 dest_instanceid,
+					  float dest_x, float dest_y, float dest_z, float dest_heading)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+	Corpse* NewCorpse = 0;
+	int CorpseCount = 0;
+	unsigned long* lengths;
+
+	if(!RunQuery(query, MakeAnyLenString(&query, "UPDATE player_corpses SET zoneid = %i, instanceid = %i, x = %f, y = %f, z = %f, "
+						     "heading = %f, IsBurried = 0, WasAtGraveyard = 0 WHERE charid = %i",
+						     dest_zoneid, dest_instanceid, dest_x, dest_y, dest_z, dest_heading, char_id), errbuf))
+		LogFile->write(EQEMuLog::Error, "Error moving corpses, Query = %s, Error = %s\n", query, errbuf);
+
+	safe_delete_array(query);
+		
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT id, charname, data, timeofdeath, rezzed FROM player_corpses WHERE charid='%u'"
+						     "ORDER BY timeofdeath", char_id), errbuf, &result))
+	{
+		while((row = mysql_fetch_row(result)))
+		{
+			lengths = mysql_fetch_lengths(result);
+			NewCorpse = Corpse::LoadFromDBData(atoi(row[0]), char_id, row[1], (uchar*) row[2], lengths[2], dest_x, dest_y,
+							   dest_z, dest_heading, row[3],atoi(row[4])==1, false);
+			if(NewCorpse) {
+				entity_list.AddCorpse(NewCorpse);
+				NewCorpse->Spawn();
+				++CorpseCount;
+			}
+			else
+				LogFile->write(EQEMuLog::Error, "Unable to construct a player corpse for character id %u.", char_id);
+		}
+
+		mysql_free_result(result);
+	}
+	else
+		LogFile->write(EQEMuLog::Error, "Error in SummonAllPlayerCorpses Query = %s, Error = %s\n", query, errbuf);
+	
+	safe_delete_array(query);
+
+	return (CorpseCount > 0);
+}
+
 bool ZoneDatabase::UnburyPlayerCorpse(int32 dbid, int32 new_zoneid, int16 new_instanceid, float new_x, float new_y, float new_z, float new_heading) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char* query = new char[256];
@@ -1676,7 +1721,7 @@ void Corpse::LoadPlayerCorpseDecayTime(int32 dbid){
     MYSQL_ROW row;
 	if (database.RunQuery(query, MakeAnyLenString(&query, "SELECT (UNIX_TIMESTAMP() - UNIX_TIMESTAMP(timeofdeath)) FROM player_corpses WHERE id=%d and not timeofdeath=0", dbid), errbuf, &result)) {
 		safe_delete_array(query);
-		while (row = mysql_fetch_row(result)) {
+		while ((row = mysql_fetch_row(result))) {
 			if(atoi(row[0]) > 0 && RuleI(Character, CorpseDecayTimeMS) > (atoi(row[0]) * 1000))
 				corpse_decay_timer.SetTimer(RuleI(Character, CorpseDecayTimeMS) - (atoi(row[0]) * 1000));
 			else

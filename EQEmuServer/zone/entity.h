@@ -153,6 +153,8 @@ public:
 	Corpse* GetCorpseByID(int16 id);
 	Corpse* GetCorpseByDBID(int32 dbid);
 	Corpse* GetCorpseByName(char* name);
+	void RemoveAllCorpsesByCharID(int32 charid);
+	int RezzAllCorpsesByCharID(int32 charid);
 	bool IsMobInZone(Mob *who);
 	void ClearClientPetitionQueue();
     bool CanAddHateForMob(Mob *p);

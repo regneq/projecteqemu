@@ -1527,6 +1527,39 @@ Corpse* EntityList::GetCorpseByName(char* name){
 	}
 	return 0;
 }
+
+void EntityList::RemoveAllCorpsesByCharID(int32 charid)
+{
+	LinkedListIterator<Corpse*> iterator(corpse_list);
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		if (iterator.GetData()->GetCharID() == charid)
+			iterator.RemoveCurrent();
+		else
+			iterator.Advance();
+	}
+}
+
+int EntityList::RezzAllCorpsesByCharID(int32 charid)
+{
+	int RezzExp = 0;
+
+	LinkedListIterator<Corpse*> iterator(corpse_list);
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		if (iterator.GetData()->GetCharID() == charid)
+		{
+			RezzExp += iterator.GetData()->GetRezzExp();
+			iterator.GetData()->Rezzed(true);
+			iterator.GetData()->CompleteRezz();
+		}
+		iterator.Advance();
+	}
+	return RezzExp;
+}
+
 Group* EntityList::GetGroupByMob(Mob* mob) 
 { 
 	list<Group *>::iterator iterator;
