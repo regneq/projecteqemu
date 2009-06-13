@@ -2916,6 +2916,24 @@ bool Database::RemoveClientFromInstance(uint16 instance_id, uint32 char_id)
 	}
 }
 
+bool Database::RemoveClientsFromInstance(uint16 instance_id)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+
+	if(RunQuery(query, MakeAnyLenString(&query, "DELETE FROM instance_lockout_player WHERE id=%lu", 
+		instance_id), errbuf))
+	{
+		safe_delete_array(query);
+		return true;
+	}
+	else 
+	{
+		safe_delete_array(query);
+		return false;
+	}
+}
+
 bool Database::CheckInstanceExists(uint16 instance_id)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
@@ -3303,6 +3321,23 @@ void Database::RemovePlayerFromAdventure(int32 id, int32 charid)
 	}
 }
 
+void Database::RemovePlayersFromAdventure(int32 id)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+
+	if(RunQuery(query, MakeAnyLenString(&query, "DELETE FROM `adventure_members` WHERE"
+		" id=%u", id), errbuf))
+	{
+		safe_delete_array(query);
+	}
+	else
+	{
+		//error
+		safe_delete_array(query);
+	}
+}
+
 void Database::AddGroupToAdventure(int32 id, int32 gid)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
@@ -3428,6 +3463,31 @@ bool Database::GetAdventureDetails(int32 charid, int32 &id, int32 &adventure_id,
 		safe_delete_array(query);
 		return false;
 	}
+}
+
+int32 Database::GetAdventureID(int32 char_id)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+	int32 adv_id = 0;
+
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT `id` FROM `adventure_members` WHERE charid=%u LIMIT 1", 
+		char_id), errbuf, &result))
+	{
+		safe_delete_array(query);
+		while((row = mysql_fetch_row(result)) != NULL)
+		{
+			adv_id = atoi(row[0]);
+		}
+		mysql_free_result(result);
+	}
+	else 
+	{
+		safe_delete_array(query);
+	}
+	return adv_id;
 }
 
 int32 Database::CountPlayersInAdventure(int32 id) 

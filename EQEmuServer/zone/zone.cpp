@@ -2275,6 +2275,8 @@ void Zone::UpdateAdventureCount(AdventureDetails *ad)
 			if(ad->status == 1)
 			{
 				database.UpdateAdventureCompleted(ad->id, tv.tv_sec);
+				database.RemoveClientsFromInstance(ad->instance_id);
+				database.RemovePlayersFromAdventure(ad->id);
 
 				ServerPacket *pack2 = new ServerPacket(ServerOP_AdventureFinish, sizeof(ServerAdventureFinish_Struct));
 				ServerAdventureFinish_Struct *afin = (ServerAdventureFinish_Struct*)pack2->pBuffer;
@@ -2305,6 +2307,9 @@ void Zone::UpdateAdventureCount(AdventureDetails *ad)
 			}
 			else if(ad->status == 2)
 			{
+				database.RemoveClientsFromInstance(ad->instance_id);
+				database.RemovePlayersFromAdventure(ad->id);
+
 				ServerPacket *pack2 = new ServerPacket(ServerOP_AdventureFinish, sizeof(ServerAdventureFinish_Struct));
 				ServerAdventureFinish_Struct *afin = (ServerAdventureFinish_Struct*)pack2->pBuffer;
 				afin->id = ad->id;

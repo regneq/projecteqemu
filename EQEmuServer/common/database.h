@@ -160,6 +160,7 @@ public:
 	void PurgeExpiredInstances();
 	bool AddClientToInstance(uint16 instance_id, uint32 char_id);
 	bool RemoveClientFromInstance(uint16 instance_id, uint32 char_id);
+	bool RemoveClientsFromInstance(uint16 instance_id);
 	bool CheckInstanceExists(uint16 instance_id);
 	void BuryCorpsesInInstance(uint16 instance_id);
 	int16 GetInstanceVersion(uint16 instance_id);
@@ -179,11 +180,13 @@ public:
 	int32 CreateAdventure(int32 adventure_id);
 	void AddPlayerToAdventure(int32 id, int32 charid);
 	void RemovePlayerFromAdventure(int32 id, int32 charid);
+	void RemovePlayersFromAdventure(int32 id);
 	void AddGroupToAdventure(int32 id, int32 gid);
 	void AddRaidToAdventure(int32 id, int32 rid);
 	void DestroyAdventure(int32 id);
 	bool GetAdventureDetails(int32 charid, int32 &id, int32 &adventure_id, int32 &instance_id, int32 &count, 
 		int32 &ass_count, int32 &status, int32 &time_c, int32 &time_z, int32 &time_comp);
+	int32 GetAdventureID(int32 char_id);
 	int32 CountPlayersInAdventure(int32 id);
 	void PurgeAdventures();
 	void AddAdventureToInstance(int32 adv_id, int32 inst_id);
