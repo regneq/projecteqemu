@@ -1171,7 +1171,7 @@ void Mob::SendIllusionPacket(int16 in_race, int8 in_gender, int16 in_texture, in
 			gender = in_gender;
 	}
 	if (in_texture == 0xFFFF) {
-		if (in_race == 0)
+		if (in_race <= 12 || in_race == 128 || in_race == 130 || in_race == 330 || in_race == 522)
 			this->texture = GetTexture();
 		else
 			this->texture = 0;
@@ -1264,6 +1264,26 @@ void Mob::SendIllusionPacket(int16 in_race, int8 in_gender, int16 in_texture, in
 			this->armor_tint = GetArmorTint();
 		else
 			this->armor_tint = in_armor_tint;
+	}
+
+	// Forces the feature information to be pulled from the Player Profile
+	if (IsClient() && in_race == 0) {
+		this->race = CastToClient()->GetBaseRace();
+		this->gender = CastToClient()->GetBaseGender();
+		this->texture = GetTexture();
+		this->helmtexture = GetHelmTexture();
+		this->haircolor = CastToClient()->GetBaseHairColor();
+		this->beardcolor = CastToClient()->GetBaseBeardColor();
+		this->eyecolor1 = CastToClient()->GetBaseEyeColor();
+		this->eyecolor2 = CastToClient()->GetBaseEyeColor();
+		this->hairstyle = CastToClient()->GetBaseHairStyle();
+		this->luclinface = CastToClient()->GetBaseFace();
+		this->beard	= CastToClient()->GetBaseBeard();
+		this->aa_title = 0xFF;
+		this->drakkin_heritage = CastToClient()->GetBaseHeritage();
+		this->drakkin_tattoo = CastToClient()->GetBaseTattoo();
+		this->drakkin_details = CastToClient()->GetBaseDetails();
+		this->armor_tint = 0xFFFFFFFF;
 	}
 
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_Illusion, sizeof(Illusion_Struct));
