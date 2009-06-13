@@ -336,6 +336,7 @@ public:
 	inline virtual sint16	GetCR() const { return CR; }
 
 	sint16	GetMaxStat() const;
+	sint16	GetMaxResist() const;
 	sint16  GetMaxSTR() const;
     sint16  GetMaxSTA() const;
     sint16  GetMaxDEX() const;
@@ -403,7 +404,7 @@ public:
 
 	bool	UpdateLDoNPoints(sint32 points, int32 theme);
 
-	void	AddEXP(uint32 add_exp, int8 conlevel = 0xFF, bool resexp = false);
+	void	AddEXP(uint32 in_add_exp, int8 conlevel = 0xFF, bool resexp = false);
 	void	SetEXP(uint32 set_exp, uint32 set_aaxp, bool resexp=false);
 	void	SetLeadershipEXP(uint32 group_exp, uint32 raid_exp);
 	void	AddLeadershipEXP(uint32 group_exp, uint32 raid_exp);
@@ -1073,6 +1074,7 @@ private:
 	uint32 AttemptedMessages;
 
 	EQClientVersion ClientVersion;
+	int XPRate;
 
 
 	//Connecting debug code.

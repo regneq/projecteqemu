@@ -233,6 +233,7 @@ struct StatBonuses {
 
 	sint8 HundredHands;		//extra haste, stacks with all other haste  i
 	bool MeleeLifetap;  //i
+	int XPRateMod;
 };
 
 typedef struct

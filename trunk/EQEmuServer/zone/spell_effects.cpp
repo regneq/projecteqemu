@@ -2650,6 +2650,15 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				break;
 			}
 
+			case SE_PercentXPIncrease:
+			{
+#ifdef SPELL_EFFECT_SPAM
+				snprintf(effect_desc, _EDLEN, "Percent XP Increase: %+i", effect_value);
+#endif
+				// Handled by bonuses.
+				break;
+			}
+
 			case SE_ImprovedDamage:
 			case SE_ImprovedHeal:
 			case SE_IncreaseSpellHaste:

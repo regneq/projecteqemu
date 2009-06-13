@@ -116,6 +116,8 @@ void Client::CalcBonuses()
 	CalcMaxEndurance();
 	
 	rooted = FindType(SE_Root);
+
+	XPRate = 100 + spellbonuses.XPRateMod;
 }
 
 int Client::CalcRecommendedLevelBonus(int8 level, uint8 reclevel, int basestat)
@@ -142,7 +144,7 @@ int Client::CalcRecommendedLevelBonus(int8 level, uint8 reclevel, int basestat)
 void Client::CalcItemBonuses(StatBonuses* newbon) {
 	//memset assumed to be done by caller.
 	
-	int i;
+	unsigned int i;
 	//should not include 21 (SLOT_AMMO)
 	for (i=0; i<21; i++) {
 		const ItemInst* inst = m_inv[i];
@@ -1110,6 +1112,12 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 			{
 				if(newbon->ExtraAttackChance < effect_value)
 					newbon->ExtraAttackChance = effect_value;
+				break;
+			}
+			case SE_PercentXPIncrease:
+			{
+				if(newbon->XPRateMod < effect_value)
+					newbon->XPRateMod = effect_value;
 				break;
 			}
 				

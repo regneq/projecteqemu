@@ -276,6 +276,7 @@ Client::Client(EQStreamInterface* ieqs)
 	AggroCount = 0;
 	RestRegenHP = 0;
 	RestRegenMana = 0;
+	XPRate = 100;
 }
 
 Client::~Client() {
