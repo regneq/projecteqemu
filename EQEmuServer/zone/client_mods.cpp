@@ -53,6 +53,20 @@ sint16 Client::GetMaxStat() const {
 	return(base);
 }
 
+sint16 Client::GetMaxResist() const 
+{
+	int level = GetLevel();
+
+	sint16 base = 500;
+	
+	if(level > 65)
+		base += ((level - 65) * 5);
+
+	base +=  (GetAA(aaDiscordantDefiance) * 5);
+
+	return base;
+}
+
 sint16 Client::GetMaxSTR() const {
 	return GetMaxStat()
 		+ itembonuses.STRCapMod
@@ -91,34 +105,29 @@ sint16 Client::GetMaxCHA() const {
 		+ spellbonuses.CHACapMod;
 }
 sint16 Client::GetMaxMR() const {
-	return GetMaxStat()
+	return GetMaxResist()
 		+ itembonuses.MRCapMod
-		+ spellbonuses.MRCapMod
-		+ (GetAA(aaDiscordantDefiance) * 5);
+		+ spellbonuses.MRCapMod;
 }
 sint16 Client::GetMaxPR() const {
-	return GetMaxStat()
+	return GetMaxResist()
 		+ itembonuses.PRCapMod
-		+ spellbonuses.PRCapMod
-		+ (GetAA(aaDiscordantDefiance) * 5);
+		+ spellbonuses.PRCapMod;
 }
 sint16 Client::GetMaxDR() const {
-	return GetMaxStat()
+	return GetMaxResist()
 		+ itembonuses.DRCapMod
-		+ spellbonuses.DRCapMod
-		+ (GetAA(aaDiscordantDefiance) * 5);
+		+ spellbonuses.DRCapMod;
 }
 sint16 Client::GetMaxCR() const {
-	return GetMaxStat()
+	return GetMaxResist()
 		+ itembonuses.CRCapMod
-		+ spellbonuses.CRCapMod
-		+ (GetAA(aaDiscordantDefiance) * 5);
+		+ spellbonuses.CRCapMod;
 }
 sint16 Client::GetMaxFR() const {
-	return GetMaxStat()
+	return GetMaxResist()
 		+ itembonuses.FRCapMod
-		+ spellbonuses.FRCapMod
-		+ (GetAA(aaDiscordantDefiance) * 5);
+		+ spellbonuses.FRCapMod;
 }
 sint32 Client::LevelRegen()
 {
@@ -1164,7 +1173,10 @@ sint16	Client::CalcMR()
 	
 	if(MR < 1)
 		MR = 1;
-	
+
+	if(MR > GetMaxMR())
+		MR = GetMaxMR();
+
 	return(MR);
 }
 
@@ -1239,6 +1251,9 @@ sint16	Client::CalcFR()
 	if(FR < 1)
 		FR = 1;
 	
+	if(FR > GetMaxFR())
+		FR = GetMaxFR();
+
 	return(FR);
 }
 
@@ -1319,6 +1334,9 @@ sint16	Client::CalcDR()
 	
 	if(DR < 1)
 		DR = 1;
+
+	if(DR > GetMaxDR())
+		DR = GetMaxDR();
 
 	return(DR);
 }
@@ -1401,6 +1419,9 @@ sint16	Client::CalcPR()
 	if(PR < 1)
 		PR = 1;
 
+	if(PR > GetMaxPR())
+		PR = GetMaxPR();
+
 	return(PR);
 }
 
@@ -1474,6 +1495,9 @@ sint16	Client::CalcCR()
 	
 	if(CR < 1)
 		CR = 1;
+
+	if(CR > GetMaxCR())
+		CR = GetMaxCR();
 
 	return(CR);
 }

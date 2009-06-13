@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/13/2009==
+Derision: Implemented SE_PercentXPIncrease and Resist caps.
+
 ==06/12/2009==
 Trevius: The #nukeitem command and related quest commands is now able to remove items on the cursor and within bag slots of the cursor
 Trevius: SoF - The Power Source Slot is now a usable slot.  Items set to use slot 22 in the items table will be able to use this new slot.

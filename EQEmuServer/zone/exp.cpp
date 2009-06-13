@@ -26,7 +26,7 @@
 #include "embparser.h"
 #endif
 
-static int MaxBankedGroupLeadershipPoints(int Level)
+static uint32 MaxBankedGroupLeadershipPoints(int Level)
 {
 	if(Level < 35)
 		return 4;
@@ -37,7 +37,7 @@ static int MaxBankedGroupLeadershipPoints(int Level)
 	return 8;
 }
 
-static int MaxBankedRaidLeadershipPoints(int Level)
+static uint32 MaxBankedRaidLeadershipPoints(int Level)
 {
 	if(Level < 45)
 		return 6;
@@ -48,7 +48,13 @@ static int MaxBankedRaidLeadershipPoints(int Level)
 	return 10;
 }
 
-void Client::AddEXP(int32 add_exp, int8 conlevel, bool resexp) {
+void Client::AddEXP(int32 in_add_exp, int8 conlevel, bool resexp) {
+
+	int32 add_exp = in_add_exp;
+
+	if(!resexp && (XPRate != 0))
+		add_exp = static_cast<int32>(in_add_exp * (static_cast<float>(XPRate) / 100.0f));
+	
 	if (m_epp.perAA<0 || m_epp.perAA>100)
 		m_epp.perAA=0;	// stop exploit with sanity check
 	
@@ -117,7 +123,7 @@ void Client::AddEXP(int32 add_exp, int8 conlevel, bool resexp) {
 		}
 
 		if(IsLeadershipEXPOn() && ((conlevel == CON_BLUE) || (conlevel == CON_WHITE) || (conlevel == CON_YELLOW) || (conlevel == CON_RED))) {
-			add_exp = static_cast<float>(add_exp) * 0.8;
+			add_exp = static_cast<int32>(static_cast<float>(add_exp) * 0.8f);
 
 			if(GetGroup())
 			{
@@ -459,7 +465,7 @@ void Group::SplitExp(uint32 exp, Mob* other) {
 	if(other->GetOwner() && other->GetOwner()->IsClient()) // Ensure owner isn't pc
 		return;
 	
-	int i; 
+	unsigned int i; 
 	uint32 groupexp = exp; 
 	int8 membercount = 0; 
 	int8 maxlevel = 1;
@@ -543,7 +549,7 @@ void Raid::SplitExp(uint32 exp, Mob* other) {
 	if (membercount == 0) 
 		return; 
 
-	for (int x = 0; x < MAX_GROUP_MEMBERS; x++)  {
+	for (unsigned int x = 0; x < MAX_GROUP_MEMBERS; x++)  {
 		if (members[x].member != NULL) // If Group Member is Client
 		{
 			Client *cmember = members[x].member;
