@@ -3,6 +3,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==06/12/2009==
 Trevius: The #nukeitem command and related quest commands is now able to remove items on the cursor and within bag slots of the cursor
 Trevius: SoF - The Power Source Slot is now a usable slot.  Items set to use slot 22 in the items table will be able to use this new slot.
+KLS: On successful completion of an adventure players should be removed from the adventure immediately instead of after 30 minutes.
 
 ==06/11/2009==
 AndMetal: Rule values can be viewed and modified through the web interface. They're updated into the database only, so they won't go into effect until you restart the server.

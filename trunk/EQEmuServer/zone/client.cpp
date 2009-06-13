@@ -3829,10 +3829,79 @@ void Client::SendRespawnBinds()
 
 void Client::SendAdventureSelection(Mob* rec, int32 difficulty, int32 type)
 {
-	if(GetCurrentAdventure())
+	Raid *ar = GetRaid();
+	Group *ag = GetGroup();
+	if(ar)
 	{
-		SendAdventureError("You cannot request an adventure because you are still resting from your last one.");
-		LogFile->write(EQEMuLog::Debug, "Client::SendAdventureSelection(): Client already in adventure");
+		for(int x = 0; x < MAX_RAID_MEMBERS; ++x)
+		{
+			if(ar->members[x].member)
+			{
+				AdventureDetails *tad = ar->members[x].member->GetCurrentAdventure();
+				if(tad)
+				{
+					SendAdventureError("You cannot request an adventure because %s is still resting from your last one.", 
+						ar->members[x].member->GetCleanName());
+					LogFile->write(EQEMuLog::Debug, "Client::SendAdventureSelection(): %s already in adventure", 
+						ar->members[x].member->GetCleanName());
+					return;
+				}
+			}
+			else
+			{
+				if(strlen(ar->members[x].membername) > 0)
+				{
+					if(database.GetAdventureID(database.GetCharacterID(ar->members[x].membername)) > 0)
+					{
+						SendAdventureError("You cannot request an adventure because %s is still resting from your last one.", 
+							ar->members[x].membername);
+						LogFile->write(EQEMuLog::Debug, "Client::SendAdventureSelection(): %s already in adventure", 
+							ar->members[x].membername);
+						return;
+					}
+				}
+			}
+		}
+	}
+	else if(ag)
+	{
+		for(int x = 0; x < 6; ++x)
+		{
+			if(ag->members[x])
+			{
+				if(ag->members[x]->IsClient())
+				{
+					AdventureDetails *tad = ag->members[x]->CastToClient()->GetCurrentAdventure();
+					if(tad)
+					{
+						SendAdventureError("You cannot request an adventure because %s is still resting from your last one.", 
+							ag->members[x]->GetCleanName());
+						LogFile->write(EQEMuLog::Debug, "Client::SendAdventureSelection(): %s already in adventure", 
+							ag->members[x]->GetCleanName());
+						return;
+					}
+				}
+			}
+			else
+			{
+				if(strlen(ag->membername[x]) > 0)
+				{
+					if(database.GetAdventureID(database.GetCharacterID(ag->membername[x])) > 0)
+					{
+						SendAdventureError("You cannot request an adventure because %s is still resting from your last one.", 
+							ag->membername[x]);
+						LogFile->write(EQEMuLog::Debug, "Client::SendAdventureSelection(): %s already in adventure", 
+							ag->membername[x]);
+						return;
+					}
+				}
+			}
+		}
+	}
+	else
+	{
+		SendAdventureError("You cannot request an adventure because you are not in a group.");
+		LogFile->write(EQEMuLog::Debug, "Client::SendAdventureSelection(): Client not in a group/raid");
 		return;
 	}
 
@@ -4249,6 +4318,11 @@ void Client::SendAdventureFinish(int8 win, int32 points, int32 theme)
 {
 	if(win > 0)
 	{
+		AdventureDetails *ad = GetCurrentAdventure();
+		if(ad)
+		{
+			SetCurrentAdventure(NULL);
+		}
 		UpdateLDoNPoints(points, theme);
 		EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureFinish, sizeof(AdventureFinish_Struct));
 		AdventureFinish_Struct *af = (AdventureFinish_Struct*)outapp->pBuffer;
