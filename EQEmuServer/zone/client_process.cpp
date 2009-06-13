@@ -745,6 +745,19 @@ void Client::BulkSendInventoryItems()
 			size+=packet.length();
 		}
 	}
+	// Power Source
+	if(GetClientVersion() == EQClientSoF)
+	{	
+		slot_id = 9999;
+		const ItemInst* inst = m_inv[slot_id];
+		if(inst && inst->IsSlotAllowed(slot_id) == 0)
+			inst = NULL;
+		if (inst){
+			string packet = inst->Serialize(slot_id);
+			ser_items[i++] = packet;
+			size+=packet.length();
+		}
+	}
 	// Bank items
 	for (slot_id=2000; slot_id<=2023; slot_id++) {
 		const ItemInst* inst = m_inv[slot_id];
@@ -758,18 +771,6 @@ void Client::BulkSendInventoryItems()
 	}
 	// Shared Bank items
 	for (slot_id=2500; slot_id<=2501; slot_id++) {
-		const ItemInst* inst = m_inv[slot_id];
-		if(inst && inst->IsSlotAllowed(slot_id) == 0)
-			inst = NULL;
-		if (inst){
-			string packet = inst->Serialize(slot_id);
-			ser_items[i++] = packet;
-			size+=packet.length();
-		}
-	}
-	if(GetClientVersion() == EQClientSoF)
-	{	
-		slot_id = 9999;
 		const ItemInst* inst = m_inv[slot_id];
 		if(inst && inst->IsSlotAllowed(slot_id) == 0)
 			inst = NULL;

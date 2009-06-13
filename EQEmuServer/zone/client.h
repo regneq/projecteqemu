@@ -268,10 +268,18 @@ public:
 	inline void	SetBaseGender(uint32 i) { m_pp.gender=i; }
 	inline  void SetDeity(uint32 i) {m_pp.deity=i;}
 
-	inline int16	GetBaseRace()	const { return m_pp.race; }
-	inline int16	GetBaseClass()	const { return m_pp.class_; }
-	inline int8		GetBaseGender()	const { return m_pp.gender; }
-	inline int8		GetBaseFace()	const { return m_pp.face; }
+	inline int16	GetBaseRace()		const { return m_pp.race; }
+	inline int16	GetBaseClass()		const { return m_pp.class_; }
+	inline int8		GetBaseGender()		const { return m_pp.gender; }
+	inline int8		GetBaseFace()		const { return m_pp.face; }
+	inline int8		GetBaseHairColor()	const { return m_pp.haircolor; }
+	inline int8		GetBaseBeardColor()	const { return m_pp.beardcolor; }
+	inline int8		GetBaseEyeColor()	const { return m_pp.eyecolor1; }
+	inline int8		GetBaseHairStyle()	const { return m_pp.hairstyle; }
+	inline int8		GetBaseBeard()		const { return m_pp.beard; }
+	inline int8		GetBaseHeritage()	const { return m_pp.drakkin_heritage; }
+	inline int8		GetBaseTattoo()		const { return m_pp.drakkin_tattoo; }
+	inline int8		GetBaseDetails()	const { return m_pp.drakkin_details; }
 	sint32			CalcMaxMana();
 	const sint32&	SetMana(sint32 amount);
 
