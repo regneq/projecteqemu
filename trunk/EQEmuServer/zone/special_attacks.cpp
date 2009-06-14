@@ -105,6 +105,22 @@ void Mob::DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, si
 	//pick up all the special behavior there
 
 	sint32 hate = max_damage;
+
+	if(skill == BASH)
+	{
+		if(IsClient())
+		{
+			ItemInst *item = CastToClient()->GetInv().GetItem(SLOT_SECONDARY);
+			if(item)
+			{
+				if(item->GetItem()->ItemType == ItemTypeShield)
+				{
+					hate += item->GetItem()->AC;
+				}
+			}
+		}
+	}
+
 	if(max_damage > 0) {
 		if(skill != THROWING && skill != ARCHERY)
 		{
@@ -931,9 +947,14 @@ void Client::RangedAttack(Mob* other) {
 			target->MeleeMitigation(this, TotalDmg, minDmg);
 			ApplyMeleeDamageBonus(ARCHERY, TotalDmg);
 			TryCriticalHit(target, ARCHERY, TotalDmg);
+			if(TotalDmg > 0)
+			{
+				sint32 hate = (2*(WDmg+ADmg));
+				target->AddToHateList(this, hate, 0, false);
+			}
 			target->Damage(this, TotalDmg, SPELL_UNKNOWN, ARCHERY);
 		}
-			else {
+		else {
 			target->Damage(this, -5, SPELL_UNKNOWN, ARCHERY);
 		}
 	}
@@ -1116,6 +1137,11 @@ void Client::ThrowingAttack(Mob* other) { //old was 51
 			target->MeleeMitigation(this, TotalDmg, minDmg);
 			ApplyMeleeDamageBonus(THROWING, TotalDmg);
 			TryCriticalHit(target, THROWING, TotalDmg);
+			if(TotalDmg > 0)
+			{
+				sint32 hate = (2*WDmg);
+				target->AddToHateList(this, hate, 0, false);
+			}
 			target->Damage(this, TotalDmg, SPELL_UNKNOWN, THROWING);
 		}
 		else

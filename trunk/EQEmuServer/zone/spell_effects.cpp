@@ -2685,6 +2685,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			case SE_LimitInstant:
 			case SE_LimitMinLevel:
 			case SE_LimitCastTime:
+			case SE_NoCombatSkills:
 			{
 				break;
 			}
@@ -3589,6 +3590,18 @@ sint16 Client::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id) {
 				value = focus_spell.base[i];
 			}
 			break;
+		case SE_SpellResistReduction:
+			if (type == focusResistRate && focus_spell.base[i] > value)
+			{
+				value = focus_spell.base[i];
+			}
+			break;
+		case SE_ReduceSpellHate:
+			if (type == focusHateReduction && focus_spell.base[i] > value)
+			{
+				value = focus_spell.base[i];
+			}
+			break;
 #if EQDEBUG >= 6
 		//this spits up a lot of garbage when calculating spell focuses
 		//since they have all kinds of extra effects on them.
@@ -3621,6 +3634,22 @@ sint16 Client::GetFocusEffect(focusType type, int16 spell_id) {
 			if(Total > realTotal) {
 				realTotal = Total;
 				UsedItem = TempItem;
+			}
+		}
+		for(int y = 0; y < MAX_AUGMENT_SLOTS; ++y)
+		{
+			ItemInst *aug = NULL;
+			aug = ins->GetAugment(y);
+			if(aug)
+			{
+				const Item_Struct* TempItemAug = aug->GetItem();
+				if (TempItemAug && TempItemAug->Focus.Effect > 0 && TempItemAug->Focus.Effect != SPELL_UNKNOWN) {
+					Total = CalcFocusEffect(type, TempItemAug->Focus.Effect, spell_id);
+					if(Total > realTotal) {
+						realTotal = Total;
+						UsedItem = TempItemAug;
+					}
+				}
 			}
 		}
 	}

@@ -1382,7 +1382,7 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte)
 			mlog(COMBAT__DAMAGE, "Final damage after all reductions: %d", damage);
 
 			if(damage != 0){
-				sint32 hate = max_hit;
+				sint32 hate = 2*weapon_damage; //base dmg with no modifiers
 				if(GetFeigned()) {
 					mlog(COMBAT__HITS, "Attacker %s avoids %d hate due to feign death", GetName(), hate);
 				} else {
@@ -2364,6 +2364,10 @@ bool NPC::Attack(Mob* other, int Hand, bool bRiposte)	 // Kaiyodo - base functio
 		}
 		
 		sint32 hate = damage;
+		if(IsPet())
+		{
+			hate = RuleI(Aggro, PetAggroAmount) * hate / 100;
+		}
 		//THIS IS WHERE WE CHECK TO SEE IF WE HIT:
 		if(other->IsClient() && other->CastToClient()->IsSitting()) {
 			mlog(COMBAT__DAMAGE, "Client %s is sitting. Hitting for max damage (%d).", other->GetName(), (max_dmg+eleBane));
