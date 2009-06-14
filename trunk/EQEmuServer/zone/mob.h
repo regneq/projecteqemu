@@ -649,6 +649,7 @@ bool logpos;
 	float Dist(const Mob &) const;
 	float DistNoZ(const Mob &) const;
 	float DistNoRoot(const Mob &) const;
+	float DistNoRoot(float x, float y, float z) const;
 	float DistNoRootNoZ(const Mob &) const;
 
 	bool IsTargeted() const { return (targeted > 0); }

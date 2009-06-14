@@ -570,7 +570,7 @@ void Mob::TemporaryPets(int16 spell_id, Mob *targ, const char *name_override, ui
 				GetX()+swarm_pet_x[summon_count], GetY()+swarm_pet_y[summon_count], 
 				GetZ(), GetHeading());
 
-		if(spell_id == 6882)	// Chaotic Jester Veteran AA.
+		if((spell_id == 6882) || (spell_id == 6884))
 			npca->SetFollowID(GetID());
 
 		if(!npca->GetSwarmInfo()){
