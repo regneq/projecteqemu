@@ -5,6 +5,14 @@ Derision: Implemented SE_PercentXPIncrease and Resist caps.
 Trevius: Removing an Illusion should now restore all features to their original settings in most cases.
 Trevius: SoF - Adjusted Power Source code some to remove a bug with using the slot.
 Derision: Implemented SE_SummonAndResAllCorpses
+KLS: Rebalanced some spell effects aggro values.
+KLS: Hate added should now be treated correctly.
+KLS: Archery should now cause aggro.
+KLS: Added rule Aggro:PetAggroAmount to control how much hate a pet causes, 50% default.
+KLS: Bash will now cause extra hate depending on the AC of the shield you're using if any.
+KLS: Implemented resist reduction and hate reduction spell focus.
+KLS: quest::updatespawntimer will now set the respawn timer in the database.
+KLS: Stole Trevius' idea to let augments work as focus items.
 
 ==06/12/2009==
 Trevius: The #nukeitem command and related quest commands is now able to remove items on the cursor and within bag slots of the cursor.

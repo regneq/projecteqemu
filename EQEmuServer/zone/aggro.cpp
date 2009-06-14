@@ -1158,7 +1158,7 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 				int val = CalcSpellEffectValue_formula(spells[spell_id].formula[o], spells[spell_id].base[o], spells[spell_id].max[o], this->GetLevel(), spell_id);
 				if (val < 0)
 				{
-					AggroAmount+=((1 + slevel*2)*RuleI(Aggro, MovementImpairAggroMod)/100);
+					AggroAmount += (2 + ((slevel * slevel) / 8));
 					break;
 				}
 				break;
@@ -1169,35 +1169,32 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 				int val = CalcSpellEffectValue_formula(spells[spell_id].formula[o], spells[spell_id].base[o], spells[spell_id].max[o], this->GetLevel(), spell_id);
 				if (val < 100)
 				{
-					AggroAmount+=((1 + slevel*2)*RuleI(Aggro, SlowAggroMod)/100);
+					AggroAmount += (5 + ((slevel * slevel) / 5));
 				}
 				break;
 			}
 			case SE_Stun: {
-				if (spells[spell_id].base[o] > 1)
-					AggroAmount+=((1 + slevel*4)*RuleI(Aggro, StunAggroMod)/100);
-				else
-					AggroAmount+=((1 + slevel*2)*RuleI(Aggro, StunAggroMod)/100);
+				AggroAmount += (5 + ((slevel * slevel) / 6));
 				break;
 			}
 			case SE_Blind: {
-				AggroAmount+=((1 + slevel*2)*RuleI(Aggro, IncapacitateAggroMod)/100);
+				AggroAmount += (5 + ((slevel * slevel) / 6));
 				break;
 			}
 			case SE_Mez: {
-				AggroAmount+=((1 + slevel*2)*RuleI(Aggro, IncapacitateAggroMod)/100);
+				AggroAmount += (5 + ((slevel * slevel) / 5));
 				break;
 			}
 			case SE_Charm: {
-				AggroAmount+=((1 + slevel*2)*RuleI(Aggro, IncapacitateAggroMod)/100);
+				AggroAmount += (5 + ((slevel * slevel) / 5));
 				break;
 			}
 			case SE_Root: {
-				AggroAmount+=((1 + slevel*2)*RuleI(Aggro, MovementImpairAggroMod)/100);
+				AggroAmount += (2 + ((slevel * slevel) / 8));
 				break;
 			}
 			case SE_Fear: {
-				AggroAmount+=((1 + slevel*2)*RuleI(Aggro, IncapacitateAggroMod)/100);
+				AggroAmount += (5 + ((slevel * slevel) / 6));
 				break;
 			}
 			case SE_ATK:
@@ -1205,7 +1202,7 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 				int val = CalcSpellEffectValue_formula(spells[spell_id].formula[o], spells[spell_id].base[o], spells[spell_id].max[o], this->GetLevel(), spell_id);
 				if (val < 0)
 				{
-					AggroAmount+=(slevel*8) - (val/2);				
+					AggroAmount -= val*2;			
 				}				
 				break;
 			}
@@ -1217,7 +1214,7 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 					int val = CalcSpellEffectValue_formula(spells[spell_id].formula[o], spells[spell_id].base[o], spells[spell_id].max[o], this->GetLevel(), spell_id);
 					if (val < 0)
 					{
-						AggroAmount -= val*2;
+						AggroAmount -= val*3;
 					}
 					break;
 			}
@@ -1256,7 +1253,7 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 					break;
 			}
 			case SE_SpinTarget:{
-					AggroAmount+=((1 + slevel*2)*RuleI(Aggro, IncapacitateAggroMod)/100);
+					AggroAmount += (5 + ((slevel * slevel) / 5));
 					break;
 			}
 			case SE_Amnesia:
@@ -1312,6 +1309,12 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 			}
 		}
 	}
+
+	if(spells[spell_id].HateAdded > 0)
+	{
+		AggroAmount = spells[spell_id].HateAdded;
+	}
+
 	if (IsBardSong(spell_id))
 		AggroAmount = AggroAmount * RuleI(Aggro, SongAggroMod) / 100;
 	if (GetOwner())
@@ -1349,8 +1352,20 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 
 #endif //EQBOTS
 
+	//made up number probably scales a bit differently on live but it seems like it will be close enough
+	//every time you cast on live you get a certain amount of "this is a spell" aggro
+	//confirmed by EQ devs to be 100 exactly at level 85. From their wording it doesn't seem like it's affected
+	//by hate modifiers either.
+	AggroAmount += (slevel*slevel/72);
+
+	if(IsClient())
+	{
+		sint32 focusAggro = CastToClient()->GetFocusEffect(focusHateReduction, spell_id);
+		AggroAmount = (AggroAmount * (100+focusAggro) / 100);
+	}
+
 	AggroAmount = (AggroAmount * RuleI(Aggro, SpellAggroMod))/100;
-	AggroAmount += spells[spell_id].HateAdded + spells[spell_id].bonushate + nonModifiedAggro;
+	AggroAmount += spells[spell_id].bonushate + nonModifiedAggro;
 	return AggroAmount;
 }
 
@@ -1391,6 +1406,12 @@ sint32 Mob::CheckHealAggroAmount(int16 spellid) {
 		AggroAmount = AggroAmount * RuleI(Aggro, SongAggroMod) / 100;
 	if (GetOwner())
 		AggroAmount = AggroAmount * RuleI(Aggro, PetSpellAggroMod) / 100;
+
+	if(IsClient())
+	{
+		sint32 focusAggro = CastToClient()->GetFocusEffect(focusHateReduction, spell_id);
+		AggroAmount = (AggroAmount * (100+focusAggro) / 100);
+	}
 
 	AggroAmount = (AggroAmount * RuleI(Aggro, SpellAggroMod))/100;
 

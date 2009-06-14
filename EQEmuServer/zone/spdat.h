@@ -227,7 +227,7 @@ typedef enum  {
 #define SE_Screech					123	// Form of Defense
 #define SE_ImprovedDamage			124
 #define SE_ImprovedHeal				125
-#define SE_IncreaseSpellResist		126 //not implemented
+#define SE_SpellResistReduction		126 //not implemented
 #define SE_IncreaseSpellHaste		127
 #define SE_IncreaseSpellDuration	128
 #define SE_IncreaseRange			129

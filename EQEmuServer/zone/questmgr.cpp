@@ -1710,6 +1710,7 @@ void QuestManager::UpdateSpawnTimer(int32 id, int32 newTime)
 {
 	bool found = false;
 
+	database.UpdateSpawn2Timeleft(id, 0, (newTime/1000));
 	LinkedListIterator<Spawn2*> iterator(zone->spawn2_list);
 	iterator.Reset();
 	while (iterator.MoreElements()) 

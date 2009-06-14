@@ -3567,6 +3567,16 @@ float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster)
 	//Set ResistMod lower to require more resist points per percentage point of resistance.
 	resistchance += resist * RuleR(Spells, ResistMod); 
 	resistchance += spellbonuses.ResistSpellChance + itembonuses.ResistSpellChance;
+
+	if(caster && caster->IsClient())
+	{
+		if(IsValidSpell(spell_id))
+		{
+			sint32 focusResist = caster->CastToClient()->GetFocusEffect(focusResistRate, spell_id);
+			resistchance = (resistchance * (100-focusResist) / 100);
+		}
+	}
+
 	//Resist chance makes up the upper limit of our partial range
 	//Fullchance makes up the lower limit of our partial range
 	if(!IsFearSpell(spell_id))
