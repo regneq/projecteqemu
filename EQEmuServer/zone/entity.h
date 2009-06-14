@@ -131,6 +131,7 @@ public:
 	Client* GetClientByCharID(int32 iCharID);
 	Client* GetClientByWID(int32 iWID);
 	Client* GetClient(int32 ip, int16 port);
+	Client* GetRandomClient(float x, float y, float z, float Distance, Client *ExcludeClient = NULL);
 	Group*	GetGroupByMob(Mob* mob);
 	Group*	GetGroupByClient(Client* client);
 	Group*  GetGroupByID(int32 id);

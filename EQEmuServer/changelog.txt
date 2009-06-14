@@ -2,6 +2,10 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==06/14/2009==
 Trevius: Added new command #randomfeatures which will randomize all possible features for playable races.
+Derision: Code support for Steadfast Servant Veteran AA.
+Derision: Added entity_list::GetRandomClient accessible from Perl.
+Dersiion: Fixed infinite loop in EntityList::RadialSetLogging.
+Derision: AATimers are now sent at level 1 rather than level >= 51.
 
 ==06/13/2009==
 Derision: Implemented SE_PercentXPIncrease and Resist caps.

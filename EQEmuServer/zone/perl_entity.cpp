@@ -1247,7 +1247,6 @@ XS(XS_EntityList_RemoveNumbers)
 	if (items != 2)
 		Perl_croak(aTHX_ "Usage: EntityList::RemoveNumbers(CLASS, name)");
 	{
-		char *		CLASS = (char *)SvPV_nolen(ST(0));
 		char *		RETVAL;
 		dXSTARG;
 		char*		name = (char *)SvPV_nolen(ST(1));
@@ -1570,6 +1569,44 @@ XS(XS_EntityList_MessageGroup)
 	XSRETURN_EMPTY;
 }
 
+XS(XS_EntityList_GetRandomClient); /* prototype to pass -Wmissing-prototypes */
+XS(XS_EntityList_GetRandomClient)
+{
+	dXSARGS;
+	if ((items < 5) || (items > 6))
+		Perl_croak(aTHX_ "Usage: EntityList::GetRandomClient(THIS, x, y, z, distance, excludeclient = NULL)");
+	{
+		EntityList *THIS;
+		Client *RETVAL, *c = NULL;
+		float x = (float)SvNV(ST(1));
+		float y = (float)SvNV(ST(2));
+		float z = (float)SvNV(ST(3));
+		float d = (float)SvNV(ST(4));
+
+		if (sv_derived_from(ST(0), "EntityList")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(EntityList *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type EntityList");
+
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		if(items == 6)
+		{
+			if (sv_derived_from(ST(5), "Client")) {
+				IV tmp = SvIV((SV*)SvRV(ST(5)));
+				c = INT2PTR(Client *,tmp);
+			}
+		}
+		RETVAL = entity_list.GetRandomClient(x, y, z, d * d, c);
+		ST(0) = sv_newmortal();
+		sv_setref_pv(ST(0), "Client", (void*)RETVAL);
+	}
+	XSRETURN(1);
+}
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -1645,6 +1682,7 @@ XS(boot_EntityList)
 		newXSproto(strcpy(buf, "Fighting"), XS_EntityList_Fighting, file, "$$");
 		newXSproto(strcpy(buf, "RemoveFromHateLists"), XS_EntityList_RemoveFromHateLists, file, "$$;$");
 		newXSproto(strcpy(buf, "MessageGroup"), XS_EntityList_MessageGroup, file, "$$$$$;@");
+		newXSproto(strcpy(buf, "GetRandomClient"), XS_EntityList_GetRandomClient, file, "$$$$$;$");
 	XSRETURN_YES;
 }
 

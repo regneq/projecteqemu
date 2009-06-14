@@ -1473,6 +1473,29 @@ Client* EntityList::GetClientByWID(int32 iWID) {
 	return 0; 
 }
 
+Client* EntityList::GetRandomClient(float x, float y, float z, float Distance, Client* ExcludeClient)
+{
+	vector<Client*> ClientsInRange;
+
+	LinkedListIterator<Client*> iterator(client_list); 
+	
+	iterator.Reset(); 
+	while(iterator.MoreElements())
+	{
+		if((iterator.GetData() != ExcludeClient) && (iterator.GetData()->DistNoRoot(x, y, z) <= Distance))
+		{
+			ClientsInRange.push_back(iterator.GetData());
+		}
+
+		iterator.Advance();
+	}
+
+	if(ClientsInRange.size() == 0)
+		return NULL;
+
+	return ClientsInRange[MakeRandomInt(0, ClientsInRange.size() - 1)];
+}
+
 Corpse*	EntityList::GetCorpseByOwner(Client* client){
 	LinkedListIterator<Corpse*> iterator(corpse_list); 
 	
@@ -3338,6 +3361,9 @@ void EntityList::RadialSetLogging(Mob *around, bool enabled, bool clients, bool 
 	iterator.Reset();
 	while(iterator.MoreElements()) {
 		Mob* mob = iterator.GetData();
+
+		iterator.Advance();
+
 		if(mob->IsClient()) {
 			if(!clients)
 				continue;
