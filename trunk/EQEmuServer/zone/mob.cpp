@@ -1149,8 +1149,10 @@ void Mob::GMMove(float x, float y, float z, float heading, bool SendUpdate) {
 
 void Mob::SendIllusionPacket(int16 in_race, int8 in_gender, int16 in_texture, int16 in_helmtexture, int8 in_haircolor, int8 in_beardcolor, int8 in_eyecolor1, int8 in_eyecolor2, int8 in_hairstyle, int8 in_luclinface, int8 in_beard, int8 in_aa_title, int32 in_drakkin_heritage, int32 in_drakkin_tattoo, int32 in_drakkin_details, int32 in_armor_tint) {
 
+	int16 BaseRace = GetBaseRace();
+
 	if (in_race == 0) {
-		this->race = GetBaseRace();
+		this->race = BaseRace;
 		if (in_gender == 0xFF)
 			this->gender = GetBaseGender();
 		else
@@ -1171,7 +1173,7 @@ void Mob::SendIllusionPacket(int16 in_race, int8 in_gender, int16 in_texture, in
 			gender = in_gender;
 	}
 	if (in_texture == 0xFFFF) {
-		if (in_race <= 12 || in_race == 128 || in_race == 130 || in_race == 330 || in_race == 522)
+		if (BaseRace <= 12 || BaseRace == 128 || BaseRace == 130 || BaseRace == 330 || BaseRace == 522)
 			this->texture = GetTexture();
 		else
 			this->texture = 0;
@@ -1180,19 +1182,19 @@ void Mob::SendIllusionPacket(int16 in_race, int8 in_gender, int16 in_texture, in
 		this->texture = in_texture;
 
 	if (in_helmtexture == 0xFFFF) {
-		if ((race == 0 || race > 12) && race != 128 && race != 130 && race != 330 && race != 522) {
-			if (in_texture != 0xFFFF)
-				this->helmtexture = this->texture;
-			else
-				this->helmtexture = 0;
-		}
-		else
+		if (in_race <= 12 || in_race == 128 || in_race == 130 || in_race == 330 || in_race == 522)
 			this->helmtexture = GetHelmTexture();
+		else if (BaseRace <= 12 || BaseRace == 128 || BaseRace == 130 || BaseRace == 330 || BaseRace == 522)
+			this->helmtexture = GetHelmTexture();
+		else if (in_texture != 0xFFFF)
+			this->helmtexture = in_texture;
+		else
+			this->helmtexture = 0;
 	}
 	else
 		this->helmtexture = in_helmtexture;
 
-	if (race > 12 && race != 128 && race != 130 && race != 330 && race != 522) {
+	if (in_race > 12 && in_race != 128 && in_race != 130 && in_race != 330 && in_race != 522) {
 		this->haircolor = 0xFF;
 		this->beardcolor = 0xFF;
 		this->eyecolor1 = 0xFF;
@@ -1267,7 +1269,7 @@ void Mob::SendIllusionPacket(int16 in_race, int8 in_gender, int16 in_texture, in
 	}
 
 	// Forces the feature information to be pulled from the Player Profile
-	if (IsClient() && in_race == 0) {
+	if (this->IsClient() && in_race == 0) {
 		this->race = CastToClient()->GetBaseRace();
 		this->gender = CastToClient()->GetBaseGender();
 		this->texture = GetTexture();

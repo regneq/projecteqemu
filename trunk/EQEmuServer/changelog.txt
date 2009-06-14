@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/14/2009==
+Trevius: Added new command #randomfeatures which will randomize all possible features for playable races.
+
 ==06/13/2009==
 Derision: Implemented SE_PercentXPIncrease and Resist caps.
 Trevius: Removing an Illusion should now restore all features to their original settings in most cases.

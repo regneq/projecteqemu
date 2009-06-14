@@ -346,6 +346,7 @@ int command_init(void) {
 		command_add("viewmessage","[id] - View messages in your tell queue",100,command_viewmessage) ||
 		command_add("viewmessages",NULL,0,command_viewmessage) ||
 		command_add("doanim","[animnum] [type] - Send an EmoteAnim for you or your target",50,command_doanim) ||
+		command_add("randomfeatures","Randomly changes the Facial Features of your target",80,command_randomfeatures) ||
 		command_add("face","Change the face of your target",80,command_face) ||
 		command_add("helm","Change the helm of your target",80,command_helm) ||
 		command_add("hair","Change the hair style of your target",80,command_hair) ||
@@ -3799,8 +3800,8 @@ void command_fixmob(Client *c, const Seperator *sep)
 		else if (strcasecmp(command, "face") == 0)
 		{
 			if (LuclinFace == 0 && codeMove == 'p')
-				LuclinFace = 80;
-			else if (LuclinFace >= 80 && codeMove != 'p')
+				LuclinFace = 87;
+			else if (LuclinFace >= 87 && codeMove != 'p')
 				LuclinFace = 0;
 			else
 				LuclinFace += Adjustment;
@@ -3810,8 +3811,8 @@ void command_fixmob(Client *c, const Seperator *sep)
 		else if (strcasecmp(command, "hair") == 0)
 		{
 			if (HairStyle == 0 && codeMove == 'p')
-				HairStyle = 7;
-			else if (HairStyle >= 7 && codeMove != 'p')
+				HairStyle = 8;
+			else if (HairStyle >= 8 && codeMove != 'p')
 				HairStyle = 0;
 			else
 				HairStyle += Adjustment;
@@ -3821,8 +3822,8 @@ void command_fixmob(Client *c, const Seperator *sep)
 		else if (strcasecmp(command, "haircolor") == 0)
 		{
 			if (HairColor == 0 && codeMove == 'p')
-				HairColor = 15;
-			else if (HairColor >= 15 && codeMove != 'p')
+				HairColor = 24;
+			else if (HairColor >= 24 && codeMove != 'p')
 				HairColor = 0;
 			else
 				HairColor += Adjustment;
@@ -3832,8 +3833,8 @@ void command_fixmob(Client *c, const Seperator *sep)
 		else if (strcasecmp(command, "beard") == 0)
 		{
 			if (Beard == 0 && codeMove == 'p')
-				Beard = 12;
-			else if (Beard >= 12 && codeMove != 'p')
+				Beard = 11;
+			else if (Beard >= 11 && codeMove != 'p')
 				Beard = 0;
 			else
 				Beard += Adjustment;
@@ -3843,8 +3844,8 @@ void command_fixmob(Client *c, const Seperator *sep)
 		else if (strcasecmp(command, "beardcolor") == 0)
 		{
 			if (BeardColor == 0 && codeMove == 'p')
-				BeardColor = 20;
-			else if (BeardColor >= 20 && codeMove != 'p')
+				BeardColor = 24;
+			else if (BeardColor >= 24 && codeMove != 'p')
 				BeardColor = 0;
 			else
 				BeardColor += Adjustment;
@@ -3865,8 +3866,8 @@ void command_fixmob(Client *c, const Seperator *sep)
 		else if (strcasecmp(command, "tattoo") == 0)
 		{
 			if (DrakkinTattoo == 0 && codeMove == 'p')
-				DrakkinTattoo = 9;
-			else if (DrakkinTattoo >= 9 && codeMove != 'p')
+				DrakkinTattoo = 8;
+			else if (DrakkinTattoo >= 8 && codeMove != 'p')
 				DrakkinTattoo = 0;
 			else
 				DrakkinTattoo += Adjustment;
@@ -5212,6 +5213,196 @@ void command_doanim(Client *c, const Seperator *sep)
 				c->GetTarget()->DoAnim(atoi(sep->arg[1]),atoi(sep->arg[2]));
 		else
 			c->DoAnim(atoi(sep->arg[1]),atoi(sep->arg[2]));
+}
+
+void command_randomfeatures(Client *c)
+{
+	Mob *target=c->GetTarget();
+	int16 Race = target->GetRace();
+	if (!target)
+		c->Message(0,"Error: This command requires a target");
+	else if (Race <= 12 || Race == 128 || Race == 130 || Race == 330 || Race == 522) {
+		
+		int8 Gender = target->GetGender();
+		int8 Texture = target->GetTexture();
+		int8 HelmTexture = 0;
+		int8 HairColor = 0;
+		int8 BeardColor = 0;
+		int8 EyeColor1 = 0;
+		int8 EyeColor2 = 0;
+		int8 HairStyle = 0;
+		int8 LuclinFace = 0;
+		int8 Beard = 0;
+		int8 DrakkinHeritage = 0;
+		int8 DrakkinTattoo = 0;
+		int8 DrakkinDetails = 0;
+		
+		// Set some common feature settings
+		EyeColor1 = MakeRandomInt(0, 9);
+		EyeColor2 = MakeRandomInt(0, 9);
+		LuclinFace = MakeRandomInt(0, 7);
+		
+		// Adjust all settings based on the min and max for each feature of each race and gender
+		switch (Race)
+		{
+			case 1:	// Human
+				HairColor = MakeRandomInt(0, 19);
+				if (Gender == 0) {
+					BeardColor = HairColor;
+					HairStyle = MakeRandomInt(0, 3);
+					Beard = MakeRandomInt(0, 5);
+				}
+				if (Gender == 1) {
+					HairStyle = MakeRandomInt(0, 2);
+				}
+				break;
+			case 2:	// Barbarian
+				HairColor = MakeRandomInt(0, 19);
+				LuclinFace = MakeRandomInt(0, 87);
+				if (Gender == 0) {
+					BeardColor = HairColor;
+					HairStyle = MakeRandomInt(0, 3);
+					Beard = MakeRandomInt(0, 5);
+				}
+				if (Gender == 1) {
+					HairStyle = MakeRandomInt(0, 2);
+				}
+				break;
+			case 3: // Erudite
+				if (Gender == 0) {
+					BeardColor = MakeRandomInt(0, 19);
+					Beard = MakeRandomInt(0, 5);
+					LuclinFace = MakeRandomInt(0, 57);
+				}
+				if (Gender == 1) {
+					LuclinFace = MakeRandomInt(0, 87);
+				}
+				break;
+			case 4: // WoodElf
+				HairColor = MakeRandomInt(0, 19);
+				if (Gender == 0) {
+					HairStyle = MakeRandomInt(0, 3);
+				}
+				if (Gender == 1) {
+					HairStyle = MakeRandomInt(0, 2);
+				}
+				break;
+			case 5: // HighElf
+				HairColor = MakeRandomInt(0, 14);
+				if (Gender == 0) {
+					HairStyle = MakeRandomInt(0, 3);
+					LuclinFace = MakeRandomInt(0, 37);
+					BeardColor = HairColor;
+				}
+				if (Gender == 1) {
+					HairStyle = MakeRandomInt(0, 2);
+				}
+				break;
+			case 6: // DarkElf
+				HairColor = MakeRandomInt(13, 18);
+				if (Gender == 0) {
+					HairStyle = MakeRandomInt(0, 3);
+					LuclinFace = MakeRandomInt(0, 37);
+					BeardColor = MakeRandomInt(0, 24);
+				}
+				if (Gender == 1) {
+					HairStyle = MakeRandomInt(0, 2);
+				}
+				break;
+			case 7: // HalfElf
+				HairColor = MakeRandomInt(0, 19);
+				if (Gender == 0) {
+					HairStyle = MakeRandomInt(0, 3);
+					LuclinFace = MakeRandomInt(0, 37);
+					BeardColor = HairColor;
+				}
+				if (Gender == 1) {
+					HairStyle = MakeRandomInt(0, 2);
+				}
+				break;
+			case 8: // Dwarf
+				HairColor = MakeRandomInt(0, 19);
+				BeardColor = HairColor;
+				if (Gender == 0) {
+					HairStyle = MakeRandomInt(0, 3);
+					Beard = MakeRandomInt(0, 5);
+				}
+				if (Gender == 1) {
+					HairStyle = MakeRandomInt(0, 2);
+					LuclinFace = MakeRandomInt(0, 17);
+				}
+				break;
+			case 9: // Troll
+				EyeColor1 = MakeRandomInt(0, 10);
+				EyeColor2 = MakeRandomInt(0, 10);
+				if (Gender == 1) {
+					HairStyle = MakeRandomInt(0, 3);
+					HairColor = MakeRandomInt(0, 23);
+				}
+				break;
+			case 10: // Ogre
+				if (Gender == 1) {
+					HairStyle = MakeRandomInt(0, 3);
+					HairColor = MakeRandomInt(0, 23);
+				}
+				break;
+			case 11: // Halfling
+				HairColor = MakeRandomInt(0, 19);
+				if (Gender == 0) {
+					BeardColor = HairColor;
+					HairStyle = MakeRandomInt(0, 3);
+					Beard = MakeRandomInt(0, 5);
+				}
+				if (Gender == 1) {
+					HairStyle = MakeRandomInt(0, 2);
+				}
+				break;
+			case 12: // Gnome
+				HairColor = MakeRandomInt(0, 24);
+				if (Gender == 0) {
+					BeardColor = HairColor;
+					HairStyle = MakeRandomInt(0, 3);
+					Beard = MakeRandomInt(0, 5);
+				}
+				if (Gender == 1) {
+					HairStyle = MakeRandomInt(0, 2);
+				}
+				break;
+			case 128: // Iksar
+			case 130: // VahShir
+				break;
+			case 330: // Froglok
+				LuclinFace = MakeRandomInt(0, 9);
+			case 522: // Drakkin
+				HairColor = MakeRandomInt(0, 3);
+				BeardColor = HairColor;
+				EyeColor1 = MakeRandomInt(0, 11);
+				EyeColor2 = MakeRandomInt(0, 11);
+				LuclinFace = MakeRandomInt(0, 6);
+				DrakkinHeritage = MakeRandomInt(0, 6);
+				DrakkinTattoo = MakeRandomInt(0, 7);
+				DrakkinDetails = MakeRandomInt(0, 7);
+				if (Gender == 0) {
+					Beard = MakeRandomInt(0, 12);
+					HairStyle = MakeRandomInt(0, 8);
+				}
+				if (Gender == 1) {
+					Beard = MakeRandomInt(0, 3);
+					HairStyle = MakeRandomInt(0, 7);
+				}
+				break;
+			default:
+				break;
+		}
+
+		target->SendIllusionPacket(Race, Gender, Texture, HelmTexture, HairColor, BeardColor,
+									EyeColor1, EyeColor2, HairStyle, LuclinFace, Beard, 0xFF,
+									DrakkinHeritage, DrakkinTattoo, DrakkinDetails);
+
+		c->Message(0,"Facial Features Randomized");
+	}
+	else
+		c->Message(0,"This command requires a Playable Race as the Target");
 }
 
 void command_face(Client *c, const Seperator *sep)
