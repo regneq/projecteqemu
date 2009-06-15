@@ -1174,22 +1174,20 @@ void Mob::SendIllusionPacket(int16 in_race, int8 in_gender, int16 in_texture, in
 	}
 	if (in_texture == 0xFFFF) {
 		if (BaseRace <= 12 || BaseRace == 128 || BaseRace == 130 || BaseRace == 330 || BaseRace == 522)
-			this->texture = GetTexture();
+			this->texture = 0xFFFF;
 		else
-			this->texture = 0;
+			this->texture = GetTexture();
 	}
 	else
 		this->texture = in_texture;
 
 	if (in_helmtexture == 0xFFFF) {
 		if (in_race <= 12 || in_race == 128 || in_race == 130 || in_race == 330 || in_race == 522)
-			this->helmtexture = GetHelmTexture();
-		else if (BaseRace <= 12 || BaseRace == 128 || BaseRace == 130 || BaseRace == 330 || BaseRace == 522)
-			this->helmtexture = GetHelmTexture();
+			this->helmtexture = 0xFFFF;
 		else if (in_texture != 0xFFFF)
 			this->helmtexture = in_texture;
 		else
-			this->helmtexture = 0;
+			this->helmtexture = GetHelmTexture();
 	}
 	else
 		this->helmtexture = in_helmtexture;
@@ -1272,7 +1270,7 @@ void Mob::SendIllusionPacket(int16 in_race, int8 in_gender, int16 in_texture, in
 	if (this->IsClient() && in_race == 0) {
 		this->race = CastToClient()->GetBaseRace();
 		this->gender = CastToClient()->GetBaseGender();
-		this->texture = GetTexture();
+		this->texture = 0xFFFF;
 		this->helmtexture = GetHelmTexture();
 		this->haircolor = CastToClient()->GetBaseHairColor();
 		this->beardcolor = CastToClient()->GetBaseBeardColor();

@@ -1,5 +1,23 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/15/2009==
+Trevius: More tweaks to make illusions work better with features and armor/helm graphics
+Trevius: Added alias #rf for the #randomfeatures command. Note that the feature changes are not permanent.
+Trevius: Changed the default way of loading spells to now load from the spells_new table instead of from the spells_us.txt file.
+
+Warning: If you do not have a spells_new table yet, you must create one and load spells into it or zones will crash when loading in.
+	 To create the spells_new table, use the SQL from \utils\sql\svn\230_spells_table.sql
+	 After creating the table, you can import or export your spells from the spells_us.txt file by using the scripts:
+	 import_spells.pl
+	 export_spells.pl
+	 
+	 The easiest way to import your spell file to the table is to move the import_spells.pl file to your main server directory
+	 where your spells_us.txt file and your eqemu_config.xml file are.  Then run the following command at a command prompt:
+	 perl import_spells.pl
+
+See this post for more information on importing/exporting the spell file:
+http://www.eqemulator.net/forums/showpost.php?p=160509&postcount=45
+
 ==06/14/2009==
 Trevius: Added new command #randomfeatures which will randomize all possible features for playable races.
 Derision: Code support for Steadfast Servant Veteran AA.
