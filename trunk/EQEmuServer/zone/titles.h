@@ -27,7 +27,7 @@ class EQApplicationPacket;
 
 using namespace std;
 
-typedef struct TitleEntry
+struct TitleEntry
 {
 	int TitleID;
 	int SkillID;

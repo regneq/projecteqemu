@@ -820,7 +820,7 @@ public:
 	inline int CompletedTasksInSet(int TaskSet)
 	 	   { return (taskstate ? taskstate->CompletedTasksInSet(TaskSet) :0); }
 
-	inline EQClientVersion GetClientVersion() { return ClientVersion; }
+	inline const EQClientVersion GetClientVersion() const { return ClientVersion; }
 	void IncrementAggroCount();
 	void DecrementAggroCount();
 	void SendPVPStats();

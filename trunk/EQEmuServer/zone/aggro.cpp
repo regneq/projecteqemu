@@ -43,7 +43,14 @@ void EntityList::CheckClientAggro(Client *around) {
 			continue;
 		
 		if(mob->CheckWillAggro(around)) {
-			mob->AddToHateList(around);
+			if(mob->IsEngaged())
+			{
+				mob->AddToHateList(around);
+			}
+			else
+			{
+				mob->AddToHateList(around, mob->GetLevel());
+			}
 		}
 	}
 }
@@ -1387,10 +1394,10 @@ sint32 Mob::CheckHealAggroAmount(int16 spellid) {
 				int val = CalcSpellEffectValue_formula(spells[spell_id].formula[o], spells[spell_id].base[o], spells[spell_id].max[o], this->GetLevel(), spell_id);
 				if(val > 0){
 					if(val > 3000){
-						AggroAmount += 2000 + (val - 3000) * 1 / 10;
+						AggroAmount += 1500 + (val - 3000) * 1 / 10;
 					}
 					else{
-						AggroAmount += val*2/3;
+						AggroAmount += val*1/2;
 					}
 				}
 				break;
@@ -1398,7 +1405,7 @@ sint32 Mob::CheckHealAggroAmount(int16 spellid) {
 			case SE_HealOverTime: {
 				int val = CalcSpellEffectValue_formula(spells[spell_id].formula[o], spells[spell_id].base[o], spells[spell_id].max[o], this->GetLevel(), spell_id);
 				if(val > 0)
-					AggroAmount += val*2/3;
+					AggroAmount += val*1/2;
 				break;
 			}
 			default:{
