@@ -270,8 +270,8 @@ int command_init(void) {
 		command_add("nukeitem","[itemid] - Remove itemid from your player target's inventory",150,command_nukeitem) ||
 		command_add("peekinv","[worn/cursor/inv/bank/trade/all] - Print out contents of your player target's inventory",100,command_peekinv) ||
 		command_add("findnpctype","[search criteria] - Search database NPC types",100,command_findnpctype) ||
-              command_add("findzone","[search criteria] - Search database zones",100,command_findzone) ||
-              command_add("fz",NULL,100,command_findzone) ||
+		command_add("findzone","[search criteria] - Search database zones",100,command_findzone) ||
+		command_add("fz",NULL,100,command_findzone) ||
 		command_add("viewnpctype","[npctype id] - Show info about an npctype",100,command_viewnpctype) ||
 		command_add("reloadstatic","- Reload Static Zone Data",150,command_reloadstatic) ||
 		command_add("reloadquest","- Clear quest cache",150,command_reloadqst) ||
@@ -346,7 +346,8 @@ int command_init(void) {
 		command_add("viewmessage","[id] - View messages in your tell queue",100,command_viewmessage) ||
 		command_add("viewmessages",NULL,0,command_viewmessage) ||
 		command_add("doanim","[animnum] [type] - Send an EmoteAnim for you or your target",50,command_doanim) ||
-		command_add("randomfeatures","Randomly changes the Facial Features of your target",80,command_randomfeatures) ||
+		command_add("randomfeatures","Temporarily randomizes the Facial Features of your target",80,command_randomfeatures) ||
+		command_add("rf",NULL,80,command_randomfeatures) ||
 		command_add("face","Change the face of your target",80,command_face) ||
 		command_add("helm","Change the helm of your target",80,command_helm) ||
 		command_add("hair","Change the hair style of your target",80,command_hair) ||
@@ -5224,18 +5225,18 @@ void command_randomfeatures(Client *c, const Seperator *sep)
 	else if (Race <= 12 || Race == 128 || Race == 130 || Race == 330 || Race == 522) {
 		
 		int8 Gender = target->GetGender();
-		int8 Texture = target->GetTexture();
-		int8 HelmTexture = 0;
-		int8 HairColor = 0;
-		int8 BeardColor = 0;
-		int8 EyeColor1 = 0;
-		int8 EyeColor2 = 0;
-		int8 HairStyle = 0;
-		int8 LuclinFace = 0;
-		int8 Beard = 0;
-		int8 DrakkinHeritage = 0;
-		int8 DrakkinTattoo = 0;
-		int8 DrakkinDetails = 0;
+		int16 Texture = 0xFFFF;
+		int16 HelmTexture = 0xFFFF;
+		int8 HairColor = 0xFF;
+		int8 BeardColor = 0xFF;
+		int8 EyeColor1 = 0xFF;
+		int8 EyeColor2 = 0xFF;
+		int8 HairStyle = 0xFF;
+		int8 LuclinFace = 0xFF;
+		int8 Beard = 0xFF;
+		int32 DrakkinHeritage = 0xFFFFFFFF;
+		int32 DrakkinTattoo = 0xFFFFFFFF;
+		int32 DrakkinDetails = 0xFFFFFFFF;
 		
 		// Set some common feature settings
 		EyeColor1 = MakeRandomInt(0, 9);
@@ -5303,7 +5304,7 @@ void command_randomfeatures(Client *c, const Seperator *sep)
 				if (Gender == 0) {
 					HairStyle = MakeRandomInt(0, 3);
 					LuclinFace = MakeRandomInt(0, 37);
-					BeardColor = MakeRandomInt(0, 24);
+					BeardColor = HairColor;
 				}
 				if (Gender == 1) {
 					HairStyle = MakeRandomInt(0, 2);
@@ -5399,7 +5400,7 @@ void command_randomfeatures(Client *c, const Seperator *sep)
 									EyeColor1, EyeColor2, HairStyle, LuclinFace, Beard, 0xFF,
 									DrakkinHeritage, DrakkinTattoo, DrakkinDetails);
 
-		c->Message(0,"Facial Features Randomized");
+		c->Message(0,"NPC Features Randomized");
 	}
 	else
 		c->Message(0,"This command requires a Playable Race as the Target");
