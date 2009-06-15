@@ -6,6 +6,9 @@ Derision: Code support for Steadfast Servant Veteran AA.
 Derision: Added entity_list::GetRandomClient accessible from Perl.
 Dersiion: Fixed infinite loop in EntityList::RadialSetLogging.
 Derision: AATimers are now sent at level 1 rather than level >= 51.
+KLS: Fix for name_filter checking.
+KLS: Name filters will now apply to surnames and will consider any name with 3 repeating characters or more invalid.
+KLS: Fix for compile error; should have been fixed already *hint*.
 
 ==06/13/2009==
 Derision: Implemented SE_PercentXPIncrease and Resist caps.

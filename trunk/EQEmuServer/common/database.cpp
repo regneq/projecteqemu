@@ -1310,7 +1310,9 @@ int8 Database::GetPEQZone(int32 zoneID){
 	return peqzone;
 }
 
-bool Database::CheckNameFilter(const char* name) {
+bool Database::CheckNameFilter(const char* name) 
+{
+	std::string str_name = name;
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
 	MYSQL_RES *result;
@@ -1319,26 +1321,58 @@ bool Database::CheckNameFilter(const char* name) {
 
 	// the minimum 4 is enforced by the client too
 	if(!name || strlen(name) < 4 || strlen(name) > 64)
-		return false;
-
-	for (i = 0; name[i]; i++)
 	{
-		if(!isalpha(name[i]))
-			return false;
+		return false;
 	}
 
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT count(*) FROM name_filter WHERE '%s' like name", name), errbuf, &result)) {
-		safe_delete_array(query);
-		if (mysql_num_rows(result) == 1) {
-			row = mysql_fetch_row(result);
-			if (row[0] != 0) {
-				if (atoi(row[0]) == 0) {
+	for (i = 0; i < str_name.size(); i++)
+	{
+		if(!isalpha(str_name[i]))
+		{
+			return false;
+		}
+	}
 
-					mysql_free_result(result);
-					return false;
-				}
+	for(int x = 0; x < str_name.size(); ++x)
+	{
+		str_name[x] = tolower(str_name[x]);
+	}
+
+	char c = '\0';
+	int8 num_c = 0;
+	for(int x = 0; x < str_name.size(); ++x)
+	{
+		if(str_name[x] == c)
+		{
+			num_c++;
+		}
+		else
+		{
+			num_c = 1;
+			c = str_name[x];
+		}
+		if(num_c > 2)
+		{
+			return false;
+		}
+	}
+
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT name FROM name_filter"), errbuf, &result)) {
+		safe_delete_array(query);
+		while(row = mysql_fetch_row(result))
+		{
+			std::string current_row = row[0];
+			for(int x = 0; x < current_row.size(); ++x)
+			{
+				current_row[x] = tolower(current_row[x]);
+			}
+
+			if(str_name.find(current_row) != std::string::npos)
+			{
+				return false;
 			}
 		}
+
 		mysql_free_result(result);
 		return true;
 	}
@@ -1348,7 +1382,7 @@ bool Database::CheckNameFilter(const char* name) {
 		safe_delete_array(query);
 	}
 
-	return false;
+	return true;
 }
 
 bool Database::AddToNameFilter(const char* name) {

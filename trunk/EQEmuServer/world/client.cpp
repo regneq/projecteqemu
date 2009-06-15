@@ -113,7 +113,8 @@ void Client::SendLogServer()
 	if(database.GetServerType() == 1)
 		l->enable_pvp = 1;
 
-	l->enable_petition_wnd = 1;
+	//enable when we are ready to implement this!
+	//l->enable_petition_wnd = 1;
 
 	QueuePacket(outapp);
 	safe_delete(outapp);
@@ -342,7 +343,7 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 			outapp->pBuffer = new uchar[1];
 			outapp->size = 1;
 			bool valid;
-			if (database.CheckNameFilter(char_name)) {
+			if(!database.CheckNameFilter(char_name)) {
 				valid = false;
 			}
 			else if(char_name[0] < 'A' && char_name[0] > 'Z') {
