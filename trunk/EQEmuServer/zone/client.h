@@ -620,6 +620,7 @@ public:
 	void HandleAAAction(aaID activate);
 	int32 GetAA(int32 aa_id) const;
 	bool SetAA(int32 aa_id, int32 new_value);
+	inline uint32 GetAAPointsSpent() { return m_pp.aapoints_spent; }
 
 	sint16 acmod();
 
@@ -856,6 +857,7 @@ public:
 	void CalcItemScale();
 	bool CalcItemScale(int32 slot_x, int32 slot_y);
 	void SummonAndRezzAllCorpses();
+	void NotifyNewTitlesAvailable();
 
 protected:
 	friend class Mob;
@@ -1086,7 +1088,6 @@ private:
 
 	EQClientVersion ClientVersion;
 	int XPRate;
-
 
 	//Connecting debug code.
 	enum { //connecting states, used for debugging only

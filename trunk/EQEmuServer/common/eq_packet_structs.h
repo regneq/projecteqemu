@@ -3221,9 +3221,9 @@ struct PlayMP3_Struct {
 
 //this is for custom title display in the skill window
 struct TitleEntry_Struct {
-	uint32	skill_id;
-	uint32	skill_value;
+	uint32	title_id;
 	char	title[1];
+	char	suffix[1];
 };
 
 struct Titles_Struct {

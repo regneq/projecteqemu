@@ -9,8 +9,10 @@ Trevius: Fix for compile error; should have been fixed already *hint*.
 Trevius: More tweaks to make illusions work better with features and armor/helm graphics
 Trevius: Added alias #rf for the #randomfeatures command. Note that the feature changes are not permanent.
 Trevius: Changed the default way of loading spells to now load from the spells_new table instead of from the spells_us.txt file.
+Derision: Implemented the Title Window.
 
 Required SQL: \utils\sql\svn\665_heroic_resists.sql
+Required SQL: utils/sql/svn/667_titles.sql
 
 Recommended SQL: (This is recommended for databases that don't stay current with PEQ or are custom)
 UPDATE items SET backstabdmg = damage WHERE backstabdmg = 0 AND itemtype = 2;

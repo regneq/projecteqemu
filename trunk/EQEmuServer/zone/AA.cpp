@@ -29,6 +29,7 @@ Copyright (C) 2001-2004  EQEMu Development Team (http://eqemulator.net)
 #include "doors.h"
 #include "beacon.h"
 #include "PlayerCorpse.h"
+#include "titles.h"
 #include "../common/races.h"
 #include "../common/classes.h"
 #include "../common/eq_packet_structs.h"
@@ -882,8 +883,9 @@ void Client::BuyAA(AA_Action* action){
 		mlog(AA__MESSAGE, "Set AA %d to level %d", aa2->id, cur_level+1);
 		
 		m_pp.aapoints -= real_cost;
+
 		Save();
-		
+
 		SendAA(aa2->id);
 		SendAATable();
 
@@ -897,6 +899,8 @@ void Client::BuyAA(AA_Action* action){
 		SendAAStats();
 		
 		CalcBonuses();
+		if(title_manager.IsNewAATitleAvailable(m_pp.aapoints_spent, GetBaseClass()))
+			NotifyNewTitlesAvailable();
 	}
 }
 

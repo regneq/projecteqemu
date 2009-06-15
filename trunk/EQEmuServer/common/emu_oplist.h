@@ -371,6 +371,7 @@ N(OP_ZoneInUnknown),
 N(OP_ZoneServerReady),	//terrible name.
 N(OP_ZoneGuildList),
 N(OP_SendTitleList),
+N(OP_NewTitlesAvailable),
 N(OP_Bandolier),
 N(OP_OpenDiscordMerchant),
 N(OP_DiscordMerchantInventory),
