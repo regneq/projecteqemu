@@ -2023,7 +2023,7 @@ void Client::Handle_OP_Surname(const EQApplicationPacket *app)
 
 	if(!database.CheckNameFilter(surname->lastname))
 	{
-		Message_StringID(10, "Surname rejected.);
+		Message_StringID(10, "Surname rejected.");
 		return;
 	}
 

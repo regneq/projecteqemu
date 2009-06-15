@@ -79,7 +79,7 @@ struct Item_Struct {
 	char	Name[64];		// Name
 	char	Lore[80];		// Lore Name: *=lore, &=summoned, #=artifact, ~=pending lore
 	char	IDFile[30];		// Visible model
-	uint32	ID;			// Unique ID (also PK for DB)
+	uint32	ID;				// Unique ID (also PK for DB)
 	uint8	Weight;			// Item weight * 10
 	uint8	NoRent;			// No Rent: 0=norent, 255=not norent
 	uint8	NoDrop;			// No Drop: 0=nodrop, 255=not nodrop
@@ -108,12 +108,12 @@ struct Item_Struct {
 	uint8	BagWR;			// 0->100
 
 	bool	BenefitFlag;
-	bool	Tradeskills;		// Is this a tradeskill item?
-	sint8	CR;			// Save vs Cold
-	sint8	DR;			// Save vs Disease
-	sint8	PR;			// Save vs Poison
-	sint8	MR;			// Save vs Magic
-	sint8	FR;			// Save vs Fire
+	bool	Tradeskills;	// Is this a tradeskill item?
+	sint8	CR;				// Save vs Cold
+	sint8	DR;				// Save vs Disease
+	sint8	PR;				// Save vs Poison
+	sint8	MR;				// Save vs Magic
+	sint8	FR;				// Save vs Fire
 	sint8	AStr;			// Strength
 	sint8	ASta;			// Stamina
 	sint8	AAgi;			// Agility
@@ -121,16 +121,16 @@ struct Item_Struct {
 	sint8	ACha;			// Charisma
 	sint8	AInt;			// Intelligence
 	sint8	AWis;			// Wisdom
-	sint32	HP;			// HP
+	sint32	HP;				// HP
 	sint32	Mana;			// Mana
-	sint32	AC;			// AC
+	sint32	AC;				// AC
 	uint32	Deity;			// Bitmask of Deities that can equip this item
 	//uint32	Unk033
-	sint32	SkillModValue;		// % Mod to skill specified in SkillModType
-	uint32	SkillModType;		// Type of skill for SkillModValue to apply to
-	uint32	BaneDmgRace;		// Bane Damage Race
+	sint32	SkillModValue;	// % Mod to skill specified in SkillModType
+	uint32	SkillModType;	// Type of skill for SkillModValue to apply to
+	uint32	BaneDmgRace;	// Bane Damage Race
 	sint8	BaneDmgAmt;		// Bane Damage Body Amount
-	uint32	BaneDmgBody;		// Bane Damage Body
+	uint32	BaneDmgBody;	// Bane Damage Body
 	bool	Magic;			// True=Magic Item, False=not
 	sint32	CastTime_;
 	uint8	ReqLevel;		// Required Level to use item
@@ -159,25 +159,25 @@ struct Item_Struct {
 	};
 	//uint32	Unk061;
 	sint32	ProcRate;
-	sint8	CombatEffects;		// PoP: Combat Effects +
+	sint8	CombatEffects;	// PoP: Combat Effects +
 	sint8	Shielding;		// PoP: Shielding %
 	sint8	StunResist;		// PoP: Stun Resist %
-	sint8	StrikeThrough;		// PoP: Strike Through %
+	sint8	StrikeThrough;	// PoP: Strike Through %
 	uint32	ExtraDmgSkill;
 	uint32	ExtraDmgAmt;
-	sint8	SpellShield;		// PoP: Spell Shield %
+	sint8	SpellShield;	// PoP: Spell Shield %
 	sint8	Avoidance;		// PoP: Avoidance +
 	sint8	Accuracy;		// PoP: Accuracy +
 	uint32	CharmFileID;
-	sint32	FactionMod1;		// Faction Mod 1
-	sint32	FactionMod2;		// Faction Mod 2
-	sint32	FactionMod3;		// Faction Mod 3
-	sint32	FactionMod4;		// Faction Mod 4
-	sint32	FactionAmt1;		// Faction Amt 1
-	sint32	FactionAmt2;		// Faction Amt 2
-	sint32	FactionAmt3;		// Faction Amt 3
-	sint32	FactionAmt4;		// Faction Amt 4
-	char	CharmFile[32];		// ?
+	sint32	FactionMod1;	// Faction Mod 1
+	sint32	FactionMod2;	// Faction Mod 2
+	sint32	FactionMod3;	// Faction Mod 3
+	sint32	FactionMod4;	// Faction Mod 4
+	sint32	FactionAmt1;	// Faction Amt 1
+	sint32	FactionAmt2;	// Faction Amt 2
+	sint32	FactionAmt3;	// Faction Amt 3
+	sint32	FactionAmt4;	// Faction Amt 4
+	char	CharmFile[32];	// ?
 	uint32	AugType;
 	uint8	AugSlotType[MAX_AUGMENT_SLOTS];		// LDoN: Augment Slot 1-5 Type
 	uint8	AugSlotVisible[MAX_AUGMENT_SLOTS];	// LDoN: Augment Slot 1-5 Visible
@@ -208,9 +208,29 @@ struct Item_Struct {
 	uint8	PotionBeltSlots;
 	ItemEffect_Struct Click, Proc, Worn, Focus, Scroll;
 
-	uint8	Book;			// 0=Not bool, 1=Book
+	uint8	Book;			// 0=Not book, 1=Book
 	uint32	BookType;
-	char	Filename[33];		// Filename for book data
+	char	Filename[33];	// Filename for book data
+	// Begin SoF Fields
+	sint32 SVCorruption;
+	uint32 Purity;
+	uint32 BackstabDmg;
+	uint32 DSMitigation;
+	sint32 HeroicStr;
+	sint32 HeroicInt;
+	sint32 HeroicWis;
+	sint32 HeroicAgi;
+	sint32 HeroicDex;
+	sint32 HeroicSta;
+	sint32 HeroicCha;
+	sint32 HeroicMR;
+	sint32 HeroicFR;
+	sint32 HeroicCR;
+	sint32 HeroicDR;
+	sint32 HeroicPR;
+	sint32 HeroicSVCorrup;
+	sint32 HealAmt;
+	sint32 SpellDmg;
 };
 
 #endif
