@@ -1310,6 +1310,11 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 		}
 	}
 
+	if(IsAEDurationSpell(spell_id))
+	{
+		AggroAmount /= 2;
+	}
+
 	if(spells[spell_id].HateAdded > 0)
 	{
 		AggroAmount = spells[spell_id].HateAdded;
