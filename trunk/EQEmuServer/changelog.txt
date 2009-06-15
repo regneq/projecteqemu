@@ -4,6 +4,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 Trevius: SoF - The following fields now show up on items that have values set for them, but the stats are not actually used by the server yet:
 	       svcorruption, purity, backstabdmg, dsmitigation, heroic_str, heroic_int, heroic_wis, heroic_agi, heroic_dex, heroic_sta
 	       heroic_cha, heroic_mr, heroic_fr, heroic_cr, heroic_dr, heroic_pr, heroic_svcorrup, healamt, and spelldmg
+Trevius: SoF - Corrected Max Stat calculation for SoF clients over level 75.
 Trevius: Fix for compile error; should have been fixed already *hint*.
 Trevius: More tweaks to make illusions work better with features and armor/helm graphics
 Trevius: Added alias #rf for the #randomfeatures command. Note that the feature changes are not permanent.

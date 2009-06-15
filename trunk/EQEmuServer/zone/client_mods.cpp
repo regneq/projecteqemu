@@ -41,8 +41,11 @@ sint16 Client::GetMaxStat() const {
 	if (level < 61) {
 		base = 255;
 	}
+	else if (GetClientVersion() == EQClientSoF) {
+		base = 255 + 5 * (level - 60);
+	}
 	else if (level < 71) {
-		base =  255 + 5 * (level - 60);
+		base = 255 + 5 * (level - 60);
 	}
 	else {
 		base = 330;
