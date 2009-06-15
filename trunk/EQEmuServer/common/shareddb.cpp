@@ -941,6 +941,25 @@ bool SharedDatabase::DBLoadItems(sint32 iItemCount, uint32 iMaxItemID) {
 			item.Scroll.Level = (uint8)atoul(row[ItemField::scrolllevel]);
 			item.Scroll.Level2 = (uint8)atoul(row[ItemField::scrolllevel2]);
 			item.QuestItemFlag = false;
+			item.SVCorruption = (sint32)atoi(row[ItemField::svcorruption]);
+			item.Purity = (uint32)atoul(row[ItemField::purity]);
+			item.BackstabDmg = (uint32)atoul(row[ItemField::backstabdmg]);
+			item.DSMitigation = (uint32)atoul(row[ItemField::dsmitigation]);
+			item.HeroicStr = (sint32)atoi(row[ItemField::heroic_str]);
+			item.HeroicInt = (sint32)atoi(row[ItemField::heroic_int]);
+			item.HeroicWis = (sint32)atoi(row[ItemField::heroic_wis]);
+			item.HeroicAgi = (sint32)atoi(row[ItemField::heroic_agi]);
+			item.HeroicDex = (sint32)atoi(row[ItemField::heroic_dex]);
+			item.HeroicSta = (sint32)atoi(row[ItemField::heroic_sta]);
+			item.HeroicCha = (sint32)atoi(row[ItemField::heroic_cha]);
+			item.HeroicMR = (sint32)atoi(row[ItemField::heroic_mr]);
+			item.HeroicFR = (sint32)atoi(row[ItemField::heroic_fr]);
+			item.HeroicCR = (sint32)atoi(row[ItemField::heroic_cr]);
+			item.HeroicDR = (sint32)atoi(row[ItemField::heroic_dr]);
+			item.HeroicPR = (sint32)atoi(row[ItemField::heroic_pr]);
+			item.HeroicSVCorrup = (sint32)atoi(row[ItemField::heroic_svcorrup]);
+			item.HealAmt = (sint32)atoi(row[ItemField::healamt]);
+			item.SpellDmg = (sint32)atoi(row[ItemField::spelldmg]);
 			
 			if (!EMuShareMemDLL.Items.cbAddItem(item.ID, &item)) {
 				LogFile->write(EQEMuLog::Error, "Database::DBLoadItems: Failure reported from EMuShareMemDLL.Items.cbAddItem(%i)", item.ID);

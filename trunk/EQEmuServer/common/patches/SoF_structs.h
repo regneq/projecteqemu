@@ -3682,7 +3682,7 @@ struct ItemBodyStruct
 	sint8 PR;
 	sint8 MR;
 	sint8 FR;
-	sint8 Corruption;
+	sint8 SVCorruption;
 	sint8 AStr;
 	sint8 ASta;
 	sint8 AAgi;
@@ -3871,24 +3871,24 @@ struct ItemTertiaryBodyStruct
 	uint32 UNK129;
 	uint8 quest_item;
 	uint32 unknown15; //0xffffffff - Power Source Capacity?
-	uint32 purity;
-	uint32 backstab;
-	uint32 dsmitigation;
-	sint32 heroic_str;
-	sint32 heroic_int;
-	sint32 heroic_wis;
-	sint32 heroic_agi;
-	sint32 heroic_dex;
-	sint32 heroic_sta;
-	sint32 heroic_cha;
-	sint32 heroic_mr;
-	sint32 heroic_fr;
-	sint32 heroic_cr;
-	uint32 heroic_dr;
-	uint32 heroic_pr;
-	uint32 heroic_corr;
-	sint32 heal_amt;
-	sint32 spell_dmg;
+	uint32 Purity;
+	uint32 BackstabDmg;
+	uint32 DSMitigation;
+	sint32 HeroicStr;
+	sint32 HeroicInt;
+	sint32 HeroicWis;
+	sint32 HeroicAgi;
+	sint32 HeroicDex;
+	sint32 HeroicSta;
+	sint32 HeroicCha;
+	sint32 HeroicMR;
+	sint32 HeroicFR;
+	sint32 HeroicCR;
+	sint32 HeroicDR;
+	sint32 HeroicPR;
+	sint32 HeroicSVCorrup;
+	sint32 HealAmt;
+	sint32 SpellDmg;
 	//sint32 unknown16; // clairvoyance?
 	//uint16 questItem2;
 	//uint16 unknown17; //something to do with power - Power Source Capacity?

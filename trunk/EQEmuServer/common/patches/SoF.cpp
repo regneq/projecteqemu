@@ -2048,7 +2048,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	ibs.PR = item->PR;
 	ibs.MR = item->MR;
 	ibs.FR = item->FR;
-	ibs.Corruption = 0; //NYI
+	ibs.SVCorruption = item->SVCorruption;
 	ibs.AStr = item->AStr;
 	ibs.ASta = item->ASta;
 	ibs.AAgi = item->AAgi;
@@ -2216,6 +2216,25 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 
 	itbs.quest_item = item->QuestItemFlag;
 	itbs.unknown15 = 0xffffffff;
+
+	itbs.Purity = item->Purity;
+	itbs.BackstabDmg = item->BackstabDmg;
+	itbs.DSMitigation = item->DSMitigation;
+	itbs.HeroicStr = item->HeroicStr;
+	itbs.HeroicInt = item->HeroicInt;
+	itbs.HeroicWis = item->HeroicWis;
+	itbs.HeroicAgi = item->HeroicAgi;
+	itbs.HeroicDex = item->HeroicDex;
+	itbs.HeroicSta = item->HeroicSta;
+	itbs.HeroicCha = item->HeroicCha;
+	itbs.HeroicMR = item->HeroicMR;
+	itbs.HeroicFR = item->HeroicFR;
+	itbs.HeroicCR = item->HeroicCR;
+	itbs.HeroicDR = item->HeroicDR;
+	itbs.HeroicPR = item->HeroicPR;
+	itbs.HeroicSVCorrup = item->HeroicSVCorrup;
+	itbs.HealAmt = item->HealAmt;
+	itbs.SpellDmg = item->SpellDmg;
 
 	itbs.subitem_count = 0;
 
