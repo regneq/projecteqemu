@@ -27,6 +27,7 @@
 #include "zonedb.h"
 #include "../common/packet_functions.h"
 #include "../common/packet_dump.h"
+#include "titles.h"
 #include "StringIDs.h"
 #include "../common/MiscFunctions.h"
 #include "../common/rulesys.h"
@@ -894,6 +895,9 @@ void Client::CheckIncreaseTradeskill(sint16 bonusstat, sint16 stat_modifier, flo
 	if (chance_stage2 > MakeRandomFloat(0, 99)) {
 		//Only if stage1 and stage2 succeeded you get a skillup.
 		SetSkill(tradeskill, current_raw_skill + 1);
+
+		if(title_manager.IsNewTradeSkillTitleAvailable(tradeskill, current_raw_skill + 1))
+			NotifyNewTitlesAvailable();
 	}
 
 	_log(TRADESKILLS__TRACE, "...skillup_modifier: %f , success_modifier: %d , stat modifier: %d", skillup_modifier , success_modifier , stat_modifier);

@@ -30,6 +30,7 @@ using namespace std;
 #include "masterentity.h"
 #include "npc.h"
 #include "watermap.h"
+#include "titles.h"
 #include "StringIDs.h"
 #include "../common/MiscFunctions.h"
 #include "../common/rulesys.h"
@@ -364,7 +365,11 @@ void Client::GoFish()
 		DeleteItemInInventory(13,0,true);
 	}
 
-	CheckIncreaseSkill(FISHING,5);
+	if(CheckIncreaseSkill(FISHING,5))
+	{
+		if(title_manager.IsNewTradeSkillTitleAvailable(FISHING, GetRawSkill(FISHING)))
+			NotifyNewTitlesAvailable();
+	}
 }
 
 void Client::ForageItem() {

@@ -27,25 +27,40 @@ class EQApplicationPacket;
 
 using namespace std;
 
-class TitleManager {
+typedef struct TitleEntry
+{
+	int TitleID;
+	int SkillID;
+	int MinSkillValue;
+	int MaxSkillValue;
+	int MinAAPoints;
+	int MaxAAPoints;
+	int Class;
+	int Gender;
+	int CharID;
+	int Status;
+	int ItemID;
+	string Prefix;
+	string Suffix;
+};
+
+class TitleManager
+{
 public:
 	TitleManager();
 
 	bool LoadTitles();
 	
-	EQApplicationPacket *MakeTitlesPacket(Client *who);
-	
-	bool IsValidTitle(Client *who, const char *title);
+	EQApplicationPacket *MakeTitlesPacket(Client *c);
+	string GetPrefix(int TitleID);
+	string GetSuffix(int TitleID);
+	int NumberOfAvailableTitles(Client *c);
+	bool IsClientEligibleForTitle(Client *c, vector<TitleEntry>::iterator Title);
+	bool IsNewAATitleAvailable(int AAPoints, int Class);
+	bool IsNewTradeSkillTitleAvailable(int SkillID, int SkillValue);
 	
 protected:
-	class TitleEntry {
-	public:
-		SkillType skill_id;			//the skill which skill_value applies to
-		uint16 skill_value;		//the minimum value of skill `skill_id` to qualify for this title
-		uint8 aa_points;		//minimum number of AA points needed to qualify for this title
-		string title;
-	};
-	vector<TitleEntry> titles;
+	vector<TitleEntry> Titles;
 };
 
 extern TitleManager title_manager;

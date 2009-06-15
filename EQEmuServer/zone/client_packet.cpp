@@ -318,6 +318,7 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_BankerChange] = &Client::Handle_OP_BankerChange;
 	ConnectedOpcodes[OP_LeadershipExpToggle] = &Client::Handle_OP_LeadershipExpToggle;
 	ConnectedOpcodes[OP_PurchaseLeadershipAA] = &Client::Handle_OP_PurchaseLeadershipAA;
+	ConnectedOpcodes[OP_RequestTitles] = &Client::Handle_OP_RequestTitles;
 	ConnectedOpcodes[OP_SetTitle] = &Client::Handle_OP_SetTitle;
 	ConnectedOpcodes[OP_SenseHeading] = &Client::Handle_OP_Ignore;
 	ConnectedOpcodes[OP_FloatListThing] = &Client::Handle_OP_Ignore;
@@ -741,13 +742,6 @@ void Client::Handle_Connect_OP_ReqNewZone(const EQApplicationPacket *app)
 	strcpy(nz->char_name, m_pp.name);
 
 	FastQueuePacket(&outapp);
-
-	/////////////////////////////////////
-	// Titles Packet
-	//this is where live is sending titles... im not sure why
-	outapp = title_manager.MakeTitlesPacket(this);
-	if(outapp != NULL)
-		FastQueuePacket(&outapp);
 
 	return;
 }
@@ -8025,15 +8019,52 @@ void Client::Handle_OP_PurchaseLeadershipAA(const EQApplicationPacket *app) {
 	
 }
 
-void Client::Handle_OP_SetTitle(const EQApplicationPacket *app) {
-//	m_pp.title[0] = '\0';
-	//TODO: send some sort of update struct to everybody.
+void Client::Handle_OP_SetTitle(const EQApplicationPacket *app)
+{
+	if(app->size != sizeof(SetTitle_Struct)) {
+		LogFile->write(EQEMuLog::Debug, "Size mismatch in OP_SetTitle expected %i got %i", sizeof(SetTitle_Struct), app->size);
+		DumpPacket(app);
+		return;
+	}
+
+	SetTitle_Struct *sts = (SetTitle_Struct *)app->pBuffer;
+
+	string Title;
+
+	if(!sts->is_suffix)
+	{
+		Title = title_manager.GetPrefix(sts->title_id);
+		strn0cpy(m_pp.title, Title.c_str(), sizeof(m_pp.title));
+	}
+	else
+	{
+		Title = title_manager.GetSuffix(sts->title_id);
+		strn0cpy(m_pp.suffix, Title.c_str(), sizeof(m_pp.suffix));
+	}
+
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_SetTitleReply, sizeof(SetTitleReply_Struct));
+
+	SetTitleReply_Struct *strs = (SetTitleReply_Struct *)outapp->pBuffer;
+
+	strs->is_suffix = sts->is_suffix;
+
+	strn0cpy(strs->title, Title.c_str(), sizeof(strs->title));
+
+	strs->entity_id = GetID();
+
+	entity_list.QueueClients(this, outapp, false);
+
+	safe_delete(outapp);
+
 }
 
-void Client::Handle_OP_RequestTitles(const EQApplicationPacket *app) {
-	//zero length request
-	//TODO: get the titles from somewhere, and ship em off
+void Client::Handle_OP_RequestTitles(const EQApplicationPacket *app)
+{
 
+	EQApplicationPacket *outapp = title_manager.MakeTitlesPacket(this);
+
+	if(outapp != NULL)
+		FastQueuePacket(&outapp);
 }
 
 void Client::Handle_OP_BankerChange(const EQApplicationPacket *app)

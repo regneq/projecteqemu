@@ -21,131 +21,220 @@
 #include "titles.h"
 #include "../common/MiscFunctions.h"
 
-/*
-
-create table titles (
-	id int UNSIGNED primary key AUTO_INCREMENT,
-	skill_id tinyint UNSIGNED NOT NULL,
-	skill_value mediumint UNSIGNED NOT NULL,
-	aa_points TINYINT UNSIGNED NOT NULL,
-	title varchar(32) NOT NULL
-);
-
-*/
-
-
 TitleManager::TitleManager() {
 }
 
-bool TitleManager::LoadTitles() {
-	TitleEntry e;
+bool TitleManager::LoadTitles()
+{
+	Titles.clear();
+
+	TitleEntry Title;
 	
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = NULL;
 	MYSQL_RES *result;
 	MYSQL_ROW row;
+
 	if (!database.RunQuery(query, MakeAnyLenString(&query, 
-		"SELECT skill_id, skill_value, title FROM titles"
-	), errbuf, &result)) {
+		"SELECT `id`, `skill_id`, `min_skill_value`, `max_skill_value`, `min_aa_points`, `max_aa_points`, `class`, `gender`, "
+		"`char_id`, `status`, `item_id`, `prefix`, `suffix` from titles"), errbuf, &result))
+	{
+		LogFile->write(EQEMuLog::Error, "Unable to load titles: %s : %s", query, errbuf);
 		safe_delete_array(query);
 		return(false);
 	}
+
 	safe_delete_array(query);
 	
 	while ((row = mysql_fetch_row(result))) {
-		int tmp_skill = atoi(row[0]);
-		if(tmp_skill < 0 || tmp_skill > HIGHEST_SKILL)
-			continue;
-		e.skill_id = (SkillType) tmp_skill;
-		e.skill_value = atoi(row[1]);
-		e.title = row[2];
-		titles.push_back(e);
+		Title.TitleID = atoi(row[0]);
+		Title.SkillID = (SkillType) atoi(row[1]);
+		Title.MinSkillValue = atoi(row[2]);
+		Title.MaxSkillValue = atoi(row[3]);
+		Title.MinAAPoints = atoi(row[4]);
+		Title.MaxAAPoints = atoi(row[5]);
+		Title.Class = atoi(row[6]);
+		Title.Gender = atoi(row[7]);
+		Title.CharID = atoi(row[8]);
+		Title.Status = atoi(row[9]);
+		Title.ItemID = atoi(row[10]);
+		Title.Prefix = row[11];
+		Title.Suffix = row[12];
+		Titles.push_back(Title);
 	}
 	mysql_free_result(result);
 	
 	return(true);
 }
 
-EQApplicationPacket *TitleManager::MakeTitlesPacket(Client *who) {
-	EQApplicationPacket *outapp = NULL;
-	vector<TitleEntry>::iterator cur,end;
-	vector< vector<TitleEntry>::iterator > avaliable;
-	uint32 len = 0;
+EQApplicationPacket *TitleManager::MakeTitlesPacket(Client *c)
+{
+	vector<TitleEntry>::iterator Iterator;
 
-	cur = titles.begin();
-	end = titles.end();
-	for(; cur != end; cur++) {
-		uint32 v = who->GetSkill(cur->skill_id);
-		if(v < cur->skill_value)
-			continue;	//not high enough
-		avaliable.push_back(cur);
-		len += cur->title.length();
+	vector<TitleEntry> AvailableTitles;
+
+	uint32 Length = 4;
+
+	Iterator = Titles.begin();
+
+	while(Iterator != Titles.end())
+	{
+		if(!IsClientEligibleForTitle(c, Iterator))
+		{
+			++Iterator;
+			continue;
+		}
+
+		AvailableTitles.push_back((*Iterator));
+
+		Length += Iterator->Prefix.length() + Iterator->Suffix.length() + 6;
+
+		++Iterator;
+
 	}
 
-	uint32 count = avaliable.size();
-	if(count == 0) {
-		//no titles avaliable...
-		outapp = new EQApplicationPacket(OP_CustomTitles, 4);
-		return(outapp);
-	}
-	
-	uint32 pos = 0;
-	uint32 total_len = sizeof(Titles_Struct) + sizeof(TitleEntry_Struct)*count + len;
-	outapp = new EQApplicationPacket(OP_CustomTitles, total_len);
-	
-	Titles_Struct *header = (Titles_Struct *) outapp->pBuffer;
-	header->title_count = count;
-	pos += sizeof(Titles_Struct);
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_SendTitleList, Length);
 
-	TitleEntry_Struct *e;
-	vector< vector<TitleEntry>::iterator >::iterator cura, enda;
-	cura = avaliable.begin();
-	enda = avaliable.end();
-	for(; cura != enda; cura++) {
-		//get the current entry
-		cur = *cura;
-		e = (TitleEntry_Struct *) (outapp->pBuffer + pos);
-		
-		//fill out the packet
-		e->skill_id = cur->skill_id;
-		e->skill_value = cur->skill_value;
-		len = cur->title.length();
-		strncpy(e->title, cur->title.c_str(), len+1);
-		
-		//advance our position in the buffer
-		pos += sizeof(TitleEntry_Struct) + len;
+	char *Buffer = (char *)outapp->pBuffer;
+
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, AvailableTitles.size());
+	
+	Iterator = AvailableTitles.begin();
+
+	while(Iterator != AvailableTitles.end())
+	{
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, Iterator->TitleID);
+
+		VARSTRUCT_ENCODE_STRING(Buffer, Iterator->Prefix.c_str());
+
+		VARSTRUCT_ENCODE_STRING(Buffer, Iterator->Suffix.c_str());
+
+		++Iterator;
 	}
 	return(outapp);
 }
-	
-bool TitleManager::IsValidTitle(Client *who, const char *title) {
-	vector<TitleEntry>::iterator cur,end;
 
-	cur = titles.begin();
-	end = titles.end();
-	for(; cur != end; cur++) {
-		if((*cur).title != title)
-			continue;	//not this title.
-		uint32 v = who->GetSkill((*cur).skill_id);
-		if(v < (*cur).skill_value) {
-			return(false);	//requirement not met
-		}
-		return(true);	//requirement met
+int TitleManager::NumberOfAvailableTitles(Client *c)
+{
+	int Count = 0;
+
+	vector<TitleEntry>::iterator Iterator;
+
+	Iterator = Titles.begin();
+
+	while(Iterator != Titles.end())
+	{
+		if(IsClientEligibleForTitle(c, Iterator))
+			++Count;
+
+		++Iterator;
 	}
-	//title not found
-	return(false);
+
+	return Count;
 }
 
+string TitleManager::GetPrefix(int TitleID)
+{
+	vector<TitleEntry>::iterator Iterator;
 
+	Iterator = Titles.begin();
 
+	while(Iterator != Titles.end())
+	{
+		if((*Iterator).TitleID == TitleID)
+			return (*Iterator).Prefix;
 
+		++Iterator;
+	}
 
+	return "";
+}
 
+string TitleManager::GetSuffix(int TitleID)
+{
+	vector<TitleEntry>::iterator Iterator;
 
+	Iterator = Titles.begin();
 
+	while(Iterator != Titles.end())
+	{
+		if((*Iterator).TitleID == TitleID)
+			return (*Iterator).Suffix;
 
+		Iterator++;
+	}
 
+	return "";
+}
 
+bool TitleManager::IsClientEligibleForTitle(Client *c, vector<TitleEntry>::iterator Title)
+{
+		if((Title->CharID >= 0) && (c->CharacterID() != static_cast<int32>(Title->CharID)))
+			return false;
 
+		if((Title->Status >= 0) && (c->Admin() < Title->Status))
+			return false;
 
+		if((Title->Gender >= 0) && (c->GetBaseGender() != Title->Gender))
+			return false;
 
+		if((Title->Class >= 0) && (c->GetBaseClass() != Title->Class))
+			return false;
+
+		if((Title->MinAAPoints >= 0) && (c->GetAAPointsSpent() < static_cast<uint32>(Title->MinAAPoints)))
+			return false;
+
+		if((Title->MaxAAPoints >= 0) && (c->GetAAPointsSpent() > static_cast<uint32>(Title->MaxAAPoints)))
+			return false;
+
+		if(Title->SkillID >= 0)
+		{
+			if((Title->MinSkillValue >= 0)
+			   && (c->GetRawSkill(static_cast<SkillType>(Title->SkillID)) < static_cast<uint32>(Title->MinSkillValue)))
+				return false;
+
+			if((Title->MaxSkillValue >= 0)
+			   && (c->GetRawSkill(static_cast<SkillType>(Title->SkillID)) > static_cast<uint32>(Title->MaxSkillValue)))
+				return false;
+
+		}
+
+		if((Title->ItemID >= 1) && (c->GetInv().HasItem(Title->ItemID, 0, 0xFF) == SLOT_INVALID))
+			return false;
+
+		return true;
+}
+
+bool TitleManager::IsNewAATitleAvailable(int AAPoints, int Class)
+{
+	vector<TitleEntry>::iterator Iterator;
+
+	Iterator = Titles.begin();
+
+	while(Iterator != Titles.end())
+	{
+		if((((*Iterator).Class == -1) || ((*Iterator).Class == Class)) && ((*Iterator).MinAAPoints == AAPoints))
+			return true;
+
+		++Iterator;
+	}
+
+	return false;
+}
+
+bool TitleManager::IsNewTradeSkillTitleAvailable(int SkillID, int SkillValue)
+{
+	vector<TitleEntry>::iterator Iterator;
+
+	Iterator = Titles.begin();
+
+	while(Iterator != Titles.end())
+	{
+		if(((*Iterator).SkillID == SkillID) && ((*Iterator).MinSkillValue == SkillValue))
+			return true;
+
+		++Iterator;
+	}
+
+	return false;
+}

@@ -4688,3 +4688,13 @@ void Client::SummonAndRezzAllCorpses()
 
 	Message(clientMessageYellow, "All your corpses have been summoned to your feet and have received a 100% resurrection.");
 }
+
+void Client::NotifyNewTitlesAvailable()
+{
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_NewTitlesAvailable, 0);
+	
+	QueuePacket(outapp);
+
+	safe_delete(outapp);
+
+}
