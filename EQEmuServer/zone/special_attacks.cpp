@@ -903,6 +903,7 @@ void Client::RangedAttack(Mob* other) {
 				ADmg = 0;
 
 			uint32 MaxDmg = (2*(WDmg+ADmg)*GetDamageTable(ARCHERY)) / 100;
+			sint32 hate = (2*(WDmg+ADmg));
 						
 			switch(GetAA(aaArcheryMastery)) {
 				case 1:
@@ -920,6 +921,7 @@ void Client::RangedAttack(Mob* other) {
 
 			if(GetClass()==RANGER && target->IsNPC() && !target->IsMoving() && !target->IsRooted() && GetLevel() > 50){
 				MaxDmg *= 2;
+				hate *= 2;
 				mlog(COMBAT__RANGED, "Ranger. Target is stationary, doubling max damage to %d", MaxDmg);
 			}
 			else
@@ -938,7 +940,6 @@ void Client::RangedAttack(Mob* other) {
 				TotalDmg = MakeRandomInt(1, MaxDmg);
 
 			int minDmg = 1;
-			sint32 hate = (2*(WDmg+ADmg));
 			if(GetLevel() > 25){
 				//twice, for ammo and weapon
 				TotalDmg += (2*((GetLevel()-25)/3));
