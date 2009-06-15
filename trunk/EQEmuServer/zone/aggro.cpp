@@ -1394,7 +1394,7 @@ sint32 Mob::CheckHealAggroAmount(int16 spellid) {
 				int val = CalcSpellEffectValue_formula(spells[spell_id].formula[o], spells[spell_id].base[o], spells[spell_id].max[o], this->GetLevel(), spell_id);
 				if(val > 0){
 					if(val > 3000){
-						AggroAmount += 1500 + (val - 3000) * 1 / 10;
+						AggroAmount += 1500 + (val - 3000) * 1 / 5;
 					}
 					else{
 						AggroAmount += val*1/2;
