@@ -1314,6 +1314,7 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte)
 		
 		int min_hit = 1;
 		int max_hit = (2*weapon_damage*GetDamageTable(skillinuse)) / 100;
+		int32 hate = 2*weapon_damage;
 
 		if(GetLevel() < 10 && max_hit > 20)
 			max_hit = 20;
@@ -1345,6 +1346,7 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte)
 
 			min_hit += (int) ucDamageBonus;
 			max_hit += (int) ucDamageBonus;
+			hate += ucDamageBonus;
 		}
 #endif
 
@@ -1382,7 +1384,6 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte)
 			mlog(COMBAT__DAMAGE, "Final damage after all reductions: %d", damage);
 
 			if(damage != 0){
-				sint32 hate = 2*weapon_damage; //base dmg with no modifiers
 				if(GetFeigned()) {
 					mlog(COMBAT__HITS, "Attacker %s avoids %d hate due to feign death", GetName(), hate);
 				} else {

@@ -938,10 +938,12 @@ void Client::RangedAttack(Mob* other) {
 				TotalDmg = MakeRandomInt(1, MaxDmg);
 
 			int minDmg = 1;
+			sint32 hate = (2*(WDmg+ADmg));
 			if(GetLevel() > 25){
 				//twice, for ammo and weapon
 				TotalDmg += (2*((GetLevel()-25)/3));
 				minDmg += (2*((GetLevel()-25)/3));
+				hate += (2*((GetLevel()-25)/3));
 			}
 
 			target->MeleeMitigation(this, TotalDmg, minDmg);
@@ -949,7 +951,6 @@ void Client::RangedAttack(Mob* other) {
 			TryCriticalHit(target, ARCHERY, TotalDmg);
 			if(TotalDmg > 0)
 			{
-				sint32 hate = (2*(WDmg+ADmg));
 				target->AddToHateList(this, hate, 0, false);
 			}
 			target->Damage(this, TotalDmg, SPELL_UNKNOWN, ARCHERY);
