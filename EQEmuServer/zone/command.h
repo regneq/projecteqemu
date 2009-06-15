@@ -219,7 +219,7 @@ void command_zonestatus(Client *c, const Seperator *sep);
 void command_manaburn(Client *c, const Seperator *sep);
 void command_viewmessage(Client *c, const Seperator *sep);
 void command_doanim(Client *c, const Seperator *sep);
-void command_randomfeatures(Client *c);
+void command_randomfeatures(Client *c, const Seperator *sep);
 void command_face(Client *c, const Seperator *sep);
 void command_helm(Client *c, const Seperator *sep);
 void command_hair(Client *c, const Seperator *sep);

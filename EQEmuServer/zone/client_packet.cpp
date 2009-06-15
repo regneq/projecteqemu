@@ -2020,6 +2020,13 @@ void Client::Handle_OP_Surname(const EQApplicationPacket *app)
 		Message_StringID(10,STRING_SURNAME_TOO_LONG);
 		return;
 	}
+
+	if(!database.CheckNameFilter(surname->lastname))
+	{
+		Message_StringID(10, "Surname rejected.);
+		return;
+	}
+
 	ChangeLastName(surname->lastname);
 
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_GMLastName, sizeof(GMLastName_Struct));

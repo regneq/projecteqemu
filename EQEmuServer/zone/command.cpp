@@ -5215,7 +5215,7 @@ void command_doanim(Client *c, const Seperator *sep)
 			c->DoAnim(atoi(sep->arg[1]),atoi(sep->arg[2]));
 }
 
-void command_randomfeatures(Client *c)
+void command_randomfeatures(Client *c, const Seperator *sep)
 {
 	Mob *target=c->GetTarget();
 	int16 Race = target->GetRace();
