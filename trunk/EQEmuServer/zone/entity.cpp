@@ -3029,15 +3029,27 @@ void EntityList::AddHealAggro(Mob* target, Mob* caster, int16 thedam)
 			if(cur->IsPet()){
 				if(caster){
 					if(cur->CheckAggro(caster))
-						cur->AddToHateList(caster, thedam);
+					{
+						if(cur->GetHateAmount(caster) > 1)
+							cur->AddToHateList(caster, thedam);
+						else
+							cur->AddToHateList(caster, 1);
+					}
 				}
 			}
 			else{
 				if(caster){
 					if(!cur->CheckAggro(caster))
-						cur->AddToHateList(caster, 1);
+					{
+						if(cur->GetHateAmount(caster) > 1)
+							cur->AddToHateList(caster, thedam);
+						else
+							cur->AddToHateList(caster, 1);
+					}
 					else
-						cur->AddToHateList(caster, thedam);
+					{
+						cur->AddToHateList(caster, 1);
+					}
 				}
 			}
 		}
