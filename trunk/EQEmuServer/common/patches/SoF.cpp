@@ -2164,7 +2164,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 		isbs.augslots[x].unknown = item->AugSlotUnk2[x];
 	}
 
-	isbs.ldonpoint_type = 0;
+	isbs.ldonpoint_type = item->PointType;
 	isbs.ldontheme = item->LDoNTheme;
 	isbs.ldonprice = item->LDoNPrice;
 	isbs.unk098 = 70;
