@@ -211,7 +211,6 @@ RULE_INT ( Aggro, CriticallyWoundedAggroMod, 100 ) //100%
 RULE_INT ( Aggro, SpellAggroMod, 100 )
 RULE_INT ( Aggro, SongAggroMod, 33 )
 RULE_INT ( Aggro, PetSpellAggroMod, 10 )
-RULE_INT ( Aggro, PetAggroAmount, 50 ) //50% of normal aggro.
 RULE_CATEGORY_END()
 
 RULE_CATEGORY ( TaskSystem)

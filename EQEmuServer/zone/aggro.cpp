@@ -1382,30 +1382,35 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 }
 
 //healing and buffing aggro
-sint32 Mob::CheckHealAggroAmount(int16 spellid) {
+sint32 Mob::CheckHealAggroAmount(int16 spellid, int32 heal_possible) {
 	int16 spell_id = spellid;
 	sint32 AggroAmount = 0;
 
 	for (int o = 0; o < EFFECT_COUNT; o++) {
 		switch(spells[spell_id].effectid[o]) {
-			case SE_Rune:
-			case SE_CurrentHP:{
+			case SE_CurrentHP:
+			case SE_HealOverTime:{
 				int val = CalcSpellEffectValue_formula(spells[spell_id].formula[o], spells[spell_id].base[o], spells[spell_id].max[o], this->GetLevel(), spell_id);
-				if(val > 0){
-					int32 max_val = GetLevel() * 50;
-					if(val > max_val){
-						AggroAmount += max_val*2/3 + (val - max_val) * 2 / 5;
+				if(val > 0)
+				{
+					if(val <= heal_possible)
+					{
+						AggroAmount += val/2;
 					}
-					else{
-						AggroAmount += val*2/3;
+					else
+					{
+						AggroAmount += heal_possible/2;
 					}
 				}
 				break;
 			}
-			case SE_HealOverTime: {
+			case SE_Rune:
+			{
 				int val = CalcSpellEffectValue_formula(spells[spell_id].formula[o], spells[spell_id].base[o], spells[spell_id].max[o], this->GetLevel(), spell_id);
 				if(val > 0)
-					AggroAmount += val*2/3;
+				{
+					AggroAmount += val/2;
+				}
 				break;
 			}
 			default:{

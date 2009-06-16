@@ -2992,8 +2992,7 @@ void EntityList::AddHealAggro(Mob* target, Mob* caster, int16 thedam)
 	while(iterator.MoreElements())
 	{
 		cur = iterator.GetData();
-		iterator.Advance();
-
+		
 		if(!cur->CheckAggro(target))
 		{
 			iterator.Advance();
@@ -3003,6 +3002,7 @@ void EntityList::AddHealAggro(Mob* target, Mob* caster, int16 thedam)
 		{
 			++count;
 		}
+		iterator.Advance();
 	}
 
 	if(thedam > 1)
@@ -3030,21 +3030,15 @@ void EntityList::AddHealAggro(Mob* target, Mob* caster, int16 thedam)
 				if(caster){
 					if(cur->CheckAggro(caster))
 					{
-						if(cur->GetHateAmount(caster) >= 1)
-							cur->AddToHateList(caster, thedam);
-						else
-							cur->AddToHateList(caster, 1);
+						cur->AddToHateList(caster, thedam);
 					}
 				}
 			}
 			else{
 				if(caster){
-					if(!cur->CheckAggro(caster))
+					if(cur->CheckAggro(caster))
 					{
-						if(cur->GetHateAmount(caster) >= 1)
-							cur->AddToHateList(caster, thedam);
-						else
-							cur->AddToHateList(caster, 1);
+						cur->AddToHateList(caster, thedam);
 					}
 					else
 					{

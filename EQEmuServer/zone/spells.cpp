@@ -3061,7 +3061,7 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar)
 		}
 	}
 	else if (IsBeneficialSpell(spell_id))
-		entity_list.AddHealAggro(spelltar, this, CheckHealAggroAmount(spell_id));
+		entity_list.AddHealAggro(spelltar, this, CheckHealAggroAmount(spell_id, (spelltar->GetMaxHP() - spelltar->GetHP())));
 
 	// cause the effects to the target
 	if(!spelltar->SpellEffect(this, spell_id, spell_effectiveness))
