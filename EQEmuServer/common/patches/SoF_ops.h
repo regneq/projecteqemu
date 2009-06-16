@@ -47,6 +47,7 @@ E(OP_SomeItemPacketMaybe)
 E(OP_ReadBook)
 E(OP_Stun)
 E(OP_ZonePlayerToBind)
+E(OP_AdventureMerchantSell)
 //E(OP_AdventureData)
 //E(OP_RaidUpdate)
 
@@ -75,5 +76,6 @@ D(OP_TributeItem)
 D(OP_ReadBook)
 D(OP_AugmentInfo)
 D(OP_FaceChange)
+D(OP_AdventureMerchantSell)
 #undef E
 #undef D

@@ -3,6 +3,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==06/16/2009==
 Derision: Old corpses summoned by Expedient Recovery will no longer rebury after 5 seconds.
 Derision: Added optional duration parameter to quest::popup.
+Trevius: SoF - Added Encode/Decode for Adventure Merchant Selling.  Selling still does not work yet, but this will be required anyway.
 
 ==06/15/2009==
 Trevius: SoF - The following fields now show up on items that have values set for them, but the stats are not actually used by the server yet:

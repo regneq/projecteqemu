@@ -1766,9 +1766,17 @@ struct Merchant_DelItem_Struct{
 };
 struct Adventure_Purchase_Struct {
 /*000*/	int32	some_flag;	//set to 1 generally...
-/*000*/	int32	npcid;
-/*004*/	int32	itemid;
-/*008*/	int32	variable;
+/*004*/	int32	npcid;
+/*008*/	int32	itemid;
+/*012*/	int32	variable;
+};
+
+struct Adventure_Sell_Struct {
+/*000*/	int32	unknown000;	//0x01 - Stack Size/Charges?
+/*004*/	int32	npcid;
+/*008*/	int32	slot;
+/*012*/	int32	charges;
+/*016*/	int32	sell_price;
 };
 
 struct AdventurePoints_Update_Struct {
@@ -1805,7 +1813,25 @@ struct AdventureRequestResponse_Struct{
 	int32 unknown2080;
 };
 
+//this is mostly right but something is off that causes the client to crash sometimes
+//I don't really care enough about the feature to work on it anymore though.
+struct AdventureLeaderboardEntry_Struct
+{
+/*004*/ char name[64];
+/*008*/ int32 success;
+/*012*/ int32 failure;
+/*016*/
+};
 
+struct AdventureLeaderboard_Struct
+{
+/*000*/ int32 unknown000;
+/*004*/ int32 unknown004;
+/*008*/ int32 success;
+/*012*/ int32 failure;
+/*016*/ int32 our_rank;
+/*020*/	
+};
 
 /*struct Item_Shop_Struct {
 	uint16 merchantid;
