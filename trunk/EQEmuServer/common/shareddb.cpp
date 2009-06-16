@@ -972,7 +972,7 @@ bool SharedDatabase::DBLoadItems(sint32 iItemCount, uint32 iMaxItemID) {
 	}
 	else {
 		LogFile->write(EQEMuLog::Error, "DBLoadItems query '%s', %s", query, errbuf);
-		LogFile->write(EQEMuLog::Error, "If you got boat loads of errors, make sure you sourced: utils/items-0.6.0-DR2-0.6.1-DR1-convert.sql\n");
+		LogFile->write(EQEMuLog::Error, "If you got boat loads of errors, make sure you sourced all sql updates!\n");
 	}
 	return ret;
 }

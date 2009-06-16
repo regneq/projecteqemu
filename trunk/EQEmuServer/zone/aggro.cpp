@@ -315,13 +315,15 @@ bool Mob::CheckWillAggro(Mob *mob) {
 	// Are they in range?
 	// Are they kos?
 	// Are we stupid or are they green
-	// and they don't have thier gm flag on
+	// and they don't have their gm flag on
 	if
 	(
 	//old InZone check taken care of above by !mob->CastToClient()->Connected()
 	(
 		( GetINT() <= 75 )
+		||( mob->CastToClient()->IsSitting() )
 		||( mob->GetLevelCon(GetLevel()) != CON_GREEN )
+
 	)
 	&&
 	(
