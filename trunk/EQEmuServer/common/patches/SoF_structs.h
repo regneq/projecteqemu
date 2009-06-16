@@ -3784,16 +3784,16 @@ struct AugSlotStruct
 struct ClickEffectStruct
 {
 	sint32 effect;
-	uint8 unknown1; // level2?
-	uint8 type;
-	uint32 level;
+	uint8 level2;
+	uint32 type;
+	uint8 level;
 	sint32 max_charges;
 	sint32 cast_time;
 	uint32 recast;
 	sint32 recast_type;
-	uint32 unknown2; //clickunk5
+	uint32 clickunk5;
 	uint8 effect_string; //unused
-	sint32 clickunk7; // added from proc section
+	sint32 clickunk7;
 };
 
 struct ProcEffectStruct

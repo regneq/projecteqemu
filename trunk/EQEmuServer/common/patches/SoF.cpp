@@ -2212,6 +2212,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	itbs.stacksize = stackable ? item->StackSize : 0;
 
 	itbs.click_effect.effect = item->Click.Effect;
+	itbs.click_effect.level2 = item->Click.Level2;
 	itbs.click_effect.type = item->Click.Type;
 	itbs.click_effect.level = item->Click.Level;
 	itbs.click_effect.max_charges = item->MaxCharges;
