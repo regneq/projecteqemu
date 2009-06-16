@@ -908,12 +908,15 @@ void Client::RangedAttack(Mob* other) {
 			switch(GetAA(aaArcheryMastery)) {
 				case 1:
 					MaxDmg = MaxDmg * 115/100;
+					hate = hate * 115/100;
 					break;
 				case 2:
 					MaxDmg = MaxDmg * 125/100;
+					hate * 125/100;
 					break;
 				case 3:
 					MaxDmg = MaxDmg * 150/100;
+					hate * 150/100;
 					break;
 			}
 			
@@ -927,6 +930,7 @@ void Client::RangedAttack(Mob* other) {
 			else
 			{
 				MaxDmg *= (RuleR(Combat, ArcheryStationaryPenalty));
+				hate *= (RuleR(Combat, ArcheryStationaryPenalty));
 			}
 			
 			sint32 TotalDmg = 0;
@@ -950,10 +954,7 @@ void Client::RangedAttack(Mob* other) {
 			target->MeleeMitigation(this, TotalDmg, minDmg);
 			ApplyMeleeDamageBonus(ARCHERY, TotalDmg);
 			TryCriticalHit(target, ARCHERY, TotalDmg);
-			if(TotalDmg > 0)
-			{
-				target->AddToHateList(this, hate, 0, false);
-			}
+			target->AddToHateList(this, hate, 0, false);
 			target->Damage(this, TotalDmg, SPELL_UNKNOWN, ARCHERY);
 		}
 		else {

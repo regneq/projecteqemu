@@ -1198,20 +1198,23 @@ void WorldServer::Process() {
 		}
 
 		case ServerOP_UpdateSpawn: {
-			UpdateSpawnTimer_Struct *ust = (UpdateSpawnTimer_Struct*)pack->pBuffer;
-			LinkedListIterator<Spawn2*> iterator(zone->spawn2_list);
-			iterator.Reset();
-			while (iterator.MoreElements()) 
+			if(zone)
 			{
-				if(iterator.GetData()->GetID() == ust->id)
+				UpdateSpawnTimer_Struct *ust = (UpdateSpawnTimer_Struct*)pack->pBuffer;
+				LinkedListIterator<Spawn2*> iterator(zone->spawn2_list);
+				iterator.Reset();
+				while (iterator.MoreElements()) 
 				{
-					if(!iterator.GetData()->NPCPointerValid())
+					if(iterator.GetData()->GetID() == ust->id)
 					{
-						iterator.GetData()->SetTimer(ust->duration);
+						if(!iterator.GetData()->NPCPointerValid())
+						{
+							iterator.GetData()->SetTimer(ust->duration);
+						}
+						break;
 					}
-					break;
+					iterator.Advance();
 				}
-				iterator.Advance();
 			}
 			break;
 		}

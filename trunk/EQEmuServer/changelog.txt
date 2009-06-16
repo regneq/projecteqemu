@@ -9,6 +9,8 @@ Trevius: SoF - Items being sold now show the correct price that the merchant wil
 cavedude: Changed the items-0.6.0-DR2-0.6.1-DR1-convert.sql error message to stop confusing people.
 cavedude: Green con KOS NPCs will now aggro clients while sitting.
 Derision: Spells Gems now stay greyed out after zoning until their recast time is met.
+KLS: More aggro tweaks.
+KLS: Fix for zone crash from world server.
 
 ==06/15/2009==
 Trevius: SoF - The following fields now show up on items that have values set for them, but the stats are not actually used by the server yet:
