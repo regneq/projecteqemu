@@ -912,11 +912,11 @@ void Client::RangedAttack(Mob* other) {
 					break;
 				case 2:
 					MaxDmg = MaxDmg * 125/100;
-					hate * 125/100;
+					hate = hate * 125/100;
 					break;
 				case 3:
 					MaxDmg = MaxDmg * 150/100;
-					hate * 150/100;
+					hate = hate * 150/100;
 					break;
 			}
 			
