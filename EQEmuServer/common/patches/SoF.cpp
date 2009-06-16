@@ -2118,7 +2118,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	ibs.Material = item->Material;
 	ibs.unknown7 = 0;
 	ibs.unknown8 = 0;
-	ibs.SellRate = 0;
+	ibs.SellRate = item->SellRate;
 
 	ibs.CombatEffects = item->CombatEffects;
 	ibs.Shielding = item->Shielding;
