@@ -1614,6 +1614,32 @@ ENCODE(OP_ZonePlayerToBind) {
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_AdventureMerchantSell) {
+	ENCODE_LENGTH_EXACT(Adventure_Sell_Struct);
+	SETUP_DIRECT_ENCODE(Adventure_Sell_Struct, structs::Adventure_Sell_Struct);
+
+	eq->unknown000 = 1;
+	OUT(npcid);
+	eq->slot = TitaniumToSoFSlot(emu->slot);
+	OUT(charges);
+	OUT(sell_price);
+
+	FINISH_ENCODE();
+}
+
+DECODE(OP_AdventureMerchantSell) {
+	DECODE_LENGTH_EXACT(structs::Adventure_Sell_Struct);
+	SETUP_DIRECT_DECODE(Adventure_Sell_Struct, structs::Adventure_Sell_Struct);
+
+	IN(npcid);
+	emu->slot = SoFToTitaniumSlot(eq->slot);
+	IN(charges);
+	IN(sell_price);
+
+	FINISH_DIRECT_DECODE();
+}
+
+
 DECODE(OP_ItemVerifyRequest) {
 	DECODE_LENGTH_EXACT(structs::ItemVerifyRequest_Struct);
 	SETUP_DIRECT_DECODE(ItemVerifyRequest_Struct, structs::ItemVerifyRequest_Struct);
