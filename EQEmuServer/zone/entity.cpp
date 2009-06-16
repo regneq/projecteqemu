@@ -3030,7 +3030,7 @@ void EntityList::AddHealAggro(Mob* target, Mob* caster, int16 thedam)
 				if(caster){
 					if(cur->CheckAggro(caster))
 					{
-						if(cur->GetHateAmount(caster) > 1)
+						if(cur->GetHateAmount(caster) >= 1)
 							cur->AddToHateList(caster, thedam);
 						else
 							cur->AddToHateList(caster, 1);
@@ -3041,7 +3041,7 @@ void EntityList::AddHealAggro(Mob* target, Mob* caster, int16 thedam)
 				if(caster){
 					if(!cur->CheckAggro(caster))
 					{
-						if(cur->GetHateAmount(caster) > 1)
+						if(cur->GetHateAmount(caster) >= 1)
 							cur->AddToHateList(caster, thedam);
 						else
 							cur->AddToHateList(caster, 1);
