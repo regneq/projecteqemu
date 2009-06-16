@@ -150,7 +150,7 @@ public:
 	void playergender(int gender_id);
 	void playersize(int newsize);
 	void playertexture(int newtexture);
-	void popup(char *title, char *text, int32 popupid, int32 buttons);
+	void popup(char *title, char *text, int32 popupid, int32 buttons, int32 Duration);
 
 #ifdef EQBOTS
 

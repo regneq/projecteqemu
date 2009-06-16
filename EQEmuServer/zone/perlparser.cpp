@@ -2266,16 +2266,21 @@ XS(XS__istaskappropriate)
         dXSARGS;
 	int popupid = 0;
 	int buttons = 0;
-	if((items < 2) || (items > 4))
-                Perl_croak(aTHX_ "Usage: popup(windowtitle, text)");
+	int duration = 0;
+
+	if((items < 2) || (items > 5))
+                Perl_croak(aTHX_ "Usage: popup(windowtitle, text, popupid, buttons, duration)");
 
 	if(items >= 3)
 		popupid = (int)SvIV(ST(2));
 
-	if(items == 4)
+	if(items >= 4)
 		buttons = (int)SvIV(ST(3));
+
+	if(items == 5)
+		duration = (int)SvIV(ST(4));
  
-        quest_manager.popup(SvPV_nolen(ST(0)), SvPV_nolen(ST(1)), popupid, buttons);
+        quest_manager.popup(SvPV_nolen(ST(0)), SvPV_nolen(ST(1)), popupid, buttons, duration);
  
         XSRETURN_EMPTY;
  }

@@ -1515,6 +1515,7 @@ bool ZoneDatabase::SummonAllPlayerCorpses(int32 char_id, int32 dest_zoneid, int1
 							   dest_z, dest_heading, row[3],atoi(row[4])==1, false);
 			if(NewCorpse) {
 				entity_list.AddCorpse(NewCorpse);
+				NewCorpse->SetDecayTimer(RuleI(Character, CorpseDecayTimeMS));
 				NewCorpse->Spawn();
 				++CorpseCount;
 			}

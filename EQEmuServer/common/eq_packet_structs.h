@@ -1482,7 +1482,7 @@ struct OnLevelMessage_Struct {
 /*0000*/       char    Title[128];
 /*0128*/       char    Text[4096];
 /*4224*/       uint32  Buttons;
-/*4228*/       uint32  unknown4228;
+/*4228*/       uint32  Duration;
 /*4232*/       uint32  PopupID;
 /*4236*/       uint32  unknown4236;
 /*4240*/       uint32  unknown4240;

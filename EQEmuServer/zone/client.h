@@ -708,7 +708,7 @@ public:
 	int FindSpellBookSlotBySpellID(int16 spellid);
 	int GetNextAvailableSpellBookSlot();
 	int16	GetMaxSkillAfterSpecializationRules(SkillType skillid, int16 maxSkill);
-	void SendPopupToClient(const char *Title, const char *Text, int32 PopupID = 0, int32 Buttons = 0);
+	void SendPopupToClient(const char *Title, const char *Text, int32 PopupID = 0, int32 Buttons = 0, int32 Duration = 0);
 	bool	PendingTranslocate;
 	time_t	TranslocateTime;
  	bool	PendingSacrifice;
@@ -1029,7 +1029,6 @@ private:
 	Timer	scanarea_timer;
 #endif
 	Timer	tribute_timer;
-	Timer	charm_update_timer;
 
 #ifdef PACKET_UPDATE_MANAGER
 	UpdateManager update_manager;
@@ -1037,6 +1036,7 @@ private:
 
 	Timer	proximity_timer;
 	Timer	TaskPeriodic_Timer;
+	Timer	charm_update_timer;
 	Timer	rest_timer;
 
 	float	proximity_x;

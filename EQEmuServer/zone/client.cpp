@@ -3305,25 +3305,30 @@ void Client::SetHoTT(int32 mobid) {
 	safe_delete(outapp);
 }
 
-void Client::SendPopupToClient(const char *Title, const char *Text, int32 PopupID, int32 Buttons) {
+void Client::SendPopupToClient(const char *Title, const char *Text, int32 PopupID, int32 Buttons, int32 Duration) {
 
-       EQApplicationPacket *outapp = new EQApplicationPacket(OP_OnLevelMessage, sizeof(OnLevelMessage_Struct));
-       OnLevelMessage_Struct *olms = (OnLevelMessage_Struct *) outapp->pBuffer;
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_OnLevelMessage, sizeof(OnLevelMessage_Struct));
+	OnLevelMessage_Struct *olms = (OnLevelMessage_Struct *) outapp->pBuffer;
 
-       if((strlen(Title) > (sizeof(olms->Title)-1)) ||
-          (strlen(Text) > (sizeof(olms->Text)-1))) return;
+	if((strlen(Title) > (sizeof(olms->Title)-1)) ||
+	   (strlen(Text) > (sizeof(olms->Text)-1))) return;
 
-       strcpy(olms->Title, Title);
-       strcpy(olms->Text, Text);
+	strcpy(olms->Title, Title);
+	strcpy(olms->Text, Text);
 
-       olms->Buttons = Buttons;
-       olms->unknown4228 = 0xffffffff;
-       olms->PopupID = PopupID;
-       olms->unknown4236 = 0x00000000;
-       olms->unknown4240 = 0xffffffff;
+	olms->Buttons = Buttons;
 
-       QueuePacket(outapp);
-       safe_delete(outapp);
+	if(Duration > 0)
+		olms->Duration = Duration * 1000;
+	else
+		olms->Duration = 0xffffffff;
+
+	olms->PopupID = PopupID;
+	olms->unknown4236 = 0x00000000;
+	olms->unknown4240 = 0xffffffff;
+
+	QueuePacket(outapp);
+	safe_delete(outapp);
 }
 
 void Client::KeyRingLoad()
@@ -3648,7 +3653,7 @@ void Client::VoiceMacroReceived(int32 Type, char *Target, int32 MacroNumber) {
 
 void Client::ClearGroupAAs() {
 
-	for(int i = 0; i <  MAX_GROUP_LEADERSHIP_AA_ARRAY; i++)
+	for(unsigned int i = 0; i <  MAX_GROUP_LEADERSHIP_AA_ARRAY; i++)
 		m_pp.leader_abilities.ranks[i] = 0;
 
 	m_pp.group_leadership_points = 0;
@@ -3760,7 +3765,7 @@ void Client::SendDisciplineTimers()
 	EQApplicationPacket *outapp = new EQApplicationPacket(OP_DisciplineTimer, sizeof(DisciplineTimer_Struct));
 	DisciplineTimer_Struct *dts = (DisciplineTimer_Struct *)outapp->pBuffer;
 
-	for(int i = 0; i < MAX_DISCIPLINE_TIMERS; ++i)
+	for(unsigned int i = 0; i < MAX_DISCIPLINE_TIMERS; ++i)
 	{
 		int32 RemainingTime = p_timers.GetRemainingTime(pTimerDisciplineReuseStart + i);
 
