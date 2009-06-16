@@ -902,7 +902,7 @@ bool logpos;
 	static int32	GetLevelHP(int8 tlevel);
 	int32	GetZoneID() const;	//for perl
 	sint32	CheckAggroAmount(int16 spellid);
-	sint32	CheckHealAggroAmount(int16 spellid);
+	sint32	CheckHealAggroAmount(int16 spellid, int32 heal_possible = 0);
 	virtual int32 GetAA(int32 aa_id) const { return(0); }
 
 	int16	GetInstrumentMod(int16 spell_id) const;

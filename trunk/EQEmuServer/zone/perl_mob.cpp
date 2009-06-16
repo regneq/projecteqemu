@@ -5395,13 +5395,14 @@ XS(XS_Mob_CheckHealAggroAmount); /* prototype to pass -Wmissing-prototypes */
 XS(XS_Mob_CheckHealAggroAmount)
 {
 	dXSARGS;
-	if (items != 2)
-		Perl_croak(aTHX_ "Usage: Mob::CheckHealAggroAmount(THIS, spellid)");
+	if (items != 2 && items != 3)
+		Perl_croak(aTHX_ "Usage: Mob::CheckHealAggroAmount(THIS, spellid, possible_heal_amt)");
 	{
 		Mob *		THIS;
 		int16		RETVAL;
 		dXSTARG;
 		int16		spellid = (int16)SvUV(ST(1));
+		int32		possible = 0;
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -5412,7 +5413,12 @@ XS(XS_Mob_CheckHealAggroAmount)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		RETVAL = THIS->CheckHealAggroAmount(spellid);
+		if(items == 3)
+		{
+			possible = (int32)SvUV(ST(2));
+		}
+
+		RETVAL = THIS->CheckHealAggroAmount(spellid, possible);
 		XSprePUSH; PUSHu((UV)RETVAL);
 	}
 	XSRETURN(1);
