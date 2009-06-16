@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/16/2009==
+Derision: Old corpses summoned by Expedient Recovery will no longer rebury after 5 seconds.
+Derision: Added optional duration parameter to quest::popup.
+
 ==06/15/2009==
 Trevius: SoF - The following fields now show up on items that have values set for them, but the stats are not actually used by the server yet:
 	       svcorruption, purity, backstabdmg, dsmitigation, heroic_str, heroic_int, heroic_wis, heroic_agi, heroic_dex, heroic_sta

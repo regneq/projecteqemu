@@ -1405,9 +1405,9 @@ void QuestManager::playertexture(int newtexture)
 {
 			initiator->SendIllusionPacket(initiator->GetRace(), 0xFF, newtexture);
 }
-void QuestManager::popup(char *title, char *text, int32 popupid, int32 buttons) 
+void QuestManager::popup(char *title, char *text, int32 popupid, int32 buttons, int32 Duration) 
 {
-         if(initiator) initiator->SendPopupToClient(title, text, popupid, buttons);
+         if(initiator) initiator->SendPopupToClient(title, text, popupid, buttons, Duration);
 }
 
 #ifdef EQBOTS
