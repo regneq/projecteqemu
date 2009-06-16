@@ -7504,6 +7504,10 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 		LogFile->write(EQEMuLog::Error, "Unable to load ability timers from the database for %s (%i)!", GetCleanName(), CharacterID());
 	}
 
+	for(unsigned int i =0 ; i < MAX_PP_MEMSPELL; ++i)
+		if(IsValidSpell(m_pp.mem_spells[i]))
+			m_pp.spellSlotRefresh[i] = p_timers.GetRemainingTime(pTimerSpellStart + m_pp.mem_spells[i]) * 1000;
+
 	if(m_pp.class_==SHADOWKNIGHT || m_pp.class_==PALADIN)
 	{
 		int32 abilitynum=0;
