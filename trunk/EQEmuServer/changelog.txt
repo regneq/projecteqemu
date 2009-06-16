@@ -5,6 +5,7 @@ Derision: Old corpses summoned by Expedient Recovery will no longer rebury after
 Derision: Added optional duration parameter to quest::popup.
 Trevius: SoF - Adventure Merchant Selling is now functional.
 Trevius: SoF - Items with click effects now show the min level required to click them.
+Trevius: SoF - Items being sold now show the correct price that the merchant will pay for them.
 
 ==06/15/2009==
 Trevius: SoF - The following fields now show up on items that have values set for them, but the stats are not actually used by the server yet:
