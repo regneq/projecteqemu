@@ -1382,7 +1382,6 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 }
 
 //healing and buffing aggro
-//I dont think this accounts for direct healing spells.
 sint32 Mob::CheckHealAggroAmount(int16 spellid) {
 	int16 spell_id = spellid;
 	sint32 AggroAmount = 0;
@@ -1393,11 +1392,12 @@ sint32 Mob::CheckHealAggroAmount(int16 spellid) {
 			case SE_CurrentHP:{
 				int val = CalcSpellEffectValue_formula(spells[spell_id].formula[o], spells[spell_id].base[o], spells[spell_id].max[o], this->GetLevel(), spell_id);
 				if(val > 0){
-					if(val > 3000){
-						AggroAmount += 1500 + (val - 3000) * 1 / 5;
+					int32 max_val = GetLevel() * 50;
+					if(val > max_val){
+						AggroAmount += max_val*2/3 + (val - max_val) * 2 / 5;
 					}
 					else{
-						AggroAmount += val*1/2;
+						AggroAmount += val*2/3;
 					}
 				}
 				break;
@@ -1405,11 +1405,10 @@ sint32 Mob::CheckHealAggroAmount(int16 spellid) {
 			case SE_HealOverTime: {
 				int val = CalcSpellEffectValue_formula(spells[spell_id].formula[o], spells[spell_id].base[o], spells[spell_id].max[o], this->GetLevel(), spell_id);
 				if(val > 0)
-					AggroAmount += val*1/2;
+					AggroAmount += val*2/3;
 				break;
 			}
 			default:{
-				AggroAmount += 0;
  				break;
  			}
 		}
