@@ -129,7 +129,7 @@ void Mob::DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, si
 		who->MeleeMitigation(this, max_damage, min_damage);
 		ApplyMeleeDamageBonus(skill, max_damage);
 		TryCriticalHit(who, skill, max_damage);
-		if(max_damage != 0)
+		if(max_damage > 0)
 		{
 			who->AddToHateList(this, hate);
 		}

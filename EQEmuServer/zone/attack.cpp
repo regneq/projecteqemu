@@ -1383,7 +1383,7 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte)
 			TryCriticalHit(other, skillinuse, damage);
 			mlog(COMBAT__DAMAGE, "Final damage after all reductions: %d", damage);
 
-			if(damage != 0){
+			if(damage > 0){
 				if(GetFeigned()) {
 					mlog(COMBAT__HITS, "Attacker %s avoids %d hate due to feign death", GetName(), hate);
 				} else {
@@ -2442,7 +2442,7 @@ bool NPC::Attack(Mob* other, int Hand, bool bRiposte)	 // Kaiyodo - base functio
 
 				mlog(COMBAT__HITS, "Generating hate %d towards %s", hate, GetName());
 				// now add done damage to the hate list
-				if(damage != 0)
+				if(damage > 0)
 				{
 					other->AddToHateList(this, hate);
 				}
