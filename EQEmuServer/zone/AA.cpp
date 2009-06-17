@@ -1472,7 +1472,14 @@ SendAA_Struct* ZoneDatabase::GetAASkillVars(int32 skill_id)
 				"a.spellid, "
 				"a.class_type, "
 				"a.name, "
-				"a.cost_inc "
+				"a.cost_inc, "
+				"a.aa_expansion, "
+				"a.special_category, "
+				"a.sof_type, "
+				"a.sof_cost_inc, "
+				"a.sof_max_level, "
+				"a.sof_next_skill, "
+				"a.clientver "	// Client Version 0 = None, 1 = All, 2 = Titanium/6.2, 3 = SoF
 			" FROM altadv_vars a WHERE skill_id=%i", skill_id), errbuf, &result)) {
 			safe_delete_array(query);
 			if (mysql_num_rows(result) == 1) {
@@ -1515,6 +1522,14 @@ SendAA_Struct* ZoneDatabase::GetAASkillVars(int32 skill_id)
 					sendaa->next_id=0xFFFFFFFF;
 				
 				sendaa->cost_inc = atoi(row[16]);
+				// Begin SoF Specific/Adjusted AA Fields
+				sendaa->aa_expansion = atoul(row[17]);
+				sendaa->special_category = atoul(row[18]);
+				sendaa->sof_type = atoul(row[19]);
+				sendaa->sof_cost_inc = atoi(row[20]);
+				sendaa->sof_max_level = atoul(row[21]);
+				sendaa->sof_next_skill = atoul(row[22]);
+				sendaa->clientver = atoul(row[23]);
 			}
 			mysql_free_result(result);
 		} else {

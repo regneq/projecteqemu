@@ -147,37 +147,42 @@ ENCODE(OP_SendAATable) {
 	SETUP_VAR_ENCODE(SendAA_Struct);
 	ALLOC_VAR_ENCODE(structs::SendAA_Struct, sizeof(structs::SendAA_Struct) + emu->total_abilities*sizeof(structs::AA_Ability));
 	
-	OUT(id);
-	eq->unknown004 = 1;
-	eq->hotkey_sid = (emu->hotkey_sid==4294967295UL)?0:(emu->id - emu->current_level + 1);
-	eq->hotkey_sid2 = (emu->hotkey_sid2==4294967295UL)?0:(emu->id - emu->current_level + 1);
-	eq->title_sid = emu->id - emu->current_level + 1;
-	eq->desc_sid = emu->id - emu->current_level + 1;
-	OUT(class_type);
-	OUT(cost);
-	OUT(seq);
-	OUT(current_level);
-	OUT(prereq_skill);
-	OUT(prereq_minpoints);
-	OUT(type);
-	OUT(spellid);
-	OUT(spell_type);
-	OUT(spell_refresh);
-	OUT(classes);
-	OUT(berserker);
-	OUT(max_level);
-	OUT(last_id);
-	OUT(next_id);
-	OUT(cost2);
-	OUT(unknown80[0]);
-	OUT(unknown80[1]);
-	OUT(total_abilities);
-	unsigned int r;
-	for(r = 0; r < emu->total_abilities; r++) {
-		OUT(abilities[r].skill_id);
-		OUT(abilities[r].base1);
-		OUT(abilities[r].base2);
-		OUT(abilities[r].slot);
+	// Check clientver field to verify this AA should be sent for Titanium
+	// clientver 1 is for all clients and 3 is for Titanium only
+	if (emu->clientver == 1 || emu->clientver == 2 )
+	{
+		OUT(id);
+		eq->unknown004 = 1;
+		eq->hotkey_sid = (emu->hotkey_sid==4294967295UL)?0:(emu->id - emu->current_level + 1);
+		eq->hotkey_sid2 = (emu->hotkey_sid2==4294967295UL)?0:(emu->id - emu->current_level + 1);
+		eq->title_sid = emu->id - emu->current_level + 1;
+		eq->desc_sid = emu->id - emu->current_level + 1;
+		OUT(class_type);
+		OUT(cost);
+		OUT(seq);
+		OUT(current_level);
+		OUT(prereq_skill);
+		OUT(prereq_minpoints);
+		OUT(type);
+		OUT(spellid);
+		OUT(spell_type);
+		OUT(spell_refresh);
+		OUT(classes);
+		OUT(berserker);
+		OUT(max_level);
+		OUT(last_id);
+		OUT(next_id);
+		OUT(cost2);
+		OUT(unknown80[0]);
+		OUT(unknown80[1]);
+		OUT(total_abilities);
+		unsigned int r;
+		for(r = 0; r < emu->total_abilities; r++) {
+			OUT(abilities[r].skill_id);
+			OUT(abilities[r].base1);
+			OUT(abilities[r].base2);
+			OUT(abilities[r].slot);
+		}
 	}
 	FINISH_ENCODE();
 }
