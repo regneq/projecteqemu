@@ -12,6 +12,24 @@ struct BotsAvailableList {
 	uint16 BotRace;
 };
 
+struct BotInventory {
+	uint32 BotID;
+	uint32 BotSlotID;
+	uint32 ItemID;
+};
+
+struct BotGroup {
+	uint32 GroupID;
+	uint32 BotID;
+	uint32 CharacterID;
+};
+
+struct SpawnedBotsList {
+	char BotName[64];
+	char ZoneName[64];
+	uint32 BotLeaderCharID;
+};
+
 #endif // BOTS
 
 #endif // BOT_STRUCTS

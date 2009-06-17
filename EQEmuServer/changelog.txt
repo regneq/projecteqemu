@@ -11,6 +11,7 @@ cavedude: Green con KOS NPCs will now aggro clients while sitting.
 Derision: Spells Gems now stay greyed out after zoning until their recast time is met.
 KLS: More aggro tweaks.
 KLS: Fix for zone crash from world server.
+WildcardX: Migrated more code for BOTS from database.cpp to bot.cpp.
 
 ==06/15/2009==
 Trevius: SoF - The following fields now show up on items that have values set for them, but the stats are not actually used by the server yet:
