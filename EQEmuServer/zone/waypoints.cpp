@@ -190,7 +190,7 @@ void NPC::MoveTo(float mtx, float mty, float mtz)
 
 void NPC::UpdateWaypoint(int wp_index)
 {
-	if(wp_index >= Waypoints.size()) {
+	if(wp_index >= static_cast<int>(Waypoints.size())) {
 		mlog(AI__WAYPOINTS, "Update to waypoint %d failed. Not found.", wp_index);
 		return;
 	}
@@ -205,36 +205,18 @@ void NPC::UpdateWaypoint(int wp_index)
 	mlog(AI__WAYPOINTS, "Next waypoint %d: (%.3f, %.3f, %.3f)", wp_index, cur_wp_x, cur_wp_y, cur_wp_z);
 		
 	//fix up pathing Z
-	if(zone->map != NULL && RuleB(Map, FixPathingZAtWaypoints) ) {
-		bool CoordinatesInWater = false;
-		if(zone->watermap != NULL && RuleB(Watermap, CheckForWaterAtWaypoints)) {
-			CoordinatesInWater = zone->watermap->InWater(cur_wp_x, cur_wp_y, cur_wp_z);
+	if(zone->HasMap() && RuleB(Map, FixPathingZAtWaypoints))
+	{
 
-			// Alter flymode 1 as appropriate if the mob has moved into or out of water.
-			if(!inWater && CoordinatesInWater) {
-				SendAppearancePacket(AT_Levitate, 1);
-				inWater = true;
-			}
-			else if(inWater && !CoordinatesInWater) {
-				SendAppearancePacket(AT_Levitate, 0);
-				inWater = false;
-			}
-		}
+		if(!RuleB(Watermap, CheckForWaterAtWaypoints) ||
+		   (zone->HasWaterMap() && !zone->watermap->InWater(cur_wp_x, cur_wp_y, cur_wp_z)))
+		{
+			VERTEX dest(cur_wp_x, cur_wp_y, cur_wp_z);
 
-		// We don't need to check the water rules again. If CoordinatesInWater is true, it can only be because
-		// CheckForWaterAtWaypoints is true
-		if(!CoordinatesInWater) {
-			VERTEX dest;
-			dest.x = cur_wp_x;
-			dest.y = cur_wp_y;
-			dest.z = cur_wp_z;
-			NodeRef n = zone->map->SeekNode( zone->map->GetRoot(), dest.x, dest.y);
-			if(n != NODE_NONE) {
-				float newz = zone->map->FindBestZ(n, dest, NULL, NULL);
-				if( (newz > -2000) && ABS(newz-dest.z) < RuleR(Map, FixPathingZMaxDeltaWaypoint)) { // Sanity check.
-					cur_wp_z = newz+1;
-				}
-			}   
+			float newz = zone->map->FindBestZ(MAP_ROOT_NODE, dest, NULL, NULL);
+
+			if( (newz > -2000) && ABS(newz - dest.z) < RuleR(Map, FixPathingZMaxDeltaWaypoint))
+				cur_wp_z = newz + 1;
 		}
 	}	
 	
@@ -242,11 +224,6 @@ void NPC::UpdateWaypoint(int wp_index)
 
 void NPC::CalculateNewWaypoint()
 {
-//	int8 max_wp = wp_a[0];
-//	int8 wandertype = wp_a[1];
-//	int8 pausetype = wp_a[2];
-//	int8 cur_wp = wp_a[3];
-
 	int32 ranmax = cur_wp;
 	int32 ranmax2 = max_wp - cur_wp;
 	int old_wp = cur_wp;
@@ -433,49 +410,31 @@ bool Mob::CalculateNewPosition2(float x, float y, float z, float speed, bool che
 		
 		mlog(AI__WAYPOINTS, "Calculating new position2 to (%.3f, %.3f, %.3f), old vector (%.3f, %.3f, %.3f)", x, y, z, tar_vx, tar_vy, tar_vz);
 		
-	    //fix up pathing Z
-	    if(checkZ && zone->map != NULL && RuleB(Map, FixPathingZWhenMoving)) {
-			bool CoordinatesInWater = false;
-	    	if(zone->watermap != NULL && RuleB(Watermap, CheckForWaterWhenMoving)) {
-				CoordinatesInWater = zone->watermap->InWater(x_pos, y_pos, z_pos);
-					// Alter flymode 1 as appropriate if the mob has moved into or out of water.
-				if(!inWater && CoordinatesInWater) {
-					SendAppearancePacket(AT_Levitate, 1);
-					inWater = true;
-				}	
-				else if(inWater && !CoordinatesInWater) {
-					SendAppearancePacket(AT_Levitate, 0);
-					inWater = false;
+		//fix up pathing Z
+		if(checkZ && zone->HasMap() && RuleB(Map, FixPathingZWhenMoving))
+		{
+			if(!RuleB(Watermap, CheckForWaterWhenMoving) ||
+			    (zone->HasWaterMap() && !zone->watermap->InWater(x_pos, y_pos, z_pos)))
+			{
+				VERTEX dest(x_pos, y_pos, z_pos);
+
+				float newz = zone->map->FindBestZ(MAP_ROOT_NODE, dest, NULL, NULL);
+
+				mlog(AI__WAYPOINTS, "BestZ returned %4.3f at %4.3f, %4.3f, %4.3f", newz,x_pos,y_pos,z_pos);
+
+				if( (newz > -2000) && ABS(newz - dest.z) < RuleR(Map, FixPathingZMaxDeltaMoving)) // Sanity check.
+				{
+					if((ABS(x - x_pos) < 0.5) && (ABS(y - y_pos) < 0.5))
+					{
+						if(ABS(z-z_pos) <= RuleR(Map, FixPathingZMaxDeltaMoving))
+							z_pos = z;
+						else
+							z_pos = newz + 1;
+					}
+					else
+						z_pos = newz + 1;
 				}
 			}
-			// We don't need to check the water rules again. If CoordinatesInWater is true, it can only be because
-			// CheckForWaterWhenMoving is true
-			if(!CoordinatesInWater) { 
-				VERTEX dest;
-				dest.x = x_pos;
-				dest.y = y_pos;
-				dest.z = z_pos;
-				NodeRef n = zone->map->SeekNode( zone->map->GetRoot(), x_pos, y_pos);
-				if(n != NODE_NONE) {
-					float newz = zone->map->FindBestZ(n, dest, NULL, NULL);
-					mlog(AI__WAYPOINTS, "BestZ returned %4.3f at %4.3f, %4.3f, %4.3f", newz,x_pos,y_pos,z_pos);
-					if( (newz > -2000) && ABS(newz-dest.z) < RuleR(Map, FixPathingZMaxDeltaMoving)) { // Sanity check.
-						if(ABS(x-x_pos) < 0.5 && ABS(y-y_pos) < 0.5)
-						{
-							if(ABS(z-z_pos) <= RuleR(Map, FixPathingZMaxDeltaMoving))
-							{
-								z_pos = z;
-							}
-							else
-								z_pos = newz+1;
-						}
-						else
-						{
-							z_pos = newz+1;
-						}
-					}
-				} 
-	        }
 		} 
 		
 		tar_ndx++;
@@ -553,50 +512,31 @@ bool Mob::CalculateNewPosition2(float x, float y, float z, float speed, bool che
 	}
 	
 	//fix up pathing Z
-	if(checkZ && zone->map != NULL && RuleB(Map, FixPathingZWhenMoving)) {
-		bool CoordinatesInWater = false;
-		if(zone->watermap != NULL && RuleB(Watermap, CheckForWaterWhenMoving)) {
-  			CoordinatesInWater = zone->watermap->InWater(x_pos, y_pos, z_pos);
-    			// Alter the flymode 1 as appropriate if the mob has moved into or out of water since the last check
-			if(!inWater && CoordinatesInWater) {
-				SendAppearancePacket(AT_Levitate, 1);
-	        		inWater = true;
-			}
-			else if(inWater && !CoordinatesInWater) {
-				SendAppearancePacket(AT_Levitate, 0);
-				inWater = false;
-			}
-		}
-		
-		// If the mob is in Water, we don'tdo BestZ
-		// No need to check rule again. CoordinatesInWater can only be true if CheckForWaterWhenMoving is true.
-		if(!CoordinatesInWater) {
-			VERTEX dest;
-			dest.x = x_pos;
-			dest.y = y_pos;
-			dest.z = z_pos;
-			NodeRef n = zone->map->SeekNode( zone->map->GetRoot(), x_pos, y_pos);
-			if(n != NODE_NONE) {
-				float newz = zone->map->FindBestZ(n, dest, NULL, NULL);
-				mlog(AI__WAYPOINTS, "BestZ returned %4.3f at %4.3f, %4.3f, %4.3f", newz,x_pos,y_pos,z_pos);
-				if( (newz > -2000) && ABS(newz-dest.z) < RuleR(Map, FixPathingZMaxDeltaMoving)) { // Sanity check.
-					if(ABS(x-x_pos) < 0.5 && ABS(y-y_pos) < 0.5)
-					{
-						if(ABS(z-z_pos) <= RuleR(Map, FixPathingZMaxDeltaMoving))
-						{
-							z_pos = z;
-						}
-						else
-							z_pos = newz+1;
-					}
+	if(checkZ && zone->HasMap() && RuleB(Map, FixPathingZWhenMoving)) {
+
+		if(!RuleB(Watermap, CheckForWaterWhenMoving) ||
+		   (zone->HasWaterMap() && !zone->watermap->InWater(x_pos, y_pos, z_pos)))
+		{
+			VERTEX dest(x_pos, y_pos, z_pos);
+
+			float newz = zone->map->FindBestZ(MAP_ROOT_NODE, dest, NULL, NULL);
+
+			mlog(AI__WAYPOINTS, "BestZ returned %4.3f at %4.3f, %4.3f, %4.3f", newz,x_pos,y_pos,z_pos);
+
+			if( (newz > -2000) && ABS(newz - dest.z) < RuleR(Map, FixPathingZMaxDeltaMoving)) // Sanity check.
+			{
+				if(ABS(x - x_pos) < 0.5 && ABS(y - y_pos) < 0.5)
+				{
+					if(ABS(z - z_pos) <= RuleR(Map, FixPathingZMaxDeltaMoving))
+						z_pos = z;
 					else
-					{
-						z_pos = newz+1;
-					}
+						z_pos = newz + 1;
+				}
+				else
+					z_pos = newz+1;
     			}
-    	    }
 		}
-    }
+	}
 	
 	SetMoving(true);
 	moved=true;
@@ -669,46 +609,28 @@ bool Mob::CalculateNewPosition(float x, float y, float z, float speed, bool chec
 	}
 	
 	//fix up pathing Z
-	if(checkZ && zone->map != NULL && RuleB(Map, FixPathingZWhenMoving)) {
-		bool CoordinatesInWater = false;
-		if(zone->watermap != NULL && RuleB(Watermap, CheckForWaterWhenMoving)) {
-			CoordinatesInWater = zone->watermap->InWater(x_pos, y_pos, z_pos);
+	if(checkZ && zone->HasMap() && RuleB(Map, FixPathingZWhenMoving))
+	{
+		if(!RuleB(Watermap, CheckForWaterWhenMoving) ||
+		   (zone->HasWaterMap() && !zone->watermap->InWater(x_pos, y_pos, z_pos)))
+		{
+			VERTEX dest(x_pos, y_pos, z_pos);
 
-			// Alter flymode 1 as appropriate if the mob has moved into or out of water.
-			if(!inWater && CoordinatesInWater) {
-					SendAppearancePacket(AT_Levitate, 1);
-					inWater = true;
-			}
-			else if(inWater && !CoordinatesInWater) {
-					SendAppearancePacket(AT_Levitate, 0);
-					inWater = false;
-			}
-		}
+			float newz = zone->map->FindBestZ(MAP_ROOT_NODE, dest, NULL, NULL);
 
-		if(!CoordinatesInWater) {
-			VERTEX dest;
-			dest.x = x_pos;
-			dest.y = y_pos;
-			dest.z = z_pos;
-			NodeRef n = zone->map->SeekNode( zone->map->GetRoot(), dest.x, dest.y);
-			if(n != NODE_NONE) {
-				float newz = zone->map->FindBestZ(n, dest, NULL, NULL);
-				mlog(AI__WAYPOINTS, "BestZ returned %4.3f at %4.3f, %4.3f, %4.3f", newz,x_pos,y_pos,z_pos);
-				if( (newz > -2000) && ABS(newz-dest.z) < RuleR(Map, FixPathingZMaxDeltaMoving)) { // Sanity check. 
-					if(ABS(x-x_pos) < 0.5 && ABS(y-y_pos) < 0.5)
-					{
-						if(ABS(z-z_pos) <= RuleR(Map, FixPathingZMaxDeltaMoving))
-						{
-							z_pos = z;
-						}
-						else
-							z_pos = newz+1;
-					}
+			mlog(AI__WAYPOINTS, "BestZ returned %4.3f at %4.3f, %4.3f, %4.3f", newz,x_pos,y_pos,z_pos);
+
+			if( (newz > -2000) && ABS(newz - dest.z) < RuleR(Map, FixPathingZMaxDeltaMoving)) // Sanity check. 
+			{
+				if(ABS(x - x_pos) < 0.5 && ABS(y - y_pos) < 0.5)
+				{
+					if(ABS(z - z_pos) <= RuleR(Map, FixPathingZMaxDeltaMoving))
+						z_pos = z;
 					else
-					{
-						z_pos = newz+1;
-					}
+						z_pos = newz + 1;
 				}
+				else
+					z_pos = newz+1;
 			}
 		}
 	}
@@ -789,46 +711,27 @@ void NPC::AssignWaypoints(int32 grid) {
 			    if(row[0] != 0 && row[1] != 0 && row[2] != 0 && row[3] != 0)
 			    {
 			    	wplist newwp;
-					newwp.index = ++max_wp;
-					newwp.x = atof(row[0]);
-					newwp.y = atof(row[1]);
-					newwp.z = atof(row[2]);
+				newwp.index = ++max_wp;
+				newwp.x = atof(row[0]);
+				newwp.y = atof(row[1]);
+				newwp.z = atof(row[2]);
 					
-					if(zone->map != NULL && RuleB(Map, FixPathingZWhenLoading) ) {
-						// Experimental. This code will send any waypoint that is 'in the air' down to ground level.
-						// If we have no watermap for this zone,
-						// or we have a watermap but don't want to use it here,
-						// or we have a watermap, we want to use it here, and the waypoint is not in water, then we do BestZ on the waypoint
-						if(
-						   (zone->watermap == NULL) ||
-						   !RuleB(Watermap, CheckWaypointsInWaterWhenLoading) ||
-						   !zone->watermap->InWater(newwp.x,newwp.y, newwp.z)
-						) {
+				if(zone->HasMap() && RuleB(Map, FixPathingZWhenLoading) )
+				{
+					if(!RuleB(Watermap, CheckWaypointsInWaterWhenLoading) ||
+					   (zone->HasWaterMap() && !zone->watermap->InWater(newwp.x, newwp.y, newwp.z)))
+					{
+						VERTEX dest(newwp.x, newwp.y, newwp.z);
 
-						    VERTEX dest;
-						    dest.x = newwp.x;
-						    dest.y = newwp.y;
-						    dest.z = newwp.z;
-					
+						float newz = zone->map->FindBestZ(MAP_ROOT_NODE, dest, NULL, NULL);
 
-						    NodeRef n = zone->map->SeekNode( zone->map->GetRoot(), dest.x, dest.y);
-						
-						    if(n != NODE_NONE) {
-								float newz = zone->map->FindBestZ(n, dest, NULL, NULL);
-								// The following test is a sanity check. 45 is an arbitrary value, chosen during testing
-								// because all the Z co-ordinates of the waypoints in The Grey where <45 units above the ground.
-								if( (newz > -2000) && ABS(newz-dest.z) < RuleR(Map, FixPathingZMaxDeltaLoading)) {
-									newwp.z = newz+1;
-									// printf("Updated Z for Grid %d, Waypoint %d from %.3f to %.3f\n",  grid, newwp.index,dest.z,newwp.z);
-								}
-								//else if(newz > -2000) 
-								//	printf("Delta Z %.3f too big for Grid %d, Waypoint %d from %.3f to %.3f\n", ABS(newz-dest.z), grid, newwp.index,dest.z,newz);
-						    } 
-					    }
-				    }
+						if( (newz > -2000) && ABS(newz-dest.z) < RuleR(Map, FixPathingZMaxDeltaLoading))
+							newwp.z = newz + 1;
+					}
+				}
 
-					newwp.pause = atoi(row[3]);
-					Waypoints.push_back(newwp);
+				newwp.pause = atoi(row[3]);
+				Waypoints.push_back(newwp);
 			    }
 			}
 			mysql_free_result(result);
@@ -887,38 +790,21 @@ void Mob::SendTo(float new_x, float new_y, float new_z) {
 	
 	//fix up pathing Z, this shouldent be needed IF our waypoints 
 	//are corrected instead
-	if(zone->map != NULL && RuleB(Map, FixPathingZOnSendTo) ) {
-		bool CoordinatesInWater = false;
-		if(zone->watermap != NULL && RuleB(Watermap, CheckForWaterOnSendTo)) {
-			CoordinatesInWater = zone->watermap->InWater(x_pos, y_pos, z_pos);
-            // We don't set inWater or alter the flymode here, because it appears SendTo is called
-			// soon after the mob is created and often (always?) before the Spawn packet is sent to
-			// the clients. This caused the 'flymode on' packet to be ignored and all subsequent
-			// checks thought the 'flymode on' had already been sent.
-			// Ideally we would figure out how to set 'flymode 1' in the spawn packet (if possible),
-			// or alternatively, have some guaranteed way of knowing when the spawn packet had been
-			// sent to the clients so we could guarantee our 'flymode on' is sent after it.
-			// We just use the water map at this point to decide whether to do BestZ or not, although
-			// it is moot as without flymode 1 the client makes the mob sink if it is in water.
-        }
-        // We don't need to check the water rules again. If CoordinatesInWater is true, it can only be because
-        // CheckForWaterOnSendTo is true
+	if(zone->HasMap() && RuleB(Map, FixPathingZOnSendTo) )
+	{
+		if(!RuleB(Watermap, CheckForWaterOnSendTo) ||
+		   (zone->HasWaterMap() && !zone->watermap->InWater(x_pos, y_pos, z_pos)))
+		{
+			VERTEX dest(x_pos, y_pos, z_pos);
 
-		if(!CoordinatesInWater) {
-			VERTEX dest;
-			dest.x = x_pos;
-			dest.y = y_pos;
-			dest.z = z_pos;
-			NodeRef n = zone->map->SeekNode( zone->map->GetRoot(), dest.x, dest.y);
-			if(n != NODE_NONE) {
-				float newz = zone->map->FindBestZ(n, dest, NULL, NULL);
-				mlog(AI__WAYPOINTS, "BestZ returned %4.3f at %4.3f, %4.3f, %4.3f", newz,x_pos,y_pos,z_pos);
-				if( (newz > -2000) && ABS(newz-dest.z) < RuleR(Map, FixPathingZMaxDeltaSendTo)) { // Sanity check.
-					z_pos = newz+1;
-    			}
-    	    }  
-        }
-    }
+			float newz = zone->map->FindBestZ(MAP_ROOT_NODE, dest, NULL, NULL);
+
+			mlog(AI__WAYPOINTS, "BestZ returned %4.3f at %4.3f, %4.3f, %4.3f", newz,x_pos,y_pos,z_pos);
+
+			if( (newz > -2000) && ABS(newz - dest.z) < RuleR(Map, FixPathingZMaxDeltaSendTo)) // Sanity check.
+				z_pos = newz + 1;
+		}
+	}
 }
 
 void Mob::SendToFixZ(float new_x, float new_y, float new_z) {
@@ -929,36 +815,21 @@ void Mob::SendToFixZ(float new_x, float new_y, float new_z) {
 	//fix up pathing Z, this shouldent be needed IF our waypoints 
 	//are corrected instead
 
-	if(zone->map != NULL && RuleB(Map, FixPathingZOnSendTo) ) {
-		bool CoordinatesInWater = false;
-		if(zone->watermap != NULL && RuleB(Watermap, CheckForWaterOnSendTo)) {
-			CoordinatesInWater = zone->watermap->InWater(x_pos, y_pos, z_pos);
+	if(zone->HasMap() && RuleB(Map, FixPathingZOnSendTo))
+	{
+		if(!RuleB(Watermap, CheckForWaterOnSendTo) ||
+		   (zone->HasWaterMap() && !zone->watermap->InWater(x_pos, y_pos, z_pos)))
+		{
+			VERTEX dest(x_pos, y_pos, z_pos);
 
-			// Alter flymode 1 as appropriate if the mob has moved into or out of water.
-			if(!inWater && CoordinatesInWater) {
-					SendAppearancePacket(AT_Levitate, 1);
-					inWater = true;
-			}       
-			else if(inWater && !CoordinatesInWater) {
-					SendAppearancePacket(AT_Levitate, 0);
-					inWater = false;
-			}
-        }
-		if(!CoordinatesInWater) {
-			VERTEX dest;
-			dest.x = x_pos;
-			dest.y = y_pos;
-			dest.z = z_pos;
-			NodeRef n = zone->map->SeekNode( zone->map->GetRoot(), dest.x, dest.y);
-			if(n != NODE_NONE) {
-				float newz = zone->map->FindBestZ(n, dest, NULL, NULL);
-				mlog(AI__WAYPOINTS, "BestZ returned %4.3f at %4.3f, %4.3f, %4.3f", newz,x_pos,y_pos,z_pos);
-				if( (newz > -2000) && ABS(newz-dest.z) < RuleR(Map, FixPathingZMaxDeltaSendTo)) { // Sanity check.
-					z_pos = newz+1;
-    			}
-    	    }
-        }
-    }
+			float newz = zone->map->FindBestZ(MAP_ROOT_NODE, dest, NULL, NULL);
+
+			mlog(AI__WAYPOINTS, "BestZ returned %4.3f at %4.3f, %4.3f, %4.3f", newz,x_pos,y_pos,z_pos);
+
+			if( (newz > -2000) && ABS(newz-dest.z) < RuleR(Map, FixPathingZMaxDeltaSendTo)) // Sanity check.
+				z_pos = newz + 1;
+		}
+	}
 }
 
 int	ZoneDatabase::GetHighestGrid(uint32 zoneid) {

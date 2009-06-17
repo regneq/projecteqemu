@@ -211,6 +211,8 @@ public:
 	bool		IsSpellBlocked(int32 spell_id, float nx, float ny, float nz);
 	const char *GetSpellBlockedMessage(int32 spell_id, float nx, float ny, float nz);
 	int			GetTotalBlockedSpells() { return totalBS; }
+	inline bool HasMap() { return map != NULL; }
+	inline bool HasWaterMap() { return watermap != NULL; }
 
 	LinkedList<Spawn2*> spawn2_list;
 	LinkedList<ZonePoint*> zone_point_list;

@@ -32,7 +32,19 @@ typedef struct _vertex{
 	float x;
 	float y;
 	float z;
-	
+
+	_vertex()
+	{
+		x  = y = z = 0.0f;
+	};
+
+	_vertex(float ix, float iy, float iz)
+	{
+		x = ix;
+		y = iy;
+		z = iz;
+	}
+
 }VERTEX, *PVERTEX;
 
 typedef struct _face{
