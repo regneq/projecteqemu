@@ -3550,11 +3550,10 @@ struct SendAA_Struct {
 /*0069*/	int32 last_id;
 /*0073*/	int32 next_id;
 /*0077*/	int32 cost2;
-/*0081*/	int8 unknown80[7]; //int32 unknown80[2]; 0s
-/*0088*/	int32 aa_expansion; //03 00 00 00 (sometimes 0C or 0E)3, 12 or 14
-/*0092*/	int32 unknown0092; //ff ff ff ff
-/*0096*/	int8 unknown0096; //00
-/*0097*/	int8 unknown0097; //00
+/*0081*/	int8 unknown80[7];
+/*0088*/	int32 aa_expansion;
+/*0092*/	int32 special_category;
+/*0096*/	int16 unknown0096;
 /*0098*/	int32 total_abilities;
 /*0102*/	AA_Ability abilities[0];
 };

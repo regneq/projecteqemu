@@ -3766,8 +3766,16 @@ struct SendAA_Struct {
 /*0076*/	int32 next_id;
 /*0080*/	int32 cost2;
 /*0084*/	int32 unknown80[2]; //0s
-/*0088*/	int32 total_abilities;
-/*0092*/	AA_Ability abilities[0];
+// Begin SoF Specific/Adjusted AA Fields
+/*0088*/	int32 aa_expansion;
+/*0092*/	int32 special_category;
+/*0096*/	int32 sof_type;
+/*0100*/	int32 sof_cost_inc;
+/*0104*/	int32 sof_max_level;
+/*0108*/	int32 sof_next_skill;
+/*0112*/	int32 clientver;
+/*0116*/	int32 total_abilities;
+/*0120*/	AA_Ability abilities[0];
 };
 
 struct AA_Action {
