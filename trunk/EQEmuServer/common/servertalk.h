@@ -79,6 +79,7 @@
 #define ServerOP_UpdateSpawn		0x0045
 #define ServerOP_ReloadTasks		0x0060
 #define ServerOP_DepopAllPlayersCorpses	0x0061
+#define ServerOP_ReloadTitles		0x0062
 
 #define ServerOP_RaidAdd			0x0100 //in use
 #define ServerOP_RaidRemove			0x0101 //in use

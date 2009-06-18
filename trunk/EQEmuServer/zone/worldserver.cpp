@@ -54,7 +54,7 @@ using namespace std;
 #include "StringIDs.h"
 #include "guild_mgr.h"
 #include "../common/rulesys.h"
-
+#include "titles.h"
 
 extern EntityList    entity_list;
 extern Zone* zone;
@@ -1368,6 +1368,11 @@ void WorldServer::Process() {
 
 			break;
 
+		}
+		case ServerOP_ReloadTitles:
+		{
+			title_manager.LoadTitles();
+			break;
 		}
 		default: {
 			cout << " Unknown ZSopcode:" << (int)pack->opcode;

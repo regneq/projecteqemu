@@ -720,7 +720,7 @@ bool TaskManager::LoadClientState(Client *c, ClientTaskState *state) {
 					TaskInformation* Task = Tasks[TaskID];
 					if(Task == NULL) continue;
 
-					for(int i=0; i<MAXACTIVITIESPERTASK; i++)
+					for(int i=0; i<Task->ActivityCount; i++)
 						if(!Task->Activity[i].Optional)
 							cti.ActivityDone[i] = true;
 				}

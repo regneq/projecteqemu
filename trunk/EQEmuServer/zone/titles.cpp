@@ -20,6 +20,9 @@
 #include "masterentity.h"
 #include "titles.h"
 #include "../common/MiscFunctions.h"
+#include "worldserver.h"
+
+extern WorldServer worldserver;
 
 TitleManager::TitleManager() {
 }
@@ -237,4 +240,128 @@ bool TitleManager::IsNewTradeSkillTitleAvailable(int SkillID, int SkillValue)
 	}
 
 	return false;
+}
+
+void TitleManager::CreateNewPlayerTitle(Client *c, const char *Title)
+{
+	if(!c || !Title)
+		return;
+
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = NULL;
+	MYSQL_RES *result;
+
+	char *EscTitle = new char[strlen(Title) * 2 + 1];
+
+	c->SetAATitle(Title);
+
+	database.DoEscapeString(EscTitle, Title, strlen(Title));
+	
+	if (database.RunQuery(query, MakeAnyLenString(&query, 
+		"SELECT `id` from titles where `prefix` = '%s' and char_id = %i", EscTitle, c->CharacterID()), errbuf, &result))
+	{
+		if(mysql_num_rows(result) > 0)
+		{
+			mysql_free_result(result);
+			safe_delete_array(query);
+			safe_delete_array(EscTitle);
+			return;
+		}
+		mysql_free_result(result);
+	}
+
+	safe_delete_array(query);
+
+	if(!database.RunQuery(query,MakeAnyLenString(&query, "INSERT into titles (`char_id`, `prefix`) VALUES(%i, '%s')",
+						    c->CharacterID(), EscTitle), errbuf))
+		LogFile->write(EQEMuLog::Error, "Error adding title: %s %s", query, errbuf);
+	else
+	{
+		ServerPacket* pack = new ServerPacket(ServerOP_ReloadTitles, 0);
+		worldserver.SendPacket(pack);
+		safe_delete(pack);
+	}
+	safe_delete_array(query);
+	safe_delete_array(EscTitle);
+
+}
+
+void TitleManager::CreateNewPlayerSuffix(Client *c, const char *Suffix)
+{
+	if(!c || !Suffix)
+		return;
+
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = NULL;
+	MYSQL_RES *result;
+
+	char *EscSuffix = new char[strlen(Suffix) * 2 + 1];
+
+	c->SetTitleSuffix(Suffix);
+
+	database.DoEscapeString(EscSuffix, Suffix, strlen(Suffix));
+	
+	if (database.RunQuery(query, MakeAnyLenString(&query, 
+		"SELECT `id` from titles where `suffix` = '%s' and char_id = %i", EscSuffix, c->CharacterID()), errbuf, &result))
+	{
+		if(mysql_num_rows(result) > 0)
+		{
+			mysql_free_result(result);
+			safe_delete_array(query);
+			safe_delete_array(EscSuffix);
+			return;
+		}
+		mysql_free_result(result);
+	}
+
+	safe_delete_array(query);
+
+	if(!database.RunQuery(query,MakeAnyLenString(&query, "INSERT into titles (`char_id`, `suffix`) VALUES(%i, '%s')",
+						    c->CharacterID(), EscSuffix), errbuf))
+		LogFile->write(EQEMuLog::Error, "Error adding title suffix: %s %s", query, errbuf);
+	else
+	{
+		ServerPacket* pack = new ServerPacket(ServerOP_ReloadTitles, 0);
+		worldserver.SendPacket(pack);
+		safe_delete(pack);
+	}
+	safe_delete_array(query);
+	safe_delete_array(EscSuffix);
+
+}
+
+void Client::SetAATitle(const char *Title)
+{
+	strn0cpy(m_pp.title, Title, sizeof(m_pp.title));
+
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_SetTitleReply, sizeof(SetTitleReply_Struct));
+
+	SetTitleReply_Struct *strs = (SetTitleReply_Struct *)outapp->pBuffer;
+
+	strn0cpy(strs->title, Title, sizeof(strs->title));
+
+	strs->entity_id = GetID();
+
+	entity_list.QueueClients(this, outapp, false);
+
+	safe_delete(outapp);
+}
+
+void Client::SetTitleSuffix(const char *Suffix)
+{
+	strn0cpy(m_pp.suffix, Suffix, sizeof(m_pp.suffix));
+
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_SetTitleReply, sizeof(SetTitleReply_Struct));
+
+	SetTitleReply_Struct *strs = (SetTitleReply_Struct *)outapp->pBuffer;
+
+	strs->is_suffix = 1;
+
+	strn0cpy(strs->title, Suffix, sizeof(strs->title));
+
+	strs->entity_id = GetID();
+
+	entity_list.QueueClients(this, outapp, false);
+
+	safe_delete(outapp);
 }
