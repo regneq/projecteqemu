@@ -4,6 +4,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==06/17/2009==
 Derision: Removed redundant flymode on/off in water code (not needed since Rev161).
 Trevius: New fields added to the alt_vars table to allow SoF and Titanium to both use it.
+KLS: Aggro tweaks + melee spell procs wont proc off ranged attacks anymore.
 
 Required SQL: /utils/sql/svn/687_aa_table_changes.sql
 

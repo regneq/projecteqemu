@@ -4510,6 +4510,18 @@ void Mob::TryWeaponProc(const Item_Struct* weapon, Mob *on, int16 hand) {
 		}
 	}
 
+	bool isRanged = false;
+	if(weapon)
+	{
+		if(weapon->ItemType == ItemTypeArrow ||
+			weapon->ItemType == ItemTypeThrowing ||
+			weapon->ItemType == ItemTypeThrowingv2 ||
+			weapon->ItemType == ItemTypeBow)
+		{
+			isRanged = true;
+		}
+	}
+
 	uint32 i;
 	for(i = 0; i < MAX_PROCS; i++) {
 		if (PermaProcs[i].spellID != SPELL_UNKNOWN) {
@@ -4520,13 +4532,16 @@ void Mob::TryWeaponProc(const Item_Struct* weapon, Mob *on, int16 hand) {
 				mlog(COMBAT__PROCS, "Permanent proc %d failed to proc %d (%d percent chance)", i, PermaProcs[i].spellID, PermaProcs[i].chance);
 			}
 		}
-		if (SpellProcs[i].spellID != SPELL_UNKNOWN) {
-			int chance = ProcChance * (SpellProcs[i].chance);
-			if(MakeRandomInt(0, 100) < chance) {
-				mlog(COMBAT__PROCS, "Spell proc %d procing spell %d (%d percent chance)", i, SpellProcs[i].spellID, chance);
-				ExecWeaponProc(SpellProcs[i].spellID, on);
-			} else {
-				mlog(COMBAT__PROCS, "Spell proc %d failed to proc %d (%d percent chance)", i, SpellProcs[i].spellID, chance);
+		if(!isRanged)
+		{
+			if (SpellProcs[i].spellID != SPELL_UNKNOWN) {
+				int chance = ProcChance * (SpellProcs[i].chance);
+				if(MakeRandomInt(0, 100) < chance) {
+					mlog(COMBAT__PROCS, "Spell proc %d procing spell %d (%d percent chance)", i, SpellProcs[i].spellID, chance);
+					ExecWeaponProc(SpellProcs[i].spellID, on);
+				} else {
+					mlog(COMBAT__PROCS, "Spell proc %d failed to proc %d (%d percent chance)", i, SpellProcs[i].spellID, chance);
+				}
 			}
 		}
 		if (bRangedAttack && RangedProcs[i].spellID != SPELL_UNKNOWN) {
