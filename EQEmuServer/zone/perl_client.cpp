@@ -31,6 +31,7 @@
 #include "embperl.h"
 
 #include "client.h"
+#include "titles.h"
 
 #ifdef THIS		/* this macro seems to leak out on some systems */
 #undef THIS
@@ -3529,11 +3530,12 @@ XS(XS_Client_SetAATitle); /* prototype to pass -Wmissing-prototypes */
 XS(XS_Client_SetAATitle)
 {
 	dXSARGS;
-	if (items != 2)
-		Perl_croak(aTHX_ "Usage: Client::SetAATitle(THIS, txt)");
+	if ((items < 2) || (items > 3))
+		Perl_croak(aTHX_ "Usage: Client::SetAATitle(THIS, txt, [save])");
 	{
 		Client *		THIS;
 		char *		txt = (char *)SvPV_nolen(ST(1));
+		bool SaveTitle = false;
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -3547,7 +3549,13 @@ XS(XS_Client_SetAATitle)
 		if(strlen(txt) > 31) 
 			Perl_croak(aTHX_ "Title must be 31 characters or less");
 
-		THIS->SetAATitle(txt);
+		if(items == 3)
+			SaveTitle = (SvIV(ST(2)) != 0);
+
+		if(!SaveTitle)
+			THIS->SetAATitle(txt);
+		else
+			title_manager.CreateNewPlayerTitle(THIS, txt);
 	}
 	XSRETURN_EMPTY;
 }
@@ -3581,11 +3589,12 @@ XS(XS_Client_GetClientVersion)
 XS(XS_Client_SetTitleSuffix);
 XS(XS_Client_SetTitleSuffix) {
 	dXSARGS;
-	if (items != 2)
-		Perl_croak(aTHX_ "Usage: Client::SetTitleSuffix(THIS, txt)");
+	if ((items < 2) || (items > 3))
+		Perl_croak(aTHX_ "Usage: Client::SetTitleSuffix(THIS, txt, [save])");
 	{
 		Client *		THIS;
 		char *		txt = (char *)SvPV_nolen(ST(1));
+		bool SaveSuffix = false;
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -3599,7 +3608,13 @@ XS(XS_Client_SetTitleSuffix) {
 		if(strlen(txt) > 31) 
 			Perl_croak(aTHX_ "Title must be 31 characters or less");
 
-		THIS->SetTitleSuffix(txt);
+		if(items == 3)
+			SaveSuffix = (SvIV(ST(2)) != 0);
+		
+		if(!SaveSuffix)
+			THIS->SetTitleSuffix(txt);
+		else
+			title_manager.CreateNewPlayerSuffix(THIS, txt);
 	}
 	XSRETURN_EMPTY;
 }
@@ -4100,9 +4115,9 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "HasZoneFlag"), XS_Client_HasZoneFlag, file, "$$");
 		newXSproto(strcpy(buf, "SendZoneFlagInfo"), XS_Client_SendZoneFlagInfo, file, "$$");
 		newXSproto(strcpy(buf, "LoadZoneFlags"), XS_Client_LoadZoneFlags, file, "$");
-		newXSproto(strcpy(buf, "SetAATitle"), XS_Client_SetAATitle, file, "$$");
+		newXSproto(strcpy(buf, "SetAATitle"), XS_Client_SetAATitle, file, "$$;$");
 		newXSproto(strcpy(buf, "GetClientVersion"), XS_Client_GetClientVersion, file, "$");
-		newXSproto(strcpy(buf, "SetTitleSuffix"), XS_Client_SetTitleSuffix, file, "$$");
+		newXSproto(strcpy(buf, "SetTitleSuffix"), XS_Client_SetTitleSuffix, file, "$$;$");
 		newXSproto(strcpy(buf, "SetAAPoints"), XS_Client_SetAAPoints, file, "$$");
 		newXSproto(strcpy(buf, "GetAAPoints"), XS_Client_GetAAPoints, file, "$$");
 		newXSproto(strcpy(buf, "GetSpentAA"), XS_Client_GetSpentAA, file, "$$");

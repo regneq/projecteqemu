@@ -8038,28 +8038,13 @@ void Client::Handle_OP_SetTitle(const EQApplicationPacket *app)
 	if(!sts->is_suffix)
 	{
 		Title = title_manager.GetPrefix(sts->title_id);
-		strn0cpy(m_pp.title, Title.c_str(), sizeof(m_pp.title));
+		SetAATitle(Title.c_str());
 	}
 	else
 	{
 		Title = title_manager.GetSuffix(sts->title_id);
-		strn0cpy(m_pp.suffix, Title.c_str(), sizeof(m_pp.suffix));
+		SetTitleSuffix(Title.c_str());
 	}
-
-	EQApplicationPacket *outapp = new EQApplicationPacket(OP_SetTitleReply, sizeof(SetTitleReply_Struct));
-
-	SetTitleReply_Struct *strs = (SetTitleReply_Struct *)outapp->pBuffer;
-
-	strs->is_suffix = sts->is_suffix;
-
-	strn0cpy(strs->title, Title.c_str(), sizeof(strs->title));
-
-	strs->entity_id = GetID();
-
-	entity_list.QueueClients(this, outapp, false);
-
-	safe_delete(outapp);
-
 }
 
 void Client::Handle_OP_RequestTitles(const EQApplicationPacket *app)

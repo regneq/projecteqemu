@@ -60,6 +60,7 @@ Copyright (C) 2001-2002	EQEMu Development Team (http://eqemulator.net)
 #include "pathing.h"
 #include "client_logs.h"
 #include "guild_mgr.h"
+#include "titles.h"
 #include "../common/patches/patches.h"
 
 #ifdef EQBOTS
@@ -292,8 +293,8 @@ int command_init(void) {
 		command_add("corpse","- Manipulate corpses, use with no arguments for help",50,command_corpse) ||
 		command_add("fixmob","[race|gender|texture|helm|face|hair|haircolor|beard|beardcolor|heritage|tattoo|detail] [next|prev] - Manipulate appearance of your target",80,command_fixmob) ||
 		command_add("gmspeed","[on/off] - Turn GM speed hack on/off for you or your player target",100,command_gmspeed) ||
-		command_add("title","[text] - Set your or your player target's title",50,command_title) ||
-		command_add("titlesuffix","[text] - Set your or your player target's title suffix",50,command_titlesuffix) ||
+		command_add("title","[text] [1 = create title table row] - Set your or your player target's title",50,command_title) ||
+		command_add("titlesuffix","[text] [1 = create title table row] - Set your or your player target's title suffix",50,command_titlesuffix) ||
 		command_add("spellinfo","[spellid] - Get detailed info about a spell",10,command_spellinfo) ||
 		command_add("lastname","[new lastname] - Set your or your player target's lastname",50,command_lastname) ||
 		command_add("memspell","[slotid] [spellid] - Memorize spellid in the specified slot",50,command_memspell) ||
@@ -413,6 +414,7 @@ int command_init(void) {
 		command_add("acceptrules","[acceptrules] - Accept the EQEmu Agreement",0,command_acceptrules) ||
 		command_add("rules","(subcommand) - Manage server rules", 250, command_rules) ||
 		command_add("task","(subcommand) - Task system commands", 150, command_task) ||
+		command_add("reloadtitles","Reload player titles from the database", 150, command_reloadtitles) ||
 		command_add("guildcreate","[guildname] - Creates an approval setup for guild name specified",0,command_guildcreate) ||
 		command_add("guildapprove","[guildapproveid] - Approve a guild with specified ID (guild creator receives the id)",0,command_guildapprove) ||
 		command_add("guildlist","[guildapproveid] - Lists character names who have approved the guild specified by the approve id",0,command_guildlist) ||
@@ -3945,8 +3947,10 @@ void command_gmspeed(Client *c, const Seperator *sep)
 void command_title(Client *c, const Seperator *sep)
 {
 	if (sep->arg[1][0]==0)
-		c->Message(0, "Usage: #title [remove|text] - remove or set title to 'text'");
+		c->Message(0, "Usage: #title [remove|text] [1 = Create row in title table] - remove or set title to 'text'");
 	else {
+		bool Save = (atoi(sep->arg[2]) == 1);
+
 		Mob *target_mob = c->GetTarget();
 		if(!target_mob)
 			target_mob = c;
@@ -3966,23 +3970,25 @@ void command_title(Client *c, const Seperator *sep)
 			t->SetAATitle("");
 			removed = true;
 		} else {
-			for(int i=0; i<strlen(sep->arg[1]); i++)
+			for(unsigned int i=0; i<strlen(sep->arg[1]); i++)
 				if(sep->arg[1][i]=='_')
 					sep->arg[1][i] = ' ';
-
-			t->SetAATitle(sep->arg[1]);
+			if(!Save)
+				t->SetAATitle(sep->arg[1]);
+			else
+				title_manager.CreateNewPlayerTitle(t, sep->arg[1]);
 		}
 
 		t->Save();
 		
 		if(removed) {
-			c->Message(13, "%s's title has been removed. They must zone for it to take effect.", t->GetName(), sep->arg[1]);
+			c->Message(13, "%s's title has been removed.", t->GetName(), sep->arg[1]);
 			if(t != c)
-				t->Message(13, "Your title has been removed. You must zone for it to take effect.", sep->arg[1]);
+				t->Message(13, "Your title has been removed.", sep->arg[1]);
 		} else {
-			c->Message(13, "%s's title has been changed to '%s'. They must zone for it to take effect.", t->GetName(), sep->arg[1]);
+			c->Message(13, "%s's title has been changed to '%s'.", t->GetName(), sep->arg[1]);
 			if(t != c)
-				t->Message(13, "Your title has been changed to '%s'. You must zone for it to take effect.", sep->arg[1]);
+				t->Message(13, "Your title has been changed to '%s'.", sep->arg[1]);
 		}
 	}
 }
@@ -3991,8 +3997,10 @@ void command_title(Client *c, const Seperator *sep)
 void command_titlesuffix(Client *c, const Seperator *sep)
 {
 	if (sep->arg[1][0]==0)
-		c->Message(0, "Usage: #titlesuffix [remove|text] - remove or set title suffix to 'text'");
+		c->Message(0, "Usage: #titlesuffix [remove|text] [1 = create row in title table] - remove or set title suffix to 'text'");
 	else {
+		bool Save = (atoi(sep->arg[2]) == 1);
+
 		Mob *target_mob = c->GetTarget();
 		if(!target_mob)
 			target_mob = c;
@@ -4012,23 +4020,26 @@ void command_titlesuffix(Client *c, const Seperator *sep)
 			t->SetTitleSuffix("");
 			removed = true;
 		} else {
-			for(int i=0; i<strlen(sep->arg[1]); i++)
+			for(unsigned int i=0; i<strlen(sep->arg[1]); i++)
 				if(sep->arg[1][i]=='_')
 					sep->arg[1][i] = ' ';
 
-			t->SetTitleSuffix(sep->arg[1]);
+			if(!Save)
+				t->SetTitleSuffix(sep->arg[1]);
+			else
+				title_manager.CreateNewPlayerSuffix(t, sep->arg[1]);
 		}
 
 		t->Save();
 		
 		if(removed) {
-			c->Message(13, "%s's title suffix has been removed. They must zone for it to take effect.", t->GetName(), sep->arg[1]);
+			c->Message(13, "%s's title suffix has been removed.", t->GetName(), sep->arg[1]);
 			if(t != c)
-				t->Message(13, "Your title suffix has been removed. You must zone for it to take effect.", sep->arg[1]);
+				t->Message(13, "Your title suffix has been removed.", sep->arg[1]);
 		} else {
-			c->Message(13, "%s's title suffix has been changed to '%s'. They must zone for it to take effect.", t->GetName(), sep->arg[1]);
+			c->Message(13, "%s's title suffix has been changed to '%s'.", t->GetName(), sep->arg[1]);
 			if(t != c)
-				t->Message(13, "Your title suffix has been changed to '%s'. You must zone for it to take effect.", sep->arg[1]);
+				t->Message(13, "Your title suffix has been changed to '%s'.", sep->arg[1]);
 		}
 	}
 }
@@ -8176,6 +8187,14 @@ void command_task(Client *c, const Seperator *sep) {
 
 	}
 	c->Message(0, "Unable to interpret command. Type #task help");
+
+}
+void command_reloadtitles(Client *c, const Seperator *sep)
+{
+	ServerPacket* pack = new ServerPacket(ServerOP_ReloadTitles, 0);
+	worldserver.SendPacket(pack);
+	safe_delete(pack);
+	c->Message(15, "Player Titles Reloaded.");
 
 }
 

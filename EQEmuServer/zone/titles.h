@@ -58,6 +58,8 @@ public:
 	bool IsClientEligibleForTitle(Client *c, vector<TitleEntry>::iterator Title);
 	bool IsNewAATitleAvailable(int AAPoints, int Class);
 	bool IsNewTradeSkillTitleAvailable(int SkillID, int SkillValue);
+	void CreateNewPlayerTitle(Client *c, const char *Title);
+	void CreateNewPlayerSuffix(Client *c, const char *Suffix);
 	
 protected:
 	vector<TitleEntry> Titles;
