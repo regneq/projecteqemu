@@ -3310,67 +3310,63 @@ void command_findnpctype(Client *c, const Seperator *sep)
 
 void command_findzone(Client *c, const Seperator *sep)
 {
-   if(sep->arg[1][0] == 0)
-      c->Message(0, "Usage: #findzone [search criteria]");
-   else
-   {
-      int id;
-      int count;
-      const int maxrows = 20;
-      char errbuf[MYSQL_ERRMSG_SIZE];
-	   char *query;
-	   MYSQL_RES *result;
-	   MYSQL_ROW row;
+	if(sep->arg[1][0] == 0)
+		c->Message(0, "Usage: #findzone [search criteria]");
+	else
+	{
+		int id;
+		int count;
+		const int maxrows = 20;
+		char errbuf[MYSQL_ERRMSG_SIZE];
+		char *query;
+		MYSQL_RES *result;
+		MYSQL_ROW row;
 
-      query = new char[256];
+		query = new char[256];
 
-      // If id evaluates to 0, then search as if user entered a string.
-      if ((id = atoi((const char *)sep->arg[1])) == 0)
-         MakeAnyLenString(&query,
-            "SELECT zoneidnumber,short_name,long_name"
-            " FROM zone WHERE long_name rLIKE '%s'",
-            sep->arg[1]);
-      // Otherwise, look for just that zoneidnumber.
-      else
-         MakeAnyLenString(&query,
-            "SELECT zoneidnumber,short_name,long_name FROM zone WHERE zoneidnumber=%i", id);
+		// If id evaluates to 0, then search as if user entered a string.
+		if ((id = atoi((const char *)sep->arg[1])) == 0)
+		{
+			char *EscName = new char[strlen(sep->arg[1]) * 2 + 1];
+			database.DoEscapeString(EscName, sep->arg[1], strlen(sep->arg[1]));
 
-      // If query runs successfully.
-      if (database.RunQuery(query, strlen(query), errbuf, &result))
-	   {
-         count = 0;
+			MakeAnyLenString(&query, "SELECT zoneidnumber,short_name,long_name" " FROM zone WHERE long_name rLIKE '%s'",
+						 EscName);
+			safe_delete_array(EscName);
+		}
+		// Otherwise, look for just that zoneidnumber.
+		else
+			MakeAnyLenString(&query, "SELECT zoneidnumber,short_name,long_name FROM zone WHERE zoneidnumber=%i", id);
 
-         // Process each row returned.
-		   while((row = mysql_fetch_row(result)))
-		   {
-            // Limit to returning maxrows rows.
-            if (++count > maxrows)
-            {
-               c->Message (0,
-                  "%i zones shown. Too many results.", maxrows);
-               break;
-            }
-            c->Message (0, "  %s: %s, %s", row[0], row[1], row[2]);
-         }
+		if (database.RunQuery(query, strlen(query), errbuf, &result))
+		{
+			count = 0;
 
-         // If we did not hit the maxrows limit.
-         if (count <= maxrows)
-            c->Message (0, "Query complete. %i rows shown.", count);
-         // No matches found.
-         else if (count == 0)
-            c->Message (0, "No matches found for %s.", sep->arg[1]);
+			while((row = mysql_fetch_row(result)))
+			{
+				if (++count > maxrows)
+				{
+					c->Message (0, "%i zones shown. Too many results.", maxrows);
+					break;
+				}
+				c->Message (0, "  %s: %s, %s", row[0], row[1], row[2]);
+			}
 
-         mysql_free_result(result);
-      }
-      // If query failed.
-      else
-      {
-         c->Message (0, "Error querying database.");
-         c->Message (0, query);
-      }
+			if (count <= maxrows)
+				c->Message (0, "Query complete. %i rows shown.", count);
+			else if (count == 0)
+				c->Message (0, "No matches found for %s.", sep->arg[1]);
 
-	   safe_delete_array(query);
-   }
+			mysql_free_result(result);
+		}
+		else
+		{
+			c->Message (0, "Error querying database.");
+			c->Message (0, query); 
+		}
+
+		safe_delete_array(query);
+	}
 }
 
 void command_viewnpctype(Client *c, const Seperator *sep)

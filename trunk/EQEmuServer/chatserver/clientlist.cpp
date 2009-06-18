@@ -849,7 +849,7 @@ void Client::SendChannelMessage(string Message) {
 						AttemptedMessages = 0;
 					}
 				}
-				uint32 AllowedMessages = RuleI(Chat, MinimumMessagesPerInterval) + GetKarma();
+				int AllowedMessages = RuleI(Chat, MinimumMessagesPerInterval) + GetKarma();
 				AllowedMessages = AllowedMessages > RuleI(Chat, MaximumMessagesPerInterval) ? RuleI(Chat, MaximumMessagesPerInterval) : AllowedMessages; 
 				
 				if(RuleI(Chat, MinStatusToBypassAntiSpam) <= Status)
@@ -938,7 +938,7 @@ void Client::SendChannelMessageByNumber(string Message) {
 				{
 					printf("GlobalChatLimiterTimer does not exist Check 1\n");
 				}
-				uint32 AllowedMessages = RuleI(Chat, MinimumMessagesPerInterval) + GetKarma();
+				int AllowedMessages = RuleI(Chat, MinimumMessagesPerInterval) + GetKarma();
 				AllowedMessages = AllowedMessages > RuleI(Chat, MaximumMessagesPerInterval) ? RuleI(Chat, MaximumMessagesPerInterval) : AllowedMessages; 
 				if(RuleI(Chat, MinStatusToBypassAntiSpam) <= Status)
 					AllowedMessages = 10000;
