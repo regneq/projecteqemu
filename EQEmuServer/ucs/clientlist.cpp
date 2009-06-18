@@ -833,10 +833,12 @@ void Clientlist::Process() {
 							break;
 						
 						case CommandBuddy:
+							RemoveApostrophes(Parameters);
 							ProcessCommandBuddy((*Iterator), Parameters);
 							break;
 
 						case CommandIgnorePlayer:
+							RemoveApostrophes(Parameters);
 							ProcessCommandIgnore((*Iterator), Parameters);
 							break;
 				

@@ -39,7 +39,7 @@ enum { CommandJoin = 0, CommandLeaveAll, CommandLeave, CommandListAll, CommandLi
        CommandSetMailForwarding, CommandBuddy, CommandIgnorePlayer,
        CommandEndOfList };
 
-typedef struct CommandEntry {
+struct CommandEntry {
 	const char *CommandString;
 	int    CommandCode;
 };

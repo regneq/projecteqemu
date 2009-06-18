@@ -464,3 +464,23 @@ float EQHtoFloat(int d)
 	return(360.0f - float((d * 360) >> 11));
 }
 
+void RemoveApostrophes(std::string &s)
+{
+	for(unsigned int i = 0; i < s.length(); ++i)
+		if(s[i] == '\'')
+			 s[i] = '_';
+}
+
+char *RemoveApostrophes(const char *s)
+{
+	char *NewString = new char[strlen(s) + 1];
+
+	strcpy(NewString, s);
+
+	for(unsigned int i = 0 ; i < strlen(NewString); ++i)
+		if(NewString[i] == '\'')
+			 NewString[i] = '_';
+
+	return NewString;
+}
+

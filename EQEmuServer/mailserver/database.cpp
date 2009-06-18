@@ -208,15 +208,19 @@ int Database::FindCharacter(const char *CharacterName) {
 	MYSQL_RES *result;
 	MYSQL_ROW row;
 
+	char *SafeCharName = RemoveApostrophes(CharacterName);
+
 	if (!RunQuery(query,MakeAnyLenString(&query, "select `id` from `character_` where `name`='%s' limit 1",
-					   CharacterName),errbuf,&result)){
+					   SafeCharName),errbuf,&result)){
 
 		safe_delete_array(query);
+		safe_delete_array(SafeCharName);
 
 		return -1;
 	}
 
 	safe_delete_array(query);
+	safe_delete_array(SafeCharName);
 
 	if (mysql_num_rows(result) != 1) {
 

@@ -1460,7 +1460,9 @@ void Client::SendBazaarResults(int32 TraderID, int32 Class_, int32 Race, int32 I
 		Search.append(Tmp);
 	}
 	if(strlen(Name) > 0){
-		sprintf(Tmp, " and items.name like '%%%s%%'", Name);
+		char *SafeName = RemoveApostrophes(Name);
+		sprintf(Tmp, " and items.name like '%%%s%%'", SafeName);
+		safe_delete_array(SafeName);
 		Search.append(Tmp);
 	}
 	if(Class_ != 0xFFFFFFFF){
@@ -1596,7 +1598,7 @@ void Client::SendBazaarResults(int32 TraderID, int32 Class_, int32 Race, int32 I
 		int Size = 0;
 		int32 ID = 0;
 
-		if(mysql_num_rows(Result) == RuleI(Bazaar, MaxSearchResults))
+		if(mysql_num_rows(Result) == static_cast<unsigned long>(RuleI(Bazaar, MaxSearchResults)))
 			Message(15, "Your search reached the limit of %i results. Please narrow your search down by selecting more options.",
 				    RuleI(Bazaar, MaxSearchResults));
 
@@ -1687,7 +1689,7 @@ void Client::SendBazaarResults(int32 TraderID, int32 Class_, int32 Race, int32 I
 		
 	}
 	else{
-		_log(TRADING__CLIENT, "Failed to retrieve Bazaar Search!! %s\n", Query);
+		_log(TRADING__CLIENT, "Failed to retrieve Bazaar Search!! %s %s\n", Query, errbuf);
 		safe_delete_array(Query);
 		return;
 	}
@@ -2026,8 +2028,11 @@ void Client::SendBuyerResults(char* SearchString, uint32 SearchID) {
 	MYSQL_RES *Result;
 	MYSQL_ROW Row;
 
+	char*EscSearchString = new char[strlen(SearchString) * 2 + 1];
+	database.DoEscapeString(EscSearchString, SearchString, strlen(SearchString));
+
 	if (database.RunQuery(Query,MakeAnyLenString(&Query, "select * from buyer where itemname like '%%%s%%' order by charid limit %i",
-						     SearchString, RuleI(Bazaar, MaxBarterSearchResults)), errbuf, &Result)) {
+						     EscSearchString, RuleI(Bazaar, MaxBarterSearchResults)), errbuf, &Result)) {
 
 		int NumberOfRows = mysql_num_rows(Result);
 
@@ -2102,7 +2107,11 @@ void Client::SendBuyerResults(char* SearchString, uint32 SearchID) {
 
 		mysql_free_result(Result);
 	}
+	else{
+		_log(TRADING__CLIENT, "Failed to retrieve Barter Search!! %s %s\n", Query, errbuf);
+	}
 	safe_delete_array(Query);
+	safe_delete_array(EscSearchString);
 }
 
 void Client::ShowBuyLines(const EQApplicationPacket *app) {
@@ -2207,19 +2216,19 @@ void Client::SellToBuyer(const EQApplicationPacket *app) {
 	
 	char ItemName[64];
 
-	/*uint32	Action		=*/ VARSTRUCT_DECODE_TYPE(uint32, Buf);	//unused
+	/*uint32	Action		=*/ VARSTRUCT_SKIP_TYPE(uint32, Buf);	//unused
 	uint32	Quantity	= VARSTRUCT_DECODE_TYPE(uint32, Buf);
 	uint32	BuyerID		= VARSTRUCT_DECODE_TYPE(uint32, Buf);
 	uint32	BuySlot		= VARSTRUCT_DECODE_TYPE(uint32, Buf);
 	uint32	UnknownByte	= VARSTRUCT_DECODE_TYPE(uint8, Buf);
 	uint32	ItemID		= VARSTRUCT_DECODE_TYPE(uint32, Buf);
 	/* ItemName  */		  VARSTRUCT_DECODE_STRING(ItemName, Buf);
-	/*uint32	Unknown2	=*/ VARSTRUCT_DECODE_TYPE(uint32, Buf);	//unused
+	/*uint32	Unknown2	=*/ VARSTRUCT_SKIP_TYPE(uint32, Buf);	//unused
 	uint32	QtyBuyerWants	= VARSTRUCT_DECODE_TYPE(uint32, Buf);
 		UnknownByte	= VARSTRUCT_DECODE_TYPE(uint8, Buf);
 	uint32	Price		= VARSTRUCT_DECODE_TYPE(uint32, Buf);
-	/*uint32	BuyerID2	=*/ VARSTRUCT_DECODE_TYPE(uint32, Buf);	//unused
-	/*uint32	Unknown3	=*/ VARSTRUCT_DECODE_TYPE(uint32, Buf);	//unused
+	/*uint32	BuyerID2	=*/ VARSTRUCT_SKIP_TYPE(uint32, Buf);	//unused
+	/*uint32	Unknown3	=*/ VARSTRUCT_SKIP_TYPE(uint32, Buf);	//unused
 
 	const Item_Struct *item = database.GetItem(ItemID);
 
@@ -2595,7 +2604,7 @@ void Client::UpdateBuyLine(const EQApplicationPacket *app) {
 
 	char ItemName[64];
 
-	/*uint32 Action		=*/ VARSTRUCT_DECODE_TYPE(uint32, Buf);	//unused
+	/*uint32 Action		=*/ VARSTRUCT_SKIP_TYPE(uint32, Buf);	//unused
 	uint32 BuySlot		= VARSTRUCT_DECODE_TYPE(uint32, Buf);
 	uint8  Unknown009	= VARSTRUCT_DECODE_TYPE(uint8, Buf);
 	uint32 ItemID		= VARSTRUCT_DECODE_TYPE(uint32, Buf);
@@ -2604,7 +2613,7 @@ void Client::UpdateBuyLine(const EQApplicationPacket *app) {
 	uint32 Quantity		= VARSTRUCT_DECODE_TYPE(uint32, Buf);
 	uint8  ToggleOnOff	= VARSTRUCT_DECODE_TYPE(uint8, Buf);
 	uint32 Price		= VARSTRUCT_DECODE_TYPE(uint32, Buf);
-	/*uint32 UnknownZ		=*/ VARSTRUCT_DECODE_TYPE(uint32, Buf);	//unused
+	/*uint32 UnknownZ		=*/ VARSTRUCT_SKIP_TYPE(uint32, Buf);	//unused
 	uint32 ItemCount	= VARSTRUCT_DECODE_TYPE(uint32, Buf);
 
 	const Item_Struct *item = database.GetItem(ItemID);

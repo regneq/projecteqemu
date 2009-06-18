@@ -22,6 +22,7 @@
 #include "chatchannel.h"
 #include "clientlist.h"
 #include "database.h"
+#include "../common/MiscFunctions.h"
 #include <cstdlib>
 
 extern Database database;
@@ -206,7 +207,10 @@ void ChatChannel::SetPassword(string inPassword) {
 	Password = inPassword;
 
 	if(Permanent)
+	{
+		RemoveApostrophes(Password);
 		database.SetChannelPassword(Name, Password);
+	}
 }
 
 void ChatChannel::SetOwner(string inOwner) {

@@ -133,7 +133,7 @@ void Database::GetAccountStatus(Client *c) {
 	row = mysql_fetch_row(result);
 
 	c->SetAccountStatus(atoi(row[0]));
-	c->SetHideMe(atoi(row[1]));
+	c->SetHideMe(atoi(row[1]) != 0);
 	c->SetKarma(atoi(row[2]));
 
 	mysql_free_result(result);
@@ -290,15 +290,21 @@ int Database::FindCharacter(const char *CharacterName) {
 	MYSQL_RES *result;
 	MYSQL_ROW row;
 
+	char *SafeCharName = RemoveApostrophes(CharacterName);
+
 	if (!RunQuery(query,MakeAnyLenString(&query, "select `id` from `character_` where `name`='%s' limit 1",
-					   CharacterName),errbuf,&result)){
+					   SafeCharName),errbuf,&result)){
+
+		_log(UCS__ERROR, "FindCharacter failed. %s %s", query, errbuf);
 
 		safe_delete_array(query);
+		safe_delete_array(SafeCharName);
 
 		return -1;
 	}
 
 	safe_delete_array(query);
+	safe_delete_array(SafeCharName);
 
 	if (mysql_num_rows(result) != 1) {
 
@@ -448,7 +454,7 @@ void Database::SendHeaders(Client *c) {
 
 	char Buf[100];
 
-	int NumRows = mysql_num_rows(result);
+	my_ulonglong NumRows = mysql_num_rows(result);
 
 	int HeaderCountPacketLength = 0;
 	
@@ -744,8 +750,9 @@ void Database::AddFriendOrIgnore(int CharID, int Type, string Name) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char* query = 0;
 
+
 	if(!RunQuery(query, MakeAnyLenString(&query, FriendsQuery, CharID, Type, CapitaliseName(Name).c_str()), errbuf, 0, 0))
-		_log(UCS__ERROR, "Error adding friend/ignore, query was %s", query);
+		_log(UCS__ERROR, "Error adding friend/ignore, query was %s : %s", query, errbuf);
 	else
 		_log(UCS__TRACE, "Wrote Friend/Ignore entry for charid %i, type %i, name %s to database.",
 		     CharID, Type, Name.c_str());

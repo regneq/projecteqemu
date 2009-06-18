@@ -36,7 +36,7 @@ enum { CommandJoin = 0, CommandLeaveAll, CommandLeave, CommandListAll, CommandLi
        CommandOPList, CommandInvite, CommandGrant, CommandModerate, CommandVoice, CommandKick, 
        CommandPassword, CommandToggleInvites, CommandAFK, CommandUptime, CommandEndOfList };
 
-typedef struct CommandEntry {
+struct CommandEntry {
 	const char *CommandString;
 	int    CommandCode;
 };
@@ -132,7 +132,7 @@ private:
 	uint32 TotalKarma;
 
 	Timer *GlobalChatLimiterTimer; //60 seconds
-	uint32 AttemptedMessages;
+	int AttemptedMessages;
 	bool ForceDisconnect;
 };
 

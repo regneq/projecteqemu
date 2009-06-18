@@ -21,6 +21,7 @@
 #include "types.h"
 #include <stdio.h>
 #include <ctype.h>
+#include <string>
 
 
 #ifndef ERRBUF_SIZE
@@ -35,6 +36,7 @@
 #define VARSTRUCT_ENCODE_STRING(Buffer, String) sprintf(Buffer, String); Buffer += strlen(String) + 1;
 #define VARSTRUCT_ENCODE_INTSTRING(Buffer, Number) sprintf(Buffer, "%i", Number); Buffer += strlen(Buffer) + 1;
 #define VARSTRUCT_ENCODE_TYPE(Type, Buffer, Value) *(Type *)Buffer = Value; Buffer += sizeof(Type);
+#define VARSTRUCT_SKIP_TYPE(Type, Buffer) Buffer += sizeof(Type);
 
 //////////////////////////////////////////////////////////////////////
 //
@@ -77,6 +79,8 @@ int FloatToEQ13(float d);
 int NewFloatToEQ13(float d);
 int FloatToEQ19(float d);
 int FloatToEQH(float d);
+void RemoveApostrophes(std::string &s);
+char *RemoveApostrophes(const char *s);
 
 
 
