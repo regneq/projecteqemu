@@ -1334,43 +1334,46 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 	if (GetOwner())
 		AggroAmount = AggroAmount * RuleI(Aggro, PetSpellAggroMod) / 100;
 	
-	int aaSubtlety = ( GetAA(aaSpellCastingSubtlety) > GetAA(aaSpellCastingSubtlety2) ) ? GetAA(aaSpellCastingSubtlety) : GetAA(aaSpellCastingSubtlety2);
-
-	switch (aaSubtlety)
+	if(AggroAmount > 0)
 	{
-	case 1:
-		AggroAmount = AggroAmount * 95 / 100;
-		break;
-	case 2:
-		AggroAmount = AggroAmount * 90 / 100;
-		break;
-	case 3:
-		AggroAmount = AggroAmount * 80 / 100;
-		break;
-	}
+		int aaSubtlety = ( GetAA(aaSpellCastingSubtlety) > GetAA(aaSpellCastingSubtlety2) ) ? GetAA(aaSpellCastingSubtlety) : GetAA(aaSpellCastingSubtlety2);
+
+		switch (aaSubtlety)
+		{
+		case 1:
+			AggroAmount = AggroAmount * 95 / 100;
+			break;
+		case 2:
+			AggroAmount = AggroAmount * 90 / 100;
+			break;
+		case 3:
+			AggroAmount = AggroAmount * 80 / 100;
+			break;
+		}
 
 #ifdef EQBOTS
 
-	// Spell Casting Subtlety for Bots
-	if(IsBot()) {
-		if(GetLevel() >= 57) {
-			AggroAmount = AggroAmount * 95 / 100;
+		// Spell Casting Subtlety for Bots
+		if(IsBot()) {
+			if(GetLevel() >= 57) {
+				AggroAmount = AggroAmount * 95 / 100;
+			}
+			else if(GetLevel() >= 56) {
+				AggroAmount = AggroAmount * 90 / 100;
+			}
+			else if(GetLevel() >= 55) {
+				AggroAmount = AggroAmount * 80 / 100;
+			}
 		}
-		else if(GetLevel() >= 56) {
-			AggroAmount = AggroAmount * 90 / 100;
-		}
-		else if(GetLevel() >= 55) {
-			AggroAmount = AggroAmount * 80 / 100;
-		}
-	}
 
 #endif //EQBOTS
 
-	//made up number probably scales a bit differently on live but it seems like it will be close enough
-	//every time you cast on live you get a certain amount of "this is a spell" aggro
-	//confirmed by EQ devs to be 100 exactly at level 85. From their wording it doesn't seem like it's affected
-	//by hate modifiers either.
-	AggroAmount += (slevel*slevel/72);
+		//made up number probably scales a bit differently on live but it seems like it will be close enough
+		//every time you cast on live you get a certain amount of "this is a spell" aggro
+		//confirmed by EQ devs to be 100 exactly at level 85. From their wording it doesn't seem like it's affected
+		//by hate modifiers either.
+		AggroAmount += (slevel*slevel/72);
+	}
 
 	if(IsClient())
 	{

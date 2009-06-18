@@ -3042,7 +3042,7 @@ void EntityList::AddHealAggro(Mob* target, Mob* caster, int16 thedam)
 					}
 					else
 					{
-						cur->AddToHateList(caster, 1);
+						cur->AddToHateList(caster, thedam*0.33);
 					}
 				}
 			}
