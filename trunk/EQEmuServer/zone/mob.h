@@ -556,6 +556,19 @@ bool logpos;
 	virtual inline sint32	CalcMaxHP()		{ return max_hp = (base_hp  + itembonuses.HP + spellbonuses.HP); }
 	float GetWalkspeed() const { return(_GetMovementSpeed(-47)); }
 	float GetRunspeed() const { return(_GetMovementSpeed(0)); }
+	float GetMovespeed() const {
+		if(IsRunning())
+		{
+			return GetRunspeed();
+		}
+		else
+		{
+			return GetWalkspeed();
+		}
+	}
+	bool IsRunning() const { return m_is_running; }
+	void SetRunning(bool val) { m_is_running = val; }
+
 	virtual int GetCasterLevel(int16 spell_id);
 	void ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newbon, int16 casterID = 0);
 
@@ -1110,6 +1123,7 @@ protected:
 	float	fixedZ;
 	EmuAppearance    _appearance;
 	int8	pRunAnimSpeed;
+	bool	m_is_running;
 
 	Mob*	target;
 	Timer	attack_timer;

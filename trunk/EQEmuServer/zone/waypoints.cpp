@@ -326,7 +326,7 @@ void NPC::SaveGuardSpot(bool iClearGuardSpot) {
 }
 
 void NPC::NextGuardPosition() {
-	if (!CalculateNewPosition2(guard_x, guard_y, guard_z, GetWalkspeed())) {
+	if (!CalculateNewPosition2(guard_x, guard_y, guard_z, GetMovespeed())) {
 		SetHeading(guard_heading);
 		mlog(AI__WAYPOINTS, "Unable to move to next guard position. Prolly rooted.");
 	}

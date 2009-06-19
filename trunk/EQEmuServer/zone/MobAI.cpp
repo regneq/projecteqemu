@@ -1033,7 +1033,7 @@ void Mob::AI_Process() {
 }
 
 void NPC::AI_DoMovement() {
-	float walksp = GetWalkspeed();
+	float walksp = GetMovespeed();
 	if(walksp <= 0.0f)
 		return;	//this is idle movement at walk speed, and we are unable to walk right now.
 	

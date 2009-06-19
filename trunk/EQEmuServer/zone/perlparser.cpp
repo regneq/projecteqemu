@@ -2599,6 +2599,37 @@ XS(XS__saylink) {
 	XSRETURN(1);
 }
 
+XS(XS__SetRunning);
+XS(XS__SetRunning)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: SetRunning(val)");
+
+	bool val = ((int)SvIV(ST(0))) == 0?false:true;
+
+	quest_manager.SetRunning(val);
+
+	XSRETURN_EMPTY;
+}
+
+XS(XS__IsRunning);
+XS(XS__IsRunning)
+{
+    dXSARGS;
+    if (items >= 1)
+        Perl_croak(aTHX_ "Usage: IsRunning()");
+
+    bool        RETVAL;
+    dXSTARG;
+
+
+	RETVAL = quest_manager.IsRunning();
+	XSprePUSH; PUSHu((IV)RETVAL);
+
+	XSRETURN(1);
+}
+
 /*
 This is the callback perl will look for to setup the
 quest package's XSUBs
@@ -2777,6 +2808,8 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "MovePCInstance"), XS__MovePCInstance, file);
 		newXS(strcpy(buf, "FlagInstanceByGroupLeader"), XS__FlagInstanceByGroupLeader, file);
 		newXS(strcpy(buf, "FlagInstanceByRaidLeader"), XS__FlagInstanceByRaidLeader, file);
+		newXS(strcpy(buf, "SetRunning"), XS__SetRunning, file);
+		newXS(strcpy(buf, "IsRunning"), XS__IsRunning, file);
 	XSRETURN_YES;
 }
 
