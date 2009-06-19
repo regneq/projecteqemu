@@ -2,6 +2,9 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
 ==06/18/2009==
+KLS: NPCs will no longer warp to their very first waypoint if they start on a grid, make sure they're spawned near their first waypoint!
+
+==06/18/2009==
 Derision: Fixed some flawed database queries and a few compile warnings.
 Derision: Added command #reloadtitles to reload titles from the database.
 Derision: Added second optional argument to #title and #titlesuffix to save the title to the database if 1.

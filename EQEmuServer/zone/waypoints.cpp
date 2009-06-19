@@ -748,7 +748,6 @@ void NPC::AssignWaypoints(int32 grid) {
 	} else if(!GridErr && !WPErr) {
 	    UpdateWaypoint(0);
 	    SetWaypointPause();
-	    SendTo(cur_wp_x, cur_wp_y, cur_wp_z);
 	    if (wandertype == 1 || wandertype == 2)
 			CalculateNewWaypoint();
 	} else {
