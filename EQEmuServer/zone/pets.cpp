@@ -273,6 +273,39 @@ void Mob::MakePet(int16 spell_id, const char* pettype, const char *petname) {
 		}
 	}
 
+	// handle monster summoning pet appearance
+	if(strncmp(pettype, "MonsterSum", 10) == 0) {
+		char errbuf[MYSQL_ERRMSG_SIZE];
+		char* query = 0;
+		MYSQL_RES *result = NULL;
+		MYSQL_ROW row;
+		
+		// get a random npc id from the spawngroups assigned to this zone
+		if (database.RunQuery(query,	MakeAnyLenString(&query,
+			"SELECT npcID FROM (spawnentry INNER JOIN spawn2 ON spawn2.spawngroupID = spawnentry.spawngroupID) "
+			"WHERE spawn2.zone = '%s' ORDER BY RAND() LIMIT 1",	zone->GetShortName()), errbuf, &result))
+		{
+			row = mysql_fetch_row(result);
+			uint32 monsterid = atoi(row[0]);
+			const NPCType* monster = database.GetNPCType(monsterid);
+			if(monster) {
+				npc_type->race = monster->race;
+				npc_type->size = monster->size;
+				npc_type->texture = monster->texture;
+				npc_type->luclinface = monster->luclinface;
+				npc_type->gender = monster->gender;
+			}
+			else {
+				LogFile->write(EQEMuLog::Error, "Error loading NPC data for monster summoing pet (NPC ID %d)", monsterid);
+			}
+		}
+		else {	// if the database query failed
+			LogFile->write(EQEMuLog::Error, "Error querying database for monster summoning pet in zone %s", zone->GetShortName());
+		}
+
+		safe_delete_array(query);
+	}
+
 	//this takes ownership of the npc_type data
 	Pet *npc = new Pet(npc_type, this, type, spell_id);
 

@@ -6,6 +6,7 @@ Derision: Fixed some flawed database queries and a few compile warnings.
 Derision: Added command #reloadtitles to reload titles from the database.
 Derision: Added second optional argument to #title and #titlesuffix to save the title to the database if 1.
 Derision: Added second optional argument to $client->SetAATitle/SetTitleSuffix to save the title to the database.
+realityincarnate: Monster Summoning pets should work properly now.
 
 ==06/17/2009==
 Derision: Removed redundant flymode on/off in water code (not needed since Rev161).
