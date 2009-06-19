@@ -341,6 +341,8 @@ Mob::Mob(const char*   in_name,
 	SetHasRune(false);
 	SetHasSpellRune(false);
 
+	m_is_running = false;
+
 #ifdef EQBOTS
 
 	// eqoffline

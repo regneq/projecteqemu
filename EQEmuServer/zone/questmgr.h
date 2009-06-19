@@ -208,6 +208,8 @@ public:
 	
 	const char* varlink(char* perltext, int item_id);
 	const char* saylink(char* Phrase);
+	void SetRunning(bool val);
+	bool IsRunning();
 
 	//not in here because it retains perl types
 	//thing ChooseRandom(array_of_things)

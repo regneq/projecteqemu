@@ -1960,3 +1960,17 @@ const char* QuestManager::saylink(char* Phrase) {
 	strcpy(Phrase,linktext);
 	return Phrase;
 }
+
+void QuestManager::SetRunning(bool val)
+{
+	if(!owner)
+		return;
+	owner->SetRunning(val);
+}
+
+bool QuestManager::IsRunning()
+{
+	if(!owner)
+		return false;
+	return owner->IsRunning();
+}
