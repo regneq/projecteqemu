@@ -1,0 +1,1 @@
+INSERT INTO `rule_values` VALUES ('1', 'Zone:PEQZoneReuseTime', '300');
