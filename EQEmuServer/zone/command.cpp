@@ -1646,7 +1646,7 @@ void command_tgczone(Client *c, const Seperator *sep)
 
        //zone to safe coords
        c->CastToClient()->cheat_timer.Start(3500,false);
-       c->GetPTimers().Start(pTimerPeqzoneReuse, 300);
+       c->GetPTimers().Start(pTimerPeqzoneReuse, RuleI(Zone, PEQZoneReuseTime));
        c->MovePC(zoneid, 0.0f, 0.0f, 0.0f, 0.0f, 0, ZoneToSafeCoords);
 }
 

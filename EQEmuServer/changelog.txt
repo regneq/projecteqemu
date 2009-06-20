@@ -3,6 +3,9 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 
 ==06/20/2009==
 WildcardX: Migrated more code for BOTS from database.cpp to bot.cpp.
+AndMetal: Added rule 'Zone:PEQZoneReuseTime' to adjust the reuse time on the #peqzone command. Defaults to 300 per change in Rev 612.
+
+Optional SQL: /utils/sql/svn/699_peqzone_rule.sql
 
 ==06/19/2009==
 KLS: NPCs will no longer warp to their very first waypoint if they start on a grid, make sure they're spawned near their first waypoint!
