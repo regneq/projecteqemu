@@ -337,29 +337,38 @@ void Mob::MakePet(int16 spell_id, const char* pettype, const char *petname) {
 		char errbuf[MYSQL_ERRMSG_SIZE];
 		char* query = 0;
 		MYSQL_RES *result = NULL;
-		MYSQL_ROW row;
+		MYSQL_ROW row = NULL;
+		uint32 monsterid;
 		
 		// get a random npc id from the spawngroups assigned to this zone
 		if (database.RunQuery(query,	MakeAnyLenString(&query,
 			"SELECT npcID FROM (spawnentry INNER JOIN spawn2 ON spawn2.spawngroupID = spawnentry.spawngroupID) "
-			"WHERE spawn2.zone = '%s' ORDER BY RAND() LIMIT 1",	zone->GetShortName()), errbuf, &result))
+			"INNER JOIN npc_types ON npc_types.id = spawnentry.npcID "
+			"WHERE spawn2.zone = '%s' AND npc_types.bodytype NOT IN (11, 33, 66, 67) "
+			"AND npc_types.race NOT IN (0,1,2,3,4,5,6,7,8,9,10,11,12,44,55,67,71,72,73,77,78,81,90,92,93,94,106,112,114,127,128,130,139,141,183,236,237,238,239,254,266,330,378,379,380,381,382,383,404,522) "
+			"ORDER BY RAND() LIMIT 1",	zone->GetShortName()), errbuf, &result))
 		{
 			row = mysql_fetch_row(result);
-			uint32 monsterid = atoi(row[0]);
-			const NPCType* monster = database.GetNPCType(monsterid);
-			if(monster) {
-				npc_type->race = monster->race;
-				npc_type->size = monster->size;
-				npc_type->texture = monster->texture;
-				npc_type->luclinface = monster->luclinface;
-				npc_type->gender = monster->gender;
-			}
-			else {
-				LogFile->write(EQEMuLog::Error, "Error loading NPC data for monster summoing pet (NPC ID %d)", monsterid);
-			}
+			if (row) 
+				monsterid = atoi(row[0]);
+			else 
+				monsterid = 567;	// since we don't have any monsters, just make it look like an earth pet for now
 		}
 		else {	// if the database query failed
-			LogFile->write(EQEMuLog::Error, "Error querying database for monster summoning pet in zone %s", zone->GetShortName());
+			LogFile->write(EQEMuLog::Error, "Error querying database for monster summoning pet in zone %s (%s)", zone->GetShortName(), errbuf);
+			monsterid = 567;
+		}
+		
+		// give the summoned pet the attributes of the monster we found
+		const NPCType* monster = database.GetNPCType(monsterid);
+		if(monster) {
+			npc_type->race = monster->race;
+			npc_type->size = monster->size;
+			npc_type->texture = monster->texture;
+			npc_type->gender = monster->gender;
+		}
+		else {
+			LogFile->write(EQEMuLog::Error, "Error loading NPC data for monster summoning pet (NPC ID %d)", monsterid);
 		}
 
 		safe_delete_array(query);
