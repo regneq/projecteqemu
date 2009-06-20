@@ -3,6 +3,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 
 ==06/19/2009==
 cavedude (nilbog): Added many missing pet names.
+realityincarnate: Restricted monster summoning to things more traditionally considered monsters (no boats, among others)
 
 ==06/18/2009==
 KLS: NPCs will no longer warp to their very first waypoint if they start on a grid, make sure they're spawned near their first waypoint!
