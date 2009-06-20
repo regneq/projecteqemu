@@ -24,6 +24,7 @@ public:
 	std::string DeleteBot();
 	void Spawn(float xPos, float yPos, float zPos, float heading);
 	void SetBotOwnerCharacterID(uint32 botOwnerCharacterID, std::string* errorMessage);
+	void Depop(std::string* errorMessage);
 
 	// Bot Inventory Class Methods
 	uint32 GetBotItemBySlot(uint32 slotID, std::string* errorMessage);
@@ -42,6 +43,8 @@ public:
 	static std::list<BotGroup> LoadBotGroups(uint32 characterID, std::string* errorMessage);
 	static uint32 SpawnedBotCount(uint32 botOwnerCharacterID, std::string* errorMessage);
 	static uint32 AllowedBotSpawns(uint32 botOwnerCharacterID, std::string* errorMessage);
+	static void CleanBotLeader(uint32 botOwnerCharacterID, std::string* errorMessage);
+	static uint32 GetBotOwnerCharacterID(uint32 botID, std::string* errorMessage);
 
 	// Inline "GET" Class Methods
 	uint32 GetBotID() { return _botID; };
@@ -73,6 +76,7 @@ private:
 	void GenerateBaseHitPoints();
 	void SetBotLeader(uint32 botID, uint32 botOwnerCharacterID, std::string botName, std::string zoneShortName, std::string* errorMessage);
 	uint32 GetBotLeader(uint32 botID, std::string* errorMessage);
+	void CleanBotLeaderEntries(std::string* errorMessage);
 };
 
 #endif // BOTS

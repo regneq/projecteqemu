@@ -115,7 +115,7 @@ Bot::Bot(std::string botName, uint8 botClass, uint16 botRace, uint8 botGender, C
 	  0,
 	  0) {
 		  if(botOwner) {
-			  this->_botOwnerCharacterID = botOwner->AccountID();
+			  this->_botOwnerCharacterID = botOwner->CharacterID();
 		  }
 		  else
 			  this->_botOwnerCharacterID = 0;
@@ -1020,6 +1020,43 @@ uint32 Bot::GetBotItemsCount(std::string *errorMessage) {
 	return Result;
 }
 
+void Bot::Depop(std::string* errorMessage) {
+	std::string TempErrorMessage;
+
+	CleanBotLeaderEntries(&TempErrorMessage);
+
+	if(TempErrorMessage.length() > 0) {
+		*errorMessage = TempErrorMessage;
+		return;
+	}
+}
+
+void Bot::CleanBotLeaderEntries(std::string* errorMessage) {
+	if(this->_botID > 0 && this->_botOwnerCharacterID > 0) {
+		char errbuf[MYSQL_ERRMSG_SIZE];
+		char *query = 0;
+
+		if(!database.RunQuery(query, MakeAnyLenString(&query, "DELETE FROM botleader WHERE botid=%i", this->_botID), errbuf)) {
+			*errorMessage = std::string(errbuf);
+		}
+
+		safe_delete_array(query);
+	}
+}
+
+static void CleanBotLeader(uint32 botOwnerCharacterID, std::string* errorMessage) {
+	if(botOwnerCharacterID > 0) {
+		char errbuf[MYSQL_ERRMSG_SIZE];
+		char *query = 0;
+
+		if(!database.RunQuery(query, MakeAnyLenString(&query, "DELETE FROM botleader where leaderid=%i", botOwnerCharacterID), errbuf)) {
+			*errorMessage = std::string(errbuf);
+		}
+
+		safe_delete_array(query);
+	}
+}
+
 static Bot* LoadBot(uint32 botID, std::string* errorMessage) {
 	Bot* Result = 0;
 
@@ -1201,8 +1238,37 @@ static uint32 SpawnedBotCount(uint32 botOwnerCharacterID, std::string* errorMess
 	return Result;
 }
 
+static uint32 GetBotOwnerCharacterID(uint32 botID, std::string* errorMessage) {
+	uint32 Result = 0;
+
+	if(botID > 0) {
+		char ErrBuf[MYSQL_ERRMSG_SIZE];
+		char* Query = 0;
+		MYSQL_RES* DatasetResult;
+		MYSQL_ROW DataRow;
+
+		if(database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT botleadercharacterid FROM botsowners WHERE botnpctypeid=%i", botID), ErrBuf, &DatasetResult)) {
+			if(mysql_num_rows(DatasetResult) == 1) {
+				DataRow = mysql_fetch_row(DatasetResult);
+				Result = atoi(DataRow[0]);
+			}
+
+			mysql_free_result(DatasetResult);
+		}
+		else
+			*errorMessage = std::string(ErrBuf);
+
+		safe_delete_array(Query);
+	}
+
+	return Result;
+}
+
 static void ProcessBotCommands(Client *c, const Seperator *sep) {
 	// TODO: All bot command processing occurs here now instead of in command.cpp
+
+	// TODO: Log any possible error messages as most of these will be MySQL error messages.
+	std::string TempErrorMessage;
 
 	if(sep->arg[1][0] == '\0') {
 		c->Message(15, "Bad argument, type #bot help");
@@ -1254,691 +1320,114 @@ static void ProcessBotCommands(Client *c, const Seperator *sep) {
 		return;
 	}
 
-//	if(!strcasecmp(sep->arg[1], "create")) {
-//		if(sep->arg[2][0] == '\0' || sep->arg[3][0] == '\0' || sep->arg[4][0] == '\0' || sep->arg[5][0] == '\0' || sep->arg[6][0] != '\0') {
-//			c->Message(15, "Usage: #bot create [name] [class(id)] [race(id)] [gender (male/female)]");
-//			return;
-//		}
-//		else if(strcasecmp(sep->arg[3],"1") && strcasecmp(sep->arg[3],"2") && strcasecmp(sep->arg[3],"3") && strcasecmp(sep->arg[3],"4") && strcasecmp(sep->arg[3],"5") && strcasecmp(sep->arg[3],"6") && strcasecmp(sep->arg[3],"7") && strcasecmp(sep->arg[3],"8") && strcasecmp(sep->arg[3],"9") && strcasecmp(sep->arg[3],"10") && strcasecmp(sep->arg[3],"11") && strcasecmp(sep->arg[3],"12") && strcasecmp(sep->arg[3],"13") && strcasecmp(sep->arg[3],"14") && strcasecmp(sep->arg[3],"15") && strcasecmp(sep->arg[3],"16")) {
-//			c->Message(15, "Usage: #bot create [name] [class(id)] [race(id)] [gender (male/female)]");
-//			return;
-//		}		
-//		else if(strcasecmp(sep->arg[4],"1") && strcasecmp(sep->arg[4],"2") && strcasecmp(sep->arg[4],"3") && strcasecmp(sep->arg[4],"4") && strcasecmp(sep->arg[4],"5") && strcasecmp(sep->arg[4],"6") && strcasecmp(sep->arg[4],"7") && strcasecmp(sep->arg[4],"8") && strcasecmp(sep->arg[4],"9") && strcasecmp(sep->arg[4],"10") && strcasecmp(sep->arg[4],"11") && strcasecmp(sep->arg[4],"12") && strcasecmp(sep->arg[4],"330") && strcasecmp(sep->arg[4],"128") && strcasecmp(sep->arg[4],"130")) {
-//			c->Message(15, "Usage: #bot create [name] [class(1-16)] [race(1-12,128,130,330)] [gender (male/female)]");
-//			return;
-//		}
-//		else if(strcasecmp(sep->arg[5],"male") && strcasecmp(sep->arg[5],"female")) {
-//			c->Message(15, "Usage: #bot create [name] [class(1-16)] [race(1-12,128,130,330)] [gender (male/female)]");
-//			return;
-//		}
-//
-//		if(database.CountBots(c->AccountID()) >= RuleI(EQOffline, CreateBotCount)) {
-//			c->Message(15, "You cannot create more than %i bots.", RuleI(EQOffline, CreateBotCount));
-//			return;
-//		}
-//
-//		// Check Race/Class combos
-//		int choosebclass = atoi(sep->arg[3]);
-//		int iRace = atoi(sep->arg[4]);
-//		bool isComboAllowed = false;
-//		switch(iRace) {
-//			case 1: // Human
-//				switch(choosebclass) {
-//			case 1: // Warrior
-//			case 2: // Cleric
-//			case 3: // Paladin
-//			case 4: // Ranger
-//			case 5: // Shadowknight
-//			case 6: // Druid
-//			case 7: // Monk
-//			case 8: // Bard
-//			case 9: // Rogue
-//			case 11: // Necromancer
-//			case 12: // Wizard
-//			case 13: // Magician
-//			case 14: // Enchanter
-//				isComboAllowed = true;
-//				break;
-//				}
-//				break;
-//			case 2: // Barbarian
-//				switch(choosebclass) {
-//			case 1: // Warrior
-//			case 9: // Rogue
-//			case 10: // Shaman
-//			case 15: // Beastlord
-//			case 16: // Berserker
-//				isComboAllowed = true;
-//				break;
-//				}
-//				break;
-//			case 3: // Erudite
-//				switch(choosebclass) {
-//			case 2: // Cleric
-//			case 3: // Paladin
-//			case 5: // Shadowknight
-//			case 11: // Necromancer
-//			case 12: // Wizard
-//			case 13: // Magician
-//			case 14: // Enchanter
-//				isComboAllowed = true;
-//				break;
-//				}
-//				break;
-//			case 4: // Wood Elf
-//				switch(choosebclass) {
-//			case 1: // Warrior
-//			case 4: // Ranger
-//			case 6: // Druid
-//			case 8: // Bard
-//			case 9: // Rogue
-//				isComboAllowed = true;
-//				break;
-//				}
-//				break;
-//			case 5: // High Elf
-//				switch(choosebclass) {
-//			case 2: // Cleric
-//			case 3: // Paladin
-//			case 12: // Wizard
-//			case 13: // Magician
-//			case 14: // Enchanter
-//				isComboAllowed = true;
-//				break;
-//				}
-//				break;
-//			case 6: // Dark Elf
-//				switch(choosebclass) {
-//			case 1: // Warrior
-//			case 2: // Cleric
-//			case 5: // Shadowknight
-//			case 9: // Rogue
-//			case 11: // Necromancer
-//			case 12: // Wizard
-//			case 13: // Magician
-//			case 14: // Enchanter
-//				isComboAllowed = true;
-//				break;
-//				}
-//				break;
-//			case 7: // Half Elf
-//				switch(choosebclass) {
-//			case 1: // Warrior
-//			case 3: // Paladin
-//			case 4: // Ranger
-//			case 6: // Druid
-//			case 8: // Bard
-//			case 9: // Rogue
-//				isComboAllowed = true;
-//				break;
-//				}
-//				break;
-//			case 8: // Dwarf
-//				switch(choosebclass) {
-//			case 1: // Warrior
-//			case 2: // Cleric
-//			case 3: // Paladin
-//			case 9: // Rogue
-//			case 16: // Berserker
-//				isComboAllowed = true;
-//				break;
-//				}
-//				break;
-//			case 9: // Troll
-//				switch(choosebclass) {
-//			case 1: // Warrior
-//			case 5: // Shadowknight
-//			case 10: // Shaman
-//			case 15: // Beastlord
-//			case 16: // Berserker
-//				isComboAllowed = true;
-//				break;
-//				}
-//				break;
-//			case 10: // Ogre
-//				switch(choosebclass) {
-//			case 1: // Warrior
-//			case 5: // Shadowknight
-//			case 10: // Shaman
-//			case 15: // Beastlord
-//			case 16: // Berserker
-//				isComboAllowed = true;
-//				break;
-//				}
-//				break;
-//			case 11: // Halfling
-//				switch(choosebclass) {
-//			case 1: // Warrior
-//			case 2: // Cleric
-//			case 3: // Paladin
-//			case 4: // Ranger
-//			case 6: // Druid
-//			case 9: // Rogue
-//				isComboAllowed = true;
-//				break;
-//				}
-//				break;
-//			case 12: // Gnome
-//				switch(choosebclass) {
-//			case 1: // Warrior
-//			case 2: // Cleric
-//			case 3: // Paladin
-//			case 5: // Shadowknight
-//			case 9: // Rogue
-//			case 11: // Necromancer
-//			case 12: // Wizard
-//			case 13: // Magician
-//			case 14: // Enchanter
-//				isComboAllowed = true;
-//				break;
-//				}
-//				break;
-//			case 128: // Iksar
-//				switch(choosebclass) {
-//			case 1: // Warrior
-//			case 5: // Shadowknight
-//			case 7: // Monk
-//			case 10: // Shaman
-//			case 11: // Necromancer
-//			case 15: // Beastlord
-//				isComboAllowed = true;
-//				break;
-//				}
-//				break;
-//			case 130: // Vah Shir
-//				switch(choosebclass) {
-//			case 1: // Warrior
-//			case 8: // Bard
-//			case 9: // Rogue
-//			case 10: // Shaman
-//			case 15: // Beastlord
-//			case 16: // Berserker
-//				isComboAllowed = true;
-//				break;
-//				}
-//				break;
-//			case 330: // Froglok
-//				switch(choosebclass) {
-//			case 1: // Warrior
-//			case 2: // Cleric
-//			case 3: // Paladin
-//			case 5: // Shadowknight
-//			case 9: // Rogue
-//			case 10: // Shaman
-//			case 11: // Necromancer
-//			case 12: // Wizard
-//				isComboAllowed = true;
-//				break;
-//				}
-//				break;
-//		}
-//		if(!isComboAllowed) {
-//			c->Message(15, "That Race/Class combination cannot be created.");
-//			return;
-//		}
-//
-//		const char* botName = sep->arg[2];
-//		if(!botName || (strlen(botName) < 4) || (strlen(botName) > 40)) {
-//			c->Message(15, "%s is too many characters.", botName);
-//			return;
-//		}
-//
-//		for(int i=0; botName[i]; i++) {
-//			if(!isalpha(botName[i])) {
-//				if(botName[i] != '_') {
-//					c->Message(15, "%s can only use A-Z, a-z and _ ", botName);
-//					return;
-//				}
-//			}
-//		}
-//
-//		int spellid = 0;
-//		// base stats
-//		uint16 bstr = 75;
-//		uint16 bsta = 75;
-//		uint16 bdex = 75;
-//		uint16 bagi = 75;
-//		uint16 bwis = 75;
-//		uint16 bint = 75;
-//		uint16 bcha = 75;
-//		uint16 ATK = 5;
-//		sint16 MR = 25;
-//		sint16 FR = 25;
-//		sint16 DR = 15;
-//		sint16 PR = 15;
-//		sint16 CR = 25;
-//
-//		switch(choosebclass) {
-//			case 1: // Warrior
-//				bstr += 10;
-//				bsta += 20;
-//				bagi += 10;
-//				bdex += 10;
-//				ATK += 12;
-//				MR += (1 / 2 + 1);
-//				break;
-//			case 2: // Cleric
-//				spellid = 701;
-//				bstr += 5;
-//				bsta += 5;
-//				bagi += 10;
-//				bwis += 30;
-//				ATK += 8;
-//				break;
-//			case 3: // Paladin
-//				spellid = 708;
-//				bstr += 15;
-//				bsta += 5;
-//				bwis += 15;
-//				bcha += 10;
-//				bdex += 5;
-//				ATK =+ 17;
-//				DR += 8;
-//				break;
-//			case 4: // Ranger
-//				spellid = 710;
-//				bstr += 15;
-//				bsta += 10;
-//				bagi += 10;
-//				bwis += 15;
-//				ATK += 17;
-//				FR += 4;
-//				CR += 4;
-//				break;
-//			case 5: // Shadowknight
-//				spellid = 709;
-//				bstr += 10;
-//				bsta += 15;
-//				bint += 20;
-//				bcha += 5;
-//				ATK += 17;
-//				PR += 4;
-//				DR += 4;
-//				break;
-//			case 6: // Druid
-//				spellid = 707;
-//				bsta += 15;
-//				bwis += 35;
-//				ATK += 5;
-//				break;
-//			case 7: // Monk
-//				bstr += 5;
-//				bsta += 15;
-//				bagi += 15;
-//				bdex += 15;
-//				ATK += 17;
-//				break;
-//			case 8: // Bard
-//				spellid = 711;
-//				bstr += 15;
-//				bdex += 10;
-//				bcha += 15;
-//				bint += 10;
-//				ATK += 17;
-//				break;
-//			case 9: // Rogue
-//				bstr += 10;
-//				bsta += 20;
-//				bagi += 10;
-//				bdex += 10;
-//				ATK += 12;
-//				PR += 8;
-//				break;
-//			case 10: // Shaman
-//				spellid = 706;
-//				bsta += 10;
-//				bwis += 30;
-//				bcha += 10;
-//				ATK += 28;
-//				break;
-//			case 11: // Necromancer
-//				spellid = 703;
-//				bdex += 10;
-//				bagi += 10;
-//				bint += 30;
-//				ATK += 5;
-//				break;
-//			case 12: // Wizard
-//				spellid = 702;
-//				bsta += 20;
-//				bint += 30;
-//				ATK += 5;
-//				break;
-//			case 13: // Magician
-//				spellid = 704;
-//				bsta += 20;
-//				bint += 30;
-//				ATK += 5;
-//				break;
-//			case 14: // Enchanter
-//				spellid = 705;
-//				bint += 25;
-//				bcha += 25;
-//				ATK += 5;
-//				break;
-//			case 15: // Beastlord
-//				spellid = 712;
-//				bsta += 10;
-//				bagi += 10;
-//				bdex += 5;
-//				bwis += 20;
-//				bcha += 5;
-//				ATK += 31;
-//				break;
-//			case 16: // Berserker
-//				bstr += 10;
-//				bsta += 15;
-//				bdex += 15;
-//				bagi += 10;
-//				ATK += 25;
-//				break;
-//		}
-//
-//		int gender = 0;
-//		if(!strcasecmp(sep->arg[5], "female"))
-//			gender = 1;
-//
-//		float bsize = 6;
-//		switch(iRace) {
-//			case 1: // Humans have no race bonus
-//				break;
-//			case 2: // Barbarian
-//				bstr += 28;
-//				bsta += 20;
-//				bagi += 7;
-//				bdex -= 5;
-//				bwis -= 5;
-//				bint -= 10;
-//				bcha -= 20;
-//				bsize = 7;
-//				CR += 10;
-//				break;
-//			case 3: // Erudite
-//				bstr -= 15;
-//				bsta -= 5;
-//				bagi -= 5;
-//				bdex -= 5;
-//				bwis += 8;
-//				bint += 32;
-//				bcha -= 5;
-//				MR += 5;
-//				DR -= 5;
-//				break;
-//			case 4: // Wood Elf
-//				bstr -= 10;
-//				bsta -= 10;
-//				bagi += 20;
-//				bdex += 5;
-//				bwis += 5;
-//				bsize = 5;
-//				break;
-//			case 5: // High Elf
-//				bstr -= 20;
-//				bsta -= 10;
-//				bagi += 10;
-//				bdex -= 5;
-//				bwis += 20;
-//				bint += 12;
-//				bcha += 5;
-//				break;
-//			case 6: // Dark Elf
-//				bstr -= 15;
-//				bsta -= 10;
-//				bagi += 15;
-//				bwis += 8;
-//				bint += 24;
-//				bcha -= 15;
-//				bsize = 5;
-//				break;
-//			case 7: // Half Elf
-//				bstr -= 5;
-//				bsta -= 5;
-//				bagi += 15;
-//				bdex += 10;
-//				bwis -= 15;
-//				bsize = 5.5;
-//				break;
-//			case 8: // Dwarf
-//				bstr += 15;
-//				bsta += 15;
-//				bagi -= 5;
-//				bdex += 15;
-//				bwis += 8;
-//				bint -= 15;
-//				bcha -= 30;
-//				bsize = 4;
-//				MR -= 5;
-//				PR += 5;
-//				break;
-//			case 9: // Troll
-//				bstr += 33;
-//				bsta += 34;
-//				bagi += 8;
-//				bwis -= 15;
-//				bint -= 23;
-//				bcha -= 35;
-//				bsize = 8;
-//				FR -= 20;
-//				break;
-//			case 10: // Ogre
-//				bstr += 55;
-//				bsta += 77;
-//				bagi -= 5;
-//				bdex -= 5;
-//				bwis -= 8;
-//				bint -= 15;
-//				bcha -= 38;
-//				bsize = 9;
-//				break;
-//			case 11: // Halfling
-//				bstr -= 5;
-//				bagi += 20;
-//				bdex += 15;
-//				bwis += 5;
-//				bint -= 8;
-//				bcha -= 25;
-//				bsize = 3.5;
-//				PR += 5;
-//				DR += 5;
-//				break;
-//			case 12: // Gnome
-//				bstr -= 15;
-//				bsta -= 5;
-//				bagi += 10;
-//				bdex += 10;
-//				bwis -= 8;
-//				bint += 23;
-//				bcha -= 15;
-//				bsize = 3;
-//				break;
-//			case 128: // Iksar
-//				bstr -= 5;
-//				bsta -= 5;
-//				bagi += 15;
-//				bdex += 10;
-//				bwis += 5;
-//				bcha -= 20;
-//				MR -= 5;
-//				FR -= 5;
-//				break;
-//			case 130: // Vah Shir
-//				bstr += 15;
-//				bagi += 15;
-//				bdex -= 5;
-//				bwis -= 5;
-//				bint -= 10;
-//				bcha -= 10;
-//				bsize = 7;
-//				MR -= 5;
-//				FR -= 5;
-//				break;
-//			case 330: // Froglok
-//				bstr -= 5;
-//				bsta += 5;
-//				bagi += 25;
-//				bdex += 25;
-//				bcha -= 25;
-//				bsize = 5;
-//				MR -= 5;
-//				FR -= 5;
-//				break;
-//		}
-//
-//		// Randomize facial appearance
-//		int iFace = 0;
-//		if(iRace == 2) { // Barbarian w/Tatoo
-//			iFace = MakeRandomInt(0, 79);
-//		}
-//		else {
-//			iFace = MakeRandomInt(0, 7);
-//		}
-//		int iHair = 0;
-//		int iBeard = 0;
-//		int iBeardColor = 1;
-//		if(gender) {
-//			iHair = MakeRandomInt(0, 2);
-//			if(iRace == 8) { // Dwarven Females can have a beard
-//				if(MakeRandomInt(1, 100) < 50) {
-//					iFace += 10;
-//				}
-//			}
-//		}
-//		else {
-//			iHair = MakeRandomInt(0, 3);
-//			iBeard = MakeRandomInt(0, 5);
-//			iBeardColor = MakeRandomInt(0, 19);
-//		}
-//		int iHairColor = MakeRandomInt(0, 19);
-//		int iEyeColor1 = MakeRandomInt(0, 9);
-//		int iEyeColor2 = 0;
-//		if(MakeRandomInt(1, 100) > 96) {
-//			iEyeColor2 = MakeRandomInt(0, 9);
-//		}
-//		else {
-//			iEyeColor2 = iEyeColor1;
-//		}
-//
-//		// Base AC
-//		int bac = (1 * 3) * 4;
-//		switch(choosebclass) {
-//			case WARRIOR:
-//			case SHADOWKNIGHT:
-//			case PALADIN:
-//				bac = bac*1.5;
-//		}
-//
-//		// Calc Base Hit Points
-//		int16 multiplier = 1;
-//		switch(choosebclass) {
-//			case WARRIOR:
-//				multiplier = 220;
-//				break;
-//			case DRUID:
-//			case CLERIC:
-//			case SHAMAN:
-//				multiplier = 150;
-//				break;
-//			case BERSERKER:
-//			case PALADIN:
-//			case SHADOWKNIGHT:
-//				multiplier = 210;
-//				break;
-//			case MONK:
-//			case BARD:
-//			case ROGUE:
-//			case BEASTLORD:
-//				multiplier = 180;
-//				break;
-//			case RANGER:
-//				multiplier = 200;
-//				break;
-//			case MAGICIAN:
-//			case WIZARD:
-//			case NECROMANCER:
-//			case ENCHANTER:
-//				multiplier = 120;
-//				break;
-//		}
-//		int16 lm = multiplier;
-//		int16 Post255;
-//		if((bsta-255)/2 > 0)
-//			Post255 = (bsta-255)/2;
-//		else
-//			Post255 = 0;
-//		int base_hp = (5)+(1*lm/10) + (((bsta-Post255)*1*lm/3000)) + ((Post255*1)*lm/6000);
-//
-//		// save bot to the database
-//		char errbuf[MYSQL_ERRMSG_SIZE];
-//		char *query = 0;
-//		MYSQL_RES *result;
-//		MYSQL_ROW row;
-//		const char* lname = "";
-//
-//		if(database.RunQuery(query, MakeAnyLenString(&query, "SELECT count(*) FROM npc_types WHERE name like '%s'", sep->arg[2]), errbuf, &result)) {
-//			row = mysql_fetch_row(result);
-//			if(atoi(row[0]) != 0) {
-//				c->Message(15, "%s already exists, try a different name.", sep->arg[2]);
-//			}
-//			else if(database.RunQuery(query, MakeAnyLenString(&query, "SELECT count(*) FROM character_ WHERE name like '%s'", sep->arg[2]), errbuf, &result)) {
-//				row = mysql_fetch_row(result);
-//				if(atoi(row[0]) != 0) {
-//					c->Message(15, "%s already exists, try a different name.", sep->arg[2]);
-//				}
-//				else if(database.RunQuery(query, MakeAnyLenString(&query, "INSERT INTO npc_types (name,lastname,level,race,class,bodytype,hp,gender,size,hp_regen_rate,mana_regen_rate,npc_spells_id,npc_faction_id,face,luclin_hairstyle,luclin_haircolor,luclin_eyecolor,luclin_eyecolor2,luclin_beardcolor,luclin_beard,runspeed,MR,CR,DR,FR,PR,AC,STR,STA,DEX,AGI,_INT,WIS,CHA,isbot,ATK) VALUES ('%s','%s', %i, %i, %i, %i, %i, %i, %f, %i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %f, %i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %i)", botName,lname,1,atoi(sep->arg[4]),atoi(sep->arg[3]),1,base_hp,gender,bsize,0,0,spellid,0,iFace,iHair,iHairColor,iEyeColor1,iEyeColor2,iBeardColor,iBeard,2.501f,MR,CR,DR,FR,PR,bac,bstr,bsta,bdex,bagi,bint,bwis,bcha,1,ATK), errbuf, 0)) {
-//					if(database.RunQuery(query, MakeAnyLenString(&query, "SELECT MAX(id) from npc_types where name='%s' and isBot=1", sep->arg[2]), errbuf, &result)) {
-//						if(row = mysql_fetch_row(result)) {
-//							database.SetBotOwner(atoi(row[0]), c->AccountID());
-//							c->Message(15, "Bot created: %s", row[0]);
-//						}
-//					}
-//				}
-//				else {
-//					c->Message(15, "Error while creating your bot... %s", errbuf);
-//				}
-//			}
-//		}
-//		else {
-//			c->Message(15, "Error while creating your bot... %s", errbuf);
-//		}
-//		safe_delete_array(query);
-//		mysql_free_result(result);
-//		return;
-//	}
+	if(!strcasecmp(sep->arg[1], "create")) {
+		if(sep->arg[2][0] == '\0' || sep->arg[3][0] == '\0' || sep->arg[4][0] == '\0' || sep->arg[5][0] == '\0' || sep->arg[6][0] != '\0') {
+			c->Message(15, "Usage: #bot create [name] [class(id)] [race(id)] [gender (male/female)]");
+			return;
+		}
+		else if(strcasecmp(sep->arg[3],"1") && strcasecmp(sep->arg[3],"2") && strcasecmp(sep->arg[3],"3") && strcasecmp(sep->arg[3],"4") && strcasecmp(sep->arg[3],"5") && strcasecmp(sep->arg[3],"6") && strcasecmp(sep->arg[3],"7") && strcasecmp(sep->arg[3],"8") && strcasecmp(sep->arg[3],"9") && strcasecmp(sep->arg[3],"10") && strcasecmp(sep->arg[3],"11") && strcasecmp(sep->arg[3],"12") && strcasecmp(sep->arg[3],"13") && strcasecmp(sep->arg[3],"14") && strcasecmp(sep->arg[3],"15") && strcasecmp(sep->arg[3],"16")) {
+			c->Message(15, "Usage: #bot create [name] [class(id)] [race(id)] [gender (male/female)]");
+			return;
+		}		
+		else if(strcasecmp(sep->arg[4],"1") && strcasecmp(sep->arg[4],"2") && strcasecmp(sep->arg[4],"3") && strcasecmp(sep->arg[4],"4") && strcasecmp(sep->arg[4],"5") && strcasecmp(sep->arg[4],"6") && strcasecmp(sep->arg[4],"7") && strcasecmp(sep->arg[4],"8") && strcasecmp(sep->arg[4],"9") && strcasecmp(sep->arg[4],"10") && strcasecmp(sep->arg[4],"11") && strcasecmp(sep->arg[4],"12") && strcasecmp(sep->arg[4],"330") && strcasecmp(sep->arg[4],"128") && strcasecmp(sep->arg[4],"130")) {
+			c->Message(15, "Usage: #bot create [name] [class(1-16)] [race(1-12,128,130,330)] [gender (male/female)]");
+			return;
+		}
+		else if(strcasecmp(sep->arg[5],"male") && strcasecmp(sep->arg[5],"female")) {
+			c->Message(15, "Usage: #bot create [name] [class(1-16)] [race(1-12,128,130,330)] [gender (male/female)]");
+			return;
+		}
 
-//
-//	if(!strcasecmp(sep->arg[1], "help") && !strcasecmp(sep->arg[2], "create") ){
-//		c->Message(15, "Classes:  1(Warrior), 2(Cleric), 3(Paladin), 4(Ranger), 5(Sk), 6(Druid), 7(Monk), 8(Bard), 9(Rogue), 10(Shaman), 11(Necro), 12(Wiz), 13(Mag), 14(Ench), 15(Beast), 16(Bersek)");
-//		c->Message(15, "------------------------------------------------------------------");
-//		c->Message(15, "Races: 1(Human), 2(Barb), 3(Erudit), 4(Wood elf), 5(High elf), 6(Dark elf), 7(Half elf), 8(Dwarf), 9(Troll), 10(Ogre), 11(Halfling), 12(Gnome), 330(Froglok), 128(Iksar), 130(Vah shir)");
-//		c->Message(15, "------------------------------------------------------------------");
-//		c->Message(15, "Usage: #bot create [name] [class(1-16)] [race(1-12,128,130,330)] [gender(male/female)]");
-//		c->Message(15, "Example: #bot create Gandolf 12 1 male");
-//		return;
-//	}
-//
-//	if(!strcasecmp(sep->arg[1], "delete") ) {
-//		if((c->GetTarget() == NULL) || !c->GetTarget()->IsBot())
-//		{
-//			c->Message(15, "You must target a bot!");
-//			return;
-//		}
-//		else if(database.GetBotOwner(c->GetTarget()->GetNPCTypeID()) != c->AccountID())
-//		{
-//			c->Message(15, "You can't delete a bot that you don't own.");
-//			return;
-//		}
-//
-//		if(database.DeleteBot(c->GetTarget()->GetNPCTypeID())) {
-//			c->GetTarget()->Say("...but why?!! We had such good adventures together! gaahhh...glrrrk...");
-//			c->GetTarget()->BotOwner = NULL;
-//			c->GetTarget()->Kill();
-//		}
-//		else {
-//			c->Message(15, "Error deleting Bot!");
-//		}
-//		return;
-//	}
-//
+		if(SpawnedBotCount(c->CharacterID(), &TempErrorMessage) >= RuleI(EQOffline, CreateBotCount)) {
+			c->Message(15, "You cannot create more than %i bots.", RuleI(EQOffline, CreateBotCount));
+			return;
+		}
+
+		if(TempErrorMessage.length() > 0) {
+			// TODO: Log this error message
+			return;
+		}
+
+		int gender = 0;
+		if(!strcasecmp(sep->arg[5], "female"))
+			gender = 1;
+
+		Bot* NewBot = new Bot(std::string(sep->arg[2]), atoi(sep->arg[3]), atoi(sep->arg[4]), gender, c);
+
+		if(NewBot) {
+			if(!NewBot->IsValidRaceClassCombo()) {
+				c->Message(15, "That Race/Class combination cannot be created.");
+				return;
+			}
+
+			if(!NewBot->IsValidName()) {
+				c->Message(15, "%s has invalid characters. You can use only the A-Z, a-z and _ characters in a bot name.", NewBot->GetName());
+				return;
+			}
+
+			if(!NewBot->IsBotNameAvailable(&TempErrorMessage)) {
+				c->Message(15, "The name %s is already being used. Please choose a different name.", NewBot->GetName());
+				return;
+			}
+
+			if(TempErrorMessage.length() > 0) {
+				// TODO: Log this error message
+				return;
+			}
+
+			// Now that all validation is complete, we can save our newly created bot
+			NewBot->SaveBot();
+		}
+		else {
+			// TODO: Log error message here
+		}
+
+		// Bot creation is complete
+		return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "help") && !strcasecmp(sep->arg[2], "create") ){
+		c->Message(15, "Classes:  1(Warrior), 2(Cleric), 3(Paladin), 4(Ranger), 5(Sk), 6(Druid), 7(Monk), 8(Bard), 9(Rogue), 10(Shaman), 11(Necro), 12(Wiz), 13(Mag), 14(Ench), 15(Beast), 16(Bersek)");
+		c->Message(15, "------------------------------------------------------------------");
+		c->Message(15, "Races: 1(Human), 2(Barb), 3(Erudit), 4(Wood elf), 5(High elf), 6(Dark elf), 7(Half elf), 8(Dwarf), 9(Troll), 10(Ogre), 11(Halfling), 12(Gnome), 330(Froglok), 128(Iksar), 130(Vah shir)");
+		c->Message(15, "------------------------------------------------------------------");
+		c->Message(15, "Usage: #bot create [name] [class(1-16)] [race(1-12,128,130,330)] [gender(male/female)]");
+		c->Message(15, "Example: #bot create Jesuschrist 9 6 male");
+		return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "delete") ) {
+		if((c->GetTarget() == NULL) || !c->GetTarget()->IsBot())
+		{
+			c->Message(15, "You must target a bot!");
+			return;
+		}
+		else if(GetBotOwnerCharacterID(c->GetTarget()->GetNPCTypeID(), &TempErrorMessage) != c->CharacterID())
+		{
+			c->Message(15, "You can't delete a bot that you don't own.");
+			return;
+		}
+
+		if(TempErrorMessage.length() > 0) {
+			// TODO: Log this error message
+			return;
+		}
+
+		// TODO: Replace the code below with something like c->GetTarget()->CastToBot()->DeleteBot()
+		/*
+		if(database.DeleteBot(c->GetTarget()->GetNPCTypeID())) {
+			c->GetTarget()->Say("...but why?!! We had such good adventures together! gaahhh...glrrrk...");
+			c->GetTarget()->BotOwner = NULL;
+			c->GetTarget()->Kill();
+		}
+		else {
+			c->Message(15, "Error deleting Bot!");
+		}
+		*/
+
+		return;
+	}
+
 //	if(!strcasecmp(sep->arg[1], "list")) {
 //
 //		bool listAll = true;
