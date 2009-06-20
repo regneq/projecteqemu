@@ -23,6 +23,14 @@ public:
 	std::string SaveBot();
 	std::string DeleteBot();
 	void Spawn(float xPos, float yPos, float zPos, float heading);
+	void SetBotOwnerCharacterID(uint32 botOwnerCharacterID, std::string* errorMessage);
+
+	// Bot Inventory Class Methods
+	uint32 GetBotItemBySlot(uint32 slotID, std::string* errorMessage);
+	std::list<BotInventory> GetBotItems(std::string* errorMessage);
+	void RemoveBotItemBySlot(uint32 slotID, std::string* errorMessage);
+	void SetBotItemInSlot(uint32 slotID, uint32 itemID, std::string* errorMessage);
+	uint32 GetBotItemsCount(std::string* errorMessage);
 
 	// Static Class Methods
 	static Bot* LoadBot(uint32 botID, std::string* errorMessage);
