@@ -893,6 +893,133 @@ uint32 Bot::GetBotLeader(uint32 botID, std::string* errorMessage) {
 	return Result;
 }
 
+void Bot::SetBotOwnerCharacterID(uint32 botOwnerCharacterID, std::string* errorMessage) {
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+
+	if(this->_botID > 0 && botOwnerCharacterID > 0) {
+		if(!database.RunQuery(query, MakeAnyLenString(&query, "REPLACE INTO botsowners SET botleadercharacterid = %i, botnpctypeid = %i", botOwnerCharacterID, this->_botID), errbuf)) {
+			*errorMessage = std::string(errbuf);
+		}
+		else
+		{
+			this->_botOwnerCharacterID = botOwnerCharacterID;
+		}
+
+		safe_delete_array(query);
+	}
+}
+
+void Bot::SetBotItemInSlot(uint32 slotID, uint32 itemID, std::string *errorMessage) {
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+
+	if(this->_botID > 0 && slotID > 0 && itemID > 0) {
+		if(!database.RunQuery(query, MakeAnyLenString(&query, "REPLACE INTO botinventory SET npctypeid = %i, botslotid = %i, itemid = %i", this->_botID, slotID, itemID), errbuf)) {
+			*errorMessage = std::string(errbuf);
+		}
+
+		safe_delete_array(query);
+	}
+}
+
+void Bot::RemoveBotItemBySlot(uint32 slotID, std::string *errorMessage) {
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+
+	if(this->_botID > 0 && slotID > 0) {
+		if(!database.RunQuery(query, MakeAnyLenString(&query, "DELETE FROM botinventory WHERE npctypeid=%i AND botslotid=%i", this->_botID, slotID), errbuf)){
+			*errorMessage = std::string(errbuf);
+		}
+
+		safe_delete_array(query);
+	}
+}
+
+std::list<BotInventory> Bot::GetBotItems(std::string *errorMessage) {
+	std::list<BotInventory> Result;
+
+	if(this->_botID > 0) {
+		char errbuf[MYSQL_ERRMSG_SIZE];
+		char* query = 0;
+		MYSQL_RES* DatasetResult;
+		MYSQL_ROW DataRow;
+
+		if(database.RunQuery(query, MakeAnyLenString(&query, "SELECT botslotid, itemid FROM botinventory WHERE npctypeid=%i order by botslotid", this->_botID), errbuf, &DatasetResult)) {
+			if(mysql_num_rows(DatasetResult) > 0) {
+				DataRow = mysql_fetch_row(DatasetResult);
+				
+				BotInventory TempBotInventoryItem;
+				TempBotInventoryItem.BotID = this->_botID;
+				TempBotInventoryItem.BotSlotID = atoi(DataRow[0]);
+				TempBotInventoryItem.ItemID = atoi(DataRow[1]);
+				
+				Result.push_back(TempBotInventoryItem);
+			}
+
+			mysql_free_result(DatasetResult);
+		}
+		else
+			*errorMessage = std::string(errbuf);
+
+		safe_delete_array(query);
+	}
+
+	return Result;
+}
+
+uint32 Bot::GetBotItemBySlot(uint32 slotID, std::string *errorMessage) {
+	uint32 Result = 0;
+
+	if(this->_botID > 0 && slotID > 0) {
+		char errbuf[MYSQL_ERRMSG_SIZE];
+		char* query = 0;
+		MYSQL_RES* DatasetResult;
+		MYSQL_ROW DataRow;
+
+		if(database.RunQuery(query, MakeAnyLenString(&query, "SELECT itemid FROM botinventory WHERE npctypeid=%i AND botslotid=%i", this->_botID, slotID), errbuf, &DatasetResult)) {
+			if(mysql_num_rows(DatasetResult) == 1) {
+				DataRow = mysql_fetch_row(DatasetResult);
+				Result = atoi(DataRow[0]);
+			}
+
+			mysql_free_result(DatasetResult);
+		}
+		else
+			*errorMessage = std::string(errbuf);
+
+		safe_delete_array(query);
+	}
+
+	return Result;
+}
+
+uint32 Bot::GetBotItemsCount(std::string *errorMessage) {
+	uint32 Result = 0;
+
+	if(this->_botID > 0) {
+		char errbuf[MYSQL_ERRMSG_SIZE];
+		char* query = 0;
+		MYSQL_RES* DatasetResult;
+		MYSQL_ROW DataRow;
+
+		if(database.RunQuery(query, MakeAnyLenString(&query, "SELECT COUNT(*) FROM botinventory WHERE npctypeid=%i", this->_botID), errbuf, &DatasetResult)) {
+			if(mysql_num_rows(DatasetResult) == 1) {
+				DataRow = mysql_fetch_row(DatasetResult);
+				Result = atoi(DataRow[0]);
+			}
+
+			mysql_free_result(DatasetResult);
+		}
+		else
+			*errorMessage = std::string(errbuf);
+
+		safe_delete_array(query);
+	}
+
+	return Result;
+}
+
 static Bot* LoadBot(uint32 botID, std::string* errorMessage) {
 	Bot* Result = 0;
 
@@ -912,8 +1039,9 @@ static Bot* LoadBot(uint32 botID, std::string* errorMessage) {
 			}
 
 			mysql_free_result(DatasetResult);
-			safe_delete_array(Query);
 		}
+
+		safe_delete_array(Query);
 	}
 
 	return Result;
@@ -940,21 +1068,24 @@ static std::list<SpawnedBotsList> ListSpawnedBots(uint32 characterID, std::strin
 		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT bot_name, zone_name FROM botleader WHERE leaderid=%i", characterID), ErrBuf, &DatasetResult)) {
 			*errorMessage = std::string(ErrBuf);
 		}
+		else {
+			uint32 RowCount = mysql_num_rows(DatasetResult);
 
-		uint32 RowCount = mysql_num_rows(DatasetResult);
-		if(RowCount > 0) {
-			for(int iCounter = 0; iCounter < RowCount; iCounter++) {
-				DataRow = mysql_fetch_row(DatasetResult);
-				SpawnedBotsList TempSpawnedBotsList;
-				TempSpawnedBotsList.BotLeaderCharID = characterID;
-				strcpy(TempSpawnedBotsList.BotName, DataRow[0]);
-				strcpy(TempSpawnedBotsList.ZoneName, DataRow[1]);
+			if(RowCount > 0) {
+				for(int iCounter = 0; iCounter < RowCount; iCounter++) {
+					DataRow = mysql_fetch_row(DatasetResult);
+					SpawnedBotsList TempSpawnedBotsList;
+					TempSpawnedBotsList.BotLeaderCharID = characterID;
+					strcpy(TempSpawnedBotsList.BotName, DataRow[0]);
+					strcpy(TempSpawnedBotsList.ZoneName, DataRow[1]);
 
-				Result.push_back(TempSpawnedBotsList);
+					Result.push_back(TempSpawnedBotsList);
+				}
 			}
+
+			mysql_free_result(DatasetResult);
 		}
 
-		mysql_free_result(DatasetResult);
 		safe_delete_array(Query);
 	}
 
