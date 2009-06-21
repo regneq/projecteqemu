@@ -728,7 +728,7 @@ void Mob::InterruptSpell(int16 message, int16 color, int16 spellid)
 			message_other = SONG_ENDS_ABRUPTLY_OTHER;
 			break;
 		case MISS_NOTE:
-			message_other = MISS_NOTE_OTHER;
+			message_other = MISSED_NOTE_OTHER;
 			break;
 		case SPELL_FIZZLE:
 			message_other = SPELL_FIZZLE_OTHER;

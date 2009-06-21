@@ -684,6 +684,7 @@ public:
 
 	void	ChangeSQLLog(const char *file);
 	void	LogSQL(const char *fmt, ...);
+	bool	CanFish();
 	void	GoFish();
 	void	ForageItem();
 	//Calculate vendor price modifier based on CHA: (reverse==selling)

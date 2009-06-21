@@ -877,7 +877,7 @@ void QuestManager::settime(int8 new_hour, int8 new_min) {
 }
 
 void QuestManager::itemlink(int item_id) {
-	const ItemInst* inst = database.CreateItem(item_id, 20, 99999, 99999, 99999, 99999, 99998);
+	const ItemInst* inst = database.CreateItem(item_id);
 	char* link = 0;
 	if (initiator->MakeItemLink(link, inst))
 		initiator->Message(0, "%s tells you, %c%s%s%c", owner->GetCleanName(), 0x12, link, inst->GetItem()->Name, 0x12);
@@ -1783,7 +1783,7 @@ int32 QuestManager::MerchantCountItem(int32 NPCid, int32 itemid) {
 
 // Item Link for use in Variables - "my $example_link = quest::varlink(item_id);"
 const char* QuestManager::varlink(char* perltext, int item_id) {
-	const ItemInst* inst = database.CreateItem(item_id, 20, 99999, 99999, 99999, 99999, 99998);
+	const ItemInst* inst = database.CreateItem(item_id);
 	if (!inst) return 0;	// return an empty string if the item is invalid
 	char* link = 0;
 	char* tempstr = 0;
