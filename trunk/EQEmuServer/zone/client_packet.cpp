@@ -6055,9 +6055,12 @@ void Client::Handle_OP_Fishing(const EQApplicationPacket *app)
 		Message(13,"Ability recovery time not yet met.");
 		return;
 	}
-	p_timers.Start(pTimerFishing, FishingReuseTime-1);
-
-	fishing_timer.Start();
+	
+	if (CanFish()) {
+		//these will trigger GoFish() after a delay if we're able to actually fish, and if not, we won't stop the client from trying again immediately (although we may need to tell it to repop the button)
+		p_timers.Start(pTimerFishing, FishingReuseTime-1);
+		fishing_timer.Start();
+	}
 	return;
 // Changes made based on Bobs work on foraging.  Now can set items in the forage database table to
 // forage for.

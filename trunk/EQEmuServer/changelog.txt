@@ -4,6 +4,10 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==06/20/2009==
 WildcardX: Migrated more code for BOTS from database.cpp to bot.cpp.
 AndMetal: Added rule 'Zone:PEQZoneReuseTime' to adjust the reuse time on the #peqzone command. Defaults to 300 per change in Rev 612.
+AndMetal: Correction to the item link code used in quests.
+AndMetal: Cleaned up zone/StringIDs.h to make it easier to read, plus added some additional String IDs.
+AndMetal: Cleaned up fishing some.
+AndMetal: Fishing failures should now happen immediately instead of waiting for the timer to run.
 
 Optional SQL: /utils/sql/svn/699_peqzone_rule.sql
 

@@ -200,49 +200,26 @@ int32 ZoneDatabase::GetZoneFishing(int32 ZoneID, int8 skill, uint32 &npc_id, uin
 	return ret;
 }
 
-void Client::GoFish()
-{
-	
-	fishing_timer.Disable();
-	
-	//multiple entries yeilds higher probability of dropping...
-	uint32 common_fish_ids[MAX_COMMON_FISH_IDS] = {
-		1038, // Tattered Cloth Sandals
-		1038, // Tattered Cloth Sandals
-		1038, // Tattered Cloth Sandals
-		13019, // Fresh Fish
-		13076, // Fish Scales
-		13076, // Fish Scales
-            7007, // Rusty Dagger
-		7007, // Rusty Dagger
-            7007 // Rusty Dagger
-		
-	};
-	
-	//success formula is not researched at all
-	
-	int fishing_skill = GetSkill(FISHING);	//will take into account skill bonuses on pole & bait
-	
+//we need this function to immediately determine, after we receive OP_Fishing, if we can even try to fish, otherwise we have to wait a while to get the failure
+bool Client::CanFish() {
 	//make sure we still have a fishing pole on:
 	const ItemInst* Pole = m_inv[SLOT_PRIMARY];
 	sint32 bslot = m_inv.HasItemByUse(ItemTypeFishingBait, 1, invWhereWorn|invWherePersonal);
 	const ItemInst* Bait = NULL;
 	if(bslot != SLOT_INVALID)
 		Bait = m_inv.GetItem(bslot);
-	
-	if(!Pole || !Bait) {
-		Message(0, "You are missing a fishing pole or bait.");
-		return;
+
+	if(!Pole || !Pole->IsType(ItemClassCommon) || Pole->GetItem()->ItemType != ItemTypeFishingPole) {
+		if (m_inv.HasItemByUse(ItemTypeFishingPole, 1, invWhereWorn|invWherePersonal|invWhereBank|invWhereSharedBank|invWhereTrading|invWhereCursor))	//We have a fishing pole somewhere, just not equipped
+			Message_StringID(0, FISHING_EQUIP_POLE);	//You need to put your fishing pole in your primary hand.
+		else	//We don't have a fishing pole anywhere
+			Message_StringID(0, FISHING_NO_POLE);	//You can't fish without a fishing pole, go buy one.
+		return false;
 	}
-	
-	if(!Pole->IsType(ItemClassCommon) || Pole->GetItem()->ItemType != ItemTypeFishingPole) {
-		Message(0, "You do not have a fishing pole equipped.");
-		return;
-	}
-	
-	if(!Bait->IsType(ItemClassCommon) || Bait->GetItem()->ItemType != ItemTypeFishingBait) {
-		Message(0, "You do not have any bait.");
-		return;
+
+	if (!Bait || !Bait->IsType(ItemClassCommon) || Bait->GetItem()->ItemType != ItemTypeFishingBait) {
+		Message_StringID(0, FISHING_NO_BAIT);	//You can't fish without fishing bait, go buy some.
+		return false;
 	}
 
 	if(zone->map!=NULL && zone->watermap != NULL && RuleB(Watermap, CheckForWaterWhenFishing)) {
@@ -267,20 +244,60 @@ void Client::GoFish()
 		NodeRef n = zone->map->SeekNode( zone->map->GetRoot(), dest.x, dest.y);
 		if(n != NODE_NONE) {
 			RodZ = zone->map->FindBestZ(n, dest, NULL, NULL) - 1;
+			bool in_lava = zone->watermap->InLava(RodX, RodY, RodZ);
 			bool in_water = zone->watermap->InWater(RodX, RodY, RodZ);
-			//Message(0, "Rod is at %4.3f, %4.3f, %4.3f, InWater says %d", RodX, RodY, RodZ, in_water);
-			if((z_pos-RodZ)>LineLength) {
-				// The water is too far below us
-				Message(0, "Trying to catch land sharks perhaps?");
-				return;
+			//Message(0, "Rod is at %4.3f, %4.3f, %4.3f, InWater says %d, InLava says %d", RodX, RodY, RodZ, in_water, in_lava);
+			if (in_lava) {
+				Message_StringID(0, FISHING_LAVA);	//Trying to catch a fire elemental or something?
+				return false;
 			}
-			if(!in_water) {
-				Message(0, "Trying to catch land sharks perhaps?");
-				return;
+			if((!in_water) || (z_pos-RodZ)>LineLength) {	//Didn't hit the water OR the water is too far below us
+				Message_StringID(0, FISHING_LAND);	//Trying to catch land sharks perhaps?
+				return false;
 			}
 		}
 	}
+	return true;
+}
 
+void Client::GoFish()
+{
+
+	//TODO: generate a message if we're already fishing
+	/*if (!fishing_timer.Check()) {	//this isn't the right check, may need to add something to the Client class like 'bool is_fishing'
+		Message_StringID(0, ALREADY_FISHING);	//You are already fishing!
+		return;
+	}*/
+
+	fishing_timer.Disable();
+
+	//we're doing this a second time (1st in Client::Handle_OP_Fishing) to make sure that, between when we started fishing & now, we're still able to fish (in case we move, change equip, etc)
+	if (!CanFish())	//if we can't fish here, we don't need to bother with the rest
+		return;
+
+	//multiple entries yeilds higher probability of dropping...
+	uint32 common_fish_ids[MAX_COMMON_FISH_IDS] = {
+		1038, // Tattered Cloth Sandals
+		1038, // Tattered Cloth Sandals
+		1038, // Tattered Cloth Sandals
+		13019, // Fresh Fish
+		13076, // Fish Scales
+		13076, // Fish Scales
+            7007, // Rusty Dagger
+		7007, // Rusty Dagger
+            7007 // Rusty Dagger
+		
+	};
+	
+	//success formula is not researched at all
+	
+	int fishing_skill = GetSkill(FISHING);	//will take into account skill bonuses on pole & bait
+	
+	//make sure we still have a fishing pole on:
+	sint32 bslot = m_inv.HasItemByUse(ItemTypeFishingBait, 1, invWhereWorn|invWherePersonal);
+	const ItemInst* Bait = NULL;
+	if(bslot != SLOT_INVALID)
+		Bait = m_inv.GetItem(bslot);
 
 	//if the bait isnt equipped, need to add its skill bonus
 	if(bslot >= IDX_INV && Bait->GetItem()->SkillModType == FISHING) {
@@ -351,9 +368,13 @@ void Client::GoFish()
 		//chance to use bait when you dont catch anything...
 		if (MakeRandomInt(0, 4) == 1) {
 			DeleteItemInInventory(bslot, 1, true);	//do we need client update?
-			Message_StringID(MT_Skills, FISHING_LOST_BAIT);	//lost bait
+			Message_StringID(MT_Skills, FISHING_LOST_BAIT);	//You lost your bait!
 		} else {
-			Message_StringID(MT_Skills, FISHING_FAILED);
+			if (MakeRandomInt(0, 15) == 1)	//give about a 1 in 15 chance to spill your beer. we could make this a rule, but it doesn't really seem worth it
+				//TODO: check for & consume an alcoholic beverage from inventory when this triggers, and set it as a rule that's disabled by default
+				Message_StringID(MT_Skills, FISHING_SPILL_BEER);	//You spill your beer while bringing in your line.
+			else
+				Message_StringID(MT_Skills, FISHING_FAILED);	//You didn't catch anything.
 		}
 	}
 	
@@ -361,7 +382,7 @@ void Client::GoFish()
 	//this is potentially exploitable in that they can fish
 	//and then swap out items in primary slot... too lazy to fix right now
 	if (MakeRandomInt(0, 49) == 1) {
-		Message_StringID(MT_Skills,169);
+		Message_StringID(MT_Skills, FISHING_POLE_BROKE);	//Your fishing pole broke!
 		DeleteItemInInventory(13,0,true);
 	}
 

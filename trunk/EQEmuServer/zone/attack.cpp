@@ -1427,7 +1427,7 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte)
 		}
 		if (((damage < 0) || slippery_attack) && !bRiposte) { // Hack to still allow Strikethrough chance w/ Slippery Attacks AA
 			if(MakeRandomInt(0, 100) < (itembonuses.StrikeThrough + spellbonuses.StrikeThrough + aaStrikethroughBonus)) {
-				Message_StringID(MT_StrikeThrough, 9078); // You strike through your opponents defenses!
+				Message_StringID(MT_StrikeThrough, STRIKETHROUGH_STRING); // You strike through your opponents defenses!
 				Attack(other, Hand, true); // Strikethrough only gives another attempted hit
 				return false;
 			}
