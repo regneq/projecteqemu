@@ -1050,6 +1050,7 @@ const NPCType* ZoneDatabase::GetNPCType (uint32 id) {
 			"npc_types.drakkin_heritage,"
 			"npc_types.drakkin_tattoo,"
 			"npc_types.drakkin_details,"
+			"npc_types.armortint_id,"
 			"npc_types.armortint_red,"
 			"npc_types.armortint_green,"
 			"npc_types.armortint_blue,"
@@ -1140,10 +1141,77 @@ const NPCType* ZoneDatabase::GetNPCType (uint32 id) {
 				tmpNPCType->drakkin_heritage = atoi(row[r++]);
 				tmpNPCType->drakkin_tattoo = atoi(row[r++]);
 				tmpNPCType->drakkin_details = atoi(row[r++]);
-				tmpNPCType->armor_tint = (atoi(row[r++]) & 0xFF) << 16;
-				tmpNPCType->armor_tint |= (atoi(row[r++]) & 0xFF) << 8;
-				tmpNPCType->armor_tint |= (atoi(row[r++]) & 0xFF);
-				tmpNPCType->armor_tint |= (tmpNPCType->armor_tint) ? (0xFF << 24) : 0;
+				uint32 armor_tint_id = atoi(row[r++]);
+				tmpNPCType->armor_tint[0] = (atoi(row[r++]) & 0xFF) << 16;
+				tmpNPCType->armor_tint[0] |= (atoi(row[r++]) & 0xFF) << 8;
+				tmpNPCType->armor_tint[0] |= (atoi(row[r++]) & 0xFF);
+				tmpNPCType->armor_tint[0] |= (tmpNPCType->armor_tint[0]) ? (0xFF << 24) : 0;
+
+				int i;
+				if (armor_tint_id > 0)
+				{
+					if (tmpNPCType->armor_tint[0] == 0)
+					{
+						char at_errbuf[MYSQL_ERRMSG_SIZE];
+						char *at_query = NULL;
+						MYSQL_RES *at_result = NULL;
+						MYSQL_ROW at_row;
+
+						MakeAnyLenString(&at_query,
+						"SELECT "
+						"red1h,grn1h,blu1h,"
+						"red2c,grn2c,blu2c,"
+						"red3a,grn3a,blu3a,"
+						"red4b,grn4b,blu4b,"
+						"red5g,grn5g,blu5g,"
+						"red6l,grn6l,blu6l,"
+						"red7f,grn7f,blu7f,"
+						"red8x,grn8x,blu8x,"
+						"red9x,grn9x,blu9x "
+						"FROM npc_types_tint WHERE id=%d", armor_tint_id);
+
+						if (RunQuery(at_query, strlen(at_query), at_errbuf, &at_result))
+						{
+							if ((at_row = mysql_fetch_row(at_result)))
+							{
+								for (i = 0; i < MAX_MATERIALS; i++)
+								{
+									tmpNPCType->armor_tint[i] = atoi(at_row[i * 3]) << 16;
+									tmpNPCType->armor_tint[i] |= atoi(at_row[i * 3 + 1]) << 8;
+									tmpNPCType->armor_tint[i] |= atoi(at_row[i * 3 + 2]);
+									tmpNPCType->armor_tint[i] |= (tmpNPCType->armor_tint[i]) ? (0xFF << 24) : 0;
+								}
+							}
+							else
+							{
+								armor_tint_id = 0;
+							}
+						}
+						else
+						{
+							armor_tint_id = 0;
+						}
+
+						if (at_result)
+						{
+							mysql_free_result(at_result);
+						}
+
+						safe_delete_array(at_query);
+					}
+					else
+					{
+						armor_tint_id = 0;
+					}
+				}
+
+				if (armor_tint_id == 0)
+				{
+					for (i = 1; i < MAX_MATERIALS; i++)
+					{
+						tmpNPCType->armor_tint[i] = tmpNPCType->armor_tint[0];
+					}
+				}
 
 				tmpNPCType->see_invis = atoi(row[r++])==0?false:true;			// Set see_invis flag
 				tmpNPCType->see_invis_undead = atoi(row[r++])==0?false:true;	// Set see_invis_undead flag

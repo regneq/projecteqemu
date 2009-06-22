@@ -558,7 +558,22 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage)
 			bBlockFromRear = true;
 	}
 
-/* Trying to add Shield Block AA, but this isn't working yet
+	if (damage > 0 && CanThisClassBlock() && (!other->BehindMob(this, other->GetX(), other->GetY()) || bBlockFromRear)) {
+		skill = CastToClient()->GetSkill(BLOCKSKILL);
+		if (IsClient()) {
+			if (!other->IsClient() && GetLevelCon(other->GetLevel()) != CON_GREEN)
+				this->CastToClient()->CheckIncreaseSkill(BLOCKSKILL, -10);
+		}
+		
+		if (!ghit) {	//if they are not using a garunteed hit discipline
+			bonus = 2.0 + skill/35.0 + (GetDEX()/200);
+			RollTable[1] = RollTable[0] + bonus;
+		}
+	}
+	else{
+		RollTable[1] = RollTable[0];
+	}
+
 	if(damage > 0 && GetAA(aaShieldBlock) && (!other->BehindMob(this, other->GetX(), other->GetY()))) {
 		bool equiped = CastToClient()->m_inv.GetItem(14);
 		if(equiped) {
@@ -578,22 +593,6 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage)
 				}
 			}
 		}
-	}
-*/
-	if (damage > 0 && CanThisClassBlock() && (!other->BehindMob(this, other->GetX(), other->GetY()) || bBlockFromRear)) {
-		skill = CastToClient()->GetSkill(BLOCKSKILL);
-		if (IsClient()) {
-			if (!other->IsClient() && GetLevelCon(other->GetLevel()) != CON_GREEN)
-				this->CastToClient()->CheckIncreaseSkill(BLOCKSKILL, -10);
-		}
-		
-		if (!ghit) {	//if they are not using a garunteed hit discipline
-			bonus = 2.0 + skill/35.0 + (GetDEX()/200);
-			RollTable[1] = RollTable[0] + bonus;
-		}
-	}
-	else{
-		RollTable[1] = RollTable[0];
 	}
 
 	//////////////////////////////////////////////////////		

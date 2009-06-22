@@ -1155,7 +1155,7 @@ bool ZoneDatabase::GetTradeRecipe(uint32 recipe_id, uint8 c_type, uint32 some_id
 	
 	//Pull the on-success items...
 	qlen = MakeAnyLenString(&query, "SELECT item_id,successcount FROM tradeskill_recipe_entries"
-	 " WHERE successcount>0 AND componentcount=0 AND recipe_id=%u", recipe_id);
+	 " WHERE successcount>0 AND recipe_id=%u", recipe_id);
 	 
 	if (!RunQuery(query, qlen, errbuf, &result)) {
 		LogFile->write(EQEMuLog::Error, "Error in GetTradeRecept success query '%s': %s", query, errbuf);
@@ -1190,7 +1190,7 @@ bool ZoneDatabase::GetTradeRecipe(uint32 recipe_id, uint8 c_type, uint32 some_id
 	
 	//Pull the on-fail items...
 	qlen = MakeAnyLenString(&query, "SELECT item_id,failcount FROM tradeskill_recipe_entries"
-	 " WHERE failcount>0 AND componentcount=0 AND recipe_id=%u", recipe_id);
+	 " WHERE failcount>0 AND recipe_id=%u", recipe_id);
 
 	spec->onfail.clear();
 	if (RunQuery(query, qlen, errbuf, &result)) {
