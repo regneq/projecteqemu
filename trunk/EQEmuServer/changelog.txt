@@ -4,8 +4,10 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 Trevius: (Rabayn) When creating recipes, it is no longer required that componentcount be on separate rows from the successcount or failcount row.
 Trevius: (takatok) AA Shield Block added.
 Trevius: (Shendare) Armor Tint on NPCs can now be set on a per-slot basis.
+cavedude: Added rules to disable/change #peqzone debuffs. Cleaned up code regarding it some.
 
 Required SQL: /utils/sql/svn/702_aashieldblock_tint_table.sql
+/utils/sql/svn/703_peqzone_rule.sql
 
 ==06/20/2009==
 WildcardX: Migrated more code for BOTS from database.cpp to bot.cpp.

@@ -121,7 +121,10 @@ RULE_REAL ( Zone, MQWarpDetectorDistance, 4900 ) //Lieka:  Distance a player mus
 RULE_REAL ( Zone, MQWarpLagThreshold, 140 ) //Lieka:  Distance beyond the Zone:MQWarpDetectorDistance that a player must travel within the MQWarpThresholdTimer amount of time before tripping the MQWarp detector.  Set to 0 to disable this feature.
 RULE_REAL ( Zone, MQWarpThresholdTimer, 90000 ) //Lieka:  Amount of time before the warp_threshold resets to the Zone:MQWarpLagThreshold value.  Default: 90000 (900 seconds/15 minutes).  Set to -1 to disable this feature.
 RULE_INT ( Zone, AutoShutdownDelay, 5000 ) //How long a dynamic zone stays loaded while empty
-RULE_INT ( Zone, PEQZoneReuseTime, 300 )	//How long, in seconds, until you can reuse the #peqzone command. Used to be 900, but was changed to 300 in Rev 612
+RULE_INT ( Zone, PEQZoneReuseTime, 900 )	//How long, in seconds, until you can reuse the #peqzone command.
+RULE_INT ( Zone, PEQZoneDebuff1, 4454 )	    //First debuff casted by #peqzone Default is Cursed Keeper's Blight.
+RULE_INT ( Zone, PEQZoneDebuff2, 2209  )	//Second debuff casted by #peqzone Default is Tendrils of Apathy.
+RULE_BOOL ( Zone, UsePEQZoneDebuffs, true )	//Will determine if #peqzone will debuff players or not when used.
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Map )

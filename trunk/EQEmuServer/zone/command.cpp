@@ -193,7 +193,7 @@ int command_init(void) {
 		command_add("zone","[zonename] [x] [y] [z] - Go to specified zone (coords optional)",50,command_zone) ||
 		command_add("zoneinstance","[instanceid] [x] [y] [z] - Go to specified instance zone (coords optional)",50,command_zone_instance) ||
         command_add("peqzone","[zonename] - Go to specified zone, if you have > 75% health",0,command_peqzone) ||
-		command_add("tgczone","[zonename] - Go to specified zone, if you have > 75% health",1,command_tgczone) ||
+		command_add("tgczone",NULL,0,command_peqzone) ||
 		command_add("showbuffs","- List buffs active on your target or you if no target",50,command_showbuffs) ||
 		command_add("movechar","[charname] [zonename] - Move charname to zonename",50,command_movechar) ||
 		command_add("viewpetition","[petition number] - View a petition",20,command_viewpetition) ||
@@ -1572,77 +1572,10 @@ void command_peqzone(Client *c, const Seperator *sep)
                        return;
                }
        }       
- 
-       //a couple good ol cripling effects. This will not work in zones that are no combat.
-       c->SpellOnTarget(4454, c); //Cursed Keeper's Blight
-       c->SpellOnTarget(2209, c); //Tendrils of Apathy
-
-       //zone to safe coords
-       c->CastToClient()->cheat_timer.Start(3500,false);
-       c->GetPTimers().Start(pTimerPeqzoneReuse, 900);
-       c->MovePC(zoneid, 0.0f, 0.0f, 0.0f, 0.0f, 0, ZoneToSafeCoords);
-}
-
-void command_tgczone(Client *c, const Seperator *sep)
-{
-       int32 timeleft = c->GetPTimers().GetRemainingTime(pTimerPeqzoneReuse)/60;
-
-       if(!c->GetPTimers().Expired(&database, pTimerPeqzoneReuse, false)) {
-               c->Message(13,"You must wait %i minute(s) before using this ability again.", timeleft);
-               return;
-       }
-       if(c->GetHPRatio() < 75) {
-               c->Message(0, "You cannot use this command with less than 75 percent health.");
-               return;
-       }
-       //this isnt perfect, but its better...
-       if(
-                  c->IsInvisible(c)
-               || c->IsRooted()
-               || c->IsStunned()
-               || c->IsMezzed()
-               || c->AutoAttackEnabled()
-			   || c->GetInvul()
-       ) {
-               c->Message(0, "You cannot use this command in your current state. Settle down and wait.");
-               return;
-       }
-	   uint16 zoneid = 0;
-       uint8 destzone = 0;
-       if (sep->IsNumber(1))
-	   {
-			zoneid = atoi(sep->arg[1]);
-			destzone = database.GetPEQZone(zoneid);
-			if(destzone == 0){
-                       c->Message(13, "You cannot use this command to enter that zone!");
-                       return;               
-               }
-               if(zoneid == zone->GetZoneID()) {
-                       c->Message(13, "You cannot use this command on the zone you are in!");
-                       return;
-               }
+	   if(RuleB (Zone, UsePEQZoneDebuffs)){
+       c->SpellOnTarget(RuleI(Zone, PEQZoneDebuff1), c);
+       c->SpellOnTarget(RuleI(Zone, PEQZoneDebuff2), c);
 	   }
-       else if (sep->arg[1][0] == 0 || sep->IsNumber(2) || sep->IsNumber(3) || sep->IsNumber(4) || sep->IsNumber(5))
-       {
-               c->Message(0, "Usage: #peqzone [zonename]");
-               c->Message(0, "Optional Usage: #peqzone [zoneid]");
-               return;
-       } else {
-			   zoneid = database.GetZoneID(sep->arg[1]);
-			   destzone = database.GetPEQZone(zoneid);
-               if(zoneid == 0) {
-                       c->Message(0, "Unable to locate zone '%s'", sep->arg[1]);
-                       return;
-               }
-               if(destzone == 0){
-                       c->Message(13, "You cannot use this command to enter that zone!");
-                       return;                          
-               }
-               if(zoneid == zone->GetZoneID()) {
-                       c->Message(13, "You cannot use this command on the zone you are in!");
-                       return;
-               }
-       }       
 
        //zone to safe coords
        c->CastToClient()->cheat_timer.Start(3500,false);
