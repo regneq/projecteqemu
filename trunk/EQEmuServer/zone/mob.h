@@ -371,7 +371,7 @@ bool logpos;
 		int32	in_drakkin_heritage,
 		int32	in_drakkin_tattoo,
 		int32	in_drakkin_details,
-		int32	in_armor_tint,
+		int32	in_armor_tint[MAX_MATERIALS],
 		int8	in_aa_title,
 		int8	in_see_invis,			// Mongrel: see through invis
 		int8	in_see_invis_undead,		// Mongrel: see through invis vs. undead
@@ -532,7 +532,7 @@ bool logpos;
 	inline int8	GetDrakkinHeritage()		const { return drakkin_heritage; }
 	inline int8	GetDrakkinTattoo()			const { return drakkin_tattoo; }
 	inline int8	GetDrakkinDetails()			const { return drakkin_details; }
-	inline int32	GetArmorTint()			const { return armor_tint; }
+	inline int32  GetArmorTint(int8 i)		const { return armor_tint[(i < MAX_MATERIALS) ? i : 0]; }
 	inline int8	GetClass()					const { return class_; }
 	inline uint8	GetLevel()				const { return level; }
 	inline const char*	GetName()			const { return name; }
@@ -723,7 +723,7 @@ bool logpos;
 	void	WakeTheDead(int16 spell_id, Mob *target, uint32 duration);
 	void	TryDotCritical(int16 spell_id, Mob *caster, int &damage);
 
-	void	SendIllusionPacket(int16 in_race, int8 in_gender = 0xFF, int16 in_texture = 0xFFFF, int16 in_helmtexture = 0xFFFF, int8 in_haircolor = 0xFF, int8 in_beardcolor = 0xFF, int8 in_eyecolor1 = 0xFF, int8 in_eyecolor2 = 0xFF, int8 in_hairstyle = 0xFF, int8 in_luclinface = 0xFF, int8 in_beard = 0xFF, int8 in_aa_title = 0xFF, int32 in_drakkin_heritage = 0xFFFFFFFF, int32 in_drakkin_tattoo = 0xFFFFFFFF, int32 in_drakkin_details = 0xFFFFFFFF, int32 in_armor_tint = 0xFFFFFFFF);
+	void	SendIllusionPacket(int16 in_race, int8 in_gender = 0xFF, int16 in_texture = 0xFFFF, int16 in_helmtexture = 0xFFFF, int8 in_haircolor = 0xFF, int8 in_beardcolor = 0xFF, int8 in_eyecolor1 = 0xFF, int8 in_eyecolor2 = 0xFF, int8 in_hairstyle = 0xFF, int8 in_luclinface = 0xFF, int8 in_beard = 0xFF, int8 in_aa_title = 0xFF, int32 in_drakkin_heritage = 0xFFFFFFFF, int32 in_drakkin_tattoo = 0xFFFFFFFF, int32 in_drakkin_details = 0xFFFFFFFF, int32* in_armor_tint = 0);
 	
 	static	int32	GetAppearanceValue(EmuAppearance iAppearance);
 	void	SendAppearancePacket(int32 type, int32 value, bool WholeZone = true, bool iIgnoreSelf = false, Client *specific_target=NULL);
@@ -1159,7 +1159,7 @@ protected:
 	int32	drakkin_heritage;
 	int32	drakkin_tattoo;
 	int32	drakkin_details;
-	int32	armor_tint;
+	int32	armor_tint[MAX_MATERIALS];
 
 	int8	aa_title;
 

@@ -86,7 +86,7 @@ Mob::Mob(const char*   in_name,
 		 int32	in_drakkin_heritage,
 		 int32	in_drakkin_tattoo,
 		 int32	in_drakkin_details,
-		 int32	in_armor_tint,
+		 int32	in_armor_tint[MAX_MATERIALS],
 
 		 int8	in_aa_title,
 		 int8	in_see_invis,			// see through invis/ivu
@@ -184,7 +184,6 @@ Mob::Mob(const char*   in_name,
 	drakkin_heritage	= in_drakkin_heritage;
 	drakkin_tattoo		= in_drakkin_tattoo;
 	drakkin_details		= in_drakkin_details;
-	armor_tint	= in_armor_tint;
 	attack_speed= 0;
 	findable	= false;
 	trackable	= true;
@@ -245,6 +244,18 @@ Mob::Mob(const char*   in_name,
 		RangedProcs[j].chance = 0;
 		RangedProcs[j].pTimer = NULL;
     }
+
+	for (i = 0; i < MAX_MATERIALS; i++)
+	{
+		if (in_armor_tint)
+		{
+			armor_tint[i] = in_armor_tint[i];
+		}
+		else
+		{
+			armor_tint[i] = 0;
+		}
+	}
 
 	delta_heading = 0;
 	delta_x = 0;
@@ -777,9 +788,9 @@ void Mob::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho)
 	for(i = 0; i < MAX_MATERIALS; i++)
 	{
 		ns->spawn.equipment[i] = GetEquipmentMaterial(i);
-		if (armor_tint)
+		if (armor_tint[i])
 		{
-			ns->spawn.colors[i].color = armor_tint;
+			ns->spawn.colors[i].color = armor_tint[i];
 		}
 		else
 		{
@@ -1149,7 +1160,7 @@ void Mob::GMMove(float x, float y, float z, float heading, bool SendUpdate) {
 #endif
 }
 
-void Mob::SendIllusionPacket(int16 in_race, int8 in_gender, int16 in_texture, int16 in_helmtexture, int8 in_haircolor, int8 in_beardcolor, int8 in_eyecolor1, int8 in_eyecolor2, int8 in_hairstyle, int8 in_luclinface, int8 in_beard, int8 in_aa_title, int32 in_drakkin_heritage, int32 in_drakkin_tattoo, int32 in_drakkin_details, int32 in_armor_tint) {
+void Mob::SendIllusionPacket(int16 in_race, int8 in_gender, int16 in_texture, int16 in_helmtexture, int8 in_haircolor, int8 in_beardcolor, int8 in_eyecolor1, int8 in_eyecolor2, int8 in_hairstyle, int8 in_luclinface, int8 in_beard, int8 in_aa_title, int32 in_drakkin_heritage, int32 in_drakkin_tattoo, int32 in_drakkin_details, int32* in_armor_tint) {
 
 	int16 BaseRace = GetBaseRace();
 
@@ -1194,6 +1205,8 @@ void Mob::SendIllusionPacket(int16 in_race, int8 in_gender, int16 in_texture, in
 	else
 		this->helmtexture = in_helmtexture;
 
+	int i;
+
 	if (in_race > 12 && in_race != 128 && in_race != 130 && in_race != 330 && in_race != 522) {
 		this->haircolor = 0xFF;
 		this->beardcolor = 0xFF;
@@ -1206,7 +1219,11 @@ void Mob::SendIllusionPacket(int16 in_race, int8 in_gender, int16 in_texture, in
 		this->drakkin_heritage = 0xFFFFFFFF;
 		this->drakkin_tattoo = 0xFFFFFFFF;
 		this->drakkin_details = 0xFFFFFFFF;
-		this->armor_tint = 0xFFFFFFFF;
+		for (i = 0; i < MAX_MATERIALS; i++)
+		{
+			this->armor_tint[i] = 0xFFFFFFFF;
+		}
+
 	}
 
 	else {
@@ -1262,10 +1279,13 @@ void Mob::SendIllusionPacket(int16 in_race, int8 in_gender, int16 in_texture, in
 		else
 			this->drakkin_details = in_drakkin_details;
 
-		if (in_armor_tint == 0xFFFFFFFF)
-			this->armor_tint = GetArmorTint();
-		else
-			this->armor_tint = in_armor_tint;
+		for (i = 0; i < MAX_MATERIALS; i++)
+		{
+			if ((in_armor_tint) && (in_armor_tint[i]))
+				this->armor_tint[i] = in_armor_tint[i];
+			else
+				this->armor_tint[i] = GetArmorTint(i);
+		}
 	}
 
 	// Forces the feature information to be pulled from the Player Profile
@@ -1285,7 +1305,10 @@ void Mob::SendIllusionPacket(int16 in_race, int8 in_gender, int16 in_texture, in
 		this->drakkin_heritage = CastToClient()->GetBaseHeritage();
 		this->drakkin_tattoo = CastToClient()->GetBaseTattoo();
 		this->drakkin_details = CastToClient()->GetBaseDetails();
-		this->armor_tint = 0xFFFFFFFF;
+		for (i = 0; i < MAX_MATERIALS; i++)
+		{
+			this->armor_tint[i] = 0xFFFFFFFF;
+		}
 	}
 
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_Illusion, sizeof(Illusion_Struct));
@@ -1308,8 +1331,11 @@ void Mob::SendIllusionPacket(int16 in_race, int8 in_gender, int16 in_texture, in
 	is->drakkin_heritage = this->drakkin_heritage;
 	is->drakkin_tattoo = this->drakkin_tattoo;
 	is->drakkin_details = this->drakkin_details;
-	is->armor_tint = this->armor_tint;
-	
+	for (i = 0; i < MAX_MATERIALS; i++)
+	{
+		is->armor_tint[i] = this->armor_tint[i];
+	}
+
 	DumpPacket(outapp);
 	entity_list.QueueClients(this, outapp);
 	safe_delete(outapp);

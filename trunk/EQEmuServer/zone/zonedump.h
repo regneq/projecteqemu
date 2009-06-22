@@ -86,7 +86,7 @@ struct NPCType
 	int32	drakkin_heritage;
 	int32	drakkin_tattoo;
 	int32	drakkin_details;
-	int32	armor_tint;
+	int32  armor_tint[MAX_MATERIALS];
 //	int8	aa_title;	////not loaded from DB
 	int32	min_dmg;
 	int32	max_dmg;
