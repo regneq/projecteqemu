@@ -5,6 +5,7 @@ KLS: /surname changes
 KLS: Implemented OP_ClearSurname
 KLS: (gaeorn) Several 64-bit compile and runtime fixes
 KLS: (gaeorn) NPC wander back rules.
+Trevius: #texture will now allow player races to retain armor tint for both PCs and NPCs.
 
 Required SQL: /utils/sql/svn/704_rules.sql
 

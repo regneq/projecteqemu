@@ -1205,87 +1205,65 @@ void Mob::SendIllusionPacket(int16 in_race, int8 in_gender, int16 in_texture, in
 	else
 		this->helmtexture = in_helmtexture;
 
+	if (in_haircolor == 0xFF)
+		this->haircolor = GetHairColor();
+	else
+		this->haircolor = in_haircolor;
+
+	if (in_beardcolor == 0xFF)
+		this->beardcolor = GetBeardColor();
+	else
+		this->beardcolor = in_beardcolor;
+
+	if (in_eyecolor1 == 0xFF)
+		this->eyecolor1 = GetEyeColor1();
+	else
+		this->eyecolor1 = in_eyecolor1;
+
+	if (in_eyecolor2 == 0xFF)
+		this->eyecolor2 = GetEyeColor2();
+	else
+		this->eyecolor2 = in_eyecolor2;
+
+	if (in_hairstyle == 0xFF)
+		this->hairstyle = GetHairStyle();
+	else
+		this->hairstyle = in_hairstyle;
+
+	if (in_luclinface == 0xFF)
+		this->luclinface = GetLuclinFace();
+	else
+		this->luclinface = in_luclinface;
+
+	if (in_beard == 0xFF)
+		this->beard	= GetBeard();
+	else
+		this->beard = in_beard;
+
+	this->aa_title = 0xFF;
+
+	if (in_drakkin_heritage == 0xFFFFFFFF)
+		this->drakkin_heritage = GetDrakkinHeritage();
+	else
+		this->drakkin_heritage = in_drakkin_heritage;
+
+	if (in_drakkin_tattoo == 0xFFFFFFFF)
+		this->drakkin_tattoo = GetDrakkinTattoo();
+	else
+		this->drakkin_tattoo = in_drakkin_tattoo;
+
+	if (in_drakkin_details == 0xFFFFFFFF)
+		this->drakkin_details = GetDrakkinDetails();
+	else
+		this->drakkin_details = in_drakkin_details;
+
 	int i;
-
-	if (in_race > 12 && in_race != 128 && in_race != 130 && in_race != 330 && in_race != 522) {
-		this->haircolor = 0xFF;
-		this->beardcolor = 0xFF;
-		this->eyecolor1 = 0xFF;
-		this->eyecolor2 = 0xFF;
-		this->hairstyle = 0xFF;
-		this->luclinface = 0xFF;
-		this->beard	= 0xFF;
-		this->aa_title = 0xFF;
-		this->drakkin_heritage = 0xFFFFFFFF;
-		this->drakkin_tattoo = 0xFFFFFFFF;
-		this->drakkin_details = 0xFFFFFFFF;
-		for (i = 0; i < MAX_MATERIALS; i++)
-		{
-			this->armor_tint[i] = 0xFFFFFFFF;
-		}
-
-	}
-
-	else {
-		if (in_haircolor == 0xFF)
-			this->haircolor = GetHairColor();
+	for (i = 0; i < MAX_MATERIALS; i++)
+	{
+		if ((in_armor_tint) && (in_armor_tint[i]))
+			this->armor_tint[i] = in_armor_tint[i];
 		else
-			this->haircolor = in_haircolor;
-
-		if (in_beardcolor == 0xFF)
-			this->beardcolor = GetBeardColor();
-		else
-			this->beardcolor = in_beardcolor;
-
-		if (in_eyecolor1 == 0xFF)
-			this->eyecolor1 = GetEyeColor1();
-		else
-			this->eyecolor1 = in_eyecolor1;
-
-		if (in_eyecolor2 == 0xFF)
-			this->eyecolor2 = GetEyeColor2();
-		else
-			this->eyecolor2 = in_eyecolor2;
-
-		if (in_hairstyle == 0xFF)
-			this->hairstyle = GetHairStyle();
-		else
-			this->hairstyle = in_hairstyle;
-
-		if (in_luclinface == 0xFF)
-			this->luclinface = GetLuclinFace();
-		else
-			this->luclinface = in_luclinface;
-
-		if (in_beard == 0xFF)
-			this->beard	= GetBeard();
-		else
-			this->beard = in_beard;
-
-		this->aa_title = 0xFF;
-
-		if (in_drakkin_heritage == 0xFFFFFFFF)
-			this->drakkin_heritage = GetDrakkinHeritage();
-		else
-			this->drakkin_heritage = in_drakkin_heritage;
-
-		if (in_drakkin_tattoo == 0xFFFFFFFF)
-			this->drakkin_tattoo = GetDrakkinTattoo();
-		else
-			this->drakkin_tattoo = in_drakkin_tattoo;
-
-		if (in_drakkin_details == 0xFFFFFFFF)
-			this->drakkin_details = GetDrakkinDetails();
-		else
-			this->drakkin_details = in_drakkin_details;
-
-		for (i = 0; i < MAX_MATERIALS; i++)
-		{
-			if ((in_armor_tint) && (in_armor_tint[i]))
-				this->armor_tint[i] = in_armor_tint[i];
-			else
-				this->armor_tint[i] = GetArmorTint(i);
-		}
+			this->armor_tint[i] = GetArmorTint(i);
 	}
 
 	// Forces the feature information to be pulled from the Player Profile
@@ -2241,6 +2219,23 @@ void Mob::SendWearChange(int8 material_slot)
 	wc->material = GetEquipmentMaterial(material_slot);
 	wc->color.color = GetEquipmentColor(material_slot);
 	wc->wear_slot_id = material_slot;
+
+	entity_list.QueueClients(this, outapp);
+	safe_delete(outapp);
+}
+
+void Mob::SendTextureWC(int8 slot, int8 texture)
+{
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_WearChange, sizeof(WearChange_Struct));
+	WearChange_Struct* wc = (WearChange_Struct*)outapp->pBuffer;
+
+	wc->spawn_id = this->GetID();
+	wc->material = texture;
+	if (this->IsClient())
+		wc->color.color = GetEquipmentColor(slot);
+	else
+		wc->color.color = this->GetArmorTint(slot);
+	wc->wear_slot_id = slot;
 
 	entity_list.QueueClients(this, outapp);
 	safe_delete(outapp);
