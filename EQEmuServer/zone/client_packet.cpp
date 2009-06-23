@@ -147,6 +147,7 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_Begging] = &Client::Handle_OP_Begging;
 	ConnectedOpcodes[OP_TestBuff] = &Client::Handle_OP_TestBuff;
 	ConnectedOpcodes[OP_Surname] = &Client::Handle_OP_Surname;
+	ConnectedOpcodes[OP_ClearSurname] = &Client::Handle_OP_ClearSurname;
 	ConnectedOpcodes[OP_YellForHelp] = &Client::Handle_OP_YellForHelp;
 	ConnectedOpcodes[OP_Assist] = &Client::Handle_OP_Assist;
 	ConnectedOpcodes[OP_AssistGroup] = &Client::Handle_OP_AssistGroup;
@@ -1984,60 +1985,61 @@ void Client::Handle_OP_Surname(const EQApplicationPacket *app)
 		LogFile->write(EQEMuLog::Debug, "Size mismatch in Surname expected %i got %i", sizeof(Surname_Struct), app->size);
 		return;
 	}
-	Surname_Struct* surname = (Surname_Struct*) app->pBuffer;
-	char *c = surname->lastname;
-	int found_bad_char = 0;
 
-	// solar: fix name so first letter is capital, the rest is lowercase
-	// and check for illegal chars too
+	if(!p_timers.Expired(&database, pTimerSurnameChange, false))
+	{
+		Message(15, "You may only change surnames once every 7 days, your /surname is currently on cooldown.");
+		return;
+	}
+
+	if(GetLevel() < 20)
+	{
+		Message_StringID(15, SURNAME_LEVEL);
+		return;
+	}
+
+	Surname_Struct* surname = (Surname_Struct*) app->pBuffer;
+
+	char *c = NULL;
+	bool first = true;
 	for(c = surname->lastname; *c; c++)
 	{
-		if(!isalpha(*c))
+		if(first)
 		{
-			found_bad_char = 1;
-			break;
-		}
-		if(c == surname->lastname)	// first letter
 			*c = toupper(*c);
+			first = false;
+		}
 		else
+		{
 			*c = tolower(*c);
+		}
 	}
 
-	if(!strcasecmp(surname->lastname,"ld") || !strcasecmp(surname->lastname,"afk"))
-		found_bad_char = 1;
-
-	if (found_bad_char) {
-		Message(13, "Surnames may only contain alphabet characters.");
-		return;
-	}
-	else if (strlen(surname->lastname)>=20) {
-		Message_StringID(10,STRING_SURNAME_TOO_LONG);
+	if (strlen(surname->lastname) >= 20) {
+		Message_StringID(15, SURNAME_TOO_LONG);
 		return;
 	}
 
-	if(!database.CheckNameFilter(surname->lastname))
+	if(!database.CheckNameFilter(surname->lastname, true))
 	{
-		Message(10, "Surname rejected.");
+		Message_StringID(15, SURNAME_REJECTED);
 		return;
 	}
 
 	ChangeLastName(surname->lastname);
+	p_timers.Start(pTimerSurnameChange, 604800);
 
-	EQApplicationPacket* outapp = new EQApplicationPacket(OP_GMLastName, sizeof(GMLastName_Struct));
-	GMLastName_Struct* lnc = (GMLastName_Struct*) outapp->pBuffer;
-	strcpy(lnc->name, surname->name);
-	strcpy(lnc->lastname, surname->lastname);
-	strcpy(lnc->gmname, "SurnameOP");
-	lnc->unknown[0] = 1;
-	lnc->unknown[1] = 1;
-	entity_list.QueueClients(this, outapp, false);
-	safe_delete(outapp);
-
+	EQApplicationPacket* outapp = app->Copy();
 	outapp = app->Copy();
 	surname = (Surname_Struct*) outapp->pBuffer;
 	surname->unknown0064=1;
 	FastQueuePacket(&outapp);
 	return;
+}
+
+void Client::Handle_OP_ClearSurname(const EQApplicationPacket *app)
+{
+	ChangeLastName("");
 }
 
 void Client::Handle_OP_YellForHelp(const EQApplicationPacket *app)

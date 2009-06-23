@@ -25,7 +25,7 @@ using namespace std;
 
 enum {	//values for pTimerType
 	pTimerStartAdventureTimer = 1,
-	pTimerAdventureTimer = 2,
+	pTimerSurnameChange = 2,
 	pTimerFeignDeath = 3,
 	pTimerSneak = 4,
 	pTimerHide = 5,

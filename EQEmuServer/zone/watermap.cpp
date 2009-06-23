@@ -41,7 +41,7 @@ WaterMap::~WaterMap() {
 }
 
 
-WaterRegionType WaterMap::BSPReturnRegionType(long node_number, float y, float x, float z) const
+WaterRegionType WaterMap::BSPReturnRegionType(sint32 node_number, float y, float x, float z) const
 {
 	float distance;
 

@@ -1,5 +1,13 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/23/2009==
+KLS: /surname changes
+KLS: Implemented OP_ClearSurname
+KLS: (gaeorn) Several 64-bit compile and runtime fixes
+KLS: (gaeorn) NPC wander back rules.
+
+Required SQL: /utils/sql/svn/704_rules.sql
+
 ==06/22/2009==
 Trevius: (Rabayn) When creating recipes, it is no longer required that componentcount be on separate rows from the successcount or failcount row.
 Trevius: (takatok) AA Shield Block added.

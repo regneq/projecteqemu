@@ -204,6 +204,8 @@ RULE_INT ( NPC, SayPauseTimeInSec, 5)
 RULE_INT ( NPC, OOCRegen, 0)
 RULE_BOOL ( NPC, BuffFriends, false )
 RULE_BOOL ( NPC, EnableNPCQuestJournal, false)
+RULE_INT ( NPC, LastFightingDelayMovingMin, 10000)
+RULE_INT ( NPC, LastFightingDelayMovingMax, 20000)
 RULE_CATEGORY_END()
 
 RULE_CATEGORY ( Aggro )

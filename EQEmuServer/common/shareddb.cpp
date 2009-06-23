@@ -254,8 +254,8 @@ bool SharedDatabase::SaveInventory(uint32 char_id, const ItemInst* inst, sint16 
 				"	augslot1,augslot2,augslot3,augslot4,augslot5)"
 				" VALUES(%lu,%lu,%lu,%lu,"
 				"	%lu,%lu,%lu,%lu,%lu)",
-				account_id, slot_id, inst->GetItem()->ID, charges ,
-				augslot[0],augslot[1],augslot[2],augslot[3],augslot[4]);
+				(unsigned long)account_id, (unsigned long)slot_id, (unsigned long)inst->GetItem()->ID, (unsigned long)charges ,
+				(unsigned long)augslot[0],(unsigned long)augslot[1],(unsigned long)augslot[2],(unsigned long)augslot[3],(unsigned long)augslot[4]);
 
 			
 			ret = RunQuery(query, len_query, errbuf);
@@ -290,8 +290,8 @@ bool SharedDatabase::SaveInventory(uint32 char_id, const ItemInst* inst, sint16 
 				"	augslot1,augslot2,augslot3,augslot4,augslot5)"
 				" VALUES(%lu,%lu,%lu,%lu,%lu,%lu,"
 				"	%lu,%lu,%lu,%lu,%lu)",
-				char_id, slot_id, inst->GetItem()->ID, charges, inst->IsInstNoDrop() ? 1:0,inst->GetColor(),
-				augslot[0],augslot[1],augslot[2],augslot[3],augslot[4] );
+				(unsigned long)char_id, (unsigned long)slot_id, (unsigned long)inst->GetItem()->ID, (unsigned long)charges, (unsigned long)(inst->IsInstNoDrop() ? 1:0),(unsigned long)inst->GetColor(),
+				(unsigned long)augslot[0],(unsigned long)augslot[1],(unsigned long)augslot[2],(unsigned long)augslot[3],(unsigned long)augslot[4] );
 			
 			ret = RunQuery(query, len_query, errbuf);
 		}

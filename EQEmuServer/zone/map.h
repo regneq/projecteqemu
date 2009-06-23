@@ -56,11 +56,10 @@ typedef struct _face{
 }FACE, *PFACE;
 
 typedef struct _mapHeader {
-	unsigned long version;
-//	unsigned long vertex_count;
-	unsigned long face_count;
-	unsigned short node_count;
-	unsigned long facelist_count;
+	uint32 version;
+	uint32 face_count;
+	uint16 node_count;
+	uint32 facelist_count;
 } mapHeader;
 
 /*
@@ -95,12 +94,12 @@ typedef struct _nodeHeader {
 	float maxx;
 	float maxy;
 	
-	unsigned char flags;
+	uint8 flags;
 	union {
-		unsigned short nodes[4];	//index 0 means NULL, not root
+		uint32 nodes[4];	//index 0 means NULL, not root
 		struct {
-			unsigned long count;
-			unsigned long offset;
+			uint32 count;
+			uint32 offset;
 		} faces;
 	};
 } nodeHeader, NODE, *PNODE;
@@ -111,7 +110,7 @@ typedef struct _nodeHeader {
 #define NODE_NONE 65534
 #define MAP_ROOT_NODE 0
 
-typedef unsigned short NodeRef;
+typedef uint16 NodeRef;
 
 /*typedef struct _node {
 	nodeHeader head;
@@ -145,7 +144,7 @@ public:
 	bool LineIntersectsZone(VERTEX start, VERTEX end, float step, VERTEX *result, FACE **on = NULL) const;
 		
 //	inline unsigned int		GetVertexNumber( ) {return m_Vertex; }
-	inline unsigned int		GetFacesNumber( ) const { return m_Faces; }
+	inline uint32		GetFacesNumber( ) const { return m_Faces; }
 //	inline PVERTEX	GetVertex( int _idx ) {return mFinalVertex + _idx;	}
 	inline PFACE		GetFace( int _idx) {return mFinalFaces + _idx;		}
 	inline PFACE		GetFaceFromlist( int _idx) {return &mFinalFaces[ mFaceLists[_idx] ];	}
@@ -161,13 +160,13 @@ public:
 	bool LineIntersectsZoneNoZLeaps(VERTEX start, VERTEX end, float step_mag, VERTEX *result, FACE **on);
 private:
 //	unsigned long m_Vertex;
-	unsigned long m_Faces;
-	unsigned long m_Nodes;
-	unsigned long m_FaceLists;
+	uint32 m_Faces;
+	uint32 m_Nodes;
+	uint32 m_FaceLists;
 //	PVERTEX mFinalVertex;
 	PFACE mFinalFaces;
 	PNODE mNodes;
-	unsigned long *mFaceLists;
+	uint32 *mFaceLists;
 	
 	
 	int mCandFaces[100];

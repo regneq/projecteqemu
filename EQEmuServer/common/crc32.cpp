@@ -112,6 +112,14 @@ void CRC32::SetEQChecksum(uchar* in_data, int32 in_length)
 #undef i386	//darwin seems to think we are generating PIC, and we clobber ebx
 #endif
 
+/* Some 64bit systems do not like the i386 assembly code below. However, some 64bit
+   systems do work with the assembly code below. We #undef i386 to be on the safe
+   side if we are compiling 64bit. */
+
+#ifdef __x86_64__
+#undef i386
+#endif
+
 uint32 CRC32::Update(const int8* buf, uint32 bufsize, uint32 crc32) {
 #if defined(WIN32)
 	// Register use:

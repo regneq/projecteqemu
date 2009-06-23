@@ -150,6 +150,7 @@
 #define SPELL_FIZZLE_OTHER			1218	//%1's spell fizzles!
 #define MISSED_NOTE_OTHER			1219	//A missed note brings %1's song to a close!
 #define CORPSE_DECAY_NOW			1227	//This corpse is waiting to expire.
+#define SURNAME_REJECTED			1374	//Your new surname was rejected.  Please try a different name.
 #define DUEL_DECLINE				1383	//%1 has declined your challenge to duel to the death.
 #define DUEL_ACCEPTED				1384	//%1 has already accepted a duel with someone else.
 #define DUEL_CONSIDERING			1385	//%1 is considering a duel with someone else.
@@ -227,7 +228,9 @@
 #define TRY_ATTACKING_SOMEONE		12696	//Try attacking someone other than yourself, it's more productive.
 #define BACKSTAB_WEAPON				12874	//You need a piercing weapon as your primary weapon in order to backstab
 #define MORE_SKILLED_THAN_I			12931	//%1 tells you, 'You are more skilled than I!  What could I possibly teach you?'
-#define STRING_SURNAME_TOO_LONG		12942	//Surname must be less than 20 characters in length.
+#define SURNAME_EXISTS				12939	//You already have a surname.  Operation failed.
+#define SURNAME_LEVEL				12940	//You can only submit a surname upon reaching the 20th level.  Operation failed.
+#define SURNAME_TOO_LONG			12942	//Surname must be less than 20 characters in length.
 #define NOW_INVISIBLE				12950	//%1 is now Invisible.
 #define NOW_VISIBLE					12951	//%1 is now Visible.
 #define DISC_LEVEL_USE_ERROR		13004	//You are not sufficient level to use this discipline.
