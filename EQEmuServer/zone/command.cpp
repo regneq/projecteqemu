@@ -2766,21 +2766,45 @@ void command_spawn(Client *c, const Seperator *sep)
 }
 
 void command_texture(Client *c, const Seperator *sep)
-{
+{	
+	
+	uint8 texture;
 	if (sep->IsNumber(1) && atoi(sep->arg[1]) >= 0 && atoi(sep->arg[1]) <= 255) {
-		int tmp;
-		if (sep->IsNumber(2) && atoi(sep->arg[2]) >= 0 && atoi(sep->arg[2]) <= 255)
-			tmp = atoi(sep->arg[2]);
-		else if (atoi(sep->arg[1]) == 255)
-			tmp = atoi(sep->arg[1]);
-		else if ((c->GetRace() > 0 && c->GetRace() <= 12) || c->GetRace() == 128 || c->GetRace() == 130)
-			tmp = 0;
-		else
-			tmp = atoi(sep->arg[1]);
-		if ((c->GetTarget()) && (c->Admin() >= commandTextureOthers))
-			c->GetTarget()->SendIllusionPacket(c->GetTarget()->GetRace(), 0xFF, atoi(sep->arg[1]), tmp);
-		else
-			c->SendIllusionPacket(c->GetRace(), 0xFF, atoi(sep->arg[1]), tmp);
+		texture = atoi(sep->arg[1]);
+		uint8 helm = 0xFF;
+		
+		// Player Races Wear Armor, so Wearchange is sent instead
+		int i;
+		if (!c->GetTarget())
+			for (i = 0; i < 7; i++)
+			{
+				c->SendTextureWC(i, texture);
+			}
+		else if ((c->GetTarget()->GetRace() > 0 && c->GetTarget()->GetRace() <= 12) ||
+			c->GetTarget()->GetRace() == 128 || c->GetTarget()->GetRace() == 130 || 
+			c->GetTarget()->GetRace() == 330 || c->GetTarget()->GetRace() == 522) {
+			for (i = 0; i < 7; i++)
+			{
+				c->GetTarget()->SendTextureWC(i, texture);
+			}
+		}
+		else	// Non-Player Races only need Illusion Packets to be sent for texture
+		{
+			if (sep->IsNumber(2) && atoi(sep->arg[2]) >= 0 && atoi(sep->arg[2]) <= 255)
+				helm = atoi(sep->arg[2]);
+			else
+				helm = texture;
+
+			if (texture == 255) {
+				texture = 0xFF;	// Should be pulling these from the database instead
+				helm = 0xFF;
+			}
+
+			if ((c->GetTarget()) && (c->Admin() >= commandTextureOthers))
+				c->GetTarget()->SendIllusionPacket(c->GetTarget()->GetRace(), 0xFF, texture, helm);
+			else
+				c->SendIllusionPacket(c->GetRace(), 0xFF, texture, helm);
+		}
 	}
 	else
 		c->Message(0, "Usage: #texture [texture] [helmtexture]  (0-255, 255 for show equipment)");

@@ -393,6 +393,7 @@ bool logpos;
 	virtual inline sint32 GetPrimaryFaction() const { return 0; }
 	virtual uint16 GetSkill(SkillType skill_num) const { return 0; } //overloaded by things which actually have skill (NPC|client)
 	virtual void SendWearChange(int8 material_slot);
+	virtual void SendTextureWC(int8 slot, int8 texture);
 	virtual int32 GetEquipment(int8 material_slot) const { return(0); }
 	virtual sint32 GetEquipmentMaterial(int8 material_slot) const;
 	virtual uint32 GetEquipmentColor(int8 material_slot) const;
