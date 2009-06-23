@@ -50,6 +50,10 @@ class Trap;
 class Entity;
 class EntityList;
 
+#ifdef BOTS
+class Bot;
+#endif
+
 #ifdef EQBOTS
 
 //EQoffline
@@ -106,6 +110,12 @@ public:
 	virtual const char* GetName() { return ""; }
 	virtual void DBAWComplete(int8 workpt_b1, DBAsyncWork* dbaw) { pDBAsyncWorkID = 0; }
 	bool CheckCoordLosNoZLeaps(float cur_x, float cur_y, float cur_z, float trg_x, float trg_y, float trg_z, float perwalk=1);
+
+#ifdef BOTS
+	virtual bool IsBot() const { return false; }
+	Bot* CastToBot();
+#endif
+
 protected:
 	friend class EntityList;
 	virtual void SetID(int16 set_id);

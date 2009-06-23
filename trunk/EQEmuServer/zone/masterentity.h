@@ -20,3 +20,7 @@
 
 #endif //EQBOTS
 
+#ifdef BOTS
+#include "bot.h"
+#endif
+

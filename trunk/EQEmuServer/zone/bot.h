@@ -9,6 +9,8 @@
 #include "zonedb.h"
 #include "../common/MiscFunctions.h"
 
+using namespace std;
+
 class Bot : public Mob {
 public:
 	// Class Constructors
@@ -20,8 +22,8 @@ public:
 	bool IsValidName();
 	bool IsBotNameAvailable(std::string* errorMessage);
 	uint32 CreateNewBotRecord(std::string* errorMessage);
-	std::string SaveBot();
-	std::string DeleteBot();
+	bool SaveBot(std::string* errorMessage);
+	bool DeleteBot(std::string* errorMessage);
 	void Spawn(float xPos, float yPos, float zPos, float heading);
 	void SetBotOwnerCharacterID(uint32 botOwnerCharacterID, std::string* errorMessage);
 	void Depop(std::string* errorMessage);
@@ -46,6 +48,8 @@ public:
 	static void CleanBotLeader(uint32 botOwnerCharacterID, std::string* errorMessage);
 	static uint32 GetBotOwnerCharacterID(uint32 botID, std::string* errorMessage);
 
+	virtual bool IsBot() const { return true; }
+
 	// Inline "GET" Class Methods
 	uint32 GetBotID() { return _botID; };
 	uint32 GetBotOwnerCharacterID() { return _botOwnerCharacterID; };
@@ -58,6 +62,10 @@ public:
 
 	// Class Deconstructors
 	virtual ~Bot();
+
+// I really don't want to do this... "friend" is one of those things that ought to be uninvented.
+//protected:
+//	friend class EntityList;
 
 private:
 	// Class Members

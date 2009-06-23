@@ -258,7 +258,29 @@ const Beacon* Entity::CastToBeacon() const {
 	return static_cast<const Beacon*>(this);
 }
 
+#ifdef BOTS
+Bot* Entity::CastToBot() {
+#ifdef _EQDEBUG
+	if(!IsBot()) {	
+		cout << "CastToBot error" << endl;
+		DebugBreak();
+		return 0;
+	}
+#endif
+	return static_cast<Bot*>(this);
+}
 
+//const Bot* Entity::CastToBot() const {
+//#ifdef _EQDEBUG
+//	if(!IsBot()) {	
+//		cout << "CastToBot error" << endl;
+//		DebugBreak();
+//		return 0;
+//	}
+//#endif
+//	return static_cast<const Bot*>(this);
+//}
+#endif
 
 EntityList::EntityList() {
 	last_insert_id = 0;

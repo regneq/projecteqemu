@@ -804,9 +804,8 @@ uint32 Bot::CreateNewBotRecord(std::string *errorMessage) {
 	return Result;
 }
 
-std::string Bot::SaveBot() {
-	// Result is a string buffer for an error message. Return value of NULL indicates a successful database operation.
-	std::string Result;
+bool Bot::SaveBot(std::string* errorMessage) {
+	bool Result = false;
 
 	if(_botID > 0) {
 		char* Query = 0;
@@ -815,16 +814,19 @@ std::string Bot::SaveBot() {
 		// TODO: Finish filling out this UPDATE query
 
 		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "UPDATE bots SET BotOwnerCharacterID = '%u', BotSpellsID = '%u', Name = '%s', LastName = '%s', BotLevel = '%u' WHERE BotID = '%u'", _botOwnerCharacterID, _botSpellID, this->GetName(), this->lastname, this->GetLevel(), _botID), TempErrorMessageBuffer)) {
-			Result = std::string(TempErrorMessageBuffer);
+			*errorMessage = std::string(TempErrorMessageBuffer);
+		}
+		else {
+			Result = true;
 		}
 	}
 
 	return Result;
 }
 
-std::string Bot::DeleteBot() {
-	// Result is a string buffer for an error message. Return value of NULL indicates a successful database operation.
-	std::string Result;
+bool Bot::DeleteBot(std::string* errorMessage) {
+	bool Result = false;
+	int TempCounter = 0;
 
 	if(_botID > 0) {
 		char* Query = 0;
@@ -833,18 +835,27 @@ std::string Bot::DeleteBot() {
 		// TODO: These queries need to be ran together as a transaction.. ie, if one or more fail then they all will fail to commit to the database.
 
 		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "DELETE FROM bots WHERE BotID = '%u'", this->_botID), TempErrorMessageBuffer)) {
-			Result = std::string(TempErrorMessageBuffer);
+			*errorMessage = std::string(TempErrorMessageBuffer);
 		}
+		else
+			TempCounter++;
 
 		// TODO: alter table botinventory modify npctypeid to botid
 		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "DELETE FROM botinventory WHERE npctypeid = '%u'", this->_botID), TempErrorMessageBuffer)) {
-			Result = std::string(TempErrorMessageBuffer);
+			*errorMessage = std::string(TempErrorMessageBuffer);
 		}
+		else
+			TempCounter++;
 
 		// TODO: alter table botsowners modify botnpctypeid to botid
 		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "DELETE FROM botsowners WHERE botnpctypeid = '%u'", this->_botID), TempErrorMessageBuffer)) {
-			Result = std::string(TempErrorMessageBuffer);
+			*errorMessage = std::string(TempErrorMessageBuffer);
 		}
+		else
+			TempCounter++;
+
+		if(TempCounter == 3)
+			Result = true;
 	}
 
 	return Result;
@@ -1376,7 +1387,10 @@ static void ProcessBotCommands(Client *c, const Seperator *sep) {
 			}
 
 			// Now that all validation is complete, we can save our newly created bot
-			NewBot->SaveBot();
+			if(!NewBot->SaveBot(&TempErrorMessage)) {
+				// TODO: Log this error message
+				return;
+			}
 		}
 		else {
 			// TODO: Log error message here
@@ -1413,17 +1427,23 @@ static void ProcessBotCommands(Client *c, const Seperator *sep) {
 			return;
 		}
 
-		// TODO: Replace the code below with something like c->GetTarget()->CastToBot()->DeleteBot()
-		/*
-		if(database.DeleteBot(c->GetTarget()->GetNPCTypeID())) {
-			c->GetTarget()->Say("...but why?!! We had such good adventures together! gaahhh...glrrrk...");
-			c->GetTarget()->BotOwner = NULL;
-			c->GetTarget()->Kill();
+		if(c->GetTarget()->IsBot()) {
+			Bot* BotTargeted = c->GetTarget()->CastToBot();
+
+			if(BotTargeted) {
+				if(BotTargeted->DeleteBot(&TempErrorMessage)) {
+					// TODO: Other clean up code goes here
+					c->GetTarget()->Say("...but why?!! We had such good adventures together! gaahhh...glrrrk...");
+					//c->GetTarget()->BotOwner = NULL;
+					//c->GetTarget()->Kill();
+				}
+				else {
+					// TODO: log error message here
+					c->Message(15, "Error deleting Bot!");
+				}
+
+			}
 		}
-		else {
-			c->Message(15, "Error deleting Bot!");
-		}
-		*/
 
 		return;
 	}
