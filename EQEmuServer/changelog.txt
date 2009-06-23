@@ -6,6 +6,7 @@ Trevius: (takatok) AA Shield Block added.
 Trevius: (Shendare) Armor Tint on NPCs can now be set on a per-slot basis.
 cavedude: Added rules to disable/change #peqzone debuffs. Cleaned up code regarding it some.
 Derision: Fixed the BestZ stuff I broke in Rev686
+WildcardX: More work migrating EQBOTS code into BOTS.
 
 Required SQL: /utils/sql/svn/702_aashieldblock_tint_table.sql
 /utils/sql/svn/703_peqzone_rule.sql
