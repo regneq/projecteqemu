@@ -41,6 +41,7 @@
 	void Handle_OP_Begging(const EQApplicationPacket *app);
 	void Handle_OP_TestBuff(const EQApplicationPacket *app);
 	void Handle_OP_Surname(const EQApplicationPacket *app);
+	void Handle_OP_ClearSurname(const EQApplicationPacket *app);
 	void Handle_OP_YellForHelp(const EQApplicationPacket *app);
 	void Handle_OP_Assist(const EQApplicationPacket *app);
 	void Handle_OP_AssistGroup(const EQApplicationPacket *app);

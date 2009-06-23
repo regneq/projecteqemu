@@ -145,7 +145,11 @@ bool TCPConnection::GetSockName(char *host, uint16 *port)
 #endif
 #endif
 	addrlen=sizeof(struct sockaddr_in);
+#ifdef WIN32
 	if (!getsockname(connection_socket,(struct sockaddr *)&local,&addrlen)) {
+#else
+	if (!getsockname(connection_socket,(struct sockaddr *)&local,(socklen_t *)&addrlen)) {
+#endif
 		unsigned long ip=local.sin_addr.s_addr;
 		sprintf(host,"%d.%d.%d.%d",
 			*(unsigned char *)&ip,

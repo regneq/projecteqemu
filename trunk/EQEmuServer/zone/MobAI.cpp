@@ -431,9 +431,8 @@ void Mob::AI_Init() {
 	AItarget_check_timer = 0;
 	AIfeignremember_timer = NULL;
 	AIscanarea_timer = 0;
-	pLastFightingDelayMoving = 0;
-	minLastFightingDelayMoving = 10000;
-	maxLastFightingDelayMoving = 20000;
+	minLastFightingDelayMoving = RuleI(NPC, LastFightingDelayMovingMin);
+	maxLastFightingDelayMoving = RuleI(NPC, LastFightingDelayMovingMax);
 
 	pDontHealMeBefore = 0;
 	pDontBuffMeBefore = 0;

@@ -119,12 +119,12 @@ bool Map::loadMap(FILE *fp) {
 	if(head.version != MAP_VERSION) {
 		//invalid version... if there really are multiple versions,
 		//a conversion routine could be possible.
-		printf("Invalid map version 0x%lx\n", head.version);
+		printf("Invalid map version 0x%lx\n", (unsigned long)head.version);
 		return(false);
 	}
 	
-	printf("Map header: %lu faces, %u nodes, %lu facelists\n", head.face_count, head.node_count, head.facelist_count);
-	
+	printf("Map header: %lu faces, %u nodes, %lu facelists\n", (unsigned long)head.face_count, (unsigned int)head.node_count, (unsigned long)head.facelist_count);
+
 	m_Faces = head.face_count;
 	m_Nodes = head.node_count;
 	m_FaceLists = head.facelist_count;
@@ -134,24 +134,24 @@ bool Map::loadMap(FILE *fp) {
 //	mFinalVertex = new VERTEX[m_Vertex];
 	mFinalFaces = new FACE	[m_Faces];
 	mNodes = new NODE[m_Nodes];
-	mFaceLists = new unsigned long[m_FaceLists];
+	mFaceLists = new uint32[m_FaceLists];
 	
 //	fread(mFinalVertex, m_Vertex, sizeof(VERTEX), fp);
 	
 	//this was changed to this loop from the single read because valgrind was
 	//hanging on this read otherwise... I dont pretend to understand it.
 #ifdef SLOW_AND_CRAPPY_MAKES_VALGRIND_HAPPY
-	unsigned long r;
+	uint32 r;
 	for(r = 0; r < m_Faces; r++) {
 		if(fread(mFinalFaces+r, sizeof(FACE), 1, fp) != 1) {
-			printf("Unable to read %lu faces from map file, got %lu.\n", m_Faces, r);
+			printf("Unable to read %lu faces from map file, got %lu.\n", (unsigned long)m_Faces, (unsigned long)r);
 			return(false);
 		}
 	}
 #else
-	unsigned long count;
+	uint32 count;
 	if((count=fread(mFinalFaces, sizeof(FACE), m_Faces , fp)) != m_Faces) {
-		printf("Unable to read %lu face bytes from map file, got %lu.\n", m_Faces, count);
+		printf("Unable to read %lu face bytes from map file, got %lu.\n", (unsigned long)m_Faces, (unsigned long)count);
 		return(false);
 	}
 #endif
@@ -159,27 +159,27 @@ bool Map::loadMap(FILE *fp) {
 #ifdef SLOW_AND_CRAPPY_MAKES_VALGRIND_HAPPY
 	for(r = 0; r < m_Nodes; r++) {
 		if(fread(mNodes+r, sizeof(NODE), 1, fp) != 1) {
-			printf("Unable to read %lu nodes from map file, got %lu.\n", m_Nodes, r);
+			printf("Unable to read %lu nodes from map file, got %lu.\n", (unsigned long)m_Nodes, (unsigned long)r);
 			return(false);
 		}
 	}
 #else
 	if(fread(mNodes, sizeof(NODE), m_Nodes, fp) != m_Nodes) {
-		printf("Unable to read %lu nodes from map file.\n", m_Nodes);
+		printf("Unable to read %lu nodes from map file.\n", (unsigned long)m_Nodes);
 		return(false);
 	}
 #endif
 	
 #ifdef SLOW_AND_CRAPPY_MAKES_VALGRIND_HAPPY
 	for(r = 0; r < m_FaceLists; r++) {
-		if(fread(mFaceLists+r, sizeof(unsigned long), 1, fp) != 1) {
-			printf("Unable to read %lu face lists from map file, got %lu.\n", m_FaceLists, r);
+		if(fread(mFaceLists+r, sizeof(uint32), 1, fp) != 1) {
+			printf("Unable to read %lu face lists from map file, got %lu.\n", (unsigned long)m_FaceLists, (unsigned long)r);
 			return(false);
 		}
 	}
 #else
-	if(fread(mFaceLists, sizeof(unsigned long), m_FaceLists, fp) != m_FaceLists) {
-		printf("Unable to read %lu face lists from map file.\n", m_FaceLists);
+	if(fread(mFaceLists, sizeof(uint32), m_FaceLists, fp) != m_FaceLists) {
+		printf("Unable to read %lu face lists from map file.\n", (unsigned long)m_FaceLists);
 		return(false);
 	}
 #endif
@@ -188,7 +188,7 @@ bool Map::loadMap(FILE *fp) {
 /*	mRoot = new NODE();
 	RecLoadNode(mRoot, fp );*/
 
-	unsigned long i;
+	uint32 i;
 	float v;
 	for(i = 0; i < m_Faces; i++) {
 		v = Vmax3(x, mFinalFaces[i].a, mFinalFaces[i].b, mFinalFaces[i].c);
@@ -210,7 +210,7 @@ bool Map::loadMap(FILE *fp) {
 		if(v < _minz)
 			_minz = v;
 	}
-	printf("Loaded map: %lu vertices, %lu faces\n", m_Faces*3, m_Faces);
+	printf("Loaded map: %lu vertices, %lu faces\n", (unsigned long)m_Faces*3, (unsigned long)m_Faces);
 	printf("Map BB: (%.2f -> %.2f, %.2f -> %.2f, %.2f -> %.2f)\n", _minx, _maxx, _miny, _maxy, _minz, _maxz);
 	return(true);
 }
@@ -454,7 +454,7 @@ bool Map::LineIntersectsNode( NodeRef node_r, VERTEX p1, VERTEX p2, VERTEX *resu
 	unsigned long i;
 	
 	PFACE cur;
-	const unsigned long *cfl = mFaceLists + _node->faces.offset;
+	const uint32 *cfl = mFaceLists + _node->faces.offset;
 	
 	for(i = 0; i < _node->faces.count; i++) {
 		if(*cfl > m_Faces)
@@ -508,7 +508,7 @@ float Map::FindBestZ( NodeRef node_r, VERTEX p1, VERTEX *result, FACE **on) cons
 	// 
 	for(zAttempt=1; zAttempt<=2; zAttempt++) {
 
-		const unsigned long *cfl = mFaceLists + _node->faces.offset;
+		const uint32 *cfl = mFaceLists + _node->faces.offset;
 
 #ifdef DEBUG_BEST_Z
 printf("Start finding best Z...\n");

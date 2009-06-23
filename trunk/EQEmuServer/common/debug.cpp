@@ -20,6 +20,10 @@ using namespace std;
 #endif
 #include "../common/MiscFunctions.h"
 
+#ifndef va_copy
+	#define va_copy(d,s) ((d) = (s))
+#endif
+
 static volatile bool logFileValid = false;
 static EQEMuLog realLogFile;
 EQEMuLog *LogFile = &realLogFile;
@@ -144,13 +148,16 @@ bool EQEMuLog::write(LogIDs id, const char *fmt, ...) {
 		fprintf(fp[id], "%04i [%02d.%02d. - %02d:%02d:%02d] ", getpid(), newtime->tm_mon+1, newtime->tm_mday, newtime->tm_hour, newtime->tm_min, newtime->tm_sec);
 #endif
 
-	va_list argptr;
+	va_list argptr, tmpargptr;
 	va_start(argptr, fmt);
-    if (dofile)
-		vfprintf( fp[id], fmt, argptr );
+	if (dofile) {
+		va_copy(tmpargptr, argptr);
+		vfprintf( fp[id], fmt, tmpargptr );
+	}
 	if(logCallbackFmt[id]) {
 		msgCallbackFmt p = logCallbackFmt[id];
-		p(id, fmt, argptr );
+		va_copy(tmpargptr, argptr);
+		p(id, fmt, tmpargptr );
 	}
     if (pLogStatus[id] & 2) {
 		if (pLogStatus[id] & 8) {
@@ -204,17 +211,21 @@ bool EQEMuLog::writePVA(LogIDs id, const char *prefix, const char *fmt, va_list 
     time( &aclock );                 /* Get time in seconds */
     newtime = localtime( &aclock );  /* Convert time to struct */
 
+	va_list tmpargptr;
+
     if (dofile) {
 #ifndef NO_PIDLOG
 		fprintf(fp[id], "[%02d.%02d. - %02d:%02d:%02d] %s", newtime->tm_mon+1, newtime->tm_mday, newtime->tm_hour, newtime->tm_min, newtime->tm_sec, prefix);
 #else
 		fprintf(fp[id], "%04i [%02d.%02d. - %02d:%02d:%02d] %s", getpid(), newtime->tm_mon+1, newtime->tm_mday, newtime->tm_hour, newtime->tm_min, newtime->tm_sec, prefix);
 #endif
-		vfprintf( fp[id], fmt, argptr );
+		va_copy(tmpargptr, argptr);
+		vfprintf( fp[id], fmt, tmpargptr );
     }
 	if(logCallbackPva[id]) {
 		msgCallbackPva p = logCallbackPva[id];
-		p(id, prefix, fmt, argptr );
+		va_copy(tmpargptr, argptr);
+		p(id, prefix, fmt, tmpargptr );
 	}
     if (pLogStatus[id] & 2) {
 		if (pLogStatus[id] & 8) {
@@ -295,10 +306,12 @@ bool EQEMuLog::writebuf(LogIDs id, const char *buf, int8 size, int32 count) {
 }
 
 bool EQEMuLog::writeNTS(LogIDs id, bool dofile, const char *fmt, ...) {
-	va_list argptr;
+	va_list argptr, tmpargptr;
 	va_start(argptr, fmt);
-	if (dofile)
-		vfprintf( fp[id], fmt, argptr );
+	if (dofile) {
+		va_copy(tmpargptr, argptr);
+		vfprintf( fp[id], fmt, tmpargptr );
+	}
     if (pLogStatus[id] & 2) {
 		if (pLogStatus[id] & 8)
 			vfprintf( stderr, fmt, argptr );

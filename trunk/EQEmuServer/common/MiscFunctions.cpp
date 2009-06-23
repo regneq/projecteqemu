@@ -59,6 +59,10 @@ using namespace std;
 	#include <errno.h>
 #endif
 
+#ifndef va_copy
+	#define va_copy(d,s) ((d) = (s))
+#endif
+
 void CoutTimestamp(bool ms) {
 	time_t rawtime;
 	struct tm* gmt_t;
@@ -147,7 +151,7 @@ void MakeLowerString(const char *source, char *target) {
 int MakeAnyLenString(char** ret, const char* format, ...) {
 	int buf_len = 128;
     int chars = -1;
-	va_list argptr;
+	va_list argptr, tmpargptr;
 	va_start(argptr, format);
 	while (chars == -1 || chars >= buf_len) {
 		safe_delete_array(*ret);
@@ -156,7 +160,8 @@ int MakeAnyLenString(char** ret, const char* format, ...) {
 		else
 			buf_len = chars + 1;
 		*ret = new char[buf_len];
-		chars = vsnprintf(*ret, buf_len, format, argptr);
+		va_copy(tmpargptr, argptr);
+		chars = vsnprintf(*ret, buf_len, format, tmpargptr);
 	}
 	va_end(argptr);
 	return chars;
@@ -169,7 +174,7 @@ int32 AppendAnyLenString(char** ret, int32* bufsize, int32* strlen, const char* 
 		*strlen = 0;
     int chars = -1;
 	char* oldret = 0;
-	va_list argptr;
+	va_list argptr, tmpargptr;
 	va_start(argptr, format);
 	while (chars == -1 || chars >= (sint32)(*bufsize-*strlen)) {
 		if (chars == -1)
@@ -183,7 +188,8 @@ int32 AppendAnyLenString(char** ret, int32* bufsize, int32* strlen, const char* 
 				memcpy(*ret, oldret, *strlen);
 			safe_delete_array(oldret);
 		}
-		chars = vsnprintf(&(*ret)[*strlen], (*bufsize-*strlen), format, argptr);
+		va_copy(tmpargptr, argptr);
+		chars = vsnprintf(&(*ret)[*strlen], (*bufsize-*strlen), format, tmpargptr);
 	}
 	va_end(argptr);
 	*strlen += chars;

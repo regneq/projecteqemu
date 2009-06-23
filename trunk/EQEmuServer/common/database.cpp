@@ -1310,22 +1310,32 @@ int8 Database::GetPEQZone(int32 zoneID){
 	return peqzone;
 }
 
-bool Database::CheckNameFilter(const char* name) 
+bool Database::CheckNameFilter(const char* name, bool surname) 
 {
 	std::string str_name = name;
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
 	MYSQL_RES *result;
 	MYSQL_ROW row;
-	int i;
 
-	// the minimum 4 is enforced by the client too
-	if(!name || strlen(name) < 4 || strlen(name) > 64)
+	if(surname)
 	{
-		return false;
+		// the minimum 4 is enforced by the client too
+		if(!name || strlen(name) < 3)
+		{
+			return false;
+		}
+	}
+	else
+	{
+		// the minimum 4 is enforced by the client too
+		if(!name || strlen(name) < 4 || strlen(name) > 64)
+		{
+			return false;
+		}
 	}
 
-	for (i = 0; i < str_name.size(); i++)
+	for (int i = 0; i < str_name.size(); i++)
 	{
 		if(!isalpha(str_name[i]))
 		{
