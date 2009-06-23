@@ -96,7 +96,7 @@ typedef struct _nodeHeader {
 	
 	uint8 flags;
 	union {
-		uint32 nodes[4];	//index 0 means NULL, not root
+		uint16 nodes[4];	//index 0 means NULL, not root
 		struct {
 			uint32 count;
 			uint32 offset;
