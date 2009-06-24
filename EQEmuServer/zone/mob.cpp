@@ -1160,7 +1160,7 @@ void Mob::GMMove(float x, float y, float z, float heading, bool SendUpdate) {
 #endif
 }
 
-void Mob::SendIllusionPacket(int16 in_race, int8 in_gender, int16 in_texture, int16 in_helmtexture, int8 in_haircolor, int8 in_beardcolor, int8 in_eyecolor1, int8 in_eyecolor2, int8 in_hairstyle, int8 in_luclinface, int8 in_beard, int8 in_aa_title, int32 in_drakkin_heritage, int32 in_drakkin_tattoo, int32 in_drakkin_details, int32* in_armor_tint) {
+void Mob::SendIllusionPacket(int16 in_race, int8 in_gender, int8 in_texture, int8 in_helmtexture, int8 in_haircolor, int8 in_beardcolor, int8 in_eyecolor1, int8 in_eyecolor2, int8 in_hairstyle, int8 in_luclinface, int8 in_beard, int8 in_aa_title, int32 in_drakkin_heritage, int32 in_drakkin_tattoo, int32 in_drakkin_details, float in_size) {
 
 	int16 BaseRace = GetBaseRace();
 
@@ -1185,19 +1185,19 @@ void Mob::SendIllusionPacket(int16 in_race, int8 in_gender, int16 in_texture, in
 		else
 			gender = in_gender;
 	}
-	if (in_texture == 0xFFFF) {
-		if (BaseRace <= 12 || BaseRace == 128 || BaseRace == 130 || BaseRace == 330 || BaseRace == 522)
-			this->texture = 0xFFFF;
+	if (in_texture == 0xFF) {
+		if (in_race <= 12 || in_race == 128 || in_race == 130 || in_race == 330 || in_race == 522)
+			this->texture = 0xFF;
 		else
 			this->texture = GetTexture();
 	}
 	else
 		this->texture = in_texture;
 
-	if (in_helmtexture == 0xFFFF) {
+	if (in_helmtexture == 0xFF) {
 		if (in_race <= 12 || in_race == 128 || in_race == 130 || in_race == 330 || in_race == 522)
-			this->helmtexture = 0xFFFF;
-		else if (in_texture != 0xFFFF)
+			this->helmtexture = 0xFF;
+		else if (in_texture != 0xFF)
 			this->helmtexture = in_texture;
 		else
 			this->helmtexture = GetHelmTexture();
@@ -1257,21 +1257,17 @@ void Mob::SendIllusionPacket(int16 in_race, int8 in_gender, int16 in_texture, in
 	else
 		this->drakkin_details = in_drakkin_details;
 
-	int i;
-	for (i = 0; i < MAX_MATERIALS; i++)
-	{
-		if ((in_armor_tint) && (in_armor_tint[i]))
-			this->armor_tint[i] = in_armor_tint[i];
-		else
-			this->armor_tint[i] = GetArmorTint(i);
-	}
+	if (in_size == 0xFFFFFFFF)
+		this->size = GetSize();
+	else
+		this->size = in_size;
 
 	// Forces the feature information to be pulled from the Player Profile
 	if (this->IsClient() && in_race == 0) {
 		this->race = CastToClient()->GetBaseRace();
 		this->gender = CastToClient()->GetBaseGender();
-		this->texture = 0xFFFF;
-		this->helmtexture = GetHelmTexture();
+		this->texture = 0xFF;
+		this->helmtexture = 0xFF;
 		this->haircolor = CastToClient()->GetBaseHairColor();
 		this->beardcolor = CastToClient()->GetBaseBeardColor();
 		this->eyecolor1 = CastToClient()->GetBaseEyeColor();
@@ -1283,10 +1279,7 @@ void Mob::SendIllusionPacket(int16 in_race, int8 in_gender, int16 in_texture, in
 		this->drakkin_heritage = CastToClient()->GetBaseHeritage();
 		this->drakkin_tattoo = CastToClient()->GetBaseTattoo();
 		this->drakkin_details = CastToClient()->GetBaseDetails();
-		for (i = 0; i < MAX_MATERIALS; i++)
-		{
-			this->armor_tint[i] = 0xFFFFFFFF;
-		}
+		this->size = GetSize();
 	}
 
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_Illusion, sizeof(Illusion_Struct));
@@ -1309,16 +1302,13 @@ void Mob::SendIllusionPacket(int16 in_race, int8 in_gender, int16 in_texture, in
 	is->drakkin_heritage = this->drakkin_heritage;
 	is->drakkin_tattoo = this->drakkin_tattoo;
 	is->drakkin_details = this->drakkin_details;
-	for (i = 0; i < MAX_MATERIALS; i++)
-	{
-		is->armor_tint[i] = this->armor_tint[i];
-	}
+	is->size = this->size;
 
 	DumpPacket(outapp);
 	entity_list.QueueClients(this, outapp);
 	safe_delete(outapp);
-	mlog(CLIENT__SPELLS, "Illusion: Race = %i, Gender = %i, Texture = %i, HelmTexture = %i, HairColor = %i, BeardColor = %i, EyeColor1 = %i, EyeColor2 = %i, HairStyle = %i, Face = %i, DrakkinHeritage = %i, DrakkinTattoo = %i, DrakkinDetails = %i, ArmorTint = %i",
-		this->race, this->gender, this->texture, this->helmtexture, this->haircolor, this->beardcolor, this->eyecolor1, this->eyecolor2, this->hairstyle, this->luclinface, this->drakkin_heritage, this->drakkin_tattoo, this->drakkin_details, this->armor_tint);
+	mlog(CLIENT__SPELLS, "Illusion: Race = %i, Gender = %i, Texture = %i, HelmTexture = %i, HairColor = %i, BeardColor = %i, EyeColor1 = %i, EyeColor2 = %i, HairStyle = %i, Face = %i, DrakkinHeritage = %i, DrakkinTattoo = %i, DrakkinDetails = %i, Size = %f",
+		this->race, this->gender, this->texture, this->helmtexture, this->haircolor, this->beardcolor, this->eyecolor1, this->eyecolor2, this->hairstyle, this->luclinface, this->drakkin_heritage, this->drakkin_tattoo, this->drakkin_details, this->size);
 }
 
 int8 Mob::GetDefaultGender(int16 in_race, int8 in_gender) {
@@ -2224,7 +2214,7 @@ void Mob::SendWearChange(int8 material_slot)
 	safe_delete(outapp);
 }
 
-void Mob::SendTextureWC(int8 slot, int8 texture)
+void Mob::SendTextureWC(int8 slot, int16 texture)
 {
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_WearChange, sizeof(WearChange_Struct));
 	WearChange_Struct* wc = (WearChange_Struct*)outapp->pBuffer;

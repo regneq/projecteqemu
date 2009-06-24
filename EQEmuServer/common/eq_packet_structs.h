@@ -1868,13 +1868,14 @@ struct Illusion_Struct {  //size: 256 - SoF
 /*085*/	uint8	haircolor;		//
 /*086*/	uint8	beard;			//
 /*087*/	uint8	beardcolor;		//
-/*088*/	uint32	drakkin_heritage;	//
-/*092*/	uint32	drakkin_tattoo;		//
-/*096*/	uint32	drakkin_details;	//
-/*100*/	uint32	armor_tint[MAX_MATERIALS];	//
-/*136*/	uint8	eyecolor1;		// Field Not Identified in any Illusion Struct
-/*137*/	uint8	eyecolor2;		// Field Not Identified in any Illusion Struct
-/*138*/	uint8	unknown138[118];	//
+/*088*/	float	size;			//
+/*092*/	uint32	drakkin_heritage;	//
+/*096*/	uint32	drakkin_tattoo;		//
+/*100*/	uint32	drakkin_details;	//
+/*104*/	uint32	armor_tint[MAX_MATERIALS];	//
+/*140*/	uint8	eyecolor1;		// Field Not Identified in any Illusion Struct
+/*141*/	uint8	eyecolor2;		// Field Not Identified in any Illusion Struct
+/*142*/	uint8	unknown138[114];	//
 /*256*/
 };
 

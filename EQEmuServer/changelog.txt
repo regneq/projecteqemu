@@ -1,5 +1,13 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/24/2009==
+Trevius: #wc (wearchange) as well as all of the facial feature commands will now retain armor tint when used.
+Trevius: Using #wc now makes temporary changes visible by all clients.
+Trevius: Decimals can now be used with the #size command instead of it only accepting whole numbers.
+Trevius: Size is now identified in the illusion struct for SoF and Titanium.
+
+Optional SQL: /utils/sql/svn/710_tint_set_naming.sql
+
 ==06/23/2009==
 KLS: /surname changes
 KLS: Implemented OP_ClearSurname

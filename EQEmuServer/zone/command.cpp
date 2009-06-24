@@ -1021,13 +1021,15 @@ void command_wc(Client *c, const Seperator *sep)
 	}
 	else
 	{
-		EQApplicationPacket* outapp = new EQApplicationPacket(OP_WearChange, sizeof(WearChange_Struct));
-		WearChange_Struct* wc = (WearChange_Struct*)outapp->pBuffer;
-		wc->spawn_id = c->GetTarget()->GetID();
-		wc->wear_slot_id = atoi(sep->arg[1]);
-		wc->material = atoi(sep->arg[2]);
-		entity_list.QueueClients(c, outapp);
-		safe_delete(outapp);
+		/*
+		// Leaving here to add color option to the #wc command eventually
+		int32 Color;
+		if (c->GetTarget()->IsClient())
+			Color = c->GetTarget()->GetEquipmentColor(atoi(sep->arg[1]));
+		else
+			Color = c->GetTarget()->GetArmorTint(atoi(sep->arg[1]));
+		*/
+		c->GetTarget()->SendTextureWC(atoi(sep->arg[1]), atoi(sep->arg[2]));
 	}
 }
 
@@ -2435,19 +2437,39 @@ void command_iplookup(Client *c, const Seperator *sep)
 
 void command_size(Client *c, const Seperator *sep)
 {
+	Mob *target=c->GetTarget();
 	if (!sep->IsNumber(1))
-		c->Message(0, "Usage: #size [0 - 255]");
+		c->Message(0, "Usage: #size [0 - 255] (Decimal increments are allowed)");
 	else {
 		float newsize = atof(sep->arg[1]);
 		if (newsize > 255)
 			c->Message(0, "Error: #size: Size can not be greater than 255.");
 		else if (newsize < 0)
 			c->Message(0, "Error: #size: Size can not be less than 0.");
-		else
-			if (c->GetTarget())
-				c->GetTarget()->ChangeSize(newsize, true);
-			else
-				c->ChangeSize(newsize, true);
+		else if (!target)
+			c->Message(0,"Error: this command requires a target");
+		else {
+			int16 Race = target->GetRace();
+			int8 Gender = target->GetGender();
+			int8 Texture = 0xFF;
+			int8 HelmTexture = 0xFF;
+			int8 HairColor = target->GetHairColor();
+			int8 BeardColor = target->GetBeardColor();
+			int8 EyeColor1 = target->GetEyeColor1();
+			int8 EyeColor2 = target->GetEyeColor2();
+			int8 HairStyle = target->GetHairStyle();
+			int8 LuclinFace = target->GetLuclinFace();
+			int8 Beard = target->GetBeard();
+			int32 DrakkinHeritage = target->GetDrakkinHeritage();
+			int32 DrakkinTattoo = target->GetDrakkinTattoo();
+			int32 DrakkinDetails = target->GetDrakkinDetails();
+
+			target->SendIllusionPacket(Race, Gender, Texture, HelmTexture, HairColor, BeardColor,
+										EyeColor1, EyeColor2, HairStyle, LuclinFace, Beard, 0xFF,
+										DrakkinHeritage, DrakkinTattoo, DrakkinDetails, newsize);
+
+			c->Message(0,"Size = %f", atof(sep->arg[1]));
+		}
 	}
 }
 
@@ -2768,7 +2790,7 @@ void command_spawn(Client *c, const Seperator *sep)
 void command_texture(Client *c, const Seperator *sep)
 {	
 	
-	uint8 texture;
+	uint16 texture;
 	if (sep->IsNumber(1) && atoi(sep->arg[1]) >= 0 && atoi(sep->arg[1]) <= 255) {
 		texture = atoi(sep->arg[1]);
 		uint8 helm = 0xFF;
@@ -2796,7 +2818,7 @@ void command_texture(Client *c, const Seperator *sep)
 				helm = texture;
 
 			if (texture == 255) {
-				texture = 0xFF;	// Should be pulling these from the database instead
+				texture = 0xFFFF;	// Should be pulling these from the database instead
 				helm = 0xFF;
 			}
 
@@ -3692,8 +3714,8 @@ void command_fixmob(Client *c, const Seperator *sep)
 	
 		int16 Race = target->GetRace();
 		int8 Gender = target->GetGender();
-		int8 Texture = target->GetTexture();
-		int8 HelmTexture = target->GetHelmTexture();
+		int8 Texture = 0xFF;
+		int8 HelmTexture = 0xFF;
 		int8 HairColor = target->GetHairColor();
 		int8 BeardColor = target->GetBeardColor();
 		int8 EyeColor1 = target->GetEyeColor1();
@@ -3733,6 +3755,8 @@ void command_fixmob(Client *c, const Seperator *sep)
 		}
 		else if (strcasecmp(command, "texture") == 0)
 		{
+			Texture = target->GetTexture();
+		
 			if (Texture == 0 && codeMove == 'p')
 				Texture = 25;
 			else if (Texture >= 25 && codeMove != 'p')
@@ -3744,6 +3768,7 @@ void command_fixmob(Client *c, const Seperator *sep)
 		}
 		else if (strcasecmp(command, "helm") == 0)
 		{
+			HelmTexture = target->GetHelmTexture();
 			if (HelmTexture == 0 && codeMove == 'p')
 				HelmTexture = 25;
 			else if (HelmTexture >= 25 && codeMove != 'p')
@@ -5189,8 +5214,8 @@ void command_randomfeatures(Client *c, const Seperator *sep)
 	else if (Race <= 12 || Race == 128 || Race == 130 || Race == 330 || Race == 522) {
 		
 		int8 Gender = target->GetGender();
-		int16 Texture = 0xFFFF;
-		int16 HelmTexture = 0xFFFF;
+		int8 Texture = 0xFF;
+		int8 HelmTexture = 0xFF;
 		int8 HairColor = 0xFF;
 		int8 BeardColor = 0xFF;
 		int8 EyeColor1 = 0xFF;
@@ -5380,8 +5405,8 @@ void command_face(Client *c, const Seperator *sep)
 	else {
 		int16 Race = target->GetRace();
 		int8 Gender = target->GetGender();
-		int8 Texture = target->GetTexture();
-		int8 HelmTexture = target->GetHelmTexture();
+		int8 Texture = 0xFF;
+		int8 HelmTexture = 0xFF;
 		int8 HairColor = target->GetHairColor();
 		int8 BeardColor = target->GetBeardColor();
 		int8 EyeColor1 = target->GetEyeColor1();
@@ -5411,8 +5436,8 @@ void command_details(Client *c, const Seperator *sep)
 	else {
 		int16 Race = target->GetRace();
 		int8 Gender = target->GetGender();
-		int8 Texture = target->GetTexture();
-		int8 HelmTexture = target->GetHelmTexture();
+		int8 Texture = 0xFF;
+		int8 HelmTexture = 0xFF;
 		int8 HairColor = target->GetHairColor();
 		int8 BeardColor = target->GetBeardColor();
 		int8 EyeColor1 = target->GetEyeColor1();
@@ -5442,8 +5467,8 @@ void command_heritage(Client *c, const Seperator *sep)
 	else {
 		int16 Race = target->GetRace();
 		int8 Gender = target->GetGender();
-		int8 Texture = target->GetTexture();
-		int8 HelmTexture = target->GetHelmTexture();
+		int8 Texture = 0xFF;
+		int8 HelmTexture = 0xFF;
 		int8 HairColor = target->GetHairColor();
 		int8 BeardColor = target->GetBeardColor();
 		int8 EyeColor1 = target->GetEyeColor1();
@@ -5473,8 +5498,8 @@ void command_tattoo(Client *c, const Seperator *sep)
 	else {
 		int16 Race = target->GetRace();
 		int8 Gender = target->GetGender();
-		int8 Texture = target->GetTexture();
-		int8 HelmTexture = target->GetHelmTexture();
+		int8 Texture = 0xFF;
+		int8 HelmTexture = 0xFF;
 		int8 HairColor = target->GetHairColor();
 		int8 BeardColor = target->GetBeardColor();
 		int8 EyeColor1 = target->GetEyeColor1();
@@ -5504,7 +5529,7 @@ void command_helm(Client *c, const Seperator *sep)
 	else {
 		int16 Race = target->GetRace();
 		int8 Gender = target->GetGender();
-		int8 Texture = target->GetTexture();
+		int8 Texture = 0xFF;
 		int8 HelmTexture = atoi(sep->arg[1]);
 		int8 HairColor = target->GetHairColor();
 		int8 BeardColor = target->GetBeardColor();
@@ -5535,8 +5560,8 @@ void command_hair(Client *c, const Seperator *sep)
 	else {
 		int16 Race = target->GetRace();
 		int8 Gender = target->GetGender();
-		int8 Texture = target->GetTexture();
-		int8 HelmTexture = target->GetHelmTexture();
+		int8 Texture = 0xFF;
+		int8 HelmTexture = 0xFF;
 		int8 HairColor = target->GetHairColor();
 		int8 BeardColor = target->GetBeardColor();
 		int8 EyeColor1 = target->GetEyeColor1();
@@ -5566,8 +5591,8 @@ void command_haircolor(Client *c, const Seperator *sep)
 	else {
 		int16 Race = target->GetRace();
 		int8 Gender = target->GetGender();
-		int8 Texture = target->GetTexture();
-		int8 HelmTexture = target->GetHelmTexture();
+		int8 Texture = 0xFF;
+		int8 HelmTexture = 0xFF;
 		int8 HairColor = atoi(sep->arg[1]);
 		int8 BeardColor = target->GetBeardColor();
 		int8 EyeColor1 = target->GetEyeColor1();
@@ -5597,8 +5622,8 @@ void command_beard(Client *c, const Seperator *sep)
 	else {
 		int16 Race = target->GetRace();
 		int8 Gender = target->GetGender();
-		int8 Texture = target->GetTexture();
-		int8 HelmTexture = target->GetHelmTexture();
+		int8 Texture = 0xFF;
+		int8 HelmTexture = 0xFF;
 		int8 HairColor = target->GetHairColor();
 		int8 BeardColor = target->GetBeardColor();
 		int8 EyeColor1 = target->GetEyeColor1();
@@ -5628,8 +5653,8 @@ void command_beardcolor(Client *c, const Seperator *sep)
 	else {
 		int16 Race = target->GetRace();
 		int8 Gender = target->GetGender();
-		int8 Texture = target->GetTexture();
-		int8 HelmTexture = target->GetHelmTexture();
+		int8 Texture = 0xFF;
+		int8 HelmTexture = 0xFF;
 		int8 HairColor = target->GetHairColor();
 		int8 BeardColor = atoi(sep->arg[1]);
 		int8 EyeColor1 = target->GetEyeColor1();
