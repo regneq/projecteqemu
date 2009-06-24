@@ -1570,7 +1570,8 @@ void NPC::ModifyNPCStat(const char *identifier, const char *newValue)
 	}
 	if(id == "max_hp")
 	{
-		max_hp = atoi(val.c_str());
+		base_hp = atoi(val.c_str());
+		CalcMaxHP();
 		if(cur_hp > max_hp)
 			cur_hp = max_hp;
 		return;
