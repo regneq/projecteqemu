@@ -1624,7 +1624,8 @@ struct Illusion_Struct {
 /*081*/	uint8	haircolor;
 /*082*/	uint8	beard;
 /*083*/	uint8	beardcolor;
-/*084*/	char	unknown084[84];
+/*084*/	float	size;
+/*088*/	char	unknown084[80];
 /*168*/
 };
 

@@ -1244,6 +1244,7 @@ ENCODE(OP_Illusion) {
 	OUT(haircolor);
 	OUT(beard);
 	OUT(beardcolor);
+	OUT(size);
 	OUT(drakkin_heritage);
 	OUT(drakkin_tattoo);
 	OUT(drakkin_details);

@@ -836,6 +836,7 @@ ENCODE(OP_Illusion) {
 	OUT(haircolor);
 	OUT(beard);
 	OUT(beardcolor);
+	OUT(size);
 	/*
 	//Test code for identifying the structure
 	uint8 ofs;

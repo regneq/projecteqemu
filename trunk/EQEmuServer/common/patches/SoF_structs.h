@@ -1858,7 +1858,7 @@ struct Illusion_Struct {  //size: 256
 /*085*/	uint8	haircolor;		// Verified
 /*086*/	uint8	beard;			// Verified
 /*087*/	uint8	beardcolor;		// Verified
-/*088*/ int32	unknown088;		// small and in world
+/*088*/ float	size;			// 
 /*092*/	uint8	unknown021[148];
 /*240*/ int32	unknown240;		// Removes armor?
 /*244*/ int32	drakkin_heritage;	// Verified
