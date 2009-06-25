@@ -657,6 +657,11 @@ ENCODE(OP_Illusion) {
 	OUT(texture);
 	OUT(helmtexture);
 	OUT(face);
+	OUT(hairstyle);
+	OUT(haircolor);
+	OUT(beard);
+	OUT(beardcolor);
+	OUT(size);
 
 	FINISH_ENCODE();
 }

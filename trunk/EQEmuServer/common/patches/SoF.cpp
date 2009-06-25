@@ -548,8 +548,8 @@ ENCODE(OP_PlayerProfile) {
 	for(r = 0; r < 50; r++) {
 		OUT(disciplines.values[r]);
 	}
-//	OUT(unknown05008[360]);
-//	OUT_array(recastTimers, structs::MAX_RECAST_TYPES);
+	OUT_array(recastTimers, structs::MAX_RECAST_TYPES);
+//	OUT(unknown08124[360]);
 	OUT(endurance);
 	OUT(aapoints_spent);
 	OUT(aapoints);

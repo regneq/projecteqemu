@@ -764,8 +764,8 @@ struct PlayerProfile_Struct
 /*05004*/ uint32  hunger_level;             // Food (ticks till next eat)
 /*05008*/ SpellBuff_Struct buffs[BUFF_COUNT];   // Buffs currently on the player
 /*05508*/ Disciplines_Struct  disciplines; // Known disciplines
-/*05908*/ uint8 unknown05008[160];
-/*06068*/ uint32 recastTimers[MAX_RECAST_TYPES]; // Timers (GMT of last use)
+/*05908*/ uint32 recastTimers[MAX_RECAST_TYPES]; // Timers (GMT of last use)
+/*05988*/ uint8 unknown05008[160];
 /*06148*/ uint32  endurance;          // Current endurance
 /*06152*/ uint32  aapoints_spent;           // Number of spent AA points
 /*06156*/ uint32  aapoints;         // Unspent AA points
