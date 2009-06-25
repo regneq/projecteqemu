@@ -63,8 +63,8 @@ RULE_BOOL ( Character, SharedBankPlat, false) //off by default to prevent duping
 RULE_BOOL ( Character, BindAnywhere, false)
 RULE_INT ( Character, RestRegenPercent, 0) // Set to >0 to enable rest state bonus HP and mana regen.
 RULE_INT ( Character, RestRegenTimeToActivate, 30) // Time in seconds for rest state regen to kick in.
-RULE_INT ( Character, KillsPerGroupLeadershipAA, 50) // Number of dark blues or above per Group Leadership AA
-RULE_INT ( Character, KillsPerRaidLeadershipAA, 50) // Number of dark blues or above per Raid Leadership AA
+RULE_INT ( Character, KillsPerGroupLeadershipAA, 250) // Number of dark blues or above per Group Leadership AA
+RULE_INT ( Character, KillsPerRaidLeadershipAA, 250) // Number of dark blues or above per Raid Leadership AA
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Guild )
@@ -191,7 +191,9 @@ RULE_REAL ( Combat, WeaponSkillFalloff, 0.33) //For every weapon skill point tha
 RULE_REAL ( Combat, ArcheryHitPenalty, 0.25) //Archery has a hit penalty to try to help balance it with the plethora of long term +hit modifiers for it
 RULE_REAL ( Combat, AgiHitFactor, 0.01) 
 RULE_INT ( Combat, MinRangedAttackDist, 25) //Minimum Distance to use Ranged Attacks
-RULE_REAL ( Combat, ArcheryStationaryPenalty, 1.0)	//Damage Penalty for moving or rooted targets.  1 = 50% penalty (Default), 2 = no penalty, 0 = 100% penalty
+RULE_BOOL ( Combat, ArcheryBonusRequiresStationary, true) //does the 2x archery bonus chance require a stationary npc
+RULE_REAL ( Combat, ArcheryBonusBaseChance, 2.0) //Base chance to get double hit
+RULE_REAL ( Combat, ArcheryBonusChanceFactor, 0.075) //this * double attack skill = bonus chance to get double hit
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( NPC )

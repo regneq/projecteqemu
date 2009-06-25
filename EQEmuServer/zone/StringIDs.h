@@ -16,6 +16,7 @@
 #define DOORS_GM					133		//You opened the locked door with your magic GM key.
 #define GAIN_XP						138		//You gain experience!!
 #define GAIN_GROUPXP				139		//You gain party experience!!
+#define BOW_DOUBLE_DAMAGE			143		//Your bow shot did double dmg.
 #define FORAGE_GRUBS				150		//You have scrounged up some fishing grubs.
 #define FORAGE_WATER				151		//You have scrounged up some water.
 #define FORAGE_FOOD					152		//You have scrounged up some food.
