@@ -1620,12 +1620,32 @@ void Mob::SetAttackTimer() {
 			if(speed < 800)
 				speed = 800;
 
-			if(ItemToUse && (ItemToUse->ItemType == ItemTypeBow || ItemToUse->ItemType == ItemTypeThrowing)){
-				//quiver haste?
-				//ranged timer is kinda off.. give it a LITTLE slack.. just a tiny bit though!
-				//I was able to still catch timers of 50ms or so if I spammed my button at 1950 speed base
-				speed = speed * 97 / 100;
+			if(ItemToUse && (ItemToUse->ItemType == ItemTypeBow || ItemToUse->ItemType == ItemTypeThrowing))
+			{
+				if(IsClient())
+				{
+					float max_quiver = 0;
+					for(int r = SLOT_PERSONAL_BEGIN; r <= SLOT_PERSONAL_END; r++) 
+					{
+						const ItemInst *pi = CastToClient()->GetInv().GetItem(r);
+						if(!pi)
+							continue;
+						if(pi->IsType(ItemClassContainer) && pi->GetItem()->BagType == bagTypeQuiver)
+						{
+							float temp_wr = (pi->GetItem()->BagWR / 3);
+							if(temp_wr > max_quiver)
+							{
+								max_quiver = temp_wr;
+							}
+						}
+					}
+					if(max_quiver > 0)
+					{
+						float quiver_haste = 1 / (1 + max_quiver / 100);
+						speed *= quiver_haste;
+					}
 				}
+			}
 			TimerToUse->SetAtTrigger(speed, true);
 		}
 		

@@ -5,6 +5,9 @@ Trevius: #wc (wearchange) as well as all of the facial feature commands will now
 Trevius: Using #wc now makes temporary changes visible by all clients.
 Trevius: Decimals can now be used with the #size command instead of it only accepting whole numbers.
 Trevius: Size is now identified in the illusion struct for SoF and Titanium.
+KLS: Implemented quiver haste.
+KLS: Change to ranger stationary archery bonus. (Re: Nerfed)
+KLS: Adjusted high level ranger archery hate.
 
 Optional SQL: /utils/sql/svn/710_tint_set_naming.sql
 
