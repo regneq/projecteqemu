@@ -762,6 +762,7 @@ static const uint32 MAX_PP_MEMSPELL		= 9;
 static const uint32 MAX_PP_SKILL		= 75;
 static const uint32 MAX_PP_AA_ARRAY		= 240;
 static const uint32 MAX_GROUP_MEMBERS	= 6;
+static const uint32 MAX_RECAST_TYPES	= 20;
 
 /*
 showeq -> eqemu
@@ -944,7 +945,8 @@ struct PlayerProfile_Struct
 /*7220*/	uint32				tribute_active;		//1=active
 /*7224*/	Tribute_Struct		tributes[MAX_PLAYER_TRIBUTES];
 /*7264*/	Disciplines_Struct	disciplines;			//fathernitwit: 10-06-04
-/*7664*/	char				unknown7464[240];
+/*7664*/	uint32				recastTimers[MAX_RECAST_TYPES]; // Timers (GMT of last use)
+/*7744*/	char				unknown7744[160];
 /*7904*/	uint32				endurance;
 /*7908*/	uint32				group_leadership_exp;	//0-1000
 /*7912*/	uint32				raid_leadership_exp;	//0-2000

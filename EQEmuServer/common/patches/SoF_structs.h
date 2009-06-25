@@ -845,8 +845,8 @@ struct PlayerProfile_Struct //23576 Octets
 /*07040*/ uint32  hunger_level;			// Food (ticks till next eat)
 /*07044*/ SpellBuff_Struct buffs[BUFF_COUNT];	// [600]Buffs currently on the player
 /*07644*/ Disciplines_Struct  disciplines;	// [400] Known disciplines
-/*08044*/ uint8 unknown05008[160];
-/*08204*/ uint32 recastTimers[MAX_RECAST_TYPES]; // Timers (GMT of last use)
+/*08044*/ uint32 recastTimers[MAX_RECAST_TYPES]; // Timers (UNIX Time of last use)
+/*08124*/ uint8 unknown08124[160];		// Some type of Timers
 /*08284*/ uint32  endurance;			// Current endurance
 /*08288*/ uint32  aapoints_spent;		// Number of spent AA points
 /*08292*/ uint32  aapoints;				// Unspent AA points
@@ -1842,28 +1842,28 @@ struct AdventureLeaderboard_Struct
 
 struct Illusion_Struct {  //size: 256
 /*000*/	uint32	spawnid;
-/*004*/	char charname[64];		//fix for 7-14-04 patch
-/*068*/	uint16	race;			// race
+/*004*/	char	charname[64];	//
+/*068*/	uint16	race;			//
 /*070*/	char	unknown006[2];	// Weird green name
 /*072*/	uint8	gender;
 /*073*/	uint8	texture;
-/*074*/	uint8	unknown008;		//
-/*075*/	uint8	unknown009;		//
-/*076*/	uint8	helmtexture;	// Verified
-/*077*/	uint8	unknown010;		//
-/*078*/	uint8	unknown011;		//
-/*079*/	uint8	unknown012;		//
-/*080*/	uint32	face;			// Verified
-/*084*/	uint8	hairstyle;		// Verified
-/*085*/	uint8	haircolor;		// Verified
-/*086*/	uint8	beard;			// Verified
-/*087*/	uint8	beardcolor;		// Verified
+/*074*/	uint8	unknown074;		//
+/*075*/	uint8	unknown075;		//
+/*076*/	uint8	helmtexture;	//
+/*077*/	uint8	unknown077;		//
+/*078*/	uint8	unknown078;		//
+/*079*/	uint8	unknown079;		//
+/*080*/	uint32	face;			//
+/*084*/	uint8	hairstyle;		// Some Races don't change Hair Style Properly in SoF
+/*085*/	uint8	haircolor;		// 
+/*086*/	uint8	beard;			// 
+/*087*/	uint8	beardcolor;		// 
 /*088*/ float	size;			// 
-/*092*/	uint8	unknown021[148];
+/*092*/	uint8	unknown092[148];
 /*240*/ int32	unknown240;		// Removes armor?
-/*244*/ int32	drakkin_heritage;	// Verified
-/*248*/ int32	drakkin_tattoo;		// Verified
-/*252*/ int32	drakkin_details;	// Verified
+/*244*/ int32	drakkin_heritage;	// 
+/*248*/ int32	drakkin_tattoo;		// 
+/*252*/ int32	drakkin_details;	// 
 /*256*/
 };
 

@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/25/2009==
+Trevius: Structure work for Player Profile Recast Timers and Illusions in 6.2 Client.
+
 ==06/24/2009==
 Trevius: #wc (wearchange) as well as all of the facial feature commands will now retain armor tint when used.
 Trevius: Using #wc now makes temporary changes visible by all clients.
