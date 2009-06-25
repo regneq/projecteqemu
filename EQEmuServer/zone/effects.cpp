@@ -338,27 +338,25 @@ sint32 Client::GetActSpellCost(int16 spell_id, sint32 cost)
 {
 	sint32 Result = 0;
 
-	if(GetClass() == WIZARD || GetClass() == ENCHANTER || GetClass() == MAGICIAN || GetClass() == NECROMANCER || GetClass() == DRUID || GetClass() == SHAMAN || GetClass() == CLERIC || GetClass() == BARD) {
-		// This formula was derived from the following resource:
-		// http://www.eqsummoners.com/eq1/specialization-library.html
-		// WildcardX
-		float PercentManaReduction = 0;
-		float PercentOfMaxSpecializeSkill = 0;
-		float MaxSpecilizationSkillAllowed = MaxSkill(spells[spell_id].skill);
-		float SpecializeSkill = GetSpecializeSkillValue(spell_id);
-		int SuccessChance = MakeRandomInt(0, 100);
-		
-		if(MaxSpecilizationSkillAllowed > 0)
-			PercentOfMaxSpecializeSkill = SpecializeSkill / MaxSpecilizationSkillAllowed;
-		
-		if(SuccessChance <= (PercentOfMaxSpecializeSkill * 100))
-			PercentManaReduction = (SpecializeSkill * .053) - 5.65;
-		
-		PercentManaReduction += GetAA(aaSpellCastingMastery);
-		PercentManaReduction += GetAA(aaAdvancedSpellCastingMastery);
-		PercentManaReduction += this->CastToClient()->GetFocusEffect(focusManaCost, spell_id);
-		cost -= (cost * (PercentManaReduction / 100));
-	}
+	// This formula was derived from the following resource:
+	// http://www.eqsummoners.com/eq1/specialization-library.html
+	// WildcardX
+	float PercentManaReduction = 0;
+	float PercentOfMaxSpecializeSkill = 0;
+	float MaxSpecilizationSkillAllowed = MaxSkill(spells[spell_id].skill);
+	float SpecializeSkill = GetSpecializeSkillValue(spell_id);
+	int SuccessChance = MakeRandomInt(0, 100);
+
+	if(MaxSpecilizationSkillAllowed > 0)
+		PercentOfMaxSpecializeSkill = SpecializeSkill / MaxSpecilizationSkillAllowed;
+
+	if(SuccessChance <= (PercentOfMaxSpecializeSkill * 100))
+		PercentManaReduction = (SpecializeSkill * .053) - 5.65;
+
+	PercentManaReduction += GetAA(aaSpellCastingMastery);
+	PercentManaReduction += GetAA(aaAdvancedSpellCastingMastery);
+	PercentManaReduction += this->CastToClient()->GetFocusEffect(focusManaCost, spell_id);
+	cost -= (cost * (PercentManaReduction / 100));
 
 	if(cost < 0)
 		cost = 0;
@@ -366,30 +364,6 @@ sint32 Client::GetActSpellCost(int16 spell_id, sint32 cost)
 	Result = cost;
 
 	return Result;
-
-	/*
-	//	int16 modspellid = 0;
-
-	int reduce = 100;
-	
-	reduce -= GetFocusEffect(focusManaCost, spell_id);
-	//if (GetReduceManaCostItem(modspellid, NULL)) {
-	//	reduce = GenericFocus(spell_id, modspellid);
-	//}
-
-	//reduce -= CastToClient()->GetFocusEffect(9, spell_id);
-	
-	uint32 spec_value = GetSpecializeSkillValue(spell_id);
-		//VERY rough success formula, needs research
-	uint32 spec_goal = spec_value + 98 + 5 * (GetAA(aaSpellCastingMastery) + GetAA(aaAdvancedSpellCastingMastery));
-	if(spec_value > 0 && (spec_goal < (uint32)MakeRandomInt(0, 600))) {
-		reduce -= spec_value * SPECIALIZE_MANA_REDUCE / 200;
-	}
-	//arbitrary rule: cannot reduce it below 10%
-	if(reduce < 10)
-		reduce = 10;
-	return (cost * reduce) / 100;
-	*/
 }
 
 sint32 Client::GetActSpellDuration(int16 spell_id, sint32 duration)
