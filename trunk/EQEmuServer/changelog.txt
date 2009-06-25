@@ -8,6 +8,8 @@ Trevius: Size is now identified in the illusion struct for SoF and Titanium.
 KLS: Implemented quiver haste.
 KLS: Change to ranger stationary archery bonus. (Re: Nerfed)
 KLS: Adjusted high level ranger archery hate.
+KLS: Fix for mana reduction focus effect checking base instead of base2
+KLS: Fix for hybrids not getting mana reduction effects.
 
 Optional SQL: /utils/sql/svn/710_tint_set_naming.sql
 

@@ -3579,9 +3579,9 @@ sint16 Client::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id) {
 			}
 			break;
 		case SE_ReduceManaCost:
-			if (type == focusManaCost && focus_spell.base[i] > value)
+			if (type == focusManaCost && focus_spell.base2[i] > value)
 			{
-				value = focus_spell.base[i];
+				value = focus_spell.base2[i];
 			}
 			break;
 		case SE_PetPowerIncrease:
