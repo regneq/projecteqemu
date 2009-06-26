@@ -902,18 +902,18 @@ void Client::RangedAttack(Mob* other) {
 			if(ADmg < 0)
 				ADmg = 0;
 
-			uint32 MaxDmg = (2*(WDmg+ADmg)*GetDamageTable(ARCHERY)) / 100;
-			sint32 hate = (2*(WDmg+ADmg));
+			uint32 MaxDmg = ((WDmg+ADmg)*GetDamageTable(ARCHERY)) / 100;
+			sint32 hate = ((WDmg+ADmg));
 						
 			switch(GetAA(aaArcheryMastery)) {
 				case 1:
-					MaxDmg = MaxDmg * 115/100;
+					MaxDmg = MaxDmg * 130/100;
 					break;
 				case 2:
-					MaxDmg = MaxDmg * 125/100;
+					MaxDmg = MaxDmg * 160/100;
 					break;
 				case 3:
-					MaxDmg = MaxDmg * 150/100;
+					MaxDmg = MaxDmg * 2;
 					break;
 			}
 			
@@ -925,30 +925,18 @@ void Client::RangedAttack(Mob* other) {
 				{
 					if(target->IsNPC() && !target->IsMoving() && !target->IsRooted())
 					{
-						float double_chance = RuleR(Combat, ArcheryBonusBaseChance) 
-							+ (float)GetSkill(DOUBLE_ATTACK) * RuleR(Combat, ArcheryBonusChanceFactor);
-
-						if(MakeRandomFloat(0, 99) < double_chance)
-						{
-							MaxDmg *= 2;
-							hate *= 2;
-							mlog(COMBAT__RANGED, "Ranger. Double damage success roll, doubling damage to %d", MaxDmg);
-							Message_StringID(MT_CritMelee, BOW_DOUBLE_DAMAGE);
-						}
-					}
-				}
-				else
-				{
-					float double_chance = RuleR(Combat, ArcheryBonusBaseChance) 
-						+ (float)GetSkill(DOUBLE_ATTACK) * RuleR(Combat, ArcheryBonusChanceFactor);
-
-					if(MakeRandomFloat(0, 99) < double_chance)
-					{
 						MaxDmg *= 2;
 						hate *= 2;
 						mlog(COMBAT__RANGED, "Ranger. Double damage success roll, doubling damage to %d", MaxDmg);
 						Message_StringID(MT_CritMelee, BOW_DOUBLE_DAMAGE);
 					}
+				}
+				else
+				{
+					MaxDmg *= 2;
+					hate *= 2;
+					mlog(COMBAT__RANGED, "Ranger. Double damage success roll, doubling damage to %d", MaxDmg);
+					Message_StringID(MT_CritMelee, BOW_DOUBLE_DAMAGE);
 				}
 			}
 

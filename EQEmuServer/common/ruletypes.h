@@ -192,8 +192,6 @@ RULE_REAL ( Combat, ArcheryHitPenalty, 0.25) //Archery has a hit penalty to try 
 RULE_REAL ( Combat, AgiHitFactor, 0.01) 
 RULE_INT ( Combat, MinRangedAttackDist, 25) //Minimum Distance to use Ranged Attacks
 RULE_BOOL ( Combat, ArcheryBonusRequiresStationary, true) //does the 2x archery bonus chance require a stationary npc
-RULE_REAL ( Combat, ArcheryBonusBaseChance, 2.0) //Base chance to get double hit
-RULE_REAL ( Combat, ArcheryBonusChanceFactor, 0.075) //this * double attack skill = bonus chance to get double hit
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( NPC )

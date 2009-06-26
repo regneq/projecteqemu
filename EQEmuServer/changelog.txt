@@ -3,6 +3,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==06/26/2009==
 Trevius: SoF - Tradeskill containers within a character inventory can now combine recipes.
 Trevius: SoF - Items with Recast Delays no longer appear as greyed out.
+KLS: More changes to archery damage.
 
 ==06/25/2009==
 Trevius: Structure work for Player Profile Recast Timers and Illusions in 6.2 Client.
