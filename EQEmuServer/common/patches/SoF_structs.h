@@ -3675,7 +3675,7 @@ struct ItemSerializationHeader
 	uint32 unknown020; //0
 	uint32 instance_id; //unique instance id if not merchant item, else is merchant slot
 	uint32 unknown028; //0
-	uint32 potion_type;
+	uint32 last_cast_time;	// Unix Time from PP of last cast for this recast type if recast delay > 0
 	uint32 charges; //Total Charges an item has (-1 for unlimited)
 	uint32 inst_nodrop; // 1 if the item is no drop (attuned items)
 	uint32 unknown044; //0

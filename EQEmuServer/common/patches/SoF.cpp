@@ -1584,7 +1584,7 @@ ENCODE(OP_ReadBook) {
 	else
 		eq->window = emu->window;
 	OUT(type);
-	OUT(invslot);
+	eq->invslot = TitaniumToSoFSlot(emu->invslot);
 	strn0cpy(eq->txtfile, emu->booktext, sizeof(eq->txtfile));
 	FINISH_ENCODE();
 }
@@ -1911,9 +1911,18 @@ DECODE(OP_ReadBook) {
 	SETUP_DIRECT_DECODE(BookRequest_Struct, structs::BookRequest_Struct);
 
 	IN(type);
-	IN(invslot);
+	emu->invslot = SoFToTitaniumSlot(eq->invslot);
 	emu->window = (uint8) eq->window;
 	strn0cpy(emu->txtfile, eq->txtfile, sizeof(emu->txtfile));
+
+	FINISH_DIRECT_DECODE();
+}
+
+DECODE(OP_TradeSkillCombine) {
+	DECODE_LENGTH_EXACT(structs::NewCombine_Struct);
+	SETUP_DIRECT_DECODE(NewCombine_Struct, structs::NewCombine_Struct);
+
+	emu->container_slot = SoFToTitaniumSlot(eq->container_slot);
 
 	FINISH_DIRECT_DECODE();
 }
@@ -1965,9 +1974,10 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	uint8 null_term = 0;
 	bool stackable = inst->IsStackable();
 	uint32 merchant_slot = inst->GetMerchantSlot();
-	sint16 charges = inst->GetCharges();
+	uint32 charges = inst->GetCharges();
+	if (charges > 254)
+		charges = 0xFFFFFFFF;
 
-	
 	std::stringstream ss(std::stringstream::in | std::stringstream::out | std::stringstream::binary);
 	ss.clear();
 
@@ -1979,16 +1989,13 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 
 	sint32 slot_id = TitaniumToSoFSlot(slot_id_in);
 
-	// It looks like Power Source is slot 21 and Ammo got bumped to slot 22
-	// This will have to be changed somehow to handle slot 21 for Power Source items
-
 	hdr.slot = (merchant_slot == 0) ? slot_id : merchant_slot;
 	hdr.price = inst->GetPrice();
 	hdr.merchant_slot = (merchant_slot == 0) ? 1 : inst->GetMerchantCount();
 	hdr.unknown020 = 0;
 	hdr.instance_id = (merchant_slot == 0) ? inst->GetSerialNumber() : merchant_slot;
 	hdr.unknown028 = 0;
-	hdr.potion_type = (stackable ? ((inst->GetItem()->ItemType == ItemTypePotion) ? 1 : 0) : charges);
+	hdr.last_cast_time = ((item->RecastDelay > 1) ? 1212693140 : 0); //(stackable ? ((inst->GetItem()->ItemType == ItemTypePotion) ? 1 : 0) : charges);
 	hdr.charges = charges;
 	hdr.inst_nodrop = inst->IsInstNoDrop() ? 1 : 0;
 	hdr.unknown044 = 0;

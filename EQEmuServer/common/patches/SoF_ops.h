@@ -77,5 +77,6 @@ D(OP_ReadBook)
 D(OP_AugmentInfo)
 D(OP_FaceChange)
 D(OP_AdventureMerchantSell)
+D(OP_TradeSkillCombine)
 #undef E
 #undef D
