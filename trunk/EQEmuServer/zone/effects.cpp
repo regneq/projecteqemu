@@ -329,9 +329,8 @@ sint32 Client::GetActSpellCost(int16 spell_id, sint32 cost)
 	}
 	
 	bonus += 0.05 * GetAA(aaAdvancedSpellCastingMastery);
-	PercentOfMaxSpecializeSkill *= bonus;
 
-	if(SuccessChance <= (SpecializeSkill * 0.3))
+	if(SuccessChance <= (SpecializeSkill * 0.3 * bonus))
 	{
 		PercentManaReduction = 1 + 0.05 * SpecializeSkill;
 		switch(GetAA(aaSpellCastingMastery))
