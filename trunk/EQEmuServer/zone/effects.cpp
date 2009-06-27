@@ -32,12 +32,8 @@
 
 float Client::GetActSpellRange(int16 spell_id, float range)
 {
-//	int16 modspellid = 0;
 	float extrange = 100;
 
-	/*if (GetExtendedRangeItem(modspellid, NULL)) {
-		extrange = GenericFocus(spell_id, modspellid);
-	}*/
 	extrange += GetFocusEffect(focusRange, spell_id);
 	
 	return (range * extrange) / 100;
@@ -49,9 +45,6 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 	// modifier: modifier to damage (from spells & focus effects?)
 	// ratio: % of the modifier to apply (from AAs & natural bonus?)
 	// chance: critital chance %
-	
-//	int16 modspellid = 0;
-	
 	//all of the ordering and stacking in here might be wrong, but I dont care right now.
 	
 	
@@ -69,8 +62,6 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
     } else {
     	//damage spells.
 		modifier += GetFocusEffect(focusImprovedDamage, spell_id);
-		//if (GetImprovedDamageItem(modspellid, NULL))
-		//	modifier = GenericFocus(spell_id, modspellid);
 	}
 	
 	//these spell IDs could be wrong
@@ -223,13 +214,9 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 }
 
 sint32 Client::GetActSpellHealing(int16 spell_id, sint32 value) {
-//	int16 modspellid = 0;
-
 	sint32 modifier = 100;
-	
+
 	modifier += GetFocusEffect(focusImprovedHeal, spell_id);
-	//if (GetImprovedHealingItem(modspellid, NULL))
-	//	modifier = GenericFocus(spell_id, modspellid);
 						
 	if(spells[spell_id].buffduration < 1) {
 		//non-dot
@@ -318,76 +305,97 @@ sint32 Client::GetActSpellHealing(int16 spell_id, sint32 value) {
 	return (value * modifier) / 100;
 }
 
-/*sint32 Client::GetDotFocus(int16 spell_id, sint32 value) {
-//	int16 modspellid = 0;
-
-	int modifier = 100;
-	
-
-	modifier += GetFocusEffect(focusImprovedDOT, spell_id);
-	//if (GetImprovedDamageItem(modspellid, NULL)) {
-	//		modifier = GenericFocus(spell_id, modspellid);
-	//}
-	
-	//why is this ammount random?
-	int randamount = MakeRandomInt(1, (100-modifier));
-	return (value * (100-randamount)) / 100;
-}*/
-
 sint32 Client::GetActSpellCost(int16 spell_id, sint32 cost)
 {
-	sint32 Result = 0;
-
 	// This formula was derived from the following resource:
 	// http://www.eqsummoners.com/eq1/specialization-library.html
 	// WildcardX
 	float PercentManaReduction = 0;
-	float PercentOfMaxSpecializeSkill = 0;
-	float MaxSpecilizationSkillAllowed = MaxSkill(spells[spell_id].skill);
 	float SpecializeSkill = GetSpecializeSkillValue(spell_id);
 	int SuccessChance = MakeRandomInt(0, 100);
 
-	if(MaxSpecilizationSkillAllowed > 0)
-		PercentOfMaxSpecializeSkill = SpecializeSkill / MaxSpecilizationSkillAllowed;
+	float bonus = 1.0;
+	switch(GetAA(aaSpellCastingMastery))
+	{
+	case 1:
+		bonus += 0.05;
+		break;
+	case 2:
+		bonus += 0.15;
+		break;
+	case 3:
+		bonus += 0.30;
+		break;
+	}
+	
+	bonus += 0.05 * GetAA(aaAdvancedSpellCastingMastery);
+	PercentOfMaxSpecializeSkill *= bonus;
 
-	if(SuccessChance <= (PercentOfMaxSpecializeSkill * 100))
-		PercentManaReduction = (SpecializeSkill * .053) - 5.65;
+	if(SuccessChance <= (SpecializeSkill * 0.3))
+	{
+		PercentManaReduction = 1 + 0.05 * SpecializeSkill;
+		switch(GetAA(aaSpellCastingMastery))
+		{
+		case 1:
+			PercentManaReduction += 2.5;
+			break;
+		case 2:
+			PercentManaReduction += 5.0;
+			break;
+		case 3:
+			PercentManaReduction += 10.0;
+			break;
+		}
 
-	PercentManaReduction += GetAA(aaSpellCastingMastery);
-	PercentManaReduction += GetAA(aaAdvancedSpellCastingMastery);
-	PercentManaReduction += this->CastToClient()->GetFocusEffect(focusManaCost, spell_id);
+		switch(GetAA(aaAdvancedSpellCastingMastery))
+		{
+		case 1:
+			PercentManaReduction += 2.5;
+			break;
+		case 2:
+			PercentManaReduction += 5.0;
+			break;
+		case 3:
+			PercentManaReduction += 10.0;
+			break;
+		}
+	}
+
+	sint16 focus_redux = GetFocusEffect(focusManaCost, spell_id);
+
+	if(focus_redux > 0)
+	{
+		PercentManaReduction += MakeRandomFloat(1, (double)focus_redux);
+	}
+
 	cost -= (cost * (PercentManaReduction / 100));
 
 	if(cost < 0)
 		cost = 0;
 
-	Result = cost;
-
-	return Result;
+	return cost;
 }
 
 sint32 Client::GetActSpellDuration(int16 spell_id, sint32 duration)
 {
-//	int16 modspellid = 0;
-
 	int increase = 100;
 	increase += GetFocusEffect(focusSpellDuration, spell_id);
-//	if (GetIncreaseSpellDurationItem(modspellid, NULL)) {
-//		increase = GenericFocus(spell_id, modspellid);
-//	}
 	
-	switch(GetAA(aaSpellCastingReinforcement)) {
-	case 1:
-		increase += 5;
-		break;
-	case 2:
-		increase += 15;
-		break;
-	case 3:
-		increase += 30;
-		if (GetAA(aaSpellCastingReinforcementMastery) == 1)
-			increase += 20;
-		break;
+	if(IsBeneficialSpell(spell_id))
+	{
+		switch(GetAA(aaSpellCastingReinforcement)) {
+		case 1:
+			increase += 5;
+			break;
+		case 2:
+			increase += 15;
+			break;
+		case 3:
+			increase += 30;
+			if (GetAA(aaSpellCastingReinforcementMastery) == 1)
+				increase += 20;
+			break;
+		}
 	}
 	
 	return (duration * increase) / 100;
@@ -395,14 +403,8 @@ sint32 Client::GetActSpellDuration(int16 spell_id, sint32 duration)
 
 sint32 Client::GetActSpellCasttime(int16 spell_id, sint32 casttime)
 {
-	
 	sint32 cast_reducer = 0;
 	cast_reducer += GetFocusEffect(focusSpellHaste, spell_id);
-
-//	int16 modspellid = 0;
-//	if (GetReduceCastTimeItem(modspellid, NULL)) {
-//		reduce += GenericFocus(spell_id, modspellid);
-//	}
 
 	//this function loops through the effects of spell_id many times
 	//could easily be consolidated.
@@ -559,7 +561,6 @@ bool Client::TrainDiscipline(int32 itemid) {
 	}
 	
 	if(level_to_use > GetLevel()) {
-//		Message_StringID(13, DISC_LEVEL_ERROR, level_to_use);
 		Message(13, "You must be at least level %d to learn this discipline.", level_to_use);
 		//summon them the item back...
 		SummonItem(itemid);

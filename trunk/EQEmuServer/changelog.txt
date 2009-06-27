@@ -1,5 +1,12 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/27/2009==
+KLS: Specialization should now never increase the amount of mana it takes to cast a spell.
+KLS: Fix for mana preservation focus not functioning correctly.
+KLS: Fix for duration enhancement focus effects not affecting detrimental spells.
+KLS: Fix for summoning focus not reducing the cast time of nec/beast pets serverside.
+KLS: Insufficient mana serverside check will now be before any modifiers instead of after, if you don't have enough mana in your mana pool to cast a spell after modifiers but do before modifiers the spell will cost your entire mana pool.
+
 ==06/26/2009==
 Trevius: SoF - Tradeskill containers within a character inventory can now combine recipes.
 Trevius: SoF - Items with Recast Delays no longer appear as greyed out.
