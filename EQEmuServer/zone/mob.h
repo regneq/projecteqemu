@@ -98,6 +98,7 @@ enum {
 	IMMUNE_MELEE_NONMAGICAL,	//W
 	IMMUNE_AGGRO, //H, wont aggro, ever.
 	IMMUNE_TARGET, //G, can't be aggroed, ever
+	IMMUNE_CASTING_FROM_RANGE, //g
 	SPECATK_MAXNUM
 				//X,Y,Z are old interactive NPC codes
 };

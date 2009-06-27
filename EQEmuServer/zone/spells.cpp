@@ -3450,6 +3450,15 @@ float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster)
 		return(100);
 	}
 
+	if(SpecAttacks[IMMUNE_CASTING_FROM_RANGE])
+	{
+		if(caster)
+		{
+			if(!caster->CombatRange(this))
+				return(0);
+		}
+	}
+
 	target_level = GetLevel();
 	
 	if(spell_id == 0) {
