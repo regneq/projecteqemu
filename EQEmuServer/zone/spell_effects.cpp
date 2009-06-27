@@ -3486,7 +3486,16 @@ sint16 Client::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id) {
 				}
 			}
 			else{
-				if(!IsEffectInSpell(spell_id,focus_spell.base[i])){ //we limit this effect, must have
+				if(focus_spell.base[i] == SE_SummonPet) //summoning haste special case
+				{	//must have one of the three pet effects to qualify
+					if(!IsEffectInSpell(spell_id, SE_SummonPet) &&
+						!IsEffectInSpell(spell_id, SE_NecPet) &&
+						!IsEffectInSpell(spell_id, SE_SummonBSTPet))
+					{
+						return 0;
+					}
+				}
+				else if(!IsEffectInSpell(spell_id,focus_spell.base[i])){ //we limit this effect, must have
 					return 0;
 				}
 			}
@@ -3561,7 +3570,7 @@ sint16 Client::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id) {
 			}
 			break;
 		case SE_IncreaseSpellDuration:
-			if (type == focusSpellDuration && BeneficialSpell(spell_id) && focus_spell.base[i] > value)
+			if (type == focusSpellDuration && focus_spell.base[i] > value)
 			{
 				value = focus_spell.base[i];
 			}
@@ -3579,9 +3588,12 @@ sint16 Client::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id) {
 			}
 			break;
 		case SE_ReduceManaCost:
-			if (type == focusManaCost && focus_spell.base2[i] > value)
+			if (type == focusManaCost)
 			{
-				value = focus_spell.base2[i];
+				if(focus_spell.base[i] > value)
+				{
+					value = focus_spell.base[i];
+				}
 			}
 			break;
 		case SE_PetPowerIncrease:

@@ -391,7 +391,7 @@ bool Mob::DoCastSpell(int16 spell_id, int16 target_id, int16 slot,
 	{
 		int my_curmana = GetMana();
 		int my_maxmana = GetMaxMana();
-		if(my_curmana < mana_cost)	// not enough mana
+		if(my_curmana < spell.mana)	// not enough mana
 		{
 			//this is a special case for NPCs with no mana...
 			if(IsNPC() && my_curmana == my_maxmana)
@@ -410,6 +410,9 @@ bool Mob::DoCastSpell(int16 spell_id, int16 target_id, int16 slot,
 			}
 		}
 	}
+
+	if(mana_cost > GetMana())
+		mana_cost = GetMana();
 
 	// we know our mana cost now
 	casting_spell_mana = mana_cost;
