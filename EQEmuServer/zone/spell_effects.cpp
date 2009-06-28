@@ -1886,9 +1886,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				snprintf(effect_desc, _EDLEN, "Destroy");
 #endif
 				if(IsNPC()) {
-					//if(GetLevel() < 52)
-					//should we use Death instead of Depop here???
-					if(GetLevel() <= spells[spell_id].base[i])
+					if(GetLevel() <= 51)
 						CastToNPC()->Depop();
 				}
 				break;
