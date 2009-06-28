@@ -8,6 +8,7 @@
 struct BotsAvailableList {
 	uint32 BotID;
 	char BotName[64];
+	uint16 BotClass;
 	uint8 BotLevel;
 	uint16 BotRace;
 };

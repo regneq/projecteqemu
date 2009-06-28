@@ -1055,6 +1055,63 @@ void Bot::CleanBotLeaderEntries(std::string* errorMessage) {
 	}
 }
 
+bool Bot::MesmerizeTarget(Mob* target) {
+	bool Result = false;
+
+	if(target) {
+		int mezid = 0;
+		int mezlevel = GetLevel();
+
+		if(mezlevel >= 69) {
+			mezid = 5520;
+		}
+		else if(mezlevel == 68) {
+			mezid = 8035;
+		}
+		else if(mezlevel == 67) {
+			mezid = 5503;
+		}
+		else if(mezlevel >= 64) {
+			mezid = 3358;
+		}
+		else if(mezlevel == 63) {
+			mezid = 3354;
+		}
+		else if(mezlevel >= 61) {
+			mezid = 3341;
+		}
+		else if(mezlevel == 60) {
+			mezid = 2120;
+		}
+		else if(mezlevel == 59) {
+			mezid = 1692;
+		}
+		else if(mezlevel >= 54) {
+			mezid = 1691;
+		}
+		else if(mezlevel >= 47) {
+			mezid = 190;
+		}
+		else if(mezlevel >= 30) {
+			mezid = 188;
+		}
+		else if(mezlevel >= 13) {
+			mezid = 187;
+		}
+		else if(mezlevel >= 2) {
+			mezid = 292;
+		}
+		if(mezid > 0) {
+			int32 DontRootMeBeforeTime = 0;
+			CastSpell(mezid, target->GetID(), 1, -1, -1, &DontRootMeBeforeTime);
+			target->SetDontRootMeBefore(DontRootMeBeforeTime);
+			Result = true;
+		}
+	}
+
+	return Result;
+}
+
 static void CleanBotLeader(uint32 botOwnerCharacterID, std::string* errorMessage) {
 	if(botOwnerCharacterID > 0) {
 		char errbuf[MYSQL_ERRMSG_SIZE];
@@ -1099,7 +1156,36 @@ static std::list<BotsAvailableList> GetBotList(uint32 botOwnerCharacterID, std::
 	std::list<BotsAvailableList> Result;
 
 	if(botOwnerCharacterID > 0) {
-		// TODO:
+		char* Query = 0;
+		char TempErrorMessageBuffer[MYSQL_ERRMSG_SIZE];
+		MYSQL_RES* DatasetResult;
+		MYSQL_ROW DataRow;
+
+		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT BotID, Name, Class, BotLevel, Race FROM bots WHERE BotOwnerCharacterID = '%u'", botOwnerCharacterID), TempErrorMessageBuffer, &DatasetResult)) {
+			*errorMessage = std::string(TempErrorMessageBuffer);
+		}
+		else {
+			while(DataRow = mysql_fetch_row(DatasetResult)) {
+				if(mysql_num_rows(DatasetResult) > 0) {
+					DataRow = mysql_fetch_row(DatasetResult);
+
+					BotsAvailableList TempAvailableBot;
+					TempAvailableBot.BotID = atoi(DataRow[0]);
+					strcpy(TempAvailableBot.BotName, DataRow[1]);
+					TempAvailableBot.BotClass = atoi(DataRow[2]);
+					TempAvailableBot.BotLevel = atoi(DataRow[3]);
+					TempAvailableBot.BotRace = atoi(DataRow[4]);
+
+					Result.push_back(TempAvailableBot);
+				}
+
+				break;
+			}
+
+			mysql_free_result(DatasetResult);
+		}
+
+		safe_delete_array(Query);
 	}
 
 	return Result;
@@ -1275,6 +1361,121 @@ static uint32 GetBotOwnerCharacterID(uint32 botID, std::string* errorMessage) {
 	return Result;
 }
 
+static std::string ClassIdToString(uint16 classId) {
+	std::string Result;
+
+	if(classId > 0 && classId < 17) {
+		switch(classId) {
+			case 1:
+				Result = std::string("Warrior");
+				break;
+			case 2:
+				Result = std::string("Cleric");
+				break;
+			case 3:
+				Result = std::string("Paladin");
+				break;
+			case 4:
+				Result = std::string("Ranger");
+				break;
+			case 5:
+				Result = std::string("Shadowknight");
+				break;
+			case 6:
+				Result = std::string("Druid");
+				break;
+			case 7:
+				Result = std::string("Monk");
+				break;
+			case 8:
+				Result = std::string("Bard");
+				break;
+			case 9:
+				Result = std::string("Rogue");
+				break;
+			case 10:
+				Result = std::string("Shaman");
+				break;
+			case 11:
+				Result = std::string("Necromancer");
+				break;
+			case 12:
+				Result = std::string("Wizard");
+				break;
+			case 13:
+				Result = std::string("Magician");
+				break;
+			case 14:
+				Result = std::string("Enchanter");
+				break;
+			case 15:
+				Result = std::string("Beastlord");
+				break;
+			case 16:
+				Result = std::string("Berserker");
+				break;
+		}
+	}
+
+	return Result;
+}
+
+static std::string RaceIdToString(uint16 raceId) {
+	std::string Result;
+
+	if(raceId > 0) {
+		switch(raceId) {
+			case 1:
+				Result = std::string("Human");
+				break;
+			case 2:
+				Result = std::string("Barbarian");
+				break;
+			case 3:
+				Result = std::string("Erudite");
+				break;
+			case 4:
+				Result = std::string("Wood Elf");
+				break;
+			case 5:
+				Result = std::string("High Elf");
+				break;
+			case 6:
+				Result = std::string("Dark Elf");
+				break;
+			case 7:
+				Result = std::string("Half Elf");
+				break;
+			case 8:
+				Result = std::string("Dwarf");
+				break;
+			case 9:
+				Result = std::string("Troll");
+				break;
+			case 10:
+				Result = std::string("Ogre");
+				break;
+			case 11:
+				Result = std::string("Halfling");
+				break;
+			case 12:
+				Result = std::string("Gnome");
+				break;
+			case 128:
+				Result = std::string("Iksar");
+				break;
+			case 130:
+				Result == std::string("Vah Shir");
+				break;
+			case 330:
+				Result = std::string("Froglok");
+				break;
+		}
+	}
+
+	return Result;
+}
+
 static void ProcessBotCommands(Client *c, const Seperator *sep) {
 	// TODO: All bot command processing occurs here now instead of in command.cpp
 
@@ -1349,10 +1550,11 @@ static void ProcessBotCommands(Client *c, const Seperator *sep) {
 			return;
 		}
 
-		if(SpawnedBotCount(c->CharacterID(), &TempErrorMessage) >= RuleI(EQOffline, CreateBotCount)) {
-			c->Message(15, "You cannot create more than %i bots.", RuleI(EQOffline, CreateBotCount));
-			return;
-		}
+//TODO: make Rule for BOTS
+//		if(SpawnedBotCount(c->CharacterID(), &TempErrorMessage) >= RuleI(EQOffline, CreateBotCount)) {
+//			c->Message(15, "You cannot create more than %i bots.", RuleI(EQOffline, CreateBotCount));
+//			return;
+//		}
 
 		if(TempErrorMessage.length() > 0) {
 			// TODO: Log this error message
@@ -1432,10 +1634,10 @@ static void ProcessBotCommands(Client *c, const Seperator *sep) {
 
 			if(BotTargeted) {
 				if(BotTargeted->DeleteBot(&TempErrorMessage)) {
-					// TODO: Other clean up code goes here
 					c->GetTarget()->Say("...but why?!! We had such good adventures together! gaahhh...glrrrk...");
+					// TODO: decide on BotOwner = NULL
 					//c->GetTarget()->BotOwner = NULL;
-					//c->GetTarget()->Kill();
+					c->GetTarget()->Kill();
 				}
 				else {
 					// TODO: log error message here
@@ -1448,168 +1650,28 @@ static void ProcessBotCommands(Client *c, const Seperator *sep) {
 		return;
 	}
 
-//	if(!strcasecmp(sep->arg[1], "list")) {
-//
-//		bool listAll = true;
-//		int iClass = atoi(sep->arg[2]);
-//		switch(iClass) {
-//			case 1:
-//			case 2:
-//			case 3:
-//			case 4:
-//			case 5:
-//			case 6:
-//			case 7:
-//			case 8:
-//			case 9:
-//			case 10:
-//			case 11:
-//			case 12:
-//			case 13:
-//			case 14:
-//			case 15:
-//			case 16:
-//				listAll = false;
-//				break;
-//			default:
-//				break;
-//		}
-//
-//		char errbuf[MYSQL_ERRMSG_SIZE];
-//		char *query = 0;
-//		int32 affected_rows = 0;
-//		MYSQL_RES *result;
-//		MYSQL_ROW row;
-//
-//		if(database.RunQuery(query, MakeAnyLenString(&query, "SELECT id, name, class, race from npc_types where isbot=1"), errbuf, &result, &affected_rows))
-//		{
-//
-//			while(row = mysql_fetch_row(result))
-//			{
-//				// change the class ID by the name
-//				int irow = atoi(row[2]);
-//				const char *crow;
-//
-//				switch(irow) {
-//		case 1:
-//			crow = "Warrior";
-//			break;
-//		case 2:
-//			crow = "Cleric";
-//			break;
-//		case 3:
-//			crow = "Paladin";
-//			break;
-//		case 4:
-//			crow = "Ranger";
-//			break;
-//		case 5:
-//			crow = "Shadows Knight";
-//			break;
-//		case 6:
-//			crow = "Druid";
-//			break;
-//		case 7:
-//			crow = "Monk";
-//			break;
-//		case 8:
-//			crow = "Bard";
-//			break;
-//		case 9:
-//			crow = "Rogue";
-//			break;
-//		case 10:
-//			crow = "Shaman";
-//			break;
-//		case 11:
-//			crow = "Necromancer";
-//			break;
-//		case 12:
-//			crow = "Wizard";
-//			break;
-//		case 13:
-//			crow = "Magician";
-//			break;
-//		case 14:
-//			crow = "Enchanter";
-//			break;
-//		case 15:
-//			crow = "Beastlord";
-//			break;
-//		case 16:
-//			crow = "Berserker";
-//			break;
-//		default:
-//			crow = "Warrior";
-//				}
-//
-//				// change the race ID by the name
-//				int rrow = atoi(row[3]);
-//				const char *rrrow;
-//
-//				switch(rrow) {
-//		case 1:
-//			rrrow = "Human";
-//			break;
-//		case 2:
-//			rrrow = "Barbarian";
-//			break;
-//		case 3:
-//			rrrow = "Erudite";
-//			break;
-//		case 4:
-//			rrrow = "Wood Elf";
-//			break;
-//		case 5:
-//			rrrow = "High Elf";
-//			break;
-//		case 6:
-//			rrrow = "Dark Elf";
-//			break;
-//		case 7:
-//			rrrow = "Half Elf";
-//			break;
-//		case 8:
-//			rrrow = "Dwarf";
-//			break;
-//		case 9:
-//			rrrow = "Troll";
-//			break;
-//		case 10:
-//			rrrow = "Ogre";
-//			break;
-//		case 11:
-//			rrrow = "Halfling";
-//			break;
-//		case 12:
-//			rrrow = "Gnome";
-//			break;
-//		case 330:
-//			rrrow = "Froglok";
-//			break;
-//		case 128:
-//			rrrow = "Iksar";
-//			break;
-//		case 130:
-//			rrrow = "Vah Shir";
-//			break;
-//		default:
-//			rrrow = "Human";
-//				}
-//
-//				if(listAll && database.GetBotOwner(atoi(row[0])) == c->AccountID()) {
-//					c->Message(15,"ID: %s -- Class: %s -- Name: %s -- Race: %s -- ", row[0], crow, row[1], rrrow);
-//				}
-//				else if((database.GetBotOwner(atoi(row[0])) == c->AccountID()) && (irow == iClass)) {
-//					c->Message(15,"ID: %s -- Class: %s -- Name: %s -- Race: %s -- ", row[0], crow, row[1], rrrow);
-//				}
-//			}				
-//		}
-//		mysql_free_result(result);
-//		safe_delete_array(query);
-//		return;
-//	}
-//
+	if(!strcasecmp(sep->arg[1], "list")) {
+		bool listAll = true;
+		int iClass = atoi(sep->arg[2]);
+
+		if(iClass > 0 && iClass < 17)
+			listAll = false;
+
+		std::list<BotsAvailableList> AvailableBots = GetBotList(c->CharacterID(), &TempErrorMessage);
+
+		if(!AvailableBots.empty()) {
+			for(std::list<BotsAvailableList>::iterator TempAvailableBotsList = AvailableBots.begin(); TempAvailableBotsList != AvailableBots.end(); TempAvailableBotsList++) {
+				if(listAll) {
+					c->Message(15,"ID: %s -- Class: %s -- Name: %s -- Race: %s -- ", TempAvailableBotsList->BotID, ClassIdToString(TempAvailableBotsList->BotClass), TempAvailableBotsList->BotName, RaceIdToString(TempAvailableBotsList->BotRace));
+				}
+				else {
+					if(TempAvailableBotsList->BotClass == iClass)
+						c->Message(15, "ID: %s -- Class: %s -- Name: %s -- Race: %s -- ", TempAvailableBotsList->BotID, ClassIdToString(TempAvailableBotsList->BotClass), TempAvailableBotsList->BotName, RaceIdToString(TempAvailableBotsList->BotRace));
+				}
+			}
+		}
+	}
+
 //	if(!strcasecmp(sep->arg[1], "spawn") ){
 //		if(database.GetBotOwner(atoi(sep->arg[2])) != c->AccountID())
 //		{
@@ -1793,44 +1855,44 @@ static void ProcessBotCommands(Client *c, const Seperator *sep) {
 //		}
 //		return;
 //	}
-//
-//	if(!strcasecmp(sep->arg[1], "picklock")) {
-//		if((c->GetTarget() == NULL) || (c->GetTarget() == c) || !c->GetTarget()->IsBot() || (c->GetTarget()->GetClass() != ROGUE)) {
-//			c->Message(15, "You must target a rogue bot!");
-//			return;
-//		}
-//		entity_list.OpenDoorsNear(c->GetTarget()->CastToNPC());
-//		return;
-//	}
-//
-//	if(!strcasecmp(sep->arg[1], "summon")) {
-//		if((c->GetTarget() == NULL) || (c->GetTarget() == c) || !c->GetTarget()->IsBot() || c->GetTarget()->IsPet())
-//		{
-//			c->Message(15, "You must target a bot!");
-//			return;
-//		}
-//		if(c->GetTarget()->IsMob() && !c->GetTarget()->IsPet())
-//		{
-//			Mob *b = c->GetTarget();
-//
-//			// Is our target "botable" ?
-//			if(b && !b->IsBot()){
-//				c->Message(15, "You must target a bot!");
-//				return;
-//			}
-//			if(b && (database.GetBotOwner(b->GetNPCTypeID()) != c->AccountID()))
-//			{
-//				b->Say("You can only summon your own bots.");
-//				return;
-//			}
-//			if(b) {
-//				b->SetTarget(b->BotOwner);
-//				b->Warp(c->GetX(), c->GetY(), c->GetZ());
-//			}
-//		}
-//		return;
-//	}
-//
+
+	if(!strcasecmp(sep->arg[1], "picklock")) {
+		if((c->GetTarget() == NULL) || (c->GetTarget() == c) || !c->GetTarget()->IsBot() || (c->GetTarget()->GetClass() != ROGUE)) {
+			c->Message(15, "You must target a rogue bot!");
+		}
+		else {
+			entity_list.OpenDoorsNear(c->GetTarget()->CastToNPC());
+		}
+
+		return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "summon")) {
+		if((c->GetTarget() == NULL) || (c->GetTarget() == c) || !c->GetTarget()->IsBot() || c->GetTarget()->IsPet())
+		{
+			c->Message(15, "You must target a bot!");
+		}
+		else if(c->GetTarget()->IsMob() && !c->GetTarget()->IsPet())
+		{
+			Mob *b = c->GetTarget();
+
+			// Is our target "botable" ?
+			if(b && !b->IsBot()){
+				c->Message(15, "You must target a bot!");
+			}
+			else if(b && (b->CastToBot()->GetBotOwnerCharacterID() != c->CharacterID()))
+			{
+				b->Say("You can only summon your own bots.");
+			}
+			else {
+				b->SetTarget(c->CastToMob());
+				b->Warp(c->GetX(), c->GetY(), c->GetZ());
+			}
+		}
+
+		return;
+	}
+
 //	if(!strcasecmp(sep->arg[1], "groupraid")) {
 //		if(c->GetFeigned())
 //		{
@@ -2567,166 +2629,166 @@ static void ProcessBotCommands(Client *c, const Seperator *sep) {
 //		}
 //		return;
 //	}
-//
-//	//Bind
-//	if(!strcasecmp(sep->arg[1], "bindme")) {
-//		Mob *binder = NULL;
-//		bool hasbinder = false;
-//		if(c->IsGrouped())
-//		{
-//			Group *g = c->GetGroup();
-//			if(g) {
-//				for(int i=0; i<MAX_GROUP_MEMBERS; i++)
-//				{
-//					if(g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == CLERIC))
-//					{
-//						hasbinder = true;
-//						binder = g->members[i];
-//					}
-//				}
-//				if(!hasbinder) {
-//					c->Message(15, "You must have a Cleric in your group.");
-//				}
-//			}
-//		}
-//		if(hasbinder) {
-//			binder->Say("Attempting to bind you %s.", c->GetName());
-//			binder->CastToNPC()->CastSpell(35, c->GetID(), 1, -1, -1);
-//		}
-//		return;
-//	}
-//
-//	// Rune
-//	if(!strcasecmp(sep->arg[1], "runeme")) {
-//		Mob *runeer = NULL;
-//		bool hasruneer = false;
-//		if(c->IsGrouped())
-//		{
-//			Group *g = c->GetGroup();
-//			if(g) {
-//				for(int i=0; i<MAX_GROUP_MEMBERS; i++)
-//				{
-//					if(g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == ENCHANTER))
-//					{
-//						hasruneer = true;
-//						runeer = g->members[i];
-//					}
-//				}
-//				if(!hasruneer) {
-//					c->Message(15, "You must have an Enchanter in your group.");
-//				}
-//			}
-//		}
-//		if(hasruneer) {
-//			if      (c->GetLevel() <= 12) {
-//				runeer->Say("I need to be level 13 or higher for this...");
-//			}
-//			else if ((c->GetLevel() >= 13) && (c->GetLevel() <= 21)) {
-//				runeer->Say("Casting Rune I...");
-//				runeer->CastSpell(481, c->GetID(), 1, -1, -1);
-//			}
-//			else if ((c->GetLevel() >= 22) && (c->GetLevel() <= 32)) {
-//				runeer->Say("Casting Rune II...");
-//				runeer->CastSpell(482, c->GetID(), 1, -1, -1);
-//			}
-//			else if ((c->GetLevel() >= 33) && (c->GetLevel() <= 39)) { 
-//				runeer->Say("Casting Rune III...");
-//				runeer->CastSpell(483, c->GetID(), 1, -1, -1);
-//			}
-//			else if ((c->GetLevel() >= 40) && (c->GetLevel() <= 51)) { 
-//				runeer->Say("Casting Rune IV...");
-//				runeer->CastSpell(484, c->GetID(), 1, -1, -1);
-//			}
-//			else if ((c->GetLevel() >= 52) && (c->GetLevel() <= 60)) { 
-//				runeer->Say("Casting Rune V...");
-//				runeer->CastSpell(1689, c->GetID(), 1, -1, -1);
-//			}
-//			else if (c->GetLevel() >= 61){ 
-//				runeer->Say("Casting Rune of Zebuxoruk...");
-//				runeer->CastSpell(3343, c->GetID(), 1, -1, -1);
-//			}
-//		}
-//		return;
-//	}
-//
-//	//Tracking
-//	if(!strcasecmp(sep->arg[1], "track") && c->IsGrouped()) {
-//		Mob *Tracker;
-//		int32 TrackerClass = 0;
-//
-//		Group *g = c->GetGroup();
-//		if(g) {
-//			for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
-//				if(g->members[i] && g->members[i]->IsBot()) {
-//					switch(g->members[i]->GetClass()) {
-//						case RANGER:
-//							Tracker = g->members[i];
-//							TrackerClass = RANGER;
-//							break;
-//						case BARD:
-//							// If we haven't found a tracker yet, use bard.
-//							if(TrackerClass == 0) {
-//								Tracker = g->members[i];
-//								TrackerClass = BARD;
-//							}
-//							break;
-//						case DRUID:
-//							// Unless we have a ranger, druid is next best.
-//							if(TrackerClass != RANGER) {
-//								Tracker = g->members[i];
-//								TrackerClass = DRUID;
-//							}
-//							break;
-//						default:
-//							break;
-//					}
-//				}
-//			}
-//
-//			int Level = (c->GetLevel());
-//			int RangeR = (Level*80); //Ranger
-//			int RangeD = (Level*30); //Druid
-//			int RangeB = (Level*20); //Bard
-//			switch(TrackerClass) {
-//				case RANGER:
-//					if(!strcasecmp(sep->arg[2], "all")) {
-//						Tracker->Say("Tracking everything", c->GetName());
-//						entity_list.ShowSpawnWindow(c, RangeR, false);
-//					}
-//					else if(!strcasecmp(sep->arg[2], "rare")) { 
-//						Tracker->Say("Selective tracking", c->GetName());
-//						entity_list.ShowSpawnWindow(c, RangeR, true);
-//					}
-//					else if(!strcasecmp(sep->arg[2], "near")) { 
-//						Tracker->Say("Tracking mobs nearby", c->GetName());
-//						entity_list.ShowSpawnWindow(c, RangeD, false);
-//					}
-//					else 
-//						Tracker->Say("You want to [track all], [track near], or [track rare]?", c->GetName());
-//
-//					break;
-//
-//				case BARD:
-//
-//					if(TrackerClass != RANGER)
-//						Tracker->Say("Tracking up", c->GetName());
-//					entity_list.ShowSpawnWindow(c, RangeB, false);
-//					break;
-//
-//				case DRUID:
-//
-//					if(TrackerClass = BARD)
-//						Tracker->Say("Tracking up", c->GetName());
-//					entity_list.ShowSpawnWindow(c, RangeD, false);
-//					break;
-//
-//				default:
-//					c->Message(15, "You must have a Ranger, Druid, or Bard in your group.");
-//					break;
-//			}
-//		}
-//	}
-//
+
+	//Bind
+	if(!strcasecmp(sep->arg[1], "bindme")) {
+		Mob *binder = NULL;
+		bool hasbinder = false;
+		if(c->IsGrouped())
+		{
+			Group *g = c->GetGroup();
+			if(g) {
+				for(int i=0; i<MAX_GROUP_MEMBERS; i++)
+				{
+					if(g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == CLERIC))
+					{
+						hasbinder = true;
+						binder = g->members[i];
+					}
+				}
+				if(!hasbinder) {
+					c->Message(15, "You must have a Cleric in your group.");
+				}
+			}
+		}
+		if(hasbinder) {
+			binder->Say("Attempting to bind you %s.", c->GetName());
+			binder->CastToNPC()->CastSpell(35, c->GetID(), 1, -1, -1);
+		}
+		return;
+	}
+
+	// Rune
+	if(!strcasecmp(sep->arg[1], "runeme")) {
+		Mob *runeer = NULL;
+		bool hasruneer = false;
+		if(c->IsGrouped())
+		{
+			Group *g = c->GetGroup();
+			if(g) {
+				for(int i=0; i<MAX_GROUP_MEMBERS; i++)
+				{
+					if(g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == ENCHANTER))
+					{
+						hasruneer = true;
+						runeer = g->members[i];
+					}
+				}
+				if(!hasruneer) {
+					c->Message(15, "You must have an Enchanter in your group.");
+				}
+			}
+		}
+		if(hasruneer) {
+			if      (c->GetLevel() <= 12) {
+				runeer->Say("I need to be level 13 or higher for this...");
+			}
+			else if ((c->GetLevel() >= 13) && (c->GetLevel() <= 21)) {
+				runeer->Say("Casting Rune I...");
+				runeer->CastSpell(481, c->GetID(), 1, -1, -1);
+			}
+			else if ((c->GetLevel() >= 22) && (c->GetLevel() <= 32)) {
+				runeer->Say("Casting Rune II...");
+				runeer->CastSpell(482, c->GetID(), 1, -1, -1);
+			}
+			else if ((c->GetLevel() >= 33) && (c->GetLevel() <= 39)) { 
+				runeer->Say("Casting Rune III...");
+				runeer->CastSpell(483, c->GetID(), 1, -1, -1);
+			}
+			else if ((c->GetLevel() >= 40) && (c->GetLevel() <= 51)) { 
+				runeer->Say("Casting Rune IV...");
+				runeer->CastSpell(484, c->GetID(), 1, -1, -1);
+			}
+			else if ((c->GetLevel() >= 52) && (c->GetLevel() <= 60)) { 
+				runeer->Say("Casting Rune V...");
+				runeer->CastSpell(1689, c->GetID(), 1, -1, -1);
+			}
+			else if (c->GetLevel() >= 61){ 
+				runeer->Say("Casting Rune of Zebuxoruk...");
+				runeer->CastSpell(3343, c->GetID(), 1, -1, -1);
+			}
+		}
+		return;
+	}
+	//
+	////Tracking
+	//if(!strcasecmp(sep->arg[1], "track") && c->IsGrouped()) {
+	//	Mob *Tracker;
+	//	int32 TrackerClass = 0;
+
+	//	Group *g = c->GetGroup();
+	//	if(g) {
+	//		for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
+	//			if(g->members[i] && g->members[i]->IsBot()) {
+	//				switch(g->members[i]->GetClass()) {
+	//					case RANGER:
+	//						Tracker = g->members[i];
+	//						TrackerClass = RANGER;
+	//						break;
+	//					case BARD:
+	//						// If we haven't found a tracker yet, use bard.
+	//						if(TrackerClass == 0) {
+	//							Tracker = g->members[i];
+	//							TrackerClass = BARD;
+	//						}
+	//						break;
+	//					case DRUID:
+	//						// Unless we have a ranger, druid is next best.
+	//						if(TrackerClass != RANGER) {
+	//							Tracker = g->members[i];
+	//							TrackerClass = DRUID;
+	//						}
+	//						break;
+	//					default:
+	//						break;
+	//				}
+	//			}
+	//		}
+
+	//		int Level = (c->GetLevel());
+	//		int RangeR = (Level*80); //Ranger
+	//		int RangeD = (Level*30); //Druid
+	//		int RangeB = (Level*20); //Bard
+	//		switch(TrackerClass) {
+	//			case RANGER:
+	//				if(!strcasecmp(sep->arg[2], "all")) {
+	//					Tracker->Say("Tracking everything", c->GetName());
+	//					entity_list.ShowSpawnWindow(c, RangeR, false);
+	//				}
+	//				else if(!strcasecmp(sep->arg[2], "rare")) { 
+	//					Tracker->Say("Selective tracking", c->GetName());
+	//					entity_list.ShowSpawnWindow(c, RangeR, true);
+	//				}
+	//				else if(!strcasecmp(sep->arg[2], "near")) { 
+	//					Tracker->Say("Tracking mobs nearby", c->GetName());
+	//					entity_list.ShowSpawnWindow(c, RangeD, false);
+	//				}
+	//				else 
+	//					Tracker->Say("You want to [track all], [track near], or [track rare]?", c->GetName());
+
+	//				break;
+
+	//			case BARD:
+
+	//				if(TrackerClass != RANGER)
+	//					Tracker->Say("Tracking up", c->GetName());
+	//				entity_list.ShowSpawnWindow(c, RangeB, false);
+	//				break;
+
+	//			case DRUID:
+
+	//				if(TrackerClass = BARD)
+	//					Tracker->Say("Tracking up", c->GetName());
+	//				entity_list.ShowSpawnWindow(c, RangeD, false);
+	//				break;
+
+	//			default:
+	//				c->Message(15, "You must have a Ranger, Druid, or Bard in your group.");
+	//				break;
+	//		}
+	//	}
+	//}
+
 //	//Cure
 //	if ((!strcasecmp(sep->arg[1], "cure")) && (c->IsGrouped())) {
 //		Mob *Curer;
@@ -2843,88 +2905,88 @@ static void ProcessBotCommands(Client *c, const Seperator *sep) {
 //			}
 //		}
 //	}
-//
-//	//Mez
-//	if(!strcasecmp(sep->arg[1], "ai") && !strcasecmp(sep->arg[2], "mez"))
-//	{
-//		Mob *target = c->GetTarget();
-//		if(target == NULL || target == c || target->IsBot() || target->IsPet() && target->GetOwner()->IsBot())
-//		{
-//			c->Message(15, "You must select a monster");
-//			return;
-//		}
-//
-//		if(c->IsGrouped())
-//		{
-//			bool hasmezzer = false;
-//			Group *g = c->GetGroup();
-//			for(int i=0; i<MAX_GROUP_MEMBERS; i++)
-//			{
-//				if(g && g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == ENCHANTER))
-//				{
-//					hasmezzer = true;
-//					Mob *mezzer = g->members[i];
-//					mezzer->Say("Trying to mez %s \n", target->GetCleanName());
-//					mezzer->CastToNPC()->Bot_Command_MezzTarget(target);
-//				}
-//			}
-//			if(!hasmezzer) {
-//				c->Message(15, "You must have an Enchanter in your group.");
-//			}
-//		}
-//		return;
-//	}
-//
-//	//Lore (Identify item)
-//	if(!strcasecmp(sep->arg[1], "lore")) {
-//		if(c->IsGrouped())
-//		{
-//			bool hascaster = false;
-//			Group *g = c->GetGroup();
-//			for(int i=0; i<MAX_GROUP_MEMBERS; i++)
-//			{
-//				if(g && g->members[i] && g->members[i]->IsBot()) {
-//					uint8 casterlevel = g->members[i]->GetLevel();
-//					switch(g->members[i]->GetClass()) {
-//						case ENCHANTER:
-//							if(casterlevel >= 15) {
-//								hascaster = true;
-//							}
-//							break;
-//						case WIZARD:
-//							if(casterlevel >= 14) {
-//								hascaster = true;
-//							}
-//							break;
-//						case NECROMANCER:
-//							if(casterlevel >= 17) {
-//								hascaster = true;
-//							}
-//							break;
-//						case MAGICIAN:
-//							if(casterlevel >= 13) {
-//								hascaster = true;
-//							}
-//							break;
-//						default:
-//							break;
-//					}
-//					if(hascaster) {
-//						g->members[i]->Say("Trying to Identify your item...");
-//						g->members[i]->CastSpell(305, c->GetID(), 1, -1, -1);
-//						break;
-//					}
-//				}
-//			}
-//			if(!hascaster) {
-//				c->Message(15, "You don't see anyone in your group that can cast Identify.");
-//			}
-//		}
-//		else {
-//			c->Message(15, "You don't see anyone in your group that can cast Identify.");
-//		}
-//		return;
-//	}
+
+	//Mez
+	if(!strcasecmp(sep->arg[1], "ai") && !strcasecmp(sep->arg[2], "mez"))
+	{
+		Mob *target = c->GetTarget();
+		if(target == NULL || target == c || target->IsBot() || target->IsPet() && target->GetOwner()->IsBot())
+		{
+			c->Message(15, "You must select a monster");
+			return;
+		}
+
+		if(c->IsGrouped())
+		{
+			bool hasmezzer = false;
+			Group *g = c->GetGroup();
+			for(int i=0; i<MAX_GROUP_MEMBERS; i++)
+			{
+				if(g && g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == ENCHANTER))
+				{
+					hasmezzer = true;
+					Mob *mezzer = g->members[i];
+					mezzer->Say("Trying to mez %s \n", target->GetCleanName());
+					mezzer->CastToBot()->MesmerizeTarget(target);
+				}
+			}
+			if(!hasmezzer) {
+				c->Message(15, "You must have an Enchanter in your group.");
+			}
+		}
+		return;
+	}
+
+	//Lore (Identify item)
+	if(!strcasecmp(sep->arg[1], "lore")) {
+		if(c->IsGrouped())
+		{
+			bool hascaster = false;
+			Group *g = c->GetGroup();
+			for(int i=0; i<MAX_GROUP_MEMBERS; i++)
+			{
+				if(g && g->members[i] && g->members[i]->IsBot()) {
+					uint8 casterlevel = g->members[i]->GetLevel();
+					switch(g->members[i]->GetClass()) {
+						case ENCHANTER:
+							if(casterlevel >= 15) {
+								hascaster = true;
+							}
+							break;
+						case WIZARD:
+							if(casterlevel >= 14) {
+								hascaster = true;
+							}
+							break;
+						case NECROMANCER:
+							if(casterlevel >= 17) {
+								hascaster = true;
+							}
+							break;
+						case MAGICIAN:
+							if(casterlevel >= 13) {
+								hascaster = true;
+							}
+							break;
+						default:
+							break;
+					}
+					if(hascaster) {
+						g->members[i]->Say("Trying to Identify your item...");
+						g->members[i]->CastSpell(305, c->GetID(), 1, -1, -1);
+						break;
+					}
+				}
+			}
+			if(!hascaster) {
+				c->Message(15, "You don't see anyone in your group that can cast Identify.");
+			}
+		}
+		else {
+			c->Message(15, "You don't see anyone in your group that can cast Identify.");
+		}
+		return;
+	}
 //
 //	//Resurrect
 //	if(!strcasecmp(sep->arg[1], "resurrectme"))
@@ -3041,58 +3103,58 @@ static void ProcessBotCommands(Client *c, const Seperator *sep) {
 //		}
 //		return;
 //	}
-//
-//	//Summon Corpse
-//	if(!strcasecmp(sep->arg[1], "corpse") && !strcasecmp(sep->arg[2], "summon")) {
-//		if(c->GetTarget() == NULL) {
-//			c->Message(15, "You must select player with his corpse in the zone.");
-//			return;
-//		}
-//		if(c->IsGrouped()) {
-//			bool hassummoner = false;
-//			Mob *t = c->GetTarget();
-//			Group *g = c->GetGroup();
-//			int summonerlevel = 0;
-//			for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
-//				if(g && g->members[i] && g->members[i]->IsBot() && ((g->members[i]->GetClass() == NECROMANCER)||(g->members[i]->GetClass() == SHADOWKNIGHT))) {
-//					hassummoner = true;
-//					summonerlevel = g->members[i]->GetLevel();
-//					if(!t->IsClient()) {
-//						g->members[i]->Say("You have to target a player with a corpse in the zone");
-//						return;
-//					}
-//					else if(summonerlevel < 12) {
-//						g->members[i]->Say("I don't have that spell yet.");
-//					}
-//					else if((summonerlevel > 11) && (summonerlevel < 35)) {
-//						g->members[i]->Say("Attempting to summon %s\'s corpse.", t->GetCleanName());
-//						g->members[i]->CastSpell(2213, t->GetID(), 1, -1, -1);
-//						return;
-//					}
-//					else if((summonerlevel > 34) && (summonerlevel < 71)) {
-//						g->members[i]->Say("Attempting to summon %s\'s corpse.", t->GetCleanName());
-//						g->members[i]->CastSpell(3, t->GetID(), 1, -1, -1);
-//						return;
-//					}
-//					else if((summonerlevel > 70) && (summonerlevel < 76)) {
-//						g->members[i]->Say("Attempting to summon %s\'s corpse.", t->GetCleanName());
-//						g->members[i]->CastSpell(10042, t->GetID(), 1, -1, -1);
-//						return;
-//					}
-//					else if((summonerlevel > 75) && (summonerlevel < 81)) {
-//						g->members[i]->Say("Attempting to summon %s\'s corpse.", t->GetCleanName());
-//						g->members[i]->CastSpell(14823, t->GetID(), 1, -1, -1);
-//						return;
-//					}
-//				}
-//			}
-//			if (!hassummoner) {
-//				c->Message(15, "You must have a Necromancer or Shadowknight in your group.");
-//			}
-//			return;
-//		}
-//	}
-//
+
+	//Summon Corpse
+	if(!strcasecmp(sep->arg[1], "corpse") && !strcasecmp(sep->arg[2], "summon")) {
+		if(c->GetTarget() == NULL) {
+			c->Message(15, "You must select player with his corpse in the zone.");
+			return;
+		}
+		if(c->IsGrouped()) {
+			bool hassummoner = false;
+			Mob *t = c->GetTarget();
+			Group *g = c->GetGroup();
+			int summonerlevel = 0;
+			for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
+				if(g && g->members[i] && g->members[i]->IsBot() && ((g->members[i]->GetClass() == NECROMANCER)||(g->members[i]->GetClass() == SHADOWKNIGHT))) {
+					hassummoner = true;
+					summonerlevel = g->members[i]->GetLevel();
+					if(!t->IsClient()) {
+						g->members[i]->Say("You have to target a player with a corpse in the zone");
+						return;
+					}
+					else if(summonerlevel < 12) {
+						g->members[i]->Say("I don't have that spell yet.");
+					}
+					else if((summonerlevel > 11) && (summonerlevel < 35)) {
+						g->members[i]->Say("Attempting to summon %s\'s corpse.", t->GetCleanName());
+						g->members[i]->CastSpell(2213, t->GetID(), 1, -1, -1);
+						return;
+					}
+					else if((summonerlevel > 34) && (summonerlevel < 71)) {
+						g->members[i]->Say("Attempting to summon %s\'s corpse.", t->GetCleanName());
+						g->members[i]->CastSpell(3, t->GetID(), 1, -1, -1);
+						return;
+					}
+					else if((summonerlevel > 70) && (summonerlevel < 76)) {
+						g->members[i]->Say("Attempting to summon %s\'s corpse.", t->GetCleanName());
+						g->members[i]->CastSpell(10042, t->GetID(), 1, -1, -1);
+						return;
+					}
+					else if((summonerlevel > 75) && (summonerlevel < 81)) {
+						g->members[i]->Say("Attempting to summon %s\'s corpse.", t->GetCleanName());
+						g->members[i]->CastSpell(14823, t->GetID(), 1, -1, -1);
+						return;
+					}
+				}
+			}
+			if (!hassummoner) {
+				c->Message(15, "You must have a Necromancer or Shadowknight in your group.");
+			}
+			return;
+		}
+	}
+
 //	//Pacify
 //	if(!strcasecmp(sep->arg[1], "target") && !strcasecmp(sep->arg[2], "calm"))
 //	{
@@ -3325,888 +3387,888 @@ static void ProcessBotCommands(Client *c, const Seperator *sep) {
 //			}
 //		}
 //	}
-//
-//	// Evacuate
-//	if(!strcasecmp(sep->arg[1], "evac")) {
-//		Mob *evac = NULL;
-//		bool hasevac = false;
-//		if(c->IsGrouped())
-//		{
-//			Group *g = c->GetGroup();
-//			if(g) {
-//				for(int i=0; i<MAX_GROUP_MEMBERS; i++)
-//				{
-//					if((g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == DRUID)) 
-//						|| (g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == WIZARD)))
-//					{
-//						hasevac = true;
-//						evac = g->members[i];
-//					}
-//				}
-//				if(!hasevac) {
-//					c->Message(15, "You must have a Druid in your group.");
-//				}
-//			}
-//		}
-//		if((hasevac)  && (c->GetLevel() >= 18)) {
-//			evac->Say("Attempting to Evac you %s.", c->GetName());
-//			evac->CastToClient()->CastSpell(2183, c->GetID(), 1, -1, -1);
-//		}
-//		else if((hasevac)  && (c->GetLevel() <= 17)) {
-//			evac->Say("I'm not level 18 yet.", c->GetName());
-//		}
-//		return;
-//	}
-//
-//	// Sow
-//	if ((!strcasecmp(sep->arg[1], "sow")) && (c->IsGrouped())) {
-//		Mob *Sower;
-//		int32 SowerClass = 0;
-//		Group *g = c->GetGroup();
-//		if(g) {
-//			for(int i=0; i<MAX_GROUP_MEMBERS; i++){
-//				if(g->members[i] && g->members[i]->IsBot()) {
-//					switch(g->members[i]->GetClass()) {
-//						case DRUID:
-//							Sower = g->members[i];
-//							SowerClass = DRUID;
-//							break;
-//						case SHAMAN:
-//							if (SowerClass != DRUID){
-//								Sower = g->members[i];
-//								SowerClass = SHAMAN;
-//							}
-//							break;
-//						case RANGER:
-//							if (SowerClass == 0){
-//								Sower = g->members[i];
-//								SowerClass = RANGER;
-//							}
-//							break;
-//						case BEASTLORD:
-//							if (SowerClass == 0){
-//								Sower = g->members[i];
-//								SowerClass = BEASTLORD;
-//							}
-//							break;
-//						default:
-//							break;
-//					}
-//				}
-//			}
-//			switch(SowerClass) {
-//				case DRUID:
-//					if      ((!strcasecmp(sep->arg[2], "regular")) && (zone->CanCastOutdoor())  && (c->GetLevel() >= 10) ) {
-//						Sower->Say("Casting sow...");
-//						Sower->CastSpell(278, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "regular")) && (zone->CanCastOutdoor())  && (c->GetLevel() <= 10) ) {
-//						Sower->Say("I'm not level 10 yet.");
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "wolf")) && zone->CanCastOutdoor() && (c->GetLevel() >= 20)) {
-//						Sower->Say("Casting group wolf...");
-//						Sower->CastSpell(428, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "wolf")) && (c->GetLevel() <= 20)) {
-//						Sower->Say("I'm not level 20 yet.");
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "feral")) && (c->GetLevel() >= 50)) { 
-//						Sower->Say("Casting Feral Pack...");
-//						Sower->CastSpell(4058, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "feral")) && (c->GetLevel() <= 50)) {
-//						Sower->Say("I'm not level 50 yet.");
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "shrew")) && (c->GetLevel() >= 35)) { 
-//						Sower->Say("Casting Pack Shrew...");
-//						Sower->CastSpell(4055, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "wolf")) && (c->GetLevel() <= 35)) {
-//						Sower->Say("I'm not level 35 yet.");
-//					}
-//					else if ((!zone->CanCastOutdoor()) && (!strcasecmp(sep->arg[2], "regular")) ||
-//						(!zone->CanCastOutdoor()) && (!strcasecmp(sep->arg[2], "wolf"))) {
-//							Sower->Say("I can't cast this spell indoors, try [sow shrew] if you're 35 or higher, or [sow feral] if you're 50 or higher,", c->GetName());
-//					}
-//					else if (!zone->CanCastOutdoor()) {
-//						Sower->Say("I can't cast this spell indoors, try [sow shrew] if you're 35 or higher, or [sow feral] if you're 50 or higher,", c->GetName());
-//					}
-//					else if (zone->CanCastOutdoor()) {
-//						Sower->Say("Do you want [sow regular] or [sow wolf]?", c->GetName());
-//					}
-//					else if (!zone->CanCastOutdoor()) {
-//						Sower->Say("I can't cast this spell indoors, try [sow shrew] if you're 35 or higher, or [sow feral] if you're 50 or higher,", c->GetName());
-//					}
-//					break;
-//
-//				case SHAMAN:
-//
-//					if ((zone->CanCastOutdoor()) && (c->GetLevel() >= 9)) { 
-//						Sower->Say("Casting SoW...");
-//						Sower->CastToClient()->CastSpell(278, c->GetID(), 1, -1, -1);
-//					}
-//					else if (!zone->CanCastOutdoor()) {
-//						Sower->Say("I can't cast this spell indoors", c->GetName());
-//					}
-//					else if (c->GetLevel() <= 9) {
-//						Sower->Say("I'm not level 9 yet.");
-//					}
-//					break;
-//
-//				case RANGER:
-//
-//					if ((zone->CanCastOutdoor()) && (c->GetLevel() >= 28)){
-//						Sower->Say("Casting SoW...");
-//						Sower->CastToClient()->CastSpell(278, c->GetID(), 1, -1, -1);
-//					}
-//					else if (!zone->CanCastOutdoor()) {
-//						Sower->Say("I can't cast this spell indoors", c->GetName());
-//					}
-//					else if (c->GetLevel() <= 28) {
-//						Sower->Say("I'm not level 28 yet.");
-//					}
-//					break;
-//
-//				case BEASTLORD:
-//
-//					if((zone->CanCastOutdoor()) && (c->GetLevel() >= 24)) {
-//						Sower->Say("Casting SoW...");
-//						Sower->CastToClient()->CastSpell(278, c->GetID(), 1, -1, -1);
-//					}
-//					else if (!zone->CanCastOutdoor()) {
-//						Sower->Say("I can't cast this spell indoors", c->GetName());
-//					}
-//					else if (c->GetLevel() <= 24) {
-//						Sower->Say("I'm not level 24 yet.");
-//					}
-//					break;
-//
-//
-//				default:
-//					c->Message(15, "You must have a Druid, Shaman, Ranger,  or Beastlord in your group.");
-//					break;
-//			}
-//		}
-//	}
-//
-//	//Shrink
-//	if ((!strcasecmp(sep->arg[1], "shrinkme")) && (c->IsGrouped())) {
-//		Mob *Shrinker;
-//		int32 ShrinkerClass = 0;
-//		Group *g = c->GetGroup();
-//
-//		if(g) {
-//			for(int i=0; i<MAX_GROUP_MEMBERS; i++){
-//				if(g->members[i] && g->members[i]->IsBot()) {
-//					switch(g->members[i]->GetClass()) {
-//						case SHAMAN:
-//							Shrinker = g->members[i];
-//							ShrinkerClass = SHAMAN;
-//							break;
-//						case BEASTLORD:
-//							if (ShrinkerClass != SHAMAN){
-//								Shrinker = g->members[i];
-//								ShrinkerClass = BEASTLORD;
-//							}
-//							break;
-//						default:
-//							break;
-//					}
-//				}
-//			}
-//			switch(ShrinkerClass) {
-//				case SHAMAN:
-//
-//					if (c->GetLevel() >= 15) { 
-//						Shrinker->Say("Casting Shrink...");
-//						Shrinker->CastToNPC()->BotRaidSpell(345);
-//					}
-//					else if (c->GetLevel() <= 14) {
-//						Shrinker->Say("I'm not level 15 yet.");
-//					}
-//					break;
-//
-//				case BEASTLORD:
-//
-//					if (c->GetLevel() >= 23) {
-//						Shrinker->Say("Casting Shrink...");
-//						Shrinker->CastToNPC()->BotRaidSpell(345);
-//					}
-//					else if (c->GetLevel() <= 22) {
-//						Shrinker->Say("I'm not level 23 yet.");
-//					}
-//					break;
-//
-//				default:
-//					c->Message(15, "You must have a Shaman or Beastlord in your group.");
-//					break;
-//			}
-//		}
-//	}
-//
-//	// Gate
-//	if ((!strcasecmp(sep->arg[1], "gate")) && (c->IsGrouped())) {
-//		Mob *Gater;
-//		int32 GaterClass = 0;
-//		Group *g = c->GetGroup();
-//		if(g) {
-//			for(int i=0; i<MAX_GROUP_MEMBERS; i++){
-//				if(g->members[i] && g->members[i]->IsBot()) {
-//					switch(g->members[i]->GetClass()) {
-//						case DRUID:
-//							Gater = g->members[i];
-//							GaterClass = DRUID;
-//							break;
-//						case WIZARD:
-//							if (GaterClass == 0){
-//								Gater = g->members[i];
-//								GaterClass = WIZARD;
-//							}
-//							break;
-//						default:
-//							break;
-//					}
-//				}
-//			}
-//			switch(GaterClass) {
-//				case DRUID:
-//					if      ((!strcasecmp(sep->arg[2], "karana")) && (c->GetLevel() >= 25) ) {
-//						Gater->Say("Casting Circle of Karana...");
-//						Gater->CastSpell(550, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "commons")) && (c->GetLevel() >= 27)) {
-//						Gater->Say("Casting Circle of Commons...");
-//						Gater->CastSpell(551, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "tox")) && (c->GetLevel() >= 25)) { 
-//						Gater->Say("Casting Circle of Toxxulia...");
-//						Gater->CastSpell(552, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "butcher")) && (c->GetLevel() >= 25)) { 
-//						Gater->Say("Casting Circle of Butcherblock...");
-//						Gater->CastSpell(553, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "lava")) && (c->GetLevel() >= 30)) { 
-//						Gater->Say("Casting Circle of Lavastorm...");
-//						Gater->CastSpell(554, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "ro")) && (c->GetLevel() >= 32)) { 
-//						Gater->Say("Casting Circle of Ro...");
-//						Gater->CastSpell(555, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "feerrott")) && (c->GetLevel() >= 32)) { 
-//						Gater->Say("Casting Circle of feerrott...");
-//						Gater->CastSpell(556, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "steamfont")) && (c->GetLevel() >= 31)) { 
-//						Gater->Say("Casting Circle of Steamfont...");
-//						Gater->CastSpell(557, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "misty")) && (c->GetLevel() >= 36)) { 
-//						Gater->Say("Casting Circle of Misty...");
-//						Gater->CastSpell(558, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "wakening")) && (c->GetLevel() >= 40)) { 
-//						Gater->Say("Casting Circle of Wakening Lands...");
-//						Gater->CastSpell(1398, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "iceclad")) && (c->GetLevel() >= 32)) { 
-//						Gater->Say("Casting Circle of Iceclad Ocean...");
-//						Gater->CastSpell(1434, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "divide")) && (c->GetLevel() >= 36)) { 
-//						Gater->Say("Casting Circle of The Great Divide...");
-//						Gater->CastSpell(1438, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "cobalt")) && (c->GetLevel() >= 42)) { 
-//						Gater->Say("Casting Circle of Cobalt Scar...");
-//						Gater->CastSpell(1440, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "combines")) && (c->GetLevel() >= 33)) { 
-//						Gater->Say("Casting Circle of The Combines...");
-//						Gater->CastSpell(1517, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "surefall")) && (c->GetLevel() >= 26)) { 
-//						Gater->Say("Casting Circle of Surefall Glade...");
-//						Gater->CastSpell(2020, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "grimling")) && (c->GetLevel() >= 29)) { 
-//						Gater->Say("Casting Circle of Grimling Forest...");
-//						Gater->CastSpell(2419, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "twilight")) && (c->GetLevel() >= 33)) { 
-//						Gater->Say("Casting Circle of Twilight...");
-//						Gater->CastSpell(2424, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "dawnshroud")) && (c->GetLevel() >= 37)) { 
-//						Gater->Say("Casting Circle of Dawnshroud...");
-//						Gater->CastSpell(2429, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "nexus")) && (c->GetLevel() >= 26)) { 
-//						Gater->Say("Casting Circle of The Nexus...");
-//						Gater->CastSpell(2432, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "pok")) && (c->GetLevel() >= 38)) { 
-//						Gater->Say("Casting Circle of Knowledge...");
-//						Gater->CastSpell(3184, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "stonebrunt")) && (c->GetLevel() >= 28)) { 
-//						Gater->Say("Casting Circle of Stonebrunt Mountains...");
-//						Gater->CastSpell(3792, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "bloodfields")) && (c->GetLevel() >= 55)) { 
-//						Gater->Say("Casting Circle of Bloodfields...");
-//						Gater->CastSpell(6184, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "emerald")) && (c->GetLevel() >= 39)) { 
-//						Gater->Say("Casting Wind of the South...");
-//						Gater->CastSpell(1737, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "skyfire")) && (c->GetLevel() >= 44)) { 
-//						Gater->Say("Casting Wind of the North...");
-//						Gater->CastSpell(1736, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "slaughter")) && (c->GetLevel() >= 64)) { 
-//						Gater->Say("Casting Circle of Slaughter...");
-//						Gater->CastSpell(6179, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "karana") 
-//						|| !strcasecmp(sep->arg[2], "tox") 
-//						|| !strcasecmp(sep->arg[2], "butcher") && (c->GetLevel() <= 25))
-//						|| !strcasecmp(sep->arg[2], "commons") && (c->GetLevel() <= 27)
-//						|| (!strcasecmp(sep->arg[2], "ro") 
-//						|| !strcasecmp(sep->arg[2], "feerrott") && (c->GetLevel() <= 32))
-//						|| !strcasecmp(sep->arg[2], "steamfont") && (c->GetLevel() <= 31)
-//						|| !strcasecmp(sep->arg[2], "misty") && (c->GetLevel() <= 36)
-//						|| !strcasecmp(sep->arg[2], "lava") && (c->GetLevel() <= 30)
-//						|| !strcasecmp(sep->arg[2], "wakening") && (c->GetLevel() <= 40)
-//						|| !strcasecmp(sep->arg[2], "iceclad") && (c->GetLevel() <= 32)
-//						|| !strcasecmp(sep->arg[2], "divide") && (c->GetLevel() <= 38)
-//						|| !strcasecmp(sep->arg[2], "cobalt") && (c->GetLevel() <= 42)
-//						|| !strcasecmp(sep->arg[2], "combines") && (c->GetLevel() <= 33)
-//						|| !strcasecmp(sep->arg[2], "surefall") && (c->GetLevel() <= 26)
-//						|| !strcasecmp(sep->arg[2], "grimling") && (c->GetLevel() <= 29)
-//						|| !strcasecmp(sep->arg[2], "twilight") && (c->GetLevel() <= 33)
-//						|| !strcasecmp(sep->arg[2], "dawnshroud") && (c->GetLevel() <= 37)
-//						|| !strcasecmp(sep->arg[2], "nexus") && (c->GetLevel() <= 26)
-//						|| !strcasecmp(sep->arg[2], "pok") && (c->GetLevel() <= 38)
-//						|| !strcasecmp(sep->arg[2], "stonebrunt") && (c->GetLevel() <= 28)
-//						|| !strcasecmp(sep->arg[2], "bloodfields") && (c->GetLevel() <= 55)
-//						|| !strcasecmp(sep->arg[2], "emerald") && (c->GetLevel() <= 38)
-//						|| !strcasecmp(sep->arg[2], "skyfire") && (c->GetLevel() <= 43)
-//						|| !strcasecmp(sep->arg[2], "wos") && (c->GetLevel() <= 64)) {
-//							Gater->Say("I don't have the needed level yet", sep->arg[2]);
-//					}
-//					else {
-//						Gater->Say("With the proper level I can [gate] to [karana],[commons],[tox],[butcher],[lava],[ro],[feerrott],[steamfont],[misty],[wakening],[iceclad],[divide],[cobalt],[combines],[surefall],[grimling],[twilight],[dawnshroud],[nexus],[pok],[stonebrunt],[bloodfields],[emerald],[skyfire] or [wos].", c->GetName());
-//					}
-//					break;
-//
-//				case WIZARD:
-//
-//					if      ((!strcasecmp(sep->arg[2], "commons")) && (c->GetLevel() >= 35) ) {
-//						Gater->Say("Casting Common Portal...");
-//						Gater->CastSpell(566, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "fay")) && (c->GetLevel() >= 27)) {
-//						Gater->Say("Casting Fay Portal...");
-//						Gater->CastSpell(563, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "ro")) && (c->GetLevel() >= 37)) {
-//						Gater->Say("Casting Ro Portal...");
-//						Gater->CastSpell(567, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "tox")) && (c->GetLevel() >= 25)) {
-//						Gater->Say("Casting Toxxula Portal...");
-//						Gater->CastSpell(561, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "nk")) && (c->GetLevel() >= 27)) {
-//						Gater->Say("Casting North Karana Portal...");
-//						Gater->CastSpell(562, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "nek")) && (c->GetLevel() >= 32)) {
-//						Gater->Say("Casting Nektulos Portal...");
-//						Gater->CastSpell(564, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "wakening")) && (c->GetLevel() >= 43)) {
-//						Gater->Say("Casting Wakening Lands Portal...");
-//						Gater->CastSpell(1399, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "iceclad")) && (c->GetLevel() >= 33)) {
-//						Gater->Say("Casting Iceclad Ocean Portal...");
-//						Gater->CastSpell(1418, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "divide")) && (c->GetLevel() >= 36)) {
-//						Gater->Say("Casting Great Divide Portal...");
-//						Gater->CastSpell(1423, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "cobalt")) && (c->GetLevel() >= 43)) {
-//						Gater->Say("Casting Cobalt Scar Portal...");
-//						Gater->CastSpell(1425, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "combines")) && (c->GetLevel() >= 34)) {
-//						Gater->Say("Casting Combines Portal...");
-//						Gater->CastSpell(1516, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "wk")) && (c->GetLevel() >= 27)) {
-//						Gater->Say("Casting West Karana Portal...");
-//						Gater->CastSpell(568, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "twilight")) && (c->GetLevel() >= 27)) {
-//						Gater->Say("Casting Twilight Portal...");
-//						Gater->CastSpell(2425, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "dawnshroud")) && (c->GetLevel() >= 27)) {
-//						Gater->Say("Casting Dawnshroud Portal...");
-//						Gater->CastSpell(2430, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "nexus")) && (c->GetLevel() >= 29)) {
-//						Gater->Say("Casting Nexus Portal...");
-//						Gater->CastSpell(2944, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "pok")) && (c->GetLevel() >= 27)) {
-//						Gater->Say("Casting Plane of Knowledge Portal...");
-//						Gater->CastSpell(3180, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "wos")) && (c->GetLevel() >= 27)) {
-//						Gater->Say("Casting Wall of Slaughter Portal...");
-//						Gater->CastSpell(6178, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "grimling")) && (c->GetLevel() >= 29)) {
-//						Gater->Say("Casting Fay Portal...");
-//						Gater->CastSpell(2420, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "emerald")) && (c->GetLevel() >= 37)) {
-//						Gater->Say("Porting to Emerald Jungle...");
-//						Gater->CastSpell(1739, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "hateplane")) && (c->GetLevel() >= 39)) {
-//						Gater->Say("Porting to Hate Plane...");
-//						Gater->CastSpell(666, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "airplane")) && (c->GetLevel() >= 39)) {
-//						Gater->Say("Porting to airplane...");
-//						Gater->CastSpell(674, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "skyfire")) && (c->GetLevel() >= 36)) {
-//						Gater->Say("Porting to Skyfire...");
-//						Gater->CastSpell(1738, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "bloodfields")) && (c->GetLevel() >= 55)) {
-//						Gater->Say("Casting Bloodfields Portal...");
-//						Gater->CastSpell(6183, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "stonebrunt")) && (c->GetLevel() >= 27)) {
-//						Gater->Say("Casting Stonebrunt Portal...");
-//						Gater->CastSpell(3793, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!strcasecmp(sep->arg[2], "commons") && (c->GetLevel() <= 35))
-//						|| !strcasecmp(sep->arg[2], "fay") && (c->GetLevel() <= 27)
-//						|| (!strcasecmp(sep->arg[2], "ro") && (c->GetLevel() <= 37))
-//						|| !strcasecmp(sep->arg[2], "tox") && (c->GetLevel() <= 25)
-//						|| !strcasecmp(sep->arg[2], "nk") && (c->GetLevel() <= 25)
-//						|| !strcasecmp(sep->arg[2], "nek") && (c->GetLevel() <= 32)
-//						|| !strcasecmp(sep->arg[2], "wakening") && (c->GetLevel() <= 43)
-//						|| !strcasecmp(sep->arg[2], "iceclad") && (c->GetLevel() <= 33)
-//						|| !strcasecmp(sep->arg[2], "divide") && (c->GetLevel() <= 36)
-//						|| !strcasecmp(sep->arg[2], "cobalt") && (c->GetLevel() <= 43)
-//						|| !strcasecmp(sep->arg[2], "combines") && (c->GetLevel() <= 34)
-//						|| !strcasecmp(sep->arg[2], "wk") && (c->GetLevel() <= 37)
-//						|| !strcasecmp(sep->arg[2], "twilight") && (c->GetLevel() <= 33)
-//						|| !strcasecmp(sep->arg[2], "dawnshroud") && (c->GetLevel() <= 39)
-//						|| !strcasecmp(sep->arg[2], "nexus") && (c->GetLevel() <= 29)
-//						|| (!strcasecmp(sep->arg[2], "pok")
-//						|| !strcasecmp(sep->arg[2], "hateplane")
-//						|| !strcasecmp(sep->arg[2], "airplane") && (c->GetLevel() <= 38))
-//						|| !strcasecmp(sep->arg[2], "grimling") && (c->GetLevel() <= 29)
-//						|| !strcasecmp(sep->arg[2], "bloodfields") && (c->GetLevel() <= 55)
-//						|| !strcasecmp(sep->arg[2], "stonebrunt") && (c->GetLevel() <= 27)
-//						|| !strcasecmp(sep->arg[2], "emerald") && (c->GetLevel() <= 36)
-//						|| !strcasecmp(sep->arg[2], "skyfire") && (c->GetLevel() <= 36)
-//						|| !strcasecmp(sep->arg[2], "wos") && (c->GetLevel() <= 64)) {
-//							Gater->Say("I don't have the needed level yet", sep->arg[2]);
-//					}
-//					else {
-//						Gater->Say("With the proper level I can [gate] to [commons],[fay],[ro],[tox],[nk],[wakening],[iceclad],[divide],[cobalt],[combines],[wk],[grimling],[twilight],[dawnshroud],[nexus],[pok],[stonebrunt],[bloodfields],[emerald],[skyfire],[hateplane],[airplane] or [wos].", c->GetName());
-//					}
-//					break;
-//				default:
-//					c->Message(15, "You must have a Druid or Wizard in your group.");
-//					break;
-//			}
-//		}
-//	}
-//
-//	//Endure Breath
-//	if ((!strcasecmp(sep->arg[1], "endureb")) && (c->IsGrouped())) {
-//		Mob *Endurer;
-//		int32 EndurerClass = 0;
-//		Group *g = c->GetGroup();
-//		if(g) {
-//			for(int i=0; i<MAX_GROUP_MEMBERS; i++){
-//				if(g->members[i] && g->members[i]->IsBot()) {
-//					switch(g->members[i]->GetClass()) {
-//						case DRUID:
-//							Endurer = g->members[i];
-//							EndurerClass = DRUID;
-//							break;
-//						case SHAMAN:
-//							if (EndurerClass != DRUID){
-//								Endurer = g->members[i];
-//								EndurerClass = SHAMAN;
-//							}
-//							break;
-//						case ENCHANTER:
-//							if(EndurerClass == 0){
-//								Endurer = g->members[i];
-//								EndurerClass = ENCHANTER;
-//							}
-//							break;
-//						case RANGER:
-//							if(EndurerClass == 0) {
-//								Endurer = g->members[i];
-//								EndurerClass = RANGER;
-//							}
-//							break;
-//						default:
-//							break;
-//					}
-//				}
-//			}
-//			switch(EndurerClass) {
-//				case DRUID:
-//
-//					if  (c->GetLevel() <= 6) {
-//						Endurer->Say("I'm not level 6 yet.");
-//					}
-//					else if (zone->CanCastOutdoor()) {
-//						Endurer->Say("Casting Enduring Breath...");
-//						Endurer->CastSpell(86, c->GetID(), 1, -1, -1);
-//						break;
-//					}
-//					break;
-//				case SHAMAN:
-//
-//					if ((zone->CanCastOutdoor()) && (c->GetLevel() >= 12)) { 
-//						Endurer->Say("Casting Enduring Breath...");
-//						Endurer->CastToClient()->CastSpell(86, c->GetID(), 1, -1, -1);
-//					}
-//					else if (c->GetLevel() <= 12) {
-//						Endurer->Say("I'm not level 12 yet.");
-//					}
-//					break;
-//				case RANGER:
-//
-//					if((zone->CanCastOutdoor()) && (c->GetLevel() >= 20)){
-//						Endurer->Say("Casting Enduring Breath...");
-//						Endurer->CastToClient()->CastSpell(86, c->GetID(), 1, -1, -1);
-//					}
-//					else if (c->GetLevel() <= 20) {
-//						Endurer->Say("I'm not level 20 yet.");
-//					}
-//					break;
-//				case ENCHANTER:
-//
-//					if((zone->CanCastOutdoor()) && (c->GetLevel() >= 12)) {
-//						Endurer->Say("Casting Enduring Breath...");
-//						Endurer->CastToClient()->CastSpell(86, c->GetID(), 1, -1, -1);
-//					}
-//					else if (c->GetLevel() <= 12) {
-//						Endurer->Say("I'm not level 12 yet.");
-//					}
-//					break;
-//				default:
-//					c->Message(15, "You must have a Druid, Shaman, Ranger, or Enchanter in your group.");
-//					break;
-//			}
-//		}
-//	}
-//
-//	//Invisible
-//	if ((!strcasecmp(sep->arg[1], "invis")) && (c->IsGrouped())) {
-//		Mob *Inviser;
-//		int32 InviserClass = 0;
-//		Group *g = c->GetGroup();
-//		if(g) {
-//			for(int i=0; i<MAX_GROUP_MEMBERS; i++){
-//				if(g->members[i] && g->members[i]->IsBot()) {
-//					switch(g->members[i]->GetClass()) {
-//						case ENCHANTER:
-//							Inviser = g->members[i];
-//							InviserClass = ENCHANTER;
-//							break;
-//						case MAGICIAN:
-//							if (InviserClass != ENCHANTER){
-//								Inviser = g->members[i];
-//								InviserClass = MAGICIAN;
-//							}
-//							break;
-//						case WIZARD:
-//							if((InviserClass != ENCHANTER) || (InviserClass != MAGICIAN)){
-//								Inviser = g->members[i];
-//								InviserClass = WIZARD;
-//							}
-//							break;
-//						case NECROMANCER:
-//							if(InviserClass == 0){
-//								Inviser = g->members[i];
-//								InviserClass = NECROMANCER;
-//							}
-//							break;
-//						case DRUID:
-//							if((InviserClass != ENCHANTER) || (InviserClass != WIZARD)
-//								|| (InviserClass != MAGICIAN)){
-//									Inviser = g->members[i];
-//									InviserClass = DRUID;
-//							}
-//							break;
-//						default:
-//							break;
-//					}
-//				}
-//			}
-//			switch(InviserClass) {
-//				case ENCHANTER:
-//					if  ((c->GetLevel() <= 14) && (!strcasecmp(sep->arg[2], "undead"))) {
-//						Inviser->Say("I'm not level 14 yet.");
-//					}
-//					else if ((!c->IsInvisible(c)) && (!c->invisible_undead) && (c->GetLevel() >= 14) && (!strcasecmp(sep->arg[2], "undead"))) {
-//						Inviser->Say("Casting invis undead...");
-//						Inviser->CastSpell(235, c->GetID(), 1, -1, -1);
-//					}
-//					else if  ((c->GetLevel() <= 4) && (!strcasecmp(sep->arg[2], "live"))) {
-//						Inviser->Say("I'm not level 4 yet.");
-//					}
-//					else if ((!c->IsInvisible(c))&& (!c->invisible_undead) && (c->GetLevel() >= 4) && (!strcasecmp(sep->arg[2], "live"))) { 
-//						Inviser->Say("Casting invisibilty...");
-//						Inviser->CastSpell(42, c->GetID(), 1, -1, -1);
-//					}
-//					else if  ((c->GetLevel() <= 6) && (!strcasecmp(sep->arg[2], "see"))) {
-//						Inviser->Say("I'm not level 6 yet.");
-//					}
-//					else if ((c->GetLevel() >= 6) && (!strcasecmp(sep->arg[2], "see"))) { 
-//						Inviser->Say("Casting see invisible...");
-//						Inviser->CastSpell(80, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((c->IsInvisible(c)) || (c->invisible_undead)) { 
-//						Inviser->Say("I can't cast this if you're already invis-buffed...");
-//					}
-//					else {
-//						Inviser->Say("Do you want [invis undead], [invis live] or [invis see] ?", c->GetName());
-//					}
-//					break;
-//				case MAGICIAN:
-//					if  (!strcasecmp(sep->arg[2], "undead")) {
-//						Inviser->Say("I don't have that spell.");
-//					}
-//					else if  ((c->GetLevel() <= 8) && (!strcasecmp(sep->arg[2], "live"))) {
-//						Inviser->Say("I'm not level 8 yet.");
-//					}
-//					else if ((!c->IsInvisible(c))&& (!c->invisible_undead) && (c->GetLevel() >= 8) && (!strcasecmp(sep->arg[2], "live"))) { 
-//						Inviser->Say("Casting invisibilty...");
-//						Inviser->CastSpell(42, c->GetID(), 1, -1, -1);
-//					}
-//					else if  ((c->GetLevel() <= 16) && (!strcasecmp(sep->arg[2], "see"))) {
-//						Inviser->Say("I'm not level 16 yet.");
-//					}
-//					else if ((c->GetLevel() >= 16) && (!strcasecmp(sep->arg[2], "see"))) { 
-//						Inviser->Say("Casting see invisible...");
-//						Inviser->CastSpell(80, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((c->IsInvisible(c)) || (c->invisible_undead)) { 
-//						Inviser->Say("I can't cast this if you're already invis-buffed...");
-//					}
-//					else {
-//						Inviser->Say("Do you want [invis live] or [invis see] ?", c->GetName());
-//					}
-//					break;
-//				case WIZARD:
-//					if  ((c->GetLevel() <= 39) && (!strcasecmp(sep->arg[2], "undead"))) {
-//						Inviser->Say("I'm not level 39 yet.");
-//					}
-//					else if ((!c->IsInvisible(c))&& (!c->invisible_undead) && (c->GetLevel() >= 39) && (!strcasecmp(sep->arg[2], "undead"))) {
-//						Inviser->Say("Casting invis undead...");
-//						Inviser->CastSpell(235, c->GetID(), 1, -1, -1);
-//					}
-//					else if  ((c->GetLevel() <= 16) && (!strcasecmp(sep->arg[2], "live"))) {
-//						Inviser->Say("I'm not level 16 yet.");
-//					}
-//					else if ((!c->IsInvisible(c))&& (!c->invisible_undead) && (c->GetLevel() >= 16) && (!strcasecmp(sep->arg[2], "live"))) { 
-//						Inviser->Say("Casting invisibilty...");
-//						Inviser->CastSpell(42, c->GetID(), 1, -1, -1);
-//					}
-//					else if  ((c->GetLevel() <= 4) && (!strcasecmp(sep->arg[2], "see"))) {
-//						Inviser->Say("I'm not level 6 yet.");
-//					}
-//					else if ((c->GetLevel() >= 4) && (!strcasecmp(sep->arg[2], "see"))) { 
-//						Inviser->Say("Casting see invisible...");
-//						Inviser->CastSpell(80, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((c->IsInvisible(c)) || (c->invisible_undead)) { 
-//						Inviser->Say("I can't cast this if you're already invis-buffed...");
-//					}
-//					else {
-//						Inviser->Say("Do you want [invis undead], [invis live] or [invis see] ?", c->GetName());
-//					}
-//					break;
-//				case NECROMANCER:
-//					if ((!c->IsInvisible(c))&& (!c->invisible_undead) && (!strcasecmp(sep->arg[2], "undead"))) {
-//						Inviser->Say("Casting invis undead...");
-//						Inviser->CastSpell(235, c->GetID(), 1, -1, -1);
-//					}
-//					else if (!strcasecmp(sep->arg[2], "see")) { 
-//						Inviser->Say("I don't have that spell...");
-//					}
-//					else if (!strcasecmp(sep->arg[2], "live")) { 
-//						Inviser->Say("I don't have that spell...");
-//					}
-//					else if ((c->IsInvisible(c))|| (c->invisible_undead)) { 
-//						Inviser->Say("I can't cast this if you're already invis-buffed...");
-//					}
-//					else {
-//						Inviser->Say("I only have [invis undead]", c->GetName());
-//					}
-//					break;
-//				case DRUID:
-//					if  (!strcasecmp(sep->arg[2], "undead")) {
-//						Inviser->Say("I don't have that spell...");
-//					}
-//					else if  ((c->GetLevel() <= 4) && (!strcasecmp(sep->arg[2], "live"))) {
-//						Inviser->Say("I'm not level 4 yet.");
-//					}
-//					else if ((!c->IsInvisible(c))&& (!c->invisible_undead) && (c->GetLevel() >= 18) && (!strcasecmp(sep->arg[2], "live"))) { 
-//						Inviser->Say("Casting Superior Camouflage...");
-//						Inviser->CastSpell(34, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((!c->IsInvisible(c))&& (!c->invisible_undead) && (c->GetLevel() >= 4) && (!strcasecmp(sep->arg[2], "live")) && (zone->CanCastOutdoor())) { 
-//						Inviser->Say("Casting Camouflage...");
-//						Inviser->CastSpell(247, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((c->GetLevel() >= 4) && (!strcasecmp(sep->arg[2], "live")) && (!zone->CanCastOutdoor())) { 
-//						Inviser->Say("I can't cast this spell indoors...");
-//					}
-//					else if  ((c->GetLevel() <= 13) && (!strcasecmp(sep->arg[2], "see"))) {
-//						Inviser->Say("I'm not level 13 yet.");
-//					}
-//					else if ((c->GetLevel() >= 13) && (!strcasecmp(sep->arg[2], "see"))) { 
-//						Inviser->Say("Casting see invisible...");
-//						Inviser->CastSpell(80, c->GetID(), 1, -1, -1);
-//					}
-//					else if ((c->IsInvisible(c)) || (c->invisible_undead)) { 
-//						Inviser->Say("I can't cast this if you're already invis-buffed...");
-//					}
-//					else {
-//						Inviser->Say("Do you want [invis live] or [invis see] ?", c->GetName());
-//					}
-//					break;
-//				default:
-//					c->Message(15, "You must have a Enchanter, Magician, Wizard, Druid, or Necromancer in your group.");
-//					break;
-//			}
-//		}
-//	}
-//
-//	//Levitate
-//	if ((!strcasecmp(sep->arg[1], "levitate")) && (c->IsGrouped())) {
-//		Mob *Lever;
-//		int32 LeverClass = 0;
-//		Group *g = c->GetGroup();
-//		if(g) {
-//			for(int i=0; i<MAX_GROUP_MEMBERS; i++){
-//				if(g->members[i] && g->members[i]->IsBot()) {
-//					switch(g->members[i]->GetClass()) {
-//						case DRUID:
-//							Lever = g->members[i];
-//							LeverClass = DRUID;
-//							break;
-//						case SHAMAN:
-//							if (LeverClass != DRUID){
-//								Lever = g->members[i];
-//								LeverClass = SHAMAN;
-//							}
-//							break;
-//						case WIZARD:
-//							if(LeverClass == 0){
-//								Lever = g->members[i];
-//								LeverClass = WIZARD;
-//							}
-//							break;
-//						case ENCHANTER:
-//							if (LeverClass == 0) {
-//								Lever = g->members[i];
-//								LeverClass = ENCHANTER;
-//							}
-//							break;
-//						default:
-//							break;
-//					}
-//				}
-//			}
-//			switch(LeverClass) {
-//				case DRUID:
-//					if  (c->GetLevel() <= 14) {
-//						Lever->Say("I'm not level 14 yet.");
-//					}
-//					else if (zone->CanCastOutdoor()) {
-//						Lever->Say("Casting Levitate...");
-//						Lever->CastSpell(261, c->GetID(), 1, -1, -1);
-//						break;
-//					}
-//					else if (!zone->CanCastOutdoor()) {
-//						Lever->Say("I can't cast this spell indoors", c->GetName());
-//					}
-//					break;
-//
-//				case SHAMAN:
-//
-//					if ((zone->CanCastOutdoor()) && (c->GetLevel() >= 10)) { 
-//						Lever->Say("Casting Levitate...");
-//						Lever->CastToClient()->CastSpell(261, c->GetID(), 1, -1, -1);
-//					}
-//					else if (!zone->CanCastOutdoor()) {
-//						Lever->Say("I can't cast this spell indoors", c->GetName());
-//					}
-//					else if (c->GetLevel() <= 10) {
-//						Lever->Say("I'm not level 10 yet.");
-//					}
-//					break;
-//
-//				case WIZARD:
-//
-//					if((zone->CanCastOutdoor()) && (c->GetLevel() >= 22)){
-//						Lever->Say("Casting Levitate...");
-//						Lever->CastToClient()->CastSpell(261, c->GetID(), 1, -1, -1);
-//					}
-//					else if (!zone->CanCastOutdoor()) {
-//						Lever->Say("I can't cast this spell indoors", c->GetName());
-//					}
-//					else if (c->GetLevel() <= 22) {
-//						Lever->Say("I'm not level 22 yet.");
-//					}
-//					break;
-//
-//				case ENCHANTER:
-//
-//					if((zone->CanCastOutdoor()) && (c->GetLevel() >= 15)) {
-//						Lever->Say("Casting Levitate...");
-//						Lever->CastToClient()->CastSpell(261, c->GetID(), 1, -1, -1);
-//					}
-//					else if (!zone->CanCastOutdoor()) {
-//						Lever->Say("I can't cast this spell indoors", c->GetName());
-//					}
-//					else if (c->GetLevel() <= 15) {
-//						Lever->Say("I'm not level 15 yet.");
-//					}
-//					break;
-//
-//
-//				default:
-//					c->Message(15, "You must have a Druid, Shaman, Wizard, or Enchanter in your group.");
-//					break;
-//			}
-//		}
-//	}
-//
+
+	// Evacuate
+	if(!strcasecmp(sep->arg[1], "evac")) {
+		Mob *evac = NULL;
+		bool hasevac = false;
+		if(c->IsGrouped())
+		{
+			Group *g = c->GetGroup();
+			if(g) {
+				for(int i=0; i<MAX_GROUP_MEMBERS; i++)
+				{
+					if((g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == DRUID)) 
+						|| (g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == WIZARD)))
+					{
+						hasevac = true;
+						evac = g->members[i];
+					}
+				}
+				if(!hasevac) {
+					c->Message(15, "You must have a Druid in your group.");
+				}
+			}
+		}
+		if((hasevac)  && (c->GetLevel() >= 18)) {
+			evac->Say("Attempting to Evac you %s.", c->GetName());
+			evac->CastToClient()->CastSpell(2183, c->GetID(), 1, -1, -1);
+		}
+		else if((hasevac)  && (c->GetLevel() <= 17)) {
+			evac->Say("I'm not level 18 yet.", c->GetName());
+		}
+		return;
+	}
+
+	// Sow
+	if ((!strcasecmp(sep->arg[1], "sow")) && (c->IsGrouped())) {
+		Mob *Sower;
+		int32 SowerClass = 0;
+		Group *g = c->GetGroup();
+		if(g) {
+			for(int i=0; i<MAX_GROUP_MEMBERS; i++){
+				if(g->members[i] && g->members[i]->IsBot()) {
+					switch(g->members[i]->GetClass()) {
+						case DRUID:
+							Sower = g->members[i];
+							SowerClass = DRUID;
+							break;
+						case SHAMAN:
+							if (SowerClass != DRUID){
+								Sower = g->members[i];
+								SowerClass = SHAMAN;
+							}
+							break;
+						case RANGER:
+							if (SowerClass == 0){
+								Sower = g->members[i];
+								SowerClass = RANGER;
+							}
+							break;
+						case BEASTLORD:
+							if (SowerClass == 0){
+								Sower = g->members[i];
+								SowerClass = BEASTLORD;
+							}
+							break;
+						default:
+							break;
+					}
+				}
+			}
+			switch(SowerClass) {
+				case DRUID:
+					if      ((!strcasecmp(sep->arg[2], "regular")) && (zone->CanCastOutdoor())  && (c->GetLevel() >= 10) ) {
+						Sower->Say("Casting sow...");
+						Sower->CastSpell(278, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "regular")) && (zone->CanCastOutdoor())  && (c->GetLevel() <= 10) ) {
+						Sower->Say("I'm not level 10 yet.");
+					}
+					else if ((!strcasecmp(sep->arg[2], "wolf")) && zone->CanCastOutdoor() && (c->GetLevel() >= 20)) {
+						Sower->Say("Casting group wolf...");
+						Sower->CastSpell(428, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "wolf")) && (c->GetLevel() <= 20)) {
+						Sower->Say("I'm not level 20 yet.");
+					}
+					else if ((!strcasecmp(sep->arg[2], "feral")) && (c->GetLevel() >= 50)) { 
+						Sower->Say("Casting Feral Pack...");
+						Sower->CastSpell(4058, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "feral")) && (c->GetLevel() <= 50)) {
+						Sower->Say("I'm not level 50 yet.");
+					}
+					else if ((!strcasecmp(sep->arg[2], "shrew")) && (c->GetLevel() >= 35)) { 
+						Sower->Say("Casting Pack Shrew...");
+						Sower->CastSpell(4055, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "wolf")) && (c->GetLevel() <= 35)) {
+						Sower->Say("I'm not level 35 yet.");
+					}
+					else if ((!zone->CanCastOutdoor()) && (!strcasecmp(sep->arg[2], "regular")) ||
+						(!zone->CanCastOutdoor()) && (!strcasecmp(sep->arg[2], "wolf"))) {
+							Sower->Say("I can't cast this spell indoors, try [sow shrew] if you're 35 or higher, or [sow feral] if you're 50 or higher,", c->GetName());
+					}
+					else if (!zone->CanCastOutdoor()) {
+						Sower->Say("I can't cast this spell indoors, try [sow shrew] if you're 35 or higher, or [sow feral] if you're 50 or higher,", c->GetName());
+					}
+					else if (zone->CanCastOutdoor()) {
+						Sower->Say("Do you want [sow regular] or [sow wolf]?", c->GetName());
+					}
+					else if (!zone->CanCastOutdoor()) {
+						Sower->Say("I can't cast this spell indoors, try [sow shrew] if you're 35 or higher, or [sow feral] if you're 50 or higher,", c->GetName());
+					}
+					break;
+
+				case SHAMAN:
+
+					if ((zone->CanCastOutdoor()) && (c->GetLevel() >= 9)) { 
+						Sower->Say("Casting SoW...");
+						Sower->CastToClient()->CastSpell(278, c->GetID(), 1, -1, -1);
+					}
+					else if (!zone->CanCastOutdoor()) {
+						Sower->Say("I can't cast this spell indoors", c->GetName());
+					}
+					else if (c->GetLevel() <= 9) {
+						Sower->Say("I'm not level 9 yet.");
+					}
+					break;
+
+				case RANGER:
+
+					if ((zone->CanCastOutdoor()) && (c->GetLevel() >= 28)){
+						Sower->Say("Casting SoW...");
+						Sower->CastToClient()->CastSpell(278, c->GetID(), 1, -1, -1);
+					}
+					else if (!zone->CanCastOutdoor()) {
+						Sower->Say("I can't cast this spell indoors", c->GetName());
+					}
+					else if (c->GetLevel() <= 28) {
+						Sower->Say("I'm not level 28 yet.");
+					}
+					break;
+
+				case BEASTLORD:
+
+					if((zone->CanCastOutdoor()) && (c->GetLevel() >= 24)) {
+						Sower->Say("Casting SoW...");
+						Sower->CastToClient()->CastSpell(278, c->GetID(), 1, -1, -1);
+					}
+					else if (!zone->CanCastOutdoor()) {
+						Sower->Say("I can't cast this spell indoors", c->GetName());
+					}
+					else if (c->GetLevel() <= 24) {
+						Sower->Say("I'm not level 24 yet.");
+					}
+					break;
+
+
+				default:
+					c->Message(15, "You must have a Druid, Shaman, Ranger,  or Beastlord in your group.");
+					break;
+			}
+		}
+	}
+
+	////Shrink
+	//if ((!strcasecmp(sep->arg[1], "shrinkme")) && (c->IsGrouped())) {
+	//	Mob *Shrinker;
+	//	int32 ShrinkerClass = 0;
+	//	Group *g = c->GetGroup();
+
+	//	if(g) {
+	//		for(int i=0; i<MAX_GROUP_MEMBERS; i++){
+	//			if(g->members[i] && g->members[i]->IsBot()) {
+	//				switch(g->members[i]->GetClass()) {
+	//					case SHAMAN:
+	//						Shrinker = g->members[i];
+	//						ShrinkerClass = SHAMAN;
+	//						break;
+	//					case BEASTLORD:
+	//						if (ShrinkerClass != SHAMAN){
+	//							Shrinker = g->members[i];
+	//							ShrinkerClass = BEASTLORD;
+	//						}
+	//						break;
+	//					default:
+	//						break;
+	//				}
+	//			}
+	//		}
+	//		switch(ShrinkerClass) {
+	//			case SHAMAN:
+
+	//				if (c->GetLevel() >= 15) { 
+	//					Shrinker->Say("Casting Shrink...");
+	//					Shrinker->CastToNPC()->BotRaidSpell(345);
+	//				}
+	//				else if (c->GetLevel() <= 14) {
+	//					Shrinker->Say("I'm not level 15 yet.");
+	//				}
+	//				break;
+
+	//			case BEASTLORD:
+
+	//				if (c->GetLevel() >= 23) {
+	//					Shrinker->Say("Casting Shrink...");
+	//					Shrinker->CastToNPC()->BotRaidSpell(345);
+	//				}
+	//				else if (c->GetLevel() <= 22) {
+	//					Shrinker->Say("I'm not level 23 yet.");
+	//				}
+	//				break;
+
+	//			default:
+	//				c->Message(15, "You must have a Shaman or Beastlord in your group.");
+	//				break;
+	//		}
+	//	}
+	//}
+
+	// Gate
+	if ((!strcasecmp(sep->arg[1], "gate")) && (c->IsGrouped())) {
+		Mob *Gater;
+		int32 GaterClass = 0;
+		Group *g = c->GetGroup();
+		if(g) {
+			for(int i=0; i<MAX_GROUP_MEMBERS; i++){
+				if(g->members[i] && g->members[i]->IsBot()) {
+					switch(g->members[i]->GetClass()) {
+						case DRUID:
+							Gater = g->members[i];
+							GaterClass = DRUID;
+							break;
+						case WIZARD:
+							if (GaterClass == 0){
+								Gater = g->members[i];
+								GaterClass = WIZARD;
+							}
+							break;
+						default:
+							break;
+					}
+				}
+			}
+			switch(GaterClass) {
+				case DRUID:
+					if      ((!strcasecmp(sep->arg[2], "karana")) && (c->GetLevel() >= 25) ) {
+						Gater->Say("Casting Circle of Karana...");
+						Gater->CastSpell(550, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "commons")) && (c->GetLevel() >= 27)) {
+						Gater->Say("Casting Circle of Commons...");
+						Gater->CastSpell(551, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "tox")) && (c->GetLevel() >= 25)) { 
+						Gater->Say("Casting Circle of Toxxulia...");
+						Gater->CastSpell(552, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "butcher")) && (c->GetLevel() >= 25)) { 
+						Gater->Say("Casting Circle of Butcherblock...");
+						Gater->CastSpell(553, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "lava")) && (c->GetLevel() >= 30)) { 
+						Gater->Say("Casting Circle of Lavastorm...");
+						Gater->CastSpell(554, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "ro")) && (c->GetLevel() >= 32)) { 
+						Gater->Say("Casting Circle of Ro...");
+						Gater->CastSpell(555, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "feerrott")) && (c->GetLevel() >= 32)) { 
+						Gater->Say("Casting Circle of feerrott...");
+						Gater->CastSpell(556, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "steamfont")) && (c->GetLevel() >= 31)) { 
+						Gater->Say("Casting Circle of Steamfont...");
+						Gater->CastSpell(557, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "misty")) && (c->GetLevel() >= 36)) { 
+						Gater->Say("Casting Circle of Misty...");
+						Gater->CastSpell(558, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "wakening")) && (c->GetLevel() >= 40)) { 
+						Gater->Say("Casting Circle of Wakening Lands...");
+						Gater->CastSpell(1398, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "iceclad")) && (c->GetLevel() >= 32)) { 
+						Gater->Say("Casting Circle of Iceclad Ocean...");
+						Gater->CastSpell(1434, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "divide")) && (c->GetLevel() >= 36)) { 
+						Gater->Say("Casting Circle of The Great Divide...");
+						Gater->CastSpell(1438, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "cobalt")) && (c->GetLevel() >= 42)) { 
+						Gater->Say("Casting Circle of Cobalt Scar...");
+						Gater->CastSpell(1440, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "combines")) && (c->GetLevel() >= 33)) { 
+						Gater->Say("Casting Circle of The Combines...");
+						Gater->CastSpell(1517, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "surefall")) && (c->GetLevel() >= 26)) { 
+						Gater->Say("Casting Circle of Surefall Glade...");
+						Gater->CastSpell(2020, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "grimling")) && (c->GetLevel() >= 29)) { 
+						Gater->Say("Casting Circle of Grimling Forest...");
+						Gater->CastSpell(2419, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "twilight")) && (c->GetLevel() >= 33)) { 
+						Gater->Say("Casting Circle of Twilight...");
+						Gater->CastSpell(2424, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "dawnshroud")) && (c->GetLevel() >= 37)) { 
+						Gater->Say("Casting Circle of Dawnshroud...");
+						Gater->CastSpell(2429, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "nexus")) && (c->GetLevel() >= 26)) { 
+						Gater->Say("Casting Circle of The Nexus...");
+						Gater->CastSpell(2432, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "pok")) && (c->GetLevel() >= 38)) { 
+						Gater->Say("Casting Circle of Knowledge...");
+						Gater->CastSpell(3184, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "stonebrunt")) && (c->GetLevel() >= 28)) { 
+						Gater->Say("Casting Circle of Stonebrunt Mountains...");
+						Gater->CastSpell(3792, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "bloodfields")) && (c->GetLevel() >= 55)) { 
+						Gater->Say("Casting Circle of Bloodfields...");
+						Gater->CastSpell(6184, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "emerald")) && (c->GetLevel() >= 39)) { 
+						Gater->Say("Casting Wind of the South...");
+						Gater->CastSpell(1737, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "skyfire")) && (c->GetLevel() >= 44)) { 
+						Gater->Say("Casting Wind of the North...");
+						Gater->CastSpell(1736, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "slaughter")) && (c->GetLevel() >= 64)) { 
+						Gater->Say("Casting Circle of Slaughter...");
+						Gater->CastSpell(6179, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "karana") 
+						|| !strcasecmp(sep->arg[2], "tox") 
+						|| !strcasecmp(sep->arg[2], "butcher") && (c->GetLevel() <= 25))
+						|| !strcasecmp(sep->arg[2], "commons") && (c->GetLevel() <= 27)
+						|| (!strcasecmp(sep->arg[2], "ro") 
+						|| !strcasecmp(sep->arg[2], "feerrott") && (c->GetLevel() <= 32))
+						|| !strcasecmp(sep->arg[2], "steamfont") && (c->GetLevel() <= 31)
+						|| !strcasecmp(sep->arg[2], "misty") && (c->GetLevel() <= 36)
+						|| !strcasecmp(sep->arg[2], "lava") && (c->GetLevel() <= 30)
+						|| !strcasecmp(sep->arg[2], "wakening") && (c->GetLevel() <= 40)
+						|| !strcasecmp(sep->arg[2], "iceclad") && (c->GetLevel() <= 32)
+						|| !strcasecmp(sep->arg[2], "divide") && (c->GetLevel() <= 38)
+						|| !strcasecmp(sep->arg[2], "cobalt") && (c->GetLevel() <= 42)
+						|| !strcasecmp(sep->arg[2], "combines") && (c->GetLevel() <= 33)
+						|| !strcasecmp(sep->arg[2], "surefall") && (c->GetLevel() <= 26)
+						|| !strcasecmp(sep->arg[2], "grimling") && (c->GetLevel() <= 29)
+						|| !strcasecmp(sep->arg[2], "twilight") && (c->GetLevel() <= 33)
+						|| !strcasecmp(sep->arg[2], "dawnshroud") && (c->GetLevel() <= 37)
+						|| !strcasecmp(sep->arg[2], "nexus") && (c->GetLevel() <= 26)
+						|| !strcasecmp(sep->arg[2], "pok") && (c->GetLevel() <= 38)
+						|| !strcasecmp(sep->arg[2], "stonebrunt") && (c->GetLevel() <= 28)
+						|| !strcasecmp(sep->arg[2], "bloodfields") && (c->GetLevel() <= 55)
+						|| !strcasecmp(sep->arg[2], "emerald") && (c->GetLevel() <= 38)
+						|| !strcasecmp(sep->arg[2], "skyfire") && (c->GetLevel() <= 43)
+						|| !strcasecmp(sep->arg[2], "wos") && (c->GetLevel() <= 64)) {
+							Gater->Say("I don't have the needed level yet", sep->arg[2]);
+					}
+					else {
+						Gater->Say("With the proper level I can [gate] to [karana],[commons],[tox],[butcher],[lava],[ro],[feerrott],[steamfont],[misty],[wakening],[iceclad],[divide],[cobalt],[combines],[surefall],[grimling],[twilight],[dawnshroud],[nexus],[pok],[stonebrunt],[bloodfields],[emerald],[skyfire] or [wos].", c->GetName());
+					}
+					break;
+
+				case WIZARD:
+
+					if      ((!strcasecmp(sep->arg[2], "commons")) && (c->GetLevel() >= 35) ) {
+						Gater->Say("Casting Common Portal...");
+						Gater->CastSpell(566, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "fay")) && (c->GetLevel() >= 27)) {
+						Gater->Say("Casting Fay Portal...");
+						Gater->CastSpell(563, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "ro")) && (c->GetLevel() >= 37)) {
+						Gater->Say("Casting Ro Portal...");
+						Gater->CastSpell(567, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "tox")) && (c->GetLevel() >= 25)) {
+						Gater->Say("Casting Toxxula Portal...");
+						Gater->CastSpell(561, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "nk")) && (c->GetLevel() >= 27)) {
+						Gater->Say("Casting North Karana Portal...");
+						Gater->CastSpell(562, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "nek")) && (c->GetLevel() >= 32)) {
+						Gater->Say("Casting Nektulos Portal...");
+						Gater->CastSpell(564, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "wakening")) && (c->GetLevel() >= 43)) {
+						Gater->Say("Casting Wakening Lands Portal...");
+						Gater->CastSpell(1399, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "iceclad")) && (c->GetLevel() >= 33)) {
+						Gater->Say("Casting Iceclad Ocean Portal...");
+						Gater->CastSpell(1418, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "divide")) && (c->GetLevel() >= 36)) {
+						Gater->Say("Casting Great Divide Portal...");
+						Gater->CastSpell(1423, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "cobalt")) && (c->GetLevel() >= 43)) {
+						Gater->Say("Casting Cobalt Scar Portal...");
+						Gater->CastSpell(1425, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "combines")) && (c->GetLevel() >= 34)) {
+						Gater->Say("Casting Combines Portal...");
+						Gater->CastSpell(1516, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "wk")) && (c->GetLevel() >= 27)) {
+						Gater->Say("Casting West Karana Portal...");
+						Gater->CastSpell(568, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "twilight")) && (c->GetLevel() >= 27)) {
+						Gater->Say("Casting Twilight Portal...");
+						Gater->CastSpell(2425, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "dawnshroud")) && (c->GetLevel() >= 27)) {
+						Gater->Say("Casting Dawnshroud Portal...");
+						Gater->CastSpell(2430, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "nexus")) && (c->GetLevel() >= 29)) {
+						Gater->Say("Casting Nexus Portal...");
+						Gater->CastSpell(2944, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "pok")) && (c->GetLevel() >= 27)) {
+						Gater->Say("Casting Plane of Knowledge Portal...");
+						Gater->CastSpell(3180, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "wos")) && (c->GetLevel() >= 27)) {
+						Gater->Say("Casting Wall of Slaughter Portal...");
+						Gater->CastSpell(6178, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "grimling")) && (c->GetLevel() >= 29)) {
+						Gater->Say("Casting Fay Portal...");
+						Gater->CastSpell(2420, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "emerald")) && (c->GetLevel() >= 37)) {
+						Gater->Say("Porting to Emerald Jungle...");
+						Gater->CastSpell(1739, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "hateplane")) && (c->GetLevel() >= 39)) {
+						Gater->Say("Porting to Hate Plane...");
+						Gater->CastSpell(666, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "airplane")) && (c->GetLevel() >= 39)) {
+						Gater->Say("Porting to airplane...");
+						Gater->CastSpell(674, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "skyfire")) && (c->GetLevel() >= 36)) {
+						Gater->Say("Porting to Skyfire...");
+						Gater->CastSpell(1738, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "bloodfields")) && (c->GetLevel() >= 55)) {
+						Gater->Say("Casting Bloodfields Portal...");
+						Gater->CastSpell(6183, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "stonebrunt")) && (c->GetLevel() >= 27)) {
+						Gater->Say("Casting Stonebrunt Portal...");
+						Gater->CastSpell(3793, c->GetID(), 1, -1, -1);
+					}
+					else if ((!strcasecmp(sep->arg[2], "commons") && (c->GetLevel() <= 35))
+						|| !strcasecmp(sep->arg[2], "fay") && (c->GetLevel() <= 27)
+						|| (!strcasecmp(sep->arg[2], "ro") && (c->GetLevel() <= 37))
+						|| !strcasecmp(sep->arg[2], "tox") && (c->GetLevel() <= 25)
+						|| !strcasecmp(sep->arg[2], "nk") && (c->GetLevel() <= 25)
+						|| !strcasecmp(sep->arg[2], "nek") && (c->GetLevel() <= 32)
+						|| !strcasecmp(sep->arg[2], "wakening") && (c->GetLevel() <= 43)
+						|| !strcasecmp(sep->arg[2], "iceclad") && (c->GetLevel() <= 33)
+						|| !strcasecmp(sep->arg[2], "divide") && (c->GetLevel() <= 36)
+						|| !strcasecmp(sep->arg[2], "cobalt") && (c->GetLevel() <= 43)
+						|| !strcasecmp(sep->arg[2], "combines") && (c->GetLevel() <= 34)
+						|| !strcasecmp(sep->arg[2], "wk") && (c->GetLevel() <= 37)
+						|| !strcasecmp(sep->arg[2], "twilight") && (c->GetLevel() <= 33)
+						|| !strcasecmp(sep->arg[2], "dawnshroud") && (c->GetLevel() <= 39)
+						|| !strcasecmp(sep->arg[2], "nexus") && (c->GetLevel() <= 29)
+						|| (!strcasecmp(sep->arg[2], "pok")
+						|| !strcasecmp(sep->arg[2], "hateplane")
+						|| !strcasecmp(sep->arg[2], "airplane") && (c->GetLevel() <= 38))
+						|| !strcasecmp(sep->arg[2], "grimling") && (c->GetLevel() <= 29)
+						|| !strcasecmp(sep->arg[2], "bloodfields") && (c->GetLevel() <= 55)
+						|| !strcasecmp(sep->arg[2], "stonebrunt") && (c->GetLevel() <= 27)
+						|| !strcasecmp(sep->arg[2], "emerald") && (c->GetLevel() <= 36)
+						|| !strcasecmp(sep->arg[2], "skyfire") && (c->GetLevel() <= 36)
+						|| !strcasecmp(sep->arg[2], "wos") && (c->GetLevel() <= 64)) {
+							Gater->Say("I don't have the needed level yet", sep->arg[2]);
+					}
+					else {
+						Gater->Say("With the proper level I can [gate] to [commons],[fay],[ro],[tox],[nk],[wakening],[iceclad],[divide],[cobalt],[combines],[wk],[grimling],[twilight],[dawnshroud],[nexus],[pok],[stonebrunt],[bloodfields],[emerald],[skyfire],[hateplane],[airplane] or [wos].", c->GetName());
+					}
+					break;
+				default:
+					c->Message(15, "You must have a Druid or Wizard in your group.");
+					break;
+			}
+		}
+	}
+
+	//Endure Breath
+	if ((!strcasecmp(sep->arg[1], "endureb")) && (c->IsGrouped())) {
+		Mob *Endurer;
+		int32 EndurerClass = 0;
+		Group *g = c->GetGroup();
+		if(g) {
+			for(int i=0; i<MAX_GROUP_MEMBERS; i++){
+				if(g->members[i] && g->members[i]->IsBot()) {
+					switch(g->members[i]->GetClass()) {
+						case DRUID:
+							Endurer = g->members[i];
+							EndurerClass = DRUID;
+							break;
+						case SHAMAN:
+							if (EndurerClass != DRUID){
+								Endurer = g->members[i];
+								EndurerClass = SHAMAN;
+							}
+							break;
+						case ENCHANTER:
+							if(EndurerClass == 0){
+								Endurer = g->members[i];
+								EndurerClass = ENCHANTER;
+							}
+							break;
+						case RANGER:
+							if(EndurerClass == 0) {
+								Endurer = g->members[i];
+								EndurerClass = RANGER;
+							}
+							break;
+						default:
+							break;
+					}
+				}
+			}
+			switch(EndurerClass) {
+				case DRUID:
+
+					if  (c->GetLevel() <= 6) {
+						Endurer->Say("I'm not level 6 yet.");
+					}
+					else if (zone->CanCastOutdoor()) {
+						Endurer->Say("Casting Enduring Breath...");
+						Endurer->CastSpell(86, c->GetID(), 1, -1, -1);
+						break;
+					}
+					break;
+				case SHAMAN:
+
+					if ((zone->CanCastOutdoor()) && (c->GetLevel() >= 12)) { 
+						Endurer->Say("Casting Enduring Breath...");
+						Endurer->CastToClient()->CastSpell(86, c->GetID(), 1, -1, -1);
+					}
+					else if (c->GetLevel() <= 12) {
+						Endurer->Say("I'm not level 12 yet.");
+					}
+					break;
+				case RANGER:
+
+					if((zone->CanCastOutdoor()) && (c->GetLevel() >= 20)){
+						Endurer->Say("Casting Enduring Breath...");
+						Endurer->CastToClient()->CastSpell(86, c->GetID(), 1, -1, -1);
+					}
+					else if (c->GetLevel() <= 20) {
+						Endurer->Say("I'm not level 20 yet.");
+					}
+					break;
+				case ENCHANTER:
+
+					if((zone->CanCastOutdoor()) && (c->GetLevel() >= 12)) {
+						Endurer->Say("Casting Enduring Breath...");
+						Endurer->CastToClient()->CastSpell(86, c->GetID(), 1, -1, -1);
+					}
+					else if (c->GetLevel() <= 12) {
+						Endurer->Say("I'm not level 12 yet.");
+					}
+					break;
+				default:
+					c->Message(15, "You must have a Druid, Shaman, Ranger, or Enchanter in your group.");
+					break;
+			}
+		}
+	}
+
+	//Invisible
+	if ((!strcasecmp(sep->arg[1], "invis")) && (c->IsGrouped())) {
+		Mob *Inviser;
+		int32 InviserClass = 0;
+		Group *g = c->GetGroup();
+		if(g) {
+			for(int i=0; i<MAX_GROUP_MEMBERS; i++){
+				if(g->members[i] && g->members[i]->IsBot()) {
+					switch(g->members[i]->GetClass()) {
+						case ENCHANTER:
+							Inviser = g->members[i];
+							InviserClass = ENCHANTER;
+							break;
+						case MAGICIAN:
+							if (InviserClass != ENCHANTER){
+								Inviser = g->members[i];
+								InviserClass = MAGICIAN;
+							}
+							break;
+						case WIZARD:
+							if((InviserClass != ENCHANTER) || (InviserClass != MAGICIAN)){
+								Inviser = g->members[i];
+								InviserClass = WIZARD;
+							}
+							break;
+						case NECROMANCER:
+							if(InviserClass == 0){
+								Inviser = g->members[i];
+								InviserClass = NECROMANCER;
+							}
+							break;
+						case DRUID:
+							if((InviserClass != ENCHANTER) || (InviserClass != WIZARD)
+								|| (InviserClass != MAGICIAN)){
+									Inviser = g->members[i];
+									InviserClass = DRUID;
+							}
+							break;
+						default:
+							break;
+					}
+				}
+			}
+			switch(InviserClass) {
+				case ENCHANTER:
+					if  ((c->GetLevel() <= 14) && (!strcasecmp(sep->arg[2], "undead"))) {
+						Inviser->Say("I'm not level 14 yet.");
+					}
+					else if ((!c->IsInvisible(c)) && (!c->invisible_undead) && (c->GetLevel() >= 14) && (!strcasecmp(sep->arg[2], "undead"))) {
+						Inviser->Say("Casting invis undead...");
+						Inviser->CastSpell(235, c->GetID(), 1, -1, -1);
+					}
+					else if  ((c->GetLevel() <= 4) && (!strcasecmp(sep->arg[2], "live"))) {
+						Inviser->Say("I'm not level 4 yet.");
+					}
+					else if ((!c->IsInvisible(c))&& (!c->invisible_undead) && (c->GetLevel() >= 4) && (!strcasecmp(sep->arg[2], "live"))) { 
+						Inviser->Say("Casting invisibilty...");
+						Inviser->CastSpell(42, c->GetID(), 1, -1, -1);
+					}
+					else if  ((c->GetLevel() <= 6) && (!strcasecmp(sep->arg[2], "see"))) {
+						Inviser->Say("I'm not level 6 yet.");
+					}
+					else if ((c->GetLevel() >= 6) && (!strcasecmp(sep->arg[2], "see"))) { 
+						Inviser->Say("Casting see invisible...");
+						Inviser->CastSpell(80, c->GetID(), 1, -1, -1);
+					}
+					else if ((c->IsInvisible(c)) || (c->invisible_undead)) { 
+						Inviser->Say("I can't cast this if you're already invis-buffed...");
+					}
+					else {
+						Inviser->Say("Do you want [invis undead], [invis live] or [invis see] ?", c->GetName());
+					}
+					break;
+				case MAGICIAN:
+					if  (!strcasecmp(sep->arg[2], "undead")) {
+						Inviser->Say("I don't have that spell.");
+					}
+					else if  ((c->GetLevel() <= 8) && (!strcasecmp(sep->arg[2], "live"))) {
+						Inviser->Say("I'm not level 8 yet.");
+					}
+					else if ((!c->IsInvisible(c))&& (!c->invisible_undead) && (c->GetLevel() >= 8) && (!strcasecmp(sep->arg[2], "live"))) { 
+						Inviser->Say("Casting invisibilty...");
+						Inviser->CastSpell(42, c->GetID(), 1, -1, -1);
+					}
+					else if  ((c->GetLevel() <= 16) && (!strcasecmp(sep->arg[2], "see"))) {
+						Inviser->Say("I'm not level 16 yet.");
+					}
+					else if ((c->GetLevel() >= 16) && (!strcasecmp(sep->arg[2], "see"))) { 
+						Inviser->Say("Casting see invisible...");
+						Inviser->CastSpell(80, c->GetID(), 1, -1, -1);
+					}
+					else if ((c->IsInvisible(c)) || (c->invisible_undead)) { 
+						Inviser->Say("I can't cast this if you're already invis-buffed...");
+					}
+					else {
+						Inviser->Say("Do you want [invis live] or [invis see] ?", c->GetName());
+					}
+					break;
+				case WIZARD:
+					if  ((c->GetLevel() <= 39) && (!strcasecmp(sep->arg[2], "undead"))) {
+						Inviser->Say("I'm not level 39 yet.");
+					}
+					else if ((!c->IsInvisible(c))&& (!c->invisible_undead) && (c->GetLevel() >= 39) && (!strcasecmp(sep->arg[2], "undead"))) {
+						Inviser->Say("Casting invis undead...");
+						Inviser->CastSpell(235, c->GetID(), 1, -1, -1);
+					}
+					else if  ((c->GetLevel() <= 16) && (!strcasecmp(sep->arg[2], "live"))) {
+						Inviser->Say("I'm not level 16 yet.");
+					}
+					else if ((!c->IsInvisible(c))&& (!c->invisible_undead) && (c->GetLevel() >= 16) && (!strcasecmp(sep->arg[2], "live"))) { 
+						Inviser->Say("Casting invisibilty...");
+						Inviser->CastSpell(42, c->GetID(), 1, -1, -1);
+					}
+					else if  ((c->GetLevel() <= 4) && (!strcasecmp(sep->arg[2], "see"))) {
+						Inviser->Say("I'm not level 6 yet.");
+					}
+					else if ((c->GetLevel() >= 4) && (!strcasecmp(sep->arg[2], "see"))) { 
+						Inviser->Say("Casting see invisible...");
+						Inviser->CastSpell(80, c->GetID(), 1, -1, -1);
+					}
+					else if ((c->IsInvisible(c)) || (c->invisible_undead)) { 
+						Inviser->Say("I can't cast this if you're already invis-buffed...");
+					}
+					else {
+						Inviser->Say("Do you want [invis undead], [invis live] or [invis see] ?", c->GetName());
+					}
+					break;
+				case NECROMANCER:
+					if ((!c->IsInvisible(c))&& (!c->invisible_undead) && (!strcasecmp(sep->arg[2], "undead"))) {
+						Inviser->Say("Casting invis undead...");
+						Inviser->CastSpell(235, c->GetID(), 1, -1, -1);
+					}
+					else if (!strcasecmp(sep->arg[2], "see")) { 
+						Inviser->Say("I don't have that spell...");
+					}
+					else if (!strcasecmp(sep->arg[2], "live")) { 
+						Inviser->Say("I don't have that spell...");
+					}
+					else if ((c->IsInvisible(c))|| (c->invisible_undead)) { 
+						Inviser->Say("I can't cast this if you're already invis-buffed...");
+					}
+					else {
+						Inviser->Say("I only have [invis undead]", c->GetName());
+					}
+					break;
+				case DRUID:
+					if  (!strcasecmp(sep->arg[2], "undead")) {
+						Inviser->Say("I don't have that spell...");
+					}
+					else if  ((c->GetLevel() <= 4) && (!strcasecmp(sep->arg[2], "live"))) {
+						Inviser->Say("I'm not level 4 yet.");
+					}
+					else if ((!c->IsInvisible(c))&& (!c->invisible_undead) && (c->GetLevel() >= 18) && (!strcasecmp(sep->arg[2], "live"))) { 
+						Inviser->Say("Casting Superior Camouflage...");
+						Inviser->CastSpell(34, c->GetID(), 1, -1, -1);
+					}
+					else if ((!c->IsInvisible(c))&& (!c->invisible_undead) && (c->GetLevel() >= 4) && (!strcasecmp(sep->arg[2], "live")) && (zone->CanCastOutdoor())) { 
+						Inviser->Say("Casting Camouflage...");
+						Inviser->CastSpell(247, c->GetID(), 1, -1, -1);
+					}
+					else if ((c->GetLevel() >= 4) && (!strcasecmp(sep->arg[2], "live")) && (!zone->CanCastOutdoor())) { 
+						Inviser->Say("I can't cast this spell indoors...");
+					}
+					else if  ((c->GetLevel() <= 13) && (!strcasecmp(sep->arg[2], "see"))) {
+						Inviser->Say("I'm not level 13 yet.");
+					}
+					else if ((c->GetLevel() >= 13) && (!strcasecmp(sep->arg[2], "see"))) { 
+						Inviser->Say("Casting see invisible...");
+						Inviser->CastSpell(80, c->GetID(), 1, -1, -1);
+					}
+					else if ((c->IsInvisible(c)) || (c->invisible_undead)) { 
+						Inviser->Say("I can't cast this if you're already invis-buffed...");
+					}
+					else {
+						Inviser->Say("Do you want [invis live] or [invis see] ?", c->GetName());
+					}
+					break;
+				default:
+					c->Message(15, "You must have a Enchanter, Magician, Wizard, Druid, or Necromancer in your group.");
+					break;
+			}
+		}
+	}
+
+	//Levitate
+	if ((!strcasecmp(sep->arg[1], "levitate")) && (c->IsGrouped())) {
+		Mob *Lever;
+		int32 LeverClass = 0;
+		Group *g = c->GetGroup();
+		if(g) {
+			for(int i=0; i<MAX_GROUP_MEMBERS; i++){
+				if(g->members[i] && g->members[i]->IsBot()) {
+					switch(g->members[i]->GetClass()) {
+						case DRUID:
+							Lever = g->members[i];
+							LeverClass = DRUID;
+							break;
+						case SHAMAN:
+							if (LeverClass != DRUID){
+								Lever = g->members[i];
+								LeverClass = SHAMAN;
+							}
+							break;
+						case WIZARD:
+							if(LeverClass == 0){
+								Lever = g->members[i];
+								LeverClass = WIZARD;
+							}
+							break;
+						case ENCHANTER:
+							if (LeverClass == 0) {
+								Lever = g->members[i];
+								LeverClass = ENCHANTER;
+							}
+							break;
+						default:
+							break;
+					}
+				}
+			}
+			switch(LeverClass) {
+				case DRUID:
+					if  (c->GetLevel() <= 14) {
+						Lever->Say("I'm not level 14 yet.");
+					}
+					else if (zone->CanCastOutdoor()) {
+						Lever->Say("Casting Levitate...");
+						Lever->CastSpell(261, c->GetID(), 1, -1, -1);
+						break;
+					}
+					else if (!zone->CanCastOutdoor()) {
+						Lever->Say("I can't cast this spell indoors", c->GetName());
+					}
+					break;
+
+				case SHAMAN:
+
+					if ((zone->CanCastOutdoor()) && (c->GetLevel() >= 10)) { 
+						Lever->Say("Casting Levitate...");
+						Lever->CastToClient()->CastSpell(261, c->GetID(), 1, -1, -1);
+					}
+					else if (!zone->CanCastOutdoor()) {
+						Lever->Say("I can't cast this spell indoors", c->GetName());
+					}
+					else if (c->GetLevel() <= 10) {
+						Lever->Say("I'm not level 10 yet.");
+					}
+					break;
+
+				case WIZARD:
+
+					if((zone->CanCastOutdoor()) && (c->GetLevel() >= 22)){
+						Lever->Say("Casting Levitate...");
+						Lever->CastToClient()->CastSpell(261, c->GetID(), 1, -1, -1);
+					}
+					else if (!zone->CanCastOutdoor()) {
+						Lever->Say("I can't cast this spell indoors", c->GetName());
+					}
+					else if (c->GetLevel() <= 22) {
+						Lever->Say("I'm not level 22 yet.");
+					}
+					break;
+
+				case ENCHANTER:
+
+					if((zone->CanCastOutdoor()) && (c->GetLevel() >= 15)) {
+						Lever->Say("Casting Levitate...");
+						Lever->CastToClient()->CastSpell(261, c->GetID(), 1, -1, -1);
+					}
+					else if (!zone->CanCastOutdoor()) {
+						Lever->Say("I can't cast this spell indoors", c->GetName());
+					}
+					else if (c->GetLevel() <= 15) {
+						Lever->Say("I'm not level 15 yet.");
+					}
+					break;
+
+
+				default:
+					c->Message(15, "You must have a Druid, Shaman, Wizard, or Enchanter in your group.");
+					break;
+			}
+		}
+	}
+
 //	//Resists
 //	if ((!strcasecmp(sep->arg[1], "resist")) && (c->IsGrouped())) {
 //		Mob *Resister;
