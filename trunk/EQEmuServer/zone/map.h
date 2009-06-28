@@ -44,6 +44,10 @@ typedef struct _vertex{
 		y = iy;
 		z = iz;
 	}
+	bool  operator==(const _vertex &v1) const
+	{
+		return((v1.x == x) && (v1.y == y) && (v1.z ==z));
+	}
 
 }VERTEX, *PVERTEX;
 
@@ -158,6 +162,8 @@ public:
 	inline float GetMinZ() const { return(_minz); }
 	inline float GetMaxZ() const { return(_maxz); }
 	bool LineIntersectsZoneNoZLeaps(VERTEX start, VERTEX end, float step_mag, VERTEX *result, FACE **on);
+	float FindClosestZ(VERTEX p ) const;
+
 private:
 //	unsigned long m_Vertex;
 	uint32 m_Faces;

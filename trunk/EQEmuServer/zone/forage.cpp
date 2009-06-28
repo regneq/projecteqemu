@@ -323,7 +323,7 @@ void Client::GoFish()
 				if(npc_chance < MakeRandomInt(0, 99)) {
 					const NPCType* tmp = database.GetNPCType(npc_id);
 					if(tmp != NULL) {
-						NPC* npc = new NPC(tmp, NULL, GetX()+3, GetY(), GetZ(), GetHeading());
+						NPC* npc = new NPC(tmp, NULL, GetX()+3, GetY(), GetZ(), GetHeading(), FlyMode3);
 						npc->AddLootTable();
 						
 						npc->AddToHateList(this, 1, 0, false);	//no help yelling

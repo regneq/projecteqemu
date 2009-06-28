@@ -1,907 +1,1174 @@
-/*  EQEMu:  Everquest Server Emulator
-Copyright (C) 2001-2002  EQEMu Development Team (http://eqemu.org)
-
-  This program is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation; version 2 of the License.
-  
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY except by those people which sell it, which
-	are required to give you total support for your newly bought product;
-	without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-	A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-	
-	  You should have received a copy of the GNU General Public License
-	  along with this program; if not, write to the Free Software
-	  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*/
 #include "../common/debug.h"
-#include <math.h>
-#include <stdio.h>
 #include <string.h>
-
-#include "../common/files.h"
-#include "../common/emu_opcodes.h"
-#include "../common/eq_packet_structs.h"
-#include "client.h"
-#include "zone_profile.h"
-#include "map.h"
+#include <math.h>
+#include <list>
+#include <algorithm>
+#include <sstream>
 #include "pathing.h"
-#include "zone.h"
+#include "../common/files.h"
 #include "../common/MiscFunctions.h"
+#include "doors.h"
+#include "client.h"
+#include "zone.h"
+
 #ifdef WIN32
-#define snprintf	_snprintf
+#define snprintf        _snprintf
 #endif
 
-#ifndef WIN32
-//comment this out if your worried about zone boot times and your not using valgrind
-#define SLOW_AND_CRAPPY_MAKES_VALGRIND_HAPPY
-#endif
+//#define PATHDEBUG
+#define ABS(x) ((x)<0?-(x):(x))
 
+extern Zone *zone;
 
-/*
+float VertexDistance(VERTEX a, VERTEX b)
+{
+	_ZP(Pathing_VertexDistance);
 
-Fear guide points. these are not used directly by the fear pathing
-code. They are used by `apathing` to act as hint points to 
-provide more valid points for it to process on
+	float xdist = a.x - b.x;
+	float ydist = a.y - b.y;
+	float zdist = a.z - b.z;
+	return sqrtf(xdist * xdist + ydist * ydist + zdist * zdist);
+}
 
-CREATE TABLE fear_hints (
-	id INT AUTO_INCREMENT PRIMARY KEY,
-	zone VARCHAR(16) NOT NULL,
-	x FLOAT NOT NULL,
-	y FLOAT NOT NULL,
-	z FLOAT NOT NULL,
-	forced TINYINT NOT NULL DEFAULT 0,
-	disjoint TINYINT NOT NULL DEFAULT 0,
-	UNIQUE KEY(zone,x,y,z)
-);
+float VertexDistanceNoRoot(VERTEX a, VERTEX b)
+{
+	_ZP(Pathing_VertexDistanceNoRoot);
 
-*/
+	float xdist = a.x - b.x;
+	float ydist = a.y - b.y;
+	float zdist = a.z - b.z;
+	return xdist * xdist + ydist * ydist + zdist * zdist;
 
+}
 
-extern Zone* zone;
+PathManager* PathManager::LoadPathFile(const char* ZoneName)
+{
 
-//#define OPTIMIZE_FEAR_QT_LOOKUPS
+	FILE *PathFile = NULL;
 
-//#define DEBUG_SEEK 1
-//#define DEBUG_NEXT
-//#define DEBUG_BEST_Z 1
-#define DEBUG_PATHING
+	char LowerCaseZoneName[64];
 
-//quick functions to clean up vertex code.
-#define Vmin3(o, a, b, c) ((a.o<b.o)? (a.o<c.o?a.o:c.o) : (b.o<c.o?b.o:c.o))
-#define Vmax3(o, a, b, c) ((a.o>b.o)? (a.o>c.o?a.o:c.o) : (b.o>c.o?b.o:c.o))
+	char ZonePathFileName[256];
 
-PathManager* PathManager::LoadPathFile(const char* in_zonename) {
-	FILE *fp = NULL;
-	char zBuf[64];
-	char cWork[256];
-	PathManager* ret = 0;
+	PathManager* Ret = NULL;
+
+	strn0cpy(LowerCaseZoneName, ZoneName, 64);
 	
-	//have to convert to lower because the short names im getting
-	//are not all lower anymore, copy since strlwr edits the str.
-	strncpy(zBuf, in_zonename, 64);
-	zBuf[63] = '\0';
-	
-	snprintf(cWork, 250, MAP_DIR "/%s.path", strlwr(zBuf));
-	
-	if ((fp = fopen( cWork, "rb" ))) {
-		ret = new PathManager();
-		if(ret->loadPaths(fp)) {
-			printf("Path File %s loaded.\n", cWork);
-		} else {
-			printf("Path File %s loading failed.\n", cWork);
+	strlwr(LowerCaseZoneName);
+
+	snprintf(ZonePathFileName, 250, MAP_DIR "/%s.path", LowerCaseZoneName);
+
+	if((PathFile = fopen(ZonePathFileName, "rb")))
+	{
+		Ret = new PathManager();
+
+		if(Ret->loadPaths(PathFile))
+		{
+			LogFile->write(EQEMuLog::Status, "Path File %s loaded.", ZonePathFileName);
+
 		}
-		fclose(fp);
-	}
-	else {
-		printf("Path File %s not found.\n", cWork);
-	}
-	return ret;
-}
-
-PathManager::PathManager() {
-	
-	m_Nodes = 0;
-	m_Links = 0;
-	nodes = NULL;
-	links = NULL;
-	m_QTNodes = 0;
-	m_NodeLists = 0;
-	QTNodes = NULL;
-	nodelists = NULL;
-	path_finding = NULL;
-}
-
-bool PathManager::loadPaths(FILE *fp) {
-#ifndef INVERSEXY
-#warning Path files do not work without inverted XY
-	return(false);
-#endif
-
-	PathFile_Header head;
-	if(fread(&head, sizeof(head), 1, fp) != 1) {
-		//map read error.
-		return(false);
-	}
-	if(head.version != PATHFILE_VERSION) {
-		//invalid version... if there really are multiple versions,
-		//a conversion routine could be possible.
-		printf("Invalid path file version 0x%lx, we want 0x%lx\n", head.version, PATHFILE_VERSION);
-		return(false);
-	}
-	
-	printf("Path header: %lu nodes, %lu links, %u QT nodes, %lu nodelists\n", head.node_count, head.link_count, head.qtnode_count, head.nodelist_count);
-	
-	m_Nodes = head.node_count;
-	m_Links = head.link_count;
-	m_QTNodes = head.qtnode_count;
-	m_NodeLists = head.nodelist_count;
-	
-	nodes = new PathNode_Struct[m_Nodes];
-	links = new PathLink_Struct[m_Links];
-	QTNodes = new PathTree_Struct[m_QTNodes];
-	nodelists = new PathNodeRef[m_NodeLists];
-	path_finding = new PathLinkOffsetRef[m_Nodes*m_Nodes];
-	
-	
-	//this was changed to this loop from the single read because valgrind was
-	//hanging on this read otherwise... I dont pretend to understand it.
-#ifdef SLOW_AND_CRAPPY_MAKES_VALGRIND_HAPPY
-	unsigned long r;
-	for(r = 0; r < m_Nodes; r++) {
-		if(fread(nodes+r, sizeof(PathNode_Struct), 1, fp) != 1) {
-			printf("Unable to read %lu nodes from path file, got %lu.\n", m_Nodes, r);
-			return(false);
+		else
+		{
+			LogFile->write(EQEMuLog::Error, "Path File %s failed to load.", ZonePathFileName);
+			safe_delete(Ret);
 		}
+		fclose(PathFile);
 	}
-#else
-	unsigned long count;
-	if((count=fread(nodes, sizeof(PathNode_Struct), m_Nodes , fp)) != m_Nodes) {
-		printf("Unable to read %lu nodes from path file, got %lu.\n", m_Nodes, count);
-		return(false);
+	else
+	{
+		LogFile->write(EQEMuLog::Error, "Path File %s not found.", ZonePathFileName);
 	}
-#endif
-	
-#ifdef SLOW_AND_CRAPPY_MAKES_VALGRIND_HAPPY
-	for(r = 0; r < m_Links; r++) {
-		if(fread(links+r, sizeof(PathLink_Struct), 1, fp) != 1) {
-			printf("Unable to read %lu links from path file, got %lu.\n", m_Links, r);
-			return(false);
-		}
-	}
-#else
-	if((count=fread(links, sizeof(PathLink_Struct), m_Links , fp)) != m_Links) {
-		printf("Unable to read %lu links from path file, got %lu.\n", m_Links, count);
-		return(false);
-	}
-#endif
-	
-#ifdef SLOW_AND_CRAPPY_MAKES_VALGRIND_HAPPY
-	for(r = 0; r < m_QTNodes; r++) {
-		if(fread(QTNodes+r, sizeof(PathTree_Struct), 1, fp) != 1) {
-			printf("Unable to read %lu qt nodes from map file, got %lu.\n", m_QTNodes, r);
-			return(false);
-		}
-	}
-#else
-	if((count=fread(QTNodes, sizeof(PathTree_Struct), m_QTNodes, fp)) != m_QTNodes) {
-		printf("Unable to read %lu qt nodes from path file.\n", m_Nodes);
-		return(false);
-	}
-#endif
-	
-#ifdef SLOW_AND_CRAPPY_MAKES_VALGRIND_HAPPY
-	for(r = 0; r < m_NodeLists; r++) {
-		if(fread(nodelists+r, sizeof(PathNodeRef), 1, fp) != 1) {
-			printf("Unable to read %lu node lists from path file, got %lu.\n", m_NodeLists, r);
-			return(false);
-		}
-	}
-#else
-	if((count=fread(nodelists, sizeof(PathNodeRef), m_NodeLists, fp)) != m_NodeLists) {
-		printf("Unable to read %lu node lists from path file. Got %lu.\n", m_NodeLists, count);
-		return(false);
-	}
-#endif
-	
-#ifdef SLOW_AND_CRAPPY_MAKES_VALGRIND_HAPPY
-	int nodes2 = m_Nodes*m_Nodes;
-	for(r = 0; r < nodes2; r++) {
-		if(fread(path_finding+r, sizeof(PathLinkOffsetRef), 1, fp) != 1) {
-			printf("Unable to read %lu faces from map file, got %lu.\n", nodes2, r);
-			return(false);
-		}
-	}
-#else
-	if((count=fread(path_finding, sizeof(PathLinkOffsetRef), m_Nodes*m_Nodes, fp)) != m_Nodes*m_Nodes) {
-		printf("Unable to read %lu path finding matrix from path file. Got %lu.\n", m_Nodes*m_Nodes, count);
-		return(false);
-	}
-#endif
-	
-	return(true);
+
+	return Ret;
 }
 
-PathManager::~PathManager() {
-	safe_delete_array(nodes);
-	safe_delete_array(links);
-	safe_delete_array(QTNodes);
-	safe_delete_array(nodelists);
-	safe_delete_array(path_finding);
+PathManager::PathManager()
+{
+	PathNodes = NULL;
+
+	ClosedListFlag = NULL;
 }
 
+PathManager::~PathManager()
+{
 
-PathNodeRef PathManager::SeekNode( PathNodeRef node_r, float x, float y ) {
-	if(node_r == PATH_NODE_NONE || node_r >= m_QTNodes) {
-		return(PATH_NODE_NONE);
-	}
-	PFPNODE _node = &QTNodes[node_r];
-#ifdef DEBUG_SEEK
-printf("Seeking node for %u:(%.2f, %.2f) with root 0x%x.\n", node_r, x, y, _node);
+	safe_delete_array(PathNodes);
 
-printf("	Current Box: (%.2f -> %.2f, %.2f -> %.2f)\n", _node->minx, _node->maxx, _node->miny, _node->maxy);
-#endif
-	if( x>= _node->minx && x<= _node->maxx && y>= _node->miny && y<= _node->maxy ) {
-		if( _node->flags & pathNodeFinal ) {
-#ifdef DEBUG_SEEK
-printf("Seeking node for %u:(%.2f, %.2f) with root 0x%x.\n", node_r, x, y, _node);
-printf("	Final Node: (%.2f -> %.2f, %.2f -> %.2f)\n", _node->minx, _node->maxx, _node->miny, _node->maxy);
-fflush(stdout);
-printf("	Final node found with %d fear nodes.\n", _node->nodelist.count);
-/*printf("	Faces:\n");
-unsigned long *cfl = mFaceLists + _node->faces.offset;
-unsigned long m;
-for(m = 0; m < _node->faces.count; m++) {
-	FACE *c = &mFinalFaces[ *cfl ];
-	printf("	%lu (%.2f, %.2f, %.2f) (%.2f, %.2f, %.2f) (%.2f, %.2f, %.2f)\n",
-				*cfl, c->a.x, c->a.y, c->a.z,
-				c->b.x, c->b.y, c->b.z, 
-				c->c.x, c->c.y, c->c.z);
-	cfl++;
-}*/
-#endif
-			return node_r;
-		}
-#ifdef DEBUG_SEEK
-printf("	Kids: %u, %u, %u, %u\n", _node->nodes[0], _node->nodes[1], _node->nodes[2], _node->nodes[3]);
-		
-printf("	Contained In Box: (%.2f -> %.2f, %.2f -> %.2f)\n", _node->minx, _node->maxx, _node->miny, _node->maxy);
-		
-/*printf("	Node found has children.\n");
-if(_node->node1 != NULL) {
-	printf("\tNode: (%.2f -> %.2f, %.2f -> %.2f)\n", 
-		_node->node1->minx, _node->node1->maxx, _node->node1->miny, _node->node1->maxy);
-}
-if(_node->node2 != NULL) {
-	printf("\tNode: (%.2f -> %.2f, %.2f -> %.2f)\n", 
-		_node->node2->minx, _node->node2->maxx, _node->node2->miny, _node->node2->maxy);
-}
-if(_node->node3 != NULL) {
-	printf("\tNode: (%.2f -> %.2f, %.2f -> %.2f)\n", 
-		_node->node3->minx, _node->node3->maxx, _node->node3->miny, _node->node3->maxy);
-}
-if(_node->node4 != NULL) {
-	printf("\tNode: (%.2f -> %.2f, %.2f -> %.2f)\n", 
-		_node->node4->minx, _node->node4->maxx, _node->node4->miny, _node->node4->maxy);
-}*/
-#endif
-		//NOTE: could precalc these and store them in node headers
-
-		PathNodeRef tmp = PATH_NODE_NONE;
-#ifdef OPTIMIZE_FEAR_QT_LOOKUPS
-		float midx = _node->minx + (_node->maxx - _node->minx) * 0.5;
-		float midy = _node->miny + (_node->maxy - _node->miny) * 0.5;
-		//follow ordering rules from map.h...
-		if(x < midx) {
-			if(y < midy) { //quad 3
-				if(_node->nodes[2] != PATH_NODE_NONE)
-					tmp = SeekNode( _node->nodes[2], x, y );
-			} else {	//quad 2
-				if(_node->nodes[2] != PATH_NODE_NONE)
-					tmp = SeekNode( _node->nodes[1], x, y );
-			}
-		} else {
-			if(y < midy) {  //quad 4
-				if(_node->nodes[2] != PATH_NODE_NONE)
-					tmp = SeekNode( _node->nodes[3], x, y );
-			} else {	//quad 1
-				if(_node->nodes[2] != PATH_NODE_NONE)
-					tmp = SeekNode( _node->nodes[0], x, y );
-			}
-		}
-		if( tmp != PATH_NODE_NONE ) return tmp;
-#else
-		tmp = SeekNode( _node->nodes[0], x, y );
-		if( tmp != PATH_NODE_NONE ) return tmp;
-		tmp = SeekNode( _node->nodes[1], x, y );
-		if( tmp != PATH_NODE_NONE ) return tmp;
-		tmp = SeekNode( _node->nodes[2], x, y );
-		if( tmp != PATH_NODE_NONE ) return tmp;
-		tmp = SeekNode( _node->nodes[3], x, y );
-		if( tmp != PATH_NODE_NONE ) return tmp;
-#endif
-
-	}
-#ifdef DEBUG_SEEK
-printf(" No node found.\n");
-#endif
-	return(PATH_NODE_NONE);
+	safe_delete_array(ClosedListFlag);
 }
 
-//this looks for our QT node, if it cannot find our, it
-//will find one close to us
-PathNodeRef PathManager::SeekNodeGuarantee( PathNodeRef node_r, float x, float y ) {
-	if(node_r == PATH_NODE_NONE || node_r >= m_QTNodes) {
-		return(PATH_NODE_NONE);
-	}
-	
-	PFPNODE _node = &QTNodes[node_r];
-	if( x>= _node->minx && x<= _node->maxx && y>= _node->miny && y<= _node->maxy ) {
-		if( _node->flags & pathNodeFinal ) {
-			return node_r;
-		}
-		//NOTE: could precalc these and store them in node headers
+bool PathManager::loadPaths(FILE *PathFile)
+{
 
-		PathNodeRef tmp = PATH_NODE_NONE;
-#ifdef OPTIMIZE_FEAR_QT_LOOKUPS
-		float midx = _node->minx + (_node->maxx - _node->minx) * 0.5;
-		float midy = _node->miny + (_node->maxy - _node->miny) * 0.5;
-		//follow ordering rules from map.h...
-		if(x < midx) {
-			if(y < midy) { //quad 3
-				if(_node->nodes[2] != PATH_NODE_NONE)
-					tmp = SeekNode( _node->nodes[2], x, y );
-			} else {	//quad 2
-				if(_node->nodes[2] != PATH_NODE_NONE)
-					tmp = SeekNode( _node->nodes[1], x, y );
-			}
-		} else {
-			if(y < midy) {  //quad 4
-				if(_node->nodes[2] != PATH_NODE_NONE)
-					tmp = SeekNode( _node->nodes[3], x, y );
-			} else {	//quad 1
-				if(_node->nodes[2] != PATH_NODE_NONE)
-					tmp = SeekNode( _node->nodes[0], x, y );
-			}
-		}
-		if( tmp != PATH_NODE_NONE ) return tmp;
-#else
-		tmp = SeekNode( _node->nodes[0], x, y );
-		if( tmp != PATH_NODE_NONE ) return tmp;
-		tmp = SeekNode( _node->nodes[1], x, y );
-		if( tmp != PATH_NODE_NONE ) return tmp;
-		tmp = SeekNode( _node->nodes[2], x, y );
-		if( tmp != PATH_NODE_NONE ) return tmp;
-		tmp = SeekNode( _node->nodes[3], x, y );
-		if( tmp != PATH_NODE_NONE ) return tmp;
-#endif
-		
-		//if we get here we didnt find the node in our children,
-		//so use ourself as the node.
-		return(node_r);
+	char Magic[10];
+
+	fread(&Magic, 9, 1, PathFile);
+
+	if(strncmp(Magic, "EQEMUPATH", 9))
+	{
+		LogFile->write(EQEMuLog::Error, "Bad Magic String in .path file.");
+		return false;
 	}
-#ifdef DEBUG_SEEK
-printf(" No node found.\n");
+
+	fread(&Head, sizeof(Head), 1, PathFile);
+
+	LogFile->write(EQEMuLog::Status, "Path File Header: Version %ld, PathNodes %ld",
+		       Head.version, Head.PathNodeCount);
+
+	if(Head.version != 2)
+	{
+		LogFile->write(EQEMuLog::Error, "Unsupported path file version.");
+		return false;
+	}
+
+	PathNodes = new PathNode[Head.PathNodeCount];
+	
+	fread(PathNodes, sizeof(PathNode), Head.PathNodeCount, PathFile);
+
+	ClosedListFlag = new int[Head.PathNodeCount];
+
+#ifdef PATHDEBUG
+	PrintPathing();
 #endif
-	return(PATH_NODE_NONE);
+	return true;
 }
 
-/*
+void PathManager::PrintPathing()
+{
 
-A quadtree is not the ideal structure for finding the closest
-node, because if you are close to a boundary, you will not search
-nodes which are just over the boundary, even if they are much closer.
+	for(int i = 0; i < Head.PathNodeCount; ++i)
+	{
+		printf("PathNode: %2d id %2d. (%8.3f, %8.3f, %8.3f), BestZ: %8.3f\n",
+		       i, PathNodes[i].id, PathNodes[i].v.x, PathNodes[i].v.y, PathNodes[i].v.z, PathNodes[i].bestz);
+		       
 
-Also, the sparse nature of the grid points might lead to several gaps
-in the quadtree which contain no nodes
-
-to help fix this, I modified the quadtree to store a node list
-at each level, this allows us to get a node list even if our current
-node dosent exist/is empty.
-
-I also dont just store nodes WITHIN this QT node, but also nodes
-within a defined range, so if you stay under that range, you will always
-find the true closest node. (FEAR_MAXIMUM_DISTANCE)
-
-This also means that if we cannot find our QT node, that there are no
-nodes within FEAR_MAXIMUM_DISTANCE from the mob, so you might wanna 
-just call it quits.
-
-*/
-
-bool PathManager::FindNearestFear(MobFearState *state, float x, float y, float z, bool check_los) {
-	if(state == NULL)
-		return(false);
-
-	PathPointRef bestref;
-	
-	bestref = FindNearestNode(x, y, z, check_los?ForceLOS:EncourageLOS);
-	if(bestref == PATH_NODE_NONE)
-		return(false);
-	
-	PathNode_Struct *bestn = GetNode(bestref);
-	//could prolly assume this is not null..
-	if(bestn == NULL)
-		return(false);
-	
-	//start with running to bottom since it will stay
-	//localized longer, once they get to top, they really only
-	//run along one path from top to bottom.
-	state->state = MobFearState::runToBottom;
-	state->goal_node = bestref;
-	state->last_link = PATH_LINK_NONE;
-	
-	state->x = bestn->x;
-	state->y = bestn->y;
-	state->z = bestn->z;
-	
-#ifdef DEBUG_SEEK
-printf("Found fear node: (%.3f,%.3f,%.3f)\n", bestn->x, bestn->y, bestn->z);
-#endif
-	
-	return(true);
-}
-
-//state is an input parameter here so I have have to take a ton of args
-bool PathManager::InitPathFinding(PathFindingState *state, bool force_it) {
-	if(state == NULL)
-		return(false);
-	if(zone->map == NULL)
-		return(false);
-	
-	//first try the obvious choice which is a straight path
-	//see if we have line of sight
-	VERTEX start, end, hit;
-	start.x = state->x;
-	start.y = state->y;
-	start.z = state->z + 5.0;
-	end.x = state->dest_x;
-	end.y = state->dest_y;
-	end.z = state->dest_z + 5.0;
-	
-	if(!zone->map->LineIntersectsZone(start, end, 0.5, &hit, NULL)) {
-		//we have LOS, no path finding needed.
-		state->x = state->dest_x;
-		state->y = state->dest_y;
-		state->z = state->dest_z;
-		return(true);
-	}
-	
-	
-	PathPointRef bestref, bestdest;
-	
-	bestref = FindNearestNode(state->x, state->y, state->z, force_it?EncourageLOS:ForceLOS);
-	if(bestref == PATH_NODE_NONE)
-		return(false);
-	
-	bestdest = FindNearestNode(state->dest_x, state->dest_y, state->dest_z, force_it?EncourageLOS:ForceLOS);
-	if(bestdest == PATH_NODE_NONE)
-		return(false);
-	
-	PathNode_Struct *bestn = GetNode(bestref);
-	//could prolly assume this is not null..
-	if(bestn == NULL)
-		return(false);
-	
-	//we found both nodes, we should be able to path this.
-	//set up our state
-	state->goal_node = bestref;
-	state->dest_node = bestdest;
-	
-	state->x = bestn->x;
-	state->y = bestn->y;
-	state->z = bestn->z;
-	
-#ifdef DEBUG_PATHING
-	LogFile->write(EQEMuLog::Debug, "Init Pathing: start=%d, dest=%d", state->goal_node, state->dest_node);
-#endif
-	
-	return(true);
-}
-
-bool PathManager::NextPathFinding(PathFindingState *state) {
-	if(state == NULL)
-		return(false);
-	
-	//assume we have reached goal_node
-	
-	//see if were completely done
-	if(state->Finished()) {
-#ifdef DEBUG_PATHING
-	LogFile->write(EQEMuLog::Debug, "Next Pathing: completely done");
-#endif
-		return(false);
-	}
-	
-	//see if we have reached our last node, just move to dest now.
-	if(state->goal_node == state->dest_node) {
-#ifdef DEBUG_PATHING
-	LogFile->write(EQEMuLog::Debug, "Next Pathing: last node at %d", state->goal_node);
-#endif
-		state->x = state->dest_x;
-		state->y = state->dest_y;
-		state->z = state->dest_z;
-		return(true);
-	}
-	
-	//we need to find our next node now...
-	PathNode_Struct *gnode = GetNode(state->goal_node);
-	if(gnode == NULL)
-		return(false);
-	
-	//ask the pathing info for the next link to take to get
-	//to our destination node from our current node.
-	
-	//get our array of links to take to reach all nodes
-	PathLinkOffsetRef *offsets = GetPathFinding(state->goal_node);
-	if(offsets == NULL)
-		return(false);
-	
-	//get the link number to reach dest_node from our link array
-	PathLinkOffsetRef off = offsets[state->dest_node];
-	
-	if(off == PATH_LINK_OFFSET_NONE) {
-		//this means the node is unreachable from here.. should print error
-		return(false);
-	}
-	
-	//get our current array of links
-	PathLink_Struct *links = GetLinks(gnode->link_offset);
-	if(links == NULL)
-		return(false);
-	
-	//get the link that the path finding code tells us for this node
-	PathLink_Struct *link = links + off;
-	
-	if(link->dest_node == PATH_NODE_NONE)
-		return(false);
-	
-	PathNode_Struct *next_node = GetNode(link->dest_node);
-	if(next_node == NULL)
-		return(false);
-	
-	if(state->goal_node == link->dest_node) {
-		//..um.. WTF... why???
-#ifdef DEBUG_PATHING
-		LogFile->write(EQEMuLog::Debug, "Cycle Detected at %d (%.3f,%.3f,%.3f) going to %d", link->dest_node, next_node->x, next_node->y, next_node->z, state->dest_node);
-#endif
-		state->x = state->dest_x;
-		state->y = state->dest_y;
-		state->z = state->dest_z;
-		return(true);
-	}
-	
-#ifdef DEBUG_PATHING
-	LogFile->write(EQEMuLog::Debug, "Next Pathing: to %d (%.3f,%.3f,%.3f) via link %d", link->dest_node, next_node->x, next_node->y, next_node->z, off);
-#endif
-	
-	//set our next state.
-	state->goal_node = link->dest_node;
-	state->x = next_node->x;
-	state->y = next_node->y;
-	state->z = next_node->z;
-	
-	return(true);
-}
-
-PathPointRef PathManager::FindNearestNode(float x, float y, float z, losp los) {
-	if(zone->map == NULL)
-		return(PATH_NODE_NONE);
-	
-	PathNodeRef qtnodeR;
-	qtnodeR = SeekNodeGuarantee(GetRoot(), x, y);
-	if(qtnodeR == PATH_NODE_NONE) {
-		//we have no node from garuntee... this is bad
-		return(PATH_NODE_NONE);
-	}
-	
-	//get our real node
-	PathTree_Struct *qtnode = GetQTNode(qtnodeR);
-	
-	//grab our node list, which is qtnode->nodelist.count long
-	PathPointRef *nlist = GetNodeList(qtnode);
-	
-#ifdef DEBUG_SEEK
-printf("QT Node starts at %d and has %d points.\n", qtnode->nodelist.offset, qtnode->nodelist.count);
-#endif
-	PathNode_Struct *curn;
-	PathPointRef bestref = PATH_NODE_NONE, bestlref = PATH_NODE_NONE;
-	float cur_dist, best_dist2, bestl_dist2;
-	VERTEX p1, p2, liz_res;
-	int32 r;
-	
-	p1.x = x;
-	p1.y = y;
-	p1.z = z + 6.0;
-	
-	//loop through each node in the list, and find the closest we can see
-	best_dist2 = 9999999e111;
-	bestl_dist2 = 9999999e111;
-	for(r = 0; r < qtnode->nodelist.count; r++, nlist++) {
-		curn = GetNode(*nlist);
-		if(curn == NULL)
+		if(PathNodes[i].Neighbours[0].id == -1)
+		{
+			printf("  NO NEIGHBOURS.\n");
 			continue;
-#ifdef DEBUG_SEEK
-printf("\nTrying node %d at (%.3f,%.3f,%.3f) ", *nlist, curn->x, curn->y, curn->z);
-#endif
+		}
+
+		for(int j=0; j<PATHNODENEIGHBOURS; j++)
+		{
+			if(PathNodes[i].Neighbours[j].id == -1)
+				break;
+
+			printf("  Neighbour: %2d, Distance %8.3f", PathNodes[i].Neighbours[j].id,
+			       PathNodes[i].Neighbours[j].distance);
+
+			if(PathNodes[i].Neighbours[j].Teleport)
+				printf("    ***** TELEPORT *****");
+
+			if(PathNodes[i].Neighbours[j].DoorID >= 0)
+				printf("    ***** via door %i *****", PathNodes[i].Neighbours[j].DoorID);
+
+			printf("\n");
+		}
+	}
+}
+
+VERTEX PathManager::GetPathNodeCoordinates(int NodeNumber, bool BestZ)
+{
+	VERTEX Result;
+
+	if(NodeNumber < Head.PathNodeCount)
+	{
+		Result = PathNodes[NodeNumber].v;
+
+		if(!BestZ)
+			return Result;
+
+		Result.z = PathNodes[NodeNumber].bestz;
+	}
+
+	return Result;
+	
+}
+
+list<int> PathManager::FindRoute(int startID, int endID)
+{
+	_ZP(Pathing_FindRoute_FromNodes);
+
+	_log(PATHING__DEBUG, "FindRoute from node %i to %i", startID, endID);
+
+	memset(ClosedListFlag, 0, sizeof(int) * Head.PathNodeCount);
+
+	list<AStarNode> OpenList, ClosedList;
+
+	list<int>Route;
+
+	AStarNode AStarEntry, CurrentNode;
+
+	AStarEntry.PathNodeID = startID;
+	AStarEntry.Parent = -1;
+	AStarEntry.HCost = 0;
+	AStarEntry.GCost = 0;
+	AStarEntry.Teleport = false;
+
+	OpenList.push_back(AStarEntry);
+
+	while(OpenList.size() > 0)
+	{
+		// The OpenList is maintained in sorted order, lowest to highest cost.
+
+		CurrentNode = (*OpenList.begin());
+
+		ClosedList.push_back(CurrentNode);
 		
-		//make sure its the closest
-		cur_dist = Dist2(x, y, z, curn->x, curn->y, curn->z);
-		if(cur_dist >= best_dist2) {
-			if(los == ForceLOS || cur_dist >= bestl_dist2)
+		ClosedListFlag[CurrentNode.PathNodeID] = true;
+
+		OpenList.pop_front();
+
+		for(int i = 0; i < PATHNODENEIGHBOURS; ++i)
+		{
+			if(PathNodes[CurrentNode.PathNodeID].Neighbours[i].id == -1)
+				break;
+
+			if(PathNodes[CurrentNode.PathNodeID].Neighbours[i].id == CurrentNode.Parent)
 				continue;
-		}
-#ifdef DEBUG_SEEK
-printf("Maybe..(%.3f<%.3f)", cur_dist, best_dist2);
-#endif
-		
-		//make sure we can see it...
-		p2.x = curn->x;
-		p2.y = curn->y;
-		p2.z = curn->z + 6.0;
-		if(los != IgnoreLOS && zone->map->LineIntersectsZone(p1, p2, 0.5, &liz_res)) {
-			//we are not ignoring los, and we dont have los.
-			if(los == EncourageLOS && cur_dist < bestl_dist2) {
-				//we might have to use the closest nos LOS node, and
-				//this is a new best.
-				bestl_dist2 = cur_dist;
-				bestlref = *nlist;
+
+			if(PathNodes[CurrentNode.PathNodeID].Neighbours[i].id == endID)
+			{
+				Route.push_back(CurrentNode.PathNodeID);
+
+				Route.push_back(endID);
+			
+				list<AStarNode>::iterator RouteIterator;
+
+				while(CurrentNode.PathNodeID != startID)
+				{
+					for(RouteIterator = ClosedList.begin(); RouteIterator != ClosedList.end(); ++RouteIterator)
+					{
+						if((*RouteIterator).PathNodeID == CurrentNode.Parent)
+						{
+							if(CurrentNode.Teleport)
+								Route.insert(Route.begin(), -1);
+
+							CurrentNode = (*RouteIterator);
+							
+							Route.insert(Route.begin(), CurrentNode.PathNodeID);
+
+							break;
+						}
+					}
+				}
+
+				return Route;
 			}
-			continue;
+			if(ClosedListFlag[PathNodes[CurrentNode.PathNodeID].Neighbours[i].id])
+				continue;
+
+			AStarEntry.PathNodeID = PathNodes[CurrentNode.PathNodeID].Neighbours[i].id;
+
+			AStarEntry.Parent = CurrentNode.PathNodeID;
+
+			AStarEntry.Teleport = PathNodes[CurrentNode.PathNodeID].Neighbours[i].Teleport;
+
+			// HCost is the estimated cost to get from this node to the end.
+			AStarEntry.HCost = VertexDistance(PathNodes[PathNodes[CurrentNode.PathNodeID].Neighbours[i].id].v,
+											PathNodes[endID].v);
+
+			AStarEntry.GCost = CurrentNode.GCost + PathNodes[CurrentNode.PathNodeID].Neighbours[i].distance;
+
+			float FCost = AStarEntry.HCost +  AStarEntry.GCost;
+#ifdef PATHDEBUG	
+			printf("Node: %i, Open Neighbour %i has HCost %8.3f, GCost %8.3f (Total Cost: %8.3f)\n",
+					CurrentNode.PathNodeID, 
+					PathNodes[CurrentNode.PathNodeID].Neighbours[i].id,
+					AStarEntry.HCost,
+					AStarEntry.GCost,
+					AStarEntry.HCost + AStarEntry.GCost);
+#endif
+
+			bool AlreadyInOpenList = false;
+
+			list<AStarNode>::iterator OpenListIterator, InsertionPoint = OpenList.end();
+
+			for(OpenListIterator = OpenList.begin(); OpenListIterator != OpenList.end(); ++OpenListIterator)
+			{
+				if((*OpenListIterator).PathNodeID == PathNodes[CurrentNode.PathNodeID].Neighbours[i].id)
+				{
+					AlreadyInOpenList = true;
+
+					float GCostToNode = CurrentNode.GCost +  PathNodes[CurrentNode.PathNodeID].Neighbours[i].distance;
+
+					if(GCostToNode < (*OpenListIterator).GCost)
+					{
+						(*OpenListIterator).Parent = CurrentNode.PathNodeID;
+
+						(*OpenListIterator).GCost = GCostToNode;
+
+						(*OpenListIterator).Teleport = PathNodes[CurrentNode.PathNodeID].Neighbours[i].Teleport;
+					}
+					break;
+				}
+				else if((InsertionPoint == OpenList.end()) && (((*OpenListIterator).HCost + (*OpenListIterator).GCost) > FCost))
+				{
+					InsertionPoint = OpenListIterator;
+				}
+			}
+			if(!AlreadyInOpenList)
+				OpenList.insert(InsertionPoint, AStarEntry);
 		}
-#ifdef DEBUG_SEEK
-printf("New Best");
-#endif
-		
-		best_dist2 = cur_dist;
-		bestref = *nlist;
+
 	}
-#ifdef DEBUG_SEEK
-printf("\nBest node: %d at dist2 %f\n", bestref, best_dist2);
-#endif
-	if(bestref == PATH_NODE_NONE && los == EncourageLOS) {
-		//we have failed to locate any LOS nodes, and the caller
-		//specified that it would take a non-LOS node if this happened
-		bestref = bestlref;
-	}
-	
-	return(bestref);
+	_log(PATHING__DEBUG, "Unable to find a route.");
+	return Route;
+
 }
 
-bool PathManager::NextFearPath(MobFearState *state) {
-#ifdef DEBUG_NEXT
-	printf("Finding next node from node %d, via link %d. (%.3f,%.3f,%.3f)\n", state->goal_node, state->last_link, state->x, state->y, state->z);
-#endif
-	if(!state->IsValidState()) {
-		return(false);
-	} else if(state->state == MobFearState::runToBottom) {
-		//assume we have reached our goal node, find our next goal
+bool CheckLOSBetweenPoints(VERTEX start, VERTEX end) {
+
+	VERTEX hit;
+	FACE *face;
+
+	if((zone->map) && (zone->map->LineIntersectsZone(start, end, 1, &hit, &face))) return false;
+
+	return true;
+}
+
+bool SortPathNodesByDistance(PathNodeSortStruct n1, PathNodeSortStruct n2)
+{
+	return n1.Distance < n2.Distance;
+}
+
+list<int> PathManager::FindRoute(VERTEX Start, VERTEX End)
+{
+
+	_ZP(Pathing_FindRoute_FromVertices);
+
+	_log(PATHING__DEBUG, "FindRoute(%8.3f, %8.3f, %8.3f,  %8.3f, %8.3f, %8.3f)", Start.x, Start.y, Start.z, End.x, End.y, End.z);
+
+	list<int> noderoute;
+
+	float CandidateNodeRangeXY = RuleR(Pathing, CandidateNodeRangeXY);
+
+	float CandidateNodeRangeZ = RuleR(Pathing, CandidateNodeRangeZ);
+
+	// Find the nearest PathNode the Start has LOS to.
+	//
+	//
+	int ClosestPathNodeToStart = -1;
+
+	list<PathNodeSortStruct> SortedByDistance;
+
+	PathNodeSortStruct TempNode;
+
+	for(int i = 0 ; i < Head.PathNodeCount; ++i)
+	{
+		if((ABS(Start.x - PathNodes[i].v.x) <= CandidateNodeRangeXY) &&
+		   (ABS(Start.y - PathNodes[i].v.y) <= CandidateNodeRangeXY) &&
+		   (ABS(Start.z - PathNodes[i].v.z) <= CandidateNodeRangeZ))
+		{
+		   	TempNode.id = i;
+			TempNode.Distance = VertexDistanceNoRoot(Start, PathNodes[i].v);
+			SortedByDistance.push_back(TempNode);
+
+		}
+	}
+	
+	SortedByDistance.sort(SortPathNodesByDistance);
+
+	for(list<PathNodeSortStruct>::iterator Iterator = SortedByDistance.begin(); Iterator != SortedByDistance.end(); ++Iterator)
+	{
+		_log(PATHING__DEBUG, "Checking Reachability of Node %i from Start Position.", PathNodes[(*Iterator).id].id);
+
+		if(!zone->map->LineIntersectsZone(Start, PathNodes[(*Iterator).id].v, 1.0f, NULL, NULL))
+		{
+			ClosestPathNodeToStart = (*Iterator).id;
+			break;
+		}
+	}
+
+	if(ClosestPathNodeToStart <0 ) {
+		_log(PATHING__DEBUG, "No LOS to any starting Path Node within range.");
+		return noderoute;
+	}
+
+	_log(PATHING__DEBUG, "Closest Path Node To Start: %2d", ClosestPathNodeToStart);
+
+	// Find the nearest PathNode the end point has LOS to
+
+	int ClosestPathNodeToEnd = -1;
+
+	SortedByDistance.clear();
+
+	for(int i = 0 ; i < Head.PathNodeCount; ++i)
+	{
+		if((ABS(End.x - PathNodes[i].v.x) <= CandidateNodeRangeXY) &&
+		   (ABS(End.y - PathNodes[i].v.y) <= CandidateNodeRangeXY) &&
+		   (ABS(End.z - PathNodes[i].v.z) <= CandidateNodeRangeZ))
+		{
+		   	TempNode.id = i;
+			TempNode.Distance = VertexDistanceNoRoot(End, PathNodes[i].v);
+			SortedByDistance.push_back(TempNode);
+		}
+	}
+	
+	SortedByDistance.sort(SortPathNodesByDistance);
+
+	for(list<PathNodeSortStruct>::iterator Iterator = SortedByDistance.begin(); Iterator != SortedByDistance.end(); ++Iterator)
+	{
+		_log(PATHING__DEBUG, "Checking Reachability of Node %i from End Position.", PathNodes[(*Iterator).id].id);
+		_log(PATHING__DEBUG, " (%8.3f, %8.3f, %8.3f) to (%8.3f, %8.3f, %8.3f)",
+			End.x, End.y, End.z,
+			PathNodes[(*Iterator).id].v.x, PathNodes[(*Iterator).id].v.y, PathNodes[(*Iterator).id].v.z);
+
+		if(!zone->map->LineIntersectsZone(End, PathNodes[(*Iterator).id].v, 1.0f, NULL, NULL))
+		{
+			ClosestPathNodeToEnd = (*Iterator).id;
+			break;
+		}
+	}
+	
+	if(ClosestPathNodeToEnd < 0) {
+		_log(PATHING__DEBUG, "No LOS to any end Path Node within range.");
+		return noderoute;
+	}
+
+	_log(PATHING__DEBUG, "Closest Path Node To End: %2d", ClosestPathNodeToEnd);
+
+	if(ClosestPathNodeToStart == ClosestPathNodeToEnd)
+	{
+		noderoute.push_back(ClosestPathNodeToStart);
+		return noderoute;
+	}
+	noderoute = FindRoute(ClosestPathNodeToStart, ClosestPathNodeToEnd);
+
+	int NodesToAttemptToCull = RuleI(Pathing, CullNodesFromStart);
+
+	if(NodesToAttemptToCull > 0)
+	{
+		int CulledNodes = 0;
 		
-		//the goal of running to bottom is to increase our distance
-		//from the root node, while taking the path which has the
-		//greatest reach
-#ifdef DEBUG_NEXT
-	printf("Starting 'To Bottom' search\n");
-#endif
-		
-		PathNode_Struct *gnode = GetNode(state->goal_node);
-		if(gnode == NULL)
-			return(false);
-		
-		PathLink_Struct *links = GetLinks(gnode->link_offset);
-		int r;
-		
-		PathNode_Struct *look_node;
-		PathNodeRef longest = 0;
-		PathPointRef long_node = PATH_NODE_NONE;
-		PathLinkRef long_link = PATH_LINK_NONE;
-		for(r = 0; r < gnode->link_count; r++, links++) {
-			if(state->last_link == (gnode->link_offset + r))
-				continue;		//never traverse the same link we just came from.
-			//make sure its further away than where we are
-			look_node = GetNode(links->dest_node);
-			if(look_node == NULL)
-				continue;		//this shouldent happen.
-#ifdef DEBUG_NEXT
-			printf("  Checking... d=%d, old_d=%d, best=%d, cur=%d.\n", look_node->distance, gnode->distance, longest, links->reach);
-#endif
-			//if this node is closer than our current node, skip it
-			if(look_node->distance <= gnode->distance)
-				continue;	//only looking for further nodes.
-			
-			if(links->reach > longest) {
-				longest = links->reach;
-				long_node = links->dest_node;
-				long_link = gnode->link_offset + r;
-			} else if(links->reach == longest) {
-				//try to provide some variance at junction nodes
-				//same length longest, give it a 50% chance
-				if(MakeRandomInt(0, 99) >= 50)
-					continue;
-				//it passed, crown this as the new longest
-				longest = links->reach;
-				long_node = links->dest_node;
-				long_link = gnode->link_offset + r;
-			} else if(links->reach > (longest - 5)) {
-				//try to provide some variance at junction nodes
-				//close to the longest, give it a chance based on closeness
-				if(MakeRandomInt(0, 99) >= 10*(longest-links->reach))
-					continue;
-				//it passed, crown this as the new longest
-				longest = links->reach;
-				long_node = links->dest_node;
-				long_link = gnode->link_offset + r;
+		list<int>::iterator First, Second;
+
+		while((noderoute.size() >= 2) && (CulledNodes < NodesToAttemptToCull))
+		{
+			First = noderoute.begin();
+
+			Second = First;
+
+			++Second;
+
+			if((*Second) < 0)
+				break;
+
+			if(!zone->map->LineIntersectsZone(Start, PathNodes[(*Second)].v, 1.0f, NULL, NULL))
+			{
+				noderoute.erase(First);
+
+				++CulledNodes;
+			}
+			else
+				break;
+		}
+	}
 				
-			}
-		}
-		
-		//this means we skipped all links cause they were closer to root
-		if(long_node == PATH_NODE_NONE) {
-			//we reached the top, start heading back down...
-			state->state = MobFearState::runToTop;
-			//call ourselves again to get a real node...
-			//I dont THINK infinite recursion is posible... lets hope not (:
-			//a node should never be top or bottom unless its alont
-			if(m_Links < 2)
-				return(false);	//watch for empty grids
-			return(NextFearPath(state));
-		}
-		
-		PathNode_Struct *bestn = NULL;
-		bestn = GetNode(long_node);
-		if(bestn == NULL)
-			return(false);
-		
-		//not a criteria for state change anymore
-/*		if(state->last_link != PATH_LINK_NONE) {
-			//Get the link
-			PathLink_Struct *last_link = GetLinks(state->last_link);
-#ifdef DEBUG_NEXT
-	printf("  Last link reach was %d, new link is %d\n", last_link->reach, longest);
-#endif
-		}*/
-		
-		
-		//only go to the next node if we did not change state.
-		//if we changed, let them pick next time we get called.
-		if(state->state == MobFearState::runToBottom) {
-			state->last_link = long_link;
-			state->goal_node = long_node;
-		
-			state->x = bestn->x;
-			state->y = bestn->y;
-			state->z = bestn->z;
+	NodesToAttemptToCull = RuleI(Pathing, CullNodesFromEnd);
 
-#ifdef DEBUG_NEXT
-		printf("To Bottom picked %d, via link %d. (%.3f,%.3f,%.3f)\n", state->goal_node, state->last_link, state->x, state->y, state->z);
-#endif
+	if(NodesToAttemptToCull > 0)
+	{
+		int CulledNodes = 0;
+		
+		list<int>::iterator First, Second;
+
+		while((noderoute.size() >= 2) && (CulledNodes < NodesToAttemptToCull))
+		{
+			First = noderoute.end();
+
+			--First;
+
+			Second = First;
+
+			--Second;
+
+			if((*Second) < 0)
+				break;
+
+			if(!zone->map->LineIntersectsZone(End, PathNodes[(*Second)].v, 1.0f, NULL, NULL))
+			{
+				noderoute.erase(First);
+
+				++CulledNodes;
+			}
+			else
+				break;
 		}
-#ifdef DEBUG_NEXT
-else {
-			printf("To Top changed state.\n");
+	}
+
+	return noderoute;
 }
-#endif
-		
-		return(true);
-	} else if(state->state == MobFearState::runToTop) {
-		//assume we have reached our goal node, find our next goal
-		
-		//our goal is to minimize our distance. The root of the tree
-		//can reach a minimum number of nodes down each branch
-		//beacuse it divides them equally on each branch.
-		
-#ifdef DEBUG_NEXT
-	printf("Starting 'To Top' search\n");
-#endif		
-		PathNode_Struct *gnode = GetNode(state->goal_node);
-		if(gnode == NULL)
-			return(false);
-		
-		PathLink_Struct *links = GetLinks(gnode->link_offset);
-		int r;
-		
-		PathNode_Struct *look_node;
-		PathNodeRef shortest = 0xFFFF;
-		PathPointRef short_node = PATH_NODE_NONE;
-		PathLinkRef short_link = PATH_LINK_NONE;
-		for(r = 0; r < gnode->link_count; r++, links++) {
-			if(state->last_link == (gnode->link_offset + r))
-				continue;		//never traverse the same link we just came from.
-			//make sure its further away than where we are
-			look_node = GetNode(links->dest_node);
-			if(look_node == NULL)
-				continue;	//this shouldent happen...
-#ifdef DEBUG_NEXT
-			printf("  Checking...best=%d, cur=%d.\n", shortest, look_node->distance);
-#endif
+
+const char* DigitToWord(int i)
+{
+	switch(i) {
+		case 0:
+			return "zero";
+		case 1:
+			return "one";
+		case 2:
+			return "two";
+		case 3:
+			return "three";
+		case 4:
+			return "four";
+		case 5:
+			return "five";
+		case 6:
+			return "six";
+		case 7:
+			return "seven";
+		case 8:
+			return "eight";
+		case 9:
+			return "nine";
+	}
+	return "";
+}
+
+void PathManager::SpawnPathNodes()
+{
+
+	for(int i = 0; i < Head.PathNodeCount; ++i)
+	{
+		NPCType* npc_type = new NPCType;
+		memset(npc_type, 0, sizeof(NPCType));
+
+		if(i < 10)
+			sprintf(npc_type->name, "%s", DigitToWord(i));
+		else if(i < 100)
+			sprintf(npc_type->name, "%s_%s", DigitToWord(i/10), DigitToWord(i % 10));
+		else
+			sprintf(npc_type->name, "%s_%s_%s", DigitToWord(i/100), DigitToWord((i % 100)/10), 
+				DigitToWord(((i % 100) %10)));
+		npc_type->cur_hp = 4000000;
+		npc_type->max_hp = 4000000;
+		npc_type->race = 151;
+		npc_type->gender = 2;
+		npc_type->class_ = 9;
+		npc_type->deity= 1;
+		npc_type->level = 75;
+		npc_type->npc_id = 0;
+		npc_type->loottable_id = 0;
+		npc_type->texture = 1;
+		npc_type->light = 0;
+		npc_type->runspeed = 0;
+		npc_type->d_meele_texture1 = 1;
+		npc_type->d_meele_texture2 = 1;
+		npc_type->merchanttype = 1;
+		npc_type->bodytype = 1;
+	
+		npc_type->STR = 150;
+		npc_type->STA = 150;
+		npc_type->DEX = 150;
+		npc_type->AGI = 150;
+		npc_type->INT = 150;
+		npc_type->WIS = 150;
+		npc_type->CHA = 150;
+
+		npc_type->findable = 1;
+	
+		NPC* npc = new NPC(npc_type, 0, PathNodes[i].v.x, PathNodes[i].v.y, PathNodes[i].v.z, 0, FlyMode1);
+		npc->GiveNPCTypeData(npc_type);
+	
+		entity_list.AddNPC(npc, true, true);
+	}
+}
+
+void PathManager::MeshTest()
+{
+	// This will test connectivity between all path nodes
+
+	int TotalTests = 0;
+	int NoConnections = 0;
+
+	printf("Beginning Pathmanager connectivity tests.\n"); fflush(stdout);
+
+	for(int i = 0; i < Head.PathNodeCount; ++i)
+	{
+		for(int j = 0; j < Head.PathNodeCount; ++j)
+		{
+			if(j == i)
+				continue;
 			
-			if(look_node->distance < shortest) {
-				shortest = look_node->distance;
-				short_node = links->dest_node;
-				short_link = gnode->link_offset + r;
-			}
-			//do we want to add variance for going up? seems like we might
-			//end up screwing up our ascent
-			/* else if(links->distance == shortest) {
-				//try to provide some variance at junction nodes
-				//same length shortest, give it a 50% chance
-				if(MakeRandomInt(0, 99) >= 50)
-					continue;
-				//it passed, crown this as the new shortest
-				shortest = links->distance;
-				short_node = links->dest_node;
-				short_link = gnode->link_offset + r;
-			}*/
-		}
-		if(short_node == PATH_NODE_NONE)
-			return(false);
-		
-		PathNode_Struct *bestn = NULL;
-		bestn = GetNode(short_node);
-		if(bestn == NULL)
-			return(false);
-		
-/*		if(state->last_link != PATH_LINK_NONE) {
-			//Get the link
-			PathLink_Struct *last_link = GetLinks(state->last_link);
-#ifdef DEBUG_NEXT
-	printf("  Last link shortest was %d, new link is %d\n", last_link->distance, shortest);
-#endif
-			if(shortest > last_link->distance) {
-				//we reached the top, start heading back down...
-				state->state = MobFearState::runToBottom;
-			}
-		}*/
-#ifdef DEBUG_NEXT
-	printf("  Last link shortest was %d, new link is %d\n", gnode->distance, shortest);
-#endif
-		if(shortest > gnode->distance) {
-			//we reached the top, start heading back down...
-			//call ourselves again to get a real node...
-			state->state = MobFearState::runToBottom;
-			if(m_Links < 2)
-				return(false);	//watch for empty grids
-			return(NextFearPath(state));
-		}
-		
-		//we reached the top, start heading back down...
-		if(shortest == 1) {
-			//call ourselves again to get a real node...
-			state->state = MobFearState::runToBottom;
-			if(m_Links < 2)
-				return(false);	//watch for empty grids
-			return(NextFearPath(state));
-		}
-		
-		//only go to the next node if we did not change state.
-		//if we changed, let them pick next time we get called.
-		if(state->state == MobFearState::runToTop) {
-		
-			state->last_link = short_link;
-			state->goal_node = short_node;
-		
-			state->x = bestn->x;
-			state->y = bestn->y;
-			state->z = bestn->z;
+			list<int> Route = FindRoute(i, j);
 
-#ifdef DEBUG_NEXT
-			printf("To Top picked %d, via link %d. (%.3f,%.3f,%.3f)\n", state->goal_node, state->last_link, state->x, state->y, state->z);
-#endif
+			if(Route.size() == 0)
+			{
+				++NoConnections;
+				printf("FindRoute(%i, %i) **** NO ROUTE FOUND ****\n", i, j);
+			}
+			++TotalTests;	
 		}
-#ifdef DEBUG_NEXT
-else {
-			printf("To Top changed state.\n");
+	}
+	printf("Executed %i route searches.\n", TotalTests);
+	printf("Failed to find %i routes.\n", NoConnections);
+	fflush(stdout);
 }
-#endif
+
+VERTEX Mob::UpdatePath(float ToX, float ToY, float ToZ, float Speed, bool &WaypointChanged, bool &NodeReached)
+{
+	_ZP(Pathing_UpdatePath);
+
+	WaypointChanged = false;
+
+	NodeReached = false;
+
+	VERTEX NodeLoc;
+
+	VERTEX From(GetX(), GetY(), GetZ());
+
+	VERTEX HeadPosition(From.x, From.y,  From.z + (GetSize() < 6.0 ? 6 : GetSize()) * HEAD_POSITION);
+
+	VERTEX To(ToX, ToY, ToZ);
+
+	bool SameDestination = (To == PathingDestination);
+
+	int NextNode;
+
+	if(To == From)
+		return To;
+
+	mlog(PATHING__DEBUG, "UpdatePath. From(%8.3f, %8.3f, %8.3f) To(%8.3f, %8.3f, %8.3f)", From.x, From.y, From.z, To.x, To.y, To.z);
+
+	if(From == PathingLastPosition)
+	{
+		++PathingLoopCount;
+
+		if((PathingLoopCount > 5) && !IsRooted())
+		{
+			mlog(PATHING__DEBUG, "appears to be stuck. Teleporting them to next position.", GetName());
+
+			if(Route.size() == 0)
+			{
+				Teleport(To);
+
+				WaypointChanged = true;
+
+				PathingLoopCount = 0;
+
+				return To;
+			}
+			NodeLoc = zone->pathing->GetPathNodeCoordinates(Route.front());
+
+			Route.pop_front();
+
+			++PathingTraversedNodes;
+
+			Teleport(NodeLoc);
+
+			WaypointChanged = true;
+
+			PathingLoopCount = 0;
+
+			return NodeLoc;
+		}
+	}
+	else
+	{
+		PathingLoopCount = 0;
+
+		PathingLastPosition = From;
+	}
 		
-		return(true);
+	if(Route.size() > 0)
+	{
+
+		// If we are already pathing, and the destination is the same as before ...
+		if(SameDestination)
+		{
+			mlog(PATHING__DEBUG, "  Still pathing to the same destination.");
+
+			// Get the coordinates of the first path node we are going to.
+			NextNode = Route.front();
+
+			NodeLoc = zone->pathing->GetPathNodeCoordinates(NextNode);
+
+			// May need to refine this as rounding errors may mean we never have equality
+			// We have reached the path node.
+			if(NodeLoc == From)
+			{
+				mlog(PATHING__DEBUG, "  Arrived at node %i", NextNode);	
+
+				NodeReached = true;
+
+				PathingLastNodeVisited = Route.front();
+				// We only check for LOS again after traversing more than 1 node, otherwise we can get into
+				// a loop where we have a hazard and so run to a path node far enough away from the hazard, and
+				// then run right back towards the same hazard again.
+				//
+				// An exception is when we are about to head for the last node. We always check LOS then. This
+				// is because we are seeking a path to the node nearest to our target. This node may be behind the
+				// target, and we may run past the target if we don't check LOS at this point.
+				int RouteSize = Route.size();
+
+				mlog(PATHING__DEBUG, "Route size is %i", RouteSize);
+
+				if((RouteSize == 2)
+				   || ((PathingTraversedNodes >= RuleI(Pathing, MinNodesTraversedForLOSCheck))
+				   && (RouteSize <= RuleI(Pathing, MinNodesLeftForLOSCheck))
+				   && PathingLOSCheckTimer->Check()))
+				{
+					mlog(PATHING__DEBUG, "  Checking distance to target.");
+					float Distance = VertexDistanceNoRoot(From, To);
+
+					mlog(PATHING__DEBUG, "  Distance between From and To (NoRoot) is %8.3f", Distance);
+
+					if((Distance <= RuleR(Pathing, MinDistanceForLOSCheckShort))
+					   && (ABS(From.z - To.z) <= RuleR(Pathing, ZDiffThreshold)))
+					{
+						if(!zone->map->LineIntersectsZone(HeadPosition, To, 1.0f, NULL, NULL))
+							PathingLOSState = HaveLOS;
+						else
+							PathingLOSState = NoLOS;
+						mlog(PATHING__DEBUG, "  LOS stats is %s", (PathingLOSState == HaveLOS) ? "HaveLOS" : "NoLOS");	
+
+						if((PathingLOSState == HaveLOS) && zone->pathing->NoHazards(From, To, Speed))
+						{
+							mlog(PATHING__DEBUG, "  No hazards. Running directly to target.");
+							Route.clear();
+
+							return To;
+						}
+						else
+						{
+							mlog(PATHING__DEBUG, "  Continuing on node path.");	
+						}
+					}
+					else
+						PathingLOSState = UnknownLOS;
+				}
+				// We are on the same route, no LOS (or not checking this time, so pop off the node we just reached
+				//
+				Route.pop_front();
+
+				++PathingTraversedNodes;
+
+				WaypointChanged = true;
+
+				// If there are more nodes on the route, return the coords of the next node
+				if(Route.size() > 0)
+				{
+					NextNode = Route.front();
+
+					if(NextNode == -1)
+					{
+						// -1 indicates a teleport to the next node
+						Route.pop_front();
+
+						if(Route.size() == 0)
+						{
+							mlog(PATHING__DEBUG, "Missing node after teleport.");
+							return To;
+						}
+
+						NextNode = Route.front();
+
+						NodeLoc = zone->pathing->GetPathNodeCoordinates(NextNode);
+
+						Teleport(NodeLoc);
+
+						mlog(PATHING__DEBUG, "  TELEPORTED to %8.3f, %8.3f, %8.3f\n", NodeLoc.x, NodeLoc.y, NodeLoc.z);
+
+						Route.pop_front();
+
+						if(Route.size() == 0)
+							return To;
+
+						NextNode = Route.front();
+					}
+					zone->pathing->OpenDoors(PathingLastNodeVisited, NextNode, this);
+
+					mlog(PATHING__DEBUG, "  Now moving to node %i", NextNode);
+
+					return  zone->pathing->GetPathNodeCoordinates(NextNode);
+				}
+				else
+				{	
+					// we have run all the nodes, all that is left is the direct path from the last node
+					// to the destination
+					mlog(PATHING__DEBUG, "  Reached end of node path, running direct to target.");
+
+					return To;
+				}
+			}
+			// At this point, we are still on the previous path, but not reached a node yet.
+			// The route shouldn't be empty, but check anyway.
+			//
+			int RouteSize = Route.size();
+
+			if((PathingTraversedNodes >= RuleI(Pathing, MinNodesTraversedForLOSCheck))
+			   && (RouteSize <= RuleI(Pathing, MinNodesLeftForLOSCheck))
+			   && PathingLOSCheckTimer->Check())
+			{
+				mlog(PATHING__DEBUG, "  Checking distance to target.");
+
+				float Distance = VertexDistanceNoRoot(From, To);
+
+				mlog(PATHING__DEBUG, "  Distance between From and To (NoRoot) is %8.3f", Distance);
+
+				if((Distance <= RuleR(Pathing, MinDistanceForLOSCheckShort))
+				   && (ABS(From.z - To.z) <= RuleR(Pathing, ZDiffThreshold)))
+				{
+					if(!zone->map->LineIntersectsZone(HeadPosition, To, 1.0f, NULL, NULL))
+						PathingLOSState = HaveLOS;
+					else
+						PathingLOSState = NoLOS;
+					mlog(PATHING__DEBUG, "  LOS stats is %s", (PathingLOSState == HaveLOS) ? "HaveLOS" : "NoLOS");	
+
+					if((PathingLOSState == HaveLOS) && zone->pathing->NoHazards(From, To, Speed))
+					{
+						mlog(PATHING__DEBUG, "  No hazards. Running directly to target.");
+						Route.clear();
+
+						return To;
+					}
+					else
+					{
+						mlog(PATHING__DEBUG, "  Continuing on node path.");	
+					}
+				}
+				else
+					PathingLOSState = UnknownLOS;
+			}
+			return NodeLoc;
+		}
+		else
+		{
+			// We get here if we were already pathing, but our destination has now changed.
+			//
+			mlog(PATHING__DEBUG, "  Target has changed position.");
+			// Update our record of where we are going to.
+			PathingDestination = To;
+			// Check if we now have LOS etc to the new destination.	
+			if(PathingLOSCheckTimer->Check())
+			{
+				float Distance = VertexDistanceNoRoot(From, To);
+
+				if((Distance <= RuleR(Pathing, MinDistanceForLOSCheckShort))
+				   && (ABS(From.z - To.z) <= RuleR(Pathing, ZDiffThreshold)))
+				{
+					mlog(PATHING__DEBUG, "  Checking for short LOS at distance %8.3f.", Distance);
+					if(!zone->map->LineIntersectsZone(HeadPosition, To, 1.0f, NULL, NULL))
+						PathingLOSState = HaveLOS;
+					else
+						PathingLOSState = NoLOS;
+	
+					mlog(PATHING__DEBUG, "  LOS stats is %s", (PathingLOSState == HaveLOS) ? "HaveLOS" : "NoLOS");	
+	
+					if((PathingLOSState == HaveLOS) && zone->pathing->NoHazards(From, To, Speed))
+					{
+						mlog(PATHING__DEBUG, "  No hazards. Running directly to target.");
+						Route.clear();
+						return To;
+					}
+					else
+					{
+						mlog(PATHING__DEBUG, "  Continuing on node path.");	
+					}
+				}
+			}
+
+			// If the player is moving, we don't want to recalculate our route too frequently.
+			//
+			if(static_cast<int>(Route.size()) <= RuleI(Pathing, RouteUpdateFrequencyNodeCount))
+			{
+				if(!PathingRouteUpdateTimerShort->Check())
+				{
+					mlog(PATHING__DEBUG, "Short route update timer not yet expired.");
+					return zone->pathing->GetPathNodeCoordinates(Route.front());
+				}
+				mlog(PATHING__DEBUG, "Short route update timer expired.");
+			}
+			else
+			{
+				if(!PathingRouteUpdateTimerLong->Check())
+				{
+					mlog(PATHING__DEBUG, "Long route update timer not yet expired.");
+					return zone->pathing->GetPathNodeCoordinates(Route.front());
+				}
+				mlog(PATHING__DEBUG, "Long route update timer expired.");
+			}
+
+			// We are already pathing, destination changed, no LOS. Find the nearest node to our destination.
+			int DestinationPathNode= zone->pathing->FindNearestPathNode(To);
+
+			// Destination unreachable via pathing, return direct route.
+			if(DestinationPathNode == -1)
+			{
+				mlog(PATHING__DEBUG, "  Unable to find path node for new destination. Running straight to target.");
+				Route.clear();
+				return To;
+			}
+			// If the nearest path node to our new destination is the same as for the previous
+			// one, we will carry on on our path.
+			if(DestinationPathNode == Route.back())
+			{
+				mlog(PATHING__DEBUG, "  Same destination Node (%i). Continue with current path.", DestinationPathNode);
+
+				NodeLoc = zone->pathing->GetPathNodeCoordinates(Route.front());
+
+				// May need to refine this as rounding errors may mean we never have equality
+				// Check if we have reached a path node.
+				if(NodeLoc == From)
+				{	
+					mlog(PATHING__DEBUG, "  Arrived at node %i, moving to next one.\n", Route.front());
+
+					NodeReached = true;
+
+					PathingLastNodeVisited = Route.front();
+			
+					Route.pop_front();
+
+					++PathingTraversedNodes;
+
+					WaypointChanged = true;
+
+					if(Route.size() > 0)
+					{
+						NextNode = Route.front();
+
+						if(NextNode == -1)
+						{
+							// -1 indicates a teleport to the next node
+							Route.pop_front();
+
+							if(Route.size() == 0)
+							{
+								mlog(PATHING__DEBUG, "Missing node after teleport.");
+								return To;
+							}
+	
+							NextNode = Route.front();
+
+							NodeLoc = zone->pathing->GetPathNodeCoordinates(NextNode);
+
+							Teleport(NodeLoc);
+
+							mlog(PATHING__DEBUG, "  TELEPORTED to %8.3f, %8.3f, %8.3f\n", NodeLoc.x, NodeLoc.y, NodeLoc.z);
+
+							Route.pop_front();
+
+							if(Route.size() == 0)
+								return To;
+
+							NextNode = Route.front();
+						}
+						// Return the coords of our next path node on the route.
+						mlog(PATHING__DEBUG, "  Now moving to node %i", NextNode);
+
+						zone->pathing->OpenDoors(PathingLastNodeVisited, NextNode, this);
+
+						return zone->pathing->GetPathNodeCoordinates(NextNode);
+					}
+					else
+					{
+						mlog(PATHING__DEBUG, "  Reached end of path grid. Running direct to target.");
+						return To;
+					}
+				}
+				return NodeLoc;
+			}
+			else 
+			{
+				mlog(PATHING__DEBUG, "  Target moved. End node is different. Clearing route.");
+
+				Route.clear();
+				// We will now fall through to get a new route.
+			}
+
+		}
+
+
+	}
+	mlog(PATHING__DEBUG, "  Our route list is empty.");
+
+	if((SameDestination) && !PathingLOSCheckTimer->Check())
+	{
+		mlog(PATHING__DEBUG, "  Destination same as before, LOS check timer not reached. Returning To.");
+		return To;
+	}
+
+	PathingLOSState = UnknownLOS;
+
+	PathingDestination = To;
+
+	WaypointChanged = true;
+
+	float Distance = VertexDistanceNoRoot(From, To);
+
+	if((Distance <= RuleR(Pathing, MinDistanceForLOSCheckLong))
+	   && (ABS(From.z - To.z) <= RuleR(Pathing, ZDiffThreshold)))
+	{	
+		mlog(PATHING__DEBUG, "  Checking for long LOS at distance %8.3f.", Distance);
+	
+		if(!zone->map->LineIntersectsZone(HeadPosition, To, 1.0f, NULL, NULL))
+			PathingLOSState = HaveLOS;
+		else
+			PathingLOSState = NoLOS;
+
+		mlog(PATHING__DEBUG, "  LOS stats is %s", (PathingLOSState == HaveLOS) ? "HaveLOS" : "NoLOS");	
+		
+		if((PathingLOSState == HaveLOS) && zone->pathing->NoHazards(From, To, Speed))
+		{
+			mlog(PATHING__DEBUG, "Target is reachable. Running directly there.");
+			return To;
+		}
+	}
+	mlog(PATHING__DEBUG, "  Calculating new route to target.");
+
+	Route = zone->pathing->FindRoute(From, To);
+
+	PathingTraversedNodes = 0;
+
+	if(Route.size() == 0)
+	{
+		mlog(PATHING__DEBUG, "  No route available, running direct.");
+
+		return To;
+	}
+
+	if(SameDestination && (Route.front() == PathingLastNodeVisited))
+	{
+		mlog(PATHING__DEBUG, "  Probable loop detected. Same destination and Route.front() == PathingLastNodeVisited.");
+
+		Route.clear();
+
+		return To;
+	}
+	NodeLoc = zone->pathing->GetPathNodeCoordinates(Route.front());
+
+	mlog(PATHING__DEBUG, "  New route determined, heading for node %i", Route.front());
+
+	PathingLoopCount = 0;
+
+	return NodeLoc;
+
+}
+
+int PathManager::FindNearestPathNode(VERTEX Position)
+{
+
+	// Find the nearest PathNode we have LOS to.
+	//
+	//
+
+	float CandidateNodeRangeXY = RuleR(Pathing, CandidateNodeRangeXY);
+
+	float CandidateNodeRangeZ = RuleR(Pathing, CandidateNodeRangeZ);
+
+	int ClosestPathNodeToStart = -1;
+
+	list<PathNodeSortStruct> SortedByDistance;
+
+	PathNodeSortStruct TempNode;
+
+	for(int i = 0 ; i < Head.PathNodeCount; ++i)
+	{
+		if((ABS(Position.x - PathNodes[i].v.x) <= CandidateNodeRangeXY) &&
+		   (ABS(Position.y - PathNodes[i].v.y) <= CandidateNodeRangeXY) &&
+		   (ABS(Position.z - PathNodes[i].v.z) <= CandidateNodeRangeZ))
+		{
+		   	TempNode.id = i;
+			TempNode.Distance = VertexDistanceNoRoot(Position, PathNodes[i].v);
+			SortedByDistance.push_back(TempNode);
+
+		}
 	}
 	
-	return(false);
+	SortedByDistance.sort(SortPathNodesByDistance);
+
+	for(list<PathNodeSortStruct>::iterator Iterator = SortedByDistance.begin(); Iterator != SortedByDistance.end(); ++Iterator)
+	{
+		_log(PATHING__DEBUG, "Checking Reachability of Node %i from Start Position.", PathNodes[(*Iterator).id].id);
+
+		if(!zone->map->LineIntersectsZone(Position, PathNodes[(*Iterator).id].v, 1.0f, NULL, NULL))
+		{
+			ClosestPathNodeToStart = (*Iterator).id;
+			break;
+		}
+	}
+
+	if(ClosestPathNodeToStart <0 ) {
+		_log(PATHING__DEBUG, "No LOS to any starting Path Node within range.");
+		return -1;
+	}
+	return ClosestPathNodeToStart;
 }
 
+bool PathManager::NoHazards(VERTEX From, VERTEX To, float Speed)
+{
+	_ZP(Pathing_NoHazards);
 
+	// Test the Z coordinate at the mid point.
+	//
+	VERTEX MidPoint((From.x + To.x) / 2, (From.y + To.y) / 2, From.z);
+
+	float NewZ = zone->map->FindBestZ(MAP_ROOT_NODE, MidPoint, NULL, NULL);
+
+	if(ABS(NewZ - From.z) > RuleR(Pathing, ZDiffThreshold))
+	{
+		_log(PATHING__DEBUG, "  HAZARD DETECTED moving from %8.3f, %8.3f, %8.3f to %8.3f, %8.3f, %8.3f. Z Change is %8.3f",
+			From.x, From.y, From.z, MidPoint.x, MidPoint.y, MidPoint.z, NewZ - From.z);
+
+		return false;
+	}
+	else
+	{
+		_log(PATHING__DEBUG, "No HAZARD DETECTED moving from %8.3f, %8.3f, %8.3f to %8.3f, %8.3f, %8.3f. Z Change is %8.3f",
+			From.x, From.y, From.z, MidPoint.x, MidPoint.y, MidPoint.z, NewZ - From.z);
+	}
+
+	return true;
+}
+
+void Mob::PrintRoute()
+{
+
+	printf("Route is : ");
+	
+	list<int>::iterator Iterator;
+
+	for(Iterator = Route.begin(); Iterator !=Route.end(); ++Iterator)
+	{
+		printf("%i, ", (*Iterator));
+	}
+
+	printf("\n");
+
+}
+
+void PathManager::OpenDoors(int Node1, int Node2, Mob *ForWho)
+{
+
+	_ZP(Pathing_OpenDoors);
+
+	if(!ForWho || (Node1 >= Head.PathNodeCount) || (Node2 >= Head.PathNodeCount) || (Node1 < 0) || (Node2 < 0))
+		return;
+
+	for(int i = 0; i < PATHNODENEIGHBOURS; ++i)
+	{
+		if(PathNodes[Node1].Neighbours[i].id == -1)
+			return;
+
+		if(PathNodes[Node1].Neighbours[i].id != Node2)
+			continue;
+
+		if(PathNodes[Node1].Neighbours[i].DoorID >= 0)
+		{
+			Doors *d = entity_list.FindDoor(PathNodes[Node1].Neighbours[i].DoorID);
+
+			if(d && !d->IsDoorOpen() )
+			{
+				_log(PATHING__DEBUG, "Opening door %i for %s", PathNodes[Node1].Neighbours[i].DoorID, ForWho->GetName());
+
+				d->ForceOpen(ForWho);
+			}
+			return;
+		}
+	}
+}
 
 //this assumes that the first point in the list is the player's
 //current position, I dont know how well it works if its not.
@@ -913,44 +1180,102 @@ void Client::SendPathPacket(vector<FindPerson_Point> &points) {
 		return;
 	}
 	
-	printf("Sending a path packet with %d nodes.\n", points.size());
-	
 	int len = sizeof(FindPersonResult_Struct) + (points.size()+1) * sizeof(FindPerson_Point);
 	EQApplicationPacket *outapp = new EQApplicationPacket(OP_FindPersonReply, len);
 	FindPersonResult_Struct* fpr=(FindPersonResult_Struct*)outapp->pBuffer;
 	
-printf("%d*%d + %d = %d\n", points.size(), sizeof(FindPerson_Point), sizeof(FindPersonResult_Struct), len);
 	vector<FindPerson_Point>::iterator cur, end;
 	cur = points.begin();
 	end = points.end();
-	int r;
+	unsigned int r;
 	for(r = 0; cur != end; cur++, r++) {
 		fpr->path[r] = *cur;
-printf("Point %d: (%f,%f,%f)\n", r, (*cur).x, (*cur).y, (*cur).z);
+
 	}
 	//put the last element into the destination field
 	cur--;
 	fpr->path[r] = *cur;
 	fpr->dest = *cur;
-//	memcpy(&fpr->dest, &fpr->path[r-1], sizeof(fpr->dest));
-printf("Terminal Point %d: (%f,%f,%f)\n", r, fpr->dest.x, fpr->dest.y, fpr->dest.z);
-	
-	float *fa = (float *) outapp->pBuffer;
-	for(r = 0; r < outapp->size/4; r++, fa++) {
-		if(r%3 == 0)
-			printf("\n");
-		printf("%f ", *fa);
-	}
-	
+
 	FastQueuePacket(&outapp);
 	
 	
 }
 
+PathNode* PathManager::FindPathNodeByCoordinates(float x, float y, float z)
+{
+	for(int i = 0; i < Head.PathNodeCount; ++i)
+		if((PathNodes[i].v.x == x) && (PathNodes[i].v.y == y) && (PathNodes[i].v.z == z))
+			return &PathNodes[i];
+
+	return NULL;
+}
+
+int PathManager::GetRandomPathNode()
+{
+	return MakeRandomInt(0, Head.PathNodeCount - 1);
+
+}
+
+void PathManager::ShowPathNodeNeighbours(Client *c)
+{
+	if(!c || !c->GetTarget())
+		return;
 
 
+	PathNode *Node = zone->pathing->FindPathNodeByCoordinates(c->GetTarget()->GetX(), c->GetTarget()->GetY(), c->GetTarget()->GetZ());
 
+	if(!Node)
+	{
+		c->Message(0, "Unable to find path node.");
+		return;
+	}
+	c->Message(0, "Path node %4i", Node->id);
 
+	for(int i = 0; i < Head.PathNodeCount; ++i)
+	{
+		char Name[64];
+
+		if(PathNodes[i].id < 10)
+			sprintf(Name, "%s000", DigitToWord(PathNodes[i].id));
+		else if(PathNodes[i].id < 100)
+			sprintf(Name, "%s_%s000", DigitToWord(PathNodes[i].id / 10), DigitToWord(PathNodes[i].id % 10));
+		else
+			sprintf(Name, "%s_%s_%s000", DigitToWord(PathNodes[i].id/100), DigitToWord((PathNodes[i].id % 100)/10), 
+				DigitToWord(((PathNodes[i].id % 100) %10)));
+
+		Mob *m = entity_list.GetMob(Name);
+
+		if(m)
+			m->SendIllusionPacket(151);
+	}
+
+	std::stringstream Neighbours;
+
+	for(int i = 0; i < PATHNODENEIGHBOURS; ++i)
+	{
+		if(Node->Neighbours[i].id == -1)
+			break;
+		Neighbours << Node->Neighbours[i].id << ", ";	
+
+		char Name[64];
+
+		if(Node->Neighbours[i].id < 10)
+			sprintf(Name, "%s000", DigitToWord(Node->Neighbours[i].id));
+		else if(Node->Neighbours[i].id < 100)
+			sprintf(Name, "%s_%s000", DigitToWord(Node->Neighbours[i].id / 10), DigitToWord(Node->Neighbours[i].id % 10));
+		else
+			sprintf(Name, "%s_%s_%s000", DigitToWord(Node->Neighbours[i].id/100), DigitToWord((Node->Neighbours[i].id % 100)/10), 
+				DigitToWord(((Node->Neighbours[i].id % 100) %10)));
+
+		Mob *m = entity_list.GetMob(Name);
+
+		if(m)
+			m->SendIllusionPacket(46);
+	}
+	c->Message(0, "Neighbours: %s", Neighbours.str().c_str());
+
+}
 
 
 

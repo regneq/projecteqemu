@@ -660,7 +660,6 @@ void Client::ZonePC(int32 zoneID, int32 instance_id, float x, float y, float z, 
 			gmg->heading = heading;
 			gmg->instance_id = instance_id;
 			gmg->type = 0x01;	//an observed value, not sure of meaning
-			
 			outapp->priority = 6;
 			FastQueuePacket(&outapp);
 			safe_delete(outapp);

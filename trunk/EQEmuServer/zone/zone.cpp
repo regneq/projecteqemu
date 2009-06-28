@@ -1715,13 +1715,13 @@ sint8 ZoneDatabase::LoadZoneState(const char* zonename, LinkedList<Spawn2*>& spa
 								CleanupLoadZoneState(spawn2_count, &spawn2_dump, &npc_dump, &npcloot_dump, &gmspawntype_dump, &spawn2_loaded, &npc_loaded, &result);
 								return -1;
 							}
-							npc_loaded[i] = new NPC(&gmspawntype_dump[npc_dump[i].gmspawntype_index], tmp, npc_dump[i].x, npc_dump[i].y, npc_dump[i].z, npc_dump[i].heading, npc_dump[i].corpse);
+							npc_loaded[i] = new NPC(&gmspawntype_dump[npc_dump[i].gmspawntype_index], tmp, npc_dump[i].x, npc_dump[i].y, npc_dump[i].z, npc_dump[i].heading, FlyMode3, npc_dump[i].corpse);
 						}
 					}
 					else {
 						const NPCType* crap = database.GetNPCType(npc_dump[i].npctype_id);
 						if (crap != 0)
-							npc_loaded[i] = new NPC(crap, tmp, npc_dump[i].x, npc_dump[i].y, npc_dump[i].z, npc_dump[i].heading, npc_dump[i].corpse);
+							npc_loaded[i] = new NPC(crap, tmp, npc_dump[i].x, npc_dump[i].y, npc_dump[i].z, npc_dump[i].heading, FlyMode3, npc_dump[i].corpse);
 						else {
 							cerr << "Error in LoadZoneState: Unknown npctype_id: " << npc_dump[i].npctype_id << endl;
 							safe_delete(tmp);

@@ -2704,7 +2704,7 @@ void NPC::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill) 
 									const NPCType* nt = NULL;
 									if(nt = database.GetNPCType(ad->ai->type_data)) 
 									{
-										NPC* npc = new NPC(nt, 0, ad->ai->assa_x, ad->ai->assa_y, ad->ai->assa_z, ad->ai->assa_h);
+										NPC* npc = new NPC(nt, 0, ad->ai->assa_x, ad->ai->assa_y, ad->ai->assa_z, ad->ai->assa_h, FlyMode3);
 										npc->AddLootTable();
 										entity_list.AddNPC(npc);
 									}

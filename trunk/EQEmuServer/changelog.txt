@@ -1,6 +1,16 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==06/27/2009==
+Derision: Began work on pathfinding for aggro/fear and Find NPC.
+
+The path files for the first few zones can be found at http://code.google.com/p/projecteqemu/downloads/list
+Put the .path files in your Maps directory with your .map and .wtr files.
+
+Optional SQL:
+
+utils/sql/svn/721_pathing_rules.sql
+
+==06/27/2009==
 KLS: Specialization should now never increase the amount of mana it takes to cast a spell.
 KLS: Fix for mana preservation focus not functioning correctly.
 KLS: Fix for duration enhancement focus effects not affecting detrimental spells.

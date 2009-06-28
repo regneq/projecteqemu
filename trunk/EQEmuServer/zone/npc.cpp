@@ -54,7 +54,7 @@ extern EntityList entity_list;
 	extern SPDat_Spell_Struct spells[SPDAT_RECORDS];
 #endif
 
-NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float heading, bool IsCorpse)
+NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float heading, int iflymode, bool IsCorpse)
 : Mob(d->name,
 	  d->lastname,
 	  d->max_hp,
@@ -257,6 +257,7 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 	org_x = x;
 	org_y = y;
 	org_z = z;
+	flymode = iflymode;
 	guard_x = -1;	//just some value we might be able to recongize as "unset"
 	guard_y = -1;
 	guard_z = -1;
@@ -481,7 +482,7 @@ void NPC::SetTarget(Mob* mob) {
 		SetAttackTimer();
 	} else {
 		ranged_timer.Disable();
-		attack_timer.Disable();
+		//attack_timer.Disable();
 		attack_dw_timer.Disable();
 	}
 	//CastToMob()->SetTarget(mob);
@@ -639,7 +640,7 @@ bool NPC::Process()
 		}
 
 		//60 seconds, or whatever the rule is set to has passed, send this position to everyone to avoid ghosting
-		if(global_position_update_timer.Check()){
+		if(global_position_update_timer.Check() && !moving){
 			SendAllPosition();
 		}
 		
@@ -993,7 +994,7 @@ NPC* NPC::SpawnNPC(const char* spawncommand, float in_x, float in_y, float in_z,
 		npc_type->WIS = 150;
 		npc_type->CHA = 150;
 		
-		NPC* npc = new NPC(npc_type, 0, in_x, in_y, in_z, in_heading/8);
+		NPC* npc = new NPC(npc_type, 0, in_x, in_y, in_z, in_heading/8, FlyMode3);
 		npc->GiveNPCTypeData(npc_type);
 		//safe_delete(npc_type);
 		

@@ -2606,6 +2606,32 @@ void EntityList::ListPlayerCorpses(Client* client) {
 	client->Message(0, "%d player corpses listed.", x);
 }
 
+void EntityList::FindPathsToAllNPCs()
+{
+	if(!zone->pathing)
+		return;
+
+	LinkedListIterator<NPC*> Iterator(npc_list);
+	
+	Iterator.Reset();
+
+	while(Iterator.MoreElements())
+	{
+		VERTEX Node0 = zone->pathing->GetPathNodeCoordinates(0, false);
+		VERTEX Dest(Iterator.GetData()->GetX(), Iterator.GetData()->GetY(), Iterator.GetData()->GetZ());
+		list<int> Route = zone->pathing->FindRoute(Node0, Dest);
+		if(Route.size() == 0)
+			printf("Unable to find a route to %s\n", Iterator.GetData()->GetName());
+		else
+			printf("Found a route to %s\n", Iterator.GetData()->GetName());
+
+		Iterator.Advance();
+	}
+
+	fflush(stdout);
+
+}
+
 // returns the number of corpses deleted. A negative number indicates an error code.
 sint32 EntityList::DeleteNPCCorpses() {
 	LinkedListIterator<Corpse*> iterator(corpse_list);

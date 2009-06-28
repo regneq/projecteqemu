@@ -142,6 +142,32 @@ float Mob::GetFearSpeed() {
 
 void Mob::CalculateNewFearpoint()
 {
+	if(RuleB(Pathing, Fear) && zone->pathing)
+	{
+		int Node = zone->pathing->GetRandomPathNode();
+	
+		VERTEX Loc = zone->pathing->GetPathNodeCoordinates(Node);
+
+		++Loc.z;
+
+		VERTEX CurrentPosition(GetX(), GetY(), GetZ());
+
+		list<int> Route = zone->pathing->FindRoute(CurrentPosition, Loc);
+
+		if(Route.size() > 0)
+		{
+			fear_walkto_x = Loc.x;
+			fear_walkto_y = Loc.y;
+			fear_walkto_z = Loc.z;
+			curfp = true;
+
+			mlog(PATHING__DEBUG, "Feared to node %i (%8.3f, %8.3f, %8.3f)", Node, Loc.x, Loc.y, Loc.z);
+			return;
+		}
+
+		mlog(PATHING__DEBUG, "No path found to selected node. Falling through to old fear point selection.");
+	}
+
 	int loop = 0;
 	float ranx, rany, ranz;
 	curfp = false;

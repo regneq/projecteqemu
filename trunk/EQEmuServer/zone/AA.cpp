@@ -569,7 +569,7 @@ void Mob::TemporaryPets(int16 spell_id, Mob *targ, const char *name_override, ui
 				(npc_dup!=NULL)?npc_dup:npc_type,	//make sure we give the NPC the correct data pointer
 				0, 
 				GetX()+swarm_pet_x[summon_count], GetY()+swarm_pet_y[summon_count], 
-				GetZ(), GetHeading());
+				GetZ(), GetHeading(), FlyMode3);
 
 		if((spell_id == 6882) || (spell_id == 6884))
 			npca->SetFollowID(GetID());
@@ -752,7 +752,7 @@ void Mob::WakeTheDead(int16 spell_id, Mob *target, uint32 duration)
 
 	TempPets(true);
 
-	NPC* npca = new NPC(make_npc, 0, GetX(), GetY(), GetZ(), GetHeading());
+	NPC* npca = new NPC(make_npc, 0, GetX(), GetY(), GetZ(), GetHeading(), FlyMode3);
 
 	if(!npca->GetSwarmInfo()){
 		AA_SwarmPetInfo* nSI = new AA_SwarmPetInfo;

@@ -31,6 +31,7 @@
 #include "zonedump.h"
 #include "spawn2.h"
 #include "tasks.h"
+#include "pathing.h"
 
 class Map;
 class WaterMap;
