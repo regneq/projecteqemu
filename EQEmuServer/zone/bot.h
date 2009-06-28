@@ -6,6 +6,7 @@
 #include "botStructs.h"
 #include "mob.h"
 #include "client.h"
+#include "groups.h"
 #include "zonedb.h"
 #include "../common/MiscFunctions.h"
 
@@ -27,6 +28,7 @@ public:
 	void Spawn(float xPos, float yPos, float zPos, float heading);
 	void SetBotOwnerCharacterID(uint32 botOwnerCharacterID, std::string* errorMessage);
 	void Depop(std::string* errorMessage);
+	bool MesmerizeTarget(Mob* target);
 
 	// Bot Inventory Class Methods
 	uint32 GetBotItemBySlot(uint32 slotID, std::string* errorMessage);
@@ -47,6 +49,8 @@ public:
 	static uint32 AllowedBotSpawns(uint32 botOwnerCharacterID, std::string* errorMessage);
 	static void CleanBotLeader(uint32 botOwnerCharacterID, std::string* errorMessage);
 	static uint32 GetBotOwnerCharacterID(uint32 botID, std::string* errorMessage);
+	static std::string ClassIdToString(uint16 classId);
+	static std::string RaceIdToString(uint16 raceId);
 
 	virtual bool IsBot() const { return true; }
 
