@@ -233,7 +233,7 @@ int16 QuestManager::spawn2(int npc_type, int grid, int unused, float x, float y,
 	if ((tmp = database.GetNPCType(npc_type)))
 	{
 
-		NPC* npc = new NPC(tmp, 0, x, y, z, heading);
+		NPC* npc = new NPC(tmp, 0, x, y, z, heading, FlyMode3);
 
 
 		npc->AddLootTable();
@@ -265,7 +265,7 @@ int16 QuestManager::unique_spawn(int npc_type, int grid, int unused, float x, fl
 	if ((tmp = database.GetNPCType(npc_type)))
 	{
 
-		NPC* npc = new NPC(tmp, 0, x, y, z, heading);
+		NPC* npc = new NPC(tmp, 0, x, y, z, heading, FlyMode3);
 
 
 		npc->AddLootTable();
@@ -1169,7 +1169,7 @@ void QuestManager::respawn(int npc_type, int grid) {
 	const NPCType* tmp = 0;
 	if ((tmp = database.GetNPCType(npc_type)))
 	{
-		owner = new NPC(tmp, 0, x, y, z, h);
+		owner = new NPC(tmp, 0, x, y, z, h, FlyMode3);
 		owner->CastToNPC()->AddLootTable();
 		entity_list.AddNPC(owner->CastToNPC(),true,true);
 		if(grid > 0)

@@ -2838,7 +2838,7 @@ void command_npctypespawn(Client *c, const Seperator *sep)
 		const NPCType* tmp = 0;
 		if ((tmp = database.GetNPCType(atoi(sep->arg[1])))) {
 			//tmp->fixedZ = 1;
-			NPC* npc = new NPC(tmp, 0, c->GetX(), c->GetY(), c->GetZ(), c->GetHeading());
+			NPC* npc = new NPC(tmp, 0, c->GetX(), c->GetY(), c->GetZ(), c->GetHeading(), FlyMode3);
 			if (npc && sep->IsNumber(2))
 				npc->SetNPCFactionID(atoi(sep->arg[2]));
 
@@ -7012,6 +7012,7 @@ void command_qglobal(Client *c, const Seperator *sep) {
 }
 
 void command_fear(Client *c, const Seperator *sep) {
+/*
 	//super-command for editing fear grids and hints
 //	char errbuf[MYSQL_ERRMSG_SIZE];
 //	char *query = 0;
@@ -7099,7 +7100,7 @@ void command_fear(Client *c, const Seperator *sep) {
 				it.z = fs.z;
 				pts.push_back(it);
 			} else {
-				/*NPC* npc = */NPC::SpawnNPC(buf, fs.x, fs.y, fs.z, c->GetHeading(), NULL);
+				NPC::SpawnNPC(buf, fs.x, fs.y, fs.z, c->GetHeading(), NULL);
 			}
 		}
 		
@@ -7180,9 +7181,83 @@ void command_fear(Client *c, const Seperator *sep) {
 	} else {
 		c->Message(15, "Invalid action specified. use '#fear help' for help");
 	}
+	*/
 }
 
-void command_path(Client *c, const Seperator *sep) {
+void command_path(Client *c, const Seperator *sep)
+{
+	if(sep->arg[1][0] == '\0' || !strcasecmp(sep->arg[1], "help"))
+	{
+		c->Message(0, "Syntax: #path shownodes");
+		return;
+	}
+	if(!strcasecmp(sep->arg[1], "shownodes"))
+	{
+		if(zone->pathing)
+			zone->pathing->SpawnPathNodes();
+
+		return;
+	}
+	if(!strcasecmp(sep->arg[1], "showneighbours") || !strcasecmp(sep->arg[1], "showneighbors"))
+	{
+		if(!c->GetTarget())
+		{
+			c->Message(0, "First #path shownodes to spawn the pathnodes, and then target one of them.");
+			return;
+		}
+		if(zone->pathing)
+		{
+			zone->pathing->ShowPathNodeNeighbours(c);
+			return;
+		}
+	}
+	if(!strcasecmp(sep->arg[1], "meshtest"))
+	{
+		if(zone->pathing)
+		{
+			c->Message(0, "You may go linkdead. Results will be in the log file.");
+			zone->pathing->MeshTest();
+			return;
+		}
+	}
+
+	if(!strcasecmp(sep->arg[1], "allspawns"))
+	{
+		if(zone->pathing)
+		{
+			c->Message(0, "You may go linkdead. Results will be in the log file.");
+			entity_list.FindPathsToAllNPCs();
+			return;
+		}
+	}
+
+	if(!strcasecmp(sep->arg[1], "nearest"))
+	{
+		if(!c->GetTarget() || !c->GetTarget()->IsMob())
+		{
+			c->Message(0, "You must target something.");
+			return;
+		}
+
+		if(zone->pathing)
+		{
+			Mob *m = c->GetTarget();
+
+			VERTEX Position(m->GetX(), m->GetY(), m->GetZ());
+
+			int Node = zone->pathing->FindNearestPathNode(Position);
+
+			if(Node == -1)
+				c->Message(0, "Unable to locate a path node within range.");
+			else
+				c->Message(0, "Nearest path node is %i", Node);
+
+			return;
+		}
+	}
+
+	return;
+/*
 	//super-command for editing fear grids and hints
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
@@ -7365,7 +7440,7 @@ void command_path(Client *c, const Seperator *sep) {
 				it.z = ps.z;
 				pts.push_back(it);
 			} else {
-				/*NPC* npc = */NPC::SpawnNPC(buf, ps.x, ps.y, ps.z, c->GetHeading(), NULL);
+				NPC::SpawnNPC(buf, ps.x, ps.y, ps.z, c->GetHeading(), NULL);
 			}
 		}
 		
@@ -7391,6 +7466,7 @@ void command_path(Client *c, const Seperator *sep) {
 	} else {
 		c->Message(15, "Invalid action specified. use '#path help' for help");
 	}
+	*/
 }
 
 void Client::Undye() {
@@ -9281,7 +9357,7 @@ void command_bot(Client *c, const Seperator *sep) {
 				return;
 			}
 
-			NPC* npc = new NPC(tmp, 0, c->GetX(), c->GetY(), c->GetZ(), c->GetHeading());
+			NPC* npc = new NPC(tmp, 0, c->GetX(), c->GetY(), c->GetZ(), c->GetHeading(), FlyMode3);
 
 			// As the mob is in the DB, we need to calc its level, HP, Mana.
 			// First, the mob must have the same level as his leader
@@ -9549,7 +9625,7 @@ void command_bot(Client *c, const Seperator *sep) {
 		for(int i=0; i<bots; i++) {
 			row = mysql_fetch_row(groups);
 			if(tmp = database.GetNPCType(atoi(row[1]))) {
-				npc = new NPC(tmp, 0, myX, myY, myZ, myHeading);
+				npc = new NPC(tmp, 0, myX, myY, myZ, myHeading, FlyMode3);
 				tmp = 0;
 				npc->SetLevel(myLevel);
 				entity_list.AddNPC(npc);

@@ -106,6 +106,15 @@ public:
 		Map_LineIntersectsNode,
 		Map_FindBestZ,
 
+		Pathing_FindRoute_FromNodes,
+		Pathing_CheckTerrainPassable,
+		Pathing_FindRoute_FromVertices,
+		Pathing_UpdatePath,
+		Pathing_NoHazards,
+		Pathing_OpenDoors,
+		Pathing_VertexDistance,
+		Pathing_VertexDistanceNoRoot,
+
 		Mob_AI_Process,
 		Mob_AI_Process_engaged,
 		Mob_AI_Process_engaged_cast,

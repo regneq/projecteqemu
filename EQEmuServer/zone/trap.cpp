@@ -142,7 +142,7 @@ void Trap::Trigger(Mob* trigger)
 			{
 				if ((tmp = database.GetNPCType(effectvalue)))
 				{
-					NPC* new_npc = new NPC(tmp, 0, x-5+rand()%10, y-5+rand()%10, z-5+rand()%10, rand()%250);
+					NPC* new_npc = new NPC(tmp, 0, x-5+rand()%10, y-5+rand()%10, z-5+rand()%10, rand()%250, FlyMode3);
 					new_npc->AddLootTable();
 					entity_list.AddNPC(new_npc);
 					new_npc->AddToHateList(trigger,1);
@@ -163,7 +163,7 @@ void Trap::Trigger(Mob* trigger)
 			{
 				if ((tmp = database.GetNPCType(effectvalue)))
 				{
-					NPC* new_npc = new NPC(tmp, 0, x-2+rand()%10, y-2+rand()%4, z-2+rand()%4, rand()%250);
+					NPC* new_npc = new NPC(tmp, 0, x-2+rand()%10, y-2+rand()%4, z-2+rand()%4, rand()%250, FlyMode3);
 					new_npc->AddLootTable();
 					entity_list.AddNPC(new_npc);
 					new_npc->AddToHateList(trigger,1);
@@ -329,7 +329,7 @@ void Trap::CreateHiddenTrigger()
       make_npc->trackable = 0;
 	make_npc->level = level;
 	strcpy(make_npc->npc_attacks, "ABHG");
-	NPC* npca = new NPC(make_npc, 0, x, y, z, 0);
+	NPC* npca = new NPC(make_npc, 0, x, y, z, 0, FlyMode3);
 	npca->GiveNPCTypeData(make_npc);
 	entity_list.AddNPC(npca);
 

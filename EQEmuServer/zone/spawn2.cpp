@@ -173,7 +173,7 @@ bool Spawn2::Process() {
 			database.UpdateSpawn2Timeleft(spawn2_id, zone->GetInstanceID(), 0);
 		
 		currentnpcid = npcid;
-		NPC* npc = new NPC(tmp, this, x, y, z, heading);
+		NPC* npc = new NPC(tmp, this, x, y, z, heading, FlyMode3);
 		npcthis = npc;
 		npc->AddLootTable();
 		npc->SetSp2(spawngroup_id_);

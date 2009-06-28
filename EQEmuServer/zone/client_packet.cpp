@@ -69,6 +69,8 @@
 #include "pets.h"
 #include "ZoneConfig.h"
 #include "guild_mgr.h"
+#include "pathing.h"
+
 using namespace std;
 
 #ifdef EMBPERL
@@ -712,7 +714,7 @@ void Client::Handle_Connect_OP_ReqClientSpawn(const EQApplicationPacket *app)
 								if(nt = database.GetNPCType(nd->ai->type_data)) 
 								{
 									NPC* npc = new NPC(nt, 0, nd->ai->assa_x, nd->ai->assa_y, 
-										nd->ai->assa_z, nd->ai->assa_h);
+										nd->ai->assa_z, nd->ai->assa_h, FlyMode3);
 									npc->AddLootTable();
 									entity_list.AddNPC(npc);
 								}
@@ -6997,7 +6999,7 @@ void Client::Handle_OP_FindPersonRequest(const EQApplicationPacket *app)
 			return;
 		}
 
-		if(RuleB(Bazaar, EnableWarpToTrader) && target->IsClient() && (target->CastToClient()->Trader ||
+		if(!RuleB(Pathing, Find) && RuleB(Bazaar, EnableWarpToTrader) && target->IsClient() && (target->CastToClient()->Trader ||
 									       target->CastToClient()->Buyer)) {
 			Message(15, "Moving you to Trader %s", target->GetName());
 			MovePC(zone->GetZoneID(), zone->GetInstanceID(), target->GetX(), target->GetY(),  target->GetZ() , 0.0f);
@@ -7005,14 +7007,95 @@ void Client::Handle_OP_FindPersonRequest(const EQApplicationPacket *app)
 		else
 			Message(13, "Found NPC '%s'\n", target->GetName());
 
-		//fill in the path array...
-		points.resize(2);
-		points[0].x = GetX();
-		points[0].y = GetY();
-		points[0].z = GetZ();
-		points[1].x = target->GetX();
-		points[1].y = target->GetY();
-		points[1].z = target->GetZ();
+		if(!RuleB(Pathing, Find) || !zone->pathing)
+		{
+			//fill in the path array...
+			//
+			points.resize(2);
+			points[0].x = GetX();
+			points[0].y = GetY();
+			points[0].z = GetZ();
+			points[1].x = target->GetX();
+			points[1].y = target->GetY();
+			points[1].z = target->GetZ();
+		}
+		else
+		{
+			VERTEX Start(GetX(), GetY(), GetZ() + (GetSize() < 6.0 ? 6 : GetSize()) * HEAD_POSITION);
+			VERTEX End(target->GetX(), target->GetY(), target->GetZ() + (target->GetSize() < 6.0 ? 6 : target->GetSize()) * HEAD_POSITION);
+
+			if(!zone->map->LineIntersectsZone(Start, End, 1.0f, NULL, NULL))	
+			{
+				points.resize(2);
+				points[0].x = Start.x;
+				points[0].y = Start.y;
+				points[0].z = Start.z;
+
+				points[1].x = End.x;
+				points[1].y = End.y;
+				points[1].z = End.z;
+	
+			}
+			else
+			{
+				list<int> pathlist = zone->pathing->FindRoute(Start, End);
+	
+				if(pathlist.size() == 0)
+				{
+					EQApplicationPacket outapp(OP_FindPersonReply, 0);
+					QueuePacket(&outapp);
+					return;
+				}
+
+				// Live appears to send the points in this order:
+				//   Final destination.
+				//   Current Position.
+				//   rest of the points.
+				FindPerson_Point p;
+
+				int PointNumber = 0;
+
+				bool LeadsToTeleporter = false;
+
+				VERTEX v = zone->pathing->GetPathNodeCoordinates(pathlist.back());
+
+				p.x = v.x;
+				p.y = v.y;
+				p.z = v.z;
+				points.push_back(p);
+
+				p.x = GetX();
+				p.y = GetY();
+				p.z = GetZ();
+				points.push_back(p);
+
+				for(list<int>::iterator Iterator = pathlist.begin(); Iterator != pathlist.end(); ++Iterator)
+				{
+					if((*Iterator) == -1) // Teleporter
+					{
+						LeadsToTeleporter = true;
+						break;
+					}
+
+					VERTEX v = zone->pathing->GetPathNodeCoordinates((*Iterator), false);
+					p.x = v.x;
+					p.y = v.y;
+					p.z = v.z;
+					points.push_back(p);
+					++PointNumber;
+				}
+
+				if(!LeadsToTeleporter)
+				{
+					p.x = target->GetX();
+					p.y = target->GetY();
+					p.z = target->GetZ();
+
+					points.push_back(p);
+				}
+
+			}
+		}
 
 		SendPathPacket(points);
 	}

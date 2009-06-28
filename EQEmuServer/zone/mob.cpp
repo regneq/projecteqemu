@@ -354,6 +354,16 @@ Mob::Mob(const char*   in_name,
 
 	m_is_running = false;
 
+	flymode = FlyMode3;
+	// Pathing
+	PathingLOSState = UnknownLOS;
+	PathingLoopCount = 0;
+	PathingLastNodeVisited = -1;
+	PathingLOSCheckTimer = new Timer(RuleI(Pathing, LOSCheckFrequency));
+	PathingRouteUpdateTimerShort = new Timer(RuleI(Pathing, RouteUpdateFrequencyShort));
+	PathingRouteUpdateTimerLong = new Timer(RuleI(Pathing, RouteUpdateFrequencyLong));
+	AggroedAwayFromGrid = 0;
+	PathingTraversedNodes = 0;
 #ifdef EQBOTS
 
 	// eqoffline
@@ -411,6 +421,9 @@ Mob::~Mob()
 		entity_list.DestroyTempPets(this);
 	}
 	entity_list.UnMarkNPC(GetID());
+	safe_delete(PathingLOSCheckTimer);
+	safe_delete(PathingRouteUpdateTimerShort);
+	safe_delete(PathingRouteUpdateTimerLong);
 }
 
 int32 Mob::GetAppearanceValue(EmuAppearance iAppearance) {
@@ -779,8 +792,8 @@ void Mob::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho)
 	if(IsClient())
 		ns->spawn.flymode = 0;
 	else
-		ns->spawn.flymode = 3;
-	
+		ns->spawn.flymode = flymode;
+
 	ns->spawn.lastName[0] = '\0';
 	
 	strncpy(ns->spawn.lastName, lastname, sizeof(lastname));
@@ -988,6 +1001,7 @@ void Mob::MakeSpawnUpdateNoDelta(PlayerPositionUpdateServer_Struct *spu){
 	spu->padding0006	=7;
 	spu->padding0014	=0x7f;
 	spu->padding0018	=0x5df27;
+
 }
 
 // this is for SendPosUpdate()
@@ -1143,6 +1157,9 @@ void Mob::ShowBuffList(Client* client) {
 }
 
 void Mob::GMMove(float x, float y, float z, float heading, bool SendUpdate) {
+
+	Route.clear();
+
 	x_pos = x;
 	y_pos = y;
 	z_pos = z;
@@ -1304,7 +1321,6 @@ void Mob::SendIllusionPacket(int16 in_race, int8 in_gender, int8 in_texture, int
 	is->drakkin_details = this->drakkin_details;
 	is->size = this->size;
 
-	DumpPacket(outapp);
 	entity_list.QueueClients(this, outapp);
 	safe_delete(outapp);
 	mlog(CLIENT__SPELLS, "Illusion: Race = %i, Gender = %i, Texture = %i, HelmTexture = %i, HairColor = %i, BeardColor = %i, EyeColor1 = %i, EyeColor2 = %i, HairStyle = %i, Face = %i, DrakkinHeritage = %i, DrakkinTattoo = %i, DrakkinDetails = %i, Size = %f",
@@ -2175,7 +2191,9 @@ void Mob::FaceTarget(Mob* MobToFace) {
 		if(moving)
 			SendPosUpdate();
 		else
+		{
 			SendPosition();
+		}
 	}
 }
 

@@ -598,7 +598,6 @@ void Client::AI_Stop() {
 
 void Mob::AI_Process() {
 	_ZP(Mob_AI_Process);
-	
 
 	if (!IsAIControlled())
 		return;
@@ -635,7 +634,20 @@ void Mob::AI_Process() {
 						// Calculate a new point to run to
 						CalculateNewFearpoint();
 					}
-					CalculateNewPosition2(fear_walkto_x, fear_walkto_y, fear_walkto_z, GetFearSpeed(), true);
+					if(!RuleB(Pathing, Fear) || !zone->pathing)
+						CalculateNewPosition2(fear_walkto_x, fear_walkto_y, fear_walkto_z, GetFearSpeed(), true);
+					else
+					{
+						bool WaypointChanged, NodeReached;
+
+						VERTEX Goal = UpdatePath(fear_walkto_x, fear_walkto_y, fear_walkto_z,
+									 GetFearSpeed(), WaypointChanged, NodeReached);
+
+						if(WaypointChanged)
+							tar_ndx = 20;
+
+						CalculateNewPosition2(Goal.x, Goal.y, Goal.z, GetRunspeed());
+					}
 				}
 				return;
 			}
@@ -835,7 +847,21 @@ void Mob::AI_Process() {
 				{
 					if(!IsRooted()) {
 						mlog(AI__WAYPOINTS, "Pursuing %s while engaged.", target->GetName());
-						CalculateNewPosition2(target->GetX(), target->GetY(), target->GetZ(), GetRunspeed());
+						if(!RuleB(Pathing, Aggro) || !zone->pathing)
+							CalculateNewPosition2(target->GetX(), target->GetY(), target->GetZ(), GetRunspeed());
+						else
+						{
+							bool WaypointChanged, NodeReached;
+
+							VERTEX Goal = UpdatePath(target->GetX(), target->GetY(), target->GetZ(),
+										 GetRunspeed(), WaypointChanged, NodeReached);
+
+							if(WaypointChanged)
+								tar_ndx = 20;
+
+							CalculateNewPosition2(Goal.x, Goal.y, Goal.z, GetRunspeed());
+						}
+
 					} else if(IsMoving()) {
 						SetHeading(CalculateHeadingToTarget(target->GetX(), target->GetY()));
 						SetRunAnimSpeed(0);
@@ -1101,6 +1127,9 @@ void NPC::AI_DoMovement() {
 					movetimercompleted=false; 
 					
 					mlog(QUESTS__PATHING, "We have reached waypoint %d.", cur_wp);
+
+					if(AggroedAwayFromGrid > 0)
+						--AggroedAwayFromGrid;
 					
 					//if we were under quest control (with no grid), we are done now..
 					if(cur_wp == -2) {
@@ -1140,7 +1169,22 @@ void NPC::AI_DoMovement() {
 				} 
 				else
 				{	// not at waypoint yet, so keep moving
-					CalculateNewPosition2(cur_wp_x, cur_wp_y, cur_wp_z, walksp, true); 
+					if(!RuleB(Pathing, AggroReturnToGrid) || !zone->pathing || (AggroedAwayFromGrid == 0))
+						CalculateNewPosition2(cur_wp_x, cur_wp_y, cur_wp_z, walksp, true); 
+					else
+					{
+						bool WaypointChanged;
+						bool NodeReached;
+						VERTEX Goal = UpdatePath(cur_wp_x, cur_wp_y, cur_wp_z, walksp, WaypointChanged, NodeReached);
+						if(WaypointChanged)
+							tar_ndx = 20;
+
+						if(NodeReached)
+							entity_list.OpenDoorsNear(CastToNPC()); 
+
+						CalculateNewPosition2(Goal.x, Goal.y, Goal.z, walksp, true);
+					}
+
 				}
 			} 
 		}		// endif (gridno > 0) 
@@ -1160,8 +1204,30 @@ void NPC::AI_DoMovement() {
   else if (IsGuarding()) 
   {
 	_ZP(Mob_AI_Process_guard);
-     if (!CalculateNewPosition2(guard_x, guard_y, guard_z, walksp)) 
-     {
+
+	bool CP2Moved;
+	if(!RuleB(Pathing, Guard) || !zone->pathing)
+		CP2Moved = CalculateNewPosition2(guard_x, guard_y, guard_z, walksp);
+	else
+	{
+		if(!((x_pos == guard_x) && (y_pos == guard_y) && (z_pos == guard_z)))
+		{
+			bool WaypointChanged, NodeReached;
+			VERTEX Goal = UpdatePath(guard_x, guard_y, guard_z, walksp, WaypointChanged, NodeReached);
+			if(WaypointChanged)
+				tar_ndx = 20;
+
+			if(NodeReached)
+				entity_list.OpenDoorsNear(CastToNPC()); 
+
+			CP2Moved = CalculateNewPosition2(Goal.x, Goal.y, Goal.z, walksp);
+		}
+		else
+			CP2Moved = false;
+
+	}
+	if (!CP2Moved)
+	{
 		if(moved) {
 			mlog(AI__WAYPOINTS, "Reached guard point (%.3f,%.3f,%.3f)", guard_x, guard_y, guard_z);
 			ClearFeignMemory();
@@ -1210,6 +1276,10 @@ void Mob::AI_Event_NoLongerEngaged() {
 		SendPosition();
 	}
 	ClearRampage();
+
+	if(IsNPC() && (CastToNPC()->GetGrid()) > 0)
+		AggroedAwayFromGrid = 2;
+
 }
 
 //this gets called from InterruptSpell() for failure or SpellFinished() for success

@@ -1,3 +1,5 @@
+#ifndef DOORS_H
+#define DOORS_H
 #include "../common/types.h"
 #include "../common/linked_list.h"
 #include "../common/timer.h"
@@ -89,3 +91,4 @@ private:
 
 	int8	is_ldon_door;
 };
+#endif

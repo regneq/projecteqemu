@@ -231,7 +231,6 @@ void NPC::CalculateNewWaypoint()
 	bool reached_end = false;
 	bool reached_beginning = false;
 
-
 	//Determine if we're at the last/first waypoint
 	if (cur_wp == max_wp)
 		reached_end = true;
@@ -497,6 +496,7 @@ bool Mob::CalculateNewPosition2(float x, float y, float z, float speed, bool che
 			x_pos = x;
 			y_pos = y;
 			z_pos = z;
+
 			mlog(AI__WAYPOINTS, "Only a single step to get there... jumping.");
 			
 		}
@@ -784,8 +784,11 @@ void Mob::SendTo(float new_x, float new_y, float new_z) {
 	//	SendPosUpdate();
 	x_pos = new_x;
 	y_pos = new_y;
-	z_pos = new_z + 0.1;
+	z_pos = new_z;
 	mlog(AI__WAYPOINTS, "Sent To (%.3f, %.3f, %.3f)", new_x, new_y, new_z);
+
+	if(flymode == FlyMode1)
+		return;
 	
 	//fix up pathing Z, this shouldent be needed IF our waypoints 
 	//are corrected instead
@@ -804,6 +807,8 @@ void Mob::SendTo(float new_x, float new_y, float new_z) {
 				z_pos = newz + 1;
 		}
 	}
+	else
+		z_pos += 0.1;
 }
 
 void Mob::SendToFixZ(float new_x, float new_y, float new_z) {

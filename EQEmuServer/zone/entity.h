@@ -306,6 +306,7 @@ public:
 	void	ListNPCs(Client* client, const char* arg1 = 0, const char* arg2 = 0, int8 searchtype = 0);
 	void	ListNPCCorpses(Client* client);
 	void	ListPlayerCorpses(Client* client);
+	void	FindPathsToAllNPCs();
 	sint32	DeleteNPCCorpses();
 	sint32	DeletePlayerCorpses();
 	void	WriteEntityIDs();

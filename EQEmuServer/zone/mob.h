@@ -65,6 +65,7 @@
 #include "../common/Kaiyodo-LList.h"
 #include "../common/skills.h"
 #include "../common/bodytypes.h"
+#include "pathing.h"
 #include "map.h"
 #include <set>
 
@@ -110,6 +111,8 @@ typedef enum {	//fear states
 	fearStateGrid,			//I am allready on a fear grid
 	fearStateStuck			//I cannot move somehow...
 } FearState;
+
+enum { FlyMode0 = 0, FlyMode1 = 1, Flymode2 = 2, FlyMode3 = 3 };
 
 struct TradeEntity;
 class Trade;
@@ -670,6 +673,7 @@ bool logpos;
 	bool IsTargeted() const { return (targeted > 0); }
 	inline void IsTargeted(int in_tar) { targeted += in_tar; if(targeted < 0) targeted = 0;}
 
+	inline void		Teleport(VERTEX NewPosition) { x_pos = NewPosition.x; y_pos = NewPosition.y; z_pos = NewPosition.z; };
 	inline const float	GetX() const		{ return x_pos; }
 	inline const float	GetY() const		{ return y_pos; }
 	inline const float	GetZ() const		{ return z_pos; }
@@ -1101,6 +1105,8 @@ protected:
 	bool HasDied();
 	void CalculateNewFearpoint();
 	float FindGroundZ(float new_x, float new_y, float z_offset=0.0);
+	VERTEX UpdatePath(float ToX, float ToY, float ToZ, float Speed, bool &WaypointChange, bool &NodeReached);
+	void PrintRoute();
 
 	enum {MAX_PROCS = 4};
 	tProc PermaProcs[MAX_PROCS];
@@ -1225,10 +1231,23 @@ protected:
 
 	int		patrol;
 	float fear_walkto_x;
-    float fear_walkto_y;
-    float fear_walkto_z;
+	float fear_walkto_y;
+	float fear_walkto_z;
 	bool curfp;
 
+	// Pathing
+	//
+	VERTEX PathingDestination;
+	VERTEX PathingLastPosition;
+	int PathingLoopCount;
+	int PathingLastNodeVisited;
+	list<int> Route;
+	LOSType PathingLOSState;
+	Timer *PathingLOSCheckTimer;
+	Timer *PathingRouteUpdateTimerShort;
+	Timer *PathingRouteUpdateTimerLong;
+	int AggroedAwayFromGrid;
+	int PathingTraversedNodes;
 
 	int32	pDontHealMeBefore;
 	int32	pDontBuffMeBefore;
@@ -1251,6 +1270,7 @@ protected:
 	bool	m_hasRune;
 	bool	m_hasSpellRune;
 	bool	m_hasDeathSaveChance;
+	int	flymode;
 
 private:
 	void	_StopSong();		//this is not what you think it is

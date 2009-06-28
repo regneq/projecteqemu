@@ -131,7 +131,9 @@ const char *__zp_names[ZoneProfiler::MaxZoneProfilerId] = {
 		"NPC_GetReverseFactionCon",
 		"NPC_Process",
 		"NPC_Death", 
+#ifdef EQBOTS
 		"NPC_BotAttackMelee",
+#endif
 		
 		"EntityList_TrapProcess",
 		"EntityList_GroupProcess",
@@ -142,12 +144,15 @@ const char *__zp_names[ZoneProfiler::MaxZoneProfilerId] = {
 		"EntityList_MobProcess",
 		"EntityList_BeaconProcess",
 		"EntityList_Process",
+		"EntityList_RaidProcess",
 		"EntityList_AICheckCloseAggro",
 		"EntityList_AICheckCloseBeneficialSpells",
 		"EntityList_CheckClientAggro",
 		"EntityList_CheckClientAggro_Loop",
 		"EntityList_AIYellForHelp",
+#ifdef EQBOTS
 		"EntityList_Bot_AICheckCloseBeneficialSpells",
+#endif
 		
 		"HateList_Find",
 		"HateList_GetDamageTop",
@@ -178,15 +183,29 @@ const char *__zp_names[ZoneProfiler::MaxZoneProfilerId] = {
 		"Mob_GetWeaponDamageBonus",
 		"Mob_TryWeaponProcA",
 		"Mob_TryWeaponProcB",
+#ifdef EQBOTS
 		"NPC_Bot_AICastSpell",
 		"Bot_AI_Process_pursue_cast",
 		"Bot_PET_Process_IsEngaged",
+#endif
 
 		"Map_LineIntersectsZone",
 		"Map_LineIntersectsNode",
 		"Map_FindBestZ",
+
+		"Pathing_FindRoute_FromNodes",
+		"Pathing_CheckTerrainPassable",
+		"Pathing_FindRoute_FromVertices",
+		"Pathing_UpdatePath",
+		"Pathing_NoHazards",
+		"Pathing_OpenDoors",
+		"Pathing_VertexDistance",
+		"Pathing_VertexDistanceNoRoot",
+
 		"Mob_AI_Process",
 		"Mob_AI_Process_engaged",
+		"Mob_AI_Process_engaged_cast",
+		"Mob_AI_Process_pursue_cast",
 		"Mob_AI_Process_autocast",
 		"Mob_AI_Process_scanarea",
 		"Mob_AI_Process_move",
@@ -194,11 +213,12 @@ const char *__zp_names[ZoneProfiler::MaxZoneProfilerId] = {
 		"Mob_AI_Process_roambox",
 		"Mob_AI_Process_roamer",
 		"Mob_AI_Process_guard",
+#ifdef EQBOTS
 		"Mob_BOT_Process",
 		"Mob_BOT_Process_IsEngaged",
 		"Bot_AI_Process_engaged_cast",
 		"NPC_Bot_AI_IdleCastCheck",
-		
+#endif
 		
 		"Database_AddLootTableToNPC",
 		

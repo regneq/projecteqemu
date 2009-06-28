@@ -57,6 +57,7 @@ extern Zone* zone;
 //quick functions to clean up vertex code.
 #define Vmin3(o, a, b, c) ((a.o<b.o)? (a.o<c.o?a.o:c.o) : (b.o<c.o?b.o:c.o))
 #define Vmax3(o, a, b, c) ((a.o>b.o)? (a.o>c.o?a.o:c.o) : (b.o>c.o?b.o:c.o))
+#define ABS(x) ((x)<0?-(x):(x))
 
 Map* Map::LoadMapfile(const char* in_zonename, const char *directory) {
 	FILE *fp;
@@ -376,59 +377,81 @@ float Map::GetFaceHeight( int _idx, float x, float y ) const {
 //p1=start of segment
 //p2=end of segment
 
-bool Map::LineIntersectsZone(VERTEX start, VERTEX end, float step_mag, VERTEX *result, FACE **on) const {
+bool Map::LineIntersectsZone(VERTEX start, VERTEX end, float step_mag, VERTEX *result, FACE **on) const
+{
 	_ZP(Map_LineIntersectsZone);
-	VERTEX step;
+	// Cast a ray from start to end, checking for collisions in each node between the two points.
+	//
+	float stepx, stepy, stepz, curx, cury, curz;
+
+	curx = start.x;
+	cury = start.y;
+	curz = start.z;
+
 	VERTEX cur = start;
-	
-	step.x = end.x - start.x;
-	step.y = end.y - start.y;
-	step.z = end.z - start.z;
-	float factor = step_mag / sqrtf(step.x*step.x + step.y*step.y + step.z*step.z);
-	step.x *= factor;
-	step.y *= factor;
-	step.z *= factor;
-	
+		
+	stepx = end.x - start.x;
+	stepy = end.y - start.y;
+	stepz = end.z - start.z;
+
+	if((stepx == 0) && (stepy == 0) && (stepz == 0))
+		return false;
+
+	float factor =  sqrt(stepx*stepx + stepy*stepy + stepz*stepz);
+
+	stepx = (stepx/factor)*step_mag;
+	stepy = (stepy/factor)*step_mag;
+	stepz = (stepz/factor)*step_mag;
+
 	NodeRef cnode, lnode, finalnode;
-	lnode = NODE_NONE;	//last node visited
-	
+	lnode = NODE_NONE;      //last node visited
+
+	cnode = SeekNode(GetRoot(), start.x, start.y);
 	finalnode = SeekNode(GetRoot(), end.x, end.y);
-	
-	//while we are not past end
-	//always do this once, even if start == end.
+	if(cnode == finalnode)
+		return LineIntersectsNode(cnode, start, end, result, on);
+
 	do {
-		//look at current location
-		cnode = SeekNode(GetRoot(), cur.x, cur.y);
-		if(cnode == lnode)
-			return(false);	//we are looping, get outta here
-		lnode = cnode;
-		if(cnode != NODE_NONE) {
+
+		stepx = (float)end.x - curx;
+		stepy = (float)end.y - cury;
+		stepz = (float)end.z - curz;
+
+		factor =  sqrt(stepx*stepx + stepy*stepy + stepz*stepz);
+
+		stepx = (stepx/factor)*step_mag;
+		stepy = (stepy/factor)*step_mag;
+		stepz = (stepz/factor)*step_mag;
+			
+	    	cnode = SeekNode(GetRoot(), curx, cury);
+		if(cnode != lnode)
+		{
+ 		    	lnode = cnode;
+
+			if(cnode == NODE_NONE)
+				return false;
+
 			if(LineIntersectsNode(cnode, start, end, result, on))
-				return(true);
+       				return(true);
+       	       		
+			if(cnode == finalnode)
+				return false;
 		}
-		if(cnode == finalnode)
-			return(false);	//we checked in the node the end point is in
-							//we will never find another node before the end
-		
-		//move 1 step
-		cur.x += step.x;
-		cur.y += step.y;
-		cur.z += step.z;
-		
-		//watch for end conditions
-		if ( (cur.x > end.x && end.x > start.x) || (cur.x < end.x && end.x < start.x) ) {
-			cur.x = end.x;
-		}
-		if ( (cur.y > end.y && end.y > start.y) || (cur.y < end.y && end.y < start.y) ) {
-			cur.y = end.y;
-		}
-		if ( (cur.z > end.z && end.z > start.z) || (cur.z < end.z && end.z < start.z) ) {
-			cur.z = end.z;
-		}
+		curx += stepx;
+		cury += stepy;
+		curz += stepz;
+
+		cur.x = curx;
+		cur.y = cury;
+		cur.z = curz;
+
+		if(ABS(curx - end.x) < step_mag) cur.x = end.x;
+		if(ABS(cury - end.y) < step_mag) cur.y = end.y;
+		if(ABS(curz - end.z) < step_mag) cur.z = end.z;
+
 	} while(cur.x != end.x || cur.y != end.y || cur.z != end.z);
-	
-	//walked entire line and didnt run into anything...
-	return(false);
+
+	return false;
 }
 
 bool Map::LocWithinNode( NodeRef node_r, float x, float y ) const {
@@ -476,6 +499,12 @@ bool Map::LineIntersectsNode( NodeRef node_r, VERTEX p1, VERTEX p2, VERTEX *resu
 
 float Map::FindBestZ( NodeRef node_r, VERTEX p1, VERTEX *result, FACE **on) const {
 	_ZP(Map_FindBestZ);
+
+	p1.z += RuleI(Map, FindBestZHeightAdjust);
+
+	if(RuleB(Map, UseClosestZ))
+		return FindClosestZ(p1);
+
 	if(node_r == GetRoot()) {
 		node_r = SeekNode(node_r, p1.x, p1.y);
 	}
@@ -487,8 +516,6 @@ float Map::FindBestZ( NodeRef node_r, VERTEX p1, VERTEX *result, FACE **on) cons
 		return(BEST_Z_INVALID);   //not a final node... could find the proper node...
 	}
 	
-	p1.z++;
-
 	VERTEX tmp_result;	//dummy placeholder if they do not ask for a result.
 	if(result == NULL)
 		result = &tmp_result;
@@ -582,7 +609,6 @@ bool Map::LineIntersectsFace( PFACE cface, VERTEX p1, VERTEX p2, VERTEX *result)
 		return(false);
 	
 	//begin attempt 2
-#define ABS(x) ((x)<0?-(x):(x))
 //#define RTOD 57.2957795 	//radians to degrees constant.
 
 	float d;
@@ -891,7 +917,7 @@ bool Map::LineIntersectsZoneNoZLeaps(VERTEX start, VERTEX end, float step_mag, V
 		step.z = -0.001f;
 	
 	NodeRef cnode, lnode;
-	lnode = NULL;
+	lnode = 0;
 	//while we are not past end
 	//always do this once, even if start == end.
 	while(cur.x != end.x || cur.y != end.y || cur.z != end.z)
@@ -948,4 +974,57 @@ bool Map::LineIntersectsZoneNoZLeaps(VERTEX start, VERTEX end, float step_mag, V
 	return(false);
 }
 
+float Map::FindClosestZ(VERTEX p ) const
+{
+	// Unlike FindBestZ, this method finds the closest Z value above or below the specified point.
+	//
+	std::list<float> ZSet;
+
+	NodeRef NodeR = SeekNode(MAP_ROOT_NODE, p.x, p.y);
+	
+	if( NodeR == NODE_NONE || NodeR >= m_Nodes)
+		return 0;
+		
+	PNODE CurrentNode = &mNodes[NodeR];
+
+	if(!(CurrentNode->flags & nodeFinal))
+		return 0; 
+		   
+	VERTEX p1(p), p2(p), Result;
+
+	p1.z = 999999;
+	
+	p2.z = BEST_Z_INVALID;
+
+	const uint32 *CurrentFaceList = mFaceLists + CurrentNode->faces.offset;
+
+	for(unsigned long i = 0; i < CurrentNode->faces.count; ++i)
+	{
+		if(*CurrentFaceList > m_Faces)
+			continue;
+
+		PFACE CurrentFace = &mFinalFaces[ *CurrentFaceList ];
+
+		if(CurrentFace->nz > 0 && LineIntersectsFace(CurrentFace, p1, p2, &Result))
+			ZSet.push_back(Result.z);
+		
+		CurrentFaceList++;
+
+	}
+	if(ZSet.size() == 0)
+		return 0;
+
+	if(ZSet.size() == 1)
+		return ZSet.front();
+
+	float ClosestZ = -999999;
+
+	for(list<float>::iterator Iterator = ZSet.begin(); Iterator != ZSet.end(); ++Iterator)
+	{
+		if(ABS(p.z - (*Iterator)) < ABS(p.z - ClosestZ))
+				ClosestZ = (*Iterator);
+	}
+
+	return ClosestZ;
+}
 
