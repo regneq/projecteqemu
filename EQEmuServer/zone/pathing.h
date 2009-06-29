@@ -71,7 +71,7 @@ public:
 	void SpawnPathNodes();
 	void MeshTest();
 	int FindNearestPathNode(VERTEX Position);
-	bool NoHazards(VERTEX From, VERTEX To, float Speed);
+	bool NoHazards(VERTEX From, VERTEX To);
 	void OpenDoors(int Node1, int Node2, Mob* ForWho);
 
 	PathNode* FindPathNodeByCoordinates(float x, float y, float z);

@@ -454,7 +454,8 @@ list<int> PathManager::FindRoute(VERTEX Start, VERTEX End)
 			if((*Second) < 0)
 				break;
 
-			if(!zone->map->LineIntersectsZone(Start, PathNodes[(*Second)].v, 1.0f, NULL, NULL))
+			if(!zone->map->LineIntersectsZone(Start, PathNodes[(*Second)].v, 1.0f, NULL, NULL)
+			   && zone->pathing->NoHazards(Start, PathNodes[(*Second)].v))
 			{
 				noderoute.erase(First);
 
@@ -486,7 +487,8 @@ list<int> PathManager::FindRoute(VERTEX Start, VERTEX End)
 			if((*Second) < 0)
 				break;
 
-			if(!zone->map->LineIntersectsZone(End, PathNodes[(*Second)].v, 1.0f, NULL, NULL))
+			if(!zone->map->LineIntersectsZone(End, PathNodes[(*Second)].v, 1.0f, NULL, NULL)
+			   && zone->pathing->NoHazards(End, PathNodes[(*Second)].v))
 			{
 				noderoute.erase(First);
 
@@ -724,7 +726,7 @@ VERTEX Mob::UpdatePath(float ToX, float ToY, float ToZ, float Speed, bool &Waypo
 							PathingLOSState = NoLOS;
 						mlog(PATHING__DEBUG, "  LOS stats is %s", (PathingLOSState == HaveLOS) ? "HaveLOS" : "NoLOS");	
 
-						if((PathingLOSState == HaveLOS) && zone->pathing->NoHazards(From, To, Speed))
+						if((PathingLOSState == HaveLOS) && zone->pathing->NoHazards(From, To))
 						{
 							mlog(PATHING__DEBUG, "  No hazards. Running directly to target.");
 							Route.clear();
@@ -817,7 +819,7 @@ VERTEX Mob::UpdatePath(float ToX, float ToY, float ToZ, float Speed, bool &Waypo
 						PathingLOSState = NoLOS;
 					mlog(PATHING__DEBUG, "  LOS stats is %s", (PathingLOSState == HaveLOS) ? "HaveLOS" : "NoLOS");	
 
-					if((PathingLOSState == HaveLOS) && zone->pathing->NoHazards(From, To, Speed))
+					if((PathingLOSState == HaveLOS) && zone->pathing->NoHazards(From, To))
 					{
 						mlog(PATHING__DEBUG, "  No hazards. Running directly to target.");
 						Route.clear();
@@ -857,7 +859,7 @@ VERTEX Mob::UpdatePath(float ToX, float ToY, float ToZ, float Speed, bool &Waypo
 	
 					mlog(PATHING__DEBUG, "  LOS stats is %s", (PathingLOSState == HaveLOS) ? "HaveLOS" : "NoLOS");	
 	
-					if((PathingLOSState == HaveLOS) && zone->pathing->NoHazards(From, To, Speed))
+					if((PathingLOSState == HaveLOS) && zone->pathing->NoHazards(From, To))
 					{
 						mlog(PATHING__DEBUG, "  No hazards. Running directly to target.");
 						Route.clear();
@@ -1010,7 +1012,7 @@ VERTEX Mob::UpdatePath(float ToX, float ToY, float ToZ, float Speed, bool &Waypo
 
 		mlog(PATHING__DEBUG, "  LOS stats is %s", (PathingLOSState == HaveLOS) ? "HaveLOS" : "NoLOS");	
 		
-		if((PathingLOSState == HaveLOS) && zone->pathing->NoHazards(From, To, Speed))
+		if((PathingLOSState == HaveLOS) && zone->pathing->NoHazards(From, To))
 		{
 			mlog(PATHING__DEBUG, "Target is reachable. Running directly there.");
 			return To;
@@ -1097,7 +1099,7 @@ int PathManager::FindNearestPathNode(VERTEX Position)
 	return ClosestPathNodeToStart;
 }
 
-bool PathManager::NoHazards(VERTEX From, VERTEX To, float Speed)
+bool PathManager::NoHazards(VERTEX From, VERTEX To)
 {
 	_ZP(Pathing_NoHazards);
 
