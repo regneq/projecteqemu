@@ -1,6 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
-==06/27/2009==
+==06/29/2009==
+Derision: Fixed a pathing bug relating to nodes incorrectly culled from the front of a path.
+
+==06/28/2009==
 Derision: Began work on pathfinding for aggro/fear and Find NPC.
 
 The path files for the first few zones can be found at http://code.google.com/p/projecteqemu/downloads/list
