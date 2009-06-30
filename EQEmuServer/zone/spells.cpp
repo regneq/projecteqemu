@@ -2051,7 +2051,10 @@ void Mob::BardPulse(uint16 spell_id, Mob *caster) {
 				}
 			}
 
-			CastToClient()->FastQueuePacket(&packet);
+			if(!IsEffectInSpell(spell_id, SE_BindAffinity))
+			{
+				CastToClient()->FastQueuePacket(&packet);
+			}
 			
 			EQApplicationPacket *message_packet = new EQApplicationPacket(OP_Damage, sizeof(CombatDamage_Struct));
 			CombatDamage_Struct *cd = (CombatDamage_Struct *)message_packet->pBuffer;
@@ -2061,7 +2064,10 @@ void Mob::BardPulse(uint16 spell_id, Mob *caster) {
 			cd->spellid = action->spell;
 			cd->sequence = action->sequence;
 			cd->damage = 0;
-			entity_list.QueueCloseClients(this, message_packet, false, 200, 0, true, IsClient() ? FILTER_PCSPELLS : FILTER_NPCSPELLS);
+			if(!IsEffectInSpell(spell_id, SE_BindAffinity))
+			{
+				entity_list.QueueCloseClients(this, message_packet, false, 200, 0, true, IsClient() ? FILTER_PCSPELLS : FILTER_NPCSPELLS);
+			}
 			safe_delete(message_packet);
 			
 		}
@@ -3129,10 +3135,13 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar)
 	}
 
 
-	if(spelltar->IsClient())	// send to target
-		spelltar->CastToClient()->QueuePacket(action_packet);
-	if(IsClient())	// send to caster
-		CastToClient()->QueuePacket(action_packet);
+	if(!IsEffectInSpell(spell_id, SE_BindAffinity))
+	{
+		if(spelltar->IsClient())	// send to target
+			spelltar->CastToClient()->QueuePacket(action_packet);
+		if(IsClient())	// send to caster
+			CastToClient()->QueuePacket(action_packet);
+	}
 	// send to people in the area, ignoring caster and target
 	//live dosent send this to anybody but the caster
 	//entity_list.QueueCloseClients(spelltar, action_packet, true, 200, this, true, spelltar->IsClient() ? FILTER_PCSPELLS : FILTER_NPCSPELLS);
@@ -3147,8 +3156,10 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar)
 	cd->spellid = action->spell;
 	cd->sequence = action->sequence;
 	cd->damage = 0;
-	entity_list.QueueCloseClients(spelltar, message_packet, false, 200, 0, true, spelltar->IsClient() ? FILTER_PCSPELLS : FILTER_NPCSPELLS);
-
+	if(!IsEffectInSpell(spell_id, SE_BindAffinity))
+	{
+		entity_list.QueueCloseClients(spelltar, message_packet, false, 200, 0, true, spelltar->IsClient() ? FILTER_PCSPELLS : FILTER_NPCSPELLS);
+	}
 	safe_delete(action_packet);
 	safe_delete(message_packet);
 	

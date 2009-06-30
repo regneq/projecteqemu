@@ -234,7 +234,7 @@ typedef enum  {
 #define SE_ReduceSpellHate			130
 #define SE_ReduceReagentCost		131
 #define SE_ReduceManaCost			132
-//#define SE_Unknown133				133	//not used
+//#define SE_Unknown133				133	//stun time half mod (mod to reduce stun time by some val?)
 #define SE_LimitMaxLevel			134
 #define SE_LimitResist				135
 #define SE_LimitTarget				136
@@ -304,7 +304,7 @@ typedef enum  {
 #define SE_Strikethrough			196
 #define SE_SkillDamageTaken			197
 #define SE_CurrentEnduranceOnce		198
-//#define SE_Unknown199				199	//Flutter Flight (9480). something with aggro?
+#define SE_Taunt					199	//Flutter Flight (9480). % chance to taunt the target
 #define SE_ProcChance				200
 #define SE_RangedProc				201
 #define SE_IllusionOther			202	
@@ -325,7 +325,7 @@ typedef enum  {
 //#define SE_Unknown217				217	//not used
 #define SE_PetCriticalHit			218 //aa effect
 #define SE_SlayUndead				219	//not implemented
-//#define SE_Unknown220				220	//not used
+#define SE_SkillDamageAmount		220	//not implemented
 #define SE_Packrat					221 //aa effect
 //#define SE_Unknown222				222	//not used
 //#define SE_Unknown223				223	//not used
@@ -447,7 +447,7 @@ typedef enum  {
 #define SE_TriggerOnCast			339	//not implemented
 #define SE_LifeshardChance			340	//chance to create lifeshard
 //#define SE_Unknown341				341	//not used
-#define SE_Unknown342				342	//not sure. Call of Challenge (8271)
+#define SE_ImmuneFleeing			342	//not implemented
 #define SE_InterruptCasting			343	//not implemented. % chance to interrupt spells being cast every tic. Cacophony (8272)
 //#define SE_Unknown344				344	//not used
 //#define SE_Unknown345				345	//not used
@@ -478,8 +478,22 @@ typedef enum  {
 #define SE_FactionMod				368	//not implemented. increases faction with base1 (faction id, live won't match up w/ ours) by base2
 #define SE_CorruptionCounter		369	//not implemented. wasn't added until Serpent's Spine, so we can't really do much w/ it
 #define SE_ResistCorruption			370	//not implemented. ditto
-//#define SE_Unknown371				371 //some type of slow? Aura of Inaction (9170)
+#define SE_InhibitMeleeAttacks		371 //some type of melee slow
 										//last effect
+//#define SE_Unknown372				372	//not used
+#define SE_CastOnWearoff			373 //Casts this spell on target when the buff wears off the target
+#define SE_ApplyEffect				374 //Also casts these spells on the target when this spell lands
+//#define SE_Unknown375				375	//not used
+//#define SE_Unknown376				376	//not used, some sort of movement spell?
+#define SE_BossSpellTrigger			377	//some sort of boss encounter effect, spell is cast if something happens
+//#define SE_Unknown372				378	//not used
+#define SE_ShadowStepDirectional	379 //Shadowstep in a certain direction
+#define SE_Knockdown				380 //small knock back + stun or feign?
+//#define SE_Unknown381				381	//not used
+#define SE_BlockDS					382 //something to do with blocking a % of certain ds?
+#define SE_Leap						383 //used to leap forward? probably something like a small knock back reverse to push you forward
+//#define SE_Unknown384				384	//not used
+//#define SE_Unknown385				385	//not used
 
 #define DF_Permanent		50
 

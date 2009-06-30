@@ -4583,10 +4583,6 @@ void Mob::TryPetCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 			break;
 	}
 
-	if (this->GetClass() == WARRIOR) {
-		critChance += RuleR(Combat, WarBerBaseCritChance);
-	}
-
 	switch (owner->GetAA(aaClass)) {
 	case 1:
 		critChance += 0.04f;
@@ -4788,7 +4784,6 @@ void Mob::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 					|| skill == _2H_SLASHING
 					|| skill == PIERCING
 					|| skill == HAND_TO_HAND
-					/*|| skill == ARCHERY*/ //AndMetal: not sure if we should be giving this to rangers
 					)
 					critMod += AAdmgmod * 3; //AndMetal: guessing
 			}

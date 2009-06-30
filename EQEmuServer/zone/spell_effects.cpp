@@ -763,30 +763,126 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #endif
 				if (IsClient())
 				{
-					if(!zone->CanBind() && !CastToClient()->GetGM()) 
+					if(CastToClient()->GetGM() || RuleB(Character, BindAnywhere))
 					{
-						Message(13, "You are not allowed to bind here!");
-					}
-					else if (!zone->IsCity()
-					  && ((GetClass() != DRUID 
-					    && GetClass() != CLERIC
-						&& GetClass() != SHAMAN 
-						&& GetClass() != WIZARD 
-						&& GetClass() != ENCHANTER 
-						&& GetClass() != MAGICIAN 
-						&& GetClass() != NECROMANCER)
-						|| caster != caster->GetTarget())
-					  && !CastToClient()->GetGM()
-					  && !RuleB(Character, BindAnywhere))
-					{
-						Message_StringID(13,CANNOT_BIND);
-//						Message(13, "You cannot form an affinity with this area.  Try a city.");
-						break;					
-					} 
-					else 
-					{
+						EQApplicationPacket *action_packet = new EQApplicationPacket(OP_Action, sizeof(Action_Struct));
+						Action_Struct* action = (Action_Struct*) action_packet->pBuffer;
+						EQApplicationPacket *message_packet = new EQApplicationPacket(OP_Damage, sizeof(CombatDamage_Struct));
+						CombatDamage_Struct *cd = (CombatDamage_Struct *)message_packet->pBuffer;
+	
+						action->target = GetID();
+						action->source = caster ? caster->GetID() : GetID();
+						action->level = 65;
+						action->instrument_mod = 10;
+						action->sequence = (GetHeading() * 12345 / 2);
+						action->type = 231;
+						action->spell = spell_id;
+						action->buff_unknown = 4;
+
+						cd->target = action->target;
+						cd->source = action->source;
+						cd->type = action->type;
+						cd->spellid = action->spell;
+						cd->sequence = action->sequence;
+
+						CastToClient()->QueuePacket(action_packet);
+						if(caster->IsClient() && caster != this)
+							caster->CastToClient()->QueuePacket(action_packet);
+
+						CastToClient()->QueuePacket(message_packet);
+						if(caster->IsClient() && caster != this)
+							caster->CastToClient()->QueuePacket(message_packet);
+
 						CastToClient()->SetBindPoint();
 						Save();
+						safe_delete(action_packet);
+						safe_delete(message_packet);
+					}
+					else
+					{
+						if(!zone->CanBind())
+						{
+							Message_StringID(13, CANNOT_BIND);
+							break;
+						}
+						if(!zone->IsCity())
+						{
+							if(caster != this)
+							{
+								Message_StringID(13, CANNOT_BIND);
+								break;
+							}
+							else
+							{
+								EQApplicationPacket *action_packet = new EQApplicationPacket(OP_Action, sizeof(Action_Struct));
+								Action_Struct* action = (Action_Struct*) action_packet->pBuffer;
+								EQApplicationPacket *message_packet = new EQApplicationPacket(OP_Damage, sizeof(CombatDamage_Struct));
+								CombatDamage_Struct *cd = (CombatDamage_Struct *)message_packet->pBuffer;
+			
+								action->target = GetID();
+								action->source = caster ? caster->GetID() : GetID();
+								action->level = 65;
+								action->instrument_mod = 10;
+								action->sequence = (GetHeading() * 12345 / 2);
+								action->type = 231;
+								action->spell = spell_id;
+								action->buff_unknown = 4;
+
+								cd->target = action->target;
+								cd->source = action->source;
+								cd->type = action->type;
+								cd->spellid = action->spell;
+								cd->sequence = action->sequence;
+
+								CastToClient()->QueuePacket(action_packet);
+								if(caster->IsClient() && caster != this)
+									caster->CastToClient()->QueuePacket(action_packet);
+
+								CastToClient()->QueuePacket(message_packet);
+								if(caster->IsClient() && caster != this)
+									caster->CastToClient()->QueuePacket(message_packet);
+
+								CastToClient()->SetBindPoint();
+								Save();
+								safe_delete(action_packet);
+								safe_delete(message_packet);
+							}
+						}
+						else
+						{
+							EQApplicationPacket *action_packet = new EQApplicationPacket(OP_Action, sizeof(Action_Struct));
+							Action_Struct* action = (Action_Struct*) action_packet->pBuffer;
+							EQApplicationPacket *message_packet = new EQApplicationPacket(OP_Damage, sizeof(CombatDamage_Struct));
+							CombatDamage_Struct *cd = (CombatDamage_Struct *)message_packet->pBuffer;
+		
+							action->target = GetID();
+							action->source = caster ? caster->GetID() : GetID();
+							action->level = 65;
+							action->instrument_mod = 10;
+							action->sequence = (GetHeading() * 12345 / 2);
+							action->type = 231;
+							action->spell = spell_id;
+							action->buff_unknown = 4;
+
+							cd->target = action->target;
+							cd->source = action->source;
+							cd->type = action->type;
+							cd->spellid = action->spell;
+							cd->sequence = action->sequence;
+
+							CastToClient()->QueuePacket(action_packet);
+							if(caster->IsClient() && caster != this)
+								caster->CastToClient()->QueuePacket(action_packet);
+
+							CastToClient()->QueuePacket(message_packet);
+							if(caster->IsClient() && caster != this)
+								caster->CastToClient()->QueuePacket(message_packet);
+
+							CastToClient()->SetBindPoint();
+							Save();
+							safe_delete(action_packet);
+							safe_delete(message_packet);
+						}
 					}
 				}
 				break;
@@ -1886,8 +1982,10 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				snprintf(effect_desc, _EDLEN, "Destroy");
 #endif
 				if(IsNPC()) {
-					if(GetLevel() <= 51)
+					if(GetLevel() <= 52)
 						CastToNPC()->Depop();
+					else
+						Message(13, "Your target is too high level to be affected by this spell.");
 				}
 				break;
 			}

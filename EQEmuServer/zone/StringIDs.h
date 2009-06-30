@@ -6,6 +6,8 @@
 #define TARGET_OUT_OF_RANGE			100		//Your target is out of range, get closer!
 #define TARGET_NOT_FOUND			101		//Target player not found.
 #define CANNOT_BIND					105		//You cannot form an affinity with this area.  Try a city.
+#define SPELL_DOES_NOT_WORK_HERE	106		//This spell does not work here.
+#define SPELL_DOES_NOT_WORK_PLANE	107		//This spell does not work on this plane.
 #define CANT_SEE_TARGET				108		//You cannot see your target.
 #define TARGET_TOO_FAR				124		//Your target is too far away, get closer!
 #define PROC_TOOLOW					126		//Your will is not sufficient to command this weapon.
