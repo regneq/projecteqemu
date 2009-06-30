@@ -2,6 +2,8 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==06/29/2009==
 Derision: Fixed a pathing bug relating to nodes incorrectly culled from the front of a path.
+KLS: Reworked bind code a bit.
+KLS: Pets no longer get client war/berserker crit bonuses.
 
 ==06/28/2009==
 Derision: Began work on pathfinding for aggro/fear and Find NPC.
