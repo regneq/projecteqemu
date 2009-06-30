@@ -646,7 +646,7 @@ void Mob::AI_Process() {
 						if(WaypointChanged)
 							tar_ndx = 20;
 
-						CalculateNewPosition2(Goal.x, Goal.y, Goal.z, GetRunspeed());
+						CalculateNewPosition2(Goal.x, Goal.y, Goal.z, GetFearSpeed());
 					}
 				}
 				return;
