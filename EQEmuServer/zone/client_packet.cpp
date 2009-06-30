@@ -5535,7 +5535,8 @@ void Client::Handle_OP_Petition(const EQApplicationPacket *app)
 		pet->SetZone(zone->GetZoneID());
 		pet->SetUrgency(0);
 		petition_list.AddPetition(pet);
-		database.InsertPetitionToDB(pet);						petition_list.UpdateGMQueue();
+		database.InsertPetitionToDB(pet);						
+		petition_list.UpdateGMQueue();
 		petition_list.UpdateZoneListQueue();
 		worldserver.SendEmoteMessage(0, 0, 80, 15, "%s has made a petition. #%i", GetName(), pet->GetID());
 	}
