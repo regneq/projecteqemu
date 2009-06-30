@@ -28,6 +28,7 @@
 class Petition
 {
 public:
+	Petition(int32 id);
 	Petition();
 	~Petition() {}
 	void SendPetitionToPlayer(Client* clientto);
@@ -103,6 +104,7 @@ public:
 	Petition* GetPetitionByID(int32 id_in);
 	int32	GetMaxPetitionID() { return last_insert_id; }
 	int32	GetNextPetitionID() { return last_insert_id++; }
+	void	SetMaxPetitionID(int32 m_new_last) { last_insert_id = m_new_last; }
 	int32	GetTotalPetitions();
 	void ClearPetitions();
 	void ReadDatabase();
