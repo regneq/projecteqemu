@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/30/2009==
+Derision: Fix for mobs in pathing enabled zones fleeing at low health at full run speed.
+
 ==06/29/2009==
 Derision: Fixed a pathing bug relating to nodes incorrectly culled from the front of a path.
 KLS: Reworked bind code a bit.
