@@ -17,4 +17,4 @@ INSERT INTO `rule_values` VALUES (1, 'Pathing:RouteUpdateFrequencyNodeCount', '5
 INSERT INTO `rule_values` VALUES (1, 'Pathing:RouteUpdateFrequencyShort', '1000', '');
 INSERT INTO `rule_values` VALUES (1, 'Pathing:ZDiffThreshold', '10.0000000', '');
 INSERT INTO `rule_values` VALUES (1, 'Map:FindBestZHeightAdjust', '1', '');
-INSERT INTO `rule_values` VALUES (1, 'Map:UseClosestZ', 'true', '');
+INSERT INTO `rule_values` VALUES (1, 'Map:UseClosestZ', 'false', '');
