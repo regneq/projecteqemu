@@ -376,7 +376,7 @@ void Client::DoZoneSuccess(ZoneChange_Struct *zc, uint16 zone_id, int32 instance
 	m_pp.zoneInstance = instance_id;
 	
 	//Force a save so its waiting for them when they zone
-	Save();
+	Save(2);
 	
 	if (zone_id == zone->GetZoneID() && instance_id == zone->GetInstanceID()) {
 		// No need to ask worldserver if we're zoning to ourselves (most

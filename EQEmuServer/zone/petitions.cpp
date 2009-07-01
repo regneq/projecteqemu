@@ -97,27 +97,6 @@ Petition::Petition(int32 id)
 	//memset(this->zone, 0, sizeof(this->zone));
 	zone = 1;
 }
-
-Petition::Petition() {
-	petid = petition_list.GetNextPetitionID();
-	charclass = 0;
-	charrace = 0;
-	charlevel = 0;
-	checkouts = 0;
-	unavailables = 0;
-	urgency = 0;
-	time(&senttime);
-	ischeckedout = false;
-	memset(accountname, 0, sizeof(accountname));
-	memset(charname, 0, sizeof(charname));
-	memset(lastgm, 0, sizeof(lastgm));
-	memset(petitiontext, 0, sizeof(petitiontext));
-	memset(gmtext, 0, sizeof(gmtext));
-	
-	//memset(this->zone, 0, sizeof(this->zone));
-	zone = 1;
-}
-
 Petition* PetitionList::GetPetitionByID(int32 id_in) { 
 	LinkedListIterator<Petition*> iterator(list); 
 	
@@ -303,7 +282,6 @@ void ZoneDatabase::RefreshPetitionsFromDB()
     MYSQL_RES *result;
     MYSQL_ROW row;
 	Petition* newpet;
-	petition_list.SetMaxPetitionID(0);
 	if (RunQuery(query, MakeAnyLenString(&query, "SELECT petid, charname, accountname, lastgm, petitiontext, zone, urgency, charclass, charrace, charlevel, checkouts, unavailables, ischeckedout, senttime, gmtext from petitions order by petid"), errbuf, &result))
 	{
 		safe_delete_array(query);
@@ -326,10 +304,6 @@ void ZoneDatabase::RefreshPetitionsFromDB()
 			if (atoi(row[12]) == 1) newpet->SetCheckedOut(true);
 			else newpet->SetCheckedOut(false);
 			petition_list.AddPetition(newpet);
-			if(newpet->GetID() > petition_list.GetMaxPetitionID())
-			{
-				petition_list.SetMaxPetitionID(newpet->GetID());
-			}
 		}
 		mysql_free_result(result);
 	}

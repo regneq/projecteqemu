@@ -5524,7 +5524,7 @@ void Client::Handle_OP_Petition(const EQApplicationPacket *app)
 		Message(0,"You already have a petition in the queue, you must wait for it to be answered or use /deletepetition to delete it.");
 		return;
 		}
-		Petition* pet = new Petition;
+		Petition* pet = new Petition(CharacterID());
 		pet->SetAName(this->AccountName());
 		pet->SetClass(this->GetClass());
 		pet->SetLevel(this->GetLevel());
