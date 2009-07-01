@@ -428,6 +428,11 @@ bool Client::Save(int8 iCommitNow) {
 	int spentpoints=0;
 	for(int a=0;a < MAX_PP_AA_ARRAY;a++) {
 		int32 points = aa[a]->value;
+		if(points > 20) //sanity check if you want an aa to have over 20 ranks you'll need to up this.
+		{
+			aa[a]->value = 20;
+			points = 20;
+		}
 		if (points > 0) {
 			SendAA_Struct* curAA = zone->FindAA(aa[a]->AA-aa[a]->value+1);
 			if(curAA) {
