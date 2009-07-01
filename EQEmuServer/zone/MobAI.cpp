@@ -1049,7 +1049,14 @@ void Mob::AI_Process() {
 					}
 					
 					if(IsNPC())
+					{
+						if(RuleB(NPC, SmartLastFightingDelayMoving) && !feign_memory_list.empty())
+						{
+							minLastFightingDelayMoving = 0;
+							maxLastFightingDelayMoving = 0;
+						}
 						CastToNPC()->AI_DoMovement();
+					}
 				}
 				
          } 
