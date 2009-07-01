@@ -3,6 +3,9 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==06/30/2009==
 Derision: Fix for mobs in pathing enabled zones fleeing at low health at full run speed.
 Derision: Made rule Map:UseClosestZ default to false. Only set true if using azone2 generated maps (specifically those for EQG zones).
+realityincarnate: Starting cities are now tracked for newly created characters.
+realityincarnate: Enabled the /setstartcity command for characters without a start city assigned.
+realityincarnate: Added $client->SetStartZone and $client->GetStartZone perl commands. 
 
 ==06/29/2009==
 Derision: Fixed a pathing bug relating to nodes incorrectly culled from the front of a path.

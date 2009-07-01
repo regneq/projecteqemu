@@ -99,6 +99,79 @@ void WorldDatabase::GetCharSelectInfo(int32 account_id, CharacterSelect_Struct* 
 						cs->gohome[char_num] = 1;
 				}
 
+
+				// This part creates home city entries for characters created before the home bind point was tracked.
+				// Do it here because the player profile is already loaded and it's as good a spot as any.  This whole block should
+				// probably be removed at some point, when most accounts are safely converted.
+				if(pp->binds[4].zoneId == 0) {
+					bool altered = false;
+					MYSQL_RES *result2;
+					MYSQL_ROW row2;
+					char startzone[50] = {0};
+
+					// check for start zone variable (I didn't even know any variables were still being used...)
+					if(database.GetVariable("startzone", startzone, 50)) {
+						uint32 zoneid = database.GetZoneID(startzone);
+						if(zoneid) {
+							pp->binds[4].zoneId = zoneid;
+							GetSafePoints(zoneid, &pp->binds[4].x, &pp->binds[4].y, &pp->binds[4].z);
+							altered = true;
+						}
+					}
+					else {
+						RunQuery(query,
+							MakeAnyLenString(&query,
+							"SELECT zone_id,bind_id,x,y,z FROM start_zones "
+							"WHERE player_class=%i AND player_deity=%i AND player_race=%i",
+							pp->class_,
+							pp->deity,
+							pp->race
+							),
+							errbuf,
+							&result2
+						);
+						safe_delete_array(query);
+
+						// if there is only one possible start city, set it
+						if(mysql_num_rows(result2) == 1) {
+							row2 = mysql_fetch_row(result2);
+							if(atoi(row2[1]) != 0) {		// if a bind_id is specified, make them start there
+								pp->binds[4].zoneId = (uint32)atoi(row2[1]);
+								GetSafePoints(pp->binds[4].zoneId, &pp->binds[4].x, &pp->binds[4].y, &pp->binds[4].z);
+							}
+							else {	// otherwise, use the zone and coordinates given
+								pp->binds[4].zoneId = (uint32)atoi(row2[0]);
+								float x = atof(row2[2]);
+								float y = atof(row2[3]);
+								float z = atof(row2[4]);
+								if(x == 0 & y == 0 & z == 0)
+									GetSafePoints(pp->binds[4].zoneId, &x, &y, &z);
+
+								pp->binds[4].x = x;
+								pp->binds[4].y = y;
+								pp->binds[4].z = z;
+							}
+							altered = true;
+						}
+
+						mysql_free_result(result2);
+					}
+
+					// update the player profile
+					if(altered) {
+						uint32 char_id = GetCharacterID(cs->name[char_num]);
+						RunQuery(query,MakeAnyLenString(&query,"SELECT extprofile FROM character_ WHERE id=%i",char_id), errbuf, &result2);
+						safe_delete_array(query);
+						if(result2) {
+							row2 = mysql_fetch_row(result2);
+							ExtendedProfile_Struct* ext = (ExtendedProfile_Struct*)row2[0];
+							SetPlayerProfile(account_id,char_id,pp,inv,ext);
+						}
+						mysql_free_result(result2);
+					}
+				}	// end of "set start zone" block
+
+
 				// Character's equipped items
 				// @merth: Haven't done bracer01/bracer02 yet.
 				// Also: this needs a second look after items are a little more solid
@@ -163,7 +236,10 @@ void WorldDatabase::GetCharSelectInfo(int32 account_id, CharacterSelect_Struct* 
 	return;
 }
 
-int WorldDatabase::MoveCharacterToBind(int CharID) {
+int WorldDatabase::MoveCharacterToBind(int CharID, uint8 bindnum) {
+	// if an invalid bind point is specified, use the primary bind
+	if (bindnum > 4)
+		bindnum = 0;
 
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
@@ -187,19 +263,19 @@ int WorldDatabase::MoveCharacterToBind(int CharID) {
 
 	if(!PPValid) return 0;
 
-	const char *BindZoneName = StaticGetZoneName(pp.binds[0].zoneId);
+	const char *BindZoneName = StaticGetZoneName(pp.binds[bindnum].zoneId);
 
 	if(!strcmp(BindZoneName, "UNKNWN")) return pp.zone_id;
 
 	if (!RunQuery(query, MakeAnyLenString(&query, "UPDATE character_ SET zonename = '%s',zoneid=%i,x=%f, y=%f, z=%f, instanceid=0 WHERE id='%i'", 
-					      BindZoneName, pp.binds[0].zoneId, pp.binds[0].x, pp.binds[0].y, pp.binds[0].z,
+					      BindZoneName, pp.binds[bindnum].zoneId, pp.binds[bindnum].x, pp.binds[bindnum].y, pp.binds[bindnum].z,
 					      CharID), errbuf, 0,&affected_rows)) {
 
 		return pp.zone_id;
 	}
 	safe_delete_array(query);
 	
-	return pp.binds[0].zoneId; 
+	return pp.binds[bindnum].zoneId; 
 }
 
 bool WorldDatabase::GetStartZone(PlayerProfile_Struct* in_pp, CharCreate_Struct* in_cc)

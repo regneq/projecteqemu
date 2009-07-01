@@ -3964,6 +3964,69 @@ XS(XS_Client_GetAugmentAt)
 	XSRETURN(1);
 }
 
+XS(XS_Client_GetStartZone);
+XS(XS_Client_GetStartZone) 
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Client::GetStartZone(THIS)");
+	{
+		Client *	THIS;
+		uint32		RETVAL;
+		dXSTARG;
+		
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetStartZone();
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Client_SetStartZone);
+XS(XS_Client_SetStartZone)
+{
+	dXSARGS;
+	if (items != 2 && items != 5)
+		Perl_croak(aTHX_ "Usage: Client::SetStartZone(THIS, zoneid [, x, y, z])");
+	{
+		Client *	THIS;
+		uint32		zoneid = (uint32)SvUV(ST(1));
+		float		x = 0;
+		float		y = 0;
+		float		z = 0;
+		
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		if(items == 5) {
+			x = SvNV(ST(2));
+			y = SvNV(ST(3));
+			z = SvNV(ST(4));
+		}
+
+		THIS->SetStartZone(zoneid,x,y,z);
+	}
+	XSRETURN_EMPTY;
+}
+
+
+		
+
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -4130,6 +4193,8 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "GetLDoNLossesTheme"), XS_Client_GetLDoNLossesTheme, file, "$$");
 		newXSproto(strcpy(buf, "GetItemAt"), XS_Client_GetItemAt, file, "$$");
 		newXSproto(strcpy(buf, "GetAugmentAt"), XS_Client_GetAugmentAt, file, "$$$");
+		newXSproto(strcpy(buf, "GetStartZone"), XS_Client_GetStartZone, file, "$");
+		newXSproto(strcpy(buf, "SetStartZone"), XS_Client_SetStartZone, file, "$$");
 		
 	XSRETURN_YES;
 }

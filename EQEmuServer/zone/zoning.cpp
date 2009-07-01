@@ -706,10 +706,17 @@ void Client::SetBindPoint(int to_zone, float new_x, float new_y, float new_z) {
 	}
 }
 
-void Client::GoToBind() {
+void Client::GoToBind(uint8 bindnum) {
+	// if the bind number is invalid, use the primary bind
+	if(bindnum > 4) 
+		bindnum = 0;
+	
 	// move the client, which will zone them if needed.
 	// ignore restrictions on the zone request..?
-	MovePC(m_pp.binds[0].zoneId, 0.0f, 0.0f, 0.0f, 0.0f, 1, GateToBindPoint);
+	if(bindnum == 0)
+		MovePC(m_pp.binds[0].zoneId, 0.0f, 0.0f, 0.0f, 0.0f, 1, GateToBindPoint);
+	else
+		MovePC(m_pp.binds[bindnum].zoneId, m_pp.binds[bindnum].x, m_pp.binds[bindnum].y, m_pp.binds[bindnum].z, m_pp.binds[bindnum].heading, 1);
 }
 
 void Client::GoToDeath() {

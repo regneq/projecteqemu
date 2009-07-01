@@ -303,6 +303,7 @@ void command_refreshgroup(Client *c, const Seperator *sep);
 void command_advnpcspawn(Client *c, const Seperator *sep);
 void command_modifynpcstat(Client *c, const Seperator *sep);
 void command_instance(Client *c, const Seperator *sep);
+void command_setstartzone(Client *c, const Seperator *sep);
 
 #ifdef EMBPERL
 void command_embperl_plugin(Client *c, const Seperator *sep);

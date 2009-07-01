@@ -824,7 +824,7 @@ struct PlayerProfile_Struct
 /*0108*/	uint32				class_;				// Player class
 /*0112*/	uint32				unknown0112;		//
 /*0116*/	uint32				level;				// Level of player (might be one byte)
-/*0120*/	BindStruct			binds[5];           // Bind points (primary is first)
+/*0120*/	BindStruct			binds[5];           // Bind points (primary is first, home city is fifth)
 /*0220*/	uint32				deity;				// deity
 /*0224*/	uint32				guild_id;
 /*0228*/	uint32				birthday;			// characters bday
