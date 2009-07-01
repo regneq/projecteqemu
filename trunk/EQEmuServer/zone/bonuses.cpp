@@ -647,11 +647,8 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 		switch (spells[spell_id].effectid[i])
 		{
 
-			case SE_Harmony:
+			case SE_ChangeFrenzyRad:
 			{
-				// neotokyo: Harmony effect as buff - kinda tricky
-				// harmony could stack with a lull spell, which has better aggro range
-				// take the one with less range in any case
 				if
 				(
 					newbon->AggroRange == -1 ||
@@ -663,8 +660,11 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 				break;
 			}
 
-			case SE_ChangeFrenzyRad:
+			case SE_Harmony:
 			{
+				// neotokyo: Harmony effect as buff - kinda tricky
+				// harmony could stack with a lull spell, which has better aggro range
+				// take the one with less range in any case
 				if
 				(
 					newbon->AssistRange == -1 ||

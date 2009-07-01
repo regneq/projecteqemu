@@ -8,6 +8,7 @@ AndMetal: Ditto with #scribespells, quest::traindiscs, & #traindiscs.
 AndMetal: quest::scribespells & quest::traindiscs will now return the amount of spells/disciplines that were scribed/learned (an optional way to verify success or failure).
 AndMetal: #scribespells & #traindiscs will limit the max level to whatever the rule Character:MaxLevel is set to, unless you have GM Mode turned on, in which case it's limited to 255 (uint8).
 AndMetal: Fixed a compile error introduced in Rev 729.
+gaeorn: SE_Harmony and SE_ChangeFrenzyRad effects were reversed. This is based on info from alla regarding spells post OoW that only have SE_Harmony effect (reaction radius).
 
 Optional SQL:
 utils/sql/svn/732_sacrifice_rules.sql
