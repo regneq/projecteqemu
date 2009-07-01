@@ -624,7 +624,7 @@ void QuestManager::permagender(int gender_id) {
 	initiator->Kick();
 }
 
-uint16 QuestManager::scribespells(uint8 max_level, uint8 min_level = 1) {
+uint16 QuestManager::scribespells(uint8 max_level, uint8 min_level) {
  	//Cofruben:-Scribe spells for user up to his actual level.
 	uint16 book_slot;
 	int16 curspell;
@@ -644,7 +644,7 @@ uint16 QuestManager::scribespells(uint8 max_level, uint8 min_level = 1) {
 	return book_slot;	//how many spells were scribed successfully
 }
 
-uint16 QuestManager::traindiscs(uint8 max_level, uint8 min_level = 1) {
+uint16 QuestManager::traindiscs(uint8 max_level, uint8 min_level) {
  	//Trevius: Train Disc for user up to their actual level.
 	uint16 book_slot;
 	int16 curspell;

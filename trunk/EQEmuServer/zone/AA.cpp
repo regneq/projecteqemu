@@ -183,9 +183,9 @@ void Client::ActivateAA(aaID activate){
 		uint32 aaremain_min = (aaremain / 60) % 60;
 		uint32 aaremain_sec = aaremain % 60;
 		if (aaremain_hr >= 1)	//1 hour or more
-			Message_StringID(13, AA_REUSE_MSG, aaname, aaremain_hr, aaremain_min, aaremain_sec);	//You can use the ability %B1(1) again in %2 hour(s) %3 minute(s) %4 seconds.
+			Message_StringID(13, AA_REUSE_MSG, aaname, itoa(aaremain_hr), itoa(aaremain_min), itoa(aaremain_sec));	//You can use the ability %B1(1) again in %2 hour(s) %3 minute(s) %4 seconds.
 		else	//less than an hour
-			Message_StringID(13, AA_REUSE_MSG2, aaname, aaremain_min, aaremain_sec);	//You can use the ability %B1(1) again in %2 minute(s) %3 seconds.
+			Message_StringID(13, AA_REUSE_MSG2, aaname, itoa(aaremain_min), itoa(aaremain_sec));	//You can use the ability %B1(1) again in %2 minute(s) %3 seconds.
 		return;
 	}
 	
