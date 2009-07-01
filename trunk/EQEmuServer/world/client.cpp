@@ -525,7 +525,7 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 			}
 
 			if(!pZoning && ew->return_home)
-				zoneID = database.MoveCharacterToBind(charid);
+				zoneID = database.MoveCharacterToBind(charid,4);
 
 			if(!pZoning && (RuleB(World, EnableTutorialButton) && (ew->tutorial || StartInTutorial))) {
 				zoneID = RuleI(World, TutorialZoneID);
@@ -1173,6 +1173,9 @@ bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 		pp.binds[0].z = pp.z;
 		pp.binds[0].heading = pp.heading;
  	}
+
+	// set starting city location to the initial bind point
+	pp.binds[4] = pp.binds[0];
 
 
 	clog(WORLD__CLIENT,"Current location: %s  %0.2f, %0.2f, %0.2f",

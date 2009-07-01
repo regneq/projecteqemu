@@ -357,6 +357,7 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_AdventureStatsRequest] = &Client::Handle_OP_AdventureStatsRequest;
 	ConnectedOpcodes[OP_AdventureLeaderboardRequest] = &Client::Handle_OP_AdventureLeaderboardRequest;	
 	ConnectedOpcodes[OP_GroupUpdate] = &Client::Handle_OP_GroupUpdate;
+	ConnectedOpcodes[OP_SetStartCity] = &Client::Handle_OP_SetStartCity;
 }
 
 int Client::HandlePacket(const EQApplicationPacket *app)
@@ -920,7 +921,7 @@ void Client::Handle_Connect_OP_ClientUpdate(const EQApplicationPacket *app)
 void Client::Handle_Connect_OP_ClientReady(const EQApplicationPacket *app)
 {
 	conn_state = ClientReadyReceived;
-
+	
 	CompleteConnect();
 	SendHPUpdate();
 }
@@ -9647,4 +9648,94 @@ void Client::Handle_OP_GroupUpdate(const EQApplicationPacket *app)
 			return;
 		}		
 	}
+}
+
+void Client::Handle_OP_SetStartCity(const EQApplicationPacket *app) 
+{
+	// if the character has a start city, don't let them use the command
+	if(m_pp.binds[4].zoneId != 0) {
+		Message(15,"Your home city has already been set.", m_pp.binds[4].zoneId, database.GetZoneName(m_pp.binds[4].zoneId));
+		return;
+	}
+
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result = NULL;
+	MYSQL_ROW row = 0;
+	float x(0),y(0),z(0);
+	uint32 zoneid = 0;
+	
+	uint32 StartCity = (uint32)strtol((const char*)app->pBuffer, NULL, 10);
+	bool ValidCity = false;
+	database.RunQuery
+	(
+		query,
+		MakeAnyLenString
+		(
+			&query,
+			"SELECT zone_id, bind_id, x, y, z FROM start_zones "
+			"WHERE player_class=%i AND player_deity=%i AND player_race=%i",
+			m_pp.class_,		
+			m_pp.deity,
+			m_pp.race
+		),
+		errbuf,
+		&result
+	);
+	safe_delete_array(query); 
+
+	if(!result) {
+		LogFile->write(EQEMuLog::Error, "No valid start zones found for /setstartcity");
+		return;
+	}
+
+	while(row = mysql_fetch_row(result)) {
+		if(atoi(row[1]) != 0)
+			zoneid = atoi(row[1]);
+		else
+			zoneid = atoi(row[0]);
+		
+		if(zoneid == StartCity) {
+			ValidCity = true;
+			x = atof(row[2]);
+			y = atof(row[3]);
+			z = atof(row[4]);
+		}
+	}
+
+	if(ValidCity) {
+		Message(15,"Your home city has been set");
+		SetStartZone(StartCity, x, y, z);
+	}
+	else {
+		database.RunQuery
+		(
+			query,
+			MakeAnyLenString
+			(
+				&query,
+				"SELECT zone_id, bind_id FROM start_zones "
+				"WHERE player_class=%i AND player_deity=%i AND player_race=%i",
+				m_pp.class_,		
+				m_pp.deity,
+				m_pp.race
+			),
+			errbuf,
+			&result
+	);
+		safe_delete_array(query); 
+		Message(15,"Use \"/startcity #\" to choose a home city from the following list:");
+		char* name;
+		while(row = mysql_fetch_row(result)) {
+			if(atoi(row[1]) != 0)
+				zoneid = atoi(row[1]);
+			else
+				zoneid = atoi(row[0]);
+			database.GetZoneLongName(database.GetZoneName(zoneid),&name);
+			Message(15,"%d - %s", zoneid, name);
+			safe_delete_array(name);
+		}
+	}
+
+	mysql_free_result(result);	
 }

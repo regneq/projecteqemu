@@ -427,7 +427,7 @@ typedef enum  {
 #define SE_CriticalHealOverTimer	319 //not implemented
 //#define SE_Unknown320				320	//not used
 #define SE_ReduceHate				321 //not implemented
-#define SE_GateToHomeCity			322 //not implemented
+#define SE_GateToHomeCity			322
 #define SE_DefensiveProc			323
 #define SE_HPToMana					324 //not implemented
 //#define SE_Unknown325				325	//not used

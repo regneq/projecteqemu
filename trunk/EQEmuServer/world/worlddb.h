@@ -32,7 +32,7 @@ public:
 	bool	GetStartZoneSoF(PlayerProfile_Struct* in_pp, CharCreate_Struct* in_cc);
 	
     void	GetCharSelectInfo(int32 account_id, CharacterSelect_Struct*);
-      int	MoveCharacterToBind(int CharID);
+      int	MoveCharacterToBind(int CharID, uint8 bindnum = 0);
 	
 	void	GetLauncherList(std::vector<std::string> &result);
 	void	SetMailKey(int CharID, int IPAddress, int MailKey);

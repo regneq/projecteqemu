@@ -405,7 +405,7 @@ bool logpos;
 	void Warp( float x, float y, float z );
 	inline bool IsMoving() const { return moving; }
 	virtual void SetMoving(bool move) { moving = move; delta_x=0; delta_y=0; delta_z=0; delta_heading=0; }
-	virtual void GoToBind() {}
+	virtual void GoToBind(uint8 bindnum = 0) {}
 	virtual void Gate();
 	virtual bool Attack(Mob* other, int Hand = 13, bool FromRiposte = false) { return false; }		// 13 = Primary (default), 14 = secondary
 	bool	AffectedExcludingSlot(int slot, int effect);

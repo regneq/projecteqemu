@@ -2763,6 +2763,13 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				break;
 			}
 
+			case SE_GateToHomeCity:
+			{
+				if(IsClient())
+					CastToClient()->GoToBind(4);
+				break;
+			}
+
 			case SE_ImprovedDamage:
 			case SE_ImprovedHeal:
 			case SE_IncreaseSpellHaste:

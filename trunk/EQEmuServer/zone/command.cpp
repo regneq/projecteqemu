@@ -437,7 +437,8 @@ int command_init(void) {
 		command_add("advnpcspawn","[maketype|makegroup|addgroupentry|addgroupspawn][removegroupspawn|movespawn|editgroupbox|cleargroupbox]",150,command_advnpcspawn) ||
 		command_add("modifynpcstat","Modifys a NPC's stats",150,command_modifynpcstat) ||
 		command_add("undyeme","Remove dye from all of your armor slots",0,command_undyeme) ||
-		command_add("instance","Modify Instances",200,command_instance)
+		command_add("instance","Modify Instances",200,command_instance) ||
+		command_add("setstartzone","[zoneid] - Set target's starting zone.  Set to zero to allow the player to use /setstartcity",80,command_setstartzone)
 		)
 	{
 		command_deinit();
@@ -13012,4 +13013,33 @@ void command_instance(Client *c, const Seperator *sep)
 		c->Message(0, "#instance list player_name - lists all the instances 'player_name' is apart of.");
 		return;
 	}
+}
+
+void command_setstartzone(Client *c, const Seperator *sep)
+{
+	uint32 startzone = 0;
+	Client* target = NULL;
+	if(c->GetTarget() && c->GetTarget()->IsClient() && sep->arg[1][0] != 0)
+		target = c->GetTarget()->CastToClient();
+	else {
+		c->Message(0, "Usage: (needs PC target) #setstartzone zonename");
+		c->Message(0, "Optional Usage: Use '#setstartzone reset' or '#setstartzone 0' to clear a starting zone.  A player can select a starting zone using /setstartcity");
+		return;
+	}
+	
+	if(sep->IsNumber(1)) {
+		startzone = atoi(sep->arg[1]);
+	}
+	else if(strcasecmp(sep->arg[1],"reset") == 0) {
+		startzone = 0;
+	}
+	else {
+		startzone = database.GetZoneID(sep->arg[1]);
+		if(startzone == 0) {
+			c->Message(0, "Unable to locate zone '%s'", sep->arg[1]);
+			return;
+		}
+	}
+
+	target->SetStartZone(startzone);
 }
