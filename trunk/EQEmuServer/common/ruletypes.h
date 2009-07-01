@@ -243,6 +243,7 @@ RULE_BOOL ( NPC, BuffFriends, false )
 RULE_BOOL ( NPC, EnableNPCQuestJournal, false)
 RULE_INT ( NPC, LastFightingDelayMovingMin, 10000)
 RULE_INT ( NPC, LastFightingDelayMovingMax, 20000)
+RULE_BOOL ( NPC, SmartLastFightingDelayMoving, true)
 RULE_CATEGORY_END()
 
 RULE_CATEGORY ( Aggro )

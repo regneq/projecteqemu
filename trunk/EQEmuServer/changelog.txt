@@ -9,6 +9,11 @@ realityincarnate: Added $client->SetStartZone and $client->GetStartZone perl com
 KLS: Petitions will assign id based on character id instead of this stupid desyncing junk.
 KLS: Max NPC name length increased to 50 characters up from 30.
 KLS: Save on zone success will now commit immediately instead of possibly delaying. Hopefully will help with some of the situations where people zone to bad locations.
+gaeorn: New rule NPC:SmartLastFightingDelayMoving. When true (default), if a mob is already wandering home during a FD pull and the puller stands up and then FD again, the mob's timer to return home will not reset, but instead will return home immediately. The timer will be reset if the mob forgets about the FD puller.
+
+Optional SQL:
+
+utils/sql/svn/730_smart_delay_moving.sql
 
 ==06/29/2009==
 Derision: Fixed a pathing bug relating to nodes incorrectly culled from the front of a path.

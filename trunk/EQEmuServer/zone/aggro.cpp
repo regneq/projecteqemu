@@ -1452,10 +1452,19 @@ void Mob::RemoveFromFeignMemory(Client* attacker) {
 	feign_memory_list.erase(attacker->CharacterID());
 	if(feign_memory_list.empty() && AIfeignremember_timer != NULL)
 	   AIfeignremember_timer->Disable();
+	if(feign_memory_list.empty())
+	{
+		minLastFightingDelayMoving = RuleI(NPC, LastFightingDelayMovingMin);
+		maxLastFightingDelayMoving = RuleI(NPC, LastFightingDelayMovingMax);
+		if(AIfeignremember_timer != NULL)
+			AIfeignremember_timer->Disable();
+	}
 }
 
 void Mob::ClearFeignMemory() {
 	feign_memory_list.clear();
+	minLastFightingDelayMoving = RuleI(NPC, LastFightingDelayMovingMin);
+	maxLastFightingDelayMoving = RuleI(NPC, LastFightingDelayMovingMax);
 	if(AIfeignremember_timer != NULL)
 		AIfeignremember_timer->Disable();
 }
