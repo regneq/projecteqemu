@@ -1,5 +1,17 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==07/01/2009==
+AndMetal: Added rules for Sacrifice, which also corrects the minimum level you can use it on: Spells:SacrificeMinLevel(46), Spells:SacrificeMaxLevel(69), & Spells:SacrificeItemID(9963).
+AndMetal: Switched to some more Message String IDs.
+AndMetal: quest::scribespells can now accept minimum level as a 2nd argument. Examples: quest::scribespells(60,60) will scribe just level 60 spells, quest::scribespells(75,71) will scribe spells from 71 through 75.
+AndMetal: Ditto with #scribespells, quest::traindiscs, & #traindiscs.
+AndMetal: quest::scribespells & quest::traindiscs will now return the amount of spells/disciplines that were scribed/learned (an optional way to verify success or failure).
+AndMetal: #scribespells & #traindiscs will limit the max level to whatever the rule Character:MaxLevel is set to, unless you have GM Mode turned on, in which case it's limited to 255 (uint8).
+AndMetal: Fixed a compile error introduced in Rev 729.
+
+Optional SQL:
+utils/sql/svn/732_sacrifice_rules.sql
+
 ==06/30/2009==
 Derision: Fix for mobs in pathing enabled zones fleeing at low health at full run speed.
 Derision: Made rule Map:UseClosestZ default to false. Only set true if using azone2 generated maps (specifically those for EQG zones).

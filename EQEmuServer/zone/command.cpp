@@ -5677,7 +5677,7 @@ void command_beardcolor(Client *c, const Seperator *sep)
 
 void command_scribespells(Client *c, const Seperator *sep)
 {
-	int level;
+	uint8 max_level, min_level;
 	int16 book_slot;
 	int16 curspell;
 	Client *t=c;
@@ -5687,29 +5687,40 @@ void command_scribespells(Client *c, const Seperator *sep)
 
 	if(!sep->arg[1][0])
 	{
-		c->Message(0, "FORMAT: #scribespells <level>");
+		c->Message(0, "FORMAT: #scribespells <max level> <min level>");
 		return;
 	}
 
-	level = atoi(sep->arg[1]);
+	max_level = (uint8)atoi(sep->arg[1]);
+	if (!c->GetGM() && max_level > RuleI(Character, MaxLevel))
+		max_level = RuleI(Character, MaxLevel);	//default to Character:MaxLevel if we're not a GM & it's higher than the max level
+	min_level = sep->arg[2][0] ? (uint8)atoi(sep->arg[2]) : 1;	//default to 1 if there isn't a 2nd argument
+	if (!c->GetGM() && min_level > RuleI(Character, MaxLevel))
+		min_level = RuleI(Character, MaxLevel);	//default to Character:MaxLevel if we're not a GM & it's higher than the max level
 
-	if(level < 1)
+
+	if(max_level < 1 || min_level < 1)
 	{
-		c->Message(0, "ERROR: Enter a level greater than 1.");
+		c->Message(0, "ERROR: Level must be greater than 1.");
+		return;
+	}
+	if (min_level > max_level) {
+		c->Message(0, "Error: Min Level must be less than or equal to Max Level.");
 		return;
 	}
 
 	t->Message(0, "Scribing spells to spellbook.");
 	if(t != c)
 		c->Message(0, "Scribing spells for %s.", t->GetName());
-	LogFile->write(EQEMuLog::Normal, "Scribe spells request for %s from %s, level: %d", t->GetName(), c->GetName(), level);
+	LogFile->write(EQEMuLog::Normal, "Scribe spells request for %s from %s, levels: %u -> %u", t->GetName(), c->GetName(), min_level, max_level);
 
 	for(curspell = 0, book_slot = 0; curspell < SPDAT_RECORDS && book_slot < MAX_PP_SPELLBOOK; curspell++)
 	{
 		if
 		(
-			spells[curspell].classes[WARRIOR] != 0 && // check if spell exists
-			spells[curspell].classes[t->GetPP().class_-1] <= level && 
+			spells[curspell].classes[WARRIOR] != 0 &&	// check if spell exists
+			spells[curspell].classes[t->GetPP().class_-1] <= max_level &&	//maximum level
+			spells[curspell].classes[t->GetPP().class_-1] >= min_level &&	//minimum level
 			spells[curspell].skill != 52
 		)
 		{
@@ -5717,6 +5728,16 @@ void command_scribespells(Client *c, const Seperator *sep)
 				t->ScribeSpell(curspell, book_slot++);
 			}
 		}
+	}
+
+	if (book_slot > 0) {
+		t->Message(0, "Successfully scribed %u spells.", book_slot);
+		if (t != c)
+			c->Message(0, "Successfully scribed %u spells for %s.", book_slot, t->GetName());
+	} else {
+		t->Message(0, "No spells scribed.");
+		if (t != c)
+			c->Message(0, "No spells scribed for %s.", t->GetName());
 	}
 }
 
@@ -12420,7 +12441,7 @@ void command_bot(Client *c, const Seperator *sep) {
 
 void command_traindisc(Client *c, const Seperator *sep)
 {
-	int level;
+	uint8 max_level, min_level;
 	int16 book_slot;
 	int16 curspell;
 	Client *t=c;
@@ -12430,29 +12451,39 @@ void command_traindisc(Client *c, const Seperator *sep)
 
 	if(!sep->arg[1][0])
 	{
-		c->Message(0, "FORMAT: #traindisc <level>");
+		c->Message(0, "FORMAT: #traindisc <max level> <min level>");
 		return;
 	}
 
-	level = atoi(sep->arg[1]);
+	max_level = (uint8)atoi(sep->arg[1]);
+	if (!c->GetGM() && max_level > RuleI(Character, MaxLevel))
+		max_level = RuleI(Character, MaxLevel);	//default to Character:MaxLevel if we're not a GM & it's higher than the max level
+	min_level = sep->arg[2][0] ? (uint8)atoi(sep->arg[2]) : 1;	//default to 1 if there isn't a 2nd argument
+	if (!c->GetGM() && min_level > RuleI(Character, MaxLevel))
+		min_level = RuleI(Character, MaxLevel);	//default to Character:MaxLevel if we're not a GM & it's higher than the max level
 
-	if(level < 1) //was: if(level < 1 || level > 70)
+	if(max_level < 1 || min_level < 1)
 	{
-		c->Message(0, "ERROR: Enter a level greater than 1."); //was "ERROR: Enter a level between 1 and 70 inclusive."
+		c->Message(0, "ERROR: Level must be greater than 1.");
+		return;
+	}
+	if (min_level > max_level) {
+		c->Message(0, "Error: Min Level must be less than or equal to Max Level.");
 		return;
 	}
 
 	t->Message(0, "Training disciplines");
 	if(t != c)
 		c->Message(0, "Training disciplines for %s.", t->GetName());
-	LogFile->write(EQEMuLog::Normal, "Train disciplines request for %s from %s, level: %d", t->GetName(), c->GetName(), level);
+	LogFile->write(EQEMuLog::Normal, "Train disciplines request for %s from %s, levels: %u -> %u", t->GetName(), c->GetName(), min_level, max_level);
 
 	for(curspell = 0, book_slot = 0; curspell < SPDAT_RECORDS && book_slot < MAX_PP_SPELLBOOK; curspell++)
 	{
 		if
 		(
-			spells[curspell].classes[WARRIOR] != 0 && // check if spell exists
-			spells[curspell].classes[t->GetPP().class_-1] <= level && 
+			spells[curspell].classes[WARRIOR] != 0 &&	// check if spell exists
+			spells[curspell].classes[t->GetPP().class_-1] <= max_level &&	//maximum level
+			spells[curspell].classes[t->GetPP().class_-1] >= min_level &&	//minimum level
 			spells[curspell].skill != 52
 		)
 		{
@@ -12460,16 +12491,27 @@ void command_traindisc(Client *c, const Seperator *sep)
 				for(int r = 0; r < MAX_PP_DISCIPLINES; r++) {
 					if(t->GetPP().disciplines.values[r] == curspell) {
 						t->Message(13, "You already know this discipline.");
-						r = MAX_PP_DISCIPLINES;
+						r = MAX_PP_DISCIPLINES;	//is there any reason we can't just break here?
 					} else if(t->GetPP().disciplines.values[r] == 0) {
 						t->GetPP().disciplines.values[r] = curspell;
 						t->SendDisciplineUpdate();
 						t->Message(0, "You have learned a new discipline!");
-						r = MAX_PP_DISCIPLINES;
+						book_slot++;	//we're not doing anything else with it, so we'll use it as a success counter
+						r = MAX_PP_DISCIPLINES;	//is there any reason we can't just break here?
 					}
 				}
 			}
 		}
+	}
+
+	if (book_slot > 0) {
+		t->Message(0, "Successfully trained %u disciplines.", book_slot);
+		if (t != c)
+			c->Message(0, "Successfully trained %u disciplines for %s.", book_slot, t->GetName());
+	} else {
+		t->Message(0, "No disciplines trained.");
+		if (t != c)
+			c->Message(0, "No disciplines trained for %s.", t->GetName());
 	}
 }
 
