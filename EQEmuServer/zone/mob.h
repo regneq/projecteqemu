@@ -100,6 +100,7 @@ enum {
 	IMMUNE_AGGRO, //H, wont aggro, ever.
 	IMMUNE_TARGET, //G, can't be aggroed, ever
 	IMMUNE_CASTING_FROM_RANGE, //g
+	IMMUNE_FEIGN_DEATH, //d
 	SPECATK_MAXNUM
 				//X,Y,Z are old interactive NPC codes
 };

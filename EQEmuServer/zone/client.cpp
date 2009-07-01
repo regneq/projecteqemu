@@ -748,7 +748,7 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, int8 lang_skil
 	{
 	case 0: { // GuildChat
 		if (!IsInAGuild())
-			Message_StringID(0, GUILD_NONE2);	//You are not a member of any guild.
+			Message_StringID(0, GUILD_NOT_MEMBER2);	//You are not a member of any guild.
 		else if (!guild_mgr.CheckPermission(GuildID(), GuildRank(), GUILD_SPEAK))
 			Message(0, "Error: You dont have permission to speak to the guild.");
 		else if (!worldserver.SendChannelMessage(this, targetname, chan_num, GuildID(), language, message))

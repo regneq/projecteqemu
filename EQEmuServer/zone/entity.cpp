@@ -2868,6 +2868,13 @@ void EntityList::ClearFeignAggro(Mob* targ)
 	{
 		if (iterator.GetData()->CheckAggro(targ))
 		{
+			if(iterator.GetData()->SpecAttacks[IMMUNE_FEIGN_DEATH])
+			{
+				iterator.GetData()->SetHate(targ, 0);
+				iterator.Advance();
+				continue;
+			}
+
 			iterator.GetData()->RemoveFromHateList(targ);
 			// EverHood 6/24/06
 			// For client targets if the mob that hated us is 35+ 

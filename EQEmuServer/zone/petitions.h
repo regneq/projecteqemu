@@ -29,7 +29,6 @@ class Petition
 {
 public:
 	Petition(int32 id);
-	Petition();
 	~Petition() {}
 	void SendPetitionToPlayer(Client* clientto);
 
@@ -98,13 +97,10 @@ class PetitionList
 public:
 	int DeletePetition(int32 petnumber);
 	void UpdateGMQueue();
-	PetitionList() { last_insert_id = 0; }
+	PetitionList() {}
 	~PetitionList() {}
 	void AddPetition(Petition* pet);
 	Petition* GetPetitionByID(int32 id_in);
-	int32	GetMaxPetitionID() { return last_insert_id; }
-	int32	GetNextPetitionID() { return last_insert_id++; }
-	void	SetMaxPetitionID(int32 m_new_last) { last_insert_id = m_new_last; }
 	int32	GetTotalPetitions();
 	void ClearPetitions();
 	void ReadDatabase();
