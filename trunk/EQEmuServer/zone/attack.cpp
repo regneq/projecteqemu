@@ -1264,7 +1264,7 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte)
 	}
 	if(DivineAura() && !GetGM()) {//cant attack while invulnerable unless your a gm
 		mlog(COMBAT__ATTACKS, "Attack canceled, Divine Aura is in effect.");
-		Message(10,"You can't attack while invulnerable!");
+		Message_StringID(10, DIVINE_AURA_NO_ATK);	//You can't attack while invulnerable!
 		return false;
 	}
 

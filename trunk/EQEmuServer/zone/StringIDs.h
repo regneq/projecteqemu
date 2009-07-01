@@ -9,6 +9,7 @@
 #define SPELL_DOES_NOT_WORK_HERE	106		//This spell does not work here.
 #define SPELL_DOES_NOT_WORK_PLANE	107		//This spell does not work on this plane.
 #define CANT_SEE_TARGET				108		//You cannot see your target.
+#define MGB_STRING					113		//The next group buff you cast will hit all targets in range.
 #define TARGET_TOO_FAR				124		//Your target is too far away, get closer!
 #define PROC_TOOLOW					126		//Your will is not sufficient to command this weapon.
 #define PROC_PETTOOLOW				127		//Your pet's will is not sufficient to command its weapon.
@@ -41,6 +42,8 @@
 #define FISHING_LOST_BAIT			172		//You lost your bait!
 #define SPELL_FIZZLE				173		//Your spell fizzles!
 #define MISS_NOTE					180		//You miss a note, bringing your song to a close!
+#define SAC_TOO_LOW					203		//This being is not a worthy sacrifice.
+#define SAC_TOO_HIGH				204		//This being is too powerful to be a sacrifice.
 #define CANNOT_SAC_SELF				205		//You cannot sacrifice yourself.
 #define CANNOT_AFFECT_PC			210		//That spell can not affect this target PC.
 #define SPELL_NEED_TAR				214		//You must first select a target for this spell!
@@ -90,6 +93,8 @@
 #define SONG_NEEDS_BRASS			408		//You need to play a brass instrument for this song
 #define AA_GAIN_ABILITY				410		//You have gained the ability "%T1" at a cost of %2 ability %T3.
 #define AA_IMPROVE					411		//You have improved %T1 %2 at a cost of %3 ability %T4.
+#define AA_REUSE_MSG				413		//You can use the ability %B1(1) again in %2 hour(s) %3 minute(s) %4 seconds.
+#define AA_REUSE_MSG2				414		//You can use the ability %B1(1) again in %2 minute(s) %3 seconds.
 #define BEGINS_TO_GLOW				422		//Your %1 begins to glow.
 #define ALREADY_INVIS				423		//%1 tries to cast an invisibility spell on you, but you are already invisible.
 #define YOU_ARE_PROTECTED			424		//%1 tries to cast a spell on you, but you are protected.
@@ -174,6 +179,9 @@
 #define GAIN_RAIDEXP				5085	//You gained raid experience!
 #define ADVENTURE_COMPLETE			5147	//You received %1 points for successfully completing the adventure.
 #define PET_ATTACKING				5501	//%1 tells you, 'Attacking %2 Master.'
+#define DISCIPLINE_REUSE_MSG		5807	//You can use the ability %1 again in %2 hour(s) %3 minute(s) %4 seconds.
+#define DISCIPLINE_REUSE_MSG2		5808	//You can use the ability %1 again in %2 minute(s) %3 seconds.
+#define AA_NO_TARGET				5825	//You must first select a target for this ability!
 #define GENERIC_STRING				6688	//%1  (used to any basic message)
 #define SENTINEL_TRIG_YOU			6724	//You have triggered your sentinel.
 #define SENTINEL_TRIG_OTHER			6725	//%1 has triggered your sentinel.
@@ -207,6 +215,7 @@
 #define OTHER_HIT_DOT				9072	//%1 has taken %2 damage from your %3.
 #define HIT_NON_MELEE				9073	//%1 hit %2 for %3 points of non-melee damage.
 #define STRIKETHROUGH_STRING		9078	//You strike through your opponent's defenses!
+#define NEW_SPELLS_AVAIL			9149	//You have new spells available to you.  Check the merchants near your guild master.
 #define FACE_ACCEPTED				12028	//Facial features accepted.
 #define SPELL_LEVEL_TO_LOW			12048	//You will have to achieve level %1 before you can scribe the %2.
 #define ATTACKFAILED				12158	//%1 try to %2 %3, but %4!
@@ -217,6 +226,7 @@
 #define STRIKE_STRING				12197	//strike
 #define BACKSTAB_STRING				12199	//backstab
 #define BASH_STRING					12201	//bash
+#define GUILD_NONE					12242	//You are not a member of any guild.
 #define NOT_IN_CONTROL				12368	//You do not have control of yourself right now.
 #define ALREADY_CASTING				12442	//You are already casting a spell!
 #define NOT_HOLDING_ITEM			12452	//You are not holding an item!
@@ -228,6 +238,7 @@
 #define SONG_ENDS					12687	//Your song ends.
 #define SONG_ENDS_OTHER				12688	//%1's song ends.
 #define SONG_ENDS_ABRUPTLY_OTHER	12689	//%1's song ends abruptly.
+#define DIVINE_AURA_NO_ATK			12695	//You can't attack while invulnerable!
 #define TRY_ATTACKING_SOMEONE		12696	//Try attacking someone other than yourself, it's more productive.
 #define BACKSTAB_WEAPON				12874	//You need a piercing weapon as your primary weapon in order to backstab
 #define MORE_SKILLED_THAN_I			12931	//%1 tells you, 'You are more skilled than I!  What could I possibly teach you?'
@@ -236,6 +247,7 @@
 #define SURNAME_TOO_LONG			12942	//Surname must be less than 20 characters in length.
 #define NOW_INVISIBLE				12950	//%1 is now Invisible.
 #define NOW_VISIBLE					12951	//%1 is now Visible.
+#define GUILD_NONE2					12966	//You are not in a guild.
 #define DISC_LEVEL_USE_ERROR		13004	//You are not sufficient level to use this discipline.
 #define TOGGLE_ON					13172	//Asking server to turn ON your incoming tells.
 #define TOGGLE_OFF					13173	//Asking server to turn OFF all incoming tells for you.

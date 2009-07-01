@@ -177,8 +177,15 @@ void Client::ActivateAA(aaID activate){
 	}
 	
 	if(!p_timers.Expired(&database, AATimerID + pTimerAAStart)) {
+		const char* aaname = aas_send[activate_val]->name;
 		uint32 aaremain = p_timers.GetRemainingTime(AATimerID + pTimerAAStart);
-		Message(13, "Ability recast time not met, usable in %d minutes and %d seconds.", aaremain/60, aaremain%60);	
+		uint32 aaremain_hr = aaremain / (60 * 60);
+		uint32 aaremain_min = (aaremain / 60) % 60;
+		uint32 aaremain_sec = aaremain % 60;
+		if (aaremain_hr >= 1)	//1 hour or more
+			Message_StringID(13, AA_REUSE_MSG, aaname, aaremain_hr, aaremain_min, aaremain_sec);	//You can use the ability %B1(1) again in %2 hour(s) %3 minute(s) %4 seconds.
+		else	//less than an hour
+			Message_StringID(13, AA_REUSE_MSG2, aaname, aaremain_min, aaremain_sec);	//You can use the ability %B1(1) again in %2 minute(s) %3 seconds.
 		return;
 	}
 	
@@ -205,7 +212,7 @@ void Client::ActivateAA(aaID activate){
 			break;
 		case aaTargetCurrent:
 			if(GetTarget() == NULL) {
-				Message(0, "A target is required for this skill.");
+				Message_StringID(0, AA_NO_TARGET);	//You must first select a target for this ability!
 				return;
 			}
 			target_id = GetTarget()->GetID();
@@ -215,7 +222,7 @@ void Client::ActivateAA(aaID activate){
 			break;
 		case aaTargetCurrentGroup:
 			if(GetTarget() == NULL) {
-				Message(0, "A target is required for this skill.");
+				Message_StringID(0, AA_NO_TARGET);	//You must first select a target for this ability!
 				return;
 			}
 			target_id = GetTarget()->GetID();
@@ -296,7 +303,7 @@ void Client::HandleAAAction(aaID activate) {
 			
 		case aaActionMassBuff:
 			EnableAAEffect(aaEffectMassGroupBuff, 3600); 
-			Message(10, "The next group spell you cast will cast on all players in range.");
+			Message_StringID(10, MGB_STRING);	//The next group buff you cast will hit all targets in range.
 			break;
 		
 		case aaActionFlamingArrows:
@@ -452,7 +459,7 @@ void Client::HandleAAAction(aaID activate) {
 			break;
 		case aaTargetCurrent:
 			if(GetTarget() == NULL) {
-				Message(0, "A target is required for this skill.");
+				Message_StringID(0, AA_NO_TARGET);	//You must first select a target for this ability!
 				return;
 			}
 			target_id = GetTarget()->GetID();
@@ -462,7 +469,7 @@ void Client::HandleAAAction(aaID activate) {
 			break;
 		case aaTargetCurrentGroup:
 			if(GetTarget() == NULL) {
-				Message(0, "A target is required for this skill.");
+				Message_StringID(0, AA_NO_TARGET);	//You must first select a target for this ability!
 				return;
 			}
 			target_id = GetTarget()->GetID();
@@ -890,6 +897,7 @@ void Client::BuyAA(AA_Action* action){
 		SendAATable();
 
 		//we are building these messages ourself instead of using the stringID to work around patch discrepencies
+		//these are AA_GAIN_ABILITY	(410) & AA_IMPROVE (411), respectively, in both Titanium & SoF. not sure about 6.2
 		if(cur_level<1)
 			Message(15,"You have gained the ability \"%s\" at a cost of %d ability %s.", aa2->name, real_cost, (real_cost>1)?"points":"point");
 		else

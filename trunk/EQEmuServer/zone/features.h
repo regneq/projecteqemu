@@ -135,9 +135,6 @@ Zone extensions and features
 
 #define SKILL_MAX_LEVEL 75
 
-#define SACRIFICE_MIN_LEVEL 50
-#define SACRIFICE_ITEMID 9963
-
 //#define MIN_RANGED_ATK_RANGE 25
 //replaced the above define with RuleI(Combat, MinRangedAttackDist)
 

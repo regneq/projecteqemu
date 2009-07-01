@@ -789,28 +789,44 @@ XS(XS__scribespells);
 XS(XS__scribespells)
 {
 	dXSARGS;
-	if (items != 1)
-		Perl_croak(aTHX_ "Usage: scribespells(spell_level)");
+	if (items < 1)
+		Perl_croak(aTHX_ "Usage: scribespells(max_level, min_level = 1)");
 
-	int	spell_level = (int)SvIV(ST(0));
+	uint16	RETVAL;
+	dXSTARG;
 
-	quest_manager.scribespells(spell_level);
+	uint8 max_level = (uint8)SvIV(ST(0));
+	uint8 min_level = (uint8)SvIV(ST(1));
 
-	XSRETURN_EMPTY;
+	if (min_level)
+		RETVAL = quest_manager.scribespells(max_level, min_level);
+	else
+		RETVAL = quest_manager.scribespells(max_level);
+
+	XSprePUSH; PUSHu((IV)RETVAL);
+	XSRETURN(1);
 }
 
 XS(XS__traindiscs);
 XS(XS__traindiscs)
 {
 	dXSARGS;
-	if (items != 1)
-		Perl_croak(aTHX_ "Usage: traindiscs(disc_level)");
+	if (items < 1)
+		Perl_croak(aTHX_ "Usage: traindiscs(max_level, min_level = 1)");
 
-	int	disc_level = (int)SvIV(ST(0));
+	uint16	RETVAL;
+	dXSTARG;
 
-	quest_manager.traindiscs(disc_level);
+	uint8 max_level = (uint8)SvIV(ST(0));
+	uint8 min_level = (uint8)SvIV(ST(1));
 
-	XSRETURN_EMPTY;
+	if (min_level)
+		RETVAL = quest_manager.traindiscs(max_level, min_level);
+	else
+		RETVAL = quest_manager.traindiscs(max_level);
+
+	XSprePUSH; PUSHu((IV)RETVAL);
+	XSRETURN(1);
 }
 
 XS(XS__unscribespells);

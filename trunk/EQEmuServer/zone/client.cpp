@@ -748,7 +748,7 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, int8 lang_skil
 	{
 	case 0: { // GuildChat
 		if (!IsInAGuild())
-			Message(0, "Error: You arent in a guild.");
+			Message_StringID(0, GUILD_NONE2);	//You are not a member of any guild.
 		else if (!guild_mgr.CheckPermission(GuildID(), GuildRank(), GUILD_SPEAK))
 			Message(0, "Error: You dont have permission to speak to the guild.");
 		else if (!worldserver.SendChannelMessage(this, targetname, chan_num, GuildID(), language, message))
@@ -3166,8 +3166,12 @@ void Client::SacrificeConfirm(Client *caster) {
 
 	if(!caster || PendingSacrifice) return;
 
-	if(GetLevel() <= SACRIFICE_MIN_LEVEL){
-		caster->Message(13, "Target is too low level.");
+	if(GetLevel() < RuleI(Spells, SacrificeMinLevel)){
+		caster->Message_StringID(13, SAC_TOO_LOW);	//This being is not a worthy sacrifice.
+		return;
+	}
+	if (GetLevel() > RuleI(Spells, SacrificeMaxLevel)) {
+		caster->Message_StringID(13, SAC_TOO_HIGH);
 		return;
 	}
 
@@ -3185,7 +3189,7 @@ void Client::SacrificeConfirm(Client *caster) {
 //Essentially a special case death function
 void Client::Sacrifice(Client *caster)
 {
-				if(GetLevel() > SACRIFICE_MIN_LEVEL){
+				if(GetLevel() >= RuleI(Spells, SacrificeMinLevel) && GetLevel() <= RuleI(Spells, SacrificeMaxLevel)){
 					int exploss = (int)(GetLevel() * (GetLevel() / 18.0) * 12000);
 					if(exploss < GetEXP()){
 						SetEXP(GetEXP()-exploss, GetAAXP());
@@ -3231,11 +3235,11 @@ void Client::Sacrifice(Client *caster)
 						}
 						Save();
 						GoToDeath();
-						caster->SummonItem(SACRIFICE_ITEMID);
+						caster->SummonItem(RuleI(Spells, SacrificeItemID));
 					}
 				}
 				else{
-					caster->Message(13, "Target is too low level.");
+					caster->Message_StringID(13, SAC_TOO_LOW);	//This being is not a worthy sacrifice.
 				}
 }
 

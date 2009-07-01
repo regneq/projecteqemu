@@ -85,8 +85,8 @@ public:
 	void permaclass(int class_id);
 	void permarace(int race_id);
 	void permagender(int gender_id);
-	void scribespells(int spell_level);
-	void traindiscs(int disc_level);
+	uint16 scribespells(uint8 max_level, uint8 min_level = 1);
+	uint16 traindiscs(uint8 max_level, uint8 min_level = 1);
 	void unscribespells();
 	void givecash(int copper, int silver, int gold, int platinum);
 	void pvp(const char *mode);

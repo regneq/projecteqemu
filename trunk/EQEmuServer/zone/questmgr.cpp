@@ -624,34 +624,37 @@ void QuestManager::permagender(int gender_id) {
 	initiator->Kick();
 }
 
-void QuestManager::scribespells(int spell_level) {
+uint16 QuestManager::scribespells(uint8 max_level, uint8 min_level = 1) {
  	//Cofruben:-Scribe spells for user up to his actual level.
-	int16 book_slot;
+	uint16 book_slot;
 	int16 curspell;
 	for(curspell = 0, book_slot = 0; curspell < SPDAT_RECORDS && book_slot < MAX_PP_SPELLBOOK; curspell++)
 	{
 	   if
 	   (
-		  spells[curspell].classes[WARRIOR] != 0 &&
-		  spells[curspell].classes[initiator->GetPP().class_-1] <= spell_level &&
+		  spells[curspell].classes[WARRIOR] != 0 &&	//check if spell exists
+		  spells[curspell].classes[initiator->GetPP().class_-1] <= max_level &&	//maximum level
+		  spells[curspell].classes[initiator->GetPP().class_-1] >= min_level &&	//minimum level
 		  spells[curspell].skill != 52
 	   )
 	   {
 		  initiator->ScribeSpell(curspell, book_slot++);
 	   }
 	}
+	return book_slot;	//how many spells were scribed successfully
 }
 
-void QuestManager::traindiscs(int disc_level) {
+uint16 QuestManager::traindiscs(uint8 max_level, uint8 min_level = 1) {
  	//Trevius: Train Disc for user up to their actual level.
-	int16 book_slot;
+	uint16 book_slot;
 	int16 curspell;
 	for(curspell = 0, book_slot = 0; curspell < SPDAT_RECORDS && book_slot < MAX_PP_SPELLBOOK; curspell++)
 	{
 	   if
 	   (
-		  spells[curspell].classes[WARRIOR] != 0 &&
-		  spells[curspell].classes[initiator->GetPP().class_-1] <= disc_level &&
+		  spells[curspell].classes[WARRIOR] != 0 &&	//check if spell exists
+		  spells[curspell].classes[initiator->GetPP().class_-1] <= max_level &&	//maximum level
+		  spells[curspell].classes[initiator->GetPP().class_-1] >= max_level &&	//minimum level
 		  spells[curspell].skill != 52
 	   )
 		{
@@ -660,17 +663,19 @@ void QuestManager::traindiscs(int disc_level) {
 				for(int r = 0; r < MAX_PP_DISCIPLINES; r++) {
 					if(initiator->GetPP().disciplines.values[r] == curspell) {
 						initiator->Message(13, "You already know this discipline.");
-						r = MAX_PP_DISCIPLINES;
+						r = MAX_PP_DISCIPLINES;	//is there any reason we can't just break here?
 					} else if(initiator->GetPP().disciplines.values[r] == 0) {
 						initiator->GetPP().disciplines.values[r] = curspell;
 						initiator->SendDisciplineUpdate();
 						initiator->Message(0, "You have learned a new discipline!");
-						r = MAX_PP_DISCIPLINES;
+						book_slot++;	//we're not doing anything else with it, so we'll use it as a success counter
+						r = MAX_PP_DISCIPLINES;	//is there any reason we can't just break here?
 					}
 				}
 			}
 	   	}
 	}
+	return book_slot;	//how many disciplines were learned successfully
 }
 
 void QuestManager::unscribespells() {
