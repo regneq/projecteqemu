@@ -479,7 +479,6 @@ typedef enum  {
 #define SE_CorruptionCounter		369	//not implemented. wasn't added until Serpent's Spine, so we can't really do much w/ it
 #define SE_ResistCorruption			370	//not implemented. ditto
 #define SE_InhibitMeleeAttacks		371 //some type of melee slow
-										//last effect
 //#define SE_Unknown372				372	//not used
 #define SE_CastOnWearoff			373 //Casts this spell on target when the buff wears off the target
 #define SE_ApplyEffect				374 //Also casts these spells on the target when this spell lands
@@ -494,6 +493,7 @@ typedef enum  {
 #define SE_Leap						383 //used to leap forward? probably something like a small knock back reverse to push you forward
 //#define SE_Unknown384				384	//not used
 //#define SE_Unknown385				385	//not used
+//last effect
 
 #define DF_Permanent		50
 

@@ -6,6 +6,9 @@ Derision: Made rule Map:UseClosestZ default to false. Only set true if using azo
 realityincarnate: Starting cities are now tracked for newly created characters.
 realityincarnate: Enabled the /setstartcity command for characters without a start city assigned.
 realityincarnate: Added $client->SetStartZone and $client->GetStartZone perl commands. 
+KLS: Petitions will assign id based on character id instead of this stupid desyncing junk.
+KLS: Max NPC name length increased to 50 characters up from 30.
+KLS: Save on zone success will now commit immediately instead of possibly delaying. Hopefully will help with some of the situations where people zone to bad locations.
 
 ==06/29/2009==
 Derision: Fixed a pathing bug relating to nodes incorrectly culled from the front of a path.

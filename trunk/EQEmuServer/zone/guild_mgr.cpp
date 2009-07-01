@@ -569,7 +569,7 @@ void GuildApproval::GuildApproved()
 	strncat(petitext,owner->CastToClient()->GetName(),len);
 	strncat(petitext," Members:",len);
 	strncat(petitext,gmembers,len);
-	Petition* pet = new Petition;
+	Petition* pet = new Petition(owner->CastToClient()->CharacterID());
 	pet->SetAName(owner->CastToClient()->AccountName());
 	pet->SetClass(owner->CastToClient()->GetClass());
 	pet->SetLevel(owner->CastToClient()->GetLevel());

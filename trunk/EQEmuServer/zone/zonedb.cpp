@@ -1078,7 +1078,7 @@ const NPCType* ZoneDatabase::GetNPCType (uint32 id) {
 				int r = 0;
 				tmpNPCType->npc_id = atoi(row[r++]);
 				
-				strncpy(tmpNPCType->name, row[r++], 30);
+				strncpy(tmpNPCType->name, row[r++], 50);
 
 				tmpNPCType->level = atoi(row[r++]);
 				tmpNPCType->race = atoi(row[r++]);
