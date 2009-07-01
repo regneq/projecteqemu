@@ -9,6 +9,9 @@ AndMetal: quest::scribespells & quest::traindiscs will now return the amount of 
 AndMetal: #scribespells & #traindiscs will limit the max level to whatever the rule Character:MaxLevel is set to, unless you have GM Mode turned on, in which case it's limited to 255 (uint8).
 AndMetal: Fixed a compile error introduced in Rev 729.
 gaeorn: SE_Harmony and SE_ChangeFrenzyRad effects were reversed. This is based on info from alla regarding spells post OoW that only have SE_Harmony effect (reaction radius).
+KLS: Added NPC code 'd' to make npcs be able to see through feign death attempts. (mostly implemented, still have to look into aggroing people who are feigned by proximity)
+KLS: Fixed a typo in the petition code and un-reverted the petition.h file (hi, there's a reason it was changed).
+KLS:
 
 Optional SQL:
 utils/sql/svn/732_sacrifice_rules.sql

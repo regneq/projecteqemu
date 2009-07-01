@@ -5576,7 +5576,7 @@ void Client::Handle_OP_PetitionDelete(const EQApplicationPacket *app)
 	pet->senttime = 0;
 	strcpy(pet->accountid, "");
 	strcpy(pet->gmsenttoo, "");
-	pet->quetotal = petition_list.GetMaxPetitionID();
+	pet->quetotal = petition_list.GetTotalPetitions();
 	strcpy(pet->charname, "");
 	FastQueuePacket(&outapp);
 

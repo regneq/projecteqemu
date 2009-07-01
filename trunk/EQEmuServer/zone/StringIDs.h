@@ -226,7 +226,7 @@
 #define STRIKE_STRING				12197	//strike
 #define BACKSTAB_STRING				12199	//backstab
 #define BASH_STRING					12201	//bash
-#define GUILD_NONE					12242	//You are not a member of any guild.
+#define GUILD_NOT_MEMBER			12242	//You are not a member of any guild.
 #define NOT_IN_CONTROL				12368	//You do not have control of yourself right now.
 #define ALREADY_CASTING				12442	//You are already casting a spell!
 #define NOT_HOLDING_ITEM			12452	//You are not holding an item!
@@ -247,7 +247,7 @@
 #define SURNAME_TOO_LONG			12942	//Surname must be less than 20 characters in length.
 #define NOW_INVISIBLE				12950	//%1 is now Invisible.
 #define NOW_VISIBLE					12951	//%1 is now Visible.
-#define GUILD_NONE2					12966	//You are not in a guild.
+#define GUILD_NOT_MEMBER2			12966	//You are not in a guild.
 #define DISC_LEVEL_USE_ERROR		13004	//You are not sufficient level to use this discipline.
 #define TOGGLE_ON					13172	//Asking server to turn ON your incoming tells.
 #define TOGGLE_OFF					13173	//Asking server to turn OFF all incoming tells for you.
