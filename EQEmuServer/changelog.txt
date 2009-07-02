@@ -11,7 +11,7 @@ AndMetal: Fixed a compile error introduced in Rev 729.
 gaeorn: SE_Harmony and SE_ChangeFrenzyRad effects were reversed. This is based on info from alla regarding spells post OoW that only have SE_Harmony effect (reaction radius).
 KLS: Added NPC code 'd' to make npcs be able to see through feign death attempts. (mostly implemented, still have to look into aggroing people who are feigned by proximity)
 KLS: Fixed a typo in the petition code and un-reverted the petition.h file (hi, there's a reason it was changed).
-KLS:
+KLS: Added mob perl object HealDamage(amount, caster = 0);
 
 Optional SQL:
 utils/sql/svn/732_sacrifice_rules.sql
