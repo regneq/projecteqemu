@@ -4191,7 +4191,7 @@ void command_repop(Client *c, const Seperator *sep)
 			char errbuf[MYSQL_ERRMSG_SIZE];
 			char *query = 0;
 			database.RunQuery(query, MakeAnyLenString(&query, "DELETE FROM respawn_times WHERE id=%lu" 
-				"AND instance_id=%lu",iterator.GetData()->GetID(), zone->GetInstanceID()), errbuf);
+				" AND instance_id=%lu",(unsigned long)iterator.GetData()->GetID(), (unsigned long)zone->GetInstanceID()), errbuf);
 			safe_delete_array(query);		
 			iterator.Advance();
 		}
