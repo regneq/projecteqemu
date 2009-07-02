@@ -815,8 +815,6 @@ void Mob::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 		double combat_rating = (defenseRating - attackRating);
 
 		combat_rating = 100 * combat_rating / (double)ac_eq100;
-		combat_rating > 60.0 ? 60 + ((combat_rating - 60)/10) : combat_rating;
-		combat_rating > 90.0 ? 90 + ((combat_rating - 90)/20) : combat_rating;
 
 		d1_chance = 6.0 + (((combat_rating * 0.39) / 3));
 		d2_d19_chance = 48.0 + (((combat_rating * 0.39) / 3) * 2);
