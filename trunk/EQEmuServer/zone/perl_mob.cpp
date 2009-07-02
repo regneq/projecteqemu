@@ -937,6 +937,44 @@ XS(XS_Mob_Heal)
 	XSRETURN_EMPTY;
 }
 
+
+XS(XS_Mob_HealDamage); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_HealDamage)
+{
+	dXSARGS;
+	if (items < 2 || items > 3)
+		Perl_croak(aTHX_ "Usage: Mob::HealDamage(THIS, amount, caster = 0)");
+	{
+		Mob *		THIS;
+		sint32	heal_amt = (sint32)SvIV(ST(1));
+		Mob *		caster = NULL;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		if(items == 3)
+		{
+			if (sv_derived_from(ST(2), "Mob")) {
+				IV tmp = SvIV((SV*)SvRV(ST(2)));
+				caster = INT2PTR(Mob *,tmp);
+			}
+			else
+				Perl_croak(aTHX_ "caster is not of type Mob");
+			if(caster == NULL)
+				Perl_croak(aTHX_ "caster is NULL, avoiding crash.");
+		}
+
+		THIS->HealDamage(heal_amt, caster);
+	}
+	XSRETURN_EMPTY;
+}
+
 XS(XS_Mob_SetMaxHP); /* prototype to pass -Wmissing-prototypes */
 XS(XS_Mob_SetMaxHP)
 {
@@ -5641,6 +5679,7 @@ XS(boot_Mob)
 		newXSproto(strcpy(buf, "Attack"), XS_Mob_Attack, file, "$$;$$");
 		newXSproto(strcpy(buf, "Damage"), XS_Mob_Damage, file, "$$$$$;$$$");
 		newXSproto(strcpy(buf, "Heal"), XS_Mob_Heal, file, "$");
+		newXSproto(strcpy(buf, "HealDamage"), XS_Mob_HealDamage, file, "$$;$");
 		newXSproto(strcpy(buf, "SetMaxHP"), XS_Mob_SetMaxHP, file, "$");
 		newXSproto(strcpy(buf, "GetLevelCon"), XS_Mob_GetLevelCon, file, "$$");
 		newXSproto(strcpy(buf, "SetHP"), XS_Mob_SetHP, file, "$$");
