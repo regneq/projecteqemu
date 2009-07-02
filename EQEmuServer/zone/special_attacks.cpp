@@ -1412,6 +1412,19 @@ void NPC::DoClassAttacks(Mob *target) {
 			break;
 		}
 		case BERSERKER: case BERSERKERGM:
+		{
+			int32 num_attacks = 1 + (GetSkill(FRENZY) / 100);
+			while(num_attacks > 0 && target) 
+			{
+				if(Attack(target))
+					num_attacks--;
+				else
+					num_attacks = 0;
+			}
+			reuse = FrenzyReuseTime * 1000;
+			did_attack = true;
+			break;
+		}
 		case RANGER: case RANGERGM:
 		case BEASTLORD: case BEASTLORDGM: {
 			//kick
