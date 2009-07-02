@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==07/02/2009==
+KLS: Berserker NPCs will now frenzy instead of kick.
+KLS: Fix for GetHateRandom() method crash if there are 0 people on the hate list.
+
 ==07/01/2009==
 AndMetal: Added rules for Sacrifice, which also corrects the minimum level you can use it on: Spells:SacrificeMinLevel(46), Spells:SacrificeMaxLevel(69), & Spells:SacrificeItemID(9963).
 AndMetal: Switched to some more Message String IDs.
