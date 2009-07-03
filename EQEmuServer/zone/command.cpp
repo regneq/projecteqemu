@@ -12793,6 +12793,50 @@ void command_advnpcspawn(Client *c, const Seperator *sep)
  				}
  			} 
  		}
+ 		else if (strcasecmp(sep->arg[1], "editrespawn") == 0) {
+ 			if (!target || !target->IsNPC())
+ 				c->Message(0, "Error: Need an NPC target.");
+ 			else {
+ 				Spawn2* s2 = target->CastToNPC()->respawn2;
+
+				int32 new_rs = 0;
+				int32 new_var = s2->GetVariance();
+				if(!sep->IsNumber(2))
+				{
+					c->Message(0, "editrespawn FAILED -- cannot set respawn to be 0");
+					return;
+				}
+				else
+				{
+					new_rs = atoi(sep->arg[2]);
+				}
+
+				if(sep->IsNumber(3))
+				{
+					new_var = atoi(sep->arg[3]);
+				}
+ 
+ 				if(!s2) {
+ 					c->Message(0, "editrespawn FAILED -- cannot determine which spawn entry in the database this mob came from.");
+ 				}
+ 				else
+ 				{
+ 					if(database.RunQuery(query, MakeAnyLenString(&query, "UPDATE spawn2 SET respawntime=%u, variance=%u WHERE id='%i'", new_rs, new_var, s2->GetID()), errbuf))
+ 					{
+ 						c->LogSQL(query);
+ 						c->Message(0, "Updating respawn timer successful.");
+						s2->SetRespawnTimer(new_rs);
+						s2->SetVariance(new_var);
+ 					}
+ 					else
+ 					{
+ 						c->Message(13, "Update failed! MySQL gave the following error:");
+ 						c->Message(13, errbuf);
+ 	  				}
+ 					safe_delete_array(query);
+ 				}
+ 			} 
+ 		}
  		else if (strcasecmp(sep->arg[1], "testload") == 0 && atoi(sep->arg[2])!=0) {
  			database.LoadSpawnGroupsByID(atoi(sep->arg[2]),&zone->spawn_group_list);
  			c->Message(0, "Group %i loaded successfully!", atoi(sep->arg[2]));
@@ -12800,7 +12844,7 @@ void command_advnpcspawn(Client *c, const Seperator *sep)
  		else {
  			c->Message(0, "Error: #advnpcspawn: Invalid command.");
  			c->Message(0, "Usage: #advnpcspawn [maketype|makegroup|addgroupentry|addgroupspawn]");
- 			c->Message(0, "Usage: #advnpcspawn [removegroupspawn|movespawn|editgroupbox|cleargroupbox]");
+ 			c->Message(0, "Usage: #advnpcspawn [removegroupspawn|movespawn|editrespawn|editgroupbox|cleargroupbox]");
  		}
  }
 

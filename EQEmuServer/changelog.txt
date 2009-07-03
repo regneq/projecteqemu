@@ -4,6 +4,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 KLS: Berserker NPCs will now frenzy instead of kick.
 KLS: Fix for GetHateRandom() method crash if there are 0 people on the hate list.
 KLS: Repop force was broken when we went to the instancing system, it has now been fixed.
+KLS: Updated #advnpcspawn to be able to edit respawn and variance timers of spawn points in game.
 
 ==07/01/2009==
 AndMetal: Added rules for Sacrifice, which also corrects the minimum level you can use it on: Spells:SacrificeMinLevel(46), Spells:SacrificeMaxLevel(69), & Spells:SacrificeItemID(9963).
