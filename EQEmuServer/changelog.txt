@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==07/03/2009==
+KLS: Fix for AA reuse timer text.
+
 ==07/02/2009==
 KLS: Berserker NPCs will now frenzy instead of kick.
 KLS: Fix for GetHateRandom() method crash if there are 0 people on the hate list.
