@@ -53,6 +53,8 @@ public:
 	float	GetY()		{ return y; }
 	float	GetZ()		{ return z; }
 	void	SetRespawnTimer(int32 newrespawntime) { respawn_ = newrespawntime; };
+	void	SetVariance(int32 newvariance) { variance_ = newvariance; }
+	const int32 GetVariance() const { return variance_; }
 	int32	RespawnTimer() { return respawn_; }
 	int32	SpawnGroupID() { return spawngroup_id_; }
 	int32	CurrentNPCID() { return currentnpcid; }
