@@ -2,6 +2,10 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==07/03/2009==
 KLS: Fix for AA reuse timer text.
+KLS: Added rules to replace defines: Combat:MaxRampageTargets, Combat:MaxFlurryHits
+KLS: Redid inner workings of rampage a bit to be more efficient memory wise and to hold an unlimited number of rampage targets instead of capping at 20.
+KLS: Made ranged combat stuff virtual so I can implement npc ranged attacks tomorrow.
+KLS: Added 3 perl functions for the mob scalar type: SetEntityVariable(id_num, var), GetEntityVariable(id_num) and EntityVariableExists(id_num), taking int32 for id_num and string for var. Allows someone to store as many variables on the entity being targeted as they would like.
 
 ==07/02/2009==
 KLS: Berserker NPCs will now frenzy instead of kick.

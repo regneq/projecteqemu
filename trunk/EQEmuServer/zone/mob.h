@@ -68,6 +68,8 @@
 #include "pathing.h"
 #include "map.h"
 #include <set>
+#include <vector>
+#include <string>
 
 /*enum FindSpellType {
 	SPELLTYPE_SELF,
@@ -409,6 +411,9 @@ bool logpos;
 	virtual void GoToBind(uint8 bindnum = 0) {}
 	virtual void Gate();
 	virtual bool Attack(Mob* other, int Hand = 13, bool FromRiposte = false) { return false; }		// 13 = Primary (default), 14 = secondary
+	virtual void	RangedAttack(Mob* other) { }
+	virtual void	ThrowingAttack(Mob* other) { }
+	uint16  GetThrownDamage(sint16 wDmg, sint32& TotalDmg, int& minDmg);
 	bool	AffectedExcludingSlot(int slot, int effect);
 
 #ifdef EQBOTS
@@ -806,9 +811,6 @@ bool logpos;
 	sint32	ReduceDamage(sint32 damage);
 	sint32  ReduceMagicalDamage(sint32 damage);
 
-#define MAX_RAMPAGE_TARGETS 3
-#define MAX_RAMPAGE_LIST 20
-#define MAX_FLURRY_HITS 2
     bool Flurry();
     bool Rampage();
     bool AddRampage(Mob*);
@@ -824,6 +826,10 @@ bool logpos;
 	virtual void		AI_Start(int32 iMoveDelay = 0);
 	virtual void		AI_Stop();
 	void				AI_Process();
+
+	const char* GetEntityVariable(int32 id);
+	void SetEntityVariable(int32 id, const char *m_var);
+	bool EntityVariableExists(int32 id);
 
 #ifdef EQBOTS
 
@@ -1029,7 +1035,8 @@ protected:
 	bool	IsFullHP;
 	bool	moved;
 
-    char RampageArray[MAX_RAMPAGE_LIST][64];
+	std::vector<std::string> RampageArray;
+	std::map<int32, std::string> m_EntityVariables;
 
 	bool	isgrouped; //These meant to be private?
 	bool	israidgrouped;
