@@ -1018,7 +1018,7 @@ void Client::RangedAttack(Mob* other) {
 	}
 }
 
-uint16 Client::GetThrownDamage(sint16 wDmg, sint32& TotalDmg, int& minDmg)
+uint16 Mob::GetThrownDamage(sint16 wDmg, sint32& TotalDmg, int& minDmg)
 {
 	uint16 MaxDmg = (((2 * wDmg) * GetDamageTable(THROWING)) / 100);
 

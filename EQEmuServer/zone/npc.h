@@ -99,6 +99,8 @@ public:
 	
 	// neotokyo: added frenzy
 	bool	Attack(Mob* other, int Hand = 13, bool = false);
+	virtual void	RangedAttack(Mob* other) { }
+	virtual void	ThrowingAttack(Mob* other) { }
 
 #ifdef EQBOTS
 

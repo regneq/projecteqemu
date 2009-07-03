@@ -307,7 +307,6 @@ Mob::Mob(const char*   in_name,
 		SpecAttacks[i] = false;
 		SpecAttackTimers[i] = 0;
 	}
-    memset( RampageArray, 0, sizeof(RampageArray));
 	wandertype=0;
 	pausetype=0;
 	cur_wp=0;
@@ -4550,4 +4549,39 @@ bool Mob::HasBuffIcon(Mob *caster, Mob *target, int16 spell_id)
 		return true;
 	else
 		return false;
+}
+
+void Mob::SetEntityVariable(int32 id, const char *m_var)
+{
+	if(!id)
+		return;
+
+	std::string n_m_var = m_var;
+	m_EntityVariables[id] = n_m_var;
+}
+
+const char* Mob::GetEntityVariable(int32 id)
+{
+	if(!id)
+		return NULL;
+
+	std::map<int32, std::string>::iterator iter = m_EntityVariables.find(id);
+	if(iter != m_EntityVariables.end())
+	{
+		return iter->second.c_str();
+	}
+	return NULL;
+}
+
+bool Mob::EntityVariableExists(int32 id)
+{
+	if(!id)
+		return false;
+
+	std::map<int32, std::string>::iterator iter = m_EntityVariables.find(id);
+	if(iter != m_EntityVariables.end())
+	{
+		return true;
+	}
+	return false;
 }

@@ -5627,6 +5627,85 @@ XS(XS_Mob_SetOOCRegen)
 	XSRETURN_EMPTY;
 }
 
+XS(XS_Mob_GetEntityVariable); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_GetEntityVariable)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Mob::GetEntityVariable(THIS, id)");
+	{
+		Mob *		THIS;
+		int32		id = (int32)SvIV(ST(1));
+		Const_char *		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetEntityVariable(id);
+		sv_setpv(TARG, RETVAL); XSprePUSH; PUSHTARG;
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Mob_EntityVariableExists); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_EntityVariableExists)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Mob::EntityVariableExists(THIS, id)");
+	{
+		Mob *		THIS;
+		int32		id = (int32)SvIV(ST(1));
+		bool		RETVAL;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->EntityVariableExists(id);
+		ST(0) = boolSV(RETVAL);
+		sv_2mortal(ST(0));
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Mob_SetEntityVariable); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_SetEntityVariable)
+{
+	dXSARGS;
+	if (items != 3)
+		Perl_croak(aTHX_ "Usage: Mob::SetEntityVariable(THIS, id, var)");
+	{
+		Mob *		THIS;
+		int32		id = (int32)SvIV(ST(1));
+		const char *	var = (const char *)SvPV_nolen(ST(2));
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->SetEntityVariable(id, var);
+	}
+	XSRETURN_EMPTY;
+}
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -5848,6 +5927,9 @@ XS(boot_Mob)
 		newXSproto(strcpy(buf, "RemoveFromFeignMemory"), XS_Mob_RemoveFromFeignMemory, file, "$$");
 		newXSproto(strcpy(buf, "ClearFeignMemory"), XS_Mob_ClearFeignMemory, file, "$");
 		newXSproto(strcpy(buf, "SetOOCRegen"), XS_Mob_SetOOCRegen, file, "$$");
+		newXSproto(strcpy(buf, "GetEntityVariable"), XS_Mob_GetEntityVariable, file, "$$");
+		newXSproto(strcpy(buf, "SetEntityVariable"), XS_Mob_SetEntityVariable, file, "$$$");
+		newXSproto(strcpy(buf, "EntityVariableExists"), XS_Mob_EntityVariableExists, file, "$$");
 	XSRETURN_YES;
 }
 

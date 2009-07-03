@@ -674,9 +674,8 @@ public:
 	int8	SlotConvert2(int8 slot);	//Maybe not needed.
 	void	Escape(); //AA Escape
 	void    RemoveNoRent();
-	void	RangedAttack(Mob* other);
-	void	ThrowingAttack(Mob* other);
-	uint16  GetThrownDamage(sint16 wDmg, sint32& TotalDmg, int& minDmg);
+	virtual void	RangedAttack(Mob* other);
+	virtual void	ThrowingAttack(Mob* other);
 
 	void	SetZoneFlag(uint32 zone_id);
 	void	ClearZoneFlag(uint32 zone_id);
