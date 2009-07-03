@@ -148,11 +148,12 @@ void Client::ActivateAA(aaID activate){
 
 	int AATimerID = GetAATimerID(activate);
 
+	SendAA_Struct* aa2 = NULL;
 	aaID aaid = activate;
 	uint8 activate_val = GetAA(activate);
 	//this wasn't taking into acct multi tiered act talents before...
 	if(activate_val == 0){
-		SendAA_Struct* aa2 = zone->FindAA(activate);
+		aa2 = zone->FindAA(activate);
 		if(!aa2){
 			int i;
 			int a;
@@ -176,16 +177,31 @@ void Client::ActivateAA(aaID activate){
 		return;
 	}
 	
-	if(!p_timers.Expired(&database, AATimerID + pTimerAAStart)) {
-		const char* aaname = aas_send[activate_val]->name;
+	if(!p_timers.Expired(&database, AATimerID + pTimerAAStart)) 
+	{
+		char aastr[10];
+		char aa_hr[10];
+		char aa_min[10];
+		char aa_sec[10];
+		memset(aastr, 0, 10);
+		memset(aa_hr, 0, 10);
+		memset(aa_min, 0, 10);
+		memset(aa_sec, 0, 10);
+
 		uint32 aaremain = p_timers.GetRemainingTime(AATimerID + pTimerAAStart);
 		uint32 aaremain_hr = aaremain / (60 * 60);
 		uint32 aaremain_min = (aaremain / 60) % 60;
 		uint32 aaremain_sec = aaremain % 60;
+
+		sprintf(aastr, "%d", activate);
+		sprintf(aa_hr, "%d", aaremain_hr);
+		sprintf(aa_min, "%d", aaremain_min);
+		sprintf(aa_sec, "%d", aaremain_sec);
+
 		if (aaremain_hr >= 1)	//1 hour or more
-			Message_StringID(13, AA_REUSE_MSG, aaname, itoa(aaremain_hr), itoa(aaremain_min), itoa(aaremain_sec));	//You can use the ability %B1(1) again in %2 hour(s) %3 minute(s) %4 seconds.
+			Message_StringID(13, AA_REUSE_MSG, aastr, aa_hr, aa_min, aa_sec);	//You can use the ability %B1(1) again in %2 hour(s) %3 minute(s) %4 seconds.
 		else	//less than an hour
-			Message_StringID(13, AA_REUSE_MSG2, aaname, itoa(aaremain_min), itoa(aaremain_sec));	//You can use the ability %B1(1) again in %2 minute(s) %3 seconds.
+			Message_StringID(13, AA_REUSE_MSG2, aastr, aa_min, aa_sec);	//You can use the ability %B1(1) again in %2 minute(s) %3 seconds.
 		return;
 	}
 	
