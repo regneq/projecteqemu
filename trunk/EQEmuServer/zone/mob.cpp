@@ -95,7 +95,8 @@ Mob::Mob(const char*   in_name,
 		 int8   in_see_improved_hide,
 		 sint16 in_hp_regen,
 		 sint16 in_mana_regen,
-		 int8	in_qglobal
+		 int8	in_qglobal,
+		 float	in_slow_mitigation	//Drakelord:  Allows for mobs to mitigate how much they are slowed.
 
 		 ) : 
 		attack_timer(2000),
@@ -212,6 +213,7 @@ Mob::Mob(const char*   in_name,
 	hp_regen = in_hp_regen;
 	mana_regen = in_mana_regen;
 	oocregen = RuleI(NPC, OOCRegen); //default Out of Combat Regen
+	slow_mitigation = in_slow_mitigation;
 	invisible = false;
 	invisible_undead = false;
 	invisible_animals = false;

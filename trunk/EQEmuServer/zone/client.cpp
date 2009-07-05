@@ -136,7 +136,8 @@ Client::Client(EQStreamInterface* ieqs)
 	0,
 	0,
 	0,
-	0	// qglobal
+	0,	// qglobal
+	0	//Drakelord:  slow_mitigation
 
 	),
 	//these must be listed in the order they appear in client.h

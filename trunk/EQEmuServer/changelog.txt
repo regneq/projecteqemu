@@ -1,5 +1,12 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==07/05/2009==
+gaeorn: (drakelord) Added slow migitation. Set npc_types.slow_mitigation with the portion of slow you want mitigated: 0 = 0%, 1 = 100%, .5 = 50%, etc.
+
+Required SQL:
+
+utils/sql/svn/745_slow_mitigation.sql
+
 ==07/03/2009==
 KLS: Fix for AA reuse timer text.
 KLS: Added rules to replace defines: Combat:MaxRampageTargets, Combat:MaxFlurryHits
