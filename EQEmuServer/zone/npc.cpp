@@ -1485,6 +1485,9 @@ void Mob::NPCSpecialAttacks(const char* parse, int permtag) {
 		case 'd':
 			SpecAttacks[IMMUNE_FEIGN_DEATH] = true;
 			break;
+		case 'Y':
+			SpecAttacks[SPECATK_RANGED_ATK] = true;
+			break;
 
         default:
             break;

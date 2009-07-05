@@ -5150,7 +5150,7 @@ int16 Mob::GetDamageTable(SkillType skillinuse)
 			335, 340, 340, 340,
 		};
 		if(GetClass() == MONK)
-			return (dmg_table[GetLevel()-51]*110/100);
+			return (dmg_table[GetLevel()-51]*(100+RuleI(Combat,MonkDamageTableBonus))/100);
 		else
 			return dmg_table[GetLevel()-51];
 	}

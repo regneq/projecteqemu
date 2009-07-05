@@ -88,6 +88,7 @@ enum {
 	SPECATK_QUAD,		//Q
 	SPECATK_BANE,		//b
 	SPECATK_MAGICAL,	//m
+	SPECATK_RANGED_ATK,	//Y
 	UNSLOWABLE,			//U
 	UNMEZABLE,			//M
 	UNCHARMABLE,		//C
@@ -104,7 +105,6 @@ enum {
 	IMMUNE_CASTING_FROM_RANGE, //g
 	IMMUNE_FEIGN_DEATH, //d
 	SPECATK_MAXNUM
-				//X,Y,Z are old interactive NPC codes
 };
 
 typedef enum {	//fear states

@@ -2646,6 +2646,73 @@ XS(XS__IsRunning)
 	XSRETURN(1);
 }
 
+XS(XS__IsEffectInSpell);
+XS(XS__IsEffectInSpell)
+{
+    dXSARGS;
+    if (items != 2)
+        Perl_croak(aTHX_ "Usage: IsEffectInSpell(spell_id, effect_id)");
+
+	int32		spell_id = (int32)SvUV(ST(0));
+	int32		effect_id = (int32)SvUV(ST(1));
+    bool        RETVAL;
+    dXSTARG;
+
+
+	RETVAL = IsEffectInSpell(spell_id, effect_id);
+	XSprePUSH; PUSHu((IV)RETVAL);
+
+	XSRETURN(1);
+}
+
+XS(XS__IsBeneficialSpell);
+XS(XS__IsBeneficialSpell)
+{
+    dXSARGS;
+    if (items != 1)
+        Perl_croak(aTHX_ "Usage: IsBeneficialSpell(spell_id)");
+
+	int32		spell_id = (int32)SvUV(ST(0));
+    bool        RETVAL;
+    dXSTARG;
+
+
+	RETVAL = BeneficialSpell(spell_id);
+	XSprePUSH; PUSHu((IV)RETVAL);
+
+	XSRETURN(1);
+}
+
+XS(XS__GetSpellResistType);
+XS(XS__GetSpellResistType)
+{
+    dXSARGS;
+    if (items != 1)
+        Perl_croak(aTHX_ "Usage: GetSpellResistType(spell_id)");
+
+	int32		spell_id = (int32)SvUV(ST(0));
+	sint32		spell_val = 0;
+    dXSTARG;
+
+	spell_val = GetSpellResistType(spell_id);
+	XSRETURN_UV(spell_val);
+}
+
+XS(XS__GetSpellTargetType);
+XS(XS__GetSpellTargetType)
+{
+    dXSARGS;
+    if (items != 1)
+        Perl_croak(aTHX_ "Usage: GetSpellTargetType(spell_id)");
+
+	int32		spell_id = (int32)SvUV(ST(0));
+	sint32		spell_val = 0;
+    dXSTARG;
+
+	spell_val = GetSpellTargetType(spell_id);
+	XSRETURN_UV(spell_val);
+}
+
 /*
 This is the callback perl will look for to setup the
 quest package's XSUBs
@@ -2826,6 +2893,10 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "FlagInstanceByRaidLeader"), XS__FlagInstanceByRaidLeader, file);
 		newXS(strcpy(buf, "SetRunning"), XS__SetRunning, file);
 		newXS(strcpy(buf, "IsRunning"), XS__IsRunning, file);
+		newXS(strcpy(buf, "IsEffectInSpell"), XS__IsEffectInSpell, file);
+		newXS(strcpy(buf, "IsBeneficialSpell"), XS__IsBeneficialSpell, file);
+		newXS(strcpy(buf, "GetSpellResistType"), XS__GetSpellResistType, file);
+		newXS(strcpy(buf, "GetSpellTargetType"), XS__GetSpellTargetType, file);
 	XSRETURN_YES;
 }
 

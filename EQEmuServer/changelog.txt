@@ -8,6 +8,10 @@ AndMetal: AAs are now calculated in CalcBonuses for clients.
 AndMetal: (via Congdar) Fix for quest::traindiscs().
 AndMetal: Fixed Packrat. However, it doesn't seem to be updating correctly to the client (or we're taking too much off).
 AndMetal: Added weight to #showstats, accurate to 1 decimal point.
+KLS: NPCs will no longer try to base their attack speed off weapons they're using, the code wasn't working anyway.
+KLS: Lowered monk kick damage and damage table bonuses but added rules to govern this damage so they can be boosted up for any servers that want.
+KLS: More work on ranged damage for npcs, not yet fully implemented but quest functions can cause NPCs to ranged attack.
+KLS: Added quest::IsEffectInSpell(spell_id, effect_id), quest::IsBeneficialSpell(spell_id), quest::GetSpellResistType(spell_id), quest::GetSpellTargetType(spell_id)
 
 Required SQL:
 

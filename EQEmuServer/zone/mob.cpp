@@ -1562,10 +1562,12 @@ void Mob::SetAttackTimer() {
 			ItemInst* ci = CastToClient()->GetInv().GetItem(i);
 			if (ci)
 				ItemToUse = ci->GetItem();
-		} else if(IsNPC()) {
-			int32 eid = CastToNPC()->GetEquipment(i);
-			if(eid != 0)
-				ItemToUse = database.GetItem(eid);
+		} else if(IsNPC()) 
+		{
+			//The code before here was fundementally flawed because equipment[] 
+			//isn't the same as PC inventory and also:
+			//NPCs don't use weapon speed to dictate how fast they hit anyway.
+			ItemToUse = NULL;
 		}
 		
 		//special offhand stuff
