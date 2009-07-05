@@ -104,8 +104,9 @@ public:
 
 	void	LoadAAs();
 	int		GetTotalAAs() { return totalAAs; }
-	SendAA_Struct* GetAABySequence(int32 seq) { return aas[seq]; }
-	SendAA_Struct* FindAA(int32 id);
+	SendAA_Struct*	GetAABySequence(int32 seq) { return aas[seq]; }
+	SendAA_Struct*	FindAA(int32 id);
+	uint8	GetTotalAALevels(int32 skill_id);
 	void	LoadZoneDoors(const char* zone, int16 version);
 	bool	LoadZoneObjects();
 	bool	LoadGroundSpawns();

@@ -348,6 +348,10 @@ RULE_REAL ( Adventure, LDoNBaseTrapDifficulty, 15.0 )
 RULE_REAL ( Adventure, LDoNCriticalFailTrapThreshold, 10.0 )
 RULE_CATEGORY_END()
 
+//RULE_CATEGORY ( AA )
+//RULE_INT ( AA, MaxEffectSlots, 7)	//the highest slot # used in the aa_effects table. have to use MAX_AA_EFFECT_SLOTS for now
+//RULE_CATEGORY_END()
+
 #undef RULE_CATEGORY
 #undef RULE_INT
 #undef RULE_REAL

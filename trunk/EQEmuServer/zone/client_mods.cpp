@@ -73,64 +73,74 @@ sint16 Client::GetMaxResist() const
 sint16 Client::GetMaxSTR() const {
 	return GetMaxStat()
 		+ itembonuses.STRCapMod
-		+ spellbonuses.STRCapMod;
+		+ spellbonuses.STRCapMod
+		+ aabonuses.STRCapMod;
 }
 sint16 Client::GetMaxSTA() const {
 	return GetMaxStat()
 		+ itembonuses.STACapMod
-		+ spellbonuses.STACapMod;
+		+ spellbonuses.STACapMod
+		+ aabonuses.STACapMod;
 }
 sint16 Client::GetMaxDEX() const {
 	return GetMaxStat()
 		+ itembonuses.DEXCapMod
-		+ spellbonuses.DEXCapMod;
+		+ spellbonuses.DEXCapMod
+		+ aabonuses.DEXCapMod;
 }
 sint16 Client::GetMaxAGI() const {
 	return GetMaxStat()
 		+ itembonuses.AGICapMod
-		+ spellbonuses.AGICapMod;
+		+ spellbonuses.AGICapMod
+		+ aabonuses.AGICapMod;
 }
 sint16 Client::GetMaxINT() const {
 	return GetMaxStat()
 		+ itembonuses.INTCapMod
 		+ spellbonuses.INTCapMod
-		+ (GetAA(aaInnateEnlightenment) * 10);
+		+ aabonuses.INTCapMod;
 }
 sint16 Client::GetMaxWIS() const {
 	return GetMaxStat()
 		+ itembonuses.WISCapMod
 		+ spellbonuses.WISCapMod
-		+ (GetAA(aaInnateEnlightenment) * 10);
+		+ aabonuses.WISCapMod;
 }
 sint16 Client::GetMaxCHA() const {
 	return GetMaxStat()
 		+ itembonuses.CHACapMod
-		+ spellbonuses.CHACapMod;
+		+ spellbonuses.CHACapMod
+		+ aabonuses.CHACapMod;
 }
 sint16 Client::GetMaxMR() const {
 	return GetMaxResist()
 		+ itembonuses.MRCapMod
-		+ spellbonuses.MRCapMod;
+		+ spellbonuses.MRCapMod
+		+ aabonuses.MRCapMod;
 }
 sint16 Client::GetMaxPR() const {
 	return GetMaxResist()
 		+ itembonuses.PRCapMod
-		+ spellbonuses.PRCapMod;
+		+ spellbonuses.PRCapMod
+		+ aabonuses.PRCapMod;
 }
 sint16 Client::GetMaxDR() const {
 	return GetMaxResist()
 		+ itembonuses.DRCapMod
-		+ spellbonuses.DRCapMod;
+		+ spellbonuses.DRCapMod
+		+ aabonuses.DRCapMod;
 }
 sint16 Client::GetMaxCR() const {
 	return GetMaxResist()
 		+ itembonuses.CRCapMod
-		+ spellbonuses.CRCapMod;
+		+ spellbonuses.CRCapMod
+		+ aabonuses.CRCapMod;
 }
 sint16 Client::GetMaxFR() const {
 	return GetMaxResist()
 		+ itembonuses.FRCapMod
-		+ spellbonuses.FRCapMod;
+		+ spellbonuses.FRCapMod
+		+ aabonuses.FRCapMod;
 }
 sint32 Client::LevelRegen()
 {
@@ -249,26 +259,10 @@ sint32 Client::CalcMaxHP() {
 	//but the actual effect sent on live causes the client
 	//to apply it to (basehp + itemhp).. I will oblige to the client's whims over
 	//the aa description
-	switch(GetAA(aaNaturalDurability)) {
-	case 1:
-		nd += 200;
-		break;
-	case 2:
-		nd += 500;
-		break;
-	case 3:
-		nd += 1000;
-		break;
-	}
-	
-	if(GetAA(aaPhysicalEnhancement))
-		nd += 200;
-
-	nd += 150*GetAA(aaPlanarDurability);
+	nd += aabonuses.MaxHP;	//Natural Durability, Physical Enhancement, Planar Durability
 
 	max_hp = max_hp * nd / 10000;
-	max_hp += 100*GetAA(aaSturdiness);
-	max_hp += spellbonuses.HP;
+	max_hp += spellbonuses.HP + aabonuses.HP;
 
 	max_hp += GroupLeadershipAAHealthEnhancement();
 	
@@ -928,9 +922,10 @@ int16 Client::CalcCurrentWeight() {
 		}
 	}
 
-	if (GetAA(aaPackrat) > 0)
-		Total *= (GetAA(aaPackrat) * 10) / 100; //AndMetal: guessing 10% per level, up to 50%. description just indicates it affects gear, doesn't mention coin
-	
+	float Packrat = (float)spellbonuses.Packrat + (float)aabonuses.Packrat;
+	if (Packrat > 0)
+		Total = (int16)((float)Total * (1.0f - ((Packrat * 10.0f) / 100.0f)));	//AndMetal: guessing 10% per level, up to 50%. description just indicates it affects gear, doesn't mention coin
+																				//without casting to float & back to (u)int16, this didn't work right
 	Total += (m_pp.platinum + m_pp.gold + m_pp.silver + m_pp.copper) / 4;
 	return Total;
 }
@@ -938,7 +933,7 @@ int16 Client::CalcCurrentWeight() {
 sint16 Client::CalcSTR() {
 	sint16 val = m_pp.STR + itembonuses.STR + spellbonuses.STR;
 	
-	sint16 mod = 2 * (GetAA(aaInnateStrength) + GetAA(aaAdvancedInnateStrength));
+	sint16 mod = aabonuses.STR;
 	
 	if(val>255 && GetLevel() <= 60)
 		val = 255;
@@ -957,7 +952,7 @@ sint16 Client::CalcSTR() {
 sint16 Client::CalcSTA() {
 	sint16 val = m_pp.STA + itembonuses.STA + spellbonuses.STA;
 	
-	sint16 mod = 2 * (GetAA(aaInnateStamina) + GetAA(aaAdvancedInnateStamina));
+	sint16 mod = aabonuses.STA;
 	
 	if(val>255 && GetLevel() <= 60)
 		val = 255;
@@ -976,7 +971,7 @@ sint16 Client::CalcSTA() {
 sint16 Client::CalcAGI() {
 	sint16 val = m_pp.AGI + itembonuses.AGI + spellbonuses.AGI;
 	
-	sint16 mod = 2 * (GetAA(aaInnateAgility) + GetAA(aaAdvancedInnateAgility));
+	sint16 mod = aabonuses.AGI;
 	
 	sint16 str = GetSTR()*10;
 	if(weight > str) {
@@ -1001,7 +996,7 @@ sint16 Client::CalcAGI() {
 sint16 Client::CalcDEX() {
 	sint16 val = m_pp.DEX + itembonuses.DEX + spellbonuses.DEX;
 	
-	sint16 mod = 2 * (GetAA(aaInnateDexterity) + GetAA(aaAdvancedInnateDexterity));
+	sint16 mod = aabonuses.DEX;
 	
 	if(val>255 && GetLevel() <= 60)
 		val = 255;
@@ -1020,7 +1015,7 @@ sint16 Client::CalcDEX() {
 sint16 Client::CalcINT() {
 	sint16 val = m_pp.INT + itembonuses.INT + spellbonuses.INT;
 	
-	sint16 mod = 2 * (GetAA(aaInnateIntelligence) + GetAA(aaAdvancedInnateIntelligence));
+	sint16 mod = aabonuses.INT;
 	
 	if(val>255 && GetLevel() <= 60)
 		val = 255;
@@ -1039,7 +1034,7 @@ sint16 Client::CalcINT() {
 sint16 Client::CalcWIS() {
 	sint16 val = m_pp.WIS + itembonuses.WIS + spellbonuses.WIS;
 	
-	sint16 mod = 2 * (GetAA(aaInnateWisdom) + GetAA(aaAdvancedInnateWisdom));
+	sint16 mod = aabonuses.WIS;
 	
 	if(val>255 && GetLevel() <= 60)
 		val = 255;
@@ -1058,7 +1053,7 @@ sint16 Client::CalcWIS() {
 sint16 Client::CalcCHA() {
 	sint16 val = m_pp.CHA + itembonuses.CHA + spellbonuses.CHA;
 	
-	sint16 mod = 2 * (GetAA(aaInnateCharisma) + GetAA(aaAdvancedInnateCharisma));
+	sint16 mod = aabonuses.CHA;
 	
 	if(val>255 && GetLevel() <= 60)
 		val = 255;

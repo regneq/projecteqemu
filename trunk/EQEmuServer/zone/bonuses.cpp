@@ -91,7 +91,9 @@ void Client::CalcBonuses()
 	
 	CalcSpellBonuses(&spellbonuses);
 
-//	CalcAABonuses(&aabonuses);	//we're not quite ready for this
+	_log(AA__BONUSES, "Calculating AA Bonuses for %s.", this->GetCleanName());
+	CalcAABonuses(&aabonuses);	//we're not quite ready for this
+	_log(AA__BONUSES, "Finished calculating AA Bonuses for %s.", this->GetCleanName());
 	
 	CalcAC();
 	CalcATK();
@@ -423,49 +425,57 @@ void Client::CalcEdibleBonuses(StatBonuses* newbon) {
 }
 
 void Client::CalcAABonuses(StatBonuses* newbon) {
-
 	memset(newbon, 0, sizeof(StatBonuses));	//start fresh
 
 	int i;
-	SendAA_Struct* aa_struct = NULL;	//need a place to put the AA info
-	int32 slots = 0;	//
-	for (i = 0; i < aaHighestID; i++) {	//iterate through all of the client's AAs
-		if (aa[i]->AA > 0) {	//do we have the AA?
-			slots = database.GetTotalAALevels(i);	//find out how many effects from aa_effects table
-			if (slots > 0) { //and does it have any effects? may be able to put this above, not sure if it runs on each iteration
-													//todo: load GetTotalAALevels into memory, otherwise we run this query 1600+ times every time we calculate stats, not including queries from FillAAEffects
-				aa_struct->id = aa[i]->AA;	//since FillAAEffects pulls from aa_struct
-				aa_struct->current_level = aa[i]->value;	//not sure if we'll actually need this at any point
-				database.FillAAEffects(aa_struct);	//pull info about the AA so we can work with it, since we don't know anything about it
-				ApplyAABonuses(aa_struct, slots, newbon);	//add the bonuses
-				memset(aa_struct, 0, sizeof(SendAA_Struct));	//need to clear out the old info for the next loop. is there a better way to do this since we really just need to clear abilities?
-			}
+	uint32 slots = 0;
+	uint32 aa_AA = 0;
+	uint32 aa_value = 0;
+	for (i = 0; i < MAX_PP_AA_ARRAY; i++) {	//iterate through all of the client's AAs
+		aa_AA = this->aa[i]->AA;	//same as aaid from the aa_effects table
+		aa_value = this->aa[i]->value;	//how many points in it
+		if (aa_AA > 0 || aa_value > 0) {	//do we have the AA? if 1 of the 2 is set, we can assume we do
+			//slots = database.GetTotalAALevels(aa_AA);	//find out how many effects from aa_effects table
+			slots = zone->GetTotalAALevels(aa_AA);	//find out how many effects from aa_effects, which is loaded into memory
+			if (slots > 0)	//and does it have any effects? may be able to put this above, not sure if it runs on each iteration
+				ApplyAABonuses(aa_AA, slots, newbon);	//add the bonuses
 		}
 	}
 }
 
 
-//A lot of the normal spell functions are set for just spells. For now, we'll just put them directly into the code and comment with the corresponding normal function
+//A lot of the normal spell functions (IsBlankSpellEffect, etc) are set for just spells (in zone/spdat.h). For now, we'll just put them directly into the code and comment with the corresponding normal function
 //Maybe we'll fix it later? :-D
-void Client::ApplyAABonuses(SendAA_Struct* aa_struct, int32 slots, StatBonuses* newbon) {
-
+void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon) {
 	if (!(slots > 0))	//sanity check. why bother if no slots to fill?
 		return;
 
-	//really don't want to have to type all the junk. from AA_Ability struct
+	//from AA_Ability struct
 	int32 effect = 0;
 	int32 base1 = 0;
 	int32 base2 = 0;	//only really used for SE_RaiseStatCap & SE_ReduceSkillTimer in aa_effects table
-	int8 i; //slot
-	for (i = 1; i <= slots; i++) {	//i guess this means we can ignore a slot if it is 0
-		effect = aa_struct->abilities[i].skill_id;
-		base1 = aa_struct->abilities[i].base1;
-		base2 = aa_struct->abilities[i].base2;
+	int32 slot = 0;
 
-		//IsBlankSpellEffect
+	int8 i; //slot we're in
+	uint8 count = 0;
+	for (i = 1; i <= MAX_AA_EFFECT_SLOTS; i++) {
+		if (count >= slots || count > MAX_AA_EFFECT_SLOTS)	//if we've already iterated through this for each of the slots that have an effect, or we're above the max, then we can stop the loop
+			break;
+
+		effect = aa_effects[aaid][i].skill_id;
+		base1 = aa_effects[aaid][i].base1;
+		base2 = aa_effects[aaid][i].base2;
+		slot = aa_effects[aaid][i].slot;
+
+		//we default to 0 (SE_CurrentHP) for the effect, so if there aren't any base1/2 values, we'll just skip it
+		if (effect == 0 && base1 == 0 && base2 == 0)
+			continue;
+
+		//IsBlankSpellEffect()
 		if (effect == SE_Blank || (effect == SE_CHA && base1 == 0) || effect == SE_StackingCommand_Block || effect == SE_StackingCommand_Overwrite)
 			continue;
 
+		_log(AA__BONUSES, "Applying Effect %d from AA %u in slot %d (base1: %d, base2: %d) on %s", effect, aaid, slot, base1, base2, this->GetCleanName());
 		switch (effect)
 		{
 			case SE_Accuracy:
@@ -535,8 +545,10 @@ void Client::ApplyAABonuses(SendAA_Struct* aa_struct, int32 slots, StatBonuses* 
 			case SE_LimitCastTime:
 				break;
 			case SE_MaxHPChange:
+				newbon->MaxHP += base1;
 				break;
 			case SE_Packrat:
+				newbon->Packrat += base1;
 				break;
 			case SE_TwoHandBash:
 				break;
@@ -594,8 +606,11 @@ void Client::ApplyAABonuses(SendAA_Struct* aa_struct, int32 slots, StatBonuses* 
 				break;
 			case SE_MysticalAttune:
 				break;
+			case SE_TotalHP:
+				newbon->HP += base1;
+				break;
 		}
-
+		count++;	//increase the amount of effects we've gone through if we get to this point
 	}
 
 }

@@ -654,7 +654,7 @@ uint16 QuestManager::traindiscs(uint8 max_level, uint8 min_level) {
 	   (
 		  spells[curspell].classes[WARRIOR] != 0 &&	//check if spell exists
 		  spells[curspell].classes[initiator->GetPP().class_-1] <= max_level &&	//maximum level
-		  spells[curspell].classes[initiator->GetPP().class_-1] >= max_level &&	//minimum level
+		  spells[curspell].classes[initiator->GetPP().class_-1] >= min_level &&	//minimum level
 		  spells[curspell].skill != 52
 	   )
 		{
