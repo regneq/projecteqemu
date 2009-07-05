@@ -3158,72 +3158,6 @@ XS(XS_Client_RemoveNoRent)
 	XSRETURN_EMPTY;
 }
 
-XS(XS_Client_RangedAttack); /* prototype to pass -Wmissing-prototypes */
-XS(XS_Client_RangedAttack)
-{
-	dXSARGS;
-	if (items != 2)
-		Perl_croak(aTHX_ "Usage: Client::RangedAttack(THIS, other)");
-	{
-		Client *		THIS;
-		Mob*		other;
-
-		if (sv_derived_from(ST(0), "Client")) {
-			IV tmp = SvIV((SV*)SvRV(ST(0)));
-			THIS = INT2PTR(Client *,tmp);
-		}
-		else
-			Perl_croak(aTHX_ "THIS is not of type Client");
-		if(THIS == NULL)
-			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
-
-		if (sv_derived_from(ST(1), "Mob")) {
-			IV tmp = SvIV((SV*)SvRV(ST(1)));
-			other = INT2PTR(Mob *,tmp);
-		}
-		else
-			Perl_croak(aTHX_ "other is not of type Mob");
-		if(other == NULL)
-			Perl_croak(aTHX_ "other is NULL, avoiding crash.");
-
-		THIS->RangedAttack(other);
-	}
-	XSRETURN_EMPTY;
-}
-
-XS(XS_Client_ThrowingAttack); /* prototype to pass -Wmissing-prototypes */
-XS(XS_Client_ThrowingAttack)
-{
-	dXSARGS;
-	if (items != 2)
-		Perl_croak(aTHX_ "Usage: Client::ThrowingAttack(THIS, other)");
-	{
-		Client *		THIS;
-		Mob*		other;
-
-		if (sv_derived_from(ST(0), "Client")) {
-			IV tmp = SvIV((SV*)SvRV(ST(0)));
-			THIS = INT2PTR(Client *,tmp);
-		}
-		else
-			Perl_croak(aTHX_ "THIS is not of type Client");
-		if(THIS == NULL)
-			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
-
-		if (sv_derived_from(ST(1), "Mob")) {
-			IV tmp = SvIV((SV*)SvRV(ST(1)));
-			other = INT2PTR(Mob *,tmp);
-		}
-		else
-			Perl_croak(aTHX_ "other is not of type Mob");
-		if(other == NULL)
-			Perl_croak(aTHX_ "other is NULL, avoiding crash.");
-
-		THIS->ThrowingAttack(other);
-	}
-	XSRETURN_EMPTY;
-}
-
 XS(XS_Client_GoFish); /* prototype to pass -Wmissing-prototypes */
 XS(XS_Client_GoFish)
 {
@@ -4165,8 +4099,6 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "SlotConvert2"), XS_Client_SlotConvert2, file, "$$");
 		newXSproto(strcpy(buf, "Escape"), XS_Client_Escape, file, "$");
 		newXSproto(strcpy(buf, "RemoveNoRent"), XS_Client_RemoveNoRent, file, "$");
-		newXSproto(strcpy(buf, "RangedAttack"), XS_Client_RangedAttack, file, "$$");
-		newXSproto(strcpy(buf, "ThrowingAttack"), XS_Client_ThrowingAttack, file, "$$");
 		newXSproto(strcpy(buf, "GoFish"), XS_Client_GoFish, file, "$");
 		newXSproto(strcpy(buf, "ForageItem"), XS_Client_ForageItem, file, "$");
 		newXSproto(strcpy(buf, "CalcPriceMod"), XS_Client_CalcPriceMod, file, "$;$$");

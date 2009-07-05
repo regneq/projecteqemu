@@ -235,6 +235,12 @@ RULE_BOOL ( Combat, ArcheryBonusRequiresStationary, true) //does the 2x archery 
 RULE_BOOL ( Combat, AssistNoTargetSelf, true)  //when assisting a target that does not have a target: true = target self, false = leave target as was before assist (false = live like)
 RULE_INT ( Combat, MaxRampageTargets, 3) //max number of people hit with rampage
 RULE_INT ( Combat, MaxFlurryHits, 2) //max number of extra hits from flurry
+RULE_INT ( Combat, MonkDamageTableBonus, 5) //% bonus monks get to their damage table calcs
+RULE_INT ( Combat, FlyingKickBonus, 50) //% Modifier that this skill gets to str and skill bonuses
+RULE_INT ( Combat, DragonPunchBonus, 40) //% Modifier that this skill gets to str and skill bonuses
+RULE_INT ( Combat, EagleStrikeBonus, 30) //% Modifier that this skill gets to str and skill bonuses
+RULE_INT ( Combat, TigerClawBonus, 20) //% Modifier that this skill gets to str and skill bonuses
+RULE_INT ( Combat, RoundKickBonus, 10) //% Modifier that this skill gets to str and skill bonuses
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( NPC )

@@ -802,3 +802,13 @@ bool IsLDoNObjectSpell(int16 spell_id)
 	}
 
 }
+
+sint32 GetSpellResistType(int16 spell_id)
+{
+	return spells[spell_id].resisttype;
+}
+
+sint32 GetSpellTargetType(int16 spell_id)
+{
+	return (sint32)spells[spell_id].targettype;
+}

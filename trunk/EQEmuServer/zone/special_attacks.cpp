@@ -401,7 +401,7 @@ int Mob::MonkSpecialAttack(Mob* other, int8 unchecked_type)
 	{
 	case FLYING_KICK:{
 		skill_type = FLYING_KICK;
-		max_dmg = ((GetSTR()+GetSkill(skill_type)) * 75 / 100) + (level);
+		max_dmg = ((GetSTR()+GetSkill(skill_type)) * RuleI(Combat, FlyingKickBonus) / 100) + (level);
 		min_dmg = ((level*8)/10);
 
 		if (IsClient() && CastToClient()->GetAA(aaKickMastery))
@@ -426,7 +426,7 @@ int Mob::MonkSpecialAttack(Mob* other, int8 unchecked_type)
 		}
 	case TIGER_CLAW:{
 		skill_type = TIGER_CLAW;
-		max_dmg = ((GetSTR()+GetSkill(skill_type)) * 30 / 100);
+		max_dmg = ((GetSTR()+GetSkill(skill_type)) * RuleI(Combat, TigerClawBonus) / 100) + (level);
 		itemslot = SLOT_HANDS;
 
 		DoAnim(animTigerClaw);
@@ -435,7 +435,7 @@ int Mob::MonkSpecialAttack(Mob* other, int8 unchecked_type)
 		}
 	case ROUND_KICK:{
 		skill_type = ROUND_KICK;
-		max_dmg = ((GetSTR()+GetSkill(skill_type)) * 15 / 100);
+		max_dmg = ((GetSTR()+GetSkill(skill_type)) * RuleI(Combat, RoundKickBonus) / 100) + (level);
 
 		DoAnim(animRoundKick);
 		reuse = RoundKickReuseTime;
@@ -443,7 +443,7 @@ int Mob::MonkSpecialAttack(Mob* other, int8 unchecked_type)
 		}
 	case EAGLE_STRIKE:{
 		skill_type = EAGLE_STRIKE;
-		max_dmg = ((GetSTR()+GetSkill(skill_type)) * 45 / 100);
+		max_dmg = ((GetSTR()+GetSkill(skill_type)) * RuleI(Combat, EagleStrikeBonus) / 100) + (level);
 		itemslot = SLOT_HANDS;
 
 		DoAnim(animEagleStrike);
@@ -452,7 +452,7 @@ int Mob::MonkSpecialAttack(Mob* other, int8 unchecked_type)
 		}
 	case DRAGON_PUNCH:{
 		skill_type = DRAGON_PUNCH;
-		max_dmg = ((GetSTR()+GetSkill(skill_type)) * 65 / 100);
+		max_dmg = ((GetSTR()+GetSkill(skill_type)) * RuleI(Combat, DragonPunchBonus) / 100) + (level);
 		itemslot = SLOT_HANDS;
 
 		DoAnim(animTailRake);
@@ -893,37 +893,47 @@ void Client::RangedAttack(Mob* other) {
 	} else {
 		mlog(COMBAT__RANGED, "Ranged attack hit %s.", target->GetName());
 		
-		if(!TryHeadShot(target, ARCHERY)) {
-		sint16 WDmg = GetWeaponDamage(target, RangeWeapon);
-		sint16 ADmg = GetWeaponDamage(target, Ammo);
-		if((WDmg > 0) || (ADmg > 0)){
-			if(WDmg < 0)
-				WDmg = 0;
-			if(ADmg < 0)
-				ADmg = 0;
-
-			uint32 MaxDmg = ((WDmg+ADmg)*GetDamageTable(ARCHERY)) / 100;
-			sint32 hate = ((WDmg+ADmg));
-						
-			switch(GetAA(aaArcheryMastery)) {
-				case 1:
-					MaxDmg = MaxDmg * 130/100;
-					break;
-				case 2:
-					MaxDmg = MaxDmg * 160/100;
-					break;
-				case 3:
-					MaxDmg = MaxDmg * 2;
-					break;
-			}
-			
-			mlog(COMBAT__RANGED, "Bow DMG %d, Arrow DMG %d, Max Damage %d.", WDmg, ADmg, MaxDmg);
-
-			if(GetClass() == RANGER && GetLevel() > 50)
+		if(!TryHeadShot(target, ARCHERY)) 
+		{
+			sint16 WDmg = GetWeaponDamage(target, RangeWeapon);
+			sint16 ADmg = GetWeaponDamage(target, Ammo);
+			if((WDmg > 0) || (ADmg > 0))
 			{
-				if(RuleB(Combat, ArcheryBonusRequiresStationary))
+				if(WDmg < 0)
+					WDmg = 0;
+				if(ADmg < 0)
+					ADmg = 0;
+
+				uint32 MaxDmg = ((WDmg+ADmg)*GetDamageTable(ARCHERY)) / 100;
+				sint32 hate = ((WDmg+ADmg));
+							
+				switch(GetAA(aaArcheryMastery)) {
+					case 1:
+						MaxDmg = MaxDmg * 130/100;
+						break;
+					case 2:
+						MaxDmg = MaxDmg * 160/100;
+						break;
+					case 3:
+						MaxDmg = MaxDmg * 2;
+						break;
+				}
+				
+				mlog(COMBAT__RANGED, "Bow DMG %d, Arrow DMG %d, Max Damage %d.", WDmg, ADmg, MaxDmg);
+
+				if(GetClass() == RANGER && GetLevel() > 50)
 				{
-					if(target->IsNPC() && !target->IsMoving() && !target->IsRooted())
+					if(RuleB(Combat, ArcheryBonusRequiresStationary))
+					{
+						if(target->IsNPC() && !target->IsMoving() && !target->IsRooted())
+						{
+							MaxDmg *= 2;
+							hate *= 2;
+							mlog(COMBAT__RANGED, "Ranger. Double damage success roll, doubling damage to %d", MaxDmg);
+							Message_StringID(MT_CritMelee, BOW_DOUBLE_DAMAGE);
+						}
+					}
+					else
 					{
 						MaxDmg *= 2;
 						hate *= 2;
@@ -931,43 +941,35 @@ void Client::RangedAttack(Mob* other) {
 						Message_StringID(MT_CritMelee, BOW_DOUBLE_DAMAGE);
 					}
 				}
+
+				sint32 TotalDmg = 0;
+				
+				if (MaxDmg == 0)
+					MaxDmg = 1;
+
+				if(RuleB(Combat, UseIntervalAC))
+					TotalDmg = MaxDmg;
 				else
-				{
-					MaxDmg *= 2;
-					hate *= 2;
-					mlog(COMBAT__RANGED, "Ranger. Double damage success roll, doubling damage to %d", MaxDmg);
-					Message_StringID(MT_CritMelee, BOW_DOUBLE_DAMAGE);
+					TotalDmg = MakeRandomInt(1, MaxDmg);
+
+				int minDmg = 1;
+				if(GetLevel() > 25){
+					//twice, for ammo and weapon
+					TotalDmg += (2*((GetLevel()-25)/3));
+					minDmg += (2*((GetLevel()-25)/3));
+					hate += (2*((GetLevel()-25)/3));
 				}
+
+				target->MeleeMitigation(this, TotalDmg, minDmg);
+				ApplyMeleeDamageBonus(ARCHERY, TotalDmg);
+				TryCriticalHit(target, ARCHERY, TotalDmg);
+				target->AddToHateList(this, hate, 0, false);
+				target->Damage(this, TotalDmg, SPELL_UNKNOWN, ARCHERY);
 			}
-
-			sint32 TotalDmg = 0;
-			
-			if (MaxDmg == 0)
-				MaxDmg = 1;
-
-			if(RuleB(Combat, UseIntervalAC))
-				TotalDmg = MaxDmg;
-			else
-				TotalDmg = MakeRandomInt(1, MaxDmg);
-
-			int minDmg = 1;
-			if(GetLevel() > 25){
-				//twice, for ammo and weapon
-				TotalDmg += (2*((GetLevel()-25)/3));
-				minDmg += (2*((GetLevel()-25)/3));
-				hate += (2*((GetLevel()-25)/3));
+			else {
+				target->Damage(this, -5, SPELL_UNKNOWN, ARCHERY);
 			}
-
-			target->MeleeMitigation(this, TotalDmg, minDmg);
-			ApplyMeleeDamageBonus(ARCHERY, TotalDmg);
-			TryCriticalHit(target, ARCHERY, TotalDmg);
-			target->AddToHateList(this, hate, 0, false);
-			target->Damage(this, TotalDmg, SPELL_UNKNOWN, ARCHERY);
 		}
-		else {
-			target->Damage(this, -5, SPELL_UNKNOWN, ARCHERY);
-		}
-	}
 	}
 	
 	//try proc on hits and misses
@@ -985,6 +987,124 @@ void Client::RangedAttack(Mob* other) {
 	}
 	
 	CheckIncreaseSkill(ARCHERY,-15);
+
+	//break invis when you attack
+	if(invisible) {
+		mlog(COMBAT__ATTACKS, "Removing invisibility due to melee attack.");
+		BuffFadeByEffect(SE_Invisibility);
+		BuffFadeByEffect(SE_Invisibility2);
+		invisible = false;
+	}
+	if(invisible_undead) {
+		mlog(COMBAT__ATTACKS, "Removing invisibility vs. undead due to melee attack.");
+		BuffFadeByEffect(SE_InvisVsUndead);
+		BuffFadeByEffect(SE_InvisVsUndead2);
+		invisible_undead = false;
+	}
+	if(invisible_animals){
+		mlog(COMBAT__ATTACKS, "Removing invisibility vs. animals due to melee attack.");
+		BuffFadeByEffect(SE_InvisVsAnimals);
+		invisible_animals = false;
+	}
+
+	if(hidden || improved_hidden){
+		hidden = false;
+		improved_hidden = false;
+		EQApplicationPacket* outapp = new EQApplicationPacket(OP_SpawnAppearance, sizeof(SpawnAppearance_Struct));
+		SpawnAppearance_Struct* sa_out = (SpawnAppearance_Struct*)outapp->pBuffer;
+		sa_out->spawn_id = GetID();
+		sa_out->type = 0x03;
+		sa_out->parameter = 0;
+		entity_list.QueueClients(this, outapp, true);
+		safe_delete(outapp);
+	}
+}
+
+void NPC::RangedAttack(Mob* other) 
+{
+
+	//make sure the attack and ranged timers are up
+	//if the ranged timer is disabled, then they have no ranged weapon and shouldent be attacking anyhow
+	if((attack_timer.Enabled() && !attack_timer.Check(false)) || (ranged_timer.Enabled() && !ranged_timer.Check())) 
+	{
+		mlog(COMBAT__RANGED, "Archery canceled. Timer not up. Attack %d, ranged %d", attack_timer.GetRemainingTime(), ranged_timer.GetRemainingTime());
+		return;
+	}
+	
+	//if we have SPECATK_RANGED_ATK set then we range attack without weapon or ammo
+	const Item_Struct* weapon = NULL;
+	const Item_Struct* ammo = NULL;
+	if(!SpecAttacks[SPECATK_RANGED_ATK])
+	{
+		//find our bow and ammo return if we can't find them...
+		return;
+	}
+
+	float range = 150;
+	mlog(COMBAT__RANGED, "Calculated bow range to be %.1f", range);
+	range *= range;
+	if(DistNoRootNoZ(*target) > range) {
+		mlog(COMBAT__RANGED, "Ranged attack out of range...%.2f vs %.2f", DistNoRootNoZ(*target), range);
+		//target is out of range, client does a message
+		return;
+	}
+	else if(DistNoRootNoZ(*target) < (RuleI(Combat, MinRangedAttackDist)*RuleI(Combat, MinRangedAttackDist))){
+		return;
+	}
+
+	if(!IsAttackAllowed(target) || 
+		IsCasting() || 
+		DivineAura() ||
+		IsStunned() ||
+		IsMezzed() ||
+		(GetAppearance() == eaDead)){
+		return;
+	}
+	
+	if(!ammo)
+	{
+		ammo = database.GetItem(8005);
+	}
+
+	if(ammo)
+		SendItemAnimation(target, ammo, ARCHERY);
+		
+	// Hit?
+	if (!target->CheckHitChance(this, ARCHERY, 13)) 
+	{
+		mlog(COMBAT__RANGED, "Ranged attack missed %s.", target->GetName());
+		target->Damage(this, 0, SPELL_UNKNOWN, ARCHERY);
+	} 
+	else 
+	{
+		sint16 WDmg = GetWeaponDamage(target, weapon);
+		sint16 ADmg = GetWeaponDamage(target, ammo);
+		if(WDmg > 0 || ADmg > 0)
+		{
+			mlog(COMBAT__RANGED, "Ranged attack hit %s.", target->GetName());
+			sint32 TotalDmg = 0;
+			
+			sint32 MaxDmg = max_dmg * 0.5;
+			sint32 MinDmg = min_dmg * 0.5;
+
+			if(RuleB(Combat, UseIntervalAC))
+				TotalDmg = MaxDmg;
+			else
+				TotalDmg = MakeRandomInt(MinDmg, MaxDmg);
+
+			sint32 hate = TotalDmg;
+
+			target->MeleeMitigation(this, TotalDmg, MinDmg);
+			ApplyMeleeDamageBonus(ARCHERY, TotalDmg);
+			TryCriticalHit(target, ARCHERY, TotalDmg);
+			target->AddToHateList(this, hate, 0, false);
+			target->Damage(this, TotalDmg, SPELL_UNKNOWN, ARCHERY);
+		}
+		else 
+		{
+			target->Damage(this, -5, SPELL_UNKNOWN, ARCHERY);
+		}
+	}
 
 	//break invis when you attack
 	if(invisible) {

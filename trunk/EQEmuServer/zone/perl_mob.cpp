@@ -914,6 +914,72 @@ XS(XS_Mob_Damage)
 	XSRETURN_EMPTY;
 }
 
+XS(XS_Mob_RangedAttack); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_RangedAttack)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Mob::RangedAttack(THIS, other)");
+	{
+		Mob *		THIS;
+		Mob*		other;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		if (sv_derived_from(ST(1), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(1)));
+			other = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "other is not of type Mob");
+		if(other == NULL)
+			Perl_croak(aTHX_ "other is NULL, avoiding crash.");
+
+		THIS->RangedAttack(other);
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_Mob_ThrowingAttack); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_ThrowingAttack)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Mob::ThrowingAttack(THIS, other)");
+	{
+		Mob *		THIS;
+		Mob*		other;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		if (sv_derived_from(ST(1), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(1)));
+			other = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "other is not of type Mob");
+		if(other == NULL)
+			Perl_croak(aTHX_ "other is NULL, avoiding crash.");
+
+		THIS->ThrowingAttack(other);
+	}
+	XSRETURN_EMPTY;
+}
+
 XS(XS_Mob_Heal); /* prototype to pass -Wmissing-prototypes */
 XS(XS_Mob_Heal)
 {
@@ -5757,6 +5823,8 @@ XS(boot_Mob)
 		newXSproto(strcpy(buf, "Gate"), XS_Mob_Gate, file, "$");
 		newXSproto(strcpy(buf, "Attack"), XS_Mob_Attack, file, "$$;$$");
 		newXSproto(strcpy(buf, "Damage"), XS_Mob_Damage, file, "$$$$$;$$$");
+		newXSproto(strcpy(buf, "RangedAttack"), XS_Mob_RangedAttack, file, "$$");
+		newXSproto(strcpy(buf, "ThrowingAttack"), XS_Mob_ThrowingAttack, file, "$$");
 		newXSproto(strcpy(buf, "Heal"), XS_Mob_Heal, file, "$");
 		newXSproto(strcpy(buf, "HealDamage"), XS_Mob_HealDamage, file, "$$;$");
 		newXSproto(strcpy(buf, "SetMaxHP"), XS_Mob_SetMaxHP, file, "$");
