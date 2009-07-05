@@ -386,7 +386,8 @@ bool logpos;
 		int8	in_see_improved_hide,
 		sint16	in_hp_regen,
 		sint16	in_mana_regen,
-		int8	in_qglobal
+		int8	in_qglobal,
+		float	in_slow_mitigation	//Drakelord:  Allows for mobs to mitigate how much they are slowed.
 
 	);
 	virtual ~Mob();
@@ -1070,6 +1071,7 @@ protected:
 	sint16	hp_regen;
 	sint16	mana_regen;
 	sint32	oocregen; //Out of Combat Regen, % per tick
+	float 	slow_mitigation;	//Allows for a slow mitigation based on a % in decimal form.  IE, 1 = 100% mitigation, .5 is 50%
 	Buffs_Struct	buffs[BUFF_COUNT];
 	StatBonuses		itembonuses;
 	StatBonuses		spellbonuses;

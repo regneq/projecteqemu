@@ -684,8 +684,16 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 						newbon->haste = effect_value - 100;
 					}
 				} else if ((effect_value - 100) < 0) { // Slow
-					if ((effect_value - 100) < newbon->haste) {
-						newbon->haste = effect_value - 100;
+					//Slow Mitigation works by taking the amount that would be slowed, and adding a multiplied version of the difference.
+					int new_effect_value;
+					float slow_amount_mitigated = 100 - effect_value; //Gives us a value that actually represents the slow amount.
+					slow_amount_mitigated *= this->slow_mitigation;
+					new_effect_value = effect_value + slow_amount_mitigated;
+					if (new_effect_value > 100)
+						new_effect_value = 100;
+					if ((new_effect_value - 100) < newbon->haste) 
+					{
+						newbon->haste = new_effect_value - 100;
 					}
 				}
 				break;

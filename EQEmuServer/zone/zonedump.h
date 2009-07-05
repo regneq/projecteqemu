@@ -110,6 +110,7 @@ struct NPCType
 	int		accuracy_rating;  //10 = 1% accuracy
 	bool	findable;		//can be found with find command
 	bool	trackable;
+	float	slow_mitigation;	//Drakelord:  Slow mitigation % in decimal form.
 };
 
 struct ZSDump_Spawn2 {
