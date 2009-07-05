@@ -151,6 +151,7 @@ struct StatBonuses {
 	sint16	AC;
 	sint32	HP;
 	sint32	HPRegen;
+	sint32	MaxHP;
 	sint32	ManaRegen;
 	sint32	EnduranceRegen;
 	sint16	Mana;
@@ -241,6 +242,8 @@ struct StatBonuses {
 	sint8 HundredHands;		//extra haste, stacks with all other haste  i
 	bool MeleeLifetap;  //i
 	int XPRateMod;
+
+	sint8	Packrat;	//weight reduction for items, 1 point = 10%
 };
 
 typedef struct

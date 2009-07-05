@@ -175,6 +175,7 @@ public:
 	 * AAs
 	 */
 	bool    LoadAAEffects();
+	bool	LoadAAEffects2();
 	bool    LoadSwarmSpells();
 //	int32	GetPlayerAlternateAdv(int32 account_id, char* name, PlayerAA_Struct* aa);
 	SendAA_Struct*	GetAASkillVars(int32 skill_id);

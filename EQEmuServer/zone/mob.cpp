@@ -1045,6 +1045,8 @@ void Mob::ShowStats(Client* client) {
 	client->Message(0, "  Total ATK: %i  Worn ATK: %i  Worn ATK Capped: %i  Server Used ATK: %i", this->CastToClient()->GetTotalATK(), GetATK(), WornCap, attackRating);
 	client->Message(0, "  STR: %i  STA: %i  DEX: %i  AGI: %i  INT: %i  WIS: %i  CHA: %i", GetSTR(), GetSTA(), GetDEX(), GetAGI(), GetINT(), GetWIS(), GetCHA());
 	client->Message(0, "  MR: %i  PR: %i  FR: %i  CR: %i  DR: %i", GetMR(), GetPR(), GetFR(), GetCR(), GetDR());
+	if (this->IsClient())
+		client->Message(0, "  Weight: %.1f/%d", (float)this->CastToClient()->CalcCurrentWeight() / 10.0f, this->CastToClient()->GetSTR());
 	client->Message(0, "  Race: %i  BaseRace: %i  Texture: %i  HelmTexture: %i  Gender: %i  BaseGender: %i", GetRace(), GetBaseRace(), GetTexture(), GetHelmTexture(), GetGender(), GetBaseGender());
 	client->Message(0, "  Last Warp Distance: %f Threshold Remaining: %f", GetLWDistance(), GetWarpThreshold());
 	if (client->Admin() >= 100) {

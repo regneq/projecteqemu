@@ -45,6 +45,8 @@ Copyright (C) 2001-2004  EQEMu Development Team (http://eqemulator.net)
 //static data arrays, really not big enough to warrant shared mem.
 AA_DBAction AA_Actions[aaHighestID][MAX_AA_ACTION_RANKS];	//[aaid][rank]
 map<int32,SendAA_Struct*>aas_send;
+AA_Ability aa_effects[aaHighestID][MAX_AA_EFFECT_SLOTS];	//stores the effects from the aa_effects table in memory
+																//i'd prefer to do this with a map to save memory (by default, this will use 182,336 bytes per zone) & increase performance, but i can't find an elegant way to nest it
 
 /*
 
@@ -1135,12 +1137,50 @@ void Zone::LoadAAs() {
 	database.LoadAAs(aas);
 	
 	int i;
-	for(i=0; i < totalAAs;i++){
+	for(i=0; i < totalAAs; i++){
 		SendAA_Struct* aa = aas[i];
 		aas_send[aa->id] = aa;
 	}
+
+	//load AA Effects into aa_effects
+	LogFile->write(EQEMuLog::Status, "Loading AA Effects...");
+	if (database.LoadAAEffects2())
+		LogFile->write(EQEMuLog::Status, "Loaded AA Effects.");
+	else
+		LogFile->write(EQEMuLog::Error, "Failed to load AA Effects!");
 }
 
+bool ZoneDatabase::LoadAAEffects2() {
+	memset(aa_effects, 0, sizeof(aa_effects));	//I hope the compiler is smart about this size. If we can turn it into a map, it won't be that big of a deal
+
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT aaid, slot, effectid, base1, base2 FROM aa_effects ORDER BY aaid ASC, slot ASC"), errbuf, &result)) {
+		int count = 0;
+		while((row = mysql_fetch_row(result))!= NULL) {
+			int aaid = atoi(row[0]);
+			int slot = atoi(row[1]);
+			int effectid = atoi(row[2]);
+			int base1 = atoi(row[3]);
+			int base2 = atoi(row[4]);
+			aa_effects[aaid][slot].skill_id = effectid;
+			aa_effects[aaid][slot].base1 = base1;
+			aa_effects[aaid][slot].base2 = base2;
+			aa_effects[aaid][slot].slot = slot;	//not really needed, but we'll populate it just in case
+			count++;
+		}
+		mysql_free_result(result);
+		if (count < 1)	//no results
+			LogFile->write(EQEMuLog::Error, "Error loading AA Effects, none found in the database.");
+	} else {
+		LogFile->write(EQEMuLog::Error, "Error in ZoneDatabase::LoadAAEffects2 query: '%s': %s", query, errbuf);
+		return false;
+	}
+	safe_delete_array(query);
+	return true;
+}
 void Client::ResetAA(){
 	uint32 i;
 	for(i=0;i<MAX_PP_AA_ARRAY;i++){
@@ -1281,6 +1321,7 @@ void Client::InspectBuffs(Client* Inspector, int Rank)
 	}
 }
 
+//this really need to be renamed to LoadAAActions()
 bool ZoneDatabase::LoadAAEffects() {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     MYSQL_RES *result;
@@ -1347,6 +1388,27 @@ int8 ZoneDatabase::GetTotalAALevels(int32 skill_id) {
 		safe_delete_array(query);
 	}
 	return total;
+}
+
+//this will allow us to count the number of effects for an AA by pulling the info from memory instead of the database. hopefully this will same some CPU cycles
+uint8 Zone::GetTotalAALevels(uint32 skill_id) {
+
+	uint8 slots = 0;
+	uint32 slot = 0;
+	for (int i = 0; i < MAX_AA_EFFECT_SLOTS; i++) {	//not going to count slot 0, since i don't think the client will be able to do anything with it
+		slot = aa_effects[skill_id][i].slot;
+		if (slot > 0)
+			slots++;
+	}
+
+	/*
+	//this should be faster
+	int abilities_size = sizeof(aa_effects[skill_id]);	//this doesn't currently work since we're setting the entire array to 0 from the start
+	int AA_Ability_size = sizeof(AA_Ability);
+	uint8 slots_size = abilities_size / AA_Ability_size;	//calculate how many abilities are loaded into the AA, based on size
+	*/
+
+	return slots;
 }
 
 /*

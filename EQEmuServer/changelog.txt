@@ -2,10 +2,17 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==07/05/2009==
 gaeorn: (drakelord) Added slow migitation. Set npc_types.slow_mitigation with the portion of slow you want mitigated: 0 = 0%, 1 = 100%, .5 = 50%, etc.
+AndMetal: AAs are now calculated in CalcBonuses for clients.
+          AAs that have been converted: (Advanced) Innate STR / STA / AGI / DEX / INT / WIS / CHA, Innate Enlightenment, Natural Durability, Physical Enhancement, Planar Durability, Packrat. They should already be in the PEQ aa_effects table.
+          For new AAs, you'll want to modify the StatBonuses struct in zone/mob.h. You'll also need to add a case in ApplyAABonuses in zone/bonuses.cpp to add it to aabonuses.
+AndMetal: (via Congdar) Fix for quest::traindiscs().
+AndMetal: Fixed Packrat. However, it doesn't seem to be updating correctly to the client (or we're taking too much off).
+AndMetal: Added weight to #showstats, accurate to 1 decimal point.
 
 Required SQL:
 
 utils/sql/svn/745_slow_mitigation.sql
+
 
 ==07/03/2009==
 KLS: Fix for AA reuse timer text.
