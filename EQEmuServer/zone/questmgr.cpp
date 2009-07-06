@@ -462,32 +462,6 @@ void QuestManager::sfollow() {
 	owner->SetFollowID(0);
 }
 
-/*
-void QuestManager::cumflag() {
-	npc->flag[50] = npc->flag[50] + 1;
-}
-
-void QuestManager::flagnpc(int32 flag_num, int8 flag_value) {
-	if (flag_num >= (sizeof(npc->flag) / sizeof(npc->flag[0])))
-		npc->flag[flag_num] = flag_value;
-	else {
-		// Quag: TODO: Script error here, handle it somehow?
-	}
-}
-
-void QuestManager::flagcheck(int32 flag_to_check, int32 flag_to_set) {
-	if (flag_to_check >= (sizeof(npc->flag) / sizeof(npc->flag[0])) || flag_to_set >= (sizeof(npc->flag) / sizeof(npc->flag[0]))) {
-	if (initiator && initiator->flag[flag_to_check] != 0)
-		initiator->flag[flag_to_set] = 0;
-	} else {
-	// Quag: TODO: Script error here, handle it somehow?
-	}
-// Quag: Orignal code, not sure how this is supposed to work
-//				if (initiator->flag[atoi(arglist[0])] != 0)
-//					if (initiator) initiator->flag[atoi(arg1)] = 0;
-
-}*/
-
 void QuestManager::changedeity(int diety_id) {
 	//Cofruben:-Changes the deity.
 	if (initiator && initiator->IsClient())

@@ -418,22 +418,7 @@ sint32 HateList::GetEntHate(Mob *ent, bool damage)
 bool HateList::IsEmpty() {
 	_ZP(HateList_IsEmpty);
 	
-    LinkedListIterator<tHateEntry*> iterator(list);
-    iterator.Reset();
-	while(iterator.MoreElements())
-    {
-    	tHateEntry *cur = iterator.GetData();
-		if(cur->ent != NULL
-			&& (
-				(cur->hate > -1) 
-				|| cur->bFrenzy )
-			)
-		{
-			return(false);
-		}
-        iterator.Advance();
-	}
-    return(true);
+	return(list.Count() == 0);
 }
 
 // Prints hate list to a client

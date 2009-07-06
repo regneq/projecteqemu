@@ -2248,13 +2248,6 @@ bool NPC::Attack(Mob* other, int Hand, bool bRiposte)	 // Kaiyodo - base functio
 	
 	FaceTarget(target);
 	
-	if(!combat_event) {
-		mlog(COMBAT__HITS, "Triggering EVENT_COMBAT due to attack on %s", other->GetName());
-		parse->Event(EVENT_COMBAT, this->GetNPCTypeID(), "1", this, other);
-		combat_event = true;
-	}
-	combat_event_timer.Start(CombatEventTimer_expire);
-	
 	SkillType skillinuse = HAND_TO_HAND;
 
 	//figure out what weapon they are using, if any
@@ -2531,18 +2524,12 @@ void NPC::Damage(Mob* other, sint32 damage, int16 spell_id, SkillType attack_ski
 		spell_id = SPELL_UNKNOWN;
 	
 	//handle EVENT_ATTACK. Resets after we have not been attacked for 12 seconds
-	if(!attack_event) {
+	if(attacked_timer.Check()) 
+	{
 		mlog(COMBAT__HITS, "Triggering EVENT_ATTACK due to attack by %s", other->GetName());
 		parse->Event(EVENT_ATTACK, this->GetNPCTypeID(), 0, this, other);
-		attack_event = true;
 	}
-	if(!combat_event) {
-		mlog(COMBAT__HITS, "Triggering EVENT_COMBAT due to attack by %s", other->GetName());
-		parse->Event(EVENT_COMBAT, this->GetNPCTypeID(), "1", this, other);
-		combat_event = true;
-	}
-	attacked_timer.Start(CombatEventTimer_expire - 1);	//-1 to solidify an assumption in NPC::Process
-	combat_event_timer.Start(CombatEventTimer_expire);
+	attacked_timer.Start(CombatEventTimer_expire);
     
 	if (!IsEngaged())
 		zone->AddAggroMob();

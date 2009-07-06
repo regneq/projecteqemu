@@ -2202,25 +2202,30 @@ void Mob::FaceTarget(Mob* MobToFace) {
 	}
 }
 
-bool Mob::RemoveFromHateList(Mob* mob) {
+bool Mob::RemoveFromHateList(Mob* mob) 
+{
 	SetRunAnimSpeed(0);
 	bool bFound = false;
-	if (this->IsEngaged())
+	if(IsEngaged())
 	{
 		bFound = hate_list.RemoveEnt(mob);	
-		if  (hate_list.IsEmpty()){
-			if (bFound)
-				AI_Event_NoLongerEngaged();
+		if(hate_list.IsEmpty())
+		{
+			AI_Event_NoLongerEngaged();
 			zone->DelAggroMob();
-			//			cout << "Mobs currently Aggro: " << zone->MobsAggroCount() << endl; 
 		}
 	}
-	if (GetTarget() == mob)
+	if(GetTarget() == mob)
+	{
 		SetTarget(hate_list.GetTop(this));
+	}
+
 	return bFound;
 }
-void Mob::WipeHateList() {
-	if (this->IsEngaged()) {
+void Mob::WipeHateList() 
+{
+	if(IsEngaged()) 
+	{
 		AI_Event_NoLongerEngaged();
 	}
 	hate_list.Wipe();

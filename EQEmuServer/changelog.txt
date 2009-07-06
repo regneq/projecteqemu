@@ -1,5 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==07/06/2009==
+KLS: Reworked EVENT_ATTACK to be more efficient.
+KLS: Reworked EVENT_COMBAT to be both more efficient and smoother, no longer having an arbitrary delay before it fires.
+KLS: Took out code in HateList::IsEmpty() that no longer makes any sense to me, it should be noticably faster.
+KLS: Took out old unused quest::flagnpc stuff.
+
 ==07/05/2009==
 gaeorn: (drakelord) Added slow migitation. Set npc_types.slow_mitigation with the portion of slow you want mitigated: 0 = 0%, 1 = 100%, .5 = 50%, etc.
 AndMetal: AAs are now calculated in CalcBonuses for clients.

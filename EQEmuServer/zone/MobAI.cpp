@@ -328,24 +328,7 @@ void NPC::AIDoSpellCast(int8 i, Mob* tar, sint32 mana_cost, int32* oDontDoAgainB
 		SendPosition();
 		SetMoving(false);
 	}
-	
-	if(		AIspells[i].type == SpellType_Nuke 
-	   ||	AIspells[i].type == SpellType_Root
-	   ||	AIspells[i].type == SpellType_Lifetap
-	   ||	AIspells[i].type == SpellType_Snare
-	   ||	AIspells[i].type == SpellType_DOT
-	   ||	AIspells[i].type == SpellType_Dispel
-	   ||   AIspells[i].type == SpellType_Mez
-	  ) {
-		//we are attacking somebody, handle event_combat
-		if(!combat_event) {
-			mlog(COMBAT__HITS, "Triggering EVENT_COMBAT due to spell index %d (id %d) of type %d on %s", i, AIspells[i].spellid, AIspells[i].type, tar->GetName());
-			parse->Event(EVENT_COMBAT, this->GetNPCTypeID(), "1", this, tar);
-			combat_event = true;
-		}
-		combat_event_timer.Start(CombatEventTimer_expire);
-	}
-	
+		
 	CastSpell(AIspells[i].spellid, tar->GetID(), 1, AIspells[i].manacost == -2 ? 0 : -1, mana_cost, oDontDoAgainBefore);
 }
 
@@ -1263,6 +1246,23 @@ void Mob::AI_Event_Engaged(Mob* attacker, bool iYellForHelp) {
 			entity_list.AIYellForHelp(this, attacker);
 		}
 	}
+
+	if(IsNPC())
+	{
+		if(attacker && !attacker->IsCorpse())
+		{
+			//Because sometimes the AIYellForHelp triggers another engaged and then immediately a not engaged
+			//if the target dies before it goes off
+			if(attacker->GetHP() > 0)
+			{
+				if(!CastToNPC()->GetCombatEvent())
+				{
+					parse->Event(EVENT_COMBAT, CastToNPC()->GetNPCTypeID(), "1", CastToNPC(), GetTarget());
+					CastToNPC()->SetCombatEvent(true);
+				}
+			}
+		}
+	}
 }
 
 // Note: Hate list may not be actually clear until after this function call completes
@@ -1284,9 +1284,19 @@ void Mob::AI_Event_NoLongerEngaged() {
 	}
 	ClearRampage();
 
-	if(IsNPC() && (CastToNPC()->GetGrid()) > 0)
-		AggroedAwayFromGrid = 2;
-
+	if(IsNPC())
+	{
+		if(CastToNPC()->GetCombatEvent())
+		{
+			parse->Event(EVENT_COMBAT, CastToNPC()->GetNPCTypeID(), "0", CastToNPC(), NULL);
+			CastToNPC()->SetCombatEvent(false);
+		}
+		
+		if(CastToNPC()->GetGrid() > 0)
+		{
+			AggroedAwayFromGrid = 2;
+		}
+	}
 }
 
 //this gets called from InterruptSpell() for failure or SpellFinished() for success

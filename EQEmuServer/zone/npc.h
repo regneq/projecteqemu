@@ -281,6 +281,9 @@ public:
 	bool IsLDoNTrapDetected() { return (ldon_trap_detected); }
 	void SetLDoNTrapDetected(bool n) { ldon_trap_detected = n; }
 
+	const bool GetCombatEvent() const { return combat_event; }
+	void SetCombatEvent(bool b) { combat_event = b; }
+
 protected:
 	
 	const NPCType*	NPCTypedata;
@@ -300,17 +303,13 @@ protected:
 	sint32	primary_faction;
 	
 	Timer	attacked_timer;		//running while we are being attacked (damaged)
-	Timer	combat_event_timer;	//running while we are engaged in offensive or defensive combat activities
     Timer	swarm_timer;
     Timer	classattack_timer;
 	Timer	knightattack_timer;
     Timer	assist_timer;		//ask for help from nearby mobs
 	Timer	global_position_update_timer;
 
-	bool	attack_event;	//true if we have fired an EVENT_ATTACK and our attacked timer has not gone off
-	bool	combat_event;	//true if we have fired an EVENT_COMBAT and our combat activity timer has not gone off
-
-//	int8	position;	// 0 - Standing, 1 - Sitting, 2 - Crouching, 4 - Looting
+	bool	combat_event;	//true if we are in combat, false otherwise
     Timer	sendhpupdate_timer;
 	Timer	enraged_timer;
 

@@ -1596,16 +1596,6 @@ void NPC::DoClassAttacks(Mob *target) {
 			}
 			break;
 		}
-
-	}
-
-	if(did_attack) {
-		if(!combat_event) {
-			mlog(COMBAT__HITS, "Triggering EVENT_COMBAT due to attack on %s", target->GetName());
-			parse->Event(EVENT_COMBAT, this->GetNPCTypeID(), "1", this, target);
-			combat_event = true;
-		}
-		combat_event_timer.Start(CombatEventTimer_expire);
 	}
 	
 	classattack_timer.Start(reuse*HasteModifier/100);

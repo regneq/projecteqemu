@@ -104,8 +104,7 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 	  d->mana_regen,
 	  d->qglobal,
 	  d->slow_mitigation ),
-	attacked_timer(11000),
-	combat_event_timer(CombatEventTimer_expire),
+	attacked_timer(CombatEventTimer_expire),
 	swarm_timer(100),
 	classattack_timer(1000),
 	knightattack_timer(1000),
@@ -291,7 +290,6 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 	pet_spell_id = 0;
 	
 	delaytimer = false;
-	attack_event = false;
 	combat_event = false;
 	attack_speed = d->attack_speed;
 
@@ -626,20 +624,8 @@ bool NPC::Process()
     
     SpellProcess();
     
-    if (tic_timer.Check()) {
-		if(combat_event) {
-			//cannot have an attack event expire without a combat event at least active
-			if (attack_event && attacked_timer.Check()) {
-				attack_event = false;
-			}
-
-			//do not fire the EVENT_COMBAT(0) until our hate list is empty and the idle timer is up.
-			if(!IsEngaged() && combat_event_timer.Check()) {
-				parse->Event(EVENT_COMBAT, this->GetNPCTypeID(), "0", this, NULL);
-				combat_event = false;
-			}
-		}
-
+    if (tic_timer.Check()) 
+	{
 		//60 seconds, or whatever the rule is set to has passed, send this position to everyone to avoid ghosting
 		if(global_position_update_timer.Check() && !moving){
 			SendAllPosition();
