@@ -438,7 +438,8 @@ int command_init(void) {
 		command_add("modifynpcstat","Modifys a NPC's stats",150,command_modifynpcstat) ||
 		command_add("undyeme","Remove dye from all of your armor slots",0,command_undyeme) ||
 		command_add("instance","Modify Instances",200,command_instance) ||
-		command_add("setstartzone","[zoneid] - Set target's starting zone.  Set to zero to allow the player to use /setstartcity",80,command_setstartzone)
+		command_add("setstartzone","[zoneid] - Set target's starting zone.  Set to zero to allow the player to use /setstartcity",80,command_setstartzone) || 
+		command_add("netstats","Gets the network stats for a stream.",200,command_netstats)
 		)
 	{
 		command_deinit();
@@ -13128,4 +13129,28 @@ void command_setstartzone(Client *c, const Seperator *sep)
 	}
 
 	target->SetStartZone(startzone);
+}
+
+void command_netstats(Client *c, const Seperator *sep)
+{
+	if(c)
+	{
+		if(c->GetTarget() && c->GetTarget()->IsClient())
+		{
+			c->Message(0, "Sent:");
+			c->Message(0, "Total: %u, per second: %u", c->GetTarget()->CastToClient()->Connection()->GetBytesSent(), 
+				c->GetTarget()->CastToClient()->Connection()->GetBytesSentPerSecond());
+			c->Message(0, "Recieved:");
+			c->Message(0, "Total: %u, per second: %u", c->GetTarget()->CastToClient()->Connection()->GetBytesRecieved(), 
+				c->GetTarget()->CastToClient()->Connection()->GetBytesRecvPerSecond());
+
+		}
+		else
+		{
+			c->Message(0, "Sent:");
+			c->Message(0, "Total: %u, per second: %u", c->Connection()->GetBytesSent(), c->Connection()->GetBytesSentPerSecond());
+			c->Message(0, "Recieved:");
+			c->Message(0, "Total: %u, per second: %u", c->Connection()->GetBytesRecieved(), c->Connection()->GetBytesRecvPerSecond());
+		}
+	}
 }

@@ -16,6 +16,7 @@
 #include "../common/opcodemgr.h"
 #include "../common/misc.h"
 #include "../common/Condition.h"
+#include "../common/timer.h"
 
 using namespace std;
 
@@ -97,7 +98,6 @@ class EQStream : public EQStreamInterface {
 
 		uint32 LastPacket;
 		Mutex MVarlock;
-
 
 		// Ack sequence tracking.
 		long NextAckToSend;
@@ -182,8 +182,8 @@ class EQStream : public EQStreamInterface {
 		
 		void init();
 	public:
-		EQStream() { init(); remote_ip = 0; remote_port = 0; State=UNESTABLISHED; StreamType=UnknownStream; compressed=true; encoded=false; app_opcode_size=2; }
-		EQStream(sockaddr_in addr) { init(); remote_ip=addr.sin_addr.s_addr; remote_port=addr.sin_port; State=UNESTABLISHED; StreamType=UnknownStream; compressed=true; encoded=false; app_opcode_size=2; }
+		EQStream() { init(); remote_ip = 0; remote_port = 0; State=UNESTABLISHED; StreamType=UnknownStream; compressed=true; encoded=false; app_opcode_size=2; bytes_sent=0; bytes_recv=0; create_time=Timer::GetTimeSeconds(); }
+		EQStream(sockaddr_in addr) { init(); remote_ip=addr.sin_addr.s_addr; remote_port=addr.sin_port; State=UNESTABLISHED; StreamType=UnknownStream; compressed=true; encoded=false; app_opcode_size=2; bytes_sent=0; bytes_recv=0; create_time=Timer::GetTimeSeconds(); }
 		virtual ~EQStream() { RemoveData(); SetState(CLOSED); }
 //		inline void SetFactory(EQStreamFactory *f) { Factory=f; }
 		void SetMaxLen(uint32 length) { MaxLen=length; }
@@ -227,6 +227,54 @@ class EQStream : public EQStreamInterface {
 
 		void Decay();
 		void AdjustRates(uint32 average_delta);
+
+		int32 bytes_sent;
+		int32 bytes_recv;
+		int32 create_time;
+
+		void AddBytesSent(int32 bytes)
+		{
+			if((int64)(bytes + bytes_sent) > 4294967296)
+			{
+				bytes_sent = bytes;
+				bytes_recv = 0;
+				create_time = Timer::GetTimeSeconds();
+			}
+			else
+			{
+				bytes_sent += bytes;
+			}
+		}
+
+		void AddBytesRecv(int32 bytes)
+		{
+			if((int64)(bytes + bytes_recv) > 4294967296)
+			{
+				bytes_recv = bytes;
+				bytes_sent = 0;
+				create_time = Timer::GetTimeSeconds();
+			}
+			else
+			{
+				bytes_recv += bytes;
+			}
+		}
+
+		virtual const int32 GetBytesSent() const { return bytes_sent; }
+		virtual const int32 GetBytesRecieved() const { return bytes_recv; }
+		virtual const int32 GetBytesSentPerSecond() const
+		{
+			if((Timer::GetTimeSeconds() - create_time) == 0)
+				return 0;
+			return bytes_sent / (Timer::GetTimeSeconds() - create_time);
+		}
+
+		virtual const int32 GetBytesRecvPerSecond() const
+		{
+			if((Timer::GetTimeSeconds() - create_time) == 0)
+				return 0;
+			return bytes_recv / (Timer::GetTimeSeconds() - create_time);
+		}
 		
 		//used for dynamic stream identification
 		class Signature {
