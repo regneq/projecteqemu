@@ -180,7 +180,7 @@ enum {	//timer settings, all in milliseconds
 	AIClientScanarea_delay = 750,	//used in REVERSE_AGGRO
 	AIassistcheck_delay = 3000,		//now often a fighting NPC will yell for help
 	ClientProximity_interval = 1000,
-	CombatEventTimer_expire = 11000,
+	CombatEventTimer_expire = 12000,
 	Tribute_duration = 600000,
 	ZoneTimerResolution = 3,			//sleep time between zone main loop runs (milliseconds)
 	FeignMemoryDuration = 120000, // EverHood - Duration player must feign death to clear zonewide agro.

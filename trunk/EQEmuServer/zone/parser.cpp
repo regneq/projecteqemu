@@ -46,7 +46,7 @@ int mindex1 = 0;
 const char * charIn3 = "`~1234567890-=!@#$%^&*_+qwertyuiop[]asdfghjkl'zxcvbnm,./QWERTYUIOP|ASDFGHJKL:ZXCVBNM<>?\"\\";
 
 // MYRA - restore missing commands for qst type files & add itemlink
-string cmds("if 0|break 1|spawn 6|spawn2 7|settimer 2|stoptimer 1|rebind 4|echo 1|summonitem 1|selfcast 1|zone 1|castspell 2|say 1|emote 1|shout 1|shout2 1|depop 1|cumflag 1|flagnpc 1|exp 1|level 1|safemove 1|rain 1|snow 1|givecash 4|pvp 1|doanim 1|addskill 2|flagcheck 1|me 1|write 2|settarget 2|follow 1|sfollow 1|save 1|setallskill 1|faction 2|settime 2|setguild 2|setsky 1|setstat 2|movepc 5|gmmove 3|movegrp 4|signal 1|attack 1|itemlink 1|setglobal 4|delglobal 1|targlobal 6|setskill 2|setlanguage 2|stop 0|resume 0|start 1|moveto 3|pause 1|addldonpoints 2|");
+string cmds("if 0|break 1|spawn 6|spawn2 7|settimer 2|stoptimer 1|rebind 4|echo 1|summonitem 1|selfcast 1|zone 1|castspell 2|say 1|emote 1|shout 1|shout2 1|depop 1|exp 1|level 1|safemove 1|rain 1|snow 1|givecash 4|pvp 1|doanim 1|addskill 2|flagcheck 1|me 1|write 2|settarget 2|follow 1|sfollow 1|save 1|setallskill 1|faction 2|settime 2|setguild 2|setsky 1|setstat 2|movepc 5|gmmove 3|movegrp 4|signal 1|attack 1|itemlink 1|setglobal 4|delglobal 1|targlobal 6|setskill 2|setlanguage 2|stop 0|resume 0|start 1|moveto 3|pause 1|addldonpoints 2|");
 
 
 //end Myra
@@ -852,12 +852,6 @@ void Parser::ExCommands(string o_command, string parms, int argnums, int32 npcid
 	else if (!strcmp(command,"sfollow"))  {
 		quest_manager.sfollow();
 	}
-/*	else if (!strcmp(command,"cumflag")) {
-		quest_manager.cumflag();
-	}
-	else if (!strcmp(command,"flagnpc")) {
-		quest_manager.flagnpc(atoi(arglist[0]), atoi(arglist[1]));
-	}*/
 	else if (!strcmp(command,"changedeity")) {
 		quest_manager.changedeity(atoi(arglist[0]));
 	}
