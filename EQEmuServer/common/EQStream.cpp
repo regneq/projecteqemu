@@ -768,6 +768,7 @@ sockaddr_in address;
 	}
 	//dump_message_column(buffer,length,"Writer: ");
 	sendto(eq_fd,(char *)buffer,length,0,(sockaddr *)&address,sizeof(address));
+	AddBytesSent(length);
 }
 
 /*

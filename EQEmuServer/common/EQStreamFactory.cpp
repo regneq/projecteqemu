@@ -194,6 +194,7 @@ timeval sleep_time;
 						Streams[temp]=s;
 						WriterWork.Signal();
 						Push(s);
+						s->AddBytesRecv(length);
 						s->Process(buffer,length);
 						s->SetLastPacketTime(Timer::GetCurrentTime());
 					}
@@ -208,6 +209,7 @@ timeval sleep_time;
 					MStreams.unlock();	//the in use flag prevents the stream from being deleted while we are using it.
 					
 					if(curstream) {
+						curstream->AddBytesRecv(length);
 						curstream->Process(buffer,length);
 						curstream->SetLastPacketTime(Timer::GetCurrentTime());
 						curstream->ReleaseFromUse();

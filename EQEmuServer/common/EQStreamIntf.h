@@ -29,6 +29,11 @@ public:
 	virtual uint16 GetRemotePort() const = 0;
 	virtual bool CheckState(EQStreamState state) = 0;
 	virtual std::string Describe() const = 0;
+
+	virtual const int32 GetBytesSent() const { return 0; }
+	virtual const int32 GetBytesRecieved() const { return 0; }
+	virtual const int32 GetBytesSentPerSecond() const { return 0; }
+	virtual const int32 GetBytesRecvPerSecond() const { return 0; }
 };
 
 #endif /*EQSTREAMINTF_H_*/
