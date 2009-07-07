@@ -428,6 +428,10 @@ int command_init(void) {
 
 #endif //EQBOTS
 
+#ifdef BOTS
+		command_add("bot"," Type \"#bot help\" to the see the list of available commands for bots.", 0, command_bot) ||
+#endif
+
 		command_add("traindisc","[level] - Trains all the disciplines usable by the target, up to level specified. (may freeze client for a few seconds)",150,command_traindisc) ||
 		command_add("setgraveyard","[zone name] - Creates a graveyard for the specified zone based on your target's LOC.", 200, command_setgraveyard) ||
 		command_add("deletegraveyard","[zone name] - Deletes the graveyard for the specified zone.", 200, command_deletegraveyard) ||
@@ -13154,3 +13158,11 @@ void command_netstats(Client *c, const Seperator *sep)
 		}
 	}
 }
+
+// All new code added to command.cpp ought to be BEFORE this comment line. Do no append code to this file below the BOTS code block.
+#ifdef BOTS
+// Function delegate to support the command interface for Bots with the client.
+void command_bot(Client *c, const Seperator *sep) {
+	Bot::ProcessBotCommands(c, sep);
+}
+#endif

@@ -12,23 +12,32 @@
 
 using namespace std;
 
-class Bot : public Mob {
+class Bot : public NPC {
 public:
 	// Class Constructors
-	Bot(uint32 botID, uint32 botOwnerCharacterID, uint32 botInventoryID, uint32 botSpellsID, std::string botName, std::string botLastName, uint8 botLevel, uint16 botRace, uint8 botClass, uint8 botBodyType, sint32 hitPoints, uint8 gender, float size, uint32 hitPointsRegenRate, uint32 manaRegenRate, uint32 face, uint32 hairStyle, uint32 hairColor, uint32 eyeColor, uint32 eyeColor2, uint32 beardColor, uint32 beard, uint32 drakkinHeritage, uint32 drakkinTattoo, uint32 drakkinDetails, float runSpeed, sint16 mr, sint16 cr, sint16 dr, sint16 fr, sint16 pr, sint16 ac, uint16 str, uint16 sta, uint16 dex, uint16 agi, uint16 _int, uint16 wis, uint16 cha, uint16 attack);
 	Bot(std::string botName, uint8 botClass, uint16 botRace, uint8 botGender, Client* botOwner);
+	Bot(uint32 botID, uint32 botOwnerCharacterID, uint32 botInventoryID, uint32 botSpellsID, NPCType npcTypeData);
 
 	// Class Methods
 	bool IsValidRaceClassCombo();
 	bool IsValidName();
 	bool IsBotNameAvailable(std::string* errorMessage);
-	uint32 CreateNewBotRecord(std::string* errorMessage);
-	bool SaveBot(std::string* errorMessage);
 	bool DeleteBot(std::string* errorMessage);
-	void Spawn(float xPos, float yPos, float zPos, float heading);
-	void SetBotOwnerCharacterID(uint32 botOwnerCharacterID, std::string* errorMessage);
+	void Spawn(Client* botCharacterOwner, std::string* errorMessage);
+	//void SetBotOwnerCharacterID(uint32 botOwnerCharacterID, std::string* errorMessage);
 	void Depop(std::string* errorMessage);
 	bool MesmerizeTarget(Mob* target);
+	virtual void SetLevel(uint8 in_level, bool command = false) override;
+	virtual void FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho) override;
+	virtual bool Process() override;
+	//virtual void AI_Process();
+	virtual bool Save() override;
+	virtual void Depop(bool StartSpawnTimer = true) override;
+	virtual bool IsBot() const { return true; }
+	
+	// Bot Orders
+	virtual bool IsBotOrderAttack() { return _botOrderAttack; }
+	virtual void SetBotOrderAttack(bool botAttack) { _botOrderAttack = botAttack; }
 
 	// Bot Inventory Class Methods
 	uint32 GetBotItemBySlot(uint32 slotID, std::string* errorMessage);
@@ -49,37 +58,69 @@ public:
 	static uint32 AllowedBotSpawns(uint32 botOwnerCharacterID, std::string* errorMessage);
 	static void CleanBotLeader(uint32 botOwnerCharacterID, std::string* errorMessage);
 	static uint32 GetBotOwnerCharacterID(uint32 botID, std::string* errorMessage);
+	static bool SetBotOwnerCharacterID(uint32 botID, uint32 botOwnerCharacterID, std::string* errorMessage);
 	static std::string ClassIdToString(uint16 classId);
 	static std::string RaceIdToString(uint16 raceId);
 
-	virtual bool IsBot() const { return true; }
+	// "GET" Class Methods
+	uint32 GetBotID() { return this->GetNPCTypeID(); }
+	uint32 GetBotOwnerCharacterID() { return _botOwnerCharacterID; }
+	uint32 GetBotSpellID() { return _botSpellID; }
+	uint32 GetInventoryID() { return _botInventoryID; }
+	Mob* GetBotOwner() { return _botOwner; }
+	uint32 GetBotArcheryRange() { return _botArcheryRange; }
+	virtual bool GetSpawnStatus() { return _spawnStatus; }
+	int8 GetPetChooserID() { return _petChooserID; }
+	bool IsBotRaiding() { return _botRaiding; }
+	bool IsPetChooser() { return _petChooser; }
+	bool IsBotArcher() { return _botArcher; }
+	bool IsBotCharmer() { return _botCharmer; }
 
-	// Inline "GET" Class Methods
-	uint32 GetBotID() { return _botID; };
-	uint32 GetBotOwnerCharacterID() { return _botOwnerCharacterID; };
-	uint32 GetBotSpellID() { return _botSpellID; };
-	uint32 GetInventoryID() { return _botInventoryID; };
-	bool IsSpawned() { return _isSpawned; };
-
-	// Inline "SET" Class Methods
-	void SetBotSpellID(uint32 newSpellID) { _botSpellID = newSpellID; };
+	// "SET" Class Methods
+	void SetBotSpellID(uint32 newSpellID) { _botSpellID = newSpellID; }
+	virtual void SetSpawnStatus(bool spawnStatus) { _spawnStatus = spawnStatus; }
+	void SetBotArcheryRange(uint32 archeryRange) { _botArcheryRange = archeryRange; }
+	void SetPetChooserID(int8 id) { _petChooserID = id; }
+	void SetBotOwner(Mob* botOwner);
+	void SetBotArcher(bool a) { _botArcher = a; }
+	void SetBotCharmer(bool c) { _botCharmer = c; }
+	void SetBotRaiding(bool v) { _botRaiding = v; }
+	void SetPetChooser(bool p) { _petChooser = p; }
 
 	// Class Deconstructors
 	virtual ~Bot();
 
-// I really don't want to do this... "friend" is one of those things that ought to be uninvented.
-//protected:
-//	friend class EntityList;
+protected:
+	virtual void BotAIProcess();
+	virtual void PetAIProcess();
+	static NPCType FillNPCTypeStruct(std::string botName, std::string botLastName, uint8 botLevel, uint16 botRace, uint8 botClass, uint8 botBodyType, sint32 hitPoints, uint8 gender, float size, uint32 hitPointsRegenRate, uint32 manaRegenRate, uint32 face, uint32 hairStyle, uint32 hairColor, uint32 eyeColor, uint32 eyeColor2, uint32 beardColor, uint32 beard, uint32 drakkinHeritage, uint32 drakkinTattoo, uint32 drakkinDetails, float runSpeed, sint16 mr, sint16 cr, sint16 dr, sint16 fr, sint16 pr, sint16 ac, uint16 str, uint16 sta, uint16 dex, uint16 agi, uint16 _int, uint16 wis, uint16 cha, uint16 attack);
+	virtual bool Bot_AI_EngagedCastCheck();
+	virtual void BotMeditate(bool isSitting);
+	virtual bool BotRangedAttack(Mob* other);
+	virtual bool BotAttackMelee(Mob* other, int Hand = 13, bool = false);
+	virtual bool CheckBotDoubleAttack(bool Triple = false);
+	virtual bool Bot_AI_PursueCastCheck();
+	virtual bool Bot_AI_IdleCastCheck();
+	virtual bool Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes);
 
 private:
 	// Class Members
 	uint32 _botOwnerCharacterID;
-	uint32 _botID;
 	uint32 _botSpellID;
 	uint32 _botInventoryID;
-	bool _isSpawned;
+	bool _spawnStatus;
+	Mob* _botOwner;
 	// uint32 _expPoints;
 	// uint32 _aaPoints;
+	bool _botOrderAttack;
+	bool _botRaiding;
+	bool _botArcher;
+	bool _botCharmer;
+	bool _petChooser;
+	int8 _petChooserID;
+	uint32 _botArcheryRange;
+	bool cast_last_time;
+
 
 	// Class Methods
 	void GenerateBaseStats();
@@ -88,7 +129,9 @@ private:
 	void GenerateBaseHitPoints();
 	void SetBotLeader(uint32 botID, uint32 botOwnerCharacterID, std::string botName, std::string zoneShortName, std::string* errorMessage);
 	uint32 GetBotLeader(uint32 botID, std::string* errorMessage);
-	void CleanBotLeaderEntries(std::string* errorMessage);
+	//void CleanBotLeaderEntries(std::string* errorMessage);
+	void DoAIProcessing();
+	bool CopyOfNPCProcessLogic();
 };
 
 #endif // BOTS

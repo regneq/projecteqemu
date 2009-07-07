@@ -406,6 +406,15 @@ private:
 
 #endif //EQBOTS
 
+	// Please Do Not Declare Any EntityList Class Members After This Comment
+#ifdef BOTS
+	public:
+		Mob* GetMobByBotID(uint32 botID);
+		void AddBot(Bot* newBot, bool SendSpawnPacket = true, bool dontqueue = false);
+		bool RemoveBot(int16 entityID);
+	private:
+		LinkedList<Bot*> bot_list;
+#endif
 };
 
 class BulkZoneSpawnPacket {
