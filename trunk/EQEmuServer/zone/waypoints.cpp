@@ -401,6 +401,14 @@ bool Mob::CalculateNewPosition2(float x, float y, float z, float speed, bool che
 		mlog(AI__WAYPOINTS, "Calc Position2 (%.3f, %.3f, %.3f) inWater=%d: We are there.", x, y, z, inWater);
 		return false;
 	}
+	else if ((ABS(x_pos - x) < 0.1) && (ABS(y_pos - y) < 0.1))
+	{
+		mlog(AI__WAYPOINTS, "Calc Position2 (%.3f, %.3f, %.3f): X/Y difference <0.1, Jumping to target.", x, y, z);
+		x_pos = x;
+		y_pos = y;
+		z_pos = z;
+		return true;
+	}
 	
 	if(tar_ndx<20 && tarx==x && tary==y){
 		x_pos = x_pos + tar_vx*tar_vector;
