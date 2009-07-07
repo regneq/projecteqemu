@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==07/07/2009==
+Derision: Fix for mobs getting stuck if their path between waypoints attempts to take them 'under the world'.
+
 ==07/06/2009==
 KLS: Reworked EVENT_ATTACK to be more efficient.
 KLS: Reworked EVENT_COMBAT to be both more efficient and smoother, no longer having an arbitrary delay before it fires.
