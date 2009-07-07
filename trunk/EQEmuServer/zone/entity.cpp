@@ -499,6 +499,11 @@ void EntityList::MobProcess() {
 			Mob* mob=iterator.GetData();
 			if(mob->IsNPC())
 				entity_list.RemoveNPC(mob->CastToNPC()->GetID());
+#ifdef BOTS
+			else if(mob->IsBot()) {
+				entity_list.RemoveBot(mob->CastToBot()->GetID());
+			}
+#endif
 			else{
 #ifdef WIN32
 					struct in_addr	in;
@@ -627,7 +632,8 @@ void EntityList::AddNPC(NPC* npc, bool SendSpawnPacket, bool dontqueue) {
 	if(!npc_list.dont_delete)
 		npc_list.dont_delete=true;
 	mob_list.Insert(npc);
-};
+}
+
 void EntityList::AddObject(Object* obj, bool SendSpawnPacket) {
 	obj->SetID(GetFreeID()); 
 	if (SendSpawnPacket) {
@@ -641,7 +647,7 @@ void EntityList::AddObject(Object* obj, bool SendSpawnPacket) {
 	object_list.Insert(obj);
 	if(!net.object_timer.Enabled())
 		net.object_timer.Start();
-};
+}
 
 void EntityList::AddDoor(Doors* door) {
 	door->SetEntityID(GetFreeID());
@@ -4152,3 +4158,91 @@ void EntityList::AdventureCountUpdate(int32 a_id, int32 current, int32 total)
 		iterator.Advance();
 	}
 }
+
+#ifdef BOTS
+Mob* EntityList::GetMobByBotID(uint32 botID) {
+	Mob* Result = 0;
+
+	if(botID > 0) {
+		LinkedListIterator<Mob*> iterator(mob_list);
+	
+		iterator.Reset();
+
+		while(iterator.MoreElements())
+		{
+			if(iterator.GetData()->GetNPCTypeID() == botID)
+				Result = iterator.GetData();
+
+			iterator.Advance();
+		}
+	}
+
+	return Result;
+}
+
+void EntityList::AddBot(Bot *newBot, bool SendSpawnPacket, bool dontqueue) {
+	if(newBot) {
+		newBot->SetID(GetFreeID());
+
+		if(SendSpawnPacket) {
+			if(dontqueue) {
+				// Send immediately
+				EQApplicationPacket* app = new EQApplicationPacket;
+				newBot->CreateSpawnPacket(app, newBot);
+				QueueClients(newBot, app);
+				safe_delete(app);
+			}
+			else {
+				// Queue the packet
+				NewSpawn_Struct* ns = new NewSpawn_Struct;
+				memset(ns, 0, sizeof(NewSpawn_Struct));
+				newBot->FillSpawnStruct(ns, 0); // Not working on player newspawns, so it's safe to use a ForWho of 0
+				AddToSpawnQueue(newBot->GetID(), &ns);
+				safe_delete(ns);
+			}
+
+			parse->Event(EVENT_SPAWN, 0, 0, 0, newBot);
+		}
+
+		bot_list.Insert(newBot);
+
+		if(!bot_list.dont_delete)
+			bot_list.dont_delete = true;
+
+		mob_list.Insert(newBot);
+	}
+}
+
+bool EntityList::RemoveBot(int16 entityID) {
+	bool Result = false;
+
+	if(entityID > 0) {
+		LinkedListIterator<Bot*> iterator(bot_list);
+		
+		iterator.Reset();
+		
+		while(iterator.MoreElements())
+		{
+			if(iterator.GetData()->GetID() == entityID){
+				//make sure its proximity is removed
+				//RemoveProximity(iterator.GetData()->GetID());
+				
+				//take it out of the list
+				iterator.RemoveCurrent(false);//Already Deleted
+				
+				//take it out of our limit list
+				/*if(npc_limit_list.count(delete_id) == 1)
+					npc_limit_list.erase(delete_id);*/
+				
+				Result = true;
+
+				break;
+			}
+
+			iterator.Advance();
+		}
+	}
+
+	return Result;
+}
+#endif

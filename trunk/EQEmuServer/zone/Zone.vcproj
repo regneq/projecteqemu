@@ -1009,6 +1009,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\common\rulesys.h"
+				>
+			</File>
+			<File
+				RelativePath="..\common\ruletypes.h"
+				>
+			</File>
+			<File
 				RelativePath="..\common\Seperator.h"
 				>
 			</File>
@@ -1333,6 +1341,10 @@
 				>
 			</File>
 		</Filter>
+		<File
+			RelativePath=".\EQEmuMobObjects.cd"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>
