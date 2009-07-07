@@ -234,30 +234,12 @@ class EQStream : public EQStreamInterface {
 
 		void AddBytesSent(int32 bytes)
 		{
-			if((int64)(bytes + bytes_sent) > 4294967296)
-			{
-				bytes_sent = bytes;
-				bytes_recv = 0;
-				create_time = Timer::GetTimeSeconds();
-			}
-			else
-			{
-				bytes_sent += bytes;
-			}
+			bytes_sent += bytes;
 		}
 
 		void AddBytesRecv(int32 bytes)
 		{
-			if((int64)(bytes + bytes_recv) > 4294967296)
-			{
-				bytes_recv = bytes;
-				bytes_sent = 0;
-				create_time = Timer::GetTimeSeconds();
-			}
-			else
-			{
-				bytes_recv += bytes;
-			}
+			bytes_recv += bytes;
 		}
 
 		virtual const int32 GetBytesSent() const { return bytes_sent; }
