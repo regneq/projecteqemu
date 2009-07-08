@@ -909,6 +909,10 @@ bool logpos;
 	inline int32		DontRootMeBefore() const { return pDontRootMeBefore; }
 	inline int32		DontSnareMeBefore() const { return pDontSnareMeBefore; }
 	void				SetDontRootMeBefore(int32 time) { pDontRootMeBefore = time; }
+	void				SetDontHealMeBefore(int32 time) { pDontHealMeBefore = time; }
+	void				SetDontBuffMeBefore(int32 time) { pDontBuffMeBefore = time; }
+	void				SetDontDotMeBefore(int32 time) { pDontDotMeBefore = time; }
+	void				SetDontSnareMeBefore(int32 time) { pDontSnareMeBefore = time; }
 
 	// calculate interruption of spell via movement of mob
 	void SaveSpellLoc() {spell_x = x_pos; spell_y = y_pos; spell_z = z_pos; }
