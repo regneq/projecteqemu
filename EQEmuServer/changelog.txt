@@ -4,6 +4,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 WildcardX: Migrated more code from EQBOTS to BOTS.
 WildcardX: Included StringIDs.h to the zone project file and allowed the ";" to replace the "," characters in the WORLD project file.
 Trevius: Added rule ArcheryBaseDamageBonus to allow easy adjustments to archery base damage
+Trevius: SoF - Adjusted how AAs are loaded to allow all to be fully functional.  This is a temp work-around until the correct way is finalized.
 
 ==07/07/2009==
 Derision: Fix for mobs getting stuck if their path between waypoints attempts to take them 'under the world'.
