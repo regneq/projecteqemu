@@ -65,6 +65,7 @@ RULE_INT ( Character, RestRegenPercent, 0) // Set to >0 to enable rest state bon
 RULE_INT ( Character, RestRegenTimeToActivate, 30) // Time in seconds for rest state regen to kick in.
 RULE_INT ( Character, KillsPerGroupLeadershipAA, 250) // Number of dark blues or above per Group Leadership AA
 RULE_INT ( Character, KillsPerRaidLeadershipAA, 250) // Number of dark blues or above per Raid Leadership AA
+RULE_INT ( Character, MaxFearDurationForPlayerCharacter, 4) //4 tics, each tic calculates every 6 seconds.
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Guild )

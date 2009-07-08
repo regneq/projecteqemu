@@ -272,7 +272,7 @@ Mob *HateList::GetTop(Mob *center)
 				continue;
 			}
 
-			if(cur->ent->DivineAura() || cur->ent->IsMezzed()){
+			if(cur->ent->DivineAura() || cur->ent->IsMezzed() || cur->ent->IsFeared()){
 				if(hate == -1)
 				{
 					top = cur->ent;

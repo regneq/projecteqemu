@@ -1834,7 +1834,7 @@ XS(XS_Client_CheckIncreaseSkill)
 			chancemodi = (int)SvIV(ST(2));
 		}
 
-		RETVAL = THIS->CheckIncreaseSkill(skillid, chancemodi);
+		RETVAL = THIS->CheckIncreaseSkill(skillid, NULL, chancemodi);
 		ST(0) = boolSV(RETVAL);
 		sv_2mortal(ST(0));
 	}

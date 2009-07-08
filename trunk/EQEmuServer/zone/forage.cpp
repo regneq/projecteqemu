@@ -386,7 +386,7 @@ void Client::GoFish()
 		DeleteItemInInventory(13,0,true);
 	}
 
-	if(CheckIncreaseSkill(FISHING,5))
+	if(CheckIncreaseSkill(FISHING, NULL, 5))
 	{
 		if(title_manager.IsNewTradeSkillTitleAvailable(FISHING, GetRawSkill(FISHING)))
 			NotifyNewTitlesAvailable();
@@ -472,6 +472,6 @@ void Client::ForageItem() {
 		Message_StringID(MT_Skills, FORAGE_FAILED);
 	}
 	
-	CheckIncreaseSkill(FORAGE,5);
+	CheckIncreaseSkill(FORAGE, NULL, 5);
 	
 }

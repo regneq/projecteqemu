@@ -1129,14 +1129,6 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 	// subtle, but you'll notice your sense heading improve as you
 	// travel around
 	// Congdar: waste of processing, this skill is set to max on character creation
-	/*
-	if(
-		( (heading != ppu->heading) && !((int)heading % 3) ) ||	// turning
-		( (x_pos != ppu->x_pos) && !((int)x_pos % 6) )					// moving
-	)
-	{
-		CheckIncreaseSkill(SENSE_HEADING, -20);
-	}*/
 
 	if(proximity_timer.Check()) {
 		entity_list.ProcessMove(this, ppu->x_pos, ppu->y_pos, ppu->z_pos);
@@ -1156,7 +1148,7 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 
 	if(IsTracking && ((x_pos!=ppu->x_pos) || (y_pos!=ppu->y_pos))){
 		if(MakeRandomFloat(0, 100) < 70)//should be good
-			CheckIncreaseSkill(TRACKING,-20);
+			CheckIncreaseSkill(TRACKING, NULL, -20);
 	}
 
 	if(ppu->y_pos != y_pos || ppu->x_pos != x_pos){
@@ -2598,7 +2590,7 @@ void Client::Handle_OP_FeignDeath(const EQApplicationPacket *app)
 		SetFeigned(true);
 	}
 
-	CheckIncreaseSkill(FEIGN_DEATH,5);
+	CheckIncreaseSkill(FEIGN_DEATH, NULL, 5);
 	return;
 }
 
@@ -2628,7 +2620,7 @@ void Client::Handle_OP_Sneak(const EQApplicationPacket *app)
 		safe_delete(outapp);
 	}
 	else {
-		CheckIncreaseSkill(SNEAK,5);
+		CheckIncreaseSkill(SNEAK, NULL, 5);
 	}
 	float hidechance = ((GetSkill(SNEAK)/300.0f) + .25) * 100;
 	float random = MakeRandomFloat(0, 99);
@@ -2672,7 +2664,7 @@ void Client::Handle_OP_Hide(const EQApplicationPacket *app)
 
 	float hidechance = ((GetSkill(HIDE)/250.0f) + .25) * 100;
 	float random = MakeRandomFloat(0, 100);
-	CheckIncreaseSkill(HIDE,5);
+	CheckIncreaseSkill(HIDE, NULL, 5);
 	if (random < hidechance) {
 		EQApplicationPacket* outapp = new EQApplicationPacket(OP_SpawnAppearance, sizeof(SpawnAppearance_Struct));
 		SpawnAppearance_Struct* sa_out = (SpawnAppearance_Struct*)outapp->pBuffer;
@@ -3788,7 +3780,7 @@ void Client::Handle_OP_DeleteItem(const EQApplicationPacket *app)
 	const ItemInst *inst = GetInv().GetItem(alc->from_slot);
 	if (inst && inst->GetItem()->ItemType == ItemTypeAlcohol) {
 		entity_list.MessageClose_StringID(this, true, 50, 0, DRINKING_MESSAGE, GetName(), inst->GetItem()->Name);
-		CheckIncreaseSkill(ALCOHOL_TOLERANCE,25);
+		CheckIncreaseSkill(ALCOHOL_TOLERANCE, NULL, 25);
 	}
 	DeleteItemInInventory(alc->from_slot, 1);
 
@@ -6139,7 +6131,7 @@ void Client::Handle_OP_Mend(const EQApplicationPacket *app)
 		Message_StringID(4,MEND_FAIL);
 	}
 
-	CheckIncreaseSkill(MEND,10);
+	CheckIncreaseSkill(MEND, NULL, 10);
 	return;
 }
 
@@ -6554,7 +6546,7 @@ void Client::Handle_OP_Track(const EQApplicationPacket *app)
 	if( GetSkill(TRACKING)==0 )
 		SetSkill(TRACKING,1);
 	else
-		CheckIncreaseSkill(TRACKING,15);
+		CheckIncreaseSkill(TRACKING, NULL, 15);
 
 	if(!entity_list.MakeTrackPacket(this))
 		LogFile->write(EQEMuLog::Error, "Unable to generate OP_Track packet requested by client.");
@@ -6671,7 +6663,7 @@ void Client::Handle_OP_SenseTraps(const EQApplicationPacket *app)
 
 	Trap* trap = entity_list.FindNearbyTrap(this,800);
 
-	CheckIncreaseSkill(SENSE_TRAPS);
+	CheckIncreaseSkill(SENSE_TRAPS, NULL);
 
 	if (trap && trap->skill > 0) {
 		int uskill = GetSkill(SENSE_TRAPS);
@@ -6757,7 +6749,7 @@ void Client::Handle_OP_DisarmTraps(const EQApplicationPacket *app)
 				Message(MT_Skills,"You failed to disarm a trap.");
 			}
 		}
-		CheckIncreaseSkill(DISARM_TRAPS);
+		CheckIncreaseSkill(DISARM_TRAPS, NULL);
 		return;
 	}
 	Message(MT_Skills,"You did not find any traps close enough to disarm.");
@@ -6966,8 +6958,8 @@ void Client::Handle_OP_SetRunMode(const EQApplicationPacket *app)
 
 void Client::Handle_OP_SafeFallSuccess(const EQApplicationPacket *app)	// bit of a misnomer, sent whenever safe fall is used (success of fail)
 {
-  if(HasSkill(SAFE_FALL)) //this should only get called if the client has safe fall, but just in case...
-	CheckIncreaseSkill(SAFE_FALL); //check for skill up
+	if(HasSkill(SAFE_FALL)) //this should only get called if the client has safe fall, but just in case...
+		CheckIncreaseSkill(SAFE_FALL, NULL); //check for skill up
 }
 
 void Client::Handle_OP_Heartbeat(const EQApplicationPacket *app)
@@ -9343,7 +9335,7 @@ void Client::Handle_OP_ApplyPoison(const EQApplicationPacket *app) {
 			float SuccessChance = (GetSkill(APPLY_POISON) + GetLevel()) / 400.0f;
 			double ChanceRoll = MakeRandomFloat(0, 1);
 		
-			CheckIncreaseSkill(APPLY_POISON, 10);
+			CheckIncreaseSkill(APPLY_POISON, NULL, 10);
 				
 			if(ChanceRoll < SuccessChance) {
 				ApplyPoisonSuccessResult = 1;

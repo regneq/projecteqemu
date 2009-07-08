@@ -5,9 +5,15 @@ WildcardX: Migrated more code from EQBOTS to BOTS.
 WildcardX: Included StringIDs.h to the zone project file and allowed the ";" to replace the "," characters in the WORLD project file.
 Trevius: Added rule ArcheryBaseDamageBonus to allow easy adjustments to archery base damage
 Trevius: SoF - Adjusted how AAs are loaded to allow all to be fully functional.  This is a temp work-around until the correct way is finalized.
+KLS: Lowered aggro backstabs generates by roughly 2/3 for a high level rogue, probably a bit less for a low level rogue.
+KLS: Backstab will now use the backstab damage field from items instead of weapon damage.
+KLS: Redid all combat skill ups, can only skill up against light blue targets or better for offensive and defensive actions, wont work against clients or NPCs who don't have aggro lists.
+KLS: Mobs will prefer targets who are not feared to targets who are feared when selecting new targets.
+KLS: Added Rule (Character, MaxFearDurationForPlayerCharacter).
 
 ==07/07/2009==
 Derision: Fix for mobs getting stuck if their path between waypoints attempts to take them 'under the world'.
+
 
 ==07/06/2009==
 KLS: Reworked EVENT_ATTACK to be more efficient.

@@ -1227,7 +1227,7 @@ int32 NPC::GetMaxDamage(int8 tlevel)
 
 void NPC::PickPocket(Client* thief) {
 	
-	thief->CheckIncreaseSkill(PICK_POCKETS,5);
+	thief->CheckIncreaseSkill(PICK_POCKETS, NULL, 5);
 	
 	//make sure were allowed to targte them:
 	int olevel = GetLevel();

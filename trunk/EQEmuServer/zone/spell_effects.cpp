@@ -739,6 +739,9 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				//use resistance value for duration...
 				buffs[buffslot].ticsremaining = ((buffs[buffslot].ticsremaining * partial) / 100);
 
+				if(buffs[buffslot].ticsremaining > RuleI(Character, MaxFearDurationForPlayerCharacter))
+					buffs[buffslot].ticsremaining = RuleI(Character, MaxFearDurationForPlayerCharacter);
+
 				if(RuleB(Combat, EnableFearPathing)){
 					if(IsClient())
 					{

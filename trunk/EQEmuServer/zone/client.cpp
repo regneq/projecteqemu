@@ -1956,13 +1956,22 @@ bool Client::HasMoney(uint64 Copper) {
 	return false;
 }
 
-bool Client::CheckIncreaseSkill(SkillType skillid, int chancemodi) {
+bool Client::CheckIncreaseSkill(SkillType skillid, Mob *against_who, int chancemodi) {
 	if (IsAIControlled()) // no skillups while chamred =p
 		return false;
 	if (skillid > HIGHEST_SKILL)
 		return false;
 	int skillval = GetRawSkill(skillid);
 	int maxskill = GetMaxSkillAfterSpecializationRules(skillid, MaxSkill(skillid));
+
+	if(against_who)
+	{
+		if(against_who->SpecAttacks[IMMUNE_AGGRO] || against_who->IsClient() || 
+			GetLevelCon(against_who->GetLevel()) == CON_GREEN)
+		{
+				return false;
+		}
+	}
 
 	// Make sure we're not already at skill cap
 	if (skillval < maxskill)
@@ -2274,7 +2283,7 @@ bool Client::BindWound(Mob* bindmob, bool start, bool fail){
 					bind_out->type = 1; // Done
 					QueuePacket(outapp);
 					bind_out->type = 0;
-					CheckIncreaseSkill(BIND_WOUND, 5);
+					CheckIncreaseSkill(BIND_WOUND, NULL, 5);
 
 					int max_percent = 50 + 10 * GetAA(aaFirstAid);
 

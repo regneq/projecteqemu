@@ -475,19 +475,19 @@ uint16 Mob::GetSpecializeSkillValue(int16 spell_id) const {
 void Client::CheckSpecializeIncrease(int16 spell_id) {
 	switch(spells[spell_id].skill) {
 	case ABJURE:
-		CheckIncreaseSkill(SPECIALIZE_ABJURE);
+		CheckIncreaseSkill(SPECIALIZE_ABJURE, NULL);
 		break;
 	case ALTERATION:
-		CheckIncreaseSkill(SPECIALIZE_ALTERATION);
+		CheckIncreaseSkill(SPECIALIZE_ALTERATION, NULL);
 		break;
 	case CONJURATION:
-		CheckIncreaseSkill(SPECIALIZE_CONJURATION);
+		CheckIncreaseSkill(SPECIALIZE_CONJURATION, NULL);
 		break;
 	case DIVINATION:
-		CheckIncreaseSkill(SPECIALIZE_DIVINATION);
+		CheckIncreaseSkill(SPECIALIZE_DIVINATION, NULL);
 		break;
 	case EVOCATION:
-		CheckIncreaseSkill(SPECIALIZE_EVOCATION);
+		CheckIncreaseSkill(SPECIALIZE_EVOCATION, NULL);
 		break;
 	default:
 		//wtf...
@@ -499,47 +499,47 @@ void Client::CheckSongSkillIncrease(int16 spell_id){
 	switch(spells[spell_id].skill)
 	{
 	case SINGING:
-		CheckIncreaseSkill(SINGING, -15);
+		CheckIncreaseSkill(SINGING, NULL, -15);
 		break;
 	case PERCUSSION_INSTRUMENTS:
 		if(this->itembonuses.percussionMod > 0) {
 			if(GetRawSkill(PERCUSSION_INSTRUMENTS) > 0)	// no skill increases if not trained in the instrument
-				CheckIncreaseSkill(PERCUSSION_INSTRUMENTS, -15);
+				CheckIncreaseSkill(PERCUSSION_INSTRUMENTS, NULL, -15);
 			else
 				Message_StringID(13,NO_INSTRUMENT_SKILL);	// tell the client that they need instrument training
 		}
 		else
-			CheckIncreaseSkill(SINGING, -15);
+			CheckIncreaseSkill(SINGING, NULL, -15);
 		break;
 	case STRINGED_INSTRUMENTS:
 		if(this->itembonuses.stringedMod > 0) {
 			if(GetRawSkill(STRINGED_INSTRUMENTS) > 0)
-				CheckIncreaseSkill(STRINGED_INSTRUMENTS, -15);
+				CheckIncreaseSkill(STRINGED_INSTRUMENTS, NULL, -15);
 			else
 				Message_StringID(13,NO_INSTRUMENT_SKILL);
 		}
 		else
-			CheckIncreaseSkill(SINGING, -15);
+			CheckIncreaseSkill(SINGING, NULL, -15);
 		break;
 	case WIND_INSTRUMENTS:
 		if(this->itembonuses.windMod > 0) {
 			if(GetRawSkill(WIND_INSTRUMENTS) > 0)
-				CheckIncreaseSkill(WIND_INSTRUMENTS, -15);
+				CheckIncreaseSkill(WIND_INSTRUMENTS, NULL, -15);
 			else
 				Message_StringID(13,NO_INSTRUMENT_SKILL);
 		}
 		else
-			CheckIncreaseSkill(SINGING, -15);
+			CheckIncreaseSkill(SINGING, NULL, -15);
 		break;
 	case BRASS_INSTRUMENTS:
 		if(this->itembonuses.brassMod > 0) {
 			if(GetRawSkill(BRASS_INSTRUMENTS) > 0)
-				CheckIncreaseSkill(BRASS_INSTRUMENTS, -15);
+				CheckIncreaseSkill(BRASS_INSTRUMENTS, NULL, -15);
 			else
 				Message_StringID(13,NO_INSTRUMENT_SKILL);
 		}
 		else
-			CheckIncreaseSkill(SINGING, -15);
+			CheckIncreaseSkill(SINGING, NULL, -15);
 		break;
 	default:
 		break;
@@ -1116,10 +1116,10 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16
 			// skills
 			if(slot < MAX_PP_MEMSPELL)
 			{
-				c->CheckIncreaseSkill(spells[spell_id].skill);
+				c->CheckIncreaseSkill(spells[spell_id].skill, NULL);
 				
 				// increased chance of gaining channel skill if you regained concentration
-				c->CheckIncreaseSkill(CHANNELING, regain_conc ? 5 : 0);
+				c->CheckIncreaseSkill(CHANNELING, NULL, regain_conc ? 5 : 0);
 				
 				c->CheckSpecializeIncrease(spell_id);
 				if ((IsGateSpell(spell_id)) ||//Lieka Edit Begin:  Checking effects within the spell, rather than hardcoding Spell IDs.
