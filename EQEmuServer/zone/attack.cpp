@@ -514,8 +514,7 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage)
 	{
         skill = GetSkill(RIPOSTE);
 		if (IsClient()) {
-        	if (!other->IsClient() && GetLevelCon(other->GetLevel()) != CON_GREEN)
-				this->CastToClient()->CheckIncreaseSkill(RIPOSTE, -10);
+			CastToClient()->CheckIncreaseSkill(RIPOSTE, other, -10);
 		}
 		
 		if (!ghit) {	//if they are not using a garunteed hit discipline
@@ -561,8 +560,7 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage)
 	if (damage > 0 && CanThisClassBlock() && (!other->BehindMob(this, other->GetX(), other->GetY()) || bBlockFromRear)) {
 		skill = CastToClient()->GetSkill(BLOCKSKILL);
 		if (IsClient()) {
-			if (!other->IsClient() && GetLevelCon(other->GetLevel()) != CON_GREEN)
-				this->CastToClient()->CheckIncreaseSkill(BLOCKSKILL, -10);
+			CastToClient()->CheckIncreaseSkill(BLOCKSKILL, other, -10);
 		}
 		
 		if (!ghit) {	//if they are not using a garunteed hit discipline
@@ -602,8 +600,7 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage)
 	{
         skill = CastToClient()->GetSkill(PARRY);
 		if (IsClient()) {
-			if (!other->IsClient() && GetLevelCon(other->GetLevel()) != CON_GREEN)
-				this->CastToClient()->CheckIncreaseSkill(PARRY, -10); 
+			CastToClient()->CheckIncreaseSkill(PARRY, other, -10); 
 		}
 		
 		if (!ghit) {	//if they are not using a garunteed hit discipline
@@ -624,8 +621,7 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage)
 	
         skill = CastToClient()->GetSkill(DODGE);
 		if (IsClient()) {
-			if (!other->IsClient() && GetLevelCon(other->GetLevel()) != CON_GREEN)
-				this->CastToClient()->CheckIncreaseSkill(DODGE, -10);
+			CastToClient()->CheckIncreaseSkill(DODGE, other, -10);
 		}
 		
 		if (!ghit) {	//if they are not using a garunteed hit discipline
@@ -1318,8 +1314,8 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte)
 		else if(GetLevel() < 20 && max_hit > 40)
 			max_hit = 40;
 
-		CheckIncreaseSkill(skillinuse, -15);
-		CheckIncreaseSkill(OFFENSE, -15);
+		CheckIncreaseSkill(skillinuse, other, -15);
+		CheckIncreaseSkill(OFFENSE, other, -15);
 
 
 		// ***************************************************************
@@ -1526,9 +1522,9 @@ void Client::Damage(Mob* other, sint32 damage, int16 spell_id, SkillType attack_
 	CommonDamage(other, damage, spell_id, attack_skill, avoidable, buffslot, iBuffTic);
 	
 	if (damage > 0) {
-		//if the other is not green, and this is not a spell
-		if (other && other->IsNPC() && (spell_id == SPELL_UNKNOWN) && GetLevelCon(other->GetLevel()) != CON_GREEN )
-			CheckIncreaseSkill(DEFENSE, -15);
+
+		if (spell_id == SPELL_UNKNOWN)
+			CheckIncreaseSkill(DEFENSE, other, -15);
 	}
 }
 
@@ -3800,10 +3796,6 @@ bool Client::CheckDoubleAttack(bool tripleAttack) {
 	else {
 		// This is the actual Double Attack chance
 		chance = skill + buffs + aaBonus;
-
-		// You can gain skill even if you don't successfully double attack,
-		// but put it here so you don't skill up on triple attacks
-		CheckIncreaseSkill(DOUBLE_ATTACK, -15);
 	}
 	
 	// If your chance is greater than the RNG you are successful! Always have a 5% chance to fail at max skills+bonuses.

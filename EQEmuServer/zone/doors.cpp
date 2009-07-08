@@ -299,7 +299,7 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 				if(lockpicks->GetItem()->ItemType == ItemTypeLockPick)
 				{
 					float modskill=sender->GetSkill(PICK_LOCK);
-					sender->CheckIncreaseSkill(PICK_LOCK, 1);
+					sender->CheckIncreaseSkill(PICK_LOCK, NULL, 1);
 
 #if EQDEBUG>=5
 					LogFile->write(EQEMuLog::Debug, "Client has lockpicks: skill=%f", modskill);

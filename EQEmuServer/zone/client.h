@@ -528,7 +528,7 @@ public:
 	void	AddSkill(SkillType skillid, int16 value);
 	void	CheckSpecializeIncrease(int16 spell_id);
 	void	CheckSongSkillIncrease(int16 spell_id);
-	bool	CheckIncreaseSkill(SkillType skillid, int chancemodi = 0);
+	bool	CheckIncreaseSkill(SkillType skillid, Mob *against_who, int chancemodi = 0);
 	void	CheckLanguageSkillIncrease(int8 langid, int8 TeacherSkill);
 	void    SetLanguageSkill(int langid, int value);
 	void	SetHoTT(int32 mobid);

@@ -100,11 +100,13 @@ int Mob::GetBashDamage() const {
 	return(dmg);
 }
 
-void Mob::DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, sint32 min_damage) {
+void Mob::DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, sint32 min_damage, sint32 hate_override) {
 	//this really should go through the same code as normal melee damage to
 	//pick up all the special behavior there
 
 	sint32 hate = max_damage;
+	if(hate_override > -1)
+		hate = hate_override;
 
 	if(skill == BASH)
 	{
@@ -199,8 +201,7 @@ void Client::OPCombatAbility(const EQApplicationPacket *app) {
 	  && (ca_atk->m_skill == BASH)) {    // SLAM - Bash without a shield equipped
 		if (target!=this) {
 			
-			if(!target->IsClient())
-				CheckIncreaseSkill(BASH,10);
+			CheckIncreaseSkill(BASH, target, 10);
 			DoAnim(animTailRake);
 
 			if(GetWeaponDamage(target, GetInv().GetItem(SLOT_SECONDARY)) <= 0 &&
@@ -231,85 +232,56 @@ void Client::OPCombatAbility(const EQApplicationPacket *app) {
 		return;
 	}
 
-	/* Commented this out to replace with Mob::GetFrenzyDamage above
-	//Frenzy, an instant attack that does up to 3 unmodified attacks before AA's and foci
-	//It attempts to do an attack, for the next hit to succeed the previous must not of missed
-	if ((ca_atk->m_atk == 100) && (ca_atk->m_skill == FRENZY)) {
-		if(!target->IsClient())
-			CheckIncreaseSkill(FRENZY,10);
+	if ((ca_atk->m_atk == 100) && (ca_atk->m_skill == FRENZY)) 
+	{
+		CheckIncreaseSkill(FRENZY, target, 10);
 
-		int AtkNum = 1 + (GetSkill(FRENZY)/100);
+		int dmg = 1 + (GetSkill(FRENZY) / 100);
 
-		while(AtkNum > 0 && target)
-		{
-			if(Attack(target))
-				AtkNum--;
-			else
-				AtkNum = 0;
+		switch (GetAA(aaBlurofAxes)) {
+	  case 1:
+		  dmg *= 1.15;
+		  break;
+	  case 2:
+		  dmg *= 1.30;
+		  break;
+	  case 3:
+		  dmg *= 1.50;
+		  break;
 		}
-		
+
+		switch (GetAA(aaViciousFrenzy)) {
+	  case 1:
+		  dmg *= 1.05;
+		  break;
+	  case 2:
+		  dmg *= 1.10;
+		  break;
+	  case 3:
+		  dmg *= 1.15;
+		  break;
+	  case 4:
+		  dmg *= 1.20;
+		  break;
+	  case 5:
+		  dmg *= 1.25;
+		  break;
+		}
+
+		while(dmg > 0 && target) {
+			if(Attack(target))
+				dmg--;
+			else
+				dmg = 0;
+		}
+
 		ReuseTime = FrenzyReuseTime-1;
 		ReuseTime = (ReuseTime*HasteMod)/100;
-		if(ReuseTime > 0)
-		{
+		if(ReuseTime > 0) {
 			p_timers.Start(pTimerCombatAbility, ReuseTime);
 		}
 		return;
 	}
-	
-	*/
-
-   if ((ca_atk->m_atk == 100) && (ca_atk->m_skill == FRENZY)) {
-      if(!target->IsClient())
-         CheckIncreaseSkill(FRENZY,10);
-
-      int dmg = 1 + (GetSkill(FRENZY) / 100);
-
-      switch (GetAA(aaBlurofAxes)) {
-      case 1:
-         dmg *= 1.15;
-         break;
-      case 2:
-         dmg *= 1.30;
-         break;
-      case 3:
-         dmg *= 1.50;
-         break;
-      }
-
-      switch (GetAA(aaViciousFrenzy)) {
-      case 1:
-         dmg *= 1.05;
-         break;
-      case 2:
-         dmg *= 1.10;
-         break;
-      case 3:
-         dmg *= 1.15;
-         break;
-      case 4:
-         dmg *= 1.20;
-         break;
-      case 5:
-         dmg *= 1.25;
-         break;
-      }
-
-                while(dmg > 0 && target) {
-                        if(Attack(target))
-                                dmg--;
-                        else
-                                dmg = 0;
-                }
-               
-   //   DoSpecialAttackDamage(target, FRENZY, dmg);
-                ReuseTime = FrenzyReuseTime-1;
-                ReuseTime = (ReuseTime*HasteMod)/100;
-                if(ReuseTime > 0) {
-                        p_timers.Start(pTimerCombatAbility, ReuseTime);
-                }
-                return;
-        }
 
 	switch(GetClass())
 	{
@@ -321,8 +293,7 @@ void Client::OPCombatAbility(const EQApplicationPacket *app) {
 			break;
 		}
 		if (target!=this) {
-			if(!target->IsClient())
-				CheckIncreaseSkill(KICK,10);
+			CheckIncreaseSkill(KICK, target, 10);
 			DoAnim(animKick);
 
 			if(GetWeaponDamage(target, GetInv().GetItem(SLOT_FEET)) <= 0){
@@ -359,7 +330,7 @@ void Client::OPCombatAbility(const EQApplicationPacket *app) {
 			//hackish... but we return a huge reuse time if this is an 
 			// invalid skill, otherwise, we can safely assume it is a 
 			// valid monk skill and just cast it to a SkillType
-			CheckIncreaseSkill((SkillType) ca_atk->m_skill);
+			CheckIncreaseSkill((SkillType) ca_atk->m_skill, target, 10);
 		}
 		break;
 	}
@@ -613,7 +584,7 @@ void Mob::TryBackstab(Mob *other) {
 			) {
 			entity_list.MessageClose_StringID(this, false, 200, MT_CritMelee, ASSASSINATES, GetName());
 			if(IsClient())
-				CastToClient()->CheckIncreaseSkill(BACKSTAB,10);
+				CastToClient()->CheckIncreaseSkill(BACKSTAB, other, 10);
 			RogueAssassinate(other);
 		}
 		else {
@@ -622,16 +593,19 @@ void Mob::TryBackstab(Mob *other) {
 				float DoubleAttackProbability = (GetSkill(DOUBLE_ATTACK) + GetLevel()) / 500.0f; // 62.4 max
 				// Check for double attack with main hand assuming maxed DA Skill (MS)
 				
-				if(MakeRandomFloat(0, 1) < DoubleAttackProbability)		// Max 62.4 % chance of DA
+				if(MakeRandomFloat(0, 1) < DoubleAttackProbability)	// Max 62.4 % chance of DA
+				{
 					if(other->GetHP() > 0)
 						RogueBackstab(other);
 
-				if (tripleBackstab && other->GetHP() > 0) {
-					RogueBackstab(other);
+					if (tripleBackstab && other->GetHP() > 0) 
+					{
+						RogueBackstab(other);
+					}
 				}
 			}
 			if(IsClient())
-				CastToClient()->CheckIncreaseSkill(BACKSTAB,10);
+				CastToClient()->CheckIncreaseSkill(BACKSTAB, other, 10);
 		}
 	}
 	else if(GetAA(aaChaoticStab) > 0) {
@@ -640,7 +614,7 @@ void Mob::TryBackstab(Mob *other) {
 		if (level > 54) {
 			float DoubleAttackProbability = (GetSkill(DOUBLE_ATTACK) + GetLevel()) / 500.0f; // 62.4 max
 			if(IsClient())
-				CastToClient()->CheckIncreaseSkill(BACKSTAB,10);
+				CastToClient()->CheckIncreaseSkill(BACKSTAB, other, 10);
 			// Check for double attack with main hand assuming maxed DA Skill (MS)
 			if(MakeRandomFloat(0, 1) < DoubleAttackProbability)		// Max 62.4 % chance of DA
 				if(other->GetHP() > 0)
@@ -662,7 +636,9 @@ void Mob::RogueBackstab(Mob* other, bool min_damage)
 	sint32 ndamage = 0;
 	sint32 max_hit = 0;
 	sint32 min_hit = 0;
-	sint16 primaryweapondamage = 0;
+	sint32 hate = 0;
+	sint32 primaryweapondamage = 0;
+	sint32 backstab_dmg = 0;
 
 #ifdef EQBOTS
 
@@ -672,10 +648,13 @@ void Mob::RogueBackstab(Mob* other, bool min_damage)
 			ItemInst* botweaponInst = new ItemInst(botweaponStruct);
 			if(botweaponInst) {
 				primaryweapondamage = GetWeaponDamage(other, botweaponInst);
+				backstab_dmg = primaryweapondamage;
 				safe_delete(botweaponInst);
 			}
-			else {
+			else 
+			{
 				primaryweapondamage = (GetLevel()/7)+1; // fallback incase it's a npc without a weapon, 2 dmg at 10, 10 dmg at 65
+				backstab_dmg = primaryweapondamage;
 			}
 		}
 	}
@@ -687,17 +666,21 @@ void Mob::RogueBackstab(Mob* other, bool min_damage)
 		const ItemInst *wpn = NULL;
 		wpn = CastToClient()->GetInv().GetItem(SLOT_PRIMARY);
 		primaryweapondamage = GetWeaponDamage(other, wpn);
+		backstab_dmg = wpn->GetItem()->BackstabDmg;
 	}
 	else{
 		primaryweapondamage = (GetLevel()/7)+1; // fallback incase it's a npc without a weapon, 2 dmg at 10, 10 dmg at 65
+		backstab_dmg = primaryweapondamage;
 	}
 	
 	if(primaryweapondamage > 0){
 		if(level > 25){
-			max_hit = (((2*primaryweapondamage) * GetDamageTable(BACKSTAB) / 100) * 10 * GetSkill(BACKSTAB) / 355)  + ((level-25)/3) + 1;
+			max_hit = (((2*backstab_dmg) * GetDamageTable(BACKSTAB) / 100) * 10 * GetSkill(BACKSTAB) / 355)  + ((level-25)/3) + 1;
+			hate = 20 * backstab_dmg * GetSkill(BACKSTAB) / 355;
 		}
 		else{
-			max_hit = (((2*primaryweapondamage) * GetDamageTable(BACKSTAB) / 100) * 10 * GetSkill(BACKSTAB) / 355) + 1;
+			max_hit = (((2*backstab_dmg) * GetDamageTable(BACKSTAB) / 100) * 10 * GetSkill(BACKSTAB) / 355) + 1;
+			hate = 20 * backstab_dmg * GetSkill(BACKSTAB) / 355;
 		}
 
 		// determine minimum hits
@@ -735,7 +718,7 @@ void Mob::RogueBackstab(Mob* other, bool min_damage)
 		ndamage = -5;
 	}
 
-	DoSpecialAttackDamage(other, BACKSTAB, ndamage, min_hit);
+	DoSpecialAttackDamage(other, BACKSTAB, ndamage, min_hit, hate);
 	DoAnim(animPiercing);
 }
 
@@ -986,7 +969,7 @@ void Client::RangedAttack(Mob* other) {
 		mlog(COMBAT__RANGED, "Endless Quiver prevented ammo consumption.");
 	}
 	
-	CheckIncreaseSkill(ARCHERY,-15);
+	CheckIncreaseSkill(ARCHERY, target, -15);
 
 	//break invis when you attack
 	if(invisible) {
@@ -1283,7 +1266,7 @@ void Client::ThrowingAttack(Mob* other) { //old was 51
 	
 	//consume ammo
 	DeleteItemInInventory(ammo_slot, 1, true);
-	CheckIncreaseSkill(THROWING);
+	CheckIncreaseSkill(THROWING, target);
 
 	//break invis when you attack
 	if(invisible) {
@@ -1608,12 +1591,11 @@ void Mob::Taunt(NPC* who, bool always_succeed) {
 	if(DivineAura())
 		return;
 
-// Range check to Taunts (depends on race. range 10-25)
 	if(!CombatRange(who))
 		return;
 
-	if (!always_succeed && IsClient())
-		CastToClient()->CheckIncreaseSkill(TAUNT,10);
+	if(!always_succeed && IsClient())
+		CastToClient()->CheckIncreaseSkill(TAUNT, who, 10);
 	
 	int level = GetLevel();
 	
@@ -1710,8 +1692,9 @@ void Mob::InstillDoubt(Mob *who) {
 	if(!CombatRange(who))
 		return;
 	
-	if(IsClient()) {
-		CastToClient()->CheckIncreaseSkill(INTIMIDATION,10);
+	if(IsClient())
+	{
+		CastToClient()->CheckIncreaseSkill(INTIMIDATION, who, 10);
 	}
 
 	//I think this formula needs work

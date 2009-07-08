@@ -1118,7 +1118,7 @@ protected:
 	int GetWeaponDamage(Mob *against, const ItemInst *weapon_item);
 	int GetKickDamage() const;
 	int GetBashDamage() const;
-	void DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, sint32 min_damage = 1);
+	void DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, sint32 min_damage = 1, sint32 hate_override = -1);
 	bool HasDied();
 	void CalculateNewFearpoint();
 	float FindGroundZ(float new_x, float new_y, float z_offset=0.0);

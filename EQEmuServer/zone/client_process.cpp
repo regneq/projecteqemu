@@ -280,21 +280,11 @@ bool Client::Process() {
 		Mob *auto_attack_target = target;
 		if (auto_attack && auto_attack_target != NULL && may_use_attacks && attack_timer.Check()) {
 			if (!CombatRange(auto_attack_target)) {
-				//Message(0,"Target's Name: %s",target->GetName());
-				//Message(0,"Target's X: %f, Your X: %f",target->CastToMob()->GetX(),GetX());
-				//Message(0,"Target's Y: %f, Your Y: %f",target->CastToMob()->GetY(),GetY());
-				//Message(0,"Target's Z: %f, Your Z: %f",target->CastToMob()->GetZ(),GetZ());
 				Message_StringID(13,TARGET_TOO_FAR);
-				//Message(13,"Your target is too far away, get closer!");
 			}
 			else if (auto_attack_target == this) {
 				Message_StringID(13,TRY_ATTACKING_SOMEONE);
-				//Message(13,"Try attacking someone else then yourself!");
 			}
-			/*
-			else if (CantSee(target)) {
-				Message(13,"You can't see your target from here.");
-			}*/
 			else if (auto_attack_target->GetHP() > -10) { // -10 so we can watch people bleed in PvP
 				if(CheckAAEffect(aaEffectRampage)){	//Dook- AA Destructive Force- AE attacks for duration
 					entity_list.AEAttack(this, 30);
@@ -305,6 +295,7 @@ bool Client::Process() {
 				bool tripleAttackSuccess = false;
 				if( auto_attack_target && CanThisClassDoubleAttack() ) {
 					
+					CheckIncreaseSkill(DOUBLE_ATTACK, auto_attack_target, -10);
 					if(CheckDoubleAttack()) {
 						//should we allow rampage on double attack?
 						if(CheckAAEffect(aaEffectRampage)) {
@@ -419,16 +410,10 @@ bool Client::Process() {
 		
 		if (GetClass() == WARRIOR || GetClass() == BERSERKER) {
 			if(!dead && !berserk && this->GetHPRatio() < 30) {
-	//			char temp[100];
-	//			snprintf(temp, 100, "%s goes into a berserker frenzy!", this->GetName());
-	//			entity_list.MessageClose(this, 0, 200, 10, temp);
 				entity_list.MessageClose_StringID(this, false, 200, 0, BERSERK_START, GetName());
 				this->berserk = true;
 			}
 			if (berserk && this->GetHPRatio() > 30) {
-	//			char temp[100];
-	//			snprintf(temp, 100, "%s is no longer berserk.", this->GetName());
-	//			entity_list.MessageClose(this, 0, 200, 10, temp);
 				entity_list.MessageClose_StringID(this, false, 200, 0, BERSERK_END, GetName());
 				this->berserk = false;
 			}
@@ -456,7 +441,7 @@ bool Client::Process() {
 				DualWieldProbability += (spellbonuses.DualWeildChance + itembonuses.DualWeildChance) / 100.0f;
 				
 				float random = MakeRandomFloat(0, 1);
-				CheckIncreaseSkill(DUAL_WIELD, -15);
+				CheckIncreaseSkill(DUAL_WIELD, auto_attack_target, -10);
 				if (random < DualWieldProbability){ // Max 78% of DW
 					if(CheckAAEffect(aaEffectRampage)) {
 						entity_list.AEAttack(this, 30, 14);
@@ -1699,7 +1684,7 @@ void Client::DoManaRegen() {
 			medding = true;
 			regen = (((GetSkill(MEDITATE)/10)+(level-(level/4)))/4)+4;
 			regen += spellbonuses.ManaRegen + itembonuses.ManaRegen;
-			CheckIncreaseSkill(MEDITATE, -5);
+			CheckIncreaseSkill(MEDITATE, NULL, -5);
 		}
 		else
 			regen = 2+spellbonuses.ManaRegen+itembonuses.ManaRegen+(level/5);
