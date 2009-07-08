@@ -8,9 +8,24 @@
 #include "client.h"
 #include "groups.h"
 #include "zonedb.h"
+#include "StringIDs.h"
 #include "../common/MiscFunctions.h"
 
 using namespace std;
+
+typedef enum {	//focus types
+	botfocusSpellHaste = 1,
+	botfocusSpellDuration,
+	botfocusRange,
+	botfocusReagentCost,
+	botfocusManaCost,
+	botfocusImprovedHeal,
+	botfocusImprovedDamage,
+	botfocusImprovedDOT,		//i dont know about this...
+	botfocusImprovedCritical,
+	botfocusImprovedUndeadDamage,
+	botfocusPetPower,
+} botfocusType;	
 
 class Bot : public NPC {
 public:
@@ -33,7 +48,20 @@ public:
 	//virtual void AI_Process();
 	virtual bool Save() override;
 	virtual void Depop(bool StartSpawnTimer = true) override;
-	virtual bool IsBot() const { return true; }
+	void BotRemoveEquipItem(int slot) { equipment[slot] = 0; }
+	void BotAddEquipItem(int slot, uint32 id) { equipment[slot] = id; }
+	void SendBotArcheryWearChange(int8 material_slot, uint32 material, uint32 color);
+	void CalcBotStats(bool showtext = true);
+	int16 BotGetSpells(int spellslot) { return AIspells[spellslot].spellid; }
+	int16 BotGetSpellType(int spellslot) { return AIspells[spellslot].type; }
+    int16 BotGetSpellPriority(int spellslot) { return AIspells[spellslot].priority; }
+	bool Bot_Command_Resist(int resisttype, int level);
+
+	// AI Methods
+	virtual bool AI_EngagedCastCheck();
+	virtual bool Bot_AI_PursueCastCheck();
+	virtual bool Bot_AI_IdleCastCheck();
+	virtual bool Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes);
 	
 	// Bot Orders
 	virtual bool IsBotOrderAttack() { return _botOrderAttack; }
@@ -45,6 +73,8 @@ public:
 	void RemoveBotItemBySlot(uint32 slotID, std::string* errorMessage);
 	void SetBotItemInSlot(uint32 slotID, uint32 itemID, std::string* errorMessage);
 	uint32 GetBotItemsCount(std::string* errorMessage);
+	void BotTradeSwapItem(Client* client, sint16 lootSlot, uint32 id, sint16 maxCharges, uint32 equipableSlots, std::string* errorMessage, bool swap = true);
+	void BotTradeAddItem(uint32 id, sint16 maxCharges, uint32 equipableSlots, int16 lootSlot, Client* client, std::string* errorMessage, bool addToDb = true);
 
 	// Static Class Methods
 	static Bot* LoadBot(uint32 botID, std::string* errorMessage);
@@ -61,6 +91,7 @@ public:
 	static bool SetBotOwnerCharacterID(uint32 botID, uint32 botOwnerCharacterID, std::string* errorMessage);
 	static std::string ClassIdToString(uint16 classId);
 	static std::string RaceIdToString(uint16 raceId);
+	static uint32 GetCountBotsInGroup(Group* group);
 
 	// "GET" Class Methods
 	uint32 GetBotID() { return this->GetNPCTypeID(); }
@@ -75,17 +106,18 @@ public:
 	bool IsPetChooser() { return _petChooser; }
 	bool IsBotArcher() { return _botArcher; }
 	bool IsBotCharmer() { return _botCharmer; }
+	virtual bool IsBot() { return true; }
 
 	// "SET" Class Methods
 	void SetBotSpellID(uint32 newSpellID) { _botSpellID = newSpellID; }
 	virtual void SetSpawnStatus(bool spawnStatus) { _spawnStatus = spawnStatus; }
 	void SetBotArcheryRange(uint32 archeryRange) { _botArcheryRange = archeryRange; }
 	void SetPetChooserID(int8 id) { _petChooserID = id; }
-	void SetBotOwner(Mob* botOwner);
 	void SetBotArcher(bool a) { _botArcher = a; }
 	void SetBotCharmer(bool c) { _botCharmer = c; }
 	void SetBotRaiding(bool v) { _botRaiding = v; }
 	void SetPetChooser(bool p) { _petChooser = p; }
+	void SetBotOwner(Mob* botOwner) { _botOwner = botOwner; }
 
 	// Class Deconstructors
 	virtual ~Bot();
@@ -94,14 +126,10 @@ protected:
 	virtual void BotAIProcess();
 	virtual void PetAIProcess();
 	static NPCType FillNPCTypeStruct(std::string botName, std::string botLastName, uint8 botLevel, uint16 botRace, uint8 botClass, uint8 botBodyType, sint32 hitPoints, uint8 gender, float size, uint32 hitPointsRegenRate, uint32 manaRegenRate, uint32 face, uint32 hairStyle, uint32 hairColor, uint32 eyeColor, uint32 eyeColor2, uint32 beardColor, uint32 beard, uint32 drakkinHeritage, uint32 drakkinTattoo, uint32 drakkinDetails, float runSpeed, sint16 mr, sint16 cr, sint16 dr, sint16 fr, sint16 pr, sint16 ac, uint16 str, uint16 sta, uint16 dex, uint16 agi, uint16 _int, uint16 wis, uint16 cha, uint16 attack);
-	virtual bool Bot_AI_EngagedCastCheck();
 	virtual void BotMeditate(bool isSitting);
 	virtual bool BotRangedAttack(Mob* other);
 	virtual bool BotAttackMelee(Mob* other, int Hand = 13, bool = false);
 	virtual bool CheckBotDoubleAttack(bool Triple = false);
-	virtual bool Bot_AI_PursueCastCheck();
-	virtual bool Bot_AI_IdleCastCheck();
-	virtual bool Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes);
 
 private:
 	// Class Members

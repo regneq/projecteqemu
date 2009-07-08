@@ -4245,4 +4245,5 @@ bool EntityList::RemoveBot(int16 entityID) {
 
 	return Result;
 }
+
 #endif

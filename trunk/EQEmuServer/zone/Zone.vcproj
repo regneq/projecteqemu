@@ -841,6 +841,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\StringIDs.h"
+				>
+			</File>
+			<File
 				RelativePath=".\titles.h"
 				>
 			</File>
