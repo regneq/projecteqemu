@@ -232,6 +232,7 @@ RULE_REAL ( Combat, ArcheryHitPenalty, 0.25) //Archery has a hit penalty to try 
 RULE_REAL ( Combat, AgiHitFactor, 0.01) 
 RULE_INT ( Combat, MinRangedAttackDist, 25) //Minimum Distance to use Ranged Attacks
 RULE_BOOL ( Combat, ArcheryBonusRequiresStationary, true) //does the 2x archery bonus chance require a stationary npc
+RULE_REAL ( Combat, ArcheryBaseDamageBonus, 1) // % Modifier to Base Archery Damage (.5 = 50% base damage, 1 = 100%, 2 = 200%)
 RULE_BOOL ( Combat, AssistNoTargetSelf, true)  //when assisting a target that does not have a target: true = target self, false = leave target as was before assist (false = live like)
 RULE_INT ( Combat, MaxRampageTargets, 3) //max number of people hit with rampage
 RULE_INT ( Combat, MaxFlurryHits, 2) //max number of extra hits from flurry

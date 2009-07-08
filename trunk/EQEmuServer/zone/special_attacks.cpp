@@ -904,7 +904,7 @@ void Client::RangedAttack(Mob* other) {
 				if(ADmg < 0)
 					ADmg = 0;
 
-				uint32 MaxDmg = ((WDmg+ADmg)*GetDamageTable(ARCHERY)) / 100;
+				uint32 MaxDmg = (RuleR(Combat, ArcheryBaseDamageBonus)*(WDmg+ADmg)*GetDamageTable(ARCHERY)) / 100;
 				sint32 hate = ((WDmg+ADmg));
 							
 				switch(GetAA(aaArcheryMastery)) {
