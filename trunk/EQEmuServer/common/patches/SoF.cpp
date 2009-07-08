@@ -406,10 +406,14 @@ ENCODE(OP_SendAATable) {
 	{
 		OUT(id);
 		eq->unknown004 = 1;
-		eq->hotkey_sid = (emu->hotkey_sid==4294967295UL)?0:(emu->id - emu->current_level + 1);
-		eq->hotkey_sid2 = (emu->hotkey_sid2==4294967295UL)?0:(emu->id - emu->current_level + 1);
-		eq->title_sid = emu->id - emu->current_level + 1;
-		eq->desc_sid = emu->id - emu->current_level + 1;
+		//eq->hotkey_sid = (emu->hotkey_sid==4294967295UL)?0:(emu->id - emu->current_level + 1);
+		//eq->hotkey_sid2 = (emu->hotkey_sid2==4294967295UL)?0:(emu->id - emu->current_level + 1);
+		//eq->title_sid = emu->id - emu->current_level + 1;
+		//eq->desc_sid = emu->id - emu->current_level + 1;
+		eq->hotkey_sid = (emu->hotkey_sid==4294967295UL)?0:(emu->sof_next_skill);
+		eq->hotkey_sid2 = (emu->hotkey_sid2==4294967295UL)?0:(emu->sof_next_skill);
+		eq->title_sid = emu->sof_next_skill;
+		eq->desc_sid = emu->sof_next_skill;
 		OUT(class_type);
 		OUT(cost);
 		OUT(seq);
@@ -422,7 +426,8 @@ ENCODE(OP_SendAATable) {
 		OUT(spell_refresh);
 		OUT(classes);
 		OUT(berserker);
-		eq->max_level = emu->sof_max_level;
+		//eq->max_level = emu->sof_max_level;
+		OUT(max_level);
 		OUT(last_id);
 		OUT(next_id);
 		OUT(cost2);
