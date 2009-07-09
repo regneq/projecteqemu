@@ -10,6 +10,7 @@ KLS: Backstab will now use the backstab damage field from items instead of weapo
 KLS: Redid all combat skill ups, can only skill up against light blue targets or better for offensive and defensive actions, wont work against clients or NPCs who don't have aggro lists.
 KLS: Mobs will prefer targets who are not feared to targets who are feared when selecting new targets.
 KLS: Added Rule (Character, MaxFearDurationForPlayerCharacter).
+KLS: Fear will now cause PCs to run instead of just be stunned, beware.
 
 ==07/07/2009==
 Derision: Fix for mobs getting stuck if their path between waypoints attempts to take them 'under the world'.
