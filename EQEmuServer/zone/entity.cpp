@@ -4170,8 +4170,9 @@ Mob* EntityList::GetMobByBotID(uint32 botID) {
 
 		while(iterator.MoreElements())
 		{
-			if(iterator.GetData()->GetNPCTypeID() == botID)
+			if(iterator.GetData()->IsBot() && iterator.GetData()->CastToBot()->GetBotID() == botID) {
 				Result = iterator.GetData();
+			}
 
 			iterator.Advance();
 		}

@@ -1345,10 +1345,6 @@
 				>
 			</File>
 		</Filter>
-		<File
-			RelativePath=".\EQEmuMobObjects.cd"
-			>
-		</File>
 	</Files>
 	<Globals>
 	</Globals>
