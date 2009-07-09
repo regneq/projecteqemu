@@ -214,7 +214,7 @@ bool Client::Process() {
 		if(auto_attack) {
 			if(!IsAIControlled() && !dead
 				&& !(spellend_timer.Enabled() && (spells[casting_spell_id].classes[7] < 1 && spells[casting_spell_id].classes[7] > 65)) 
-				&& !IsStunned() && !IsMezzed() && GetAppearance() != eaDead
+				&& !IsStunned() && !IsFeared() && !IsMezzed() && GetAppearance() != eaDead
 				)
 				may_use_attacks = true;
 			
@@ -225,13 +225,6 @@ bool Client::Process() {
 					may_use_attacks = false;
 				}
 			}
-/*			
-			printf("May Attack Debug: ai? %d, dead? %d, spells? %d, stunned? %d, mezzed? %d, app==3? %d, ranged? %d\n", 
-				IsAIControlled(), dead, spellend_timer.Enabled() && (spells[casting_spell_id].classes[7] < 1 && spells[casting_spell_id].classes[7] > 65), 
-				IsStunned(), IsMezzed(), appearance, ranged_timer.Check(false));
-			
-			printf("Auto Attack Enabled, mut=%d, at=%d, t=0x%x\n", may_use_attacks, attack_timer.Check(false), target);
-		*/
 		}
 
 		if(AutoFireEnabled()){
@@ -321,40 +314,43 @@ bool Client::Process() {
 					}
 				}
 				if (auto_attack_target && GetAA(aaFlurry) > 0) {
-					int flurrychance = 0;
-               //Wolftousen - flurry chance on live after Class AAs is about 5%, 10% after PoP AAs
-               switch (GetAA(aaFlurry)) {
-                  case 1:
-                     flurrychance += 10;
-                     break;
-                  case 2:
-                     flurrychance += 25;
-                     break;
-                  case 3:
-                     flurrychance += 50;
-                     break;
-               }
-               if(tripleAttackSuccess) {
-                  tripleAttackSuccess = false;
-                  switch (GetAA(aaRagingFlurry)) {
-                     case 1:
-                        flurrychance += 10;
-                        break;
-                     case 2:
-                        flurrychance += 25;
-                        break;
-                     case 3:
-                        flurrychance += 50;
-                        break;
-                  }
-               }         
-               if (rand()%1000 < flurrychance) {
-                  //Wolftousen - You get 2 attacks, the "up to 2 additional attacks" in the description is mis-leading as on live you always got 2,, also send proper text color
-                  Message_StringID(MT_Flurry, 128);
-                  Attack(auto_attack_target, 13, true);
-                  Attack(auto_attack_target, 13, true);
-               }
-            }
+					int32 flurrychance = 0;
+
+					switch (GetAA(aaFlurry)) 
+					{
+					case 1:
+						flurrychance += 10;
+						break;
+					case 2:
+						flurrychance += 25;
+						break;
+					case 3:
+						flurrychance += 50;
+						break;
+					}
+
+					if(tripleAttackSuccess) {
+						tripleAttackSuccess = false;
+						switch (GetAA(aaRagingFlurry)) {
+						case 1:
+							flurrychance += 10;
+							break;
+						case 2:
+							flurrychance += 25;
+							break;
+						case 3:
+							flurrychance += 50;
+							break;
+						}
+					}
+
+					if(MakeRandomInt(0, 999) < flurrychance) 
+					{
+						Message_StringID(MT_Flurry, 128);
+						Attack(auto_attack_target, 13, true);
+						Attack(auto_attack_target, 13, true);
+					}
+				}
 
 				if (target && GetAA(aaRapidStrikes))
 				{
@@ -464,7 +460,18 @@ bool Client::Process() {
 		adverrorinfo = 2;
 		if (position_timer.Check()) {
 			if (IsAIControlled())
-				SendPosUpdate(2);
+			{
+				if(IsMoving())
+					SendPosUpdate(2);
+				else
+				{
+					animation = 0;
+					delta_x = 0;
+					delta_y = 0;
+					delta_z = 0;
+					SendPosUpdate(2);
+				}
+			}
 			
 			// Send a position packet every 8 seconds - if not done, other clients
 			// see this char disappear after 10-12 seconds of inactivity

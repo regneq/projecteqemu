@@ -324,6 +324,8 @@ public:
 	
 	bool	Fighting(Mob* targ);
 	void    RemoveFromHateLists(Mob* mob, bool settoone = false);
+	void	RemoveDebuffs(Mob* caster);
+
 
 	void	MessageGroup(Mob* sender, bool skipclose, int32 type, const char* message, ...);
 	//void	MessageRaid(Mob* sender, bool skipclose, int32 type, const char* message, ...);

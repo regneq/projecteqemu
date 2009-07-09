@@ -200,12 +200,13 @@ bool Mob::CastSpell(int16 spell_id, int16 target_id, int16 slot,
 		delaytimer ||
 		spellend_timer.Enabled() ||
 		IsStunned() ||
+		IsFeared() ||
 		IsMezzed() ||
 		IsSilenced()
 	)
 	{
-		mlog(SPELLS__CASTING_ERR, "Spell casting canceled: not able to cast now. Valid? %d, casting %d, waiting? %d, spellend? %d, stunned? %d, mezed? %d, silenced? %d",
-			IsValidSpell(spell_id), casting_spell_id, delaytimer, spellend_timer.Enabled(), IsStunned(), IsMezzed(), IsSilenced() );
+		mlog(SPELLS__CASTING_ERR, "Spell casting canceled: not able to cast now. Valid? %d, casting %d, waiting? %d, spellend? %d, stunned? %d, feared? %d, mezed? %d, silenced? %d",
+			IsValidSpell(spell_id), casting_spell_id, delaytimer, spellend_timer.Enabled(), IsStunned(), IsFeared(), IsMezzed(), IsSilenced() );
 		if(IsSilenced())
 			Message(13, "You cannot cast spells while silenced");
 		if(IsClient())
@@ -3230,6 +3231,25 @@ void Mob::BuffFadeDetrimental() {
 	}
 }
 
+void Mob::BuffFadeDetrimentalByCaster(Mob *caster)
+{
+	if(!caster)
+		return;
+
+	for (int j = 0; j < BUFF_COUNT; j++) {
+		if(buffs[j].spellid != SPELL_UNKNOWN) {
+			if(IsDetrimentalSpell(buffs[j].spellid))
+			{
+				//this is a pretty terrible way to do this but 
+				//there really isn't another way till I rewrite the basics
+				Mob * c = entity_list.GetMob(buffs[j].casterid);
+				if(c && c == caster)
+					BuffFadeBySlot(j, false);
+			}
+		}
+	}
+}
+
 // solar: removes the buff matching spell_id
 void Mob::BuffFadeBySpellID(int16 spell_id)
 {
@@ -3338,23 +3358,18 @@ bool Mob::IsImmuneToSpell(int16 spell_id, Mob *caster)
 			return true;
 		}
 
-		// solar: clients cannot be charmed right now.  Maybe this will change
-		// at some point.
-		if(IsClient())
+		//let npcs cast whatever charm on anyone
+		if(!caster->IsNPC())
 		{
-			mlog(SPELLS__RESISTS, "Clients cannot be charmed");
-			caster->Message_StringID(MT_Shout, CANNOT_AFFECT_PC);
-			return true;
-		}
-
-		// check level limit of charm spell
-		effect_index = GetSpellEffectIndex(spell_id, SE_Charm);
-		assert(effect_index >= 0);
-		if(GetLevel() > spells[spell_id].max[effect_index] && spells[spell_id].max[effect_index] != 0)
-		{
-			mlog(SPELLS__RESISTS, "Our level (%d) is higher than the limit of this Charm spell (%d)", GetLevel(), spells[spell_id].max[effect_index]);
-			caster->Message_StringID(MT_Shout, CANNOT_CHARM_YET);
-			return true;
+			// check level limit of charm spell
+			effect_index = GetSpellEffectIndex(spell_id, SE_Charm);
+			assert(effect_index >= 0);
+			if(GetLevel() > spells[spell_id].max[effect_index] && spells[spell_id].max[effect_index] != 0)
+			{
+				mlog(SPELLS__RESISTS, "Our level (%d) is higher than the limit of this Charm spell (%d)", GetLevel(), spells[spell_id].max[effect_index]);
+				caster->Message_StringID(MT_Shout, CANNOT_CHARM_YET);
+				return true;
+			}
 		}
 	}
 

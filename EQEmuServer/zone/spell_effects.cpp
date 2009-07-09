@@ -656,12 +656,14 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Charm: %+i (up to lvl %d)", effect_value, spell.max[i]);
 #endif
+
 				if (!caster)	// can't be someone's pet unless we know who that someone is
 					break;
 
-				//target level is checked elsewhere...
+				entity_list.RemoveDebuffs(this);
+				entity_list.RemoveFromTargets(this);
+				WipeHateList();
 
-				//Shawn319: This does not work. we need to re-write it. Players should never be able to charm other players
 				if (IsClient() && caster->IsClient())
 				{
 					caster->Message(0, "Unable to cast charm on a fellow player.");
@@ -674,13 +676,16 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 					break;
 				}
 
+				Mob *my_pet = GetPet();
+				if(my_pet)
+				{
+					my_pet->Kill();
+				}
+
 				WipeHateList();
 				caster->SetPet(this);
 				SetOwnerID(caster->GetID());
 				SetPetOrder(SPO_Follow);
-
-				//Need to handle the case where the charmed mob has a pet...
-				//SetPet(NULL);
 
 				if(caster->IsClient()){
 					EQApplicationPacket *app = new EQApplicationPacket(OP_Charm, sizeof(Charm_Struct));
@@ -693,24 +698,14 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 					SendPetBuffsToClient();
 				}
 
-				// tell caster it has a pet
-				/*if(caster->IsClient())
+				if (IsClient()) 
 				{
-					EQApplicationPacket *app = new EQApplicationPacket(OP_Charm, sizeof(Charm_Struct));
-					Charm_Struct *ps = (Charm_Struct*)app->pBuffer;
-					ps->owner_id = caster->GetID();
-					ps->pet_id = this->GetID();
-					ps->command = 1;
-					caster->CastToClient()->FastQueuePacket(&app);
-				}*/
-
-				if (IsClient()) {
 					AI_Start();
+					SendAppearancePacket(14, 100, true, true);
 				} else if(IsNPC()) {
 					CastToNPC()->SetPetSpellID(0);	//not a pet spell.
 				}
 
-// solar: random duration stuff - this is going into CalcBuffDuration eventually
 				bool bBreak = false;
 
 				// define spells with fixed duration
@@ -727,6 +722,9 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 					resistMod = resistMod > 100 ? 100 : resistMod;
 					buffs[buffslot].ticsremaining = resistMod * buffs[buffslot].ticsremaining / 100;
 				}
+
+				if(buffs[buffslot].ticsremaining > RuleI(Character, MaxCharmDurationForPlayerCharacter))
+					buffs[buffslot].ticsremaining = RuleI(Character, MaxCharmDurationForPlayerCharacter);
 
 				break;
 			}
@@ -747,15 +745,16 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 					{
 						AI_Start();
 						animation = GetRunspeed() * 21; //set our animation to match our speed about
-						Stun(buffs[buffslot].ticsremaining * 6000 - (6000 - tic_timer.GetRemainingTime()));
 					}
-					// Begin: Code to use Wiz fear code
+
 					CalculateNewFearpoint();
-					if(curfp) {
+					if(curfp) 
+					{
 						break;
 					}
-				} else { //poor man's fear
-					//kathgar: Its basicly fear, they don't move
+				} 
+				else 
+				{
 					Stun(buffs[buffslot].ticsremaining * 6000 - (6000 - tic_timer.GetRemainingTime()));
 				}
 				break;
@@ -3117,7 +3116,10 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 						AddToHateList(caster, -effect_value);
 					}
 					else if(!caster->IsClient())
-						AddToHateList(caster, -effect_value);
+					{
+						if(!IsClient())
+							AddToHateList(caster, -effect_value);
+					}
 
 					TryDotCritical(spell_id, caster, effect_value);
 				}
@@ -3249,28 +3251,6 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 			}
 			break;
 		 }
-   /* case SE_Charm: { //Do it once in Effect instead of every tic
-		bool bBreak = false;
-
-		// define spells with fixed duration
-		// this is handled by the server, and not by the spell database
-		switch(spell_id) {
-		case 3371://call of the banshee
-		case 1707://dictate
-			bBreak = true;
-		}
-
-		if (!bBreak && caster) {
-			int cha = caster->GetCHA();
-			float r1 = (float)rand()/(float)RAND_MAX;
-			float r2 = (float)cha  + (caster->GetLevel()/3) / 255.0f;
-
-			if (r1 > r2) {
-				BuffFadeByEffect(SE_Charm);
-			}
-		}
-		break;
-	}*/
 		default: {
 			// do we need to do anyting here?
 		}
@@ -3458,14 +3438,18 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 					ps->command = 0;
 					entity_list.QueueClients(this, app);
 					safe_delete(app);
-					//tempmob->CastToClient()->FastQueuePacket(&app);
 				}
 				if(IsClient())
 				{
+					InterruptSpell();
 					if (this->CastToClient()->IsLD())
 						AI_Start(CLIENT_LD_TIMEOUT);
 					else
-						AI_Stop();
+					{
+						bool feared = FindType(SE_Fear);
+						if(!feared)
+							AI_Stop();
+					}
 				}
 				break;
 			}
@@ -3480,14 +3464,21 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 			{
 				if(RuleB(Combat, EnableFearPathing)){
 					if(IsClient())
-						AI_Stop();
+					{
+						bool charmed = FindType(SE_Fear);
+						if(!charmed)
+							AI_Stop();
+					}
 
 					if(curfp) {
 						curfp = false;
 						break;
 					}
 				}
-				UnStun();
+				else
+				{
+					UnStun();
+				}
 				break;
 			}
 		}

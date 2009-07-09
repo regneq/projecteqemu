@@ -57,8 +57,9 @@ const int SpellType_DOT=256;
 const int SpellType_Dispel=512;
 const int SpellType_InCombatBuff=1024;
 const int SpellType_Mez=2048;
+const int SpellType_Charm=4096;
 
-const int SpellTypes_Detrimental = SpellType_Nuke|SpellType_Root|SpellType_Lifetap|SpellType_Snare|SpellType_DOT|SpellType_Dispel|SpellType_Mez;
+const int SpellTypes_Detrimental = SpellType_Nuke|SpellType_Root|SpellType_Lifetap|SpellType_Snare|SpellType_DOT|SpellType_Dispel|SpellType_Mez|SpellType_Charm;
 const int SpellTypes_Beneficial = SpellType_Heal|SpellType_Buff|SpellType_Escape|SpellType_Pet|SpellType_InCombatBuff;
 
 #define SpellType_Any		0xFFFF
@@ -239,6 +240,17 @@ bool NPC::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 						if(mezTar)
 						{
 							AIDoSpellCast(i, mezTar, mana_cost);
+							return true;
+						}
+						break;
+					}
+					
+					case SpellType_Charm: 
+					{
+						Mob * chrmTar = GetHateRandom();
+						if(chrmTar)
+						{
+							AIDoSpellCast(i, chrmTar, mana_cost);
 							return true;
 						}
 						break;
@@ -447,12 +459,14 @@ void Client::AI_Init() {
 }
 
 void Mob::AI_Start(int32 iMoveDelay) {
+	if (pAIControlled)
+		return;
+
 	if (iMoveDelay)
 		pLastFightingDelayMoving = Timer::GetCurrentTime() + iMoveDelay;
 	else
 		pLastFightingDelayMoving = 0;
-	if (pAIControlled)
-		return;
+
 	pAIControlled = true;
 	AIthink_timer = new Timer(AIthink_duration);
 	AIthink_timer->Trigger();
@@ -545,12 +559,15 @@ void NPC::AI_Stop() {
 void Client::AI_Stop() {
 	Mob::AI_Stop();
 	this->Message_StringID(13,PLAYER_REGAIN);
+
 	EQApplicationPacket *app = new EQApplicationPacket(OP_Charm, sizeof(Charm_Struct));
 	Charm_Struct *ps = (Charm_Struct*)app->pBuffer;
 	ps->owner_id = 0;
 	ps->pet_id = this->GetID();
 	ps->command = 0;
-	FastQueuePacket(&app);
+	entity_list.QueueClients(this, app);
+	safe_delete(app);
+
 	SetTarget(entity_list.GetMob(pClientSideTarget));
 	SendAppearancePacket(AT_Anim, GetAppearanceValue(GetAppearance()));
 	SendAppearancePacket(AT_Linkdead, 0); // Removing LD packet so *LD* no longer appears by the player name when charmed/feared -Kasai
@@ -562,6 +579,484 @@ void Client::AI_Stop() {
 	{
 		Save();
 		Disconnect();
+	}
+}
+
+//todo: expand the logic here to cover:
+//redundant debuffs
+//buffing owner
+//certain types of det spells that need special behavior.
+void Client::AI_SpellCast()
+{
+	if(!charm_cast_timer.Check())
+		return;
+
+	Mob *targ = GetTarget();
+	if(!targ)
+		return;
+
+	float dist = DistNoRootNoZ(*targ);
+
+	std::vector<int32> valid_spells;
+	std::vector<int32> slots;
+
+	for(uint32 x = 0; x < 9; ++x)
+	{
+		int32 current_spell = m_pp.mem_spells[x];
+		if(!IsValidSpell(current_spell))
+			continue;
+
+		if(IsBeneficialSpell(current_spell))
+		{
+			continue;
+		}
+
+		if(dist > spells[current_spell].range*spells[current_spell].range)
+		{
+			continue;
+		}
+
+		if(GetMana() < spells[current_spell].mana)
+		{
+			continue;
+		}
+
+		if(IsEffectInSpell(current_spell, SE_Charm))
+		{
+			continue;
+		}
+
+		if(!GetPTimers().Expired(&database, pTimerSpellStart + current_spell, false)) 
+		{
+			continue;
+		}
+
+		//bard songs cause trouble atm
+		if(IsBardSong(current_spell))
+			continue;
+
+		valid_spells.push_back(current_spell);
+		slots.push_back(x);
+	}
+
+	int32 spell_to_cast = 0xFFFFFFFF;
+	int32 slot_to_use = 10;
+	if(valid_spells.size() == 1)
+	{
+		spell_to_cast = valid_spells[0];
+		slot_to_use = slots[0];
+	}
+	else if(valid_spells.size() == 0)
+	{
+		return;
+	}
+	else
+	{
+		int32 idx = MakeRandomInt(0, (valid_spells.size()-1));
+		spell_to_cast = valid_spells[idx];
+		slot_to_use = slots[idx];
+	}
+
+	if(IsMezSpell(spell_to_cast) || IsFearSpell(spell_to_cast))
+	{
+		Mob *tar = entity_list.GetTargetForMez(this);
+		if(!tar)
+		{
+			tar = GetTarget();
+			if(tar && IsFearSpell(spell_to_cast))
+			{
+				if(!IsBardSong(spell_to_cast)) 
+				{
+					SetRunAnimSpeed(0);
+					SendPosition();
+					SetMoving(false);
+				}
+				CastSpell(spell_to_cast, tar->GetID(), slot_to_use);
+				return;
+			}
+		}
+	}
+	else
+	{
+		Mob *tar = GetTarget();
+		if(tar)
+		{
+			if(!IsBardSong(spell_to_cast)) 
+			{
+				SetRunAnimSpeed(0);
+				SendPosition();
+				SetMoving(false);
+			}
+			CastSpell(spell_to_cast, tar->GetID(), slot_to_use);
+			return;
+		}
+	}
+
+
+}
+
+void Client::AI_Process()
+{
+	if (!IsAIControlled())
+		return;
+
+	if (!(AIthink_timer->Check() || attack_timer.Check(false)))
+		return;
+
+	if (IsCasting())
+		return;
+	
+	bool engaged = IsEngaged();
+
+	Mob *ow = GetOwner();
+	if(!engaged)
+	{
+		if(ow)
+		{
+			if(ow->IsEngaged())
+			{
+				Mob *tar = ow->GetTarget();
+				if(tar)
+				{
+					AddToHateList(tar, 1, 0, false);
+				}
+			}
+		}
+	}
+
+	if(!ow)
+	{
+		if(!IsFeared() && !IsLD())
+		{
+			BuffFadeByEffect(SE_Charm);
+			return;
+		}
+	}
+
+	if(RuleB(Combat, EnableFearPathing)){
+		if(curfp) {
+			if(IsRooted()) {
+				//make sure everybody knows were not moving, for appearance sake
+				if(IsMoving())
+				{
+					if(target)
+						SetHeading(CalculateHeadingToTarget(target->GetX(), target->GetY()));
+					SetRunAnimSpeed(0);
+					SendPosition();
+					SetMoving(false);
+					moved=false;
+				}
+				//continue on to attack code, ensuring that we execute the engaged code
+				engaged = true;
+			} else {
+				if(AImovement_timer->Check()) {
+					animation = GetRunspeed() * 21;
+					// Check if we have reached the last fear point
+					if((ABS(GetX()-fear_walkto_x) < 0.1) && (ABS(GetY()-fear_walkto_y) <0.1)) {
+						// Calculate a new point to run to
+						CalculateNewFearpoint();
+					}
+					if(!RuleB(Pathing, Fear) || !zone->pathing)
+						CalculateNewPosition2(fear_walkto_x, fear_walkto_y, fear_walkto_z, GetFearSpeed(), true);
+					else
+					{
+						bool WaypointChanged, NodeReached;
+
+						VERTEX Goal = UpdatePath(fear_walkto_x, fear_walkto_y, fear_walkto_z,
+									 GetFearSpeed(), WaypointChanged, NodeReached);
+
+						if(WaypointChanged)
+							tar_ndx = 20;
+
+						CalculateNewPosition2(Goal.x, Goal.y, Goal.z, GetFearSpeed());
+					}
+				}
+				return;
+			}
+		}
+	}
+
+	if (engaged) 
+	{
+		if (IsRooted())
+			SetTarget(hate_list.GetClosest(this));
+		else
+		{
+			if(AItarget_check_timer->Check())
+			{
+				SetTarget(hate_list.GetTop(this));
+			}
+		}
+
+		if (!target)
+			return;
+
+		if (target->IsCorpse())
+		{
+			RemoveFromHateList(this);
+			return;
+		}
+      
+		if(DivineAura())
+			return;
+			
+		bool is_combat_range = CombatRange(target);
+		
+		if(is_combat_range) 
+        {
+			if(charm_class_attacks_timer.Check())
+			{
+				DoClassAttacks(target);
+			}
+
+			if (AImovement_timer->Check()) 
+			{
+				SetRunAnimSpeed(0);
+			}
+			if(IsMoving())
+			{
+				SetMoving(false);
+				moved=false;
+				SetHeading(CalculateHeadingToTarget(target->GetX(), target->GetY()));
+				SendPosition();
+				tar_ndx =0;
+			}
+
+			if(target && !IsStunned() && !IsMezzed() && !GetFeigned()) 
+			{
+				if(attack_timer.Check()) 
+				{
+					Attack(target, 13);
+					if(target)
+					{
+						if(CheckDoubleAttack()) 
+						{
+							Attack(target, 13);
+							if(target)
+							{
+								bool triple_attack_success = false;
+								if((((GetClass() == MONK || GetClass() == WARRIOR || GetClass() == RANGER || GetClass() == BERSERKER)
+									&& GetLevel() >= 60) || SpecAttacks[SPECATK_TRIPLE])
+									&& CheckDoubleAttack(true))
+								{
+									Attack(target, 13, true);
+									triple_attack_success = true;
+								}
+
+								if(target)
+								{
+									int32 flurry_chance = 0;
+									switch (GetAA(aaFlurry)) 
+									{
+									case 1:
+										flurry_chance += 10;
+										break;
+									case 2:
+										flurry_chance += 25;
+										break;
+									case 3:
+										flurry_chance += 50;
+										break;
+									}
+
+									if(triple_attack_success) 
+									{
+										triple_attack_success = false;
+										switch (GetAA(aaRagingFlurry)) 
+										{
+										case 1:
+											flurry_chance += 10;
+											break;
+										case 2:
+											flurry_chance += 25;
+											break;
+										case 3:
+											flurry_chance += 50;
+											break;
+										}
+									}
+
+									if(MakeRandomInt(0, 999) < flurry_chance) 
+									{
+										Message_StringID(MT_Flurry, 128);
+										Attack(target, 13, true);
+										Attack(target, 13, true);
+									}
+
+									if (target && GetAA(aaRapidStrikes))
+									{
+										int32 chance_xhit1 = 0;
+										int32 chance_xhit2 = 0;
+										switch (GetAA(aaRapidStrikes))
+										{
+										case 1:
+											chance_xhit1 = 10;
+											chance_xhit2 = 2;
+											break;
+										case 2:
+											chance_xhit1 = 12;
+											chance_xhit2 = 4;
+											break;
+										case 3:
+											chance_xhit1 = 14;
+											chance_xhit2 = 6;
+											break;
+										case 4:
+											chance_xhit1 = 16;
+											chance_xhit2 = 8;
+											break;
+										case 5:
+											chance_xhit1 = 20;
+											chance_xhit2 = 10;
+											break;
+										}
+										if (MakeRandomInt(1,100) < chance_xhit1)
+											Attack(target, 13, true);
+										if (MakeRandomInt(1,100) < chance_xhit2)
+											Attack(target, 13, true);
+									}
+
+									if(target && (GetAA(aaPunishingBlade) > 0 || GetAA(aaSpeedoftheKnight) > 0)) 
+									{
+										ItemInst *wpn = GetInv().GetItem(SLOT_PRIMARY);
+										if(wpn)
+										{
+											if(wpn->GetItem()->ItemType == ItemType2HS || 
+												wpn->GetItem()->ItemType == ItemType2HB ||
+												wpn->GetItem()->ItemType == ItemType2HPierce )
+											{
+												int32 extatk = GetAA(aaPunishingBlade)*5;
+												extatk += GetAA(aaSpeedoftheKnight)*5;
+												if(MakeRandomInt(0, 100) < extatk)
+												{
+													Attack(target, 13, true);
+												}
+											}
+										}
+									}
+
+									if (GetClass() == WARRIOR || GetClass() == BERSERKER) 
+									{
+										if(!dead && !berserk && this->GetHPRatio() < 30) 
+										{
+											entity_list.MessageClose_StringID(this, false, 200, 0, BERSERK_START, GetName());
+											berserk = true;
+										}
+										else if (berserk && this->GetHPRatio() > 30) 
+										{
+											entity_list.MessageClose_StringID(this, false, 200, 0, BERSERK_END, GetName());
+											berserk = false;
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+			if(CanThisClassDualWield() && attack_dw_timer.Check())
+			{
+				if(target)
+				{
+					float DualWieldProbability = (GetSkill(DUAL_WIELD) + GetLevel()) / 400.0f; // 78.0 max
+					DualWieldProbability += (0.1f * GetAA(aaAmbidexterity));
+					DualWieldProbability += ((spellbonuses.DualWeildChance + itembonuses.DualWeildChance) / 100.0f);			
+
+					if(MakeRandomFloat(0.0, 1.0) < DualWieldProbability)
+					{
+						Attack(target, 14);
+						if(CheckDoubleAttack())
+						{
+							Attack(target, 14);
+						}
+
+					}
+				}
+			}
+		}
+		else
+		{
+			if(!IsRooted())
+			{
+				animation = 21 * GetRunspeed();
+				if(!RuleB(Pathing, Aggro) || !zone->pathing)
+					CalculateNewPosition2(target->GetX(), target->GetY(), target->GetZ(), GetRunspeed());
+				else
+				{
+					bool WaypointChanged, NodeReached;
+					VERTEX Goal = UpdatePath(target->GetX(), target->GetY(), target->GetZ(),
+						GetRunspeed(), WaypointChanged, NodeReached);
+
+					if(WaypointChanged)
+						tar_ndx = 20;
+
+					CalculateNewPosition2(Goal.x, Goal.y, Goal.z, GetRunspeed());
+				}				
+			}
+			else if(IsMoving())
+			{
+				SetHeading(CalculateHeadingToTarget(target->GetX(), target->GetY()));
+				SetRunAnimSpeed(0);
+				SendPosition();
+				SetMoving(false);
+				moved=false;				
+			}
+		}
+		AI_SpellCast();
+	}
+	else
+	{
+		if(AIfeignremember_timer->Check()) {
+			std::set<int32>::iterator RememberedCharID, tmp;
+			RememberedCharID=feign_memory_list.begin();
+			bool got_one = false;
+			while(RememberedCharID != feign_memory_list.end()) {
+				Client* remember_client = entity_list.GetClientByCharID(*RememberedCharID);
+				if(remember_client == NULL) {
+					//they are gone now...
+					tmp = RememberedCharID;
+					RememberedCharID++;
+					feign_memory_list.erase(tmp);
+				} else if (!remember_client->GetFeigned()) {
+					AddToHateList(remember_client->CastToMob(),1);
+					tmp = RememberedCharID;
+					RememberedCharID++;
+					feign_memory_list.erase(tmp);
+					got_one = true;
+					break;
+				} else {
+					//they are still feigned, carry on...
+					RememberedCharID++;
+				}
+			}
+		}
+
+		if(IsPet()) 
+		{			
+			Mob* owner = GetOwner();
+			if(owner == NULL)
+				return;
+
+			float dist = DistNoRoot(*owner);
+			if (dist >= 100) 
+			{
+				float speed = dist >= 25 ? GetRunspeed() : GetWalkspeed();
+				animation = 21 * speed;
+				CalculateNewPosition2(owner->GetX(), owner->GetY(), owner->GetZ(), speed);
+			}
+			else
+			{
+				SetHeading(owner->GetHeading());
+				if(moved)
+				{
+					moved=false;
+					SetMoving(false);
+					SendPosition();
+					SetRunAnimSpeed(0);
+				}
+			}
+		}
 	}
 }
 
@@ -837,11 +1332,8 @@ void Mob::AI_Process() {
 			}
 		}
 	}
-	else { // not engaged
-		//if (pStandingPetOrder == SPO_Follow && IsPet() && !IsStunned())
-			//SetHeading(CalculateHeadingToTarget(target->GetX(), target->GetY())*8);
-			//FaceTarget(GetOwner());
-		
+	else 
+	{
 		if(AIfeignremember_timer->Check()) {
 			// EverHood - 6/14/06
 			// Improved Feign Death Memory
