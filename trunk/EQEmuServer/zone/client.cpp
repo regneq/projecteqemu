@@ -165,6 +165,8 @@ Client::Client(EQStreamInterface* ieqs)
 	proximity_timer(ClientProximity_interval),
 	TaskPeriodic_Timer(RuleI(TaskSystem, PeriodicCheckTimer) * 1000),
 	charm_update_timer(60000),
+	charm_class_attacks_timer(3000),
+	charm_cast_timer(3500),
 	rest_timer(1)
 {
 	for(int cf=0; cf < _FilterCount; cf++)

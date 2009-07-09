@@ -66,6 +66,7 @@ RULE_INT ( Character, RestRegenTimeToActivate, 30) // Time in seconds for rest s
 RULE_INT ( Character, KillsPerGroupLeadershipAA, 250) // Number of dark blues or above per Group Leadership AA
 RULE_INT ( Character, KillsPerRaidLeadershipAA, 250) // Number of dark blues or above per Raid Leadership AA
 RULE_INT ( Character, MaxFearDurationForPlayerCharacter, 4) //4 tics, each tic calculates every 6 seconds.
+RULE_INT ( Character, MaxCharmDurationForPlayerCharacter, 15)
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Guild )

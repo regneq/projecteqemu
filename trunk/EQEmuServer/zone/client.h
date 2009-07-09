@@ -152,6 +152,8 @@ public:
 	void	AI_Init();
 	void	AI_Start(int32 iMoveDelay = 0);
 	void	AI_Stop();
+	void	AI_Process();
+	void	AI_SpellCast();
 	void	Trader_ShowItems();
 	void    Trader_CustomerBrowsing(Client *Customer);
 	void	Trader_EndTrader();
@@ -676,6 +678,7 @@ public:
 	void    RemoveNoRent();
 	virtual void	RangedAttack(Mob* other);
 	virtual void	ThrowingAttack(Mob* other);
+	void	DoClassAttacks(Mob *ca_target);
 
 	void	SetZoneFlag(uint32 zone_id);
 	void	ClearZoneFlag(uint32 zone_id);
@@ -1040,6 +1043,8 @@ private:
 	Timer	TaskPeriodic_Timer;
 	Timer	charm_update_timer;
 	Timer	rest_timer;
+	Timer	charm_class_attacks_timer;
+	Timer	charm_cast_timer;
 
 	float	proximity_x;
 	float	proximity_y;

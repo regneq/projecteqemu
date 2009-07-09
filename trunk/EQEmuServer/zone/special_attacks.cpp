@@ -149,7 +149,7 @@ void Client::OPCombatAbility(const EQApplicationPacket *app) {
 	if(!target)
 		return;
 	//make sure were actually able to use such an attack.
-	if(spellend_timer.Enabled() || IsStunned() || IsMezzed() || DivineAura() || dead)
+	if(spellend_timer.Enabled() || IsFeared() || IsStunned() || IsMezzed() || DivineAura() || dead)
 		return;
 	
 	CombatAbility_Struct* ca_atk = (CombatAbility_Struct*) app->pBuffer;
@@ -862,6 +862,7 @@ void Client::RangedAttack(Mob* other) {
 		IsSitting() || 
 		(DivineAura() && !GetGM()) ||
 		IsStunned() ||
+		IsFeared() ||
 		IsMezzed() ||
 		(GetAppearance() == eaDead)){
 		return;
@@ -1039,6 +1040,7 @@ void NPC::RangedAttack(Mob* other)
 		IsCasting() || 
 		DivineAura() ||
 		IsStunned() ||
+		IsFeared() ||
 		IsMezzed() ||
 		(GetAppearance() == eaDead)){
 		return;
@@ -1222,6 +1224,7 @@ void Client::ThrowingAttack(Mob* other) { //old was 51
 		IsSitting() || 
 		(DivineAura() && !GetGM()) ||
 		IsStunned() ||
+		IsFeared() ||
 		IsMezzed() ||
 		(GetAppearance() == eaDead)){
 		return;
@@ -1584,6 +1587,228 @@ void NPC::DoClassAttacks(Mob *target) {
 	classattack_timer.Start(reuse*HasteModifier/100);
 }
 
+void Client::DoClassAttacks(Mob *ca_target)
+{
+	if(!ca_target)
+		return;
+
+	if(spellend_timer.Enabled() || IsFeared() || IsStunned() || IsMezzed() || DivineAura() || dead)
+		return;
+	
+	if(!IsAttackAllowed(ca_target))
+		return;
+	
+	//check range for all these abilities, they are all close combat stuff
+	if(!CombatRange(ca_target))
+	{
+		return;
+	}
+	
+	if(!p_timers.Expired(&database, pTimerCombatAbility, false)) {
+		return;
+	}
+	
+	int ReuseTime = 0;
+	int ClientHaste = GetHaste();
+	int HasteMod = 0;
+
+	if(ClientHaste >= 0){
+		HasteMod = (10000/(100+ClientHaste)); //+100% haste = 2x as many attacks
+	}
+	else{
+		HasteMod = (100-ClientHaste); //-100% haste = 1/2 as many attacks
+	}
+	sint32 dmg = 0;
+
+	sint32 skill_to_use = -1;
+	
+	switch(GetClass())
+	{
+	case WARRIOR:
+	case RANGER:
+	case BEASTLORD:
+		skill_to_use = KICK;
+		break;
+	case BERSERKER:
+		skill_to_use = FRENZY;
+		break;
+	case SHADOWKNIGHT:
+	case PALADIN:
+		skill_to_use = BASH;
+		break;
+	case MONK:
+		if(GetLevel() >= 30)
+		{
+			skill_to_use = FLYING_KICK;
+		}
+		else if(GetLevel() >= 25)
+		{
+			skill_to_use = DRAGON_PUNCH;
+		}
+		else if(GetLevel() >= 20)
+		{
+			skill_to_use = EAGLE_STRIKE;
+		}
+		else if(GetLevel() >= 10)
+		{
+			skill_to_use = TIGER_CLAW;
+		}
+		else if(GetLevel() >= 5)
+		{
+			skill_to_use = ROUND_KICK;
+		}
+		else
+		{
+			skill_to_use = KICK;
+		}
+		break;
+	case ROGUE:
+		skill_to_use = BACKSTAB;
+		break;
+	}
+	
+	if(skill_to_use == -1)
+		return;
+	
+	if(skill_to_use == BASH) 
+	{
+		if (ca_target!=this) 
+		{
+			DoAnim(animTailRake);
+
+			if(GetWeaponDamage(ca_target, GetInv().GetItem(SLOT_SECONDARY)) <= 0 &&
+				GetWeaponDamage(ca_target, GetInv().GetItem(SLOT_SHOULDER)) <= 0){
+				dmg = -5;
+			}
+			else{
+				if(!ca_target->CheckHitChance(this, BASH, 0)) {
+					dmg = 0;
+				}
+				else{
+					if(RuleB(Combat, UseIntervalAC))
+						dmg = GetBashDamage();
+					else
+						dmg = MakeRandomInt(1, GetBashDamage());
+
+				}
+			}
+
+			DoSpecialAttackDamage(ca_target, BASH, dmg);
+			ReuseTime = BashReuseTime-1;
+			ReuseTime = (ReuseTime*HasteMod)/100;
+			if(ReuseTime > 0)
+			{
+				p_timers.Start(pTimerCombatAbility, ReuseTime);
+			}
+		}
+		return;
+	}
+
+	if(skill_to_use == FRENZY)
+	{
+		int dmg = 1 + (GetSkill(FRENZY) / 100);
+
+		switch (GetAA(aaBlurofAxes)) {
+		case 1:
+			dmg *= 1.15;
+			break;
+		case 2:
+			dmg *= 1.30;
+			break;
+		case 3:
+			dmg *= 1.50;
+			break;
+		}
+
+		switch (GetAA(aaViciousFrenzy)) 
+		{
+		case 1:
+			dmg *= 1.05;
+			break;
+		case 2:
+			dmg *= 1.10;
+			break;
+		case 3:
+			dmg *= 1.15;
+			break;
+		case 4:
+			dmg *= 1.20;
+			break;
+		case 5:
+			dmg *= 1.25;
+			break;
+		}
+
+		while(dmg > 0 && ca_target) {
+			if(Attack(ca_target))
+				dmg--;
+			else
+				dmg = 0;
+		}
+
+		ReuseTime = FrenzyReuseTime-1;
+		ReuseTime = (ReuseTime*HasteMod)/100;
+		if(ReuseTime > 0) {
+			p_timers.Start(pTimerCombatAbility, ReuseTime);
+		}
+		return;
+	}
+
+	if(skill_to_use == KICK)
+	{
+		if(ca_target!=this)
+		{
+			DoAnim(animKick);
+
+			if(GetWeaponDamage(ca_target, GetInv().GetItem(SLOT_FEET)) <= 0){
+				dmg = -5;
+			}
+			else{
+				if(!ca_target->CheckHitChance(this, KICK, 0)) {
+					dmg = 0;
+				}
+				else{
+					if(RuleB(Combat, UseIntervalAC))
+						dmg = GetKickDamage();
+					else
+						dmg = MakeRandomInt(1, GetKickDamage());
+				}
+			}
+
+			DoSpecialAttackDamage(ca_target, KICK, dmg);
+			ReuseTime = KickReuseTime-1;
+		}
+	}
+
+	if(skill_to_use == FLYING_KICK ||
+		skill_to_use == DRAGON_PUNCH ||
+		skill_to_use == EAGLE_STRIKE ||
+		skill_to_use == TIGER_CLAW ||
+		skill_to_use == ROUND_KICK)
+	{
+		ReuseTime = MonkSpecialAttack(ca_target, skill_to_use) - 1;
+
+		int specl = GetAA(aaTechniqueofMasterWu) * 20;
+		if(specl == 100 || specl > MakeRandomInt(0,100)) {
+			ReuseTime = MonkSpecialAttack(ca_target, skill_to_use) - 1;
+			if(20 > MakeRandomInt(0,100)) {
+				ReuseTime = MonkSpecialAttack(ca_target, skill_to_use) - 1;
+			}
+		}
+	}
+	
+	if(skill_to_use == BACKSTAB)
+	{
+		TryBackstab(ca_target);
+		ReuseTime = BackstabReuseTime-1;
+	}
+	
+	ReuseTime = (ReuseTime*HasteMod)/100;
+	if(ReuseTime > 0)
+	{
+		p_timers.Start(pTimerCombatAbility, ReuseTime);
+	}	
+}
 void Mob::Taunt(NPC* who, bool always_succeed) {
 	if (who == NULL)
 		return;

@@ -731,6 +731,7 @@ bool logpos;
 	void	BuffFadeAll();
 	void	BuffFadeDetrimental();
 	void	BuffFadeBySlot(int slot, bool iRecalcBonuses = true);
+	void	BuffFadeDetrimentalByCaster(Mob *caster);
 	int		CanBuffStack(int16 spellid, int8 caster_level, bool iFailIfOverwrite = false);
 	inline	bool	IsCasting() const { return((casting_spell_id != 0)); }
 	int16	CastingSpellID() const { return casting_spell_id; }
@@ -829,7 +830,7 @@ bool logpos;
 	virtual void		AI_Init();
 	virtual void		AI_Start(int32 iMoveDelay = 0);
 	virtual void		AI_Stop();
-	void				AI_Process();
+	virtual void		AI_Process();
 
 	const char* GetEntityVariable(int32 id);
 	void SetEntityVariable(int32 id, const char *m_var);

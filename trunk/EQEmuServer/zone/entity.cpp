@@ -2436,6 +2436,18 @@ void EntityList::RemoveFromHateLists(Mob* mob, bool settoone) {
 	}
 }
 
+void EntityList::RemoveDebuffs(Mob* caster)
+{
+	LinkedListIterator<Mob*> iterator(mob_list);
+	
+	iterator.Reset();
+	while(iterator.MoreElements()) 
+	{
+		iterator.GetData()->BuffFadeDetrimentalByCaster(caster);
+		iterator.Advance();
+	}
+}
+
 
 // Currently, a new packet is sent per entity.
 // @todo: Come back and use FLAG_COMBINED to pack
@@ -3059,7 +3071,7 @@ void EntityList::AddHealAggro(Mob* target, Mob* caster, int16 thedam)
 			iterator.Advance();
 			continue;
 		}
-		if (!cur->IsMezzed() && !cur->IsStunned())
+		if (!cur->IsMezzed() && !cur->IsStunned() && !cur->IsFeared())
 		{
 			++count;
 		}
@@ -3085,7 +3097,7 @@ void EntityList::AddHealAggro(Mob* target, Mob* caster, int16 thedam)
 			continue;
 		}
 
-		if (!cur->IsMezzed() && !cur->IsStunned())
+		if (!cur->IsMezzed() && !cur->IsStunned() && !cur->IsFeared())
 		{
 			if(cur->IsPet()){
 				if(caster){

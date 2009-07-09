@@ -96,7 +96,7 @@ bool Beacon::Process()
 		Mob *caster = entity_list.GetMob(caster_id);
 		if(caster && spell_iterations--)
 		{
-			bool affect_caster = !caster->IsNPC();	//NPC AE spells do not affect the NPC caster
+			bool affect_caster = (!caster->IsNPC() && !caster->IsAIControlled());	//NPC AE spells do not affect the NPC caster
 			entity_list.AESpell(caster, this, spell_id, affect_caster);
 		}
 		else
