@@ -745,6 +745,8 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				if(RuleB(Combat, EnableFearPathing)){
 					if(IsClient())
 					{
+						AI_Start();
+						animation = GetRunspeed() * 21; //set our animation to match our speed about
 						Stun(buffs[buffslot].ticsremaining * 6000 - (6000 - tic_timer.GetRemainingTime()));
 					}
 					// Begin: Code to use Wiz fear code
@@ -3478,15 +3480,13 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 			{
 				if(RuleB(Combat, EnableFearPathing)){
 					if(IsClient())
-						UnStun();
-					// Begin: Code to use Wiz fear code
+						AI_Stop();
+
 					if(curfp) {
 						curfp = false;
 						break;
 					}
 				}
-				// If fear pathing is over implemented, we can remove the the Stun() and UnStun() calls.
-				//
 				UnStun();
 				break;
 			}

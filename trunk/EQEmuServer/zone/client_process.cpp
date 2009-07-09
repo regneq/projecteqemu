@@ -185,7 +185,7 @@ bool Client::Process() {
 			}
 		}
 		
-		if(this->client_state == CLIENT_LINKDEAD)
+		if(IsAIControlled())
 			AI_Process();
 		
 		if (bindwound_timer.Check() && bindwound_target != 0) {

@@ -482,23 +482,10 @@ void Mob::AI_Start(int32 iMoveDelay) {
 
 void Client::AI_Start(int32 iMoveDelay) {
 	Mob::AI_Start(iMoveDelay);
+
 	if (!pAIControlled)
 		return;
-	// copy memed spells to the spells struct here
-	this->Message_StringID(13,PLAYER_CHARMED);
-/*	EQApplicationPacket *app = new EQApplicationPacket(OP_Charm, sizeof(Charm_Struct));
-	Charm_Struct *ps = (Charm_Struct*)app->pBuffer;
-	ps->owner_id = GetOwnerOrSelf()->GetID();
-	ps->pet_id = this->GetID();
-	ps->command = 1;
-	FastQueuePacket(&app);*/
-	Group* group = GetGroup();
-	if (this->isgrouped && group != NULL)
-    {
-		group->DelMember(CastToMob(),true);
-    }
 	
-//	SaveSpawnSpot();
 	pClientSideTarget = target ? target->GetID() : 0;
 	SendAppearancePacket(AT_Anim, ANIM_FREEZE);	// this freezes the client
 	SendAppearancePacket(AT_Linkdead, 1); // Sending LD packet so *LD* appears by the player name when charmed/feared -Kasai
@@ -525,7 +512,6 @@ void NPC::AI_Start(int32 iMoveDelay) {
 	
 	SendTo(GetX(), GetY(), GetZ());
 	SetChanged();
-//	SaveSpawnSpot();
 	SaveGuardSpot();
 }
 
@@ -684,11 +670,6 @@ void Mob::AI_Process() {
 				SetMoving(false);
 				moved=false;
 				SetHeading(CalculateHeadingToTarget(target->GetX(), target->GetY()));
-				/*while(DistNoZ(*target)<10){ //dont want them too close
-					x_pos -= tar_vx*.2;
-					y_pos -= tar_vy*.2;
-					z_pos -= tar_vz*.2;
-				}*/
 				SendPosition();
 				tar_ndx =0;
 			}
@@ -725,11 +706,11 @@ void Mob::AI_Process() {
 											&& RandRoll < (GetLevel() + NPCQuadAttackModifier))  
 										{
 											Attack(target, 13);
-										} // if (SpecAttacks[SPECATK_QUAD])
+										}
 									}
-								} // if (SpecAttacks[SPECATK_TRIPLE])
+								}
 							}
-						} // if (CanThisClassDoubleAttack())
+						}
 					}
 	
 					if (SpecAttacks[SPECATK_FLURRY]) {

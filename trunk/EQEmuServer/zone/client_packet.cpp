@@ -1121,15 +1121,6 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 		rewind_z = ppu->z_pos;
 	}
 
-	// solar: a very low chance to improve at sense heading, since
-	// the client doesn't send an opcode for the key anymore, ever
-	// since they made it useless on live
-	//
-	// this checking of heading/x_pos is cheap, and the result is
-	// subtle, but you'll notice your sense heading improve as you
-	// travel around
-	// Congdar: waste of processing, this skill is set to max on character creation
-
 	if(proximity_timer.Check()) {
 		entity_list.ProcessMove(this, ppu->x_pos, ppu->y_pos, ppu->z_pos);
             if(RuleB(TaskSystem, EnableTaskSystem) && RuleB(TaskSystem,EnableTaskProximity))

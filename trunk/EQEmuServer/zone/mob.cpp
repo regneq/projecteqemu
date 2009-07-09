@@ -549,7 +549,7 @@ float Mob::_GetMovementSpeed(int mod) const {
 		if(speed_mod > 1.58)
 			speed_mod = 1.58;
 	}
-	
+
 	return(runspeed * speed_mod);
 }
 
@@ -944,7 +944,8 @@ void Mob::SendHPUpdate()
 }
 
 // this one just warps the mob to the current location
-void Mob::SendPosition() {
+void Mob::SendPosition() 
+{
 	EQApplicationPacket* app = new EQApplicationPacket(OP_ClientUpdate, sizeof(PlayerPositionUpdateServer_Struct));
 	PlayerPositionUpdateServer_Struct* spu = (PlayerPositionUpdateServer_Struct*)app->pBuffer;	
 	MakeSpawnUpdateNoDelta(spu);
@@ -972,6 +973,7 @@ void Mob::SendPosUpdate(int8 iSendToSelf) {
 	EQApplicationPacket* app = new EQApplicationPacket(OP_ClientUpdate, sizeof(PlayerPositionUpdateServer_Struct));
 	PlayerPositionUpdateServer_Struct* spu = (PlayerPositionUpdateServer_Struct*)app->pBuffer;
 	MakeSpawnUpdate(spu);
+	
 	if (iSendToSelf == 2) {
 		if (this->IsClient())
 			this->CastToClient()->FastQueuePacket(&app,false);
