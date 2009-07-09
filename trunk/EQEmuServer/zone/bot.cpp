@@ -28,14 +28,15 @@ const int SpellTypes_Beneficial = SpellType_Heal|SpellType_Buff|SpellType_Escape
 #endif
 
 // This constructor is used during the bot create command
-Bot::Bot(std::string botName, uint8 botClass, uint16 botRace, uint8 botGender, Client* botOwner) : NPC(0, 0, 0, 0, 0, 0, 0, false) {
+Bot::Bot(NPCType npcTypeData, Client* botOwner) : NPC(&npcTypeData, 0, 0, 0, 0, 0, 0, false) {
 	if(botOwner) {
 		this->_botOwnerCharacterID = botOwner->CharacterID();
 	}
 	else
 		this->_botOwnerCharacterID = 0;
 
-	this->_botSpellID = 0;
+	SetBotID(0);
+	SetBotSpellID(0);
 	this->_botInventoryID = 0;
 
 	GenerateBaseStats();
@@ -50,8 +51,9 @@ Bot::Bot(std::string botName, uint8 botClass, uint16 botRace, uint8 botGender, C
 
 // This constructor is used when the bot is loaded out of the database
 Bot::Bot(uint32 botID, uint32 botOwnerCharacterID, uint32 botInventoryID, uint32 botSpellsID, NPCType npcTypeData) : NPC(&npcTypeData, 0, 0, 0, 0, 0, 0, false) {
+	SetBotID(botID);
 	this->_botOwnerCharacterID = botOwnerCharacterID;
-	this->_botSpellID = botSpellsID;
+	SetBotSpellID(botSpellsID);
 	this->_botInventoryID = botInventoryID;
 	
 	GenerateBaseStats();
@@ -66,7 +68,16 @@ Bot::Bot(uint32 botID, uint32 botOwnerCharacterID, uint32 botInventoryID, uint32
 
 Bot::~Bot() {
 	// TODO: dependancy resource deallocation goes here (if any!)
-	//delete this;
+}
+
+void Bot::SetBotID(uint32 botID) {
+	this->_botID = botID;
+	this->npctype_id = botID;
+}
+
+void Bot::SetBotSpellID(uint32 newSpellID) {
+	this->_botSpellID = newSpellID;
+	this->npc_spells_id = newSpellID;
 }
 
 NPCType Bot::FillNPCTypeStruct(std::string botName, std::string botLastName, uint8 botLevel, uint16 botRace, uint8 botClass, uint8 botBodyType, sint32 hitPoints, uint8 gender, float size, uint32 hitPointsRegenRate, uint32 manaRegenRate, uint32 face, uint32 hairStyle, uint32 hairColor, uint32 eyeColor, uint32 eyeColor2, uint32 beardColor, uint32 beard, uint32 drakkinHeritage, uint32 drakkinTattoo, uint32 drakkinDetails, float runSpeed, sint16 mr, sint16 cr, sint16 dr, sint16 fr, sint16 pr, sint16 ac, uint16 str, uint16 sta, uint16 dex, uint16 agi, uint16 _int, uint16 wis, uint16 cha, uint16 attack) {
@@ -116,7 +127,39 @@ NPCType Bot::FillNPCTypeStruct(std::string botName, std::string botLastName, uin
 	BotNPCType.CHA = cha;
 	BotNPCType.ATK = attack;
 
+	BotNPCType.npc_id = 0;
+
 	return BotNPCType;
+}
+
+NPCType Bot::CreateDefaultNPCTypeStructForBot(std::string botName, std::string botLastName, uint8 botLevel, uint16 botRace, uint8 botClass, uint8 gender) {
+	NPCType Result;
+	int CopyLength = 0;
+
+	CopyLength = botName.copy(Result.name, 63);
+	Result.name[CopyLength] = '\0';
+	CopyLength = 0;
+
+	CopyLength = botLastName.copy(Result.lastname, 69);
+	Result.lastname[CopyLength] = '\0';
+	CopyLength = 0;
+
+	Result.level = botLevel;
+	Result.race = botRace;
+	Result.class_ = botClass;
+	Result.gender = gender;
+
+	// default values just to initialize them to values that wont crash the client until they get calculated
+	Result.size = 6;
+	Result.npc_id = 0;
+	Result.bodytype = 0;
+	Result.cur_hp = 0;
+	Result.drakkin_details = 0;
+	Result.drakkin_heritage = 0;
+	Result.drakkin_tattoo = 0;
+	Result.runspeed = 0;
+
+	return Result;
 }
 
 void Bot::GenerateBaseStats() {
@@ -423,7 +466,7 @@ void Bot::GenerateBaseStats() {
 	this->DR = DiseaseResist;
 	this->PR = PoisonResist;
 	this->CR = ColdResist;
-	this->_botSpellID = BotSpellID;
+	SetBotSpellID(BotSpellID);
 	this->size = BotSize;
 }
 
@@ -729,7 +772,7 @@ bool Bot::IsValidRaceClassCombo() {
 
 bool Bot::IsValidName() {
 	bool Result = false;
-	std::string TempBotName = std::string(this->GetName());
+	std::string TempBotName = std::string(this->GetCleanName());
 
 	for(int iCounter = 0; iCounter < TempBotName.length(); iCounter++) {
 		if(isalpha(TempBotName[iCounter]) || TempBotName[iCounter] == '_') {
@@ -743,13 +786,13 @@ bool Bot::IsValidName() {
 bool Bot::IsBotNameAvailable(std::string* errorMessage) {
 	bool Result = false;
 
-	if(this->GetName()) {
+	if(this->GetCleanName()) {
 		char* Query = 0;
 		char TempErrorMessageBuffer[MYSQL_ERRMSG_SIZE];
 		MYSQL_RES* DatasetResult;
 		MYSQL_ROW DataRow;
 
-		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT COUNT(BotID) FROM bots WHERE Name LIKE '%s'", this->GetName()), TempErrorMessageBuffer, &DatasetResult)) {
+		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT COUNT(BotID) FROM bots WHERE Name LIKE '%s'", this->GetCleanName()), TempErrorMessageBuffer, &DatasetResult)) {
 			*errorMessage = std::string(TempErrorMessageBuffer);
 		}
 		else {
@@ -782,17 +825,17 @@ bool Bot::Save() {
 	if(this->GetBotID() == 0) {
 		// New bot record
 		uint32 TempNewBotID = 0;
-		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "INSERT INTO bots (BotOwnerCharacterID, BotSpellsID, Name, LastName, BotLevel, Race, Class, BodyType, HitPoints, Gender, Size, HitPointsRegenRate, ManaRegenRate, Face, LuclinHairStyle, LuclinHairColor, LuclinEyeColor, LuclinEyeColor2, LuclinBeardColor, LuclinBeard, DrakkinHeritage, DrakkinTattoo, DrakkinDetails, RunSpeed, MR, CR, DR, FR, PR, AC, STR, STA, DEX, AGI, _INT, WIS, CHA, ATK) VALUES('%u', '%u', '%s', '%s', '%u', '%u', '%u', '%i', '%i', '%u', '%f', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%f', '%i', '%i', '%i', '%i', '%i', '%i', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u')", this->_botOwnerCharacterID, 0, this->GetName(), this->lastname, this->GetLevel(), GetRace(), GetClass(), GetBodyType(), this->GetMaxHP(), GetGender(), GetSize(), this->hp_regen, this->mana_regen, this->GetLuclinFace(), this->GetHairStyle(), GetHairColor(), this->GetEyeColor1(), GetEyeColor2(), this->GetBeardColor(), this->GetBeard(), this->GetDrakkinHeritage(), this->GetDrakkinTattoo(), GetDrakkinDetails(), this->GetRunspeed(), GetMR(), GetCR(), GetDR(), GetFR(), GetPR(), GetAC(), GetSTR(), GetSTA(), GetDEX(), GetAGI(), GetINT(), GetWIS(), GetCHA(), GetATK()), TempErrorMessageBuffer, 0, 0, &TempNewBotID)) {
+		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "INSERT INTO bots (BotOwnerCharacterID, BotSpellsID, Name, LastName, BotLevel, Race, Class, BodyType, HitPoints, Gender, Size, HitPointsRegenRate, ManaRegenRate, Face, LuclinHairStyle, LuclinHairColor, LuclinEyeColor, LuclinEyeColor2, LuclinBeardColor, LuclinBeard, DrakkinHeritage, DrakkinTattoo, DrakkinDetails, RunSpeed, MR, CR, DR, FR, PR, AC, STR, STA, DEX, AGI, _INT, WIS, CHA, ATK) VALUES('%u', '%u', '%s', '%s', '%u', '%u', '%u', '%i', '%i', '%u', '%f', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%f', '%i', '%i', '%i', '%i', '%i', '%i', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u')", this->_botOwnerCharacterID, this->GetBotSpellID(), this->GetCleanName(), this->lastname, this->GetLevel(), GetRace(), GetClass(), GetBodyType(), this->GetHP(), GetGender(), GetSize(), this->hp_regen, this->mana_regen, this->GetLuclinFace(), this->GetHairStyle(), GetHairColor(), this->GetEyeColor1(), GetEyeColor2(), this->GetBeardColor(), this->GetBeard(), this->GetDrakkinHeritage(), this->GetDrakkinTattoo(), GetDrakkinDetails(), this->GetRunspeed(), GetMR(), GetCR(), GetDR(), GetFR(), GetPR(), GetAC(), GetSTR(), GetSTA(), GetDEX(), GetAGI(), GetINT(), GetWIS(), GetCHA(), GetATK()), TempErrorMessageBuffer, 0, 0, &TempNewBotID)) {
 			errorMessage = std::string(TempErrorMessageBuffer);
 		}
 		else {
-			this->npctype_id = TempNewBotID;
+			SetBotID(TempNewBotID);
 			Result = true;
 		}
 	}
 	else {
 		// Update existing bot record
-		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "UPDATE bots SET BotOwnerCharacterID = '%u', BotInventoryID = '%u', BotSpellsID = '%u', Name = '%s', LastName = '%s', BotLevel = '%u', Race = '%u', Class = '%u', BodyType = '%i', HitPoints = '%i', Gender = '%u', Size = '%d', HitPointsRegenRate = '%u', ManaRegenRate = '%u', Face = '%u', LuclinHairStyle = '%u', LuclinHairColor = '%u', LuclinEyeColor = '%u', LuclinEyeColor2 = '%u', LuclinBeardColor = '%u', LuclinBeard = '%u', DrakkinHeritage = '%u', DrakkinTattoo = '%u', DrakkinDetails = '%u', RunSpeed = '%d', MR = '%i', CR = '%i', DR = '%i', FR = '%i', PR = '%i', AC = '%i', STR = '%u', STA = '%u', DEX = '%u', AGI = '%u', _INT = '%u', WIS = '%u', CHA = '%u', ATK = '%i' WHERE BotID = '%u'", _botOwnerCharacterID, this->_botInventoryID, _botSpellID, this->GetName(), this->lastname, this->GetLevel(), this->GetRace(), this->GetClass(), GetBodyType(), this->GetMaxHP(), GetGender(), GetSize(), this->hp_regen, this->mana_regen, this->GetLuclinFace(), this->GetHairStyle(), GetHairColor(), this->GetEyeColor1(), GetEyeColor2(), this->GetBeardColor(), this->GetBeard(), this->GetDrakkinHeritage(), this->GetDrakkinTattoo(), GetDrakkinDetails(), this->GetRunspeed(), GetMR(), GetCR(), GetDR(), GetFR(), GetPR(), GetAC(), GetSTR(), GetSTA(), GetDEX(), GetAGI(), GetINT(), GetWIS(), GetCHA(), GetATK(), this->GetBotID()), TempErrorMessageBuffer)) {
+		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "UPDATE bots SET BotOwnerCharacterID = '%u', BotInventoryID = '%u', BotSpellsID = '%u', Name = '%s', LastName = '%s', BotLevel = '%u', Race = '%u', Class = '%u', BodyType = '%i', HitPoints = '%i', Gender = '%u', Size = '%d', HitPointsRegenRate = '%u', ManaRegenRate = '%u', Face = '%u', LuclinHairStyle = '%u', LuclinHairColor = '%u', LuclinEyeColor = '%u', LuclinEyeColor2 = '%u', LuclinBeardColor = '%u', LuclinBeard = '%u', DrakkinHeritage = '%u', DrakkinTattoo = '%u', DrakkinDetails = '%u', RunSpeed = '%d', MR = '%i', CR = '%i', DR = '%i', FR = '%i', PR = '%i', AC = '%i', STR = '%u', STA = '%u', DEX = '%u', AGI = '%u', _INT = '%u', WIS = '%u', CHA = '%u', ATK = '%i' WHERE BotID = '%u'", _botOwnerCharacterID, this->_botInventoryID, this->GetBotSpellID(), this->GetCleanName(), this->lastname, this->GetLevel(), this->GetRace(), this->GetClass(), GetBodyType(), this->GetHP(), GetGender(), GetSize(), this->hp_regen, this->mana_regen, this->GetLuclinFace(), this->GetHairStyle(), GetHairColor(), this->GetEyeColor1(), GetEyeColor2(), this->GetBeardColor(), this->GetBeard(), this->GetDrakkinHeritage(), this->GetDrakkinTattoo(), GetDrakkinDetails(), this->GetRunspeed(), GetMR(), GetCR(), GetDR(), GetFR(), GetPR(), GetAC(), GetSTR(), GetSTA(), GetDEX(), GetAGI(), GetINT(), GetWIS(), GetCHA(), GetATK(), this->GetBotID()), TempErrorMessageBuffer)) {
 			errorMessage = std::string(TempErrorMessageBuffer);
 		}
 		else {
@@ -1077,7 +1120,7 @@ bool Bot::BotRangedAttack(Mob* other) {
 	const Item_Struct* Ammo = database.GetItem(equipment[MATERIAL_PRIMARY]);
 	ItemInst* RangeItem = new ItemInst(RangeWeapon);
 	ItemInst* AmmoItem = new ItemInst(Ammo);
-	mlog(COMBAT__RANGED, "Shooting %s with bow %s (%d) and arrow %s (%d)", other->GetName(), RangeWeapon->Name, RangeWeapon->ID, Ammo->Name, Ammo->ID);
+	mlog(COMBAT__RANGED, "Shooting %s with bow %s (%d) and arrow %s (%d)", other->GetCleanName(), RangeWeapon->Name, RangeWeapon->ID, Ammo->Name, Ammo->ID);
 	
 	if(!IsAttackAllowed(other) || 
 		IsCasting() || 
@@ -1095,11 +1138,11 @@ bool Bot::BotRangedAttack(Mob* other) {
 
 	// Hit?
 	if(!other->CheckHitChance(this, ARCHERY, SLOT_PRIMARY)) {
-		mlog(COMBAT__RANGED, "Ranged attack missed %s.", other->GetName());
+		mlog(COMBAT__RANGED, "Ranged attack missed %s.", other->GetCleanName());
 		other->Damage(this, 0, SPELL_UNKNOWN, ARCHERY);
 	}
 	else {
-		mlog(COMBAT__RANGED, "Ranged attack hit %s.", other->GetName());
+		mlog(COMBAT__RANGED, "Ranged attack hit %s.", other->GetCleanName());
 		
 		if(!TryHeadShot(other, ARCHERY)) {
 			sint16 WDmg = GetWeaponDamage(other, RangeWeapon);
@@ -1180,7 +1223,7 @@ bool Bot::BotAttackMelee(Mob* other, int Hand, bool bRiposte)
 	if(!GetTarget())
 		SetTarget(other);
 	
-	mlog(COMBAT__ATTACKS, "Attacking %s with hand %d %s", other?other->GetName():"(NULL)", Hand, bRiposte?"(this is a riposte)":"");
+	mlog(COMBAT__ATTACKS, "Attacking %s with hand %d %s", other?other->GetCleanName():"(NULL)", Hand, bRiposte?"(this is a riposte)":"");
 	
 	if ((IsCasting() && (GetClass() != BARD)) ||
 		other == NULL ||
@@ -1191,7 +1234,7 @@ bool Bot::BotAttackMelee(Mob* other, int Hand, bool bRiposte)
 			entity_list.MessageClose(this, 1, 200, 10, "%s says, 'That is not a legal target master.'", this->GetCleanName());
 		if(other)
 			RemoveFromHateList(other);
-		mlog(COMBAT__ATTACKS, "I am not allowed to attack %s", other->GetName());
+		mlog(COMBAT__ATTACKS, "I am not allowed to attack %s", other->GetCleanName());
 		return false;
 	}
 
@@ -1311,7 +1354,7 @@ bool Bot::BotAttackMelee(Mob* other, int Hand, bool bRiposte)
 
 			if(damage != 0){
 				sint32 hate = max_hit;
-				mlog(COMBAT__HITS, "Generating hate %d towards %s", hate, GetName());
+				mlog(COMBAT__HITS, "Generating hate %d towards %s", hate, GetCleanName());
 				// now add done damage to the hate list
 				other->AddToHateList(this, hate);
 			}
@@ -1942,7 +1985,7 @@ bool Bot::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 										}
 					default: {
 						// TODO: log this error
-						//cout<<"Error: Unknown spell type in AICastSpell. caster:"<<this->GetName()<<" type:"<<AIspells[i].type<<" slot:"<<i<<endl;
+						//cout<<"Error: Unknown spell type in AICastSpell. caster:"<<this->GetCleanName()<<" type:"<<AIspells[i].type<<" slot:"<<i<<endl;
 						break;
 							 }
 					}
@@ -1980,7 +2023,7 @@ bool Bot::Bot_AI_IdleCastCheck() {
 	if (AIautocastspell_timer->Check(false)) {
 		_ZP(NPC_Bot_AI_IdleCastCheck);
 #if MobAI_DEBUG_Spells >= 25
-		cout << "Non-Engaged autocast check triggered: " << this->GetName() << endl;
+		cout << "Non-Engaged autocast check triggered: " << this->GetCleanName() << endl;
 #endif
 		AIautocastspell_timer->Disable();	//prevent the timer from going off AGAIN while we are casting.
 
@@ -2453,7 +2496,7 @@ void Bot::BotAIProcess() {
 				else if(target && AImovement_timer->Check())
 				{
 					if(!IsRooted()) {
-						mlog(AI__WAYPOINTS, "Pursuing %s while engaged.", target->GetName());
+						mlog(AI__WAYPOINTS, "Pursuing %s while engaged.", target->GetCleanName());
 						CalculateNewPosition2(target->GetX(), target->GetY(), target->GetZ(), GetRunspeed(), false);
 					} else {
 						SetHeading(target->GetHeading());
@@ -2647,7 +2690,7 @@ void Bot::PetAIProcess() {
 				{
 					SetRunAnimSpeed(0);
 					if(!IsRooted()) {
-						mlog(AI__WAYPOINTS, "Pursuing %s while engaged.", target->GetName());
+						mlog(AI__WAYPOINTS, "Pursuing %s while engaged.", target->GetCleanName());
 						CalculateNewPosition2(target->GetX(), target->GetY(), target->GetZ(), GetOwner()->GetRunspeed(), false);
 					}
 					else {
@@ -2769,12 +2812,8 @@ bool Bot::DeleteBot(std::string* errorMessage) {
 void Bot::Spawn(Client* botCharacterOwner, std::string* errorMessage) {
 	if(this->GetBotID() > 0 && this->_botOwnerCharacterID > 0 && botCharacterOwner) {
 		this->SetLevel(botCharacterOwner->GetLevel());
-		entity_list.AddBot(this);
+		entity_list.AddBot(this, true, true);
 		this->GMMove(botCharacterOwner->GetX(), botCharacterOwner->GetY(), botCharacterOwner->GetZ(), botCharacterOwner->GetHeading(), true);
-		//this->SetBotOwnerCharacterID(botCharacterOwner->CharacterID(), errorMessage);
-		//if(errorMessage->empty()) {
-		//	entity_list.AddBot(this);
-		//}
 	}
 }
 
@@ -3082,8 +3121,6 @@ std::list<BotsAvailableList> Bot::GetBotList(uint32 botOwnerCharacterID, std::st
 
 					Result.push_back(TempAvailableBot);
 				}
-
-				break;
 			}
 
 			mysql_free_result(DatasetResult);
@@ -3385,8 +3422,7 @@ std::string Bot::RaceIdToString(uint16 raceId) {
 	return Result;
 }
 
-void Bot::SendBotArcheryWearChange(int8 material_slot, uint32 material, uint32 color)
-{
+void Bot::SendBotArcheryWearChange(int8 material_slot, uint32 material, uint32 color) {
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_WearChange, sizeof(WearChange_Struct));
 	WearChange_Struct* wc = (WearChange_Struct*)outapp->pBuffer;
 
@@ -3630,6 +3666,332 @@ bool Bot::Bot_Command_Resist(int resisttype, int level) {
 	return false;
 }
 
+bool Bot::AddBotToGroup(Bot* bot, Group* group) {
+	bool Result = false;
+
+	int i = 0;
+
+	if(bot && group) {
+		//Let's see if the bot is already in the group
+		for(i = 0; i < MAX_GROUP_MEMBERS; i++) {
+			if(group->members[i] && !strcasecmp(group->members[i]->GetName(), bot->GetName()))
+				return false;
+		}
+
+		// Put the bot in the group
+		for(i = 0; i < MAX_GROUP_MEMBERS; i++) {
+			if(group->members[i] == NULL) {
+				group->members[i] = bot;
+				break;
+			}
+		}
+		
+		// We copy the bot name in the group at the slot of the bot
+		strcpy(group->membername[i], bot->GetName());
+		bot->SetGrouped(true);
+
+		//build the template join packet
+		EQApplicationPacket* outapp = new EQApplicationPacket(OP_GroupUpdate, sizeof(GroupJoin_Struct));
+		GroupJoin_Struct* gj = (GroupJoin_Struct*) outapp->pBuffer;	
+		strcpy(gj->membername, bot->GetName());
+		gj->action = groupActJoin;
+	
+		int z = 1;
+		for(i=0; i < MAX_GROUP_MEMBERS; i++) {
+			if(group->members[i] && group->members[i]->IsClient()) {
+				if(group->IsLeader(group->members[i])) {
+					strcpy(gj->yourname, group->members[i]->GetName());
+					strcpy(group->members[i]->CastToClient()->GetPP().groupMembers[0], group->members[i]->GetName());
+					group->members[i]->CastToClient()->QueuePacket(outapp);
+				}
+				else {
+					strcpy(group->members[i]->CastToClient()->GetPP().groupMembers[0+z], group->members[i]->GetName());
+					group->members[i]->CastToClient()->QueuePacket(outapp);
+				}
+			}
+			z++;
+		}
+
+		safe_delete(outapp);
+
+		// Need to send this only once when a group is formed with a bot so the client knows it is also the group leader
+		if(group->GroupCount() == 2) {
+			Mob *TempLeader = group->GetLeader();
+			group->SendUpdate(groupActUpdate, TempLeader);
+		}
+
+		Result = true;
+	}
+
+	return Result;
+}
+
+bool Bot::Bot_Command_CharmTarget(int charmtype, Mob *target) {
+	int charmid = 0;
+	int charmlevel = GetLevel();
+	if(target) {
+		switch(charmtype) {
+			case 1: // Enchanter
+				if((charmlevel >= 64) && (charmlevel <= 75)) {
+					charmid = 3355;
+				}
+				else if((charmlevel >= 62) && (charmlevel <= 63)) {
+					charmid = 3347;
+				}
+				else if((charmlevel >= 60) && (charmlevel <= 61)) {
+					charmid = 1707;
+				}
+				else if((charmlevel >= 53) && (charmlevel <= 59)) {
+					charmid = 1705;
+				}
+				else if((charmlevel >= 37) && (charmlevel <= 52)) {
+					charmid = 183;
+				}
+				else if((charmlevel >= 23) && (charmlevel <= 36)) {
+					charmid = 182;
+				}
+				else if((charmlevel >= 11) && (charmlevel <= 22)) {
+					charmid = 300;
+				}
+				break;
+			case 2: // Necromancer
+				if((charmlevel >= 60) && (charmlevel <= 75)) {
+					charmid = 1629;
+				}
+				else if((charmlevel >=47) && (charmlevel <= 59)) {
+					charmid = 198;
+				}
+				else if((charmlevel >= 31) && (charmlevel <= 46)) {
+					charmid = 197;
+				}
+				else if((charmlevel >= 18) && (charmlevel <= 30)) {
+					charmid = 196;
+				}
+				break;
+			case 3: // Druid
+				if((charmlevel >= 63) && (charmlevel <= 75)) {
+					charmid = 3445;
+				}
+				else if((charmlevel >= 55) && (charmlevel <= 62)) {
+					charmid = 1556;
+				}
+				else if((charmlevel >= 52) && (charmlevel <= 54)) {
+					charmid = 1553;
+				}
+				else if((charmlevel >= 43) && (charmlevel <= 51)) {
+					charmid = 142;
+				}
+				else if((charmlevel >= 33) && (charmlevel <= 42)) {
+					charmid = 141;
+				}
+				else if((charmlevel >= 23) && (charmlevel <= 32)) {
+					charmid = 260;
+				}
+				else if((charmlevel >= 13) && (charmlevel <= 22)) {
+					charmid = 242;
+				}
+				break;
+		}
+		if(charmid > 0) {
+			int32 DontRootMeBeforeTime = 0;
+			CastSpell(charmid, target->GetID(), 1, -1, -1, &DontRootMeBeforeTime);
+			target->SetDontRootMeBefore(DontRootMeBeforeTime);
+			return true;
+		}
+	}
+	return false;
+}
+
+bool Bot::Bot_Command_DireTarget(int diretype, Mob *target) {
+	int direid = 0;
+	int direlevel = GetLevel();
+	if(target) {
+		switch(diretype) {
+			case 1: // Enchanter
+				if(direlevel >= 65) {
+					direid = 5874;
+				}
+				else if(direlevel >= 55) {
+					direid = 2761;
+				}
+				break;
+			case 2: // Necromancer
+				if(direlevel >= 65) {
+					direid = 5876;
+				}
+				else if(direlevel >= 55) {
+					direid = 2759;
+				}
+				break;
+			case 3: // Druid
+				if(direlevel >= 65) {
+					direid = 5875;
+				}
+				else if(direlevel >= 55) {
+					direid = 2760;
+				}
+				break;
+		}
+		if(direid > 0) {
+			int32 DontRootMeBeforeTime = 0;
+			CastSpell(direid, target->GetID(), 1, -1, -1, &DontRootMeBeforeTime);
+			target->SetDontRootMeBefore(DontRootMeBeforeTime);
+			return true;
+		}
+	}
+	return false;
+}
+
+bool Bot::Bot_Command_CalmTarget(Mob *target) {
+	if(target) {
+		int calmid = 0;
+		int calmlevel = GetLevel();
+		if((calmlevel >= 67) && (calmlevel <= 75)) {
+			calmid = 5274;
+		}
+		else if((calmlevel >= 62) && (calmlevel <= 66)) {
+			calmid = 3197;
+		}
+		else if((calmlevel >= 35) && (calmlevel <= 61)) {
+			calmid = 45;
+		}
+		else if((calmlevel >= 18) && (calmlevel <= 34)) {
+			calmid = 47;
+		}
+		else if((calmlevel >= 6) && (calmlevel <= 17)) {
+			calmid = 501;
+		}
+		else if((calmlevel >= 1) && (calmlevel <= 5)) {
+			calmid = 208;
+		}
+		if(calmid > 0) {
+			int32 DontRootMeBeforeTime = 0;
+			CastSpell(calmid, target->GetID(), 1, -1, -1, &DontRootMeBeforeTime);
+			target->SetDontRootMeBefore(DontRootMeBeforeTime);
+			return true;
+		}
+	}
+	return false;
+}
+
+bool Bot::Bot_Command_RezzTarget(Mob *target) {
+	if(target) {
+		int rezid = 0;
+		int rezlevel = GetLevel();
+		if(rezlevel >= 56) {
+			rezid = 1524;
+		}
+		else if(rezlevel >= 47) {
+			rezid = 392;
+		}
+		else if(rezlevel >= 42) {
+			rezid = 2172;
+		}
+		else if(rezlevel >= 37) {
+			rezid = 388;
+		}
+		else if(rezlevel >= 32) {
+			rezid = 2171;
+		}
+		else if(rezlevel >= 27) {
+			rezid = 391;
+		}
+		else if(rezlevel >= 22) {
+			rezid = 2170;
+		}
+		else if(rezlevel >= 18) {
+			rezid = 2169;
+		}
+		if(rezid > 0) {
+			int32 DontRootMeBeforeTime = 0;
+			CastSpell(rezid, target->GetID(), 1, -1, -1, &DontRootMeBeforeTime);
+			target->SetDontRootMeBefore(DontRootMeBeforeTime);
+			return true;
+		}
+	}
+	return false;
+}
+
+bool Bot::Bot_Command_Cure(int curetype, int level) {
+	int cureid = 0;
+	switch(curetype) {
+		case 1: // Poison
+			if(level >= 58) {
+				cureid = 1525;
+			}
+			else if(level >= 48) {
+				cureid = 97;
+			}
+			else if(level >= 22) {
+				cureid = 95;
+			}
+			else if(level >= 1) {
+				cureid = 203;
+			}
+			break;
+		case 2: // Disease
+			if(level >= 51) {
+				cureid = 3693;
+			}
+			else if(level >= 28) {
+				cureid = 96;
+			}
+			else if(level >= 4) {
+				cureid = 213;
+			}
+			break;
+		case 3: // Curse
+			if(level >= 54) {
+				cureid = 2880;
+			}
+			else if(level >= 38) {
+				cureid = 2946;
+			}
+			else if(level >= 23) {
+				cureid = 4057;
+			}
+			else if(level >= 8) {
+				cureid = 4056;
+			}
+			break;
+		case 4: // Blindness
+			if(level >= 3) {
+				cureid = 212;
+			}
+			break;
+	}
+	if(cureid > 0) {
+		if(IsBotRaiding()) {
+			// TODO: Uncomment this block of code after bot raids are integrated
+			/*BotRaids* br = entity_list.GetBotRaidByMob(this);
+			if(br) {
+				for(int i=0; i<MAX_BOT_RAID_GROUPS; i++) {
+					Group* gr = br->BotRaidGroups[i];
+					if(gr) {
+						for(int j=0; j<MAX_GROUP_MEMBERS; j++) {
+							if(gr->members[j]) {
+								SpellOnTarget(cureid, gr->members[j]);
+							}
+						}
+					}
+				}
+			}*/
+		}
+		else {
+			Group* g = entity_list.GetGroupByMob(this);
+			if(g) {
+				for(int k=0; k<MAX_GROUP_MEMBERS; k++) {
+					if(g->members[k]) {
+						SpellOnTarget(cureid, g->members[k]);
+					}
+				}
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 	// TODO: All bot command processing occurs here now instead of in command.cpp
 
@@ -3719,7 +4081,8 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		if(!strcasecmp(sep->arg[5], "female"))
 			gender = 1;
 
-		Bot* NewBot = new Bot(std::string(sep->arg[2]), atoi(sep->arg[3]), atoi(sep->arg[4]), gender, c);
+		NPCType DefaultNPCTypeStruct = CreateDefaultNPCTypeStructForBot(std::string(sep->arg[2]), std::string(), c->GetLevel(), atoi(sep->arg[4]), atoi(sep->arg[3]), gender);
+		Bot* NewBot = new Bot(DefaultNPCTypeStruct, c);
 
 		if(NewBot) {
 			if(!NewBot->IsValidRaceClassCombo()) {
@@ -3728,12 +4091,12 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 			}
 
 			if(!NewBot->IsValidName()) {
-				c->Message(0, "%s has invalid characters. You can use only the A-Z, a-z and _ characters in a bot name.", NewBot->GetName());
+				c->Message(0, "%s has invalid characters. You can use only the A-Z, a-z and _ characters in a bot name.", NewBot->GetCleanName());
 				return;
 			}
 
 			if(!NewBot->IsBotNameAvailable(&TempErrorMessage)) {
-				c->Message(0, "The name %s is already being used. Please choose a different name.", NewBot->GetName());
+				c->Message(0, "The name %s is already being used. Please choose a different name.", NewBot->GetCleanName());
 				return;
 			}
 
@@ -3744,9 +4107,9 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 
 			// Now that all validation is complete, we can save our newly created bot
 			if(!NewBot->Save())
-				c->Message(0, "Unable to save %s as a bot.", NewBot->GetName());
+				c->Message(0, "Unable to save %s as a bot.", NewBot->GetCleanName());
 			else
-				c->Message(0, "%s saved as bot %u.", NewBot->GetName(), NewBot->GetBotID());
+				c->Message(0, "%s saved as bot %u.", NewBot->GetCleanName(), NewBot->GetBotID());
 		}
 		else {
 			// TODO: Log error message here
@@ -3772,14 +4135,9 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 			c->Message(15, "You must target a bot!");
 			return;
 		}
-		else if(GetBotOwnerCharacterID(c->GetTarget()->GetNPCTypeID(), &TempErrorMessage) != c->CharacterID())
+		else if(c->GetTarget()->CastToBot()->GetBotOwnerCharacterID() != c->CharacterID())
 		{
 			c->Message(15, "You can't delete a bot that you don't own.");
-			return;
-		}
-
-		if(!TempErrorMessage.empty()) {
-			c->Message(13, "Database Error: %s", TempErrorMessage.c_str());
 			return;
 		}
 
@@ -4211,7 +4569,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 //				tmp = 0;
 //				npc->SetLevel(myLevel);
 //				entity_list.AddNPC(npc);
-//				database.SetBotLeader(npc->GetNPCTypeID(), c->CharacterID(), npc->GetName(), zone->GetShortName());
+//				database.SetBotLeader(npc->GetNPCTypeID(), c->CharacterID(), npc->GetCleanName(), zone->GetShortName());
 //			}
 //		}
 //		mysql_free_result(groups);
@@ -4314,20 +4672,6 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 			return;
 		}
 
-		if (c->IsGrouped()) {
-			Group *g = entity_list.GetGroupByClient(c);
-			if(g && (GetCountBotsInGroup(g) > 5)) {
-				c->Message(15, "There is no more room in your group.");
-				Mob* kmob = c->GetTarget();
-				if(kmob != NULL) {
-					kmob->CastToBot()->SetBotOwner(0);
-					//kmob->BotOwner = NULL;
-					kmob->Kill();
-				}
-				return;
-			}
-		}
-
 		if(c->IsGrouped()) {
 			Group *g = entity_list.GetGroupByClient(c);
 			if(g && (c->CastToMob() != g->members[0])) {
@@ -4342,13 +4686,25 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 			}
 		}
 
+		if (c->IsGrouped()) {
+			Group *g = entity_list.GetGroupByClient(c);
+			if(g && (GetCountBotsInGroup(g) > 5)) {
+				c->Message(15, "There is no more room in your group.");
+				Mob* kmob = c->GetTarget();
+				if(kmob != NULL) {
+					kmob->CastToBot()->SetBotOwner(0);
+					//kmob->BotOwner = NULL;
+					kmob->Kill();
+				}
+				return;
+			}
+		}
+
 		if(c->GetTarget()->IsBot())
 		{
 			Bot* b = c->GetTarget()->CastToBot();
 
-			if(b->GetBotID() != c->CharacterID())
-			//if(database.GetBotOwner(b->GetNPCTypeID()) != c->AccountID())
-			{
+			if(b->GetBotOwnerCharacterID() != c->CharacterID()) {
 				b->Say("I can't be your bot, you are not my owner.");
 				return;
 			}
@@ -4361,7 +4717,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 
 			// else, we do:
 			//1: Set its leader
-			b->Say("I'm becoming %s\'s bot!", c->GetName());
+			b->Say("I'm becoming %s\'s bot!", c->GetCleanName());
 
 			//2: Set the follow ID so he's following its leader
 			b->SetFollowID(c->GetID());
@@ -4372,11 +4728,13 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 			//3:  invite it to the group
 			if(!c->IsGrouped()) {
 				Group *g = new Group(c->CastToMob());
-				g->AddMember(b);
+				AddBotToGroup(b, g);
+				//g->AddMember(b);
 				entity_list.AddGroup(g);
 			}
 			else {
-				c->GetGroup()->AddMember(b);
+				AddBotToGroup(b, c->GetGroup());
+				//c->GetGroup()->AddMember(b);
 			}
 
 			// TODO: Uncomment this block of code after bot raids has been integrated
@@ -4387,6 +4745,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 
 			uint32 itemID = 0;
 			const Item_Struct* item2 = NULL;
+
 			for(int i=0; i<22; i++) {
 				itemID = b->GetBotItemBySlot(i, &TempErrorMessage);
 
@@ -4405,8 +4764,10 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 					}
 				}
 			}
+
 			b->CalcBotStats();
 		}
+
 		return;
 	}
 
@@ -4438,9 +4799,10 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 					c->GetTarget()->CastToBot()->SetBotOwner(0);
 					c->GetTarget()->Kill();
 				}
-				if(c->GetTarget()->CastToBot()->IsBotRaiding()) {
-					// TODO: Uncomment this block of code after bot raids has been integrated
-					/*if(database.SpawnedBotCount(c->CharacterID()) < 6) {
+				// TODO: Uncomment this block of code after bot raids has been integrated
+				/*if(c->GetTarget()->CastToBot()->IsBotRaiding()) {
+					
+					if(database.SpawnedBotCount(c->CharacterID()) < 6) {
 						entity_list.RemoveBotRaid(c->CastToMob()->GetBotRaidID());
 						Group *g = c->GetGroup();
 						if(g) {
@@ -4451,8 +4813,8 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 								}
 							}
 						}
-					}*/
-				}
+					}
+				}*/
 			}
 			else {
 				c->Message(15, "You must target a bot first.");
@@ -4482,7 +4844,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 //						if(g->members[i] && g->members[i]->IsBot()) {
 //							if(botfollowid == 0) {
 //								botfollowid = g->members[i]->GetID();
-//								botfollowname = g->members[i]->GetName();
+//								botfollowname = g->members[i]->GetCleanName();
 //								g->members[i]->SetFollowID(c->GetID());
 //								g->members[i]->Say("Following %s.", c->GetName());
 //							}
@@ -4549,170 +4911,194 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 //		}
 //		return;
 //	}
-//
-//	if(!strcasecmp(sep->arg[1], "inventory") && !strcasecmp(sep->arg[2], "list"))
-//	{
-//		if(c->GetTarget() != NULL)
-//		{
-//			if(c->GetTarget()->IsBot() && (c->GetTarget()->BotOwner == c->CastToMob()))
-//			{
-//				Mob* b = c->GetTarget();	
-//				int x = database.GetBotItemsNumber(b->GetNPCTypeID() );
-//				const char* equipped[22] = {"Charm", "Left Ear", "Head", "Face", "Right Ear", "Neck", "Shoulders", "Arms", "Back",
-//					"Left Wrist", "Right Wrist", "Range", "Hands", "Primary Hand", "Secondary Hand",
-//					"Left Finger", "Right Finger", "Chest", "Legs", "Feet", "Waist", "Ammo" };
-//				const Item_Struct* item2 = NULL;
-//				bool is2Hweapon = false;
-//				for(int i=0; i<22 ; i++)
-//				{
-//					if((i == 14) && is2Hweapon) {
-//						continue;
-//					}
-//					item2 = database.GetItem(database.GetBotItemBySlot(b->GetNPCTypeID(), i));
-//					if(item2 == 0) {
-//						c->Message(15, "I need something for my %s (Item %i)", equipped[i], i);
-//						continue;
-//					}
-//					if((i == 13) && ((item2->ItemType == ItemType2HS) || (item2->ItemType == ItemType2HB) || (item2->ItemType == ItemType2HPierce))) {
-//						is2Hweapon = true;
-//					}
-//					if((i == 0) || (i == 11) || (i == 13) || (i == 14) || (i == 21)) {
-//						if (c->GetClientVersion() == EQClientSoF)
-//						{
-//							c->Message(15, "Using %c%06X00000000000000000000000000000000000000000000%s%c in my %s (Item %i)", 0x12, item2->ID, item2->Name, 0x12, equipped[i], i);
-//						}
-//						else
-//						{
-//							c->Message(15, "Using %c%06X000000000000000000000000000000000000000%s%c in my %s (Item %i)", 0x12, item2->ID, item2->Name, 0x12, equipped[i], i);
-//						}
-//					}
-//					else {
-//						if (c->GetClientVersion() == EQClientSoF)
-//						{
-//							c->Message(15, "Using %c%06X00000000000000000000000000000000000000000000%s%c on my %s (Item %i)", 0x12, item2->ID, item2->Name, 0x12, equipped[i], i);
-//						}
-//						else
-//						{
-//							c->Message(15, "Using %c%06X000000000000000000000000000000000000000%s%c on my %s (Item %i)", 0x12, item2->ID, item2->Name, 0x12, equipped[i], i);
-//						}
-//					}
-//				}
-//			}
-//			else {
-//				c->Message(15, "You must group your bot first.");
-//			}
-//		}
-//		else {
-//			c->Message(15, "You must target a bot first.");
-//		}
-//		return;
-//	}
-//
-//	if(!strcasecmp(sep->arg[1], "inventory") && !strcasecmp(sep->arg[2], "remove")) {
-//		if((c->GetTarget() == NULL) || (sep->arg[3] == '\0') || !c->GetTarget()->IsBot())
-//		{
-//			c->Message(15, "Usage: #bot inventory remove [slotid] (You must have a bot targetted) ");
-//			return;
-//		}		
-//		else if(c->GetTarget()->IsBot() && (c->GetTarget()->BotOwner == c->CastToMob()))
-//		{
-//			int slotId = atoi(sep->arg[3]);
-//			if(slotId > 21 || slotId < 0) {
-//				c->Message(15, "A bot has 21 slots in its inventory, please choose a slot between 0 and 21.");
-//				return;
-//			}
-//			const char* equipped[22] = {"Charm", "Left Ear", "Head", "Face", "Right Ear", "Neck", "Shoulders", "Arms", "Back",
-//				"Left Wrist", "Right Wrist", "Range", "Hands", "Primary Hand", "Secondary Hand",
-//				"Left Finger", "Right Finger", "Chest", "Legs", "Feet", "Waist", "Ammo" };
-//			const Item_Struct *itm = database.GetItem(database.GetBotItemBySlot(c->GetTarget()->GetNPCTypeID(), slotId));
-//			// Don't allow the player to remove a lore item they already possess and cause a crash
-//			if(!c->CheckLoreConflict(itm)) {
-//				if(itm) {
-//					const ItemInst* itminst = new ItemInst(itm, itm->MaxCharges);
-//					c->PushItemOnCursor(*itminst, true);
-//					safe_delete(itminst);
-//					Mob *gearbot = c->GetTarget();
-//					if((slotId == SLOT_RANGE)||(slotId == SLOT_AMMO)||(slotId == SLOT_PRIMARY)||(slotId == SLOT_SECONDARY)) {
-//						gearbot->SetBotArcher(false);
-//					}
-//					database.RemoveBotItemBySlot(gearbot->GetNPCTypeID(), slotId);
-//					gearbot->CastToNPC()->RemoveItem(itm->ID);
-//					int8 materialFromSlot = Inventory::CalcMaterialFromSlot(slotId);
-//					if(materialFromSlot != 0xFF) {
-//						gearbot->CastToNPC()->BotRemoveEquipItem(materialFromSlot);
-//						gearbot->CastToNPC()->SendWearChange(materialFromSlot);
-//					}
-//					gearbot->CalcBotStats();
-//					switch(slotId) {
-//						case 0:
-//						case 1:
-//						case 2:
-//						case 3:
-//						case 4:
-//						case 5:
-//						case 8:
-//						case 9:
-//						case 10:
-//						case 11:
-//						case 13:
-//						case 14:
-//						case 15:
-//						case 16:
-//						case 17:
-//						case 20:
-//						case 21:
-//							gearbot->Say("My %s is now unequipped.", equipped[slotId]);
-//							break;
-//						case 6:
-//						case 7:
-//						case 12:
-//						case 18:
-//						case 19:
-//							gearbot->Say("My %s are now unequipped.", equipped[slotId]);
-//							break;
-//						default:
-//							break;
-//					}
-//				}
-//				else {
-//					switch(slotId) {
-//						case 0:
-//						case 1:
-//						case 2:
-//						case 3:
-//						case 4:
-//						case 5:
-//						case 8:
-//						case 9:
-//						case 10:
-//						case 11:
-//						case 13:
-//						case 14:
-//						case 15:
-//						case 16:
-//						case 17:
-//						case 20:
-//						case 21:
-//							c->GetTarget()->Say("My %s is already unequipped.", equipped[slotId]);
-//							break;
-//						case 6:
-//						case 7:
-//						case 12:
-//						case 18:
-//						case 19:
-//							c->GetTarget()->Say("My %s are already unequipped.", equipped[slotId]);
-//							break;
-//						default:
-//							break;
-//					}
-//				}
-//			}
-//			else {
-//				c->Message(15, "Duplicate Lore item.");
-//			}
-//		}
-//		return;
-//	}
+
+	if(!strcasecmp(sep->arg[1], "inventory") && !strcasecmp(sep->arg[2], "list"))
+	{
+		if(c->GetTarget() != NULL)
+		{
+			if(c->GetTarget()->IsBot() && c->GetTarget()->CastToBot()->GetBotOwnerCharacterID() == c->CharacterID())
+			{
+				Mob* b = c->GetTarget();	
+				int x = c->GetTarget()->CastToBot()->GetBotItemsCount(&TempErrorMessage);
+
+				if(!TempErrorMessage.empty()) {
+					c->Message(13, "Database Error: %s", TempErrorMessage.c_str());
+					return;
+				}
+
+				const char* equipped[22] = {"Charm", "Left Ear", "Head", "Face", "Right Ear", "Neck", "Shoulders", "Arms", "Back",
+					"Left Wrist", "Right Wrist", "Range", "Hands", "Primary Hand", "Secondary Hand",
+					"Left Finger", "Right Finger", "Chest", "Legs", "Feet", "Waist", "Ammo" };
+				const Item_Struct* item2 = NULL;
+				bool is2Hweapon = false;
+				for(int i=0; i<22 ; i++)
+				{
+					if((i == 14) && is2Hweapon) {
+						continue;
+					}
+
+					item2 = database.GetItem(c->GetTarget()->CastToBot()->GetBotItemBySlot(i, &TempErrorMessage));
+
+					if(!TempErrorMessage.empty()) {
+						c->Message(13, "Database Error: %s", TempErrorMessage.c_str());
+						return;
+					}
+					if(item2 == 0) {
+						c->Message(15, "I need something for my %s (Item %i)", equipped[i], i);
+						continue;
+					}
+					if((i == 13) && ((item2->ItemType == ItemType2HS) || (item2->ItemType == ItemType2HB) || (item2->ItemType == ItemType2HPierce))) {
+						is2Hweapon = true;
+					}
+					if((i == 0) || (i == 11) || (i == 13) || (i == 14) || (i == 21)) {
+						if (c->GetClientVersion() == EQClientSoF)
+						{
+							c->Message(15, "Using %c%06X00000000000000000000000000000000000000000000%s%c in my %s (Item %i)", 0x12, item2->ID, item2->Name, 0x12, equipped[i], i);
+						}
+						else
+						{
+							c->Message(15, "Using %c%06X000000000000000000000000000000000000000%s%c in my %s (Item %i)", 0x12, item2->ID, item2->Name, 0x12, equipped[i], i);
+						}
+					}
+					else {
+						if (c->GetClientVersion() == EQClientSoF)
+						{
+							c->Message(15, "Using %c%06X00000000000000000000000000000000000000000000%s%c on my %s (Item %i)", 0x12, item2->ID, item2->Name, 0x12, equipped[i], i);
+						}
+						else
+						{
+							c->Message(15, "Using %c%06X000000000000000000000000000000000000000%s%c on my %s (Item %i)", 0x12, item2->ID, item2->Name, 0x12, equipped[i], i);
+						}
+					}
+				}
+			}
+			else {
+				c->Message(15, "You must group your bot first.");
+			}
+		}
+		else {
+			c->Message(15, "You must target a bot first.");
+		}
+		return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "inventory") && !strcasecmp(sep->arg[2], "remove")) {
+		if((c->GetTarget() == NULL) || (sep->arg[3] == '\0') || !c->GetTarget()->IsBot())
+		{
+			c->Message(15, "Usage: #bot inventory remove [slotid] (You must have a bot targetted) ");
+			return;
+		}		
+		else if(c->GetTarget()->IsBot() && c->GetTarget()->CastToBot()->GetBotOwnerCharacterID() == c->CharacterID())
+		{
+			int slotId = atoi(sep->arg[3]);
+			if(slotId > 21 || slotId < 0) {
+				c->Message(15, "A bot has 21 slots in its inventory, please choose a slot between 0 and 21.");
+				return;
+			}
+			const char* equipped[22] = {"Charm", "Left Ear", "Head", "Face", "Right Ear", "Neck", "Shoulders", "Arms", "Back",
+				"Left Wrist", "Right Wrist", "Range", "Hands", "Primary Hand", "Secondary Hand",
+				"Left Finger", "Right Finger", "Chest", "Legs", "Feet", "Waist", "Ammo" };
+			const Item_Struct *itm = database.GetItem(c->GetTarget()->CastToBot()->GetBotItemBySlot(slotId, &TempErrorMessage));
+
+			if(!TempErrorMessage.empty()) {
+				c->Message(13, "Database Error: %s", TempErrorMessage.c_str());
+				return;
+			}
+
+			// Don't allow the player to remove a lore item they already possess and cause a crash
+			if(!c->CheckLoreConflict(itm)) {
+				if(itm) {
+					const ItemInst* itminst = new ItemInst(itm, itm->MaxCharges);
+					c->PushItemOnCursor(*itminst, true);
+					safe_delete(itminst);
+					Bot *gearbot = c->GetTarget()->CastToBot();
+					if((slotId == SLOT_RANGE)||(slotId == SLOT_AMMO)||(slotId == SLOT_PRIMARY)||(slotId == SLOT_SECONDARY)) {
+						gearbot->SetBotArcher(false);
+					}
+					gearbot->RemoveBotItemBySlot(slotId, &TempErrorMessage);
+
+					if(!TempErrorMessage.empty()) {
+						c->Message(13, "Database Error: %s", TempErrorMessage.c_str());
+						return;
+					}
+
+					gearbot->RemoveItem(itm->ID);
+					int8 materialFromSlot = Inventory::CalcMaterialFromSlot(slotId);
+					if(materialFromSlot != 0xFF) {
+						gearbot->BotRemoveEquipItem(materialFromSlot);
+						gearbot->SendWearChange(materialFromSlot);
+					}
+					gearbot->CalcBotStats();
+					switch(slotId) {
+						case 0:
+						case 1:
+						case 2:
+						case 3:
+						case 4:
+						case 5:
+						case 8:
+						case 9:
+						case 10:
+						case 11:
+						case 13:
+						case 14:
+						case 15:
+						case 16:
+						case 17:
+						case 20:
+						case 21:
+							gearbot->Say("My %s is now unequipped.", equipped[slotId]);
+							break;
+						case 6:
+						case 7:
+						case 12:
+						case 18:
+						case 19:
+							gearbot->Say("My %s are now unequipped.", equipped[slotId]);
+							break;
+						default:
+							break;
+					}
+				}
+				else {
+					switch(slotId) {
+						case 0:
+						case 1:
+						case 2:
+						case 3:
+						case 4:
+						case 5:
+						case 8:
+						case 9:
+						case 10:
+						case 11:
+						case 13:
+						case 14:
+						case 15:
+						case 16:
+						case 17:
+						case 20:
+						case 21:
+							c->GetTarget()->Say("My %s is already unequipped.", equipped[slotId]);
+							break;
+						case 6:
+						case 7:
+						case 12:
+						case 18:
+						case 19:
+							c->GetTarget()->Say("My %s are already unequipped.", equipped[slotId]);
+							break;
+						default:
+							break;
+					}
+				}
+			}
+			else {
+				c->Message(15, "Duplicate Lore item.");
+			}
+		}
+		return;
+	}
 
 	if(!strcasecmp(sep->arg[1], "update")) {
 		// Congdar: add IsEngaged check for exploit to keep bots alive by repeatedly using #bot update.
@@ -4953,122 +5339,122 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 	//	}
 	//}
 
-//	//Cure
-//	if ((!strcasecmp(sep->arg[1], "cure")) && (c->IsGrouped())) {
-//		Mob *Curer;
-//		int32 CurerClass = 0;
-//		Group *g = c->GetGroup();
-//		if(g) {
-//			for(int i=0; i<MAX_GROUP_MEMBERS; i++){
-//				if(g->members[i] && g->members[i]->IsBot()) {
-//					switch(g->members[i]->GetClass()) {
-//						case CLERIC:
-//							Curer = g->members[i];
-//							CurerClass = CLERIC;
-//							break;
-//						case SHAMAN:
-//							if(CurerClass != CLERIC){
-//								Curer = g->members[i];
-//								CurerClass = SHAMAN;
-//							}
-//						case DRUID:
-//							if (CurerClass == 0){
-//								Curer = g->members[i];
-//								CurerClass = DRUID;
-//							}
-//							break;
-//							break;
-//						default:
-//							break;
-//					}
-//				}
-//			}
-//			switch(CurerClass) {
-//				case CLERIC:
-//					if	(!strcasecmp(sep->arg[2], "poison") && (c->GetLevel() >= 1))  {
-//						Curer->Say("Trying to cure us of %s.", sep->arg[2]);
-//						Curer->CastToNPC()->Bot_Command_Cure(1, Curer->GetLevel());
-//					}
-//					else if (!strcasecmp(sep->arg[2], "disease") && (c->GetLevel() >= 4)) {
-//						Curer->Say("Trying to cure us of %s.", sep->arg[2]);
-//						Curer->CastToNPC()->Bot_Command_Cure(2, Curer->GetLevel());
-//					}
-//					else if(!strcasecmp(sep->arg[2], "curse") && (c->GetLevel() >= 8)) {
-//						Curer->Say("Trying to cure us of %s.", sep->arg[2]);
-//						Curer->CastToNPC()->Bot_Command_Cure(3, Curer->GetLevel());
-//					}
-//					else if(!strcasecmp(sep->arg[2], "blindness") && (c->GetLevel() >= 3)) {
-//						Curer->Say("Trying to cure us of %s.", sep->arg[2]);
-//						Curer->CastToNPC()->Bot_Command_Cure(4, Curer->GetLevel());
-//					}
-//					else if (!strcasecmp(sep->arg[2], "curse") && (c->GetLevel() <= 8)
-//						|| !strcasecmp(sep->arg[2], "blindness") && (c->GetLevel() <= 3) 
-//						|| !strcasecmp(sep->arg[2], "disease") && (c->GetLevel() <= 4)
-//						|| !strcasecmp(sep->arg[2], "poison") && (c->GetLevel() <= 1)) {
-//							Curer->Say("I don't have the needed level yet", sep->arg[2]);
-//					}
-//					else
-//						Curer->Say("Do you want [cure poison], [cure disease], [cure curse], or [cure blindness]?", c->GetName());
-//
-//					break;
-//
-//				case SHAMAN:
-//					if	(!strcasecmp(sep->arg[2], "poison") && (c->GetLevel() >= 2))  {
-//						Curer->Say("Trying to cure us of %s.", sep->arg[2]);
-//						Curer->CastToNPC()->Bot_Command_Cure(1, Curer->GetLevel());
-//					}
-//					else if (!strcasecmp(sep->arg[2], "disease") && (c->GetLevel() >= 1)) {
-//						Curer->Say("Trying to cure us of %s.", sep->arg[2]);
-//						Curer->CastToNPC()->Bot_Command_Cure(2, Curer->GetLevel());
-//					}
-//					else if(!strcasecmp(sep->arg[2], "curse")) {
-//						Curer->Say("I don't have that spell", sep->arg[2]);
-//					}
-//					else if(!strcasecmp(sep->arg[2], "blindness") && (c->GetLevel() >= 7)) {
-//						Curer->Say("Trying to cure us of %s.", sep->arg[2]);
-//						Curer->CastToNPC()->Bot_Command_Cure(4, Curer->GetLevel());
-//					}
-//					else if (!strcasecmp(sep->arg[2], "blindness") && (c->GetLevel() <= 7) 
-//						|| !strcasecmp(sep->arg[2], "disease") && (c->GetLevel() <= 1)
-//						|| !strcasecmp(sep->arg[2], "poison") && (c->GetLevel() <= 2)) {
-//							Curer->Say("I don't have the needed level yet", sep->arg[2]);
-//					}
-//					else 
-//						Curer->Say("Do you want [cure poison], [cure disease], or [cure blindness]?", c->GetName());
-//
-//					break;
-//
-//				case DRUID:
-//
-//					if	(!strcasecmp(sep->arg[2], "poison") && (c->GetLevel() >= 5)) {
-//						Curer->Say("Trying to cure us of %s.", sep->arg[2]);
-//						Curer->CastToNPC()->Bot_Command_Cure(1, Curer->GetLevel());
-//					}
-//					else if (!strcasecmp(sep->arg[2], "disease") && (c->GetLevel() >= 4)) {
-//						Curer->Say("Trying to cure us of %s.", sep->arg[2]);
-//						Curer->CastToNPC()->Bot_Command_Cure(2, Curer->GetLevel());
-//					}
-//					else if(!strcasecmp(sep->arg[2], "curse")) { // Fire level 1
-//						Curer->Say("I don't have that spell", sep->arg[2]);
-//					}
-//					else if(!strcasecmp(sep->arg[2], "blindness") && (c->GetLevel() >= 13)) {
-//						Curer->Say("I don't have that spell", sep->arg[2]);
-//					}
-//					else if (!strcasecmp(sep->arg[2], "disease") && (c->GetLevel() <= 4)
-//						|| !strcasecmp(sep->arg[2], "poison") && (c->GetLevel() <= 5)) {
-//							Curer->Say("I don't have the needed level yet", sep->arg[2]) ;
-//					}
-//					else 
-//						Curer->Say("Do you want [cure poison], or [cure disease]?", c->GetName());
-//
-//					break;
-//
-//				default:
-//					c->Message(15, "You must have a Cleric, Shaman, or Druid in your group.");
-//					break;
-//			}
-//		}
-//	}
+	//Cure
+	if ((!strcasecmp(sep->arg[1], "cure")) && (c->IsGrouped())) {
+		Mob *Curer;
+		int32 CurerClass = 0;
+		Group *g = c->GetGroup();
+		if(g) {
+			for(int i=0; i<MAX_GROUP_MEMBERS; i++){
+				if(g->members[i] && g->members[i]->IsBot()) {
+					switch(g->members[i]->GetClass()) {
+						case CLERIC:
+							Curer = g->members[i];
+							CurerClass = CLERIC;
+							break;
+						case SHAMAN:
+							if(CurerClass != CLERIC){
+								Curer = g->members[i];
+								CurerClass = SHAMAN;
+							}
+						case DRUID:
+							if (CurerClass == 0){
+								Curer = g->members[i];
+								CurerClass = DRUID;
+							}
+							break;
+							break;
+						default:
+							break;
+					}
+				}
+			}
+			switch(CurerClass) {
+				case CLERIC:
+					if	(!strcasecmp(sep->arg[2], "poison") && (c->GetLevel() >= 1))  {
+						Curer->Say("Trying to cure us of %s.", sep->arg[2]);
+						Curer->CastToBot()->Bot_Command_Cure(1, Curer->GetLevel());
+					}
+					else if (!strcasecmp(sep->arg[2], "disease") && (c->GetLevel() >= 4)) {
+						Curer->Say("Trying to cure us of %s.", sep->arg[2]);
+						Curer->CastToBot()->Bot_Command_Cure(2, Curer->GetLevel());
+					}
+					else if(!strcasecmp(sep->arg[2], "curse") && (c->GetLevel() >= 8)) {
+						Curer->Say("Trying to cure us of %s.", sep->arg[2]);
+						Curer->CastToBot()->Bot_Command_Cure(3, Curer->GetLevel());
+					}
+					else if(!strcasecmp(sep->arg[2], "blindness") && (c->GetLevel() >= 3)) {
+						Curer->Say("Trying to cure us of %s.", sep->arg[2]);
+						Curer->CastToBot()->Bot_Command_Cure(4, Curer->GetLevel());
+					}
+					else if (!strcasecmp(sep->arg[2], "curse") && (c->GetLevel() <= 8)
+						|| !strcasecmp(sep->arg[2], "blindness") && (c->GetLevel() <= 3) 
+						|| !strcasecmp(sep->arg[2], "disease") && (c->GetLevel() <= 4)
+						|| !strcasecmp(sep->arg[2], "poison") && (c->GetLevel() <= 1)) {
+							Curer->Say("I don't have the needed level yet", sep->arg[2]);
+					}
+					else
+						Curer->Say("Do you want [cure poison], [cure disease], [cure curse], or [cure blindness]?", c->GetName());
+
+					break;
+
+				case SHAMAN:
+					if	(!strcasecmp(sep->arg[2], "poison") && (c->GetLevel() >= 2))  {
+						Curer->Say("Trying to cure us of %s.", sep->arg[2]);
+						Curer->CastToBot()->Bot_Command_Cure(1, Curer->GetLevel());
+					}
+					else if (!strcasecmp(sep->arg[2], "disease") && (c->GetLevel() >= 1)) {
+						Curer->Say("Trying to cure us of %s.", sep->arg[2]);
+						Curer->CastToBot()->Bot_Command_Cure(2, Curer->GetLevel());
+					}
+					else if(!strcasecmp(sep->arg[2], "curse")) {
+						Curer->Say("I don't have that spell", sep->arg[2]);
+					}
+					else if(!strcasecmp(sep->arg[2], "blindness") && (c->GetLevel() >= 7)) {
+						Curer->Say("Trying to cure us of %s.", sep->arg[2]);
+						Curer->CastToBot()->Bot_Command_Cure(4, Curer->GetLevel());
+					}
+					else if (!strcasecmp(sep->arg[2], "blindness") && (c->GetLevel() <= 7) 
+						|| !strcasecmp(sep->arg[2], "disease") && (c->GetLevel() <= 1)
+						|| !strcasecmp(sep->arg[2], "poison") && (c->GetLevel() <= 2)) {
+							Curer->Say("I don't have the needed level yet", sep->arg[2]);
+					}
+					else 
+						Curer->Say("Do you want [cure poison], [cure disease], or [cure blindness]?", c->GetName());
+
+					break;
+
+				case DRUID:
+
+					if	(!strcasecmp(sep->arg[2], "poison") && (c->GetLevel() >= 5)) {
+						Curer->Say("Trying to cure us of %s.", sep->arg[2]);
+						Curer->CastToBot()->Bot_Command_Cure(1, Curer->GetLevel());
+					}
+					else if (!strcasecmp(sep->arg[2], "disease") && (c->GetLevel() >= 4)) {
+						Curer->Say("Trying to cure us of %s.", sep->arg[2]);
+						Curer->CastToBot()->Bot_Command_Cure(2, Curer->GetLevel());
+					}
+					else if(!strcasecmp(sep->arg[2], "curse")) { // Fire level 1
+						Curer->Say("I don't have that spell", sep->arg[2]);
+					}
+					else if(!strcasecmp(sep->arg[2], "blindness") && (c->GetLevel() >= 13)) {
+						Curer->Say("I don't have that spell", sep->arg[2]);
+					}
+					else if (!strcasecmp(sep->arg[2], "disease") && (c->GetLevel() <= 4)
+						|| !strcasecmp(sep->arg[2], "poison") && (c->GetLevel() <= 5)) {
+							Curer->Say("I don't have the needed level yet", sep->arg[2]) ;
+					}
+					else 
+						Curer->Say("Do you want [cure poison], or [cure disease]?", c->GetName());
+
+					break;
+
+				default:
+					c->Message(15, "You must have a Cleric, Shaman, or Druid in your group.");
+					break;
+			}
+		}
+	}
 
 	//Mez
 	if(!strcasecmp(sep->arg[1], "ai") && !strcasecmp(sep->arg[2], "mez"))
@@ -5151,122 +5537,122 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		}
 		return;
 	}
-//
-//	//Resurrect
-//	if(!strcasecmp(sep->arg[1], "resurrectme"))
-//	{
-//		Mob *target = c->GetTarget();
-//		if(target == NULL || !target->IsCorpse())
-//		{
-//			c->Message(15, "You must select a corpse");
-//			return;
-//		}
-//
-//		if(c->IsGrouped())
-//		{
-//			bool hasrezzer = false;
-//			Group *g = c->GetGroup();
-//			for(int i=0; i<MAX_GROUP_MEMBERS; i++)
-//			{
-//				if(g && g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == CLERIC))
-//				{
-//					hasrezzer = true;
-//					Mob *rezzer = g->members[i];
-//					rezzer->Say("Trying to rez %s", target->GetCleanName());
-//					rezzer->CastToNPC()->Bot_Command_RezzTarget(target);
-//					break;
-//				}
-//			}
-//			if(!hasrezzer) {
-//				c->Message(15, "You must have a Cleric in your group.");
-//			}
-//		}
-//		else {
-//			c->Message(15, "You must have a Cleric in your group.");
-//		}
-//		return;
-//	}
-//
-//	if(!strcasecmp(sep->arg[1], "magepet"))
-//	{
-//		if(c->GetTarget() && c->GetTarget()->IsBot() && (c->GetTarget()->GetClass() == MAGICIAN))
-//		{
-//			if(database.GetBotOwner(c->GetTarget()->GetNPCTypeID()) == c->AccountID())
-//			{
-//				int botlevel = c->GetTarget()->GetLevel();
-//				c->GetTarget()->SetPetChooser(true);
-//				if(botlevel == 1)
-//				{
-//					c->GetTarget()->Say("I don't have any pets yet.");
-//					return;
-//				}
-//				if(!strcasecmp(sep->arg[2], "water"))
-//				{
-//					c->GetTarget()->SetPetChooserID(0);
-//				}
-//				else if(!strcasecmp(sep->arg[2], "fire"))
-//				{
-//					if(botlevel < 3)
-//					{
-//						c->GetTarget()->Say("I don't have that pet yet.");
-//						return;
-//					}
-//					else
-//					{
-//						c->GetTarget()->SetPetChooserID(1);
-//					}
-//				}
-//				else if(!strcasecmp(sep->arg[2], "air"))
-//				{
-//					if(botlevel < 4)
-//					{
-//						c->GetTarget()->Say("I don't have that pet yet.");
-//						return;
-//					}
-//					else
-//					{
-//						c->GetTarget()->SetPetChooserID(2);
-//					}
-//				}
-//				else if(!strcasecmp(sep->arg[2], "earth"))
-//				{
-//					if(botlevel < 5)
-//					{
-//						c->GetTarget()->Say("I don't have that pet yet.");
-//						return;
-//					}
-//					else
-//					{
-//						c->GetTarget()->SetPetChooserID(3);
-//					}
-//				}
-//				else if(!strcasecmp(sep->arg[2], "monster"))
-//				{
-//					if(botlevel < 30)
-//					{
-//						c->GetTarget()->Say("I don't have that pet yet.");
-//						return;
-//					}
-//					else
-//					{
-//						c->GetTarget()->SetPetChooserID(4);
-//					}
-//				}
-//				if(c->GetTarget()->GetPet())
-//				{
-//					// cast reclaim energy
-//					int16 id = c->GetTarget()->GetPetID();
-//					c->GetTarget()->SetPetID(0);
-//					c->GetTarget()->CastSpell(331, id);
-//				}
-//			}
-//		}
-//		else
-//		{
-//			c->Message(15, "You must target your Magician bot.");
-//		}
-//		return;
-//	}
+
+	//Resurrect
+	if(!strcasecmp(sep->arg[1], "resurrectme"))
+	{
+		Mob *target = c->GetTarget();
+		if(target == NULL || !target->IsCorpse())
+		{
+			c->Message(15, "You must select a corpse");
+			return;
+		}
+
+		if(c->IsGrouped())
+		{
+			bool hasrezzer = false;
+			Group *g = c->GetGroup();
+			for(int i=0; i<MAX_GROUP_MEMBERS; i++)
+			{
+				if(g && g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == CLERIC))
+				{
+					hasrezzer = true;
+					Mob *rezzer = g->members[i];
+					rezzer->Say("Trying to rez %s", target->GetCleanName());
+					rezzer->CastToBot()->Bot_Command_RezzTarget(target);
+					break;
+				}
+			}
+			if(!hasrezzer) {
+				c->Message(15, "You must have a Cleric in your group.");
+			}
+		}
+		else {
+			c->Message(15, "You must have a Cleric in your group.");
+		}
+		return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "magepet"))
+	{
+		if(c->GetTarget() && c->GetTarget()->IsBot() && (c->GetTarget()->GetClass() == MAGICIAN))
+		{
+			if(c->GetTarget()->CastToBot()->GetBotOwnerCharacterID() == c->CharacterID())
+			{
+				int botlevel = c->GetTarget()->GetLevel();
+				c->GetTarget()->CastToBot()->SetPetChooser(true);
+				if(botlevel == 1)
+				{
+					c->GetTarget()->Say("I don't have any pets yet.");
+					return;
+				}
+				if(!strcasecmp(sep->arg[2], "water"))
+				{
+					c->GetTarget()->CastToBot()->SetPetChooserID(0);
+				}
+				else if(!strcasecmp(sep->arg[2], "fire"))
+				{
+					if(botlevel < 3)
+					{
+						c->GetTarget()->Say("I don't have that pet yet.");
+						return;
+					}
+					else
+					{
+						c->GetTarget()->CastToBot()->SetPetChooserID(1);
+					}
+				}
+				else if(!strcasecmp(sep->arg[2], "air"))
+				{
+					if(botlevel < 4)
+					{
+						c->GetTarget()->Say("I don't have that pet yet.");
+						return;
+					}
+					else
+					{
+						c->GetTarget()->CastToBot()->SetPetChooserID(2);
+					}
+				}
+				else if(!strcasecmp(sep->arg[2], "earth"))
+				{
+					if(botlevel < 5)
+					{
+						c->GetTarget()->Say("I don't have that pet yet.");
+						return;
+					}
+					else
+					{
+						c->GetTarget()->CastToBot()->SetPetChooserID(3);
+					}
+				}
+				else if(!strcasecmp(sep->arg[2], "monster"))
+				{
+					if(botlevel < 30)
+					{
+						c->GetTarget()->Say("I don't have that pet yet.");
+						return;
+					}
+					else
+					{
+						c->GetTarget()->CastToBot()->SetPetChooserID(4);
+					}
+				}
+				if(c->GetTarget()->GetPet())
+				{
+					// cast reclaim energy
+					int16 id = c->GetTarget()->GetPetID();
+					c->GetTarget()->SetPetID(0);
+					c->GetTarget()->CastSpell(331, id);
+				}
+			}
+		}
+		else
+		{
+			c->Message(15, "You must target your Magician bot.");
+		}
+		return;
+	}
 
 	//Summon Corpse
 	if(!strcasecmp(sep->arg[1], "corpse") && !strcasecmp(sep->arg[2], "summon")) {
@@ -5319,126 +5705,126 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		}
 	}
 
-//	//Pacify
-//	if(!strcasecmp(sep->arg[1], "target") && !strcasecmp(sep->arg[2], "calm"))
-//	{
-//		Mob *target = c->GetTarget();
-//		if(target == NULL || target->IsClient() || target->IsBot() || target->IsPet() && target->GetOwner()->IsBot())
-//		{
-//			c->Message(15, "You must select a monster");
-//			return;
-//		}
-//		if(c->IsGrouped())
-//		{
-//			bool haspacer = false;
-//			Group *g = c->GetGroup();
-//			for(int i=0; i<MAX_GROUP_MEMBERS; i++)
-//			{
-//				if(g && g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == ENCHANTER) && (!haspacer))
-//				{
-//					haspacer = true;
-//					Mob *pacer = g->members[i];
-//					pacer->Say("Trying to calm %s \n", target->GetCleanName());
-//					pacer->CastToNPC()->Bot_Command_CalmTarget(target);
-//					c->GetTarget()->CastToMob()->BotEffect(c);
-//				}
-//				else if(g && g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == CLERIC) && (!haspacer))
-//				{
-//					haspacer = true;
-//					Mob *pacer = g->members[i];
-//					pacer->Say("Trying to calm %s \n", target->GetCleanName());
-//					pacer->CastToNPC()->Bot_Command_CalmTarget(target);
-//					c->GetTarget()->CastToMob()->BotEffect(c);
-//				}
-//			}
-//			if(!haspacer) {
-//				c->Message(15, "You must have an Enchanter or Cleric in your group.");
-//			}
-//			return;
-//		}
-//	}
-//
-//	//Charm
-//	if(!strcasecmp(sep->arg[1], "charm"))
-//	{
-//		Mob *target = c->GetTarget();
-//		if(target == NULL || target->IsClient() || target->IsBot() || (target->IsPet() && target->GetOwner()->IsBot()))
-//		{
-//			c->Message(15, "You must select a monster");
-//			return;
-//		}
-//		int32 DBtype = c->GetTarget()->GetBodyType();
-//		Mob *Charmer;
-//		int32 CharmerClass = 0;
-//		Group *g = c->GetGroup();
-//		if(g) {
-//			for(int i=0; i<MAX_GROUP_MEMBERS; i++){
-//				if(g->members[i] && g->members[i]->IsBot()) {
-//					switch(g->members[i]->GetClass()) {
-//						case ENCHANTER:
-//							Charmer = g->members[i];
-//							CharmerClass = ENCHANTER;
-//							break;
-//						case NECROMANCER:
-//							if(CharmerClass != ENCHANTER){
-//								Charmer = g->members[i];
-//								CharmerClass = NECROMANCER;
-//							}
-//						case DRUID:
-//							if (CharmerClass == 0){
-//								Charmer = g->members[i];
-//								CharmerClass = DRUID;
-//							}
-//							break;
-//							break;
-//						default:
-//							break;
-//					}
-//				}
-//			}
-//			switch(CharmerClass) {
-//				case ENCHANTER:
-//					if	(c->GetLevel() >= 11) {
-//						Charmer->Say("Trying to charm %s \n", target->GetCleanName(), sep->arg[2]);
-//						Charmer->CastToNPC()->Bot_Command_CharmTarget (1,target);
-//					}
-//					else if (c->GetLevel() <= 10){
-//						Charmer->Say("I don't have the needed level yet", sep->arg[2]);
-//					}
-//					else
-//						Charmer->Say("Mob level is too high or can't be charmed", c->GetName());
-//					break;
-//
-//				case NECROMANCER:
-//					if	((c->GetLevel() >= 18) && (DBtype == 3)) {
-//						Charmer->Say("Trying to Charm %s \n", target->GetCleanName(), sep->arg[2]);
-//						Charmer->CastToNPC()->Bot_Command_CharmTarget (2,target);
-//					}
-//					else if (c->GetLevel() <= 17){
-//						Charmer->Say("I don't have the needed level yet", sep->arg[2]);
-//					}
-//					else
-//						Charmer->Say("Mob Is not undead...", c->GetName());
-//					break;
-//
-//				case DRUID:
-//					if	((c->GetLevel() >= 13) && (DBtype == 21)) {
-//						Charmer->Say("Trying to charm %s \n", target->GetCleanName(), sep->arg[2]);
-//						Charmer->CastToNPC()->Bot_Command_CharmTarget (3,target);
-//					}
-//					else if (c->GetLevel() <= 12){
-//						Charmer->Say("I don't have the needed level yet", sep->arg[2]);
-//					}
-//					else
-//						Charmer->Say("Mob is not an animal...", c->GetName());
-//					break;
-//
-//				default:
-//					c->Message(15, "You must have an Enchanter, Necromancer or Druid in your group.");
-//					break;
-//			}
-//		}
-//	}
+	//Pacify
+	//if(!strcasecmp(sep->arg[1], "target") && !strcasecmp(sep->arg[2], "calm"))
+	//{
+	//	Mob *target = c->GetTarget();
+	//	if(target == NULL || target->IsClient() || target->IsBot() || target->IsPet() && target->GetOwner()->IsBot())
+	//	{
+	//		c->Message(15, "You must select a monster");
+	//		return;
+	//	}
+	//	if(c->IsGrouped())
+	//	{
+	//		bool haspacer = false;
+	//		Group *g = c->GetGroup();
+	//		for(int i=0; i<MAX_GROUP_MEMBERS; i++)
+	//		{
+	//			if(g && g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == ENCHANTER) && (!haspacer))
+	//			{
+	//				haspacer = true;
+	//				Mob *pacer = g->members[i];
+	//				pacer->Say("Trying to calm %s \n", target->GetCleanName());
+	//				pacer->CastToBot()->Bot_Command_CalmTarget(target);
+	//				c->GetTarget()->CastToMob()->BotEffect(c);
+	//			}
+	//			else if(g && g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == CLERIC) && (!haspacer))
+	//			{
+	//				haspacer = true;
+	//				Mob *pacer = g->members[i];
+	//				pacer->Say("Trying to calm %s \n", target->GetCleanName());
+	//				pacer->CastToNPC()->Bot_Command_CalmTarget(target);
+	//				c->GetTarget()->CastToMob()->BotEffect(c);
+	//			}
+	//		}
+	//		if(!haspacer) {
+	//			c->Message(15, "You must have an Enchanter or Cleric in your group.");
+	//		}
+	//		return;
+	//	}
+	//}
+
+	//Charm
+	if(!strcasecmp(sep->arg[1], "charm"))
+	{
+		Mob *target = c->GetTarget();
+		if(target == NULL || target->IsClient() || target->IsBot() || (target->IsPet() && target->GetOwner()->IsBot()))
+		{
+			c->Message(15, "You must select a monster");
+			return;
+		}
+		int32 DBtype = c->GetTarget()->GetBodyType();
+		Mob *Charmer;
+		int32 CharmerClass = 0;
+		Group *g = c->GetGroup();
+		if(g) {
+			for(int i=0; i<MAX_GROUP_MEMBERS; i++){
+				if(g->members[i] && g->members[i]->IsBot()) {
+					switch(g->members[i]->GetClass()) {
+						case ENCHANTER:
+							Charmer = g->members[i];
+							CharmerClass = ENCHANTER;
+							break;
+						case NECROMANCER:
+							if(CharmerClass != ENCHANTER){
+								Charmer = g->members[i];
+								CharmerClass = NECROMANCER;
+							}
+						case DRUID:
+							if (CharmerClass == 0){
+								Charmer = g->members[i];
+								CharmerClass = DRUID;
+							}
+							break;
+							break;
+						default:
+							break;
+					}
+				}
+			}
+			switch(CharmerClass) {
+				case ENCHANTER:
+					if	(c->GetLevel() >= 11) {
+						Charmer->Say("Trying to charm %s \n", target->GetCleanName(), sep->arg[2]);
+						Charmer->CastToBot()->Bot_Command_CharmTarget (1,target);
+					}
+					else if (c->GetLevel() <= 10){
+						Charmer->Say("I don't have the needed level yet", sep->arg[2]);
+					}
+					else
+						Charmer->Say("Mob level is too high or can't be charmed", c->GetName());
+					break;
+
+				case NECROMANCER:
+					if	((c->GetLevel() >= 18) && (DBtype == 3)) {
+						Charmer->Say("Trying to Charm %s \n", target->GetCleanName(), sep->arg[2]);
+						Charmer->CastToBot()->Bot_Command_CharmTarget (2,target);
+					}
+					else if (c->GetLevel() <= 17){
+						Charmer->Say("I don't have the needed level yet", sep->arg[2]);
+					}
+					else
+						Charmer->Say("Mob Is not undead...", c->GetName());
+					break;
+
+				case DRUID:
+					if	((c->GetLevel() >= 13) && (DBtype == 21)) {
+						Charmer->Say("Trying to charm %s \n", target->GetCleanName(), sep->arg[2]);
+						Charmer->CastToBot()->Bot_Command_CharmTarget (3,target);
+					}
+					else if (c->GetLevel() <= 12){
+						Charmer->Say("I don't have the needed level yet", sep->arg[2]);
+					}
+					else
+						Charmer->Say("Mob is not an animal...", c->GetName());
+					break;
+
+				default:
+					c->Message(15, "You must have an Enchanter, Necromancer or Druid in your group.");
+					break;
+			}
+		}
+	}
 
 	// Remove Bot's Pet
 	if(!strcasecmp(sep->arg[1], "pet") && !strcasecmp(sep->arg[2], "remove")) {
@@ -5470,87 +5856,87 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		return;
 	}
 
-//	//Dire Charm
-//	if(!strcasecmp(sep->arg[1], "Dire") && !strcasecmp(sep->arg[2], "Charm"))
-//	{
-//		Mob *target = c->GetTarget();
-//		if(target == NULL || target->IsClient() || target->IsBot() || (target->IsPet() && target->GetOwner()->IsBot()))
-//		{
-//			c->Message(15, "You must select a monster");
-//			return;
-//		}
-//		int32 DBtype = c->GetTarget()->GetBodyType();
-//		Mob *Direr;
-//		int32 DirerClass = 0;
-//		Group *g = c->GetGroup();
-//		if(g) {
-//			for(int i=0; i<MAX_GROUP_MEMBERS; i++){
-//				if(g->members[i] && g->members[i]->IsBot()) {
-//					switch(g->members[i]->GetClass()) {
-//						case ENCHANTER:
-//							Direr = g->members[i];
-//							DirerClass = ENCHANTER;
-//							break;
-//						case NECROMANCER:
-//							if(DirerClass != ENCHANTER){
-//								Direr = g->members[i];
-//								DirerClass = NECROMANCER;
-//							}
-//						case DRUID:
-//							if (DirerClass == 0){
-//								Direr = g->members[i];
-//								DirerClass = DRUID;
-//							}
-//							break;
-//							break;
-//						default:
-//							break;
-//					}
-//				}
-//			}
-//			switch(DirerClass) {
-//				case ENCHANTER:
-//					if	(c->GetLevel() >= 55) {
-//						Direr->Say("Trying to dire charm %s \n", target->GetCleanName(), sep->arg[2]);
-//						Direr->CastToNPC()->Bot_Command_DireTarget (1,target);
-//					}
-//					else if (c->GetLevel() <= 55){
-//						Direr->Say("I don't have the needed level yet", sep->arg[2]);
-//					}
-//					else
-//						Direr->Say("Mob level is too high or can't be charmed", c->GetName());
-//					break;
-//
-//				case NECROMANCER:
-//					if	((c->GetLevel() >= 55) && (DBtype == 3)) {
-//						Direr->Say("Trying to dire charm %s \n", target->GetCleanName(), sep->arg[2]);
-//						Direr->CastToNPC()->Bot_Command_DireTarget (2,target);
-//					}
-//					else if (c->GetLevel() <= 55){
-//						Direr->Say("I don't have the needed level yet", sep->arg[2]);
-//					}
-//					else
-//						Direr->Say("Mob Is not undead...", c->GetName());
-//					break;
-//
-//				case DRUID:
-//					if	((c->GetLevel() >= 55) && (DBtype == 21)) {
-//						Direr->Say("Trying to dire charm %s \n", target->GetCleanName(), sep->arg[2]);
-//						Direr->CastToNPC()->Bot_Command_DireTarget (3,target);
-//					}
-//					else if (c->GetLevel() <= 55){
-//						Direr->Say("I don't have the needed level yet", sep->arg[2]);
-//					}
-//					else
-//						Direr->Say("Mob is not an animal...", c->GetName());
-//					break;
-//
-//				default:
-//					c->Message(15, "You must have an Enchanter, Necromancer or Druid in your group.");
-//					break;
-//			}
-//		}
-//	}
+	//Dire Charm
+	if(!strcasecmp(sep->arg[1], "Dire") && !strcasecmp(sep->arg[2], "Charm"))
+	{
+		Mob *target = c->GetTarget();
+		if(target == NULL || target->IsClient() || target->IsBot() || (target->IsPet() && target->GetOwner()->IsBot()))
+		{
+			c->Message(15, "You must select a monster");
+			return;
+		}
+		int32 DBtype = c->GetTarget()->GetBodyType();
+		Mob *Direr;
+		int32 DirerClass = 0;
+		Group *g = c->GetGroup();
+		if(g) {
+			for(int i=0; i<MAX_GROUP_MEMBERS; i++){
+				if(g->members[i] && g->members[i]->IsBot()) {
+					switch(g->members[i]->GetClass()) {
+						case ENCHANTER:
+							Direr = g->members[i];
+							DirerClass = ENCHANTER;
+							break;
+						case NECROMANCER:
+							if(DirerClass != ENCHANTER){
+								Direr = g->members[i];
+								DirerClass = NECROMANCER;
+							}
+						case DRUID:
+							if (DirerClass == 0){
+								Direr = g->members[i];
+								DirerClass = DRUID;
+							}
+							break;
+							break;
+						default:
+							break;
+					}
+				}
+			}
+			switch(DirerClass) {
+				case ENCHANTER:
+					if	(c->GetLevel() >= 55) {
+						Direr->Say("Trying to dire charm %s \n", target->GetCleanName(), sep->arg[2]);
+						Direr->CastToBot()->Bot_Command_DireTarget (1,target);
+					}
+					else if (c->GetLevel() <= 55){
+						Direr->Say("I don't have the needed level yet", sep->arg[2]);
+					}
+					else
+						Direr->Say("Mob level is too high or can't be charmed", c->GetName());
+					break;
+
+				case NECROMANCER:
+					if	((c->GetLevel() >= 55) && (DBtype == 3)) {
+						Direr->Say("Trying to dire charm %s \n", target->GetCleanName(), sep->arg[2]);
+						Direr->CastToBot()->Bot_Command_DireTarget (2,target);
+					}
+					else if (c->GetLevel() <= 55){
+						Direr->Say("I don't have the needed level yet", sep->arg[2]);
+					}
+					else
+						Direr->Say("Mob Is not undead...", c->GetName());
+					break;
+
+				case DRUID:
+					if	((c->GetLevel() >= 55) && (DBtype == 21)) {
+						Direr->Say("Trying to dire charm %s \n", target->GetCleanName(), sep->arg[2]);
+						Direr->CastToBot()->Bot_Command_DireTarget (3,target);
+					}
+					else if (c->GetLevel() <= 55){
+						Direr->Say("I don't have the needed level yet", sep->arg[2]);
+					}
+					else
+						Direr->Say("Mob is not an animal...", c->GetName());
+					break;
+
+				default:
+					c->Message(15, "You must have an Enchanter, Necromancer or Druid in your group.");
+					break;
+			}
+		}
+	}
 
 	// Evacuate
 	if(!strcasecmp(sep->arg[1], "evac")) {
@@ -5715,7 +6101,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		}
 	}
 
-	////Shrink
+	//Shrink
 	//if ((!strcasecmp(sep->arg[1], "shrinkme")) && (c->IsGrouped())) {
 	//	Mob *Shrinker;
 	//	int32 ShrinkerClass = 0;
@@ -5745,7 +6131,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 
 	//				if (c->GetLevel() >= 15) { 
 	//					Shrinker->Say("Casting Shrink...");
-	//					Shrinker->CastToNPC()->BotRaidSpell(345);
+	//					Shrinker->CastToBot()->BotRaidSpell(345);
 	//				}
 	//				else if (c->GetLevel() <= 14) {
 	//					Shrinker->Say("I'm not level 15 yet.");
@@ -5756,7 +6142,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 
 	//				if (c->GetLevel() >= 23) {
 	//					Shrinker->Say("Casting Shrink...");
-	//					Shrinker->CastToNPC()->BotRaidSpell(345);
+	//					Shrinker->CastToBot()->BotRaidSpell(345);
 	//				}
 	//				else if (c->GetLevel() <= 22) {
 	//					Shrinker->Say("I'm not level 23 yet.");
@@ -6595,7 +6981,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 				c->Message(15, "This class can double attack.");
 		}
 		if(target->GetPetID())
-			c->Message(15, "I've a pet and its name is %s", target->GetPet()->GetName() );
+			c->Message(15, "I've a pet and its name is %s", target->GetPet()->GetCleanName() );
 		return;
 	}
 
@@ -6609,7 +6995,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 				if(target->CastToBot()->BotGetSpells(i) != 0)
 				{
 					SPDat_Spell_Struct botspell = spells[target->CastToBot()->BotGetSpells(i)];
-					c->Message(15, "(DEBUG) %s , Slot(%i), Spell (%s) Priority (%i) \n", target->GetName(), i, botspell.name, target->CastToBot()->BotGetSpellPriority(i));
+					c->Message(15, "(DEBUG) %s , Slot(%i), Spell (%s) Priority (%i) \n", target->GetCleanName(), i, botspell.name, target->CastToBot()->BotGetSpellPriority(i));
 				}
 			}
 		}

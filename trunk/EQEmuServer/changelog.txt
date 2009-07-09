@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==07/09/2009==
+WildcardX: Migrated more code from EQBOTS to BOTS. The BOTS code can do basic functions now but its still "buggy" compared to EQBOTS until migration/integration is complete.
+
 ==07/08/2009==
 WildcardX: Migrated more code from EQBOTS to BOTS.
 WildcardX: Included StringIDs.h to the zone project file and allowed the ";" to replace the "," characters in the WORLD project file.
