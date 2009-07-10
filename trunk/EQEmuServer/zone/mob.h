@@ -307,7 +307,6 @@ typedef enum {
 class EGNode;
 class MobFearState;
 
-#define MAX_AISPELLS 16
 class Mob : public Entity
 {
 	friend class NPC;	//why do I have to do this for a child to access protected members with ->?
