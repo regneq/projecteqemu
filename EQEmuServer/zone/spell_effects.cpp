@@ -3473,7 +3473,7 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 				if(RuleB(Combat, EnableFearPathing)){
 					if(IsClient())
 					{
-						bool charmed = FindType(SE_Fear);
+						bool charmed = FindType(SE_Charm);
 						if(!charmed)
 							AI_Stop();
 					}
