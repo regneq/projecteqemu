@@ -22,6 +22,7 @@ using namespace std;
 using namespace std;
 #include <stdlib.h>
 #include <math.h>
+#include <algorithm>
 #include "npc.h"
 #include "masterentity.h"
 #include "NpcAI.h"
@@ -95,8 +96,7 @@ bool NPC::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 	bool checked_los = false;	//we do not check LOS until we are absolutely sure we need to, and we only do it once.
 	
 	float manaR = GetManaRatio();
-//	for (int i=0; i<MAX_AISPELLS; i++) {
-	for (int i=MAX_AISPELLS-1; i >= 0; i--) {
+	for (int i=AIspells.size()-1; i >= 0; i--) {
 		if (AIspells[i].spellid <= 0 || AIspells[i].spellid >= SPDAT_RECORDS) {
 			// this is both to quit early to save cpu and to avoid casting bad spells
 			// Bad info from database can trigger this incorrectly, but that should be fixed in DB, not here
@@ -440,7 +440,7 @@ void NPC::AI_Init() {
 	Mob::AI_Init();
 	
 	AIautocastspell_timer = 0;
-	casting_spell_AIindex = MAX_AISPELLS;
+	casting_spell_AIindex = AIspells.size();
 
 	roambox_max_x = 0;
 	roambox_max_y = 0;
@@ -511,7 +511,7 @@ void NPC::AI_Start(int32 iMoveDelay) {
 	if (!pAIControlled)
 		return;
 	
-	if (AIspells[0].spellid == 0 || AIspells[0].spellid == SPELL_UNKNOWN) {
+	if (AIspells.size() == 0) {
 		AIautocastspell_timer = new Timer(1000);
 		AIautocastspell_timer->Disable();
 	} else {
@@ -1728,7 +1728,7 @@ void Mob::AI_Event_Engaged(Mob* attacker, bool iYellForHelp) {
 			//if the target dies before it goes off
 			if(attacker->GetHP() > 0)
 			{
-				if(!CastToNPC()->GetCombatEvent())
+				if(!CastToNPC()->GetCombatEvent() && GetHP() > 0)
 				{
 					parse->Event(EVENT_COMBAT, CastToNPC()->GetNPCTypeID(), "1", CastToNPC(), GetTarget());
 					CastToNPC()->SetCombatEvent(true);
@@ -1759,7 +1759,7 @@ void Mob::AI_Event_NoLongerEngaged() {
 
 	if(IsNPC())
 	{
-		if(CastToNPC()->GetCombatEvent())
+		if(CastToNPC()->GetCombatEvent() && GetHP() > 0)
 		{
 			parse->Event(EVENT_COMBAT, CastToNPC()->GetNPCTypeID(), "0", CastToNPC(), NULL);
 			CastToNPC()->SetCombatEvent(false);
@@ -1777,12 +1777,13 @@ void NPC::AI_Event_SpellCastFinished(bool iCastSucceeded, int8 slot) {
 	if (slot == 1) {
 		int32 recovery_time = 0;
 		if (iCastSucceeded) {
-			if (casting_spell_AIindex < MAX_AISPELLS) {
+			if (casting_spell_AIindex < AIspells.size()) {
 					recovery_time += spells[AIspells[casting_spell_AIindex].spellid].recovery_time;
-					if (AIspells[casting_spell_AIindex].recast_delay >= 0){
-						if (AIspells[casting_spell_AIindex].recast_delay <10000)
+					if (AIspells[casting_spell_AIindex].recast_delay >= 0)
+					{
+						if (AIspells[casting_spell_AIindex].recast_delay < 10000)
 							AIspells[casting_spell_AIindex].time_cancast = Timer::GetCurrentTime() + (AIspells[casting_spell_AIindex].recast_delay*1000);
-}
+					}
 					else
 						AIspells[casting_spell_AIindex].time_cancast = Timer::GetCurrentTime() + spells[AIspells[casting_spell_AIindex].spellid].recast_time;
 			}
@@ -1792,7 +1793,7 @@ void NPC::AI_Event_SpellCastFinished(bool iCastSucceeded, int8 slot) {
 		}
 		else
 			AIautocastspell_timer->Start(800, false);
-		casting_spell_AIindex = MAX_AISPELLS;
+		casting_spell_AIindex = AIspells.size();
 	}
 }
 
@@ -2170,11 +2171,12 @@ create table npc_spells_entries (
 */ 
 
 bool IsSpellInList(DBnpcspells_Struct* spell_list, sint16 iSpellID);
+bool Compare_AI_Spells(AISpells_Struct i, AISpells_Struct j);
 
 bool NPC::AI_AddNPCSpells(int32 iDBSpellsID) {
 	// ok, this function should load the list, and the parent list then shove them into the struct and sort
 	npc_spells_id = iDBSpellsID;
-	memset(AIspells, 0, sizeof(AIspells));
+	AIspells.clear();
 	if (iDBSpellsID == 0) {
 		AIautocastspell_timer->Disable();
 		return false;
@@ -2210,7 +2212,9 @@ bool NPC::AI_AddNPCSpells(int32 iDBSpellsID) {
 		for (i=0; i<parentlist->numentries; i++) {
 			if (GetLevel() >= parentlist->entries[i].minlevel && GetLevel() <= parentlist->entries[i].maxlevel && parentlist->entries[i].spellid > 0) {
 				if (!IsSpellInList(spell_list, parentlist->entries[i].spellid))
-					AddSpellToNPCList(AIspells, parentlist->entries[i].priority, parentlist->entries[i].spellid, parentlist->entries[i].type, parentlist->entries[i].manacost, parentlist->entries[i].recast_delay);
+				{
+					AddSpellToNPCList(parentlist->entries[i].priority, parentlist->entries[i].spellid, parentlist->entries[i].type, parentlist->entries[i].manacost, parentlist->entries[i].recast_delay);
+				}
 			}
 		}
 	}
@@ -2220,24 +2224,15 @@ bool NPC::AI_AddNPCSpells(int32 iDBSpellsID) {
 	}
 	for (i=0; i<spell_list->numentries; i++) {
 		if (GetLevel() >= spell_list->entries[i].minlevel && GetLevel() <= spell_list->entries[i].maxlevel && spell_list->entries[i].spellid > 0) {
-			AddSpellToNPCList(AIspells, spell_list->entries[i].priority, spell_list->entries[i].spellid, spell_list->entries[i].type, spell_list->entries[i].manacost, spell_list->entries[i].recast_delay);
+			AddSpellToNPCList(spell_list->entries[i].priority, spell_list->entries[i].spellid, spell_list->entries[i].type, spell_list->entries[i].manacost, spell_list->entries[i].recast_delay);
 		}
 	}
+	std::sort(AIspells.begin(), AIspells.end(), Compare_AI_Spells);
+	
 	if (attack_proc_spell > 0)
 		AddProcToWeapon(attack_proc_spell, true, proc_chance);
 
-#if MobAI_DEBUG_Spells >= 11
-	i=0;
-	for (int j=0; j<MAX_AISPELLS; j++) {
-		if (AIspells[j].spellid > 0) {
-			cout << "NPCSpells on " << this->GetName() << ": AIspells[" << j << "].spellid=" << setw(5) << AIspells[j].spellid << ": " << spells[AIspells[j].spellid].name << endl;
-			i++;
-		}
-	}
-	cout << i << " NPCSpells on " << this->GetName() << endl;
-#endif
-
-	if (AIspells[0].spellid == 0)
+	if (AIspells.size() == 0)
 		AIautocastspell_timer->Disable();
 	else
 		AIautocastspell_timer->Trigger();
@@ -2252,63 +2247,28 @@ bool IsSpellInList(DBnpcspells_Struct* spell_list, sint16 iSpellID) {
 	return false;
 }
 
+bool Compare_AI_Spells(AISpells_Struct i, AISpells_Struct j) 
+{ 
+	return(i.priority < j.priority); 
+}
+
 // adds a spell to the list, taking into account priority and resorting list as needed.
-void NPC::AddSpellToNPCList(AISpells_Struct* AIspells, sint16 iPriority, sint16 iSpellID, uint16 iType, sint16 iManaCost, sint32 iRecastDelay) {
-	if (iSpellID <= 0 || iSpellID > SPDAT_RECORDS) {
-
-#if MobAI_DEBUG_Spells >= 1
-		cout << "AddSpellToNPCList: Spell #" << iSpellID << " not added, out of bounds" << endl;
-#endif
-
+void NPC::AddSpellToNPCList(sint16 iPriority, sint16 iSpellID, uint16 iType, sint16 iManaCost, sint32 iRecastDelay) {
+	
+	if(!IsValidSpell(iSpellID))
 		return;
-	}
 
 	HasAISpell = true;
+	AISpells_Struct t;
+	
+	t.priority = iPriority;
+	t.spellid = iSpellID;
+	t.type = iType;
+	t.manacost = iManaCost;
+	t.recast_delay = iRecastDelay;
+	t.time_cancast = 0;
 
-#if MobAI_DEBUG_Spells >= 12
-	cout << "Adding spell #" << iSpellID;
-#endif
-
-	for (int i=0; i<MAX_AISPELLS; i++) {
-		if (AIspells[i].spellid <= 0) {
-			AIspells[i].spellid = iSpellID;
-			AIspells[i].priority = iPriority;
-			AIspells[i].type = iType;
-			AIspells[i].manacost = iManaCost;
-			AIspells[i].recast_delay = iRecastDelay;
-
-#if MobAI_DEBUG_Spells >= 12
-			cout << " to slot " << i;
-#endif
-
-			break;
-		}
-		else if (AIspells[i].priority < iPriority) {
-			for (int j=MAX_AISPELLS-1; j>i; j--) {
-				AIspells[j].spellid = AIspells[j-1].spellid;
-				AIspells[j].priority = AIspells[j-1].priority;
-				AIspells[j].type = AIspells[j-1].type;
-				AIspells[j].manacost = AIspells[j-1].manacost;
-				AIspells[j].recast_delay = AIspells[j-1].recast_delay;
-			}
-			AIspells[i].spellid = iSpellID;
-			AIspells[i].priority = iPriority;
-			AIspells[i].type = iType;
-			AIspells[i].manacost = iManaCost;
-			AIspells[i].recast_delay = iRecastDelay;
-
-#if MobAI_DEBUG_Spells >= 12
-			cout << " to slot " << i;
-#endif
-
-			break;
-		}
-	}
-
-#if MobAI_DEBUG_Spells >= 12
-	cout << endl;
-#endif
-
+	AIspells.push_back(t);
 }
 
 

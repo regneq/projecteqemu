@@ -34,8 +34,6 @@ using namespace std;
 	#define  M_PI	3.141592
 #endif
 
-//typedef LinkedList<Item_Struct*> ItemList;
-
 typedef struct {
 	float min_x;
 	float max_x;
@@ -45,6 +43,15 @@ typedef struct {
 	float max_z;
 	bool say;
 } NPCProximity;
+
+struct AISpells_Struct {
+	int16	type;			// 0 = never, must be one (and only one) of the defined values
+	uint16	spellid;		// <= 0 = no spell
+	sint16	manacost;		// -1 = use spdat, -2 = no cast time
+	int32	time_cancast;	// when we can cast this spell next
+	sint32	recast_delay;
+	sint16	priority;
+};
 
 class NPC : public Mob
 {
@@ -314,20 +321,12 @@ protected:
 	Timer	enraged_timer;
 
 	int32	npc_spells_id;
-	struct AISpells_Struct {
-		int16	type;			// 0 = never, must be one (and only one) of the defined values
-		uint16	spellid;		// <= 0 = no spell
-		sint16	manacost;		// -1 = use spdat, -2 = no cast time
-		int32	time_cancast;	// when we can cast this spell next
-		sint32	recast_delay;
-		sint16	priority;
-	};
 	int8	casting_spell_AIindex;
 	Timer*	AIautocastspell_timer;
 	int32*	pDontCastBefore_casting_spell;
-	AISpells_Struct	AIspells[MAX_AISPELLS]; // expected to be pre-sorted, best at low index
+	std::vector<AISpells_Struct> AIspells;
 	bool HasAISpell;
-	void AddSpellToNPCList(AISpells_Struct* AIspells, sint16 iPriority, sint16 iSpellID, uint16 iType, sint16 iManaCost, sint32 iRecastDelay);
+	void AddSpellToNPCList(sint16 iPriority, sint16 iSpellID, uint16 iType, sint16 iManaCost, sint32 iRecastDelay);
 	bool AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes);
 
 #ifdef EQBOTS

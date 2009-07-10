@@ -859,7 +859,7 @@ bool NPC::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 	bool checked_los = false;	//we do not check LOS until we are absolutely sure we need to, and we only do it once.
 	
 	float manaR = GetManaRatio();
-	for (int i=MAX_AISPELLS-1; i >= 0; i--) {
+	for (int i=AIspells.size()-1; i >= 0; i--) {
 		if (AIspells[i].spellid <= 0 || AIspells[i].spellid >= SPDAT_RECORDS) {
 			// this is both to quit early to save cpu and to avoid casting bad spells
 			// Bad info from database can trigger this incorrectly, but that should be fixed in DB, not here

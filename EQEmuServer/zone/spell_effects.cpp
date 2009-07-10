@@ -660,6 +660,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				if (!caster)	// can't be someone's pet unless we know who that someone is
 					break;
 
+				InterruptSpell();
 				entity_list.RemoveDebuffs(this);
 				entity_list.RemoveFromTargets(this);
 				WipeHateList();
@@ -667,12 +668,20 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				if (IsClient() && caster->IsClient())
 				{
 					caster->Message(0, "Unable to cast charm on a fellow player.");
+					BuffFadeByEffect(SE_Charm);
 					break;
 				} else if(IsCorpse()) {
 					caster->Message(0, "Unable to cast charm on a corpse.");
+					BuffFadeByEffect(SE_Charm);
 					break;
-				} else if(caster->GetPet() != NULL) {
+				} else if(caster->GetPet() != NULL && caster->IsClient()) {
 					caster->Message(0, "You cannot charm something when you already have a pet.");
+					BuffFadeByEffect(SE_Charm);
+					break;
+				} else if(GetOwner())
+				{
+					caster->Message(0, "You cannot charm someone else's pet!");
+					BuffFadeByEffect(SE_Charm);
 					break;
 				}
 
@@ -682,7 +691,6 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 					my_pet->Kill();
 				}
 
-				WipeHateList();
 				caster->SetPet(this);
 				SetOwnerID(caster->GetID());
 				SetPetOrder(SPO_Follow);
