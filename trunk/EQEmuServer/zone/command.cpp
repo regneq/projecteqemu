@@ -300,6 +300,7 @@ int command_init(void) {
 		command_add("memspell","[slotid] [spellid] - Memorize spellid in the specified slot",50,command_memspell) ||
 		command_add("save","- Force your player or player corpse target to be saved to the database",50,command_save) ||
 		command_add("showstats","- Show details about you or your target",50,command_showstats) ||
+		command_add("mystats","- Show details about you or your pet",50,command_mystats) ||
 		command_add("depop","- Depop your NPC target",50,command_depop) ||
 		command_add("depopzone","- Depop the zone",100,command_depopzone) ||
 		command_add("repop","[delay] - Repop the zone with optional delay",100,command_repop) ||
@@ -4152,6 +4153,18 @@ void command_showstats(Client *c, const Seperator *sep)
 {
 	if (c->GetTarget() != 0 )
 		c->GetTarget()->ShowStats(c);
+	else
+		c->ShowStats(c);
+}
+
+void command_mystats(Client *c, const Seperator *sep)
+{
+	if (c->GetTarget() && c->GetPet()) {
+		if (c->GetTarget()->IsPet() && c->GetTarget() == c->GetPet())
+			c->GetTarget()->ShowStats(c);
+		else
+			c->ShowStats(c);
+	}
 	else
 		c->ShowStats(c);
 }
