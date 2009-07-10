@@ -2249,7 +2249,7 @@ bool IsSpellInList(DBnpcspells_Struct* spell_list, sint16 iSpellID) {
 
 bool Compare_AI_Spells(AISpells_Struct i, AISpells_Struct j) 
 { 
-	return(i.priority < j.priority); 
+	return(i.priority > j.priority); 
 }
 
 // adds a spell to the list, taking into account priority and resorting list as needed.
