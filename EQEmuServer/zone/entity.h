@@ -415,6 +415,7 @@ private:
 		void AddBot(Bot* newBot, bool SendSpawnPacket = true, bool dontqueue = false);
 		bool RemoveBot(int16 entityID);
 		bool Bot_AICheckCloseBeneficialSpells(Bot* caster, int8 iChance, float iRange, int16 iSpellTypes);
+		void ShowSpawnWindow(Client* client, int Distance, bool NamedOnly);
 	private:
 		LinkedList<Bot*> bot_list;
 #endif

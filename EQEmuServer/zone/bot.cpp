@@ -37,6 +37,10 @@ Bot::Bot(NPCType npcTypeData, Client* botOwner) : NPC(&npcTypeData, 0, 0, 0, 0, 
 
 	SetBotID(0);
 	SetBotSpellID(0);
+	SetBotRaiding(false);
+	SetSpawnStatus(false);
+	//SetFollowID(GetBotOwnerCharacterID());
+
 	this->_botInventoryID = 0;
 
 	GenerateBaseStats();
@@ -45,15 +49,19 @@ Bot::Bot(NPCType npcTypeData, Client* botOwner) : NPC(&npcTypeData, 0, 0, 0, 0, 
 
 	// Calculate HitPoints Last As It Uses Base Stats
 	GenerateBaseHitPoints();
-
-	SetSpawnStatus(false);
 }
 
 // This constructor is used when the bot is loaded out of the database
 Bot::Bot(uint32 botID, uint32 botOwnerCharacterID, uint32 botInventoryID, uint32 botSpellsID, NPCType npcTypeData) : NPC(&npcTypeData, 0, 0, 0, 0, 0, 0, false) {
 	SetBotID(botID);
-	this->_botOwnerCharacterID = botOwnerCharacterID;
 	SetBotSpellID(botSpellsID);
+	SetBotRaiding(false);
+	SetSpawnStatus(false);
+
+	this->_botOwnerCharacterID = botOwnerCharacterID;
+
+	//SetFollowID(GetBotOwnerCharacterID());
+
 	this->_botInventoryID = botInventoryID;
 	
 	GenerateBaseStats();
@@ -62,8 +70,6 @@ Bot::Bot(uint32 botID, uint32 botOwnerCharacterID, uint32 botInventoryID, uint32
 
 	// Calculate HitPoints Last As It Uses Base Stats
 	GenerateBaseHitPoints();
-
-	SetSpawnStatus(false);
 }
 
 Bot::~Bot() {
@@ -2175,11 +2181,8 @@ void Bot::BotAIProcess() {
 		if(GetFollowID()) {
 			if(BotOwner && BotOwner->CastToClient()->AutoAttackEnabled() && BotOwner->GetTarget() &&
 				BotOwner->GetTarget()->IsNPC() && BotOwner->GetTarget()->GetHateAmount(BotOwner)) {
-					//BotOwner->CastToClient()->SetOrderBotAttack(true);
 					this->SetBotOrderAttack(true);
-					// TODO: need to virtual Mob::AddToHateList()
 					AddToHateList(BotOwner->GetTarget(), 1);
-					//BotOwner->CastToClient()->SetOrderBotAttack(false);
 					this->SetBotOrderAttack(false);
 			}
 		}
@@ -2188,9 +2191,9 @@ void Bot::BotAIProcess() {
 	if(IsEngaged()) {
 		_ZP(Mob_BOT_Process_IsEngaged);
 		if(IsRooted())
-			CastToNPC()->SetTarget(hate_list.GetClosest(this));
+			SetTarget(hate_list.GetClosest(this));
 		else
-			CastToNPC()->SetTarget(hate_list.GetTop(this));
+			SetTarget(hate_list.GetTop(this));
 
 		if(!target)
 			return;
@@ -2198,11 +2201,14 @@ void Bot::BotAIProcess() {
 		if(DivineAura())
 			return;
 
+		// TODO: Looks like this block of code doesn't need to be here
 		// Lets see if we can let the main tank build a little aggro.  Let healers and slowers in though
-		if((botClass == CLERIC) || (botClass == SHAMAN) || (botClass == ENCHANTER) || (botClass == DRUID))
-		{
-			// do nothing
-		}
+		//if((botClass == CLERIC) || (botClass == SHAMAN) || (botClass == ENCHANTER) || (botClass == DRUID))
+		//{
+		//	// do nothing
+		//}
+
+
 		// TODO: Uncomment this after bot raiding is integrated
 		//else if(GetBotRaidID())
 		//{
@@ -2231,7 +2237,7 @@ void Bot::BotAIProcess() {
 		if(!CheckLosFN(target) || target->IsMezzed() || !IsAttackAllowed(target))
 		{
 			WipeHateList();
-			CastToNPC()->SetTarget(BotOwner);
+			SetTarget(BotOwner);
 			return;
 		}
 
@@ -2303,7 +2309,7 @@ void Bot::BotAIProcess() {
 			if(!IsBotArcher() && target && !IsStunned() && !IsMezzed() && (GetAppearance() != eaDead))
 			{
 				// First, special attack per class (kick, backstab etc..)
-				CastToNPC()->DoClassAttacks(target);
+				DoClassAttacks(target);
 
 				//try main hand first
 				if(attack_timer.Check())
@@ -2513,7 +2519,7 @@ void Bot::BotAIProcess() {
 	else {
 		// Franck: EQoffline
 		// Ok if we're not engaged, what's happening..
-		CastToNPC()->SetTarget(entity_list.GetMob(GetFollowID()));
+		SetTarget(entity_list.GetMob(GetFollowID()));
 		if(!IsMoving()) {
 			BotMeditate(true);
 			Bot_AI_IdleCastCheck(); // let's rebuff, heal, etc..
@@ -2522,17 +2528,18 @@ void Bot::BotAIProcess() {
 		// now the followID: that's what happening as the bots follow their leader.
 		if(GetFollowID())
 		{
-			if(!target) {
+			if(!GetTarget()) {
 				SetFollowID(0);
 			}
 			else if(AImovement_timer->Check()){
-				float dist2 = DistNoRoot(*target);
+				// float dist2 = DistNoRoot(*target);
+				float dist2 = DistNoRoot(*GetTarget());
 				SetRunAnimSpeed(0);
 				if(dist2>184) {
-					CalculateNewPosition2(target->GetX(), target->GetY(), target->GetZ(), GetRunspeed(), false);
+					CalculateNewPosition2(GetTarget()->GetX(), GetTarget()->GetY(), GetTarget()->GetZ(), GetRunspeed(), false);
 				}
 				else {
-					SetHeading(target->GetHeading());
+					SetHeading(GetTarget()->GetHeading());
 					if(moved) {
 						moved=false;
 						SetMoving(false);
@@ -2577,19 +2584,19 @@ void Bot::PetAIProcess() {
 	{
 		_ZP(Bot_PET_Process_IsEngaged);
 		if (IsRooted())
-			CastToNPC()->SetTarget(hate_list.GetClosest(this));
+			SetTarget(hate_list.GetClosest(this));
 		else
-			CastToNPC()->SetTarget(hate_list.GetTop(this));
+			SetTarget(hate_list.GetTop(this));
 
-		if (!target)
+		if (!GetTarget())
 			return;
 
 		// Let's check if we have a los with our target.
 		// If we don't, our hate_list is wiped.
 		// It causes some cpu stress but without it, it was causing the bot/pet to aggro behind wall, floor etc... 
-		if(!CheckLosFN(target) || target->IsMezzed() || !IsAttackAllowed(target)) {
+		if(!CheckLosFN(target) || GetTarget()->IsMezzed() || !IsAttackAllowed(GetTarget())) {
 			WipeHateList();
-			CastToNPC()->SetTarget(GetOwner());
+			SetTarget(GetOwner());
 			return;
 		}
 
@@ -2613,7 +2620,7 @@ void Bot::PetAIProcess() {
 			}
 		}*/
 
-		bool is_combat_range = CombatRange(target);
+		bool is_combat_range = CombatRange(GetTarget());
 
 		// Ok, we're engaged, each class type has a special AI
 		// Only melee class will go to melee. Casters and healers will stay behind, following the leader by default.
@@ -2626,7 +2633,7 @@ void Bot::PetAIProcess() {
 			if(IsMoving())
 			{
 				SetRunAnimSpeed(0);
-				SetHeading(target->GetHeading());
+				SetHeading(GetTarget()->GetHeading());
 				if(moved) {
 					moved=false;
 					SetMoving(false);
@@ -2634,18 +2641,18 @@ void Bot::PetAIProcess() {
 				}
 			}
 			// we can't fight if we don't have a target, are stun/mezzed or dead..
-			if(target && !IsStunned() && !IsMezzed() && (GetAppearance() != eaDead)) 
+			if(GetTarget() && !IsStunned() && !IsMezzed() && (GetAppearance() != eaDead)) 
 			{
 				if(attack_timer.Check())  // check the delay on the attack
 				{		
-					if(Attack(target, 13))			// try the main hand
-						if (target)					// Do we still have a target?
+					if(Attack(GetTarget(), 13))			// try the main hand
+						if (GetTarget())					// Do we still have a target?
 						{
 							// We're a pet so we re able to dual attack
 							sint32 RandRoll = MakeRandomInt(0, 99);	
 							if (CanThisClassDoubleAttack() && (RandRoll < (GetLevel() + NPCDualAttackModifier)))	
 							{
-								if(Attack(target, 13)) 
+								if(Attack(GetTarget(), 13)) 
 								{}
 							}
 						}
@@ -2658,13 +2665,13 @@ void Bot::PetAIProcess() {
 								float DualWieldProbability = (GetSkill(DUAL_WIELD) + GetLevel()) / 400.0f;
 								DualWieldProbability -= MakeRandomFloat(0, 1);
 								if(DualWieldProbability < 0){
-									Attack(target, 14);
+									Attack(GetTarget(), 14);
 									if (CanThisClassDoubleAttack())
 									{
 										sint32 RandRoll = rand()%100;
 										if (RandRoll < (GetLevel() + 20))
 										{
-											Attack(target, 14);
+											Attack(GetTarget(), 14);
 										}
 									}
 								}
@@ -2674,7 +2681,7 @@ void Bot::PetAIProcess() {
 							return;
 
 						// Special attack
-						CastToNPC()->DoClassAttacks(target); 
+						DoClassAttacks(GetTarget()); 
 				}
 				// See if the pet can cast any spell
 				this->AI_EngagedCastCheck();
@@ -2684,17 +2691,17 @@ void Bot::PetAIProcess() {
 			// Now, if we cannot reach our target
 			if (!HateSummon()) 
 			{
-				if(target && Bot_AI_PursueCastCheck()) 
+				if(GetTarget() && Bot_AI_PursueCastCheck()) 
 				{}
 				else if (target && AImovement_timer->Check()) 
 				{
 					SetRunAnimSpeed(0);
 					if(!IsRooted()) {
-						mlog(AI__WAYPOINTS, "Pursuing %s while engaged.", target->GetCleanName());
-						CalculateNewPosition2(target->GetX(), target->GetY(), target->GetZ(), GetOwner()->GetRunspeed(), false);
+						mlog(AI__WAYPOINTS, "Pursuing %s while engaged.", GetTarget()->GetCleanName());
+						CalculateNewPosition2(GetTarget()->GetX(), GetTarget()->GetY(), GetTarget()->GetZ(), GetOwner()->GetRunspeed(), false);
 					}
 					else {
-						SetHeading(target->GetHeading());
+						SetHeading(GetTarget()->GetHeading());
 						if(moved) {
 							moved=false;
 							SetMoving(false);
@@ -2708,23 +2715,26 @@ void Bot::PetAIProcess() {
 	else{
 		// Franck: EQoffline
 		// Ok if we're not engaged, what's happening..
-		if(target != GetOwner()) {
-			CastToNPC()->SetTarget(GetOwner());
+		if(GetTarget() != GetOwner()) {
+			SetTarget(GetOwner());
 		}
+
 		if(!IsMoving()) {
 			Bot_AI_IdleCastCheck();
 		}
+
 		if(AImovement_timer->Check()) {
 			switch(pStandingPetOrder) {
 				case SPO_Follow:
 					{
-						float dist = DistNoRoot(*target);
+						// float dist = DistNoRoot(*target);
+						float dist = DistNoRoot(*GetTarget());
 						SetRunAnimSpeed(0);
 						if(dist > 184) {
-							CalculateNewPosition2(target->GetX(), target->GetY(), target->GetZ(), target->GetRunspeed(), false);
+							CalculateNewPosition2(GetTarget()->GetX(), GetTarget()->GetY(), GetTarget()->GetZ(), GetTarget()->GetRunspeed(), false);
 						}
 						else {
-							SetHeading(target->GetHeading());
+							SetHeading(GetTarget()->GetHeading());
 							if(moved) {
 								moved=false;
 								SetMoving(false);
@@ -2737,7 +2747,7 @@ void Bot::PetAIProcess() {
 					SetAppearance(eaSitting);
 					break;
 				case SPO_Guard:
-					CastToNPC()->NextGuardPosition();
+					NextGuardPosition();
 					break;
 			}
 		}
@@ -4728,13 +4738,12 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 			//3:  invite it to the group
 			if(!c->IsGrouped()) {
 				Group *g = new Group(c->CastToMob());
-				AddBotToGroup(b, g);
-				//g->AddMember(b);
-				entity_list.AddGroup(g);
+				if(AddBotToGroup(b, g)) {
+					entity_list.AddGroup(g);
+				}
 			}
 			else {
 				AddBotToGroup(b, c->GetGroup());
-				//c->GetGroup()->AddMember(b);
 			}
 
 			// TODO: Uncomment this block of code after bot raids has been integrated
@@ -5260,84 +5269,84 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		}
 		return;
 	}
-	//
-	////Tracking
-	//if(!strcasecmp(sep->arg[1], "track") && c->IsGrouped()) {
-	//	Mob *Tracker;
-	//	int32 TrackerClass = 0;
 
-	//	Group *g = c->GetGroup();
-	//	if(g) {
-	//		for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
-	//			if(g->members[i] && g->members[i]->IsBot()) {
-	//				switch(g->members[i]->GetClass()) {
-	//					case RANGER:
-	//						Tracker = g->members[i];
-	//						TrackerClass = RANGER;
-	//						break;
-	//					case BARD:
-	//						// If we haven't found a tracker yet, use bard.
-	//						if(TrackerClass == 0) {
-	//							Tracker = g->members[i];
-	//							TrackerClass = BARD;
-	//						}
-	//						break;
-	//					case DRUID:
-	//						// Unless we have a ranger, druid is next best.
-	//						if(TrackerClass != RANGER) {
-	//							Tracker = g->members[i];
-	//							TrackerClass = DRUID;
-	//						}
-	//						break;
-	//					default:
-	//						break;
-	//				}
-	//			}
-	//		}
+	//Tracking
+	if(!strcasecmp(sep->arg[1], "track") && c->IsGrouped()) {
+		Mob *Tracker;
+		int32 TrackerClass = 0;
 
-	//		int Level = (c->GetLevel());
-	//		int RangeR = (Level*80); //Ranger
-	//		int RangeD = (Level*30); //Druid
-	//		int RangeB = (Level*20); //Bard
-	//		switch(TrackerClass) {
-	//			case RANGER:
-	//				if(!strcasecmp(sep->arg[2], "all")) {
-	//					Tracker->Say("Tracking everything", c->GetName());
-	//					entity_list.ShowSpawnWindow(c, RangeR, false);
-	//				}
-	//				else if(!strcasecmp(sep->arg[2], "rare")) { 
-	//					Tracker->Say("Selective tracking", c->GetName());
-	//					entity_list.ShowSpawnWindow(c, RangeR, true);
-	//				}
-	//				else if(!strcasecmp(sep->arg[2], "near")) { 
-	//					Tracker->Say("Tracking mobs nearby", c->GetName());
-	//					entity_list.ShowSpawnWindow(c, RangeD, false);
-	//				}
-	//				else 
-	//					Tracker->Say("You want to [track all], [track near], or [track rare]?", c->GetName());
+		Group *g = c->GetGroup();
+		if(g) {
+			for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
+				if(g->members[i] && g->members[i]->IsBot()) {
+					switch(g->members[i]->GetClass()) {
+						case RANGER:
+							Tracker = g->members[i];
+							TrackerClass = RANGER;
+							break;
+						case BARD:
+							// If we haven't found a tracker yet, use bard.
+							if(TrackerClass == 0) {
+								Tracker = g->members[i];
+								TrackerClass = BARD;
+							}
+							break;
+						case DRUID:
+							// Unless we have a ranger, druid is next best.
+							if(TrackerClass != RANGER) {
+								Tracker = g->members[i];
+								TrackerClass = DRUID;
+							}
+							break;
+						default:
+							break;
+					}
+				}
+			}
 
-	//				break;
+			int Level = (c->GetLevel());
+			int RangeR = (Level*80); //Ranger
+			int RangeD = (Level*30); //Druid
+			int RangeB = (Level*20); //Bard
+			switch(TrackerClass) {
+				case RANGER:
+					if(!strcasecmp(sep->arg[2], "all")) {
+						Tracker->Say("Tracking everything", c->GetName());
+						entity_list.ShowSpawnWindow(c, RangeR, false);
+					}
+					else if(!strcasecmp(sep->arg[2], "rare")) { 
+						Tracker->Say("Selective tracking", c->GetName());
+						entity_list.ShowSpawnWindow(c, RangeR, true);
+					}
+					else if(!strcasecmp(sep->arg[2], "near")) { 
+						Tracker->Say("Tracking mobs nearby", c->GetName());
+						entity_list.ShowSpawnWindow(c, RangeD, false);
+					}
+					else 
+						Tracker->Say("You want to [track all], [track near], or [track rare]?", c->GetName());
 
-	//			case BARD:
+					break;
 
-	//				if(TrackerClass != RANGER)
-	//					Tracker->Say("Tracking up", c->GetName());
-	//				entity_list.ShowSpawnWindow(c, RangeB, false);
-	//				break;
+				case BARD:
 
-	//			case DRUID:
+					if(TrackerClass != RANGER)
+						Tracker->Say("Tracking up", c->GetName());
+					entity_list.ShowSpawnWindow(c, RangeB, false);
+					break;
 
-	//				if(TrackerClass = BARD)
-	//					Tracker->Say("Tracking up", c->GetName());
-	//				entity_list.ShowSpawnWindow(c, RangeD, false);
-	//				break;
+				case DRUID:
 
-	//			default:
-	//				c->Message(15, "You must have a Ranger, Druid, or Bard in your group.");
-	//				break;
-	//		}
-	//	}
-	//}
+					if(TrackerClass = BARD)
+						Tracker->Say("Tracking up", c->GetName());
+					entity_list.ShowSpawnWindow(c, RangeD, false);
+					break;
+
+				default:
+					c->Message(15, "You must have a Ranger, Druid, or Bard in your group.");
+					break;
+			}
+		}
+	}
 
 	//Cure
 	if ((!strcasecmp(sep->arg[1], "cure")) && (c->IsGrouped())) {
@@ -8559,6 +8568,133 @@ void Bot::CalcBotStats(bool showtext) {
 		BotOwner->Message(15, "Level: %i HP: %i AC: %i Mana: %i STR: %i STA: %i DEX: %i AGI: %i INT: %i WIS: %i CHA: %i", blevel, max_hp, bac, max_mana, bstr, bsta, bdex, bagi, bint, bwis, bcha);
 		BotOwner->Message(15, "Resists-- Magic: %i, Poison: %i, Fire: %i, Cold: %i, Disease: %i.",bMR,bPR,bFR,bCR,bDR);
 	}
+}
+
+void EntityList::ShowSpawnWindow(Client* client, int Distance, bool NamedOnly) {
+
+	const char *WindowTitle = "Bot Tracking Window";
+
+	string WindowText;
+	int LastCon = -1;
+	int CurrentCon = 0;
+	
+	int32 array_counter = 0;
+	
+	LinkedListIterator<Mob*> iterator(mob_list);
+	iterator.Reset();
+
+	while(iterator.MoreElements())
+	{
+		if (iterator.GetData() && (iterator.GetData()->DistNoZ(*client)<=Distance))
+		{
+			if(iterator.GetData()->IsTrackable()) {
+				Mob* cur_entity = iterator.GetData();
+				int  Extras = (cur_entity->IsBot() || cur_entity->IsPet() || cur_entity->IsFamiliar() || cur_entity->IsClient());
+				const char *const MyArray[] = {
+					"a_","an_","Innkeep_","Barkeep_",
+					"Guard_","Merchant_","Lieutenant_",
+					"Banker_","Centaur_","Aviak_","Baker_",
+					"Sir_","Armorer_","Deathfist_","Deputy_",
+					"Sentry_","Sentinel_","Leatherfoot_",
+					"Corporal_","goblin_","Bouncer_","Captain_",
+					"orc_","fire_","inferno_","young_","cinder_",
+					"flame_","gnomish_","CWG_","sonic_","greater_",
+					"ice_","dry_","Priest_","dark-boned_",
+					"Tentacle_","Basher_","Dar_","Greenblood_",
+					"clockwork_","guide_","rogue_","minotaur_",
+					"brownie_","Teir'","dark_","tormented_",
+					"mortuary_","lesser_","giant_","infected_",
+					"wharf_","Apprentice_","Scout_","Recruit_",
+					"Spiritist_","Pit_","Royal_","scalebone_",
+					"carrion_","Crusader_","Trooper_","hunter_",
+					"decaying_","iksar_","klok_","templar_","lord_",
+					"froglok_","war_","large_","charbone_","icebone_",
+					"Vicar_","Cavalier_","Heretic_","Reaver_","venomous_",
+					"Sheildbearer_","pond_","mountain_","plaguebone_","Brother_",
+					"great_","strathbone_","briarweb_","strathbone_","skeletal_",
+					"minion_","spectral_","myconid_","spurbone_","sabretooth_",
+					"Tin_","Iron_","Erollisi_","Petrifier_","Burynai_",
+					"undead_","decayed_","You_","smoldering_","gyrating_",
+					"lumpy_","Marshal_","Sheriff_","Chief_","Risen_",
+					"lascar_","tribal_","fungi_","Xi_","Legionnaire_",
+					"Centurion_","Zun_","Diabo_","Scribe_","Defender_","Capt_",
+					"blazing_","Solusek_","imp_","hexbone_","elementalbone_",
+					"stone_","lava_","_",""
+				};
+				unsigned int MyArraySize;
+				 for ( MyArraySize = 0; true; MyArraySize++) {   //Find empty string & get size
+				   if (!(*(MyArray[MyArraySize]))) break;   //Checks for null char in 1st pos
+				};
+				if (NamedOnly) {
+				   bool ContinueFlag = false;
+				   const char *CurEntityName = cur_entity->GetName();  //Call function once
+				   for (int Index = 0; Index < MyArraySize; Index++) {
+				      if (!strncasecmp(CurEntityName, MyArray[Index], strlen(MyArray[Index])) || (Extras)) {
+				         iterator.Advance();
+				         ContinueFlag = true;
+				         break;   //From Index for
+				       };
+				   };
+				  if (ContinueFlag) continue; //Moved here or would apply to Index for
+				};
+
+				CurrentCon = client->GetLevelCon(cur_entity->GetLevel());
+				if(CurrentCon != LastCon) {
+
+					if(LastCon != -1)
+						WindowText += "</c>";
+
+					LastCon = CurrentCon;
+
+					switch(CurrentCon) {
+
+						case CON_GREEN: {
+							WindowText += "<c \"#00FF00\">";
+							break;
+						}
+
+						case CON_LIGHTBLUE: {
+							WindowText += "<c \"#8080FF\">";
+							break;
+						}
+						case CON_BLUE: {
+							WindowText += "<c \"#2020FF\">";
+							break;
+						}
+
+						case CON_YELLOW: {
+							WindowText += "<c \"#FFFF00\">";
+							break;
+						}
+						case CON_RED: {
+							WindowText += "<c \"#FF0000\">";
+							break;
+						}
+						default: {
+							WindowText += "<c \"#FFFFFF\">";
+							break;
+						}
+					}
+				}
+
+				WindowText += cur_entity->GetCleanName();
+				WindowText += "<br>";
+
+				if(strlen(WindowText.c_str()) > 4000) {
+					// Popup window is limited to 4096 characters.
+					WindowText += "</c><br><br>List truncated ... too many mobs to display";
+					break;
+				}
+			}
+		}
+
+		iterator.Advance();
+	}
+	WindowText += "</c>";
+
+	client->SendPopupToClient(WindowTitle, WindowText.c_str());
+
+	return; 
 }
 
 #endif
