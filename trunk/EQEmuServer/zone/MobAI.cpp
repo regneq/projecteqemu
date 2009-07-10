@@ -234,26 +234,32 @@ bool NPC::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 						break;
 					}
 					case SpellType_Mez: {
-						Mob * mezTar = NULL;
-						mezTar = entity_list.GetTargetForMez(this);
-
-						if(mezTar)
+						if(MakeRandomInt(0, 99) < 20)
 						{
-							AIDoSpellCast(i, mezTar, mana_cost);
-							return true;
+							Mob * mezTar = NULL;
+							mezTar = entity_list.GetTargetForMez(this);
+
+							if(mezTar && mezTar->CanBuffStack(AIspells[i].spellid, GetLevel(), true) >= 0)
+							{
+								AIDoSpellCast(i, mezTar, mana_cost);
+								return true;
+							}
 						}
 						break;
 					}
 					
 					case SpellType_Charm: 
 					{
-						Mob * chrmTar = GetHateRandom();
-						if(chrmTar)
+						if(MakeRandomInt(0, 99) < 20)
 						{
-							AIDoSpellCast(i, chrmTar, mana_cost);
-							return true;
+							Mob * chrmTar = GetHateRandom();
+							if(chrmTar && chrmTar->CanBuffStack(AIspells[i].spellid, GetLevel(), true) >= 0)
+							{
+								AIDoSpellCast(i, chrmTar, mana_cost);
+								return true;
+							}
+							break;
 						}
-						break;
 					}
 
 					case SpellType_Pet: {
@@ -627,6 +633,11 @@ void Client::AI_SpellCast()
 		}
 
 		if(!GetPTimers().Expired(&database, pTimerSpellStart + current_spell, false)) 
+		{
+			continue;
+		}
+
+		if(targ->CanBuffStack(current_spell, GetLevel(), true) < 0)
 		{
 			continue;
 		}
