@@ -1632,6 +1632,87 @@ ENCODE(OP_AdventureMerchantSell) {
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_RaidUpdate) 
+{
+	EQApplicationPacket *inapp = *p;
+	*p = NULL;
+	unsigned char * __emu_buffer = inapp->pBuffer;
+	RaidGeneral_Struct *raid_gen = (RaidGeneral_Struct*)__emu_buffer;
+
+	if(raid_gen->action == 0) // raid add has longer length than other raid updates
+	{
+		RaidAddMember_Struct* in_add_member = (RaidAddMember_Struct*)__emu_buffer;
+
+		EQApplicationPacket *outapp = new EQApplicationPacket(OP_RaidUpdate, sizeof(structs::RaidAddMember_Struct));
+		structs::RaidAddMember_Struct *add_member = (structs::RaidAddMember_Struct*)outapp->pBuffer;
+		
+		add_member->raidGen.action = in_add_member->raidGen.action;
+		add_member->raidGen.parameter = in_add_member->raidGen.parameter;
+		strncpy(add_member->raidGen.leader_name, in_add_member->raidGen.leader_name, 64);
+		strncpy(add_member->raidGen.player_name, in_add_member->raidGen.player_name, 64);
+		add_member->_class = in_add_member->_class;
+		add_member->level= in_add_member->level;
+		add_member->isGroupLeader = in_add_member->isGroupLeader;
+		add_member->flags[0] = in_add_member->flags[0];
+		add_member->flags[1] = in_add_member->flags[1];
+		add_member->flags[2] = in_add_member->flags[2];
+		add_member->flags[3] = in_add_member->flags[3];
+		add_member->flags[4] = in_add_member->flags[4];
+		dest->FastQueuePacket(&outapp);
+	}
+	else
+	{
+		RaidGeneral_Struct* in_raid_general = (RaidGeneral_Struct*)__emu_buffer;
+
+		EQApplicationPacket *outapp = new EQApplicationPacket(OP_RaidUpdate, sizeof(structs::RaidGeneral_Struct));
+		structs::RaidGeneral_Struct *raid_general = (structs::RaidGeneral_Struct*)outapp->pBuffer;
+		strncpy(raid_general->leader_name, in_raid_general->leader_name, 64);
+		strncpy(raid_general->player_name, in_raid_general->player_name, 64);
+		raid_general->action = in_raid_general->action;
+		raid_general->parameter = in_raid_general->parameter;
+		dest->FastQueuePacket(&outapp);
+	}
+	delete[] __emu_buffer;
+}
+
+ENCODE(OP_RaidJoin)
+{
+	EQApplicationPacket *inapp = *p;
+	unsigned char * __emu_buffer = inapp->pBuffer;
+	RaidCreate_Struct *raid_create = (RaidCreate_Struct*)__emu_buffer;
+
+	EQApplicationPacket *outapp_create = new EQApplicationPacket(OP_RaidUpdate, sizeof(structs::RaidGeneral_Struct));
+	EQApplicationPacket *outapp_change = new EQApplicationPacket(OP_RaidUpdate, sizeof(structs::RaidGeneral_Struct));
+	structs::RaidGeneral_Struct *general = (structs::RaidGeneral_Struct*)outapp_create->pBuffer;
+
+	general->action = 8;
+	general->parameter = 1;
+	strncpy(general->leader_name, raid_create->leader_name, 64);
+	strncpy(general->player_name, raid_create->leader_name, 64);
+
+	general = (structs::RaidGeneral_Struct*)outapp_change->pBuffer;
+	general->action = 30;
+	general->parameter = 1;
+	strncpy(general->leader_name, raid_create->leader_name, 64);
+	strncpy(general->player_name, raid_create->leader_name, 64);
+
+	dest->FastQueuePacket(&outapp_create);
+	dest->FastQueuePacket(&outapp_change);
+	delete[] __emu_buffer;
+}
+
+DECODE(OP_RaidInvite) {
+	DECODE_LENGTH_EXACT(structs::RaidGeneral_Struct);
+	SETUP_DIRECT_DECODE(RaidGeneral_Struct, structs::RaidGeneral_Struct);
+
+	strncpy(emu->leader_name, eq->leader_name, 64);
+	strncpy(emu->player_name, eq->player_name, 64);
+	IN(action);
+	IN(parameter);
+
+	FINISH_DIRECT_DECODE();
+}
+
 DECODE(OP_AdventureMerchantSell) {
 	DECODE_LENGTH_EXACT(structs::Adventure_Sell_Struct);
 	SETUP_DIRECT_DECODE(Adventure_Sell_Struct, structs::Adventure_Sell_Struct);
