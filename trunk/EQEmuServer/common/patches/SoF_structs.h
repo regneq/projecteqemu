@@ -3366,14 +3366,20 @@ struct leadExpUpdateStruct {
    /*0028*/ uint32 unknown0028;
 };
 
-
-
 struct RaidGeneral_Struct {
-/*00*/	uint32		action;	//=10
-/*04*/	char		player_name[64];	//should both be the player's name
-uint32 unknown68;
-/*04*/	char		leader_name[64];
-/*132*/	uint32		parameter;
+/*00*/	uint32		action;
+/*04*/	char		player_name[64];
+/*68*/	uint32		unknown68;
+/*72*/	char		leader_name[64];
+/*136*/	uint32		parameter;
+};
+
+struct RaidAddMember_Struct {
+/*000*/ RaidGeneral_Struct raidGen; //param = (group num-1); 0xFFFFFFFF = no group
+/*136*/ uint8 _class;
+/*137*/	uint8 level;
+/*138*/	uint8 isGroupLeader;
+/*139*/	uint8 flags[5]; //no idea if these are needed...
 };
 
 struct RaidAdd_Struct {

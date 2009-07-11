@@ -48,8 +48,8 @@ E(OP_ReadBook)
 E(OP_Stun)
 E(OP_ZonePlayerToBind)
 E(OP_AdventureMerchantSell)
-//E(OP_AdventureData)
-//E(OP_RaidUpdate)
+E(OP_RaidUpdate)
+E(OP_RaidJoin)
 
 //list of packets we need to decode on the way in:
 D(OP_SetServerFilter)
@@ -78,5 +78,6 @@ D(OP_AugmentInfo)
 D(OP_FaceChange)
 D(OP_AdventureMerchantSell)
 D(OP_TradeSkillCombine)
+D(OP_RaidInvite)
 #undef E
 #undef D

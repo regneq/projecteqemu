@@ -5,6 +5,7 @@ Trevius: (Zeice) Added #mystats command as an alternative to #showstats that onl
 WildcardX: Migrated more code from EQBOTS to BOTS. The BOT code is less buggy than last iteration and now has even more active features that can be tested but there is a known issue or two I am aware of and working to correct.
 KLS: Fix for fear not wearing off properly.
 KLS: Small tweaks to npc spell ai.
+KLS: SoF - Raids should now function properly.
 
 ==07/09/2009==
 WildcardX: Migrated more code from EQBOTS to BOTS. The BOTS code can do basic functions now but its still "buggy" compared to EQBOTS until migration/integration is complete.

@@ -3572,7 +3572,7 @@ struct MarkNPC_Struct
 struct RaidGeneral_Struct {
 /*00*/	uint32		action;	//=10
 /*04*/	char		player_name[64];	//should both be the player's name
-/*04*/	char		leader_name[64];
+/*64*/	char		leader_name[64];
 /*132*/	uint32		parameter;
 };
 
