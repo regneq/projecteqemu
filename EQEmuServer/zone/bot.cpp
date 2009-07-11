@@ -40,7 +40,6 @@ Bot::Bot(NPCType npcTypeData, Client* botOwner) : NPC(&npcTypeData, 0, 0, 0, 0, 
 	SetBotRaiding(false);
 	SetSpawnStatus(false);
 	//SetFollowID(GetBotOwnerCharacterID());
-
 	this->_botInventoryID = 0;
 
 	GenerateBaseStats();
@@ -158,12 +157,12 @@ NPCType Bot::CreateDefaultNPCTypeStructForBot(std::string botName, std::string b
 	// default values just to initialize them to values that wont crash the client until they get calculated
 	Result.size = 6;
 	Result.npc_id = 0;
-	Result.bodytype = 0;
+	Result.bodytype = 1;
 	Result.cur_hp = 0;
 	Result.drakkin_details = 0;
 	Result.drakkin_heritage = 0;
 	Result.drakkin_tattoo = 0;
-	Result.runspeed = 0;
+	Result.runspeed = 2.501;
 
 	return Result;
 }
@@ -4156,10 +4155,25 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 
 			if(BotTargeted) {
 				if(BotTargeted->DeleteBot(&TempErrorMessage)) {
-					c->GetTarget()->Say("...but why?!! We had such good adventures together! gaahhh...glrrrk...");
+					BotTargeted->Say("...but why?!! We had such good adventures together! gaahhh...glrrrk...");
 					// TODO: decide on BotOwner = NULL
 					//c->GetTarget()->BotOwner = NULL;
-					c->GetTarget()->Kill();
+
+					if(BotTargeted->IsGrouped()) {
+						Group *g = entity_list.GetGroupByMob(c->GetTarget());
+						if(g) {
+							g->DelMember(BotTargeted);
+						}
+					}
+					else {
+						Group *g = entity_list.GetGroupByMob(c->GetTarget());
+						if(g && g->GroupCount() == 2) {
+							g->DisbandGroup();
+							// TODO: Client group window now shows a no members but the "Disband" button is still enabled.
+						}
+					}
+
+					BotTargeted->Kill();
 				}
 				else {
 					// TODO: log error message here
