@@ -1229,6 +1229,24 @@ struct ZonePlayerToBind_Struct {
 /*000*/	uint32	unknown024;	// Seen 21 or 43
 };
 
+struct ZonePlayerToBindHeader_Struct
+{
+	/*000*/	uint32	bind_zone_id;
+	/*004*/	float	x;
+	/*008*/	float	y;
+	/*012*/	float	z;
+	/*016*/	float	heading;
+	/*020*/	char	zone_name[1];  // Or "Bind Location"
+};
+
+struct ZonePlayerToBindFooter_Struct
+{
+	/*000*/	uint8	unknown021;	// Seen 1 - Maybe 0 would be to force a rezone and 1 is just respawn
+	/*000*/	uint32	unknown022;	// Seen 32 or 59
+	/*000*/	uint32	unknown023;	// Seen 0
+	/*000*/	uint32	unknown024;	// Seen 21 or 43
+};
+
 typedef struct {
 /*000*/	uint32	bind_number;		// Number of this bind in the iteration
 /*004*/	uint32	bind_zone_id;		// ID of the zone for this bind point or resurect point
