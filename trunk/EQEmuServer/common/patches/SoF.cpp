@@ -1605,18 +1605,43 @@ ENCODE(OP_Stun) {
 	FINISH_ENCODE();
 }
 
-ENCODE(OP_ZonePlayerToBind) {
-
+ENCODE(OP_ZonePlayerToBind) 
+{
 	ENCODE_LENGTH_ATLEAST(ZonePlayerToBind_Struct);
-	SETUP_DIRECT_ENCODE(ZonePlayerToBind_Struct, structs::ZonePlayerToBind_Struct);
-	OUT(bind_zone_id);
-	OUT(x);
-	OUT(y);
-	OUT(z);
-	OUT(heading);
-	strn0cpy(eq->zone_name, emu->zone_name, sizeof(emu->zone_name));
+	ZonePlayerToBind_Struct *zps = (ZonePlayerToBind_Struct*)(*p)->pBuffer;
 
-	FINISH_ENCODE();
+	std::stringstream ss(std::stringstream::in | std::stringstream::out | std::stringstream::binary);
+	ss.clear();
+
+	unsigned char *buffer1 = new unsigned char[sizeof(structs::ZonePlayerToBindHeader_Struct) + strlen(zps->zone_name)];
+	structs::ZonePlayerToBindHeader_Struct *zph = (structs::ZonePlayerToBindHeader_Struct*)buffer1;
+	unsigned char *buffer2 = new unsigned char[sizeof(structs::ZonePlayerToBindFooter_Struct)];
+	structs::ZonePlayerToBindFooter_Struct *zpf = (structs::ZonePlayerToBindFooter_Struct*)buffer2;
+
+	zph->x = zps->x;
+	zph->y = zps->y;
+	zph->z = zps->z;
+	zph->heading = zps->heading;
+	zph->bind_zone_id = 0;
+	strcpy(zph->zone_name, zps->zone_name);
+
+	zpf->unknown021 = 1;
+	zpf->unknown022 = 0;
+	zpf->unknown023 = 0;
+	zpf->unknown024 = 0;
+
+	ss.write((const char*)buffer1, (sizeof(structs::ZonePlayerToBindHeader_Struct) + strlen(zps->zone_name)));
+	ss.write((const char*)buffer2, sizeof(structs::ZonePlayerToBindFooter_Struct));
+
+	delete[] buffer1;
+	delete[] buffer2;
+	delete[] (*p)->pBuffer;
+
+	(*p)->pBuffer = new unsigned char[ss.str().size()];
+	(*p)->size = ss.str().size();
+
+	memcpy((*p)->pBuffer, ss.str().c_str(), ss.str().size());
+	dest->FastQueuePacket(&(*p));
 }
 
 ENCODE(OP_AdventureMerchantSell) {
@@ -1682,7 +1707,6 @@ ENCODE(OP_RaidJoin)
 	RaidCreate_Struct *raid_create = (RaidCreate_Struct*)__emu_buffer;
 
 	EQApplicationPacket *outapp_create = new EQApplicationPacket(OP_RaidUpdate, sizeof(structs::RaidGeneral_Struct));
-	EQApplicationPacket *outapp_change = new EQApplicationPacket(OP_RaidUpdate, sizeof(structs::RaidGeneral_Struct));
 	structs::RaidGeneral_Struct *general = (structs::RaidGeneral_Struct*)outapp_create->pBuffer;
 
 	general->action = 8;
@@ -1690,14 +1714,7 @@ ENCODE(OP_RaidJoin)
 	strncpy(general->leader_name, raid_create->leader_name, 64);
 	strncpy(general->player_name, raid_create->leader_name, 64);
 
-	general = (structs::RaidGeneral_Struct*)outapp_change->pBuffer;
-	general->action = 30;
-	general->parameter = 1;
-	strncpy(general->leader_name, raid_create->leader_name, 64);
-	strncpy(general->player_name, raid_create->leader_name, 64);
-
 	dest->FastQueuePacket(&outapp_create);
-	dest->FastQueuePacket(&outapp_change);
 	delete[] __emu_buffer;
 }
 
