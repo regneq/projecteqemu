@@ -3683,7 +3683,7 @@ bool Bot::AddBotToGroup(Bot* bot, Group* group) {
 	if(bot && group) {
 		//Let's see if the bot is already in the group
 		for(i = 0; i < MAX_GROUP_MEMBERS; i++) {
-			if(group->members[i] && !strcasecmp(group->members[i]->GetName(), bot->GetName()))
+			if(group->members[i] && !strcasecmp(group->members[i]->GetName(), bot->GetCleanName()))
 				return false;
 		}
 
@@ -3696,13 +3696,13 @@ bool Bot::AddBotToGroup(Bot* bot, Group* group) {
 		}
 		
 		// We copy the bot name in the group at the slot of the bot
-		strcpy(group->membername[i], bot->GetName());
+		strcpy(group->membername[i], bot->GetCleanName());
 		bot->SetGrouped(true);
 
 		//build the template join packet
 		EQApplicationPacket* outapp = new EQApplicationPacket(OP_GroupUpdate, sizeof(GroupJoin_Struct));
 		GroupJoin_Struct* gj = (GroupJoin_Struct*) outapp->pBuffer;	
-		strcpy(gj->membername, bot->GetName());
+		strcpy(gj->membername, bot->GetCleanName());
 		gj->action = groupActJoin;
 	
 		int z = 1;
@@ -3714,7 +3714,7 @@ bool Bot::AddBotToGroup(Bot* bot, Group* group) {
 					group->members[i]->CastToClient()->QueuePacket(outapp);
 				}
 				else {
-					strcpy(group->members[i]->CastToClient()->GetPP().groupMembers[0+z], group->members[i]->GetName());
+					strcpy(group->members[i]->CastToClient()->GetPP().groupMembers[0+z], group->members[i]->GetCleanName());
 					group->members[i]->CastToClient()->QueuePacket(outapp);
 				}
 			}
@@ -3999,6 +3999,23 @@ bool Bot::Bot_Command_Cure(int curetype, int level) {
 		}
 	}
 	return false;
+}
+
+// This funcion is a bit of a hack.
+// Ideally, this function should identify the desired buff by spell effect (SE) type. Like SE_Calm for example, not by specific spell id.
+// TODO: reimplement this function so no spell type id is hard-coded and instead the buff is identify by spell effect id.
+bool Bot::IsPacified(Mob* targetMob) {
+	bool Result = false;
+
+	if(targetMob && GetBotOwner() && spells_loaded) {
+		for (int i=0; i < BUFF_COUNT; i++) {
+			if ((buffs[i].spellid == 3197) || (buffs[i].spellid == 45) || (buffs[i].spellid == 47) || (buffs[i].spellid == 501) || (buffs[i].spellid == 208)) {
+				Result = true;
+			}
+		}
+	}
+
+	return Result;
 }
 
 void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
@@ -4849,91 +4866,106 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		return;
 	}
 
-//	if(!strcasecmp(sep->arg[1], "group") && !strcasecmp(sep->arg[2], "order"))
-//	{
-//		if(!strcasecmp(sep->arg[3], "follow"))
-//		{
-//			if(c->IsBotRaiding()) {
-//				BotRaids *br = entity_list.GetBotRaidByMob(c->CastToMob());
-//				br->FollowGuardCmd(c, false);
-//			}
-//			else if(c->IsGrouped())
-//			{
-//				Group *g = c->GetGroup();
-//				if(g) {
-//					int32 botfollowid = 0;
-//					const char* botfollowname;
-//					for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
-//						if(g->members[i] && g->members[i]->IsBot()) {
-//							if(botfollowid == 0) {
-//								botfollowid = g->members[i]->GetID();
-//								botfollowname = g->members[i]->GetCleanName();
-//								g->members[i]->SetFollowID(c->GetID());
-//								g->members[i]->Say("Following %s.", c->GetName());
-//							}
-//							else {
-//								g->members[i]->SetFollowID(botfollowid);
-//								g->members[i]->Say("Following %s.", botfollowname);
-//							}
-//							g->members[i]->WipeHateList();
-//						}
-//					}
-//				}
-//			}
-//		}
-//		else if(!strcasecmp(sep->arg[3], "guard"))
-//		{
-//			if(c->IsBotRaiding()) {
-//				BotRaids *br = entity_list.GetBotRaidByMob(c->CastToMob());
-//				br->FollowGuardCmd(c, true);
-//			}
-//			else if(c->IsGrouped())
-//			{
-//				Group *g = c->GetGroup();
-//				if(g) {
-//					for(int i=0; i<MAX_GROUP_MEMBERS; i++)
-//					{
-//						if(g->members[i] && g->members[i]->IsBot()) {
-//							g->members[i]->SetFollowID(0);
-//							g->members[i]->WipeHateList();
-//							g->members[i]->Say("Guarding here.");
-//						}
-//					}
-//				}
-//			}
-//		}
-//		else if(!strcasecmp(sep->arg[3], "attack"))
-//		{
-//			if(c->IsGrouped() && (c->GetTarget() != NULL) && c->IsAttackAllowed(c->GetTarget())) {
-//				c->SetOrderBotAttack(true);
-//				if(c->IsBotRaiding()) {
-//					BotRaids *br = entity_list.GetBotRaidByMob(c->CastToMob());
-//					if(br) {
-//						c->SetOrderBotAttack(true);
-//						br->AddBotRaidAggro(c->GetTarget());
-//						c->SetOrderBotAttack(false);
-//					}
-//				}
-//				else {
-//					Group *g = entity_list.GetGroupByMob(c->CastToMob());
-//					if(g) {
-//						for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
-//							if(g->members[i] && g->members[i]->IsBot()) {
-//								c->SetOrderBotAttack(true);
-//								g->members[i]->AddToHateList(c->GetTarget(), 1);
-//								c->SetOrderBotAttack(false);
-//							}
-//						}
-//					}
-//				}
-//				c->SetOrderBotAttack(false);
-//			}
-//			else {
-//				c->Message(15, "You must target a monster.");
-//			}
-//		}
-//		return;
-//	}
+	if(!strcasecmp(sep->arg[1], "group") && !strcasecmp(sep->arg[2], "order"))
+	{
+		if(!strcasecmp(sep->arg[3], "follow"))
+		{
+			/*if(c->IsBotRaiding()) {
+				BotRaids *br = entity_list.GetBotRaidByMob(c->CastToMob());
+				br->FollowGuardCmd(c, false);
+			}
+			else*/ if(c->IsGrouped())
+			{
+				Group *g = c->GetGroup();
+				if(g) {
+					int32 botfollowid = 0;
+					const char* botfollowname;
+					for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
+						if(g->members[i] && g->members[i]->IsBot()) {
+							if(botfollowid == 0) {
+								botfollowid = g->members[i]->GetID();
+								botfollowname = g->members[i]->GetCleanName();
+								g->members[i]->SetFollowID(c->GetID());
+								g->members[i]->Say("Following %s.", c->GetName());
+							}
+							else {
+								g->members[i]->SetFollowID(botfollowid);
+								g->members[i]->Say("Following %s.", botfollowname);
+							}
+							g->members[i]->WipeHateList();
+						}
+					}
+				}
+			}
+		}
+		else if(!strcasecmp(sep->arg[3], "guard"))
+		{
+			/*if(c->IsBotRaiding()) {
+				BotRaids *br = entity_list.GetBotRaidByMob(c->CastToMob());
+				br->FollowGuardCmd(c, true);
+			}
+			else*/ if(c->IsGrouped())
+			{
+				Group *g = c->GetGroup();
+				if(g) {
+					for(int i=0; i<MAX_GROUP_MEMBERS; i++)
+					{
+						if(g->members[i] && g->members[i]->IsBot()) {
+							g->members[i]->SetFollowID(0);
+							g->members[i]->WipeHateList();
+							g->members[i]->Say("Guarding here.");
+						}
+					}
+				}
+			}
+		}
+		else if(!strcasecmp(sep->arg[3], "attack"))
+		{
+			/*if(c->IsGrouped() && (c->GetTarget() != NULL) && c->IsAttackAllowed(c->GetTarget())) {
+				c->SetOrderBotAttack(true);
+				if(c->IsBotRaiding()) {
+					BotRaids *br = entity_list.GetBotRaidByMob(c->CastToMob());
+					if(br) {
+						c->SetOrderBotAttack(true);
+						br->AddBotRaidAggro(c->GetTarget());
+						c->SetOrderBotAttack(false);
+					}
+				}
+				else {
+					Group *g = entity_list.GetGroupByMob(c->CastToMob());
+					if(g) {
+						for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
+							if(g->members[i] && g->members[i]->IsBot()) {
+								c->SetOrderBotAttack(true);
+								g->members[i]->AddToHateList(c->GetTarget(), 1);
+								c->SetOrderBotAttack(false);
+							}
+						}
+					}
+				}
+				c->SetOrderBotAttack(false);
+			}*/
+
+			// This function was added from the part of the code block that is commented out above.
+			// TODO: evaluate SetOrderBotAttack and the bot commend toggles in general.
+			if(c->IsGrouped() && (c->GetTarget() != NULL) && c->IsAttackAllowed(c->GetTarget())) {
+				Group *g = entity_list.GetGroupByMob(c->CastToMob());
+				if(g) {
+					for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
+						if(g->members[i] && g->members[i]->IsBot()) {
+							//c->SetOrderBotAttack(true);
+							g->members[i]->AddToHateList(c->GetTarget(), 1);
+							//c->SetOrderBotAttack(false);
+						}
+					}
+				}
+			}
+			else {
+				c->Message(15, "You must target a monster.");
+			}
+		}
+		return;
+	}
 
 	if(!strcasecmp(sep->arg[1], "inventory") && !strcasecmp(sep->arg[2], "list"))
 	{
@@ -5176,32 +5208,34 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		return;
 	}
 
-//	if(!strcasecmp(sep->arg[1], "group") && !strcasecmp(sep->arg[2], "summon") ) {
-//		if(c->IsBotRaiding()) {
-//			BotRaids *brsummon = entity_list.GetBotRaidByMob(c->CastToMob());
-//			if(brsummon) {
-//				brsummon->SummonRaidBots(c->CastToMob(), false);
-//			}
-//		}
-//		else if(c->IsGrouped())
-//		{
-//			Group *g = c->GetGroup();
-//			if(g) {
-//				for(int i=0; i<MAX_GROUP_MEMBERS; i++)
-//				{
-//					if(g->members[i] && g->members[i]->IsBot()) {
-//						g->members[i]->SetTarget(g->members[i]->BotOwner);
-//						g->members[i]->Warp(c->GetX(), c->GetY(), c->GetZ());
-//						if(g->members[i]->GetPetID()) {
-//							g->members[i]->GetPet()->SetTarget(g->members[i]);
-//							g->members[i]->GetPet()->Warp(c->GetX(), c->GetY(), c->GetZ());
-//						}
-//					}
-//				}
-//			}
-//		}
-//		return;
-//	}
+	if(!strcasecmp(sep->arg[1], "group") && !strcasecmp(sep->arg[2], "summon") ) {
+		// TODO: Uncomment this block of code after bot raids has been integrated.
+		/*if(c->IsBotRaiding()) {
+			BotRaids *brsummon = entity_list.GetBotRaidByMob(c->CastToMob());
+			if(brsummon) {
+				brsummon->SummonRaidBots(c->CastToMob(), false);
+			}
+		}
+		else*/ if(c->IsGrouped())
+		{
+			Group *g = c->GetGroup();
+			if(g) {
+				for(int i=0; i<MAX_GROUP_MEMBERS; i++)
+				{
+					if(g->members[i] && g->members[i]->IsBot()) {
+						Bot* botMember = g->members[i]->CastToBot();
+						botMember->SetTarget(botMember->GetBotOwner());
+						botMember->Warp(c->GetX(), c->GetY(), c->GetZ());
+						if(botMember->GetPetID()) {
+							botMember->GetPet()->SetTarget(botMember);
+							botMember->GetPet()->Warp(c->GetX(), c->GetY(), c->GetZ());
+						}
+					}
+				}
+			}
+		}
+		return;
+	}
 
 	//Bind
 	if(!strcasecmp(sep->arg[1], "bindme")) {
@@ -5729,43 +5763,38 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 	}
 
 	//Pacify
-	//if(!strcasecmp(sep->arg[1], "target") && !strcasecmp(sep->arg[2], "calm"))
-	//{
-	//	Mob *target = c->GetTarget();
-	//	if(target == NULL || target->IsClient() || target->IsBot() || target->IsPet() && target->GetOwner()->IsBot())
-	//	{
-	//		c->Message(15, "You must select a monster");
-	//		return;
-	//	}
-	//	if(c->IsGrouped())
-	//	{
-	//		bool haspacer = false;
-	//		Group *g = c->GetGroup();
-	//		for(int i=0; i<MAX_GROUP_MEMBERS; i++)
-	//		{
-	//			if(g && g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == ENCHANTER) && (!haspacer))
-	//			{
-	//				haspacer = true;
-	//				Mob *pacer = g->members[i];
-	//				pacer->Say("Trying to calm %s \n", target->GetCleanName());
-	//				pacer->CastToBot()->Bot_Command_CalmTarget(target);
-	//				c->GetTarget()->CastToMob()->BotEffect(c);
-	//			}
-	//			else if(g && g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == CLERIC) && (!haspacer))
-	//			{
-	//				haspacer = true;
-	//				Mob *pacer = g->members[i];
-	//				pacer->Say("Trying to calm %s \n", target->GetCleanName());
-	//				pacer->CastToNPC()->Bot_Command_CalmTarget(target);
-	//				c->GetTarget()->CastToMob()->BotEffect(c);
-	//			}
-	//		}
-	//		if(!haspacer) {
-	//			c->Message(15, "You must have an Enchanter or Cleric in your group.");
-	//		}
-	//		return;
-	//	}
-	//}
+	if(!strcasecmp(sep->arg[1], "target") && !strcasecmp(sep->arg[2], "calm"))
+	{
+		Mob *target = c->GetTarget();
+
+		if(target == NULL || target->IsClient() || target->IsBot() || target->IsPet() && target->GetOwner()->IsBot())
+			c->Message(15, "You must select a monster");
+		else {
+			if(c->IsGrouped()) {
+				Group *g = c->GetGroup();
+
+				for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
+					if(g && g->members[i] && g->members[i]->IsBot() && ((g->members[i]->GetClass() == ENCHANTER) || g->members[i]->GetClass() == CLERIC)) {
+						Bot *pacer = g->members[i]->CastToBot();
+						pacer->Say("Trying to pacify %s \n", target->GetCleanName());
+
+						if(pacer->Bot_Command_CalmTarget(target)) {
+							if(pacer->IsPacified(target))
+								c->Message(0, "I have successfully pacified %s.", target->GetCleanName());
+							else
+								c->Message(0, "I failed to pacify %s.", target->GetCleanName());
+						}
+						else
+							c->Message(0, "I failed to pacify %s.", target->GetCleanName());
+					}
+					else
+						c->Message(15, "You must have an Enchanter or Cleric in your group.");
+				}
+			}
+		}
+
+		return;
+	}
 
 	//Charm
 	if(!strcasecmp(sep->arg[1], "charm"))
@@ -6124,60 +6153,62 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		}
 	}
 
-	//Shrink
-	//if ((!strcasecmp(sep->arg[1], "shrinkme")) && (c->IsGrouped())) {
-	//	Mob *Shrinker;
-	//	int32 ShrinkerClass = 0;
-	//	Group *g = c->GetGroup();
+	// Shrink
+	if ((!strcasecmp(sep->arg[1], "shrinkme")) && (c->IsGrouped())) {
+		Mob *Shrinker;
+		int32 ShrinkerClass = 0;
+		Group *g = c->GetGroup();
 
-	//	if(g) {
-	//		for(int i=0; i<MAX_GROUP_MEMBERS; i++){
-	//			if(g->members[i] && g->members[i]->IsBot()) {
-	//				switch(g->members[i]->GetClass()) {
-	//					case SHAMAN:
-	//						Shrinker = g->members[i];
-	//						ShrinkerClass = SHAMAN;
-	//						break;
-	//					case BEASTLORD:
-	//						if (ShrinkerClass != SHAMAN){
-	//							Shrinker = g->members[i];
-	//							ShrinkerClass = BEASTLORD;
-	//						}
-	//						break;
-	//					default:
-	//						break;
-	//				}
-	//			}
-	//		}
-	//		switch(ShrinkerClass) {
-	//			case SHAMAN:
+		if(g) {
+			for(int i=0; i<MAX_GROUP_MEMBERS; i++){
+				if(g->members[i] && g->members[i]->IsBot()) {
+					switch(g->members[i]->GetClass()) {
+						case SHAMAN:
+							Shrinker = g->members[i];
+							ShrinkerClass = SHAMAN;
+							break;
+						case BEASTLORD:
+							if (ShrinkerClass != SHAMAN){
+								Shrinker = g->members[i];
+								ShrinkerClass = BEASTLORD;
+							}
+							break;
+						default:
+							break;
+					}
+				}
+			}
+			switch(ShrinkerClass) {
+				case SHAMAN:
 
-	//				if (c->GetLevel() >= 15) { 
-	//					Shrinker->Say("Casting Shrink...");
-	//					Shrinker->CastToBot()->BotRaidSpell(345);
-	//				}
-	//				else if (c->GetLevel() <= 14) {
-	//					Shrinker->Say("I'm not level 15 yet.");
-	//				}
-	//				break;
+					if (c->GetLevel() >= 15) { 
+						Shrinker->Say("Casting Shrink...");
+						//Shrinker->CastToBot()->BotRaidSpell(345);
+						Shrinker->CastSpell(345, c->GetID(), 1);
+					}
+					else if (c->GetLevel() <= 14) {
+						Shrinker->Say("I'm not level 15 yet.");
+					}
+					break;
 
-	//			case BEASTLORD:
+				case BEASTLORD:
 
-	//				if (c->GetLevel() >= 23) {
-	//					Shrinker->Say("Casting Shrink...");
-	//					Shrinker->CastToBot()->BotRaidSpell(345);
-	//				}
-	//				else if (c->GetLevel() <= 22) {
-	//					Shrinker->Say("I'm not level 23 yet.");
-	//				}
-	//				break;
+					if (c->GetLevel() >= 23) {
+						Shrinker->Say("Casting Shrink...");
+						//Shrinker->CastToBot()->BotRaidSpell(345);
+						Shrinker->CastSpell(345, c->GetID(), 1);
+					}
+					else if (c->GetLevel() <= 22) {
+						Shrinker->Say("I'm not level 23 yet.");
+					}
+					break;
 
-	//			default:
-	//				c->Message(15, "You must have a Shaman or Beastlord in your group.");
-	//				break;
-	//		}
-	//	}
-	//}
+				default:
+					c->Message(15, "You must have a Shaman or Beastlord in your group.");
+					break;
+			}
+		}
+	}
 
 	// Gate
 	if ((!strcasecmp(sep->arg[1], "gate")) && (c->IsGrouped())) {

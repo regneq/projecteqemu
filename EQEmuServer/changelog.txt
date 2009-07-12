@@ -4,6 +4,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 KLS: SoF - Changed raid join packet encode slightly.
 KLS: SoF - Added workaround for disconnection on death for now.
 WildcardX: Fixed BOTS so the bot doesn't warp to its owner.
+WildcardX: All commands for the BOTS system can be tested now except for bot raiding and bot group raiding.
 
 ==07/10/2009==
 Trevius: (Zeice) Added #mystats command as an alternative to #showstats that only shows stats for the client or it's own pet.
