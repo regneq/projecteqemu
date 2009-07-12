@@ -13,6 +13,8 @@
 
 using namespace std;
 
+extern bool spells_loaded;
+
 typedef enum {	//focus types
 	botfocusSpellHaste = 1,
 	botfocusSpellDuration,
@@ -169,6 +171,7 @@ private:
 	//void CleanBotLeaderEntries(std::string* errorMessage);
 	void DoAIProcessing();
 	void SetBotID(uint32 botID);
+	bool IsPacified(Mob* targetMob);
 };
 
 #endif // BOTS
