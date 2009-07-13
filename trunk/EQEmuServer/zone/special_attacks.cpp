@@ -389,7 +389,7 @@ int Mob::MonkSpecialAttack(Mob* other, int8 unchecked_type)
 	{
 	case FLYING_KICK:{
 		skill_type = FLYING_KICK;
-		max_dmg = ((GetSTR()+GetSkill(skill_type)) * RuleI(Combat, FlyingKickBonus) / 100) + (level);
+		max_dmg = ((GetSTR()+GetSkill(skill_type)) * RuleI(Combat, FlyingKickBonus) / 100) + 35;
 		min_dmg = ((level*8)/10);
 
 		if (IsClient() && CastToClient()->GetAA(aaKickMastery))
@@ -412,41 +412,45 @@ int Mob::MonkSpecialAttack(Mob* other, int8 unchecked_type)
 		reuse = FlyingKickReuseTime;
 		break;
 		}
-	case TIGER_CLAW:{
-		skill_type = TIGER_CLAW;
-		max_dmg = ((GetSTR()+GetSkill(skill_type)) * RuleI(Combat, TigerClawBonus) / 100) + (level);
-		itemslot = SLOT_HANDS;
-
-		DoAnim(animTigerClaw);
-		reuse = TigerClawReuseTime;
-		break;
-		}
-	case ROUND_KICK:{
-		skill_type = ROUND_KICK;
-		max_dmg = ((GetSTR()+GetSkill(skill_type)) * RuleI(Combat, RoundKickBonus) / 100) + (level);
-
-		DoAnim(animRoundKick);
-		reuse = RoundKickReuseTime;
-		break;
-		}
-	case EAGLE_STRIKE:{
-		skill_type = EAGLE_STRIKE;
-		max_dmg = ((GetSTR()+GetSkill(skill_type)) * RuleI(Combat, EagleStrikeBonus) / 100) + (level);
-		itemslot = SLOT_HANDS;
-
-		DoAnim(animEagleStrike);
-		reuse = EagleStrikeReuseTime;
-		break;
-		}
 	case DRAGON_PUNCH:{
 		skill_type = DRAGON_PUNCH;
-		max_dmg = ((GetSTR()+GetSkill(skill_type)) * RuleI(Combat, DragonPunchBonus) / 100) + (level);
+		max_dmg = ((GetSTR()+GetSkill(skill_type)) * RuleI(Combat, DragonPunchBonus) / 100) + 26;
 		itemslot = SLOT_HANDS;
 
 		DoAnim(animTailRake);
 		reuse = TailRakeReuseTime;
 		break;
 		}
+
+	case EAGLE_STRIKE:{
+		skill_type = EAGLE_STRIKE;
+		max_dmg = ((GetSTR()+GetSkill(skill_type)) * RuleI(Combat, EagleStrikeBonus) / 100) + 19;
+		itemslot = SLOT_HANDS;
+
+		DoAnim(animEagleStrike);
+		reuse = EagleStrikeReuseTime;
+		break;
+		}
+
+	case TIGER_CLAW:{
+		skill_type = TIGER_CLAW;
+		max_dmg = ((GetSTR()+GetSkill(skill_type)) * RuleI(Combat, TigerClawBonus) / 100) + 12;
+		itemslot = SLOT_HANDS;
+
+		DoAnim(animTigerClaw);
+		reuse = TigerClawReuseTime;
+		break;
+		}
+
+	case ROUND_KICK:{
+		skill_type = ROUND_KICK;
+		max_dmg = ((GetSTR()+GetSkill(skill_type)) * RuleI(Combat, RoundKickBonus) / 100) + 10;
+
+		DoAnim(animRoundKick);
+		reuse = RoundKickReuseTime;
+		break;
+		}
+
 	case KICK:{
 		skill_type = KICK;
 		max_dmg = GetKickDamage();
