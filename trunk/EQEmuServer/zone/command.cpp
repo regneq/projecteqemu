@@ -2575,11 +2575,12 @@ void command_castspell(Client *c, const Seperator *sep)
 		/*
 		Spell restrictions.
 		*/
-		if ((spellid == 2859 || spellid == 841 || spellid == 300 || spellid == 2314 ||
-			spellid == 3716 || spellid == 911 || spellid == 3014 || spellid == 982 ||
-			spellid == 905 || spellid == 2079 || spellid == 1218 || spellid == 819 ||
-			spellid >= 780 && spellid <= 785 || spellid >= 1200 && spellid <= 1205 ||
-			spellid >= 1342 && spellid <= 1348 || spellid == 1923 || spellid == 1924 || spellid == 3355) &&
+		if (((spellid == 2859) || (spellid == 841) || (spellid == 300) || (spellid == 2314) ||
+			(spellid == 3716) || (spellid == 911) || (spellid == 3014) || (spellid == 982) ||
+			(spellid == 905) || (spellid == 2079) || (spellid == 1218) || (spellid == 819) ||
+			((spellid >= 780) && (spellid <= 785)) || ((spellid >= 1200) && (spellid <= 1205)) ||
+			((spellid >= 1342) && (spellid <= 1348)) || (spellid == 1923) || (spellid == 1924) || 
+			(spellid == 3355)) &&
 			c->Admin() < commandCastSpecials)
 			c->Message(13, "Unable to cast spell.");
 		else if (spellid >= SPDAT_RECORDS)
@@ -2795,7 +2796,7 @@ void command_spawn(Client *c, const Seperator *sep)
 }
 
 void command_texture(Client *c, const Seperator *sep)
-{	
+{
 	
 	uint16 texture;
 	if (sep->IsNumber(1) && atoi(sep->arg[1]) >= 0 && atoi(sep->arg[1]) <= 255) {
@@ -5739,7 +5740,7 @@ void command_scribespells(Client *c, const Seperator *sep)
 	{
 		if
 		(
-			spells[curspell].classes[WARRIOR] != 0 &&	// check if spell exists
+			spells[curspell].classes[WARRIOR] != 0 && // check if spell exists
 			spells[curspell].classes[t->GetPP().class_-1] <= max_level &&	//maximum level
 			spells[curspell].classes[t->GetPP().class_-1] >= min_level &&	//minimum level
 			spells[curspell].skill != 52
@@ -8450,7 +8451,7 @@ void command_bot(Client *c, const Seperator *sep) {
 		c->Message(15, "#bot summon - It will summon your targeted bot to you.");
 		c->Message(15, "#bot ai mez - If you're grouped with an enchanter, he will mez your target.");
 		c->Message(15, "#bot picklock - You must have a targeted rogue bot in your group and be right on the door.");
-		c->Message(15, "#bot cure [poison|disease|curse|blindness] Cleric has most options");
+		c->Message(15, "#bot cure [poison|disease|curse|blindness|detrimental] Cleric has most options");
 		c->Message(15, "#bot bindme - You must have a Cleric in your group to get Bind Affinity cast on you.");
 		c->Message(15, "#bot raid [commands] (#bot raid help will show some help).");
 		c->Message(15, "#bot track - look at mobs in the zone (ranger has options)");
@@ -9337,6 +9338,12 @@ void command_bot(Client *c, const Seperator *sep) {
 			return;
 		}
 
+		if(c->GetAggroCount() > 0)
+        {
+            c->Message(15, "You can't summon bots while a monster has aggro on you.");
+			return;
+		}
+
 		if(c->IsBotRaiding()) {
 			BotRaids *br = entity_list.GetBotRaidByMob(c->CastToMob());
 			if(br) {
@@ -9437,7 +9444,7 @@ void command_bot(Client *c, const Seperator *sep) {
 			// As the mob is in the DB, we need to calc its level, HP, Mana.
 			// First, the mob must have the same level as his leader
 			npc->SetLevel(c->GetLevel());
-			entity_list.AddNPC(npc);
+			entity_list.AddNPC(npc, true, true);
 			database.SetBotLeader(npc->GetNPCTypeID(), c->CharacterID(), npc->GetName(), zone->GetShortName());
 			npc->CastToMob()->Say("I am ready for battle.");
 		}
@@ -9667,6 +9674,11 @@ void command_bot(Client *c, const Seperator *sep) {
             c->Message(15, "You can't load your raid while you are feigned.");
 			return;
 		}
+		if(c->GetAggroCount() > 0)
+        {
+            c->Message(15, "You can't load your raid while a monster has aggro on you.");
+			return;
+		}
 
 		const int spawnedBots = database.SpawnedBotCount(c->CharacterID());
 		if(c->IsBotRaiding() || c->IsGrouped() || spawnedBots) {
@@ -9703,7 +9715,7 @@ void command_bot(Client *c, const Seperator *sep) {
 				npc = new NPC(tmp, 0, myX, myY, myZ, myHeading, FlyMode3);
 				tmp = 0;
 				npc->SetLevel(myLevel);
-				entity_list.AddNPC(npc);
+				entity_list.AddNPC(npc, true, true);
 				database.SetBotLeader(npc->GetNPCTypeID(), c->CharacterID(), npc->GetName(), zone->GetShortName());
 			}
 		}
@@ -10008,11 +10020,41 @@ void command_bot(Client *c, const Seperator *sep) {
 		}
 		else if(!strcasecmp(sep->arg[3], "attack"))
         {
-			if(c->IsGrouped() && (c->GetTarget() != NULL) && c->IsAttackAllowed(c->GetTarget())) {
+			if(c->IsGrouped() && (c->GetTarget() != NULL) && c->IsAttackAllowed(c->GetTarget()))
+			{
+				//break invis when you attack
+				if(c->invisible) {
+					c->BuffFadeByEffect(SE_Invisibility);
+					c->BuffFadeByEffect(SE_Invisibility2);
+					c->invisible = false;
+				}
+				if(c->invisible_undead) {
+					c->BuffFadeByEffect(SE_InvisVsUndead);
+					c->BuffFadeByEffect(SE_InvisVsUndead2);
+					c->invisible_undead = false;
+				}
+				if(c->invisible_animals){
+					c->BuffFadeByEffect(SE_InvisVsAnimals);
+					c->invisible_animals = false;
+				}
+				if(c->hidden || c->improved_hidden){
+					c->hidden = false;
+					c->improved_hidden = false;
+					EQApplicationPacket* outapp = new EQApplicationPacket(OP_SpawnAppearance, sizeof(SpawnAppearance_Struct));
+					SpawnAppearance_Struct* sa_out = (SpawnAppearance_Struct*)outapp->pBuffer;
+					sa_out->spawn_id = c->GetID();
+					sa_out->type = 0x03;
+					sa_out->parameter = 0;
+					entity_list.QueueClients(c, outapp, true);
+					safe_delete(outapp);
+				}
+
 				c->SetOrderBotAttack(true);
-				if(c->IsBotRaiding()) {
+				if(c->IsBotRaiding())
+				{
 					BotRaids *br = entity_list.GetBotRaidByMob(c->CastToMob());
-					if(br) {
+					if(br)
+					{
 						c->SetOrderBotAttack(true);
 						br->AddBotRaidAggro(c->GetTarget());
 						c->SetOrderBotAttack(false);
@@ -10020,9 +10062,12 @@ void command_bot(Client *c, const Seperator *sep) {
 				}
 				else {
 					Group *g = entity_list.GetGroupByMob(c->CastToMob());
-					if(g) {
-						for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
-							if(g->members[i] && g->members[i]->IsBot()) {
+					if(g)
+					{
+						for(int i=0; i<MAX_GROUP_MEMBERS; i++)
+						{
+							if(g->members[i] && g->members[i]->IsBot())
+							{
 								c->SetOrderBotAttack(true);
 								g->members[i]->AddToHateList(c->GetTarget(), 1);
 								c->SetOrderBotAttack(false);
@@ -10032,7 +10077,8 @@ void command_bot(Client *c, const Seperator *sep) {
 				}
 				c->SetOrderBotAttack(false);
 			}
-            else {
+            else
+			{
                 c->Message(15, "You must target a monster.");
             }
         }
@@ -10271,7 +10317,7 @@ void command_bot(Client *c, const Seperator *sep) {
 					if(g->members[i] && g->members[i]->IsBot()) {
 						g->members[i]->SetTarget(g->members[i]->BotOwner);
 						g->members[i]->Warp(c->GetX(), c->GetY(), c->GetZ());
-						if(g->members[i]->GetPetID()) {
+						if(g->members[i] && g->members[i]->GetPetID()) {
 							g->members[i]->GetPet()->SetTarget(g->members[i]);
 							g->members[i]->GetPet()->Warp(c->GetX(), c->GetY(), c->GetZ());
 						}
@@ -10447,24 +10493,24 @@ void command_bot(Client *c, const Seperator *sep) {
 			int32 CurerClass = 0;
 			Group *g = c->GetGroup();
 		if(g) {
-			for(int i=0; i<MAX_GROUP_MEMBERS; i++){
+			for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
 				if(g->members[i] && g->members[i]->IsBot()) {
 					switch(g->members[i]->GetClass()) {
 						case CLERIC:
-							  Curer = g->members[i];
-							  CurerClass = CLERIC;
+							Curer = g->members[i];
+							CurerClass = CLERIC;
 							break;
 						case SHAMAN:
-							if(CurerClass != CLERIC){
-							  Curer = g->members[i];
-							  CurerClass = SHAMAN;
-						}
-						case DRUID:
-							if (CurerClass == 0){
-							  Curer = g->members[i];
-							  CurerClass = DRUID;
-						}
+							if(CurerClass != CLERIC) {
+								Curer = g->members[i];
+								CurerClass = SHAMAN;
+							}
 							break;
+						case DRUID:
+							if (CurerClass == 0) {
+								Curer = g->members[i];
+								CurerClass = DRUID;
+							}
 							break;
 						default:
 							break;
@@ -10489,10 +10535,10 @@ void command_bot(Client *c, const Seperator *sep) {
 						Curer->Say("Trying to cure us of %s.", sep->arg[2]);
 						Curer->CastToNPC()->Bot_Command_Cure(4, Curer->GetLevel());
 					}
-					else if (!strcasecmp(sep->arg[2], "curse") && (c->GetLevel() <= 8)
-					|| !strcasecmp(sep->arg[2], "blindness") && (c->GetLevel() <= 3) 
-					|| !strcasecmp(sep->arg[2], "disease") && (c->GetLevel() <= 4)
-					|| !strcasecmp(sep->arg[2], "poison") && (c->GetLevel() <= 1)) {
+					else if (((!strcasecmp(sep->arg[2], "curse")) && (c->GetLevel() <= 8))
+					|| ((!strcasecmp(sep->arg[2], "blindness")) && (c->GetLevel() <= 3)) 
+					|| ((!strcasecmp(sep->arg[2], "disease")) && (c->GetLevel() <= 4))
+					|| ((!strcasecmp(sep->arg[2], "poison")) && (c->GetLevel() <= 1))) {
 						Curer->Say("I don't have the needed level yet", sep->arg[2]);
 					}
 					else
@@ -10501,7 +10547,11 @@ void command_bot(Client *c, const Seperator *sep) {
 					break;
 
 				case SHAMAN:
-					if	(!strcasecmp(sep->arg[2], "poison") && (c->GetLevel() >= 2))  {
+					if	(!strcasecmp(sep->arg[2], "detrimental") && (c->GetLevel() >= 69))  {
+						Curer->Say("Trying to cure us of %s.", sep->arg[2]);
+						Curer->CastToNPC()->Bot_Command_Cure(5, Curer->GetLevel());
+					}
+					else if	(!strcasecmp(sep->arg[2], "poison") && (c->GetLevel() >= 2))  {
 						Curer->Say("Trying to cure us of %s.", sep->arg[2]);
 						Curer->CastToNPC()->Bot_Command_Cure(1, Curer->GetLevel());
 					}
@@ -10516,13 +10566,14 @@ void command_bot(Client *c, const Seperator *sep) {
 						Curer->Say("Trying to cure us of %s.", sep->arg[2]);
 						Curer->CastToNPC()->Bot_Command_Cure(4, Curer->GetLevel());
 					}
-					else if (!strcasecmp(sep->arg[2], "blindness") && (c->GetLevel() <= 7) 
-					|| !strcasecmp(sep->arg[2], "disease") && (c->GetLevel() <= 1)
-					|| !strcasecmp(sep->arg[2], "poison") && (c->GetLevel() <= 2)) {
+					else if (((!strcasecmp(sep->arg[2], "blindness")) && (c->GetLevel() <= 7)) 
+					|| ((!strcasecmp(sep->arg[2], "detrimental")) && (c->GetLevel() <= 68))
+					|| ((!strcasecmp(sep->arg[2], "disease")) && (c->GetLevel() <= 1))
+					|| ((!strcasecmp(sep->arg[2], "poison")) && (c->GetLevel() <= 2))) {
 						Curer->Say("I don't have the needed level yet", sep->arg[2]);
 					}
 					else 
-					Curer->Say("Do you want [cure poison], [cure disease], or [cure blindness]?", c->GetName());
+					Curer->Say("Do you want [cure detrimental], [cure poison], [cure disease], or [cure blindness]?", c->GetName());
 
 					break;
 
@@ -10542,8 +10593,8 @@ void command_bot(Client *c, const Seperator *sep) {
 					else if(!strcasecmp(sep->arg[2], "blindness") && (c->GetLevel() >= 13)) {
 						Curer->Say("I don't have that spell", sep->arg[2]);
 					}
-					else if (!strcasecmp(sep->arg[2], "disease") && (c->GetLevel() <= 4)
-					|| !strcasecmp(sep->arg[2], "poison") && (c->GetLevel() <= 5)) {
+					else if (((!strcasecmp(sep->arg[2], "disease")) && (c->GetLevel() <= 4))
+					|| ((!strcasecmp(sep->arg[2], "poison")) && (c->GetLevel() <= 5))) {
 						Curer->Say("I don't have the needed level yet", sep->arg[2]) ;
 					}
 					else 
@@ -10559,10 +10610,10 @@ void command_bot(Client *c, const Seperator *sep) {
 	}
 
 //Mez
-	if(!strcasecmp(sep->arg[1], "ai") && !strcasecmp(sep->arg[2], "mez"))
+	if((!strcasecmp(sep->arg[1], "ai")) && (!strcasecmp(sep->arg[2], "mez")))
     {
 		Mob *target = c->GetTarget();
-        if(target == NULL || target == c || target->IsBot() || target->IsPet() && target->GetOwner()->IsBot())
+        if((target == NULL) || (target == c )|| (target->IsBot()) || ((target->IsPet()) && (target->GetOwner()->IsBot())))
         {
             c->Message(15, "You must select a monster");
             return;
@@ -10577,9 +10628,9 @@ void command_bot(Client *c, const Seperator *sep) {
 				if(g && g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == ENCHANTER))
                 {
 					hasmezzer = true;
-					Mob *mezzer = g->members[i];
-                    mezzer->Say("Trying to mez %s \n", target->GetCleanName());
-					mezzer->CastToNPC()->Bot_Command_MezzTarget(target);
+                    g->members[i]->Say("Trying to mez %s \n", target->GetCleanName());
+					g->members[i]->CastToNPC()->Bot_Command_MezzTarget(target);
+					break;
 				}
 			}
 			if(!hasmezzer) {
@@ -10640,6 +10691,7 @@ void command_bot(Client *c, const Seperator *sep) {
 		return;
 	}
 
+//Angelox2 start
 //Resurrect
 	if(!strcasecmp(sep->arg[1], "resurrectme"))
     {
@@ -10656,7 +10708,7 @@ void command_bot(Client *c, const Seperator *sep) {
 			Group *g = c->GetGroup();
 			for(int i=0; i<MAX_GROUP_MEMBERS; i++)
             {
-				if(g && g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == CLERIC))
+				if(g && g->members[i] && g->members[i]->IsBot() && (g->members[i]->GetClass() == CLERIC) && (g->members[i]->GetLevel() > 17))
                 {
 					hasrezzer = true;
 					Mob *rezzer = g->members[i];
@@ -10666,7 +10718,7 @@ void command_bot(Client *c, const Seperator *sep) {
 				}
 			}
 			if(!hasrezzer) {
-				c->Message(15, "You must have a Cleric in your group.");
+				c->Message(15, "You must have a level 18+ Cleric in your group.");
 			}
 		}
 		else {
@@ -10674,6 +10726,7 @@ void command_bot(Client *c, const Seperator *sep) {
 		}
         return;
 	}
+//Angelox2 end
 
 	if(!strcasecmp(sep->arg[1], "magepet"))
 	{
@@ -10740,12 +10793,10 @@ void command_bot(Client *c, const Seperator *sep) {
 						c->GetTarget()->SetPetChooserID(4);
 					}
 				}
-				if(c->GetTarget()->GetPet())
+				if(c->GetTarget() && c->GetTarget()->GetPet())
 				{
-					// cast reclaim energy
-					int16 id = c->GetTarget()->GetPetID();
+					c->GetTarget()->GetPet()->Say_StringID(PET_GETLOST_STRING);
 					c->GetTarget()->SetPetID(0);
-					c->GetTarget()->CastSpell(331, id);
 				}
 			}
 		}
@@ -10756,62 +10807,87 @@ void command_bot(Client *c, const Seperator *sep) {
 		return;
 	}
 
+//Angelox2 start
 //Summon Corpse
-	if(!strcasecmp(sep->arg[1], "corpse") && !strcasecmp(sep->arg[2], "summon")) {
+	if((!strcasecmp(sep->arg[1], "corpse")) && (!strcasecmp(sep->arg[2], "summon"))) {
 		if(c->GetTarget() == NULL) {
 			c->Message(15, "You must select player with his corpse in the zone.");
 			return;
 		}
 		if(c->IsGrouped()) {
 			bool hassummoner = false;
+			bool SpellQuest = RuleB(EQOffline, BotSpellQuest);
 			Mob *t = c->GetTarget();
 			Group *g = c->GetGroup();
+			Mob *summoner = NULL;
 			int summonerlevel = 0;
 			for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
-				if(g && g->members[i] && g->members[i]->IsBot() && ((g->members[i]->GetClass() == NECROMANCER)||(g->members[i]->GetClass() == SHADOWKNIGHT))) {
+				if((g && g->members[i]) && (g->members[i]->IsBot()) && (g->members[i]->GetClass() == NECROMANCER)) {
+					const int canSummon = database.BotSummonLookup(c->CharacterID());
 					hassummoner = true;
+					summoner = g->members[i];
 					summonerlevel = g->members[i]->GetLevel();
 					if(!t->IsClient()) {
-						g->members[i]->Say("You have to target a player with a corpse in the zone");
+						summoner->Say("You have to target a player with a corpse in the zone",t->GetCleanName());
 						return;
 					}
-					else if(summonerlevel < 12) {
-						g->members[i]->Say("I don't have that spell yet.");
-					}
-					else if((summonerlevel > 11) && (summonerlevel < 35)) {
-						g->members[i]->Say("Attempting to summon %s\'s corpse.", t->GetCleanName());
-						g->members[i]->CastSpell(2213, t->GetID(), 1, -1, -1);
+					else if(summonerlevel < 12){
+						summoner->Say("I need to be level 13 for this spell.");
 						return;
 					}
-					else if((summonerlevel > 34) && (summonerlevel < 71)) {
-						g->members[i]->Say("Attempting to summon %s\'s corpse.", t->GetCleanName());
-						g->members[i]->CastSpell(3, t->GetID(), 1, -1, -1);
-						return;
+					else if (SpellQuest) {
+						if((canSummon == 0) && ((c->GetLevel() >= 13))) {
+							summoner->Say("You need to see the Bot Spell Scriber for my Summon Corpse spell.");
+							return;
+						}
+						else if((canSummon == 1) && (c->GetLevel() >= 35)) {
+							summoner->Say("You need to see the Bot Spell Scriber again.");
+							return;
+						}
+						else if((canSummon == 2) && (c->GetLevel() >= 57)) {
+							summoner->Say("You need to see the Bot Spell Scriber again.");
+							return;
+						} 
+						else if(((summonerlevel > 11) && (summonerlevel < 35) && (canSummon == 1)) || 
+							((summonerlevel > 34) && (summonerlevel < 56) && (canSummon == 2)) ||
+							((summonerlevel > 57) && (summonerlevel < 81)  && (canSummon == 3))) {
+								summoner->Say("Attempting to summon %s\'s corpse.", t->GetCleanName());
+								summoner->CastSpell(3, t->GetID(), 1);
+								if(!RuleB(EQOffline, BotGroupBuffing))
+								{
+									summoner->SpellOnTarget(3, t);
+								}
+								return;
+						}
 					}
-					else if((summonerlevel > 70) && (summonerlevel < 76)) {
-						g->members[i]->Say("Attempting to summon %s\'s corpse.", t->GetCleanName());
-						g->members[i]->CastSpell(10042, t->GetID(), 1, -1, -1);
-						return;
-					}
-					else if((summonerlevel > 75) && (summonerlevel < 81)) {
-						g->members[i]->Say("Attempting to summon %s\'s corpse.", t->GetCleanName());
-						g->members[i]->CastSpell(14823, t->GetID(), 1, -1, -1);
-						return;
+					else if (!SpellQuest) {
+						if(((summonerlevel > 11) && (summonerlevel < 35)) || 
+							((summonerlevel > 34) && (summonerlevel < 56)) ||
+							((summonerlevel > 57) && (summonerlevel < 81))) {
+								summoner->Say("Attempting to summon %s\'s corpse.", t->GetCleanName());
+								summoner->CastSpell(3, t->GetID(), 1);
+								if(!RuleB(EQOffline, BotGroupBuffing))
+								{
+									summoner->SpellOnTarget(3, t);
+								}
+								return;
+						}
 					}
 				}
 			}
 			if (!hassummoner) {
-				c->Message(15, "You must have a Necromancer or Shadowknight in your group.");
+				c->Message(15, "You must have a Necromancer in your group.");
 			}
 			return;
 		}
 	}
+//Angelox2 end
 
 //Pacify
 	if(!strcasecmp(sep->arg[1], "target") && !strcasecmp(sep->arg[2], "calm"))
     {
 		Mob *target = c->GetTarget();
-		if(target == NULL || target->IsClient() || target->IsBot() || target->IsPet() && target->GetOwner()->IsBot())
+		if((target == NULL) || (target->IsClient()) || (target->IsBot()) || ((target->IsPet()) && (target->GetOwner()->IsBot())))
         {
             c->Message(15, "You must select a monster");
             return;
@@ -11121,8 +11197,15 @@ void command_bot(Client *c, const Seperator *sep) {
 						Sower->Say("Casting group wolf...");
 						Sower->CastSpell(428, c->GetID(), 1, -1, -1);
 					}
+					else if ((!strcasecmp(sep->arg[2], "group")) && zone->CanCastOutdoor() && (c->GetLevel() >= 34)) {
+						Sower->Say("Casting Pack Spirit...");
+						Sower->CastSpell(169, c->GetID(), 1, -1, -1);
+					}
 					else if ((!strcasecmp(sep->arg[2], "wolf")) && (c->GetLevel() <= 20)) {
 						Sower->Say("I'm not level 20 yet.");
+					}
+					else if ((!strcasecmp(sep->arg[2], "group")) && (c->GetLevel() <= 35)) {
+						Sower->Say("I'm not level 35 yet.");
 					}
 					else if ((!strcasecmp(sep->arg[2], "feral")) && (c->GetLevel() >= 50)) { 
 						Sower->Say("Casting Feral Pack...");
@@ -11138,15 +11221,15 @@ void command_bot(Client *c, const Seperator *sep) {
 					else if ((!strcasecmp(sep->arg[2], "wolf")) && (c->GetLevel() <= 35)) {
 						Sower->Say("I'm not level 35 yet.");
 					}
-					else if ((!zone->CanCastOutdoor()) && (!strcasecmp(sep->arg[2], "regular")) ||
-						(!zone->CanCastOutdoor()) && (!strcasecmp(sep->arg[2], "wolf"))) {
+					else if (((!zone->CanCastOutdoor()) && (!strcasecmp(sep->arg[2], "regular"))) ||
+						((!zone->CanCastOutdoor()) && (!strcasecmp(sep->arg[2], "wolf")))) {
 						Sower->Say("I can't cast this spell indoors, try [sow shrew] if you're 35 or higher, or [sow feral] if you're 50 or higher,", c->GetName());
 					}
 					else if (!zone->CanCastOutdoor()) {
 						Sower->Say("I can't cast this spell indoors, try [sow shrew] if you're 35 or higher, or [sow feral] if you're 50 or higher,", c->GetName());
 					}
 					else if (zone->CanCastOutdoor()) {
-						Sower->Say("Do you want [sow regular] or [sow wolf]?", c->GetName());
+						Sower->Say("Do you want [sow regular], [sow group] or [sow wolf]?", c->GetName());
 					}
 					else if (!zone->CanCastOutdoor()) {
 						Sower->Say("I can't cast this spell indoors, try [sow shrew] if you're 35 or higher, or [sow feral] if you're 50 or higher,", c->GetName());
@@ -11160,7 +11243,7 @@ void command_bot(Client *c, const Seperator *sep) {
 						Sower->CastToClient()->CastSpell(278, c->GetID(), 1, -1, -1);
 					}
 					else if (!zone->CanCastOutdoor()) {
-						Sower->Say("I can't cast this spell indoors", c->GetName());
+						Sower->Say("I can't cast this spell indoors, but druids have Pack Shrew and Feral Pack", c->GetName());
 					}
 					else if (c->GetLevel() <= 9) {
 						Sower->Say("I'm not level 9 yet.");
@@ -11174,7 +11257,7 @@ void command_bot(Client *c, const Seperator *sep) {
 						Sower->CastToClient()->CastSpell(278, c->GetID(), 1, -1, -1);
 					}
 					else if (!zone->CanCastOutdoor()) {
-						Sower->Say("I can't cast this spell indoors", c->GetName());
+						Sower->Say("I can't cast this spell indoors, but druids have Pack Shrew and Feral Pack", c->GetName());
 					}
 					else if (c->GetLevel() <= 28) {
 						Sower->Say("I'm not level 28 yet.");
@@ -11188,7 +11271,7 @@ void command_bot(Client *c, const Seperator *sep) {
 						Sower->CastToClient()->CastSpell(278, c->GetID(), 1, -1, -1);
 					}
 					else if (!zone->CanCastOutdoor()) {
-						Sower->Say("I can't cast this spell indoors", c->GetName());
+						Sower->Say("I can't cast this spell indoors, but druids have Pack Shrew and Feral Pack", c->GetName());
 					}
 					else if (c->GetLevel() <= 24) {
 						Sower->Say("I'm not level 24 yet.");
@@ -11258,11 +11341,12 @@ void command_bot(Client *c, const Seperator *sep) {
 		}
 	}
 
-// Gate
+//Gate
 	if ((!strcasecmp(sep->arg[1], "gate")) && (c->IsGrouped())) {
  			Mob *Gater;
 			int32 GaterClass = 0;
 			Group *g = c->GetGroup();
+			bool Special = (RuleB(EQOffline, AXCustom));
 		if(g) {
 			for(int i=0; i<MAX_GROUP_MEMBERS; i++){
 				if(g->members[i] && g->members[i]->IsBot()) {
@@ -11284,7 +11368,18 @@ void command_bot(Client *c, const Seperator *sep) {
 			}
 			switch(GaterClass) {
 				case DRUID:
-					if      ((!strcasecmp(sep->arg[2], "karana")) && (c->GetLevel() >= 25) ) {
+				       if (Special) {
+					    const int canGate = (database.BotCircleLookup(c->CharacterID()));
+					    if((canGate == 0) && (c->GetLevel() >= 25)){
+						      Gater->Say("We haven't completed the Bot Spell Scriber's request yet.");
+						      return;
+					      }
+					    else if(canGate == 0){
+						      Gater->Say("I have to be at least level 25 for my first Circle spells, and you need to talk to the Bot Spell Scriber.");
+						      return;
+					      }
+					}
+					if ((!strcasecmp(sep->arg[2], "karana")) && (c->GetLevel() >= 25) ) {
 						Gater->Say("Casting Circle of Karana...");
 						Gater->CastSpell(550, c->GetID(), 1, -1, -1);
 					}
@@ -11309,7 +11404,7 @@ void command_bot(Client *c, const Seperator *sep) {
 						Gater->CastSpell(555, c->GetID(), 1, -1, -1);
 					}
 					else if ((!strcasecmp(sep->arg[2], "feerrott")) && (c->GetLevel() >= 32)) { 
-						Gater->Say("Casting Circle of feerrott...");
+						Gater->Say("Casting Circle of Feerrott...");
 						Gater->CastSpell(556, c->GetID(), 1, -1, -1);
 					}
 					else if ((!strcasecmp(sep->arg[2], "steamfont")) && (c->GetLevel() >= 31)) { 
@@ -11384,31 +11479,31 @@ void command_bot(Client *c, const Seperator *sep) {
 						Gater->Say("Casting Circle of Slaughter...");
 						Gater->CastSpell(6179, c->GetID(), 1, -1, -1);
 					}
-					else if ((!strcasecmp(sep->arg[2], "karana") 
-						|| !strcasecmp(sep->arg[2], "tox") 
-						|| !strcasecmp(sep->arg[2], "butcher") && (c->GetLevel() <= 25))
-					|| !strcasecmp(sep->arg[2], "commons") && (c->GetLevel() <= 27)
-				        || (!strcasecmp(sep->arg[2], "ro") 
-						|| !strcasecmp(sep->arg[2], "feerrott") && (c->GetLevel() <= 32))
-					|| !strcasecmp(sep->arg[2], "steamfont") && (c->GetLevel() <= 31)
-					|| !strcasecmp(sep->arg[2], "misty") && (c->GetLevel() <= 36)
-					|| !strcasecmp(sep->arg[2], "lava") && (c->GetLevel() <= 30)
-					|| !strcasecmp(sep->arg[2], "wakening") && (c->GetLevel() <= 40)
-					|| !strcasecmp(sep->arg[2], "iceclad") && (c->GetLevel() <= 32)
-					|| !strcasecmp(sep->arg[2], "divide") && (c->GetLevel() <= 38)
-					|| !strcasecmp(sep->arg[2], "cobalt") && (c->GetLevel() <= 42)
-					|| !strcasecmp(sep->arg[2], "combines") && (c->GetLevel() <= 33)
-					|| !strcasecmp(sep->arg[2], "surefall") && (c->GetLevel() <= 26)
-					|| !strcasecmp(sep->arg[2], "grimling") && (c->GetLevel() <= 29)
-					|| !strcasecmp(sep->arg[2], "twilight") && (c->GetLevel() <= 33)
-					|| !strcasecmp(sep->arg[2], "dawnshroud") && (c->GetLevel() <= 37)
-					|| !strcasecmp(sep->arg[2], "nexus") && (c->GetLevel() <= 26)
-					|| !strcasecmp(sep->arg[2], "pok") && (c->GetLevel() <= 38)
-					|| !strcasecmp(sep->arg[2], "stonebrunt") && (c->GetLevel() <= 28)
-					|| !strcasecmp(sep->arg[2], "bloodfields") && (c->GetLevel() <= 55)
-					|| !strcasecmp(sep->arg[2], "emerald") && (c->GetLevel() <= 38)
-					|| !strcasecmp(sep->arg[2], "skyfire") && (c->GetLevel() <= 43)
-					|| !strcasecmp(sep->arg[2], "wos") && (c->GetLevel() <= 64)) {
+					else if (((!strcasecmp(sep->arg[2], "karana")) 
+						|| (!strcasecmp(sep->arg[2], "tox")) 
+						|| ((!strcasecmp(sep->arg[2], "butcher")) && (c->GetLevel() <= 25)))
+					|| ((!strcasecmp(sep->arg[2], "commons")) && (c->GetLevel() <= 27))
+				        || ((!strcasecmp(sep->arg[2], "ro")) 
+						|| ((!strcasecmp(sep->arg[2], "feerrott")) && (c->GetLevel() <= 32)))
+					|| ((!strcasecmp(sep->arg[2], "steamfont")) && (c->GetLevel() <= 31))
+					|| ((!strcasecmp(sep->arg[2], "misty")) && (c->GetLevel() <= 36))
+					|| ((!strcasecmp(sep->arg[2], "lava")) && (c->GetLevel() <= 30))
+					|| ((!strcasecmp(sep->arg[2], "wakening")) && (c->GetLevel() <= 40))
+					|| ((!strcasecmp(sep->arg[2], "iceclad")) && (c->GetLevel() <= 32))
+					|| ((!strcasecmp(sep->arg[2], "divide")) && (c->GetLevel() <= 38))
+					|| ((!strcasecmp(sep->arg[2], "cobalt")) && (c->GetLevel() <= 42))
+					|| ((!strcasecmp(sep->arg[2], "combines")) && (c->GetLevel() <= 33))
+					|| ((!strcasecmp(sep->arg[2], "surefall")) && (c->GetLevel() <= 26))
+					|| ((!strcasecmp(sep->arg[2], "grimling")) && (c->GetLevel() <= 29))
+					|| ((!strcasecmp(sep->arg[2], "twilight")) && (c->GetLevel() <= 33))
+					|| ((!strcasecmp(sep->arg[2], "dawnshroud")) && (c->GetLevel() <= 37))
+					|| ((!strcasecmp(sep->arg[2], "nexus")) && (c->GetLevel() <= 26))
+					|| ((!strcasecmp(sep->arg[2], "pok")) && (c->GetLevel() <= 38))
+					|| ((!strcasecmp(sep->arg[2], "stonebrunt")) && (c->GetLevel() <= 28))
+					|| ((!strcasecmp(sep->arg[2], "bloodfields")) && (c->GetLevel() <= 55))
+					|| ((!strcasecmp(sep->arg[2], "emerald")) && (c->GetLevel() <= 38))
+					|| ((!strcasecmp(sep->arg[2], "skyfire")) && (c->GetLevel() <= 43))
+					|| ((!strcasecmp(sep->arg[2], "wos")) && (c->GetLevel() <= 64))) {
 						Gater->Say("I don't have the needed level yet", sep->arg[2]);
 					}
 					else {
@@ -11417,7 +11512,17 @@ void command_bot(Client *c, const Seperator *sep) {
 					break;
 
 				case WIZARD:
-
+					if (Special){
+					const int canPort = (database.BotPortalLookup(c->CharacterID()));
+					    if((canPort == 0) && (c->GetLevel() >= 25)){
+						  Gater->Say("We haven't completed the Bot Spell Scriber's request yet.");
+						  return;
+					    }
+					    else if(canPort == 0){
+						  Gater->Say("I have to be at least level 25 for my first portal spells, and you need to talk to the Bot Spell Scriber.");
+						  return;
+					    }
+					}
 					if      ((!strcasecmp(sep->arg[2], "commons")) && (c->GetLevel() >= 35) ) {
 						Gater->Say("Casting Common Portal...");
 						Gater->CastSpell(566, c->GetID(), 1, -1, -1);
@@ -11487,7 +11592,7 @@ void command_bot(Client *c, const Seperator *sep) {
 						Gater->CastSpell(6178, c->GetID(), 1, -1, -1);
 					}
 					else if ((!strcasecmp(sep->arg[2], "grimling")) && (c->GetLevel() >= 29)) {
-						Gater->Say("Casting Fay Portal...");
+						Gater->Say("Casting Grimling Forest Portal...");
 						Gater->CastSpell(2420, c->GetID(), 1, -1, -1);
 					}
 					else if ((!strcasecmp(sep->arg[2], "emerald")) && (c->GetLevel() >= 37)) {
@@ -11515,29 +11620,29 @@ void command_bot(Client *c, const Seperator *sep) {
 						Gater->CastSpell(3793, c->GetID(), 1, -1, -1);
 					}
 					else if ((!strcasecmp(sep->arg[2], "commons") && (c->GetLevel() <= 35))
-					|| !strcasecmp(sep->arg[2], "fay") && (c->GetLevel() <= 27)
+					|| (!strcasecmp(sep->arg[2], "fay") && (c->GetLevel() <= 27))
 				        || (!strcasecmp(sep->arg[2], "ro") && (c->GetLevel() <= 37))
-					|| !strcasecmp(sep->arg[2], "tox") && (c->GetLevel() <= 25)
-					|| !strcasecmp(sep->arg[2], "nk") && (c->GetLevel() <= 25)
-					|| !strcasecmp(sep->arg[2], "nek") && (c->GetLevel() <= 32)
-					|| !strcasecmp(sep->arg[2], "wakening") && (c->GetLevel() <= 43)
-					|| !strcasecmp(sep->arg[2], "iceclad") && (c->GetLevel() <= 33)
-					|| !strcasecmp(sep->arg[2], "divide") && (c->GetLevel() <= 36)
-					|| !strcasecmp(sep->arg[2], "cobalt") && (c->GetLevel() <= 43)
-					|| !strcasecmp(sep->arg[2], "combines") && (c->GetLevel() <= 34)
-					|| !strcasecmp(sep->arg[2], "wk") && (c->GetLevel() <= 37)
-					|| !strcasecmp(sep->arg[2], "twilight") && (c->GetLevel() <= 33)
-					|| !strcasecmp(sep->arg[2], "dawnshroud") && (c->GetLevel() <= 39)
-					|| !strcasecmp(sep->arg[2], "nexus") && (c->GetLevel() <= 29)
-					|| (!strcasecmp(sep->arg[2], "pok")
-						 || !strcasecmp(sep->arg[2], "hateplane")
-						 || !strcasecmp(sep->arg[2], "airplane") && (c->GetLevel() <= 38))
-					|| !strcasecmp(sep->arg[2], "grimling") && (c->GetLevel() <= 29)
-					|| !strcasecmp(sep->arg[2], "bloodfields") && (c->GetLevel() <= 55)
-					|| !strcasecmp(sep->arg[2], "stonebrunt") && (c->GetLevel() <= 27)
-					|| !strcasecmp(sep->arg[2], "emerald") && (c->GetLevel() <= 36)
-					|| !strcasecmp(sep->arg[2], "skyfire") && (c->GetLevel() <= 36)
-					|| !strcasecmp(sep->arg[2], "wos") && (c->GetLevel() <= 64)) {
+					|| (!strcasecmp(sep->arg[2], "tox") && (c->GetLevel() <= 25))
+					|| (!strcasecmp(sep->arg[2], "nk") && (c->GetLevel() <= 25))
+					|| (!strcasecmp(sep->arg[2], "nek") && (c->GetLevel() <= 32))
+					|| (!strcasecmp(sep->arg[2], "wakening") && (c->GetLevel() <= 43))
+					|| (!strcasecmp(sep->arg[2], "iceclad") && (c->GetLevel() <= 33))
+					|| (!strcasecmp(sep->arg[2], "divide") && (c->GetLevel() <= 36))
+					|| (!strcasecmp(sep->arg[2], "cobalt") && (c->GetLevel() <= 43))
+					|| (!strcasecmp(sep->arg[2], "combines") && (c->GetLevel() <= 34))
+					|| (!strcasecmp(sep->arg[2], "wk") && (c->GetLevel() <= 37))
+					|| (!strcasecmp(sep->arg[2], "twilight") && (c->GetLevel() <= 33))
+					|| (!strcasecmp(sep->arg[2], "dawnshroud") && (c->GetLevel() <= 39))
+					|| (!strcasecmp(sep->arg[2], "nexus") && (c->GetLevel() <= 29))
+					|| ((!strcasecmp(sep->arg[2], "pok"))
+						 || (!strcasecmp(sep->arg[2], "hateplane"))
+						 || ((!strcasecmp(sep->arg[2], "airplane")) && (c->GetLevel() <= 38)))
+					|| (!strcasecmp(sep->arg[2], "grimling") && (c->GetLevel() <= 29))
+					|| (!strcasecmp(sep->arg[2], "bloodfields") && (c->GetLevel() <= 55))
+					|| (!strcasecmp(sep->arg[2], "stonebrunt") && (c->GetLevel() <= 27))
+					|| (!strcasecmp(sep->arg[2], "emerald") && (c->GetLevel() <= 36))
+					|| (!strcasecmp(sep->arg[2], "skyfire") && (c->GetLevel() <= 36))
+					|| (!strcasecmp(sep->arg[2], "wos") && (c->GetLevel() <= 64))) {
 						Gater->Say("I don't have the needed level yet", sep->arg[2]);
 					}
 					else {
@@ -11593,7 +11698,7 @@ void command_bot(Client *c, const Seperator *sep) {
 					if  (c->GetLevel() <= 6) {
 						Endurer->Say("I'm not level 6 yet.");
 					}
-					else if (zone->CanCastOutdoor()) {
+					else {
 						Endurer->Say("Casting Enduring Breath...");
 						Endurer->CastSpell(86, c->GetID(), 1, -1, -1);
 						break;
@@ -11601,9 +11706,9 @@ void command_bot(Client *c, const Seperator *sep) {
 					break;
 				case SHAMAN:
 
-					if ((zone->CanCastOutdoor()) && (c->GetLevel() >= 12)) { 
+					if (c->GetLevel() >= 12) { 
 						Endurer->Say("Casting Enduring Breath...");
-						Endurer->CastToClient()->CastSpell(86, c->GetID(), 1, -1, -1);
+						Endurer->CastSpell(86, c->GetID(), 1, -1, -1);
 					}
 					else if (c->GetLevel() <= 12) {
 						Endurer->Say("I'm not level 12 yet.");
@@ -11611,9 +11716,9 @@ void command_bot(Client *c, const Seperator *sep) {
 					break;
 				case RANGER:
 
-					if((zone->CanCastOutdoor()) && (c->GetLevel() >= 20)){
+					if (c->GetLevel() >= 20){
 						Endurer->Say("Casting Enduring Breath...");
-						Endurer->CastToClient()->CastSpell(86, c->GetID(), 1, -1, -1);
+						Endurer->CastSpell(86, c->GetID(), 1, -1, -1);
 					}
 					else if (c->GetLevel() <= 20) {
 						Endurer->Say("I'm not level 20 yet.");
@@ -11621,9 +11726,9 @@ void command_bot(Client *c, const Seperator *sep) {
 					break;
 				case ENCHANTER:
 
-					if((zone->CanCastOutdoor()) && (c->GetLevel() >= 12)) {
+					if(c->GetLevel() >= 12) {
 						Endurer->Say("Casting Enduring Breath...");
-						Endurer->CastToClient()->CastSpell(86, c->GetID(), 1, -1, -1);
+						Endurer->CastSpell(86, c->GetID(), 1, -1, -1);
 					}
 					else if (c->GetLevel() <= 12) {
 						Endurer->Say("I'm not level 12 yet.");
@@ -11973,11 +12078,11 @@ void command_bot(Client *c, const Seperator *sep) {
 						Resister->Say("Casting magic protection...", sep->arg[2]);
 						Resister->CastToNPC()->Bot_Command_Resist(5, Resister->GetLevel());
 					}
-					else if (!strcasecmp(sep->arg[2], "magic") && (c->GetLevel() <= 16)
-					|| !strcasecmp(sep->arg[2], "cold") && (c->GetLevel() <= 13)
-					|| !strcasecmp(sep->arg[2], "fire") && (c->GetLevel() <= 8) 
-					|| !strcasecmp(sep->arg[2], "disease") && (c->GetLevel() <= 11)
-					|| !strcasecmp(sep->arg[2], "poison") && (c->GetLevel() <= 6)) {
+					else if (((!strcasecmp(sep->arg[2], "magic")) && (c->GetLevel() <= 16))
+					|| ((!strcasecmp(sep->arg[2], "cold")) && (c->GetLevel() <= 13))
+					|| ((!strcasecmp(sep->arg[2], "fire")) && (c->GetLevel() <= 8)) 
+					|| ((!strcasecmp(sep->arg[2], "disease")) && (c->GetLevel() <= 11))
+					|| ((!strcasecmp(sep->arg[2], "poison")) && (c->GetLevel() <= 6))) {
 						Resister->Say("I don't have the needed level yet", sep->arg[2]);
 					}
 					else 
@@ -12006,11 +12111,11 @@ void command_bot(Client *c, const Seperator *sep) {
 						Resister->Say("Casting magic protection...", sep->arg[2]);
 						Resister->CastToNPC()->Bot_Command_Resist(16, Resister->GetLevel());
 					}
-					else if (!strcasecmp(sep->arg[2], "magic") && (c->GetLevel() <= 19)
-					|| !strcasecmp(sep->arg[2], "cold") && (c->GetLevel() <= 1)
-					|| !strcasecmp(sep->arg[2], "fire") && (c->GetLevel() <= 5) 
-					|| !strcasecmp(sep->arg[2], "disease") && (c->GetLevel() <= 8)
-					|| !strcasecmp(sep->arg[2], "poison") && (c->GetLevel() <= 20)) {
+					else if (((!strcasecmp(sep->arg[2], "magic")) && (c->GetLevel() <= 19))
+					|| ((!strcasecmp(sep->arg[2], "cold")) && (c->GetLevel() <= 1))
+					|| ((!strcasecmp(sep->arg[2], "fire")) && (c->GetLevel() <= 5)) 
+					|| ((!strcasecmp(sep->arg[2], "disease")) && (c->GetLevel() <= 8))
+					|| ((!strcasecmp(sep->arg[2], "poison")) && (c->GetLevel() <= 20))) {
 						Resister->Say("I don't have the needed level yet", sep->arg[2]);
 					}
 					else 
@@ -12040,10 +12145,10 @@ void command_bot(Client *c, const Seperator *sep) {
 						Resister->Say("Casting magic protection...", sep->arg[2]);
 						Resister->CastToNPC()->Bot_Command_Resist(11, Resister->GetLevel());
 					}
-					else if (!strcasecmp(sep->arg[2], "magic") && (c->GetLevel() <= 16)
-					|| !strcasecmp(sep->arg[2], "cold") && (c->GetLevel() <= 9)
-					|| !strcasecmp(sep->arg[2], "disease") && (c->GetLevel() <= 19)
-					|| !strcasecmp(sep->arg[2], "poison") && (c->GetLevel() <= 19)) {
+					else if (((!strcasecmp(sep->arg[2], "magic")) && (c->GetLevel() <= 16))
+					|| ((!strcasecmp(sep->arg[2], "cold")) && (c->GetLevel() <= 9))
+					|| ((!strcasecmp(sep->arg[2], "disease")) && (c->GetLevel() <= 19))
+					|| ((!strcasecmp(sep->arg[2], "poison")) && (c->GetLevel() <= 19))) {
 						Resister->Say("I don't have the needed level yet", sep->arg[2]) ;
 					}
 					else 
@@ -12092,7 +12197,7 @@ void command_bot(Client *c, const Seperator *sep) {
 		Mob *target = c->GetTarget();
 		if(target && target->IsBot())
         {
-            for(int i=0; i<16; i++)
+            for(int i=0; i<target->CastToNPC()->BotSpellCount(); i++)
             {
 				if(target->CastToNPC()->BotGetSpells(i) != 0)
                 {
@@ -12162,7 +12267,7 @@ void command_bot(Client *c, const Seperator *sep) {
 						if(g->members[i]) {
 							g->members[i]->SetBotRaidID(br->GetBotRaidID());
 							g->members[i]->SetBotRaiding(true);
-							if(g->members[i]->GetPetID())
+							if(g->members[i] && g->members[i]->GetPetID())
 							{
 								g->members[i]->GetPet()->SetBotRaidID(br->GetBotRaidID());
 								g->members[i]->GetPet()->SetBotRaiding(true);
@@ -12459,6 +12564,33 @@ void command_bot(Client *c, const Seperator *sep) {
 					{
 						Mob *ctarget = c->GetTarget();
 						if(ctarget != NULL) {
+							//break invis when you attack
+							if(c->invisible) {
+								c->BuffFadeByEffect(SE_Invisibility);
+								c->BuffFadeByEffect(SE_Invisibility2);
+								c->invisible = false;
+							}
+							if(c->invisible_undead) {
+								c->BuffFadeByEffect(SE_InvisVsUndead);
+								c->BuffFadeByEffect(SE_InvisVsUndead2);
+								c->invisible_undead = false;
+							}
+							if(c->invisible_animals){
+								c->BuffFadeByEffect(SE_InvisVsAnimals);
+								c->invisible_animals = false;
+							}
+							if(c->hidden || c->improved_hidden){
+								c->hidden = false;
+								c->improved_hidden = false;
+								EQApplicationPacket* outapp = new EQApplicationPacket(OP_SpawnAppearance, sizeof(SpawnAppearance_Struct));
+								SpawnAppearance_Struct* sa_out = (SpawnAppearance_Struct*)outapp->pBuffer;
+								sa_out->spawn_id = c->GetID();
+								sa_out->type = 0x03;
+								sa_out->parameter = 0;
+								entity_list.QueueClients(c, outapp, true);
+								safe_delete(outapp);
+							}
+
 							c->SetOrderBotAttack(true);
 							brc->GroupAssignTask(entity_list.GetGroupByLeaderName(sep->arg[5]), 2, ctarget);
 							c->SetOrderBotAttack(false);
@@ -12534,7 +12666,7 @@ void command_traindisc(Client *c, const Seperator *sep)
 	{
 		if
 		(
-			spells[curspell].classes[WARRIOR] != 0 &&	// check if spell exists
+			spells[curspell].classes[WARRIOR] != 0 && // check if spell exists
 			spells[curspell].classes[t->GetPP().class_-1] <= max_level &&	//maximum level
 			spells[curspell].classes[t->GetPP().class_-1] >= min_level &&	//minimum level
 			spells[curspell].skill != 52

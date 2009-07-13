@@ -346,7 +346,7 @@ void NPC::AIDoSpellCast(int8 i, Mob* tar, sint32 mana_cost, int32* oDontDoAgainB
 		SendPosition();
 		SetMoving(false);
 	}
-		
+	
 	CastSpell(AIspells[i].spellid, tar->GetID(), 1, AIspells[i].manacost == -2 ? 0 : -1, mana_cost, oDontDoAgainBefore);
 }
 
@@ -1775,7 +1775,7 @@ void Mob::AI_Event_NoLongerEngaged() {
 			parse->Event(EVENT_COMBAT, CastToNPC()->GetNPCTypeID(), "0", CastToNPC(), NULL);
 			CastToNPC()->SetCombatEvent(false);
 		}
-		
+
 		if(CastToNPC()->GetGrid() > 0)
 		{
 			AggroedAwayFromGrid = 2;

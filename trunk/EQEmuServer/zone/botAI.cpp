@@ -68,9 +68,11 @@ const int SpellType_Lifetap=64;
 const int SpellType_Snare=128;
 const int SpellType_DOT=256;
 const int SpellType_Dispel=512;
+const int SpellType_InCombatBuff=1024;
+const int SpellType_Mez=2048;
 
-const int SpellTypes_Detrimental = SpellType_Nuke|SpellType_Root|SpellType_Lifetap|SpellType_Snare|SpellType_DOT|SpellType_Dispel;
-const int SpellTypes_Beneficial = SpellType_Heal|SpellType_Buff|SpellType_Escape|SpellType_Pet;
+const int SpellTypes_Detrimental = SpellType_Nuke|SpellType_Root|SpellType_Lifetap|SpellType_Snare|SpellType_DOT|SpellType_Dispel|SpellType_Mez;
+const int SpellTypes_Beneficial = SpellType_Heal|SpellType_Buff|SpellType_Escape|SpellType_Pet|SpellType_InCombatBuff;
 
 #define SpellType_Any		0xFFFF
 #ifdef _EQDEBUG
@@ -277,7 +279,7 @@ void Mob::BOT_Process() {
 								flurrychance += 10;
 							}
 						}
-						if(rand()%1000 < flurrychance) {
+						if(MakeRandomInt(0, 999) < flurrychance) {
 							Message_StringID(MT_Flurry, 128);
 							BotAttackMelee(target, SLOT_PRIMARY, true);
 							BotAttackMelee(target, SLOT_PRIMARY, true);
@@ -386,6 +388,10 @@ void Mob::BOT_Process() {
 				if(botClass == BARD || botClass == RANGER || botClass == SHADOWKNIGHT || botClass == PALADIN || botClass == BEASTLORD) {
                     Bot_AI_EngagedCastCheck();
 					BotMeditate(false);
+					if(!hate_list.IsEmpty())
+					{
+						CastToNPC()->SetTarget(hate_list.GetTop(this));
+					}
 				}
             }
         } //end is within combat range
@@ -495,19 +501,19 @@ bool NPC::Bot_AI_EngagedCastCheck() {
 				// try to heal the raid main tank
 				if(br->GetBotMainTank() && (br->GetBotMainTank()->GetHPRatio() < 80)) {
 					if(!Bot_AICastSpell(br->GetBotMainTank(), 80, SpellType_Heal)) {
-						if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 80, MobAISpellRange, SpellType_Heal)) {
-							if(!Bot_AICastSpell(this, 100, SpellType_Heal)) {
+						if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 70, MobAISpellRange, SpellType_Heal)) {
+							if(!Bot_AICastSpell(this, 80, SpellType_Heal)) {
 								AIautocastspell_timer->Start(RandomTimer(500, 2000), false);
 								return true;
 							}
 						}
 					}
 				}
-				// try to heal the raid secondar tank
+				// try to heal the raid secondary tank
 				else if(br->GetBotSecondTank() && (br->GetBotSecondTank()->GetHPRatio() < 80)) {
-					if(!Bot_AICastSpell(br->GetBotSecondTank(), 80, SpellType_Heal)) {
-						if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 80, MobAISpellRange, SpellType_Heal)) {
-							if(!Bot_AICastSpell(this, 100, SpellType_Heal)) {
+					if(!Bot_AICastSpell(br->GetBotSecondTank(), 70, SpellType_Heal)) {
+						if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 70, MobAISpellRange, SpellType_Heal)) {
+							if(!Bot_AICastSpell(this, 70, SpellType_Heal)) {
 								AIautocastspell_timer->Start(RandomTimer(500, 2000), false);
 								return true;
 							}
@@ -515,9 +521,9 @@ bool NPC::Bot_AI_EngagedCastCheck() {
 					}
 				}
 			}
-            if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 100, MobAISpellRange, SpellType_Heal)) {
-				if(!Bot_AICastSpell(this, 100, SpellType_Escape)) {
-					if(!Bot_AICastSpell(this, 100, SpellType_Heal)) {
+            if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 70, MobAISpellRange, SpellType_Heal)) {
+				if(!Bot_AICastSpell(this, 70, SpellType_Escape)) {
+					if(!Bot_AICastSpell(this, 70, SpellType_Heal)) {
 						if(!Bot_AICastSpell(target, 5, SpellType_DOT | SpellType_Nuke | SpellType_Lifetap | SpellType_Dispel)) {
 							AIautocastspell_timer->Start(RandomTimer(500, 2000), false);
 							return true;
@@ -526,22 +532,36 @@ bool NPC::Bot_AI_EngagedCastCheck() {
 				}
 			}
 		}
-        else if((botClass == DRUID) || (botClass == SHAMAN) || (botClass == PALADIN) || (botClass == SHADOWKNIGHT) || (botClass == BEASTLORD) || (botClass == RANGER))
+        else if((botClass == DRUID) || (botClass == SHAMAN))
         {
-            if (!Bot_AICastSpell(this, 100, SpellType_Escape | SpellType_Pet)) {
-				if (!Bot_AICastSpell(this, 100, SpellType_Heal)) {
-					if (!entity_list.Bot_AICheckCloseBeneficialSpells(this, 80, MobAISpellRange, SpellType_Heal)) {
-						if(!Bot_AICastSpell(target, 80, SpellType_Root | SpellType_Snare | SpellType_DOT | SpellType_Nuke | SpellType_Lifetap | SpellType_Dispel)) {
+            if (!Bot_AICastSpell(this, 70, SpellType_Escape | SpellType_Pet)) {
+				if (!Bot_AICastSpell(this, 70, SpellType_Heal)) {
+					if (!entity_list.Bot_AICheckCloseBeneficialSpells(this, 70, MobAISpellRange, SpellType_Heal)) {
+						if(!Bot_AICastSpell(target, 100, SpellType_Root | SpellType_Snare | SpellType_DOT | SpellType_Nuke | SpellType_Lifetap | SpellType_Dispel)) {
+							if(!Bot_AICastSpell(this, 100, SpellType_InCombatBuff)) {
+								AIautocastspell_timer->Start(RandomTimer(1000, 5000), false);
+								return true;
+							}
+						}
+					}
+				}
+			}
+        }
+		else if((botClass == PALADIN) || (botClass == SHADOWKNIGHT) || (botClass == BEASTLORD) || (botClass == RANGER)) {
+            if (!Bot_AICastSpell(this, 60, SpellType_Escape | SpellType_Pet)) {
+				if (!Bot_AICastSpell(this, 30, SpellType_Heal | SpellType_InCombatBuff)) {
+					if (!entity_list.Bot_AICheckCloseBeneficialSpells(this, 30, MobAISpellRange, SpellType_Heal)) {
+						if(!Bot_AICastSpell(target, 60, SpellType_Root | SpellType_Snare | SpellType_DOT | SpellType_Nuke | SpellType_Lifetap | SpellType_Dispel)) {
 							AIautocastspell_timer->Start(RandomTimer(1000, 5000), false);
 							return true;
 						}
 					}
 				}
 			}
-        }
+		}
 		else if((botClass == WIZARD) || (botClass == MAGICIAN) || (botClass == NECROMANCER)) {
-			if (!Bot_AICastSpell(this, 100, SpellType_Escape | SpellType_Pet)) {
-				if(!Bot_AICastSpell(target, 80, SpellType_Root | SpellType_Snare | SpellType_DOT | SpellType_Nuke | SpellType_Lifetap | SpellType_Dispel)) {
+			if (!Bot_AICastSpell(this, 60, SpellType_Escape | SpellType_Pet | SpellType_InCombatBuff)) {
+				if(!Bot_AICastSpell(target, 60, SpellType_Root | SpellType_Snare | SpellType_DOT | SpellType_Nuke | SpellType_Lifetap | SpellType_Dispel)) {
 					//no spell to cast, try again soon.
 					AIautocastspell_timer->Start(RandomTimer(500, 2000), false);
 					return true;
@@ -551,15 +571,15 @@ bool NPC::Bot_AI_EngagedCastCheck() {
 
 		// TODO: Make enchanter to be able to mez
 		else if(botClass == ENCHANTER) {
-			if (!Bot_AICastSpell(this, 100, SpellType_Escape | SpellType_Pet)) {
-				if(!Bot_AICastSpell(target, 80, SpellType_DOT | SpellType_Nuke | SpellType_Dispel)) {
+			if (!Bot_AICastSpell(this, 60, SpellType_Escape | SpellType_Pet | SpellType_InCombatBuff)) {
+				if(!Bot_AICastSpell(target, 60, SpellType_DOT | SpellType_Nuke | SpellType_Dispel)) {
 					AIautocastspell_timer->Start(RandomTimer(500, 2000), false);
 					return true;
 				}
 			}
 		}
 		else if(botClass == BARD) {
-			if(!Bot_AICastSpell(this, 100, SpellType_Buff)) {
+			if(!Bot_AICastSpell(this, 100, SpellType_Buff | SpellType_InCombatBuff)) {
 				if(!Bot_AICastSpell(target, 100, SpellType_Nuke | SpellType_Dispel | SpellType_Escape)) {// Bards will use their debuff songs
 					AIautocastspell_timer->Start(RandomTimer(10, 50), false);
 					return true;
@@ -568,9 +588,9 @@ bool NPC::Bot_AI_EngagedCastCheck() {
 		}
 		// And for all the others classes..
 		else {
-            if(!Bot_AICastSpell(this, 100, SpellType_Heal | SpellType_Escape)) {                                 // heal itself
-				if (!entity_list.Bot_AICheckCloseBeneficialSpells(this, 80, MobAISpellRange, SpellType_Heal)) {	// heal others
-					if(!Bot_AICastSpell(target, 80, SpellTypes_Detrimental)) {		// nuke..
+            if(!Bot_AICastSpell(this, 70, SpellType_Heal | SpellType_Escape | SpellType_InCombatBuff)) {	// heal itself
+				if (!entity_list.Bot_AICheckCloseBeneficialSpells(this, 70, MobAISpellRange, SpellType_Heal)) {	// heal others
+					if(!Bot_AICastSpell(target, 60, SpellTypes_Detrimental)) {		// nuke..
 						AIautocastspell_timer->Start(RandomTimer(500, 2000), false);							// timer 5 t 20 seconds
 						return true;
 					}
@@ -631,13 +651,13 @@ bool EntityList::Bot_AICheckCloseBeneficialSpells(NPC* caster, int8 iChance, flo
 				if(br) {
 					if(br->GetBotMainTank() && (br->GetBotMainTank()->GetHPRatio() < 80))
 					{
-						if(caster->Bot_AICastSpell(br->GetBotMainTank(), 80, SpellType_Heal)) {
+						if(caster->Bot_AICastSpell(br->GetBotMainTank(), 70, SpellType_Heal)) {
 							return true;
 						}
 					}
 					else if(br->GetBotSecondTank() && (br->GetBotSecondTank()->GetHPRatio() < 80))
 					{
-						if(caster->Bot_AICastSpell(br->GetBotSecondTank(), 80, SpellType_Heal)) {
+						if(caster->Bot_AICastSpell(br->GetBotSecondTank(), 70, SpellType_Heal)) {
 							return true;
 						}
 					}
@@ -653,12 +673,12 @@ bool EntityList::Bot_AICheckCloseBeneficialSpells(NPC* caster, int8 iChance, flo
 					{
 						if(g->members[i] && !g->members[i]->qglobal && (g->members[i]->GetHPRatio() < 80))
 						{
-							if(caster->Bot_AICastSpell(g->members[i], 100, SpellType_Heal))
+							if(caster->Bot_AICastSpell(g->members[i], 70, SpellType_Heal))
 								return true;
 						}
-						if(g->members[i] && !g->members[i]->qglobal && g->members[i]->GetPetID())
+						if(g->members[i] && !g->members[i]->qglobal && g->members[i]->GetPetID() && (botCasterClass != CLERIC))
 						{
-							if(caster->Bot_AICastSpell(g->members[i]->GetPet(), 60, SpellType_Heal))
+							if(caster->Bot_AICastSpell(g->members[i]->GetPet(), 40, SpellType_Heal))
 								return true;
 						}
 					}
@@ -677,8 +697,7 @@ bool EntityList::Bot_AICheckCloseBeneficialSpells(NPC* caster, int8 iChance, flo
 			else
 				return false;
 		}
-
-		if(caster->IsGrouped() )
+		else
 		{
 			Group *g = entity_list.GetGroupByMob(caster);
 			if(g) {
@@ -712,11 +731,11 @@ bool NPC::Bot_AI_IdleCastCheck() {
 		int8 botClass = GetClass();
 		if(botClass == CLERIC || botClass == PALADIN || botClass == RANGER)
 		{
-			if (!Bot_AICastSpell(this, 50, SpellType_Heal | SpellType_Buff))
+			if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 60, MobAISpellRange, SpellType_Buff))
 			{
 				if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 50, MobAISpellRange, SpellType_Heal))
 				{
-					if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 50, MobAISpellRange, SpellType_Buff))
+					if(!Bot_AICastSpell(this, 50, SpellType_Heal | SpellType_Buff))
 					{
 						if(IsGrouped())
 						{
@@ -726,7 +745,7 @@ bool NPC::Bot_AI_IdleCastCheck() {
 								{
 									if(g->members[i] && !g->members[i]->qglobal && (g->members[i]->GetHPRatio() < 99))
 									{
-										if(Bot_AICastSpell(g->members[i], 100, SpellType_Heal))
+										if(Bot_AICastSpell(g->members[i], 60, SpellType_Heal))
 										{
 											AIautocastspell_timer->Start(RandomTimer(1000, 5000), false);
 											return true;
@@ -734,7 +753,7 @@ bool NPC::Bot_AI_IdleCastCheck() {
 									}
 									if(g->members[i] && !g->members[i]->qglobal && g->members[i]->GetPetID())
 									{
-										if(Bot_AICastSpell(g->members[i]->GetPet(), 100, SpellType_Heal))
+										if(Bot_AICastSpell(g->members[i]->GetPet(), 60, SpellType_Heal))
 										{
 											AIautocastspell_timer->Start(RandomTimer(1000, 5000), false);
 											return true;
@@ -751,14 +770,14 @@ bool NPC::Bot_AI_IdleCastCheck() {
 		}
 		// Pets class will first cast their pet, then buffs
 		else if(botClass == DRUID || botClass == MAGICIAN || botClass == SHADOWKNIGHT || botClass == SHAMAN || botClass == NECROMANCER || botClass == ENCHANTER || botClass == BEASTLORD  || botClass == WIZARD)
-		{			
+		{
 			if (!Bot_AICastSpell(this, 100, SpellType_Pet))
 			{
-				if (!Bot_AICastSpell(this, 50, SpellType_Heal | SpellType_Buff))
+				if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 100, MobAISpellRange, SpellType_Buff)) // then buff the group
 				{
-					if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 50, MobAISpellRange, SpellType_Heal))
+					if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 40, MobAISpellRange, SpellType_Heal))
 					{
-						if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 50, MobAISpellRange, SpellType_Buff)) // then buff the group
+						if(!Bot_AICastSpell(this, 40, SpellType_Heal | SpellType_Buff))
 						{
 							if(IsGrouped())
 							{
@@ -768,7 +787,7 @@ bool NPC::Bot_AI_IdleCastCheck() {
 									{
 										if(g->members[i] && !g->members[i]->qglobal && (g->members[i]->GetHPRatio() < 99))
 										{
-											if(Bot_AICastSpell(g->members[i], 100, SpellType_Heal))
+											if(Bot_AICastSpell(g->members[i], 60, SpellType_Heal))
 											{
 												AIautocastspell_timer->Start(RandomTimer(1000, 5000), false);
 												return true;
@@ -776,7 +795,7 @@ bool NPC::Bot_AI_IdleCastCheck() {
 										}
 										if(g->members[i] && !g->members[i]->qglobal && g->members[i]->GetPetID())
 										{
-											if(Bot_AICastSpell(g->members[i]->GetPet(), 100, SpellType_Heal))
+											if(Bot_AICastSpell(g->members[i]->GetPet(), 40, SpellType_Heal))
 											{
 												AIautocastspell_timer->Start(RandomTimer(1000, 5000), false);
 												return true;
@@ -802,9 +821,9 @@ bool NPC::Bot_AI_IdleCastCheck() {
 
 		// and standard buffing for others..
 		else {
-			if (!Bot_AICastSpell(this, 100, SpellType_Heal | SpellType_Buff | SpellType_Pet))
+			if (!Bot_AICastSpell(this, 60, SpellType_Heal | SpellType_Buff | SpellType_Pet))
 			{
-				if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 50, MobAISpellRange, SpellType_Heal | SpellType_Buff)) {
+				if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 40, MobAISpellRange, SpellType_Heal | SpellType_Buff)) {
 					AIautocastspell_timer->Start(RandomTimer(1000, 5000), false);
 					return true;
 				}
@@ -883,6 +902,7 @@ bool NPC::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 					}
 				}
 			}
+
 			if (((((spells[AIspells[i].spellid].targettype==ST_GroupTeleport && AIspells[i].type==2)
 				|| spells[AIspells[i].spellid].targettype==ST_AECaster
 				|| spells[AIspells[i].spellid].targettype==ST_Group
@@ -903,12 +923,12 @@ bool NPC::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 								}
 							}
 							int8 hpr = (int8)tar->GetHPRatio();
-							if(hpr<= 80 || ((tar->IsClient()||tar->IsPet()) && (hpr <= 98)) || (botClass == BARD))
+							if((hpr<= 80) || (tar->IsPet() && (hpr <= 60)) || (tar->IsClient() && (hpr <= 97)) || (botClass == BARD))
 							{
-								if(tar->GetClass() == NECROMANCER) {
-									// Necro bots use too much cleric mana with thier
+								if((tar->GetClass() == NECROMANCER) || (tar->GetClass() == SHAMAN)) {
+									// Necro and Shaman bots use too much cleric mana with thier
 									// mana for life spells... give them a chance
-									// to lifetap something
+									// to lifetap or otherwise heal themselves.
 									if(hpr > 60) {
 										break;
 									}
@@ -944,9 +964,9 @@ bool NPC::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 					}
 					case SpellType_Root: {
 						if (
-							!tar->IsRooted() 
-							&& tar->DontRootMeBefore() < Timer::GetCurrentTime()
-							&& tar->CanBuffStack(AIspells[i].spellid, botLevel, true) >= 0
+							!tar->IsRooted() &&
+							(tar->DontRootMeBefore() < Timer::GetCurrentTime()) &&
+							(tar->CanBuffStack(AIspells[i].spellid, botLevel, true) >= 0)
 							) {
 							if(!checked_los) {
 								if(!CheckLosFN(tar))
@@ -960,7 +980,7 @@ bool NPC::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 					}
 					case SpellType_Buff: {
 						if (
-							(spells[AIspells[i].spellid].targettype == ST_Target || tar == this)
+							((spells[AIspells[i].spellid].targettype == ST_GroupClient || spells[AIspells[i].spellid].targettype == ST_Target) || tar == this)
 							&& tar->DontBuffMeBefore() < Timer::GetCurrentTime()
 							&& !tar->IsImmuneToSpell(AIspells[i].spellid, this)
 							&& (tar->CanBuffStack(AIspells[i].spellid, botLevel, true) >= 0)
@@ -970,6 +990,12 @@ bool NPC::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 								// Put the zone levitate and movement check here since bots are able to bypass the client casting check
 								if(	(IsEffectInSpell(AIspells[i].spellid, SE_Levitate) && !zone->CanLevitate()) ||
 									(IsEffectInSpell(AIspells[i].spellid, SE_MovementSpeed) && !zone->CanCastOutdoor())) {
+									break;
+								}
+								// Block rune types on necro's
+								if((tar->GetClass() == NECROMANCER) &&
+									(IsEffectInSpell(AIspells[i].spellid, SE_Rune) || IsEffectInSpell(AIspells[i].spellid, SE_AbsorbMagicAtt)))
+								{
 									break;
 								}
 								// when a pet class buffs its pet, it only needs to do it once
@@ -996,6 +1022,31 @@ bool NPC::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 						}
 						break;
 					}
+					case SpellType_InCombatBuff:
+						{
+							if((botClass == SHAMAN) && (tar == this))
+							{
+								if((tar->DontHealMeBefore() < Timer::GetCurrentTime()) || (BotGetSpellPriority(i) == 6))
+								{
+									// no need to cannibalize or regen health if they are doing well
+									if(((BotGetSpellPriority(i) == 6) && (GetManaRatio() > 90.0f)) ||
+										((BotGetSpellPriority(i) == 5) && (GetHPRatio() > 70.0f)))
+									{
+										break;
+									}
+									else
+									{
+										AIDoSpellCast(i, tar, mana_cost, &tar->pDontBuffMeBefore);
+										if(BotGetSpellPriority(i) == 5)
+										{
+											tar->pDontHealMeBefore = (Timer::GetCurrentTime() + 24000);
+										}
+									}
+									return true;
+								}
+							}
+							break;
+						}
 					case SpellType_Escape: {
 						int8 hpr = (int8)GetHPRatio();
 	                #ifdef IPC          
@@ -1238,7 +1289,7 @@ bool NPC::BotRaidSpell(int16 spellID)
 						if(br->BotRaidGroups[i]->members[j])
 						{
 							SpellOnTarget(spellID, br->BotRaidGroups[i]->members[j]);
-							if(br->BotRaidGroups[i]->members[j]->GetPetID())
+							if(br->BotRaidGroups[i]->members[j] && br->BotRaidGroups[i]->members[j]->GetPetID())
 							{
 								SpellOnTarget(spellID, br->BotRaidGroups[i]->members[j]->GetPet());
 							}
@@ -1259,7 +1310,7 @@ bool NPC::BotRaidSpell(int16 spellID)
 				if(g->members[k])
 				{
 					SpellOnTarget(spellID, g->members[k]);
-					if(g->members[k]->GetPetID())
+					if(g->members[k] && g->members[k]->GetPetID())
 					{
 						SpellOnTarget(spellID, g->members[k]->GetPet());
 					}
@@ -1317,6 +1368,14 @@ bool NPC::Bot_Command_Cure(int curetype, int level) {
 			if(level >= 3) {
 				cureid = 212;
 			}
+			break;
+		case 5:
+			if(level >= 69) {
+				cureid = 5410;
+			}
+			break;
+		default:
+			cureid = 0;
 			break;
 	}
 	if(cureid > 0) {
@@ -1733,7 +1792,9 @@ bool NPC::Bot_Command_CalmTarget(Mob *target) {
 		int calmid = 0;
 		int calmlevel = GetLevel();
 		if((calmlevel >= 67) && (calmlevel <= 75)) {
-			calmid = 5274;
+			// Use Pacification until Placate is fixed
+			calmid = 3197;
+			//calmid = 5274;
 		}
 		else if((calmlevel >= 62) && (calmlevel <= 66)) {
 			calmid = 3197;

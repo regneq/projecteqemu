@@ -630,7 +630,10 @@ bool logpos;
 		botfocusImprovedCritical,
 		botfocusImprovedUndeadDamage,
 		botfocusPetPower,
-	} botfocusType;	
+		botfocusResistRate,
+		botfocusHateReduction,
+	} botfocusType;
+
 	void CalcBotStats(bool showtext = true);
 	sint16 GetBotFocusEffect(botfocusType bottype, int16 spell_id);
 	sint16 CalcBotFocusEffect(botfocusType bottype, int16 focus_id, int16 spell_id);

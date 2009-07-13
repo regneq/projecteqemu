@@ -39,16 +39,6 @@ Copyright (C) 2001-2004  EQEMu Development Team (http://eqemu.org)
 void Mob::CalcBonuses()
 {	
 	CalcSpellBonuses(&spellbonuses);
-
-#ifdef EQBOTS
-
-	if(CastToMob()->IsBot() || (CastToMob()->GetOwner() && CastToMob()->GetOwner()->IsBot())) {
-		return;
-	}
-
-#endif //EQBOTS
-
-
 	CalcMaxHP();
 	CalcMaxMana();
 	SetAttackTimer();
@@ -62,7 +52,7 @@ void NPC::CalcBonuses()
 
 #ifdef EQBOTS
 
-	if(CastToMob()->IsBot() || (CastToMob()->GetOwner() && CastToMob()->GetOwner()->IsBot())) {
+	if(CastToMob()->IsBot()) {
 		return;
 	}
 

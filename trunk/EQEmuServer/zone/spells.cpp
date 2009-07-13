@@ -420,6 +420,15 @@ bool Mob::DoCastSpell(int16 spell_id, int16 target_id, int16 slot,
 	
 	mlog(SPELLS__CASTING, "Spell %d: Casting time %d (orig %d), mana cost %d", orgcasttime, cast_time, mana_cost);
 
+#ifdef EQBOTS
+
+	if(IsBot() && (GetClass() == BARD))
+	{ // Bard bots casting time is interrupting thier melee
+		cast_time = 0;
+	}
+
+#endif //EQBOTS
+
 	// cast time is 0, just finish it right now and be done with it
 	if(cast_time == 0) {
 		CastedSpellFinished(spell_id, target_id, slot, mana_cost, item_slot);
@@ -436,10 +445,22 @@ bool Mob::DoCastSpell(int16 spell_id, int16 target_id, int16 slot,
 			this->FaceTarget(pMob);
 	}
 	
+#ifdef EQBOTS
+
+	if(IsBot())
+	{
+		if(oSpellWillFinish)
+		{
+			*oSpellWillFinish = Timer::GetCurrentTime() + ((spell.recast_time > 20000) ? 10000 : spell.recast_time);
+		}
+	}
+	else
+
+#endif //EQBOTS
+
 	// if we got here we didn't fizzle, and are starting our cast
 	if (oSpellWillFinish)
 		*oSpellWillFinish = Timer::GetCurrentTime() + cast_time + 100;
-
 
 	// now tell the people in the area
 	outapp = new EQApplicationPacket(OP_BeginCast,sizeof(BeginCast_Struct));
@@ -1390,8 +1411,8 @@ bool Mob::DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_ce
 
 #ifdef EQBOTS
 
-					// This is so PoK Necro/Shd can create essence emeralds for pc's in perl scripts
-					if((spell_id == 1768) && (zone->GetZoneID() == 202)) {
+					// This is so PoK NPC Necro/Shd can create essence emeralds for pc's from perl scripts
+					if(((spell_id == 1768) && (zone->GetZoneID() == 202)) || (IsBot() && !IsDetrimentalSpell(spell_id))) {
 						CastAction = SingleTarget;
 						break;
 					}
@@ -1570,26 +1591,36 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
 #ifdef EQBOTS
 
             //EQoffline: force AE buffs
-            if(IsBot() && IsGrouped() && (spell_target->IsBot() || spell_target->IsClient()))
+            if(IsBot() && IsGrouped() && (spell_target->IsBot() || spell_target->IsClient()) && RuleB(EQOffline, BotGroupBuffing))
             {
-
-                NPC *bot = this->CastToNPC();
+				NPC *bot = this->CastToNPC();
                 bool noGroupSpell = false;
-
-                for(int i=0; i<16; i++)
+				int16 thespell = spell_id;
+				for(int i=0; i<bot->BotSpellCount(); i++)
 				{
 					int j = bot->BotGetSpells(i);
+					int spelltype = bot->BotGetSpellType(i);
+					bool spellequal = (j == thespell);
+					bool spelltypeequal = ((spelltype == 2) || (spelltype == 16) || (spelltype == 32));
+					bool spelltypetargetequal = ((spelltype == 8) && (spells[thespell].targettype == ST_Self));
+					bool spelltypeclassequal = ((spelltype == 1024) && (GetClass() == SHAMAN));
+					bool slotequal = (slot == USE_ITEM_SPELL_SLOT);
+
 					// if it's a targeted heal or escape spell or pet spell or it's self only buff or self buff weapon proc, we only want to cast it once
-					if((j == spell_id) &&
-						(((bot->BotGetSpellType(i) == 2) ||
-						(bot->BotGetSpellType(i) == 16) ||
-						(bot->BotGetSpellType(i) == 32)) ||
-						((bot->BotGetSpellType(i) == 8) && (spells[spell_id].targettype == ST_Self))) ||
-						(slot == USE_ITEM_SPELL_SLOT))
+					if(spellequal || slotequal)
 					{
-						SpellOnTarget(spell_id, spell_target);
-						noGroupSpell = true;
-						break;
+						if((spelltypeequal || spelltypetargetequal) || spelltypeclassequal || slotequal)
+						{
+							// Don't let the Shaman canni themselves to death
+							if(((spells[thespell].effectid[0] == 0) && (spells[thespell].base[0] < 0)) &&
+								(spell_target->GetHP() < ((spells[thespell].base[0] * (-1)) + 100)))
+							{
+								return false;
+							}
+							SpellOnTarget(thespell, spell_target);
+							noGroupSpell = true;
+							break;
+						}
 					}
 				}
 				if(!noGroupSpell) {
@@ -1597,12 +1628,23 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
 					if(g) {
 						for(int i=0; i<MAX_GROUP_MEMBERS;i++) {
 							if(g->members[i]) {
-								SpellOnTarget(spell_id, g->members[i]);
-								if(g->members[i]->GetPetID()) {
-									SpellOnTarget(spell_id, g->members[i]->GetPet());
+								if((g->members[i]->GetClass() == NECROMANCER) &&
+									(IsEffectInSpell(thespell, SE_AbsorbMagicAtt) || IsEffectInSpell(thespell, SE_Rune)))
+								{
+									// don't cast this on necro's, their health to mana
+									// spell eats up the rune spell and it just keeps
+									// getting recast over and over
+								}
+								else
+								{
+									SpellOnTarget(thespell, g->members[i]);
+								}
+								if(g->members[i] && g->members[i]->GetPetID()) {
+									SpellOnTarget(thespell, g->members[i]->GetPet());
 								}
 							}
 						}
+						SetMana(GetMana() - (GetBotActSpellCost(thespell, spells[thespell].mana) * (g->BotGroupCount() - 1)));
 					}
 				}
 				break;
@@ -1673,13 +1715,33 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
 
 			//franck-debug
 			if(IsBot()) {
-				Group *g = entity_list.GetGroupByMob(this);
-				if(g) {
-					for(int i=0; i<MAX_GROUP_MEMBERS;i++) {
-						if(g->members[i]) {
-							SpellOnTarget(spell_id, g->members[i]);
-							if(g->members[i]->GetPetID()) {
-								SpellOnTarget(spell_id, g->members[i]->GetPet());
+				bool isMainGroupMGB = false;
+				if(IsBotRaiding()) {
+					BotRaids *br = entity_list.GetBotRaidByMob(this);
+					if(br) {
+						for(int n=0; n<MAX_GROUP_MEMBERS; ++n) {
+							if(br->BotRaidGroups[0] && (br->BotRaidGroups[0]->members[n] == this)) {
+								if(GetLevel() >= 59) // MGB AA
+									isMainGroupMGB = true;
+								break;
+							}
+						}
+					}
+				}
+				if(isMainGroupMGB && (GetClass() != BARD)) {
+					Say("MGB %s", spells[spell_id].name);
+					SpellOnTarget(spell_id, this);
+					entity_list.AESpell(this, this, spell_id, true);
+				}
+				else {
+					Group *g = entity_list.GetGroupByMob(this);
+					if(g) {
+						for(int i=0; i<MAX_GROUP_MEMBERS; ++i) {
+							if(g->members[i]) {
+								SpellOnTarget(spell_id, g->members[i]);
+								if(g->members[i] && g->members[i]->GetPetID()) {
+									SpellOnTarget(spell_id, g->members[i]->GetPet());
+								}
 							}
 						}
 					}
@@ -2762,11 +2824,11 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar)
 
 	if(IsBot() && spelltar->IsPet())
 	{
-	  for(int i=0; i<EFFECT_COUNT; ++i)
-	  {
-	     if(spells[spell_id].effectid[i] == SE_Illusion)
-		return false;
-	  }
+		for(int i=0; i<EFFECT_COUNT; ++i)
+		{
+			if(spells[spell_id].effectid[i] == SE_Illusion)
+				return false;
+		}
 	}
 
 #endif //EQBOTS
@@ -3614,6 +3676,19 @@ float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster)
 			resistchance = (resistchance * (100-focusResist) / 100);
 		}
 	}
+
+#ifdef EQBOTS
+
+	if(caster && caster->IsBot())
+	{
+		if(IsValidSpell(spell_id))
+		{
+			sint32 focusResist = caster->GetBotFocusEffect(botfocusResistRate, spell_id);
+			resistchance = (resistchance * (100-focusResist) / 100);
+		}
+	}
+
+#endif //EQBOTS
 
 	//Resist chance makes up the upper limit of our partial range
 	//Fullchance makes up the lower limit of our partial range

@@ -2246,6 +2246,72 @@ int Database::AllowedBotSpawns(int32 id) {
     return numberAllowed;
 }
 
+//Angelox2 start
+//Necro-Bots Summon Spell
+int Database::BotSummonLookup(int32 id) {
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	MYSQL_RES* result;
+	MYSQL_ROW row;
+    int spellActive = 0;
+
+	if(RunQuery(query, MakeAnyLenString(&query, "SELECT value FROM quest_globals WHERE name='bot_spell_1' and charid=%i", id), errbuf, &result)) {
+		if(mysql_num_rows(result) == 1) {
+			row = mysql_fetch_row(result);
+			spellActive = atoi(row[0]);
+		}
+	}
+	else {
+		cerr << "Error in BotSummonLookup query '" << query << "' " << errbuf << endl;
+	}
+	mysql_free_result(result);
+    safe_delete_array(query);
+    return spellActive;
+}
+//Druid-Bots Circle Spells
+int Database::BotCircleLookup(int32 id) {
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	MYSQL_RES* result;
+	MYSQL_ROW row;
+    int spellActive = 0;
+
+	if(RunQuery(query, MakeAnyLenString(&query, "SELECT value FROM quest_globals WHERE name='bot_spell_2' and charid=%i", id), errbuf, &result)) {
+		if(mysql_num_rows(result) == 1) {
+			row = mysql_fetch_row(result);
+			spellActive = atoi(row[0]);
+		}
+	}
+	else {
+		cerr << "Error in BotCircleLookup query '" << query << "' " << errbuf << endl;
+	}
+	mysql_free_result(result);
+    safe_delete_array(query);
+    return spellActive;
+}
+//Wizard-Bots Portal Spells
+int Database::BotPortalLookup(int32 id) {
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	MYSQL_RES* result;
+	MYSQL_ROW row;
+    int spellActive = 0;
+
+	if(RunQuery(query, MakeAnyLenString(&query, "SELECT value FROM quest_globals WHERE name='bot_spell_3' and charid=%i", id), errbuf, &result)) {
+		if(mysql_num_rows(result) == 1) {
+			row = mysql_fetch_row(result);
+			spellActive = atoi(row[0]);
+		}
+	}
+	else {
+		cerr << "Error in BotPortalLookup query '" << query << "' " << errbuf << endl;
+	}
+	mysql_free_result(result);
+    safe_delete_array(query);
+    return spellActive;
+}
+//Angelox2 End
+
 int Database::SpawnedBotCount(int32 id) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char* query = 0;

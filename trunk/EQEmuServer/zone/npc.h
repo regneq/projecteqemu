@@ -333,6 +333,7 @@ protected:
 
 	//franck-add: EQoffline
 public:
+	int   BotSpellCount() { return AIspells.size(); }
 	int16 BotGetSpells(int spellslot) { return AIspells[spellslot].spellid; }
     int16 BotGetSpellType(int spellslot) { return AIspells[spellslot].type; }
     int16 BotGetSpellPriority(int spellslot) { return AIspells[spellslot].priority; }

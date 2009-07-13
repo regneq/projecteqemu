@@ -228,7 +228,7 @@ bool BotRaids::GetBotRaidAggro() {
 						gotAggro = true;
 						break;
 					}
-					if(BotRaidGroups[i]->members[j]->GetPetID()) {
+					if(BotRaidGroups[i]->members[j] && BotRaidGroups[i]->members[j]->GetPetID()) {
 						if(BotRaidGroups[i]->members[j]->GetPet()->IsEngaged()) {
 							gotAggro = true;
 							break;
@@ -282,7 +282,7 @@ void BotRaids::SummonRaidBots(Mob *m, bool wipe_hate) {
 						}
 						BotRaidGroups[i]->members[j]->SetTarget(m);
 						BotRaidGroups[i]->members[j]->Warp(m->GetX(), m->GetY(), m->GetZ());
-						if(BotRaidGroups[i]->members[j]->GetPetID()) {
+						if(BotRaidGroups[i]->members[j] && BotRaidGroups[i]->members[j]->GetPetID()) {
 							if(wipe_hate) {
 								BotRaidGroups[i]->members[j]->GetPet()->WipeHateList();
 							}
@@ -482,7 +482,7 @@ void BotRaids::RaidDefendEnraged() {
 					BotRaidGroups[j]->members[i]->Say("Enraged... stopping attacks.");
 					BotRaidGroups[j]->members[i]->SetFollowID(0);
 					BotRaidGroups[j]->members[i]->WipeHateList();
-					if(BotRaidGroups[j]->members[i]->GetPetID()) {
+					if(BotRaidGroups[j]->members[i] && BotRaidGroups[j]->members[i]->GetPetID()) {
 						BotRaidGroups[j]->members[i]->GetPet()->WipeHateList();
 					}
 				}
@@ -518,8 +518,41 @@ void BotRaids::GroupAssignTask(Group *g, int iTask, Group *g2) {
 	else if(iTask == 3)
 	{
 		if(gleader2->GetTarget() == NULL)
+		{
 			return;
-		else{
+		}
+		else
+		{
+			if(gleader2->BotOwner)
+			{
+				//break invis when you attack
+				if(gleader2->BotOwner->invisible) {
+					gleader2->BotOwner->BuffFadeByEffect(SE_Invisibility);
+					gleader2->BotOwner->BuffFadeByEffect(SE_Invisibility2);
+					gleader2->BotOwner->invisible = false;
+				}
+				if(gleader2->BotOwner->invisible_undead) {
+					gleader2->BotOwner->BuffFadeByEffect(SE_InvisVsUndead);
+					gleader2->BotOwner->BuffFadeByEffect(SE_InvisVsUndead2);
+					gleader2->BotOwner->invisible_undead = false;
+				}
+				if(gleader2->BotOwner->invisible_animals){
+					gleader2->BotOwner->BuffFadeByEffect(SE_InvisVsAnimals);
+					gleader2->BotOwner->invisible_animals = false;
+				}
+				if(gleader2->BotOwner->hidden || gleader2->BotOwner->improved_hidden){
+					gleader2->BotOwner->hidden = false;
+					gleader2->BotOwner->improved_hidden = false;
+					EQApplicationPacket* outapp = new EQApplicationPacket(OP_SpawnAppearance, sizeof(SpawnAppearance_Struct));
+					SpawnAppearance_Struct* sa_out = (SpawnAppearance_Struct*)outapp->pBuffer;
+					sa_out->spawn_id = gleader2->BotOwner->GetID();
+					sa_out->type = 0x03;
+					sa_out->parameter = 0;
+					entity_list.QueueClients(gleader2->BotOwner, outapp, true);
+					safe_delete(outapp);
+				}
+			}
+
 			gleader1->CastToNPC()->SetTarget(gleader2->GetTarget());
 			this->SetAttackBotRaidRights(1);
 			gleader1->Say("Assisting %s", gleader2->GetName());

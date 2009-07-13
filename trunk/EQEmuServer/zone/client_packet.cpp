@@ -1082,8 +1082,12 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 	{
 		if ((WarpDetection(false, dist)) && ((admin <= RuleI(Zone, MQWarpExemptStatus)) || (RuleI(Zone, MQWarpExemptStatus) == -1))) //Exempt from warp detection if admin level is >  Rule:Zone:MQWarpExemptStatus
 		{
-			printf("Warping Detected by %s Acct: %s Distance: %f.", GetName(), AccountName(), GetLWDistance());
-			CheatDetected(MQWarp); //Lieka:  Execute MQWarp function on offending player
+			if ((zone->GetZoneID() != 209) && (zone->GetZoneID() != 151))
+			{
+				printf("Warping Detected by %s Acct: %s Distance: %f.", GetName(), AccountName(), GetLWDistance());
+				CheatDetected(MQWarp); //Lieka:  Execute MQWarp function on offending player
+				MovePC(185, 0, -305, -48, -718, 0, 2, ZoneSolicited);  // Congdar... delete
+			}
 		}
 	}
 	if(dist > 50.0f*50.0f) {
