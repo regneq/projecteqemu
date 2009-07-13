@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+KLS: Reimplemented pet hate scaling.
+KLS: Removed code that ports you if you're found warping.
+
 ==07/12/2009==
 Trevius: Added "featuresave" option to #npcedit that will save all currently set facial features.
 Trevius: Fixed crash for #randomfeatures if no target was selected before using it.
