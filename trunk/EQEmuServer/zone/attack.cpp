@@ -2443,6 +2443,10 @@ bool NPC::Attack(Mob* other, int Hand, bool bRiposte)	 // Kaiyodo - base functio
 		}
 		
 		sint32 hate = damage;
+		if(IsPet())
+		{
+			hate = hate * 100 / GetDamageTable(skillinuse);
+		}
 		//THIS IS WHERE WE CHECK TO SEE IF WE HIT:
 		if(other->IsClient() && other->CastToClient()->IsSitting()) {
 			mlog(COMBAT__DAMAGE, "Client %s is sitting. Hitting for max damage (%d).", other->GetName(), (max_dmg+eleBane));

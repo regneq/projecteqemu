@@ -1084,9 +1084,7 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 		{
 			if ((zone->GetZoneID() != 209) && (zone->GetZoneID() != 151))
 			{
-				printf("Warping Detected by %s Acct: %s Distance: %f.", GetName(), AccountName(), GetLWDistance());
 				CheatDetected(MQWarp); //Lieka:  Execute MQWarp function on offending player
-				MovePC(185, 0, -305, -48, -718, 0, 2, ZoneSolicited);  // Congdar... delete
 			}
 		}
 	}
