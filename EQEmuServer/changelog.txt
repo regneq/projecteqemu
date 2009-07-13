@@ -4,6 +4,9 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 Trevius: Added "featuresave" option to #npcedit that will save all currently set facial features.
 Trevius: Fixed crash for #randomfeatures if no target was selected before using it.
 Congdar: Fix EQBOTS AISpells break. Add new rules, features too much to list.
+KLS: Upped default monk melee damage, halved default monk special attack damage by a little over half.
+
+SQL: /utils/sql/svn/773_monk_rules.sql
 
 ==07/11/2009==
 KLS: SoF - Changed raid join packet encode slightly.
