@@ -327,7 +327,7 @@ sint32 Client::GetActSpellCost(int16 spell_id, sint32 cost)
 		bonus += 0.30;
 		break;
 	}
-	
+
 	bonus += 0.05 * GetAA(aaAdvancedSpellCastingMastery);
 
 	if(SuccessChance <= (SpecializeSkill * 0.3 * bonus))
@@ -704,6 +704,15 @@ void EntityList::AESpell(Mob *caster, Mob *center, int16 spell_id, bool affect_c
 	
 	bool bad = IsDetrimentalSpell(spell_id);
 	bool isnpc = caster->IsNPC();
+
+#ifdef EQBOTS
+
+	if(caster->IsBot())
+	{
+		isnpc = false;
+	}
+
+#endif //EQBOTS
 
 	const int MAX_TARGETS_ALLOWED = 4;
 	int iCounter = 0;

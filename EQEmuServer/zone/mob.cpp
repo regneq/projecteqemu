@@ -365,6 +365,7 @@ Mob::Mob(const char*   in_name,
 	PathingRouteUpdateTimerLong = new Timer(RuleI(Pathing, RouteUpdateFrequencyLong));
 	AggroedAwayFromGrid = 0;
 	PathingTraversedNodes = 0;
+
 #ifdef EQBOTS
 
 	// eqoffline
@@ -1046,7 +1047,7 @@ void Mob::ShowStats(Client* client) {
 	client->Message(0, "  MaxMana: %i  CurMana: %i  Size: %1.1f", GetMaxMana(), GetMana(), GetSize());
 	client->Message(0, "  Total ATK: %i  Worn ATK: %i  Worn ATK Capped: %i  Server Used ATK: %i", this->CastToClient()->GetTotalATK(), GetATK(), WornCap, attackRating);
 	client->Message(0, "  STR: %i  STA: %i  DEX: %i  AGI: %i  INT: %i  WIS: %i  CHA: %i", GetSTR(), GetSTA(), GetDEX(), GetAGI(), GetINT(), GetWIS(), GetCHA());
-	client->Message(0, "  MR: %i  PR: %i  FR: %i  CR: %i  DR: %i", GetMR(), GetPR(), GetFR(), GetCR(), GetDR());
+	client->Message(0, "  MR: %i  PR: %i  FR: %i  CR: %i  DR: %i  Haste: %i", GetMR(), GetPR(), GetFR(), GetCR(), GetDR(), GetHaste());
 	if (this->IsClient())
 		client->Message(0, "  Weight: %.1f/%d", (float)this->CastToClient()->CalcCurrentWeight() / 10.0f, this->CastToClient()->GetSTR());
 	client->Message(0, "  Race: %i  BaseRace: %i  Texture: %i  HelmTexture: %i  Gender: %i  BaseGender: %i", GetRace(), GetBaseRace(), GetTexture(), GetHelmTexture(), GetGender(), GetBaseGender());
@@ -1564,12 +1565,38 @@ void Mob::SetAttackTimer() {
 			ItemInst* ci = CastToClient()->GetInv().GetItem(i);
 			if (ci)
 				ItemToUse = ci->GetItem();
-		} else if(IsNPC()) 
+		} else if(IsNPC())
 		{
 			//The code before here was fundementally flawed because equipment[] 
 			//isn't the same as PC inventory and also:
 			//NPCs don't use weapon speed to dictate how fast they hit anyway.
 			ItemToUse = NULL;
+
+#ifdef EQBOTS
+
+			if(IsBot())
+			{
+				int j = 0;
+				switch(i)
+				{
+					case SLOT_PRIMARY:
+						j = MATERIAL_PRIMARY;
+						break;
+					case SLOT_SECONDARY:
+					case SLOT_RANGE:
+						j = MATERIAL_SECONDARY;
+						break;
+					default:
+						j = MATERIAL_PRIMARY;
+						break;
+				}
+				int32 eid = CastToNPC()->GetEquipment(j);
+				if(eid != 0)
+					ItemToUse = database.GetItem(eid);
+			}
+
+#endif //EQBOTS
+
 		}
 		
 		//special offhand stuff
@@ -2582,13 +2609,6 @@ int Mob::GetHaste() {
 
 	h += spellbonuses.hastetype3;
 	h += ExtraHaste;	//GM granted haste.
-
-#ifdef EQBOTS
-
-    if(IsBot() && (GetClass() == ROGUE || GetClass() == MONK )) // jadams: EQOffline, Not commented
-        h += 15;
-
-#endif //EQBOTS
 
 	return(h); 
 }
@@ -3608,6 +3628,8 @@ void Mob::CalcBotStats(bool showtext) {
 					break;
 			}
 			break;
+		default:
+			isComboAllowed = true;
 	}
 	if(!isComboAllowed) {
 		this->BotOwner->Message(15, "A %s - %s bot was detected. Is this Race/Class combination allowed?.", GetRaceName(brace), GetEQClassName(bclass, blevel));
@@ -4311,6 +4333,9 @@ void Mob::CalcBotStats(bool showtext) {
 						itembonuses.HitChance += itemtmp->Accuracy;
 					if(itemtmp->CombatEffects != 0)
 						itembonuses.ProcChance += itemtmp->CombatEffects;
+					if(itemtmp->Haste != 0)
+						if(itembonuses.haste < itemtmp->Haste)
+							itembonuses.haste = itemtmp->Haste;
 					if ((itemtmp->Worn.Effect != 0) && (itemtmp->Worn.Type == ET_WornEffect)) { // latent effects
 						ApplySpellsBonuses(itemtmp->Worn.Effect, itemtmp->Worn.Level, &itembonuses);
 					}

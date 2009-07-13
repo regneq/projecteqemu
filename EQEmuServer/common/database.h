@@ -289,6 +289,11 @@ public:
 	int32	GetBotLeader(int32 mobidtmp);
 	int		SpawnedBotCount(int32 id);
 	int		AllowedBotSpawns(int32 id);
+//Angelox2 start
+	int		BotSummonLookup(int32 id);
+	int		BotCircleLookup(int32 id);
+	int		BotPortalLookup(int32 id);
+//Angelox2 end
 	bool	IsBotSpawned(int32 id, int botid);
 	MYSQL_RES*	ListSpawnedBots(int32 id);
 	int		GetBotOwner(int32 mobid);

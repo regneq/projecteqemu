@@ -3,6 +3,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==07/12/2009==
 Trevius: Added "featuresave" option to #npcedit that will save all currently set facial features.
 Trevius: Fixed crash for #randomfeatures if no target was selected before using it.
+Congdar: Fix EQBOTS AISpells break. Add new rules, features too much to list.
 
 ==07/11/2009==
 KLS: SoF - Changed raid join packet encode slightly.

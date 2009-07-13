@@ -826,6 +826,7 @@ public:
 	 	   { return (taskstate ? taskstate->CompletedTasksInSet(TaskSet) :0); }
 
 	inline const EQClientVersion GetClientVersion() const { return ClientVersion; }
+	int GetAggroCount();
 	void IncrementAggroCount();
 	void DecrementAggroCount();
 	void SendPVPStats();

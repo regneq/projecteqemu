@@ -289,6 +289,9 @@ RULE_BOOL ( EQOffline, BotFinishBuffing, true ) // Allow for buffs to complete e
 RULE_INT ( EQOffline, CreateBotCount, 150 ) // Number of bots that each account can create
 RULE_INT ( EQOffline, SpawnBotCount, 71 ) // Number of bots a character can have spawned at one time, You + 71 bots is a 12 group raid
 RULE_BOOL ( EQOffline, BotQuest, false ) // Optional quest method to manage bot spawn limits using the quest_globals name bot_spawn_limit, see: /bazaar/Aediles_Thrall.pl
+RULE_BOOL ( EQOffline, BotGroupBuffing, false ) // Bots will cast single target buffs as group buffs, default is false for single. Does not make single target buffs work for MGB.
+RULE_BOOL ( EQOffline, BotSpellQuest, false ) // Anita Thrall's (Anita_Thrall.pl) Bot Spell Scriber quests.
+RULE_BOOL ( EQOffline, AXCustom, false ) // Custom code for AX Classic database
 RULE_CATEGORY_END()
 
 #endif //EQBOTS

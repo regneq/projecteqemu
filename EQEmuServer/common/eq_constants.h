@@ -209,7 +209,6 @@ typedef enum {
 #define MT_Broadcasts			269
 #define MT_Skills				270
 #define MT_Disciplines			271
-#define MT_CritMelee			301
 #define	MT_Unused1				272
 #define MT_DefaultText			273
 #define MT_Unused2				274

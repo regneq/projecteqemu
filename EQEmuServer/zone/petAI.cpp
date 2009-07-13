@@ -75,29 +75,29 @@ void Mob::PET_Process() {
 	_ZP(Mob_PET_Process);
  
 	// of course, if we're not a pet
-	if( !IsPet() || !GetOwner() )
+	if(!IsPet() || !GetID())
 		return;
 
-	if(!GetOwner() || !GetID() || !GetOwnerID() || !BotOwner)
+	if(!GetOwner() || !GetOwnerID() || !BotOwner)
 	{
 		Kill();
 		return;
 	} 
 	
-	if (!IsAIControlled())
+	if(!IsAIControlled())
 		return;
  
-	if (!(AIthink_timer->Check() || attack_timer.Check(false)))
+	if(!(AIthink_timer->Check() || attack_timer.Check(false)))
 		return;
  
-	if (IsCasting())
+	if(IsCasting())
 		return;
  
 	// if our owner isn't a pet or if he is not a client...
-	if (!GetOwner()->IsBot() || ( !GetOwner()->IsBot() && !GetOwner()->IsClient() ) )
+	if(!GetOwner()->IsBot())
 		return;
     
-    if (IsEngaged())
+	if(GetOwner()->IsEngaged() && IsEngaged())
 	{
 		_ZP(Bot_PET_Process_IsEngaged);
         if (IsRooted())
@@ -105,7 +105,7 @@ void Mob::PET_Process() {
         else
             CastToNPC()->SetTarget(hate_list.GetTop(this));
 
-        if (!target)
+        if(!target)
             return;
  
 		// Let's check if we have a los with our target.
@@ -160,7 +160,10 @@ void Mob::PET_Process() {
 			if(target && !IsStunned() && !IsMezzed() && (GetAppearance() != eaDead)) 
 			{
 				if(attack_timer.Check())  // check the delay on the attack
-				{		
+				{
+					// Special attack
+					CastToNPC()->DoClassAttacks(target); 
+
 					if(Attack(target, 13))			// try the main hand
 					if (target)					// Do we still have a target?
 					{
@@ -195,9 +198,6 @@ void Mob::PET_Process() {
 					}
 					if(!GetOwner())
 						return;
-
-					// Special attack
-					CastToNPC()->DoClassAttacks(target); 
 				}
                 // See if the pet can cast any spell
                 Bot_AI_EngagedCastCheck();

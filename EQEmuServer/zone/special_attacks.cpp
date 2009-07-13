@@ -121,6 +121,23 @@ void Mob::DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, si
 				}
 			}
 		}
+
+#ifdef EQBOTS
+
+		if(IsBot())
+		{
+			const Item_Struct* botweapon = database.GetItem(CastToNPC()->GetEquipment(MATERIAL_SECONDARY));
+			if(botweapon)
+			{
+				if(botweapon->ItemType == ItemTypeShield)
+				{
+					hate += botweapon->AC;
+				}
+			}
+		}
+
+#endif //EQBOTS
+
 	}
 
 	if(max_damage > 0) {
@@ -239,33 +256,33 @@ void Client::OPCombatAbility(const EQApplicationPacket *app) {
 		int dmg = 1 + (GetSkill(FRENZY) / 100);
 
 		switch (GetAA(aaBlurofAxes)) {
-	  case 1:
-		  dmg *= 1.15;
-		  break;
-	  case 2:
-		  dmg *= 1.30;
-		  break;
-	  case 3:
-		  dmg *= 1.50;
-		  break;
+			case 1:
+				dmg *= 1.15;
+				break;
+			case 2:
+				dmg *= 1.30;
+				break;
+			case 3:
+				dmg *= 1.50;
+				break;
 		}
 
 		switch (GetAA(aaViciousFrenzy)) {
-	  case 1:
-		  dmg *= 1.05;
-		  break;
-	  case 2:
-		  dmg *= 1.10;
-		  break;
-	  case 3:
-		  dmg *= 1.15;
-		  break;
-	  case 4:
-		  dmg *= 1.20;
-		  break;
-	  case 5:
-		  dmg *= 1.25;
-		  break;
+			case 1:
+				dmg *= 1.05;
+				break;
+			case 2:
+				dmg *= 1.10;
+				break;
+			case 3:
+				dmg *= 1.15;
+				break;
+			case 4:
+				dmg *= 1.20;
+				break;
+			case 5:
+				dmg *= 1.25;
+				break;
 		}
 
 		while(dmg > 0 && target) {
@@ -285,67 +302,67 @@ void Client::OPCombatAbility(const EQApplicationPacket *app) {
 
 	switch(GetClass())
 	{
-	case BERSERKER:
-	case WARRIOR:
-	case RANGER:
-	case BEASTLORD:
-		if (ca_atk->m_atk != 100 || ca_atk->m_skill != KICK) {
-			break;
-		}
-		if (target!=this) {
-			CheckIncreaseSkill(KICK, target, 10);
-			DoAnim(animKick);
-
-			if(GetWeaponDamage(target, GetInv().GetItem(SLOT_FEET)) <= 0){
-				dmg = -5;
+		case BERSERKER:
+		case WARRIOR:
+		case RANGER:
+		case BEASTLORD:
+			if (ca_atk->m_atk != 100 || ca_atk->m_skill != KICK) {
+				break;
 			}
-			else{
-				if(!target->CheckHitChance(this, KICK, 0)) {
-					dmg = 0;
+			if (target!=this) {
+				CheckIncreaseSkill(KICK, target, 10);
+				DoAnim(animKick);
+
+				if(GetWeaponDamage(target, GetInv().GetItem(SLOT_FEET)) <= 0){
+					dmg = -5;
 				}
 				else{
-					if(RuleB(Combat, UseIntervalAC))
-						dmg = GetKickDamage();
-					else
-						dmg = MakeRandomInt(1, GetKickDamage());
+					if(!target->CheckHitChance(this, KICK, 0)) {
+						dmg = 0;
+					}
+					else{
+						if(RuleB(Combat, UseIntervalAC))
+							dmg = GetKickDamage();
+						else
+							dmg = MakeRandomInt(1, GetKickDamage());
+					}
+				}
+
+				DoSpecialAttackDamage(target, KICK, dmg);
+				ReuseTime = KickReuseTime-1;
+			}
+			break;
+		case MONK: {
+			ReuseTime = MonkSpecialAttack(target, ca_atk->m_skill) - 1;
+
+			int specl = GetAA(aaTechniqueofMasterWu) * 20;
+			if(specl == 100 || specl > MakeRandomInt(0,100)) {
+				ReuseTime = MonkSpecialAttack(target, ca_atk->m_skill) - 1;
+				if(20 > MakeRandomInt(0,100)) {
+					ReuseTime = MonkSpecialAttack(target, ca_atk->m_skill) - 1;
 				}
 			}
 
-			DoSpecialAttackDamage(target, KICK, dmg);
-			ReuseTime = KickReuseTime-1;
-		}
-		break;
-	case MONK: {
-		ReuseTime = MonkSpecialAttack(target, ca_atk->m_skill) - 1;
-
-		int specl = GetAA(aaTechniqueofMasterWu) * 20;
-		if(specl == 100 || specl > MakeRandomInt(0,100)) {
-			ReuseTime = MonkSpecialAttack(target, ca_atk->m_skill) - 1;
-			if(20 > MakeRandomInt(0,100)) {
-				ReuseTime = MonkSpecialAttack(target, ca_atk->m_skill) - 1;
+			if(ReuseTime < 100) {
+				//hackish... but we return a huge reuse time if this is an 
+				// invalid skill, otherwise, we can safely assume it is a 
+				// valid monk skill and just cast it to a SkillType
+				CheckIncreaseSkill((SkillType) ca_atk->m_skill, target, 10);
 			}
-		}
-
-		if(ReuseTime < 100) {
-			//hackish... but we return a huge reuse time if this is an 
-			// invalid skill, otherwise, we can safely assume it is a 
-			// valid monk skill and just cast it to a SkillType
-			CheckIncreaseSkill((SkillType) ca_atk->m_skill, target, 10);
-		}
-		break;
-	}
-	case ROGUE: {
-		if (ca_atk->m_atk != 100 || ca_atk->m_skill != BACKSTAB) {
 			break;
 		}
-		TryBackstab(target);
-		ReuseTime = BackstabReuseTime-1;
-		break;
-	}
-	default:
-		//they have no abilities... wtf? make em wait a bit
-		ReuseTime = 9;
-		break;
+		case ROGUE: {
+			if (ca_atk->m_atk != 100 || ca_atk->m_skill != BACKSTAB) {
+				break;
+			}
+			TryBackstab(target);
+			ReuseTime = BackstabReuseTime-1;
+			break;
+		}
+		default:
+			//they have no abilities... wtf? make em wait a bit
+			ReuseTime = 9;
+			break;
 	}
 	
 	ReuseTime = (ReuseTime*HasteMod)/100;
@@ -1391,11 +1408,49 @@ void NPC::DoClassAttacks(Mob *target) {
 #ifdef EQBOTS
 
     //franck-add: EQoffline. Warrior bots must taunt the target.
-	if(IsBot() && (GetClass() == WARRIOR) && target->IsNPC() && taunt_time) {
-        this->Say("Taunting %s", target->GetCleanName());
-		Taunt(target->CastToNPC(), false);
+	if(IsBot() &&
+		((GetClass() == WARRIOR) || (GetClass() == PALADIN) || (GetClass() == SHADOWKNIGHT)) &&
+		target->IsNPC() &&
+		taunt_time &&
+		target)
+	{
+		bool isTaunting = false;
+		BotRaids* br = entity_list.GetBotRaidByMob(this);
+		if(br)
+		{
+			if(br->GetBotMainTank())
+			{
+				if(br->GetBotMainTank() == this)
+				{
+					isTaunting = true;
+				}
+			}
+			else if(br->GetBotSecondTank())
+			{
+				if(br->GetBotSecondTank() == this)
+				{
+					isTaunting = true;
+				}
+			}
+			else
+			{
+				if(MakeRandomInt(1, 100) > 50)
+				{
+					isTaunting = true;
+				}
+			}
+		}
+		else
+		{
+			isTaunting = true;
+		}
+		if(isTaunting)
+		{
+			Say("Taunting %s", target->GetCleanName());
+			Taunt(target->CastToNPC(), true);
+		}
 	}
-	
+
 #endif //EQBOTS
 
 	if(!ca_time)
@@ -1840,7 +1895,7 @@ void Mob::Taunt(NPC* who, bool always_succeed) {
 			
 			// no idea how taunt success is actually calculated
 			// TODO: chance for level 50+ mobs should be lower
-			int level_difference = level - target->GetLevel();
+			int level_difference = level - who->GetLevel();
 			if (level_difference <= 5) {
 				tauntchance = 25.0;	// minimum
 				tauntchance += tauntchance * (float)GetSkill(TAUNT) / 200.0;	// skill modifier
@@ -1884,15 +1939,8 @@ void Mob::Taunt(NPC* who, bool always_succeed) {
 #ifdef EQBOTS
 
     //Franck-add: little tweak for the warrior bot so they can taunt better
-	if(IsBot() && (GetClass() == WARRIOR)) {
-		if(IsBotRaiding()) {
-			BotRaids *br = entity_list.GetBotRaidByMob(this);
-			if(br && ((br->GetBotMainTank() && (br->GetBotMainTank() == this)) || (br->GetBotSecondTank() && (br->GetBotSecondTank() == this)))) {
-				who->CastToNPC()->AddToHateList(this, (who->GetNPCHate(hate_top) - who->GetNPCHate(this))+(MakeRandomInt(5, 10) * level));
-			}
-		}
-		else if(!IsBotRaiding() && IsGrouped())
-			who->CastToNPC()->AddToHateList(this, (who->GetNPCHate(hate_top) - who->GetNPCHate(this))+(MakeRandomInt(5, 10) * level));
+	if(IsBot() && ((GetClass() == WARRIOR) || (GetClass() == PALADIN) || (GetClass() == SHADOWKNIGHT))) {
+		who->CastToNPC()->AddToHateList(this, (MakeRandomInt(5, 10)*level));
 	}
 
 #endif //EQBOTS
