@@ -2,6 +2,8 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 KLS: Reimplemented pet hate scaling.
 KLS: Removed code that ports you if you're found warping.
+WildcardX: (for BOTS alpha code only)Inviting a bot to group will show the bot name without any numeric characters (ie, mob::cleanname()).
+WildcardX: (for BOTS alpha code only)Detecting pacified mobs via spell effect type instead of specific spell id's.
 
 ==07/12/2009==
 Trevius: Added "featuresave" option to #npcedit that will save all currently set facial features.
