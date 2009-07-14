@@ -380,9 +380,9 @@ public:
 
 	inline const sint32	GetBaseHP() const { return base_hp; }
 
-	int16 GetWeight() const { return(weight); }
+	uint32 GetWeight() const { return(weight); }
 	inline void RecalcWeight() { weight = CalcCurrentWeight(); }
-	int16 CalcCurrentWeight();
+	uint32 CalcCurrentWeight();
 	inline uint32	GetCopper()		const { return m_pp.copper; }
 	inline uint32	GetSilver()		const { return m_pp.silver; }
 	inline uint32	GetGold()		const { return m_pp.gold; }
@@ -963,7 +963,7 @@ private:
 	bool				revoked;
 	int32				pQueuedSaveWorkID;
 	int16				pClientSideTarget;
-	int16				weight;
+	uint32				weight;
 	bool				berserk;
 	bool				dead;
 	int16				BoatID;

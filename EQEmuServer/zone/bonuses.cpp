@@ -446,16 +446,11 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon) {
 	int32 base2 = 0;	//only really used for SE_RaiseStatCap & SE_ReduceSkillTimer in aa_effects table
 	int32 slot = 0;
 
-	int8 i; //slot we're in
-	uint8 count = 0;
-	for (i = 1; i <= MAX_AA_EFFECT_SLOTS; i++) {
-		if (count >= slots || count > MAX_AA_EFFECT_SLOTS)	//if we've already iterated through this for each of the slots that have an effect, or we're above the max, then we can stop the loop
-			break;
-
-		effect = aa_effects[aaid][i].skill_id;
-		base1 = aa_effects[aaid][i].base1;
-		base2 = aa_effects[aaid][i].base2;
-		slot = aa_effects[aaid][i].slot;
+	for (map<uint32, AA_Ability>::const_iterator iter = aa_effects[aaid].begin(); iter != aa_effects[aaid].end(); ++iter) {
+		effect = iter->second.skill_id;
+		base1 = iter->second.base1;
+		base2 = iter->second.base2;
+		slot = iter->second.slot;
 
 		//we default to 0 (SE_CurrentHP) for the effect, so if there aren't any base1/2 values, we'll just skip it
 		if (effect == 0 && base1 == 0 && base2 == 0)
@@ -600,7 +595,6 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon) {
 				newbon->HP += base1;
 				break;
 		}
-		count++;	//increase the amount of effects we've gone through if we get to this point
 	}
 
 }
