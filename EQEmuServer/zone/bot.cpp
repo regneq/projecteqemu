@@ -143,6 +143,9 @@ NPCType Bot::FillNPCTypeStruct(std::string botName, std::string botLastName, uin
 	BotNPCType.ATK = attack;
 
 	BotNPCType.npc_id = 0;
+	BotNPCType.texture = 0;
+	BotNPCType.d_meele_texture1 = 0;
+	BotNPCType.d_meele_texture2 = 0;
 
 	return BotNPCType;
 }
@@ -173,6 +176,9 @@ NPCType Bot::CreateDefaultNPCTypeStructForBot(std::string botName, std::string b
 	Result.drakkin_heritage = 0;
 	Result.drakkin_tattoo = 0;
 	Result.runspeed = 2.501;
+	Result.texture = 0;
+	Result.d_meele_texture1 = 0;
+	Result.d_meele_texture2 = 0;
 
 	return Result;
 }

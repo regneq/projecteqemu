@@ -1,9 +1,13 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==07/14/2009==
+WildcardX: (for BOTS alpha code only) Set textures to 0 to create the correct appearance of a naked bot on spawn without any equipment.
+
+==07/13/2009==
 KLS: Reimplemented pet hate scaling.
 KLS: Removed code that ports you if you're found warping.
-WildcardX: (for BOTS alpha code only)Inviting a bot to group will show the bot name without any numeric characters (ie, mob::cleanname()).
-WildcardX: (for BOTS alpha code only)Detecting pacified mobs via spell effect type instead of specific spell id's.
+WildcardX: (for BOTS alpha code only) Inviting a bot to group will show the bot name without any numeric characters (ie, mob::cleanname()).
+WildcardX: (for BOTS alpha code only) Detecting pacified mobs via spell effect type instead of specific spell id's.
 
 ==07/12/2009==
 Trevius: Added "featuresave" option to #npcedit that will save all currently set facial features.
