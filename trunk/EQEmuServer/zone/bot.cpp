@@ -48,6 +48,11 @@ Bot::Bot(NPCType npcTypeData, Client* botOwner) : NPC(&npcTypeData, 0, 0, 0, 0, 
 
 	// Calculate HitPoints Last As It Uses Base Stats
 	GenerateBaseHitPoints();
+
+	int CopyLength = 0;
+	CopyLength = std::string(this->GetCleanName()).copy(this->name, 63);
+	this->name[CopyLength] = '\0';
+	CopyLength  = 0;
 }
 
 // This constructor is used when the bot is loaded out of the database
@@ -69,6 +74,11 @@ Bot::Bot(uint32 botID, uint32 botOwnerCharacterID, uint32 botInventoryID, uint32
 
 	// Calculate HitPoints Last As It Uses Base Stats
 	GenerateBaseHitPoints();
+
+	int CopyLength = 0;
+	CopyLength = std::string(this->GetCleanName()).copy(this->name, 63);
+	this->name[CopyLength] = '\0';
+	CopyLength  = 0;
 }
 
 Bot::~Bot() {
@@ -3093,7 +3103,6 @@ Bot* Bot::LoadBot(uint32 botID, std::string* errorMessage) {
 			while(DataRow = mysql_fetch_row(DatasetResult)) {
 				NPCType TempNPCStruct = FillNPCTypeStruct(std::string(DataRow[3]), std::string(DataRow[4]), atoi(DataRow[5]), atoi(DataRow[6]), atoi(DataRow[7]), atoi(DataRow[8]), atoi(DataRow[9]), atoi(DataRow[10]), atof(DataRow[11]), atoi(DataRow[12]), atoi(DataRow[13]), atoi(DataRow[14]), atoi(DataRow[15]), atoi(DataRow[16]), atoi(DataRow[17]), atoi(DataRow[18]), atoi(DataRow[19]), atoi(DataRow[20]), atoi(DataRow[21]), atoi(DataRow[22]), atoi(DataRow[23]), atof(DataRow[24]), atoi(DataRow[25]), atoi(DataRow[26]), atoi(DataRow[27]), atoi(DataRow[28]), atoi(DataRow[29]), atoi(DataRow[30]), atoi(DataRow[31]), atoi(DataRow[32]), atoi(DataRow[33]), atoi(DataRow[34]), atoi(DataRow[35]), atoi(DataRow[36]), atoi(DataRow[37]), atoi(DataRow[37]));
 				Result = new Bot(botID, atoi(DataRow[0]), atoi(DataRow[1]), atoi(DataRow[2]), TempNPCStruct);
-				//Result = new Bot(botID, atoi(DataRow[0]), atoi(DataRow[1]), atoi(DataRow[2]), std::string(DataRow[3]), std::string(DataRow[4]), atoi(DataRow[5]), atoi(DataRow[6]), atoi(DataRow[7]), atoi(DataRow[8]), atoi(DataRow[9]), atoi(DataRow[10]), atof(DataRow[11]), atoi(DataRow[12]), atoi(DataRow[13]), atoi(DataRow[14]), atoi(DataRow[15]), atoi(DataRow[16]), atoi(DataRow[17]), atoi(DataRow[18]), atoi(DataRow[19]), atoi(DataRow[20]), atoi(DataRow[21]), atoi(DataRow[22]), atoi(DataRow[23]), atof(DataRow[24]), atoi(DataRow[25]), atoi(DataRow[26]), atoi(DataRow[27]), atoi(DataRow[28]), atoi(DataRow[29]), atoi(DataRow[30]), atoi(DataRow[31]), atoi(DataRow[32]), atoi(DataRow[33]), atoi(DataRow[34]), atoi(DataRow[35]), atoi(DataRow[36]), atoi(DataRow[37]), atoi(DataRow[37]));
 				break;
 			}
 
@@ -3683,7 +3692,7 @@ bool Bot::AddBotToGroup(Bot* bot, Group* group) {
 	if(bot && group) {
 		//Let's see if the bot is already in the group
 		for(i = 0; i < MAX_GROUP_MEMBERS; i++) {
-			if(group->members[i] && !strcasecmp(group->members[i]->GetName(), bot->GetCleanName()))
+			if(group->members[i] && !strcasecmp(group->members[i]->GetCleanName(), bot->GetCleanName()))
 				return false;
 		}
 
@@ -3714,7 +3723,7 @@ bool Bot::AddBotToGroup(Bot* bot, Group* group) {
 					group->members[i]->CastToClient()->QueuePacket(outapp);
 				}
 				else {
-					strcpy(group->members[i]->CastToClient()->GetPP().groupMembers[0+z], group->members[i]->GetCleanName());
+					strcpy(group->members[i]->CastToClient()->GetPP().groupMembers[0+z], group->members[i]->GetName());
 					group->members[i]->CastToClient()->QueuePacket(outapp);
 				}
 			}
@@ -4004,19 +4013,19 @@ bool Bot::Bot_Command_Cure(int curetype, int level) {
 // This funcion is a bit of a hack.
 // Ideally, this function should identify the desired buff by spell effect (SE) type. Like SE_Calm for example, not by specific spell id.
 // TODO: reimplement this function so no spell type id is hard-coded and instead the buff is identify by spell effect id.
-bool Bot::IsPacified(Mob* targetMob) {
-	bool Result = false;
-
-	if(targetMob && GetBotOwner() && spells_loaded) {
-		for (int i=0; i < BUFF_COUNT; i++) {
-			if ((buffs[i].spellid == 3197) || (buffs[i].spellid == 45) || (buffs[i].spellid == 47) || (buffs[i].spellid == 501) || (buffs[i].spellid == 208)) {
-				Result = true;
-			}
-		}
-	}
-
-	return Result;
-}
+//bool Bot::IsPacified(Mob* targetMob) {
+//	bool Result = false;
+//
+//	if(targetMob && GetBotOwner() && spells_loaded) {
+//		for (int i=0; i < BUFF_COUNT; i++) {
+//			if ((buffs[i].spellid == 3197) || (buffs[i].spellid == 45) || (buffs[i].spellid == 47) || (buffs[i].spellid == 501) || (buffs[i].spellid == 208)) {
+//				Result = true;
+//			}
+//		}
+//	}
+//
+//	return Result;
+//}
 
 void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 	// TODO: All bot command processing occurs here now instead of in command.cpp
@@ -5779,7 +5788,8 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 						pacer->Say("Trying to pacify %s \n", target->GetCleanName());
 
 						if(pacer->Bot_Command_CalmTarget(target)) {
-							if(pacer->IsPacified(target))
+							if(target->FindType(SE_Lull) || target->FindType(SE_Harmony) || target->FindType(SE_Calm))
+							//if(pacer->IsPacified(target))
 								c->Message(0, "I have successfully pacified %s.", target->GetCleanName());
 							else
 								c->Message(0, "I failed to pacify %s.", target->GetCleanName());

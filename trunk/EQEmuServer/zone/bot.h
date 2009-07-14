@@ -171,7 +171,7 @@ private:
 	//void CleanBotLeaderEntries(std::string* errorMessage);
 	void DoAIProcessing();
 	void SetBotID(uint32 botID);
-	bool IsPacified(Mob* targetMob);
+	//bool IsPacified(Mob* targetMob);
 };
 
 #endif // BOTS
