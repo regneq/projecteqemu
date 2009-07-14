@@ -79,8 +79,8 @@ bool EQEmuDatabase::GetLoginDataByLSAccountName(std::string LSAccountName, std::
 void EQEmuDatabase::UpdateLSAccountData(uint32 LSAccountID, std::string LastIPAddress) {
 	if(!_mysql)
 	{
-		return;
 		cout << "NOT CONNECTED TO MYQSL: " << endl;
+		return;
 	}
 
 	char * mQuery = 0;
@@ -169,8 +169,8 @@ void EQEmuDatabase::UpdateWorldServerRegistration(uint32 serverID, std::string s
 {
 	if(!_mysql)
 	{
-		return;
 		cout << "NOT CONNECTED TO MYQSL: " << endl;
+		return;
 	}
 
 	char * mQuery = 0;
