@@ -2,6 +2,10 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==07/14/2009==
 WildcardX: (for BOTS alpha code only) Set textures to 0 to create the correct appearance of a naked bot on spawn without any equipment.
+AndMetal: Changed AA Effects to be loaded into a map instead of a static array.
+AndMetal: Changed weight in the client class to uint32 from int16 since the client uses 32 bits for the weight. This should prevent it from overflowing.
+AndMetal: Corrected Packrat from 10% per level to 1% per level per the Titanium client. It also now affects coin weight (also 1% per level) per the Titanium client.
+AndMetal: Cleaned up a few compile warnings.
 
 ==07/13/2009==
 KLS: Reimplemented pet hate scaling.

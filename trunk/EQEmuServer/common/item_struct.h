@@ -87,7 +87,7 @@ struct Item_Struct {
 	uint32	Slots;			// Bitfield for which slots this item can be used in
 	uint32	Price;			// Item cost (?)
 	uint32	Icon;			// Icon Number
-	uint32	LoreGroup;		// Later items use LoreGroup instead of LoreFlag
+	uint32	LoreGroup;		// Later items use LoreGroup instead of LoreFlag. we might want to see about changing this to sint32 since it is commonly -1 and is constantly being cast from signed (-1) to unsigned (4294967295)
 	bool	LoreFlag;		// This will be true if LoreGroup is non-zero
 	bool	PendingLoreFlag;
 	bool	ArtifactFlag;

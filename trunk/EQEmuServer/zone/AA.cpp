@@ -45,8 +45,7 @@ Copyright (C) 2001-2004  EQEMu Development Team (http://eqemulator.net)
 //static data arrays, really not big enough to warrant shared mem.
 AA_DBAction AA_Actions[aaHighestID][MAX_AA_ACTION_RANKS];	//[aaid][rank]
 map<int32,SendAA_Struct*>aas_send;
-AA_Ability aa_effects[aaHighestID][MAX_AA_EFFECT_SLOTS];	//stores the effects from the aa_effects table in memory
-																//i'd prefer to do this with a map to save memory (by default, this will use 182,336 bytes per zone) & increase performance, but i can't find an elegant way to nest it
+std::map<uint32, std::map<uint32, AA_Ability> > aa_effects;	//stores the effects from the aa_effects table in memory
 
 /*
 
@@ -1145,13 +1144,13 @@ void Zone::LoadAAs() {
 	//load AA Effects into aa_effects
 	LogFile->write(EQEMuLog::Status, "Loading AA Effects...");
 	if (database.LoadAAEffects2())
-		LogFile->write(EQEMuLog::Status, "Loaded AA Effects.");
+		LogFile->write(EQEMuLog::Status, "Loaded %d AA Effects.", aa_effects.size());
 	else
 		LogFile->write(EQEMuLog::Error, "Failed to load AA Effects!");
 }
 
 bool ZoneDatabase::LoadAAEffects2() {
-	memset(aa_effects, 0, sizeof(aa_effects));	//I hope the compiler is smart about this size. If we can turn it into a map, it won't be that big of a deal
+	aa_effects.clear();	//start fresh
 
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
@@ -1370,6 +1369,8 @@ bool ZoneDatabase::LoadAAEffects() {
 //For the purposes of sizing a packet because every skill does not
 //have the same number effects, they can range from none to a few depending on AA.
 //counts the # of effects by counting the different slots of an AAID in the DB.
+
+//AndMetal: this may now be obsolete since we have Zone::GetTotalAALevels()
 int8 ZoneDatabase::GetTotalAALevels(int32 skill_id) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
@@ -1392,23 +1393,7 @@ int8 ZoneDatabase::GetTotalAALevels(int32 skill_id) {
 
 //this will allow us to count the number of effects for an AA by pulling the info from memory instead of the database. hopefully this will same some CPU cycles
 uint8 Zone::GetTotalAALevels(uint32 skill_id) {
-
-	uint8 slots = 0;
-	uint32 slot = 0;
-	for (int i = 0; i < MAX_AA_EFFECT_SLOTS; i++) {	//not going to count slot 0, since i don't think the client will be able to do anything with it
-		slot = aa_effects[skill_id][i].slot;
-		if (slot > 0)
-			slots++;
-	}
-
-	/*
-	//this should be faster
-	int abilities_size = sizeof(aa_effects[skill_id]);	//this doesn't currently work since we're setting the entire array to 0 from the start
-	int AA_Ability_size = sizeof(AA_Ability);
-	uint8 slots_size = abilities_size / AA_Ability_size;	//calculate how many abilities are loaded into the AA, based on size
-	*/
-
-	return slots;
+	return aa_effects[skill_id].size();	//will return 0 if the skill_id isn't loaded
 }
 
 /*
@@ -1569,7 +1554,7 @@ SendAA_Struct* ZoneDatabase::GetAASkillVars(int32 skill_id)
 			" FROM altadv_vars a WHERE skill_id=%i", skill_id), errbuf, &result)) {
 			safe_delete_array(query);
 			if (mysql_num_rows(result) == 1) {
-				int total_abilities = GetTotalAALevels(skill_id);
+				int total_abilities = GetTotalAALevels(skill_id);	//eventually we'll want to use zone->GetTotalAALevels(skill_id) since it should save queries to the DB
 				int totalsize = total_abilities * sizeof(AA_Ability) + sizeof(SendAA_Struct);
 				
 				buffer = new uchar[totalsize];

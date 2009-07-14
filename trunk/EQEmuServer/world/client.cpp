@@ -1205,7 +1205,7 @@ bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 // returns true if the request is ok, false if there's an error
 bool CheckCharCreateInfo(CharCreate_Struct *cc)
 {
-	int bSTR, bSTA, bAGI, bDEX, bWIS, bINT, bCHA, bTOTAL, cTOTAL, stat_points;
+	int32 bSTR, bSTA, bAGI, bDEX, bWIS, bINT, bCHA, bTOTAL, cTOTAL, stat_points;	//these are all int32 in CharCreate_Struct, so we'll make them int32 here to make the compiler shut up
 	int classtemp, racetemp;
 	int Charerrors = 0;
 

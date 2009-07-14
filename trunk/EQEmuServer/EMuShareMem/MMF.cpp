@@ -210,7 +210,7 @@ bool MMF::Open(const char* iName, int32 iSize) {
 				    cerr << "shmat failed! " << strerror(errno) << endl;
 			    }
 			    if( (shmctl(share_id, IPC_STAT, &mem_size)) == 0){
-				  if (mem_size.shm_segsz != int(tmpSize)){
+				  if (mem_size.shm_segsz != int(tmpSize)){	//comparison between signed and unsigned integer expressions
 					cout<<"[Warning] requested shared memory of size:"<<tmpSize<<" but that Key is already in use with size:"<< mem_size.shm_segsz<<endl;
 					shmid_ds mem_users;
 					if( (shmctl(share_id, IPC_STAT, &mem_users)) == 0 && mem_users.shm_nattch == 1){
