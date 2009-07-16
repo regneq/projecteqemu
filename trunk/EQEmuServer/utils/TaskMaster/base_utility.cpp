@@ -104,10 +104,17 @@ bool MainFrame::LoadZones()
 		}
 
 		wxString zoneStr;
-		zoneStr.Printf("*Unknown Zone*");
+		zoneStr.Printf("**Unknown Zone**");
 		int * id = new int;
 		*id = -1;
 		mStartZone->Append(zoneStr, (void*)id);
+
+		zoneStr.Clear();
+		zoneStr.Printf("*Any Zone*");
+		id = new int;
+		*id = 0;
+		mStartZone->Append(zoneStr, (void*)id);
+
 		mActivityZone->Append(zoneStr, (void*)id);
 		mProxZone->Append(zoneStr, (void*)id);
 		zoneStr.clear();
@@ -186,7 +193,7 @@ bool MainFrame::LoadTasks()
 			newT.duration = atoi(row[9]);
 			newT.level_min = atoi(row[10]);
 			newT.level_max = atoi(row[11]);
-			newT.repeatable = (bool)atoi(row[12]);
+			newT.repeatable = atoi(row[12]) ? true : false;
 
 			taskList.push_back(newT);
 
@@ -263,7 +270,7 @@ bool MainFrame::LoadActivities()
 			newAL.goalcount = atoi(row[9]);
 			newAL.deliverToNpc = atoi(row[10]);
 			newAL.zoneid = atoi(row[11]);
-			newAL.optional = (bool)atoi(row[12]);
+			newAL.optional = atoi(row[12]) ? true : false;
 
 			taskActivitiesList.push_back(newAL);
 			activitiesLoaded++;

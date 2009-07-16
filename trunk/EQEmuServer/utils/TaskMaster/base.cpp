@@ -1,5 +1,6 @@
 #include <wx/wx.h>
 #include <wx/aboutdlg.h>
+#include <wx/cmdline.h>
 #include <mysql.h>
 #include <vector>
 #include "tasks.h"
@@ -44,7 +45,6 @@ END_EVENT_TABLE()
 
 //Our main() thread
 IMPLEMENT_APP_CONSOLE(MainApp)
- 
 
 bool MainApp::OnInit()
 {
