@@ -22,12 +22,12 @@ void MainFrame::NewTask(wxCommandEvent& event)
 		newT.xpreward = 0;
 		newT.rewardmethod = 2;
 		newT.rewardid = 0;
-		newT.startzone = 0;
+		newT.startzone = -1;
 		newT.level_min = 0;
 		newT.level_max = 0;
 		newT.repeatable = true;
 
-		int newID = wxGetNumberFromUser("", "ID:", "Input ID", (highestIndex+1), 0, 2147483600);
+		unsigned int newID = wxGetNumberFromUser("", "ID:", "Input ID", (highestIndex+1), 0, 2147483600);
 
 		newT.id = newID;
 

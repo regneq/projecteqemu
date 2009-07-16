@@ -134,6 +134,12 @@ void MainFrame::NewProximity(wxCommandEvent& event)
 	eqtask_proximity newProx;
 	newProx.exploreid = newID;
 	newProx.zoneid = newZoneID;
+	newProx.maxx = 0.0;
+	newProx.minx = 0.0;
+	newProx.maxy = 0.0;
+	newProx.miny = 0.0;
+	newProx.maxz = 0.0;
+	newProx.minz = 0.0;
 
 	char * mQuery = 0;
 	MakeAnyLenString(&mQuery, "INSERT INTO `proximities` (`zoneid`,`exploreid`) VALUES (%u,%u)", newZoneID, newID);
