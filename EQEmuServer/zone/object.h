@@ -168,7 +168,21 @@ public:
 	virtual void SetID(int16 set_id);
 	
 	void ClearUser() { user = NULL; }
-	
+
+	int32 GetDBID();
+	int32 GetType();
+	void  SetType(int32 type);
+	int32 GetIcon();
+	void  SetIcon(int32 icon);
+	int32 GetItemID();
+	void  SetItemID(int32 itemid);
+	void GetObjectData(Object_Struct* Data);
+	void SetObjectData(Object_Struct* Data);
+	void GetLocation(float* x, float* y, float* z);
+	void SetLocation(float x, float y, float z);
+	void GetHeading(float* heading);
+	void SetHeading(float heading);
+
 protected:
 	void	ResetState();	// Set state back to original
 	void	RandomSpawn(bool send_packet = false);		//spawn this ground spawn at a random place

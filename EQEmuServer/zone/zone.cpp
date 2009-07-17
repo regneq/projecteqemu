@@ -178,6 +178,57 @@ bool Zone::LoadZoneObjects() {
 		safe_delete_array(query);
 		LogFile->write(EQEMuLog::Status, "Loading Objects from DB...");
 		while ((row = mysql_fetch_row(result))) {
+			if (atoi(row[9]) == 0)
+			{
+				// Type == 0 - Static Object
+				const char* shortname = database.GetZoneName(atoi(row[1]), false); // zoneid -> zone_shortname
+
+				if (shortname)
+				{
+					Door d;
+					memset(&d, 0, sizeof(d));
+
+					strncpy(d.zone_name, shortname, sizeof(d.zone_name));
+					d.db_id = 1000000000 + atoi(row[0]); // Out of range of normal use for doors.id
+					d.door_id = -1; // Client doesn't care if these are all the same door_id
+					d.pos_x = atof(row[2]); // xpos
+					d.pos_y = atof(row[3]); // ypos
+					d.pos_z = atof(row[4]); // zpos
+					d.heading = atof(row[5]); // heading
+
+					strncpy(d.door_name, row[8], sizeof(d.door_name)); // objectname
+					// Strip trailing "_ACTORDEF" if present. Client won't accept it for doors.
+					int len = strlen(d.door_name);
+					if ((len > 9) && (memcmp(&d.door_name[len - 9], "_ACTORDEF", 10) == 0))
+					{
+						d.door_name[len - 9] = '\0';
+					}
+					  
+					memcpy(d.dest_zone, "NONE", 5);
+					  
+					if ((d.size = atoi(row[11])) == 0) // unknown08 = optional size percentage
+					{
+						d.size = 100;
+					}
+
+					switch (d.opentype = atoi(row[12])) // unknown10 = optional request_nonsolid (0 or 1 or experimental number)
+					{
+						case 0:
+							d.opentype = 31;
+							break;
+						case 1:
+							d.opentype = 9;
+							break;
+					}
+
+					d.incline = atoi(row[13]); // unknown20 = optional model incline value
+
+					Doors* door = new Doors(&d);
+					entity_list.AddDoor(door);
+				}
+
+				continue;
+			}
 			Object_Struct data = {0};
 			uint32 id = 0;
 			uint32 icon = 0;

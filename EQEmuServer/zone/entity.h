@@ -189,6 +189,8 @@ public:
 	void	ProcessProximitySay(const char *Message, Client *c, int8 language = 0);
 	void	SendAATimer(int32 charid,UseAA_Struct* uaa);
 	Doors*	FindDoor(int8 door_id);
+	Object*	FindObject(int32 object_id);
+	Object*	FindNearbyObject(float x, float y, float z, float radius);
 	bool	MakeDoorSpawnPacket(EQApplicationPacket* app);
 	bool    MakeTrackPacket(Client* client);
 	void	SendTraders(Client* client);	
