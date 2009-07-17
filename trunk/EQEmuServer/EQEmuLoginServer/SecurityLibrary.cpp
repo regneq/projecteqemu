@@ -48,12 +48,7 @@ bool SecurityLibrary::Load(const char *name)
 {
 #ifdef WIN32
 	SetLastError(0);
-	
-#ifdef NDEBUG //release mode
-	hDLL = LoadLibrary((LPCWSTR)name);
-#else //debug mode
 	hDLL = LoadLibrary(name);
-#endif
 
 #else
 	hDLL = LoadLibrary(name);

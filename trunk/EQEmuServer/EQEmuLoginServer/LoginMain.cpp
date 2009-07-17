@@ -39,10 +39,9 @@ using namespace std;
 int main() {
 	UpdateWindowTitle(0);
 
-	cout << "EQEmuLoginServer v1.0 ALPHA by The Oustanding Developers at PEQ!" << endl << endl;
+	cout << "EQEmuLoginServer" << endl << endl;
 
 	inifile.Load("eqemulogin.ini");
-	// printf("Using Port: %-4i \n", inifile.PortNumber);
 	cout << "  Using Port: " << inifile.PortNumber << endl;
 
 	if(inifile.DumpPacketsIn) 
@@ -92,11 +91,7 @@ void UpdateWindowTitle(char* iNewTitle) {
         else {
                 snprintf(tmp, sizeof(tmp), "EQEmu Login Server");
         }
-#ifdef NDEBUG //if release mode
-        SetConsoleTitle((LPCWSTR)tmp);
-#else
 		SetConsoleTitle(tmp);
-#endif
 
 #endif
 }
