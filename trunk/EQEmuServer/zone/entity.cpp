@@ -739,6 +739,54 @@ Doors* EntityList::FindDoor(int8 door_id)
 	return 0;
 }
 
+Object* EntityList::FindObject(int32 object_id)
+{
+	LinkedListIterator<Object*> iterator(object_list);
+	iterator.Reset();
+
+	while(iterator.MoreElements())
+	{
+		Object* object=iterator.GetData();
+		if (object->GetDBID() == object_id)
+		{
+			return object;
+		}
+		iterator.Advance();
+	}
+	return NULL;
+}
+
+Object* EntityList::FindNearbyObject(float x, float y, float z, float radius)
+{
+	LinkedListIterator<Object*> iterator(object_list);
+	iterator.Reset();
+
+	float ox;
+	float oy;
+	float oz;
+
+	while(iterator.MoreElements())
+	{
+		Object* object=iterator.GetData();
+		
+		object->GetLocation(&ox, &oy, &oz);
+
+		ox = (x < ox) ? (ox - x) : (x - ox);
+		oy = (y < oy) ? (oy - y) : (y - oy);
+		oz = (z < oz) ? (oz - z) : (z - oz);
+
+		if ((ox <= radius) && (oy <= radius) && (oz <= radius))
+		{
+			return object;
+		}
+		iterator.Advance();
+	}
+
+
+	return NULL;
+}
+
+
 bool EntityList::MakeDoorSpawnPacket(EQApplicationPacket* app)
 {
 	int32 count = door_list.Count();

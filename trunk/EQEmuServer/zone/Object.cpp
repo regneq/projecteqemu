@@ -627,6 +627,110 @@ void ZoneDatabase::DeleteObject(uint32 id)
 	safe_delete_array(query);
 }
 
+int32 Object::GetDBID()
+{
+	return this->m_id;
+}
 
+int32 Object::GetType()
+{
+	return this->m_type;
+}
 
+void Object::SetType(uint32 type)
+{
+	this->m_type = type;
+	this->m_data.object_type = type;
+}
+
+int32 Object::GetIcon()
+{
+	return this->m_icon;
+}
+
+void Object::SetIcon(int32 icon)
+{
+	this->m_icon = icon;
+}
+
+int32 Object::GetItemID()
+{
+	if (this->m_inst == 0)
+	{
+		return 0;
+	}
+
+	const Item_Struct* item = this->m_inst->GetItem();
+
+	if (item == 0)
+	{
+		return 0;
+	}
+
+	return item->ID;
+}
+
+void Object::SetItemID(int32 itemid)
+{
+	safe_delete(this->m_inst);
+  
+	if (itemid)
+	{
+		this->m_inst = database.CreateItem(itemid);
+	}
+}
+
+void Object::GetObjectData(Object_Struct* Data)
+{
+	if (Data)
+	{
+		memcpy(Data, &this->m_data, sizeof(this->m_data));
+	}
+}
+
+void Object::SetObjectData(Object_Struct* Data)
+{
+	if (Data)
+	{
+		memcpy(&this->m_data, Data, sizeof(this->m_data));
+	}
+}
+
+void Object::GetLocation(float* x, float* y, float* z)
+{
+	if (x)
+	{
+		*x = this->m_data.x;
+	}
+
+	if (y)
+	{
+		*y = this->m_data.y;
+	}
+
+	if (z)
+	{
+		*z = this->m_data.z;
+	}
+}
+
+void Object::SetLocation(float x, float y, float z)
+{
+	this->m_data.x = x;
+	this->m_data.y = y;
+	this->m_data.z = z;
+}
+
+void Object::GetHeading(float* heading)
+{
+	if (heading)
+	{
+		*heading = this->m_data.heading;
+	}
+}
+
+void Object::SetHeading(float heading)
+{
+	this->m_data.heading = heading;
+}
 

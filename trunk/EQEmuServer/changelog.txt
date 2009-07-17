@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==07/15/2009==
+Trevius: (Shendare) New object command (#object List|Add|Edit|Move|Rotate|Save|Copy|Delete|Undo) to manipulate objects in real-time from in-game in almost every possible way!
+
 ==07/14/2009==
 WildcardX: (for BOTS alpha code only) Set textures to 0 to create the correct appearance of a naked bot on spawn without any equipment.
 AndMetal: Changed AA Effects to be loaded into a map instead of a static array.
