@@ -4,6 +4,7 @@
 #ifdef BOTS
 
 #include "botStructs.h"
+#include "botRaids.h"
 #include "mob.h"
 #include "client.h"
 #include "groups.h"
@@ -33,7 +34,11 @@ class Bot : public NPC {
 public:
 	// Class Constructors
 	Bot(NPCType npcTypeData, Client* botOwner);
-	Bot(uint32 botID, uint32 botOwnerCharacterID, uint32 botInventoryID, uint32 botSpellsID, NPCType npcTypeData);
+	Bot(uint32 botID, uint32 botOwnerCharacterID, uint32 botSpellsID, NPCType npcTypeData);
+
+	//abstract virtual function implementations requird by base abstract class
+	virtual void FinishTrade(Mob* tradingWith);
+	virtual void Death(Mob* killerMob, sint32 damage, int16 spell_id, SkillType attack_skill);
 
 	// Class Methods
 	bool IsValidRaceClassCombo();
@@ -43,20 +48,19 @@ public:
 	void Spawn(Client* botCharacterOwner, std::string* errorMessage);
 	//void SetBotOwnerCharacterID(uint32 botOwnerCharacterID, std::string* errorMessage);
 	void Depop(std::string* errorMessage);
-	bool MesmerizeTarget(Mob* target);
 	virtual void SetLevel(uint8 in_level, bool command = false) override;
 	virtual void FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho) override;
 	virtual bool Process() override;
 	//virtual void AI_Process();
 	virtual bool Save() override;
 	virtual void Depop(bool StartSpawnTimer = true) override;
-	void BotRemoveEquipItem(int slot) { equipment[slot] = 0; }
-	void BotAddEquipItem(int slot, uint32 id) { equipment[slot] = id; }
-	void SendBotArcheryWearChange(int8 material_slot, uint32 material, uint32 color);
 	void CalcBotStats(bool showtext = true);
 	int16 BotGetSpells(int spellslot) { return AIspells[spellslot].spellid; }
 	int16 BotGetSpellType(int spellslot) { return AIspells[spellslot].type; }
     int16 BotGetSpellPriority(int spellslot) { return AIspells[spellslot].priority; }
+	
+	// Bot Action Command Methods
+	bool MesmerizeTarget(Mob* target);
 	bool Bot_Command_Resist(int resisttype, int level);
 	bool Bot_Command_DireTarget(int diretype, Mob *target);
 	bool Bot_Command_CharmTarget(int charmtype, Mob *target);
@@ -74,7 +78,7 @@ public:
 	virtual bool IsBotOrderAttack() { return _botOrderAttack; }
 	virtual void SetBotOrderAttack(bool botAttack) { _botOrderAttack = botAttack; }
 
-	// Bot Inventory Class Methods
+	// Bot Equipment & Inventory Class Methods
 	uint32 GetBotItemBySlot(uint32 slotID, std::string* errorMessage);
 	std::list<BotInventory> GetBotItems(std::string* errorMessage);
 	void RemoveBotItemBySlot(uint32 slotID, std::string* errorMessage);
@@ -82,6 +86,9 @@ public:
 	uint32 GetBotItemsCount(std::string* errorMessage);
 	void BotTradeSwapItem(Client* client, sint16 lootSlot, uint32 id, sint16 maxCharges, uint32 equipableSlots, std::string* errorMessage, bool swap = true);
 	void BotTradeAddItem(uint32 id, sint16 maxCharges, uint32 equipableSlots, int16 lootSlot, Client* client, std::string* errorMessage, bool addToDb = true);
+	void BotRemoveEquipItem(int slot) { equipment[slot] = 0; }
+	void BotAddEquipItem(int slot, uint32 id) { equipment[slot] = id; }
+	void SendBotArcheryWearChange(int8 material_slot, uint32 material, uint32 color);
 
 	// Static Class Methods
 	static Bot* LoadBot(uint32 botID, std::string* errorMessage);
@@ -106,7 +113,6 @@ public:
 	uint32 GetBotID() { return _botID; }
 	uint32 GetBotOwnerCharacterID() { return _botOwnerCharacterID; }
 	uint32 GetBotSpellID() { return _botSpellID; }
-	uint32 GetInventoryID() { return _botInventoryID; }
 	Mob* GetBotOwner() { return _botOwner; }
 	uint32 GetBotArcheryRange() { return _botArcheryRange; }
 	virtual bool GetSpawnStatus() { return _spawnStatus; }
@@ -128,7 +134,7 @@ public:
 	void SetPetChooser(bool p) { _petChooser = p; }
 	void SetBotOwner(Mob* botOwner) { _botOwner = botOwner; }
 
-	// Class Deconstructors
+	// Class Destructors
 	virtual ~Bot();
 
 protected:
@@ -146,7 +152,6 @@ private:
 	uint32 _botID;
 	uint32 _botOwnerCharacterID;
 	uint32 _botSpellID;
-	uint32 _botInventoryID;
 	bool _spawnStatus;
 	Mob* _botOwner;
 	// uint32 _expPoints;

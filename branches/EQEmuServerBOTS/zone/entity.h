@@ -52,6 +52,7 @@ class EntityList;
 
 #ifdef BOTS
 class Bot;
+//class BotRaids;
 #endif
 
 #ifdef EQBOTS
@@ -418,8 +419,13 @@ private:
 		bool RemoveBot(int16 entityID);
 		bool Bot_AICheckCloseBeneficialSpells(Bot* caster, int8 iChance, float iRange, int16 iSpellTypes);
 		void ShowSpawnWindow(Client* client, int Distance, bool NamedOnly);
+		//BotRaids* GetBotRaidByMob(Mob *mr);
+		//bool RemoveBotRaid(int16 delete_id);
+		//void AddBotRaid(BotRaids *br);
+		//void AddBotRaid(BotRaids *br, int16 id);
 	private:
 		LinkedList<Bot*> bot_list;
+		//list<BotRaids*> botraid_list;
 #endif
 };
 

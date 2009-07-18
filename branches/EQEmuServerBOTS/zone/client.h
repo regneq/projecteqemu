@@ -148,6 +148,15 @@ public:
 	Client(EQStreamInterface * ieqs);
     ~Client();
 
+	//abstract virtual function implementations requird by base abstract class
+	virtual void FinishTrade(Mob* tradingWith);
+	virtual void Death(Mob* killerMob, sint32 damage, int16 spell_id, SkillType attack_skill);
+
+	// This FinishTrade method is for EQBOTS only until BOTS is ready. Its just a temporary hack to keep EQBOTS working.
+#ifdef EQBOTS
+	void FinishEQBOTTrade(NPC* with);
+#endif
+
 //	void	Discipline(ClientDiscipline_Struct* disc_in, Mob* tar);
 	void	AI_Init();
 	void	AI_Start(int32 iMoveDelay = 0);
@@ -250,7 +259,7 @@ public:
 	bool	AutoFireEnabled() const { return auto_fire; }
 	bool	Attack(Mob* other, int Hand = 13, bool bRiposte = false);	// 13 = Primary (default), 14 = secondary
 	void	Damage(Mob* other, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable = true, sint8 buffslot = -1, bool iBuffTic = false);
-	void	Death(Mob* other, sint32 damage, int16 spell_id, SkillType attack_skill);
+	//void	Death(Mob* other, sint32 damage, int16 spell_id, SkillType attack_skill);
 	void	MakeCorpse(int32 exploss);
 
 	bool	ChangeFirstName(const char* in_firstname,const char* gmname);
@@ -315,11 +324,7 @@ public:
 	inline bool MelodyIsActive() const { return(melodystate); } // is activated
 	void		MelodySetSong(int gem_id, int slot = -1); // set a specific song in the array
 	inline void MelodySetState(bool state) { melodystate = state; this->Message(0, "Melody %s.", state ? "activated" : "deactivated"); } // activate / deactivate melody
-	void		MelodyTrySong();
-	
-
-	
-	
+	void		MelodyTrySong();	
 	
 	
 	
@@ -503,8 +508,6 @@ public:
 	void	AddMoneyToPP(uint32 copper, uint32 silver, uint32 gold,uint32 platinum,bool updateclient);
 	bool	HasMoney(uint64 copper);
 
-	void	FinishTrade(Client* with);
-	void	FinishTrade(NPC* with);
 	bool	TGB() const { return tgb; }
 
 #ifdef EQBOTS

@@ -63,6 +63,10 @@ public:
 	
 	virtual ~NPC();
 
+	//abstract virtual function implementations requird by base abstract class
+	virtual void FinishTrade(Mob* tradingWith);
+	virtual void Death(Mob* killerMob, sint32 damage, int16 spell_id, SkillType attack_skill);
+
 	virtual bool IsNPC() const { return true; }
 
 	virtual bool Process();
@@ -120,7 +124,7 @@ public:
 #endif //EQBOTS
 
 	void	Damage(Mob* other, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable = true, sint8 buffslot = -1, bool iBuffTic = false);
-	void	Death(Mob* other, sint32 damage, int16 spell_id, SkillType attack_skill);
+	//void	Death(Mob* other, sint32 damage, int16 spell_id, SkillType attack_skill);
 	bool	DatabaseCastAccepted(int spell_id);
 	bool	IsFactionListAlly(uint32 other_faction);
 	FACTION_VALUE CheckNPCFactionAlly(sint32 other_faction);

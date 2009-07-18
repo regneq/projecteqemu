@@ -3894,14 +3894,20 @@ void Client::Handle_OP_CancelTrade(const EQApplicationPacket *app)
 		with->CastToClient()->QueuePacket(app);
 
 		// Put trade items/cash back into inventory
-		FinishTrade(this);
+		FinishTrade(with);
 		trade->Reset();
 	}
 	else if(with){
 		CancelTrade_Struct* msg = (CancelTrade_Struct*) app->pBuffer;
 		msg->fromid = with->GetID();
 		QueuePacket(app);
-		FinishTrade(this);
+#ifdef EQBOTS
+		if(with->IsBot())
+			FinishEQBOTTrade(with->CastToNPC());
+		else
+#endif
+		FinishTrade(with);
+
 		trade->Reset();
 	}
 	EQApplicationPacket end_trade1(OP_FinishWindow, 0);
@@ -3951,12 +3957,18 @@ void Client::Handle_OP_TradeAcceptClick(const EQApplicationPacket *app)
 			this->FastQueuePacket(&outapp);
 		}
 	}
-	else if(with && with->IsNPC()){
-		//trading with an NPC
+	else if(with) {
+		// Trading with a Mob object that is not a Client.
 		EQApplicationPacket* outapp = new EQApplicationPacket(OP_FinishTrade,0);
 		QueuePacket(outapp);
 		safe_delete(outapp);
-		FinishTrade(with->CastToNPC());
+#ifdef EQBOTS
+		if(with->IsBot())
+			FinishEQBOTTrade(with->CastToNPC());
+		else
+#endif
+		with->FinishTrade(this);
+
 		trade->Reset();
 	}
 

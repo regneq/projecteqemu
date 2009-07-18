@@ -2001,7 +2001,7 @@ bool NPC::BotAttackMelee(Mob* other, int Hand, bool bRiposte)
 
 #endif //EQBOTS
 
-void Client::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill)
+void Client::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_skill)
 {
 	if(!ClientFinishedLoading())
 		return;
@@ -2044,7 +2044,7 @@ void Client::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skil
 
 	int exploss;
 
-	mlog(COMBAT__HITS, "Fatal blow dealt by %s with %d damage, spell %d, skill %d", other->GetName(), damage, spell, attack_skill);
+	mlog(COMBAT__HITS, "Fatal blow dealt by %s with %d damage, spell %d, skill %d", killerMob->GetName(), damage, spell, attack_skill);
 	
 	//
 	// #1: Send death packet to everyone
@@ -2067,7 +2067,7 @@ void Client::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skil
 	EQApplicationPacket app(OP_Death, sizeof(Death_Struct));
 	Death_Struct* d = (Death_Struct*)app.pBuffer;
 	d->spawn_id = GetID();
-	d->killer_id = other ? other->GetID() : 0;
+	d->killer_id = killerMob ? killerMob->GetID() : 0;
 	d->corpseid=GetID();
 	d->bindzoneid = m_pp.binds[0].zoneId;
 	d->spell_id = spell == SPELL_UNKNOWN ? 0xffffffff : spell;
@@ -2086,20 +2086,20 @@ void Client::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skil
 	dead = true;
 	dead_timer.Start(5000, true);
 
-	if (other != NULL)
+	if (killerMob != NULL)
 	{
-		if (other->IsNPC())
-			parse->Event(EVENT_SLAY, other->GetNPCTypeID(), 0, other->CastToNPC(), this);
+		if (killerMob->IsNPC())
+			parse->Event(EVENT_SLAY, killerMob->GetNPCTypeID(), 0, killerMob->CastToNPC(), this);
 		
-		if(other->IsClient() && (IsDueling() || other->CastToClient()->IsDueling())) {
+		if(killerMob->IsClient() && (IsDueling() || killerMob->CastToClient()->IsDueling())) {
 			SetDueling(false);
 			SetDuelTarget(0);
-			if (other->IsClient() && other->CastToClient()->IsDueling() && other->CastToClient()->GetDuelTarget() == GetID())
+			if (killerMob->IsClient() && killerMob->CastToClient()->IsDueling() && killerMob->CastToClient()->GetDuelTarget() == GetID())
 			{
 				//if duel opponent killed us...
-				other->CastToClient()->SetDueling(false);
-				other->CastToClient()->SetDuelTarget(0);
-				entity_list.DuelMessage(other,this,false);
+				killerMob->CastToClient()->SetDueling(false);
+				killerMob->CastToClient()->SetDuelTarget(0);
+				entity_list.DuelMessage(killerMob,this,false);
 			} else {
 				//otherwise, we just died, end the duel.
 				Mob* who = entity_list.GetMob(GetDuelTarget());
@@ -2149,13 +2149,13 @@ if(!RuleB(Character, UseDeathExpLossMult)){
 	{
 		exploss = 0;
 	}
-	else if( other )
+	else if( killerMob )
 	{
-		if( other->IsClient() )
+		if( killerMob->IsClient() )
 		{
 			exploss = 0;
 		}
-		else if( other->GetOwner() && other->GetOwner()->IsClient() )
+		else if( killerMob->GetOwner() && killerMob->GetOwner()->IsClient() )
 		{
 			exploss = 0;
 		}
@@ -2200,7 +2200,7 @@ if(!RuleB(Character, UseDeathExpLossMult)){
 
 			char tmp[20];
 			database.GetVariable("ServerType", tmp, 9);
-			if(atoi(tmp)==1 && other != NULL && other->IsClient()){
+			if(atoi(tmp)==1 && killerMob != NULL && killerMob->IsClient()){
 				char tmp2[10] = {0};
 				database.GetVariable("PvPreward", tmp, 9);
 				int reward = atoi(tmp);
@@ -2216,8 +2216,8 @@ if(!RuleB(Character, UseDeathExpLossMult)){
 					new_corpse->SetPKItem(1);
 				else
 					new_corpse->SetPKItem(0);
-				if(other->CastToClient()->isgrouped) {
-					Group* group = entity_list.GetGroupByClient(other->CastToClient());
+				if(killerMob->CastToClient()->isgrouped) {
+					Group* group = entity_list.GetGroupByClient(killerMob->CastToClient());
 					if(group != 0) 
 					{
 						for(int i=0;i<6;i++) 
@@ -2249,24 +2249,24 @@ if(!RuleB(Character, UseDeathExpLossMult)){
 #if 0	// solar: commenting this out for now TODO reimplement becomenpc stuff
 	if (IsBecomeNPC() == true)
 	{
-		if (other != NULL && other->IsClient()) {
-			if (other->CastToClient()->isgrouped && entity_list.GetGroupByMob(other) != 0)
-				entity_list.GetGroupByMob(other->CastToClient())->SplitExp((uint32)(level*level*75*3.5f), this);
+		if (killerMob != NULL && killerMob->IsClient()) {
+			if (killerMob->CastToClient()->isgrouped && entity_list.GetGroupByMob(killerMob) != 0)
+				entity_list.GetGroupByMob(killerMob->CastToClient())->SplitExp((uint32)(level*level*75*3.5f), this);
 
 			else
-				other->CastToClient()->AddEXP((uint32)(level*level*75*3.5f)); // Pyro: Comment this if NPC death crashes zone
+				killerMob->CastToClient()->AddEXP((uint32)(level*level*75*3.5f)); // Pyro: Comment this if NPC death crashes zone
 			//hate_list.DoFactionHits(GetNPCFactionID());
 		}
 
 		Corpse* corpse = new Corpse(this->CastToClient(), 0);
 		entity_list.AddCorpse(corpse, this->GetID());
 		this->SetID(0);
-		if(other->GetOwner() != 0 && other->GetOwner()->IsClient())
-			other = other->GetOwner();
-		if(other != 0 && other->IsClient()) {
-			corpse->AllowMobLoot(other, 0);
-			if(other->CastToClient()->isgrouped) {
-				Group* group = entity_list.GetGroupByClient(other->CastToClient());
+		if(killerMob->GetOwner() != 0 && killerMob->GetOwner()->IsClient())
+			killerMob = killerMob->GetOwner();
+		if(killerMob != 0 && killerMob->IsClient()) {
+			corpse->AllowMobLoot(killerMob, 0);
+			if(killerMob->CastToClient()->isgrouped) {
+				Group* group = entity_list.GetGroupByClient(killerMob->CastToClient());
 				if(group != 0) {
 					for(int i=0; i < MAX_GROUP_MEMBERS; i++) { // Doesnt work right, needs work
 						if(group->members[i] != NULL) {
@@ -2648,9 +2648,9 @@ void NPC::Damage(Mob* other, sint32 damage, int16 spell_id, SkillType attack_ski
 
 }
 
-void NPC::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill) {
+void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_skill) {
 	_ZP(NPC_Death);
-	mlog(COMBAT__HITS, "Fatal blow dealt by %s with %d damage, spell %d, skill %d", other->GetName(), damage, spell, attack_skill);
+	mlog(COMBAT__HITS, "Fatal blow dealt by %s with %d damage, spell %d, skill %d", killerMob->GetName(), damage, spell, attack_skill);
 	
 	if (this->IsEngaged())
 	{
@@ -2676,7 +2676,7 @@ void NPC::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill) 
     //franck-add: EQoffline. If a bot kill a mob, the Killer is its leader.	
 	if(!IsBot()) {
 		if((killer != NULL) && killer->AmIaBot && killer->qglobal) {
-			killer = other;
+			killer = killerMob;
 		}
 		if((killer != NULL) && killer->BotOwner) {
 			killer = killer->BotOwner;
@@ -2695,22 +2695,22 @@ void NPC::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill) 
 	EQApplicationPacket* app= new EQApplicationPacket(OP_Death,sizeof(Death_Struct));
 	Death_Struct* d = (Death_Struct*)app->pBuffer;
 	d->spawn_id = GetID();
-	d->killer_id = other ? other->GetID() : 0;
+	d->killer_id = killerMob ? killerMob->GetID() : 0;
 //	d->unknown12 = 1;
 	d->bindzoneid = 0;
 	d->spell_id = spell == SPELL_UNKNOWN ? 0xffffffff : spell;
 	d->attack_skill = SkillDamageTypes[attack_skill];
 	d->damage = damage;
 	app->priority = 6;
-	entity_list.QueueClients(other, app, false);
+	entity_list.QueueClients(killerMob, app, false);
 	
 	if(respawn2) {
 		respawn2->DeathReset();
 	}
 
-	if (other) {
+	if (killerMob) {
 		if(GetClass() != LDON_TREASURE)
-			hate_list.Add(other, damage);
+			hate_list.Add(killerMob, damage);
 	}
 
 	safe_delete(app);
@@ -2722,7 +2722,7 @@ void NPC::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill) 
     //franck-add: EQoffline. Same there, if a bot kill a mob, the exp goes to its leader.
 	if(!IsBot()) {
 		if((give_exp != NULL) && give_exp->AmIaBot && give_exp->qglobal) {
-			give_exp = other;
+			give_exp = killerMob;
 		}
 		if((give_exp != NULL) && give_exp->BotOwner) {
 			give_exp = give_exp->BotOwner;
@@ -2956,8 +2956,8 @@ void NPC::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill) 
 	}
 	
 	// Parse quests even if we're killed by an NPC
-	if(other) {
-		Mob *oos = other->GetOwnerOrSelf();
+	if(killerMob) {
+		Mob *oos = killerMob->GetOwnerOrSelf();
 		parse->Event(EVENT_DEATH, this->GetNPCTypeID(),0, this, oos);
 		if(oos->IsNPC())
 			parse->Event(EVENT_NPC_SLAY, this->GetNPCTypeID(), 0, oos->CastToNPC(), this);
@@ -2965,8 +2965,8 @@ void NPC::Death(Mob* other, sint32 damage, int16 spell, SkillType attack_skill) 
 	
 	this->WipeHateList();
 	p_depop = true;
-	if(other && other->GetTarget() == this) //we can kill things without having them targeted
-		other->SetTarget(NULL); //via AE effects and such..
+	if(killerMob && killerMob->GetTarget() == this) //we can kill things without having them targeted
+		killerMob->SetTarget(NULL); //via AE effects and such..
 
 #ifdef EQBOTS
 

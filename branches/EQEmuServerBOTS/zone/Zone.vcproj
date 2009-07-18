@@ -323,7 +323,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="C:\perl\lib\core"
-				PreprocessorDefinitions="EMBPERL;EMBPERL_PLUGIN;SHAREMEM;i386;_WIN32_WINNT=0x0400;ZONE;INVERSEXY;WIN32;_CONSOLE;FIELD_ITEMS;EQDEBUG=5;EQBOTS"
+				PreprocessorDefinitions="EMBPERL;EMBPERL_PLUGIN;SHAREMEM;i386;_WIN32_WINNT=0x0400;ZONE;INVERSEXY;WIN32;_CONSOLE;FIELD_ITEMS;EQDEBUG=5;BOTS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				PrecompiledHeaderFile=".\..\Build\ZonePerl/Zone.pch"
