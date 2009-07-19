@@ -1,5 +1,5 @@
 Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual C++ Express 2008
+# Visual Studio 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EMuShareMem", "EMuShareMem\EMuShareMem.vcproj", "{21168136-6906-4039-B486-6086E164E743}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "World", "world\World.vcproj", "{0FD472B1-CCB8-4ED2-8F4E-A1FC34E668EC}"
@@ -13,6 +13,11 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mailserver", "mailserver\mailserver.vcproj", "{43F55C6E-770A-49C9-BBEE-2C8FB7638E40}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ucs", "ucs\ucs.vcproj", "{A49B3EAF-553A-42F6-B343-A1EDEE6EBE4D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A8888EE2-5A40-415B-80AF-E316491C5FB3}"
+	ProjectSection(SolutionItems) = preProject
+		changelog.txt = changelog.txt
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

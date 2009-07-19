@@ -4,6 +4,8 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 Trevius: EVENT_PROXIMITY_SAY will now work whether you have a target or not.
 Trevius: Added bool option to quest::saylink() to allow them to be silent. Ex. quest::saylink("silent link",1)
 Trevius: Added quest::FlyMode() command to allow setting flymode on players via quest scripts.
+WildcardX: Fixed the build by casting this->GetTarget() as NPC in void Client::Handle_OP_ItemLinkClick method as a parameter to a EVENT_SAY call.
+WildcardX: Added the changelog file to the solution for convenience.
 
 ==07/15/2009==
 Trevius: (Shendare) New object command (#object List|Add|Edit|Move|Rotate|Save|Copy|Delete|Undo) to manipulate objects in real-time from in-game in almost every possible way!
@@ -199,7 +201,8 @@ Trevius: (takatok) AA Shield Block added.
 Trevius: (Shendare) Armor Tint on NPCs can now be set on a per-slot basis.
 cavedude: Added rules to disable/change #peqzone debuffs. Cleaned up code regarding it some.
 Derision: Fixed the BestZ stuff I broke in Rev686
-WildcardX: More work migrating EQBOTS code into BOTS.
+
+WildcardX: More work migrating EQBOTS code into BOTS.
 
 Required SQL: /utils/sql/svn/702_aashieldblock_tint_table.sql
 /utils/sql/svn/703_peqzone_rule.sql

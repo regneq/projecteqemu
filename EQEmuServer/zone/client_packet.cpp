@@ -2440,11 +2440,11 @@ void Client::Handle_OP_ItemLinkClick(const EQApplicationPacket *app)
 				}
 				safe_delete_array(query);
 			}
-			if(this->GetTarget())
+			if(this->GetTarget() && this->GetTarget()->IsNPC())
 			{
 				if(silentsaylink)
 				{
-					parse->Event(EVENT_SAY, this->GetTarget()->GetNPCTypeID(), response, this->GetTarget(), this);
+					parse->Event(EVENT_SAY, this->GetTarget()->GetNPCTypeID(), response, this->GetTarget()->CastToNPC(), this);
 				}
 				else
 				{
