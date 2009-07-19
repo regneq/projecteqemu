@@ -34,6 +34,7 @@ public:
 	virtual void FinishTrade(Mob* tradingWith) { return; }
 	virtual void Death(Mob* killerMob, sint32 damage, int16 spell_id, SkillType attack_skill) { return; }
 	virtual void Damage(Mob* from, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable = true, sint8 buffslot = -1, bool iBuffTic = false) { return; }
+	virtual bool Attack(Mob* other, int Hand = 13, bool FromRiposte = false) { return false; }
 
 	bool	IsBeacon()			const { return true; }
 	bool	Process();

@@ -413,7 +413,6 @@ bool logpos;
 	virtual void SetMoving(bool move) { moving = move; delta_x=0; delta_y=0; delta_z=0; delta_heading=0; }
 	virtual void GoToBind(uint8 bindnum = 0) {}
 	virtual void Gate();
-	virtual bool Attack(Mob* other, int Hand = 13, bool FromRiposte = false) { return false; }		// 13 = Primary (default), 14 = secondary
 	virtual void	RangedAttack(Mob* other) { }
 	virtual void	ThrowingAttack(Mob* other) { }
 	uint16  GetThrownDamage(sint16 wDmg, sint32& TotalDmg, int& minDmg);
@@ -453,7 +452,9 @@ bool logpos;
 	virtual void FinishTrade(Mob* tradingWith) = 0;
 	virtual void Death(Mob* killerMob, sint32 damage, int16 spell_id, SkillType attack_skill) = 0;
 	virtual void Damage(Mob* from, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable = true, sint8 buffslot = -1, bool iBuffTic = false) = 0;
-	
+	virtual bool Attack(Mob* other, int Hand = 13, bool FromRiposte = false) = 0;	// 13 = Primary (default), 14 = secondary
+
+	// methods with implementation
 	virtual void Heal();
 	virtual void HealDamage(uint32 ammount, Mob* caster = NULL);
 	virtual void SetMaxHP() { cur_hp = max_hp; }

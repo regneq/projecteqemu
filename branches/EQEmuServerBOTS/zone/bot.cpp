@@ -4485,6 +4485,10 @@ void Bot::Damage(Mob *from, sint32 damage, int16 spell_id, SkillType attack_skil
 	//
 }
 
+bool Bot::Attack(Mob* other, int Hand, bool FromRiposte) {
+	return false;
+}
+
 void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 	// TODO: All bot command processing occurs here now instead of in command.cpp
 
