@@ -4503,6 +4503,25 @@ bool Bot::Attack(Mob* other, int Hand, bool FromRiposte) {
 	return this->BotAttackMelee(other, Hand, FromRiposte);
 }
 
+void Bot::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHelp, bool bFrenzy, bool iBuffTic) {
+	if(other && other != this && other != this->GetBotOwner() && other != GetOwner() && !SpecAttacks[IMMUNE_AGGRO] && !other->SpecAttacks[IMMUNE_TARGET]) {
+		// TODO: Evaluate "GetBotOwner()->CastToClient()->IsOrderBotAttack()"
+		/*if(GetBotOwner() && !GetBotOwner()->CastToClient()->IsOrderBotAttack()) {
+				return;
+		}*/
+
+		CommonAddToHateList(other, hate, damage, iYellForHelp, bFrenzy, iBuffTic);
+
+		if(GetBotOwner() && GetBotOwner()->CastToClient()->GetFeigned()) {
+			AddFeignMemory(GetBotOwner()->CastToClient());
+		}
+		else {
+			if(!hate_list.IsOnHateList(GetBotOwner()))
+				hate_list.Add(GetBotOwner(), 0, 0, false, true);
+		}
+	}
+}
+
 void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 	// TODO: All bot command processing occurs here now instead of in command.cpp
 

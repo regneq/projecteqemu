@@ -2890,23 +2890,15 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 		killerMob->SetTarget(NULL); //via AE effects and such..
 }
 
-void Mob::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHelp, bool bFrenzy, bool iBuffTic) {
+void Mob::CommonAddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHelp, bool bFrenzy, bool iBuffTic) {
     assert(other != NULL);
     if (other == this)
         return;
 
-#ifdef EQBOTS
-
-	if((IsBot() && BotOwner && !BotOwner->CastToClient()->IsOrderBotAttack()) ||
-		(IsPet() && GetOwner() && GetOwner()->IsBot() && GetOwner()->BotOwner && !GetOwner()->BotOwner->CastToClient()->IsOrderBotAttack())) {
-		return;
-	}
-
-#endif //EQBOTS
-
     if(damage < 0){
         hate = 1;
     }
+
 	bool wasengaged = IsEngaged();
 	Mob* owner = other->GetOwner();
 	Mob* mypet = this->GetPet();
@@ -2939,21 +2931,6 @@ void Mob::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHel
 	// first add self
 	hate_list.Add(other, hate, damage, bFrenzy, !iBuffTic);
 
-#ifdef EQBOTS
-
-	// if other is a bot, add the bots client to the hate list
-	if(other->IsBot()) {
-		if(other->BotOwner && other->BotOwner->CastToClient()->GetFeigned()) {
-			AddFeignMemory(other->BotOwner->CastToClient());
-		}
-		else {
-			if(!hate_list.IsOnHateList(other->BotOwner))
-				hate_list.Add(other->BotOwner, 0, 0, false, true);
-		}
-	}
-
-#endif //EQBOTS
-
 	// then add pet owner if there's one
 	if (owner) { // Other is a pet, add him and it
 		// EverHood 6/12/06
@@ -2975,11 +2952,34 @@ void Mob::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHel
 		if (myowner->IsAIControlled() && !myowner->SpecAttacks[IMMUNE_AGGRO])
 			myowner->hate_list.Add(other, 0, 0, bFrenzy);
 	}
-	if (!wasengaged) { 
-		if(IsNPC() && other->IsClient() && other->CastToClient())
-			parse->Event(EVENT_AGGRO, this->GetNPCTypeID(), 0, CastToNPC(), other); 
-		AI_Event_Engaged(other, iYellForHelp); 
-		adverrorinfo = 8293;
+	//if (!wasengaged) { 
+	//	if(IsNPC() && other->IsClient() && other->CastToClient())
+	//		parse->Event(EVENT_AGGRO, this->GetNPCTypeID(), 0, CastToNPC(), other); 
+	//	AI_Event_Engaged(other, iYellForHelp); 
+	//	adverrorinfo = 8293;
+	//}
+}
+
+void Client::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHelp, bool bFrenzy, bool iBuffTic) {
+	if(this->IsAIControlled() && !this->SpecAttacks[IMMUNE_AGGRO] && other && other != this && other != this->GetOwner() && !other->SpecAttacks[IMMUNE_TARGET]) {
+		CommonAddToHateList(other, hate, damage, iYellForHelp, bFrenzy, iBuffTic);
+	}
+}
+
+void NPC::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHelp, bool bFrenzy, bool iBuffTic) {
+	if(!this->SpecAttacks[IMMUNE_AGGRO] && other && other != this && other != this->GetOwner() && !other->SpecAttacks[IMMUNE_TARGET]) {
+		if(!IsPet() && GetOwner() && !GetOwner()->GetAA(aaPetDiscipline) && !IsHeld()) {
+			if(!this->IsFamiliar()) {
+				CommonAddToHateList(other, hate, damage, iYellForHelp, bFrenzy, iBuffTic);
+
+				if (!this->IsEngaged()) { 
+					if(other->IsClient() && other->CastToClient())
+						parse->Event(EVENT_AGGRO, this->GetNPCTypeID(), 0, CastToNPC(), other); 
+					AI_Event_Engaged(other, iYellForHelp); 
+					adverrorinfo = 8293;
+				}
+			}
+		}
 	}
 }
 

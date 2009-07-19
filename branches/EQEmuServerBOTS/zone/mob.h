@@ -453,6 +453,7 @@ bool logpos;
 	virtual void Death(Mob* killerMob, sint32 damage, int16 spell_id, SkillType attack_skill) = 0;
 	virtual void Damage(Mob* from, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable = true, sint8 buffslot = -1, bool iBuffTic = false) = 0;
 	virtual bool Attack(Mob* other, int Hand = 13, bool FromRiposte = false) = 0;	// 13 = Primary (default), 14 = secondary
+	virtual void AddToHateList(Mob* other, sint32 hate = 0, sint32 damage = 0, bool iYellForHelp = true, bool bFrenzy = false, bool iBuffTic = false) = 0;
 
 	// methods with implementation
 	virtual void Heal();
@@ -869,7 +870,6 @@ bool logpos;
 	int					GetSnaredAmount();
 
 	bool				RemoveFromHateList(Mob* mob);
-    void				AddToHateList(Mob* other, sint32 hate = 0, sint32 damage = 0, bool iYellForHelp = true, bool bFrenzy = false, bool iBuffTic = false);
 	void				SetHate(Mob* other, sint32 hate = 0, sint32 damage = 0) {hate_list.Set(other,hate,damage);}
 	int32				GetHateAmount(Mob* tmob, bool is_dam = false)  {return hate_list.GetEntHate(tmob,is_dam);}
 	int32				GetDamageAmount(Mob* tmob)  {return hate_list.GetEntHate(tmob, true);}
@@ -1016,6 +1016,7 @@ bool logpos;
 	bool TryDeathSave();
 
 protected:
+	void CommonAddToHateList(Mob* other, sint32 hate = 0, sint32 damage = 0, bool iYellForHelp = true, bool bFrenzy = false, bool iBuffTic = false);
 	void CommonDamage(Mob* other, sint32 &damage, const uint16 spell_id, const SkillType attack_skill, bool &avoidable, const sint8 buffslot, const bool iBuffTic);
 	static uint16 GetProcID(uint16 spell_id, uint8 effect_index);
 	float _GetMovementSpeed(int mod) const;
