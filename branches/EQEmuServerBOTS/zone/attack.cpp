@@ -2891,6 +2891,7 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 }
 
 void Mob::CommonAddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHelp, bool bFrenzy, bool iBuffTic) {
+	// TODO: Make this method generic and non specific to any objects that derive (Client, NPC, Bot, Beacon, Corpse, etc)
     assert(other != NULL);
     if (other == this)
         return;

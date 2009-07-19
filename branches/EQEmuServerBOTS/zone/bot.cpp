@@ -1221,291 +1221,6 @@ bool Bot::BotRangedAttack(Mob* other) {
 	return true;
 }
 
-bool Bot::BotAttackMelee(Mob* other, int Hand, bool bRiposte)
-{
-	_ZP(Bot_BotAttackMelee);
-
-	if (!other) {
-		SetTarget(NULL);
-		LogFile->write(EQEMuLog::Error, "A null Mob object was passed to NPC::BotAttackMelee for evaluation!");
-		return false;
-	}
-	
-	if(!GetTarget())
-		SetTarget(other);
-	
-	mlog(COMBAT__ATTACKS, "Attacking %s with hand %d %s", other?other->GetCleanName():"(NULL)", Hand, bRiposte?"(this is a riposte)":"");
-	
-	if ((IsCasting() && (GetClass() != BARD)) ||
-		other == NULL ||
-		(GetHP() < 0) ||
-		(!IsAttackAllowed(other)))
-	{
-		if(this->GetOwnerID())
-			entity_list.MessageClose(this, 1, 200, 10, "%s says, 'That is not a legal target master.'", this->GetCleanName());
-		if(other)
-			RemoveFromHateList(other);
-		mlog(COMBAT__ATTACKS, "I am not allowed to attack %s", other->GetCleanName());
-		return false;
-	}
-
-	if(DivineAura()) {//cant attack while invulnerable
-		mlog(COMBAT__ATTACKS, "Attack canceled, Divine Aura is in effect.");
-		return false;
-	}
-	
-	FaceTarget(target);
-
-	ItemInst* weapon = NULL;
-	const Item_Struct* botweapon = NULL;
-	if((Hand == SLOT_PRIMARY) && equipment[MATERIAL_PRIMARY])
-	    botweapon = database.GetItem(equipment[MATERIAL_PRIMARY]);
-	if((Hand == SLOT_SECONDARY) && equipment[MATERIAL_SECONDARY])
-	    botweapon = database.GetItem(equipment[MATERIAL_SECONDARY]);
-	if(botweapon != NULL)
-		weapon = new ItemInst(botweapon);
-
-	if(weapon != NULL) {
-		if (!weapon->IsWeapon()) {
-			mlog(COMBAT__ATTACKS, "Attack canceled, Item %s (%d) is not a weapon.", weapon->GetItem()->Name, weapon->GetID());
-			safe_delete(weapon);
-			return(false);
-		}
-		mlog(COMBAT__ATTACKS, "Attacking with weapon: %s (%d)", weapon->GetItem()->Name, weapon->GetID());
-	} else {
-		mlog(COMBAT__ATTACKS, "Attacking without a weapon.");
-	}
-	
-	// calculate attack_skill and skillinuse depending on hand and weapon
-	// also send Packet to near clients
-	SkillType skillinuse;
-	AttackAnimation(skillinuse, Hand, weapon);
-	mlog(COMBAT__ATTACKS, "Attacking with %s in slot %d using skill %d", weapon?weapon->GetItem()->Name:"Fist", Hand, skillinuse);
-	
-	/// Now figure out damage
-	int damage = 0;
-	int weapon_damage = GetWeaponDamage(other, weapon);
-	
-	//if weapon damage > 0 then we know we can hit the target with this weapon
-	//otherwise we cannot and we set the damage to -5 later on
-	if(weapon_damage > 0){
-		
-		//Berserker Berserk damage bonus
-		if((GetHPRatio() < 30) && (GetClass() == BERSERKER)){
-			int bonus = 3 + GetLevel()/10;		//unverified
-			weapon_damage = weapon_damage * (100+bonus) / 100;
-			mlog(COMBAT__DAMAGE, "Berserker damage bonus increases DMG to %d", weapon_damage);
-		}
-
-		//try a finishing blow.. if successful end the attack
-		if(TryFinishingBlow(other, skillinuse)) {
-			safe_delete(weapon);
-			return (true);
-		}
-		
-		//damage formula needs some work
-		int min_hit = 1;
-		int max_hit = (2*weapon_damage*GetDamageTable(skillinuse)) / 100;
-
-		if(GetLevel() < 10 && max_hit > 20)
-			max_hit = 20;
-		else if(GetLevel() < 20 && max_hit > 40)
-			max_hit = 40;
-
-		//if mainhand only, get the bonus damage from level
-		if((Hand == SLOT_PRIMARY) && (GetLevel() >= 28) && IsWarriorClass())
-		{
-			int8 ucDamageBonus = GetWeaponDamageBonus( weapon ? weapon->GetItem() : (const Item_Struct*) NULL );
-
-			min_hit += (int) ucDamageBonus;
-			max_hit += (int) ucDamageBonus;
-		}
-
-		min_hit = min_hit * (100 + itembonuses.MinDamageModifier + spellbonuses.MinDamageModifier) / 100;
-
-		if(Hand == SLOT_SECONDARY) {
-			if((GetClass() == WARRIOR) ||
-				(GetClass() == ROGUE) ||
-				(GetClass() == MONK) ||
-				(GetClass() == RANGER) ||
-				(GetClass() == BARD) ||
-				(GetClass() == BEASTLORD))
-			{
-				if(GetLevel() >= 65)
-				{ // Sinister Strikes AA
-					int sinisterBonus = MakeRandomInt(5, 10);
-					min_hit += (min_hit * sinisterBonus / 100);
-					max_hit += (max_hit * sinisterBonus / 100);
-				}
-			}
-		}
-
-		if(max_hit < min_hit)
-			max_hit = min_hit;
-
-		if(RuleB(Combat, UseIntervalAC))
-			damage = max_hit;
-		else
-			damage = MakeRandomInt(min_hit, max_hit);
-
-		mlog(COMBAT__DAMAGE, "Damage calculated to %d (min %d, max %d, str %d, skill %d, DMG %d, lv %d)",
-			damage, min_hit, max_hit, GetSTR(), GetSkill(skillinuse), weapon_damage, GetLevel());
-
-		//check to see if we hit..
-		if(!other->CheckHitChance(this, skillinuse, Hand)) {
-			mlog(COMBAT__ATTACKS, "Attack missed. Damage set to 0.");
-			damage = 0;
-			other->AddToHateList(this, 0);
-		} else {	//we hit, try to avoid it
-			other->AvoidDamage(this, damage);
-			other->MeleeMitigation(this, damage, min_hit);
-			ApplyMeleeDamageBonus(skillinuse, damage);
-			TryCriticalHit(other, skillinuse, damage);
-			mlog(COMBAT__DAMAGE, "Final damage after all reductions: %d", damage);
-
-			if(damage != 0){
-				sint32 hate = max_hit;
-				mlog(COMBAT__HITS, "Generating hate %d towards %s", hate, GetCleanName());
-				// now add done damage to the hate list
-				other->AddToHateList(this, hate);
-			}
-			else
-				other->AddToHateList(this, 0);
-		}
-
-		//riposte
-		bool slippery_attack = false; // Part of hack to allow riposte to become a miss, but still allow a Strikethrough chance (like on Live)
-		if (damage == -3)  {
-			if(bRiposte) {
-				safe_delete(weapon);
-				return false;
-			}
-			else {
-				
-				int saChance = 0;
-				if(IsWarriorClass()) {
-					if(GetLevel() >= 70)
-					{ // Slippery Attacks AA 5
-						saChance = 5;
-					}
-					else if(GetLevel() >= 69)
-					{ // Slippery Attacks AA 4
-						saChance = 4;
-					}
-					else if(GetLevel() >= 68)
-					{ // Slippery Attacks AA 3
-						saChance = 3;
-					}
-					else if(GetLevel() >= 67)
-					{ // Slippery Attacks AA 2
-						saChance = 2;
-					}
-					else if(GetLevel() >= 66)
-					{ // Slippery Attacks AA 1
-						saChance = 1;
-					}
-				}
-				if ((Hand == SLOT_SECONDARY) && saChance) {// Do we even have it & was attack with mainhand? If not, don't bother with other calculations
-					if (MakeRandomInt(0, 100) < (saChance * 20)) {
-						damage = 0; // Counts as a miss
-						slippery_attack = true;
-					} else DoRiposte(other);
-				}
-				else DoRiposte(other);
-			}
-		}
-		
-		int aaStrikethroughBonus = 0;
-		if(GetClass() == MONK)
-		{
-			if(GetLevel() >= 67)
-			{ // Strikethrough AA 3
-				aaStrikethroughBonus = 6;
-			}
-			else if(GetLevel() >= 66)
-			{ // Strikethrough AA 2
-				aaStrikethroughBonus = 4;
-			}
-			else if(GetLevel() >= 65)
-			{ // Strikethrough AA 1
-				aaStrikethroughBonus = 2;
-			}
-		}
-
-		//strikethrough..
-		if (((damage < 0) || slippery_attack) && !bRiposte) { // Hack to still allow Strikethrough chance w/ Slippery Attacks AA
-			if(MakeRandomInt(0, 100) < (itembonuses.StrikeThrough + spellbonuses.StrikeThrough + aaStrikethroughBonus)) {
-				BotAttackMelee(other, Hand, true); // Strikethrough only gives another attempted hit
-				safe_delete(weapon);
-				return false;
-			}
-		}
-	}
-	else{
-		damage = -5;
-	}
-	
-	///////////////////////////////////////////////////////////
-	//////    Send Attack Damage
-	///////////////////////////////////////////////////////////
-	other->Damage(this, damage, SPELL_UNKNOWN, skillinuse);
-	if(damage > 0 && (spellbonuses.MeleeLifetap || itembonuses.MeleeLifetap)) {
-		mlog(COMBAT__DAMAGE, "Melee lifetap healing for %d damage.", damage);
-		//heal self for damage done..
-		HealDamage(damage);
-	}
-	
-	//break invis when you attack
-	if(invisible) {
-		mlog(COMBAT__ATTACKS, "Removing invisibility due to melee attack.");
-		BuffFadeByEffect(SE_Invisibility);
-		BuffFadeByEffect(SE_Invisibility2);
-		invisible = false;
-	}
-	if(invisible_undead) {
-		mlog(COMBAT__ATTACKS, "Removing invisibility vs. undead due to melee attack.");
-		BuffFadeByEffect(SE_InvisVsUndead);
-		BuffFadeByEffect(SE_InvisVsUndead2);
-		invisible_undead = false;
-	}
-	if(invisible_animals){
-		mlog(COMBAT__ATTACKS, "Removing invisibility vs. animals due to melee attack.");
-		BuffFadeByEffect(SE_InvisVsAnimals);
-		invisible_animals = false;
-	}
-
-	if(hidden || improved_hidden){
-		hidden = false;
-		improved_hidden = false;
-		EQApplicationPacket* outapp = new EQApplicationPacket(OP_SpawnAppearance, sizeof(SpawnAppearance_Struct));
-		SpawnAppearance_Struct* sa_out = (SpawnAppearance_Struct*)outapp->pBuffer;
-		sa_out->spawn_id = GetID();
-		sa_out->type = 0x03;
-		sa_out->parameter = 0;
-		entity_list.QueueClients(this, outapp, true);
-		safe_delete(outapp);
-	}
-	
-	////////////////////////////////////////////////////////////
-	////////  PROC CODE
-	////////  Kaiyodo - Check for proc on weapon based on DEX
-	///////////////////////////////////////////////////////////
-	if(other->GetHP() > -10 && !bRiposte && this) {
-		TryWeaponProc(weapon, other);
-	}
-	
-	if(damage > 0) {
-		// Give the opportunity to throw back a defensive proc, if we are successful in affecting damage on our target
-		other->TriggerDefensiveProcs(this);
-		safe_delete(weapon);
-		return true;
-	}
-	else {
-		safe_delete(weapon);
-		return false;
-	}
-}
-
 bool Bot::CheckBotDoubleAttack(bool tripleAttack) {
 	// If you don't have the double attack skill, return
 	if(!GetSkill(DOUBLE_ATTACK))
@@ -2319,20 +2034,20 @@ void Bot::BotAIProcess() {
 				//try main hand first
 				if(attack_timer.Check())
 				{
-					BotAttackMelee(target, SLOT_PRIMARY);
+					Attack(target, SLOT_PRIMARY);
 					bool tripleSuccess = false;
 					if(BotOwner && target && CanThisClassDoubleAttack()) {
 
 						if(BotOwner && CheckBotDoubleAttack()) {
-							BotAttackMelee(target, SLOT_PRIMARY, true);
+							Attack(target, SLOT_PRIMARY, true);
 						}
 						if(BotOwner && target && SpecAttacks[SPECATK_TRIPLE] && CheckBotDoubleAttack(true)) {
 							tripleSuccess = true;
-							BotAttackMelee(target, SLOT_PRIMARY, true);
+							Attack(target, SLOT_PRIMARY, true);
 						}
 						//quad attack, does this belong here??
 						if(BotOwner && target && SpecAttacks[SPECATK_QUAD] && CheckBotDoubleAttack(true)) {
-							BotAttackMelee(target, SLOT_PRIMARY, true);
+							Attack(target, SLOT_PRIMARY, true);
 						}
 					}
 
@@ -2362,8 +2077,8 @@ void Bot::BotAIProcess() {
 						}
 						if(rand()%1000 < flurrychance) {
 							Message_StringID(MT_Flurry, 128);
-							BotAttackMelee(target, SLOT_PRIMARY, true);
-							BotAttackMelee(target, SLOT_PRIMARY, true);
+							Attack(target, SLOT_PRIMARY, true);
+							Attack(target, SLOT_PRIMARY, true);
 						}
 					}
 
@@ -2391,9 +2106,9 @@ void Bot::BotAIProcess() {
 							chance_xhit2 = 2;
 						}
 						if(MakeRandomInt(1,100) < chance_xhit1)
-							BotAttackMelee(target, SLOT_PRIMARY, true);
+							Attack(target, SLOT_PRIMARY, true);
 						if(target && (MakeRandomInt(1,100) < chance_xhit2))
-							BotAttackMelee(target, SLOT_PRIMARY, true);
+							Attack(target, SLOT_PRIMARY, true);
 					}
 
 					// Handle Punishing Blade and Speed of the Knight and Wicked Blade
@@ -2424,7 +2139,7 @@ void Bot::BotAIProcess() {
 										extatk += 15;
 									}
 									if(MakeRandomInt(0, 100) < extatk) {
-										BotAttackMelee(target, SLOT_PRIMARY, true);
+										Attack(target, SLOT_PRIMARY, true);
 									}
 								}
 							}
@@ -2456,9 +2171,9 @@ void Bot::BotAIProcess() {
 
 							float random = MakeRandomFloat(0, 1);
 							if (random < DualWieldProbability) { // Max 78% of DW
-								BotAttackMelee(target, SLOT_SECONDARY);
+								Attack(target, SLOT_SECONDARY);
 								if(target && CanThisClassDoubleAttack() && CheckBotDoubleAttack()) {
-									BotAttackMelee(target, SLOT_SECONDARY);
+									Attack(target, SLOT_SECONDARY);
 								}
 							}
 						}
@@ -4500,7 +4215,287 @@ void Bot::Damage(Mob *from, sint32 damage, int16 spell_id, SkillType attack_skil
 }
 
 bool Bot::Attack(Mob* other, int Hand, bool FromRiposte) {
-	return this->BotAttackMelee(other, Hand, FromRiposte);
+	_ZP(Bot_Attack);
+
+	if (!other) {
+		SetTarget(NULL);
+		LogFile->write(EQEMuLog::Error, "A null Mob object was passed to NPC::Attack for evaluation!");
+		return false;
+	}
+	
+	if(!GetTarget())
+		SetTarget(other);
+	
+	mlog(COMBAT__ATTACKS, "Attacking %s with hand %d %s", other?other->GetCleanName():"(NULL)", Hand, FromRiposte?"(this is a riposte)":"");
+	
+	if ((IsCasting() && (GetClass() != BARD)) ||
+		other == NULL ||
+		(GetHP() < 0) ||
+		(!IsAttackAllowed(other)))
+	{
+		if(this->GetOwnerID())
+			entity_list.MessageClose(this, 1, 200, 10, "%s says, 'That is not a legal target master.'", this->GetCleanName());
+		if(other)
+			RemoveFromHateList(other);
+		mlog(COMBAT__ATTACKS, "I am not allowed to attack %s", other->GetCleanName());
+		return false;
+	}
+
+	if(DivineAura()) {//cant attack while invulnerable
+		mlog(COMBAT__ATTACKS, "Attack canceled, Divine Aura is in effect.");
+		return false;
+	}
+	
+	FaceTarget(target);
+
+	ItemInst* weapon = NULL;
+	const Item_Struct* botweapon = NULL;
+	if((Hand == SLOT_PRIMARY) && equipment[MATERIAL_PRIMARY])
+	    botweapon = database.GetItem(equipment[MATERIAL_PRIMARY]);
+	if((Hand == SLOT_SECONDARY) && equipment[MATERIAL_SECONDARY])
+	    botweapon = database.GetItem(equipment[MATERIAL_SECONDARY]);
+	if(botweapon != NULL)
+		weapon = new ItemInst(botweapon);
+
+	if(weapon != NULL) {
+		if (!weapon->IsWeapon()) {
+			mlog(COMBAT__ATTACKS, "Attack canceled, Item %s (%d) is not a weapon.", weapon->GetItem()->Name, weapon->GetID());
+			safe_delete(weapon);
+			return(false);
+		}
+		mlog(COMBAT__ATTACKS, "Attacking with weapon: %s (%d)", weapon->GetItem()->Name, weapon->GetID());
+	} else {
+		mlog(COMBAT__ATTACKS, "Attacking without a weapon.");
+	}
+	
+	// calculate attack_skill and skillinuse depending on hand and weapon
+	// also send Packet to near clients
+	SkillType skillinuse;
+	AttackAnimation(skillinuse, Hand, weapon);
+	mlog(COMBAT__ATTACKS, "Attacking with %s in slot %d using skill %d", weapon?weapon->GetItem()->Name:"Fist", Hand, skillinuse);
+	
+	/// Now figure out damage
+	int damage = 0;
+	int weapon_damage = GetWeaponDamage(other, weapon);
+	
+	//if weapon damage > 0 then we know we can hit the target with this weapon
+	//otherwise we cannot and we set the damage to -5 later on
+	if(weapon_damage > 0){
+		
+		//Berserker Berserk damage bonus
+		if((GetHPRatio() < 30) && (GetClass() == BERSERKER)){
+			int bonus = 3 + GetLevel()/10;		//unverified
+			weapon_damage = weapon_damage * (100+bonus) / 100;
+			mlog(COMBAT__DAMAGE, "Berserker damage bonus increases DMG to %d", weapon_damage);
+		}
+
+		//try a finishing blow.. if successful end the attack
+		if(TryFinishingBlow(other, skillinuse)) {
+			safe_delete(weapon);
+			return (true);
+		}
+		
+		//damage formula needs some work
+		int min_hit = 1;
+		int max_hit = (2*weapon_damage*GetDamageTable(skillinuse)) / 100;
+
+		if(GetLevel() < 10 && max_hit > 20)
+			max_hit = 20;
+		else if(GetLevel() < 20 && max_hit > 40)
+			max_hit = 40;
+
+		//if mainhand only, get the bonus damage from level
+		if((Hand == SLOT_PRIMARY) && (GetLevel() >= 28) && IsWarriorClass())
+		{
+			int8 ucDamageBonus = GetWeaponDamageBonus( weapon ? weapon->GetItem() : (const Item_Struct*) NULL );
+
+			min_hit += (int) ucDamageBonus;
+			max_hit += (int) ucDamageBonus;
+		}
+
+		min_hit = min_hit * (100 + itembonuses.MinDamageModifier + spellbonuses.MinDamageModifier) / 100;
+
+		if(Hand == SLOT_SECONDARY) {
+			if((GetClass() == WARRIOR) ||
+				(GetClass() == ROGUE) ||
+				(GetClass() == MONK) ||
+				(GetClass() == RANGER) ||
+				(GetClass() == BARD) ||
+				(GetClass() == BEASTLORD))
+			{
+				if(GetLevel() >= 65)
+				{ // Sinister Strikes AA
+					int sinisterBonus = MakeRandomInt(5, 10);
+					min_hit += (min_hit * sinisterBonus / 100);
+					max_hit += (max_hit * sinisterBonus / 100);
+				}
+			}
+		}
+
+		if(max_hit < min_hit)
+			max_hit = min_hit;
+
+		if(RuleB(Combat, UseIntervalAC))
+			damage = max_hit;
+		else
+			damage = MakeRandomInt(min_hit, max_hit);
+
+		mlog(COMBAT__DAMAGE, "Damage calculated to %d (min %d, max %d, str %d, skill %d, DMG %d, lv %d)",
+			damage, min_hit, max_hit, GetSTR(), GetSkill(skillinuse), weapon_damage, GetLevel());
+
+		//check to see if we hit..
+		if(!other->CheckHitChance(this, skillinuse, Hand)) {
+			mlog(COMBAT__ATTACKS, "Attack missed. Damage set to 0.");
+			damage = 0;
+			other->AddToHateList(this, 0);
+		} else {	//we hit, try to avoid it
+			other->AvoidDamage(this, damage);
+			other->MeleeMitigation(this, damage, min_hit);
+			ApplyMeleeDamageBonus(skillinuse, damage);
+			TryCriticalHit(other, skillinuse, damage);
+			mlog(COMBAT__DAMAGE, "Final damage after all reductions: %d", damage);
+
+			if(damage != 0){
+				sint32 hate = max_hit;
+				mlog(COMBAT__HITS, "Generating hate %d towards %s", hate, GetCleanName());
+				// now add done damage to the hate list
+				other->AddToHateList(this, hate);
+			}
+			else
+				other->AddToHateList(this, 0);
+		}
+
+		//riposte
+		bool slippery_attack = false; // Part of hack to allow riposte to become a miss, but still allow a Strikethrough chance (like on Live)
+		if (damage == -3)  {
+			if(FromRiposte) {
+				safe_delete(weapon);
+				return false;
+			}
+			else {
+				
+				int saChance = 0;
+				if(IsWarriorClass()) {
+					if(GetLevel() >= 70)
+					{ // Slippery Attacks AA 5
+						saChance = 5;
+					}
+					else if(GetLevel() >= 69)
+					{ // Slippery Attacks AA 4
+						saChance = 4;
+					}
+					else if(GetLevel() >= 68)
+					{ // Slippery Attacks AA 3
+						saChance = 3;
+					}
+					else if(GetLevel() >= 67)
+					{ // Slippery Attacks AA 2
+						saChance = 2;
+					}
+					else if(GetLevel() >= 66)
+					{ // Slippery Attacks AA 1
+						saChance = 1;
+					}
+				}
+				if ((Hand == SLOT_SECONDARY) && saChance) {// Do we even have it & was attack with mainhand? If not, don't bother with other calculations
+					if (MakeRandomInt(0, 100) < (saChance * 20)) {
+						damage = 0; // Counts as a miss
+						slippery_attack = true;
+					} else DoRiposte(other);
+				}
+				else DoRiposte(other);
+			}
+		}
+		
+		int aaStrikethroughBonus = 0;
+		if(GetClass() == MONK)
+		{
+			if(GetLevel() >= 67)
+			{ // Strikethrough AA 3
+				aaStrikethroughBonus = 6;
+			}
+			else if(GetLevel() >= 66)
+			{ // Strikethrough AA 2
+				aaStrikethroughBonus = 4;
+			}
+			else if(GetLevel() >= 65)
+			{ // Strikethrough AA 1
+				aaStrikethroughBonus = 2;
+			}
+		}
+
+		//strikethrough..
+		if (((damage < 0) || slippery_attack) && !FromRiposte) { // Hack to still allow Strikethrough chance w/ Slippery Attacks AA
+			if(MakeRandomInt(0, 100) < (itembonuses.StrikeThrough + spellbonuses.StrikeThrough + aaStrikethroughBonus)) {
+				Attack(other, Hand, true); // Strikethrough only gives another attempted hit
+				safe_delete(weapon);
+				return false;
+			}
+		}
+	}
+	else{
+		damage = -5;
+	}
+	
+	///////////////////////////////////////////////////////////
+	//////    Send Attack Damage
+	///////////////////////////////////////////////////////////
+	other->Damage(this, damage, SPELL_UNKNOWN, skillinuse);
+	if(damage > 0 && (spellbonuses.MeleeLifetap || itembonuses.MeleeLifetap)) {
+		mlog(COMBAT__DAMAGE, "Melee lifetap healing for %d damage.", damage);
+		//heal self for damage done..
+		HealDamage(damage);
+	}
+	
+	//break invis when you attack
+	if(invisible) {
+		mlog(COMBAT__ATTACKS, "Removing invisibility due to melee attack.");
+		BuffFadeByEffect(SE_Invisibility);
+		BuffFadeByEffect(SE_Invisibility2);
+		invisible = false;
+	}
+	if(invisible_undead) {
+		mlog(COMBAT__ATTACKS, "Removing invisibility vs. undead due to melee attack.");
+		BuffFadeByEffect(SE_InvisVsUndead);
+		BuffFadeByEffect(SE_InvisVsUndead2);
+		invisible_undead = false;
+	}
+	if(invisible_animals){
+		mlog(COMBAT__ATTACKS, "Removing invisibility vs. animals due to melee attack.");
+		BuffFadeByEffect(SE_InvisVsAnimals);
+		invisible_animals = false;
+	}
+
+	if(hidden || improved_hidden){
+		hidden = false;
+		improved_hidden = false;
+		EQApplicationPacket* outapp = new EQApplicationPacket(OP_SpawnAppearance, sizeof(SpawnAppearance_Struct));
+		SpawnAppearance_Struct* sa_out = (SpawnAppearance_Struct*)outapp->pBuffer;
+		sa_out->spawn_id = GetID();
+		sa_out->type = 0x03;
+		sa_out->parameter = 0;
+		entity_list.QueueClients(this, outapp, true);
+		safe_delete(outapp);
+	}
+	
+	////////////////////////////////////////////////////////////
+	////////  PROC CODE
+	////////  Kaiyodo - Check for proc on weapon based on DEX
+	///////////////////////////////////////////////////////////
+	if(other->GetHP() > -10 && !FromRiposte && this) {
+		TryWeaponProc(weapon, other);
+	}
+	
+	if(damage > 0) {
+		// Give the opportunity to throw back a defensive proc, if we are successful in affecting damage on our target
+		other->TriggerDefensiveProcs(this);
+		safe_delete(weapon);
+		return true;
+	}
+	else {
+		safe_delete(weapon);
+		return false;
+	}
 }
 
 void Bot::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHelp, bool bFrenzy, bool iBuffTic) {

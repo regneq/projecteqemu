@@ -51,8 +51,8 @@ public:
 	void Spawn(Client* botCharacterOwner, std::string* errorMessage);
 	//void SetBotOwnerCharacterID(uint32 botOwnerCharacterID, std::string* errorMessage);
 	void Depop(std::string* errorMessage);
-	virtual void SetLevel(uint8 in_level, bool command = false) override;
-	virtual void FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho) override;
+	virtual void SetLevel(uint8 in_level, bool command = false);
+	virtual void FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho);
 	virtual bool Process() override;
 	//virtual void AI_Process();
 	virtual bool Save() override;
@@ -147,7 +147,6 @@ protected:
 	static NPCType CreateDefaultNPCTypeStructForBot(std::string botName, std::string botLastName, uint8 botLevel, uint16 botRace, uint8 botClass, uint8 gender);
 	virtual void BotMeditate(bool isSitting);
 	virtual bool BotRangedAttack(Mob* other);
-	virtual bool BotAttackMelee(Mob* other, int Hand = 13, bool = false);
 	virtual bool CheckBotDoubleAttack(bool Triple = false);
 
 private:
