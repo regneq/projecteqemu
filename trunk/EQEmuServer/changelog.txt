@@ -1,5 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==07/19/2009==
+Trevius: EVENT_PROXIMITY_SAY will now work whether you have a target or not.
+Trevius: Added bool option to quest::saylink() to allow them to be silent. Ex. quest::saylink("silent link",1)
+Trevius: Added quest::FlyMode() command to allow setting flymode on players via quest scripts.
+
 ==07/15/2009==
 Trevius: (Shendare) New object command (#object List|Add|Edit|Move|Rotate|Save|Copy|Delete|Undo) to manipulate objects in real-time from in-game in almost every possible way!
 
