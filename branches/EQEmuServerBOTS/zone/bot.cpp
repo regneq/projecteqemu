@@ -1223,7 +1223,7 @@ bool Bot::BotRangedAttack(Mob* other) {
 
 bool Bot::BotAttackMelee(Mob* other, int Hand, bool bRiposte)
 {
-	_ZP(NPC_BotAttackMelee);
+	_ZP(Bot_BotAttackMelee);
 
 	if (!other) {
 		SetTarget(NULL);
@@ -4482,11 +4482,25 @@ void Bot::Death(Mob *killerMob, sint32 damage, int16 spell_id, SkillType attack_
 }
 
 void Bot::Damage(Mob *from, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable, sint8 buffslot, bool iBuffTic) {
-	//
+	NPC::Damage(from, damage, spell_id, attack_skill, avoidable, buffslot, iBuffTic);
+
+	// franck-add: when a bot takes some dmg, its leader must see it in the group HP bar
+	if(IsGrouped() && GetHP() > 0) {
+		Group *g = entity_list.GetGroupByMob(this);
+		if(g) {
+			EQApplicationPacket hp_app;
+			CreateHPPacket(&hp_app);
+			for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
+				if(g->members[i] && g->members[i]->IsClient()) {
+					g->members[i]->CastToClient()->QueuePacket(&hp_app);
+				}
+			}
+		}
+	}
 }
 
 bool Bot::Attack(Mob* other, int Hand, bool FromRiposte) {
-	return false;
+	return this->BotAttackMelee(other, Hand, FromRiposte);
 }
 
 void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
