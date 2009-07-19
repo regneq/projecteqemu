@@ -2407,6 +2407,13 @@ void Client::Handle_OP_ItemLinkClick(const EQApplicationPacket *app)
 		{
 			char response[64];
 			int sayid = ivrs->item_id - 500000;
+			bool silentsaylink = false;
+
+			if (sayid > 250000)	//Silent Saylink
+			{
+				sayid = sayid - 250000;
+				silentsaylink = true;
+			}
 
 			if (sayid && sayid > 0) 
 			{
@@ -2433,11 +2440,24 @@ void Client::Handle_OP_ItemLinkClick(const EQApplicationPacket *app)
 				}
 				safe_delete_array(query);
 			}
-			
-			Message(7, "You say,'%s'",response);
 			if(this->GetTarget())
-				this->ChannelMessageReceived(8, 0, 100, response);
-			return;
+			{
+				if(silentsaylink)
+				{
+					parse->Event(EVENT_SAY, this->GetTarget()->GetNPCTypeID(), response, this->GetTarget(), this);
+				}
+				else
+				{
+					Message(7, "You say,'%s'",response);
+					this->ChannelMessageReceived(8, 0, 100, response);
+				}
+				return;
+			}
+			else
+			{
+				Message(13, "Error: Say Links require a target.");
+				return;
+			}
 		}
 		else {
 			Message(13, "Error: The item for the link you have clicked on does not exist!");

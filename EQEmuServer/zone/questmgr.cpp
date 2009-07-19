@@ -1879,7 +1879,7 @@ void QuestManager::FlagInstanceByRaidLeader(int32 zone, int16 version)
 	}
 }
 
-const char* QuestManager::saylink(char* Phrase) {
+const char* QuestManager::saylink(char* Phrase, bool silent) {
 
 	const char *ERR_MYSQLERROR = "Error in saylink phrase queries";
 	char errbuf[MYSQL_ERRMSG_SIZE];
@@ -1925,16 +1925,21 @@ const char* QuestManager::saylink(char* Phrase) {
 		}
 	}
 	safe_delete_array(query);
+	
+	if(silent)
+		sayid = sayid + 750000;
+	else
+		sayid = sayid + 500000;
 
 	//Create the say link as an item link hash
 	char linktext[250];
 	if (initiator->GetClientVersion() == EQClientSoF)
 	{
-		sprintf(linktext,"%c%06X%s%s%c",0x12,500000+sayid,"00000000000000000000000000000000000000000000",Phrase,0x12);
+		sprintf(linktext,"%c%06X%s%s%c",0x12,sayid,"00000000000000000000000000000000000000000000",Phrase,0x12);
 	}
 	else
 	{
-		sprintf(linktext,"%c%06X%s%s%c",0x12,500000+sayid,"000000000000000000000000000000000000000",Phrase,0x12);
+		sprintf(linktext,"%c%06X%s%s%c",0x12,sayid,"000000000000000000000000000000000000000",Phrase,0x12);
 	}
 	strcpy(Phrase,linktext);
 	return Phrase;
@@ -1952,4 +1957,14 @@ bool QuestManager::IsRunning()
 	if(!owner)
 		return false;
 	return owner->IsRunning();
+}
+
+void QuestManager::FlyMode(int8 flymode)
+{
+	if(initiator)
+	{
+		if (flymode >= 0 && flymode < 3 && initiator->IsClient()) {
+			initiator->SendAppearancePacket(AT_Levitate, flymode);
+		}
+	}
 }
