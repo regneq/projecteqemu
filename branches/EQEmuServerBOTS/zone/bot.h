@@ -39,6 +39,7 @@ public:
 	//abstract virtual function implementations requird by base abstract class
 	virtual void FinishTrade(Mob* tradingWith);
 	virtual void Death(Mob* killerMob, sint32 damage, int16 spell_id, SkillType attack_skill);
+	virtual void Damage(Mob* from, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable = true, sint8 buffslot = -1, bool iBuffTic = false);
 
 	// Class Methods
 	bool IsValidRaceClassCombo();

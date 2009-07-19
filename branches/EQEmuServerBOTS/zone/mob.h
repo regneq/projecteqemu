@@ -449,13 +449,14 @@ bool logpos;
 
 #endif //EQBOTS
 
+	// abstract methods
 	virtual void FinishTrade(Mob* tradingWith) = 0;
-
-	virtual void Damage(Mob* from, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable = true, sint8 buffslot = -1, bool iBuffTic = false) {};
+	virtual void Death(Mob* killerMob, sint32 damage, int16 spell_id, SkillType attack_skill) = 0;
+	virtual void Damage(Mob* from, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable = true, sint8 buffslot = -1, bool iBuffTic = false) = 0;
+	
 	virtual void Heal();
 	virtual void HealDamage(uint32 ammount, Mob* caster = NULL);
 	virtual void SetMaxHP() { cur_hp = max_hp; }
-	virtual void Death(Mob* killerMob, sint32 damage, int16 spell_id, SkillType attack_skill) = 0;
 	static int32 GetLevelCon(int8 mylevel, int8 iOtherLevel);
 	inline int32 GetLevelCon(int8 iOtherLevel) const { return(this?GetLevelCon(GetLevel(), iOtherLevel):CON_GREEN); }
 
