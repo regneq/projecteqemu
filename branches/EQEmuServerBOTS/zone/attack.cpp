@@ -1557,6 +1557,9 @@ void Client::Damage(Mob* other, sint32 damage, int16 spell_id, SkillType attack_
 		damage = (damage * PvPMitigation) / 100;
 	}
 			
+	if(!ClientFinishedLoading())
+		damage = -5;
+
 	//do a majority of the work...
 	CommonDamage(other, damage, spell_id, attack_skill, avoidable, buffslot, iBuffTic);
 	
@@ -2618,6 +2621,13 @@ void NPC::Damage(Mob* other, sint32 damage, int16 spell_id, SkillType attack_ski
 	if (!IsEngaged())
 		zone->AddAggroMob();
 	
+	if(GetClass() == LDON_TREASURE) {
+		if(GetLDoNTrapType() > 0) {
+			if(IsLDoNLocked() || IsLDoNTrapped())
+				damage = -5;
+		}
+	}
+
 	//do a majority of the work...
 	CommonDamage(other, damage, spell_id, attack_skill, avoidable, buffslot, iBuffTic);
 	
@@ -2625,27 +2635,6 @@ void NPC::Damage(Mob* other, sint32 damage, int16 spell_id, SkillType attack_ski
 		//see if we are gunna start fleeing
 		if(!IsPet()) CheckFlee();
 	}
-
-#ifdef EQBOTS
-
-    // franck-add: when a bot takes some dmg, its leader must see it in the group HP bar
-	if(IsBot() && IsGrouped()) {
-		if(GetHP() > 0) {
-			Group *g = entity_list.GetGroupByMob(this);
-			if(g) {
-				EQApplicationPacket hp_app;
-				CreateHPPacket(&hp_app);
-				for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
-					if(g->members[i] && g->members[i]->IsClient()) {
-						g->members[i]->CastToClient()->QueuePacket(&hp_app);
-					}
-				}
-			}
-		}
-	}
-
-#endif //EQBOTS
-
 }
 
 void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_skill) {
@@ -3806,13 +3795,6 @@ bool Mob::CheckBotDoubleAttack(bool tripleAttack) {
 #endif //EQBOTS
 
 void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, const SkillType skill_used, bool &avoidable, const sint8 buffslot, const bool iBuffTic) {
-
-	if(IsClient())
-	{
-		if(!CastToClient()->ClientFinishedLoading())
-			damage = -5;
-	}
-
 	// This method is called with skill_used=ABJURE for Damage Shield damage. 
 	bool FromDamageShield = (skill_used == ABJURE);
 
@@ -3841,15 +3823,6 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 				}
 			}
 		}		
-	}
-
-	if(IsNPC() && GetClass() == LDON_TREASURE)
-	{
-		if(CastToNPC()->GetLDoNTrapType() > 0)
-		{
-			if(CastToNPC()->IsLDoNLocked() || CastToNPC()->IsLDoNTrapped())
-				damage = -5;
-		}
 	}
 	
 	if(attacker){

@@ -4197,7 +4197,30 @@ void Bot::Death(Mob *killerMob, sint32 damage, int16 spell_id, SkillType attack_
 }
 
 void Bot::Damage(Mob *from, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable, sint8 buffslot, bool iBuffTic) {
-	NPC::Damage(from, damage, spell_id, attack_skill, avoidable, buffslot, iBuffTic);
+	if(spell_id==0)
+		spell_id = SPELL_UNKNOWN;
+
+	//handle EVENT_ATTACK. Resets after we have not been attacked for 12 seconds
+	if(attacked_timer.Check()) {
+		mlog(COMBAT__HITS, "Triggering EVENT_ATTACK due to attack by %s", from->GetName());
+		parse->Event(EVENT_ATTACK, this->GetBotID(), 0, this, from);
+	}
+
+	attacked_timer.Start(CombatEventTimer_expire);
+    
+	// TODO: A bot doesnt call this, right?
+	/*if (!IsEngaged())
+		zone->AddAggroMob();*/
+
+	// if spell is lifetap add hp to the caster
+	if (spell_id != SPELL_UNKNOWN && IsLifetapSpell(spell_id)) {
+		int healed = GetBotActSpellHealing(spell_id, damage);
+		mlog(COMBAT__DAMAGE, "Applying lifetap heal of %d to %s", healed, GetCleanName());
+		HealDamage(healed);
+		entity_list.MessageClose(this, true, 300, MT_Spells, "%s beams a smile at %s", GetCleanName(), from->GetCleanName() );
+	}
+
+	this->CommonDamage(from, damage, spell_id, attack_skill, avoidable, buffslot, iBuffTic);
 
 	// franck-add: when a bot takes some dmg, its leader must see it in the group HP bar
 	if(IsGrouped() && GetHP() > 0) {
@@ -4510,6 +4533,355 @@ void Bot::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHel
 				other->SetHate(GetBotOwner());
 		}
 	}
+}
+
+sint32 Bot::GetBotActSpellHealing(int16 spell_id, sint32 value) {
+
+	sint32 modifier = 100;
+	
+	modifier += GetBotFocusEffect(botfocusImprovedHeal, spell_id);
+						
+	if(spells[spell_id].buffduration < 1) {
+		uint8 botlevel = GetLevel();
+		int8 botclass = GetClass();
+		int chance = 0;
+
+		if((botclass == BEASTLORD)||(botclass == CLERIC)||(botclass == DRUID)||(botclass == PALADIN)||(botclass == RANGER)||(botclass == SHAMAN)) {
+			if(botlevel >= 57) { // Healing Adept AA
+				modifier += 10;
+			}
+			else if(botlevel == 56) {
+				modifier += 5;
+			}
+			else if(botlevel == 55) {
+				modifier += 2;
+			}
+
+			if(botlevel >= 64) { // Advanced Healing Adept AA
+				modifier += 9;
+			}
+			else if(botlevel == 63) {
+				modifier += 6;
+			}
+			else if(botlevel == 62) {
+				modifier += 3;
+			}
+
+			if(botlevel >= 57) { // Healing Gift AA
+				chance = 10;
+			}
+			else if(botlevel == 56) {
+				chance = 6;
+			}
+			else if(botlevel == 55) {
+				chance = 3;
+			}
+
+			if(botlevel >= 64) { // Advanced Healing Gift AA
+				chance += 6;
+			}
+			else if(botlevel == 63) {
+				chance += 4;
+			}
+			else if(botlevel == 62) {
+				chance += 2;
+			}
+		}
+
+		if((botclass == NECROMANCER)||(botclass == SHADOWKNIGHT)) {
+			if(spells[spell_id].targettype == ST_Tap) {
+				if(botlevel >= 65) { // Theft of Life
+					chance += 10;
+				}
+				else if(botlevel == 63) {
+					chance += 5;
+				}
+				else if(botlevel == 61) {
+					chance += 2;
+				}
+
+				if(botlevel >= 66) { // Advanced Theft of Life
+					chance += 6;
+				}
+				else if(botlevel == 65) {
+					chance += 3;
+				}
+
+				if(botlevel >= 69) { // Soul Thief
+					chance += 6;
+				}
+				else if(botlevel == 68) {
+					chance += 4;
+				}
+				else if(botlevel == 67) {
+					chance += 2;
+				}
+			}
+		}
+		
+		if(MakeRandomInt(1,100) < chance) {
+			entity_list.MessageClose(this, false, 100, MT_SpellCrits, "%s performs an exceptional heal! (%d)", GetName(), ((value * modifier) / 50));		
+			return (value * modifier) / 50;
+		}
+		else{
+			return (value * modifier) / 100;
+		}		
+	}
+					
+	return (value * modifier) / 100;
+}
+
+sint16 Bot::GetBotFocusEffect(botfocusType bottype, int16 spell_id) {
+	if (IsBardSong(spell_id))
+		return 0;
+	const Item_Struct* TempItem = 0;
+	sint16 Total = 0;
+	sint16 realTotal = 0;
+
+	//item focus
+	for(int x=0; x<=21; x++)
+	{
+		//TempItem = database.GetItem(this->CastToNPC()->GetItemID(x));
+		TempItem = database.GetItem(GetItemID(x));
+		if (TempItem && TempItem->Focus.Effect > 0 && TempItem->Focus.Effect != SPELL_UNKNOWN) {
+			Total = CalcBotFocusEffect(bottype, TempItem->Focus.Effect, spell_id);
+			if(Total > realTotal) {
+				realTotal = Total;
+			}
+		}
+	}
+
+	//Spell Focus
+	sint16 Total2 = 0;
+	sint16 realTotal2 = 0;
+
+	for (int y = 0; y < BUFF_COUNT; y++) {
+		int16 focusspellid = buffs[y].spellid;
+		if (focusspellid == 0 || focusspellid >= SPDAT_RECORDS)
+			continue;
+
+		Total2 = CalcBotFocusEffect(bottype, focusspellid, spell_id);
+		if(Total2 > realTotal2) {
+			realTotal2 = Total2;
+		}
+	}
+
+	int32 MagicianElementalPactAA = 0;
+	if((GetClass() == MAGICIAN) && (GetLevel() >= 59)) {
+		MagicianElementalPactAA = 1;
+	}
+
+	if(bottype == botfocusReagentCost && IsSummonPetSpell(spell_id) && MagicianElementalPactAA)
+		return 100;
+
+	if(bottype == botfocusReagentCost && (IsEffectInSpell(spell_id, SE_SummonItem) || IsSacrificeSpell(spell_id))){
+		return 0;
+	//Summon Spells that require reagents are typically imbue type spells, enchant metal, sacrifice and shouldn't be affected
+	//by reagent conservation for obvious reasons.
+	}
+
+	return realTotal + realTotal2;
+}
+
+uint32 Bot::GetItemID(int slot_id) {
+	ItemList::iterator cur,end;
+	cur = itemlist.begin();
+	end = itemlist.end();
+	for(; cur != end; cur++) {
+		ServerLootItem_Struct* item = *cur;
+		if (item->lootslot == slot_id) {
+			return item->item_id;
+		}
+	}
+	return(NULL);
+}
+
+sint16 Bot::CalcBotFocusEffect(botfocusType bottype, int16 focus_id, int16 spell_id) {
+	const SPDat_Spell_Struct &focus_spell = spells[focus_id];
+	const SPDat_Spell_Struct &spell = spells[spell_id];
+
+	sint16 value = 0;
+	int lvlModifier = 100;
+
+	for (int i = 0; i < EFFECT_COUNT; i++) {
+		switch (focus_spell.effectid[i]) {
+		case SE_Blank:
+			break;
+
+		//check limits
+
+		//missing limits:
+		//SE_LimitTarget
+
+		case SE_LimitResist:{
+			if(focus_spell.base[i]){
+				if(spell.resisttype != focus_spell.base[i])
+					return(0);
+			}
+			break;
+		}
+		case SE_LimitInstant:{
+			if(spell.buffduration)
+				return(0);
+			break;
+		}
+
+		case SE_LimitMaxLevel:{
+			int lvldiff = (spell.classes[(GetClass()%16) - 1]) - focus_spell.base[i];
+
+			if(lvldiff > 0){ //every level over cap reduces the effect by spell.base2[i] percent
+				lvlModifier -= spell.base2[i]*lvldiff;
+				if(lvlModifier < 1)
+					return 0;
+			}
+			break;
+		}
+
+		case SE_LimitMinLevel:
+			if (spell.classes[(GetClass()%16) - 1] < focus_spell.base[i])
+				return(0);
+			break;
+
+		case SE_LimitCastTime:
+			if (spells[spell_id].cast_time < (uint16)focus_spell.base[i])
+				return(0);
+			break;
+
+		case SE_LimitSpell:
+			if(focus_spell.base[i] < 0) {	//exclude spell
+				if (spell_id == (focus_spell.base[i]*-1))
+					return(0);
+			} else {
+				//this makes the assumption that only one spell can be explicitly included...
+				if (spell_id != focus_spell.base[i])
+					return(0);
+			}
+			break;
+
+		case SE_LimitMinDur:
+				if (focus_spell.base[i] > CalcBuffDuration_formula(GetLevel(), spell.buffdurationformula, spell.buffduration))
+					return(0);
+			break;
+
+		case SE_LimitEffect:
+			if(focus_spell.base[i] < 0){
+				if(IsEffectInSpell(spell_id,focus_spell.base[i])){ //we limit this effect, can't have
+					return 0;
+				}
+			}
+			else{
+				if(!IsEffectInSpell(spell_id,focus_spell.base[i])){ //we limit this effect, must have
+					return 0;
+				}
+			}
+			break;
+
+
+		case SE_LimitSpellType:
+			switch( focus_spell.base[i] )
+			{
+				case 0:
+					if (!IsDetrimentalSpell(spell_id))
+						return 0;
+					break;
+				case 1:
+					if (!IsBeneficialSpell(spell_id))
+						return 0;
+					break;
+				default:
+					LogFile->write(EQEMuLog::Normal, "CalcFocusEffect:  unknown limit spelltype %d", focus_spell.base[i]);
+			}
+			break;
+
+		//handle effects
+
+		case SE_ImprovedDamage:
+			switch (focus_spell.max[i])
+			{
+				case 0:
+					if (bottype == botfocusImprovedDamage && focus_spell.base[i] > value)
+					{
+						value = focus_spell.base[i];
+					}
+					break;
+				case 1:
+					if (bottype == botfocusImprovedCritical && focus_spell.base[i] > value)
+					{
+						value = focus_spell.base[i];
+					}
+					break;
+				case 2:
+					if (bottype == botfocusImprovedUndeadDamage && focus_spell.base[i] > value)
+					{
+						value = focus_spell.base[i];
+					}
+					break;
+				case 3:
+					if (bottype == 10 && focus_spell.base[i] > value)
+					{
+						value = focus_spell.base[i];
+					}
+					break;
+				default: //Resist stuff
+					if (bottype == (botfocusType)focus_spell.max[i] && focus_spell.base[i] > value)
+					{
+						value = focus_spell.base[i];
+					}
+					break;
+			}
+			break;
+		case SE_ImprovedHeal:
+			if (bottype == botfocusImprovedHeal && focus_spell.base[i] > value)
+			{
+				value = focus_spell.base[i];
+			}
+			break;
+		case SE_IncreaseSpellHaste:
+			if (bottype == botfocusSpellHaste && focus_spell.base[i] > value)
+			{
+				value = focus_spell.base[i];
+			}
+			break;
+		case SE_IncreaseSpellDuration:
+			if (bottype == botfocusSpellDuration && BeneficialSpell(spell_id) && focus_spell.base[i] > value)
+			{
+				value = focus_spell.base[i];
+			}
+			break;
+		case SE_IncreaseRange:
+			if (bottype == botfocusRange && focus_spell.base[i] > value)
+			{
+				value = focus_spell.base[i];
+			}
+			break;
+		case SE_ReduceReagentCost:
+			if (bottype == botfocusReagentCost && focus_spell.base[i] > value)
+			{
+				value = focus_spell.base[i];
+			}
+			break;
+		case SE_ReduceManaCost:
+			if (bottype == botfocusManaCost && focus_spell.base[i] > value)
+			{
+				value = focus_spell.base[i];
+			}
+			break;
+		case SE_PetPowerIncrease:
+			if (bottype == botfocusPetPower && focus_spell.base[i] > value)
+			{
+				value = focus_spell.base[i];
+			}
+			break;
+#if EQDEBUG >= 6
+		//this spits up a lot of garbage when calculating spell focuses
+		//since they have all kinds of extra effects on them.
+		default:
+			LogFile->write(EQEMuLog::Normal, "CalcFocusEffect:  unknown effectid %d", focus_spell.effectid[i]);
+#endif
+		}
+	}
+
+	return(value*lvlModifier/100);
 }
 
 void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {

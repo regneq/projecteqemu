@@ -148,6 +148,9 @@ protected:
 	virtual void BotMeditate(bool isSitting);
 	virtual bool BotRangedAttack(Mob* other);
 	virtual bool CheckBotDoubleAttack(bool Triple = false);
+	virtual sint32 GetBotActSpellHealing(int16 spell_id, sint32 value);
+	virtual sint16 GetBotFocusEffect(botfocusType bottype, int16 spell_id);
+	virtual sint16 CalcBotFocusEffect(botfocusType bottype, int16 focus_id, int16 spell_id);
 
 private:
 	// Class Members
@@ -179,6 +182,7 @@ private:
 	void DoAIProcessing();
 	void SetBotID(uint32 botID);
 	//bool IsPacified(Mob* targetMob);
+	uint32 GetItemID(int slot_id);
 };
 
 #endif // BOTS
