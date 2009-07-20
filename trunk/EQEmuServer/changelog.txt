@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==07/20/2009==
+Trevius: Corrected/Updated some minor size stuff with illusions and player races.
+
 ==07/19/2009==
 Trevius: EVENT_PROXIMITY_SAY will now work whether you have a target or not.
 Trevius: Added bool option to quest::saylink() to allow them to be silent. Ex. quest::saylink("silent link",1)

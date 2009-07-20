@@ -1185,10 +1185,10 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				else if(spell.base[i] == TROLL){
 					SendAppearancePacket(AT_Size, 8);
 				}
-				else if(spell.base[i] == VAHSHIR || spell.base[i] == FROGLOK || spell.base[i] == BARBARIAN){
+				else if(spell.base[i] == VAHSHIR || spell.base[i] == BARBARIAN){
 					SendAppearancePacket(AT_Size, 7);
 				}
-				else if(spell.base[i] == HALF_ELF || spell.base[i] == WOOD_ELF || spell.base[i] == DARK_ELF){
+				else if(spell.base[i] == HALF_ELF || spell.base[i] == WOOD_ELF || spell.base[i] == DARK_ELF || spell.base[i] == FROGLOK){
 					SendAppearancePacket(AT_Size, 5);
 				}
 				else if(spell.base[i] == DWARF){
