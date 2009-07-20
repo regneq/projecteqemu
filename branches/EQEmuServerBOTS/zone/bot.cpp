@@ -4499,20 +4499,15 @@ bool Bot::Attack(Mob* other, int Hand, bool FromRiposte) {
 }
 
 void Bot::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHelp, bool bFrenzy, bool iBuffTic) {
-	if(other && other != this && other != this->GetBotOwner() && other != GetOwner() && !SpecAttacks[IMMUNE_AGGRO] && !other->SpecAttacks[IMMUNE_TARGET]) {
-		// TODO: Evaluate "GetBotOwner()->CastToClient()->IsOrderBotAttack()"
-		/*if(GetBotOwner() && !GetBotOwner()->CastToClient()->IsOrderBotAttack()) {
-				return;
-		}*/
-
+	if(other && other != this && GetBotOwner() && GetBotOwner() != other) {
 		CommonAddToHateList(other, hate, damage, iYellForHelp, bFrenzy, iBuffTic);
 
 		if(GetBotOwner() && GetBotOwner()->CastToClient()->GetFeigned()) {
 			AddFeignMemory(GetBotOwner()->CastToClient());
 		}
 		else {
-			if(!hate_list.IsOnHateList(GetBotOwner()))
-				hate_list.Add(GetBotOwner(), 0, 0, false, true);
+			if(!other->GetHateAmount(GetBotOwner()))
+				other->SetHate(GetBotOwner());
 		}
 	}
 }

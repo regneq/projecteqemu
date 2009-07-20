@@ -2891,14 +2891,13 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 }
 
 void Mob::CommonAddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHelp, bool bFrenzy, bool iBuffTic) {
-	// TODO: Make this method generic and non specific to any objects that derive (Client, NPC, Bot, Beacon, Corpse, etc)
-    assert(other != NULL);
-    if (other == this)
-        return;
+	assert(other != NULL);
+	if (other == this)
+		return;
 
-    if(damage < 0){
-        hate = 1;
-    }
+	if(damage < 0){
+		hate = 1;
+	}
 
 	bool wasengaged = IsEngaged();
 	Mob* owner = other->GetOwner();
@@ -2953,33 +2952,23 @@ void Mob::CommonAddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYell
 		if (myowner->IsAIControlled() && !myowner->SpecAttacks[IMMUNE_AGGRO])
 			myowner->hate_list.Add(other, 0, 0, bFrenzy);
 	}
-	//if (!wasengaged) { 
-	//	if(IsNPC() && other->IsClient() && other->CastToClient())
-	//		parse->Event(EVENT_AGGRO, this->GetNPCTypeID(), 0, CastToNPC(), other); 
-	//	AI_Event_Engaged(other, iYellForHelp); 
-	//	adverrorinfo = 8293;
-	//}
 }
 
 void Client::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHelp, bool bFrenzy, bool iBuffTic) {
-	if(this->IsAIControlled() && !this->SpecAttacks[IMMUNE_AGGRO] && other && other != this && other != this->GetOwner() && !other->SpecAttacks[IMMUNE_TARGET]) {
+	if(other && other != this) {
 		CommonAddToHateList(other, hate, damage, iYellForHelp, bFrenzy, iBuffTic);
 	}
 }
 
 void NPC::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHelp, bool bFrenzy, bool iBuffTic) {
-	if(!this->SpecAttacks[IMMUNE_AGGRO] && other && other != this && other != this->GetOwner() && !other->SpecAttacks[IMMUNE_TARGET]) {
-		if(!IsPet() && GetOwner() && !GetOwner()->GetAA(aaPetDiscipline) && !IsHeld()) {
-			if(!this->IsFamiliar()) {
-				CommonAddToHateList(other, hate, damage, iYellForHelp, bFrenzy, iBuffTic);
+	if(other && other != this) {
+		CommonAddToHateList(other, hate, damage, iYellForHelp, bFrenzy, iBuffTic);
 
-				if (!this->IsEngaged()) { 
-					if(other->IsClient() && other->CastToClient())
-						parse->Event(EVENT_AGGRO, this->GetNPCTypeID(), 0, CastToNPC(), other); 
-					AI_Event_Engaged(other, iYellForHelp); 
-					adverrorinfo = 8293;
-				}
-			}
+		if (!this->IsEngaged()) { 
+			if(other->IsClient() && other->CastToClient())
+				parse->Event(EVENT_AGGRO, this->GetNPCTypeID(), 0, CastToNPC(), other); 
+			AI_Event_Engaged(other, iYellForHelp); 
+			adverrorinfo = 8293;
 		}
 	}
 }
