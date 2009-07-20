@@ -2602,15 +2602,16 @@ XS(XS__FlagInstanceByRaidLeader) {
 XS(XS__saylink);
 XS(XS__saylink) {
 	dXSARGS;
-	if (items != 1)
-		Perl_croak(aTHX_ "Usage: saylink(phrase)");
+	if (items < 1 || items > 2)
+		Perl_croak(aTHX_ "Usage: saylink(phrase,[silent?])");
 	dXSTARG;
 
 	Const_char * RETVAL;
 	char text[250];
 	strcpy(text,(char *)SvPV_nolen(ST(0)));
+	bool silent = ((int)SvIV(ST(1))) == 0?false:true;
 
-	RETVAL = quest_manager.saylink(text);
+	RETVAL = quest_manager.saylink(text, silent);
 	sv_setpv(TARG, RETVAL); XSprePUSH; PUSHTARG;
 	XSRETURN(1);
 }
@@ -2711,6 +2712,18 @@ XS(XS__GetSpellTargetType)
 
 	spell_val = GetSpellTargetType(spell_id);
 	XSRETURN_UV(spell_val);
+}
+
+XS(XS__FlyMode);
+XS(XS__FlyMode) {
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: FlyMode([0/1/2])");
+
+	int8 flymode = (int)SvUV(ST(0));
+	quest_manager.FlyMode(flymode);
+
+	XSRETURN_EMPTY;
 }
 
 /*
@@ -2897,6 +2910,7 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "IsBeneficialSpell"), XS__IsBeneficialSpell, file);
 		newXS(strcpy(buf, "GetSpellResistType"), XS__GetSpellResistType, file);
 		newXS(strcpy(buf, "GetSpellTargetType"), XS__GetSpellTargetType, file);
+		newXS(strcpy(buf, "FlyMode"), XS__FlyMode, file);
 	XSRETURN_YES;
 }
 
