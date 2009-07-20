@@ -131,7 +131,7 @@ bool Mob::AttackAnimation(SkillType &skillinuse, int Hand, const ItemInst* weapo
 
 // solar: called when a mob is attacked, does the checks to see if it's a hit
 // and does other mitigation checks.  'this' is the mob being attacked.
-bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
+float Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 {
 /*
 	Father Nitwit:
@@ -143,17 +143,7 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 	Mob *defender=this;
 	float chancetohit = RuleR(Combat, BaseHitChance);
 
-#ifdef EQBOTS
-
-	if(!attacker->IsClient() && !attacker->IsPet() && !attacker->IsBot())
-		// Bots spawn as npc's but they try to emulate clients
-
-#else
-
-	if(!attacker->IsClient() && !attacker->IsPet())
-
-#endif //EQBOTS
-
+	if(attacker->IsNPC() && !attacker->IsPet())
 		chancetohit += RuleR(Combat, NPCBonusHitChance);
 
 #if ATTACK_DEBUG>=11
@@ -220,20 +210,6 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 		mlog(COMBAT__TOHIT, "Chance to hit after weapon falloff calc (defense) %.2f", chancetohit);
 	}
 
-#ifdef EQBOTS
-
-	if(attacker->IsBot())
-	{
-		chancetohit -= (RuleR(Combat,WeaponSkillFalloff) * 5);
-	}
-
-	if(defender->IsBot())
-	{
-		chancetohit += (RuleR(Combat,WeaponSkillFalloff) * 5);
-	}
-
-#endif //EQBOTS
-
 	//I dont think this is 100% correct, but at least it does something...
 	if(attacker->spellbonuses.MeleeSkillCheckSkill == skillinuse || attacker->spellbonuses.MeleeSkillCheckSkill == 255) {
 		chancetohit += attacker->spellbonuses.MeleeSkillCheck;
@@ -250,15 +226,6 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 		chancetohit -= ((bonus * chancetohit) / 1000);
 		mlog(COMBAT__TOHIT, "Applied avoidance chance %.2f/10, yeilding %.2f", bonus, chancetohit);
 	}
-
-#ifdef EQBOTS
-
-	if(attacker->IsBot()) {
-		// Dont give bots the npc chancetohit calc
-	}
-	else
-
-#endif //EQBOTS
 
 	if(attacker->IsNPC())
 		chancetohit += (chancetohit * attacker->CastToNPC()->GetAccuracyRating() / 1000);
@@ -285,88 +252,6 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 
 	mlog(COMBAT__TOHIT, "Chance to hit after AA calc %.2f", chancetohit);
 
-#ifdef EQBOTS
-
-	if(IsBot())
-	{
-		int8 botclass = GetClass();
-		uint8 botlevel = GetLevel();
-
-		// Everyone gets Combat Agility AA
-		if(botlevel >= 57)
-		{
-			AA_mod = 10;
-		}
-		else if(botlevel >= 56)
-		{
-			AA_mod = 5;
-		}
-		else if(botlevel >= 55)
-		{
-			AA_mod = 2;
-		}
-
-		// All Melee get Physical Enhancement AA
-		if((botclass != WIZARD) &&
-			(botclass != NECROMANCER) &&
-			(botclass != MAGICIAN) &&
-			(botclass != ENCHANTER) &&
-			(botclass != DRUID) &&
-			(botclass != SHAMAN))
-		{
-			if(botlevel >= 59)
-			{ // Physical Enhancement AA
-				AA_mod += 3;
-			}
-		}
-
-		// Everyone gets Lightning Reflexes AA
-		if(botlevel >= 65)
-		{ // Lightning Reflexes AA 5
-			AA_mod += 10;
-		}
-		else if(botlevel >= 64)
-		{ // Lightning Reflexes AA 4
-			AA_mod += 8;
-		}
-		else if(botlevel >= 63)
-		{ // Lightning Reflexes AA 3
-			AA_mod += 6;
-		}
-		else if(botlevel >= 62)
-		{ // Lightning Reflexes AA 2
-			AA_mod += 4;
-		}
-		else if(botlevel >= 61)
-		{ // Lightning Reflexes AA 1
-			AA_mod += 2;
-		}
-
-		// Everyone gets Reflexive Mastery AA
-		if(botlevel >= 70)
-		{ // Reflexive Mastery AA 5
-			AA_mod += 5;
-		}
-		else if(botlevel >= 69)
-		{ // Reflexive Mastery AA 4
-			AA_mod += 4;
-		}
-		else if(botlevel >= 68)
-		{ // Reflexive Mastery AA 3
-			AA_mod += 3;
-		}
-		else if(botlevel >= 67)
-		{ // Reflexive Mastery AA 2
-			AA_mod += 2;
-		}
-		else if(botlevel >= 66)
-		{ // Reflexive Mastery AA 1
-			AA_mod += 1;
-		}
-	}
-
-#endif //EQBOTS
-
 	//add in our hit chance bonuses if we are using the right skill
 	//does the hit chance cap apply to spell bonuses from disciplines?
 	if(attacker->spellbonuses.HitChanceSkill == 255 || attacker->spellbonuses.HitChanceSkill == skillinuse) {
@@ -377,24 +262,6 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 		chancetohit += (chancetohit * (attacker->itembonuses.HitChance / 15.0f) / 100);
 		mlog(COMBAT__TOHIT, "Applied item melee hit chance %d/15, yeilding %.2f", attacker->itembonuses.HitChance, chancetohit);
 	}
-
-#ifdef EQBOTS
-
-	if(attacker->IsBot() && (attacker->GetClass() == RANGER)) {
-		int modRangerBotAA = 100;
-		if(attacker->GetLevel() >= 67) {  // Precision of the Pathfinder 3
-			modRangerBotAA += 6;
-		}
-		else if(attacker->GetLevel() == 66) {  // Precision of the Pathfinder 2
-			modRangerBotAA += 4;
-		}
-		else if(attacker->GetLevel() == 65) {  // Precision of the Pathfinder 1
-			modRangerBotAA += 2;
-		}
-		chancetohit = ((chancetohit * modRangerBotAA) / 100);
-	}
-
-#endif //EQBOTS
 
 	if (attacker->IsClient()) {
 		int modAA = 100;
@@ -449,20 +316,6 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 	#if EQDEBUG>=11
 		LogFile->write(EQEMuLog::Debug, "3 FINAL calculated chance to hit is: %5.2f", chancetohit);
 	#endif
-
-#ifdef EQBOTS
-
-    // EQoffline - Raid mantank has a special defensive disc reducing by 50% the chance to be hitted.
-    if(defender->IsBot() && defender->IsBotRaiding()) {
-        BotRaids *br = entity_list.GetBotRaidByMob(defender);
-        if(br && (br->GetBotMainTank() && (br->GetBotMainTank() == defender)) ||
-			(br && (br->GetBotSecondTank() && (br->GetBotSecondTank() == defender))))
-		{
-            chancetohit = chancetohit/2;
-        }
-    }
-
-#endif //EQBOTS
 
 	//
 	// Did we hit?

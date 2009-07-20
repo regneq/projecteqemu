@@ -1148,7 +1148,7 @@ bool Bot::BotRangedAttack(Mob* other) {
 	SendItemAnimation(other, Ammo, ARCHERY);
 
 	// Hit?
-	if(!other->CheckHitChance(this, ARCHERY, SLOT_PRIMARY)) {
+	if(!this->CalcBotHitChance(other, ARCHERY, SLOT_PRIMARY)) {
 		mlog(COMBAT__RANGED, "Ranged attack missed %s.", other->GetCleanName());
 		other->Damage(this, 0, SPELL_UNKNOWN, ARCHERY);
 	}
@@ -4367,7 +4367,7 @@ bool Bot::Attack(Mob* other, int Hand, bool FromRiposte) {
 			damage, min_hit, max_hit, GetSTR(), GetSkill(skillinuse), weapon_damage, GetLevel());
 
 		//check to see if we hit..
-		if(!other->CheckHitChance(this, skillinuse, Hand)) {
+		if(!this->CalcBotHitChance(other, skillinuse, Hand)) {
 			mlog(COMBAT__ATTACKS, "Attack missed. Damage set to 0.");
 			damage = 0;
 			other->AddToHateList(this, 0);
@@ -4882,6 +4882,148 @@ sint16 Bot::CalcBotFocusEffect(botfocusType bottype, int16 focus_id, int16 spell
 	}
 
 	return(value*lvlModifier/100);
+}
+
+float Bot::CheckHitChance(Mob *attacker, SkillType skillinuse, int Hand) {
+	bool Result = 0;
+
+	if(attacker) {
+		Result = Mob::CheckHitChance(attacker, skillinuse, Hand);
+
+		Result += (RuleR(Combat,WeaponSkillFalloff) * 5);
+
+		// TODO: This block of code doesnt seem to be contributing to the chancetohit calc at all
+#ifdef EQBOTS
+
+		if(IsBot())
+		{
+			int8 botclass = GetClass();
+			uint8 botlevel = GetLevel();
+
+			// Everyone gets Combat Agility AA
+			if(botlevel >= 57)
+			{
+				AA_mod = 10;
+			}
+			else if(botlevel >= 56)
+			{
+				AA_mod = 5;
+			}
+			else if(botlevel >= 55)
+			{
+				AA_mod = 2;
+			}
+
+			// All Melee get Physical Enhancement AA
+			if((botclass != WIZARD) &&
+				(botclass != NECROMANCER) &&
+				(botclass != MAGICIAN) &&
+				(botclass != ENCHANTER) &&
+				(botclass != DRUID) &&
+				(botclass != SHAMAN))
+			{
+				if(botlevel >= 59)
+				{ // Physical Enhancement AA
+					AA_mod += 3;
+				}
+			}
+
+			// Everyone gets Lightning Reflexes AA
+			if(botlevel >= 65)
+			{ // Lightning Reflexes AA 5
+				AA_mod += 10;
+			}
+			else if(botlevel >= 64)
+			{ // Lightning Reflexes AA 4
+				AA_mod += 8;
+			}
+			else if(botlevel >= 63)
+			{ // Lightning Reflexes AA 3
+				AA_mod += 6;
+			}
+			else if(botlevel >= 62)
+			{ // Lightning Reflexes AA 2
+				AA_mod += 4;
+			}
+			else if(botlevel >= 61)
+			{ // Lightning Reflexes AA 1
+				AA_mod += 2;
+			}
+
+			// Everyone gets Reflexive Mastery AA
+			if(botlevel >= 70)
+			{ // Reflexive Mastery AA 5
+				AA_mod += 5;
+			}
+			else if(botlevel >= 69)
+			{ // Reflexive Mastery AA 4
+				AA_mod += 4;
+			}
+			else if(botlevel >= 68)
+			{ // Reflexive Mastery AA 3
+				AA_mod += 3;
+			}
+			else if(botlevel >= 67)
+			{ // Reflexive Mastery AA 2
+				AA_mod += 2;
+			}
+			else if(botlevel >= 66)
+			{ // Reflexive Mastery AA 1
+				AA_mod += 1;
+			}
+		}
+
+#endif //EQBOTS
+
+		
+
+#ifdef EQBOTS
+
+		// EQoffline - Raid mantank has a special defensive disc reducing by 50% the chance to be hitted.
+		if(defender->IsBot() && defender->IsBotRaiding()) {
+			BotRaids *br = entity_list.GetBotRaidByMob(defender);
+			if(br && (br->GetBotMainTank() && (br->GetBotMainTank() == defender)) ||
+				(br && (br->GetBotSecondTank() && (br->GetBotSecondTank() == defender))))
+			{
+				Result = Result/2;
+			}
+		}
+
+#endif //EQBOTS
+
+	}
+
+	return Result;
+}
+
+bool Bot::CalcBotHitChance(Mob* target, SkillType skillinuse, int Hand) {
+	bool Result = false;
+
+	if(target) {
+		float chancetohit = target->CheckHitChance(this, skillinuse, Hand);
+
+		chancetohit -= (RuleR(Combat,WeaponSkillFalloff) * 5);
+
+		if(GetClass() == RANGER) {
+			int modRangerBotAA = 100;
+
+			if(GetLevel() >= 67) {  // Precision of the Pathfinder 3
+				modRangerBotAA += 6;
+			}
+			else if(GetLevel() == 66) {  // Precision of the Pathfinder 2
+				modRangerBotAA += 4;
+			}
+			else if(GetLevel() == 65) {  // Precision of the Pathfinder 1
+				modRangerBotAA += 2;
+			}
+
+			chancetohit = ((chancetohit * modRangerBotAA) / 100);
+		}
+
+		Result = (bool)chancetohit;
+	}
+
+	return Result;
 }
 
 void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {

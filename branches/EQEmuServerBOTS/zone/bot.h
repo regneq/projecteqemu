@@ -61,6 +61,7 @@ public:
 	int16 BotGetSpells(int spellslot) { return AIspells[spellslot].spellid; }
 	int16 BotGetSpellType(int spellslot) { return AIspells[spellslot].type; }
     int16 BotGetSpellPriority(int spellslot) { return AIspells[spellslot].priority; }
+	virtual float CheckHitChance(Mob* attacker, SkillType skillinuse, int Hand);
 	
 	// Bot Action Command Methods
 	bool MesmerizeTarget(Mob* target);
@@ -183,6 +184,7 @@ private:
 	void SetBotID(uint32 botID);
 	//bool IsPacified(Mob* targetMob);
 	uint32 GetItemID(int slot_id);
+	bool CalcBotHitChance(Mob* target, SkillType skillinuse, int Hand);
 };
 
 #endif // BOTS
