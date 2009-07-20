@@ -1052,6 +1052,31 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16
 
 	// this is common to both bard and non bard
 
+	// if this was cast from an inventory slot, check out the item that's there
+	if(IsClient() && ((slot == USE_ITEM_SPELL_SLOT) || (slot == POTION_BELT_SPELL_SLOT))
+		&& inventory_slot != 0xFFFFFFFF)	// 10 is an item
+	{
+		const ItemInst* inst = CastToClient()->GetInv()[inventory_slot];
+		if (inst && inst->IsType(ItemClassCommon))
+		{
+			//const Item_Struct* item = inst->GetItem();
+			sint16 charges = inst->GetItem()->MaxCharges;
+			if(charges > -1) {	// charged item, expend a charge
+				mlog(SPELLS__CASTING, "Spell %d: Consuming a charge from item %s (%d) which had %d/%d charges.", spell_id, inst->GetItem()->Name, inst->GetItem()->ID, inst->GetCharges(), inst->GetItem()->MaxCharges);
+				CastToClient()->DeleteItemInInventory(inventory_slot, 1, true);
+			} else {
+				mlog(SPELLS__CASTING, "Spell %d: Cast from unlimited charge item %s (%d) (%d charges)", spell_id, inst->GetItem()->Name, inst->GetItem()->ID, inst->GetItem()->MaxCharges);
+			}
+		}
+		else
+		{
+			mlog(SPELLS__CASTING_ERR, "Item used to cast spell %d was missing from inventory slot %d after casting!", spell_id, inventory_slot);
+			Message(0, "Error: item not found for inventory slot #%i", inventory_slot);
+			InterruptSpell();
+			return;
+		}
+	}
+	
 	// we're done casting, now try to apply the spell
 	if( !SpellFinished(spell_id, spell_target, slot, mana_used, inventory_slot) )
 	{
@@ -1073,32 +1098,6 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16
 			((PerlembParser*)parse)->Event(EVENT_CAST, 0, temp, (NPC*)NULL, this->CastToClient());
 		}
 	#endif
-	}
-
-	// if this was cast from an inventory slot, check out the item that's there
-	if(IsClient() && ((slot == USE_ITEM_SPELL_SLOT) || (slot == POTION_BELT_SPELL_SLOT))
-		&& inventory_slot != 0xFFFFFFFF)	// 10 is an item
-	{
-		const ItemInst* inst = CastToClient()->GetInv()[inventory_slot];
-		if (inst && inst->IsType(ItemClassCommon))
-		{
-			//const Item_Struct* item = inst->GetItem();
-			sint16 charges = inst->GetItem()->MaxCharges;
-			if(charges > -1) {	// charged item, expend a charge
-				mlog(SPELLS__CASTING, "Spell %d: Consuming a charge from item %s (%d) which had %d/%d charges.", spell_id, inst->GetItem()->Name, inst->GetItem()->ID, inst->GetCharges(), inst->GetItem()->MaxCharges);
-				CastToClient()->DeleteItemInInventory(inventory_slot, 1, true);
-			} else {
-				mlog(SPELLS__CASTING, "Spell %d: Cast from unlimited charge item %s (%d) (%d charges)", spell_id, inst->GetItem()->Name, inst->GetItem()->ID, inst->GetItem()->MaxCharges);
-			}
-		}
-		else
-		{
-			mlog(SPELLS__CASTING_ERR, "Item used to cast spell %d was missing from inventory slot %d after casting!", spell_id, inventory_slot);
-			Message(0, "Error: item not found for inventory slot #%i", inventory_slot);
-			//We cannot interrupt the spell here... it has allready
-			//finished being cast... not sure what to do here...
-			//InterruptSpell();
-		}
 	}
 
 	if(bard_song_mode)

@@ -6,6 +6,7 @@ Trevius: Added bool option to quest::saylink() to allow them to be silent. Ex. q
 Trevius: Added quest::FlyMode() command to allow setting flymode on players via quest scripts.
 WildcardX: Fixed the build by casting this->GetTarget() as NPC in void Client::Handle_OP_ItemLinkClick method as a parameter to a EVENT_SAY call.
 WildcardX: Added the changelog file to the solution for convenience.
+realityincarnate: Spells cast from items now reduce the charges before creating spell effects (stops loregroup conflict with Gloves/Hammer of Infuse)
 
 ==07/15/2009==
 Trevius: (Shendare) New object command (#object List|Add|Edit|Move|Rotate|Save|Copy|Delete|Undo) to manipulate objects in real-time from in-game in almost every possible way!
