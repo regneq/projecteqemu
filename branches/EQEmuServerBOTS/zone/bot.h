@@ -125,7 +125,7 @@ public:
 	uint32 GetBotID() { return _botID; }
 	uint32 GetBotOwnerCharacterID() { return _botOwnerCharacterID; }
 	uint32 GetBotSpellID() { return _botSpellID; }
-	Mob* GetBotOwner() { return _botOwner; }
+	Mob* GetBotOwner() { return this->GetOwner(); }
 	uint32 GetBotArcheryRange() { return _botArcheryRange; }
 	virtual bool GetSpawnStatus() { return _spawnStatus; }
 	int8 GetPetChooserID() { return _petChooserID; }
@@ -144,7 +144,7 @@ public:
 	void SetBotCharmer(bool c) { _botCharmer = c; }
 	void SetBotRaiding(bool v) { _botRaiding = v; }
 	void SetPetChooser(bool p) { _petChooser = p; }
-	void SetBotOwner(Mob* botOwner) { _botOwner = botOwner; }
+	void SetBotOwner(Mob* botOwner) { botOwner ? this->SetOwnerID(botOwner->GetID()) : this->SetOwnerID(0); }
 
 	// Class Destructors
 	virtual ~Bot();
@@ -167,7 +167,7 @@ private:
 	uint32 _botOwnerCharacterID;
 	uint32 _botSpellID;
 	bool _spawnStatus;
-	Mob* _botOwner;
+	//Mob* _botOwner;
 	// uint32 _expPoints;
 	// uint32 _aaPoints;
 	bool _botOrderAttack;

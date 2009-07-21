@@ -6611,8 +6611,8 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 			//2: Set the follow ID so he's following its leader
 			b->SetFollowID(c->GetID());
 			b->SetBotOwner(c->CastToMob());
-			b->SetOwnerID(0);
-			c->SetOwnerID(0);
+			//b->SetOwnerID(0);
+			//c->SetOwnerID(0);
 
 			//3:  invite it to the group
 			if(!c->IsGrouped()) {
