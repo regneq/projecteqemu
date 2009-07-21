@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==07/21/2009==
+Trevius: Added a 4th type for quest::getlevel(type) that will get the characters level2 value, which is the max level the character has ever reached.
+Trevius: Added a 3rd option for saylink() to allow the link to be different than the say message. Ex quest::saylink("bind my soul", 0, "bind your soul")
+
 ==07/20/2009==
 Trevius: Corrected/Updated some minor size stuff with illusions and player races.
 

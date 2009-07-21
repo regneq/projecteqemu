@@ -207,7 +207,7 @@ public:
 	void FlagInstanceByRaidLeader(int32 zone, int16 version);
 	
 	const char* varlink(char* perltext, int item_id);
-	const char* saylink(char* Phrase, bool silent);
+	const char* saylink(char* Phrase, bool silent, char* LinkName);
 	void SetRunning(bool val);
 	bool IsRunning();
 	void FlyMode(int8 flymode);
