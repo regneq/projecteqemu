@@ -825,6 +825,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\questmgr.h"
+				>
+			</File>
+			<File
 				RelativePath=".\skills.h"
 				>
 			</File>
