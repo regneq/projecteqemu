@@ -284,6 +284,7 @@ public:
 	inline void	SetBaseGender(uint32 i) { m_pp.gender=i; }
 	inline  void SetDeity(uint32 i) {m_pp.deity=i;}
 
+	inline int8		GetLevel2()			const { return m_pp.level2; }
 	inline int16	GetBaseRace()		const { return m_pp.race; }
 	inline int16	GetBaseClass()		const { return m_pp.class_; }
 	inline int8		GetBaseGender()		const { return m_pp.gender; }

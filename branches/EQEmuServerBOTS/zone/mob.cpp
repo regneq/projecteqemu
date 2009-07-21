@@ -1302,7 +1302,34 @@ void Mob::SendIllusionPacket(int16 in_race, int8 in_gender, int8 in_texture, int
 		this->drakkin_heritage = CastToClient()->GetBaseHeritage();
 		this->drakkin_tattoo = CastToClient()->GetBaseTattoo();
 		this->drakkin_details = CastToClient()->GetBaseDetails();
-		this->size = GetSize();
+		switch(race){
+			case OGRE:
+				this->size = 9;
+				break;
+			case TROLL:
+				this->size = 8;
+				break;
+			case VAHSHIR:
+			case BARBARIAN:
+				this->size = 7;
+				break;
+			case HALF_ELF:
+			case WOOD_ELF:
+			case DARK_ELF:
+			case FROGLOK:
+				this->size = 5;
+				break;
+			case DWARF:
+				this->size = 4;
+				break;
+			case HALFLING:
+			case GNOME:
+				this->size = 3;
+				break;
+			default:
+				this->size = 6;
+				break;
+		}
 	}
 
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_Illusion, sizeof(Illusion_Struct));

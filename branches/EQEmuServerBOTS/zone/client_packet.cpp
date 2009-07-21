@@ -7881,13 +7881,13 @@ void Client::CompleteConnect()
 							SendAppearancePacket(AT_Size, 8);
 							break;
 						case VAHSHIR:
-						case FROGLOK:
 						case BARBARIAN:
 							SendAppearancePacket(AT_Size, 7);
 							break;
 						case HALF_ELF:
 						case WOOD_ELF:
 						case DARK_ELF:
+						case FROGLOK:
 							SendAppearancePacket(AT_Size, 5);
 							break;
 						case DWARF:

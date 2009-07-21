@@ -1,5 +1,12 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==07/21/2009==
+Trevius: Added a 4th type for quest::getlevel(type) that will get the characters level2 value, which is the max level the character has ever reached.
+Trevius: Added a 3rd option for saylink() to allow the link to be different than the say message. Ex quest::saylink("bind my soul", 0, "bind your soul")
+
+==07/20/2009==
+Trevius: Corrected/Updated some minor size stuff with illusions and player races.
+
 ==07/19/2009==
 Trevius: EVENT_PROXIMITY_SAY will now work whether you have a target or not.
 Trevius: Added bool option to quest::saylink() to allow them to be silent. Ex. quest::saylink("silent link",1)
