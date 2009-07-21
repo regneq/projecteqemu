@@ -67,6 +67,7 @@ public:
 	virtual int GetMonkHandToHandDamage(void);
 	virtual void TryCriticalHit(Mob *defender, int16 skill, sint32 &damage);
 	virtual bool TryFinishingBlow(Mob *defender, SkillType skillinuse);
+	virtual void DoRiposte();
 	
 	// Bot Action Command Methods
 	bool MesmerizeTarget(Mob* target);

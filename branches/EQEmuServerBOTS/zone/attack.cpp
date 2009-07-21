@@ -1251,9 +1251,11 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte)
 					if (MakeRandomInt(0, 100) < (GetAA(aaSlipperyAttacks) * 20)) {
 						damage = 0; // Counts as a miss
 						slippery_attack = true;
-					} else DoRiposte(other);
+					} else 
+						other->DoRiposte();
 				}
-				else DoRiposte(other);
+				else 
+					other->DoRiposte();
 			}
 		}
 
@@ -1881,7 +1883,7 @@ bool NPC::Attack(Mob* other, int Hand, bool bRiposte)	 // Kaiyodo - base functio
 	
 	// now check ripostes
 	if (damage == -3) { // riposting
-		DoRiposte(other);
+		other->DoRiposte();
 	}
 	
 	if (damage > 0)
@@ -2965,102 +2967,6 @@ bool Client::CheckDoubleAttack(bool tripleAttack) {
 	return false;
 }
 
-#ifdef EQBOTS
-
-bool Mob::CheckBotDoubleAttack(bool tripleAttack) {
-
-	// If you don't have the double attack skill, return
-	if(!GetSkill(DOUBLE_ATTACK))
-		return false;
-	
-	// You start with no chance of double attacking
-	int chance = 0;
-	
-	// Used for maxSkill and triple attack calcs
-	int8 classtype = GetClass();
-	
-	// The current skill level
-	uint16 skill = GetSkill(DOUBLE_ATTACK);
-
-	// Discipline bonuses give you 100% chance to double attack
-	sint16 buffs = spellbonuses.DoubleAttackChance + itembonuses.DoubleAttackChance;
-	
-	// The maximum value for the Class based on the server rule of MaxLevel
-	if(!BotOwner || BotOwner->qglobal || (GetAppearance() == eaDead))
-		return false;
-	int16 maxSkill = BotOwner->CastToClient()->MaxSkill(DOUBLE_ATTACK, classtype, RuleI(Character, MaxLevel));
-
-	int32 aaBonus = 0;
-	uint8 aalevel = GetLevel();
-	if((classtype == BEASTLORD)||(classtype == BARD)) { // AA's Beastial Frenzy, Harmonious Attacks
-		if(aalevel >= 65) {
-			aaBonus += 5;
-		}
-		else if(aalevel >= 64) {
-			aaBonus += 4;
-		}
-		else if(aalevel >= 63) {
-			aaBonus += 3;
-		}
-		else if(aalevel >= 62) {
-			aaBonus += 2;
-		}
-		else if(aalevel >= 61) {
-			aaBonus += 1;
-		}
-	}
-	if((classtype == PALADIN)||(classtype == SHADOWKNIGHT)) { // AA Knights Advantage
-		if(aalevel >= 65) {
-			aaBonus += 30;
-		}
-		else if(aalevel >= 63) {
-			aaBonus += 20;
-		}
-		else if(aalevel >= 61) {
-			aaBonus += 10;
-		}
-	}
-	if((classtype == ROGUE)||(classtype == WARRIOR)||(classtype == RANGER)||(classtype == MONK)) { // AA Ferocity and Relentless Assault
-		if(aalevel >= 70) {
-			aaBonus += 60;
-		}
-		else if(aalevel >= 65) {
-			aaBonus += 30;
-		}
-		else if(aalevel >= 63) {
-			aaBonus += 20;
-		}
-		else if(aalevel >= 61) {
-			aaBonus += 10;
-		}
-	}
-
-	// Half of Double Attack Skill used to check chance for Triple Attack
-	if(tripleAttack) {
-		// Only some Double Attack classes get Triple Attack
-		if((classtype == MONK) || (classtype == WARRIOR) || (classtype == RANGER) || (classtype == BERSERKER)) {
-			// We only get half the skill, but should get all the bonuses
-			chance = (skill/2) + buffs + aaBonus;
-		}
-		else {
-			return false;
-		}
-	}
-	else {
-		// This is the actual Double Attack chance
-		chance = skill + buffs + aaBonus;
-	}
-	
-	// If your chance is greater than the RNG you are successful! Always have a 5% chance to fail at max skills+bonuses.
-	if(chance > MakeRandomInt(0, (maxSkill + itembonuses.DoubleAttackChance + aaBonus)*1.05)) {
-		return true;
-	}
-
-	return false;
-}
-
-#endif //EQBOTS
-
 void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, const SkillType skill_used, bool &avoidable, const sint8 buffslot, const bool iBuffTic) {
 	// This method is called with skill_used=ABJURE for Damage Shield damage. 
 	bool FromDamageShield = (skill_used == ABJURE);
@@ -3882,22 +3788,15 @@ bool Mob::TryFinishingBlow(Mob *defender, SkillType skillinuse)
 	return false;
 }
 
-void Mob::DoRiposte(Mob *defender){
-		mlog(COMBAT__ATTACKS, "Preforming a riposte");
+void Mob::DoRiposte() {
+	Mob* defender = this;
+	mlog(COMBAT__ATTACKS, "Preforming a riposte");
 
-#ifdef EQBOTS
+	defender->Attack(this, SLOT_PRIMARY, true);
 
-		if(defender->IsBot())
-			defender->BotAttackMelee(this, SLOT_PRIMARY, true);
-		else
-
-#endif //EQBOTS
-
-	    defender->Attack(this, 13, true);
-	    
-		//double riposte
-		int DoubleRipChance = 0;
-		switch(defender->GetAA(aaDoubleRiposte)) {
+	//double riposte
+	int DoubleRipChance = 0;
+	switch(defender->GetAA(aaDoubleRiposte)) {
 		case 1: 
 			DoubleRipChance = 15;
 			break;
@@ -3907,53 +3806,19 @@ void Mob::DoRiposte(Mob *defender){
 		case 3:
 			DoubleRipChance = 50;
 			break;
-		}
+	}
 
-		DoubleRipChance += 10*defender->GetAA(aaFlashofSteel);
+	DoubleRipChance += 10*defender->GetAA(aaFlashofSteel);
 
-#ifdef EQBOTS
+	if(DoubleRipChance >= MakeRandomInt(0, 100)) {
+		mlog(COMBAT__ATTACKS, "Preforming a double riposed (%d percent chance)", DoubleRipChance);
 
-		// Bot AA for DoubleRiposte and FlashofSteel
-		if(defender->IsBot()) {
-			if(defender->GetLevel() >= 64) {
-				DoubleRipChance = 80;
-			}
-			else if(defender->GetLevel() >= 63) {
-				DoubleRipChance = 70;
-			}
-			else if(defender->GetLevel() >= 62) {
-				DoubleRipChance = 60;
-			}
-			else if(defender->GetLevel() >= 61) {
-				DoubleRipChance = 50;
-			}
-			else if(defender->GetLevel() >= 60) {
-				DoubleRipChance = 35;
-			}
-			else if(defender->GetLevel() >= 59) {
-				DoubleRipChance = 15;
-			}
-		}
+		defender->Attack(this, SLOT_PRIMARY, true);
+	}
 
-#endif //EQBOTS
-
-		if(DoubleRipChance >= MakeRandomInt(0, 100)) {
-			mlog(COMBAT__ATTACKS, "Preforming a double riposed (%d percent chance)", DoubleRipChance);
-
-#ifdef EQBOTS
-
-		if(defender->IsBot())
-			defender->BotAttackMelee(this, SLOT_PRIMARY, true);
-		else
-
-#endif //EQBOTS
-
-			defender->Attack(this, 13, true);
-		}
-
-		if(defender->GetAA(aaReturnKick)){
-			int ReturnKickChance = 0;
-			switch(defender->GetAA(aaReturnKick)){
+	if(defender->GetAA(aaReturnKick)){
+		int ReturnKickChance = 0;
+		switch(defender->GetAA(aaReturnKick)){
 			case 1:
 				ReturnKickChance = 25;
 				break;
@@ -3963,60 +3828,13 @@ void Mob::DoRiposte(Mob *defender){
 			case 3:
 				ReturnKickChance = 50;
 				break;
-			}
+		}
 
-#ifdef EQBOTS
-
-			// Bot AA ReturnKick
-			if(defender->IsBot() && (defender->GetClass() == MONK)) {
-				if(defender->GetLevel() >= 61) {
-					ReturnKickChance = 50;
-				}
-				else if(defender->GetLevel() >= 60) {
-					ReturnKickChance = 35;
-				}
-				else if(defender->GetLevel() >= 59) {
-					ReturnKickChance = 25;
-				}
-			}
-
-#endif //EQBOTS
-
-			if(ReturnKickChance >= MakeRandomInt(0, 100)) {
-				mlog(COMBAT__ATTACKS, "Preforming a return kick (%d percent chance)", ReturnKickChance);
-				defender->MonkSpecialAttack(this, FLYING_KICK);
-
-#ifdef EQBOTS
-
-				if(defender->IsBot()) { // Technique Of Master Wu AA
-					int special = 0;
-					if(defender->GetLevel() >= 65) {
-						special = 100;
-					}
-					else if(defender->GetLevel() >= 64) {
-						special = 80;
-					}
-					else if(defender->GetLevel() >= 63) {
-						special = 60;
-					}
-					else if(defender->GetLevel() >= 62) {
-						special = 40;
-					}
-					else if(defender->GetLevel() >= 61) {
-						special = 20;
-					}
-					if(special == 100 || special > MakeRandomInt(0,100)) {
-						defender->MonkSpecialAttack(this, FLYING_KICK);
-						if(20 > MakeRandomInt(0,100)) {
-							defender->MonkSpecialAttack(this, FLYING_KICK);
-						}
-					}
-				}
-
-#endif //EQBOTS
-
-			}
-		}		
+		if(ReturnKickChance >= MakeRandomInt(0, 100)) {
+			mlog(COMBAT__ATTACKS, "Preforming a return kick (%d percent chance)", ReturnKickChance);
+			defender->MonkSpecialAttack(this, FLYING_KICK);
+		}
+	}		
 }
  
 void Mob::ApplyMeleeDamageBonus(int16 skill, sint32 &damage){

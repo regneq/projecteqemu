@@ -421,8 +421,8 @@ bool logpos;
 #ifdef EQBOTS
 
 	//EQoffline-adds
-	virtual bool BotAttackMelee(Mob* other, int Hand = 13, bool FromRiposte = false) { return false; }
-	virtual bool BotRangedAttack(Mob* other) { return false; }
+	//virtual bool BotAttackMelee(Mob* other, int Hand = 13, bool FromRiposte = false) { return false; }
+	//virtual bool BotRangedAttack(Mob* other) { return false; }
 	bool BotRaiding;
 	bool OrderBotAttack;
 	bool BotArchery;
@@ -444,7 +444,7 @@ bool logpos;
 	bool IsBotArcher() const { return BotArchery; }
 	bool IsBotCharmer() const { return BotCharmer; }
 	bool IsOrderBotAttack() const { return OrderBotAttack; }
-	bool CheckBotDoubleAttack(bool Triple = false);
+	//bool CheckBotDoubleAttack(bool Triple = false);
 
 #endif //EQBOTS
 
@@ -516,7 +516,7 @@ bool logpos;
 	void TryPetCriticalHit(Mob *defender, int16 skill, sint32 &damage);
 	virtual bool TryFinishingBlow(Mob *defender, SkillType skillinuse);
 	bool TryHeadShot(Mob* defender, SkillType skillInUse);
-	void DoRiposte(Mob* defender);
+	virtual void DoRiposte();
 	void ApplyMeleeDamageBonus(int16 skill, sint32 &damage);
 	void MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit);
 
@@ -622,26 +622,9 @@ bool logpos;
 
 	
 #ifdef EQBOTS
-
-	typedef enum {	//focus types
-		botfocusSpellHaste = 1,
-		botfocusSpellDuration,
-		botfocusRange,
-		botfocusReagentCost,
-		botfocusManaCost,
-		botfocusImprovedHeal,
-		botfocusImprovedDamage,
-		botfocusImprovedDOT,		//i dont know about this...
-		botfocusImprovedCritical,
-		botfocusImprovedUndeadDamage,
-		botfocusPetPower,
-		botfocusResistRate,
-		botfocusHateReduction,
-	} botfocusType;
-
-	void CalcBotStats(bool showtext = true);
-	sint16 GetBotFocusEffect(botfocusType bottype, int16 spell_id);
-	sint16 CalcBotFocusEffect(botfocusType bottype, int16 focus_id, int16 spell_id);
+	//void CalcBotStats(bool showtext = true);
+	//sint16 GetBotFocusEffect(botfocusType bottype, int16 spell_id);
+	//sint16 CalcBotFocusEffect(botfocusType bottype, int16 focus_id, int16 spell_id);
 	sint32 GetBotActSpellCasttime(int16 spell_id, sint32 casttime);
 	sint32 GetBotActSpellCost(int16 spell_id, sint32 cost);
 	float GetBotActSpellRange(int16 spell_id, float range);
@@ -843,15 +826,6 @@ bool logpos;
 	void SetEntityVariable(int32 id, const char *m_var);
 	bool EntityVariableExists(int32 id);
 
-#ifdef EQBOTS
-
-	/*Franck-add: EQoffline  */
-	void				BOT_Process();
-	void				PET_Process();
-	/*-----------------------*/
-	
-#endif //EQBOTS
-
 	void				AI_Event_Engaged(Mob* attacker, bool iYellForHelp = true);
 	void				AI_Event_NoLongerEngaged();
 
@@ -990,15 +964,15 @@ bool logpos;
 #ifdef EQBOTS
 
     //franck-add: EQoffline
-	bool AmIaBot;
+	//bool AmIaBot;
 	bool cast_last_time;
-	bool IsBot() const { return AmIaBot; }
+	//bool IsBot() const { return AmIaBot; }
 	int32 GetBotLeader();
 	sint32 GetBotActSpellDamage(int16 spell_id, sint32 value);
-	sint32 GetBotActSpellHealing(int16 spell_id, sint32 value);
-	void SendBotArcheryWearChange(int8 material_slot, uint32 material, uint32 color);
-	void BotMeditate(bool isSitting);
-	Mob *BotOwner;
+	//sint32 GetBotActSpellHealing(int16 spell_id, sint32 value);
+	//void SendBotArcheryWearChange(int8 material_slot, uint32 material, uint32 color);
+	//void BotMeditate(bool isSitting);
+	//Mob *BotOwner;
 	int BotRaidID;
 	void SetBotRaidID( int rId ) { BotRaidID = rId; }
 	int GetBotRaidID() { return BotRaidID; }
@@ -1028,17 +1002,17 @@ protected:
 #ifdef EQBOTS
 
 	//franck-add:EQoffline
-	virtual bool Bot_AI_IdleCastCheck() { return(false); }
+	//virtual bool Bot_AI_IdleCastCheck() { return(false); }
 	virtual bool Bot_AI_EngagedCastCheck() { return(false); }
-	virtual bool Bot_AI_PursueCastCheck() { return(false); }
-	virtual bool Bot_Command_MezzTarget(Mob *target) { return(false); }
-	virtual bool Bot_Command_RezzTarget(Mob *target) { return(false); }
-	virtual bool Bot_Command_Cure(int curetype, int level) { return(false); }
+	//virtual bool Bot_AI_PursueCastCheck() { return(false); }
+	//virtual bool Bot_Command_MezzTarget(Mob *target) { return(false); }
+	//virtual bool Bot_Command_RezzTarget(Mob *target) { return(false); }
+	//virtual bool Bot_Command_Cure(int curetype, int level) { return(false); }
 	virtual bool BotRaidSpell(int16 spellID) { return(false); }
-	virtual bool Bot_Command_CalmTarget(Mob *target) { return(false); }
-	virtual bool Bot_Command_CharmTarget(int charmtype, Mob *target) { return(false); }
-	virtual bool Bot_Command_DireTarget(int diretype, Mob *target) { return(false); }
-	virtual bool Bot_Command_Resist(int resisttype, int level) { return(false); } 
+	//virtual bool Bot_Command_CalmTarget(Mob *target) { return(false); }
+	//virtual bool Bot_Command_CharmTarget(int charmtype, Mob *target) { return(false); }
+	//virtual bool Bot_Command_DireTarget(int diretype, Mob *target) { return(false); }
+	//virtual bool Bot_Command_Resist(int resisttype, int level) { return(false); } 
 
 #endif //EQBOTS
 	

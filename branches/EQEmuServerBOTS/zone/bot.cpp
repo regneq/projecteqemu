@@ -4424,9 +4424,12 @@ bool Bot::Attack(Mob* other, int Hand, bool FromRiposte) {
 					if (MakeRandomInt(0, 100) < (saChance * 20)) {
 						damage = 0; // Counts as a miss
 						slippery_attack = true;
-					} else DoRiposte(other);
+					}
+					else 
+						other->DoRiposte();
 				}
-				else DoRiposte(other);
+				else 
+					other->DoRiposte();
 			}
 		}
 		
@@ -5529,6 +5532,112 @@ bool Bot::TryFinishingBlow(Mob *defender, SkillType skillinuse)
 		}
 	}
 	return false;
+}
+
+void Bot::DoRiposte() {
+	Mob* defender = this;
+	mlog(COMBAT__ATTACKS, "Preforming a riposte");
+
+	defender->Attack(this, SLOT_PRIMARY, true);
+
+	//double riposte
+	int DoubleRipChance = 0;
+	switch(defender->GetAA(aaDoubleRiposte)) {
+		case 1: 
+			DoubleRipChance = 15;
+			break;
+		case 2:
+			DoubleRipChance = 35;
+			break;
+		case 3:
+			DoubleRipChance = 50;
+			break;
+	}
+
+	DoubleRipChance += 10*defender->GetAA(aaFlashofSteel);
+
+	if(defender->GetLevel() >= 64) {
+		DoubleRipChance = 80;
+	}
+	else if(defender->GetLevel() >= 63) {
+		DoubleRipChance = 70;
+	}
+	else if(defender->GetLevel() >= 62) {
+		DoubleRipChance = 60;
+	}
+	else if(defender->GetLevel() >= 61) {
+		DoubleRipChance = 50;
+	}
+	else if(defender->GetLevel() >= 60) {
+		DoubleRipChance = 35;
+	}
+	else if(defender->GetLevel() >= 59) {
+		DoubleRipChance = 15;
+	}
+
+	if(DoubleRipChance >= MakeRandomInt(0, 100)) {
+		mlog(COMBAT__ATTACKS, "Preforming a double riposed (%d percent chance)", DoubleRipChance);
+
+		defender->Attack(this, SLOT_PRIMARY, true);
+	}
+
+	if(defender->GetAA(aaReturnKick)){
+		int ReturnKickChance = 0;
+		switch(defender->GetAA(aaReturnKick)){
+			case 1:
+				ReturnKickChance = 25;
+				break;
+			case 2:
+				ReturnKickChance = 35;
+				break;
+			case 3:
+				ReturnKickChance = 50;
+				break;
+		}
+
+		// Bot AA ReturnKick
+		if(defender->GetClass() == MONK) {
+			if(defender->GetLevel() >= 61) {
+				ReturnKickChance = 50;
+			}
+			else if(defender->GetLevel() >= 60) {
+				ReturnKickChance = 35;
+			}
+			else if(defender->GetLevel() >= 59) {
+				ReturnKickChance = 25;
+			}
+		}
+
+		if(ReturnKickChance >= MakeRandomInt(0, 100)) {
+			mlog(COMBAT__ATTACKS, "Preforming a return kick (%d percent chance)", ReturnKickChance);
+			defender->MonkSpecialAttack(this, FLYING_KICK);
+
+			// Technique Of Master Wu AA
+			int special = 0;
+			if(defender->GetLevel() >= 65) {
+				special = 100;
+			}
+			else if(defender->GetLevel() >= 64) {
+				special = 80;
+			}
+			else if(defender->GetLevel() >= 63) {
+				special = 60;
+			}
+			else if(defender->GetLevel() >= 62) {
+				special = 40;
+			}
+			else if(defender->GetLevel() >= 61) {
+				special = 20;
+			}
+			if(special == 100 || special > MakeRandomInt(0,100)) {
+				defender->MonkSpecialAttack(this, FLYING_KICK);
+				if(20 > MakeRandomInt(0,100)) {
+					defender->MonkSpecialAttack(this, FLYING_KICK);
+				}
+			}
+
+		}
+	}		
 }
 
 void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
