@@ -68,6 +68,8 @@ public:
 	virtual void TryCriticalHit(Mob *defender, int16 skill, sint32 &damage);
 	virtual bool TryFinishingBlow(Mob *defender, SkillType skillinuse);
 	virtual void DoRiposte();
+	inline virtual sint16 GetATK() const { return ATK + itembonuses.ATK + spellbonuses.ATK + ((GetSTR() + GetSkill(OFFENSE)) * 9 / 10); }
+	virtual void MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit);
 	
 	// Bot Action Command Methods
 	bool MesmerizeTarget(Mob* target);

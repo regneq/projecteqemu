@@ -534,87 +534,6 @@ void Mob::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 	totalMit += GetAA(aaInnateDefense);
 	totalMit += GetAA(aaDefensiveInstincts)*0.5;
 
-#ifdef EQBOTS
-
-	if(IsBot())
-	{
-		int8 botclass = GetClass();
-		uint8 botlevel = GetLevel();
-
-		// Everyone gets Combat Stability AA
-		if(botlevel >= 57)
-		{ // Combat Stability AA 3
-			totalMit += 10;
-		}
-		else if(botlevel >= 56)
-		{ // Combat Stability AA 2
-			totalMit += 5;
-		}
-		else if(botlevel >= 55)
-		{ // Combat Stability AA 1
-			totalMit += 2;
-		}
-
-		// All Melee get Physical Enhancement AA
-		if((botclass != WIZARD) &&
-			(botclass != NECROMANCER) &&
-			(botclass != MAGICIAN) &&
-			(botclass != ENCHANTER) &&
-			(botclass != DRUID) &&
-			(botclass != SHAMAN))
-		{
-			if(botlevel >= 59)
-			{ // Physical Enhancement AA
-				totalMit += 2;
-			}
-		}
-		
-		// Everyone gets Innate Defense AA
-		if(botlevel >= 65)
-		{ // Innate Defense AA 5
-			totalMit += 5;
-		}
-		else if(botlevel >= 64)
-		{ // Innate Defense AA 4
-			totalMit += 4;
-		}
-		else if(botlevel >= 63)
-		{ // Innate Defense AA 3
-			totalMit += 3;
-		}
-		else if(botlevel >= 62)
-		{ // Innate Defense AA 2
-			totalMit += 2;
-		}
-		else if(botlevel >= 61)
-		{ // Innate Defense AA 1
-			totalMit += 1;
-		}
-
-		// All but pure casters get Defensive Instincts AA
-		if((botclass != WIZARD) && (botclass != NECROMANCER) && (botclass != MAGICIAN) && (botclass != ENCHANTER))
-		{
-			// Clients get this AA multiplied by a float to equal an int(totalMit)?  Unfair rounding
-			if(botlevel >= 70) { // Defensive Instincts AA 5
-				totalMit += 5;
-			}
-			else if(botlevel >= 69) { // Defensive Instincts AA 4
-				totalMit += 4;
-			}
-			else if(botlevel >= 68) { // Defensive Instincts AA 3
-				totalMit += 3;
-			}
-			else if(botlevel >= 67) { // Defensive Instincts AA 2
-				totalMit += 2;
-			}
-			else if(botlevel >= 66) { // Defensive Instincts AA 1
-				totalMit += 1;
-			}
-		}
-	}
-
-#endif //EQBOTS
-
 	if(RuleB(Combat, UseIntervalAC)){
 		//AC Mitigation
 		sint32 attackRating = 0;
@@ -640,19 +559,7 @@ void Mob::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 			ac_eq100 += (2325 + ((defender->GetLevel()-69)*125));
 		}
 
-#ifdef EQBOTS
-
-		if(attacker->IsClient() || attacker->IsBot())
-
-#else
-
-		if(attacker->IsClient())
-
-#endif //EQBOTS
-
-			attackRating = 10 + attacker->GetATK() + ((attacker->GetSTR() + attacker->GetSkill(OFFENSE)) * 9 / 10);
-		else
-			attackRating = 10 + attacker->GetATK() + (attacker->GetSTR() * 9 / 10);
+		attackRating = 10 + attacker->GetATK();
 
 		sint32 defenseRating = defender->GetAC();
 		defenseRating += 125;

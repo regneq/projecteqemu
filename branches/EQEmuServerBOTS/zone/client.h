@@ -340,7 +340,7 @@ public:
 	virtual void CalcBonuses();
 	//these are all precalculated now
 	inline virtual sint16	GetAC()		const { return AC; }
-	inline virtual sint16	GetATK()	const { return ATK; }
+	inline virtual sint16 GetATK() const { return ATK + itembonuses.ATK + spellbonuses.ATK + ((GetSTR() + GetSkill(OFFENSE)) * 9 / 10); }
 	inline virtual int	GetHaste() const { return Haste; }
 
 	inline virtual sint16	GetSTR()	const { return STR; }

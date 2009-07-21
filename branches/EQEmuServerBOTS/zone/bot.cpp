@@ -5640,6 +5640,232 @@ void Bot::DoRiposte() {
 	}		
 }
 
+void Bot::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
+{
+	if(damage <= 0)
+		return;
+
+	Mob* defender = this;
+	int totalMit = 0;
+
+	switch(GetAA(aaCombatStability)){
+		case 1:
+			totalMit += 2;
+			break;
+		case 2:
+			totalMit += 5;
+			break;
+		case 3:
+			totalMit += 10;
+			break;
+	}
+
+	totalMit += GetAA(aaPhysicalEnhancement)*2;
+	totalMit += GetAA(aaInnateDefense);
+	totalMit += GetAA(aaDefensiveInstincts)*0.5;
+
+	int8 botclass = GetClass();
+	uint8 botlevel = GetLevel();
+
+	// Everyone gets Combat Stability AA
+	if(botlevel >= 57)
+	{ // Combat Stability AA 3
+		totalMit += 10;
+	}
+	else if(botlevel >= 56)
+	{ // Combat Stability AA 2
+		totalMit += 5;
+	}
+	else if(botlevel >= 55)
+	{ // Combat Stability AA 1
+		totalMit += 2;
+	}
+
+	// All Melee get Physical Enhancement AA
+	if((botclass != WIZARD) &&
+		(botclass != NECROMANCER) &&
+		(botclass != MAGICIAN) &&
+		(botclass != ENCHANTER) &&
+		(botclass != DRUID) &&
+		(botclass != SHAMAN))
+	{
+		if(botlevel >= 59)
+		{ // Physical Enhancement AA
+			totalMit += 2;
+		}
+	}
+
+	// Everyone gets Innate Defense AA
+	if(botlevel >= 65)
+	{ // Innate Defense AA 5
+		totalMit += 5;
+	}
+	else if(botlevel >= 64)
+	{ // Innate Defense AA 4
+		totalMit += 4;
+	}
+	else if(botlevel >= 63)
+	{ // Innate Defense AA 3
+		totalMit += 3;
+	}
+	else if(botlevel >= 62)
+	{ // Innate Defense AA 2
+		totalMit += 2;
+	}
+	else if(botlevel >= 61)
+	{ // Innate Defense AA 1
+		totalMit += 1;
+	}
+
+	// All but pure casters get Defensive Instincts AA
+	if((botclass != WIZARD) && (botclass != NECROMANCER) && (botclass != MAGICIAN) && (botclass != ENCHANTER))
+	{
+		// Clients get this AA multiplied by a float to equal an int(totalMit)?  Unfair rounding
+		if(botlevel >= 70) { // Defensive Instincts AA 5
+			totalMit += 5;
+		}
+		else if(botlevel >= 69) { // Defensive Instincts AA 4
+			totalMit += 4;
+		}
+		else if(botlevel >= 68) { // Defensive Instincts AA 3
+			totalMit += 3;
+		}
+		else if(botlevel >= 67) { // Defensive Instincts AA 2
+			totalMit += 2;
+		}
+		else if(botlevel >= 66) { // Defensive Instincts AA 1
+			totalMit += 1;
+		}
+	}
+
+	if(RuleB(Combat, UseIntervalAC)){
+		//AC Mitigation
+		sint32 attackRating = 0;
+		uint16 ac_eq100 = 125;
+		if(defender->GetLevel() < 20)
+		{
+			ac_eq100 += 15 * defender->GetLevel();
+		}
+		else if(defender->GetLevel() < 50)
+		{
+			ac_eq100 += (285 + ((defender->GetLevel()-19)*30));
+		}
+		else if(defender->GetLevel() < 60)
+		{
+			ac_eq100 += (1185 + ((defender->GetLevel()-49)*60));
+		}
+		else if(defender->GetLevel() < 70)
+		{
+			ac_eq100 += (1785 + ((defender->GetLevel()-59)*90));
+		}
+		else
+		{
+			ac_eq100 += (2325 + ((defender->GetLevel()-69)*125));
+		}
+
+		attackRating = 10 + attacker->GetATK();
+
+		sint32 defenseRating = defender->GetAC();
+		defenseRating += 125;
+		defenseRating += (totalMit * defenseRating / 100);
+
+		double d1_chance;
+		double d2_d19_chance;
+
+		double combat_rating = (defenseRating - attackRating);
+
+		combat_rating = 100 * combat_rating / (double)ac_eq100;
+
+		d1_chance = 6.0 + (((combat_rating * 0.39) / 3));
+		d2_d19_chance = 48.0 + (((combat_rating * 0.39) / 3) * 2);
+
+		if(d1_chance < 1.0)
+			d1_chance = 1.0;
+
+		if(d2_d19_chance < 5.0)
+			d2_d19_chance = 5.0;
+
+		double roll = MakeRandomFloat(0, 100);
+
+		int interval_used = 0;
+		if(roll <= d1_chance)
+		{
+			interval_used = 1;
+		}
+		else if(roll <= (d2_d19_chance + d1_chance))
+		{
+			interval_used = 1 + (int)((((roll-d1_chance) / d2_d19_chance) * 18) + 1);
+		}
+		else
+		{
+			interval_used = 20;
+		}
+
+		//PS: this looks WRONG but there's a method to the madness
+		int db = minhit;
+		double di = ((double)(damage-minhit)/19);
+		damage = db + (di * (interval_used - 1));
+	}
+	else{
+		////////////////////////////////////////////////////////
+		// Scorpious2k: Include AC in the calculation
+		// use serverop variables to set values
+		int myac = GetAC();
+		if (damage > 0 && myac > 0) {
+			int acfail=1000;
+			char tmp[10];
+
+			if (database.GetVariable("ACfail", tmp, 9)) {
+				acfail = (int) (atof(tmp) * 100);
+				if (acfail>100) acfail=100;
+			}
+
+			if (acfail<=0 || rand()%101>acfail) {
+				float acreduction=1;
+				int acrandom=300;
+				if (database.GetVariable("ACreduction", tmp, 9))
+				{
+					acreduction=atof(tmp);
+					if (acreduction>100) acreduction=100;
+				}
+
+				if (database.GetVariable("ACrandom", tmp, 9))
+				{
+					acrandom = (int) ((atof(tmp)+1) * 100);
+					if (acrandom>10100) acrandom=10100;
+				}
+
+				if (acreduction>0) {
+					damage -= (int) (GetAC() * acreduction/100.0f);
+				}		
+				if (acrandom>0) {
+					damage -= (myac * MakeRandomInt(0, acrandom) / 10000);
+				}
+				if (damage<1) damage=1;
+				mlog(COMBAT__DAMAGE, "AC Damage Reduction: fail chance %d%%. Failed. Reduction %.3f%%, random %d. Resulting damage %d.", acfail, acreduction, acrandom, damage);
+			} else {
+				mlog(COMBAT__DAMAGE, "AC Damage Reduction: fail chance %d%%. Did not fail.", acfail);
+			}
+		}
+
+		damage -= (totalMit * damage / 100);
+
+		if(damage != 0 && damage < minhit)
+			damage = minhit;
+	}
+
+
+	//reduce the damage from shielding item and aa based on the min dmg
+	//spells offer pure mitigation
+	damage -= (minhit * defender->GetItemBonuses().MeleeMitigation / 100);
+	damage -= (damage * defender->GetSpellBonuses().MeleeMitigation / 100);
+
+	if(damage < 0)
+		damage = 0;
+
+	mlog(COMBAT__DAMAGE, "Applied %d percent mitigation, remaining damage %d", totalMit, damage);
+}
+
 void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 	// TODO: All bot command processing occurs here now instead of in command.cpp
 

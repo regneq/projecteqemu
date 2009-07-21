@@ -518,7 +518,7 @@ bool logpos;
 	bool TryHeadShot(Mob* defender, SkillType skillInUse);
 	virtual void DoRiposte();
 	void ApplyMeleeDamageBonus(int16 skill, sint32 &damage);
-	void MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit);
+	virtual void MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit);
 
 	void	DamageShield(Mob* other);
 	bool	FindBuff(int16 spellid);
@@ -602,7 +602,7 @@ bool logpos;
 	virtual sint32 CalcMaxMana();
 
 	inline virtual sint16	GetAC()		const { return AC + itembonuses.AC + spellbonuses.AC; } // Quagmire - this is NOT the right math
-	inline virtual sint16	GetATK()	const { return ATK + itembonuses.ATK + spellbonuses.ATK; }
+	inline virtual sint16	GetATK()	const { return ATK + itembonuses.ATK + spellbonuses.ATK + (GetSTR() * 9 / 10); }
 	inline virtual sint16	GetSTR()	const { return STR + itembonuses.STR + spellbonuses.STR; }
 	inline virtual sint16	GetSTA()	const { return STA + itembonuses.STA + spellbonuses.STA; }
 	inline virtual sint16	GetDEX()	const { return DEX + itembonuses.DEX + spellbonuses.DEX; }
