@@ -5866,6 +5866,519 @@ void Bot::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 	mlog(COMBAT__DAMAGE, "Applied %d percent mitigation, remaining damage %d", totalMit, damage);
 }
 
+void Bot::DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, sint32 min_damage, sint32 hate_override) {
+	//this really should go through the same code as normal melee damage to
+	//pick up all the special behavior there
+
+	sint32 hate = max_damage;
+	if(hate_override > -1)
+		hate = hate_override;
+
+	if(skill == BASH) {
+		const Item_Struct* botweapon = database.GetItem(GetEquipment(MATERIAL_SECONDARY));
+		if(botweapon) {
+			if(botweapon->ItemType == ItemTypeShield) {
+				hate += botweapon->AC;
+			}
+		}
+
+	}
+
+	if(max_damage > 0) {
+		if(skill != THROWING && skill != ARCHERY) {
+			who->AvoidDamage(this, max_damage);
+		}
+		who->MeleeMitigation(this, max_damage, min_damage);
+		ApplyMeleeDamageBonus(skill, max_damage);
+		TryCriticalHit(who, skill, max_damage);
+		if(max_damage > 0) {
+			who->AddToHateList(this, hate);
+		}
+		else
+			who->AddToHateList(this, 0);
+	}
+	who->Damage(this, max_damage, SPELL_UNKNOWN, skill, false);
+	
+	if(max_damage == -3)
+		who->DoRiposte();	
+}
+
+void Bot::TryBackstab(Mob *other) {
+	if(!other)
+		return;
+
+	const Item_Struct* botpiercer = NULL;
+	    botpiercer = database.GetItem(GetEquipment(MATERIAL_PRIMARY));
+		if(!botpiercer || (botpiercer->ItemType != ItemTypePierce)) {
+			Say("I can't backstab with this weapon!");
+			return;
+		}
+	
+	bool tripleBackstab = false;
+	int tripleChance = 0;
+
+	if(GetLevel() >= 67) { // Triple Backstab AA 3
+			tripleChance = 30;
+		}
+		else if(GetLevel() == 66) { // Triple Backstab AA 2
+			tripleChance = 20;
+		}
+		else if(GetLevel() == 65) { // Triple Backstab AA 1
+			tripleChance = 10;
+		}
+		if (tripleChance > MakeRandomInt(1, 100)) {
+			tripleBackstab = true;
+		}
+
+	bool seizedOpportunity = false;
+	int seizedChance = 0;
+
+	if (BehindMob(other, GetX(), GetY()) || seizedOpportunity) // Player is behind other
+	{
+		if (seizedOpportunity) {
+			Message(0,"%s's fierce attack is executed with such grace, %s did not see it coming!", this->GetCleanName(), other->GetCleanName());
+		}
+
+		// solar - chance to assassinate
+		float chance = (10.0+(GetDEX()/10)); //18.5% chance at 85 dex 40% chance at 300 dex
+		if(
+			level >= 60 && // player is 60 or higher
+			other->GetLevel() <= 45 && // mob 45 or under
+			!other->CastToNPC()->IsEngaged() && // not aggro
+			other->GetHP()<=32000
+			&& other->IsNPC()
+			&& MakeRandomFloat(0, 99) < chance // chance
+			) {
+			entity_list.MessageClose_StringID(this, false, 200, MT_CritMelee, ASSASSINATES, GetName());
+			RogueAssassinate(other);
+		}
+		else {
+			RogueBackstab(other);
+			if (level > 54) {
+				float DoubleAttackProbability = (GetSkill(DOUBLE_ATTACK) + GetLevel()) / 500.0f; // 62.4 max
+				// Check for double attack with main hand assuming maxed DA Skill (MS)
+				
+				if(MakeRandomFloat(0, 1) < DoubleAttackProbability)	// Max 62.4 % chance of DA
+				{
+					if(other->GetHP() > 0)
+						RogueBackstab(other);
+
+					if (tripleBackstab && other->GetHP() > 0) 
+					{
+						RogueBackstab(other);
+					}
+				}
+			}
+		}
+	}
+	else if(GetAA(aaChaoticStab) > 0) {
+		//we can stab from any angle, we do min damage though.
+		RogueBackstab(other, true);
+		if (level > 54) {
+			float DoubleAttackProbability = (GetSkill(DOUBLE_ATTACK) + GetLevel()) / 500.0f; // 62.4 max
+			// Check for double attack with main hand assuming maxed DA Skill (MS)
+			if(MakeRandomFloat(0, 1) < DoubleAttackProbability)		// Max 62.4 % chance of DA
+				if(other->GetHP() > 0)
+					RogueBackstab(other, true);
+
+			if (tripleBackstab && other->GetHP() > 0) {
+					RogueBackstab(other);
+				}
+		}
+	}
+	else { //We do a single regular attack if we attack from the front without chaotic stab
+		Attack(other, 13);
+	}
+}
+
+//heko: backstab
+void Bot::RogueBackstab(Mob* other, bool min_damage)
+{
+	sint32 ndamage = 0;
+	sint32 max_hit = 0;
+	sint32 min_hit = 0;
+	sint32 hate = 0;
+	sint32 primaryweapondamage = 0;
+	sint32 backstab_dmg = 0;
+
+	const Item_Struct* botweaponStruct = database.GetItem(GetEquipment(MATERIAL_PRIMARY));
+	if(botweaponStruct) {
+		ItemInst* botweaponInst = new ItemInst(botweaponStruct);
+		if(botweaponInst) {
+			primaryweapondamage = GetWeaponDamage(other, botweaponInst);
+			backstab_dmg = primaryweapondamage;
+			safe_delete(botweaponInst);
+		}
+		else 
+		{
+			primaryweapondamage = (GetLevel()/7)+1; // fallback incase it's a npc without a weapon, 2 dmg at 10, 10 dmg at 65
+			backstab_dmg = primaryweapondamage;
+		}
+	}
+
+	if(primaryweapondamage > 0){
+		if(level > 25){
+			max_hit = (((2*backstab_dmg) * GetDamageTable(BACKSTAB) / 100) * 10 * GetSkill(BACKSTAB) / 355)  + ((level-25)/3) + 1;
+			hate = 20 * backstab_dmg * GetSkill(BACKSTAB) / 355;
+		}
+		else{
+			max_hit = (((2*backstab_dmg) * GetDamageTable(BACKSTAB) / 100) * 10 * GetSkill(BACKSTAB) / 355) + 1;
+			hate = 20 * backstab_dmg * GetSkill(BACKSTAB) / 355;
+		}
+
+		// determine minimum hits
+		if (level < 51)
+		{
+			min_hit = (level*15/10);
+		}
+		else
+		{
+			// Trumpcard:  Replaced switch statement with formula calc.  This will give minhit increases all the way to 65.
+			min_hit = (level * ( level*5 - 105)) / 100;
+		}
+
+		if(!other->CheckHitChance(this, BACKSTAB, 0))	{
+			ndamage = 0;
+		}
+		else{
+			if(min_damage){
+				ndamage = min_hit;
+			}
+			else
+			{
+				if (max_hit < min_hit)
+					max_hit = min_hit;
+
+				if(RuleB(Combat, UseIntervalAC))
+					ndamage = max_hit; 
+				else
+					ndamage = MakeRandomInt(min_hit, max_hit);
+
+			}
+		}
+	}
+	else{
+		ndamage = -5;
+	}
+
+	DoSpecialAttackDamage(other, BACKSTAB, ndamage, min_hit, hate);
+	DoAnim(animPiercing);
+}
+
+void Bot::RogueAssassinate(Mob* other)
+{
+	const Item_Struct* botweaponStruct = database.GetItem(GetEquipment(MATERIAL_PRIMARY));
+	if(botweaponStruct) {
+		ItemInst* botweaponInst = new ItemInst(botweaponStruct);
+		if(botweaponInst) {
+			if(GetWeaponDamage(other, botweaponInst)) {
+				other->Damage(this, 32000, SPELL_UNKNOWN, BACKSTAB);
+			}
+			else {
+				other->Damage(this, -5, SPELL_UNKNOWN, BACKSTAB);
+			}
+			safe_delete(botweaponInst);
+		}
+	}
+
+	DoAnim(animPiercing);	//piercing animation
+}
+
+void Bot::DoClassAttacks(Mob *target) {
+	if(target == NULL)
+		return;	//gotta have a target for all these
+
+	bool taunt_time = taunt_timer.Check();
+	bool ca_time = classattack_timer.Check(false);
+	bool ka_time = knightattack_timer.Check(false);
+
+	//only check attack allowed if we are going to do something
+	if((taunt_time || ca_time || ka_time) && !IsAttackAllowed(target))
+		return;
+
+	if(ka_time){
+		int knightreuse = 1000; //lets give it a small cooldown actually.
+		switch(GetClass()){
+			case SHADOWKNIGHT: case SHADOWKNIGHTGM:{
+				CastSpell(SPELL_NPC_HARM_TOUCH, target->GetID());
+				knightreuse = HarmTouchReuseTime * 1000;
+				break;
+							   }
+			case PALADIN: case PALADINGM:{
+				if(GetHPRatio() < 20) {
+					CastSpell(SPELL_LAY_ON_HANDS, GetID());
+					knightreuse = LayOnHandsReuseTime * 1000;
+				} else {
+					knightreuse = 2000; //Check again in two seconds.
+				}
+				break;
+						  }
+		}
+		knightattack_timer.Start(knightreuse); 
+	}
+
+	//general stuff, for all classes....
+	//only gets used when their primary ability get used too
+	if (taunting && HasOwner() && target->IsNPC() && target->GetBodyType() != BT_Undead && taunt_time) {
+		Taunt(target->CastToNPC(), false);
+	}
+
+	//franck-add: EQoffline. Warrior bots must taunt the target.
+	if(((GetClass() == WARRIOR) || (GetClass() == PALADIN) || (GetClass() == SHADOWKNIGHT)) && target->IsNPC() && taunt_time && target) {
+		bool isTaunting = false;
+		/*BotRaids* br = entity_list.GetBotRaidByMob(this);
+		if(br)
+		{
+		if(br->GetBotMainTank())
+		{
+		if(br->GetBotMainTank() == this)
+		{
+		isTaunting = true;
+		}
+		}
+		else if(br->GetBotSecondTank())
+		{
+		if(br->GetBotSecondTank() == this)
+		{
+		isTaunting = true;
+		}
+		}
+		else
+		{
+		if(MakeRandomInt(1, 100) > 50)
+		{
+		isTaunting = true;
+		}
+		}
+		}
+		else
+		{
+		isTaunting = true;
+		}*/
+		if(isTaunting)
+		{
+			Say("Taunting %s", target->GetCleanName());
+			Taunt(target->CastToNPC(), true);
+		}
+	}
+
+	if(!ca_time)
+		return;
+
+	float HasteModifier = 0;
+	if(GetHaste() > 0)
+		HasteModifier = 10000 / (100 + GetHaste());
+	else if(GetHaste() < 0)
+		HasteModifier = (100 - GetHaste());
+	else
+		HasteModifier = 100;
+
+	int level = GetLevel();
+	int reuse = TauntReuseTime * 1000;	//make this very long since if they dont use it once, they prolly never will
+	bool did_attack = false;
+	//class specific stuff...
+	switch(GetClass()) {
+		case ROGUE: case ROGUEGM:
+			if(level >= 10) {
+				TryBackstab(target);
+				reuse = BackstabReuseTime * 1000;
+				did_attack = true;
+			}
+			break;
+		case MONK: case MONKGM: {
+			int8 satype = KICK;
+			if(level > 29) {
+				satype = FLYING_KICK;
+			} else if(level > 24) {
+				satype = DRAGON_PUNCH;
+			} else if(level > 19) {
+				satype = EAGLE_STRIKE;
+			} else if(level > 9) {
+				satype = TIGER_CLAW;
+			} else if(level > 4) {
+				satype = ROUND_KICK;
+			}
+			reuse = MonkSpecialAttack(target, satype);
+
+			// Technique Of Master Wu AA
+			int specl = 0;
+			if(GetLevel() >= 65) {
+				specl = 100;
+			}
+			else if(GetLevel() >= 64) {
+				specl = 80;
+			}
+			else if(GetLevel() >= 63) {
+				specl = 60;
+			}
+			else if(GetLevel() >= 62) {
+				specl = 40;
+			}
+			else if(GetLevel() >= 61) {
+				specl = 20;
+			}
+			if(specl == 100 || specl > MakeRandomInt(0,100)) {
+				reuse = MonkSpecialAttack(target, satype);
+				if(20 > MakeRandomInt(0,100)) {
+					reuse = MonkSpecialAttack(target, satype);
+				}
+			}
+
+			reuse *= 1000;
+			did_attack = true;
+			break;
+				   }
+		case WARRIOR: 
+		case WARRIORGM:{
+			if(level >= RuleI(Combat, NPCBashKickLevel)){
+				if(MakeRandomInt(0, 100) > 25) //tested on live, warrior mobs both kick and bash, kick about 75% of the time, casting doesn't seem to make a difference.
+				{
+					DoAnim(animKick);
+					sint32 dmg = 0;
+
+					if(GetWeaponDamage(target, (const Item_Struct*)NULL) <= 0){
+						dmg = -5;
+					}
+					else{
+						if(target->CheckHitChance(this, KICK, 0)) {
+							if(RuleB(Combat, UseIntervalAC))
+								dmg = GetKickDamage();
+							else
+								dmg = MakeRandomInt(1, GetKickDamage());
+
+						}
+					}
+
+					DoSpecialAttackDamage(target, KICK, dmg);
+					reuse = KickReuseTime * 1000;
+					did_attack = true;
+				}
+				else
+				{
+					DoAnim(animTailRake);
+					sint32 dmg = 0;
+
+					if(GetWeaponDamage(target, (const Item_Struct*)NULL) <= 0){
+						dmg = -5;
+					}
+					else{
+						if(target->CheckHitChance(this, BASH, 0)) {
+							if(RuleB(Combat, UseIntervalAC))
+								dmg = GetBashDamage();
+							else
+								dmg = MakeRandomInt(1, GetBashDamage());
+						}
+					}
+
+					DoSpecialAttackDamage(target, BASH, dmg);
+					reuse = BashReuseTime * 1000;
+					did_attack = true;
+				}
+			}
+			break;
+					   }
+		case BERSERKER: 
+		case BERSERKERGM:
+			{
+				int32 num_attacks = 1 + (GetSkill(FRENZY) / 100);
+				while(num_attacks > 0 && target) 
+				{
+					if(Attack(target))
+						num_attacks--;
+					else
+						num_attacks = 0;
+				}
+				reuse = FrenzyReuseTime * 1000;
+				did_attack = true;
+				break;
+			}
+		case RANGER: case RANGERGM:
+		case BEASTLORD: case BEASTLORDGM: {
+			//kick
+			if(level >= RuleI(Combat, NPCBashKickLevel)){
+				DoAnim(animKick);
+				sint32 dmg = 0;
+
+				if(GetWeaponDamage(target, (const Item_Struct*)NULL) <= 0){
+					dmg = -5;
+				}
+				else{
+					if(target->CheckHitChance(this, KICK, 0)) {
+						if(RuleB(Combat, UseIntervalAC))
+							dmg = GetKickDamage();
+						else
+							dmg = MakeRandomInt(1, GetKickDamage());
+					}
+				}
+
+				DoSpecialAttackDamage(target, KICK, dmg);
+				reuse = KickReuseTime * 1000;
+				did_attack = true;
+			}
+			break;
+						}
+		case CLERIC: case CLERICGM: //clerics can bash too.
+		case SHADOWKNIGHT: case SHADOWKNIGHTGM:
+		case PALADIN: case PALADINGM:
+			{
+				if(level >= RuleI(Combat, NPCBashKickLevel)){
+					DoAnim(animTailRake);
+					sint32 dmg = 0;
+
+					if(GetWeaponDamage(target, (const Item_Struct*)NULL) <= 0){
+						dmg = -5;
+					}
+					else{
+						if(target->CheckHitChance(this, BASH, 0)) {
+							if(RuleB(Combat, UseIntervalAC))
+								dmg = GetBashDamage();
+							else
+								dmg = MakeRandomInt(1, GetBashDamage());
+						}
+					}
+
+					DoSpecialAttackDamage(target, BASH, dmg);
+					reuse = BashReuseTime * 1000;
+					did_attack = true;
+				}
+				break;
+			}
+	}
+
+	classattack_timer.Start(reuse*HasteModifier/100);
+}
+
+bool Bot::TryHeadShot(Mob* defender, SkillType skillInUse) {
+	bool Result = false;
+
+	if(defender && (defender->GetBodyType() == BT_Humanoid) && (skillInUse == ARCHERY) && (GetClass() == RANGER) && (GetLevel() >= 62)) {
+		int defenderLevel = defender->GetLevel();
+		int rangerLevel = GetLevel();
+		// Bot Ranger Headshot AA through level 80(Secrets of Faydwer)
+		if( ((defenderLevel<=48)&&(rangerLevel>=62)) || ((defenderLevel<=50)&&(rangerLevel>=66)) || ((defenderLevel<=52)&&(rangerLevel>=68)) || ((defenderLevel<=54)&&(rangerLevel>=70)) || ((defenderLevel<=56)&&(rangerLevel>=71)) ||
+			((defenderLevel<=58)&&(rangerLevel>=73)) || ((defenderLevel<=60)&&(rangerLevel>=75)) || ((defenderLevel<=62)&&(rangerLevel>=76)) || ((defenderLevel<=64)&&(rangerLevel>=78)) || ((defenderLevel<=66)&&(rangerLevel>=80)) )
+		{
+			// WildcardX: These chance formula's below are arbitrary. If someone has a better formula that is more
+			// consistent with live, feel free to update these.
+			float AttackerChance = 0.20f + ((float)(rangerLevel - 51) * 0.005f);
+			float DefenderChance = (float)MakeRandomFloat(0.00f, 1.00f);
+			if(AttackerChance > DefenderChance) {
+				mlog(COMBAT__ATTACKS, "Landed a headshot: Attacker chance was %f and Defender chance was %f.", AttackerChance, DefenderChance);
+				// WildcardX: At the time I wrote this, there wasnt a string id for something like HEADSHOT_BLOW
+				//entity_list.MessageClose_StringID(this, false, 200, MT_CritMelee, FINISHING_BLOW, GetName());
+				entity_list.MessageClose(this, false, 200, MT_CritMelee, "%s has scored a leathal HEADSHOT!", GetName());
+				defender->Damage(this, (defender->GetMaxHP()+50), SPELL_UNKNOWN, skillInUse);
+				Result = true;
+			}
+			else {
+				mlog(COMBAT__ATTACKS, "FAILED a headshot: Attacker chance was %f and Defender chance was %f.", AttackerChance, DefenderChance);
+			}
+		}
+	}
+
+	return Result;
+}
+
 void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 	// TODO: All bot command processing occurs here now instead of in command.cpp
 

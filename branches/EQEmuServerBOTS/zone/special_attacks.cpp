@@ -121,23 +121,6 @@ void Mob::DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, si
 				}
 			}
 		}
-
-#ifdef EQBOTS
-
-		if(IsBot())
-		{
-			const Item_Struct* botweapon = database.GetItem(CastToNPC()->GetEquipment(MATERIAL_SECONDARY));
-			if(botweapon)
-			{
-				if(botweapon->ItemType == ItemTypeShield)
-				{
-					hate += botweapon->AC;
-				}
-			}
-		}
-
-#endif //EQBOTS
-
 	}
 
 	if(max_damage > 0) {
@@ -505,19 +488,6 @@ void Mob::TryBackstab(Mob *other) {
 			return;
 		}
 	}
-
-#ifdef EQBOTS
-
-	else if(IsBot()) {
-		const Item_Struct* botpiercer = NULL;
-	    botpiercer = database.GetItem(GetEquipment(MATERIAL_PRIMARY));
-		if(!botpiercer || (botpiercer->ItemType != ItemTypePierce)) {
-			Say("I can't backstab with this weapon!");
-			return;
-		}
-	}
-
-#endif //EQBOTS
 	
 	bool tripleBackstab = false;
 	int tripleChance = 0;
@@ -538,25 +508,6 @@ void Mob::TryBackstab(Mob *other) {
 		}
 	}
 
-#ifdef EQBOTS
-
-	else if(IsBot()) {
-		if(GetLevel() >= 67) { // Triple Backstab AA 3
-			tripleChance = 30;
-		}
-		else if(GetLevel() == 66) { // Triple Backstab AA 2
-			tripleChance = 20;
-		}
-		else if(GetLevel() == 65) { // Triple Backstab AA 1
-			tripleChance = 10;
-		}
-		if (tripleChance > MakeRandomInt(1, 100)) {
-			tripleBackstab = true;
-		}
-	}
-
-#endif //EQBOTS
-
 	bool seizedOpportunity = false;
 	int seizedChance = 0;
 	if (IsClient() && CastToClient()->GetAA(aaSeizedOpportunity) > 0) {
@@ -576,18 +527,7 @@ void Mob::TryBackstab(Mob *other) {
 		}
 	}
 
-#ifdef EQBOTS
-
-	// Until I can do some extensive Rogue bot ai work to get the bot around behind a mob
-	// I'm just going to do it this way
-	if(IsBot() || BehindMob(other, GetX(), GetY()) || seizedOpportunity)
-
-#else //EQBOTS
-
 	if (BehindMob(other, GetX(), GetY()) || seizedOpportunity) // Player is behind other
-
-#endif //EQBOTS
-
 	{
 		if (seizedOpportunity) {
 			CastToClient()->Message(0,"Your fierce attack is executed with such grace, your target did not see it coming!");
@@ -661,28 +601,6 @@ void Mob::RogueBackstab(Mob* other, bool min_damage)
 	sint32 primaryweapondamage = 0;
 	sint32 backstab_dmg = 0;
 
-#ifdef EQBOTS
-
-	if(IsBot()) {
-		const Item_Struct* botweaponStruct = database.GetItem(GetEquipment(MATERIAL_PRIMARY));
-		if(botweaponStruct) {
-			ItemInst* botweaponInst = new ItemInst(botweaponStruct);
-			if(botweaponInst) {
-				primaryweapondamage = GetWeaponDamage(other, botweaponInst);
-				backstab_dmg = primaryweapondamage;
-				safe_delete(botweaponInst);
-			}
-			else 
-			{
-				primaryweapondamage = (GetLevel()/7)+1; // fallback incase it's a npc without a weapon, 2 dmg at 10, 10 dmg at 65
-				backstab_dmg = primaryweapondamage;
-			}
-		}
-	}
-	else
-
-#endif //EQBOTS
-
 	if(IsClient()){
 		const ItemInst *wpn = NULL;
 		wpn = CastToClient()->GetInv().GetItem(SLOT_PRIMARY);
@@ -746,28 +664,6 @@ void Mob::RogueBackstab(Mob* other, bool min_damage)
 // solar - assassinate
 void Mob::RogueAssassinate(Mob* other)
 {
-
-#ifdef EQBOTS
-
-	if(IsBot()) {
-		const Item_Struct* botweaponStruct = database.GetItem(GetEquipment(MATERIAL_PRIMARY));
-		if(botweaponStruct) {
-			ItemInst* botweaponInst = new ItemInst(botweaponStruct);
-			if(botweaponInst) {
-				if(GetWeaponDamage(other, botweaponInst)) {
-					other->Damage(this, 32000, SPELL_UNKNOWN, BACKSTAB);
-				}
-				else {
-					other->Damage(this, -5, SPELL_UNKNOWN, BACKSTAB);
-				}
-				safe_delete(botweaponInst);
-			}
-		}
-	}
-	else
-
-#endif //EQBOTS
-
 	//can you dodge, parry, etc.. an assassinate??
 	//if so, use DoSpecialAttackDamage(other, BACKSTAB, 32000); instead
 	if(GetWeaponDamage(other, IsClient()?CastToClient()->GetInv().GetItem(SLOT_PRIMARY):(const ItemInst*)NULL) > 0){
@@ -1409,54 +1305,6 @@ void NPC::DoClassAttacks(Mob *target) {
 		Taunt(target->CastToNPC(), false);
 	}
 	
-#ifdef EQBOTS
-
-    //franck-add: EQoffline. Warrior bots must taunt the target.
-	if(IsBot() &&
-		((GetClass() == WARRIOR) || (GetClass() == PALADIN) || (GetClass() == SHADOWKNIGHT)) &&
-		target->IsNPC() &&
-		taunt_time &&
-		target)
-	{
-		bool isTaunting = false;
-		BotRaids* br = entity_list.GetBotRaidByMob(this);
-		if(br)
-		{
-			if(br->GetBotMainTank())
-			{
-				if(br->GetBotMainTank() == this)
-				{
-					isTaunting = true;
-				}
-			}
-			else if(br->GetBotSecondTank())
-			{
-				if(br->GetBotSecondTank() == this)
-				{
-					isTaunting = true;
-				}
-			}
-			else
-			{
-				if(MakeRandomInt(1, 100) > 50)
-				{
-					isTaunting = true;
-				}
-			}
-		}
-		else
-		{
-			isTaunting = true;
-		}
-		if(isTaunting)
-		{
-			Say("Taunting %s", target->GetCleanName());
-			Taunt(target->CastToNPC(), true);
-		}
-	}
-
-#endif //EQBOTS
-
 	if(!ca_time)
 		return;
 	
@@ -1494,35 +1342,6 @@ void NPC::DoClassAttacks(Mob *target) {
 				satype = ROUND_KICK;
 			}
 			reuse = MonkSpecialAttack(target, satype);
-
-#ifdef EQBOTS
-
-			if(IsBot()) { // Technique Of Master Wu AA
-				int specl = 0;
-				if(GetLevel() >= 65) {
-					specl = 100;
-				}
-				else if(GetLevel() >= 64) {
-					specl = 80;
-				}
-				else if(GetLevel() >= 63) {
-					specl = 60;
-				}
-				else if(GetLevel() >= 62) {
-					specl = 40;
-				}
-				else if(GetLevel() >= 61) {
-					specl = 20;
-				}
-				if(specl == 100 || specl > MakeRandomInt(0,100)) {
-					reuse = MonkSpecialAttack(target, satype);
-					if(20 > MakeRandomInt(0,100)) {
-						reuse = MonkSpecialAttack(target, satype);
-					}
-				}
-			}
-
-#endif //EQBOTS
 
 			reuse *= 1000;
 			did_attack = true;
@@ -1939,17 +1758,7 @@ void Mob::Taunt(NPC* who, bool always_succeed) {
 			who->CastToNPC()->AddToHateList(this, (MakeRandomInt(5, 10)*level));
 		}
 	}
-	
-#ifdef EQBOTS
-
-    //Franck-add: little tweak for the warrior bot so they can taunt better
-	if(IsBot() && ((GetClass() == WARRIOR) || (GetClass() == PALADIN) || (GetClass() == SHADOWKNIGHT))) {
-		who->CastToNPC()->AddToHateList(this, (MakeRandomInt(5, 10)*level));
-	}
-
-#endif //EQBOTS
-
-	
+		
 	//generate at least some hate reguardless of the outcome.
 	who->CastToNPC()->AddToHateList(this, (MakeRandomInt(5, 10)*level));
 }
@@ -2024,35 +1833,6 @@ bool Mob::TryHeadShot(Mob* defender, SkillType skillInUse) {
 			}
 		}
 	}
-
-#ifdef EQBOTS
-
-	else if(IsBot() && defender && (defender->GetBodyType() == BT_Humanoid) && (skillInUse == ARCHERY) && (GetClass() == RANGER) && (GetLevel() >= 62)) {
-		int defenderLevel = defender->GetLevel();
-		int rangerLevel = GetLevel();
-		// Bot Ranger Headshot AA through level 80(Secrets of Faydwer)
-		if( ((defenderLevel<=48)&&(rangerLevel>=62)) || ((defenderLevel<=50)&&(rangerLevel>=66)) || ((defenderLevel<=52)&&(rangerLevel>=68)) || ((defenderLevel<=54)&&(rangerLevel>=70)) || ((defenderLevel<=56)&&(rangerLevel>=71)) ||
-			((defenderLevel<=58)&&(rangerLevel>=73)) || ((defenderLevel<=60)&&(rangerLevel>=75)) || ((defenderLevel<=62)&&(rangerLevel>=76)) || ((defenderLevel<=64)&&(rangerLevel>=78)) || ((defenderLevel<=66)&&(rangerLevel>=80)) )
-		{
-			// WildcardX: These chance formula's below are arbitrary. If someone has a better formula that is more
-			// consistent with live, feel free to update these.
-			float AttackerChance = 0.20f + ((float)(rangerLevel - 51) * 0.005f);
-			float DefenderChance = (float)MakeRandomFloat(0.00f, 1.00f);
-			if(AttackerChance > DefenderChance) {
-				mlog(COMBAT__ATTACKS, "Landed a headshot: Attacker chance was %f and Defender chance was %f.", AttackerChance, DefenderChance);
-				// WildcardX: At the time I wrote this, there wasnt a string id for something like HEADSHOT_BLOW
-				//entity_list.MessageClose_StringID(this, false, 200, MT_CritMelee, FINISHING_BLOW, GetName());
-				entity_list.MessageClose(this, false, 200, MT_CritMelee, "%s has scored a leathal HEADSHOT!", GetName());
-				defender->Damage(this, (defender->GetMaxHP()+50), SPELL_UNKNOWN, skillInUse);
-				Result = true;
-			}
-			else {
-				mlog(COMBAT__ATTACKS, "FAILED a headshot: Attacker chance was %f and Defender chance was %f.", AttackerChance, DefenderChance);
-			}
-		}
-	}
-
-#endif //EQBOTS
 
 	return Result;
 }

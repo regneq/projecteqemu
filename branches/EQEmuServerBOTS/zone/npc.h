@@ -223,7 +223,7 @@ public:
 	void	PickPocket(Client* thief);
 	void	StartSwarmTimer(int32 duration) { swarm_timer.Start(duration); }
 	void	AddLootDrop(const Item_Struct*dbitem, ItemList* itemlistconst, sint8 charges, bool equipit, bool wearchange = false);
-	void	DoClassAttacks(Mob *target);
+	virtual void DoClassAttacks(Mob *target);
 	void	CheckSignal();
 	
 	//waypoint crap

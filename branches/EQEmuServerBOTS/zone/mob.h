@@ -335,8 +335,8 @@ bool logpos;
 //	static	int		CheckEffectIDMatch(int8 effectindex, int16 spellid1, int8 caster_level1, int16 spellid2, int8 caster_level2);
 
 
-	void	RogueBackstab(Mob* other, bool min_damage = false);
-	void	RogueAssassinate(Mob* other); // solar
+	virtual void	RogueBackstab(Mob* other, bool min_damage = false);
+	virtual void	RogueAssassinate(Mob* other); // solar
 	bool	BehindMob(Mob* other = 0, float playerx = 0.0f, float playery = 0.0f) const;
 
 	void	TriggerDefensiveProcs(Mob *on);
@@ -466,7 +466,7 @@ bool logpos;
 	bool ChangeHP(Mob* other, sint32 amount, int16 spell_id = 0, sint8 buffslot = -1, bool iBuffTic = false);
 	inline void SetOOCRegen(sint32 newoocregen) {oocregen = newoocregen;}
 	int MonkSpecialAttack(Mob* other, int8 skill_used);
-	void TryBackstab(Mob *other);
+	virtual void TryBackstab(Mob *other);
 	void DoAnim(const int animnum, int type=0, bool ackreq = true, eqFilterType filter = FilterNone);
 
 	void ChangeSize(float in_size, bool bNoRestriction = false);
@@ -515,7 +515,7 @@ bool logpos;
 	virtual void TryCriticalHit(Mob *defender, int16 skill, sint32 &damage);
 	void TryPetCriticalHit(Mob *defender, int16 skill, sint32 &damage);
 	virtual bool TryFinishingBlow(Mob *defender, SkillType skillinuse);
-	bool TryHeadShot(Mob* defender, SkillType skillInUse);
+	virtual bool TryHeadShot(Mob* defender, SkillType skillInUse);
 	virtual void DoRiposte();
 	void ApplyMeleeDamageBonus(int16 skill, sint32 &damage);
 	virtual void MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit);
@@ -1100,7 +1100,7 @@ protected:
 	int GetWeaponDamage(Mob *against, const ItemInst *weapon_item);
 	int GetKickDamage() const;
 	int GetBashDamage() const;
-	void DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, sint32 min_damage = 1, sint32 hate_override = -1);
+	virtual void DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, sint32 min_damage = 1, sint32 hate_override = -1);
 	bool HasDied();
 	void CalculateNewFearpoint();
 	float FindGroundZ(float new_x, float new_y, float z_offset=0.0);

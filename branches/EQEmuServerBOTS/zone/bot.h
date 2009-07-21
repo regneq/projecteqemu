@@ -70,6 +70,12 @@ public:
 	virtual void DoRiposte();
 	inline virtual sint16 GetATK() const { return ATK + itembonuses.ATK + spellbonuses.ATK + ((GetSTR() + GetSkill(OFFENSE)) * 9 / 10); }
 	virtual void MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit);
+	virtual void DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, sint32 min_damage = 1, sint32 hate_override = -1);
+	virtual void TryBackstab(Mob *other);
+	virtual void RogueBackstab(Mob* other, bool min_damage = false);
+	virtual void RogueAssassinate(Mob* other);
+	virtual void DoClassAttacks(Mob *target);
+	virtual bool TryHeadShot(Mob* defender, SkillType skillInUse);
 	
 	// Bot Action Command Methods
 	bool MesmerizeTarget(Mob* target);
