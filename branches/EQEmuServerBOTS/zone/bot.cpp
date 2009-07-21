@@ -4885,7 +4885,7 @@ sint16 Bot::CalcBotFocusEffect(botfocusType bottype, int16 focus_id, int16 spell
 }
 
 float Bot::CheckHitChance(Mob *attacker, SkillType skillinuse, int Hand) {
-	bool Result = 0;
+	float Result = 0;
 
 	if(attacker) {
 		Result = Mob::CheckHitChance(attacker, skillinuse, Hand);
@@ -5024,6 +5024,511 @@ bool Bot::CalcBotHitChance(Mob* target, SkillType skillinuse, int Hand) {
 	}
 
 	return Result;
+}
+
+//proc chance includes proc bonus
+float Bot::GetProcChances(float &ProcBonus, float &ProcChance, int16 weapon_speed) {
+	int mydex = GetDEX();
+	float AABonus = 0;
+	ProcBonus = 0;
+	ProcChance = 0;
+
+	// Bot AA WeaponAffinity
+	if(GetLevel() >= 59) {
+		AABonus += 0.50;
+	}
+	else if(GetLevel() == 58) {
+		AABonus += 0.40;
+	}
+	else if(GetLevel() == 57) {
+		AABonus += 0.30;
+	}
+	else if(GetLevel() == 56) {
+		AABonus += 0.20;
+	}
+	else if(GetLevel() == 55) {
+		AABonus += 0.10;
+	}
+
+	float PermaHaste;
+	if(GetHaste() > 0)
+		PermaHaste = 1 / (1 + (float)GetHaste()/100);
+	else if(GetHaste() < 0)
+		PermaHaste = 1 * (1 - (float)GetHaste()/100);
+	else
+		PermaHaste = 1.0f;
+
+	weapon_speed = ((int)(weapon_speed*(100.0f+attack_speed)*PermaHaste) / 100);
+
+
+	ProcBonus += (float(itembonuses.ProcChance + spellbonuses.ProcChance) / 1000.0f + AABonus);
+
+	if(RuleB(Combat, AdjustProcPerMinute) == true)
+	{
+		ProcChance = ((float)weapon_speed * RuleR(Combat, AvgProcsPerMinute) / 600.0f);
+		ProcBonus += float(mydex) * RuleR(Combat, ProcPerMinDexContrib) / 100.0f;
+		ProcChance = ProcChance + (ProcChance * ProcBonus);
+	}
+	else
+	{
+		ProcChance = RuleR(Combat, BaseProcChance) + float(mydex) / RuleR(Combat, ProcDexDivideBy);
+		ProcChance = ProcChance + (ProcChance * ProcBonus);
+	}
+
+	mlog(COMBAT__PROCS, "Proc chance %.2f (%.2f from bonuses)", ProcChance, ProcBonus);
+	return ProcChance;
+}
+
+bool Bot::AvoidDamage(Mob* other, sint32 &damage)
+{
+	/* solar: called when a mob is attacked, does the checks to see if it's a hit
+	*  and does other mitigation checks.  'this' is the mob being attacked.
+	* 
+	* special return values:
+	*    -1 - block
+	*    -2 - parry
+	*    -3 - riposte
+	*    -4 - dodge
+	* 
+	*/
+	float skill;
+	float bonus;
+	float RollTable[4] = {0,0,0,0};
+	float roll;
+	Mob *attacker=other;
+	Mob *defender=this;
+
+	//garunteed hit
+	bool ghit = false;
+	if((attacker->GetSpellBonuses().MeleeSkillCheck + attacker->GetItemBonuses().MeleeSkillCheck) > 500)
+		ghit = true;
+	
+	//////////////////////////////////////////////////////////
+	// make enrage same as riposte
+	/////////////////////////////////////////////////////////
+	if (IsEnraged() && !other->BehindMob(this, other->GetX(), other->GetY())) {
+		damage = -3;
+		mlog(COMBAT__DAMAGE, "I am enraged, riposting frontal attack.");
+	}
+	
+	/////////////////////////////////////////////////////////
+	// riposte
+	/////////////////////////////////////////////////////////
+	if (damage > 0 && CanThisClassRiposte() && !other->BehindMob(this, other->GetX(), other->GetY()))
+	{
+        skill = GetSkill(RIPOSTE);
+		
+		if (!ghit) {	//if they are not using a garunteed hit discipline
+			bonus = 2.0 + skill/60.0 + (GetDEX()/200);
+			bonus = bonus * (100 + defender->GetSpellBonuses().RiposteChance + defender->GetItemBonuses().RiposteChance) / 100.0f;
+			RollTable[0] = bonus;
+		}
+	}
+	
+	///////////////////////////////////////////////////////	
+	// block
+	///////////////////////////////////////////////////////
+
+	bool bBlockFromRear = false;
+	float aaChance = 0;
+	int8 botclass = GetClass();
+	uint8 botlevel = GetLevel();
+
+	// a successful roll on this does not mean a successful block is forthcoming. only that a chance to block
+	// from a direction other than the rear is granted.
+	if((botclass = BERSERKER) || (botclass == MONK))
+	{
+		if(botlevel >= 69) // Heightened Awareness 5
+		{
+			aaChance = 40;
+		}
+		else if(botlevel >= 68) // Heightened Awareness 4
+		{
+			aaChance = 32;
+		}
+		else if(botlevel >= 67) // Heightened Awareness 3
+		{
+			aaChance = 24;
+		}
+		else if(botlevel >= 66) // Heightened Awareness 2
+		{
+			aaChance = 16;
+		}
+		else if(botlevel >= 65) // Heightened Awareness 1
+		{
+			aaChance = 8;
+		}
+	}
+
+	if(aaChance > MakeRandomInt(1, 100))
+		bBlockFromRear = true;
+
+	if (damage > 0 && CanThisClassBlock() && (!other->BehindMob(this, other->GetX(), other->GetY()) || bBlockFromRear)) {
+		//skill = CastToClient()->GetSkill(BLOCKSKILL);
+		/*if (IsClient()) {
+			CastToClient()->CheckIncreaseSkill(BLOCKSKILL, other, -10);
+		}*/
+		
+		if (!ghit) {	//if they are not using a garunteed hit discipline
+			bonus = 2.0 + skill/35.0 + (GetDEX()/200);
+			RollTable[1] = RollTable[0] + bonus;
+		}
+	}
+	else{
+		RollTable[1] = RollTable[0];
+	}
+
+	if(damage > 0 && GetAA(aaShieldBlock) && (!other->BehindMob(this, other->GetX(), other->GetY()))) {
+		/*bool equiped = CastToClient()->m_inv.GetItem(14);
+		if(equiped) {
+			uint8 shield = CastToClient()->m_inv.GetItem(14)->GetItem()->ItemType;
+
+			if(shield == ItemTypeShield) {
+				switch(GetAA(aaShieldBlock)) {
+					 case 1:
+						RollTable[1] = RollTable[0] + 2.50;
+                        break;
+	                 case 2:
+		                RollTable[1] = RollTable[0] + 5.00;
+			            break;
+				     case 3:
+					    RollTable[1] = RollTable[0] + 10.00;
+						break;
+				}
+			}
+		}*/
+	}
+
+	//////////////////////////////////////////////////////		
+	// parry
+	//////////////////////////////////////////////////////
+	if (damage > 0 && CanThisClassParry() && !other->BehindMob(this, other->GetX(), other->GetY()))
+	{
+        /*skill = CastToClient()->GetSkill(PARRY);
+		if (IsClient()) {
+			CastToClient()->CheckIncreaseSkill(PARRY, other, -10); 
+		}*/
+		
+		if (!ghit) {	//if they are not using a garunteed hit discipline
+			bonus = 2.0 + skill/60.0 + (GetDEX()/200);
+			bonus = bonus * (100 + defender->GetSpellBonuses().ParryChance + defender->GetItemBonuses().ParryChance) / 100.0f;
+			RollTable[2] = RollTable[1] + bonus;
+		}
+	}
+	else{
+		RollTable[2] = RollTable[1];
+	}
+	
+	////////////////////////////////////////////////////////
+	// dodge
+	////////////////////////////////////////////////////////
+	if (damage > 0 && CanThisClassDodge() && !other->BehindMob(this, other->GetX(), other->GetY()))
+	{
+	
+        /*skill = CastToClient()->GetSkill(DODGE);
+		if (IsClient()) {
+			CastToClient()->CheckIncreaseSkill(DODGE, other, -10);
+		}*/
+		
+		if (!ghit) {	//if they are not using a garunteed hit discipline
+			bonus = 2.0 + skill/60.0 + (GetAGI()/200);
+			bonus = bonus * (100 + defender->GetSpellBonuses().DodgeChance + defender->GetItemBonuses().DodgeChance) / 100.0f;
+			RollTable[3] = RollTable[2] + bonus;
+		}
+	}
+	else{
+		RollTable[3] = RollTable[2];
+	}
+
+	if(damage > 0){
+		roll = MakeRandomFloat(0,100);
+		if(roll <= RollTable[0]){
+			damage = -3;
+		}
+		else if(roll <= RollTable[1]){
+			damage = -1;
+		}
+		else if(roll <= RollTable[2]){
+			damage = -2;
+		}
+		else if(roll <= RollTable[3]){
+			damage = -4;
+		}
+	}
+
+	mlog(COMBAT__DAMAGE, "Final damage after all avoidances: %d", damage);
+	
+	if (damage < 0)
+		return true;
+	return false;
+}
+
+int Bot::GetMonkHandToHandDamage(void)
+{
+	// Kaiyodo - Determine a monk's fist damage. Table data from www.monkly-business.com
+	// saved as static array - this should speed this function up considerably
+	static int damage[66] = {
+		//   0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19
+		99, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7,
+		8, 8, 8, 8, 8, 9, 9, 9, 9, 9,10,10,10,10,10,11,11,11,11,11,
+		12,12,12,12,12,13,13,13,13,13,14,14,14,14,14,14,14,14,14,14,
+		14,14,15,15,15,15 };
+
+		// Have a look to see if we have epic fists on
+
+		uint32 botWeaponId = INVALID_ID;
+		botWeaponId = CastToNPC()->GetEquipment(MATERIAL_HANDS);
+		if(botWeaponId == 10652) { //Monk Epic ID
+			return 9;
+		}
+		else
+		{
+			int Level = GetLevel();
+			if(Level > 65)
+				return 19;
+			else
+				return damage[Level];
+		}
+
+		int Level = GetLevel();
+		if (Level > 65)
+			return(19);
+		else
+			return damage[Level];
+}
+
+void Bot::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
+{
+	bool slayUndeadCrit = false;
+
+	if(damage < 1) //We can't critical hit if we don't hit.
+		return;
+
+	float critChance = RuleR(Combat, BaseCritChance);
+
+	critChance += RuleR(Combat, ClientBaseCritChance);
+
+	uint16 critMod = 200; 
+
+	if(skill == ARCHERY && GetClass() == RANGER && GetSkill(ARCHERY) >= 65){
+		critChance += 0.06f;
+	}
+
+	if(GetHPRatio() < 30 && GetClass() == BERSERKER) {
+		critChance += RuleR(Combat, BerserkBaseCritChance);
+		critMod = 400;
+	}
+	else if(GetHPRatio() < 30 && GetClass() == WARRIOR) {
+		critChance += RuleR(Combat, WarBerBaseCritChance);
+	}
+
+	// Bot AA's for CombatFury and FuryoftheAges
+	if(GetLevel() >= 64) {
+		critChance += 0.12f;
+	}
+	else if(GetLevel() >= 63) {
+		critChance += 0.10f;
+	}
+	else if(GetLevel() >= 62) {
+		critChance += 0.08f;
+	}
+	else if(GetLevel() >= 57) {
+		critChance += 0.07f;
+	}
+	else if(GetLevel() >= 56) {
+		critChance += 0.04f;
+	}
+	else if(GetLevel() >= 55) {
+		critChance += 0.02f;
+	}
+
+	switch(GetAA(aaCombatFury))
+	{
+	case 1:
+		critChance += 0.02f;
+		break;
+	case 2:
+		critChance += 0.04f;
+		break;
+	case 3:
+		critChance += 0.07f;
+		break;
+	default:
+		break;
+	}
+
+	switch(GetAA(aaFuryoftheAges))
+	{
+	case 1:
+		critChance += 0.01f;
+		break;
+	case 2:
+		critChance += 0.03f;
+		break;
+	case 3:
+		critChance += 0.05f;
+		break;
+	default:
+		break;
+	}
+
+	float CritBonus = spellbonuses.CriticalHitChance + itembonuses.CriticalHitChance;
+	if(CritBonus > 0.0 && critChance < 0.01) //If we have a bonus to crit in items or spells but no actual chance to crit
+		critChance = 0.01f; //Give them a small one so skills and items appear to have some effect.
+
+	critChance += ((critChance) * (CritBonus) / 100.0f); //crit chance is a % increase to your reg chance
+	if(GetAA(aaSlayUndead)){
+		if(defender && defender->GetBodyType() == BT_Undead || defender->GetBodyType() == BT_SummonedUndead || defender->GetBodyType() == BT_Vampire){
+			switch(GetAA(aaSlayUndead)){
+			case 1:
+				critMod += 33;
+				break;
+			case 2:
+				critMod += 66;
+				break;
+			case 3:
+				critMod += 100;
+				break;
+			}
+			slayUndeadCrit = true;
+		}
+	}
+
+	// Paladin Bot Slay Undead AA
+	if(GetClass() == PALADIN) {
+		if(defender && defender->GetBodyType() == BT_Undead || defender->GetBodyType() == BT_SummonedUndead || defender->GetBodyType() == BT_Vampire) {
+			if(GetLevel() >= 61) {
+				critMod += 100;
+			}
+			else if(GetLevel() >= 60) {
+				critMod += 66;
+			}
+			else if(GetLevel() >= 59) {
+				critMod += 33;
+			}
+		}
+	}
+
+	if(critChance > 0){
+		if(MakeRandomFloat(0, 1) <= critChance)
+		{
+			if (slayUndeadCrit)
+			{
+				damage = (damage * (critMod * 2.65)) / 100;
+				entity_list.MessageClose(this, false, 200, MT_CritMelee, "%s cleanses %s target!(%d)", GetCleanName(), this->GetGender() == 0 ? "his" : this->GetGender() == 1 ? "her" : "its", damage);
+				return;
+			}
+			////Veteran's Wrath AA
+			////first, find out of we have it (don't multiply by 0 :-\ )
+			//int32 AAdmgmod = GetAA(aaVeteransWrath);
+			//if (AAdmgmod > 0) {
+			//	//now, make sure it's not a special attack
+			//	if (skill == _1H_BLUNT
+			//		|| skill == _2H_BLUNT
+			//		|| skill == _1H_SLASHING
+			//		|| skill == _2H_SLASHING
+			//		|| skill == PIERCING
+			//		|| skill == HAND_TO_HAND
+			//		)
+			//		critMod += AAdmgmod * 3; //AndMetal: guessing
+			//}
+
+			damage = (damage * critMod) / 100;
+
+			if((GetClass() == WARRIOR || GetClass() == BERSERKER) && GetHPRatio() < 30) {
+				entity_list.MessageClose(this, false, 200, MT_CritMelee, "%s lands a crippling blow!(%d)", GetCleanName(), damage);
+			}
+			else {
+				entity_list.MessageClose(this, false, 200, MT_CritMelee, "%s scores a critical hit!(%d)", GetCleanName(), damage);
+			}
+			/*else {
+				entity_list.MessageClose(this, false, 200, MT_CritMelee, "%s scores a critical hit!(%d)", GetCleanName(), damage);
+			}*/
+		}
+	}
+}
+
+bool Bot::TryFinishingBlow(Mob *defender, SkillType skillinuse)
+{
+	int8 aa_item = GetAA(aaFinishingBlow) + GetAA(aaCoupdeGrace) + GetAA(aaDeathblow);
+
+	if(GetLevel() >= 55) {
+		aa_item += 1;	// Finishing Blow AA 1
+	}
+	if(GetLevel() >= 56) {
+		aa_item += 1;	// Finishing Blow AA 2
+	}
+	if(GetLevel() >= 57) {
+		aa_item += 1;	// Finishing Blow AA 3
+	}
+	if(GetLevel() >= 62) {
+		aa_item += 1;	// Coup de Grace AA 1
+	}
+	if(GetLevel() >= 63) {
+		aa_item += 1;	// Coup de Grace AA 2
+	}
+	if(GetLevel() >= 64) {
+		aa_item += 1;	// Coup de Grace AA 3
+	}
+
+	if(aa_item && defender->GetHPRatio() < 10){
+		int chance = 0;
+		int levelreq = 0;
+		switch(aa_item)
+		{
+		case 1:
+			chance = 2;
+			levelreq = 50;
+			break;
+		case 2:
+			chance = 5;
+			levelreq = 52;
+			break;
+		case 3:
+			chance = 7;
+			levelreq = 54;
+			break;
+		case 4:
+			chance = 7;
+			levelreq = 55;
+			break;
+		case 5:
+			chance = 7;
+			levelreq = 57;
+			break;
+		case 6:
+			chance = 7;
+			levelreq = 59;
+			break;
+		case 7:
+			chance = 7;
+			levelreq = 61;
+			break;
+		case 8:
+			chance = 7;
+			levelreq = 63;
+			break;
+		case 9:
+			chance = 7;
+			levelreq = 65;
+			break;
+		default:
+			break;
+		}
+
+		if(chance >= MakeRandomInt(0, 100) && defender->GetLevel() <= levelreq){
+			mlog(COMBAT__ATTACKS, "Landed a finishing blow: AA at %d, other level %d", aa_item, defender->GetLevel());
+			entity_list.MessageClose_StringID(this, false, 200, MT_CritMelee, FINISHING_BLOW, GetCleanName());
+			defender->Damage(this, 32000, SPELL_UNKNOWN, skillinuse);
+			return true;
+		}
+		else
+		{
+			mlog(COMBAT__ATTACKS, "FAILED a finishing blow: AA at %d, other level %d", aa_item, defender->GetLevel());
+			return false;
+		}
+	}
+	return false;
 }
 
 void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {

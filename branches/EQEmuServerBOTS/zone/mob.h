@@ -510,11 +510,11 @@ bool logpos;
 	void SetInvisible(bool state);
 
 	bool AttackAnimation(SkillType &skillinuse, int Hand, const ItemInst* weapon);
-	bool AvoidDamage(Mob* attacker, sint32 &damage);
+	virtual bool AvoidDamage(Mob* attacker, sint32 &damage);
 	virtual float CheckHitChance(Mob* attacker, SkillType skillinuse, int Hand);
-	void TryCriticalHit(Mob *defender, int16 skill, sint32 &damage);
+	virtual void TryCriticalHit(Mob *defender, int16 skill, sint32 &damage);
 	void TryPetCriticalHit(Mob *defender, int16 skill, sint32 &damage);
-	bool TryFinishingBlow(Mob *defender, SkillType skillinuse);
+	virtual bool TryFinishingBlow(Mob *defender, SkillType skillinuse);
 	bool TryHeadShot(Mob* defender, SkillType skillInUse);
 	void DoRiposte(Mob* defender);
 	void ApplyMeleeDamageBonus(int16 skill, sint32 &damage);
@@ -803,7 +803,7 @@ bool logpos;
 
 	int8	GetWeaponDamageBonus(const Item_Struct* Weapon);
 	int16	GetDamageTable(SkillType skillinuse);
-	int		GetMonkHandToHandDamage(void);
+	virtual int GetMonkHandToHandDamage(void);
 
 	bool	CanThisClassDoubleAttack(void) const;
 	bool	CanThisClassDualWield(void) const;
@@ -1121,7 +1121,7 @@ protected:
 	void TryWeaponProc(const Item_Struct* weapon, Mob *on, int16 hand = 13);
 	void TryWeaponProc(const ItemInst* weapon, Mob *on, int16 hand = 13);
 	void ExecWeaponProc(uint16 spell_id, Mob *on);
-	float GetProcChances(float &ProcBonus, float &ProcChance, uint16 weapon_speed = 30);
+	virtual float GetProcChances(float &ProcBonus, float &ProcChance, uint16 weapon_speed = 30);
 	int GetWeaponDamage(Mob *against, const Item_Struct *weapon_item);
 	int GetWeaponDamage(Mob *against, const ItemInst *weapon_item);
 	int GetKickDamage() const;
