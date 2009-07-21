@@ -1615,6 +1615,10 @@ int QuestManager::getlevel(uint8 type)
 		else
 			return (initiator->GetLevel());
 	}
+	else if(type == 4 && initiator->IsClient())
+	{
+		return (initiator->CastToClient()->GetLevel2());
+	}
 	else
 		return 0;
 }
@@ -1879,7 +1883,7 @@ void QuestManager::FlagInstanceByRaidLeader(int32 zone, int16 version)
 	}
 }
 
-const char* QuestManager::saylink(char* Phrase, bool silent) {
+const char* QuestManager::saylink(char* Phrase, bool silent, char* LinkName) {
 
 	const char *ERR_MYSQLERROR = "Error in saylink phrase queries";
 	char errbuf[MYSQL_ERRMSG_SIZE];
@@ -1935,11 +1939,11 @@ const char* QuestManager::saylink(char* Phrase, bool silent) {
 	char linktext[250];
 	if (initiator->GetClientVersion() == EQClientSoF)
 	{
-		sprintf(linktext,"%c%06X%s%s%c",0x12,sayid,"00000000000000000000000000000000000000000000",Phrase,0x12);
+		sprintf(linktext,"%c%06X%s%s%c",0x12,sayid,"00000000000000000000000000000000000000000000",LinkName,0x12);
 	}
 	else
 	{
-		sprintf(linktext,"%c%06X%s%s%c",0x12,sayid,"000000000000000000000000000000000000000",Phrase,0x12);
+		sprintf(linktext,"%c%06X%s%s%c",0x12,sayid,"000000000000000000000000000000000000000",LinkName,0x12);
 	}
 	strcpy(Phrase,linktext);
 	return Phrase;

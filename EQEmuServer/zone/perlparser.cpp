@@ -2343,14 +2343,18 @@ XS(XS__we)
 XS(XS__getlevel);
 XS(XS__getlevel)
 {
-    dXSARGS;
-    if (items != 1)
-        Perl_croak(aTHX_ "Usage: getlevel(type)");
+	dXSARGS;
+	if (items > 1)
+		Perl_croak(aTHX_ "Usage: getlevel(type)");
 
-    int		RETVAL;
-    dXSTARG;
+	int	RETVAL;
+	dXSTARG;
 
-	int		type = (int)SvIV(ST(0));
+	int	type;
+	if (items == 1)
+		type = (int)SvIV(ST(0));
+	else
+		type = 0;
 
 	RETVAL = quest_manager.getlevel(type);
 	XSprePUSH; PUSHu((IV)RETVAL);
@@ -2602,16 +2606,21 @@ XS(XS__FlagInstanceByRaidLeader) {
 XS(XS__saylink);
 XS(XS__saylink) {
 	dXSARGS;
-	if (items < 1 || items > 2)
-		Perl_croak(aTHX_ "Usage: saylink(phrase,[silent?])");
+	if (items != 1 && items != 2 && items != 3)
+		Perl_croak(aTHX_ "Usage: saylink(phrase,[silent?],[linkname])");
 	dXSTARG;
 
 	Const_char * RETVAL;
 	char text[250];
+	char text2[250];
 	strcpy(text,(char *)SvPV_nolen(ST(0)));
 	bool silent = ((int)SvIV(ST(1))) == 0?false:true;
+	if (items == 3)
+		strcpy(text2,(char *)SvPV_nolen(ST(2)));
+	else
+		strcpy(text2,text);
 
-	RETVAL = quest_manager.saylink(text, silent);
+	RETVAL = quest_manager.saylink(text, silent, text2);
 	sv_setpv(TARG, RETVAL); XSprePUSH; PUSHTARG;
 	XSRETURN(1);
 }
