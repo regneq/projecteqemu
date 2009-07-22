@@ -83,7 +83,7 @@ void Bot::SetBotSpellID(uint32 newSpellID) {
 	this->npc_spells_id = newSpellID;
 }
 
-NPCType Bot::FillNPCTypeStruct(std::string botName, std::string botLastName, uint8 botLevel, uint16 botRace, uint8 botClass, uint8 botBodyType, sint32 hitPoints, uint8 gender, float size, uint32 hitPointsRegenRate, uint32 manaRegenRate, uint32 face, uint32 hairStyle, uint32 hairColor, uint32 eyeColor, uint32 eyeColor2, uint32 beardColor, uint32 beard, uint32 drakkinHeritage, uint32 drakkinTattoo, uint32 drakkinDetails, float runSpeed, sint16 mr, sint16 cr, sint16 dr, sint16 fr, sint16 pr, sint16 ac, uint16 str, uint16 sta, uint16 dex, uint16 agi, uint16 _int, uint16 wis, uint16 cha, uint16 attack) {
+NPCType Bot::FillNPCTypeStruct(uint32 botSpellsID, std::string botName, std::string botLastName, uint8 botLevel, uint16 botRace, uint8 botClass, uint8 botBodyType, sint32 hitPoints, uint8 gender, float size, uint32 hitPointsRegenRate, uint32 manaRegenRate, uint32 face, uint32 hairStyle, uint32 hairColor, uint32 eyeColor, uint32 eyeColor2, uint32 beardColor, uint32 beard, uint32 drakkinHeritage, uint32 drakkinTattoo, uint32 drakkinDetails, float runSpeed, sint16 mr, sint16 cr, sint16 dr, sint16 fr, sint16 pr, sint16 ac, uint16 str, uint16 sta, uint16 dex, uint16 agi, uint16 _int, uint16 wis, uint16 cha, uint16 attack) {
 	NPCType BotNPCType;
 	int CopyLength = 0;
 
@@ -95,6 +95,7 @@ NPCType Bot::FillNPCTypeStruct(std::string botName, std::string botLastName, uin
 	BotNPCType.lastname[CopyLength] = '\0';
 	CopyLength = 0;
 
+	BotNPCType.npc_spells_id = botSpellsID;
 	BotNPCType.level = botLevel;
 	BotNPCType.race = botRace;
 	BotNPCType.class_ = botClass;
@@ -169,6 +170,7 @@ NPCType Bot::CreateDefaultNPCTypeStructForBot(std::string botName, std::string b
 	Result.d_meele_texture1 = 0;
 	Result.d_meele_texture2 = 0;
 	Result.qglobal = false;
+	Result.npc_spells_id = 0;
 
 	return Result;
 }
@@ -866,9 +868,9 @@ bool Bot::Save() {
 bool Bot::Process() {
 	bool Result = false;
 
-	Result = NPC::Process();
-
 	DoAIProcessing();
+
+	Result = NPC::Process();
 
 	return Result;
 }
@@ -1866,7 +1868,8 @@ bool Bot::Bot_AI_IdleCastCheck() {
 void Bot::DoAIProcessing() {
 	BotAIProcess();
 
-	if(this->GetPetID() > 0 && this->GetPet())
+	//if(this->GetPetID() > 0 && this->GetPet())
+	if(HasPet())
 		PetAIProcess();
 }
 
@@ -2811,7 +2814,7 @@ Bot* Bot::LoadBot(uint32 botID, std::string* errorMessage) {
 		}
 		else {
 			while(DataRow = mysql_fetch_row(DatasetResult)) {
-				NPCType TempNPCStruct = FillNPCTypeStruct(std::string(DataRow[2]), std::string(DataRow[3]), atoi(DataRow[4]), atoi(DataRow[5]), atoi(DataRow[6]), atoi(DataRow[7]), atoi(DataRow[8]), atoi(DataRow[9]), atof(DataRow[10]), atoi(DataRow[11]), atoi(DataRow[12]), atoi(DataRow[13]), atoi(DataRow[14]), atoi(DataRow[15]), atoi(DataRow[16]), atoi(DataRow[17]), atoi(DataRow[18]), atoi(DataRow[19]), atoi(DataRow[20]), atoi(DataRow[21]), atoi(DataRow[22]), atof(DataRow[23]), atoi(DataRow[24]), atoi(DataRow[25]), atoi(DataRow[26]), atoi(DataRow[27]), atoi(DataRow[28]), atoi(DataRow[29]), atoi(DataRow[30]), atoi(DataRow[31]), atoi(DataRow[32]), atoi(DataRow[33]), atoi(DataRow[34]), atoi(DataRow[35]), atoi(DataRow[36]), atoi(DataRow[37]));
+				NPCType TempNPCStruct = FillNPCTypeStruct(atoi(DataRow[1]), std::string(DataRow[2]), std::string(DataRow[3]), atoi(DataRow[4]), atoi(DataRow[5]), atoi(DataRow[6]), atoi(DataRow[7]), atoi(DataRow[8]), atoi(DataRow[9]), atof(DataRow[10]), atoi(DataRow[11]), atoi(DataRow[12]), atoi(DataRow[13]), atoi(DataRow[14]), atoi(DataRow[15]), atoi(DataRow[16]), atoi(DataRow[17]), atoi(DataRow[18]), atoi(DataRow[19]), atoi(DataRow[20]), atoi(DataRow[21]), atoi(DataRow[22]), atof(DataRow[23]), atoi(DataRow[24]), atoi(DataRow[25]), atoi(DataRow[26]), atoi(DataRow[27]), atoi(DataRow[28]), atoi(DataRow[29]), atoi(DataRow[30]), atoi(DataRow[31]), atoi(DataRow[32]), atoi(DataRow[33]), atoi(DataRow[34]), atoi(DataRow[35]), atoi(DataRow[36]), atoi(DataRow[37]));
 				Result = new Bot(botID, atoi(DataRow[0]), atoi(DataRow[1]), TempNPCStruct);
 				break;
 			}
@@ -4143,7 +4146,7 @@ void Bot::Death(Mob *killerMob, sint32 damage, int16 spell_id, SkillType attack_
 					for(; j<MAX_GROUP_MEMBERS; j++) {
 						if(g->members[j]) {
 							g->members[j-1] = g->members[j];
-							strcpy(g->membername[j-1], g->members[j]->GetName());
+							strcpy(g->membername[j-1], g->members[j]->GetCleanName());
 							g->membername[j][0] = '\0';
 							memset(g->membername[j], 0, 64);
 							g->members[j] = NULL;
@@ -4154,7 +4157,7 @@ void Bot::Death(Mob *killerMob, sint32 damage, int16 spell_id, SkillType attack_
 					EQApplicationPacket* outapp = new EQApplicationPacket(OP_GroupUpdate, sizeof(GroupJoin_Struct));
 					GroupJoin_Struct* gu = (GroupJoin_Struct*)outapp->pBuffer;
 					gu->action = groupActLeave;
-					strcpy(gu->membername, GetName());
+					strcpy(gu->membername, GetCleanName());
 					if(g) {
 						for(int k=0; k<MAX_GROUP_MEMBERS; k++) {
 							if(g->members[k] && g->members[k]->IsClient())
@@ -5098,10 +5101,10 @@ bool Bot::AvoidDamage(Mob* other, sint32 &damage)
 	*    -4 - dodge
 	* 
 	*/
-	float skill;
-	float bonus;
+	float skill = 0;
+	float bonus = 0;
 	float RollTable[4] = {0,0,0,0};
-	float roll;
+	float roll = 0;
 	Mob *attacker=other;
 	Mob *defender=this;
 
@@ -6563,7 +6566,6 @@ void Bot::MakePet(int16 spell_id, const char* pettype, const char *petname) {
 }
 
 void Bot::AI_Stop() {
-	// TODO: dear jesus why?
 	Mob::AI_Stop();
 	NPC::AI_Stop();
 }
