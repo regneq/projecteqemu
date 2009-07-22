@@ -50,14 +50,6 @@ void NPC::CalcBonuses()
 {
 	Mob::CalcBonuses();
 
-#ifdef EQBOTS
-
-	if(CastToMob()->IsBot()) {
-		return;
-	}
-
-#endif //EQBOTS
-
 	if(RuleB(NPC, UseItemBonusesForNonPets)){
 		memset(&itembonuses, 0, sizeof(StatBonuses));
 		CalcItemBonuses(&itembonuses);
@@ -623,18 +615,9 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 
 	if(!IsValidSpell(spell_id))
 		return;
-
-#ifdef EQBOTS
-
-	if(IsBot()) {
-		caster = entity_list.GetMob(casterId);
-	}
-	else
-
-#endif //EQBOTS
 	
 	if(casterId > 0)
-		caster = entity_list.GetClientByID(casterId);
+		caster = entity_list.GetMob(casterId);
 	
 	for (i = 0; i < EFFECT_COUNT; i++)
 	{

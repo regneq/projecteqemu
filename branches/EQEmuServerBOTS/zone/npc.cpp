@@ -297,12 +297,6 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 	if(!IsInteractive())
 		entity_list.MakeNameUnique(name);
 #else
-
-#ifdef EQBOTS
-// creates the bot with a clean name
-	if (!IsBot())
-#endif //EQBOTS
-
     entity_list.MakeNameUnique(name);
 #endif
 
@@ -499,23 +493,6 @@ ServerLootItem_Struct* NPC::GetItem(int slot_id) {
 	}
 	return(NULL);
 }
-
-#ifdef EQBOTS
-
-uint32 NPC::GetItemID(int slot_id) {
-	ItemList::iterator cur,end;
-	cur = itemlist.begin();
-	end = itemlist.end();
-	for(; cur != end; cur++) {
-		ServerLootItem_Struct* item = *cur;
-		if (item->lootslot == slot_id) {
-			return item->item_id;
-		}
-	}
-	return(NULL);
-}
-
-#endif //EQBOTS
 	  
 void NPC::RemoveItem(uint32 item_id, int16 quantity, int16 slot) {
 	ItemList::iterator cur,end;
@@ -713,17 +690,6 @@ bool NPC::Process()
 	if(assist_timer.Check() && !Charmed() && GetTarget() != NULL) {
 		entity_list.AIYellForHelp(this, GetTarget());
 	}
-	
-#ifdef EQBOTS
-
-    //Franck-add: EQoffline. If a bot spawns, it must use a special AI wich differs to standard NPC
-	if(IsBot())
-		BOT_Process();
-	else if(IsPet() && GetOwner() && GetOwner()->IsBot())
-		PET_Process();
-	else
-
-#endif //EQBOTS
 
 	AI_Process();
 	

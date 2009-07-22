@@ -155,11 +155,6 @@ public:
 	virtual bool Attack(Mob* other, int Hand = 13, bool FromRiposte = false);
 	virtual void AddToHateList(Mob* other, sint32 hate = 0, sint32 damage = 0, bool iYellForHelp = true, bool bFrenzy = false, bool iBuffTic = false);
 
-	// This FinishTrade method is for EQBOTS only until BOTS is ready. Its just a temporary hack to keep EQBOTS working.
-#ifdef EQBOTS
-	void FinishEQBOTTrade(NPC* with);
-#endif
-
 //	void	Discipline(ClientDiscipline_Struct* disc_in, Mob* tar);
 	void	AI_Init();
 	void	AI_Start(int32 iMoveDelay = 0);
@@ -514,15 +509,7 @@ public:
 
 	bool	TGB() const { return tgb; }
 
-#ifdef EQBOTS
-
-	void	BotTradeSwapItem(NPC* bot, sint16 lootSlot, uint32 id, sint16 maxCharges, uint32 equipableSlots, bool swap = true);
-	void	BotTradeAddItem(uint32 id, sint16 maxCharges, uint32 equipableSlots, int16 lootSlot, NPC* bot, bool addToDb = true);
-
-#endif //EQBOTS
-
 	void	OnDisconnect(bool hard_disconnect);
-
 
 	int16	GetSkillPoints() {return m_pp.points;}
 	void	SetSkillPoints(int inp) {m_pp.points = inp;}

@@ -6379,6 +6379,185 @@ bool Bot::TryHeadShot(Mob* defender, SkillType skillInUse) {
 	return Result;
 }
 
+//offensive spell aggro
+sint32 Bot::CheckAggroAmount(int16 spellid) {
+	sint32 AggroAmount = Mob::CheckAggroAmount(spellid);
+
+	if(GetLevel() >= 57) {
+		AggroAmount = AggroAmount * 95 / 100;
+	}
+	else if(GetLevel() >= 56) {
+		AggroAmount = AggroAmount * 90 / 100;
+	}
+	else if(GetLevel() >= 55) {
+		AggroAmount = AggroAmount * 80 / 100;
+	}
+
+	sint32 focusAggro = GetBotFocusEffect(botfocusType::botfocusHateReduction, spellid);
+	AggroAmount = (AggroAmount * (100+focusAggro) / 100);
+
+	return AggroAmount;
+}
+
+void Bot::MakePet(int16 spell_id, const char* pettype, const char *petname) {
+	//see if we are a special type of pet (for command filtering)
+	PetType type = petOther;
+	if(strncmp(pettype, "Familiar", 8) == 0) {
+		type = petFamiliar;
+	} else if(strncmp(pettype, "Animation", 9) == 0) {
+		type = petAnimation;
+	}
+
+	if(HasPet())
+		return;
+
+
+	//lookup our pets table record for this type
+	PetRecord record;
+	if(!database.GetPetEntry(pettype, &record)) {
+		Message(13, "Unable to find data for pet %s", pettype);
+		LogFile->write(EQEMuLog::Error, "Unable to find data for pet %s, check pets table.", pettype);
+		return;
+	}
+
+	//find the NPC data for the specified NPC type
+	const NPCType *base = database.GetNPCType(record.npc_type);
+	if(base == NULL) {
+		Message(13, "Unable to load NPC data for pet %s", pettype);
+		LogFile->write(EQEMuLog::Error, "Unable to load NPC data for pet %s (NPC ID %d), check pets and npc_types tables.", pettype, record.npc_type);
+		return;
+	}
+
+	//we copy the npc_type data because we need to edit it a bit
+	NPCType *npc_type = new NPCType;
+	memcpy(npc_type, base, sizeof(NPCType));
+
+	if(GetClass() == MAGICIAN)
+	{
+		if(GetLevel() >= 67)
+		{ // Elemental Durability 3 AA
+			npc_type->max_hp *= 1.10;
+			npc_type->cur_hp = npc_type->max_hp;
+		}
+		else if(GetLevel() == 66)
+		{ // Elemental Durability 2 AA
+			npc_type->max_hp *= 1.05;
+			npc_type->cur_hp = npc_type->max_hp;
+		}
+		else if(GetLevel() == 65)
+		{ // Elemental Durability 1 AA
+			npc_type->max_hp *= 1.02;
+			npc_type->cur_hp = npc_type->max_hp;
+		}
+	}
+
+	switch (GetAA(aaElementalDurability))
+	{
+	case 1:
+		npc_type->max_hp *= 1.02;
+		npc_type->cur_hp = npc_type->max_hp;
+		break;
+	case 2:
+		npc_type->max_hp *= 1.05;
+		npc_type->cur_hp = npc_type->max_hp;
+		break;
+	case 3:
+		npc_type->max_hp *= 1.10;
+		npc_type->cur_hp = npc_type->max_hp;
+		break;
+	}
+
+	//TODO: think about regen (engaged vs. not engaged)
+
+	if(petname != NULL) {
+		strncpy(npc_type->name, petname, 64);
+	} else if (strncmp("Familiar", pettype, 8) == 0) {
+		strcpy(npc_type->name, this->GetName());
+		npc_type->name[19] = '\0';
+		strcat(npc_type->name, "`s_familiar");
+	} else if (strncmp("BLpet",pettype, 5) == 0) {
+		strcpy(npc_type->name, this->GetName());
+		npc_type->name[21] = 0;
+		strcat(npc_type->name, "`s_Warder");
+	} else if (this->IsClient()) {
+		//clients get a random pet name
+		strcpy(npc_type->name, GetRandPetName());
+	} else {
+		strcpy(npc_type->name, this->GetCleanName());
+		npc_type->name[25] = '\0';
+		strcat(npc_type->name, "`s_pet");
+	}
+
+
+	//handle beastlord pet appearance
+	if(strncmp(pettype, "BLpet", 5) == 0) {
+		switch ( GetBaseRace() ) {
+		case VAHSHIR: npc_type->race = TIGER; npc_type->size *= 0.8f; break;
+		case TROLL: npc_type->race = ALLIGATOR; npc_type->size *= 2.5f; break;
+		case OGRE: npc_type->race = BEAR; npc_type->texture=3; npc_type->gender=2; break;
+		case BARBARIAN: npc_type->race = WOLF; npc_type->texture=2; break;
+		case IKSAR: npc_type->race = WOLF; npc_type->texture=1; npc_type->gender=1; npc_type->size *= 2.0f; break;
+		default: npc_type->race = WOLF; npc_type->texture=0; break;
+		}
+	}
+
+	// handle monster summoning pet appearance
+	if(strncmp(pettype, "MonsterSum", 10) == 0) {
+		char errbuf[MYSQL_ERRMSG_SIZE];
+		char* query = 0;
+		MYSQL_RES *result = NULL;
+		MYSQL_ROW row = NULL;
+		uint32 monsterid;
+
+		// get a random npc id from the spawngroups assigned to this zone
+		if (database.RunQuery(query,	MakeAnyLenString(&query,
+			"SELECT npcID FROM (spawnentry INNER JOIN spawn2 ON spawn2.spawngroupID = spawnentry.spawngroupID) "
+			"INNER JOIN npc_types ON npc_types.id = spawnentry.npcID "
+			"WHERE spawn2.zone = '%s' AND npc_types.bodytype NOT IN (11, 33, 66, 67) "
+			"AND npc_types.race NOT IN (0,1,2,3,4,5,6,7,8,9,10,11,12,44,55,67,71,72,73,77,78,81,90,92,93,94,106,112,114,127,128,130,139,141,183,236,237,238,239,254,266,330,378,379,380,381,382,383,404,522) "
+			"ORDER BY RAND() LIMIT 1",	zone->GetShortName()), errbuf, &result))
+		{
+			row = mysql_fetch_row(result);
+			if (row) 
+				monsterid = atoi(row[0]);
+			else 
+				monsterid = 567;	// since we don't have any monsters, just make it look like an earth pet for now
+		}
+		else {	// if the database query failed
+			LogFile->write(EQEMuLog::Error, "Error querying database for monster summoning pet in zone %s (%s)", zone->GetShortName(), errbuf);
+			monsterid = 567;
+		}
+
+		// give the summoned pet the attributes of the monster we found
+		const NPCType* monster = database.GetNPCType(monsterid);
+		if(monster) {
+			npc_type->race = monster->race;
+			npc_type->size = monster->size;
+			npc_type->texture = monster->texture;
+			npc_type->gender = monster->gender;
+		}
+		else {
+			LogFile->write(EQEMuLog::Error, "Error loading NPC data for monster summoning pet (NPC ID %d)", monsterid);
+		}
+
+		safe_delete_array(query);
+	}
+
+	//this takes ownership of the npc_type data
+	Pet *npc = new Pet(npc_type, this, type, spell_id);
+	npc->SetTaunting(false);
+	//npc->BotOwner = BotOwner;
+	npc->SetOwnerID(GetID());
+
+	// TODO: Uncomment after implementing bot raiding
+	/*if(IsBotRaiding()) {
+		npc->SetBotRaidID(GetBotRaidID());
+	}*/
+
+	entity_list.AddNPC(npc, true, true);
+	SetPetID(npc->GetID());
+}
+
 void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 	// TODO: All bot command processing occurs here now instead of in command.cpp
 

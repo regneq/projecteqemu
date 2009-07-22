@@ -7,6 +7,7 @@
 #include "botRaids.h"
 #include "mob.h"
 #include "client.h"
+#include "pets.h"
 #include "groups.h"
 #include "zonedb.h"
 #include "StringIDs.h"
@@ -28,7 +29,9 @@ typedef enum {	//focus types
 	botfocusImprovedCritical,
 	botfocusImprovedUndeadDamage,
 	botfocusPetPower,
-} botfocusType;	
+	botfocusResistRate,
+	botfocusHateReduction,
+} botfocusType;
 
 class Bot : public NPC {
 public:
@@ -76,6 +79,10 @@ public:
 	virtual void RogueAssassinate(Mob* other);
 	virtual void DoClassAttacks(Mob *target);
 	virtual bool TryHeadShot(Mob* defender, SkillType skillInUse);
+	// virtual bool IsAttackAllowed(Mob *target, bool isSpellAttack = false);
+	virtual sint32 CheckAggroAmount(int16 spellid);
+	virtual void CalcBonuses() { return; }
+	virtual void MakePet(int16 spell_id, const char* pettype, const char *petname = NULL);
 	
 	// Bot Action Command Methods
 	bool MesmerizeTarget(Mob* target);

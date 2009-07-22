@@ -527,7 +527,7 @@ bool logpos;
 	int		CountDispellableBuffs();
 	bool	HasBuffIcon(Mob* caster, Mob* target, int16 spell_id);
 
-	void	MakePet(int16 spell_id, const char* pettype, const char *petname = NULL);
+	virtual void MakePet(int16 spell_id, const char* pettype, const char *petname = NULL);
 //	inline void	MakePetType(int16 spell_id, const char* pettype, const char *petname = NULL) { MakePet(spell_id, pettype, petname); }	//for perl
 //	void	MakePet(int16 spell_id, int8 in_level, int8 in_class, int16 in_race, int8 in_texture = 0, int8 in_pettype = 0, float in_size = 0, int8 type = 0, int32 min_dmg = 0, int32 max_dmg = 0, const char *petname = NULL);
 
@@ -917,7 +917,7 @@ bool logpos;
 	bool	Charmed() const { return charmed; }
 	static int32	GetLevelHP(int8 tlevel);
 	int32	GetZoneID() const;	//for perl
-	sint32	CheckAggroAmount(int16 spellid);
+	virtual sint32 CheckAggroAmount(int16 spellid);
 	sint32	CheckHealAggroAmount(int16 spellid, int32 heal_possible = 0);
 	virtual int32 GetAA(int32 aa_id) const { return(0); }
 
