@@ -1887,7 +1887,7 @@ void Bot::BotAIProcess() {
 		return;
 
 	// A bot wont start its AI if not grouped
-	if((IsPet() && !GetOwner()->IsBot()) || (IsBot() && !IsGrouped())) {
+	if((IsPet() && !GetOwner()->IsBot()) || (!IsGrouped())) {
 		return;
 	}
 
@@ -4070,130 +4070,134 @@ void Bot::Death(Mob *killerMob, sint32 damage, int16 spell_id, SkillType attack_
 
 	bool IsLdonTreasure = (this->GetClass() == LDON_TREASURE);
 
-	// Uncomment after bot raiding is ready and a decision on cleanbotleader() is made
+	if (give_exp_client && !IsCorpse() && MerchantType == 0)
+	{
+		Group *kg = entity_list.GetGroupByClient(give_exp_client);
+		Raid *kr = entity_list.GetRaidByClient(give_exp_client);
 
-	//if (give_exp_client && !IsCorpse() && MerchantType == 0)
-	//{
-	//	Group *kg = entity_list.GetGroupByClient(give_exp_client);
-	//	Raid *kr = entity_list.GetRaidByClient(give_exp_client);
+		// TODO: Uncomment after bot raiding is ready and a decision on cleanbotleader() is made
 
-	//	if(!kr && give_exp_client->IsClient() && give_exp_client->IsBotRaiding())
-	//	{
-	//		BotRaids *br = entity_list.GetBotRaidByMob(give_exp_client->CastToMob());
-	//		if(br)
-	//		{
-	//			if(!IsLdonTreasure)
-	//				br->SplitExp((EXP_FORMULA), this);
+		//if(!kr && give_exp_client->IsClient() && give_exp_client->IsBotRaiding()) {
 
-	//			if(br->GetBotMainTarget() == this)
-	//				br->SetBotMainTarget(NULL);
+		//BotRaids *br = entity_list.GetBotRaidByMob(give_exp_client->CastToMob());
+		//if(br)
+		//{
+		//	if(!IsLdonTreasure)
+		//		br->SplitExp((EXP_FORMULA), this);
 
-	//			/* Send the EVENT_KILLED_MERIT event for all raid members */
-	//			if(br->BotRaidGroups[0])
-	//			{
-	//				for(int j=0; j<MAX_GROUP_MEMBERS; j++)
-	//				{
-	//					if(br->BotRaidGroups[0]->members[j] && br->BotRaidGroups[0]->members[j]->IsClient())
-	//					{
-	//						parse->Event(EVENT_KILLED_MERIT, GetNPCTypeID(), "killed", this, br->BotRaidGroups[0]->members[j]);
-	//						if(RuleB(TaskSystem, EnableTaskSystem))
-	//						{
-	//							br->BotRaidGroups[0]->members[j]->CastToClient()->UpdateTasksOnKill(GetNPCTypeID());
-	//						}
-	//					}
-	//				}
-	//			}
-	//		}
-	//	}
-	//}
+		//	if(br->GetBotMainTarget() == this)
+		//		br->SetBotMainTarget(NULL);
+
+		//	/* Send the EVENT_KILLED_MERIT event for all raid members */
+		//	if(br->BotRaidGroups[0])
+		//	{
+		//		for(int j=0; j<MAX_GROUP_MEMBERS; j++)
+		//		{
+		//			if(br->BotRaidGroups[0]->members[j] && br->BotRaidGroups[0]->members[j]->IsClient())
+		//			{
+		//				parse->Event(EVENT_KILLED_MERIT, GetNPCTypeID(), "killed", this, br->BotRaidGroups[0]->members[j]);
+		//				if(RuleB(TaskSystem, EnableTaskSystem))
+		//				{
+		//					br->BotRaidGroups[0]->members[j]->CastToClient()->UpdateTasksOnKill(GetNPCTypeID());
+		//				}
+		//			}
+		//		}
+		//	}
+		//}
+		//}
+	}
 
 	//corpse->Depop();
+	if(entity_list.GetCorpseByID(GetID()))
+		entity_list.GetCorpseByID(GetID())->Depop();
 
-	//Group *g = entity_list.GetGroupByMob(this);
-	//if(g) {
-	//	for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
-	//		if(g->members[i]) {
-	//			if(g->members[i] == this) {
-	//				// If the leader dies, make the next bot the leader
-	//				// and reset all bots followid
-	//				if(g->IsLeader(g->members[i])) {
-	//					if(g->members[i+1]) {
-	//						g->SetLeader(g->members[i+1]);
-	//						g->members[i+1]->SetFollowID(g->members[i]->GetFollowID());
-	//						for(int j=0; j<MAX_GROUP_MEMBERS; j++) {
-	//							if(g->members[j] && (g->members[j] != g->members[i+1])) {
-	//								g->members[j]->SetFollowID(g->members[i+1]->GetID());
-	//							}
-	//						}
-	//					}
-	//				}
+	Group *g = entity_list.GetGroupByMob(this);
+	if(g) {
+		for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
+			if(g->members[i]) {
+				if(g->members[i] == this) {
+					// If the leader dies, make the next bot the leader
+					// and reset all bots followid
+					if(g->IsLeader(g->members[i])) {
+						if(g->members[i+1]) {
+							g->SetLeader(g->members[i+1]);
+							g->members[i+1]->SetFollowID(g->members[i]->GetFollowID());
+							for(int j=0; j<MAX_GROUP_MEMBERS; j++) {
+								if(g->members[j] && (g->members[j] != g->members[i+1])) {
+									g->members[j]->SetFollowID(g->members[i+1]->GetID());
+								}
+							}
+						}
+					}
 
-	//				// delete from group data
-	//				g->membername[i][0] = '\0';
-	//				memset(g->membername[i], 0, 64);
-	//				g->members[i]->BotOwner = NULL;
-	//				g->members[i] = NULL;
+					// delete from group data
+					g->membername[i][0] = '\0';
+					memset(g->membername[i], 0, 64);
+					g->members[i]->SetOwnerID(0);
+					//g->members[i]->BotOwner = NULL;
+					g->members[i] = NULL;
 
-	//				// if group members exist below this one, move
-	//				// them all up one slot in the group list
-	//				int j = i+1;
-	//				for(; j<MAX_GROUP_MEMBERS; j++) {
-	//					if(g->members[j]) {
-	//						g->members[j-1] = g->members[j];
-	//						strcpy(g->membername[j-1], g->members[j]->GetName());
-	//						g->membername[j][0] = '\0';
-	//						memset(g->membername[j], 0, 64);
-	//						g->members[j] = NULL;
-	//					}
-	//				}
+					// if group members exist below this one, move
+					// them all up one slot in the group list
+					int j = i+1;
+					for(; j<MAX_GROUP_MEMBERS; j++) {
+						if(g->members[j]) {
+							g->members[j-1] = g->members[j];
+							strcpy(g->membername[j-1], g->members[j]->GetName());
+							g->membername[j][0] = '\0';
+							memset(g->membername[j], 0, 64);
+							g->members[j] = NULL;
+						}
+					}
 
-	//				// update the client group
-	//				EQApplicationPacket* outapp = new EQApplicationPacket(OP_GroupUpdate, sizeof(GroupJoin_Struct));
-	//				GroupJoin_Struct* gu = (GroupJoin_Struct*)outapp->pBuffer;
-	//				gu->action = groupActLeave;
-	//				strcpy(gu->membername, GetName());
-	//				if(g) {
-	//					for(int k=0; k<MAX_GROUP_MEMBERS; k++) {
-	//						if(g->members[k] && g->members[k]->IsClient())
-	//							g->members[k]->CastToClient()->QueuePacket(outapp);
-	//					}
-	//				}
-	//				safe_delete(outapp);
+					// update the client group
+					EQApplicationPacket* outapp = new EQApplicationPacket(OP_GroupUpdate, sizeof(GroupJoin_Struct));
+					GroupJoin_Struct* gu = (GroupJoin_Struct*)outapp->pBuffer;
+					gu->action = groupActLeave;
+					strcpy(gu->membername, GetName());
+					if(g) {
+						for(int k=0; k<MAX_GROUP_MEMBERS; k++) {
+							if(g->members[k] && g->members[k]->IsClient())
+								g->members[k]->CastToClient()->QueuePacket(outapp);
+						}
+					}
+					safe_delete(outapp);
 
-	//				// now that's done, lets see if all we have left is the client
-	//				// and we can clean up the clients raid group and group
-	//				if(IsBotRaiding()) {
-	//					BotRaids* br = entity_list.GetBotRaidByMob(this);
-	//					if(br) {
-	//						if(this == br->botmaintank) {
-	//							br->botmaintank = NULL;
-	//						}
-	//						if(this == br->botsecondtank) {
-	//							br->botsecondtank = NULL;
-	//						}
-	//					}
-	//					if(g->BotGroupCount() == 0) {
-	//						int32 gid = g->GetID();
-	//						if(br) {
-	//							br->RemoveEmptyBotGroup();
-	//						}
-	//						entity_list.RemoveGroup(gid);
-	//					}
-	//					if(br && (br->RaidBotGroupsCount() == 1)) {
-	//						br->RemoveClientGroup(br->GetRaidBotLeader());
-	//					}
-	//					if(br && (br->RaidBotGroupsCount() == 0)) {
-	//						br->DisbandBotRaid();
-	//					}
-	//				}
-	//			}
-	//		}
-	//	}
-	//}
+					//				// now that's done, lets see if all we have left is the client
+					//				// and we can clean up the clients raid group and group
+					//				if(IsBotRaiding()) {
+					//					BotRaids* br = entity_list.GetBotRaidByMob(this);
+					//					if(br) {
+					//						if(this == br->botmaintank) {
+					//							br->botmaintank = NULL;
+					//						}
+					//						if(this == br->botsecondtank) {
+					//							br->botsecondtank = NULL;
+					//						}
+					//					}
+					//					if(g->BotGroupCount() == 0) {
+					//						int32 gid = g->GetID();
+					//						if(br) {
+					//							br->RemoveEmptyBotGroup();
+					//						}
+					//						entity_list.RemoveGroup(gid);
+					//					}
+					//					if(br && (br->RaidBotGroupsCount() == 1)) {
+					//						br->RemoveClientGroup(br->GetRaidBotLeader());
+					//					}
+					//					if(br && (br->RaidBotGroupsCount() == 0)) {
+					//						br->DisbandBotRaid();
+					//					}
+					//				}
+					//			}
+				}
+			}
+		}
+	}
 
-	//// Delete from database
+	// Delete from database
 	//database.CleanBotLeaderEntries(this->GetBotID());
-	entity_list.RemoveNPC(this->GetID());
+	entity_list.RemoveBot(this->GetID());
 }
 
 void Bot::Damage(Mob *from, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable, sint8 buffslot, bool iBuffTic) {
@@ -6579,6 +6583,33 @@ FACTION_VALUE Bot::GetReverseFactionCon(Mob* iOther) {
 	}
 
 	return NPC::GetReverseFactionCon(iOther);
+}
+
+Mob* Bot::GetOwnerOrSelf() {
+	Mob* Result = 0;
+
+	if(this->GetOwner())
+		Result = GetOwner();
+	else
+		Result = this;
+
+	return Result;
+}
+
+Mob* Bot::GetOwner() {
+	Mob* Result = 0;
+
+	if(GetOwnerID() > 0) {
+		Mob* owner = entity_list.GetMob(GetOwnerID());
+		if(owner) {
+			Result = owner;
+		}
+	}
+
+	if(!Result)
+		this->SetBotOwner(0);
+
+	return Result;
 }
 
 void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {

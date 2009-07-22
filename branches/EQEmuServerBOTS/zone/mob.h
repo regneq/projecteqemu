@@ -741,8 +741,8 @@ bool logpos;
 
 	Mob*	GetPet();
 	void	SetPet(Mob* newpet);
-	Mob*	GetOwner();
-	Mob*	GetOwnerOrSelf();
+	virtual Mob* GetOwner();
+	virtual Mob* GetOwnerOrSelf();
 	void	SetPetID(int16 NewPetID);
 	inline int16	GetPetID()		const			{ return petid;  }
 	inline PetType GetPetType() const { return typeofpet; }
@@ -753,7 +753,7 @@ bool logpos;
 	void SetOwnerID(int16 NewOwnerID);
 	inline int16 GetOwnerID()	const			{ return ownerid; }
 	inline bool HasOwner() const { if(GetOwnerID()==0){return false;} return( entity_list.GetMob(GetOwnerID()) != 0); }
-	inline bool IsPet() const { return(HasOwner()); }
+	inline virtual bool IsPet() const { return(HasOwner()); }
 	inline bool HasPet() const { if(GetPetID()==0){return false;} return (entity_list.GetMob(GetPetID()) != 0);}
 	bool HadTempPets() const { return(hasTempPet); }
 	void TempPets(bool i) { hasTempPet = i; }

@@ -1500,11 +1500,8 @@ Mob* Mob::GetOwner() {
 	if(IsNPC() && CastToNPC()->GetSwarmInfo()){
 		return (CastToNPC()->GetSwarmInfo()->owner);
 	}
-	if(!owner) {
-		SetOwnerID(0);
-		return 0;
-	}
-	return owner;
+	SetOwnerID(0);
+	return 0;
 }
 
 void Mob::SetOwnerID(int16 NewOwnerID) {

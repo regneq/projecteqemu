@@ -9,6 +9,7 @@
 #include "client.h"
 #include "pets.h"
 #include "groups.h"
+#include "PlayerCorpse.h"
 #include "zonedb.h"
 #include "StringIDs.h"
 #include "../common/MiscFunctions.h"
@@ -85,6 +86,10 @@ public:
 	virtual void MakePet(int16 spell_id, const char* pettype, const char *petname = NULL);
 	virtual void AI_Stop();
 	virtual FACTION_VALUE GetReverseFactionCon(Mob* iOther);
+	inline virtual bool IsPet() const { return false; }
+	virtual bool IsNPC() const { return false; }
+	virtual Mob* GetOwner();
+	virtual Mob* GetOwnerOrSelf();
 	
 	// Bot Action Command Methods
 	bool MesmerizeTarget(Mob* target);
