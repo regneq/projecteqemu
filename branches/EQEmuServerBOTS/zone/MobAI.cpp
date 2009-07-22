@@ -549,15 +549,6 @@ void Mob::AI_Stop() {
 }
 
 void NPC::AI_Stop() {
-
-#ifdef EQBOTS
-
-	if(IsBot()) {
-		Mob::AI_Stop();					// jadams: Unsure if this is bot code? No comment
-	}
-
-#endif //EQBOTS
-
 	Waypoints.clear();
 	safe_delete(AIautocastspell_timer);
 }

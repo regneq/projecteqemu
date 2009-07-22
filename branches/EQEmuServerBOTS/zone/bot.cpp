@@ -6558,6 +6558,29 @@ void Bot::MakePet(int16 spell_id, const char* pettype, const char *petname) {
 	SetPetID(npc->GetID());
 }
 
+void Bot::AI_Stop() {
+	// TODO: dear jesus why?
+	Mob::AI_Stop();
+	NPC::AI_Stop();
+}
+
+//this is called with 'this' as the mob being looked at, and
+//iOther the mob who is doing the looking. It should figure out
+//what iOther thinks about 'this'
+FACTION_VALUE Bot::GetReverseFactionCon(Mob* iOther) {
+#if FACTIONS_DEBUG >= 20
+	LogFile->write(EQEMuLog::Debug, "called N $s::GetReverseFactionCon(%s)", GetName(), iOther->GetName());
+#endif
+	
+	_ZP(Bot_GetReverseFactionCon);
+
+	if(iOther->IsBot()) {
+		return FACTION_ALLY;
+	}
+
+	return NPC::GetReverseFactionCon(iOther);
+}
+
 void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 	// TODO: All bot command processing occurs here now instead of in command.cpp
 

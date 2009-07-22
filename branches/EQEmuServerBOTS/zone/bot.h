@@ -83,6 +83,8 @@ public:
 	virtual sint32 CheckAggroAmount(int16 spellid);
 	virtual void CalcBonuses() { return; }
 	virtual void MakePet(int16 spell_id, const char* pettype, const char *petname = NULL);
+	virtual void AI_Stop();
+	virtual FACTION_VALUE GetReverseFactionCon(Mob* iOther);
 	
 	// Bot Action Command Methods
 	bool MesmerizeTarget(Mob* target);
