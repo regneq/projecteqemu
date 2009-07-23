@@ -298,6 +298,8 @@ public:
 	const bool GetCombatEvent() const { return combat_event; }
 	void SetCombatEvent(bool b) { combat_event = b; }
 
+	bool GetDepop() { return p_depop; }
+
 protected:
 	
 	const NPCType*	NPCTypedata;

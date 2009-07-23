@@ -39,6 +39,9 @@ Bot::Bot(NPCType npcTypeData, Client* botOwner) : NPC(&npcTypeData, 0, 0, 0, 0, 
 	SetBotSpellID(0);
 	SetBotRaiding(false);
 	SetSpawnStatus(false);
+	SetBotArcher(false);
+	SetBotCharmer(false);
+	SetPetChooser(false);
 
 	GenerateBaseStats();
 	GenerateAppearance();
@@ -58,6 +61,9 @@ Bot::Bot(uint32 botID, uint32 botOwnerCharacterID, uint32 botSpellsID, NPCType n
 	SetBotSpellID(botSpellsID);
 	SetBotRaiding(false);
 	SetSpawnStatus(false);
+	SetBotArcher(false);
+	SetBotCharmer(false);
+	SetPetChooser(false);
 	
 	GenerateBaseStats();
 	GenerateAppearance();
@@ -868,9 +874,118 @@ bool Bot::Save() {
 bool Bot::Process() {
 	bool Result = false;
 
+	_ZP(Bot_Process);
+
+	adverrorinfo = 1;
+	if (IsStunned() && stunned_timer.Check()) {
+		this->stunned = false;
+		this->stunned_timer.Disable();
+	}
+
+	if (GetDepop()) {
+		Mob* owner = entity_list.GetMob(this->ownerid);
+		if (owner != 0) {
+			//if(GetBodyType() != BT_SwarmPet)
+			//    owner->SetPetID(0);
+			this->ownerid = 0;
+			this->petid = 0;
+		}
+		return false;
+	}
+
+	adverrorinfo = 2;
+
+	SpellProcess();
+
+	if (tic_timer.Check()) {
+		//60 seconds, or whatever the rule is set to has passed, send this position to everyone to avoid ghosting
+		if(global_position_update_timer.Check() && !moving){
+			SendAllPosition();
+		}
+
+		BuffProcess();
+
+		if(curfp)
+			ProcessFlee();
+
+		int32 bonus = 0;
+
+		if(GetAppearance() == eaSitting)
+			bonus+=3;
+
+		sint32 OOCRegen = 0;
+		if(oocregen > 0){ //should pull from Mob class
+			OOCRegen += GetMaxHP() * oocregen / 100;
+		}
+		//Lieka Edit:  Fixing NPC regen.  NPCs should regen to full during a set duration, not based on their HPs.  Increase NPC's HPs by % of total HPs / tick.
+		if((GetHP() < GetMaxHP()) && !IsPet()) {
+			if(!IsEngaged()) {//NPC out of combat
+				if(hp_regen > OOCRegen)
+					SetHP(GetHP() + hp_regen);
+				else
+					SetHP(GetHP() + OOCRegen);
+			} else
+				SetHP(GetHP()+hp_regen);
+		} else if(GetHP() < GetMaxHP() && GetOwnerID() !=0) {
+			if(!IsEngaged()) //pet
+				SetHP(GetHP()+hp_regen+bonus+(GetLevel()/5));
+			else
+				SetHP(GetHP()+hp_regen+bonus);
+		} else 
+			SetHP(GetHP()+hp_regen);
+
+		if(GetMana() < GetMaxMana()) {
+			SetMana(GetMana()+mana_regen+bonus);
+		}
+
+		Mob *o = GetOwner();
+		if(o && o->IsClient()) {
+			if(!GetDepop()) {
+				Client *c = o->CastToClient();
+				AdventureDetails *ad = c->GetCurrentAdventure();
+				if(ad && ad->ai) {
+					if(ad->ai->type == Adventure_Rescue) {
+						if(GetNPCTypeID() == ad->ai->type_data) {
+							float xDiff = ad->ai->dest_x - GetX();
+							float yDiff = ad->ai->dest_y - GetY();
+							float zDiff = ad->ai->dest_z - GetZ();
+							float dist = ((xDiff * xDiff) + (yDiff * yDiff) + (zDiff * zDiff));
+							if(dist < RuleR(Adventure, DistanceForRescueComplete)) {
+								zone->UpdateAdventureCount(ad);
+								Say("You don't know what this means to me. Thank you so much for finding and saving me from"
+									" this wretched place. I'll find my way from here.");
+								Depop();
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	if (sendhpupdate_timer.Check() && (IsTargeted() || (IsPet() && GetOwner() && GetOwner()->IsClient()))) {
+		if(!IsFullHP || cur_hp<max_hp){
+			SendHPUpdate();
+		}
+	}
+
+	if (IsStunned()||IsMezzed())
+		return true;
+
+	if (enraged_timer.Check()){
+		ProcessEnrage();
+	}
+
+	//Handle assists...
+	if(assist_timer.Check() && !Charmed() && GetTarget() != NULL) {
+		entity_list.AIYellForHelp(this, GetTarget());
+	}
+
 	DoAIProcessing();
 
-	Result = NPC::Process();
+	AI_Process();
+
+	Result = true;
 
 	return Result;
 }
@@ -6136,34 +6251,36 @@ void Bot::DoClassAttacks(Mob *target) {
 		/*BotRaids* br = entity_list.GetBotRaidByMob(this);
 		if(br)
 		{
-		if(br->GetBotMainTank())
-		{
-		if(br->GetBotMainTank() == this)
-		{
-		isTaunting = true;
-		}
-		}
-		else if(br->GetBotSecondTank())
-		{
-		if(br->GetBotSecondTank() == this)
-		{
-		isTaunting = true;
-		}
+			if(br->GetBotMainTank())
+			{
+				if(br->GetBotMainTank() == this)
+				{
+					isTaunting = true;
+				}
+			}
+			else if(br->GetBotSecondTank())
+			{
+				if(br->GetBotSecondTank() == this)
+				{
+					isTaunting = true;
+				}
+			}
+			else
+			{
+				if(MakeRandomInt(1, 100) > 50)
+				{
+					isTaunting = true;
+				}
+			}
 		}
 		else
 		{
-		if(MakeRandomInt(1, 100) > 50)
-		{
-		isTaunting = true;
-		}
-		}
-		}
-		else
-		{
-		isTaunting = true;
+			isTaunting = true;
 		}*/
-		if(isTaunting)
-		{
+		// TODO: Remove this line after the code block above gets uncommented
+		isTaunting = true;
+
+		if(isTaunting) {
 			Say("Taunting %s", target->GetCleanName());
 			Taunt(target->CastToNPC(), true);
 		}
@@ -6235,8 +6352,7 @@ void Bot::DoClassAttacks(Mob *target) {
 			did_attack = true;
 			break;
 				   }
-		case WARRIOR: 
-		case WARRIORGM:{
+		case WARRIOR: case WARRIORGM:{
 			if(level >= RuleI(Combat, NPCBashKickLevel)){
 				if(MakeRandomInt(0, 100) > 25) //tested on live, warrior mobs both kick and bash, kick about 75% of the time, casting doesn't seem to make a difference.
 				{
@@ -6284,8 +6400,7 @@ void Bot::DoClassAttacks(Mob *target) {
 			}
 			break;
 					   }
-		case BERSERKER: 
-		case BERSERKERGM:
+		case BERSERKER: case BERSERKERGM:
 			{
 				int32 num_attacks = 1 + (GetSkill(FRENZY) / 100);
 				while(num_attacks > 0 && target) 
@@ -6400,7 +6515,7 @@ sint32 Bot::CheckAggroAmount(int16 spellid) {
 		AggroAmount = AggroAmount * 80 / 100;
 	}
 
-	sint32 focusAggro = GetBotFocusEffect(botfocusType::botfocusHateReduction, spellid);
+	sint32 focusAggro = GetBotFocusEffect(botfocusHateReduction, spellid);
 	AggroAmount = (AggroAmount * (100+focusAggro) / 100);
 
 	return AggroAmount;

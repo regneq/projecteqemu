@@ -18,21 +18,8 @@ using namespace std;
 
 extern bool spells_loaded;
 
-typedef enum {	//focus types
-	botfocusSpellHaste = 1,
-	botfocusSpellDuration,
-	botfocusRange,
-	botfocusReagentCost,
-	botfocusManaCost,
-	botfocusImprovedHeal,
-	botfocusImprovedDamage,
-	botfocusImprovedDOT,		//i dont know about this...
-	botfocusImprovedCritical,
-	botfocusImprovedUndeadDamage,
-	botfocusPetPower,
-	botfocusResistRate,
-	botfocusHateReduction,
-} botfocusType;
+
+//typedef botfocusType_e botfocusType;
 
 class Bot : public NPC {
 public:
@@ -168,6 +155,25 @@ public:
 
 	// Class Destructors
 	virtual ~Bot();
+
+	// Class enums
+	enum botfocusType {	//focus types
+		botfocusSpellHaste = 1,
+		botfocusSpellDuration,
+		botfocusRange,
+		botfocusReagentCost,
+		botfocusManaCost,
+		botfocusImprovedHeal,
+		botfocusImprovedDamage,
+		botfocusImprovedDOT,		//i dont know about this...
+		botfocusImprovedCritical,
+		botfocusImprovedUndeadDamage,
+		botfocusPetPower,
+		botfocusResistRate,
+		botfocusHateReduction,
+	};
+
+	typedef enum botfocusType botfocusType;
 
 protected:
 	virtual void BotAIProcess();
