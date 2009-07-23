@@ -211,6 +211,7 @@ public:
 	void SetRunning(bool val);
 	bool IsRunning();
 	void FlyMode(int8 flymode);
+	uint8 FactionValue();
 
 	//not in here because it retains perl types
 	//thing ChooseRandom(array_of_things)

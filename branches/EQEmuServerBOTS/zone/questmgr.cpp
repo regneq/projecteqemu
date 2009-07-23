@@ -861,6 +861,7 @@ void QuestManager::itemlink(int item_id) {
 	if (initiator->MakeItemLink(link, inst))
 		initiator->Message(0, "%s tells you, %c%s%s%c", owner->GetCleanName(), 0x12, link, inst->GetItem()->Name, 0x12);
 	safe_delete_array(link);
+	safe_delete(inst);
 }
 
 void QuestManager::signalwith(int npc_id, int signal_id, int wait_ms) {
@@ -1776,6 +1777,7 @@ const char* QuestManager::varlink(char* perltext, int item_id) {
 		safe_delete_array(tempstr);	// MakeAnyLenString() uses new, so clean up after it
 	}
 	safe_delete_array(link);	// MakeItemLink() uses new also
+	safe_delete(inst);
 	return perltext;
 }
 
@@ -1972,3 +1974,46 @@ void QuestManager::FlyMode(int8 flymode)
 		}
 	}
 }
+
+uint8 QuestManager::FactionValue() 
+{
+	FACTION_VALUE oldfac;
+	uint8 newfac = 0;
+	if(initiator && owner->IsNPC()) {
+		oldfac = initiator->GetFactionLevel(initiator->GetID(), owner->GetID(), initiator->GetRace(), initiator->GetClass(), initiator->GetDeity(), owner->GetPrimaryFaction(), owner);
+		
+		// now, reorder the faction to have it make sense (higher values are better)
+		switch (oldfac) {
+			case FACTION_SCOWLS:
+				newfac = 1;
+				break;
+			case FACTION_THREATENLY:
+				newfac = 2;
+				break;
+			case FACTION_DUBIOUS:
+				newfac = 3;
+				break;
+			case FACTION_APPREHENSIVE:
+				newfac = 4;
+				break;
+			case FACTION_INDIFFERENT:
+				newfac = 5;
+				break;
+			case FACTION_AMIABLE:
+				newfac = 6;
+				break;
+			case FACTION_KINDLY:
+				newfac = 7;
+				break;
+			case FACTION_WARMLY:
+				newfac = 8;
+				break;
+			case FACTION_ALLY:
+				newfac = 9;
+				break;
+		}
+	}
+	
+	return newfac;
+}
+
