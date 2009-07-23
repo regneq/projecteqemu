@@ -2735,6 +2735,16 @@ XS(XS__FlyMode) {
 	XSRETURN_EMPTY;
 }
 
+XS(XS_FactionValue);
+XS(XS_FactionValue) {
+	dXSARGS;
+	if (items != 0)
+		Perl_croak(aTHX_ "Usage: factionvalue()");
+
+	uint8 fac = quest_manager.FactionValue();
+	XSRETURN_UV(fac);
+}
+
 /*
 This is the callback perl will look for to setup the
 quest package's XSUBs
@@ -2920,6 +2930,7 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "GetSpellResistType"), XS__GetSpellResistType, file);
 		newXS(strcpy(buf, "GetSpellTargetType"), XS__GetSpellTargetType, file);
 		newXS(strcpy(buf, "FlyMode"), XS__FlyMode, file);
+		newXS(strcpy(buf, "factionvalue"), XS_FactionValue, file);
 	XSRETURN_YES;
 }
 
