@@ -542,14 +542,15 @@ bool Mob::IsAttackAllowed(Mob *target, bool isSpellAttack)
 	mob1 = our_owner ? our_owner : this;
 	mob2 = target_owner ? target_owner : target;
 
-#ifdef EQBOTS
+#ifdef BOTS
+	// This block is here only until I think of a clean way to move it
 
 	// some pvp checks
-	if(IsBot() && BotOwner && BotOwner->CastToClient()->GetPVP()) // i'm a bot and my owner is pvp
+	if(IsBot() && GetOwner() && GetOwner()->CastToClient()->GetPVP()) // i'm a bot and my owner is pvp
 	{
-		if(target->IsBot() && target->BotOwner && target->BotOwner->CastToClient()->GetPVP()) // my target is a bot and it's owner is pvp
+		if(target->IsBot() && target->GetOwner() && target->GetOwner()->CastToClient()->GetPVP()) // my target is a bot and it's owner is pvp
 		{
-			if(target->BotOwner == BotOwner) // no attacking if my owner is my target
+			if(target->GetOwner() == GetOwner()) // no attacking if my owner is my target
 			{
 				return false;
 			}
@@ -560,7 +561,7 @@ bool Mob::IsAttackAllowed(Mob *target, bool isSpellAttack)
 		}
 		if(target->IsClient() && target->CastToClient()->GetPVP()) // my target is a player and it's pvp
 		{
-			if(target == BotOwner) // my target cannot be my owner
+			if(target == GetOwner()) // my target cannot be my owner
 			{
 				return false;
 			}
@@ -573,9 +574,10 @@ bool Mob::IsAttackAllowed(Mob *target, bool isSpellAttack)
 	if(IsClient() &&
 		target->IsBot() &&
 		CastToClient()->GetPVP() &&
-		target->BotOwner &&
-		target->BotOwner->CastToClient()->GetPVP() &&
-		database.GetBotOwner(target->GetNPCTypeID()) != CastToClient()->AccountID())
+		target->GetOwner() &&
+		target->GetOwner()->CastToClient()->GetPVP() &&
+		target->CastToBot()->GetBotOwnerCharacterID() != CastToClient()->CharacterID())
+		//database.GetBotOwner(target->GetNPCTypeID()) != CastToClient()->AccountID())
 	{ // im a pvp player and i'm targeting a bot whos owner is pvp, and it's not my bot
 		return true;
 	}
@@ -598,7 +600,7 @@ bool Mob::IsAttackAllowed(Mob *target, bool isSpellAttack)
 			return false;
 	}
 
-#endif //EQBOTS
+#endif //BOTS
 
 	reverse = 0;
 	do
@@ -688,6 +690,10 @@ type', in which case, the answer is yes.
 			{
 				return false;
 			}
+#ifdef BOTS
+			else if(mob2->IsBot())
+				return true;
+#endif
 		}
 		else if(_BECOMENPC(mob1))
 		{
@@ -722,6 +728,12 @@ type', in which case, the answer is yes.
 				return false;
 			}
 		}
+#ifdef BOTS
+		else if(mob1->IsBot()) {
+			if(mob2->IsNPC())
+				return true;
+		}
+#endif
 
 		// we fell through, now we swap the 2 mobs and run through again once more
 		tempmob = mob1;

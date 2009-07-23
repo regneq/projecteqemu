@@ -2391,50 +2391,48 @@ void Bot::BotAIProcess() {
 
 // AI Processing for a Bot object's pet
 void Bot::PetAIProcess() {
-	_ZP(Mob_PET_Process);
+	_ZP(Bot_PET_Process);
 
-	// of course, if we're not a pet
-	if( !IsPet() || !GetOwner() )
+	if( !HasPet() || !GetPet() || !GetPet()->IsNPC())
 		return;
 
 	Mob* BotOwner = this->GetOwner();
+	NPC* botPet = this->GetPet()->CastToNPC();
 
-	if(!GetOwner() || !GetID() || !GetOwnerID() || !BotOwner)
-	{
+	if(!botPet->GetOwner() || !botPet->GetID() || !botPet->GetOwnerID()) {
 		Kill();
 		return;
 	} 
 
-	if (!IsAIControlled())
+	if (!botPet->IsAIControlled())
 		return;
 
-	if (!(AIthink_timer->Check() || attack_timer.Check(false)))
+	if (!(botPet->GetAIThinkTimer()->Check() || botPet->GetAttackTimer().Check(false)))
 		return;
 
-	if (IsCasting())
+	if (botPet->IsCasting())
 		return;
 
 	// if our owner isn't a pet or if he is not a client...
-	if (!GetOwner()->IsBot() || ( !GetOwner()->IsBot() && !GetOwner()->IsClient() ) )
+	if (!botPet->GetOwner()->IsBot() || ( !botPet->GetOwner()->IsBot() && !botPet->GetOwner()->IsClient() ) )
 		return;
 
-	if (IsEngaged())
-	{
+	if (IsEngaged()) {
 		_ZP(Bot_PET_Process_IsEngaged);
-		if (IsRooted())
-			SetTarget(hate_list.GetClosest(this));
+		if (botPet->IsRooted())
+			botPet->SetTarget(hate_list.GetClosest(botPet));
 		else
-			SetTarget(hate_list.GetTop(this));
+			botPet->SetTarget(hate_list.GetTop(botPet));
 
-		if (!GetTarget())
+		if (!botPet->GetTarget())
 			return;
 
 		// Let's check if we have a los with our target.
 		// If we don't, our hate_list is wiped.
 		// It causes some cpu stress but without it, it was causing the bot/pet to aggro behind wall, floor etc... 
-		if(!CheckLosFN(target) || GetTarget()->IsMezzed() || !IsAttackAllowed(GetTarget())) {
-			WipeHateList();
-			SetTarget(GetOwner());
+		if(!botPet->CheckLosFN(botPet->GetTarget()) || botPet->GetTarget()->IsMezzed() || !botPet->IsAttackAllowed(GetTarget())) {
+			botPet->WipeHateList();
+			botPet->SetTarget(botPet->GetOwner());
 			return;
 		}
 
@@ -2458,92 +2456,90 @@ void Bot::PetAIProcess() {
 			}
 		}*/
 
-		bool is_combat_range = CombatRange(GetTarget());
+		bool is_combat_range = botPet->CombatRange(botPet->GetTarget());
 
 		// Ok, we're engaged, each class type has a special AI
 		// Only melee class will go to melee. Casters and healers will stay behind, following the leader by default.
 		// I should probably make the casters staying in place so they can cast..
 
 		// Ok, we 're a melee or any other class lvl<12. Yes, because after it becomes hard to go in melee for casters.. even for bots..
-		if( is_combat_range )
-		{
-			AImovement_timer->Check();
-			if(IsMoving())
-			{
-				SetRunAnimSpeed(0);
-				SetHeading(GetTarget()->GetHeading());
+		if( is_combat_range ) {
+			botPet->GetAIMovementTimer()->Check();
+			if(botPet->IsMoving()) {
+				botPet->SetRunAnimSpeed(0);
+				botPet->SetHeading(botPet->GetTarget()->GetHeading());
 				if(moved) {
 					moved=false;
-					SetMoving(false);
-					SendPosUpdate();
+					botPet->SetMoving(false);
+					botPet->SendPosUpdate();
 				}
 			}
 			// we can't fight if we don't have a target, are stun/mezzed or dead..
-			if(GetTarget() && !IsStunned() && !IsMezzed() && (GetAppearance() != eaDead)) 
+			if(botPet->GetTarget() && !botPet->IsStunned() && !botPet->IsMezzed() && (botPet->GetAppearance() != eaDead)) 
 			{
-				if(attack_timer.Check())  // check the delay on the attack
+				if(botPet->GetAttackTimer().Check())  // check the delay on the attack
 				{		
-					if(Attack(GetTarget(), 13))			// try the main hand
-						if (GetTarget())					// Do we still have a target?
+					if(botPet->Attack(GetTarget(), 13))			// try the main hand
+						if (botPet->GetTarget())					// Do we still have a target?
 						{
 							// We're a pet so we re able to dual attack
 							sint32 RandRoll = MakeRandomInt(0, 99);	
-							if (CanThisClassDoubleAttack() && (RandRoll < (GetLevel() + NPCDualAttackModifier)))	
+							if (botPet->CanThisClassDoubleAttack() && (RandRoll < (botPet->GetLevel() + NPCDualAttackModifier)))	
 							{
-								if(Attack(GetTarget(), 13)) 
+								if(botPet->Attack(botPet->GetTarget(), 13)) 
 								{}
 							}
 						}
 
 						// Ok now, let's check pet's offhand. 
-						if (attack_dw_timer.Check() && GetOwnerID() && GetOwner() && ((GetOwner()->GetClass() == MAGICIAN) || (GetOwner()->GetClass() == NECROMANCER) || (GetOwner()->GetClass() == SHADOWKNIGHT) || (GetOwner()->GetClass() == BEASTLORD))) 
+						if (botPet->GetAttackDWTimer().Check() && botPet->GetOwnerID() && botPet->GetOwner() && ((botPet->GetOwner()->GetClass() == MAGICIAN) || (botPet->GetOwner()->GetClass() == NECROMANCER) || (botPet->GetOwner()->GetClass() == SHADOWKNIGHT) || (botPet->GetOwner()->GetClass() == BEASTLORD))) 
 						{
-							if(GetOwner()->GetLevel() >= 24)
+							if(botPet->GetOwner()->GetLevel() >= 24)
 							{
-								float DualWieldProbability = (GetSkill(DUAL_WIELD) + GetLevel()) / 400.0f;
+								float DualWieldProbability = (botPet->GetSkill(DUAL_WIELD) + botPet->GetLevel()) / 400.0f;
 								DualWieldProbability -= MakeRandomFloat(0, 1);
 								if(DualWieldProbability < 0){
-									Attack(GetTarget(), 14);
-									if (CanThisClassDoubleAttack())
+									botPet->Attack(botPet->GetTarget(), 14);
+									if (botPet->CanThisClassDoubleAttack())
 									{
 										sint32 RandRoll = rand()%100;
-										if (RandRoll < (GetLevel() + 20))
+										if (RandRoll < (botPet->GetLevel() + 20))
 										{
-											Attack(GetTarget(), 14);
+											botPet->Attack(botPet->GetTarget(), 14);
 										}
 									}
 								}
 							}
 						}
-						if(!GetOwner())
+						if(!botPet->GetOwner())
 							return;
 
 						// Special attack
-						DoClassAttacks(GetTarget()); 
+						botPet->DoClassAttacks(botPet->GetTarget()); 
 				}
 				// See if the pet can cast any spell
-				this->AI_EngagedCastCheck();
+				botPet->AI_EngagedCastCheck();
 			}	
 		}// end of the combat in range
 		else{
 			// Now, if we cannot reach our target
-			if (!HateSummon()) 
+			if (!botPet->HateSummon()) 
 			{
-				if(GetTarget() && Bot_AI_PursueCastCheck()) 
+				if(botPet->GetTarget() && botPet->AI_PursueCastCheck()) 
 				{}
-				else if (target && AImovement_timer->Check()) 
+				else if (botPet->GetTarget() && botPet->GetAIMovementTimer()->Check()) 
 				{
-					SetRunAnimSpeed(0);
-					if(!IsRooted()) {
-						mlog(AI__WAYPOINTS, "Pursuing %s while engaged.", GetTarget()->GetCleanName());
-						CalculateNewPosition2(GetTarget()->GetX(), GetTarget()->GetY(), GetTarget()->GetZ(), GetOwner()->GetRunspeed(), false);
+					botPet->SetRunAnimSpeed(0);
+					if(!botPet->IsRooted()) {
+						mlog(AI__WAYPOINTS, "Pursuing %s while engaged.", botPet->GetTarget()->GetCleanName());
+						botPet->CalculateNewPosition2(botPet->GetTarget()->GetX(), botPet->GetTarget()->GetY(), botPet->GetTarget()->GetZ(), botPet->GetOwner()->GetRunspeed(), false);
 					}
 					else {
-						SetHeading(GetTarget()->GetHeading());
+						botPet->SetHeading(botPet->GetTarget()->GetHeading());
 						if(moved) {
 							moved=false;
-							SetMoving(false);
-							SendPosUpdate();
+							botPet->SetMoving(false);
+							botPet->SendPosUpdate();
 						}
 					}
 				}
@@ -2553,39 +2549,40 @@ void Bot::PetAIProcess() {
 	else{
 		// Franck: EQoffline
 		// Ok if we're not engaged, what's happening..
-		if(GetTarget() != GetOwner()) {
-			SetTarget(GetOwner());
+		if(botPet->GetTarget() != botPet->GetOwner()) {
+			botPet->SetTarget(botPet->GetOwner());
 		}
 
 		if(!IsMoving()) {
-			Bot_AI_IdleCastCheck();
+			//Bot_AI_IdleCastCheck();
+			botPet->AI_IdleCastCheck();
 		}
 
-		if(AImovement_timer->Check()) {
+		if(botPet->GetAIMovementTimer()->Check()) {
 			switch(pStandingPetOrder) {
 				case SPO_Follow:
 					{
 						// float dist = DistNoRoot(*target);
-						float dist = DistNoRoot(*GetTarget());
-						SetRunAnimSpeed(0);
+						float dist = botPet->DistNoRoot(*botPet->GetTarget());
+						botPet->SetRunAnimSpeed(0);
 						if(dist > 184) {
-							CalculateNewPosition2(GetTarget()->GetX(), GetTarget()->GetY(), GetTarget()->GetZ(), GetTarget()->GetRunspeed(), false);
+							botPet->CalculateNewPosition2(botPet->GetTarget()->GetX(), botPet->GetTarget()->GetY(), botPet->GetTarget()->GetZ(), botPet->GetTarget()->GetRunspeed(), false);
 						}
 						else {
-							SetHeading(GetTarget()->GetHeading());
+							botPet->SetHeading(botPet->GetTarget()->GetHeading());
 							if(moved) {
 								moved=false;
-								SetMoving(false);
-								SendPosUpdate();
+								botPet->SetMoving(false);
+								botPet->SendPosUpdate();
 							}
 						}
 					}
 					break;
 				case SPO_Sit:
-					SetAppearance(eaSitting);
+					botPet->SetAppearance(eaSitting);
 					break;
 				case SPO_Guard:
-					NextGuardPosition();
+					botPet->NextGuardPosition();
 					break;
 			}
 		}
@@ -6725,6 +6722,84 @@ Mob* Bot::GetOwner() {
 
 	if(!Result)
 		this->SetBotOwner(0);
+
+	return Result;
+}
+
+bool Bot::IsAttackAllowed(Mob *target, bool isSpellAttack)
+{
+	bool Result = false;
+	//Mob *mob1, *mob2, *tempmob;
+
+	//// can't damage own pet (applies to everthing)
+	//Mob *target_owner = target->GetOwner();
+	//Mob *our_owner = GetOwner();
+	//if(target_owner && target_owner == this)
+	//	return false;
+	//else if(our_owner && our_owner == target)
+	//	return false;
+
+	//// first figure out if we're pets.  we always look at the master's flags.
+	//// no need to compare pets to anything
+	//mob1 = our_owner ? our_owner : this;
+	//mob2 = target_owner ? target_owner : target;
+
+
+	//// some pvp checks
+	//if(IsBot() && BotOwner && BotOwner->CastToClient()->GetPVP()) // i'm a bot and my owner is pvp
+	//{
+	//	if(target->IsBot() && target->BotOwner && target->BotOwner->CastToClient()->GetPVP()) // my target is a bot and it's owner is pvp
+	//	{
+	//		if(target->BotOwner == BotOwner) // no attacking if my owner is my target
+	//		{
+	//			return false;
+	//		}
+	//		else
+	//		{
+	//			return true;
+	//		}
+	//	}
+	//	if(target->IsClient() && target->CastToClient()->GetPVP()) // my target is a player and it's pvp
+	//	{
+	//		if(target == BotOwner) // my target cannot be my owner
+	//		{
+	//			return false;
+	//		}
+	//		else
+	//		{
+	//			return true;
+	//		}
+	//	}
+	//}
+	//if(IsClient() &&
+	//	target->IsBot() &&
+	//	CastToClient()->GetPVP() &&
+	//	target->BotOwner &&
+	//	target->BotOwner->CastToClient()->GetPVP() &&
+	//	database.GetBotOwner(target->GetNPCTypeID()) != CastToClient()->AccountID())
+	//{ // im a pvp player and i'm targeting a bot whos owner is pvp, and it's not my bot
+	//	return true;
+	//}
+
+	//if((IsBot() && (target->IsBot() || target->IsClient())) || (IsClient() && target->IsBot()))
+	//{
+	//	return false;    
+	//}
+
+ //   // franck-add: Bots pet can't attack others bots and there pets. Clients and their pet can't attack bot pets.
+	//if(mob1->IsClient()) {
+	//	if(mob2->IsBot())
+	//		return false;
+	//}
+	//
+	//else if(mob1->IsBot()){
+	//	if(mob2->IsBot())
+	//		return false;
+	//	else if(mob2->IsClient())
+	//		return false;
+	//}
+
+	Result = Mob::IsAttackAllowed(target, false);
 
 	return Result;
 }

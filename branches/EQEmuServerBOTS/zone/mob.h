@@ -567,7 +567,7 @@ bool logpos;
 	void EnableLogging() { logging_enabled = true; }
 	void DisableLogging() { logging_enabled = false; }
 	bool IsWarriorClass() const;
-	bool IsAttackAllowed(Mob *target, bool isSpellAttack = false);
+	virtual bool IsAttackAllowed(Mob *target, bool isSpellAttack = false);
 	bool IsBeneficialAllowed(Mob *target);
 
 	inline sint32	GetHP()			const { return cur_hp; }
@@ -988,6 +988,10 @@ bool logpos;
 	inline void SetDeathSaveChance(bool hasDeathSaveChance) { m_hasDeathSaveChance = hasDeathSaveChance; }
 	bool PassCharismaCheck(Mob* caster, Mob* spellTarget, int16 spell_id);
 	bool TryDeathSave();
+	Timer* GetAIThinkTimer() { return AIthink_timer; }
+	Timer* GetAIMovementTimer() { return AImovement_timer; }
+	Timer GetAttackTimer() { return attack_timer; }
+	Timer GetAttackDWTimer() { return attack_dw_timer; }
 
 protected:
 	void CommonAddToHateList(Mob* other, sint32 hate = 0, sint32 damage = 0, bool iYellForHelp = true, bool bFrenzy = false, bool iBuffTic = false);

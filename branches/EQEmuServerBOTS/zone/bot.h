@@ -77,6 +77,7 @@ public:
 	virtual bool IsNPC() const { return false; }
 	virtual Mob* GetOwner();
 	virtual Mob* GetOwnerOrSelf();
+	virtual bool IsAttackAllowed(Mob *target, bool isSpellAttack = false);
 	
 	// Bot Action Command Methods
 	bool MesmerizeTarget(Mob* target);
