@@ -1972,3 +1972,46 @@ void QuestManager::FlyMode(int8 flymode)
 		}
 	}
 }
+
+uint8 QuestManager::FactionValue() 
+{
+	FACTION_VALUE oldfac;
+	uint8 newfac = 0;
+	if(initiator && owner->IsNPC()) {
+		oldfac = initiator->GetFactionLevel(initiator->GetID(), owner->GetID(), initiator->GetRace(), initiator->GetClass(), initiator->GetDeity(), owner->GetPrimaryFaction(), owner);
+		
+		// now, reorder the faction to have it make sense (higher values are better)
+		switch (oldfac) {
+			case FACTION_SCOWLS:
+				newfac = 1;
+				break;
+			case FACTION_THREATENLY:
+				newfac = 2;
+				break;
+			case FACTION_DUBIOUS:
+				newfac = 3;
+				break;
+			case FACTION_APPREHENSIVE:
+				newfac = 4;
+				break;
+			case FACTION_INDIFFERENT:
+				newfac = 5;
+				break;
+			case FACTION_AMIABLE:
+				newfac = 6;
+				break;
+			case FACTION_KINDLY:
+				newfac = 7;
+				break;
+			case FACTION_WARMLY:
+				newfac = 8;
+				break;
+			case FACTION_ALLY:
+				newfac = 9;
+				break;
+		}
+	}
+	
+	return newfac;
+}
+
