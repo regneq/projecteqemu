@@ -861,6 +861,7 @@ void QuestManager::itemlink(int item_id) {
 	if (initiator->MakeItemLink(link, inst))
 		initiator->Message(0, "%s tells you, %c%s%s%c", owner->GetCleanName(), 0x12, link, inst->GetItem()->Name, 0x12);
 	safe_delete_array(link);
+	safe_delete(inst);
 }
 
 void QuestManager::signalwith(int npc_id, int signal_id, int wait_ms) {
@@ -1776,6 +1777,7 @@ const char* QuestManager::varlink(char* perltext, int item_id) {
 		safe_delete_array(tempstr);	// MakeAnyLenString() uses new, so clean up after it
 	}
 	safe_delete_array(link);	// MakeItemLink() uses new also
+	safe_delete(inst);
 	return perltext;
 }
 
