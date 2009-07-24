@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==7/24/2009==
+Derision: Moved RecalcWeight to after CalcAABonuses in bonuses.cpp because valgrind complained aabonuses.packrat was used uninitialised.
+Derision: Fixed memory leak in /who all processing.
+
 ==7/22/2009==
 realityincarnate: Added quest::factionvalue() command to give more logical faction values than the client uses (Scowling = 1, Ally = 9)
 
