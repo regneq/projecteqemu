@@ -378,7 +378,7 @@ void WorldServer::Process() {
 					EQApplicationPacket* outapp = new EQApplicationPacket(OP_WhoAllResponse, pack->size);
 					memcpy(outapp->pBuffer, pack->pBuffer, pack->size);
 					client->QueuePacket(outapp);
-					//DumpPacket(outapp);
+					safe_delete(outapp);
 					}
 				}
 				else {
