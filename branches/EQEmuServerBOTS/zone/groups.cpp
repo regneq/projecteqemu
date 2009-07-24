@@ -364,40 +364,16 @@ void Group::QueuePacket(const EQApplicationPacket *app, bool ack_req)
 // solar: sends the rest of the group's hps to member.  this is useful when
 // someone first joins a group, but otherwise there shouldn't be a need to
 // call it
-void Group::SendHPPacketsTo(Mob *member)
-{
-	EQApplicationPacket hpapp;
-	uint32 i;
-
-#ifdef EQBOTS
-
-    // Franck-add
-	if(member->IsBot()) {
-		member->CreateHPPacket(&hpapp);
-		if(GetLeader()->IsClient()) {
-			GetLeader()->CastToClient()->QueuePacket(&hpapp, false);
-        }
-		return;
-	}
-
-#endif //EQBOTS
-
-	if(!member || !member->IsClient())
-		return;
-
-	for (i = 0; i < MAX_GROUP_MEMBERS; i++)
-	{
-		if(members[i] && members[i] != member)
-		{
-			members[i]->CreateHPPacket(&hpapp);
-
-#ifdef EQBOTS
-
-			if(member->IsClient())					// jadams: putting these in, assuming Bot code? No comments...
-
-#endif //EQBOTS
-
-			member->CastToClient()->QueuePacket(&hpapp, false);
+void Group::SendHPPacketsTo(Mob *member) {
+	if(member) {
+		EQApplicationPacket hpapp;
+		for (uint32 i = 0; i < MAX_GROUP_MEMBERS; i++) {
+			if(members[i] && members[i] != member) {
+				if(members[i]->IsClient()) {
+					members[i]->CreateHPPacket(&hpapp);
+					member->CastToClient()->QueuePacket(&hpapp, false);
+				}
+			}
 		}
 	}
 }
