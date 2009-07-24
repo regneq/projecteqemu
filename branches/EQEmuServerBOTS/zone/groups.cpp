@@ -365,14 +365,12 @@ void Group::QueuePacket(const EQApplicationPacket *app, bool ack_req)
 // someone first joins a group, but otherwise there shouldn't be a need to
 // call it
 void Group::SendHPPacketsTo(Mob *member) {
-	if(member) {
+	if(member && member->IsClient()) {
 		EQApplicationPacket hpapp;
 		for (uint32 i = 0; i < MAX_GROUP_MEMBERS; i++) {
 			if(members[i] && members[i] != member) {
-				if(members[i]->IsClient()) {
-					members[i]->CreateHPPacket(&hpapp);
-					member->CastToClient()->QueuePacket(&hpapp, false);
-				}
+				members[i]->CreateHPPacket(&hpapp);
+				member->CastToClient()->QueuePacket(&hpapp, false);
 			}
 		}
 	}
@@ -689,16 +687,16 @@ void Group::GroupBardPulse(Mob* caster, uint16 spell_id) {
 
 bool Group::IsGroupMember(Mob* client)
 {
-	uint32 i;
-	for (i = 0; i < MAX_GROUP_MEMBERS; i++)
-	 {
-		if (members[i] == client)
-		  {
-			return true;
-		  }
+	bool Result = false;
+
+	if(client) {
+		for (uint32 i = 0; i < MAX_GROUP_MEMBERS; i++) {
+			if (members[i] == client)
+				Result = true;
+		}
 	}
 
-	return false;
+	return Result;
 }
 
 void Group::GroupMessage(Mob* sender, int8 language, int8 lang_skill, const char* message) {

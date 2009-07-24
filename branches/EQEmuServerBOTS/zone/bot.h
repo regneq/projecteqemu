@@ -127,6 +127,7 @@ public:
 	static std::string RaceIdToString(uint16 raceId);
 	static uint32 GetCountBotsInGroup(Group* group);
 	static bool AddBotToGroup(Bot* bot, Group* group);
+	static void SendBotHPPacketsToGroup(Bot* bot, Group* group);
 
 	// "GET" Class Methods
 	//uint32 GetBotID() { return this->GetNPCTypeID(); }

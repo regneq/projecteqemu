@@ -3563,6 +3563,8 @@ bool Bot::AddBotToGroup(Bot* bot, Group* group) {
 			group->SendUpdate(groupActUpdate, TempLeader);
 		}
 
+		SendBotHPPacketsToGroup(bot, group);
+
 		Result = true;
 	}
 
@@ -6804,6 +6806,18 @@ bool Bot::IsAttackAllowed(Mob *target, bool isSpellAttack)
 	return Result;
 }
 
+void Bot::SendBotHPPacketsToGroup(Bot* bot, Group* group) {
+	if(bot && group) {
+		EQApplicationPacket hpapp;
+		bot->CreateHPPacket(&hpapp);
+		for(uint8 i = 0; i < MAX_GROUP_MEMBERS; i++) {
+			if(group->members[i] && group->members[i]->IsClient()) {
+				group->members[i]->CastToClient()->QueuePacket(&hpapp, false);
+			}
+		}
+	}
+}
+
 void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 	// TODO: All bot command processing occurs here now instead of in command.cpp
 
@@ -7616,9 +7630,8 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 							c->GetTarget()->Kill();
 						}
 						
-						if(GetCountBotsInGroup(g) < 2) {
+						if(g->GroupCount() < 2)
 							g->DisbandGroup();
-						}
 					}
 				}
 				else {
