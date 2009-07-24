@@ -2627,13 +2627,13 @@ bool Bot::DeleteBot(std::string* errorMessage) {
 
 		// TODO: These queries need to be ran together as a transaction.. ie, if one or more fail then they all will fail to commit to the database.
 
-		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "DELETE FROM bots WHERE BotID = '%u'", this->GetBotID()), TempErrorMessageBuffer)) {
+		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "DELETE FROM botinventory WHERE botid = '%u'", this->GetBotID()), TempErrorMessageBuffer)) {
 			*errorMessage = std::string(TempErrorMessageBuffer);
 		}
 		else
 			TempCounter++;
 
-		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "DELETE FROM botinventory WHERE botid = '%u'", this->GetBotID()), TempErrorMessageBuffer)) {
+		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "DELETE FROM bots WHERE BotID = '%u'", this->GetBotID()), TempErrorMessageBuffer)) {
 			*errorMessage = std::string(TempErrorMessageBuffer);
 		}
 		else
@@ -6973,8 +6973,6 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 			if(BotTargeted) {
 				if(BotTargeted->DeleteBot(&TempErrorMessage)) {
 					BotTargeted->Say("...but why?!! We had such good adventures together! gaahhh...glrrrk...");
-					// TODO: decide on BotOwner = NULL
-					//c->GetTarget()->BotOwner = NULL;
 
 					if(BotTargeted->IsGrouped()) {
 						Group *g = entity_list.GetGroupByMob(c->GetTarget());
@@ -6990,6 +6988,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 						}
 					}
 
+					BotTargeted->SetBotOwner(0);
 					BotTargeted->Kill();
 				}
 				else {
