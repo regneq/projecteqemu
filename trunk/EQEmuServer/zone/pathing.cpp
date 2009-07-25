@@ -1131,6 +1131,7 @@ bool PathManager::NoHazards(VERTEX From, VERTEX To)
 bool PathManager::NoHazardsAccurate(VERTEX From, VERTEX To)
 {
 	float stepx, stepy, stepz, curx, cury, curz;
+	float last_z = From.z;
 	VERTEX cur = From;
 
 	curx = From.x;
@@ -1149,18 +1150,29 @@ bool PathManager::NoHazardsAccurate(VERTEX From, VERTEX To)
 			
 		VERTEX TestPoint(curx, cury, curz);
 		float NewZ = zone->map->FindBestZ(MAP_ROOT_NODE, TestPoint, NULL, NULL);
-		if(ABS(NewZ - From.z) > RuleR(Pathing, ZDiffThreshold))
+		if(ABS(NewZ - last_z) > (RuleR(Pathing, ZDiffThreshold)))
 		{
 			_log(PATHING__DEBUG, "  HAZARD DETECTED moving from %8.3f, %8.3f, %8.3f to %8.3f, %8.3f, %8.3f. Best Z %8.3f, Z Change is %8.3f",
 				From.x, From.y, From.z, TestPoint.x, TestPoint.y, TestPoint.z, NewZ, NewZ - From.z);
 			return false;
 		}
+		last_z = NewZ;
 
 		if(zone->watermap)
 		{
 			NodeRef n = zone->map->SeekNode( zone->map->GetRoot(), TestPoint.x, TestPoint.y);
 			if(n != NODE_NONE) 
 			{
+				if(zone->watermap->InLava(From.x, From.y, From.z) || zone->watermap->InWater(From.x, From.y, From.z))
+				{
+					break;
+				}
+
+				if(zone->watermap->InLava(To.x, To.y, To.z) || zone->watermap->InWater(To.x, To.y, To.z))
+				{
+					break;
+				}
+
 				bool in_lava = zone->watermap->InLava(TestPoint.x, TestPoint.y, NewZ);
 				bool in_water = zone->watermap->InWater(TestPoint.x, TestPoint.y, NewZ);
 				if(in_lava || in_water)
@@ -1997,7 +2009,7 @@ void PathManager::ProcessNodesAndSave(string filename)
 
 					if(CheckLosFN(PathNodes[x].v, PathNodes[y].v))
 					{
-						if(NoHazardsAccurate(PathNodes[x].v, PathNodes[y].v))
+						if(NoHazardsAccurate(PathNodes[x].v, PathNodes[y].v) && NoHazardsAccurate(PathNodes[y].v, PathNodes[x].v))
 						{
 							ConnectNodeToNode(PathNodes[x].id, PathNodes[y].id, 0, 0);
 						}
