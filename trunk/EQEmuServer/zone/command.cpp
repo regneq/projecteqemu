@@ -7270,9 +7270,11 @@ void command_path(Client *c, const Seperator *sep)
 		c->Message(0, "#path info node_id: Gives information about node info (requires shownode target).");
 		c->Message(0, "#path dump file_name: Dumps the current zone->pathing to a file of your naming.");
 		c->Message(0, "#path add [requested_id]: Adds a node at your current location will try to take the requested id if possible.");
-		c->Message(0, "#path connect connect_to_id [is_teleport] [door_id]: Connects the currently targeted node to connect_to_id's node (requires shownode target).");
+		c->Message(0, "#path connect connect_to_id [is_teleport] [door_id]: Connects the currently targeted node to connect_to_id's node and connects that node back (requires shownode target).");
+		c->Message(0, "#path sconnect connect_to_id [is_teleport] [door_id]: Connects the currently targeted node to connect_to_id's node (requires shownode target).");		
 		c->Message(0, "#path disconnect disconnect_from_id: Disconnects the currently targeted node to disconnect from disconnect from id's node (requires shownode target).");
 		c->Message(0, "#path process file_name: processes the map file and tries to automatically generate a rudimentary path setup and then dumps the current zone->pathing to a file of your naming.");
+		c->Message(0, "#path resort: resorts the connections after you've manually altered them so they'll work.");
 		return;
 	}
 	if(!strcasecmp(sep->arg[1], "shownodes"))
@@ -7386,6 +7388,14 @@ void command_path(Client *c, const Seperator *sep)
 		}
 	}
 
+	if(!strcasecmp(sep->arg[1], "sconnect"))
+	{
+		if(zone->pathing)
+		{
+			zone->pathing->ConnectNode(c, atoi(sep->arg[2]), atoi(sep->arg[3]), atoi(sep->arg[4]));
+		}
+	}
+
 	if(!strcasecmp(sep->arg[1], "disconnect"))
 	{
 		if(zone->pathing)
@@ -7405,6 +7415,15 @@ void command_path(Client *c, const Seperator *sep)
 			c->Message(0, "Path processed...");
 		}
 		return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "resort"))
+	{
+		if(zone->pathing)
+		{
+			zone->pathing->ResortConnections();
+			c->Message(0, "Connections resorted...");
+		}
 	}
 
 	if(!strcasecmp(sep->arg[1], "showneighbours") || !strcasecmp(sep->arg[1], "showneighbors"))
