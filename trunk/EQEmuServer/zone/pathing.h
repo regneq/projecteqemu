@@ -72,6 +72,7 @@ public:
 	void MeshTest();
 	int FindNearestPathNode(VERTEX Position);
 	bool NoHazards(VERTEX From, VERTEX To);
+	bool NoHazardsAccurate(VERTEX From, VERTEX To);
 	void OpenDoors(int Node1, int Node2, Mob* ForWho);
 
 	PathNode* FindPathNodeByCoordinates(float x, float y, float z);
@@ -88,6 +89,8 @@ public:
 	void ConnectNode(sint32 Node1, sint32 Node2, sint32 teleport = 0, sint32 doorid = -1);
 	void DisconnectNodeToNode(Client *c, sint32 Node2);
 	void DisconnectNodeToNode(sint32 Node1, sint32 Node2);
+	void MoveNode(Client *c);
+	void DisconnectAll(Client *c);
 	bool NodesConnected(PathNode *a, PathNode *b);
 	void DumpPath(string filename);
 	void ProcessNodesAndSave(string filename);

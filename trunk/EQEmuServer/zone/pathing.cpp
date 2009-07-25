@@ -6,6 +6,7 @@
 #include <sstream>
 #include <fstream>
 #include "pathing.h"
+#include "watermap.h"
 #include "../common/files.h"
 #include "../common/MiscFunctions.h"
 #include "doors.h"
@@ -1127,6 +1128,98 @@ bool PathManager::NoHazards(VERTEX From, VERTEX To)
 	return true;
 }
 
+bool PathManager::NoHazardsAccurate(VERTEX From, VERTEX To)
+{
+	float stepx, stepy, stepz, curx, cury, curz;
+	VERTEX cur = From;
+
+	curx = From.x;
+	cury = From.y;
+	curz = From.z;
+
+	do 
+	{
+		stepx = (float)To.x - curx;
+		stepy = (float)To.y - cury;
+		stepz = (float)To.z - curz;
+		float factor =  sqrt(stepx*stepx + stepy*stepy + stepz*stepz);
+		stepx = (stepx/factor)*1.0;
+		stepy = (stepy/factor)*1.0;
+		stepz = (stepz/factor)*1.0;
+			
+		VERTEX TestPoint(curx, cury, curz);
+		float NewZ = zone->map->FindBestZ(MAP_ROOT_NODE, TestPoint, NULL, NULL);
+		if(ABS(NewZ - From.z) > RuleR(Pathing, ZDiffThreshold))
+		{
+			_log(PATHING__DEBUG, "  HAZARD DETECTED moving from %8.3f, %8.3f, %8.3f to %8.3f, %8.3f, %8.3f. Best Z %8.3f, Z Change is %8.3f",
+				From.x, From.y, From.z, TestPoint.x, TestPoint.y, TestPoint.z, NewZ, NewZ - From.z);
+			return false;
+		}
+
+		if(zone->watermap)
+		{
+			NodeRef n = zone->map->SeekNode( zone->map->GetRoot(), TestPoint.x, TestPoint.y);
+			if(n != NODE_NONE) 
+			{
+				bool in_lava = zone->watermap->InLava(TestPoint.x, TestPoint.y, NewZ);
+				bool in_water = zone->watermap->InWater(TestPoint.x, TestPoint.y, NewZ);
+				if(in_lava || in_water)
+				{
+					VERTEX TestPointWater(TestPoint.x, TestPoint.y, NewZ-0.5);
+					VERTEX TestPointWaterDest(TestPointWater);
+					VERTEX hit;
+					TestPointWaterDest.z -= 500;
+					float best_z2 = -999990;
+					if(zone->map->LineIntersectsNode(n, TestPointWater, TestPointWaterDest, &hit, NULL)) 
+					{
+						best_z2 = hit.z;
+					}
+					if(best_z2 == -999990)
+					{
+						_log(PATHING__DEBUG, "  HAZARD DETECTED, really deep water/lava!");
+						return false;
+					}
+					else
+					{
+						if(ABS(NewZ - best_z2) > RuleR(Pathing, ZDiffThreshold))
+						{
+							_log(PATHING__DEBUG, "  HAZARD DETECTED, water is fairly deep at %8.3f units deep", ABS(NewZ - best_z2));
+							return false;
+						}
+						else
+						{
+							_log(PATHING__DEBUG, "  HAZARD NOT DETECTED, water is shallow at %8.3f units deep", ABS(NewZ - best_z2));
+						}
+					}
+				}
+				else
+				{
+					_log(PATHING__DEBUG, "Hazard point not in water or lava!");
+				}
+			}
+		}
+		else
+		{
+			_log(PATHING__DEBUG, "No water map loaded for hazards!");
+		}
+
+		curx += stepx;
+		cury += stepy;
+		curz += stepz;
+
+		cur.x = curx;
+		cur.y = cury;
+		cur.z = curz;
+
+		if(ABS(curx - To.x) < 1.0) cur.x = To.x;
+		if(ABS(cury - To.y) < 1.0) cur.y = To.y;
+		if(ABS(curz - To.z) < 1.0) cur.z = To.z;
+
+	} 
+	while(cur.x != To.x || cur.y != To.y || cur.z != To.z);
+	return true;
+}
+
 void Mob::PrintRoute()
 {
 
@@ -1752,6 +1845,85 @@ void PathManager::DisconnectNodeToNode(sint32 Node1, sint32 Node2)
 	}
 }
 
+void PathManager::MoveNode(Client *c)
+{
+	if(!c)
+	{
+		return;
+	}
+
+	if(!c->GetTarget())
+	{
+		c->Message(0, "You must target a node.");
+		return;
+	}
+
+	PathNode *Node = zone->pathing->FindPathNodeByCoordinates(c->GetTarget()->GetX(), c->GetTarget()->GetY(), c->GetTarget()->GetZ());
+	if(!Node)
+	{
+		return;
+	}
+
+	Node->v.x = c->GetX();
+	Node->v.y = c->GetY();
+	Node->v.z = c->GetZ();
+
+	if(zone->map)
+	{
+		VERTEX loc(c->GetX(), c->GetY(), c->GetZ());
+		Node->bestz = zone->map->FindBestZ(MAP_ROOT_NODE, loc, NULL, NULL);
+	}
+	else
+	{
+		Node->bestz = Node->v.z;
+	}
+}
+
+void PathManager::DisconnectAll(Client *c)
+{
+	if(!c)
+	{
+		return;
+	}
+
+	if(!c->GetTarget())
+	{
+		c->Message(0, "You must target a node.");
+		return;
+	}
+
+	PathNode *Node = zone->pathing->FindPathNodeByCoordinates(c->GetTarget()->GetX(), c->GetTarget()->GetY(), c->GetTarget()->GetZ());
+	if(!Node)
+	{
+		return;
+	}
+
+	for(int x = 0; x < PATHNODENEIGHBOURS; ++x)
+	{
+		Node->Neighbours[x].distance = 0;
+		Node->Neighbours[x].Teleport = 0;
+		Node->Neighbours[x].DoorID = -1;
+		Node->Neighbours[x].id = -1;
+	}
+
+	for(int i = 0; i < Head.PathNodeCount; ++i)
+	{
+		if(PathNodes[i].id == Node->id)
+			continue;
+
+		for(int ix = 0; ix < PATHNODENEIGHBOURS; ++ix)
+		{
+			if(PathNodes[i].Neighbours[ix].id == Node->id)
+			{
+				PathNodes[i].Neighbours[ix].distance = 0;
+				PathNodes[i].Neighbours[ix].Teleport = 0;
+				PathNodes[i].Neighbours[ix].id = -1;
+				PathNodes[i].Neighbours[ix].DoorID = -1;
+			}
+		}
+	}
+}
+
 //checks if anything in a points to b
 bool PathManager::NodesConnected(PathNode *a, PathNode *b)
 {
@@ -1825,7 +1997,7 @@ void PathManager::ProcessNodesAndSave(string filename)
 
 					if(CheckLosFN(PathNodes[x].v, PathNodes[y].v))
 					{
-						if(NoHazards(PathNodes[x].v, PathNodes[y].v))
+						if(NoHazardsAccurate(PathNodes[x].v, PathNodes[y].v))
 						{
 							ConnectNodeToNode(PathNodes[x].id, PathNodes[y].id, 0, 0);
 						}
