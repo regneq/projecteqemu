@@ -1600,6 +1600,74 @@ void PathManager::ConnectNodeToNode(sint32 Node1, sint32 Node2, sint32 teleport,
 	}
 }
 
+void PathManager::ConnectNode(Client *c, sint32 Node2, sint32 teleport, sint32 doorid)
+{
+	if(!c)
+	{
+		return;
+	}
+
+	if(!c->GetTarget())
+	{
+		c->Message(0, "You must target a node.");
+		return;
+	}
+
+	PathNode *Node = zone->pathing->FindPathNodeByCoordinates(c->GetTarget()->GetX(), c->GetTarget()->GetY(), c->GetTarget()->GetZ());
+	if(!Node)
+	{
+		return;
+	}
+
+	if(doorid == 0)
+		ConnectNode(Node->id, Node2, teleport);
+	else
+		ConnectNode(Node->id, Node2, teleport, doorid);
+}
+
+void PathManager::ConnectNode(sint32 Node1, sint32 Node2, sint32 teleport, sint32 doorid)
+{
+	PathNode *a = NULL;
+	PathNode *b = NULL;
+	for(int x = 0; x < Head.PathNodeCount; ++x)
+	{
+		if(PathNodes[x].id == Node1)
+		{
+			a = &PathNodes[x];
+			if(b)
+				break;
+		}
+		else if(PathNodes[x].id == Node2)
+		{
+			b = &PathNodes[x];
+			if(a)
+				break;
+		}
+	}
+
+	if(a == NULL || b == NULL)
+		return;
+
+	bool connect_a_to_b = true;
+	if(NodesConnected(a, b))
+		connect_a_to_b = false;
+
+	if(connect_a_to_b)
+	{
+		for(int a_i = 0; a_i < PATHNODENEIGHBOURS; ++a_i)
+		{
+			if(a->Neighbours[a_i].id == -1)
+			{
+				a->Neighbours[a_i].id = b->id;
+				a->Neighbours[a_i].DoorID = doorid;
+				a->Neighbours[a_i].Teleport = teleport;
+				a->Neighbours[a_i].distance = VertexDistance(a->v, b->v);
+				break;
+			}
+		}
+	}
+}
+
 void PathManager::DisconnectNodeToNode(Client *c, sint32 Node2)
 {
 	if(!c)
@@ -1767,4 +1835,48 @@ void PathManager::ProcessNodesAndSave(string filename)
 		}
 	}
 	DumpPath(filename);
+}
+
+void PathManager::ResortConnections()
+{
+	NeighbourNode Neigh[PATHNODENEIGHBOURS];
+	for(int x = 0; x < Head.PathNodeCount; ++x)
+	{
+		int index = 0;
+		for(int y = 0; y < PATHNODENEIGHBOURS; ++y)
+		{
+			Neigh[y].distance = 0;
+			Neigh[y].DoorID = -1;
+			Neigh[y].id = -1;
+			Neigh[y].Teleport = 0;
+		}
+
+		for(int z = 0; z < PATHNODENEIGHBOURS; ++z)
+		{
+			if(PathNodes[x].Neighbours[z].id != -1)
+			{
+				Neigh[index].id = PathNodes[x].Neighbours[z].id;
+				Neigh[index].distance = PathNodes[x].Neighbours[z].distance;
+				Neigh[index].DoorID = PathNodes[x].Neighbours[z].DoorID;
+				Neigh[index].Teleport = PathNodes[x].Neighbours[z].Teleport;
+				index++;
+			}
+		}
+
+		for(int i = 0; i < PATHNODENEIGHBOURS; ++i)
+		{
+			PathNodes[x].Neighbours[i].distance = 0;
+			PathNodes[x].Neighbours[i].DoorID = -1;
+			PathNodes[x].Neighbours[i].id = -1;
+			PathNodes[x].Neighbours[i].Teleport = 0;
+		}
+
+		for(int z = 0; z < PATHNODENEIGHBOURS; ++z)
+		{
+			PathNodes[x].Neighbours[z].distance = Neigh[z].distance;
+			PathNodes[x].Neighbours[z].DoorID = Neigh[z].DoorID;
+			PathNodes[x].Neighbours[z].id = Neigh[z].id;
+			PathNodes[x].Neighbours[z].Teleport = Neigh[z].Teleport;
+		}
+	}
 }
