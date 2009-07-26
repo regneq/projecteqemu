@@ -368,7 +368,7 @@ Mob::Mob(const char*   in_name,
 
 #ifdef BOTS
 	// Please do not add any thing to the Client class constructor below this block of code. This block is necessary to accomodate BOTS.
-	SetBotRaidID(0);
+	BotRaidID = 0;
 #endif
 }
 

@@ -30,18 +30,22 @@ const int SpellTypes_Beneficial = SpellType_Heal|SpellType_Buff|SpellType_Escape
 // This constructor is used during the bot create command
 Bot::Bot(NPCType npcTypeData, Client* botOwner) : NPC(&npcTypeData, 0, 0, 0, 0, 0, 0, false) {
 	if(botOwner) {
+		this->SetBotOwner(botOwner);
 		this->_botOwnerCharacterID = botOwner->CharacterID();
 	}
-	else
+	else {
+		this->SetBotOwner(0);
 		this->_botOwnerCharacterID = 0;
+	}
 
 	SetBotID(0);
 	SetBotSpellID(0);
-	SetBotRaiding(false);
 	SetSpawnStatus(false);
 	SetBotArcher(false);
 	SetBotCharmer(false);
 	SetPetChooser(false);
+
+	this->SetBotRaidID(0);
 
 	GenerateBaseStats();
 	GenerateAppearance();
@@ -57,14 +61,19 @@ Bot::Bot(NPCType npcTypeData, Client* botOwner) : NPC(&npcTypeData, 0, 0, 0, 0, 
 Bot::Bot(uint32 botID, uint32 botOwnerCharacterID, uint32 botSpellsID, NPCType npcTypeData) : NPC(&npcTypeData, 0, 0, 0, 0, 0, 0, false) {
 	this->_botOwnerCharacterID = botOwnerCharacterID;
 
+	if(this->_botOwnerCharacterID > 0) {
+		this->SetBotOwner(entity_list.GetClientByCharID(this->_botOwnerCharacterID));
+	}
+
 	SetBotID(botID);
 	SetBotSpellID(botSpellsID);
-	SetBotRaiding(false);
 	SetSpawnStatus(false);
 	SetBotArcher(false);
 	SetBotCharmer(false);
 	SetPetChooser(false);
 	
+	this->SetBotRaidID(0);
+
 	GenerateBaseStats();
 	GenerateAppearance();
 	GenerateArmorClass();
@@ -938,32 +947,32 @@ bool Bot::Process() {
 			SetMana(GetMana()+mana_regen+bonus);
 		}
 
-		Mob *o = GetOwner();
+		/*Mob *o = GetBotOwner();
 		if(o && o->IsClient()) {
-			if(!GetDepop()) {
-				Client *c = o->CastToClient();
-				AdventureDetails *ad = c->GetCurrentAdventure();
-				if(ad && ad->ai) {
-					if(ad->ai->type == Adventure_Rescue) {
-						if(GetNPCTypeID() == ad->ai->type_data) {
-							float xDiff = ad->ai->dest_x - GetX();
-							float yDiff = ad->ai->dest_y - GetY();
-							float zDiff = ad->ai->dest_z - GetZ();
-							float dist = ((xDiff * xDiff) + (yDiff * yDiff) + (zDiff * zDiff));
-							if(dist < RuleR(Adventure, DistanceForRescueComplete)) {
-								zone->UpdateAdventureCount(ad);
-								Say("You don't know what this means to me. Thank you so much for finding and saving me from"
-									" this wretched place. I'll find my way from here.");
-								Depop();
-							}
-						}
-					}
-				}
-			}
+		if(!GetDepop()) {
+		Client *c = o->CastToClient();
+		AdventureDetails *ad = c->GetCurrentAdventure();
+		if(ad && ad->ai) {
+		if(ad->ai->type == Adventure_Rescue) {
+		if(GetNPCTypeID() == ad->ai->type_data) {
+		float xDiff = ad->ai->dest_x - GetX();
+		float yDiff = ad->ai->dest_y - GetY();
+		float zDiff = ad->ai->dest_z - GetZ();
+		float dist = ((xDiff * xDiff) + (yDiff * yDiff) + (zDiff * zDiff));
+		if(dist < RuleR(Adventure, DistanceForRescueComplete)) {
+		zone->UpdateAdventureCount(ad);
+		Say("You don't know what this means to me. Thank you so much for finding and saving me from"
+		" this wretched place. I'll find my way from here.");
+		Depop();
 		}
+		}
+		}
+		}
+		}
+		}*/
 	}
 
-	if (sendhpupdate_timer.Check() && (IsTargeted() || (IsPet() && GetOwner() && GetOwner()->IsClient()))) {
+	if (sendhpupdate_timer.Check() && (IsTargeted() || (IsPet() && GetBotOwner() && GetOwner()->IsClient()))) {
 		if(!IsFullHP || cur_hp<max_hp){
 			SendHPUpdate();
 		}
@@ -1010,7 +1019,7 @@ bool Bot::AI_EngagedCastCheck() {
 		
 		if(botClass == CLERIC)
 		{
-			if(br && IsBotRaiding()) {
+			if(br && GetBotRaidID()) {
 				// try to heal the raid main tank
 				if(br->GetBotMainTank() && (br->GetBotMainTank()->GetHPRatio() < 80)) {
 					if(!Bot_AICastSpell(br->GetBotMainTank(), 80, SpellType_Heal)) {
@@ -1589,7 +1598,7 @@ bool Bot::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 							&& tar->DontBuffMeBefore() < Timer::GetCurrentTime()
 							&& !tar->IsImmuneToSpell(AIspells[i].spellid, this)
 							&& (tar->CanBuffStack(AIspells[i].spellid, botLevel, true) >= 0)
-							&&  !(tar->IsPet() && tar->GetOwner()->IsClient() && this != tar)	//no buffing PC's pets, but they can buff themself
+							&&  !(tar->IsPet() && tar->CastToBot()->GetBotOwner()->IsClient() && this != tar)	//no buffing PC's pets, but they can buff themself
 
 							) {
 								// Put the zone levitate and movement check here since bots are able to bypass the client casting check
@@ -1807,7 +1816,7 @@ bool Bot::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 										  }
 					case SpellType_DOT: {
 						if (
-							((tar->GetHPRatio()<=80.0f)||(!IsBotRaiding()))
+							((tar->GetHPRatio()<=80.0f)||(!GetBotRaidID()))
 							&& !tar->IsImmuneToSpell(AIspells[i].spellid, this)
 							&& tar->DontDotMeBefore() < Timer::GetCurrentTime()
 							&& tar->CanBuffStack(AIspells[i].spellid, botLevel, true) >= 0
@@ -1981,6 +1990,9 @@ bool Bot::Bot_AI_IdleCastCheck() {
 
 // Calls all relevant methods/functions to perform AI logic
 void Bot::DoAIProcessing() {
+	if(!GetBotOwner())
+		return;
+
 	BotAIProcess();
 
 	if(HasPet())
@@ -2004,7 +2016,7 @@ void Bot::BotAIProcess() {
 		return;
 
 	// A bot wont start its AI if not grouped
-	if(!GetOwner()->IsBot() || !IsGrouped()) {
+	if(!GetBotOwner() || !IsGrouped()) {
 		return;
 	}
 
@@ -2388,7 +2400,7 @@ void Bot::PetAIProcess() {
 	if( !HasPet() || !GetPet() || !GetPet()->IsNPC())
 		return;
 
-	Mob* BotOwner = this->GetOwner();
+	Mob* BotOwner = this->GetBotOwner();
 	NPC* botPet = this->GetPet()->CastToNPC();
 
 	if(!botPet->GetOwner() || !botPet->GetID() || !botPet->GetOwnerID()) {
@@ -3465,7 +3477,7 @@ bool Bot::Bot_Command_Resist(int resisttype, int level) {
 			break;
 	}
 	if(resistid > 0) {
-		if(IsBotRaiding()) {
+		if(GetBotRaidID()) {
 			BotRaids* br = entity_list.GetBotRaidByMob(this);
 			if(br) {
 				for(int i=0; i<MAX_BOT_RAID_GROUPS; i++) {
@@ -3794,7 +3806,7 @@ bool Bot::Bot_Command_Cure(int curetype, int level) {
 			break;
 	}
 	if(cureid > 0) {
-		if(IsBotRaiding()) {
+		if(GetBotRaidID()) {
 			BotRaids* br = entity_list.GetBotRaidByMob(this);
 			if(br) {
 				for(int i=0; i<MAX_BOT_RAID_GROUPS; i++) {
@@ -4262,7 +4274,7 @@ void Bot::Death(Mob *killerMob, sint32 damage, int16 spell_id, SkillType attack_
 
 					// now that's done, lets see if all we have left is the client
 					// and we can clean up the clients raid group and group
-					if(IsBotRaiding()) {
+					if(GetBotRaidID()) {
 						BotRaids* br = entity_list.GetBotRaidByMob(this);
 						if(br) {
 							if(this == br->botmaintank) {
@@ -5081,7 +5093,7 @@ float Bot::CheckHitChance(Mob *attacker, SkillType skillinuse, int Hand) {
 		
 
 // Raid mantank has a special defensive disc reducing by 50% the chance to be hitted.
-		if(IsBotRaiding()) {
+		if(GetBotRaidID()) {
 			BotRaids *br = entity_list.GetBotRaidByMob(this);
 			if(br && (br->GetBotMainTank() && (br->GetBotMainTank() == this)) || (br && (br->GetBotSecondTank() && (br->GetBotSecondTank() == this)))) {
 				Result = Result/2;
@@ -6640,7 +6652,7 @@ void Bot::MakePet(int16 spell_id, const char* pettype, const char *petname) {
 	npc->SetTaunting(false);
 	npc->SetOwnerID(GetID());
 
-	if(IsBotRaiding()) {
+	if(GetBotRaidID()) {
 		npc->SetBotRaidID(GetBotRaidID());
 	}
 
@@ -6673,8 +6685,8 @@ FACTION_VALUE Bot::GetReverseFactionCon(Mob* iOther) {
 Mob* Bot::GetOwnerOrSelf() {
 	Mob* Result = 0;
 
-	if(this->GetOwner())
-		Result = GetOwner();
+	if(this->GetBotOwner())
+		Result = GetBotOwner();
 	else
 		Result = this;
 
@@ -6684,15 +6696,17 @@ Mob* Bot::GetOwnerOrSelf() {
 Mob* Bot::GetOwner() {
 	Mob* Result = 0;
 
-	if(GetOwnerID() > 0) {
-		Mob* owner = entity_list.GetMob(GetOwnerID());
+	/*if(GetBotOwnerCharacterID() > 0) {
+		Mob* owner = entity_list.GetMob(GetBotOwnerCharacterID());
 		if(owner) {
 			Result = owner;
 		}
-	}
+	}*/
+	Result = GetBotOwner();
 
-	if(!Result)
+	if(!Result) {
 		this->SetBotOwner(0);
+	}
 
 	return Result;
 }
@@ -7593,6 +7607,25 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 	if(!strcasecmp(sep->arg[1], "group") && !strcasecmp(sep->arg[2], "remove")) {
 		if(c->GetTarget() != NULL) {
 			if(c->GetTarget()->IsBot() && c->GetTarget()->CastToBot()->GetBotOwnerCharacterID() == c->CharacterID()) {
+				if(c->GetTarget()->GetBotRaidID()) {
+					if(SpawnedBotCount(c->CharacterID(), &TempErrorMessage) < 6) {
+						entity_list.RemoveBotRaid(c->CastToMob()->GetBotRaidID());
+						Group *g = c->GetGroup();
+						if(g) {
+							for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
+								if(g->members[i]) {
+									g->members[i]->SetBotRaidID(0);
+								}
+							}
+						}
+					}
+
+					if(!TempErrorMessage.empty()) {
+						c->Message(13, TempErrorMessage.c_str());
+						return;
+					}
+				}
+
 				if(c->GetTarget()->IsGrouped()) {
 					Group *g = entity_list.GetGroupByMob(c->GetTarget());
 					if(g && g->members[0]) {
@@ -7618,7 +7651,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 					c->GetTarget()->Kill();
 				}
 
-				if(c->GetTarget()->CastToBot()->IsBotRaiding()) {
+				/*if(c->GetTarget()->GetBotRaidID()) {
 					if(SpawnedBotCount(c->CharacterID(), &TempErrorMessage) < 6) {
 						entity_list.RemoveBotRaid(c->CastToMob()->GetBotRaidID());
 						Group *g = c->GetGroup();
@@ -7635,7 +7668,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 						c->Message(13, TempErrorMessage.c_str());
 						return;
 					}
-				}
+				}*/
 			}
 			else {
 				c->Message(15, "You must target a bot first.");
@@ -8290,7 +8323,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 	if(!strcasecmp(sep->arg[1], "ai") && !strcasecmp(sep->arg[2], "mez"))
 	{
 		Mob *target = c->GetTarget();
-		if(target == NULL || target == c || target->IsBot() || target->IsPet() && target->GetOwner()->IsBot())
+		if(target == NULL || target == c || target->IsBot() || (target->IsPet() && target->GetOwner()->IsBot()))
 		{
 			c->Message(15, "You must select a monster");
 			return;
@@ -9935,7 +9968,6 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 				Mob* kmob = c->GetTarget();
 				if(kmob != NULL) {
 					kmob->CastToBot()->SetBotOwner(0);
-					kmob->CastToBot()->Depop();
 					kmob->Kill();
 				}
 				return;
@@ -9954,7 +9986,6 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 					Mob *kmob = c->GetTarget();
 					if(kmob != NULL) {
 						kmob->CastToBot()->SetBotOwner(0);
-						kmob->CastToBot()->Depop();
 						kmob->Kill();
 					}
 					return;
@@ -10020,7 +10051,6 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 				if(kmob != NULL) {
 					//kmob->BotOwner = NULL;
 					kmob->CastToBot()->SetBotOwner(0);
-					kmob->CastToBot()->Depop();
 					kmob->Kill();
 				}
 				return;
@@ -10032,7 +10062,6 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 				if(kmob != NULL) {
 					//kmob->BotOwner = NULL;
 					kmob->CastToBot()->SetBotOwner(0);
-					kmob->CastToBot()->Depop();
 					kmob->Kill();
 				}
 				return;
@@ -10045,7 +10074,6 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 					inv->Say("I can't get into the group, it's full already.");
 					//inv->BotOwner = NULL;
 					inv->CastToBot()->SetBotOwner(0);
-					inv->CastToBot()->Depop();
 					inv->Kill();
 					return;
 				}
@@ -10104,7 +10132,6 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 							hasBots = true;
 							//g->members[i]->BotOwner = NULL;
 							g->members[i]->CastToBot()->SetBotOwner(0);
-							g->members[i]->CastToBot()->Depop();
 							g->members[i]->Kill();
 						}
 					}
@@ -10277,7 +10304,7 @@ bool EntityList::Bot_AICheckCloseBeneficialSpells(Bot* caster, int8 iChance, flo
 		if( iSpellTypes == SpellType_Heal )	// 
 		{
 			// check raids
-			if( caster->CastToMob()->IsGrouped() && caster->CastToBot()->IsBotRaiding() && (entity_list.GetBotRaidByMob(caster) != NULL)) {
+			if( caster->CastToMob()->IsGrouped() && caster->GetBotRaidID() && (entity_list.GetBotRaidByMob(caster) != NULL)) {
 				BotRaids *br = entity_list.GetBotRaidByMob(caster);
 				// boolean trying to ai the heal rotation, prolly not working well.
 				if(br) {

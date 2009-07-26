@@ -528,32 +528,32 @@ void BotRaids::GroupAssignTask(Group *g, int iTask, Group *g2) {
 		}
 		else
 		{
-			if(gleader2->GetOwner())
+			if(gleader2->CastToBot()->GetBotOwner())
 			{
 				//break invis when you attack
-				if(gleader2->GetOwner()->invisible) {
-					gleader2->GetOwner()->BuffFadeByEffect(SE_Invisibility);
-					gleader2->GetOwner()->BuffFadeByEffect(SE_Invisibility2);
-					gleader2->GetOwner()->invisible = false;
+				if(gleader2->CastToBot()->GetBotOwner()->invisible) {
+					gleader2->CastToBot()->GetBotOwner()->BuffFadeByEffect(SE_Invisibility);
+					gleader2->CastToBot()->GetBotOwner()->BuffFadeByEffect(SE_Invisibility2);
+					gleader2->CastToBot()->GetBotOwner()->invisible = false;
 				}
-				if(gleader2->GetOwner()->see_invis_undead) {
-					gleader2->GetOwner()->BuffFadeByEffect(SE_InvisVsUndead);
-					gleader2->GetOwner()->BuffFadeByEffect(SE_InvisVsUndead2);
-					gleader2->GetOwner()->see_invis_undead = false;
+				if(gleader2->CastToBot()->GetBotOwner()->see_invis_undead) {
+					gleader2->CastToBot()->GetBotOwner()->BuffFadeByEffect(SE_InvisVsUndead);
+					gleader2->CastToBot()->GetBotOwner()->BuffFadeByEffect(SE_InvisVsUndead2);
+					gleader2->CastToBot()->GetBotOwner()->see_invis_undead = false;
 				}
-				if(gleader2->GetOwner()->invisible_animals){
-					gleader2->GetOwner()->BuffFadeByEffect(SE_InvisVsAnimals);
-					gleader2->GetOwner()->invisible_animals = false;
+				if(gleader2->CastToBot()->GetBotOwner()->invisible_animals){
+					gleader2->CastToBot()->GetBotOwner()->BuffFadeByEffect(SE_InvisVsAnimals);
+					gleader2->CastToBot()->GetBotOwner()->invisible_animals = false;
 				}
-				if(gleader2->GetOwner()->hidden || gleader2->GetOwner()->improved_hidden){
-					gleader2->GetOwner()->hidden = false;
-					gleader2->GetOwner()->improved_hidden = false;
+				if(gleader2->CastToBot()->GetBotOwner()->hidden || gleader2->CastToBot()->GetBotOwner()->improved_hidden){
+					gleader2->CastToBot()->GetBotOwner()->hidden = false;
+					gleader2->CastToBot()->GetBotOwner()->improved_hidden = false;
 					EQApplicationPacket* outapp = new EQApplicationPacket(OP_SpawnAppearance, sizeof(SpawnAppearance_Struct));
 					SpawnAppearance_Struct* sa_out = (SpawnAppearance_Struct*)outapp->pBuffer;
-					sa_out->spawn_id = gleader2->GetOwner()->GetID();
+					sa_out->spawn_id = gleader2->CastToBot()->GetBotOwner()->GetID();
 					sa_out->type = 0x03;
 					sa_out->parameter = 0;
-					entity_list.QueueClients(gleader2->GetOwner(), outapp, true);
+					entity_list.QueueClients(gleader2->CastToBot()->GetBotOwner(), outapp, true);
 					safe_delete(outapp);
 				}
 			}

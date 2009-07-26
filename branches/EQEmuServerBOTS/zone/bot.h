@@ -78,6 +78,7 @@ public:
 	virtual Mob* GetOwner();
 	virtual Mob* GetOwnerOrSelf();
 	virtual bool IsAttackAllowed(Mob *target, bool isSpellAttack = false);
+	//uint32 IsBotRaiding() { return this->GetBotRaidID(); }
 	
 	// Bot Action Command Methods
 	bool MesmerizeTarget(Mob* target);
@@ -134,11 +135,11 @@ public:
 	uint32 GetBotID() { return _botID; }
 	uint32 GetBotOwnerCharacterID() { return _botOwnerCharacterID; }
 	uint32 GetBotSpellID() { return _botSpellID; }
-	Mob* GetBotOwner() { return this->GetOwner(); }
+	Mob* GetBotOwner() { return this->_botOwner; }
 	uint32 GetBotArcheryRange() { return _botArcheryRange; }
 	virtual bool GetSpawnStatus() { return _spawnStatus; }
 	int8 GetPetChooserID() { return _petChooserID; }
-	bool IsBotRaiding() { return _botRaiding; }
+	//bool IsBotRaiding() { return _botRaiding; }
 	bool IsPetChooser() { return _petChooser; }
 	bool IsBotArcher() { return _botArcher; }
 	bool IsBotCharmer() { return _botCharmer; }
@@ -151,9 +152,9 @@ public:
 	void SetPetChooserID(int8 id) { _petChooserID = id; }
 	void SetBotArcher(bool a) { _botArcher = a; }
 	void SetBotCharmer(bool c) { _botCharmer = c; }
-	void SetBotRaiding(bool v) { _botRaiding = v; }
+	//void SetBotRaiding(bool v) { _botRaiding = v; }
 	void SetPetChooser(bool p) { _petChooser = p; }
-	void SetBotOwner(Mob* botOwner) { botOwner ? this->SetOwnerID(botOwner->GetID()) : this->SetOwnerID(0); }
+	void SetBotOwner(Mob* botOwner) { this->_botOwner = botOwner; }
 
 	// Class Destructors
 	virtual ~Bot();
@@ -195,11 +196,11 @@ private:
 	uint32 _botOwnerCharacterID;
 	uint32 _botSpellID;
 	bool _spawnStatus;
-	//Mob* _botOwner;
+	Mob* _botOwner;
 	// uint32 _expPoints;
 	// uint32 _aaPoints;
 	bool _botOrderAttack;
-	bool _botRaiding;
+	//bool _botRaiding;
 	bool _botArcher;
 	bool _botCharmer;
 	bool _petChooser;
