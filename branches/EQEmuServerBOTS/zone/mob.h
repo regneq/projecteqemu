@@ -752,8 +752,8 @@ bool logpos;
 	bool IsCharmed() const { return(typeofpet == petCharmed); }
 	void SetOwnerID(int16 NewOwnerID);
 	inline int16 GetOwnerID()	const			{ return ownerid; }
-	inline bool HasOwner() const { if(GetOwnerID()==0){return false;} return( entity_list.GetMob(GetOwnerID()) != 0); }
-	inline virtual bool IsPet() const { return(HasOwner()); }
+	inline virtual bool HasOwner() { if(GetOwnerID()==0){return false;} return( entity_list.GetMob(GetOwnerID()) != 0); }
+	inline virtual bool IsPet() { return(HasOwner()); }
 	inline bool HasPet() const { if(GetPetID()==0){return false;} return (entity_list.GetMob(GetPetID()) != 0);}
 	bool HadTempPets() const { return(hasTempPet); }
 	void TempPets(bool i) { hasTempPet = i; }

@@ -73,12 +73,13 @@ public:
 	virtual void MakePet(int16 spell_id, const char* pettype, const char *petname = NULL);
 	virtual void AI_Stop();
 	virtual FACTION_VALUE GetReverseFactionCon(Mob* iOther);
-	inline virtual bool IsPet() const { return false; }
+	inline virtual bool IsPet() { return false; }
 	virtual bool IsNPC() const { return false; }
 	virtual Mob* GetOwner();
 	virtual Mob* GetOwnerOrSelf();
 	virtual bool IsAttackAllowed(Mob *target, bool isSpellAttack = false);
 	//uint32 IsBotRaiding() { return this->GetBotRaidID(); }
+	inline virtual bool HasOwner() { return (GetBotOwner() ? true : false); }
 	
 	// Bot Action Command Methods
 	bool MesmerizeTarget(Mob* target);
