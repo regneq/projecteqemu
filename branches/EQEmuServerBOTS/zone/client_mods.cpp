@@ -979,19 +979,22 @@ sint16 Client::CalcSTA() {
 
 sint16 Client::CalcAGI() {
 	sint16 val = m_pp.AGI + itembonuses.AGI + spellbonuses.AGI;
-	
 	sint16 mod = aabonuses.AGI;
-	
-	sint16 str = GetSTR()*10;
-	if(weight > str) {
-		//ratio is wrong (close), but better than nothing
-		val -= (weight-str) * 100 / 1500;	//WR said /1875
-	}
-	
+
 	if(val>255 && GetLevel() <= 60)
 		val = 255;
-	AGI = val + mod;
+
+	sint16 str = GetSTR();
 	
+	//Encumbered penalty
+	if(weight > (str * 10)) {
+		//AGI is halved when we double our weight, zeroed (defaults to 1) when we triple it. this includes AGI from AAs
+		float total_agi = float(val + mod);
+		float str_float = float(str);
+		AGI = (sint16)(((-total_agi) / (str_float * 2)) * (((float)weight / 10) - str_float) + total_agi);	//casting to an int assumes this will be floor'd. without using floats & casting to sint16, the calculation doesn't work right
+	} else
+		AGI = val + mod;
+
 	if(AGI < 1)
 		AGI = 1;
 

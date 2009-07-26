@@ -99,6 +99,11 @@ bool WaterMap::InLava(float y, float x, float z) const {
 	return(BSPReturnRegionType(1, y, x, z) == RegionTypeLava);
 }
 
+bool WaterMap::InLiquid(float y, float x, float z) const {
+	if(BSP_Root == NULL)	//if the water map isn't loaded, this will save ~1 CPU cycle
+		return false;
+	return (InWater(y, x, z) || InLava(y, x, z));
+}
 
 WaterMap* WaterMap::LoadWaterMapfile(const char* in_zonename, const char *directory) {
 	FILE *fp;

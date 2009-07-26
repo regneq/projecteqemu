@@ -5688,8 +5688,7 @@ void command_beardcolor(Client *c, const Seperator *sep)
 void command_scribespells(Client *c, const Seperator *sep)
 {
 	uint8 max_level, min_level;
-	int16 book_slot;
-	int16 curspell;
+	int16 book_slot, curspell, count;
 	Client *t=c;
 
 	if(c->GetTarget() && c->GetTarget()->IsClient() && c->GetGM())
@@ -5724,7 +5723,7 @@ void command_scribespells(Client *c, const Seperator *sep)
 		c->Message(0, "Scribing spells for %s.", t->GetName());
 	LogFile->write(EQEMuLog::Normal, "Scribe spells request for %s from %s, levels: %u -> %u", t->GetName(), c->GetName(), min_level, max_level);
 
-	for(curspell = 0, book_slot = 0; curspell < SPDAT_RECORDS && book_slot < MAX_PP_SPELLBOOK; curspell++)
+	for(curspell = 0, book_slot = t->GetNextAvailableSpellBookSlot(), count = 0; curspell < SPDAT_RECORDS && book_slot < MAX_PP_SPELLBOOK; curspell++, book_slot = t->GetNextAvailableSpellBookSlot(book_slot))
 	{
 		if
 		(
@@ -5734,16 +5733,23 @@ void command_scribespells(Client *c, const Seperator *sep)
 			spells[curspell].skill != 52
 		)
 		{
-			if(!IsDiscipline(curspell)){
-				t->ScribeSpell(curspell, book_slot++);
+			if (book_slot == -1) {	//no more book slots
+				t->Message(13, "Unable to scribe spell %s (%u) to spellbook: no more spell book slots available.", spells[curspell].name, curspell);
+				if (t != c)
+					c->Message(13, "Error scribing spells: %s ran out of spell book slots on spell %s (%u)", t->GetName(), spells[curspell].name, curspell);
+				break;
+			}
+			if(!IsDiscipline(curspell) && !t->HasSpellScribed(curspell)) {	//isn't a discipline & we don't already have it scribed
+				t->ScribeSpell(curspell, book_slot);
+				count++;
 			}
 		}
 	}
 
-	if (book_slot > 0) {
-		t->Message(0, "Successfully scribed %u spells.", book_slot);
+	if (count > 0) {
+		t->Message(0, "Successfully scribed %u spells.", count);
 		if (t != c)
-			c->Message(0, "Successfully scribed %u spells for %s.", book_slot, t->GetName());
+			c->Message(0, "Successfully scribed %u spells for %s.", count, t->GetName());
 	} else {
 		t->Message(0, "No spells scribed.");
 		if (t != c)
@@ -5967,7 +5973,7 @@ void command_giveitem(Client *c, const Seperator *sep)
 
 void command_givemoney(Client *c, const Seperator *sep)
 {
-	if (!sep->IsNumber(1) || !sep->IsNumber(2) || !sep->IsNumber(3) || !sep->IsNumber(4)) {
+	if (!sep->IsNumber(1)) {	//as long as the first one is a number, we'll just let atoi convert the rest to 0 or a number
 		c->Message(13, "Usage: #Usage: #givemoney [pp] [gp] [sp] [cp]");
     } 
 	else if(c->GetTarget() == NULL) {
@@ -7259,6 +7265,7 @@ void command_path(Client *c, const Seperator *sep)
 		c->Message(0, "#path add [requested_id]: Adds a node at your current location will try to take the requested id if possible.");
 		c->Message(0, "#path connect connect_to_id [is_teleport] [door_id]: Connects the currently targeted node to connect_to_id's node and connects that node back (requires shownode target).");
 		c->Message(0, "#path sconnect connect_to_id [is_teleport] [door_id]: Connects the currently targeted node to connect_to_id's node (requires shownode target).");		
+		c->Message(0, "#path qconnect [set]: short cut connect, connects the targeted node to the node you set with #path qconnect set (requires shownode target).");
 		c->Message(0, "#path disconnect [all]/disconnect_from_id: Disconnects the currently targeted node to disconnect from disconnect from id's node (requires shownode target), if passed all as the second argument it will disconnect this node from every other node.");
 		c->Message(0, "#path move: Moves your targeted node to your current position");
 		c->Message(0, "#path process file_name: processes the map file and tries to automatically generate a rudimentary path setup and then dumps the current zone->pathing to a file of your naming.");
@@ -7381,6 +7388,21 @@ void command_path(Client *c, const Seperator *sep)
 		if(zone->pathing)
 		{
 			zone->pathing->ConnectNode(c, atoi(sep->arg[2]), atoi(sep->arg[3]), atoi(sep->arg[4]));
+		}
+	}
+
+	if(!strcasecmp(sep->arg[1], "qconnect"))
+	{
+		if(zone->pathing)
+		{
+			if(!strcasecmp(sep->arg[2], "set"))
+			{
+				zone->pathing->QuickConnect(c, true);
+			}
+			else
+			{
+				zone->pathing->QuickConnect(c, false);
+			}
 		}
 	}
 
@@ -8393,8 +8415,7 @@ void command_refundaa(Client *c, const Seperator *sep){
 void command_traindisc(Client *c, const Seperator *sep)
 {
 	uint8 max_level, min_level;
-	int16 book_slot;
-	int16 curspell;
+	int16 curspell, count;
 	Client *t=c;
 
 	if(c->GetTarget() && c->GetTarget()->IsClient() && c->GetGM())
@@ -8428,7 +8449,7 @@ void command_traindisc(Client *c, const Seperator *sep)
 		c->Message(0, "Training disciplines for %s.", t->GetName());
 	LogFile->write(EQEMuLog::Normal, "Train disciplines request for %s from %s, levels: %u -> %u", t->GetName(), c->GetName(), min_level, max_level);
 
-	for(curspell = 0, book_slot = 0; curspell < SPDAT_RECORDS && book_slot < MAX_PP_SPELLBOOK; curspell++)
+	for(curspell = 0, count = 0; curspell < SPDAT_RECORDS; curspell++)
 	{
 		if
 		(
@@ -8439,26 +8460,27 @@ void command_traindisc(Client *c, const Seperator *sep)
 		)
 		{
 			if(IsDiscipline(curspell)){
+				//we may want to come up with a function like Client::GetNextAvailableSpellBookSlot() to help speed this up a little
 				for(int r = 0; r < MAX_PP_DISCIPLINES; r++) {
 					if(t->GetPP().disciplines.values[r] == curspell) {
 						t->Message(13, "You already know this discipline.");
-						r = MAX_PP_DISCIPLINES;	//is there any reason we can't just break here?
+						break;	//continue the 1st loop
 					} else if(t->GetPP().disciplines.values[r] == 0) {
 						t->GetPP().disciplines.values[r] = curspell;
 						t->SendDisciplineUpdate();
 						t->Message(0, "You have learned a new discipline!");
-						book_slot++;	//we're not doing anything else with it, so we'll use it as a success counter
-						r = MAX_PP_DISCIPLINES;	//is there any reason we can't just break here?
-					}
+						count++;	//success counter
+						break;	//continue the 1st loop
+					}	//if we get to this point, there's already a discipline in this slot, so we continue onto the next slot
 				}
 			}
 		}
 	}
 
-	if (book_slot > 0) {
-		t->Message(0, "Successfully trained %u disciplines.", book_slot);
+	if (count > 0) {
+		t->Message(0, "Successfully trained %u disciplines.", count);
 		if (t != c)
-			c->Message(0, "Successfully trained %u disciplines for %s.", book_slot, t->GetName());
+			c->Message(0, "Successfully trained %u disciplines for %s.", count, t->GetName());
 	} else {
 		t->Message(0, "No disciplines trained.");
 		if (t != c)

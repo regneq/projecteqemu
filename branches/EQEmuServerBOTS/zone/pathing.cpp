@@ -90,6 +90,7 @@ PathManager::PathManager()
 	ClosedListFlag = NULL;
 	Head.PathNodeCount = 0;
 	Head.version = 2;
+	QuickConnectTarget = -1;
 }
 
 PathManager::~PathManager()
@@ -1131,7 +1132,6 @@ bool PathManager::NoHazards(VERTEX From, VERTEX To)
 bool PathManager::NoHazardsAccurate(VERTEX From, VERTEX To)
 {
 	float stepx, stepy, stepz, curx, cury, curz;
-	float last_z = From.z;
 	VERTEX cur = From;
 
 	curx = From.x;
@@ -1150,32 +1150,24 @@ bool PathManager::NoHazardsAccurate(VERTEX From, VERTEX To)
 			
 		VERTEX TestPoint(curx, cury, curz);
 		float NewZ = zone->map->FindBestZ(MAP_ROOT_NODE, TestPoint, NULL, NULL);
-		if(ABS(NewZ - last_z) > (RuleR(Pathing, ZDiffThreshold)))
+		if(ABS(NewZ - From.z) > RuleR(Pathing, ZDiffThreshold))
 		{
 			_log(PATHING__DEBUG, "  HAZARD DETECTED moving from %8.3f, %8.3f, %8.3f to %8.3f, %8.3f, %8.3f. Best Z %8.3f, Z Change is %8.3f",
 				From.x, From.y, From.z, TestPoint.x, TestPoint.y, TestPoint.z, NewZ, NewZ - From.z);
 			return false;
 		}
-		last_z = NewZ;
 
 		if(zone->watermap)
 		{
 			NodeRef n = zone->map->SeekNode( zone->map->GetRoot(), TestPoint.x, TestPoint.y);
 			if(n != NODE_NONE) 
 			{
-				if(zone->watermap->InLava(From.x, From.y, From.z) || zone->watermap->InWater(From.x, From.y, From.z))
+				if(zone->watermap->InLiquid(From.x, From.y, From.z) || zone->watermap->InLiquid(To.x, To.y, To.z))
 				{
 					break;
 				}
 
-				if(zone->watermap->InLava(To.x, To.y, To.z) || zone->watermap->InWater(To.x, To.y, To.z))
-				{
-					break;
-				}
-
-				bool in_lava = zone->watermap->InLava(TestPoint.x, TestPoint.y, NewZ);
-				bool in_water = zone->watermap->InWater(TestPoint.x, TestPoint.y, NewZ);
-				if(in_lava || in_water)
+				if(zone->watermap->InLiquid(TestPoint.x, TestPoint.y, NewZ))
 				{
 					VERTEX TestPointWater(TestPoint.x, TestPoint.y, NewZ-0.5);
 					VERTEX TestPointWaterDest(TestPointWater);
@@ -1517,6 +1509,46 @@ sint32 PathManager::AddNode(float x, float y, float z, float best_z, sint32 requ
 
 		delete[] PathNodes;
 		PathNodes = t_PathNodes;
+
+		NPCType* npc_type = new NPCType;
+		memset(npc_type, 0, sizeof(NPCType));
+		if(new_id < 10)
+			sprintf(npc_type->name, "%s", DigitToWord(new_id));
+		else if(new_id < 100)
+			sprintf(npc_type->name, "%s_%s", DigitToWord(new_id/10), DigitToWord(new_id % 10));
+		else
+			sprintf(npc_type->name, "%s_%s_%s", DigitToWord(new_id/100), DigitToWord((new_id % 100)/10), 
+				DigitToWord(((new_id % 100) %10)));
+
+		sprintf(npc_type->lastname, "%i", new_id);
+		npc_type->cur_hp = 4000000;
+		npc_type->max_hp = 4000000;
+		npc_type->race = 151;
+		npc_type->gender = 2;
+		npc_type->class_ = 9;
+		npc_type->deity= 1;
+		npc_type->level = 75;
+		npc_type->npc_id = 0;
+		npc_type->loottable_id = 0;
+		npc_type->texture = 1;
+		npc_type->light = 0;
+		npc_type->runspeed = 0;
+		npc_type->d_meele_texture1 = 1;
+		npc_type->d_meele_texture2 = 1;
+		npc_type->merchanttype = 1;
+		npc_type->bodytype = 1;
+		npc_type->STR = 150;
+		npc_type->STA = 150;
+		npc_type->DEX = 150;
+		npc_type->AGI = 150;
+		npc_type->INT = 150;
+		npc_type->WIS = 150;
+		npc_type->CHA = 150;
+		npc_type->findable = 1;
+
+		NPC* npc = new NPC(npc_type, 0, new_node.v.x, new_node.v.y, new_node.v.z, 0, FlyMode1);
+		npc->GiveNPCTypeData(npc_type);
+		entity_list.AddNPC(npc, true, true);
 		return new_id;
 	}
 	else
@@ -1534,6 +1566,46 @@ sint32 PathManager::AddNode(float x, float y, float z, float best_z, sint32 requ
 			PathNodes[0].Neighbours[n].id = new_node.Neighbours[n].id;
 			PathNodes[0].Neighbours[n].Teleport = new_node.Neighbours[n].Teleport;
 		}
+
+		NPCType* npc_type = new NPCType;
+		memset(npc_type, 0, sizeof(NPCType));
+		if(new_id < 10)
+			sprintf(npc_type->name, "%s", DigitToWord(new_id));
+		else if(new_id < 100)
+			sprintf(npc_type->name, "%s_%s", DigitToWord(new_id/10), DigitToWord(new_id % 10));
+		else
+			sprintf(npc_type->name, "%s_%s_%s", DigitToWord(new_id/100), DigitToWord((new_id % 100)/10), 
+				DigitToWord(((new_id % 100) %10)));
+
+		sprintf(npc_type->lastname, "%i", new_id);
+		npc_type->cur_hp = 4000000;
+		npc_type->max_hp = 4000000;
+		npc_type->race = 151;
+		npc_type->gender = 2;
+		npc_type->class_ = 9;
+		npc_type->deity= 1;
+		npc_type->level = 75;
+		npc_type->npc_id = 0;
+		npc_type->loottable_id = 0;
+		npc_type->texture = 1;
+		npc_type->light = 0;
+		npc_type->runspeed = 0;
+		npc_type->d_meele_texture1 = 1;
+		npc_type->d_meele_texture2 = 1;
+		npc_type->merchanttype = 1;
+		npc_type->bodytype = 1;
+		npc_type->STR = 150;
+		npc_type->STA = 150;
+		npc_type->DEX = 150;
+		npc_type->AGI = 150;
+		npc_type->INT = 150;
+		npc_type->WIS = 150;
+		npc_type->CHA = 150;
+		npc_type->findable = 1;
+
+		NPC* npc = new NPC(npc_type, 0, new_node.v.x, new_node.v.y, new_node.v.z, 0, FlyMode1);
+		npc->GiveNPCTypeData(npc_type);
+		entity_list.AddNPC(npc, true, true);
 		return new_id;
 	}
 }
@@ -1636,6 +1708,8 @@ void PathManager::ConnectNodeToNode(Client *c, sint32 Node2, sint32 teleport, si
 		return;
 	}
 
+	c->Message(0, "Connecting %i to %i", Node->id, Node2);
+
 	if(doorid == 0)
 		ConnectNodeToNode(Node->id, Node2, teleport);
 	else
@@ -1723,6 +1797,8 @@ void PathManager::ConnectNode(Client *c, sint32 Node2, sint32 teleport, sint32 d
 	{
 		return;
 	}
+
+	c->Message(0, "Connecting %i to %i", Node->id, Node2);
 
 	if(doorid == 0)
 		ConnectNode(Node->id, Node2, teleport);
@@ -2061,6 +2137,39 @@ void PathManager::ResortConnections()
 			PathNodes[x].Neighbours[z].DoorID = Neigh[z].DoorID;
 			PathNodes[x].Neighbours[z].id = Neigh[z].id;
 			PathNodes[x].Neighbours[z].Teleport = Neigh[z].Teleport;
+		}
+	}
+}
+
+void PathManager::QuickConnect(Client *c, bool set)
+{
+	if(!c)
+	{
+		return;
+	}
+
+	if(!c->GetTarget())
+	{
+		c->Message(0, "You must target a node.");
+		return;
+	}
+
+	PathNode *Node = zone->pathing->FindPathNodeByCoordinates(c->GetTarget()->GetX(), c->GetTarget()->GetY(), c->GetTarget()->GetZ());
+	if(!Node)
+	{
+		return;
+	}
+
+	if(set)
+	{
+		c->Message(0, "Setting %i to the quick connect target", Node->id);
+		QuickConnectTarget = Node->id;
+	}
+	else
+	{
+		if(QuickConnectTarget >= 0)
+		{
+			ConnectNodeToNode(QuickConnectTarget, Node->id);
 		}
 	}
 }
