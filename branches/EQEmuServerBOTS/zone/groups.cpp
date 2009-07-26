@@ -77,12 +77,6 @@ Group::Group(Mob* leader)
 		memset(membername[i],0,64);
 	strcpy(membername[0],leader->GetName());
 
-#ifdef EQBOTS
-
-	if(!leader->IsBot())
-
-#endif //EQBOTS
-
 	strcpy(leader->CastToClient()->GetPP().groupMembers[0],leader->GetName());
 
 	for(int i = 0; i < MAX_MARKED_NPCS; ++i)
@@ -199,66 +193,6 @@ void Group::SplitMoney(uint32 copper, uint32 silver, uint32 gold, uint32 platinu
 
 bool Group::AddMember(Mob* newmember)
 {
-
-#ifdef EQBOTS
-
-	//EQOffline
-	if(newmember->IsBot()) {
-		int i;
-		//Let's see if the bot is already in the group
-		for(i=0; i<MAX_GROUP_MEMBERS; i++) {
-			if(members[i] && !strcasecmp(members[i]->GetName(),newmember->GetName()))
-				return false;
-		}
-
-		// Put the bot in the group
-		for(i=0; i<MAX_GROUP_MEMBERS; i++) {
-			if(members[i] == NULL) {
-				members[i] = newmember;
-				break;
-			}
-		}
-		
-		// We copy the bot name in the group at the slot of the bot
-		strcpy(membername[i],newmember->GetName());
-		newmember->SetGrouped(true);
-
-		//build the template join packet
-		EQApplicationPacket* outapp = new EQApplicationPacket(OP_GroupUpdate,sizeof(GroupJoin_Struct));
-		GroupJoin_Struct* gj = (GroupJoin_Struct*) outapp->pBuffer;	
-		strcpy(gj->membername, newmember->GetName());
-		gj->action = groupActJoin;
-	
-		int z=1;
-		for(i=0; i<MAX_GROUP_MEMBERS; i++) {
-			if(members[i] && members[i]->IsClient()) {
-				if(IsLeader(members[i])) {
-					strcpy(gj->yourname,members[i]->GetName());
-					strcpy(members[i]->CastToClient()->GetPP().groupMembers[0],members[i]->GetName());
-					members[i]->CastToClient()->QueuePacket(outapp);
-				}
-				else {
-					strcpy(members[i]->CastToClient()->GetPP().groupMembers[0+z],members[i]->GetName());
-					members[i]->CastToClient()->QueuePacket(outapp);
-				}
-			}
-			z++;
-		}
-
-		safe_delete(outapp);
-
-		// Need to send this only once when a group is formed with a bot so the client knows it is also the group leader
-		if(GroupCount() == 2) {
-			Mob *TempLeader = GetLeader();
-			SendUpdate(groupActUpdate, TempLeader);
-		}
-
-		return true;
-	}
-	// end of EQoffline
-
-#endif //EQBOTS
-
 	uint32 i=0;
 	//see if they are allready in the group
 	 for (i = 0; i < MAX_GROUP_MEMBERS; i++) {
@@ -290,54 +224,21 @@ bool Group::AddMember(Mob* newmember)
 			//fill in group join & send it
 			strcpy(gj->yourname,members[i]->GetName());
 
-#ifdef EQBOTS
-
-            if(!members[i]->IsBot())
-
-#endif //EQBOTS
-
 			members[i]->CastToClient()->QueuePacket(outapp);
-			
-#ifdef EQBOTS
-
-            if(!members[i]->IsBot())
-
-#endif //EQBOTS
 
 			//put new member into existing person's list
 			strcpy(members[i]->CastToClient()->GetPP().groupMembers[this->GroupCount()-1],newmember->GetName());
 			
 			//put this existing person into the new member's list
 			if(IsLeader(members[i])){
-
-#ifdef EQBOTS
-
-              if(!members[i]->IsBot())
-
-#endif //EQBOTS
-
 				strcpy(newmember->CastToClient()->GetPP().groupMembers[0],members[i]->GetName());
 			} else{
-
-#ifdef EQBOTS
-
-                if(!members[i]->IsBot())
-
-#endif //EQBOTS
-
 				strcpy(newmember->CastToClient()->GetPP().groupMembers[x],members[i]->GetName());
 				x++;
 			}
 		}
 	}
 	
-
-#ifdef EQBOTS
-
-    if(!newmember->IsBot())
-
-#endif //EQBOTS
-
 	//put new member in his own list.
 	strcpy(newmember->CastToClient()->GetPP().groupMembers[x],newmember->GetName());
 	newmember->SetGrouped(true);
@@ -385,16 +286,10 @@ void Group::SendHPPacketsFrom(Mob *member)
  	member->CreateHPPacket(&hp_app);
 
 	uint32 i;
-	for(i = 0; i < MAX_GROUP_MEMBERS; i++)
-
-#ifdef EQBOTS
-
-		if(members[i] && (members[i]->GetMaxHP() > 0))
-
-#endif //EQBOTS
-
+	for(i = 0; i < MAX_GROUP_MEMBERS; i++) {
 		if(members[i] && members[i] != member && members[i]->IsClient())
 			members[i]->CastToClient()->QueuePacket(&hp_app);
+	}
 }
 
 //updates a group member's client pointer when they zone in
@@ -487,38 +382,6 @@ bool Group::DelMember(Mob* oldmember,bool ignoresender){
 	if (oldmember == NULL){
 		return false;
 	}
-
-#ifdef EQBOTS
-
-	if(oldmember->IsClient() && (oldmember == GetLeader())) {
-		database.CleanBotLeader(oldmember->CastToClient()->CharacterID());
-		if(oldmember->IsBotRaiding()) {
-			BotRaids* br = entity_list.GetBotRaidByMob(oldmember);
-			if(br) {
-				br->RemoveRaidBots();
-				br = NULL;
-			}
-		}
-		Group *g = entity_list.GetGroupByMob(oldmember);
-		if(g) {
-			bool hasBots = false;
-			for(int i=5; i>=0; i--) {
-				if(g->members[i] && g->members[i]->IsBot()) {
-					hasBots = true;
-					g->members[i]->BotOwner = NULL;
-					g->members[i]->Kill();
-				}
-			}
-			if(hasBots) {
-				hasBots = false;
-				if(g->BotGroupCount() <= 1) {
-					g->DisbandGroup();
-				}
-			}
-		}
-	}
-
-#endif //EQBOTS
 
 	for (uint32 i = 0; i < MAX_GROUP_MEMBERS; i++) {
 		if (members[i] == oldmember) {
@@ -870,19 +733,6 @@ int8 Group::GroupCount() {
 	return MemberCount;
 }
 
-#ifdef EQBOTS
-
-int Group::BotGroupCount() {
-	int count = 0;
-	for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
-		if(members[i] && (members[i]->GetMaxHP()>0))
-			count++;
-	}
-	return count;
-}
-
-#endif //EQBOTS
-
 int32 Group::GetHighestLevel()
 {
 int32 level = 1;
@@ -1015,40 +865,6 @@ void Group::GroupMessage_StringID(Mob* sender, int32 type, int32 string_id, cons
 
 
 void Client::LeaveGroup() {
-
-#ifdef EQBOTS
-
-	Mob *clientmob = CastToMob();
-	database.CleanBotLeader(CharacterID());
-	if(clientmob) {
-		if(clientmob->IsBotRaiding()) {
-			BotRaids* br = entity_list.GetBotRaidByMob(clientmob);
-			if(br) {
-				br->RemoveRaidBots();
-				br = NULL;
-			}
-		}
-		Group *g = entity_list.GetGroupByMob(clientmob);
-		if(g) {
-			bool hasBots = false;
-			for(int i=5; i>=0; i--) {
-				if(g->members[i] && g->members[i]->IsBot()) {
-					hasBots = true;
-					g->members[i]->BotOwner = NULL;
-					g->members[i]->Kill();
-				}
-			}
-			if(hasBots) {
-				hasBots = false;
-				if(g->BotGroupCount() <= 1) {
-					g->DisbandGroup();
-				}
-			}
-		}
-	}
-
-#endif //EQBOTS
-
 	Group *g = GetGroup();
 	
 	if(g) {

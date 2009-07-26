@@ -2637,13 +2637,6 @@ bool Bot::DeleteBot(std::string* errorMessage) {
 		else
 			TempCounter++;
 
-		// TODO: alter table botsowners modify botnpctypeid to botid
-		//if(!database.RunQuery(Query, MakeAnyLenString(&Query, "DELETE FROM botsowners WHERE botnpctypeid = '%u'", this->GetBotID()), TempErrorMessageBuffer)) {
-		//	*errorMessage = std::string(TempErrorMessageBuffer);
-		//}
-		//else
-		//	TempCounter++;
-
 		if(TempCounter == 2)
 			Result = true;
 	}
@@ -2697,25 +2690,6 @@ uint32 Bot::GetBotLeader(uint32 botID, std::string* errorMessage) {
 
 	return Result;
 }
-
-/*
-void Bot::SetBotOwnerCharacterID(uint32 botOwnerCharacterID, std::string* errorMessage) {
-	char errbuf[MYSQL_ERRMSG_SIZE];
-	char *query = 0;
-
-	if(this->GetBotID() > 0 && botOwnerCharacterID > 0) {
-		if(!database.RunQuery(query, MakeAnyLenString(&query, "REPLACE INTO botsowners SET botleadercharacterid = %i, botnpctypeid = %i", botOwnerCharacterID, this->GetBotID()), errbuf)) {
-			*errorMessage = std::string(errbuf);
-		}
-		else
-		{
-			this->_botOwnerCharacterID = botOwnerCharacterID;
-		}
-
-		safe_delete_array(query);
-	}
-}
-*/
 
 void Bot::SetBotItemInSlot(uint32 slotID, uint32 itemID, std::string *errorMessage) {
 	char errbuf[MYSQL_ERRMSG_SIZE];

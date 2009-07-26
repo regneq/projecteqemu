@@ -85,14 +85,6 @@ public:
 	void	MemberZoned(Mob* removemob);
 	inline	bool IsLeader(Mob* leadertest) { return leadertest==leader; };
 	int8	GroupCount();
-
-#ifdef EQBOTS
-
-	// EQoffline
-	int		BotGroupCount();
-
-#endif //EQBOTS
-
 	int32	GetHighestLevel();
 	int32	GetLowestLevel();
 	void	QueuePacket(const EQApplicationPacket *app, bool ack_req = true);

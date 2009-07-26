@@ -3921,13 +3921,7 @@ void Client::Handle_OP_CancelTrade(const EQApplicationPacket *app)
 		CancelTrade_Struct* msg = (CancelTrade_Struct*) app->pBuffer;
 		msg->fromid = with->GetID();
 		QueuePacket(app);
-#ifdef EQBOTS
-		if(with->IsBot())
-			FinishEQBOTTrade(with->CastToNPC());
-		else
-#endif
 		FinishTrade(with);
-
 		trade->Reset();
 	}
 	EQApplicationPacket end_trade1(OP_FinishWindow, 0);
@@ -3982,13 +3976,7 @@ void Client::Handle_OP_TradeAcceptClick(const EQApplicationPacket *app)
 		EQApplicationPacket* outapp = new EQApplicationPacket(OP_FinishTrade,0);
 		QueuePacket(outapp);
 		safe_delete(outapp);
-#ifdef EQBOTS
-		if(with->IsBot())
-			FinishEQBOTTrade(with->CastToNPC());
-		else
-#endif
 		with->FinishTrade(this);
-
 		trade->Reset();
 	}
 

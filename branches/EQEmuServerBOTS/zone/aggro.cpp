@@ -760,18 +760,6 @@ bool Mob::IsBeneficialAllowed(Mob *target)
 	if(!target)
 		return false;
 
-#ifdef EQBOTS
-
-    //franck-add: Eqoffline.
-	if(IsClient() && target->IsBot())
-		return true;
-	else if(IsBot() && target->IsClient())
-		return true;
-	else if(IsBot() && target->IsBot())
-		return true;
-
-#endif //EQBOTS
-
 	// solar: see IsAttackAllowed for notes
 	
 	// first figure out if we're pets.  we always look at the master's flags.
@@ -1363,23 +1351,6 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 			break;
 		}
 
-#ifdef EQBOTS
-
-		// Spell Casting Subtlety for Bots
-		if(IsBot()) {
-			if(GetLevel() >= 57) {
-				AggroAmount = AggroAmount * 95 / 100;
-			}
-			else if(GetLevel() >= 56) {
-				AggroAmount = AggroAmount * 90 / 100;
-			}
-			else if(GetLevel() >= 55) {
-				AggroAmount = AggroAmount * 80 / 100;
-			}
-		}
-
-#endif //EQBOTS
-
 		//made up number probably scales a bit differently on live but it seems like it will be close enough
 		//every time you cast on live you get a certain amount of "this is a spell" aggro
 		//confirmed by EQ devs to be 100 exactly at level 85. From their wording it doesn't seem like it's affected
@@ -1392,16 +1363,6 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 		sint32 focusAggro = CastToClient()->GetFocusEffect(focusHateReduction, spell_id);
 		AggroAmount = (AggroAmount * (100+focusAggro) / 100);
 	}
-
-#ifdef EQBOTS
-
-	if(IsBot())
-	{
-		sint32 focusAggro = GetBotFocusEffect(botfocusHateReduction, spell_id);
-		AggroAmount = (AggroAmount * (100+focusAggro) / 100);
-	}
-
-#endif //EQBOTS
 
 	AggroAmount = (AggroAmount * RuleI(Aggro, SpellAggroMod))/100;
 	AggroAmount += spells[spell_id].bonushate + nonModifiedAggro;

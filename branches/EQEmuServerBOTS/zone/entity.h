@@ -55,13 +55,6 @@ class Bot;
 class BotRaids;
 #endif
 
-#ifdef EQBOTS
-
-//EQoffline
-class BotRaids;
-
-#endif //EQBOTS
-
 extern EntityList entity_list;
 
 void ProcessClientThreadSpawn(void *tmp);
