@@ -95,10 +95,12 @@ public:
 	void DumpPath(string filename);
 	void ProcessNodesAndSave(string filename);
 	void ResortConnections();
+	void QuickConnect(Client *c, bool set = false);
 
 private:
 	PathFileHeader Head;
 	PathNode *PathNodes;
+	int QuickConnectTarget;
 
 	int *ClosedListFlag;
 };

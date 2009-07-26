@@ -7272,6 +7272,7 @@ void command_path(Client *c, const Seperator *sep)
 		c->Message(0, "#path add [requested_id]: Adds a node at your current location will try to take the requested id if possible.");
 		c->Message(0, "#path connect connect_to_id [is_teleport] [door_id]: Connects the currently targeted node to connect_to_id's node and connects that node back (requires shownode target).");
 		c->Message(0, "#path sconnect connect_to_id [is_teleport] [door_id]: Connects the currently targeted node to connect_to_id's node (requires shownode target).");		
+		c->Message(0, "#path qconnect [set]: short cut connect, connects the targeted node to the node you set with #path qconnect set (requires shownode target).");
 		c->Message(0, "#path disconnect [all]/disconnect_from_id: Disconnects the currently targeted node to disconnect from disconnect from id's node (requires shownode target), if passed all as the second argument it will disconnect this node from every other node.");
 		c->Message(0, "#path move: Moves your targeted node to your current position");
 		c->Message(0, "#path process file_name: processes the map file and tries to automatically generate a rudimentary path setup and then dumps the current zone->pathing to a file of your naming.");
@@ -7394,6 +7395,21 @@ void command_path(Client *c, const Seperator *sep)
 		if(zone->pathing)
 		{
 			zone->pathing->ConnectNode(c, atoi(sep->arg[2]), atoi(sep->arg[3]), atoi(sep->arg[4]));
+		}
+	}
+
+	if(!strcasecmp(sep->arg[1], "qconnect"))
+	{
+		if(zone->pathing)
+		{
+			if(!strcasecmp(sep->arg[2], "set"))
+			{
+				zone->pathing->QuickConnect(c, true);
+			}
+			else
+			{
+				zone->pathing->QuickConnect(c, false);
+			}
 		}
 	}
 
