@@ -1,5 +1,15 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==7/25/2009==
+KLS: Added a much more accurate but slower Hazard Detection algorithm for #path process that will calculate water and very spikey terrain between two points, other instances of PathManager::NoHazards untouched.
+KLS: Added #path move and #path disconnect all.
+
+==7/24/2009==
+Derision: Moved RecalcWeight to after CalcAABonuses in bonuses.cpp because valgrind complained aabonuses.packrat was used uninitialised.
+Derision: Fixed memory leak in /who all processing.
+KLS: Added functionality to #path to faciliate making .path files in game, including a very CPU intensive #path process filename which will try to create a connected path from unconnected laid out nodes.
+KLS: /find will now do a hazards check.
+
 ==7/22/2009==
 realityincarnate: Added quest::factionvalue() command to give more logical faction values than the client uses (Scowling = 1, Ally = 9)
 

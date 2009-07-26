@@ -69,13 +69,13 @@ void Client::CalcBonuses()
 	CalcItemBonuses(&itembonuses);
 	CalcEdibleBonuses(&itembonuses);
 	
-	RecalcWeight();
-	
 	CalcSpellBonuses(&spellbonuses);
 
 	_log(AA__BONUSES, "Calculating AA Bonuses for %s.", this->GetCleanName());
 	CalcAABonuses(&aabonuses);	//we're not quite ready for this
 	_log(AA__BONUSES, "Finished calculating AA Bonuses for %s.", this->GetCleanName());
+	
+	RecalcWeight();
 	
 	CalcAC();
 	CalcATK();

@@ -7043,7 +7043,7 @@ void Client::Handle_OP_FindPersonRequest(const EQApplicationPacket *app)
 			VERTEX Start(GetX(), GetY(), GetZ() + (GetSize() < 6.0 ? 6 : GetSize()) * HEAD_POSITION);
 			VERTEX End(target->GetX(), target->GetY(), target->GetZ() + (target->GetSize() < 6.0 ? 6 : target->GetSize()) * HEAD_POSITION);
 
-			if(!zone->map->LineIntersectsZone(Start, End, 1.0f, NULL, NULL))	
+			if(!zone->map->LineIntersectsZone(Start, End, 1.0f, NULL, NULL) && zone->pathing->NoHazards(Start, End))	
 			{
 				points.resize(2);
 				points[0].x = Start.x;

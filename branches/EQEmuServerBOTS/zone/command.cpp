@@ -7253,7 +7253,16 @@ void command_path(Client *c, const Seperator *sep)
 {
 	if(sep->arg[1][0] == '\0' || !strcasecmp(sep->arg[1], "help"))
 	{
-		c->Message(0, "Syntax: #path shownodes");
+		c->Message(0, "Syntax: #path shownodes: Spawns a npc to represent every npc node.");
+		c->Message(0, "#path info node_id: Gives information about node info (requires shownode target).");
+		c->Message(0, "#path dump file_name: Dumps the current zone->pathing to a file of your naming.");
+		c->Message(0, "#path add [requested_id]: Adds a node at your current location will try to take the requested id if possible.");
+		c->Message(0, "#path connect connect_to_id [is_teleport] [door_id]: Connects the currently targeted node to connect_to_id's node and connects that node back (requires shownode target).");
+		c->Message(0, "#path sconnect connect_to_id [is_teleport] [door_id]: Connects the currently targeted node to connect_to_id's node (requires shownode target).");		
+		c->Message(0, "#path disconnect [all]/disconnect_from_id: Disconnects the currently targeted node to disconnect from disconnect from id's node (requires shownode target), if passed all as the second argument it will disconnect this node from every other node.");
+		c->Message(0, "#path move: Moves your targeted node to your current position");
+		c->Message(0, "#path process file_name: processes the map file and tries to automatically generate a rudimentary path setup and then dumps the current zone->pathing to a file of your naming.");
+		c->Message(0, "#path resort: resorts the connections after you've manually altered them so they'll work.");
 		return;
 	}
 	if(!strcasecmp(sep->arg[1], "shownodes"))
@@ -7263,6 +7272,183 @@ void command_path(Client *c, const Seperator *sep)
 
 		return;
 	}
+
+	if(!strcasecmp(sep->arg[1], "info"))
+	{
+		if(zone->pathing)
+		{
+			zone->pathing->NodeInfo(c);
+		}
+		return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "dump"))
+	{
+		if(zone->pathing)
+		{
+			if(sep->arg[2][0] == '\0')
+				return;
+
+			zone->pathing->DumpPath(sep->arg[2]);
+		}
+		return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "add"))
+	{
+		if(zone->pathing)
+		{
+			float px = c->GetX();
+			float py = c->GetY();
+			float pz = c->GetZ();
+			float best_z;
+
+			if(zone->map)
+			{
+				VERTEX loc(px, py, pz);
+				best_z = zone->map->FindBestZ(MAP_ROOT_NODE, loc, NULL, NULL);
+			}
+			else
+			{
+				best_z = pz;
+			}
+			sint32 res = zone->pathing->AddNode(px, py, pz, best_z, atoi(sep->arg[2]));
+			if(res >= 0)
+			{
+				c->Message(0, "Added Path Node: %i", res);
+			}
+			else
+			{
+				c->Message(0, "Failed to add Path Node");
+			}
+		}
+		else
+		{
+			zone->pathing = new PathManager();
+			float px = c->GetX();
+			float py = c->GetY();
+			float pz = c->GetZ();
+			float best_z;
+
+			if(zone->map)
+			{
+				VERTEX loc(px, py, pz);
+				best_z = zone->map->FindBestZ(MAP_ROOT_NODE, loc, NULL, NULL);
+			}
+			else
+			{
+				best_z = pz;
+			}
+			sint32 res = zone->pathing->AddNode(px, py, pz, best_z, atoi(sep->arg[2]));
+			if(res >= 0)
+			{
+				c->Message(0, "Added Path Node: %i", res);
+			}
+			else
+			{
+				c->Message(0, "Failed to add Path Node");
+			}
+		}
+		return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "remove"))
+	{
+		if(zone->pathing)
+		{
+			if(zone->pathing->DeleteNode(c))
+			{
+				c->Message(0, "Removed Node.");
+			}
+			else
+			{
+				c->Message(0, "Unable to Remove Node.");
+			}
+		}
+		return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "connect"))
+	{
+		if(zone->pathing)
+		{
+			zone->pathing->ConnectNodeToNode(c, atoi(sep->arg[2]), atoi(sep->arg[3]), atoi(sep->arg[4]));
+		}
+	}
+
+	if(!strcasecmp(sep->arg[1], "sconnect"))
+	{
+		if(zone->pathing)
+		{
+			zone->pathing->ConnectNode(c, atoi(sep->arg[2]), atoi(sep->arg[3]), atoi(sep->arg[4]));
+		}
+	}
+
+	if(!strcasecmp(sep->arg[1], "disconnect"))
+	{
+		if(zone->pathing)
+		{
+			if(!strcasecmp(sep->arg[2], "all"))
+			{
+				zone->pathing->DisconnectAll(c);
+			}
+			else
+			{
+				zone->pathing->DisconnectNodeToNode(c, atoi(sep->arg[2]));
+			}
+		}
+	}
+
+
+	if(!strcasecmp(sep->arg[1], "move"))
+	{
+		if(zone->pathing)
+		{
+			zone->pathing->MoveNode(c);
+		}
+	}
+
+	if(!strcasecmp(sep->arg[1], "process"))
+	{
+		if(zone->pathing)
+		{
+			if(sep->arg[2][0] == '\0')
+				return;
+
+			zone->pathing->ProcessNodesAndSave(sep->arg[2]);
+			c->Message(0, "Path processed...");
+		}
+		return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "resort"))
+	{
+		if(zone->pathing)
+		{
+			zone->pathing->ResortConnections();
+			c->Message(0, "Connections resorted...");
+		}
+	}
+
+	if(!strcasecmp(sep->arg[1], "hazard"))
+	{
+		if(zone->pathing)
+		{
+			if(c && c->GetTarget())
+			{
+				if(zone->pathing->NoHazardsAccurate(VERTEX(c->GetX(),c->GetY(),c->GetZ()), 
+					VERTEX(c->GetTarget()->GetX(),c->GetTarget()->GetY(),c->GetTarget()->GetZ())))
+				{
+					c->Message(0, "No hazards.");
+				}
+				else
+				{
+					c->Message(0, "Hazard Detected...");
+				}
+			}
+		}
+	}
+
 	if(!strcasecmp(sep->arg[1], "showneighbours") || !strcasecmp(sep->arg[1], "showneighbors"))
 	{
 		if(!c->GetTarget())
@@ -7322,216 +7508,6 @@ void command_path(Client *c, const Seperator *sep)
 	}
 
 	return;
-/*
-	//super-command for editing fear grids and hints
-	char errbuf[MYSQL_ERRMSG_SIZE];
-	char *query = 0;
-	if(sep->arg[1][0] == '\0' || !strcasecmp(sep->arg[1], "help")) {
-		c->Message(0, "Syntax: #path [view|close|add|link|list|del].");
-		c->Message(0, "...view - spawn an NPC at each path grid point, and fear hint");
-		c->Message(0, "...close - spawn an NPC at the closest path point");
-		c->Message(0, "...show [draw|npc] [x] [y] [z]- draw a path (or spawn an NPC) at each path point to x,y,z");
-		c->Message(0, "...to [draw|npc] - draw a path (or spawn an NPC) at each path point to your target");
-		c->Message(0, "...add [force|disjoint]- add a new path hint point where your standing");
-		c->Message(0, "....... force requires this point not move when combining nodes");
-		c->Message(0, "....... disjoint marks the graph connected to this node as a valid disjoint graph");
-		c->Message(0, "...list - show a list of all path hint points for this zone");
-		c->Message(0, "...find [range] - show a list of all path hint points within range of you");
-		c->Message(0, "...del [id] - remove the path hint 'id'");
-//		c->Message(0, "...start - fears your target until you #fear stop them");
-//		c->Message(0, "...stop - Stops fear on your target");
-		return;
-	}
-	
-	if(!strcasecmp(sep->arg[1], "add")) {
-		int force = 0;
-		int disjoint = 0;
-		if(!strcasecmp(sep->arg[2], "force")) {
-			force = 1;
-			if(!strcasecmp(sep->arg[1], "disjoint"))
-				disjoint = 1;
-		} else if(!strcasecmp(sep->arg[2], "disjoint")) {
-			disjoint = 1;
-		}
-		if(!database.RunQuery(query, MakeAnyLenString(&query, 
-			"INSERT INTO fear_hints (zone,x,y,z,forced,disjoint) VALUES('%s',%f,%f,%f,%d,%d)",
-			zone->GetShortName(), c->GetX(), c->GetY(), c->GetZ(), force, disjoint), errbuf))
-		{
-			c->Message(15, "Error adding hint: %s", errbuf);
-		} else {
-			c->LogSQL(query);
-			c->Message(15, "Success! Path hint point added.");
-		}
-		safe_delete(query);
-	} else if(!strcasecmp(sep->arg[1], "del")) {
-		if(!database.RunQuery(query, MakeAnyLenString(&query, 
-			"DELETE FROM fear_hints WHERE zone='%s' AND id=%d",
-			zone->GetShortName(), atoi(sep->arg[2])), errbuf))
-		{
-			c->Message(15, "Error adding hint: %s", errbuf);
-		} else {
-			c->LogSQL(query);
-			c->Message(15, "Success! Path hint point added.");
-		}
-		safe_delete(query);
-	} else if(!strcasecmp(sep->arg[1], "list")) {
-		MYSQL_RES *result;
-		MYSQL_ROW row;
-		if (database.RunQuery(query, MakeAnyLenString(&query, 
-			"SELECT id,x,y,z FROM fear_hints WHERE zone='%s'",
-			zone->GetShortName()), errbuf, &result))
-		{
-			c->Message(0, "Path Hints for %s:", zone->GetShortName());
-			while ((row = mysql_fetch_row(result)))
-			{
-				c->Message(0, "[%s]: (%s, %s, %s)", row[0], row[1], row[2], row[3]);
-			}
-			mysql_free_result(result);
-		} else {
-			c->Message(0, "Unable to query path hints: %s", errbuf);
-		}
-		safe_delete_array(query);
-	} else if(!strcasecmp(sep->arg[1], "find")) {
-		float range = atof(sep->arg[2]);
-		if(range < 1) {
-			c->Message(0, "Invalid range.");
-			return;
-		}
-		
-		MYSQL_RES *result;
-		MYSQL_ROW row;
-		if (database.RunQuery(query, MakeAnyLenString(&query, 
-			"SELECT id,x,y,z FROM fear_hints WHERE zone='%s' AND (x*x+y*y) < %f",
-			zone->GetShortName(), range*range), errbuf, &result))
-		{
-			c->Message(0, "Path Hints for %s within %.3f:", zone->GetShortName(), range);
-			while ((row = mysql_fetch_row(result)))
-			{
-				c->Message(0, "[%s]: (%s, %s, %s)", row[0], row[1], row[2], row[3]);
-			}
-			mysql_free_result(result);
-		} else {
-			c->Message(0, "Unable to query path hints: %s", errbuf);
-		}
-		safe_delete_array(query);
-	} else if(!strcasecmp(sep->arg[1], "view")) {
-		if(zone->pathing == NULL) {
-			c->Message(13, "There is no path grid file loaded for this zone.");
-			return;
-		}
-		
-		int32 count = zone->pathing->CountNodes();
-		int32 r;
-		char buf[128];
-		PathNode_Struct *node = zone->pathing->GetNode(0); //assumes nodes are stored in a linear array
-		for(r = 0; r < count; r++, node++) {
-			sprintf(buf, "Path_Point%d 3", r);
-			NPC* npc = NPC::SpawnNPC(buf, node->x, node->y, node->z, c->GetHeading(), NULL);
-			if(npc == NULL)
-				c->Message(13, "Unable to spawn new NPC marker.");
-			//do we need to do anything else?
-		}
-	} else if(!strcasecmp(sep->arg[1], "show") || !strcasecmp(sep->arg[1], "to")) {
-		if(zone->pathing == NULL) {
-			c->Message(13, "There is no path grid file loaded for this zone.");
-			return;
-		}
-		
-		char buf[128];
-		
-		FindPerson_Point it;
-		vector<FindPerson_Point> pts;
-		bool path_mode = (strcasecmp(sep->arg[2], "npc") != 0);
-		
-		PathFindingState ps;
-		ps.x = c->GetX();
-		ps.y = c->GetY();
-		ps.z = c->GetZ();
-		float x,y,z;
-		if(!strcasecmp(sep->arg[1], "to")) {
-			Mob *t = c->GetTarget();
-			if(t == NULL) {
-				c->Message(13, "You must have a target to path to them.");
-				return;
-			}
-			x = ps.dest_x = t->GetX();
-			y = ps.dest_y = t->GetY();
-			z = ps.dest_z = t->GetZ();
-		} else {
-			x = ps.dest_x = atof(sep->arg[3]);
-			y = ps.dest_y = atof(sep->arg[4]);
-			z = ps.dest_z = atof(sep->arg[5]);
-		}
-		
-		if(!zone->pathing->InitPathFinding(&ps, false)) {
-			if(zone->pathing->InitPathFinding(&ps, true)) {
-				c->Message(13, "Unable to locate a clean path, but found one without LOS to endpoints.");
-			} else {
-				c->Message(13, "Unable to locate a path to (%.3f,%.3f,%.3f)", x, y, z);
-				return;
-			}
-		}
-		
-		c->Message(0, "Showing pathing to (%.3f,%.3f,%.3f)", x, y, z);
-		
-		int d = 0;
-		if(path_mode) {
-			//initial position
-			it.x = c->GetX();
-			it.y = c->GetY();
-			it.z = c->GetZ();
-			pts.push_back(it);
-			//first path node
-			it.x = ps.x;
-			it.y = ps.y;
-			it.z = ps.z;
-			pts.push_back(it);
-		} else {
-			sprintf(buf, "Close_Path_Link%d_ 3", d++);
-			NPC* npc = NPC::SpawnNPC(buf, ps.x, ps.y, ps.z, c->GetHeading(), NULL);
-			if(npc == NULL)
-				c->Message(13, "Unable to spawn new NPC marker.");
-		}
-		c->Message(0, "First node (%.3f,%.3f,%.3f)", ps.x, ps.y, ps.z);
-		
-		for(; zone->pathing->NextPathFinding(&ps); d++) {
-			sprintf(buf, "Close_Path_Link%d_ 3", d);
-
-			c->Message(0, "Next (%.3f,%.3f,%.3f)", ps.x, ps.y, ps.z);
-						
-			if(path_mode) {
-				it.x = ps.x;
-				it.y = ps.y;
-				it.z = ps.z;
-				pts.push_back(it);
-			} else {
-				NPC::SpawnNPC(buf, ps.x, ps.y, ps.z, c->GetHeading(), NULL);
-			}
-		}
-		
-		if(path_mode) {
-			c->SendPathPacket(pts);
-		}
-		
-	} else if(!strcasecmp(sep->arg[1], "close")) {
-		if(zone->pathing == NULL) {
-			c->Message(13, "There is no fear grid file loaded for this zone.");
-			return;
-		}
-		MobFearState fs;
-		
-		if(!zone->pathing->FindNearestFear(&fs, c->GetX(), c->GetY(), c->GetZ())) {
-			c->Message(13, "Unable to locate a closest fear path.");
-			return;
-		}
-		
-		NPC* npc = NPC::SpawnNPC("Close_Fear_Point 2", fs.x, fs.y, fs.z, c->GetHeading(), NULL);
-		if(npc == NULL)
-			c->Message(13, "Unable to spawn new NPC marker.");
-	} else {
-		c->Message(15, "Invalid action specified. use '#path help' for help");
-	}
-	*/
 }
 
 void Client::Undye() {
