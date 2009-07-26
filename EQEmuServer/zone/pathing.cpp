@@ -1162,19 +1162,12 @@ bool PathManager::NoHazardsAccurate(VERTEX From, VERTEX To)
 			NodeRef n = zone->map->SeekNode( zone->map->GetRoot(), TestPoint.x, TestPoint.y);
 			if(n != NODE_NONE) 
 			{
-				if(zone->watermap->InLava(From.x, From.y, From.z) || zone->watermap->InWater(From.x, From.y, From.z))
+				if(zone->watermap->InLiquid(From.x, From.y, From.z) || zone->watermap->InLiquid(To.x, To.y, To.z))
 				{
 					break;
 				}
 
-				if(zone->watermap->InLava(To.x, To.y, To.z) || zone->watermap->InWater(To.x, To.y, To.z))
-				{
-					break;
-				}
-
-				bool in_lava = zone->watermap->InLava(TestPoint.x, TestPoint.y, NewZ);
-				bool in_water = zone->watermap->InWater(TestPoint.x, TestPoint.y, NewZ);
-				if(in_lava || in_water)
+				if(zone->watermap->InLiquid(TestPoint.x, TestPoint.y, NewZ))
 				{
 					VERTEX TestPointWater(TestPoint.x, TestPoint.y, NewZ-0.5);
 					VERTEX TestPointWaterDest(TestPointWater);

@@ -46,6 +46,7 @@ public:
         WaterRegionType BSPReturnRegionType(sint32 node_number, float y, float x, float z) const;
         bool InWater(float y, float x, float z) const;
         bool InLava(float y, float x, float z) const;
+		bool InLiquid(float y, float x, float z) const;
 
 	WaterMap();
 	~WaterMap();
