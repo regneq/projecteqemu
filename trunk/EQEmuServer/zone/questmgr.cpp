@@ -600,56 +600,61 @@ void QuestManager::permagender(int gender_id) {
 
 uint16 QuestManager::scribespells(uint8 max_level, uint8 min_level) {
  	//Cofruben:-Scribe spells for user up to his actual level.
-	uint16 book_slot;
+	uint16 book_slot, count;
 	int16 curspell;
-	for(curspell = 0, book_slot = 0; curspell < SPDAT_RECORDS && book_slot < MAX_PP_SPELLBOOK; curspell++)
+	for(curspell = 0, book_slot = initiator->GetNextAvailableSpellBookSlot(), count = 0; curspell < SPDAT_RECORDS && book_slot < MAX_PP_SPELLBOOK; curspell++, book_slot = initiator->GetNextAvailableSpellBookSlot(book_slot))
 	{
-	   if
-	   (
-		  spells[curspell].classes[WARRIOR] != 0 &&	//check if spell exists
-		  spells[curspell].classes[initiator->GetPP().class_-1] <= max_level &&	//maximum level
-		  spells[curspell].classes[initiator->GetPP().class_-1] >= min_level &&	//minimum level
-		  spells[curspell].skill != 52
-	   )
-	   {
-		  initiator->ScribeSpell(curspell, book_slot++);
-	   }
+		if
+		(
+			spells[curspell].classes[WARRIOR] != 0 &&	//check if spell exists
+			spells[curspell].classes[initiator->GetPP().class_-1] <= max_level &&	//maximum level
+			spells[curspell].classes[initiator->GetPP().class_-1] >= min_level &&	//minimum level
+			spells[curspell].skill != 52
+		)
+		{
+			if (book_slot == -1)	//no more book slots
+				break;
+			if(!IsDiscipline(curspell) && !initiator->HasSpellScribed(curspell)) {	//isn't a discipline & we don't already have it scribed
+				initiator->ScribeSpell(curspell, book_slot);
+				count++;
+			}
+		}
 	}
 	return book_slot;	//how many spells were scribed successfully
 }
 
 uint16 QuestManager::traindiscs(uint8 max_level, uint8 min_level) {
  	//Trevius: Train Disc for user up to their actual level.
-	uint16 book_slot;
+	uint16 count;
 	int16 curspell;
-	for(curspell = 0, book_slot = 0; curspell < SPDAT_RECORDS && book_slot < MAX_PP_SPELLBOOK; curspell++)
+	for(curspell = 0, count = 0; curspell < SPDAT_RECORDS; curspell++)
 	{
-	   if
-	   (
-		  spells[curspell].classes[WARRIOR] != 0 &&	//check if spell exists
-		  spells[curspell].classes[initiator->GetPP().class_-1] <= max_level &&	//maximum level
-		  spells[curspell].classes[initiator->GetPP().class_-1] >= min_level &&	//minimum level
-		  spells[curspell].skill != 52
-	   )
+		if
+		(
+			spells[curspell].classes[WARRIOR] != 0 &&	//check if spell exists
+			spells[curspell].classes[initiator->GetPP().class_-1] <= max_level &&	//maximum level
+			spells[curspell].classes[initiator->GetPP().class_-1] >= min_level &&	//minimum level
+			spells[curspell].skill != 52
+		)
 		{
-
 			if(IsDiscipline(curspell)){
+				//we may want to come up with a function like Client::GetNextAvailableSpellBookSlot() to help speed this up a little
 				for(int r = 0; r < MAX_PP_DISCIPLINES; r++) {
 					if(initiator->GetPP().disciplines.values[r] == curspell) {
 						initiator->Message(13, "You already know this discipline.");
-						r = MAX_PP_DISCIPLINES;	//is there any reason we can't just break here?
+						break;	//continue the 1st loop
 					} else if(initiator->GetPP().disciplines.values[r] == 0) {
 						initiator->GetPP().disciplines.values[r] = curspell;
 						initiator->SendDisciplineUpdate();
 						initiator->Message(0, "You have learned a new discipline!");
-						book_slot++;	//we're not doing anything else with it, so we'll use it as a success counter
-						r = MAX_PP_DISCIPLINES;	//is there any reason we can't just break here?
-					}
+						count++;	//success counter
+						break;	//continue the 1st loop
+					}	//if we get to this point, there's already a discipline in this slot, so we skip it
 				}
 			}
 	   	}
 	}
-	return book_slot;	//how many disciplines were learned successfully
+	return count;	//how many disciplines were learned successfully
 }
 
 void QuestManager::unscribespells() {

@@ -1,5 +1,12 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==7/26/2009==
+AndMetal: AGI Penalty for being encumbered now matches the Titanium client. The old formula was much higher than the client was reporting.
+AndMetal: Added InLiquid() function to the WaterMap class. Will return true if you're in Water or Lava (or both?)
+AndMetal: Converted to some more Message Strings in zone/spells.cpp.
+AndMetal: Changed GetNextAvailableSpellBookSlot() & FindSpellBookSlotBySpellID() to return a result much faster.
+AndMetal: The scribespells commands/quest functions should no longer overwrite existing spells & will use only unused book slots.
+
 ==7/25/2009==
 KLS: Added a much more accurate but slower Hazard Detection algorithm for #path process that will calculate water and very spikey terrain between two points, other instances of PathManager::NoHazards untouched.
 KLS: Added #path move and #path disconnect all.

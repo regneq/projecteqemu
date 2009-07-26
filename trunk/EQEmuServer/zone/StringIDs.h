@@ -42,14 +42,21 @@
 #define FISHING_LOST_BAIT			172		//You lost your bait!
 #define SPELL_FIZZLE				173		//Your spell fizzles!
 #define MISS_NOTE					180		//You miss a note, bringing your song to a close!
+#define TARGET_NO_MANA				191		//Your target has no mana to affect
+#define TARGET_GROUP_MEMBER			196		//You must first target a group member.
+#define INSUFFICIENT_MANA			199		//Insufficient Mana to cast this spell!
 #define SAC_TOO_LOW					203		//This being is not a worthy sacrifice.
 #define SAC_TOO_HIGH				204		//This being is too powerful to be a sacrifice.
 #define CANNOT_SAC_SELF				205		//You cannot sacrifice yourself.
+#define SILENCED_STRING				207		//You *CANNOT* cast spells, you have been silenced!
 #define CANNOT_AFFECT_PC			210		//That spell can not affect this target PC.
 #define SPELL_NEED_TAR				214		//You must first select a target for this spell!
 #define ONLY_ON_CORPSES				221		//This spell only works on corpses.
 #define CANT_DRAIN_SELF				224		//You can't drain yourself!
 #define CORPSE_NOT_VALID			230		//This corpse is not valid.
+#define CAST_OUTDOORS				234		//You can only cast this spell in the outdoors.
+#define SPELL_RECAST				236		//Spell recast time not yet met.
+#define SPELL_RECOVERY				237		//Spell recovery time not yet met.
 #define CANNOT_MEZ					239		//Your target cannot be mesmerized.
 #define CANNOT_MEZ_WITH_SPELL		240		//Your target cannot be mesmerized (with this spell).
 #define IMMUNE_STUN					241		//Your target is immune to the stun portion of this effect.
@@ -64,6 +71,7 @@
 #define CANNOT_CHARM				267		//This NPC cannot be charmed.
 #define NO_INSTRUMENT_SKILL			269		//Stick to singing until you learn to play this instrument.
 #define REGAIN_AND_CONTINUE			270		//You regain your concentration and continue your casting.
+#define SPELL_WOULDNT_HOLD			271		//Your spell would not have taken hold on your target.
 #define MISSING_SPELL_COMP			272		//You are missing some required spell components.
 #define DISCIPLINE_CONLOST			278		//You lose the concentration to remain in your fighting discipline.
 #define REZ_REGAIN					289		//You regain some experience from resurrection.

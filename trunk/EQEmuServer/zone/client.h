@@ -712,7 +712,9 @@ public:
 
 	bool ClientFinishedLoading() { return (conn_state == ClientConnectFinished); }
 	int FindSpellBookSlotBySpellID(int16 spellid);
-	int GetNextAvailableSpellBookSlot();
+	int GetNextAvailableSpellBookSlot(int starting_slot = 0);
+	inline int32 GetSpellByBookSlot(int book_slot) { return m_pp.spell_book[book_slot]; }
+	inline bool HasSpellScribed(int spellid) { return (FindSpellBookSlotBySpellID(spellid) != -1 ? true : false); }
 	int16	GetMaxSkillAfterSpecializationRules(SkillType skillid, int16 maxSkill);
 	void SendPopupToClient(const char *Title, const char *Text, int32 PopupID = 0, int32 Buttons = 0, int32 Duration = 0);
 	bool	PendingTranslocate;
