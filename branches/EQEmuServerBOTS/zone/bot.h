@@ -41,13 +41,13 @@ public:
 	bool DeleteBot(std::string* errorMessage);
 	void Spawn(Client* botCharacterOwner, std::string* errorMessage);
 	//void SetBotOwnerCharacterID(uint32 botOwnerCharacterID, std::string* errorMessage);
-	void Depop(std::string* errorMessage);
+	//void Depop(std::string* errorMessage);
 	virtual void SetLevel(uint8 in_level, bool command = false);
 	virtual void FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho);
 	virtual bool Process() override;
 	//virtual void AI_Process();
 	virtual bool Save() override;
-	virtual void Depop(bool StartSpawnTimer = true) override;
+	virtual void Depop();
 	void CalcBotStats(bool showtext = true);
 	int16 BotGetSpells(int spellslot) { return AIspells[spellslot].spellid; }
 	int16 BotGetSpellType(int spellslot) { return AIspells[spellslot].type; }
@@ -221,6 +221,7 @@ private:
 	//bool IsPacified(Mob* targetMob);
 	uint32 GetItemID(int slot_id);
 	bool CalcBotHitChance(Mob* target, SkillType skillinuse, int Hand);
+	void EquipBot(Client* client);
 };
 
 #endif // BOTS

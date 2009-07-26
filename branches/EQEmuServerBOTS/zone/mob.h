@@ -1277,6 +1277,15 @@ protected:
 
 private:
 	void	_StopSong();		//this is not what you think it is
+
+#ifdef BOTS
+	// Please do not declare any Client class members or methods below this block.
+public:
+	void SetBotRaidID( int rId ) { BotRaidID = rId; }
+	int GetBotRaidID() { return BotRaidID; }
+private:
+	uint32 BotRaidID;
+#endif
 };
 
 // All data associated with a single trade

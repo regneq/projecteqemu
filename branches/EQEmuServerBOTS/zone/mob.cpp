@@ -366,27 +366,10 @@ Mob::Mob(const char*   in_name,
 	AggroedAwayFromGrid = 0;
 	PathingTraversedNodes = 0;
 
-#ifdef EQBOTS
-
-	// eqoffline
-	if(database.GetBotStatus(GetNPCTypeID()) == 1) {
-		AmIaBot = true;
-	}
-	else {
-		AmIaBot = false;
-	}
-	cast_last_time = false;
-	BotOwner = NULL;
-	BotRaidID = 0;
-	BotRaiding = false;
-	OrderBotAttack = false;
-	BotArchery = false;
-	BotArcheryRange = 0;
-	BotCharmer = false;
-	PetChooser = false;
-
-#endif //EQBOTS
-
+#ifdef BOTS
+	// Please do not add any thing to the Client class constructor below this block of code. This block is necessary to accomodate BOTS.
+	SetBotRaidID(0);
+#endif
 }
 
 Mob::~Mob()

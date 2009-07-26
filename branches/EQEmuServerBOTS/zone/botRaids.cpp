@@ -17,7 +17,7 @@ Copyright (C) 2001-2002  EQEMu Development Team (http://eqemu.org)
 
 */
 
-#ifdef EQBOTS
+#ifdef BOTS
 
 #include "../common/debug.h"
 #include "botRaids.h"
@@ -36,7 +36,6 @@ BotRaids::BotRaids(Mob *leader)
         memset(BotRaidGroups, 0, sizeof(BotRaidGroups));
 		entity_list.AddBotRaid(this);
 		botrleader = leader;
-		botrleader->SetBotRaiding(true);
 		botrleader->SetBotRaidID(GetBotRaidID());
 		botmaintank = NULL;
 		botsecondtank = NULL;
@@ -69,7 +68,16 @@ bool BotRaids::AddBotGroup(Group *gtoadd) {
 	//put them in the group
 	for(i=0; i<MAX_BOT_RAID_GROUPS; i++) {
 		if(!BotRaidGroups[i]) {
+			// Give everyone in this group the raid id for this raid.
+			for(int k = 0; k < MAX_GROUP_MEMBERS; k++) {
+				if(gtoadd->members[k]) {
+					gtoadd->members[k]->SetBotRaidID(GetBotRaidID());
+				}
+			}
+
+			// Now add this group to the raid
 			BotRaidGroups[i] = gtoadd;
+
 			break;
 		}
 	}
@@ -82,7 +90,7 @@ void BotRaids::RemoveBotGroup(Group *delgroup) {
 			if(BotRaidGroups[i] == delgroup) {
 				for(int j=5; j>=0; j--) {
 					if(delgroup->members[j] && delgroup->members[j]->IsBot()) {
-						delgroup->members[j]->BotOwner = NULL;
+						delgroup->members[j]->CastToBot()->SetBotOwner(0);
 						delgroup->members[j]->Kill();
 					}
 				}
@@ -107,13 +115,12 @@ void BotRaids::RemoveRaidBots() {
 				if(BotRaidGroups[i]) {
 					if(BotRaidGroups[i]->members[j]) {
 						if(BotRaidGroups[i]->members[j]->IsBot()) {
-							BotRaidGroups[i]->members[j]->BotOwner = NULL;
+							BotRaidGroups[i]->members[j]->CastToBot()->SetBotOwner(0);
 							BotRaidGroups[i]->members[j]->Kill();
 						}
 						else if(BotRaidGroups[i]->members[j]->IsClient()) {
 							BotRaidGroups[i]->members[j]->SetBotRaidID(0);
-							BotRaidGroups[i]->members[j]->SetBotRaiding(false);
-							if(BotRaidGroups[i]->BotGroupCount() < 2) {
+							if(Bot::GetCountBotsInGroup(BotRaidGroups[i]) < 2) {
 								BotRaidGroups[i]->members[j]->SetGrouped(false);
 							}
 						}
@@ -138,7 +145,7 @@ bool BotRaids::RemoveEmptyBotGroup() {
 	for(int i=0; i<MAX_BOT_RAID_GROUPS; i++) {
 		Group *g = BotRaidGroups[i];
 		if(g) {
-			if(g->BotGroupCount() == 0) {
+			if(Bot::GetCountBotsInGroup(g) == 0) {
 				BotRaidGroups[i] = 0x00000000;
 				int j = i+1;
 				for(; j<MAX_BOT_RAID_GROUPS; j++) {
@@ -159,18 +166,16 @@ bool BotRaids::RemoveClientGroup(Mob *m) {
 		Group *g = BotRaidGroups[i];
 		if(g) {
 			if(g->GetLeader() == m) {
-				if(BotRaidGroups[i]->BotGroupCount() == 1) {
-					m->SetBotRaidID(0);
-					m->SetBotRaiding(false);
+				if(Bot::GetCountBotsInGroup(BotRaidGroups[i]) == 1) {
+					if(m->IsClient())
+						m->CastToClient()->SetBotRaidID(0);
 					m->SetGrouped(false);
 					entity_list.RemoveGroup(BotRaidGroups[i]->GetID());
 				}
 				else {
 					for(int j=0; j<MAX_GROUP_MEMBERS; j++) {
-						if(g->members[j]) {
+						if(g->members[j])
 							g->members[j]->SetBotRaidID(0);
-							g->members[j]->SetBotRaiding(false);
-						}
 					}
 				}
 				BotRaidGroups[i] = 0x00000000;
@@ -368,7 +373,7 @@ void BotRaids::GroupAssignTask(Group *g, int iTask, Mob *m) {
 	if((iTask == 2) && (m != NULL) && !m->IsBot()) {
 		Mob *gleader = g->GetLeader();
 		if(gleader->IsBot()) {
-			gleader->SetFollowID(gleader->BotOwner->GetID());
+			gleader->SetFollowID(gleader->CastToBot()->GetBotOwner()->GetID());
 			gleader->WipeHateList();
 			gleader->Say("Attacking %s", m->GetCleanName());
 			gleader->AddToHateList(m, 2000, 2000, false);
@@ -523,58 +528,58 @@ void BotRaids::GroupAssignTask(Group *g, int iTask, Group *g2) {
 		}
 		else
 		{
-			if(gleader2->BotOwner)
+			if(gleader2->GetOwner())
 			{
 				//break invis when you attack
-				if(gleader2->BotOwner->invisible) {
-					gleader2->BotOwner->BuffFadeByEffect(SE_Invisibility);
-					gleader2->BotOwner->BuffFadeByEffect(SE_Invisibility2);
-					gleader2->BotOwner->invisible = false;
+				if(gleader2->GetOwner()->invisible) {
+					gleader2->GetOwner()->BuffFadeByEffect(SE_Invisibility);
+					gleader2->GetOwner()->BuffFadeByEffect(SE_Invisibility2);
+					gleader2->GetOwner()->invisible = false;
 				}
-				if(gleader2->BotOwner->invisible_undead) {
-					gleader2->BotOwner->BuffFadeByEffect(SE_InvisVsUndead);
-					gleader2->BotOwner->BuffFadeByEffect(SE_InvisVsUndead2);
-					gleader2->BotOwner->invisible_undead = false;
+				if(gleader2->GetOwner()->see_invis_undead) {
+					gleader2->GetOwner()->BuffFadeByEffect(SE_InvisVsUndead);
+					gleader2->GetOwner()->BuffFadeByEffect(SE_InvisVsUndead2);
+					gleader2->GetOwner()->see_invis_undead = false;
 				}
-				if(gleader2->BotOwner->invisible_animals){
-					gleader2->BotOwner->BuffFadeByEffect(SE_InvisVsAnimals);
-					gleader2->BotOwner->invisible_animals = false;
+				if(gleader2->GetOwner()->invisible_animals){
+					gleader2->GetOwner()->BuffFadeByEffect(SE_InvisVsAnimals);
+					gleader2->GetOwner()->invisible_animals = false;
 				}
-				if(gleader2->BotOwner->hidden || gleader2->BotOwner->improved_hidden){
-					gleader2->BotOwner->hidden = false;
-					gleader2->BotOwner->improved_hidden = false;
+				if(gleader2->GetOwner()->hidden || gleader2->GetOwner()->improved_hidden){
+					gleader2->GetOwner()->hidden = false;
+					gleader2->GetOwner()->improved_hidden = false;
 					EQApplicationPacket* outapp = new EQApplicationPacket(OP_SpawnAppearance, sizeof(SpawnAppearance_Struct));
 					SpawnAppearance_Struct* sa_out = (SpawnAppearance_Struct*)outapp->pBuffer;
-					sa_out->spawn_id = gleader2->BotOwner->GetID();
+					sa_out->spawn_id = gleader2->GetOwner()->GetID();
 					sa_out->type = 0x03;
 					sa_out->parameter = 0;
-					entity_list.QueueClients(gleader2->BotOwner, outapp, true);
+					entity_list.QueueClients(gleader2->GetOwner(), outapp, true);
 					safe_delete(outapp);
 				}
 			}
 
-			gleader1->CastToNPC()->SetTarget(gleader2->GetTarget());
+			gleader1->SetTarget(gleader2->GetTarget());
 			this->SetAttackBotRaidRights(1);
-			gleader1->Say("Assisting %s", gleader2->GetName());
+			gleader1->Say("Assisting %s", gleader2->GetCleanName());
 		}
 	}
 }
 
 Mob* BotRaids::GetBotMainTank() {
-	if(!botmaintank || (botmaintank->AmIaBot && botmaintank->qglobal))
+	if(!botmaintank || (botmaintank->IsBot() && botmaintank->qglobal))
 		return NULL;
 
-	if(entity_list.GetMob(botmaintank->GetName()))
+	if(entity_list.GetMob(botmaintank->GetCleanName()))
 		return botmaintank;
 	else
 		return NULL;
 }
 
 Mob* BotRaids::GetBotSecondTank() {
-	if(!botsecondtank || (botsecondtank->AmIaBot && botsecondtank->qglobal))
+	if(!botsecondtank || (botsecondtank->IsBot() && botsecondtank->qglobal))
 		return NULL;
 
-	if(entity_list.GetMob(botsecondtank->GetName()))
+	if(entity_list.GetMob(botsecondtank->GetCleanName()))
 		return botsecondtank;
 	else
 		return NULL;
@@ -611,7 +616,12 @@ int BotRaids::GetBotAttackRights() {
 }
 
 void BotRaids::SaveGroups(Client *c) {
-	database.DeleteBotGroups(c->CharacterID());
+	std::string TempErrorMessage;
+	Bot::DeleteBotGroups(c->CharacterID(), &TempErrorMessage);
+	if(!TempErrorMessage.empty()) {
+		c->Message(13, "Unable to delete bot group: %s", TempErrorMessage.c_str());
+		return;
+	}
 	for(int i=0; i<MAX_BOT_RAID_GROUPS; i++) {
 		if(BotRaidGroups[i]) {
 			for(int j=0; j<MAX_GROUP_MEMBERS; j++) {
@@ -619,7 +629,11 @@ void BotRaids::SaveGroups(Client *c) {
 					if(BotRaidGroups[i]->members[j]->IsClient()) {
 						continue;
 					}
-					database.SaveBotGroups(i, c->CharacterID(), BotRaidGroups[i]->members[j]->GetNPCTypeID(), j);
+					Bot::SaveBotGroups(i, c->CharacterID(), BotRaidGroups[i]->members[j]->GetNPCTypeID(), j, &TempErrorMessage);
+					if(!TempErrorMessage.empty()) {
+						c->Message(13, "Unable to delete bot group: %s", TempErrorMessage.c_str());
+						return;
+					}
 				}
 			}
 		}
@@ -628,27 +642,27 @@ void BotRaids::SaveGroups(Client *c) {
 
 void BotRaids::BotRaidInfo(Client *c) {
 	if(c->IsClient()) {
-		if(c->IsBotRaiding()) {
+		if(c->GetBotRaidID() > 0) {
 			bool moredata = false;
 			for(int i=0; i<MAX_BOT_RAID_GROUPS; i++) {
 				if(BotRaidGroups[i] && BotRaidGroups[i]->members[0]) {
 					moredata = true;
-					c->Message(15, "Group %i (%i members)", i+1, BotRaidGroups[i]->BotGroupCount());
-					c->Message(15, "Group %i Leader: %s", i+1, BotRaidGroups[i]->members[0]->GetName());
+					c->Message(15, "Group %i (%i members)", i+1, Bot::GetCountBotsInGroup(BotRaidGroups[i]));
+					c->Message(15, "Group %i Leader: %s", i+1, BotRaidGroups[i]->members[0]->GetCleanName());
 					for(int j=0; j<MAX_GROUP_MEMBERS; j++) {
 						if(BotRaidGroups[i]->members[j]) {
 							int memberClass = BotRaidGroups[i]->members[j]->GetClass();
 							if((memberClass == MONK) || (memberClass == WARRIOR) || (memberClass == BERSERKER) || (memberClass == ROGUE))
 							{
 								c->Message(15, "%s,  hp: %i | %i",
-									BotRaidGroups[i]->members[j]->GetName(),
+									BotRaidGroups[i]->members[j]->GetCleanName(),
 									BotRaidGroups[i]->members[j]->GetHP(),
 									BotRaidGroups[i]->members[j]->GetMaxHP());
 							}
 							else
 							{
 								c->Message(15, "%s,  hp: %i | %i  mana: %i | %i",
-									BotRaidGroups[i]->members[j]->GetName(),
+									BotRaidGroups[i]->members[j]->GetCleanName(),
 									BotRaidGroups[i]->members[j]->GetHP(),
 									BotRaidGroups[i]->members[j]->GetMaxHP(),
 									BotRaidGroups[i]->members[j]->GetMana(),
@@ -660,15 +674,15 @@ void BotRaids::BotRaidInfo(Client *c) {
 				}
 			}
 			if(moredata) {
-				c->Message(15, "Raid Leader is %s", botrleader->GetName());
+				c->Message(15, "Raid Leader is %s", botrleader->GetCleanName());
 				if(botmaintank) {
-					c->Message(15, "Main Tank is %s", botmaintank->GetName());
+					c->Message(15, "Main Tank is %s", botmaintank->GetCleanName());
 				}
 				else {
 					c->Message(15, "A Main Tank is not assigned.");
 				}
 				if(botsecondtank) {					
-					c->Message(15, "Secondary Tank is %s", botsecondtank->GetName());
+					c->Message(15, "Secondary Tank is %s", botsecondtank->GetCleanName());
 				}
 				else {
 					c->Message(15, "A Secondary Tank is not assigned.");
@@ -690,4 +704,4 @@ void BotRaids::BotRaidInfo(Client *c) {
 	}
 }
 
-#endif //EQBOTS
+#endif //BOTS
