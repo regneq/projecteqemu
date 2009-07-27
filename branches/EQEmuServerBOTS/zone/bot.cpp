@@ -10691,7 +10691,7 @@ list<Bot*> EntityList::GetBotsByBotOwnerCharacterID(uint32 botOwnerCharacterID) 
 		LinkedListIterator<Bot*> botItr(bot_list);
 		botItr.Reset();
 		while(botItr.MoreElements()) {
-			if(botItr.GetData()->GetBotOwnerCharacterID() == botOwnerCharacterID)
+			if(botItr.GetData() && botItr.GetData()->GetBotOwnerCharacterID() == botOwnerCharacterID)
 				Result.push_back(botItr.GetData());
 			botItr.Advance();
 		}
