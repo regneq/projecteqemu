@@ -229,7 +229,7 @@
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="2"
 				AdditionalIncludeDirectories="C:\perl\lib\core"
-				PreprocessorDefinitions="EMBPERL,EMBPERL_PLUGIN,SHAREMEM,i386,CATCH_CRASH,_WIN32_WINNT=0x0400,NDEBUG,ZONESERVER,ZONE,INVERSEXY,WIN32,_CONSOLE,FIELD_ITEMS,EQDEBUG=5,EQBOTS"
+				PreprocessorDefinitions="EMBPERL,EMBPERL_PLUGIN,SHAREMEM,i386,CATCH_CRASH,_WIN32_WINNT=0x0400,NDEBUG,ZONESERVER,ZONE,INVERSEXY,WIN32,_CONSOLE,FIELD_ITEMS,EQDEBUG=5,BOTS"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				BufferSecurityCheck="false"
@@ -416,6 +416,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\botAI.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\botRaids.cpp"
 				>
 			</File>
@@ -589,6 +593,10 @@
 			</File>
 			<File
 				RelativePath=".\perlparser.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\petAI.cpp"
 				>
 			</File>
 			<File
