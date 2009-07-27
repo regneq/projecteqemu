@@ -18,9 +18,6 @@ using namespace std;
 
 extern bool spells_loaded;
 
-
-//typedef botfocusType_e botfocusType;
-
 class Bot : public NPC {
 public:
 	// Class Constructors
@@ -40,13 +37,12 @@ public:
 	bool IsBotNameAvailable(std::string* errorMessage);
 	bool DeleteBot(std::string* errorMessage);
 	void Spawn(Client* botCharacterOwner, std::string* errorMessage);
-	//void SetBotOwnerCharacterID(uint32 botOwnerCharacterID, std::string* errorMessage);
 	//void Depop(std::string* errorMessage);
 	virtual void SetLevel(uint8 in_level, bool command = false);
 	virtual void FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho);
-	virtual bool Process() override;
+	virtual bool Process();
 	//virtual void AI_Process();
-	virtual bool Save() override;
+	virtual bool Save();
 	virtual void Depop();
 	void CalcBotStats(bool showtext = true);
 	int16 BotGetSpells(int spellslot) { return AIspells[spellslot].spellid; }
@@ -78,11 +74,18 @@ public:
 	virtual Mob* GetOwner();
 	virtual Mob* GetOwnerOrSelf();
 	virtual bool IsAttackAllowed(Mob *target, bool isSpellAttack = false);
-	//uint32 IsBotRaiding() { return this->GetBotRaidID(); }
 	inline virtual bool HasOwner() { return (GetBotOwner() ? true : false); }
 	virtual sint32 CheckHealAggroAmount(int16 spellid, int32 heal_possible = 0);
 	virtual sint32 CalcMaxMana();
 	virtual void SetAttackTimer();
+
+	// Mob Spell Virtual Override Methods
+	virtual sint32 GetActSpellDamage(int16 spell_id, sint32 value);
+	virtual sint32 GetActSpellHealing(int16 spell_id, sint32 value);
+	virtual sint32 GetActSpellCasttime(int16 spell_id, sint32 casttime);
+	virtual sint32 GetActSpellCost(int16 spell_id, sint32 cost);
+	virtual float GetActSpellRange(int16 spell_id, float range);
+	virtual sint32 GetActSpellDuration(int16 spell_id, sint32 duration);
 	
 	// Bot Action Command Methods
 	bool MesmerizeTarget(Mob* target);
@@ -125,7 +128,6 @@ public:
 	static std::list<BotGroup> LoadBotGroups(uint32 characterID, std::string* errorMessage);
 	static uint32 SpawnedBotCount(uint32 botOwnerCharacterID, std::string* errorMessage);
 	static uint32 AllowedBotSpawns(uint32 botOwnerCharacterID, std::string* errorMessage);
-	static void CleanBotLeader(uint32 botOwnerCharacterID, std::string* errorMessage);
 	static uint32 GetBotOwnerCharacterID(uint32 botID, std::string* errorMessage);
 	static bool SetBotOwnerCharacterID(uint32 botID, uint32 botOwnerCharacterID, std::string* errorMessage);
 	static std::string ClassIdToString(uint16 classId);
@@ -136,7 +138,6 @@ public:
 	static void DestroyBotObjects(Client* client);
 
 	// "GET" Class Methods
-	//uint32 GetBotID() { return this->GetNPCTypeID(); }
 	uint32 GetBotID() { return _botID; }
 	uint32 GetBotOwnerCharacterID() { return _botOwnerCharacterID; }
 	uint32 GetBotSpellID() { return _botSpellID; }
@@ -144,7 +145,6 @@ public:
 	uint32 GetBotArcheryRange() { return _botArcheryRange; }
 	virtual bool GetSpawnStatus() { return _spawnStatus; }
 	int8 GetPetChooserID() { return _petChooserID; }
-	//bool IsBotRaiding() { return _botRaiding; }
 	bool IsPetChooser() { return _petChooser; }
 	bool IsBotArcher() { return _botArcher; }
 	bool IsBotCharmer() { return _botCharmer; }
@@ -157,7 +157,6 @@ public:
 	void SetPetChooserID(int8 id) { _petChooserID = id; }
 	void SetBotArcher(bool a) { _botArcher = a; }
 	void SetBotCharmer(bool c) { _botCharmer = c; }
-	//void SetBotRaiding(bool v) { _botRaiding = v; }
 	void SetPetChooser(bool p) { _petChooser = p; }
 	void SetBotOwner(Mob* botOwner) { this->_botOwner = botOwner; }
 
@@ -191,7 +190,6 @@ protected:
 	virtual void BotMeditate(bool isSitting);
 	virtual bool BotRangedAttack(Mob* other);
 	virtual bool CheckBotDoubleAttack(bool Triple = false);
-	virtual sint32 GetBotActSpellHealing(int16 spell_id, sint32 value);
 	virtual sint16 GetBotFocusEffect(botfocusType bottype, int16 spell_id);
 	virtual sint16 CalcBotFocusEffect(botfocusType bottype, int16 focus_id, int16 spell_id);
 
@@ -202,10 +200,7 @@ private:
 	uint32 _botSpellID;
 	bool _spawnStatus;
 	Mob* _botOwner;
-	// uint32 _expPoints;
-	// uint32 _aaPoints;
 	bool _botOrderAttack;
-	//bool _botRaiding;
 	bool _botArcher;
 	bool _botCharmer;
 	bool _petChooser;
@@ -219,9 +214,6 @@ private:
 	void GenerateAppearance();
 	void GenerateArmorClass();
 	void GenerateBaseHitPoints();
-	void SetBotLeader(uint32 botID, uint32 botOwnerCharacterID, std::string botName, std::string zoneShortName, std::string* errorMessage);
-	uint32 GetBotLeader(uint32 botID, std::string* errorMessage);
-	//void CleanBotLeaderEntries(std::string* errorMessage);
 	void DoAIProcessing();
 	void SetBotID(uint32 botID);
 	//bool IsPacified(Mob* targetMob);

@@ -329,20 +329,8 @@ bool Mob::DoCastSpell(int16 spell_id, int16 target_id, int16 slot,
 		// save the non-reduced cast time to use in the packet
 		cast_time = orgcasttime = spell.cast_time;
 		// if there's a cast time, check if they have a modifier for it
-		if(cast_time)
-		{
-
-#ifdef EQBOTS
-
-			if(IsBot()) {
-				cast_time = GetBotActSpellCasttime(spell_id, cast_time);
-			}
-			else
-
-#endif //EQBOTS
-
-			cast_time = GetActSpellCasttime(spell_id, cast_time);
-			
+		if(cast_time) {
+			cast_time = GetActSpellCasttime(spell_id, cast_time);	
 		}
 	}
 	else
@@ -366,16 +354,6 @@ bool Mob::DoCastSpell(int16 spell_id, int16 target_id, int16 slot,
 
 	if (mana_cost == -1) {
 		mana_cost = spell.mana;
-
-#ifdef EQBOTS
-
-		if(IsBot()) {
-			mana_cost = GetBotActSpellCost(spell_id, mana_cost);
-		}
-		else
-
-#endif //EQBOTS
-
 		mana_cost = GetActSpellCost(spell_id, mana_cost);
 	}
 
@@ -1549,15 +1527,6 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
 	if(IsClient() && CastToClient()->TGB() && IsTGBCompatibleSpell(spell_id) && IsGroupSpell(spell_id))
 		range = spells[spell_id].aoerange;
 
-#ifdef EQBOTS
-
-	if(IsBot()) {
-		range = GetBotActSpellRange(spell_id, range);
-	}
-	else
-
-#endif //EQBOTS
-
 	range = GetActSpellRange(spell_id, range);
 // seveian 2008-09-23
 	if(IsPlayerIllusionSpell(spell_id)
@@ -1918,15 +1887,6 @@ bool Mob::ApplyNextBardPulse(int16 spell_id, Mob *spell_target, int16 slot) {
 	
 	//range check our target, if we have one and it is not us
 	float range = 0.00f;
-
-#ifdef EQBOTS
-
-	if(IsBot()) {
-		range = GetBotActSpellRange(spell_id, spells[spell_id].range);
-	}
-	else
-
-#endif //EQBOTS
 
 	range = GetActSpellRange(spell_id, spells[spell_id].range);
 	if(spell_target != NULL && spell_target != this) {
@@ -2521,15 +2481,6 @@ int Mob::AddBuff(Mob *caster, int16 spell_id, int duration, sint32 level_overrid
 	if(duration == 0)
 	{
 		duration = CalcBuffDuration(caster, this, spell_id);
-
-#ifdef EQBOTS
-
-		if(caster && caster->IsBot()) {
-			duration = caster->GetBotActSpellDuration(spell_id, duration);
-		}
-		else
-
-#endif //EQBOTS
 
 		if(caster)
 			duration = caster->GetActSpellDuration(spell_id, duration);

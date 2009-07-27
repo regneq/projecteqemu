@@ -2653,43 +2653,43 @@ void Bot::Spawn(Client* botCharacterOwner, std::string* errorMessage) {
 	}
 }
 
-void Bot::SetBotLeader(uint32 botID, uint32 botOwnerCharacterID, std::string botName, std::string zoneShortName, std::string* errorMessage) {
-	char errbuf[MYSQL_ERRMSG_SIZE];
-	char *query = 0;
-
-	if(!database.RunQuery(query, MakeAnyLenString(&query, "INSERT INTO botleader SET botid=%i, leaderid=%i, bot_name='%s', zone_name='%s'", botID, botOwnerCharacterID, botName.c_str(), zoneShortName.c_str()), errbuf)) {
-		*errorMessage = std::string(errbuf);
-	}
-
-	safe_delete_array(query);
-}
-
-uint32 Bot::GetBotLeader(uint32 botID, std::string* errorMessage) {
-	uint32 Result = 0;
-
-	if(botID > 0) {
-		char ErrBuf[MYSQL_ERRMSG_SIZE];
-		char* Query = 0;
-		MYSQL_RES* DatasetResult;
-		MYSQL_ROW DataRow;
-
-		if(database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT leaderid FROM botleader WHERE botid=%i", botID), ErrBuf, &DatasetResult)) {
-			if(mysql_num_rows(DatasetResult) == 1) {
-				DataRow = mysql_fetch_row(DatasetResult);
-				if(DataRow)
-					Result = atoi(DataRow[0]);
-			}
-
-			mysql_free_result(DatasetResult);
-		}
-		else
-			*errorMessage = std::string(ErrBuf);
-
-		safe_delete_array(Query);
-	}
-
-	return Result;
-}
+//void Bot::SetBotLeader(uint32 botID, uint32 botOwnerCharacterID, std::string botName, std::string zoneShortName, std::string* errorMessage) {
+//	char errbuf[MYSQL_ERRMSG_SIZE];
+//	char *query = 0;
+//
+//	if(!database.RunQuery(query, MakeAnyLenString(&query, "INSERT INTO botleader SET botid=%i, leaderid=%i, bot_name='%s', zone_name='%s'", botID, botOwnerCharacterID, botName.c_str(), zoneShortName.c_str()), errbuf)) {
+//		*errorMessage = std::string(errbuf);
+//	}
+//
+//	safe_delete_array(query);
+//}
+//
+//uint32 Bot::GetBotLeader(uint32 botID, std::string* errorMessage) {
+//	uint32 Result = 0;
+//
+//	if(botID > 0) {
+//		char ErrBuf[MYSQL_ERRMSG_SIZE];
+//		char* Query = 0;
+//		MYSQL_RES* DatasetResult;
+//		MYSQL_ROW DataRow;
+//
+//		if(database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT leaderid FROM botleader WHERE botid=%i", botID), ErrBuf, &DatasetResult)) {
+//			if(mysql_num_rows(DatasetResult) == 1) {
+//				DataRow = mysql_fetch_row(DatasetResult);
+//				if(DataRow)
+//					Result = atoi(DataRow[0]);
+//			}
+//
+//			mysql_free_result(DatasetResult);
+//		}
+//		else
+//			*errorMessage = std::string(ErrBuf);
+//
+//		safe_delete_array(Query);
+//	}
+//
+//	return Result;
+//}
 
 void Bot::SetBotItemInSlot(uint32 slotID, uint32 itemID, std::string *errorMessage) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
@@ -2872,18 +2872,18 @@ void Bot::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho) {
 	}
 }
 
-void Bot::CleanBotLeader(uint32 botOwnerCharacterID, std::string* errorMessage) {
-	if(botOwnerCharacterID > 0) {
-		char errbuf[MYSQL_ERRMSG_SIZE];
-		char *query = 0;
-
-		if(!database.RunQuery(query, MakeAnyLenString(&query, "DELETE FROM botleader where leaderid=%i", botOwnerCharacterID), errbuf)) {
-			*errorMessage = std::string(errbuf);
-		}
-
-		safe_delete_array(query);
-	}
-}
+//void Bot::CleanBotLeader(uint32 botOwnerCharacterID, std::string* errorMessage) {
+//	if(botOwnerCharacterID > 0) {
+//		char errbuf[MYSQL_ERRMSG_SIZE];
+//		char *query = 0;
+//
+//		if(!database.RunQuery(query, MakeAnyLenString(&query, "DELETE FROM botleader where leaderid=%i", botOwnerCharacterID), errbuf)) {
+//			*errorMessage = std::string(errbuf);
+//		}
+//
+//		safe_delete_array(query);
+//	}
+//}
 
 Bot* Bot::LoadBot(uint32 botID, std::string* errorMessage) {
 	Bot* Result = 0;
@@ -4304,7 +4304,7 @@ void Bot::Damage(Mob *from, sint32 damage, int16 spell_id, SkillType attack_skil
 
 	// if spell is lifetap add hp to the caster
 	if (spell_id != SPELL_UNKNOWN && IsLifetapSpell(spell_id)) {
-		int healed = GetBotActSpellHealing(spell_id, damage);
+		int healed = GetActSpellHealing(spell_id, damage);
 		mlog(COMBAT__DAMAGE, "Applying lifetap heal of %d to %s", healed, GetCleanName());
 		HealDamage(healed);
 		entity_list.MessageClose(this, true, 300, MT_Spells, "%s beams a smile at %s", GetCleanName(), from->GetCleanName() );
@@ -4626,102 +4626,6 @@ void Bot::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHel
 				other->SetHate(GetBotOwner());
 		}
 	}
-}
-
-sint32 Bot::GetBotActSpellHealing(int16 spell_id, sint32 value) {
-
-	sint32 modifier = 100;
-	
-	modifier += GetBotFocusEffect(botfocusImprovedHeal, spell_id);
-						
-	if(spells[spell_id].buffduration < 1) {
-		uint8 botlevel = GetLevel();
-		int8 botclass = GetClass();
-		int chance = 0;
-
-		if((botclass == BEASTLORD)||(botclass == CLERIC)||(botclass == DRUID)||(botclass == PALADIN)||(botclass == RANGER)||(botclass == SHAMAN)) {
-			if(botlevel >= 57) { // Healing Adept AA
-				modifier += 10;
-			}
-			else if(botlevel == 56) {
-				modifier += 5;
-			}
-			else if(botlevel == 55) {
-				modifier += 2;
-			}
-
-			if(botlevel >= 64) { // Advanced Healing Adept AA
-				modifier += 9;
-			}
-			else if(botlevel == 63) {
-				modifier += 6;
-			}
-			else if(botlevel == 62) {
-				modifier += 3;
-			}
-
-			if(botlevel >= 57) { // Healing Gift AA
-				chance = 10;
-			}
-			else if(botlevel == 56) {
-				chance = 6;
-			}
-			else if(botlevel == 55) {
-				chance = 3;
-			}
-
-			if(botlevel >= 64) { // Advanced Healing Gift AA
-				chance += 6;
-			}
-			else if(botlevel == 63) {
-				chance += 4;
-			}
-			else if(botlevel == 62) {
-				chance += 2;
-			}
-		}
-
-		if((botclass == NECROMANCER)||(botclass == SHADOWKNIGHT)) {
-			if(spells[spell_id].targettype == ST_Tap) {
-				if(botlevel >= 65) { // Theft of Life
-					chance += 10;
-				}
-				else if(botlevel == 63) {
-					chance += 5;
-				}
-				else if(botlevel == 61) {
-					chance += 2;
-				}
-
-				if(botlevel >= 66) { // Advanced Theft of Life
-					chance += 6;
-				}
-				else if(botlevel == 65) {
-					chance += 3;
-				}
-
-				if(botlevel >= 69) { // Soul Thief
-					chance += 6;
-				}
-				else if(botlevel == 68) {
-					chance += 4;
-				}
-				else if(botlevel == 67) {
-					chance += 2;
-				}
-			}
-		}
-		
-		if(MakeRandomInt(1,100) < chance) {
-			entity_list.MessageClose(this, false, 100, MT_SpellCrits, "%s performs an exceptional heal! (%d)", GetName(), ((value * modifier) / 50));		
-			return (value * modifier) / 50;
-		}
-		else{
-			return (value * modifier) / 100;
-		}		
-	}
-					
-	return (value * modifier) / 100;
 }
 
 sint16 Bot::GetBotFocusEffect(botfocusType bottype, int16 spell_id) {
@@ -7040,6 +6944,423 @@ void Bot::SetAttackTimer() {
 		if(i == SLOT_PRIMARY)
 			PrimaryWeapon = ItemToUse;
 	}	
+}
+
+sint32 Bot::GetActSpellDamage(int16 spell_id, sint32 value) {
+	sint32 modifier = 100;
+	int8 casterClass = GetClass();
+	int8 casterLevel = GetLevel();
+
+	//Dunno if this makes sense:
+	if (spells[spell_id].resisttype > 0)
+		modifier += 5;
+
+
+	int tt = spells[spell_id].targettype;
+	if (tt == ST_UndeadAE || tt == ST_Undead || tt == ST_Summoned) {
+		//undead/summoned spells
+		modifier += 10;
+	} else {
+		//damage spells.
+		modifier += 5;
+	}
+
+	//these spell IDs could be wrong
+	if (spell_id == SPELL_LEECH_TOUCH) {	//leech touch
+		if(casterLevel >= 65) { // Consumption of the Soul 3 AA
+			value -= 1500;
+		}
+		else if(casterLevel >= 63) { // Consumption of the Soul 2 AA
+			value -= 1000;
+		}
+		else if(casterLevel >= 61) { // Consumption of the Soul 1 AA
+			value -= 500;
+		}
+	}
+	if (spell_id == SPELL_IMP_HARM_TOUCH) {	//harm touch
+		if(casterLevel >= 65) { // Unholy Touch 3 AA
+			modifier += 75;
+		}
+		else if(casterLevel >= 63) { // Unholy Touch 2 AA
+			modifier += 50;
+		}
+		else if(casterLevel >= 61) { // Unholy Touch 1 AA
+			modifier += 25;
+		}
+	}
+
+	//spell crits, dont make sense if cast on self.
+	if(tt != ST_Self) {
+		int chance = RuleI(Spells, BaseCritChance) + 1;
+		sint32 ratio = RuleI(Spells, BaseCritRatio);
+
+		//here's an idea instead of bloating code with unused cases there's this thing called:
+		//case 'default'
+		switch(casterClass)
+		{
+		case WIZARD:
+			{
+				if (casterLevel >= RuleI(Spells, WizCritLevel)) {
+					chance += RuleI(Spells, WizCritChance);
+					ratio += RuleI(Spells, WizCritRatio);
+				}
+				break;
+			}
+
+		default: 
+			break;
+		}
+
+		if((casterClass == MONK) || (casterClass == ROGUE) || (casterClass == WARRIOR) || (casterClass == BERSERKER)) {
+			if(casterLevel >= 65) { // Ingenuity 3 AA
+				ratio += 100;
+				chance += 3;
+			}
+			else if(casterLevel >= 63) { // Ingenuity 2 AA
+				ratio += 75;
+				chance += 2;
+			}
+			else if(casterLevel >= 61) { // Ingenuity 1 AA
+				ratio += 50;
+				chance += 1;
+			}
+		}
+
+		if((casterClass != WARRIOR) && (casterClass != ROGUE) && (casterClass != MONK) && (casterClass != BERSERKER)) {
+			if(casterLevel >= 66) { // Advanced Fury of Magic 2 AA
+				chance += 20;
+			}
+			else if(casterLevel >= 65) { // Fury of Magic 3 AA or Advanced Fury of Magic 1 AA
+				chance += 18;
+			}
+			else if(casterLevel >= 63) { // Fury of Magic 2 AA
+				chance += 16;
+			}
+			else if(casterLevel >= 61) { // Fury of Magic 1 AA or Spell Casting Fury Mastery 3 AA
+				chance += 14;
+			}
+			else if(casterLevel >= 60) { // Spell Casting Fury Mastery 2 AA
+				chance += 12;
+			}
+			else if(casterLevel >= 59) { // Spell Casting Fury Mastery 1 AA
+				chance += 10;
+			}
+			else if(casterLevel >= 57) { // Spell Casting Fury 3 AA
+				chance += 7;
+			}
+			else if(casterLevel >= 56) { // Spell Casting Fury 2 AA
+				chance += 4;
+			}
+			else if(casterLevel >= 55) { // Spell Casting Fury 1 AA
+				chance += 2;
+			}
+		}
+
+		if(tt == ST_Tap) {
+
+			if(spells[spell_id].classes[SHADOWKNIGHT-1] >= 254 && spell_id != SPELL_LEECH_TOUCH) {
+				if(ratio < 100)	//chance increase and ratio are made up, not confirmed
+					ratio = 100;
+
+				if(casterClass == SHADOWKNIGHT) {
+					if(casterLevel >= 61) { // Soul Abrasion 3 AA
+						modifier += 300;
+					}
+					else if(casterLevel >= 60) { // Soul Abrasion 2 AA
+						modifier += 200;
+					}
+					else if(casterLevel >= 59) { // Soul Abrasion1 AA
+						modifier += 100;
+					}
+				}
+			}
+		}
+
+		//crit damage modifiers
+		if (casterClass == WIZARD) { //wizards get an additional bonus
+			if(casterLevel >= 70) { // Destructive Fury 3 AA
+				ratio += 24;
+			}
+			else if(casterLevel >= 68) { // Destructive Fury 2 AA
+				ratio += 16;
+			}
+			else if(casterLevel >= 66) { // Destructive Fury 1 AA
+				ratio += 8;
+			}
+		}
+		else {
+			if(casterLevel >= 70) { // Destructive Fury 3 AA
+				ratio += 16;
+			}
+			else if(casterLevel >= 68) { // Destructive Fury 2 AA
+				ratio += 8;
+			}
+			else if(casterLevel >= 66) { // Destructive Fury 1 AA
+				ratio += 4;
+			}
+		}
+
+		if (chance > 0) {
+			mlog(SPELLS__CRITS, "Attempting spell crit. Spell: %s (%d), Value: %d, Modifier: %d, Chance: %d, Ratio: %d", spells[spell_id].name, spell_id, value, modifier, chance, ratio);
+			if(MakeRandomInt(1,100) <= chance) {
+				modifier += modifier*ratio/100;
+				mlog(SPELLS__CRITS, "Spell crit successful. Final damage modifier: %d, Final Damage: %d", modifier, (value * modifier) / 100);
+				entity_list.MessageClose(this, false, 100, MT_SpellCrits, "%s delivers a critical blast! (%d)", GetName(), ((-value * modifier) / 100));	
+			} else 
+				mlog(SPELLS__CRITS, "Spell crit failed. Final Damage Modifier: %d, Final Damage: %d", modifier, (value * modifier) / 100);
+		}
+	}
+
+	return (value * modifier) / 100;
+}
+
+sint32 Bot::GetActSpellHealing(int16 spell_id, sint32 value) {
+	sint32 modifier = 100;
+
+	modifier += GetBotFocusEffect(botfocusImprovedHeal, spell_id);
+
+	if(spells[spell_id].buffduration < 1) {
+		uint8 botlevel = GetLevel();
+		int8 botclass = GetClass();
+		int chance = 0;
+
+		if((botclass == BEASTLORD)||(botclass == CLERIC)||(botclass == DRUID)||(botclass == PALADIN)||(botclass == RANGER)||(botclass == SHAMAN)) {
+			if(botlevel >= 57) { // Healing Adept AA
+				modifier += 10;
+			}
+			else if(botlevel == 56) {
+				modifier += 5;
+			}
+			else if(botlevel == 55) {
+				modifier += 2;
+			}
+
+			if(botlevel >= 64) { // Advanced Healing Adept AA
+				modifier += 9;
+			}
+			else if(botlevel == 63) {
+				modifier += 6;
+			}
+			else if(botlevel == 62) {
+				modifier += 3;
+			}
+
+			if(botlevel >= 57) { // Healing Gift AA
+				chance = 10;
+			}
+			else if(botlevel == 56) {
+				chance = 6;
+			}
+			else if(botlevel == 55) {
+				chance = 3;
+			}
+
+			if(botlevel >= 64) { // Advanced Healing Gift AA
+				chance += 6;
+			}
+			else if(botlevel == 63) {
+				chance += 4;
+			}
+			else if(botlevel == 62) {
+				chance += 2;
+			}
+		}
+
+		if((botclass == NECROMANCER)||(botclass == SHADOWKNIGHT)) {
+			if(spells[spell_id].targettype == ST_Tap) {
+				if(botlevel >= 65) { // Theft of Life
+					chance += 10;
+				}
+				else if(botlevel == 63) {
+					chance += 5;
+				}
+				else if(botlevel == 61) {
+					chance += 2;
+				}
+
+				if(botlevel >= 66) { // Advanced Theft of Life
+					chance += 6;
+				}
+				else if(botlevel == 65) {
+					chance += 3;
+				}
+
+				if(botlevel >= 69) { // Soul Thief
+					chance += 6;
+				}
+				else if(botlevel == 68) {
+					chance += 4;
+				}
+				else if(botlevel == 67) {
+					chance += 2;
+				}
+			}
+		}
+
+		if(MakeRandomInt(1,100) < chance) {
+			entity_list.MessageClose(this, false, 100, MT_SpellCrits, "%s performs an exceptional heal! (%d)", GetName(), ((value * modifier) / 50));		
+			return (value * modifier) / 50;
+		}
+		else{
+			return (value * modifier) / 100;
+		}		
+	}
+
+	return (value * modifier) / 100;
+}
+
+sint32 Bot::GetActSpellCasttime(int16 spell_id, sint32 casttime) {
+	sint32 cast_reducer = 0;
+	cast_reducer += GetBotFocusEffect(botfocusSpellHaste, spell_id);
+
+	uint8 botlevel = GetLevel();
+	int8 botclass = GetClass();
+
+	if (botlevel >= 51 && casttime >= 3000 && !BeneficialSpell(spell_id) 
+		&& (botclass == SHADOWKNIGHT || botclass == RANGER || botclass == PALADIN || botclass == BEASTLORD ))
+		cast_reducer += (GetLevel()-50)*3;
+
+	if((casttime >= 4000) && BeneficialSpell(spell_id) && (CalcBuffDuration(this, this, spell_id) > 0)) {
+		if((botclass == ENCHANTER)||(botclass == WIZARD)||(botclass == NECROMANCER)||(botclass == MAGICIAN)||(botclass == SHADOWKNIGHT)) {
+			if(botlevel >= 57) { // Spell Casting Deftness AA
+				cast_reducer += 25;
+			}
+			else if(botlevel == 56) {
+				cast_reducer += 10;
+			}
+			else if(botlevel == 55) {
+				cast_reducer += 5;
+			}
+		}
+
+		if((botclass == ENCHANTER)||(botclass == SHAMAN)) {
+			if(botlevel >= 61) { // Quick Buff AA
+				cast_reducer += 50;
+			}
+			else if(botlevel == 60) {
+				cast_reducer += 25;
+			}
+			else if(botlevel == 59) {
+				cast_reducer += 10;
+			}
+		}
+	}
+
+	if(IsSummonSpell(spell_id)) {
+		if(botclass == MAGICIAN) {
+			if(botlevel >= 61) { // Quick Summoning AA
+				cast_reducer += 50;
+			}
+			else if(botlevel == 60) {
+				cast_reducer += 25;
+			}
+			else if(botlevel == 59) {
+				cast_reducer += 10;
+			}
+		}
+	}
+
+	if(IsEvacSpell(spell_id)) {
+		if((botclass == DRUID)||(botclass == WIZARD)) {
+			if(botlevel >= 61) { // Quick Evacuation AA
+				cast_reducer += 50;
+			}
+			else if(botlevel == 60) {
+				cast_reducer += 25;
+			}
+			else if(botlevel == 59) {
+				cast_reducer += 10;
+			}
+		}
+	}
+
+	if(IsDamageSpell(spell_id) && spells[spell_id].cast_time >= 4000) {
+		if((botclass == DRUID)||(botclass == WIZARD)) {
+			if(botlevel >= 61) { // Quick Damage AA
+				cast_reducer += 10;
+			}
+			else if(botlevel == 60) {
+				cast_reducer += 5;
+			}
+			else if(botlevel == 59) {
+				cast_reducer += 2;
+			}
+		}
+	}
+	if (cast_reducer > 50)
+		cast_reducer = 50;	//is this just an arbitrary limit?
+
+	casttime = (casttime*(100 - cast_reducer)/100);
+
+	return casttime;
+}
+
+sint32 Bot::GetActSpellCost(int16 spell_id, sint32 cost) {
+	sint32 Result = 0;
+
+	if(GetClass() == WIZARD || GetClass() == ENCHANTER || GetClass() == MAGICIAN || GetClass() == NECROMANCER || GetClass() == DRUID || GetClass() == SHAMAN || GetClass() == CLERIC || GetClass() == BARD) {
+		// This formula was derived from the following resource:
+		// http://www.eqsummoners.com/eq1/specialization-library.html
+		// WildcardX
+		float PercentManaReduction = 0;
+		float PercentOfMaxSpecializeSkill = 0;
+		float MaxSpecilizationSkillAllowed = GetSkill(spells[spell_id].skill);
+		float SpecializeSkill = GetSpecializeSkillValue(spell_id);
+		int SuccessChance = MakeRandomInt(1, 100);
+
+		if(MaxSpecilizationSkillAllowed > 0)
+			PercentOfMaxSpecializeSkill = SpecializeSkill / MaxSpecilizationSkillAllowed;
+
+		if(SuccessChance <= (PercentOfMaxSpecializeSkill * 100))
+			PercentManaReduction = (SpecializeSkill * .053) - 5.65;
+
+		if(GetLevel() >= 57) { // Spell Casting Mastery
+			PercentManaReduction += 30;
+		}
+		else if(GetLevel() == 56) {
+			PercentManaReduction += 15;
+		}
+		else if(GetLevel() == 55) {
+			PercentManaReduction += 5;
+		}
+
+		PercentManaReduction += GetBotFocusEffect(botfocusManaCost, spell_id);
+		cost -= (cost * (PercentManaReduction / 100));
+	}
+
+	if(cost < 0)
+		cost = 0;
+
+	Result = cost;
+
+	return Result;
+}
+
+float Bot::GetActSpellRange(int16 spell_id, float range) {
+	float extrange = 100;
+	extrange += GetBotFocusEffect(botfocusRange, spell_id);
+	return (range * extrange) / 100;
+}
+
+sint32 Bot::GetActSpellDuration(int16 spell_id, sint32 duration) {
+	int increase = 100;
+	increase += GetBotFocusEffect(botfocusSpellDuration, spell_id);
+
+	if(GetLevel() >= 57) { // Spell Casting Reinforcement AA
+		increase += 30;
+	}
+	else if(GetLevel() == 56) {
+		increase += 15;
+	}
+	else if(GetLevel() == 55) {
+		increase += 5;
+	}
+
+	if(GetLevel() >= 59) { // Spell Casting Reinforcement Mastery AA
+		increase += 20;
+	}
+
+	return (duration * increase) / 100;
 }
 
 void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {

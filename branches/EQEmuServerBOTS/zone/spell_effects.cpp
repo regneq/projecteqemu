@@ -162,16 +162,6 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 					// take partial damage into account
 					dmg = (sint32) (dmg * partial / 100);
 
-#ifdef EQBOTS
-
-					// Bot AA Casting Bonuses
-					if(caster && caster->IsBot()) {
-						dmg = caster->GetBotActSpellDamage(spell_id, dmg);
-					}
-					else
-
-#endif //EQBOTS
-
 					//handles AAs and what not...
 					if(caster)
 						dmg = caster->GetActSpellDamage(spell_id, dmg);
@@ -180,17 +170,6 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 					Damage(caster, dmg, spell_id, spell.skill, false, buffslot, false);
 				}
 				else if(dmg > 0) {
-
-#ifdef EQBOTS
-
-					// Bot AA Healing Bonuses
-					if(caster && caster->IsBot()) {
-						dmg = caster->GetBotActSpellHealing(spell_id, dmg);
-					}
-					else
-
-#endif //EQBOTS
-
 					//healing spell...
 					if(caster)
 						dmg = caster->GetActSpellHealing(spell_id, dmg);
@@ -248,16 +227,6 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
                                 //im not 100% sure about this implementation.
                                 //the spell value forumula dosent work for these... at least spell 3232 anyways
                                 sint32 val = spell.max[i];
-
-#ifdef EQBOTS
-
-								// Bot AA Casting Bonuses
-								if(caster && caster->IsBot()) {
-									val = caster->GetBotActSpellHealing(spell_id, val);
-								}
-								else
-
-#endif //EQBOTS
 
                                 if(caster)
                                         val = caster->GetActSpellHealing(spell_id, val);
@@ -2653,17 +2622,6 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 					dmg = -dmg;
 					Damage(caster, dmg, spell_id, spell.skill, false, buffslot, false);
 				} else if(dmg > 0) {
-
-#ifdef EQBOTS
-
-					// Bot AA Casting Bonuses
-					if(caster && caster->IsBot()) {
-						dmg = caster->GetBotActSpellHealing(spell_id, dmg);
-					}
-					else
-
-#endif //EQBOTS
-
 					//healing spell...
 					if(caster)
 						dmg = caster->GetActSpellHealing(spell_id, dmg);
@@ -3144,17 +3102,6 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 				effect_value = -effect_value;
 				Damage(caster, effect_value, spell_id, spell.skill, false, i, true);
 			} else if(effect_value > 0) {
-
-#ifdef EQBOTS
-
-				// Bot AA Casting Bonuses
-				if(caster && caster->IsBot()) {
-					effect_value = caster->GetBotActSpellHealing(spell_id, effect_value);
-				}
-				else
-
-#endif //EQBOTS
-
 				//healing spell...
 				//healing aggro would go here; removed for now
 				if(caster)
