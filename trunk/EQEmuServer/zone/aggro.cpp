@@ -916,7 +916,7 @@ bool Mob::CombatRange(Mob* other)
 	if (size_mod > 10000)
 		size_mod = size_mod / 7;
 	
-	if (DistNoRootNoZ(*other) <= size_mod)
+	if (DistNoRoot(*other) <= size_mod)
 	{
 		return true;
 	}
