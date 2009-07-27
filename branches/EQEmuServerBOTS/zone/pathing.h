@@ -96,6 +96,7 @@ public:
 	void ProcessNodesAndSave(string filename);
 	void ResortConnections();
 	void QuickConnect(Client *c, bool set = false);
+	void SortNodes();
 
 private:
 	PathFileHeader Head;

@@ -7269,7 +7269,7 @@ void command_path(Client *c, const Seperator *sep)
 		c->Message(0, "#path disconnect [all]/disconnect_from_id: Disconnects the currently targeted node to disconnect from disconnect from id's node (requires shownode target), if passed all as the second argument it will disconnect this node from every other node.");
 		c->Message(0, "#path move: Moves your targeted node to your current position");
 		c->Message(0, "#path process file_name: processes the map file and tries to automatically generate a rudimentary path setup and then dumps the current zone->pathing to a file of your naming.");
-		c->Message(0, "#path resort: resorts the connections after you've manually altered them so they'll work.");
+		c->Message(0, "#path resort [nodes]: resorts the connections/nodes after you've manually altered them so they'll work.");
 		return;
 	}
 	if(!strcasecmp(sep->arg[1], "shownodes"))
@@ -7381,6 +7381,7 @@ void command_path(Client *c, const Seperator *sep)
 		{
 			zone->pathing->ConnectNodeToNode(c, atoi(sep->arg[2]), atoi(sep->arg[3]), atoi(sep->arg[4]));
 		}
+		return;
 	}
 
 	if(!strcasecmp(sep->arg[1], "sconnect"))
@@ -7389,6 +7390,7 @@ void command_path(Client *c, const Seperator *sep)
 		{
 			zone->pathing->ConnectNode(c, atoi(sep->arg[2]), atoi(sep->arg[3]), atoi(sep->arg[4]));
 		}
+		return;
 	}
 
 	if(!strcasecmp(sep->arg[1], "qconnect"))
@@ -7404,6 +7406,7 @@ void command_path(Client *c, const Seperator *sep)
 				zone->pathing->QuickConnect(c, false);
 			}
 		}
+		return;
 	}
 
 	if(!strcasecmp(sep->arg[1], "disconnect"))
@@ -7419,6 +7422,7 @@ void command_path(Client *c, const Seperator *sep)
 				zone->pathing->DisconnectNodeToNode(c, atoi(sep->arg[2]));
 			}
 		}
+		return;
 	}
 
 
@@ -7428,6 +7432,7 @@ void command_path(Client *c, const Seperator *sep)
 		{
 			zone->pathing->MoveNode(c);
 		}
+		return;
 	}
 
 	if(!strcasecmp(sep->arg[1], "process"))
@@ -7447,9 +7452,18 @@ void command_path(Client *c, const Seperator *sep)
 	{
 		if(zone->pathing)
 		{
-			zone->pathing->ResortConnections();
-			c->Message(0, "Connections resorted...");
+			if(!strcasecmp(sep->arg[2], "nodes"))
+			{
+				zone->pathing->SortNodes();
+				c->Message(0, "Nodes resorted...");
+			}
+			else
+			{
+				zone->pathing->ResortConnections();
+				c->Message(0, "Connections resorted...");
+			}
 		}
+		return;
 	}
 
 	if(!strcasecmp(sep->arg[1], "hazard"))
@@ -7469,6 +7483,16 @@ void command_path(Client *c, const Seperator *sep)
 				}
 			}
 		}
+		return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "print"))
+	{
+		if(zone->pathing)
+		{
+			zone->pathing->PrintPathing();
+		}
+		return;
 	}
 
 	if(!strcasecmp(sep->arg[1], "showneighbours") || !strcasecmp(sep->arg[1], "showneighbors"))
