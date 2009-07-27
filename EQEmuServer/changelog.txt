@@ -6,6 +6,9 @@ AndMetal: Added InLiquid() function to the WaterMap class. Will return true if y
 AndMetal: Converted to some more Message Strings in zone/spells.cpp.
 AndMetal: Changed GetNextAvailableSpellBookSlot() & FindSpellBookSlotBySpellID() to return a result much faster.
 AndMetal: The scribespells commands/quest functions should no longer overwrite existing spells & will use only unused book slots.
+KLS: Added #path resort nodes to facilitate with keeping the pathing nodes in order.
+KLS: Fix for crash from adding/removing nodes.
+KLS: Combat range will now check the z axis as well.
 
 ==7/25/2009==
 KLS: Added a much more accurate but slower Hazard Detection algorithm for #path process that will calculate water and very spikey terrain between two points, other instances of PathManager::NoHazards untouched.

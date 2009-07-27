@@ -712,7 +712,7 @@ VERTEX Mob::UpdatePath(float ToX, float ToY, float ToZ, float Speed, bool &Waypo
 				mlog(PATHING__DEBUG, "Route size is %i", RouteSize);
 
 				if((RouteSize == 2)
-				   || ((PathingTraversedNodes >= RuleI(Pathing, MinNodesTraversedForLOSCheck))
+					|| ((PathingTraversedNodes >= RuleI(Pathing, MinNodesTraversedForLOSCheck))
 				   && (RouteSize <= RuleI(Pathing, MinNodesLeftForLOSCheck))
 				   && PathingLOSCheckTimer->Check()))
 				{
@@ -1549,6 +1549,9 @@ sint32 PathManager::AddNode(float x, float y, float z, float best_z, sint32 requ
 		NPC* npc = new NPC(npc_type, 0, new_node.v.x, new_node.v.y, new_node.v.z, 0, FlyMode1);
 		npc->GiveNPCTypeData(npc_type);
 		entity_list.AddNPC(npc, true, true);
+
+		safe_delete_array(ClosedListFlag);
+		ClosedListFlag = new int[Head.PathNodeCount];
 		return new_id;
 	}
 	else
@@ -1606,6 +1609,9 @@ sint32 PathManager::AddNode(float x, float y, float z, float best_z, sint32 requ
 		NPC* npc = new NPC(npc_type, 0, new_node.v.x, new_node.v.y, new_node.v.z, 0, FlyMode1);
 		npc->GiveNPCTypeData(npc_type);
 		entity_list.AddNPC(npc, true, true);
+
+		ClosedListFlag = new int[Head.PathNodeCount];
+
 		return new_id;
 	}
 }
@@ -1680,6 +1686,8 @@ bool PathManager::DeleteNode(sint32 id)
 				}
 			}
 		}
+		safe_delete_array(ClosedListFlag);
+		ClosedListFlag = new int[Head.PathNodeCount];
 	}
 	else
 	{
@@ -2172,4 +2180,68 @@ void PathManager::QuickConnect(Client *c, bool set)
 			ConnectNodeToNode(QuickConnectTarget, Node->id);
 		}
 	}
+}
+
+struct InternalPathSort
+{
+	sint16 old_id;
+	sint16 new_id;
+};
+
+void PathManager::SortNodes()
+{
+	std::vector<InternalPathSort> sorted_vals;
+	for(int x = 0; x < Head.PathNodeCount; ++x)
+	{
+		InternalPathSort tmp;
+		tmp.old_id = PathNodes[x].id;
+		sorted_vals.push_back(tmp);
+	}
+
+	PathNode *t_PathNodes = new PathNode[Head.PathNodeCount];
+	memcpy(t_PathNodes, PathNodes, sizeof(PathNode)*Head.PathNodeCount);
+	for(int i = 0; i < Head.PathNodeCount; ++i)
+	{
+		for(int j = 0; j < sorted_vals.size(); ++j)
+		{
+			if(sorted_vals[j].old_id == PathNodes[i].id)
+			{
+				if(i != PathNodes[i].id)
+				{
+					printf("Assigning new id of index %i differs from old id %i\n", i, PathNodes[i].id);
+				}
+				sorted_vals[j].new_id = i;
+			}
+		}
+		t_PathNodes[i].id = i;
+	}
+
+	for(int y = 0; y < Head.PathNodeCount; ++y)
+	{
+		for(int z = 0; z < PATHNODENEIGHBOURS; ++z)
+		{
+			if(PathNodes[y].Neighbours[z].id != -1)
+			{
+				int new_val = -1;
+				for(int c = 0; c < sorted_vals.size(); ++c)
+				{
+					if(PathNodes[y].Neighbours[z].id == sorted_vals[c].old_id)
+					{
+						new_val = sorted_vals[c].new_id;
+						break;
+					}
+				}
+				if(new_val != -1)
+				{
+					if(t_PathNodes[y].Neighbours[z].id != new_val)
+					{
+						printf("changing neighbor value to %i from %i\n", new_val, t_PathNodes[y].Neighbours[z].id);
+					}
+					t_PathNodes[y].Neighbours[z].id = new_val;
+				}
+			}
+		}
+	}
+	safe_delete_array(PathNodes);
+	PathNodes = t_PathNodes;
 }
