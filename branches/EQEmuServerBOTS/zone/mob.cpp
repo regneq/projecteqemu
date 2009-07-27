@@ -537,60 +537,7 @@ float Mob::_GetMovementSpeed(int mod) const {
 	return(runspeed * speed_mod);
 }
 
-sint32 Mob::CalcMaxMana()
-{
-
-#ifdef EQBOTS
-
-	if(IsBot()) {
-		sint32 WisInt = 0;
-		sint32 MindLesserFactor, MindFactor;
-		switch (GetCasterClass()) {
-		case 'I':
-			WisInt = GetINT();
-			if((( WisInt - 199 ) / 2) > 0) {
-				MindLesserFactor = ( WisInt - 199 ) / 2;
-			}
-			else {
-				MindLesserFactor = 0;
-			}
-			MindFactor = WisInt - MindLesserFactor;
-			if(WisInt > 100) {
-				max_mana = (((5 * (MindFactor + 20)) / 2) * 3 * GetLevel() / 40);
-			}
-			else {
-				max_mana = (((5 * (MindFactor + 200)) / 2) * 3 * GetLevel() / 100);
-			}
-			max_mana += (itembonuses.Mana + spellbonuses.Mana);
-			break;
-
-		case 'W':
-			WisInt = GetWIS();
-			if((( WisInt - 199 ) / 2) > 0) {
-				MindLesserFactor = ( WisInt - 199 ) / 2;
-			}
-			else {
-				MindLesserFactor = 0;
-			}
-			MindFactor = WisInt - MindLesserFactor;
-			if(WisInt > 100) {
-				max_mana = (((5 * (MindFactor + 20)) / 2) * 3 * GetLevel() / 40);
-			}
-			else {
-				max_mana = (((5 * (MindFactor + 200)) / 2) * 3 * GetLevel() / 100);
-			}
-			max_mana += (itembonuses.Mana + spellbonuses.Mana);
-			break;
-
-		default:
-			max_mana = 0;
-			break;
-		}
-		return max_mana;
-	}
-
-#endif //EQBOTS
-
+sint32 Mob::CalcMaxMana() {
 	switch (GetCasterClass()) {
 		case 'I':
 			max_mana = (((GetINT()/2)+1) * GetLevel()) + spellbonuses.Mana + itembonuses.Mana;
@@ -1563,32 +1510,6 @@ void Mob::SetAttackTimer() {
 			//isn't the same as PC inventory and also:
 			//NPCs don't use weapon speed to dictate how fast they hit anyway.
 			ItemToUse = NULL;
-
-#ifdef EQBOTS
-
-			if(IsBot())
-			{
-				int j = 0;
-				switch(i)
-				{
-					case SLOT_PRIMARY:
-						j = MATERIAL_PRIMARY;
-						break;
-					case SLOT_SECONDARY:
-					case SLOT_RANGE:
-						j = MATERIAL_SECONDARY;
-						break;
-					default:
-						j = MATERIAL_PRIMARY;
-						break;
-				}
-				int32 eid = CastToNPC()->GetEquipment(j);
-				if(eid != 0)
-					ItemToUse = database.GetItem(eid);
-			}
-
-#endif //EQBOTS
-
 		}
 		
 		//special offhand stuff
@@ -2166,23 +2087,7 @@ bool Mob::HateSummon() {
 			target->CastToClient()->MovePC(zone->GetZoneID(), zone->GetInstanceID(), x_pos, y_pos, z_pos, target->GetHeading(), 0, SummonPC);
 		}
 		else
-
-#ifdef EQBOTS
-
-             {
-                 if(target->IsBot()) {
-                     target->Warp(x_pos, y_pos, z_pos);
-                 }
-                 else {
-                     GetHateTop()->GMMove(x_pos, y_pos, z_pos, target->GetHeading());
-                 }
-        }
-
-#else //EQBOTS
-
 			GetHateTop()->GMMove(x_pos, y_pos, z_pos, target->GetHeading());
-
-#endif //EQBOTS
 
         return true;
 	}

@@ -384,6 +384,7 @@ private:
 	public:
 		Mob* GetMobByBotID(uint32 botID);
 		void AddBot(Bot* newBot, bool SendSpawnPacket = true, bool dontqueue = false);
+		list<Bot*> GetBotsByBotOwnerCharacterID(uint32 botOwnerCharacterID);
 		bool RemoveBot(int16 entityID);
 		bool Bot_AICheckCloseBeneficialSpells(Bot* caster, int8 iChance, float iRange, int16 iSpellTypes);
 		void ShowSpawnWindow(Client* client, int Distance, bool NamedOnly);

@@ -1996,15 +1996,6 @@ void EntityList::RemoveAllNPCs(){
 	LinkedListIterator<NPC*> iterator(npc_list);
 	iterator.Reset();
 	while(iterator.MoreElements()) {
-
-#ifdef EQBOTS
-
-		if(iterator.GetData()->IsBot()) {
-			database.CleanBotLeaderEntries(iterator.GetData()->GetNPCTypeID());
-		}
-
-#endif //EQBOTS
-
 		iterator.RemoveCurrent(false);
 	}
 	npc_limit_list.clear();
@@ -2291,12 +2282,13 @@ void EntityList::RemoveEntity(int16 id)
 	else if(entity_list.RemoveTrap(id))
 		return;
 
-#ifdef EQBOTS
-
+#ifdef BOTS
+	// This block of code is necessary to clean up bot objects
 	else if(entity_list.RemoveBotRaid(id))
 		return;
-
-#endif //EQBOTS
+	else if(entity_list.RemoveBot(id))
+		return;
+#endif //BOTS
 
 	else 
 		entity_list.RemoveObject(id);

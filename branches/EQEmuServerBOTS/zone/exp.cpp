@@ -188,15 +188,6 @@ void Client::SetEXP(int32 set_exp, int32 set_aaxp, bool isrezzexp) {
 		if (isrezzexp)
 			this->Message_StringID(15,REZ_REGAIN);
 		else{
-
-#ifdef EQBOTS
-
-			if(this->IsBotRaiding())
-				Message_StringID(15, GAIN_RAIDEXP);
-			else
-
-#endif //EQBOTS
-
 			if(this->IsGrouped())
 				this->Message_StringID(15,GAIN_GROUPXP);
 			else if(IsRaidGrouped())

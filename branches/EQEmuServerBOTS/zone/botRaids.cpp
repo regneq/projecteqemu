@@ -72,6 +72,7 @@ bool BotRaids::AddBotGroup(Group *gtoadd) {
 			for(int k = 0; k < MAX_GROUP_MEMBERS; k++) {
 				if(gtoadd->members[k]) {
 					gtoadd->members[k]->SetBotRaidID(GetBotRaidID());
+					gtoadd->members[k]->SetRaidGrouped(true);
 				}
 			}
 
@@ -90,6 +91,7 @@ void BotRaids::RemoveBotGroup(Group *delgroup) {
 			if(BotRaidGroups[i] == delgroup) {
 				for(int j=5; j>=0; j--) {
 					if(delgroup->members[j] && delgroup->members[j]->IsBot()) {
+						delgroup->members[j]->SetRaidGrouped(false);
 						delgroup->members[j]->CastToBot()->SetBotOwner(0);
 						delgroup->members[j]->Kill();
 					}
@@ -115,11 +117,13 @@ void BotRaids::RemoveRaidBots() {
 				if(BotRaidGroups[i]) {
 					if(BotRaidGroups[i]->members[j]) {
 						if(BotRaidGroups[i]->members[j]->IsBot()) {
+							BotRaidGroups[i]->members[j]->SetRaidGrouped(false);
 							BotRaidGroups[i]->members[j]->CastToBot()->SetBotOwner(0);
 							BotRaidGroups[i]->members[j]->Kill();
 						}
 						else if(BotRaidGroups[i]->members[j]->IsClient()) {
 							BotRaidGroups[i]->members[j]->SetBotRaidID(0);
+							BotRaidGroups[i]->members[j]->SetRaidGrouped(false);
 							if(Bot::GetCountBotsInGroup(BotRaidGroups[i]) < 2) {
 								BotRaidGroups[i]->members[j]->SetGrouped(false);
 							}
@@ -167,15 +171,19 @@ bool BotRaids::RemoveClientGroup(Mob *m) {
 		if(g) {
 			if(g->GetLeader() == m) {
 				if(Bot::GetCountBotsInGroup(BotRaidGroups[i]) == 1) {
-					if(m->IsClient())
+					if(m->IsClient()) {
+						m->CastToClient()->SetRaidGrouped(false);
 						m->CastToClient()->SetBotRaidID(0);
+					}
 					m->SetGrouped(false);
 					entity_list.RemoveGroup(BotRaidGroups[i]->GetID());
 				}
 				else {
 					for(int j=0; j<MAX_GROUP_MEMBERS; j++) {
-						if(g->members[j])
+						if(g->members[j]) {
+							g->members[j]->SetRaidGrouped(false);
 							g->members[j]->SetBotRaidID(0);
+						}
 					}
 				}
 				BotRaidGroups[i] = 0x00000000;

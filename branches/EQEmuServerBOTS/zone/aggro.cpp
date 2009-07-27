@@ -1417,16 +1417,6 @@ sint32 Mob::CheckHealAggroAmount(int16 spellid, int32 heal_possible) {
 		AggroAmount = (AggroAmount * (100+focusAggro) / 100);
 	}
 
-#ifdef EQBOTS
-
-	if(IsBot())
-	{
-		sint32 focusAggro = GetBotFocusEffect(botfocusHateReduction, spell_id);
-		AggroAmount = (AggroAmount * (100+focusAggro) / 100);
-	}
-
-#endif //EQBOTS
-
 	AggroAmount = (AggroAmount * RuleI(Aggro, SpellAggroMod))/100;
 
 	if(AggroAmount < 0)

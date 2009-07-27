@@ -80,6 +80,9 @@ public:
 	virtual bool IsAttackAllowed(Mob *target, bool isSpellAttack = false);
 	//uint32 IsBotRaiding() { return this->GetBotRaidID(); }
 	inline virtual bool HasOwner() { return (GetBotOwner() ? true : false); }
+	virtual sint32 CheckHealAggroAmount(int16 spellid, int32 heal_possible = 0);
+	virtual sint32 CalcMaxMana();
+	virtual void SetAttackTimer();
 	
 	// Bot Action Command Methods
 	bool MesmerizeTarget(Mob* target);
@@ -130,6 +133,7 @@ public:
 	static uint32 GetCountBotsInGroup(Group* group);
 	static bool AddBotToGroup(Bot* bot, Group* group);
 	static void SendBotHPPacketsToGroup(Bot* bot, Group* group);
+	static void DestroyBotObjects(Client* client);
 
 	// "GET" Class Methods
 	//uint32 GetBotID() { return this->GetNPCTypeID(); }

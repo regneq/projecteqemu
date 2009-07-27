@@ -3074,7 +3074,11 @@ uint32 Bot::SpawnedBotCount(uint32 botOwnerCharacterID, std::string* errorMessag
 	uint32 Result = 0;
 
 	if(botOwnerCharacterID > 0) {
-		char ErrBuf[MYSQL_ERRMSG_SIZE];
+		std::list<Bot*> SpawnedBots = entity_list.GetBotsByBotOwnerCharacterID(botOwnerCharacterID);
+
+		Result = SpawnedBots.size();
+
+		/*char ErrBuf[MYSQL_ERRMSG_SIZE];
 		char* Query = 0;
 		MYSQL_RES* DatasetResult;
 		MYSQL_ROW DataRow;
@@ -3091,7 +3095,7 @@ uint32 Bot::SpawnedBotCount(uint32 botOwnerCharacterID, std::string* errorMessag
 		else
 			*errorMessage = std::string(ErrBuf);
 
-		safe_delete_array(Query);
+		safe_delete_array(Query);*/
 	}
 
 	return Result;
@@ -4118,7 +4122,7 @@ void Bot::FinishTrade(Mob* tradingWith) {
 				//NPC* npc=with->CastToNPC();
 				const Item_Struct* item2 = database.GetItem(items[y]);
 				if (item2) {
-					if(!botCanWear[y]) {
+					if(botCanWear[y]) {
 						Say("Thank you for the %s, %s.", item2->Name,  client->GetName());
 					}
 					else {
@@ -6477,6 +6481,16 @@ sint32 Bot::CheckAggroAmount(int16 spellid) {
 	return AggroAmount;
 }
 
+sint32 Bot::CheckHealAggroAmount(int16 spellid, int32 heal_possible) {
+	sint32 AggroAmount = Mob::CheckHealAggroAmount(spellid, heal_possible);
+
+	sint32 focusAggro = GetBotFocusEffect(botfocusHateReduction, spellid);
+	
+	AggroAmount = (AggroAmount * (100 + focusAggro) / 100);
+
+	return AggroAmount;
+}
+
 void Bot::MakePet(int16 spell_id, const char* pettype, const char *petname) {
 	//see if we are a special type of pet (for command filtering)
 	PetType type = petOther;
@@ -6803,6 +6817,229 @@ void Bot::EquipBot(Client* client) {
 		CalcBotStats();
 		SendHPUpdate();
 	}
+}
+
+void Bot::DestroyBotObjects(Client* client) {
+	if(client) {
+		if(client->GetBotRaidID() > 0) {
+			BotRaids* br = entity_list.GetBotRaidByMob(client);
+			if(br) {
+				br->RemoveRaidBots();
+				br = NULL;
+			}
+		}
+
+		Group *g = entity_list.GetGroupByMob(client);
+		if(g) {
+			for(int i=5; i>=0; i--) {
+				if(g->members[i] && g->members[i]->IsBot()) {
+					g->members[i]->CastToBot()->SetBotOwner(0);
+					g->members[i]->Kill();
+				}
+			}
+
+			if(g->GroupCount() <= 1)
+				g->DisbandGroup();
+		}
+	}
+}
+
+sint32 Bot::CalcMaxMana() {
+	sint32 WisInt = 0;
+	sint32 MindLesserFactor, MindFactor;
+	switch (GetCasterClass()) {
+		case 'I':
+			WisInt = GetINT();
+			if((( WisInt - 199 ) / 2) > 0) {
+				MindLesserFactor = ( WisInt - 199 ) / 2;
+			}
+			else {
+				MindLesserFactor = 0;
+			}
+			MindFactor = WisInt - MindLesserFactor;
+			if(WisInt > 100) {
+				max_mana = (((5 * (MindFactor + 20)) / 2) * 3 * GetLevel() / 40);
+			}
+			else {
+				max_mana = (((5 * (MindFactor + 200)) / 2) * 3 * GetLevel() / 100);
+			}
+			max_mana += (itembonuses.Mana + spellbonuses.Mana);
+			break;
+
+		case 'W':
+			WisInt = GetWIS();
+			if((( WisInt - 199 ) / 2) > 0) {
+				MindLesserFactor = ( WisInt - 199 ) / 2;
+			}
+			else {
+				MindLesserFactor = 0;
+			}
+			MindFactor = WisInt - MindLesserFactor;
+			if(WisInt > 100) {
+				max_mana = (((5 * (MindFactor + 20)) / 2) * 3 * GetLevel() / 40);
+			}
+			else {
+				max_mana = (((5 * (MindFactor + 200)) / 2) * 3 * GetLevel() / 100);
+			}
+			max_mana += (itembonuses.Mana + spellbonuses.Mana);
+			break;
+
+		default:
+			max_mana = 0;
+			break;
+	}
+	return max_mana;
+}
+
+void Bot::SetAttackTimer() {
+	float PermaHaste;
+	if(GetHaste() > 0)
+		PermaHaste = 1 / (1 + (float)GetHaste()/100);
+	else if(GetHaste() < 0)
+		PermaHaste = 1 * (1 - (float)GetHaste()/100);
+	else
+		PermaHaste = 1.0f;
+
+	//default value for attack timer in case they have
+	//an invalid weapon equipped:
+	attack_timer.SetAtTrigger(4000, true);
+
+	Timer* TimerToUse = NULL;
+	const Item_Struct* PrimaryWeapon = NULL;
+
+	for (int i=SLOT_RANGE; i<=SLOT_SECONDARY; i++) {
+
+		//pick a timer
+		if (i == SLOT_PRIMARY)
+			TimerToUse = &attack_timer;
+		else if (i == SLOT_RANGE)
+			TimerToUse = &ranged_timer;
+		else if(i == SLOT_SECONDARY)
+			TimerToUse = &attack_dw_timer;
+		else	//invalid slot (hands will always hit this)
+			continue;
+
+		const Item_Struct* ItemToUse = NULL;
+
+		//find our item
+		//The code before here was fundementally flawed because equipment[] 
+		//isn't the same as PC inventory and also:
+		//NPCs don't use weapon speed to dictate how fast they hit anyway.
+		ItemToUse = NULL;
+
+		// BEGIN CODE BLOCK UNIQUE TO A BOT
+		int j = 0;
+		switch(i) {
+				case SLOT_PRIMARY:
+					j = MATERIAL_PRIMARY;
+					break;
+				case SLOT_SECONDARY:
+				case SLOT_RANGE:
+					j = MATERIAL_SECONDARY;
+					break;
+				default:
+					j = MATERIAL_PRIMARY;
+					break;
+		}
+		int32 eid = CastToNPC()->GetEquipment(j);
+		if(eid != 0)
+			ItemToUse = database.GetItem(eid);
+		// END CODE BLOCK UNIQUE TO A BOT
+
+		//special offhand stuff
+		if(i == SLOT_SECONDARY) {
+			//if we have a 2H weapon in our main hand, no dual
+			if(PrimaryWeapon != NULL) {
+				if(	PrimaryWeapon->ItemClass == ItemClassCommon
+					&& (PrimaryWeapon->ItemType == ItemType2HS
+					||	PrimaryWeapon->ItemType == ItemType2HB
+					||	PrimaryWeapon->ItemType == ItemType2HPierce)) {
+						attack_dw_timer.Disable();
+						continue;
+				}
+			}
+
+			//clients must have the skill to use it...
+			if(GetLevel() < 13) {
+				attack_dw_timer.Disable();
+				continue;
+			}
+		}
+
+		//see if we have a valid weapon
+		if(ItemToUse != NULL) {
+			//check type and damage/delay
+			if(ItemToUse->ItemClass != ItemClassCommon 
+				|| ItemToUse->Damage == 0 
+				|| ItemToUse->Delay == 0) {
+					//no weapon
+					ItemToUse = NULL;
+			}
+			// Check to see if skill is valid
+			else if((ItemToUse->ItemType > ItemTypeThrowing) && (ItemToUse->ItemType != ItemTypeHand2Hand) && (ItemToUse->ItemType != ItemType2HPierce)) {
+				//no weapon
+				ItemToUse = NULL;
+			}
+		}
+
+		//if we have no weapon..
+		if (ItemToUse == NULL) {
+			//above checks ensure ranged weapons do not fall into here
+			// Work out if we're a monk
+			if ((GetClass() == MONK) || (GetClass() == BEASTLORD)) {
+				//we are a monk, use special delay
+				int speed = (int)(GetMonkHandToHandDelay()*(100.0f+attack_speed)*PermaHaste);
+				// neotokyo: 1200 seemed too much, with delay 10 weapons available
+				if(speed < 800)	//lower bound
+					speed = 800;
+				TimerToUse->SetAtTrigger(speed, true);	// Hand to hand, delay based on level or epic
+			} else {
+				//not a monk... using fist, regular delay
+				int speed = (int)(36*(100.0f+attack_speed)*PermaHaste);
+				//if(speed < 800 && IsClient())	//lower bound
+				//	speed = 800;
+				TimerToUse->SetAtTrigger(speed, true); 	// Hand to hand, non-monk 2/36
+			}
+		} else {
+			//we have a weapon, use its delay
+			// Convert weapon delay to timer resolution (milliseconds)
+			//delay * 100
+			int speed = (int)(ItemToUse->Delay*(100.0f+attack_speed)*PermaHaste);
+			if(speed < 800)
+				speed = 800;
+
+			if(ItemToUse && (ItemToUse->ItemType == ItemTypeBow || ItemToUse->ItemType == ItemTypeThrowing))
+			{
+				/*if(IsClient())
+				{
+					float max_quiver = 0;
+					for(int r = SLOT_PERSONAL_BEGIN; r <= SLOT_PERSONAL_END; r++) 
+					{
+						const ItemInst *pi = CastToClient()->GetInv().GetItem(r);
+						if(!pi)
+							continue;
+						if(pi->IsType(ItemClassContainer) && pi->GetItem()->BagType == bagTypeQuiver)
+						{
+							float temp_wr = (pi->GetItem()->BagWR / 3);
+							if(temp_wr > max_quiver)
+							{
+								max_quiver = temp_wr;
+							}
+						}
+					}
+					if(max_quiver > 0)
+					{
+						float quiver_haste = 1 / (1 + max_quiver / 100);
+						speed *= quiver_haste;
+					}
+				}*/
+			}
+			TimerToUse->SetAtTrigger(speed, true);
+		}
+
+		if(i == SLOT_PRIMARY)
+			PrimaryWeapon = ItemToUse;
+	}	
 }
 
 void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
@@ -7288,8 +7525,10 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 					// Create a group before we have to make a raid in case we dont need to form a raid
 					AddBotToGroup(botGroupMember, g);
 
-					if(br)
-						botGroupMember->SetBotRaidID(br->GetBotRaidID());
+					/*if(br)
+						botGroupMember->SetBotRaidID(br->GetBotRaidID());*/
+
+					botGroupMember->SendHPUpdate();
 				}
 				else {
 					// Create a raid, if one already isn't instantiated and then create a new group to add to this raid
@@ -7306,6 +7545,8 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 					entity_list.AddGroup(g);
 
 					br->AddBotGroup(g);
+
+					botGroupMember->SendHPUpdate();
 				}
 			}
 		}
@@ -10441,6 +10682,22 @@ void EntityList::AddBot(Bot *newBot, bool SendSpawnPacket, bool dontqueue) {
 
 		mob_list.Insert(newBot);
 	}
+}
+
+list<Bot*> EntityList::GetBotsByBotOwnerCharacterID(uint32 botOwnerCharacterID) {
+	list<Bot*> Result;
+
+	if(botOwnerCharacterID > 0) {
+		LinkedListIterator<Bot*> botItr(bot_list);
+		botItr.Reset();
+		while(botItr.MoreElements()) {
+			if(botItr.GetData()->GetBotOwnerCharacterID() == botOwnerCharacterID)
+				Result.push_back(botItr.GetData());
+			botItr.Advance();
+		}
+	}
+
+	return Result;
 }
 
 bool EntityList::RemoveBot(int16 entityID) {
