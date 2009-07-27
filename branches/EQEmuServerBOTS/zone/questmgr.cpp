@@ -1395,22 +1395,22 @@ void QuestManager::popup(char *title, char *text, int32 popupid, int32 buttons, 
          if(initiator) initiator->SendPopupToClient(title, text, popupid, buttons, Duration);
 }
 
-#ifdef EQBOTS
+#ifdef BOTS
 
 int QuestManager::createbotcount() {
-	return RuleI(EQOffline, CreateBotCount);
+	return RuleI(Bots, CreateBotCount);
 }
 
 int QuestManager::spawnbotcount() {
-	return RuleI(EQOffline, SpawnBotCount);
+	return RuleI(Bots, SpawnBotCount);
 }
 
 bool QuestManager::botquest()
 {
-	return RuleB(EQOffline, BotQuest);
+	return RuleB(Bots, BotQuest);
 }
 
-#endif //EQBOTS
+#endif //BOTS
 
 void QuestManager::taskselector(int taskcount, int *tasks) {
 	if(RuleB(TaskSystem, EnableTaskSystem) && initiator && owner && taskmanager) 

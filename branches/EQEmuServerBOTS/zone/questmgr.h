@@ -213,6 +213,12 @@ public:
 	inline ItemInst *GetQuestItem() const {return questitem; }
 	inline bool ProximitySayInUse() { return HaveProximitySays; }
 
+#ifdef BOTS
+	int createbotcount();
+	int spawnbotcount();
+	bool botquest();
+#endif
+
 protected:
 	Mob *owner;	//NPC is never NULL when functions are called.
 	Client *initiator;	//this can be null.

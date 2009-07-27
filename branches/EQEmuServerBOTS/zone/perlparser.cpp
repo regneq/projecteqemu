@@ -1839,7 +1839,7 @@ XS(XS__playertexture)
 	XSRETURN_EMPTY;
 }
 
-#ifdef EQBOTS
+#ifdef BOTS
 
 XS(XS__createbotcount);
 XS(XS__createbotcount)
@@ -1880,7 +1880,7 @@ XS(XS__botquest)
 	XSRETURN(1);
 }
 
-#endif //EQBOTS
+#endif //BOTS
 
 XS(XS__taskselector);
 XS(XS__taskselector)
@@ -2871,13 +2871,11 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "playersize"), XS__playersize, file);
 		newXS(strcpy(buf, "playertexture"), XS__playertexture, file);
 
-#ifdef EQBOTS
-
+#ifdef BOTS
 		newXS(strcpy(buf, "botquest"), XS__botquest, file);
 		newXS(strcpy(buf, "spawnbotcount"), XS__spawnbotcount, file);
 		newXS(strcpy(buf, "createbotcount"), XS__createbotcount, file);
-
-#endif //EQBOTS
+#endif //BOTS
 
 		newXS(strcpy(buf, "taskselector"), XS__taskselector, file);
 		newXS(strcpy(buf, "tasksetselector"), XS__tasksetselector, file);
