@@ -1493,14 +1493,14 @@ bool Bot::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 				mana_cost = spells[AIspells[i].spellid].mana;
 			else if (mana_cost == -2)
 				mana_cost = 0;
-			bool extraMana = false;
+			sint32 extraMana = 0;
 			sint32 hasMana = GetMana();
 			if(RuleB(Bots, BotFinishBuffing)) {
 				if(mana_cost > hasMana) {
 					// Let's have the bots complete the buff time process
 					if(iSpellTypes & SpellType_Buff) {
+						extraMana = mana_cost - hasMana;
 						SetMana(mana_cost);
-						extraMana = true;
 					}
 				}
 			}
@@ -1627,8 +1627,7 @@ bool Bot::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 									// If the bot is just looping through spells and not casting
 									// then don't let them keep the extra mana we gave them during
 									// buff time
-									SetMana(0);
-									extraMana = false;
+									SetMana(GetMana() - extraMana);
 								}
 								return true;
 						}
@@ -12019,17 +12018,22 @@ void Bot::CalcBotStats(bool showtext) {
 	bool ret = false;			
 
 	/* Update to the DB with base stats*/
-	if(database.RunQuery(query, MakeAnyLenString(&query, "update npc_types set level=%i, hp=%i, size=%f, npc_spells_id=%i, runspeed=%f, MR=%i, CR=%i, DR=%i, FR=%i, PR=%i, AC=%i, STR=%i, STA=%i, DEX=%i, AGI=%i, _INT=%i, WIS=%i, CHA=%i, ATK=%i where id=%i",blevel,base_hp,bsize,spellid,2.501f,MR,CR,DR,FR,PR,AC,STR,STA,DEX,AGI,INT,WIS,CHA,ATK,GetNPCTypeID()), errbuf)) {
+	/*if(database.RunQuery(query, MakeAnyLenString(&query, "update npc_types set level=%i, hp=%i, size=%f, npc_spells_id=%i, runspeed=%f, MR=%i, CR=%i, DR=%i, FR=%i, PR=%i, AC=%i, STR=%i, STA=%i, DEX=%i, AGI=%i, _INT=%i, WIS=%i, CHA=%i, ATK=%i where id=%i",blevel,base_hp,bsize,spellid,2.501f,MR,CR,DR,FR,PR,AC,STR,STA,DEX,AGI,INT,WIS,CHA,ATK,GetNPCTypeID()), errbuf)) {
 		safe_delete_array(query);
 	}
 	else {
 		Say("My database update failed!!!");
-	}
+	}*/
+	
+	if(this->Save())
+		this->GetBotOwner()->CastToClient()->Message(0, "%s saved.", this->GetCleanName());
+	else
+		this->GetBotOwner()->CastToClient()->Message(13, "%s save failed!", this->GetCleanName());
 
 	query = 0;
 	memset(&itembonuses, 0, sizeof(StatBonuses));
 	for(int i=0; i<22; i++) {
-		if(database.RunQuery(query, MakeAnyLenString(&query, "SELECT itemid FROM botinventory WHERE npctypeid=%i AND botslotid=%i", GetNPCTypeID(), i), errbuf, &result)) {
+		if(database.RunQuery(query, MakeAnyLenString(&query, "SELECT itemid FROM botinventory WHERE botid=%i AND slotid=%i", GetNPCTypeID(), i), errbuf, &result)) {
 			safe_delete_array(query);
 			if(mysql_num_rows(result) == 1) {
 				row = mysql_fetch_row(result);
@@ -12233,7 +12237,7 @@ void Bot::CalcBotStats(bool showtext) {
 			break;
 	}
 	max_mana = cur_mana = bot_mana;
-	CastToNPC()->AI_AddNPCSpells(spellid);
+	AI_AddNPCSpells(spellid);
 
 	if(showtext) {
 		BotOwner->Message(15, "I'm updated.");
