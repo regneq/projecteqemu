@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==7/27/2009==
 gaeorn: changes to login server to compile under linux. added linux makefile for linux. converted utf16 sql files to normal ascii text.
+KLS: Fix for issue where client would stop recieving communication when recieving more than 36 nodes in a find reply. Resolved by capping the amount of nodes find can return, more than 36 will result in unable to easily find message.
 
 ==7/26/2009==
 AndMetal: AGI Penalty for being encumbered now matches the Titanium client. The old formula was much higher than the client was reporting.
