@@ -1170,7 +1170,7 @@ void Bot::BotMeditate(bool isSitting) {
 				}
 				regen = (regen * RuleI(Character, ManaRegenMultiplier)) / 100;
 
-				float mana_regen_rate = RuleR(EQOffline, BotManaRegen);
+				float mana_regen_rate = RuleR(Bots, BotManaRegen);
 				if(mana_regen_rate < 1.0f)
 					mana_regen_rate = 1.0f;
 
@@ -1233,7 +1233,7 @@ void Bot::BotMeditate(bool isSitting) {
 			}
 			regen = (regen * RuleI(Character, ManaRegenMultiplier)) / 100;
 
-			float mana_regen_rate = RuleR(EQOffline, BotManaRegen);
+			float mana_regen_rate = RuleR(Bots, BotManaRegen);
 			if(mana_regen_rate < 1.0f)
 				mana_regen_rate = 1.0f;
 
@@ -1495,7 +1495,7 @@ bool Bot::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 				mana_cost = 0;
 			bool extraMana = false;
 			sint32 hasMana = GetMana();
-			if(RuleB(EQOffline, BotFinishBuffing)) {
+			if(RuleB(Bots, BotFinishBuffing)) {
 				if(mana_cost > hasMana) {
 					// Let's have the bots complete the buff time process
 					if(iSpellTypes & SpellType_Buff) {

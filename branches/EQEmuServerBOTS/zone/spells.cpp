@@ -1546,7 +1546,7 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
 #ifdef EQBOTS
 
             //EQoffline: force AE buffs
-            if(IsBot() && IsGrouped() && (spell_target->IsBot() || spell_target->IsClient()) && RuleB(EQOffline, BotGroupBuffing))
+            if(IsBot() && IsGrouped() && (spell_target->IsBot() || spell_target->IsClient()) && RuleB(Bots, BotGroupBuffing))
             {
 				NPC *bot = this->CastToNPC();
                 bool noGroupSpell = false;
