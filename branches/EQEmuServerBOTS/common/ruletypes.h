@@ -283,8 +283,8 @@ RULE_CATEGORY_END()
 
 #ifdef BOTS
 RULE_CATEGORY ( Bots )
-RULE_REAL ( Bots, BotManaRegen, 1.0 ) // Adjust mana regen for bots, 1 is fast and higher numbers slow it down 3 is about the same as players.
-RULE_BOOL ( Bots, BotFinishBuffing, true ) // Allow for buffs to complete even if the bot caster is out of mana.  Only affects buffing out of combat.
+RULE_REAL ( Bots, BotManaRegen, 2.0 ) // Adjust mana regen for bots, 1 is fast and higher numbers slow it down 3 is about the same as players.
+RULE_BOOL ( Bots, BotFinishBuffing, false ) // Allow for buffs to complete even if the bot caster is out of mana.  Only affects buffing out of combat.
 RULE_INT ( Bots, CreateBotCount, 150 ) // Number of bots that each account can create
 RULE_INT ( Bots, SpawnBotCount, 71 ) // Number of bots a character can have spawned at one time, You + 71 bots is a 12 group raid
 RULE_BOOL ( Bots, BotQuest, false ) // Optional quest method to manage bot spawn limits using the quest_globals name bot_spawn_limit, see: /bazaar/Aediles_Thrall.pl

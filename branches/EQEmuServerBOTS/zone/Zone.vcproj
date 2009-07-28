@@ -929,10 +929,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\common\EQOpcodes.h"
-				>
-			</File>
-			<File
 				RelativePath="..\common\EQPacket.h"
 				>
 			</File>
