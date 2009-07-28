@@ -416,10 +416,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\botAI.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\botRaids.cpp"
 				>
 			</File>
@@ -593,10 +589,6 @@
 			</File>
 			<File
 				RelativePath=".\perlparser.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\petAI.cpp"
 				>
 			</File>
 			<File
