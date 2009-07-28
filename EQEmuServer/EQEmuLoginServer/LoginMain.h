@@ -19,10 +19,10 @@
 #if !defined(_L__LOGINMAIN__H)
 #define _L__LOGINMAIN__H
 
-#include "..\common\debug.h"
-#include "..\common\types.h"
-#include "..\common\opcodemgr.h"
-#include "..\common\EQStreamFactory.h"
+#include "../common/debug.h"
+#include "../common/types.h"
+#include "../common/opcodemgr.h"
+#include "../common/EQStreamFactory.h"
 
 #include "clientlist.h"
 #include "serverlist.h"
