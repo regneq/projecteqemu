@@ -7025,6 +7025,14 @@ void Client::Handle_OP_FindPersonRequest(const EQApplicationPacket *app)
 					return;
 				}
 
+				//the client seems to have issues with packets larger than this
+				if(pathlist.size() > 36)
+				{
+					EQApplicationPacket outapp(OP_FindPersonReply, 0);
+					QueuePacket(&outapp);
+					return;
+				}
+
 				// Live appears to send the points in this order:
 				//   Final destination.
 				//   Current Position.

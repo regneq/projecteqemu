@@ -17,7 +17,7 @@
 */
 
 #include "AuthCredential.h"
-#include "..\common\MiscFunctions.h"
+#include "../common/MiscFunctions.h"
 
 AuthCredential::AuthCredential() {
 	SetAccountID(0);

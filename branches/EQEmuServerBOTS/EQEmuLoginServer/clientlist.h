@@ -19,10 +19,10 @@
 #if !defined(_L__CLELIST__H)
 #define _L__CLELIST__H
 
-#include "..\common\debug.h"
-#include "..\common\opcodemgr.h"
-#include "..\common\EQStreamType.h"
-#include "..\common\EQStreamFactory.h"
+#include "../common/debug.h"
+#include "../common/opcodemgr.h"
+#include "../common/EQStreamType.h"
+#include "../common/EQStreamFactory.h"
 
 #include "serverlist.h"
 #include "LoginMain.h"

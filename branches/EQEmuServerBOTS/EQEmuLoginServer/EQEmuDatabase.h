@@ -19,10 +19,11 @@
 #if !defined(_L__EQDATAB__H)
 #define _L__EQDATAB__H
 
-#include "..\common\debug.h"
-#include "..\common\MiscFunctions.h"
+#include "../common/debug.h"
+#include "../common/MiscFunctions.h"
 
 #include <mysql.h>
+#include <stdlib.h>
 
 #include <string>
 using std::string;

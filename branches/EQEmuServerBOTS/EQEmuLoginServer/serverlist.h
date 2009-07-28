@@ -19,12 +19,12 @@
 #if !defined(_L__SERVLIST__H)
 #define _L__SERVLIST__H
 
-#include "..\common\debug.h"
-#include "..\common\EQStreamFactory.h"
-#include "..\common\EmuTCPConnection.h"
-#include "..\common\EmuTCPServer.h"
-#include "..\common\servertalk.h"
-#include "..\common\packet_dump.h"
+#include "../common/debug.h"
+#include "../common/EQStreamFactory.h"
+#include "../common/EmuTCPConnection.h"
+#include "../common/EmuTCPServer.h"
+#include "../common/servertalk.h"
+#include "../common/packet_dump.h"
 
 #include "LoginMain.h"
 #include "inifile.h"
