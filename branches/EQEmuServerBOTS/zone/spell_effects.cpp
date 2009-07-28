@@ -2069,16 +2069,6 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Sacrifice");
 #endif
-
-#ifdef EQBOTS
-
-				if(zone->GetZoneID()==202) {
-					// do nothing
-				}
-				else
-
-#endif //EQBOTS
-
 				if(!IsClient() || !caster->IsClient()){
 					break;
 				}
@@ -2798,24 +2788,6 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 		safe_delete(SummonedItem);
 	}
 
-#ifdef EQBOTS
-
-    // Franck-add: If healed/doted, a bot must show its new HP to its leader
-	if(IsBot() && IsGrouped()) {
-		Group *g = entity_list.GetGroupByMob(this);
-		if(g) {
-			EQApplicationPacket hp_app;
-			CreateHPPacket(&hp_app);
-			for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
-				if(g->members[i] && g->members[i]->IsClient()) {
-					g->members[i]->CastToClient()->QueuePacket(&hp_app);
-				}
-			}
-		}
-	}
-
-#endif //EQBOTS
-
 	return true;
 }
 
@@ -3037,22 +3009,13 @@ void Mob::BuffProcess() {
 	}
 }
 
-void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob* caster)
-{
+void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob* caster) {
 	_ZP(Mob_DoBuffTic);
 
 	int effect, effect_value;
 
 	if(!IsValidSpell(spell_id))
 		return;
-
-#ifdef EQBOTS
-
-	if(!caster || caster->IsCorpse()) {
-		return;
-	}
-
-#endif //EQBOTS
 
 	const SPDat_Spell_Struct &spell = spells[spell_id];
 

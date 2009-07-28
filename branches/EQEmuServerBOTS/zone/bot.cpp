@@ -7363,6 +7363,133 @@ sint32 Bot::GetActSpellDuration(int16 spell_id, sint32 duration) {
 	return (duration * increase) / 100;
 }
 
+float Bot::GetAOERange(uint16 spell_id) {
+	float range = 0;
+	
+	range = Mob::GetAOERange(spell_id);
+
+	if(spell_id > 0) {
+		float mod = 0;
+		if(IsBardSong(spell_id)) {
+			if(GetLevel() >= 61) { // Extended Notes AA
+				mod += range * 0.25;
+			}
+			else if(GetLevel() == 60) {
+				mod += range * 0.15;
+			}
+			else if(GetLevel() == 59) {
+				mod += range * 0.10;
+			}
+
+			if(GetLevel() >= 65) { // Sionachies Crescendo AA
+				mod += range * 0.15;
+			}
+			else if(GetLevel() == 64) {
+				mod += range * 0.10;
+			}
+			else if(GetLevel() == 63) {
+				mod += range * 0.05;
+			}
+			range += mod;
+		}
+
+		range = GetActSpellRange(spell_id, range);
+	}
+
+	return range;
+}
+
+bool Bot::SpellEffect(Mob* caster, int16 spell_id, float partial) {
+	bool Result = false;
+	
+	Result = Mob::SpellEffect(caster, spell_id, partial);
+
+    // Franck-add: If healed/doted, a bot must show its new HP to its leader
+	if(IsGrouped()) {
+		Group *g = entity_list.GetGroupByMob(this);
+		if(g) {
+			EQApplicationPacket hp_app;
+			CreateHPPacket(&hp_app);
+			for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
+				if(g->members[i] && g->members[i]->IsClient()) {
+					g->members[i]->CastToClient()->QueuePacket(&hp_app);
+				}
+			}
+		}
+	}
+
+	return Result;
+}
+
+void Bot::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob* caster) {
+	if(caster && !caster->IsCorpse())
+		Mob::DoBuffTic(spell_id, ticsremaining, caster_level, caster);
+}
+
+bool Bot::CastSpell(int16 spell_id, int16 target_id, int16 slot, sint32 cast_time, sint32 mana_cost, int32* oSpellWillFinish, int32 item_slot) {
+	bool Result = false;
+
+	if(zone && !zone->IsSpellBlocked(spell_id, GetX(), GetY(), GetZ())) {
+		_ZP(Bot_CastSpell);
+
+		mlog(SPELLS__CASTING, "CastSpell called for spell %s (%d) on entity %d, slot %d, time %d, mana %d, from item slot %d",
+			spells[spell_id].name, spell_id, target_id, slot, cast_time, mana_cost, (item_slot==0xFFFFFFFF)?999:item_slot);
+
+		if(casting_spell_id == spell_id)
+			ZeroCastingVars();
+
+		if(!IsValidSpell(spell_id) || casting_spell_id || delaytimer || spellend_timer.Enabled() || IsStunned() || IsFeared() || IsMezzed() || IsSilenced()) {
+			mlog(SPELLS__CASTING_ERR, "Spell casting canceled: not able to cast now. Valid? %d, casting %d, waiting? %d, spellend? %d, stunned? %d, feared? %d, mezed? %d, silenced? %d",
+				IsValidSpell(spell_id), casting_spell_id, delaytimer, spellend_timer.Enabled(), IsStunned(), IsFeared(), IsMezzed(), IsSilenced() );
+			if(IsSilenced())
+				Message_StringID(13, SILENCED_STRING);
+			if(casting_spell_id)
+				CastToNPC()->AI_Event_SpellCastFinished(false, casting_spell_slot);
+			return(false);
+		}
+
+		if(IsDetrimentalSpell(spell_id) && !zone->CanDoCombat()){
+			Message_StringID(13, SPELL_WOULDNT_HOLD);
+			if(casting_spell_id)
+				CastToNPC()->AI_Event_SpellCastFinished(false, casting_spell_slot);
+			return(false);
+		}
+
+		//cannot cast under deivne aura
+		if(DivineAura()) {
+			mlog(SPELLS__CASTING_ERR, "Spell casting canceled: cannot cast while Divine Aura is in effect.");
+			InterruptSpell(173, 0x121, false);
+			return(false);
+		}
+
+		// check for fizzle
+		// note that CheckFizzle itself doesn't let NPCs fizzle,
+		// but this code allows for it.
+		if(slot < MAX_PP_MEMSPELL && !CheckFizzle(spell_id))
+		{
+			int fizzle_msg = IsBardSong(spell_id) ? MISS_NOTE : SPELL_FIZZLE;
+			InterruptSpell(fizzle_msg, 0x121, spell_id);
+
+			uint32 use_mana = ((spells[spell_id].mana) / 4);
+			mlog(SPELLS__CASTING_ERR, "Spell casting canceled: fizzled. %d mana has been consumed", use_mana);
+
+			// fizzle 1/4 the mana away
+			SetMana(GetMana() - use_mana);
+			return(false);
+		}
+
+		//if (HasActiveSong()) {
+		//	mlog(SPELLS__BARDS, "Casting a new spell/song while singing a song. Killing old song %d.", bardsong);
+		//	//Note: this does NOT tell the client
+		//	_StopSong();
+		//}
+
+		Result = DoCastSpell(spell_id, target_id, slot, cast_time, mana_cost, oSpellWillFinish, item_slot);
+	}
+
+	return Result;
+}
+
 void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 	// All bot command processing occurs here now instead of in command.cpp
 

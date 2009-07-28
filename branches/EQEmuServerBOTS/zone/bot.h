@@ -86,6 +86,10 @@ public:
 	virtual sint32 GetActSpellCost(int16 spell_id, sint32 cost);
 	virtual float GetActSpellRange(int16 spell_id, float range);
 	virtual sint32 GetActSpellDuration(int16 spell_id, sint32 duration);
+	virtual float GetAOERange(uint16 spell_id);
+	virtual bool SpellEffect(Mob* caster, int16 spell_id, float partial = 100);
+	virtual void DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob* caster = 0);
+	virtual bool CastSpell(int16 spell_id, int16 target_id, int16 slot = 10, sint32 casttime = -1, sint32 mana_cost = -1, int32* oSpellWillFinish = 0, int32 item_slot = 0xFFFFFFFF);
 	
 	// Bot Action Command Methods
 	bool MesmerizeTarget(Mob* target);

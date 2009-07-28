@@ -180,19 +180,6 @@ bool Mob::CastSpell(int16 spell_id, int16 target_id, int16 slot,
 	if(casting_spell_id == spell_id)
 		ZeroCastingVars();
 	
-
-#ifdef EQBOTS
-
-	if(IsBot() && (zone->IsSpellBlocked(spell_id, GetX(), GetY(), GetZ())))
-		return false;
-
-	if(IsBot() && (GetClass() == BARD)) {
-		// Do Nothing so Bard Bots can sing
-	}
-	else
-
-#endif //EQBOTS
-
 	if
 	(
 		!IsValidSpell(spell_id) ||
@@ -3720,37 +3707,6 @@ float Mob::GetAOERange(uint16 spell_id) {
 		
 		range = CastToClient()->GetActSpellRange(spell_id, range);
 	}
-
-#ifdef EQBOTS
-
-	else if(IsBot()) {
-		if(IsBardSong(spell_id)) {
-			if(GetLevel() >= 61) { // Extended Notes AA
-				mod += range * 0.25;
-			}
-			else if(GetLevel() == 60) {
-				mod += range * 0.15;
-			}
-			else if(GetLevel() == 59) {
-				mod += range * 0.10;
-			}
-
-			if(GetLevel() >= 65) { // Sionachies Crescendo AA
-				mod += range * 0.15;
-			}
-			else if(GetLevel() == 64) {
-				mod += range * 0.10;
-			}
-			else if(GetLevel() == 63) {
-				mod += range * 0.05;
-			}
-			range += mod;
-		}
-		
-		range = GetBotActSpellRange(spell_id, range);
-	}
-
-#endif //EQBOTS
 	
 	return(range);
 }
