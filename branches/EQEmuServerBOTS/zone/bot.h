@@ -218,6 +218,9 @@ private:
 	void GenerateAppearance();
 	void GenerateArmorClass();
 	void GenerateBaseHitPoints();
+	void GenerateAABonuses();
+	void GenerateBaseManaPoints();
+	void GenerateSpecialAttacks();
 	void DoAIProcessing();
 	void SetBotID(uint32 botID);
 	//bool IsPacified(Mob* targetMob);

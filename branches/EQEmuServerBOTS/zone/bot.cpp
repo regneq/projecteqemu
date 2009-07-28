@@ -151,6 +151,7 @@ NPCType Bot::FillNPCTypeStruct(uint32 botSpellsID, std::string botName, std::str
 	BotNPCType.d_meele_texture1 = 0;
 	BotNPCType.d_meele_texture2 = 0;
 	BotNPCType.qglobal = false;
+	BotNPCType.attack_speed = 0;
 
 	return BotNPCType;
 }
@@ -186,6 +187,7 @@ NPCType Bot::CreateDefaultNPCTypeStructForBot(std::string botName, std::string b
 	Result.d_meele_texture2 = 0;
 	Result.qglobal = false;
 	Result.npc_spells_id = 0;
+	Result.attack_speed = 0;
 
 	return Result;
 }
@@ -557,7 +559,7 @@ void Bot::GenerateArmorClass() {
 
 void Bot::GenerateBaseHitPoints() {
 	// Calc Base Hit Points
-	int16 multiplier = 1;
+	/*int16 multiplier = 1;
 	switch(this->GetClass()) {
 			case WARRIOR:
 				multiplier = 220;
@@ -588,16 +590,233 @@ void Bot::GenerateBaseHitPoints() {
 				multiplier = 120;
 				break;
 	}
-	int16 lm = multiplier;
+	int16 lm = multiplier;*/
+	int16 lm = GetClassLevelFactor();
 	int16 Post255;
+
 	if((this->GetSTA()-255)/2 > 0)
 		Post255 = (this->GetSTA()-255)/2;
 	else
 		Post255 = 0;
-	int base_hp = (5)+(1*lm/10) + (((this->GetSTA()-Post255)*1*lm/3000)) + ((Post255*1)*lm/6000);
 
-	this->base_hp = base_hp;
-	this->cur_hp = base_hp;
+	int new_base_hp = (5)+(GetLevel()*lm/10) + (((this->GetSTA()-Post255)*GetLevel()*lm/3000)) + ((Post255*1)*lm/6000);
+
+	this->base_hp = new_base_hp;
+	this->cur_hp = this->base_hp;
+}
+
+void Bot::GenerateAABonuses() {
+	// General AA bonus'
+	if(GetLevel() >= 51 ) {
+		STR += 2;	// Innate Strength AA 1
+		STA += 2;	// Innate Stamina AA 1
+		AGI += 2;	// Innate Agility AA 1
+		DEX += 2;	// Innate Dexterity AA 1
+		INT += 2;	// Innate Intelligence AA 1
+		WIS += 2;	// Innate Wisdom AA 1
+		CHA += 2;	// Innate Charisma AA 1
+		FR += 2;	// Innate Fire Protection AA 1
+		CR += 2;	// Innate Cold Protection AA 1
+		MR += 2;	// Innate Magic Protection AA 1
+		PR += 2;	// Innate Poison Protection AA 1
+		DR += 2;	// Innate Disease AA 1
+	}
+	if(GetLevel() >= 52 ) {
+		STR += 2;	// Innate Strength AA 2
+		STA += 2;	// Innate Stamina AA 2
+		AGI += 2;	// Innate Agility AA 2
+		DEX += 2;	// Innate Dexterity AA 2
+		INT += 2;	// Innate Intelligence AA 2
+		WIS += 2;	// Innate Wisdom AA 2
+		CHA += 2;	// Innate Charisma AA 2
+		FR += 2;	// Innate Fire Protection AA 2
+		CR += 2;	// Innate Cold Protection AA 2
+		MR += 2;	// Innate Magic Protection AA 2
+		PR += 2;	// Innate Poison Protection AA 2
+		DR += 2;	// Innate Disease AA 2
+	}
+	if(GetLevel() >= 53 ) {
+		STR += 2;	// Innate Strength AA 3
+		STA += 2;	// Innate Stamina AA 3
+		AGI += 2;	// Innate Agility AA 3
+		DEX += 2;	// Innate Dexterity AA 3
+		INT += 2;	// Innate Intelligence AA 3
+		WIS += 2;	// Innate Wisdom AA 3
+		CHA += 2;	// Innate Charisma AA 3
+		FR += 2;	// Innate Fire Protection AA 3
+		CR += 2;	// Innate Cold Protection AA 3
+		MR += 2;	// Innate Magic Protection AA 3
+		PR += 2;	// Innate Poison Protection AA 3
+		DR += 2;	// Innate Disease AA 3
+	}
+	if(GetLevel() >= 54 ) {
+		STR += 2;	// Innate Strength AA 4
+		STA += 2;	// Innate Stamina AA 4
+		AGI += 2;	// Innate Agility AA 4
+		DEX += 2;	// Innate Dexterity AA 4
+		INT += 2;	// Innate Intelligence AA 4
+		WIS += 2;	// Innate Wisdom AA 4
+		CHA += 2;	// Innate Charisma AA 4
+		FR += 2;	// Innate Fire Protection AA 4
+		CR += 2;	// Innate Cold Protection AA 4
+		MR += 2;	// Innate Magic Protection AA 4
+		PR += 2;	// Innate Poison Protection AA 4
+		DR += 2;	// Innate Disease AA 4
+	}
+	if(GetLevel() >= 55 ) {
+		STR += 2;	// Innate Strength AA 5
+		STA += 2;	// Innate Stamina AA 5
+		AGI += 2;	// Innate Agility AA 5
+		DEX += 2;	// Innate Dexterity AA 5
+		INT += 2;	// Innate Intelligence AA 5
+		WIS += 2;	// Innate Wisdom AA 5
+		CHA += 2;	// Innate Charisma AA 5
+		FR += 2;	// Innate Fire Protection AA 5
+		CR += 2;	// Innate Cold Protection AA 5
+		MR += 2;	// Innate Magic Protection AA 5
+		PR += 2;	// Innate Poison Protection AA 5
+		DR += 2;	// Innate Disease AA 5
+	}
+	if(GetLevel() >= 61 ) {
+		STR += 2;	// Advanced Innate Strength AA 1
+		STA += 2;	// Advanced Innate Stamina AA 1
+		AGI += 2;	// Advanced Innate Agility AA 1
+		DEX += 2;	// Advanced Innate Dexterity AA 1
+		INT += 2;	// Advanced Innate Intelligence AA 1
+		WIS += 2;	// Advanced Innate Wisdom AA 1
+		CHA += 2;	// Advanced Innate Charisma AA 1
+		FR += 2;	// Warding of Solusek AA 1
+		CR += 2;	// Blessing of E'ci AA 1
+		MR += 2;	// Marr's Protection AA 1
+		PR += 2;	// Shroud of the Faceless AA 1
+		DR += 2;	// Bertoxxulous' Gift AA 1
+	}
+	if(GetLevel() >= 62 ) {
+		STR += 2;	// Advanced Innate Strength AA 2
+		STA += 2;	// Advanced Innate Stamina AA 2
+		AGI += 2;	// Advanced Innate Agility AA 2
+		DEX += 2;	// Advanced Innate Dexterity AA 2
+		INT += 2;	// Advanced Innate Intelligence AA 2
+		WIS += 2;	// Advanced Innate Wisdom AA 2
+		CHA += 2;	// Advanced Innate Charisma AA 2
+		FR += 2;	// Warding of Solusek AA 2
+		CR += 2;	// Blessing of E'ci AA 2
+		MR += 2;	// Marr's Protection AA 2
+		PR += 2;	// Shroud of the Faceless AA 2
+		DR += 2;	// Bertoxxulous' Gift AA 2
+	}
+	if(GetLevel() >= 63 ) {
+		STR += 2;	// Advanced Innate Strength AA 3
+		STA += 2;	// Advanced Innate Stamina AA 3
+		AGI += 2;	// Advanced Innate Agility AA 3
+		DEX += 2;	// Advanced Innate Dexterity AA 3
+		INT += 2;	// Advanced Innate Intelligence AA 3
+		WIS += 2;	// Advanced Innate Wisdom AA 3
+		CHA += 2;	// Advanced Innate Charisma AA 3
+		FR += 2;	// Warding of Solusek AA 3
+		CR += 2;	// Blessing of E'ci AA 3
+		MR += 2;	// Marr's Protection AA 3
+		PR += 2;	// Shroud of the Faceless AA 3
+		DR += 2;	// Bertoxxulous' Gift AA 3
+	}
+	if(GetLevel() >= 64 ) {
+		STR += 2;	// Advanced Innate Strength AA 4
+		STA += 2;	// Advanced Innate Stamina AA 4
+		AGI += 2;	// Advanced Innate Agility AA 4
+		DEX += 2;	// Advanced Innate Dexterity AA 4
+		INT += 2;	// Advanced Innate Intelligence AA 4
+		WIS += 2;	// Advanced Innate Wisdom AA 4
+		CHA += 2;	// Advanced Innate Charisma AA 4
+		FR += 2;	// Warding of Solusek AA 4
+		CR += 2;	// Blessing of E'ci AA 4
+		MR += 2;	// Marr's Protection AA 4
+		PR += 2;	// Shroud of the Faceless AA 4
+		DR += 2;	// Bertoxxulous' Gift AA 4
+	}
+	if(GetLevel() >= 65 ) {
+		STR += 2;	// Advanced Innate Strength AA 5
+		STA += 2;	// Advanced Innate Stamina AA 5
+		AGI += 2;	// Advanced Innate Agility AA 5
+		DEX += 2;	// Advanced Innate Dexterity AA 5
+		INT += 2;	// Advanced Innate Intelligence AA 5
+		WIS += 2;	// Advanced Innate Wisdom AA 5
+		CHA += 2;	// Advanced Innate Charisma AA 5
+		FR += 2;	// Warding of Solusek AA 5
+		CR += 2;	// Blessing of E'ci AA 5
+		MR += 2;	// Marr's Protection AA 5
+		PR += 2;	// Shroud of the Faceless AA 5
+		DR += 2;	// Bertoxxulous' Gift AA 5
+	}
+	if(GetLevel() >= 66 ) {
+		STR += 2;	// Advanced Innate Strength AA 6
+		STA += 2;	// Advanced Innate Stamina AA 6
+		AGI += 2;	// Advanced Innate Agility AA 6
+		DEX += 2;	// Advanced Innate Dexterity AA 6
+		INT += 2;	// Advanced Innate Intelligence AA 6
+		WIS += 2;	// Advanced Innate Wisdom AA 6
+		CHA += 2;	// Advanced Innate Charisma AA 6
+		FR += 2;	// Warding of Solusek AA 6
+		CR += 2;	// Blessing of E'ci AA 6
+		MR += 2;	// Marr's Protection AA 6
+		PR += 2;	// Shroud of the Faceless AA 6
+		DR += 2;	// Bertoxxulous' Gift AA 6
+	}
+	if(GetLevel() >= 67 ) {
+		STR += 2;	// Advanced Innate Strength AA 7
+		STA += 2;	// Advanced Innate Stamina AA 7
+		AGI += 2;	// Advanced Innate Agility AA 7
+		DEX += 2;	// Advanced Innate Dexterity AA 7
+		INT += 2;	// Advanced Innate Intelligence AA 7
+		WIS += 2;	// Advanced Innate Wisdom AA 7
+		CHA += 2;	// Advanced Innate Charisma AA 7
+		FR += 2;	// Warding of Solusek AA 7
+		CR += 2;	// Blessing of E'ci AA 7
+		MR += 2;	// Marr's Protection AA 7
+		PR += 2;	// Shroud of the Faceless AA 7
+		DR += 2;	// Bertoxxulous' Gift AA 7
+	}
+	if(GetLevel() >= 68 ) {
+		STR += 2;	// Advanced Innate Strength AA 8
+		STA += 2;	// Advanced Innate Stamina AA 8
+		AGI += 2;	// Advanced Innate Agility AA 8
+		DEX += 2;	// Advanced Innate Dexterity AA 8
+		INT += 2;	// Advanced Innate Intelligence AA 8
+		WIS += 2;	// Advanced Innate Wisdom AA 8
+		CHA += 2;	// Advanced Innate Charisma AA 8
+		FR += 2;	// Warding of Solusek AA 8
+		CR += 2;	// Blessing of E'ci AA 8
+		MR += 2;	// Marr's Protection AA 8
+		PR += 2;	// Shroud of the Faceless AA 8
+		DR += 2;	// Bertoxxulous' Gift AA 8
+	}
+	if(GetLevel() >= 69 ) {
+		STR += 2;	// Advanced Innate Strength AA 9
+		STA += 2;	// Advanced Innate Stamina AA 9
+		AGI += 2;	// Advanced Innate Agility AA 9
+		DEX += 2;	// Advanced Innate Dexterity AA 9
+		INT += 2;	// Advanced Innate Intelligence AA 9
+		WIS += 2;	// Advanced Innate Wisdom AA 9
+		CHA += 2;	// Advanced Innate Charisma AA 9
+		FR += 2;	// Warding of Solusek AA 9
+		CR += 2;	// Blessing of E'ci AA 9
+		MR += 2;	// Marr's Protection AA 9
+		PR += 2;	// Shroud of the Faceless AA 9
+		DR += 2;	// Bertoxxulous' Gift AA 9
+	}
+	if(GetLevel() >= 70 ) {
+		STR += 2;	// Advanced Innate Strength AA 10
+		STA += 2;	// Advanced Innate Stamina AA 10
+		AGI += 2;	// Advanced Innate Agility AA 10
+		DEX += 2;	// Advanced Innate Dexterity AA 10
+		INT += 2;	// Advanced Innate Intelligence AA 10
+		WIS += 2;	// Advanced Innate Wisdom AA 10
+		CHA += 2;	// Advanced Innate Charisma AA 10
+		FR += 2;	// Warding of Solusek AA 10
+		CR += 2;	// Blessing of E'ci AA 10
+		MR += 2;	// Marr's Protection AA 10
+		PR += 2;	// Shroud of the Faceless AA 10
+		DR += 2;	// Bertoxxulous' Gift AA 10
+	}
 }
 
 bool Bot::IsValidRaceClassCombo() {
@@ -2601,19 +2820,6 @@ void Bot::Depop() {
 //	}
 //}
 
-//void Bot::CleanBotLeaderEntries(std::string* errorMessage) {
-//	if(this->GetBotID() > 0 && this->_botOwnerCharacterID > 0) {
-//		char errbuf[MYSQL_ERRMSG_SIZE];
-//		char *query = 0;
-//
-//		if(!database.RunQuery(query, MakeAnyLenString(&query, "DELETE FROM botleader WHERE botid=%i", this->GetBotID()), errbuf)) {
-//			*errorMessage = std::string(errbuf);
-//		}
-//
-//		safe_delete_array(query);
-//	}
-//}
-
 bool Bot::DeleteBot(std::string* errorMessage) {
 	bool Result = false;
 	int TempCounter = 0;
@@ -2651,44 +2857,6 @@ void Bot::Spawn(Client* botCharacterOwner, std::string* errorMessage) {
 		this->GMMove(botCharacterOwner->GetX(), botCharacterOwner->GetY(), botCharacterOwner->GetZ(), botCharacterOwner->GetHeading(), true);
 	}
 }
-
-//void Bot::SetBotLeader(uint32 botID, uint32 botOwnerCharacterID, std::string botName, std::string zoneShortName, std::string* errorMessage) {
-//	char errbuf[MYSQL_ERRMSG_SIZE];
-//	char *query = 0;
-//
-//	if(!database.RunQuery(query, MakeAnyLenString(&query, "INSERT INTO botleader SET botid=%i, leaderid=%i, bot_name='%s', zone_name='%s'", botID, botOwnerCharacterID, botName.c_str(), zoneShortName.c_str()), errbuf)) {
-//		*errorMessage = std::string(errbuf);
-//	}
-//
-//	safe_delete_array(query);
-//}
-//
-//uint32 Bot::GetBotLeader(uint32 botID, std::string* errorMessage) {
-//	uint32 Result = 0;
-//
-//	if(botID > 0) {
-//		char ErrBuf[MYSQL_ERRMSG_SIZE];
-//		char* Query = 0;
-//		MYSQL_RES* DatasetResult;
-//		MYSQL_ROW DataRow;
-//
-//		if(database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT leaderid FROM botleader WHERE botid=%i", botID), ErrBuf, &DatasetResult)) {
-//			if(mysql_num_rows(DatasetResult) == 1) {
-//				DataRow = mysql_fetch_row(DatasetResult);
-//				if(DataRow)
-//					Result = atoi(DataRow[0]);
-//			}
-//
-//			mysql_free_result(DatasetResult);
-//		}
-//		else
-//			*errorMessage = std::string(ErrBuf);
-//
-//		safe_delete_array(Query);
-//	}
-//
-//	return Result;
-//}
 
 void Bot::SetBotItemInSlot(uint32 slotID, uint32 itemID, std::string *errorMessage) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
@@ -2870,19 +3038,6 @@ void Bot::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho) {
 		ns->spawn.is_npc = 1;
 	}
 }
-
-//void Bot::CleanBotLeader(uint32 botOwnerCharacterID, std::string* errorMessage) {
-//	if(botOwnerCharacterID > 0) {
-//		char errbuf[MYSQL_ERRMSG_SIZE];
-//		char *query = 0;
-//
-//		if(!database.RunQuery(query, MakeAnyLenString(&query, "DELETE FROM botleader where leaderid=%i", botOwnerCharacterID), errbuf)) {
-//			*errorMessage = std::string(errbuf);
-//		}
-//
-//		safe_delete_array(query);
-//	}
-//}
 
 Bot* Bot::LoadBot(uint32 botID, std::string* errorMessage) {
 	Bot* Result = 0;
@@ -4220,7 +4375,6 @@ void Bot::Death(Mob *killerMob, sint32 damage, int16 spell_id, SkillType attack_
 					g->membername[i][0] = '\0';
 					memset(g->membername[i], 0, 64);
 					g->members[i]->SetOwnerID(0);
-					//g->members[i]->BotOwner = NULL;
 					g->members[i] = NULL;
 
 					// if group members exist below this one, move
@@ -4280,8 +4434,6 @@ void Bot::Death(Mob *killerMob, sint32 damage, int16 spell_id, SkillType attack_
 		}
 	}
 
-	// Delete from database
-	//database.CleanBotLeaderEntries(this->GetBotID());
 	entity_list.RemoveBot(this->GetID());
 }
 
@@ -6587,12 +6739,6 @@ Mob* Bot::GetOwnerOrSelf() {
 Mob* Bot::GetOwner() {
 	Mob* Result = 0;
 
-	/*if(GetBotOwnerCharacterID() > 0) {
-		Mob* owner = entity_list.GetMob(GetBotOwnerCharacterID());
-		if(owner) {
-			Result = owner;
-		}
-	}*/
 	Result = GetBotOwner();
 
 	if(!Result) {
@@ -7487,6 +7633,303 @@ bool Bot::CastSpell(int16 spell_id, int16 target_id, int16 slot, sint32 cast_tim
 	}
 
 	return Result;
+}
+
+void Bot::GenerateBaseManaPoints() {
+	// Now, we need to calc the base mana.
+	sint32 bot_mana = 0;
+	sint32 WisInt = 0;
+	sint32 MindLesserFactor, MindFactor;
+	switch (GetCasterClass()) {
+		case 'I':
+			WisInt = INT;
+			if((( WisInt - 199 ) / 2) > 0) {
+				MindLesserFactor = ( WisInt - 199 ) / 2;
+			}
+			else {
+				MindLesserFactor = 0;
+			}
+			MindFactor = WisInt - MindLesserFactor;
+			if(WisInt > 100) {
+				bot_mana = (((5 * (MindFactor + 20)) / 2) * 3 * GetLevel() / 40);
+			}
+			else {
+				bot_mana = (((5 * (MindFactor + 200)) / 2) * 3 * GetLevel() / 100);
+			}
+			bot_mana += (itembonuses.Mana + spellbonuses.Mana);
+			break;
+
+		case 'W':
+			WisInt = WIS;
+			if((( WisInt - 199 ) / 2) > 0) {
+				MindLesserFactor = ( WisInt - 199 ) / 2;
+			}
+			else {
+				MindLesserFactor = 0;
+			}
+			MindFactor = WisInt - MindLesserFactor;
+			if(WisInt > 100) {
+				bot_mana = (((5 * (MindFactor + 20)) / 2) * 3 * GetLevel() / 40);
+			}
+			else {
+				bot_mana = (((5 * (MindFactor + 200)) / 2) * 3 * GetLevel() / 100);
+			}
+			bot_mana += (itembonuses.Mana + spellbonuses.Mana);
+			break;
+
+		default:
+			bot_mana = 0;
+			break;
+	}
+
+	max_mana = cur_mana = bot_mana;
+}
+
+void Bot::GenerateSpecialAttacks() {
+	// Special Attacks
+	if(((GetClass() == MONK) || (GetClass() == WARRIOR) || (GetClass() == RANGER) || (GetClass() == BERSERKER))	&& (GetLevel() >= 60)) {
+		SpecAttacks[SPECATK_TRIPLE] = true;
+	}
+}
+
+// TODO: Refactor this method.
+// This method contains a large amount of redundant code that can be replaced with private methods
+void Bot::CalcBotStats(bool showtext) {
+	Client* BotOwner = this->GetBotOwner()->CastToClient();
+
+	if(!BotOwner)
+		return;
+
+	if(showtext) {
+		BotOwner->Message(15, "Bot updating...");
+	}
+	
+	if(!IsValidRaceClassCombo()) {
+		BotOwner->Message(15, "A %s - %s bot was detected. Is this Race/Class combination allowed?.", GetRaceName(GetRace()), GetEQClassName(GetClass(), GetLevel()));
+		BotOwner->Message(15, "Previous Bots Code releases did not check Race/Class combinations during create.");
+		BotOwner->Message(15, "Unless you are experiencing heavy lag, you should delete and remake this bot.");
+	}
+	
+	GenerateBaseStats();
+
+	GenerateAABonuses();
+
+	GenerateArmorClass();
+
+	//// Calc Base Hit Points
+	//int16 lm = GetClassLevelFactor();
+	//int16 Post255;
+	//if((bsta-255)/2 > 0)
+	//	Post255 = (bsta-255)/2;
+	//else
+	//	Post255 = 0;
+	//sint32 bot_hp = (5)+(blevel*lm/10) + (((bsta-Post255)*blevel*lm/3000)) + ((Post255*blevel)*lm/6000);
+	GenerateBaseHitPoints();
+
+	GenerateBaseManaPoints();
+
+	GenerateSpecialAttacks();
+
+	if(showtext) {
+		BotOwner->Message(15, "Base stats:");
+		BotOwner->Message(15, "Level: %i HP: %i AC: %i Mana: %i STR: %i STA: %i DEX: %i AGI: %i INT: %i WIS: %i CHA: %i", GetLevel(), base_hp, AC, max_mana, STR, STA, DEX, AGI, INT, WIS, CHA);
+		BotOwner->Message(15, "Resists-- Magic: %i, Poison: %i, Fire: %i, Cold: %i, Disease: %i.",MR,PR,FR,CR,DR);
+	}
+
+	// Let's find the items in the bot inventory
+	sint32 items_hp = 0;
+	sint32 items_mana = 0;
+
+	if(this->Save())
+		this->GetBotOwner()->CastToClient()->Message(0, "%s saved.", this->GetCleanName());
+	else
+		this->GetBotOwner()->CastToClient()->Message(13, "%s save failed!", this->GetCleanName());
+
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	MYSQL_RES* result;
+	MYSQL_ROW row;
+	bool ret = false;	
+
+	memset(&itembonuses, 0, sizeof(StatBonuses));
+	for(int i=0; i<22; i++) {
+		if(database.RunQuery(query, MakeAnyLenString(&query, "SELECT itemid FROM botinventory WHERE botid=%i AND slotid=%i", GetNPCTypeID(), i), errbuf, &result)) {
+			safe_delete_array(query);
+			if(mysql_num_rows(result) == 1) {
+				row = mysql_fetch_row(result);
+				int iteminslot = atoi(row[0]);
+				mysql_free_result(result);
+
+				if(iteminslot > 0) {
+					const Item_Struct *itemtmp = database.GetItem(iteminslot);
+					if(itemtmp->AC != 0)
+						itembonuses.AC += itemtmp->AC;
+					if(itemtmp->HP != 0)
+						itembonuses.HP += itemtmp->HP;
+					if(itemtmp->Mana != 0)
+						itembonuses.Mana += itemtmp->Mana;
+					if(itemtmp->Endur != 0)
+						itembonuses.Endurance += itemtmp->Endur;
+					if(itemtmp->AStr != 0)
+						itembonuses.STR += itemtmp->AStr;
+					if(itemtmp->ASta != 0)
+						itembonuses.STA += itemtmp->ASta;
+					if(itemtmp->ADex != 0)
+						itembonuses.DEX += itemtmp->ADex;
+					if(itemtmp->AAgi != 0)
+						itembonuses.AGI += itemtmp->AAgi;
+					if(itemtmp->AInt != 0)
+						itembonuses.INT += itemtmp->AInt;
+					if(itemtmp->AWis != 0)
+						itembonuses.WIS += itemtmp->AWis;
+					if(itemtmp->ACha != 0)
+						itembonuses.CHA += itemtmp->ACha;
+					if(itemtmp->MR != 0)
+						itembonuses.MR += itemtmp->MR;
+					if(itemtmp->FR != 0)
+						itembonuses.FR += itemtmp->FR;
+					if(itemtmp->CR != 0)
+						itembonuses.CR += itemtmp->CR;
+					if(itemtmp->PR != 0)
+						itembonuses.PR += itemtmp->PR;
+					if(itemtmp->DR != 0)
+						itembonuses.DR += itemtmp->DR;
+					if(itemtmp->Regen != 0)
+						itembonuses.HPRegen += itemtmp->Regen;
+					if(itemtmp->ManaRegen != 0)
+						itembonuses.ManaRegen += itemtmp->ManaRegen;
+					if(itemtmp->Attack != 0)
+						itembonuses.ATK += itemtmp->Attack;
+					if(itemtmp->DamageShield != 0)
+						itembonuses.DamageShield += itemtmp->DamageShield;
+					if(itemtmp->SpellShield != 0)
+						itembonuses.SpellDamageShield += itemtmp->SpellShield;
+					if(itemtmp->Shielding != 0)
+						itembonuses.MeleeMitigation += itemtmp->Shielding;
+					if(itemtmp->StunResist != 0)
+						itembonuses.StunResist += itemtmp->StunResist;
+					if(itemtmp->StrikeThrough != 0)
+						itembonuses.StrikeThrough += itemtmp->StrikeThrough;
+					if(itemtmp->Avoidance != 0)
+						itembonuses.AvoidMeleeChance += itemtmp->Avoidance;
+					if(itemtmp->Accuracy != 0)
+						itembonuses.HitChance += itemtmp->Accuracy;
+					if(itemtmp->CombatEffects != 0)
+						itembonuses.ProcChance += itemtmp->CombatEffects;
+					if ((itemtmp->Worn.Effect != 0) && (itemtmp->Worn.Type == ET_WornEffect)) { // latent effects
+						ApplySpellsBonuses(itemtmp->Worn.Effect, itemtmp->Worn.Level, &itembonuses);
+					}
+				}
+			}
+		}
+	}
+
+	MR += itembonuses.MR;
+	CR += itembonuses.CR;
+	DR += itembonuses.DR;
+	FR += itembonuses.FR;
+	PR += itembonuses.PR;
+	AC += itembonuses.AC;
+	STR += itembonuses.STR;
+	STA += itembonuses.STA;
+	DEX += itembonuses.DEX;
+	AGI += itembonuses.AGI;
+	INT += itembonuses.INT;
+	WIS += itembonuses.WIS;
+	CHA += itembonuses.CHA;
+	ATK += itembonuses.ATK;
+
+	MR += spellbonuses.MR;
+	CR += spellbonuses.CR;
+	DR += spellbonuses.DR;
+	FR += spellbonuses.FR;
+	PR += spellbonuses.PR;
+	AC += spellbonuses.AC;
+	STR += spellbonuses.STR;
+	STA += spellbonuses.STA;
+	DEX += spellbonuses.DEX;
+	AGI += spellbonuses.AGI;
+	INT += spellbonuses.INT;
+	WIS += spellbonuses.WIS;
+	CHA += spellbonuses.CHA;
+	ATK += spellbonuses.ATK;
+
+	int16 Post255 = 0;
+	sint32 bot_hp = 0;
+	int16 lm = GetClassLevelFactor();
+	if((STA-255)/2 > 0)
+		Post255 = (STA-255)/2;
+	else
+		Post255 = 0;
+	bot_hp = (5)+(GetLevel()*lm/10) + (((STA-Post255)*GetLevel()*lm/3000));
+	bot_hp += itembonuses.HP;
+	
+	// GenerateBaseHitPoints();
+
+	// Hitpoint AA's
+	int32 nd = 10000;
+	if(GetLevel() >= 69) {
+		nd += 1650;	// Planar Durablility AA 3
+		if(GetClass() == WARRIOR) { // Sturdiness AA 5
+			nd += 500;
+		}
+	}
+	else if(GetLevel() >= 68) {
+		nd += 1650;	// Planar Durablility AA 3
+		if(GetClass() == WARRIOR) { // Sturdiness AA 4
+			nd += 400;
+		}
+	}
+	else if(GetLevel() >= 67) {
+		nd += 1650;	// Planar Durablility AA 3
+		if(GetClass() == WARRIOR) { // Sturdiness AA 3
+			nd += 300;
+		}
+	}
+	else if(GetLevel() >= 66) {
+		nd += 1650;	// Planar Durablility AA 3
+		if(GetClass() == WARRIOR) { // Sturdiness AA 2
+			nd += 200;
+		}
+	}
+	else if(GetLevel() >= 65) {
+		nd += 1650;	// Planar Durablility AA 3
+		if(GetClass() == WARRIOR) { // Sturdiness AA 1
+			nd += 100;
+		}
+	}
+	else if(GetLevel() >= 63) {
+		nd += 1500;	// Planar Durablility AA 2
+	}
+	else if(GetLevel() >= 61) {
+		nd += 1350;	// Planar Durablility AA 1
+	}
+	else if(GetLevel() >= 59) {
+		nd += 1200;	// Physical Enhancememt AA 1
+	}
+	else if(GetLevel() >= 57) {
+		nd += 1000;	// Natural Durablility AA 3
+	}
+	else if(GetLevel() >= 56) {
+		nd += 500;	// Natural Durablility AA 2
+	}
+	else if(GetLevel() >= 55) {
+		nd += 200;	// Natural Durablility AA 1
+	}
+
+	bot_hp = bot_hp * nd / 10000;
+	bot_hp += spellbonuses.HP;
+	max_hp = cur_hp = bot_hp;
+
+	GenerateBaseManaPoints();
+	
+	AI_AddNPCSpells(this->GetBotSpellID());
+
+	if(showtext) {
+		BotOwner->Message(15, "I'm updated.");
+		BotOwner->Message(15, "Level: %i HP: %i AC: %i Mana: %i STR: %i STA: %i DEX: %i AGI: %i INT: %i WIS: %i CHA: %i", GetLevel(), max_hp, AC, max_mana, STR, STA, DEX, AGI, INT, WIS, CHA);
+		BotOwner->Message(15, "Resists-- Magic: %i, Poison: %i, Fire: %i, Cold: %i, Disease: %i.",MR,PR,FR,CR,DR);
+	}
 }
 
 void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
@@ -9250,14 +9693,14 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 							if(target->FindType(SE_Lull) || target->FindType(SE_Harmony) || target->FindType(SE_Calm))
 							//if(pacer->IsPacified(target))
 								c->Message(0, "I have successfully pacified %s.", target->GetCleanName());
-							else
-								c->Message(0, "I failed to pacify %s.", target->GetCleanName());
+							/*else
+								c->Message(0, "I failed to pacify %s.", target->GetCleanName());*/
 						}
 						else
 							c->Message(0, "I failed to pacify %s.", target->GetCleanName());
 					}
-					else
-						c->Message(15, "You must have an Enchanter or Cleric in your group.");
+					/*else
+						c->Message(15, "You must have an Enchanter or Cleric in your group.");*/
 				}
 			}
 		}
@@ -10722,7 +11165,6 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 				c->Message(15, "You must target an ungrouped bot first.");
 				Mob* kmob = c->GetTarget();
 				if(kmob != NULL) {
-					//kmob->BotOwner = NULL;
 					kmob->CastToBot()->SetBotOwner(0);
 					kmob->Kill();
 				}
@@ -10734,7 +11176,6 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 				Group *g = entity_list.GetGroupByMob(sictar);
 				if(g && (GetCountBotsInGroup(g) > 5)) {
 					inv->Say("I can't get into the group, it's full already.");
-					//inv->BotOwner = NULL;
 					inv->CastToBot()->SetBotOwner(0);
 					inv->Kill();
 					return;
@@ -10743,8 +11184,6 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 				{
 					inv->SetFollowID(sictar->GetID());
 					inv->CastToBot()->SetBotOwner(c);
-					//inv->BotOwner = c->CastToMob();
-					//inv->SetOwnerID(0);
 					g->AddMember(inv);
 					inv->SetBotRaidID(sictar->GetBotRaidID());
 
@@ -10758,10 +11197,9 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 							c->Message(13, TempErrorMessage.c_str());
 							return;
 						}
-						//itemID = database.GetBotItemBySlot(inv->GetNPCTypeID(), i);
+
 						if(itemID != 0) {
 							item2 = database.GetItem(itemID);
-							//c->BotTradeAddItem(itemID, item2->MaxCharges, item2->Slots, i, inv->CastToNPC(), false);
 							inv->CastToBot()->BotTradeAddItem(itemID, item2->MaxCharges, item2->Slots, i, c, &TempErrorMessage, false);
 							if(!TempErrorMessage.empty()) {
 								c->Message(13, TempErrorMessage.c_str());
@@ -10780,7 +11218,6 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		else if(!strcasecmp(sep->arg[2], "disband"))
 		{
 			if(c->GetBotRaidID() > 0) {
-				//database.CleanBotLeader(c->CharacterID());
 				BotRaids *brd = entity_list.GetBotRaidByMob(c->CastToMob());
 				if(brd) {
 					brd->RemoveRaidBots();
@@ -10792,7 +11229,6 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 					for(int i=5; i>=0; i--) {
 						if(g->members[i] && g->members[i]->IsBot()) {
 							hasBots = true;
-							//g->members[i]->BotOwner = NULL;
 							g->members[i]->CastToBot()->SetBotOwner(0);
 							g->members[i]->Kill();
 						}
@@ -10807,7 +11243,6 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 				c->Message(15, "Raid disbanded.");
 			}
 			c->SetBotRaidID(0);
-			//database.CleanBotLeader(c->CharacterID());
 			return;
 		}
 
@@ -11178,1072 +11613,6 @@ bool EntityList::RemoveBot(int16 entityID) {
 	}
 
 	return Result;
-}
-
-// TODO: Refactor this method.
-// This method contains a large amount of redundant code that can be replaced with private methods
-void Bot::CalcBotStats(bool showtext) {
-	Client* BotOwner = this->GetBotOwner()->CastToClient();
-
-	if(!BotOwner)
-		return;
-
-	if(showtext) {
-		BotOwner->Message(15, "Bot updating...");
-	}
-	// base stats
-	int brace = GetBaseRace(); // Angelox
-	int bclass = GetClass();
-	int blevel = GetLevel();
-	
-	// Check Race/Class combos
-	bool isComboAllowed = false;
-	switch(brace) {
-		case 1: // Human
-			switch(bclass) {
-				case 1: // Warrior
-				case 2: // Cleric
-				case 3: // Paladin
-				case 4: // Ranger
-				case 5: // Shadowknight
-				case 6: // Druid
-				case 7: // Monk
-				case 8: // Bard
-				case 9: // Rogue
-				case 11: // Necromancer
-				case 12: // Wizard
-				case 13: // Magician
-				case 14: // Enchanter
-					isComboAllowed = true;
-					break;
-			}
-			break;
-		case 2: // Barbarian
-			switch(bclass) {
-				case 1: // Warrior
-				case 9: // Rogue
-				case 10: // Shaman
-				case 15: // Beastlord
-				case 16: // Berserker
-					isComboAllowed = true;
-					break;
-			}
-			break;
-		case 3: // Erudite
-			switch(bclass) {
-				case 2: // Cleric
-				case 3: // Paladin
-				case 5: // Shadowknight
-				case 11: // Necromancer
-				case 12: // Wizard
-				case 13: // Magician
-				case 14: // Enchanter
-					isComboAllowed = true;
-					break;
-			}
-			break;
-		case 4: // Wood Elf
-			switch(bclass) {
-				case 1: // Warrior
-				case 4: // Ranger
-				case 6: // Druid
-				case 8: // Bard
-				case 9: // Rogue
-					isComboAllowed = true;
-					break;
-			}
-			break;
-		case 5: // High Elf
-			switch(bclass) {
-				case 2: // Cleric
-				case 3: // Paladin
-				case 12: // Wizard
-				case 13: // Magician
-				case 14: // Enchanter
-					isComboAllowed = true;
-					break;
-			}
-			break;
-		case 6: // Dark Elf
-			switch(bclass) {
-				case 1: // Warrior
-				case 2: // Cleric
-				case 5: // Shadowknight
-				case 9: // Rogue
-				case 11: // Necromancer
-				case 12: // Wizard
-				case 13: // Magician
-				case 14: // Enchanter
-					isComboAllowed = true;
-					break;
-			}
-			break;
-		case 7: // Half Elf
-			switch(bclass) {
-				case 1: // Warrior
-				case 3: // Paladin
-				case 4: // Ranger
-				case 6: // Druid
-				case 8: // Bard
-				case 9: // Rogue
-					isComboAllowed = true;
-					break;
-			}
-			break;
-		case 8: // Dwarf
-			switch(bclass) {
-				case 1: // Warrior
-				case 2: // Cleric
-				case 3: // Paladin
-				case 9: // Rogue
-				case 16: // Berserker
-					isComboAllowed = true;
-					break;
-			}
-			break;
-		case 9: // Troll
-			switch(bclass) {
-				case 1: // Warrior
-				case 5: // Shadowknight
-				case 10: // Shaman
-				case 15: // Beastlord
-				case 16: // Berserker
-					isComboAllowed = true;
-					break;
-			}
-			break;
-		case 10: // Ogre
-			switch(bclass) {
-				case 1: // Warrior
-				case 5: // Shadowknight
-				case 10: // Shaman
-				case 15: // Beastlord
-				case 16: // Berserker
-					isComboAllowed = true;
-					break;
-			}
-			break;
-		case 11: // Halfling
-			switch(bclass) {
-				case 1: // Warrior
-				case 2: // Cleric
-				case 3: // Paladin
-				case 4: // Ranger
-				case 6: // Druid
-				case 9: // Rogue
-					isComboAllowed = true;
-					break;
-			}
-			break;
-		case 12: // Gnome
-			switch(bclass) {
-				case 1: // Warrior
-				case 2: // Cleric
-				case 3: // Paladin
-				case 5: // Shadowknight
-				case 9: // Rogue
-				case 11: // Necromancer
-				case 12: // Wizard
-				case 13: // Magician
-				case 14: // Enchanter
-					isComboAllowed = true;
-					break;
-			}
-			break;
-		case 128: // Iksar
-			switch(bclass) {
-				case 1: // Warrior
-				case 5: // Shadowknight
-				case 7: // Monk
-				case 10: // Shaman
-				case 11: // Necromancer
-				case 15: // Beastlord
-					isComboAllowed = true;
-					break;
-			}
-			break;
-		case 130: // Vah Shir
-			switch(bclass) {
-				case 1: // Warrior
-				case 8: // Bard
-				case 9: // Rogue
-				case 10: // Shaman
-				case 15: // Beastlord
-				case 16: // Berserker
-					isComboAllowed = true;
-					break;
-			}
-			break;
-		case 330: // Froglok
-			switch(bclass) {
-				case 1: // Warrior
-				case 2: // Cleric
-				case 3: // Paladin
-				case 5: // Shadowknight
-				case 9: // Rogue
-				case 10: // Shaman
-				case 11: // Necromancer
-				case 12: // Wizard
-					isComboAllowed = true;
-					break;
-			}
-			break;
-	}
-	if(!isComboAllowed) {
-		BotOwner->Message(15, "A %s - %s bot was detected. Is this Race/Class combination allowed?.", GetRaceName(brace), GetEQClassName(bclass, blevel));
-		BotOwner->Message(15, "Previous Bots Code releases did not check Race/Class combinations during create.");
-		BotOwner->Message(15, "Unless you are experiencing heavy lag, you should delete and remake this bot.");
-	}
-	isComboAllowed = false;
-
-	int spellid = 0;
-	// base stats
-	sint16 bstr = 75;
-	sint16 bsta = 75;
-	sint16 bdex = 75;
-	sint16 bagi = 75;
-	sint16 bwis = 75;
-	sint16 bint = 75;
-	sint16 bcha = 75;
-	sint16 bATK = 5;
-	sint16 bMR = 25;
-	sint16 bFR = 25;
-	sint16 bDR = 15;
-	sint16 bPR = 15;
-	sint16 bCR = 25;
-
-	switch(bclass) {
-		case 1: // Warrior
-			bstr += 10;
-			bsta += 20;
-			bagi += 10;
-			bdex += 10;
-			bATK += 12;
-			bMR += (blevel / 2 + 1);
-			break;
-		case 2: // Cleric
-			spellid = 701;
-			bstr += 5;
-			bsta += 5;
-			bagi += 10;
-			bwis += 30;
-			bATK += 8;
-			break;
-		case 3: // Paladin
-			spellid = 708;
-			bstr += 15;
-			bsta += 5;
-			bwis += 15;
-			bcha += 10;
-			bdex += 5;
-			bATK += 17;
-			bDR += 8;
-			if(blevel > 50) {
-				bDR += (blevel - 50);
-			}
-			break;
-		case 4: // Ranger
-			spellid = 710;
-			bstr += 15;
-			bsta += 10;
-			bagi += 10;
-			bwis += 15;
-			bATK += 17;
-			bFR += 4;
-			if(blevel > 50) {
-				bFR += (blevel - 50);
-			}
-			bCR += 4;
-			if(blevel > 50) {
-				bCR += (blevel - 50);
-			}
-			break;
-		case 5: // Shadowknight
-			spellid = 709;
-			bstr += 10;
-			bsta += 15;
-			bint += 20;
-			bcha += 5;
-			bATK += 17;
-			bPR += 4;
-			if(blevel > 50) {
-				bPR += (blevel - 50);
-			}
-			bDR += 4;
-			if(blevel > 50) {
-				bDR += (blevel - 50);
-			}
-			break;
-		case 6: // Druid
-			spellid = 707;
-			bsta += 15;
-			bwis += 35;
-			bATK += 5;
-			break;
-		case 7: // Monk
-			bstr += 5;
-			bsta += 15;
-			bagi += 15;
-			bdex += 15;
-			bATK += 17;
-			break;
-		case 8: // Bard
-			spellid = 711;
-			bstr += 15;
-			bdex += 10;
-			bcha += 15;
-			bint += 10;
-			bATK += 17;
-			break;
-		case 9: // Rogue
-			bstr += 10;
-			bsta += 20;
-			bagi += 10;
-			bdex += 10;
-			bATK += 12;
-			bPR += 8;
-			if(blevel > 50) {
-				bPR += (blevel - 50);
-			}
-			break;
-		case 10: // Shaman
-			spellid = 706;
-			bsta += 10;
-			bwis += 30;
-			bcha += 10;
-			bATK += 28;
-			break;
-		case 11: // Necromancer
-			spellid = 703;
-			bdex += 10;
-			bagi += 10;
-			bint += 30;
-			bATK += 5;
-			break;
-		case 12: // Wizard
-			spellid = 702;
-			bsta += 20;
-			bint += 30;
-			bATK += 5;
-			break;
-		case 13: // Magician
-			spellid = 704;
-			bsta += 20;
-			bint += 30;
-			bATK += 5;
-			break;
-		case 14: // Enchanter
-			spellid = 705;
-			bint += 25;
-			bcha += 25;
-			bATK += 5;
-			break;
-		case 15: // Beastlord
-			spellid = 712;
-			bsta += 10;
-			bagi += 10;
-			bdex += 5;
-			bwis += 20;
-			bcha += 5;
-			bATK += 31;
-			break;
-		case 16: // Berserker
-			bstr += 10;
-			bsta += 15;
-			bdex += 15;
-			bagi += 10;
-			bATK += 25;
-			break;
-	}
-
-	float bsize = 6.0;
-	switch(brace) {
-		case 1: // Humans have no race bonus
-			break;
-		case 2: // Barbarian
-			bstr += 28;
-			bsta += 20;
-			bagi += 7;
-			bdex -= 5;
-			bwis -= 5;
-			bint -= 10;
-			bcha -= 20;
-			bsize = 7;
-			bCR += 10;
-			break;
-		case 3: // Erudite
-			bstr -= 15;
-			bsta -= 5;
-			bagi -= 5;
-			bdex -= 5;
-			bwis += 8;
-			bint += 32;
-			bcha -= 5;
-			bMR += 5;
-			bDR -= 5;
-			break;
-		case 4: // Wood Elf
-			bstr -= 10;
-			bsta -= 10;
-			bagi += 20;
-			bdex += 5;
-			bwis += 5;
-			bsize = 5;
-			break;
-		case 5: // High Elf
-			bstr -= 20;
-			bsta -= 10;
-			bagi += 10;
-			bdex -= 5;
-			bwis += 20;
-			bint += 12;
-			bcha += 5;
-			break;
-		case 6: // Dark Elf
-			bstr -= 15;
-			bsta -= 10;
-			bagi += 15;
-			bwis += 8;
-			bint += 24;
-			bcha -= 15;
-			bsize = 5;
-			break;
-		case 7: // Half Elf
-			bstr -= 5;
-			bsta -= 5;
-			bagi += 15;
-			bdex += 10;
-			bwis -= 15;
-			bsize = 5.5;
-			break;
-		case 8: // Dwarf
-			bstr += 15;
-			bsta += 15;
-			bagi -= 5;
-			bdex += 15;
-			bwis += 8;
-			bint -= 15;
-			bcha -= 30;
-			bsize = 4;
-			bMR -= 5;
-			bPR += 5;
-			break;
-		case 9: // Troll
-			bstr += 33;
-			bsta += 34;
-			bagi += 8;
-			bwis -= 15;
-			bint -= 23;
-			bcha -= 35;
-			bsize = 8;
-			bFR -= 20;
-			break;
-		case 10: // Ogre
-			bstr += 55;
-			bsta += 77;
-			bagi -= 5;
-			bdex -= 5;
-			bwis -= 8;
-			bint -= 15;
-			bcha -= 38;
-			bsize = 9;
-			break;
-		case 11: // Halfling
-			bstr -= 5;
-			bagi += 20;
-			bdex += 15;
-			bwis += 5;
-			bint -= 8;
-			bcha -= 25;
-			bsize = 3.5;
-			bPR += 5;
-			bDR += 5;
-			break;
-		case 12: // Gnome
-			bstr -= 15;
-			bsta -= 5;
-			bagi += 10;
-			bdex += 10;
-			bwis -= 8;
-			bint += 23;
-			bcha -= 15;
-			bsize = 3;
-			break;
-		case 128: // Iksar
-			bstr -= 5;
-			bsta -= 5;
-			bagi += 15;
-			bdex += 10;
-			bwis += 5;
-			bcha -= 20;
-			bMR -= 5;
-			bFR -= 5;
-			break;
-		case 130: // Vah Shir
-			bstr += 15;
-			bagi += 15;
-			bdex -= 5;
-			bwis -= 5;
-			bint -= 10;
-			bcha -= 10;
-			bsize = 7;
-			bMR -= 5;
-			bFR -= 5;
-			break;
-		case 330: // Froglok
-			bstr -= 5;
-			bsta += 5;
-			bagi += 25;
-			bdex += 25;
-			bcha -= 25;
-			bsize = 5;
-			bMR -= 5;
-			bFR -= 5;
-			break;
-	}
-
-	// General AA bonus'
-	if(blevel >= 51 ) {
-		bstr += 2;	// Innate Strength AA 1
-		bsta += 2;	// Innate Stamina AA 1
-		bagi += 2;	// Innate Agility AA 1
-		bdex += 2;	// Innate Dexterity AA 1
-		bint += 2;	// Innate Intelligence AA 1
-		bwis += 2;	// Innate Wisdom AA 1
-		bcha += 2;	// Innate Charisma AA 1
-		bFR += 2;	// Innate Fire Protection AA 1
-		bCR += 2;	// Innate Cold Protection AA 1
-		bMR += 2;	// Innate Magic Protection AA 1
-		bPR += 2;	// Innate Poison Protection AA 1
-		bDR += 2;	// Innate Disease AA 1
-	}
-	if(blevel >= 52 ) {
-		bstr += 2;	// Innate Strength AA 2
-		bsta += 2;	// Innate Stamina AA 2
-		bagi += 2;	// Innate Agility AA 2
-		bdex += 2;	// Innate Dexterity AA 2
-		bint += 2;	// Innate Intelligence AA 2
-		bwis += 2;	// Innate Wisdom AA 2
-		bcha += 2;	// Innate Charisma AA 2
-		bFR += 2;	// Innate Fire Protection AA 2
-		bCR += 2;	// Innate Cold Protection AA 2
-		bMR += 2;	// Innate Magic Protection AA 2
-		bPR += 2;	// Innate Poison Protection AA 2
-		bDR += 2;	// Innate Disease AA 2
-	}
-	if(blevel >= 53 ) {
-		bstr += 2;	// Innate Strength AA 3
-		bsta += 2;	// Innate Stamina AA 3
-		bagi += 2;	// Innate Agility AA 3
-		bdex += 2;	// Innate Dexterity AA 3
-		bint += 2;	// Innate Intelligence AA 3
-		bwis += 2;	// Innate Wisdom AA 3
-		bcha += 2;	// Innate Charisma AA 3
-		bFR += 2;	// Innate Fire Protection AA 3
-		bCR += 2;	// Innate Cold Protection AA 3
-		bMR += 2;	// Innate Magic Protection AA 3
-		bPR += 2;	// Innate Poison Protection AA 3
-		bDR += 2;	// Innate Disease AA 3
-	}
-	if(blevel >= 54 ) {
-		bstr += 2;	// Innate Strength AA 4
-		bsta += 2;	// Innate Stamina AA 4
-		bagi += 2;	// Innate Agility AA 4
-		bdex += 2;	// Innate Dexterity AA 4
-		bint += 2;	// Innate Intelligence AA 4
-		bwis += 2;	// Innate Wisdom AA 4
-		bcha += 2;	// Innate Charisma AA 4
-		bFR += 2;	// Innate Fire Protection AA 4
-		bCR += 2;	// Innate Cold Protection AA 4
-		bMR += 2;	// Innate Magic Protection AA 4
-		bPR += 2;	// Innate Poison Protection AA 4
-		bDR += 2;	// Innate Disease AA 4
-	}
-	if(blevel >= 55 ) {
-		bstr += 2;	// Innate Strength AA 5
-		bsta += 2;	// Innate Stamina AA 5
-		bagi += 2;	// Innate Agility AA 5
-		bdex += 2;	// Innate Dexterity AA 5
-		bint += 2;	// Innate Intelligence AA 5
-		bwis += 2;	// Innate Wisdom AA 5
-		bcha += 2;	// Innate Charisma AA 5
-		bFR += 2;	// Innate Fire Protection AA 5
-		bCR += 2;	// Innate Cold Protection AA 5
-		bMR += 2;	// Innate Magic Protection AA 5
-		bPR += 2;	// Innate Poison Protection AA 5
-		bDR += 2;	// Innate Disease AA 5
-	}
-	if(blevel >= 61 ) {
-		bstr += 2;	// Advanced Innate Strength AA 1
-		bsta += 2;	// Advanced Innate Stamina AA 1
-		bagi += 2;	// Advanced Innate Agility AA 1
-		bdex += 2;	// Advanced Innate Dexterity AA 1
-		bint += 2;	// Advanced Innate Intelligence AA 1
-		bwis += 2;	// Advanced Innate Wisdom AA 1
-		bcha += 2;	// Advanced Innate Charisma AA 1
-		bFR += 2;	// Warding of Solusek AA 1
-		bCR += 2;	// Blessing of E'ci AA 1
-		bMR += 2;	// Marr's Protection AA 1
-		bPR += 2;	// Shroud of the Faceless AA 1
-		bDR += 2;	// Bertoxxulous' Gift AA 1
-	}
-	if(blevel >= 62 ) {
-		bstr += 2;	// Advanced Innate Strength AA 2
-		bsta += 2;	// Advanced Innate Stamina AA 2
-		bagi += 2;	// Advanced Innate Agility AA 2
-		bdex += 2;	// Advanced Innate Dexterity AA 2
-		bint += 2;	// Advanced Innate Intelligence AA 2
-		bwis += 2;	// Advanced Innate Wisdom AA 2
-		bcha += 2;	// Advanced Innate Charisma AA 2
-		bFR += 2;	// Warding of Solusek AA 2
-		bCR += 2;	// Blessing of E'ci AA 2
-		bMR += 2;	// Marr's Protection AA 2
-		bPR += 2;	// Shroud of the Faceless AA 2
-		bDR += 2;	// Bertoxxulous' Gift AA 2
-	}
-	if(blevel >= 63 ) {
-		bstr += 2;	// Advanced Innate Strength AA 3
-		bsta += 2;	// Advanced Innate Stamina AA 3
-		bagi += 2;	// Advanced Innate Agility AA 3
-		bdex += 2;	// Advanced Innate Dexterity AA 3
-		bint += 2;	// Advanced Innate Intelligence AA 3
-		bwis += 2;	// Advanced Innate Wisdom AA 3
-		bcha += 2;	// Advanced Innate Charisma AA 3
-		bFR += 2;	// Warding of Solusek AA 3
-		bCR += 2;	// Blessing of E'ci AA 3
-		bMR += 2;	// Marr's Protection AA 3
-		bPR += 2;	// Shroud of the Faceless AA 3
-		bDR += 2;	// Bertoxxulous' Gift AA 3
-	}
-	if(blevel >= 64 ) {
-		bstr += 2;	// Advanced Innate Strength AA 4
-		bsta += 2;	// Advanced Innate Stamina AA 4
-		bagi += 2;	// Advanced Innate Agility AA 4
-		bdex += 2;	// Advanced Innate Dexterity AA 4
-		bint += 2;	// Advanced Innate Intelligence AA 4
-		bwis += 2;	// Advanced Innate Wisdom AA 4
-		bcha += 2;	// Advanced Innate Charisma AA 4
-		bFR += 2;	// Warding of Solusek AA 4
-		bCR += 2;	// Blessing of E'ci AA 4
-		bMR += 2;	// Marr's Protection AA 4
-		bPR += 2;	// Shroud of the Faceless AA 4
-		bDR += 2;	// Bertoxxulous' Gift AA 4
-	}
-	if(blevel >= 65 ) {
-		bstr += 2;	// Advanced Innate Strength AA 5
-		bsta += 2;	// Advanced Innate Stamina AA 5
-		bagi += 2;	// Advanced Innate Agility AA 5
-		bdex += 2;	// Advanced Innate Dexterity AA 5
-		bint += 2;	// Advanced Innate Intelligence AA 5
-		bwis += 2;	// Advanced Innate Wisdom AA 5
-		bcha += 2;	// Advanced Innate Charisma AA 5
-		bFR += 2;	// Warding of Solusek AA 5
-		bCR += 2;	// Blessing of E'ci AA 5
-		bMR += 2;	// Marr's Protection AA 5
-		bPR += 2;	// Shroud of the Faceless AA 5
-		bDR += 2;	// Bertoxxulous' Gift AA 5
-	}
-	if(blevel >= 66 ) {
-		bstr += 2;	// Advanced Innate Strength AA 6
-		bsta += 2;	// Advanced Innate Stamina AA 6
-		bagi += 2;	// Advanced Innate Agility AA 6
-		bdex += 2;	// Advanced Innate Dexterity AA 6
-		bint += 2;	// Advanced Innate Intelligence AA 6
-		bwis += 2;	// Advanced Innate Wisdom AA 6
-		bcha += 2;	// Advanced Innate Charisma AA 6
-		bFR += 2;	// Warding of Solusek AA 6
-		bCR += 2;	// Blessing of E'ci AA 6
-		bMR += 2;	// Marr's Protection AA 6
-		bPR += 2;	// Shroud of the Faceless AA 6
-		bDR += 2;	// Bertoxxulous' Gift AA 6
-	}
-	if(blevel >= 67 ) {
-		bstr += 2;	// Advanced Innate Strength AA 7
-		bsta += 2;	// Advanced Innate Stamina AA 7
-		bagi += 2;	// Advanced Innate Agility AA 7
-		bdex += 2;	// Advanced Innate Dexterity AA 7
-		bint += 2;	// Advanced Innate Intelligence AA 7
-		bwis += 2;	// Advanced Innate Wisdom AA 7
-		bcha += 2;	// Advanced Innate Charisma AA 7
-		bFR += 2;	// Warding of Solusek AA 7
-		bCR += 2;	// Blessing of E'ci AA 7
-		bMR += 2;	// Marr's Protection AA 7
-		bPR += 2;	// Shroud of the Faceless AA 7
-		bDR += 2;	// Bertoxxulous' Gift AA 7
-	}
-	if(blevel >= 68 ) {
-		bstr += 2;	// Advanced Innate Strength AA 8
-		bsta += 2;	// Advanced Innate Stamina AA 8
-		bagi += 2;	// Advanced Innate Agility AA 8
-		bdex += 2;	// Advanced Innate Dexterity AA 8
-		bint += 2;	// Advanced Innate Intelligence AA 8
-		bwis += 2;	// Advanced Innate Wisdom AA 8
-		bcha += 2;	// Advanced Innate Charisma AA 8
-		bFR += 2;	// Warding of Solusek AA 8
-		bCR += 2;	// Blessing of E'ci AA 8
-		bMR += 2;	// Marr's Protection AA 8
-		bPR += 2;	// Shroud of the Faceless AA 8
-		bDR += 2;	// Bertoxxulous' Gift AA 8
-	}
-	if(blevel >= 69 ) {
-		bstr += 2;	// Advanced Innate Strength AA 9
-		bsta += 2;	// Advanced Innate Stamina AA 9
-		bagi += 2;	// Advanced Innate Agility AA 9
-		bdex += 2;	// Advanced Innate Dexterity AA 9
-		bint += 2;	// Advanced Innate Intelligence AA 9
-		bwis += 2;	// Advanced Innate Wisdom AA 9
-		bcha += 2;	// Advanced Innate Charisma AA 9
-		bFR += 2;	// Warding of Solusek AA 9
-		bCR += 2;	// Blessing of E'ci AA 9
-		bMR += 2;	// Marr's Protection AA 9
-		bPR += 2;	// Shroud of the Faceless AA 9
-		bDR += 2;	// Bertoxxulous' Gift AA 9
-	}
-	if(blevel >= 70 ) {
-		bstr += 2;	// Advanced Innate Strength AA 10
-		bsta += 2;	// Advanced Innate Stamina AA 10
-		bagi += 2;	// Advanced Innate Agility AA 10
-		bdex += 2;	// Advanced Innate Dexterity AA 10
-		bint += 2;	// Advanced Innate Intelligence AA 10
-		bwis += 2;	// Advanced Innate Wisdom AA 10
-		bcha += 2;	// Advanced Innate Charisma AA 10
-		bFR += 2;	// Warding of Solusek AA 10
-		bCR += 2;	// Blessing of E'ci AA 10
-		bMR += 2;	// Marr's Protection AA 10
-		bPR += 2;	// Shroud of the Faceless AA 10
-		bDR += 2;	// Bertoxxulous' Gift AA 10
-	}
-
-
-	// Base AC
-	int bac = (blevel * 3) * 4;
-	switch(bclass) {
-		case WARRIOR:
-		case SHADOWKNIGHT:
-		case PALADIN: bac = bac*1.5;
-	}
-
-	// Calc Base Hit Points
-	int16 lm = GetClassLevelFactor();
-	int16 Post255;
-	if((bsta-255)/2 > 0)
-		Post255 = (bsta-255)/2;
-	else
-		Post255 = 0;
-	sint32 bot_hp = (5)+(blevel*lm/10) + (((bsta-Post255)*blevel*lm/3000)) + ((Post255*blevel)*lm/6000);
-
-
-	// Now, we need to calc the base mana.
-	sint32 bot_mana = 0;
-	sint32 WisInt = 0;
-	sint32 MindLesserFactor, MindFactor;
-	switch (GetCasterClass()) {
-		case 'I':
-			WisInt = bint;
-			if((( WisInt - 199 ) / 2) > 0) {
-				MindLesserFactor = ( WisInt - 199 ) / 2;
-			}
-			else {
-				MindLesserFactor = 0;
-			}
-			MindFactor = WisInt - MindLesserFactor;
-			if(WisInt > 100) {
-				bot_mana = (((5 * (MindFactor + 20)) / 2) * 3 * blevel / 40);
-			}
-			else {
-				bot_mana = (((5 * (MindFactor + 200)) / 2) * 3 * blevel / 100);
-			}
-			bot_mana += (itembonuses.Mana + spellbonuses.Mana);
-			break;
-
-		case 'W':
-			WisInt = bwis;
-			if((( WisInt - 199 ) / 2) > 0) {
-				MindLesserFactor = ( WisInt - 199 ) / 2;
-			}
-			else {
-				MindLesserFactor = 0;
-			}
-			MindFactor = WisInt - MindLesserFactor;
-			if(WisInt > 100) {
-				bot_mana = (((5 * (MindFactor + 20)) / 2) * 3 * blevel / 40);
-			}
-			else {
-				bot_mana = (((5 * (MindFactor + 200)) / 2) * 3 * blevel / 100);
-			}
-			bot_mana += (itembonuses.Mana + spellbonuses.Mana);
-			break;
-
-		default:
-			bot_mana = 0;
-			break;
-	}
-
-	base_hp = bot_hp;
-	max_mana = cur_mana = bot_mana;
-	AC = bac;
-	AGI = bagi;
-	ATK = bATK;
-	CHA = bcha;
-	CR = bCR;
-	DEX = bdex;
-	DR = bDR;
-	FR = bFR;
-	INT = bint;
-	MR = bMR;
-	PR = bPR;
-	STA = bsta;
-	STR = bstr;
-	WIS = bwis;
-
-	// Special Attacks
-	if(((bclass == MONK) || (bclass == WARRIOR) || (bclass == RANGER) || (bclass == BERSERKER))	&& (blevel >= 60)) {
-		SpecAttacks[SPECATK_TRIPLE] = true;
-	}
-
-	if(showtext) {
-		BotOwner->Message(15, "Base stats:");
-		BotOwner->Message(15, "Level: %i HP: %i AC: %i Mana: %i STR: %i STA: %i DEX: %i AGI: %i INT: %i WIS: %i CHA: %i", blevel, base_hp, AC, max_mana, STR, STA, DEX, AGI, INT, WIS, CHA);
-		BotOwner->Message(15, "Resists-- Magic: %i, Poison: %i, Fire: %i, Cold: %i, Disease: %i.",MR,PR,FR,CR,DR);
-	}
-
-	// Let's find the items in the bot inventory
-	sint32 items_hp = 0;
-	sint32 items_mana = 0;
-
-	char errbuf[MYSQL_ERRMSG_SIZE];
-	char* query = 0;
-	MYSQL_RES* result;
-	MYSQL_ROW row;
-	bool ret = false;			
-
-	/* Update to the DB with base stats*/
-	/*if(database.RunQuery(query, MakeAnyLenString(&query, "update npc_types set level=%i, hp=%i, size=%f, npc_spells_id=%i, runspeed=%f, MR=%i, CR=%i, DR=%i, FR=%i, PR=%i, AC=%i, STR=%i, STA=%i, DEX=%i, AGI=%i, _INT=%i, WIS=%i, CHA=%i, ATK=%i where id=%i",blevel,base_hp,bsize,spellid,2.501f,MR,CR,DR,FR,PR,AC,STR,STA,DEX,AGI,INT,WIS,CHA,ATK,GetNPCTypeID()), errbuf)) {
-		safe_delete_array(query);
-	}
-	else {
-		Say("My database update failed!!!");
-	}*/
-	
-	if(this->Save())
-		this->GetBotOwner()->CastToClient()->Message(0, "%s saved.", this->GetCleanName());
-	else
-		this->GetBotOwner()->CastToClient()->Message(13, "%s save failed!", this->GetCleanName());
-
-	query = 0;
-	memset(&itembonuses, 0, sizeof(StatBonuses));
-	for(int i=0; i<22; i++) {
-		if(database.RunQuery(query, MakeAnyLenString(&query, "SELECT itemid FROM botinventory WHERE botid=%i AND slotid=%i", GetNPCTypeID(), i), errbuf, &result)) {
-			safe_delete_array(query);
-			if(mysql_num_rows(result) == 1) {
-				row = mysql_fetch_row(result);
-				int iteminslot = atoi(row[0]);
-				mysql_free_result(result);
-
-				if(iteminslot > 0) {
-					const Item_Struct *itemtmp = database.GetItem(iteminslot);
-					if(itemtmp->AC != 0)
-						itembonuses.AC += itemtmp->AC;
-					if(itemtmp->HP != 0)
-						itembonuses.HP += itemtmp->HP;
-					if(itemtmp->Mana != 0)
-						itembonuses.Mana += itemtmp->Mana;
-					if(itemtmp->Endur != 0)
-						itembonuses.Endurance += itemtmp->Endur;
-					if(itemtmp->AStr != 0)
-						itembonuses.STR += itemtmp->AStr;
-					if(itemtmp->ASta != 0)
-						itembonuses.STA += itemtmp->ASta;
-					if(itemtmp->ADex != 0)
-						itembonuses.DEX += itemtmp->ADex;
-					if(itemtmp->AAgi != 0)
-						itembonuses.AGI += itemtmp->AAgi;
-					if(itemtmp->AInt != 0)
-						itembonuses.INT += itemtmp->AInt;
-					if(itemtmp->AWis != 0)
-						itembonuses.WIS += itemtmp->AWis;
-					if(itemtmp->ACha != 0)
-						itembonuses.CHA += itemtmp->ACha;
-					if(itemtmp->MR != 0)
-						itembonuses.MR += itemtmp->MR;
-					if(itemtmp->FR != 0)
-						itembonuses.FR += itemtmp->FR;
-					if(itemtmp->CR != 0)
-						itembonuses.CR += itemtmp->CR;
-					if(itemtmp->PR != 0)
-						itembonuses.PR += itemtmp->PR;
-					if(itemtmp->DR != 0)
-						itembonuses.DR += itemtmp->DR;
-					if(itemtmp->Regen != 0)
-						itembonuses.HPRegen += itemtmp->Regen;
-					if(itemtmp->ManaRegen != 0)
-						itembonuses.ManaRegen += itemtmp->ManaRegen;
-					if(itemtmp->Attack != 0)
-						itembonuses.ATK += itemtmp->Attack;
-					if(itemtmp->DamageShield != 0)
-						itembonuses.DamageShield += itemtmp->DamageShield;
-					if(itemtmp->SpellShield != 0)
-						itembonuses.SpellDamageShield += itemtmp->SpellShield;
-					if(itemtmp->Shielding != 0)
-						itembonuses.MeleeMitigation += itemtmp->Shielding;
-					if(itemtmp->StunResist != 0)
-						itembonuses.StunResist += itemtmp->StunResist;
-					if(itemtmp->StrikeThrough != 0)
-						itembonuses.StrikeThrough += itemtmp->StrikeThrough;
-					if(itemtmp->Avoidance != 0)
-						itembonuses.AvoidMeleeChance += itemtmp->Avoidance;
-					if(itemtmp->Accuracy != 0)
-						itembonuses.HitChance += itemtmp->Accuracy;
-					if(itemtmp->CombatEffects != 0)
-						itembonuses.ProcChance += itemtmp->CombatEffects;
-					if ((itemtmp->Worn.Effect != 0) && (itemtmp->Worn.Type == ET_WornEffect)) { // latent effects
-						ApplySpellsBonuses(itemtmp->Worn.Effect, itemtmp->Worn.Level, &itembonuses);
-					}
-				}
-			}
-		}
-	}
-
-	bMR += itembonuses.MR;
-	bCR += itembonuses.CR;
-	bDR += itembonuses.DR;
-	bFR += itembonuses.FR;
-	bPR += itembonuses.PR;
-	bac += itembonuses.AC;
-	bstr += itembonuses.STR;
-	bsta += itembonuses.STA;
-	bdex += itembonuses.DEX;
-	bagi += itembonuses.AGI;
-	bint += itembonuses.INT;
-	bwis += itembonuses.WIS;
-	bcha += itembonuses.CHA;
-	bATK += itembonuses.ATK;
-
-	bMR += spellbonuses.MR;
-	bCR += spellbonuses.CR;
-	bDR += spellbonuses.DR;
-	bFR += spellbonuses.FR;
-	bPR += spellbonuses.PR;
-	bac += spellbonuses.AC;
-	bstr += spellbonuses.STR;
-	bsta += spellbonuses.STA;
-	bdex += spellbonuses.DEX;
-	bagi += spellbonuses.AGI;
-	bint += spellbonuses.INT;
-	bwis += spellbonuses.WIS;
-	bcha += spellbonuses.CHA;
-	bATK += spellbonuses.ATK;
-
-	if((bsta-255)/2 > 0)
-		Post255 = (bsta-255)/2;
-	else
-		Post255 = 0;
-	bot_hp = (5)+(blevel*lm/10) + (((bsta-Post255)*blevel*lm/3000));
-	bot_hp += itembonuses.HP;
-
-	// Hitpoint AA's
-	int32 nd = 10000;
-	if(blevel >= 69) {
-		nd += 1650;	// Planar Durablility AA 3
-		if(bclass == WARRIOR) { // Sturdiness AA 5
-			nd += 500;
-		}
-	}
-	else if(blevel >= 68) {
-		nd += 1650;	// Planar Durablility AA 3
-		if(bclass == WARRIOR) { // Sturdiness AA 4
-			nd += 400;
-		}
-	}
-	else if(blevel >= 67) {
-		nd += 1650;	// Planar Durablility AA 3
-		if(bclass == WARRIOR) { // Sturdiness AA 3
-			nd += 300;
-		}
-	}
-	else if(blevel >= 66) {
-		nd += 1650;	// Planar Durablility AA 3
-		if(bclass == WARRIOR) { // Sturdiness AA 2
-			nd += 200;
-		}
-	}
-	else if(blevel >= 65) {
-		nd += 1650;	// Planar Durablility AA 3
-		if(bclass == WARRIOR) { // Sturdiness AA 1
-			nd += 100;
-		}
-	}
-	else if(blevel >= 63) {
-		nd += 1500;	// Planar Durablility AA 2
-	}
-	else if(blevel >= 61) {
-		nd += 1350;	// Planar Durablility AA 1
-	}
-	else if(blevel >= 59) {
-		nd += 1200;	// Physical Enhancememt AA 1
-	}
-	else if(blevel >= 57) {
-		nd += 1000;	// Natural Durablility AA 3
-	}
-	else if(blevel >= 56) {
-		nd += 500;	// Natural Durablility AA 2
-	}
-	else if(blevel >= 55) {
-		nd += 200;	// Natural Durablility AA 1
-	}
-	bot_hp = bot_hp * nd / 10000;
-	bot_hp += spellbonuses.HP;
-	max_hp = cur_hp = bot_hp;
-
-	switch (GetCasterClass()) {
-		case 'I':
-			WisInt = bint;
-			if((( WisInt - 199 ) / 2) > 0) {
-				MindLesserFactor = ( WisInt - 199 ) / 2;
-			}
-			else {
-				MindLesserFactor = 0;
-			}
-			MindFactor = WisInt - MindLesserFactor;
-			if(WisInt > 100) {
-				bot_mana = (((5 * (MindFactor + 20)) / 2) * 3 * blevel / 40);
-			}
-			else {
-				bot_mana = (((5 * (MindFactor + 200)) / 2) * 3 * blevel / 100);
-			}
-			bot_mana += (itembonuses.Mana + spellbonuses.Mana);
-			break;
-
-		case 'W':
-			WisInt = bwis;
-			if((( WisInt - 199 ) / 2) > 0) {
-				MindLesserFactor = ( WisInt - 199 ) / 2;
-			}
-			else {
-				MindLesserFactor = 0;
-			}
-			MindFactor = WisInt - MindLesserFactor;
-			if(WisInt > 100) {
-				bot_mana = (((5 * (MindFactor + 20)) / 2) * 3 * blevel / 40);
-			}
-			else {
-				bot_mana = (((5 * (MindFactor + 200)) / 2) * 3 * blevel / 100);
-			}
-			bot_mana += (itembonuses.Mana + spellbonuses.Mana);
-			break;
-
-		default:
-			bot_mana = 0;
-			break;
-	}
-	max_mana = cur_mana = bot_mana;
-	AI_AddNPCSpells(spellid);
-
-	if(showtext) {
-		BotOwner->Message(15, "I'm updated.");
-		BotOwner->Message(15, "Level: %i HP: %i AC: %i Mana: %i STR: %i STA: %i DEX: %i AGI: %i INT: %i WIS: %i CHA: %i", blevel, max_hp, bac, max_mana, bstr, bsta, bdex, bagi, bint, bwis, bcha);
-		BotOwner->Message(15, "Resists-- Magic: %i, Poison: %i, Fire: %i, Cold: %i, Disease: %i.",bMR,bPR,bFR,bCR,bDR);
-	}
 }
 
 void EntityList::ShowSpawnWindow(Client* client, int Distance, bool NamedOnly) {
