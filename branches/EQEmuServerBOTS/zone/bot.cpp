@@ -7692,8 +7692,85 @@ void Bot::GenerateSpecialAttacks() {
 	}
 }
 
-// TODO: Refactor this method.
-// This method contains a large amount of redundant code that can be replaced with private methods
+void Bot::CalcBonuses() {
+	CalcSpellBonuses(&spellbonuses);
+	CalcMaxHP();
+	CalcMaxMana();
+}
+
+sint32 Bot::CalcMaxHP() {
+	int16 Post255 = 0;
+	sint32 bot_hp = 0;
+	int16 lm = GetClassLevelFactor();
+
+	if((STA-255)/2 > 0)
+		Post255 = (STA-255)/2;
+	else
+		Post255 = 0;
+
+	bot_hp = (5)+(GetLevel()*lm/10) + (((STA-Post255)*GetLevel()*lm/3000));
+	bot_hp += itembonuses.HP;
+	
+	// Hitpoint AA's
+	int32 nd = 10000;
+	if(GetLevel() >= 69) {
+		nd += 1650;	// Planar Durablility AA 3
+		if(GetClass() == WARRIOR) { // Sturdiness AA 5
+			nd += 500;
+		}
+	}
+	else if(GetLevel() >= 68) {
+		nd += 1650;	// Planar Durablility AA 3
+		if(GetClass() == WARRIOR) { // Sturdiness AA 4
+			nd += 400;
+		}
+	}
+	else if(GetLevel() >= 67) {
+		nd += 1650;	// Planar Durablility AA 3
+		if(GetClass() == WARRIOR) { // Sturdiness AA 3
+			nd += 300;
+		}
+	}
+	else if(GetLevel() >= 66) {
+		nd += 1650;	// Planar Durablility AA 3
+		if(GetClass() == WARRIOR) { // Sturdiness AA 2
+			nd += 200;
+		}
+	}
+	else if(GetLevel() >= 65) {
+		nd += 1650;	// Planar Durablility AA 3
+		if(GetClass() == WARRIOR) { // Sturdiness AA 1
+			nd += 100;
+		}
+	}
+	else if(GetLevel() >= 63) {
+		nd += 1500;	// Planar Durablility AA 2
+	}
+	else if(GetLevel() >= 61) {
+		nd += 1350;	// Planar Durablility AA 1
+	}
+	else if(GetLevel() >= 59) {
+		nd += 1200;	// Physical Enhancememt AA 1
+	}
+	else if(GetLevel() >= 57) {
+		nd += 1000;	// Natural Durablility AA 3
+	}
+	else if(GetLevel() >= 56) {
+		nd += 500;	// Natural Durablility AA 2
+	}
+	else if(GetLevel() >= 55) {
+		nd += 200;	// Natural Durablility AA 1
+	}
+
+	bot_hp = bot_hp * nd / 10000;
+
+	bot_hp += spellbonuses.HP;
+
+	max_hp = bot_hp;
+
+	return max_hp;
+}
+
 void Bot::CalcBotStats(bool showtext) {
 	Client* BotOwner = this->GetBotOwner()->CastToClient();
 
@@ -7854,72 +7931,7 @@ void Bot::CalcBotStats(bool showtext) {
 	CHA += spellbonuses.CHA;
 	ATK += spellbonuses.ATK;
 
-	int16 Post255 = 0;
-	sint32 bot_hp = 0;
-	int16 lm = GetClassLevelFactor();
-	if((STA-255)/2 > 0)
-		Post255 = (STA-255)/2;
-	else
-		Post255 = 0;
-	bot_hp = (5)+(GetLevel()*lm/10) + (((STA-Post255)*GetLevel()*lm/3000));
-	bot_hp += itembonuses.HP;
-	
-	// GenerateBaseHitPoints();
-
-	// Hitpoint AA's
-	int32 nd = 10000;
-	if(GetLevel() >= 69) {
-		nd += 1650;	// Planar Durablility AA 3
-		if(GetClass() == WARRIOR) { // Sturdiness AA 5
-			nd += 500;
-		}
-	}
-	else if(GetLevel() >= 68) {
-		nd += 1650;	// Planar Durablility AA 3
-		if(GetClass() == WARRIOR) { // Sturdiness AA 4
-			nd += 400;
-		}
-	}
-	else if(GetLevel() >= 67) {
-		nd += 1650;	// Planar Durablility AA 3
-		if(GetClass() == WARRIOR) { // Sturdiness AA 3
-			nd += 300;
-		}
-	}
-	else if(GetLevel() >= 66) {
-		nd += 1650;	// Planar Durablility AA 3
-		if(GetClass() == WARRIOR) { // Sturdiness AA 2
-			nd += 200;
-		}
-	}
-	else if(GetLevel() >= 65) {
-		nd += 1650;	// Planar Durablility AA 3
-		if(GetClass() == WARRIOR) { // Sturdiness AA 1
-			nd += 100;
-		}
-	}
-	else if(GetLevel() >= 63) {
-		nd += 1500;	// Planar Durablility AA 2
-	}
-	else if(GetLevel() >= 61) {
-		nd += 1350;	// Planar Durablility AA 1
-	}
-	else if(GetLevel() >= 59) {
-		nd += 1200;	// Physical Enhancememt AA 1
-	}
-	else if(GetLevel() >= 57) {
-		nd += 1000;	// Natural Durablility AA 3
-	}
-	else if(GetLevel() >= 56) {
-		nd += 500;	// Natural Durablility AA 2
-	}
-	else if(GetLevel() >= 55) {
-		nd += 200;	// Natural Durablility AA 1
-	}
-
-	bot_hp = bot_hp * nd / 10000;
-	bot_hp += spellbonuses.HP;
-	max_hp = cur_hp = bot_hp;
+	cur_hp = CalcMaxHP();
 
 	GenerateBaseManaPoints();
 	

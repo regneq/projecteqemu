@@ -65,7 +65,7 @@ public:
 	virtual bool TryHeadShot(Mob* defender, SkillType skillInUse);
 	// virtual bool IsAttackAllowed(Mob *target, bool isSpellAttack = false);
 	virtual sint32 CheckAggroAmount(int16 spellid);
-	virtual void CalcBonuses() { return; }
+	virtual void CalcBonuses();
 	virtual void MakePet(int16 spell_id, const char* pettype, const char *petname = NULL);
 	virtual void AI_Stop();
 	virtual FACTION_VALUE GetReverseFactionCon(Mob* iOther);
@@ -78,6 +78,7 @@ public:
 	virtual sint32 CheckHealAggroAmount(int16 spellid, int32 heal_possible = 0);
 	virtual sint32 CalcMaxMana();
 	virtual void SetAttackTimer();
+	virtual sint32 CalcMaxHP();
 
 	// Mob Spell Virtual Override Methods
 	virtual sint32 GetActSpellDamage(int16 spell_id, sint32 value);
