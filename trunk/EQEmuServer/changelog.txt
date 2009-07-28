@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==7/27/2009==
+gaeorn: changes to login server to compile under linux. added linux makefile for linux. converted utf16 sql files to normal ascii text.
+
 ==7/26/2009==
 AndMetal: AGI Penalty for being encumbered now matches the Titanium client. The old formula was much higher than the client was reporting.
 AndMetal: Added InLiquid() function to the WaterMap class. Will return true if you're in Water or Lava (or both?)

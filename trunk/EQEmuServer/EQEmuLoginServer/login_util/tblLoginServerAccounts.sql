@@ -1,4 +1,4 @@
-﻿DROP TABLE IF EXISTS tblLoginServerAccounts;
+DROP TABLE IF EXISTS tblLoginServerAccounts;
 CREATE TABLE IF NOT EXISTS tblLoginServerAccounts (
   LoginServerID integer unsigned NOT NULL auto_increment,
   AccountName varchar(30) NOT NULL,

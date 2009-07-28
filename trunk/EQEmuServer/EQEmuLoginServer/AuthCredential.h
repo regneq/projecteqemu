@@ -19,7 +19,7 @@
 #if !defined(_L__AUTHCRED__H)
 #define _L__AUTHCRED__H
 
-#include "..\common\debug.h"
+#include "../common/debug.h"
 
 #include <ctime>
 #include <string>

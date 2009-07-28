@@ -19,8 +19,8 @@
 #if !defined(_L__WORLDREG__H)
 #define _L__WORLDREG__H
 
-#include "..\common\debug.h"
-#include "..\common\servertalk.h"
+#include "../common/debug.h"
+#include "../common/servertalk.h"
 
 #include "RuntimeCredential.h"
 

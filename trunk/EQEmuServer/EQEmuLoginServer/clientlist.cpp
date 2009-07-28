@@ -44,7 +44,7 @@ Clientlist::Clientlist() {
 	try {
 		if(!_db->TestDBConnection()) {
 			_log(WORLD__LS_ERR, "Unable to connect to the specified database server. (%s/%s using login account name %s)", _db->GetServerName().c_str(), _db->GetDatabaseName().c_str(), _db->GetDBUsername().c_str());
-			throw new std::exception("Unable to access accounts table from the specified database. Verify tblLoginServerAccounts table is correct.");
+			throw new std::exception((const std::exception&)"Unable to access accounts table from the specified database. Verify tblLoginServerAccounts table is correct.");
 		}
 	}
 	catch(std::exception &Ex) {
