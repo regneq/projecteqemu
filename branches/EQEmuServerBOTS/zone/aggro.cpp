@@ -810,6 +810,10 @@ bool Mob::IsBeneficialAllowed(Mob *target)
 			{
 				return false;
 			}
+#ifdef BOTS
+			else if(mob2->IsBot())
+				return true;
+#endif
 		}
 		else if(_NPC(mob1))
 		{
