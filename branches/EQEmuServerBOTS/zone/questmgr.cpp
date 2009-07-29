@@ -620,7 +620,7 @@ uint16 QuestManager::scribespells(uint8 max_level, uint8 min_level) {
 			}
 		}
 	}
-	return book_slot;	//how many spells were scribed successfully
+	return count;	//how many spells were scribed successfully
 }
 
 uint16 QuestManager::traindiscs(uint8 max_level, uint8 min_level) {

@@ -721,7 +721,6 @@ extern map<int16, AA_SwarmPet> AA_SwarmPets;	//key=spell_id
 #define AA_Choose3(val, v1, v2, v3) (val==1?v1:(val==2?v2:v3))
 
 extern map<int32,SendAA_Struct*>aas_send;
-#define MAX_AA_EFFECT_SLOTS 7	//i hate to add another #define, but we can't use a rule to define the size of an array (not const)
 extern std::map<uint32, std::map<uint32, AA_Ability> > aa_effects;
 
 

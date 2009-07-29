@@ -1,5 +1,12 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==7/29/2009==
+AndMetal: Small fix to quest::scribespells() to return the correct amount of scribed spells.
+AndMetal: #setaapoints/#setaapts will now consistently add the correct amount of AA points. Also added a rule AA:ExpPerPoint(23976503).
+AndMetal: Added a little bit of logging for exp (CLIENT__EXP). Disabled by default.
+
+Optional SQL: utils/sql/svn/853_optional_rule_aaexp.sql
+
 ==7/27/2009==
 gaeorn: changes to login server to compile under linux. added linux makefile for linux. converted utf16 sql files to normal ascii text.
 KLS: Fix for issue where client would stop recieving communication when recieving more than 36 nodes in a find reply. Resolved by capping the amount of nodes find can return, more than 36 will result in unable to easily find message.
