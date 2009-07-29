@@ -7191,10 +7191,7 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 
 	TotalSecondsPlayed = m_pp.timePlayedMin * 60;
 
-	char temp1[64];
-	if (database.GetVariable("Max_AAXP", temp1, sizeof(temp1)-1)) {
-		max_AAXP = (atoi(temp1)*16)/10;
-	}
+	max_AAXP = RuleI(AA, ExpPerPoint);
 
 	//int32 aalen = database.GetPlayerAlternateAdv(account_id, name, &aa);
 	//if (aalen == 0) {
