@@ -7635,6 +7635,143 @@ bool Bot::CastSpell(int16 spell_id, int16 target_id, int16 slot, sint32 cast_tim
 	return Result;
 }
 
+bool Bot::SpellOnTarget(int16 spell_id, Mob* spelltar) {
+	bool Result = false;
+
+	if(!IsValidSpell(spell_id))
+		return false;
+
+	if(spelltar) {
+		if(spelltar->IsBot() && (spells[spell_id].targettype == ST_GroupTeleport)) {
+			// So I made this check because teleporting a group of bots tended to crash the zone
+			// It seems several group spells also show up as ST_GroupTeleport for some
+			// reason so I now have to check by spell id. These appear to be Group v1 spells and
+			// Heal over Time spells.
+			switch(spell_id) {
+				// Paladin
+			case 3577: // Wave of Life
+			case 4065: // Blessing of Austerity
+			case 1455: // Wave of Healing
+			case 2589: // Healing Wave of Prexus
+			case 3427: // Wave of Marr
+			case 3683: // Ethereal Cleansing
+			case 1283: // Celestial Cleansing
+			case 3485: // Supernal Cleansing
+			case 5293: // Pious Cleansing
+			case 4893: // Wave of Trushar
+			case 5295: // Jeron's Mark
+			case 5296: // Wave of Piety
+				// Bard
+			case 4085: // Forpar's Aria of Affliction
+			case 4083: // Rizlona's Embers
+			case 4086: // Forpar's Psalm of Pain
+			case 4084: // Rizlona's Fire
+			case 6734: // Song of the Storm
+			case 3651: // Wind of Marr
+			case 4087: // Forpar's Verse of Venom
+			case 3362: // Rizlona's Call of Flame
+			case 4112: // Call of the Muse
+			case 4872: // Echo of the Trusik
+			case 4873: // Dark Echo
+			case 5377: // Cantata of Life
+			case 5380: // Yelhun's Mystic Call
+			case 5382: // Eriki's Psalm of Power
+			case 6666: // Storm Blade
+			case 5388: // Ancient Call of Power
+				// Cleric
+			case 134: // Word of Health
+			case 136: // Word of Healing
+			case 1520: // Word of Vigor
+			case 1521: // Word of Restoration
+			case 1523: // Word of Redemption
+			case 3471: // Word of Replenishment
+			case 5270: // Word of Vivification
+			case 2502: // Celestial Remedy
+			case 2175: // Celestial Health
+			case 1444: // Celestial Healing
+			case 1522: // Celestial Elixir
+			case 2180: // Etherial Elixir
+			case 3047: // Kazad's Mark
+			case 3475: // Supernal Elixir
+			case 4053: // Blessing of Temperance
+			case 4108: // Aura of Reverence
+			case 4882: // Holy Elixir
+			case 5259: // Pious Elixir
+			case 5272: // Aura of Devotion
+			case 5277: // Balikor's Mark
+				// Enchanter
+			case 5517: // Circle of Alendar
+			case 6671: // Rune of Rikkukin
+			case 6739: // Rune of the Scale
+				// Shaman
+			case 2521: // Talisman of the Beast
+			case 4055: // Pack Shrew
+			case 3842: // Blood of Nadox
+			case 5417: // Champion
+				// Druid
+			case 4058: // Feral Pack
+			case 2520: // Natures Recovery
+				break;
+			default:
+				return false;
+			}
+		}
+
+		//Franck-add: can't detrimental spell on bots and bots can't detriment on you or the others bots
+		if((IsDetrimentalSpell(spell_id) && spelltar->IsBot()) || (IsDetrimentalSpell(spell_id) && spelltar->IsClient()))
+			return false;
+
+		if(spelltar->IsPet()) {
+			for(int i=0; i<EFFECT_COUNT; ++i)
+			{
+				if(spells[spell_id].effectid[i] == SE_Illusion)
+					return false;
+			}
+		}
+
+		Result = Mob::SpellOnTarget(spell_id, spelltar);
+	}
+
+	return Result;
+}
+
+bool Bot::IsImmuneToSpell(int16 spell_id, Mob *caster) {
+	bool Result = false;
+
+	if(!caster)
+		return false;
+
+	// TODO: Remove hard coded zone id's
+	if(!IsSacrificeSpell(spell_id) && !(zone->GetZoneID() == 202) && !(this == caster)) {
+		Result = Mob::IsImmuneToSpell(spell_id, caster);
+
+		if(!Result) {
+			if(caster->IsBot()) {
+				if(spells[spell_id].targettype == ST_Undead) {
+					if((GetBodyType() != BT_SummonedUndead) && (GetBodyType() != BT_Undead) && (GetBodyType() != BT_Vampire)) {
+							mlog(SPELLS__RESISTS, "Bot's target is not an undead.");
+							return true;
+					}
+				}
+				if(spells[spell_id].targettype == ST_Summoned) {
+					if((GetBodyType() != BT_SummonedUndead)
+						&& (GetBodyType() != BT_Summoned)
+						&& (GetBodyType() != BT_Summoned2)
+						&& (GetBodyType() != BT_Summoned3)
+						) {
+							mlog(SPELLS__RESISTS, "Bot's target is not a summoned creature.");
+							return true;
+					}
+				}
+			}
+
+			mlog(SPELLS__RESISTS, "No bot immunities to spell %d found.", spell_id);
+		}
+	}
+
+	return Result;
+}
+
 void Bot::GenerateBaseManaPoints() {
 	// Now, we need to calc the base mana.
 	sint32 bot_mana = 0;
