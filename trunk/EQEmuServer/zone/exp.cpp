@@ -177,7 +177,9 @@ void Client::AddEXP(int32 in_add_exp, int8 conlevel, bool resexp) {
 }
 
 void Client::SetEXP(int32 set_exp, int32 set_aaxp, bool isrezzexp) {
-	max_AAXP = GetEXPForLevel(52) - GetEXPForLevel(51);
+	_log(CLIENT__EXP, "Attempting to Set Exp for %s (XP: %u, AAXP: %u, Rez: %s)", this->GetCleanName(), set_exp, set_aaxp, isrezzexp ? "true" : "false");
+	//max_AAXP = GetEXPForLevel(52) - GetEXPForLevel(51);	//GetEXPForLevel() doesn't depend on class/race, just level, so it shouldn't change between Clients
+	max_AAXP = RuleI(AA, ExpPerPoint);	//this may be redundant since we're doing this in Client::FinishConnState2()
 	if (max_AAXP == 0 || GetEXPForLevel(GetLevel()) == 0xFFFFFFFF) {
 		Message(13, "Error in Client::SetEXP. EXP not set.");
 		return; // Must be invalid class/race
@@ -249,6 +251,7 @@ void Client::SetEXP(int32 set_exp, int32 set_aaxp, bool isrezzexp) {
 		
 		//figure out how many AA points we get from the exp were setting
 		m_pp.aapoints = set_aaxp / max_AAXP;
+		_log(CLIENT__EXP, "Calculating additional AA Points from AAXP for %s: %u / %u = %.1f points", this->GetCleanName(), set_aaxp, max_AAXP, (float)set_aaxp / (float)max_AAXP);
 		
 		//get remainder exp points, set in PP below
 		set_aaxp = set_aaxp - (max_AAXP * m_pp.aapoints);
@@ -262,7 +265,7 @@ void Client::SetEXP(int32 set_exp, int32 set_aaxp, bool isrezzexp) {
 		
 		//Message(15, "You have gained %d skill points!!", m_pp.aapoints - last_unspentAA);
 		char val1[20]={0};
-		Message_StringID(15,GAIN_ABILITY_POINT,ConvertArray(m_pp.aapoints, val1),"(s)");
+		Message_StringID(15,GAIN_ABILITY_POINT,ConvertArray(m_pp.aapoints, val1),m_pp.aapoints == 1 ? "" : "(s)");	//You have gained an ability point!  You now have %1 ability point%2.
 		//Message(15, "You now have %d skill points available to spend.", m_pp.aapoints);
 	}
 
@@ -326,7 +329,7 @@ void Client::SetEXP(int32 set_exp, int32 set_aaxp, bool isrezzexp) {
 		char val1[20]={0};
 		char val2[20]={0};
 		char val3[20]={0};
-		Message_StringID(15,GM_GAINXP,ConvertArray(set_aaxp,val1),ConvertArray(set_exp,val2),ConvertArray(GetEXPForLevel(GetLevel()+1),val3));
+		Message_StringID(15,GM_GAINXP,ConvertArray(set_aaxp,val1),ConvertArray(set_exp,val2),ConvertArray(GetEXPForLevel(GetLevel()+1),val3));	//[GM] You have gained %1 AXP and %2 EXP (%3).
 		//Message(15, "[GM] You now have %d / %d EXP and %d / %d AA exp.", set_exp, GetEXPForLevel(GetLevel()+1), set_aaxp, max_AAXP);
 	}
 }
