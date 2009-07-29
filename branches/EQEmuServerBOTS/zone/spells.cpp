@@ -385,15 +385,6 @@ bool Mob::DoCastSpell(int16 spell_id, int16 target_id, int16 slot,
 	
 	mlog(SPELLS__CASTING, "Spell %d: Casting time %d (orig %d), mana cost %d", orgcasttime, cast_time, mana_cost);
 
-#ifdef EQBOTS
-
-	if(IsBot() && (GetClass() == BARD))
-	{ // Bard bots casting time is interrupting thier melee
-		cast_time = 0;
-	}
-
-#endif //EQBOTS
-
 	// cast time is 0, just finish it right now and be done with it
 	if(cast_time == 0) {
 		CastedSpellFinished(spell_id, target_id, slot, mana_cost, item_slot);
@@ -410,19 +401,6 @@ bool Mob::DoCastSpell(int16 spell_id, int16 target_id, int16 slot,
 			this->FaceTarget(pMob);
 	}
 	
-#ifdef EQBOTS
-
-	if(IsBot())
-	{
-		if(oSpellWillFinish)
-		{
-			*oSpellWillFinish = Timer::GetCurrentTime() + ((spell.recast_time > 20000) ? 10000 : spell.recast_time);
-		}
-	}
-	else
-
-#endif //EQBOTS
-
 	// if we got here we didn't fizzle, and are starting our cast
 	if (oSpellWillFinish)
 		*oSpellWillFinish = Timer::GetCurrentTime() + cast_time + 100;
@@ -1372,17 +1350,6 @@ bool Mob::DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_ce
 					}
 				}
 				else{
-
-#ifdef EQBOTS
-
-					// This is so PoK NPC Necro/Shd can create essence emeralds for pc's from perl scripts
-					if(((spell_id == 1768) && (zone->GetZoneID() == 202)) || (IsBot() && !IsDetrimentalSpell(spell_id))) {
-						CastAction = SingleTarget;
-						break;
-					}
-
-#endif //EQBOTS
-
 					mlog(SPELLS__CASTING_ERR, "Spell %d canceled: Attempted to cast a Single Target Group spell on a member not in the group.", spell_id);
 					Message_StringID(13, TARGET_GROUP_MEMBER);
 					return false;

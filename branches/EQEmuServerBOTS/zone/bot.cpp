@@ -7772,6 +7772,44 @@ bool Bot::IsImmuneToSpell(int16 spell_id, Mob *caster) {
 	return Result;
 }
 
+bool Bot::DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_center, CastAction_type &CastAction) {
+	bool Result = false;
+
+	SpellTargetType targetType = spells[spell_id].targettype;
+
+
+	// This is so PoK NPC Necro/Shd can create essence emeralds for pc's from perl scripts
+	if(targetType == ST_GroupClient) {
+		if(((spell_id == 1768) && (zone->GetZoneID() == 202)) || (!IsDetrimentalSpell(spell_id))) {
+			CastAction = SingleTarget;
+			return true;
+		}
+	}
+
+	Result = Mob::DetermineSpellTargets(spell_id, spell_target, ae_center, CastAction);
+
+	return Result;
+}
+
+bool Bot::DoCastSpell(int16 spell_id, int16 target_id, int16 slot, sint32 cast_time, sint32 mana_cost, int32* oSpellWillFinish, int32 item_slot) {
+	bool Result = false;
+	
+	if(GetClass() == BARD) { 
+		// Bard bots casting time is interrupting thier melee
+		CastedSpellFinished(spell_id, target_id, slot, mana_cost, item_slot);
+		return true;
+	}
+
+	Result = Mob::DoCastSpell(spell_id, target_id, slot, cast_time, mana_cost, oSpellWillFinish, item_slot);
+
+	if(oSpellWillFinish) {
+		const SPDat_Spell_Struct &spell = spells[spell_id];
+		*oSpellWillFinish = Timer::GetCurrentTime() + ((spell.recast_time > 20000) ? 10000 : spell.recast_time);
+	}
+
+	return Result;
+}
+
 void Bot::GenerateBaseManaPoints() {
 	// Now, we need to calc the base mana.
 	sint32 bot_mana = 0;
