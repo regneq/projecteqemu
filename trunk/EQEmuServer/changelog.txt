@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==7/30/2009==
+Trevius: Added heading option and bool option for saving guard spot to quest::moveto(x,y,z,[h,saveguardspot?]).
+
 ==7/29/2009==
 AndMetal: Small fix to quest::scribespells() to return the correct amount of scribed spells.
 AndMetal: #setaapoints/#setaapts will now consistently add the correct amount of AA points. Also added a rule AA:ExpPerPoint(23976503).

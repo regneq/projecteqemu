@@ -1252,13 +1252,25 @@ XS(XS_NPC_MoveTo); /* prototype to pass -Wmissing-prototypes */
 XS(XS_NPC_MoveTo)
 {
 	dXSARGS;
-	if (items != 4)
-		Perl_croak(aTHX_ "Usage: NPC::MoveTo(THIS, mtx, mty, mtz)");
+	if (items != 4 && items != 5 && items != 6)
+		Perl_croak(aTHX_ "Usage: NPC::MoveTo(THIS, mtx, mty, mtz, [mth, saveguard?])");
 	{
 		NPC *		THIS;
 		float		mtx = (float)SvNV(ST(1));
 		float		mty = (float)SvNV(ST(2));
 		float		mtz = (float)SvNV(ST(3));
+		float		mth;
+		bool		saveguard;
+
+		if(items > 4)
+			mth = (float)SvNV(ST(4));
+		else
+			mth = 0;
+
+		if(items > 5)
+			saveguard = (bool)SvTRUE(ST(5));
+		else
+			saveguard = false;
 
 		if (sv_derived_from(ST(0), "NPC")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -1269,7 +1281,7 @@ XS(XS_NPC_MoveTo)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		THIS->MoveTo(mtx, mty, mtz);
+		THIS->MoveTo(mtx, mty, mtz, mth, saveguard);
 	}
 	XSRETURN_EMPTY;
 }

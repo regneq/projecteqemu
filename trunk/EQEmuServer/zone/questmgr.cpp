@@ -1112,10 +1112,10 @@ void QuestManager::pause(int duration) {
 	owner->CastToNPC()->PauseWandering(duration);
 }
 
-void QuestManager::moveto(float x, float y, float z) {
+void QuestManager::moveto(float x, float y, float z, float h, bool saveguardspot) {
 	if(!owner->IsNPC())
 		return;
-	owner->CastToNPC()->MoveTo(x, y, z);
+	owner->CastToNPC()->MoveTo(x, y, z, h, saveguardspot);
 }
 
 void QuestManager::resume() {

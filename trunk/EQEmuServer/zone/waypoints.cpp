@@ -156,7 +156,7 @@ void NPC::PauseWandering(int pausetime)
 	return;
 }
 
-void NPC::MoveTo(float mtx, float mty, float mtz)
+void NPC::MoveTo(float mtx, float mty, float mtz, float mth, bool saveguardspot)
 {	// makes mob walk to specified location
 	if (IsNPC() && GetGrid() != 0)
 	{	// he is on a grid
@@ -180,6 +180,22 @@ void NPC::MoveTo(float mtx, float mty, float mtz)
 		cur_wp=-2;		// flag as quest controlled w/no grid
 		mlog(AI__WAYPOINTS, "MoveTo (%.3f, %.3f, %.3f) without a grid.", mtx, mty, mtz);
 	}
+	if (saveguardspot)
+	{
+		guard_x = mtx;
+		guard_y = mty;
+		guard_z = mtz;
+		guard_heading = mth;
+
+		if(guard_heading == 0)
+			guard_heading = 0.0001;		//hack to make IsGuarding simpler
+
+		if(guard_heading == -1)
+			guard_heading = this->CalculateHeadingToTarget(mtx, mty);
+
+		mlog(AI__WAYPOINTS, "Setting guard position to (%.3f, %.3f, %.3f)", guard_x, guard_y, guard_z);
+	}
+
 	cur_wp_x = mtx;
 	cur_wp_y = mty;
 	cur_wp_z = mtz;
