@@ -8390,7 +8390,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 			return;
 		}
 
-		if(RuleB(Bots, BotQuest)) {
+		if(RuleB(Bots, BotQuest) && !c->GetGM()) {
 			const int allowedBots = AllowedBotSpawns(c->CharacterID(), &TempErrorMessage);
 
 			if(!TempErrorMessage.empty()) {
@@ -8410,7 +8410,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 
 		}
 
-		if(spawnedBotCount >= RuleI(Bots, SpawnBotCount)) {
+		if(spawnedBotCount >= RuleI(Bots, SpawnBotCount) && !c->GetGM()) {
 			c->Message(0, "You cannot spawn more than %i bots.", spawnedBotCount);
 			return;
 		}

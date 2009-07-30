@@ -291,7 +291,6 @@ RULE_INT ( Bots, SpawnBotCount, 71 ) // Number of bots a character can have spaw
 RULE_BOOL ( Bots, BotQuest, false ) // Optional quest method to manage bot spawn limits using the quest_globals name bot_spawn_limit, see: /bazaar/Aediles_Thrall.pl
 RULE_BOOL ( Bots, BotGroupBuffing, false ) // Bots will cast single target buffs as group buffs, default is false for single. Does not make single target buffs work for MGB.
 RULE_BOOL ( Bots, BotSpellQuest, false ) // Anita Thrall's (Anita_Thrall.pl) Bot Spell Scriber quests.
-RULE_BOOL ( Bots, AXCustom, false ) // Custom code for AX Classic database
 RULE_CATEGORY_END()
 #endif
 
