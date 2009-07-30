@@ -170,11 +170,23 @@ void ClientList::GetCLEIP(int32 iIP) {
                         // If the number of connections exceeds the lower limit
 
                         if (IPInstances > (RuleI(World, MaxClientsPerIP))){
+							
+								// If MaxClientsSetByStatus is set to True,
+								// the IP Limit is set by the status of the account if status > MaxClientsPerIP
+							
+								if ((IPInstances > countCLEIPs->Admin()) && (RuleB(World, MaxClientsSetByStatus))){
 
-                                // If the Admin status of the connection is not eligible for the higher limit,
+                                        // Remove the connection
+
+                                        countCLEIPs->SetOnline(CLE_Status_Offline);
+                                        iterator.RemoveCurrent();
+                                        continue;
+								}
+
+                                // Else if the Admin status of the connection is not eligible for the higher limit,
                                 // or there is no higher limit (AddMaxClientStatus<0)
 
-                                if ((countCLEIPs->Admin() < (RuleI(World, AddMaxClientsStatus)) ||
+                                else if ((countCLEIPs->Admin() < (RuleI(World, AddMaxClientsStatus)) ||
                                     (RuleI(World, AddMaxClientsStatus) < 0))) {
 
                                         // Remove the connection

@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==7/30/2009==
 Trevius: Added heading option and bool option for saving guard spot to quest::moveto(x,y,z,[h,saveguardspot?]).
+Trevius: Added rule MaxClientsSetByStatus. If True, IP Limiting will be set to the status on the account as long as the status is > MaxClientsPerIP.
 
 ==7/29/2009==
 AndMetal: Small fix to quest::scribespells() to return the correct amount of scribed spells.
