@@ -117,7 +117,7 @@ public:
 	void start(int wp);
 	void stop();
 	void pause(int duration);
-	void moveto(float x, float y, float z);
+	void moveto(float x, float y, float z, float h, bool saveguardspot);
 	void resume();
 	void addldonpoints(sint32 points, int32 theme);
 	void setnexthpevent(int at);
