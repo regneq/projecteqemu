@@ -53,7 +53,7 @@
 	void				StopWandering();
 	void				ResumeWandering();
 	void				PauseWandering(int pausetime);
-	void				MoveTo(float mtx, float mty, float mtz);
+	void				MoveTo(float mtx, float mty, float mtz, float mth, bool saveguardspot);
 	
 	void				NextGuardPosition();
 	void				SaveGuardSpot(bool iClearGuardSpot = false);

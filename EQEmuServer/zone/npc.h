@@ -232,7 +232,7 @@ public:
 	void				StopWandering();
 	void				ResumeWandering();
 	void				PauseWandering(int pausetime);
-	void				MoveTo(float mtx, float mty, float mtz);
+	void				MoveTo(float mtx, float mty, float mtz, float mth, bool saveguardspot);
 	
 	int32				GetEquipment(int8 material_slot) const;	// returns item id
 	sint32				GetEquipmentMaterial(int8 material_slot) const;

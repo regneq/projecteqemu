@@ -970,7 +970,7 @@ void Parser::ExCommands(string o_command, string parms, int argnums, int32 npcid
 		quest_manager.pause(atoi(arglist[0]));
 	}
 	else if (!strcmp(command,"moveto")) {
-		quest_manager.moveto(atof(arglist[0]), atof(arglist[1]), atof(arglist[2]));
+		quest_manager.moveto(atof(arglist[0]), atof(arglist[1]), atof(arglist[2]), atof(arglist[3]), atoi(arglist[4]));
 	}
 	else if (!strcmp(command,"pathto")) {
 		quest_manager.pathto(atof(arglist[0]), atof(arglist[1]), atof(arglist[2]));

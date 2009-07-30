@@ -1296,14 +1296,26 @@ XS(XS__moveto);
 XS(XS__moveto)
 {
 	dXSARGS;
-	if (items != 3)
-		Perl_croak(aTHX_ "Usage: moveto(x, y, z)");
+	if (items != 3 && items != 4 && items != 5)
+		Perl_croak(aTHX_ "Usage: moveto(x, y, z, [mth, saveguard?])");
 
 	float	x = (float)SvNV(ST(0));
 	float	y = (float)SvNV(ST(1));
 	float	z = (float)SvNV(ST(2));
+	float	h;
+	bool	saveguard;
 
-	quest_manager.moveto(x, y, z);
+	if(items > 3)
+		h = (float)SvNV(ST(3));
+	else
+		h = 0;
+
+	if(items > 4)
+		saveguard = (bool)SvTRUE(ST(4));
+	else
+		saveguard = false;
+
+	quest_manager.moveto(x, y, z, h, saveguard);
 
 	XSRETURN_EMPTY;
 }
