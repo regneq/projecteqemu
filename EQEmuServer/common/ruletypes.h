@@ -88,20 +88,21 @@ RULE_CATEGORY_END()
 RULE_CATEGORY( World )
 RULE_INT ( World, ZoneAutobootTimeoutMS, 60000 )
 RULE_INT ( World, ClientKeepaliveTimeoutMS, 65000 )
-RULE_BOOL ( World, UseBannedIPsTable, false ) //Lieka Edit: Toggle whether or not to check incoming client connections against the Banned_IPs table. Set this value to false to disable this feature.
+RULE_BOOL ( World, UseBannedIPsTable, false ) // Toggle whether or not to check incoming client connections against the Banned_IPs table. Set this value to false to disable this feature.
 RULE_BOOL ( World, EnableTutorialButton, true)
 RULE_BOOL ( World, EnableReturnHomeButton, true)
 RULE_INT  ( World, MaxLevelForTutorial, 10)
 RULE_INT  ( World, TutorialZoneID, 189)
 RULE_INT  ( World, MinOfflineTimeToReturnHome, 21600) // 21600 seconds is 6 Hours
-RULE_INT ( World, MaxClientsPerIP, -1 ) //Lieka Edit: Maximum number of clients allowed to connect per IP address if account status is < AddMaxClientsStatus.  Default value: -1 (feature disabled)
-RULE_INT ( World, ExemptMaxClientsStatus, -1 ) //Lieka Edit: Exempt accounts from the MaxClientsPerIP and AddMaxClientsStatus rules, if their status is >= this value.  Default value: -1 (feature disabled)
-RULE_INT ( World, AddMaxClientsPerIP, -1 ) //Trevius Edit: Maximum number of clients allowed to connect per IP address if account status is < ExemptMaxClientsStatus.  Default value: -1 (feature disabled)
-RULE_INT ( World, AddMaxClientsStatus, -1 ) //Trevius Edit: Accounts with status >= this rule will be allowed to use the amount of accounts defined in the AddMaxClientsPerIP.  Default value: -1 (feature disabled)
-RULE_BOOL ( World, ClearTempMerchantlist, true) //cavedude: Clears temp merchant items when world boots.
+RULE_INT ( World, MaxClientsPerIP, -1 ) // Maximum number of clients allowed to connect per IP address if account status is < AddMaxClientsStatus.  Default value: -1 (feature disabled)
+RULE_INT ( World, ExemptMaxClientsStatus, -1 ) // Exempt accounts from the MaxClientsPerIP and AddMaxClientsStatus rules, if their status is >= this value.  Default value: -1 (feature disabled)
+RULE_INT ( World, AddMaxClientsPerIP, -1 ) // Maximum number of clients allowed to connect per IP address if account status is < ExemptMaxClientsStatus.  Default value: -1 (feature disabled)
+RULE_INT ( World, AddMaxClientsStatus, -1 ) // Accounts with status >= this rule will be allowed to use the amount of accounts defined in the AddMaxClientsPerIP.  Default value: -1 (feature disabled)
+RULE_BOOL ( World, MaxClientsSetByStatus, false) // If True, IP Limiting will be set to the status on the account as long as the status is > MaxClientsPerIP
+RULE_BOOL ( World, ClearTempMerchantlist, true) // Clears temp merchant items when world boots.
 RULE_INT ( World, AccountSessionLimit, -1 )  //Max number of characters allowed on at once from a single account (-1 is disabled)
 RULE_INT ( World, ExemptAccountLimitStatus, -1 )  //Min status required to be exempt from multi-session per account limiting (-1 is disabled)
-RULE_BOOL ( World, GMAccountIPList, false) // Voidd: Check ip list against GM Accounts, AntiHack GM Accounts.
+RULE_BOOL ( World, GMAccountIPList, false) // Check ip list against GM Accounts, AntiHack GM Accounts.
 RULE_INT ( World, MinGMAntiHackStatus, 1 ) //Minimum GM status to check against AntiHack list
 RULE_INT ( World, SoFStartZoneID, -1 ) //Sets the Starting Zone for SoF Clients separate from Titanium Clients (-1 is disabled)
 RULE_CATEGORY_END()
@@ -111,17 +112,17 @@ RULE_INT ( Zone,  NPCGlobalPositionUpdateInterval, 60000 ) //ms between interval
 RULE_INT ( Zone,  ClientLinkdeadMS, 180000) //the time a client remains link dead on the server after a sudden disconnection
 RULE_INT ( Zone,  GraveyardTimeMS, 1200000) //ms time until a player corpse is moved to a zone's graveyard, if one is specified for the zone
 RULE_BOOL ( Zone, EnableShadowrest, 0 ) // enables or disables the shadowrest zone feature for player corpses. Default is turned off.
-RULE_INT ( Zone, MQWarpExemptStatus, -1 ) //Lieka:  Required status level to exempt the MQWarpDetector.  Set to -1 to disable this feature.
-RULE_INT ( Zone, MQZoneExemptStatus, -1 ) //Lieka:  Required status level to exempt the MQZoneDetector.  Set to -1 to disable this feature.
-RULE_INT ( Zone, MQGateExemptStatus, -1 ) //Lieka:  Required status level to exempt the MQGateDetector.  Set to -1 to disable this feature.
-RULE_INT ( Zone, MQGhostExemptStatus, -1 ) //Lieka:  Required status level to exempt the MGhostDetector.  Set to -1 to disable this feature.
-RULE_BOOL ( Zone, EnableMQWarpDetector, true ) //Lieka:  Enable the MQWarp Detector.  Set to False to disable this feature.
-RULE_BOOL ( Zone, EnableMQZoneDetector, true ) //Lieka:  Enable the MQZone Detector.  Set to False to disable this feature.
-RULE_BOOL ( Zone, EnableMQGateDetector, true ) //Lieka:  Enable the MQGate Detector.  Set to False to disable this feature.
-RULE_BOOL ( Zone, EnableMQGhostDetector, true ) //Lieka:  Enable the MQGhost Detector.  Set to False to disable this feature.
-RULE_REAL ( Zone, MQWarpDetectorDistance, 4900 ) //Lieka:  Distance a player must travel between client to server location updates before a warp is registered.  30 allows for beyond GM speed without lag.
-RULE_REAL ( Zone, MQWarpLagThreshold, 140 ) //Lieka:  Distance beyond the Zone:MQWarpDetectorDistance that a player must travel within the MQWarpThresholdTimer amount of time before tripping the MQWarp detector.  Set to 0 to disable this feature.
-RULE_REAL ( Zone, MQWarpThresholdTimer, 90000 ) //Lieka:  Amount of time before the warp_threshold resets to the Zone:MQWarpLagThreshold value.  Default: 90000 (900 seconds/15 minutes).  Set to -1 to disable this feature.
+RULE_INT ( Zone, MQWarpExemptStatus, -1 ) // Required status level to exempt the MQWarpDetector.  Set to -1 to disable this feature.
+RULE_INT ( Zone, MQZoneExemptStatus, -1 ) // Required status level to exempt the MQZoneDetector.  Set to -1 to disable this feature.
+RULE_INT ( Zone, MQGateExemptStatus, -1 ) // Required status level to exempt the MQGateDetector.  Set to -1 to disable this feature.
+RULE_INT ( Zone, MQGhostExemptStatus, -1 ) // Required status level to exempt the MGhostDetector.  Set to -1 to disable this feature.
+RULE_BOOL ( Zone, EnableMQWarpDetector, true ) // Enable the MQWarp Detector.  Set to False to disable this feature.
+RULE_BOOL ( Zone, EnableMQZoneDetector, true ) // Enable the MQZone Detector.  Set to False to disable this feature.
+RULE_BOOL ( Zone, EnableMQGateDetector, true ) // Enable the MQGate Detector.  Set to False to disable this feature.
+RULE_BOOL ( Zone, EnableMQGhostDetector, true ) // Enable the MQGhost Detector.  Set to False to disable this feature.
+RULE_REAL ( Zone, MQWarpDetectorDistance, 4900 ) // Distance a player must travel between client to server location updates before a warp is registered.  30 allows for beyond GM speed without lag.
+RULE_REAL ( Zone, MQWarpLagThreshold, 140 ) // Distance beyond the Zone:MQWarpDetectorDistance that a player must travel within the MQWarpThresholdTimer amount of time before tripping the MQWarp detector.  Set to 0 to disable this feature.
+RULE_REAL ( Zone, MQWarpThresholdTimer, 90000 ) // Amount of time before the warp_threshold resets to the Zone:MQWarpLagThreshold value.  Default: 90000 (900 seconds/15 minutes).  Set to -1 to disable this feature.
 RULE_INT ( Zone, AutoShutdownDelay, 5000 ) //How long a dynamic zone stays loaded while empty
 RULE_INT ( Zone, PEQZoneReuseTime, 900 )	//How long, in seconds, until you can reuse the #peqzone command.
 RULE_INT ( Zone, PEQZoneDebuff1, 4454 )	    //First debuff casted by #peqzone Default is Cursed Keeper's Blight.
