@@ -63,3 +63,13 @@ CREATE TABLE IF NOT EXISTS botgroups (
   PRIMARY KEY (BotID),
   CONSTRAINT FK_botgroups_1 FOREIGN KEY (BotID) REFERENCES bots (BotID)
 ) ENGINE=InnoDB;
+
+delete from rule_values where rule_name like 'Bots%' and ruleset_id = 1;
+
+INSERT INTO rule_values VALUES ('1', 'Bots:BotManaRegen', '2.0', '');
+INSERT INTO rule_values VALUES ('1', 'Bots:BotFinishBuffing', 'false', '');
+INSERT INTO rule_values VALUES ('1', 'Bots:CreateBotCount', '150', '');
+INSERT INTO rule_values VALUES ('1', 'Bots:SpawnBotCount', '71', '');
+INSERT INTO rule_values VALUES ('1', 'Bots:BotQuest', 'false', '');
+INSERT INTO rule_values VALUES ('1', 'Bots:BotGroupBuffing', 'false', '');
+INSERT INTO rule_values VALUES ('1', 'Bots:BotSpellQuest', 'false', '');
