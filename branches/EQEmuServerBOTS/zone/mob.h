@@ -876,7 +876,7 @@ bool logpos;
 	int16	GetInstrumentMod(int16 spell_id) const;
 	int CalcSpellEffectValue(int16 spell_id, int effect_id, int caster_level = 1, Mob *caster = NULL, int ticsremaining = 0);
 	int CalcSpellEffectValue_formula(int formula, int base, int max, int caster_level, int16 spell_id, int ticsremaining = 0);
-	int CheckStackConflict(int16 spellid1, int caster_level1, int16 spellid2, int caster_level2, Mob* caster1 = NULL, Mob* caster2 = NULL);
+	virtual int CheckStackConflict(int16 spellid1, int caster_level1, int16 spellid2, int caster_level2, Mob* caster1 = NULL, Mob* caster2 = NULL);
 	int32 GetCastedSpellInvSlot() const { return casting_spell_inventory_slot; }
 
 //	inline EGNode *GetEGNode() { return(_egnode); }

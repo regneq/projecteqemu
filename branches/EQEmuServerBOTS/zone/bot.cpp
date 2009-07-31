@@ -6748,80 +6748,93 @@ Mob* Bot::GetOwner() {
 	return Result;
 }
 
-bool Bot::IsAttackAllowed(Mob *target, bool isSpellAttack)
-{
+bool Bot::IsAttackAllowed(Mob *target, bool isSpellAttack) {
 	bool Result = false;
-	//Mob *mob1, *mob2, *tempmob;
 
-	//// can't damage own pet (applies to everthing)
-	//Mob *target_owner = target->GetOwner();
-	//Mob *our_owner = GetOwner();
-	//if(target_owner && target_owner == this)
-	//	return false;
-	//else if(our_owner && our_owner == target)
-	//	return false;
+	//cannot hurt untargetable mobs
+	bodyType bt = target->GetBodyType();
 
-	//// first figure out if we're pets.  we always look at the master's flags.
-	//// no need to compare pets to anything
-	//mob1 = our_owner ? our_owner : this;
-	//mob2 = target_owner ? target_owner : target;
+	if(bt == BT_NoTarget || bt == BT_NoTarget2)
+		return false;
 
+	if(target && zone->CanDoCombat() && this != target && GetPet() != target) {
+		Mob* attacker = this;
 
-	//// some pvp checks
-	//if(IsBot() && BotOwner && BotOwner->CastToClient()->GetPVP()) // i'm a bot and my owner is pvp
-	//{
-	//	if(target->IsBot() && target->BotOwner && target->BotOwner->CastToClient()->GetPVP()) // my target is a bot and it's owner is pvp
-	//	{
-	//		if(target->BotOwner == BotOwner) // no attacking if my owner is my target
-	//		{
-	//			return false;
-	//		}
-	//		else
-	//		{
-	//			return true;
-	//		}
-	//	}
-	//	if(target->IsClient() && target->CastToClient()->GetPVP()) // my target is a player and it's pvp
-	//	{
-	//		if(target == BotOwner) // my target cannot be my owner
-	//		{
-	//			return false;
-	//		}
-	//		else
-	//		{
-	//			return true;
-	//		}
-	//	}
-	//}
-	//if(IsClient() &&
-	//	target->IsBot() &&
-	//	CastToClient()->GetPVP() &&
-	//	target->BotOwner &&
-	//	target->BotOwner->CastToClient()->GetPVP() &&
-	//	database.GetBotOwner(target->GetNPCTypeID()) != CastToClient()->AccountID())
-	//{ // im a pvp player and i'm targeting a bot whos owner is pvp, and it's not my bot
-	//	return true;
-	//}
+		// some pvp checks
+		if(attacker->IsBot() && attacker->GetOwner() && attacker->GetOwner()->CastToClient()->GetPVP()) // i'm a bot and my owner is pvp
+		{
+			if(target->IsBot() && target->GetOwner() && target->GetOwner()->CastToClient()->GetPVP()) // my target is a bot and it's owner is pvp
+			{
+				if(target->GetOwner() == attacker->GetOwner()) // no attacking if my owner is my target
+				{
+					return false;
+				}
+				else
+				{
+					return true;
+				}
+			}
 
-	//if((IsBot() && (target->IsBot() || target->IsClient())) || (IsClient() && target->IsBot()))
-	//{
-	//	return false;    
-	//}
+			if(target->IsClient() && target->CastToClient()->GetPVP()) // my target is a player and it's pvp
+			{
+				if(target == attacker->GetOwner()) // my target cannot be my owner
+				{
+					return false;
+				}
+				else
+				{
+					return true;
+				}
+			}
+		}
 
- //   // franck-add: Bots pet can't attack others bots and there pets. Clients and their pet can't attack bot pets.
-	//if(mob1->IsClient()) {
-	//	if(mob2->IsBot())
-	//		return false;
-	//}
-	//
-	//else if(mob1->IsBot()){
-	//	if(mob2->IsBot())
-	//		return false;
-	//	else if(mob2->IsClient())
-	//		return false;
-	//}
+		if((attacker->IsBot() && (target->IsBot() || target->IsClient())) || (attacker->IsClient() && target->IsBot())) {
+			return false;    
+		}
 
-	Result = Mob::IsAttackAllowed(target, false);
+		if(target->IsPet() && target->GetOwner()) {
+			if(target->GetOwner()->IsCorpse())
+				return false;
+			else if (target->GetOwner()->IsNPC())
+				return true;
+			else if (target->GetOwner()->IsBot())
+				return false;
+			else if(target->GetOwner()->IsClient())
+				return false;
+		}
+
+		if(attacker->IsBot()){
+			if(target->IsBot())
+				return false;
+			else if(target->IsClient())
+				return false;
+			else if(target->IsNPC())
+				return true;
+			else if(target->IsCorpse())
+				return false;
+		}
+	}
+
+	return Result;
+}
+
+bool Bot::IsBotAttackAllowed(Mob* attacker, Mob* target, bool& hasRuleDefined) {
+	bool Result = false;
+	
+	if(attacker && target) {
+		if(attacker->IsClient() && target->IsBot() && attacker->CastToClient()->GetPVP() && target->CastToBot()->GetBotOwner()->CastToClient()->GetPVP()) {
+			hasRuleDefined = true;
+			Result = true;
+		}
+		if(attacker->IsClient() && target->IsBot()) {
+			hasRuleDefined = true;
+			Result = false;
+		}
+		else if(attacker->IsBot() && target->IsNPC()) {
+			hasRuleDefined = true;
+			Result = true;
+		}
+	}
 
 	return Result;
 }
@@ -7865,6 +7878,139 @@ void Bot::GenerateSpecialAttacks() {
 	if(((GetClass() == MONK) || (GetClass() == WARRIOR) || (GetClass() == RANGER) || (GetClass() == BERSERKER))	&& (GetLevel() >= 60)) {
 		SpecAttacks[SPECATK_TRIPLE] = true;
 	}
+}
+
+bool Bot::DoFinishedSpellAETarget(int16 spell_id, Mob* spellTarget, int16 slot, bool& stopLogic) {
+	if(GetClass() == BARD) {
+		if(!ApplyNextBardPulse(bardsong, this, bardsong_slot)) {
+			InterruptSpell(SONG_ENDS_ABRUPTLY, 0x121, bardsong);
+		}
+		stopLogic = true;
+	}
+
+	return true;
+}
+
+bool Bot::DoFinishedSpellSingleTarget(int16 spell_id, Mob* spellTarget, int16 slot, bool& stopLogic) {
+	if(spellTarget) {
+		if(IsGrouped() && (spellTarget->IsBot() || spellTarget->IsClient()) && RuleB(Bots, BotGroupBuffing)) {
+			//NPC *bot = this->CastToNPC();
+			bool noGroupSpell = false;
+			int16 thespell = spell_id;
+
+			for(int i=0; i < AIspells.size(); i++) {
+				int j = BotGetSpells(i);
+				int spelltype = BotGetSpellType(i);
+				bool spellequal = (j == thespell);
+				bool spelltypeequal = ((spelltype == 2) || (spelltype == 16) || (spelltype == 32));
+				bool spelltypetargetequal = ((spelltype == 8) && (spells[thespell].targettype == ST_Self));
+				bool spelltypeclassequal = ((spelltype == 1024) && (GetClass() == SHAMAN));
+				bool slotequal = (slot == USE_ITEM_SPELL_SLOT);
+
+				// if it's a targeted heal or escape spell or pet spell or it's self only buff or self buff weapon proc, we only want to cast it once
+				if(spellequal || slotequal) {
+					if((spelltypeequal || spelltypetargetequal) || spelltypeclassequal || slotequal) {
+						// Don't let the Shaman canni themselves to death
+						if(((spells[thespell].effectid[0] == 0) && (spells[thespell].base[0] < 0)) && 
+							(spellTarget->GetHP() < ((spells[thespell].base[0] * (-1)) + 100))) {
+							return false;
+						}
+
+						SpellOnTarget(thespell, spellTarget);
+						noGroupSpell = true;
+						stopLogic = true;
+					}
+				}
+			}
+
+			if(!noGroupSpell) {
+				Group *g = entity_list.GetGroupByMob(this);
+				if(g) {
+					for(int i=0; i<MAX_GROUP_MEMBERS;i++) {
+						if(g->members[i]) {
+							if((g->members[i]->GetClass() == NECROMANCER) &&
+								(IsEffectInSpell(thespell, SE_AbsorbMagicAtt) || IsEffectInSpell(thespell, SE_Rune))) {
+								// don't cast this on necro's, their health to mana
+								// spell eats up the rune spell and it just keeps
+								// getting recast over and over
+							}
+							else
+							{
+								SpellOnTarget(thespell, g->members[i]);
+							}
+							if(g->members[i] && g->members[i]->GetPetID()) {
+								SpellOnTarget(thespell, g->members[i]->GetPet());
+							}
+						}
+					}
+					SetMana(GetMana() - (GetActSpellCost(thespell, spells[thespell].mana) * (g->GroupCount() - 1)));
+				}
+			}
+
+			stopLogic = true;
+		}
+	}
+
+	return true;
+}
+
+bool Bot::DoFinishedSpellGroupTarget(int16 spell_id, Mob* spellTarget, int16 slot, bool& stopLogic) {
+	bool isMainGroupMGB = false;
+
+	if(GetBotRaidID() > 0) {
+		BotRaids *br = entity_list.GetBotRaidByMob(this);
+		if(br) {
+			for(int n=0; n<MAX_GROUP_MEMBERS; ++n) {
+				if(br->BotRaidGroups[0] && (br->BotRaidGroups[0]->members[n] == this)) {
+					if(GetLevel() >= 59) // MGB AA
+						isMainGroupMGB = true;
+					break;
+				}
+			}
+		}
+	}
+
+	if(isMainGroupMGB && (GetClass() != BARD)) {
+		Say("MGB %s", spells[spell_id].name);
+		SpellOnTarget(spell_id, this);
+		entity_list.AESpell(this, this, spell_id, true);
+	}
+	else {
+		Group *g = entity_list.GetGroupByMob(this);
+		if(g) {
+			for(int i=0; i<MAX_GROUP_MEMBERS; ++i) {
+				if(g->members[i]) {
+					SpellOnTarget(spell_id, g->members[i]);
+					if(g->members[i] && g->members[i]->GetPetID()) {
+						SpellOnTarget(spell_id, g->members[i]->GetPet());
+					}
+				}
+			}
+		}
+	}
+
+	stopLogic = true;
+
+	return true;
+}
+
+int Bot::CheckStackConflict(int16 spellid1, int caster_level1, int16 spellid2, int caster_level2, Mob* caster1, Mob* caster2) {
+	const SPDat_Spell_Struct &sp1 = spells[spellid1];
+	const SPDat_Spell_Struct &sp2 = spells[spellid2];
+
+	int effect1 = 0;
+	int effect2 = 0;
+
+	for(int i = 0; i < EFFECT_COUNT; i++) {
+		effect1 = sp1.effectid[i];
+		effect2 = sp2.effectid[i];
+		// This is to allow bots to cast heals over the top of regen spells
+		if((effect1 == SE_CurrentHP) && (effect2 == SE_CurrentHP) && !IsDetrimentalSpell(spellid1) && !IsDetrimentalSpell(spellid2)) {
+			return 0;
+		}
+	}
+
+	return Mob::CheckStackConflict(spellid1, caster_level1, spellid2, caster_level2, caster1, caster2);
 }
 
 void Bot::CalcBonuses() {

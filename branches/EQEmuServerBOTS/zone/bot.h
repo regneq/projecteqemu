@@ -63,7 +63,7 @@ public:
 	virtual void RogueAssassinate(Mob* other);
 	virtual void DoClassAttacks(Mob *target);
 	virtual bool TryHeadShot(Mob* defender, SkillType skillInUse);
-	// virtual bool IsAttackAllowed(Mob *target, bool isSpellAttack = false);
+	virtual bool IsAttackAllowed(Mob *target, bool isSpellAttack = false);
 	virtual sint32 CheckAggroAmount(int16 spellid);
 	virtual void CalcBonuses();
 	virtual void MakePet(int16 spell_id, const char* pettype, const char *petname = NULL);
@@ -73,12 +73,14 @@ public:
 	virtual bool IsNPC() const { return false; }
 	virtual Mob* GetOwner();
 	virtual Mob* GetOwnerOrSelf();
-	virtual bool IsAttackAllowed(Mob *target, bool isSpellAttack = false);
 	inline virtual bool HasOwner() { return (GetBotOwner() ? true : false); }
 	virtual sint32 CheckHealAggroAmount(int16 spellid, int32 heal_possible = 0);
 	virtual sint32 CalcMaxMana();
 	virtual void SetAttackTimer();
 	virtual sint32 CalcMaxHP();
+	bool DoFinishedSpellAETarget(int16 spell_id, Mob* spellTarget, int16 slot, bool &stopLogic);
+	bool DoFinishedSpellSingleTarget(int16 spell_id, Mob* spellTarget, int16 slot, bool &stopLogic);
+	bool DoFinishedSpellGroupTarget(int16 spell_id, Mob* spellTarget, int16 slot, bool &stopLogic);
 
 	// Mob Spell Virtual Override Methods
 	virtual sint32 GetActSpellDamage(int16 spell_id, sint32 value);
@@ -95,6 +97,7 @@ public:
 	virtual bool IsImmuneToSpell(int16 spell_id, Mob *caster);
 	virtual bool DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_center, CastAction_type &CastAction);
 	virtual bool DoCastSpell(int16 spell_id, int16 target_id, int16 slot = 10, sint32 casttime = -1, sint32 mana_cost = -1, int32* oSpellWillFinish = 0, int32 item_slot = 0xFFFFFFFF);
+	virtual int CheckStackConflict(int16 spellid1, int caster_level1, int16 spellid2, int caster_level2, Mob* caster1 = NULL, Mob* caster2 = NULL);
 
 	// Bot Action Command Methods
 	bool MesmerizeTarget(Mob* target);
@@ -145,6 +148,7 @@ public:
 	static bool AddBotToGroup(Bot* bot, Group* group);
 	static void SendBotHPPacketsToGroup(Bot* bot, Group* group);
 	static void DestroyBotObjects(Client* client);
+	static bool IsBotAttackAllowed(Mob* attacker, Mob* target, bool& hasRuleDefined);
 
 	// "GET" Class Methods
 	uint32 GetBotID() { return _botID; }

@@ -1510,69 +1510,15 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
 		case SingleTarget:
 		{
 
-#ifdef EQBOTS
-
-            //EQoffline: force AE buffs
-            if(IsBot() && IsGrouped() && (spell_target->IsBot() || spell_target->IsClient()) && RuleB(Bots, BotGroupBuffing))
-            {
-				NPC *bot = this->CastToNPC();
-                bool noGroupSpell = false;
-				int16 thespell = spell_id;
-				for(int i=0; i<bot->BotSpellCount(); i++)
-				{
-					int j = bot->BotGetSpells(i);
-					int spelltype = bot->BotGetSpellType(i);
-					bool spellequal = (j == thespell);
-					bool spelltypeequal = ((spelltype == 2) || (spelltype == 16) || (spelltype == 32));
-					bool spelltypetargetequal = ((spelltype == 8) && (spells[thespell].targettype == ST_Self));
-					bool spelltypeclassequal = ((spelltype == 1024) && (GetClass() == SHAMAN));
-					bool slotequal = (slot == USE_ITEM_SPELL_SLOT);
-
-					// if it's a targeted heal or escape spell or pet spell or it's self only buff or self buff weapon proc, we only want to cast it once
-					if(spellequal || slotequal)
-					{
-						if((spelltypeequal || spelltypetargetequal) || spelltypeclassequal || slotequal)
-						{
-							// Don't let the Shaman canni themselves to death
-							if(((spells[thespell].effectid[0] == 0) && (spells[thespell].base[0] < 0)) &&
-								(spell_target->GetHP() < ((spells[thespell].base[0] * (-1)) + 100)))
-							{
-								return false;
-							}
-							SpellOnTarget(thespell, spell_target);
-							noGroupSpell = true;
-							break;
-						}
-					}
-				}
-				if(!noGroupSpell) {
-					Group *g = entity_list.GetGroupByMob(this);
-					if(g) {
-						for(int i=0; i<MAX_GROUP_MEMBERS;i++) {
-							if(g->members[i]) {
-								if((g->members[i]->GetClass() == NECROMANCER) &&
-									(IsEffectInSpell(thespell, SE_AbsorbMagicAtt) || IsEffectInSpell(thespell, SE_Rune)))
-								{
-									// don't cast this on necro's, their health to mana
-									// spell eats up the rune spell and it just keeps
-									// getting recast over and over
-								}
-								else
-								{
-									SpellOnTarget(thespell, g->members[i]);
-								}
-								if(g->members[i] && g->members[i]->GetPetID()) {
-									SpellOnTarget(thespell, g->members[i]->GetPet());
-								}
-							}
-						}
-						SetMana(GetMana() - (GetBotActSpellCost(thespell, spells[thespell].mana) * (g->BotGroupCount() - 1)));
-					}
-				}
-				break;
+#ifdef BOTS
+			if(IsBot()) {
+				bool StopLogic = false;
+				if(!this->CastToBot()->DoFinishedSpellSingleTarget(spell_id, spell_target, slot, StopLogic))
+					return false;
+				if(StopLogic)
+					break;
 			}
-
-#endif //EQBOTS
+#endif //BOTS
 
 			if(spell_target == NULL) {
 				mlog(SPELLS__CASTING, "Spell %d: Targeted spell, but we have no target", spell_id);
@@ -1596,17 +1542,15 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
 		case AECaster:
 		case AETarget:
 		{
-
-#ifdef EQBOTS
-
-			if(IsBot() && (GetClass() == BARD)) {
-				if(!ApplyNextBardPulse(bardsong, this, bardsong_slot)) {
-					InterruptSpell(SONG_ENDS_ABRUPTLY, 0x121, bardsong);
-				}
-				break;
+#ifdef BOTS
+			if(IsBot()) {
+				bool StopLogic = false;
+				if(!this->CastToBot()->DoFinishedSpellAETarget(spell_id, spell_target, slot, StopLogic))
+					return false;
+				if(StopLogic)
+					break;
 			}
-
-#endif //EQBOTS
+#endif //BOTS
 
 			// we can't cast an AE spell without something to center it on
 			assert(ae_center != NULL);
@@ -1632,46 +1576,15 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
 
 		case GroupSpell:
 		{
-
-#ifdef EQBOTS
-
-			//franck-debug
+#ifdef BOTS
 			if(IsBot()) {
-				bool isMainGroupMGB = false;
-				if(IsBotRaiding()) {
-					BotRaids *br = entity_list.GetBotRaidByMob(this);
-					if(br) {
-						for(int n=0; n<MAX_GROUP_MEMBERS; ++n) {
-							if(br->BotRaidGroups[0] && (br->BotRaidGroups[0]->members[n] == this)) {
-								if(GetLevel() >= 59) // MGB AA
-									isMainGroupMGB = true;
-								break;
-							}
-						}
-					}
-				}
-				if(isMainGroupMGB && (GetClass() != BARD)) {
-					Say("MGB %s", spells[spell_id].name);
-					SpellOnTarget(spell_id, this);
-					entity_list.AESpell(this, this, spell_id, true);
-				}
-				else {
-					Group *g = entity_list.GetGroupByMob(this);
-					if(g) {
-						for(int i=0; i<MAX_GROUP_MEMBERS; ++i) {
-							if(g->members[i]) {
-								SpellOnTarget(spell_id, g->members[i]);
-								if(g->members[i] && g->members[i]->GetPetID()) {
-									SpellOnTarget(spell_id, g->members[i]->GetPet());
-								}
-							}
-						}
-					}
-				}
-				break;
+				bool StopLogic = false;
+				if(!this->CastToBot()->DoFinishedSpellGroupTarget(spell_id, spell_target, slot, StopLogic))
+					return false;
+				if(StopLogic)
+					break;
 			}
-
-#endif //EQBOTS
+#endif //BOTS
 
 			if(IsClient() && CastToClient()->CheckAAEffect(aaEffectMassGroupBuff)){
 				SpellOnTarget(spell_id, this);
@@ -2323,15 +2236,6 @@ int Mob::CheckStackConflict(int16 spellid1, int caster_level1, int16 spellid2, i
 		*/
 		if(effect1 != effect2)
 			continue;
-
-#ifdef EQBOTS
-
-		// This is to allow bots to cast heals over the top of regen spells
-		if((effect1 == SE_CurrentHP) && (effect2 == SE_CurrentHP) && !sp1_detrimental && !sp2_detrimental) {
-			return 0;
-		}
-
-#endif //EQBOTS
 
 		/*
 		If target is a npc and caster1 and caster2 exist
