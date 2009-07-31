@@ -19,13 +19,13 @@
 #ifndef VERSION_H
 #define VERSION_H
 
-#define CURRENT_VERSION	        "0.7.0"
+#define CURRENT_VERSION	        "0.8.0"
 #define CURRENT_CHAT_VERSION    "EQEMu " CURRENT_VERSION
 #define CURRENT_ZONE_VERSION	"EQEMu " CURRENT_VERSION
 #define CURRENT_WORLD_VERSION   "EQEMu " CURRENT_VERSION
 #define COMPILE_DATE	__DATE__
 #define COMPILE_TIME	__TIME__
-#define	SVN_REVISION		"$Rev: 775 $"
+#define	SVN_REVISION		"$Rev: 862 $"
 #ifndef WIN32
 	#define LAST_MODIFIED	__TIME__
 #else
