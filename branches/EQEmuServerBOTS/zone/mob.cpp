@@ -2060,18 +2060,38 @@ float Mob::GetReciprocalHeading(Mob* target) {
 
 	if(target) {
 		float h = target->GetHeading();
-
+		//Result = (h + 128.0) % 256.0;
 		if(h > 0.0 && h < 128.0)
 			Result = h + 128.0;
 		else if(h > 128.0 && h < 256)
 			Result = h - 128.0;
 		else if(h == 128.0)
-			Result = 255.9;
+			Result = 0.0;
+		else if(h == 0.0)
+			Result = 128.0;
 		else
 			Result = h;
 	}
 
 	return Result;
+}
+
+void Mob::GetPositionBehindMob(Mob* target, float &x_dest, float &y_dest, float &z_dest) {
+	if(target) {
+		float x_dest;
+		float look_heading = GetReciprocalHeading(target);
+		/*float look_heading = target->GetHeading();
+		look_heading /= 256;
+		look_heading *= 360;
+		look_heading += 180;
+		if(look_heading > 360)
+			look_heading -= 360;*/
+
+		x_dest = GetX() + (target->GetSize() * sin(double(look_heading * 3.141592 / 180.0)));
+		y_dest = GetY() + (target->GetSize() * cos(double(look_heading * 3.141592 / 180.0)));
+		//z_dest = BestZ of x_dest and y_dest
+		z_dest = target->GetZ();
+	}
 }
 
 bool Mob::HateSummon() {

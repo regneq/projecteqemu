@@ -2365,6 +2365,18 @@ void Bot::BotAIProcess() {
 				}
 			}
 
+			if(GetClass() == ROGUE && !BehindMob(target, GetX(), GetY())) {
+				// Move the rogue to behind the mob
+				float newX = 0;
+				float newY = 0;
+				float newZ = 0;
+
+				GetPositionBehindMob(target, newX, newY, newZ);
+
+				if(CheckLosFN(target))
+					CalculateNewPosition2(newX, newY, newZ, GetRunspeed());
+			}
+
 			// we can't fight if we don't have a target, are stun/mezzed or dead..
 			if(!IsBotArcher() && target && !IsStunned() && !IsMezzed() && (GetAppearance() != eaDead))
 			{
@@ -2655,6 +2667,18 @@ void Bot::PetAIProcess() {
 		if(!botPet->CheckLosFN(botPet->GetTarget()) || botPet->GetTarget()->IsMezzed() || !botPet->IsAttackAllowed(GetTarget())) {
 			botPet->WipeHateList();
 			botPet->SetTarget(botPet->GetOwner());
+
+			if(GetClass() == ROGUE && !BehindMob(target, GetX(), GetY())) {
+				// Move the rogue to behind the mob
+				float newX = 0;
+				float newY = 0;
+				float newZ = 0;
+
+				GetPositionBehindMob(target, newX, newY, newZ);
+
+				CalculateNewPosition2(newX, newY, newZ, GetRunspeed());	
+			}
+
 			return;
 		}
 

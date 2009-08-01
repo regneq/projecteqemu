@@ -623,6 +623,7 @@ bool logpos;
 	float DistNoRootNoZ(const Mob &) const;
 
 	static float GetReciprocalHeading(Mob* target);
+	void GetPositionBehindMob(Mob* target, float &x_dest, float &y_dest, float &z_dest);
 
 	bool IsTargeted() const { return (targeted > 0); }
 	inline void IsTargeted(int in_tar) { targeted += in_tar; if(targeted < 0) targeted = 0;}
