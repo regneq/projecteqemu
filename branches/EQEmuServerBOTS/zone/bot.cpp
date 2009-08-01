@@ -2356,31 +2356,17 @@ void Bot::BotAIProcess() {
 				tar_ndx = 0;
 			}
 
-			if(GetClass() == ROGUE && !BehindMob(target, GetX(), GetY())) {
+			if(!IsMoving() && GetClass() == ROGUE && !BehindMob(target, GetX(), GetY())) {
 				// Move the rogue to behind the mob
 				float newX = 0;
 				float newY = 0;
 				float newZ = 0;
 
-				GetPositionBehindMob(target, newX, newY, newZ);
-
-				CalculateNewPosition2(newX, newY, newZ, GetRunspeed());
+				if(GetPositionBehindMob(target, newX, newY, newZ))
+					CalculateNewPosition2(newX, newY, newZ, GetRunspeed());
 
 				return;
 			}
-
-			//if(GetClass() == ROGUE && !BehindMob(target, GetX(), GetY())) {
-			//	// Move the rogue to behind the mob
-			//	float newX = 0;
-			//	float newY = 0;
-			//	float newZ = 0;
-
-			//	GetPositionBehindMob(target, newX, newY, newZ);
-
-			//	CalculateNewPosition2(newX, newY, newZ, GetRunspeed());
-
-			//	return;
-			//}
 
 			if(IsBotArcher() && ranged_timer.Check(false)) {
 				if(MakeRandomInt(1, 100) > 95) {
@@ -2720,15 +2706,14 @@ void Bot::PetAIProcess() {
 				}
 			}
 
-			if(botPet->GetClass() == ROGUE && !botPet->BehindMob(target, botPet->GetX(), botPet->GetY())) {
+			if(!botPet->IsMoving() && botPet->GetClass() == ROGUE && !botPet->BehindMob(target, botPet->GetX(), botPet->GetY())) {
 				// Move the rogue to behind the mob
 				float newX = 0;
 				float newY = 0;
 				float newZ = 0;
 
-				botPet->GetPositionBehindMob(target, newX, newY, newZ);
-
-				botPet->CalculateNewPosition2(newX, newY, newZ, botPet->GetRunspeed());
+				if(botPet->GetPositionBehindMob(target, newX, newY, newZ))
+					botPet->CalculateNewPosition2(newX, newY, newZ, botPet->GetRunspeed());
 
 				return;
 			}

@@ -2076,7 +2076,9 @@ float Mob::GetReciprocalHeading(Mob* target) {
 	return Result;
 }
 
-void Mob::GetPositionBehindMob(Mob* target, float &x_dest, float &y_dest, float &z_dest) {
+bool Mob::GetPositionBehindMob(Mob* target, float &x_dest, float &y_dest, float &z_dest) {
+	bool Result = false;
+
 	if(target) {
 		float look_heading = GetReciprocalHeading(target);
 		/*float look_heading = target->GetHeading();
@@ -2091,7 +2093,6 @@ void Mob::GetPositionBehindMob(Mob* target, float &x_dest, float &y_dest, float 
 		float tempZ = 0;
 		float tempSize = 0;
 		const float rangeMod = 0.25;
-		bool HasLOS = false;
 
 		tempSize = target->GetSize();
 
@@ -2104,17 +2105,19 @@ void Mob::GetPositionBehindMob(Mob* target, float &x_dest, float &y_dest, float 
 				tempSize -= (tempSize * rangeMod);
 			}
 			else {
-				HasLOS = true;
+				Result = true;
 				break;
 			}
 		}
 
-		if(HasLOS) {
+		if(Result) {
 			x_dest = tempX;
 			y_dest = tempY;
 			z_dest = tempZ;
 		}
 	}
+
+	return Result;
 }
 
 bool Mob::HateSummon() {
