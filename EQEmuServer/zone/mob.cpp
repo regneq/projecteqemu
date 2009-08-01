@@ -2179,6 +2179,25 @@ float Mob::DistNoRootNoZ(const Mob &other) const {
 	return ( (xDiff * xDiff) + (yDiff * yDiff) );
 }
 
+float Mob::GetReciprocalHeading(Mob* target) {
+	float Result = 0;
+
+	if(target) {
+		float h = target->GetHeading();
+
+		if(h > 0.0 && h < 128.0)
+			Result = h + 128.0;
+		else if(h > 128.0 && h < 256)
+			Result = h - 128.0;
+		else if(h == 128.0)
+			Result = 255.9;
+		else
+			Result = h;
+	}
+
+	return Result;
+}
+
 bool Mob::HateSummon() {
     // check if mob has ability to summon
     // we need to be hurt and level 51+ or ability checked to continue
