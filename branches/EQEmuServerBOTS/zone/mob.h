@@ -622,6 +622,8 @@ bool logpos;
 	float DistNoRoot(float x, float y, float z) const;
 	float DistNoRootNoZ(const Mob &) const;
 
+	static float GetReciprocalHeading(Mob* target);
+
 	bool IsTargeted() const { return (targeted > 0); }
 	inline void IsTargeted(int in_tar) { targeted += in_tar; if(targeted < 0) targeted = 0;}
 
