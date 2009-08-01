@@ -2078,7 +2078,6 @@ float Mob::GetReciprocalHeading(Mob* target) {
 
 void Mob::GetPositionBehindMob(Mob* target, float &x_dest, float &y_dest, float &z_dest) {
 	if(target) {
-		float x_dest;
 		float look_heading = GetReciprocalHeading(target);
 		/*float look_heading = target->GetHeading();
 		look_heading /= 256;
@@ -2087,10 +2086,34 @@ void Mob::GetPositionBehindMob(Mob* target, float &x_dest, float &y_dest, float 
 		if(look_heading > 360)
 			look_heading -= 360;*/
 
-		x_dest = GetX() + (target->GetSize() * sin(double(look_heading * 3.141592 / 180.0)));
-		y_dest = GetY() + (target->GetSize() * cos(double(look_heading * 3.141592 / 180.0)));
-		//z_dest = BestZ of x_dest and y_dest
-		z_dest = target->GetZ();
+		float tempX = 0;
+		float tempY = 0;
+		float tempZ = 0;
+		float tempSize = 0;
+		const float rangeMod = 0.25;
+		bool HasLOS = false;
+
+		tempSize = target->GetSize();
+
+		while(tempSize > 0) {
+			tempX = GetX() + (tempSize * sin(double(look_heading * 3.141592 / 180.0)));
+			tempY = GetY() + (tempSize * cos(double(look_heading * 3.141592 / 180.0)));
+			tempZ = target->GetZ();
+
+			if(!CheckLosFN(tempX, tempY, tempZ, tempSize)) {
+				tempSize -= (tempSize * rangeMod);
+			}
+			else {
+				HasLOS = true;
+				break;
+			}
+		}
+
+		if(HasLOS) {
+			x_dest = tempX;
+			y_dest = tempY;
+			z_dest = tempZ;
+		}
 	}
 }
 

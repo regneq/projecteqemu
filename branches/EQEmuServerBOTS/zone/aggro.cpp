@@ -994,7 +994,16 @@ bool Mob::CheckLos(Mob* other) {
 
 //Father Nitwit's LOS code
 bool Mob::CheckLosFN(Mob* other) {
-	if(other == NULL || zone->map == NULL) {
+	bool Result = false;
+
+	if(other)
+		Result = CheckLosFN(other->GetX(), other->GetY(), other->GetZ(), other->GetSize());
+
+	return Result;
+}
+
+bool Mob::CheckLosFN(float posX, float posY, float posZ, float mobSize) {
+	if(zone->map == NULL) {
 		//not sure what the best return is on error
 		//should make this a database variable, but im lazy today
 #ifdef LOS_DEFAULT_CAN_SEE
@@ -1014,12 +1023,12 @@ bool Mob::CheckLosFN(Mob* other) {
 	myloc.y = GetY();
 	myloc.z = GetZ() + (GetSize()==0.0?LOS_DEFAULT_HEIGHT:GetSize())/2 * HEAD_POSITION;
 	
-	oloc.x = other->GetX();
-	oloc.y = other->GetY();
-	oloc.z = other->GetZ() + (other->GetSize()==0.0?LOS_DEFAULT_HEIGHT:other->GetSize())/2 * SEE_POSITION;
+	oloc.x = posX;
+	oloc.y = posY;
+	oloc.z = posZ + (mobSize==0.0?LOS_DEFAULT_HEIGHT:mobSize)/2 * SEE_POSITION;
 
 #if LOSDEBUG>=5
-	LogFile->write(EQEMuLog::Debug, "LOS from (%.2f, %.2f, %.2f) to (%.2f, %.2f, %.2f) sizes: (%.2f, %.2f)", myloc.x, myloc.y, myloc.z, oloc.x, oloc.y, oloc.z, GetSize(), other->GetSize());
+	LogFile->write(EQEMuLog::Debug, "LOS from (%.2f, %.2f, %.2f) to (%.2f, %.2f, %.2f) sizes: (%.2f, %.2f)", myloc.x, myloc.y, myloc.z, oloc.x, oloc.y, oloc.z, GetSize(), mobSize);
 #endif
 	
 	FACE *onhit;
@@ -1032,7 +1041,7 @@ bool Mob::CheckLosFN(Mob* other) {
 	if(mynode != NODE_NONE) {
 		if(zone->map->LineIntersectsNode(mynode, myloc, oloc, &hit, &onhit)) {
 #if LOSDEBUG>=5
-			LogFile->write(EQEMuLog::Debug, "Check LOS for %s target %s, cannot see.", GetName(), other->GetName() );
+			LogFile->write(EQEMuLog::Debug, "Check LOS for %s target position, cannot see.", GetName());
 			LogFile->write(EQEMuLog::Debug, "\tPoly: (%.2f, %.2f, %.2f) (%.2f, %.2f, %.2f) (%.2f, %.2f, %.2f)\n",
 				onhit->a.x, onhit->a.y, onhit->a.z,
 				onhit->b.x, onhit->b.y, onhit->b.z, 
@@ -1054,7 +1063,7 @@ bool Mob::CheckLosFN(Mob* other) {
 		if(onode != NODE_NONE && onode != mynode) {
 			if(zone->map->LineIntersectsNode(onode, myloc, oloc, &hit, &onhit)) {
 #if LOSDEBUG>=5
-			LogFile->write(EQEMuLog::Debug, "Check LOS for %s target %s, cannot see (2).", GetName(), other->GetName());
+			LogFile->write(EQEMuLog::Debug, "Check LOS for %s target position, cannot see (2).", GetName());
 			LogFile->write(EQEMuLog::Debug, "\tPoly: (%.2f, %.2f, %.2f) (%.2f, %.2f, %.2f) (%.2f, %.2f, %.2f)\n",
 				onhit->a.x, onhit->a.y, onhit->a.z,
 				onhit->b.x, onhit->b.y, onhit->b.z, 
@@ -1083,7 +1092,7 @@ bool Mob::CheckLosFN(Mob* other) {
 	}*/
 	
 #if LOSDEBUG>=5
-			LogFile->write(EQEMuLog::Debug, "Check LOS for %s target %s, CAN SEE.", GetName(), other->GetName());
+			LogFile->write(EQEMuLog::Debug, "Check LOS for %s target position, CAN SEE.", GetName());
 #endif
 	
 	return(true);

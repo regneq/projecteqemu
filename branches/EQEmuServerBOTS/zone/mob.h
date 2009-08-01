@@ -474,6 +474,7 @@ bool logpos;
 
 	bool CheckLos(Mob* other);
 	bool CheckLosFN(Mob* other);
+	bool CheckLosFN(float posX, float posY, float posZ, float mobSize);
 	inline bool GetQglobal() const {return qglobal;}		// SCORPIOUS2K - return quest global flag
 
 	bool IsInvisible(Mob* other = 0) const;

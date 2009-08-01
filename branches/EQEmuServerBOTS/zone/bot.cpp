@@ -2259,8 +2259,9 @@ void Bot::BotAIProcess() {
 		_ZP(Mob_BOT_Process_IsEngaged);
 		if(IsRooted())
 			SetTarget(hate_list.GetClosest(this));
-		else
+		else {
 			SetTarget(hate_list.GetTop(this));
+		}
 
 		if(!target)
 			return;
@@ -2341,9 +2342,10 @@ void Bot::BotAIProcess() {
 		if(is_combat_range && cast_last_time)
 		{
 			cast_last_time = false;
+
 			AImovement_timer->Check();
-			if(IsMoving())
-			{
+			
+			if(IsMoving()) {
 				SetRunAnimSpeed(0);
 				SetHeading(target->GetHeading());
 				if(moved) {
@@ -2354,6 +2356,32 @@ void Bot::BotAIProcess() {
 				tar_ndx = 0;
 			}
 
+			if(GetClass() == ROGUE && !BehindMob(target, GetX(), GetY())) {
+				// Move the rogue to behind the mob
+				float newX = 0;
+				float newY = 0;
+				float newZ = 0;
+
+				GetPositionBehindMob(target, newX, newY, newZ);
+
+				CalculateNewPosition2(newX, newY, newZ, GetRunspeed());
+
+				return;
+			}
+
+			//if(GetClass() == ROGUE && !BehindMob(target, GetX(), GetY())) {
+			//	// Move the rogue to behind the mob
+			//	float newX = 0;
+			//	float newY = 0;
+			//	float newZ = 0;
+
+			//	GetPositionBehindMob(target, newX, newY, newZ);
+
+			//	CalculateNewPosition2(newX, newY, newZ, GetRunspeed());
+
+			//	return;
+			//}
+
 			if(IsBotArcher() && ranged_timer.Check(false)) {
 				if(MakeRandomInt(1, 100) > 95) {
 					this->AI_EngagedCastCheck();
@@ -2363,18 +2391,6 @@ void Bot::BotAIProcess() {
 					if(target->GetHPRatio() < 98)
 						BotRangedAttack(target);
 				}
-			}
-
-			if(GetClass() == ROGUE && !BehindMob(target, GetX(), GetY())) {
-				// Move the rogue to behind the mob
-				float newX = 0;
-				float newY = 0;
-				float newZ = 0;
-
-				GetPositionBehindMob(target, newX, newY, newZ);
-
-				if(CheckLosFN(target))
-					CalculateNewPosition2(newX, newY, newZ, GetRunspeed());
 			}
 
 			// we can't fight if we don't have a target, are stun/mezzed or dead..
@@ -2668,17 +2684,6 @@ void Bot::PetAIProcess() {
 			botPet->WipeHateList();
 			botPet->SetTarget(botPet->GetOwner());
 
-			if(GetClass() == ROGUE && !BehindMob(target, GetX(), GetY())) {
-				// Move the rogue to behind the mob
-				float newX = 0;
-				float newY = 0;
-				float newZ = 0;
-
-				GetPositionBehindMob(target, newX, newY, newZ);
-
-				CalculateNewPosition2(newX, newY, newZ, GetRunspeed());	
-			}
-
 			return;
 		}
 
@@ -2714,6 +2719,20 @@ void Bot::PetAIProcess() {
 					botPet->SendPosUpdate();
 				}
 			}
+
+			if(botPet->GetClass() == ROGUE && !botPet->BehindMob(target, botPet->GetX(), botPet->GetY())) {
+				// Move the rogue to behind the mob
+				float newX = 0;
+				float newY = 0;
+				float newZ = 0;
+
+				botPet->GetPositionBehindMob(target, newX, newY, newZ);
+
+				botPet->CalculateNewPosition2(newX, newY, newZ, botPet->GetRunspeed());
+
+				return;
+			}
+
 			// we can't fight if we don't have a target, are stun/mezzed or dead..
 			if(botPet->GetTarget() && !botPet->IsStunned() && !botPet->IsMezzed() && (botPet->GetAppearance() != eaDead)) 
 			{
