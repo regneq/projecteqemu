@@ -2362,10 +2362,25 @@ void Bot::BotAIProcess() {
 				float newY = 0;
 				float newZ = 0;
 
-				if(GetPositionBehindMob(target, newX, newY, newZ))
+				if(PlotPositionAroundTarget(target, newX, newY, newZ))
 					CalculateNewPosition2(newX, newY, newZ, GetRunspeed());
 
 				return;
+			}
+			else if(!IsMoving() && GetClass() != ROGUE && (DistNoZ(*target) < target->GetSize())) {
+				// If we are not a rogue trying to backstab, let's try to adjust our melee range so we don't appear to be bunched up
+				float newX = 0;
+				float newY = 0;
+				float newZ = 0;
+
+				if(PlotPositionAroundTarget(target, newX, newY, newZ, false))
+					CalculateNewPosition2(newX, newY, newZ, GetRunspeed());
+
+				return;
+			}
+			else {
+				// We are in the position we want, so now lets face our target
+				FaceTarget(target);
 			}
 
 			if(IsBotArcher() && ranged_timer.Check(false)) {
@@ -2712,10 +2727,25 @@ void Bot::PetAIProcess() {
 				float newY = 0;
 				float newZ = 0;
 
-				if(botPet->GetPositionBehindMob(target, newX, newY, newZ))
+				if(botPet->PlotPositionAroundTarget(target, newX, newY, newZ))
 					botPet->CalculateNewPosition2(newX, newY, newZ, botPet->GetRunspeed());
 
 				return;
+			}
+			else if(!botPet->IsMoving() && botPet->GetClass() != ROGUE && (botPet->DistNoZ(*target) < target->GetSize())) {
+				// If we are not a rogue trying to backstab, let's try to adjust our melee range so we don't appear to be bunched up
+				float newX = 0;
+				float newY = 0;
+				float newZ = 0;
+
+				if(botPet->PlotPositionAroundTarget(target, newX, newY, newZ, false))
+					botPet->CalculateNewPosition2(newX, newY, newZ, GetRunspeed());
+
+				return;
+			}
+			else {
+				// We are in the position we want, so now lets face our target
+				botPet->FaceTarget(target);
 			}
 
 			// we can't fight if we don't have a target, are stun/mezzed or dead..

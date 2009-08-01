@@ -2076,11 +2076,17 @@ float Mob::GetReciprocalHeading(Mob* target) {
 	return Result;
 }
 
-bool Mob::GetPositionBehindMob(Mob* target, float &x_dest, float &y_dest, float &z_dest) {
+bool Mob::PlotPositionAroundTarget(Mob* target, float &x_dest, float &y_dest, float &z_dest, bool lookForAftArc) {
 	bool Result = false;
 
 	if(target) {
-		float look_heading = GetReciprocalHeading(target);
+		float look_heading = 0;
+
+		if(lookForAftArc)
+			look_heading = GetReciprocalHeading(target);
+		else
+			look_heading = target->GetHeading();
+
 		/*float look_heading = target->GetHeading();
 		look_heading /= 256;
 		look_heading *= 360;
@@ -2092,7 +2098,7 @@ bool Mob::GetPositionBehindMob(Mob* target, float &x_dest, float &y_dest, float 
 		float tempY = 0;
 		float tempZ = 0;
 		float tempSize = 0;
-		const float rangeMod = 0.25;
+		const float rangeCreepMod = 0.25;
 
 		tempSize = target->GetSize();
 
@@ -2102,7 +2108,7 @@ bool Mob::GetPositionBehindMob(Mob* target, float &x_dest, float &y_dest, float 
 			tempZ = target->GetZ();
 
 			if(!CheckLosFN(tempX, tempY, tempZ, tempSize)) {
-				tempSize -= (tempSize * rangeMod);
+				tempSize -= (tempSize * rangeCreepMod);
 			}
 			else {
 				Result = true;
