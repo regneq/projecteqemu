@@ -2367,7 +2367,7 @@ void Bot::BotAIProcess() {
 
 				return;
 			}
-			else if(!IsMoving() && GetClass() != ROGUE && (DistNoZ(*target) < target->GetSize())) {
+			else if(!IsMoving() && GetClass() != ROGUE && (DistNoRootNoZ(*target) < target->GetSize())) {
 				// If we are not a rogue trying to backstab, let's try to adjust our melee range so we don't appear to be bunched up
 				float newX = 0;
 				float newY = 0;
@@ -2732,7 +2732,7 @@ void Bot::PetAIProcess() {
 
 				return;
 			}
-			else if(!botPet->IsMoving() && botPet->GetClass() != ROGUE && (botPet->DistNoZ(*target) < target->GetSize())) {
+			else if(!botPet->IsMoving() && botPet->GetClass() != ROGUE && (botPet->DistNoRootNoZ(*target) < target->GetSize())) {
 				// If we are not a rogue trying to backstab, let's try to adjust our melee range so we don't appear to be bunched up
 				float newX = 0;
 				float newY = 0;
