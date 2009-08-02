@@ -2255,6 +2255,11 @@ void Bot::BotAIProcess() {
 		}
 	}
 
+	if(!IsCasting() && !AIautocastspell_timer->Enabled()) {
+		// No idea why this seems to shutdown sometimes.
+		AIautocastspell_timer->Start(RandomTimer(1000, 5000), false);
+	}
+
 	if(IsEngaged()) {
 		_ZP(Mob_BOT_Process_IsEngaged);
 		if(IsRooted())
@@ -2362,10 +2367,10 @@ void Bot::BotAIProcess() {
 				float newY = 0;
 				float newZ = 0;
 
-				if(PlotPositionAroundTarget(target, newX, newY, newZ))
+				if(PlotPositionAroundTarget(target, newX, newY, newZ)) {
 					CalculateNewPosition2(newX, newY, newZ, GetRunspeed());
-
-				return;
+					return;
+				}
 			}
 			else if(!IsMoving() && GetClass() != ROGUE && (DistNoRootNoZ(*target) < target->GetSize())) {
 				// If we are not a rogue trying to backstab, let's try to adjust our melee range so we don't appear to be bunched up
@@ -2373,10 +2378,10 @@ void Bot::BotAIProcess() {
 				float newY = 0;
 				float newZ = 0;
 
-				if(PlotPositionAroundTarget(target, newX, newY, newZ, false))
+				if(PlotPositionAroundTarget(target, newX, newY, newZ, false)) {
 					CalculateNewPosition2(newX, newY, newZ, GetRunspeed());
-
-				return;
+					return;
+				}
 			}
 			
 			// We are in the position we want, so now lets face our target
@@ -2726,10 +2731,10 @@ void Bot::PetAIProcess() {
 				float newY = 0;
 				float newZ = 0;
 
-				if(botPet->PlotPositionAroundTarget(target, newX, newY, newZ))
+				if(botPet->PlotPositionAroundTarget(target, newX, newY, newZ)) {
 					botPet->CalculateNewPosition2(newX, newY, newZ, botPet->GetRunspeed());
-
-				return;
+					return;
+				}
 			}
 			else if(!botPet->IsMoving() && botPet->GetClass() != ROGUE && (botPet->DistNoRootNoZ(*target) < target->GetSize())) {
 				// If we are not a rogue trying to backstab, let's try to adjust our melee range so we don't appear to be bunched up
@@ -2737,10 +2742,10 @@ void Bot::PetAIProcess() {
 				float newY = 0;
 				float newZ = 0;
 
-				if(botPet->PlotPositionAroundTarget(target, newX, newY, newZ, false))
+				if(botPet->PlotPositionAroundTarget(target, newX, newY, newZ, false)) {
 					botPet->CalculateNewPosition2(newX, newY, newZ, GetRunspeed());
-
-				return;
+					return;
+				}
 			}
 			
 			// We are in the position we want, so now lets face our target
