@@ -2059,18 +2059,14 @@ float Mob::GetReciprocalHeading(Mob* target) {
 	float Result = 0;
 
 	if(target) {
-		float h = target->GetHeading();
-		//Result = (h + 128.0) % 256.0;
-		if(h > 0.0 && h < 128.0)
-			Result = h + 128.0;
-		else if(h > 128.0 && h < 256)
-			Result = h - 128.0;
-		else if(h == 128.0)
-			Result = 0.0;
-		else if(h == 0.0)
-			Result = 128.0;
-		else
-			Result = h;
+		// Convert to radians
+		float h = (target->GetHeading() / 256) * 6.283184;
+
+		// Calculate the reciprocal heading in radians
+		Result =  h + 3.141592;
+
+		// Convert back to eq heading from radians
+		Result = (Result / 6.283184) * 256;
 	}
 
 	return Result;
@@ -2087,12 +2083,8 @@ bool Mob::PlotPositionAroundTarget(Mob* target, float &x_dest, float &y_dest, fl
 		else
 			look_heading = target->GetHeading();
 
-		/*float look_heading = target->GetHeading();
-		look_heading /= 256;
-		look_heading *= 360;
-		look_heading += 180;
-		if(look_heading > 360)
-			look_heading -= 360;*/
+		// Convert to sony heading to radians
+		look_heading = (look_heading / 256) * 6.283184;
 
 		float tempX = 0;
 		float tempY = 0;
@@ -2107,8 +2099,8 @@ bool Mob::PlotPositionAroundTarget(Mob* target, float &x_dest, float &y_dest, fl
 		rangeReduction = (tempSize * rangeCreepMod);
 
 		while(tempSize > 0 && counter != maxIterationsAllowed) {
-			tempX = GetX() + (tempSize * sin(double(look_heading * 3.141592 / 180.0)));
-			tempY = GetY() + (tempSize * cos(double(look_heading * 3.141592 / 180.0)));
+			tempX = GetX() + (tempSize * sin(double(look_heading)));
+			tempY = GetY() + (tempSize * cos(double(look_heading)));
 			tempZ = target->GetZ();
 
 			if(!CheckLosFN(tempX, tempY, tempZ, tempSize)) {
@@ -2130,8 +2122,8 @@ bool Mob::PlotPositionAroundTarget(Mob* target, float &x_dest, float &y_dest, fl
 			counter = 0;
 
 			while(tempSize > 0 && counter != maxIterationsAllowed) {
-				tempX = GetX() + (tempSize * sin(double(look_heading * 3.141592 / 180.0)));
-				tempY = GetY() + (tempSize * cos(double(look_heading * 3.141592 / 180.0)));
+				tempX = GetX() + (tempSize * sin(double(look_heading)));
+				tempY = GetY() + (tempSize * cos(double(look_heading)));
 				tempZ = target->GetZ();
 
 				if(!CheckLosFN(tempX, tempY, tempZ, tempSize)) {
