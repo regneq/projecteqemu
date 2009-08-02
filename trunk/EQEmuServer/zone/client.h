@@ -449,7 +449,7 @@ public:
 	void	ChangeLastName(const char* in_lastname);
 	void	GetGroupAAs(GroupLeadershipAA_Struct *into) const;
 	void	ClearGroupAAs();
-      void	SacrificeConfirm(Client* caster);
+	void	SacrificeConfirm(Client* caster);
 	void	Sacrifice(Client* caster);
 	void	GoToDeath();
 
@@ -535,10 +535,11 @@ public:
 	void	CheckLanguageSkillIncrease(int8 langid, int8 TeacherSkill);
 	void    SetLanguageSkill(int langid, int value);
 	void	SetHoTT(int32 mobid);
+	void	ShowSkillsWindow();
 
 	int16	MaxSkill(SkillType skillid, int16 class_, int16 level) const;
-    inline	int16	MaxSkill(SkillType skillid) const { return MaxSkill(skillid, GetClass(), GetLevel()); }
-    int8	SkillTrainLevel(SkillType skillid, int16 class_);
+	inline	int16	MaxSkill(SkillType skillid) const { return MaxSkill(skillid, GetClass(), GetLevel()); }
+	int8	SkillTrainLevel(SkillType skillid, int16 class_);
 
 	void TradeskillSearchResults(const char *query, unsigned long qlen, unsigned long objtype, unsigned long someid);
 	void SendTradeskillDetails(unsigned long  recipe_id);

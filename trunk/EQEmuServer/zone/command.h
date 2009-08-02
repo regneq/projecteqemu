@@ -184,6 +184,7 @@ void command_memspell(Client *c, const Seperator *sep);
 void command_save(Client *c, const Seperator *sep);
 void command_showstats(Client *c, const Seperator *sep);
 void command_mystats(Client *c, const Seperator *sep);
+void command_myskills(Client *c, const Seperator *sep);
 void command_depop(Client *c, const Seperator *sep);
 void command_depopzone(Client *c, const Seperator *sep);
 void command_repop(Client *c, const Seperator *sep);

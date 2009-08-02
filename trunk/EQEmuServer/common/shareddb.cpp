@@ -1491,13 +1491,19 @@ uint16 SharedDatabase::GetSkillCap(int8 Class_, SkillType Skill, int8 Level) {
 uint8 SharedDatabase::GetTrainLevel(int8 Class_, SkillType Skill, int8 Level) {
 	if(Class_ == 0)
 		return(0);
+
+	uint8 ret = 0;
 	if(Level > SKILL_MAX_LEVEL){
-		return EMuShareMemDLL.SkillCaps.GetTrainLevel(Class_-1, Skill, SKILL_MAX_LEVEL);
+		ret = EMuShareMemDLL.SkillCaps.GetTrainLevel(Class_-1, Skill, SKILL_MAX_LEVEL);
 	}
 	else
 	{
-		return EMuShareMemDLL.SkillCaps.GetTrainLevel(Class_-1, Skill, Level);
+		ret = EMuShareMemDLL.SkillCaps.GetTrainLevel(Class_-1, Skill, Level);
 	}
+	if(ret > GetSkillCap(Class_, Skill, Level))
+		ret = GetSkillCap(Class_, Skill, Level);
+
+	return ret;
 }
 
 void SharedDatabase::DBLoadDamageShieldTypes(SPDat_Spell_Struct* sp, sint32 iMaxSpellID) {
