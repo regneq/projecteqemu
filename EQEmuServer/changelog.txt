@@ -1,5 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==08/02/2009==
+realityincarnate: SoF - Added opcode values to avoid packet dumps of some of the more annoying unknowns
+realityincarnate: SoF - Tradeskill success messages now display the recipe name instead of %1
+realityincarnate: Added #myskills command to bring up an SoF-style skills window showing current and capped skill levels
+realityincarnate: Skills can no longer pass the cap from initial training (specifically bard meditate)
+
 ==7/31/2009==
 WildcardX: Implemented a method to calculate the reciprocal heading of a specified mob object.
 

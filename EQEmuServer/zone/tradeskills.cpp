@@ -820,7 +820,7 @@ bool Client::TradeskillExecute(DBTradeskillRecipe_Struct *spec) {
 		if(over_trivial < 0)
 			CheckIncreaseTradeskill(bonusstat, stat_modifier, skillup_modifier, success_modifier, spec->tradeskill);
 		
-		Message_StringID(4,TRADESKILL_SUCCEED);
+		Message_StringID(4,TRADESKILL_SUCCEED,spec->name.c_str());
 
 		_log(TRADESKILLS__TRACE, "Tradeskill success");
 
@@ -1125,7 +1125,7 @@ bool ZoneDatabase::GetTradeRecipe(uint32 recipe_id, uint8 c_type, uint32 some_id
  	}
  	
  	qlen = MakeAnyLenString(&query, "SELECT tr.id, tr.tradeskill, tr.skillneeded,"
- 	" tr.trivial, tr.nofail, tr.replace_container"
+ 	" tr.trivial, tr.nofail, tr.replace_container, tr.name"
  	" FROM tradeskill_recipe AS tr inner join tradeskill_recipe_entries as tre"
  	" ON tr.id = tre.recipe_id"
  	" WHERE tr.id = %lu AND tre.item_id %s"
@@ -1151,6 +1151,7 @@ bool ZoneDatabase::GetTradeRecipe(uint32 recipe_id, uint8 c_type, uint32 some_id
  	spec->trivial			= (uint16)atoi(row[3]);
  	spec->nofail			= atoi(row[4]) ? true : false;
  	spec->replace_container	= atoi(row[5]) ? true : false;
+	spec->name = row[6];
 	mysql_free_result(result);
 	
 	//Pull the on-success items...

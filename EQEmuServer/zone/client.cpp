@@ -4748,3 +4748,41 @@ uint32 Client::GetStartZone()
 {
 	return m_pp.binds[4].zoneId;
 }
+
+void Client::ShowSkillsWindow() 
+{
+	const char *WindowTitle = "Skills";
+	string WindowText;
+	// using a map for easy alphabetizing of the skills list
+	map<string, SkillType> Skills;
+	map<string, SkillType>::iterator it;
+
+	// this list of names must keep the same order as that in common/skills.h
+	const char* SkillName[] = {"1H Blunt","1H Slashing","2H Blunt","2H Slashing","Abjuration","Alteration","Apply Poison","Archery",
+		"Backstab","Bind Wound","Bash","Block","Brass Instruments","Channeling","Conjuration","Defense","Disarm","Disarm Traps","Divination",
+		"Dodge","Double Attack","Dragon Punch","Duel Wield","Eagle Strike","Evocation","Feign Death","Flying Kick","Forage","Hand to Hand",
+		"Hide","Kick","Meditate","Mend","Offense","Parry","Pick Lock","Piercing","Ripost","Round Kick","Safe Fall","Sense Heading",
+		"Singing","Sneak","Specialize Abjuration","Specialize Alteration","Specialize Conjuration","Specialize Divination","Specialize Evocation","Pick Pockets",
+		"Stringed Instruments","Swimming","Throwing","Tiger Claw","Tracking","Wind Instruments","Fishing","Make Poison","Tinkering","Research",
+		"Alchemy","Baking","Tailoring","Sense Traps","Blacksmithing","Fletching","Brewing","Alcohol Tolerance","Begging","Jewelry Making",
+		"Pottery","Percussion Instruments","Intimidation","Berserking","Taunt","Frenzy"};
+	for(int i = 0; i <= (int)HIGHEST_SKILL; i++)
+		Skills[SkillName[i]] = (SkillType)i;
+	
+	// print out all available skills
+	for(it = Skills.begin(); it != Skills.end(); it++) {
+		if(GetSkill(it->second) > 0 || MaxSkill(it->second) > 0) {
+			WindowText += it->first;
+			// line up the values
+			for (int j = 0; j < 5; j++)
+				WindowText += "&nbsp;";
+			WindowText += itoa(this->GetSkill(it->second));
+			if (MaxSkill(it->second) > 0) {
+				WindowText += "/";
+				WindowText += itoa(this->GetMaxSkillAfterSpecializationRules(it->second,this->MaxSkill(it->second)));
+			}
+			WindowText += "<br>";
+		}
+	}
+	this->SendPopupToClient(WindowTitle, WindowText.c_str());
+}

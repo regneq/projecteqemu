@@ -301,6 +301,7 @@ int command_init(void) {
 		command_add("save","- Force your player or player corpse target to be saved to the database",50,command_save) ||
 		command_add("showstats","- Show details about you or your target",50,command_showstats) ||
 		command_add("mystats","- Show details about you or your pet",50,command_mystats) ||
+		command_add("myskills","- Show details about your current skill levels",0,command_myskills) ||
 		command_add("depop","- Depop your NPC target",50,command_depop) ||
 		command_add("depopzone","- Depop the zone",100,command_depopzone) ||
 		command_add("repop","[delay] - Repop the zone with optional delay",100,command_repop) ||
@@ -4169,6 +4170,11 @@ void command_mystats(Client *c, const Seperator *sep)
 	}
 	else
 		c->ShowStats(c);
+}
+
+void command_myskills(Client *c, const Seperator *sep)
+{
+	c->ShowSkillsWindow();
 }
 
 void command_bind(Client *c, const Seperator *sep)
