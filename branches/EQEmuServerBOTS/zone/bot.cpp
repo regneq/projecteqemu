@@ -2271,6 +2271,8 @@ void Bot::BotAIProcess() {
 		if(!target)
 			return;
 
+		FaceTarget(target);
+
 		if(DivineAura())
 			return;
 
@@ -2383,9 +2385,6 @@ void Bot::BotAIProcess() {
 					return;
 				}
 			}
-			
-			// We are in the position we want, so now lets face our target
-			FaceTarget(target);
 
 			if(IsBotArcher() && ranged_timer.Check(false)) {
 				if(MakeRandomInt(1, 100) > 95) {
@@ -2679,9 +2678,6 @@ void Bot::PetAIProcess() {
 		else
 			botPet->SetTarget(hate_list.GetTop(botPet));
 
-		if (!botPet->GetTarget())
-			return;
-
 		// Let's check if we have a los with our target.
 		// If we don't, our hate_list is wiped.
 		// It causes some cpu stress but without it, it was causing the bot/pet to aggro behind wall, floor etc... 
@@ -2691,6 +2687,8 @@ void Bot::PetAIProcess() {
 
 			return;
 		}
+
+		botPet->FaceTarget(botPet->GetTarget());
 
 		// Lets see if we can let the main tank build a little aggro
 		if(GetBotRaidID()) {
@@ -2748,9 +2746,6 @@ void Bot::PetAIProcess() {
 				}
 			}
 			
-			// We are in the position we want, so now lets face our target
-			botPet->FaceTarget(target);
-
 			// we can't fight if we don't have a target, are stun/mezzed or dead..
 			if(botPet->GetTarget() && !botPet->IsStunned() && !botPet->IsMezzed() && (botPet->GetAppearance() != eaDead)) 
 			{
