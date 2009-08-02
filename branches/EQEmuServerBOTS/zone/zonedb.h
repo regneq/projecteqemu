@@ -42,6 +42,7 @@ struct DBTradeskillRecipe_Struct {
 	bool replace_container;
 	vector< pair<uint32,uint8> > onsuccess;
 	vector< pair<uint32,uint8> > onfail;
+	string name;
 };
 
 struct PetRecord {

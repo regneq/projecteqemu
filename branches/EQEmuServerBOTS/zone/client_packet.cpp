@@ -358,6 +358,7 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_AdventureLeaderboardRequest] = &Client::Handle_OP_AdventureLeaderboardRequest;	
 	ConnectedOpcodes[OP_GroupUpdate] = &Client::Handle_OP_GroupUpdate;
 	ConnectedOpcodes[OP_SetStartCity] = &Client::Handle_OP_SetStartCity;
+	ConnectedOpcodes[OP_ItemViewUnknown] = &Client::Handle_OP_Ignore;
 }
 
 int Client::HandlePacket(const EQApplicationPacket *app)

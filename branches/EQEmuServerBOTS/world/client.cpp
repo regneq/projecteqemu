@@ -675,6 +675,10 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 			eqs->Close();
 			break;
 		}
+		case OP_LoginUnknown1:
+		case OP_LoginUnknown2:
+			break;
+
 		default: {
 			clog(WORLD__CLIENT_ERR,"Received unknown EQApplicationPacket");
 			_pkt(WORLD__CLIENT_ERR,app);
