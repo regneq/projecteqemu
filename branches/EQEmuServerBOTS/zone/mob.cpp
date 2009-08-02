@@ -2099,20 +2099,50 @@ bool Mob::PlotPositionAroundTarget(Mob* target, float &x_dest, float &y_dest, fl
 		float tempZ = 0;
 		float tempSize = 0;
 		const float rangeCreepMod = 0.25;
+		const uint8 maxIterationsAllowed = 4;
+		uint8 counter = 0;
+		float rangeReduction= 0;
 
 		tempSize = target->GetSize();
+		rangeReduction = (tempSize * rangeCreepMod);
 
-		while(tempSize > 0) {
+		while(tempSize > 0 && counter != maxIterationsAllowed) {
 			tempX = GetX() + (tempSize * sin(double(look_heading * 3.141592 / 180.0)));
 			tempY = GetY() + (tempSize * cos(double(look_heading * 3.141592 / 180.0)));
 			tempZ = target->GetZ();
 
 			if(!CheckLosFN(tempX, tempY, tempZ, tempSize)) {
-				tempSize -= (tempSize * rangeCreepMod);
+				tempSize -= rangeReduction;
 			}
 			else {
 				Result = true;
 				break;
+			}
+
+			counter++;
+		}
+
+		if(!Result) {
+			// Try to find an attack arc to position at from the opposite direction.
+			look_heading += (3.141592 / 2);
+
+			tempSize = target->GetSize();
+			counter = 0;
+
+			while(tempSize > 0 && counter != maxIterationsAllowed) {
+				tempX = GetX() + (tempSize * sin(double(look_heading * 3.141592 / 180.0)));
+				tempY = GetY() + (tempSize * cos(double(look_heading * 3.141592 / 180.0)));
+				tempZ = target->GetZ();
+
+				if(!CheckLosFN(tempX, tempY, tempZ, tempSize)) {
+					tempSize -= rangeReduction;
+				}
+				else {
+					Result = true;
+					break;
+				}
+
+				counter++;
 			}
 		}
 

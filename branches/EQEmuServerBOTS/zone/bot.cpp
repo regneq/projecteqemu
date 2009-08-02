@@ -2378,10 +2378,9 @@ void Bot::BotAIProcess() {
 
 				return;
 			}
-			else {
-				// We are in the position we want, so now lets face our target
-				FaceTarget(target);
-			}
+			
+			// We are in the position we want, so now lets face our target
+			FaceTarget(target);
 
 			if(IsBotArcher() && ranged_timer.Check(false)) {
 				if(MakeRandomInt(1, 100) > 95) {
@@ -2743,10 +2742,9 @@ void Bot::PetAIProcess() {
 
 				return;
 			}
-			else {
-				// We are in the position we want, so now lets face our target
-				botPet->FaceTarget(target);
-			}
+			
+			// We are in the position we want, so now lets face our target
+			botPet->FaceTarget(target);
 
 			// we can't fight if we don't have a target, are stun/mezzed or dead..
 			if(botPet->GetTarget() && !botPet->IsStunned() && !botPet->IsMezzed() && (botPet->GetAppearance() != eaDead)) 
