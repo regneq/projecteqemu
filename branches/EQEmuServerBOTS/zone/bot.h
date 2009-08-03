@@ -120,15 +120,16 @@ public:
 
 	// Bot Equipment & Inventory Class Methods
 	uint32 GetBotItemBySlot(uint32 slotID, std::string* errorMessage);
-	std::list<BotInventory> GetBotItems(std::string* errorMessage);
+	uint32 GetBotItem(uint32 slotID);
 	void RemoveBotItemBySlot(uint32 slotID, std::string* errorMessage);
 	void SetBotItemInSlot(uint32 slotID, uint32 itemID, std::string* errorMessage);
 	uint32 GetBotItemsCount(std::string* errorMessage);
 	void BotTradeSwapItem(Client* client, sint16 lootSlot, uint32 id, sint16 maxCharges, uint32 equipableSlots, std::string* errorMessage, bool swap = true);
-	void BotTradeAddItem(uint32 id, sint16 maxCharges, uint32 equipableSlots, int16 lootSlot, Client* client, std::string* errorMessage, bool addToDb = true);
+	void BotTradeAddItem(uint32 id, sint16 maxCharges, uint32 equipableSlots, int16 lootSlot, std::string* errorMessage, bool addToDb = true);
 	void BotRemoveEquipItem(int slot) { equipment[slot] = 0; }
 	void BotAddEquipItem(int slot, uint32 id) { equipment[slot] = id; }
 	void SendBotArcheryWearChange(int8 material_slot, uint32 material, uint32 color);
+	void EquipBot(std::string* errorMessage);
 
 	// Static Class Methods
 	static Bot* LoadBot(uint32 botID, std::string* errorMessage);
@@ -195,6 +196,9 @@ public:
 
 	typedef enum botfocusType botfocusType;
 
+	typedef std::map<uint32, uint32> BotInventory;
+	typedef std::pair<uint32, uint32> BotInventoryItem;
+
 protected:
 	virtual void BotAIProcess();
 	virtual void PetAIProcess();
@@ -220,7 +224,8 @@ private:
 	int8 _petChooserID;
 	uint32 _botArcheryRange;
 	bool cast_last_time;
-
+	//std::list<BotInventory> _botInventory;
+	BotInventory _botInventory;
 
 	// Class Methods
 	void GenerateBaseStats();
@@ -235,7 +240,7 @@ private:
 	//bool IsPacified(Mob* targetMob);
 	uint32 GetItemID(int slot_id);
 	bool CalcBotHitChance(Mob* target, SkillType skillinuse, int Hand);
-	void EquipBot(Client* client);
+	BotInventory GetBotItems(std::string* errorMessage);
 };
 
 #endif // BOTS

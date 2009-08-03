@@ -74,6 +74,18 @@ Bot::Bot(uint32 botID, uint32 botOwnerCharacterID, uint32 botSpellsID, NPCType n
 	
 	this->SetBotRaidID(0);
 
+	strcpy(this->name, this->GetCleanName());
+
+	std::string TempErrorMessage;
+
+	EquipBot(&TempErrorMessage);
+
+	if(!TempErrorMessage.empty()) {
+		// TODO: log error message to zone error log
+		if(GetBotOwner())
+			GetBotOwner()->Message(13, TempErrorMessage.c_str());
+	}
+
 	GenerateBaseStats();
 	GenerateAppearance();
 	GenerateArmorClass();
@@ -81,7 +93,8 @@ Bot::Bot(uint32 botID, uint32 botOwnerCharacterID, uint32 botSpellsID, NPCType n
 	// Calculate HitPoints Last As It Uses Base Stats
 	GenerateBaseHitPoints();
 
-	strcpy(this->name, this->GetCleanName());
+	CalcBotStats(false);
+	//SendHPUpdate();
 }
 
 Bot::~Bot() {
@@ -2908,9 +2921,11 @@ bool Bot::DeleteBot(std::string* errorMessage) {
 void Bot::Spawn(Client* botCharacterOwner, std::string* errorMessage) {
 	if(this->GetBotID() > 0 && this->_botOwnerCharacterID > 0 && botCharacterOwner) {
 		this->SetLevel(botCharacterOwner->GetLevel());
-		entity_list.AddBot(this, true, true);
-		this->EquipBot(botCharacterOwner);
-		this->GMMove(botCharacterOwner->GetX(), botCharacterOwner->GetY(), botCharacterOwner->GetZ(), botCharacterOwner->GetHeading(), true);
+
+		if(!PlotPositionAroundTarget(botCharacterOwner, x_pos, y_pos, z_pos, false))
+			GMMove(botCharacterOwner->GetX(), botCharacterOwner->GetY(), botCharacterOwner->GetZ(), botCharacterOwner->GetHeading(), true);
+
+		entity_list.AddBot(this, true);
 	}
 }
 
@@ -2940,8 +2955,8 @@ void Bot::RemoveBotItemBySlot(uint32 slotID, std::string *errorMessage) {
 	}
 }
 
-std::list<BotInventory> Bot::GetBotItems(std::string *errorMessage) {
-	std::list<BotInventory> Result;
+Bot::BotInventory Bot::GetBotItems(std::string* errorMessage) {
+	BotInventory Result;
 
 	if(this->GetBotID() > 0) {
 		char errbuf[MYSQL_ERRMSG_SIZE];
@@ -2952,17 +2967,18 @@ std::list<BotInventory> Bot::GetBotItems(std::string *errorMessage) {
 		if(database.RunQuery(query, MakeAnyLenString(&query, "SELECT slotid, itemid FROM botinventory WHERE botid=%i order by slotid", this->GetBotID()), errbuf, &DatasetResult)) {
 			while(DataRow = mysql_fetch_row(DatasetResult)) {
 
-				BotInventory TempBotInventoryItem;
+				/*BotInventoryStruct TempBotInventoryItem;
 				TempBotInventoryItem.BotID = this->GetBotID();
 				TempBotInventoryItem.BotSlotID = atoi(DataRow[0]);
-				TempBotInventoryItem.ItemID = atoi(DataRow[1]);
+				TempBotInventoryItem.ItemID = atoi(DataRow[1]);*/
 
-				Result.push_back(TempBotInventoryItem);
+				Result.insert(BotInventoryItem(atoi(DataRow[0]), atoi(DataRow[1])));
+				//Result.push_back(TempBotInventoryItem);
 			}
 
 			mysql_free_result(DatasetResult);
 		}
-		else
+		else 
 			*errorMessage = std::string(errbuf);
 
 		safe_delete_array(query);
@@ -2993,6 +3009,21 @@ uint32 Bot::GetBotItemBySlot(uint32 slotID, std::string *errorMessage) {
 			*errorMessage = std::string(errbuf);
 
 		safe_delete_array(query);
+	}
+
+	return Result;
+}
+
+uint32 Bot::GetBotItem(uint32 slotID) {
+	uint32 Result = 0;
+
+	if(slotID > 0 && !_botInventory.empty()) {
+		BotInventory::iterator invItr = _botInventory.begin();
+
+		invItr = _botInventory.find(slotID);
+
+		if(invItr != _botInventory.end())
+			Result = invItr->second;
 	}
 
 	return Result;
@@ -3090,8 +3121,74 @@ void Bot::SetLevel(uint8 in_level, bool command) {
 
 void Bot::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho) {
 	if(ns) {
-		NPC::FillSpawnStruct(ns, ForWho);
-		ns->spawn.is_npc = 1;
+		Mob::FillSpawnStruct(ns, ForWho);
+
+		ns->spawn.afk = 0;
+		ns->spawn.lfg = 0;
+		ns->spawn.anon = 0;
+		ns->spawn.gm = 0;
+		ns->spawn.guildID = 0;
+		ns->spawn.is_npc = 0;
+		ns->spawn.is_pet = 0;
+		ns->spawn.guildrank = 0xFF;
+		ns->spawn.size = 0;
+		ns->spawn.runspeed = 3.125f;
+		ns->spawn.showhelm = 0;
+		ns->spawn.flymode = 0;
+
+		const Item_Struct* item = 0;
+
+		if(!_botInventory.empty()) {
+			if(item = database.GetItem(GetBotItem(SLOT_HANDS))) {
+				ns->spawn.equipment[MATERIAL_HANDS]	= item->Material;
+				ns->spawn.colors[MATERIAL_HANDS].color	= GetEquipmentColor(MATERIAL_HANDS);
+			}
+
+			if(item = database.GetItem(GetBotItem(SLOT_HEAD))) {
+				ns->spawn.equipment[MATERIAL_HEAD]	= item->Material;
+				ns->spawn.colors[MATERIAL_HEAD].color	= GetEquipmentColor(MATERIAL_HEAD);
+			}
+
+			if(item = database.GetItem(GetBotItem(SLOT_ARMS))) {
+				ns->spawn.equipment[MATERIAL_ARMS]	= item->Material;
+				ns->spawn.colors[MATERIAL_ARMS].color	= GetEquipmentColor(MATERIAL_ARMS);
+			}
+
+			if(item = database.GetItem(GetBotItem(SLOT_BRACER01))) {
+				ns->spawn.equipment[MATERIAL_BRACER]= item->Material;
+				ns->spawn.colors[MATERIAL_BRACER].color	= GetEquipmentColor(MATERIAL_BRACER);
+			}
+
+			if(item = database.GetItem(GetBotItem(SLOT_BRACER02))) {
+				ns->spawn.equipment[MATERIAL_BRACER]= item->Material;
+				ns->spawn.colors[MATERIAL_BRACER].color	= GetEquipmentColor(MATERIAL_BRACER);
+			}
+
+			if(item = database.GetItem(GetBotItem(SLOT_CHEST))) {
+				ns->spawn.equipment[MATERIAL_CHEST]	= item->Material;
+				ns->spawn.colors[MATERIAL_CHEST].color	= GetEquipmentColor(MATERIAL_CHEST);
+			}
+
+			if(item = database.GetItem(GetBotItem(SLOT_LEGS))) {
+				ns->spawn.equipment[MATERIAL_LEGS] = item->Material;
+				ns->spawn.colors[MATERIAL_LEGS].color = GetEquipmentColor(MATERIAL_LEGS);
+			}
+
+			if(item = database.GetItem(GetBotItem(SLOT_FEET))) {
+				ns->spawn.equipment[MATERIAL_FEET] = item->Material;
+				ns->spawn.colors[MATERIAL_FEET].color = GetEquipmentColor(MATERIAL_FEET);
+			}
+
+			if(item = database.GetItem(GetBotItem(SLOT_PRIMARY))) {
+				if(strlen(item->IDFile) > 2)
+					ns->spawn.equipment[MATERIAL_PRIMARY] = atoi(&item->IDFile[2]);
+			}
+
+			if(item = database.GetItem(GetBotItem(SLOT_SECONDARY))) {
+				if(strlen(item->IDFile) > 2)
+					ns->spawn.equipment[MATERIAL_SECONDARY] = atoi(&item->IDFile[2]);
+			}
+		}
 	}
 }
 
@@ -3501,14 +3598,14 @@ void Bot::BotTradeSwapItem(Client* client, sint16 lootSlot, uint32 id, sint16 ma
 		this->SendWearChange(materialFromSlot);
 	}
 	if(swap) {
-		BotTradeAddItem(id, maxCharges, equipableSlots, lootSlot, client, errorMessage);
+		BotTradeAddItem(id, maxCharges, equipableSlots, lootSlot, errorMessage);
 
 		if(!errorMessage->empty())
 			return;
 	}
 }
 
-void Bot::BotTradeAddItem(uint32 id, sint16 maxCharges, uint32 equipableSlots, int16 lootSlot, Client* client, std::string* errorMessage, bool addToDb) {
+void Bot::BotTradeAddItem(uint32 id, sint16 maxCharges, uint32 equipableSlots, int16 lootSlot, std::string* errorMessage, bool addToDb) {
 	if(addToDb) {
 		this->SetBotItemInSlot(lootSlot, id, errorMessage);
 		if(!errorMessage->empty())
@@ -4076,11 +4173,11 @@ void Bot::FinishTrade(Mob* tradingWith) {
 								if(j==SLOT_EAR01 || j==SLOT_EAR02) { // earrings
 									if(GetBotItemBySlot(SLOT_EAR02, &TempErrorMessage) == 0) {
 										// If the right ear is empty lets put the earring there
-										BotTradeAddItem(mWeaponItem->ID, mWeaponItem->MaxCharges, mWeaponItem->Slots, SLOT_EAR02, client, &TempErrorMessage);
+										BotTradeAddItem(mWeaponItem->ID, mWeaponItem->MaxCharges, mWeaponItem->Slots, SLOT_EAR02, &TempErrorMessage);
 									}
 									else if(GetBotItemBySlot(SLOT_EAR01, &TempErrorMessage) == 0) {
 										// The right ear is being used, lets put it in the empty left ear
-										BotTradeAddItem(mWeaponItem->ID, mWeaponItem->MaxCharges, mWeaponItem->Slots, SLOT_EAR01, client, &TempErrorMessage);
+										BotTradeAddItem(mWeaponItem->ID, mWeaponItem->MaxCharges, mWeaponItem->Slots, SLOT_EAR01, &TempErrorMessage);
 									}
 									else {
 										// both ears are equipped, so swap out the left ear
@@ -4092,11 +4189,11 @@ void Bot::FinishTrade(Mob* tradingWith) {
 								else if(j==SLOT_BRACER01 || j==SLOT_BRACER02) { // bracers
 									if(GetBotItemBySlot(SLOT_BRACER02, &TempErrorMessage) == 0) {
 										// If the right wrist is empty lets put the bracer there
-										BotTradeAddItem(mWeaponItem->ID, mWeaponItem->MaxCharges, mWeaponItem->Slots, SLOT_BRACER02, client, &TempErrorMessage);
+										BotTradeAddItem(mWeaponItem->ID, mWeaponItem->MaxCharges, mWeaponItem->Slots, SLOT_BRACER02, &TempErrorMessage);
 									}
 									else if(GetBotItemBySlot(SLOT_BRACER01, &TempErrorMessage) == 0) {
 										// The right wrist is equipped, lets put it in the empty left wrist
-										BotTradeAddItem(mWeaponItem->ID, mWeaponItem->MaxCharges, mWeaponItem->Slots, SLOT_BRACER01, client, &TempErrorMessage);
+										BotTradeAddItem(mWeaponItem->ID, mWeaponItem->MaxCharges, mWeaponItem->Slots, SLOT_BRACER01, &TempErrorMessage);
 									}
 									else {
 										// both wrists are equipped, so swap out the left wrist
@@ -4110,7 +4207,7 @@ void Bot::FinishTrade(Mob* tradingWith) {
 									const Item_Struct* itmwp = database.GetItem(inst->GetID());
 									if((GetBotItemBySlot(SLOT_PRIMARY, &TempErrorMessage) == 0)) {
 										// if the primary hand is empty, lets put the item there
-										BotTradeAddItem(mWeaponItem->ID, mWeaponItem->MaxCharges, mWeaponItem->Slots, SLOT_PRIMARY, client, &TempErrorMessage);
+										BotTradeAddItem(mWeaponItem->ID, mWeaponItem->MaxCharges, mWeaponItem->Slots, SLOT_PRIMARY, &TempErrorMessage);
 										if((itmwp->ItemType == ItemType2HS) || (itmwp->ItemType == ItemType2HB) || (itmwp->ItemType == ItemType2HPierce)) {
 											// if the primary item is a two-hander, and the left hand is equipped, lets remove the item in the left hand
 											if(GetBotItemBySlot(SLOT_SECONDARY, &TempErrorMessage) != 0) {
@@ -4145,7 +4242,7 @@ void Bot::FinishTrade(Mob* tradingWith) {
 												Say("I was using this 2 Handed Weapon... but OK, you can have it back.");
 											}
 											// put the new item in the secondary hand
-											BotTradeAddItem(mWeaponItem->ID, mWeaponItem->MaxCharges, mWeaponItem->Slots, SLOT_SECONDARY, client, &TempErrorMessage);
+											BotTradeAddItem(mWeaponItem->ID, mWeaponItem->MaxCharges, mWeaponItem->Slots, SLOT_SECONDARY, &TempErrorMessage);
 										}
 										else if((GetBotItemBySlot(SLOT_SECONDARY, &TempErrorMessage) != 0) && inst->IsSlotAllowed(SLOT_SECONDARY) ) {
 											// Make sure to not equip weapons in the offhand of non-dual wielding classes
@@ -4185,7 +4282,7 @@ void Bot::FinishTrade(Mob* tradingWith) {
 									}
 									if((GetBotItemBySlot(SLOT_SECONDARY, &TempErrorMessage) == 0)) {
 										// if the secondary hand is free, equip it with the new item
-										BotTradeAddItem(mWeaponItem->ID, mWeaponItem->MaxCharges, mWeaponItem->Slots, SLOT_SECONDARY, client, &TempErrorMessage);
+										BotTradeAddItem(mWeaponItem->ID, mWeaponItem->MaxCharges, mWeaponItem->Slots, SLOT_SECONDARY, &TempErrorMessage);
 									}
 									else {
 										// The primary and secondary hands are equipped, just swap out the secondary item with the new item
@@ -4197,11 +4294,11 @@ void Bot::FinishTrade(Mob* tradingWith) {
 								else if(j==SLOT_RING01 || j==SLOT_RING02) { // rings
 									if(GetBotItemBySlot(SLOT_RING02, &TempErrorMessage) == 0) {
 										// If the right finger is empty lets put the ring there
-										BotTradeAddItem(mWeaponItem->ID, mWeaponItem->MaxCharges, mWeaponItem->Slots, SLOT_RING02, client, &TempErrorMessage);
+										BotTradeAddItem(mWeaponItem->ID, mWeaponItem->MaxCharges, mWeaponItem->Slots, SLOT_RING02, &TempErrorMessage);
 									}
 									else if(GetBotItemBySlot(SLOT_RING01, &TempErrorMessage) == 0) {
 										// The right finger is equipped, lets put it on the empty left finger
-										BotTradeAddItem(mWeaponItem->ID, mWeaponItem->MaxCharges, mWeaponItem->Slots, SLOT_RING01, client, &TempErrorMessage);
+										BotTradeAddItem(mWeaponItem->ID, mWeaponItem->MaxCharges, mWeaponItem->Slots, SLOT_RING01, &TempErrorMessage);
 									}
 									else {
 										// both fingers are equipped, so swap out the left finger
@@ -4219,7 +4316,7 @@ void Bot::FinishTrade(Mob* tradingWith) {
 									Say("Thanks! Here, take this other one back.");
 								}
 								// put the item in the slot
-								BotTradeAddItem(mWeaponItem->ID, mWeaponItem->MaxCharges, mWeaponItem->Slots, j, client, &TempErrorMessage);
+								BotTradeAddItem(mWeaponItem->ID, mWeaponItem->MaxCharges, mWeaponItem->Slots, j, &TempErrorMessage);
 								break;
 							}
 						}
@@ -6907,33 +7004,24 @@ void Bot::SendBotHPPacketsToGroup(Bot* bot, Group* group) {
 	}
 }
 
-void Bot::EquipBot(Client* client) {
-	uint32 itemID = 0;
-	const Item_Struct* item2 = NULL;
-	std::string TempErrorMessage;
+void Bot::EquipBot(std::string* errorMessage) {
+	if(_botInventory.empty()) {
+		_botInventory = GetBotItems(errorMessage);
+	}
 
-	if(client) {
-		for(int i=0; i<22; i++) {
-			itemID = GetBotItemBySlot(i, &TempErrorMessage);
-
-			if(!TempErrorMessage.empty()) {
-				client->Message(13, "Database Error: %s", TempErrorMessage.c_str());
-				return;
-			}
+	if(!_botInventory.empty()) {
+		for(int i = 0; i < 22; i++) {
+			uint32 itemID = 0;
+			itemID = GetBotItem(i);
 
 			if(itemID != 0) {
-				item2 = database.GetItem(itemID);
-				BotTradeAddItem(itemID, item2->MaxCharges, item2->Slots, i, client, &TempErrorMessage, false);
+				const Item_Struct* item2 = database.GetItem(itemID);
+				BotTradeAddItem(itemID, item2->MaxCharges, item2->Slots, i, errorMessage, false);
 
-				if(!TempErrorMessage.empty()) {
-					client->Message(13, "Database Error: %s", TempErrorMessage.c_str());
+				if(!errorMessage->empty())
 					return;
-				}
 			}
 		}
-
-		CalcBotStats();
-		SendHPUpdate();
 	}
 }
 
@@ -9070,7 +9158,9 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 				b->SetBotRaidID(c->GetBotRaidID());
 			}
 
-			uint32 itemID = 0;
+			b->EquipBot(&TempErrorMessage);
+
+			/*uint32 itemID = 0;
 			const Item_Struct* item2 = NULL;
 
 			for(int i=0; i<22; i++) {
@@ -9092,7 +9182,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 				}
 			}
 
-			b->CalcBotStats();
+			b->CalcBotStats();*/
 		}
 
 		return;
@@ -11507,7 +11597,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 					//itemID = database.GetBotItemBySlot(gleader->GetNPCTypeID(), i);
 					if(itemID != 0) {
 						item2 = database.GetItem(itemID);
-						gleader->CastToBot()->BotTradeAddItem(itemID, item2->MaxCharges, item2->Slots, i, c, &TempErrorMessage, false);
+						gleader->CastToBot()->BotTradeAddItem(itemID, item2->MaxCharges, item2->Slots, i, &TempErrorMessage, false);
 						//c->BotTradeAddItem(itemID, item2->MaxCharges, item2->Slots, i, gleader->CastToNPC(), false);
 					}
 				}
@@ -11589,7 +11679,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 
 						if(itemID != 0) {
 							item2 = database.GetItem(itemID);
-							inv->CastToBot()->BotTradeAddItem(itemID, item2->MaxCharges, item2->Slots, i, c, &TempErrorMessage, false);
+							inv->CastToBot()->BotTradeAddItem(itemID, item2->MaxCharges, item2->Slots, i, &TempErrorMessage, false);
 							if(!TempErrorMessage.empty()) {
 								c->Message(13, TempErrorMessage.c_str());
 								return;
@@ -11929,16 +12019,17 @@ void EntityList::AddBot(Bot *newBot, bool SendSpawnPacket, bool dontqueue) {
 		if(SendSpawnPacket) {
 			if(dontqueue) {
 				// Send immediately
-				EQApplicationPacket* app = new EQApplicationPacket;
-				newBot->CreateSpawnPacket(app, newBot);
-				QueueClients(newBot, app);
-				safe_delete(app);
+				EQApplicationPacket* outapp = new EQApplicationPacket();
+				newBot->CreateSpawnPacket(outapp);
+				outapp->priority = 6;
+				QueueClients(newBot, outapp, true);
+				safe_delete(outapp);
 			}
 			else {
 				// Queue the packet
 				NewSpawn_Struct* ns = new NewSpawn_Struct;
 				memset(ns, 0, sizeof(NewSpawn_Struct));
-				newBot->FillSpawnStruct(ns, 0); // Not working on player newspawns, so it's safe to use a ForWho of 0
+				newBot->FillSpawnStruct(ns, newBot);
 				AddToSpawnQueue(newBot->GetID(), &ns);
 				safe_delete(ns);
 			}

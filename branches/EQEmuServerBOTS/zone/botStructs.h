@@ -13,12 +13,6 @@ struct BotsAvailableList {
 	uint16 BotRace;
 };
 
-struct BotInventory {
-	uint32 BotID;
-	uint32 BotSlotID;
-	uint32 ItemID;
-};
-
 struct BotGroup {
 	uint32 GroupID;
 	uint32 BotID;
