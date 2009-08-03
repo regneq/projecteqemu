@@ -2920,12 +2920,35 @@ bool Bot::DeleteBot(std::string* errorMessage) {
 
 void Bot::Spawn(Client* botCharacterOwner, std::string* errorMessage) {
 	if(this->GetBotID() > 0 && this->_botOwnerCharacterID > 0 && botCharacterOwner) {
+		// Spawn the bot at the bow owner's loc
+		this->x_pos = botCharacterOwner->GetX();
+		this->y_pos = botCharacterOwner->GetY();
+		this->z_pos = botCharacterOwner->GetZ();
+		
+		// Make the bot look at the bot owner
+		FaceTarget(botCharacterOwner);
+
+		// Level the bot to the same level as the bot owner
 		this->SetLevel(botCharacterOwner->GetLevel());
 
-		if(!PlotPositionAroundTarget(botCharacterOwner, x_pos, y_pos, z_pos, false))
-			GMMove(botCharacterOwner->GetX(), botCharacterOwner->GetY(), botCharacterOwner->GetZ(), botCharacterOwner->GetHeading(), true);
-
 		entity_list.AddBot(this, true);
+
+		PlotPositionAroundTarget(botCharacterOwner, x_pos, y_pos, z_pos, false);
+
+		/*if(!_botInventory.empty()) {
+			for(int i = 1; i < 22; i++) {
+				uint32 itemID = 0;
+				itemID = GetBotItem(i);
+
+				if(itemID != 0) {
+					const Item_Struct* item2 = database.GetItem(itemID);
+					int8 materialFromSlot = Inventory::CalcMaterialFromSlot(i);
+					if(materialFromSlot != 0xFF) {
+						this->SendWearChange(materialFromSlot);
+					}
+				}
+			}
+		}*/
 	}
 }
 
@@ -3141,32 +3164,32 @@ void Bot::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho) {
 		if(!_botInventory.empty()) {
 			if(item = database.GetItem(GetBotItem(SLOT_HANDS))) {
 				ns->spawn.equipment[MATERIAL_HANDS]	= item->Material;
-				ns->spawn.colors[MATERIAL_HANDS].color	= GetEquipmentColor(MATERIAL_HANDS);
+				ns->spawn.colors[MATERIAL_HANDS].color = GetEquipmentColor(MATERIAL_HANDS);
 			}
 
 			if(item = database.GetItem(GetBotItem(SLOT_HEAD))) {
-				ns->spawn.equipment[MATERIAL_HEAD]	= item->Material;
-				ns->spawn.colors[MATERIAL_HEAD].color	= GetEquipmentColor(MATERIAL_HEAD);
+				ns->spawn.equipment[MATERIAL_HEAD] = item->Material;
+				ns->spawn.colors[MATERIAL_HEAD].color = GetEquipmentColor(MATERIAL_HEAD);
 			}
 
 			if(item = database.GetItem(GetBotItem(SLOT_ARMS))) {
-				ns->spawn.equipment[MATERIAL_ARMS]	= item->Material;
-				ns->spawn.colors[MATERIAL_ARMS].color	= GetEquipmentColor(MATERIAL_ARMS);
+				ns->spawn.equipment[MATERIAL_ARMS] = item->Material;
+				ns->spawn.colors[MATERIAL_ARMS].color = GetEquipmentColor(MATERIAL_ARMS);
 			}
 
 			if(item = database.GetItem(GetBotItem(SLOT_BRACER01))) {
-				ns->spawn.equipment[MATERIAL_BRACER]= item->Material;
+				ns->spawn.equipment[MATERIAL_BRACER] = item->Material;
 				ns->spawn.colors[MATERIAL_BRACER].color	= GetEquipmentColor(MATERIAL_BRACER);
 			}
 
 			if(item = database.GetItem(GetBotItem(SLOT_BRACER02))) {
-				ns->spawn.equipment[MATERIAL_BRACER]= item->Material;
+				ns->spawn.equipment[MATERIAL_BRACER] = item->Material;
 				ns->spawn.colors[MATERIAL_BRACER].color	= GetEquipmentColor(MATERIAL_BRACER);
 			}
 
 			if(item = database.GetItem(GetBotItem(SLOT_CHEST))) {
 				ns->spawn.equipment[MATERIAL_CHEST]	= item->Material;
-				ns->spawn.colors[MATERIAL_CHEST].color	= GetEquipmentColor(MATERIAL_CHEST);
+				ns->spawn.colors[MATERIAL_CHEST].color = GetEquipmentColor(MATERIAL_CHEST);
 			}
 
 			if(item = database.GetItem(GetBotItem(SLOT_LEGS))) {
