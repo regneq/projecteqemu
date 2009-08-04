@@ -149,7 +149,6 @@ public:
     ~Client();
 
 	//abstract virtual function implementations requird by base abstract class
-	virtual void FinishTrade(Mob* tradingWith);
 	virtual void Death(Mob* killerMob, sint32 damage, int16 spell_id, SkillType attack_skill);
 	virtual void Damage(Mob* from, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable = true, sint8 buffslot = -1, bool iBuffTic = false);
 	virtual bool Attack(Mob* other, int Hand = 13, bool FromRiposte = false);
@@ -196,6 +195,8 @@ public:
 	void	TradeRequestFailed(const EQApplicationPacket* app);
 	void	BuyTraderItem(TraderBuy_Struct* tbs,Client* trader,const EQApplicationPacket* app);
 	void	TraderUpdate(int16 slot_id,int32 trader_id);
+	void	FinishTrade(Client* with);
+	void	FinishTrade(NPC* with);
 
 	void	SendBuyerResults(char *SearchQuery, uint32 SearchID);
 	void	ShowBuyLines(const EQApplicationPacket *app);

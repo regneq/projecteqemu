@@ -3886,14 +3886,14 @@ void Client::Handle_OP_CancelTrade(const EQApplicationPacket *app)
 		with->CastToClient()->QueuePacket(app);
 
 		// Put trade items/cash back into inventory
-		FinishTrade(with);
+		FinishTrade(this);
 		trade->Reset();
 	}
 	else if(with){
 		CancelTrade_Struct* msg = (CancelTrade_Struct*) app->pBuffer;
 		msg->fromid = with->GetID();
 		QueuePacket(app);
-		FinishTrade(with);
+		FinishTrade(this);
 		trade->Reset();
 	}
 	EQApplicationPacket end_trade1(OP_FinishWindow, 0);
@@ -3948,9 +3948,15 @@ void Client::Handle_OP_TradeAcceptClick(const EQApplicationPacket *app)
 		EQApplicationPacket* outapp = new EQApplicationPacket(OP_FinishTrade,0);
 		QueuePacket(outapp);
 		safe_delete(outapp);
-		with->FinishTrade(this);
+		if(with->IsNPC())
+			FinishTrade(with->CastToNPC());
+#ifdef BOTS
+		else if(with->IsBot())
+			with->CastToBot()->FinishTrade(this);
+#endif
 		trade->Reset();
 	}
+
 
 	return;
 }
