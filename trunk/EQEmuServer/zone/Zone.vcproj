@@ -229,7 +229,7 @@
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="2"
 				AdditionalIncludeDirectories="C:\perl\lib\core"
-				PreprocessorDefinitions="EMBPERL,EMBPERL_PLUGIN,SHAREMEM,i386,CATCH_CRASH,_WIN32_WINNT=0x0400,NDEBUG,ZONESERVER,ZONE,INVERSEXY,WIN32,_CONSOLE,FIELD_ITEMS,EQDEBUG=5,EQBOTS"
+				PreprocessorDefinitions="EMBPERL,EMBPERL_PLUGIN,SHAREMEM,i386,CATCH_CRASH,_WIN32_WINNT=0x0400,NDEBUG,ZONESERVER,ZONE,INVERSEXY,WIN32,_CONSOLE,FIELD_ITEMS,EQDEBUG=5,BOTS"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				BufferSecurityCheck="false"
@@ -323,7 +323,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="C:\perl\lib\core"
-				PreprocessorDefinitions="EMBPERL;EMBPERL_PLUGIN;SHAREMEM;i386;_WIN32_WINNT=0x0400;ZONE;INVERSEXY;WIN32;_CONSOLE;FIELD_ITEMS;EQDEBUG=5;EQBOTS"
+				PreprocessorDefinitions="EMBPERL;EMBPERL_PLUGIN;SHAREMEM;i386;_WIN32_WINNT=0x0400;ZONE;INVERSEXY;WIN32;_CONSOLE;FIELD_ITEMS;EQDEBUG=5;BOTS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				PrecompiledHeaderFile=".\..\Build\ZonePerl/Zone.pch"
@@ -413,10 +413,6 @@
 			</File>
 			<File
 				RelativePath=".\bot.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\botAI.cpp"
 				>
 			</File>
 			<File
@@ -593,10 +589,6 @@
 			</File>
 			<File
 				RelativePath=".\perlparser.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\petAI.cpp"
 				>
 			</File>
 			<File
@@ -825,6 +817,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\questmgr.h"
+				>
+			</File>
+			<File
 				RelativePath=".\skills.h"
 				>
 			</File>
@@ -930,10 +926,6 @@
 			</File>
 			<File
 				RelativePath="..\common\EQCheckTable.h"
-				>
-			</File>
-			<File
-				RelativePath="..\common\EQOpcodes.h"
 				>
 			</File>
 			<File

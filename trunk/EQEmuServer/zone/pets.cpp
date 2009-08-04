@@ -259,29 +259,6 @@ void Mob::MakePet(int16 spell_id, const char* pettype, const char *petname) {
 		npc_type->size *= 1.15;
 	}
 
-#ifdef EQBOTS
-
-	if(IsBot() && (GetClass() == MAGICIAN))
-	{
-		if(GetLevel() >= 67)
-		{ // Elemental Durability 3 AA
-			npc_type->max_hp *= 1.10;
-			npc_type->cur_hp = npc_type->max_hp;
-		}
-		else if(GetLevel() == 66)
-		{ // Elemental Durability 2 AA
-			npc_type->max_hp *= 1.05;
-			npc_type->cur_hp = npc_type->max_hp;
-		}
-		else if(GetLevel() == 65)
-		{ // Elemental Durability 1 AA
-			npc_type->max_hp *= 1.02;
-			npc_type->cur_hp = npc_type->max_hp;
-		}
-	}
-
-#endif //EQBOTS
-
 	switch (GetAA(aaElementalDurability))
 	{
 	case 1:
@@ -376,19 +353,6 @@ void Mob::MakePet(int16 spell_id, const char* pettype, const char *petname) {
 
 	//this takes ownership of the npc_type data
 	Pet *npc = new Pet(npc_type, this, type, spell_id);
-
-#ifdef EQBOTS
-
-	if(IsBot()) {
-		npc->SetTaunting(false);
-		npc->BotOwner = BotOwner;
-		npc->SetOwnerID(GetID());
-		if(IsBotRaiding()) {
-			npc->SetBotRaidID(GetBotRaidID());
-		}
-	}
-
-#endif //EQBOTS
 
 	entity_list.AddNPC(npc, true, true);
 	SetPetID(npc->GetID());

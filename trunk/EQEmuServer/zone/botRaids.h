@@ -16,12 +16,13 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifdef EQBOTS
+#ifdef BOTS
 
 #ifndef BOTRAIDS_H
 #define BOTRAIDS_H
 
 #include "../common/debug.h"
+#include "bot.h"
 #include "entity.h"
 #include "mob.h"
 
@@ -132,6 +133,6 @@ public:
 };
 #endif
 
-#endif //EQBOTS
+#endif //BOTS
 
 

@@ -335,8 +335,8 @@ bool logpos;
 //	static	int		CheckEffectIDMatch(int8 effectindex, int16 spellid1, int8 caster_level1, int16 spellid2, int8 caster_level2);
 
 
-	void	RogueBackstab(Mob* other, bool min_damage = false);
-	void	RogueAssassinate(Mob* other); // solar
+	virtual void	RogueBackstab(Mob* other, bool min_damage = false);
+	virtual void	RogueAssassinate(Mob* other); // solar
 	bool	BehindMob(Mob* other = 0, float playerx = 0.0f, float playery = 0.0f) const;
 
 	void	TriggerDefensiveProcs(Mob *on);
@@ -413,47 +413,22 @@ bool logpos;
 	virtual void SetMoving(bool move) { moving = move; delta_x=0; delta_y=0; delta_z=0; delta_heading=0; }
 	virtual void GoToBind(uint8 bindnum = 0) {}
 	virtual void Gate();
-	virtual bool Attack(Mob* other, int Hand = 13, bool FromRiposte = false) { return false; }		// 13 = Primary (default), 14 = secondary
 	virtual void	RangedAttack(Mob* other) { }
 	virtual void	ThrowingAttack(Mob* other) { }
 	uint16  GetThrownDamage(sint16 wDmg, sint32& TotalDmg, int& minDmg);
 	bool	AffectedExcludingSlot(int slot, int effect);
 
-#ifdef EQBOTS
+	// abstract methods
+	virtual void FinishTrade(Mob* tradingWith) = 0;
+	virtual void Death(Mob* killerMob, sint32 damage, int16 spell_id, SkillType attack_skill) = 0;
+	virtual void Damage(Mob* from, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable = true, sint8 buffslot = -1, bool iBuffTic = false) = 0;
+	virtual bool Attack(Mob* other, int Hand = 13, bool FromRiposte = false) = 0;	// 13 = Primary (default), 14 = secondary
+	virtual void AddToHateList(Mob* other, sint32 hate = 0, sint32 damage = 0, bool iYellForHelp = true, bool bFrenzy = false, bool iBuffTic = false) = 0;
 
-	//EQoffline-adds
-	virtual bool BotAttackMelee(Mob* other, int Hand = 13, bool FromRiposte = false) { return false; }
-	virtual bool BotRangedAttack(Mob* other) { return false; }
-	bool BotRaiding;
-	bool OrderBotAttack;
-	bool BotArchery;
-	bool BotCharmer;
-	bool PetChooser;
-	int8 PetChooserID;
-	uint32 BotArcheryRange;
-	void SetBotArcheryRange(uint32 r) { BotArcheryRange = r; }
-	void SetPetChooserID(int8 id) { PetChooserID = id; }
-	int8 GetPetChooserID() { return PetChooserID; }
-	uint32 GetBotArcheryRange() { return BotArcheryRange; }
-	void SetBotArcher(bool a) { BotArchery = a; }
-	void SetBotCharmer(bool c) { BotCharmer = c; }
-	void SetBotRaiding(bool v) { BotRaiding = v; }
-	void SetPetChooser(bool p) { PetChooser = p; }
-	void SetOrderBotAttack(bool v) { OrderBotAttack = v; }
-	bool IsBotRaiding() const { return BotRaiding; }
-	bool IsPetChooser() const { return PetChooser; }
-	bool IsBotArcher() const { return BotArchery; }
-	bool IsBotCharmer() const { return BotCharmer; }
-	bool IsOrderBotAttack() const { return OrderBotAttack; }
-	bool CheckBotDoubleAttack(bool Triple = false);
-
-#endif //EQBOTS
-
-	virtual void Damage(Mob* from, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable = true, sint8 buffslot = -1, bool iBuffTic = false) {};
+	// methods with implementation
 	virtual void Heal();
 	virtual void HealDamage(uint32 ammount, Mob* caster = NULL);
 	virtual void SetMaxHP() { cur_hp = max_hp; }
-	virtual void Death(Mob* killer, sint32 damage, int16 spell_id, SkillType attack_skill) {}
 	static int32 GetLevelCon(int8 mylevel, int8 iOtherLevel);
 	inline int32 GetLevelCon(int8 iOtherLevel) const { return(this?GetLevelCon(GetLevel(), iOtherLevel):CON_GREEN); }
 
@@ -461,7 +436,7 @@ bool logpos;
 	bool ChangeHP(Mob* other, sint32 amount, int16 spell_id = 0, sint8 buffslot = -1, bool iBuffTic = false);
 	inline void SetOOCRegen(sint32 newoocregen) {oocregen = newoocregen;}
 	int MonkSpecialAttack(Mob* other, int8 skill_used);
-	void TryBackstab(Mob *other);
+	virtual void TryBackstab(Mob *other);
 	void DoAnim(const int animnum, int type=0, bool ackreq = true, eqFilterType filter = FilterNone);
 
 	void ChangeSize(float in_size, bool bNoRestriction = false);
@@ -499,21 +474,22 @@ bool logpos;
 
 	bool CheckLos(Mob* other);
 	bool CheckLosFN(Mob* other);
+	bool CheckLosFN(float posX, float posY, float posZ, float mobSize);
 	inline bool GetQglobal() const {return qglobal;}		// SCORPIOUS2K - return quest global flag
 
 	bool IsInvisible(Mob* other = 0) const;
 	void SetInvisible(bool state);
 
 	bool AttackAnimation(SkillType &skillinuse, int Hand, const ItemInst* weapon);
-	bool AvoidDamage(Mob* attacker, sint32 &damage);
-	bool CheckHitChance(Mob* attacker, SkillType skillinuse, int Hand);
-	void TryCriticalHit(Mob *defender, int16 skill, sint32 &damage);
+	virtual bool AvoidDamage(Mob* attacker, sint32 &damage);
+	virtual float CheckHitChance(Mob* attacker, SkillType skillinuse, int Hand);
+	virtual void TryCriticalHit(Mob *defender, int16 skill, sint32 &damage);
 	void TryPetCriticalHit(Mob *defender, int16 skill, sint32 &damage);
-	bool TryFinishingBlow(Mob *defender, SkillType skillinuse);
-	bool TryHeadShot(Mob* defender, SkillType skillInUse);
-	void DoRiposte(Mob* defender);
+	virtual bool TryFinishingBlow(Mob *defender, SkillType skillinuse);
+	virtual bool TryHeadShot(Mob* defender, SkillType skillInUse);
+	virtual void DoRiposte();
 	void ApplyMeleeDamageBonus(int16 skill, sint32 &damage);
-	void MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit);
+	virtual void MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit);
 
 	void	DamageShield(Mob* other);
 	bool	FindBuff(int16 spellid);
@@ -522,7 +498,7 @@ bool logpos;
 	int		CountDispellableBuffs();
 	bool	HasBuffIcon(Mob* caster, Mob* target, int16 spell_id);
 
-	void	MakePet(int16 spell_id, const char* pettype, const char *petname = NULL);
+	virtual void MakePet(int16 spell_id, const char* pettype, const char *petname = NULL);
 //	inline void	MakePetType(int16 spell_id, const char* pettype, const char *petname = NULL) { MakePet(spell_id, pettype, petname); }	//for perl
 //	void	MakePet(int16 spell_id, int8 in_level, int8 in_class, int16 in_race, int8 in_texture = 0, int8 in_pettype = 0, float in_size = 0, int8 type = 0, int32 min_dmg = 0, int32 max_dmg = 0, const char *petname = NULL);
 
@@ -562,7 +538,7 @@ bool logpos;
 	void EnableLogging() { logging_enabled = true; }
 	void DisableLogging() { logging_enabled = false; }
 	bool IsWarriorClass() const;
-	bool IsAttackAllowed(Mob *target, bool isSpellAttack = false);
+	virtual bool IsAttackAllowed(Mob *target, bool isSpellAttack = false);
 	bool IsBeneficialAllowed(Mob *target);
 
 	inline sint32	GetHP()			const { return cur_hp; }
@@ -597,7 +573,7 @@ bool logpos;
 	virtual sint32 CalcMaxMana();
 
 	inline virtual sint16	GetAC()		const { return AC + itembonuses.AC + spellbonuses.AC; } // Quagmire - this is NOT the right math
-	inline virtual sint16	GetATK()	const { return ATK + itembonuses.ATK + spellbonuses.ATK; }
+	inline virtual sint16	GetATK()	const { return ATK + itembonuses.ATK + spellbonuses.ATK + (GetSTR() * 9 / 10); }
 	inline virtual sint16	GetSTR()	const { return STR + itembonuses.STR + spellbonuses.STR; }
 	inline virtual sint16	GetSTA()	const { return STA + itembonuses.STA + spellbonuses.STA; }
 	inline virtual sint16	GetDEX()	const { return DEX + itembonuses.DEX + spellbonuses.DEX; }
@@ -612,38 +588,8 @@ bool logpos;
 	inline virtual sint16	GetCR() const { return CR + itembonuses.CR + spellbonuses.CR; }
 
 	inline StatBonuses GetItemBonuses() const { return itembonuses; }
-	inline StatBonuses GetSpellBonuses() const { return spellbonuses; 
-}
+	inline StatBonuses GetSpellBonuses() const { return spellbonuses; }
 
-	
-#ifdef EQBOTS
-
-	typedef enum {	//focus types
-		botfocusSpellHaste = 1,
-		botfocusSpellDuration,
-		botfocusRange,
-		botfocusReagentCost,
-		botfocusManaCost,
-		botfocusImprovedHeal,
-		botfocusImprovedDamage,
-		botfocusImprovedDOT,		//i dont know about this...
-		botfocusImprovedCritical,
-		botfocusImprovedUndeadDamage,
-		botfocusPetPower,
-		botfocusResistRate,
-		botfocusHateReduction,
-	} botfocusType;
-
-	void CalcBotStats(bool showtext = true);
-	sint16 GetBotFocusEffect(botfocusType bottype, int16 spell_id);
-	sint16 CalcBotFocusEffect(botfocusType bottype, int16 focus_id, int16 spell_id);
-	sint32 GetBotActSpellCasttime(int16 spell_id, sint32 casttime);
-	sint32 GetBotActSpellCost(int16 spell_id, sint32 cost);
-	float GetBotActSpellRange(int16 spell_id, float range);
-	sint32 GetBotActSpellDuration(int16 spell_id, sint32 duration);
-
-#endif //EQBOTS	
-	
 	inline virtual sint16  GetMaxSTR() const { return GetSTR(); }
 	inline virtual sint16  GetMaxSTA() const { return GetSTA(); }
 	inline virtual sint16  GetMaxDEX() const { return GetDEX(); }
@@ -667,11 +613,6 @@ bool logpos;
 	uint16 GetSpecializeSkillValue(int16 spell_id) const;
 
 	void ShowStats(Client* client);
-
-#ifdef EQBOTS
-	void BotEffect(Client* client); //Angelox
-#endif //EQBOTS	
-
 	void ShowBuffs(Client* client);
 	void ShowBuffList(Client* client);
 	int32 GetNPCTypeID()			const { return npctype_id; } // rembrant, Dec. 20, 2001
@@ -683,6 +624,7 @@ bool logpos;
 	float DistNoRootNoZ(const Mob &) const;
 
 	static float GetReciprocalHeading(Mob* target);
+	bool PlotPositionAroundTarget(Mob* target, float &x_dest, float &y_dest, float &z_dest, bool lookForAftArc = true);
 
 	bool IsTargeted() const { return (targeted > 0); }
 	inline void IsTargeted(int in_tar) { targeted += in_tar; if(targeted < 0) targeted = 0;}
@@ -715,21 +657,21 @@ bool logpos;
 	bool UseBardSpellLogic(int16 spell_id = 0xffff, int slot = -1);
 	void InterruptSpell(int16 spellid = SPELL_UNKNOWN);
 	void InterruptSpell(int16, int16, int16 spellid = SPELL_UNKNOWN);
-	bool	CastSpell(int16 spell_id, int16 target_id, int16 slot = 10, sint32 casttime = -1, sint32 mana_cost = -1, int32* oSpellWillFinish = 0, int32 item_slot = 0xFFFFFFFF);
-	bool	DoCastSpell(int16 spell_id, int16 target_id, int16 slot = 10, sint32 casttime = -1, sint32 mana_cost = -1, int32* oSpellWillFinish = 0, int32 item_slot = 0xFFFFFFFF);
+	virtual bool CastSpell(int16 spell_id, int16 target_id, int16 slot = 10, sint32 casttime = -1, sint32 mana_cost = -1, int32* oSpellWillFinish = 0, int32 item_slot = 0xFFFFFFFF);
+	virtual bool DoCastSpell(int16 spell_id, int16 target_id, int16 slot = 10, sint32 casttime = -1, sint32 mana_cost = -1, int32* oSpellWillFinish = 0, int32 item_slot = 0xFFFFFFFF);
 	void	CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16 mana_used, int32 inventory_slot = 0xFFFFFFFF);
 	bool	SpellFinished(int16 spell_id, Mob *target, int16 slot = 10, int16 mana_used = 0, int32 inventory_slot = 0xFFFFFFFF);
-	bool	SpellOnTarget(int16 spell_id, Mob* spelltar);
+	virtual bool SpellOnTarget(int16 spell_id, Mob* spelltar);
 	bool	ApplyNextBardPulse(int16 spell_id, Mob *spell_target, int16 slot);
 	void	BardPulse(uint16 spell_id, Mob *caster);
-	bool	DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_center, CastAction_type &CastAction);
+	virtual bool DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_center, CastAction_type &CastAction);
 	int		CalcBuffDuration(Mob *caster, Mob *target, int16 spell_id, sint32 caster_level_override = -1);
 	void	SendPetBuffsToClient();
 //	int		CheckAddBuff(Mob* caster, const int16& spell_id, const int& caster_level, int* buffdur, int ticsremaining = -1);
 	int		AddBuff(Mob *caster, const int16 spell_id, int duration = 0, sint32 level_override = -1);
-	bool	SpellEffect(Mob* caster, int16 spell_id, float partial = 100);
-	bool	IsImmuneToSpell(int16 spell_id, Mob *caster);
-	void	DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob* caster = 0);
+	virtual bool SpellEffect(Mob* caster, int16 spell_id, float partial = 100);
+	virtual bool IsImmuneToSpell(int16 spell_id, Mob *caster);
+	virtual void DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob* caster = 0);
 	void	BuffFadeBySpellID(int16 spell_id);
 	void	BuffFadeByEffect(int effectid, int skipslot = -1);
 	void	BuffFadeAll();
@@ -739,7 +681,7 @@ bool logpos;
 	int		CanBuffStack(int16 spellid, int8 caster_level, bool iFailIfOverwrite = false);
 	inline	bool	IsCasting() const { return((casting_spell_id != 0)); }
 	int16	CastingSpellID() const { return casting_spell_id; }
-	float	GetAOERange(uint16 spell_id);
+	virtual float GetAOERange(uint16 spell_id);
 	void	TemporaryPets(int16 spell_id, Mob *target, const char *name_override = NULL, uint32 duration_override = 0);
 	void	WakeTheDead(int16 spell_id, Mob *target, uint32 duration);
 	void	TryDotCritical(int16 spell_id, Mob *caster, int &damage);
@@ -755,8 +697,8 @@ bool logpos;
 
 	Mob*	GetPet();
 	void	SetPet(Mob* newpet);
-	Mob*	GetOwner();
-	Mob*	GetOwnerOrSelf();
+	virtual Mob* GetOwner();
+	virtual Mob* GetOwnerOrSelf();
 	void	SetPetID(int16 NewPetID);
 	inline int16	GetPetID()		const			{ return petid;  }
 	inline PetType GetPetType() const { return typeofpet; }
@@ -766,8 +708,8 @@ bool logpos;
 	bool IsCharmed() const { return(typeofpet == petCharmed); }
 	void SetOwnerID(int16 NewOwnerID);
 	inline int16 GetOwnerID()	const			{ return ownerid; }
-	inline bool HasOwner() const { if(GetOwnerID()==0){return false;} return( entity_list.GetMob(GetOwnerID()) != 0); }
-	inline bool IsPet() const { return(HasOwner()); }
+	inline virtual bool HasOwner() { if(GetOwnerID()==0){return false;} return( entity_list.GetMob(GetOwnerID()) != 0); }
+	inline virtual bool IsPet() { return(HasOwner()); }
 	inline bool HasPet() const { if(GetPetID()==0){return false;} return (entity_list.GetMob(GetPetID()) != 0);}
 	bool HadTempPets() const { return(hasTempPet); }
 	void TempPets(bool i) { hasTempPet = i; }
@@ -792,7 +734,7 @@ bool logpos;
 	void	Spin();
 	void	Kill();
 
-	void	SetAttackTimer();
+	virtual void SetAttackTimer();
 	inline void	SetInvul(bool invul) { invulnerable=invul; }
 	inline bool	GetInvul(void) { return invulnerable; }
 	inline void	SetExtraHaste(int Haste) { ExtraHaste = Haste; }
@@ -800,7 +742,7 @@ bool logpos;
 
 	int8	GetWeaponDamageBonus(const Item_Struct* Weapon);
 	int16	GetDamageTable(SkillType skillinuse);
-	int		GetMonkHandToHandDamage(void);
+	virtual int GetMonkHandToHandDamage(void);
 
 	bool	CanThisClassDoubleAttack(void) const;
 	bool	CanThisClassDualWield(void) const;
@@ -840,15 +782,6 @@ bool logpos;
 	void SetEntityVariable(int32 id, const char *m_var);
 	bool EntityVariableExists(int32 id);
 
-#ifdef EQBOTS
-
-	/*Franck-add: EQoffline  */
-	void				BOT_Process();
-	void				PET_Process();
-	/*-----------------------*/
-	
-#endif //EQBOTS
-
 	void				AI_Event_Engaged(Mob* attacker, bool iYellForHelp = true);
 	void				AI_Event_NoLongerEngaged();
 
@@ -867,7 +800,6 @@ bool logpos;
 	int					GetSnaredAmount();
 
 	bool				RemoveFromHateList(Mob* mob);
-    void				AddToHateList(Mob* other, sint32 hate = 0, sint32 damage = 0, bool iYellForHelp = true, bool bFrenzy = false, bool iBuffTic = false);
 	void				SetHate(Mob* other, sint32 hate = 0, sint32 damage = 0) {hate_list.Set(other,hate,damage);}
 	int32				GetHateAmount(Mob* tmob, bool is_dam = false)  {return hate_list.GetEntHate(tmob,is_dam);}
 	int32				GetDamageAmount(Mob* tmob)  {return hate_list.GetEntHate(tmob, true);}
@@ -941,14 +873,14 @@ bool logpos;
 	bool	Charmed() const { return charmed; }
 	static int32	GetLevelHP(int8 tlevel);
 	int32	GetZoneID() const;	//for perl
-	sint32	CheckAggroAmount(int16 spellid);
-	sint32	CheckHealAggroAmount(int16 spellid, int32 heal_possible = 0);
+	virtual sint32 CheckAggroAmount(int16 spellid);
+	virtual sint32 CheckHealAggroAmount(int16 spellid, int32 heal_possible = 0);
 	virtual int32 GetAA(int32 aa_id) const { return(0); }
 
 	int16	GetInstrumentMod(int16 spell_id) const;
 	int CalcSpellEffectValue(int16 spell_id, int effect_id, int caster_level = 1, Mob *caster = NULL, int ticsremaining = 0);
 	int CalcSpellEffectValue_formula(int formula, int base, int max, int caster_level, int16 spell_id, int ticsremaining = 0);
-	int CheckStackConflict(int16 spellid1, int caster_level1, int16 spellid2, int caster_level2, Mob* caster1 = NULL, Mob* caster2 = NULL);
+	virtual int CheckStackConflict(int16 spellid1, int caster_level1, int16 spellid2, int caster_level2, Mob* caster1 = NULL, Mob* caster2 = NULL);
 	int32 GetCastedSpellInvSlot() const { return casting_spell_inventory_slot; }
 
 //	inline EGNode *GetEGNode() { return(_egnode); }
@@ -985,24 +917,6 @@ bool logpos;
 	inline int GetCWP() const { return(cur_wp); }
 	virtual FACTION_VALUE GetReverseFactionCon(Mob* iOther) { return FACTION_INDIFFERENT; }
 	
-#ifdef EQBOTS
-
-    //franck-add: EQoffline
-	bool AmIaBot;
-	bool cast_last_time;
-	bool IsBot() const { return AmIaBot; }
-	int32 GetBotLeader();
-	sint32 GetBotActSpellDamage(int16 spell_id, sint32 value);
-	sint32 GetBotActSpellHealing(int16 spell_id, sint32 value);
-	void SendBotArcheryWearChange(int8 material_slot, uint32 material, uint32 color);
-	void BotMeditate(bool isSitting);
-	Mob *BotOwner;
-	int BotRaidID;
-	void SetBotRaidID( int rId ) { BotRaidID = rId; }
-	int GetBotRaidID() { return BotRaidID; }
-	
-#endif //EQBOTS
-
 	inline bool IsTrackable() const { return(trackable); }
 	inline bool HasRune() const { return m_hasRune; }
 	inline bool HasSpellRune() const { return m_hasSpellRune; }
@@ -1012,8 +926,13 @@ bool logpos;
 	inline void SetDeathSaveChance(bool hasDeathSaveChance) { m_hasDeathSaveChance = hasDeathSaveChance; }
 	bool PassCharismaCheck(Mob* caster, Mob* spellTarget, int16 spell_id);
 	bool TryDeathSave();
+	Timer* GetAIThinkTimer() { return AIthink_timer; }
+	Timer* GetAIMovementTimer() { return AImovement_timer; }
+	Timer GetAttackTimer() { return attack_timer; }
+	Timer GetAttackDWTimer() { return attack_dw_timer; }
 
 protected:
+	void CommonAddToHateList(Mob* other, sint32 hate = 0, sint32 damage = 0, bool iYellForHelp = true, bool bFrenzy = false, bool iBuffTic = false);
 	void CommonDamage(Mob* other, sint32 &damage, const uint16 spell_id, const SkillType attack_skill, bool &avoidable, const sint8 buffslot, const bool iBuffTic);
 	static uint16 GetProcID(uint16 spell_id, uint8 effect_index);
 	float _GetMovementSpeed(int mod) const;
@@ -1021,23 +940,6 @@ protected:
 	virtual bool AI_EngagedCastCheck() { return(false); }
 	virtual bool AI_PursueCastCheck() { return(false); }
 	virtual bool AI_IdleCastCheck() { return(false); }
-	
-#ifdef EQBOTS
-
-	//franck-add:EQoffline
-	virtual bool Bot_AI_IdleCastCheck() { return(false); }
-	virtual bool Bot_AI_EngagedCastCheck() { return(false); }
-	virtual bool Bot_AI_PursueCastCheck() { return(false); }
-	virtual bool Bot_Command_MezzTarget(Mob *target) { return(false); }
-	virtual bool Bot_Command_RezzTarget(Mob *target) { return(false); }
-	virtual bool Bot_Command_Cure(int curetype, int level) { return(false); }
-	virtual bool BotRaidSpell(int16 spellID) { return(false); }
-	virtual bool Bot_Command_CalmTarget(Mob *target) { return(false); }
-	virtual bool Bot_Command_CharmTarget(int charmtype, Mob *target) { return(false); }
-	virtual bool Bot_Command_DireTarget(int diretype, Mob *target) { return(false); }
-	virtual bool Bot_Command_Resist(int resisttype, int level) { return(false); } 
-
-#endif //EQBOTS
 	
 	//used by mlog() for VC6
 	#ifdef NO_VARIADIC_MACROS
@@ -1118,12 +1020,12 @@ protected:
 	void TryWeaponProc(const Item_Struct* weapon, Mob *on, int16 hand = 13);
 	void TryWeaponProc(const ItemInst* weapon, Mob *on, int16 hand = 13);
 	void ExecWeaponProc(uint16 spell_id, Mob *on);
-	float GetProcChances(float &ProcBonus, float &ProcChance, uint16 weapon_speed = 30);
+	virtual float GetProcChances(float &ProcBonus, float &ProcChance, uint16 weapon_speed = 30);
 	int GetWeaponDamage(Mob *against, const Item_Struct *weapon_item);
 	int GetWeaponDamage(Mob *against, const ItemInst *weapon_item);
 	int GetKickDamage() const;
 	int GetBashDamage() const;
-	void DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, sint32 min_damage = 1, sint32 hate_override = -1);
+	virtual void DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, sint32 min_damage = 1, sint32 hate_override = -1);
 	bool HasDied();
 	void CalculateNewFearpoint();
 	float FindGroundZ(float new_x, float new_y, float z_offset=0.0);
@@ -1296,6 +1198,15 @@ protected:
 
 private:
 	void	_StopSong();		//this is not what you think it is
+
+#ifdef BOTS
+	// Please do not declare any Client class members or methods below this block.
+public:
+	void SetBotRaidID( int rId ) { BotRaidID = rId; }
+	int GetBotRaidID() { return BotRaidID; }
+private:
+	uint32 BotRaidID;
+#endif
 };
 
 // All data associated with a single trade

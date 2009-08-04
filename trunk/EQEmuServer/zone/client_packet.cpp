@@ -2513,39 +2513,10 @@ void Client::Handle_OP_Camp(const EQApplicationPacket *app)
 
 void Client::Handle_OP_Logout(const EQApplicationPacket *app)
 {
-
-#ifdef EQBOTS
-
-	Mob *clientmob = CastToMob();
-	database.CleanBotLeader(CharacterID());
-	if(clientmob) {
-		if(clientmob->IsBotRaiding()) {
-			BotRaids* br = entity_list.GetBotRaidByMob(clientmob);
-			if(br) {
-				br->RemoveRaidBots();
-				br = NULL;
-			}
-		}
-		Group *g = entity_list.GetGroupByMob(clientmob);
-		if(g) {
-			bool hasBots = false;
-			for(int i=5; i>=0; i--) {
-				if(g->members[i] && g->members[i]->IsBot()) {
-					hasBots = true;
-					g->members[i]->BotOwner = NULL;
-					g->members[i]->Kill();
-				}
-			}
-			if(hasBots) {
-				hasBots = false;
-				if(g->BotGroupCount() <= 1) {
-					g->DisbandGroup();
-				}
-			}
-		}
-	}
-
-#endif //EQBOTS
+#ifdef BOTS
+	// This block is necessary to clean up any bot objects owned by a Client
+	Bot::DestroyBotObjects(this);
+#endif
 
 	//LogFile->write(EQEMuLog::Debug, "%s sent a logout packet.", GetName());
 	//we will save when we get destroyed soon anyhow
@@ -3915,14 +3886,14 @@ void Client::Handle_OP_CancelTrade(const EQApplicationPacket *app)
 		with->CastToClient()->QueuePacket(app);
 
 		// Put trade items/cash back into inventory
-		FinishTrade(this);
+		FinishTrade(with);
 		trade->Reset();
 	}
 	else if(with){
 		CancelTrade_Struct* msg = (CancelTrade_Struct*) app->pBuffer;
 		msg->fromid = with->GetID();
 		QueuePacket(app);
-		FinishTrade(this);
+		FinishTrade(with);
 		trade->Reset();
 	}
 	EQApplicationPacket end_trade1(OP_FinishWindow, 0);
@@ -3972,12 +3943,12 @@ void Client::Handle_OP_TradeAcceptClick(const EQApplicationPacket *app)
 			this->FastQueuePacket(&outapp);
 		}
 	}
-	else if(with && with->IsNPC()){
-		//trading with an NPC
+	else if(with) {
+		// Trading with a Mob object that is not a Client.
 		EQApplicationPacket* outapp = new EQApplicationPacket(OP_FinishTrade,0);
 		QueuePacket(outapp);
 		safe_delete(outapp);
-		FinishTrade(with->CastToNPC());
+		with->FinishTrade(this);
 		trade->Reset();
 	}
 
@@ -6485,26 +6456,6 @@ void Client::Handle_OP_PickPocket(const EQApplicationPacket *app)
 		safe_delete(outapp);
 	}
 	else if (victim->IsNPC()){
-
-#ifdef EQBOTS
-
-		if(victim->IsBot()) {
-			Message(0,"Stealing from your own bots is just wrong.");
-			EQApplicationPacket* outapp = new EQApplicationPacket(OP_PickPocket, sizeof(sPickPocket_Struct));
-			sPickPocket_Struct* pick_out = (sPickPocket_Struct*) outapp->pBuffer;
-			pick_out->coin = 0;
-			pick_out->from = victim->GetID();
-			pick_out->to = GetID();
-			pick_out->myskill = GetSkill(PICK_POCKETS);
-			pick_out->type = 0;
-			//if we do not send this packet the client will lock up and require the player to relog.
-			QueuePacket(outapp);
-			safe_delete(outapp);
-		}
-		else
-
-#endif //EQBOTS
-
 		victim->CastToNPC()->PickPocket(this);
 	}
 	else{

@@ -285,15 +285,6 @@ void command_reloadtitles(Client *c, const Seperator *sep);
 void command_altactivate(Client *c, const Seperator *sep);
 void command_refundaa(Client *c, const Seperator *sep);
 void command_melody(Client *c, const Seperator *sep);
-
-#ifdef EQBOTS
-
-//Franck
-void command_bot(Client *c, const Seperator *sep);
-// -franck
-
-#endif //EQBOTS
-
 void command_traindisc(Client *c, const Seperator *sep);
 void command_deletegraveyard(Client *c, const Seperator *sep);
 void command_setgraveyard(Client *c, const Seperator *sep);

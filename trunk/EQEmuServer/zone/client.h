@@ -148,6 +148,13 @@ public:
 	Client(EQStreamInterface * ieqs);
     ~Client();
 
+	//abstract virtual function implementations requird by base abstract class
+	virtual void FinishTrade(Mob* tradingWith);
+	virtual void Death(Mob* killerMob, sint32 damage, int16 spell_id, SkillType attack_skill);
+	virtual void Damage(Mob* from, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable = true, sint8 buffslot = -1, bool iBuffTic = false);
+	virtual bool Attack(Mob* other, int Hand = 13, bool FromRiposte = false);
+	virtual void AddToHateList(Mob* other, sint32 hate = 0, sint32 damage = 0, bool iYellForHelp = true, bool bFrenzy = false, bool iBuffTic = false);
+
 //	void	Discipline(ClientDiscipline_Struct* disc_in, Mob* tar);
 	void	AI_Init();
 	void	AI_Start(int32 iMoveDelay = 0);
@@ -248,9 +255,9 @@ public:
 	void	LogLoot(Client* player,Corpse* corpse,const Item_Struct* item);
 	bool	AutoAttackEnabled() const { return auto_attack; }
 	bool	AutoFireEnabled() const { return auto_fire; }
-	bool	Attack(Mob* other, int Hand = 13, bool bRiposte = false);	// 13 = Primary (default), 14 = secondary
-	void	Damage(Mob* other, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable = true, sint8 buffslot = -1, bool iBuffTic = false);
-	void	Death(Mob* other, sint32 damage, int16 spell_id, SkillType attack_skill);
+	//bool	Attack(Mob* other, int Hand = 13, bool bRiposte = false);	// 13 = Primary (default), 14 = secondary
+	//void	Damage(Mob* other, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable = true, sint8 buffslot = -1, bool iBuffTic = false);
+	//void	Death(Mob* other, sint32 damage, int16 spell_id, SkillType attack_skill);
 	void	MakeCorpse(int32 exploss);
 
 	bool	ChangeFirstName(const char* in_firstname,const char* gmname);
@@ -316,11 +323,7 @@ public:
 	inline bool MelodyIsActive() const { return(melodystate); } // is activated
 	void		MelodySetSong(int gem_id, int slot = -1); // set a specific song in the array
 	inline void MelodySetState(bool state) { melodystate = state; this->Message(0, "Melody %s.", state ? "activated" : "deactivated"); } // activate / deactivate melody
-	void		MelodyTrySong();
-	
-
-	
-	
+	void		MelodyTrySong();	
 	
 	
 	
@@ -332,7 +335,7 @@ public:
 	virtual void CalcBonuses();
 	//these are all precalculated now
 	inline virtual sint16	GetAC()		const { return AC; }
-	inline virtual sint16	GetATK()	const { return ATK; }
+	inline virtual sint16 GetATK() const { return ATK + itembonuses.ATK + spellbonuses.ATK + ((GetSTR() + GetSkill(OFFENSE)) * 9 / 10); }
 	inline virtual int	GetHaste() const { return Haste; }
 
 	inline virtual sint16	GetSTR()	const { return STR; }
@@ -504,19 +507,9 @@ public:
 	void	AddMoneyToPP(uint32 copper, uint32 silver, uint32 gold,uint32 platinum,bool updateclient);
 	bool	HasMoney(uint64 copper);
 
-	void	FinishTrade(Client* with);
-	void	FinishTrade(NPC* with);
 	bool	TGB() const { return tgb; }
 
-#ifdef EQBOTS
-
-	void	BotTradeSwapItem(NPC* bot, sint16 lootSlot, uint32 id, sint16 maxCharges, uint32 equipableSlots, bool swap = true);
-	void	BotTradeAddItem(uint32 id, sint16 maxCharges, uint32 equipableSlots, int16 lootSlot, NPC* bot, bool addToDb = true);
-
-#endif //EQBOTS
-
 	void	OnDisconnect(bool hard_disconnect);
-
 
 	int16	GetSkillPoints() {return m_pp.points;}
 	void	SetSkillPoints(int inp) {m_pp.points = inp;}

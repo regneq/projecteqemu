@@ -54,6 +54,10 @@ extern EntityList entity_list;
 	extern SPDat_Spell_Struct spells[SPDAT_RECORDS];
 #endif
 
+#ifdef EMBPERL
+#include "embparser.h"
+#endif
+
 NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float heading, int iflymode, bool IsCorpse)
 : Mob(d->name,
 	  d->lastname,
@@ -293,12 +297,6 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 	if(!IsInteractive())
 		entity_list.MakeNameUnique(name);
 #else
-
-#ifdef EQBOTS
-// creates the bot with a clean name
-	if (!IsBot())
-#endif //EQBOTS
-
     entity_list.MakeNameUnique(name);
 #endif
 
@@ -495,23 +493,6 @@ ServerLootItem_Struct* NPC::GetItem(int slot_id) {
 	}
 	return(NULL);
 }
-
-#ifdef EQBOTS
-
-uint32 NPC::GetItemID(int slot_id) {
-	ItemList::iterator cur,end;
-	cur = itemlist.begin();
-	end = itemlist.end();
-	for(; cur != end; cur++) {
-		ServerLootItem_Struct* item = *cur;
-		if (item->lootslot == slot_id) {
-			return item->item_id;
-		}
-	}
-	return(NULL);
-}
-
-#endif //EQBOTS
 	  
 void NPC::RemoveItem(uint32 item_id, int16 quantity, int16 slot) {
 	ItemList::iterator cur,end;
@@ -709,17 +690,6 @@ bool NPC::Process()
 	if(assist_timer.Check() && !Charmed() && GetTarget() != NULL) {
 		entity_list.AIYellForHelp(this, GetTarget());
 	}
-	
-#ifdef EQBOTS
-
-    //Franck-add: EQoffline. If a bot spawns, it must use a special AI wich differs to standard NPC
-	if(IsBot())
-		BOT_Process();
-	else if(IsPet() && GetOwner() && GetOwner()->IsBot())
-		PET_Process();
-	else
-
-#endif //EQBOTS
 
 	AI_Process();
 	
@@ -1669,5 +1639,105 @@ void NPC::ModifyNPCStat(const char *identifier, const char *newValue)
 	{
 		SetLevel(atoi(val.c_str()));
 		return;
+	}
+}
+
+void NPC::FinishTrade(Mob* tradingWith) {
+	if(tradingWith && tradingWith->IsClient()) {
+		Client* client = tradingWith->CastToClient();
+		if(client) {
+			int32 items[4]={0};
+			int8 charges[4]={0};
+
+			for (sint16 i=3000; i<=3003; i++) {
+				Inventory& clientInventory = client->GetInv();
+				const ItemInst* inst = clientInventory[i];
+				if (inst) {
+					items[i-3000]=inst->GetItem()->ID;
+					charges[i-3000]=inst->GetCharges();
+					client->DeleteItemInInventory(i);
+				}
+			}
+
+			//dont bother with this crap unless we have a quest...
+			//pets can have quests! (especially charmed NPCs)
+			bool did_quest = false;
+#ifdef EMBPERL
+			if(((PerlembParser *)parse)->HasQuestSub(GetNPCTypeID(), "EVENT_ITEM")) {
+#else
+			if(parse->HasQuestFile(GetNPCTypeID())) {
+#endif
+				char temp1[100];
+				memset(temp1,0x0,100);
+				char temp2[100];
+				memset(temp2,0x0,100);
+				for ( int z=0; z < 4; z++ ) {
+					snprintf(temp1, 100, "item%d.%d", z+1,GetNPCTypeID());
+					snprintf(temp2, 100, "%d",items[z]);
+					parse->AddVar(temp1,temp2);
+					//			memset(temp1,0x0,100);
+					//			memset(temp2,0x0,100);
+					snprintf(temp1, 100, "item%d.charges.%d", z+1,GetNPCTypeID());
+					snprintf(temp2, 100, "%d",charges[z]);
+					parse->AddVar(temp1,temp2);
+					//			memset(temp1,0x0,100);
+					//			memset(temp2,0x0,100);
+				}
+				snprintf(temp1, 100, "copper.%d",GetNPCTypeID());
+				snprintf(temp2, 100, "%i",trade->cp);
+				parse->AddVar(temp1,temp2);
+				//		memset(temp1,0x0,100);
+				//		memset(temp2,0x0,100);
+				snprintf(temp1, 100, "silver.%d",GetNPCTypeID());
+				snprintf(temp2, 100, "%i",trade->sp);
+				parse->AddVar(temp1,temp2);
+				//		memset(temp1,0x0,100);
+				//		memset(temp2,0x0,100);
+				snprintf(temp1, 100, "gold.%d",GetNPCTypeID());
+				snprintf(temp2, 100, "%i",trade->gp);
+				parse->AddVar(temp1,temp2);
+				//		memset(temp1,0x0,100);
+				//		memset(temp2,0x0,100);
+				snprintf(temp1, 100, "platinum.%d",GetNPCTypeID());
+				snprintf(temp2, 100, "%i",trade->pp);
+				parse->AddVar(temp1,temp2);
+				//		memset(temp1,0x0,100);
+				//		memset(temp2,0x0,100);
+				parse->Event(EVENT_ITEM, GetNPCTypeID(), NULL, this, client);
+				did_quest = true;
+			}
+			if(RuleB(TaskSystem, EnableTaskSystem)) {
+				int Cash = trade->cp + (trade->sp * 10) + (trade->gp * 100) + (trade->pp * 1000);
+				if(client->UpdateTasksOnDeliver(items, Cash, GetNPCTypeID())) {
+					if(!IsMoving()) 
+						FaceTarget(this);
+				}
+			}
+			//		Message(0, "Normal NPC: keeping items.");
+
+			//else, we do not have a quest, give the items to the NPC
+			if(did_quest) {
+				//only continue if we are a charmed NPC
+				if(!HasOwner() || GetPetType() != petCharmed)
+					return;
+			}
+
+			int xy = CountLoot();
+
+			for(int y=0; y < 4; y++) {
+				if (xy >= 20)
+					break;
+				xy++;
+				//NPC* npc=with->CastToNPC();
+				const Item_Struct* item2 = database.GetItem(items[y]);
+				if (item2) {
+					//if was not no drop item, let the NPC have it
+					if(client->GetGM() || item2->NoDrop != 0)
+						AddLootDrop(item2, &itemlist, charges[y], true, true);
+					//else 
+					//	with->AddLootDrop(item2, NULL, charges[y], false, true);
+				}
+			}
+		}
 	}
 }

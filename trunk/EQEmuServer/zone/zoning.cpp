@@ -34,37 +34,10 @@ extern Zone* zone;
 
 void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 
-#ifdef EQBOTS
-
-	Mob *clientmob = CastToMob();
-	if(clientmob) {
-		if(clientmob->IsBotRaiding()) {
-			BotRaids* br = entity_list.GetBotRaidByMob(clientmob);
-			if(br) {
-				br->RemoveRaidBots();
-				br = NULL;
-			}
-		}
-		Group *g = entity_list.GetGroupByMob(clientmob);
-		if(g) {
-			bool hasBots = false;
-			for(int i=5; i>=0; i--) {
-				if(g->members[i] && g->members[i]->IsBot()) {
-					hasBots = true;
-					g->members[i]->BotOwner = NULL;
-					g->members[i]->Kill();
-				}
-			}
-			if(hasBots) {
-				hasBots = false;
-				if(g->BotGroupCount() <= 1) {
-					g->DisbandGroup();
-				}
-			}
-		}
-	}
-
-#endif //EQBOTS
+#ifdef BOTS
+	// This block is necessary to clean up any bot objects owned by a Client
+	Bot::DestroyBotObjects(this);
+#endif
 
 	zoning = true;
 	if (app->size != sizeof(ZoneChange_Struct)) {
