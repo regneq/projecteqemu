@@ -2931,9 +2931,11 @@ void Bot::Spawn(Client* botCharacterOwner, std::string* errorMessage) {
 		// Level the bot to the same level as the bot owner
 		this->SetLevel(botCharacterOwner->GetLevel());
 
-		entity_list.AddBot(this, true);
+		entity_list.AddBot(this, true, true);
 
-		PlotPositionAroundTarget(botCharacterOwner, x_pos, y_pos, z_pos, false);
+		this->SendAllPosition();
+
+		//PlotPositionAroundTarget(botCharacterOwner, x_pos, y_pos, z_pos, false);
 
 		/*if(!_botInventory.empty()) {
 			for(int i = 1; i < 22; i++) {
@@ -8906,6 +8908,8 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 					c->Message(13, TempErrorMessage.c_str());
 					return;
 				}
+		
+				botGroupMember->SetFollowID(c->GetID());
 
 				// The thinking here is the raid leader must be a client and is going to be in the first group in the raid (if there is a raid), so groupCount = 0
 				// If a second group becomes necessary because there are more bots to spawn still, then the "ELSE" condition is tripped and we make a raid if there
@@ -8916,7 +8920,14 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 					AddBotToGroup(botGroupMember, g);
 
 					/*if(br)
-						botGroupMember->SetBotRaidID(br->GetBotRaidID());*/
+					botGroupMember->SetBotRaidID(br->GetBotRaidID());*/
+
+					botGroupMember->EquipBot(&TempErrorMessage);
+
+					if(!TempErrorMessage.empty()) {
+						c->Message(13, TempErrorMessage.c_str());
+						return;
+					}
 
 					botGroupMember->SendHPUpdate();
 				}
@@ -8936,7 +8947,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 
 					br->AddBotGroup(g);
 
-					botGroupMember->SendHPUpdate();
+					//botGroupMember->SendHPUpdate();
 				}
 			}
 		}
@@ -9164,7 +9175,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 
 			//2: Set the follow ID so he's following its leader
 			b->SetFollowID(c->GetID());
-			b->SetBotOwner(c->CastToMob());
+			//b->SetBotOwner(c->CastToMob());
 
 			//3:  invite it to the group
 			if(!c->IsGrouped()) {
@@ -9182,6 +9193,11 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 			}
 
 			b->EquipBot(&TempErrorMessage);
+
+			if(!TempErrorMessage.empty()) {
+				c->Message(13, TempErrorMessage.c_str());
+				return;
+			}
 
 			/*uint32 itemID = 0;
 			const Item_Struct* item2 = NULL;
