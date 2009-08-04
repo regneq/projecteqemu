@@ -67,7 +67,7 @@ public:
 	void depopzone(bool StartSpawnTimer = true);
 	void repopzone();
 	void settarget(const char *type, int target_id);
-	void follow(int entity_id);
+	void follow(int entity_id, int distance);
 	void sfollow();
 //	void cumflag();
 //	void flagnpc(int32 flag_num, int8 flag_value);

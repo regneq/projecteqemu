@@ -450,10 +450,11 @@ void QuestManager::settarget(const char *type, int target_id) {
 	}
 }
 
-void QuestManager::follow(int entity_id) {
+void QuestManager::follow(int entity_id, int distance) {
 	if(!owner->IsNPC())
 		return;
 	owner->SetFollowID(entity_id);
+	owner->SetFollowDistance(distance * distance);
 }
 
 void QuestManager::sfollow() {
