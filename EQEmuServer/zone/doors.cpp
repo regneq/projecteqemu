@@ -449,31 +449,27 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 
 void Doors::NPCOpen(NPC* sender)
 {
+	if(sender) {
+		if(GetTriggerType() == 255 || GetTriggerDoorID() > 0 || GetLockpick() != 0 || GetKeyItem() != 0 || opentype == 59 || opentype == 58 || !sender->IsNPC()) { // this object isnt triggered or door is locked - NPCs should not open locked doors!
+			return;
+		}
 
-#ifdef EQBOTS
+		EQApplicationPacket* outapp = new EQApplicationPacket(OP_MoveDoor, sizeof(MoveDoor_Struct));
+		MoveDoor_Struct* md=(MoveDoor_Struct*)outapp->pBuffer;
+		md->doorid = door_id;
+		md->action = OPEN_DOOR;
+		entity_list.QueueCloseClients(sender,outapp,false,200);
+		safe_delete(outapp);
 
-	if(!sender->IsBot())
-
-#endif //EQBOTS
-
-	if(GetTriggerType() == 255 || GetTriggerDoorID() > 0 || GetLockpick() != 0 || GetKeyItem() != 0 || opentype == 59 || opentype == 58) { // this object isnt triggered or door is locked - NPCs should not open locked doors!
-		return;
+		if(!isopen) {
+			close_timer.Start();
+			isopen=true;
+		}
+		else {
+			close_timer.Disable();
+			isopen=false;
+		}
 	}
-    EQApplicationPacket* outapp = new EQApplicationPacket(OP_MoveDoor, sizeof(MoveDoor_Struct));
-	MoveDoor_Struct* md=(MoveDoor_Struct*)outapp->pBuffer;
-	md->doorid = door_id;
-	md->action = OPEN_DOOR;
-	entity_list.QueueCloseClients(sender,outapp,false,200);
-	safe_delete(outapp);
-
-    if(!isopen) {
-        close_timer.Start();
-        isopen=true;
-    }
-    else {
-        close_timer.Disable();
-        isopen=false;
-    }
 }
 
 void Doors::ForceOpen(Mob *sender)

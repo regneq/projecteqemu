@@ -196,14 +196,6 @@ FACTION_VALUE NPC::GetReverseFactionCon(Mob* iOther) {
 	
 	_ZP(NPC_GetReverseFactionCon);
 
-#ifdef EQBOTS
-
-	if(IsBot() && iOther->IsBot()) {
-		return FACTION_ALLY;
-	}
-
-#endif //EQBOTS
-
 	iOther = iOther->GetOwnerOrSelf();
 	int primaryFaction= iOther->GetPrimaryFaction();
 

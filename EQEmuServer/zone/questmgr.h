@@ -151,15 +151,6 @@ public:
 	void playersize(int newsize);
 	void playertexture(int newtexture);
 	void popup(char *title, char *text, int32 popupid, int32 buttons, int32 Duration);
-
-#ifdef EQBOTS
-
-	bool botquest();
-	int spawnbotcount();
-	int createbotcount();
-
-#endif //EQBOTS
-
 	void taskselector(int taskcount, int *tasks);
 	void tasksetselector(int tasksettid);
 	void enabletask(int taskcount, int *tasks);
@@ -221,6 +212,12 @@ public:
 	inline Mob *GetOwner() const { return(owner); }
 	inline ItemInst *GetQuestItem() const {return questitem; }
 	inline bool ProximitySayInUse() { return HaveProximitySays; }
+
+#ifdef BOTS
+	int createbotcount();
+	int spawnbotcount();
+	bool botquest();
+#endif
 
 protected:
 	Mob *owner;	//NPC is never NULL when functions are called.

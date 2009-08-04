@@ -30,6 +30,13 @@ public:
 	Beacon(Mob *at_mob, int lifetime);
 	~Beacon();
 	
+	//abstract virtual function implementations requird by base abstract class
+	virtual void FinishTrade(Mob* tradingWith) { return; }
+	virtual void Death(Mob* killerMob, sint32 damage, int16 spell_id, SkillType attack_skill) { return; }
+	virtual void Damage(Mob* from, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable = true, sint8 buffslot = -1, bool iBuffTic = false) { return; }
+	virtual bool Attack(Mob* other, int Hand = 13, bool FromRiposte = false) { return false; }
+	virtual void AddToHateList(Mob* other, sint32 hate = 0, sint32 damage = 0, bool iYellForHelp = true, bool bFrenzy = false, bool iBuffTic = false) { return; }
+
 	bool	IsBeacon()			const { return true; }
 	bool	Process();
 	virtual void	Depop(bool not_used = true)	{ remove_me = true; }

@@ -542,64 +542,6 @@ bool Mob::IsAttackAllowed(Mob *target, bool isSpellAttack)
 	mob1 = our_owner ? our_owner : this;
 	mob2 = target_owner ? target_owner : target;
 
-#ifdef EQBOTS
-
-	// some pvp checks
-	if(IsBot() && BotOwner && BotOwner->CastToClient()->GetPVP()) // i'm a bot and my owner is pvp
-	{
-		if(target->IsBot() && target->BotOwner && target->BotOwner->CastToClient()->GetPVP()) // my target is a bot and it's owner is pvp
-		{
-			if(target->BotOwner == BotOwner) // no attacking if my owner is my target
-			{
-				return false;
-			}
-			else
-			{
-				return true;
-			}
-		}
-		if(target->IsClient() && target->CastToClient()->GetPVP()) // my target is a player and it's pvp
-		{
-			if(target == BotOwner) // my target cannot be my owner
-			{
-				return false;
-			}
-			else
-			{
-				return true;
-			}
-		}
-	}
-	if(IsClient() &&
-		target->IsBot() &&
-		CastToClient()->GetPVP() &&
-		target->BotOwner &&
-		target->BotOwner->CastToClient()->GetPVP() &&
-		database.GetBotOwner(target->GetNPCTypeID()) != CastToClient()->AccountID())
-	{ // im a pvp player and i'm targeting a bot whos owner is pvp, and it's not my bot
-		return true;
-	}
-
-	if((IsBot() && (target->IsBot() || target->IsClient())) || (IsClient() && target->IsBot()))
-	{
-		return false;    
-	}
-
-    // franck-add: Bots pet can't attack others bots and there pets. Clients and their pet can't attack bot pets.
-	if(mob1->IsClient()) {
-		if(mob2->IsBot())
-			return false;
-	}
-	
-	else if(mob1->IsBot()){
-		if(mob2->IsBot())
-			return false;
-		else if(mob2->IsClient())
-			return false;
-	}
-
-#endif //EQBOTS
-
 	reverse = 0;
 	do
 	{
@@ -723,6 +665,14 @@ type', in which case, the answer is yes.
 			}
 		}
 
+#ifdef BOTS
+		bool HasRuleDefined = false;
+		bool IsBotAttackAllowed = false;
+		IsBotAttackAllowed = Bot::IsBotAttackAllowed(mob1, mob2, HasRuleDefined);
+		if(HasRuleDefined)
+			return IsBotAttackAllowed;
+#endif //BOTS
+
 		// we fell through, now we swap the 2 mobs and run through again once more
 		tempmob = mob1;
 		mob1 = mob2;
@@ -747,18 +697,6 @@ bool Mob::IsBeneficialAllowed(Mob *target)
 
 	if(!target)
 		return false;
-
-#ifdef EQBOTS
-
-    //franck-add: Eqoffline.
-	if(IsClient() && target->IsBot())
-		return true;
-	else if(IsBot() && target->IsClient())
-		return true;
-	else if(IsBot() && target->IsBot())
-		return true;
-
-#endif //EQBOTS
 
 	// solar: see IsAttackAllowed for notes
 	
@@ -810,6 +748,10 @@ bool Mob::IsBeneficialAllowed(Mob *target)
 			{
 				return false;
 			}
+#ifdef BOTS
+			else if(mob2->IsBot())
+				return true;
+#endif
 		}
 		else if(_NPC(mob1))
 		{
@@ -1052,7 +994,16 @@ bool Mob::CheckLos(Mob* other) {
 
 //Father Nitwit's LOS code
 bool Mob::CheckLosFN(Mob* other) {
-	if(other == NULL || zone->map == NULL) {
+	bool Result = false;
+
+	if(other)
+		Result = CheckLosFN(other->GetX(), other->GetY(), other->GetZ(), other->GetSize());
+
+	return Result;
+}
+
+bool Mob::CheckLosFN(float posX, float posY, float posZ, float mobSize) {
+	if(zone->map == NULL) {
 		//not sure what the best return is on error
 		//should make this a database variable, but im lazy today
 #ifdef LOS_DEFAULT_CAN_SEE
@@ -1072,12 +1023,12 @@ bool Mob::CheckLosFN(Mob* other) {
 	myloc.y = GetY();
 	myloc.z = GetZ() + (GetSize()==0.0?LOS_DEFAULT_HEIGHT:GetSize())/2 * HEAD_POSITION;
 	
-	oloc.x = other->GetX();
-	oloc.y = other->GetY();
-	oloc.z = other->GetZ() + (other->GetSize()==0.0?LOS_DEFAULT_HEIGHT:other->GetSize())/2 * SEE_POSITION;
+	oloc.x = posX;
+	oloc.y = posY;
+	oloc.z = posZ + (mobSize==0.0?LOS_DEFAULT_HEIGHT:mobSize)/2 * SEE_POSITION;
 
 #if LOSDEBUG>=5
-	LogFile->write(EQEMuLog::Debug, "LOS from (%.2f, %.2f, %.2f) to (%.2f, %.2f, %.2f) sizes: (%.2f, %.2f)", myloc.x, myloc.y, myloc.z, oloc.x, oloc.y, oloc.z, GetSize(), other->GetSize());
+	LogFile->write(EQEMuLog::Debug, "LOS from (%.2f, %.2f, %.2f) to (%.2f, %.2f, %.2f) sizes: (%.2f, %.2f)", myloc.x, myloc.y, myloc.z, oloc.x, oloc.y, oloc.z, GetSize(), mobSize);
 #endif
 	
 	FACE *onhit;
@@ -1090,7 +1041,7 @@ bool Mob::CheckLosFN(Mob* other) {
 	if(mynode != NODE_NONE) {
 		if(zone->map->LineIntersectsNode(mynode, myloc, oloc, &hit, &onhit)) {
 #if LOSDEBUG>=5
-			LogFile->write(EQEMuLog::Debug, "Check LOS for %s target %s, cannot see.", GetName(), other->GetName() );
+			LogFile->write(EQEMuLog::Debug, "Check LOS for %s target position, cannot see.", GetName());
 			LogFile->write(EQEMuLog::Debug, "\tPoly: (%.2f, %.2f, %.2f) (%.2f, %.2f, %.2f) (%.2f, %.2f, %.2f)\n",
 				onhit->a.x, onhit->a.y, onhit->a.z,
 				onhit->b.x, onhit->b.y, onhit->b.z, 
@@ -1112,7 +1063,7 @@ bool Mob::CheckLosFN(Mob* other) {
 		if(onode != NODE_NONE && onode != mynode) {
 			if(zone->map->LineIntersectsNode(onode, myloc, oloc, &hit, &onhit)) {
 #if LOSDEBUG>=5
-			LogFile->write(EQEMuLog::Debug, "Check LOS for %s target %s, cannot see (2).", GetName(), other->GetName());
+			LogFile->write(EQEMuLog::Debug, "Check LOS for %s target position, cannot see (2).", GetName());
 			LogFile->write(EQEMuLog::Debug, "\tPoly: (%.2f, %.2f, %.2f) (%.2f, %.2f, %.2f) (%.2f, %.2f, %.2f)\n",
 				onhit->a.x, onhit->a.y, onhit->a.z,
 				onhit->b.x, onhit->b.y, onhit->b.z, 
@@ -1141,7 +1092,7 @@ bool Mob::CheckLosFN(Mob* other) {
 	}*/
 	
 #if LOSDEBUG>=5
-			LogFile->write(EQEMuLog::Debug, "Check LOS for %s target %s, CAN SEE.", GetName(), other->GetName());
+			LogFile->write(EQEMuLog::Debug, "Check LOS for %s target position, CAN SEE.", GetName());
 #endif
 	
 	return(true);
@@ -1351,23 +1302,6 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 			break;
 		}
 
-#ifdef EQBOTS
-
-		// Spell Casting Subtlety for Bots
-		if(IsBot()) {
-			if(GetLevel() >= 57) {
-				AggroAmount = AggroAmount * 95 / 100;
-			}
-			else if(GetLevel() >= 56) {
-				AggroAmount = AggroAmount * 90 / 100;
-			}
-			else if(GetLevel() >= 55) {
-				AggroAmount = AggroAmount * 80 / 100;
-			}
-		}
-
-#endif //EQBOTS
-
 		//made up number probably scales a bit differently on live but it seems like it will be close enough
 		//every time you cast on live you get a certain amount of "this is a spell" aggro
 		//confirmed by EQ devs to be 100 exactly at level 85. From their wording it doesn't seem like it's affected
@@ -1380,16 +1314,6 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 		sint32 focusAggro = CastToClient()->GetFocusEffect(focusHateReduction, spell_id);
 		AggroAmount = (AggroAmount * (100+focusAggro) / 100);
 	}
-
-#ifdef EQBOTS
-
-	if(IsBot())
-	{
-		sint32 focusAggro = GetBotFocusEffect(botfocusHateReduction, spell_id);
-		AggroAmount = (AggroAmount * (100+focusAggro) / 100);
-	}
-
-#endif //EQBOTS
 
 	AggroAmount = (AggroAmount * RuleI(Aggro, SpellAggroMod))/100;
 	AggroAmount += spells[spell_id].bonushate + nonModifiedAggro;
@@ -1443,16 +1367,6 @@ sint32 Mob::CheckHealAggroAmount(int16 spellid, int32 heal_possible) {
 		sint32 focusAggro = CastToClient()->GetFocusEffect(focusHateReduction, spell_id);
 		AggroAmount = (AggroAmount * (100+focusAggro) / 100);
 	}
-
-#ifdef EQBOTS
-
-	if(IsBot())
-	{
-		sint32 focusAggro = GetBotFocusEffect(botfocusHateReduction, spell_id);
-		AggroAmount = (AggroAmount * (100+focusAggro) / 100);
-	}
-
-#endif //EQBOTS
 
 	AggroAmount = (AggroAmount * RuleI(Aggro, SpellAggroMod))/100;
 

@@ -269,17 +269,6 @@ Bot* Entity::CastToBot() {
 #endif
 	return static_cast<Bot*>(this);
 }
-
-//const Bot* Entity::CastToBot() const {
-//#ifdef _EQDEBUG
-//	if(!IsBot()) {	
-//		cout << "CastToBot error" << endl;
-//		DebugBreak();
-//		return 0;
-//	}
-//#endif
-//	return static_cast<const Bot*>(this);
-//}
 #endif
 
 EntityList::EntityList() {
@@ -1678,54 +1667,6 @@ Group* EntityList::GetGroupByMob(Mob* mob)
 	return 0; 
 }
 
-#ifdef EQBOTS
-
-// EQoffline
-BotRaids* EntityList::GetBotRaidByMob(Mob *mr) {
-	list<BotRaids *>::iterator iterator;
-	iterator = botraid_list.begin();
-	while(iterator != botraid_list.end()) {
-		if((*iterator)->IsBotRaidMember(mr)) {
-			return *iterator;
-		}
-		iterator++;
-	}
-	return 0;
-}
-
-void EntityList::AddBotRaid(BotRaids* br) {
-	if(br == NULL)
-		return;
-	
-	int16 gid = GetFreeID();
-	if(gid == 0) {
-		LogFile->write(EQEMuLog::Error, "Unable to get new Raid ID from world server. Raid is going to be broken.");
-		return;
-	}
-	
-	AddBotRaid(br, gid);
-}
-
-void EntityList::AddBotRaid(BotRaids* br, int16 gid) {
-	br->SetBotRaidID(gid);
-	botraid_list.push_back(br);
-}
-
-bool EntityList::RemoveBotRaid(int16 delete_id) {
-	list<BotRaids *>::iterator iterator;
-	iterator = botraid_list.begin();
-	while(iterator != botraid_list.end()) {
-		if((*iterator)->GetBotRaidID() == delete_id) {
-			botraid_list.remove (*iterator);
-			return true;
-		}
-		iterator++;
-	}
-	return false;
-}
-
-#endif //EQBOTS
-
 Group* EntityList::GetGroupByLeaderName(char* leader){
 	list<Group *>::iterator iterator;
 
@@ -2055,15 +1996,6 @@ void EntityList::RemoveAllNPCs(){
 	LinkedListIterator<NPC*> iterator(npc_list);
 	iterator.Reset();
 	while(iterator.MoreElements()) {
-
-#ifdef EQBOTS
-
-		if(iterator.GetData()->IsBot()) {
-			database.CleanBotLeaderEntries(iterator.GetData()->GetNPCTypeID());
-		}
-
-#endif //EQBOTS
-
 		iterator.RemoveCurrent(false);
 	}
 	npc_limit_list.clear();
@@ -2350,12 +2282,13 @@ void EntityList::RemoveEntity(int16 id)
 	else if(entity_list.RemoveTrap(id))
 		return;
 
-#ifdef EQBOTS
-
+#ifdef BOTS
+	// This block of code is necessary to clean up bot objects
 	else if(entity_list.RemoveBotRaid(id))
 		return;
-
-#endif //EQBOTS
+	else if(entity_list.RemoveBot(id))
+		return;
+#endif //BOTS
 
 	else 
 		entity_list.RemoveObject(id);
@@ -4218,93 +4151,3 @@ void EntityList::AdventureCountUpdate(int32 a_id, int32 current, int32 total)
 		iterator.Advance();
 	}
 }
-
-#ifdef BOTS
-Mob* EntityList::GetMobByBotID(uint32 botID) {
-	Mob* Result = 0;
-
-	if(botID > 0) {
-		LinkedListIterator<Mob*> iterator(mob_list);
-	
-		iterator.Reset();
-
-		while(iterator.MoreElements())
-		{
-			if(iterator.GetData()->IsBot() && iterator.GetData()->CastToBot()->GetBotID() == botID) {
-				Result = iterator.GetData();
-			}
-
-			iterator.Advance();
-		}
-	}
-
-	return Result;
-}
-
-void EntityList::AddBot(Bot *newBot, bool SendSpawnPacket, bool dontqueue) {
-	if(newBot) {
-		newBot->SetID(GetFreeID());
-
-		if(SendSpawnPacket) {
-			if(dontqueue) {
-				// Send immediately
-				EQApplicationPacket* app = new EQApplicationPacket;
-				newBot->CreateSpawnPacket(app, newBot);
-				QueueClients(newBot, app);
-				safe_delete(app);
-			}
-			else {
-				// Queue the packet
-				NewSpawn_Struct* ns = new NewSpawn_Struct;
-				memset(ns, 0, sizeof(NewSpawn_Struct));
-				newBot->FillSpawnStruct(ns, 0); // Not working on player newspawns, so it's safe to use a ForWho of 0
-				AddToSpawnQueue(newBot->GetID(), &ns);
-				safe_delete(ns);
-			}
-
-			parse->Event(EVENT_SPAWN, 0, 0, 0, newBot);
-		}
-
-		bot_list.Insert(newBot);
-
-		if(!bot_list.dont_delete)
-			bot_list.dont_delete = true;
-
-		mob_list.Insert(newBot);
-	}
-}
-
-bool EntityList::RemoveBot(int16 entityID) {
-	bool Result = false;
-
-	if(entityID > 0) {
-		LinkedListIterator<Bot*> iterator(bot_list);
-		
-		iterator.Reset();
-		
-		while(iterator.MoreElements())
-		{
-			if(iterator.GetData()->GetID() == entityID){
-				//make sure its proximity is removed
-				//RemoveProximity(iterator.GetData()->GetID());
-				
-				//take it out of the list
-				iterator.RemoveCurrent(false);//Already Deleted
-				
-				//take it out of our limit list
-				/*if(npc_limit_list.count(delete_id) == 1)
-					npc_limit_list.erase(delete_id);*/
-				
-				Result = true;
-
-				break;
-			}
-
-			iterator.Advance();
-		}
-	}
-
-	return Result;
-}
-
-#endif

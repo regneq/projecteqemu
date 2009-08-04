@@ -52,14 +52,8 @@ class EntityList;
 
 #ifdef BOTS
 class Bot;
-#endif
-
-#ifdef EQBOTS
-
-//EQoffline
 class BotRaids;
-
-#endif //EQBOTS
+#endif
 
 extern EntityList entity_list;
 
@@ -149,16 +143,6 @@ public:
 	Raid*	GetRaidByClient(Client* client);
 	Raid*	GetRaidByID(int32 id);
 	Raid*	GetRaidByLeaderName(const char *leader);
-
-#ifdef EQBOTS
-
-	// EQoffline
-	BotRaids* GetBotRaidByMob(Mob *mr);
-	bool	RemoveBotRaid(int16 delete_id);
-	void    AddBotRaid(BotRaids *br);
-	void    AddBotRaid(BotRaids *br, int16 id);
-
-#endif //EQBOTS
 
 	Corpse*	GetCorpseByOwner(Client* client);
 	Corpse* GetCorpseByID(int16 id);
@@ -365,18 +349,10 @@ public:
 	void	AdventureDestroy(int32 a_id);
 	void	AdventureCountUpdate(int32 a_id, int32 current, int32 total);
 
-#ifdef EQBOTS
-
-	// franck-add: EQoffline
-	bool	Bot_AICheckCloseBeneficialSpells(NPC* caster, int8 iChance, float iRange, int16 iSpellTypes);
-	Mob*	GetBotMobByName(const char *name);
-	void    ShowSpawnWindow(Client* client, int Distance, bool NamedOnly = false);
-
-#endif //EQBOTS
-
 protected:
 	friend class Zone;
 	void	Depop(bool StartSpawnTimer = true);
+
 private:
 	int16   GetFreeID();
 	void	AddToSpawnQueue(int16 entityid, NewSpawn_Struct** app);
@@ -403,23 +379,22 @@ private:
 	list<Raid *> raid_list;
 	int16 last_insert_id;
 
-#ifdef EQBOTS
-
-	//EQoffline
-	list<BotRaids*> botraid_list;
-
-#endif //EQBOTS
-
 	// Please Do Not Declare Any EntityList Class Members After This Comment
 #ifdef BOTS
 	public:
 		Mob* GetMobByBotID(uint32 botID);
 		void AddBot(Bot* newBot, bool SendSpawnPacket = true, bool dontqueue = false);
+		list<Bot*> GetBotsByBotOwnerCharacterID(uint32 botOwnerCharacterID);
 		bool RemoveBot(int16 entityID);
 		bool Bot_AICheckCloseBeneficialSpells(Bot* caster, int8 iChance, float iRange, int16 iSpellTypes);
 		void ShowSpawnWindow(Client* client, int Distance, bool NamedOnly);
+		BotRaids* GetBotRaidByMob(Mob *mr);
+		bool RemoveBotRaid(int16 delete_id);
+		void AddBotRaid(BotRaids *br);
+		void AddBotRaid(BotRaids *br, int16 id);
 	private:
 		LinkedList<Bot*> bot_list;
+		list<BotRaids*> botraid_list;
 #endif
 };
 

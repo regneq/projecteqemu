@@ -63,6 +63,13 @@ public:
 	
 	virtual ~NPC();
 
+	//abstract virtual function implementations requird by base abstract class
+	virtual void FinishTrade(Mob* tradingWith);
+	virtual void Death(Mob* killerMob, sint32 damage, int16 spell_id, SkillType attack_skill);
+	virtual void Damage(Mob* from, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable = true, sint8 buffslot = -1, bool iBuffTic = false);
+	virtual bool Attack(Mob* other, int Hand = 13, bool FromRiposte = false);
+	virtual void AddToHateList(Mob* other, sint32 hate = 0, sint32 damage = 0, bool iYellForHelp = true, bool bFrenzy = false, bool iBuffTic = false);
+
 	virtual bool IsNPC() const { return true; }
 
 	virtual bool Process();
@@ -73,23 +80,6 @@ public:
 	bool			AI_AddNPCSpells(int32 iDBSpellsID);
 	virtual bool	AI_EngagedCastCheck();
 	bool			AI_HasSpells() { return HasAISpell; }
-
-#ifdef EQBOTS
-
-	//franck-adds: EQoffline
-	virtual bool	Bot_AI_EngagedCastCheck();
-	virtual bool	Bot_AI_IdleCastCheck();
-	virtual bool	Bot_Command_MezzTarget(Mob *target);
-	virtual bool	Bot_Command_RezzTarget(Mob *target);
-	virtual bool	BotRaidSpell(int16 spellID);
-	virtual bool	Bot_Command_Cure(int curetype, int level);
-	virtual bool	Bot_AI_PursueCastCheck();
-	virtual bool	Bot_Command_CalmTarget(Mob *target);
-	virtual bool	Bot_Command_CharmTarget(int charmtype,Mob *target);
-	virtual bool	Bot_Command_DireTarget(int diretype, Mob *target);
-	virtual bool	Bot_Command_Resist(int resisttype, int level);
-
-#endif //EQBOTS
 
 	virtual bool	AI_PursueCastCheck();
 	virtual bool	AI_IdleCastCheck();
@@ -105,26 +95,16 @@ public:
 
 	
 	// neotokyo: added frenzy
-	bool	Attack(Mob* other, int Hand = 13, bool = false);
+	//bool	Attack(Mob* other, int Hand = 13, bool = false);
 	virtual void	RangedAttack(Mob* other);
 	virtual void	ThrowingAttack(Mob* other) { }
 
-#ifdef EQBOTS
-
-	// EQoffline: special BotAttack function
-	bool	BotAttackMelee(Mob* other, int Hand = 13, bool = false);
-	bool	BotRangedAttack(Mob* other);
-	void	BotRemoveEquipItem(int slot) { equipment[slot] = 0; }
-	void	BotAddEquipItem(int slot, uint32 id) { equipment[slot] = id; }
-
-#endif //EQBOTS
-
-	void	Damage(Mob* other, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable = true, sint8 buffslot = -1, bool iBuffTic = false);
-	void	Death(Mob* other, sint32 damage, int16 spell_id, SkillType attack_skill);
+	//void	Damage(Mob* other, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable = true, sint8 buffslot = -1, bool iBuffTic = false);
+	//void	Death(Mob* other, sint32 damage, int16 spell_id, SkillType attack_skill);
 	bool	DatabaseCastAccepted(int spell_id);
 	bool	IsFactionListAlly(uint32 other_faction);
 	FACTION_VALUE CheckNPCFactionAlly(sint32 other_faction);
-	FACTION_VALUE GetReverseFactionCon(Mob* iOther);
+	virtual FACTION_VALUE GetReverseFactionCon(Mob* iOther);
 
 	void	GoToBind(uint8 bindnum = 0)	{ GMMove(org_x, org_y, org_z, org_heading); }
 	void	Gate();
@@ -149,13 +129,6 @@ public:
 	void	NPCHarmSpell(int target,int type);
 	void    HateSummon();
 */	
-
-#ifdef EQBOTS
-
-	uint32	GetItemID(int slot_id);
-
-#endif //EQBOTS
-
 	void	DescribeAggro(Client *towho, Mob *mob, bool verbose);
 	void    RemoveItem(uint32 item_id, int16 quantity = 0, int16 slot = 0);
 //	bool	AddNPCSpells(int32 iDBSpellsID, AISpells_Struct* AIspells);
@@ -216,7 +189,7 @@ public:
 	void	PickPocket(Client* thief);
 	void	StartSwarmTimer(int32 duration) { swarm_timer.Start(duration); }
 	void	AddLootDrop(const Item_Struct*dbitem, ItemList* itemlistconst, sint8 charges, bool equipit, bool wearchange = false);
-	void	DoClassAttacks(Mob *target);
+	virtual void DoClassAttacks(Mob *target);
 	void	CheckSignal();
 	
 	//waypoint crap
@@ -291,6 +264,8 @@ public:
 	const bool GetCombatEvent() const { return combat_event; }
 	void SetCombatEvent(bool b) { combat_event = b; }
 
+	bool GetDepop() { return p_depop; }
+
 protected:
 	
 	const NPCType*	NPCTypedata;
@@ -328,20 +303,6 @@ protected:
 	bool HasAISpell;
 	void AddSpellToNPCList(sint16 iPriority, sint16 iSpellID, uint16 iType, sint16 iManaCost, sint32 iRecastDelay);
 	bool AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes);
-
-#ifdef EQBOTS
-
-	//franck-add: EQoffline
-public:
-	int   BotSpellCount() { return AIspells.size(); }
-	int16 BotGetSpells(int spellslot) { return AIspells[spellslot].spellid; }
-    int16 BotGetSpellType(int spellslot) { return AIspells[spellslot].type; }
-    int16 BotGetSpellPriority(int spellslot) { return AIspells[spellslot].priority; }
-protected:
-	bool Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes);
-
-#endif //EQBOTS
-
 	void AIDoSpellCast(int8 i, Mob* tar, sint32 mana_cost, int32* oDontDoAgainBefore = 0);
 	
 	

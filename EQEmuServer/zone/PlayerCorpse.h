@@ -37,7 +37,14 @@ public:
 	Corpse(Client* client, sint32 in_rezexp);
 	Corpse(int32 in_corpseid, int32 in_charid, char* in_charname, ItemList* in_itemlist, int32 in_copper, int32 in_silver, int32 in_gold, int32 in_plat, float in_x, float in_y, float in_z, float in_heading, float in_size, int8 in_gender, int16 in_race, int8 in_class, int8 in_deity, int8 in_level, int8 in_texture, int8 in_helmtexture,int32 in_rezexp, bool wasAtGraveyard = false);
 	~Corpse();
-	
+
+	//abstract virtual function implementations requird by base abstract class
+	virtual void FinishTrade(Mob* tradingWith) { return; }
+	virtual void Death(Mob* killerMob, sint32 damage, int16 spell_id, SkillType attack_skill) { return; }
+	virtual void Damage(Mob* from, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable = true, sint8 buffslot = -1, bool iBuffTic = false) { return; }
+	virtual bool Attack(Mob* other, int Hand = 13, bool FromRiposte = false) { return false; }
+	virtual void AddToHateList(Mob* other, sint32 hate = 0, sint32 damage = 0, bool iYellForHelp = true, bool bFrenzy = false, bool iBuffTic = false) { return; }
+
 	void LoadPlayerCorpseDecayTime(int32 dbid);
 
 	bool	IsCorpse()			const { return true; }
@@ -100,6 +107,7 @@ public:
 
 protected:
 	void MoveItemToCorpse(Client *client, ItemInst *item, sint16 equipslot);
+
 private:
 	bool		p_PlayerCorpse;
 	bool		pIsChanged;

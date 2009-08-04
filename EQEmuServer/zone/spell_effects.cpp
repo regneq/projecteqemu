@@ -162,16 +162,6 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 					// take partial damage into account
 					dmg = (sint32) (dmg * partial / 100);
 
-#ifdef EQBOTS
-
-					// Bot AA Casting Bonuses
-					if(caster && caster->IsBot()) {
-						dmg = caster->GetBotActSpellDamage(spell_id, dmg);
-					}
-					else
-
-#endif //EQBOTS
-
 					//handles AAs and what not...
 					if(caster)
 						dmg = caster->GetActSpellDamage(spell_id, dmg);
@@ -180,17 +170,6 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 					Damage(caster, dmg, spell_id, spell.skill, false, buffslot, false);
 				}
 				else if(dmg > 0) {
-
-#ifdef EQBOTS
-
-					// Bot AA Healing Bonuses
-					if(caster && caster->IsBot()) {
-						dmg = caster->GetBotActSpellHealing(spell_id, dmg);
-					}
-					else
-
-#endif //EQBOTS
-
 					//healing spell...
 					if(caster)
 						dmg = caster->GetActSpellHealing(spell_id, dmg);
@@ -248,16 +227,6 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
                                 //im not 100% sure about this implementation.
                                 //the spell value forumula dosent work for these... at least spell 3232 anyways
                                 sint32 val = spell.max[i];
-
-#ifdef EQBOTS
-
-								// Bot AA Casting Bonuses
-								if(caster && caster->IsBot()) {
-									val = caster->GetBotActSpellHealing(spell_id, val);
-								}
-								else
-
-#endif //EQBOTS
 
                                 if(caster)
                                         val = caster->GetActSpellHealing(spell_id, val);
@@ -425,26 +394,6 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				else
 				{
 					target_zone = spell.teleport_zone;
-
-#ifdef EQBOTS
-
-					// Bots don't like the interzone port proc spells some npc's have
-					if(IsBot() && ((spell_id == 1164) || (spell_id == 855) || (spell_id == 1476) || (spell_id == 2786) || (spell_id == 2204) ||
-						(spell_id == 2205) || (spell_id == 2212) || (spell_id == 853) || (spell_id == 854))) {
-						// Specific spell handler for:
-						// Crusader's Banishment - Skyshrine - Charayan and Susarrak
-						// Trakanon's  Banishing Touch - Old Sebilis - Trakanon
-						// The Dain's Justice - Icewell Keep - Dain Frostreaver IV
-						// In Irons - Sanctus - Sanctus Seru - Praesertum Bikun, Mapta, Rhugol and Vantorus
-						// Allure of the Pool - Acrylia Caverns Event
-						// Word of Passage - Acrylia Caverns Event
-						// Random Port 37 - Acrylia Caverns Event
-						// Burning Touch I/II - Burning Wood - Atheling Plague
-						target_zone = 0;
-					}
-					else
-
-#endif //EQBOTS
 
 					if(IsNPC() && target_zone != zone->GetShortName()){
 						if(!GetOwner()){
@@ -2100,16 +2049,6 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Sacrifice");
 #endif
-
-#ifdef EQBOTS
-
-				if(zone->GetZoneID()==202) {
-					// do nothing
-				}
-				else
-
-#endif //EQBOTS
-
 				if(!IsClient() || !caster->IsClient()){
 					break;
 				}
@@ -2653,17 +2592,6 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 					dmg = -dmg;
 					Damage(caster, dmg, spell_id, spell.skill, false, buffslot, false);
 				} else if(dmg > 0) {
-
-#ifdef EQBOTS
-
-					// Bot AA Casting Bonuses
-					if(caster && caster->IsBot()) {
-						dmg = caster->GetBotActSpellHealing(spell_id, dmg);
-					}
-					else
-
-#endif //EQBOTS
-
 					//healing spell...
 					if(caster)
 						dmg = caster->GetActSpellHealing(spell_id, dmg);
@@ -2839,24 +2767,6 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 		c->SendItemPacket(SLOT_CURSOR, SummonedItem, ItemPacketSummonItem);
 		safe_delete(SummonedItem);
 	}
-
-#ifdef EQBOTS
-
-    // Franck-add: If healed/doted, a bot must show its new HP to its leader
-	if(IsBot() && IsGrouped()) {
-		Group *g = entity_list.GetGroupByMob(this);
-		if(g) {
-			EQApplicationPacket hp_app;
-			CreateHPPacket(&hp_app);
-			for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
-				if(g->members[i] && g->members[i]->IsClient()) {
-					g->members[i]->CastToClient()->QueuePacket(&hp_app);
-				}
-			}
-		}
-	}
-
-#endif //EQBOTS
 
 	return true;
 }
@@ -3079,22 +2989,13 @@ void Mob::BuffProcess() {
 	}
 }
 
-void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob* caster)
-{
+void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob* caster) {
 	_ZP(Mob_DoBuffTic);
 
 	int effect, effect_value;
 
 	if(!IsValidSpell(spell_id))
 		return;
-
-#ifdef EQBOTS
-
-	if(!caster || caster->IsCorpse()) {
-		return;
-	}
-
-#endif //EQBOTS
 
 	const SPDat_Spell_Struct &spell = spells[spell_id];
 
@@ -3144,17 +3045,6 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 				effect_value = -effect_value;
 				Damage(caster, effect_value, spell_id, spell.skill, false, i, true);
 			} else if(effect_value > 0) {
-
-#ifdef EQBOTS
-
-				// Bot AA Casting Bonuses
-				if(caster && caster->IsBot()) {
-					effect_value = caster->GetBotActSpellHealing(spell_id, effect_value);
-				}
-				else
-
-#endif //EQBOTS
-
 				//healing spell...
 				//healing aggro would go here; removed for now
 				if(caster)

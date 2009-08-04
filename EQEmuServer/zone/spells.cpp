@@ -180,19 +180,6 @@ bool Mob::CastSpell(int16 spell_id, int16 target_id, int16 slot,
 	if(casting_spell_id == spell_id)
 		ZeroCastingVars();
 	
-
-#ifdef EQBOTS
-
-	if(IsBot() && (zone->IsSpellBlocked(spell_id, GetX(), GetY(), GetZ())))
-		return false;
-
-	if(IsBot() && (GetClass() == BARD)) {
-		// Do Nothing so Bard Bots can sing
-	}
-	else
-
-#endif //EQBOTS
-
 	if
 	(
 		!IsValidSpell(spell_id) ||
@@ -329,20 +316,8 @@ bool Mob::DoCastSpell(int16 spell_id, int16 target_id, int16 slot,
 		// save the non-reduced cast time to use in the packet
 		cast_time = orgcasttime = spell.cast_time;
 		// if there's a cast time, check if they have a modifier for it
-		if(cast_time)
-		{
-
-#ifdef EQBOTS
-
-			if(IsBot()) {
-				cast_time = GetBotActSpellCasttime(spell_id, cast_time);
-			}
-			else
-
-#endif //EQBOTS
-
-			cast_time = GetActSpellCasttime(spell_id, cast_time);
-			
+		if(cast_time) {
+			cast_time = GetActSpellCasttime(spell_id, cast_time);	
 		}
 	}
 	else
@@ -366,16 +341,6 @@ bool Mob::DoCastSpell(int16 spell_id, int16 target_id, int16 slot,
 
 	if (mana_cost == -1) {
 		mana_cost = spell.mana;
-
-#ifdef EQBOTS
-
-		if(IsBot()) {
-			mana_cost = GetBotActSpellCost(spell_id, mana_cost);
-		}
-		else
-
-#endif //EQBOTS
-
 		mana_cost = GetActSpellCost(spell_id, mana_cost);
 	}
 
@@ -420,15 +385,6 @@ bool Mob::DoCastSpell(int16 spell_id, int16 target_id, int16 slot,
 	
 	mlog(SPELLS__CASTING, "Spell %d: Casting time %d (orig %d), mana cost %d", orgcasttime, cast_time, mana_cost);
 
-#ifdef EQBOTS
-
-	if(IsBot() && (GetClass() == BARD))
-	{ // Bard bots casting time is interrupting thier melee
-		cast_time = 0;
-	}
-
-#endif //EQBOTS
-
 	// cast time is 0, just finish it right now and be done with it
 	if(cast_time == 0) {
 		CastedSpellFinished(spell_id, target_id, slot, mana_cost, item_slot);
@@ -445,19 +401,6 @@ bool Mob::DoCastSpell(int16 spell_id, int16 target_id, int16 slot,
 			this->FaceTarget(pMob);
 	}
 	
-#ifdef EQBOTS
-
-	if(IsBot())
-	{
-		if(oSpellWillFinish)
-		{
-			*oSpellWillFinish = Timer::GetCurrentTime() + ((spell.recast_time > 20000) ? 10000 : spell.recast_time);
-		}
-	}
-	else
-
-#endif //EQBOTS
-
 	// if we got here we didn't fizzle, and are starting our cast
 	if (oSpellWillFinish)
 		*oSpellWillFinish = Timer::GetCurrentTime() + cast_time + 100;
@@ -1407,17 +1350,6 @@ bool Mob::DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_ce
 					}
 				}
 				else{
-
-#ifdef EQBOTS
-
-					// This is so PoK NPC Necro/Shd can create essence emeralds for pc's from perl scripts
-					if(((spell_id == 1768) && (zone->GetZoneID() == 202)) || (IsBot() && !IsDetrimentalSpell(spell_id))) {
-						CastAction = SingleTarget;
-						break;
-					}
-
-#endif //EQBOTS
-
 					mlog(SPELLS__CASTING_ERR, "Spell %d canceled: Attempted to cast a Single Target Group spell on a member not in the group.", spell_id);
 					Message_StringID(13, TARGET_GROUP_MEMBER);
 					return false;
@@ -1549,15 +1481,6 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
 	if(IsClient() && CastToClient()->TGB() && IsTGBCompatibleSpell(spell_id) && IsGroupSpell(spell_id))
 		range = spells[spell_id].aoerange;
 
-#ifdef EQBOTS
-
-	if(IsBot()) {
-		range = GetBotActSpellRange(spell_id, range);
-	}
-	else
-
-#endif //EQBOTS
-
 	range = GetActSpellRange(spell_id, range);
 // seveian 2008-09-23
 	if(IsPlayerIllusionSpell(spell_id)
@@ -1587,69 +1510,15 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
 		case SingleTarget:
 		{
 
-#ifdef EQBOTS
-
-            //EQoffline: force AE buffs
-            if(IsBot() && IsGrouped() && (spell_target->IsBot() || spell_target->IsClient()) && RuleB(EQOffline, BotGroupBuffing))
-            {
-				NPC *bot = this->CastToNPC();
-                bool noGroupSpell = false;
-				int16 thespell = spell_id;
-				for(int i=0; i<bot->BotSpellCount(); i++)
-				{
-					int j = bot->BotGetSpells(i);
-					int spelltype = bot->BotGetSpellType(i);
-					bool spellequal = (j == thespell);
-					bool spelltypeequal = ((spelltype == 2) || (spelltype == 16) || (spelltype == 32));
-					bool spelltypetargetequal = ((spelltype == 8) && (spells[thespell].targettype == ST_Self));
-					bool spelltypeclassequal = ((spelltype == 1024) && (GetClass() == SHAMAN));
-					bool slotequal = (slot == USE_ITEM_SPELL_SLOT);
-
-					// if it's a targeted heal or escape spell or pet spell or it's self only buff or self buff weapon proc, we only want to cast it once
-					if(spellequal || slotequal)
-					{
-						if((spelltypeequal || spelltypetargetequal) || spelltypeclassequal || slotequal)
-						{
-							// Don't let the Shaman canni themselves to death
-							if(((spells[thespell].effectid[0] == 0) && (spells[thespell].base[0] < 0)) &&
-								(spell_target->GetHP() < ((spells[thespell].base[0] * (-1)) + 100)))
-							{
-								return false;
-							}
-							SpellOnTarget(thespell, spell_target);
-							noGroupSpell = true;
-							break;
-						}
-					}
-				}
-				if(!noGroupSpell) {
-					Group *g = entity_list.GetGroupByMob(this);
-					if(g) {
-						for(int i=0; i<MAX_GROUP_MEMBERS;i++) {
-							if(g->members[i]) {
-								if((g->members[i]->GetClass() == NECROMANCER) &&
-									(IsEffectInSpell(thespell, SE_AbsorbMagicAtt) || IsEffectInSpell(thespell, SE_Rune)))
-								{
-									// don't cast this on necro's, their health to mana
-									// spell eats up the rune spell and it just keeps
-									// getting recast over and over
-								}
-								else
-								{
-									SpellOnTarget(thespell, g->members[i]);
-								}
-								if(g->members[i] && g->members[i]->GetPetID()) {
-									SpellOnTarget(thespell, g->members[i]->GetPet());
-								}
-							}
-						}
-						SetMana(GetMana() - (GetBotActSpellCost(thespell, spells[thespell].mana) * (g->BotGroupCount() - 1)));
-					}
-				}
-				break;
+#ifdef BOTS
+			if(IsBot()) {
+				bool StopLogic = false;
+				if(!this->CastToBot()->DoFinishedSpellSingleTarget(spell_id, spell_target, slot, StopLogic))
+					return false;
+				if(StopLogic)
+					break;
 			}
-
-#endif //EQBOTS
+#endif //BOTS
 
 			if(spell_target == NULL) {
 				mlog(SPELLS__CASTING, "Spell %d: Targeted spell, but we have no target", spell_id);
@@ -1673,17 +1542,15 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
 		case AECaster:
 		case AETarget:
 		{
-
-#ifdef EQBOTS
-
-			if(IsBot() && (GetClass() == BARD)) {
-				if(!ApplyNextBardPulse(bardsong, this, bardsong_slot)) {
-					InterruptSpell(SONG_ENDS_ABRUPTLY, 0x121, bardsong);
-				}
-				break;
+#ifdef BOTS
+			if(IsBot()) {
+				bool StopLogic = false;
+				if(!this->CastToBot()->DoFinishedSpellAETarget(spell_id, spell_target, slot, StopLogic))
+					return false;
+				if(StopLogic)
+					break;
 			}
-
-#endif //EQBOTS
+#endif //BOTS
 
 			// we can't cast an AE spell without something to center it on
 			assert(ae_center != NULL);
@@ -1709,46 +1576,15 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
 
 		case GroupSpell:
 		{
-
-#ifdef EQBOTS
-
-			//franck-debug
+#ifdef BOTS
 			if(IsBot()) {
-				bool isMainGroupMGB = false;
-				if(IsBotRaiding()) {
-					BotRaids *br = entity_list.GetBotRaidByMob(this);
-					if(br) {
-						for(int n=0; n<MAX_GROUP_MEMBERS; ++n) {
-							if(br->BotRaidGroups[0] && (br->BotRaidGroups[0]->members[n] == this)) {
-								if(GetLevel() >= 59) // MGB AA
-									isMainGroupMGB = true;
-								break;
-							}
-						}
-					}
-				}
-				if(isMainGroupMGB && (GetClass() != BARD)) {
-					Say("MGB %s", spells[spell_id].name);
-					SpellOnTarget(spell_id, this);
-					entity_list.AESpell(this, this, spell_id, true);
-				}
-				else {
-					Group *g = entity_list.GetGroupByMob(this);
-					if(g) {
-						for(int i=0; i<MAX_GROUP_MEMBERS; ++i) {
-							if(g->members[i]) {
-								SpellOnTarget(spell_id, g->members[i]);
-								if(g->members[i] && g->members[i]->GetPetID()) {
-									SpellOnTarget(spell_id, g->members[i]->GetPet());
-								}
-							}
-						}
-					}
-				}
-				break;
+				bool StopLogic = false;
+				if(!this->CastToBot()->DoFinishedSpellGroupTarget(spell_id, spell_target, slot, StopLogic))
+					return false;
+				if(StopLogic)
+					break;
 			}
-
-#endif //EQBOTS
+#endif //BOTS
 
 			if(IsClient() && CastToClient()->CheckAAEffect(aaEffectMassGroupBuff)){
 				SpellOnTarget(spell_id, this);
@@ -1918,15 +1754,6 @@ bool Mob::ApplyNextBardPulse(int16 spell_id, Mob *spell_target, int16 slot) {
 	
 	//range check our target, if we have one and it is not us
 	float range = 0.00f;
-
-#ifdef EQBOTS
-
-	if(IsBot()) {
-		range = GetBotActSpellRange(spell_id, spells[spell_id].range);
-	}
-	else
-
-#endif //EQBOTS
 
 	range = GetActSpellRange(spell_id, spells[spell_id].range);
 	if(spell_target != NULL && spell_target != this) {
@@ -2410,15 +2237,6 @@ int Mob::CheckStackConflict(int16 spellid1, int caster_level1, int16 spellid2, i
 		if(effect1 != effect2)
 			continue;
 
-#ifdef EQBOTS
-
-		// This is to allow bots to cast heals over the top of regen spells
-		if((effect1 == SE_CurrentHP) && (effect2 == SE_CurrentHP) && !sp1_detrimental && !sp2_detrimental) {
-			return 0;
-		}
-
-#endif //EQBOTS
-
 		/*
 		If target is a npc and caster1 and caster2 exist
 		If Caster1 isn't the same as Caster2 and the effect is a DoT then ignore it.
@@ -2521,15 +2339,6 @@ int Mob::AddBuff(Mob *caster, int16 spell_id, int duration, sint32 level_overrid
 	if(duration == 0)
 	{
 		duration = CalcBuffDuration(caster, this, spell_id);
-
-#ifdef EQBOTS
-
-		if(caster && caster->IsBot()) {
-			duration = caster->GetBotActSpellDuration(spell_id, duration);
-		}
-		else
-
-#endif //EQBOTS
 
 		if(caster)
 			duration = caster->GetActSpellDuration(spell_id, duration);
@@ -2737,100 +2546,6 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar)
 		Message(13, "SOT: You must have a target for this spell.");
 		return false;
 	}
-
-#ifdef EQBOTS
-
-	if(spelltar->IsBot() && (spells[spell_id].targettype == ST_GroupTeleport)) {
-		// So I made this check because teleporting a group of bots tended to crash the zone
-		// It seems several group spells also show up as ST_GroupTeleport for some
-		// reason so I now have to check by spell id. These appear to be Group v1 spells and
-		// Heal over Time spells.
-		switch(spell_id) {
-			// Paladin
-			case 3577: // Wave of Life
-			case 4065: // Blessing of Austerity
-			case 1455: // Wave of Healing
-			case 2589: // Healing Wave of Prexus
-			case 3427: // Wave of Marr
-			case 3683: // Ethereal Cleansing
-			case 1283: // Celestial Cleansing
-			case 3485: // Supernal Cleansing
-			case 5293: // Pious Cleansing
-			case 4893: // Wave of Trushar
-			case 5295: // Jeron's Mark
-			case 5296: // Wave of Piety
-			// Bard
-			case 4085: // Forpar's Aria of Affliction
-			case 4083: // Rizlona's Embers
-			case 4086: // Forpar's Psalm of Pain
-			case 4084: // Rizlona's Fire
-			case 6734: // Song of the Storm
-			case 3651: // Wind of Marr
-			case 4087: // Forpar's Verse of Venom
-			case 3362: // Rizlona's Call of Flame
-			case 4112: // Call of the Muse
-			case 4872: // Echo of the Trusik
-			case 4873: // Dark Echo
-			case 5377: // Cantata of Life
-			case 5380: // Yelhun's Mystic Call
-			case 5382: // Eriki's Psalm of Power
-			case 6666: // Storm Blade
-			case 5388: // Ancient Call of Power
-			// Cleric
-			case 134: // Word of Health
-			case 136: // Word of Healing
-			case 1520: // Word of Vigor
-			case 1521: // Word of Restoration
-			case 1523: // Word of Redemption
-			case 3471: // Word of Replenishment
-			case 5270: // Word of Vivification
-			case 2502: // Celestial Remedy
-			case 2175: // Celestial Health
-			case 1444: // Celestial Healing
-			case 1522: // Celestial Elixir
-			case 2180: // Etherial Elixir
-			case 3047: // Kazad's Mark
-			case 3475: // Supernal Elixir
-			case 4053: // Blessing of Temperance
-			case 4108: // Aura of Reverence
-			case 4882: // Holy Elixir
-			case 5259: // Pious Elixir
-			case 5272: // Aura of Devotion
-			case 5277: // Balikor's Mark
-			// Enchanter
-			case 5517: // Circle of Alendar
-			case 6671: // Rune of Rikkukin
-			case 6739: // Rune of the Scale
-			// Shaman
-			case 2521: // Talisman of the Beast
-			case 4055: // Pack Shrew
-			case 3842: // Blood of Nadox
-			case 5417: // Champion
-			// Druid
-			case 4058: // Feral Pack
-			case 2520: // Natures Recovery
-				break;
-			default:
-				return false;
-		}
-	}
-
-	//Franck-add: can't detrimental spell on bots and bots can't detriment on you or the others bots
-	if((IsBot() && IsDetrimentalSpell(spell_id) && spelltar->IsBot()) ||
-		(IsBot() && IsDetrimentalSpell(spell_id) && spelltar->IsClient()) ||
-		(IsClient() && IsDetrimentalSpell(spell_id) && spelltar->IsBot()))
-		return false;
-
-	if(IsBot() && spelltar->IsPet())
-	{
-		for(int i=0; i<EFFECT_COUNT; ++i)
-		{
-			if(spells[spell_id].effectid[i] == SE_Illusion)
-				return false;
-		}
-	}
-
-#endif //EQBOTS
 
 	int16 caster_level = GetCasterLevel(spell_id);
 	
@@ -3459,16 +3174,6 @@ bool Mob::IsImmuneToSpell(int16 spell_id, Mob *caster)
 
 	if(IsSacrificeSpell(spell_id))
 	{
-
-#ifdef EQBOTS
-
-		if((zone->GetZoneID() == 202) && (this == caster)) {
-			// do nothing
-		}
-		else
-
-#endif //EQBOTS
-
 		if(this == caster)
 		{
 			mlog(SPELLS__RESISTS, "You cannot sacrifice yourself.");
@@ -3476,33 +3181,6 @@ bool Mob::IsImmuneToSpell(int16 spell_id, Mob *caster)
 			return true;
 		}
 	}
-	
-
-#ifdef EQBOTS
-
-	if(caster->IsBot()) {
-		if(spells[spell_id].targettype == ST_Undead) {
-			if((GetBodyType() != BT_SummonedUndead)
-				&& (GetBodyType() != BT_Undead)
-				&& (GetBodyType() != BT_Vampire)
-				) {
-					mlog(SPELLS__RESISTS, "Bot's target is not an undead.");
-					return true;
-			}
-		}
-		if(spells[spell_id].targettype == ST_Summoned) {
-			if((GetBodyType() != BT_SummonedUndead)
-				&& (GetBodyType() != BT_Summoned)
-				&& (GetBodyType() != BT_Summoned2)
-				&& (GetBodyType() != BT_Summoned3)
-				) {
-					mlog(SPELLS__RESISTS, "Bot's target is not a summoned creature.");
-					return true;
-			}
-		}
-	}
-
-#endif //EQBOTS
 
 	mlog(SPELLS__RESISTS, "No immunities to spell %d found.", spell_id);
 	
@@ -3769,37 +3447,6 @@ float Mob::GetAOERange(uint16 spell_id) {
 		
 		range = CastToClient()->GetActSpellRange(spell_id, range);
 	}
-
-#ifdef EQBOTS
-
-	else if(IsBot()) {
-		if(IsBardSong(spell_id)) {
-			if(GetLevel() >= 61) { // Extended Notes AA
-				mod += range * 0.25;
-			}
-			else if(GetLevel() == 60) {
-				mod += range * 0.15;
-			}
-			else if(GetLevel() == 59) {
-				mod += range * 0.10;
-			}
-
-			if(GetLevel() >= 65) { // Sionachies Crescendo AA
-				mod += range * 0.15;
-			}
-			else if(GetLevel() == 64) {
-				mod += range * 0.10;
-			}
-			else if(GetLevel() == 63) {
-				mod += range * 0.05;
-			}
-			range += mod;
-		}
-		
-		range = GetBotActSpellRange(spell_id, range);
-	}
-
-#endif //EQBOTS
 	
 	return(range);
 }
