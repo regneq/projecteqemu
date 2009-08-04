@@ -592,12 +592,18 @@ XS(XS__follow);
 XS(XS__follow)
 {
 	dXSARGS;
-	if (items != 1)
-		Perl_croak(aTHX_ "Usage: follow(entity_id)");
+	if (items != 1 && items != 2)
+		Perl_croak(aTHX_ "Usage: follow(entity_id, [distance])");
 
 	int	entity_id = (int)SvIV(ST(0));
+	int	distance;
 
-	quest_manager.follow(entity_id);
+	if (items == 2)
+		distance = (int)SvIV(ST(1));
+	else
+		distance = 10;
+
+	quest_manager.follow(entity_id, distance);
 
 	XSRETURN_EMPTY;
 }

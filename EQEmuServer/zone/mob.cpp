@@ -318,6 +318,7 @@ Mob::Mob(const char*   in_name,
 	cur_wp_pause = 0;
 	patrol=0;
 	follow=0;
+	follow_dist = 100;	// Default Distance for Follow
 	flee_mode = false;
 	fear_walkto_x = -999999;
 	fear_walkto_y = -999999;

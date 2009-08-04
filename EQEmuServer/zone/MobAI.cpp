@@ -1407,7 +1407,7 @@ void Mob::AI_Process() {
 						if (dist >= 100) 
 						{
 							float speed = GetWalkspeed();
-							if (dist >= 25)
+							if (dist >= 225)
 								speed = GetRunspeed();
 							CalculateNewPosition2(owner->GetX(), owner->GetY(), owner->GetZ(), speed);
 						}
@@ -1460,10 +1460,12 @@ void Mob::AI_Process() {
 				else 
 				{
 					float dist2 = DistNoRoot(*follow);
-					if (dist2 >= 100) 
+					int followdist = GetFollowDistance();
+
+					if (dist2 >= followdist)	// Default follow distance is 100
 					{
 						float speed = GetWalkspeed();
-						if (dist2 >= 225)
+						if (dist2 >= followdist + 150)
 							speed = GetRunspeed();
 						CalculateNewPosition2(follow->GetX(), follow->GetY(), follow->GetZ(), speed);
 					}

@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==08/04/2009==
 WildcardX: Merged the "bots" branch into trunk and removed the prior "EQBOTS" system from trunk. Please carefully evaluate this version before making any decision to upgrade your servers.
+Trevius: Added a Distance option for quest::follow(entity_id, distance) to allow setting the distance for the NPC to follow at.
 
 ==08/02/2009==
 realityincarnate: SoF - Added opcode values to avoid packet dumps of some of the more annoying unknowns

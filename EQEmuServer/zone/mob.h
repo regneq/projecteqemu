@@ -639,7 +639,9 @@ bool logpos;
 	inline const int32	LastChange() const	{ return pLastChange; }
 
 	void	SetFollowID(int32 id) { follow = id; }
+	void	SetFollowDistance(int32 dist) { follow_dist = dist; }
 	int32	GetFollowID()		  const { return follow; }
+	int32	GetFollowDistance()		  const { return follow_dist; }
 
 	virtual void	Message(int32 type, const char* message, ...) {} // fake so dont have to worry about typecasting
 	virtual void	Message_StringID(int32 type, int32 string_id, int32 distance = 0) {}
@@ -995,6 +997,7 @@ protected:
 	PetType			typeofpet;
 
 	int32			follow;
+	int32			follow_dist;
 
 	int8    gender;
 	int16	race;

@@ -847,7 +847,7 @@ void Parser::ExCommands(string o_command, string parms, int argnums, int32 npcid
 		quest_manager.settarget(arglist[0], atoi(arglist[1]));
 	}
 	else if (!strcmp(command,"follow"))  {
-		quest_manager.follow(atoi(arglist[0]));
+		quest_manager.follow(atoi(arglist[0]), atoi(arglist[1]));
 	}
 	else if (!strcmp(command,"sfollow"))  {
 		quest_manager.sfollow();
