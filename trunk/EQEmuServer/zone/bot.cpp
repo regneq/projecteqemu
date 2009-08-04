@@ -4154,323 +4154,320 @@ bool Bot::Bot_Command_Cure(int curetype, int level) {
 //	return Result;
 //}
 
-void Bot::FinishTrade(Mob* tradingWith) {
-	if(tradingWith && tradingWith->IsClient()) {
-		Client* client = tradingWith->CastToClient();
-		if(client) {
-			int32 items[4]={0};
-			int8 charges[4]={0};
+void Bot::FinishTrade(Client* client) {
+	if(client) {
+		int32 items[4]={0};
+		int8 charges[4]={0};
 
-			bool botCanWear[4] = {0};
-			bool BotCanWear = false;
-			for (sint16 i=3000; i<=3003; i++){
-				BotCanWear = false;
-				botCanWear[i-3000] = BotCanWear;
+		bool botCanWear[4] = {0};
+		bool BotCanWear = false;
+		for (sint16 i=3000; i<=3003; i++){
+			BotCanWear = false;
+			botCanWear[i-3000] = BotCanWear;
 
-				Inventory& clientInventory = client->GetInv();
-				const ItemInst* inst = clientInventory[i];
-				if (inst) {
-					items[i-3000]=inst->GetItem()->ID;
-					charges[i-3000]=inst->GetCharges();
-				}
-				//EQoffline: will give the items to the bots and change the bot stats
-				if(inst && this->GetBotOwner() == client->CastToMob()) {
-					std::string TempErrorMessage;
-					const Item_Struct* mWeaponItem = inst->GetItem();
-					if(mWeaponItem && inst->IsEquipable(GetBaseRace(), GetClass()) && (GetLevel() >= mWeaponItem->ReqLevel)) { // Angelox
-						BotCanWear = true;
-						botCanWear[i-3000] = BotCanWear;
+			Inventory& clientInventory = client->GetInv();
+			const ItemInst* inst = clientInventory[i];
+			if (inst) {
+				items[i-3000]=inst->GetItem()->ID;
+				charges[i-3000]=inst->GetCharges();
+			}
+			//EQoffline: will give the items to the bots and change the bot stats
+			if(inst && this->GetBotOwner() == client->CastToMob()) {
+				std::string TempErrorMessage;
+				const Item_Struct* mWeaponItem = inst->GetItem();
+				if(mWeaponItem && inst->IsEquipable(GetBaseRace(), GetClass()) && (GetLevel() >= mWeaponItem->ReqLevel)) { // Angelox
+					BotCanWear = true;
+					botCanWear[i-3000] = BotCanWear;
 
-						const char* equipped[22] = {"Charm", "Left Ear", "Head", "Face", "Right Ear", "Neck", "Shoulders", "Arms", "Back",
-							"Left Wrist", "Right Wrist", "Range", "Hands", "Primary Hand", "Secondary Hand",
-							"Left Finger", "Right Finger", "Chest", "Legs", "Feet", "Waist", "Ammo" };
-						for(int j=0;j<22;j++) {
-							if(inst->IsSlotAllowed(j)) {
-								if(j==SLOT_EAR01 || j==SLOT_EAR02) { // earrings
-									if(GetBotItemBySlot(SLOT_EAR02, &TempErrorMessage) == 0) {
-										// If the right ear is empty lets put the earring there
-										BotTradeAddItem(mWeaponItem->ID, mWeaponItem->MaxCharges, mWeaponItem->Slots, SLOT_EAR02, &TempErrorMessage);
-									}
-									else if(GetBotItemBySlot(SLOT_EAR01, &TempErrorMessage) == 0) {
-										// The right ear is being used, lets put it in the empty left ear
-										BotTradeAddItem(mWeaponItem->ID, mWeaponItem->MaxCharges, mWeaponItem->Slots, SLOT_EAR01, &TempErrorMessage);
-									}
-									else {
-										// both ears are equipped, so swap out the left ear
-										BotTradeSwapItem(client, SLOT_EAR01, inst->GetID(), mWeaponItem->MaxCharges, mWeaponItem->Slots, &TempErrorMessage);
-										this->Say("I was using this in my %s but OK, you can have it back.", equipped[SLOT_EAR01]);
-									}
-									break;
+					const char* equipped[22] = {"Charm", "Left Ear", "Head", "Face", "Right Ear", "Neck", "Shoulders", "Arms", "Back",
+						"Left Wrist", "Right Wrist", "Range", "Hands", "Primary Hand", "Secondary Hand",
+						"Left Finger", "Right Finger", "Chest", "Legs", "Feet", "Waist", "Ammo" };
+					for(int j=0;j<22;j++) {
+						if(inst->IsSlotAllowed(j)) {
+							if(j==SLOT_EAR01 || j==SLOT_EAR02) { // earrings
+								if(GetBotItemBySlot(SLOT_EAR02, &TempErrorMessage) == 0) {
+									// If the right ear is empty lets put the earring there
+									BotTradeAddItem(mWeaponItem->ID, mWeaponItem->MaxCharges, mWeaponItem->Slots, SLOT_EAR02, &TempErrorMessage);
 								}
-								else if(j==SLOT_BRACER01 || j==SLOT_BRACER02) { // bracers
-									if(GetBotItemBySlot(SLOT_BRACER02, &TempErrorMessage) == 0) {
-										// If the right wrist is empty lets put the bracer there
-										BotTradeAddItem(mWeaponItem->ID, mWeaponItem->MaxCharges, mWeaponItem->Slots, SLOT_BRACER02, &TempErrorMessage);
-									}
-									else if(GetBotItemBySlot(SLOT_BRACER01, &TempErrorMessage) == 0) {
-										// The right wrist is equipped, lets put it in the empty left wrist
-										BotTradeAddItem(mWeaponItem->ID, mWeaponItem->MaxCharges, mWeaponItem->Slots, SLOT_BRACER01, &TempErrorMessage);
-									}
-									else {
-										// both wrists are equipped, so swap out the left wrist
-										BotTradeSwapItem(client, SLOT_BRACER01, inst->GetID(), mWeaponItem->MaxCharges, mWeaponItem->Slots, &TempErrorMessage);
-										Say("I was using this in my %s but OK, you can have it back.", equipped[SLOT_BRACER01]);
-									}
-									break;
+								else if(GetBotItemBySlot(SLOT_EAR01, &TempErrorMessage) == 0) {
+									// The right ear is being used, lets put it in the empty left ear
+									BotTradeAddItem(mWeaponItem->ID, mWeaponItem->MaxCharges, mWeaponItem->Slots, SLOT_EAR01, &TempErrorMessage);
 								}
-								else if(j == SLOT_PRIMARY) { // primary melee weapons
-									SetBotArcher(false);
-									const Item_Struct* itmwp = database.GetItem(inst->GetID());
-									if((GetBotItemBySlot(SLOT_PRIMARY, &TempErrorMessage) == 0)) {
-										// if the primary hand is empty, lets put the item there
-										BotTradeAddItem(mWeaponItem->ID, mWeaponItem->MaxCharges, mWeaponItem->Slots, SLOT_PRIMARY, &TempErrorMessage);
-										if((itmwp->ItemType == ItemType2HS) || (itmwp->ItemType == ItemType2HB) || (itmwp->ItemType == ItemType2HPierce)) {
-											// if the primary item is a two-hander, and the left hand is equipped, lets remove the item in the left hand
-											if(GetBotItemBySlot(SLOT_SECONDARY, &TempErrorMessage) != 0) {
-												BotTradeSwapItem(client, SLOT_SECONDARY, inst->GetID(), mWeaponItem->MaxCharges, mWeaponItem->Slots, &TempErrorMessage, false);
-												Say("I was using this in my %s but OK, you can have it back.", equipped[SLOT_SECONDARY]);
-											}
-										}
-									}
-									else if((GetBotItemBySlot(SLOT_PRIMARY, &TempErrorMessage) != 0)) {
-										if((itmwp->ItemType == ItemType2HS) || (itmwp->ItemType == ItemType2HB) || (itmwp->ItemType == ItemType2HPierce)) {
-											// if the primary hand is equipped and the new item is a two-hander, lets remove the old primary item
-											BotTradeSwapItem(client, SLOT_PRIMARY, inst->GetID(), mWeaponItem->MaxCharges, mWeaponItem->Slots, &TempErrorMessage);
-											Say("I was using this in my %s but OK, you can have it back.", equipped[SLOT_PRIMARY]);
-											if((GetBotItemBySlot(SLOT_SECONDARY, &TempErrorMessage) != 0)) {
-												// if the new primary item is a two-hander, and the secondary hand is equipped, remove the secondary hand item
-												BotTradeSwapItem(client, SLOT_SECONDARY, inst->GetID(), mWeaponItem->MaxCharges, mWeaponItem->Slots, &TempErrorMessage, false);
-												Say("I was using this in my %s but OK, you can have it back.", equipped[SLOT_SECONDARY]);
-											}
-										}
-										else if((GetBotItemBySlot(SLOT_SECONDARY, &TempErrorMessage) == 0) && inst->IsSlotAllowed(SLOT_SECONDARY)) {
-											// Make sure to not equip weapons in the offhand of non-dual wielding classes
-											if(inst->IsWeapon() && !CanThisClassDualWield()) {
-												Say("I cannot dual wield.");
-												client->PushItemOnCursor(*inst, true);
-												client->DeleteItemInInventory(i);
-												return;
-											}
-											const Item_Struct* itmtmp = database.GetItem(GetBotItemBySlot(SLOT_PRIMARY, &TempErrorMessage));
-											if((itmtmp->ItemType == ItemType2HS) || (itmtmp->ItemType == ItemType2HB) || (itmtmp->ItemType == ItemType2HPierce)) {
-												// if the primary hand is equpped with a two-hander and the secondary is free, remove the existing primary hand item
-												BotTradeSwapItem(client, SLOT_PRIMARY, inst->GetID(), mWeaponItem->MaxCharges, mWeaponItem->Slots, &TempErrorMessage, false);
-												Say("I was using this 2 Handed Weapon... but OK, you can have it back.");
-											}
-											// put the new item in the secondary hand
-											BotTradeAddItem(mWeaponItem->ID, mWeaponItem->MaxCharges, mWeaponItem->Slots, SLOT_SECONDARY, &TempErrorMessage);
-										}
-										else if((GetBotItemBySlot(SLOT_SECONDARY, &TempErrorMessage) != 0) && inst->IsSlotAllowed(SLOT_SECONDARY) ) {
-											// Make sure to not equip weapons in the offhand of non-dual wielding classes
-											if(inst->IsWeapon() && !CanThisClassDualWield()) {
-												Say("I cannot dual wield.");
-												client->PushItemOnCursor(*inst, true);
-												client->DeleteItemInInventory(i);
-												return;
-											}
-											// the primary and secondary hands are equipped, swap out the secondary hand item with the new item
-											BotTradeSwapItem(client, SLOT_SECONDARY, inst->GetID(), mWeaponItem->MaxCharges, mWeaponItem->Slots, &TempErrorMessage);
+								else {
+									// both ears are equipped, so swap out the left ear
+									BotTradeSwapItem(client, SLOT_EAR01, inst->GetID(), mWeaponItem->MaxCharges, mWeaponItem->Slots, &TempErrorMessage);
+									this->Say("I was using this in my %s but OK, you can have it back.", equipped[SLOT_EAR01]);
+								}
+								break;
+							}
+							else if(j==SLOT_BRACER01 || j==SLOT_BRACER02) { // bracers
+								if(GetBotItemBySlot(SLOT_BRACER02, &TempErrorMessage) == 0) {
+									// If the right wrist is empty lets put the bracer there
+									BotTradeAddItem(mWeaponItem->ID, mWeaponItem->MaxCharges, mWeaponItem->Slots, SLOT_BRACER02, &TempErrorMessage);
+								}
+								else if(GetBotItemBySlot(SLOT_BRACER01, &TempErrorMessage) == 0) {
+									// The right wrist is equipped, lets put it in the empty left wrist
+									BotTradeAddItem(mWeaponItem->ID, mWeaponItem->MaxCharges, mWeaponItem->Slots, SLOT_BRACER01, &TempErrorMessage);
+								}
+								else {
+									// both wrists are equipped, so swap out the left wrist
+									BotTradeSwapItem(client, SLOT_BRACER01, inst->GetID(), mWeaponItem->MaxCharges, mWeaponItem->Slots, &TempErrorMessage);
+									Say("I was using this in my %s but OK, you can have it back.", equipped[SLOT_BRACER01]);
+								}
+								break;
+							}
+							else if(j == SLOT_PRIMARY) { // primary melee weapons
+								SetBotArcher(false);
+								const Item_Struct* itmwp = database.GetItem(inst->GetID());
+								if((GetBotItemBySlot(SLOT_PRIMARY, &TempErrorMessage) == 0)) {
+									// if the primary hand is empty, lets put the item there
+									BotTradeAddItem(mWeaponItem->ID, mWeaponItem->MaxCharges, mWeaponItem->Slots, SLOT_PRIMARY, &TempErrorMessage);
+									if((itmwp->ItemType == ItemType2HS) || (itmwp->ItemType == ItemType2HB) || (itmwp->ItemType == ItemType2HPierce)) {
+										// if the primary item is a two-hander, and the left hand is equipped, lets remove the item in the left hand
+										if(GetBotItemBySlot(SLOT_SECONDARY, &TempErrorMessage) != 0) {
+											BotTradeSwapItem(client, SLOT_SECONDARY, inst->GetID(), mWeaponItem->MaxCharges, mWeaponItem->Slots, &TempErrorMessage, false);
 											Say("I was using this in my %s but OK, you can have it back.", equipped[SLOT_SECONDARY]);
 										}
-										else {
-											Say("Use '#bot inventory remove 13' to remove the primary weapon.");
+									}
+								}
+								else if((GetBotItemBySlot(SLOT_PRIMARY, &TempErrorMessage) != 0)) {
+									if((itmwp->ItemType == ItemType2HS) || (itmwp->ItemType == ItemType2HB) || (itmwp->ItemType == ItemType2HPierce)) {
+										// if the primary hand is equipped and the new item is a two-hander, lets remove the old primary item
+										BotTradeSwapItem(client, SLOT_PRIMARY, inst->GetID(), mWeaponItem->MaxCharges, mWeaponItem->Slots, &TempErrorMessage);
+										Say("I was using this in my %s but OK, you can have it back.", equipped[SLOT_PRIMARY]);
+										if((GetBotItemBySlot(SLOT_SECONDARY, &TempErrorMessage) != 0)) {
+											// if the new primary item is a two-hander, and the secondary hand is equipped, remove the secondary hand item
+											BotTradeSwapItem(client, SLOT_SECONDARY, inst->GetID(), mWeaponItem->MaxCharges, mWeaponItem->Slots, &TempErrorMessage, false);
+											Say("I was using this in my %s but OK, you can have it back.", equipped[SLOT_SECONDARY]);
+										}
+									}
+									else if((GetBotItemBySlot(SLOT_SECONDARY, &TempErrorMessage) == 0) && inst->IsSlotAllowed(SLOT_SECONDARY)) {
+										// Make sure to not equip weapons in the offhand of non-dual wielding classes
+										if(inst->IsWeapon() && !CanThisClassDualWield()) {
+											Say("I cannot dual wield.");
 											client->PushItemOnCursor(*inst, true);
 											client->DeleteItemInInventory(i);
 											return;
 										}
+										const Item_Struct* itmtmp = database.GetItem(GetBotItemBySlot(SLOT_PRIMARY, &TempErrorMessage));
+										if((itmtmp->ItemType == ItemType2HS) || (itmtmp->ItemType == ItemType2HB) || (itmtmp->ItemType == ItemType2HPierce)) {
+											// if the primary hand is equpped with a two-hander and the secondary is free, remove the existing primary hand item
+											BotTradeSwapItem(client, SLOT_PRIMARY, inst->GetID(), mWeaponItem->MaxCharges, mWeaponItem->Slots, &TempErrorMessage, false);
+											Say("I was using this 2 Handed Weapon... but OK, you can have it back.");
+										}
+										// put the new item in the secondary hand
+										BotTradeAddItem(mWeaponItem->ID, mWeaponItem->MaxCharges, mWeaponItem->Slots, SLOT_SECONDARY, &TempErrorMessage);
 									}
-									break;
-								}
-								else if(j == SLOT_SECONDARY) { // Secondary Hand
-									SetBotArcher(false);
-									// Make sure to not equip weapons in the offhand of non-dual wielding classes
-									if(inst->IsWeapon() && !CanThisClassDualWield()) {
-										Say("I cannot dual wield.");
+									else if((GetBotItemBySlot(SLOT_SECONDARY, &TempErrorMessage) != 0) && inst->IsSlotAllowed(SLOT_SECONDARY) ) {
+										// Make sure to not equip weapons in the offhand of non-dual wielding classes
+										if(inst->IsWeapon() && !CanThisClassDualWield()) {
+											Say("I cannot dual wield.");
+											client->PushItemOnCursor(*inst, true);
+											client->DeleteItemInInventory(i);
+											return;
+										}
+										// the primary and secondary hands are equipped, swap out the secondary hand item with the new item
+										BotTradeSwapItem(client, SLOT_SECONDARY, inst->GetID(), mWeaponItem->MaxCharges, mWeaponItem->Slots, &TempErrorMessage);
+										Say("I was using this in my %s but OK, you can have it back.", equipped[SLOT_SECONDARY]);
+									}
+									else {
+										Say("Use '#bot inventory remove 13' to remove the primary weapon.");
 										client->PushItemOnCursor(*inst, true);
 										client->DeleteItemInInventory(i);
 										return;
 									}
-									const Item_Struct* itmtmp = database.GetItem(GetBotItemBySlot(SLOT_PRIMARY, &TempErrorMessage));
-									if(itmtmp && ((itmtmp->ItemType == ItemType2HS) || (itmtmp->ItemType == ItemType2HB) || (itmtmp->ItemType == ItemType2HPierce))) {
-										// If the primary hand item is a two-hander, remove it
-										BotTradeSwapItem(client, SLOT_PRIMARY, inst->GetID(), mWeaponItem->MaxCharges, mWeaponItem->Slots, &TempErrorMessage, false);
-										Say("I was using a 2 Handed weapon... but OK, you can have it back.");
-									}
-									if((GetBotItemBySlot(SLOT_SECONDARY, &TempErrorMessage) == 0)) {
-										// if the secondary hand is free, equip it with the new item
-										BotTradeAddItem(mWeaponItem->ID, mWeaponItem->MaxCharges, mWeaponItem->Slots, SLOT_SECONDARY, &TempErrorMessage);
-									}
-									else {
-										// The primary and secondary hands are equipped, just swap out the secondary item with the new item
-										BotTradeSwapItem(client, SLOT_SECONDARY, inst->GetID(), mWeaponItem->MaxCharges, mWeaponItem->Slots, &TempErrorMessage);
-										Say("I was using this in my %s but OK, you can have it back.", equipped[SLOT_SECONDARY]);
-									}
-									break;
 								}
-								else if(j==SLOT_RING01 || j==SLOT_RING02) { // rings
-									if(GetBotItemBySlot(SLOT_RING02, &TempErrorMessage) == 0) {
-										// If the right finger is empty lets put the ring there
-										BotTradeAddItem(mWeaponItem->ID, mWeaponItem->MaxCharges, mWeaponItem->Slots, SLOT_RING02, &TempErrorMessage);
-									}
-									else if(GetBotItemBySlot(SLOT_RING01, &TempErrorMessage) == 0) {
-										// The right finger is equipped, lets put it on the empty left finger
-										BotTradeAddItem(mWeaponItem->ID, mWeaponItem->MaxCharges, mWeaponItem->Slots, SLOT_RING01, &TempErrorMessage);
-									}
-									else {
-										// both fingers are equipped, so swap out the left finger
-										BotTradeSwapItem(client, SLOT_RING01, inst->GetID(), mWeaponItem->MaxCharges, mWeaponItem->Slots, &TempErrorMessage);
-										Say("I was using this in my %s but OK, you can have it back.", equipped[SLOT_RING01]);
-									}
-									break;
-								}
-								if((j == SLOT_AMMO) || (j == SLOT_RANGE)) {
-									SetBotArcher(false);
-								}
-								if(GetBotItemBySlot(j, &TempErrorMessage) != 0) {
-									// remove existing item if equipped
-									BotTradeSwapItem(client, j, inst->GetID(), mWeaponItem->MaxCharges, mWeaponItem->Slots, &TempErrorMessage, false);
-									Say("Thanks! Here, take this other one back.");
-								}
-								// put the item in the slot
-								BotTradeAddItem(mWeaponItem->ID, mWeaponItem->MaxCharges, mWeaponItem->Slots, j, &TempErrorMessage);
 								break;
 							}
+							else if(j == SLOT_SECONDARY) { // Secondary Hand
+								SetBotArcher(false);
+								// Make sure to not equip weapons in the offhand of non-dual wielding classes
+								if(inst->IsWeapon() && !CanThisClassDualWield()) {
+									Say("I cannot dual wield.");
+									client->PushItemOnCursor(*inst, true);
+									client->DeleteItemInInventory(i);
+									return;
+								}
+								const Item_Struct* itmtmp = database.GetItem(GetBotItemBySlot(SLOT_PRIMARY, &TempErrorMessage));
+								if(itmtmp && ((itmtmp->ItemType == ItemType2HS) || (itmtmp->ItemType == ItemType2HB) || (itmtmp->ItemType == ItemType2HPierce))) {
+									// If the primary hand item is a two-hander, remove it
+									BotTradeSwapItem(client, SLOT_PRIMARY, inst->GetID(), mWeaponItem->MaxCharges, mWeaponItem->Slots, &TempErrorMessage, false);
+									Say("I was using a 2 Handed weapon... but OK, you can have it back.");
+								}
+								if((GetBotItemBySlot(SLOT_SECONDARY, &TempErrorMessage) == 0)) {
+									// if the secondary hand is free, equip it with the new item
+									BotTradeAddItem(mWeaponItem->ID, mWeaponItem->MaxCharges, mWeaponItem->Slots, SLOT_SECONDARY, &TempErrorMessage);
+								}
+								else {
+									// The primary and secondary hands are equipped, just swap out the secondary item with the new item
+									BotTradeSwapItem(client, SLOT_SECONDARY, inst->GetID(), mWeaponItem->MaxCharges, mWeaponItem->Slots, &TempErrorMessage);
+									Say("I was using this in my %s but OK, you can have it back.", equipped[SLOT_SECONDARY]);
+								}
+								break;
+							}
+							else if(j==SLOT_RING01 || j==SLOT_RING02) { // rings
+								if(GetBotItemBySlot(SLOT_RING02, &TempErrorMessage) == 0) {
+									// If the right finger is empty lets put the ring there
+									BotTradeAddItem(mWeaponItem->ID, mWeaponItem->MaxCharges, mWeaponItem->Slots, SLOT_RING02, &TempErrorMessage);
+								}
+								else if(GetBotItemBySlot(SLOT_RING01, &TempErrorMessage) == 0) {
+									// The right finger is equipped, lets put it on the empty left finger
+									BotTradeAddItem(mWeaponItem->ID, mWeaponItem->MaxCharges, mWeaponItem->Slots, SLOT_RING01, &TempErrorMessage);
+								}
+								else {
+									// both fingers are equipped, so swap out the left finger
+									BotTradeSwapItem(client, SLOT_RING01, inst->GetID(), mWeaponItem->MaxCharges, mWeaponItem->Slots, &TempErrorMessage);
+									Say("I was using this in my %s but OK, you can have it back.", equipped[SLOT_RING01]);
+								}
+								break;
+							}
+							if((j == SLOT_AMMO) || (j == SLOT_RANGE)) {
+								SetBotArcher(false);
+							}
+							if(GetBotItemBySlot(j, &TempErrorMessage) != 0) {
+								// remove existing item if equipped
+								BotTradeSwapItem(client, j, inst->GetID(), mWeaponItem->MaxCharges, mWeaponItem->Slots, &TempErrorMessage, false);
+								Say("Thanks! Here, take this other one back.");
+							}
+							// put the item in the slot
+							BotTradeAddItem(mWeaponItem->ID, mWeaponItem->MaxCharges, mWeaponItem->Slots, j, &TempErrorMessage);
+							break;
 						}
-						CalcBotStats();
 					}
-				}
-				if(inst) {
-					if(!botCanWear[i-3000]) {
-						client->PushItemOnCursor(*inst, true);
-					}
-					client->DeleteItemInInventory(i);
+					CalcBotStats();
 				}
 			}
-
-			//		if(!with->IsBot()) { // START This is so Bots don't trigger the EVENT_ITEM
-			//
-			//			for (sint16 i=3000; i<=3003; i++) {
-			//				const ItemInst* inst = m_inv[i];
-			//				if (inst) {
-			//					items[i-3000]=inst->GetItem()->ID;
-			//					charges[i-3000]=inst->GetCharges();
-			//					DeleteItemInInventory(i);
-			//				}
-			//			}
-			//
-			//			//dont bother with this crap unless we have a quest...
-			//			//pets can have quests! (especially charmed NPCs)
-			//			bool did_quest = false;
-			//#ifdef EMBPERL
-			//			if(((PerlembParser *)parse)->HasQuestSub(with->GetNPCTypeID(), "EVENT_ITEM")) {
-			//#else
-			//			if(parse->HasQuestFile(with->GetNPCTypeID())) {
-			//#endif
-			//				char temp1[100];
-			//				memset(temp1,0x0,100);
-			//				char temp2[100];
-			//				memset(temp2,0x0,100);
-			//				for ( int z=0; z < 4; z++ ) {
-			//					snprintf(temp1, 100, "item%d.%d", z+1,with->GetNPCTypeID());
-			//					snprintf(temp2, 100, "%d",items[z]);
-			//					parse->AddVar(temp1,temp2);
-			//					//			memset(temp1,0x0,100);
-			//					//			memset(temp2,0x0,100);
-			//					snprintf(temp1, 100, "item%d.charges.%d", z+1,with->GetNPCTypeID());
-			//					snprintf(temp2, 100, "%d",charges[z]);
-			//					parse->AddVar(temp1,temp2);
-			//					//			memset(temp1,0x0,100);
-			//					//			memset(temp2,0x0,100);
-			//				}
-			//				snprintf(temp1, 100, "copper.%d",with->GetNPCTypeID());
-			//				snprintf(temp2, 100, "%i",trade->cp);
-			//				parse->AddVar(temp1,temp2);
-			//				//		memset(temp1,0x0,100);
-			//				//		memset(temp2,0x0,100);
-			//				snprintf(temp1, 100, "silver.%d",with->GetNPCTypeID());
-			//				snprintf(temp2, 100, "%i",trade->sp);
-			//				parse->AddVar(temp1,temp2);
-			//				//		memset(temp1,0x0,100);
-			//				//		memset(temp2,0x0,100);
-			//				snprintf(temp1, 100, "gold.%d",with->GetNPCTypeID());
-			//				snprintf(temp2, 100, "%i",trade->gp);
-			//				parse->AddVar(temp1,temp2);
-			//				//		memset(temp1,0x0,100);
-			//				//		memset(temp2,0x0,100);
-			//				snprintf(temp1, 100, "platinum.%d",with->GetNPCTypeID());
-			//				snprintf(temp2, 100, "%i",trade->pp);
-			//				parse->AddVar(temp1,temp2);
-			//				//		memset(temp1,0x0,100);
-			//				//		memset(temp2,0x0,100);
-			//				parse->Event(EVENT_ITEM, with->GetNPCTypeID(), NULL, with, this);
-			//				did_quest = true;
-			//			}
-			//			if(RuleB(TaskSystem, EnableTaskSystem)) {
-			//				int Cash = trade->cp + (trade->sp * 10) + (trade->gp * 100) + (trade->pp * 1000);
-			//				if(UpdateTasksOnDeliver(items, Cash, with->GetNPCTypeID())) {
-			//					if(!with->IsMoving()) 
-			//						with->FaceTarget(this);
-			//				}
-			//			}
-			//			//		Message(0, "Normal NPC: keeping items.");
-			//
-			//			//else, we do not have a quest, give the items to the NPC
-			//			if(did_quest) {
-			//				//only continue if we are a charmed NPC
-			//				if(!with->HasOwner() || with->GetPetType() != petCharmed)
-			//					return;
-			//			}
-			//		} // END This is so Bots don't trigger the EVENT_ITEM
-
-			int xy = CountLoot();
-
-			for(int y=0; y < 4; y++) {
-				if(xy >= 23) {
-					break;
+			if(inst) {
+				if(!botCanWear[i-3000]) {
+					client->PushItemOnCursor(*inst, true);
 				}
-				// TODO: Figure out whats with the xy-- followed by xy++... its literally a 0 sum calculation.
-				xy--;
-				//if(with->IsBot()) { // The xy++ below doesn't work for bot trading.
-				//	if(xy >= 23) {
-				//		break;
-				//	}
-				//	xy--;
-				//}
-				//else {
-				//	if (xy >= 20)
-				//		break;
-				//}
+				client->DeleteItemInInventory(i);
+			}
+		}
 
-				xy++;
-				//NPC* npc=with->CastToNPC();
-				const Item_Struct* item2 = database.GetItem(items[y]);
-				if (item2) {
-					if(botCanWear[y]) {
-						Say("Thank you for the %s, %s.", item2->Name,  client->GetName());
-					}
-					else {
-						Say("I can't use this %s!", item2->Name);
-					}
+		//		if(!with->IsBot()) { // START This is so Bots don't trigger the EVENT_ITEM
+		//
+		//			for (sint16 i=3000; i<=3003; i++) {
+		//				const ItemInst* inst = m_inv[i];
+		//				if (inst) {
+		//					items[i-3000]=inst->GetItem()->ID;
+		//					charges[i-3000]=inst->GetCharges();
+		//					DeleteItemInInventory(i);
+		//				}
+		//			}
+		//
+		//			//dont bother with this crap unless we have a quest...
+		//			//pets can have quests! (especially charmed NPCs)
+		//			bool did_quest = false;
+		//#ifdef EMBPERL
+		//			if(((PerlembParser *)parse)->HasQuestSub(with->GetNPCTypeID(), "EVENT_ITEM")) {
+		//#else
+		//			if(parse->HasQuestFile(with->GetNPCTypeID())) {
+		//#endif
+		//				char temp1[100];
+		//				memset(temp1,0x0,100);
+		//				char temp2[100];
+		//				memset(temp2,0x0,100);
+		//				for ( int z=0; z < 4; z++ ) {
+		//					snprintf(temp1, 100, "item%d.%d", z+1,with->GetNPCTypeID());
+		//					snprintf(temp2, 100, "%d",items[z]);
+		//					parse->AddVar(temp1,temp2);
+		//					//			memset(temp1,0x0,100);
+		//					//			memset(temp2,0x0,100);
+		//					snprintf(temp1, 100, "item%d.charges.%d", z+1,with->GetNPCTypeID());
+		//					snprintf(temp2, 100, "%d",charges[z]);
+		//					parse->AddVar(temp1,temp2);
+		//					//			memset(temp1,0x0,100);
+		//					//			memset(temp2,0x0,100);
+		//				}
+		//				snprintf(temp1, 100, "copper.%d",with->GetNPCTypeID());
+		//				snprintf(temp2, 100, "%i",trade->cp);
+		//				parse->AddVar(temp1,temp2);
+		//				//		memset(temp1,0x0,100);
+		//				//		memset(temp2,0x0,100);
+		//				snprintf(temp1, 100, "silver.%d",with->GetNPCTypeID());
+		//				snprintf(temp2, 100, "%i",trade->sp);
+		//				parse->AddVar(temp1,temp2);
+		//				//		memset(temp1,0x0,100);
+		//				//		memset(temp2,0x0,100);
+		//				snprintf(temp1, 100, "gold.%d",with->GetNPCTypeID());
+		//				snprintf(temp2, 100, "%i",trade->gp);
+		//				parse->AddVar(temp1,temp2);
+		//				//		memset(temp1,0x0,100);
+		//				//		memset(temp2,0x0,100);
+		//				snprintf(temp1, 100, "platinum.%d",with->GetNPCTypeID());
+		//				snprintf(temp2, 100, "%i",trade->pp);
+		//				parse->AddVar(temp1,temp2);
+		//				//		memset(temp1,0x0,100);
+		//				//		memset(temp2,0x0,100);
+		//				parse->Event(EVENT_ITEM, with->GetNPCTypeID(), NULL, with, this);
+		//				did_quest = true;
+		//			}
+		//			if(RuleB(TaskSystem, EnableTaskSystem)) {
+		//				int Cash = trade->cp + (trade->sp * 10) + (trade->gp * 100) + (trade->pp * 1000);
+		//				if(UpdateTasksOnDeliver(items, Cash, with->GetNPCTypeID())) {
+		//					if(!with->IsMoving()) 
+		//						with->FaceTarget(this);
+		//				}
+		//			}
+		//			//		Message(0, "Normal NPC: keeping items.");
+		//
+		//			//else, we do not have a quest, give the items to the NPC
+		//			if(did_quest) {
+		//				//only continue if we are a charmed NPC
+		//				if(!with->HasOwner() || with->GetPetType() != petCharmed)
+		//					return;
+		//			}
+		//		} // END This is so Bots don't trigger the EVENT_ITEM
 
-					if(item2->NoDrop != 0)
-						AddLootDrop(item2, &itemlist, charges[y], true, true);
+		int xy = CountLoot();
 
-					//if((GetGM() && !with->IsBot()) || ((item2->NoDrop != 0) && !with->IsBot()))
-					//	with->AddLootDrop(item2, &with->itemlist, charges[y], true, true);
-					//// franck-add: you can give nodrop items to bots
-					//else if(with->IsBot() && botCanWear[y]) {
-					//	with->Say("Thank you for the %s, %s.", item2->Name,  this->GetName());
-					//}
-					//else if(with->IsBot() && !botCanWear[y]) {
-					//	with->Say("I can't use this %s!", item2->Name);
-					//}
+		for(int y=0; y < 4; y++) {
+			if(xy >= 23) {
+				break;
+			}
+			// TODO: Figure out whats with the xy-- followed by xy++... its literally a 0 sum calculation.
+			xy--;
+			//if(with->IsBot()) { // The xy++ below doesn't work for bot trading.
+			//	if(xy >= 23) {
+			//		break;
+			//	}
+			//	xy--;
+			//}
+			//else {
+			//	if (xy >= 20)
+			//		break;
+			//}
 
-					////if was not no drop item, let the NPC have it
-					//if(GetGM() || item2->NoDrop != 0)
-					//	with->AddLootDrop(item2, &with->itemlist, charges[y], true, true);
-					//else 
-					//	with->AddLootDrop(item2, NULL, charges[y], false, true);
+			xy++;
+			//NPC* npc=with->CastToNPC();
+			const Item_Struct* item2 = database.GetItem(items[y]);
+			if (item2) {
+				if(botCanWear[y]) {
+					Say("Thank you for the %s, %s.", item2->Name,  client->GetName());
 				}
+				else {
+					Say("I can't use this %s!", item2->Name);
+				}
+
+				if(item2->NoDrop != 0)
+					AddLootDrop(item2, &itemlist, charges[y], true, true);
+
+				//if((GetGM() && !with->IsBot()) || ((item2->NoDrop != 0) && !with->IsBot()))
+				//	with->AddLootDrop(item2, &with->itemlist, charges[y], true, true);
+				//// franck-add: you can give nodrop items to bots
+				//else if(with->IsBot() && botCanWear[y]) {
+				//	with->Say("Thank you for the %s, %s.", item2->Name,  this->GetName());
+				//}
+				//else if(with->IsBot() && !botCanWear[y]) {
+				//	with->Say("I can't use this %s!", item2->Name);
+				//}
+
+				////if was not no drop item, let the NPC have it
+				//if(GetGM() || item2->NoDrop != 0)
+				//	with->AddLootDrop(item2, &with->itemlist, charges[y], true, true);
+				//else 
+				//	with->AddLootDrop(item2, NULL, charges[y], false, true);
 			}
 		}
 	}

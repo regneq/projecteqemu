@@ -25,7 +25,6 @@ public:
 	Bot(uint32 botID, uint32 botOwnerCharacterID, uint32 botSpellsID, NPCType npcTypeData);
 
 	//abstract virtual function implementations requird by base abstract class
-	virtual void FinishTrade(Mob* tradingWith);
 	virtual void Death(Mob* killerMob, sint32 damage, int16 spell_id, SkillType attack_skill);
 	virtual void Damage(Mob* from, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable = true, sint8 buffslot = -1, bool iBuffTic = false);
 	virtual bool Attack(Mob* other, int Hand = 13, bool FromRiposte = false);
@@ -81,6 +80,7 @@ public:
 	bool DoFinishedSpellAETarget(int16 spell_id, Mob* spellTarget, int16 slot, bool &stopLogic);
 	bool DoFinishedSpellSingleTarget(int16 spell_id, Mob* spellTarget, int16 slot, bool &stopLogic);
 	bool DoFinishedSpellGroupTarget(int16 spell_id, Mob* spellTarget, int16 slot, bool &stopLogic);
+	void FinishTrade(Client* client);
 
 	// Mob Spell Virtual Override Methods
 	virtual sint32 GetActSpellDamage(int16 spell_id, sint32 value);
