@@ -1159,10 +1159,10 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte)
 						damage = 0; // Counts as a miss
 						slippery_attack = true;
 					} else 
-						other->DoRiposte();
+						DoRiposte(other);
 				}
 				else 
-					other->DoRiposte();
+					DoRiposte(other);
 			}
 		}
 
@@ -1790,7 +1790,7 @@ bool NPC::Attack(Mob* other, int Hand, bool bRiposte)	 // Kaiyodo - base functio
 	
 	// now check ripostes
 	if (damage == -3) { // riposting
-		other->DoRiposte();
+		DoRiposte(other);
 	}
 	
 	if (damage > 0)
@@ -3695,8 +3695,7 @@ bool Mob::TryFinishingBlow(Mob *defender, SkillType skillinuse)
 	return false;
 }
 
-void Mob::DoRiposte() {
-	Mob* defender = this;
+void Mob::DoRiposte(Mob* defender) {
 	mlog(COMBAT__ATTACKS, "Preforming a riposte");
 
 	defender->Attack(this, SLOT_PRIMARY, true);

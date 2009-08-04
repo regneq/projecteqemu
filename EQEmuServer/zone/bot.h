@@ -54,7 +54,7 @@ public:
 	virtual int GetMonkHandToHandDamage(void);
 	virtual void TryCriticalHit(Mob *defender, int16 skill, sint32 &damage);
 	virtual bool TryFinishingBlow(Mob *defender, SkillType skillinuse);
-	virtual void DoRiposte();
+	virtual void DoRiposte(Mob* defender);
 	inline virtual sint16 GetATK() const { return ATK + itembonuses.ATK + spellbonuses.ATK + ((GetSTR() + GetSkill(OFFENSE)) * 9 / 10); }
 	virtual void MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit);
 	virtual void DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, sint32 min_damage = 1, sint32 hate_override = -1);

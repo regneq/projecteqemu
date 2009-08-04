@@ -4836,10 +4836,10 @@ bool Bot::Attack(Mob* other, int Hand, bool FromRiposte) {
 						slippery_attack = true;
 					}
 					else 
-						other->DoRiposte();
+						DoRiposte(other);
 				}
 				else 
-					other->DoRiposte();
+					DoRiposte(other);
 			}
 		}
 		
@@ -5842,8 +5842,7 @@ bool Bot::TryFinishingBlow(Mob *defender, SkillType skillinuse)
 	return false;
 }
 
-void Bot::DoRiposte() {
-	Mob* defender = this;
+void Bot::DoRiposte(Mob* defender) {
 	mlog(COMBAT__ATTACKS, "Preforming a riposte");
 
 	defender->Attack(this, SLOT_PRIMARY, true);
@@ -6208,7 +6207,7 @@ void Bot::DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, si
 	who->Damage(this, max_damage, SPELL_UNKNOWN, skill, false);
 	
 	if(max_damage == -3)
-		who->DoRiposte();	
+		DoRiposte(who);	
 }
 
 void Bot::TryBackstab(Mob *other) {
@@ -9183,12 +9182,12 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 				b->SetBotRaidID(c->GetBotRaidID());
 			}
 
-			b->EquipBot(&TempErrorMessage);
+			/*b->EquipBot(&TempErrorMessage);
 
 			if(!TempErrorMessage.empty()) {
 				c->Message(13, TempErrorMessage.c_str());
 				return;
-			}
+			}*/
 
 			/*uint32 itemID = 0;
 			const Item_Struct* item2 = NULL;

@@ -487,7 +487,7 @@ bool logpos;
 	void TryPetCriticalHit(Mob *defender, int16 skill, sint32 &damage);
 	virtual bool TryFinishingBlow(Mob *defender, SkillType skillinuse);
 	virtual bool TryHeadShot(Mob* defender, SkillType skillInUse);
-	virtual void DoRiposte();
+	virtual void DoRiposte(Mob* defender);
 	void ApplyMeleeDamageBonus(int16 skill, sint32 &damage);
 	virtual void MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit);
 
