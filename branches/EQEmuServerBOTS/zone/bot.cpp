@@ -2935,9 +2935,7 @@ void Bot::Spawn(Client* botCharacterOwner, std::string* errorMessage) {
 
 		this->SendAllPosition();
 
-		//PlotPositionAroundTarget(botCharacterOwner, x_pos, y_pos, z_pos, false);
-
-		/*if(!_botInventory.empty()) {
+		if(!_botInventory.empty()) {
 			for(int i = 1; i < 22; i++) {
 				uint32 itemID = 0;
 				itemID = GetBotItem(i);
@@ -2950,7 +2948,7 @@ void Bot::Spawn(Client* botCharacterOwner, std::string* errorMessage) {
 					}
 				}
 			}
-		}*/
+		}
 	}
 }
 
@@ -2991,14 +2989,7 @@ Bot::BotInventory Bot::GetBotItems(std::string* errorMessage) {
 
 		if(database.RunQuery(query, MakeAnyLenString(&query, "SELECT slotid, itemid FROM botinventory WHERE botid=%i order by slotid", this->GetBotID()), errbuf, &DatasetResult)) {
 			while(DataRow = mysql_fetch_row(DatasetResult)) {
-
-				/*BotInventoryStruct TempBotInventoryItem;
-				TempBotInventoryItem.BotID = this->GetBotID();
-				TempBotInventoryItem.BotSlotID = atoi(DataRow[0]);
-				TempBotInventoryItem.ItemID = atoi(DataRow[1]);*/
-
 				Result.insert(BotInventoryItem(atoi(DataRow[0]), atoi(DataRow[1])));
-				//Result.push_back(TempBotInventoryItem);
 			}
 
 			mysql_free_result(DatasetResult);
