@@ -481,7 +481,7 @@ bool logpos;
 
 	bool AttackAnimation(SkillType &skillinuse, int Hand, const ItemInst* weapon);
 	virtual bool AvoidDamage(Mob* attacker, sint32 &damage);
-	virtual float CheckHitChance(Mob* attacker, SkillType skillinuse, int Hand);
+	virtual bool CheckHitChance(Mob* attacker, SkillType skillinuse, int Hand);
 	virtual void TryCriticalHit(Mob *defender, int16 skill, sint32 &damage);
 	void TryPetCriticalHit(Mob *defender, int16 skill, sint32 &damage);
 	virtual bool TryFinishingBlow(Mob *defender, SkillType skillinuse);
