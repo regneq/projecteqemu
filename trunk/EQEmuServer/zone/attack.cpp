@@ -559,10 +559,7 @@ void Mob::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 			ac_eq100 += (2325 + ((defender->GetLevel()-69)*125));
 		}
 
-		if(attacker->IsNPC())
-			attackRating = 10 + attacker->GetATK() + (attacker->GetSTR() * 9 / 10);
-		else
-			attackRating = 10 + attacker->GetATK() + ((attacker->GetSTR() + attacker->GetSkill(OFFENSE)) * 9 / 10);
+		attackRating = 10 + attacker->GetATK();
 
 		sint32 defenseRating = defender->GetAC();
 		defenseRating += 125;
