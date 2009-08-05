@@ -5026,11 +5026,10 @@ sint16 Bot::CalcBotFocusEffect(botfocusType bottype, int16 focus_id, int16 spell
 	return(value*lvlModifier/100);
 }
 
-float Bot::CheckHitChance(Mob *attacker, SkillType skillinuse, int Hand) {
-	float Result = 0;
+float Bot::GetHitChance(Mob *attacker, SkillType skillinuse, int Hand) {
+	float Result = 1;
 
 	if(attacker) {
-		Result = Mob::CheckHitChance(attacker, skillinuse, Hand);
 
 		Result += (RuleR(Combat,WeaponSkillFalloff) * 5);
 
@@ -5136,7 +5135,7 @@ bool Bot::CalcBotHitChance(Mob* target, SkillType skillinuse, int Hand) {
 	bool Result = false;
 
 	if(target) {
-		float chancetohit = target->CheckHitChance(this, skillinuse, Hand);
+		float chancetohit = 1.0;
 
 		chancetohit -= (RuleR(Combat,WeaponSkillFalloff) * 5);
 

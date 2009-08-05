@@ -131,7 +131,7 @@ bool Mob::AttackAnimation(SkillType &skillinuse, int Hand, const ItemInst* weapo
 
 // solar: called when a mob is attacked, does the checks to see if it's a hit
 // and does other mitigation checks.  'this' is the mob being attacked.
-float Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
+bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 {
 /*
 	Father Nitwit:
@@ -559,7 +559,10 @@ void Mob::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 			ac_eq100 += (2325 + ((defender->GetLevel()-69)*125));
 		}
 
-		attackRating = 10 + attacker->GetATK();
+		if(attacker->IsNPC())
+			attackRating = 10 + attacker->GetATK() + (attacker->GetSTR() * 9 / 10);
+		else
+			attackRating = 10 + attacker->GetATK() + ((attacker->GetSTR() + attacker->GetSkill(OFFENSE)) * 9 / 10);
 
 		sint32 defenseRating = defender->GetAC();
 		defenseRating += 125;

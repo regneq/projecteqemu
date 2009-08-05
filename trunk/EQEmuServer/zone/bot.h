@@ -46,7 +46,7 @@ public:
 	int16 BotGetSpells(int spellslot) { return AIspells[spellslot].spellid; }
 	int16 BotGetSpellType(int spellslot) { return AIspells[spellslot].type; }
     int16 BotGetSpellPriority(int spellslot) { return AIspells[spellslot].priority; }
-	virtual float CheckHitChance(Mob* attacker, SkillType skillinuse, int Hand);
+	virtual float GetHitChance(Mob* attacker, SkillType skillinuse, int Hand);
 	virtual float GetProcChances(float &ProcBonus, float &ProcChance, int16 weapon_speed);
 	virtual bool AvoidDamage(Mob* other, sint32 &damage);
 	virtual int GetMonkHandToHandDamage(void);
