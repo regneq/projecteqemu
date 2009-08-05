@@ -1,5 +1,12 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==08/05/2009==
+WildcardX: Fixed a bug that prevented COMBAT_EVENT signaling to NPC's from working correctly.
+WildcardX: Bots will now call the database a lot less regarding their inventory. They can get info about their inventory from memory during runtime.
+WildcardX: Bots appearance like face, hair, etc is now persisted to the database and used during runtime.
+WildcardX: (Taurinus) Tweaked the way bots calculate their AA's so the code isn't as long and is easier to read.
+WildcardX: A bot getting aggro will aggro its group members for them to come to the bots defense.
+
 ==08/04/2009==
 WildcardX: Fixed a bug that broke cash handins with NPC's.
 WildcardX: Fixed a bug that reversed a riposte attack's target.

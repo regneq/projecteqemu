@@ -28,7 +28,6 @@ public:
 	virtual void Death(Mob* killerMob, sint32 damage, int16 spell_id, SkillType attack_skill);
 	virtual void Damage(Mob* from, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable = true, sint8 buffslot = -1, bool iBuffTic = false);
 	virtual bool Attack(Mob* other, int Hand = 13, bool FromRiposte = false);
-	virtual void AddToHateList(Mob* other, sint32 hate = 0, sint32 damage = 0, bool iYellForHelp = true, bool bFrenzy = false, bool iBuffTic = false);
 
 	// Class Methods
 	bool IsValidRaceClassCombo();
@@ -81,6 +80,7 @@ public:
 	bool DoFinishedSpellSingleTarget(int16 spell_id, Mob* spellTarget, int16 slot, bool &stopLogic);
 	bool DoFinishedSpellGroupTarget(int16 spell_id, Mob* spellTarget, int16 slot, bool &stopLogic);
 	void FinishTrade(Client* client);
+	void SendBotArcheryWearChange(int8 material_slot, uint32 material, uint32 color);
 
 	// Mob Spell Virtual Override Methods
 	virtual sint32 GetActSpellDamage(int16 spell_id, sint32 value);
@@ -115,20 +115,12 @@ public:
 	virtual bool Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes);
 	
 	// Bot Orders
-	virtual bool IsBotOrderAttack() { return _botOrderAttack; }
-	virtual void SetBotOrderAttack(bool botAttack) { _botOrderAttack = botAttack; }
+	//virtual bool IsBotOrderAttack() { return _botOrderAttack; }
+	//virtual void SetBotOrderAttack(bool botAttack) { _botOrderAttack = botAttack; }
 
 	// Bot Equipment & Inventory Class Methods
-	uint32 GetBotItemBySlot(uint32 slotID, std::string* errorMessage);
-	uint32 GetBotItem(uint32 slotID);
-	void RemoveBotItemBySlot(uint32 slotID, std::string* errorMessage);
-	void SetBotItemInSlot(uint32 slotID, uint32 itemID, std::string* errorMessage);
-	uint32 GetBotItemsCount(std::string* errorMessage);
 	void BotTradeSwapItem(Client* client, sint16 lootSlot, uint32 id, sint16 maxCharges, uint32 equipableSlots, std::string* errorMessage, bool swap = true);
 	void BotTradeAddItem(uint32 id, sint16 maxCharges, uint32 equipableSlots, int16 lootSlot, std::string* errorMessage, bool addToDb = true);
-	void BotRemoveEquipItem(int slot) { equipment[slot] = 0; }
-	void BotAddEquipItem(int slot, uint32 id) { equipment[slot] = id; }
-	void SendBotArcheryWearChange(int8 material_slot, uint32 material, uint32 color);
 	void EquipBot(std::string* errorMessage);
 
 	// Static Class Methods
@@ -224,8 +216,23 @@ private:
 	int8 _petChooserID;
 	uint32 _botArcheryRange;
 	bool cast_last_time;
-	//std::list<BotInventory> _botInventory;
 	BotInventory _botInventory;
+
+	// Private "base stats" Members
+	sint16 _baseMR;
+	sint16 _baseCR;
+	sint16 _baseDR;
+	sint16 _baseFR;
+	sint16 _basePR;
+	int _baseAC;
+	sint16 _baseSTR;
+	sint16 _baseSTA;
+	sint16 _baseDEX;
+	sint16 _baseAGI;
+	sint16 _baseINT;
+	sint16 _baseWIS;
+	sint16 _baseCHA;
+	sint16 _baseATK;
 
 	// Class Methods
 	void GenerateBaseStats();
@@ -237,10 +244,18 @@ private:
 	void GenerateSpecialAttacks();
 	void DoAIProcessing();
 	void SetBotID(uint32 botID);
-	//bool IsPacified(Mob* targetMob);
 	uint32 GetItemID(int slot_id);
 	bool CalcBotHitChance(Mob* target, SkillType skillinuse, int Hand);
+
+	// Private "Inventory" Methods
 	BotInventory GetBotItems(std::string* errorMessage);
+	uint32 GetBotItem(uint32 slotID);
+	void BotRemoveEquipItem(int slot);
+	void BotAddEquipItem(int slot, uint32 id);
+	uint32 GetBotItemBySlot(uint32 slotID, std::string* errorMessage);
+	void RemoveBotItemBySlot(uint32 slotID, std::string* errorMessage);
+	void SetBotItemInSlot(uint32 slotID, uint32 itemID, std::string* errorMessage);
+	uint32 GetBotItemsCount(std::string* errorMessage);
 };
 
 #endif // BOTS
