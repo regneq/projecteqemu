@@ -2075,14 +2075,14 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 		killerMob->SetTarget(NULL); //via AE effects and such..
 }
 
-void Mob::CommonAddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHelp, bool bFrenzy, bool iBuffTic) {
-	assert(other != NULL);
-	if (other == this)
-		return;
+void Mob::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHelp, bool bFrenzy, bool iBuffTic) {
+    assert(other != NULL);
+    if (other == this)
+        return;
 
-	if(damage < 0){
-		hate = 1;
-	}
+    if(damage < 0){
+        hate = 1;
+    }
 
 	bool wasengaged = IsEngaged();
 	Mob* owner = other->GetOwner();
@@ -2116,6 +2116,19 @@ void Mob::CommonAddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYell
 	// first add self
 	hate_list.Add(other, hate, damage, bFrenzy, !iBuffTic);
 
+#ifdef BOTS
+	// if other is a bot, add the bots client to the hate list
+	if(other->IsBot()) {
+		if(other->CastToBot()->GetBotOwner() && other->CastToBot()->GetBotOwner()->CastToClient()->GetFeigned()) {
+			AddFeignMemory(other->CastToBot()->GetBotOwner()->CastToClient());
+		}
+		else {
+			if(!hate_list.IsOnHateList(other->CastToBot()->GetBotOwner()))
+				hate_list.Add(other->CastToBot()->GetBotOwner(), 0, 0, false, true);
+		}
+	}
+#endif //BOTS
+
 	// then add pet owner if there's one
 	if (owner) { // Other is a pet, add him and it
 		// EverHood 6/12/06
@@ -2137,24 +2150,11 @@ void Mob::CommonAddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYell
 		if (myowner->IsAIControlled() && !myowner->SpecAttacks[IMMUNE_AGGRO])
 			myowner->hate_list.Add(other, 0, 0, bFrenzy);
 	}
-}
-
-void Client::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHelp, bool bFrenzy, bool iBuffTic) {
-	if(other && other != this) {
-		CommonAddToHateList(other, hate, damage, iYellForHelp, bFrenzy, iBuffTic);
-	}
-}
-
-void NPC::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHelp, bool bFrenzy, bool iBuffTic) {
-	if(other && other != this) {
-		CommonAddToHateList(other, hate, damage, iYellForHelp, bFrenzy, iBuffTic);
-
-		if (!this->IsEngaged()) { 
-			if(other->IsClient() && other->CastToClient())
-				parse->Event(EVENT_AGGRO, this->GetNPCTypeID(), 0, CastToNPC(), other); 
-			AI_Event_Engaged(other, iYellForHelp); 
-			adverrorinfo = 8293;
-		}
+	if (!wasengaged) { 
+		if(IsNPC() && other->IsClient() && other->CastToClient())
+			parse->Event(EVENT_AGGRO, this->GetNPCTypeID(), 0, CastToNPC(), other); 
+		AI_Event_Engaged(other, iYellForHelp); 
+		adverrorinfo = 8293;
 	}
 }
 

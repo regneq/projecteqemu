@@ -38,6 +38,21 @@ Bot::Bot(NPCType npcTypeData, Client* botOwner) : NPC(&npcTypeData, 0, 0, 0, 0, 
 		this->_botOwnerCharacterID = 0;
 	}
 
+	_baseMR = npcTypeData.MR;
+	_baseCR = npcTypeData.CR;
+	_baseDR = npcTypeData.DR;
+	_baseFR = npcTypeData.FR;
+	_basePR = npcTypeData.PR;
+	_baseAC = npcTypeData.AC;
+	_baseSTR = npcTypeData.STR;
+	_baseSTA = npcTypeData.STA;
+	_baseDEX = npcTypeData.DEX;
+	_baseAGI = npcTypeData.AGI;
+	_baseINT = npcTypeData.INT;
+	_baseWIS = npcTypeData.WIS;
+	_baseCHA = npcTypeData.CHA;
+	_baseATK = npcTypeData.ATK;
+
 	SetBotID(0);
 	SetBotSpellID(0);
 	SetSpawnStatus(false);
@@ -47,8 +62,10 @@ Bot::Bot(NPCType npcTypeData, Client* botOwner) : NPC(&npcTypeData, 0, 0, 0, 0, 
 
 	this->SetBotRaidID(0);
 
-	GenerateBaseStats();
+	// Do this once and only in this constructor
 	GenerateAppearance();
+
+	GenerateBaseStats();
 	GenerateArmorClass();
 
 	// Calculate HitPoints Last As It Uses Base Stats
@@ -64,6 +81,21 @@ Bot::Bot(uint32 botID, uint32 botOwnerCharacterID, uint32 botSpellsID, NPCType n
 	if(this->_botOwnerCharacterID > 0) {
 		this->SetBotOwner(entity_list.GetClientByCharID(this->_botOwnerCharacterID));
 	}
+
+	_baseMR = npcTypeData.MR;
+	_baseCR = npcTypeData.CR;
+	_baseDR = npcTypeData.DR;
+	_baseFR = npcTypeData.FR;
+	_basePR = npcTypeData.PR;
+	_baseAC = npcTypeData.AC;
+	_baseSTR = npcTypeData.STR;
+	_baseSTA = npcTypeData.STA;
+	_baseDEX = npcTypeData.DEX;
+	_baseAGI = npcTypeData.AGI;
+	_baseINT = npcTypeData.INT;
+	_baseWIS = npcTypeData.WIS;
+	_baseCHA = npcTypeData.CHA;
+	_baseATK = npcTypeData.ATK;
 
 	SetBotID(botID);
 	SetBotSpellID(botSpellsID);
@@ -87,7 +119,7 @@ Bot::Bot(uint32 botID, uint32 botOwnerCharacterID, uint32 botSpellsID, NPCType n
 	}
 
 	GenerateBaseStats();
-	GenerateAppearance();
+	//GenerateAppearance();
 	GenerateArmorClass();
 
 	// Calculate HitPoints Last As It Uses Base Stats
@@ -186,7 +218,7 @@ NPCType Bot::CreateDefaultNPCTypeStructForBot(std::string botName, std::string b
 	Result.class_ = botClass;
 	Result.gender = gender;
 
-	// default values just to initialize them to values that wont crash the client until they get calculated
+	// default values
 	Result.size = 6;
 	Result.npc_id = 0;
 	Result.bodytype = 1;
@@ -201,6 +233,20 @@ NPCType Bot::CreateDefaultNPCTypeStructForBot(std::string botName, std::string b
 	Result.qglobal = false;
 	Result.npc_spells_id = 0;
 	Result.attack_speed = 0;
+	Result.STR = 75;
+	Result.STA = 75;
+	Result.DEX = 75;
+	Result.AGI = 75;
+	Result.WIS = 75;
+	Result.INT = 75;
+	Result.CHA = 75;
+	Result.ATK = 75;
+	Result.MR = 25;
+	Result.FR = 25;
+	Result.DR = 15;
+	Result.PR = 15;
+	Result.CR = 25;
+	Result.AC = 12;
 
 	return Result;
 }
@@ -209,19 +255,19 @@ void Bot::GenerateBaseStats() {
 	int BotSpellID = 0;
 
 	// base stats
-	uint16 Strength = 75;
-	uint16 Stamina = 75;
-	uint16 Dexterity = 75;
-	uint16 Agility = 75;
-	uint16 Wisdom = 75;
-	uint16 Intelligence = 75;
-	uint16 Charisma = 75;
-	uint16 Attack = 5;
-	sint16 MagicResist = 25;
-	sint16 FireResist = 25;
-	sint16 DiseaseResist = 15;
-	sint16 PoisonResist = 15;
-	sint16 ColdResist = 25;
+	uint16 Strength = _baseSTR;
+	uint16 Stamina = _baseSTA;
+	uint16 Dexterity = _baseDEX;
+	uint16 Agility = _baseAGI;
+	uint16 Wisdom = _baseWIS;
+	uint16 Intelligence = _baseINT;
+	uint16 Charisma = _baseCHA;
+	uint16 Attack = _baseATK;
+	sint16 MagicResist = _baseMR;
+	sint16 FireResist = _baseFR;
+	sint16 DiseaseResist = _baseDR;
+	sint16 PoisonResist = _basePR;
+	sint16 ColdResist = _baseCR;
 
 	switch(this->GetClass()) {
 			case 1: // Warrior
@@ -349,7 +395,7 @@ void Bot::GenerateBaseStats() {
 				break;
 	}
 
-	float BotSize = 6;
+	float BotSize = GetSize();
 
 	switch(this->GetRace()) {
 			case 1: // Humans have no race bonus
@@ -559,7 +605,7 @@ void Bot::GenerateAppearance() {
 
 void Bot::GenerateArmorClass() {
 	// Base AC
-	int bac = (1 * 3) * 4;
+	int bac = GetAC();
 	switch(this->GetClass()) {
 			case WARRIOR:
 			case SHADOWKNIGHT:
@@ -619,216 +665,23 @@ void Bot::GenerateBaseHitPoints() {
 }
 
 void Bot::GenerateAABonuses() {
-	// General AA bonus'
-	if(GetLevel() >= 51 ) {
-		STR += 2;	// Innate Strength AA 1
-		STA += 2;	// Innate Stamina AA 1
-		AGI += 2;	// Innate Agility AA 1
-		DEX += 2;	// Innate Dexterity AA 1
-		INT += 2;	// Innate Intelligence AA 1
-		WIS += 2;	// Innate Wisdom AA 1
-		CHA += 2;	// Innate Charisma AA 1
-		FR += 2;	// Innate Fire Protection AA 1
-		CR += 2;	// Innate Cold Protection AA 1
-		MR += 2;	// Innate Magic Protection AA 1
-		PR += 2;	// Innate Poison Protection AA 1
-		DR += 2;	// Innate Disease AA 1
-	}
-	if(GetLevel() >= 52 ) {
-		STR += 2;	// Innate Strength AA 2
-		STA += 2;	// Innate Stamina AA 2
-		AGI += 2;	// Innate Agility AA 2
-		DEX += 2;	// Innate Dexterity AA 2
-		INT += 2;	// Innate Intelligence AA 2
-		WIS += 2;	// Innate Wisdom AA 2
-		CHA += 2;	// Innate Charisma AA 2
-		FR += 2;	// Innate Fire Protection AA 2
-		CR += 2;	// Innate Cold Protection AA 2
-		MR += 2;	// Innate Magic Protection AA 2
-		PR += 2;	// Innate Poison Protection AA 2
-		DR += 2;	// Innate Disease AA 2
-	}
-	if(GetLevel() >= 53 ) {
-		STR += 2;	// Innate Strength AA 3
-		STA += 2;	// Innate Stamina AA 3
-		AGI += 2;	// Innate Agility AA 3
-		DEX += 2;	// Innate Dexterity AA 3
-		INT += 2;	// Innate Intelligence AA 3
-		WIS += 2;	// Innate Wisdom AA 3
-		CHA += 2;	// Innate Charisma AA 3
-		FR += 2;	// Innate Fire Protection AA 3
-		CR += 2;	// Innate Cold Protection AA 3
-		MR += 2;	// Innate Magic Protection AA 3
-		PR += 2;	// Innate Poison Protection AA 3
-		DR += 2;	// Innate Disease AA 3
-	}
-	if(GetLevel() >= 54 ) {
-		STR += 2;	// Innate Strength AA 4
-		STA += 2;	// Innate Stamina AA 4
-		AGI += 2;	// Innate Agility AA 4
-		DEX += 2;	// Innate Dexterity AA 4
-		INT += 2;	// Innate Intelligence AA 4
-		WIS += 2;	// Innate Wisdom AA 4
-		CHA += 2;	// Innate Charisma AA 4
-		FR += 2;	// Innate Fire Protection AA 4
-		CR += 2;	// Innate Cold Protection AA 4
-		MR += 2;	// Innate Magic Protection AA 4
-		PR += 2;	// Innate Poison Protection AA 4
-		DR += 2;	// Innate Disease AA 4
-	}
-	if(GetLevel() >= 55 ) {
-		STR += 2;	// Innate Strength AA 5
-		STA += 2;	// Innate Stamina AA 5
-		AGI += 2;	// Innate Agility AA 5
-		DEX += 2;	// Innate Dexterity AA 5
-		INT += 2;	// Innate Intelligence AA 5
-		WIS += 2;	// Innate Wisdom AA 5
-		CHA += 2;	// Innate Charisma AA 5
-		FR += 2;	// Innate Fire Protection AA 5
-		CR += 2;	// Innate Cold Protection AA 5
-		MR += 2;	// Innate Magic Protection AA 5
-		PR += 2;	// Innate Poison Protection AA 5
-		DR += 2;	// Innate Disease AA 5
-	}
-	if(GetLevel() >= 61 ) {
-		STR += 2;	// Advanced Innate Strength AA 1
-		STA += 2;	// Advanced Innate Stamina AA 1
-		AGI += 2;	// Advanced Innate Agility AA 1
-		DEX += 2;	// Advanced Innate Dexterity AA 1
-		INT += 2;	// Advanced Innate Intelligence AA 1
-		WIS += 2;	// Advanced Innate Wisdom AA 1
-		CHA += 2;	// Advanced Innate Charisma AA 1
-		FR += 2;	// Warding of Solusek AA 1
-		CR += 2;	// Blessing of E'ci AA 1
-		MR += 2;	// Marr's Protection AA 1
-		PR += 2;	// Shroud of the Faceless AA 1
-		DR += 2;	// Bertoxxulous' Gift AA 1
-	}
-	if(GetLevel() >= 62 ) {
-		STR += 2;	// Advanced Innate Strength AA 2
-		STA += 2;	// Advanced Innate Stamina AA 2
-		AGI += 2;	// Advanced Innate Agility AA 2
-		DEX += 2;	// Advanced Innate Dexterity AA 2
-		INT += 2;	// Advanced Innate Intelligence AA 2
-		WIS += 2;	// Advanced Innate Wisdom AA 2
-		CHA += 2;	// Advanced Innate Charisma AA 2
-		FR += 2;	// Warding of Solusek AA 2
-		CR += 2;	// Blessing of E'ci AA 2
-		MR += 2;	// Marr's Protection AA 2
-		PR += 2;	// Shroud of the Faceless AA 2
-		DR += 2;	// Bertoxxulous' Gift AA 2
-	}
-	if(GetLevel() >= 63 ) {
-		STR += 2;	// Advanced Innate Strength AA 3
-		STA += 2;	// Advanced Innate Stamina AA 3
-		AGI += 2;	// Advanced Innate Agility AA 3
-		DEX += 2;	// Advanced Innate Dexterity AA 3
-		INT += 2;	// Advanced Innate Intelligence AA 3
-		WIS += 2;	// Advanced Innate Wisdom AA 3
-		CHA += 2;	// Advanced Innate Charisma AA 3
-		FR += 2;	// Warding of Solusek AA 3
-		CR += 2;	// Blessing of E'ci AA 3
-		MR += 2;	// Marr's Protection AA 3
-		PR += 2;	// Shroud of the Faceless AA 3
-		DR += 2;	// Bertoxxulous' Gift AA 3
-	}
-	if(GetLevel() >= 64 ) {
-		STR += 2;	// Advanced Innate Strength AA 4
-		STA += 2;	// Advanced Innate Stamina AA 4
-		AGI += 2;	// Advanced Innate Agility AA 4
-		DEX += 2;	// Advanced Innate Dexterity AA 4
-		INT += 2;	// Advanced Innate Intelligence AA 4
-		WIS += 2;	// Advanced Innate Wisdom AA 4
-		CHA += 2;	// Advanced Innate Charisma AA 4
-		FR += 2;	// Warding of Solusek AA 4
-		CR += 2;	// Blessing of E'ci AA 4
-		MR += 2;	// Marr's Protection AA 4
-		PR += 2;	// Shroud of the Faceless AA 4
-		DR += 2;	// Bertoxxulous' Gift AA 4
-	}
-	if(GetLevel() >= 65 ) {
-		STR += 2;	// Advanced Innate Strength AA 5
-		STA += 2;	// Advanced Innate Stamina AA 5
-		AGI += 2;	// Advanced Innate Agility AA 5
-		DEX += 2;	// Advanced Innate Dexterity AA 5
-		INT += 2;	// Advanced Innate Intelligence AA 5
-		WIS += 2;	// Advanced Innate Wisdom AA 5
-		CHA += 2;	// Advanced Innate Charisma AA 5
-		FR += 2;	// Warding of Solusek AA 5
-		CR += 2;	// Blessing of E'ci AA 5
-		MR += 2;	// Marr's Protection AA 5
-		PR += 2;	// Shroud of the Faceless AA 5
-		DR += 2;	// Bertoxxulous' Gift AA 5
-	}
-	if(GetLevel() >= 66 ) {
-		STR += 2;	// Advanced Innate Strength AA 6
-		STA += 2;	// Advanced Innate Stamina AA 6
-		AGI += 2;	// Advanced Innate Agility AA 6
-		DEX += 2;	// Advanced Innate Dexterity AA 6
-		INT += 2;	// Advanced Innate Intelligence AA 6
-		WIS += 2;	// Advanced Innate Wisdom AA 6
-		CHA += 2;	// Advanced Innate Charisma AA 6
-		FR += 2;	// Warding of Solusek AA 6
-		CR += 2;	// Blessing of E'ci AA 6
-		MR += 2;	// Marr's Protection AA 6
-		PR += 2;	// Shroud of the Faceless AA 6
-		DR += 2;	// Bertoxxulous' Gift AA 6
-	}
-	if(GetLevel() >= 67 ) {
-		STR += 2;	// Advanced Innate Strength AA 7
-		STA += 2;	// Advanced Innate Stamina AA 7
-		AGI += 2;	// Advanced Innate Agility AA 7
-		DEX += 2;	// Advanced Innate Dexterity AA 7
-		INT += 2;	// Advanced Innate Intelligence AA 7
-		WIS += 2;	// Advanced Innate Wisdom AA 7
-		CHA += 2;	// Advanced Innate Charisma AA 7
-		FR += 2;	// Warding of Solusek AA 7
-		CR += 2;	// Blessing of E'ci AA 7
-		MR += 2;	// Marr's Protection AA 7
-		PR += 2;	// Shroud of the Faceless AA 7
-		DR += 2;	// Bertoxxulous' Gift AA 7
-	}
-	if(GetLevel() >= 68 ) {
-		STR += 2;	// Advanced Innate Strength AA 8
-		STA += 2;	// Advanced Innate Stamina AA 8
-		AGI += 2;	// Advanced Innate Agility AA 8
-		DEX += 2;	// Advanced Innate Dexterity AA 8
-		INT += 2;	// Advanced Innate Intelligence AA 8
-		WIS += 2;	// Advanced Innate Wisdom AA 8
-		CHA += 2;	// Advanced Innate Charisma AA 8
-		FR += 2;	// Warding of Solusek AA 8
-		CR += 2;	// Blessing of E'ci AA 8
-		MR += 2;	// Marr's Protection AA 8
-		PR += 2;	// Shroud of the Faceless AA 8
-		DR += 2;	// Bertoxxulous' Gift AA 8
-	}
-	if(GetLevel() >= 69 ) {
-		STR += 2;	// Advanced Innate Strength AA 9
-		STA += 2;	// Advanced Innate Stamina AA 9
-		AGI += 2;	// Advanced Innate Agility AA 9
-		DEX += 2;	// Advanced Innate Dexterity AA 9
-		INT += 2;	// Advanced Innate Intelligence AA 9
-		WIS += 2;	// Advanced Innate Wisdom AA 9
-		CHA += 2;	// Advanced Innate Charisma AA 9
-		FR += 2;	// Warding of Solusek AA 9
-		CR += 2;	// Blessing of E'ci AA 9
-		MR += 2;	// Marr's Protection AA 9
-		PR += 2;	// Shroud of the Faceless AA 9
-		DR += 2;	// Bertoxxulous' Gift AA 9
-	}
-	if(GetLevel() >= 70 ) {
-		STR += 2;	// Advanced Innate Strength AA 10
-		STA += 2;	// Advanced Innate Stamina AA 10
-		AGI += 2;	// Advanced Innate Agility AA 10
-		DEX += 2;	// Advanced Innate Dexterity AA 10
-		INT += 2;	// Advanced Innate Intelligence AA 10
-		WIS += 2;	// Advanced Innate Wisdom AA 10
-		CHA += 2;	// Advanced Innate Charisma AA 10
-		FR += 2;	// Warding of Solusek AA 10
-		CR += 2;	// Blessing of E'ci AA 10
-		MR += 2;	// Marr's Protection AA 10
-		PR += 2;	// Shroud of the Faceless AA 10
-		DR += 2;	// Bertoxxulous' Gift AA 10
+	// General AA bonus
+	uint8 botlevel = GetLevel();
+	if(botlevel >= 51) {
+		//level 51 = 1 AA level
+		uint8 botAAlevels = botlevel - 50;
+		STR += botAAlevels * 2;	// Innate Strength AAs
+		STA += botAAlevels * 2;	// Innate Stamina AAs
+		AGI += botAAlevels * 2;	// Innate Agility AAs
+		DEX += botAAlevels * 2;	// Innate Dexterity AA
+		INT += botAAlevels * 2;	// Innate Intelligence AAs
+		WIS += botAAlevels * 2;	// Innate Wisdom AAs
+		CHA += botAAlevels * 2;	// Innate Charisma AAs
+		FR += botAAlevels * 2;	// Innate Fire Protection AAs
+		CR += botAAlevels * 2;	// Innate Cold Protection AAs
+		MR += botAAlevels * 2;	// Innate Magic Protection AAs
+		PR += botAAlevels * 2;	// Innate Poison Protection AAs
+		DR += botAAlevels * 2;	// Innate Disease AAs	
 	}
 }
 
@@ -1095,7 +948,10 @@ bool Bot::Save() {
 	}
 	else {
 		// Update existing bot record
-		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "UPDATE bots SET BotOwnerCharacterID = '%u', BotSpellsID = '%u', Name = '%s', LastName = '%s', BotLevel = '%u', Race = '%u', Class = '%u', BodyType = '%i', HitPoints = '%i', Gender = '%u', Size = '%d', HitPointsRegenRate = '%u', ManaRegenRate = '%u', Face = '%u', LuclinHairStyle = '%u', LuclinHairColor = '%u', LuclinEyeColor = '%u', LuclinEyeColor2 = '%u', LuclinBeardColor = '%u', LuclinBeard = '%u', DrakkinHeritage = '%u', DrakkinTattoo = '%u', DrakkinDetails = '%u', RunSpeed = '%d', MR = '%i', CR = '%i', DR = '%i', FR = '%i', PR = '%i', AC = '%i', STR = '%u', STA = '%u', DEX = '%u', AGI = '%u', _INT = '%u', WIS = '%u', CHA = '%u', ATK = '%i' WHERE BotID = '%u'", _botOwnerCharacterID, this->GetBotSpellID(), this->GetCleanName(), this->lastname, this->GetLevel(), this->GetRace(), this->GetClass(), GetBodyType(), this->GetHP(), GetGender(), GetSize(), this->hp_regen, this->mana_regen, this->GetLuclinFace(), this->GetHairStyle(), GetHairColor(), this->GetEyeColor1(), GetEyeColor2(), this->GetBeardColor(), this->GetBeard(), this->GetDrakkinHeritage(), this->GetDrakkinTattoo(), GetDrakkinDetails(), this->GetRunspeed(), GetMR(), GetCR(), GetDR(), GetFR(), GetPR(), GetAC(), GetSTR(), GetSTA(), GetDEX(), GetAGI(), GetINT(), GetWIS(), GetCHA(), GetATK(), this->GetBotID()), TempErrorMessageBuffer)) {
+		/*if(!database.RunQuery(Query, MakeAnyLenString(&Query, "UPDATE bots SET BotOwnerCharacterID = '%u', BotSpellsID = '%u', Name = '%s', LastName = '%s', BotLevel = '%u', Race = '%u', Class = '%u', BodyType = '%i', HitPoints = '%i', Gender = '%u', Size = '%d', HitPointsRegenRate = '%u', ManaRegenRate = '%u', Face = '%u', LuclinHairStyle = '%u', LuclinHairColor = '%u', LuclinEyeColor = '%u', LuclinEyeColor2 = '%u', LuclinBeardColor = '%u', LuclinBeard = '%u', DrakkinHeritage = '%u', DrakkinTattoo = '%u', DrakkinDetails = '%u', RunSpeed = '%d', MR = '%i', CR = '%i', DR = '%i', FR = '%i', PR = '%i', AC = '%i', STR = '%u', STA = '%u', DEX = '%u', AGI = '%u', _INT = '%u', WIS = '%u', CHA = '%u', ATK = '%i' WHERE BotID = '%u'", _botOwnerCharacterID, this->GetBotSpellID(), this->GetCleanName(), this->lastname, this->GetLevel(), this->GetRace(), this->GetClass(), GetBodyType(), this->GetHP(), GetGender(), GetSize(), this->hp_regen, this->mana_regen, this->GetLuclinFace(), this->GetHairStyle(), GetHairColor(), this->GetEyeColor1(), GetEyeColor2(), this->GetBeardColor(), this->GetBeard(), this->GetDrakkinHeritage(), this->GetDrakkinTattoo(), GetDrakkinDetails(), this->GetRunspeed(), GetMR(), GetCR(), GetDR(), GetFR(), GetPR(), GetAC(), GetSTR(), GetSTA(), GetDEX(), GetAGI(), GetINT(), GetWIS(), GetCHA(), GetATK(), this->GetBotID()), TempErrorMessageBuffer)) {
+			errorMessage = std::string(TempErrorMessageBuffer);
+		}*/
+		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "UPDATE bots SET BotOwnerCharacterID = '%u', BotSpellsID = '%u', Name = '%s', LastName = '%s', BotLevel = '%u', Race = '%u', Class = '%u', BodyType = '%i', HitPoints = '%i', Gender = '%u', Size = '%d', HitPointsRegenRate = '%u', ManaRegenRate = '%u', Face = '%u', LuclinHairStyle = '%u', LuclinHairColor = '%u', LuclinEyeColor = '%u', LuclinEyeColor2 = '%u', LuclinBeardColor = '%u', LuclinBeard = '%u', DrakkinHeritage = '%u', DrakkinTattoo = '%u', DrakkinDetails = '%u', RunSpeed = '%d', MR = '%i', CR = '%i', DR = '%i', FR = '%i', PR = '%i', AC = '%i', STR = '%u', STA = '%u', DEX = '%u', AGI = '%u', _INT = '%u', WIS = '%u', CHA = '%u', ATK = '%i' WHERE BotID = '%u'", _botOwnerCharacterID, this->GetBotSpellID(), this->GetCleanName(), this->lastname, this->GetLevel(), this->GetRace(), this->GetClass(), GetBodyType(), this->GetHP(), GetGender(), GetSize(), this->hp_regen, this->mana_regen, this->GetLuclinFace(), this->GetHairStyle(), GetHairColor(), this->GetEyeColor1(), GetEyeColor2(), this->GetBeardColor(), this->GetBeard(), this->GetDrakkinHeritage(), this->GetDrakkinTattoo(), GetDrakkinDetails(), this->GetRunspeed(), _baseMR, _baseCR, _baseDR, _baseFR, _basePR, _baseAC, _baseSTR, _baseSTA, _baseDEX, _baseAGI, _baseINT, _baseWIS, _baseCHA, _baseATK, this->GetBotID()), TempErrorMessageBuffer)) {
 			errorMessage = std::string(TempErrorMessageBuffer);
 		}
 		else {
@@ -2261,9 +2117,7 @@ void Bot::BotAIProcess() {
 		if(GetFollowID()) {
 			if(BotOwner && BotOwner->CastToClient()->AutoAttackEnabled() && BotOwner->GetTarget() &&
 				BotOwner->GetTarget()->IsNPC() && BotOwner->GetTarget()->GetHateAmount(BotOwner)) {
-					this->SetBotOrderAttack(true);
 					AddToHateList(BotOwner->GetTarget(), 1);
-					this->SetBotOrderAttack(false);
 			}
 		}
 	}
@@ -2952,6 +2806,7 @@ void Bot::Spawn(Client* botCharacterOwner, std::string* errorMessage) {
 	}
 }
 
+// Saves the specified item as an inventory record in the database for this bot.
 void Bot::SetBotItemInSlot(uint32 slotID, uint32 itemID, std::string *errorMessage) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
@@ -2965,6 +2820,7 @@ void Bot::SetBotItemInSlot(uint32 slotID, uint32 itemID, std::string *errorMessa
 	}
 }
 
+// Deletes the inventory record for the specified item from the database for this bot.
 void Bot::RemoveBotItemBySlot(uint32 slotID, std::string *errorMessage) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
@@ -2978,6 +2834,7 @@ void Bot::RemoveBotItemBySlot(uint32 slotID, std::string *errorMessage) {
 	}
 }
 
+// Retrieves all the inventory records from the database for this bot.
 Bot::BotInventory Bot::GetBotItems(std::string* errorMessage) {
 	BotInventory Result;
 
@@ -3003,6 +2860,7 @@ Bot::BotInventory Bot::GetBotItems(std::string* errorMessage) {
 	return Result;
 }
 
+// Returns the inventory record for this bot from the database for the specified equipment slot.
 uint32 Bot::GetBotItemBySlot(uint32 slotID, std::string *errorMessage) {
 	uint32 Result = 0;
 
@@ -3030,21 +2888,7 @@ uint32 Bot::GetBotItemBySlot(uint32 slotID, std::string *errorMessage) {
 	return Result;
 }
 
-uint32 Bot::GetBotItem(uint32 slotID) {
-	uint32 Result = 0;
-
-	if(slotID > 0 && !_botInventory.empty()) {
-		BotInventory::iterator invItr = _botInventory.begin();
-
-		invItr = _botInventory.find(slotID);
-
-		if(invItr != _botInventory.end())
-			Result = invItr->second;
-	}
-
-	return Result;
-}
-
+// Returns the number of inventory records the bot has in the database.
 uint32 Bot::GetBotItemsCount(std::string *errorMessage) {
 	uint32 Result = 0;
 
@@ -3400,25 +3244,6 @@ uint32 Bot::SpawnedBotCount(uint32 botOwnerCharacterID, std::string* errorMessag
 		std::list<Bot*> SpawnedBots = entity_list.GetBotsByBotOwnerCharacterID(botOwnerCharacterID);
 
 		Result = SpawnedBots.size();
-
-		/*char ErrBuf[MYSQL_ERRMSG_SIZE];
-		char* Query = 0;
-		MYSQL_RES* DatasetResult;
-		MYSQL_ROW DataRow;
-
-		if(database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT COUNT(*) FROM botleader WHERE leaderid=%i", botOwnerCharacterID), ErrBuf, &DatasetResult)) {
-			if(mysql_num_rows(DatasetResult) == 1) {
-				DataRow = mysql_fetch_row(DatasetResult);
-				if(DataRow)
-					Result = atoi(DataRow[0]);
-			}
-
-			mysql_free_result(DatasetResult);
-		}
-		else
-			*errorMessage = std::string(ErrBuf);
-
-		safe_delete_array(Query);*/
 	}
 
 	return Result;
@@ -3593,6 +3418,38 @@ uint32 Bot::GetCountBotsInGroup(Group *group) {
 	return Result;
 }
 
+// Returns the item id that is in the bot inventory collection for the specified slot.
+uint32 Bot::GetBotItem(uint32 slotID) {
+	uint32 Result = 0;
+
+	if(slotID > 0 && !_botInventory.empty()) {
+		BotInventory::iterator invItr = _botInventory.begin();
+
+		invItr = _botInventory.find(slotID);
+
+		if(invItr != _botInventory.end())
+			Result = invItr->second;
+	}
+
+	return Result;
+}
+
+// Adds the specified item it bot to the NPC equipment array and to the bot inventory collection.
+void Bot::BotAddEquipItem(int slot, uint32 id) {
+	if(slot > 0 && id > 0) {
+		equipment[slot] = id;
+		_botInventory.insert(BotInventoryItem(slot, id));
+	}
+}
+
+// Erases the specified item from bot the NPC equipment array and from the bot inventory collection.
+void Bot::BotRemoveEquipItem(int slot) {
+	if(slot > 0) {
+		equipment[slot] = 0;
+		_botInventory.erase(slot);
+	}
+}
+
 void Bot::BotTradeSwapItem(Client* client, sint16 lootSlot, uint32 id, sint16 maxCharges, uint32 equipableSlots, std::string* errorMessage, bool swap) {
 	const Item_Struct* itmtmp = database.GetItem(this->GetBotItemBySlot(lootSlot, errorMessage));
 	
@@ -3602,12 +3459,14 @@ void Bot::BotTradeSwapItem(Client* client, sint16 lootSlot, uint32 id, sint16 ma
 	const ItemInst* insttmp = new ItemInst(itmtmp, itmtmp->MaxCharges);
 	client->PushItemOnCursor(*insttmp, true);
 	safe_delete(insttmp);
-	this->RemoveBotItemBySlot(lootSlot, errorMessage);
+	
+	// Remove the item from the bot and from the bot's database records
+	RemoveItem(itmtmp->ID);
+	RemoveBotItemBySlot(lootSlot, errorMessage);
 
 	if(!errorMessage->empty())
 		return;
 
-	RemoveItem(itmtmp->ID);
 	int8 materialFromSlot = Inventory::CalcMaterialFromSlot(lootSlot);
 	if(materialFromSlot != 0xFF) {
 		this->BotRemoveEquipItem(materialFromSlot);
@@ -4137,23 +3996,6 @@ bool Bot::Bot_Command_Cure(int curetype, int level) {
 	return false;
 }
 
-// This funcion is a bit of a hack.
-// Ideally, this function should identify the desired buff by spell effect (SE) type. Like SE_Calm for example, not by specific spell id.
-// TODO: reimplement this function so no spell type id is hard-coded and instead the buff is identify by spell effect id.
-//bool Bot::IsPacified(Mob* targetMob) {
-//	bool Result = false;
-//
-//	if(targetMob && GetBotOwner() && spells_loaded) {
-//		for (int i=0; i < BUFF_COUNT; i++) {
-//			if ((buffs[i].spellid == 3197) || (buffs[i].spellid == 45) || (buffs[i].spellid == 47) || (buffs[i].spellid == 501) || (buffs[i].spellid == 208)) {
-//				Result = true;
-//			}
-//		}
-//	}
-//
-//	return Result;
-//}
-
 void Bot::FinishTrade(Client* client) {
 	if(client) {
 		int32 items[4]={0};
@@ -4627,17 +4469,17 @@ void Bot::Damage(Mob *from, sint32 damage, int16 spell_id, SkillType attack_skil
 		entity_list.MessageClose(this, true, 300, MT_Spells, "%s beams a smile at %s", GetCleanName(), from->GetCleanName() );
 	}
 
-	this->CommonDamage(from, damage, spell_id, attack_skill, avoidable, buffslot, iBuffTic);
+	CommonDamage(from, damage, spell_id, attack_skill, avoidable, buffslot, iBuffTic);
 
-	// franck-add: when a bot takes some dmg, its leader must see it in the group HP bar
-	if(IsGrouped() && GetHP() > 0) {
+	SendHPUpdate();
+
+	// Aggro the bot's group members
+	if(IsGrouped()) {
 		Group *g = entity_list.GetGroupByMob(this);
 		if(g) {
-			EQApplicationPacket hp_app;
-			CreateHPPacket(&hp_app);
 			for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
-				if(g->members[i] && g->members[i]->IsClient()) {
-					g->members[i]->CastToClient()->QueuePacket(&hp_app);
+				if(g->members[i] && g->members[i]->IsBot() && !g->members[i]->CheckAggro(from)) {
+					g->members[i]->AddToHateList(from, 1);
 				}
 			}
 		}
@@ -4928,20 +4770,6 @@ bool Bot::Attack(Mob* other, int Hand, bool FromRiposte) {
 	else {
 		safe_delete(weapon);
 		return false;
-	}
-}
-
-void Bot::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHelp, bool bFrenzy, bool iBuffTic) {
-	if(other && other != this && GetBotOwner() && GetBotOwner() != other) {
-		CommonAddToHateList(other, hate, damage, iYellForHelp, bFrenzy, iBuffTic);
-
-		if(GetBotOwner() && GetBotOwner()->CastToClient()->GetFeigned()) {
-			AddFeignMemory(GetBotOwner()->CastToClient());
-		}
-		else {
-			if(!other->GetHateAmount(GetBotOwner()))
-				other->SetHate(GetBotOwner());
-		}
 	}
 }
 
@@ -8299,81 +8127,69 @@ void Bot::CalcBotStats(bool showtext) {
 	else
 		this->GetBotOwner()->CastToClient()->Message(13, "%s save failed!", this->GetCleanName());
 
-	char errbuf[MYSQL_ERRMSG_SIZE];
-	char* query = 0;
-	MYSQL_RES* result;
-	MYSQL_ROW row;
-	bool ret = false;	
-
 	memset(&itembonuses, 0, sizeof(StatBonuses));
-	for(int i=0; i<22; i++) {
-		if(database.RunQuery(query, MakeAnyLenString(&query, "SELECT itemid FROM botinventory WHERE botid=%i AND slotid=%i", GetNPCTypeID(), i), errbuf, &result)) {
-			safe_delete_array(query);
-			if(mysql_num_rows(result) == 1) {
-				row = mysql_fetch_row(result);
-				int iteminslot = atoi(row[0]);
-				mysql_free_result(result);
 
-				if(iteminslot > 0) {
-					const Item_Struct *itemtmp = database.GetItem(iteminslot);
-					if(itemtmp->AC != 0)
-						itembonuses.AC += itemtmp->AC;
-					if(itemtmp->HP != 0)
-						itembonuses.HP += itemtmp->HP;
-					if(itemtmp->Mana != 0)
-						itembonuses.Mana += itemtmp->Mana;
-					if(itemtmp->Endur != 0)
-						itembonuses.Endurance += itemtmp->Endur;
-					if(itemtmp->AStr != 0)
-						itembonuses.STR += itemtmp->AStr;
-					if(itemtmp->ASta != 0)
-						itembonuses.STA += itemtmp->ASta;
-					if(itemtmp->ADex != 0)
-						itembonuses.DEX += itemtmp->ADex;
-					if(itemtmp->AAgi != 0)
-						itembonuses.AGI += itemtmp->AAgi;
-					if(itemtmp->AInt != 0)
-						itembonuses.INT += itemtmp->AInt;
-					if(itemtmp->AWis != 0)
-						itembonuses.WIS += itemtmp->AWis;
-					if(itemtmp->ACha != 0)
-						itembonuses.CHA += itemtmp->ACha;
-					if(itemtmp->MR != 0)
-						itembonuses.MR += itemtmp->MR;
-					if(itemtmp->FR != 0)
-						itembonuses.FR += itemtmp->FR;
-					if(itemtmp->CR != 0)
-						itembonuses.CR += itemtmp->CR;
-					if(itemtmp->PR != 0)
-						itembonuses.PR += itemtmp->PR;
-					if(itemtmp->DR != 0)
-						itembonuses.DR += itemtmp->DR;
-					if(itemtmp->Regen != 0)
-						itembonuses.HPRegen += itemtmp->Regen;
-					if(itemtmp->ManaRegen != 0)
-						itembonuses.ManaRegen += itemtmp->ManaRegen;
-					if(itemtmp->Attack != 0)
-						itembonuses.ATK += itemtmp->Attack;
-					if(itemtmp->DamageShield != 0)
-						itembonuses.DamageShield += itemtmp->DamageShield;
-					if(itemtmp->SpellShield != 0)
-						itembonuses.SpellDamageShield += itemtmp->SpellShield;
-					if(itemtmp->Shielding != 0)
-						itembonuses.MeleeMitigation += itemtmp->Shielding;
-					if(itemtmp->StunResist != 0)
-						itembonuses.StunResist += itemtmp->StunResist;
-					if(itemtmp->StrikeThrough != 0)
-						itembonuses.StrikeThrough += itemtmp->StrikeThrough;
-					if(itemtmp->Avoidance != 0)
-						itembonuses.AvoidMeleeChance += itemtmp->Avoidance;
-					if(itemtmp->Accuracy != 0)
-						itembonuses.HitChance += itemtmp->Accuracy;
-					if(itemtmp->CombatEffects != 0)
-						itembonuses.ProcChance += itemtmp->CombatEffects;
-					if ((itemtmp->Worn.Effect != 0) && (itemtmp->Worn.Type == ET_WornEffect)) { // latent effects
-						ApplySpellsBonuses(itemtmp->Worn.Effect, itemtmp->Worn.Level, &itembonuses);
-					}
-				}
+	for(int i=0; i<22; i++) {
+		uint32 iteminslot = GetBotItem(i);
+
+		if(iteminslot > 0) {
+			const Item_Struct *itemtmp = database.GetItem(iteminslot);
+			if(itemtmp->AC != 0)
+				itembonuses.AC += itemtmp->AC;
+			if(itemtmp->HP != 0)
+				itembonuses.HP += itemtmp->HP;
+			if(itemtmp->Mana != 0)
+				itembonuses.Mana += itemtmp->Mana;
+			if(itemtmp->Endur != 0)
+				itembonuses.Endurance += itemtmp->Endur;
+			if(itemtmp->AStr != 0)
+				itembonuses.STR += itemtmp->AStr;
+			if(itemtmp->ASta != 0)
+				itembonuses.STA += itemtmp->ASta;
+			if(itemtmp->ADex != 0)
+				itembonuses.DEX += itemtmp->ADex;
+			if(itemtmp->AAgi != 0)
+				itembonuses.AGI += itemtmp->AAgi;
+			if(itemtmp->AInt != 0)
+				itembonuses.INT += itemtmp->AInt;
+			if(itemtmp->AWis != 0)
+				itembonuses.WIS += itemtmp->AWis;
+			if(itemtmp->ACha != 0)
+				itembonuses.CHA += itemtmp->ACha;
+			if(itemtmp->MR != 0)
+				itembonuses.MR += itemtmp->MR;
+			if(itemtmp->FR != 0)
+				itembonuses.FR += itemtmp->FR;
+			if(itemtmp->CR != 0)
+				itembonuses.CR += itemtmp->CR;
+			if(itemtmp->PR != 0)
+				itembonuses.PR += itemtmp->PR;
+			if(itemtmp->DR != 0)
+				itembonuses.DR += itemtmp->DR;
+			if(itemtmp->Regen != 0)
+				itembonuses.HPRegen += itemtmp->Regen;
+			if(itemtmp->ManaRegen != 0)
+				itembonuses.ManaRegen += itemtmp->ManaRegen;
+			if(itemtmp->Attack != 0)
+				itembonuses.ATK += itemtmp->Attack;
+			if(itemtmp->DamageShield != 0)
+				itembonuses.DamageShield += itemtmp->DamageShield;
+			if(itemtmp->SpellShield != 0)
+				itembonuses.SpellDamageShield += itemtmp->SpellShield;
+			if(itemtmp->Shielding != 0)
+				itembonuses.MeleeMitigation += itemtmp->Shielding;
+			if(itemtmp->StunResist != 0)
+				itembonuses.StunResist += itemtmp->StunResist;
+			if(itemtmp->StrikeThrough != 0)
+				itembonuses.StrikeThrough += itemtmp->StrikeThrough;
+			if(itemtmp->Avoidance != 0)
+				itembonuses.AvoidMeleeChance += itemtmp->Avoidance;
+			if(itemtmp->Accuracy != 0)
+				itembonuses.HitChance += itemtmp->Accuracy;
+			if(itemtmp->CombatEffects != 0)
+				itembonuses.ProcChance += itemtmp->CombatEffects;
+			if ((itemtmp->Worn.Effect != 0) && (itemtmp->Worn.Type == ET_WornEffect)) { // latent effects
+				ApplySpellsBonuses(itemtmp->Worn.Effect, itemtmp->Worn.Level, &itembonuses);
 			}
 		}
 	}
@@ -8409,7 +8225,6 @@ void Bot::CalcBotStats(bool showtext) {
 	ATK += spellbonuses.ATK;
 
 	cur_hp = CalcMaxHP();
-
 	GenerateBaseManaPoints();
 	
 	AI_AddNPCSpells(this->GetBotSpellID());

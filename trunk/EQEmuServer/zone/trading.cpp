@@ -332,279 +332,143 @@ void Client::ResetTrade() {
 	}
 }
 
-void Client::FinishTrade(Client* other) {
-	sint16 slot_id;
-	if (!other)
-		return;
+void Client::FinishTrade(Mob* tradingWith) {
+	if(tradingWith && tradingWith->IsClient()) {
+		Client* other = tradingWith->CastToClient();
+		if(other) {
+			sint16 slot_id;
 
-	mlog(TRADING__CLIENT, "Finishing trade with client %s", other->GetName());
-	
-	// Move each trade slot into free inventory slot
-	for (sint16 i=3000; i<=3007; i++){
-		const ItemInst* inst = m_inv[i];
-		if(inst == NULL)
-			continue;
+			mlog(TRADING__CLIENT, "Finishing trade with client %s", other->GetName());
 
-		mlog(TRADING__CLIENT, "Giving %s (%d) in slot %d to %s", inst->GetItem()->Name, inst->GetItem()->ID, i, other->GetName());
-		
-		if (inst->GetItem()->NoDrop != 0 || other == this) {
-			slot_id = other->GetInv().FindFreeSlot(inst->IsType(ItemClassContainer), true, inst->GetItem()->Size);
+			// Move each trade slot into free inventory slot
+			for (sint16 i=3000; i<=3007; i++){
+				const ItemInst* inst = m_inv[i];
+				if(inst == NULL)
+					continue;
 
-			mlog(TRADING__CLIENT, "Trying to put %s (%d) into slot %d", inst->GetItem()->Name, inst->GetItem()->ID, slot_id);
-			if (other->PutItemInInventory(slot_id, *inst, true)) {
-				mlog(TRADING__CLIENT, "Item  %s (%d) successfully transfered, deleting from trade slot.", inst->GetItem()->Name, inst->GetItem()->ID);
-			} else {
-				PushItemOnCursor(*inst, true);
-				mlog(TRADING__ERROR, "Unable to give item %d (%d) to %s, returning to giver.", inst->GetItem()->Name, inst->GetItem()->ID, other->GetName());
+				mlog(TRADING__CLIENT, "Giving %s (%d) in slot %d to %s", inst->GetItem()->Name, inst->GetItem()->ID, i, other->GetName());
+
+				if (inst->GetItem()->NoDrop != 0 || other == this) {
+					slot_id = other->GetInv().FindFreeSlot(inst->IsType(ItemClassContainer), true, inst->GetItem()->Size);
+
+					mlog(TRADING__CLIENT, "Trying to put %s (%d) into slot %d", inst->GetItem()->Name, inst->GetItem()->ID, slot_id);
+					if (other->PutItemInInventory(slot_id, *inst, true)) {
+						mlog(TRADING__CLIENT, "Item  %s (%d) successfully transfered, deleting from trade slot.", inst->GetItem()->Name, inst->GetItem()->ID);
+					} else {
+						PushItemOnCursor(*inst, true);
+						mlog(TRADING__ERROR, "Unable to give item %d (%d) to %s, returning to giver.", inst->GetItem()->Name, inst->GetItem()->ID, other->GetName());
+					}
+					DeleteItemInInventory(i);
+				} else {
+					PushItemOnCursor(*inst, true);
+					DeleteItemInInventory(i);
+				}
 			}
-			DeleteItemInInventory(i);
-		} else {
-			PushItemOnCursor(*inst, true);
-			DeleteItemInInventory(i);
+
+			// Money @merth: look into how NPC's receive cash
+			this->AddMoneyToPP(other->trade->cp, other->trade->sp, other->trade->gp, other->trade->pp, true);
+
+			//Do not reset the trade here, done by the caller.
 		}
 	}
-	
-	// Money @merth: look into how NPC's receive cash
-	this->AddMoneyToPP(other->trade->cp, other->trade->sp, other->trade->gp, other->trade->pp, true);
-	
-	//Do not reset the trade here, done by the caller.
-}
+	else if(tradingWith && tradingWith->IsNPC()) {
+		int32 items[4]={0};
+		int8 charges[4]={0};
 
-// Place items into inventory of NPC specified
-void Client::FinishTrade(NPC* with) {
-	int32 items[4]={0};
-	int8 charges[4]={0};
-
-	for (sint16 i=3000; i<=3003; i++) {
-		const ItemInst* inst = m_inv[i];
-		if (inst) {
-			items[i-3000]=inst->GetItem()->ID;
-			charges[i-3000]=inst->GetCharges();
-			DeleteItemInInventory(i);
+		for (sint16 i=3000; i<=3003; i++) {
+			const ItemInst* inst = m_inv[i];
+			if (inst) {
+				items[i-3000]=inst->GetItem()->ID;
+				charges[i-3000]=inst->GetCharges();
+				DeleteItemInInventory(i);
+			}
 		}
-	}
 
-	//dont bother with this crap unless we have a quest...
-	//pets can have quests! (especially charmed NPCs)
-	bool did_quest = false;
+		//dont bother with this crap unless we have a quest...
+		//pets can have quests! (especially charmed NPCs)
+		bool did_quest = false;
+
 #ifdef EMBPERL
-	if(((PerlembParser *)parse)->HasQuestSub(with->GetNPCTypeID(), "EVENT_ITEM")) {
+		if(((PerlembParser *)parse)->HasQuestSub(tradingWith->GetNPCTypeID(), "EVENT_ITEM")) {
 #else
-	if(parse->HasQuestFile(with->GetNPCTypeID())) {
+		if(parse->HasQuestFile(tradingWith->GetNPCTypeID())) {
 #endif
-		char temp1[100];
-		memset(temp1,0x0,100);
-		char temp2[100];
-		memset(temp2,0x0,100);
-		for ( int z=0; z < 4; z++ ) {
-			snprintf(temp1, 100, "item%d.%d", z+1,with->GetNPCTypeID());
-			snprintf(temp2, 100, "%d",items[z]);
+			char temp1[100];
+			memset(temp1,0x0,100);
+			char temp2[100];
+			memset(temp2,0x0,100);
+			for ( int z=0; z < 4; z++ ) {
+				snprintf(temp1, 100, "item%d.%d", z+1,tradingWith->GetNPCTypeID());
+				snprintf(temp2, 100, "%d",items[z]);
+				parse->AddVar(temp1,temp2);
+				//			memset(temp1,0x0,100);
+				//			memset(temp2,0x0,100);
+				snprintf(temp1, 100, "item%d.charges.%d", z+1,tradingWith->GetNPCTypeID());
+				snprintf(temp2, 100, "%d",charges[z]);
+				parse->AddVar(temp1,temp2);
+				//			memset(temp1,0x0,100);
+				//			memset(temp2,0x0,100);
+			}
+			snprintf(temp1, 100, "copper.%d",tradingWith->GetNPCTypeID());
+			snprintf(temp2, 100, "%i",trade->cp);
 			parse->AddVar(temp1,temp2);
-			//			memset(temp1,0x0,100);
-			//			memset(temp2,0x0,100);
-			snprintf(temp1, 100, "item%d.charges.%d", z+1,with->GetNPCTypeID());
-			snprintf(temp2, 100, "%d",charges[z]);
+			//		memset(temp1,0x0,100);
+			//		memset(temp2,0x0,100);
+			snprintf(temp1, 100, "silver.%d",tradingWith->GetNPCTypeID());
+			snprintf(temp2, 100, "%i",trade->sp);
 			parse->AddVar(temp1,temp2);
-			//			memset(temp1,0x0,100);
-			//			memset(temp2,0x0,100);
+			//		memset(temp1,0x0,100);
+			//		memset(temp2,0x0,100);
+			snprintf(temp1, 100, "gold.%d",tradingWith->GetNPCTypeID());
+			snprintf(temp2, 100, "%i",trade->gp);
+			parse->AddVar(temp1,temp2);
+			//		memset(temp1,0x0,100);
+			//		memset(temp2,0x0,100);
+			snprintf(temp1, 100, "platinum.%d",tradingWith->GetNPCTypeID());
+			snprintf(temp2, 100, "%i",trade->pp);
+			parse->AddVar(temp1,temp2);
+			//		memset(temp1,0x0,100);
+			//		memset(temp2,0x0,100);
+			parse->Event(EVENT_ITEM, tradingWith->GetNPCTypeID(), NULL, tradingWith->CastToNPC(), this);
+			did_quest = true;
 		}
-		snprintf(temp1, 100, "copper.%d",with->GetNPCTypeID());
-		snprintf(temp2, 100, "%i",trade->cp);
-		parse->AddVar(temp1,temp2);
-		//		memset(temp1,0x0,100);
-		//		memset(temp2,0x0,100);
-		snprintf(temp1, 100, "silver.%d",with->GetNPCTypeID());
-		snprintf(temp2, 100, "%i",trade->sp);
-		parse->AddVar(temp1,temp2);
-		//		memset(temp1,0x0,100);
-		//		memset(temp2,0x0,100);
-		snprintf(temp1, 100, "gold.%d",with->GetNPCTypeID());
-		snprintf(temp2, 100, "%i",trade->gp);
-		parse->AddVar(temp1,temp2);
-		//		memset(temp1,0x0,100);
-		//		memset(temp2,0x0,100);
-		snprintf(temp1, 100, "platinum.%d",with->GetNPCTypeID());
-		snprintf(temp2, 100, "%i",trade->pp);
-		parse->AddVar(temp1,temp2);
-		//		memset(temp1,0x0,100);
-		//		memset(temp2,0x0,100);
-		parse->Event(EVENT_ITEM, with->GetNPCTypeID(), NULL, with, this);
-		did_quest = true;
-	}
-	if(RuleB(TaskSystem, EnableTaskSystem)) {
-		int Cash = trade->cp + (trade->sp * 10) + (trade->gp * 100) + (trade->pp * 1000);
-		if(UpdateTasksOnDeliver(items, Cash, with->GetNPCTypeID())) {
-			if(!with->IsMoving()) 
-				with->FaceTarget(this);
+
+		if(RuleB(TaskSystem, EnableTaskSystem)) {
+			int Cash = trade->cp + (trade->sp * 10) + (trade->gp * 100) + (trade->pp * 1000);
+			if(UpdateTasksOnDeliver(items, Cash, tradingWith->GetNPCTypeID())) {
+				if(!tradingWith->IsMoving()) 
+					tradingWith->FaceTarget(this);
+			}
 		}
-	}
-	//		Message(0, "Normal NPC: keeping items.");
+		//		Message(0, "Normal NPC: keeping items.");
 
-	//else, we do not have a quest, give the items to the NPC
-	if(did_quest) {
-		//only continue if we are a charmed NPC
-		if(!with->HasOwner() || with->GetPetType() != petCharmed)
-			return;
-	}
+		//else, we do not have a quest, give the items to the NPC
+		if(did_quest) {
+			//only continue if we are a charmed NPC
+			if(!tradingWith->HasOwner() || tradingWith->GetPetType() != petCharmed)
+				return;
+		}
 
-	int xy = with->CountLoot();
+		int xy = tradingWith->CastToNPC()->CountLoot();
 
-	for(int y=0; y < 4; y++) {
-		if (xy >= 20)
-			break;
-		xy++;
-		//NPC* npc=with->CastToNPC();
-		const Item_Struct* item2 = database.GetItem(items[y]);
-		if (item2) {
-			//if was not no drop item, let the NPC have it
-			if(GetGM() || item2->NoDrop != 0)
-				with->AddLootDrop(item2, &with->itemlist, charges[y], true, true);
-			//else 
-			//	with->AddLootDrop(item2, NULL, charges[y], false, true);
+		for(int y=0; y < 4; y++) {
+			if (xy >= 20)
+				break;
+			xy++;
+			//NPC* npc=with->CastToNPC();
+			const Item_Struct* item2 = database.GetItem(items[y]);
+			if (item2) {
+
+
+				//if was not no drop item, let the NPC have it
+				if(GetGM() || item2->NoDrop != 0)
+					tradingWith->CastToNPC()->AddLootDrop(item2, &tradingWith->CastToNPC()->itemlist, charges[y], true, true);
+				//else 
+				//	with->AddLootDrop(item2, NULL, charges[y], false, true);
+			}
 		}
 	}
 }
-
-//void Client::FinishTrade(Mob* tradingWith) {
-//	if(tradingWith && tradingWith->IsClient()) {
-//		Client* other = tradingWith->CastToClient();
-//		if(other) {
-//			sint16 slot_id;
-//
-//			mlog(TRADING__CLIENT, "Finishing trade with client %s", other->GetName());
-//
-//			// Move each trade slot into free inventory slot
-//			for (sint16 i=3000; i<=3007; i++){
-//				const ItemInst* inst = m_inv[i];
-//				if(inst == NULL)
-//					continue;
-//
-//				mlog(TRADING__CLIENT, "Giving %s (%d) in slot %d to %s", inst->GetItem()->Name, inst->GetItem()->ID, i, other->GetName());
-//
-//				if (inst->GetItem()->NoDrop != 0 || other == this) {
-//					slot_id = other->GetInv().FindFreeSlot(inst->IsType(ItemClassContainer), true, inst->GetItem()->Size);
-//
-//					mlog(TRADING__CLIENT, "Trying to put %s (%d) into slot %d", inst->GetItem()->Name, inst->GetItem()->ID, slot_id);
-//					if (other->PutItemInInventory(slot_id, *inst, true)) {
-//						mlog(TRADING__CLIENT, "Item  %s (%d) successfully transfered, deleting from trade slot.", inst->GetItem()->Name, inst->GetItem()->ID);
-//					} else {
-//						PushItemOnCursor(*inst, true);
-//						mlog(TRADING__ERROR, "Unable to give item %d (%d) to %s, returning to giver.", inst->GetItem()->Name, inst->GetItem()->ID, other->GetName());
-//					}
-//					DeleteItemInInventory(i);
-//				} else {
-//					PushItemOnCursor(*inst, true);
-//					DeleteItemInInventory(i);
-//				}
-//			}
-//
-//			// Money @merth: look into how NPC's receive cash
-//			this->AddMoneyToPP(other->trade->cp, other->trade->sp, other->trade->gp, other->trade->pp, true);
-//
-//			//Do not reset the trade here, done by the caller.
-//		}
-//	}
-//	else if(tradingWith && tradingWith->IsNPC()) {
-//		int32 items[4]={0};
-//		int8 charges[4]={0};
-//
-//		for (sint16 i=3000; i<=3003; i++) {
-//			const ItemInst* inst = m_inv[i];
-//			if (inst) {
-//				items[i-3000]=inst->GetItem()->ID;
-//				charges[i-3000]=inst->GetCharges();
-//				DeleteItemInInventory(i);
-//			}
-//		}
-//
-//		//dont bother with this crap unless we have a quest...
-//		//pets can have quests! (especially charmed NPCs)
-//		bool did_quest = false;
-//#ifdef EMBPERL
-//		if(((PerlembParser *)parse)->HasQuestSub(tradingWith->GetNPCTypeID(), "EVENT_ITEM")) {
-//#else
-//		if(parse->HasQuestFile(tradingWith->GetNPCTypeID())) {
-//#endif
-//			char temp1[100];
-//			memset(temp1,0x0,100);
-//			char temp2[100];
-//			memset(temp2,0x0,100);
-//			for ( int z=0; z < 4; z++ ) {
-//				snprintf(temp1, 100, "item%d.%d", z+1,tradingWith->GetNPCTypeID());
-//				snprintf(temp2, 100, "%d",items[z]);
-//				parse->AddVar(temp1,temp2);
-//				//			memset(temp1,0x0,100);
-//				//			memset(temp2,0x0,100);
-//				snprintf(temp1, 100, "item%d.charges.%d", z+1,tradingWith->GetNPCTypeID());
-//				snprintf(temp2, 100, "%d",charges[z]);
-//				parse->AddVar(temp1,temp2);
-//				//			memset(temp1,0x0,100);
-//				//			memset(temp2,0x0,100);
-//			}
-//			snprintf(temp1, 100, "copper.%d",tradingWith->GetNPCTypeID());
-//			snprintf(temp2, 100, "%i",trade->cp);
-//			parse->AddVar(temp1,temp2);
-//			//		memset(temp1,0x0,100);
-//			//		memset(temp2,0x0,100);
-//			snprintf(temp1, 100, "silver.%d",tradingWith->GetNPCTypeID());
-//			snprintf(temp2, 100, "%i",trade->sp);
-//			parse->AddVar(temp1,temp2);
-//			//		memset(temp1,0x0,100);
-//			//		memset(temp2,0x0,100);
-//			snprintf(temp1, 100, "gold.%d",tradingWith->GetNPCTypeID());
-//			snprintf(temp2, 100, "%i",trade->gp);
-//			parse->AddVar(temp1,temp2);
-//			//		memset(temp1,0x0,100);
-//			//		memset(temp2,0x0,100);
-//			snprintf(temp1, 100, "platinum.%d",tradingWith->GetNPCTypeID());
-//			snprintf(temp2, 100, "%i",trade->pp);
-//			parse->AddVar(temp1,temp2);
-//			//		memset(temp1,0x0,100);
-//			//		memset(temp2,0x0,100);
-//			parse->Event(EVENT_ITEM, tradingWith->GetNPCTypeID(), NULL, tradingWith->CastToNPC(), this);
-//			did_quest = true;
-//		}
-//		if(RuleB(TaskSystem, EnableTaskSystem)) {
-//			int Cash = trade->cp + (trade->sp * 10) + (trade->gp * 100) + (trade->pp * 1000);
-//			if(UpdateTasksOnDeliver(items, Cash, tradingWith->GetNPCTypeID())) {
-//				if(!tradingWith->IsMoving()) 
-//					tradingWith->FaceTarget(this);
-//			}
-//		}
-//		//		Message(0, "Normal NPC: keeping items.");
-//
-//		//else, we do not have a quest, give the items to the NPC
-//		if(did_quest) {
-//			//only continue if we are a charmed NPC
-//			if(!tradingWith->HasOwner() || tradingWith->GetPetType() != petCharmed)
-//				return;
-//		}
-//
-//
-//		int xy = tradingWith->CastToNPC()->CountLoot();
-//
-//		for(int y=0; y < 4; y++) {
-//
-//
-//			if (xy >= 20)
-//				break;
-//			xy++;
-//			//NPC* npc=with->CastToNPC();
-//			const Item_Struct* item2 = database.GetItem(items[y]);
-//			if (item2) {
-//
-//
-//				//if was not no drop item, let the NPC have it
-//				if(GetGM() || item2->NoDrop != 0)
-//					tradingWith->CastToNPC()->AddLootDrop(item2, &tradingWith->CastToNPC()->itemlist, charges[y], true, true);
-//				//else 
-//				//	with->AddLootDrop(item2, NULL, charges[y], false, true);
-//
-//
-//			}
-//		}
-//	}
-//}
 
 bool Client::CheckTradeLoreConflict(Client* other)
 {

@@ -152,7 +152,6 @@ public:
 	virtual void Death(Mob* killerMob, sint32 damage, int16 spell_id, SkillType attack_skill);
 	virtual void Damage(Mob* from, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable = true, sint8 buffslot = -1, bool iBuffTic = false);
 	virtual bool Attack(Mob* other, int Hand = 13, bool FromRiposte = false);
-	virtual void AddToHateList(Mob* other, sint32 hate = 0, sint32 damage = 0, bool iYellForHelp = true, bool bFrenzy = false, bool iBuffTic = false);
 
 //	void	Discipline(ClientDiscipline_Struct* disc_in, Mob* tar);
 	void	AI_Init();
@@ -195,8 +194,7 @@ public:
 	void	TradeRequestFailed(const EQApplicationPacket* app);
 	void	BuyTraderItem(TraderBuy_Struct* tbs,Client* trader,const EQApplicationPacket* app);
 	void	TraderUpdate(int16 slot_id,int32 trader_id);
-	void	FinishTrade(Client* with);
-	void	FinishTrade(NPC* with);
+	void	FinishTrade(Mob* with);
 
 	void	SendBuyerResults(char *SearchQuery, uint32 SearchID);
 	void	ShowBuyLines(const EQApplicationPacket *app);
