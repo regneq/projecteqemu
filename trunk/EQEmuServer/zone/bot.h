@@ -22,7 +22,7 @@ class Bot : public NPC {
 public:
 	// Class Constructors
 	Bot(NPCType npcTypeData, Client* botOwner);
-	Bot(uint32 botID, uint32 botOwnerCharacterID, uint32 botSpellsID, NPCType npcTypeData);
+	Bot(uint32 botID, uint32 botOwnerCharacterID, uint32 botSpellsID, double totalPlayTime, NPCType npcTypeData);
 
 	//abstract virtual function implementations requird by base abstract class
 	virtual void Death(Mob* killerMob, sint32 damage, int16 spell_id, SkillType attack_skill);
@@ -113,10 +113,6 @@ public:
 	virtual bool Bot_AI_PursueCastCheck();
 	virtual bool Bot_AI_IdleCastCheck();
 	virtual bool Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes);
-	
-	// Bot Orders
-	//virtual bool IsBotOrderAttack() { return _botOrderAttack; }
-	//virtual void SetBotOrderAttack(bool botAttack) { _botOrderAttack = botAttack; }
 
 	// Bot Equipment & Inventory Class Methods
 	void BotTradeSwapItem(Client* client, sint16 lootSlot, uint32 id, sint16 maxCharges, uint32 equipableSlots, std::string* errorMessage, bool swap = true);
@@ -194,7 +190,7 @@ public:
 protected:
 	virtual void BotAIProcess();
 	virtual void PetAIProcess();
-	static NPCType FillNPCTypeStruct(uint32 botSpellsID, std::string botName, std::string botLastName, uint8 botLevel, uint16 botRace, uint8 botClass, uint8 botBodyType, sint32 hitPoints, uint8 gender, float size, uint32 hitPointsRegenRate, uint32 manaRegenRate, uint32 face, uint32 hairStyle, uint32 hairColor, uint32 eyeColor, uint32 eyeColor2, uint32 beardColor, uint32 beard, uint32 drakkinHeritage, uint32 drakkinTattoo, uint32 drakkinDetails, float runSpeed, sint16 mr, sint16 cr, sint16 dr, sint16 fr, sint16 pr, sint16 ac, uint16 str, uint16 sta, uint16 dex, uint16 agi, uint16 _int, uint16 wis, uint16 cha, uint16 attack);
+	static NPCType FillNPCTypeStruct(uint32 botSpellsID, std::string botName, std::string botLastName, uint8 botLevel, uint16 botRace, uint8 botClass, uint8 gender, float size, uint32 face, uint32 hairStyle, uint32 hairColor, uint32 eyeColor, uint32 eyeColor2, uint32 beardColor, uint32 beard, uint32 drakkinHeritage, uint32 drakkinTattoo, uint32 drakkinDetails, sint16 mr, sint16 cr, sint16 dr, sint16 fr, sint16 pr, sint16 ac, uint16 str, uint16 sta, uint16 dex, uint16 agi, uint16 _int, uint16 wis, uint16 cha, uint16 attack);
 	static NPCType CreateDefaultNPCTypeStructForBot(std::string botName, std::string botLastName, uint8 botLevel, uint16 botRace, uint8 botClass, uint8 gender);
 	virtual void BotMeditate(bool isSitting);
 	virtual bool BotRangedAttack(Mob* other);
@@ -217,6 +213,8 @@ private:
 	uint32 _botArcheryRange;
 	bool cast_last_time;
 	BotInventory _botInventory;
+	double _lastTotalPlayTime;
+	time_t _startTotalPlayTime;
 
 	// Private "base stats" Members
 	sint16 _baseMR;
@@ -256,6 +254,7 @@ private:
 	void RemoveBotItemBySlot(uint32 slotID, std::string* errorMessage);
 	void SetBotItemInSlot(uint32 slotID, uint32 itemID, std::string* errorMessage);
 	uint32 GetBotItemsCount(std::string* errorMessage);
+	double GetTotalPlayTime();
 };
 
 #endif // BOTS
