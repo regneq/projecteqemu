@@ -443,7 +443,8 @@ bool Group::DelMember(Mob* oldmember,bool ignoresender){
 		oldmember->CastToClient()->QueuePacket(outapp);
 	 }
 
-	database.SetGroupID(oldmember->GetName(), 0, oldmember->CastToClient()->CharacterID());
+	if(oldmember->IsClient())
+		database.SetGroupID(oldmember->GetName(), 0, oldmember->CastToClient()->CharacterID());
 	
 	oldmember->SetGrouped(false);
 	disbandcheck = true;

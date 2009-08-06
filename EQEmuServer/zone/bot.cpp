@@ -944,11 +944,12 @@ bool Bot::Save() {
 
 	char* Query = 0;
 	char TempErrorMessageBuffer[MYSQL_ERRMSG_SIZE];
+	int32 affectedRows = 0;
 
 	if(this->GetBotID() == 0) {
 		// New bot record
 		uint32 TempNewBotID = 0;
-		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "INSERT INTO bots (BotOwnerCharacterID, BotSpellsID, Name, LastName, BotLevel, Race, Class, Gender, Size, Face, LuclinHairStyle, LuclinHairColor, LuclinEyeColor, LuclinEyeColor2, LuclinBeardColor, LuclinBeard, DrakkinHeritage, DrakkinTattoo, DrakkinDetails, MR, CR, DR, FR, PR, AC, STR, STA, DEX, AGI, _INT, WIS, CHA, ATK, LastSpawnDate, TotalPlayTime) VALUES('%u', '%u', '%s', '%s', '%u', '%i', '%i', '%i', '%f', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', NOW(), 0)", this->_botOwnerCharacterID, this->GetBotSpellID(), this->GetCleanName(), this->lastname, this->GetLevel(), GetRace(), GetClass(), GetGender(), GetSize(), this->GetLuclinFace(), this->GetHairStyle(), GetHairColor(), this->GetEyeColor1(), GetEyeColor2(), this->GetBeardColor(), this->GetBeard(), this->GetDrakkinHeritage(), this->GetDrakkinTattoo(), GetDrakkinDetails(), GetMR(), GetCR(), GetDR(), GetFR(), GetPR(), GetAC(), GetSTR(), GetSTA(), GetDEX(), GetAGI(), GetINT(), GetWIS(), GetCHA(), GetATK()), TempErrorMessageBuffer, 0, 0, &TempNewBotID)) {
+		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "INSERT INTO bots (BotOwnerCharacterID, BotSpellsID, Name, LastName, BotLevel, Race, Class, Gender, Size, Face, LuclinHairStyle, LuclinHairColor, LuclinEyeColor, LuclinEyeColor2, LuclinBeardColor, LuclinBeard, DrakkinHeritage, DrakkinTattoo, DrakkinDetails, MR, CR, DR, FR, PR, AC, STR, STA, DEX, AGI, _INT, WIS, CHA, ATK, LastSpawnDate, TotalPlayTime) VALUES('%u', '%u', '%s', '%s', '%u', '%i', '%i', '%i', '%f', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', NOW(), 0)", this->_botOwnerCharacterID, this->GetBotSpellID(), this->GetCleanName(), this->lastname, this->GetLevel(), GetRace(), GetClass(), GetGender(), GetSize(), this->GetLuclinFace(), this->GetHairStyle(), GetHairColor(), this->GetEyeColor1(), GetEyeColor2(), this->GetBeardColor(), this->GetBeard(), this->GetDrakkinHeritage(), this->GetDrakkinTattoo(), GetDrakkinDetails(), GetMR(), GetCR(), GetDR(), GetFR(), GetPR(), GetAC(), GetSTR(), GetSTA(), GetDEX(), GetAGI(), GetINT(), GetWIS(), GetCHA(), GetATK()), TempErrorMessageBuffer, 0, &affectedRows, &TempNewBotID)) {
 			errorMessage = std::string(TempErrorMessageBuffer);
 		}
 		else {
@@ -958,7 +959,7 @@ bool Bot::Save() {
 	}
 	else {
 		// Update existing bot record
-		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "UPDATE bots SET BotOwnerCharacterID = '%u', BotSpellsID = '%u', Name = '%s', LastName = '%s', BotLevel = '%u', Race = '%i', Class = '%i', Gender = '%i', Size = '%f', Face = '%i', LuclinHairStyle = '%i', LuclinHairColor = '%i', LuclinEyeColor = '%i', LuclinEyeColor2 = '%i', LuclinBeardColor = '%i', LuclinBeard = '%i', DrakkinHeritage = '%i', DrakkinTattoo = '%i', DrakkinDetails = '%i', MR = '%i', CR = '%i', DR = '%i', FR = '%i', PR = '%i', AC = '%i', STR = '%i', STA = '%i', DEX = '%i', AGI = '%i', _INT = '%i', WIS = '%i', CHA = '%i', ATK = '%i', LastSpawnDate = NOW(), TotalPlayTime = '%ld' WHERE BotID = '%u'", _botOwnerCharacterID, this->GetBotSpellID(), this->GetCleanName(), this->lastname, this->GetLevel(), this->GetRace(), this->GetClass(), GetGender(), GetSize(), this->GetLuclinFace(), this->GetHairStyle(), GetHairColor(), this->GetEyeColor1(), GetEyeColor2(), this->GetBeardColor(), this->GetBeard(), this->GetDrakkinHeritage(), GetDrakkinTattoo(), GetDrakkinDetails(), _baseMR, _baseCR, _baseDR, _baseFR, _basePR, _baseAC, _baseSTR, _baseSTA, _baseDEX, _baseAGI, _baseINT, _baseWIS, _baseCHA, _baseATK, GetTotalPlayTime(), GetBotID()), TempErrorMessageBuffer)) {
+		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "UPDATE bots SET BotOwnerCharacterID = '%u', BotSpellsID = '%u', Name = '%s', LastName = '%s', BotLevel = '%u', Race = '%i', Class = '%i', Gender = '%i', Size = '%f', Face = '%i', LuclinHairStyle = '%i', LuclinHairColor = '%i', LuclinEyeColor = '%i', LuclinEyeColor2 = '%i', LuclinBeardColor = '%i', LuclinBeard = '%i', DrakkinHeritage = '%i', DrakkinTattoo = '%i', DrakkinDetails = '%i', MR = '%i', CR = '%i', DR = '%i', FR = '%i', PR = '%i', AC = '%i', STR = '%i', STA = '%i', DEX = '%i', AGI = '%i', _INT = '%i', WIS = '%i', CHA = '%i', ATK = '%i', LastSpawnDate = NOW(), TotalPlayTime = '%u' WHERE BotID = '%u'", _botOwnerCharacterID, this->GetBotSpellID(), this->GetCleanName(), this->lastname, this->GetLevel(), this->GetRace(), this->GetClass(), GetGender(), GetSize(), this->GetLuclinFace(), this->GetHairStyle(), GetHairColor(), this->GetEyeColor1(), GetEyeColor2(), this->GetBeardColor(), this->GetBeard(), this->GetDrakkinHeritage(), GetDrakkinTattoo(), GetDrakkinDetails(), _baseMR, _baseCR, _baseDR, _baseFR, _basePR, _baseAC, _baseSTR, _baseSTA, _baseDEX, _baseAGI, _baseINT, _baseWIS, _baseCHA, _baseATK, GetTotalPlayTime(), GetBotID()), TempErrorMessageBuffer, 0, &affectedRows)) {
 			errorMessage = std::string(TempErrorMessageBuffer);
 		}
 		else {
@@ -968,23 +969,31 @@ bool Bot::Save() {
 
 	safe_delete(Query);
 
-	if(!errorMessage.empty()) {
-		if(GetBotOwner())
+	if(!errorMessage.empty() || (Result && affectedRows != 1)) {
+		if(GetBotOwner() && !errorMessage.empty())
 			GetBotOwner()->Message(13, errorMessage.c_str());
+		else if(GetBotOwner())
+			GetBotOwner()->Message(13, std::string("Unable to save bot to the database.").c_str());
+
+		Result = false;
 	}
 
 	return Result;
 }
 
 // Returns the current total play time for the bot
-double Bot::GetTotalPlayTime() {
-	double Result = 0;
+uint32 Bot::GetTotalPlayTime() {
+	uint32 Result = 0;
+
+	double TempTotalPlayTime = 0;
 
 	time_t currentTime = time(&currentTime);
 
-	Result = difftime(currentTime, _startTotalPlayTime);
+	TempTotalPlayTime = difftime(currentTime, _startTotalPlayTime);
 
-	Result += _lastTotalPlayTime;
+	TempTotalPlayTime += _lastTotalPlayTime;
+
+	Result = (uint32)TempTotalPlayTime;
 
 	return Result;
 }
@@ -3685,6 +3694,25 @@ bool Bot::Bot_Command_Resist(int resisttype, int level) {
 		}
 	}
 	return false;
+}
+
+bool Bot::RemoveBotFromGroup(Bot* bot) {
+	bool Result = false;
+
+	if(bot) {
+		Group *g = entity_list.GetGroupByMob(bot);
+		if(g) {
+			bot->SetFollowID(0);
+			g->DelMember(bot);
+			
+			if(g->GroupCount() <= 1)
+				g->DisbandGroup();
+
+			Result = true;
+		}
+	}
+
+	return Result;
 }
 
 bool Bot::AddBotToGroup(Bot* bot, Group* group) {
@@ -6894,17 +6922,12 @@ void Bot::DestroyBotObjects(Client* client) {
 			}
 		}
 
-		Group *g = entity_list.GetGroupByMob(client);
-		if(g) {
-			for(int i=5; i>=0; i--) {
-				if(g->members[i] && g->members[i]->IsBot()) {
-					g->members[i]->CastToBot()->SetBotOwner(0);
-					g->members[i]->Kill();
-				}
-			}
+		std::list<Bot*> BotList = entity_list.GetBotsByBotOwnerCharacterID(client->CharacterID());
 
-			if(g->GroupCount() <= 1)
-				g->DisbandGroup();
+		if(!BotList.empty()) {
+			for(std::list<Bot*>::iterator botListItr = BotList.begin(); botListItr != BotList.end(); botListItr++) {
+				(*botListItr)->Camp();
+			}
 		}
 	}
 }
@@ -8095,6 +8118,18 @@ sint32 Bot::CalcMaxHP() {
 	return max_hp;
 }
 
+void Bot::Camp(bool databaseSave) {
+	if(IsGrouped()) {
+		RemoveBotFromGroup(this);
+	}
+
+	if(databaseSave)
+		Save();
+
+	SetBotOwner(0);
+	Depop();
+}
+
 void Bot::CalcBotStats(bool showtext) {
 	Client* BotOwner = this->GetBotOwner()->CastToClient();
 
@@ -8408,30 +8443,32 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 			Bot* BotTargeted = c->GetTarget()->CastToBot();
 
 			if(BotTargeted) {
-				if(BotTargeted->DeleteBot(&TempErrorMessage)) {
-					BotTargeted->Say("...but why?!! We had such good adventures together! gaahhh...glrrrk...");
+				BotTargeted->DeleteBot(&TempErrorMessage);
+				BotTargeted->Camp(false);
+				//if(BotTargeted->DeleteBot(&TempErrorMessage)) {
+				//	BotTargeted->Say("...but why?!! We had such good adventures together! gaahhh...glrrrk...");
 
-					if(BotTargeted->IsGrouped()) {
-						Group *g = entity_list.GetGroupByMob(c->GetTarget());
-						if(g) {
-							g->DelMember(BotTargeted);
-						}
-					}
-					else {
-						Group *g = entity_list.GetGroupByMob(c->GetTarget());
-						if(g && g->GroupCount() == 2) {
-							g->DisbandGroup();
-							// TODO: Client group window now shows a no members but the "Disband" button is still enabled.
-						}
-					}
+				//	if(BotTargeted->IsGrouped()) {
+				//		Group *g = entity_list.GetGroupByMob(c->GetTarget());
+				//		if(g) {
+				//			g->DelMember(BotTargeted);
+				//		}
+				//	}
+				//	else {
+				//		Group *g = entity_list.GetGroupByMob(c->GetTarget());
+				//		if(g && g->GroupCount() == 2) {
+				//			g->DisbandGroup();
+				//			// TODO: Client group window now shows a no members but the "Disband" button is still enabled.
+				//		}
+				//	}
 
-					BotTargeted->SetBotOwner(0);
-					BotTargeted->Kill();
-				}
-				else {
-					// TODO: log error message here
-					c->Message(15, "Error deleting Bot!");
-				}
+				//	BotTargeted->SetBotOwner(0);
+				//	BotTargeted->Kill();
+				//}
+				//else {
+				//	// TODO: log error message here
+				//	c->Message(15, "Error deleting Bot!");
+				//}
 
 				if(!TempErrorMessage.empty()) {
 					c->Message(13, "Database Error: %s", TempErrorMessage.c_str());
@@ -8953,11 +8990,11 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 			Group *g = entity_list.GetGroupByClient(c);
 			if(g && (c->CastToMob() != g->members[0])) {
 				c->Message(15, "Only the group leader can invite bots.");
-				Mob* kmob = c->GetTarget();
-				if(kmob != NULL) {
-					kmob->CastToBot()->SetBotOwner(0);
-					kmob->Kill();
-				}
+				//Mob* kmob = c->GetTarget();
+				//if(kmob != NULL) {
+				//	kmob->CastToBot()->SetBotOwner(0);
+				//	kmob->Kill();
+				//}
 				return;
 			}
 		}
@@ -8966,11 +9003,11 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 			Group *g = entity_list.GetGroupByClient(c);
 			if(g && (GetCountBotsInGroup(g) > 5)) {
 				c->Message(15, "There is no more room in your group.");
-				Mob* kmob = c->GetTarget();
+				/*Mob* kmob = c->GetTarget();
 				if(kmob != NULL) {
 					kmob->CastToBot()->SetBotOwner(0);
 					kmob->Kill();
-				}
+				}*/
 				return;
 			}
 		}
@@ -9076,23 +9113,20 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 						if(g->members[0] == c->GetTarget()) {
 							for(int i=5; i>=0; i--) {
 								if(g->members[i]) {
-									g->members[i]->CastToBot()->SetBotOwner(0);
-									g->members[i]->Kill();
+									g->members[i]->CastToBot()->Camp();
 								}
 							}
 						}
 						else {
-							c->GetTarget()->CastToBot()->SetBotOwner(0);;
-							c->GetTarget()->Kill();
+							c->GetTarget()->CastToBot()->Camp();
 						}
 						
-						if(g->GroupCount() < 2)
-							g->DisbandGroup();
+						/*if(g->GroupCount() < 2)
+							g->DisbandGroup();*/
 					}
 				}
 				else {
-					c->GetTarget()->CastToBot()->SetBotOwner(0);
-					c->GetTarget()->Kill();
+					c->GetTarget()->CastToBot()->Camp();
 				}
 
 				/*if(c->GetTarget()->GetBotRaidID()) {
@@ -10142,7 +10176,8 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 						if(c->GetTarget()->GetPet())
 						{
 							c->GetTarget()->GetPet()->Say_StringID(PET_GETLOST_STRING);
-							c->GetTarget()->GetPet()->Kill();
+							// c->GetTarget()->GetPet()->Kill();
+							c->GetTarget()->GetPet()->Depop(false);
 							c->GetTarget()->SetPetID(0);
 						}
 						c->GetTarget()->CastToBot()->SetBotCharmer(true);
@@ -11409,11 +11444,11 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 			if(c->GetBotRaidID() <= 0 && c->GetTarget()->IsBot())
 			{
 				c->Message(15, "You must have created your raid and your group must be full before doing that!");
-				Mob* kmob = c->GetTarget();
+				/*Mob* kmob = c->GetTarget();
 				if(kmob != NULL) {
 					kmob->CastToBot()->SetBotOwner(0);
 					kmob->Kill();
-				}
+				}*/
 				return;
 			}
 
@@ -11427,11 +11462,11 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 			{
 				BotRaids *br = entity_list.GetBotRaidByMob(c->CastToMob());
 				if(br && (br->RaidBotGroupsCount() >= MAX_BOT_RAID_GROUPS)) {
-					Mob *kmob = c->GetTarget();
+					/*Mob *kmob = c->GetTarget();
 					if(kmob != NULL) {
 						kmob->CastToBot()->SetBotOwner(0);
 						kmob->Kill();
-					}
+					}*/
 					return;
 				}
 
@@ -11491,32 +11526,33 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 			if(!sictar || !sictar->IsGrouped() || entity_list.GetGroupByMob(sictar) == NULL || entity_list.GetGroupByMob(sictar)->GetLeader() != sictar)
 			{
 				c->Message(15, "You didn't type the correct group leader name.");
-				Mob* kmob = c->GetTarget();
-				if(kmob != NULL) {
-					//kmob->BotOwner = NULL;
-					kmob->CastToBot()->SetBotOwner(0);
-					kmob->Kill();
-				}
+				//Mob* kmob = c->GetTarget();
+				//if(kmob != NULL) {
+				//	//kmob->BotOwner = NULL;
+				//	kmob->CastToBot()->SetBotOwner(0);
+				//	kmob->Kill();
+				//}
 				return;
 			}
 
 			if(c->GetTarget()->IsGrouped()) {
 				c->Message(15, "You must target an ungrouped bot first.");
-				Mob* kmob = c->GetTarget();
+				/*Mob* kmob = c->GetTarget();
 				if(kmob != NULL) {
 					kmob->CastToBot()->SetBotOwner(0);
 					kmob->Kill();
-				}
+				}*/
 				return;
 			}                
 			else {
 				Mob *inv = c->GetTarget();
 
 				Group *g = entity_list.GetGroupByMob(sictar);
-				if(g && (GetCountBotsInGroup(g) > 5)) {
+				//if(g && (GetCountBotsInGroup(g) > 5)) {
+				if(g && g->GroupCount() == 6) {
 					inv->Say("I can't get into the group, it's full already.");
-					inv->CastToBot()->SetBotOwner(0);
-					inv->Kill();
+					/*inv->CastToBot()->SetBotOwner(0);
+					inv->Kill();*/
 					return;
 				}
 				if(g && (GetCountBotsInGroup(g) < 6))
@@ -11568,8 +11604,8 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 					for(int i=5; i>=0; i--) {
 						if(g->members[i] && g->members[i]->IsBot()) {
 							hasBots = true;
-							g->members[i]->CastToBot()->SetBotOwner(0);
-							g->members[i]->Kill();
+							//g->members[i]->CastToBot()->SetBotOwner(0);
+							g->members[i]->CastToBot()->Camp();
 						}
 					}
 					if(hasBots) {

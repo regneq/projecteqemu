@@ -35,7 +35,6 @@ public:
 	bool IsBotNameAvailable(std::string* errorMessage);
 	bool DeleteBot(std::string* errorMessage);
 	void Spawn(Client* botCharacterOwner, std::string* errorMessage);
-	//void Depop(std::string* errorMessage);
 	virtual void SetLevel(uint8 in_level, bool command = false);
 	virtual void FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho);
 	virtual bool Process();
@@ -81,6 +80,7 @@ public:
 	bool DoFinishedSpellGroupTarget(int16 spell_id, Mob* spellTarget, int16 slot, bool &stopLogic);
 	void FinishTrade(Client* client);
 	void SendBotArcheryWearChange(int8 material_slot, uint32 material, uint32 color);
+	void Camp(bool databaseSave = true);
 
 	// Mob Spell Virtual Override Methods
 	virtual sint32 GetActSpellDamage(int16 spell_id, sint32 value);
@@ -135,6 +135,7 @@ public:
 	static std::string RaceIdToString(uint16 raceId);
 	static uint32 GetCountBotsInGroup(Group* group);
 	static bool AddBotToGroup(Bot* bot, Group* group);
+	static bool RemoveBotFromGroup(Bot* bot);
 	static void SendBotHPPacketsToGroup(Bot* bot, Group* group);
 	static void DestroyBotObjects(Client* client);
 	static bool IsBotAttackAllowed(Mob* attacker, Mob* target, bool& hasRuleDefined);
@@ -254,7 +255,7 @@ private:
 	void RemoveBotItemBySlot(uint32 slotID, std::string* errorMessage);
 	void SetBotItemInSlot(uint32 slotID, uint32 itemID, std::string* errorMessage);
 	uint32 GetBotItemsCount(std::string* errorMessage);
-	double GetTotalPlayTime();
+	uint32 GetTotalPlayTime();
 };
 
 #endif // BOTS
