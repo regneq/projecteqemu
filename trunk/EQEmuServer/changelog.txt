@@ -6,6 +6,7 @@ WildcardX: Bots will now call the database a lot less regarding their inventory.
 WildcardX: Bots appearance like face, hair, etc is now persisted to the database and used during runtime.
 WildcardX: (Taurinus) Tweaked the way bots calculate their AA's so the code isn't as long and is easier to read.
 WildcardX: A bot getting aggro will aggro its group members for them to come to the bots defense.
+gaeorn: added utils/sql/svn/botsconvert.sql to convert old schema bots and inventory to new schema. if you need to convert old bots, use this instead of bots.sql.
 
 ==08/04/2009==
 WildcardX: Fixed a bug that broke cash handins with NPC's.
