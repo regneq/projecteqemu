@@ -86,6 +86,7 @@ public:
 	void FinishTrade(Client* client);
 	void SendBotArcheryWearChange(int8 material_slot, uint32 material, uint32 color);
 	void Camp(bool databaseSave = true);
+	virtual void AddToHateList(Mob* other, sint32 hate = 0, sint32 damage = 0, bool iYellForHelp = true, bool bFrenzy = false, bool iBuffTic = false);
 
 	// Mob Spell Virtual Override Methods
 	virtual sint32 GetActSpellDamage(int16 spell_id, sint32 value);
@@ -224,6 +225,7 @@ private:
 	BotInventory _botInventory;
 	double _lastTotalPlayTime;
 	time_t _startTotalPlayTime;
+	Mob* _previousTarget;
 
 	// Private "base stats" Members
 	sint16 _baseMR;
