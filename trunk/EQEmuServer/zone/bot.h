@@ -14,6 +14,8 @@
 #include "StringIDs.h"
 #include "../common/MiscFunctions.h"
 
+#include <sstream>
+
 using namespace std;
 
 extern bool spells_loaded;
@@ -137,6 +139,10 @@ public:
 	static bool RemoveBotFromGroup(Bot* bot);
 	static void DestroyBotObjects(Client* client);
 	static bool IsBotAttackAllowed(Mob* attacker, Mob* target, bool& hasRuleDefined);
+	static void BotGroupOrderFollow(Group* group);
+	static void BotGroupOrderGuard(Group* group);
+	static void BotGroupOrderAttack(Group* group);
+	static void BotGroupSummon(Group* group);
 
 	// "GET" Class Methods
 	uint32 GetBotID() { return _botID; }

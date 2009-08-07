@@ -8,6 +8,7 @@ WildcardX: Only a Client object will try to update its group id in the database 
 WildcardX: *BOTS* Bots will now record their total play time.
 WildcardX: Modified Group::AddMember() to be more bots friendly and removed specific bot code to do the same thing.
 WildcardX: *BOTS* Modified the IsBotAttackAllowed() method to prevent a bot wizard's familiar from attacking.
+WildcardX: *BOTS* More code refactoring. Bots will now use group message channel to communicate with the group (idea being bots may eventually be in a different zone than the group and/or client).
 
 Optional SQL: *BOTS* utils/sql/svn/892_optional_bots_table_mod.sql
 Optional SQL: *BOTS* utils/sql/svn/893_optional_bots_table_mod.sql
