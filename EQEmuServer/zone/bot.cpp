@@ -2157,6 +2157,7 @@ void Bot::BotAIProcess() {
 
 	if(IsEngaged()) {
 		_ZP(Mob_BOT_Process_IsEngaged);
+
 		if(IsRooted())
 			SetTarget(hate_list.GetClosest(this));
 		else {
@@ -4481,6 +4482,11 @@ void Bot::Damage(Mob *from, sint32 damage, int16 spell_id, SkillType attack_skil
 	}
 }
 
+void Bot::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHelp, bool bFrenzy, bool iBuffTic) {
+	this->_previousTarget = GetTarget();
+	Mob::AddToHateList(other, hate, damage, iYellForHelp, bFrenzy, iBuffTic);
+}
+
 bool Bot::Attack(Mob* other, int Hand, bool FromRiposte) {
 	_ZP(Bot_Attack);
 
@@ -4513,7 +4519,7 @@ bool Bot::Attack(Mob* other, int Hand, bool FromRiposte) {
 		return false;
 	}
 	
-	if(IsGrouped()) {
+	if(IsGrouped() && this->_previousTarget != other) {
 		Group* g = GetGroup();
 
 		if(g) {
