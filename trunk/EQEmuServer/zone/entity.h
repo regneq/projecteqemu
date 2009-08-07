@@ -140,6 +140,7 @@ public:
 	Group*	GetGroupByClient(Client* client);
 	Group*  GetGroupByID(int32 id);
 	Group*  GetGroupByLeaderName(char* leader);
+	Raid*	GetRaidByMob(Mob* mob);
 	Raid*	GetRaidByClient(Client* client);
 	Raid*	GetRaidByID(int32 id);
 	Raid*	GetRaidByLeaderName(const char *leader);
@@ -382,19 +383,20 @@ private:
 	// Please Do Not Declare Any EntityList Class Members After This Comment
 #ifdef BOTS
 	public:
-		Mob* GetMobByBotID(uint32 botID);
 		void AddBot(Bot* newBot, bool SendSpawnPacket = true, bool dontqueue = false);
-		list<Bot*> GetBotsByBotOwnerCharacterID(uint32 botOwnerCharacterID);
 		bool RemoveBot(int16 entityID);
-		bool Bot_AICheckCloseBeneficialSpells(Bot* caster, int8 iChance, float iRange, int16 iSpellTypes);
-		void ShowSpawnWindow(Client* client, int Distance, bool NamedOnly);
-		BotRaids* GetBotRaidByMob(Mob *mr);
-		bool RemoveBotRaid(int16 delete_id);
-		void AddBotRaid(BotRaids *br);
-		void AddBotRaid(BotRaids *br, int16 id);
+		Mob* GetMobByBotID(uint32 botID);
+		list<Bot*> GetBotsByBotOwnerCharacterID(uint32 botOwnerCharacterID);
+
+		bool Bot_AICheckCloseBeneficialSpells(Bot* caster, int8 iChance, float iRange, int16 iSpellTypes);  // TODO: Evaluate this closesly in hopes to eliminate
+		void ShowSpawnWindow(Client* client, int Distance, bool NamedOnly);  // TODO: Implement ShowSpawnWindow in the bot class but it needs entity list stuff
+		BotRaids* GetBotRaidByMob(Mob *mr);	// TODO: Remove after BotRaids object is deprecated
+		bool RemoveBotRaid(int16 delete_id);	// TODO: Remove after BotRaids object is deprecated
+		void AddBotRaid(BotRaids *br);	// TODO: Remove after BotRaids object is deprecated
+		void AddBotRaid(BotRaids *br, int16 id);	// TODO: Remove after BotRaids object is deprecated
 	private:
 		LinkedList<Bot*> bot_list;
-		list<BotRaids*> botraid_list;
+		list<BotRaids*> botraid_list;	// TODO: Remove after BotRaids object is deprecated
 #endif
 };
 

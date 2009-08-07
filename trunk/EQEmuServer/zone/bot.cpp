@@ -2007,7 +2007,7 @@ bool Bot::Bot_AI_IdleCastCheck() {
 					{
 						if(IsGrouped())
 						{
-							Group *g = entity_list.GetGroupByMob(this);
+							Group *g = GetGroup();
 							if(g) {
 								for(int i=0; i<MAX_GROUP_MEMBERS; ++i)
 								{
@@ -2049,7 +2049,7 @@ bool Bot::Bot_AI_IdleCastCheck() {
 						{
 							if(IsGrouped())
 							{
-								Group *g = entity_list.GetGroupByMob(this);
+								Group *g = GetGroup();
 								if(g) {
 									for(int i=0; i<MAX_GROUP_MEMBERS; ++i)
 									{
@@ -3669,7 +3669,7 @@ bool Bot::Bot_Command_Resist(int resisttype, int level) {
 			}
 		}
 		else {
-			Group* g = entity_list.GetGroupByMob(this);
+			Group* g = GetGroup();
 			if(g) {
 				for(int k=0; k<MAX_GROUP_MEMBERS; k++) {
 					if(g->members[k]) {
@@ -3975,7 +3975,7 @@ bool Bot::Bot_Command_Cure(int curetype, int level) {
 			}
 		}
 		else {
-			Group* g = entity_list.GetGroupByMob(this);
+			Group* g = GetGroup();
 			if(g) {
 				for(int k=0; k<MAX_GROUP_MEMBERS; k++) {
 					if(g->members[k]) {
@@ -4355,7 +4355,7 @@ void Bot::Death(Mob *killerMob, sint32 damage, int16 spell_id, SkillType attack_
 	if(entity_list.GetCorpseByID(GetID()))
 		entity_list.GetCorpseByID(GetID())->Depop();
 
-	Group *g = entity_list.GetGroupByMob(this);
+	Group *g = GetGroup();
 	if(g) {
 		for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
 			if(g->members[i]) {
@@ -4470,7 +4470,7 @@ void Bot::Damage(Mob *from, sint32 damage, int16 spell_id, SkillType attack_skil
 
 	// Aggro the bot's group members
 	if(IsGrouped()) {
-		Group *g = entity_list.GetGroupByMob(this);
+		Group *g = GetGroup();
 		if(g) {
 			for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
 				if(g->members[i] && g->members[i]->IsBot() && !g->members[i]->CheckAggro(from)) {
@@ -4514,7 +4514,7 @@ bool Bot::Attack(Mob* other, int Hand, bool FromRiposte) {
 	}
 	
 	if(IsGrouped()) {
-		Group* g = entity_list.GetGroupByMob(this);
+		Group* g = GetGroup();
 
 		if(g) {
 			std::ostringstream attackMessage;
@@ -7500,7 +7500,7 @@ bool Bot::SpellEffect(Mob* caster, int16 spell_id, float partial) {
 
     // Franck-add: If healed/doted, a bot must show its new HP to its leader
 	if(IsGrouped()) {
-		Group *g = entity_list.GetGroupByMob(this);
+		Group *g = GetGroup();
 		if(g) {
 			EQApplicationPacket hp_app;
 			CreateHPPacket(&hp_app);
@@ -7860,7 +7860,7 @@ bool Bot::DoFinishedSpellSingleTarget(int16 spell_id, Mob* spellTarget, int16 sl
 			}
 
 			if(!noGroupSpell) {
-				Group *g = entity_list.GetGroupByMob(this);
+				Group *g = GetGroup();
 				if(g) {
 					for(int i=0; i<MAX_GROUP_MEMBERS;i++) {
 						if(g->members[i]) {
@@ -7912,7 +7912,7 @@ bool Bot::DoFinishedSpellGroupTarget(int16 spell_id, Mob* spellTarget, int16 slo
 		entity_list.AESpell(this, this, spell_id, true);
 	}
 	else {
-		Group *g = entity_list.GetGroupByMob(this);
+		Group *g = GetGroup();
 		if(g) {
 			for(int i=0; i<MAX_GROUP_MEMBERS; ++i) {
 				if(g->members[i]) {
