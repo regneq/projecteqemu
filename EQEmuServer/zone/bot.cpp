@@ -125,14 +125,12 @@ Bot::Bot(uint32 botID, uint32 botOwnerCharacterID, uint32 botSpellsID, double to
 	}
 
 	GenerateBaseStats();
-	//GenerateAppearance();
 	GenerateArmorClass();
 
 	// Calculate HitPoints Last As It Uses Base Stats
 	GenerateBaseHitPoints();
 
 	CalcBotStats(false);
-	//SendHPUpdate();
 }
 
 Bot::~Bot() {
@@ -2762,17 +2760,6 @@ void Bot::Depop() {
 	NPC::Depop(false);
 }
 
-//void Bot::Depop(std::string* errorMessage) {
-//	std::string TempErrorMessage;
-//
-//	CleanBotLeaderEntries(&TempErrorMessage);
-//
-//	if(TempErrorMessage.length() > 0) {
-//		*errorMessage = TempErrorMessage;
-//		return;
-//	}
-//}
-
 bool Bot::DeleteBot(std::string* errorMessage) {
 	bool Result = false;
 	int TempCounter = 0;
@@ -3432,20 +3419,20 @@ void Bot::SendBotArcheryWearChange(int8 material_slot, uint32 material, uint32 c
 	safe_delete(outapp);
 }
 
-uint32 Bot::GetCountBotsInGroup(Group *group) {
-	uint32 Result = 0;
-
-	if(group) {
-		for(int Count = 0; Count < group->GroupCount(); Count++) {
-			if(group->members[Count]) {
-				if(group->members[Count]->IsBot())
-					Result++;
-			}
-		}
-	}
-
-	return Result;
-}
+//uint32 Bot::GetCountBotsInGroup(Group *group) {
+//	uint32 Result = 0;
+//
+//	if(group) {
+//		for(int Count = 0; Count < group->GroupCount(); Count++) {
+//			if(group->members[Count]) {
+//				if(group->members[Count]->IsBot())
+//					Result++;
+//			}
+//		}
+//	}
+//
+//	return Result;
+//}
 
 // Returns the item id that is in the bot inventory collection for the specified slot.
 uint32 Bot::GetBotItem(uint32 slotID) {
@@ -3718,62 +3705,20 @@ bool Bot::RemoveBotFromGroup(Bot* bot) {
 bool Bot::AddBotToGroup(Bot* bot, Group* group) {
 	bool Result = false;
 
-	int i = 0;
-
 	if(bot && group) {
-		//Let's see if the bot is already in the group
-		for(i = 0; i < MAX_GROUP_MEMBERS; i++) {
-			if(group->members[i] && !strcasecmp(group->members[i]->GetCleanName(), bot->GetCleanName()))
-				return false;
-		}
+		if(group->AddMember(bot)) {
+			if(group->GetLeader()) {
+				bot->SetFollowID(group->GetLeader()->GetID());
 
-		// Put the bot in the group
-		for(i = 0; i < MAX_GROUP_MEMBERS; i++) {
-			if(group->members[i] == NULL) {
-				group->members[i] = bot;
-				break;
-			}
-		}
-		
-		// We copy the bot name in the group at the slot of the bot
-		strcpy(group->membername[i], bot->GetCleanName());
-		bot->SetGrouped(true);
-
-		//build the template join packet
-		EQApplicationPacket* outapp = new EQApplicationPacket(OP_GroupUpdate, sizeof(GroupJoin_Struct));
-		GroupJoin_Struct* gj = (GroupJoin_Struct*) outapp->pBuffer;	
-		strcpy(gj->membername, bot->GetCleanName());
-		gj->action = groupActJoin;
-	
-		int z = 1;
-		for(i=0; i < MAX_GROUP_MEMBERS; i++) {
-			if(group->members[i] && group->members[i]->IsClient()) {
-				if(group->IsLeader(group->members[i])) {
-					strcpy(gj->yourname, group->members[i]->GetName());
-					strcpy(group->members[i]->CastToClient()->GetPP().groupMembers[0], group->members[i]->GetName());
-					group->members[i]->CastToClient()->QueuePacket(outapp);
-				}
-				else {
-					strcpy(group->members[i]->CastToClient()->GetPP().groupMembers[0+z], group->members[i]->GetName());
-					group->members[i]->CastToClient()->QueuePacket(outapp);
+				// Need to send this only once when a group is formed with a bot so the client knows it is also the group leader
+				if(group->GroupCount() == 2) {
+					Mob *TempLeader = group->GetLeader();
+					group->SendUpdate(groupActUpdate, TempLeader);
 				}
 			}
-			z++;
+
+			Result = true;
 		}
-
-		safe_delete(outapp);
-
-		bot->SetFollowID(group->GetLeader()->GetID());
-
-		// Need to send this only once when a group is formed with a bot so the client knows it is also the group leader
-		if(group->GroupCount() == 2) {
-			Mob *TempLeader = group->GetLeader();
-			group->SendUpdate(groupActUpdate, TempLeader);
-		}
-
-		SendBotHPPacketsToGroup(bot, group);
-
-		Result = true;
 	}
 
 	return Result;
@@ -4366,6 +4311,8 @@ void Bot::FinishTrade(Client* client) {
 void Bot::Death(Mob *killerMob, sint32 damage, int16 spell_id, SkillType attack_skill) {
 	NPC::Death(killerMob, damage, spell_id, attack_skill);
 
+	Save();
+
 	Mob *give_exp = hate_list.GetDamageTop(this);
 	Client *give_exp_client = NULL;
 
@@ -4471,7 +4418,7 @@ void Bot::Death(Mob *killerMob, sint32 damage, int16 spell_id, SkillType attack_
 								br->botsecondtank = NULL;
 							}
 						}
-						if(Bot::GetCountBotsInGroup(g) == 0) {
+						if(g->GroupCount() == 0) {
 							int32 gid = g->GetID();
 							if(br) {
 								br->RemoveEmptyBotGroup();
@@ -6788,76 +6735,6 @@ Mob* Bot::GetOwner() {
 	return Result;
 }
 
-bool Bot::IsAttackAllowed(Mob *target, bool isSpellAttack) {
-	bool Result = false;
-
-	//cannot hurt untargetable mobs
-	bodyType bt = target->GetBodyType();
-
-	if(bt == BT_NoTarget || bt == BT_NoTarget2)
-		return false;
-
-	if(target && zone->CanDoCombat() && this != target && GetPet() != target) {
-		Mob* attacker = this;
-
-		// some pvp checks
-		if(attacker->IsBot() && attacker->GetOwner() && attacker->GetOwner()->CastToClient()->GetPVP()) // i'm a bot and my owner is pvp
-		{
-			if(target->IsBot() && target->GetOwner() && target->GetOwner()->CastToClient()->GetPVP()) // my target is a bot and it's owner is pvp
-			{
-				if(target->GetOwner() == attacker->GetOwner()) // no attacking if my owner is my target
-				{
-					return false;
-				}
-				else
-				{
-					return true;
-				}
-			}
-
-			if(target->IsClient() && target->CastToClient()->GetPVP()) // my target is a player and it's pvp
-			{
-				if(target == attacker->GetOwner()) // my target cannot be my owner
-				{
-					return false;
-				}
-				else
-				{
-					return true;
-				}
-			}
-		}
-
-		if((attacker->IsBot() && (target->IsBot() || target->IsClient())) || (attacker->IsClient() && target->IsBot())) {
-			return false;    
-		}
-
-		if(target->IsPet() && target->GetOwner()) {
-			if(target->GetOwner()->IsCorpse())
-				return false;
-			else if (target->GetOwner()->IsNPC())
-				return true;
-			else if (target->GetOwner()->IsBot())
-				return false;
-			else if(target->GetOwner()->IsClient())
-				return false;
-		}
-
-		if(attacker->IsBot()){
-			if(target->IsBot())
-				return false;
-			else if(target->IsClient())
-				return false;
-			else if(target->IsNPC())
-				return true;
-			else if(target->IsCorpse())
-				return false;
-		}
-	}
-
-	return Result;
-}
-
 bool Bot::IsBotAttackAllowed(Mob* attacker, Mob* target, bool& hasRuleDefined) {
 	bool Result = false;
 	
@@ -6866,7 +6743,33 @@ bool Bot::IsBotAttackAllowed(Mob* attacker, Mob* target, bool& hasRuleDefined) {
 			hasRuleDefined = true;
 			Result = true;
 		}
-		if(attacker->IsClient() && target->IsBot()) {
+		else if(attacker->IsBot() && attacker->CastToBot()->GetBotOwner() && attacker->CastToBot()->GetBotOwner()->CastToClient()->GetPVP()) {
+			if(target->IsBot() && target->GetOwner() && target->GetOwner()->CastToClient()->GetPVP()) {
+				// my target is a bot and it's owner is pvp
+				hasRuleDefined = true;
+
+				if(target->GetOwner() == attacker->GetOwner()) {
+					// no attacking if my target's owner is my owner
+					Result = false;
+				}
+				else {
+					Result = true;
+				}
+			}
+			else if(target->IsClient() && target->CastToClient()->GetPVP()) {
+				// my target is a player and it's pvp
+				hasRuleDefined = true;
+
+				if(target == attacker->GetOwner()) {
+					// my target cannot be my owner
+					Result = false;
+				}
+				else {
+					Result = true;
+				}
+			}
+		}
+		else if(attacker->IsClient() && target->IsBot()) {
 			hasRuleDefined = true;
 			Result = false;
 		}
@@ -6874,21 +6777,17 @@ bool Bot::IsBotAttackAllowed(Mob* attacker, Mob* target, bool& hasRuleDefined) {
 			hasRuleDefined = true;
 			Result = true;
 		}
+		else if(attacker->IsBot() && !target->IsNPC()) {
+			hasRuleDefined = true;
+			Result = false;
+		}
+		else if(attacker->IsPet() && attacker->IsFamiliar()) {
+			hasRuleDefined = true;
+			Result = false;
+		}
 	}
 
 	return Result;
-}
-
-void Bot::SendBotHPPacketsToGroup(Bot* bot, Group* group) {
-	if(bot && group) {
-		EQApplicationPacket hpapp;
-		bot->CreateHPPacket(&hpapp);
-		for(uint8 i = 0; i < MAX_GROUP_MEMBERS; i++) {
-			if(group->members[i] && group->members[i]->IsClient()) {
-				group->members[i]->CastToClient()->QueuePacket(&hpapp, false);
-			}
-		}
-	}
 }
 
 void Bot::EquipBot(std::string* errorMessage) {
@@ -8773,7 +8672,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 				// If a second group becomes necessary because there are more bots to spawn still, then the "ELSE" condition is tripped and we make a raid if there
 				// already isnt one and then we also make a new group, so groupCount++. Then we continue on until we fill this second group like we did the prior
 				// group until we run out of bots or we have to make more groups to add to the raid.
-				if(GetCountBotsInGroup(g) < 6 && botGroupItr->GroupID == groupCount) {
+				if(g->GroupCount() < 6 && botGroupItr->GroupID == groupCount) {
 					// Create a group before we have to make a raid in case we dont need to form a raid
 					AddBotToGroup(botGroupMember, g);
 
@@ -9001,7 +8900,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 
 		if (c->IsGrouped()) {
 			Group *g = entity_list.GetGroupByClient(c);
-			if(g && (GetCountBotsInGroup(g) > 5)) {
+			if(g && (g->GroupCount() > 5)) {
 				c->Message(15, "There is no more room in your group.");
 				/*Mob* kmob = c->GetTarget();
 				if(kmob != NULL) {
@@ -11555,7 +11454,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 					inv->Kill();*/
 					return;
 				}
-				if(g && (GetCountBotsInGroup(g) < 6))
+				if(g && (g->GroupCount() < 6))
 				{
 					inv->SetFollowID(sictar->GetID());
 					inv->CastToBot()->SetBotOwner(c);
@@ -11610,7 +11509,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 					}
 					if(hasBots) {
 						hasBots = false;
-						if(GetCountBotsInGroup(g) <= 1) {
+						if(g->GroupCount() <= 1) {
 							g->DisbandGroup();
 						}
 					}
