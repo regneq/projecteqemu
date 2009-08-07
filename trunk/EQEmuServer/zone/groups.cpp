@@ -191,8 +191,7 @@ void Group::SplitMoney(uint32 copper, uint32 silver, uint32 gold, uint32 platinu
   }
 }
 
-bool Group::AddMember(Mob* newmember)
-{
+bool Group::AddMember(Mob* newmember) {
 	uint32 i=0;
 	//see if they are allready in the group
 	 for (i = 0; i < MAX_GROUP_MEMBERS; i++) {
@@ -206,15 +205,17 @@ bool Group::AddMember(Mob* newmember)
 			break;
 		}
 	}
-	if ((i == MAX_GROUP_MEMBERS) || (!newmember->IsClient()))
+
+	if (i == MAX_GROUP_MEMBERS)
 		return false;
-	strcpy(membername[i],newmember->GetName());
+
+	strcpy(membername[i],newmember->GetCleanName());
 	int x=1;
 	
 	//build the template join packet	
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_GroupUpdate,sizeof(GroupJoin_Struct));
 	GroupJoin_Struct* gj = (GroupJoin_Struct*) outapp->pBuffer;	
-	strcpy(gj->membername, newmember->GetName());
+	strcpy(gj->membername, newmember->GetCleanName());
 	gj->action = groupActJoin;
 
 	gj->leader_aas = LeaderAbilities;
@@ -222,25 +223,31 @@ bool Group::AddMember(Mob* newmember)
 	for (i = 0;i < MAX_GROUP_MEMBERS; i++) {
 		if (members[i] != NULL && members[i] != newmember) {
 			//fill in group join & send it
-			strcpy(gj->yourname,members[i]->GetName());
+			strcpy(gj->yourname,members[i]->GetCleanName());
 
-			members[i]->CastToClient()->QueuePacket(outapp);
+			if(members[i]->IsClient()) {
+				members[i]->CastToClient()->QueuePacket(outapp);
 
-			//put new member into existing person's list
-			strcpy(members[i]->CastToClient()->GetPP().groupMembers[this->GroupCount()-1],newmember->GetName());
-			
-			//put this existing person into the new member's list
-			if(IsLeader(members[i])){
-				strcpy(newmember->CastToClient()->GetPP().groupMembers[0],members[i]->GetName());
-			} else{
-				strcpy(newmember->CastToClient()->GetPP().groupMembers[x],members[i]->GetName());
-				x++;
+				//put new member into existing person's list
+				strcpy(members[i]->CastToClient()->GetPP().groupMembers[this->GroupCount()-1],newmember->GetCleanName());
+
+				//put this existing person into the new member's list
+				if(newmember->IsClient()) {
+					if(IsLeader(members[i]))
+						strcpy(newmember->CastToClient()->GetPP().groupMembers[0],members[i]->GetName());
+					else {
+						strcpy(newmember->CastToClient()->GetPP().groupMembers[x],members[i]->GetName());
+						x++;
+					}
+				}
 			}
 		}
 	}
 	
 	//put new member in his own list.
-	strcpy(newmember->CastToClient()->GetPP().groupMembers[x],newmember->GetName());
+	if(newmember->IsClient())
+		strcpy(newmember->CastToClient()->GetPP().groupMembers[x],newmember->GetName());
+
 	newmember->SetGrouped(true);
 	
 	if(newmember->IsClient()) {

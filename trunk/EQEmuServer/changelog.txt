@@ -6,6 +6,8 @@ WildcardX: *BOTS* Slowed bot runspeed to a more reasonable default value.
 WildcardX: *BOTS* Bots will now depop instead of being murdered to go away.
 WildcardX: Only a Client object will try to update its group id in the database when a group member is removed from the group.
 WildcardX: *BOTS* Bots will now record their total play time.
+WildcardX: Modified Group::AddMember() to be more bots friendly and removed specific bot code to do the same thing.
+WildcardX: *BOTS* Modified the IsBotAttackAllowed() method to prevent a bot wizard's familiar from attacking.
 
 Optional SQL: *BOTS* utils/sql/svn/892_optional_bots_table_mod.sql
 Optional SQL: *BOTS* utils/sql/svn/893_optional_bots_table_mod.sql

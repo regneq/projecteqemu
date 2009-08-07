@@ -124,7 +124,7 @@ void BotRaids::RemoveRaidBots() {
 						else if(BotRaidGroups[i]->members[j]->IsClient()) {
 							BotRaidGroups[i]->members[j]->SetBotRaidID(0);
 							BotRaidGroups[i]->members[j]->SetRaidGrouped(false);
-							if(Bot::GetCountBotsInGroup(BotRaidGroups[i]) < 2) {
+							if(BotRaidGroups[i]->GroupCount() < 2) {
 								BotRaidGroups[i]->members[j]->SetGrouped(false);
 							}
 						}
@@ -149,7 +149,7 @@ bool BotRaids::RemoveEmptyBotGroup() {
 	for(int i=0; i<MAX_BOT_RAID_GROUPS; i++) {
 		Group *g = BotRaidGroups[i];
 		if(g) {
-			if(Bot::GetCountBotsInGroup(g) == 0) {
+			if(g->GroupCount() == 0) {
 				BotRaidGroups[i] = 0x00000000;
 				int j = i+1;
 				for(; j<MAX_BOT_RAID_GROUPS; j++) {
@@ -170,7 +170,7 @@ bool BotRaids::RemoveClientGroup(Mob *m) {
 		Group *g = BotRaidGroups[i];
 		if(g) {
 			if(g->GetLeader() == m) {
-				if(Bot::GetCountBotsInGroup(BotRaidGroups[i]) == 1) {
+				if(g->GroupCount() == 1) {
 					if(m->IsClient()) {
 						m->CastToClient()->SetRaidGrouped(false);
 						m->CastToClient()->SetBotRaidID(0);
@@ -655,7 +655,7 @@ void BotRaids::BotRaidInfo(Client *c) {
 			for(int i=0; i<MAX_BOT_RAID_GROUPS; i++) {
 				if(BotRaidGroups[i] && BotRaidGroups[i]->members[0]) {
 					moredata = true;
-					c->Message(15, "Group %i (%i members)", i+1, Bot::GetCountBotsInGroup(BotRaidGroups[i]));
+					c->Message(15, "Group %i (%i members)", i+1, BotRaidGroups[i]->GroupCount());
 					c->Message(15, "Group %i Leader: %s", i+1, BotRaidGroups[i]->members[0]->GetCleanName());
 					for(int j=0; j<MAX_GROUP_MEMBERS; j++) {
 						if(BotRaidGroups[i]->members[j]) {

@@ -733,7 +733,7 @@ bool logpos;
 	bool	qglobal;		// SCORPIOUS2K - qglobal flag
 
 	void	Spin();
-	void	Kill();
+	void Kill();
 
 	virtual void SetAttackTimer();
 	inline void	SetInvul(bool invul) { invulnerable=invul; }

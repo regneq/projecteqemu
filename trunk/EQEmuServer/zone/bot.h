@@ -60,7 +60,6 @@ public:
 	virtual void RogueAssassinate(Mob* other);
 	virtual void DoClassAttacks(Mob *target);
 	virtual bool TryHeadShot(Mob* defender, SkillType skillInUse);
-	virtual bool IsAttackAllowed(Mob *target, bool isSpellAttack = false);
 	virtual sint32 CheckAggroAmount(int16 spellid);
 	virtual void CalcBonuses();
 	virtual void MakePet(int16 spell_id, const char* pettype, const char *petname = NULL);
@@ -133,10 +132,9 @@ public:
 	static bool SetBotOwnerCharacterID(uint32 botID, uint32 botOwnerCharacterID, std::string* errorMessage);
 	static std::string ClassIdToString(uint16 classId);
 	static std::string RaceIdToString(uint16 raceId);
-	static uint32 GetCountBotsInGroup(Group* group);
+	//static uint32 GetCountBotsInGroup(Group* group);
 	static bool AddBotToGroup(Bot* bot, Group* group);
 	static bool RemoveBotFromGroup(Bot* bot);
-	static void SendBotHPPacketsToGroup(Bot* bot, Group* group);
 	static void DestroyBotObjects(Client* client);
 	static bool IsBotAttackAllowed(Mob* attacker, Mob* target, bool& hasRuleDefined);
 
