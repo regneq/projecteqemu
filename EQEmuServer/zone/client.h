@@ -152,6 +152,10 @@ public:
 	virtual void Death(Mob* killerMob, sint32 damage, int16 spell_id, SkillType attack_skill);
 	virtual void Damage(Mob* from, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable = true, sint8 buffslot = -1, bool iBuffTic = false);
 	virtual bool Attack(Mob* other, int Hand = 13, bool FromRiposte = false);
+	virtual bool HasRaid() { return (GetRaid() ? true : false);  }
+	virtual bool HasGroup() { return (GetGroup() ? true : false); }
+	virtual Raid* GetRaid() { return entity_list.GetRaidByClient(this); }
+	virtual Group* GetGroup() { return entity_list.GetGroupByClient(this); }
 
 //	void	Discipline(ClientDiscipline_Struct* disc_in, Mob* tar);
 	void	AI_Init();
@@ -254,9 +258,6 @@ public:
 	void	LogLoot(Client* player,Corpse* corpse,const Item_Struct* item);
 	bool	AutoAttackEnabled() const { return auto_attack; }
 	bool	AutoFireEnabled() const { return auto_fire; }
-	//bool	Attack(Mob* other, int Hand = 13, bool bRiposte = false);	// 13 = Primary (default), 14 = secondary
-	//void	Damage(Mob* other, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable = true, sint8 buffslot = -1, bool iBuffTic = false);
-	//void	Death(Mob* other, sint32 damage, int16 spell_id, SkillType attack_skill);
 	void	MakeCorpse(int32 exploss);
 
 	bool	ChangeFirstName(const char* in_firstname,const char* gmname);
@@ -652,9 +653,7 @@ public:
 	void	SetFilter(eqFilterType filter_id, eqFilterMode value) { ClientFilters[filter_id]=value; }
 
 	void	BreakInvis();
-	Group*	GetGroup() { return entity_list.GetGroupByClient(this); }
 	void	LeaveGroup();
-	Raid*	GetRaid() { return entity_list.GetRaidByClient(this); }
 
 	bool	Hungry() const {if (GetGM()) return false; return m_pp.hunger_level <= 3000;}
 	bool	Thirsty() const {if (GetGM()) return false; return m_pp.thirst_level <= 3000;}

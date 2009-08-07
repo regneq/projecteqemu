@@ -1750,6 +1750,7 @@ Raid* EntityList::GetRaidByID(int32 id){
 	} 
 	return 0;
 }
+
 Raid* EntityList::GetRaidByClient(Client* client) 
 { 
 	list<Raid *>::iterator iterator;
@@ -1764,6 +1765,26 @@ Raid* EntityList::GetRaidByClient(Client* client)
 				if((*iterator)->members[x].member == client)
 					return *iterator;
 			}
+		}
+		iterator++;
+	} 
+	return 0; 
+}
+
+Raid* EntityList::GetRaidByMob(Mob* mob) { 
+	list<Raid *>::iterator iterator;
+
+	iterator = raid_list.begin();
+
+	while(iterator != raid_list.end())
+	{ 
+		for(int x = 0; x < MAX_RAID_MEMBERS; x++)
+		{
+			// TODO: Implement support for Mob objects in Raid class
+			/*if((*iterator)->members[x].member){
+				if((*iterator)->members[x].member == mob)
+					return *iterator;
+			}*/
 		}
 		iterator++;
 	} 

@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==08/07/2009==
+WildcardX: *BOTS* More code refactoring.
+WildcardX: Implemented 4 additional abstract methods in the mob object, HasRaid(), HasGroup(), GetRaid(), GetGroup(). These will be implemented as common interfaces by any class deriving from Mob.
+
 ==08/06/2009==
 WildcardX: *BOTS* Significantly modified the bots table. Removed several unnecessary columns and changed  many interger columns to accept signed values. Added new columns to track dates and times for bots.
 WildcardX: *BOTS* Slowed bot runspeed to a more reasonable default value.

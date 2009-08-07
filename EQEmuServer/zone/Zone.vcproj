@@ -821,6 +821,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\raids.h"
+				>
+			</File>
+			<File
 				RelativePath=".\skills.h"
 				>
 			</File>
