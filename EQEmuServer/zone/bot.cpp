@@ -4513,6 +4513,17 @@ bool Bot::Attack(Mob* other, int Hand, bool FromRiposte) {
 		return false;
 	}
 	
+	if(IsGrouped()) {
+		Group* g = entity_list.GetGroupByMob(this);
+
+		if(g) {
+			std::ostringstream attackMessage;
+			attackMessage << "Attacking " << other->GetCleanName() << ".";
+
+			g->GroupMessage(this, 0, 100, attackMessage.str().c_str());
+		}
+	}
+
 	FaceTarget(target);
 
 	ItemInst* weapon = NULL;
@@ -8029,6 +8040,79 @@ void Bot::Camp(bool databaseSave) {
 	Depop();
 }
 
+// Orders all bots in the specified group to follow their group leader.
+void Bot::BotGroupOrderFollow(Group* group) {
+	if(group) {
+		Mob* groupLeader = group->GetLeader();
+
+		if(groupLeader) {
+			for(int i = 0; i< MAX_GROUP_MEMBERS; i++) {
+				if(group->members[i] && group->members[i]->IsBot()) {
+					Bot* botGroupMember = group->members[i]->CastToBot();
+
+					botGroupMember->SetFollowID(groupLeader->GetID());
+					botGroupMember->Say("Following %s.", groupLeader->GetCleanName());
+
+					botGroupMember->WipeHateList();
+				}
+			}
+		}
+	}
+}
+
+// Orders all bots in the specified group to guard their current location.
+void Bot::BotGroupOrderGuard(Group* group) {
+	if(group) {
+		for(int i = 0; i< MAX_GROUP_MEMBERS; i++) {
+			if(group->members[i] && group->members[i]->IsBot()) {
+				Bot* botGroupMember = group->members[i]->CastToBot();
+
+				botGroupMember->SetFollowID(0);
+				botGroupMember->Say("Guarding here.");
+
+				botGroupMember->WipeHateList();
+			}
+		}
+	}
+}
+
+// Orders all bots in the specified group to attack their group leader's target.
+void Bot::BotGroupOrderAttack(Group* group) {
+	if(group) {
+		Mob* groupLeader = group->GetLeader();
+
+		if(groupLeader) {
+			for(int i=0; i < MAX_GROUP_MEMBERS; i++) {
+				if(group->members[i] && group->members[i]->IsBot()) {
+					Bot* botGroupMember = group->members[i]->CastToBot();
+
+					botGroupMember->AddToHateList(groupLeader->GetTarget(), 1);
+				}
+			}
+		}
+	}
+}
+
+// Summons all bot group members to ther owners location.
+void Bot::BotGroupSummon(Group* group) {
+	if(group) {
+		for(int i = 0; i < MAX_GROUP_MEMBERS; i++) {
+			if(group->members[i] && group->members[i]->IsBot()) {
+				Bot* botMember = group->members[i]->CastToBot();
+
+				botMember->SetTarget(botMember->GetBotOwner());
+				
+				botMember->Warp(botMember->GetBotOwner()->GetX(), botMember->GetBotOwner()->GetY(), botMember->GetBotOwner()->GetZ());
+				
+				if(botMember->HasPet() && botMember->GetPet()) {
+					botMember->GetPet()->SetTarget(botMember);
+					botMember->GetPet()->Warp(botMember->GetBotOwner()->GetX(), botMember->GetBotOwner()->GetY(), botMember->GetBotOwner()->GetZ());
+				}
+			}
+		}
+	}
+}
+
 void Bot::CalcBotStats(bool showtext) {
 	Client* BotOwner = this->GetBotOwner()->CastToClient();
 
@@ -8344,30 +8428,6 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 			if(BotTargeted) {
 				BotTargeted->DeleteBot(&TempErrorMessage);
 				BotTargeted->Camp(false);
-				//if(BotTargeted->DeleteBot(&TempErrorMessage)) {
-				//	BotTargeted->Say("...but why?!! We had such good adventures together! gaahhh...glrrrk...");
-
-				//	if(BotTargeted->IsGrouped()) {
-				//		Group *g = entity_list.GetGroupByMob(c->GetTarget());
-				//		if(g) {
-				//			g->DelMember(BotTargeted);
-				//		}
-				//	}
-				//	else {
-				//		Group *g = entity_list.GetGroupByMob(c->GetTarget());
-				//		if(g && g->GroupCount() == 2) {
-				//			g->DisbandGroup();
-				//			// TODO: Client group window now shows a no members but the "Disband" button is still enabled.
-				//		}
-				//	}
-
-				//	BotTargeted->SetBotOwner(0);
-				//	BotTargeted->Kill();
-				//}
-				//else {
-				//	// TODO: log error message here
-				//	c->Message(15, "Error deleting Bot!");
-				//}
 
 				if(!TempErrorMessage.empty()) {
 					c->Message(13, "Database Error: %s", TempErrorMessage.c_str());
@@ -8665,8 +8725,6 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 					c->Message(13, TempErrorMessage.c_str());
 					return;
 				}
-		
-				botGroupMember->SetFollowID(c->GetID());
 
 				// The thinking here is the raid leader must be a client and is going to be in the first group in the raid (if there is a raid), so groupCount = 0
 				// If a second group becomes necessary because there are more bots to spawn still, then the "ELSE" condition is tripped and we make a raid if there
@@ -8675,18 +8733,6 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 				if(g->GroupCount() < 6 && botGroupItr->GroupID == groupCount) {
 					// Create a group before we have to make a raid in case we dont need to form a raid
 					AddBotToGroup(botGroupMember, g);
-
-					/*if(br)
-					botGroupMember->SetBotRaidID(br->GetBotRaidID());*/
-
-					botGroupMember->EquipBot(&TempErrorMessage);
-
-					if(!TempErrorMessage.empty()) {
-						c->Message(13, TempErrorMessage.c_str());
-						return;
-					}
-
-					botGroupMember->SendHPUpdate();
 				}
 				else {
 					// Create a raid, if one already isn't instantiated and then create a new group to add to this raid
@@ -8703,8 +8749,6 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 					entity_list.AddGroup(g);
 
 					br->AddBotGroup(g);
-
-					//botGroupMember->SendHPUpdate();
 				}
 			}
 		}
@@ -8867,8 +8911,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		if(c->IsGrouped()) {
 			Group *g = entity_list.GetGroupByClient(c);
 			for (int i=0; i<MAX_GROUP_MEMBERS; i++) {
-				if(g && g->members[i] && g->members[i]->IsEngaged())
-				{
+				if(g && g->members[i] && g->members[i]->IsEngaged()) {
 					c->Message(15, "You can't create bot groups while you are engaged.");
 					return;
 				}
@@ -8889,11 +8932,6 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 			Group *g = entity_list.GetGroupByClient(c);
 			if(g && (c->CastToMob() != g->members[0])) {
 				c->Message(15, "Only the group leader can invite bots.");
-				//Mob* kmob = c->GetTarget();
-				//if(kmob != NULL) {
-				//	kmob->CastToBot()->SetBotOwner(0);
-				//	kmob->Kill();
-				//}
 				return;
 			}
 		}
@@ -8902,11 +8940,6 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 			Group *g = entity_list.GetGroupByClient(c);
 			if(g && (g->GroupCount() > 5)) {
 				c->Message(15, "There is no more room in your group.");
-				/*Mob* kmob = c->GetTarget();
-				if(kmob != NULL) {
-					kmob->CastToBot()->SetBotOwner(0);
-					kmob->Kill();
-				}*/
 				return;
 			}
 		}
@@ -8927,58 +8960,19 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 			}
 
 			// else, we do:
-			//1: Set its leader
 			b->Say("I'm becoming %s\'s bot!", c->GetCleanName());
 
-			//2: Set the follow ID so he's following its leader
-			b->SetFollowID(c->GetID());
-			//b->SetBotOwner(c->CastToMob());
-
-			//3:  invite it to the group
+			// Invite it to the group
 			if(!c->IsGrouped()) {
 				Group *g = new Group(c->CastToMob());
-				if(AddBotToGroup(b, g)) {
+				if(AddBotToGroup(b, g))
 					entity_list.AddGroup(g);
-				}
 			}
-			else {
+			else
 				AddBotToGroup(b, c->GetGroup());
-			}
 
-			if(c->GetBotRaidID() > 0) {
+			if(c->GetBotRaidID() > 0)
 				b->SetBotRaidID(c->GetBotRaidID());
-			}
-
-			/*b->EquipBot(&TempErrorMessage);
-
-			if(!TempErrorMessage.empty()) {
-				c->Message(13, TempErrorMessage.c_str());
-				return;
-			}*/
-
-			/*uint32 itemID = 0;
-			const Item_Struct* item2 = NULL;
-
-			for(int i=0; i<22; i++) {
-				itemID = b->GetBotItemBySlot(i, &TempErrorMessage);
-
-				if(!TempErrorMessage.empty()) {
-					c->Message(13, "Database Error: %s", TempErrorMessage.c_str());
-					return;
-				}
-
-				if(itemID != 0) {
-					item2 = database.GetItem(itemID);
-					b->BotTradeAddItem(itemID, item2->MaxCharges, item2->Slots, i, c, &TempErrorMessage, false);
-
-					if(!TempErrorMessage.empty()) {
-						c->Message(13, "Database Error: %s", TempErrorMessage.c_str());
-						return;
-					}
-				}
-			}
-
-			b->CalcBotStats();*/
 		}
 
 		return;
@@ -9019,33 +9013,11 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 						else {
 							c->GetTarget()->CastToBot()->Camp();
 						}
-						
-						/*if(g->GroupCount() < 2)
-							g->DisbandGroup();*/
 					}
 				}
 				else {
 					c->GetTarget()->CastToBot()->Camp();
 				}
-
-				/*if(c->GetTarget()->GetBotRaidID()) {
-					if(SpawnedBotCount(c->CharacterID(), &TempErrorMessage) < 6) {
-						entity_list.RemoveBotRaid(c->CastToMob()->GetBotRaidID());
-						Group *g = c->GetGroup();
-						if(g) {
-							for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
-								if(g->members[i]) {
-									g->members[i]->SetBotRaidID(0);
-								}
-							}
-						}
-					}
-
-					if(!TempErrorMessage.empty()) {
-						c->Message(13, TempErrorMessage.c_str());
-						return;
-					}
-				}*/
 			}
 			else {
 				c->Message(15, "You must target a bot first.");
@@ -9057,61 +9029,24 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		return;
 	}
 
-	if(!strcasecmp(sep->arg[1], "group") && !strcasecmp(sep->arg[2], "order"))
-	{
-		if(!strcasecmp(sep->arg[3], "follow"))
-		{
+	if(!strcasecmp(sep->arg[1], "group") && !strcasecmp(sep->arg[2], "order")) {
+		if(!strcasecmp(sep->arg[3], "follow")) {
 			if(c->GetBotRaidID() > 0) {
 				BotRaids *br = entity_list.GetBotRaidByMob(c->CastToMob());
 				br->FollowGuardCmd(c, false);
 			}
 			else if(c->IsGrouped())
-			{
-				Group *g = c->GetGroup();
-				if(g) {
-					int32 botfollowid = 0;
-					const char* botfollowname;
-					for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
-						if(g->members[i] && g->members[i]->IsBot()) {
-							if(botfollowid == 0) {
-								botfollowid = g->members[i]->GetID();
-								botfollowname = g->members[i]->GetCleanName();
-								g->members[i]->SetFollowID(c->GetID());
-								g->members[i]->Say("Following %s.", c->GetCleanName());
-							}
-							else {
-								g->members[i]->SetFollowID(botfollowid);
-								g->members[i]->Say("Following %s.", botfollowname);
-							}
-							g->members[i]->WipeHateList();
-						}
-					}
-				}
-			}
+				BotGroupOrderFollow(c->GetGroup());
 		}
-		else if(!strcasecmp(sep->arg[3], "guard"))
-		{
+		else if(!strcasecmp(sep->arg[3], "guard")) {
 			if(c->GetBotRaidID() > 0) {
 				BotRaids *br = entity_list.GetBotRaidByMob(c->CastToMob());
 				br->FollowGuardCmd(c, true);
 			}
 			else if(c->IsGrouped())
-			{
-				Group *g = c->GetGroup();
-				if(g) {
-					for(int i=0; i<MAX_GROUP_MEMBERS; i++)
-					{
-						if(g->members[i] && g->members[i]->IsBot()) {
-							g->members[i]->SetFollowID(0);
-							g->members[i]->WipeHateList();
-							g->members[i]->Say("Guarding here.");
-						}
-					}
-				}
-			}
+				BotGroupOrderGuard(c->GetGroup());
 		}
-		else if(!strcasecmp(sep->arg[3], "attack"))
-		{
+		else if(!strcasecmp(sep->arg[3], "attack")) {
 			if(c->IsGrouped() && (c->GetTarget() != NULL) && c->IsAttackAllowed(c->GetTarget())) {
 				if(c->GetBotRaidID() > 0) {
 					BotRaids *br = entity_list.GetBotRaidByMob(c->CastToMob());
@@ -9119,36 +9054,13 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 						br->AddBotRaidAggro(c->GetTarget());
 					}
 				}
-				else {
-					Group *g = entity_list.GetGroupByMob(c->CastToMob());
-					if(g) {
-						for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
-							if(g->members[i] && g->members[i]->IsBot()) {
-								g->members[i]->AddToHateList(c->GetTarget(), 1);
-							}
-						}
-					}
-				}
+				else
+					BotGroupOrderAttack(c->GetGroup());
 			}
-
-			// This function was added from the part of the code block that is commented out above.
-			// TODO: evaluate SetOrderBotAttack and the bot commend toggles in general.
-			//if(c->IsGrouped() && (c->GetTarget() != NULL) && c->IsAttackAllowed(c->GetTarget())) {
-			//	Group *g = entity_list.GetGroupByMob(c->CastToMob());
-			//	if(g) {
-			//		for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
-			//			if(g->members[i] && g->members[i]->IsBot()) {
-			//				//c->SetOrderBotAttack(true);
-			//				g->members[i]->AddToHateList(c->GetTarget(), 1);
-			//				//c->SetOrderBotAttack(false);
-			//			}
-			//		}
-			//	}
-			//}
-			else {
+			else
 				c->Message(15, "You must target a monster.");
-			}
 		}
+
 		return;
 	}
 
@@ -9400,23 +9312,8 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 			}
 		}
 		else if(c->IsGrouped())
-		{
-			Group *g = c->GetGroup();
-			if(g) {
-				for(int i=0; i<MAX_GROUP_MEMBERS; i++)
-				{
-					if(g->members[i] && g->members[i]->IsBot()) {
-						Bot* botMember = g->members[i]->CastToBot();
-						botMember->SetTarget(botMember->GetBotOwner());
-						botMember->Warp(c->GetX(), c->GetY(), c->GetZ());
-						if(botMember->GetPetID()) {
-							botMember->GetPet()->SetTarget(botMember);
-							botMember->GetPet()->Warp(c->GetX(), c->GetY(), c->GetZ());
-						}
-					}
-				}
-			}
-		}
+			BotGroupSummon(c->GetGroup());
+
 		return;
 	}
 
