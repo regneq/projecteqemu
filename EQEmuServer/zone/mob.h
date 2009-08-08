@@ -307,9 +307,7 @@ typedef enum {
 class EGNode;
 class MobFearState;
 
-class Mob : public Entity
-{
-	friend class NPC;	//why do I have to do this for a child to access protected members with ->?
+class Mob : public Entity {
 public:
 bool logpos;
 	enum CLIENT_CONN_STATUS { CLIENT_CONNECTING, CLIENT_CONNECTED, CLIENT_LINKDEAD,
@@ -1067,7 +1065,7 @@ protected:
 	int8	pRunAnimSpeed;
 	bool	m_is_running;
 
-	Mob*	target;
+	
 	Timer	attack_timer;
 	Timer	attack_dw_timer;
 	Timer	ranged_timer;
@@ -1207,6 +1205,7 @@ protected:
 
 private:
 	void	_StopSong();		//this is not what you think it is
+	Mob*	target;
 
 #ifdef BOTS
 	// Please do not declare any Client class members or methods below this block.

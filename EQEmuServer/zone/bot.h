@@ -69,7 +69,6 @@ public:
 	virtual sint32 CheckAggroAmount(int16 spellid);
 	virtual void CalcBonuses();
 	virtual void MakePet(int16 spell_id, const char* pettype, const char *petname = NULL);
-	virtual void AI_Stop();
 	virtual FACTION_VALUE GetReverseFactionCon(Mob* iOther);
 	inline virtual bool IsPet() { return false; }
 	virtual bool IsNPC() const { return false; }
@@ -87,6 +86,11 @@ public:
 	void SendBotArcheryWearChange(int8 material_slot, uint32 material, uint32 color);
 	void Camp(bool databaseSave = true);
 	virtual void AddToHateList(Mob* other, sint32 hate = 0, sint32 damage = 0, bool iYellForHelp = true, bool bFrenzy = false, bool iBuffTic = false);
+	virtual void SetTarget(Mob* mob);
+
+	// Mob AI Virtual Override Methods
+	virtual void AI_Process();
+	virtual void AI_Stop();
 
 	// Mob Spell Virtual Override Methods
 	virtual sint32 GetActSpellDamage(int16 spell_id, sint32 value);
@@ -198,7 +202,7 @@ public:
 	typedef std::pair<uint32, uint32> BotInventoryItem;
 
 protected:
-	virtual void BotAIProcess();
+	//virtual void BotAIProcess();
 	virtual void PetAIProcess();
 	static NPCType FillNPCTypeStruct(uint32 botSpellsID, std::string botName, std::string botLastName, uint8 botLevel, uint16 botRace, uint8 botClass, uint8 gender, float size, uint32 face, uint32 hairStyle, uint32 hairColor, uint32 eyeColor, uint32 eyeColor2, uint32 beardColor, uint32 beard, uint32 drakkinHeritage, uint32 drakkinTattoo, uint32 drakkinDetails, sint16 mr, sint16 cr, sint16 dr, sint16 fr, sint16 pr, sint16 ac, uint16 str, uint16 sta, uint16 dex, uint16 agi, uint16 _int, uint16 wis, uint16 cha, uint16 attack);
 	static NPCType CreateDefaultNPCTypeStructForBot(std::string botName, std::string botLastName, uint8 botLevel, uint16 botRace, uint8 botClass, uint8 gender);
@@ -251,7 +255,6 @@ private:
 	void GenerateAABonuses();
 	void GenerateBaseManaPoints();
 	void GenerateSpecialAttacks();
-	void DoAIProcessing();
 	void SetBotID(uint32 botID);
 	uint32 GetItemID(int slot_id);
 	bool CalcBotHitChance(Mob* target, SkillType skillinuse, int Hand);

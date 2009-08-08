@@ -146,7 +146,7 @@ void Mob::DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, si
 
 
 void Client::OPCombatAbility(const EQApplicationPacket *app) {
-	if(!target)
+	if(!GetTarget())
 		return;
 	//make sure were actually able to use such an attack.
 	if(spellend_timer.Enabled() || IsFeared() || IsStunned() || IsMezzed() || DivineAura() || dead)
@@ -154,10 +154,10 @@ void Client::OPCombatAbility(const EQApplicationPacket *app) {
 	
 	CombatAbility_Struct* ca_atk = (CombatAbility_Struct*) app->pBuffer;
 	
-	if(target->GetID() != ca_atk->m_target)
+	if(GetTarget()->GetID() != ca_atk->m_target)
 		return;	//invalid packet.
 	
-	if(!IsAttackAllowed(target))
+	if(!IsAttackAllowed(GetTarget()))
 		return;
 	
 	//These two are not subject to the combat ability timer, as they
@@ -165,19 +165,19 @@ void Client::OPCombatAbility(const EQApplicationPacket *app) {
 	//throwing weapons
 	if(ca_atk->m_atk == 11) {
 		if (ca_atk->m_skill == THROWING) {
-			ThrowingAttack(target);
+			ThrowingAttack(GetTarget());
 			return;
 		}
 		//ranged attack (archery)
 		if (ca_atk->m_skill == ARCHERY) {
-			RangedAttack(target);
+			RangedAttack(GetTarget());
 			return;
 		}
 		//could we return here? Im not sure is m_atk 11 is used for real specials
 	}
 	
 	//check range for all these abilities, they are all close combat stuff
-	if(!CombatRange(target))
+	if(!CombatRange(GetTarget()))
 		return;
 	
 	if(!p_timers.Expired(&database, pTimerCombatAbility, false)) {
@@ -199,17 +199,17 @@ void Client::OPCombatAbility(const EQApplicationPacket *app) {
 
 	if ((ca_atk->m_atk == 100) 
 	  && (ca_atk->m_skill == BASH)) {    // SLAM - Bash without a shield equipped
-		if (target!=this) {
+		if (GetTarget() != this) {
 			
-			CheckIncreaseSkill(BASH, target, 10);
+			CheckIncreaseSkill(BASH, GetTarget(), 10);
 			DoAnim(animTailRake);
 
-			if(GetWeaponDamage(target, GetInv().GetItem(SLOT_SECONDARY)) <= 0 &&
-				GetWeaponDamage(target, GetInv().GetItem(SLOT_SHOULDER)) <= 0){
+			if(GetWeaponDamage(GetTarget(), GetInv().GetItem(SLOT_SECONDARY)) <= 0 &&
+				GetWeaponDamage(GetTarget(), GetInv().GetItem(SLOT_SHOULDER)) <= 0){
 				dmg = -5;
 			}
 			else{
-				if(!target->CheckHitChance(this, BASH, 0)) {
+				if(!GetTarget()->CheckHitChance(this, BASH, 0)) {
 					dmg = 0;
 				}
 				else{
@@ -221,7 +221,7 @@ void Client::OPCombatAbility(const EQApplicationPacket *app) {
 				}
 			}
 
-			DoSpecialAttackDamage(target, BASH, dmg);
+			DoSpecialAttackDamage(GetTarget(), BASH, dmg);
 			ReuseTime = BashReuseTime-1;
 			ReuseTime = (ReuseTime*HasteMod)/100;
 			if(ReuseTime > 0)
@@ -234,7 +234,7 @@ void Client::OPCombatAbility(const EQApplicationPacket *app) {
 
 	if ((ca_atk->m_atk == 100) && (ca_atk->m_skill == FRENZY)) 
 	{
-		CheckIncreaseSkill(FRENZY, target, 10);
+		CheckIncreaseSkill(FRENZY, GetTarget(), 10);
 
 		int dmg = 1 + (GetSkill(FRENZY) / 100);
 
@@ -268,8 +268,8 @@ void Client::OPCombatAbility(const EQApplicationPacket *app) {
 				break;
 		}
 
-		while(dmg > 0 && target) {
-			if(Attack(target))
+		while(dmg > 0 && GetTarget()) {
+			if(Attack(GetTarget()))
 				dmg--;
 			else
 				dmg = 0;
@@ -292,15 +292,15 @@ void Client::OPCombatAbility(const EQApplicationPacket *app) {
 			if (ca_atk->m_atk != 100 || ca_atk->m_skill != KICK) {
 				break;
 			}
-			if (target!=this) {
-				CheckIncreaseSkill(KICK, target, 10);
+			if (GetTarget() != this) {
+				CheckIncreaseSkill(KICK, GetTarget(), 10);
 				DoAnim(animKick);
 
-				if(GetWeaponDamage(target, GetInv().GetItem(SLOT_FEET)) <= 0){
+				if(GetWeaponDamage(GetTarget(), GetInv().GetItem(SLOT_FEET)) <= 0){
 					dmg = -5;
 				}
 				else{
-					if(!target->CheckHitChance(this, KICK, 0)) {
+					if(!GetTarget()->CheckHitChance(this, KICK, 0)) {
 						dmg = 0;
 					}
 					else{
@@ -311,18 +311,18 @@ void Client::OPCombatAbility(const EQApplicationPacket *app) {
 					}
 				}
 
-				DoSpecialAttackDamage(target, KICK, dmg);
+				DoSpecialAttackDamage(GetTarget(), KICK, dmg);
 				ReuseTime = KickReuseTime-1;
 			}
 			break;
 		case MONK: {
-			ReuseTime = MonkSpecialAttack(target, ca_atk->m_skill) - 1;
+			ReuseTime = MonkSpecialAttack(GetTarget(), ca_atk->m_skill) - 1;
 
 			int specl = GetAA(aaTechniqueofMasterWu) * 20;
 			if(specl == 100 || specl > MakeRandomInt(0,100)) {
-				ReuseTime = MonkSpecialAttack(target, ca_atk->m_skill) - 1;
+				ReuseTime = MonkSpecialAttack(GetTarget(), ca_atk->m_skill) - 1;
 				if(20 > MakeRandomInt(0,100)) {
-					ReuseTime = MonkSpecialAttack(target, ca_atk->m_skill) - 1;
+					ReuseTime = MonkSpecialAttack(GetTarget(), ca_atk->m_skill) - 1;
 				}
 			}
 
@@ -330,7 +330,7 @@ void Client::OPCombatAbility(const EQApplicationPacket *app) {
 				//hackish... but we return a huge reuse time if this is an 
 				// invalid skill, otherwise, we can safely assume it is a 
 				// valid monk skill and just cast it to a SkillType
-				CheckIncreaseSkill((SkillType) ca_atk->m_skill, target, 10);
+				CheckIncreaseSkill((SkillType) ca_atk->m_skill, GetTarget(), 10);
 			}
 			break;
 		}
@@ -338,7 +338,7 @@ void Client::OPCombatAbility(const EQApplicationPacket *app) {
 			if (ca_atk->m_atk != 100 || ca_atk->m_skill != BACKSTAB) {
 				break;
 			}
-			TryBackstab(target);
+			TryBackstab(GetTarget());
 			ReuseTime = BackstabReuseTime-1;
 			break;
 		}
@@ -715,7 +715,7 @@ void Client::RangedAttack(Mob* other) {
 		return;
 	}
 	
-	mlog(COMBAT__RANGED, "Shooting %s with bow %s (%d) and arrow %s (%d)", target->GetName(), RangeItem->Name, RangeItem->ID, AmmoItem->Name, AmmoItem->ID);
+	mlog(COMBAT__RANGED, "Shooting %s with bow %s (%d) and arrow %s (%d)", GetTarget()->GetName(), RangeItem->Name, RangeItem->ID, AmmoItem->Name, AmmoItem->ID);
 	
 	//look for ammo in inventory if we only have 1 left...
 	if(Ammo->GetCharges() == 1) {
@@ -765,16 +765,16 @@ void Client::RangedAttack(Mob* other) {
 	float range = RangeItem->Range + AmmoItem->Range + 5; //Fudge it a little, client will let you hit something at 0 0 0 when you are at 205 0 0
 	mlog(COMBAT__RANGED, "Calculated bow range to be %.1f", range);
 	range *= range;
-	if(DistNoRootNoZ(*target) > range) {
-		mlog(COMBAT__RANGED, "Ranged attack out of range... client should catch this. (%f > %f).\n", DistNoRootNoZ(*target), range);
+	if(DistNoRootNoZ(*GetTarget()) > range) {
+		mlog(COMBAT__RANGED, "Ranged attack out of range... client should catch this. (%f > %f).\n", DistNoRootNoZ(*GetTarget()), range);
 		//target is out of range, client does a message
 		return;
 	}
-	else if(DistNoRootNoZ(*target) < (RuleI(Combat, MinRangedAttackDist)*RuleI(Combat, MinRangedAttackDist))){
+	else if(DistNoRootNoZ(*GetTarget()) < (RuleI(Combat, MinRangedAttackDist)*RuleI(Combat, MinRangedAttackDist))){
 		return;
 	}
 
-	if(!IsAttackAllowed(target) || 
+	if(!IsAttackAllowed(GetTarget()) || 
 		IsCasting() || 
 		IsSitting() || 
 		(DivineAura() && !GetGM()) ||
@@ -785,19 +785,19 @@ void Client::RangedAttack(Mob* other) {
 		return;
 	}
 	
-	SendItemAnimation(target, AmmoItem, ARCHERY);
+	SendItemAnimation(GetTarget(), AmmoItem, ARCHERY);
 		
 	// Hit?
-	if (!target->CheckHitChance(this, ARCHERY, 13)) {
-		mlog(COMBAT__RANGED, "Ranged attack missed %s.", target->GetName());
-		target->Damage(this, 0, SPELL_UNKNOWN, ARCHERY);
+	if (!GetTarget()->CheckHitChance(this, ARCHERY, 13)) {
+		mlog(COMBAT__RANGED, "Ranged attack missed %s.", GetTarget()->GetName());
+		GetTarget()->Damage(this, 0, SPELL_UNKNOWN, ARCHERY);
 	} else {
-		mlog(COMBAT__RANGED, "Ranged attack hit %s.", target->GetName());
+		mlog(COMBAT__RANGED, "Ranged attack hit %s.", GetTarget()->GetName());
 		
-		if(!TryHeadShot(target, ARCHERY)) 
+		if(!TryHeadShot(GetTarget(), ARCHERY)) 
 		{
-			sint16 WDmg = GetWeaponDamage(target, RangeWeapon);
-			sint16 ADmg = GetWeaponDamage(target, Ammo);
+			sint16 WDmg = GetWeaponDamage(GetTarget(), RangeWeapon);
+			sint16 ADmg = GetWeaponDamage(GetTarget(), Ammo);
 			if((WDmg > 0) || (ADmg > 0))
 			{
 				if(WDmg < 0)
@@ -826,7 +826,7 @@ void Client::RangedAttack(Mob* other) {
 				{
 					if(RuleB(Combat, ArcheryBonusRequiresStationary))
 					{
-						if(target->IsNPC() && !target->IsMoving() && !target->IsRooted())
+						if(GetTarget()->IsNPC() && !GetTarget()->IsMoving() && !GetTarget()->IsRooted())
 						{
 							MaxDmg *= 2;
 							hate *= 2;
@@ -861,22 +861,22 @@ void Client::RangedAttack(Mob* other) {
 					hate += (2*((GetLevel()-25)/3));
 				}
 
-				target->MeleeMitigation(this, TotalDmg, minDmg);
+				GetTarget()->MeleeMitigation(this, TotalDmg, minDmg);
 				ApplyMeleeDamageBonus(ARCHERY, TotalDmg);
-				TryCriticalHit(target, ARCHERY, TotalDmg);
-				target->AddToHateList(this, hate, 0, false);
-				target->Damage(this, TotalDmg, SPELL_UNKNOWN, ARCHERY);
+				TryCriticalHit(GetTarget(), ARCHERY, TotalDmg);
+				GetTarget()->AddToHateList(this, hate, 0, false);
+				GetTarget()->Damage(this, TotalDmg, SPELL_UNKNOWN, ARCHERY);
 			}
 			else {
-				target->Damage(this, -5, SPELL_UNKNOWN, ARCHERY);
+				GetTarget()->Damage(this, -5, SPELL_UNKNOWN, ARCHERY);
 			}
 		}
 	}
 	
 	//try proc on hits and misses
-	if(target && (target->GetHP() > -10))
+	if(GetTarget() && (GetTarget()->GetHP() > -10))
 	{
-		TryWeaponProc(RangeWeapon, target);
+		TryWeaponProc(RangeWeapon, GetTarget());
 	}
 	
 	//consume ammo (should stay at the end, after we are done with everything)
@@ -887,7 +887,7 @@ void Client::RangedAttack(Mob* other) {
 		mlog(COMBAT__RANGED, "Endless Quiver prevented ammo consumption.");
 	}
 	
-	CheckIncreaseSkill(ARCHERY, target, -15);
+	CheckIncreaseSkill(ARCHERY, GetTarget(), -15);
 
 	//break invis when you attack
 	if(invisible) {
@@ -944,16 +944,16 @@ void NPC::RangedAttack(Mob* other)
 	float range = 150;
 	mlog(COMBAT__RANGED, "Calculated bow range to be %.1f", range);
 	range *= range;
-	if(DistNoRootNoZ(*target) > range) {
-		mlog(COMBAT__RANGED, "Ranged attack out of range...%.2f vs %.2f", DistNoRootNoZ(*target), range);
+	if(DistNoRootNoZ(*GetTarget()) > range) {
+		mlog(COMBAT__RANGED, "Ranged attack out of range...%.2f vs %.2f", DistNoRootNoZ(*GetTarget()), range);
 		//target is out of range, client does a message
 		return;
 	}
-	else if(DistNoRootNoZ(*target) < (RuleI(Combat, MinRangedAttackDist)*RuleI(Combat, MinRangedAttackDist))){
+	else if(DistNoRootNoZ(*GetTarget()) < (RuleI(Combat, MinRangedAttackDist)*RuleI(Combat, MinRangedAttackDist))){
 		return;
 	}
 
-	if(!IsAttackAllowed(target) || 
+	if(!IsAttackAllowed(GetTarget()) || 
 		IsCasting() || 
 		DivineAura() ||
 		IsStunned() ||
@@ -969,21 +969,21 @@ void NPC::RangedAttack(Mob* other)
 	}
 
 	if(ammo)
-		SendItemAnimation(target, ammo, ARCHERY);
+		SendItemAnimation(GetTarget(), ammo, ARCHERY);
 		
 	// Hit?
-	if (!target->CheckHitChance(this, ARCHERY, 13)) 
+	if (!GetTarget()->CheckHitChance(this, ARCHERY, 13)) 
 	{
-		mlog(COMBAT__RANGED, "Ranged attack missed %s.", target->GetName());
-		target->Damage(this, 0, SPELL_UNKNOWN, ARCHERY);
+		mlog(COMBAT__RANGED, "Ranged attack missed %s.", GetTarget()->GetName());
+		GetTarget()->Damage(this, 0, SPELL_UNKNOWN, ARCHERY);
 	} 
 	else 
 	{
-		sint16 WDmg = GetWeaponDamage(target, weapon);
-		sint16 ADmg = GetWeaponDamage(target, ammo);
+		sint16 WDmg = GetWeaponDamage(GetTarget(), weapon);
+		sint16 ADmg = GetWeaponDamage(GetTarget(), ammo);
 		if(WDmg > 0 || ADmg > 0)
 		{
-			mlog(COMBAT__RANGED, "Ranged attack hit %s.", target->GetName());
+			mlog(COMBAT__RANGED, "Ranged attack hit %s.", GetTarget()->GetName());
 			sint32 TotalDmg = 0;
 			
 			sint32 MaxDmg = max_dmg * 0.5;
@@ -996,15 +996,15 @@ void NPC::RangedAttack(Mob* other)
 
 			sint32 hate = TotalDmg;
 
-			target->MeleeMitigation(this, TotalDmg, MinDmg);
+			GetTarget()->MeleeMitigation(this, TotalDmg, MinDmg);
 			ApplyMeleeDamageBonus(ARCHERY, TotalDmg);
-			TryCriticalHit(target, ARCHERY, TotalDmg);
-			target->AddToHateList(this, hate, 0, false);
-			target->Damage(this, TotalDmg, SPELL_UNKNOWN, ARCHERY);
+			TryCriticalHit(GetTarget(), ARCHERY, TotalDmg);
+			GetTarget()->AddToHateList(this, hate, 0, false);
+			GetTarget()->Damage(this, TotalDmg, SPELL_UNKNOWN, ARCHERY);
 		}
 		else 
 		{
-			target->Damage(this, -5, SPELL_UNKNOWN, ARCHERY);
+			GetTarget()->Damage(this, -5, SPELL_UNKNOWN, ARCHERY);
 		}
 	}
 
@@ -1102,7 +1102,7 @@ void Client::ThrowingAttack(Mob* other) { //old was 51
 		return;
 	}
 	
-	mlog(COMBAT__RANGED, "Throwing %s (%d) at %s", item->Name, item->ID, target->GetName());
+	mlog(COMBAT__RANGED, "Throwing %s (%d) at %s", item->Name, item->ID, GetTarget()->GetName());
 	
 	if(RangeWeapon->GetCharges() == 1) {
 		//first check ammo
@@ -1127,16 +1127,16 @@ void Client::ThrowingAttack(Mob* other) { //old was 51
 	int range = item->Range +50/*Fudge it a little, client will let you hit something at 0 0 0 when you are at 205 0 0*/;
 	mlog(COMBAT__RANGED, "Calculated bow range to be %.1f", range);
 	range *= range;
-	if(DistNoRootNoZ(*target) > range) {
-		mlog(COMBAT__RANGED, "Throwing attack out of range... client should catch this. (%f > %f).\n", DistNoRootNoZ(*target), range);
+	if(DistNoRootNoZ(*GetTarget()) > range) {
+		mlog(COMBAT__RANGED, "Throwing attack out of range... client should catch this. (%f > %f).\n", DistNoRootNoZ(*GetTarget()), range);
 		//target is out of range, client does a message
 		return;
 	}
-	else if(DistNoRootNoZ(*target) < (RuleI(Combat, MinRangedAttackDist)*RuleI(Combat, MinRangedAttackDist))){
+	else if(DistNoRootNoZ(*GetTarget()) < (RuleI(Combat, MinRangedAttackDist)*RuleI(Combat, MinRangedAttackDist))){
 		return;
 	}
 
-	if(!IsAttackAllowed(target) || 
+	if(!IsAttackAllowed(GetTarget()) || 
 		IsCasting() || 
 		IsSitting() || 
 		(DivineAura() && !GetGM()) ||
@@ -1147,17 +1147,17 @@ void Client::ThrowingAttack(Mob* other) { //old was 51
 		return;
 	}
 	//send item animation, also does the throw animation
-	SendItemAnimation(target, item, THROWING);
+	SendItemAnimation(GetTarget(), item, THROWING);
 
 	
 	// Hit?
-	if (!target->CheckHitChance(this, THROWING, 13)) {
-		mlog(COMBAT__RANGED, "Ranged attack missed %s.", target->GetName());
-		target->Damage(this, 0, SPELL_UNKNOWN, THROWING);
+	if (!GetTarget()->CheckHitChance(this, THROWING, 13)) {
+		mlog(COMBAT__RANGED, "Ranged attack missed %s.", GetTarget()->GetName());
+		GetTarget()->Damage(this, 0, SPELL_UNKNOWN, THROWING);
 	} else {
-		mlog(COMBAT__RANGED, "Throwing attack hit %s.", target->GetName());
+		mlog(COMBAT__RANGED, "Throwing attack hit %s.", GetTarget()->GetName());
 		
-		sint16 WDmg = GetWeaponDamage(target, item);
+		sint16 WDmg = GetWeaponDamage(GetTarget(), item);
 
 		if(WDmg > 0)
 		{
@@ -1167,26 +1167,27 @@ void Client::ThrowingAttack(Mob* other) { //old was 51
 
 			mlog(COMBAT__RANGED, "Item DMG %d. Max Damage %d. Hit for damage %d", WDmg, MaxDmg, TotalDmg);
 
-			target->MeleeMitigation(this, TotalDmg, minDmg);
+			GetTarget()->MeleeMitigation(this, TotalDmg, minDmg);
 			ApplyMeleeDamageBonus(THROWING, TotalDmg);
-			TryCriticalHit(target, THROWING, TotalDmg);
-			if(TotalDmg > 0)
-			{
+			TryCriticalHit(GetTarget(), THROWING, TotalDmg);
+
+			if(TotalDmg > 0) {
 				sint32 hate = (2*WDmg);
-				target->AddToHateList(this, hate, 0, false);
+				GetTarget()->AddToHateList(this, hate, 0, false);
 			}
-			target->Damage(this, TotalDmg, SPELL_UNKNOWN, THROWING);
+
+			GetTarget()->Damage(this, TotalDmg, SPELL_UNKNOWN, THROWING);
 		}
 		else
-			target->Damage(this, -5, SPELL_UNKNOWN, THROWING);
+			GetTarget()->Damage(this, -5, SPELL_UNKNOWN, THROWING);
 	}
 	
-	if(target && (target->GetHP() > -10))
-		TryWeaponProc(RangeWeapon, target);
+	if(GetTarget() && (GetTarget()->GetHP() > -10))
+		TryWeaponProc(RangeWeapon, GetTarget());
 	
 	//consume ammo
 	DeleteItemInInventory(ammo_slot, 1, true);
-	CheckIncreaseSkill(THROWING, target);
+	CheckIncreaseSkill(THROWING, GetTarget());
 
 	//break invis when you attack
 	if(invisible) {

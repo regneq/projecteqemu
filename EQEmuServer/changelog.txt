@@ -8,6 +8,8 @@ Trevius: Minor adjustment to the flow of logic for the MaxClientsSetByStatus rul
 Trevius: Corrected the Attack Rating portion of #showstats and #mystats
 Trevius: (Secrets) Added new quest::gmsay("message") command that will send a message to all GMs (GMs only) on the server.
 Trevius: (Secrets/Trevius) Added 2 new fields (maxlevel & scalerate) to npc_types for allowing NPCs to spawn within a range of levels and scale stats at the rate set
+WildcardX: NPC is no longer a friend class in the Mob class. Moved the class member Mob::target to Mob's private scope to ensure other classes use the Mob::GetTarget() and Mob::SetTarget() methods.
+WildcardX: *BOTS* Commented out code that let bots use the groups chat channel until I can fix I bug I found that causes bots to have their targets repeatedly reset to null values and back to their attacker while in combat.
 
 Required SQL: utils/sql/svn/897_npc_maxlevel_scalerate.sql
 

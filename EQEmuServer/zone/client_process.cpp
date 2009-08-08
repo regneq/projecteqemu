@@ -237,7 +237,7 @@ bool Client::Process() {
 							if(!GetTarget()->BehindMob(this, GetTarget()->GetX(), GetTarget()->GetY())){
 								if(CheckLosFN(GetTarget())){
 									//client has built in los check, but auto fire does not.. done last.
-									RangedAttack(target);
+									RangedAttack(GetTarget());
 								}
 								else
 									ranged_timer.Start();
@@ -255,7 +255,7 @@ bool Client::Process() {
 							if(!GetTarget()->BehindMob(this, GetTarget()->GetX(), GetTarget()->GetY())){
 								if(CheckLosFN(GetTarget())){
 									//client has built in los check, but auto fire does not.. done last.
-									ThrowingAttack(target);
+									ThrowingAttack(GetTarget());
 								}
 								else
 									ranged_timer.Start();
@@ -270,7 +270,7 @@ bool Client::Process() {
 			}
 		}
 		
-		Mob *auto_attack_target = target;
+		Mob *auto_attack_target = GetTarget();
 		if (auto_attack && auto_attack_target != NULL && may_use_attacks && attack_timer.Check()) {
 			if (!CombatRange(auto_attack_target)) {
 				Message_StringID(13,TARGET_TOO_FAR);
@@ -352,7 +352,7 @@ bool Client::Process() {
 					}
 				}
 
-				if (target && GetAA(aaRapidStrikes))
+				if (GetTarget() && GetAA(aaRapidStrikes))
 				{
 					int chance_xhit1 = 0;
 					int chance_xhit2 = 0;
@@ -380,9 +380,9 @@ bool Client::Process() {
 						break;
 					}
 					if (MakeRandomInt(1,100) < chance_xhit1)
-						Attack(target, 13, true);
+						Attack(GetTarget(), 13, true);
 					if (MakeRandomInt(1,100) < chance_xhit2)
-						Attack(target, 13, true);
+						Attack(GetTarget(), 13, true);
 				}
 				
 				if (auto_attack_target && (GetAA(aaPunishingBlade) > 0 || GetAA(aaSpeedoftheKnight) > 0)) {
@@ -476,7 +476,7 @@ bool Client::Process() {
 			// Send a position packet every 8 seconds - if not done, other clients
 			// see this char disappear after 10-12 seconds of inactivity
 			if (position_timer_counter >= 36) { // Approx. 4 ticks per second
-				entity_list.SendPositionUpdates(this, pLastUpdateWZ, 500, target, true);
+				entity_list.SendPositionUpdates(this, pLastUpdateWZ, 500, GetTarget(), true);
 			/* if (position_timer_counter >= 3) { // Send every 750ms?
 				//Image (2k5): The trick of stopping MQ map without screwing up client updates, shorter distances, faster updates, however if its an admin we can send further updates
 				if(Admin() > 80)

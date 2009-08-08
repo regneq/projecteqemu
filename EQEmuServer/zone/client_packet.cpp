@@ -1266,8 +1266,8 @@ void Client::Handle_OP_TargetCommand(const EQApplicationPacket *app)
 		LogFile->write(EQEMuLog::Error, "OP size error: OP_TargetMouse expected:%i got:%i", sizeof(ClientTarget_Struct), app->size);
 		return;
 	}
-	if(target)
-		target->IsTargeted(-1);
+	if(GetTarget())
+		GetTarget()->IsTargeted(-1);
 
 	// Locate and cache new target
 	ClientTarget_Struct* ct=(ClientTarget_Struct*)app->pBuffer;
@@ -1285,31 +1285,31 @@ void Client::Handle_OP_TargetCommand(const EQApplicationPacket *app)
 		g->SetGroupTarget(ct->new_target);
 
 	//ensure LOS to the target (image)
-	if((Admin() < 80) && (target != this && !CheckLosFN(target)))
+	if((Admin() < 80) && (GetTarget() != this && !CheckLosFN(GetTarget())))
 		return;
 
 	// For /target, send reject or success packet
 	if (app->GetOpcode() == OP_TargetCommand) {
-		if (target && !target->CastToMob()->IsInvisible(this) && DistNoRoot(*target) <= TARGETING_RANGE*TARGETING_RANGE) {
+		if (GetTarget() && !GetTarget()->CastToMob()->IsInvisible(this) && DistNoRoot(*GetTarget()) <= TARGETING_RANGE*TARGETING_RANGE) {
 			QueuePacket(app);
 			EQApplicationPacket hp_app;
-			target->IsTargeted(1);
-			target->CreateHPPacket(&hp_app);
+			GetTarget()->IsTargeted(1);
+			GetTarget()->CreateHPPacket(&hp_app);
 			QueuePacket(&hp_app, false);
 		} else {
 			EQApplicationPacket* outapp = new EQApplicationPacket(OP_TargetReject, sizeof(TargetReject_Struct));
 			outapp->pBuffer[0] = 0x2f;
 			outapp->pBuffer[1] = 0x01;
 			outapp->pBuffer[4] = 0x0d;
-			if(target)
-				target->IsTargeted(-1);
+			if(GetTarget())
+				GetTarget()->IsTargeted(-1);
 			QueuePacket(outapp);
 			safe_delete(outapp);
 		}
 	}
 	else{
-		if(target)
-			target->IsTargeted(1);
+		if(GetTarget())
+			GetTarget()->IsTargeted(1);
 	}
 	return;
 }
@@ -3812,7 +3812,7 @@ void Client::Handle_OP_InstillDoubt(const EQApplicationPacket *app)
 	}
 	p_timers.Start(pTimerInstillDoubt, InstillDoubtReuseTime-1);
 
-	InstillDoubt(target);
+	InstillDoubt(GetTarget());
 	return;
 }
 
@@ -5328,7 +5328,7 @@ void Client::Handle_OP_GroupDisband(const EQApplicationPacket *app)
 	if(!group)
 		return;
 
-	if((group->IsLeader(this) && (target == 0 || target == this)) || (group->GroupCount()<3)) {
+	if((group->IsLeader(this) && (GetTarget() == 0 || GetTarget() == this)) || (group->GroupCount()<3)) {
 		group->DisbandGroup();
 	} else {
 		Mob* memberToDisband = NULL;
@@ -5588,22 +5588,22 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 
 	switch(pet->command) {
 	case PET_ATTACK: {
-		if (!target)
+		if (!GetTarget())
 			break;
-		if (target->IsMezzed()) {
-			Message_StringID(10, CANNOT_WAKE, mypet->GetCleanName(), target->GetCleanName());
+		if (GetTarget()->IsMezzed()) {
+			Message_StringID(10, CANNOT_WAKE, mypet->GetCleanName(), GetTarget()->GetCleanName());
 			break;
 		}
 		if (mypet->IsFeared()) break; //AndMetal: prevent pet from attacking stuff while feared
 
 		if((mypet->GetPetType() == petAnimation && GetAA(aaAnimationEmpathy) >= 2) || mypet->GetPetType() != petAnimation) {
-			if (target != this && mypet->DistNoRootNoZ(*target) <= (RuleR(Pets, AttackCommandRange)*RuleR(Pets, AttackCommandRange))) {
+			if (GetTarget() != this && mypet->DistNoRootNoZ(*GetTarget()) <= (RuleR(Pets, AttackCommandRange)*RuleR(Pets, AttackCommandRange))) {
 				mypet->SetHeld(false); //break the hold and guard if we explicitly tell the pet to attack.
 				if(mypet->GetPetOrder() != SPO_Guard)
 					mypet->SetPetOrder(SPO_Follow);
 				zone->AddAggroMob();
-				mypet->AddToHateList(target, 1);
-				Message_StringID(10, PET_ATTACKING, mypet->GetCleanName(), target->GetCleanName());
+				mypet->AddToHateList(GetTarget(), 1);
+				Message_StringID(10, PET_ATTACKING, mypet->GetCleanName(), GetTarget()->GetCleanName());
 			}
 		}
 		break;

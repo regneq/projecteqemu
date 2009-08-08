@@ -214,7 +214,7 @@ Client::Client(EQStreamInterface* ieqs)
 	cheat_y=0;
 	gmspeed = 0;
 	playeraction = 0;
-	target = 0;
+	SetTarget(0);
 	auto_attack = false;
 	auto_fire = false;
 	PendingGuildInvite = 0;
@@ -333,8 +333,8 @@ Client::~Client() {
 		shield_target = NULL;
 	}
 
-	if(target)
-		target->IsTargeted(-1);
+	if(GetTarget())
+		GetTarget()->IsTargeted(-1);
 
 	//if we are in a group and we are not zoning, force leave the group
 	if(isgrouped && !zoning)
@@ -706,7 +706,7 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, int8 lang_skil
 	#endif
 
 	if (targetname == NULL) {
-		targetname = (target==NULL) ? NULL : target->GetName();
+		targetname = (!GetTarget()) ? NULL : GetTarget()->GetName();
 	}
 
 	if(RuleB(Chat, EnableAntiSpam))
@@ -871,47 +871,47 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, int8 lang_skil
 		if(quest_manager.ProximitySayInUse())
 			entity_list.ProcessProximitySay(message, this, language);
 
-		if (target != 0 && target->IsNPC()) {
-			if(!target->CastToNPC()->IsEngaged()) {
+		if (GetTarget() != 0 && GetTarget()->IsNPC()) {
+			if(!GetTarget()->CastToNPC()->IsEngaged()) {
 
-				CheckLDoNHail(target);
+				CheckLDoNHail(GetTarget());
 #ifdef EMBPERL
-				if(((PerlembParser *)parse)->HasQuestSub(target->GetNPCTypeID(),"EVENT_SAY")){
+				if(((PerlembParser *)parse)->HasQuestSub(GetTarget()->GetNPCTypeID(),"EVENT_SAY")){
 #endif
-					if (DistNoRootNoZ(*target) <= 200) {
-						if(target->CastToNPC()->IsMoving() && !target->CastToNPC()->IsOnHatelist(target))
-							target->CastToNPC()->PauseWandering(RuleI(NPC, SayPauseTimeInSec));
-						parse->Event(EVENT_SAY, target->GetNPCTypeID(), message, target->CastToNPC(), this, language);
+					if (DistNoRootNoZ(*GetTarget()) <= 200) {
+						if(GetTarget()->CastToNPC()->IsMoving() && !GetTarget()->CastToNPC()->IsOnHatelist(GetTarget()))
+							GetTarget()->CastToNPC()->PauseWandering(RuleI(NPC, SayPauseTimeInSec));
+						parse->Event(EVENT_SAY, GetTarget()->GetNPCTypeID(), message, GetTarget()->CastToNPC(), this, language);
 					#ifdef IPC
-						if(target->CastToNPC()->IsInteractive()) {
-							target->CastToNPC()->InteractiveChat(chan_num,language,message,targetname,this);
+						if(GetTarget()->CastToNPC()->IsInteractive()) {
+							GetTarget()->CastToNPC()->InteractiveChat(chan_num,language,message,targetname,this);
 						}
 					#endif
-						//parse->Event(EVENT_SAY, target->GetNPCTypeID(), message, target->CastToNPC(), this);
+						//parse->Event(EVENT_SAY, GetTarget()->GetNPCTypeID(), message, target->CastToNPC(), this);
 					}
 #ifdef EMBPERL
 				}	
 #endif
 
-				if (RuleB(TaskSystem, EnableTaskSystem) && DistNoRootNoZ(*target) <= 200) {
+				if (RuleB(TaskSystem, EnableTaskSystem) && DistNoRootNoZ(*GetTarget()) <= 200) {
 
-					if(target->CastToNPC()->IsMoving() && !target->CastToNPC()->IsOnHatelist(target))
-						target->CastToNPC()->PauseWandering(RuleI(NPC, SayPauseTimeInSec));
+					if(GetTarget()->CastToNPC()->IsMoving() && !GetTarget()->CastToNPC()->IsOnHatelist(GetTarget()))
+						GetTarget()->CastToNPC()->PauseWandering(RuleI(NPC, SayPauseTimeInSec));
 
-					if(UpdateTasksOnSpeakWith(target->GetNPCTypeID())) {
+					if(UpdateTasksOnSpeakWith(GetTarget()->GetNPCTypeID())) {
 						// If the client had an activity to talk to this NPC, make the NPC turn to face him if
 						// he isn't moving. Makes things look better.
-						if(!target->CastToNPC()->IsMoving())
-							target->FaceTarget(this);
+						if(!GetTarget()->CastToNPC()->IsMoving())
+							GetTarget()->FaceTarget(this);
 					}
 				}
 			}
 			else {
 #ifdef EMBPERL
-				if(((PerlembParser *)parse)->HasQuestSub(target->GetNPCTypeID(),"EVENT_AGGRO_SAY")) {
+				if(((PerlembParser *)parse)->HasQuestSub(GetTarget()->GetNPCTypeID(),"EVENT_AGGRO_SAY")) {
 #endif
-					if (DistNoRootNoZ(*target) <= 200) {
-						parse->Event(EVENT_AGGRO_SAY, target->GetNPCTypeID(), message, target->CastToNPC(), this, language);
+					if (DistNoRootNoZ(*GetTarget()) <= 200) {
+						parse->Event(EVENT_AGGRO_SAY, GetTarget()->GetNPCTypeID(), message, GetTarget()->CastToNPC(), this, language);
 					}
 #ifdef EMBPERL
 				}	
