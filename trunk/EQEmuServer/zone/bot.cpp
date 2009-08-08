@@ -201,6 +201,7 @@ NPCType Bot::FillNPCTypeStruct(uint32 botSpellsID, std::string botName, std::str
 	BotNPCType.findable = 0;
 	BotNPCType.hp_regen = 0;
 	BotNPCType.mana_regen = 0;
+	BotNPCType.maxlevel = botLevel;
 
 	return BotNPCType;
 }
@@ -223,6 +224,7 @@ NPCType Bot::CreateDefaultNPCTypeStructForBot(std::string botName, std::string b
 	Result.gender = gender;
 
 	// default values
+	Result.maxlevel = botLevel;
 	Result.size = 6;
 	Result.npc_id = 0;
 	Result.bodytype = 1;
@@ -1006,13 +1008,13 @@ bool Bot::Process() {
 	}
 
 	if (GetDepop()) {
-		Mob* owner = entity_list.GetMob(this->ownerid);
-		if (owner != 0) {
-			//if(GetBodyType() != BT_SwarmPet)
-			//    owner->SetPetID(0);
-			this->ownerid = 0;
-			this->petid = 0;
-		}
+		//Mob* owner = entity_list.GetMob(this->ownerid);
+		//if (owner != 0) {
+		//	//if(GetBodyType() != BT_SwarmPet)
+		//	//    owner->SetPetID(0);
+		//	this->ownerid = 0;
+		//	this->petid = 0;
+		//}
 		return false;
 	}
 
@@ -1022,7 +1024,7 @@ bool Bot::Process() {
 
 	if (tic_timer.Check()) {
 		//60 seconds, or whatever the rule is set to has passed, send this position to everyone to avoid ghosting
-		if(global_position_update_timer.Check() && !moving){
+		if(/*global_position_update_timer.Check() && */!moving){
 			SendAllPosition();
 		}
 
@@ -1036,10 +1038,10 @@ bool Bot::Process() {
 		if(GetAppearance() == eaSitting)
 			bonus+=3;
 
-		sint32 OOCRegen = 0;
-		if(oocregen > 0){ //should pull from Mob class
-			OOCRegen += GetMaxHP() * oocregen / 100;
-		}
+		//sint32 OOCRegen = 0;
+		//if(oocregen > 0){ //should pull from Mob class
+		//	OOCRegen += GetMaxHP() * oocregen / 100;
+		//}
 
 		//Lieka Edit:  Fixing NPC regen.  NPCs should regen to full during a set duration, not based on their HPs.  Increase NPC's HPs by % of total HPs / tick.
 		//if((GetHP() < GetMaxHP()) && !IsPet()) {
@@ -1090,7 +1092,7 @@ bool Bot::Process() {
 	}
 
 	if (sendhpupdate_timer.Check() && IsTargeted()) {
-		if(!IsFullHP || cur_hp<max_hp){
+		if(!IsFullHP || cur_hp < max_hp){
 			SendHPUpdate();
 		}
 	}
@@ -1103,17 +1105,15 @@ bool Bot::Process() {
 	}
 
 	//Handle assists...
-	if(assist_timer.Check() && !Charmed() && GetTarget() != NULL) {
+	/*if(assist_timer.Check() && !Charmed() && GetTarget() != NULL) {
 		entity_list.AIYellForHelp(this, GetTarget());
-	}
+	}*/
 
 	// Bot AI
 	AI_Process();
 
 	if(HasPet())
 		PetAIProcess();
-
-	//Mob::AI_Process();
 
 	return true;
 }
@@ -2523,7 +2523,7 @@ void Bot::AI_Process() {
 				SetFollowID(0);
 			else if(AImovement_timer->Check()){
 				float dist2 = DistNoRoot(*follow);
-				int followdist = GetFollowDistance();
+				int followdist = 184;	/*GetFollowDistance();*/
 				SetRunAnimSpeed(0);
 				if(dist2 > followdist) {
 					CalculateNewPosition2(follow->GetX(), follow->GetY(), follow->GetZ(), GetRunspeed(), false);
@@ -2534,6 +2534,9 @@ void Bot::AI_Process() {
 						moved=false;
 						SetMoving(false);
 						SendPosUpdate();
+						/*SendPosition();
+						moved=false;
+						SetMoving(false);*/
 					}
 				}
 			}
@@ -2803,7 +2806,7 @@ void Bot::Spawn(Client* botCharacterOwner, std::string* errorMessage) {
 		FaceTarget(botCharacterOwner);
 
 		// Level the bot to the same level as the bot owner
-		this->SetLevel(botCharacterOwner->GetLevel());
+		//this->SetLevel(botCharacterOwner->GetLevel());
 
 		entity_list.AddBot(this, true, true);
 
@@ -3007,13 +3010,14 @@ void Bot::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho) {
 		ns->spawn.lfg = 0;
 		ns->spawn.anon = 0;
 		ns->spawn.gm = 0;
-		ns->spawn.guildID = 0;
-		ns->spawn.is_npc = 0;
+		ns->spawn.guildID = 0xFFFFFFFF;		// 0xFFFFFFFF = NO GUILD, 0 = Unknown Guild
+		ns->spawn.is_npc = 0;			// 0=no, 1=yes
 		ns->spawn.is_pet = 0;
-		ns->spawn.guildrank = 0xFF;
+		ns->spawn.guildrank = 0;
 		ns->spawn.showhelm = 0;
 		ns->spawn.flymode = 0;
 		ns->spawn.size = 0;
+		ns->spawn.NPC = 0;				// 0=player,1=npc,2=pc corpse,3=npc corpse
 
 		const Item_Struct* item = 0;
 
@@ -4485,7 +4489,6 @@ void Bot::Damage(Mob *from, sint32 damage, int16 spell_id, SkillType attack_skil
 }
 
 void Bot::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHelp, bool bFrenzy, bool iBuffTic) {
-	this->_previousTarget = GetTarget();
 	Mob::AddToHateList(other, hate, damage, iYellForHelp, bFrenzy, iBuffTic);
 }
 
@@ -8119,21 +8122,22 @@ void Bot::BotGroupSummon(Group* group) {
 }
 
 void Bot::CalcBotStats(bool showtext) {
-	Client* BotOwner = this->GetBotOwner()->CastToClient();
-
-	if(!BotOwner)
+	if(!GetBotOwner())
 		return;
 
 	if(showtext) {
-		BotOwner->Message(15, "Bot updating...");
+		GetBotOwner()->Message(15, "Bot updating...");
 	}
 	
 	if(!IsValidRaceClassCombo()) {
-		BotOwner->Message(15, "A %s - %s bot was detected. Is this Race/Class combination allowed?.", GetRaceName(GetRace()), GetEQClassName(GetClass(), GetLevel()));
-		BotOwner->Message(15, "Previous Bots Code releases did not check Race/Class combinations during create.");
-		BotOwner->Message(15, "Unless you are experiencing heavy lag, you should delete and remake this bot.");
+		GetBotOwner()->Message(15, "A %s - %s bot was detected. Is this Race/Class combination allowed?.", GetRaceName(GetRace()), GetEQClassName(GetClass(), GetLevel()));
+		GetBotOwner()->Message(15, "Previous Bots Code releases did not check Race/Class combinations during create.");
+		GetBotOwner()->Message(15, "Unless you are experiencing heavy lag, you should delete and remake this bot.");
 	}
 	
+	if(GetBotOwner()->GetLevel() != GetLevel())
+		SetLevel(GetBotOwner()->GetLevel());
+
 	GenerateBaseStats();
 
 	GenerateAABonuses();
@@ -8155,9 +8159,9 @@ void Bot::CalcBotStats(bool showtext) {
 	GenerateSpecialAttacks();
 
 	if(showtext) {
-		BotOwner->Message(15, "Base stats:");
-		BotOwner->Message(15, "Level: %i HP: %i AC: %i Mana: %i STR: %i STA: %i DEX: %i AGI: %i INT: %i WIS: %i CHA: %i", GetLevel(), base_hp, AC, max_mana, STR, STA, DEX, AGI, INT, WIS, CHA);
-		BotOwner->Message(15, "Resists-- Magic: %i, Poison: %i, Fire: %i, Cold: %i, Disease: %i.",MR,PR,FR,CR,DR);
+		GetBotOwner()->Message(15, "Base stats:");
+		GetBotOwner()->Message(15, "Level: %i HP: %i AC: %i Mana: %i STR: %i STA: %i DEX: %i AGI: %i INT: %i WIS: %i CHA: %i", GetLevel(), base_hp, AC, max_mana, STR, STA, DEX, AGI, INT, WIS, CHA);
+		GetBotOwner()->Message(15, "Resists-- Magic: %i, Poison: %i, Fire: %i, Cold: %i, Disease: %i.",MR,PR,FR,CR,DR);
 	}
 
 	// Let's find the items in the bot inventory
@@ -8272,9 +8276,9 @@ void Bot::CalcBotStats(bool showtext) {
 	AI_AddNPCSpells(this->GetBotSpellID());
 
 	if(showtext) {
-		BotOwner->Message(15, "I'm updated.");
-		BotOwner->Message(15, "Level: %i HP: %i AC: %i Mana: %i STR: %i STA: %i DEX: %i AGI: %i INT: %i WIS: %i CHA: %i", GetLevel(), max_hp, AC, max_mana, STR, STA, DEX, AGI, INT, WIS, CHA);
-		BotOwner->Message(15, "Resists-- Magic: %i, Poison: %i, Fire: %i, Cold: %i, Disease: %i.",MR,PR,FR,CR,DR);
+		GetBotOwner()->Message(15, "I'm updated.");
+		GetBotOwner()->Message(15, "Level: %i HP: %i AC: %i Mana: %i STR: %i STA: %i DEX: %i AGI: %i INT: %i WIS: %i CHA: %i", GetLevel(), max_hp, AC, max_mana, STR, STA, DEX, AGI, INT, WIS, CHA);
+		GetBotOwner()->Message(15, "Resists-- Magic: %i, Poison: %i, Fire: %i, Cold: %i, Disease: %i.",MR,PR,FR,CR,DR);
 	}
 }
 
@@ -9290,7 +9294,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 
 			if((c->GetTarget()->CastToBot()->GetBotOwner() == c->CastToMob()) && !c->GetFeigned()) {
 				Bot* bot = c->GetTarget()->CastToBot();
-				bot->SetLevel(c->GetLevel());
+				//bot->SetLevel(c->GetLevel());
 				bot->SetPetChooser(false);
 				bot->CalcBotStats();
 			}

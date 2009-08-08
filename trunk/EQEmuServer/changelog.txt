@@ -1,5 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==08/08/2009==
+WildcardX: *BOTS* More code refactoring.
+WildcardX: *BOTS* Bots now appear as another client player to your client. This will lead to using your UI to perform operations like group invites/disbands and the raid UI. Perhaps even guilding your bot! (Thanks Trev for your assistance!)
+WildcardX: Fixed a bug that negatively impacted BOTS when the NPC scaling logic was introduced. This caused bots to spawn as outrageously large levels, like level 185!
+
 ==08/07/2009==
 WildcardX: *BOTS* More code refactoring.
 WildcardX: Implemented 4 additional abstract methods in the mob object, HasRaid(), HasGroup(), GetRaid(), GetGroup(). These will be implemented as common interfaces by any class deriving from Mob.
