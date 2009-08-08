@@ -107,7 +107,9 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 	  d->hp_regen,
 	  d->mana_regen,
 	  d->qglobal,
-	  d->slow_mitigation ),
+	  d->slow_mitigation,
+	  d->maxlevel,
+	  d->scalerate ),
 	attacked_timer(CombatEventTimer_expire),
 	swarm_timer(100),
 	classattack_timer(1000),
@@ -161,6 +163,82 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 	findable = d->findable;
 	trackable = d->trackable;
 
+    MR = d->MR;
+    CR = d->CR;
+    DR = d->DR;
+    FR = d->FR;
+    PR = d->PR;
+
+	//quick fix of ordering if they screwed it up in the DB
+	if(max_dmg < min_dmg) {
+		int tmp = min_dmg;
+		min_dmg = max_dmg;
+		max_dmg = tmp;
+	}
+
+
+	int8 max_level = d->maxlevel;
+	int8 base_level = d->level;
+
+	// Max Level and Stat Scaling if maxlevel is set
+	if(max_level > base_level)
+	{
+
+		int8 random_level = (MakeRandomInt(base_level, max_level));
+
+		float scaling = (((random_level / (float)base_level) - 1) * (d->scalerate / 100.0f));
+		
+		// Compensate for scale rates at low levels so they don't add too much
+		int8 scale_adjust = 1;
+		if(base_level > 0 && base_level <= 5)
+			scale_adjust = 10;
+		if(base_level > 5 && base_level <= 10)
+			scale_adjust = 5;
+		if(base_level > 10 && base_level <= 15)
+			scale_adjust = 3;
+		if(base_level > 15 && base_level <= 25)
+			scale_adjust = 2;
+
+		max_hp += (max_hp * scaling);
+		cur_hp = max_hp;
+		STR += (d->STR * scaling / scale_adjust);
+		STA += (d->STA * scaling / scale_adjust);
+		AGI += (d->AGI * scaling / scale_adjust);
+		DEX += (d->DEX * scaling / scale_adjust);
+		INT += (d->INT * scaling / scale_adjust);
+		WIS += (d->WIS * scaling / scale_adjust);
+		CHA += (d->CHA * scaling / scale_adjust);
+		if (MR)
+			MR += (MR * scaling / scale_adjust); 
+		if (CR)
+			CR += (CR * scaling / scale_adjust);
+		if (DR)
+			DR += (DR * scaling / scale_adjust);
+		if (FR)
+			FR += (FR * scaling / scale_adjust);
+		if (PR)
+			PR += (PR * scaling / scale_adjust);
+
+		if (max_dmg)
+		{
+			max_dmg += (max_dmg * scaling / scale_adjust);
+			min_dmg += (min_dmg * scaling / scale_adjust);
+		}
+
+		level = random_level;
+	}
+
+    if (!MR)
+        MR = (moblevel * 11)/10;
+    if (!CR)
+        CR = (moblevel * 11)/10;
+    if (!DR)
+        DR = (moblevel * 11)/10;
+    if (!FR)
+        FR = (moblevel * 11)/10;
+    if (!PR)
+        PR = (moblevel * 11)/10;
+
     // neotokyo: fix for lazy db-updaters
     if (GetCasterClass() != 'N' && mana_regen == 0)
         mana_regen = (GetLevel() / 10) + 4;
@@ -197,13 +275,6 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 		hp_regen = 0;
 	} else
 		hp_regen = d->hp_regen;
-	
-	//quick fix of ordering if they screwed it up in the DB
-	if(max_dmg < min_dmg) {
-		int tmp = min_dmg;
-		min_dmg = max_dmg;
-		max_dmg = tmp;
-	}
 		
 	if(max_dmg == 0){
 		int AC_adjust=12;
@@ -299,23 +370,6 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 #else
     entity_list.MakeNameUnique(name);
 #endif
-
-    MR = d->MR;
-    CR = d->CR;
-    DR = d->DR;
-    FR = d->FR;
-    PR = d->PR;
-
-    if (!MR)
-        MR = (moblevel * 11)/10;
-    if (!CR)
-        CR = (moblevel * 11)/10;
-    if (!DR)
-        DR = (moblevel * 11)/10;
-    if (!FR)
-        FR = (moblevel * 11)/10;
-    if (!PR)
-        PR = (moblevel * 11)/10;
 
 	npc_aggro = d->npc_aggro;
 

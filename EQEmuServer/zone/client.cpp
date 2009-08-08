@@ -137,7 +137,9 @@ Client::Client(EQStreamInterface* ieqs)
 	0,
 	0,
 	0,	// qglobal
-	0	//Drakelord:  slow_mitigation
+	0,	// slow_mitigation
+	0,	// maxlevel
+	0	// scalerate
 
 	),
 	//these must be listed in the order they appear in client.h
@@ -3611,7 +3613,7 @@ uint16 Client::GetPrimarySkillValue()
 uint16 Client::GetTotalATK()
 {
 	int16 AttackRating = 0;
-	int16 WornCap = GetATK();
+	int16 WornCap = GetATKBonus();
 
 	if(WornCap > 250)
 		WornCap = 250;
@@ -3623,7 +3625,7 @@ uint16 Client::GetTotalATK()
 			AttackRating = 10;
 	}
 	else
-	AttackRating = GetATK() + (GetSTR() * 9 / 10);
+		AttackRating = GetATK();
 
 	return AttackRating;
 }

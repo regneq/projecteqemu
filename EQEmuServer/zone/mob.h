@@ -351,7 +351,7 @@ bool logpos;
         bodyType    in_bodytype,
 	    int8    in_deity,
 	    int8    in_level,
-		int32   in_npctype_id, // rembrant, Dec. 20, 2001
+		int32   in_npctype_id,
 		float	in_size,
 		float	in_runspeed,
 	    float   in_heading,
@@ -382,15 +382,16 @@ bool logpos;
 		int32	in_drakkin_details,
 		int32	in_armor_tint[MAX_MATERIALS],
 		int8	in_aa_title,
-		int8	in_see_invis,			// Mongrel: see through invis
-		int8	in_see_invis_undead,		// Mongrel: see through invis vs. undead
+		int8	in_see_invis,			// see through invis
+		int8	in_see_invis_undead,		// see through invis vs. undead
 		int8	in_see_hide,
 		int8	in_see_improved_hide,
 		sint16	in_hp_regen,
 		sint16	in_mana_regen,
 		int8	in_qglobal,
-		float	in_slow_mitigation	//Drakelord:  Allows for mobs to mitigate how much they are slowed.
-
+		float	in_slow_mitigation,	// Allows for mobs to mitigate how much they are slowed.
+		int8	in_maxlevel,
+		int32	in_scalerate
 	);
 	virtual ~Mob();
 
@@ -577,6 +578,7 @@ bool logpos;
 
 	inline virtual sint16	GetAC()		const { return AC + itembonuses.AC + spellbonuses.AC; } // Quagmire - this is NOT the right math
 	inline virtual sint16	GetATK()	const { return ATK + itembonuses.ATK + spellbonuses.ATK + (GetSTR() * 9 / 10); }
+	inline virtual sint16	GetATKBonus()	const { return itembonuses.ATK + spellbonuses.ATK; }
 	inline virtual sint16	GetSTR()	const { return STR + itembonuses.STR + spellbonuses.STR; }
 	inline virtual sint16	GetSTA()	const { return STA + itembonuses.STA + spellbonuses.STA; }
 	inline virtual sint16	GetDEX()	const { return DEX + itembonuses.DEX + spellbonuses.DEX; }
@@ -988,12 +990,14 @@ protected:
 	sint32	max_mana;
 	sint16	hp_regen;
 	sint16	mana_regen;
-	sint32	oocregen; //Out of Combat Regen, % per tick
-	float 	slow_mitigation;	//Allows for a slow mitigation based on a % in decimal form.  IE, 1 = 100% mitigation, .5 is 50%
+	sint32	oocregen; // Out of Combat Regen, % per tick
+	float 	slow_mitigation;	// Allows for a slow mitigation based on a % in decimal form.  IE, 1 = 100% mitigation, .5 is 50%
+	int8	maxlevel;
+	int32	scalerate;
 	Buffs_Struct	buffs[BUFF_COUNT];
 	StatBonuses		itembonuses;
 	StatBonuses		spellbonuses;
-	StatBonuses		aabonuses;	//AndMetal
+	StatBonuses		aabonuses;
 	int16			petid;
 	int16			ownerid;
 	PetType			typeofpet;
@@ -1009,7 +1013,7 @@ protected:
 	bodyType    bodytype;
 	int16	deity;
 	uint8    level;
-	int32   npctype_id; // rembrant, Dec. 20, 2001
+	int32   npctype_id;
 	float	x_pos;
 	float	y_pos;
 	float	z_pos;

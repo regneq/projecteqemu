@@ -96,8 +96,9 @@ Mob::Mob(const char*   in_name,
 		 sint16 in_hp_regen,
 		 sint16 in_mana_regen,
 		 int8	in_qglobal,
-		 float	in_slow_mitigation	//Drakelord:  Allows for mobs to mitigate how much they are slowed.
-
+		 float	in_slow_mitigation,	// Allows for mobs to mitigate how much they are slowed.
+		 int8	in_maxlevel,
+		 int32	in_scalerate
 		 ) : 
 		attack_timer(2000),
 		attack_dw_timer(2000),
@@ -214,6 +215,8 @@ Mob::Mob(const char*   in_name,
 	mana_regen = in_mana_regen;
 	oocregen = RuleI(NPC, OOCRegen); //default Out of Combat Regen
 	slow_mitigation = in_slow_mitigation;
+	maxlevel = in_maxlevel;
+	scalerate = in_scalerate;
 	invisible = false;
 	invisible_undead = false;
 	invisible_animals = false;
@@ -963,20 +966,14 @@ void Mob::MakeSpawnUpdate(PlayerPositionUpdateServer_Struct* spu) {
 void Mob::ShowStats(Client* client) {
 
 	int16 attackRating = 0;
-	int16 WornCap = GetATK();
+	int16 WornCap = GetATKBonus();
 
-	if(IsClient())
-		attackRating = GetATK() + ((GetSTR() + GetSkill(OFFENSE)) * 9 / 10);
-	else
-		attackRating = GetATK() + (GetSTR() * 9 / 10);
-
-	if(WornCap > 250)
-		WornCap = 250;
+	attackRating = GetATK();
 
 	client->Message(0, "Name: %s %s", GetName(), lastname);
 	client->Message(0, "  Level: %i  MaxHP: %i  CurHP: %i  AC: %i  Class: %i", GetLevel(), GetMaxHP(), GetHP(), GetAC(), GetClass());
 	client->Message(0, "  MaxMana: %i  CurMana: %i  Size: %1.1f", GetMaxMana(), GetMana(), GetSize());
-	client->Message(0, "  Total ATK: %i  Worn ATK: %i  Worn ATK Capped: %i  Server Used ATK: %i", this->CastToClient()->GetTotalATK(), GetATK(), WornCap, attackRating);
+	client->Message(0, "  Total ATK: %i  Worn/Spell ATK (Cap 250): %i  Server Used ATK: %i", this->CastToClient()->GetTotalATK(), GetATKBonus(), attackRating);
 	client->Message(0, "  STR: %i  STA: %i  DEX: %i  AGI: %i  INT: %i  WIS: %i  CHA: %i", GetSTR(), GetSTA(), GetDEX(), GetAGI(), GetINT(), GetWIS(), GetCHA());
 	client->Message(0, "  MR: %i  PR: %i  FR: %i  CR: %i  DR: %i  Haste: %i", GetMR(), GetPR(), GetFR(), GetCR(), GetDR(), GetHaste());
 	if (this->IsClient())
