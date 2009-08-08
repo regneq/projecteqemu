@@ -176,18 +176,16 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 		max_dmg = tmp;
 	}
 
-
 	int8 max_level = d->maxlevel;
 	int8 base_level = d->level;
 
 	// Max Level and Stat Scaling if maxlevel is set
 	if(max_level > base_level)
 	{
-
 		int8 random_level = (MakeRandomInt(base_level, max_level));
 
 		float scaling = (((random_level / (float)base_level) - 1) * (d->scalerate / 100.0f));
-		
+
 		// Compensate for scale rates at low levels so they don't add too much
 		int8 scale_adjust = 1;
 		if(base_level > 0 && base_level <= 5)
@@ -226,18 +224,18 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 		}
 
 		level = random_level;
-	}
 
-    if (!MR)
-        MR = (moblevel * 11)/10;
-    if (!CR)
-        CR = (moblevel * 11)/10;
-    if (!DR)
-        DR = (moblevel * 11)/10;
-    if (!FR)
-        FR = (moblevel * 11)/10;
-    if (!PR)
-        PR = (moblevel * 11)/10;
+		if (!MR)
+			MR = (moblevel * 11)/10;
+		if (!CR)
+			CR = (moblevel * 11)/10;
+		if (!DR)
+			DR = (moblevel * 11)/10;
+		if (!FR)
+			FR = (moblevel * 11)/10;
+		if (!PR)
+			PR = (moblevel * 11)/10;
+	}
 
     // neotokyo: fix for lazy db-updaters
     if (GetCasterClass() != 'N' && mana_regen == 0)
