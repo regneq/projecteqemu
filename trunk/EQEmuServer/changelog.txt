@@ -4,6 +4,8 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 WildcardX: *BOTS* More code refactoring.
 WildcardX: *BOTS* Bots now appear as another client player to your client. This will lead to using your UI to perform operations like group invites/disbands and the raid UI. Perhaps even guilding your bot! (Thanks Trev for your assistance!)
 WildcardX: Fixed a bug that negatively impacted BOTS when the NPC scaling logic was introduced. This caused bots to spawn as outrageously large levels, like level 185!
+WildcardX: *BOTS* Bots can now be invited and disbanded from your group by simply using the group "Invite" and "Disband" buttons from the client's UI.
+WildcardX: *BOTS* Tweak to the bots total play time calculation to make it more accurate.
 
 ==08/07/2009==
 WildcardX: *BOTS* More code refactoring.

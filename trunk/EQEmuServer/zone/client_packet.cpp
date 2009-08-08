@@ -5044,41 +5044,34 @@ void Client::Handle_OP_GroupInvite2(const EQApplicationPacket *app)
 		return;
 	}
 
-	if(this->GetTarget() != 0 && this->GetTarget()->IsClient()) {
-		if(!GetTarget()->IsGrouped() && !GetTarget()->IsRaidGrouped()){
-
-#ifdef EQBOTS
-
-            Group *g = entity_list.GetGroupByClient(this);
-            if(g) {
-                for(int i=0; i<MAX_GROUP_MEMBERS; i++) {
-                    if(g->members[i] && g->members[i]->IsBot()) {
-                        Message(15, "You currently have bots in your group. Cannot invite %s.", this->GetTarget()->GetName());
-                        Message(15, "Bots must be the final group members invited.");
-                        return;
-                    }
-                }
-            }
-
-#endif //EQBOTS
-
-			if(app->GetOpcode() == OP_GroupInvite2)
-			{
-				//Make a new packet using all the same information but make sure it's a fixed GroupInvite opcode so we
-				//Don't have to deal with GroupFollow2 crap.
-				EQApplicationPacket* outapp = new EQApplicationPacket(OP_GroupInvite, sizeof(GroupInvite_Struct));
-				memcpy(outapp->pBuffer, app->pBuffer, outapp->size);
-				this->GetTarget()->CastToClient()->QueuePacket(outapp);
-				safe_delete(outapp);
-				return;
-			}
-			else
-			{
-				//The correct opcode, no reason to bother wasting time reconstructing the packet
-				this->GetTarget()->CastToClient()->QueuePacket(app);
+	if(GetTarget()) {
+		if(GetTarget()->IsClient()) {
+			if(!GetTarget()->IsGrouped() && !GetTarget()->IsRaidGrouped()) {
+				if(app->GetOpcode() == OP_GroupInvite2)
+				{
+					//Make a new packet using all the same information but make sure it's a fixed GroupInvite opcode so we
+					//Don't have to deal with GroupFollow2 crap.
+					EQApplicationPacket* outapp = new EQApplicationPacket(OP_GroupInvite, sizeof(GroupInvite_Struct));
+					memcpy(outapp->pBuffer, app->pBuffer, outapp->size);
+					this->GetTarget()->CastToClient()->QueuePacket(outapp);
+					safe_delete(outapp);
+					return;
+				}
+				else
+				{
+					//The correct opcode, no reason to bother wasting time reconstructing the packet
+					this->GetTarget()->CastToClient()->QueuePacket(app);
+				}
 			}
 		}
+#ifdef BOTS
+		else if(GetTarget()->IsBot()) {
+			GroupInvite_Struct* gi = (GroupInvite_Struct*) app->pBuffer;
+			Bot::ProcessBotGroupInvite(this, std::string(gi->invitee_name));
+		}
+#endif
 	}
+
 	/*if(this->GetTarget() != 0 && this->GetTarget()->IsNPC() && this->GetTarget()->CastToNPC()->IsInteractive()) {
 		if(!this->GetTarget()->CastToNPC()->IsGrouped()) {
 			EQApplicationPacket* outapp = new EQApplicationPacket(OP_GroupUpdate,sizeof(GroupUpdate_Struct));

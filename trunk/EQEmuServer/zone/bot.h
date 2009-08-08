@@ -143,7 +143,6 @@ public:
 	static bool SetBotOwnerCharacterID(uint32 botID, uint32 botOwnerCharacterID, std::string* errorMessage);
 	static std::string ClassIdToString(uint16 classId);
 	static std::string RaceIdToString(uint16 raceId);
-	//static uint32 GetCountBotsInGroup(Group* group);
 	static bool AddBotToGroup(Bot* bot, Group* group);
 	static bool RemoveBotFromGroup(Bot* bot);
 	static void DestroyBotObjects(Client* client);
@@ -152,6 +151,8 @@ public:
 	static void BotGroupOrderGuard(Group* group);
 	static void BotGroupOrderAttack(Group* group);
 	static void BotGroupSummon(Group* group);
+	static Bot* GetBotByBotClientOwnerAndBotName(Client* c, std::string botName);
+	static void ProcessBotGroupInvite(Client* c, std::string botName);
 
 	// "GET" Class Methods
 	uint32 GetBotID() { return _botID; }
