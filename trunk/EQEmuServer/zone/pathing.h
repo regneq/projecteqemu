@@ -70,6 +70,7 @@ public:
 	bool CheckLosFN(VERTEX a, VERTEX b);
 	void SpawnPathNodes();
 	void MeshTest();
+	void SimpleMeshTest();
 	int FindNearestPathNode(VERTEX Position);
 	bool NoHazards(VERTEX From, VERTEX To);
 	bool NoHazardsAccurate(VERTEX From, VERTEX To);

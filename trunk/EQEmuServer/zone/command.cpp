@@ -7518,9 +7518,18 @@ void command_path(Client *c, const Seperator *sep)
 	{
 		if(zone->pathing)
 		{
-			c->Message(0, "You may go linkdead. Results will be in the log file.");
-			zone->pathing->MeshTest();
-			return;
+			if(!strcasecmp(sep->arg[2], "simple"))
+			{
+				c->Message(0, "You may go linkdead. Results will be in the log file.");
+				zone->pathing->SimpleMeshTest();
+				return;
+			}
+			else
+			{
+				c->Message(0, "You may go linkdead. Results will be in the log file.");
+				zone->pathing->MeshTest();
+				return;
+			}
 		}
 	}
 
