@@ -964,6 +964,7 @@ bool Bot::Save() {
 		}
 		else {
 			Result = true;
+			time(&_startTotalPlayTime);
 		}
 	}
 
@@ -3011,13 +3012,13 @@ void Bot::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho) {
 		ns->spawn.anon = 0;
 		ns->spawn.gm = 0;
 		ns->spawn.guildID = 0xFFFFFFFF;		// 0xFFFFFFFF = NO GUILD, 0 = Unknown Guild
-		ns->spawn.is_npc = 0;			// 0=no, 1=yes
+		ns->spawn.is_npc = 0;				// 0=no, 1=yes
 		ns->spawn.is_pet = 0;
 		ns->spawn.guildrank = 0;
 		ns->spawn.showhelm = 0;
 		ns->spawn.flymode = 0;
 		ns->spawn.size = 0;
-		ns->spawn.NPC = 0;				// 0=player,1=npc,2=pc corpse,3=npc corpse
+		ns->spawn.NPC = 0;					// 0=player,1=npc,2=pc corpse,3=npc corpse
 
 		const Item_Struct* item = 0;
 
@@ -8121,6 +8122,48 @@ void Bot::BotGroupSummon(Group* group) {
 	}
 }
 
+// Finds a bot in the entitity list by bot owner character id and the bot first name
+Bot* Bot::GetBotByBotClientOwnerAndBotName(Client* c, std::string botName) {
+	Bot* Result = 0;
+
+	if(c) {
+		std::list<Bot*> BotList = entity_list.GetBotsByBotOwnerCharacterID(c->CharacterID());
+
+		if(!BotList.empty()) {
+			for(std::list<Bot*>::iterator botListItr = BotList.begin(); botListItr != BotList.end(); botListItr++) {
+				if(std::string((*botListItr)->GetCleanName()) == botName) {
+					Result = (*botListItr);
+					break;
+				}
+			}
+		}
+	}
+
+	return Result;
+}
+
+// Processes a group invite from a Client for a Bot character.
+void Bot::ProcessBotGroupInvite(Client* c, std::string botName) {
+	if(c) {
+		Bot* invitedBot = GetBotByBotClientOwnerAndBotName(c, botName);
+
+		if(invitedBot && !invitedBot->HasGroup()) {
+			if(!c->IsGrouped()) {
+				Group *g = new Group(c);
+				if(AddBotToGroup(invitedBot, g))
+					entity_list.AddGroup(g);
+			}
+			else
+				AddBotToGroup(invitedBot, c->GetGroup());
+
+			if(c->GetBotRaidID() > 0)
+				invitedBot->SetBotRaidID(c->GetBotRaidID());
+		}
+		// TODO: if there is a bot but the bot is already in a group, do we send an group invitation cancel message back to the client?
+	}
+}
+
+// This method is intended to call all necessary methods to do all bot stat calculations, including spell buffs, equipment, AA bonsues, etc.
 void Bot::CalcBotStats(bool showtext) {
 	if(!GetBotOwner())
 		return;
@@ -8436,12 +8479,13 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 
 			if(BotTargeted) {
 				BotTargeted->DeleteBot(&TempErrorMessage);
-				BotTargeted->Camp(false);
 
 				if(!TempErrorMessage.empty()) {
 					c->Message(13, "Database Error: %s", TempErrorMessage.c_str());
 					return;
 				}
+
+				BotTargeted->Camp(false);
 			}
 		}
 
@@ -8902,12 +8946,12 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 	}
 
 	if(!strcasecmp(sep->arg[1], "group") && !strcasecmp(sep->arg[2], "add")) {
-		if(c->GetFeigned()) {
+		/*if(c->GetFeigned()) {
 			c->Message(15, "You can't create bot groups while feigned!");
 			return;
-		}
+		}*/
 
-		if(c->GetBotRaidID() > 0) {
+		/*if(c->GetBotRaidID() > 0) {
 			BotRaids *br = entity_list.GetBotRaidByMob(c->CastToMob());
 			if(br) {
 				if(br->GetBotRaidAggro()) {
@@ -8915,9 +8959,9 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 					return;
 				}
 			}
-		}
+		}*/
 
-		if(c->IsGrouped()) {
+		/*if(c->IsGrouped()) {
 			Group *g = entity_list.GetGroupByClient(c);
 			for (int i=0; i<MAX_GROUP_MEMBERS; i++) {
 				if(g && g->members[i] && g->members[i]->IsEngaged()) {
@@ -8925,7 +8969,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 					return;
 				}
 			}
-		}
+		}*/
 
 		if((c->GetTarget() == NULL) || !c->GetTarget()->IsBot()) {
 			c->Message(15, "You must target a bot!");
@@ -8945,7 +8989,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 			}
 		}
 
-		if (c->IsGrouped()) {
+		if(c->IsGrouped()) {
 			Group *g = entity_list.GetGroupByClient(c);
 			if(g && (g->GroupCount() > 5)) {
 				c->Message(15, "There is no more room in your group.");
@@ -8957,31 +9001,31 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		{
 			Bot* b = c->GetTarget()->CastToBot();
 
-			if(b->GetBotOwnerCharacterID() != c->CharacterID()) {
+			/*if(b->GetBotOwnerCharacterID() != c->CharacterID()) {
 				b->Say("I can't be your bot, you are not my owner.");
 				return;
-			}
+			}*/
 
-			// Is he already grouped ?
-			if(b->IsGrouped()) {
-				b->Say("I'm already grouped!");
-				return;
-			}
-
-			// else, we do:
-			b->Say("I'm becoming %s\'s bot!", c->GetCleanName());
+			//// Is he already grouped ?
+			//if(b->IsGrouped()) {
+			//	b->Say("I'm already grouped!");
+			//	return;
+			//}
 
 			// Invite it to the group
-			if(!c->IsGrouped()) {
-				Group *g = new Group(c->CastToMob());
-				if(AddBotToGroup(b, g))
-					entity_list.AddGroup(g);
-			}
-			else
-				AddBotToGroup(b, c->GetGroup());
+			ProcessBotGroupInvite(c, std::string(b->GetCleanName()));
 
-			if(c->GetBotRaidID() > 0)
-				b->SetBotRaidID(c->GetBotRaidID());
+			b->Say("I'm becoming %s\'s bot!", c->GetCleanName());
+			//if(!c->IsGrouped()) {
+			//	Group *g = new Group(c->CastToMob());
+			//	if(AddBotToGroup(b, g))
+			//		entity_list.AddGroup(g);
+			//}
+			//else
+			//	AddBotToGroup(b, c->GetGroup());
+
+			//if(c->GetBotRaidID() > 0)
+			//	b->SetBotRaidID(c->GetBotRaidID());
 		}
 
 		return;
