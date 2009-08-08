@@ -6,6 +6,8 @@ WildcardX: *BOTS* Bots now appear as another client player to your client. This 
 WildcardX: Fixed a bug that negatively impacted BOTS when the NPC scaling logic was introduced. This caused bots to spawn as outrageously large levels, like level 185!
 WildcardX: *BOTS* Bots can now be invited and disbanded from your group by simply using the group "Invite" and "Disband" buttons from the client's UI.
 WildcardX: *BOTS* Tweak to the bots total play time calculation to make it more accurate.
+KLS: Added #path meshtest simple to do a faster search on errant path nodes.
+KLS: Modified the accurate hazard code to make automatic path maps with more accurate info that requires less manual editing afterward.
 
 ==08/07/2009==
 WildcardX: *BOTS* More code refactoring.

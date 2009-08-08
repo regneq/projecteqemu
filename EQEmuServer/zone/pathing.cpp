@@ -613,6 +613,32 @@ void PathManager::MeshTest()
 	fflush(stdout);
 }
 
+void PathManager::SimpleMeshTest()
+{
+	// This will test connectivity between the first path node and all other nodes
+
+	int TotalTests = 0;
+	int NoConnections = 0;
+
+	printf("Beginning Pathmanager connectivity tests.\n"); 
+	fflush(stdout);
+
+	for(int j = 1; j < Head.PathNodeCount; ++j)
+	{
+		list<int> Route = FindRoute(PathNodes[0].id, PathNodes[j].id);
+
+		if(Route.size() == 0)
+		{
+			++NoConnections;
+			printf("FindRoute(%i, %i) **** NO ROUTE FOUND ****\n", PathNodes[0].id, PathNodes[j].id);
+		}
+		++TotalTests;	
+	}
+	printf("Executed %i route searches.\n", TotalTests);
+	printf("Failed to find %i routes.\n", NoConnections);
+	fflush(stdout);
+}
+
 VERTEX Mob::UpdatePath(float ToX, float ToY, float ToZ, float Speed, bool &WaypointChanged, bool &NodeReached)
 {
 	_ZP(Pathing_UpdatePath);
@@ -1133,6 +1159,8 @@ bool PathManager::NoHazardsAccurate(VERTEX From, VERTEX To)
 {
 	float stepx, stepy, stepz, curx, cury, curz;
 	VERTEX cur = From;
+	float last_z = From.z;
+	float step_size = 1.0;
 
 	curx = From.x;
 	cury = From.y;
@@ -1144,18 +1172,19 @@ bool PathManager::NoHazardsAccurate(VERTEX From, VERTEX To)
 		stepy = (float)To.y - cury;
 		stepz = (float)To.z - curz;
 		float factor =  sqrt(stepx*stepx + stepy*stepy + stepz*stepz);
-		stepx = (stepx/factor)*1.0;
-		stepy = (stepy/factor)*1.0;
-		stepz = (stepz/factor)*1.0;
+		stepx = (stepx/factor)*step_size;
+		stepy = (stepy/factor)*step_size;
+		stepz = (stepz/factor)*step_size;
 			
 		VERTEX TestPoint(curx, cury, curz);
 		float NewZ = zone->map->FindBestZ(MAP_ROOT_NODE, TestPoint, NULL, NULL);
-		if(ABS(NewZ - From.z) > RuleR(Pathing, ZDiffThreshold))
+		if(ABS(NewZ - last_z) > 5.0)
 		{
 			_log(PATHING__DEBUG, "  HAZARD DETECTED moving from %8.3f, %8.3f, %8.3f to %8.3f, %8.3f, %8.3f. Best Z %8.3f, Z Change is %8.3f",
 				From.x, From.y, From.z, TestPoint.x, TestPoint.y, TestPoint.z, NewZ, NewZ - From.z);
 			return false;
 		}
+		last_z = NewZ;
 
 		if(zone->watermap)
 		{
@@ -1215,9 +1244,9 @@ bool PathManager::NoHazardsAccurate(VERTEX From, VERTEX To)
 		cur.y = cury;
 		cur.z = curz;
 
-		if(ABS(curx - To.x) < 1.0) cur.x = To.x;
-		if(ABS(cury - To.y) < 1.0) cur.y = To.y;
-		if(ABS(curz - To.z) < 1.0) cur.z = To.z;
+		if(ABS(curx - To.x) < step_size) cur.x = To.x;
+		if(ABS(cury - To.y) < step_size) cur.y = To.y;
+		if(ABS(curz - To.z) < step_size) cur.z = To.z;
 
 	} 
 	while(cur.x != To.x || cur.y != To.y || cur.z != To.z);
@@ -2090,12 +2119,14 @@ void PathManager::ProcessNodesAndSave(string filename)
 
 				if(!NodesConnected(&PathNodes[x], &PathNodes[y]))
 				{
-
-					if(CheckLosFN(PathNodes[x].v, PathNodes[y].v))
+					if(VertexDistance(PathNodes[x].v, PathNodes[y].v) <= 200)
 					{
-						if(NoHazardsAccurate(PathNodes[x].v, PathNodes[y].v) && NoHazardsAccurate(PathNodes[y].v, PathNodes[x].v))
+						if(CheckLosFN(PathNodes[x].v, PathNodes[y].v))
 						{
-							ConnectNodeToNode(PathNodes[x].id, PathNodes[y].id, 0, 0);
+							if(NoHazardsAccurate(PathNodes[x].v, PathNodes[y].v))
+							{
+								ConnectNodeToNode(PathNodes[x].id, PathNodes[y].id, 0, 0);
+							}
 						}
 					}
 				}
