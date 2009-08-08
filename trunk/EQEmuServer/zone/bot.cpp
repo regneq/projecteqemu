@@ -997,8 +997,6 @@ uint32 Bot::GetTotalPlayTime() {
 }
 
 bool Bot::Process() {
-	bool Result = false;
-
 	_ZP(Bot_Process);
 
 	adverrorinfo = 1;
@@ -1042,26 +1040,29 @@ bool Bot::Process() {
 		if(oocregen > 0){ //should pull from Mob class
 			OOCRegen += GetMaxHP() * oocregen / 100;
 		}
-		//Lieka Edit:  Fixing NPC regen.  NPCs should regen to full during a set duration, not based on their HPs.  Increase NPC's HPs by % of total HPs / tick.
-		if((GetHP() < GetMaxHP()) && !IsPet()) {
-			if(!IsEngaged()) {//NPC out of combat
-				if(hp_regen > OOCRegen)
-					SetHP(GetHP() + hp_regen);
-				else
-					SetHP(GetHP() + OOCRegen);
-			} else
-				SetHP(GetHP()+hp_regen);
-		} else if(GetHP() < GetMaxHP() && GetOwnerID() !=0) {
-			if(!IsEngaged()) //pet
-				SetHP(GetHP()+hp_regen+bonus+(GetLevel()/5));
-			else
-				SetHP(GetHP()+hp_regen+bonus);
-		} else 
-			SetHP(GetHP()+hp_regen);
 
-		if(GetMana() < GetMaxMana()) {
+		//Lieka Edit:  Fixing NPC regen.  NPCs should regen to full during a set duration, not based on their HPs.  Increase NPC's HPs by % of total HPs / tick.
+		//if((GetHP() < GetMaxHP()) && !IsPet()) {
+		//	if(!IsEngaged()) {//NPC out of combat
+		//		if(hp_regen > OOCRegen)
+		//			SetHP(GetHP() + hp_regen);
+		//		else
+		//			SetHP(GetHP() + OOCRegen);
+		//	} else
+		//		SetHP(GetHP()+hp_regen);
+		//} else if(GetHP() < GetMaxHP() && GetOwnerID() !=0) {
+		//	if(!IsEngaged()) //pet
+		//		SetHP(GetHP()+hp_regen+bonus+(GetLevel()/5));
+		//	else
+		//		SetHP(GetHP()+hp_regen+bonus);
+		//} else 
+		//	SetHP(GetHP()+hp_regen);
+
+		if(GetHP() < GetMaxHP())
+			SetHP(GetHP() + hp_regen + bonus);
+
+		if(GetMana() < GetMaxMana())
 			SetMana(GetMana()+mana_regen+bonus);
-		}
 
 		/*Mob *o = GetBotOwner();
 		if(o && o->IsClient()) {
@@ -1088,7 +1089,7 @@ bool Bot::Process() {
 		}*/
 	}
 
-	if (sendhpupdate_timer.Check() && (IsTargeted() || (IsPet() && GetBotOwner() && GetOwner()->IsClient()))) {
+	if (sendhpupdate_timer.Check() && IsTargeted()) {
 		if(!IsFullHP || cur_hp<max_hp){
 			SendHPUpdate();
 		}
@@ -1106,13 +1107,15 @@ bool Bot::Process() {
 		entity_list.AIYellForHelp(this, GetTarget());
 	}
 
-	DoAIProcessing();
-
+	// Bot AI
 	AI_Process();
 
-	Result = true;
+	if(HasPet())
+		PetAIProcess();
 
-	return Result;
+	//Mob::AI_Process();
+
+	return true;
 }
 
 // franck: EQoffline
@@ -1121,7 +1124,7 @@ bool Bot::Process() {
 // -- Wizard, Mage, Necro will start the nuke.  
 // -- TODO : Enchanter will nuke untill it it sees if there is an add. 
 bool Bot::AI_EngagedCastCheck() {
-	if (target && AIautocastspell_timer->Check(false)) {
+	if (GetTarget() && AIautocastspell_timer->Check(false)) {
 		_ZP(Bot_AI_Process_engaged_cast);
 		
 		AIautocastspell_timer->Disable();	//prevent the timer from going off AGAIN while we are casting.
@@ -1162,7 +1165,7 @@ bool Bot::AI_EngagedCastCheck() {
 			if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 100, MobAISpellRange, SpellType_Heal)) {
 				if(!Bot_AICastSpell(this, 100, SpellType_Escape)) {
 					if(!Bot_AICastSpell(this, 100, SpellType_Heal)) {
-						if(!Bot_AICastSpell(target, 5, SpellType_DOT | SpellType_Nuke | SpellType_Lifetap | SpellType_Dispel)) {
+						if(!Bot_AICastSpell(GetTarget(), 5, SpellType_DOT | SpellType_Nuke | SpellType_Lifetap | SpellType_Dispel)) {
 							AIautocastspell_timer->Start(RandomTimer(500, 2000), false);
 							return true;
 						}
@@ -1175,7 +1178,7 @@ bool Bot::AI_EngagedCastCheck() {
 			if (!Bot_AICastSpell(this, 100, SpellType_Escape | SpellType_Pet)) {
 				if (!Bot_AICastSpell(this, 100, SpellType_Heal)) {
 					if (!entity_list.Bot_AICheckCloseBeneficialSpells(this, 80, MobAISpellRange, SpellType_Heal)) {
-						if(!Bot_AICastSpell(target, 80, SpellType_Root | SpellType_Snare | SpellType_DOT | SpellType_Nuke | SpellType_Lifetap | SpellType_Dispel)) {
+						if(!Bot_AICastSpell(GetTarget(), 80, SpellType_Root | SpellType_Snare | SpellType_DOT | SpellType_Nuke | SpellType_Lifetap | SpellType_Dispel)) {
 							AIautocastspell_timer->Start(RandomTimer(1000, 5000), false);
 							return true;
 						}
@@ -1185,7 +1188,7 @@ bool Bot::AI_EngagedCastCheck() {
 		}
 		else if((botClass == WIZARD) || (botClass == MAGICIAN) || (botClass == NECROMANCER)) {
 			if (!Bot_AICastSpell(this, 100, SpellType_Escape | SpellType_Pet)) {
-				if(!Bot_AICastSpell(target, 80, SpellType_Root | SpellType_Snare | SpellType_DOT | SpellType_Nuke | SpellType_Lifetap | SpellType_Dispel)) {
+				if(!Bot_AICastSpell(GetTarget(), 80, SpellType_Root | SpellType_Snare | SpellType_DOT | SpellType_Nuke | SpellType_Lifetap | SpellType_Dispel)) {
 					//no spell to cast, try again soon.
 					AIautocastspell_timer->Start(RandomTimer(500, 2000), false);
 					return true;
@@ -1196,7 +1199,7 @@ bool Bot::AI_EngagedCastCheck() {
 		// TODO: Make enchanter to be able to mez
 		else if(botClass == ENCHANTER) {
 			if (!Bot_AICastSpell(this, 100, SpellType_Escape | SpellType_Pet)) {
-				if(!Bot_AICastSpell(target, 80, SpellType_DOT | SpellType_Nuke | SpellType_Dispel)) {
+				if(!Bot_AICastSpell(GetTarget(), 80, SpellType_DOT | SpellType_Nuke | SpellType_Dispel)) {
 					AIautocastspell_timer->Start(RandomTimer(500, 2000), false);
 					return true;
 				}
@@ -1204,7 +1207,7 @@ bool Bot::AI_EngagedCastCheck() {
 		}
 		else if(botClass == BARD) {
 			if(!Bot_AICastSpell(this, 100, SpellType_Buff)) {
-				if(!Bot_AICastSpell(target, 100, SpellType_Nuke | SpellType_Dispel | SpellType_Escape)) {// Bards will use their debuff songs
+				if(!Bot_AICastSpell(GetTarget(), 100, SpellType_Nuke | SpellType_Dispel | SpellType_Escape)) {// Bards will use their debuff songs
 					AIautocastspell_timer->Start(RandomTimer(10, 50), false);
 					return true;
 				}					
@@ -1214,7 +1217,7 @@ bool Bot::AI_EngagedCastCheck() {
 		else {
 			if(!Bot_AICastSpell(this, 100, SpellType_Heal | SpellType_Escape)) {                                 // heal itself
 				if (!entity_list.Bot_AICheckCloseBeneficialSpells(this, 80, MobAISpellRange, SpellType_Heal)) {	// heal others
-					if(!Bot_AICastSpell(target, 80, SpellTypes_Detrimental)) {		// nuke..
+					if(!Bot_AICastSpell(GetTarget(), 80, SpellTypes_Detrimental)) {		// nuke..
 						AIautocastspell_timer->Start(RandomTimer(500, 2000), false);							// timer 5 t 20 seconds
 						return true;
 					}
@@ -1975,7 +1978,7 @@ bool Bot::Bot_AI_PursueCastCheck() {
 		AIautocastspell_timer->Disable();	//prevent the timer from going off AGAIN while we are casting.
 		
 		mlog(AI__SPELLS, "Bot Engaged (pursuing) autocast check triggered. Trying to cast offensive spells.");
-		if(!Bot_AICastSpell(target, 90, SpellType_Root | SpellType_Nuke | SpellType_Lifetap | SpellType_Snare | SpellType_DOT | SpellType_Dispel)) {
+		if(!Bot_AICastSpell(GetTarget(), 90, SpellType_Root | SpellType_Nuke | SpellType_Lifetap | SpellType_Snare | SpellType_DOT | SpellType_Dispel)) {
 			//no spell cast, try again soon.
 			AIautocastspell_timer->Start(RandomTimer(500, 2000), false);
 		} //else, spell casting finishing will reset the timer.
@@ -1995,7 +1998,7 @@ bool Bot::Bot_AI_IdleCastCheck() {
 		AIautocastspell_timer->Disable();	//prevent the timer from going off AGAIN while we are casting.
 
 		//Ok, IdleCastCheck depends of class. 
-		// Healers will check if a heal is needed before buffing.
+		// Healers WITHOUT pets will check if a heal is needed before buffing.
 		int8 botClass = GetClass();
 		if(botClass == CLERIC || botClass == PALADIN || botClass == RANGER)
 		{
@@ -2103,19 +2106,17 @@ bool Bot::Bot_AI_IdleCastCheck() {
 	return false;
 }
 
-// Calls all relevant methods/functions to perform AI logic
-void Bot::DoAIProcessing() {
-	if(!GetBotOwner())
-		return;
+void Bot::SetTarget(Mob* mob) {
+	if(mob != this) {
+		if(mob != GetTarget())
+			_previousTarget = GetTarget();
 
-	BotAIProcess();
-
-	if(HasPet())
-		PetAIProcess();
+		NPC::SetTarget(mob);
+	}
 }
 
 // AI Processing for the Bot object
-void Bot::BotAIProcess() {
+void Bot::AI_Process() {
 	_ZP(Mob_BOT_Process);
 
 	if(!IsAIControlled())
@@ -2160,14 +2161,13 @@ void Bot::BotAIProcess() {
 
 		if(IsRooted())
 			SetTarget(hate_list.GetClosest(this));
-		else {
+		else
 			SetTarget(hate_list.GetTop(this));
-		}
 
-		if(!target)
+		if(!GetTarget())
 			return;
 
-		FaceTarget(target);
+		FaceTarget(GetTarget());
 
 		if(DivineAura())
 			return;
@@ -2184,44 +2184,45 @@ void Bot::BotAIProcess() {
 			if(br) {
 				if(br->GetBotMainTank() && (br->GetBotMainTank() != this)) {
 					if(br->GetBotMainTarget() && (br->GetBotMainTarget()->GetHateAmount(br->GetBotMainTank()) < 5000)) {
-						if(target == br->GetBotMainTarget()) {
+						if(br->GetBotMainTarget()) {
 							return;
 						}
+						else
+							SetTarget(br->GetBotMainTarget());
 					}
 				}
 			}
 		}
 
-		if(GetHPRatio() < 15)
-			StartEnrage();
+		/*if(GetHPRatio() < 15)
+			StartEnrage();*/
 
 		// Let's check if we have a los with our target.
 		// If we don't, our hate_list is wiped.
 		// Else, it was causing the bot to aggro behind wall etc... causing massive trains.
-		if(!CheckLosFN(target) || target->IsMezzed() || !IsAttackAllowed(target))
-		{
+		if(!CheckLosFN(GetTarget()) || GetTarget()->IsMezzed() || !IsAttackAllowed(GetTarget())) {
 			WipeHateList();
-			SetTarget(BotOwner);
+			SetTarget(0);
 			return;
 		}
 
-		bool is_combat_range = CombatRange(target);
+		bool is_combat_range = CombatRange(GetTarget());
 		if(IsBotArcher()) {
 			float range = GetBotArcheryRange() + 5.0; //Fudge it a little, client will let you hit something at 0 0 0 when you are at 205 0 0
 			mlog(COMBAT__RANGED, "Calculated bow range to be %.1f", range);
 			range *= range;
-			if(DistNoRootNoZ(*target) > range) {
-				mlog(COMBAT__RANGED, "Ranged attack out of range... client should catch this. (%f > %f).\n", DistNoRootNoZ(*target), range);
+			if(DistNoRootNoZ(*GetTarget()) > range) {
+				mlog(COMBAT__RANGED, "Ranged attack out of range... client should catch this. (%f > %f).\n", DistNoRootNoZ(*GetTarget()), range);
 				//target is out of range, client does a message
 				is_combat_range = false;
 			}
-			else if(DistNoRootNoZ(*target) < (RuleI(Combat, MinRangedAttackDist)*RuleI(Combat, MinRangedAttackDist))) {
+			else if(DistNoRootNoZ(*GetTarget()) < (RuleI(Combat, MinRangedAttackDist)*RuleI(Combat, MinRangedAttackDist))) {
 				is_combat_range = false;
 				AImovement_timer->Check();
 				if(IsMoving())
 				{
 					SetRunAnimSpeed(0);
-					SetHeading(target->GetHeading());
+					SetHeading(GetTarget()->GetHeading());
 					if(moved) {
 						moved=false;
 						SetMoving(false);
@@ -2250,7 +2251,7 @@ void Bot::BotAIProcess() {
 			
 			if(IsMoving()) {
 				SetRunAnimSpeed(0);
-				SetHeading(target->GetHeading());
+				SetHeading(GetTarget()->GetHeading());
 				if(moved) {
 					moved=false;
 					SetMoving(false);
@@ -2259,24 +2260,24 @@ void Bot::BotAIProcess() {
 				tar_ndx = 0;
 			}
 
-			if(!IsMoving() && GetClass() == ROGUE && !BehindMob(target, GetX(), GetY())) {
+			if(!IsMoving() && GetClass() == ROGUE && !BehindMob(GetTarget(), GetX(), GetY())) {
 				// Move the rogue to behind the mob
 				float newX = 0;
 				float newY = 0;
 				float newZ = 0;
 
-				if(PlotPositionAroundTarget(target, newX, newY, newZ)) {
+				if(PlotPositionAroundTarget(GetTarget(), newX, newY, newZ)) {
 					CalculateNewPosition2(newX, newY, newZ, GetRunspeed());
 					return;
 				}
 			}
-			else if(!IsMoving() && GetClass() != ROGUE && (DistNoRootNoZ(*target) < target->GetSize())) {
+			else if(!IsMoving() && GetClass() != ROGUE && (DistNoRootNoZ(*GetTarget()) < GetTarget()->GetSize())) {
 				// If we are not a rogue trying to backstab, let's try to adjust our melee range so we don't appear to be bunched up
 				float newX = 0;
 				float newY = 0;
 				float newZ = 0;
 
-				if(PlotPositionAroundTarget(target, newX, newY, newZ, false)) {
+				if(PlotPositionAroundTarget(GetTarget(), newX, newY, newZ, false)) {
 					CalculateNewPosition2(newX, newY, newZ, GetRunspeed());
 					return;
 				}
@@ -2288,34 +2289,34 @@ void Bot::BotAIProcess() {
 					BotMeditate(false);
 				}
 				else {
-					if(target->GetHPRatio() < 98)
-						BotRangedAttack(target);
+					if(GetTarget()->GetHPRatio() < 98)
+						BotRangedAttack(GetTarget());
 				}
 			}
 
 			// we can't fight if we don't have a target, are stun/mezzed or dead..
-			if(!IsBotArcher() && target && !IsStunned() && !IsMezzed() && (GetAppearance() != eaDead))
+			if(!IsBotArcher() && GetTarget() && !IsStunned() && !IsMezzed() && (GetAppearance() != eaDead))
 			{
 				// First, special attack per class (kick, backstab etc..)
-				DoClassAttacks(target);
+				DoClassAttacks(GetTarget());
 
 				//try main hand first
 				if(attack_timer.Check())
 				{
-					Attack(target, SLOT_PRIMARY);
+					Attack(GetTarget(), SLOT_PRIMARY);
 					bool tripleSuccess = false;
-					if(BotOwner && target && CanThisClassDoubleAttack()) {
+					if(BotOwner && GetTarget() && CanThisClassDoubleAttack()) {
 
 						if(BotOwner && CheckBotDoubleAttack()) {
-							Attack(target, SLOT_PRIMARY, true);
+							Attack(GetTarget(), SLOT_PRIMARY, true);
 						}
-						if(BotOwner && target && SpecAttacks[SPECATK_TRIPLE] && CheckBotDoubleAttack(true)) {
+						if(BotOwner && GetTarget() && SpecAttacks[SPECATK_TRIPLE] && CheckBotDoubleAttack(true)) {
 							tripleSuccess = true;
-							Attack(target, SLOT_PRIMARY, true);
+							Attack(GetTarget(), SLOT_PRIMARY, true);
 						}
 						//quad attack, does this belong here??
-						if(BotOwner && target && SpecAttacks[SPECATK_QUAD] && CheckBotDoubleAttack(true)) {
-							Attack(target, SLOT_PRIMARY, true);
+						if(BotOwner && GetTarget() && SpecAttacks[SPECATK_QUAD] && CheckBotDoubleAttack(true)) {
+							Attack(GetTarget(), SLOT_PRIMARY, true);
 						}
 					}
 
@@ -2345,12 +2346,12 @@ void Bot::BotAIProcess() {
 						}
 						if(rand()%1000 < flurrychance) {
 							Message_StringID(MT_Flurry, 128);
-							Attack(target, SLOT_PRIMARY, true);
-							Attack(target, SLOT_PRIMARY, true);
+							Attack(GetTarget(), SLOT_PRIMARY, true);
+							Attack(GetTarget(), SLOT_PRIMARY, true);
 						}
 					}
 
-					if(target && (botClass == MONK)) { // Rapid Strikes AA
+					if(GetTarget() && (botClass == MONK)) { // Rapid Strikes AA
 						int chance_xhit1 = 0;
 						int chance_xhit2 = 0;
 						if(botLevel >= 69) {
@@ -2374,13 +2375,13 @@ void Bot::BotAIProcess() {
 							chance_xhit2 = 2;
 						}
 						if(MakeRandomInt(1,100) < chance_xhit1)
-							Attack(target, SLOT_PRIMARY, true);
-						if(target && (MakeRandomInt(1,100) < chance_xhit2))
-							Attack(target, SLOT_PRIMARY, true);
+							Attack(GetTarget(), SLOT_PRIMARY, true);
+						if(GetTarget() && (MakeRandomInt(1,100) < chance_xhit2))
+							Attack(GetTarget(), SLOT_PRIMARY, true);
 					}
 
 					// Handle Punishing Blade and Speed of the Knight and Wicked Blade
-					if(target && ((botClass == MONK)||(botClass == RANGER)||(botClass == WARRIOR)||(botClass == PALADIN)||(botClass == SHADOWKNIGHT))) {
+					if(GetTarget() && ((botClass == MONK) || (botClass == RANGER) || (botClass == WARRIOR) || (botClass == PALADIN) || (botClass == SHADOWKNIGHT))) {
 						if(botLevel >= 61) {
 							ItemInst* weapon = NULL;
 							const Item_Struct* botweapon = NULL;
@@ -2407,7 +2408,7 @@ void Bot::BotAIProcess() {
 										extatk += 15;
 									}
 									if(MakeRandomInt(0, 100) < extatk) {
-										Attack(target, SLOT_PRIMARY, true);
+										Attack(GetTarget(), SLOT_PRIMARY, true);
 									}
 								}
 							}
@@ -2416,7 +2417,7 @@ void Bot::BotAIProcess() {
 				}
 
 				//now off hand
-				if(target && attack_dw_timer.Check() && CanThisClassDualWield())
+				if(GetTarget() && attack_dw_timer.Check() && CanThisClassDualWield())
 				{
 					//can only dual weild without a weapon if you're a monk
 					if((GetEquipment(MATERIAL_SECONDARY) != 0) || (botClass == MONK))
@@ -2439,9 +2440,9 @@ void Bot::BotAIProcess() {
 
 							float random = MakeRandomFloat(0, 1);
 							if (random < DualWieldProbability) { // Max 78% of DW
-								Attack(target, SLOT_SECONDARY);
-								if(target && CanThisClassDoubleAttack() && CheckBotDoubleAttack()) {
-									Attack(target, SLOT_SECONDARY);
+								Attack(GetTarget(), SLOT_SECONDARY);
+								if(GetTarget() && CanThisClassDoubleAttack() && CheckBotDoubleAttack()) {
+									Attack(GetTarget(), SLOT_SECONDARY);
 								}
 							}
 						}
@@ -2464,7 +2465,7 @@ void Bot::BotAIProcess() {
 			if(IsMoving())
 			{
 				SetRunAnimSpeed(0);
-				SetHeading(target->GetHeading());
+				SetHeading(GetTarget()->GetHeading());
 				if(moved) {
 					moved=false;
 					SetMoving(false);
@@ -2485,15 +2486,15 @@ void Bot::BotAIProcess() {
 			{
 				//could not summon them, start pursuing...
 				// TODO: Check here for another person on hate list with close hate value
-				if(target && Bot_AI_PursueCastCheck())
+				if(GetTarget() && Bot_AI_PursueCastCheck())
 				{}
-				else if(target && AImovement_timer->Check())
+				else if(GetTarget() && AImovement_timer->Check())
 				{
 					if(!IsRooted()) {
-						mlog(AI__WAYPOINTS, "Pursuing %s while engaged.", target->GetCleanName());
-						CalculateNewPosition2(target->GetX(), target->GetY(), target->GetZ(), GetRunspeed(), false);
+						mlog(AI__WAYPOINTS, "Pursuing %s while engaged.", GetTarget()->GetCleanName());
+						CalculateNewPosition2(GetTarget()->GetX(), GetTarget()->GetY(), GetTarget()->GetZ(), GetRunspeed(), false);
 					} else {
-						SetHeading(target->GetHeading());
+						SetHeading(GetTarget()->GetHeading());
 						if(moved) {
 							moved=false;
 							SetMoving(false);
@@ -2507,27 +2508,28 @@ void Bot::BotAIProcess() {
 	else {
 		// Franck: EQoffline
 		// Ok if we're not engaged, what's happening..
-		SetTarget(entity_list.GetMob(GetFollowID()));
+		SetTarget(0);
+
 		if(!IsMoving()) {
 			BotMeditate(true);
 			Bot_AI_IdleCastCheck(); // let's rebuff, heal, etc..
 		}
 
 		// now the followID: that's what happening as the bots follow their leader.
-		if(GetFollowID())
-		{
-			if(!GetTarget()) {
+		if(GetFollowID()) {
+			Mob* follow = entity_list.GetMob(GetFollowID());
+			
+			if (!follow)
 				SetFollowID(0);
-			}
 			else if(AImovement_timer->Check()){
-				// float dist2 = DistNoRoot(*target);
-				float dist2 = DistNoRoot(*GetTarget());
+				float dist2 = DistNoRoot(*follow);
+				int followdist = GetFollowDistance();
 				SetRunAnimSpeed(0);
-				if(dist2>184) {
-					CalculateNewPosition2(GetTarget()->GetX(), GetTarget()->GetY(), GetTarget()->GetZ(), GetRunspeed(), false);
+				if(dist2 > followdist) {
+					CalculateNewPosition2(follow->GetX(), follow->GetY(), follow->GetZ(), GetRunspeed(), false);
 				}
 				else {
-					SetHeading(GetTarget()->GetHeading());
+					SetHeading(follow->GetHeading());
 					if(moved) {
 						moved=false;
 						SetMoving(false);
@@ -2592,7 +2594,7 @@ void Bot::PetAIProcess() {
 			if(br) {
 				if(br->GetBotMainTank() && (br->GetBotMainTank() != this)) {
 					if(br->GetBotMainTarget() && (br->GetBotMainTarget()->GetHateAmount(br->GetBotMainTank()) < 5000)) {
-						if(target == br->GetBotMainTarget()) {
+						if(GetTarget() == br->GetBotMainTarget()) {
 							return;
 						}
 					}
@@ -2619,24 +2621,24 @@ void Bot::PetAIProcess() {
 				}
 			}
 
-			if(!botPet->IsMoving() && botPet->GetClass() == ROGUE && !botPet->BehindMob(target, botPet->GetX(), botPet->GetY())) {
+			if(!botPet->IsMoving() && botPet->GetClass() == ROGUE && !botPet->BehindMob(GetTarget(), botPet->GetX(), botPet->GetY())) {
 				// Move the rogue to behind the mob
 				float newX = 0;
 				float newY = 0;
 				float newZ = 0;
 
-				if(botPet->PlotPositionAroundTarget(target, newX, newY, newZ)) {
+				if(botPet->PlotPositionAroundTarget(GetTarget(), newX, newY, newZ)) {
 					botPet->CalculateNewPosition2(newX, newY, newZ, botPet->GetRunspeed());
 					return;
 				}
 			}
-			else if(!botPet->IsMoving() && botPet->GetClass() != ROGUE && (botPet->DistNoRootNoZ(*target) < target->GetSize())) {
+			else if(!botPet->IsMoving() && botPet->GetClass() != ROGUE && (botPet->DistNoRootNoZ(*GetTarget()) < GetTarget()->GetSize())) {
 				// If we are not a rogue trying to backstab, let's try to adjust our melee range so we don't appear to be bunched up
 				float newX = 0;
 				float newY = 0;
 				float newZ = 0;
 
-				if(botPet->PlotPositionAroundTarget(target, newX, newY, newZ, false)) {
+				if(botPet->PlotPositionAroundTarget(GetTarget(), newX, newY, newZ, false)) {
 					botPet->CalculateNewPosition2(newX, newY, newZ, GetRunspeed());
 					return;
 				}
@@ -4496,7 +4498,7 @@ bool Bot::Attack(Mob* other, int Hand, bool FromRiposte) {
 		return false;
 	}
 	
-	if(!GetTarget())
+	if(!GetTarget() || GetTarget() != other)
 		SetTarget(other);
 	
 	mlog(COMBAT__ATTACKS, "Attacking %s with hand %d %s", other?other->GetCleanName():"(NULL)", Hand, FromRiposte?"(this is a riposte)":"");
@@ -4519,18 +4521,15 @@ bool Bot::Attack(Mob* other, int Hand, bool FromRiposte) {
 		return false;
 	}
 	
-	if(IsGrouped() && this->_previousTarget != other) {
-		Group* g = GetGroup();
+	// TODO: Uncomment this block after solved the bug that is assigning a null value to GetTarget() for bots while in combat. Appears to happen at random, but frequently.
+	/*if(HasGroup() && _previousTarget != GetTarget()) {
+		std::ostringstream attackMessage;
+		attackMessage << "Attacking " << other->GetCleanName() << ".";
 
-		if(g) {
-			std::ostringstream attackMessage;
-			attackMessage << "Attacking " << other->GetCleanName() << ".";
+		GetGroup()->GroupMessage(this, 0, 100, attackMessage.str().c_str());
+	}*/
 
-			g->GroupMessage(this, 0, 100, attackMessage.str().c_str());
-		}
-	}
-
-	FaceTarget(target);
+	FaceTarget(GetTarget());
 
 	ItemInst* weapon = NULL;
 	const Item_Struct* botweapon = NULL;

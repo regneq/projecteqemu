@@ -1583,7 +1583,7 @@ bool NPC::Attack(Mob* other, int Hand, bool bRiposte)	 // Kaiyodo - base functio
 		return false;
 	}
 	
-	FaceTarget(target);
+	FaceTarget(GetTarget());
 	
 	SkillType skillinuse = HAND_TO_HAND;
 
@@ -1780,7 +1780,7 @@ bool NPC::Attack(Mob* other, int Hand, bool bRiposte)	 // Kaiyodo - base functio
 	improved_hidden = false;
 	
 	//I doubt this works...
-	if (!target)
+	if (!GetTarget())
 		return true; //We killed them
 	
 	// Kaiyodo - Check for proc on weapon based on DEX

@@ -138,12 +138,11 @@ bool NPC::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 							&& !(tar->IsPet() && tar->GetOwner()->IsClient())	//no buffing PC's pets
 							) {
 							int8 hpr = (int8)tar->GetHPRatio();
-							if (
-								hpr <= 35 
-								|| (!IsEngaged() && hpr <= 50)
-								|| (tar->IsClient() && hpr <= 99)
-								) {
-								AIDoSpellCast(i, tar, mana_cost, &tar->pDontHealMeBefore);
+
+							if(hpr <= 35 || (!IsEngaged() && hpr <= 50) || (tar->IsClient() && hpr <= 99)) {
+								int32 tempTime = 0;
+								AIDoSpellCast(i, tar, mana_cost, &tempTime);
+								tar->SetDontHealMeBefore(tempTime);
 								return true;
 							}
 						}
@@ -162,7 +161,9 @@ bool NPC::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 									return(false);	//cannot see target... we assume that no spell is going to work since we will only be casting detrimental spells in this call
 								checked_los = true;
 							}
-							AIDoSpellCast(i, tar, mana_cost, &tar->pDontRootMeBefore);
+							int32 tempTime = 0;
+							AIDoSpellCast(i, tar, mana_cost, &tempTime);
+							tar->SetDontRootMeBefore(tempTime);
 							return true;
 						}
 						break;
@@ -175,7 +176,9 @@ bool NPC::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 							&& tar->CanBuffStack(AIspells[i].spellid, GetLevel(), true) >= 0
 							&& !(tar->IsPet() && tar->GetOwner()->IsClient() && this != tar)	//no buffing PC's pets, but they can buff themself
 							) {
-							AIDoSpellCast(i, tar, mana_cost, &tar->pDontBuffMeBefore);
+								int32 tempTime = 0;
+							AIDoSpellCast(i, tar, mana_cost, &tempTime);
+							tar->SetDontBuffMeBefore(tempTime);
 							return true;
 						}
 						break;
@@ -297,7 +300,9 @@ bool NPC::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 									return(false);	//cannot see target... we assume that no spell is going to work since we will only be casting detrimental spells in this call
 								checked_los = true;
 							}
-							AIDoSpellCast(i, tar, mana_cost, &tar->pDontSnareMeBefore);
+							int32 tempTime = 0;
+							AIDoSpellCast(i, tar, mana_cost, &tempTime);
+							tar->SetDontSnareMeBefore(tempTime);
 							return true;
 						}
 						break;
@@ -313,7 +318,9 @@ bool NPC::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 									return(false);	//cannot see target... we assume that no spell is going to work since we will only be casting detrimental spells in this call
 								checked_los = true;
 							}
-							AIDoSpellCast(i, tar, mana_cost, &tar->pDontDotMeBefore);
+							int32 tempTime = 0;
+							AIDoSpellCast(i, tar, mana_cost, &tempTime);
+							tar->SetDontDotMeBefore(tempTime);
 							return true;
 						}
 						break;
@@ -506,7 +513,7 @@ void Client::AI_Start(int32 iMoveDelay) {
 	if (!pAIControlled)
 		return;
 	
-	pClientSideTarget = target ? target->GetID() : 0;
+	pClientSideTarget = GetTarget() ? GetTarget()->GetID() : 0;
 	SendAppearancePacket(AT_Anim, ANIM_FREEZE);	// this freezes the client
 	SendAppearancePacket(AT_Linkdead, 1); // Sending LD packet so *LD* appears by the player name when charmed/feared -Kasai
 	SetAttackTimer();
@@ -741,8 +748,8 @@ void Client::AI_Process()
 				//make sure everybody knows were not moving, for appearance sake
 				if(IsMoving())
 				{
-					if(target)
-						SetHeading(CalculateHeadingToTarget(target->GetX(), target->GetY()));
+					if(GetTarget())
+						SetHeading(CalculateHeadingToTarget(GetTarget()->GetX(), GetTarget()->GetY()));
 					SetRunAnimSpeed(0);
 					SendPosition();
 					SetMoving(false);
@@ -790,11 +797,10 @@ void Client::AI_Process()
 			}
 		}
 
-		if (!target)
+		if (!GetTarget())
 			return;
 
-		if (target->IsCorpse())
-		{
+		if (GetTarget()->IsCorpse()) {
 			RemoveFromHateList(this);
 			return;
 		}
@@ -802,50 +808,41 @@ void Client::AI_Process()
 		if(DivineAura())
 			return;
 			
-		bool is_combat_range = CombatRange(target);
+		bool is_combat_range = CombatRange(GetTarget());
 		
-		if(is_combat_range) 
-        {
-			if(charm_class_attacks_timer.Check())
-			{
-				DoClassAttacks(target);
+		if(is_combat_range) {
+			if(charm_class_attacks_timer.Check()) {
+				DoClassAttacks(GetTarget());
 			}
 
-			if (AImovement_timer->Check()) 
-			{
+			if (AImovement_timer->Check()) {
 				SetRunAnimSpeed(0);
 			}
-			if(IsMoving())
-			{
+			if(IsMoving()) {
 				SetMoving(false);
 				moved=false;
-				SetHeading(CalculateHeadingToTarget(target->GetX(), target->GetY()));
+				SetHeading(CalculateHeadingToTarget(GetTarget()->GetX(), GetTarget()->GetY()));
 				SendPosition();
 				tar_ndx =0;
 			}
 
-			if(target && !IsStunned() && !IsMezzed() && !GetFeigned()) 
-			{
-				if(attack_timer.Check()) 
-				{
-					Attack(target, 13);
-					if(target)
-					{
-						if(CheckDoubleAttack()) 
-						{
-							Attack(target, 13);
-							if(target)
-							{
+			if(GetTarget() && !IsStunned() && !IsMezzed() && !GetFeigned()) {
+				if(attack_timer.Check()) {
+					Attack(GetTarget(), 13);
+					if(GetTarget()) {
+						if(CheckDoubleAttack()) {
+							Attack(GetTarget(), 13);
+							if(GetTarget()) {
 								bool triple_attack_success = false;
 								if((((GetClass() == MONK || GetClass() == WARRIOR || GetClass() == RANGER || GetClass() == BERSERKER)
 									&& GetLevel() >= 60) || SpecAttacks[SPECATK_TRIPLE])
 									&& CheckDoubleAttack(true))
 								{
-									Attack(target, 13, true);
+									Attack(GetTarget(), 13, true);
 									triple_attack_success = true;
 								}
 
-								if(target)
+								if(GetTarget())
 								{
 									int32 flurry_chance = 0;
 									switch (GetAA(aaFlurry)) 
@@ -881,11 +878,11 @@ void Client::AI_Process()
 									if(MakeRandomInt(0, 999) < flurry_chance) 
 									{
 										Message_StringID(MT_Flurry, 128);
-										Attack(target, 13, true);
-										Attack(target, 13, true);
+										Attack(GetTarget(), 13, true);
+										Attack(GetTarget(), 13, true);
 									}
 
-									if (target && GetAA(aaRapidStrikes))
+									if (GetTarget() && GetAA(aaRapidStrikes))
 									{
 										int32 chance_xhit1 = 0;
 										int32 chance_xhit2 = 0;
@@ -913,12 +910,12 @@ void Client::AI_Process()
 											break;
 										}
 										if (MakeRandomInt(1,100) < chance_xhit1)
-											Attack(target, 13, true);
+											Attack(GetTarget(), 13, true);
 										if (MakeRandomInt(1,100) < chance_xhit2)
-											Attack(target, 13, true);
+											Attack(GetTarget(), 13, true);
 									}
 
-									if(target && (GetAA(aaPunishingBlade) > 0 || GetAA(aaSpeedoftheKnight) > 0)) 
+									if(GetTarget() && (GetAA(aaPunishingBlade) > 0 || GetAA(aaSpeedoftheKnight) > 0)) 
 									{
 										ItemInst *wpn = GetInv().GetItem(SLOT_PRIMARY);
 										if(wpn)
@@ -931,7 +928,7 @@ void Client::AI_Process()
 												extatk += GetAA(aaSpeedoftheKnight)*5;
 												if(MakeRandomInt(0, 100) < extatk)
 												{
-													Attack(target, 13, true);
+													Attack(GetTarget(), 13, true);
 												}
 											}
 										}
@@ -959,7 +956,7 @@ void Client::AI_Process()
 
 			if(CanThisClassDualWield() && attack_dw_timer.Check())
 			{
-				if(target)
+				if(GetTarget())
 				{
 					float DualWieldProbability = (GetSkill(DUAL_WIELD) + GetLevel()) / 400.0f; // 78.0 max
 					DualWieldProbability += (0.1f * GetAA(aaAmbidexterity));
@@ -967,10 +964,10 @@ void Client::AI_Process()
 
 					if(MakeRandomFloat(0.0, 1.0) < DualWieldProbability)
 					{
-						Attack(target, 14);
+						Attack(GetTarget(), 14);
 						if(CheckDoubleAttack())
 						{
-							Attack(target, 14);
+							Attack(GetTarget(), 14);
 						}
 
 					}
@@ -983,11 +980,11 @@ void Client::AI_Process()
 			{
 				animation = 21 * GetRunspeed();
 				if(!RuleB(Pathing, Aggro) || !zone->pathing)
-					CalculateNewPosition2(target->GetX(), target->GetY(), target->GetZ(), GetRunspeed());
+					CalculateNewPosition2(GetTarget()->GetX(), GetTarget()->GetY(), GetTarget()->GetZ(), GetRunspeed());
 				else
 				{
 					bool WaypointChanged, NodeReached;
-					VERTEX Goal = UpdatePath(target->GetX(), target->GetY(), target->GetZ(),
+					VERTEX Goal = UpdatePath(GetTarget()->GetX(), GetTarget()->GetY(), GetTarget()->GetZ(),
 						GetRunspeed(), WaypointChanged, NodeReached);
 
 					if(WaypointChanged)
@@ -998,7 +995,7 @@ void Client::AI_Process()
 			}
 			else if(IsMoving())
 			{
-				SetHeading(CalculateHeadingToTarget(target->GetX(), target->GetY()));
+				SetHeading(CalculateHeadingToTarget(GetTarget()->GetX(), GetTarget()->GetY()));
 				SetRunAnimSpeed(0);
 				SendPosition();
 				SetMoving(false);
@@ -1814,7 +1811,7 @@ bool NPC::AI_EngagedCastCheck() {
 			// try casting a heal on nearby
 			if (!entity_list.AICheckCloseBeneficialSpells(this, 25, MobAISpellRange, SpellType_Heal)) {
 				//nobody to heal, try some detrimental spells.
-				if(!AICastSpell(target, 20, SpellType_Nuke | SpellType_Lifetap | SpellType_DOT | SpellType_Dispel | SpellType_Mez)) {
+				if(!AICastSpell(GetTarget(), 20, SpellType_Nuke | SpellType_Lifetap | SpellType_DOT | SpellType_Dispel | SpellType_Mez)) {
 					//no spell to cast, try again soon.
 					AIautocastspell_timer->Start(RandomTimer(500, 1000), false);
 				}
@@ -1832,7 +1829,7 @@ bool NPC::AI_PursueCastCheck() {
 		AIautocastspell_timer->Disable();	//prevent the timer from going off AGAIN while we are casting.
 		
 		mlog(AI__SPELLS, "Engaged (pursuing) autocast check triggered. Trying to cast offensive spells.");
-		if(!AICastSpell(target, 90, SpellType_Root | SpellType_Nuke | SpellType_Lifetap | SpellType_Snare | SpellType_DOT | SpellType_Dispel | SpellType_Mez)) {
+		if(!AICastSpell(GetTarget(), 90, SpellType_Root | SpellType_Nuke | SpellType_Lifetap | SpellType_Snare | SpellType_DOT | SpellType_Dispel | SpellType_Mez)) {
 			//no spell cast, try again soon.
 			AIautocastspell_timer->Start(RandomTimer(500, 2000), false);
 		} //else, spell casting finishing will reset the timer.
