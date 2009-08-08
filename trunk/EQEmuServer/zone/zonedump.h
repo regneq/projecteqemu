@@ -45,10 +45,10 @@ struct NPCType
     int8    gender;
     int16    race;
     int8    class_;
-    int8    bodytype;   // added for targettype support - NEOTOKYO
+    int8    bodytype;   // added for targettype support
     int8    deity;		//not loaded from DB
     int8    level;
-	int32   npc_id; // rembrant, Dec. 20, 2001
+	int32   npc_id;
 //	int8    skills[75]; // socket 12-29-01, not loaded from DB
 	int8	texture;
 	int8	helmtexture;
@@ -98,8 +98,8 @@ struct NPCType
 	sint32  mana_regen;
 	sint32	aggroradius; // added for AI improvement - neotokyo
 //	bool	ipc;
-	bool	see_invis;			// Mongrel: See Invis flag added
-	bool	see_invis_undead;   // Mongrel: See Invis vs. Undead flag added 
+	bool	see_invis;			// See Invis flag added
+	bool	see_invis_undead;   // See Invis vs. Undead flag added 
 	bool	see_hide;
 	bool	see_improved_hide;
 	bool	qglobal;
@@ -110,7 +110,9 @@ struct NPCType
 	int		accuracy_rating;  //10 = 1% accuracy
 	bool	findable;		//can be found with find command
 	bool	trackable;
-	float	slow_mitigation;	//Drakelord:  Slow mitigation % in decimal form.
+	float	slow_mitigation;	// Slow mitigation % in decimal form.
+	int8	maxlevel;
+	int32	scalerate;
 };
 
 struct ZSDump_Spawn2 {

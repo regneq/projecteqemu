@@ -142,77 +142,67 @@ void ClientList::EnforceSessionLimit(int32 iLSAccountID) {
 }
 
 
-//Lieka && Derision Edit Begin:  Check current CLE Entry IPs against incoming connection
+//Check current CLE Entry IPs against incoming connection
 
 void ClientList::GetCLEIP(int32 iIP) {
 
-        ClientListEntry* countCLEIPs = 0;
-        LinkedListIterator<ClientListEntry*> iterator(clientlist);
+	ClientListEntry* countCLEIPs = 0;
+	LinkedListIterator<ClientListEntry*> iterator(clientlist);
 
-        int IPInstances = 0;
-        iterator.Reset();
+	int IPInstances = 0;
+	iterator.Reset();
 
-        while(iterator.MoreElements()) {
+	while(iterator.MoreElements()) {
 
-                countCLEIPs = iterator.GetData();
+		countCLEIPs = iterator.GetData();
 
-                // If the IP matches, and the connection admin status is below the exempt status,
-                // or exempt status is less than 0 (no-one is exempt)
+		// If the IP matches, and the connection admin status is below the exempt status,
+		// or exempt status is less than 0 (no-one is exempt)
+		if ((countCLEIPs->GetIP() == iIP) &&
+			((countCLEIPs->Admin() < (RuleI(World, ExemptMaxClientsStatus))) ||
+			(RuleI(World, ExemptMaxClientsStatus) < 0))) {
 
-                if ((countCLEIPs->GetIP() == iIP) &&
-                    ((countCLEIPs->Admin() < (RuleI(World, ExemptMaxClientsStatus))) ||
-                     (RuleI(World, ExemptMaxClientsStatus) < 0))) {
+			// Increment the occurences of this IP address
+			IPInstances++;
 
-                        // Increment the occurences of this IP address
+			// If the number of connections exceeds the lower limit
+			if (IPInstances > (RuleI(World, MaxClientsPerIP))) {
+						
+				// If MaxClientsSetByStatus is set to True, override other IP Limit Rules
+				if (RuleB(World, MaxClientsSetByStatus)) {
 
-                        IPInstances++;
+					// The IP Limit is set by the status of the account if status > MaxClientsPerIP
+					if (IPInstances > countCLEIPs->Admin()) {
+						
+						// Remove the connection
+						countCLEIPs->SetOnline(CLE_Status_Offline);
+						iterator.RemoveCurrent();
+						continue;
+					}
+				}
+				// Else if the Admin status of the connection is not eligible for the higher limit,
+				// or there is no higher limit (AddMaxClientStatus<0)
+				else if ((countCLEIPs->Admin() < (RuleI(World, AddMaxClientsStatus)) ||
+						(RuleI(World, AddMaxClientsStatus) < 0))) {
 
-                        // If the number of connections exceeds the lower limit
+					// Remove the connection
+					countCLEIPs->SetOnline(CLE_Status_Offline);
+					iterator.RemoveCurrent();
+					continue;
+				}
+				// else they are eligible for the higher limit, but if they exceed that
+				else if (IPInstances > RuleI(World, AddMaxClientsPerIP)) {
 
-                        if (IPInstances > (RuleI(World, MaxClientsPerIP))){
-							
-								// If MaxClientsSetByStatus is set to True,
-								// the IP Limit is set by the status of the account if status > MaxClientsPerIP
-							
-								if ((IPInstances > countCLEIPs->Admin()) && (RuleB(World, MaxClientsSetByStatus))){
-
-                                        // Remove the connection
-
-                                        countCLEIPs->SetOnline(CLE_Status_Offline);
-                                        iterator.RemoveCurrent();
-                                        continue;
-								}
-
-                                // Else if the Admin status of the connection is not eligible for the higher limit,
-                                // or there is no higher limit (AddMaxClientStatus<0)
-
-                                else if ((countCLEIPs->Admin() < (RuleI(World, AddMaxClientsStatus)) ||
-                                    (RuleI(World, AddMaxClientsStatus) < 0))) {
-
-                                        // Remove the connection
-
-                                        countCLEIPs->SetOnline(CLE_Status_Offline);
-                                        iterator.RemoveCurrent();
-                                        continue;
-
-                                }
-                                // else they are eligible for the higher limit, but if they exceed that
-
-                                else if (IPInstances > RuleI(World, AddMaxClientsPerIP)) {
-
-                                        // Remove the connection
-
-                                        countCLEIPs->SetOnline(CLE_Status_Offline);
-                                        iterator.RemoveCurrent();
-                                        continue;
-
-                                }
-                        }
-                }
-                iterator.Advance();
-        }
+					// Remove the connection
+					countCLEIPs->SetOnline(CLE_Status_Offline);
+					iterator.RemoveCurrent();
+					continue;
+				}
+			}
+		}
+		iterator.Advance();
+	}
 }
-//Lieka & Derision Edit End
 
 ClientListEntry* ClientList::FindCharacter(const char* name) {
 	LinkedListIterator<ClientListEntry*> iterator(clientlist);

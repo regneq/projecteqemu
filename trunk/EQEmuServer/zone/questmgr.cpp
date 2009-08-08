@@ -388,6 +388,10 @@ void QuestManager::shout2(const char *str) {
 	worldserver.SendEmoteMessage(0,0,0,13, "%s shouts, '%s'", owner->GetCleanName(), str);
 }
 
+void QuestManager::gmsay(const char *str) {
+	worldserver.SendChannelMessage(0,0,11,0, 0, "%s", str);
+}
+
 void QuestManager::depop(int npc_type) {
 	if(!owner->IsNPC())
 		return;

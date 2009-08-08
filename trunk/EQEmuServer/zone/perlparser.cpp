@@ -533,6 +533,20 @@ XS(XS__shout2)
 	XSRETURN_EMPTY;
 }
 
+XS(XS__gmsay);
+XS(XS__gmsay)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: gmsay(str)");
+
+	char *		str = (char *)SvPV_nolen(ST(0));
+
+	quest_manager.gmsay(str);
+
+	XSRETURN_EMPTY;
+}
+
 XS(XS__depop);
 XS(XS__depop)
 {
@@ -2802,6 +2816,7 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "emote"), XS__emote, file);
 		newXS(strcpy(buf, "shout"), XS__shout, file);
 		newXS(strcpy(buf, "shout2"), XS__shout2, file);
+		newXS(strcpy(buf, "gmsay"), XS__gmsay, file);
 		newXS(strcpy(buf, "depop"), XS__depop, file);
 		newXS(strcpy(buf, "settarget"), XS__settarget, file);
 		newXS(strcpy(buf, "follow"), XS__follow, file);

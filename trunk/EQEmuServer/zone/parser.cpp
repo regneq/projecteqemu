@@ -840,6 +840,9 @@ void Parser::ExCommands(string o_command, string parms, int argnums, int32 npcid
 	else if (!strcmp(command,"shout")) {
 		quest_manager.shout(parms.c_str());
 	}
+	else if (!strcmp(command,"gmsay")) {
+		quest_manager.shout2(parms.c_str());
+	}
 	else if (!strcmp(command,"depop")) {
 		quest_manager.depop(atoi(arglist[0]));
 	}
