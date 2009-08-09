@@ -86,6 +86,11 @@ public:
 	virtual bool	AI_PursueCastCheck();
 	virtual bool	AI_IdleCastCheck();
 	virtual void	AI_Event_SpellCastFinished(bool iCastSucceeded, int8 slot);
+
+	void LevelScale();
+	void CalcNPCResists();
+	void CalcNPCRegen();
+	void CalcNPCDamage();
 	
 	virtual void SetTarget(Mob* mob);
 	virtual uint16 GetSkill(SkillType skill_num) const { if (skill_num <= HIGHEST_SKILL) { return skills[skill_num]; } return 0; }
