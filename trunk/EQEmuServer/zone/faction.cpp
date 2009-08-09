@@ -445,8 +445,11 @@ FACTION_VALUE Client::GetFactionLevel(int32 char_id, int32 npc_id, int32 p_race,
         return FACTION_INDIFFERENT;
     if (IsInvisible(tnpc))
 		return FACTION_INDIFFERENT;
-    if (tnpc && tnpc->GetOwnerID() != 0) // neotokyo: pets always con indiff
-        return FACTION_INDIFFERENT;
+    if (tnpc && tnpc->GetOwnerID() != 0) // pets con amiably to owner and indiff to rest
+		if (char_id == tnpc->GetOwner()->CastToClient()->CharacterID())
+			return FACTION_AMIABLE;
+		else
+			return FACTION_INDIFFERENT;
 
     //First get the NPC's Primary faction
 	if(pFaction > 0)

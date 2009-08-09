@@ -103,6 +103,7 @@
 #define AA_IMPROVE					411		//You have improved %T1 %2 at a cost of %3 ability %T4.
 #define AA_REUSE_MSG				413		//You can use the ability %B1(1) again in %2 hour(s) %3 minute(s) %4 seconds.
 #define AA_REUSE_MSG2				414		//You can use the ability %B1(1) again in %2 minute(s) %3 seconds.
+#define YOU_HEALED					419		//%1 has healed you for %2 points of damage.
 #define BEGINS_TO_GLOW				422		//Your %1 begins to glow.
 #define ALREADY_INVIS				423		//%1 tries to cast an invisibility spell on you, but you are already invisible.
 #define YOU_ARE_PROTECTED			424		//%1 tries to cast a spell on you, but you are protected.
@@ -220,6 +221,7 @@
 #define GAIN_GROUP_LEADERSHIP_EXP	8788	//
 #define GAIN_RAID_LEADERSHIP_EXP	8789	//
 #define BUFF_MINUTES_REMAINING		8799	//%1 (%2 minutes remaining)
+#define YOU_HEAL					9068	//You have healed %1 for %2 points of damage.
 #define OTHER_HIT_DOT				9072	//%1 has taken %2 damage from your %3.
 #define HIT_NON_MELEE				9073	//%1 hit %2 for %3 points of non-melee damage.
 #define STRIKETHROUGH_STRING		9078	//You strike through your opponent's defenses!

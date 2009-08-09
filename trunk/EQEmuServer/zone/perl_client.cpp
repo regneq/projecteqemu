@@ -3957,8 +3957,59 @@ XS(XS_Client_SetStartZone)
 	XSRETURN_EMPTY;
 }
 
+XS(XS_Client_KeyRingAdd);
+XS(XS_Client_KeyRingAdd)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Client::KeyRingAdd(THIS, item_id)");
+	{
+		Client *	THIS;
+		dXSTARG;
+		uint32		item_id = (uint32)SvUV(ST(1));
 
-		
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->KeyRingAdd(item_id);;
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_Client_KeyRingCheck);
+XS(XS_Client_KeyRingCheck)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Client::KeyRingCheck(THIS, item_id)");
+	{
+		Client *	THIS;
+		bool		RETVAL;
+		dXSTARG;
+		uint32		item_id = (uint32)SvUV(ST(1));
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->KeyRingCheck(item_id);;
+		ST(0) = boolSV(RETVAL);
+		sv_2mortal(ST(0));
+	}
+	XSRETURN(1);
+}
+
 
 
 #ifdef __cplusplus
@@ -4127,6 +4178,8 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "GetAugmentAt"), XS_Client_GetAugmentAt, file, "$$$");
 		newXSproto(strcpy(buf, "GetStartZone"), XS_Client_GetStartZone, file, "$");
 		newXSproto(strcpy(buf, "SetStartZone"), XS_Client_SetStartZone, file, "$$");
+		newXSproto(strcpy(buf, "KeyRingAdd"), XS_Client_KeyRingAdd, file, "$$");
+		newXSproto(strcpy(buf, "KeyRingCheck"), XS_Client_KeyRingCheck, file, "$$");
 		
 	XSRETURN_YES;
 }
