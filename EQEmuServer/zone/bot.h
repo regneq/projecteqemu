@@ -22,6 +22,35 @@ extern bool spells_loaded;
 
 class Bot : public NPC {
 public:
+	// Class enums
+	enum botfocusType {	//focus types
+		botfocusSpellHaste = 1,
+		botfocusSpellDuration,
+		botfocusRange,
+		botfocusReagentCost,
+		botfocusManaCost,
+		botfocusImprovedHeal,
+		botfocusImprovedDamage,
+		botfocusImprovedDOT,		//i dont know about this...
+		botfocusImprovedCritical,
+		botfocusImprovedUndeadDamage,
+		botfocusPetPower,
+		botfocusResistRate,
+		botfocusHateReduction,
+	};
+
+	typedef enum botfocusType botfocusType;
+
+	typedef std::map<uint32, uint32> BotInventory;
+	typedef std::pair<uint32, uint32> BotInventoryItem;
+
+	enum botTradeType {	// types of trades a bot can do
+		botTradeClientNormal,
+		botTradeClientNoDropNoTrade
+	};
+
+	typedef enum botTradeType botTradeType;
+
 	// Class Constructors
 	Bot(NPCType npcTypeData, Client* botOwner);
 	Bot(uint32 botID, uint32 botOwnerCharacterID, uint32 botSpellsID, double totalPlayTime, NPCType npcTypeData);
@@ -44,7 +73,7 @@ public:
 	virtual void SetLevel(uint8 in_level, bool command = false);
 	virtual void FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho);
 	virtual bool Process();
-	//virtual void AI_Process();
+	void FinishTrade(Client* client, botTradeType tradeType);
 	virtual bool Save();
 	virtual void Depop();
 	void CalcBotStats(bool showtext = true);
@@ -82,7 +111,6 @@ public:
 	bool DoFinishedSpellAETarget(int16 spell_id, Mob* spellTarget, int16 slot, bool &stopLogic);
 	bool DoFinishedSpellSingleTarget(int16 spell_id, Mob* spellTarget, int16 slot, bool &stopLogic);
 	bool DoFinishedSpellGroupTarget(int16 spell_id, Mob* spellTarget, int16 slot, bool &stopLogic);
-	void FinishTrade(Client* client);
 	void SendBotArcheryWearChange(int8 material_slot, uint32 material, uint32 color);
 	void Camp(bool databaseSave = true);
 	virtual void AddToHateList(Mob* other, sint32 hate = 0, sint32 damage = 0, bool iYellForHelp = true, bool bFrenzy = false, bool iBuffTic = false);
@@ -153,6 +181,7 @@ public:
 	static void BotGroupSummon(Group* group);
 	static Bot* GetBotByBotClientOwnerAndBotName(Client* c, std::string botName);
 	static void ProcessBotGroupInvite(Client* c, std::string botName);
+	static void BotOrderCampAll(Client* c);
 
 	// "GET" Class Methods
 	uint32 GetBotID() { return _botID; }
@@ -180,30 +209,7 @@ public:
 	// Class Destructors
 	virtual ~Bot();
 
-	// Class enums
-	enum botfocusType {	//focus types
-		botfocusSpellHaste = 1,
-		botfocusSpellDuration,
-		botfocusRange,
-		botfocusReagentCost,
-		botfocusManaCost,
-		botfocusImprovedHeal,
-		botfocusImprovedDamage,
-		botfocusImprovedDOT,		//i dont know about this...
-		botfocusImprovedCritical,
-		botfocusImprovedUndeadDamage,
-		botfocusPetPower,
-		botfocusResistRate,
-		botfocusHateReduction,
-	};
-
-	typedef enum botfocusType botfocusType;
-
-	typedef std::map<uint32, uint32> BotInventory;
-	typedef std::pair<uint32, uint32> BotInventoryItem;
-
 protected:
-	//virtual void BotAIProcess();
 	virtual void PetAIProcess();
 	static NPCType FillNPCTypeStruct(uint32 botSpellsID, std::string botName, std::string botLastName, uint8 botLevel, uint16 botRace, uint8 botClass, uint8 gender, float size, uint32 face, uint32 hairStyle, uint32 hairColor, uint32 eyeColor, uint32 eyeColor2, uint32 beardColor, uint32 beard, uint32 drakkinHeritage, uint32 drakkinTattoo, uint32 drakkinDetails, sint16 mr, sint16 cr, sint16 dr, sint16 fr, sint16 pr, sint16 ac, uint16 str, uint16 sta, uint16 dex, uint16 agi, uint16 _int, uint16 wis, uint16 cha, uint16 attack);
 	static NPCType CreateDefaultNPCTypeStructForBot(std::string botName, std::string botLastName, uint8 botLevel, uint16 botRace, uint8 botClass, uint8 gender);
@@ -212,6 +218,7 @@ protected:
 	virtual bool CheckBotDoubleAttack(bool Triple = false);
 	virtual sint16 GetBotFocusEffect(botfocusType bottype, int16 spell_id);
 	virtual sint16 CalcBotFocusEffect(botfocusType bottype, int16 focus_id, int16 spell_id);
+	virtual void PerformTradeWithClient(sint16 beginSlotID, sint16 endSlotID, Client* client);
 
 private:
 	// Class Members
@@ -247,6 +254,8 @@ private:
 	sint16 _baseWIS;
 	sint16 _baseCHA;
 	sint16 _baseATK;
+	int16 _baseRace;	// Necessary to preserve the race otherwise bots get their race updated in the db when they get an illusion.
+	int8 _baseGender;	// Bots gender. Necessary to preserve the original value otherwise it can be changed by illusions.
 
 	// Class Methods
 	void GenerateBaseStats();

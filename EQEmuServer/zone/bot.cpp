@@ -55,6 +55,8 @@ Bot::Bot(NPCType npcTypeData, Client* botOwner) : NPC(&npcTypeData, 0, 0, 0, 0, 
 	_baseWIS = npcTypeData.WIS;
 	_baseCHA = npcTypeData.CHA;
 	_baseATK = npcTypeData.ATK;
+	_baseRace = npcTypeData.race;
+	_baseGender = npcTypeData.gender;
 
 	SetBotID(0);
 	SetBotSpellID(0);
@@ -102,6 +104,8 @@ Bot::Bot(uint32 botID, uint32 botOwnerCharacterID, uint32 botSpellsID, double to
 	_baseWIS = npcTypeData.WIS;
 	_baseCHA = npcTypeData.CHA;
 	_baseATK = npcTypeData.ATK;
+	_baseRace = npcTypeData.race;
+	_baseGender = npcTypeData.gender;
 
 	SetBotID(botID);
 	SetBotSpellID(botSpellsID);
@@ -959,7 +963,7 @@ bool Bot::Save() {
 	}
 	else {
 		// Update existing bot record
-		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "UPDATE bots SET BotOwnerCharacterID = '%u', BotSpellsID = '%u', Name = '%s', LastName = '%s', BotLevel = '%u', Race = '%i', Class = '%i', Gender = '%i', Size = '%f', Face = '%i', LuclinHairStyle = '%i', LuclinHairColor = '%i', LuclinEyeColor = '%i', LuclinEyeColor2 = '%i', LuclinBeardColor = '%i', LuclinBeard = '%i', DrakkinHeritage = '%i', DrakkinTattoo = '%i', DrakkinDetails = '%i', MR = '%i', CR = '%i', DR = '%i', FR = '%i', PR = '%i', AC = '%i', STR = '%i', STA = '%i', DEX = '%i', AGI = '%i', _INT = '%i', WIS = '%i', CHA = '%i', ATK = '%i', LastSpawnDate = NOW(), TotalPlayTime = '%u' WHERE BotID = '%u'", _botOwnerCharacterID, this->GetBotSpellID(), this->GetCleanName(), this->lastname, this->GetLevel(), this->GetRace(), this->GetClass(), GetGender(), GetSize(), this->GetLuclinFace(), this->GetHairStyle(), GetHairColor(), this->GetEyeColor1(), GetEyeColor2(), this->GetBeardColor(), this->GetBeard(), this->GetDrakkinHeritage(), GetDrakkinTattoo(), GetDrakkinDetails(), _baseMR, _baseCR, _baseDR, _baseFR, _basePR, _baseAC, _baseSTR, _baseSTA, _baseDEX, _baseAGI, _baseINT, _baseWIS, _baseCHA, _baseATK, GetTotalPlayTime(), GetBotID()), TempErrorMessageBuffer, 0, &affectedRows)) {
+		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "UPDATE bots SET BotOwnerCharacterID = '%u', BotSpellsID = '%u', Name = '%s', LastName = '%s', BotLevel = '%u', Race = '%i', Class = '%i', Gender = '%i', Size = '%f', Face = '%i', LuclinHairStyle = '%i', LuclinHairColor = '%i', LuclinEyeColor = '%i', LuclinEyeColor2 = '%i', LuclinBeardColor = '%i', LuclinBeard = '%i', DrakkinHeritage = '%i', DrakkinTattoo = '%i', DrakkinDetails = '%i', MR = '%i', CR = '%i', DR = '%i', FR = '%i', PR = '%i', AC = '%i', STR = '%i', STA = '%i', DEX = '%i', AGI = '%i', _INT = '%i', WIS = '%i', CHA = '%i', ATK = '%i', LastSpawnDate = NOW(), TotalPlayTime = '%u' WHERE BotID = '%u'", _botOwnerCharacterID, this->GetBotSpellID(), this->GetCleanName(), this->lastname, this->GetLevel(), _baseRace, this->GetClass(), _baseGender, GetSize(), this->GetLuclinFace(), this->GetHairStyle(), GetHairColor(), this->GetEyeColor1(), GetEyeColor2(), this->GetBeardColor(), this->GetBeard(), this->GetDrakkinHeritage(), GetDrakkinTattoo(), GetDrakkinDetails(), _baseMR, _baseCR, _baseDR, _baseFR, _basePR, _baseAC, _baseSTR, _baseSTA, _baseDEX, _baseAGI, _baseINT, _baseWIS, _baseCHA, _baseATK, GetTotalPlayTime(), GetBotID()), TempErrorMessageBuffer, 0, &affectedRows)) {
 			errorMessage = std::string(TempErrorMessageBuffer);
 		}
 		else {
@@ -3997,30 +4001,51 @@ bool Bot::Bot_Command_Cure(int curetype, int level) {
 	return false;
 }
 
-void Bot::FinishTrade(Client* client) {
+// Completes a trade with a client bot owner
+void Bot::FinishTrade(Client* client, botTradeType tradeType) {
 	if(client) {
-		int32 items[4]={0};
-		int8 charges[4]={0};
+		if(tradeType == botTradeClientNormal) {
+			// Items being traded are found in the normal trade window used to trade between a Client and a Client or NPC
+			// Items in this mode are found in slot ids 3000 thru 3003
+			PerformTradeWithClient(3000, 3003, client);
+		}
+		else if(tradeType == botTradeClientNoDropNoTrade) {
+			// Items being traded are found on the Client's cursor slot, slot id 30. This item can be either a single item or it can be a bag.
+			// If it is a bag, then we have to search for items in slots 331 thru 340
+			PerformTradeWithClient(SLOT_CURSOR, SLOT_CURSOR, client);
 
-		bool botCanWear[4] = {0};
-		bool BotCanWear = false;
-		for (sint16 i=3000; i<=3003; i++){
-			BotCanWear = false;
-			botCanWear[i-3000] = BotCanWear;
+			// TODO: Add logic here to test if the item in SLOT_CURSOR is a container type, if it is then we need to call the following:
+			// PerformTradeWithClient(331, 340, client);
+		}
+	}
+}
+
+// Perfoms the actual trade action with a client bot owner
+void Bot::PerformTradeWithClient(sint16 beginSlotID, sint16 endSlotID, Client* client) {
+	if(client) {
+		// TODO: Figure out what the actual max slot id is
+		const int MAX_SLOT_ID = 3179;
+		int32 items[MAX_SLOT_ID] = {0};
+		int8 charges[MAX_SLOT_ID] = {0};
+		bool botCanWear[MAX_SLOT_ID] = {0};
+		
+		for(sint16 i = beginSlotID; i <= endSlotID; i++) {
+			bool BotCanWear = false;
 
 			Inventory& clientInventory = client->GetInv();
 			const ItemInst* inst = clientInventory[i];
-			if (inst) {
-				items[i-3000]=inst->GetItem()->ID;
-				charges[i-3000]=inst->GetCharges();
+			if(inst) {
+				items[i] = inst->GetItem()->ID;
+				charges[i] = inst->GetCharges();
 			}
+
 			//EQoffline: will give the items to the bots and change the bot stats
 			if(inst && this->GetBotOwner() == client->CastToMob()) {
 				std::string TempErrorMessage;
 				const Item_Struct* mWeaponItem = inst->GetItem();
 				if(mWeaponItem && inst->IsEquipable(GetBaseRace(), GetClass()) && (GetLevel() >= mWeaponItem->ReqLevel)) { // Angelox
 					BotCanWear = true;
-					botCanWear[i-3000] = BotCanWear;
+					botCanWear[i] = BotCanWear;
 
 					const char* equipped[22] = {"Charm", "Left Ear", "Head", "Face", "Right Ear", "Neck", "Shoulders", "Arms", "Back",
 						"Left Wrist", "Right Wrist", "Range", "Hands", "Primary Hand", "Secondary Hand",
@@ -4181,110 +4206,24 @@ void Bot::FinishTrade(Client* client) {
 				}
 			}
 			if(inst) {
-				if(!botCanWear[i-3000]) {
+				if(!botCanWear[i]) {
 					client->PushItemOnCursor(*inst, true);
 				}
 				client->DeleteItemInInventory(i);
 			}
 		}
 
-		//		if(!with->IsBot()) { // START This is so Bots don't trigger the EVENT_ITEM
-		//
-		//			for (sint16 i=3000; i<=3003; i++) {
-		//				const ItemInst* inst = m_inv[i];
-		//				if (inst) {
-		//					items[i-3000]=inst->GetItem()->ID;
-		//					charges[i-3000]=inst->GetCharges();
-		//					DeleteItemInInventory(i);
-		//				}
-		//			}
-		//
-		//			//dont bother with this crap unless we have a quest...
-		//			//pets can have quests! (especially charmed NPCs)
-		//			bool did_quest = false;
-		//#ifdef EMBPERL
-		//			if(((PerlembParser *)parse)->HasQuestSub(with->GetNPCTypeID(), "EVENT_ITEM")) {
-		//#else
-		//			if(parse->HasQuestFile(with->GetNPCTypeID())) {
-		//#endif
-		//				char temp1[100];
-		//				memset(temp1,0x0,100);
-		//				char temp2[100];
-		//				memset(temp2,0x0,100);
-		//				for ( int z=0; z < 4; z++ ) {
-		//					snprintf(temp1, 100, "item%d.%d", z+1,with->GetNPCTypeID());
-		//					snprintf(temp2, 100, "%d",items[z]);
-		//					parse->AddVar(temp1,temp2);
-		//					//			memset(temp1,0x0,100);
-		//					//			memset(temp2,0x0,100);
-		//					snprintf(temp1, 100, "item%d.charges.%d", z+1,with->GetNPCTypeID());
-		//					snprintf(temp2, 100, "%d",charges[z]);
-		//					parse->AddVar(temp1,temp2);
-		//					//			memset(temp1,0x0,100);
-		//					//			memset(temp2,0x0,100);
-		//				}
-		//				snprintf(temp1, 100, "copper.%d",with->GetNPCTypeID());
-		//				snprintf(temp2, 100, "%i",trade->cp);
-		//				parse->AddVar(temp1,temp2);
-		//				//		memset(temp1,0x0,100);
-		//				//		memset(temp2,0x0,100);
-		//				snprintf(temp1, 100, "silver.%d",with->GetNPCTypeID());
-		//				snprintf(temp2, 100, "%i",trade->sp);
-		//				parse->AddVar(temp1,temp2);
-		//				//		memset(temp1,0x0,100);
-		//				//		memset(temp2,0x0,100);
-		//				snprintf(temp1, 100, "gold.%d",with->GetNPCTypeID());
-		//				snprintf(temp2, 100, "%i",trade->gp);
-		//				parse->AddVar(temp1,temp2);
-		//				//		memset(temp1,0x0,100);
-		//				//		memset(temp2,0x0,100);
-		//				snprintf(temp1, 100, "platinum.%d",with->GetNPCTypeID());
-		//				snprintf(temp2, 100, "%i",trade->pp);
-		//				parse->AddVar(temp1,temp2);
-		//				//		memset(temp1,0x0,100);
-		//				//		memset(temp2,0x0,100);
-		//				parse->Event(EVENT_ITEM, with->GetNPCTypeID(), NULL, with, this);
-		//				did_quest = true;
-		//			}
-		//			if(RuleB(TaskSystem, EnableTaskSystem)) {
-		//				int Cash = trade->cp + (trade->sp * 10) + (trade->gp * 100) + (trade->pp * 1000);
-		//				if(UpdateTasksOnDeliver(items, Cash, with->GetNPCTypeID())) {
-		//					if(!with->IsMoving()) 
-		//						with->FaceTarget(this);
-		//				}
-		//			}
-		//			//		Message(0, "Normal NPC: keeping items.");
-		//
-		//			//else, we do not have a quest, give the items to the NPC
-		//			if(did_quest) {
-		//				//only continue if we are a charmed NPC
-		//				if(!with->HasOwner() || with->GetPetType() != petCharmed)
-		//					return;
-		//			}
-		//		} // END This is so Bots don't trigger the EVENT_ITEM
-
+		// TODO: I dont understand whats going on here with item2
+		// I assume this is some type of security check?
 		int xy = CountLoot();
 
 		for(int y=0; y < 4; y++) {
 			if(xy >= 23) {
 				break;
 			}
-			// TODO: Figure out whats with the xy-- followed by xy++... its literally a 0 sum calculation.
-			xy--;
-			//if(with->IsBot()) { // The xy++ below doesn't work for bot trading.
-			//	if(xy >= 23) {
-			//		break;
-			//	}
-			//	xy--;
-			//}
-			//else {
-			//	if (xy >= 20)
-			//		break;
-			//}
 
-			xy++;
-			//NPC* npc=with->CastToNPC();
 			const Item_Struct* item2 = database.GetItem(items[y]);
+
 			if (item2) {
 				if(botCanWear[y]) {
 					Say("Thank you for the %s, %s.", item2->Name,  client->GetName());
@@ -4292,25 +4231,6 @@ void Bot::FinishTrade(Client* client) {
 				else {
 					Say("I can't use this %s!", item2->Name);
 				}
-
-				if(item2->NoDrop != 0)
-					AddLootDrop(item2, &itemlist, charges[y], true, true);
-
-				//if((GetGM() && !with->IsBot()) || ((item2->NoDrop != 0) && !with->IsBot()))
-				//	with->AddLootDrop(item2, &with->itemlist, charges[y], true, true);
-				//// franck-add: you can give nodrop items to bots
-				//else if(with->IsBot() && botCanWear[y]) {
-				//	with->Say("Thank you for the %s, %s.", item2->Name,  this->GetName());
-				//}
-				//else if(with->IsBot() && !botCanWear[y]) {
-				//	with->Say("I can't use this %s!", item2->Name);
-				//}
-
-				////if was not no drop item, let the NPC have it
-				//if(GetGM() || item2->NoDrop != 0)
-				//	with->AddLootDrop(item2, &with->itemlist, charges[y], true, true);
-				//else 
-				//	with->AddLootDrop(item2, NULL, charges[y], false, true);
 			}
 		}
 	}
@@ -6831,6 +6751,7 @@ void Bot::EquipBot(std::string* errorMessage) {
 	}
 }
 
+// This method is meant to be called by zone or client methods to clean up objects when a client camps, goes LD, zones out or something like that.
 void Bot::DestroyBotObjects(Client* client) {
 	if(client) {
 		if(client->GetBotRaidID() > 0) {
@@ -6841,7 +6762,14 @@ void Bot::DestroyBotObjects(Client* client) {
 			}
 		}
 
-		std::list<Bot*> BotList = entity_list.GetBotsByBotOwnerCharacterID(client->CharacterID());
+		BotOrderCampAll(client);
+	}
+}
+
+// Orders all the bots owned by the specified client bot owner to camp out of the game
+void Bot::BotOrderCampAll(Client* c) {
+	if(c) {
+		std::list<Bot*> BotList = entity_list.GetBotsByBotOwnerCharacterID(c->CharacterID());
 
 		if(!BotList.empty()) {
 			for(std::list<Bot*>::iterator botListItr = BotList.begin(); botListItr != BotList.end(); botListItr++) {
@@ -8378,6 +8306,41 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		c->Message(0, "#bot groupraid - Groups your spawned bots.");
 		c->Message(0, "#bot archery - Toggle Archery Skilled bots between using a Bow or using Melee weapons.");
 		c->Message(0, "#bot magepet [earth|water|air|fire|monster] - Select the pet type you want your Mage bot to use.");
+		c->Message(0, "#bot giveitem - Gives your targetted bot the item you have on your cursor.");
+		c->Message(0, "#bot camp - Tells your bot to camp out of the game.");
+		return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "giveitem")) {
+		if(c->GetTarget() && c->GetTarget()->IsBot() && (c->GetTarget()->CastToBot()->GetBotOwner() == c)) {
+			// Its a bot targetted and this client is the bots owner
+			Bot* targetedBot = c->GetTarget()->CastToBot();
+				if(targetedBot)
+					targetedBot->FinishTrade(c, botTradeClientNoDropNoTrade);
+		}
+		else {
+			c->Message(15, "You must target a bot you own to do this.");
+		}
+
+		return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "camp")) {
+		if(!strcasecmp(sep->arg[2], "all")) {
+			// Camp out all bots owned by this bot owner
+			BotOrderCampAll(c);
+		}
+		else {
+			// Camp only the targetted bot
+			if(c->GetTarget() && c->GetTarget()->IsBot() && (c->GetTarget()->CastToBot()->GetBotOwner() == c)) {
+				Bot* targetedBot = c->GetTarget()->CastToBot();
+				if(targetedBot)
+					targetedBot->Camp();
+			}
+			else
+				c->Message(15, "You must target a bot you own to do this.");
+		}
+
 		return;
 	}
 
