@@ -394,11 +394,11 @@ NPC::~NPC()
 }
 
 void NPC::SetTarget(Mob* mob) {
-	if(mob == target)		//dont bother if they are allready our target
+	if(mob == GetTarget())		//dont bother if they are allready our target
 		return;
 	
 	//our target is already set, do not turn from the course, unless our current target is dead.
-	if(GetSwarmInfo() && target && (target->GetHP() > 0)) {
+	if(GetSwarmInfo() && GetTarget() && (GetTarget()->GetHP() > 0)) {
 		Mob *targ = entity_list.GetMob(GetSwarmInfo()->target);
 		if(targ != mob){
 			return;
