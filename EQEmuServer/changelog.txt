@@ -8,6 +8,11 @@ WildcardX: *BOTS* Bots can now be invited and disbanded from your group by simpl
 WildcardX: *BOTS* Tweak to the bots total play time calculation to make it more accurate.
 KLS: Added #path meshtest simple to do a faster search on errant path nodes.
 KLS: Modified the accurate hazard code to make automatic path maps with more accurate info that requires less manual editing afterward.
+cavedude: (demonstar55) Pets will now be amiable to their owners, indifferent to all else.
+cavedude: (demonstar55) Added $client->KeyRingCheck() and $client->KeyRingAdd() to allow Perl to manipulate the keyring.
+cavedude: (demonstar55) Casting an invis spell on a player that already has a similar type invis spell will no longer drop the existing buff.
+cavedude: (demonstar55) Corrected message string for heal spells.
+cavedude: Added rule to determine at what HP a fleeing NPC will halt due to being snared.
 
 ==08/07/2009==
 WildcardX: *BOTS* More code refactoring.

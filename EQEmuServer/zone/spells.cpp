@@ -2645,6 +2645,38 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar)
 		return(false);
 	}
 
+	// Prevent double invising, which made you uninvised
+	// Not sure if all 3 should be stacking
+	if(IsEffectInSpell(spell_id, SE_Invisibility))
+	{
+		if(spelltar->invisible)
+		{
+			spelltar->Message_StringID(MT_Shout, ALREADY_INVIS, GetCleanName());
+			safe_delete(action_packet);
+			return false;
+		}
+	}
+
+	if(IsEffectInSpell(spell_id, SE_InvisVsUndead))
+	{
+		if(spelltar->invisible_undead)
+		{
+			spelltar->Message_StringID(MT_Shout, ALREADY_INVIS, GetCleanName());
+			safe_delete(action_packet);
+			return false;
+		}
+	}
+
+	if(IsEffectInSpell(spell_id, SE_InvisVsAnimals))
+	{
+		if(spelltar->invisible_animals)
+		{
+			spelltar->Message_StringID(MT_Shout, ALREADY_INVIS, GetCleanName());
+			safe_delete(action_packet);
+			return false;
+		}
+	}
+
 	if(!(IsClient() && CastToClient()->GetGM()) && !IsHarmonySpell(spell_id))	// GMs can cast on anything
 	{
 		// Beneficial spells check

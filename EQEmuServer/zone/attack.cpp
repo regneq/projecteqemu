@@ -3191,12 +3191,16 @@ void Mob::HealDamage(uint32 amount, Mob* caster) {
 		acthealed = (maxhp - curhp);
 	else
 		acthealed = amount;
+
+	char *TempString = NULL;
+
+	MakeAnyLenString(&TempString, "%d", acthealed);
 		
 	if(acthealed > 100){
 		if(caster){
-			Message(MT_NonMelee, "You have been healed by %s for %d points of damage.", caster->GetCleanName(), acthealed);
+			Message_StringID(MT_NonMelee, YOU_HEALED, caster->GetCleanName(), TempString);
 			if(caster != this){
-				caster->Message(MT_NonMelee, "You have healed %s for %d points of damage.", GetCleanName(), acthealed);
+				caster->Message_StringID(MT_NonMelee, YOU_HEAL, GetCleanName(), TempString);
 			}
 		}
 		else{
@@ -3213,6 +3217,7 @@ void Mob::HealDamage(uint32 amount, Mob* caster) {
 
 		SendHPUpdate();
 	}
+	safe_delete_array(TempString);
 }
 
 
