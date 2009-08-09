@@ -4,6 +4,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 WildcardX: *BOTS* Fixed the bots illusion bug that caused a bots gender and race values to be changed to that of the illusion in the bots table.
 WildcardX: *BOTS* Added new bots command, "#bot giveitem". This command lets you give a NO DROP, NO TRADE item to your bot as long as its on your cursor.
 WildcardX: *BOTS* Added new commands, "#bot camp" and "#bot camp all". The first orders your bots to camp out if you target them. The second orders all bots you own to camp out, no need to target each.
+Trevius: Created methods for when an NPC is spawned to clean up the NPC code some.
 
 ==08/08/2009==
 WildcardX: *BOTS* More code refactoring.
@@ -30,7 +31,7 @@ Trevius: (Secrets/Trevius) Added 2 new fields (maxlevel & scalerate) to npc_type
 WildcardX: NPC is no longer a friend class in the Mob class. Moved the class member Mob::target to Mob's private scope to ensure other classes use the Mob::GetTarget() and Mob::SetTarget() methods.
 WildcardX: *BOTS* Commented out code that let bots use the groups chat channel until I can fix I bug I found that causes bots to have their targets repeatedly reset to null values and back to their attacker while in combat.
 
-Required SQL: utils/sql/svn/897_npc_maxlevel_scalerate.sql
+Required SQL: utils/sql/svn/898_npc_maxlevel_scalerate.sql
 
 ==08/06/2009==
 WildcardX: *BOTS* Significantly modified the bots table. Removed several unnecessary columns and changed  many interger columns to accept signed values. Added new columns to track dates and times for bots.

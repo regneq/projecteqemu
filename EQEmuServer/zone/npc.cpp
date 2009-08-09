@@ -169,6 +169,14 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
     FR = d->FR;
     PR = d->PR;
 
+	STR = d->STR;
+	STA = d->STA;
+	AGI = d->AGI;
+	DEX = d->DEX;
+	INT = d->INT;
+	WIS = d->WIS;
+	CHA = d->CHA;
+
 	//quick fix of ordering if they screwed it up in the DB
 	if(max_dmg < min_dmg) {
 		int tmp = min_dmg;
@@ -176,147 +184,21 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 		max_dmg = tmp;
 	}
 
-	int8 max_level = d->maxlevel;
-	int8 base_level = d->level;
-
 	// Max Level and Stat Scaling if maxlevel is set
-	if(max_level > base_level)
+	if(maxlevel > level)
 	{
-		int8 random_level = (MakeRandomInt(base_level, max_level));
-
-		float scaling = (((random_level / (float)base_level) - 1) * (d->scalerate / 100.0f));
-
-		// Compensate for scale rates at low levels so they don't add too much
-		int8 scale_adjust = 1;
-		if(base_level > 0 && base_level <= 5)
-			scale_adjust = 10;
-		if(base_level > 5 && base_level <= 10)
-			scale_adjust = 5;
-		if(base_level > 10 && base_level <= 15)
-			scale_adjust = 3;
-		if(base_level > 15 && base_level <= 25)
-			scale_adjust = 2;
-
-		max_hp += (max_hp * scaling);
-		cur_hp = max_hp;
-		STR += (d->STR * scaling / scale_adjust);
-		STA += (d->STA * scaling / scale_adjust);
-		AGI += (d->AGI * scaling / scale_adjust);
-		DEX += (d->DEX * scaling / scale_adjust);
-		INT += (d->INT * scaling / scale_adjust);
-		WIS += (d->WIS * scaling / scale_adjust);
-		CHA += (d->CHA * scaling / scale_adjust);
-		if (MR)
-			MR += (MR * scaling / scale_adjust); 
-		if (CR)
-			CR += (CR * scaling / scale_adjust);
-		if (DR)
-			DR += (DR * scaling / scale_adjust);
-		if (FR)
-			FR += (FR * scaling / scale_adjust);
-		if (PR)
-			PR += (PR * scaling / scale_adjust);
-
-		if (max_dmg)
-		{
-			max_dmg += (max_dmg * scaling / scale_adjust);
-			min_dmg += (min_dmg * scaling / scale_adjust);
-		}
-
-		level = random_level;
-
-		if (!MR)
-			MR = (moblevel * 11)/10;
-		if (!CR)
-			CR = (moblevel * 11)/10;
-		if (!DR)
-			DR = (moblevel * 11)/10;
-		if (!FR)
-			FR = (moblevel * 11)/10;
-		if (!PR)
-			PR = (moblevel * 11)/10;
+		LevelScale();
 	}
 
-    // neotokyo: fix for lazy db-updaters
-    if (GetCasterClass() != 'N' && mana_regen == 0)
-        mana_regen = (GetLevel() / 10) + 4;
-	else if(mana_regen < 0)
-		mana_regen = 0;
-	else
-		mana_regen=d->mana_regen;
-	
-	//Trumpcard:  Gives low end monsters no regen if set to 0 in database. Should make low end monsters killable
-	//Might want to lower this to /5 rather than 10.
-	if(hp_regen == 0)
-	{
-		if(GetLevel() <= 6)  
-            hp_regen = 1;  
-       else if(GetLevel() > 6 && GetLevel() <= 10)  
-            hp_regen = 2;  
-       else if(GetLevel() > 10 && GetLevel() <= 15)  
-            hp_regen = 3;  
-       else if(GetLevel() > 15 && GetLevel() <= 20)  
-            hp_regen = 5;  
-       else if(GetLevel() > 20 && GetLevel() <= 30)  
-            hp_regen = 7;  
-       else if(GetLevel() > 30 && GetLevel() <= 35)  
-            hp_regen = 9;  
-       else if(GetLevel() > 35 && GetLevel() <= 40)  
-            hp_regen = 12;  
-       else if(GetLevel() > 40 && GetLevel() <= 45)  
-            hp_regen = 18;  
-       else if(GetLevel() > 45 && GetLevel() <= 50)  
-            hp_regen = 21;  
-       else
-            hp_regen = 30;
-	} else if(hp_regen < 0) {
-		hp_regen = 0;
-	} else
-		hp_regen = d->hp_regen;
-		
-	if(max_dmg == 0){
-		int AC_adjust=12;
+	// Set Resists if they are 0 in the DB
+	CalcNPCResists();
 
-		if (GetLevel() >= 66) {
-			    if (min_dmg==0)
-			    	min_dmg = 220;
-			    if (max_dmg==0)
-					max_dmg = ((((99000)*(GetLevel()-64))/400)*AC_adjust/10);
-			}
-			else if (GetLevel() >= 60 && GetLevel() <= 65){
-			    if(min_dmg==0)
-					min_dmg = (GetLevel()+(GetLevel()/3));
-			    if(max_dmg==0)
-			    	max_dmg = (GetLevel()*3)*AC_adjust/10;
-			}
-			else if (GetLevel() >= 51 && GetLevel() <= 59){
-			    if(min_dmg==0)
-			    	min_dmg = (GetLevel()+(GetLevel()/3));
-			    if(max_dmg==0)
-			    	max_dmg = (GetLevel()*3)*AC_adjust/10;
-			}
-			else if (GetLevel() >= 40 && GetLevel() <= 50) {
-				if (min_dmg==0)
-					min_dmg = GetLevel();
-				if(max_dmg==0)
-					max_dmg = (GetLevel()*3)*AC_adjust/10;
-			}
-			else if (GetLevel() >= 28 && GetLevel() <= 39) {
-			    if (min_dmg==0)
-					min_dmg = GetLevel() / 2;
-			    if (max_dmg==0)
-					max_dmg = ((GetLevel()*2)+2)*AC_adjust/10;
-			}
-			else if (GetLevel() <= 27) {
-			    if (min_dmg==0)
-					min_dmg=1;
-			    if (max_dmg==0)
-					max_dmg = (GetLevel()*2)*AC_adjust/10;
-			}
-			
-			int clfact = GetClassLevelFactor();
-			min_dmg = (min_dmg * clfact) / 220;
-			max_dmg = (max_dmg * clfact) / 220;	
+	// Set Mana and HP Regen Rates if they are 0 in the DB
+	CalcNPCRegen();
+		
+	// Set Min and Max Damage if they are 0 in the DB
+	if(max_dmg == 0){
+		CalcNPCDamage();
 	}	
 	
 	accuracy_rating = d->accuracy_rating;
@@ -457,6 +339,7 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 		ldon_locked_skill = 0;
 		ldon_trap_detected = 0;
 	}
+
 }
 	  
 NPC::~NPC()
@@ -511,11 +394,11 @@ NPC::~NPC()
 }
 
 void NPC::SetTarget(Mob* mob) {
-	if(mob == GetTarget())		//dont bother if they are allready our target
+	if(mob == target)		//dont bother if they are allready our target
 		return;
 	
 	//our target is already set, do not turn from the course, unless our current target is dead.
-	if(GetSwarmInfo() && GetTarget() && (GetTarget()->GetHP() > 0)) {
+	if(GetSwarmInfo() && target && (target->GetHP() > 0)) {
 		Mob *targ = entity_list.GetMob(GetSwarmInfo()->target);
 		if(targ != mob){
 			return;
@@ -1692,4 +1575,158 @@ void NPC::ModifyNPCStat(const char *identifier, const char *newValue)
 		SetLevel(atoi(val.c_str()));
 		return;
 	}
+}
+
+void NPC::LevelScale() {
+
+	int8 random_level = (MakeRandomInt(level, maxlevel));
+
+	float scaling = (((random_level / (float)level) - 1) * (scalerate / 100.0f));
+	
+	// Compensate for scale rates at low levels so they don't add too much
+	int8 scale_adjust = 1;
+	if(level > 0 && level <= 5)
+		scale_adjust = 10;
+	if(level > 5 && level <= 10)
+		scale_adjust = 5;
+	if(level > 10 && level <= 15)
+		scale_adjust = 3;
+	if(level > 15 && level <= 25)
+		scale_adjust = 2;
+
+	max_hp += (max_hp * scaling);
+	cur_hp = max_hp;
+	STR += (int)(STR * scaling / scale_adjust);
+	STA += (int)(STA * scaling / scale_adjust);
+	AGI += (int)(AGI * scaling / scale_adjust);
+	DEX += (int)(DEX * scaling / scale_adjust);
+	INT += (int)(INT * scaling / scale_adjust);
+	WIS += (int)(WIS * scaling / scale_adjust);
+	CHA += (int)(CHA * scaling / scale_adjust);
+	if (MR)
+		MR += (int)(MR * scaling / scale_adjust); 
+	if (CR)
+		CR += (int)(CR * scaling / scale_adjust);
+	if (DR)
+		DR += (int)(DR * scaling / scale_adjust);
+	if (FR)
+		FR += (int)(FR * scaling / scale_adjust);
+	if (PR)
+		PR += (int)(PR * scaling / scale_adjust);
+
+	if (max_dmg)
+	{
+		max_dmg += (int)(max_dmg * scaling / scale_adjust);
+		min_dmg += (int)(min_dmg * scaling / scale_adjust);
+	}
+
+	level = random_level;
+
+	return;
+}
+
+void NPC::CalcNPCResists() {
+
+    if (!MR)
+        MR = (GetLevel() * 11)/10;
+    if (!CR)
+        CR = (GetLevel() * 11)/10;
+    if (!DR)
+        DR = (GetLevel() * 11)/10;
+    if (!FR)
+        FR = (GetLevel() * 11)/10;
+    if (!PR)
+        PR = (GetLevel() * 11)/10;
+
+	return;
+}
+
+void NPC::CalcNPCRegen() {
+
+    // Fix for lazy db-updaters (regen values left at 0)
+    if (GetCasterClass() != 'N' && mana_regen == 0)
+        mana_regen = (GetLevel() / 10) + 4;
+	else if(mana_regen < 0)
+		mana_regen = 0;
+	else
+		mana_regen = mana_regen;
+	
+	// Gives low end monsters no regen if set to 0 in database. Should make low end monsters killable
+	// Might want to lower this to /5 rather than 10.
+	if(hp_regen == 0)
+	{
+		if(GetLevel() <= 6)  
+            hp_regen = 1;  
+       else if(GetLevel() > 6 && GetLevel() <= 10)  
+            hp_regen = 2;  
+       else if(GetLevel() > 10 && GetLevel() <= 15)  
+            hp_regen = 3;  
+       else if(GetLevel() > 15 && GetLevel() <= 20)  
+            hp_regen = 5;  
+       else if(GetLevel() > 20 && GetLevel() <= 30)  
+            hp_regen = 7;  
+       else if(GetLevel() > 30 && GetLevel() <= 35)  
+            hp_regen = 9;  
+       else if(GetLevel() > 35 && GetLevel() <= 40)  
+            hp_regen = 12;  
+       else if(GetLevel() > 40 && GetLevel() <= 45)  
+            hp_regen = 18;  
+       else if(GetLevel() > 45 && GetLevel() <= 50)  
+            hp_regen = 21;  
+       else
+            hp_regen = 30;
+	} else if(hp_regen < 0) {
+		hp_regen = 0;
+	} else
+		hp_regen = hp_regen;
+
+	return;
+}
+
+void NPC::CalcNPCDamage() {
+
+	int AC_adjust=12;
+
+	if (GetLevel() >= 66) {
+		if (min_dmg==0)
+			min_dmg = 220;
+		if (max_dmg==0)
+			max_dmg = ((((99000)*(GetLevel()-64))/400)*AC_adjust/10);
+	}
+	else if (GetLevel() >= 60 && GetLevel() <= 65){
+	    if(min_dmg==0)
+			min_dmg = (GetLevel()+(GetLevel()/3));
+	    if(max_dmg==0)
+	    	max_dmg = (GetLevel()*3)*AC_adjust/10;
+	}
+	else if (GetLevel() >= 51 && GetLevel() <= 59){
+	    if(min_dmg==0)
+	    	min_dmg = (GetLevel()+(GetLevel()/3));
+	    if(max_dmg==0)
+	    	max_dmg = (GetLevel()*3)*AC_adjust/10;
+	}
+	else if (GetLevel() >= 40 && GetLevel() <= 50) {
+		if (min_dmg==0)
+			min_dmg = GetLevel();
+		if(max_dmg==0)
+			max_dmg = (GetLevel()*3)*AC_adjust/10;
+	}
+	else if (GetLevel() >= 28 && GetLevel() <= 39) {
+	    if (min_dmg==0)
+			min_dmg = GetLevel() / 2;
+	    if (max_dmg==0)
+			max_dmg = ((GetLevel()*2)+2)*AC_adjust/10;
+	}
+	else if (GetLevel() <= 27) {
+	    if (min_dmg==0)
+			min_dmg=1;
+	    if (max_dmg==0)
+			max_dmg = (GetLevel()*2)*AC_adjust/10;
+	}
+	
+	int clfact = GetClassLevelFactor();
+	min_dmg = (min_dmg * clfact) / 220;
+	max_dmg = (max_dmg * clfact) / 220;	
+
+	return;
 }
