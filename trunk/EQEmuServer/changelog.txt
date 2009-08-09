@@ -1,5 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==08/09/2009==
+WildcardX: *BOTS* Fixed the bots illusion bug that caused a bots gender and race values to be changed to that of the illusion in the bots table.
+WildcardX: *BOTS* Added new bots command, "#bot giveitem". This command lets you give a NO DROP, NO TRADE item to your bot as long as its on your cursor.
+WildcardX: *BOTS* Added new commands, "#bot camp" and "#bot camp all". The first orders your bots to camp out if you target them. The second orders all bots you own to camp out, no need to target each.
+
 ==08/08/2009==
 WildcardX: *BOTS* More code refactoring.
 WildcardX: *BOTS* Bots now appear as another client player to your client. This will lead to using your UI to perform operations like group invites/disbands and the raid UI. Perhaps even guilding your bot! (Thanks Trev for your assistance!)

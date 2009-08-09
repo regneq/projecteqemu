@@ -3952,7 +3952,7 @@ void Client::Handle_OP_TradeAcceptClick(const EQApplicationPacket *app)
 			FinishTrade(with->CastToNPC());
 #ifdef BOTS
 		else if(with->IsBot())
-			with->CastToBot()->FinishTrade(this);
+			with->CastToBot()->FinishTrade(this, Bot::botTradeClientNormal);
 #endif
 		trade->Reset();
 	}
