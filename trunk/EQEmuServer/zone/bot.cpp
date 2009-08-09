@@ -4114,7 +4114,7 @@ void Bot::PerformTradeWithClient(sint16 beginSlotID, sint16 endSlotID, Client* c
 										if(inst->IsWeapon() && !CanThisClassDualWield()) {
 											Say("I cannot dual wield.");
 											client->PushItemOnCursor(*inst, true);
-											client->DeleteItemInInventory(i);
+											client->DeleteItemInInventory(i, 0, true);
 											return;
 										}
 										const Item_Struct* itmtmp = database.GetItem(GetBotItemBySlot(SLOT_PRIMARY, &TempErrorMessage));
@@ -4131,7 +4131,7 @@ void Bot::PerformTradeWithClient(sint16 beginSlotID, sint16 endSlotID, Client* c
 										if(inst->IsWeapon() && !CanThisClassDualWield()) {
 											Say("I cannot dual wield.");
 											client->PushItemOnCursor(*inst, true);
-											client->DeleteItemInInventory(i);
+											client->DeleteItemInInventory(i, 0, true);
 											return;
 										}
 										// the primary and secondary hands are equipped, swap out the secondary hand item with the new item
@@ -4141,7 +4141,7 @@ void Bot::PerformTradeWithClient(sint16 beginSlotID, sint16 endSlotID, Client* c
 									else {
 										Say("Use '#bot inventory remove 13' to remove the primary weapon.");
 										client->PushItemOnCursor(*inst, true);
-										client->DeleteItemInInventory(i);
+										client->DeleteItemInInventory(i, 0, true);
 										return;
 									}
 								}
@@ -4153,7 +4153,7 @@ void Bot::PerformTradeWithClient(sint16 beginSlotID, sint16 endSlotID, Client* c
 								if(inst->IsWeapon() && !CanThisClassDualWield()) {
 									Say("I cannot dual wield.");
 									client->PushItemOnCursor(*inst, true);
-									client->DeleteItemInInventory(i);
+									client->DeleteItemInInventory(i, 0, true);
 									return;
 								}
 								const Item_Struct* itmtmp = database.GetItem(GetBotItemBySlot(SLOT_PRIMARY, &TempErrorMessage));
@@ -4209,7 +4209,7 @@ void Bot::PerformTradeWithClient(sint16 beginSlotID, sint16 endSlotID, Client* c
 				if(!botCanWear[i]) {
 					client->PushItemOnCursor(*inst, true);
 				}
-				client->DeleteItemInInventory(i);
+				client->DeleteItemInInventory(i, 0, true);
 			}
 		}
 
