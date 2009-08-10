@@ -6242,22 +6242,46 @@ void command_ban(Client *c, const Seperator *sep)
 		if(query)
 		{
 			safe_delete_array(query);
-			query=NULL;
 		}
+
 		if(mysql_num_rows(result))
 		{
 			row = mysql_fetch_row(result);
-			mysql_free_result(result);
 			database.RunQuery(query, MakeAnyLenString(&query, "UPDATE account set status = -2 where id = %i", atoi(row[0])), errbuf, 0);
 			c->Message(13,"Account number %i with the character %s has been banned.", atoi(row[0]), sep->arg[1]);
+
+			ServerPacket* pack = new ServerPacket(ServerOP_FlagUpdate, 6);
+			*((int32*) pack->pBuffer) = atoi(row[0]);
+			*((sint16*) &pack->pBuffer[4]) = -2;
+			worldserver.SendPacket(pack);
+			safe_delete(pack);
+
+			Client *client = NULL;
+			client = entity_list.GetClientByName(sep->arg[1]);
+			if(client)
+			{
+				client->Kick();
+			}
+			else
+			{
+				ServerPacket* pack = new ServerPacket(ServerOP_KickPlayer, sizeof(ServerKickPlayer_Struct));
+				ServerKickPlayer_Struct* skp = (ServerKickPlayer_Struct*) pack->pBuffer;
+				strcpy(skp->adminname, c->GetName());
+				strcpy(skp->name, sep->arg[1]);
+				skp->adminrank = c->Admin();
+				worldserver.SendPacket(pack);
+				safe_delete(pack);
+			}
+
+			mysql_free_result(result);
 		}
-		else {
+		else 
+		{
 			c->Message(13,"Character does not exist.");
 		}
 		if(query)
 		{
 			safe_delete_array(query);
-			query=NULL;
 		}
 	}
 }
