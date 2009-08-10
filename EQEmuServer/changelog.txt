@@ -7,6 +7,8 @@ WildcardX: *BOTS* Added new commands, "#bot camp" and "#bot camp all". The first
 Trevius: Created methods for when an NPC is spawned to clean up the NPC code some.
 WildcardX: *BOTS* Fixed a bug caused by using #bot giveitem that didn't update the client that the iyem that was on the cursor is now gone.
 WildcardX: *BOTS* Fixed a bug that crash the client when trading with a bot.
+KLS: Fix for #ban
+KLS: #ban will now update the player's flag and kick them from the server.
 
 ==08/08/2009==
 WildcardX: *BOTS* More code refactoring.
