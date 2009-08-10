@@ -4031,6 +4031,7 @@ void Bot::PerformTradeWithClient(sint16 beginSlotID, sint16 endSlotID, Client* c
 		
 		for(sint16 i = beginSlotID; i <= endSlotID; i++) {
 			bool BotCanWear = false;
+			bool UpdateClient = false;
 
 			Inventory& clientInventory = client->GetInv();
 			const ItemInst* inst = clientInventory[i];
@@ -4038,6 +4039,9 @@ void Bot::PerformTradeWithClient(sint16 beginSlotID, sint16 endSlotID, Client* c
 				items[i] = inst->GetItem()->ID;
 				charges[i] = inst->GetCharges();
 			}
+
+			if(i == SLOT_CURSOR)
+				UpdateClient = true;
 
 			//EQoffline: will give the items to the bots and change the bot stats
 			if(inst && this->GetBotOwner() == client->CastToMob()) {
@@ -4114,7 +4118,7 @@ void Bot::PerformTradeWithClient(sint16 beginSlotID, sint16 endSlotID, Client* c
 										if(inst->IsWeapon() && !CanThisClassDualWield()) {
 											Say("I cannot dual wield.");
 											client->PushItemOnCursor(*inst, true);
-											client->DeleteItemInInventory(i, 0, true);
+											client->DeleteItemInInventory(i, 0, UpdateClient);
 											return;
 										}
 										const Item_Struct* itmtmp = database.GetItem(GetBotItemBySlot(SLOT_PRIMARY, &TempErrorMessage));
@@ -4131,7 +4135,7 @@ void Bot::PerformTradeWithClient(sint16 beginSlotID, sint16 endSlotID, Client* c
 										if(inst->IsWeapon() && !CanThisClassDualWield()) {
 											Say("I cannot dual wield.");
 											client->PushItemOnCursor(*inst, true);
-											client->DeleteItemInInventory(i, 0, true);
+											client->DeleteItemInInventory(i, 0, UpdateClient);
 											return;
 										}
 										// the primary and secondary hands are equipped, swap out the secondary hand item with the new item
@@ -4141,7 +4145,7 @@ void Bot::PerformTradeWithClient(sint16 beginSlotID, sint16 endSlotID, Client* c
 									else {
 										Say("Use '#bot inventory remove 13' to remove the primary weapon.");
 										client->PushItemOnCursor(*inst, true);
-										client->DeleteItemInInventory(i, 0, true);
+										client->DeleteItemInInventory(i, 0, UpdateClient);
 										return;
 									}
 								}
@@ -4153,7 +4157,7 @@ void Bot::PerformTradeWithClient(sint16 beginSlotID, sint16 endSlotID, Client* c
 								if(inst->IsWeapon() && !CanThisClassDualWield()) {
 									Say("I cannot dual wield.");
 									client->PushItemOnCursor(*inst, true);
-									client->DeleteItemInInventory(i, 0, true);
+									client->DeleteItemInInventory(i, 0, UpdateClient);
 									return;
 								}
 								const Item_Struct* itmtmp = database.GetItem(GetBotItemBySlot(SLOT_PRIMARY, &TempErrorMessage));
@@ -4209,7 +4213,7 @@ void Bot::PerformTradeWithClient(sint16 beginSlotID, sint16 endSlotID, Client* c
 				if(!botCanWear[i]) {
 					client->PushItemOnCursor(*inst, true);
 				}
-				client->DeleteItemInInventory(i, 0, true);
+				client->DeleteItemInInventory(i, 0, UpdateClient);
 			}
 		}
 
