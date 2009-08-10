@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==08/10/2009==
+WildcardX: Tweaked Groups a little to allow a group to consist of both Bots and Clients, doesn't matter what order you invite either nor does it matter how many of each.
+
 ==08/09/2009==
 WildcardX: *BOTS* Fixed the bots illusion bug that caused a bots gender and race values to be changed to that of the illusion in the bots table.
 WildcardX: *BOTS* Added new bots command, "#bot giveitem". This command lets you give a NO DROP, NO TRADE item to your bot as long as its on your cursor.
