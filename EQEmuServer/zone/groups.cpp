@@ -195,7 +195,7 @@ bool Group::AddMember(Mob* newmember) {
 	uint32 i=0;
 	//see if they are allready in the group
 	 for (i = 0; i < MAX_GROUP_MEMBERS; i++) {
-		if(members[i] != NULL && !strcasecmp(members[i]->GetName(),newmember->GetName()))
+		if(members[i] != NULL && !strcasecmp(members[i]->GetCleanName(), newmember->GetCleanName()))
 			return false;
 	}
 	//put them in the group
@@ -209,7 +209,7 @@ bool Group::AddMember(Mob* newmember) {
 	if (i == MAX_GROUP_MEMBERS)
 		return false;
 
-	strcpy(membername[i],newmember->GetCleanName());
+	strcpy(membername[i], newmember->GetCleanName());
 	int x=1;
 	
 	//build the template join packet	
@@ -223,22 +223,22 @@ bool Group::AddMember(Mob* newmember) {
 	for (i = 0;i < MAX_GROUP_MEMBERS; i++) {
 		if (members[i] != NULL && members[i] != newmember) {
 			//fill in group join & send it
-			strcpy(gj->yourname,members[i]->GetCleanName());
+			strcpy(gj->yourname, members[i]->GetCleanName());
 
 			if(members[i]->IsClient()) {
 				members[i]->CastToClient()->QueuePacket(outapp);
 
 				//put new member into existing person's list
-				strcpy(members[i]->CastToClient()->GetPP().groupMembers[this->GroupCount()-1],newmember->GetCleanName());
+				strcpy(members[i]->CastToClient()->GetPP().groupMembers[this->GroupCount()-1], newmember->GetCleanName());
+			}
 
-				//put this existing person into the new member's list
-				if(newmember->IsClient()) {
-					if(IsLeader(members[i]))
-						strcpy(newmember->CastToClient()->GetPP().groupMembers[0],members[i]->GetName());
-					else {
-						strcpy(newmember->CastToClient()->GetPP().groupMembers[x],members[i]->GetName());
-						x++;
-					}
+			//put this existing person into the new member's list
+			if(newmember->IsClient()) {
+				if(IsLeader(members[i]))
+					strcpy(newmember->CastToClient()->GetPP().groupMembers[0], members[i]->GetCleanName());
+				else {
+					strcpy(newmember->CastToClient()->GetPP().groupMembers[x], members[i]->GetCleanName());
+					x++;
 				}
 			}
 		}
@@ -246,13 +246,13 @@ bool Group::AddMember(Mob* newmember) {
 	
 	//put new member in his own list.
 	if(newmember->IsClient())
-		strcpy(newmember->CastToClient()->GetPP().groupMembers[x],newmember->GetName());
+		strcpy(newmember->CastToClient()->GetPP().groupMembers[x], newmember->GetCleanName());
 
 	newmember->SetGrouped(true);
 	
 	if(newmember->IsClient()) {
 		newmember->CastToClient()->Save();
-		database.SetGroupID(newmember->GetName(), GetID(), newmember->CastToClient()->CharacterID());
+		database.SetGroupID(newmember->GetCleanName(), GetID(), newmember->CastToClient()->CharacterID());
 		SendMarkedNPCsToMember(newmember->CastToClient());
 	}
 	

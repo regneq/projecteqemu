@@ -8082,11 +8082,17 @@ void Bot::ProcessBotGroupInvite(Client* c, std::string botName) {
 		if(invitedBot && !invitedBot->HasGroup()) {
 			if(!c->IsGrouped()) {
 				Group *g = new Group(c);
-				if(AddBotToGroup(invitedBot, g))
+				if(AddBotToGroup(invitedBot, g)) {
 					entity_list.AddGroup(g);
+					database.SetGroupLeaderName(g->GetID(), c->GetName());
+					database.SetGroupID(c->GetName(), g->GetID(), c->CharacterID());
+					database.SetGroupID(invitedBot->GetCleanName(), g->GetID(), invitedBot->GetBotID());
+				}
 			}
-			else
+			else {
 				AddBotToGroup(invitedBot, c->GetGroup());
+				database.SetGroupID(invitedBot->GetCleanName(), c->GetGroup()->GetID(), invitedBot->GetBotID());
+			}
 
 			if(c->GetBotRaidID() > 0)
 				invitedBot->SetBotRaidID(c->GetBotRaidID());
@@ -8753,6 +8759,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 				if(g->GroupCount() < 6 && botGroupItr->GroupID == groupCount) {
 					// Create a group before we have to make a raid in case we dont need to form a raid
 					AddBotToGroup(botGroupMember, g);
+					database.SetGroupID(botGroupMember->GetCleanName(), g->GetID(), botGroupMember->GetBotID());
 				}
 				else {
 					// Create a raid, if one already isn't instantiated and then create a new group to add to this raid
@@ -8766,9 +8773,12 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 
 					groupCount++;
 					
+					br->AddBotGroup(g);
+
 					entity_list.AddGroup(g);
 
-					br->AddBotGroup(g);
+					database.SetGroupLeaderName(g->GetID(), botGroupMember->GetCleanName());
+					database.SetGroupID(botGroupMember->GetCleanName(), g->GetID(), botGroupMember->GetBotID());
 				}
 			}
 		}
