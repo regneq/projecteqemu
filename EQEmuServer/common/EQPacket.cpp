@@ -68,7 +68,7 @@ void EQPacket::DumpRawHeaderNoTime(uint16 seq, FILE *to) const
 	if (seq != 0xffff)
 		fprintf(to, "[Seq=%u] ",seq);
 	
-	fprintf(to, "[EmuOpCode 0x%04x Size=%lu]\n",emu_opcode,size);
+	fprintf(to, "[EmuOpCode 0x%04x Size=%lu]\n",emu_opcode,(unsigned long)size);
 }
 
 void EQProtocolPacket::build_raw_header_dump(char *buffer, uint16 seq) const
@@ -102,7 +102,7 @@ void EQProtocolPacket::DumpRawHeaderNoTime(uint16 seq, FILE *to) const
 	if (seq != 0xffff)
 		fprintf(to, "[Seq=%u] ",seq);
 	
-	fprintf(to, "[ProtoOpCode 0x%04x Size=%lu]\n",opcode,size);
+	fprintf(to, "[ProtoOpCode 0x%04x Size=%lu]\n",opcode,(unsigned long)size);
 }
 
 void EQApplicationPacket::build_raw_header_dump(char *buffer, uint16 seq) const
@@ -147,7 +147,7 @@ void EQApplicationPacket::DumpRawHeaderNoTime(uint16 seq, FILE *to) const
 #ifdef STATIC_OPCODE
 	fprintf(to, "[OpCode 0x%04x Size=%u]\n", emu_opcode,size);
 #else
-	fprintf(to, "[OpCode %s Size=%lu]\n",OpcodeManager::EmuToName(emu_opcode),size);
+	fprintf(to, "[OpCode %s Size=%lu]\n",OpcodeManager::EmuToName(emu_opcode),(unsigned long)size);
 #endif
 }
 
@@ -193,7 +193,7 @@ void EQRawApplicationPacket::DumpRawHeaderNoTime(uint16 seq, FILE *to) const
 #ifdef STATIC_OPCODE
 	fprintf(to, "[OpCode 0x%04x (0x%04x) Size=%u]\n", emu_opcode, opcode,size);
 #else
-	fprintf(to, "[OpCode %s (0x%04x) Size=%lu]\n", OpcodeManager::EmuToName(emu_opcode), opcode,size);
+	fprintf(to, "[OpCode %s (0x%04x) Size=%lu]\n", OpcodeManager::EmuToName(emu_opcode), opcode,(unsigned long)size);
 #endif
 }
 

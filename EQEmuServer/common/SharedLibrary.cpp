@@ -109,7 +109,7 @@ const char *SharedLibrary::GetError()
 	unsigned long err = GetLastError();
 	if(err == 0)
 		return(NULL);
-	sprintf(ErrBuf, "Error #%lu", err);
+	sprintf(ErrBuf, "Error #%lu", (unsigned long)err);
 	return(ErrBuf);
 #else
 	return GetLastError();

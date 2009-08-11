@@ -1889,7 +1889,7 @@ void Database::ClearGroup(int32 gid) {
 			printf("Unable to clear groups: %s\n",errbuf);
 	} else {	//clear a specific group
 		//if (!RunQuery(query, MakeAnyLenString(&query, "update group_id set groupid=0 where groupid = %lu", gid), errbuf))
-		if (!RunQuery(query, MakeAnyLenString(&query, "delete from group_id where groupid = %lu", gid), errbuf))
+		if (!RunQuery(query, MakeAnyLenString(&query, "delete from group_id where groupid = %lu", (unsigned long)gid), errbuf))
 			printf("Unable to clear groups: %s\n",errbuf);
 	}
 	safe_delete_array(query);
@@ -2002,7 +2002,7 @@ void Database::ClearGroupLeader(int32 gid){
 		if (!RunQuery(query, MakeAnyLenString(&query, "DELETE from group_leaders"), errbuf))
 			printf("Unable to clear group leaders: %s\n",errbuf);
 	} else {	//clear a specific group leader
-		if (!RunQuery(query, MakeAnyLenString(&query, "DELETE from group_leaders where gid = %lu", gid), errbuf))
+		if (!RunQuery(query, MakeAnyLenString(&query, "DELETE from group_leaders where gid = %lu", (unsigned long)gid), errbuf))
 			printf("Unable to clear group leader: %s\n",errbuf);
 	}
 	safe_delete_array(query);
@@ -2069,7 +2069,7 @@ void Database::ClearRaid(int32 rid) {
 		if (!RunQuery(query, MakeAnyLenString(&query, "delete from raid_members"), errbuf))
 			printf("Unable to clear raids: %s\n",errbuf);
 	} else {	//clear a specific group
-		if (!RunQuery(query, MakeAnyLenString(&query, "delete from raid_members where raidid = %lu", rid), errbuf))
+		if (!RunQuery(query, MakeAnyLenString(&query, "delete from raid_members where raidid = %lu", (unsigned long)rid), errbuf))
 			printf("Unable to clear raids: %s\n",errbuf);
 	}
 	safe_delete_array(query);
@@ -2082,7 +2082,7 @@ void Database::ClearRaidDetails(int32 rid) {
 		if (!RunQuery(query, MakeAnyLenString(&query, "delete from raid_details"), errbuf))
 			printf("Unable to clear raid details: %s\n",errbuf);
 	} else {	//clear a specific group
-		if (!RunQuery(query, MakeAnyLenString(&query, "delete from raid_details where raidid = %lu", rid), errbuf))
+		if (!RunQuery(query, MakeAnyLenString(&query, "delete from raid_details where raidid = %lu", (unsigned long)rid), errbuf))
 			printf("Unable to clear raid details: %s\n",errbuf);
 	}
 	safe_delete_array(query);
@@ -2490,7 +2490,7 @@ bool Database::CreateInstance(uint16 instance_id, uint32 zone_id, uint32 version
 	char *query = 0;
 
 	if(RunQuery(query, MakeAnyLenString(&query, "INSERT INTO instance_lockout (id, zone, version, start_time, duration)" 
-		" values(%lu, %lu, %lu, UNIX_TIMESTAMP(), %lu)", instance_id, zone_id, version, duration), errbuf))
+		" values(%lu, %lu, %lu, UNIX_TIMESTAMP(), %lu)", (unsigned long)instance_id, (unsigned long)zone_id, (unsigned long)version, (unsigned long)duration), errbuf))
 	{
 		safe_delete_array(query);
 		return true;
@@ -2538,7 +2538,7 @@ bool Database::AddClientToInstance(uint16 instance_id, uint32 char_id)
 	char *query = 0;
 
 	if(RunQuery(query, MakeAnyLenString(&query, "INSERT INTO instance_lockout_player(id, charid) "
-			"values(%lu, %lu)", instance_id, char_id), errbuf))
+			"values(%lu, %lu)", (unsigned long)instance_id, (unsigned long)char_id), errbuf))
 	{
 		safe_delete_array(query);
 		return true;
@@ -2556,7 +2556,7 @@ bool Database::RemoveClientFromInstance(uint16 instance_id, uint32 char_id)
 	char *query = 0;
 
 	if(RunQuery(query, MakeAnyLenString(&query, "DELETE FROM instance_lockout_player WHERE id=%lu AND charid=%lu", 
-		instance_id, char_id), errbuf))
+		(unsigned long)instance_id, (unsigned long)char_id), errbuf))
 	{
 		safe_delete_array(query);
 		return true;
@@ -2574,7 +2574,7 @@ bool Database::RemoveClientsFromInstance(uint16 instance_id)
 	char *query = 0;
 
 	if(RunQuery(query, MakeAnyLenString(&query, "DELETE FROM instance_lockout_player WHERE id=%lu", 
-		instance_id), errbuf))
+		(unsigned long)instance_id), errbuf))
 	{
 		safe_delete_array(query);
 		return true;

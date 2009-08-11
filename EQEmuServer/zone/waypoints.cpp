@@ -114,7 +114,7 @@ void NPC::ResumeWandering()
 		}
 		else
 		{
-			LogFile->write(EQEMuLog::Error, "NPC not paused - can't resume wandering: %lu", GetNPCTypeID());
+			LogFile->write(EQEMuLog::Error, "NPC not paused - can't resume wandering: %lu", (unsigned long)GetNPCTypeID());
 			return;
 		}
 		
@@ -129,7 +129,7 @@ void NPC::ResumeWandering()
 	}
 	else
 	{
-		LogFile->write(EQEMuLog::Error, "NPC not on grid - can't resume wandering: %lu", GetNPCTypeID());
+		LogFile->write(EQEMuLog::Error, "NPC not on grid - can't resume wandering: %lu", (unsigned long)GetNPCTypeID());
 	}
 	return;
 }
@@ -151,7 +151,7 @@ void NPC::PauseWandering(int pausetime)
 			AIwalking_timer->Start(pausetime*1000); // set the timer
 		}
 	} else {
-		LogFile->write(EQEMuLog::Error, "NPC not on grid - can't pause wandering: %lu", GetNPCTypeID());
+		LogFile->write(EQEMuLog::Error, "NPC not on grid - can't pause wandering: %lu", (unsigned long)GetNPCTypeID());
 	}
 	return;
 }

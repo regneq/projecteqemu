@@ -274,7 +274,7 @@ void EQStreamServer::RecvData(uchar* data, int32 size, int32 irIP, int16 irPort)
 	//}
 
 	char temp[25];
-	sprintf(temp,"%lu:%u",irIP,irPort);
+	sprintf(temp,"%lu:%u",(unsigned long)irIP,irPort);
 	cout << "Data from " << temp << endl;
 	EQStream* tmp = NULL;
 	map <string, EQStream*>::iterator connection;

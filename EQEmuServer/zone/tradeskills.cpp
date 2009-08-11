@@ -1129,7 +1129,7 @@ bool ZoneDatabase::GetTradeRecipe(uint32 recipe_id, uint8 c_type, uint32 some_id
  	" FROM tradeskill_recipe AS tr inner join tradeskill_recipe_entries as tre"
  	" ON tr.id = tre.recipe_id"
  	" WHERE tr.id = %lu AND tre.item_id %s"
- 	" GROUP BY tr.id", recipe_id, containers);
+ 	" GROUP BY tr.id", (unsigned long)recipe_id, containers);
 		
 	if (!RunQuery(query, qlen, errbuf, &result)) {
 		LogFile->write(EQEMuLog::Error, "Error in GetTradeRecipe, query: %s", query);

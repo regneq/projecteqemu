@@ -303,7 +303,7 @@ uint32 processed=0,subpacket_length=0;
 			SessionRequest *Request=(SessionRequest *)p->pBuffer;
 			Session=ntohl(Request->Session);
 			SetMaxLen(ntohl(Request->MaxLength));
-			_log(NET__NET_TRACE, _L "Received OP_SessionRequest: session %lu, maxlen %d" __L, Session, MaxLen);
+			_log(NET__NET_TRACE, _L "Received OP_SessionRequest: session %lu, maxlen %d" __L, (unsigned long)Session, MaxLen);
 			SetState(ESTABLISHED);
 #ifndef COLLECTOR
 			Key=0x11223344;
@@ -330,7 +330,7 @@ uint32 processed=0,subpacket_length=0;
 			compressed=(Response->Format&FLAG_COMPRESSED);
 			encoded=(Response->Format&FLAG_ENCODED);
 
-			_log(NET__NET_TRACE, _L "Received OP_SessionResponse: session %lu, maxlen %d, key %lu, compressed? %s, encoded? %s" __L, Session, MaxLen, Key, compressed?"yes":"no", encoded?"yes":"no");
+			_log(NET__NET_TRACE, _L "Received OP_SessionResponse: session %lu, maxlen %d, key %lu, compressed? %s, encoded? %s" __L, (unsigned long)Session, MaxLen, (unsigned long)Key, compressed?"yes":"no", encoded?"yes":"no");
 			
 			// Kinda kludgy, but trie for now
 			if (StreamType==UnknownStream) {
@@ -409,9 +409,9 @@ if(NextSequencedSend > SequencedQueue.size()) {
 #ifndef COLLECTOR
 			SessionStats *Stats=(SessionStats *)p->pBuffer;
 			_log(NET__NET_TRACE, _L "Received Stats: %lu packets received, %lu packets sent, Deltas: local %lu, (%lu <- %lu -> %lu) remote %lu" __L, 
-				ntohl(Stats->packets_recieved), ntohl(Stats->packets_sent), ntohl(Stats->last_local_delta), 
-				ntohl(Stats->low_delta), ntohl(Stats->average_delta), 
-				ntohl(Stats->high_delta), ntohl(Stats->last_remote_delta));
+				(unsigned long)ntohl(Stats->packets_recieved), (unsigned long)ntohl(Stats->packets_sent), (unsigned long)ntohl(Stats->last_local_delta), 
+				(unsigned long)ntohl(Stats->low_delta), (unsigned long)ntohl(Stats->average_delta), 
+				(unsigned long)ntohl(Stats->high_delta), (unsigned long)ntohl(Stats->last_remote_delta));
 			uint64 x=Stats->packets_recieved;
 			Stats->packets_recieved=Stats->packets_sent;
 			Stats->packets_sent=x;
@@ -825,7 +825,7 @@ EQProtocolPacket *out=new EQProtocolPacket(OP_SessionResponse,NULL,sizeof(Sessio
 	out->size=sizeof(SessionResponse);
 	
 	_log(NET__NET_TRACE, _L "Sending OP_SessionResponse: session %lu, maxlen=%d, key=0x%x, compressed? %s, encoded? %s" __L,
-		Session, MaxLen, Key, compressed?"yes":"no", encoded?"yes":"no");
+		(unsigned long)Session, MaxLen, Key, compressed?"yes":"no", encoded?"yes":"no");
 	
 	NonSequencedPush(out);
 }
@@ -838,7 +838,7 @@ EQProtocolPacket *out=new EQProtocolPacket(OP_SessionRequest,NULL,sizeof(Session
 	Request->Session=htonl(time(NULL));
 	Request->MaxLength=htonl(512);
 	
-	_log(NET__NET_TRACE, _L "Sending OP_SessionRequest: session %lu, maxlen=%d" __L, ntohl(Request->Session), ntohl(Request->MaxLength));
+	_log(NET__NET_TRACE, _L "Sending OP_SessionRequest: session %lu, maxlen=%d" __L, (unsigned long)ntohl(Request->Session), ntohl(Request->MaxLength));
 	
 	NonSequencedPush(out);
 }
@@ -852,7 +852,7 @@ void EQStream::_SendDisconnect()
 	*(uint32 *)out->pBuffer=htonl(Session);
 	NonSequencedPush(out);
 	
-	_log(NET__NET_TRACE, _L "Sending OP_SessionDisconnect: session %lu" __L, Session);
+	_log(NET__NET_TRACE, _L "Sending OP_SessionDisconnect: session %lu" __L, (unsigned long)Session);
 }
 
 void EQStream::InboundQueuePush(EQRawApplicationPacket *p)
@@ -1092,12 +1092,12 @@ if(NextSequencedSend > SequencedQueue.size()) {
 		seq++;	//we stop at the block right after their ack, counting on the wrap of both numbers.
 		while(SequencedBase != seq) {
 if(SequencedQueue.empty()) {
-_log(NET__ERROR, _L "OUT OF PACKETS acked packet with sequence %lu. Next send is %d before this." __L, SequencedBase, NextSequencedSend);
+_log(NET__ERROR, _L "OUT OF PACKETS acked packet with sequence %lu. Next send is %d before this." __L, (unsigned long)SequencedBase, NextSequencedSend);
 	SequencedBase = NextOutSeq;
 	NextSequencedSend = 0;
 	break;
 }
-			_log(NET__NET_ACKS, _L "Removing acked packet with sequence %lu. Next send is %d before this." __L, SequencedBase, NextSequencedSend);
+			_log(NET__NET_ACKS, _L "Removing acked packet with sequence %lu. Next send is %d before this." __L, (unsigned long)SequencedBase, NextSequencedSend);
 			//clean out the acked packet
 			delete SequencedQueue.front();
 			SequencedQueue.pop_front();
@@ -1121,7 +1121,7 @@ if(NextSequencedSend > SequencedQueue.size()) {
 void EQStream::SetNextAckToSend(uint32 seq)
 {
 	MAcks.lock();
-	_log(NET__NET_ACKS, _L "Set Next Ack To Send to %lu" __L, seq);
+	_log(NET__NET_ACKS, _L "Set Next Ack To Send to %lu" __L, (unsigned long)seq);
 	NextAckToSend=seq;
 	MAcks.unlock();
 }
@@ -1129,7 +1129,7 @@ void EQStream::SetNextAckToSend(uint32 seq)
 void EQStream::SetLastAckSent(uint32 seq)
 {
 	MAcks.lock();
-	_log(NET__NET_ACKS, _L "Set Last Ack Sent to %lu" __L, seq);
+	_log(NET__NET_ACKS, _L "Set Last Ack Sent to %lu" __L, (unsigned long)seq);
 	LastAckSent=seq;
 	MAcks.unlock();
 }
