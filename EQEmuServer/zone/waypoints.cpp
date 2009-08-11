@@ -229,7 +229,7 @@ void NPC::UpdateWaypoint(int wp_index)
 		{
 			VERTEX dest(cur_wp_x, cur_wp_y, cur_wp_z);
 
-			float newz = zone->map->FindBestZ(MAP_ROOT_NODE, dest, NULL, NULL);
+			float newz = zone->zonemap->FindBestZ(MAP_ROOT_NODE, dest, NULL, NULL);
 
 			if( (newz > -2000) && ABS(newz - dest.z) < RuleR(Map, FixPathingZMaxDeltaWaypoint))
 				cur_wp_z = newz + 1;
@@ -441,7 +441,7 @@ bool Mob::CalculateNewPosition2(float x, float y, float z, float speed, bool che
 			{
 				VERTEX dest(x_pos, y_pos, z_pos);
 
-				float newz = zone->map->FindBestZ(MAP_ROOT_NODE, dest, NULL, NULL);
+				float newz = zone->zonemap->FindBestZ(MAP_ROOT_NODE, dest, NULL, NULL);
 
 				mlog(AI__WAYPOINTS, "BestZ returned %4.3f at %4.3f, %4.3f, %4.3f", newz,x_pos,y_pos,z_pos);
 
@@ -543,7 +543,7 @@ bool Mob::CalculateNewPosition2(float x, float y, float z, float speed, bool che
 		{
 			VERTEX dest(x_pos, y_pos, z_pos);
 
-			float newz = zone->map->FindBestZ(MAP_ROOT_NODE, dest, NULL, NULL);
+			float newz = zone->zonemap->FindBestZ(MAP_ROOT_NODE, dest, NULL, NULL);
 
 			mlog(AI__WAYPOINTS, "BestZ returned %4.3f at %4.3f, %4.3f, %4.3f", newz,x_pos,y_pos,z_pos);
 
@@ -640,7 +640,7 @@ bool Mob::CalculateNewPosition(float x, float y, float z, float speed, bool chec
 		{
 			VERTEX dest(x_pos, y_pos, z_pos);
 
-			float newz = zone->map->FindBestZ(MAP_ROOT_NODE, dest, NULL, NULL);
+			float newz = zone->zonemap->FindBestZ(MAP_ROOT_NODE, dest, NULL, NULL);
 
 			mlog(AI__WAYPOINTS, "BestZ returned %4.3f at %4.3f, %4.3f, %4.3f", newz,x_pos,y_pos,z_pos);
 
@@ -747,7 +747,7 @@ void NPC::AssignWaypoints(int32 grid) {
 					{
 						VERTEX dest(newwp.x, newwp.y, newwp.z);
 
-						float newz = zone->map->FindBestZ(MAP_ROOT_NODE, dest, NULL, NULL);
+						float newz = zone->zonemap->FindBestZ(MAP_ROOT_NODE, dest, NULL, NULL);
 
 						if( (newz > -2000) && ABS(newz-dest.z) < RuleR(Map, FixPathingZMaxDeltaLoading))
 							newwp.z = newz + 1;
@@ -823,7 +823,7 @@ void Mob::SendTo(float new_x, float new_y, float new_z) {
 		{
 			VERTEX dest(x_pos, y_pos, z_pos);
 
-			float newz = zone->map->FindBestZ(MAP_ROOT_NODE, dest, NULL, NULL);
+			float newz = zone->zonemap->FindBestZ(MAP_ROOT_NODE, dest, NULL, NULL);
 
 			mlog(AI__WAYPOINTS, "BestZ returned %4.3f at %4.3f, %4.3f, %4.3f", newz,x_pos,y_pos,z_pos);
 
@@ -850,7 +850,7 @@ void Mob::SendToFixZ(float new_x, float new_y, float new_z) {
 		{
 			VERTEX dest(x_pos, y_pos, z_pos);
 
-			float newz = zone->map->FindBestZ(MAP_ROOT_NODE, dest, NULL, NULL);
+			float newz = zone->zonemap->FindBestZ(MAP_ROOT_NODE, dest, NULL, NULL);
 
 			mlog(AI__WAYPOINTS, "BestZ returned %4.3f at %4.3f, %4.3f, %4.3f", newz,x_pos,y_pos,z_pos);
 

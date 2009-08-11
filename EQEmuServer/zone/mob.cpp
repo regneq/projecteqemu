@@ -2600,9 +2600,9 @@ void Mob::SetTarget(Mob* mob) {
 float Mob::FindGroundZ(float new_x, float new_y, float z_offset)
 {
 	float ret = -999999;
-	if (zone->map != 0)
+	if (zone->zonemap != 0)
 	{
-		NodeRef pnode = zone->map->SeekNode( zone->map->GetRoot(), new_x, new_y );
+		NodeRef pnode = zone->zonemap->SeekNode( zone->zonemap->GetRoot(), new_x, new_y );
 		if (pnode != NODE_NONE)
 		{
 			VERTEX me;
@@ -2611,7 +2611,7 @@ float Mob::FindGroundZ(float new_x, float new_y, float z_offset)
 			me.z = z_pos+z_offset;
 			VERTEX hit;
 			FACE *onhit;
-			float best_z = zone->map->FindBestZ(pnode, me, &hit, &onhit);
+			float best_z = zone->zonemap->FindBestZ(pnode, me, &hit, &onhit);
 			if (best_z != -999999)
 			{
 				ret = best_z;

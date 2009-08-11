@@ -756,7 +756,7 @@ Zone::Zone(int32 in_zoneid, int32 in_instanceid, const char* in_short_name)
 	zoneid = in_zoneid;
 	instanceid = in_instanceid;
 	instanceversion = database.GetInstanceVersion(instanceid);
-	map = Map::LoadMapfile(in_short_name);
+	zonemap = Map::LoadMapfile(in_short_name);
 	watermap = WaterMap::LoadWaterMapfile(in_short_name);
 	pathing = PathManager::LoadPathFile(in_short_name);
 
@@ -829,7 +829,7 @@ Zone::~Zone() {
 	if(pQueuedMerchantsWorkID != 0)
 		dbasync->CancelWork(pQueuedMerchantsWorkID);
 	spawn2_list.Clear();
-	safe_delete(map);
+	safe_delete(zonemap);
 	safe_delete(watermap);
 	safe_delete(pathing);
 	if (worldserver.Connected()) {

@@ -177,7 +177,7 @@ public:
 	map<uint32,LDoNTrapTemplate*> ldon_trap_list;
 	map<uint32,std::list<LDoNTrapTemplate*> > ldon_trap_entry_list;
 
-	Map*	map;
+	Map*	zonemap;
 	WaterMap* watermap;
 	PathManager *pathing;
 	NewZone_Struct	newzone_data;
@@ -213,7 +213,7 @@ public:
 	bool		IsSpellBlocked(int32 spell_id, float nx, float ny, float nz);
 	const char *GetSpellBlockedMessage(int32 spell_id, float nx, float ny, float nz);
 	int			GetTotalBlockedSpells() { return totalBS; }
-	inline bool HasMap() { return map != NULL; }
+	inline bool HasMap() { return zonemap != NULL; }
 	inline bool HasWaterMap() { return watermap != NULL; }
 
 	LinkedList<Spawn2*> spawn2_list;
