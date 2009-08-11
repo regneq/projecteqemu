@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==08/11/2009==
+WildcardX: *BOTS* Refactored some bots code and implemented a new feature. Players can now inspect bots and their equipment just like players inspect other players. Enjoy!
+
 ==08/10/2009==
 WildcardX: Tweaked Groups a little to allow a group to consist of both Bots and Clients, doesn't matter what order you invite either nor does it matter how many of each.
 WildcardX: *BOTS* A client camping out or zoning will now auto camp out all their bots and clean up any group those bots may have been in.

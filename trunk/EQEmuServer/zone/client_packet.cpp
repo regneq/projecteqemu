@@ -5385,6 +5385,11 @@ void Client::Handle_OP_InspectRequest(const EQApplicationPacket *app)
 	if(tmp != 0 && tmp->IsClient())
 		tmp->CastToClient()->QueuePacket(app); // Send request to target
 
+#ifdef BOTS
+	if(tmp != 0 && tmp->IsBot())
+		Bot::ProcessBotInspectionRequest(tmp->CastToBot(), this);
+#endif
+
 	return;
 }
 
