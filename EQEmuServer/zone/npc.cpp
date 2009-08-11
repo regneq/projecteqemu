@@ -1594,7 +1594,8 @@ void NPC::LevelScale() {
 	if(level > 15 && level <= 25)
 		scale_adjust = 2;
 
-	max_hp += (max_hp * scaling);
+	base_hp += (int)(base_hp * scaling);
+	max_hp += (int)(max_hp * scaling);
 	cur_hp = max_hp;
 	STR += (int)(STR * scaling / scale_adjust);
 	STA += (int)(STA * scaling / scale_adjust);
