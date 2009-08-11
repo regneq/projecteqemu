@@ -1131,7 +1131,7 @@ bool Bot::Process() {
 bool Bot::AI_EngagedCastCheck() {
 	if (GetTarget() && AIautocastspell_timer->Check(false)) {
 		_ZP(Bot_AI_Process_engaged_cast);
-		
+
 		AIautocastspell_timer->Disable();	//prevent the timer from going off AGAIN while we are casting.
 
 		int8 botClass = GetClass();
@@ -1140,7 +1140,7 @@ bool Bot::AI_EngagedCastCheck() {
 		mlog(AI__SPELLS, "Engaged autocast check triggered. Trying to cast healing spells then maybe offensive spells.");
 
 		BotRaids *br = entity_list.GetBotRaidByMob(this);
-		
+
 		if(botClass == CLERIC)
 		{
 			if(br && GetBotRaidID()) {
@@ -1199,10 +1199,9 @@ bool Bot::AI_EngagedCastCheck() {
 					return true;
 				}
 			}
-		}
-
-		// TODO: Make enchanter to be able to mez
+		}		
 		else if(botClass == ENCHANTER) {
+			// TODO: Make enchanter to be able to mez
 			if (!Bot_AICastSpell(this, 100, SpellType_Escape | SpellType_Pet)) {
 				if(!Bot_AICastSpell(GetTarget(), 80, SpellType_DOT | SpellType_Nuke | SpellType_Dispel)) {
 					AIautocastspell_timer->Start(RandomTimer(500, 2000), false);
@@ -1218,8 +1217,8 @@ bool Bot::AI_EngagedCastCheck() {
 				}					
 			}
 		}
-		// And for all the others classes..
 		else {
+			// And for all the others classes..
 			if(!Bot_AICastSpell(this, 100, SpellType_Heal | SpellType_Escape)) {                                 // heal itself
 				if (!entity_list.Bot_AICheckCloseBeneficialSpells(this, 80, MobAISpellRange, SpellType_Heal)) {	// heal others
 					if(!Bot_AICastSpell(GetTarget(), 80, SpellTypes_Detrimental)) {		// nuke..
@@ -7450,20 +7449,22 @@ bool Bot::CastSpell(int16 spell_id, int16 target_id, int16 slot, sint32 cast_tim
 		if(casting_spell_id == spell_id)
 			ZeroCastingVars();
 
-		if(!IsValidSpell(spell_id) || casting_spell_id || delaytimer || spellend_timer.Enabled() || IsStunned() || IsFeared() || IsMezzed() || IsSilenced()) {
-			mlog(SPELLS__CASTING_ERR, "Spell casting canceled: not able to cast now. Valid? %d, casting %d, waiting? %d, spellend? %d, stunned? %d, feared? %d, mezed? %d, silenced? %d",
-				IsValidSpell(spell_id), casting_spell_id, delaytimer, spellend_timer.Enabled(), IsStunned(), IsFeared(), IsMezzed(), IsSilenced() );
-			if(IsSilenced())
-				Message_StringID(13, SILENCED_STRING);
-			if(casting_spell_id)
-				CastToNPC()->AI_Event_SpellCastFinished(false, casting_spell_slot);
-			return(false);
+		if(GetClass() != BARD) {
+			if(!IsValidSpell(spell_id) || casting_spell_id || delaytimer || spellend_timer.Enabled() || IsStunned() || IsFeared() || IsMezzed() || IsSilenced()) {
+				mlog(SPELLS__CASTING_ERR, "Spell casting canceled: not able to cast now. Valid? %d, casting %d, waiting? %d, spellend? %d, stunned? %d, feared? %d, mezed? %d, silenced? %d",
+					IsValidSpell(spell_id), casting_spell_id, delaytimer, spellend_timer.Enabled(), IsStunned(), IsFeared(), IsMezzed(), IsSilenced() );
+				if(IsSilenced())
+					Message_StringID(13, SILENCED_STRING);
+				if(casting_spell_id)
+					AI_Event_SpellCastFinished(false, casting_spell_slot);
+				return(false);
+			}
 		}
 
 		if(IsDetrimentalSpell(spell_id) && !zone->CanDoCombat()){
 			Message_StringID(13, SPELL_WOULDNT_HOLD);
 			if(casting_spell_id)
-				CastToNPC()->AI_Event_SpellCastFinished(false, casting_spell_slot);
+				AI_Event_SpellCastFinished(false, casting_spell_slot);
 			return(false);
 		}
 
@@ -7490,11 +7491,15 @@ bool Bot::CastSpell(int16 spell_id, int16 target_id, int16 slot, sint32 cast_tim
 			return(false);
 		}
 
-		//if (HasActiveSong()) {
-		//	mlog(SPELLS__BARDS, "Casting a new spell/song while singing a song. Killing old song %d.", bardsong);
-		//	//Note: this does NOT tell the client
-		//	_StopSong();
-		//}
+		if (HasActiveSong()) {
+			mlog(SPELLS__BARDS, "Casting a new spell/song while singing a song. Killing old song %d.", bardsong);
+			//Note: this does NOT tell the client
+			//_StopSong();
+			bardsong = 0;
+			bardsong_target_id = 0;
+			bardsong_slot = 0;
+			bardsong_timer.Disable();
+		}
 
 		Result = DoCastSpell(spell_id, target_id, slot, cast_time, mana_cost, oSpellWillFinish, item_slot);
 	}
@@ -7663,8 +7668,7 @@ bool Bot::DoCastSpell(int16 spell_id, int16 target_id, int16 slot, sint32 cast_t
 	
 	if(GetClass() == BARD) { 
 		// Bard bots casting time is interrupting thier melee
-		CastedSpellFinished(spell_id, target_id, slot, mana_cost, item_slot);
-		return true;
+		cast_time = 0;
 	}
 
 	Result = Mob::DoCastSpell(spell_id, target_id, slot, cast_time, mana_cost, oSpellWillFinish, item_slot);

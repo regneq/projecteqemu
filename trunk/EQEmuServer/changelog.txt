@@ -5,6 +5,7 @@ WildcardX: *BOTS* Refactored some bots code and implemented a new feature. Playe
 Trevius: (Secrets) Minor fix for the new Maxlevel Scaling for NPCs to correct a HP issue if they have visible armor/weapons or buffs.
 Trevius: SoF - Updated Opcodes for Voice Macros. They now function in SoF (/vtell, /vgroup, /vraid).
 WildcardX: *BOTS* Cleaned up bot inventory code a little and fixed a bug that caused some items to display in incorrect slots in the inspection window.
+WildcardX: *BOTS* Bot bards are now holding concerts for those willing to listen...
 
 ==08/10/2009==
 WildcardX: Tweaked Groups a little to allow a group to consist of both Bots and Clients, doesn't matter what order you invite either nor does it matter how many of each.
