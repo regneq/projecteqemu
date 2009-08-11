@@ -3492,7 +3492,7 @@ void Bot::BotTradeSwapItem(Client* client, sint16 lootSlot, uint32 id, sint16 ma
 	safe_delete(insttmp);
 	
 	// Remove the item from the bot and from the bot's database records
-	RemoveItem(itmtmp->ID);
+	//RemoveItem(itmtmp->ID);
 	RemoveBotItemBySlot(lootSlot, errorMessage);
 
 	if(!errorMessage->empty())
@@ -3517,7 +3517,7 @@ void Bot::BotTradeAddItem(uint32 id, sint16 maxCharges, uint32 equipableSlots, i
 		if(!errorMessage->empty())
 			return;
 	}
-	ServerLootItem_Struct* item = new ServerLootItem_Struct;
+	/*ServerLootItem_Struct* item = new ServerLootItem_Struct;
 	item->item_id = id;
 	item->charges = maxCharges;
 	item->aug1 = 0;
@@ -3527,7 +3527,7 @@ void Bot::BotTradeAddItem(uint32 id, sint16 maxCharges, uint32 equipableSlots, i
 	item->aug5 = 0;
 	item->equipSlot = equipableSlots;
 	item->lootslot = lootSlot;
-	this->itemlist.push_back(item);
+	this->itemlist.push_back(item);*/
 	int8 materialFromSlot = Inventory::CalcMaterialFromSlot(lootSlot);
 	if(materialFromSlot != 0xFF) {
 		this->BotAddEquipItem(materialFromSlot, id);
@@ -4719,15 +4719,14 @@ bool Bot::Attack(Mob* other, int Hand, bool FromRiposte) {
 sint16 Bot::GetBotFocusEffect(botfocusType bottype, int16 spell_id) {
 	if (IsBardSong(spell_id))
 		return 0;
+
 	const Item_Struct* TempItem = 0;
 	sint16 Total = 0;
 	sint16 realTotal = 0;
 
 	//item focus
-	for(int x=0; x<=21; x++)
-	{
-		//TempItem = database.GetItem(this->CastToNPC()->GetItemID(x));
-		TempItem = database.GetItem(GetItemID(x));
+	for(int x=0; x<=21; x++) {
+		TempItem = database.GetItem(GetBotItem(x));
 		if (TempItem && TempItem->Focus.Effect > 0 && TempItem->Focus.Effect != SPELL_UNKNOWN) {
 			Total = CalcBotFocusEffect(bottype, TempItem->Focus.Effect, spell_id);
 			if(Total > realTotal) {
@@ -4742,16 +4741,19 @@ sint16 Bot::GetBotFocusEffect(botfocusType bottype, int16 spell_id) {
 
 	for (int y = 0; y < BUFF_COUNT; y++) {
 		int16 focusspellid = buffs[y].spellid;
+		
 		if (focusspellid == 0 || focusspellid >= SPDAT_RECORDS)
 			continue;
 
 		Total2 = CalcBotFocusEffect(bottype, focusspellid, spell_id);
+		
 		if(Total2 > realTotal2) {
 			realTotal2 = Total2;
 		}
 	}
 
 	int32 MagicianElementalPactAA = 0;
+
 	if((GetClass() == MAGICIAN) && (GetLevel() >= 59)) {
 		MagicianElementalPactAA = 1;
 	}
@@ -4768,18 +4770,18 @@ sint16 Bot::GetBotFocusEffect(botfocusType bottype, int16 spell_id) {
 	return realTotal + realTotal2;
 }
 
-uint32 Bot::GetItemID(int slot_id) {
-	ItemList::iterator cur,end;
-	cur = itemlist.begin();
-	end = itemlist.end();
-	for(; cur != end; cur++) {
-		ServerLootItem_Struct* item = *cur;
-		if (item->lootslot == slot_id) {
-			return item->item_id;
-		}
-	}
-	return(NULL);
-}
+//uint32 Bot::GetItemID(int slot_id) {
+//	ItemList::iterator cur,end;
+//	cur = itemlist.begin();
+//	end = itemlist.end();
+//	for(; cur != end; cur++) {
+//		ServerLootItem_Struct* item = *cur;
+//		if (item->lootslot == slot_id) {
+//			return item->item_id;
+//		}
+//	}
+//	return(NULL);
+//}
 
 sint16 Bot::CalcBotFocusEffect(botfocusType bottype, int16 focus_id, int16 spell_id) {
 	const SPDat_Spell_Struct &focus_spell = spells[focus_id];
@@ -4805,6 +4807,7 @@ sint16 Bot::CalcBotFocusEffect(botfocusType bottype, int16 focus_id, int16 spell
 			}
 			break;
 		}
+
 		case SE_LimitInstant:{
 			if(spell.buffduration)
 				return(0);
@@ -8102,6 +8105,37 @@ void Bot::ProcessBotGroupInvite(Client* c, std::string botName) {
 				invitedBot->SetBotRaidID(c->GetBotRaidID());
 		}
 		// TODO: if there is a bot but the bot is already in a group, do we send an group invitation cancel message back to the client?
+	}
+}
+
+// Processes a client request to inspect a bot's equipment.
+void Bot::ProcessBotInspectionRequest(Bot* inspectedBot, Client* client) {
+	if(inspectedBot && client) {
+		EQApplicationPacket* outapp = new EQApplicationPacket(OP_InspectAnswer, sizeof(InspectResponse_Struct));
+		InspectResponse_Struct* insr = (InspectResponse_Struct*) outapp->pBuffer;
+		insr->TargetID = inspectedBot->GetID();
+		insr->playerid = client->GetID();
+
+		const Item_Struct* item = 0;
+		
+		for (sint16 L=0; L <= 21; L++) {
+			const Item_Struct* itm = database.GetItem(inspectedBot->GetBotItem(L));
+
+			if(itm) {
+				const ItemInst* inst = new ItemInst(itm, itm->MaxCharges);
+
+				if(inst) {
+					if(item = inst->GetItem()) {
+						strcpy(insr->itemnames[L], item->Name);
+						insr->itemicons[L] = item->Icon;
+					}
+					else
+						insr->itemicons[L] = 0xFFFFFFFF;
+				}
+			}
+		}
+
+		client->QueuePacket(outapp); // Send answer to requester
 	}
 }
 

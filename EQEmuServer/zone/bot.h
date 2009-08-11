@@ -182,6 +182,7 @@ public:
 	static Bot* GetBotByBotClientOwnerAndBotName(Client* c, std::string botName);
 	static void ProcessBotGroupInvite(Client* c, std::string botName);
 	static void BotOrderCampAll(Client* c);
+	static void ProcessBotInspectionRequest(Bot* inspectedBot, Client* client);
 
 	// "GET" Class Methods
 	uint32 GetBotID() { return _botID; }
@@ -266,7 +267,7 @@ private:
 	void GenerateBaseManaPoints();
 	void GenerateSpecialAttacks();
 	void SetBotID(uint32 botID);
-	uint32 GetItemID(int slot_id);
+	//uint32 GetItemID(int slot_id);
 	bool CalcBotHitChance(Mob* target, SkillType skillinuse, int Hand);
 
 	// Private "Inventory" Methods
