@@ -1021,7 +1021,7 @@ private:
 	Timer	zoneinpacket_timer;
 	Timer	linkdead_timer;
 	Timer	dead_timer;
-	Timer	ooc_timer;
+	Timer	global_channel_timer;
 	Timer	shield_timer;
 	Timer	fishing_timer;
 	Timer	endupkeep_timer;

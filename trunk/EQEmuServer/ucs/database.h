@@ -53,7 +53,6 @@ public:
 	void GetAccountStatus(Client *c);
 	void SetChannelPassword(string ChannelName, string Password);
 	void SetChannelOwner(string ChannelName, string Owner);
-	void UpdateKarma(Client *c);
 	void SendHeaders(Client *c);
 	void SendBody(Client *c, int MessageNumber);
 	bool SendMail(string Recipient, string From, string Subject, string Body, string RecipientsString);

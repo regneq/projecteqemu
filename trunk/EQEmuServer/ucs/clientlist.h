@@ -110,7 +110,7 @@ public:
 	void GeneralChannelMessage(const char *Characters);
 	void SetChannelPassword(string ChannelPassword);
 	void ProcessChannelList(string CommandString);
-	void ProcessKarma();
+	void AccountUpdate();
 	int ChannelCount();
 	inline void SetAccountID(int inAccountID) { AccountID = inAccountID; }
 	inline int GetAccountID() { return AccountID; }
@@ -130,6 +130,8 @@ public:
 	string ChannelSlotName(int ChannelNumber);
 	void ToggleInvites();
 	bool InvitesAllowed() { return AllowInvites; }
+	bool IsRevoked() { return Revoked; }
+	void SetRevoked(bool r) { Revoked = r; }
 	inline bool IsChannelAdmin() { return (Status >= RuleI(Channels, RequiredStatusAdmin)); }
 	inline bool CanListAllChannels() { return (Status >= RuleI(Channels, RequiredStatusListAll)); }
 	void SendHelp();
@@ -156,9 +158,10 @@ private:
 	int Status;
 	bool HideMe;
 	bool AllowInvites;
+	bool Revoked;
 
 	//Anti Spam Stuff
-	Timer *KarmaGrabUpdateTimer;
+	Timer *AccountGrabUpdateTimer;
 	uint32 TotalKarma;
 
 	Timer *GlobalChatLimiterTimer; //60 seconds

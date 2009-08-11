@@ -5,6 +5,8 @@ WildcardX: Tweaked Groups a little to allow a group to consist of both Bots and 
 WildcardX: *BOTS* A client camping out or zoning will now auto camp out all their bots and clean up any group those bots may have been in.
 gaeorn: renamed zone->map to zone->zonemap to eliminate compile warning
 gaeorn: added lots of type casting for 64bit compatibility
+KLS: Added #revoke support to /auction and UCS chat channels.
+KLS: Added rule Chat:KarmaGlobalChatLimit amount of karma needed to be able to chat in global channels below the minimum level and Chat:GlobalChatLevelLimit. By default the level is 8 and the karma amount equal to 24 hours of /played time. Meaning that unchanged someone must be >= level 8 or have more than a day of played time before they can chat in global channels.
 
 ==08/09/2009==
 WildcardX: *BOTS* Fixed the bots illusion bug that caused a bots gender and race values to be changed to that of the illusion in the bots table.
