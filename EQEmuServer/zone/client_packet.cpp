@@ -2501,6 +2501,10 @@ void Client::Handle_OP_MoveItem(const EQApplicationPacket *app)
 
 void Client::Handle_OP_Camp(const EQApplicationPacket *app)
 {
+#ifdef BOTS
+	// This block is necessary to clean up any bot objects owned by a Client
+	Bot::DestroyBotObjects(this);
+#endif
 	if(IsLFP())
 		worldserver.StopLFP(CharacterID());
 
@@ -2513,11 +2517,6 @@ void Client::Handle_OP_Camp(const EQApplicationPacket *app)
 
 void Client::Handle_OP_Logout(const EQApplicationPacket *app)
 {
-#ifdef BOTS
-	// This block is necessary to clean up any bot objects owned by a Client
-	Bot::DestroyBotObjects(this);
-#endif
-
 	//LogFile->write(EQEMuLog::Debug, "%s sent a logout packet.", GetName());
 	//we will save when we get destroyed soon anyhow
 	//Save();

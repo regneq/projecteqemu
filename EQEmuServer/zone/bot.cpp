@@ -2802,6 +2802,9 @@ bool Bot::DeleteBot(std::string* errorMessage) {
 
 void Bot::Spawn(Client* botCharacterOwner, std::string* errorMessage) {
 	if(this->GetBotID() > 0 && this->_botOwnerCharacterID > 0 && botCharacterOwner) {
+		// Rename the bot name to make sure that Mob::GetName() matches Mob::GetCleanName() so we dont have a bot named "Jesuschrist001"
+		strcpy(name, GetCleanName());
+
 		// Spawn the bot at the bow owner's loc
 		this->x_pos = botCharacterOwner->GetX();
 		this->y_pos = botCharacterOwner->GetY();
@@ -3702,7 +3705,8 @@ bool Bot::RemoveBotFromGroup(Bot* bot) {
 		Group *g = entity_list.GetGroupByMob(bot);
 		if(g) {
 			bot->SetFollowID(0);
-			g->DelMember(bot);
+			if(g->DelMember(bot))
+				database.SetGroupID(bot->GetCleanName(), 0, bot->GetBotID());
 			
 			if(g->GroupCount() <= 1)
 				g->DisbandGroup();
