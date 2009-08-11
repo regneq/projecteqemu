@@ -775,7 +775,7 @@ void WorldServer::Process() {
 			cur_groupid = ids->start;
 			last_groupid = ids->end;
 #ifdef _EQDEBUG
-			printf("Got new group id set: %lu -> %lu\n", cur_groupid, last_groupid);
+			printf("Got new group id set: %lu -> %lu\n", (unsigned long)cur_groupid, (unsigned long)last_groupid);
 #endif
 			break;
 		}

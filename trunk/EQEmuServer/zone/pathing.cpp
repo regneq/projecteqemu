@@ -115,7 +115,7 @@ bool PathManager::loadPaths(FILE *PathFile)
 	fread(&Head, sizeof(Head), 1, PathFile);
 
 	LogFile->write(EQEMuLog::Status, "Path File Header: Version %ld, PathNodes %ld",
-		       Head.version, Head.PathNodeCount);
+		       (long)Head.version, (long)Head.PathNodeCount);
 
 	if(Head.version != 2)
 	{

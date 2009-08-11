@@ -100,7 +100,7 @@ void EntityList::DescribeAggro(Client *towho, NPC *from_who, float d, bool verbo
 			if(amm == 0) {
 				towho->Message(0, "... %s is not on my hate list.", mob->GetName());
 			} else {
-				towho->Message(0, "... %s is on my hate list with value %lu", mob->GetName(), amm);
+				towho->Message(0, "... %s is on my hate list with value %lu", mob->GetName(), (unsigned long)amm);
 			}
 		} else if(!check_npcs && mob->IsNPC()) {
 				towho->Message(0, "... %s is an NPC and my npc_aggro is disabled.", mob->GetName());

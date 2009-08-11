@@ -121,7 +121,7 @@ bool BaseGuildManager::RefreshGuild(uint32 guild_id) {
 	
 	// load up all the guilds
 	if (!m_db->RunQuery(query, MakeAnyLenString(&query, 
-		"SELECT name, leader, minstatus, motd, motd_setter FROM guilds WHERE id=%lu", guild_id), errbuf, &result)) {
+		"SELECT name, leader, minstatus, motd, motd_setter FROM guilds WHERE id=%lu", (unsigned long)guild_id), errbuf, &result)) {
 		_log(GUILDS__ERROR, "Error reloading guilds '%s': %s", query, errbuf);
 		safe_delete_array(query);
 		return(false);
@@ -139,7 +139,7 @@ bool BaseGuildManager::RefreshGuild(uint32 guild_id) {
 	//load up the rank info for each guild.
 	if (!m_db->RunQuery(query, MakeAnyLenString(&query, 
 		"SELECT guild_id,rank,title,can_hear,can_speak,can_invite,can_remove,can_promote,can_demote,can_motd,can_warpeace "
-		"FROM guild_ranks WHERE guild_id=%lu", guild_id), errbuf, &result)) {
+		"FROM guild_ranks WHERE guild_id=%lu", (unsigned long)guild_id), errbuf, &result)) {
 		_log(GUILDS__ERROR, "Error reloading guild ranks '%s': %s", query, errbuf);
 		safe_delete_array(query);
 		return(false);
@@ -232,7 +232,7 @@ bool BaseGuildManager::_StoreGuildDB(uint32 guild_id) {
 	
 	//clear out old `guilds` entry
 	if (!m_db->RunQuery(query, MakeAnyLenString(&query, 
-		"DELETE FROM guilds WHERE id=%lu", guild_id), errbuf))
+		"DELETE FROM guilds WHERE id=%lu", (unsigned long)guild_id), errbuf))
 	{
 		_log(GUILDS__ERROR, "Error clearing old guild record when storing %d '%s': %s", guild_id, query, errbuf);
 	}
@@ -240,7 +240,7 @@ bool BaseGuildManager::_StoreGuildDB(uint32 guild_id) {
 	
 	//clear out old `guild_ranks` entries
 	if (!m_db->RunQuery(query, MakeAnyLenString(&query, 
-		"DELETE FROM guild_ranks WHERE guild_id=%lu", guild_id), errbuf))
+		"DELETE FROM guild_ranks WHERE guild_id=%lu", (unsigned long)guild_id), errbuf))
 	{
 		_log(GUILDS__ERROR, "Error clearing old guild_ranks records when storing %d '%s': %s", guild_id, query, errbuf);
 	}
@@ -257,7 +257,7 @@ bool BaseGuildManager::_StoreGuildDB(uint32 guild_id) {
 	//insert the new `guilds` entry
 	if (!m_db->RunQuery(query, MakeAnyLenString(&query, 
 		"INSERT INTO guilds (id,name,leader,minstatus,motd,motd_setter) VALUES(%lu,'%s',%lu,%d,'%s', '%s')", 
-		guild_id, name_esc, info->leader_char_id, info->minstatus, motd_esc, motd_set_esc), errbuf))
+		(unsigned long)guild_id, name_esc, (unsigned long)info->leader_char_id, info->minstatus, motd_esc, motd_set_esc), errbuf))
 	{
 		_log(GUILDS__ERROR, "Error inserting new guild record when storing %d. Giving up. '%s': %s", guild_id, query, errbuf);
 		safe_delete_array(query);
@@ -499,15 +499,15 @@ bool BaseGuildManager::DBDeleteGuild(int32 guild_id) {
 	
 	//clear out old `guilds` entry
 	_RunQuery(query, MakeAnyLenString(&query, 
-		"DELETE FROM guilds WHERE id=%lu", guild_id), "clearing old guild record");
+		"DELETE FROM guilds WHERE id=%lu", (unsigned long)guild_id), "clearing old guild record");
 	
 	//clear out old `guild_ranks` entries
 	_RunQuery(query, MakeAnyLenString(&query, 
-		"DELETE FROM guild_ranks WHERE guild_id=%lu", guild_id), "clearing old guild_ranks records");
+		"DELETE FROM guild_ranks WHERE guild_id=%lu", (unsigned long)guild_id), "clearing old guild_ranks records");
 	
 	//clear out people belonging to this guild.
 	_RunQuery(query, MakeAnyLenString(&query, 
-		"DELETE FROM guild_members WHERE guild_id=%lu", guild_id), "clearing chars in guild");
+		"DELETE FROM guild_members WHERE guild_id=%lu", (unsigned long)guild_id), "clearing chars in guild");
 	
 	_log(GUILDS__DB, "Deleted guild %d from the database.", guild_id);
 	

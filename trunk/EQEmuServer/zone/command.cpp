@@ -4920,7 +4920,7 @@ void command_guild(Client *c, const Seperator *sep)
 				int32 id = guild_mgr.CreateGuild(sep->argplus[3], leader);
 				
 				_log(GUILDS__ACTIONS, "%s: Creating guild %s with leader %d with GM command. It was given id %lu.", c->GetName(),
-					sep->argplus[3], leader, id);
+					sep->argplus[3], leader, (unsigned long)id);
 				
 				if (id == GUILD_NONE)
 					c->Message(0, "Guild creation failed.");
@@ -7640,7 +7640,7 @@ void command_ginfo(Client *c, const Seperator *sep)
 			return;
 		}
 		
-		c->Message(0, "Group #%lu:", g->GetID());
+		c->Message(0, "Group #%lu:", (unsigned long)g->GetID());
 		
 		uint32 r;
 		for(r = 0; r < MAX_GROUP_MEMBERS; r++) {
@@ -9006,7 +9006,7 @@ void command_instance(Client *c, const Seperator *sep)
 
 		if(!zn)
 		{
-			c->Message(0, "Zone with id %lu was not found by the server.", zone_id);
+			c->Message(0, "Zone with id %lu was not found by the server.", (unsigned long)zone_id);
 			return;
 		}
 
@@ -9023,7 +9023,7 @@ void command_instance(Client *c, const Seperator *sep)
 			return;
 		}
 		
-		c->Message(0, "New instance %s was created with id %lu.", zn, id);
+		c->Message(0, "New instance %s was created with id %lu.", zn, (unsigned long)id);
 	}
 	else if(strcasecmp(sep->arg[1], "destroy") == 0)
 	{

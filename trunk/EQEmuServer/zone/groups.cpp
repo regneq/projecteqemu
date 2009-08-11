@@ -793,12 +793,12 @@ bool Group::LearnMembers() {
     char* query = 0;
 	MYSQL_RES *result;
 	MYSQL_ROW row;
-	if (database.RunQuery(query,MakeAnyLenString(&query, "SELECT name FROM group_id WHERE groupid=%lu", GetID()),
+	if (database.RunQuery(query,MakeAnyLenString(&query, "SELECT name FROM group_id WHERE groupid=%lu", (unsigned long)GetID()),
 			      errbuf,&result)){
 		safe_delete_array(query);
 		if(mysql_num_rows(result) < 1) {	//could prolly be 2
 			mysql_free_result(result);
-			LogFile->write(EQEMuLog::Error, "Error getting group members for group %lu: %s", GetID(), errbuf);
+			LogFile->write(EQEMuLog::Error, "Error getting group members for group %lu: %s", (unsigned long)GetID(), errbuf);
 			return(false);
 		}
 		int i = 0;
@@ -827,7 +827,7 @@ void Group::VerifyGroup() {
 	for (i = 0; i < MAX_GROUP_MEMBERS; i++) {
 		if (membername[i][0] == '\0') {
 #if EQDEBUG >= 7
-LogFile->write(EQEMuLog::Debug, "Group %lu: Verify %d: Empty.\n", GetID(), i);
+LogFile->write(EQEMuLog::Debug, "Group %lu: Verify %d: Empty.\n", (unsigned long)GetID(), i);
 #endif
 			members[i] = NULL;
 			continue;
@@ -838,7 +838,7 @@ LogFile->write(EQEMuLog::Debug, "Group %lu: Verify %d: Empty.\n", GetID(), i);
 		Mob *them = entity_list.GetMob(membername[i]);
 		if(them == NULL && members[i] != NULL) {	//they arnt here anymore....
 #if EQDEBUG >= 6
-		LogFile->write(EQEMuLog::Debug, "Member of group %lu named '%s' has disappeared!!", GetID(), membername[i]);
+		LogFile->write(EQEMuLog::Debug, "Member of group %lu named '%s' has disappeared!!", (unsigned long)GetID(), membername[i]);
 #endif
 			membername[i][0] = '\0';
 			members[i] = NULL;
@@ -847,13 +847,13 @@ LogFile->write(EQEMuLog::Debug, "Group %lu: Verify %d: Empty.\n", GetID(), i);
 		
 		if(them != NULL && members[i] != them) {	//our pointer is out of date... not so good.
 #if EQDEBUG >= 5
-		LogFile->write(EQEMuLog::Debug, "Member of group %lu named '%s' had an out of date pointer!!", GetID(), membername[i]);
+		LogFile->write(EQEMuLog::Debug, "Member of group %lu named '%s' had an out of date pointer!!", (unsigned long)GetID(), membername[i]);
 #endif
 			members[i] = them;
 			continue;
 		}
 #if EQDEBUG >= 8
-		LogFile->write(EQEMuLog::Debug, "Member of group %lu named '%s' is valid.", GetID(), membername[i]);
+		LogFile->write(EQEMuLog::Debug, "Member of group %lu named '%s' is valid.", (unsigned long)GetID(), membername[i]);
 #endif
 	}
 }

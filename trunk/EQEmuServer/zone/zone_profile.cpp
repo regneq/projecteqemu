@@ -276,7 +276,7 @@ void DumpZoneProfile() {
 		if(cur->count == 0)
 			continue;	//dont print empty timers.
 		
-		LogFile->write(EQEMuLog::Debug, "..%s: %llu calls, %.4fms", cur->str, cur->count, cur->dur);
+		LogFile->write(EQEMuLog::Debug, "..%s: %llu calls, %.4fms", cur->str, (unsigned long long)cur->count, cur->dur);
 	}
 
     LogFile->write(EQEMuLog::Debug, "End Profiling dump at: [%02d/%02d - %02d:%02d:%02d] (%.2f ms of data)", 

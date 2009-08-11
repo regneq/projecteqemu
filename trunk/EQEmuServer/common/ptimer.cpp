@@ -110,7 +110,7 @@ PersistentTimer::PersistentTimer(int32 char_id, pTimerType type, int32 in_timer_
 		enabled = true;
 	}
 #ifdef DEBUG_PTIMERS
-	printf("New timer: char %lu of type %u at %lu for %lu seconds.\n", _char_id, _type, start_time, timer_time);
+	printf("New timer: char %lu of type %u at %lu for %lu seconds.\n", (unsigned long)_char_id, _type, (unsigned long)start_time, (unsigned long)timer_time);
 #endif
 }
 
@@ -122,7 +122,7 @@ PersistentTimer::PersistentTimer(int32 char_id, pTimerType type, int32 in_start_
 	start_time = in_start_time;
 	enabled = in_enable;
 #ifdef DEBUG_PTIMERS
-	printf("New stored timer: char %lu of type %u at %lu for %lu seconds.\n", _char_id, _type, start_time, timer_time);
+	printf("New stored timer: char %lu of type %u at %lu for %lu seconds.\n", (unsigned long)_char_id, _type, (unsigned long)start_time, (unsigned long)timer_time);
 #endif
 }
 
@@ -135,10 +135,10 @@ bool PersistentTimer::Load(Database *db) {
 	uint32 qcount = 0;
 	
 	qlen = MakeAnyLenString(&query, "SELECT start,duration,enable "
-	" FROM timers WHERE char_id=%lu AND type=%u", _char_id, _type);
+	" FROM timers WHERE char_id=%lu AND type=%u", (unsigned long)_char_id, _type);
 	
 #ifdef DEBUG_PTIMERS
-	printf("Loading timer: char %lu of type %u\n", _char_id, _type);
+	printf("Loading timer: char %lu of type %u\n", (unsigned long)_char_id, _type);
 #endif
 	
 	if (!db->RunQuery(query, qlen, errbuf, &result)) {
@@ -175,11 +175,11 @@ bool PersistentTimer::Store(Database *db) {
 	qlen = MakeAnyLenString(&query, "REPLACE INTO timers "
 		" (char_id,type,start,duration,enable) "
 		" VALUES(%lu,%u,%lu,%lu,%d)",
-		_char_id, _type, start_time, timer_time, enabled?1:0);
+		(unsigned long)_char_id, _type, (unsigned long)start_time, (unsigned long)timer_time, enabled?1:0);
 	
 	
 #ifdef DEBUG_PTIMERS
-	printf("Storing timer: char %lu of type %u: '%s'\n", _char_id, _type, query);
+	printf("Storing timer: char %lu of type %u: '%s'\n", (unsigned long)_char_id, _type, query);
 #endif
 	
 	if (!db->RunQuery(query, qlen, errbuf)) {
@@ -201,10 +201,10 @@ bool PersistentTimer::Clear(Database *db) {
 	
 	qlen = MakeAnyLenString(&query, "DELETE FROM timers "
 		" WHERE char_id=%lu AND type=%u ",
-		_char_id, _type);
+		(unsigned long)_char_id, _type);
 	
 #ifdef DEBUG_PTIMERS
-	printf("Clearing timer: char %lu of type %u: '%s'\n", _char_id, _type, query);
+	printf("Clearing timer: char %lu of type %u: '%s'\n", (unsigned long)_char_id, _type, query);
 #endif
 	
 	if (!db->RunQuery(query, qlen, errbuf)) {
@@ -247,7 +247,7 @@ void PersistentTimer::Start(int32 set_timer_time) {
 		timer_time = set_timer_time;
     }
 #ifdef DEBUG_PTIMERS
-	printf("Starting timer: char %lu of type %u at %lu for %lu seconds.\n", _char_id, _type, start_time, timer_time);
+	printf("Starting timer: char %lu of type %u at %lu for %lu seconds.\n", (unsigned long)_char_id, _type, (unsigned long)start_time, (unsigned long)timer_time);
 #endif
 }
 
@@ -260,7 +260,7 @@ void PersistentTimer::SetTimer(int32 set_timer_time) {
 		enabled = true;
     }
 #ifdef DEBUG_PTIMERS
-	printf("Setting timer: char %lu of type %u at %lu for %lu seconds.\n", _char_id, _type, start_time, timer_time);
+	printf("Setting timer: char %lu of type %u at %lu for %lu seconds.\n", (unsigned long)_char_id, _type, (unsigned long)start_time, (unsigned long)timer_time);
 #endif
 }
 
@@ -317,10 +317,10 @@ bool PTimerList::Load(Database *db) {
 	uint32 qcount = 0;
 	
 	qlen = MakeAnyLenString(&query, "SELECT type,start,duration,enable "
-	" FROM timers WHERE char_id=%lu", _char_id);
+	" FROM timers WHERE char_id=%lu", (unsigned long)_char_id);
 	
 #ifdef DEBUG_PTIMERS
-	printf("Loading all timers for char %lu\n", _char_id);
+	printf("Loading all timers for char %lu\n", (unsigned long)_char_id);
 #endif
 	
 	if (!db->RunQuery(query, qlen, errbuf, &result)) {
@@ -359,7 +359,7 @@ bool PTimerList::Load(Database *db) {
 
 bool PTimerList::Store(Database *db) {
 #ifdef DEBUG_PTIMERS
-	printf("Storing all timers for char %lu\n", _char_id);
+	printf("Storing all timers for char %lu\n", (unsigned long)_char_id);
 #endif
 
 	map<pTimerType, PersistentTimer *>::iterator s;
@@ -368,7 +368,7 @@ bool PTimerList::Store(Database *db) {
 	while(s != _list.end()) {
 		if(s->second != NULL) {
 #ifdef DEBUG_PTIMERS
-	printf("Storing timer %u for char %lu\n", s->first, _char_id);
+	printf("Storing timer %u for char %lu\n", s->first, (unsigned long)_char_id);
 #endif
 			if(!s->second->Store(db))
 				res = false;
@@ -386,10 +386,10 @@ bool PTimerList::Clear(Database *db) {
 	uint32 qlen = 0;
 	
 	qlen = MakeAnyLenString(&query, "DELETE FROM timers "
-		" WHERE char_id=%lu ", _char_id);
+		" WHERE char_id=%lu ", (unsigned long)_char_id);
 	
 #ifdef DEBUG_PTIMERS
-	printf("Storing all timers for char %lu: '%s'\n", _char_id, query);
+	printf("Storing all timers for char %lu: '%s'\n", (unsigned long)_char_id, query);
 #endif
 	
 	if (!db->RunQuery(query, qlen, errbuf)) {
@@ -483,10 +483,10 @@ bool PTimerList::ClearOffline(Database *db, int32 char_id, pTimerType type) {
     char *query = 0;
 	uint32 qlen = 0;
 	
-	qlen = MakeAnyLenString(&query, "DELETE FROM timers WHERE char_id=%lu AND type=%u ",char_id, type);
+	qlen = MakeAnyLenString(&query, "DELETE FROM timers WHERE char_id=%lu AND type=%u ",(unsigned long)char_id, type);
 	
 #ifdef DEBUG_PTIMERS
-	printf("Clearing timer (offline): char %lu of type %u: '%s'\n", char_id, type, query);
+	printf("Clearing timer (offline): char %lu of type %u: '%s'\n", (unsigned long)char_id, type, query);
 #endif
 	
 	if (!db->RunQuery(query, qlen, errbuf)) {

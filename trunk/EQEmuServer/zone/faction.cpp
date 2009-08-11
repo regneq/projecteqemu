@@ -75,7 +75,7 @@ const char *FactionValueToString(FACTION_VALUE fv) {
 FACTION_VALUE CalculateFaction(FactionMods* fm, sint32 tmpCharacter_value)
 {
 #if FACTIONS_DEBUG >= 5
-	LogFile->write(EQEMuLog::Debug, "called CalculateFaction(0x%x, %ld)", fm, tmpCharacter_value);
+	LogFile->write(EQEMuLog::Debug, "called CalculateFaction(0x%x, %ld)", fm, (unsigned long)tmpCharacter_value);
 #endif
 	sint32 character_value = tmpCharacter_value;
 	if (fm)
@@ -426,7 +426,7 @@ FACTION_VALUE Mob::GetSpecialFactionCon(Mob* iOther) {
 FACTION_VALUE Client::GetFactionLevel(int32 char_id, int32 npc_id, int32 p_race, int32 p_class, int32 p_deity, sint32 pFaction, Mob* tnpc)
 {
 #if FACTIONS_DEBUG >= 5
-	LogFile->write(EQEMuLog::Debug, "called %s::GetFactionLevel(%lu, %lu, %lu, %lu, %lu, %lu, %s)", GetName(), char_id, npc_id, p_race, p_class, p_deity, pFaction, tnpc?tnpc->GetName():"(NULL)");
+	LogFile->write(EQEMuLog::Debug, "called %s::GetFactionLevel(%lu, %lu, %lu, %lu, %lu, %lu, %s)", GetName(), (unsigned long)char_id, (unsigned long)npc_id, (unsigned long)p_race, (unsigned long)p_class, (unsigned long)p_deity, (unsigned long)pFaction, tnpc?tnpc->GetName():"(NULL)");
 #endif
 	
 	_ZP(Client_GetFactionLevel);

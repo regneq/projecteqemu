@@ -158,7 +158,7 @@ void ZoneDatabase::UpdateSpawn2Timeleft(int32 id, int16 instance_id, int32 timel
 	if(timeleft == 0)
 	{
 		if (!RunQuery(query, MakeAnyLenString(&query, "DELETE FROM respawn_times WHERE id=%lu "
-			"AND instance_id=%lu",id, instance_id),errbuf))
+			"AND instance_id=%lu",(unsigned long)id, (unsigned long)instance_id),errbuf))
 		{
 			LogFile->write(EQEMuLog::Error, "Error in UpdateTimeLeft query %s: %s", query, errbuf);
 		}
@@ -167,7 +167,7 @@ void ZoneDatabase::UpdateSpawn2Timeleft(int32 id, int16 instance_id, int32 timel
 	else
 	{
 		if (!RunQuery(query, MakeAnyLenString(&query, "REPLACE INTO respawn_times (id,start,duration,instance_id) "
-			"VALUES(%lu,%lu,%lu,%lu)",id, cur, timeleft, instance_id),errbuf))
+			"VALUES(%lu,%lu,%lu,%lu)",(unsigned long)id, (unsigned long)cur, (unsigned long)timeleft, (unsigned long)instance_id),errbuf))
 		{
 			LogFile->write(EQEMuLog::Error, "Error in UpdateTimeLeft query %s: %s", query, errbuf);
 		}
@@ -185,7 +185,7 @@ int32 ZoneDatabase::GetSpawnTimeLeft(int32 id, int16 instance_id)
 	MYSQL_ROW row;
 
 	MakeAnyLenString(&query, "SELECT start, duration FROM respawn_times WHERE id=%lu AND instance_id=%lu",
-		id, zone->GetInstanceID());
+		(unsigned long)id, (unsigned long)zone->GetInstanceID());
 	
 	if (RunQuery(query, strlen(query), errbuf, &result))
 	{
@@ -1801,7 +1801,7 @@ void ZoneDatabase::ListAllInstances(Client* c, int32 charid)
 
 	if (RunQuery(query,MakeAnyLenString(&query, "SELECT instance_lockout.id, zone, version FROM instance_lockout JOIN"
 		" instance_lockout_player ON instance_lockout.id = instance_lockout_player.id"
-		" WHERE instance_lockout_player.charid=%lu", charid),errbuf,&result))
+		" WHERE instance_lockout_player.charid=%lu", (unsigned long)charid),errbuf,&result))
 	{
 		safe_delete_array(query);
 
@@ -1811,7 +1811,7 @@ void ZoneDatabase::ListAllInstances(Client* c, int32 charid)
 		while(row = mysql_fetch_row(result))
 		{
 			c->Message(0, "%s - id: %lu, version: %lu", database.GetZoneName(atoi(row[1])), 
-				atoi(row[0]), atoi(row[2]));
+				(unsigned long)atoi(row[0]), (unsigned long)atoi(row[2]));
 		}
 
 		mysql_free_result(result);
