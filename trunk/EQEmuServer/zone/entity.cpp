@@ -3497,7 +3497,7 @@ void EntityList::DestroyTempPets(Mob *owner)
 
 bool Entity::CheckCoordLosNoZLeaps(float cur_x, float cur_y, float cur_z, float trg_x, float trg_y, float trg_z, float perwalk)
 {
-	if(zone->map == NULL) {
+	if(zone->zonemap == NULL) {
 		return(true);
 	}
 	VERTEX myloc;
@@ -3517,7 +3517,7 @@ bool Entity::CheckCoordLosNoZLeaps(float cur_x, float cur_y, float cur_z, float 
 
 	FACE *onhit;
 
-	if (!zone->map->LineIntersectsZoneNoZLeaps(myloc,oloc,perwalk,&hit,&onhit))
+	if (!zone->zonemap->LineIntersectsZoneNoZLeaps(myloc,oloc,perwalk,&hit,&onhit))
 		return true;
 	return false;
 }

@@ -934,7 +934,7 @@ bool Map::LineIntersectsZoneNoZLeaps(VERTEX start, VERTEX end, float step_mag, V
 		me.z = cur.z;
 		VERTEX hit;
 		FACE *onhit;
-		float best_z = zone->map->FindBestZ(cnode, me, &hit, &onhit);
+		float best_z = zone->zonemap->FindBestZ(cnode, me, &hit, &onhit);
 		float diff = ABS(best_z-z);
 //		diff *= sign(diff);
 		if (z == -999999 || best_z == -999999 || diff < 12.0)

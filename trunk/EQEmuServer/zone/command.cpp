@@ -7340,10 +7340,10 @@ void command_path(Client *c, const Seperator *sep)
 			float pz = c->GetZ();
 			float best_z;
 
-			if(zone->map)
+			if(zone->zonemap)
 			{
 				VERTEX loc(px, py, pz);
-				best_z = zone->map->FindBestZ(MAP_ROOT_NODE, loc, NULL, NULL);
+				best_z = zone->zonemap->FindBestZ(MAP_ROOT_NODE, loc, NULL, NULL);
 			}
 			else
 			{
@@ -7367,10 +7367,10 @@ void command_path(Client *c, const Seperator *sep)
 			float pz = c->GetZ();
 			float best_z;
 
-			if(zone->map)
+			if(zone->zonemap)
 			{
 				VERTEX loc(px, py, pz);
-				best_z = zone->map->FindBestZ(MAP_ROOT_NODE, loc, NULL, NULL);
+				best_z = zone->zonemap->FindBestZ(MAP_ROOT_NODE, loc, NULL, NULL);
 			}
 			else
 			{
@@ -7702,16 +7702,16 @@ void command_pf(Client *c, const Seperator *sep)
 }
 
 void command_bestz(Client *c, const Seperator *sep) {
-	if (zone->map == NULL) {
+	if (zone->zonemap == NULL) {
 		c->Message(0,"Maps deactivated in this zone.");
 		return;
 	}
 	
 	NodeRef pnode;
 	if(c->GetTarget()) {
-		pnode = zone->map->SeekNode( zone->map->GetRoot(), c->GetTarget()->GetX(), c->GetTarget()->GetY() );
+		pnode = zone->zonemap->SeekNode( zone->zonemap->GetRoot(), c->GetTarget()->GetX(), c->GetTarget()->GetY() );
 	} else {
-		pnode = zone->map->SeekNode( zone->map->GetRoot(), c->GetX(), c->GetY() );
+		pnode = zone->zonemap->SeekNode( zone->zonemap->GetRoot(), c->GetX(), c->GetY() );
 	}
 	if (pnode == NODE_NONE) {
 		c->Message(0,"Unable to find your node.");
@@ -7726,10 +7726,10 @@ void command_bestz(Client *c, const Seperator *sep) {
 	VERTEX bme(me);
 	bme.z -= 500;
 	
-	float best_z = zone->map->FindBestZ(pnode, me, &hit, NULL);
+	float best_z = zone->zonemap->FindBestZ(pnode, me, &hit, NULL);
 	
 	float best_z2 = -999990;
-	if(zone->map->LineIntersectsNode(pnode, me, bme, &hit, NULL)) {
+	if(zone->zonemap->LineIntersectsNode(pnode, me, bme, &hit, NULL)) {
 		best_z2 = hit.z;
 	}
 	

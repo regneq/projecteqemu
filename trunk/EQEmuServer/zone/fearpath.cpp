@@ -215,7 +215,7 @@ void Mob::CalculateNewFearpoint()
 	flee_mode = flee;
 	
 	//fear dosent work without at least maps
-	if(zone->map == NULL) {
+	if(zone->zonemap == NULL) {
 		fear_state = fearStateStuck;
 		return;	//just stand there
 	}
@@ -303,7 +303,7 @@ bool Mob::FearTryStraight(Mob *caster, int32 duration, bool flee, VERTEX &hit, V
 	end.y = start.y + fear_vector.y * distance;
 	end.z = start.z;
 	
-	if(!zone->map->LineIntersectsZone(start, end, 0.5, &hit, NULL)) {
+	if(!zone->zonemap->LineIntersectsZone(start, end, 0.5, &hit, NULL)) {
 #ifdef FEAR_PATHING_DEBUG
 		LogFile->write(EQEMuLog::Debug, "Fear Pathing Start: can run entire vector from (%.2f, %.2f, %.2f) to (%.2f, %.2f, %.2f)",
 			GetX(), GetY(), GetZ(), end.x, end.y, end.z);
@@ -321,7 +321,7 @@ bool Mob::FearTryStraight(Mob *caster, int32 duration, bool flee, VERTEX &hit, V
 
 //old fear function, kept for ref.
 void Mob::CalculateFearPosition() {
-	if(zone->map == NULL || fear_state == fearStateStuck) {
+	if(zone->zonemap == NULL || fear_state == fearStateStuck) {
 		return;	//just stand there
 	}
 	
@@ -466,7 +466,7 @@ void Mob::CalculateFearPosition() {
 	end.y = start.y + fear_vector.y * 10;
 	end.z = start.z;
 	
-	if(!zone->map->LineIntersectsZone(start, end, 0.5, &normalhit, NULL)) {
+	if(!zone->zonemap->LineIntersectsZone(start, end, 0.5, &normalhit, NULL)) {
 #ifdef FEAR_PATHING_DEBUG
 		LogFile->write(EQEMuLog::Debug, "Fear Pathing: From (%.2f, %.2f, %.2f) normal run to (%.2f, %.2f, %.2f)",
 			GetX(), GetY(), GetZ(), end.x, end.y, end.z);
@@ -505,9 +505,9 @@ void Mob::CalculateFearPosition() {
 		//try and fix up the Z coord if possible
 		//not sure if this is worth it, since it prolly isnt up much
 		
-		NodeRef c = zone->map->SeekNode(zone->map->GetRoot(), end.x, end.y);
+		NodeRef c = zone->zonemap->SeekNode(zone->zonemap->GetRoot(), end.x, end.y);
 		if(c != NODE_NONE) {
-			cur_wp_z = zone->map->FindBestZ(c, end, &hit, NULL);
+			cur_wp_z = zone->zonemap->FindBestZ(c, end, &hit, NULL);
 			if(cur_wp_z < start.z)
 				cur_wp_z = end.z;	//revert on error
 		}
@@ -533,7 +533,7 @@ void Mob::CalculateFearPosition() {
 	end.y = start.y + fear_vector.y * speed;
 	end.z = start.z + speed + speed;
 	
-	if(!zone->map->LineIntersectsZone(start, end, 0.5, &hit, NULL)) {
+	if(!zone->zonemap->LineIntersectsZone(start, end, 0.5, &hit, NULL)) {
 #ifdef FEAR_PATHING_DEBUG
 		LogFile->write(EQEMuLog::Debug, "Fear Pathing: From (%.2f, %.2f, %.2f) up hill run to (%.2f, %.2f, %.2f)",
 			GetX(), GetY(), GetZ(), end.x, end.y, end.z);
@@ -546,9 +546,9 @@ void Mob::CalculateFearPosition() {
 		//try and fix up the Z coord if possible
 		//not sure if this is worth it, since it prolly isnt up much
 		
-		NodeRef c = zone->map->SeekNode(zone->map->GetRoot(), end.x, end.y);
+		NodeRef c = zone->zonemap->SeekNode(zone->zonemap->GetRoot(), end.x, end.y);
 		if(c != NODE_NONE) {
-			cur_wp_z = zone->map->FindBestZ(c, end, &hit, NULL);
+			cur_wp_z = zone->zonemap->FindBestZ(c, end, &hit, NULL);
 			if(cur_wp_z < start.z)
 				cur_wp_z = end.z;	//revert on error
 		}
@@ -572,7 +572,7 @@ void Mob::CalculateFearPosition() {
 	}
 	end.z = start.z + 3;	//a little lift as always
 	
-	if(!zone->map->LineIntersectsZone(start, end, 0.5, &hit, NULL)) {
+	if(!zone->zonemap->LineIntersectsZone(start, end, 0.5, &hit, NULL)) {
 #ifdef FEAR_PATHING_DEBUG
 		LogFile->write(EQEMuLog::Debug, "Fear Pathing: From (%.2f, %.2f, %.2f) strafe 1 to (%.2f, %.2f, %.2f)",
 			GetX(), GetY(), GetZ(), end.x, end.y, end.z);
@@ -595,7 +595,7 @@ void Mob::CalculateFearPosition() {
 	}
 	end.z = start.z + 3;	//a little lift as always
 	
-	if(!zone->map->LineIntersectsZone(start, end, 0.5, &hit, NULL)) {
+	if(!zone->zonemap->LineIntersectsZone(start, end, 0.5, &hit, NULL)) {
 #ifdef FEAR_PATHING_DEBUG
 		LogFile->write(EQEMuLog::Debug, "Fear Pathing: From (%.2f, %.2f, %.2f) strafe 2 to (%.2f, %.2f, %.2f)",
 			GetX(), GetY(), GetZ(), end.x, end.y, end.z);

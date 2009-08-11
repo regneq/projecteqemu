@@ -222,7 +222,7 @@ bool Client::CanFish() {
 		return false;
 	}
 
-	if(zone->map!=NULL && zone->watermap != NULL && RuleB(Watermap, CheckForWaterWhenFishing)) {
+	if(zone->zonemap!=NULL && zone->watermap != NULL && RuleB(Watermap, CheckForWaterWhenFishing)) {
 		float RodX, RodY, RodZ;
 		// Tweak Rod and LineLength if required
 		const float RodLength = RuleR(Watermap, FishingRodLength);
@@ -241,9 +241,9 @@ bool Client::CanFish() {
 		dest.x = RodX;
 		dest.y = RodY;
 		dest.z = z_pos+10;
-		NodeRef n = zone->map->SeekNode( zone->map->GetRoot(), dest.x, dest.y);
+		NodeRef n = zone->zonemap->SeekNode( zone->zonemap->GetRoot(), dest.x, dest.y);
 		if(n != NODE_NONE) {
-			RodZ = zone->map->FindBestZ(n, dest, NULL, NULL) - 1;
+			RodZ = zone->zonemap->FindBestZ(n, dest, NULL, NULL) - 1;
 			bool in_lava = zone->watermap->InLava(RodX, RodY, RodZ);
 			bool in_water = zone->watermap->InWater(RodX, RodY, RodZ);
 			//Message(0, "Rod is at %4.3f, %4.3f, %4.3f, InWater says %d, InLava says %d", RodX, RodY, RodZ, in_water, in_lava);

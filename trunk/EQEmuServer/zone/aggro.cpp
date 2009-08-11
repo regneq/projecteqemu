@@ -869,7 +869,7 @@ bool Mob::CombatRange(Mob* other)
 //Not removed because I havent looked it over to see if anything
 //useful is in here before we delete it.
 bool Mob::CheckLos(Mob* other) {
-	if (zone->map == 0)
+	if (zone->zonemap == 0)
 	{
 		return true;
 	}
@@ -957,11 +957,11 @@ bool Mob::CheckLos(Mob* other) {
 		}
 
 //I believe this is contributing to breaking mob spawns when a map is loaded
-//		NodeRef pnode = zone->map->SeekNode( zone->map->GetRoot(), tmp_x, tmp_y );
+//		NodeRef pnode = zone->zonemap->SeekNode( zone->zonemap->GetRoot(), tmp_x, tmp_y );
 		NodeRef pnode = NODE_NONE;
 		if (pnode != NODE_NONE)
 		{
-			const int *iface = zone->map->SeekFace( pnode, tmp_x, tmp_y );
+			const int *iface = zone->zonemap->SeekFace( pnode, tmp_x, tmp_y );
 			if (*iface == -1) {
 				return false;
 			}
@@ -969,7 +969,7 @@ bool Mob::CheckLos(Mob* other) {
 			float best_z = 999999;
 			while(*iface != -1)
 			{
-				temp_z = zone->map->GetFaceHeight( *iface, x_pos, y_pos );
+				temp_z = zone->zonemap->GetFaceHeight( *iface, x_pos, y_pos );
 //UMM.. OMG... sqrtf(pow(x, 2)) == x.... retards
 				float best_dist = sqrtf((float)(pow(best_z-tmp_z, 2)));
 				float tmp_dist = sqrtf((float)(pow(tmp_z-tmp_z, 2)));
@@ -1003,7 +1003,7 @@ bool Mob::CheckLosFN(Mob* other) {
 }
 
 bool Mob::CheckLosFN(float posX, float posY, float posZ, float mobSize) {
-	if(zone->map == NULL) {
+	if(zone->zonemap == NULL) {
 		//not sure what the best return is on error
 		//should make this a database variable, but im lazy today
 #ifdef LOS_DEFAULT_CAN_SEE
@@ -1037,9 +1037,9 @@ bool Mob::CheckLosFN(float posX, float posY, float posZ, float mobSize) {
 	
 	VERTEX hit;
 	//see if anything in our node is in the way
-	mynode = zone->map->SeekNode( zone->map->GetRoot(), myloc.x, myloc.y);
+	mynode = zone->zonemap->SeekNode( zone->zonemap->GetRoot(), myloc.x, myloc.y);
 	if(mynode != NODE_NONE) {
-		if(zone->map->LineIntersectsNode(mynode, myloc, oloc, &hit, &onhit)) {
+		if(zone->zonemap->LineIntersectsNode(mynode, myloc, oloc, &hit, &onhit)) {
 #if LOSDEBUG>=5
 			LogFile->write(EQEMuLog::Debug, "Check LOS for %s target position, cannot see.", GetName());
 			LogFile->write(EQEMuLog::Debug, "\tPoly: (%.2f, %.2f, %.2f) (%.2f, %.2f, %.2f) (%.2f, %.2f, %.2f)\n",
@@ -1058,10 +1058,10 @@ bool Mob::CheckLosFN(float posX, float posY, float posZ, float mobSize) {
 	
 	//see if they are in a different node.
 	//if so, see if anything in their node is blocking me.
-	if(! zone->map->LocWithinNode(mynode, oloc.x, oloc.y)) {
-		onode = zone->map->SeekNode( zone->map->GetRoot(), oloc.x, oloc.y);
+	if(! zone->zonemap->LocWithinNode(mynode, oloc.x, oloc.y)) {
+		onode = zone->zonemap->SeekNode( zone->zonemap->GetRoot(), oloc.x, oloc.y);
 		if(onode != NODE_NONE && onode != mynode) {
-			if(zone->map->LineIntersectsNode(onode, myloc, oloc, &hit, &onhit)) {
+			if(zone->zonemap->LineIntersectsNode(onode, myloc, oloc, &hit, &onhit)) {
 #if LOSDEBUG>=5
 			LogFile->write(EQEMuLog::Debug, "Check LOS for %s target position, cannot see (2).", GetName());
 			LogFile->write(EQEMuLog::Debug, "\tPoly: (%.2f, %.2f, %.2f) (%.2f, %.2f, %.2f) (%.2f, %.2f, %.2f)\n",
@@ -1080,7 +1080,7 @@ bool Mob::CheckLosFN(float posX, float posY, float posZ, float mobSize) {
 	}
 	
 	/*
-	if(zone->map->LineIntersectsZone(myloc, oloc, CHECK_LOS_STEP, &onhit)) {
+	if(zone->zonemap->LineIntersectsZone(myloc, oloc, CHECK_LOS_STEP, &onhit)) {
 #if LOSDEBUG>=5
 		LogFile->write(EQEMuLog::Debug, "Check LOS for %s target %s, cannot see.", GetName(), other->GetName() );
 		LogFile->write(EQEMuLog::Debug, "\tPoly: (%.2f, %.2f, %.2f) (%.2f, %.2f, %.2f) (%.2f, %.2f, %.2f)\n",
