@@ -421,8 +421,8 @@ bool Group::DelMember(Mob* oldmember,bool ignoresender){
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_GroupUpdate,sizeof(GroupJoin_Struct));
 	GroupJoin_Struct* gu = (GroupJoin_Struct*) outapp->pBuffer;
 	gu->action = groupActLeave;
-	strcpy(gu->membername, oldmember->GetName());
-	strcpy(gu->yourname, oldmember->GetName());
+	strcpy(gu->membername, oldmember->GetCleanName());
+	strcpy(gu->yourname, oldmember->GetCleanName());
 
 	gu->leader_aas = LeaderAbilities;
 
@@ -431,9 +431,10 @@ bool Group::DelMember(Mob* oldmember,bool ignoresender){
 			//if (DEBUG>=5) LogFile->write(EQEMuLog::Debug, "Group::DelMember() null member at slot %i", i);
 			continue;
 		}
-		if (members[i] != oldmember && members[i]->IsClient()) {
-			strcpy(gu->yourname, members[i]->GetName());
-			members[i]->CastToClient()->QueuePacket(outapp);
+		if (members[i] != oldmember) {
+			strcpy(gu->yourname, members[i]->GetCleanName());
+			if(members[i]->IsClient())
+				members[i]->CastToClient()->QueuePacket(outapp);
 		}
 		#ifdef IPC
 		if(members[i] == oldmember && members[i]->IsNPC() && members[i]->CastToNPC()->IsGrouped() && members[i]->CastToNPC()->IsInteractive()) {
@@ -442,16 +443,17 @@ bool Group::DelMember(Mob* oldmember,bool ignoresender){
 		#endif	
 	}
 
-	if (!ignoresender && oldmember->IsClient()) {
-		strcpy(gu->yourname,oldmember->GetName());
-		strcpy(gu->membername,oldmember->GetName());
+	if (!ignoresender) {
+		strcpy(gu->yourname,oldmember->GetCleanName());
+		strcpy(gu->membername,oldmember->GetCleanName());
 		gu->action = groupActLeave;
 
-		oldmember->CastToClient()->QueuePacket(outapp);
+		if(oldmember->IsClient())
+			oldmember->CastToClient()->QueuePacket(outapp);
 	 }
 
 	if(oldmember->IsClient())
-		database.SetGroupID(oldmember->GetName(), 0, oldmember->CastToClient()->CharacterID());
+		database.SetGroupID(oldmember->GetCleanName(), 0, oldmember->CastToClient()->CharacterID());
 	
 	oldmember->SetGrouped(false);
 	disbandcheck = true;
