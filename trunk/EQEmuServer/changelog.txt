@@ -4,6 +4,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 WildcardX: *BOTS* Refactored some bots code and implemented a new feature. Players can now inspect bots and their equipment just like players inspect other players. Enjoy!
 Trevius: (Secrets) Minor fix for the new Maxlevel Scaling for NPCs to correct a HP issue if they have visible armor/weapons or buffs.
 Trevius: SoF - Updated Opcodes for Voice Macros. They now function in SoF (/vtell, /vgroup, /vraid).
+WildcardX: *BOTS* Cleaned up bot inventory code a little and fixed a bug that caused some items to display in incorrect slots in the inspection window.
 
 ==08/10/2009==
 WildcardX: Tweaked Groups a little to allow a group to consist of both Bots and Clients, doesn't matter what order you invite either nor does it matter how many of each.

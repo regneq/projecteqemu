@@ -1674,22 +1674,18 @@ bool Bot::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 								if((botClass == CLERIC || botClass == PALADIN) && (botLevel >= 19) && (AIspells[i].priority == 1)) {
 									if(tar->GetOwnerID()) {
 										tar->SetDontHealMeBefore(Timer::GetCurrentTime() + 18000);
-										//tar->pDontHealMeBefore = (Timer::GetCurrentTime() + 18000);
 									}
 									else {
 										tar->SetDontHealMeBefore(Timer::GetCurrentTime() + 12000);
-										//tar->pDontHealMeBefore = (Timer::GetCurrentTime() + 12000);
 									}
 								}
 								else if((botClass == CLERIC || botClass == PALADIN) && (botLevel >= 19) && (AIspells[i].priority == 2)) {
 									if(AIspells[i].spellid == 13) { 
 										// Complete Heal 4 second rotation
 										tar->SetDontHealMeBefore(Timer::GetCurrentTime() + 4000);
-										//tar->pDontHealMeBefore = (Timer::GetCurrentTime() + 4000);
 									}
 									else {
 										tar->SetDontHealMeBefore(Timer::GetCurrentTime() + 1000);
-										//tar->pDontHealMeBefore = (Timer::GetCurrentTime() + 1000);
 									}
 								}
 								return true;
@@ -2539,9 +2535,6 @@ void Bot::AI_Process() {
 						moved=false;
 						SetMoving(false);
 						SendPosUpdate();
-						/*SendPosition();
-						moved=false;
-						SetMoving(false);*/
 					}
 				}
 			}
@@ -2732,7 +2725,6 @@ void Bot::PetAIProcess() {
 		}
 
 		if(!IsMoving()) {
-			//Bot_AI_IdleCastCheck();
 			botPet->AI_IdleCastCheck();
 		}
 
@@ -2740,7 +2732,6 @@ void Bot::PetAIProcess() {
 			switch(pStandingPetOrder) {
 				case SPO_Follow:
 					{
-						// float dist = DistNoRoot(*target);
 						float dist = botPet->DistNoRoot(*botPet->GetTarget());
 						botPet->SetRunAnimSpeed(0);
 						if(dist > 184) {
@@ -3434,21 +3425,6 @@ void Bot::SendBotArcheryWearChange(int8 material_slot, uint32 material, uint32 c
 	safe_delete(outapp);
 }
 
-//uint32 Bot::GetCountBotsInGroup(Group *group) {
-//	uint32 Result = 0;
-//
-//	if(group) {
-//		for(int Count = 0; Count < group->GroupCount(); Count++) {
-//			if(group->members[Count]) {
-//				if(group->members[Count]->IsBot())
-//					Result++;
-//			}
-//		}
-//	}
-//
-//	return Result;
-//}
-
 // Returns the item id that is in the bot inventory collection for the specified slot.
 uint32 Bot::GetBotItem(uint32 slotID) {
 	uint32 Result = 0;
@@ -3468,7 +3444,13 @@ uint32 Bot::GetBotItem(uint32 slotID) {
 // Adds the specified item it bot to the NPC equipment array and to the bot inventory collection.
 void Bot::BotAddEquipItem(int slot, uint32 id) {
 	if(slot > 0 && id > 0) {
-		equipment[slot] = id;
+		int8 materialFromSlot = Inventory::CalcMaterialFromSlot(slot);
+
+		if(materialFromSlot != 0xFF) {
+			equipment[materialFromSlot] = id;
+			SendWearChange(materialFromSlot);
+		}
+
 		_botInventory.insert(BotInventoryItem(slot, id));
 	}
 }
@@ -3476,7 +3458,13 @@ void Bot::BotAddEquipItem(int slot, uint32 id) {
 // Erases the specified item from bot the NPC equipment array and from the bot inventory collection.
 void Bot::BotRemoveEquipItem(int slot) {
 	if(slot > 0) {
-		equipment[slot] = 0;
+		int8 materialFromSlot = Inventory::CalcMaterialFromSlot(slot);
+
+		if(materialFromSlot != 0xFF) {
+			equipment[materialFromSlot] = 0;
+			SendWearChange(materialFromSlot);
+		}
+
 		_botInventory.erase(slot);
 	}
 }
@@ -3492,17 +3480,13 @@ void Bot::BotTradeSwapItem(Client* client, sint16 lootSlot, uint32 id, sint16 ma
 	safe_delete(insttmp);
 	
 	// Remove the item from the bot and from the bot's database records
-	//RemoveItem(itmtmp->ID);
 	RemoveBotItemBySlot(lootSlot, errorMessage);
 
 	if(!errorMessage->empty())
 		return;
 
-	int8 materialFromSlot = Inventory::CalcMaterialFromSlot(lootSlot);
-	if(materialFromSlot != 0xFF) {
-		this->BotRemoveEquipItem(materialFromSlot);
-		this->SendWearChange(materialFromSlot);
-	}
+	this->BotRemoveEquipItem(lootSlot);
+
 	if(swap) {
 		BotTradeAddItem(id, maxCharges, equipableSlots, lootSlot, errorMessage);
 
@@ -3517,22 +3501,8 @@ void Bot::BotTradeAddItem(uint32 id, sint16 maxCharges, uint32 equipableSlots, i
 		if(!errorMessage->empty())
 			return;
 	}
-	/*ServerLootItem_Struct* item = new ServerLootItem_Struct;
-	item->item_id = id;
-	item->charges = maxCharges;
-	item->aug1 = 0;
-	item->aug2 = 0;
-	item->aug3 = 0;
-	item->aug4 = 0;
-	item->aug5 = 0;
-	item->equipSlot = equipableSlots;
-	item->lootslot = lootSlot;
-	this->itemlist.push_back(item);*/
-	int8 materialFromSlot = Inventory::CalcMaterialFromSlot(lootSlot);
-	if(materialFromSlot != 0xFF) {
-		this->BotAddEquipItem(materialFromSlot, id);
-		this->SendWearChange(materialFromSlot);
-	}
+
+	this->BotAddEquipItem(lootSlot, id);
 }
 
 bool Bot::Bot_Command_Resist(int resisttype, int level) {
@@ -8674,32 +8644,32 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 			if(archerbot->CastToBot()->IsBotArcher()) {
 				archerbot->CastToBot()->SetBotArcher(false);
 				archerbot->Say("Using melee skills.");
-				archerbot->CastToBot()->BotAddEquipItem(MATERIAL_PRIMARY, archerbot->CastToBot()->GetBotItemBySlot(SLOT_PRIMARY, &TempErrorMessage));
+				archerbot->CastToBot()->BotAddEquipItem(SLOT_PRIMARY, archerbot->CastToBot()->GetBotItemBySlot(SLOT_PRIMARY, &TempErrorMessage));
 
 				if(!TempErrorMessage.empty()) {
 					c->Message(13, "Database Error: %s", TempErrorMessage.c_str());
 					return;
 				}
-				archerbot->SendWearChange(MATERIAL_PRIMARY);
-				archerbot->CastToBot()->BotAddEquipItem(MATERIAL_SECONDARY, archerbot->CastToBot()->GetBotItemBySlot(SLOT_SECONDARY, &TempErrorMessage));
+				//archerbot->SendWearChange(MATERIAL_PRIMARY);
+				archerbot->CastToBot()->BotAddEquipItem(SLOT_SECONDARY, archerbot->CastToBot()->GetBotItemBySlot(SLOT_SECONDARY, &TempErrorMessage));
 
 				if(!TempErrorMessage.empty()) {
 					c->Message(13, "Database Error: %s", TempErrorMessage.c_str());
 					return;
 				}
-				archerbot->SendWearChange(MATERIAL_SECONDARY);
+				//archerbot->SendWearChange(MATERIAL_SECONDARY);
 				archerbot->CastToBot()->SetBotArcheryRange(0);
 			}
 			else {
 				archerbot->CastToBot()->SetBotArcher(true);
 				archerbot->Say("Using archery skills.");
-				archerbot->CastToBot()->BotRemoveEquipItem(MATERIAL_PRIMARY);
-				archerbot->SendWearChange(MATERIAL_PRIMARY);
-				archerbot->CastToBot()->BotRemoveEquipItem(MATERIAL_SECONDARY);
-				archerbot->SendWearChange(MATERIAL_SECONDARY);
-				archerbot->CastToBot()->BotAddEquipItem(MATERIAL_SECONDARY, archeryBowID);
+				archerbot->CastToBot()->BotRemoveEquipItem(SLOT_PRIMARY);
+				//archerbot->SendWearChange(MATERIAL_PRIMARY);
+				archerbot->CastToBot()->BotRemoveEquipItem(SLOT_SECONDARY);
+				//archerbot->SendWearChange(MATERIAL_SECONDARY);
+				archerbot->CastToBot()->BotAddEquipItem(SLOT_SECONDARY, archeryBowID);
 				archerbot->CastToBot()->SendBotArcheryWearChange(MATERIAL_SECONDARY, archeryMaterial, archeryColor);
-				archerbot->CastToBot()->BotAddEquipItem(MATERIAL_PRIMARY, archeryAmmoID);
+				archerbot->CastToBot()->BotAddEquipItem(SLOT_PRIMARY, archeryAmmoID);
 				archerbot->CastToBot()->SetBotArcheryRange(range);
 			}
 		}
@@ -9242,12 +9212,12 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 						return;
 					}
 
-					gearbot->RemoveItem(itm->ID);
-					int8 materialFromSlot = Inventory::CalcMaterialFromSlot(slotId);
+					//gearbot->RemoveItem(itm->ID);
+					gearbot->BotRemoveEquipItem(slotId);
+					/*int8 materialFromSlot = Inventory::CalcMaterialFromSlot(slotId);
 					if(materialFromSlot != 0xFF) {
-						gearbot->BotRemoveEquipItem(materialFromSlot);
 						gearbot->SendWearChange(materialFromSlot);
-					}
+					}*/
 					gearbot->CalcBotStats();
 					switch(slotId) {
 						case 0:
