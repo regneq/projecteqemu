@@ -506,6 +506,7 @@ Client::Client(EQStream *eqs) {
 	AccountID = 0;
 
 	AllowInvites = true;
+	Revoked = false;
 
 	for(int i = 0; i < MAX_JOINED_CHANNELS ; i++)
 		JoinedChannels[i] = NULL;
@@ -514,7 +515,7 @@ Client::Client(EQStream *eqs) {
 	AttemptedMessages = 0;
 	ForceDisconnect = false;
 
-	KarmaGrabUpdateTimer = new Timer(120000); //check every 2 minutes
+	AccountGrabUpdateTimer = new Timer(60000); //check every minute
 	GlobalChatLimiterTimer = new Timer(RuleI(Chat, IntervalDurationMS));
 
 	TypeOfConnection = ConnectionTypeUnknown;
@@ -526,10 +527,10 @@ Client::~Client() {
 
 	LeaveAllChannels(false);
 
-	if(KarmaGrabUpdateTimer)
+	if(AccountGrabUpdateTimer)
 	{
-		delete KarmaGrabUpdateTimer;
-		KarmaGrabUpdateTimer = NULL;
+		delete AccountGrabUpdateTimer;
+		AccountGrabUpdateTimer = NULL;
 	}
 
 	if(GlobalChatLimiterTimer)
@@ -598,7 +599,7 @@ void Clientlist::Process() {
 
 	for(Iterator = ClientChatConnections.begin(); Iterator != ClientChatConnections.end(); Iterator++) {
 
-		(*Iterator)->ProcessKarma();
+		(*Iterator)->AccountUpdate();
 		if((*Iterator)->ClientStream->CheckClosed()) {
 
 			struct in_addr  in;
@@ -1271,7 +1272,8 @@ void Client::SendChannelList() {
 	safe_delete(outapp);
 }
 
-void Client::SendChannelMessage(string Message) {
+void Client::SendChannelMessage(string Message) 
+{
 
 	string::size_type MessageStart = Message.find_first_of(" ");
 
@@ -1283,6 +1285,12 @@ void Client::SendChannelMessage(string Message) {
 	_log(UCS__TRACE, "%s tells %s, [%s]", GetName().c_str(), ChannelName.c_str(), Message.substr(MessageStart + 1).c_str());
 
 	ChatChannel *RequiredChannel = ChannelList->FindChannel(ChannelName);
+
+	if(IsRevoked())
+	{
+		GeneralChannelMessage("You are Revoked, you cannot chat in global channels.");
+		return;
+	}
 
 	if(RequiredChannel)
 		if(RuleB(Chat, EnableAntiSpam))
@@ -1364,6 +1372,12 @@ void Client::SendChannelMessageByNumber(string Message) {
 
 		GeneralChannelMessage("Invalid channel name/number specified.");
 
+		return;
+	}
+
+	if(IsRevoked())
+	{
+		GeneralChannelMessage("You are Revoked, you cannot chat in global channels.");
 		return;
 	}
 
@@ -2097,14 +2111,14 @@ void Client::SendHelp() {
 	GeneralChannelMessage(";setowner, ;toggleinvites");
 }
 
-void Client::ProcessKarma()
+void Client::AccountUpdate()
 {
-	if(KarmaGrabUpdateTimer)
+	if(AccountGrabUpdateTimer)
 	{
-		if(KarmaGrabUpdateTimer->Check(false))
+		if(AccountGrabUpdateTimer->Check(false))
 		{
-			KarmaGrabUpdateTimer->Start(120000);
-			database.UpdateKarma(this);
+			AccountGrabUpdateTimer->Start(60000);
+			database.GetAccountStatus(this);
 		}
 	}
 }

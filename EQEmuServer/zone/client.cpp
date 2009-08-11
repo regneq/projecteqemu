@@ -151,7 +151,7 @@ Client::Client(EQStreamInterface* ieqs)
 	zoneinpacket_timer(3000),
 	linkdead_timer(RuleI(Zone,ClientLinkdeadMS)),
 	dead_timer(2000),
-	ooc_timer(1000),
+	global_channel_timer(1000),
 	shield_timer(500),
 	fishing_timer(8000),
 	endupkeep_timer(1000),
@@ -794,7 +794,31 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, int8 lang_skil
  		break;
  	}
 	case 4: { // Auction
-        if(RuleB(Chat, ServerWideAuction)){
+        if(RuleB(Chat, ServerWideAuction))
+		{
+			if(!global_channel_timer.Check())
+			{
+				if(strlen(targetname)==0)
+					ChannelMessageReceived(5, language, lang_skill, message, "discard"); //Fast typer or spammer??
+				else
+					return;
+			}
+
+			if(GetRevoked())
+			{
+				Message(0, "You have been revoked.  You may not talk on Auction.");
+				return;
+			}
+
+			if(TotalKarma < RuleI(Chat, KarmaGlobalChatLimit))
+			{
+				if(GetLevel() < RuleI(Chat, GlobalChatLevelLimit))
+				{
+					Message(0, "You do not have permission to talk in Auction at this time.");
+					return;
+				}
+			}
+
             if (!worldserver.SendChannelMessage(this, 0, 4, 0, language, message))
 			Message(0, "Error: World server disconnected");
 		}
@@ -809,34 +833,49 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, int8 lang_skil
 		break;
 	}
 	case 5: { // OOC
-		if(RuleB(Chat, ServerWideOOC)){
-		    if(!ooc_timer.Check())
+		if(RuleB(Chat, ServerWideOOC))
 		{
-			if(strlen(targetname)==0)
-			ChannelMessageReceived(5, language, lang_skill, message,"discard"); //Fast typer or spammer??
-			else
-			return;
+			if(!global_channel_timer.Check())
+			{
+				if(strlen(targetname)==0)
+					ChannelMessageReceived(5, language, lang_skill, message,"discard"); //Fast typer or spammer??
+				else
+					return;
+			}
+			if(worldserver.IsOOCMuted() && admin < 100)
+			{
+				Message(0,"OOC has been muted.  Try again later.");
+				return;
+			}
+
+			if(GetRevoked())
+			{
+				Message(0, "You have been revoked.  You may not talk on OOC.");
+				return;
+			}
+
+			if(TotalKarma < RuleI(Chat, KarmaGlobalChatLimit))
+			{
+				if(GetLevel() < RuleI(Chat, GlobalChatLevelLimit))
+				{
+					Message(0, "You do not have permission to talk in OOC at this time.");
+					return;
+				}
+			}
+			
+			if (!worldserver.SendChannelMessage(this, 0, 5, 0, language, message))
+			{
+				Message(0, "Error: World server disconnected");
+			}
 		}
-		if(worldserver.IsOOCMuted() && admin < 100)
+		else if(!RuleB(Chat, ServerWideOOC))
 		{
-			Message(0,"OOC has been muted.  Try again later.");
-			return;
-		}
-		if(GetRevoked())
-		{
-			Message(0, "You have been revoked.  You may not talk on OOC.");
-			return;
-		}
-		else if (!worldserver.SendChannelMessage(this, 0, 5, 0, language, message))
-			Message(0, "Error: World server disconnected");
-		}
-		else if(!RuleB(Chat, ServerWideOOC)){
 			Mob *sender = this;
 
-		    if (GetPet() && GetPet()->FindType(SE_VoiceGraft))
-			sender = GetPet();
+			if (GetPet() && GetPet()->FindType(SE_VoiceGraft))
+				sender = GetPet();
 
-		entity_list.ChannelMessage(sender, chan_num, language, message);
+			entity_list.ChannelMessage(sender, chan_num, language, message);
 		}
 		break;
 	}
