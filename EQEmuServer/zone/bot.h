@@ -267,7 +267,6 @@ private:
 	void GenerateBaseManaPoints();
 	void GenerateSpecialAttacks();
 	void SetBotID(uint32 botID);
-	//uint32 GetItemID(int slot_id);
 	bool CalcBotHitChance(Mob* target, SkillType skillinuse, int Hand);
 
 	// Private "Inventory" Methods
