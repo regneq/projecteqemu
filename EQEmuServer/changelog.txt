@@ -1,5 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==08/13/2009==
+KLS: Added method to enable / disable spawn2 entries from spawning, enabled by default obviously.
+KLS: Two quest methods to modify spawn2 behavior quest::enable_spawn2(spawn2_id) and quest::disable_spawn2(spawn2_id), disable will force depop whatever mob is currently spawned in that spawn2 point if any.
+KLS: quest::spawn_from_spawn2(spawn2_id), will force a spawn_2 point to spawn a npc even if disabled or it already has a npc spawned.
+KLS: Exported several new C-Objects to perl: MobList, ClientList, NPCList, CorpseList, HateEntry, HateList. Examples of how to use can be found in utils/Examples/ListIteration.pl
+
 ==08/11/2009==
 WildcardX: *BOTS* Refactored some bots code and implemented a new feature. Players can now inspect bots and their equipment just like players inspect other players. Enjoy!
 Trevius: (Secrets) Minor fix for the new Maxlevel Scaling for NPCs to correct a HP issue if they have visible armor/weapons or buffs.

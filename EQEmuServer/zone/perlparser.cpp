@@ -86,6 +86,25 @@ void PerlXSParser::map_funs() {
 
 	"package QuestItem;"
 	"&boot_QuestItem;"	// load quest item XS
+
+	"package MobList;"
+	"&boot_MobList;"	// load MobList XS
+
+	"package ClientList;"
+	"&boot_ClientList;"	// load ClientList XS
+
+	"package NPCList;"
+	"&boot_NPCList;"	// load NPCList XS
+
+	"package CorpseList;"
+	"&boot_CorpseList;"	// load CorpseList XS
+
+	"package HateEntry;"
+	"&boot_HateEntry;"	// load HateEntry XS
+
+	"package HateList;"
+	"&boot_HateList;"	// load HateList XS
+
 #endif
 	"package main;"
 	"}"
@@ -232,6 +251,24 @@ XS(XS_QuestItem_new)
 	XSRETURN(1);
 }
 
+//Any creation of new quest items gets the current quest item
+XS(XS_MobList_new);
+XS(XS_MobList_new) 
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: MobList::new()");
+
+	ListElement<Mob*>* RETVAL;
+
+	RETVAL = NULL;
+	ST(0) = sv_newmortal();
+	if(RETVAL)
+		sv_setref_pv(ST(0), "MobList", (void*)RETVAL);
+
+	XSRETURN(1);
+}
+
 #endif //EMBPERL_XS_CLASSES
 
 
@@ -353,7 +390,7 @@ XS(XS__unique_spawn)
 {
 	dXSARGS;
 	if (items != 6 && items != 7)
-		Perl_croak(aTHX_ "Usage: unique_spawn(npc_type, grid, unused, x, y, z[, heading])");
+		Perl_croak(aTHX_ "Usage: unique_spawn(npc_type, grid, unused, x, y, z, [heading])");
 
 	int16		RETVAL;
 	dXSTARG;
@@ -372,6 +409,50 @@ XS(XS__unique_spawn)
 	XSprePUSH; PUSHu((UV)RETVAL);
 
 	XSRETURN(1);
+}
+
+XS(XS__spawn_from_spawn2);
+XS(XS__spawn_from_spawn2)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: spawn_from_spawn2(spawn2_id)");
+
+	int16		RETVAL;
+	dXSTARG;
+
+	int	spawn2_id = (int)SvIV(ST(0));
+
+	RETVAL = quest_manager.spawn_from_spawn2(spawn2_id);
+	XSprePUSH; PUSHu((UV)RETVAL);
+
+	XSRETURN(1);
+}
+
+XS(XS__enable_spawn2);
+XS(XS__enable_spawn2)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: enable_spawn2(spawn2_id)");
+
+	int	spawn2_id = (int)SvIV(ST(0));
+
+	quest_manager.enable_spawn2(spawn2_id);
+	XSRETURN_EMPTY;
+}
+
+XS(XS__disable_spawn2);
+XS(XS__disable_spawn2)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: disable_spawn2(spawn2_id)");
+
+	int	spawn2_id = (int)SvIV(ST(0));
+
+	quest_manager.disable_spawn2(spawn2_id);
+	XSRETURN_EMPTY;
 }
 
 XS(XS__setstat);
@@ -2805,6 +2886,9 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "spawn"), XS__spawn, file);
 		newXS(strcpy(buf, "spawn2"), XS__spawn2, file);
 		newXS(strcpy(buf, "unique_spawn"), XS__unique_spawn, file);
+		newXS(strcpy(buf, "spawn_from_spawn2"), XS__spawn_from_spawn2, file);
+		newXS(strcpy(buf, "enable_spawn2"), XS__enable_spawn2, file);
+		newXS(strcpy(buf, "disable_spawn2"), XS__disable_spawn2, file);
 		newXS(strcpy(buf, "setstat"), XS__setstat, file);
 		newXS(strcpy(buf, "incstat"), XS__incstat, file);
 		newXS(strcpy(buf, "castspell"), XS__castspell, file);

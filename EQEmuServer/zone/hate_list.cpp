@@ -25,14 +25,6 @@
 #include "../common/rulesys.h"
 #include "hate_list.h"
 
-class tHateEntry
-{
-public:
-    Mob *ent;
-    sint32 damage, hate;
-    bool bFrenzy;
-};
-
 HateList::HateList()
 {
 }

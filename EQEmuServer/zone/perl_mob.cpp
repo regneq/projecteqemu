@@ -5772,6 +5772,33 @@ XS(XS_Mob_SetEntityVariable)
 	XSRETURN_EMPTY;
 }
 
+XS(XS_Mob_GetHateList); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_GetHateList)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Mob::GetHateList(THIS)");
+	{
+		Mob *THIS;
+		ListElement<tHateEntry*> *RETVAL = NULL;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetHateListElement();
+		ST(0) = sv_newmortal();
+		sv_setref_pv(ST(0), "HateList", (void*)RETVAL);
+	}
+	XSRETURN(1);
+}
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -5998,6 +6025,7 @@ XS(boot_Mob)
 		newXSproto(strcpy(buf, "GetEntityVariable"), XS_Mob_GetEntityVariable, file, "$$");
 		newXSproto(strcpy(buf, "SetEntityVariable"), XS_Mob_SetEntityVariable, file, "$$$");
 		newXSproto(strcpy(buf, "EntityVariableExists"), XS_Mob_EntityVariableExists, file, "$$");
+		newXSproto(strcpy(buf, "GetHateList"), XS_Mob_GetHateList, file, "$");
 	XSRETURN_YES;
 }
 

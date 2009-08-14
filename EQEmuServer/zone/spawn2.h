@@ -27,6 +27,7 @@ using namespace std;
 #define SC_AlwaysEnabled 0
 
 class SpawnCondition;
+class NPC;
 
 class Spawn2
 {
@@ -35,11 +36,13 @@ public:
 		float x, float y, float z, float heading, 
 		int32 respawn, int32 variance, 
 		int32 timeleft = 0, int32 grid = 0,
-		uint16 cond_id = SC_AlwaysEnabled, sint16 min_value = 0);
+		uint16 cond_id = SC_AlwaysEnabled, sint16 min_value = 0, bool in_enabled = true);
 	~Spawn2();
 
 	void	LoadGrid();
-	void	Enable();
+	void	Enable() { enabled = true; }
+	void	Disable();
+	bool	Enabled() { return enabled; }
 	bool	Process();
 	void	Reset();
 	void	Depop();
@@ -52,17 +55,20 @@ public:
 	float	GetX()		{ return x; }
 	float	GetY()		{ return y; }
 	float	GetZ()		{ return z; }
+	float	GetHeading() { return heading; }
 	void	SetRespawnTimer(int32 newrespawntime) { respawn_ = newrespawntime; };
 	void	SetVariance(int32 newvariance) { variance_ = newvariance; }
 	const int32 GetVariance() const { return variance_; }
 	int32	RespawnTimer() { return respawn_; }
 	int32	SpawnGroupID() { return spawngroup_id_; }
 	int32	CurrentNPCID() { return currentnpcid; }
+	void	SetCurrentNPCID(int32 nid) { currentnpcid = nid; }
 	int32	GetSpawnCondition() { return condition_id; }
 	int32	spawn2_id;
 	int32	respawn_;
 
 	bool	NPCPointerValid() { return (npcthis!=NULL); }
+	void	SetNPCPointer(NPC* n) { npcthis = n; }
 	void	SetTimer(int32 duration) { timer.Start(duration); }
 protected:
 	friend class Zone;
@@ -81,6 +87,7 @@ private:
 	int32	grid_;
 	uint16	condition_id;
 	sint16	condition_min_value;
+	bool enabled;
 };
 
 class SpawnCondition {

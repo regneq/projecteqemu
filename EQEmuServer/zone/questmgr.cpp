@@ -232,23 +232,18 @@ int16 QuestManager::spawn2(int npc_type, int grid, int unused, float x, float y,
 	const NPCType* tmp = 0;
 	if ((tmp = database.GetNPCType(npc_type)))
 	{
-
 		NPC* npc = new NPC(tmp, 0, x, y, z, heading, FlyMode3);
-
-
 		npc->AddLootTable();
 		entity_list.AddNPC(npc,true,true);
 		// Quag: Sleep in main thread? ICK!
 		// Sleep(200);
 		// Quag: check is irrelevent, it's impossible for npc to be 0 here
 		// (we're in main thread, nothing else can possibly modify it)
-//		if(npc != 0) {
-			if(grid > 0)
-			{
-				npc->AssignWaypoints(grid);
-			}
-			npc->SendPosUpdate();
-//		}
+		if(grid > 0)
+		{
+			npc->AssignWaypoints(grid);
+		}
+		npc->SendPosUpdate();
 		return(npc->GetID());
 	}
 	return(0);
@@ -260,30 +255,119 @@ int16 QuestManager::unique_spawn(int npc_type, int grid, int unused, float x, fl
 		return(other->GetID());
 	}
 
-
 	const NPCType* tmp = 0;
 	if ((tmp = database.GetNPCType(npc_type)))
 	{
-
 		NPC* npc = new NPC(tmp, 0, x, y, z, heading, FlyMode3);
-
-
 		npc->AddLootTable();
 		entity_list.AddNPC(npc,true,true);
 		// Quag: Sleep in main thread? ICK!
 		// Sleep(200);
 		// Quag: check is irrelevent, it's impossible for npc to be 0 here
 		// (we're in main thread, nothing else can possibly modify it)
-//		if(npc != 0) {
-			if(grid > 0)
-			{
-				npc->AssignWaypoints(grid);
-			}
-			npc->SendPosUpdate();
-//		}
+		if(grid > 0)
+		{
+			npc->AssignWaypoints(grid);
+		}
+		npc->SendPosUpdate();
 		return(npc->GetID());
 	}
 	return(0);
+}
+
+int16 QuestManager::spawn_from_spawn2(int32 spawn2_id)
+{
+	LinkedListIterator<Spawn2*> iterator(zone->spawn2_list);
+	iterator.Reset();
+	Spawn2 *found_spawn = NULL;
+
+	while(iterator.MoreElements())
+	{
+		Spawn2* cur = iterator.GetData();
+		iterator.Advance();
+		if(cur->GetID() == spawn2_id)
+		{
+			found_spawn = cur;
+			break;
+		}
+	}
+
+	if(found_spawn)
+	{
+		SpawnGroup* sg = zone->spawn_group_list.GetSpawnGroup(found_spawn->SpawnGroupID());
+		if(!sg)
+		{
+			database.LoadSpawnGroupsByID(found_spawn->SpawnGroupID(),&zone->spawn_group_list);
+			sg = zone->spawn_group_list.GetSpawnGroup(found_spawn->SpawnGroupID());
+			if(!sg)
+			{
+				return 0;
+			}
+		}
+		int32 npcid = sg->GetNPCType();
+		if(npcid == 0)
+		{
+			return 0;
+		}
+
+		const NPCType* tmp = database.GetNPCType(npcid);
+		if(!tmp)
+		{
+			return 0;
+		}
+
+		if(tmp->spawn_limit > 0)
+		{
+			if(!entity_list.LimitCheckType(npcid, tmp->spawn_limit)) 
+			{
+				return 0;
+			}
+		}
+
+		database.UpdateSpawn2Timeleft(spawn2_id, zone->GetInstanceID(), 0);
+		found_spawn->SetCurrentNPCID(npcid);
+
+		NPC* npc = new NPC(tmp, found_spawn, found_spawn->GetX(), found_spawn->GetY(), found_spawn->GetZ(), 
+			found_spawn->GetHeading(), FlyMode3);
+
+		found_spawn->SetNPCPointer(npc);
+		npc->AddLootTable();
+		npc->SetSp2(found_spawn->SpawnGroupID());
+		entity_list.AddNPC(npc);
+		entity_list.LimitAddNPC(npc);
+
+		if(sg->roamdist && sg->roambox[0] && sg->roambox[1] && sg->roambox[2] && sg->roambox[3] && sg->delay)
+			npc->AI_SetRoambox(sg->roamdist,sg->roambox[0],sg->roambox[1],sg->roambox[2],sg->roambox[3],sg->delay);
+		if(zone->InstantGrids()) 
+		{
+			found_spawn->LoadGrid();
+		}
+
+		return npc->GetID();
+	}
+	return 0;
+}
+
+void QuestManager::enable_spawn2(int32 spawn2_id)
+{
+	database.UpdateSpawn2Status(spawn2_id, 1);
+	ServerPacket* pack = new ServerPacket(ServerOP_SpawnStatusChange, sizeof(ServerSpawnStatusChange_Struct));
+	ServerSpawnStatusChange_Struct* ssc = (ServerSpawnStatusChange_Struct*) pack->pBuffer;
+	ssc->id = spawn2_id;
+	ssc->new_status = 1;
+	worldserver.SendPacket(pack);
+	safe_delete(pack);
+}
+
+void QuestManager::disable_spawn2(int32 spawn2_id)
+{
+	database.UpdateSpawn2Status(spawn2_id, 0);
+	ServerPacket* pack = new ServerPacket(ServerOP_SpawnStatusChange, sizeof(ServerSpawnStatusChange_Struct));
+	ServerSpawnStatusChange_Struct* ssc = (ServerSpawnStatusChange_Struct*) pack->pBuffer;
+	ssc->id = spawn2_id;
+	ssc->new_status = 0;
+	worldserver.SendPacket(pack);
+	safe_delete(pack);
 }
 
 void QuestManager::setstat(int stat, int value) {
