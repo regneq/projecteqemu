@@ -51,6 +51,9 @@ public:
 	void write(const char *file, const char *str);
 	int16 spawn2(int npc_type, int grid, int unused, float x, float y, float z, float heading);
 	int16 unique_spawn(int npc_type, int grid, int unused, float x, float y, float z, float heading = 0);
+	int16 spawn_from_spawn2(int32 spawn2_id);
+	void enable_spawn2(int32 spawn2_id);
+	void disable_spawn2(int32 spawn2_id);
 	void setstat(int stat, int value);
 	void incstat(int stat, int value); //old setstat command
 	void castspell(int spell_id, int target_id);

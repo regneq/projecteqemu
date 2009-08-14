@@ -1374,6 +1374,41 @@ void WorldServer::Process() {
 			title_manager.LoadTitles();
 			break;
 		}
+
+		case ServerOP_SpawnStatusChange:
+		{
+			if(zone)
+			{
+				ServerSpawnStatusChange_Struct *ssc = (ServerSpawnStatusChange_Struct*)pack->pBuffer;
+				LinkedListIterator<Spawn2*> iterator(zone->spawn2_list);
+				iterator.Reset();
+				Spawn2 *found_spawn = NULL;
+				while(iterator.MoreElements())
+				{
+					Spawn2* cur = iterator.GetData();
+					if(cur->GetID() == ssc->id)
+					{
+						found_spawn = cur;
+						break;
+					}
+					iterator.Advance();
+				}
+
+				if(found_spawn)
+				{
+					if(ssc->new_status == 0)
+					{
+						found_spawn->Disable();
+					}
+					else
+					{
+						found_spawn->Enable();
+					}
+				}
+			}
+			break;
+		}
+
 		default: {
 			cout << " Unknown ZSopcode:" << (int)pack->opcode;
 			cout << " size:" << pack->size << endl;

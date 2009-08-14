@@ -227,6 +227,19 @@ int32 ZoneDatabase::GetSpawnTimeLeft(int32 id, int16 instance_id)
 	return 0;
 }
 
+void ZoneDatabase::UpdateSpawn2Status(int32 id, int8 new_status)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+    char *query = 0;
+	
+	if(!RunQuery(query, MakeAnyLenString(&query, "UPDATE spawn2 SET enabled=%i WHERE id=%lu", new_status, (unsigned long)id),errbuf))
+	{
+		LogFile->write(EQEMuLog::Error, "Error in UpdateSpawn2Status query %s: %s", query, errbuf);
+	}
+	safe_delete_array(query);
+	return;
+}
+
 bool ZoneDatabase::logevents(const char* accountname,int32 accountid,int8 status,const char* charname, const char* target,const char* descriptiontype, const char* description,int event_nid){
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;

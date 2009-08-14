@@ -817,13 +817,16 @@ bool logpos;
 	bool				HateSummon();
 	void				FaceTarget(Mob* MobToFace = 0);
 	void				SetHeading(float iHeading) { if (heading != iHeading) { pLastChange = Timer::GetCurrentTime(); heading = iHeading; } }
-	void				WipeHateList(); //Wipe?
+	void				WipeHateList();
 	// EverHood 6/14/06
 	// Mobs need to be able to remember more than one feigned attacker
 	void				AddFeignMemory(Client* attacker);
 	void				RemoveFromFeignMemory(Client* attacker);
 	void				ClearFeignMemory();
 	void				PrintHateListToClient(Client *who) { hate_list.PrintToClient(who); }
+
+	//for accessing hate list from perl only, don't use for other purposes.
+	ListElement<tHateEntry*> *GetHateListElement() { return hate_list.GetHateListElement(); }
 
 
 	int					GetCurWp(){ return cur_wp; }

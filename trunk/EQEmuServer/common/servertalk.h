@@ -77,6 +77,7 @@
 #define ServerOP_DisbandGroup		0x0043 //for disbanding a whole group cross zone
 #define ServerOP_GroupJoin			0x0044 //for joining ooz folks
 #define ServerOP_UpdateSpawn		0x0045
+#define ServerOP_SpawnStatusChange	0x0046
 #define ServerOP_ReloadTasks		0x0060
 #define ServerOP_DepopAllPlayersCorpses	0x0061
 #define ServerOP_ReloadTitles		0x0062
@@ -857,6 +858,12 @@ struct ServerAdventureMessage_Struct
 {
 	int32 id;
 	char message[0];
+};
+
+struct ServerSpawnStatusChange_Struct
+{
+	int32 id;
+	bool new_status;
 };
 
 #pragma pack()

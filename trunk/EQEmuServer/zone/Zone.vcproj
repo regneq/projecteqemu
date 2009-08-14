@@ -552,6 +552,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\perl_clientlist.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\perl_corpselist.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\perl_entity.cpp"
 				>
 			</File>
@@ -560,11 +568,27 @@
 				>
 			</File>
 			<File
+				RelativePath=".\perl_hateentry.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\perl_hatelist.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\perl_mob.cpp"
 				>
 			</File>
 			<File
+				RelativePath=".\perl_moblist.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\perl_npc.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\perl_npclist.cpp"
 				>
 			</File>
 			<File

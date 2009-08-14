@@ -19,7 +19,13 @@
 #ifndef HATELIST_H
 #define HATELIST_H
 
-class tHateEntry;
+class tHateEntry
+{
+public:
+    Mob *ent;
+    sint32 damage, hate;
+    bool bFrenzy;
+};
 
 class HateList
 {
@@ -58,6 +64,9 @@ public:
 
     bool IsEmpty();
 	void PrintToClient(Client *c);
+
+	//For accessing the hate list via perl; don't use for anything else
+	ListElement<tHateEntry*> *GetHateListElement() { return list.GetFirst(); }
 
 protected:
     tHateEntry *Find(Mob *ent);
