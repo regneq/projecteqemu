@@ -31,7 +31,9 @@ SF= .obj/EQPacket.o .obj/EQStream.o .obj/EQStreamFactory.o .obj/CRC16.o \
    ../common/EQStreamIdent.o ../common/patches/Live.o \
    zone_logsys.o ../common/BasePacket.o ../common/worldconn.o \
    ../common/EmuTCPConnection.o ../common/EmuTCPServer.o ../common/TCPServer.o \
-   ../common/guild_base.o guild_mgr.o tasks.o raids.o
+   ../common/guild_base.o \
+   guild_mgr.o tasks.o raids.o perl_clientlist.o perl_corpselist.o \
+   perl_hateentry.o perl_hatelist.o perl_moblist.o perl_npclist.o
 
 
 all: $(APP)
