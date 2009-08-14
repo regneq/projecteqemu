@@ -22,6 +22,7 @@
 #include "../common/debug.h"
 #include "../common/MiscFunctions.h"
 
+#include "ucsconfig.h"
 #include "clientlist.h"
 #include "database.h"
 #include "chatchannel.h"
@@ -44,6 +45,87 @@ extern ChatChannelList *ChannelList;
 extern Clientlist *CL;
 extern uint32 ChatMessagesSent;
 extern uint32 MailMessagesSent;
+extern ucsconfig *Config;
+const bool UseIRC = ucsconfig::get()->UseIRC;
+extern IRC conn;
+
+typedef int (Client::*pt2Member)(char * params, irc_reply_data * hostd, void * conn);
+
+/* maintains the loop for processing the other two IRC commands */
+#ifdef WIN32
+void IRCConnect(void* irc_conn) {
+#else	//not Windows
+void *IRCConnect(void* irc_conn) {
+#endif
+		_log(IRC__TRACE, "IRCConnect(): Casting irc_conn to conn.");
+		IRC* conn = (IRC*)irc_conn;	//lets us use the connection passed in the arguments of the thread
+		_log(IRC__TRACE, "IRCConnect(): irc_conn cast successfully, starting IRC::message_loop().");
+		conn->message_loop();
+}
+
+int end_of_motd(char* params, irc_reply_data* hostd, void* conn) /* hooks END OF MOTD message from IRC */
+	{
+		IRC* irc_conn=(IRC*)conn;
+	
+		const ucsconfig *Config=ucsconfig::get();
+
+		char name[128];
+
+		strcpy(name,Config->ChannelToOutput.c_str());
+			
+
+		irc_conn->join(name);
+
+		return 0;
+	}
+
+std::string GetCleanMessageFromIRC(std::string in) {
+	std::string out = in;	//our return string
+
+	if (in.empty())	//if there's nothing there, we don't really need to do the rest of this
+		return in;
+
+	if (in.at(0) == ':')	//get rid of that annoying colon at the beginning
+		out = in.substr(1);
+
+	//TODO: convert ACTION to an actual emote, or something similar
+	//
+
+	return out;
+}
+
+/*int triggers(char*params,irc_reply_data*hostd,void*conn) //hooks privmsg to your specified channel
+{
+
+	IRC* irc_conn=(IRC*)conn;
+	
+
+	//const ucsconfig *Config=ucsconfig::get();
+
+	string ChannelName = Config->EQChannelToOutput;
+
+	ChatChannel *RequiredChannel = ChannelList->FindChannel(ChannelName);
+
+	char name[128];
+	strcpy(name,Config->ChannelToOutput.c_str());
+
+	if(!strcmp(params,":!rejoin"))
+	{
+		irc_conn->join(name);
+	}	
+
+	string parame = params;
+	string IRCName = hostd->nick;
+
+	if(!strcmp(hostd->target,name))
+	{
+		RequiredChannel->SendMessageToChannelFromIRC(GetCleanMessageFromIRC(parame), IRCName); // I got an IRC command, now let's send it
+		
+	}
+	return 0;
+	
+}*/
+
 
 int LookupCommand(const char *ChatCommand) {
 
@@ -519,6 +601,10 @@ Client::Client(EQStream *eqs) {
 	GlobalChatLimiterTimer = new Timer(RuleI(Chat, IntervalDurationMS));
 
 	TypeOfConnection = ConnectionTypeUnknown;
+
+	//IRC
+	//we need to initialize this, otherwise we're just pulling random values from memory
+	IRCThreadPtr = 0;
 }
 
 Client::~Client() {
@@ -573,6 +659,65 @@ void Clientlist::CheckForStaleConnections(Client *c) {
 
 			Iterator = ClientChatConnections.erase(Iterator);
 		}
+	}
+}
+
+int Client::triggers(char *params, irc_reply_data *hostd, void *conn) {	//hooks privmsg to your specified channel
+
+	IRC* irc_conn=(IRC*)conn;
+	
+
+	//const ucsconfig *Config=ucsconfig::get();
+
+	string ChannelName = Config->EQChannelToOutput;
+
+	ChatChannel *RequiredChannel = ChannelList->FindChannel(ChannelName);
+
+	char name[128];
+	strcpy(name,Config->ChannelToOutput.c_str());
+
+	if(!strcmp(params,":!rejoin"))
+	{
+		irc_conn->join(name);
+	}	
+
+	string parame = params;
+	string IRCName = hostd->nick;
+
+	if(!strcmp(hostd->target,name))
+	{
+		//RequiredChannel->SendMessageToChannelFromIRC(GetCleanMessageFromIRC(parame), IRCName); // I got an IRC command, now let's send it
+		this->SendChannelMessageFromIRC(GetCleanMessageFromIRC(parame), IRCName);	// I got an IRC command, now let's send it
+	}
+	return 0;
+}
+
+bool Client::CreateIRCThread() {
+
+	pt2Member MemberPointer = &Client::triggers;
+	this->IRCConnection.hook_irc_command("PRIVMSG", &(this->*MemberPointer));
+	this->IRCConnection.hook_irc_command("376", &end_of_motd);
+	this->IRCConnection.hook_irc_command("422", &end_of_motd);
+
+	//this allows us to go from const to non-const
+	char irc_host[64];
+	char irc_nick[64];
+	strcpy(irc_host, Config->ChatIRCHost.c_str());
+	strcpy(irc_nick, this->GetName().c_str());
+
+	this->IRCConnection.start(irc_host, Config->ChatIRCPort, irc_nick, "EQEMu IRC Bot", "EQEMu IRC Bot", 0);
+	if (!this->IRCThreadPtr) {
+		_log(IRC__TRACE, "No existing IRC thread found for %s, starting IRC thread.", irc_nick);
+		#ifdef WIN32
+		this->IRCThreadPtr = _beginthread(IRCConnect,0,(void*)&this->IRCConnection);
+		#else
+		pthread_create(&this->IRCThreadPtr,NULL,IRCConnect,(void*)&this->IRCConnection);
+		#endif
+		_log(IRC__TRACE, "Thread %i started for %s", this->IRCThreadPtr, irc_nick);
+		return true;
+	} else {
+		_log(IRC__TRACE, "Found existing thread %i for %s", this->IRCThreadPtr, irc_nick);
+		return false;
 	}
 }
 
@@ -688,6 +833,43 @@ void Clientlist::Process() {
 					(*Iterator)->SendMailBoxes();
 
 					CheckForStaleConnections((*Iterator));
+
+					//start irc thread
+					_log(IRC__TRACE, "Checking to see if we should use IRC: %s", UseIRC ? "TRUE" : "FALSE");
+					if(UseIRC) {
+						(*Iterator)->CreateIRCThread();
+//						IRC &IRCconn = (*Iterator)->IRCConnection;
+//						char irc_host[64];
+//						char irc_nick[64];
+//						strcpy(irc_host, Config->ChatIRCHost.c_str());
+//						strcpy(irc_nick, (*Iterator)->GetName().c_str());
+//						//int (Client::*pt2Member)(char*, irc_reply_data*, void*) = NULL;
+//						pt2Member MemberPointer = &Client::triggers;
+//						IRCconn.hook_irc_command("PRIVMSG",&MemberPointer);
+//						IRCconn.hook_irc_command("376", &end_of_motd); //hook the end of MOTD message
+//						IRCconn.hook_irc_command("422", &end_of_motd);	//MOTD File is missing
+//						IRCconn.start(irc_host,Config->ChatIRCPort,irc_nick,"EQEMu IRC Bot","EQEMu IRC Bot",0);
+//
+//						//_log(IRC__TRACE, "Checking for an existing IRC thread: %s", (*Iterator)->IRCThreadPtr ? "TRUE" : "FALSE");
+//						/*_log(IRC__TRACE, "Requesting Mutex lock for IRCThreadPtr.");
+//						(*Iterator)->MIRCThreadPtr.lock();
+//						_log(IRC__TRACE, "Got Mutex lock for IRCThreadPtr.");*/
+//						if (!(*Iterator)->IRCThreadPtr) {
+//							_log(IRC__TRACE, "No existing IRC thread found for %s, starting IRC thread.", irc_nick);
+//#ifdef WIN32
+//							(*Iterator)->IRCThreadPtr = _beginthread(IRCConnect,0,(void*)&IRCconn);
+//#else
+//							//pthread_t th1;
+//							pthread_create(&(*Iterator)->IRCThreadPtr,NULL,IRCConnect,(void*)&IRCconn);
+//#endif
+//							_log(IRC__TRACE, "Thread %i started for %s", (*Iterator)->IRCThreadPtr, irc_nick);
+//						} else {
+//							_log(IRC__TRACE, "Found existing thread %i for %s", (*Iterator)->IRCThreadPtr, irc_nick);
+//						}
+//						/*_log(IRC__TRACE, "Unlocking Mutex for IRCThreadPtr.");
+//						(*Iterator)->MIRCThreadPtr.unlock();
+//						_log(IRC__TRACE, "Mutex for IRCThreadPtr unlocked.");*/
+					}
 
 					break;
 				}
@@ -1457,6 +1639,30 @@ void Client::SendChannelMessage(string ChannelName, string Message, Client *Send
 	VARSTRUCT_ENCODE_STRING(PacketBuffer, Message.c_str());
 
 	_pkt(UCS__PACKETS, outapp);
+	QueuePacket(outapp);
+
+	safe_delete(outapp);
+}
+
+void Client::SendChannelMessageFromIRC(string Message, string IRCName) { /* Packet handler for IRC Messages */
+
+	const ucsconfig *Config=ucsconfig::get();
+
+	string FQSenderName = "IRC." + IRCName;
+
+	string ChannelName = Config->EQChannelToOutput.c_str();
+
+	int PacketLength = ChannelName.length() + Message.length() + FQSenderName.length() + 3;
+
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_ChannelMessage, PacketLength);
+
+	char *PacketBuffer = (char *)outapp->pBuffer;
+
+	VARSTRUCT_ENCODE_STRING(PacketBuffer, ChannelName.c_str());
+	VARSTRUCT_ENCODE_STRING(PacketBuffer, FQSenderName.c_str());
+	VARSTRUCT_ENCODE_STRING(PacketBuffer, Message.c_str());
+
+	_pkt(CHANNELS__PACKETS, outapp);
 	QueuePacket(outapp);
 
 	safe_delete(outapp);

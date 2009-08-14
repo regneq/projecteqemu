@@ -26,9 +26,11 @@
 #include "../common/EQStreamType.h"
 #include "../common/EQStreamFactory.h"
 #include "../common/rulesys.h"
+#include "../common/Mutex.h"
 #include "chatchannel.h"
 #include <list>
 #include <vector>
+#include "IRC.h"
 
 #define MAX_JOINED_CHANNELS 10
 
@@ -148,6 +150,21 @@ public:
 	void SendFriends();
 	int GetCharID();
 	void SendUptime();
+
+	//IRC stuff
+	bool RunIRCThread;
+	void SendChannelMessageFromIRC(string Message, string IRCName);
+	int triggers(char *params, irc_reply_data *hostd, void *conn);
+	bool CreateIRCThread();
+	//thread pointers for IRC
+	IRC IRCConnection;
+	#ifdef WIN32
+	uintptr_t IRCThreadPtr;
+	#else
+	pthread_t IRCThreadPtr;
+	#endif
+	//Mutexes for IRC
+	Mutex MIRCThreadPtr;
 
 private:
 	unsigned int CurrentMailBox;

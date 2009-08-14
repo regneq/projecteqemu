@@ -186,6 +186,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\IRC.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ucs.cpp"
 				>
 			</File>
@@ -209,6 +213,10 @@
 			</File>
 			<File
 				RelativePath=".\database.h"
+				>
+			</File>
+			<File
+				RelativePath=".\IRC.h"
 				>
 			</File>
 			<File

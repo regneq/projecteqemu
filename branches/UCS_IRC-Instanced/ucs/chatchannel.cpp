@@ -18,13 +18,16 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 */
-
+#include "ucsconfig.h"
 #include "chatchannel.h"
 #include "clientlist.h"
 #include "database.h"
 #include "../common/MiscFunctions.h"
+#include "IRC.h"
+
 #include <cstdlib>
 
+extern IRC conn;
 extern Database database;
 extern uint32 ChatMessagesSent;
 
@@ -382,11 +385,38 @@ void ChatChannel::SendChannelMembers(Client *c) {
 
 }
 
-void ChatChannel::SendMessageToChannel(string Message, Client* Sender) {
+void ChatChannel::SendMessageToChannel(string Message, Client* Sender) { /* edited for IRC -- Secrets*/
 
 	if(!Sender) return;
 
 	ChatMessagesSent++;
+
+	const ucsconfig *Config=ucsconfig::get();
+	
+	LinkedListIterator<Client*> iterator(ClientsInChannel);
+
+	string ChannelToOutput = Config->ChannelToOutput.c_str();
+
+	string Total = Sender->GetName() + " (" + Name + "): " + Message;	//this is what actually gets sent to the chat channel
+
+	char target[64];
+	strcpy(target,Config->ChannelToOutput.c_str());
+	iterator.Reset();
+
+	while(iterator.MoreElements()) {
+
+		Client *ChannelClient = iterator.GetData();
+
+		if(ChannelClient)
+_log(UCS__TRACE, "Sending message to %s from %s",
+			     ChannelClient->GetName().c_str(), Sender->GetName().c_str());
+			ChannelClient->SendChannelMessage(Name, Message, Sender);
+		iterator.Advance();
+	}
+	Sender->IRCConnection.privmsg(target,Total.c_str()); // Secrets -- IRC : Send message to IRC also
+}
+
+void ChatChannel::SendMessageToChannelFromIRC(string Message, string IRCName) { /* Sends IRC Messages to Game */
 
 	LinkedListIterator<Client*> iterator(ClientsInChannel);
 
@@ -395,14 +425,9 @@ void ChatChannel::SendMessageToChannel(string Message, Client* Sender) {
 	while(iterator.MoreElements()) {
 
 		Client *ChannelClient = iterator.GetData();
-
+		
 		if(ChannelClient)
-		{
-			_log(UCS__TRACE, "Sending message to %s from %s",
-			     ChannelClient->GetName().c_str(), Sender->GetName().c_str());
-			ChannelClient->SendChannelMessage(Name, Message, Sender);
-		}
-
+			ChannelClient->SendChannelMessageFromIRC(Message, IRCName);
 		iterator.Advance();
 	}
 }
