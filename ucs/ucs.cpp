@@ -26,9 +26,16 @@
 #include "../common/rulesys.h"
 #include "database.h"
 #include "ucsconfig.h"
+#include "IRC.h"
 #include "chatchannel.h"
 #include <list>
 #include <signal.h>
+#ifdef WIN32
+#include <process.h>
+#else
+#include <pthread.h>
+#endif
+
 
 volatile bool RunLoops = true;
 
@@ -45,6 +52,10 @@ Database database;
 
 string WorldShortName;
 
+const ucsconfig *Config;
+//const bool UseIRC = ucsconfig::get()->UseIRC;
+IRC conn;
+
 RuleManager *rules = new RuleManager();
 
 void CatchSignal(int sig_num) {
@@ -57,6 +68,78 @@ string GetMailPrefix() {
 	return "SOE.EQ." + WorldShortName + ".";
 
 }
+/* maintains the loop for processing the other two IRC commands */
+/*
+#ifdef WIN32
+void IRCConnect(void* irc_conn) {
+#else	//not Windows
+void *IRCConnect(void* irc_conn) {
+#endif
+		conn.message_loop();
+}
+
+int end_of_motd(char* params, irc_reply_data* hostd, void* conn)	//hooks END OF MOTD message from IRC
+	{
+		IRC* irc_conn=(IRC*)conn;
+	
+		const ucsconfig *Config=ucsconfig::get();
+
+		char name[128];
+
+		strcpy(name,Config->ChannelToOutput.c_str());
+			
+
+		irc_conn->join(name);
+
+		return 0;
+	}
+
+std::string GetCleanMessageFromIRC(std::string in) {
+	std::string out = in;	//our return string
+
+	if (in.empty())	//if there's nothing there, we don't really need to do the rest of this
+		return in;
+
+	if (in.at(0) == ':')	//get rid of that annoying colon at the beginning
+		out = in.substr(1);
+
+	//TODO: convert ACTION to an actual emote, or something similar
+	//
+
+	return out;
+}
+
+int triggers(char*params,irc_reply_data*hostd,void*conn)	//hooks privmsg to your specified channel
+{
+
+	IRC* irc_conn=(IRC*)conn;
+	
+
+	const ucsconfig *Config=ucsconfig::get();
+
+	string ChannelName = Config->EQChannelToOutput;
+
+	ChatChannel *RequiredChannel = ChannelList->FindChannel(ChannelName);
+
+	char name[128];
+	strcpy(name,Config->ChannelToOutput.c_str());
+
+	if(!strcmp(params,":!rejoin"))
+	{
+		irc_conn->join(name);
+	}	
+
+	string parame = params;
+	string IRCName = hostd->nick;
+
+	if(!strcmp(hostd->target,name))
+	{
+		RequiredChannel->SendMessageToChannelFromIRC(GetCleanMessageFromIRC(parame), IRCName); // I got an IRC command, now let's send it
+	}
+	return 0;
+	
+}
+*/
 
 int main() {
 
@@ -73,8 +156,26 @@ int main() {
 		return(1);
 	}
 
-	const ucsconfig *Config=ucsconfig::get();
+	Config = ucsconfig::get();
+/*
+	if(UseIRC) {
+		char array1[64];
+		char array2[64];
+		strcpy(array1, Config->ChatIRCHost.c_str());
+		strcpy(array2, Config->ChatIRCNick.c_str());
+		conn.hook_irc_command("PRIVMSG",&triggers);
+		conn.hook_irc_command("376", &end_of_motd); //hook the end of MOTD message
+		conn.hook_irc_command("422", &end_of_motd);	//MOTD File is missing
+		conn.start(array1,Config->ChatIRCPort,array2,"EQEMu IRC Bot","EQEMu IRC Bot",0);
 
+#ifdef WIN32
+		_beginthread(IRCConnect,0,(void*)&conn);
+#else
+		pthread_t th1;
+		pthread_create(&th1,NULL,IRCConnect,(void*)&conn);
+#endif
+	}
+*/
 	if(!load_log_settings(Config->LogSettingsFile.c_str()))
 		_log(UCS__INIT, "Warning: Unable to read %s", Config->LogSettingsFile.c_str());
 	else

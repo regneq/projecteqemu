@@ -339,6 +339,7 @@ RULE_CATEGORY ( Channels )
 RULE_INT ( Channels, RequiredStatusAdmin, 251) // Required status to administer chat channels
 RULE_INT ( Channels, RequiredStatusListAll, 251) // Required status to list all chat channels
 RULE_INT ( Channels, DeleteTimer, 1440) // Empty password protected channels will be deleted after this many minutes
+/*RULE_BOOL ( Channels, UseIRC, false)*/ //true = enable connecting to IRC. we'll need to see about creating RULE_STRING before we use this as an actual rule
 RULE_CATEGORY_END()
 
 RULE_CATEGORY ( EventLog )

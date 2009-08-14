@@ -25,6 +25,7 @@ public:
 	int MemberCount(int Status);
 	string GetName() { return Name; }
 	void SendMessageToChannel(string Message, Client* Sender);
+	void SendMessageToChannelFromIRC(string Message, string IRCName);
 	bool CheckPassword(string inPassword) { return ((Password.length() == 0) || (Password == inPassword)); }
 	void SetPassword(string inPassword);
 	bool IsOwner(string Name) { return (Owner == Name); }

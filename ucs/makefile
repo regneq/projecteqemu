@@ -11,7 +11,7 @@ LINKER=gcc
 OUT=-o 
 LINKOUT=-o 
 NOLINK=-c
-DFLAGS=-DDEBUG=5 -DEQDEBUG=5 -DSHAREMEM -DCATCH_CRASH -DNO_PIDLOG -DFIELD_ITEMS -DIRC -Di386 -DUCS
+DFLAGS=-DDEBUG=5 -DEQDEBUG=5 -DSHAREMEM -DCATCH_CRASH -DNO_PIDLOG -DFIELD_ITEMS -Di386 -DUCS
 WFLAGS=-Wall -Wuninitialized -Wwrite-strings -Wcast-qual -Wcomment -Wcast-align -Wno-deprecated
 
 PERL_FLAGS=$(shell perl -MExtUtils::Embed -e ccopts)

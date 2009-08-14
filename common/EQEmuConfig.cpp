@@ -120,6 +120,7 @@ void EQEmuConfig::do_world(TiXmlElement *ele) {
 
 void EQEmuConfig::do_chatserver(TiXmlElement *ele) {
 	const char *text;
+	TiXmlElement * sub_ele;
 
 	text=ParseTextBlock(ele,"host",true);
 	if (text)
@@ -128,6 +129,30 @@ void EQEmuConfig::do_chatserver(TiXmlElement *ele) {
 	text=ParseTextBlock(ele,"port",true);
 	if (text)
 		ChatPort=atoi(text);
+	
+	sub_ele = ele->FirstChildElement("useirc");
+	if (sub_ele != NULL)
+		UseIRC=true;
+
+	text=ParseTextBlock(ele,"channeltooutput",true);
+	if (text)
+		ChannelToOutput=text;
+
+	text=ParseTextBlock(ele,"eqchanneltooutput",true);
+	if (text)
+		EQChannelToOutput=text;
+
+	text=ParseTextBlock(ele,"chatirchost",true);
+	if (text)
+		ChatIRCHost=text;
+
+	text=ParseTextBlock(ele,"chatircport",true);
+	if (text)
+		ChatIRCPort=atoi(text);
+
+	text=ParseTextBlock(ele,"chatircnick",true);
+	if (text)
+		ChatIRCNick=text;
 }
 		
 void EQEmuConfig::do_mailserver(TiXmlElement *ele) {
@@ -323,6 +348,18 @@ string EQEmuConfig::GetByName(const string &var_name) const {
 		return(ChatHost);
 	if(var_name == "ChatPort")
 		return(itoa(ChatPort));
+	if(var_name == "UseIRC")
+		return (UseIRC?"true":"false");
+	if(var_name == "ChannelToOutput")
+		return (ChannelToOutput);
+	if(var_name == "EQChannelToOutput")
+		return (EQChannelToOutput);
+	if(var_name == "ChatIRCHost")
+		return(ChatIRCHost);
+	if(var_name == "ChatIRCPort")
+		return(itoa(ChatIRCPort));
+	if(var_name == "ChatIRCNick")
+		return(ChatIRCNick);
 	if(var_name == "MailHost")
 		return(MailHost);
 	if(var_name == "MailPort")
@@ -386,6 +423,12 @@ void EQEmuConfig::Dump() const
 	cout << "WorldHTTPEnabled = " << WorldHTTPEnabled << endl;
 	cout << "ChatHost = " << ChatHost << endl;
 	cout << "ChatPort = " << ChatPort << endl;
+	cout << "UseIRC = " << UseIRC << endl;
+	cout << "ChannelToOutput = " << ChannelToOutput << endl;
+	cout << "EQChannelToOutput = " << EQChannelToOutput << endl;
+	cout << "ChatIRCHost = " << ChatIRCHost << endl;
+	cout << "ChatIRCPort = " << ChatIRCPort << endl;
+	cout << "ChatIRCNick = " << ChatIRCNick << endl;
 	cout << "MailHost = " << MailHost << endl;
 	cout << "MailPort = " << MailPort << endl;
 	cout << "DatabaseHost = " << DatabaseHost << endl;

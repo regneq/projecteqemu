@@ -46,7 +46,13 @@ public:
 	// From <chatserver/>
 	string ChatHost;
 	uint16 ChatPort;
-	
+	bool UseIRC;
+	string ChannelToOutput;
+	string EQChannelToOutput;
+	string ChatIRCHost;
+	uint16 ChatIRCPort;
+	string ChatIRCNick;
+
 	// From <mailserver/>
 	string MailHost;
 	uint16 MailPort;
@@ -111,6 +117,7 @@ protected:
 		LoginPort=5998;
 
 		// World
+		//strcpy(lsi->name, Config->LongName.c_str());
 		Locked=false;
 		WorldTCPPort=9000;
 		TelnetEnabled=false;
@@ -122,6 +129,13 @@ protected:
 		// Mail
 		ChatHost="eqchat.eqemulator.net";
 		ChatPort=7778;
+		UseIRC=false;
+		ChannelToOutput="#InterServerChat";
+		EQChannelToOutput="General";
+		ChatIRCHost="eqnet.eqemulator.net";
+		ChatIRCPort=6667;
+		ChatIRCNick="EQEmuChatBot";
+
 
 		// Mail
 		MailHost="eqmail.eqemulator.net";
