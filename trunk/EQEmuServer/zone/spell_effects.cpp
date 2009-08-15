@@ -104,7 +104,19 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 	else
 	{
 		if((CalcBuffDuration(caster,this,spell_id)-1) > 0){
-			buffslot = AddBuff(caster, spell_id);
+			if(IsEffectInSpell(spell_id, SE_BindSight))
+			{
+				if(caster)
+				{
+					buffslot = caster->AddBuff(caster, spell_id);
+				}
+				else
+					buffslot = -1;
+			}
+			else
+			{
+				buffslot = AddBuff(caster, spell_id);
+			}
 			if(buffslot == -1)	// stacking failure
 				return false;
 		} else {
@@ -1300,7 +1312,10 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Bind Sight");
 #endif
-				// solar: handled by client
+				if(caster && caster->IsClient())
+				{
+					caster->CastToClient()->SetBindSightTarget(this);
+				}
 				break;
 			}
 
@@ -3384,6 +3399,15 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 					UnStun();
 				}
 				break;
+			}
+
+			case SE_BindSight:
+			{
+				if(IsClient())
+				{
+					CastToClient()->SetBindSightTarget(NULL);
+				}
+				break;			
 			}
 		}
 	}

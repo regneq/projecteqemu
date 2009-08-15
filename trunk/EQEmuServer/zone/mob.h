@@ -448,7 +448,6 @@ bool logpos;
 	void MakeSpawnUpdateNoDelta(PlayerPositionUpdateServer_Struct* spu);
 	void MakeSpawnUpdate(PlayerPositionUpdateServer_Struct* spu);
 	void SendPosition();
-	void SendAllPosition();
 
 	void CreateDespawnPacket(EQApplicationPacket* app);
 	void CreateHorseSpawnPacket(EQApplicationPacket* app, const char* ownername, uint16 ownerid, Mob* ForWho = 0);
@@ -1143,6 +1142,7 @@ protected:
 	sint32	GetFactionBonus(uint32 pFactionID);
 
 	void CalculateFearPosition();
+	int32 move_tic_count;
 	//bool FearTryStraight(Mob *caster, int32 duration, bool flee, VERTEX &hit, VERTEX &fv);
 //	VERTEX fear_vector;
 	//FearState fear_state;

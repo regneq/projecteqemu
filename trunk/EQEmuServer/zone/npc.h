@@ -296,7 +296,6 @@ protected:
     Timer	classattack_timer;
 	Timer	knightattack_timer;
     Timer	assist_timer;		//ask for help from nearby mobs
-	Timer	global_position_update_timer;
 
 	bool	combat_event;	//true if we are in combat, false otherwise
     Timer	sendhpupdate_timer;

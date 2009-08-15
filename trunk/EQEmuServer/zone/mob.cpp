@@ -139,6 +139,7 @@ Mob::Mob(const char*   in_name,
 
 	warp_threshold = 140;
 	last_warp_distance = 0;	
+	move_tic_count = 0;
 	
 	_egnode = NULL;
 	adverrorinfo = 0;
@@ -884,21 +885,7 @@ void Mob::SendPosition()
 	EQApplicationPacket* app = new EQApplicationPacket(OP_ClientUpdate, sizeof(PlayerPositionUpdateServer_Struct));
 	PlayerPositionUpdateServer_Struct* spu = (PlayerPositionUpdateServer_Struct*)app->pBuffer;	
 	MakeSpawnUpdateNoDelta(spu);
-//?	spu->heading *= 8;
-#ifdef PACKET_UPDATE_MANAGER
-	entity_list.QueueManaged(this, app, true);
-#else
-	entity_list.QueueCloseClients(this, app, true, 800);
-#endif
-	safe_delete(app);
-}
-
-// this one just warps the mob to the current location
-void Mob::SendAllPosition() {
-	EQApplicationPacket* app = new EQApplicationPacket(OP_ClientUpdate, sizeof(PlayerPositionUpdateServer_Struct));
-	PlayerPositionUpdateServer_Struct* spu = (PlayerPositionUpdateServer_Struct*)app->pBuffer;	
-	MakeSpawnUpdateNoDelta(spu);
-//?	spu->heading *= 8;
+	move_tic_count = 0;
 	entity_list.QueueClients(this, app, true);
 	safe_delete(app);
 }
@@ -914,11 +901,22 @@ void Mob::SendPosUpdate(int8 iSendToSelf) {
 			this->CastToClient()->FastQueuePacket(&app,false);
 	}
 	else
+	{
 #ifdef PACKET_UPDATE_MANAGER
 		entity_list.QueueManaged(this, app, (iSendToSelf==0),false);
 #else
-		entity_list.QueueCloseClients(this, app, (iSendToSelf==0), 800, NULL, false);
+		if(move_tic_count == RuleI(Zone,  NPCPositonUpdateTicCount))
+		{
+			entity_list.QueueClients(this, app, (iSendToSelf==0), false);
+			move_tic_count = 0;
+		}
+		else
+		{
+			entity_list.QueueCloseClients(this, app, (iSendToSelf==0), 800, NULL, false);
+			move_tic_count++;
+		}
 #endif
+	}
 	safe_delete(app);
 }
 
@@ -1084,7 +1082,7 @@ void Mob::GMMove(float x, float y, float z, float heading, bool SendUpdate) {
 	if(IsNPC())
 		CastToNPC()->SaveGuardSpot(true);
 	if(SendUpdate)
-		SendAllPosition();
+		SendPosition();
 	//SendPosUpdate(1);
 #ifdef PACKET_UPDATE_MANAGER
 	if(IsClient()) {

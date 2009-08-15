@@ -1028,11 +1028,6 @@ bool Bot::Process() {
 	SpellProcess();
 
 	if (tic_timer.Check()) {
-		//60 seconds, or whatever the rule is set to has passed, send this position to everyone to avoid ghosting
-		if(/*global_position_update_timer.Check() && */!moving){
-			SendAllPosition();
-		}
-
 		BuffProcess();
 
 		if(curfp)
@@ -2808,7 +2803,7 @@ void Bot::Spawn(Client* botCharacterOwner, std::string* errorMessage) {
 
 		entity_list.AddBot(this, true, true);
 
-		this->SendAllPosition();
+		this->SendPosition();
 
 		if(!_botInventory.empty()) {
 			for(int i = 1; i < 22; i++) {

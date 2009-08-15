@@ -1284,13 +1284,28 @@ void Client::Handle_OP_TargetCommand(const EQApplicationPacket *app)
 	if(g && g->IsMainAssist(this))
 		g->SetGroupTarget(ct->new_target);
 
-	//ensure LOS to the target (image)
-	if((Admin() < 80) && (GetTarget() != this && !CheckLosFN(GetTarget())))
-		return;
-
 	// For /target, send reject or success packet
 	if (app->GetOpcode() == OP_TargetCommand) {
 		if (GetTarget() && !GetTarget()->CastToMob()->IsInvisible(this) && DistNoRoot(*GetTarget()) <= TARGETING_RANGE*TARGETING_RANGE) {
+			if(GetTarget()->GetBodyType() == BT_NoTarget2 || GetTarget()->GetBodyType() == BT_Special 
+				|| GetTarget()->GetBodyType() == BT_NoTarget)
+			{
+				//Targeting something we shouldn't with /target
+				//but the client allows this without MQ so you don't flag it
+				EQApplicationPacket* outapp = new EQApplicationPacket(OP_TargetReject, sizeof(TargetReject_Struct));
+				outapp->pBuffer[0] = 0x2f;
+				outapp->pBuffer[1] = 0x01;
+				outapp->pBuffer[4] = 0x0d;
+				if(GetTarget())
+				{
+					GetTarget()->IsTargeted(-1);
+					SetTarget(NULL);
+				}
+				QueuePacket(outapp);
+				safe_delete(outapp);
+				return;
+			}
+			
 			QueuePacket(app);
 			EQApplicationPacket hp_app;
 			GetTarget()->IsTargeted(1);
@@ -1302,14 +1317,65 @@ void Client::Handle_OP_TargetCommand(const EQApplicationPacket *app)
 			outapp->pBuffer[1] = 0x01;
 			outapp->pBuffer[4] = 0x0d;
 			if(GetTarget())
+			{
 				GetTarget()->IsTargeted(-1);
+				SetTarget(NULL);
+			}
 			QueuePacket(outapp);
 			safe_delete(outapp);
 		}
 	}
-	else{
+	else
+	{
 		if(GetTarget())
+		{
+			if(GetTarget()->GetBodyType() == BT_NoTarget2 || GetTarget()->GetBodyType() == BT_Special 
+				|| GetTarget()->GetBodyType() == BT_NoTarget)
+			{
+				char *hacker_str = NULL;
+				MakeAnyLenString(&hacker_str, "%s attempting to target something untargetable, bodytype: %i\n",
+					GetName(), (int)GetTarget()->GetBodyType());
+				database.SetMQDetectionFlag(AccountName(), GetName(), hacker_str, zone->GetShortName());
+				safe_delete_array(hacker_str);
+				GetTarget()->IsTargeted(-1);
+				SetTarget((Mob*)NULL);
+				return;
+			}
+			else if(GetBindSightTarget())
+			{
+				if(GetBindSightTarget()->DistNoRoot(*GetTarget()) > (zone->newzone_data.maxclip*zone->newzone_data.maxclip))
+				{
+					if(DistNoRoot(*GetTarget()) > (zone->newzone_data.maxclip*zone->newzone_data.maxclip))
+					{
+						char *hacker_str = NULL;
+						MakeAnyLenString(&hacker_str, "%s attempting to target something beyond the clip plane of %i units,"
+							" from (%.2f, %.2f, %.2f) to (%.2f, %.2f, %.2f)", GetName(),
+							(zone->newzone_data.maxclip*zone->newzone_data.maxclip),
+							GetX(), GetY(), GetZ(), GetTarget()->GetX(), GetTarget()->GetY(), GetTarget()->GetZ());
+						database.SetMQDetectionFlag(AccountName(), GetName(), hacker_str, zone->GetShortName());
+						safe_delete_array(hacker_str);
+						GetTarget()->IsTargeted(-1);
+						SetTarget(NULL);
+						return;
+					}
+				}
+			}
+			else if(DistNoRoot(*GetTarget()) > (zone->newzone_data.maxclip*zone->newzone_data.maxclip))
+			{
+				char *hacker_str = NULL;
+				MakeAnyLenString(&hacker_str, "%s attempting to target something beyond the clip plane of %i units,"
+					" from (%.2f, %.2f, %.2f) to (%.2f, %.2f, %.2f)", GetName(),
+					(zone->newzone_data.maxclip*zone->newzone_data.maxclip),
+					GetX(), GetY(), GetZ(), GetTarget()->GetX(), GetTarget()->GetY(), GetTarget()->GetZ());
+				database.SetMQDetectionFlag(AccountName(), GetName(), hacker_str, zone->GetShortName());
+				safe_delete_array(hacker_str);
+				GetTarget()->IsTargeted(-1);
+				SetTarget(NULL);
+				return;
+			}
+
 			GetTarget()->IsTargeted(1);
+		}
 	}
 	return;
 }
