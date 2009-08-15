@@ -1389,7 +1389,6 @@ void command_summon(Client *c, const Seperator *sep)
 			c->Message(0, "You may not summon a player.");
 			return;
 		}*/
-		t->CastToClient()->cheat_timer.Start(3500,false);
 		c->Message(0, "Summoning player %s to %1.1f, %1.1f, %1.1f", t->GetName(), c->GetX(), c->GetY(), c->GetZ());
 		t->CastToClient()->MovePC(zone->GetZoneID(), zone->GetInstanceID(), c->GetX(), c->GetY(), c->GetZ(), c->GetHeading(), 2, GMSummon);
 	}
@@ -1437,7 +1436,6 @@ void command_zone(Client *c, const Seperator *sep)
 		
 	if (sep->IsNumber(2) || sep->IsNumber(3) || sep->IsNumber(4)){
 		//zone to specific coords
-		c->CastToClient()->cheat_timer.Start(3500,false);
 		c->MovePC(zoneid, (float)atof(sep->arg[2]), atof(sep->arg[3]), atof(sep->arg[4]), 0.0f, 0);
 		}
 	else
@@ -1494,7 +1492,6 @@ void command_zone_instance(Client *c, const Seperator *sep)
 
 	if (sep->IsNumber(2) || sep->IsNumber(3) || sep->IsNumber(4)){
 		//zone to specific coords
-		c->CastToClient()->cheat_timer.Start(3500,false);
 		c->MovePC(zoneid, instanceid, atof(sep->arg[2]), atof(sep->arg[3]), atof(sep->arg[4]), 0.0f, 0);
 	}
 	else{
@@ -1576,7 +1573,6 @@ void command_peqzone(Client *c, const Seperator *sep)
 	   }
 
        //zone to safe coords
-       c->CastToClient()->cheat_timer.Start(3500,false);
        c->GetPTimers().Start(pTimerPeqzoneReuse, RuleI(Zone, PEQZoneReuseTime));
        c->MovePC(zoneid, 0.0f, 0.0f, 0.0f, 0.0f, 0, ZoneToSafeCoords);
 }

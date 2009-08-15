@@ -1048,19 +1048,10 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16
 		if(IsClient())
 		{
 			this->CastToClient()->CheckSongSkillIncrease(spell_id);
-			//Lieka start Edit:  Fixing Warp Detector triggered for Bard Songs
-			if ((IsGateSpell(spell_id)) ||//Lieka Edit Begin:  Checking effects within the spell, rather than hardcoding Spell IDs.
-				(IsTeleportSpell(spell_id)) ||
-				(IsSuccorSpell(spell_id)) ||
-				(IsShadowStepSpell(spell_id)) ||
-				(IsGateSpell(spell_id)))
-				{
-						this->cheat_timer.Start(2000,false);
-				}
 		}
 		// go again in 6 seconds
-//this is handled with bardsong_timer
-//		DoCastSpell(casting_spell_id, casting_spell_targetid, casting_spell_slot, 6000, casting_spell_mana);
+		//this is handled with bardsong_timer
+		//		DoCastSpell(casting_spell_id, casting_spell_targetid, casting_spell_slot, 6000, casting_spell_mana);
 
 		mlog(SPELLS__CASTING, "Bard song %d should be started", spell_id);
 	}
@@ -1085,18 +1076,8 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16
 				// increased chance of gaining channel skill if you regained concentration
 				c->CheckIncreaseSkill(CHANNELING, NULL, regain_conc ? 5 : 0);
 				
-				c->CheckSpecializeIncrease(spell_id);
-				if ((IsGateSpell(spell_id)) ||//Lieka Edit Begin:  Checking effects within the spell, rather than hardcoding Spell IDs.
-					(IsTeleportSpell(spell_id)) ||
-					(IsSuccorSpell(spell_id)) ||
-					(IsShadowStepSpell(spell_id)) ||
-					(IsGateSpell(spell_id)))
-					{
-					c->cheat_timer.Start(2000,false); 
-					}				
+				c->CheckSpecializeIncrease(spell_id);	
 			}
-			
-			
 		}
 
 		// there should be no casting going on now
@@ -1905,6 +1886,8 @@ void Mob::BardPulse(uint16 spell_id, Mob *caster) {
 				{
 					if(HasBuffIcon(caster, this, spell_id) == false)
 					{
+						CastToClient()->SetKnockBackExemption(true);
+
 						action->buff_unknown = 0;
 						EQApplicationPacket* outapp_push = new EQApplicationPacket(OP_ClientUpdate, sizeof(PlayerPositionUpdateServer_Struct));
 						PlayerPositionUpdateServer_Struct* spu = (PlayerPositionUpdateServer_Struct*)outapp_push->pBuffer;
@@ -1938,6 +1921,11 @@ void Mob::BardPulse(uint16 spell_id, Mob *caster) {
 						CastToClient()->FastQueuePacket(&outapp_push);
 					}
 				}
+			}
+
+			if(IsClient() && IsEffectInSpell(spell_id, SE_ShadowStep))
+			{
+				CastToClient()->SetShadowStepExemption(true);
 			}
 
 			if(!IsEffectInSpell(spell_id, SE_BindAffinity))
@@ -2601,16 +2589,6 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar)
 	action->sequence = (int32) (GetHeading() * 2);	// just some random number
 	action->instrument_mod = GetInstrumentMod(spell_id);
 	action->buff_unknown = 0;
-
-
-	if ((IsGateSpell(spell_id)) ||
-		(IsTeleportSpell(spell_id)) ||
-		(IsSuccorSpell(spell_id)) ||
-		(IsShadowStepSpell(spell_id)) ||
-		(IsGateSpell(spell_id)))
-		{
-				spelltar->cheat_timer.Start(2000,false);
-		}	
 	
 	if(spelltar->IsClient())	// send to target
 		spelltar->CastToClient()->QueuePacket(action_packet);
@@ -2908,6 +2886,8 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar)
 		{
 			if(HasBuffIcon(this, spelltar, spell_id) == false)
 			{
+				spelltar->CastToClient()->SetKnockBackExemption(true);
+
 				action->buff_unknown = 0;
 				EQApplicationPacket* outapp_push = new EQApplicationPacket(OP_ClientUpdate, sizeof(PlayerPositionUpdateServer_Struct));
 				PlayerPositionUpdateServer_Struct* spu = (PlayerPositionUpdateServer_Struct*)outapp_push->pBuffer;
@@ -2943,6 +2923,10 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar)
 		}
 	}
 
+	if(spelltar->IsClient() && IsEffectInSpell(spell_id, SE_ShadowStep))
+	{
+		spelltar->CastToClient()->SetShadowStepExemption(true);
+	}
 
 	if(!IsEffectInSpell(spell_id, SE_BindAffinity))
 	{

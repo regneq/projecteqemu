@@ -532,9 +532,6 @@ bool logpos;
 	virtual void SetTarget(Mob* mob);
 	virtual inline float		GetHPRatio() const { return max_hp == 0 ? 0 : ((float)cur_hp/max_hp*100); }
 
-	float GetLWDistance()					{ return last_warp_distance; }
-	float GetWarpThreshold()				{ return warp_threshold; }
-
 	bool IsLoggingEnabled() const { return(logging_enabled); }
 	void EnableLogging() { logging_enabled = true; }
 	void DisableLogging() { logging_enabled = false; }
@@ -905,11 +902,6 @@ bool logpos;
     bool SpecAttacks[SPECATK_MAXNUM];
 	Shielders_Struct shielder[MAX_SHIELDERS];
 	Trade* trade;
-
-	Timer cheat_timer; //Lieka:  Timer used to check for movement exemptions/client-based, unsolicited zone exemptions
-	Timer threshold_timer;  //Null:  threshold timer
-	float warp_threshold;   //Null:  threshold for warp detector
-	float last_warp_distance;  //Null:  last distance logged as a warp, used for logs and #showstats
 
 	//temporary:
 	bool fix_pathing;

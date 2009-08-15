@@ -208,10 +208,6 @@ Client::Client(EQStreamInterface* ieqs)
 	LFGMatchFilter = false;
 	LFGComments[0] = '\0';
 	LFP = false;
-	cheater = false;
-	cheatcount =0;
-	cheat_x=0;
-	cheat_y=0;
 	gmspeed = 0;
 	playeraction = 0;
 	SetTarget(0);
@@ -283,6 +279,13 @@ Client::Client(EQStreamInterface* ieqs)
 	RestRegenHP = 0;
 	RestRegenMana = 0;
 	XPRate = 100;
+
+	m_TimeSinceLastPositionCheck = 0;
+	m_DistanceSinceLastPositionCheck = 0.0f;
+	m_ShadowStepExemption = 0;
+	m_KnockBackExemption = 0;
+	m_PortExemption = 0;
+	runspeed = 1.25f;
 }
 
 Client::~Client() {
@@ -2611,13 +2614,6 @@ void Client::SetTint(sint16 in_slot, Color_Struct& color) {
 		m_pp.item_tint[MATERIAL_FEET].color=color.color;
 }
 
-bool Client::CheckCheat(){
-	float dx=cheat_x-x_pos;
-	float dy=cheat_y-y_pos;
-	float result=((dx*dx)+(dy*dy));
-	return result>(RuleR(Zone, MQWarpDetectorDistance));
-}
-
 void Client::SetHideMe(bool flag)
 {
 	EQApplicationPacket app;
@@ -4827,4 +4823,129 @@ void Client::ShowSkillsWindow()
 		}
 	}
 	this->SendPopupToClient(WindowTitle, WindowText.c_str());
+}
+
+
+void Client::SetShadowStepExemption(bool v) 
+{
+	if(v == true)
+	{
+		int32 cur_time = Timer::GetCurrentTime();
+		if((cur_time - m_TimeSinceLastPositionCheck) > 1000)
+		{
+			float speed = (m_DistanceSinceLastPositionCheck * 100) / (float)(cur_time - m_TimeSinceLastPositionCheck);
+			if(speed > (GetRunspeed() * 4.5))
+			{
+				if(IsShadowStepExempted())
+				{
+					if(speed > 10.0f)
+					{
+						CheatDetected(MQWarp);
+					}
+				}
+				else if(IsKnockBackExempted())
+				{
+					//still potential to trigger this if you're knocked back off a 
+					//HUGE fall that takes > 2.5 seconds
+					if(speed > 30.0f)
+					{
+						CheatDetected(MQWarp);
+					}
+				}
+				else if(!IsPortExempted())
+				{
+					CheatDetected(MQWarp);
+				}
+			}
+		}
+		m_TimeSinceLastPositionCheck = cur_time;
+		m_DistanceSinceLastPositionCheck = 0.0f;
+	}
+	m_ShadowStepExemption = v; 
+}
+
+void Client::SetKnockBackExemption(bool v) 
+{
+	if(v == true)
+	{
+		int32 cur_time = Timer::GetCurrentTime();
+		if((cur_time - m_TimeSinceLastPositionCheck) > 1000)
+		{
+			float speed = (m_DistanceSinceLastPositionCheck * 100) / (float)(cur_time - m_TimeSinceLastPositionCheck);
+			if(speed > (GetRunspeed() * 4.5))
+			{
+				if(IsShadowStepExempted())
+				{
+					if(speed > 10.0f)
+					{
+						CheatDetected(MQWarp);
+					}
+				}
+				else if(IsKnockBackExempted())
+				{
+					//still potential to trigger this if you're knocked back off a 
+					//HUGE fall that takes > 2.5 seconds
+					if(speed > 30.0f)
+					{
+						CheatDetected(MQWarp);
+					}
+				}
+				else if(!IsPortExempted())
+				{
+					CheatDetected(MQWarp);
+				}
+			}
+		}
+		m_TimeSinceLastPositionCheck = cur_time;
+		m_DistanceSinceLastPositionCheck = 0.0f;
+	}
+	m_KnockBackExemption = v; 
+}
+
+void Client::SetPortExemption(bool v) 
+{
+	if(v == true)
+	{
+		int32 cur_time = Timer::GetCurrentTime();
+		if((cur_time - m_TimeSinceLastPositionCheck) > 1000)
+		{
+			float speed = (m_DistanceSinceLastPositionCheck * 100) / (float)(cur_time - m_TimeSinceLastPositionCheck);
+			if(speed > (GetRunspeed() * 4.5))
+			{
+				if(IsShadowStepExempted())
+				{
+					if(speed > 10.0f)
+					{
+						CheatDetected(MQWarp);
+					}
+				}
+				else if(IsKnockBackExempted())
+				{
+					//still potential to trigger this if you're knocked back off a 
+					//HUGE fall that takes > 2.5 seconds
+					if(speed > 30.0f)
+					{
+						CheatDetected(MQWarp);
+					}
+				}
+				else if(!IsPortExempted())
+				{
+					CheatDetected(MQWarp);
+				}
+			}
+		}
+		m_TimeSinceLastPositionCheck = cur_time;
+		m_DistanceSinceLastPositionCheck = 0.0f;
+	}
+	m_PortExemption = v; 
+}
+
+void Client::Signal(int32 data)
+{
+#ifdef EMBPERL
+	char buf[32];
+	snprintf(buf, 31, "%d", data);
+	buf[31] = '\0';
+	((PerlembParser *)parse)->Event(EVENT_SIGNAL, 0, buf, (NPC*)NULL, this);
+#endif
 }
