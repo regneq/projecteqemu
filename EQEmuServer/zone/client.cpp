@@ -260,6 +260,7 @@ Client::Client(EQStreamInterface* ieqs)
 	TotalSecondsPlayed = 0;
 	keyring.clear();
 	melodystate = false;
+	bind_sight_target = NULL;
 	for (int i = 0; i < MAX_PP_MEMSPELL; i++) {
 		melodygems[i] = -1;
 	}

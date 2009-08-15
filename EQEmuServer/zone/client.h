@@ -861,6 +861,9 @@ public:
 	void SummonAndRezzAllCorpses();
 	void NotifyNewTitlesAvailable();
 
+	Mob *GetBindSightTarget() { return bind_sight_target; }
+	void SetBindSightTarget(Mob *n) { bind_sight_target = n; }
+
 protected:
 	friend class Mob;
 	void CalcItemBonuses(StatBonuses* newbon);
@@ -876,6 +879,9 @@ protected:
 	sint16	CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id);
 
 	bool	MoveItemToInventory(ItemInst *BInst, bool UpdateClient = false);
+
+	Mob*	bind_sight_target;
+
 private:
 	eqFilterMode ClientFilters[_FilterCount];
 	sint32	HandlePacket(const EQApplicationPacket *app);
