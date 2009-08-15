@@ -349,6 +349,7 @@ public:
 	void	AdventureFinish(int32 a_id, int8 win_lose, int32 points);
 	void	AdventureDestroy(int32 a_id);
 	void	AdventureCountUpdate(int32 a_id, int32 current, int32 total);
+	void	SignalAllClients(int32 data);
 
 	//Perl stuff only, we have iterators for normal iteration but 
 	//perl doesn't play nice with iterators, so we abstract a more 

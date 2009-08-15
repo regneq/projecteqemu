@@ -33,6 +33,7 @@
 typedef const char Const_char;
 
 #include "mob.h"
+#include "client.h"
 
 #ifdef THIS	 /* this macro seems to leak out on some systems */
 #undef THIS		
@@ -5799,6 +5800,40 @@ XS(XS_Mob_GetHateList)
 	XSRETURN(1);
 }
 
+XS(XS_Mob_SignalClient); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_SignalClient)
+{
+	dXSARGS;
+	if (items != 3)
+		Perl_croak(aTHX_ "Usage: Mob::SignalClient(THIS, client, data)");
+	{
+		Mob *		THIS;
+		Client*		client = NULL;
+		int32		data = (int32)SvUV(ST(2));
+	
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		if (sv_derived_from(ST(1), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(1)));
+			client = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "client is not of type Client");
+		if(client == NULL)
+			Perl_croak(aTHX_ "client is NULL, avoiding crash.");
+
+		client->Signal(data);
+	}
+	XSRETURN_EMPTY;
+}
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -6026,6 +6061,7 @@ XS(boot_Mob)
 		newXSproto(strcpy(buf, "SetEntityVariable"), XS_Mob_SetEntityVariable, file, "$$$");
 		newXSproto(strcpy(buf, "EntityVariableExists"), XS_Mob_EntityVariableExists, file, "$$");
 		newXSproto(strcpy(buf, "GetHateList"), XS_Mob_GetHateList, file, "$");
+		newXSproto(strcpy(buf, "SignalClient"), XS_Mob_SignalClient, file, "$$$");
 	XSRETURN_YES;
 }
 

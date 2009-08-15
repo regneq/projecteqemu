@@ -104,8 +104,6 @@ Mob::Mob(const char*   in_name,
 		attack_dw_timer(2000),
 		ranged_timer(2000),
 		tic_timer(6000),
-		cheat_timer(0),
-		threshold_timer(0),
 		mana_timer(2000),
 		spellend_timer(0),
 		rewind_timer(30000), //Timer used for determining amount of time between actual player position updates for /rewind.
@@ -136,9 +134,6 @@ Mob::Mob(const char*   in_name,
  	rewind_x = 0;		//Stored x_pos for /rewind
  	rewind_y = 0;		//Stored y_pos for /rewind
  	rewind_z = 0;		//Stored z_pos for /rewind
-
-	warp_threshold = 140;
-	last_warp_distance = 0;	
 	move_tic_count = 0;
 	
 	_egnode = NULL;
@@ -277,7 +272,6 @@ Mob::Mob(const char*   in_name,
 //	guildeqid = GUILD_NONE;
 	
     spellend_timer.Disable();
-	cheat_timer.Disable();
 	bardsong_timer.Disable();
 	bardsong = 0;
 	bardsong_target_id = 0;
@@ -532,14 +526,34 @@ float Mob::_GetMovementSpeed(int mod) const {
 	//runspeed cap.
 	if(GetClass() == BARD) {
 		//this extra-high bard cap should really only apply if they have AAs
-		if(speed_mod > 1.74)
-			speed_mod = 1.74;
+		if(speed_mod > 2.74)
+			speed_mod = 2.74;
 	} else {
-		if(speed_mod > 1.58)
-			speed_mod = 1.58;
+		if(speed_mod > 2.58)
+			speed_mod = 2.58;
 	}
 
-	return(runspeed * speed_mod);
+	if(IsClient())
+	{
+		if(CastToClient()->GetGMSpeed())
+		{
+			return(3.125 * speed_mod);
+		}
+		else
+		{
+			Mob* horse = entity_list.GetMob(CastToClient()->GetHorseId());
+			if(horse)
+			{
+				return(horse->GetRunspeed() * speed_mod); 
+			}
+			else
+			{
+				return(runspeed * speed_mod);
+			}
+		}
+	}
+	else
+		return(runspeed * speed_mod);
 }
 
 sint32 Mob::CalcMaxMana() {
@@ -977,7 +991,6 @@ void Mob::ShowStats(Client* client) {
 	if (this->IsClient())
 		client->Message(0, "  Weight: %.1f/%d", (float)this->CastToClient()->CalcCurrentWeight() / 10.0f, this->CastToClient()->GetSTR());
 	client->Message(0, "  Race: %i  BaseRace: %i  Texture: %i  HelmTexture: %i  Gender: %i  BaseGender: %i", GetRace(), GetBaseRace(), GetTexture(), GetHelmTexture(), GetGender(), GetBaseGender());
-	client->Message(0, "  Last Warp Distance: %f Threshold Remaining: %f", GetLWDistance(), GetWarpThreshold());
 	if (client->Admin() >= 100) {
 		client->Message(0, "  EntityID: %i  PetID: %i  OwnerID: %i  AIControlled: %i  Targetted: %i", 
 				this->GetID(), this->GetPetID(), this->GetOwnerID(), this->IsAIControlled(), targeted);
@@ -2172,7 +2185,6 @@ bool Mob::HateSummon() {
 
 		// RangerDown - GMMove doesn't seem to be working well with players, so use MovePC for them, GMMove for NPC's
 		if (target->IsClient()) {
-			target->CastToClient()->cheat_timer.Start(3500,false); //Lieka:  Prevent Mob Summons from tripping hack detector.
 			target->CastToClient()->MovePC(zone->GetZoneID(), zone->GetInstanceID(), x_pos, y_pos, z_pos, target->GetHeading(), 0, SummonPC);
 		}
 		else

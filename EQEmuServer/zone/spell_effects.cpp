@@ -2004,6 +2004,11 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				if(toss_amt > 20.0)
 					toss_amt = 20.0;
 
+				if(IsClient())
+				{
+					CastToClient()->SetKnockBackExemption(true);
+				}
+
 				double look_heading = GetHeading();
 				look_heading /= 256;
 				look_heading *= 360;
@@ -2074,12 +2079,9 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			case SE_SummonPC:
 			{
 			if(IsClient()){
-					CastToClient()->cheat_timer.Start(3500, false);
 					CastToClient()->MovePC(zone->GetZoneID(), zone->GetInstanceID(), caster->GetX(), caster->GetY(), caster->GetZ(), caster->GetHeading(), 2, SummonPC);
 					Message(15, "You have been summoned!");
 					entity_list.ClearAggro(this);
-					//WipeHateList();	//wipe client's hate list
-										//we're not currently using a client hate list, so we don't need to mess with this currently
 				}
 				else
 					caster->Message(13, "This spell can only be cast on players.");
@@ -3408,6 +3410,45 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 					CastToClient()->SetBindSightTarget(NULL);
 				}
 				break;			
+			}
+
+			case SE_MovementSpeed:
+			{
+				if(IsClient())
+				{
+					Client *my_c = CastToClient();
+					int32 cur_time = Timer::GetCurrentTime();
+					if((cur_time - my_c->m_TimeSinceLastPositionCheck) > 1000)
+					{
+						float speed = (my_c->m_DistanceSinceLastPositionCheck * 100) / (float)(cur_time - my_c->m_TimeSinceLastPositionCheck);
+						if(speed > (my_c->GetRunspeed() * 4.5))
+						{
+							if(my_c->IsShadowStepExempted())
+							{
+								if(speed > 10.0f)
+								{
+									my_c->CheatDetected(MQWarp);
+								}
+							}
+							else if(my_c->IsKnockBackExempted())
+							{
+								//still potential to trigger this if you're knocked back off a 
+								//HUGE fall that takes > 2.5 seconds, I wasn't able to do it with
+								//Avatar KB in westwastes tho so I'm not very worried.
+								if(speed > 30.0f)
+								{
+									my_c->CheatDetected(MQWarp);
+								}
+							}
+							else if(!my_c->IsPortExempted())
+							{
+								my_c->CheatDetected(MQWarp);
+							}
+						}
+					}
+					my_c->m_TimeSinceLastPositionCheck = cur_time;
+					my_c->m_DistanceSinceLastPositionCheck = 0.0f;
+				}
 			}
 		}
 	}

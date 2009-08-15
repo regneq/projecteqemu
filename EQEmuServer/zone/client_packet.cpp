@@ -958,28 +958,6 @@ void Client::Handle_Connect_OP_UpdateAA(const EQApplicationPacket *app) {
 	SendAATable();
 }
 
-bool Client::WarpDetection(bool CTimer, float distance)
-{
-	float last_distance;
-	if (threshold_timer.GetRemainingTime() < 1 && ((RuleR(Zone, MQWarpThresholdTimer)) != -1)) {   //Null:  If the timer is done, reset threshold, then reset timer //Lieka:  Integrated into Rules System.
-		warp_threshold = (RuleR(Zone, MQWarpLagThreshold));  //Lieka:  Integrated warp_threshold value into Rules System.  Original Value was 140.
-		threshold_timer.Start((RuleR(Zone, MQWarpThresholdTimer)), false); //Lieka:  Integrated timer duration value into the Rules System.  Original Value was 90000 (90 seconds).
-	}
-	if ((CTimer))
-		return false;
-	else
-	{
-		//Null Edit:  made warp detector fire only when the sum of all the warps in a period of time are greater than a threshold
-		//this makes the warp detector more lax on small warps, but still drops the hammer on the big ones.
-		if (distance>140.0f) {
-			last_distance = (distance-140.0f);
-			warp_threshold -= last_distance;
-			last_warp_distance = last_distance;
-		}
-	   return (warp_threshold < 0); //Null:  If the threshold is met, hit them with the hammer
-	}
-}
-
 void Client::CheatDetected(CheatTypes CheatType)
 { //[Paddy] ToDo: Break warp down for special zones. Some zones have special teleportation pads or bad .map files which can trigger the detector without a legit zone request.
 	switch (CheatType)
@@ -990,7 +968,6 @@ void Client::CheatDetected(CheatTypes CheatType)
 				char hString[250];
 				sprintf(hString, "/MQWarp with location %.2f, %.2f, %.2f", GetX(), GetY(), GetZ());
 				database.SetMQDetectionFlag(this->account_name,this->name, hString, zone->GetShortName());
-				warp_threshold = 1;   //Null:  bringing the detector back up to one to avoid chain detections.
 			}
 			break;
 		case MQZone:
@@ -1069,35 +1046,99 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 	tmp = y_pos - ppu->y_pos;
 	dist += tmp*tmp;
 	dist = sqrt(dist);
-	/*[Paddy] Cutting out the Z-Axis check. Not necessary and prevents long falls from triggering */
-	//tmp = z_pos - ppu->z_pos;
-	//dist += tmp*tmp;
 
-	/* Begin Cheat Detection*/
-	if ((this->cheat_timer.GetRemainingTime())>1 && (this->cheat_timer.Enabled())) //Lieka:  Check to see if the cheat (exemption) timer is active - this is for debugging
+	//the purpose of this first block may not be readily apparent
+	//basically it's so people don't do a moderate warp every 2.5 seconds 
+	//letting it even out and basically getting the job done without triggering
+	if(dist == 0)
 	{
-		//Spell timer is currently active
-		//worldserver.SendEmoteMessage(0,0,0,13,"Timer is Active.  %d True: %s",this->cheat_timer.GetRemainingTime(), (this->cheat_timer.GetRemainingTime()>1)? "true" : "false"); //Leika Edit:  Enable this to get debug messages.
-	}
-	else //Timer has elapsed or hasn't started, let's do a Warp Check
-	{
-		if ((WarpDetection(false, dist)) && ((admin <= RuleI(Zone, MQWarpExemptStatus)) || (RuleI(Zone, MQWarpExemptStatus) == -1))) //Exempt from warp detection if admin level is >  Rule:Zone:MQWarpExemptStatus
+		if(m_DistanceSinceLastPositionCheck > 0.0)
 		{
-			if ((zone->GetZoneID() != 209) && (zone->GetZoneID() != 151))
+			int32 cur_time = Timer::GetCurrentTime();
+			if((cur_time - m_TimeSinceLastPositionCheck) > 0)
 			{
-				CheatDetected(MQWarp); //Lieka:  Execute MQWarp function on offending player
+				float speed = (m_DistanceSinceLastPositionCheck * 100) / (float)(cur_time - m_TimeSinceLastPositionCheck);
+				if(speed > (GetRunspeed() * 4.5))
+				{
+					if(IsShadowStepExempted())
+					{
+						if(speed > 10.0f)
+						{
+							CheatDetected(MQWarp);
+						}
+					}
+					else if(IsKnockBackExempted())
+					{
+						//still potential to trigger this if you're knocked back off a 
+						//HUGE fall that takes > 2.5 seconds
+						if(speed > 30.0f)
+						{
+							CheatDetected(MQWarp);
+						}
+					}
+					else if(!IsPortExempted())
+					{
+						CheatDetected(MQWarp);
+					}
+				}
+				SetShadowStepExemption(false);
+				SetKnockBackExemption(false);
+				SetPortExemption(false);
+				m_TimeSinceLastPositionCheck = cur_time;
+				m_DistanceSinceLastPositionCheck = 0.0f;
+			}
+		}
+		else
+		{
+			m_TimeSinceLastPositionCheck = Timer::GetCurrentTime();
+		}
+	}
+	else
+	{
+		m_DistanceSinceLastPositionCheck += dist;
+		if(m_TimeSinceLastPositionCheck == 0)
+		{
+			m_TimeSinceLastPositionCheck = Timer::GetCurrentTime();
+		}
+		else
+		{
+			int32 cur_time = Timer::GetCurrentTime();
+			if((cur_time - m_TimeSinceLastPositionCheck) > 2500)
+			{
+				float speed = (m_DistanceSinceLastPositionCheck * 100) / (float)(cur_time - m_TimeSinceLastPositionCheck);
+				if(speed > (GetRunspeed() * 4.5))
+				{
+					if(IsShadowStepExempted())
+					{
+						if(speed > 10.0f)
+						{
+							CheatDetected(MQWarp);
+						}
+					}
+					else if(IsKnockBackExempted())
+					{
+						//still potential to trigger this if you're knocked back off a 
+						//HUGE fall that takes > 2.5 seconds
+						if(speed > 30.0f)
+						{
+							CheatDetected(MQWarp);
+						}
+					}
+					else if(!IsPortExempted())
+					{
+						CheatDetected(MQWarp);
+					}
+				}
+				SetShadowStepExemption(false);
+				SetKnockBackExemption(false);
+				SetPortExemption(false);
+				m_TimeSinceLastPositionCheck = cur_time;
+				m_DistanceSinceLastPositionCheck = 0.0f;
 			}
 		}
 	}
-	if(dist > 50.0f*50.0f) {
-		printf("%s: Large position change: %f units\n", GetName(), sqrtf(dist));
-		printf("Coords: (%.4f, %.4f, %.4f) -> (%.4f, %.4f, %.4f)\n",
-			x_pos, y_pos, z_pos, ppu->x_pos, ppu->y_pos, ppu->z_pos);
-		printf("Deltas: (%.2f, %.2f, %.2f) -> (%.2f, %.2f, %.2f)\n",
-			delta_x, delta_y, delta_z, ppu->delta_x, ppu->delta_y, ppu->delta_z);
-	}
 
-//Lieka:  Check to see if PPU should trigger an update to the rewind position.
+	//Lieka:  Check to see if PPU should trigger an update to the rewind position.
 	float rewind_x_diff = 0;
 	float rewind_y_diff = 0;
 
@@ -1160,7 +1201,6 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 		}
 	}
 
-		//printf("animation: %i\n",ppu->animation);
 	// Outgoing client packet
 	if (ppu->y_pos != y_pos || ppu->x_pos != x_pos || ppu->heading != heading || ppu->animation != animation)
 	{
@@ -3893,7 +3933,6 @@ void Client::Handle_OP_GMSummon(const EQApplicationPacket *app)
 		cout << "Wrong size on OP_GMSummon. Got: " << app->size << ", Expected: " << sizeof(GMSummon_Struct) << endl;
 		return;
 	}
-	cheat_timer.Start(5000, false);
 	OPGMSummon(app);
 	return;
 }
@@ -7269,8 +7308,6 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 	drakkin_tattoo		= m_pp.drakkin_tattoo;
 	drakkin_details		= m_pp.drakkin_details;
 
-	cheat_timer.Start(2500,false);
-
 	//if we zone in with invalid Z, fix it.
 	if (zone->zonemap != NULL) {
 
@@ -7977,7 +8014,6 @@ void Client::CompleteConnect()
 	//sends appearances for all mobs not doing anim_stand aka sitting, looting, playing dead
 	entity_list.SendZoneAppearance(this);
 
-	cheat_timer.Start(2500,false);
 	client_data_loaded = true;
 	int x;
 	for(x=0;x<8;x++)
@@ -8863,7 +8899,6 @@ void Client::Handle_OP_Translocate(const EQApplicationPacket *app) {
 		zonesummon_z = ots->z;
 		zonesummon_id = ots->ZoneID;
 		zone_mode = ZoneSolicited;
-		cheat_timer.Start(3500, false);
 
 		QueuePacket(outapp);
 		safe_delete(outapp);

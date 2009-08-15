@@ -1454,7 +1454,7 @@ ZonePoint* Zone::GetClosestZonePoint(float x, float y, float z, int32 to, float 
 			if(zp->y == 999999 || zp->y == -999999)
 				delta_y = 0;
 
-			float dist = delta_x*delta_x+delta_y*delta_y;///*+(zp->z-z)*(zp->z-z)*/;
+			float dist = delta_x*delta_x+delta_y*delta_y;
 			if (dist < closest_dist)
 			{
 				closest_zp = zp;
