@@ -120,9 +120,7 @@ RULE_BOOL ( Zone, EnableMQWarpDetector, true ) // Enable the MQWarp Detector.  S
 RULE_BOOL ( Zone, EnableMQZoneDetector, true ) // Enable the MQZone Detector.  Set to False to disable this feature.
 RULE_BOOL ( Zone, EnableMQGateDetector, true ) // Enable the MQGate Detector.  Set to False to disable this feature.
 RULE_BOOL ( Zone, EnableMQGhostDetector, true ) // Enable the MQGhost Detector.  Set to False to disable this feature.
-RULE_REAL ( Zone, MQWarpDetectorDistance, 4900 ) // Distance a player must travel between client to server location updates before a warp is registered.  30 allows for beyond GM speed without lag.
-RULE_REAL ( Zone, MQWarpLagThreshold, 140 ) // Distance beyond the Zone:MQWarpDetectorDistance that a player must travel within the MQWarpThresholdTimer amount of time before tripping the MQWarp detector.  Set to 0 to disable this feature.
-RULE_REAL ( Zone, MQWarpThresholdTimer, 90000 ) // Amount of time before the warp_threshold resets to the Zone:MQWarpLagThreshold value.  Default: 90000 (900 seconds/15 minutes).  Set to -1 to disable this feature.
+RULE_REAL ( Zone, MQWarpDetectionDistanceFactor, 5.8) //clients move at 4.4 about if in a straight line but with movement and to acct for lag we raise it a bit
 RULE_INT ( Zone, AutoShutdownDelay, 5000 ) //How long a dynamic zone stays loaded while empty
 RULE_INT ( Zone, PEQZoneReuseTime, 900 )	//How long, in seconds, until you can reuse the #peqzone command.
 RULE_INT ( Zone, PEQZoneDebuff1, 4454 )	    //First debuff casted by #peqzone Default is Cursed Keeper's Blight.

@@ -1467,7 +1467,7 @@ ZonePoint* Zone::GetClosestZonePoint(float x, float y, float z, int32 to, float 
 	if(closest_dist>(40000.0f) && closest_dist<max_distance2)
 	{
 		if(client)
-			client->CheatDetected(MQZone); //[Paddy] Someone is trying to use /zone
+			client->CheatDetected(MQZoneUnknownDest, x, y, z); //[Paddy] Someone is trying to use /zone
 		LogFile->write(EQEMuLog::Status, "WARNING: Closest zone point for zone id %d is %f, you might need to update your zone_points table if you dont arrive at the right spot.",to,closest_dist);
 		LogFile->write(EQEMuLog::Status, "<Real Zone Points>.  %f x %f y %fz ",x,y,z);
 	}

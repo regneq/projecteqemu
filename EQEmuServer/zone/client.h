@@ -122,7 +122,11 @@ typedef enum {
 
 typedef enum {
 	MQWarp,
+	MQWarpShadowStep,
+	MQWarpKnockBack,
+	MQWarpLight,
 	MQZone,
+	MQZoneUnknownDest,
 	MQGate,
 	MQGhost
 } CheatTypes;
@@ -699,6 +703,7 @@ public:
 	//Anti-Cheat Stuff
 	int32 m_TimeSinceLastPositionCheck;
 	float m_DistanceSinceLastPositionCheck;
+	bool m_CheatDetectMoved;
 	void SetShadowStepExemption(bool v);
 	void SetKnockBackExemption(bool v);
 	void SetPortExemption(bool v);
@@ -706,7 +711,8 @@ public:
 	const bool IsKnockBackExempted() const { return m_KnockBackExemption; }
 	const bool IsPortExempted() const { return m_PortExemption; }
 	const bool GetGMSpeed() const { return (gmspeed > 0); }
-	void CheatDetected(CheatTypes CheatType);
+	void CheatDetected(CheatTypes CheatType, float x, float y, float z);
+	const bool IsMQExemptedArea(int32 zoneID, float x, float y, float z) const;
 
 	//This is used to later set the buff duration of the spell, in slot to duration.
 	//Doesn't appear to work directly after the client recieves an action packet.
@@ -872,6 +878,7 @@ public:
 	void Signal(int32 data);
 	Mob *GetBindSightTarget() { return bind_sight_target; }
 	void SetBindSightTarget(Mob *n) { bind_sight_target = n; }
+	const int16 GetBoatID() const { return BoatID; }
 
 protected:
 	friend class Mob;
