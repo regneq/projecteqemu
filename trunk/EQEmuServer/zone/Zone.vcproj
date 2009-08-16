@@ -805,6 +805,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\masterentity.h"
+				>
+			</File>
+			<File
 				RelativePath=".\mob.h"
 				>
 			</File>
