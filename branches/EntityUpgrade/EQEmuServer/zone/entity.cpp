@@ -80,9 +80,9 @@ Entity::~Entity() {
 	dbasync->CancelWork(pDBAsyncWorkID);
 }
 
-void Entity::SetID(int16 set_id) {
-	id = set_id;
-}
+//void Entity::SetID(int16 set_id) {
+//	id = set_id;
+//}
 
 Client* Entity::CastToClient() {
 	if(this==0x00){
@@ -1582,7 +1582,7 @@ Corpse* EntityList::GetCorpseByID(int16 id){
 	iterator.Reset();
 	while(iterator.MoreElements())
 	{
-		if (iterator.GetData()->id == id) {
+		if (iterator.GetData()->GetID() == id) {
 			return iterator.GetData();
 		}
 		iterator.Advance();
