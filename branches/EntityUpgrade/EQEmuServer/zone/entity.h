@@ -359,8 +359,6 @@ public:
 	ListElement<NPC*> *GetNPCListElement() { return npc_list.GetFirst(); }
 	ListElement<Corpse*> *GetCorpseListElement() { return corpse_list.GetFirst(); }
 
-protected:
-	friend class Zone;
 	void	Depop(bool StartSpawnTimer = true);
 
 private:
