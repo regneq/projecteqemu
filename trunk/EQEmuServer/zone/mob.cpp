@@ -502,23 +502,57 @@ float Mob::_GetMovementSpeed(int mod) const {
 	if (IsRooted())
 		return 0.0f;
 	
+	float aa_mod = 0.0f;
 	float speed_mod = 1.0f;
+	bool has_horse = false;
+	if(CastToClient()->GetGMSpeed())
+	{
+		speed_mod = 3.125f;
+	}
+	else
+	{
+		Mob* horse = entity_list.GetMob(CastToClient()->GetHorseId());
+		if(horse)
+		{
+			speed_mod = horse->GetBaseRunspeed();
+			has_horse = true;
+		}
+		else
+		{
+			speed_mod = runspeed;
+		}
+	}
 	
 	if (IsClient()){
-            speed_mod += ((CastToClient()->GetAA(aaInnateRunSpeed) * 0.10)
+            aa_mod += ((CastToClient()->GetAA(aaInnateRunSpeed) * 0.10)
 			+ (CastToClient()->GetAA(aaFleetofFoot) * 0.10)
 			+ (CastToClient()->GetAA(aaSwiftJourney) * 0.10)
 		);
 		//Selo's Enduring Cadence should be +7% per level
 	}
-	
-	int movemod = spellbonuses.movementspeed + itembonuses.movementspeed + mod;
+
+	int spell_mod = spellbonuses.movementspeed + itembonuses.movementspeed;
+	int movemod = 0;
+
+	if(spell_mod > (aa_mod*100))
+	{
+		movemod = spell_mod;
+	}
+	else
+	{
+		movemod = (aa_mod * 100);
+		if(spell_mod < 0)
+			movemod += spell_mod;
+	}
 	
 	if(movemod < -85) //cap it at moving very very slow
 		movemod = -85;
 	
-	if (movemod != 0)
-		speed_mod += float(movemod) / 100.0f;
+	if (!has_horse && movemod != 0)
+		speed_mod += (speed_mod * float(movemod) / 100.0f);
+
+	if(mod != 0)
+		speed_mod += (speed_mod * mod / 100);
 
 	if(speed_mod <= 0.0f)
 		return(0.0001f);
@@ -526,34 +560,14 @@ float Mob::_GetMovementSpeed(int mod) const {
 	//runspeed cap.
 	if(GetClass() == BARD) {
 		//this extra-high bard cap should really only apply if they have AAs
-		if(speed_mod > 2.74)
-			speed_mod = 2.74;
+		if(speed_mod > 1.74)
+			speed_mod = 1.74;
 	} else {
-		if(speed_mod > 2.58)
-			speed_mod = 2.58;
+		if(speed_mod > 1.58)
+			speed_mod = 1.58;
 	}
 
-	if(IsClient())
-	{
-		if(CastToClient()->GetGMSpeed())
-		{
-			return(3.125 * speed_mod);
-		}
-		else
-		{
-			Mob* horse = entity_list.GetMob(CastToClient()->GetHorseId());
-			if(horse)
-			{
-				return(horse->GetRunspeed() * speed_mod); 
-			}
-			else
-			{
-				return(runspeed * speed_mod);
-			}
-		}
-	}
-	else
-		return(runspeed * speed_mod);
+	return speed_mod;
 }
 
 sint32 Mob::CalcMaxMana() {

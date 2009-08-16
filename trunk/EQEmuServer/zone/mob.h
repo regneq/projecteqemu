@@ -544,6 +544,7 @@ bool logpos;
 	virtual inline sint32	CalcMaxHP()		{ return max_hp = (base_hp  + itembonuses.HP + spellbonuses.HP); }
 	float GetWalkspeed() const { return(_GetMovementSpeed(-47)); }
 	float GetRunspeed() const { return(_GetMovementSpeed(0)); }
+	float GetBaseRunspeed() const { return runspeed; }
 	float GetMovespeed() const {
 		if(IsRunning())
 		{
