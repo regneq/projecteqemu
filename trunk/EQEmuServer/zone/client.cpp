@@ -285,7 +285,6 @@ Client::Client(EQStreamInterface* ieqs)
 	m_ShadowStepExemption = 0;
 	m_KnockBackExemption = 0;
 	m_PortExemption = 0;
-	runspeed = 1.25f;
 }
 
 Client::~Client() {
