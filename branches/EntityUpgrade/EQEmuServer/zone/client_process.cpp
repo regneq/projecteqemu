@@ -166,6 +166,11 @@ bool Client::Process() {
 			this->MelodyTrySong();
 		}
 
+		if(!m_CheatDetectMoved)
+		{
+			m_TimeSinceLastPositionCheck = Timer::GetCurrentTime();
+		}
+
 		if (bardsong_timer.Check() && bardsong != 0) {
 			//NOTE: this is kinda a heavy-handed check to make sure the mob still exists before
 			//doing the next pulse on them...
@@ -1008,7 +1013,6 @@ void Client::OPRezzAnswer(const EQApplicationPacket* app) {
 	}
 
 	if (ra->action == 1) {
-		cheat_timer.Start(3500, false);
 		_log(SPELLS__REZ, "Player %s got a %i Rezz, spellid %i", 
 				  this->name, (int16)spells[ra->spellid].base[0],
 				  ra->spellid);
@@ -1630,7 +1634,6 @@ void Client::OPGMSummon(const EQApplicationPacket *app)
 		}
 		if(st)
 		{
-			cheat_timer.Start(3500, false);
 			Message(0, "Local: Summoning %s to %f, %f, %f", gms->charname, gms->x, gms->y, gms->z);
 			if (st->IsClient() && (st->CastToClient()->GetAnon() != 1 || this->Admin() >= st->CastToClient()->Admin()))
 				st->CastToClient()->MovePC(zone->GetZoneID(), zone->GetInstanceID(), (float)gms->x, (float)gms->y, (float)gms->z, this->GetHeading(), true);
@@ -1662,7 +1665,6 @@ void Client::OPGMSummon(const EQApplicationPacket *app)
 			else {
 				//all options have been exhausted
 				//summon our target...
-				cheat_timer.Start(3500, false);
 				if(GetTarget() && GetTarget()->IsCorpse()){
 					GetTarget()->CastToCorpse()->Summon(this, false);
 				}

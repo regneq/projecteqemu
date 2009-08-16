@@ -1715,6 +1715,31 @@ XS(XS_EntityList_GetCorpseList)
 	XSRETURN(1);
 }
 
+XS(XS_EntityList_SignalAllClients); /* prototype to pass -Wmissing-prototypes */
+XS(XS_EntityList_SignalAllClients)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: EntityList::SignalAllClients(THIS, data)");
+	{
+		EntityList *THIS;
+		int32 data = (int32)SvUV(ST(1));
+
+		if (sv_derived_from(ST(0), "EntityList")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(EntityList *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type EntityList");
+
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		entity_list.SignalAllClients(data);
+	}
+	XSRETURN_EMPTY;
+}
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -1795,6 +1820,7 @@ XS(boot_EntityList)
 		newXSproto(strcpy(buf, "GetClientList"), XS_EntityList_GetClientList, file, "$");
 		newXSproto(strcpy(buf, "GetNPCList"), XS_EntityList_GetNPCList, file, "$");
 		newXSproto(strcpy(buf, "GetCorpseList"), XS_EntityList_GetCorpseList, file, "$");
+		newXSproto(strcpy(buf, "SignalAllClients"), XS_EntityList_SignalAllClients, file, "$$");
 	XSRETURN_YES;
 }
 

@@ -448,7 +448,6 @@ bool logpos;
 	void MakeSpawnUpdateNoDelta(PlayerPositionUpdateServer_Struct* spu);
 	void MakeSpawnUpdate(PlayerPositionUpdateServer_Struct* spu);
 	void SendPosition();
-	void SendAllPosition();
 
 	void CreateDespawnPacket(EQApplicationPacket* app);
 	void CreateHorseSpawnPacket(EQApplicationPacket* app, const char* ownername, uint16 ownerid, Mob* ForWho = 0);
@@ -533,9 +532,6 @@ bool logpos;
 	virtual void SetTarget(Mob* mob);
 	virtual inline float		GetHPRatio() const { return max_hp == 0 ? 0 : ((float)cur_hp/max_hp*100); }
 
-	float GetLWDistance()					{ return last_warp_distance; }
-	float GetWarpThreshold()				{ return warp_threshold; }
-
 	bool IsLoggingEnabled() const { return(logging_enabled); }
 	void EnableLogging() { logging_enabled = true; }
 	void DisableLogging() { logging_enabled = false; }
@@ -548,6 +544,7 @@ bool logpos;
 	virtual inline sint32	CalcMaxHP()		{ return max_hp = (base_hp  + itembonuses.HP + spellbonuses.HP); }
 	float GetWalkspeed() const { return(_GetMovementSpeed(-47)); }
 	float GetRunspeed() const { return(_GetMovementSpeed(0)); }
+	float GetBaseRunspeed() const { return runspeed; }
 	float GetMovespeed() const {
 		if(IsRunning())
 		{
@@ -907,11 +904,6 @@ bool logpos;
 	Shielders_Struct shielder[MAX_SHIELDERS];
 	Trade* trade;
 
-	Timer cheat_timer; //Lieka:  Timer used to check for movement exemptions/client-based, unsolicited zone exemptions
-	Timer threshold_timer;  //Null:  threshold timer
-	float warp_threshold;   //Null:  threshold for warp detector
-	float last_warp_distance;  //Null:  last distance logged as a warp, used for logs and #showstats
-
 	//temporary:
 	bool fix_pathing;
 	float rewind_x; //Lieka:  Used for storing /rewind values
@@ -1143,6 +1135,7 @@ protected:
 	sint32	GetFactionBonus(uint32 pFactionID);
 
 	void CalculateFearPosition();
+	int32 move_tic_count;
 	//bool FearTryStraight(Mob *caster, int32 duration, bool flee, VERTEX &hit, VERTEX &fv);
 //	VERTEX fear_vector;
 	//FearState fear_state;

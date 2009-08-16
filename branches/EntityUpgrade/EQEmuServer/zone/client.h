@@ -122,7 +122,11 @@ typedef enum {
 
 typedef enum {
 	MQWarp,
+	MQWarpShadowStep,
+	MQWarpKnockBack,
+	MQWarpLight,
 	MQZone,
+	MQZoneUnknownDest,
 	MQGate,
 	MQGhost
 } CheatTypes;
@@ -168,9 +172,6 @@ public:
 	void	Trader_EndTrader();
 	void	Trader_StartTrader();
 	int8	WithCustomer(int16 NewCustomer);
-	bool	CheckCheat();
-	void	CheatDetected(CheatTypes Cheat);
-	bool	WarpDetection(bool CTimer, float Distance);
 	void	KeyRingLoad();
 	void	KeyRingAdd(int32 item_id);
 	bool	KeyRingCheck(int32 item_id);
@@ -699,6 +700,20 @@ public:
 	void	SendRules(Client* client);
 	std::list<std::string> consent_list;
 
+	//Anti-Cheat Stuff
+	int32 m_TimeSinceLastPositionCheck;
+	float m_DistanceSinceLastPositionCheck;
+	bool m_CheatDetectMoved;
+	void SetShadowStepExemption(bool v);
+	void SetKnockBackExemption(bool v);
+	void SetPortExemption(bool v);
+	const bool IsShadowStepExempted() const { return m_ShadowStepExemption; }
+	const bool IsKnockBackExempted() const { return m_KnockBackExemption; }
+	const bool IsPortExempted() const { return m_PortExemption; }
+	const bool GetGMSpeed() const { return (gmspeed > 0); }
+	void CheatDetected(CheatTypes CheatType, float x, float y, float z);
+	const bool IsMQExemptedArea(int32 zoneID, float x, float y, float z) const;
+
 	//This is used to later set the buff duration of the spell, in slot to duration.
 	//Doesn't appear to work directly after the client recieves an action packet.
 	void SendBuffDurationPacket(int16 spell_id, int duration, int inlevel);
@@ -860,6 +875,10 @@ public:
 	bool CalcItemScale(int32 slot_x, int32 slot_y);
 	void SummonAndRezzAllCorpses();
 	void NotifyNewTitlesAvailable();
+	void Signal(int32 data);
+	Mob *GetBindSightTarget() { return bind_sight_target; }
+	void SetBindSightTarget(Mob *n) { bind_sight_target = n; }
+	const int16 GetBoatID() const { return BoatID; }
 
 protected:
 	friend class Mob;
@@ -876,6 +895,9 @@ protected:
 	sint16	CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id);
 
 	bool	MoveItemToInventory(ItemInst *BInst, bool UpdateClient = false);
+
+	Mob*	bind_sight_target;
+
 private:
 	eqFilterMode ClientFilters[_FilterCount];
 	sint32	HandlePacket(const EQApplicationPacket *app);
@@ -968,11 +990,7 @@ private:
 	bool	Trader;
 	bool	Buyer;
 	string	BuyerWelcomeMessage;
-	bool	cheater;
-	float	cheat_x;
-	float	cheat_y;
 	bool	AbilityTimer;
-	int8	cheatcount;
 	int Haste;  //precalced value
 
 	sint32				max_end;
@@ -1092,6 +1110,10 @@ private:
 
 	EQClientVersion ClientVersion;
 	int XPRate;
+
+	bool m_ShadowStepExemption;
+	bool m_KnockBackExemption;
+	bool m_PortExemption;
 
 	//Connecting debug code.
 	enum { //connecting states, used for debugging only

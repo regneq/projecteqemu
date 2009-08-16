@@ -1391,18 +1391,19 @@ void Client::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_
 	// #3: exp loss and corpse generation
 	//
 
-// figure out if they should lose exp
-if(RuleB(Character, UseDeathExpLossMult)){
-	float GetNum [] = {0.005f,0.015f,0.025f,0.035f,0.045f,0.055f,0.065f,0.075f,0.085f,0.095f,0.110f };
-	int Num = RuleI(Character, DeathExpLossMultiplier);
-	if((Num < 0) || (Num > 10))
-		Num = 3;
-	float loss = GetNum[Num];
-	exploss=(int)((float)GetEXP() * (loss)); //loose % of total XP pending rule (choose 0-10)
-}
-if(!RuleB(Character, UseDeathExpLossMult)){
-      exploss = (int)(GetLevel() * (GetLevel() / 18.0) * 12000);
-     }
+	// figure out if they should lose exp
+	if(RuleB(Character, UseDeathExpLossMult)){
+		float GetNum [] = {0.005f,0.015f,0.025f,0.035f,0.045f,0.055f,0.065f,0.075f,0.085f,0.095f,0.110f };
+		int Num = RuleI(Character, DeathExpLossMultiplier);
+		if((Num < 0) || (Num > 10))
+			Num = 3;
+		float loss = GetNum[Num];
+		exploss=(int)((float)GetEXP() * (loss)); //loose % of total XP pending rule (choose 0-10)
+	}
+
+	if(!RuleB(Character, UseDeathExpLossMult)){
+		exploss = (int)(GetLevel() * (GetLevel() / 18.0) * 12000);
+	}
 
 	if( (GetLevel() < RuleI(Character, DeathExpLossLevel)) || IsBecomeNPC() )
 	{

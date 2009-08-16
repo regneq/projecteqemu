@@ -13,13 +13,6 @@
 #include "beacon.h"
 #include "horse.h"
 
-#ifdef EQBOTS
-
-//EQoffline
-#include "botRaids.h"
-
-#endif //EQBOTS
-
 #ifdef BOTS
 #include "bot.h"
 #endif

@@ -64,7 +64,6 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 		case ZoneToSafeCoords:
 			//going to safe coords, but client dosent know where?
 			//assume it is this zone for now.
-			cheat_timer.Start(35000,false);
 			target_zone_id = zone->GetZoneID();
 			break;
 		case GMSummon:
@@ -77,7 +76,6 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 			target_zone_id = m_pp.binds[0].zoneId;
 			break;
 		case ZoneSolicited:  //we told the client to zone somewhere, so we know where they are going.
-			cheat_timer.Start(35000,false);
 			target_zone_id = zonesummon_id;
 			break;
 		case ZoneUnsolicited:   //client came up with this on its own.
@@ -90,7 +88,7 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 				//unable to find a zone point... is there anything else
 				//that can be a valid un-zolicited zone request?
 				
-				CheatDetected(MQZone);
+				CheatDetected(MQZone, zc->x, zc->y, zc->z);
 				Message(13, "Invalid unsolicited zone request.");
 				LogFile->write(EQEMuLog::Error, "Zoning %s: Invalid unsolicited zone request to zone id '%d'.", GetName(), target_zone_id);
 				SendZoneCancel(zc);
@@ -110,16 +108,20 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 		//if we are zoning to a specific zone unsolicied,
 		//then until otherwise determined, they must be zoning
 		//on a zone line.
-		if(zone_mode == ZoneUnsolicited) {
+		if(zone_mode == ZoneUnsolicited)
+		{
+			if(target_zone_id == zone->GetZoneID())
+			{
+				SendZoneCancel(zc);
+				return;
+			}
+
 			zone_point = zone->GetClosestZonePoint(GetX(), GetY(), GetZ(), target_zone_id, ZONEPOINT_ZONE_RANGE);
 			//if we didnt get a zone point, or its to a different zone,
 			//then we assume this is invalid.
 			if(!zone_point || zone_point->target_zone_id != target_zone_id) {
-				Message(13, "Invalid unsolicited zone request.");
 				LogFile->write(EQEMuLog::Error, "Zoning %s: Invalid unsolicited zone request to zone id '%d'.", GetName(), target_zone_id);
-				if ((cheat_timer.GetRemainingTime())<1 || (!cheat_timer.Enabled())){ //Lieka:  Disable MQGate Detector if timer is active.
-					CheatDetected(MQGate);
-				}					
+				CheatDetected(MQGate, zc->x, zc->y, zc->z);				
 				SendZoneCancel(zc);
 				return;
 			}
@@ -209,7 +211,6 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 		break;
 	case ZoneSolicited:  //we told the client to zone somewhere, so we know where they are going.
 		//recycle zonesummon variables
-		cheat_timer.Start(3500,false);
 		dest_x = zonesummon_x;
 		dest_y = zonesummon_y;
 		dest_z = zonesummon_z;
@@ -245,8 +246,7 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 		//for now, there are no other cases...
 		
 		//could not find a valid reason for them to be zoning, stop it.
-		CheatDetected(MQZone);
-		Message(13, "Invalid unsolicited zone request.");
+		CheatDetected(MQZoneUnknownDest, 0.0, 0.0, 0.0);
 		LogFile->write(EQEMuLog::Error, "Zoning %s: Invalid unsolicited zone request to zone id '%s'. Not near a zone point.", GetName(), target_zone_name);
 		SendZoneCancel(zc);
 		return;
@@ -260,17 +260,17 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 	//not sure when we would use ZONE_ERROR_NOTREADY
 
 	//enforce min status and level
-	if (!ignorerestrictions && (Admin() < minstatus || GetLevel() < minlevel)) {
-		cheat_timer.Start(3500,false); //Lieka:  Don't set off warp detector for when a player is moved to the safe-spot for trying to access a zone without the appropriate level or status requirements (i.e. zoning into FearPlane at level 30, etc)
+	if (!ignorerestrictions && (Admin() < minstatus || GetLevel() < minlevel)) 
+	{
 		myerror = ZONE_ERROR_NOEXPERIENCE;
-		}
+	}
 	
 	if(!ignorerestrictions && flag_needed[0] != '\0') {
 		//the flag needed string is not empty, meaning a flag is required.
-		if(Admin() < minStatusToIgnoreZoneFlags && !HasZoneFlag(target_zone_id)) {
+		if(Admin() < minStatusToIgnoreZoneFlags && !HasZoneFlag(target_zone_id)) 
+		{
 			Message(13, "You must have the flag %s to enter this zone.");
 			myerror = ZONE_ERROR_NOEXPERIENCE;
-			cheat_timer.Start(3500,false);
 		}
 	}
 	
@@ -289,8 +289,8 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 void Client::SendZoneCancel(ZoneChange_Struct *zc) {
 	//effectively zone them right back to where they were
 	//unless we find a better way to stop the zoning process.
+	SetPortExemption(true);
 	EQApplicationPacket *outapp;
-	cheat_timer.Start(3500,false);
 	outapp = new EQApplicationPacket(OP_ZoneChange, sizeof(ZoneChange_Struct));
 	ZoneChange_Struct *zc2 = (ZoneChange_Struct*)outapp->pBuffer;
 	strcpy(zc2->char_name, zc->char_name);
@@ -303,10 +303,12 @@ void Client::SendZoneCancel(ZoneChange_Struct *zc) {
 	zone_mode = ZoneUnsolicited;
 }
 
-void Client::SendZoneError(ZoneChange_Struct *zc, sint8 err) {
-	cheat_timer.Start(3500,false);
+void Client::SendZoneError(ZoneChange_Struct *zc, sint8 err) 
+{
 	LogFile->write(EQEMuLog::Error, "Zone %i is not available because target wasn't found or character insufficent level", zc->zoneID);
 	
+	SetPortExemption(true);
+
 	EQApplicationPacket *outapp;
 	outapp = new EQApplicationPacket(OP_ZoneChange, sizeof(ZoneChange_Struct));
 	ZoneChange_Struct *zc2 = (ZoneChange_Struct*)outapp->pBuffer;
@@ -466,6 +468,8 @@ void Client::ZonePC(int32 zoneID, int32 instance_id, float x, float y, float z, 
 	pShortZoneName = database.GetZoneName(zoneID);
 	database.GetZoneLongName(pShortZoneName, &pZoneName);
 
+	SetPortExemption(true);
+
 	if(!pZoneName) {
 		Message(13, "Invalid zone number specified");
 		return;
@@ -475,14 +479,12 @@ void Client::ZonePC(int32 zoneID, int32 instance_id, float x, float y, float z, 
 	switch(zm) {
 		case EvacToSafeCoords:
 		case ZoneToSafeCoords:
-			cheat_timer.Start(2500,false);
 			x = zone->safe_x();
 			y = zone->safe_y();
 			z = zone->safe_z();
 			heading = heading;
 			break;
 		case GMSummon:
-			cheat_timer.Start(2500,false);
 			zonesummon_x = x_pos = x;
 			zonesummon_y = y_pos = y;
 			zonesummon_z = z_pos = z;
@@ -492,7 +494,6 @@ void Client::ZonePC(int32 zoneID, int32 instance_id, float x, float y, float z, 
 			zonesummon_ignorerestrictions = 1;
 			break;
 		case ZoneSolicited:
-			cheat_timer.Start(2500,false);
 			zonesummon_x = x;
 			zonesummon_y = y;
 			zonesummon_z = z;
@@ -502,14 +503,12 @@ void Client::ZonePC(int32 zoneID, int32 instance_id, float x, float y, float z, 
 			zonesummon_ignorerestrictions = ignorerestrictions;
 			break;
 		case GateToBindPoint:
-			cheat_timer.Start(2500,false);
 			x = x_pos = m_pp.binds[0].x;
 			y = y_pos = m_pp.binds[0].y;
 			z = z_pos = m_pp.binds[0].z;
 			heading = m_pp.binds[0].heading;
 			break;
 		case ZoneToBindPoint:
-			cheat_timer.Start(2500,false);
 			x = x_pos = m_pp.binds[0].x;
 			y = y_pos = m_pp.binds[0].y;
 			z = z_pos = m_pp.binds[0].z;
@@ -519,7 +518,6 @@ void Client::ZonePC(int32 zoneID, int32 instance_id, float x, float y, float z, 
 			LogFile->write(EQEMuLog::Debug, "Player %s has died and will be zoned to bind point in zone: %s at LOC x=%f, y=%f, z=%f, heading=%f", GetName(), pZoneName, m_pp.binds[0].x, m_pp.binds[0].y, m_pp.binds[0].z, m_pp.binds[0].heading);
 			break;
 		case SummonPC:
-			cheat_timer.Start(2500,false);
 			zonesummon_x = x_pos = x;
 			zonesummon_y = y_pos = y;
 			zonesummon_z = z_pos = z;

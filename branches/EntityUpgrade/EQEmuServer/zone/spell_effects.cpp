@@ -104,7 +104,19 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 	else
 	{
 		if((CalcBuffDuration(caster,this,spell_id)-1) > 0){
-			buffslot = AddBuff(caster, spell_id);
+			if(IsEffectInSpell(spell_id, SE_BindSight))
+			{
+				if(caster)
+				{
+					buffslot = caster->AddBuff(caster, spell_id);
+				}
+				else
+					buffslot = -1;
+			}
+			else
+			{
+				buffslot = AddBuff(caster, spell_id);
+			}
 			if(buffslot == -1)	// stacking failure
 				return false;
 		} else {
@@ -1300,7 +1312,10 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Bind Sight");
 #endif
-				// solar: handled by client
+				if(caster && caster->IsClient())
+				{
+					caster->CastToClient()->SetBindSightTarget(this);
+				}
 				break;
 			}
 
@@ -1989,6 +2004,11 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				if(toss_amt > 20.0)
 					toss_amt = 20.0;
 
+				if(IsClient())
+				{
+					CastToClient()->SetKnockBackExemption(true);
+				}
+
 				double look_heading = GetHeading();
 				look_heading /= 256;
 				look_heading *= 360;
@@ -2059,12 +2079,9 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			case SE_SummonPC:
 			{
 			if(IsClient()){
-					CastToClient()->cheat_timer.Start(3500, false);
 					CastToClient()->MovePC(zone->GetZoneID(), zone->GetInstanceID(), caster->GetX(), caster->GetY(), caster->GetZ(), caster->GetHeading(), 2, SummonPC);
 					Message(15, "You have been summoned!");
 					entity_list.ClearAggro(this);
-					//WipeHateList();	//wipe client's hate list
-										//we're not currently using a client hate list, so we don't need to mess with this currently
 				}
 				else
 					caster->Message(13, "This spell can only be cast on players.");
@@ -3384,6 +3401,72 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 					UnStun();
 				}
 				break;
+			}
+
+			case SE_BindSight:
+			{
+				if(IsClient())
+				{
+					CastToClient()->SetBindSightTarget(NULL);
+				}
+				break;			
+			}
+
+			case SE_MovementSpeed:
+			{
+				if(IsClient())
+				{
+					Client *my_c = CastToClient();
+					int32 cur_time = Timer::GetCurrentTime();
+					if((cur_time - my_c->m_TimeSinceLastPositionCheck) > 1000)
+					{
+						float speed = (my_c->m_DistanceSinceLastPositionCheck * 100) / (float)(cur_time - my_c->m_TimeSinceLastPositionCheck);
+						float runs = my_c->GetRunspeed();
+						if(speed > (runs * RuleR(Zone, MQWarpDetectionDistanceFactor)))
+						{
+							if(!my_c->GetGMSpeed() && (runs >= my_c->GetBaseRunspeed() || (speed > (my_c->GetBaseRunspeed() * RuleR(Zone, MQWarpDetectionDistanceFactor)))))
+							{
+								printf("%s %i moving too fast! moved: %.2f in %ims, speed %.2f\n", __FILE__, __LINE__,
+									my_c->m_DistanceSinceLastPositionCheck, (cur_time - my_c->m_TimeSinceLastPositionCheck), speed);
+								if(my_c->IsShadowStepExempted())
+								{
+									if(my_c->m_DistanceSinceLastPositionCheck > 800)
+									{
+										my_c->CheatDetected(MQWarpShadowStep, my_c->GetX(), my_c->GetY(), my_c->GetZ());
+									}
+								}
+								else if(my_c->IsKnockBackExempted())
+								{
+									//still potential to trigger this if you're knocked back off a 
+									//HUGE fall that takes > 2.5 seconds
+									if(speed > 30.0f)
+									{
+										my_c->CheatDetected(MQWarpKnockBack, my_c->GetX(), my_c->GetY(), my_c->GetZ());
+									}
+								}
+								else if(!my_c->IsPortExempted())
+								{
+									if(!my_c->IsMQExemptedArea(zone->GetZoneID(), my_c->GetX(), my_c->GetY(), my_c->GetZ()))
+									{
+										if(speed > (runs * 2 * RuleR(Zone, MQWarpDetectionDistanceFactor)))
+										{
+											my_c->m_TimeSinceLastPositionCheck = cur_time;
+											my_c->m_DistanceSinceLastPositionCheck = 0.0f;
+											my_c->CheatDetected(MQWarp, my_c->GetX(), my_c->GetY(), my_c->GetZ());
+											//my_c->Death(my_c, 10000000, SPELL_UNKNOWN, _1H_BLUNT);
+										}
+										else
+										{
+											my_c->CheatDetected(MQWarpLight, my_c->GetX(), my_c->GetY(), my_c->GetZ());
+										}
+									}
+								}
+							}
+						}
+					}
+					my_c->m_TimeSinceLastPositionCheck = cur_time;
+					my_c->m_DistanceSinceLastPositionCheck = 0.0f;
+				}
 			}
 		}
 	}

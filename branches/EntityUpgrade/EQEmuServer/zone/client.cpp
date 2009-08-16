@@ -208,10 +208,6 @@ Client::Client(EQStreamInterface* ieqs)
 	LFGMatchFilter = false;
 	LFGComments[0] = '\0';
 	LFP = false;
-	cheater = false;
-	cheatcount =0;
-	cheat_x=0;
-	cheat_y=0;
 	gmspeed = 0;
 	playeraction = 0;
 	SetTarget(0);
@@ -260,6 +256,7 @@ Client::Client(EQStreamInterface* ieqs)
 	TotalSecondsPlayed = 0;
 	keyring.clear();
 	melodystate = false;
+	bind_sight_target = NULL;
 	for (int i = 0; i < MAX_PP_MEMSPELL; i++) {
 		melodygems[i] = -1;
 	}
@@ -272,6 +269,7 @@ Client::Client(EQStreamInterface* ieqs)
 	memset(&m_epp, 0, sizeof(m_epp));
     PendingTranslocate = false;
 	PendingSacrifice = false;
+	BoatID = 0;
 
 	KarmaUpdateTimer = new Timer(RuleI(Chat, KarmaUpdateIntervalMS));
 	GlobalChatLimiterTimer = new Timer(RuleI(Chat, IntervalDurationMS));
@@ -282,6 +280,13 @@ Client::Client(EQStreamInterface* ieqs)
 	RestRegenHP = 0;
 	RestRegenMana = 0;
 	XPRate = 100;
+
+	m_TimeSinceLastPositionCheck = 0;
+	m_DistanceSinceLastPositionCheck = 0.0f;
+	m_ShadowStepExemption = 0;
+	m_KnockBackExemption = 0;
+	m_PortExemption = 0;
+	m_CheatDetectMoved = false;
 }
 
 Client::~Client() {
@@ -2610,13 +2615,6 @@ void Client::SetTint(sint16 in_slot, Color_Struct& color) {
 		m_pp.item_tint[MATERIAL_FEET].color=color.color;
 }
 
-bool Client::CheckCheat(){
-	float dx=cheat_x-x_pos;
-	float dy=cheat_y-y_pos;
-	float result=((dx*dx)+(dy*dy));
-	return result>(RuleR(Zone, MQWarpDetectorDistance));
-}
-
 void Client::SetHideMe(bool flag)
 {
 	EQApplicationPacket app;
@@ -4826,4 +4824,336 @@ void Client::ShowSkillsWindow()
 		}
 	}
 	this->SendPopupToClient(WindowTitle, WindowText.c_str());
+}
+
+
+void Client::SetShadowStepExemption(bool v) 
+{
+	if(v == true)
+	{
+		int32 cur_time = Timer::GetCurrentTime();
+		if((cur_time - m_TimeSinceLastPositionCheck) > 1000)
+		{
+			float speed = (m_DistanceSinceLastPositionCheck * 100) / (float)(cur_time - m_TimeSinceLastPositionCheck);
+			float runs = GetRunspeed();
+			if(speed > (runs * RuleR(Zone, MQWarpDetectionDistanceFactor)))
+			{
+				printf("%s %i moving too fast! moved: %.2f in %ims, speed %.2f\n", __FILE__, __LINE__,
+					m_DistanceSinceLastPositionCheck, (cur_time - m_TimeSinceLastPositionCheck), speed);
+				if(!GetGMSpeed() && (runs >= GetBaseRunspeed() || (speed > (GetBaseRunspeed() * RuleR(Zone, MQWarpDetectionDistanceFactor)))))
+				{
+					if(IsShadowStepExempted())
+					{
+						if(m_DistanceSinceLastPositionCheck > 800)
+						{
+							CheatDetected(MQWarpShadowStep, GetX(), GetY(), GetZ());
+						}
+					}
+					else if(IsKnockBackExempted())
+					{
+						//still potential to trigger this if you're knocked back off a 
+						//HUGE fall that takes > 2.5 seconds
+						if(speed > 30.0f)
+						{
+							CheatDetected(MQWarpKnockBack, GetX(), GetY(), GetZ());
+						}
+					}
+					else if(!IsPortExempted())
+					{
+						if(!IsMQExemptedArea(zone->GetZoneID(), GetX(), GetY(), GetZ()))
+						{
+							if(speed > (runs * 2 * RuleR(Zone, MQWarpDetectionDistanceFactor)))
+							{
+								CheatDetected(MQWarp, GetX(), GetY(), GetZ());
+								m_TimeSinceLastPositionCheck = cur_time;
+								m_DistanceSinceLastPositionCheck = 0.0f;
+								//Death(this, 10000000, SPELL_UNKNOWN, _1H_BLUNT);
+							}
+							else
+							{
+								CheatDetected(MQWarpLight, GetX(), GetY(), GetZ());
+							}
+						}
+					}
+				}
+			}
+		}
+		m_TimeSinceLastPositionCheck = cur_time;
+		m_DistanceSinceLastPositionCheck = 0.0f;
+	}
+	m_ShadowStepExemption = v; 
+}
+
+void Client::SetKnockBackExemption(bool v) 
+{
+	if(v == true)
+	{
+		int32 cur_time = Timer::GetCurrentTime();
+		if((cur_time - m_TimeSinceLastPositionCheck) > 1000)
+		{
+			float speed = (m_DistanceSinceLastPositionCheck * 100) / (float)(cur_time - m_TimeSinceLastPositionCheck);
+			float runs = GetRunspeed();
+			if(speed > (runs * RuleR(Zone, MQWarpDetectionDistanceFactor)))
+			{
+				if(!GetGMSpeed() && (runs >= GetBaseRunspeed() || (speed > (GetBaseRunspeed() * RuleR(Zone, MQWarpDetectionDistanceFactor)))))
+				{
+					printf("%s %i moving too fast! moved: %.2f in %ims, speed %.2f\n", __FILE__, __LINE__,
+					m_DistanceSinceLastPositionCheck, (cur_time - m_TimeSinceLastPositionCheck), speed);
+					if(IsShadowStepExempted())
+					{
+						if(m_DistanceSinceLastPositionCheck > 800)
+						{
+							CheatDetected(MQWarpShadowStep, GetX(), GetY(), GetZ());
+						}
+					}
+					else if(IsKnockBackExempted())
+					{
+						//still potential to trigger this if you're knocked back off a 
+						//HUGE fall that takes > 2.5 seconds
+						if(speed > 30.0f)
+						{
+							CheatDetected(MQWarpKnockBack, GetX(), GetY(), GetZ());
+						}
+					}
+					else if(!IsPortExempted())
+					{
+						if(!IsMQExemptedArea(zone->GetZoneID(), GetX(), GetY(), GetZ()))
+						{
+							if(speed > (runs * 2 * RuleR(Zone, MQWarpDetectionDistanceFactor)))
+							{
+								m_TimeSinceLastPositionCheck = cur_time;
+								m_DistanceSinceLastPositionCheck = 0.0f;
+								CheatDetected(MQWarp, GetX(), GetY(), GetZ());
+								//Death(this, 10000000, SPELL_UNKNOWN, _1H_BLUNT);
+							}
+							else
+							{
+								CheatDetected(MQWarpLight, GetX(), GetY(), GetZ());
+							}
+						}
+					}
+				}
+			}
+		}
+		m_TimeSinceLastPositionCheck = cur_time;
+		m_DistanceSinceLastPositionCheck = 0.0f;
+	}
+	m_KnockBackExemption = v; 
+}
+
+void Client::SetPortExemption(bool v) 
+{
+	if(v == true)
+	{
+		int32 cur_time = Timer::GetCurrentTime();
+		if((cur_time - m_TimeSinceLastPositionCheck) > 1000)
+		{
+			float speed = (m_DistanceSinceLastPositionCheck * 100) / (float)(cur_time - m_TimeSinceLastPositionCheck);
+			float runs = GetRunspeed();
+			if(speed > (runs * RuleR(Zone, MQWarpDetectionDistanceFactor)))
+			{
+				if(!GetGMSpeed() && (runs >= GetBaseRunspeed() || (speed > (GetBaseRunspeed() * RuleR(Zone, MQWarpDetectionDistanceFactor)))))
+				{
+					printf("%s %i moving too fast! moved: %.2f in %ims, speed %.2f\n", __FILE__, __LINE__,
+					m_DistanceSinceLastPositionCheck, (cur_time - m_TimeSinceLastPositionCheck), speed);
+					if(IsShadowStepExempted())
+					{
+						if(m_DistanceSinceLastPositionCheck > 800)
+						{
+								CheatDetected(MQWarpShadowStep, GetX(), GetY(), GetZ());
+						}
+					}
+					else if(IsKnockBackExempted())
+					{
+						//still potential to trigger this if you're knocked back off a 
+						//HUGE fall that takes > 2.5 seconds
+						if(speed > 30.0f)
+						{
+							CheatDetected(MQWarpKnockBack, GetX(), GetY(), GetZ());
+						}
+					}
+					else if(!IsPortExempted())
+					{
+						if(!IsMQExemptedArea(zone->GetZoneID(), GetX(), GetY(), GetZ()))
+						{
+							if(speed > (runs * 2 * RuleR(Zone, MQWarpDetectionDistanceFactor)))
+							{
+								m_TimeSinceLastPositionCheck = cur_time;
+								m_DistanceSinceLastPositionCheck = 0.0f;
+								CheatDetected(MQWarp, GetX(), GetY(), GetZ());
+								//Death(this, 10000000, SPELL_UNKNOWN, _1H_BLUNT);
+							}
+							else
+							{
+								CheatDetected(MQWarpLight, GetX(), GetY(), GetZ());
+							}
+						}
+					}
+				}
+			}
+		}
+		m_TimeSinceLastPositionCheck = cur_time;
+		m_DistanceSinceLastPositionCheck = 0.0f;
+	}
+	m_PortExemption = v; 
+}
+
+void Client::Signal(int32 data)
+{
+#ifdef EMBPERL
+	char buf[32];
+	snprintf(buf, 31, "%d", data);
+	buf[31] = '\0';
+	((PerlembParser *)parse)->Event(EVENT_SIGNAL, 0, buf, (NPC*)NULL, this);
+#endif
+}
+
+const bool Client::IsMQExemptedArea(int32 zoneID, float x, float y, float z) const
+{
+	float max_dist = 90000;
+	switch(zoneID)
+	{
+	case 2:
+		{
+			float delta = (x-(-713.6));
+			delta *= delta;
+			float distance = delta;
+			delta = (y-(-160.2));
+			delta *= delta;
+			distance += delta;
+			delta = (z-(-12.8));
+			delta *= delta;
+			distance += delta;
+
+			if(distance < max_dist)
+				return true;
+
+			delta = (x-(-153.8));
+			delta *= delta;
+			distance = delta;
+			delta = (y-(-30.3));
+			delta *= delta;
+			distance += delta;
+			delta = (z-(8.2));
+			delta *= delta;
+			distance += delta;
+
+			if(distance < max_dist)
+				return true;
+
+			break;
+		}
+	case 9:
+	{
+		float delta = (x-(-682.5));
+		delta *= delta;
+		float distance = delta;
+		delta = (y-(147.0));
+		delta *= delta;
+		distance += delta;
+		delta = (z-(-9.9));
+		delta *= delta;
+		distance += delta;
+
+		if(distance < max_dist)
+			return true;
+
+		delta = (x-(-655.4));
+		delta *= delta;
+		distance = delta;
+		delta = (y-(10.5));
+		delta *= delta;
+		distance += delta;
+		delta = (z-(-51.8));
+		delta *= delta;
+		distance += delta;
+
+		if(distance < max_dist)
+			return true;
+
+		break;
+	}
+	case 62:
+	case 75:
+	{
+		//The portals are so common in paineel/felwitheb that checking 
+		//distances wouldn't be worth it cause unless you're porting to the 
+		//start field you're going to be triggering this and that's a level of
+		//accuracy I'm willing to sacrifice
+		return true;
+		break;
+	}
+	
+	case 24:
+	{
+		float delta = (x-(-183.0));
+		delta *= delta;
+		float distance = delta;
+		delta = (y-(-773.3));
+		delta *= delta;
+		distance += delta;
+		delta = (z-(54.1));
+		delta *= delta;
+		distance += delta;
+
+		if(distance < max_dist)
+			return true;
+
+		delta = (x-(-8.8));
+		delta *= delta;
+		distance = delta;
+		delta = (y-(-394.1));
+		delta *= delta;
+		distance += delta;
+		delta = (z-(41.1));
+		delta *= delta;
+		distance += delta;
+
+		if(distance < max_dist)
+			return true;
+
+		delta = (x-(-310.3));
+		delta *= delta;
+		distance = delta;
+		delta = (y-(-1411.6));
+		delta *= delta;
+		distance += delta;
+		delta = (z-(-42.8));
+		delta *= delta;
+		distance += delta;
+
+		if(distance < max_dist)
+			return true;
+
+		delta = (x-(-183.1));
+		delta *= delta;
+		distance = delta;
+		delta = (y-(-1409.8));
+		delta *= delta;
+		distance += delta;
+		delta = (z-(37.1));
+		delta *= delta;
+		distance += delta;
+
+		if(distance < max_dist)
+			return true;
+
+		break;
+	}
+
+	case 110:
+	case 34:
+	case 96:
+	case 93:
+	case 68:
+	case 84:
+		{
+			if(GetBoatID() != 0)
+				return true;
+			break;
+		}
+	default:
+		break;
+	}
+	return false;
 }

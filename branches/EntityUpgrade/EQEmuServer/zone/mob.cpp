@@ -104,8 +104,6 @@ Mob::Mob(const char*   in_name,
 		attack_dw_timer(2000),
 		ranged_timer(2000),
 		tic_timer(6000),
-		cheat_timer(0),
-		threshold_timer(0),
 		mana_timer(2000),
 		spellend_timer(0),
 		rewind_timer(30000), //Timer used for determining amount of time between actual player position updates for /rewind.
@@ -136,9 +134,7 @@ Mob::Mob(const char*   in_name,
  	rewind_x = 0;		//Stored x_pos for /rewind
  	rewind_y = 0;		//Stored y_pos for /rewind
  	rewind_z = 0;		//Stored z_pos for /rewind
-
-	warp_threshold = 140;
-	last_warp_distance = 0;	
+	move_tic_count = 0;
 	
 	_egnode = NULL;
 	adverrorinfo = 0;
@@ -276,7 +272,6 @@ Mob::Mob(const char*   in_name,
 //	guildeqid = GUILD_NONE;
 	
     spellend_timer.Disable();
-	cheat_timer.Disable();
 	bardsong_timer.Disable();
 	bardsong = 0;
 	bardsong_target_id = 0;
@@ -507,23 +502,57 @@ float Mob::_GetMovementSpeed(int mod) const {
 	if (IsRooted())
 		return 0.0f;
 	
+	float aa_mod = 0.0f;
 	float speed_mod = 1.0f;
+	bool has_horse = false;
+	if(CastToClient()->GetGMSpeed())
+	{
+		speed_mod = 3.125f;
+	}
+	else
+	{
+		Mob* horse = entity_list.GetMob(CastToClient()->GetHorseId());
+		if(horse)
+		{
+			speed_mod = horse->GetBaseRunspeed();
+			has_horse = true;
+		}
+		else
+		{
+			speed_mod = runspeed;
+		}
+	}
 	
 	if (IsClient()){
-            speed_mod += ((CastToClient()->GetAA(aaInnateRunSpeed) * 0.10)
+            aa_mod += ((CastToClient()->GetAA(aaInnateRunSpeed) * 0.10)
 			+ (CastToClient()->GetAA(aaFleetofFoot) * 0.10)
 			+ (CastToClient()->GetAA(aaSwiftJourney) * 0.10)
 		);
 		//Selo's Enduring Cadence should be +7% per level
 	}
-	
-	int movemod = spellbonuses.movementspeed + itembonuses.movementspeed + mod;
+
+	int spell_mod = spellbonuses.movementspeed + itembonuses.movementspeed;
+	int movemod = 0;
+
+	if(spell_mod > (aa_mod*100))
+	{
+		movemod = spell_mod;
+	}
+	else
+	{
+		movemod = (aa_mod * 100);
+		if(spell_mod < 0)
+			movemod += spell_mod;
+	}
 	
 	if(movemod < -85) //cap it at moving very very slow
 		movemod = -85;
 	
-	if (movemod != 0)
-		speed_mod += float(movemod) / 100.0f;
+	if (!has_horse && movemod != 0)
+		speed_mod += (speed_mod * float(movemod) / 100.0f);
+
+	if(mod != 0)
+		speed_mod += (speed_mod * mod / 100);
 
 	if(speed_mod <= 0.0f)
 		return(0.0001f);
@@ -538,7 +567,7 @@ float Mob::_GetMovementSpeed(int mod) const {
 			speed_mod = 1.58;
 	}
 
-	return(runspeed * speed_mod);
+	return speed_mod;
 }
 
 sint32 Mob::CalcMaxMana() {
@@ -884,21 +913,7 @@ void Mob::SendPosition()
 	EQApplicationPacket* app = new EQApplicationPacket(OP_ClientUpdate, sizeof(PlayerPositionUpdateServer_Struct));
 	PlayerPositionUpdateServer_Struct* spu = (PlayerPositionUpdateServer_Struct*)app->pBuffer;	
 	MakeSpawnUpdateNoDelta(spu);
-//?	spu->heading *= 8;
-#ifdef PACKET_UPDATE_MANAGER
-	entity_list.QueueManaged(this, app, true);
-#else
-	entity_list.QueueCloseClients(this, app, true, 800);
-#endif
-	safe_delete(app);
-}
-
-// this one just warps the mob to the current location
-void Mob::SendAllPosition() {
-	EQApplicationPacket* app = new EQApplicationPacket(OP_ClientUpdate, sizeof(PlayerPositionUpdateServer_Struct));
-	PlayerPositionUpdateServer_Struct* spu = (PlayerPositionUpdateServer_Struct*)app->pBuffer;	
-	MakeSpawnUpdateNoDelta(spu);
-//?	spu->heading *= 8;
+	move_tic_count = 0;
 	entity_list.QueueClients(this, app, true);
 	safe_delete(app);
 }
@@ -914,11 +929,22 @@ void Mob::SendPosUpdate(int8 iSendToSelf) {
 			this->CastToClient()->FastQueuePacket(&app,false);
 	}
 	else
+	{
 #ifdef PACKET_UPDATE_MANAGER
 		entity_list.QueueManaged(this, app, (iSendToSelf==0),false);
 #else
-		entity_list.QueueCloseClients(this, app, (iSendToSelf==0), 800, NULL, false);
+		if(move_tic_count == RuleI(Zone,  NPCPositonUpdateTicCount))
+		{
+			entity_list.QueueClients(this, app, (iSendToSelf==0), false);
+			move_tic_count = 0;
+		}
+		else
+		{
+			entity_list.QueueCloseClients(this, app, (iSendToSelf==0), 800, NULL, false);
+			move_tic_count++;
+		}
 #endif
+	}
 	safe_delete(app);
 }
 
@@ -979,7 +1005,6 @@ void Mob::ShowStats(Client* client) {
 	if (this->IsClient())
 		client->Message(0, "  Weight: %.1f/%d", (float)this->CastToClient()->CalcCurrentWeight() / 10.0f, this->CastToClient()->GetSTR());
 	client->Message(0, "  Race: %i  BaseRace: %i  Texture: %i  HelmTexture: %i  Gender: %i  BaseGender: %i", GetRace(), GetBaseRace(), GetTexture(), GetHelmTexture(), GetGender(), GetBaseGender());
-	client->Message(0, "  Last Warp Distance: %f Threshold Remaining: %f", GetLWDistance(), GetWarpThreshold());
 	if (client->Admin() >= 100) {
 		client->Message(0, "  EntityID: %i  PetID: %i  OwnerID: %i  AIControlled: %i  Targetted: %i", 
 				this->GetID(), this->GetPetID(), this->GetOwnerID(), this->IsAIControlled(), targeted);
@@ -1084,7 +1109,7 @@ void Mob::GMMove(float x, float y, float z, float heading, bool SendUpdate) {
 	if(IsNPC())
 		CastToNPC()->SaveGuardSpot(true);
 	if(SendUpdate)
-		SendAllPosition();
+		SendPosition();
 	//SendPosUpdate(1);
 #ifdef PACKET_UPDATE_MANAGER
 	if(IsClient()) {
@@ -2174,7 +2199,6 @@ bool Mob::HateSummon() {
 
 		// RangerDown - GMMove doesn't seem to be working well with players, so use MovePC for them, GMMove for NPC's
 		if (target->IsClient()) {
-			target->CastToClient()->cheat_timer.Start(3500,false); //Lieka:  Prevent Mob Summons from tripping hack detector.
 			target->CastToClient()->MovePC(zone->GetZoneID(), zone->GetInstanceID(), x_pos, y_pos, z_pos, target->GetHeading(), 0, SummonPC);
 		}
 		else

@@ -4172,3 +4172,18 @@ void EntityList::AdventureCountUpdate(int32 a_id, int32 current, int32 total)
 		iterator.Advance();
 	}
 }
+
+void EntityList::SignalAllClients(int32 data)
+{
+	LinkedListIterator<Client*> iterator(client_list); 
+	iterator.Reset();
+	while(iterator.MoreElements()) 
+	{
+		Client *ent = iterator.GetData();
+		if(ent)
+		{
+			ent->Signal(data);
+		}
+		iterator.Advance();
+	}
+}
