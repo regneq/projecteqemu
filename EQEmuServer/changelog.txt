@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==08/17/2009==
+KLS: Fix for zonesummon variables influencing next zone attempt if you inner-zone first.
+
 ==08/13/2009==
 KLS: Added method to enable / disable spawn2 entries from spawning, enabled by default obviously.
 KLS: Two quest methods to modify spawn2 behavior quest::enable_spawn2(spawn2_id) and quest::disable_spawn2(spawn2_id), disable will force depop whatever mob is currently spawned in that spawn2 point if any.
