@@ -104,7 +104,6 @@ public:
 	bool CheckCoordLosNoZLeaps(float cur_x, float cur_y, float cur_z, float trg_x, float trg_y, float trg_z, float perwalk=1);
 
 	virtual int16 GetID() { return id; }
-	virtual void SetID(int16 entityId) { id = entityId; }
 
 #ifdef BOTS
 	virtual bool IsBot() const { return false; }
@@ -112,7 +111,9 @@ public:
 #endif
 
 protected:
+	friend class EntityList;
 	int32 pDBAsyncWorkID;
+	virtual void SetID(int16 entityId) { id = entityId; }
 
 private:
 	int16 id;
