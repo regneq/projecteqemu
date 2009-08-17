@@ -337,8 +337,7 @@ void Client::DoZoneSuccess(ZoneChange_Struct *zc, uint16 zone_id, int32 instance
 	LogFile->write(EQEMuLog::Status, "Zoning '%s' to: %s (%i) - (%i) x=%f, y=%f, z=%f",
 		m_pp.name, database.GetZoneName(zone_id), zone_id, instance_id,
 		dest_x, dest_y, dest_z);
-	
-	
+
 	//set the player's coordinates in the new zone so they have them
 	//when they zone into it
 	x_pos = dest_x; //these coordinates will now be saved when ~client is called
@@ -385,6 +384,11 @@ void Client::DoZoneSuccess(ZoneChange_Struct *zc, uint16 zone_id, int32 instance
 	
 	//reset to unsolicited.
 	zone_mode = ZoneUnsolicited;
+	zonesummon_x = 0;
+	zonesummon_y = 0;
+	zonesummon_z = 0;
+	zonesummon_id = 0;
+	zonesummon_ignorerestrictions = 0;
 }
 
 void Client::MovePC(const char* zonename, float x, float y, float z, float heading, int8 ignorerestrictions, ZoneMode zm) {
@@ -538,7 +542,6 @@ void Client::ZonePC(int32 zoneID, int32 instance_id, float x, float y, float z, 
 
 	if(ReadyToZone) {
 		zone_mode = zm;
-		
 		if(zm == ZoneToBindPoint) {
 			EQApplicationPacket* outapp = new EQApplicationPacket(OP_ZonePlayerToBind, sizeof(ZonePlayerToBind_Struct) + iZoneNameLength);
 			ZonePlayerToBind_Struct* gmg = (ZonePlayerToBind_Struct*) outapp->pBuffer;
@@ -636,6 +639,18 @@ void Client::ZonePC(int32 zoneID, int32 instance_id, float x, float y, float z, 
 		}
 
 		LogFile->write(EQEMuLog::Debug, "Player %s has requested a zoning to LOC x=%f, y=%f, z=%f, heading=%f in zoneid=%i", GetName(), x, y, z, heading, zoneID);
+		//Clear zonesummon variables if we're zoning to our own zone
+		//Client wont generate a zone change packet to the server in this case so
+		//They aren't needed and it keeps behavior on next zone attempt from being undefined.
+		if(zoneID == zone->GetZoneID() && instance_id == zone->GetInstanceID())
+		{
+			zonesummon_x = 0;
+			zonesummon_y = 0;
+			zonesummon_z = 0;
+			zonesummon_id = 0;
+			zonesummon_ignorerestrictions = 0;
+			zone_mode = ZoneUnsolicited;
+		}
 	}
 }
 

@@ -8987,22 +8987,13 @@ void Client::Handle_OP_Translocate(const EQApplicationPacket *app) {
 		EQApplicationPacket* outapp = new EQApplicationPacket(OP_Translocate, sizeof(Translocate_Struct));
 		Translocate_Struct *ots = (Translocate_Struct*)outapp->pBuffer;
 		memcpy(ots, &PendingTranslocateData, sizeof(Translocate_Struct));
-		ots->Complete = 1;
-
-
-		zonesummon_x = ots->x;
-		zonesummon_y = ots->y;
-		zonesummon_z = ots->z;
-		zonesummon_id = ots->ZoneID;
-		zone_mode = ZoneSolicited;
-
-		QueuePacket(outapp);
-		safe_delete(outapp);
+		
+		//Was sending the packet back to initiate client zone... 
+		//but that could be abusable, so lets go through proper channels
+		MovePC(ots->ZoneID, 0, ots->x, ots->y, ots->z, GetHeading(), 0, ZoneSolicited);
 	}
 
 	PendingTranslocate = false;
-
-
 }
 
 void Client::Handle_OP_Sacrifice(const EQApplicationPacket *app) {

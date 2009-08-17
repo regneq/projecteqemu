@@ -1043,16 +1043,10 @@ void Client::OPRezzAnswer(const EQApplicationPacket* app) {
 			SetEXP((GetEXP()+pendingrezzexp), GetAAXP(), true);
 		}
 		pendingrezzexp = -1;
-		//they are gunna be trying to zone soon.
-		zonesummon_x = ra->x;
-		zonesummon_y = ra->y;
-		zonesummon_z = ra->z;
-		zonesummon_id = ra->zone_id;
-		zone_mode = ZoneSolicited;
-		
-		// We also send the OP_RezzComplete packet to the client. This is what makes them zone to their corpse.
-		_pkt(SPELLS__REZ, outapp);
-		this->FastQueuePacket(&outapp);
+
+		//Was sending the packet back to initiate client zone... 
+		//but that could be abusable, so lets go through proper channels
+		MovePC(ra->zone_id, ra->instance_id, ra->x, ra->y, ra->z, GetHeading(), 0, ZoneSolicited);
 	}
 }
 
