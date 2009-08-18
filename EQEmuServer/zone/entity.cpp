@@ -4187,3 +4187,59 @@ void EntityList::SignalAllClients(int32 data)
 		iterator.Advance();
 	}
 }
+
+list<Mob*> EntityList::GetMobList()
+{
+	list<Mob*> m_list;
+	LinkedListIterator<Mob*> iterator(mob_list); 
+	iterator.Reset();
+	while(iterator.MoreElements()) 
+	{
+		Mob *ent = iterator.GetData();
+		m_list.push_back(ent);
+		iterator.Advance();
+	}
+	return m_list;
+}
+
+list<NPC*> EntityList::GetNPCList()
+{
+	list<NPC*> n_list;
+	LinkedListIterator<NPC*> iterator(npc_list); 
+	iterator.Reset();
+	while(iterator.MoreElements()) 
+	{
+		NPC *ent = iterator.GetData();
+		n_list.push_back(ent);
+		iterator.Advance();
+	}
+	return n_list;
+}
+
+list<Client*> EntityList::GetClientList()
+{
+	list<Client*> c_list;
+	LinkedListIterator<Client*> iterator(client_list); 
+	iterator.Reset();
+	while(iterator.MoreElements()) 
+	{
+		Client *ent = iterator.GetData();
+		c_list.push_back(ent);
+		iterator.Advance();
+	}
+	return c_list;
+}
+
+list<Corpse*> EntityList::GetCorpseList()
+{
+	list<Corpse*> c_list;
+	LinkedListIterator<Corpse*> iterator(corpse_list); 
+	iterator.Reset();
+	while(iterator.MoreElements()) 
+	{
+		Corpse *ent = iterator.GetData();
+		c_list.push_back(ent);
+		iterator.Advance();
+	}
+	return c_list;
+}

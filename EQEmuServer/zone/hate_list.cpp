@@ -452,3 +452,17 @@ int HateList::AreaRampage(Mob *caster, Mob *target)
 	}
 	return ret;
 }
+
+std::list<tHateEntry*> HateList::GetHateList()
+{
+	std::list<tHateEntry*> hlist;
+	LinkedListIterator<tHateEntry*> iterator(list); 
+	iterator.Reset();
+	while(iterator.MoreElements()) 
+	{
+		tHateEntry *ent = iterator.GetData();
+		hlist.push_back(ent);
+		iterator.Advance();
+	}
+	return hlist;
+}

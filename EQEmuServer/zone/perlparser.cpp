@@ -87,23 +87,8 @@ void PerlXSParser::map_funs() {
 	"package QuestItem;"
 	"&boot_QuestItem;"	// load quest item XS
 
-	"package MobList;"
-	"&boot_MobList;"	// load MobList XS
-
-	"package ClientList;"
-	"&boot_ClientList;"	// load ClientList XS
-
-	"package NPCList;"
-	"&boot_NPCList;"	// load NPCList XS
-
-	"package CorpseList;"
-	"&boot_CorpseList;"	// load CorpseList XS
-
 	"package HateEntry;"
-	"&boot_HateEntry;"	// load HateEntry XS
-
-	"package HateList;"
-	"&boot_HateList;"	// load HateList XS
+	"&boot_HateEntry;"	// load quest item XS
 
 #endif
 	"package main;"
