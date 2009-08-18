@@ -37,12 +37,7 @@ EXTERN_C XS(boot_EntityList);
 EXTERN_C XS(boot_Group);
 EXTERN_C XS(boot_Raid);
 EXTERN_C XS(boot_QuestItem);
-EXTERN_C XS(boot_MobList);
-EXTERN_C XS(boot_ClientList);
-EXTERN_C XS(boot_NPCList);
-EXTERN_C XS(boot_CorpseList);
 EXTERN_C XS(boot_HateEntry);
-EXTERN_C XS(boot_HateList);
 EXTERN_C XS(boot_PerlPacket);
 /*XS(XS_Client_new);
 //XS(XS_Mob_new);
@@ -92,12 +87,8 @@ EXTERN_C void xs_init(pTHX)
 	newXS(strcpy(buf, "Group::boot_Group"), boot_Group, file);
 	newXS(strcpy(buf, "Raid::boot_Raid"), boot_Raid, file);
 	newXS(strcpy(buf, "QuestItem::boot_QuestItem"), boot_QuestItem, file);
-	newXS(strcpy(buf, "MobList::boot_MobList"), boot_MobList, file);
-	newXS(strcpy(buf, "ClientList::boot_ClientList"), boot_ClientList, file);
-	newXS(strcpy(buf, "NPCList::boot_NPCList"), boot_NPCList, file);
-	newXS(strcpy(buf, "CorpseList::boot_CorpseList"), boot_CorpseList, file);
 	newXS(strcpy(buf, "HateEntry::boot_HateEntry"), boot_HateEntry, file);
-	newXS(strcpy(buf, "HateList::boot_HateList"), boot_HateList, file);
+;
 #endif
 #endif
 #ifdef EMBPERL_COMMANDS

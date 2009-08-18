@@ -28,6 +28,7 @@
 #include "features.h"
 #ifdef EMBPERL_XS_CLASSES
 #include "../common/debug.h"
+#include <list>
 #include "embperl.h"
 
 #include "entity.h"
@@ -1611,11 +1612,11 @@ XS(XS_EntityList_GetMobList); /* prototype to pass -Wmissing-prototypes */
 XS(XS_EntityList_GetMobList)
 {
 	dXSARGS;
+	int num_mobs = 0;
 	if (items != 1)
 		Perl_croak(aTHX_ "Usage: EntityList::GetMobList(THIS)");
 	{
 		EntityList *THIS;
-		ListElement<Mob*> *RETVAL = NULL;
 
 		if (sv_derived_from(ST(0), "EntityList")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -1627,22 +1628,31 @@ XS(XS_EntityList_GetMobList)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		RETVAL = entity_list.GetMobListElement();
-		ST(0) = sv_newmortal();
-		sv_setref_pv(ST(0), "MobList", (void*)RETVAL);
+		std::list<Mob*> mob_list = entity_list.GetMobList();
+		std::list<Mob*>::iterator iter = mob_list.begin();
+
+		while(iter != mob_list.end())
+		{
+			Mob *entry = (*iter);
+			ST(0) = sv_newmortal();
+			sv_setref_pv(ST(0), "Mob", (void*)entry);
+			XPUSHs(ST(0));
+			num_mobs++;
+			iter++;
+		}
 	}
-	XSRETURN(1);
+	XSRETURN(num_mobs);
 }
 
 XS(XS_EntityList_GetClientList); /* prototype to pass -Wmissing-prototypes */
 XS(XS_EntityList_GetClientList)
 {
 	dXSARGS;
+	int num_clients = 0;
 	if (items != 1)
 		Perl_croak(aTHX_ "Usage: EntityList::GetClientList(THIS)");
 	{
 		EntityList *THIS;
-		ListElement<Client*> *RETVAL = NULL;
 
 		if (sv_derived_from(ST(0), "EntityList")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -1654,22 +1664,31 @@ XS(XS_EntityList_GetClientList)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		RETVAL = entity_list.GetClientListElement();
-		ST(0) = sv_newmortal();
-		sv_setref_pv(ST(0), "ClientList", (void*)RETVAL);
+		std::list<Client*> client_list = entity_list.GetClientList();
+		std::list<Client*>::iterator iter = client_list.begin();
+
+		while(iter != client_list.end())
+		{
+			Client *entry = (*iter);
+			ST(0) = sv_newmortal();
+			sv_setref_pv(ST(0), "Client", (void*)entry);
+			XPUSHs(ST(0));
+			num_clients++;
+			iter++;
+		}
 	}
-	XSRETURN(1);
+	XSRETURN(num_clients);
 }
 
 XS(XS_EntityList_GetNPCList); /* prototype to pass -Wmissing-prototypes */
 XS(XS_EntityList_GetNPCList)
 {
 	dXSARGS;
+	int num_npcs = 0;
 	if (items != 1)
 		Perl_croak(aTHX_ "Usage: EntityList::GetNPCList(THIS)");
 	{
 		EntityList *THIS;
-		ListElement<NPC*> *RETVAL = NULL;
 
 		if (sv_derived_from(ST(0), "EntityList")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -1681,22 +1700,31 @@ XS(XS_EntityList_GetNPCList)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		RETVAL = entity_list.GetNPCListElement();
-		ST(0) = sv_newmortal();
-		sv_setref_pv(ST(0), "NPCList", (void*)RETVAL);
+		std::list<NPC*> npc_list = entity_list.GetNPCList();
+		std::list<NPC*>::iterator iter = npc_list.begin();
+
+		while(iter != npc_list.end())
+		{
+			NPC *entry = (*iter);
+			ST(0) = sv_newmortal();
+			sv_setref_pv(ST(0), "NPC", (void*)entry);
+			XPUSHs(ST(0));
+			num_npcs++;
+			iter++;
+		}
 	}
-	XSRETURN(1);
+	XSRETURN(num_npcs);
 }
 
 XS(XS_EntityList_GetCorpseList); /* prototype to pass -Wmissing-prototypes */
 XS(XS_EntityList_GetCorpseList)
 {
 	dXSARGS;
+	int num_corpses = 0;
 	if (items != 1)
 		Perl_croak(aTHX_ "Usage: EntityList::GetCorpseList(THIS)");
 	{
 		EntityList *THIS;
-		ListElement<Corpse*> *RETVAL = NULL;
 
 		if (sv_derived_from(ST(0), "EntityList")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -1708,11 +1736,20 @@ XS(XS_EntityList_GetCorpseList)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		RETVAL = entity_list.GetCorpseListElement();
-		ST(0) = sv_newmortal();
-		sv_setref_pv(ST(0), "CorpseList", (void*)RETVAL);
+		std::list<Corpse*> corpse_list = entity_list.GetCorpseList();
+		std::list<Corpse*>::iterator iter = corpse_list.begin();
+
+		while(iter != corpse_list.end())
+		{
+			Corpse *entry = (*iter);
+			ST(0) = sv_newmortal();
+			sv_setref_pv(ST(0), "Corpse", (void*)entry);
+			XPUSHs(ST(0));
+			num_corpses++;
+			iter++;
+		}
 	}
-	XSRETURN(1);
+	XSRETURN(num_corpses);
 }
 
 XS(XS_EntityList_SignalAllClients); /* prototype to pass -Wmissing-prototypes */

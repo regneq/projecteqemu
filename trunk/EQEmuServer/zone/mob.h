@@ -822,8 +822,7 @@ bool logpos;
 	void				ClearFeignMemory();
 	void				PrintHateListToClient(Client *who) { hate_list.PrintToClient(who); }
 
-	//for accessing hate list from perl only, don't use for other purposes.
-	ListElement<tHateEntry*> *GetHateListElement() { return hate_list.GetHateListElement(); }
+	std::list<tHateEntry*> GetHateList() { return hate_list.GetHateList(); }
 
 
 	int					GetCurWp(){ return cur_wp; }

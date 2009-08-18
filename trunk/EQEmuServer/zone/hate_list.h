@@ -66,7 +66,7 @@ public:
 	void PrintToClient(Client *c);
 
 	//For accessing the hate list via perl; don't use for anything else
-	ListElement<tHateEntry*> *GetHateListElement() { return list.GetFirst(); }
+	std::list<tHateEntry*> GetHateList();
 
 protected:
     tHateEntry *Find(Mob *ent);

@@ -5777,11 +5777,11 @@ XS(XS_Mob_GetHateList); /* prototype to pass -Wmissing-prototypes */
 XS(XS_Mob_GetHateList)
 {
 	dXSARGS;
+	int num_entries = 0;
 	if (items != 1)
 		Perl_croak(aTHX_ "Usage: Mob::GetHateList(THIS)");
 	{
 		Mob *THIS;
-		ListElement<tHateEntry*> *RETVAL = NULL;
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -5793,12 +5793,56 @@ XS(XS_Mob_GetHateList)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		RETVAL = THIS->GetHateListElement();
-		ST(0) = sv_newmortal();
-		sv_setref_pv(ST(0), "HateList", (void*)RETVAL);
+		std::list<tHateEntry*> hate_list = THIS->GetHateList();
+		std::list<tHateEntry*>::iterator iter = hate_list.begin();
+
+		while(iter != hate_list.end())
+		{
+			tHateEntry *entry = (*iter);
+			ST(0) = sv_newmortal();
+			sv_setref_pv(ST(0), "HateEntry", (void*)entry);
+			XPUSHs(ST(0));
+			num_entries++;
+			iter++;
+		}
+		printf("num entries in hatelist: %i\n", num_entries);
 	}
-	XSRETURN(1);
+	XSRETURN(num_entries);
 }
+
+/*
+	dXSARGS;
+	int num_mobs = 0;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: EntityList::GetCorpseList(THIS)");
+	{
+		EntityList *THIS;
+
+		if (sv_derived_from(ST(0), "EntityList")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(EntityList *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type EntityList");
+
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		std::list<Corpse*> corpse_list = entity_list.GetCorpseList();
+		std::list<Corpse*>::iterator iter = corpse_list.begin();
+
+		while(iter != corpse_list.end())
+		{
+			Corpse *entry = (*iter);
+			ST(0) = sv_newmortal();
+			sv_setref_pv(ST(0), "Corpse", (void*)entry);
+			XPUSHs(ST(0));
+			num_mobs++;
+			iter++;
+		}
+	}
+	XSRETURN(num_mobs);
+*/
 
 XS(XS_Mob_SignalClient); /* prototype to pass -Wmissing-prototypes */
 XS(XS_Mob_SignalClient)
