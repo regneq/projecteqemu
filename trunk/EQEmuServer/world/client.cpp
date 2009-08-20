@@ -525,11 +525,67 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 			}
 
 			if(!pZoning && ew->return_home)
-				zoneID = database.MoveCharacterToBind(charid,4);
+			{
+				CharacterSelect_Struct* cs = new CharacterSelect_Struct;
+				memset(cs, 0, sizeof(CharacterSelect_Struct));
+				database.GetCharSelectInfo(GetAccountID(), cs);
+				bool home_enabled = false;
+
+				for(int x = 0; x < 10; ++x)
+				{
+					if(strcasecmp(cs->name[x], char_name) == 0)
+					{
+						if(cs->gohome[x] == 1)
+						{
+							home_enabled = true;
+						}
+					}
+				}
+				safe_delete(cs);
+
+				if(home_enabled)
+				{
+					zoneID = database.MoveCharacterToBind(charid,4);
+				}
+				else
+				{
+					clog(WORLD__CLIENT_ERR,"'%s' is trying to go home before they're able...",char_name);
+					database.SetHackerFlag(GetAccountName(), char_name, "MQGoHome: player tried to enter the tutorial without having go home enabled for this character.");
+					eqs->Close();
+					break;
+				}
+			}
 
 			if(!pZoning && (RuleB(World, EnableTutorialButton) && (ew->tutorial || StartInTutorial))) {
-				zoneID = RuleI(World, TutorialZoneID);
-				database.MoveCharacterToZone(charid, database.GetZoneName(zoneID));
+				CharacterSelect_Struct* cs = new CharacterSelect_Struct;
+				memset(cs, 0, sizeof(CharacterSelect_Struct));
+				database.GetCharSelectInfo(GetAccountID(), cs);
+				bool tutorial_enabled = false;
+
+				for(int x = 0; x < 10; ++x)
+				{
+					if(strcasecmp(cs->name[x], char_name) == 0)
+					{
+						if(cs->tutorial[x] == 1)
+						{
+							tutorial_enabled = true;
+						}
+					}
+				}
+				safe_delete(cs);
+
+				if(tutorial_enabled)
+				{
+					zoneID = RuleI(World, TutorialZoneID);
+					database.MoveCharacterToZone(charid, database.GetZoneName(zoneID));
+				}
+				else
+				{
+					clog(WORLD__CLIENT_ERR,"'%s' is trying to go to tutorial but are not allowed...",char_name);
+					database.SetHackerFlag(GetAccountName(), char_name, "MQTutorial: player tried to enter the tutorial without having tutorial enabled for this character.");
+					eqs->Close();
+					break;
+				}
 
 				// HACK: Entering the Tutorial directly from Character Creation (without going back to Char Select)
 				// does not work correctly yet in SoF, so bounce them back to Character Select first.
