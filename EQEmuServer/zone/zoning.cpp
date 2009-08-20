@@ -644,7 +644,7 @@ void Client::ZonePC(int32 zoneID, int32 instance_id, float x, float y, float z, 
 		//They aren't needed and it keeps behavior on next zone attempt from being undefined.
 		if(zoneID == zone->GetZoneID() && instance_id == zone->GetInstanceID())
 		{
-			if(zm != EvacToSafeCoords && zm != ZoneToSafeCoords)
+			if(zm != EvacToSafeCoords && zm != ZoneToSafeCoords && zm != ZoneToBindPoint)
 			{
 				zonesummon_x = 0;
 				zonesummon_y = 0;

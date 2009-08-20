@@ -534,15 +534,17 @@ float Mob::_GetMovementSpeed(int mod) const {
 	int spell_mod = spellbonuses.movementspeed + itembonuses.movementspeed;
 	int movemod = 0;
 
-	if(spell_mod > (aa_mod*100))
+	if(spell_mod < 0)
+	{
+		movemod += spell_mod;
+	}
+	else if(spell_mod > (aa_mod*100))
 	{
 		movemod = spell_mod;
 	}
 	else
 	{
 		movemod = (aa_mod * 100);
-		if(spell_mod < 0)
-			movemod += spell_mod;
 	}
 	
 	if(movemod < -85) //cap it at moving very very slow
@@ -552,7 +554,7 @@ float Mob::_GetMovementSpeed(int mod) const {
 		speed_mod += (speed_mod * float(movemod) / 100.0f);
 
 	if(mod != 0)
-		speed_mod += (speed_mod * mod / 100);
+		speed_mod += (speed_mod * (float)mod / 100.0f);
 
 	if(speed_mod <= 0.0f)
 		return(0.0001f);

@@ -1465,7 +1465,14 @@ void Client::Handle_OP_TargetCommand(const EQApplicationPacket *app)
 	{
 		if(GetTarget())
 		{
-			if(GetTarget()->GetBodyType() == BT_NoTarget2 || GetTarget()->GetBodyType() == BT_Special 
+			if(GetGM())
+			{
+			}
+			else if(GetTarget()->IsClient())
+			{
+				//make sure this client is in our raid/group
+			}
+			else if(GetTarget()->GetBodyType() == BT_NoTarget2 || GetTarget()->GetBodyType() == BT_Special 
 				|| GetTarget()->GetBodyType() == BT_NoTarget)
 			{
 				char *hacker_str = NULL;
@@ -1484,8 +1491,8 @@ void Client::Handle_OP_TargetCommand(const EQApplicationPacket *app)
 					if(DistNoRoot(*GetTarget()) > (zone->newzone_data.maxclip*zone->newzone_data.maxclip))
 					{
 						char *hacker_str = NULL;
-						MakeAnyLenString(&hacker_str, "%s attempting to target something beyond the clip plane of %i units,"
-							" from (%.2f, %.2f, %.2f) to (%.2f, %.2f, %.2f)", GetName(),
+						MakeAnyLenString(&hacker_str, "%s attempting to target something beyond the clip plane of %8.2f units,"
+							" from (%8.2f, %8.2f, %8.2f) to (%8.2f, %8.2f, %8.2f)", GetName(),
 							(zone->newzone_data.maxclip*zone->newzone_data.maxclip),
 							GetX(), GetY(), GetZ(), GetTarget()->GetX(), GetTarget()->GetY(), GetTarget()->GetZ());
 						database.SetMQDetectionFlag(AccountName(), GetName(), hacker_str, zone->GetShortName());
@@ -1499,8 +1506,8 @@ void Client::Handle_OP_TargetCommand(const EQApplicationPacket *app)
 			else if(DistNoRoot(*GetTarget()) > (zone->newzone_data.maxclip*zone->newzone_data.maxclip))
 			{
 				char *hacker_str = NULL;
-				MakeAnyLenString(&hacker_str, "%s attempting to target something beyond the clip plane of %i units,"
-					" from (%.2f, %.2f, %.2f) to (%.2f, %.2f, %.2f)", GetName(),
+				MakeAnyLenString(&hacker_str, "%s attempting to target something beyond the clip plane of %8.2f units,"
+					" from (%8.2f, %8.2f, %8.2f) to (%8.2f, %8.2f, %8.2f)", GetName(),
 					(zone->newzone_data.maxclip*zone->newzone_data.maxclip),
 					GetX(), GetY(), GetZ(), GetTarget()->GetX(), GetTarget()->GetY(), GetTarget()->GetZ());
 				database.SetMQDetectionFlag(AccountName(), GetName(), hacker_str, zone->GetShortName());
