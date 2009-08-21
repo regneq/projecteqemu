@@ -538,6 +538,7 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 						if(cs->gohome[x] == 1)
 						{
 							home_enabled = true;
+							break;
 						}
 					}
 				}
@@ -569,6 +570,7 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 						if(cs->tutorial[x] == 1)
 						{
 							tutorial_enabled = true;
+							break;
 						}
 					}
 				}

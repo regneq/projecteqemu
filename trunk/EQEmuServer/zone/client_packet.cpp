@@ -1417,11 +1417,13 @@ void Client::Handle_OP_TargetCommand(const EQApplicationPacket *app)
 		}
 		else
 		{
+			SetTarget(NULL);
 			return;
 		}
 	}
 	else
 	{
+		SetTarget(NULL);
 		return;
 	}
 
