@@ -221,6 +221,7 @@ void Serverlist::Process() {
 						if(NewWorldReq->IsAuthorized()) {
 							// TODO: record the IP address from (*Iterator)-> instead of what the IP the world server reported.
 							_db->UpdateWorldServerRegistration(NewWorldReq->GetServerID(), NewWorldReq->GetPublicIPAddress());
+							printf("***Adding server: %s\n", NewWorldReq->GetLongServerName().c_str());
 							AddServer((*Iterator), NewWorldReq);
 						}
 						else {
