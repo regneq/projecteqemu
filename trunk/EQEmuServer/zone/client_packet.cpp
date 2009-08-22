@@ -1001,10 +1001,13 @@ void Client::CheatDetected(CheatTypes CheatType, float x, float y, float z)
 				&& ((this->Admin() < RuleI(Zone, MQWarpExemptStatus) 
 				|| (RuleI(Zone, MQWarpExemptStatus)) == -1)))
 			{
-				char *hString = NULL;
-				MakeAnyLenString(&hString, "/MQWarp(LT) with location %.2f, %.2f, %.2f, running fast but not fast enough to get killed, possibly: small warp, speed hack, excessive lag, marked as suspicious.", GetX(), GetY(), GetZ());
-				database.SetMQDetectionFlag(this->account_name,this->name, hString, zone->GetShortName());
-				safe_delete_array(hString);
+				if(RuleB(Zone, MarkMQWarpLT))
+				{
+					char *hString = NULL;
+					MakeAnyLenString(&hString, "/MQWarp(LT) with location %.2f, %.2f, %.2f, running fast but not fast enough to get killed, possibly: small warp, speed hack, excessive lag, marked as suspicious.", GetX(), GetY(), GetZ());
+					database.SetMQDetectionFlag(this->account_name,this->name, hString, zone->GetShortName());
+					safe_delete_array(hString);
+				}
 			}
 			break;
 
@@ -1402,8 +1405,11 @@ void Client::Handle_OP_TargetCommand(const EQApplicationPacket *app)
 		LogFile->write(EQEMuLog::Error, "OP size error: OP_TargetMouse expected:%i got:%i", sizeof(ClientTarget_Struct), app->size);
 		return;
 	}
+
 	if(GetTarget())
+	{
 		GetTarget()->IsTargeted(-1);
+	}
 
 	// Locate and cache new target
 	ClientTarget_Struct* ct=(ClientTarget_Struct*)app->pBuffer;
@@ -1418,18 +1424,22 @@ void Client::Handle_OP_TargetCommand(const EQApplicationPacket *app)
 		else
 		{
 			SetTarget(NULL);
+			SetHoTT(0);
 			return;
 		}
 	}
 	else
 	{
 		SetTarget(NULL);
+		SetHoTT(0);
 		return;
 	}
 
 	// <Rogean> HoTT
-	if (GetTarget() && GetTarget()->GetTarget()) SetHoTT(GetTarget()->GetTarget()->GetID());
-	else SetHoTT(0);
+	if (GetTarget() && GetTarget()->GetTarget()) 
+		SetHoTT(GetTarget()->GetTarget()->GetID());
+	else 
+		SetHoTT(0);
 
 	Group *g = GetGroup();
 
@@ -1450,7 +1460,6 @@ void Client::Handle_OP_TargetCommand(const EQApplicationPacket *app)
 				outapp->pBuffer[4] = 0x0d;
 				if(GetTarget())
 				{
-					GetTarget()->IsTargeted(-1);
 					SetTarget(NULL);
 				}
 				QueuePacket(outapp);
@@ -1463,14 +1472,15 @@ void Client::Handle_OP_TargetCommand(const EQApplicationPacket *app)
 			GetTarget()->IsTargeted(1);
 			GetTarget()->CreateHPPacket(&hp_app);
 			QueuePacket(&hp_app, false);
-		} else {
+		} 
+		else 
+		{
 			EQApplicationPacket* outapp = new EQApplicationPacket(OP_TargetReject, sizeof(TargetReject_Struct));
 			outapp->pBuffer[0] = 0x2f;
 			outapp->pBuffer[1] = 0x01;
 			outapp->pBuffer[4] = 0x0d;
 			if(GetTarget())
 			{
-				GetTarget()->IsTargeted(-1);
 				SetTarget(NULL);
 			}
 			QueuePacket(outapp);
@@ -1496,7 +1506,6 @@ void Client::Handle_OP_TargetCommand(const EQApplicationPacket *app)
 					GetName(), GetTarget()->GetName(), (int)GetTarget()->GetBodyType());
 				database.SetMQDetectionFlag(AccountName(), GetName(), hacker_str, zone->GetShortName());
 				safe_delete_array(hacker_str);
-				GetTarget()->IsTargeted(-1);
 				SetTarget((Mob*)NULL);
 				return;
 			}
@@ -1513,7 +1522,6 @@ void Client::Handle_OP_TargetCommand(const EQApplicationPacket *app)
 							GetX(), GetY(), GetZ(), GetTarget()->GetName(), GetTarget()->GetX(), GetTarget()->GetY(), GetTarget()->GetZ());
 						database.SetMQDetectionFlag(AccountName(), GetName(), hacker_str, zone->GetShortName());
 						safe_delete_array(hacker_str);
-						GetTarget()->IsTargeted(-1);
 						SetTarget(NULL);
 						return;
 					}
@@ -1528,7 +1536,6 @@ void Client::Handle_OP_TargetCommand(const EQApplicationPacket *app)
 					GetX(), GetY(), GetZ(), GetTarget()->GetName(), GetTarget()->GetX(), GetTarget()->GetY(), GetTarget()->GetZ());
 				database.SetMQDetectionFlag(AccountName(), GetName(), hacker_str, zone->GetShortName());
 				safe_delete_array(hacker_str);
-				GetTarget()->IsTargeted(-1);
 				SetTarget(NULL);
 				return;
 			}

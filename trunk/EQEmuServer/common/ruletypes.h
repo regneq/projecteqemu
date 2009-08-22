@@ -121,6 +121,7 @@ RULE_BOOL ( Zone, EnableMQZoneDetector, true ) // Enable the MQZone Detector.  S
 RULE_BOOL ( Zone, EnableMQGateDetector, true ) // Enable the MQGate Detector.  Set to False to disable this feature.
 RULE_BOOL ( Zone, EnableMQGhostDetector, true ) // Enable the MQGhost Detector.  Set to False to disable this feature.
 RULE_REAL ( Zone, MQWarpDetectionDistanceFactor, 5.8) //clients move at 4.4 about if in a straight line but with movement and to acct for lag we raise it a bit
+RULE_BOOL ( Zone, MarkMQWarpLT, false )
 RULE_INT ( Zone, AutoShutdownDelay, 5000 ) //How long a dynamic zone stays loaded while empty
 RULE_INT ( Zone, PEQZoneReuseTime, 900 )	//How long, in seconds, until you can reuse the #peqzone command.
 RULE_INT ( Zone, PEQZoneDebuff1, 4454 )	    //First debuff casted by #peqzone Default is Cursed Keeper's Blight.
