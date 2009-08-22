@@ -186,18 +186,21 @@ void Serverlist::Process() {
 									if(NewWorldReq->IsRegisteredServer())
 										NewWorldReq->SetAuthorized(true);
 									else {
+										printf("Server failed world registration, is not a registered server.\n");
 										// Something in the world registration object's data didnt pass this last validation step
 
 										// TODO: Log the fact we have declined to allow this server onto the serverlist.
 									}
 								}
 								else {
+									printf("Server failed world registration, user and pass do not match.\n");
 									// This is an unauthorized, but registered server
 
 									// TODO: Log the fact we have declined to allow this server onto the serverlist.
 								}
 							}
 							else {
+								printf("Server failed world registration, failed to get world data from the database.\n");
 								// if we get here it is most likely because this request has no sql record as a registered server so we are not going to authorize
 								// Let this server remain unauthorized and do not show on serverlist
 
@@ -205,6 +208,7 @@ void Serverlist::Process() {
 							}
 						}
 						else {
+							printf("Server logging in as unregistered...\n");
 							// Request to login as a Standard server (unregistered)
 
 							// TODO: Check to make sure there isn't already another standard server on the serverlist with the same name
@@ -220,6 +224,8 @@ void Serverlist::Process() {
 							AddServer((*Iterator), NewWorldReq);
 						}
 						else {
+							printf("Server failed world registration, Server not Authorized...\n");
+
 							// If we decline to show a server on the serverlist it is because of some type of malformed data we couldn't validate
 
 							// TODO: Log the fact we have declined to allow this server onto the serverlist.
