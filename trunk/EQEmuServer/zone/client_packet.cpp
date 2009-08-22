@@ -2285,8 +2285,8 @@ void Client::Handle_OP_Assist(const EQApplicationPacket *app)
 			(
 				new_target &&
 				!new_target->IsInvisible(this) &&
-				Dist(*assistee) <= TARGETING_RANGE &&
-				Dist(*new_target) <= TARGETING_RANGE
+				(GetGM() || (Dist(*assistee) <= TARGETING_RANGE &&
+				Dist(*new_target) <= TARGETING_RANGE))
 			)
 			{
 				eid->entity_id = new_target->GetID();
