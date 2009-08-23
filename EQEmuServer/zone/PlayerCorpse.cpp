@@ -201,7 +201,8 @@ Corpse::Corpse(NPC* in_npc, ItemList* in_itemlist, int32 in_npctypeid, const NPC
 	 0,0,0,0,0,0,0,0,0,0,0,0xff,0,0,0,0,0,0,0,0,0,0),
 	 corpse_decay_timer(in_decaytime),
 	corpse_delay_timer(RuleI(NPC, CorpseUnlockTimer)),
-	corpse_graveyard_timer(0)
+	corpse_graveyard_timer(0),
+	loot_cooldown_timer(200)
 {
 	corpse_graveyard_timer.Disable();
 	memset(item_tint, 0, sizeof(item_tint));
@@ -300,7 +301,8 @@ Corpse::Corpse(Client* client, sint32 in_rezexp)
 ),
 	corpse_decay_timer(RuleI(Character, CorpseDecayTimeMS)),
 	corpse_delay_timer(RuleI(NPC, CorpseUnlockTimer)),
-	corpse_graveyard_timer(RuleI(Zone, GraveyardTimeMS))
+	corpse_graveyard_timer(RuleI(Zone, GraveyardTimeMS)),
+	loot_cooldown_timer(200)
 {
 	int i;
 	PlayerProfile_Struct *pp = &client->GetPP();
@@ -408,7 +410,8 @@ Corpse::Corpse(int32 in_dbid, int32 in_charid, char* in_charname, ItemList* in_i
 	 0,0,0,0,0,0,0,0,0,0),
 	corpse_decay_timer(RuleI(Character, CorpseDecayTimeMS)),
 	corpse_delay_timer(RuleI(NPC, CorpseUnlockTimer)),
-	corpse_graveyard_timer(RuleI(Zone, GraveyardTimeMS))
+	corpse_graveyard_timer(RuleI(Zone, GraveyardTimeMS)),
+	loot_cooldown_timer(200)
 {
 	if(!zone->HasGraveyard() || wasAtGraveyard)
 		corpse_graveyard_timer.Disable();
@@ -953,6 +956,12 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app)
 {
 	//this gets sent out no matter what as a sort of 'ack', so send it here.
 	client->QueuePacket(app);
+
+	if(!loot_cooldown_timer.Check())
+	{
+		SendEndLootErrorPacket(client);
+		return;
+	}
 	
 	LootingItem_Struct* lootitem = (LootingItem_Struct*)app->pBuffer;
 

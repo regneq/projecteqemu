@@ -286,6 +286,7 @@ Client::Client(EQStreamInterface* ieqs)
 	m_ShadowStepExemption = 0;
 	m_KnockBackExemption = 0;
 	m_PortExemption = 0;
+	m_SenseExemption = 0;
 	m_CheatDetectMoved = false;
 }
 
@@ -5075,6 +5076,8 @@ const bool Client::IsMQExemptedArea(int32 zoneID, float x, float y, float z) con
 	}
 	case 62:
 	case 75:
+	case 114:
+	case 209:
 	{
 		//The portals are so common in paineel/felwitheb that checking 
 		//distances wouldn't be worth it cause unless you're porting to the 
