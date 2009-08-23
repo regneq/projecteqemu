@@ -1028,6 +1028,10 @@ bool Bot::Process() {
 	SpellProcess();
 
 	if (tic_timer.Check()) {
+		//60 seconds, or whatever the rule is set to has passed, send this position to everyone to avoid ghosting
+		if(/*qglobal_position_update_timer.Check() && */!moving)
+			SendAllPosition();
+
 		BuffProcess();
 
 		if(curfp)

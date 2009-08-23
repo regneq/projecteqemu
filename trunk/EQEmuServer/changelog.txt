@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==08/23/2009==
+WildcardX: *BOTS* Fixed a bug that made bots ghost when moving.
+
 ==08/17/2009==
 KLS: Fix for zonesummon variables influencing next zone attempt if you inner-zone first.
 
