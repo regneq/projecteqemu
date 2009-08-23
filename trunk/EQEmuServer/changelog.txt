@@ -2,6 +2,8 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==08/23/2009==
 WildcardX: *BOTS* Fixed a bug that made bots ghost when moving.
+KLS: More tweaks to anti-hack systems, should trigger MQWarp less often.
+KLS: Instituted a cooldown on looting items from corpses, 200ms per item looted.
 
 ==08/17/2009==
 KLS: Fix for zonesummon variables influencing next zone attempt if you inner-zone first.

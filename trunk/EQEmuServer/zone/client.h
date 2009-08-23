@@ -707,9 +707,11 @@ public:
 	void SetShadowStepExemption(bool v);
 	void SetKnockBackExemption(bool v);
 	void SetPortExemption(bool v);
+	void SetSenseExemption(bool v) { m_SenseExemption = v; }
 	const bool IsShadowStepExempted() const { return m_ShadowStepExemption; }
 	const bool IsKnockBackExempted() const { return m_KnockBackExemption; }
 	const bool IsPortExempted() const { return m_PortExemption; }
+	const bool IsSenseExempted() const { return m_SenseExemption; }
 	const bool GetGMSpeed() const { return (gmspeed > 0); }
 	void CheatDetected(CheatTypes CheatType, float x, float y, float z);
 	const bool IsMQExemptedArea(int32 zoneID, float x, float y, float z) const;
@@ -1114,6 +1116,7 @@ private:
 	bool m_ShadowStepExemption;
 	bool m_KnockBackExemption;
 	bool m_PortExemption;
+	bool m_SenseExemption;
 
 	//Connecting debug code.
 	enum { //connecting states, used for debugging only

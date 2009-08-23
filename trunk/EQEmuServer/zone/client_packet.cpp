@@ -1493,10 +1493,19 @@ void Client::Handle_OP_TargetCommand(const EQApplicationPacket *app)
 		{
 			if(GetGM())
 			{
+				GetTarget()->IsTargeted(1);
+				return;
+			}
+			else if(IsSenseExempted())
+			{
+				GetTarget()->IsTargeted(1);
+				return;
 			}
 			else if(GetTarget()->IsClient())
 			{
 				//make sure this client is in our raid/group
+				GetTarget()->IsTargeted(1);
+				return;
 			}
 			else if(GetTarget()->GetBodyType() == BT_NoTarget2 || GetTarget()->GetBodyType() == BT_Special 
 				|| GetTarget()->GetBodyType() == BT_NoTarget)
@@ -2452,12 +2461,15 @@ void Client::Handle_OP_SpawnAppearance(const EQApplicationPacket *app)
 	if (sa->type == AT_Invis) {
 		if(sa->parameter != 0)
 		{
-			if(!HasSkill(HIDE))
+			if(!HasSkill(HIDE) && GetSkill(HIDE) == 0)
 			{
-				char *hack_str = NULL;
-				MakeAnyLenString(&hack_str, "Player sent OP_SpawnAppearance with AT_Invis: %i", sa->parameter);
-				database.SetHackerFlag(this->account_name, this->name, hack_str);
-				safe_delete_array(hack_str);
+				if(GetClientVersion() != EQClientSoF)
+				{
+					char *hack_str = NULL;
+					MakeAnyLenString(&hack_str, "Player sent OP_SpawnAppearance with AT_Invis: %i", sa->parameter);
+					database.SetMQDetectionFlag(this->account_name, this->name, hack_str, zone->GetShortName());
+					safe_delete_array(hack_str);
+				}
 			}
 			return;
 		}
@@ -2555,7 +2567,7 @@ void Client::Handle_OP_SpawnAppearance(const EQApplicationPacket *app)
 			{
 				char *hack_str = NULL;
 				MakeAnyLenString(&hack_str, "Player sent OP_SpawnAppearance with AT_Sneak: %i", sa->parameter);
-				database.SetHackerFlag(this->account_name, this->name, hack_str);
+				database.SetMQDetectionFlag(this->account_name, this->name, hack_str, zone->GetShortName());
 				safe_delete_array(hack_str);
 			}
 			return;
@@ -2567,7 +2579,7 @@ void Client::Handle_OP_SpawnAppearance(const EQApplicationPacket *app)
 	{
 		char *hack_str = NULL;
 		MakeAnyLenString(&hack_str, "Player sent OP_SpawnAppearance with AT_Size: %i", sa->parameter);
-		database.SetHackerFlag(this->account_name, this->name, hack_str);
+		database.SetMQDetectionFlag(this->account_name, this->name, hack_str, zone->GetShortName());
 		safe_delete_array(hack_str);
 	}
 	else if (sa->type == AT_Light)	// client emitting light (lightstone, shiny shield)
@@ -2767,7 +2779,8 @@ void Client::Handle_OP_Camp(const EQApplicationPacket *app)
 	if(IsLFP())
 		worldserver.StopLFP(CharacterID());
 
-	if (GetGM()) {
+	if (GetGM()) 
+	{
 		OnDisconnect(true);
 	}
 	camp_timer.Start(29000,true);
@@ -2839,7 +2852,7 @@ void Client::Handle_OP_FeignDeath(const EQApplicationPacket *app)
 
 void Client::Handle_OP_Sneak(const EQApplicationPacket *app)
 {
-	if(!HasSkill(SNEAK)) {
+	if(!HasSkill(SNEAK)  && GetSkill(SNEAK) == 0) {
 		return; //You cannot sneak if you do not have sneak
 	}
 
@@ -2894,7 +2907,9 @@ void Client::Handle_OP_Sneak(const EQApplicationPacket *app)
 
 void Client::Handle_OP_Hide(const EQApplicationPacket *app)
 {
-	if(!HasSkill(HIDE)) {
+	if(!HasSkill(HIDE) && GetSkill(HIDE) == 0) 
+	{
+		//Can not be able to train hide but still have it from racial though
 		return; //You cannot hide if you do not have hide
 	}
 

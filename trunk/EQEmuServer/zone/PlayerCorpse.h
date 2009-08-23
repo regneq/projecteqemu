@@ -131,6 +131,7 @@ private:
 	Timer		corpse_decay_timer;
 	Timer		corpse_delay_timer;
 	Timer		corpse_graveyard_timer;
+	Timer		loot_cooldown_timer;
 	Color_Struct item_tint[9];
 };
 
