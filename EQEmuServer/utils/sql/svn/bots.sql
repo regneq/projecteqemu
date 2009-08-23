@@ -39,7 +39,7 @@ CREATE TABLE  bots (
   `ATK` mediumint(9) NOT NULL DEFAULT '0',
   `BotCreateDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `LastSpawnDate` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `TotalPlayTime` time NOT NULL DEFAULT '00:00:00',
+  `TotalPlayTime` int(10) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`BotID`)
 ) ENGINE=InnoDB;
 
