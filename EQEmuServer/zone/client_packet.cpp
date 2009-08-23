@@ -2450,7 +2450,20 @@ void Client::Handle_OP_SpawnAppearance(const EQApplicationPacket *app)
 		return;
 
 	if (sa->type == AT_Invis) {
-		this->invisible = (sa->parameter == 1);
+		if(sa->parameter != 0)
+		{
+			if(!HasSkill(HIDE))
+			{
+				char *hack_str = NULL;
+				MakeAnyLenString(&hack_str, "Player sent OP_SpawnAppearance with AT_Invis: %i", sa->parameter);
+				database.SetHackerFlag(this->account_name, this->name, hack_str);
+				safe_delete_array(hack_str);
+			}
+			return;
+		}
+		invisible = false;
+		hidden = false;
+		improved_hidden = false;
 		entity_list.QueueClients(this, app, true);
 		return;
 	}
@@ -2536,12 +2549,26 @@ void Client::Handle_OP_SpawnAppearance(const EQApplicationPacket *app)
 		m_pp.autosplit = (sa->parameter == 1);
 	}
 	else if (sa->type == AT_Sneak) {
-		this->sneaking = (sa->parameter == 1);
+		if(sa->parameter != 0)
+		{
+			if(!HasSkill(SNEAK))
+			{
+				char *hack_str = NULL;
+				MakeAnyLenString(&hack_str, "Player sent OP_SpawnAppearance with AT_Sneak: %i", sa->parameter);
+				database.SetHackerFlag(this->account_name, this->name, hack_str);
+				safe_delete_array(hack_str);
+			}
+			return;
+		}
+		this->sneaking = 0;
 		entity_list.QueueClients(this, app, true);
 	}
 	else if (sa->type == AT_Size)
 	{
-		entity_list.QueueClients(this, app, false);
+		char *hack_str = NULL;
+		MakeAnyLenString(&hack_str, "Player sent OP_SpawnAppearance with AT_Size: %i", sa->parameter);
+		database.SetHackerFlag(this->account_name, this->name, hack_str);
+		safe_delete_array(hack_str);
 	}
 	else if (sa->type == AT_Light)	// client emitting light (lightstone, shiny shield)
 	{
