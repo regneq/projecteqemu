@@ -1521,6 +1521,7 @@ void Client::Handle_OP_TargetCommand(const EQApplicationPacket *app)
 			else if(IsSenseExempted())
 			{
 				GetTarget()->IsTargeted(1);
+				SetSenseExemption(false);
 				return;
 			}
 			else if(GetBindSightTarget())
