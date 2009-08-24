@@ -1496,11 +1496,6 @@ void Client::Handle_OP_TargetCommand(const EQApplicationPacket *app)
 				GetTarget()->IsTargeted(1);
 				return;
 			}
-			else if(IsSenseExempted())
-			{
-				GetTarget()->IsTargeted(1);
-				return;
-			}
 			else if(GetTarget()->IsClient())
 			{
 				//make sure this client is in our raid/group
@@ -1516,6 +1511,16 @@ void Client::Handle_OP_TargetCommand(const EQApplicationPacket *app)
 				database.SetMQDetectionFlag(AccountName(), GetName(), hacker_str, zone->GetShortName());
 				safe_delete_array(hacker_str);
 				SetTarget((Mob*)NULL);
+				return;
+			}
+			else if(IsPortExempted())
+			{
+				GetTarget()->IsTargeted(1);
+				return;
+			}
+			else if(IsSenseExempted())
+			{
+				GetTarget()->IsTargeted(1);
 				return;
 			}
 			else if(GetBindSightTarget())
