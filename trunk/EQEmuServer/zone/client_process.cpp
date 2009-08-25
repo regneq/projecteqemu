@@ -1113,7 +1113,14 @@ void Client::OPMemorizeSpell(const EQApplicationPacket* app)
 			break;
 		}
 		case memSpellMemorize:	{	// memming spell
-			MemSpell(memspell->spell_id, memspell->slot);
+			if(HasSpellScribed(memspell->spell_id))
+			{
+				MemSpell(memspell->spell_id, memspell->slot);
+			}
+			else
+			{
+				database.SetMQDetectionFlag(AccountName(), GetName(), "OP_MemorizeSpell but we don't have this spell scribed...", zone->GetShortName());
+			}
 			break;
 		}
 		case memSpellForget:	{	// unmemming spell
