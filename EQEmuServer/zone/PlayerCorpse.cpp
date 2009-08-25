@@ -592,9 +592,11 @@ ServerLootItem_Struct* Corpse::GetItem(int16 lootslot, ServerLootItem_Struct** b
 	cur = itemlist.begin();
 	end = itemlist.end();
 	for(; cur != end; cur++) {
-		sitem = *cur;
-		if(sitem->lootslot == lootslot)
+		if((*cur)->lootslot == lootslot)
+		{
+			sitem = *cur;
 			break;
+		}
 	}
 
 	if (sitem && bag_item_data && Inventory::SupportsContainers(sitem->equipSlot))

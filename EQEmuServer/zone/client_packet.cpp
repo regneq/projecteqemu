@@ -3168,7 +3168,16 @@ void Client::Handle_OP_LootRequest(const EQApplicationPacket *app)
 		Corpse::SendLootReqErrorPacket(this);
 		return;
 	}
-	if (ent->IsCorpse()) {
+	if (ent->IsCorpse()) 
+	{
+		Corpse *ent_corpse = ent->CastToCorpse();
+		if(DistNoRoot(ent_corpse->GetX(), ent_corpse->GetY(), ent_corpse->GetZ()) > 625)
+		{
+			Message(13, "Corpse too far away.");
+			Corpse::SendLootReqErrorPacket(this);
+			return;
+		}
+
 		if(invisible) {
 			BuffFadeByEffect(SE_Invisibility);
 			BuffFadeByEffect(SE_Invisibility2);
