@@ -288,6 +288,7 @@ Client::Client(EQStreamInterface* ieqs)
 	m_PortExemption = 0;
 	m_SenseExemption = 0;
 	m_CheatDetectMoved = false;
+	CanUseReport = true;
 }
 
 Client::~Client() {

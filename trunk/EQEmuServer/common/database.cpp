@@ -1862,6 +1862,20 @@ void Database::SetLFG(int32 CharID, bool LFG) {
 
 }
 
+void Database::AddReport(std::string who, std::string against, std::string lines)
+{
+	char ErrBuf[MYSQL_ERRMSG_SIZE];
+	char *Query = 0;
+	char *escape_str = new char[lines.size()*2+1];
+	DoEscapeString(escape_str, lines.c_str(), lines.size());
+
+	if (!RunQuery(Query, MakeAnyLenString(&Query, "INSERT INTO reports (name, reported, reported_text) VALUES('%s', '%s', '%s')", who.c_str(), against.c_str(), escape_str), ErrBuf))
+		LogFile->write(EQEMuLog::Error, "Error adding a report for %s: %s", who.c_str(), ErrBuf);
+
+	safe_delete_array(Query);
+	safe_delete_array(escape_str);
+}
+
 void  Database::SetGroupID(const char* name,int32 id, int32 charid){
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;

@@ -9985,14 +9985,17 @@ void Client::Handle_OP_SetStartCity(const EQApplicationPacket *app)
 
 void Client::Handle_OP_Report(const EQApplicationPacket *app)
 {
+	if(!CanUseReport)
+	{
+		Message_StringID(MT_System, 12945);
+		return;
+	}
+
 	int32 size = app->size;
 	int32 current_point = 0;
 	string reported, reporter;
 	string current_string;
-	vector<string> string_list;
 	int mode = 0;
-
-	string_list.reserve(20);
 
 	while(current_point < size)
 	{
@@ -10006,7 +10009,7 @@ void Client::Handle_OP_Report(const EQApplicationPacket *app)
 			{
 				if(mode == 0)
 				{
-					reported +=app->pBuffer[current_point];
+					reported += app->pBuffer[current_point];
 				}
 				else
 				{
@@ -10019,13 +10022,11 @@ void Client::Handle_OP_Report(const EQApplicationPacket *app)
 		{
 			if(app->pBuffer[current_point] == 0x0a)
 			{
-				string_list.push_back(current_string);
-				current_string.clear();
+				current_string += '\n';
 			}
 			else if(app->pBuffer[current_point] == 0x00)
 			{
-				string_list.push_back(current_string);
-				current_string.clear();
+				database.AddReport(reporter, reported, current_string);
 				return;
 			}
 			else
@@ -10035,4 +10036,6 @@ void Client::Handle_OP_Report(const EQApplicationPacket *app)
 			current_point++;
 		}
 	}
+
+	database.AddReport(reporter, reported, current_string);
 }

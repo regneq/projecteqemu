@@ -275,7 +275,8 @@ public:
 	void	ClearPTimers(uint32 charid);
 	void	ClearMerchantTemp();
 	void	SetLFP(int32 CharID, bool LFP); 
-	void	SetLFG(int32 CharID, bool LFG); 
+	void	SetLFG(int32 CharID, bool LFG);
+	void	AddReport(std::string who, std::string against, std::string lines);
 	
 
 protected:
