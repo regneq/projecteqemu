@@ -152,54 +152,43 @@ int Database::FindAccount(const char *CharacterName, Client *c) {
 
 	c->ClearCharacters();
 
-	if (!RunQuery(query,MakeAnyLenString(&query, "select `id`, `account_id` from `character_` where `name`='%s' limit 1",
-					   CharacterName),errbuf,&result)){
-		
+	if (!RunQuery(query,MakeAnyLenString(&query, "select `id`, `account_id`, `level` from `character_` where `name`='%s' limit 1",
+					   CharacterName),errbuf,&result))
+	{
 		_log(UCS__ERROR, "FindAccount query failed: %s", query);
 		safe_delete_array(query);
-
 		return -1;
 	}
-
 	safe_delete_array(query);
 
-	if (mysql_num_rows(result) != 1) {
+	if (mysql_num_rows(result) != 1) 
+	{
 		_log(UCS__ERROR, "Bad result from query");
-
 		mysql_free_result(result);
-
 		return -1;
 	}
 
 	row = mysql_fetch_row(result);
-
-	c->AddCharacter(atoi(row[0]), CharacterName);
-
+	c->AddCharacter(atoi(row[0]), CharacterName, atoi(row[2]));
 	int AccountID = atoi(row[1]);
 
 	mysql_free_result(result);
-
 	_log(UCS__TRACE, "Account ID for %s is %i", CharacterName, AccountID);
 
-	if (!RunQuery(query,MakeAnyLenString(&query, "select `id`, `name` from `character_` where `account_id`=%i and `name` !='%s'",
-					   AccountID, CharacterName),errbuf,&result)){
-
+	if (!RunQuery(query,MakeAnyLenString(&query, "select `id`, `name`, `level` from `character_` where `account_id`=%i and `name` !='%s'",
+					   AccountID, CharacterName),errbuf,&result))
+	{
 		safe_delete_array(query);
-
 		return AccountID;
 	}
-
 	safe_delete_array(query);
 
-	for(unsigned int i = 0; i < mysql_num_rows(result); i++) {
-
+	for(unsigned int i = 0; i < mysql_num_rows(result); i++) 
+	{
 		row = mysql_fetch_row(result);
-
-		c->AddCharacter(atoi(row[0]), row[1]);
+		c->AddCharacter(atoi(row[0]), row[1], atoi(row[2]));
 	}
-
 	mysql_free_result(result);
-
 	return AccountID;
 }
 

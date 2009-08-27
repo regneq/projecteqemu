@@ -897,13 +897,14 @@ void Clientlist::CloseAllConnections() {
 	}
 }
 
-void Client::AddCharacter(int CharID, const char *CharacterName) {
+void Client::AddCharacter(int CharID, const char *CharacterName, int Level) {
 
 	if(!CharacterName) return;
 	_log(UCS__TRACE, "Adding character %s with ID %i for %s", CharacterName, CharID, GetName().c_str());
 	CharacterEntry NewCharacter;
 	NewCharacter.CharID = CharID;
 	NewCharacter.Name = CharacterName;
+	NewCharacter.Level = Level;
 
 	Characters.push_back(NewCharacter);
 }
@@ -1292,6 +1293,30 @@ void Client::SendChannelMessage(string Message)
 		return;
 	}
 
+	if(ChannelName.compare("Newplayers") != 0)
+	{
+		if(GetKarma() <  RuleI(Chat, KarmaGlobalChatLimit))
+		{
+			CharacterEntry *char_ent = NULL;
+			for(int x = 0; x < Characters.size(); ++x)
+			{
+				if(Characters[x].Name.compare(GetName()) == 0)
+				{
+					char_ent = &Characters[x];
+					break;
+				}
+			}
+			if(char_ent)
+			{
+				if(char_ent->Level < RuleI(Chat, GlobalChatLevelLimit))
+				{
+					GeneralChannelMessage("You are either not high enough level or high enough karma to talk in this channel right now.");
+					return;
+				}
+			}
+		}
+	}
+
 	if(RequiredChannel)
 		if(RuleB(Chat, EnableAntiSpam))
 		{
@@ -1379,6 +1404,30 @@ void Client::SendChannelMessageByNumber(string Message) {
 	{
 		GeneralChannelMessage("You are Revoked, you cannot chat in global channels.");
 		return;
+	}
+
+	if(RequiredChannel->GetName().compare("Newplayers") != 0)
+	{
+		if(GetKarma() <  RuleI(Chat, KarmaGlobalChatLimit))
+		{
+			CharacterEntry *char_ent = NULL;
+			for(int x = 0; x < Characters.size(); ++x)
+			{
+				if(Characters[x].Name.compare(GetName()) == 0)
+				{
+					char_ent = &Characters[x];
+					break;
+				}
+			}
+			if(char_ent)
+			{
+				if(char_ent->Level < RuleI(Chat, GlobalChatLevelLimit))
+				{
+					GeneralChannelMessage("You are either not high enough level or high enough karma to talk in this channel right now.");
+					return;
+				}
+			}
+		}
 	}
 
 	_log(UCS__TRACE, "%s tells %s, [%s]", GetName().c_str(), RequiredChannel->GetName().c_str(), 

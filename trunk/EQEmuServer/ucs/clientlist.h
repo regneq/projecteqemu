@@ -77,6 +77,7 @@ static const CommandEntry Commands[] = {
 
 struct CharacterEntry {
 	int CharID;
+	int Level;
 	string Name;
 };
 
@@ -87,7 +88,7 @@ public:
 	~Client();
 
 	EQStream *ClientStream;
-	void AddCharacter(int CharID, const char *CharacterName);
+	void AddCharacter(int CharID, const char *CharacterName, int Level);
 	void ClearCharacters() { Characters.clear(); }
 	void SendMailBoxes();
 	inline void QueuePacket(const EQApplicationPacket *p, bool ack_req=true) { ClientStream->QueuePacket(p, ack_req); }
