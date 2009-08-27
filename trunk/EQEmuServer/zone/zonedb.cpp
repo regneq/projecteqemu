@@ -80,7 +80,7 @@ bool ZoneDatabase::SaveZoneCFG(int32 zoneid,NewZone_Struct* zd){
 	return true;
 }
 
-bool ZoneDatabase::GetZoneCFG(int32 zoneid, NewZone_Struct *zone_data, bool &can_bind, bool &can_combat, bool &can_levitate, bool &can_castoutdoor, bool &is_city) {
+bool ZoneDatabase::GetZoneCFG(int32 zoneid, NewZone_Struct *zone_data, bool &can_bind, bool &can_combat, bool &can_levitate, bool &can_castoutdoor, bool &is_city, bool &is_hotzone) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
 	MYSQL_RES *result;
@@ -94,7 +94,8 @@ bool ZoneDatabase::GetZoneCFG(int32 zoneid, NewZone_Struct *zone_data, bool &can
 		"fog_red3,fog_green3,fog_blue3,fog_minclip3,fog_maxclip3,"
 		"fog_red4,fog_green4,fog_blue4,fog_minclip4,fog_maxclip4,"
 		"sky,zone_exp_multiplier,safe_x,safe_y,safe_z,underworld,"
-		"minclip,maxclip,time_type,canbind,cancombat,canlevitate,castoutdoor"
+		"minclip,maxclip,time_type,canbind,cancombat,canlevitate,"
+		"castoutdoor,hotzone"
 		" from zone where zoneidnumber=%i",zoneid), errbuf, &result)) {
 		safe_delete_array(query);
 		while((row = mysql_fetch_row(result))) {
@@ -129,7 +130,7 @@ bool ZoneDatabase::GetZoneCFG(int32 zoneid, NewZone_Struct *zone_data, bool &can
 			can_combat = atoi(row[r++])==0?false:true;
             can_levitate = atoi(row[r++])==0?false:true;
 			can_castoutdoor = atoi(row[r++])==0?false:true;
-			
+			is_hotzone = atoi(row[r++])==0?false:true;
 			good = true;
 		}
 		mysql_free_result(result);

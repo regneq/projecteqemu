@@ -359,6 +359,7 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_GroupUpdate] = &Client::Handle_OP_GroupUpdate;
 	ConnectedOpcodes[OP_SetStartCity] = &Client::Handle_OP_SetStartCity;
 	ConnectedOpcodes[OP_ItemViewUnknown] = &Client::Handle_OP_Ignore;
+	ConnectedOpcodes[OP_Report] = &Client::Handle_OP_Report;
 }
 
 int Client::HandlePacket(const EQApplicationPacket *app)
@@ -1340,6 +1341,7 @@ void Client::Handle_OP_AutoAttack(const EQApplicationPacket *app)
 	}
 	else if (app->pBuffer[0] == 1) {
 		auto_attack = true;
+		auto_fire = false;
 		if (IsAIControlled())
 			return;
 		SetAttackTimer();
@@ -8459,6 +8461,7 @@ void Client::Handle_OP_AutoFire(const EQApplicationPacket *app)
 	}
 	bool *af = (bool*)app->pBuffer;
 	auto_fire = *af;
+	auto_attack = false;
 	SetAttackTimer();
 }
 void Client::Handle_OP_Rewind(const EQApplicationPacket *app)
@@ -9978,4 +9981,58 @@ void Client::Handle_OP_SetStartCity(const EQApplicationPacket *app)
 	}
 
 	mysql_free_result(result);	
+}
+
+void Client::Handle_OP_Report(const EQApplicationPacket *app)
+{
+	int32 size = app->size;
+	int32 current_point = 0;
+	string reported, reporter;
+	string current_string;
+	vector<string> string_list;
+	int mode = 0;
+
+	string_list.reserve(20);
+
+	while(current_point < size)
+	{
+		if(mode < 2)
+		{
+			if(app->pBuffer[current_point] == '|')
+			{
+				mode++;
+			}
+			else
+			{
+				if(mode == 0)
+				{
+					reported +=app->pBuffer[current_point];
+				}
+				else
+				{
+					reporter += app->pBuffer[current_point];
+				}
+			}
+			current_point++;
+		}
+		else
+		{
+			if(app->pBuffer[current_point] == 0x0a)
+			{
+				string_list.push_back(current_string);
+				current_string.clear();
+			}
+			else if(app->pBuffer[current_point] == 0x00)
+			{
+				string_list.push_back(current_string);
+				current_string.clear();
+				return;
+			}
+			else
+			{
+				current_string += app->pBuffer[current_point];
+			}
+			current_point++;
+		}
+	}
 }

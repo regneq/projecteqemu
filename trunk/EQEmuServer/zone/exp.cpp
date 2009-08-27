@@ -87,6 +87,11 @@ void Client::AddEXP(int32 in_add_exp, int8 conlevel, bool resexp) {
 			totalmod *= 1.05;
 		}
 
+		if(zone->IsHotzone())
+		{
+			totalmod += RuleR(Zone, HotZoneBonus);
+		}
+
 		add_exp = int32(float(add_exp) * totalmod * zemmod);
 	
 		if(RuleB(Character,UseXPConScaling))

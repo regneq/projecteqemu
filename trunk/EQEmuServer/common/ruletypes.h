@@ -127,6 +127,7 @@ RULE_INT ( Zone, PEQZoneReuseTime, 900 )	//How long, in seconds, until you can r
 RULE_INT ( Zone, PEQZoneDebuff1, 4454 )	    //First debuff casted by #peqzone Default is Cursed Keeper's Blight.
 RULE_INT ( Zone, PEQZoneDebuff2, 2209  )	//Second debuff casted by #peqzone Default is Tendrils of Apathy.
 RULE_BOOL ( Zone, UsePEQZoneDebuffs, true )	//Will determine if #peqzone will debuff players or not when used.
+RULE_REAL ( Zone, HotZoneBonus, 0.75 )
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Map )
@@ -306,7 +307,7 @@ RULE_INT ( Chat, MaximumMessagesPerInterval, 12)
 RULE_INT ( Chat, MaxMessagesBeforeKick, 20)
 RULE_INT ( Chat, IntervalDurationMS, 60000)
 RULE_INT ( Chat, KarmaUpdateIntervalMS, 1200000)
-RULE_INT ( Chat, KarmaGlobalChatLimit, 720) //amount of karma you need to be able to talk in ooc/auction/chat below the level limit
+RULE_INT ( Chat, KarmaGlobalChatLimit, 72) //amount of karma you need to be able to talk in ooc/auction/chat below the level limit
 RULE_INT ( Chat, GlobalChatLevelLimit, 8) //level limit you need to of reached to talk in ooc/auction/chat if your karma is too low.
 RULE_CATEGORY_END()
 

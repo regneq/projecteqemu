@@ -196,6 +196,7 @@ public:
 	bool	CanDoCombat() const { return(can_combat); }
 	bool	CanLevitate() const {return(can_levitate); } // Magoth78
 	bool    CanCastOutdoor() const {return(can_castoutdoor);} //qadar
+	bool	IsHotzone() const { return(is_hotzone); }
 	
 	time_t	weather_timer;
 	int8	weather_type;
@@ -235,6 +236,7 @@ private:
 	bool	can_combat;
 	bool    can_castoutdoor;
 	bool	can_levitate;
+	bool	is_hotzone;
 	int32	pgraveyard_id, pgraveyard_zoneid;
 	float	pgraveyard_x, pgraveyard_y, pgraveyard_z, pgraveyard_heading;
 
