@@ -10026,6 +10026,7 @@ void Client::Handle_OP_Report(const EQApplicationPacket *app)
 			}
 			else if(app->pBuffer[current_point] == 0x00)
 			{
+				CanUseReport = false;
 				database.AddReport(reporter, reported, current_string);
 				return;
 			}
@@ -10037,5 +10038,6 @@ void Client::Handle_OP_Report(const EQApplicationPacket *app)
 		}
 	}
 
+	CanUseReport = false;
 	database.AddReport(reporter, reported, current_string);
 }
