@@ -715,6 +715,7 @@ public:
 	const bool GetGMSpeed() const { return (gmspeed > 0); }
 	void CheatDetected(CheatTypes CheatType, float x, float y, float z);
 	const bool IsMQExemptedArea(int32 zoneID, float x, float y, float z) const;
+	bool CanUseReport;
 
 	//This is used to later set the buff duration of the spell, in slot to duration.
 	//Doesn't appear to work directly after the client recieves an action packet.
