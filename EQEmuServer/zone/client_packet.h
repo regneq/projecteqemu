@@ -250,3 +250,4 @@
 	void Handle_OP_RespawnWindow(const EQApplicationPacket *app);
 	void Handle_OP_GroupUpdate(const EQApplicationPacket *app);
 	void Handle_OP_SetStartCity(const EQApplicationPacket *app);
+	void Handle_OP_Report(const EQApplicationPacket *app);

@@ -719,7 +719,7 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, int8 lang_skil
 	{
 		if(strcmp(targetname, "discard") != 0)
 		{
-			if(chan_num == 3 || chan_num == 4 || chan_num == 5)
+			if(chan_num == 3 || chan_num == 4 || chan_num == 5 || chan_num == 7)
 			{
 				if(GlobalChatLimiterTimer)
 				{
@@ -896,6 +896,29 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, int8 lang_skil
 	case 7: { // Tell
 		if(!worldserver.SendChannelMessage(this, targetname, chan_num, 0, language, message))
 			Message(0, "Error: World server disconnected");
+
+			if(!global_channel_timer.Check())
+			{
+				if(strlen(targetname)==0)
+					ChannelMessageReceived(7, language, lang_skill, message, "discard"); //Fast typer or spammer??
+				else
+					return;
+			}
+
+			if(GetRevoked())
+			{
+				Message(0, "You have been revoked.  You may not send tells.");
+				return;
+			}
+
+			if(TotalKarma < RuleI(Chat, KarmaGlobalChatLimit))
+			{
+				if(GetLevel() < RuleI(Chat, GlobalChatLevelLimit))
+				{
+					Message(0, "You do not have permission to send tells at this time.");
+					return;
+				}
+			}
 		break;
 	}
 	case 8: { // /say

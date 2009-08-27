@@ -1,5 +1,12 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==08/26/2009==
+KLS: Significantly lowered karma required to talk globally if using the system.
+KLS: Fixed some small potential exploits.
+KLS: Extended anti-spam to /tell, will extend fully to universal chat server soon.
+KLS: Started work on /report but did not finish implementation yet.
+KLS: Added hotzone support.
+
 ==08/23/2009==
 WildcardX: *BOTS* Fixed a bug that made bots ghost when moving.
 KLS: More tweaks to anti-hack systems, should trigger MQWarp less often.

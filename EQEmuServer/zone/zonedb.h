@@ -190,7 +190,7 @@ public:
 	/*
 	 * Zone related
 	 */
-	bool	GetZoneCFG(int32 zoneid, NewZone_Struct *data, bool &can_bind, bool &can_combat, bool &can_levitate, bool &can_castoutdoor, bool &is_city);
+	bool	GetZoneCFG(int32 zoneid, NewZone_Struct *data, bool &can_bind, bool &can_combat, bool &can_levitate, bool &can_castoutdoor, bool &is_city, bool &is_hotzone);
 	bool	SaveZoneCFG(int32 zoneid,NewZone_Struct* zd);
 	bool	DumpZoneState();
 	sint8	LoadZoneState(const char* zonename, LinkedList<Spawn2*>& spawn2_list);
