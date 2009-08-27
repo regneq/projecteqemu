@@ -895,9 +895,6 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, int8 lang_skil
 		break;
 	}
 	case 7: { // Tell
-		if(!worldserver.SendChannelMessage(this, targetname, chan_num, 0, language, message))
-			Message(0, "Error: World server disconnected");
-
 			if(!global_channel_timer.Check())
 			{
 				if(strlen(targetname)==0)
@@ -920,6 +917,9 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, int8 lang_skil
 					return;
 				}
 			}
+
+			if(!worldserver.SendChannelMessage(this, targetname, chan_num, 0, language, message))
+				Message(0, "Error: World server disconnected");
 		break;
 	}
 	case 8: { // /say
