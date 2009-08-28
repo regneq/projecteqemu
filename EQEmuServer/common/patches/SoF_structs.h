@@ -3957,14 +3957,14 @@ struct AugmentInfo_Struct
 struct VeteranRewardItem
 {
 /*000*/	int32 item_id;
-/*004*/	int32 unknown004; //always 1 (some sort of status flag probably)
+/*004*/	int32 charges;
 /*008*/	char item_name[64];
 };
 
 struct VeteranReward
 {
 /*000*/	int32 claim_id;
-/*004*/	int32 unknown004; //always 1 (some sort of status flag probably)
+/*004*/	int32 number_available;
 /*008*/	int32 claim_count;
 /*012*/	VeteranRewardItem items[8];
 };

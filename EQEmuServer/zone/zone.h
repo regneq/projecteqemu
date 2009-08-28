@@ -176,6 +176,9 @@ public:
 	map<uint32,AdventureDetails*> active_adventures;
 	map<uint32,LDoNTrapTemplate*> ldon_trap_list;
 	map<uint32,std::list<LDoNTrapTemplate*> > ldon_trap_entry_list;
+	list<InternalVeteranReward> VeteranRewards;
+
+	void	LoadVeteranRewards();
 
 	Map*	zonemap;
 	WaterMap* watermap;

@@ -4054,14 +4054,16 @@ struct DisciplineTimer_Struct
 struct InternalVeteranRewardItem
 {
 /*000*/	int32 item_id;
-/*004*/	char item_name[64];
+/*004*/ int32 charges;
+/*008*/	char item_name[64];
 };
 
 struct InternalVeteranReward
 {
 /*000*/	int32 claim_id;
-/*004*/	int32 claim_count;
-/*008*/	InternalVeteranRewardItem items[8];
+/*004*/ int32 number_available;
+/*008*/	int32 claim_count;
+/*012*/	InternalVeteranRewardItem items[8];
 };
 
 struct VeteranClaimReply
@@ -4077,7 +4079,6 @@ struct VeteranClaimRequest
 /*000*/	char name_data[64]; //name + other data
 /*064*/	int32 claim_id;
 /*068*/	int32 unknown068;
-/*072*/	int32 unknown072;
 };
 
 //old structures live here:
