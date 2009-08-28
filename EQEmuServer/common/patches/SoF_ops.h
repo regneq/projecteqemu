@@ -50,6 +50,7 @@ E(OP_ZonePlayerToBind)
 E(OP_AdventureMerchantSell)
 E(OP_RaidUpdate)
 E(OP_RaidJoin)
+E(OP_VetRewardsAvaliable)
 
 //list of packets we need to decode on the way in:
 D(OP_SetServerFilter)

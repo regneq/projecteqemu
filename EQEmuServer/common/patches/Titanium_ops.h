@@ -18,6 +18,7 @@ E(OP_Trader)
 E(OP_TraderBuy)
 E(OP_ReadBook)
 E(OP_Illusion)
+E(OP_VetRewardsAvaliable)
 
 //list of packets we need to decode on the way in:
 D(OP_SetServerFilter)

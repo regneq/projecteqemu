@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==08/28/2009==
+KLS: Fix for bug with AI_Start not clearing feign death.
+KLS: Worked out basics for /claim, not yet implemented but worked out all the packets needed for sof/titanium.
+
 ==08/26/2009==
 KLS: Significantly lowered karma required to talk globally if using the system.
 KLS: Fixed some small potential exploits.
