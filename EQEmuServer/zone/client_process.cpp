@@ -277,11 +277,17 @@ bool Client::Process() {
 		
 		Mob *auto_attack_target = GetTarget();
 		if (auto_attack && auto_attack_target != NULL && may_use_attacks && attack_timer.Check()) {
-			if (!CombatRange(auto_attack_target)) {
+			if (!CombatRange(auto_attack_target)) 
+			{
 				Message_StringID(13,TARGET_TOO_FAR);
 			}
-			else if (auto_attack_target == this) {
+			else if (auto_attack_target == this) 
+			{
 				Message_StringID(13,TRY_ATTACKING_SOMEONE);
+			}
+			else if (!CheckLosFN(auto_attack_target))
+			{
+				//you can't see your target	
 			}
 			else if (auto_attack_target->GetHP() > -10) { // -10 so we can watch people bleed in PvP
 				if(CheckAAEffect(aaEffectRampage)){	//Dook- AA Destructive Force- AE attacks for duration
@@ -433,6 +439,10 @@ bool Client::Process() {
 			else if(auto_attack_target == this) {
 				//Message(13,"Try attacking someone else then yourself! (dual)");
 				Message_StringID(13,TRY_ATTACKING_SOMEONE);
+			}
+			else if (!CheckLosFN(auto_attack_target))
+			{
+				//you can't see your target	
 			}
 			else if(auto_attack_target->GetHP() > -10) {
 				float DualWieldProbability = (GetSkill(DUAL_WIELD) + GetLevel()) / 400.0f; // 78.0 max
