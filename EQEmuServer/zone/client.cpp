@@ -5371,14 +5371,17 @@ bool Client::TryReward(int32 claim_id)
 		{
 			if(ivr.items[y].item_id)
 			{
-				ItemInst *item_temp = database.CreateItem(ivr.items[y].item_id, ivr.items[y].charges);
-				if(item_temp)
+				if(claim->GetItem()->ItemClass == 1)
 				{
-					if(CheckLoreConflict(item_temp->GetItem()))
+					ItemInst *item_temp = database.CreateItem(ivr.items[y].item_id, ivr.items[y].charges);
+					if(item_temp)
 					{
-						lore_conflict = true;
+						if(CheckLoreConflict(item_temp->GetItem()))
+						{
+							lore_conflict = true;
+						}
+						claim->PutItem(y-1, *item_temp);
 					}
-					claim->PutItem(y-1, *item_temp);
 				}
 			}
 		}
