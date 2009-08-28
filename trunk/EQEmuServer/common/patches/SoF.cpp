@@ -1735,12 +1735,12 @@ ENCODE(OP_VetRewardsAvaliable)
 
 		vr->claim_count = ivr->claim_count;
 		vr->claim_id = ivr->claim_id;
-		vr->unknown004 = 1;
+		vr->number_available = ivr->number_available;
 		for(int x = 0; x < 8; ++x)
 		{
 			vr->items[x].item_id = ivr->items[x].item_id;
 			strcpy(vr->items[x].item_name, ivr->items[x].item_name);
-			vr->items[x].unknown004 = 1;
+			vr->items[x].charges = ivr->items[x].charges;
 		}
 
 		old_data += sizeof(InternalVeteranReward);

@@ -138,6 +138,12 @@ typedef enum {
 	EQClientSoF
 } EQClientVersion;
 
+struct ClientReward
+{
+	int32 id;
+	int32 amount;
+};
+
 class ClientFactory {
 public:
 	Client *MakeClient(EQStream* ieqs);
@@ -882,6 +888,8 @@ public:
 	Mob *GetBindSightTarget() { return bind_sight_target; }
 	void SetBindSightTarget(Mob *n) { bind_sight_target = n; }
 	const int16 GetBoatID() const { return BoatID; }
+	void SendRewards();
+	bool TryReward(int32 claim_id);
 
 protected:
 	friend class Mob;

@@ -8275,7 +8275,7 @@ void Client::CompleteConnect()
 		}
 	}
 
-	//Send Claim Info Here.
+	SendRewards();
 	CalcItemScale();
 }
 
@@ -10046,9 +10046,9 @@ void Client::Handle_OP_Report(const EQApplicationPacket *app)
 
 void Client::Handle_OP_VetClaimRequest(const EQApplicationPacket *app)
 {
-	if(app->size != sizeof(VeteranClaimRequest))
+	if(app->size < sizeof(VeteranClaimRequest))
 	{
-		LogFile->write(EQEMuLog::Debug, "Size mismatch on OP_VetClaimRequest: got %u expected %u", 
+		LogFile->write(EQEMuLog::Debug, "OP_VetClaimRequest size lower than expected: got %u expected at least %u", 
 			app->size, sizeof(VeteranClaimRequest));
 		DumpPacket(app);
 		return;
@@ -10058,14 +10058,28 @@ void Client::Handle_OP_VetClaimRequest(const EQApplicationPacket *app)
 
 	if(vcr->claim_id == 0xFFFFFFFF) //request update packet
 	{
+		SendRewards();
 	}
 	else //try to claim something!
 	{
-		Message(13, "Your claim has been rejected.");
-		EQApplicationPacket *vetapp = new EQApplicationPacket(OP_VetClaimReply, sizeof(VeteranClaimReply));
-		VeteranClaimReply * cr = (VeteranClaimReply*)vetapp->pBuffer;
-		strcpy(cr->name, GetName());
-		cr->claim_id = vcr->claim_id;
-		cr->reject_field = -1;
+		if(!TryReward(vcr->claim_id))
+		{
+			Message(13, "Your claim has been rejected.");
+			EQApplicationPacket *vetapp = new EQApplicationPacket(OP_VetClaimReply, sizeof(VeteranClaimReply));
+			VeteranClaimReply * cr = (VeteranClaimReply*)vetapp->pBuffer;
+			strcpy(cr->name, GetName());
+			cr->claim_id = vcr->claim_id;
+			cr->reject_field = -1;
+			FastQueuePacket(&vetapp);
+		}
+		else
+		{
+			EQApplicationPacket *vetapp = new EQApplicationPacket(OP_VetClaimReply, sizeof(VeteranClaimReply));
+			VeteranClaimReply * cr = (VeteranClaimReply*)vetapp->pBuffer;
+			strcpy(cr->name, GetName());
+			cr->claim_id = vcr->claim_id;
+			cr->reject_field = 0;
+			FastQueuePacket(&vetapp);
+		}
 	}
 }
