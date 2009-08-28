@@ -1718,6 +1718,39 @@ ENCODE(OP_RaidJoin)
 	delete[] __emu_buffer;
 }
 
+ENCODE(OP_VetRewardsAvaliable)
+{
+	EQApplicationPacket *inapp = *p;
+	unsigned char * __emu_buffer = inapp->pBuffer;
+
+	int32 count = ((*p)->Size() / sizeof(InternalVeteranReward));
+
+	EQApplicationPacket *outapp_create = new EQApplicationPacket(OP_VetRewardsAvaliable, (sizeof(structs::VeteranReward)*count));
+	uchar *old_data = __emu_buffer;
+	uchar *data = outapp_create->pBuffer;
+	for(int i = 0; i < count; ++i)
+	{
+		structs::VeteranReward *vr = (structs::VeteranReward*)data;
+		InternalVeteranReward *ivr = (InternalVeteranReward*)old_data;
+
+		vr->claim_count = ivr->claim_count;
+		vr->claim_id = ivr->claim_id;
+		vr->unknown004 = 1;
+		for(int x = 0; x < 8; ++x)
+		{
+			vr->items[x].item_id = ivr->items[x].item_id;
+			strcpy(vr->items[x].item_name, ivr->items[x].item_name);
+			vr->items[x].unknown004 = 1;
+		}
+
+		old_data += sizeof(InternalVeteranReward);
+		data += sizeof(structs::VeteranReward);
+	}
+	
+	dest->FastQueuePacket(&outapp_create);
+	delete[] __emu_buffer;
+}
+
 DECODE(OP_RaidInvite) {
 	DECODE_LENGTH_EXACT(structs::RaidGeneral_Struct);
 	SETUP_DIRECT_DECODE(RaidGeneral_Struct, structs::RaidGeneral_Struct);

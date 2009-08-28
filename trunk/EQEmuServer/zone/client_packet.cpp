@@ -360,6 +360,7 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_SetStartCity] = &Client::Handle_OP_SetStartCity;
 	ConnectedOpcodes[OP_ItemViewUnknown] = &Client::Handle_OP_Ignore;
 	ConnectedOpcodes[OP_Report] = &Client::Handle_OP_Report;
+	ConnectedOpcodes[OP_VetClaimRequest] = &Client::Handle_OP_VetClaimRequest;
 }
 
 int Client::HandlePacket(const EQApplicationPacket *app)
@@ -8274,6 +8275,7 @@ void Client::CompleteConnect()
 		}
 	}
 
+	//Send Claim Info Here.
 	CalcItemScale();
 }
 
@@ -10040,4 +10042,30 @@ void Client::Handle_OP_Report(const EQApplicationPacket *app)
 
 	CanUseReport = false;
 	database.AddReport(reporter, reported, current_string);
+}
+
+void Client::Handle_OP_VetClaimRequest(const EQApplicationPacket *app)
+{
+	if(app->size != sizeof(VeteranClaimRequest))
+	{
+		LogFile->write(EQEMuLog::Debug, "Size mismatch on OP_VetClaimRequest: got %u expected %u", 
+			app->size, sizeof(VeteranClaimRequest));
+		DumpPacket(app);
+		return;
+	}
+
+	VeteranClaimRequest *vcr = (VeteranClaimRequest*)app->pBuffer;
+
+	if(vcr->claim_id == 0xFFFFFFFF) //request update packet
+	{
+	}
+	else //try to claim something!
+	{
+		Message(13, "Your claim has been rejected.");
+		EQApplicationPacket *vetapp = new EQApplicationPacket(OP_VetClaimReply, sizeof(VeteranClaimReply));
+		VeteranClaimReply * cr = (VeteranClaimReply*)vetapp->pBuffer;
+		strcpy(cr->name, GetName());
+		cr->claim_id = vcr->claim_id;
+		cr->reject_field = -1;
+	}
 }

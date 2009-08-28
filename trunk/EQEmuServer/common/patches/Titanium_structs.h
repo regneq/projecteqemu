@@ -3137,15 +3137,24 @@ struct AnnoyingZoneUnknown_Struct {
 };
 
 struct GuildMemberUpdate_Struct {
-/*00*/	uint32 guild_id;	//not sure
-/*04*/	char	member_name[64];
-/*68*/	uint16	zone_id;
-/*70*/	uint16	instance_id;
-/*72*/	uint32	unknown072;
+/*000*/	uint32 guild_id;	//not sure
+/*004*/	char	member_name[64];
+/*068*/	uint16	zone_id;
+/*070*/	uint16	instance_id;
+/*072*/	uint32	unknown072;
 };
 
+struct VeteranRewardItem
+{
+/*000*/	int32 item_id;
+/*004*/	char item_name[256];
+};
 
-
+struct VeteranReward
+{
+/*000*/	int32 claim_id;
+/*004*/	VeteranRewardItem item;
+};
 
 	};	//end namespace structs
 };	//end namespace Titanium
