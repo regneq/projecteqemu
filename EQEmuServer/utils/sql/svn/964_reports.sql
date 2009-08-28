@@ -4,5 +4,5 @@ CREATE TABLE `reports` (
   `reported` varchar(64) default NULL,
   `reported_text` text,
   PRIMARY KEY  (`id`),
-  UNIQUE KEY `id` (`id`),
+  UNIQUE KEY `id` (`id`)
 ) ENGINE=InnoDB;
