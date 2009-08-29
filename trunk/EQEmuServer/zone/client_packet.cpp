@@ -1332,20 +1332,56 @@ void Client::Handle_OP_AutoAttack(const EQApplicationPacket *app)
 		return;
 	}
 
-	if (app->pBuffer[0] == 0) {
+	if (app->pBuffer[0] == 0) 
+	{
 		auto_attack = false;
 		if (IsAIControlled())
 			return;
 		attack_timer.Disable();
 		ranged_timer.Disable();
 		attack_dw_timer.Disable();
+
+		aa_los_me.x = 0;
+		aa_los_me.y = 0;
+		aa_los_me.z = 0;
+		aa_los_them.x = 0;
+		aa_los_them.y = 0;
+		aa_los_them.z = 0;
+		aa_los_them_mob = NULL;
 	}
-	else if (app->pBuffer[0] == 1) {
+	else if (app->pBuffer[0] == 1) 
+	{
 		auto_attack = true;
 		auto_fire = false;
 		if (IsAIControlled())
 			return;
 		SetAttackTimer();
+
+		if(GetTarget())
+		{
+			aa_los_them_mob = GetTarget();
+			aa_los_me.x = GetX();
+			aa_los_me.y = GetY();
+			aa_los_me.z = GetZ();
+			aa_los_them.x = aa_los_them_mob->GetX();
+			aa_los_them.y = aa_los_them_mob->GetY();
+			aa_los_them.z = aa_los_them_mob->GetZ();
+			if(CheckLosFN(aa_los_them_mob))
+				los_status = true;
+			else
+				los_status = false;
+		}
+		else
+		{
+			aa_los_me.x = GetX();
+			aa_los_me.y = GetY();
+			aa_los_me.z = GetZ();
+			aa_los_them.x = 0;
+			aa_los_them.y = 0;
+			aa_los_them.z = 0;
+			aa_los_them_mob = NULL;
+			los_status = false;
+		}
 	}
 }
 

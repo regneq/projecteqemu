@@ -909,6 +909,11 @@ protected:
 
 	Mob*	bind_sight_target;
 
+	VERTEX aa_los_me;
+	VERTEX aa_los_them;
+	Mob *aa_los_them_mob;
+	bool los_status;
+
 private:
 	eqFilterMode ClientFilters[_FilterCount];
 	sint32	HandlePacket(const EQApplicationPacket *app);
