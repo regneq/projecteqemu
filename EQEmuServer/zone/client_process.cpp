@@ -274,9 +274,50 @@ bool Client::Process() {
 				}
 			}
 		}
-		
+
 		Mob *auto_attack_target = GetTarget();
-		if (auto_attack && auto_attack_target != NULL && may_use_attacks && attack_timer.Check()) {
+		if (auto_attack && auto_attack_target != NULL && may_use_attacks && attack_timer.Check()) 
+		{
+			//check if change
+			//only check on primary attack.. sorry offhand you gotta wait!
+			if(aa_los_them_mob)
+			{
+				if(auto_attack_target != aa_los_them_mob ||
+					aa_los_me.x != GetX() ||
+					aa_los_me.y != GetY() ||
+					aa_los_me.z != GetZ() ||
+					aa_los_them.x != aa_los_them_mob->GetX() ||
+					aa_los_them.y != aa_los_them_mob->GetY() ||
+					aa_los_them.z != aa_los_them_mob->GetZ())
+				{
+					aa_los_them_mob = auto_attack_target;
+					aa_los_me.x = GetX();
+					aa_los_me.y = GetY();
+					aa_los_me.z = GetZ();
+					aa_los_them.x = aa_los_them_mob->GetX();
+					aa_los_them.y = aa_los_them_mob->GetY();
+					aa_los_them.z = aa_los_them_mob->GetZ();
+					if(CheckLosFN(auto_attack_target))
+						los_status = true;
+					else
+						los_status = false;
+				}
+			}
+			else
+			{
+				aa_los_them_mob = auto_attack_target;
+				aa_los_me.x = GetX();
+				aa_los_me.y = GetY();
+				aa_los_me.z = GetZ();
+				aa_los_them.x = aa_los_them_mob->GetX();
+				aa_los_them.y = aa_los_them_mob->GetY();
+				aa_los_them.z = aa_los_them_mob->GetZ();
+				if(CheckLosFN(auto_attack_target))
+					los_status = true;
+				else
+					los_status = false;
+			}
+
 			if (!CombatRange(auto_attack_target)) 
 			{
 				Message_StringID(13,TARGET_TOO_FAR);
@@ -285,7 +326,7 @@ bool Client::Process() {
 			{
 				Message_StringID(13,TRY_ATTACKING_SOMEONE);
 			}
-			else if (!CheckLosFN(auto_attack_target))
+			else if (!los_status)
 			{
 				//you can't see your target	
 			}
@@ -428,8 +469,8 @@ bool Client::Process() {
 		
 		// Kaiyodo - Check offhand attack timer
 		if(auto_attack && may_use_attacks && auto_attack_target != NULL
-			&& CanThisClassDualWield() && attack_dw_timer.Check()) {
-			
+			&& CanThisClassDualWield() && attack_dw_timer.Check()) 
+		{	
 			// Range check
 			if(!CombatRange(auto_attack_target)) {
 				//Message(13,"Your target is too far away, get closer! (dual)");
@@ -440,7 +481,7 @@ bool Client::Process() {
 				//Message(13,"Try attacking someone else then yourself! (dual)");
 				Message_StringID(13,TRY_ATTACKING_SOMEONE);
 			}
-			else if (!CheckLosFN(auto_attack_target))
+			else if (!los_status)
 			{
 				//you can't see your target	
 			}
