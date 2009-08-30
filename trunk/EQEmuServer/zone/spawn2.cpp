@@ -172,7 +172,7 @@ bool Spawn2::Process() {
 		if(tmp->spawn_limit > 0) {
 			if(!entity_list.LimitCheckType(npcid, tmp->spawn_limit)) {
 				_log(SPAWNS__MAIN, "Spawn2 %d: Spawn group %d yeilded NPC type %d, which is over its spawn limit (%d)", spawn2_id, spawngroup_id_, npcid, tmp->spawn_limit);
-				Reset();	//try again later
+				timer.Start(5000);	//try again in five seconds.
 				return(true);
 			}
 		}
