@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==09/08/2009==
+Trevius: SoF - Corrected disciplines for SoF clients so they can load up to 100 instead of being cut-off at 50 max.
+
 ==08/28/2009==
 KLS: Fix for bug with AI_Start not clearing feign death.
 KLS: Worked out basics for /claim, not yet implemented but worked out all the packets needed for sof/titanium.

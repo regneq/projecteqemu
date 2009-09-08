@@ -548,9 +548,7 @@ ENCODE(OP_PlayerProfile) {
 		OUT(buffs[r].reserved);
 		OUT(buffs[r].player_id);
 	}
-	//NOTE: new client supports 100 disciplines, our internal rep 
-	//only supports 50..
-	for(r = 0; r < 50; r++) {
+	for(r = 0; r < structs::MAX_PP_DISCIPLINES; r++) {
 		OUT(disciplines.values[r]);
 	}
 	OUT_array(recastTimers, structs::MAX_RECAST_TYPES);
