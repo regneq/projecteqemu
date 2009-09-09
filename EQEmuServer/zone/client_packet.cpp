@@ -70,6 +70,7 @@
 #include "ZoneConfig.h"
 #include "guild_mgr.h"
 #include "pathing.h"
+#include "watermap.h"
 
 using namespace std;
 
@@ -1318,6 +1319,15 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 #endif
 		safe_delete(outapp);
 	}
+
+	if(zone->watermap)
+	{
+		if(zone->watermap->InLava(x_pos, y_pos, z_pos))
+		{
+			CheckIncreaseSkill(SWIMMING, NULL, -5);
+		}
+	}
+
 	x_pos			= ppu->x_pos;
 	y_pos			= ppu->y_pos;
 	z_pos			= ppu->z_pos;
