@@ -2055,6 +2055,13 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 								i++;
 							}
 							break;
+						case 4:
+							if(r->members[x].member)
+							{
+								corpse->AllowMobLoot(r->members[x].member, i);
+								i++;
+							}
+							break;
 						}
 					}
 				}

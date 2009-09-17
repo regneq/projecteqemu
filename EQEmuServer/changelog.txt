@@ -1,5 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==09/16/2009==
+KLS: Added support for raid all loot (type 4), raids will default to this loot type now(may have some appearance issues).
+KLS: Added command #raidloot to change raid loot manually, this is needed for titanium if they want to switch from 4 to another and back to 4 since the client does not support type 4 natively.
+KLS: Added private_corpse to npctypes to dictate whether a corpse will unlock to outside people or not, by default(0) it will unlock.
+
 ==09/08/2009==
 Trevius: SoF - Corrected disciplines for SoF clients so they can load up to 100 instead of being cut-off at 50 max.
 

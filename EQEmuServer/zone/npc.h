@@ -271,6 +271,9 @@ public:
 	const bool GetCombatEvent() const { return combat_event; }
 	void SetCombatEvent(bool b) { combat_event = b; }
 
+	//The corpse we make can only be looted by people who got credit for the kill
+	const bool HasPrivateCorpse() const { return NPCTypedata->private_corpse; }
+
 	bool GetDepop() { return p_depop; }
 
 protected:

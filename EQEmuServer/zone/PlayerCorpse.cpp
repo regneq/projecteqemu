@@ -235,6 +235,12 @@ Corpse::Corpse(NPC* in_npc, ItemList* in_itemlist, int32 in_npctypeid, const NPC
 	{
 		corpse_decay_timer.SetTimer(RuleI(NPC,EmptyNPCCorpseDecayTimeMS)+1000);
 	}
+
+	if(in_npc->HasPrivateCorpse())
+	{
+		corpse_delay_timer.SetTimer(corpse_decay_timer.GetRemainingTime() + 1000);
+	}
+
 	// Added By Hogie -- End
 	for (int i=0; i<MAX_LOOTERS; i++)
 		looters[i] = 0;
