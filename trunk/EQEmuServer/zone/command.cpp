@@ -433,7 +433,8 @@ int command_init(void) {
 		command_add("instance","Modify Instances",200,command_instance) ||
 		command_add("setstartzone","[zoneid] - Set target's starting zone.  Set to zero to allow the player to use /setstartcity",80,command_setstartzone) || 
 		command_add("netstats","Gets the network stats for a stream.",200,command_netstats) ||
-		command_add("object","List|Add|Edit|Move|Rotate|Copy|Save|Undo|Delete - Manipulate static and tradeskill objects within the zone",100,command_object)
+		command_add("object","List|Add|Edit|Move|Rotate|Copy|Save|Undo|Delete - Manipulate static and tradeskill objects within the zone",100,command_object) ||
+		command_add("raidloot","LEADER|GROUPLEADER|SELECTED|ALL - Sets your raid loot settings if you have permission to do so.",0,command_raidloot)
 		)
 	{
 		command_deinit();
@@ -10597,3 +10598,59 @@ void command_bot(Client *c, const Seperator *sep) {
 	Bot::ProcessBotCommands(c, sep);
 }
 #endif
+
+void command_raidloot(Client *c, const Seperator *sep)
+{
+	if(!sep->arg[1][0]) {
+		c->Message(0, "Usage: #raidloot [LEADER/GROUPLEADER/SELECTED/ALL]");
+		return;
+	}
+
+	Raid *r = c->GetRaid();
+	if(r)
+	{
+		for(int x = 0; x < 72; ++x)
+		{
+			if(r->members[x].member == c)
+			{
+				if(r->members[x].IsRaidLeader == 0)
+				{
+					c->Message(0, "You must be the raid leader to use this command.");
+				}
+				else
+				{
+					break;
+				}
+			}
+		}
+
+		if(strcasecmp(sep->arg[1], "LEADER") == 0)
+		{
+			c->Message(15, "Loot type changed to: 1");
+			r->ChangeLootType(1);
+		}
+		else if(strcasecmp(sep->arg[1], "GROUPLEADER") == 0)
+		{
+			c->Message(15, "Loot type changed to: 2");
+			r->ChangeLootType(2);
+		}
+		else if(strcasecmp(sep->arg[1], "SELECTED") == 0)
+		{
+			c->Message(15, "Loot type changed to: 3");
+			r->ChangeLootType(3);
+		}
+		else if(strcasecmp(sep->arg[1], "ALL") == 0)
+		{
+			c->Message(15, "Loot type changed to: 4");
+			r->ChangeLootType(4);
+		}
+		else
+		{
+			c->Message(0, "Usage: #raidloot [LEADER/GROUPLEADER/SELECTED/ALL]");
+		}
+	}
+	else
+	{
+		c->Message(0, "You must be in a raid to use that command.");
+	}
+}

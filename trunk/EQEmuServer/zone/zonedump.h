@@ -113,6 +113,7 @@ struct NPCType
 	float	slow_mitigation;	// Slow mitigation % in decimal form.
 	int8	maxlevel;
 	int32	scalerate;
+	bool	private_corpse;
 };
 
 struct ZSDump_Spawn2 {

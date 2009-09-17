@@ -31,7 +31,7 @@ Raid::Raid(uint32 raidID)
 	leader = NULL;
 	memset(leadername, 0, 64);
 	locked = false;
-	LootType = 0;
+	LootType = 4;
 }
 
 Raid::Raid(Client* nLeader)
@@ -42,7 +42,7 @@ Raid::Raid(Client* nLeader)
 	memset(leadername, 0, 64);
 	strncpy(leadername, nLeader->GetName(), 64);
 	locked = false;
-	LootType = 0;
+	LootType = 4;
 }
 
 Raid::~Raid()
@@ -1179,7 +1179,7 @@ void Raid::SetRaidDetails()
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char* query = 0;
 	MYSQL_RES *result;
-	if (database.RunQuery(query,MakeAnyLenString(&query, "INSERT INTO raid_details SET raidid=%lu, loottype=1, locked=0", (unsigned long)GetID()),errbuf,&result)){
+	if (database.RunQuery(query,MakeAnyLenString(&query, "INSERT INTO raid_details SET raidid=%lu, loottype=4, locked=0", (unsigned long)GetID()),errbuf,&result)){
 		mysql_free_result(result);
 	}
 
