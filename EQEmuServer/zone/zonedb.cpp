@@ -1081,8 +1081,8 @@ const NPCType* ZoneDatabase::GetNPCType (uint32 id) {
 			"npc_types.Accuracy,"
 			"npc_types.slow_mitigation,"
 			"npc_types.maxlevel,"
-			"npc_types.scalerate,";
-			"npc_types.private_corpse ";
+			"npc_types.scalerate,"
+			"npc_types.private_corpse";
 
 		MakeAnyLenString(&query, "%s FROM npc_types WHERE id=%d", basic_query, id);
 
