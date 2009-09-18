@@ -142,6 +142,7 @@ public:
  	bool	AddBannedIP(char* bannedIP, const char* notes); //Lieka Edit:  Add IP address to the Banned_IPs table.
 	bool	CheckGMIPs(const char* loginIP, int32 account_id);
 	bool	AddGMIP(char* ip_address, char* name);
+	void	LoginIP(int32 AccountID, const char* LoginIP);
 
 	/*
 	 * Instancing Stuff
