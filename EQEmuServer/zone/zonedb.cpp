@@ -1082,7 +1082,8 @@ const NPCType* ZoneDatabase::GetNPCType (uint32 id) {
 			"npc_types.slow_mitigation,"
 			"npc_types.maxlevel,"
 			"npc_types.scalerate,"
-			"npc_types.private_corpse";
+			"npc_types.private_corpse,"
+			"npc_types.unique_spawn_by_name";
 
 		MakeAnyLenString(&query, "%s FROM npc_types WHERE id=%d", basic_query, id);
 
@@ -1249,6 +1250,7 @@ const NPCType* ZoneDatabase::GetNPCType (uint32 id) {
 				tmpNPCType->maxlevel = atoi(row[r++]);
 				tmpNPCType->scalerate = atoi(row[r++]);
 				tmpNPCType->private_corpse = atoi(row[r++]) == 1 ? true : false;
+				tmpNPCType->unique_spawn_by_name = atoi(row[r++]) == 1 ? true : false;
 
 				// If NPC with duplicate NPC id already in table,
 				// free item we attempted to add.

@@ -31,6 +31,7 @@
 #include "embperl.h"
 
 #include "raids.h"
+#include "client.h"
 
 #ifdef THIS	 /* this macro seems to leak out on some systems */
 #undef THIS		
@@ -537,6 +538,40 @@ XS(XS_Raid_GetID)
 	XSRETURN(1);
 }
 
+XS(XS_Raid_GetMember);
+XS(XS_Raid_GetMember) 
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Raid::GetMember(THIS, index)");
+	{
+		Raid * THIS;
+		Client*	RETVAL = NULL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Raid")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Raid *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Raid");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		int index = (int)SvUV(ST(1));
+		if (index < 0 || index > 71) 
+			RETVAL = NULL;
+		else {
+			if(THIS->members[index].member != NULL)
+				RETVAL = THIS->members[index].member->CastToClient();
+		}
+
+		ST(0) = sv_newmortal();
+		sv_setref_pv(ST(0), "Client", (void*)RETVAL);
+	}
+	XSRETURN(1);
+}
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -575,6 +610,7 @@ XS(boot_Raid)
 		newXSproto(strcpy(buf, "TeleportGroup"), XS_Raid_TeleportGroup, file, "$$$$$$$$");
 		newXSproto(strcpy(buf, "TeleportRaid"), XS_Raid_TeleportRaid, file, "$$$$$$$");
 		newXSproto(strcpy(buf, "GetID"), XS_Raid_GetID, file, "$");
+		newXSproto(strcpy(buf, "GetMember"), XS_Raid_GetMember, file, "$$");
 	XSRETURN_YES;
 }
 

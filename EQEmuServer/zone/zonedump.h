@@ -114,6 +114,7 @@ struct NPCType
 	int8	maxlevel;
 	int32	scalerate;
 	bool	private_corpse;
+	bool	unique_spawn_by_name;
 };
 
 struct ZSDump_Spawn2 {

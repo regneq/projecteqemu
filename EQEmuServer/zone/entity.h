@@ -322,6 +322,7 @@ public:
 	bool	LimitCheckType(int32 npc_type, int count);
 	bool	LimitCheckGroup(int32 spawngroup_id, int count);
 	bool	LimitCheckBoth(int32 npc_type, int32 spawngroup_id, int group_count, int type_count);
+	bool	LimitCheckName(const char* npc_name);
 
 	void	CheckClientAggro(Client *around);
 	Mob*	AICheckCloseAggro(Mob* sender, float iAggroRange, float iAssistRange);

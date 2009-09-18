@@ -316,6 +316,14 @@ int16 QuestManager::spawn_from_spawn2(int32 spawn2_id)
 			return 0;
 		}
 
+		if(tmp->unique_spawn_by_name)
+		{
+			if(!entity_list.LimitCheckName(tmp->name)) 
+			{
+				return 0;
+			}
+		}
+
 		if(tmp->spawn_limit > 0)
 		{
 			if(!entity_list.LimitCheckType(npcid, tmp->spawn_limit)) 
