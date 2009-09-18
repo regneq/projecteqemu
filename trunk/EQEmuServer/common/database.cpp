@@ -289,6 +289,17 @@ bool Database::AddGMIP(char* ip_address, char* name) {
 	return true;
 }
 
+void Database::LoginIP(int32 AccountID, const char* LoginIP)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+    char *query = 0;
+
+	if (!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO account_ip SET accid=%i, ip='%s' ON DUPLICATE KEY UPDATE count=count+1, lastused=now()", AccountID, LoginIP), errbuf)) {
+ 		cerr << "Error in Log IP query '" << query << "' " << errbuf << endl;
+ 	}
+ 	safe_delete_array(query);
+}
+
 sint16 Database::CheckStatus(int32 account_id)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];

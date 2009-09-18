@@ -310,7 +310,9 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 				if (!pZoning) {
 					SendExpansionInfo();
 					SendCharInfo();
+					database.LoginIP(cle->AccountID(), long2ip(GetIP()).c_str());
 				}
+
 			}
 			else {
 				// TODO: Find out how to tell the client wrong username/password
