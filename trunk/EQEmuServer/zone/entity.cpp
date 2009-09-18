@@ -3435,6 +3435,25 @@ bool EntityList::LimitCheckBoth(int32 npc_type, int32 spawngroup_id, int group_c
 	return(true);
 }
 
+bool EntityList::LimitCheckName(const char *npc_name)
+{
+	LinkedListIterator<NPC*> iterator(npc_list);
+	iterator.Reset();
+	while(iterator.MoreElements()) 
+	{
+		NPC* npc = iterator.GetData();
+		if(npc)
+		{
+			if(strcasecmp(npc_name, npc->GetRawNPCTypeName()) == 0)
+			{
+				return false;
+			}
+		}
+		iterator.Advance();
+	}
+	return true;
+}
+
 void EntityList::RadialSetLogging(Mob *around, bool enabled, bool clients, bool non_clients, float range) {
 	float range2 = range * range;
 	

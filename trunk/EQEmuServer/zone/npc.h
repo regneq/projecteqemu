@@ -273,6 +273,7 @@ public:
 
 	//The corpse we make can only be looted by people who got credit for the kill
 	const bool HasPrivateCorpse() const { return NPCTypedata->private_corpse; }
+	const char* GetRawNPCTypeName() const { return NPCTypedata->name; }
 
 	bool GetDepop() { return p_depop; }
 

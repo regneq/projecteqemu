@@ -649,7 +649,7 @@ XS(boot_Group)
 		newXSproto(strcpy(buf, "GetHighestLevel"), XS_Group_GetHighestLevel, file, "$");
 		newXSproto(strcpy(buf, "TeleportGroup"), XS_Group_TeleportGroup, file, "$$$$$$$");
 		newXSproto(strcpy(buf, "GetID"), XS_Group_GetID, file, "$");
-		newXSproto(strcpy(buf, "GetMember"), XS_Group_GetMember, file, "$");
+		newXSproto(strcpy(buf, "GetMember"), XS_Group_GetMember, file, "$$");
 	XSRETURN_YES;
 }
 
