@@ -1117,8 +1117,6 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte)
 		}
 #endif
 
-		Message(13, "Hate: %i", hate);
-
 		min_hit = min_hit * (100 + itembonuses.MinDamageModifier + spellbonuses.MinDamageModifier) / 100;
 
 		if (Hand==14) {
