@@ -773,7 +773,7 @@ int Mob::GetWeaponDamage(Mob *against, const Item_Struct *weapon_item) {
 		return dmg;
 }
 
-int Mob::GetWeaponDamage(Mob *against, const ItemInst *weapon_item)
+int Mob::GetWeaponDamage(Mob *against, const ItemInst *weapon_item, int32 *hate)
 {
 	_ZP(Mob_GetWeaponDamageB);
 	int dmg = 0;
@@ -827,6 +827,7 @@ int Mob::GetWeaponDamage(Mob *against, const ItemInst *weapon_item)
 				for(int x = 0; x < 5; x++){
 					if(weapon_item->GetAugment(x) && weapon_item->GetAugment(x)->GetItem()){
 						dmg += weapon_item->GetAugment(x)->GetItem()->Damage;
+						if (hate) *hate += weapon_item->GetAugment(x)->GetItem()->Damage + weapon_item->GetAugment(x)->GetItem()->ElemDmgAmt;
 					}
 				}
 				dmg = dmg <= 0 ? 1 : dmg;
@@ -837,6 +838,7 @@ int Mob::GetWeaponDamage(Mob *against, const ItemInst *weapon_item)
 		else{
 			if((GetClass() == MONK || GetClass() == BEASTLORD) && GetLevel() >= 30){
 				dmg = GetMonkHandToHandDamage();
+				if (hate) *hate += dmg;
 			}
 			else if(GetOwner() && GetLevel() >= RuleI(Combat, PetAttackMagicLevel)){ //pets wouldn't actually use this but...
 				dmg = 1;						   //it gives us an idea if we can hit
@@ -862,6 +864,7 @@ int Mob::GetWeaponDamage(Mob *against, const ItemInst *weapon_item)
 				for(int x = 0; x < 5; x++){
 					if(weapon_item->GetAugment(x) && weapon_item->GetAugment(x)->GetItem()){
 						dmg += weapon_item->GetAugment(x)->GetItem()->Damage;
+						if (hate) *hate += weapon_item->GetAugment(x)->GetItem()->Damage + weapon_item->GetAugment(x)->GetItem()->ElemDmgAmt;
 					}
 				}
 				dmg = dmg <= 0 ? 1 : dmg;
@@ -870,6 +873,7 @@ int Mob::GetWeaponDamage(Mob *against, const ItemInst *weapon_item)
 		else{
 			if(GetClass() == MONK || GetClass() == BEASTLORD){
 				dmg = GetMonkHandToHandDamage();
+				if (hate) *hate += dmg;
 			}
 			else{
 				dmg = 1;
@@ -943,8 +947,10 @@ int Mob::GetWeaponDamage(Mob *against, const ItemInst *weapon_item)
 			else
 				return 1;
 		}
-		else
+		else {
 			dmg += (banedmg + eledmg);
+			if (hate) *hate += banedmg;
+		}
 	}
 	else{
 		if(weapon_item && weapon_item->GetItem()){
@@ -979,6 +985,7 @@ int Mob::GetWeaponDamage(Mob *against, const ItemInst *weapon_item)
 			}
 		}
 		dmg += (banedmg + eledmg);
+		if (hate) *hate += banedmg;
 	}
 
 	if(dmg <= 0){
@@ -1022,6 +1029,9 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte)
 		return false;
 	}
 
+	if (GetFeigned())
+		return false; // Rogean: How can you attack while feigned? Moved up from Aggro Code.
+
 	
 	ItemInst* weapon;
 	if (Hand == 14)	// Kaiyodo - Pick weapon from the attacking hand
@@ -1048,7 +1058,10 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte)
 	/// Now figure out damage
 	int damage = 0;
 	int8 mylevel = GetLevel() ? GetLevel() : 1;
-	int weapon_damage = GetWeaponDamage(other, weapon);
+	int32 hate = 0;
+	if (weapon) hate = weapon->GetItem()->Damage + weapon->GetItem()->ElemDmgAmt;
+	int weapon_damage = GetWeaponDamage(other, weapon, &hate);
+	if (hate == 0 && weapon_damage > 1) hate = weapon_damage;
 	
 	//if weapon damage > 0 then we know we can hit the target with this weapon
 	//otherwise we cannot and we set the damage to -5 later on
@@ -1067,7 +1080,8 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte)
 		
 		int min_hit = 1;
 		int max_hit = (2*weapon_damage*GetDamageTable(skillinuse)) / 100;
-		int32 hate = 2*weapon_damage;
+		//int32 hate = 2*weapon_damage;
+		
 
 		if(GetLevel() < 10 && max_hit > 20)
 			max_hit = 20;
@@ -1103,6 +1117,8 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte)
 		}
 #endif
 
+		Message(13, "Hate: %i", hate);
+
 		min_hit = min_hit * (100 + itembonuses.MinDamageModifier + spellbonuses.MinDamageModifier) / 100;
 
 		if (Hand==14) {
@@ -1128,7 +1144,7 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte)
 		if(!other->CheckHitChance(this, skillinuse, Hand)) {
 			mlog(COMBAT__ATTACKS, "Attack missed. Damage set to 0.");
 			damage = 0;
-			other->AddToHateList(this, 0);
+			// other->AddToHateList(this, 0); // Rogean: Moved
 		} else {	//we hit, try to avoid it
 			other->AvoidDamage(this, damage);
 			other->MeleeMitigation(this, damage, min_hit);
@@ -1136,6 +1152,7 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte)
 			TryCriticalHit(other, skillinuse, damage);
 			mlog(COMBAT__DAMAGE, "Final damage after all reductions: %d", damage);
 
+			/* // Rogean: Moved.
 			if(damage > 0){
 				if(GetFeigned()) {
 					mlog(COMBAT__HITS, "Attacker %s avoids %d hate due to feign death", GetName(), hate);
@@ -1146,7 +1163,7 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte)
 				}
 			}
 			else
-				other->AddToHateList(this, 0);
+				other->AddToHateList(this, 0);*/
 		}
 
 		//riposte
@@ -1191,6 +1208,12 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte)
 	else{
 		damage = -5;
 	}
+
+
+	// Rogean: Hate Generation is on a per swing basis, regardless of a hit, miss, or block, its always the same.
+	// If we are this far, this means we are atleast making a swing.
+	if (!bRiposte) // Ripostes never generate any aggro.
+		other->AddToHateList(this, hate);
 	
 	///////////////////////////////////////////////////////////
 	//////    Send Attack Damage

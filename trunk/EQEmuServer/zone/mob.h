@@ -1023,7 +1023,7 @@ protected:
 	void ExecWeaponProc(uint16 spell_id, Mob *on);
 	virtual float GetProcChances(float &ProcBonus, float &ProcChance, uint16 weapon_speed = 30);
 	int GetWeaponDamage(Mob *against, const Item_Struct *weapon_item);
-	int GetWeaponDamage(Mob *against, const ItemInst *weapon_item);
+	int GetWeaponDamage(Mob *against, const ItemInst *weapon_item, int32 *hate = NULL);
 	int GetKickDamage() const;
 	int GetBashDamage() const;
 	virtual void DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, sint32 min_damage = 1, sint32 hate_override = -1);

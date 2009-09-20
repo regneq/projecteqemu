@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==09/20/2009==
+Rogean: Small (Big?) Aggro change, melee swings now generate same aggro regardless of hit/miss/dodged.
+Rogean: Aggro Formula changed to weapon_damage + dmg bonus + elemental dmg + (if applicable) bane dmg.
+
 ==09/18/2009==
 KLS: Fixed an error with Perl::Group::GetMember(index) added Perl::Raid::GetMember(index).
 KLS: Added new npc types field: 'unique_spawn_by_name'.  NPC will only attempt to spawn if there isn't already a npc with it's exact name in the zone already.
