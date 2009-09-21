@@ -359,6 +359,7 @@ RULE_INT ( Adventure, ItemIDToEnablePorts, 41000 ) //0 to disable, otherwise usi
 RULE_INT ( Adventure, LDoNTrapDistanceUse, 100 )
 RULE_REAL ( Adventure, LDoNBaseTrapDifficulty, 15.0 )
 RULE_REAL ( Adventure, LDoNCriticalFailTrapThreshold, 10.0 )
+RULE_INT ( Adventure, LDoNAdventureExpireTime, 1800) //30 minutes to expire
 RULE_CATEGORY_END()
 
 RULE_CATEGORY ( AA )

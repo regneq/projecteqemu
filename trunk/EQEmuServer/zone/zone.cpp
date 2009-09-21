@@ -1183,7 +1183,7 @@ bool Zone::Process() {
 					if(ad->time_completed > 0)
 					{
 						//if time is up then destroy this adventure
-						if((1800 + ad->time_completed) <= tv.tv_sec)
+						if((RuleI(Adventure, LDoNAdventureExpireTime) + ad->time_completed) <= tv.tv_sec)
 						{
 							if(ad->status == 2)
 							{
@@ -1221,7 +1221,7 @@ bool Zone::Process() {
 							{
 								database.UpdateAllAdventureStatsEntry(ad->id, ad->ai->theme, false);
 								sint32 time_since = tv.tv_sec - (ad->ai->duration + ad->time_zoned);
-								if(time_since >= 1800) //we're over time on our instance
+								if(time_since >= RuleI(Adventure, LDoNAdventureExpireTime)) //we're over time on our instance
 								{
 									database.DestroyAdventure(ad->id);
 									ServerPacket *pack = new ServerPacket(ServerOP_AdventureDestroy, sizeof(ServerAdventureDestroy_Struct));
@@ -1263,11 +1263,11 @@ bool Zone::Process() {
 									safe_delete(pack_msg);
 
 									//set time on instance to 30 min
-									database.SetInstanceDuration(ad->instance_id, (1800-time_since));
+									database.SetInstanceDuration(ad->instance_id, (RuleI(Adventure, LDoNAdventureExpireTime)-time_since));
 									ServerPacket *instance_pack = new ServerPacket(ServerOP_InstanceUpdateTime, sizeof(ServerInstanceUpdateTime_Struct));
 									ServerInstanceUpdateTime_Struct *iut = (ServerInstanceUpdateTime_Struct*)instance_pack->pBuffer;
 									iut->instance_id = ad->instance_id;
-									iut->new_duration = (1800-time_since);
+									iut->new_duration = (RuleI(Adventure, LDoNAdventureExpireTime)-time_since);
 									worldserver.SendPacket(instance_pack);
 									safe_delete(instance_pack);
 								}
@@ -2313,10 +2313,11 @@ void Zone::UpdateAdventureCount(AdventureDetails *ad)
 		ServerPacket *pack = new ServerPacket(ServerOP_AdventureCount, sizeof(ServerAdventureCount_Struct));
 		ServerAdventureCount_Struct *ac = (ServerAdventureCount_Struct*)pack->pBuffer;
 		ac->id = ad->id;
+		ac->count = ++ad->count;
 		worldserver.SendPacket(pack);
 		safe_delete(pack);
 
-		if(ad->ai->type_count == (ad->count+1))
+		if(ad->ai->type_count == (ad->count))
 		{
 			timeval tv;
 			gettimeofday(&tv, NULL);
@@ -2326,8 +2327,8 @@ void Zone::UpdateAdventureCount(AdventureDetails *ad)
 			if(ad->status == 1)
 			{
 				database.UpdateAdventureCompleted(ad->id, tv.tv_sec);
-				database.RemoveClientsFromInstance(ad->instance_id);
 				database.RemovePlayersFromAdventure(ad->id);
+				database.RemoveClientsFromInstance(ad->instance_id);
 
 				ServerPacket *pack2 = new ServerPacket(ServerOP_AdventureFinish, sizeof(ServerAdventureFinish_Struct));
 				ServerAdventureFinish_Struct *afin = (ServerAdventureFinish_Struct*)pack2->pBuffer;
@@ -2348,18 +2349,18 @@ void Zone::UpdateAdventureCount(AdventureDetails *ad)
 				worldserver.SendPacket(pack);
 				safe_delete(pack);
 
-				database.SetInstanceDuration(ad->instance_id, 1800);
+				database.SetInstanceDuration(ad->instance_id, RuleI(Adventure, LDoNAdventureExpireTime));
 				ServerPacket *instance_pack = new ServerPacket(ServerOP_InstanceUpdateTime, sizeof(ServerInstanceUpdateTime_Struct));
 				ServerInstanceUpdateTime_Struct *iut = (ServerInstanceUpdateTime_Struct*)instance_pack->pBuffer;
 				iut->instance_id = ad->instance_id;
-				iut->new_duration = 1800;
+				iut->new_duration = RuleI(Adventure, LDoNAdventureExpireTime);
 				worldserver.SendPacket(instance_pack);
 				safe_delete(instance_pack);
 			}
 			else if(ad->status == 2)
 			{
-				database.RemoveClientsFromInstance(ad->instance_id);
 				database.RemovePlayersFromAdventure(ad->id);
+				database.RemoveClientsFromInstance(ad->instance_id);
 
 				ServerPacket *pack2 = new ServerPacket(ServerOP_AdventureFinish, sizeof(ServerAdventureFinish_Struct));
 				ServerAdventureFinish_Struct *afin = (ServerAdventureFinish_Struct*)pack2->pBuffer;

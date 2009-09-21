@@ -845,6 +845,7 @@ struct ServerAdventureUpdate_Struct
 struct ServerAdventureCount_Struct
 {
 	int32 id;
+	int32 count;
 };
 
 struct ServerAdventureFinish_Struct
