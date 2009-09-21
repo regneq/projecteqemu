@@ -3417,76 +3417,76 @@ void Client::SendPopupToClient(const char *Title, const char *Text, int32 PopupI
 
 void Client::KeyRingLoad()
 {
-char errbuf[MYSQL_ERRMSG_SIZE];
-char *query = 0;
-MYSQL_RES *result;
-MYSQL_ROW row;
-query = new char[256];
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+	query = new char[256];
 
-sprintf(query, "SELECT item_id FROM keyring WHERE char_id='%i' ORDER BY item_id",character_id);
-if (database.RunQuery(query, strlen(query), errbuf, &result))
-{
-safe_delete_array(query);
-while(0 != (row = mysql_fetch_row(result))){
-keyring.push_back(atoi(row[0]));
-}
-mysql_free_result(result);
-}else {
-cerr << "Error in Client::KeyRingLoad query '" << query << "' " << errbuf << endl;
-safe_delete_array(query);
-return;
-}
+	sprintf(query, "SELECT item_id FROM keyring WHERE char_id='%i' ORDER BY item_id",character_id);
+	if (database.RunQuery(query, strlen(query), errbuf, &result))
+	{
+		safe_delete_array(query);
+		while(0 != (row = mysql_fetch_row(result))){
+			keyring.push_back(atoi(row[0]));
+		}
+		mysql_free_result(result);
+	}else {
+		cerr << "Error in Client::KeyRingLoad query '" << query << "' " << errbuf << endl;
+		safe_delete_array(query);
+		return;
+	}
 }
 
 void Client::KeyRingAdd(int32 item_id)
 {
-if(0==item_id)return;
-char errbuf[MYSQL_ERRMSG_SIZE];
-char *query = 0;
-int32 affected_rows = 0;
-query = new char[256];
-bool bFound = KeyRingCheck(item_id);
-if(!bFound){
-sprintf(query, "INSERT INTO keyring(char_id,item_id) VALUES(%i,%i)",character_id,item_id);
-if(database.RunQuery(query, strlen(query), errbuf, 0, &affected_rows))
-{
-Message(4,"Added to keyring.");
-safe_delete_array(query);
-}
-else
-{
-cerr << "Error in Doors::HandleClick query '" << query << "' " << errbuf << endl;
-safe_delete_array(query);
-return;
-}
-keyring.push_back(item_id);
-}
+	if(0==item_id)return;
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	int32 affected_rows = 0;
+	query = new char[256];
+	bool bFound = KeyRingCheck(item_id);
+	if(!bFound){
+		sprintf(query, "INSERT INTO keyring(char_id,item_id) VALUES(%i,%i)",character_id,item_id);
+		if(database.RunQuery(query, strlen(query), errbuf, 0, &affected_rows))
+		{
+			Message(4,"Added to keyring.");
+			safe_delete_array(query);
+		}
+		else
+		{
+			cerr << "Error in Doors::HandleClick query '" << query << "' " << errbuf << endl;
+			safe_delete_array(query);
+			return;
+		}
+		keyring.push_back(item_id);
+	}
 }
 
 bool Client::KeyRingCheck(int32 item_id)
 {
-for(std::list<int32>::iterator iter = keyring.begin();
-iter != keyring.end();
-++iter)
-{
-if(*iter == item_id)
-return true;
-}
-return false;
+	for(std::list<int32>::iterator iter = keyring.begin();
+		iter != keyring.end();
+		++iter)
+	{
+		if(*iter == item_id)
+			return true;
+	}
+	return false;
 }
 
 void Client::KeyRingList()
 {
-Message(4,"Keys on Keyring:");
-const Item_Struct *item = 0;
-for(std::list<int32>::iterator iter = keyring.begin();
-iter != keyring.end();
-++iter)
-{
-if ((item = database.GetItem(*iter))!=NULL) {
-Message(4,item->Name);
-}
-}
+	Message(4,"Keys on Keyring:");
+	const Item_Struct *item = 0;
+	for(std::list<int32>::iterator iter = keyring.begin();
+		iter != keyring.end();
+		++iter)
+	{
+		if ((item = database.GetItem(*iter))!=NULL) {
+			Message(4,item->Name);
+		}
+	}
 }
 
 void Client::MelodyAdvanceSong() {
@@ -4378,7 +4378,7 @@ void Client::SendAdventureDetail()
 	
 	if(ad->time_completed > 0)
 	{
-		arr->timeleft = (ad->time_completed + 1800) - tv.tv_sec;
+		arr->timeleft = (ad->time_completed + RuleI(Adventure, LDoNAdventureExpireTime)) - tv.tv_sec;
 	}
 	else if(ad->instance_id > 0)
 	{
