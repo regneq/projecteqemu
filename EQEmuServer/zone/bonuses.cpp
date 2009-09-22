@@ -428,8 +428,9 @@ void Client::CalcAABonuses(StatBonuses* newbon) {
 
 //A lot of the normal spell functions (IsBlankSpellEffect, etc) are set for just spells (in zone/spdat.h). For now, we'll just put them directly into the code and comment with the corresponding normal function
 //Maybe we'll fix it later? :-D
-void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon) {
-	if (!(slots > 0))	//sanity check. why bother if no slots to fill?
+void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon) 
+{
+	if(slots < 0)	//sanity check. why bother if no slots to fill?
 		return;
 
 	//from AA_Ability struct
@@ -437,6 +438,12 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon) {
 	int32 base1 = 0;
 	int32 base2 = 0;	//only really used for SE_RaiseStatCap & SE_ReduceSkillTimer in aa_effects table
 	int32 slot = 0;
+
+	std::map<uint32, std::map<uint32, AA_Ability> >::const_iterator find_iter = aa_effects.find(aaid);
+	if(find_iter == aa_effects.end())
+	{
+		return;
+	}
 
 	for (map<uint32, AA_Ability>::const_iterator iter = aa_effects[aaid].begin(); iter != aa_effects[aaid].end(); ++iter) {
 		effect = iter->second.skill_id;
