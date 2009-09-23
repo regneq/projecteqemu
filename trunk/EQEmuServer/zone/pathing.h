@@ -39,8 +39,8 @@ struct PathNode {
 };
 
 struct PathFileHeader {
-	long version;
-	long PathNodeCount;
+	int32 version;
+	int32 PathNodeCount;
 };
 
 #pragma pack()
