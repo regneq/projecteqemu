@@ -430,7 +430,7 @@ void Client::CalcAABonuses(StatBonuses* newbon) {
 //Maybe we'll fix it later? :-D
 void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon) 
 {
-	if(slots < 0)	//sanity check. why bother if no slots to fill?
+	if(slots == 0)	//sanity check. why bother if no slots to fill?
 		return;
 
 	//from AA_Ability struct
