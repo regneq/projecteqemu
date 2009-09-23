@@ -1967,7 +1967,7 @@ char* Database::GetGroupLeaderForLogin(const char* name,char* leaderbuf){
 void Database::SetGroupLeaderName(int32 gid, const char* name){
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
-	if (!RunQuery(query, MakeAnyLenString(&query, "Replace into group_leaders set gid=%i, leadername='%s'",gid,name), errbuf))
+	if (!RunQuery(query, MakeAnyLenString(&query, "Replace into group_leaders set gid=%lu, leadername='%s'",(unsigned long)gid,name), errbuf))
 		printf("Unable to set group leader: %s\n",errbuf);
 
 	safe_delete_array(query);
@@ -1979,7 +1979,7 @@ char *Database::GetGroupLeadershipInfo(int32 gid, char* leaderbuf, char* assist,
 	MYSQL_RES* result;
 	MYSQL_ROW row;
 
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT leadername, assist, marknpc, leadershipaa FROM group_leaders WHERE gid=%i",gid),
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT leadername, assist, marknpc, leadershipaa FROM group_leaders WHERE gid=%lu",(unsigned long)gid),
 		     errbuf, &result)) {
 
 		safe_delete_array(query);
