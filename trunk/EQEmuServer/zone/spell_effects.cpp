@@ -3681,9 +3681,27 @@ sint16 Client::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id) {
 			}
 			break;
 		case SE_ReduceSpellHate:
-			if (type == focusHateReduction && focus_spell.base[i] > value)
+			if (type == focusHateReduction)
 			{
-				value = focus_spell.base[i];
+				if(value != 0)
+				{
+					if(value > 0)
+					{
+						if(focus_spell.base[i] > value)
+						{
+							value = focus_spell.base[i];
+						}
+					}
+					else
+					{
+						if(focus_spell.base[i] < value)
+						{
+							value = focus_spell.base[i];
+						}
+					}
+				}
+				else
+					value = focus_spell.base[i];
 			}
 			break;
 #if EQDEBUG >= 6
