@@ -37,7 +37,7 @@ include makefile.common
 	for f in $(SF); \
 	do \
 		i=`echo $$f | sed -e 's#.obj/#../common/#g' -e 's/\.o/.cpp/g' `; \
-		gcc -MM $(COPTS) $(PERL_FLAGS) $$i | sed "s#^[^ ]*:#$$f:#g"; \
+		gcc -MM $(COPTS) $$i | sed "s#^[^ ]*:#$$f:#g"; \
 	done  >.depend
 
 

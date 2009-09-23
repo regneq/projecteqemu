@@ -10,16 +10,16 @@ OUT=-o
 LINKOUT=-o 
 NOLINK=-c
 LINKER=gcc
-MYSQL_FLAGS=-I/usr/include/mysql
-MYSQL_LIB=-L/usr/lib/mysql -lmysqlclient -lz -lcrypt -lnsl -lm -lc -lnss_files -lnss_dns -lresolv -lc -lnss_files -lnss_dns -lresolv
+MYSQL_FLAGS=$(shell mysql_config --cflags)
+MYSQL_LIB=$(shell mysql_config --libs)
 DFLAGS=-DEQDEBUG=5 -DCATCH_CRASH -DNO_PIDLOG -DSHAREMEM -DFIELD_ITEMS -DCOMBINED -DAPP_OPCODE_SIZE=2 -Di386
 #try commenting out the following three lines to disable embedded perl
-PERL_FLAGS=perl -MExtUtils::Embed -e ccopts
-PERL_LIB=perl -MExtUtils::Embed -e ldopts
+PERL_FLAGS=$(shell perl -MExtUtils::Embed -e ccopts)
+PERL_LIB=$(shell perl -MExtUtils::Embed -e ldopts)
 DFLAGS+=-DEMBPERL -DEMBPERL_PLUGIN -DHAS_UNION_SEMUN
 WFLAGS=-fpermissive -Wall -Wuninitialized -Wwrite-strings -Wcast-qual -Wno-deprecated  -Wcomment -Wcast-align
-COPTS=$(WFLAGS) -O -g -march=i686 -pthread -pipe -D_GNU_SOURCE -DINVERSEXY -DFX -DZONE $(DFLAGS) $(MYSQL_FLAGS) `$(PERL_FLAGS)`
-LINKOPTS=$(COPTS) -rdynamic -L. -lstdc++ -ldl $(MYSQL_LIB) `$(PERL_LIB)`
+COPTS=$(WFLAGS) -O -g -march=i686 -pthread -pipe -D_GNU_SOURCE -DINVERSEXY -DFX -DZONE $(DFLAGS) $(MYSQL_FLAGS) $(PERL_FLAGS)
+LINKOPTS=$(COPTS) -rdynamic -L. -lstdc++ -ldl $(MYSQL_LIB) $(PERL_LIB)
 
 all: zone
 
@@ -31,7 +31,7 @@ include makefile.common
 	for f in $(SF); \
 	do \
 		i=`echo $$f | sed -e 's#.obj/#../common/#g' -e 's/\.o/.cpp/g' `; \
-		gcc -MM $(COPTS) `$(PERL_FLAGS)` $$i | sed "s#^[^ ]*:#$$f:#g"; \
+		gcc -MM $(COPTS) $$i | sed "s#^[^ ]*:#$$f:#g"; \
 	done  >.depend
 
 wine:

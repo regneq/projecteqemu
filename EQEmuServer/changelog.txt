@@ -1,7 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
-==09/20/2009==
+==09/23/2009==
 gaeorn: small fix to pathing code for 64bit
+gaeorn: a few changes to makefiles to clean things up
 
 ==09/20/2009==
 Rogean: Small (Big?) Aggro change, melee swings now generate same aggro regardless of hit/miss/dodged.

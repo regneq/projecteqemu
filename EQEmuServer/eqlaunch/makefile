@@ -10,8 +10,8 @@ OUT=-o
 LINKOUT=-o 
 NOLINK=-c
 LINKER=gcc
-MYSQL_FLAGS=-I/usr/include/mysql
-MYSQL_LIB=-L/usr/lib/mysql -lmysqlclient -lz -lcrypt -lnsl -lm -lc -lnss_files -lnss_dns -lresolv -lc -lnss_files -lnss_dns -lresolv
+MYSQL_FLAGS=$(shell mysql_config --cflags)
+MYSQL_LIB=$(shell mysql_config --libs)
 DFLAGS=-DEQDEBUG=5
 WFLAGS=-Wall -Wuninitialized -Wwrite-strings -Wcast-qual -Wno-deprecated  -Wcomment -Wcast-align
 COPTS=$(WFLAGS) -O -g -march=i686 -pthread -pipe -DEQLAUNCH $(DFLAGS) $(MYSQL_FLAGS)
@@ -25,5 +25,5 @@ include makefile.common
 
 .depend depend:
 	echo $(SF) "" | sed -e 's#.obj/#../common/#g' -e 's/\.o/.cpp/g' | \
-	xargs gcc -MM $(COPTS) `$(PERL_FLAGS)` >.depend
+	xargs gcc -MM $(COPTS) >.depend
 
