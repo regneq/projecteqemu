@@ -232,33 +232,31 @@ Trap* EntityList::FindNearbyTrap(Mob* searcher, float max_dist) {
 }
 
 Mob* EntityList::GetTrapTrigger(Trap* trap) {
-	LinkedListIterator<Client*> iterator(client_list);
-
 	Mob* savemob = 0;
-	iterator.Reset();
-	
 	float xdiff, ydiff, zdiff;
-	
 	float maxdist = trap->radius * trap->radius;
-	
-	while(iterator.MoreElements()) {
-		Client* cur = iterator.GetData();
-		zdiff = cur->GetZ() - trap->z;
-		if(zdiff < 0)
-			zdiff = 0 - zdiff;
-		
-		xdiff = cur->GetX() - trap->x;
-		ydiff = cur->GetY() - trap->y;
-		if ((xdiff*xdiff + ydiff*ydiff) <= maxdist
-			&& zdiff < trap->maxzdiff)
-		{
-			if (MakeRandomInt(0,100) < trap->chance)
-				return(cur);
-			else
-				savemob = cur;
+
+	for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+		Client* cur = *itr;
+
+		if(cur) {
+			zdiff = cur->GetZ() - trap->z;
+
+			if(zdiff < 0)
+				zdiff = 0 - zdiff;
+
+			xdiff = cur->GetX() - trap->x;
+			ydiff = cur->GetY() - trap->y;
+
+			if ((xdiff * xdiff + ydiff * ydiff) <= maxdist && zdiff < trap->maxzdiff) {
+				if (MakeRandomInt(0, 100) < trap->chance)
+					return cur;
+				else
+					savemob = cur;
+			}
 		}
-		iterator.Advance();
 	}
+
 	return savemob;
 }
 

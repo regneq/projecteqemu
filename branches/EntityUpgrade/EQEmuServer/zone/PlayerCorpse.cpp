@@ -807,7 +807,7 @@ void Corpse::MakeLootRequestPackets(Client* client, const EQApplicationPacket* a
 		BeingLootedBy = 0xFFFFFFFF;
 	if (this->BeingLootedBy != 0xFFFFFFFF) {
 		// lets double check....
-		Entity* looter = entity_list.GetID(this->BeingLootedBy);
+		Entity* looter = entity_list.GetByEntityID(this->BeingLootedBy);
 		if (looter == 0)
 			this->BeingLootedBy = 0xFFFFFFFF;
 	}

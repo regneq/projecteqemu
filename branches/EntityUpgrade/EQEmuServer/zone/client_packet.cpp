@@ -2247,7 +2247,7 @@ void Client::Handle_OP_Assist(const EQApplicationPacket *app)
 	}
 
 	EntityId_Struct* eid = (EntityId_Struct*)app->pBuffer;
-	Entity* entity = entity_list.GetID(eid->entity_id);
+	Entity* entity = entity_list.GetByEntityID(eid->entity_id);
 
 	EQApplicationPacket* outapp = app->Copy();
 	eid = (EntityId_Struct*)outapp->pBuffer;
@@ -2323,8 +2323,8 @@ void Client::Handle_OP_DuelResponse(const EQApplicationPacket *app)
 	if(app->size != sizeof(DuelResponse_Struct))
 		return;
 	DuelResponse_Struct* ds = (DuelResponse_Struct*) app->pBuffer;
-	Entity* entity = entity_list.GetID(ds->target_id);
-	Entity* initiator = entity_list.GetID(ds->entity_id);
+	Entity* entity = entity_list.GetByEntityID(ds->target_id);
+	Entity* initiator = entity_list.GetByEntityID(ds->entity_id);
 	if(!entity->IsClient() || !initiator->IsClient())
 		return;
 
@@ -2345,8 +2345,8 @@ void Client::Handle_OP_DuelResponse2(const EQApplicationPacket *app)
 		return;
 
 	Duel_Struct* ds = (Duel_Struct*) app->pBuffer;
-	Entity* entity = entity_list.GetID(ds->duel_target);
-	Entity* initiator = entity_list.GetID(ds->duel_initiator);
+	Entity* entity = entity_list.GetByEntityID(ds->duel_target);
+	Entity* initiator = entity_list.GetByEntityID(ds->duel_initiator);
 
 	if (entity && initiator && entity == this && initiator->IsClient()) {
 		EQApplicationPacket* outapp = new EQApplicationPacket(OP_RequestDuel, sizeof(Duel_Struct));
@@ -2385,7 +2385,7 @@ void Client::Handle_OP_RequestDuel(const EQApplicationPacket *app)
 	int32 duel = ds->duel_initiator;
 	ds->duel_initiator = ds->duel_target;
 	ds->duel_target = duel;
-	Entity* entity = entity_list.GetID(ds->duel_target);
+	Entity* entity = entity_list.GetByEntityID(ds->duel_target);
 	if(GetID() != ds->duel_target && entity->IsClient() && (entity->CastToClient()->IsDueling() && entity->CastToClient()->GetDuelTarget() != 0)) {
 		Message_StringID(10,DUEL_CONSIDERING,entity->GetName());
 		return;
@@ -3059,7 +3059,7 @@ void Client::Handle_OP_EndLootRequest(const EQApplicationPacket *app)
 		return;
 	}
 
-	Entity* entity = entity_list.GetID(*((int16*)app->pBuffer));
+	Entity* entity = entity_list.GetByEntityID(*((int16*)app->pBuffer));
 	if (entity == 0) {
 		//DumpPacket(app);
 		Message(13, "Error: OP_EndLootRequest: Corpse not found (ent = 0)");
@@ -3084,7 +3084,7 @@ void Client::Handle_OP_LootRequest(const EQApplicationPacket *app)
 		return;
 	}
 
-	Entity* ent = entity_list.GetID(*((int32*)app->pBuffer));
+	Entity* ent = entity_list.GetByEntityID(*((int32*)app->pBuffer));
 	if (ent == 0) {
 		Message(13, "Error: OP_LootRequest: Corpse not found (ent = 0)");
 		Corpse::SendLootReqErrorPacket(this);
@@ -3228,7 +3228,7 @@ void Client::Handle_OP_LootItem(const EQApplicationPacket *app)
 	*/
 
 	EQApplicationPacket* outapp = 0;
-	Entity* entity = entity_list.GetID(*((int16*)app->pBuffer));
+	Entity* entity = entity_list.GetByEntityID(*((int16*)app->pBuffer));
 	if (entity == 0) {
 		Message(13, "Error: OP_LootItem: Corpse not found (ent = 0)");
 		outapp = new EQApplicationPacket(OP_LootComplete, 0);
@@ -4960,7 +4960,7 @@ void Client::Handle_OP_ClickObject(const EQApplicationPacket *app)
 	}
 
 	ClickObject_Struct* click_object = (ClickObject_Struct*)app->pBuffer;
-	Entity* entity = entity_list.GetID(click_object->drop_id);
+	Entity* entity = entity_list.GetByEntityID(click_object->drop_id);
 	//TODO: should enforce range checking here.
 	if (entity && entity->IsObject()) {
 		Object* object = entity->CastToObject();

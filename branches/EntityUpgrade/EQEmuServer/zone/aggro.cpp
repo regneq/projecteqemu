@@ -35,21 +35,22 @@ extern Zone* zone;
 void EntityList::CheckClientAggro(Client *around) {
 	_ZP(EntityList_CheckClientAggro);
 
-	LinkedListIterator<Mob*> iterator(mob_list);
-	for(iterator.Reset(); iterator.MoreElements(); iterator.Advance()) {
-		_ZP(EntityList_CheckClientAggro_Loop);
-		Mob* mob = iterator.GetData();
-		if(mob->IsClient())	//also ensures that mob != around
-			continue;
-		
-		if(mob->CheckWillAggro(around)) {
-			if(mob->IsEngaged())
-			{
-				mob->AddToHateList(around);
-			}
-			else
-			{
-				mob->AddToHateList(around, mob->GetLevel());
+	for(list<Mob*>::iterator itr = mob_list.begin(); itr != mob_list.end(); itr++) {
+		Mob* mob = *itr;
+
+		if(mob) {
+			_ZP(EntityList_CheckClientAggro_Loop);
+
+			if(mob->IsClient())	//also ensures that mob != around
+				continue;
+
+			if(mob->CheckWillAggro(around)) {
+				if(mob->IsEngaged()) {
+					mob->AddToHateList(around);
+				}
+				else {
+					mob->AddToHateList(around, mob->GetLevel());
+				}
 			}
 		}
 	}
@@ -86,26 +87,28 @@ void EntityList::DescribeAggro(Client *towho, NPC *from_who, float d, bool verbo
 		towho->Message(0, ".. I am on faction %s (%d)\n", namebuf, my_primary);
 	}
 	
-	LinkedListIterator<Mob*> iterator(mob_list);
-	for(iterator.Reset(); iterator.MoreElements(); iterator.Advance()) {
-		Mob* mob = iterator.GetData();
-		if(mob->IsClient())	//also ensures that mob != around
-			continue;
-		
-		if(mob->DistNoRoot(*from_who) > d2)
-			continue;
-		
-		if(engaged) {
-			int32 amm = from_who->GetHateAmount(mob);
-			if(amm == 0) {
-				towho->Message(0, "... %s is not on my hate list.", mob->GetName());
-			} else {
-				towho->Message(0, "... %s is on my hate list with value %lu", mob->GetName(), (unsigned long)amm);
-			}
-		} else if(!check_npcs && mob->IsNPC()) {
+	for(list<Mob*>::iterator itr = mob_list.begin(); itr != mob_list.end(); itr++) {
+		Mob* mob = *itr;
+
+		if(mob) {
+			if(mob->IsClient())	//also ensures that mob != around
+				continue;
+
+			if(mob->DistNoRoot(*from_who) > d2)
+				continue;
+
+			if(engaged) {
+				int32 amm = from_who->GetHateAmount(mob);
+				if(amm == 0) {
+					towho->Message(0, "... %s is not on my hate list.", mob->GetName());
+				} else {
+					towho->Message(0, "... %s is on my hate list with value %lu", mob->GetName(), (unsigned long)amm);
+				}
+			} else if(!check_npcs && mob->IsNPC()) {
 				towho->Message(0, "... %s is an NPC and my npc_aggro is disabled.", mob->GetName());
-		} else {
-			from_who->DescribeAggro(towho, mob, verbose);
+			} else {
+				from_who->DescribeAggro(towho, mob, verbose);
+			}
 		}
 	}
 }
@@ -362,29 +365,40 @@ bool Mob::CheckWillAggro(Mob *mob) {
 }
 
 Mob* EntityList::AICheckCloseAggro(Mob* sender, float iAggroRange, float iAssistRange) {
-	if (!sender || !sender->IsNPC())
-		return(NULL);
-	_ZP(EntityList_AICheckCloseAggro);
+	Mob* Result = 0;
 
+	if(sender) {
+		if(sender->IsNPC()) {
+			_ZP(EntityList_AICheckCloseAggro);
+
+//with reverse aggro, npc->client is checked elsewhere, no need to check again
 #ifdef REVERSE_AGGRO
-	//with reverse aggro, npc->client is checked elsewhere, no need to check again
-	LinkedListIterator<NPC*> iterator(npc_list);
+			for(list<NPC*>::iterator itr = npc_list.begin(); itr != npc_list.end(); itr++) {
+				NPC* mob = *itr;
+
+				if(mob) {
+					if(sender->CheckWillAggro(mob)) {
+						Result = mob;
+						break;
+					}
+				}
+			}
 #else
-	LinkedListIterator<Mob*> iterator(mob_list);
+			for(list<Mob*>::iterator itr = mob_list.begin(); itr != mob_list.end(); itr++) {
+				Mob* mob = *itr;
+
+				if(mob) {
+					if(sender->CheckWillAggro(mob)) {
+						Result = mob;
+						break;
+					}
+				}
+			}
 #endif
-	iterator.Reset();
-	//float distZ;
-	while(iterator.MoreElements()) {
-		Mob* mob = iterator.GetData();
-		
-		if(sender->CheckWillAggro(mob)) {
-			return(mob);
 		}
-		
-		iterator.Advance();
 	}
-	//LogFile->write(EQEMuLog::Debug, "Check aggro for %s no target.", sender->GetName());
-	return(NULL);
+
+	return Result;
 }
 
 int EntityList::GetHatedCount(Mob *attacker, Mob *exclude) {
@@ -395,92 +409,86 @@ int EntityList::GetHatedCount(Mob *attacker, Mob *exclude) {
 
 	int Count = 0;
 
-	LinkedListIterator<NPC*> iterator(npc_list);
+	for(list<NPC*>::iterator itr = npc_list.begin(); itr != npc_list.end(); itr++) {
+		NPC* mob = *itr;
 
-	for(iterator.Reset(); iterator.MoreElements(); iterator.Advance()) {
+		if(mob) {
+			if(mob == exclude) continue;
 
-		NPC* mob = iterator.GetData();
+			if(!mob->IsEngaged()) continue;
 
-		if(!mob || (mob == exclude)) continue;
-		
-		if(!mob->IsEngaged()) continue;
+			if(mob->IsFeared() || mob->IsMezzed()) continue;
 
-		if(mob->IsFeared() || mob->IsMezzed()) continue;
+			if(attacker->GetLevelCon(mob->GetLevel()) == CON_GREEN) continue;
 
-		if(attacker->GetLevelCon(mob->GetLevel()) == CON_GREEN) continue;
+			if(!mob->CheckAggro(attacker)) continue;
 
-		if(!mob->CheckAggro(attacker)) continue;
+			float AggroRange = mob->GetAggroRange();
 
-		float AggroRange = mob->GetAggroRange();
+			// Square it because we will be using DistNoRoot
 
-		// Square it because we will be using DistNoRoot
-			
-		AggroRange = AggroRange * AggroRange;
+			AggroRange = AggroRange * AggroRange;
 
-		if(mob->DistNoRoot(*attacker) > AggroRange) continue;
+			if(mob->DistNoRoot(*attacker) > AggroRange) continue;
 
-		Count++;
-
+			Count++;
+		}
 	}
 
 	return Count;
-
 }
 
 void EntityList::AIYellForHelp(Mob* sender, Mob* attacker) {
 	_ZP(EntityList_AIYellForHelp);
+
 	if(!sender || !attacker)
 		return;
+
 	if (sender->GetPrimaryFaction() == 0 )
 		return; // well, if we dont have a faction set, we're gonna be indiff to everybody
 	
-	LinkedListIterator<NPC*> iterator(npc_list);
-	
-	for(iterator.Reset(); iterator.MoreElements(); iterator.Advance()) {
-		NPC* mob = iterator.GetData();
-		if(!mob){
-			continue;
-		}
-		float r = mob->GetAssistRange();
-		r = r * r;
+	for(list<NPC*>::iterator itr = npc_list.begin(); itr != npc_list.end(); itr++) {
+		NPC* mob = *itr;
 
-		if(sender == NULL)
-			return;
+		if(mob) {
+			float r = mob->GetAssistRange();
+			r = r * r;
 
-		if (
-			mob != sender
-			&& mob != attacker
-//			&& !mob->IsCorpse()
-//			&& mob->IsAIControlled()
-			&& mob->GetPrimaryFaction() != 0
-			&& mob->DistNoRoot(*sender) <= r
-			&& !mob->IsEngaged()
-			)
-		{
-			//if they are in range, make sure we are not green...
-			//then jump in if they are our friend
-			if(attacker->GetLevelCon(mob->GetLevel()) != CON_GREEN)
+			if(sender == NULL)
+				return;
+
+			if (
+				mob != sender
+				&& mob != attacker
+				//			&& !mob->IsCorpse()
+				//			&& mob->IsAIControlled()
+				&& mob->GetPrimaryFaction() != 0
+				&& mob->DistNoRoot(*sender) <= r
+				&& !mob->IsEngaged()
+				)
 			{
-				bool useprimfaction = false;
-				if(mob->GetPrimaryFaction() == sender->CastToNPC()->GetPrimaryFaction())
-				{
-					const NPCFactionList *cf = database.GetNPCFactionEntry(mob->GetNPCFactionID());
-					if(cf){
-						if(cf->assistprimaryfaction != 0)
-							useprimfaction = true;
+				//if they are in range, make sure we are not green...
+				//then jump in if they are our friend
+				if(attacker->GetLevelCon(mob->GetLevel()) != CON_GREEN) {
+					bool useprimfaction = false;
+					if(mob->GetPrimaryFaction() == sender->CastToNPC()->GetPrimaryFaction()) {
+						const NPCFactionList *cf = database.GetNPCFactionEntry(mob->GetNPCFactionID());
+						if(cf){
+							if(cf->assistprimaryfaction != 0)
+								useprimfaction = true;
+						}
 					}
-				}
 
-				if(useprimfaction || sender->GetReverseFactionCon(mob) <= FACTION_AMIABLE )
-				{
-					//attacking someone on same faction, or a friend
-					//Father Nitwit:  make sure we can see them.
-					if(mob->CheckLosFN(sender)) {
+					if(useprimfaction || sender->GetReverseFactionCon(mob) <= FACTION_AMIABLE ) {
+						//attacking someone on same faction, or a friend
+						//Father Nitwit:  make sure we can see them.
+						if(mob->CheckLosFN(sender)) {
 #if (EQDEBUG>=5) 
-						LogFile->write(EQEMuLog::Debug, "AIYellForHelp(\"%s\",\"%s\") %s attacking %s Dist %f Z %f", 
-						sender->GetName(), attacker->GetName(), mob->GetName(), attacker->GetName(), mob->DistNoRoot(*sender), fabs(sender->GetZ()+mob->GetZ()));
+							LogFile->write(EQEMuLog::Debug, "AIYellForHelp(\"%s\",\"%s\") %s attacking %s Dist %f Z %f", 
+								sender->GetName(), attacker->GetName(), mob->GetName(), attacker->GetName(), mob->DistNoRoot(*sender), fabs(sender->GetZ()+mob->GetZ()));
 #endif
-						mob->AddToHateList(attacker, 1, 0, false);
+							mob->AddToHateList(attacker, 1, 0, false);
+						}
 					}
 				}
 			}

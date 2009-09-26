@@ -124,72 +124,69 @@ void Client::RefreshGuildInfo() {
 }
 
 void EntityList::SendGuildMOTD(uint32 guild_id) {
-	if(guild_id == GUILD_NONE)
-		return;
-	LinkedListIterator<Client*> iterator(client_list);
-	iterator.Reset();
-	while(iterator.MoreElements()) {
-		Client* client = iterator.GetData();
-		if (client->GuildID() == guild_id) {
-			client->SendGuildMOTD();
+	if(guild_id != GUILD_NONE) {
+		for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+			Client* client = *itr;
+
+			if(client) {
+				if (client->GuildID() == guild_id) {
+					client->SendGuildMOTD();
+				}
+			}
 		}
-		iterator.Advance();
 	}
 }
 
 void EntityList::SendGuildSpawnAppearance(uint32 guild_id) {
-	if(guild_id == GUILD_NONE)
-		return;
-	LinkedListIterator<Client*> iterator(client_list);
-	iterator.Reset();
-	while(iterator.MoreElements()) {
-		Client* client = iterator.GetData();
-		if (client->GuildID() == guild_id) {
-			client->SendGuildSpawnAppearance();
+	if(guild_id != GUILD_NONE) {
+		for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+			Client* client = *itr;
+
+			if(client) {
+				if (client->GuildID() == guild_id) {
+					client->SendGuildSpawnAppearance();
+				}
+			}
 		}
-		iterator.Advance();
 	}
 }
 
 void EntityList::RefreshAllGuildInfo(uint32 guild_id) {
-	if(guild_id == GUILD_NONE)
-		return;
-	LinkedListIterator<Client*> iterator(client_list);
-	iterator.Reset();
-	while(iterator.MoreElements()) {
-		Client* client = iterator.GetData();
-		if (client->GuildID() == guild_id) {
-			client->RefreshGuildInfo();
+	if(guild_id != GUILD_NONE) {
+		for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+			Client* client = *itr;
+
+			if(client) {
+				if (client->GuildID() == guild_id) {
+					client->RefreshGuildInfo();
+				}
+			}
 		}
-		iterator.Advance();
 	}
 }
 
 void EntityList::SendGuildMembers(uint32 guild_id) {
-	if(guild_id == GUILD_NONE)
-		return;
-	
 	//this could be optimized a bit to only build the member's packet once
 	//and then keep swapping out the name in the packet on each send.
-	
-	LinkedListIterator<Client*> iterator(client_list);
-	iterator.Reset();
-	while(iterator.MoreElements()) {
-		Client* client = iterator.GetData();
-		if (client->GuildID() == guild_id) {
-			client->SendGuildMembers();
+	if(guild_id != GUILD_NONE) {
+		for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+			Client* client = *itr;
+
+			if(client) {
+				if (client->GuildID() == guild_id) {
+					client->SendGuildMembers();
+				}
+			}
 		}
-		iterator.Advance();
 	}
 }
 
 void EntityList::SendGuildList() {
-	LinkedListIterator<Client*> iterator(client_list);
-	iterator.Reset();
-	while(iterator.MoreElements()) {
-		Client* client = iterator.GetData();
-		client->SendGuildList();
-		iterator.Advance();
+	for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+		Client* client = *itr;
+
+		if(client)
+			client->SendGuildList();
 	}
 }
 

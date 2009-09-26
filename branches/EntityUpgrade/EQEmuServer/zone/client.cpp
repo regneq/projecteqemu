@@ -320,7 +320,7 @@ Client::~Client() {
 
 	ChangeSQLLog(NULL);
 	if(IsDueling() && GetDuelTarget() != 0) {
-		Entity* entity = entity_list.GetID(GetDuelTarget());
+		Entity* entity = entity_list.GetByEntityID(GetDuelTarget());
 		if(entity != NULL && entity->IsClient()) {
 			entity->CastToClient()->SetDueling(false);
 			entity->CastToClient()->SetDuelTarget(0);

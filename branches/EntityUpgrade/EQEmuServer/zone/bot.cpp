@@ -11693,7 +11693,7 @@ void EntityList::AddBotRaid(BotRaids* br) {
 	if(br == NULL)
 		return;
 	
-	int16 gid = GetFreeID();
+	int16 gid = GetZoneEntityID();
 	if(gid == 0) {
 		LogFile->write(EQEMuLog::Error, "Unable to get new Raid ID from world server. Raid is going to be broken.");
 		return;
@@ -11724,17 +11724,13 @@ Mob* EntityList::GetMobByBotID(uint32 botID) {
 	Mob* Result = 0;
 
 	if(botID > 0) {
-		LinkedListIterator<Mob*> iterator(mob_list);
-	
-		iterator.Reset();
+		if(!bot_botid_map.empty()) {
+			BotMap::iterator itr = bot_botid_map.begin();
 
-		while(iterator.MoreElements())
-		{
-			if(iterator.GetData()->IsBot() && iterator.GetData()->CastToBot()->GetBotID() == botID) {
-				Result = iterator.GetData();
-			}
+			itr = bot_botid_map.find(botID);
 
-			iterator.Advance();
+			if(itr != bot_botid_map.end())
+				Result = itr->second;
 		}
 	}
 
@@ -11743,7 +11739,7 @@ Mob* EntityList::GetMobByBotID(uint32 botID) {
 
 void EntityList::AddBot(Bot *newBot, bool SendSpawnPacket, bool dontqueue) {
 	if(newBot) {
-		newBot->SetID(GetFreeID());
+		newBot->SetID(GetGlobalEntityID(newBot));
 
 		if(SendSpawnPacket) {
 			if(dontqueue) {
@@ -11766,12 +11762,14 @@ void EntityList::AddBot(Bot *newBot, bool SendSpawnPacket, bool dontqueue) {
 			parse->Event(EVENT_SPAWN, 0, 0, 0, newBot);
 		}
 
-		bot_list.Insert(newBot);
+		bot_list.push_back(newBot);
+		
+		/*if(!bot_list.dont_delete)
+			bot_list.dont_delete = true;*/
 
-		if(!bot_list.dont_delete)
-			bot_list.dont_delete = true;
-
-		mob_list.Insert(newBot);
+		bot_entityid_map.insert(BotMapPair(newBot->GetID(), newBot));
+		bot_botid_map.insert(BotMapPair(newBot->GetBotID(), newBot));
+		mob_list.push_back(newBot);
 	}
 }
 
@@ -11779,12 +11777,13 @@ list<Bot*> EntityList::GetBotsByBotOwnerCharacterID(uint32 botOwnerCharacterID) 
 	list<Bot*> Result;
 
 	if(botOwnerCharacterID > 0) {
-		LinkedListIterator<Bot*> botItr(bot_list);
-		botItr.Reset();
-		while(botItr.MoreElements()) {
-			if(botItr.GetData() && botItr.GetData()->GetBotOwnerCharacterID() == botOwnerCharacterID)
-				Result.push_back(botItr.GetData());
-			botItr.Advance();
+		for(list<Bot*>::iterator itr = bot_list.begin(); itr != bot_list.end(); itr++) {
+			Bot* bot = *itr;
+
+			if(bot) {
+				if(bot->GetBotOwnerCharacterID() == botOwnerCharacterID)
+					Result.push_back(bot);
+			}
 		}
 	}
 
@@ -11795,31 +11794,75 @@ bool EntityList::RemoveBot(int16 entityID) {
 	bool Result = false;
 
 	if(entityID > 0) {
-		LinkedListIterator<Bot*> iterator(bot_list);
-		
-		iterator.Reset();
-		
-		while(iterator.MoreElements())
-		{
-			if(iterator.GetData()->GetID() == entityID){
-				//make sure its proximity is removed
-				//RemoveProximity(iterator.GetData()->GetID());
-				
-				//take it out of the list
-				iterator.RemoveCurrent(false);//Already Deleted
-				
-				//take it out of our limit list
-				/*if(npc_limit_list.count(delete_id) == 1)
-					npc_limit_list.erase(delete_id);*/
-				
-				Result = true;
+		BotMap::iterator botItr = bot_entityid_map.begin();
 
-				break;
-			}
+		botItr = bot_entityid_map.find(entityID);
 
-			iterator.Advance();
+		if(botItr != bot_entityid_map.end()) {
+			Bot* delete_bot = botItr->second;
+
+			// Call RemoveBot(Bot*) to remove this object from all "bot" lists now that we have the object reference
+			Result = RemoveBot(delete_bot);
 		}
 	}
+
+	return Result;
+}
+
+bool EntityList::RemoveBot(Bot *delete_bot) {
+	bool Result = false;
+
+	if(delete_bot) {
+		for(list<Bot*>::iterator itr = bot_list.begin(); itr != bot_list.end(); itr++) {
+			if(*itr == delete_bot) {
+				// Remove the object reference from the bot entity id map container
+				BotMap::iterator mapItr = bot_entityid_map.begin();
+
+				mapItr = bot_entityid_map.find(delete_bot->GetID());
+
+				if(mapItr != bot_entityid_map.end()) {
+					bot_entityid_map.erase(mapItr);
+				}
+
+				mapItr = 0;
+
+				// Remove the object reference from the bot id map container
+				mapItr = bot_botid_map.begin();
+
+				mapItr = bot_botid_map.find(delete_bot->GetBotID());
+
+				if(mapItr != bot_botid_map.end()) {
+					bot_botid_map.erase(mapItr);
+				}
+
+				//// Remove the object reference from the mob name map container
+				//MobNameMap::iterator mapNameItr = mob_name_map.begin();
+
+				//mapNameItr = mob_name_map.find(delete_mob->GetName());
+
+				//if(mapNameItr != mob_name_map.end()) {
+				//	mob_name_map.erase(mapNameItr);
+				//}
+
+				// Remove the object reference from the bot list container
+				bot_list.remove(delete_bot);
+
+				// Delete the referenced object
+				safe_delete(delete_bot);
+
+				Result = true;
+				break;
+			}
+		}
+	}
+
+	return Result;
+}
+
+int16 EntityList::GetGlobalEntityID(Bot* bot) {
+	int16 Result = 0;
+
+	// TODO:
 
 	return Result;
 }
@@ -11834,116 +11877,224 @@ void EntityList::ShowSpawnWindow(Client* client, int Distance, bool NamedOnly) {
 	
 	int32 array_counter = 0;
 	
-	LinkedListIterator<Mob*> iterator(mob_list);
-	iterator.Reset();
+	for(list<Mob*>::iterator itr = mob_list.begin(); itr != mob_list.end(); itr++) {
+		Mob* mob = *itr;
 
-	while(iterator.MoreElements())
-	{
-		if (iterator.GetData() && (iterator.GetData()->DistNoZ(*client)<=Distance))
-		{
-			if(iterator.GetData()->IsTrackable()) {
-				Mob* cur_entity = iterator.GetData();
-				int  Extras = (cur_entity->IsBot() || cur_entity->IsPet() || cur_entity->IsFamiliar() || cur_entity->IsClient());
-				const char *const MyArray[] = {
-					"a_","an_","Innkeep_","Barkeep_",
-					"Guard_","Merchant_","Lieutenant_",
-					"Banker_","Centaur_","Aviak_","Baker_",
-					"Sir_","Armorer_","Deathfist_","Deputy_",
-					"Sentry_","Sentinel_","Leatherfoot_",
-					"Corporal_","goblin_","Bouncer_","Captain_",
-					"orc_","fire_","inferno_","young_","cinder_",
-					"flame_","gnomish_","CWG_","sonic_","greater_",
-					"ice_","dry_","Priest_","dark-boned_",
-					"Tentacle_","Basher_","Dar_","Greenblood_",
-					"clockwork_","guide_","rogue_","minotaur_",
-					"brownie_","Teir'","dark_","tormented_",
-					"mortuary_","lesser_","giant_","infected_",
-					"wharf_","Apprentice_","Scout_","Recruit_",
-					"Spiritist_","Pit_","Royal_","scalebone_",
-					"carrion_","Crusader_","Trooper_","hunter_",
-					"decaying_","iksar_","klok_","templar_","lord_",
-					"froglok_","war_","large_","charbone_","icebone_",
-					"Vicar_","Cavalier_","Heretic_","Reaver_","venomous_",
-					"Sheildbearer_","pond_","mountain_","plaguebone_","Brother_",
-					"great_","strathbone_","briarweb_","strathbone_","skeletal_",
-					"minion_","spectral_","myconid_","spurbone_","sabretooth_",
-					"Tin_","Iron_","Erollisi_","Petrifier_","Burynai_",
-					"undead_","decayed_","You_","smoldering_","gyrating_",
-					"lumpy_","Marshal_","Sheriff_","Chief_","Risen_",
-					"lascar_","tribal_","fungi_","Xi_","Legionnaire_",
-					"Centurion_","Zun_","Diabo_","Scribe_","Defender_","Capt_",
-					"blazing_","Solusek_","imp_","hexbone_","elementalbone_",
-					"stone_","lava_","_",""
-				};
-				unsigned int MyArraySize;
-				 for ( MyArraySize = 0; true; MyArraySize++) {   //Find empty string & get size
-				   if (!(*(MyArray[MyArraySize]))) break;   //Checks for null char in 1st pos
-				};
-				if (NamedOnly) {
-				   bool ContinueFlag = false;
-				   const char *CurEntityName = cur_entity->GetName();  //Call function once
-				   for (int Index = 0; Index < MyArraySize; Index++) {
-				      if (!strncasecmp(CurEntityName, MyArray[Index], strlen(MyArray[Index])) || (Extras)) {
-				         iterator.Advance();
-				         ContinueFlag = true;
-				         break;   //From Index for
-				       };
-				   };
-				  if (ContinueFlag) continue; //Moved here or would apply to Index for
-				};
+		if(mob) {
+			if (mob->DistNoZ(*client) <= Distance) {
+				if(mob->IsTrackable()) {
+					Mob* cur_entity = mob;
+					int  Extras = (cur_entity->IsBot() || cur_entity->IsPet() || cur_entity->IsFamiliar() || cur_entity->IsClient());
+					const char *const MyArray[] = {
+						"a_","an_","Innkeep_","Barkeep_",
+						"Guard_","Merchant_","Lieutenant_",
+						"Banker_","Centaur_","Aviak_","Baker_",
+						"Sir_","Armorer_","Deathfist_","Deputy_",
+						"Sentry_","Sentinel_","Leatherfoot_",
+						"Corporal_","goblin_","Bouncer_","Captain_",
+						"orc_","fire_","inferno_","young_","cinder_",
+						"flame_","gnomish_","CWG_","sonic_","greater_",
+						"ice_","dry_","Priest_","dark-boned_",
+						"Tentacle_","Basher_","Dar_","Greenblood_",
+						"clockwork_","guide_","rogue_","minotaur_",
+						"brownie_","Teir'","dark_","tormented_",
+						"mortuary_","lesser_","giant_","infected_",
+						"wharf_","Apprentice_","Scout_","Recruit_",
+						"Spiritist_","Pit_","Royal_","scalebone_",
+						"carrion_","Crusader_","Trooper_","hunter_",
+						"decaying_","iksar_","klok_","templar_","lord_",
+						"froglok_","war_","large_","charbone_","icebone_",
+						"Vicar_","Cavalier_","Heretic_","Reaver_","venomous_",
+						"Sheildbearer_","pond_","mountain_","plaguebone_","Brother_",
+						"great_","strathbone_","briarweb_","strathbone_","skeletal_",
+						"minion_","spectral_","myconid_","spurbone_","sabretooth_",
+						"Tin_","Iron_","Erollisi_","Petrifier_","Burynai_",
+						"undead_","decayed_","You_","smoldering_","gyrating_",
+						"lumpy_","Marshal_","Sheriff_","Chief_","Risen_",
+						"lascar_","tribal_","fungi_","Xi_","Legionnaire_",
+						"Centurion_","Zun_","Diabo_","Scribe_","Defender_","Capt_",
+						"blazing_","Solusek_","imp_","hexbone_","elementalbone_",
+						"stone_","lava_","_",""
+					};
+					unsigned int MyArraySize;
+					for ( MyArraySize = 0; true; MyArraySize++) {   //Find empty string & get size
+						if (!(*(MyArray[MyArraySize]))) break;   //Checks for null char in 1st pos
+					};
+					if (NamedOnly) {
+						bool ContinueFlag = false;
+						const char *CurEntityName = cur_entity->GetName();  //Call function once
+						for (int Index = 0; Index < MyArraySize; Index++) {
+							if (!strncasecmp(CurEntityName, MyArray[Index], strlen(MyArray[Index])) || (Extras)) {
+								//iterator.Advance();
+								ContinueFlag = true;
+								break;   //From Index for
+							};
+						};
+						if (ContinueFlag) continue; //Moved here or would apply to Index for
+					};
 
-				CurrentCon = client->GetLevelCon(cur_entity->GetLevel());
-				if(CurrentCon != LastCon) {
+					CurrentCon = client->GetLevelCon(cur_entity->GetLevel());
+					if(CurrentCon != LastCon) {
 
-					if(LastCon != -1)
-						WindowText += "</c>";
+						if(LastCon != -1)
+							WindowText += "</c>";
 
-					LastCon = CurrentCon;
+						LastCon = CurrentCon;
 
-					switch(CurrentCon) {
+						switch(CurrentCon) {
 
 						case CON_GREEN: {
 							WindowText += "<c \"#00FF00\">";
 							break;
-						}
+										}
 
 						case CON_LIGHTBLUE: {
 							WindowText += "<c \"#8080FF\">";
 							break;
-						}
+											}
 						case CON_BLUE: {
 							WindowText += "<c \"#2020FF\">";
 							break;
-						}
+									   }
 
 						case CON_YELLOW: {
 							WindowText += "<c \"#FFFF00\">";
 							break;
-						}
+										 }
 						case CON_RED: {
 							WindowText += "<c \"#FF0000\">";
 							break;
-						}
+									  }
 						default: {
 							WindowText += "<c \"#FFFFFF\">";
 							break;
+								 }
 						}
 					}
-				}
 
-				WindowText += cur_entity->GetCleanName();
-				WindowText += "<br>";
+					WindowText += cur_entity->GetCleanName();
+					WindowText += "<br>";
 
-				if(strlen(WindowText.c_str()) > 4000) {
-					// Popup window is limited to 4096 characters.
-					WindowText += "</c><br><br>List truncated ... too many mobs to display";
-					break;
+					if(strlen(WindowText.c_str()) > 4000) {
+						// Popup window is limited to 4096 characters.
+						WindowText += "</c><br><br>List truncated ... too many mobs to display";
+						break;
+					}
 				}
 			}
 		}
-
-		iterator.Advance();
 	}
+
+	//LinkedListIterator<Mob*> iterator(mob_list);
+	//iterator.Reset();
+
+	//while(iterator.MoreElements())
+	//{
+	//	if (iterator.GetData() && (iterator.GetData()->DistNoZ(*client)<=Distance))
+	//	{
+	//		if(iterator.GetData()->IsTrackable()) {
+	//			Mob* cur_entity = iterator.GetData();
+	//			int  Extras = (cur_entity->IsBot() || cur_entity->IsPet() || cur_entity->IsFamiliar() || cur_entity->IsClient());
+	//			const char *const MyArray[] = {
+	//				"a_","an_","Innkeep_","Barkeep_",
+	//				"Guard_","Merchant_","Lieutenant_",
+	//				"Banker_","Centaur_","Aviak_","Baker_",
+	//				"Sir_","Armorer_","Deathfist_","Deputy_",
+	//				"Sentry_","Sentinel_","Leatherfoot_",
+	//				"Corporal_","goblin_","Bouncer_","Captain_",
+	//				"orc_","fire_","inferno_","young_","cinder_",
+	//				"flame_","gnomish_","CWG_","sonic_","greater_",
+	//				"ice_","dry_","Priest_","dark-boned_",
+	//				"Tentacle_","Basher_","Dar_","Greenblood_",
+	//				"clockwork_","guide_","rogue_","minotaur_",
+	//				"brownie_","Teir'","dark_","tormented_",
+	//				"mortuary_","lesser_","giant_","infected_",
+	//				"wharf_","Apprentice_","Scout_","Recruit_",
+	//				"Spiritist_","Pit_","Royal_","scalebone_",
+	//				"carrion_","Crusader_","Trooper_","hunter_",
+	//				"decaying_","iksar_","klok_","templar_","lord_",
+	//				"froglok_","war_","large_","charbone_","icebone_",
+	//				"Vicar_","Cavalier_","Heretic_","Reaver_","venomous_",
+	//				"Sheildbearer_","pond_","mountain_","plaguebone_","Brother_",
+	//				"great_","strathbone_","briarweb_","strathbone_","skeletal_",
+	//				"minion_","spectral_","myconid_","spurbone_","sabretooth_",
+	//				"Tin_","Iron_","Erollisi_","Petrifier_","Burynai_",
+	//				"undead_","decayed_","You_","smoldering_","gyrating_",
+	//				"lumpy_","Marshal_","Sheriff_","Chief_","Risen_",
+	//				"lascar_","tribal_","fungi_","Xi_","Legionnaire_",
+	//				"Centurion_","Zun_","Diabo_","Scribe_","Defender_","Capt_",
+	//				"blazing_","Solusek_","imp_","hexbone_","elementalbone_",
+	//				"stone_","lava_","_",""
+	//			};
+	//			unsigned int MyArraySize;
+	//			 for ( MyArraySize = 0; true; MyArraySize++) {   //Find empty string & get size
+	//			   if (!(*(MyArray[MyArraySize]))) break;   //Checks for null char in 1st pos
+	//			};
+	//			if (NamedOnly) {
+	//			   bool ContinueFlag = false;
+	//			   const char *CurEntityName = cur_entity->GetName();  //Call function once
+	//			   for (int Index = 0; Index < MyArraySize; Index++) {
+	//			      if (!strncasecmp(CurEntityName, MyArray[Index], strlen(MyArray[Index])) || (Extras)) {
+	//			         iterator.Advance();
+	//			         ContinueFlag = true;
+	//			         break;   //From Index for
+	//			       };
+	//			   };
+	//			  if (ContinueFlag) continue; //Moved here or would apply to Index for
+	//			};
+
+	//			CurrentCon = client->GetLevelCon(cur_entity->GetLevel());
+	//			if(CurrentCon != LastCon) {
+
+	//				if(LastCon != -1)
+	//					WindowText += "</c>";
+
+	//				LastCon = CurrentCon;
+
+	//				switch(CurrentCon) {
+
+	//					case CON_GREEN: {
+	//						WindowText += "<c \"#00FF00\">";
+	//						break;
+	//					}
+
+	//					case CON_LIGHTBLUE: {
+	//						WindowText += "<c \"#8080FF\">";
+	//						break;
+	//					}
+	//					case CON_BLUE: {
+	//						WindowText += "<c \"#2020FF\">";
+	//						break;
+	//					}
+
+	//					case CON_YELLOW: {
+	//						WindowText += "<c \"#FFFF00\">";
+	//						break;
+	//					}
+	//					case CON_RED: {
+	//						WindowText += "<c \"#FF0000\">";
+	//						break;
+	//					}
+	//					default: {
+	//						WindowText += "<c \"#FFFFFF\">";
+	//						break;
+	//					}
+	//				}
+	//			}
+
+	//			WindowText += cur_entity->GetCleanName();
+	//			WindowText += "<br>";
+
+	//			if(strlen(WindowText.c_str()) > 4000) {
+	//				// Popup window is limited to 4096 characters.
+	//				WindowText += "</c><br><br>List truncated ... too many mobs to display";
+	//				break;
+	//			}
+	//		}
+	//	}
+
+	//	iterator.Advance();
+	//}
 	WindowText += "</c>";
 
 	client->SendPopupToClient(WindowTitle, WindowText.c_str());

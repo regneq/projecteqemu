@@ -664,169 +664,174 @@ bool Client::UseDiscipline(int32 spell_id, int32 target) {
 }
 
 void EntityList::AETaunt(Client* taunter, float range) {
-	LinkedListIterator<NPC*> iterator(npc_list);
-	
-	if(range == 0) {
-		range = 100;		//arbitrary default...
-	}
-	
-	range = range * range;
-	
-	iterator.Reset();
-	while(iterator.MoreElements())
-	{
-		NPC * them = iterator.GetData();
-		float zdiff = taunter->GetZ() - them->GetZ();
-		if (zdiff < 0)
-			zdiff *= -1;
-		if (zdiff < 10
-			&& taunter->IsAttackAllowed(them)
-			&& taunter->DistNoRootNoZ(*them) <= range) {
-			
-			if (taunter->CheckLosFN(them)) {
-				taunter->Taunt(them, true);
+	if(taunter) {
+		if(range == 0)
+			range = 100;	//arbitrary default...
+
+		for(list<NPC*>::iterator itr = npc_list.begin(); itr != npc_list.end(); itr++) {
+			NPC* them = *itr;
+
+			if(them) {
+				float zdiff = taunter->GetZ() - them->GetZ();
+				
+				if (zdiff < 0)
+					zdiff *= -1;
+				
+				if (zdiff < 10 && taunter->IsAttackAllowed(them) && taunter->DistNoRootNoZ(*them) <= range) {
+					if (taunter->CheckLosFN(them))
+						taunter->Taunt(them, true);
+				}
 			}
 		}
-		iterator.Advance();
 	}
 }
 
 // solar: causes caster to hit every mob within dist range of center with
 // spell_id.
 // NPC spells will only affect other NPCs with compatible faction
-void EntityList::AESpell(Mob *caster, Mob *center, int16 spell_id, bool affect_caster)
-{
-	LinkedListIterator<Mob*> iterator(mob_list);
-	Mob *curmob;
-	
-	float dist = caster->GetAOERange(spell_id);
-	float dist2 = dist * dist;
-	
-	bool bad = IsDetrimentalSpell(spell_id);
-	bool isnpc = caster->IsNPC();
-	const int MAX_TARGETS_ALLOWED = 4;
-	int iCounter = 0;
-	
-	for(iterator.Reset(); iterator.MoreElements(); iterator.Advance())
-	{
-		curmob = iterator.GetData();
-		if(curmob == center)	//do not affect center
-			continue;
-		if(curmob == caster && !affect_caster)	//watch for caster too
-			continue;
-		if(center->DistNoRoot(*curmob) > dist2)	//make sure they are in range
-			continue;
-		if(isnpc && curmob->IsNPC()) {	//check npc->npc casting
-			FACTION_VALUE f = curmob->GetReverseFactionCon(caster);
-			if(bad) {
-				//affect mobs that are on our hate list, or
-				//which have bad faction with us
-				if( ! (caster->CheckAggro(curmob) || f == FACTION_THREATENLY || f == FACTION_SCOWLS) )
+void EntityList::AESpell(Mob *caster, Mob *center, int16 spell_id, bool affect_caster) {
+	if(caster && center) {
+		float dist = caster->GetAOERange(spell_id);
+		float dist2 = dist * dist;
+		bool bad = IsDetrimentalSpell(spell_id);
+		bool isnpc = caster->IsNPC();
+		const int MAX_TARGETS_ALLOWED = 4;
+		int iCounter = 0;
+
+		for(list<Mob*>::iterator itr = mob_list.begin(); itr != mob_list.end(); itr++) {
+			Mob* curmob = *itr;
+
+			if(curmob) {
+				if(curmob == center)	//do not affect center
 					continue;
-			} else {
-				//only affect mobs we would assist.
-				if( ! (f <= FACTION_AMIABLE))
+
+				if(curmob == caster && !affect_caster)	//watch for caster too
 					continue;
+
+				if(center->DistNoRoot(*curmob) > dist2)	//make sure they are in range
+					continue;
+
+				if(isnpc && curmob->IsNPC()) {	//check npc->npc casting
+					FACTION_VALUE f = curmob->GetReverseFactionCon(caster);
+					if(bad) {
+						//affect mobs that are on our hate list, or
+						//which have bad faction with us
+						if( ! (caster->CheckAggro(curmob) || f == FACTION_THREATENLY || f == FACTION_SCOWLS) )
+							continue;
+					} else {
+						//only affect mobs we would assist.
+						if( ! (f <= FACTION_AMIABLE))
+							continue;
+					}
+				}
+
+				//finally, make sure they are within range
+				if(bad) {
+					if(!caster->IsAttackAllowed(curmob, true))
+						continue;
+					if(!center->CheckLosFN(curmob))
+						continue;
+				}
+				else {
+					if(!caster->IsBeneficialAllowed(curmob))
+						continue;
+				}
+
+				//if we get here... cast the spell.
+				if(IsTargetableAESpell(spell_id) && bad) {
+					if(iCounter < MAX_TARGETS_ALLOWED)
+						caster->SpellOnTarget(spell_id, curmob);
+				}
+				else
+					caster->SpellOnTarget(spell_id, curmob);
+
+				if(!isnpc) //npcs are not target limited...
+					iCounter++;
 			}
 		}
-		//finally, make sure they are within range
-		if(bad) {
-			if(!caster->IsAttackAllowed(curmob, true))
-				continue;
-			if(!center->CheckLosFN(curmob))
-				continue;
-		}
-		else {
-			if(!caster->IsBeneficialAllowed(curmob))
-				continue;
-		}
-
-		//if we get here... cast the spell.
-		if(IsTargetableAESpell(spell_id) && bad) {
-			if(iCounter < MAX_TARGETS_ALLOWED)
-				caster->SpellOnTarget(spell_id, curmob);
-		}
-		else
-			caster->SpellOnTarget(spell_id, curmob);
-
-		if(!isnpc) //npcs are not target limited...
-			iCounter++;
-	}	
+	}
 }
 
 // solar: causes caster to hit every mob within dist range of center with
 // a bard pulse of spell_id.
 // NPC spells will only affect other NPCs with compatible faction
-void EntityList::AEBardPulse(Mob *caster, Mob *center, int16 spell_id, bool affect_caster)
-{
-	LinkedListIterator<Mob*> iterator(mob_list);
-	Mob *curmob;
-	
-	float dist = caster->GetAOERange(spell_id);
-	float dist2 = dist * dist;
-	
-	bool bad = IsDetrimentalSpell(spell_id);
-	bool isnpc = caster->IsNPC();
-	
-	for(iterator.Reset(); iterator.MoreElements(); iterator.Advance())
-	{
-		curmob = iterator.GetData();
-		if(curmob == center)	//do not affect center
-			continue;
-		if(curmob == caster && !affect_caster)	//watch for caster too
-			continue;
-		if(center->DistNoRoot(*curmob) > dist2)	//make sure they are in range
-			continue;
-		if(isnpc && curmob->IsNPC()) {	//check npc->npc casting
-			FACTION_VALUE f = curmob->GetReverseFactionCon(caster);
-			if(bad) {
-				//affect mobs that are on our hate list, or
-				//which have bad faction with us
-				if( ! (caster->CheckAggro(curmob) || f == FACTION_THREATENLY || f == FACTION_SCOWLS) )
+void EntityList::AEBardPulse(Mob *caster, Mob *center, int16 spell_id, bool affect_caster) {
+	if(caster && center) {
+		float dist = caster->GetAOERange(spell_id);
+		float dist2 = dist * dist;
+		bool bad = IsDetrimentalSpell(spell_id);
+		bool isnpc = caster->IsNPC();
+
+		for(list<Mob*>::iterator itr = mob_list.begin(); itr != mob_list.end(); itr++) {
+			Mob* curmob = *itr;
+
+			if(curmob) {
+				if(curmob == center)	//do not affect center
 					continue;
-			} else {
-				//only affect mobs we would assist.
-				if( ! (f <= FACTION_AMIABLE))
+
+				if(curmob == caster && !affect_caster)	//watch for caster too
 					continue;
+
+				if(center->DistNoRoot(*curmob) > dist2)	//make sure they are in range
+					continue;
+
+				if(isnpc && curmob->IsNPC()) {	//check npc->npc casting
+					FACTION_VALUE f = curmob->GetReverseFactionCon(caster);
+
+					if(bad) {
+						//affect mobs that are on our hate list, or
+						//which have bad faction with us
+						if( ! (caster->CheckAggro(curmob) || f == FACTION_THREATENLY || f == FACTION_SCOWLS) )
+							continue;
+					} else {
+						//only affect mobs we would assist.
+						if( ! (f <= FACTION_AMIABLE))
+							continue;
+					}
+				}
+
+				//finally, make sure they are within range
+				if(bad) {
+					if(!center->CheckLosFN(curmob))
+						continue;
+				}
+
+				//if we get here... cast the spell.
+				curmob->BardPulse(spell_id, caster);
 			}
 		}
-		//finally, make sure they are within range
-		if(bad) {
-			if(!center->CheckLosFN(curmob))
-				continue;
-		}
-		//if we get here... cast the spell.
-		curmob->BardPulse(spell_id, caster);
+
+		if(caster->IsClient())
+			caster->CastToClient()->CheckSongSkillIncrease(spell_id);
 	}
-	if(caster->IsClient())
-		caster->CastToClient()->CheckSongSkillIncrease(spell_id);
 }
 
 //Dook- Rampage and stuff for clients.
 //NPCs handle it differently in Mob::Rampage
 void EntityList::AEAttack(Mob *attacker, float dist, int Hand, int count) {
 //Dook- Will need tweaking, currently no pets or players or horses 
-	LinkedListIterator<Mob*> iterator(mob_list); 
-	Mob *curmob; 
-	
-	float dist2 = dist * dist;
-	
-	int hit = 0;
-	
-	for(iterator.Reset(); iterator.MoreElements(); iterator.Advance()) { 
-		curmob = iterator.GetData(); 
-		if(curmob->IsNPC()
-			&& curmob != attacker //this is not needed unless NPCs can use this
-			&&(attacker->IsAttackAllowed(curmob))
-			&& curmob->GetRace() != 216 && curmob->GetRace() != 472 /* dont attack horses */
-			&& (curmob->DistNoRoot(*attacker) <= dist2)
-		) {
-			attacker->Attack(curmob, Hand); 
-			hit++;
-			if(count != 0 && hit >= count)
-				return;
+	if(attacker) {
+		float dist2 = dist * dist;
+		int hit = 0;
+
+		for(list<Mob*>::iterator itr = mob_list.begin(); itr != mob_list.end(); itr++) {
+			Mob* curmob = *itr;
+
+			if(curmob) {
+				if(curmob->IsNPC()
+					&& curmob != attacker //this is not needed unless NPCs can use this
+					&&(attacker->IsAttackAllowed(curmob))
+					&& curmob->GetRace() != 216 && curmob->GetRace() != 472 /* dont attack horses */
+					&& (curmob->DistNoRoot(*attacker) <= dist2)
+					) {
+						attacker->Attack(curmob, Hand); 
+						hit++;
+						if(count != 0 && hit >= count)
+							return;
+				}
+			}
 		}
-	}    
+	}   
 } 
 
 

@@ -390,44 +390,83 @@ bool EntityList::AICheckCloseBeneficialSpells(NPC* caster, int8 iChance, float i
 	
 
 	//Only iterate through NPCs
-    LinkedListIterator<NPC*> iterator(npc_list);
-    for(iterator.Reset(); iterator.MoreElements(); iterator.Advance()) {
-		NPC* mob = iterator.GetData();
-		
-		//Since >90% of mobs will always be out of range, try to
-		//catch them with simple bounding box checks first. These
-		//checks are about 6X faster than DistNoRoot on my athlon 1Ghz
-		t1 = mob->GetX() - caster->GetX();
-		t2 = mob->GetY() - caster->GetY();
-		t3 = mob->GetZ() - caster->GetZ();
-		//cheap ABS()
-		if(t1 < 0)
-			t1 = 0 - t1;
-		if(t2 < 0)
-			t2 = 0 - t2;
-		if(t3 < 0)
-			t3 = 0 - t3;
-		if (   t1 > iRange
-			|| t2 > iRange
-			|| t3 > iRange
-			|| mob->DistNoRoot(*caster) > iRange2
+	for(list<NPC*>::iterator itr = npc_list.begin(); itr != npc_list.end(); itr++) {
+		NPC* mob = *itr;
+		if(mob) {
+			//Since >90% of mobs will always be out of range, try to
+			//catch them with simple bounding box checks first. These
+			//checks are about 6X faster than DistNoRoot on my athlon 1Ghz
+			t1 = mob->GetX() - caster->GetX();
+			t2 = mob->GetY() - caster->GetY();
+			t3 = mob->GetZ() - caster->GetZ();
+			//cheap ABS()
+			if(t1 < 0)
+				t1 = 0 - t1;
+			if(t2 < 0)
+				t2 = 0 - t2;
+			if(t3 < 0)
+				t3 = 0 - t3;
+			if (   t1 > iRange
+				|| t2 > iRange
+				|| t3 > iRange
+				|| mob->DistNoRoot(*caster) > iRange2
 				//this call should seem backwards:
-			|| mob->GetReverseFactionCon(caster) >= FACTION_KINDLY
-		) {
-			continue;
-		}
+				|| mob->GetReverseFactionCon(caster) >= FACTION_KINDLY
+				) {
+					continue;
+			}
 
-		//since we assume these are beneficial spells, which do not
-		//require LOS, we just go for it.
-		// we have a winner!
-		if((iSpellTypes & SpellType_Buff) && !RuleB(NPC, BuffFriends)){
-			if (mob != caster)
-				iSpellTypes = SpellType_Heal;
-		}
+			//since we assume these are beneficial spells, which do not
+			//require LOS, we just go for it.
+			// we have a winner!
+			if((iSpellTypes & SpellType_Buff) && !RuleB(NPC, BuffFriends)){
+				if (mob != caster)
+					iSpellTypes = SpellType_Heal;
+			}
 
-		if (caster->AICastSpell(mob, 100, iSpellTypes))
-			return true;
+			if (caster->AICastSpell(mob, 100, iSpellTypes))
+				return true;
+		}
 	}
+
+	//LinkedListIterator<NPC*> iterator(npc_list);
+	//for(iterator.Reset(); iterator.MoreElements(); iterator.Advance()) {
+	//	NPC* mob = iterator.GetData();
+
+	//	//Since >90% of mobs will always be out of range, try to
+	//	//catch them with simple bounding box checks first. These
+	//	//checks are about 6X faster than DistNoRoot on my athlon 1Ghz
+	//	t1 = mob->GetX() - caster->GetX();
+	//	t2 = mob->GetY() - caster->GetY();
+	//	t3 = mob->GetZ() - caster->GetZ();
+	//	//cheap ABS()
+	//	if(t1 < 0)
+	//		t1 = 0 - t1;
+	//	if(t2 < 0)
+	//		t2 = 0 - t2;
+	//	if(t3 < 0)
+	//		t3 = 0 - t3;
+	//	if (   t1 > iRange
+	//		|| t2 > iRange
+	//		|| t3 > iRange
+	//		|| mob->DistNoRoot(*caster) > iRange2
+	//		//this call should seem backwards:
+	//		|| mob->GetReverseFactionCon(caster) >= FACTION_KINDLY
+	//		) {
+	//			continue;
+	//	}
+
+	//	//since we assume these are beneficial spells, which do not
+	//	//require LOS, we just go for it.
+	//	// we have a winner!
+	//	if((iSpellTypes & SpellType_Buff) && !RuleB(NPC, BuffFriends)){
+	//		if (mob != caster)
+	//			iSpellTypes = SpellType_Heal;
+	//	}
+
+	//	if (caster->AICastSpell(mob, 100, iSpellTypes))
+	//		return true;
+	//}
 	return false;
 }
 

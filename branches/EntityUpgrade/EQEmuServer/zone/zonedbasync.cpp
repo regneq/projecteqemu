@@ -38,7 +38,7 @@ void DispatchFinishedDBAsync(DBAsyncWork* dbaw) {
 			break;
 		}
 		case DBA_b4_Entity: {
-			Entity* entity = entity_list.GetID(workpt.w2_3());
+			Entity* entity = entity_list.GetByEntityID(workpt.w2_3());
 			if (!entity)
 				break;
 			entity->DBAWComplete(workpt.b1(), dbaw);

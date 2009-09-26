@@ -2941,7 +2941,7 @@ void ClientTaskState::AcceptNewTask(Client *c, int TaskID, int NPCID) {
 	char *buf = 0;
 	MakeAnyLenString(&buf, "%d", TaskID);
 
-	NPC *npc = entity_list.GetID(NPCID)->CastToNPC();
+	NPC *npc = entity_list.GetByEntityID(NPCID)->CastToNPC();
 	if(!npc) {
 		c->Message(clientMessageYellow, "Task Giver ID is %i", NPCID);
 		c->Message(clientMessageError, "Unable to find NPC to send EVENT_TASKACCEPTD to. Report this bug.");
