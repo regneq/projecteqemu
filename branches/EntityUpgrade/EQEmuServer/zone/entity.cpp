@@ -2270,15 +2270,43 @@ bool EntityList::RemoveMob(Mob *delete_mob) {
 bool EntityList::RemoveNPC(int32 delete_id) {
 	bool Result = false;
 
-	if(delete_id > 0 && !mob_entityid_map.empty()) {
-		MobMap::iterator mobItr = mob_entityid_map.begin();
+	if(delete_id > 0) {
+		NPCMap::iterator npcItr = npc_entityid_map.begin();
 
-		mobItr = mob_entityid_map.find(delete_id);
+		npcItr = npc_entityid_map.find(delete_id);
 
-		if(mobItr != mob_entityid_map.end()) {
-			mob_entityid_map.erase(mobItr);
-			safe_delete(mobItr->second);
-			Result = true;
+		if(npcItr != npc_entityid_map.end()) {
+			NPC* delete_npc = npcItr->second;
+
+			// Call RemoveNPC(NPC*) to remove this object from all "NPC" lists now that we have the object reference
+			Result = RemoveNPC(delete_npc);
+		}
+	}
+
+	return Result;
+}
+
+bool EntityList::RemoveNPC(NPC *delete_npc) {
+	bool Result = false;
+
+	if(delete_npc) {
+		for(list<NPC*>::iterator itr = npc_list.begin(); itr != npc_list.end(); itr++) {
+			if(*itr == delete_npc) {
+				// Remove the object reference from the NPC entity id map container
+				npc_entityid_map.erase(delete_npc->GetID());
+
+				// Remove the object reference from the NPC id map container
+				npc_npcid_map.erase(delete_npc->GetID());
+
+				// Remove the object reference from the npc list container
+				npc_list.remove(delete_npc);
+
+				// Delete the referenced object
+				safe_delete(delete_npc);
+
+				Result = true;
+				break;
+			}
 		}
 	}
 
