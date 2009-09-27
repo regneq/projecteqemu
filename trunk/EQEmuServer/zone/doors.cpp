@@ -427,7 +427,7 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 			}		
 			sender->MovePC(zone->GetZoneID(), zone->GetInstanceID(), dest_x, dest_y, dest_z, dest_heading);
 		}
-		else if (( !IsDoorOpen() || opentype == 58 ) && (keyneeded && keyneeded == playerkey)) 
+		else if (( !IsDoorOpen() || opentype == 58 ) && (keyneeded && ((keyneeded == playerkey) || sender->GetGM())))
 		{
 			if(!keepoffkeyring)
 			{

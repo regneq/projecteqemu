@@ -1,5 +1,12 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==09/27/2009==
+cavedude: (Shin Noir) Implemented Wizard AA: Teleport Bind.
+cavedude: (tsowl) GMs will no longer need a key for locked portal doors.
+cavedude: (tsowl) Fix for shared and normal bank dupes.
+cavedude: (Nachyoz) Corrected a bug preventing $faction from reporting correct values.
+cavedude: (drakelord) Runes will now block stuns, provided the damage does not exceed the rune's limit.
+
 ==09/23/2009==
 gaeorn: small fix to pathing code for 64bit
 gaeorn: a few changes to makefiles to clean things up
