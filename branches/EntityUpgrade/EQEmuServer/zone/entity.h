@@ -103,7 +103,7 @@ public:
 	virtual void DBAWComplete(int8 workpt_b1, DBAsyncWork* dbaw) { pDBAsyncWorkID = 0; }
 	bool CheckCoordLosNoZLeaps(float cur_x, float cur_y, float cur_z, float trg_x, float trg_y, float trg_z, float perwalk=1);
 
-	virtual int16 GetID() { return id; }
+	virtual int32 GetID() { return id; }
 
 #ifdef BOTS
 	virtual bool IsBot() const { return false; }
@@ -113,10 +113,10 @@ public:
 protected:
 	friend class EntityList;
 	int32 pDBAsyncWorkID;
-	virtual void SetID(int16 entityId) { id = entityId; }
+	virtual void SetID(int32 entityId) { id = entityId; }
 
 private:
-	int16 id;
+	int32 id;
 };
 
 class EntityList {
@@ -124,14 +124,14 @@ public:
 	EntityList();
 	~EntityList();
 	
-	Entity* GetByEntityID(int16 id);
-	Mob*	GetMob(int16 id);
-	inline Mob*	GetMobID(int16 id) { return(GetMob(id)); }	//for perl
+	Entity* GetByEntityID(int32 id);
+	Mob*	GetMob(int32 id);
+	inline Mob*	GetMobID(int32 id) { return(GetMob(id)); }	//for perl
 	Mob*	GetMob(const char* name);
 	Mob*	GetMobByNpcTypeID(int32 get_id);
 	Client* GetClientByName(const char *name); 
 	Client* GetClientByAccID(int32 accid);
-	Client* GetClientByID(int16 id);
+	Client* GetClientByID(int32 id);
 	Client* GetClientByCharID(int32 iCharID);
 	Client* GetClientByWID(int32 iWID);
 	Client* GetClient(int32 ip, int16 port);
@@ -146,7 +146,7 @@ public:
 	Raid*	GetRaidByLeaderName(const char *leader);
 
 	Corpse*	GetCorpseByOwner(Client* client);
-	Corpse* GetCorpseByID(int16 id);
+	Corpse* GetCorpseByID(int32 id);
 	Corpse* GetCorpseByDBID(int32 dbid);
 	Corpse* GetCorpseByName(char* name);
 	void RemoveAllCorpsesByCharID(int32 charid);
@@ -192,22 +192,22 @@ public:
 	void	AddBeacon(Beacon *beacon);
 	void	AddProximity(NPC *proximity_for);
 	void	Clear();
-	bool	RemoveMob(int16 delete_id);
+	bool	RemoveMob(int32 delete_id);
 	bool	RemoveMob(Mob* delete_mob);
-	bool	RemoveClient(int16 delete_id);
+	bool	RemoveClient(int32 delete_id);
 	bool	RemoveClient(Client* delete_client);
-	bool	RemoveNPC(int16 delete_id);
+	bool	RemoveNPC(int32 delete_id);
 	bool	RemoveNPC(NPC* delete_npc);
 	bool	RemoveGroup(int32 delete_id);
 	bool	RemoveGroup(Group* delete_group);
 	bool	RemoveRaid(int32 delete_id);
 	bool	RemoveRaid(Raid* delete_raid);
-	bool	RemoveCorpse(int16 delete_id);
+	bool	RemoveCorpse(int32 delete_id);
 	bool	RemoveCorpse(Corpse* delete_corpse);
-	bool	RemoveDoor(int16 delete_id);
-	bool	RemoveTrap(int16 delete_id);
-	bool	RemoveObject(int16 delete_id);
-	bool	RemoveProximity(int16 delete_npc_id);
+	bool	RemoveDoor(int32 delete_id);
+	bool	RemoveTrap(int32 delete_id);
+	bool	RemoveObject(int32 delete_id);
+	bool	RemoveProximity(int32 delete_npc_id);
 	void	RemoveAllMobs();
 	void	RemoveAllClients();
 	void	RemoveAllNPCs();
@@ -219,15 +219,15 @@ public:
 	void	RemoveAllLocalities();
 	void	RemoveAllRaids();
 	void	DestroyTempPets(Mob *owner);
-	Entity*	GetEntityMob(int16 id);
+	Entity*	GetEntityMob(int32 id);
 	Entity* GetEntityMob(const char *name);
-	Entity*	GetEntityDoor(int16 id);
-	Entity*	GetEntityObject(int16 id);
-	Entity*	GetEntityCorpse(int16 id);
+	Entity*	GetEntityDoor(int32 id);
+	Entity*	GetEntityObject(int32 id);
+	Entity*	GetEntityCorpse(int32 id);
 	Entity* GetEntityCorpse(const char *name);
 //	Entity*	GetEntityGroup(int32 id);
-	Entity*	GetEntityTrap(int16 id);
-	Entity*	GetEntityBeacon(int16 id);
+	Entity*	GetEntityTrap(int32 id);
+	Entity*	GetEntityBeacon(int32 id);
 	
 	void DescribeAggro(Client *towho, NPC *from_who, float dist, bool verbose);
 
@@ -375,7 +375,7 @@ private:
 	void	AddToSpawnQueue(int16 entityid, NewSpawn_Struct** app);
 	void	CheckSpawnQueue();
 	class SpawnLimitRecord { public: int32 spawngroup_id; int32 npc_type; };	// used for limiting spawns
-	map<int16, SpawnLimitRecord> npc_limit_list;		// entity id -> npc type
+	map<int32, SpawnLimitRecord> npc_limit_list;		// entity id -> npc type
 	int32	tsFirstSpawnOnQueue; // timestamp that the top spawn on the spawnqueue was added, should be 0xFFFFFFFF if queue is empty
 	int32	NumSpawnsOnQueue;
 	LinkedList<NewSpawn_Struct*> SpawnQueue;
@@ -393,49 +393,49 @@ private:
 	list<Raid *> raid_list;*/
 
 	// The various, individual entity lists ...
-	typedef map<int16, Client*> ClientMap;
+	typedef map<int32, Client*> ClientMap;
 	typedef map<std::string, Client*> ClientNameMap;
-	typedef pair<int16, Client*> ClientMapPair;
+	typedef pair<int32, Client*> ClientMapPair;
 	typedef pair<std::string, Client*> ClientMapByNamePair;
 	ClientMap client_entityid_map;	// Objects stored in this container are keyed by entity id
 	ClientMap client_characterid_map;	// Objects stored in this container are keyed by character id
 	ClientNameMap client_name_map;	// Objects stored in this container are keyed by character name
 	list<Client*> client_list;
 	
-	typedef map<int16, NPC*> NPCMap;
-	typedef pair<int16, NPC*> NPCMapPair;
+	typedef map<int32, NPC*> NPCMap;
+	typedef pair<int32, NPC*> NPCMapPair;
 	NPCMap npc_entityid_map;	// Objects stored in this container are keyed by entity id
 	NPCMap npc_npcid_map;	// Objects stored in this container are keyed by npc id
 	list<NPC*> npc_list;
 	
-	typedef map<int16, Group*> GroupMap;
-	typedef pair<int16, Group*> GroupMapPair;
+	typedef map<int32, Group*> GroupMap;
+	typedef pair<int32, Group*> GroupMapPair;
 	GroupMap group_entityid_map;	// Objects stored in this container are keyed by entity id
 	GroupMap group_groupid_map;	// Objects stored in this container are keyed by group id
 	list<Group*> group_list;
 	
-	typedef map<int16, Raid*> RaidMap;
-	typedef pair<int16, Raid*> RaidMapPair;
+	typedef map<int32, Raid*> RaidMap;
+	typedef pair<int32, Raid*> RaidMapPair;
 	RaidMap raid_entityid_map;	// Objects stored in this container are keyed by entity id
 	RaidMap raid_raidid_map;	// Objects stored in this container are keyed by raid id
 	list<Raid*> raid_list;
 
-	typedef map<int16, Corpse*> CorpseMap;
+	typedef map<int32, Corpse*> CorpseMap;
 	//typedef map<std::string, Corpse*> CorpseNameMap;
-	typedef pair<int16, Corpse*> CorpseMapPair;
+	typedef pair<int32, Corpse*> CorpseMapPair;
 	//typedef pair<std::string, Corpse*> CorpseMapByNamePair;	
 	CorpseMap corpse_entityid_map;	// Objects stored in this container are keyed by entity id
 	//CorpseNameMap corpse_name_map;	// Objects stored in this container are keyed by corpse first name
 	list<Corpse*> corpse_list;
 	
-	typedef map<int16, Beacon*> BeaconMap;
-	typedef pair<int16, Beacon*> BeaconMapPair;
+	typedef map<int32, Beacon*> BeaconMap;
+	typedef pair<int32, Beacon*> BeaconMapPair;
 	BeaconMap beacon_entityid_map;	// Objects stored in this container are keyed by entity id
 	list<Beacon*> beacon_list;
 
-	typedef map<int16, Mob*> MobMap;
+	typedef map<int32, Mob*> MobMap;
 	typedef map<std::string, Mob*> MobNameMap;
-	typedef pair<int16, Mob*> MobMapPair;
+	typedef pair<int32, Mob*> MobMapPair;
 	typedef pair<std::string, Mob*> MobMapByNamePair;
 	MobMap mob_entityid_map;	// Objects stored in this container are keyed by entity id
 	MobNameMap mob_name_map;	// Objects stored in this container are keyed by mob first name
@@ -450,12 +450,13 @@ private:
 	LinkedList<Doors*> door_list;
 	LinkedList<Trap*> trap_list;
 
-	int16 last_insert_id;	// The value of the last zone entity id assigned.
-	int16 maxZoneEntitiesAllowed;	// This value constrains the number of allowed zone entities.
-	int16 GetZoneEntityID();	// Returns the next available zone entity id available for assignment.
-	int16 GetGlobalEntityID(Client* client);	// Returns the next available global entity id available for assignment.
-	int16 GetGlobalEntityID(Group* group);	// Returns the next available global entity id available for assignment.
-	int16 GetGlobalEntityID(Raid* raid);	// Returns the next available global entity id available for assignment.
+	int32 last_insert_id;	// The value of the last zone entity id assigned.
+	int32 maxZoneEntitiesAllowed;	// This value constrains the number of allowed zone entities.
+	int32 GetZoneEntityID();	// Returns the next available zone entity id available for assignment.
+	int32 GetGlobalEntityID(Client* client);	// Returns the next available global entity id available for assignment.
+	//int16 GetGlobalEntityID(Group* group);	// Returns the next available global entity id available for assignment.
+	//int16 GetGlobalEntityID(Raid* raid);	// Returns the next available global entity id available for assignment.
+	int32 GetGlobalEntityIDByObjectTypeAndTableID(int16 entityObjectType, int32 objectTableID);	// Returns the global entity id assigned to specified object type id and object table id.
 
 	// Please Do Not Declare Any EntityList Class Members After This Comment
 #ifdef BOTS
@@ -473,9 +474,9 @@ private:
 		void AddBotRaid(BotRaids *br);	// TODO: Remove after BotRaids object is deprecated
 		void AddBotRaid(BotRaids *br, int16 id);	// TODO: Remove after BotRaids object is deprecated
 	private:
-		int16 GetGlobalEntityID(Bot* bot);	// Returns the next available global entity id available for assignment.
-		typedef map<int16, Bot*> BotMap;
-		typedef pair<int16, Bot*> BotMapPair;
+		int32 GetGlobalEntityID(Bot* bot);	// Returns the next available global entity id available for assignment.
+		typedef map<int32, Bot*> BotMap;
+		typedef pair<int32, Bot*> BotMapPair;
 		BotMap bot_entityid_map;	// Objects stored in this container are keyed by entity id
 		BotMap bot_botid_map;	// Objects stored in this container are keyed by bot id
 		list<Bot*> bot_list;

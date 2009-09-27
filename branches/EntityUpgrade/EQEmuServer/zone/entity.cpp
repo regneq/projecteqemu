@@ -281,34 +281,94 @@ EntityList::~EntityList() {
 	RemoveAllLocalities();
 }
 
-int16 EntityList::GetZoneEntityID() {
-	int16 Result = 0;
+int32 EntityList::GetZoneEntityID() {
+	if(last_insert_id > 1500)
+		last_insert_id = 0;
 
-	// TODO:
+	int32 getid=last_insert_id;
+
+	while(1) {
+		getid++;
+
+		if (GetByEntityID(getid) == 0) {
+			last_insert_id = getid;
+			return getid;
+		}
+	}
+}
+
+int32 EntityList::GetGlobalEntityID(Client* client) {
+	int32 Result = 0;
+
+	if(client) {
+		int32 tempGlobalEntityID = 0;
+
+		tempGlobalEntityID = GetGlobalEntityIDByObjectTypeAndTableID(1, client->CharacterID());
+
+		if(tempGlobalEntityID == 0) {
+			std::string errorMessage;
+			char* Query = 0;
+			char TempErrorMessageBuffer[MYSQL_ERRMSG_SIZE];
+
+			if(!database.RunQuery(Query, MakeAnyLenString(&Query, "insert into globalentity (GlobalEntityTypeID, GlobalObjectTableID) VALUES (1, %i)", client->CharacterID()), TempErrorMessageBuffer, 0, 0, &tempGlobalEntityID)) {
+				errorMessage = std::string(TempErrorMessageBuffer);
+				// TODO: Write this error message to zone error log
+			}
+			else {
+				Result = tempGlobalEntityID;
+			}
+		}
+		else
+			Result = tempGlobalEntityID;
+	}
 
 	return Result;
 }
 
-int16 EntityList::GetGlobalEntityID(Client* client) {
-	int16 Result = 0;
+//int16 EntityList::GetGlobalEntityID(Group* group) {
+//	int16 Result = 0;
+//
+//	if(group) {
+//		//
+//	}
+//
+//	return Result;
+//}
+//
+//int16 EntityList::GetGlobalEntityID(Raid* raid) {
+//	int16 Result = 0;
+//
+//	if(raid) {
+//		//
+//	}
+//
+//	return Result;
+//}
 
-	// TODO:
+int32 EntityList::GetGlobalEntityIDByObjectTypeAndTableID(int16 entityObjectType, int32 objectTableID) {
+	int32 Result = 0;
 
-	return Result;
-}
+	if(entityObjectType > 0 && objectTableID > 0) {
+		char* Query = 0;
+		char TempErrorMessageBuffer[MYSQL_ERRMSG_SIZE];
+		MYSQL_RES* DatasetResult;
+		MYSQL_ROW DataRow;
 
-int16 EntityList::GetGlobalEntityID(Group* group) {
-	int16 Result = 0;
+		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "select ID from globalentity where GlobalEntityTypeID = %i and GlobalObjectTableID = %i", entityObjectType, objectTableID), TempErrorMessageBuffer, &DatasetResult)) {
+			// TODO: Write error message to zone error log
+			//*errorMessage = std::string(TempErrorMessageBuffer);
+		}
+		else {
+			while(DataRow = mysql_fetch_row(DatasetResult)) {
+				Result = atoi(DataRow[0]);
+				break;
+			}
 
-	// TODO:
+			mysql_free_result(DatasetResult);
+		}
 
-	return Result;
-}
-
-int16 EntityList::GetGlobalEntityID(Raid* raid) {
-	int16 Result = 0;
-
-	// TODO:
+		safe_delete(Query);
+	}
 
 	return Result;
 }
@@ -506,8 +566,11 @@ void EntityList::CorpseProcess() {
 		count++;
 		
 		if(!(*itr)->Process()) {
-			corpse_list.erase(itr);
+			itr = corpse_list.erase(itr);
 			safe_delete(*itr);
+
+			if(itr == corpse_list.end())
+				break;
 		}
 	}
 
@@ -528,14 +591,15 @@ void EntityList::MobProcess() {
 			continue;
 
 		if(!mob->Process()){
-			if(mob->IsNPC())
+			if(mob->IsNPC()) {
 				entity_list.RemoveNPC(mob->CastToNPC()->GetID());
+			}
 #ifdef BOTS
 			else if(mob->IsBot()) {
 				entity_list.RemoveBot(mob->CastToBot()->GetID());
 			}
 #endif
-			else{
+			else {
 #ifdef WIN32
 				struct in_addr	in;
 				in.s_addr = mob->CastToClient()->GetIP();
@@ -555,9 +619,12 @@ void EntityList::MobProcess() {
 				entity_list.RemoveClient(mob->GetID());
 			}
 			
-			mob_list.erase(itr);
+			itr = mob_list.erase(itr);
 			safe_delete(mob);
 			mob = 0;
+
+			if(itr == mob_list.end())
+				break;
 		}
 	}
 }
@@ -565,28 +632,17 @@ void EntityList::MobProcess() {
 void EntityList::BeaconProcess() {
 	_ZP(EntityList_BeaconProcess);
 
-	//LinkedListIterator<Beacon *> iterator(beacon_list);
-	//int count = 0;
-
 	for(list<Beacon*>::iterator itr = beacon_list.begin(); itr != beacon_list.end(); itr++) {
-		//count++;
+		Beacon* beacon = *itr;
 		
-		if(!(*itr)->Process()) {
-			beacon_list.erase(itr);
-			safe_delete(*itr);
+		if(!beacon->Process()) {
+			itr = beacon_list.erase(itr);
+			safe_delete(beacon);
+
+			if(itr == beacon_list.end())
+				break;
 		}
 	}
-
-	/*if(count == 0)
-		net.corpse_timer.Disable();*/
-
-	/*for(iterator.Reset(), count = 0; iterator.MoreElements(); count++)
-	{
-		if(!iterator.GetData()->Process())
-			iterator.RemoveCurrent();
-		else
-			iterator.Advance();
-	}*/
 }
 
 
@@ -877,7 +933,7 @@ bool EntityList::MakeDoorSpawnPacket(EQApplicationPacket* app)
 	return true;	
 }
 
-Entity* EntityList::GetEntityMob(int16 id) {
+Entity* EntityList::GetEntityMob(int32 id) {
 	Entity* Result = 0;
 
 	if(!mob_entityid_map.empty()) {
@@ -922,7 +978,8 @@ Entity* EntityList::GetEntityMob(const char *name) {
 	}
 	return 0;*/
 }
-Entity* EntityList::GetEntityDoor(int16 id){
+
+Entity* EntityList::GetEntityDoor(int32 id) {
 	LinkedListIterator<Doors*> iterator(door_list);
 	iterator.Reset();
 	while(iterator.MoreElements())
@@ -935,7 +992,8 @@ Entity* EntityList::GetEntityDoor(int16 id){
 	}
 	return 0;
 }
-Entity* EntityList::GetEntityCorpse(int16 id) {
+
+Entity* EntityList::GetEntityCorpse(int32 id) {
 	Entity* Result = 0;
 
 	if(!corpse_entityid_map.empty() && id > 0) {
@@ -971,7 +1029,7 @@ Entity* EntityList::GetEntityCorpse(const char *name) {
 	return Result;
 }
 
-Entity* EntityList::GetEntityTrap(int16 id){
+Entity* EntityList::GetEntityTrap(int32 id){
 	LinkedListIterator<Trap*> iterator(trap_list);
 	iterator.Reset();
 	while(iterator.MoreElements())
@@ -985,7 +1043,7 @@ Entity* EntityList::GetEntityTrap(int16 id){
 	return 0;
 }
 
-Entity* EntityList::GetEntityObject(int16 id){
+Entity* EntityList::GetEntityObject(int32 id){
 	LinkedListIterator<Object*> iterator(object_list);
 	iterator.Reset();
 	while(iterator.MoreElements())
@@ -1013,7 +1071,7 @@ Entity* EntityList::GetEntityGroup(int16 id){
 	return 0;
 }
 */
-Entity* EntityList::GetEntityBeacon(int16 id) {
+Entity* EntityList::GetEntityBeacon(int32 id) {
 	Entity* Result = 0;
 
 	if(id > 0 && !beacon_entityid_map.empty()) {
@@ -1028,7 +1086,7 @@ Entity* EntityList::GetEntityBeacon(int16 id) {
 	return Result;
 }
 
-Entity* EntityList::GetByEntityID(int16 get_id) {
+Entity* EntityList::GetByEntityID(int32 get_id) {
 	Entity* ent=0;
 
 	if((ent=entity_list.GetEntityMob(get_id))!=0)
@@ -1049,7 +1107,7 @@ Entity* EntityList::GetByEntityID(int16 get_id) {
 		return 0;
 }
 
-Mob* EntityList::GetMob(int16 get_id)
+Mob* EntityList::GetMob(int32 get_id)
 {
 	Entity* ent=0;
 
@@ -1648,7 +1706,7 @@ Corpse*	EntityList::GetCorpseByOwner(Client* client) {
 	return Result;
 }
 
-Corpse* EntityList::GetCorpseByID(int16 id) {
+Corpse* EntityList::GetCorpseByID(int32 id) {
 	Corpse* Result = 0;
 
 	if(id > 0) {
@@ -1903,7 +1961,7 @@ Client* EntityList::GetClientByAccID(int32 accid) {
 	return Result;
 }
 
-Client* EntityList::GetClientByID(int16 id) { 
+Client* EntityList::GetClientByID(int32 id) { 
 	Client* Result = 0;
 
 	if(id > 0 && !client_entityid_map.empty()) {
@@ -2150,7 +2208,8 @@ void EntityList::RemoveAllTraps(){
 	while(iterator.MoreElements())
 		iterator.RemoveCurrent();
 }
-bool EntityList::RemoveMob(int16 delete_id){
+
+bool EntityList::RemoveMob(int32 delete_id) {
 	bool Result = false;
 
 	if(delete_id > 0) {
@@ -2208,7 +2267,7 @@ bool EntityList::RemoveMob(Mob *delete_mob) {
 	return Result;
 }
 
-bool EntityList::RemoveNPC(int16 delete_id) {
+bool EntityList::RemoveNPC(int32 delete_id) {
 	bool Result = false;
 
 	if(delete_id > 0 && !mob_entityid_map.empty()) {
@@ -2226,7 +2285,7 @@ bool EntityList::RemoveNPC(int16 delete_id) {
 	return Result;
 }
 
-bool EntityList::RemoveClient(int16 delete_id) {
+bool EntityList::RemoveClient(int32 delete_id) {
 	bool Result = false;
 
 	if(delete_id > 0) {
@@ -2295,7 +2354,7 @@ bool EntityList::RemoveClient(Client *delete_client) {
 	return Result;
 }
 
-bool EntityList::RemoveObject(int16 delete_id){
+bool EntityList::RemoveObject(int32 delete_id) {
 	LinkedListIterator<Object*> iterator(object_list);
 	iterator.Reset();
 	while(iterator.MoreElements())
@@ -2308,7 +2367,8 @@ bool EntityList::RemoveObject(int16 delete_id){
 	}
 	return false;
 }
-bool EntityList::RemoveTrap(int16 delete_id){
+
+bool EntityList::RemoveTrap(int32 delete_id) {
 	LinkedListIterator<Trap*> iterator(trap_list);
 	iterator.Reset();
 	while(iterator.MoreElements())
@@ -2321,7 +2381,8 @@ bool EntityList::RemoveTrap(int16 delete_id){
 	}
 	return false;
 }
-bool EntityList::RemoveDoor(int16 delete_id){
+
+bool EntityList::RemoveDoor(int32 delete_id) {
 	LinkedListIterator<Doors*> iterator(door_list);
 	iterator.Reset();
 	while(iterator.MoreElements())
@@ -2335,7 +2396,7 @@ bool EntityList::RemoveDoor(int16 delete_id){
 	return false;
 }
 
-bool EntityList::RemoveCorpse(int16 delete_id) {
+bool EntityList::RemoveCorpse(int32 delete_id) {
 	bool Result = false;
 
 	if(delete_id > 0 && !corpse_entityid_map.empty()) {
@@ -3371,7 +3432,7 @@ void EntityList::AddProximity(NPC *proximity_for) {
 	proximity_for->proximity = new NPCProximity;
 }
 
-bool EntityList::RemoveProximity(int16 delete_npc_id) {
+bool EntityList::RemoveProximity(int32 delete_npc_id) {
 	LinkedListIterator<NPC*> iterator(proximity_list);
 	iterator.Reset();
 	while(iterator.MoreElements()) {
@@ -3544,7 +3605,7 @@ bool EntityList::LimitCheckType(int32 npc_type, int count) {
 	if(count < 1)
 		return(true);
 	
-	map<int16, SpawnLimitRecord>::iterator cur,end;
+	map<int32, SpawnLimitRecord>::iterator cur,end;
 	cur = npc_limit_list.begin();
 	end = npc_limit_list.end();
 	
@@ -3565,7 +3626,7 @@ bool EntityList::LimitCheckGroup(int32 spawngroup_id, int count) {
 	if(count < 1)
 		return(true);
 	
-	map<int16, SpawnLimitRecord>::iterator cur,end;
+	map<int32, SpawnLimitRecord>::iterator cur,end;
 	cur = npc_limit_list.begin();
 	end = npc_limit_list.end();
 	
@@ -3587,7 +3648,7 @@ bool EntityList::LimitCheckBoth(int32 npc_type, int32 spawngroup_id, int group_c
 	if(group_count < 1 && type_count < 1)
 		return(true);
 	
-	map<int16, SpawnLimitRecord>::iterator cur,end;
+	map<int32, SpawnLimitRecord>::iterator cur,end;
 	cur = npc_limit_list.begin();
 	end = npc_limit_list.end();
 	

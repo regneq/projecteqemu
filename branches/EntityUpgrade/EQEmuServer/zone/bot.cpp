@@ -11859,10 +11859,30 @@ bool EntityList::RemoveBot(Bot *delete_bot) {
 	return Result;
 }
 
-int16 EntityList::GetGlobalEntityID(Bot* bot) {
-	int16 Result = 0;
+int32 EntityList::GetGlobalEntityID(Bot* bot) {
+	int32 Result = 0;
 
-	// TODO:
+	if(bot) {
+		int32 tempGlobalEntityID = 0;
+
+		tempGlobalEntityID = GetGlobalEntityIDByObjectTypeAndTableID(2, bot->GetBotID());
+
+		if(tempGlobalEntityID == 0) {
+			std::string errorMessage;
+			char* Query = 0;
+			char TempErrorMessageBuffer[MYSQL_ERRMSG_SIZE];
+
+			if(!database.RunQuery(Query, MakeAnyLenString(&Query, "insert into globalentity (GlobalEntityTypeID, GlobalObjectTableID) VALUES (2, %i)", bot->GetBotID()), TempErrorMessageBuffer, 0, 0, &tempGlobalEntityID)) {
+				errorMessage = std::string(TempErrorMessageBuffer);
+				// TODO: Write this error message to zone error log
+			}
+			else {
+				Result = tempGlobalEntityID;
+			}
+		}
+		else
+			Result = tempGlobalEntityID;
+	}
 
 	return Result;
 }
