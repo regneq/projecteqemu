@@ -759,7 +759,7 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 			Message(13, "Error: Server found no item in slot %i (->%i), Deleting Item!", src_slot_id, dst_slot_id);
 
 		LogFile->write(EQEMuLog::Debug, "Error: Server found no item in slot %i (->%i), Deleting Item!", src_slot_id, dst_slot_id);
-		this->DeleteItemInInventory(dst_slot_id,0,true);
+		this->DeleteItemInInventory(src_slot_id,0,true);
 		return false;
 	}
 	//verify shared bank transactions in the database
@@ -769,7 +769,31 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 			DeleteItemInInventory(dst_slot_id,0,true);
 			return(false);
 		}
+		if(src_slot_id >= 2500 && src_slot_id <= 2501 && src_inst->IsType(ItemClassContainer)){
+			for (uint8 idx=0; idx<10; idx++) {
+				const ItemInst* baginst = src_inst->GetItem(idx);
+				if(baginst && !database.VerifyInventory(account_id, Inventory::CalcSlotId(src_slot_id, idx), baginst)){
+					DeleteItemInInventory(Inventory::CalcSlotId(src_slot_id, idx),0,false);
+				}
+			}
+		}
 	}
+	if(dst_inst && dst_slot_id >= 2500 && dst_slot_id <= 2550) {
+		if(!database.VerifyInventory(account_id, dst_slot_id, dst_inst)) {
+			LogFile->write(EQEMuLog::Error, "Player %s on account %s was found exploting the shared bank. They have been banned until further review.\n", account_name, GetName());
+			DeleteItemInInventory(src_slot_id,0,true);
+			return(false);
+		}
+		if(dst_slot_id >= 2500 && dst_slot_id <= 2501 && dst_inst->IsType(ItemClassContainer)){
+			for (uint8 idx=0; idx<10; idx++) {
+				const ItemInst* baginst = dst_inst->GetItem(idx);
+				if(baginst && !database.VerifyInventory(account_id, Inventory::CalcSlotId(dst_slot_id, idx), baginst)){
+					DeleteItemInInventory(Inventory::CalcSlotId(dst_slot_id, idx),0,false);
+				}
+			}
+		}
+	}
+
 
 	// Check for No Drop Hacks
 	Mob* with = trade->With();

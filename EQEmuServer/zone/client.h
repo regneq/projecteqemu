@@ -451,6 +451,11 @@ public:
 	void	SetBindPoint(int to_zone = -1, float new_x = 0.0f, float new_y = 0.0f, float new_z = 0.0f);
 	void	SetStartZone(uint32 zoneid, float x = 0.0f, float y =0.0f, float z = 0.0f);
 	uint32	GetStartZone(void);
+	inline const float	GetBindX() const		{ return m_pp.binds[0].x; }
+	inline const float	GetBindY() const		{ return m_pp.binds[0].y; }
+	inline const float	GetBindZ() const		{ return m_pp.binds[0].z; }
+	inline const float	GetBindHeading() const	{ return m_pp.binds[0].heading; }
+	uint32	GetBindZoneID() const	{ return m_pp.binds[0].zoneId; }
 	void	MovePC(const char* zonename, float x, float y, float z, float heading, int8 ignorerestrictions = 0, ZoneMode zm = ZoneSolicited);
 	void	MovePC(int32 zoneID, float x, float y, float z, float heading, int8 ignorerestrictions = 0, ZoneMode zm = ZoneSolicited);
 	void	MovePC(float x, float y, float z, float heading, int8 ignorerestrictions = 0, ZoneMode zm = ZoneSolicited);

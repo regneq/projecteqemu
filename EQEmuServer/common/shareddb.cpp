@@ -233,7 +233,7 @@ bool SharedDatabase::SaveInventory(uint32 char_id, const ItemInst* inst, sint16 
 			if (ret && Inventory::SupportsContainers(slot_id)) {
 				safe_delete_array(query);
 				sint16 base_slot_id = Inventory::CalcSlotId(slot_id, 0);
-				ret = RunQuery(query, MakeAnyLenString(&query, "DELETE FROM inventory WHERE charid=%i AND slotid>=%i AND slotid<%i",
+				ret = RunQuery(query, MakeAnyLenString(&query, "DELETE FROM sharedbank WHERE charid=%i AND slotid>=%i AND slotid<%i",
 					char_id, base_slot_id, (base_slot_id+10)), errbuf);
 			}
 			
@@ -1272,7 +1272,6 @@ ItemInst* SharedDatabase::CreateItem(uint32 item_id, sint16 charges, uint32 aug1
 		inst->PutAugment(this, 2, aug3);
 		inst->PutAugment(this, 3, aug4);
 		inst->PutAugment(this, 4, aug5);
-
 	}
 
 	return inst;

@@ -388,6 +388,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 
 				break;
 			}
+			case SE_YetAnotherGate: //Shin: Used on Teleport Bind.
 			case SE_Teleport:	// gates, rings, circles, etc
 			case SE_Teleport2:
 			{
@@ -417,6 +418,17 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 								break;
 						}
 					}
+				}
+
+				if (effect == SE_YetAnotherGate && caster->IsClient())
+				{ //Shin: Teleport Bind uses caster's bind point
+					x = caster->CastToClient()->GetBindX();
+					y = caster->CastToClient()->GetBindY();
+					z = caster->CastToClient()->GetBindZ();
+					heading = caster->CastToClient()->GetBindHeading();
+					//target_zone = caster->CastToClient()->GetBindZoneId(); target_zone doesn't work due to const char
+					CastToClient()->MovePC(caster->CastToClient()->GetBindZoneID(), 0, x, y, z, heading);
+					break;
 				}
 
 #ifdef SPELL_EFFECT_SPAM
