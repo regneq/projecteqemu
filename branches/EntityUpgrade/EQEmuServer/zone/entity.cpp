@@ -2232,35 +2232,27 @@ bool EntityList::RemoveMob(Mob *delete_mob) {
 	bool Result = false;
 
 	if(delete_mob) {
-		for(list<Mob*>::iterator itr = mob_list.begin(); itr != mob_list.end(); itr++) {
+		list<Mob*>::iterator itr = mob_list.begin();
+
+		while(itr != mob_list.end()) {
 			if(*itr == delete_mob) {
-				// Remove the object reference from the mob entity id map container
-				MobMap::iterator mapItr = mob_entityid_map.begin();
+				// Remove the object reference from the Mob entity id map container
+				mob_entityid_map.erase(delete_mob->GetID());
 
-				mapItr = mob_entityid_map.find(delete_mob->GetID());
+				// Remove the object reference from the Mob name map container
+				mob_name_map.erase(delete_mob->GetName());
 
-				if(mapItr != mob_entityid_map.end()) {
-					mob_entityid_map.erase(mapItr);
-				}
-
-				// Remove the object reference from the mob name map container
-				MobNameMap::iterator mapNameItr = mob_name_map.begin();
-
-				mapNameItr = mob_name_map.find(delete_mob->GetName());
-
-				if(mapNameItr != mob_name_map.end()) {
-					mob_name_map.erase(mapNameItr);
-				}
-
-				// Remove the object reference from the mob list container
-				mob_list.remove(delete_mob);
+				// Remove the object reference from the Mob list container
+				mob_list.erase(itr++);
 
 				// Delete the referenced object
 				safe_delete(delete_mob);
 
 				Result = true;
-				break;
 			}
+			else
+				itr++;
+
 		}
 	}
 
@@ -2290,23 +2282,26 @@ bool EntityList::RemoveNPC(NPC *delete_npc) {
 	bool Result = false;
 
 	if(delete_npc) {
-		for(list<NPC*>::iterator itr = npc_list.begin(); itr != npc_list.end(); itr++) {
+		list<NPC*>::iterator itr = npc_list.begin();
+
+		while(itr != npc_list.end()) {
 			if(*itr == delete_npc) {
 				// Remove the object reference from the NPC entity id map container
 				npc_entityid_map.erase(delete_npc->GetID());
 
 				// Remove the object reference from the NPC id map container
-				npc_npcid_map.erase(delete_npc->GetID());
+				npc_npcid_map.erase(delete_npc->GetNPCTypeID());
 
 				// Remove the object reference from the npc list container
-				npc_list.remove(delete_npc);
+				npc_list.erase(itr++);
 
 				// Delete the referenced object
 				safe_delete(delete_npc);
 
 				Result = true;
-				break;
 			}
+			else
+				itr++;
 		}
 	}
 
@@ -2336,46 +2331,29 @@ bool EntityList::RemoveClient(Client *delete_client) {
 	bool Result = false;
 
 	if(delete_client) {
-		for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+		list<Client*>::iterator itr = client_list.begin();
+
+		while(itr != client_list.end()) {
 			if(*itr == delete_client) {
-				// Remove the object reference from the client entity id map container
-				ClientMap::iterator mapItr = client_entityid_map.begin();
+				// Remove the object reference from the Client entity id map container
+				client_entityid_map.erase(delete_client->GetID());
 
-				mapItr = client_entityid_map.find(delete_client->GetID());
+				// Remove the object reference from the Client character id map container
+				client_characterid_map.erase(delete_client->CharacterID());
 
-				if(mapItr != client_entityid_map.end()) {
-					client_entityid_map.erase(mapItr);
-				}
+				// Remove the object reference from the Client name map container
+				client_name_map.erase(delete_client->GetName());
 
-				mapItr = 0;
-
-				// Remove the object reference from the client character id map container
-				mapItr = client_characterid_map.begin();
-
-				mapItr = client_characterid_map.find(delete_client->GetID());
-
-				if(mapItr != client_characterid_map.end()) {
-					client_characterid_map.erase(mapItr);
-				}
-
-				// Remove the object reference from the client name map container
-				ClientNameMap::iterator mapNameItr = client_name_map.begin();
-
-				mapNameItr = client_name_map.find(delete_client->GetName());
-
-				if(mapNameItr != client_name_map.end()) {
-					client_name_map.erase(mapNameItr);
-				}
-
-				// Remove the object reference from the client list container
-				client_list.remove(delete_client);
+				// Remove the object reference from the npc list container
+				client_list.erase(itr++);
 
 				// Delete the referenced object
 				safe_delete(delete_client);
 
 				Result = true;
-				break;
 			}
+			else
+				itr++;
 		}
 	}
 
