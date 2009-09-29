@@ -69,6 +69,7 @@
 #define CORPSE_CANT_SENSE			262		//You cannot sense any corpses for this PC in this zone.
 #define SPELL_NO_HOLD				263		//Your spell did not take hold.
 #define CANNOT_CHARM				267		//This NPC cannot be charmed.
+#define SPELL_NO_EFFECT				268		//Your target looks unaffected.
 #define NO_INSTRUMENT_SKILL			269		//Stick to singing until you learn to play this instrument.
 #define REGAIN_AND_CONTINUE			270		//You regain your concentration and continue your casting.
 #define SPELL_WOULDNT_HOLD			271		//Your spell would not have taken hold on your target.
