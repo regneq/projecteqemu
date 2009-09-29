@@ -1,5 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==09/29/2009==
+Rogean: Direct Heal and Rune Aggro are now based off the mana cost of the spell.
+Rogean: HoT Aggro is now based off the per-tic heal amount, when the spell lands.
+Rogean: Fixed several issues with focus effects. Beneficial Hate Reduction Focus should now work.
+Rogean: Fixed AA Spell Casting Subtlety not applying to heal aggro. Also changed to correct values.
+
 ==09/27/2009==
 cavedude: (Shin Noir) Implemented Wizard AA: Teleport Bind.
 cavedude: (tsowl) GMs will no longer need a key for locked portal doors.

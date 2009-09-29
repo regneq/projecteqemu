@@ -1287,36 +1287,43 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 	
 	if(AggroAmount > 0)
 	{
+
+		int HateMod = RuleI(Aggro, SpellAggroMod);
+
+		if(IsClient())
+		{
+			HateMod += CastToClient()->GetFocusEffect(focusSpellHateMod, spell_id);
+		}
+
 		int aaSubtlety = ( GetAA(aaSpellCastingSubtlety) > GetAA(aaSpellCastingSubtlety2) ) ? GetAA(aaSpellCastingSubtlety) : GetAA(aaSpellCastingSubtlety2);
 
 		switch (aaSubtlety)
 		{
+		case 0:
+			break;
 		case 1:
-			AggroAmount = AggroAmount * 95 / 100;
-			break;
 		case 2:
-			AggroAmount = AggroAmount * 90 / 100;
-			break;
 		case 3:
-			AggroAmount = AggroAmount * 80 / 100;
+			HateMod -= ((aaSubtlety * 3) + 3);
+			break;
+		default:
+			HateMod -= (12 + aaSubtlety);
 			break;
 		}
+
+		AggroAmount = (AggroAmount * HateMod) / 100;
 
 		//made up number probably scales a bit differently on live but it seems like it will be close enough
 		//every time you cast on live you get a certain amount of "this is a spell" aggro
 		//confirmed by EQ devs to be 100 exactly at level 85. From their wording it doesn't seem like it's affected
 		//by hate modifiers either.
-		AggroAmount += (slevel*slevel/72);
+		//AggroAmount += (slevel*slevel/72); // Moved Below
+
 	}
 
-	if(IsClient())
-	{
-		sint32 focusAggro = CastToClient()->GetFocusEffect(focusHateReduction, spell_id);
-		AggroAmount = (AggroAmount * (100+focusAggro) / 100);
-	}
 
-	AggroAmount = (AggroAmount * RuleI(Aggro, SpellAggroMod))/100;
-	AggroAmount += spells[spell_id].bonushate + nonModifiedAggro;
+
+	AggroAmount += (slevel*slevel/72) + spells[spell_id].bonushate + nonModifiedAggro;
 	return AggroAmount;
 }
 
@@ -1327,29 +1334,13 @@ sint32 Mob::CheckHealAggroAmount(int16 spellid, int32 heal_possible) {
 
 	for (int o = 0; o < EFFECT_COUNT; o++) {
 		switch(spells[spell_id].effectid[o]) {
-			case SE_CurrentHP:
-			case SE_HealOverTime:{
-				int val = CalcSpellEffectValue_formula(spells[spell_id].formula[o], spells[spell_id].base[o], spells[spell_id].max[o], this->GetLevel(), spell_id);
-				if(val > 0)
-				{
-					if(val <= heal_possible)
-					{
-						AggroAmount += val/2;
-					}
-					else
-					{
-						AggroAmount += heal_possible/2;
-					}
-				}
+			case SE_CurrentHP: 
+			case SE_Rune: {
+				AggroAmount += spells[spell_id].mana;
 				break;
 			}
-			case SE_Rune:
-			{
-				int val = CalcSpellEffectValue_formula(spells[spell_id].formula[o], spells[spell_id].base[o], spells[spell_id].max[o], this->GetLevel(), spell_id);
-				if(val > 0)
-				{
-					AggroAmount += val/2;
-				}
+			case SE_HealOverTime:{
+				AggroAmount += CalcSpellEffectValue_formula(spells[spell_id].formula[o], spells[spell_id].base[o], spells[spell_id].max[o], this->GetLevel(), spell_id);
 				break;
 			}
 			default:{
@@ -1362,13 +1353,43 @@ sint32 Mob::CheckHealAggroAmount(int16 spellid, int32 heal_possible) {
 	if (GetOwner())
 		AggroAmount = AggroAmount * RuleI(Aggro, PetSpellAggroMod) / 100;
 
-	if(IsClient())
+	if(AggroAmount > 0)
 	{
-		sint32 focusAggro = CastToClient()->GetFocusEffect(focusHateReduction, spell_id);
-		AggroAmount = (AggroAmount * (100+focusAggro) / 100);
+		int HateMod = RuleI(Aggro, SpellAggroMod);
+
+		if(IsClient())
+		{
+			HateMod += CastToClient()->GetFocusEffect(focusSpellHateMod, spell_id);
+		}
+
+		int aaSubtlety = ( GetAA(aaSpellCastingSubtlety) > GetAA(aaSpellCastingSubtlety2) ) ? GetAA(aaSpellCastingSubtlety) : GetAA(aaSpellCastingSubtlety2);
+
+		switch (aaSubtlety)
+		{
+		case 0:
+			break;
+		case 1:
+		case 2:
+		case 3:
+			//AggroAount = (AggroAmount * ((aaSubtlety * 3) + 3)) / 100;
+			HateMod -= ((aaSubtlety * 3) + 3);
+			break;
+		default:
+			HateMod -= (12 + aaSubtlety);
+			break;
+		}
+
+		AggroAmount = (AggroAmount * HateMod) / 100;
+
+		//made up number probably scales a bit differently on live but it seems like it will be close enough
+		//every time you cast on live you get a certain amount of "this is a spell" aggro
+		//confirmed by EQ devs to be 100 exactly at level 85. From their wording it doesn't seem like it's affected
+		//by hate modifiers either.
+		//AggroAmount += (slevel*slevel/72); // Moved Below
+
+
 	}
 
-	AggroAmount = (AggroAmount * RuleI(Aggro, SpellAggroMod))/100;
 
 	if(AggroAmount < 0)
 		return 0;

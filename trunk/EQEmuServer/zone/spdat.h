@@ -231,7 +231,7 @@ typedef enum  {
 #define SE_IncreaseSpellHaste		127
 #define SE_IncreaseSpellDuration	128
 #define SE_IncreaseRange			129
-#define SE_ReduceSpellHate			130
+#define SE_SpellHateMod				130
 #define SE_ReduceReagentCost		131
 #define SE_ReduceManaCost			132
 //#define SE_Unknown133				133	//stun time half mod (mod to reduce stun time by some val?)

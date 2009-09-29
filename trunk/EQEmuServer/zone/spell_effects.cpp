@@ -2738,7 +2738,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			case SE_IncreaseSpellHaste:
 			case SE_IncreaseSpellDuration:
 			case SE_IncreaseRange:
-			case SE_ReduceSpellHate:
+			case SE_SpellHateMod:
 			case SE_ReduceReagentCost:
 			case SE_ReduceManaCost:
 			case SE_LimitMaxLevel:
@@ -3692,8 +3692,8 @@ sint16 Client::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id) {
 				value = focus_spell.base[i];
 			}
 			break;
-		case SE_ReduceSpellHate:
-			if (type == focusHateReduction)
+		case SE_SpellHateMod:
+			if (type == focusSpellHateMod)
 			{
 				if(value != 0)
 				{
@@ -3745,7 +3745,11 @@ sint16 Client::GetFocusEffect(focusType type, int16 spell_id) {
 		TempItem = ins->GetItem();
 		if (TempItem && TempItem->Focus.Effect > 0 && TempItem->Focus.Effect != SPELL_UNKNOWN) {
 			Total = CalcFocusEffect(type, TempItem->Focus.Effect, spell_id);
-			if(Total > realTotal) {
+
+			if (Total > 0 && realTotal >= 0 && Total > realTotal) {
+				realTotal = Total;
+				UsedItem = TempItem;
+			} else if (Total < 0 && Total < realTotal) {
 				realTotal = Total;
 				UsedItem = TempItem;
 			}
@@ -3759,16 +3763,19 @@ sint16 Client::GetFocusEffect(focusType type, int16 spell_id) {
 				const Item_Struct* TempItemAug = aug->GetItem();
 				if (TempItemAug && TempItemAug->Focus.Effect > 0 && TempItemAug->Focus.Effect != SPELL_UNKNOWN) {
 					Total = CalcFocusEffect(type, TempItemAug->Focus.Effect, spell_id);
-					if(Total > realTotal) {
+					if (Total > 0 && realTotal >= 0 && Total > realTotal) {
 						realTotal = Total;
-						UsedItem = TempItemAug;
+						UsedItem = TempItem;
+					} else if (Total < 0 && Total < realTotal) {
+						realTotal = Total;
+						UsedItem = TempItem;
 					}
 				}
 			}
 		}
 	}
 
-	if (realTotal > 0 && UsedItem && spells[spell_id].buffduration == 0) {
+	if (realTotal != 0 && UsedItem && spells[spell_id].buffduration == 0) {
 		Message_StringID(MT_Spells, BEGINS_TO_GLOW, UsedItem->Name);
 	}
 
@@ -3782,9 +3789,11 @@ sint16 Client::GetFocusEffect(focusType type, int16 spell_id) {
 			continue;
 
 		Total2 = CalcFocusEffect(type, focusspellid, spell_id);
-		if(Total2 > realTotal2) {
-			realTotal2 = Total2;
-		}
+		if (Total2 > 0 && realTotal2 >= 0 && Total2 > realTotal2) {
+				realTotal2 = Total2;
+			} else if (Total2 < 0 && Total2 < realTotal2) {
+				realTotal2 = Total2;
+			}
 	}
 
 	if(type == focusReagentCost && IsSummonPetSpell(spell_id) && GetAA(aaElementalPact))
