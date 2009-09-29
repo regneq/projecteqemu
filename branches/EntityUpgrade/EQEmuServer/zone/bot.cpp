@@ -11763,13 +11763,11 @@ void EntityList::AddBot(Bot *newBot, bool SendSpawnPacket, bool dontqueue) {
 		}
 
 		bot_list.push_back(newBot);
-		
-		/*if(!bot_list.dont_delete)
-			bot_list.dont_delete = true;*/
-
 		bot_entityid_map.insert(BotMapPair(newBot->GetID(), newBot));
 		bot_botid_map.insert(BotMapPair(newBot->GetBotID(), newBot));
 		mob_list.push_back(newBot);
+		mob_entityid_map.insert(MobMapPair(newBot->GetID(), newBot));
+		mob_name_map.insert(MobMapByNamePair(std::string(newBot->GetName()), newBot));
 	}
 }
 
@@ -11813,47 +11811,26 @@ bool EntityList::RemoveBot(Bot *delete_bot) {
 	bool Result = false;
 
 	if(delete_bot) {
-		for(list<Bot*>::iterator itr = bot_list.begin(); itr != bot_list.end(); itr++) {
-			if(*itr == delete_bot) {
-				// Remove the object reference from the bot entity id map container
-				BotMap::iterator mapItr = bot_entityid_map.begin();
+		// Remove the object reference from the bot entity id map container
+		bot_entityid_map.erase(delete_bot->GetID());
 
-				mapItr = bot_entityid_map.find(delete_bot->GetID());
+		// Remove the object reference from the bot id map container
+		bot_botid_map.erase(delete_bot->GetBotID());
 
-				if(mapItr != bot_entityid_map.end()) {
-					bot_entityid_map.erase(mapItr);
-				}
+		// Remove the object reference from the bot list container
+		bot_list.remove(delete_bot);
 
-				mapItr = 0;
+		mob_entityid_map.erase(delete_bot->GetID());
 
-				// Remove the object reference from the bot id map container
-				mapItr = bot_botid_map.begin();
+		mob_name_map.erase(std::string(delete_bot->GetName()));
 
-				mapItr = bot_botid_map.find(delete_bot->GetBotID());
+		mob_list.remove(delete_bot);
 
-				if(mapItr != bot_botid_map.end()) {
-					bot_botid_map.erase(mapItr);
-				}
+		// Delete the referenced object
+		//safe_delete(delete_bot);
+		//delete_bot = 0;
 
-				//// Remove the object reference from the mob name map container
-				//MobNameMap::iterator mapNameItr = mob_name_map.begin();
-
-				//mapNameItr = mob_name_map.find(delete_mob->GetName());
-
-				//if(mapNameItr != mob_name_map.end()) {
-				//	mob_name_map.erase(mapNameItr);
-				//}
-
-				// Remove the object reference from the bot list container
-				bot_list.remove(delete_bot);
-
-				// Delete the referenced object
-				safe_delete(delete_bot);
-
-				Result = true;
-				break;
-			}
-		}
+		Result = true;
 	}
 
 	return Result;

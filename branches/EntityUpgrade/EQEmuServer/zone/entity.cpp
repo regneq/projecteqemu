@@ -379,7 +379,9 @@ bool EntityList::CanAddHateForMob(Mob *p) {
 	if(p) {
 		int mobCount = 0;
 
-		for(list<NPC*>::iterator npcListItr = npc_list.begin(); npcListItr != npc_list.end(); npcListItr++) {
+		list<NPC*> ClonedNPCList = npc_list;
+
+		for(list<NPC*>::iterator npcListItr = ClonedNPCList.begin(); npcListItr != ClonedNPCList.end(); npcListItr++) {
 			NPC* npcMob = *npcListItr;
 
 			if(npcMob) {
@@ -407,8 +409,11 @@ void EntityList::AddClient(Client* client) {
 
 		// Push this object to it's maps
 		mob_entityid_map.insert(MobMapPair(client->GetID(), client));
+		mob_name_map.insert(MobMapByNamePair(std::string(client->GetName()), client));
+
 		client_entityid_map.insert(ClientMapPair(client->GetID(), client));
 		client_characterid_map.insert(ClientMapPair(client->CharacterID(), client));
+		client_name_map.insert(ClientMapByNamePair(std::string(client->GetName()), client));
 
 		// Push this object to it's lists
 		client_list.push_back(client);
@@ -562,15 +567,19 @@ void EntityList::CorpseProcess() {
 	
 	int32 count=0;
 
-	for(list<Corpse*>::iterator itr = corpse_list.begin(); itr != corpse_list.end(); itr++) {
-		count++;
-		
-		if(!(*itr)->Process()) {
-			itr = corpse_list.erase(itr);
-			safe_delete(*itr);
+	list<Corpse*> ClonedCorpseList = corpse_list;
 
-			if(itr == corpse_list.end())
-				break;
+	for(list<Corpse*>::iterator itr = ClonedCorpseList.begin(); itr != ClonedCorpseList.end(); itr++) {
+		count++;
+
+		if(!(*itr)->Process()) {
+			//itr = corpse_list.erase(itr);
+			//safe_delete(*itr);
+
+			/*if(itr == corpse_list.end())
+				break;*/
+			corpse_list.remove(*itr);
+			safe_delete(*itr);
 		}
 	}
 
@@ -584,7 +593,9 @@ void EntityList::MobProcess() {
 		return;
 #endif
 	_ZP(EntityList_MobProcess);
-	for(list<Mob*>::iterator itr = mob_list.begin(); itr != mob_list.end(); itr++) {
+	list<Mob*> ClonedMobList = mob_list;
+
+	for(list<Mob*>::iterator itr = ClonedMobList.begin(); itr != ClonedMobList.end(); itr++) {
 		Mob* mob = *itr;
 		
 		if(!mob)
@@ -619,12 +630,13 @@ void EntityList::MobProcess() {
 				entity_list.RemoveClient(mob->GetID());
 			}
 			
-			itr = mob_list.erase(itr);
+			mob_list.remove(mob);
+			//itr = mob_list.erase(itr);
 			safe_delete(mob);
 			mob = 0;
 
-			if(itr == mob_list.end())
-				break;
+			/*if(itr == mob_list.end())
+				break;*/
 		}
 	}
 }
@@ -632,15 +644,18 @@ void EntityList::MobProcess() {
 void EntityList::BeaconProcess() {
 	_ZP(EntityList_BeaconProcess);
 
-	for(list<Beacon*>::iterator itr = beacon_list.begin(); itr != beacon_list.end(); itr++) {
+	list<Beacon*> ClonedBeaconList = beacon_list;
+
+	for(list<Beacon*>::iterator itr = ClonedBeaconList.begin(); itr != ClonedBeaconList.end(); itr++) {
 		Beacon* beacon = *itr;
 		
 		if(!beacon->Process()) {
-			itr = beacon_list.erase(itr);
+			beacon_list.remove(beacon);
+			// itr = beacon_list.erase(itr);
 			safe_delete(beacon);
 
-			if(itr == beacon_list.end())
-				break;
+			/*if(itr == beacon_list.end())
+				break;*/
 		}
 	}
 }
@@ -704,7 +719,10 @@ void EntityList::AddCorpse(Corpse* corpse, int32 in_id) {
 		corpse->SetID(in_id);
 
 	corpse->CalcCorpseName();
+
+	// Add to corpse containers
 	corpse_list.push_back(corpse);
+	corpse_entityid_map.insert(CorpseMapPair(corpse->GetID(), corpse));
 
 	if(!net.corpse_timer.Enabled())
 		net.corpse_timer.Start();
@@ -732,7 +750,12 @@ void EntityList::AddNPC(NPC* npc, bool SendSpawnPacket, bool dontqueue) {
 	}
 	
 	npc_list.push_back(npc);
+	npc_entityid_map.insert(NPCMapPair(npc->GetID(), npc));
+	npc_npcid_map.insert(NPCMapPair(npc->GetNPCTypeID(), npc));
+
 	mob_list.push_back(npc);
+	mob_entityid_map.insert(MobMapPair(npc->GetID(), npc));
+	mob_name_map.insert(MobMapByNamePair(std::string(npc->GetName()), npc));
 }
 
 void EntityList::AddObject(Object* obj, bool SendSpawnPacket) {
@@ -1014,7 +1037,9 @@ Entity* EntityList::GetEntityCorpse(const char *name) {
 	std::string tempName(name);
 
 	if(!tempName.empty()) {
-		for(list<Corpse*>::iterator itr = corpse_list.begin(); itr != corpse_list.end(); itr++) {
+		list<Corpse*> ClonedCorpseList = corpse_list;
+
+		for(list<Corpse*>::iterator itr = ClonedCorpseList.begin(); itr != ClonedCorpseList.end(); itr++) {
 			Corpse* c = *itr;
 
 			if(c) {
@@ -1181,7 +1206,9 @@ void EntityList::ChannelMessage(Mob* from, int8 chan_num, int8 language, int8 la
 	vsnprintf(buffer, 4096, message, argptr);
 	va_end(argptr);
 
-	for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+	list<Client*> ClonedClientList = client_list;
+
+	for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 		Client* client = *itr;
 
 		if(client) {
@@ -1223,7 +1250,9 @@ void EntityList::ChannelMessageSend(Mob* to, int8 chan_num, int8 language, const
 }
 
 void EntityList::SendZoneSpawns(Client* client) {
-	for(list<Mob*>::iterator itr = mob_list.begin(); itr != mob_list.end(); itr++) {
+	list<Mob*> ClonedMobList = mob_list;
+
+	for(list<Mob*>::iterator itr = ClonedMobList.begin(); itr != ClonedMobList.end(); itr++) {
 		Mob* ent = *itr;
 
 		if(ent) {
@@ -1246,8 +1275,9 @@ void EntityList::SendZoneSpawnsBulk(Client* client) {
 
 		BulkZoneSpawnPacket* bzsp = new BulkZoneSpawnPacket(client, maxspawns);
 
-		for(list<Mob*>::iterator itr = mob_list.begin(); itr != mob_list.end(); itr++)
-		{
+		list<Mob*> ClonedMobList = mob_list;
+
+		for(list<Mob*>::iterator itr = ClonedMobList.begin(); itr != ClonedMobList.end(); itr++) {
 			Mob* spawn = *itr;
 
 			if(spawn) {
@@ -1256,6 +1286,7 @@ void EntityList::SendZoneSpawnsBulk(Client* client) {
 
 					if(spawn->IsClient() && spawn->CastToClient()->GMHideMe(client))
 						continue;
+
 					memset(&ns, 0, sizeof(NewSpawn_Struct));
 					spawn->FillSpawnStruct(&ns, client);
 					bzsp->AddSpawn(&ns);
@@ -1269,7 +1300,9 @@ void EntityList::SendZoneSpawnsBulk(Client* client) {
 
 //this is a hack to handle a broken spawn struct
 void EntityList::SendZonePVPUpdates(Client *to) {
-	for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+	list<Client*> ClonedClientList = client_list;
+
+	for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 		Client* c = *itr;
 
 		if(c) {
@@ -1281,13 +1314,13 @@ void EntityList::SendZonePVPUpdates(Client *to) {
 
 void EntityList::SendZoneCorpses(Client* client) {
 	if(client) {
-		EQApplicationPacket* app;
+		list<Corpse*> ClonedCorpseList = corpse_list;
 
-		for(list<Corpse*>::iterator itr = corpse_list.begin(); itr != corpse_list.end(); itr++) {
+		for(list<Corpse*>::iterator itr = ClonedCorpseList.begin(); itr != ClonedCorpseList.end(); itr++) {
 			Corpse* ent = *itr;
 
 			if(ent) {
-				app = new EQApplicationPacket;
+				EQApplicationPacket* app = new EQApplicationPacket;
 				ent->CreateSpawnPacket(app);
 				client->QueuePacket(app, true, Client::CLIENT_CONNECTED);
 				safe_delete(app);
@@ -1308,7 +1341,9 @@ void EntityList::SendZoneCorpsesBulk(Client* client) {
 	if(client) {
 		BulkZoneSpawnPacket* bzsp = new BulkZoneSpawnPacket(client, maxspawns);
 
-		for(list<Corpse*>::iterator itr = corpse_list.begin(); itr != corpse_list.end(); itr++) {
+		list<Corpse*> ClonedCorpseList = corpse_list;
+
+		for(list<Corpse*>::iterator itr = ClonedCorpseList.begin(); itr != ClonedCorpseList.end(); itr++) {
 			Corpse* spawn = *itr;
 
 			if(spawn) {
@@ -1338,7 +1373,9 @@ void EntityList::SendZoneObjects(Client* client)
 }
 
 void EntityList::Save() {
-	for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+	list<Client*> ClonedClientList = client_list;
+
+	for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 		Client* c = *itr;
 
 		if(c) {
@@ -1349,7 +1386,9 @@ void EntityList::Save() {
 
 void EntityList::ReplaceWithTarget(Mob* pOldMob, Mob* pNewTarget) {
 	if(pOldMob && pNewTarget) {
-		for(list<Mob*>::iterator itr = mob_list.begin(); itr != mob_list.end(); itr++) {
+		list<Mob*> ClonedMobList = mob_list;
+
+		for(list<Mob*>::iterator itr = ClonedMobList.begin(); itr != ClonedMobList.end(); itr++) {
 			Mob* m = *itr;
 
 			if(m) {
@@ -1365,7 +1404,9 @@ void EntityList::ReplaceWithTarget(Mob* pOldMob, Mob* pNewTarget) {
 
 void EntityList::RemoveFromTargets(Mob* mob) {
 	if(mob) {
-		for(list<Mob*>::iterator itr = mob_list.begin(); itr != mob_list.end(); itr++) {
+		list<Mob*> ClonedMobList = mob_list;
+
+		for(list<Mob*>::iterator itr = ClonedMobList.begin(); itr != ClonedMobList.end(); itr++) {
 			Mob* m = *itr;
 
 			if(m) {
@@ -1376,7 +1417,9 @@ void EntityList::RemoveFromTargets(Mob* mob) {
 }
 
 void EntityList::QueueClientsByTarget(Mob* sender, const EQApplicationPacket* app, bool iSendToSender, Mob* SkipThisMob, bool ackreq) {
-	for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+	list<Client*> ClonedClientList = client_list;
+
+	for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 		Client* c = *itr;
 
 		if(c) {
@@ -1397,7 +1440,9 @@ void EntityList::QueueCloseClients(Mob* sender, const EQApplicationPacket* app, 
 	}
 	float dist2 = dist * dist; //pow(dist, 2);
 	
-	for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+	list<Client*> ClonedClientList = client_list;
+
+	for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 		Client* ent = *itr;
 
 		if(ent) {
@@ -1419,7 +1464,9 @@ void EntityList::QueueCloseClients(Mob* sender, const EQApplicationPacket* app, 
 
 //sender can be null
 void EntityList::QueueClients(Mob* sender, const EQApplicationPacket* app, bool ignore_sender, bool ackreq) {
-	for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+	list<Client*> ClonedClientList = client_list;
+
+	for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 		Client* ent = *itr;
 
 		if(ent) {
@@ -1569,7 +1616,9 @@ void EntityList::QueueManaged(Mob* sender, const EQApplicationPacket* app, bool 
 	EQApplicationPacket* tmp_app = app->Copy();
 #endif
 
-	for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+	list<Client*> ClonedClientList = client_list;
+
+	for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 		Client* ent = *itr;
 
 		if(ent) {
@@ -1589,7 +1638,9 @@ void EntityList::QueueManaged(Mob* sender, const EQApplicationPacket* app, bool 
 }
 
 void EntityList::QueueClientsStatus(Mob* sender, const EQApplicationPacket* app, bool ignore_sender, int8 minstatus, int8 maxstatus) {
-	for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+	list<Client*> ClonedClientList = client_list;
+
+	for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 		Client* ent = *itr;
 
 		if(ent) {
@@ -1602,7 +1653,9 @@ void EntityList::QueueClientsStatus(Mob* sender, const EQApplicationPacket* app,
 
 void EntityList::DuelMessage(Mob* winner, Mob* loser, bool flee) {
 	if(winner && loser) {
-		for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+		list<Client*> ClonedClientList = client_list;
+
+		for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 			Client* cur = *itr;
 
 			if(cur) {
@@ -1652,7 +1705,9 @@ Client* EntityList::GetClientByCharID(int32 iCharID) {
 Client* EntityList::GetClientByWID(int32 iWID) {
 	Client* Result = 0;
 
-	for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+	list<Client*> ClonedClientList = client_list;
+
+	for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 		Client* cur = *itr;
 
 		if(cur) {
@@ -1670,7 +1725,9 @@ Client* EntityList::GetRandomClient(float x, float y, float z, float Distance, C
 	Client* Result = 0;
 	vector<Client*> ClientsInRange;
 
-	for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+	list<Client*> ClonedClientList = client_list;
+
+	for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 		Client* cur = *itr;
 
 		if(cur) {
@@ -1690,7 +1747,9 @@ Corpse*	EntityList::GetCorpseByOwner(Client* client) {
 
 	if(client) {
 		if(!corpse_list.empty()) {
-			for(list<Corpse*>::iterator itr = corpse_list.begin(); itr != corpse_list.end(); itr++) {
+			list<Corpse*> ClonedCorpseList = corpse_list;
+
+			for(list<Corpse*>::iterator itr = ClonedCorpseList.begin(); itr != ClonedCorpseList.end(); itr++) {
 				Corpse* c = *itr;
 
 				if(c) {
@@ -1727,7 +1786,9 @@ Corpse* EntityList::GetCorpseByDBID(int32 dbid) {
 	Corpse* Result = 0;
 
 	if(dbid > 0) {
-		for(list<Corpse*>::iterator itr = corpse_list.begin(); itr != corpse_list.end(); itr++) {
+		list<Corpse*> ClonedCorpseList = corpse_list;
+
+		for(list<Corpse*>::iterator itr = ClonedCorpseList.begin(); itr != ClonedCorpseList.end(); itr++) {
 			Corpse* ent = *itr;
 
 			if(ent) {
@@ -1748,7 +1809,9 @@ Corpse* EntityList::GetCorpseByName(char* name) {
 
 	if(!tempName.empty()) {
 		if(!corpse_list.empty()) {
-			for(list<Corpse*>::iterator itr = corpse_list.begin(); itr != corpse_list.end(); itr++) {
+			list<Corpse*> ClonedCorpseList = corpse_list;
+
+			for(list<Corpse*>::iterator itr = ClonedCorpseList.begin(); itr != ClonedCorpseList.end(); itr++) {
 				Corpse* c = *itr;
 
 				if(c) {
@@ -1765,14 +1828,15 @@ Corpse* EntityList::GetCorpseByName(char* name) {
 }
 
 void EntityList::RemoveAllCorpsesByCharID(int32 charid) {
-	if(charid > 0 && !corpse_list.empty()) {
-		for(list<Corpse*>::iterator itr = corpse_list.begin(); itr != corpse_list.end(); itr++) {
+	if(charid > 0) {
+		list<Corpse*> ClonedCorpseList = corpse_list;
+
+		for(list<Corpse*>::iterator itr = ClonedCorpseList.begin(); itr != ClonedCorpseList.end(); itr++) {
 			Corpse* c = *itr;
 
 			if(c) {
 				if (c->GetCharID() == charid) {
-					corpse_list.remove(c);
-					safe_delete(c);
+					RemoveCorpse(c);
 				}
 			}
 		}
@@ -1783,7 +1847,9 @@ int EntityList::RezzAllCorpsesByCharID(int32 charid) {
 	int RezzExp = 0;
 
 	if(charid > 0 && !corpse_list.empty()) {
-		for(list<Corpse*>::iterator itr = corpse_list.begin(); itr != corpse_list.end(); itr++) {
+		list<Corpse*> ClonedCorpseList = corpse_list;
+
+		for(list<Corpse*>::iterator itr = ClonedCorpseList.begin(); itr != ClonedCorpseList.end(); itr++) {
 			Corpse* c = *itr;
 
 			if(c) {
@@ -1946,7 +2012,9 @@ Client* EntityList::GetClientByAccID(int32 accid) {
 	Client* Result = 0;
 
 	if(accid > 0 && !client_list.empty()) {
-		for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+		list<Client*> ClonedClientList = client_list;
+
+		for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 			Client* c = *itr;
 
 			if(c) {
@@ -1977,7 +2045,9 @@ Client* EntityList::GetClientByID(int32 id) {
 } 
 
 void EntityList::ChannelMessageFromWorld(const char* from, const char* to, int8 chan_num, int32 guild_id, int8 language, const char* message) {
-	for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+	list<Client*> ClonedClientList = client_list;
+
+	for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 		Client* client = *itr;
 
 		if(client) {
@@ -2002,12 +2072,14 @@ void EntityList::ChannelMessageFromWorld(const char* from, const char* to, int8 
 void EntityList::Message(int32 to_guilddbid, int32 type, const char* message, ...) {
 	va_list argptr;
 	char buffer[4096];
-	
+
 	va_start(argptr, message);
 	vsnprintf(buffer, 4096, message, argptr);
 	va_end(argptr);
-	
-	for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+
+	list<Client*> ClonedClientList = client_list;
+
+	for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 		Client* client = *itr;
 
 		if(client) {
@@ -2019,7 +2091,9 @@ void EntityList::Message(int32 to_guilddbid, int32 type, const char* message, ..
 
 void EntityList::QueueClientsGuild(Mob* sender, const EQApplicationPacket* app, bool ignore_sender, int32 guild_id){
 	// TODO: This method does not use the "sender" or the "ignore_sender" parameter values
-	for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+	list<Client*> ClonedClientList = client_list;
+
+	for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 		Client* client = *itr;
 
 		if(client) {
@@ -2032,12 +2106,14 @@ void EntityList::QueueClientsGuild(Mob* sender, const EQApplicationPacket* app, 
 void EntityList::MessageStatus(int32 to_guild_id, int to_minstatus, int32 type, const char* message, ...) {
 	va_list argptr;
 	char buffer[4096];
-	
+
 	va_start(argptr, message);
 	vsnprintf(buffer, 4096, message, argptr);
 	va_end(argptr);
-	
-	for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+
+	list<Client*> ClonedClientList = client_list;
+
+	for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 		Client* client = *itr;
 
 		if(client) {
@@ -2051,7 +2127,9 @@ void EntityList::MessageStatus(int32 to_guild_id, int to_minstatus, int32 type, 
 void EntityList::MessageClose_StringID(Mob *sender, bool skipsender, float dist, int32 type, int32 string_id, const char* message1,const char* message2,const char* message3,const char* message4,const char* message5,const char* message6,const char* message7,const char* message8,const char* message9) {
 	float dist2 = dist * dist;
 
-	for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+	list<Client*> ClonedClientList = client_list;
+
+	for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 		Client* c = *itr;
 
 		if(c) {
@@ -2062,7 +2140,9 @@ void EntityList::MessageClose_StringID(Mob *sender, bool skipsender, float dist,
 }
 
 void EntityList::Message_StringID(Mob *sender, bool skipsender, int32 type, int32 string_id, const char* message1,const char* message2,const char* message3,const char* message4,const char* message5,const char* message6,const char* message7,const char* message8,const char* message9) {
-	for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+	list<Client*> ClonedClientList = client_list;
+
+	for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 		Client* c = *itr;
 
 		if(c) {
@@ -2075,14 +2155,16 @@ void EntityList::Message_StringID(Mob *sender, bool skipsender, int32 type, int3
 void EntityList::MessageClose(Mob* sender, bool skipsender, float dist, int32 type, const char* message, ...) {
 	va_list argptr;
 	char buffer[4096];
-	
+
 	va_start(argptr, message);
 	vsnprintf(buffer, 4095, message, argptr);
 	va_end(argptr);
-	
+
 	float dist2 = dist * dist;
-	
-	for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+
+	list<Client*> ClonedClientList = client_list;
+
+	for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 		Client* c = *itr;
 
 		if(c) {
@@ -2147,23 +2229,26 @@ void EntityList::NPCMessage(Mob* sender, bool skipsender, float dist, int32 type
 #endif
 
 void EntityList::RemoveAllMobs() {
-	for(list<Mob*>::iterator itr = mob_list.begin(); itr != mob_list.end(); itr++) {
-		mob_list.remove(*itr);
-		safe_delete(*itr);
+	list<Mob*> ClonedMobList = mob_list;
+
+	for(list<Mob*>::iterator itr = ClonedMobList.begin(); itr != ClonedMobList.end(); itr++) {
+		RemoveMob(*itr);
 	}
 }
 
 void EntityList::RemoveAllClients() {
-	for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
-		client_list.remove(*itr);
-		safe_delete(*itr);
+	list<Client*> ClonedClientList = client_list;
+
+	for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
+		RemoveClient(*itr);
 	}
 }
 
 void EntityList::RemoveAllNPCs() {
-	for(list<NPC*>::iterator itr = npc_list.begin(); itr != npc_list.end(); itr++) {
-		npc_list.remove(*itr);
-		safe_delete(*itr);
+	list<NPC*> ClonedNPCList = npc_list;
+
+	for(list<NPC*>::iterator itr = ClonedNPCList.begin(); itr != ClonedNPCList.end(); itr++) {
+		RemoveNPC(*itr);
 	}
 
 	npc_limit_list.clear();
@@ -2190,9 +2275,10 @@ void EntityList::RemoveAllDoors(){
 }
 
 void EntityList::RemoveAllCorpses() {
-	for(list<Corpse*>::iterator itr = corpse_list.begin(); itr != corpse_list.end(); itr++) {
-		corpse_list.remove(*itr);
-		safe_delete(*itr);
+	list<Corpse*> ClonedCorpseList = corpse_list;
+
+	for(list<Corpse*>::iterator itr = ClonedCorpseList.begin(); itr != ClonedCorpseList.end(); itr++) {
+		RemoveCorpse(*itr);
 	}
 }
 
@@ -2234,26 +2320,20 @@ bool EntityList::RemoveMob(Mob *delete_mob) {
 	if(delete_mob) {
 		list<Mob*>::iterator itr = mob_list.begin();
 
-		while(itr != mob_list.end()) {
-			if(*itr == delete_mob) {
-				// Remove the object reference from the Mob entity id map container
-				mob_entityid_map.erase(delete_mob->GetID());
+		// Remove the object reference from the Mob entity id map container
+		mob_entityid_map.erase(delete_mob->GetID());
 
-				// Remove the object reference from the Mob name map container
-				mob_name_map.erase(delete_mob->GetName());
+		// Remove the object reference from the Mob name map container
+		mob_name_map.erase(delete_mob->GetName());
 
-				// Remove the object reference from the Mob list container
-				mob_list.erase(itr++);
+		// Remove the object reference from the Mob list container
+		mob_list.remove(delete_mob);
 
-				// Delete the referenced object
-				safe_delete(delete_mob);
+		// Delete the referenced object
+		//safe_delete(delete_mob);
+		//delete_mob = 0;
 
-				Result = true;
-			}
-			else
-				itr++;
-
-		}
+		Result = true;
 	}
 
 	return Result;
@@ -2282,27 +2362,26 @@ bool EntityList::RemoveNPC(NPC *delete_npc) {
 	bool Result = false;
 
 	if(delete_npc) {
-		list<NPC*>::iterator itr = npc_list.begin();
+		// Remove the object reference from the NPC entity id map container
+		npc_entityid_map.erase(delete_npc->GetID());
 
-		while(itr != npc_list.end()) {
-			if(*itr == delete_npc) {
-				// Remove the object reference from the NPC entity id map container
-				npc_entityid_map.erase(delete_npc->GetID());
+		// Remove the object reference from the NPC id map container
+		npc_npcid_map.erase(delete_npc->GetNPCTypeID());
 
-				// Remove the object reference from the NPC id map container
-				npc_npcid_map.erase(delete_npc->GetNPCTypeID());
+		// Remove the object reference from the npc list container
+		npc_list.remove(delete_npc);
 
-				// Remove the object reference from the npc list container
-				npc_list.erase(itr++);
+		mob_entityid_map.erase(delete_npc->GetID());
 
-				// Delete the referenced object
-				safe_delete(delete_npc);
+		mob_name_map.erase(std::string(delete_npc->GetName()));
 
-				Result = true;
-			}
-			else
-				itr++;
-		}
+		mob_list.remove(delete_npc);
+
+		// Delete the referenced object
+		//safe_delete(delete_npc);
+		//delete_npc = 0;
+
+		Result = true;
 	}
 
 	return Result;
@@ -2331,30 +2410,23 @@ bool EntityList::RemoveClient(Client *delete_client) {
 	bool Result = false;
 
 	if(delete_client) {
-		list<Client*>::iterator itr = client_list.begin();
+		// Remove the object reference from the Client entity id map container
+		client_entityid_map.erase(delete_client->GetID());
 
-		while(itr != client_list.end()) {
-			if(*itr == delete_client) {
-				// Remove the object reference from the Client entity id map container
-				client_entityid_map.erase(delete_client->GetID());
+		// Remove the object reference from the Client character id map container
+		client_characterid_map.erase(delete_client->CharacterID());
 
-				// Remove the object reference from the Client character id map container
-				client_characterid_map.erase(delete_client->CharacterID());
+		// Remove the object reference from the Client name map container
+		client_name_map.erase(std::string(delete_client->GetName()));
 
-				// Remove the object reference from the Client name map container
-				client_name_map.erase(delete_client->GetName());
+		// Remove the object reference from the npc list container
+		client_list.remove(delete_client);
 
-				// Remove the object reference from the npc list container
-				client_list.erase(itr++);
+		// Delete the referenced object
+		//safe_delete(delete_client);
+		//delete_client = 0;
 
-				// Delete the referenced object
-				safe_delete(delete_client);
-
-				Result = true;
-			}
-			else
-				itr++;
-		}
+		Result = true;
 	}
 
 	return Result;
@@ -2405,16 +2477,37 @@ bool EntityList::RemoveDoor(int32 delete_id) {
 bool EntityList::RemoveCorpse(int32 delete_id) {
 	bool Result = false;
 
-	if(delete_id > 0 && !corpse_entityid_map.empty()) {
-		CorpseMap::iterator itr = corpse_entityid_map.begin();
+	if(delete_id > 0) {
+		CorpseMap::iterator corpseItr = corpse_entityid_map.begin();
 
-		itr = corpse_entityid_map.find(delete_id);
+		corpseItr = corpse_entityid_map.find(delete_id);
 
-		if(itr != corpse_entityid_map.end()) {
-			corpse_entityid_map.erase(itr);
-			safe_delete(itr->second);
-			Result = true;
+		if(corpseItr != corpse_entityid_map.end()) {
+			Corpse* delete_corpse = corpseItr->second;
+
+			// Call RemoveCorpse(Corpse*) to remove this object from all "corpse" lists now that we have the object reference
+			Result = RemoveCorpse(delete_corpse);
 		}
+	}
+
+	return Result;
+}
+
+bool EntityList::RemoveCorpse(Corpse* delete_corpse) {
+	bool Result = false;
+
+	if(delete_corpse) {
+		// Remove the object reference from the corpse entity id map container
+		corpse_entityid_map.erase(delete_corpse->GetID());
+
+		// Remove the object reference from the corpse list container
+		corpse_list.remove(delete_corpse);
+
+		// Delete the referenced object
+		//safe_delete(delete_corpse);
+		//delete_corpse = 0;
+
+		Result = true;
 	}
 
 	return Result;
@@ -2484,7 +2577,9 @@ void EntityList::UpdateWho(bool iSendFullUpdate) {
 			sclka = (ServerClientListKeepAlive_Struct*) pack->pBuffer;
 		}
 
-		for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+		list<Client*> ClonedClientList = client_list;
+
+		for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 			Client* c = *itr;
 
 			if(c) {
@@ -2554,7 +2649,9 @@ void EntityList::CountNPC(int32* NPCCount, int32* NPCLootCount, int32* gmspawnty
 	*NPCCount = 0;
 	*NPCLootCount = 0;
 	
-	for(list<NPC*>::iterator itr = npc_list.begin(); itr != npc_list.end(); itr++) {
+	list<NPC*> ClonedNPCList = npc_list;
+
+	for(list<NPC*>::iterator itr = ClonedNPCList.begin(); itr != ClonedNPCList.end(); itr++) {
 		NPC* n = *itr;
 
 		if(n) {
@@ -2571,7 +2668,9 @@ void EntityList::DoZoneDump(ZSDump_Spawn2* spawn2_dump, ZSDump_NPC* npc_dump, ZS
 	int32 gmspawntype_index = 0;
 	
 	if (npc_dump) {
-		for(list<NPC*>::iterator itr = npc_list.begin(); itr != npc_list.end(); itr++) {
+		list<NPC*> ClonedNPCList = npc_list;
+
+		for(list<NPC*>::iterator itr = ClonedNPCList.begin(); itr != ClonedNPCList.end(); itr++) {
 			NPC* npc = *itr;
 
 			if(npc) {
@@ -2621,7 +2720,9 @@ void EntityList::DoZoneDump(ZSDump_Spawn2* spawn2_dump, ZSDump_NPC* npc_dump, ZS
 }
 
 void EntityList::Depop(bool StartSpawnTimer) {
-	for(list<NPC*>::iterator itr = npc_list.begin(); itr != npc_list.end(); itr++) {
+	list<NPC*> ClonedNPCList = npc_list;
+
+	for(list<NPC*>::iterator itr = ClonedNPCList.begin(); itr != ClonedNPCList.end(); itr++) {
 		NPC* npc = *itr;
 
 		if(npc) {
@@ -2641,7 +2742,9 @@ void EntityList::Depop(bool StartSpawnTimer) {
 
 void EntityList::SendTraders(Client* client) {
 	if(client) {
-		for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+		list<Client*> ClonedClientList = client_list;
+
+		for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 			Client* trader = *itr;
 
 			if(trader) {
@@ -2656,7 +2759,9 @@ void EntityList::SendTraders(Client* client) {
 }
 
 void EntityList::RemoveFromHateLists(Mob* mob, bool settoone) {
-	for(list<NPC*>::iterator itr = npc_list.begin(); itr != npc_list.end(); itr++) {
+	list<NPC*> ClonedNPCList = npc_list;
+
+	for(list<NPC*>::iterator itr = ClonedNPCList.begin(); itr != ClonedNPCList.end(); itr++) {
 		NPC* npc = *itr;
 
 		if(npc) {
@@ -2671,7 +2776,9 @@ void EntityList::RemoveFromHateLists(Mob* mob, bool settoone) {
 }
 
 void EntityList::RemoveDebuffs(Mob* caster) {
-	for(list<Mob*>::iterator itr = mob_list.begin(); itr != mob_list.end(); itr++) {
+	list<Mob*> ClonedMobList = mob_list;
+
+	for(list<Mob*>::iterator itr = ClonedMobList.begin(); itr != ClonedMobList.end(); itr++) {
 		Mob* mob = *itr;
 
 		if(mob) {
@@ -2689,7 +2796,9 @@ void EntityList::SendPositionUpdates(Client* client, int32 cLastUpdate, float ra
 	EQApplicationPacket* outapp = 0;
 	PlayerPositionUpdateServer_Struct* ppu = 0;
 
-	for(list<Mob*>::iterator itr = mob_list.begin(); itr != mob_list.end(); itr++) {
+	list<Mob*> ClonedMobList = mob_list;
+
+	for(list<Mob*>::iterator itr = ClonedMobList.begin(); itr != ClonedMobList.end(); itr++) {
 		Mob* mob = *itr;
 
 		if(mob) {
@@ -2730,7 +2839,9 @@ char* EntityList::MakeNameUnique(char* name) {
 	
 	int len = strlen(name);
 
-	for(list<Mob*>::iterator itr = mob_list.begin(); itr != mob_list.end(); itr++) {
+	list<Mob*> ClonedMobList = mob_list;
+
+	for(list<Mob*>::iterator itr = ClonedMobList.begin(); itr != ClonedMobList.end(); itr++) {
 		Mob* mob = *itr;
 
 		if(mob) {
@@ -2790,7 +2901,9 @@ void EntityList::ListNPCs(Client* client, const char* arg1, const char* arg2, in
 	client->Message(0, "NPCs in the zone:");
 	
 	if(searchtype == 0) {
-		for(list<NPC*>::iterator itr = npc_list.begin(); itr != npc_list.end(); itr++) {
+		list<NPC*> ClonedNPCList = npc_list;
+
+		for(list<NPC*>::iterator itr = ClonedNPCList.begin(); itr != ClonedNPCList.end(); itr++) {
 			NPC* npc = *itr;
 
 			if(npc) {
@@ -2806,7 +2919,9 @@ void EntityList::ListNPCs(Client* client, const char* arg1, const char* arg2, in
 		strcpy(tmp, arg1);
 		strupr(tmp);
 
-		for(list<NPC*>::iterator itr = npc_list.begin(); itr != npc_list.end(); itr++) {
+		list<NPC*> ClonedNPCList = npc_list;
+
+		for(list<NPC*>::iterator itr = ClonedNPCList.begin(); itr != ClonedNPCList.end(); itr++) {
 			NPC* npc = *itr;
 
 			if(npc) {
@@ -2825,7 +2940,9 @@ void EntityList::ListNPCs(Client* client, const char* arg1, const char* arg2, in
 	else if(searchtype == 2) {
 		client->Message(0, "Searching by number method. (%s %s)",arg1,arg2);
 
-		for(list<NPC*>::iterator itr = npc_list.begin(); itr != npc_list.end(); itr++) {
+		list<NPC*> ClonedNPCList = npc_list;
+
+		for(list<NPC*>::iterator itr = ClonedNPCList.begin(); itr != ClonedNPCList.end(); itr++) {
 			NPC* npc = *itr;
 
 			if(npc) {
@@ -2847,7 +2964,9 @@ void EntityList::ListNPCCorpses(Client* client) {
 
 		client->Message(0, "NPC Corpses in the zone:");
 
-		for(list<Corpse*>::iterator itr = corpse_list.begin(); itr != corpse_list.end(); itr++) {
+		list<Corpse*> ClonedCorpseList = corpse_list;
+
+		for(list<Corpse*>::iterator itr = ClonedCorpseList.begin(); itr != ClonedCorpseList.end(); itr++) {
 			Corpse* corpse = *itr;
 
 			if(corpse) {
@@ -2868,7 +2987,9 @@ void EntityList::ListPlayerCorpses(Client* client) {
 
 		client->Message(0, "NPC Corpses in the zone:");
 
-		for(list<Corpse*>::iterator itr = corpse_list.begin(); itr != corpse_list.end(); itr++) {
+		list<Corpse*> ClonedCorpseList = corpse_list;
+
+		for(list<Corpse*>::iterator itr = ClonedCorpseList.begin(); itr != ClonedCorpseList.end(); itr++) {
 			Corpse* corpse = *itr;
 
 			if(corpse) {
@@ -2885,7 +3006,9 @@ void EntityList::ListPlayerCorpses(Client* client) {
 
 void EntityList::FindPathsToAllNPCs() {
 	if(zone->pathing) {
-		for(list<NPC*>::iterator itr = npc_list.begin(); itr != npc_list.end(); itr++) {
+		list<NPC*> ClonedNPCList = npc_list;
+
+		for(list<NPC*>::iterator itr = ClonedNPCList.begin(); itr != ClonedNPCList.end(); itr++) {
 			NPC* npc = *itr;
 
 			if(npc) {
@@ -2908,7 +3031,9 @@ void EntityList::FindPathsToAllNPCs() {
 sint32 EntityList::DeleteNPCCorpses() {
 	sint32 Result = 0;
 
-	for(list<Corpse*>::iterator itr = corpse_list.begin(); itr != corpse_list.end(); itr++) {
+	list<Corpse*> ClonedCorpseList = corpse_list;
+
+	for(list<Corpse*>::iterator itr = ClonedCorpseList.begin(); itr != ClonedCorpseList.end(); itr++) {
 		Corpse* corpse = *itr;
 
 		if(corpse) {
@@ -2926,7 +3051,9 @@ sint32 EntityList::DeleteNPCCorpses() {
 sint32 EntityList::DeletePlayerCorpses() {
 	sint32 Result = 0;
 
-	for(list<Corpse*>::iterator itr = corpse_list.begin(); itr != corpse_list.end(); itr++) {
+	list<Corpse*> ClonedCorpseList = corpse_list;
+
+	for(list<Corpse*>::iterator itr = ClonedCorpseList.begin(); itr != ClonedCorpseList.end(); itr++) {
 		Corpse* corpse = *itr;
 
 		if(corpse) {
@@ -2951,7 +3078,9 @@ void EntityList::SendPetitionToAdmins() {
 	strcpy(pcus->gmsenttoo, "");
 	pcus->quetotal=0;
 
-	for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+	list<Client*> ClonedClientList = client_list;
+
+	for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 		Client* client = *itr;
 
 		if(client) {
@@ -2984,7 +3113,9 @@ void EntityList::SendPetitionToAdmins(Petition* pet) {
 
 	pcus->quetotal = petition_list.GetTotalPetitions();
 
-	for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+	list<Client*> ClonedClientList = client_list;
+
+	for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 		Client* client = *itr;
 
 		if(client) {
@@ -3013,7 +3144,9 @@ void EntityList::ClearClientPetitionQueue() {
 	strcpy(pet->charname, "");
 	pet->quetotal = petition_list.GetTotalPetitions();
 
-	for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+	list<Client*> ClonedClientList = client_list;
+
+	for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 		Client* client = *itr;
 
 		if(client) {
@@ -3031,7 +3164,9 @@ void EntityList::ClearClientPetitionQueue() {
 }
 
 void EntityList::WriteEntityIDs() {
-	for(list<Mob*>::iterator itr = mob_list.begin(); itr != mob_list.end(); itr++) {
+	list<Mob*> ClonedMobList = mob_list;
+
+	for(list<Mob*>::iterator itr = ClonedMobList.begin(); itr != ClonedMobList.end(); itr++) {
 		Mob* mob = *itr;
 
 		if(mob) {
@@ -3090,7 +3225,9 @@ void BulkZoneSpawnPacket::SendBuffer() {
 }
 
 void EntityList::DoubleAggro(Mob* who) {
-	for(list<NPC*>::iterator itr = npc_list.begin(); itr != npc_list.end(); itr++) {
+	list<NPC*> ClonedNPCList = npc_list;
+
+	for(list<NPC*>::iterator itr = ClonedNPCList.begin(); itr != ClonedNPCList.end(); itr++) {
 		NPC* npc = *itr;
 
 		if(npc) {
@@ -3101,7 +3238,9 @@ void EntityList::DoubleAggro(Mob* who) {
 }
 
 void EntityList::HalveAggro(Mob* who) {
-	for(list<NPC*>::iterator itr = npc_list.begin(); itr != npc_list.end(); itr++) {
+	list<NPC*> ClonedNPCList = npc_list;
+
+	for(list<NPC*>::iterator itr = ClonedNPCList.begin(); itr != ClonedNPCList.end(); itr++) {
 		NPC* npc = *itr;
 
 		if(npc) {
@@ -3115,7 +3254,9 @@ void EntityList::Evade(Mob *who) {
 	uint32 flatval = who->GetLevel() * 13;
 	int amt = 0;
 
-	for(list<NPC*>::iterator itr = npc_list.begin(); itr != npc_list.end(); itr++) {
+	list<NPC*> ClonedNPCList = npc_list;
+
+	for(list<NPC*>::iterator itr = ClonedNPCList.begin(); itr != ClonedNPCList.end(); itr++) {
 		NPC* npc = *itr;
 
 		if(npc) {
@@ -3135,7 +3276,9 @@ void EntityList::Evade(Mob *who) {
 //removes "targ" from all hate lists, including feigned, in the zone
 void EntityList::ClearAggro(Mob* targ) {
 	if(targ) {
-		for(list<NPC*>::iterator itr = npc_list.begin(); itr != npc_list.end(); itr++) {
+		list<NPC*> ClonedNPCList = npc_list;
+
+		for(list<NPC*>::iterator itr = ClonedNPCList.begin(); itr != ClonedNPCList.end(); itr++) {
 			NPC* npc = *itr;
 
 			if(npc) {
@@ -3148,7 +3291,9 @@ void EntityList::ClearAggro(Mob* targ) {
 
 void EntityList::ClearFeignAggro(Mob* targ) {
 	if(targ) {
-		for(list<NPC*>::iterator itr = npc_list.begin(); itr != npc_list.end(); itr++) {
+		list<NPC*> ClonedNPCList = npc_list;
+
+		for(list<NPC*>::iterator itr = ClonedNPCList.begin(); itr != ClonedNPCList.end(); itr++) {
 			NPC* npc = *itr;
 
 			if(npc) {
@@ -3177,7 +3322,9 @@ void EntityList::ClearFeignAggro(Mob* targ) {
 
 // EverHood 6/17/06
 void EntityList::ClearZoneFeignAggro(Client* targ) {
-	for(list<NPC*>::iterator itr = npc_list.begin(); itr != npc_list.end(); itr++) {
+	list<NPC*> ClonedNPCList = npc_list;
+
+	for(list<NPC*>::iterator itr = ClonedNPCList.begin(); itr != ClonedNPCList.end(); itr++) {
 		NPC* npc = *itr;
 
 		if(npc) {
@@ -3187,7 +3334,9 @@ void EntityList::ClearZoneFeignAggro(Client* targ) {
 }
 
 void EntityList::AggroZone(Mob* who, int hate) {
-	for(list<NPC*>::iterator itr = npc_list.begin(); itr != npc_list.end(); itr++) {
+	list<NPC*> ClonedNPCList = npc_list;
+
+	for(list<NPC*>::iterator itr = ClonedNPCList.begin(); itr != ClonedNPCList.end(); itr++) {
 		NPC* npc = *itr;
 
 		if(npc) {
@@ -3198,7 +3347,9 @@ void EntityList::AggroZone(Mob* who, int hate) {
 
 // Signal Quest command function
 void EntityList::SignalMobsByNPCID(int32 snpc, int signal_id) {
-	for(list<NPC*>::iterator itr = npc_list.begin(); itr != npc_list.end(); itr++) {
+	list<NPC*> ClonedNPCList = npc_list;
+
+	for(list<NPC*>::iterator itr = ClonedNPCList.begin(); itr != ClonedNPCList.end(); itr++) {
 		NPC* npc = *itr;
 
 		if(npc) {
@@ -3239,7 +3390,9 @@ bool EntityList::MakeTrackPacket(Client* client) {
 	
 	int32 array_counter = 0;
 	
-	for(list<Mob*>::iterator itr = mob_list.begin(); itr != mob_list.end(); itr++) {
+	list<Mob*> ClonedMobList = mob_list;
+
+	for(list<Mob*>::iterator itr = ClonedMobList.begin(); itr != ClonedMobList.end(); itr++) {
 		Mob* mob = *itr;
 
 		if(mob) {
@@ -3287,7 +3440,9 @@ void EntityList::MessageGroup(Mob* sender, bool skipclose, int32 type, const cha
 	if (skipclose)
 		dist2 = 0;
 
-	for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+	list<Client*> ClonedClientList = client_list;
+
+	for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 		Client* client = *itr;
 
 		if(client) {
@@ -3302,7 +3457,9 @@ void EntityList::MessageGroup(Mob* sender, bool skipclose, int32 type, const cha
 bool EntityList::Fighting(Mob* targ) {
 	bool Result = false;
 
-	for(list<NPC*>::iterator itr = npc_list.begin(); itr != npc_list.end(); itr++) {
+	list<NPC*> ClonedNPCList = npc_list;
+
+	for(list<NPC*>::iterator itr = ClonedNPCList.begin(); itr != ClonedNPCList.end(); itr++) {
 		NPC* npc = *itr;
 
 		if(npc) {
@@ -3319,7 +3476,9 @@ bool EntityList::Fighting(Mob* targ) {
 void EntityList::AddHealAggro(Mob* target, Mob* caster, int16 thedam) {
 	int16 count = 0;
 
-	for(list<NPC*>::iterator itr = npc_list.begin(); itr != npc_list.end(); itr++) {
+	list<NPC*> ClonedNPCList = npc_list;
+
+	for(list<NPC*>::iterator itr = ClonedNPCList.begin(); itr != ClonedNPCList.end(); itr++) {
 		NPC* npc = *itr;
 
 		if(npc) {
@@ -3340,7 +3499,9 @@ void EntityList::AddHealAggro(Mob* target, Mob* caster, int16 thedam) {
 			thedam = 1;
 	}
 
-	for(list<NPC*>::iterator itr = npc_list.begin(); itr != npc_list.end(); itr++) {
+	ClonedNPCList = npc_list;
+
+	for(list<NPC*>::iterator itr = ClonedNPCList.begin(); itr != ClonedNPCList.end(); itr++) {
 		NPC* npc = *itr;
 
 		if(npc) {
@@ -3398,7 +3559,9 @@ void EntityList::SendAlarm(Trap* trap, Mob* currenttarget, int8 kos) {
 	if(trap && currenttarget) {
 		float val2 = trap->effectvalue * trap->effectvalue;
 
-		for(list<NPC*>::iterator itr = npc_list.begin(); itr != npc_list.end(); itr++) {
+		list<NPC*> ClonedNPCList = npc_list;
+
+		for(list<NPC*>::iterator itr = ClonedNPCList.begin(); itr != ClonedNPCList.end(); itr++) {
 			NPC* npc = *itr;
 
 			if(npc) {
@@ -3527,7 +3690,9 @@ void EntityList::ProcessProximitySay(const char *Message, Client *c, int8 langua
 
 void EntityList::SaveAllClientsTaskState() {
 	if(taskmanager) {
-		for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+		list<Client*> ClonedClientList = client_list;
+
+		for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 			Client* client = *itr;
 
 			if(client) {
@@ -3541,7 +3706,9 @@ void EntityList::SaveAllClientsTaskState() {
 
 void EntityList::ReloadAllClientsTaskState(int TaskID) {
 	if(taskmanager) {
-		for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+		list<Client*> ClonedClientList = client_list;
+
+		for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 			Client* client = *itr;
 
 			if(client) {
@@ -3563,7 +3730,9 @@ void EntityList::ReloadAllClientsTaskState(int TaskID) {
 bool EntityList::IsMobInZone(Mob *who) {
 	bool Result = false;
 
-	for(list<Mob*>::iterator itr = mob_list.begin(); itr != mob_list.end(); itr++) {
+	list<Mob*> ClonedMobList = mob_list;
+
+	for(list<Mob*>::iterator itr = ClonedMobList.begin(); itr != ClonedMobList.end(); itr++) {
 		Mob* mob = *itr;
 
 		if(mob == who) {
@@ -3679,7 +3848,9 @@ void EntityList::RadialSetLogging(Mob *around, bool enabled, bool clients, bool 
 	if(around) {
 		float range2 = range * range;
 
-		for(list<Mob*>::iterator itr = mob_list.begin(); itr != mob_list.end(); itr++) {
+		list<Mob*> ClonedMobList = mob_list;
+
+		for(list<Mob*>::iterator itr = ClonedMobList.begin(); itr != ClonedMobList.end(); itr++) {
 			Mob* mob = *itr;
 
 			if(mob) {
@@ -3706,7 +3877,9 @@ void EntityList::RadialSetLogging(Mob *around, bool enabled, bool clients, bool 
 
 void EntityList::UpdateHoTT(Mob* target) {
 	if(target) {
-		for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+		list<Client*> ClonedClientList = client_list;
+
+		for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 			Client* client = *itr;
 
 			if(client) {
@@ -3722,7 +3895,9 @@ void EntityList::UpdateHoTT(Mob* target) {
 }
 
 void EntityList::DestroyTempPets(Mob *owner) {
-	for(list<NPC*>::iterator itr = npc_list.begin(); itr != npc_list.end(); itr++) {
+	list<NPC*> ClonedNPCList = npc_list;
+
+	for(list<NPC*>::iterator itr = ClonedNPCList.begin(); itr != ClonedNPCList.end(); itr++) {
 		NPC* npc = *itr;
 
 		if(npc) {
@@ -3735,8 +3910,7 @@ void EntityList::DestroyTempPets(Mob *owner) {
 	}
 }
 
-bool Entity::CheckCoordLosNoZLeaps(float cur_x, float cur_y, float cur_z, float trg_x, float trg_y, float trg_z, float perwalk)
-{
+bool Entity::CheckCoordLosNoZLeaps(float cur_x, float cur_y, float cur_z, float trg_x, float trg_y, float trg_z, float perwalk) {
 	if(zone->zonemap == NULL) {
 		return(true);
 	}
@@ -3759,6 +3933,7 @@ bool Entity::CheckCoordLosNoZLeaps(float cur_x, float cur_y, float cur_z, float 
 
 	if (!zone->zonemap->LineIntersectsZoneNoZLeaps(myloc,oloc,perwalk,&hit,&onhit))
 		return true;
+
 	return false;
 }
 
@@ -3775,7 +3950,9 @@ void EntityList::QuestJournalledSayClose(Mob *sender, Client *QuestInitiator, fl
 	}
 
 	// Use the old method for all other nearby clients
-	for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+	list<Client*> ClonedClientList = client_list;
+
+	for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 		Client* client = *itr;
 
 		if(client) {
@@ -3791,7 +3968,9 @@ Corpse* EntityList::GetClosestCorpse(Mob* sender) {
 	if(sender) {
 		uint32 dist = 4294967295;
 
-		for(list<Corpse*>::iterator itr = corpse_list.begin(); itr != corpse_list.end(); itr++) {
+		list<Corpse*> ClonedCorpseList = corpse_list;
+
+		for(list<Corpse*>::iterator itr = ClonedCorpseList.begin(); itr != ClonedCorpseList.end(); itr++) {
 			Corpse* corpse = *itr;
 
 			if(corpse) {
@@ -3810,7 +3989,9 @@ Corpse* EntityList::GetClosestCorpse(Mob* sender) {
 }
 
 void EntityList::ForceGroupUpdate(int32 gid) {
-	for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+	list<Client*> ClonedClientList = client_list;
+
+	for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 		Client* client = *itr;
 
 		if(client) {
@@ -3826,7 +4007,9 @@ void EntityList::ForceGroupUpdate(int32 gid) {
 }
 
 void EntityList::SendGroupLeave(int32 gid, const char *name) {
-	for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+	list<Client*> ClonedClientList = client_list;
+
+	for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 		Client* client = *itr;
 
 		if(client) {
@@ -3859,7 +4042,9 @@ void EntityList::SendGroupLeave(int32 gid, const char *name) {
 }
 
 void EntityList::SendGroupJoin(int32 gid, const char *name) {
-	for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+	list<Client*> ClonedClientList = client_list;
+
+	for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 		Client* client = *itr;
 
 		if(client) {
@@ -3888,7 +4073,9 @@ void EntityList::SendGroupJoin(int32 gid, const char *name) {
 }
 
 void EntityList::GroupMessage(int32 gid, const char *from, const char *message) {
-	for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+	list<Client*> ClonedClientList = client_list;
+
+	for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 		Client* client = *itr;
 
 		if(client) {
@@ -3925,7 +4112,9 @@ Mob* EntityList::GetTargetForMez(Mob* caster) {
 	Mob* Result = 0;
 
 	if(caster) {
-		for(list<Mob*>::iterator itr = mob_list.begin(); itr != mob_list.end(); itr++) {
+		list<Mob*> ClonedMobList = mob_list;
+
+		for(list<Mob*>::iterator itr = ClonedMobList.begin(); itr != ClonedMobList.end(); itr++) {
 			Mob* mob = *itr;
 
 			if(mob) {
@@ -3962,7 +4151,9 @@ Mob* EntityList::GetTargetForMez(Mob* caster) {
 
 void EntityList::SendZoneAppearance(Client *c) {
 	if(c) {
-		for(list<Mob*>::iterator itr = mob_list.begin(); itr != mob_list.end(); itr++) {
+		list<Mob*> ClonedMobList = mob_list;
+
+		for(list<Mob*>::iterator itr = ClonedMobList.begin(); itr != ClonedMobList.end(); itr++) {
 			Mob* cur = *itr;
 
 			if(cur) {
@@ -3983,7 +4174,9 @@ void EntityList::ZoneWho(Client *c, Who_All_Struct* Who) {
 	int32 PacketLength = 0;
 	int32 Entries = 0;
 
-	for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+	list<Client*> ClonedClientList = client_list;
+
+	for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 		Client* ClientEntry = *itr;
 
 		if(ClientEntry) {
@@ -4187,7 +4380,9 @@ void EntityList::UnMarkNPC(int16 ID) {
 	// Designed to be called from the Mob destructor, this method calls Group::UnMarkNPC for
 	// each group to remove the dead mobs entity ID from the groups list of NPCs marked via the
 	// Group Leadership AA Mark NPC ability.
-	for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+	list<Client*> ClonedClientList = client_list;
+
+	for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 		Client* client = *itr;
 
 		if(client) {
@@ -4204,7 +4399,9 @@ void EntityList::UnMarkNPC(int16 ID) {
 int32 EntityList::CheckNPCsClose(Mob *center) {
     int32 count = 0;
 
-	for(list<NPC*>::iterator itr = npc_list.begin(); itr != npc_list.end(); itr++) {
+	list<NPC*> ClonedNPCList = npc_list;
+
+	for(list<NPC*>::iterator itr = ClonedNPCList.begin(); itr != ClonedNPCList.end(); itr++) {
 		NPC* current = *itr;
 
 		if(current) {
@@ -4239,7 +4436,9 @@ int32 EntityList::CheckNPCsClose(Mob *center) {
 }
 
 void EntityList::GateAllClients() {
-	for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+	list<Client*> ClonedClientList = client_list;
+
+	for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 		Client* c = *itr;
 
 		if(c) {
@@ -4249,7 +4448,9 @@ void EntityList::GateAllClients() {
 }
 
 void EntityList::SendAdventureUpdate(int32 a_id) {
-	for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+	list<Client*> ClonedClientList = client_list;
+
+	for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 		Client* c = *itr;
 
 		if(c) {
@@ -4262,7 +4463,9 @@ void EntityList::SendAdventureUpdate(int32 a_id) {
 }
 
 void EntityList::AdventureMessage(int32 a_id, const char *msg) {
-	for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+	list<Client*> ClonedClientList = client_list;
+
+	for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 		Client* c = *itr;
 
 		if(c) {
@@ -4294,12 +4497,14 @@ void EntityList::AdventureFinish(int32 a_id, int8 win_lose, int32 points) {
 	if(ad->status != 3) {
 		ad->status = 3;
 
-		for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+		list<Client*> ClonedClientList = client_list;
+
+		for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 			Client* c = *itr;
 
 			if(c) {
 				AdventureDetails *ad = c->GetCurrentAdventure();
-				
+
 				if(ad && ad->id == a_id) {
 					c->SendAdventureFinish(win_lose, points, ad->ai->theme);
 				}
@@ -4309,7 +4514,9 @@ void EntityList::AdventureFinish(int32 a_id, int8 win_lose, int32 points) {
 }
 
 void EntityList::AdventureDestroy(int32 a_id) {
-	for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+	list<Client*> ClonedClientList = client_list;
+
+	for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 		Client* c = *itr;
 
 		if(c) {
@@ -4323,7 +4530,9 @@ void EntityList::AdventureDestroy(int32 a_id) {
 }
 
 void EntityList::AdventureCountUpdate(int32 a_id, int32 current, int32 total) {
-	for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+	list<Client*> ClonedClientList = client_list;
+
+	for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 		Client* c = *itr;
 
 		if(c) {
@@ -4336,7 +4545,9 @@ void EntityList::AdventureCountUpdate(int32 a_id, int32 current, int32 total) {
 }
 
 void EntityList::SignalAllClients(int32 data) {
-	for(list<Client*>::iterator itr = client_list.begin(); itr != client_list.end(); itr++) {
+	list<Client*> ClonedClientList = client_list;
+
+	for(list<Client*>::iterator itr = ClonedClientList.begin(); itr != ClonedClientList.end(); itr++) {
 		Client* ent = *itr;
 
 		if(ent) {
