@@ -3132,6 +3132,12 @@ bool Mob::IsImmuneToSpell(int16 spell_id, Mob *caster)
 			caster->Message_StringID(MT_Shout, IMMUNE_FEAR);
 			return true;
 		}
+		else if(GetLevel() > spells[spell_id].max[effect_index] && spells[spell_id].max[effect_index] != 0)
+		{
+			mlog(SPELLS__RESISTS, "Level is %d, cannot be feared by this spell.");
+			caster->Message_StringID(MT_Shout, SPELL_NO_EFFECT);
+			return true;
+		}
 	}
 
 	if(IsCharmSpell(spell_id))
