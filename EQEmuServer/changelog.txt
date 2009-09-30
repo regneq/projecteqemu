@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==09/30/2009==
 Rogean: Fixed possible crash in Mob::CheckWillAggro();
+Rogean: Temporarily Disabled Fear MaxLevel Check causing a crash.
 Trevius: Added Quest Commands quest::playerfeature(feature, setting) and quest::npcfeature(feature, setting) - See Wiki for details on usage.
 Trevius: Added Quest Objects GetHairColor(), GetBeardColor(), GetEyeColor1(), GetEyeColor2(), GetHairStyle(), GetLuclinFace(), GetBeard(), GetDrakkinHeritage(), GetDrakkinTattoo(), and GetDrakkinDetails().
 
