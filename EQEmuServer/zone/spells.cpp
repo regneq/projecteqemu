@@ -3122,6 +3122,7 @@ bool Mob::IsImmuneToSpell(int16 spell_id, Mob *caster)
 	// client vs client fear
 	if(IsEffectInSpell(spell_id, SE_Fear))
 	{
+		effect_index = GetSpellEffectIndex(spell_id, SE_Fear);
 		if(SpecAttacks[UNFEARABLE]) {
 			mlog(SPELLS__RESISTS, "We are immune to Fear spells.");
 			caster->Message_StringID(MT_Shout, IMMUNE_FEAR);
@@ -3131,13 +3132,13 @@ bool Mob::IsImmuneToSpell(int16 spell_id, Mob *caster)
 			mlog(SPELLS__RESISTS, "Clients cannot fear eachother!");
 			caster->Message_StringID(MT_Shout, IMMUNE_FEAR);
 			return true;
-		} /* Rogean: Causing crash issues due to effect_index not being set. Commenting out until properly fixed.
+		}
 		else if(GetLevel() > spells[spell_id].max[effect_index] && spells[spell_id].max[effect_index] != 0)
 		{
 			mlog(SPELLS__RESISTS, "Level is %d, cannot be feared by this spell.");
 			caster->Message_StringID(MT_Shout, SPELL_NO_EFFECT);
 			return true;
-		} */
+		}
 	}
 
 	if(IsCharmSpell(spell_id))
