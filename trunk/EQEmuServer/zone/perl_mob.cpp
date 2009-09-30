@@ -1663,6 +1663,266 @@ XS(XS_Mob_GetHelmTexture)
 	XSRETURN(1);
 }
 
+XS(XS_Mob_GetHairColor); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_GetHairColor)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Mob::GetHairColor(THIS)");
+	{
+		Mob *		THIS;
+		int8		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetHairColor();
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Mob_GetBeardColor); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_GetBeardColor)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Mob::GetBeardColor(THIS)");
+	{
+		Mob *		THIS;
+		int8		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetBeardColor();
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Mob_GetEyeColor1); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_GetEyeColor1)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Mob::GetEyeColor1(THIS)");
+	{
+		Mob *		THIS;
+		int8		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetEyeColor1();
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Mob_GetEyeColor2); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_GetEyeColor2)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Mob::GetEyeColor2(THIS)");
+	{
+		Mob *		THIS;
+		int8		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetEyeColor2();
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Mob_GetHairStyle); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_GetHairStyle)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Mob::GetHairStyle(THIS)");
+	{
+		Mob *		THIS;
+		int8		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetHairStyle();
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Mob_GetLuclinFace); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_GetLuclinFace)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Mob::GetLuclinFace(THIS)");
+	{
+		Mob *		THIS;
+		int8		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetLuclinFace();
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Mob_GetBeard); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_GetBeard)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Mob::GetBeard(THIS)");
+	{
+		Mob *		THIS;
+		int8		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetBeard();
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Mob_GetDrakkinHeritage); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_GetDrakkinHeritage)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Mob::GetDrakkinHeritage(THIS)");
+	{
+		Mob *		THIS;
+		int8		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetDrakkinHeritage();
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Mob_GetDrakkinTattoo); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_GetDrakkinTattoo)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Mob::GetDrakkinTattoo(THIS)");
+	{
+		Mob *		THIS;
+		int8		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetDrakkinTattoo();
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Mob_GetDrakkinDetails); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_GetDrakkinDetails)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Mob::GetDrakkinDetails(THIS)");
+	{
+		Mob *		THIS;
+		int8		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetDrakkinDetails();
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
 XS(XS_Mob_GetClass); /* prototype to pass -Wmissing-prototypes */
 XS(XS_Mob_GetClass)
 {
@@ -5955,6 +6215,16 @@ XS(boot_Mob)
 		newXSproto(strcpy(buf, "GetGender"), XS_Mob_GetGender, file, "$");
 		newXSproto(strcpy(buf, "GetTexture"), XS_Mob_GetTexture, file, "$");
 		newXSproto(strcpy(buf, "GetHelmTexture"), XS_Mob_GetHelmTexture, file, "$");
+		newXSproto(strcpy(buf, "GetHairColor"), XS_Mob_GetHairColor, file, "$");
+		newXSproto(strcpy(buf, "GetBeardColor"), XS_Mob_GetBeardColor, file, "$");
+		newXSproto(strcpy(buf, "GetEyeColor1"), XS_Mob_GetEyeColor1, file, "$");
+		newXSproto(strcpy(buf, "GetEyeColor2"), XS_Mob_GetEyeColor2, file, "$");
+		newXSproto(strcpy(buf, "GetHairStyle"), XS_Mob_GetHairStyle, file, "$");
+		newXSproto(strcpy(buf, "GetLuclinFace"), XS_Mob_GetLuclinFace, file, "$");
+		newXSproto(strcpy(buf, "GetBeard"), XS_Mob_GetBeard, file, "$");
+		newXSproto(strcpy(buf, "GetDrakkinHeritage"), XS_Mob_GetDrakkinHeritage, file, "$");
+		newXSproto(strcpy(buf, "GetDrakkinTattoo"), XS_Mob_GetDrakkinTattoo, file, "$");
+		newXSproto(strcpy(buf, "GetDrakkinDetails"), XS_Mob_GetDrakkinDetails, file, "$");
 		newXSproto(strcpy(buf, "GetClass"), XS_Mob_GetClass, file, "$");
 		newXSproto(strcpy(buf, "GetLevel"), XS_Mob_GetLevel, file, "$");
 		newXSproto(strcpy(buf, "GetCleanName"), XS_Mob_GetCleanName, file, "$");

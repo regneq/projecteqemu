@@ -1937,6 +1937,36 @@ XS(XS__playertexture)
 	XSRETURN_EMPTY;
 }
 
+XS(XS__playerfeature);
+XS(XS__playerfeature)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: playerfeature(feature, setting)");
+
+	char *	feature	= (char *)SvPV_nolen(ST(0));
+	int		setting	= (int)SvIV(ST(1));
+
+	quest_manager.playerfeature(feature, setting);
+
+	XSRETURN_EMPTY;
+}
+
+XS(XS__npcfeature);
+XS(XS__npcfeature)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: npcfeature(feature, setting)");
+
+	char *	feature	= (char *)SvPV_nolen(ST(0));
+	int		setting	= (int)SvIV(ST(1));
+
+	quest_manager.npcfeature(feature, setting);
+
+	XSRETURN_EMPTY;
+}
+
 #ifdef BOTS
 
 XS(XS__createbotcount);
@@ -2972,6 +3002,8 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "playergender"), XS__playergender, file);
 		newXS(strcpy(buf, "playersize"), XS__playersize, file);
 		newXS(strcpy(buf, "playertexture"), XS__playertexture, file);
+		newXS(strcpy(buf, "playerfeature"), XS__playerfeature, file);
+		newXS(strcpy(buf, "npcfeature"), XS__npcfeature, file);
 
 #ifdef BOTS
 		newXS(strcpy(buf, "botquest"), XS__botquest, file);

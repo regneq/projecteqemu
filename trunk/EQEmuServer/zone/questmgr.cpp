@@ -1454,39 +1454,154 @@ bool QuestManager::isdooropen(int32 doorid) {
 }
 void QuestManager::npcrace(int race_id)
 {
-		owner->SendIllusionPacket(race_id);
+	owner->SendIllusionPacket(race_id);
 }
 
 void QuestManager::npcgender(int gender_id)
 {
-		owner->SendIllusionPacket(owner->GetRace(), gender_id);
+	owner->SendIllusionPacket(owner->GetRace(), gender_id);
 }
 void QuestManager::npcsize(int newsize)
 {
-				owner->ChangeSize(newsize, true);
+	owner->ChangeSize(newsize, true);
 }
 void QuestManager::npctexture(int newtexture)
 {
-			owner->SendIllusionPacket(owner->GetRace(), 0xFF, newtexture);
+	owner->SendIllusionPacket(owner->GetRace(), 0xFF, newtexture);
 }
 
 void QuestManager::playerrace(int race_id)
 {
-			initiator->SendIllusionPacket(race_id);
+	initiator->SendIllusionPacket(race_id);
 }
 
 void QuestManager::playergender(int gender_id)
 {
-			initiator->SendIllusionPacket(initiator->GetRace(), gender_id);
+	initiator->SendIllusionPacket(initiator->GetRace(), gender_id);
 }
+
 void QuestManager::playersize(int newsize)
 {
-			initiator->ChangeSize(newsize, true);
+	initiator->ChangeSize(newsize, true);
 }
+
 void QuestManager::playertexture(int newtexture)
 {
-			initiator->SendIllusionPacket(initiator->GetRace(), 0xFF, newtexture);
+	initiator->SendIllusionPacket(initiator->GetRace(), 0xFF, newtexture);
 }
+
+void QuestManager::playerfeature(char *feature, int setting)
+{
+	int16 Race = initiator->GetRace();
+	int8 Gender = initiator->GetGender();
+	int8 Texture = 0xFF;
+	int8 HelmTexture = 0xFF;
+	int8 HairColor = initiator->GetHairColor();
+	int8 BeardColor = initiator->GetBeardColor();
+	int8 EyeColor1 = initiator->GetEyeColor1();
+	int8 EyeColor2 = initiator->GetEyeColor2();
+	int8 HairStyle = initiator->GetHairStyle();
+	int8 LuclinFace = initiator->GetLuclinFace();
+	int8 Beard = initiator->GetBeard();
+	int32 DrakkinHeritage = initiator->GetDrakkinHeritage();
+	int32 DrakkinTattoo = initiator->GetDrakkinTattoo();
+	int32 DrakkinDetails = initiator->GetDrakkinDetails();
+	float Size = initiator->GetSize();
+
+	if (!strcasecmp(feature,"race"))
+		Race = setting;
+	else if (!strcasecmp(feature,"gender"))
+		Gender = setting;
+	else if (!strcasecmp(feature,"texture"))
+		Texture = setting;
+	else if (!strcasecmp(feature,"helm"))
+		HelmTexture = setting;
+	else if (!strcasecmp(feature,"haircolor"))
+		HairColor = setting;
+	else if (!strcasecmp(feature,"beardcolor"))
+		BeardColor = setting;
+	else if (!strcasecmp(feature,"eyecolor1"))
+		EyeColor1 = setting;
+	else if (!strcasecmp(feature,"eyecolor2"))
+		EyeColor2 = setting;
+	else if (!strcasecmp(feature,"hair"))
+		HairStyle = setting;
+	else if (!strcasecmp(feature,"face"))
+		LuclinFace = setting;
+	else if (!strcasecmp(feature,"beard"))
+		Beard = setting;
+	else if (!strcasecmp(feature,"heritage"))
+		DrakkinHeritage = setting;
+	else if (!strcasecmp(feature,"tattoo"))
+		DrakkinTattoo = setting;
+	else if (!strcasecmp(feature,"details"))
+		DrakkinDetails = setting;
+	else if (!strcasecmp(feature,"size"))
+		Size = (float)setting / 10;	//dividing by 10 to allow 1 decimal place for adjusting size
+	else
+		return;
+
+	initiator->SendIllusionPacket(Race, Gender, Texture, HelmTexture, HairColor, BeardColor,
+										EyeColor1, EyeColor2, HairStyle, LuclinFace, Beard, 0xFF,
+										DrakkinHeritage, DrakkinTattoo, DrakkinDetails, Size);
+}
+
+void QuestManager::npcfeature(char *feature, int setting)
+{
+	int16 Race = owner->GetRace();
+	int8 Gender = owner->GetGender();
+	int8 Texture = 0xFF;
+	int8 HelmTexture = 0xFF;
+	int8 HairColor = owner->GetHairColor();
+	int8 BeardColor = owner->GetBeardColor();
+	int8 EyeColor1 = owner->GetEyeColor1();
+	int8 EyeColor2 = owner->GetEyeColor2();
+	int8 HairStyle = owner->GetHairStyle();
+	int8 LuclinFace = owner->GetLuclinFace();
+	int8 Beard = owner->GetBeard();
+	int32 DrakkinHeritage = owner->GetDrakkinHeritage();
+	int32 DrakkinTattoo = owner->GetDrakkinTattoo();
+	int32 DrakkinDetails = owner->GetDrakkinDetails();
+	float Size = owner->GetSize();
+
+	if (!strcasecmp(feature,"race"))
+		Race = setting;
+	else if (!strcasecmp(feature,"gender"))
+		Gender = setting;
+	else if (!strcasecmp(feature,"texture"))
+		Texture = setting;
+	else if (!strcasecmp(feature,"helm"))
+		HelmTexture = setting;
+	else if (!strcasecmp(feature,"haircolor"))
+		HairColor = setting;
+	else if (!strcasecmp(feature,"beardcolor"))
+		BeardColor = setting;
+	else if (!strcasecmp(feature,"eyecolor1"))
+		EyeColor1 = setting;
+	else if (!strcasecmp(feature,"eyecolor2"))
+		EyeColor2 = setting;
+	else if (!strcasecmp(feature,"hair"))
+		HairStyle = setting;
+	else if (!strcasecmp(feature,"face"))
+		LuclinFace = setting;
+	else if (!strcasecmp(feature,"beard"))
+		Beard = setting;
+	else if (!strcasecmp(feature,"heritage"))
+		DrakkinHeritage = setting;
+	else if (!strcasecmp(feature,"tattoo"))
+		DrakkinTattoo = setting;
+	else if (!strcasecmp(feature,"details"))
+		DrakkinDetails = setting;
+	else if (!strcasecmp(feature,"size"))
+		Size = (float)setting / 10;	//dividing by 10 to allow 1 decimal place for adjusting size
+	else
+		return;
+
+	owner->SendIllusionPacket(Race, Gender, Texture, HelmTexture, HairColor, BeardColor,
+										EyeColor1, EyeColor2, HairStyle, LuclinFace, Beard, 0xFF,
+										DrakkinHeritage, DrakkinTattoo, DrakkinDetails, Size);
+}
+
 void QuestManager::popup(char *title, char *text, int32 popupid, int32 buttons, int32 Duration) 
 {
          if(initiator) initiator->SendPopupToClient(title, text, popupid, buttons, Duration);

@@ -154,6 +154,8 @@ public:
 	void playergender(int gender_id);
 	void playersize(int newsize);
 	void playertexture(int newtexture);
+	void playerfeature(char *feature, int setting);
+	void npcfeature(char *feature, int setting);
 	void popup(char *title, char *text, int32 popupid, int32 buttons, int32 Duration);
 	void taskselector(int taskcount, int *tasks);
 	void tasksetselector(int tasksettid);
