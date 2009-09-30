@@ -321,7 +321,7 @@ bool Mob::CheckWillAggro(Mob *mob) {
 	//old InZone check taken care of above by !mob->CastToClient()->Connected()
 	(
 		( GetINT() <= 75 )
-		||( mob->CastToClient()->IsSitting() )
+		||( mob->IsClient() && mob->CastToClient()->IsSitting() )
 		||( mob->GetLevelCon(GetLevel()) != CON_GREEN )
 
 	)
