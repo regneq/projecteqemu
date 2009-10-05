@@ -449,6 +449,7 @@ int main(int argc, char** argv) {
 			in.s_addr = eqsi->GetRemoteIP();
 			_log(WORLD__CLIENT, "New client from %s:%d", inet_ntoa(in), ntohs(eqsi->GetRemotePort()));
 			Client* client = new Client(eqsi);
+			
 			entity_list.AddClient(client);
 		}
 		

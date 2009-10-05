@@ -515,6 +515,9 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 		client->Disconnect();
 	}
 
+	entity_list.RemoveClient(this);
+	entity_list.AddClient(this);
+
 	char* query = 0;
 	uint32_breakdown workpt;
 	workpt.b4() = DBA_b4_Entity;
@@ -538,6 +541,7 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 		client_state = CLIENT_KICKED;
 		return;
 	}
+
 	return;
 }
 

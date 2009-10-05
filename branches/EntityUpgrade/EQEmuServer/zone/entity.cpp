@@ -303,23 +303,25 @@ int32 EntityList::GetGlobalEntityID(Client* client) {
 	if(client) {
 		int32 tempGlobalEntityID = 0;
 
-		tempGlobalEntityID = GetGlobalEntityIDByObjectTypeAndTableID(1, client->CharacterID());
+		if(client->CharacterID() > 0) {
+			tempGlobalEntityID = GetGlobalEntityIDByObjectTypeAndTableID(1, client->CharacterID());
 
-		if(tempGlobalEntityID == 0) {
-			std::string errorMessage;
-			char* Query = 0;
-			char TempErrorMessageBuffer[MYSQL_ERRMSG_SIZE];
+			if(tempGlobalEntityID == 0) {
+				std::string errorMessage;
+				char* Query = 0;
+				char TempErrorMessageBuffer[MYSQL_ERRMSG_SIZE];
 
-			if(!database.RunQuery(Query, MakeAnyLenString(&Query, "insert into globalentity (GlobalEntityTypeID, GlobalObjectTableID) VALUES (1, %i)", client->CharacterID()), TempErrorMessageBuffer, 0, 0, &tempGlobalEntityID)) {
-				errorMessage = std::string(TempErrorMessageBuffer);
-				// TODO: Write this error message to zone error log
+				if(!database.RunQuery(Query, MakeAnyLenString(&Query, "insert into globalentity (GlobalEntityTypeID, GlobalObjectTableID) VALUES (1, %i)", client->CharacterID()), TempErrorMessageBuffer, 0, 0, &tempGlobalEntityID)) {
+					errorMessage = std::string(TempErrorMessageBuffer);
+					// TODO: Write this error message to zone error log
+				}
+				else {
+					Result = tempGlobalEntityID;
+				}
 			}
-			else {
+			else
 				Result = tempGlobalEntityID;
-			}
 		}
-		else
-			Result = tempGlobalEntityID;
 	}
 
 	return Result;
@@ -402,22 +404,33 @@ bool EntityList::CanAddHateForMob(Mob *p) {
 }
 
 void EntityList::AddClient(Client* client) {
-	int16 TempEntityId = GetGlobalEntityID(client);
-	
-	if(TempEntityId > 0) {
-		client->SetID(TempEntityId);
+	if(client) {
+		int16 TempEntityId = 0;
 
-		// Push this object to it's maps
-		mob_entityid_map.insert(MobMapPair(client->GetID(), client));
-		mob_name_map.insert(MobMapByNamePair(std::string(client->GetName()), client));
+		if(client->CharacterID() <= 0) {
+			// New client object that just connected to the zone process and we don't yet know who this is
+			TempEntityId = GetZoneEntityID();
+		}
+		else {
+			// We know who this client is
+			TempEntityId = GetGlobalEntityID(client);
+		}
 
-		client_entityid_map.insert(ClientMapPair(client->GetID(), client));
-		client_characterid_map.insert(ClientMapPair(client->CharacterID(), client));
-		client_name_map.insert(ClientMapByNamePair(std::string(client->GetName()), client));
+		if(TempEntityId > 0) {
+			client->SetID(TempEntityId);
 
-		// Push this object to it's lists
-		client_list.push_back(client);
-		mob_list.push_back(client);
+			// Push this object to it's maps
+			mob_entityid_map.insert(MobMapPair(client->GetID(), client));
+			mob_name_map.insert(MobMapByNamePair(std::string(client->GetName()), client));
+
+			client_entityid_map.insert(ClientMapPair(client->GetID(), client));
+			client_characterid_map.insert(ClientMapPair(client->CharacterID(), client));
+			client_name_map.insert(ClientMapByNamePair(std::string(client->GetName()), client));
+
+			// Push this object to it's lists
+			client_list.push_back(client);
+			mob_list.push_back(client);
+		}
 	}
 }
 
