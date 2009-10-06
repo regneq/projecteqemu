@@ -74,6 +74,7 @@
 #define REGAIN_AND_CONTINUE			270		//You regain your concentration and continue your casting.
 #define SPELL_WOULDNT_HOLD			271		//Your spell would not have taken hold on your target.
 #define MISSING_SPELL_COMP			272		//You are missing some required spell components.
+#define INVIS_BEGIN_BREAK			275		//You feel yourself starting to appear.
 #define DISCIPLINE_CONLOST			278		//You lose the concentration to remain in your fighting discipline.
 #define REZ_REGAIN					289		//You regain some experience from resurrection.
 #define DUP_LORE					290		//Duplicate lore items are not allowed. 

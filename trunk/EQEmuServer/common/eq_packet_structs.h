@@ -935,7 +935,17 @@ struct PlayerProfile_Struct
 /*7072*/	sint32				ldon_points_ruj;
 /*7076*/	sint32				ldon_points_tak;
 /*7080*/	sint32				ldon_points_available;
-/*7084*/	uint8				unknown5940[112];
+/*7084*/	sint32				ldon_wins_guk;
+/*7088*/	sint32				ldon_wins_mir;
+/*7092*/	sint32				ldon_wins_mmc;
+/*7096*/	sint32				ldon_wins_ruj;
+/*7100*/	sint32				ldon_wins_tak;
+/*7104*/	sint32				ldon_losses_guk;
+/*7108*/	sint32				ldon_losses_mir;
+/*7112*/	sint32				ldon_losses_mmc;
+/*7116*/	sint32				ldon_losses_ruj;
+/*7120*/	sint32				ldon_losses_tak;
+/*7124*/	uint8				unknown5940[72];
 /*7196*/	uint32				tribute_time_remaining;	//in miliseconds
 /*7200*/	uint32				showhelm;
 /*7204*/	uint32				career_tribute_points;
