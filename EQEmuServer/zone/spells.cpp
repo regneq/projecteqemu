@@ -4387,3 +4387,19 @@ void Mob::SendPetBuffsToClient()
 	safe_delete(outapp);
 }
 
+void Mob::BuffModifyDurationBySpellID(int16 spell_id, sint32 newDuration)
+{
+	for(int i = 0; i < BUFF_COUNT; ++i)
+	{
+		if (buffs[i].spellid == spell_id)
+		{
+			buffs[i].ticsremaining = newDuration;
+			if(IsClient())
+			{
+				CastToClient()->SendBuffDurationPacket(buffs[i].spellid, buffs[i].ticsremaining, buffs[i].casterlevel);
+			}
+		}
+	}
+}
+
+void	BuffModifyDurationBySpellID(int16 spell_id, int32 newDuration);

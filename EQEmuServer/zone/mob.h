@@ -680,6 +680,7 @@ bool logpos;
 	void	BuffFadeDetrimental();
 	void	BuffFadeBySlot(int slot, bool iRecalcBonuses = true);
 	void	BuffFadeDetrimentalByCaster(Mob *caster);
+	void	BuffModifyDurationBySpellID(int16 spell_id, sint32 newDuration);
 	int		CanBuffStack(int16 spellid, int8 caster_level, bool iFailIfOverwrite = false);
 	inline	bool	IsCasting() const { return((casting_spell_id != 0)); }
 	int16	CastingSpellID() const { return casting_spell_id; }

@@ -3171,7 +3171,25 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 				CastToClient()->m_pp.thirst_level += 5;
 			}
 			break;
-		 }
+		}
+		case SE_Invisibility:
+		case SE_InvisVsAnimals:
+		case SE_InvisVsUndead:
+			if(ticsremaining > 2)
+			{
+				if(MakeRandomInt(0, 100) < 2)
+				{
+					BuffModifyDurationBySpellID(spell_id, 3);
+				}
+			}
+		
+		case SE_Invisibility2:
+		case SE_InvisVsUndead2:
+			if(ticsremaining <= 2)
+			{
+				Message_StringID(MT_Spells, INVIS_BEGIN_BREAK);
+			}
+			break;
 		default: {
 			// do we need to do anyting here?
 		}
