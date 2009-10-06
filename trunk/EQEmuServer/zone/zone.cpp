@@ -1192,6 +1192,7 @@ bool Zone::Process() {
 								afin->id = ad->id;
 								afin->win_lose = 0;
 								afin->points = 0;
+								afin->update_stats = false;
 								worldserver.SendPacket(pack2);
 								safe_delete(pack2);
 
@@ -1251,6 +1252,7 @@ bool Zone::Process() {
 									afin->id = ad->id;
 									afin->win_lose = 0;
 									afin->points = 0;
+									afin->update_stats = false;
 									worldserver.SendPacket(pack2);
 									safe_delete(pack2);									
 
@@ -2335,6 +2337,7 @@ void Zone::UpdateAdventureCount(AdventureDetails *ad)
 				afin->id = ad->id;
 				afin->win_lose = 1;
 				afin->points = ad->ai->win_points;
+				afin->update_stats = true;
 				worldserver.SendPacket(pack2);
 				safe_delete(pack2);
 
@@ -2367,6 +2370,7 @@ void Zone::UpdateAdventureCount(AdventureDetails *ad)
 				afin->id = ad->id;
 				afin->win_lose = 1;
 				afin->points = ad->ai->lose_points;
+				afin->update_stats = true;
 				worldserver.SendPacket(pack2);
 				safe_delete(pack2);
 

@@ -197,7 +197,6 @@ public:
 	void UpdateAdventureCount(int32 adv_id, int32 new_count);
 	void IncrementAdventureCount(int32 adv_id);
 	int32 GetAdventureCount(int32 adv_id);
-	bool AdventureStatsEntryExists(int32 char_id);
 	bool AdventureExists(int32 adv_id);
 	void UpdateAdventureStatsEntry(int32 char_id, int8 theme, bool win);
 	void UpdateAllAdventureStatsEntry(int32 adv_id, int8 theme, bool win);
@@ -205,10 +204,6 @@ public:
 		int32 &guk_l, int32 &mir_l, int32 &mmc_l, int32 &ruj_l, int32 &tak_l);
 	int32 AdventureGetAssassinateKills(int32 adv_id);
 	void AdventureSetAssassinateKills(int32 adv_id, int32 kills);
-	int32 GetAdventureWins(int32 char_id);
-	int32 GetAdventureLosses(int32 char_id);
-	int32 GetAdventureWinsTheme(int32 char_id, int32 theme);
-	int32 GetAdventureLossesTheme(int32 char_id, int32 theme);
 
 	/*
 	 * Account Related

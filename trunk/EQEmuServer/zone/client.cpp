@@ -4335,6 +4335,7 @@ void Client::LeaveAdventure()
 			return;
 
 		database.UpdateAdventureStatsEntry(CharacterID(), ad->ai->theme, false);
+		UpdateLDoNLosses(ad->ai->theme, (GetLDoNLossesTheme(ad->ai->theme) + 1));
 		database.RemovePlayerFromAdventure(ad->id, CharacterID());
 		if(database.CountPlayersInAdventure(ad->id) == 0)
 		{
@@ -4408,7 +4409,7 @@ void Client::SendAdventureDetail()
 	SendAdventureCountUpdate(ad->count, ad->ai->type_count);
 }
 
-void Client::SendAdventureFinish(int8 win, int32 points, int32 theme)
+void Client::SendAdventureFinish(int8 win, int32 points, int32 theme, bool update_stats)
 {
 	if(win > 0)
 	{
@@ -4423,6 +4424,8 @@ void Client::SendAdventureFinish(int8 win, int32 points, int32 theme)
 		af->win_lose = 1;
 		af->points = points;
 		FastQueuePacket(&outapp);
+		if(update_stats)
+			UpdateLDoNWins(theme, (GetLDoNWinsTheme(theme) + 1));
 	}
 	else
 	{
@@ -4431,6 +4434,8 @@ void Client::SendAdventureFinish(int8 win, int32 points, int32 theme)
 		af->win_lose = 0;
 		af->points = 0;
 		FastQueuePacket(&outapp);
+		if(update_stats)
+			UpdateLDoNLosses(theme, (GetLDoNLossesTheme(theme) + 1));
 	}
 }
 
@@ -5409,4 +5414,90 @@ bool Client::TryReward(int32 claim_id)
 
 	Save();
 	return true;
+}
+
+int32 Client::GetLDoNWinsTheme(int32 t)
+{
+	switch(t)
+	{
+	case 1:
+		return m_pp.ldon_wins_guk;
+	case 2:
+		return m_pp.ldon_wins_mir;
+	case 3:
+		return m_pp.ldon_wins_mmc;
+	case 4:
+		return m_pp.ldon_wins_ruj;
+	case 5:
+		return m_pp.ldon_wins_tak;
+	default:
+		return 0;
+	}
+}
+
+int32 Client::GetLDoNLossesTheme(int32 t)
+{
+	switch(t)
+	{
+	case 1:
+		return m_pp.ldon_losses_guk;
+	case 2:
+		return m_pp.ldon_losses_mir;
+	case 3:
+		return m_pp.ldon_losses_mmc;
+	case 4:
+		return m_pp.ldon_losses_ruj;
+	case 5:
+		return m_pp.ldon_losses_tak;
+	default:
+		return 0;
+	}
+}
+
+void Client::UpdateLDoNWins(int32 t, sint32 n)
+{
+	switch(t)
+	{
+	case 1:
+		m_pp.ldon_wins_guk = n;
+		break;
+	case 2:
+		m_pp.ldon_wins_mir = n;
+		break;
+	case 3:
+		m_pp.ldon_wins_mmc = n;
+		break;
+	case 4:
+		m_pp.ldon_wins_ruj = n;
+		break;
+	case 5:
+		m_pp.ldon_wins_tak = n;
+		break;
+	default:
+		return;
+	}
+}
+
+void Client::UpdateLDoNLosses(int32 t, sint32 n)
+{
+	switch(t)
+	{
+	case 1:
+		m_pp.ldon_losses_guk = n;
+		break;
+	case 2:
+		m_pp.ldon_losses_mir = n;
+		break;
+	case 3:
+		m_pp.ldon_losses_mmc = n;
+		break;
+	case 4:
+		m_pp.ldon_losses_ruj = n;
+		break;
+	case 5:
+		m_pp.ldon_losses_tak = n;
+		break;
+	default:
+		return;
+	}
 }

@@ -347,7 +347,7 @@ public:
 	void	GateAllClients();
 	void	SendAdventureUpdate(int32 a_id);
 	void	AdventureMessage(int32 a_id, const char *msg);
-	void	AdventureFinish(int32 a_id, int8 win_lose, int32 points);
+	void	AdventureFinish(int32 a_id, int8 win_lose, int32 points, bool update_stats);
 	void	AdventureDestroy(int32 a_id);
 	void	AdventureCountUpdate(int32 a_id, int32 current, int32 total);
 	void	SignalAllClients(int32 data);
