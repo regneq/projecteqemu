@@ -853,6 +853,7 @@ struct ServerAdventureFinish_Struct
 	int32 id;
 	int8 win_lose;
 	int32 points;
+	bool update_stats;
 };
 
 struct ServerAdventureMessage_Struct

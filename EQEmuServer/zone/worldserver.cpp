@@ -1328,7 +1328,7 @@ void WorldServer::Process() {
 			ServerAdventureFinish_Struct *af = (ServerAdventureFinish_Struct*)pack->pBuffer;
 			if(zone)
 			{
-				entity_list.AdventureFinish(af->id, af->win_lose, af->points);
+				entity_list.AdventureFinish(af->id, af->win_lose, af->points, af->update_stats);
 			}
 			break;
 		}

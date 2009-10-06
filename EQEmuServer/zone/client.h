@@ -868,16 +868,18 @@ public:
 	void SendAdventureSelection(Mob* rec, int32 difficulty, int32 type);
 	void SendAdventureError(const char* msg, ...);
 	void SendAdventureDetail();
-	void SendAdventureFinish(int8 win, int32 points, int32 theme);
+	void SendAdventureFinish(int8 win, int32 points, int32 theme, bool update_stats);
 	void SendAdventureCountUpdate(int32 current, int32 total);
 	void AcceptAdventure();
 	void DeclineAdventure();
 	void LeaveAdventure();
 
-	int32 GetLDoNWins() { return database.GetAdventureWins(CharacterID()); }
-	int32 GetLDoNLosses() { return database.GetAdventureLosses(CharacterID()); }
-	int32 GetLDoNWinsTheme(int32 t) { return database.GetAdventureWinsTheme(CharacterID(), t); }
-	int32 GetLDoNLossesTheme(int32 t) { return database.GetAdventureLossesTheme(CharacterID(), t); }
+	int32 GetLDoNWins() { return (m_pp.ldon_wins_guk + m_pp.ldon_wins_mir + m_pp.ldon_wins_mmc + m_pp.ldon_wins_ruj + m_pp.ldon_wins_tak); }
+	int32 GetLDoNLosses() { return (m_pp.ldon_losses_guk + m_pp.ldon_losses_mir + m_pp.ldon_losses_mmc + m_pp.ldon_losses_ruj + m_pp.ldon_losses_tak); }
+	int32 GetLDoNWinsTheme(int32 t);
+	int32 GetLDoNLossesTheme(int32 t);
+	void UpdateLDoNWins(int32 t, sint32 n);
+	void UpdateLDoNLosses(int32 t, sint32 n);
 
 	void HandleLDoNOpen(NPC *target);
 	void HandleLDoNSenseTraps(NPC *target, int16 skill, int8 type);

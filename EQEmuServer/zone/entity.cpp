@@ -4113,7 +4113,7 @@ void EntityList::AdventureMessage(int32 a_id, const char *msg)
 	}
 }
 
-void EntityList::AdventureFinish(int32 a_id, int8 win_lose, int32 points)
+void EntityList::AdventureFinish(int32 a_id, int8 win_lose, int32 points, bool update_stats)
 {
 	AdventureDetails *ad = NULL;
 
@@ -4145,7 +4145,7 @@ void EntityList::AdventureFinish(int32 a_id, int8 win_lose, int32 points)
 				ad = c->GetCurrentAdventure();
 				if(ad && ad->id == a_id)
 				{
-					c->SendAdventureFinish(win_lose, points, ad->ai->theme);
+					c->SendAdventureFinish(win_lose, points, ad->ai->theme, update_stats);
 				}
 			}
 			iterator.Advance();

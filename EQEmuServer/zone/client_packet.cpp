@@ -9871,6 +9871,16 @@ void Client::Handle_OP_AdventureStatsRequest(const EQApplicationPacket *app)
 	{
 		as->failure.total = as->failure.guk + as->failure.mir + as->failure.mmc + as->failure.ruj + as->failure.tak;
 		as->success.total = as->success.guk + as->success.mir + as->success.mmc + as->success.ruj + as->success.tak;
+		m_pp.ldon_wins_guk = as->success.guk;
+		m_pp.ldon_wins_mir = as->success.mir;
+		m_pp.ldon_wins_mmc = as->success.mmc;
+		m_pp.ldon_wins_ruj = as->success.ruj;
+		m_pp.ldon_wins_tak = as->success.tak;
+		m_pp.ldon_losses_guk = as->failure.guk;
+		m_pp.ldon_losses_mir = as->failure.mir;
+		m_pp.ldon_losses_mmc = as->failure.mmc;
+		m_pp.ldon_losses_ruj = as->failure.ruj;
+		m_pp.ldon_losses_tak = as->failure.tak;
 	}
 
 	FastQueuePacket(&outapp);
