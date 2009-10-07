@@ -425,6 +425,23 @@ void WorldServer::Process() {
 			}
 			break;
 		}
+		case ServerOP_Motd: {
+			ServerMotd_Struct* smotd = (ServerMotd_Struct*) pack->pBuffer;
+			EQApplicationPacket *outapp;
+			outapp = new EQApplicationPacket(OP_MOTD);
+			char tmp[500] = {0};
+			sprintf(tmp, "%s", smotd->motd);
+
+			outapp->size = strlen(tmp)+1;
+			outapp->pBuffer = new uchar[outapp->size];
+			memset(outapp->pBuffer,0,outapp->size);
+			strcpy((char*)outapp->pBuffer, tmp);
+
+			entity_list.QueueClients(0, outapp);
+			safe_delete(outapp);
+
+			break;
+		}
 		case ServerOP_ShutdownAll: {
 			entity_list.Save();
 			CatchSignal(2);

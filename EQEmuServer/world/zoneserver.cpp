@@ -839,7 +839,8 @@ bool ZoneServer::Process() {
 			}
 			ServerMotd_Struct* smotd = (ServerMotd_Struct*) pack->pBuffer;
 			database.SetVariable("MOTD",smotd->motd);
-			this->SendEmoteMessage(smotd->myname, 0, 0, 13, "Updated Motd.");
+			//this->SendEmoteMessage(smotd->myname, 0, 0, 13, "Updated Motd.");
+			zoneserver_list.SendPacket(pack);
 			break;
 		}
 		case ServerOP_Uptime: {
