@@ -1,5 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==10/15/2009==
+AndMetal: Added rule Combat:ProcTargetOnly(true). Allows the change from Rev 606 that limits procs to only the target to be removed. Note: AE procs can still cause stability issues if it is set to false.
+AndMetal: Fixed some "no newline at end of file" warnings.
+AndMetal: Corrected formatting/typo for some # commands.
+AndMetal: Fixed a memory leak in Client::ZonePC().
+
 ==10/07/2009==
 Rogean: #motd now updates clients instantly serverwide.
 

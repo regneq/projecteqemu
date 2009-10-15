@@ -476,6 +476,7 @@ void Client::ZonePC(int32 zoneID, int32 instance_id, float x, float y, float z, 
 
 	if(!pZoneName) {
 		Message(13, "Invalid zone number specified");
+		safe_delete_array(pZoneName);
 		return;
 	}
 	iZoneNameLength = strlen(pZoneName);
@@ -655,6 +656,8 @@ void Client::ZonePC(int32 zoneID, int32 instance_id, float x, float y, float z, 
 			}
 		}
 	}
+
+	safe_delete_array(pZoneName);
 }
 
 void Client::GoToSafeCoords(uint16 zone_id, uint16 instance_id) {
