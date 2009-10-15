@@ -2074,6 +2074,15 @@ float Mob::DistNoRoot(float x, float y, float z) const {
 	       + (zDiff * zDiff) );
 }
 
+float Mob::DistNoRootNoZ(float x, float y) const {
+	_ZP(Mob_DistNoRoot);
+	float xDiff = x - x_pos;
+	float yDiff = y - y_pos;
+
+	return ( (xDiff * xDiff)  
+	       + (yDiff * yDiff) );
+}
+
 float Mob::DistNoRootNoZ(const Mob &other) const {
 	_ZP(Mob_DistNoRootNoZ);
 	float xDiff = other.x_pos - x_pos;

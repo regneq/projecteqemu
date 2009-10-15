@@ -3175,17 +3175,30 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 		case SE_Invisibility:
 		case SE_InvisVsAnimals:
 		case SE_InvisVsUndead:
-			if(ticsremaining > 2)
+			if(ticsremaining > 3)
 			{
-				if(MakeRandomInt(0, 100) < 2)
+				if(!IsBardSong(spell_id))
 				{
-					BuffModifyDurationBySpellID(spell_id, 3);
+					double break_chance = 2.0;
+					if(caster)
+					{
+						break_chance -= (2 * (((double)caster->GetSkill(DIVINATION) + ((double)caster->GetLevel() * 3.0)) / 650.0));
+					}
+					else
+					{
+						break_chance -= (2 * (((double)GetSkill(DIVINATION) + ((double)GetLevel() * 3.0)) / 650.0));
+					}
+
+					if(MakeRandomFloat(0.0, 100.0) < break_chance)
+					{
+						BuffModifyDurationBySpellID(spell_id, 3);
+					}
 				}
 			}
 		
 		case SE_Invisibility2:
 		case SE_InvisVsUndead2:
-			if(ticsremaining <= 2)
+			if(ticsremaining <= 3 && ticsremaining > 1)
 			{
 				Message_StringID(MT_Spells, INVIS_BEGIN_BREAK);
 			}

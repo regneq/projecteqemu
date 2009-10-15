@@ -40,6 +40,12 @@ void Object::HandleAugmentation(Client* user, const AugmentItem_Struct* in_augme
 		LogFile->write(EQEMuLog::Error, "Client or AugmentItem_Struct not set in Object::HandleAugmentation");
 		return;
 	}
+
+	if(!worldo)
+	{
+		LogFile->write(EQEMuLog::Error, "Player tried to augment an item without a world object set.");
+		return;
+	}
 	
 	ItemInst *tobe_auged, *auged_with = NULL;
 	sint8 slot=-1;

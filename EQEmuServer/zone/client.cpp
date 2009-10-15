@@ -297,6 +297,8 @@ Client::Client(EQStreamInterface* ieqs)
 	aa_los_them.z = 0;
 	aa_los_them_mob = NULL;
 	los_status = false;
+
+	qGlobals = NULL;
 }
 
 Client::~Client() {
@@ -363,6 +365,7 @@ Client::~Client() {
 	safe_delete(taskstate);
 	safe_delete(KarmaUpdateTimer);
 	safe_delete(GlobalChatLimiterTimer);
+	safe_delete(qGlobals);
 
 	numclients--;
 	UpdateWindowTitle();

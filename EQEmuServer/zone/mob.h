@@ -621,6 +621,7 @@ bool logpos;
 	float DistNoZ(const Mob &) const;
 	float DistNoRoot(const Mob &) const;
 	float DistNoRoot(float x, float y, float z) const;
+	float DistNoRootNoZ(float x, float y) const;
 	float DistNoRootNoZ(const Mob &) const;
 
 	static float GetReciprocalHeading(Mob* target);

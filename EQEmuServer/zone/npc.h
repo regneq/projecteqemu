@@ -29,6 +29,7 @@ using namespace std;
 #include "spawn2.h"
 #include "loottable.h"
 #include "zonedump.h"
+#include "QGlobals.h"
 
 #ifdef WIN32
 	#define  M_PI	3.141592
@@ -238,8 +239,8 @@ public:
 	ItemList	itemlist; //kathgar - why is this public?  Doing other things or I would check the code
 	
 	NPCProximity* proximity;
-
 	Spawn2*	respawn2;
+	QGlobalCache *qGlobals;
 
 	AA_SwarmPetInfo *GetSwarmInfo() { return (swarmInfoPtr); }
 	void SetSwarmInfo(AA_SwarmPetInfo *mSwarmInfo) { swarmInfoPtr = mSwarmInfo; }

@@ -4401,5 +4401,3 @@ void Mob::BuffModifyDurationBySpellID(int16 spell_id, sint32 newDuration)
 		}
 	}
 }
-
-void	BuffModifyDurationBySpellID(int16 spell_id, int32 newDuration);

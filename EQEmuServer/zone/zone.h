@@ -32,6 +32,7 @@
 #include "spawn2.h"
 #include "tasks.h"
 #include "pathing.h"
+#include "QGlobals.h"
 
 class Map;
 class WaterMap;
@@ -223,6 +224,7 @@ public:
 	LinkedList<Spawn2*> spawn2_list;
 	LinkedList<ZonePoint*> zone_point_list;
 	int32	numzonepoints;
+	QGlobalCache *qGlobals;
 	
 private:
 	int32	zoneid;
