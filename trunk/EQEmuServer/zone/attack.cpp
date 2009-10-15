@@ -1259,7 +1259,10 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte)
 	////////  Kaiyodo - Check for proc on weapon based on DEX
 	///////////////////////////////////////////////////////////
 	if(other->GetHP() > -10 && !bRiposte && !IsDead()) {
-		if(other == GetTarget())
+		if (RuleB(Combat, ProcTargetOnly)) {
+			if(other == GetTarget())
+				TryWeaponProc(weapon, other, Hand);
+		} else
 			TryWeaponProc(weapon, other, Hand);
 	}
 	

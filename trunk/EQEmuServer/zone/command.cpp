@@ -153,12 +153,12 @@ Access Levels:
 int command_init(void) {
 	if
 	(
-		command_add("resetaa","Resets a Player's AA in their profile.",200,command_resetaa) ||
-		command_add("bind","Sets your targets bind spot to their current location",200,command_bind) ||
+		command_add("resetaa","- Resets a Player's AA in their profile.",200,command_resetaa) ||
+		command_add("bind","- Sets your targets bind spot to their current location",200,command_bind) ||
 		command_add("sendop","[opcode] - LE's Private test command, leave it alone",200,command_sendop) ||
-		command_add("optest","solar's private test command",255,command_optest) ||
-		command_add("setstat","Sets the stats to a specific value.",255,command_setstat) ||
-		command_add("incstat","Increases or Decreases a client's stats permanently.",200,command_incstat) ||
+		command_add("optest","- solar's private test command",255,command_optest) ||
+		command_add("setstat","- Sets the stats to a specific value.",255,command_setstat) ||
+		command_add("incstat","- Increases or Decreases a client's stats permanently.",200,command_incstat) ||
 		command_add("help","[search term] - List available commands and their description, specify partial command as argument to search",0,command_help) ||
 		command_add("version","- Display current version of EQEmu server",0,command_version) ||
 		command_add("eitem","- Changes item stats",200,command_eitem) ||
@@ -342,19 +342,19 @@ int command_init(void) {
 		command_add("viewmessage","[id] - View messages in your tell queue",100,command_viewmessage) ||
 		command_add("viewmessages",NULL,0,command_viewmessage) ||
 		command_add("doanim","[animnum] [type] - Send an EmoteAnim for you or your target",50,command_doanim) ||
-		command_add("randomfeatures","Temporarily randomizes the Facial Features of your target",80,command_randomfeatures) ||
+		command_add("randomfeatures","- Temporarily randomizes the Facial Features of your target",80,command_randomfeatures) ||
 		command_add("rf",NULL,80,command_randomfeatures) ||
-		command_add("face","Change the face of your target",80,command_face) ||
-		command_add("helm","Change the helm of your target",80,command_helm) ||
-		command_add("hair","Change the hair style of your target",80,command_hair) ||
-		command_add("haircolor","Change the hair color of your target",80,command_haircolor) ||
-		command_add("beard","Change the beard of your target",80,command_beard) ||
-		command_add("beardcolor","Change the beard color of your target",80,command_beardcolor) ||
-		command_add("heritage","Change the heritage of your target (Drakkin Only)",80,command_heritage) ||
-		command_add("tattoo","Change the tattoo of your target (Drakkin Only)",80,command_tattoo) ||
-		command_add("details","Change the details of your target (Drakkin Only)",80,command_details) ||
-		command_add("scribespells","[level] - Scribe all spells for you or your player target that are usable by them, up to level specified. (may freeze client for a few seconds)",150,command_scribespells) ||
-		command_add("unscribespells","Clear out your or your player target's spell book.",180,command_unscribespells) ||
+		command_add("face","- Change the face of your target",80,command_face) ||
+		command_add("helm","- Change the helm of your target",80,command_helm) ||
+		command_add("hair","- Change the hair style of your target",80,command_hair) ||
+		command_add("haircolor","- Change the hair color of your target",80,command_haircolor) ||
+		command_add("beard","- Change the beard of your target",80,command_beard) ||
+		command_add("beardcolor","- Change the beard color of your target",80,command_beardcolor) ||
+		command_add("heritage","- Change the heritage of your target (Drakkin Only)",80,command_heritage) ||
+		command_add("tattoo","- Change the tattoo of your target (Drakkin Only)",80,command_tattoo) ||
+		command_add("details","- Change the details of your target (Drakkin Only)",80,command_details) ||
+		command_add("scribespells","[max level] [min level] - Scribe all spells for you or your player target that are usable by them, up to level specified. (may freeze client for a few seconds)",150,command_scribespells) ||
+		command_add("unscribespells","- Clear out your or your player target's spell book.",180,command_unscribespells) ||
 		command_add("scribespell", "[spellid] - Scribe specified spell in your target's spell book.", 180, command_scribespell) ||
 		command_add("unscribespell", "[spellid] - Unscribe specified spell from your target's spell book.", 180, command_unscribespell) ||
 		command_add("interrupt","[message id] [color] - Interrupt your casting.  Arguments are optional.",50,command_interrupt) ||
@@ -390,7 +390,7 @@ int command_init(void) {
 		command_add("setadventurepoints","- Set your or your player target's available adventure points",150,command_set_adventure_points) ||
 		command_add("npcsay","[message] - Make your NPC target say a message.",150,command_npcsay) ||
 		command_add("npcshout","[message] - Make your NPC target shout a message.",150,command_npcshout) ||
-		command_add("timers","- Display persisten timers for target",200,command_timers) ||
+		command_add("timers","- Display persistent timers for target",200,command_timers) ||
 		command_add("hp","- Refresh your HP bar from the server.",0,command_hp) ||
 		command_add("pf","- ",0,command_pf) ||
 		command_add("logsql","- enable SQL logging",200,command_logsql) ||
@@ -409,13 +409,13 @@ int command_init(void) {
 		command_add("acceptrules","[acceptrules] - Accept the EQEmu Agreement",0,command_acceptrules) ||
 		command_add("rules","(subcommand) - Manage server rules", 250, command_rules) ||
 		command_add("task","(subcommand) - Task system commands", 150, command_task) ||
-		command_add("reloadtitles","Reload player titles from the database", 150, command_reloadtitles) ||
+		command_add("reloadtitles","- Reload player titles from the database", 150, command_reloadtitles) ||
 		command_add("guildcreate","[guildname] - Creates an approval setup for guild name specified",0,command_guildcreate) ||
 		command_add("guildapprove","[guildapproveid] - Approve a guild with specified ID (guild creator receives the id)",0,command_guildapprove) ||
 		command_add("guildlist","[guildapproveid] - Lists character names who have approved the guild specified by the approve id",0,command_guildlist) ||
 		command_add("altactivate", "[argument] - activates alternate advancement abilities, use altactivate help for more information", 0, command_altactivate) ||
-		command_add("refundaa", "Refunds your target's AA points, will disconnect them in the process as well.", 100, command_refundaa) ||
-		command_add("melody", "Used by bards to twist multiple songs.", 0, command_melody) ||
+		command_add("refundaa", "- Refunds your target's AA points, will disconnect them in the process as well.", 100, command_refundaa) ||
+		command_add("melody", "- Used by bards to twist multiple songs.", 0, command_melody) ||
 
 #ifdef BOTS
 		command_add("bot"," Type \"#bot help\" to the see the list of available commands for bots.", 0, command_bot) ||
@@ -428,11 +428,11 @@ int command_init(void) {
 		command_add("summonburriedplayercorpse","- Summons the target's oldest burried corpse, if any exist.", 100, command_summonburriedplayercorpse) ||
 		command_add("refreshgroup","- Refreshes Group.", 0, command_refreshgroup) ||
 		command_add("advnpcspawn","[maketype|makegroup|addgroupentry|addgroupspawn][removegroupspawn|movespawn|editgroupbox|cleargroupbox]",150,command_advnpcspawn) ||
-		command_add("modifynpcstat","Modifys a NPC's stats",150,command_modifynpcstat) ||
-		command_add("undyeme","Remove dye from all of your armor slots",0,command_undyeme) ||
-		command_add("instance","Modify Instances",200,command_instance) ||
+		command_add("modifynpcstat","- Modifys a NPC's stats",150,command_modifynpcstat) ||
+		command_add("undyeme","- Remove dye from all of your armor slots",0,command_undyeme) ||
+		command_add("instance","- Modify Instances",200,command_instance) ||
 		command_add("setstartzone","[zoneid] - Set target's starting zone.  Set to zero to allow the player to use /setstartcity",80,command_setstartzone) || 
-		command_add("netstats","Gets the network stats for a stream.",200,command_netstats) ||
+		command_add("netstats","- Gets the network stats for a stream.",200,command_netstats) ||
 		command_add("object","List|Add|Edit|Move|Rotate|Copy|Save|Undo|Delete - Manipulate static and tradeskill objects within the zone",100,command_object) ||
 		command_add("raidloot","LEADER|GROUPLEADER|SELECTED|ALL - Sets your raid loot settings if you have permission to do so.",0,command_raidloot)
 		)
