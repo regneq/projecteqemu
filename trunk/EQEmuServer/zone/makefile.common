@@ -32,7 +32,7 @@ SF= .obj/EQPacket.o .obj/EQStream.o .obj/EQStreamFactory.o .obj/CRC16.o \
    zone_logsys.o ../common/BasePacket.o ../common/worldconn.o \
    ../common/EmuTCPConnection.o ../common/EmuTCPServer.o ../common/TCPServer.o \
    ../common/guild_base.o \
-   guild_mgr.o tasks.o raids.o perl_hateentry.o
+   guild_mgr.o tasks.o raids.o perl_hateentry.o QGlobals.o
 
 
 all: $(APP)
