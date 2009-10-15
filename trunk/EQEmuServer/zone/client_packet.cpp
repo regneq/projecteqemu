@@ -1,23 +1,20 @@
 /*  EQEMu:  Everquest Server Emulator
-	Copyright (C) 2001-2003  EQEMu Development Team (http://eqemulator.net)
+	Copyright (C) 2001-2009 EQEMu Development Team (http://eqemulator.net)
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
 	the Free Software Foundation; version 2 of the License.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY except by those people which sell it, which
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY except by those people which sell it, which
 	are required to give you total support for your newly bought product;
 	without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 	A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, write to the Free Software
-	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-	client_packet.cpp:
-	Handles client login sequence and packets sent from client to zone
+	  You should have received a copy of the GNU General Public License
+	  along with this program; if not, write to the Free Software
+	  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
+
 #include "../common/debug.h"
 #include <iostream>
 #include <iomanip>
@@ -3220,7 +3217,7 @@ void Client::Handle_OP_LootRequest(const EQApplicationPacket *app)
 	if (ent->IsCorpse()) 
 	{
 		Corpse *ent_corpse = ent->CastToCorpse();
-		if(DistNoRoot(ent_corpse->GetX(), ent_corpse->GetY(), ent_corpse->GetZ()) > 625)
+		if(DistNoRootNoZ(ent_corpse->GetX(), ent_corpse->GetY()) > 625)
 		{
 			Message(13, "Corpse too far away.");
 			Corpse::SendLootReqErrorPacket(this);
@@ -8059,8 +8056,10 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 void Client::CompleteConnect()
 {
 
+	qGlobals = new QGlobalCache();
+	qGlobals->LoadByCharID(CharacterID());
+
 	UpdateWho();
-//	database.UpdateTimersClientConnected(CharacterID());
 	client_state = CLIENT_CONNECTED;
 
 	hpupdate_timer.Start();

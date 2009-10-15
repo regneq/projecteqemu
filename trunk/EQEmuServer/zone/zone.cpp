@@ -159,6 +159,10 @@ bool Zone::Bootup(int32 iZoneID, int32 iInstanceID, bool iStaticZone) {
 	UpdateWindowTitle();
 	zone->GetTimeSync();
 
+	zone->qGlobals = new QGlobalCache();
+	zone->qGlobals->LoadByZoneID(iZoneID);
+	zone->qGlobals->LoadByGlobalContext();
+
 	return true;
 }
 
@@ -844,6 +848,7 @@ Zone::~Zone() {
 	
 	safe_delete(Instance_Timer);
 	safe_delete(Instance_Shutdown_Timer);
+	safe_delete(qGlobals);
 
 	if(aas != NULL) {
 		int r;

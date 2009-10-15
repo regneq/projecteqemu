@@ -45,6 +45,7 @@ class Client;
 #include <float.h>
 #include <set>
 #include "../common/item_struct.h"
+#include "QGlobals.h"
 
 #define CLIENT_TIMEOUT		90000
 #define CLIENT_LD_TIMEOUT	30000 // length of time client stays in zone after LDing
@@ -897,6 +898,7 @@ public:
 	const int16 GetBoatID() const { return BoatID; }
 	void SendRewards();
 	bool TryReward(int32 claim_id);
+	QGlobalCache *qGlobals;
 
 protected:
 	friend class Mob;

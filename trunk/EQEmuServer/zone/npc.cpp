@@ -228,8 +228,6 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 	p_depop = false;
 	loottable_id = d->loottable_id;	
 
-//	if (d->npc_faction_id)
-//		DebugBreak();
 	primary_faction = 0;
 	SetNPCFactionID(d->npc_faction_id);
 
@@ -339,6 +337,15 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 		ldon_trap_detected = 0;
 	}
 
+	if(qglobal)
+	{
+		qGlobals = new QGlobalCache();
+		qGlobals->LoadByNPCID(GetNPCTypeID());
+	}
+	else
+	{
+		qGlobals = NULL;
+	}
 }
 	  
 NPC::~NPC()
@@ -354,7 +361,6 @@ NPC::~NPC()
 	//clear our spawn limit record if we had one.
 	entity_list.LimitRemoveNPC(this);
 	
-//	safe_delete(NPCTypedata);
 	safe_delete(NPCTypedata_ours);
  #ifdef IPC	  
 	if(IsInteractive())
@@ -390,6 +396,7 @@ NPC::~NPC()
 	}
 
 	safe_delete(swarmInfoPtr);
+	safe_delete(qGlobals);
 }
 
 void NPC::SetTarget(Mob* mob) {

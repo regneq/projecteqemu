@@ -612,6 +612,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\QGlobals.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\questmgr.cpp"
 				>
 			</File>
@@ -822,6 +826,10 @@
 			</File>
 			<File
 				RelativePath=".\PlayerCorpse.h"
+				>
+			</File>
+			<File
+				RelativePath=".\QGlobals.h"
 				>
 			</File>
 			<File
