@@ -159,10 +159,6 @@ bool Zone::Bootup(int32 iZoneID, int32 iInstanceID, bool iStaticZone) {
 	UpdateWindowTitle();
 	zone->GetTimeSync();
 
-	zone->qGlobals = new QGlobalCache();
-	zone->qGlobals->LoadByZoneID(iZoneID);
-	zone->qGlobals->LoadByGlobalContext();
-
 	return true;
 }
 
@@ -328,7 +324,6 @@ bool Zone::LoadGroundSpawns() {
 			if(inst){
 				name = groundspawn.spawn[gsindex].name;
 				for(ix=0;ix<gsnumber;ix++){
-	//				printf("Spawning object %s at %f,%f,%f %f\n",name,gsx,gsy,gsz,gsheading);
 					Object* object = new Object(inst,name,groundspawn.spawn[gsindex].max_x,groundspawn.spawn[gsindex].min_x,groundspawn.spawn[gsindex].max_y,groundspawn.spawn[gsindex].min_y,groundspawn.spawn[gsindex].max_z,groundspawn.spawn[gsindex].heading,groundspawn.spawn[gsindex].respawntimer);//new object with id of 10000+
 					entity_list.AddObject(object, false);
 				}
@@ -755,7 +750,8 @@ Zone::Zone(int32 in_zoneid, int32 in_instanceid, const char* in_short_name)
 	autoshutdown_timer((RuleI(Zone, AutoShutdownDelay))),
 	clientauth_timer(AUTHENTICATION_TIMEOUT * 1000),
 	spawn2_timer(1000),
-	adventure_timer(2000)
+	adventure_timer(2000),
+	qglobal_purge_timer(30000)
 {
 	zoneid = in_zoneid;
 	instanceid = in_instanceid;
@@ -763,6 +759,7 @@ Zone::Zone(int32 in_zoneid, int32 in_instanceid, const char* in_short_name)
 	zonemap = Map::LoadMapfile(in_short_name);
 	watermap = WaterMap::LoadWaterMapfile(in_short_name);
 	pathing = PathManager::LoadPathFile(in_short_name);
+	qGlobals = NULL;
 
 	if(RuleB(TaskSystem, EnableTaskSystem)) {
 		taskmanager->LoadProximities(zoneid);
@@ -827,6 +824,8 @@ Zone::Zone(int32 in_zoneid, int32 in_instanceid, const char* in_short_name)
 	{
 		Instance_Timer = NULL;
 	}
+
+	database.QGlobalPurge();
 }
 
 Zone::~Zone() {
@@ -1336,7 +1335,13 @@ bool Zone::Process() {
 		}
 	}
 
-
+	if(qGlobals)
+	{
+		if(qglobal_purge_timer.Check())
+		{
+			qGlobals->PurgeExpiredGlobals();
+		}
+	}
 
 	if (clientauth_timer.Check()) {
 		LinkedListIterator<ZoneClientAuth_Struct*> iterator2(client_auth_list);
@@ -2536,5 +2541,30 @@ void Zone::LoadVeteranRewards()
 	{
 		LogFile->write(EQEMuLog::Error, "Error in Zone::LoadVeteranRewards: %s (%s)", query, errbuf);
 		safe_delete_array(query);
+	}
+}
+
+void Zone::UpdateQGlobal(uint32 qid, QGlobal newGlobal)
+{
+	if((newGlobal.npc_id == 0 && newGlobal.char_id == 0 && newGlobal.zone_id == 0) || 
+		(newGlobal.npc_id == 0 && newGlobal.char_id == 0 && newGlobal.zone_id == GetZoneID()))
+	{
+		if(qGlobals)
+		{
+			qGlobals->AddGlobal(qid, newGlobal);
+		}
+		else
+		{
+			qGlobals = new QGlobalCache();
+			qGlobals->AddGlobal(qid, newGlobal);
+		}
+	}
+}
+
+void Zone::DeleteQGlobal(std::string name, uint32 npcID, uint32 charID, uint32 zoneID)
+{
+	if(qGlobals)
+	{
+		qGlobals->RemoveGlobal(name, npcID, charID, zoneID);
 	}
 }

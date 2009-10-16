@@ -25,6 +25,7 @@
 #include "zonedump.h"
 #include "zonedbasync.h"
 #include "../common/servertalk.h"
+#include "QGlobals.h"
 
 // max number of newspawns to send per bulk packet
 #define SPAWNS_PER_POINT_DATARATE 10
@@ -351,6 +352,8 @@ public:
 	void	AdventureDestroy(int32 a_id);
 	void	AdventureCountUpdate(int32 a_id, int32 current, int32 total);
 	void	SignalAllClients(int32 data);
+	void	UpdateQGlobal(uint32 qid, QGlobal newGlobal);
+	void	DeleteQGlobal(std::string name, uint32 npcID, uint32 charID, uint32 zoneID);
 
 	list<Mob*> GetMobList();
 	list<NPC*> GetNPCList();

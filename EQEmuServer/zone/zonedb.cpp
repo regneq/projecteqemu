@@ -1810,7 +1810,6 @@ void ZoneDatabase::ListAllInstances(Client* c, int32 charid)
 	if(!c)
 		return;
 
-
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char* query = 0;
 	MYSQL_RES *result;
@@ -1838,4 +1837,13 @@ void ZoneDatabase::ListAllInstances(Client* c, int32 charid)
 	{
 		safe_delete_array(query);
 	}
+}
+
+void ZoneDatabase::QGlobalPurge()
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	database.RunQuery(query, MakeAnyLenString(&query, "DELETE FROM quest_globals WHERE expdate < UNIX_TIMESTAMP()"), 
+		errbuf);
+	safe_delete_array(query);
 }

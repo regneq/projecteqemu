@@ -117,7 +117,8 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 	assist_timer(AIassistcheck_delay),
 	sendhpupdate_timer(1000),
 	enraged_timer(1000),
-	taunt_timer(TauntReuseTime * 1000)
+	taunt_timer(TauntReuseTime * 1000),
+	qglobal_purge_timer(30000)
 {
 	//What is the point of this, since the names get mangled..
 	Mob* mob = entity_list.GetMob(name);
@@ -336,16 +337,7 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 		ldon_locked_skill = 0;
 		ldon_trap_detected = 0;
 	}
-
-	if(qglobal)
-	{
-		qGlobals = new QGlobalCache();
-		qGlobals->LoadByNPCID(GetNPCTypeID());
-	}
-	else
-	{
-		qGlobals = NULL;
-	}
+	qGlobals = NULL;
 }
 	  
 NPC::~NPC()
@@ -625,6 +617,15 @@ bool NPC::Process()
 	//Handle assists...
 	if(assist_timer.Check() && !Charmed() && GetTarget() != NULL) {
 		entity_list.AIYellForHelp(this, GetTarget());
+	}
+
+	
+	if(qGlobals)
+	{
+		if(qglobal_purge_timer.Check())
+		{
+			qGlobals->PurgeExpiredGlobals();
+		}
 	}
 
 	AI_Process();

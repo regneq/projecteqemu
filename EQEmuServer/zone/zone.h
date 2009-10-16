@@ -221,10 +221,14 @@ public:
 	inline bool HasMap() { return zonemap != NULL; }
 	inline bool HasWaterMap() { return watermap != NULL; }
 
+	QGlobalCache *GetQGlobals() { return qGlobals; }
+	QGlobalCache *CreateQGlobals() { qGlobals = new QGlobalCache(); return qGlobals; }
+	void	UpdateQGlobal(uint32 qid, QGlobal newGlobal);
+	void	DeleteQGlobal(std::string name, uint32 npcID, uint32 charID, uint32 zoneID);
+
 	LinkedList<Spawn2*> spawn2_list;
 	LinkedList<ZonePoint*> zone_point_list;
 	int32	numzonepoints;
-	QGlobalCache *qGlobals;
 	
 private:
 	int32	zoneid;
@@ -268,10 +272,12 @@ private:
 	Timer	clientauth_timer;
 	Timer	spawn2_timer;
 	Timer	adventure_timer;
+	Timer	qglobal_purge_timer;
 	Timer*  Weather_Timer;
 	Timer*	Instance_Timer;
 	Timer*	Instance_Shutdown_Timer;
 	LinkedList<ZoneClientAuth_Struct*> client_auth_list;
+	QGlobalCache *qGlobals;
 	
 	Mutex	MZoneLock;
 };

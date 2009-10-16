@@ -4262,3 +4262,69 @@ list<Corpse*> EntityList::GetCorpseList()
 	}
 	return c_list;
 }
+
+void EntityList::UpdateQGlobal(uint32 qid, QGlobal newGlobal)
+{
+	LinkedListIterator<Mob*> iterator(mob_list); 
+	iterator.Reset();
+	while(iterator.MoreElements()) 
+	{
+		Mob *ent = iterator.GetData();
+		
+		if(ent->IsClient())
+		{
+			QGlobalCache *qgc = ent->CastToClient()->GetQGlobals();
+			if(qgc)
+			{
+				uint32 char_id = ent->CastToClient()->CharacterID();
+				if(newGlobal.char_id == char_id && newGlobal.npc_id == 0)
+				{
+					qgc->AddGlobal(qid, newGlobal);
+				}
+			}
+		}
+		else if(ent->IsNPC())
+		{
+			QGlobalCache *qgc = ent->CastToNPC()->GetQGlobals();
+			if(qgc)
+			{
+				uint32 npc_id = ent->GetNPCTypeID();
+				if(newGlobal.npc_id == npc_id)
+				{
+					qgc->AddGlobal(qid, newGlobal);
+				}
+			}
+		}
+
+		iterator.Advance();
+	}
+}
+
+void EntityList::DeleteQGlobal(std::string name, uint32 npcID, uint32 charID, uint32 zoneID)
+{
+	LinkedListIterator<Mob*> iterator(mob_list); 
+	iterator.Reset();
+	while(iterator.MoreElements()) 
+	{
+		Mob *ent = iterator.GetData();
+		
+		if(ent->IsClient())
+		{
+			QGlobalCache *qgc = ent->CastToClient()->GetQGlobals();
+			if(qgc)
+			{
+				qgc->RemoveGlobal(name, npcID, charID, zoneID);
+			}
+		}
+		else if(ent->IsNPC())
+		{
+			QGlobalCache *qgc = ent->CastToNPC()->GetQGlobals();
+			if(qgc)
+			{
+				qgc->RemoveGlobal(name, npcID, charID, zoneID);
+			}
+		}
+
+		iterator.Advance();
+	}
+}

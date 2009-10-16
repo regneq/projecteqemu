@@ -74,6 +74,7 @@ using namespace std;
 #include "event_codes.h"
 #include "guild_mgr.h"
 #include "../common/rulesys.h"
+#include "QGlobals.h"
 
 
 extern Zone* zone;
@@ -1035,12 +1036,6 @@ void QuestManager::setglobal(const char *varname, const char *newvalue, int opti
 			qgZoneid=0;
 	}
 
-	// clean up expired vars and get rid of the one we're going to set if there
-	database.RunQuery(query, MakeAnyLenString(&query,
-		"DELETE FROM quest_globals WHERE expdate < UNIX_TIMESTAMP() || (name='%s' && npcid=%i && charid=%i && zoneid=%i))"
-		,varname,qgNpcid,qgCharid,qgZoneid), errbuf);
-	safe_delete_array(query);
-
 	InsertQuestGlobal(qgCharid, qgNpcid, qgZoneid, varname, newvalue, QGVarDuration(duration));
 }
 
@@ -1066,30 +1061,57 @@ int QuestManager::InsertQuestGlobal(
 
 	//NOTE: this should be escaping the contents of arglist
 	//npcwise a malicious script can arbitrarily alter the DB
+	uint32 last_id = 0;
 	if (!database.RunQuery(query, MakeAnyLenString(&query,
 		"REPLACE INTO quest_globals (charid, npcid, zoneid, name, value, expdate)"
 		"VALUES (%i, %i, %i, '%s', '%s', %s)",
 		charid, npcid, zoneid, varname, varvalue, duration_ss.str().c_str()
-		), errbuf))
+		), errbuf, NULL, NULL, &last_id))
 	{
 		cerr << "setglobal error inserting " << varname << " : " << errbuf << endl;
 	}
 	safe_delete_array(query);
 
+	if(zone)
+	{
+		//first delete our global
+		ServerPacket* pack = new ServerPacket(ServerOP_QGlobalDelete, sizeof(ServerQGlobalDelete_Struct));
+		ServerQGlobalDelete_Struct *qgd = (ServerQGlobalDelete_Struct*)pack->pBuffer;
+		qgd->npc_id = npcid;
+		qgd->char_id = charid;
+		qgd->zone_id = zoneid;
+		strcpy(qgd->name, varname);
+
+		worldserver.SendPacket(pack);
+		safe_delete(pack);
+
+		//then create a new one with the new id
+		pack = new ServerPacket(ServerOP_QGlobalUpdate, sizeof(ServerQGlobalUpdate_Struct));
+		ServerQGlobalUpdate_Struct *qgu = (ServerQGlobalUpdate_Struct*)pack->pBuffer;
+		qgu->npc_id = npcid;
+		qgu->char_id = charid;
+		qgu->zone_id = zoneid;
+		if(duration == INT_MAX)
+		{
+			qgu->expdate = 0xFFFFFFFF;
+		}
+		else
+		{
+			qgu->expdate = Timer::GetTimeSeconds() + duration;
+		}
+		strcpy((char*)qgu->name, varname);
+		strcpy((char*)qgu->value, varvalue);
+		qgu->id = last_id;
+
+		worldserver.SendPacket(pack);
+		safe_delete(pack);
+	}
+
 	return 0;
 }
 
-void QuestManager::targlobal(const char *varname, const char *value, const char *duration, int qgNpcid, int qgCharid, int qgZoneid) {
-	// targlobal(varname,value,duration,npcid,charid,zoneid)
-	char errbuf[MYSQL_ERRMSG_SIZE];
-	char *query = 0;
-	// clean up expired vars and get rid of the one we're going to set if there
-	database.RunQuery(query, MakeAnyLenString(&query,
-		"DELETE FROM quest_globals WHERE expdate < UNIX_TIMESTAMP()"
-		" || (name='%s' && npcid=%i && charid=%i && zoneid=%i))"
-		,varname,qgNpcid,qgCharid,qgZoneid), errbuf);
-	safe_delete_array(query);
-
+void QuestManager::targlobal(const char *varname, const char *value, const char *duration, int qgNpcid, int qgCharid, int qgZoneid) 
+{
 	InsertQuestGlobal(qgCharid, qgNpcid, qgZoneid, varname, value, QGVarDuration(duration));
 }
 
@@ -1118,6 +1140,20 @@ void QuestManager::delglobal(const char *varname) {
 		cerr << "delglobal error deleting " << varname << " : " << errbuf << endl;
 	}
 	safe_delete_array(query);
+
+	if(zone)
+	{
+		ServerPacket* pack = new ServerPacket(ServerOP_QGlobalDelete, sizeof(ServerQGlobalDelete_Struct));
+		ServerQGlobalDelete_Struct *qgu = (ServerQGlobalDelete_Struct*)pack->pBuffer;
+
+		qgu->npc_id = qgNpcid;
+		qgu->char_id = qgCharid;
+		qgu->zone_id = qgZoneid;
+		strcpy(qgu->name, varname);
+
+		worldserver.SendPacket(pack);
+		safe_delete(pack);
+	}
 }
 
 // Converts duration string to duration value (in seconds)

@@ -5,22 +5,30 @@
 
 void QGlobalCache::AddGlobal(uint32 id, QGlobal global)
 {
+	std::map<uint32, QGlobal>::iterator iter = qGlobalBucket.find(id);
+	if(iter != qGlobalBucket.end())
+	{
+		qGlobalBucket.erase(iter);
+	}
 	qGlobalBucket[id] = global;
 }
 
-/*void QGlobalCache::RemoveGlobal(std::string name)
+void QGlobalCache::RemoveGlobal(std::string name, uint32 npcID, uint32 charID, uint32 zoneID)
 {
 	std::map<uint32, QGlobal>::iterator iter = qGlobalBucket.begin();
 	while(iter != qGlobalBucket.end())
 	{
-		if(name.compare(iter->second) == 0)
+		if(name.compare(iter->second.name) == 0)
 		{
-			qGlobalBucket.erase(iter);
-			return;
+			if((npcID == iter->second.npc_id || iter->second.npc_id == 0) && (charID == iter->second.char_id || iter->second.char_id == 0) && (zoneID == iter->second.zone_id) || iter->second.zone_id == 0)
+			{
+				qGlobalBucket.erase(iter);
+				return;
+			}
 		}
 		++iter;
 	}
-}*/
+}
 
 std::map<uint32, QGlobal> QGlobalCache::Combine(std::map<uint32, QGlobal> cacheA, std::map<uint32, QGlobal> cacheB, uint32 npcID, uint32 charID, uint32 zoneID)
 {
@@ -29,15 +37,15 @@ std::map<uint32, QGlobal> QGlobalCache::Combine(std::map<uint32, QGlobal> cacheA
 	while(iter != cacheA.end())
 	{
 		QGlobal cur = iter->second;
-		bool rep = false;
 
 		if((cur.npc_id == npcID || cur.npc_id == 0) && (cur.char_id == charID || cur.char_id == 0) && (cur.zone_id == zoneID || cur.zone_id == 0))
 		{
-			if(Timer::GetCurrentTime() < cur.expdate)
+
+			if(Timer::GetTimeSeconds() < cur.expdate)
 			{
 				returnCache[iter->first] = cur;
 			}
-		}	
+		}
 		++iter;
 	}
 	
@@ -45,9 +53,10 @@ std::map<uint32, QGlobal> QGlobalCache::Combine(std::map<uint32, QGlobal> cacheA
 	while(iter != cacheB.end())
 	{
 		QGlobal cur = iter->second;
+
 		if((cur.npc_id == npcID || cur.npc_id == 0) && (cur.char_id == charID || cur.char_id == 0) && (cur.zone_id == zoneID || cur.zone_id == 0))
 		{
-			if(Timer::GetCurrentTime() < cur.expdate)
+			if(Timer::GetTimeSeconds() < cur.expdate)
 			{
 				returnCache[iter->first] = cur;
 			}
@@ -56,6 +65,24 @@ std::map<uint32, QGlobal> QGlobalCache::Combine(std::map<uint32, QGlobal> cacheA
 	}
 	
 	return returnCache;
+}
+
+void QGlobalCache::PurgeExpiredGlobals()
+{
+	if(!qGlobalBucket.size())
+		return;
+
+	std::map<uint32, QGlobal>::iterator iter = qGlobalBucket.begin();
+	while(iter != qGlobalBucket.end())
+	{
+		QGlobal cur = iter->second;
+		if(Timer::GetTimeSeconds() > cur.expdate)
+		{
+			qGlobalBucket.erase(iter);
+			iter = qGlobalBucket.begin();
+		}
+		++iter;
+	}
 }
 
 void QGlobalCache::LoadByNPCID(uint32 npcID)

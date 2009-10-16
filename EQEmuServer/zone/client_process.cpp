@@ -97,13 +97,6 @@ bool Client::Process() {
 		if(dead)
 			SetHP(-100);
 		
-		/*
-		is there a reason we were doing this? its handled below...
-		if(dead && this->client_state == CLIENT_LINKDEAD) {
-			LeaveGroup();
-			return false;
-		}
-		*/
 		if(hpupdate_timer.Check())
 			SendHPUpdate();	
 		if(mana_timer.Check())
@@ -203,6 +196,14 @@ bool Client::Process() {
 			{
 				KarmaUpdateTimer->Start(RuleI(Chat, KarmaUpdateIntervalMS));
 				database.UpdateKarma(AccountID(), ++TotalKarma);
+			}
+		}
+
+		if(qGlobals)
+		{
+			if(qglobal_purge_timer.Check())
+			{
+				qGlobals->PurgeExpiredGlobals();
 			}
 		}
 		

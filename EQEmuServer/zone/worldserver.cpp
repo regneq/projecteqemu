@@ -55,6 +55,7 @@ using namespace std;
 #include "guild_mgr.h"
 #include "../common/rulesys.h"
 #include "titles.h"
+#include "QGlobals.h"
 
 extern EntityList    entity_list;
 extern Zone* zone;
@@ -1421,6 +1422,45 @@ void WorldServer::Process() {
 						found_spawn->Enable();
 					}
 				}
+			}
+			break;
+		}
+
+		case ServerOP_QGlobalUpdate:
+		{
+			if(pack->size != sizeof(ServerQGlobalUpdate_Struct))
+			{
+				break;
+			}
+			
+			if(zone)
+			{
+				ServerQGlobalUpdate_Struct *qgu = (ServerQGlobalUpdate_Struct*)pack->pBuffer;
+				QGlobal temp;
+				temp.npc_id = qgu->npc_id;
+				temp.char_id = qgu->char_id;
+				temp.zone_id = qgu->zone_id;
+				temp.expdate = qgu->expdate;
+				temp.name.assign(qgu->name);
+				temp.value.assign(qgu->value);
+				entity_list.UpdateQGlobal(qgu->id, temp);
+				zone->UpdateQGlobal(qgu->id, temp);
+			}
+			break;
+		}
+
+		case ServerOP_QGlobalDelete:
+		{
+			if(pack->size != sizeof(ServerQGlobalDelete_Struct))
+			{
+				break;
+			}
+			
+			if(zone)
+			{
+				ServerQGlobalDelete_Struct *qgd = (ServerQGlobalDelete_Struct*)pack->pBuffer;
+				entity_list.DeleteQGlobal(std::string((char*)qgd->name), qgd->npc_id, qgd->char_id, qgd->zone_id);
+				zone->DeleteQGlobal(std::string((char*)qgd->name), qgd->npc_id, qgd->char_id, qgd->zone_id);
 			}
 			break;
 		}

@@ -1078,14 +1078,7 @@ bool ZoneServer::Process() {
 			}
 			break;
 		}
-		case ServerOP_ReloadTasks: {
-			zoneserver_list.SendPacket(pack);
-			break;
-		}
-		case ServerOP_UpdateSpawn: {
-			zoneserver_list.SendPacket(pack);
-			break;
-		}
+
 		case ServerOP_InstanceUpdateTime :
 		{
 			ServerInstanceUpdateTime_Struct *iut = (ServerInstanceUpdateTime_Struct*)pack->pBuffer;
@@ -1096,6 +1089,28 @@ bool ZoneServer::Process() {
 			}
 			break;
 		}
+		case ServerOP_QGlobalUpdate:
+		{
+			if(pack->size != sizeof(ServerQGlobalUpdate_Struct))
+			{
+				break;
+			}
+
+			zoneserver_list.SendPacket(pack);
+			break;		
+		}
+
+		case ServerOP_QGlobalDelete:
+		{
+			if(pack->size != sizeof(ServerQGlobalDelete_Struct))
+			{
+				break;
+			}
+
+			zoneserver_list.SendPacket(pack);
+			break;		
+		}
+
 		case ServerOP_AdventureCreate:
 		case ServerOP_AdventureAddPlayer:
 		case ServerOP_AdventureDestroy: 
@@ -1103,21 +1118,11 @@ bool ZoneServer::Process() {
 		case ServerOP_AdventureCount:
 		case ServerOP_AdventureFinish:
 		case ServerOP_AdventureMessage:
-		{
-			zoneserver_list.SendPacket(pack);
-			break;
-		}
 		case ServerOP_DepopAllPlayersCorpses:
-		{
-			zoneserver_list.SendPacket(pack);
-			break;
-		}
 		case ServerOP_ReloadTitles:
-		{
-			zoneserver_list.SendPacket(pack);
-			break;
-		}
 		case ServerOP_SpawnStatusChange:
+		case ServerOP_ReloadTasks:
+		case ServerOP_UpdateSpawn:
 		{
 			zoneserver_list.SendPacket(pack);
 			break;
