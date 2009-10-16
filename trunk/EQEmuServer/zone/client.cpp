@@ -169,6 +169,7 @@ Client::Client(EQStreamInterface* ieqs)
 	charm_update_timer(60000),
 	charm_class_attacks_timer(3000),
 	charm_cast_timer(3500),
+	qglobal_purge_timer(30000),
 	rest_timer(1)
 {
 	for(int cf=0; cf < _FilterCount; cf++)
@@ -297,7 +298,6 @@ Client::Client(EQStreamInterface* ieqs)
 	aa_los_them.z = 0;
 	aa_los_them_mob = NULL;
 	los_status = false;
-
 	qGlobals = NULL;
 }
 

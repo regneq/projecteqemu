@@ -8055,10 +8055,6 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 // Finish client connecting state
 void Client::CompleteConnect()
 {
-
-	qGlobals = new QGlobalCache();
-	qGlobals->LoadByCharID(CharacterID());
-
 	UpdateWho();
 	client_state = CLIENT_CONNECTED;
 

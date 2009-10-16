@@ -32,6 +32,7 @@
 #include "command.h"
 #include "../common/seperator.h"
 #include "../common/MiscFunctions.h"
+#include "QGlobals.h"
 
 #include <algorithm>
 
@@ -286,71 +287,117 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 
 	ExportVar(packagename.c_str(), "charid", charid);
 
-	if(!isPlayerQuest && !isItemQuest){
-		//only export globals if the npcmob has the qglobal flag
-		if(npcmob && npcmob->GetQglobal()){
-			// Delete expired global variables
-			database.RunQuery(query, MakeAnyLenString(&query,
-				"DELETE FROM quest_globals WHERE expdate < UNIX_TIMESTAMP()"), errbuf);
-			safe_delete_array(query);
-
+	//NPC quest
+	if(!isPlayerQuest && !isItemQuest)
+	{
+		//only export for npcs that are global enabled.
+		if(npcmob && npcmob->GetQglobal())
+		{
 			map<string, string> globhash;
+			QGlobalCache *npc_c = NULL;
+			QGlobalCache *char_c = NULL;
+			QGlobalCache *zone_c = NULL;
 
-			// Load global variables
-			database.RunQuery(query, MakeAnyLenString(&query,
-			"SELECT name,value"
-			" FROM quest_globals"
-			" WHERE (npcid=%i || npcid=0) && (charid=%i || charid=0) && (zoneid=%i || zoneid=0)",
-				npcmob->GetNPCTypeID(),charid,zone->GetZoneID()), errbuf, &result);
-			if (result)
+			//retrieve our globals
+			npc_c = npcmob->GetQGlobals();
+			if(mob && mob->IsClient())
+				char_c = mob->CastToClient()->GetQGlobals();
+			zone_c = zone->GetQGlobals();
+
+			if(!npc_c)
 			{
-				while ((row = mysql_fetch_row(result)))
-				{
-					globhash[row[0]] = row[1];
-
-					// DEPRECATED: Export variables as $var in addition to hash
-					ExportVar(packagename.c_str(), row[0], row[1]);
-				}
-				mysql_free_result(result);
+				npc_c = npcmob->CreateQGlobals();
+				npc_c->LoadByNPCID(npcmob->GetNPCTypeID());
 			}
-			safe_delete_array(query);
 
-			// Put key-value pairs in perl hash
+			if(!char_c)
+			{
+				if(mob && mob->IsClient())
+				{
+					char_c = mob->CastToClient()->CreateQGlobals();
+					char_c->LoadByCharID(mob->CastToClient()->CharacterID());
+				}
+			}
+
+			if(!zone_c)
+			{
+				zone_c = zone->CreateQGlobals();
+				zone_c->LoadByZoneID(zone->GetZoneID());
+				zone_c->LoadByGlobalContext();
+			}
+
+			std::map<uint32, QGlobal> globalMap;
+			if(npc_c)
+			{
+				globalMap = QGlobalCache::Combine(globalMap, npc_c->GetMap(), npcmob->GetNPCTypeID(), charid, zone->GetZoneID());
+			}
+
+			if(char_c)
+			{
+				globalMap = QGlobalCache::Combine(globalMap, char_c->GetMap(), npcmob->GetNPCTypeID(), charid, zone->GetZoneID());
+			}
+
+			if(zone_c)
+			{
+				globalMap = QGlobalCache::Combine(globalMap, zone_c->GetMap(), npcmob->GetNPCTypeID(), charid, zone->GetZoneID());
+			}
+			
+			std::map<uint32, QGlobal>::iterator iter = globalMap.begin();
+			while(iter != globalMap.end())
+			{
+				globhash[iter->second.name] = iter->second.value;
+				ExportVar(packagename.c_str(), iter->second.name.c_str(), iter->second.value.c_str());
+				++iter;
+			}
 			ExportHash(packagename.c_str(), "qglobals", globhash);
 		}
 	}
-	else{
-		//only export globals if the npcmob has the qglobal flag
-		if(mob){
-			// Delete expired global variables
-			database.RunQuery(query, MakeAnyLenString(&query,
-				"DELETE FROM quest_globals WHERE expdate < UNIX_TIMESTAMP()"), errbuf);
-			safe_delete_array(query);
+	else
+	{
+		map<string, string> globhash;
+		QGlobalCache *char_c = NULL;
+		QGlobalCache *zone_c = NULL;
 
-			map<string, string> globhash;
+		//retrieve our globals
+		if(mob && mob->IsClient())
+			char_c = mob->CastToClient()->GetQGlobals();
+		zone_c = zone->GetQGlobals();
 
-			// Load global variables
-			database.RunQuery(query, MakeAnyLenString(&query,
-			"SELECT name,value"
-			" FROM quest_globals"
-			" WHERE (npcid=0) && (charid=%i || charid=0) && (zoneid=%i || zoneid=0)",
-				charid,zone->GetZoneID()), errbuf, &result);
-			if (result)
+		if(!char_c)
+		{
+			if(mob && mob->IsClient())
 			{
-				while ((row = mysql_fetch_row(result)))
-				{
-					globhash[row[0]] = row[1];
-
-					// DEPRECATED: Export variables as $var in addition to hash
-					ExportVar(packagename.c_str(), row[0], row[1]);
-				}
-				mysql_free_result(result);
+				char_c = mob->CastToClient()->CreateQGlobals();
+				char_c->LoadByCharID(mob->CastToClient()->CharacterID());
 			}
-			safe_delete_array(query);
-
-			// Put key-value pairs in perl hash
-			ExportHash(packagename.c_str(), "qglobals", globhash);
 		}
+
+		if(!zone_c)
+		{
+			zone_c = zone->CreateQGlobals();
+			zone_c->LoadByZoneID(zone->GetZoneID());
+			zone_c->LoadByGlobalContext();
+		}
+
+		std::map<uint32, QGlobal> globalMap;
+		if(char_c)
+		{
+			globalMap = QGlobalCache::Combine(globalMap, char_c->GetMap(), 0, charid, zone->GetZoneID());
+		}
+
+		if(zone_c)
+		{
+			globalMap = QGlobalCache::Combine(globalMap, zone_c->GetMap(), 0, charid, zone->GetZoneID());
+		}
+
+		std::map<uint32, QGlobal>::iterator iter = globalMap.begin();
+		while(iter != globalMap.end())
+		{
+			globhash[iter->second.name] = iter->second.value;
+			ExportVar(packagename.c_str(), iter->second.name.c_str(), iter->second.value.c_str());
+			++iter;
+		}
+		ExportHash(packagename.c_str(), "qglobals", globhash);
 	}
 
 	int8 fac = 0;
@@ -358,7 +405,6 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 		ExportVar(packagename.c_str(), "uguild_id", mob->CastToClient()->GuildID());
 		ExportVar(packagename.c_str(), "uguildrank", mob->CastToClient()->GuildRank());
 		ExportVar(packagename.c_str(), "status", mob->CastToClient()->Admin());
-//		ExportVar(packagename.c_str(), "cumflag", mob->CastToClient()->flag[50]);
 	}
 
 	if(!isPlayerQuest && !isItemQuest){

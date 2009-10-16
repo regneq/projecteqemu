@@ -330,6 +330,11 @@ public:
 	 * Instancing
 	 */
 	void ListAllInstances(Client* c, int32 charid);
+	
+	/*
+	 * QGlobals
+	 */
+	void QGlobalPurge();
 
 	/*
 	 * Misc stuff.

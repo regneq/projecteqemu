@@ -898,7 +898,8 @@ public:
 	const int16 GetBoatID() const { return BoatID; }
 	void SendRewards();
 	bool TryReward(int32 claim_id);
-	QGlobalCache *qGlobals;
+	QGlobalCache *GetQGlobals() { return qGlobals; }
+	QGlobalCache *CreateQGlobals() { qGlobals = new QGlobalCache(); return qGlobals; }
 
 protected:
 	friend class Mob;
@@ -922,6 +923,7 @@ protected:
 	VERTEX aa_los_them;
 	Mob *aa_los_them_mob;
 	bool los_status;
+	QGlobalCache *qGlobals;
 
 private:
 	eqFilterMode ClientFilters[_FilterCount];
@@ -1085,6 +1087,7 @@ private:
 	Timer	rest_timer;
 	Timer	charm_class_attacks_timer;
 	Timer	charm_cast_timer;
+	Timer	qglobal_purge_timer;
 
 	float	proximity_x;
 	float	proximity_y;

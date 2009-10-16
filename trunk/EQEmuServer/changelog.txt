@@ -5,6 +5,7 @@ AndMetal: Added rule Combat:ProcTargetOnly(true). Allows the change from Rev 606
 AndMetal: Fixed some "no newline at end of file" warnings.
 AndMetal: Corrected formatting/typo for some # commands.
 AndMetal: Fixed a memory leak in Client::ZonePC().
+KLS: Changed how QGlobals are tracked on the server to reduce the amount of times we query the database.  I've tested it quite a bit but if you find anything wrong with the new implementation: report it.
 
 ==10/07/2009==
 Rogean: #motd now updates clients instantly serverwide.

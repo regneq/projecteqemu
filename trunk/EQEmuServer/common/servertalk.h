@@ -81,6 +81,8 @@
 #define ServerOP_ReloadTasks		0x0060
 #define ServerOP_DepopAllPlayersCorpses	0x0061
 #define ServerOP_ReloadTitles		0x0062
+#define ServerOP_QGlobalUpdate		0x0063
+#define ServerOP_QGlobalDelete		0x0064
 
 #define ServerOP_RaidAdd			0x0100 //in use
 #define ServerOP_RaidRemove			0x0101 //in use
@@ -866,6 +868,25 @@ struct ServerSpawnStatusChange_Struct
 {
 	int32 id;
 	bool new_status;
+};
+
+struct ServerQGlobalUpdate_Struct
+{
+	uint32 id;
+	char name[64];
+	char value[64];
+	uint32 npc_id;
+	uint32 char_id;
+	uint32 zone_id;
+	uint32 expdate;
+};
+
+struct ServerQGlobalDelete_Struct
+{
+	char name[64];
+	uint32 npc_id;
+	uint32 char_id;
+	uint32 zone_id;
 };
 
 #pragma pack()

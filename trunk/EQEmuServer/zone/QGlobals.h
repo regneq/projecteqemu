@@ -22,10 +22,11 @@ class QGlobalCache
 {
 public:
 	void AddGlobal(uint32 id, QGlobal global);
-	//void RemoveGlobal(std::string name);
+	void RemoveGlobal(std::string name, uint32 npcID, uint32 charID, uint32 zoneID);
 	std::map<uint32, QGlobal> GetMap() { return qGlobalBucket; }
 	static std::map<uint32, QGlobal> Combine(std::map<uint32, QGlobal> cacheA, std::map<uint32, QGlobal> cacheB, uint32 npcID, uint32 charID, uint32 zoneID);
 	
+	void PurgeExpiredGlobals();
 	void LoadByNPCID(uint32 npcID); //npc
 	void LoadByCharID(uint32 charID); //client
 	void LoadByZoneID(uint32 zoneID); //zone

@@ -240,7 +240,8 @@ public:
 	
 	NPCProximity* proximity;
 	Spawn2*	respawn2;
-	QGlobalCache *qGlobals;
+	QGlobalCache *GetQGlobals() { return qGlobals; }
+	QGlobalCache *CreateQGlobals() { qGlobals = new QGlobalCache(); return qGlobals; }
 
 	AA_SwarmPetInfo *GetSwarmInfo() { return (swarmInfoPtr); }
 	void SetSwarmInfo(AA_SwarmPetInfo *mSwarmInfo) { swarmInfoPtr = mSwarmInfo; }
@@ -301,6 +302,7 @@ protected:
     Timer	classattack_timer;
 	Timer	knightattack_timer;
     Timer	assist_timer;		//ask for help from nearby mobs
+	Timer	qglobal_purge_timer;
 
 	bool	combat_event;	//true if we are in combat, false otherwise
     Timer	sendhpupdate_timer;
@@ -332,13 +334,11 @@ protected:
 	bool	signaled;	// used by quest signal() command
 	
 	//waypoint crap:
-	//MyList <wplist> Waypoints;
 	vector<wplist> Waypoints;
 	void _ClearWaypints();
 	int		max_wp;
 	int		save_wp;
     float guard_x, guard_y, guard_z, guard_heading;
-//    float spawn_x, spawn_y, spawn_z, spawn_heading;
 	float roambox_max_x;
 	float roambox_max_y;
 	float roambox_min_x;
@@ -361,6 +361,7 @@ protected:
 	bool ldon_locked;
 	int16 ldon_locked_skill;
 	bool ldon_trap_detected;
+	QGlobalCache *qGlobals;
 
 private:
 	int32	loottable_id;
