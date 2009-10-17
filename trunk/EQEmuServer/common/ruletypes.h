@@ -26,7 +26,7 @@ RULE_INT ( Character, MaxExpLevel, 0 ) //Sets the Max Level attainable via Exper
 RULE_INT ( Character, DeathExpLossLevel, 10 )
 RULE_INT ( Character, DeathItemLossLevel, 10 )
 RULE_INT ( Character, DeathExpLossMultiplier, 3) //Adjust how much exp is lost
-RULE_BOOL( Character, UseDeathExpLossMult, true ) //Adjust to use the above multiplier or to use code default.
+RULE_BOOL( Character, UseDeathExpLossMult, false ) //Adjust to use the above multiplier or to use code default.
 RULE_INT ( Character, CorpseDecayTimeMS, 10800000 )
 RULE_BOOL( Character, LeaveCorpses, false )
 RULE_BOOL( Character, LeaveNakedCorpses, false )
