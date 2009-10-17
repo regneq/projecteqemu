@@ -2546,8 +2546,13 @@ void Zone::LoadVeteranRewards()
 
 void Zone::UpdateQGlobal(uint32 qid, QGlobal newGlobal)
 {
-	if((newGlobal.npc_id == 0 && newGlobal.char_id == 0 && newGlobal.zone_id == 0) || 
-		(newGlobal.npc_id == 0 && newGlobal.char_id == 0 && newGlobal.zone_id == GetZoneID()))
+	if(newGlobal.npc_id != 0)
+		return;
+
+	if(newGlobal.char_id != 0)
+		return;
+
+	if(newGlobal.zone_id == GetZoneID() || newGlobal.zone_id == 0)
 	{
 		if(qGlobals)
 		{
