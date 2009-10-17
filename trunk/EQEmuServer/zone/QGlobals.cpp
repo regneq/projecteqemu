@@ -5,22 +5,18 @@
 
 void QGlobalCache::AddGlobal(uint32 id, QGlobal global)
 {
-	std::map<uint32, QGlobal>::iterator iter = qGlobalBucket.find(id);
-	if(iter != qGlobalBucket.end())
-	{
-		qGlobalBucket.erase(iter);
-	}
-	qGlobalBucket[id] = global;
+	global.id = id;
+	qGlobalBucket.push_back(global);
 }
 
 void QGlobalCache::RemoveGlobal(std::string name, uint32 npcID, uint32 charID, uint32 zoneID)
 {
-	std::map<uint32, QGlobal>::iterator iter = qGlobalBucket.begin();
+	std::list<QGlobal>::iterator iter = qGlobalBucket.begin();
 	while(iter != qGlobalBucket.end())
 	{
-		if(name.compare(iter->second.name) == 0)
+		if(name.compare((*iter).name) == 0)
 		{
-			if((npcID == iter->second.npc_id || iter->second.npc_id == 0) && (charID == iter->second.char_id || iter->second.char_id == 0) && (zoneID == iter->second.zone_id) || iter->second.zone_id == 0)
+			if((npcID == (*iter).npc_id || (*iter).npc_id == 0) && (charID == (*iter).char_id || (*iter).char_id == 0) && (zoneID == (*iter).zone_id) || (*iter).zone_id == 0)
 			{
 				qGlobalBucket.erase(iter);
 				return;
@@ -30,41 +26,22 @@ void QGlobalCache::RemoveGlobal(std::string name, uint32 npcID, uint32 charID, u
 	}
 }
 
-std::map<uint32, QGlobal> QGlobalCache::Combine(std::map<uint32, QGlobal> cacheA, std::map<uint32, QGlobal> cacheB, uint32 npcID, uint32 charID, uint32 zoneID)
+void QGlobalCache::Combine(std::list<QGlobal> &cacheA, std::list<QGlobal> cacheB, uint32 npcID, uint32 charID, uint32 zoneID)
 {
-	std::map<uint32, QGlobal> returnCache;
-	std::map<uint32, QGlobal>::iterator iter = cacheA.begin();
-	while(iter != cacheA.end())
-	{
-		QGlobal cur = iter->second;
-
-		if((cur.npc_id == npcID || cur.npc_id == 0) && (cur.char_id == charID || cur.char_id == 0) && (cur.zone_id == zoneID || cur.zone_id == 0))
-		{
-
-			if(Timer::GetTimeSeconds() < cur.expdate)
-			{
-				returnCache[iter->first] = cur;
-			}
-		}
-		++iter;
-	}
-	
-	iter = cacheB.begin();
+	std::list<QGlobal>::iterator iter = cacheB.begin();
 	while(iter != cacheB.end())
 	{
-		QGlobal cur = iter->second;
+		QGlobal cur = (*iter);
 
 		if((cur.npc_id == npcID || cur.npc_id == 0) && (cur.char_id == charID || cur.char_id == 0) && (cur.zone_id == zoneID || cur.zone_id == 0))
 		{
 			if(Timer::GetTimeSeconds() < cur.expdate)
 			{
-				returnCache[iter->first] = cur;
+				cacheA.push_back(cur);
 			}
 		}
 		++iter;
 	}
-	
-	return returnCache;
 }
 
 void QGlobalCache::PurgeExpiredGlobals()
@@ -72,10 +49,10 @@ void QGlobalCache::PurgeExpiredGlobals()
 	if(!qGlobalBucket.size())
 		return;
 
-	std::map<uint32, QGlobal>::iterator iter = qGlobalBucket.begin();
+	std::list<QGlobal>::iterator iter = qGlobalBucket.begin();
 	while(iter != qGlobalBucket.end())
 	{
-		QGlobal cur = iter->second;
+		QGlobal cur = (*iter);
 		if(Timer::GetTimeSeconds() > cur.expdate)
 		{
 			qGlobalBucket.erase(iter);

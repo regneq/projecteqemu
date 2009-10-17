@@ -326,27 +326,27 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 				zone_c->LoadByGlobalContext();
 			}
 
-			std::map<uint32, QGlobal> globalMap;
+			std::list<QGlobal> globalMap;
 			if(npc_c)
 			{
-				globalMap = QGlobalCache::Combine(globalMap, npc_c->GetMap(), npcmob->GetNPCTypeID(), charid, zone->GetZoneID());
+				QGlobalCache::Combine(globalMap, npc_c->GetBucket(), npcmob->GetNPCTypeID(), charid, zone->GetZoneID());
 			}
 
 			if(char_c)
 			{
-				globalMap = QGlobalCache::Combine(globalMap, char_c->GetMap(), npcmob->GetNPCTypeID(), charid, zone->GetZoneID());
+				QGlobalCache::Combine(globalMap, char_c->GetBucket(), npcmob->GetNPCTypeID(), charid, zone->GetZoneID());
 			}
 
 			if(zone_c)
 			{
-				globalMap = QGlobalCache::Combine(globalMap, zone_c->GetMap(), npcmob->GetNPCTypeID(), charid, zone->GetZoneID());
+				QGlobalCache::Combine(globalMap, zone_c->GetBucket(), npcmob->GetNPCTypeID(), charid, zone->GetZoneID());
 			}
 			
-			std::map<uint32, QGlobal>::iterator iter = globalMap.begin();
+			std::list<QGlobal>::iterator iter = globalMap.begin();
 			while(iter != globalMap.end())
 			{
-				globhash[iter->second.name] = iter->second.value;
-				ExportVar(packagename.c_str(), iter->second.name.c_str(), iter->second.value.c_str());
+				globhash[(*iter).name] = (*iter).value;
+				ExportVar(packagename.c_str(), (*iter).name.c_str(), (*iter).value.c_str());
 				++iter;
 			}
 			ExportHash(packagename.c_str(), "qglobals", globhash);
@@ -379,22 +379,22 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 			zone_c->LoadByGlobalContext();
 		}
 
-		std::map<uint32, QGlobal> globalMap;
+		std::list<QGlobal> globalMap;
 		if(char_c)
 		{
-			globalMap = QGlobalCache::Combine(globalMap, char_c->GetMap(), 0, charid, zone->GetZoneID());
+			QGlobalCache::Combine(globalMap, char_c->GetBucket(), 0, charid, zone->GetZoneID());
 		}
 
 		if(zone_c)
 		{
-			globalMap = QGlobalCache::Combine(globalMap, zone_c->GetMap(), 0, charid, zone->GetZoneID());
+			QGlobalCache::Combine(globalMap, zone_c->GetBucket(), 0, charid, zone->GetZoneID());
 		}
 
-		std::map<uint32, QGlobal>::iterator iter = globalMap.begin();
+		std::list<QGlobal>::iterator iter = globalMap.begin();
 		while(iter != globalMap.end())
 		{
-			globhash[iter->second.name] = iter->second.value;
-			ExportVar(packagename.c_str(), iter->second.name.c_str(), iter->second.value.c_str());
+			globhash[(*iter).name] = (*iter).value;
+			ExportVar(packagename.c_str(), (*iter).name.c_str(), (*iter).value.c_str());
 			++iter;
 		}
 		ExportHash(packagename.c_str(), "qglobals", globhash);
