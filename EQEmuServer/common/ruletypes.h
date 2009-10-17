@@ -28,7 +28,7 @@ RULE_INT ( Character, DeathItemLossLevel, 10 )
 RULE_INT ( Character, DeathExpLossMultiplier, 3) //Adjust how much exp is lost
 RULE_BOOL( Character, UseDeathExpLossMult, false ) //Adjust to use the above multiplier or to use code default.
 RULE_INT ( Character, CorpseDecayTimeMS, 10800000 )
-RULE_BOOL( Character, LeaveCorpses, false )
+RULE_BOOL( Character, LeaveCorpses, true )
 RULE_BOOL( Character, LeaveNakedCorpses, false )
 RULE_REAL( Character, ExpMultiplier, 0.5 )
 RULE_REAL( Character, AAExpMultiplier, 0.5 )
@@ -111,7 +111,7 @@ RULE_CATEGORY( Zone )
 RULE_INT ( Zone,  NPCPositonUpdateTicCount, 32 ) //ms between intervals of sending a position update to the entire zone.
 RULE_INT ( Zone,  ClientLinkdeadMS, 180000) //the time a client remains link dead on the server after a sudden disconnection
 RULE_INT ( Zone,  GraveyardTimeMS, 1200000) //ms time until a player corpse is moved to a zone's graveyard, if one is specified for the zone
-RULE_BOOL ( Zone, EnableShadowrest, 0 ) // enables or disables the shadowrest zone feature for player corpses. Default is turned off.
+RULE_BOOL ( Zone, EnableShadowrest, 1 ) // enables or disables the shadowrest zone feature for player corpses. Default is turned off.
 RULE_INT ( Zone, MQWarpExemptStatus, -1 ) // Required status level to exempt the MQWarpDetector.  Set to -1 to disable this feature.
 RULE_INT ( Zone, MQZoneExemptStatus, -1 ) // Required status level to exempt the MQZoneDetector.  Set to -1 to disable this feature.
 RULE_INT ( Zone, MQGateExemptStatus, -1 ) // Required status level to exempt the MQGateDetector.  Set to -1 to disable this feature.
