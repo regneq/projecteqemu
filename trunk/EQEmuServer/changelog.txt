@@ -1,5 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==10/17/2009==
+WildcardX: A character and a bot can now recieve an ldon adventure.
+
+<Required SQL> 1022_botadventuring.sql
+
 ==10/15/2009==
 AndMetal: Added rule Combat:ProcTargetOnly(true). Allows the change from Rev 606 that limits procs to only the target to be removed. Note: AE procs can still cause stability issues if it is set to false.
 AndMetal: Fixed some "no newline at end of file" warnings.
