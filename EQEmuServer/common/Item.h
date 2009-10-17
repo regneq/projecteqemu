@@ -181,7 +181,7 @@ public:
 	sint16 HasItemByLoreGroup(uint32 loregroup, uint8 where=0xFF);
 	
 	// Locate an available inventory slot
-	sint16 FindFreeSlot(bool for_bag, bool try_cursor, int8 min_size = 0);
+	sint16 FindFreeSlot(bool for_bag, bool try_cursor, int8 min_size = 0, bool is_arrow = false);
 	
 	// Calculate slot_id for an item within a bag
 	static sint16 CalcSlotId(sint16 slot_id); // Calc parent bag's slot_id
