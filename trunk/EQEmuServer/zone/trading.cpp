@@ -317,7 +317,8 @@ void Client::ResetTrade() {
 			TempItem = ins->GetItem();
 		if (TempItem)
 		{
-			int freeslotid = GetInv().FindFreeSlot(ins->IsType(ItemClassContainer), true, TempItem->Size);
+			bool is_arrow = (TempItem->ItemType == ItemTypeArrow) ? true : false;
+			int freeslotid = GetInv().FindFreeSlot(ins->IsType(ItemClassContainer), true, TempItem->Size, is_arrow);
 			if (freeslotid == SLOT_INVALID)
 			{
 				DropInst(ins);
@@ -349,7 +350,8 @@ void Client::FinishTrade(Mob* tradingWith) {
 				mlog(TRADING__CLIENT, "Giving %s (%d) in slot %d to %s", inst->GetItem()->Name, inst->GetItem()->ID, i, other->GetName());
 
 				if (inst->GetItem()->NoDrop != 0 || other == this) {
-					slot_id = other->GetInv().FindFreeSlot(inst->IsType(ItemClassContainer), true, inst->GetItem()->Size);
+					bool is_arrow = (inst->GetItem()->ItemType == ItemTypeArrow) ? true : false;
+					slot_id = other->GetInv().FindFreeSlot(inst->IsType(ItemClassContainer), true, inst->GetItem()->Size, is_arrow);
 
 					mlog(TRADING__CLIENT, "Trying to put %s (%d) into slot %d", inst->GetItem()->Name, inst->GetItem()->ID, slot_id);
 					if (other->PutItemInInventory(slot_id, *inst, true)) {
@@ -652,8 +654,10 @@ void Client::SendTraderItem(int32 ItemID, int16 Quantity) {
 	
 	ItemInst* inst = database.CreateItem(item, Quantity);
 
-	if (inst) {
-		FreeSlotID = m_inv.FindFreeSlot(false, true, inst->GetItem()->Size);
+	if (inst) 
+	{
+		bool is_arrow = (inst->GetItem()->ItemType == ItemTypeArrow) ? true : false;
+		FreeSlotID = m_inv.FindFreeSlot(false, true, inst->GetItem()->Size, is_arrow);
 
 		PutItemInInventory(FreeSlotID, *inst);
 		Save();

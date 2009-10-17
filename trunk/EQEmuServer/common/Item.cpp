@@ -971,7 +971,7 @@ ItemInst* Inventory::PopItem(sint16 slot_id)
 
 // Locate an available inventory slot
 // Returns slot_id when there's one available, else SLOT_INVALID
-sint16 Inventory::FindFreeSlot(bool for_bag, bool try_cursor, int8 min_size)
+sint16 Inventory::FindFreeSlot(bool for_bag, bool try_cursor, int8 min_size, bool is_arrow)
 {
 	// Check basic inventory
 	for (sint16 i=22; i<=29; i++) {
@@ -984,8 +984,13 @@ sint16 Inventory::FindFreeSlot(bool for_bag, bool try_cursor, int8 min_size)
 		for (sint16 i=22; i<=29; i++) {
 			const ItemInst* inst = GetItem(i);
 			if (inst && inst->IsType(ItemClassContainer) 
-				&& inst->GetItem()->BagSize >= min_size
-				) {
+				&& inst->GetItem()->BagSize >= min_size) 
+			{
+				if(inst->GetItem()->BagType == bagTypeQuiver && inst->GetItem()->ItemType != ItemTypeArrow)
+				{
+					continue;
+				}
+
 				sint16 base_slot_id = Inventory::CalcSlotId(i, 0);
 
 				int8 slots=inst->GetItem()->BagSlots;

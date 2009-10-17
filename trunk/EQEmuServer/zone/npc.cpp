@@ -1181,7 +1181,8 @@ void NPC::PickPocket(Client* thief) {
 			if (item)
 			{
 				inst = database.CreateItem(item, citem->charges);
-				int slot_id = thief->GetInv().FindFreeSlot(false, true, inst->GetItem()->Size);
+				bool is_arrow = (item->ItemType == ItemTypeArrow) ? true : false;
+				int slot_id = thief->GetInv().FindFreeSlot(false, true, inst->GetItem()->Size, is_arrow);
 				if (/*!Equipped(item->ID) &&*/
 					 !item->LoreFlag && !item->Magic && item->NoDrop != 0 && !inst->IsType(ItemClassContainer) && slot_id != SLOT_INVALID 
 					/*&& steal_skill > item->StealSkill*/ )

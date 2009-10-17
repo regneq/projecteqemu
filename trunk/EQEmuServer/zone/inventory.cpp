@@ -395,8 +395,7 @@ bool Client::TryStacking(ItemInst* item, int8 type, bool try_worn, bool try_curs
 bool Client::AutoPutLootInInventory(ItemInst& inst, bool try_worn, bool try_cursor, ServerLootItem_Struct** bag_item_data)
 {
 	// #1: Try to auto equip
-	if (try_worn && inst.IsEquipable(GetBaseRace(), GetClass()) && inst.GetItem()->ReqLevel<=level && !inst.GetItem()->Attuneable)
-
+	if (try_worn && inst.IsEquipable(GetBaseRace(), GetClass()) && inst.GetItem()->ReqLevel<=level && !inst.GetItem()->Attuneable && inst.GetItem()->ItemType != ItemTypeAugment)
 	{
 		for (sint16 i = 0; i < 22; i++)
 		{
@@ -430,6 +429,12 @@ bool Client::AutoPutLootInInventory(ItemInst& inst, bool try_worn, bool try_curs
 
 				if (inst.IsEquipable(i))	// Equippable at this slot?
 				{
+					//send worn to everyone...
+					int8 worn_slot_material = Inventory::CalcMaterialFromSlot(i);
+					if(worn_slot_material != 0xFF)
+					{
+						SendWearChange(worn_slot_material);
+					}
 					PutLootInInventory(i, inst);
 					return true;
 				}
@@ -445,7 +450,8 @@ bool Client::AutoPutLootInInventory(ItemInst& inst, bool try_worn, bool try_curs
 	}
 
 	// #3: put it in inventory
-	sint16 slot_id = m_inv.FindFreeSlot(inst.IsType(ItemClassContainer), try_cursor, inst.GetItem()->Size);
+	bool is_arrow = (inst.GetItem()->ItemType == ItemTypeArrow) ? true : false;
+	sint16 slot_id = m_inv.FindFreeSlot(inst.IsType(ItemClassContainer), try_cursor, inst.GetItem()->Size, is_arrow);
 	if (slot_id != SLOT_INVALID)
 	{
 		PutLootInInventory(slot_id, inst, bag_item_data);

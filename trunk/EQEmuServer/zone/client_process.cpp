@@ -847,7 +847,8 @@ void Client::BulkSendInventoryItems()
 	for (sint16 trade_slot_id=3000; trade_slot_id<=3007; trade_slot_id++) {
 		const ItemInst* inst = m_inv[slot_id];
 		if (inst) {
-			sint16 free_slot_id = m_inv.FindFreeSlot(inst->IsType(ItemClassContainer), true, inst->GetItem()->Size);
+			bool is_arrow = (inst->GetItem()->ItemType == ItemTypeArrow) ? true : false;
+			sint16 free_slot_id = m_inv.FindFreeSlot(inst->IsType(ItemClassContainer), true, inst->GetItem()->Size, is_arrow);
 			DeleteItemInInventory(trade_slot_id, 0, false);
 			PutItemInInventory(free_slot_id, *inst, true);
 		}
