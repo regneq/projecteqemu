@@ -2877,10 +2877,12 @@ void Database::GroupAdventureLevelAndRange(int32 gid, int32 &avg_level, int32 &r
 	int16 min_level = 2000;
 	int16 max_level = 0;
 
-	// If you are going to use MySQL 4.x or lower, then uncomment this line and comment out the following line
-	/*if (RunQuery(query, MakeAnyLenString(&query, "SELECT character_.level FROM character_, group_id"
-		" WHERE character_.id=group_id.charid AND group_id.groupid=%u", gid), errbuf, &result))*/
+#ifndef GROUP_ADV_USE_VIEW
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT character_.level FROM character_, group_id"
+		" WHERE character_.id=group_id.charid AND group_id.groupid=%u", gid), errbuf, &result))
+#else
 	if (RunQuery(query, MakeAnyLenString(&query, "select level from vwGroups where groupid = %u", gid), errbuf, &result))
+#endif
 	{
 		safe_delete_array(query);
 		while((row = mysql_fetch_row(result)) != NULL)
