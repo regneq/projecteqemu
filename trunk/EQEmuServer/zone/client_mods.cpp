@@ -148,50 +148,8 @@ sint32 Client::LevelRegen()
 	int level = GetLevel();
 	
 	sint32 hp = 0;
-	if (level <= 19) {
-		if(IsSitting())
-			hp+=2;
-		else
-			hp+=1;
-	}
-	else if(level <= 49) {
-		if(sitting)
-			hp+=3;
-		else
-			hp+=1;
-	}
-	else if(level == 50) {
-		if(sitting)
-			hp+=4;
-
-		else
-			hp+=1;
-	}
-	else if(level <= 55) {
-		if(sitting)
-			hp+=5;
-		else
-			hp+=2;
-	}
-	else if(level <= 58) {
-		if(sitting)
-			hp+=6;
-		else
-			hp+=3;
-	}
-	else if(level <= 65) {
-		if(sitting)
-			hp+=7;
-		else
-			hp+=4;
-	}
-	else {
-		if(sitting)
-			hp+=8;
-		else
-			hp+=5;
-	}
-	if(GetRace() == IKSAR || GetRace() == TROLL) {
+	if(GetBaseRace() == IKSAR || GetBaseRace() == TROLL) 
+	{
 		if (level <= 19) {
 			if(sitting)
 				hp+=4;
@@ -233,6 +191,52 @@ sint32 Client::LevelRegen()
 				hp+=20;
 			else
 				hp+=10;
+		}
+	}
+	else
+	{
+		if (level <= 19) {
+			if(IsSitting())
+				hp+=2;
+			else
+				hp+=1;
+		}
+		else if(level <= 49) {
+			if(sitting)
+				hp+=3;
+			else
+				hp+=1;
+		}
+		else if(level == 50) {
+			if(sitting)
+				hp+=4;
+
+			else
+				hp+=1;
+		}
+		else if(level <= 55) {
+			if(sitting)
+				hp+=5;
+			else
+				hp+=2;
+		}
+		else if(level <= 58) {
+			if(sitting)
+				hp+=6;
+			else
+				hp+=3;
+		}
+		else if(level <= 65) {
+			if(sitting)
+				hp+=7;
+			else
+				hp+=4;
+		}
+		else {
+			if(sitting)
+				hp+=8;
+			else
+				hp+=5;
 		}
 	}
 	// AA Regens
