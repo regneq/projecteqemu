@@ -115,6 +115,7 @@ public:
 	void Camp(bool databaseSave = true);
 	virtual void AddToHateList(Mob* other, sint32 hate = 0, sint32 damage = 0, bool iYellForHelp = true, bool bFrenzy = false, bool iBuffTic = false);
 	virtual void SetTarget(Mob* mob);
+	virtual void Zone();
 
 	// Mob AI Virtual Override Methods
 	virtual void AI_Process();
@@ -172,7 +173,7 @@ public:
 	static std::string ClassIdToString(uint16 classId);
 	static std::string RaceIdToString(uint16 raceId);
 	static bool AddBotToGroup(Bot* bot, Group* group);
-	static bool RemoveBotFromGroup(Bot* bot);
+	static bool RemoveBotFromGroup(Bot* bot, Group* group);
 	static void DestroyBotObjects(Client* client);
 	static bool IsBotAttackAllowed(Mob* attacker, Mob* target, bool& hasRuleDefined);
 	static void BotGroupOrderFollow(Group* group);
@@ -181,8 +182,17 @@ public:
 	static void BotGroupSummon(Group* group);
 	static Bot* GetBotByBotClientOwnerAndBotName(Client* c, std::string botName);
 	static void ProcessBotGroupInvite(Client* c, std::string botName);
+	static void ProcessBotGroupDisband(Client* c, std::string botName);
 	static void BotOrderCampAll(Client* c);
 	static void ProcessBotInspectionRequest(Bot* inspectedBot, Client* client);
+	static bool ActivateBot(Bot* bot, std::string* errorMessage);
+	static bool DeactivateBot(Bot* bot, std::string* errorMessage);
+	static std::list<uint32> GetActiveBotsByBotOwnerCharacterID(uint32 botOwnerCharacterID, std::string* errorMessage);
+	static void LoadAndSpawnAllActiveBots(Client* botOwner);
+	static void ZoneAllActiveBots(Client* botOwner);
+	static bool GroupHasBot(Group* group);
+	static Bot* GetFirstBotInGroup(Group* group);
+	static void ProcessClientZoneChange(Client* botOwner);
 
 	// "GET" Class Methods
 	uint32 GetBotID() { return _botID; }

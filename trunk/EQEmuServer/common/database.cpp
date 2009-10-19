@@ -2866,8 +2866,7 @@ void Database::SetInstanceDuration(int16 instance_id, int32 new_duration)
 	}
 }
 
-void Database::GroupAdventureLevelAndRange(int32 gid, int32 &avg_level, int32 &range)
-{
+void Database::GroupAdventureLevelAndRange(int32 gid, int32 &avg_level, int32 &range) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
 	MYSQL_RES *result;
@@ -2877,16 +2876,14 @@ void Database::GroupAdventureLevelAndRange(int32 gid, int32 &avg_level, int32 &r
 	int16 min_level = 2000;
 	int16 max_level = 0;
 
-#ifndef GROUP_ADV_USE_VIEW
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT character_.level FROM character_, group_id"
-		" WHERE character_.id=group_id.charid AND group_id.groupid=%u", gid), errbuf, &result))
+#ifndef BOTS
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT character_.level FROM character_, group_id WHERE character_.id=group_id.charid AND group_id.groupid=%u", gid), errbuf, &result))
 #else
 	if (RunQuery(query, MakeAnyLenString(&query, "select level from vwGroups where groupid = %u", gid), errbuf, &result))
 #endif
 	{
 		safe_delete_array(query);
-		while((row = mysql_fetch_row(result)) != NULL)
-		{
+		while((row = mysql_fetch_row(result)) != NULL) {
 			int16 m_lvl = atoi(row[0]);
 			m_avg_level += m_lvl;
 			if(m_lvl < min_level)
@@ -2898,8 +2895,7 @@ void Database::GroupAdventureLevelAndRange(int32 gid, int32 &avg_level, int32 &r
 		}
 		mysql_free_result(result);
 	}
-	else 
-	{
+	else {
 		safe_delete_array(query);
 	}
 	avg_level = (m_avg_level / num_in_group);

@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==10/18/2009==
+WildcardX: Bots can now zone with their bot owners as long as they are in a group. Bots not in a group will camp instead of zone.
+
 ==10/17/2009==
 WildcardX: A character and a bot can now recieve an ldon adventure.
 
