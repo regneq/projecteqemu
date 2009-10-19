@@ -1891,7 +1891,7 @@ void  Database::SetGroupID(const char* name,int32 id, int32 charid){
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
 	if(id == 0){ //removing you from table
-	if (!RunQuery(query, MakeAnyLenString(&query, "delete from group_id where charid=%i",charid), errbuf))
+	if (!RunQuery(query, MakeAnyLenString(&query, "delete from group_id where charid=%i and name='%s'",charid, name), errbuf))
 		printf("Unable to get group id: %s\n",errbuf);
 	}
 	else{

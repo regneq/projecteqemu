@@ -2825,7 +2825,8 @@ void Client::Handle_OP_MoveItem(const EQApplicationPacket *app)
 void Client::Handle_OP_Camp(const EQApplicationPacket *app) {
 #ifdef BOTS
 	// This block is necessary to clean up any bot objects owned by a Client
-	Bot::DestroyBotObjects(this);
+	Bot::BotOrderCampAll(this);
+	Bot::DestroyBotRaidObjects(this);
 #endif
 	if(IsLFP())
 		worldserver.StopLFP(CharacterID());
