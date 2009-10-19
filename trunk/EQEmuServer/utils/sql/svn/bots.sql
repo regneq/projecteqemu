@@ -70,7 +70,7 @@ INSERT INTO rule_values VALUES ('1', 'Bots:CreateBotCount', '150', 'Number of bo
 INSERT INTO rule_values VALUES ('1', 'Bots:SpawnBotCount', '71', 'Number of bots a character can have spawned at one time, You + 71 bots is a 12 group raid');
 INSERT INTO rule_values VALUES ('1', 'Bots:BotQuest', 'false', 'Optional quest method to manage bot spawn limits using the quest_globals name bot_spawn_limit, see: /bazaar/Aediles_Thrall.pl');
 INSERT INTO rule_values VALUES ('1', 'Bots:BotGroupBuffing', 'false', 'Bots will cast single target buffs as group buffs, default is false for single. Does not make single target buffs work for MGB.');
-INSERT INTO rule_values VALUES ('1', 'Bots:BotSpellQuest', 'false', 'Anita Thrall's (Anita_Thrall.pl) Bot Spell Scriber quests.');
+INSERT INTO rule_values VALUES ('1', 'Bots:BotSpellQuest', 'false', 'Anita Thrall\'s (Anita_Thrall.pl) Bot Spell Scriber quests.');
 
 DELIMITER $$
 
