@@ -64,13 +64,13 @@ CREATE TABLE IF NOT EXISTS botgroups (
 
 delete from rule_values where rule_name like 'Bots%' and ruleset_id = 1;
 
-INSERT INTO rule_values VALUES ('1', 'Bots:BotManaRegen', '2.0', '');
-INSERT INTO rule_values VALUES ('1', 'Bots:BotFinishBuffing', 'false', '');
-INSERT INTO rule_values VALUES ('1', 'Bots:CreateBotCount', '150', '');
-INSERT INTO rule_values VALUES ('1', 'Bots:SpawnBotCount', '71', '');
-INSERT INTO rule_values VALUES ('1', 'Bots:BotQuest', 'false', '');
-INSERT INTO rule_values VALUES ('1', 'Bots:BotGroupBuffing', 'false', '');
-INSERT INTO rule_values VALUES ('1', 'Bots:BotSpellQuest', 'false', '');
+INSERT INTO rule_values VALUES ('1', 'Bots:BotManaRegen', '3.0', 'Adjust mana regen for bots, 1 is fast and higher numbers slow it down 3 is about the same as players.');
+INSERT INTO rule_values VALUES ('1', 'Bots:BotFinishBuffing', 'false', 'Allow for buffs to complete even if the bot caster is out of mana.  Only affects buffing out of combat.');
+INSERT INTO rule_values VALUES ('1', 'Bots:CreateBotCount', '150', 'Number of bots that each account can create');
+INSERT INTO rule_values VALUES ('1', 'Bots:SpawnBotCount', '71', 'Number of bots a character can have spawned at one time, You + 71 bots is a 12 group raid');
+INSERT INTO rule_values VALUES ('1', 'Bots:BotQuest', 'false', 'Optional quest method to manage bot spawn limits using the quest_globals name bot_spawn_limit, see: /bazaar/Aediles_Thrall.pl');
+INSERT INTO rule_values VALUES ('1', 'Bots:BotGroupBuffing', 'false', 'Bots will cast single target buffs as group buffs, default is false for single. Does not make single target buffs work for MGB.');
+INSERT INTO rule_values VALUES ('1', 'Bots:BotSpellQuest', 'false', 'Anita Thrall's (Anita_Thrall.pl) Bot Spell Scriber quests.');
 
 DELIMITER $$
 
