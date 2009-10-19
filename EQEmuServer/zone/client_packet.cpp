@@ -2822,8 +2822,7 @@ void Client::Handle_OP_MoveItem(const EQApplicationPacket *app)
 	return;
 }
 
-void Client::Handle_OP_Camp(const EQApplicationPacket *app)
-{
+void Client::Handle_OP_Camp(const EQApplicationPacket *app) {
 #ifdef BOTS
 	// This block is necessary to clean up any bot objects owned by a Client
 	Bot::DestroyBotObjects(this);
@@ -5654,6 +5653,23 @@ void Client::Handle_OP_GroupDisband(const EQApplicationPacket *app)
 	if(!group)
 		return;
 
+#ifdef BOTS
+	// this block is necessary to allow more control over controlling how bots are zoned or camped. 
+	if(Bot::GroupHasBot(group)) {
+		if(group->IsLeader(this)) {
+			if((GetTarget() == 0 || GetTarget() == this) || (group->GroupCount() < 3)) {
+				Bot::ProcessBotGroupDisband(this, std::string());
+			} else {
+				Mob* tempMember = entity_list.GetMob(gd->name2);
+				if(tempMember) {
+					if(tempMember->IsBot())
+						Bot::ProcessBotGroupDisband(this, std::string(tempMember->GetCleanName()));
+				}
+			}
+		}
+	}
+#endif
+
 	if((group->IsLeader(this) && (GetTarget() == 0 || GetTarget() == this)) || (group->GroupCount()<3)) {
 		group->DisbandGroup();
 	} else {
@@ -5662,9 +5678,8 @@ void Client::Handle_OP_GroupDisband(const EQApplicationPacket *app)
 
 		if(!memberToDisband)
 			memberToDisband = entity_list.GetMob(gd->name2);
-
 		if(memberToDisband ){
-			if(group->IsLeader(this))	// the group leader can kick other members out of the group...
+			if(group->IsLeader(this)) // the group leader can kick other members out of the group...
 				group->DelMember(memberToDisband,false);
 			else						// ...but other members can only remove themselves
 				group->DelMember(this,false);
@@ -7860,6 +7875,10 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 		}
 		LFG = false;
 	}
+
+#ifdef BOTS
+	Bot::LoadAndSpawnAllActiveBots(this);
+#endif
 
 	CalcBonuses();
 	if (m_pp.cur_hp <= 0)
