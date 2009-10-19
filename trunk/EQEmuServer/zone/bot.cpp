@@ -8445,8 +8445,8 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		c->Message(0, "#bot delete - completely destroy forever the targeted bot and all its items.");
 		c->Message(0, "#bot list [all/class(1-16)] - list your bots all or by class. Classes: 1(Warrior), 2(Cleric), 3(Paladin), 4(Ranger), 5(Sk), 6(Druid), 7(Monk), 8(Bard), 9(Rogue), 10(Shaman), 11(Necro), 12(Wiz), 13(Mag), 14(Ench), 15(Beast), 16(Bersek)");
 		c->Message(0, "#bot spawn [botid] - spawn a bot from its ID (use list to see all the bots). ");
-		c->Message(0, "#bot group add - make the targetted bot joigning your group.");
-		c->Message(0, "#bot group remove [target} - kick the targetted bot from your group (it will die also).");
+		c->Message(0, "#bot group add - make the targetted bot join your group.");
+		c->Message(0, "#bot group remove [target} - kick the targetted bot from your group.");
 		c->Message(0, "#bot group order [follow/guard/attack (target)] - Give orders [follow/guard/attack (target)] to your grouped bots.");
 		c->Message(0, "#bot inventory list - show the inventory (and the slots IDs) of the targetted bot.");
 		c->Message(0, "#bot inventory remove [slotid] - remove the item at the given slot in the inventory of the targetted bot.");

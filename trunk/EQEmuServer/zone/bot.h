@@ -159,13 +159,14 @@ public:
 	void EquipBot(std::string* errorMessage);
 
 	// Static Class Methods
+	static void SaveBotGroups(uint32 groupID, uint32 characterID, uint32 botID, uint16 slotID, std::string* errorMessage);	// Can be removed after bot raids are dumped
+	static void DeleteBotGroups(uint32 characterID, std::string* errorMessage);	// Can be removed after bot raids are dumped
+	static std::list<BotGroup> LoadBotGroups(uint32 characterID, std::string* errorMessage);	// Can be removed after bot raids are dumped
+	static void DestroyBotRaidObjects(Client* client);	// Can be removed after bot raids are dumped
 	static Bot* LoadBot(uint32 botID, std::string* errorMessage);
 	static std::list<BotsAvailableList> GetBotList(uint32 botOwnerCharacterID, std::string* errorMessage);
 	static void ProcessBotCommands(Client *c, const Seperator *sep);
 	static std::list<SpawnedBotsList> ListSpawnedBots(uint32 characterID, std::string* errorMessage);
-	static void SaveBotGroups(uint32 groupID, uint32 characterID, uint32 botID, uint16 slotID, std::string* errorMessage);	// Can be removed after bot raids are dumped
-	static void DeleteBotGroups(uint32 characterID, std::string* errorMessage);	// Can be removed after bot raids are dumped
-	static std::list<BotGroup> LoadBotGroups(uint32 characterID, std::string* errorMessage);	// Can be removed after bot raids are dumped
 	static uint32 SpawnedBotCount(uint32 botOwnerCharacterID, std::string* errorMessage);
 	static uint32 AllowedBotSpawns(uint32 botOwnerCharacterID, std::string* errorMessage);
 	static uint32 GetBotOwnerCharacterID(uint32 botID, std::string* errorMessage);
@@ -174,7 +175,6 @@ public:
 	static std::string RaceIdToString(uint16 raceId);
 	static bool AddBotToGroup(Bot* bot, Group* group);
 	static bool RemoveBotFromGroup(Bot* bot, Group* group);
-	static void DestroyBotRaidObjects(Client* client);	// Can be removed after bot raids are dumped
 	static bool IsBotAttackAllowed(Mob* attacker, Mob* target, bool& hasRuleDefined);
 	static void BotGroupOrderFollow(Group* group);
 	static void BotGroupOrderGuard(Group* group);
