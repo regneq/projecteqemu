@@ -1,5 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==10/19/2009==
+WildcardX: Fixed a number of bugs with support bots zoning. Refactored the code and eliminated the botactives table.
+
+<SQL Required for BOTS> 1030_botzoningsupport.sql
+
 ==10/18/2009==
 WildcardX: Bots can now zone with their bot owners as long as they are in a group. Bots not in a group will camp instead of zone.
 

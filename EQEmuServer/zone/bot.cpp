@@ -3100,50 +3100,16 @@ Bot* Bot::LoadBot(uint32 botID, std::string* errorMessage) {
 	return Result;
 }
 
-// Sets the bot activation flag in the database to allow the bot to persist zones and logouts
-bool Bot::ActivateBot(Bot* bot, std::string* errorMessage) {
-	bool Result = false;
-
-	if(bot) {
-		char* Query = 0;
-		char TempErrorMessageBuffer[MYSQL_ERRMSG_SIZE];
-
-		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "REPLACE INTO botactives SET ActiveBotId = '%u'", bot->GetBotID()), TempErrorMessageBuffer))
-			*errorMessage = std::string(TempErrorMessageBuffer);
-		else
-			Result = true;
-	}
-
-	return Result;
-}
-
-// Removes the bot activation flag in the database
-bool Bot::DeactivateBot(Bot* bot, std::string* errorMessage) {
-	bool Result = false;
-
-	if(bot) {
-		char* Query = 0;
-		char TempErrorMessageBuffer[MYSQL_ERRMSG_SIZE];
-
-		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "DELETE FROM botactives WHERE ActiveBotId = '%u'", bot->GetBotID()), TempErrorMessageBuffer))
-			*errorMessage = std::string(TempErrorMessageBuffer);
-		else
-			Result = true;
-	}
-
-	return Result;
-}
-
-std::list<uint32> Bot::GetActiveBotsByBotOwnerCharacterID(uint32 botOwnerCharacterID, std::string* errorMessage) {
+std::list<uint32> Bot::GetGroupedBotsByGroupId(uint32 groupId, std::string* errorMessage) {
 	std::list<uint32> Result;
 
-	if(botOwnerCharacterID > 0) {
+	if(groupId > 0) {
 		char* Query = 0;
 		char TempErrorMessageBuffer[MYSQL_ERRMSG_SIZE];
 		MYSQL_RES* DatasetResult;
 		MYSQL_ROW DataRow;
 
-		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "select b.BotID as ActiveBotID from botactives as a join bots as b on a.ActiveBotId = b.BotID where BotOwnerCharacterID = '%u'", botOwnerCharacterID), TempErrorMessageBuffer, &DatasetResult)) {
+		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "select g.mobid as BotID from vwGroups as g join bots as b on g.mobid = b.BotId and g.mobtype = 'B' where g.groupid = %u", groupId), TempErrorMessageBuffer, &DatasetResult)) {
 			*errorMessage = std::string(TempErrorMessageBuffer);
 		}
 		else {
@@ -3160,83 +3126,46 @@ std::list<uint32> Bot::GetActiveBotsByBotOwnerCharacterID(uint32 botOwnerCharact
 	}
 
 	return Result;
-}
+} 
 
 // Load and spawn all active bots by bot owner character
 void Bot::LoadAndSpawnAllActiveBots(Client* botOwner) {
 	if(botOwner) {
-		std::string errorMessage;
-		std::list<uint32> ActiveBots = Bot::GetActiveBotsByBotOwnerCharacterID(botOwner->CharacterID(), &errorMessage);
-		
-		if(errorMessage.empty()) {
-			for(list<uint32>::iterator itr = ActiveBots.begin(); itr != ActiveBots.end(); itr++) {
-				Bot* activeBot = Bot::LoadBot(*itr, &errorMessage);
+		if(botOwner->HasGroup()) {
+			Group* g = botOwner->GetGroup();
+			if(g) {
+				uint32 TempGroupId = g->GetID();
+				std::string errorMessage;
+				std::list<uint32> ActiveBots = Bot::GetGroupedBotsByGroupId(botOwner->GetGroup()->GetID(), &errorMessage);
 
-				if(!errorMessage.empty()) {
-					safe_delete(activeBot);
-					break;
-				}
+				if(errorMessage.empty() && !ActiveBots.empty()) {
+					for(list<uint32>::iterator itr = ActiveBots.begin(); itr != ActiveBots.end(); itr++) {
+						Bot* activeBot = Bot::LoadBot(*itr, &errorMessage);
 
-				if(activeBot && botOwner->HasGroup()) {
-					activeBot->Spawn(botOwner, &errorMessage);
-				
-					Group* g = botOwner->GetGroup();
-
-					if(g) {
-						g->UpdatePlayer(activeBot);
-						if(g->GetLeader())
-							activeBot->SetFollowID(g->GetLeader()->GetID());
-					}
-					else {
-						Bot::DeactivateBot(activeBot, &errorMessage);
-						database.SetGroupID(activeBot->GetCleanName(), 0, activeBot->GetBotID());
-					}
-
-					if(!errorMessage.empty()) {
-						if(entity_list.GetMobByBotID(activeBot->GetBotID())) {
-							Bot::DeactivateBot(activeBot, &errorMessage);
-							database.SetGroupID(activeBot->GetCleanName(), 0, activeBot->GetBotID());
+						if(!errorMessage.empty()) {
 							safe_delete(activeBot);
+							break;
 						}
-						break;
+
+						if(activeBot) {
+							activeBot->Spawn(botOwner, &errorMessage);
+
+							g->UpdatePlayer(activeBot);
+							
+							if(g->GetLeader())
+								activeBot->SetFollowID(g->GetLeader()->GetID());
+						}
+
+						if(activeBot && !botOwner->HasGroup())
+							database.SetGroupID(activeBot->GetCleanName(), 0, activeBot->GetBotID());
 					}
 				}
 
-				if(activeBot && !botOwner->HasGroup()) {
-					Bot::DeactivateBot(activeBot, &errorMessage);
-					database.SetGroupID(activeBot->GetCleanName(), 0, activeBot->GetBotID());
+				// Catch all condition for error messages destined for the zone error log
+				if(!errorMessage.empty()) {
+					// TODO: Log this error message to zone error log
 				}
 			}
-		}
-
-		// Catch all condition for error messages destined for the zone error log
-		if(!errorMessage.empty()) {
-			// TODO: Log this error message to zone error log
-		}
-	}
-}
-
-// Causes all active bots to depop without removing any group or raid information
-void Bot::ZoneAllActiveBots(Client* botOwner) {
-	if(botOwner) {
-		std::string errorMessage;
-
-		std::list<uint32> ActiveBots = Bot::GetActiveBotsByBotOwnerCharacterID(botOwner->CharacterID(), &errorMessage);
-		
-		if(errorMessage.empty()) {
-			for(list<uint32>::iterator itr = ActiveBots.begin(); itr != ActiveBots.end(); itr++) {
-				Mob* activeBot = entity_list.GetMobByBotID(*itr);
-
-				if(activeBot) {
-					if(activeBot->IsBot())
-						activeBot->CastToBot()->Zone();
-				}
-			}
-		}
-
-		// Catch all condition for error messages destined for the zone error log
-		if(!errorMessage.empty()) {
-			// TODO: Log this error message to zone error log
 		}
 	}
 }
@@ -3838,15 +3767,6 @@ bool Bot::RemoveBotFromGroup(Bot* bot, Group* group) {
 		if(group->GroupCount() <= 1)
 			group->DisbandGroup();
 
-		std::string errorMessage;
-
-		// This tells the server that this bot will camp instead of zone when its bow owner leaves the zone
-		DeactivateBot(bot, &errorMessage);
-
-		if(!errorMessage.empty()) {
-			// TODO: log this error message to the zone error log
-		}
-
 		Result = true;
 	}
 
@@ -3869,15 +3789,6 @@ bool Bot::AddBotToGroup(Bot* bot, Group* group) {
 				if(group->GroupCount() == 2) {
 					Mob *TempLeader = group->GetLeader();
 					group->SendUpdate(groupActUpdate, TempLeader);
-				}
-
-				std::string errorMessage;
-
-				// This tells the server that this bot will be zoned and not camped when the bot owner leaves the zone, unless the owner camps
-				ActivateBot(bot, &errorMessage);
-
-				if(!errorMessage.empty()) {
-					// TODO: log this error message to the zone error log
 				}
 			}
 
@@ -6911,7 +6822,7 @@ void Bot::EquipBot(std::string* errorMessage) {
 }
 
 // This method is meant to be called by zone or client methods to clean up objects when a client camps, goes LD, zones out or something like that.
-void Bot::DestroyBotObjects(Client* client) {
+void Bot::DestroyBotRaidObjects(Client* client) {
 	if(client) {
 		if(client->GetBotRaidID() > 0) {
 			BotRaids* br = entity_list.GetBotRaidByMob(client);
@@ -6921,7 +6832,7 @@ void Bot::DestroyBotObjects(Client* client) {
 			}
 		}
 
-		BotOrderCampAll(client);
+		//BotOrderCampAll(client);
 	}
 }
 
@@ -8137,11 +8048,6 @@ void Bot::Camp(bool databaseSave) {
 	if(databaseSave)
 		Save();
 
-	// Deactive the bot in the database
-	std::string errorMessage;
-	Bot::DeactivateBot(this, &errorMessage);
-	// TODO: Log this error message to zone error log
-
 	SetBotOwner(0);
 	Depop();
 }
@@ -8300,9 +8206,9 @@ void Bot::ProcessClientZoneChange(Client* botOwner) {
 
 			if(tempBot) {
 				if(tempBot->HasGroup())
-					ZoneAllActiveBots(botOwner);
+					tempBot->Zone();
 				else
-					DestroyBotObjects(botOwner);
+					tempBot->Camp();
 			}
 		}
 	}
