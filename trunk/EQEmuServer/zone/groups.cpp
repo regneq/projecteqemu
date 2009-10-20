@@ -77,13 +77,13 @@ Group::Group(Mob* leader)
 		memset(membername[i],0,64);
 	strcpy(membername[0],leader->GetName());
 
-	strcpy(leader->CastToClient()->GetPP().groupMembers[0],leader->GetName());
+	if(leader->IsClient())
+		strcpy(leader->CastToClient()->GetPP().groupMembers[0],leader->GetName());
 
 	for(int i = 0; i < MAX_MARKED_NPCS; ++i)
 		MarkedNPCs[i] = 0;
 
 	NPCMarkerID = 0;
-
 }
 
 Group::~Group()

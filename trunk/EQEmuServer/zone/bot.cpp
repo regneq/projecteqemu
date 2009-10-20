@@ -1012,7 +1012,7 @@ bool Bot::Process() {
 		this->stunned_timer.Disable();
 	}
 
-	if (GetDepop()) {
+	if (GetDepop() || !GetBotOwner()) {
 		//Mob* owner = entity_list.GetMob(this->ownerid);
 		//if (owner != 0) {
 		//	//if(GetBodyType() != BT_SwarmPet)
@@ -2138,7 +2138,10 @@ void Bot::AI_Process() {
 	Mob* BotOwner = this->GetBotOwner();
 
 	// The bots need an owner
-	if(!BotOwner || BotOwner->qglobal || (GetAppearance() == eaDead) || BotOwner->IsBot())
+	if(!BotOwner)
+		return;
+
+	if(BotOwner->qglobal || (GetAppearance() == eaDead) || BotOwner->IsBot())
 		return;
 
 	if(!IsEngaged()) {
@@ -3128,8 +3131,8 @@ std::list<uint32> Bot::GetGroupedBotsByGroupId(uint32 groupId, std::string* erro
 	return Result;
 } 
 
-// Load and spawn all active bots by bot owner character
-void Bot::LoadAndSpawnAllActiveBots(Client* botOwner) {
+// Load and spawn all zoned bots by bot owner character
+void Bot::LoadAndSpawnAllZonedBots(Client* botOwner) {
 	if(botOwner) {
 		if(botOwner->HasGroup()) {
 			Group* g = botOwner->GetGroup();
@@ -3760,14 +3763,31 @@ bool Bot::RemoveBotFromGroup(Bot* bot, Group* group) {
 	bool Result = false;
 
 	if(bot && group) {
-		bot->SetFollowID(0);
-		if(group->DelMember(bot))
-			database.SetGroupID(bot->GetCleanName(), 0, bot->GetBotID());
+		if(bot->HasGroup()) {
+			if(bot->GetGroup() == group) {
+				if(!group->IsLeader(bot)) {
+					bot->SetFollowID(0);
 
-		if(group->GroupCount() <= 1)
-			group->DisbandGroup();
+					if(group->DelMember(bot))
+						database.SetGroupID(bot->GetCleanName(), 0, bot->GetBotID());
 
-		Result = true;
+					if(group->GroupCount() <= 1)
+						group->DisbandGroup();
+				}
+				else {
+					for(int i = 0; i < MAX_GROUP_MEMBERS; i++) {
+						if(!group->members[i])
+							continue;
+
+						group->members[i]->SetFollowID(0);
+					}
+
+					group->DisbandGroup();
+				}
+
+				Result = true;
+			}
+		}
 	}
 
 	return Result;
@@ -3777,20 +3797,55 @@ bool Bot::AddBotToGroup(Bot* bot, Group* group) {
 	bool Result = false;
 
 	if(bot && group) {
-		// Remove any existing group records
-		database.SetGroupID(bot->GetCleanName(), 0, bot->GetBotID());
+		if(!bot->HasGroup()) {
+			// Remove any existing group records
+			database.SetGroupID(bot->GetCleanName(), 0, bot->GetBotID());
 
-		// Add bot to this group
-		if(group->AddMember(bot)) {
-			if(group->GetLeader()) {
-				bot->SetFollowID(group->GetLeader()->GetID());
+			// Add bot to this group
+			if(group->AddMember(bot)) {
+				if(group->GetLeader()) {
+					bot->SetFollowID(group->GetLeader()->GetID());
 
-				// Need to send this only once when a group is formed with a bot so the client knows it is also the group leader
-				if(group->GroupCount() == 2) {
-					Mob *TempLeader = group->GetLeader();
-					group->SendUpdate(groupActUpdate, TempLeader);
+					// Need to send this only once when a group is formed with a bot so the client knows it is also the group leader
+					if(group->GroupCount() == 2 && group->GetLeader()->IsClient()) {
+						Mob *TempLeader = group->GetLeader();
+						group->SendUpdate(groupActUpdate, TempLeader);
+					}
 				}
+
+				Result = true;
 			}
+		}
+	}
+
+	return Result;
+}
+
+bool Bot::BotGroupCreate(std::string botGroupLeaderName) {
+	bool Result = false;
+
+	if(!botGroupLeaderName.empty()) {
+		Bot* botGroupLeader = entity_list.GetBotByBotName(botGroupLeaderName);
+
+		if(botGroupLeader)
+			Result = BotGroupCreate(botGroupLeader);
+	}
+
+	return Result;
+}
+
+bool Bot::BotGroupCreate(Bot* botGroupLeader) {
+	bool Result = false;
+
+	if(botGroupLeader && !botGroupLeader->HasGroup()) {
+		Group* newGroup = new Group(botGroupLeader);
+		
+		if(newGroup) {
+			entity_list.AddGroup(newGroup);
+			database.SetGroupID(botGroupLeader->GetName(), newGroup->GetID(), botGroupLeader->GetBotID());
+			database.SetGroupLeaderName(newGroup->GetID(), botGroupLeader->GetName());
+
+			botGroupLeader->SetFollowID(botGroupLeader->GetBotOwner()->GetID());
 
 			Result = true;
 		}
@@ -8072,10 +8127,16 @@ void Bot::BotGroupOrderFollow(Group* group) {
 				if(group->members[i] && group->members[i]->IsBot()) {
 					Bot* botGroupMember = group->members[i]->CastToBot();
 
-					botGroupMember->SetFollowID(groupLeader->GetID());
-					botGroupMember->Say("Following %s.", groupLeader->GetCleanName());
+					if(botGroupMember) {
+						if(group->IsLeader(botGroupMember) && botGroupMember->GetBotOwner())
+							botGroupMember->SetFollowID(botGroupMember->GetBotOwner()->GetID());
+						else
+							botGroupMember->SetFollowID(groupLeader->GetID());
 
-					botGroupMember->WipeHateList();
+						botGroupMember->Say("Following %s.", groupLeader->GetCleanName());
+
+						botGroupMember->WipeHateList();
+					}
 				}
 			}
 		}
@@ -8099,8 +8160,8 @@ void Bot::BotGroupOrderGuard(Group* group) {
 }
 
 // Orders all bots in the specified group to attack their group leader's target.
-void Bot::BotGroupOrderAttack(Group* group) {
-	if(group) {
+void Bot::BotGroupOrderAttack(Group* group, Mob* target) {
+	if(group && target) {
 		Mob* groupLeader = group->GetLeader();
 
 		if(groupLeader) {
@@ -8108,7 +8169,7 @@ void Bot::BotGroupOrderAttack(Group* group) {
 				if(group->members[i] && group->members[i]->IsBot()) {
 					Bot* botGroupMember = group->members[i]->CastToBot();
 
-					botGroupMember->AddToHateList(groupLeader->GetTarget(), 1);
+					botGroupMember->AddToHateList(target, 1);
 				}
 			}
 		}
@@ -9249,7 +9310,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 					}
 				}
 				else
-					BotGroupOrderAttack(c->GetGroup());
+					BotGroupOrderAttack(c->GetGroup(), c->GetTarget());
 			}
 			else
 				c->Message(15, "You must target a monster.");
@@ -11332,7 +11393,281 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		return;
 	}
 
+	// #bot botgroup ...
+	if(!strcasecmp(sep->arg[1], "botgroup") && !strcasecmp(sep->arg[2], "help")) {
+		c->Message(15, "#bot botgroup help - will show this help.");
+		c->Message(15, "#bot botgroup create <bot group leader name or target>. This will designate a bot to be a bot group leader.");
+		c->Message(15, "#bot botgroup add <bot group leader name or target> <bot group member name to add>");
+		c->Message(15, "#bot botgroup remove <bot group member name to remove>");
+		c->Message(15, "#bot botgroup disband <bot group leader name or target>. Disbands the designated bot group leader's bot group.");
+		c->Message(15, "#bot botgroup summon <bot group leader name or target>. Summons the bot group to your location.");
+		c->Message(15, "#bot botgroup follow <bot group leader name or target>");
+		c->Message(15, "#bot botgroup guard <bot group leader name or target>");
+		c->Message(15, "#bot botgroup attack <bot group leader name> <mob name to attack or target>");
 
+		return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "botgroup") && !strcasecmp(sep->arg[2], "create")) {
+		Mob* targetMob = c->GetTarget();
+		std::string targetName = std::string(sep->arg[3]);
+		Bot* botGroupLeader = 0;
+		
+		if(!targetName.empty()) {
+			botGroupLeader = entity_list.GetBotByBotName(targetName);
+		}
+		else if(targetMob) {
+			if(targetMob->IsBot())
+				botGroupLeader = targetMob->CastToBot();
+		}
+
+		if(botGroupLeader) {
+			if(Bot::BotGroupCreate(botGroupLeader))
+				botGroupLeader->Say("I am prepared to lead.");
+			else
+				botGroupLeader->Say("I can not lead.");
+		}
+
+		return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "botgroup") && !strcasecmp(sep->arg[2], "add")) {
+		Mob* targetMob = c->GetTarget();
+		std::string targetName = std::string(sep->arg[3]);
+		Bot* botGroupLeader = 0;
+
+		std::string botMemberName;
+
+		if(!targetName.empty()) {
+			botGroupLeader = entity_list.GetBotByBotName(targetName);
+			botMemberName = std::string(sep->arg[4]);
+		}
+		else if(targetMob) {
+			if(targetMob->IsBot()) {
+				botGroupLeader = targetMob->CastToBot();
+				botMemberName = std::string(sep->arg[3]);
+			}
+		}
+
+		if(botGroupLeader && !botMemberName.empty()) {
+			if(botGroupLeader->HasGroup()) {
+				Group* g = botGroupLeader->GetGroup();
+
+				if(g->IsLeader(botGroupLeader)) {
+					Bot* botMember = entity_list.GetBotByBotName(botMemberName);
+
+					if(botMember) {
+						if(!botMember->HasGroup()) {
+							// invite
+							if(Bot::AddBotToGroup(botMember, g)) {
+								database.SetGroupID(botMember->GetName(), g->GetID(), botMember->GetBotID());
+								botMember->Say("I have joined %s\'s group.", botGroupLeader->GetName());
+							}
+							else {
+								botMember->Say("I can not join %s\'s group.", botGroupLeader->GetName());
+							}
+						}
+						else {
+							// bot to invite is already in a group error message
+							Group* tempGroup = botMember->GetGroup();
+							botMember->Say("I can not join %s\'s group. I am already a member in %s\'s group.", botGroupLeader->GetName(), tempGroup->GetLeaderName());
+						}
+					}
+				}
+				else {
+					// targetted bot has a group but is not the group leader error message
+					Group* tempGroup = botGroupLeader->GetGroup();
+					botGroupLeader->Say("I can not lead anyone because I am a member in %s\'s group.", tempGroup->GetLeaderName());
+				}
+			}
+			else {
+				// targetted bot does not have a group error message
+				botGroupLeader->Say("I am not a leader, %s. But I am ready to lead if you want me to.", c->GetName());
+			}
+		}
+
+		return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "botgroup") && !strcasecmp(sep->arg[2], "remove")) {
+		Mob* targetMob = c->GetTarget();
+		std::string targetName = std::string(sep->arg[3]);
+		Bot* botGroupMember = 0;
+		
+		if(!targetName.empty()) {
+			botGroupMember = entity_list.GetBotByBotName(targetName);
+		}
+		else if(targetMob) {
+			if(targetMob->IsBot())
+				botGroupMember = targetMob->CastToBot();
+		}
+
+		if(botGroupMember) {
+			if(botGroupMember->HasGroup()) {
+				Group* g = botGroupMember->GetGroup();
+
+				if(Bot::RemoveBotFromGroup(botGroupMember, g))
+					botGroupMember->Say("I am no longer in a group.");
+				else
+					botGroupMember->Say("I can not leave %s\'s group.", g->GetLeaderName());
+			}
+			else
+				botGroupMember->Say("I am not in a group.");
+		}
+
+		return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "botgroup") && !strcasecmp(sep->arg[2], "disband")) {
+		Mob* targetMob = c->GetTarget();
+		std::string targetName = std::string(sep->arg[3]);
+		Bot* botGroupLeader = 0;
+		
+		if(!targetName.empty()) {
+			botGroupLeader = entity_list.GetBotByBotName(targetName);
+		}
+		else if(targetMob) {
+			if(targetMob->IsBot())
+				botGroupLeader = targetMob->CastToBot();
+		}
+
+		if(botGroupLeader) {
+			if(botGroupLeader->HasGroup()) {
+				Group* g = botGroupLeader->GetGroup();
+				
+				if(g->IsLeader(botGroupLeader)) {
+					if(Bot::RemoveBotFromGroup(botGroupLeader, g))
+						botGroupLeader->Say("I have disbanded my group, %s.", c->GetName());
+					else
+						botGroupLeader->Say("I was not able to disband my group, %s.", c->GetName());
+				}
+				else {
+					botGroupLeader->Say("I can not disband my group, %s, because I am not the leader. %s is the leader of my group.", c->GetName(), g->GetLeaderName());
+				}
+			}
+			else
+				botGroupLeader->Say("I am not a group leader, %s.", c->GetName());
+		}
+
+		return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "botgroup") && !strcasecmp(sep->arg[2], "summon") ) {
+		Mob* targetMob = c->GetTarget();
+		std::string targetName = std::string(sep->arg[3]);
+		Bot* botGroupLeader = 0;
+		
+		if(!targetName.empty()) {
+			botGroupLeader = entity_list.GetBotByBotName(targetName);
+		}
+		else if(targetMob) {
+			if(targetMob->IsBot())
+				botGroupLeader = targetMob->CastToBot();
+		}
+
+		if(botGroupLeader) {
+			if(botGroupLeader->HasGroup()) {
+				Group* g = botGroupLeader->GetGroup();
+				
+				if(g->IsLeader(botGroupLeader))
+					BotGroupSummon(g);
+			}
+		}
+		else if(c->HasGroup())
+			BotGroupSummon(c->GetGroup());
+
+		return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "botgroup") && !strcasecmp(sep->arg[2], "follow") ) {
+		Mob* targetMob = c->GetTarget();
+		std::string targetName = std::string(sep->arg[3]);
+		Bot* botGroupLeader = 0;
+		
+		if(!targetName.empty()) {
+			botGroupLeader = entity_list.GetBotByBotName(targetName);
+		}
+		else if(targetMob) {
+			if(targetMob->IsBot())
+				botGroupLeader = targetMob->CastToBot();
+		}
+
+		if(botGroupLeader) {
+			if(botGroupLeader->HasGroup()) {
+				Group* g = botGroupLeader->GetGroup();
+				
+				if(g->IsLeader(botGroupLeader))
+					BotGroupOrderFollow(g);
+			}
+		}
+		else if(c->HasGroup())
+			BotGroupOrderFollow(c->GetGroup());
+
+		return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "botgroup") && !strcasecmp(sep->arg[2], "guard") ) {
+		Mob* targetMob = c->GetTarget();
+		std::string targetName = std::string(sep->arg[3]);
+		Bot* botGroupLeader = 0;
+		
+		if(!targetName.empty()) {
+			botGroupLeader = entity_list.GetBotByBotName(targetName);
+		}
+		else if(targetMob) {
+			if(targetMob->IsBot())
+				botGroupLeader = targetMob->CastToBot();
+		}
+
+		if(botGroupLeader) {
+			if(botGroupLeader->HasGroup()) {
+				Group* g = botGroupLeader->GetGroup();
+				
+				if(g->IsLeader(botGroupLeader))
+					BotGroupOrderGuard(g);
+			}
+		}
+		else if(c->HasGroup())
+			BotGroupOrderGuard(c->GetGroup());
+
+		return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "botgroup") && !strcasecmp(sep->arg[2], "attack") ) {
+		Mob* targetMob = c->GetTarget();
+		Bot* botGroupLeader = 0;
+		std::string botGroupLeaderName = std::string(sep->arg[3]);
+		std::string targetName = std::string(sep->arg[4]);
+		
+		if(!botGroupLeaderName.empty()) {
+			botGroupLeader = entity_list.GetBotByBotName(botGroupLeaderName);
+
+			if(botGroupLeader) {
+				if(!targetName.empty()) {
+					targetMob = entity_list.GetMob(targetName.c_str());
+				}
+				
+				if(targetMob) {
+					if(c->IsAttackAllowed(targetMob)) {
+						if(botGroupLeader->HasGroup()) {
+							Group* g = botGroupLeader->GetGroup();
+
+							if(g) {
+								if(g->IsLeader(botGroupLeader))
+									BotGroupOrderAttack(g, targetMob);
+							}
+						}
+						else if(c->HasGroup())
+							BotGroupOrderAttack(c->GetGroup(), targetMob);
+					}
+					else
+						c->Message(15, "You must target a monster.");
+				}
+			}
+		}
+
+		return;
+	}
 
 	// EQoffline - Raids
 	if(!strcasecmp(sep->arg[1], "raid") && !strcasecmp(sep->arg[2], "help"))
@@ -11885,13 +12220,50 @@ Mob* EntityList::GetMobByBotID(uint32 botID) {
 	
 		iterator.Reset();
 
-		while(iterator.MoreElements())
-		{
+		while(iterator.MoreElements()) {
 			if(iterator.GetData()->IsBot() && iterator.GetData()->CastToBot()->GetBotID() == botID) {
 				Result = iterator.GetData();
 			}
 
 			iterator.Advance();
+		}
+	}
+
+	return Result;
+}
+
+Bot* EntityList::GetBotByBotID(uint32 botID) {
+	Bot* Result = 0;
+
+	if(botID > 0) {
+		LinkedListIterator<Mob*> iterator(mob_list);
+	
+		iterator.Reset();
+
+		while(iterator.MoreElements()) {
+			if(iterator.GetData()->IsBot() && iterator.GetData()->CastToBot()->GetBotID() == botID) {
+				Result = iterator.GetData()->CastToBot();
+			}
+
+			iterator.Advance();
+		}
+	}
+
+	return Result;
+}
+
+Bot* EntityList::GetBotByBotName(std::string botName) {
+	Bot* Result = 0;
+
+	if(!botName.empty()) {
+		LinkedListIterator<Mob*> itr(mob_list);
+		itr.Reset();
+
+		while(itr.MoreElements()) {
+			if(itr.GetData()->IsBot() && std::string(itr.GetData()->CastToBot()->GetName()) == botName)
+				Result = itr.GetData()->CastToBot();
+
+			itr.Advance();
 		}
 	}
 

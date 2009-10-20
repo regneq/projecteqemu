@@ -7878,7 +7878,7 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 	}
 
 #ifdef BOTS
-	Bot::LoadAndSpawnAllActiveBots(this);
+	Bot::LoadAndSpawnAllZonedBots(this);
 #endif
 
 	CalcBonuses();
