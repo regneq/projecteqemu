@@ -879,6 +879,8 @@ struct ServerQGlobalUpdate_Struct
 	uint32 char_id;
 	uint32 zone_id;
 	uint32 expdate;
+	uint32 from_zone_id;
+	uint32 from_instance_id;
 };
 
 struct ServerQGlobalDelete_Struct
@@ -887,6 +889,8 @@ struct ServerQGlobalDelete_Struct
 	uint32 npc_id;
 	uint32 char_id;
 	uint32 zone_id;
+	uint32 from_zone_id;
+	uint32 from_instance_id;
 };
 
 #pragma pack()

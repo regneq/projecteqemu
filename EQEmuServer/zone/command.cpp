@@ -78,6 +78,7 @@ const static int PERL_PRIVS = 200; //what admin status is required to use perl? 
 
 #include "StringIDs.h"
 #include "command.h"
+#include "QGlobals.h"
 
 //struct cl_struct *commandlist;	// the actual linked list of commands
 int commandcount;								// how many commands we have
@@ -434,7 +435,8 @@ int command_init(void) {
 		command_add("setstartzone","[zoneid] - Set target's starting zone.  Set to zero to allow the player to use /setstartcity",80,command_setstartzone) || 
 		command_add("netstats","- Gets the network stats for a stream.",200,command_netstats) ||
 		command_add("object","List|Add|Edit|Move|Rotate|Copy|Save|Undo|Delete - Manipulate static and tradeskill objects within the zone",100,command_object) ||
-		command_add("raidloot","LEADER|GROUPLEADER|SELECTED|ALL - Sets your raid loot settings if you have permission to do so.",0,command_raidloot)
+		command_add("raidloot","LEADER|GROUPLEADER|SELECTED|ALL - Sets your raid loot settings if you have permission to do so.",0,command_raidloot) ||
+		command_add("globalview","Lists all qglobals in cache if you were to do a quest with this target.",80,command_globalview)
 		)
 	{
 		command_deinit();
@@ -10652,5 +10654,90 @@ void command_raidloot(Client *c, const Seperator *sep)
 	else
 	{
 		c->Message(0, "You must be in a raid to use that command.");
+	}
+}
+
+void command_globalview(Client *c, const Seperator *sep)
+{
+	NPC * npcmob = NULL;
+	
+	if(c->GetTarget() && c->GetTarget()->IsNPC())
+	{
+		npcmob = c->GetTarget()->CastToNPC();
+		QGlobalCache *npc_c = NULL;
+		QGlobalCache *char_c = NULL;
+		QGlobalCache *zone_c = NULL;
+
+		if(npcmob)
+			npc_c = npcmob->GetQGlobals();
+
+		char_c = c->GetQGlobals();
+		zone_c = zone->GetQGlobals();
+
+		std::list<QGlobal> globalMap;
+		uint32 ntype = 0;
+
+		if(npcmob)
+			ntype = npcmob->GetNPCTypeID();
+
+		if(npc_c)
+		{
+			QGlobalCache::Combine(globalMap, npc_c->GetBucket(), ntype, c->CharacterID(), zone->GetZoneID());
+		}
+
+		if(char_c)
+		{
+			QGlobalCache::Combine(globalMap, char_c->GetBucket(), ntype, c->CharacterID(), zone->GetZoneID());
+		}
+
+		if(zone_c)
+		{
+			QGlobalCache::Combine(globalMap, zone_c->GetBucket(), ntype, c->CharacterID(), zone->GetZoneID());
+		}
+
+		std::list<QGlobal>::iterator iter = globalMap.begin();
+		uint32 gcount = 0;
+
+		c->Message(0, "Name, Value");
+		while(iter != globalMap.end())
+		{
+			c->Message(0, "%s %s", (*iter).name.c_str(), (*iter).value.c_str());
+			++iter;
+			++gcount;
+		}
+		c->Message(0, "%u globals loaded.", gcount);
+	}
+	else
+	{
+		QGlobalCache *char_c = NULL;
+		QGlobalCache *zone_c = NULL;
+
+		char_c = c->GetQGlobals();
+		zone_c = zone->GetQGlobals();
+
+		std::list<QGlobal> globalMap;
+		uint32 ntype = 0;
+
+		if(char_c)
+		{
+			QGlobalCache::Combine(globalMap, char_c->GetBucket(), ntype, c->CharacterID(), zone->GetZoneID());
+		}
+
+		if(zone_c)
+		{
+			QGlobalCache::Combine(globalMap, zone_c->GetBucket(), ntype, c->CharacterID(), zone->GetZoneID());
+		}
+
+		std::list<QGlobal>::iterator iter = globalMap.begin();
+		uint32 gcount = 0;
+
+		c->Message(0, "Name, Value");
+		while(iter != globalMap.end())
+		{
+			c->Message(0, "%s %s", (*iter).name.c_str(), (*iter).value.c_str());
+			++iter;
+			++gcount;
+		}
+		c->Message(0, "%u globals loaded.", gcount);
 	}
 }
