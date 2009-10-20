@@ -1012,7 +1012,10 @@ bool Bot::Process() {
 		this->stunned_timer.Disable();
 	}
 
-	if (GetDepop() || !GetBotOwner()) {
+	if(!GetBotOwner())
+		Camp();
+
+	if (GetDepop()) {
 		//Mob* owner = entity_list.GetMob(this->ownerid);
 		//if (owner != 0) {
 		//	//if(GetBodyType() != BT_SwarmPet)
@@ -3842,6 +3845,7 @@ bool Bot::BotGroupCreate(Bot* botGroupLeader) {
 		
 		if(newGroup) {
 			entity_list.AddGroup(newGroup);
+			database.SetGroupID(botGroupLeader->GetName(), 0, botGroupLeader->GetBotID());
 			database.SetGroupID(botGroupLeader->GetName(), newGroup->GetID(), botGroupLeader->GetBotID());
 			database.SetGroupLeaderName(newGroup->GetID(), botGroupLeader->GetName());
 
@@ -8128,12 +8132,15 @@ void Bot::BotGroupOrderFollow(Group* group) {
 					Bot* botGroupMember = group->members[i]->CastToBot();
 
 					if(botGroupMember) {
-						if(group->IsLeader(botGroupMember) && botGroupMember->GetBotOwner())
+						if(group->IsLeader(botGroupMember) && botGroupMember->GetBotOwner()) {
 							botGroupMember->SetFollowID(botGroupMember->GetBotOwner()->GetID());
-						else
+							if(botGroupMember->GetBotOwner())
+								botGroupMember->Say("Following %s.", botGroupMember->GetBotOwner()->GetName());
+						}
+						else {
 							botGroupMember->SetFollowID(groupLeader->GetID());
-
-						botGroupMember->Say("Following %s.", groupLeader->GetCleanName());
+							botGroupMember->Say("Following %s.", groupLeader->GetCleanName());
+						}
 
 						botGroupMember->WipeHateList();
 					}
@@ -11427,62 +11434,79 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 			else
 				botGroupLeader->Say("I can not lead.");
 		}
+		else
+			c->Message(13, "You must target a spawned bot first.");
 
 		return;
 	}
 
 	if(!strcasecmp(sep->arg[1], "botgroup") && !strcasecmp(sep->arg[2], "add")) {
-		Mob* targetMob = c->GetTarget();
-		std::string targetName = std::string(sep->arg[3]);
-		Bot* botGroupLeader = 0;
+		std::string botGroupLeaderName = std::string(sep->arg[3]);
+		std::string botGroupMemberName = std::string(sep->arg[4]);
+		Bot* botGroupMember = 0;
 
-		std::string botMemberName;
-
-		if(!targetName.empty()) {
-			botGroupLeader = entity_list.GetBotByBotName(targetName);
-			botMemberName = std::string(sep->arg[4]);
+		if(c->GetTarget()) {
+			if(c->GetTarget()->IsBot())
+				botGroupMember = c->GetTarget()->CastToBot();
 		}
-		else if(targetMob) {
-			if(targetMob->IsBot()) {
-				botGroupLeader = targetMob->CastToBot();
-				botMemberName = std::string(sep->arg[3]);
-			}
-		}
+		
+		if(!botGroupLeaderName.empty()) {
+			Bot* botGroupLeader = entity_list.GetBotByBotName(botGroupLeaderName);
 
-		if(botGroupLeader && !botMemberName.empty()) {
-			if(botGroupLeader->HasGroup()) {
-				Group* g = botGroupLeader->GetGroup();
+			if(botGroupLeader) {
+				if(botGroupLeader->HasGroup()) {
+					Group* g = botGroupLeader->GetGroup();
 
-				if(g->IsLeader(botGroupLeader)) {
-					Bot* botMember = entity_list.GetBotByBotName(botMemberName);
+					if(g) {
+						if(g->IsLeader(botGroupLeader)) {
+							if(g->GroupCount() < MAX_GROUP_MEMBERS) {
+								if(!botGroupMemberName.empty() && botGroupMember) {
+									botGroupMember = entity_list.GetBotByBotName(botGroupMemberName);
+								}
 
-					if(botMember) {
-						if(!botMember->HasGroup()) {
-							// invite
-							if(Bot::AddBotToGroup(botMember, g)) {
-								database.SetGroupID(botMember->GetName(), g->GetID(), botMember->GetBotID());
-								botMember->Say("I have joined %s\'s group.", botGroupLeader->GetName());
+								if(botGroupMember) {
+									if(!botGroupMember->HasGroup()) {
+										// invite
+										if(Bot::AddBotToGroup(botGroupMember, g)) {
+											database.SetGroupID(botGroupMember->GetName(), g->GetID(), botGroupMember->GetBotID());
+											botGroupMember->Say("I have joined %s\'s group.", botGroupLeader->GetName());
+										}
+										else {
+											botGroupMember->Say("I can not join %s\'s group.", botGroupLeader->GetName());
+										}
+									}
+									else {
+										// "I am already in a group."
+										Group* tempGroup = botGroupMember->GetGroup();
+										if(tempGroup)
+											botGroupMember->Say("I can not join %s\'s group. I am already a member in %s\'s group.", botGroupLeader->GetName(), tempGroup->GetLeaderName());
+									}
+								}
+								else {
+									// must target a bot message
+									c->Message(13, "You must target a spawned bot first.");
+								}
 							}
 							else {
-								botMember->Say("I can not join %s\'s group.", botGroupLeader->GetName());
+								// "My group is full."
+								botGroupLeader->Say("I have no more openings in my group, %s.", c->GetName());
 							}
 						}
 						else {
-							// bot to invite is already in a group error message
-							Group* tempGroup = botMember->GetGroup();
-							botMember->Say("I can not join %s\'s group. I am already a member in %s\'s group.", botGroupLeader->GetName(), tempGroup->GetLeaderName());
+							// "I am not a group leader."
+							Group* tempGroup = botGroupLeader->GetGroup();
+							if(tempGroup)
+								botGroupLeader->Say("I can not lead anyone because I am a member in %s\'s group.", tempGroup->GetLeaderName());
 						}
 					}
 				}
 				else {
-					// targetted bot has a group but is not the group leader error message
-					Group* tempGroup = botGroupLeader->GetGroup();
-					botGroupLeader->Say("I can not lead anyone because I am a member in %s\'s group.", tempGroup->GetLeaderName());
+					// TODO: "I do not belong to a group."
+					botGroupLeader->Say("I am not a leader and do not belong to a group, %s.", c->GetName());
 				}
 			}
 			else {
-				// targetted bot does not have a group error message
-				botGroupLeader->Say("I am not a leader, %s. But I am ready to lead if you want me to.", c->GetName());
+				c->Message(13, "You must target a bot group leader first.");
 			}
 		}
 
@@ -11514,6 +11538,8 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 			else
 				botGroupMember->Say("I am not in a group.");
 		}
+		else
+			c->Message(13, "You must target a spawned bot first.");
 
 		return;
 	}
@@ -11548,6 +11574,8 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 			else
 				botGroupLeader->Say("I am not a group leader, %s.", c->GetName());
 		}
+		else
+			c->Message(13, "You must target a spawned bot group leader first.");
 
 		return;
 	}
@@ -11661,9 +11689,13 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 							BotGroupOrderAttack(c->GetGroup(), targetMob);
 					}
 					else
-						c->Message(15, "You must target a monster.");
+						c->Message(13, "You must target a monster.");
 				}
+				else
+					c->Message(13, "You must target a monster.");
 			}
+			else
+				c->Message(13, "You must target a spawned bot group leader first.");
 		}
 
 		return;
