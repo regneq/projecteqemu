@@ -302,6 +302,9 @@ Client::Client(EQStreamInterface* ieqs)
 }
 
 Client::~Client() {
+#ifdef BOTS
+	Bot::ProcessBotOwnerRefDelete(this);
+#endif
 	Mob* horse = entity_list.GetMob(this->CastToClient()->GetHorseId());
 	if (horse)
 		horse->Depop();
