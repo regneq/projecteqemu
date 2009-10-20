@@ -300,6 +300,7 @@ void command_setstartzone(Client *c, const Seperator *sep);
 void command_netstats(Client *c, const Seperator *sep);
 void command_object(Client* c, const Seperator *sep);
 void command_raidloot(Client* c, const Seperator *sep);
+void command_globalview(Client* c, const Seperator *sep);
 
 #ifdef EMBPERL
 void command_embperl_plugin(Client *c, const Seperator *sep);

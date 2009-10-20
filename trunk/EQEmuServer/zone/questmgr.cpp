@@ -1080,7 +1080,12 @@ int QuestManager::InsertQuestGlobal(
 		qgd->npc_id = npcid;
 		qgd->char_id = charid;
 		qgd->zone_id = zoneid;
+		qgd->from_zone_id = zone->GetZoneID();
+		qgd->from_instance_id = zone->GetInstanceID();
 		strcpy(qgd->name, varname);
+
+		entity_list.DeleteQGlobal(std::string((char*)qgd->name), qgd->npc_id, qgd->char_id, qgd->zone_id);
+		zone->DeleteQGlobal(std::string((char*)qgd->name), qgd->npc_id, qgd->char_id, qgd->zone_id);
 
 		worldserver.SendPacket(pack);
 		safe_delete(pack);
@@ -1102,6 +1107,18 @@ int QuestManager::InsertQuestGlobal(
 		strcpy((char*)qgu->name, varname);
 		strcpy((char*)qgu->value, varvalue);
 		qgu->id = last_id;
+		qgu->from_zone_id = zone->GetZoneID();
+		qgu->from_instance_id = zone->GetInstanceID();
+
+		QGlobal temp;
+		temp.npc_id = npcid;
+		temp.char_id = charid;
+		temp.zone_id = zoneid;
+		temp.expdate = qgu->expdate;
+		temp.name.assign(qgu->name);
+		temp.value.assign(qgu->value);
+		entity_list.UpdateQGlobal(qgu->id, temp);
+		zone->UpdateQGlobal(qgu->id, temp);
 
 		worldserver.SendPacket(pack);
 		safe_delete(pack);
@@ -1150,6 +1167,9 @@ void QuestManager::delglobal(const char *varname) {
 		qgu->char_id = qgCharid;
 		qgu->zone_id = qgZoneid;
 		strcpy(qgu->name, varname);
+
+		entity_list.DeleteQGlobal(std::string((char*)qgu->name), qgu->npc_id, qgu->char_id, qgu->zone_id);
+		zone->DeleteQGlobal(std::string((char*)qgu->name), qgu->npc_id, qgu->char_id, qgu->zone_id);
 
 		worldserver.SendPacket(pack);
 		safe_delete(pack);

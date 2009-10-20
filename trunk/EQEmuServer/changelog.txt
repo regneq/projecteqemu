@@ -5,6 +5,8 @@ WildcardX: Bots can now be a group leader. A character can now make not only a g
 WildcardX: Fix for a bug with #bot botgroup add.
 WildcardX: Fix for a bug with bot group leader's record in group_id table not removing any older records.
 WildcardX: Fix for a bug  that caused a bot group leader to say it is following itself.
+KLS: Added #globalview
+KLS: QGlobals will update instantly for the zone they're in.
 
 ==10/19/2009==
 WildcardX: Fixed a number of bugs with support bots zoning. Refactored the code and eliminated the botactives table.
