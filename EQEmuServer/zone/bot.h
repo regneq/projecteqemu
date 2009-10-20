@@ -173,12 +173,10 @@ public:
 	static bool SetBotOwnerCharacterID(uint32 botID, uint32 botOwnerCharacterID, std::string* errorMessage);
 	static std::string ClassIdToString(uint16 classId);
 	static std::string RaceIdToString(uint16 raceId);
-	static bool AddBotToGroup(Bot* bot, Group* group);
-	static bool RemoveBotFromGroup(Bot* bot, Group* group);
 	static bool IsBotAttackAllowed(Mob* attacker, Mob* target, bool& hasRuleDefined);
 	static void BotGroupOrderFollow(Group* group);
 	static void BotGroupOrderGuard(Group* group);
-	static void BotGroupOrderAttack(Group* group);
+	static void BotGroupOrderAttack(Group* group, Mob* target);
 	static void BotGroupSummon(Group* group);
 	static Bot* GetBotByBotClientOwnerAndBotName(Client* c, std::string botName);
 	static void ProcessBotGroupInvite(Client* c, std::string botName);
@@ -186,10 +184,16 @@ public:
 	static void BotOrderCampAll(Client* c);
 	static void ProcessBotInspectionRequest(Bot* inspectedBot, Client* client);
 	static std::list<uint32> GetGroupedBotsByGroupId(uint32 groupId, std::string* errorMessage);
-	static void LoadAndSpawnAllActiveBots(Client* botOwner);
+	static void LoadAndSpawnAllZonedBots(Client* botOwner);
 	static bool GroupHasBot(Group* group);
 	static Bot* GetFirstBotInGroup(Group* group);
 	static void ProcessClientZoneChange(Client* botOwner);
+
+	// Static Bot Group Methods
+	static bool AddBotToGroup(Bot* bot, Group* group);
+	static bool RemoveBotFromGroup(Bot* bot, Group* group);
+	static bool BotGroupCreate(std::string botGroupLeaderName);
+	static bool BotGroupCreate(Bot* botGroupLeader);
 
 	// "GET" Class Methods
 	uint32 GetBotID() { return _botID; }

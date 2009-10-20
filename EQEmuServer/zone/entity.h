@@ -396,6 +396,8 @@ private:
 		void AddBot(Bot* newBot, bool SendSpawnPacket = true, bool dontqueue = false);
 		bool RemoveBot(int16 entityID);
 		Mob* GetMobByBotID(uint32 botID);
+		Bot* GetBotByBotID(uint32 botID);
+		Bot* GetBotByBotName(std::string botName);
 		list<Bot*> GetBotsByBotOwnerCharacterID(uint32 botOwnerCharacterID);
 
 		bool Bot_AICheckCloseBeneficialSpells(Bot* caster, int8 iChance, float iRange, int16 iSpellTypes);  // TODO: Evaluate this closesly in hopes to eliminate

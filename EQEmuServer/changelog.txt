@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==10/20/2009==
+WildcardX: Bots can now be a group leader. A character can now make not only a group mixed with both bots and other characters, but also groups with all bots and lead by a bot the character designates. Please see #bot botgroup help for details. The legacy BotRaids logic will be removed from the server code in the next 24/48 hours. This effectivly makes bot raiding the same as before the raid system was created. Much of the existing "#bot group order" commands will also be deprecated soon.
+
 ==10/19/2009==
 WildcardX: Fixed a number of bugs with support bots zoning. Refactored the code and eliminated the botactives table.
 
