@@ -4,7 +4,8 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 WildcardX: Bots can now be a group leader. A character can now make not only a group mixed with both bots and other characters, but also groups with all bots and lead by a bot the character designates. Please see #bot botgroup help for details. The legacy BotRaids logic will be removed from the server code in the next 24/48 hours. This effectivly makes bot raiding the same as before the raid system was created. Much of the existing "#bot group order" commands will also be deprecated soon.
 WildcardX: Fix for a bug with #bot botgroup add.
 WildcardX: Fix for a bug with bot group leader's record in group_id table not removing any older records.
-WildcardX: Fix for a bug  that caused a bot group leader to say it is following itself.
+WildcardX: Fix for a bug that caused a bot group leader to say it is following itself.
+WildcardX: Fix for a bug that caused a zone crash when a client ungracefully disconnects from zone but zone still runs and the client had spawned bots.
 KLS: Added #globalview
 KLS: QGlobals will update instantly for the zone they're in.
 

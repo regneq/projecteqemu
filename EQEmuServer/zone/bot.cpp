@@ -6908,6 +6908,24 @@ void Bot::BotOrderCampAll(Client* c) {
 	}
 }
 
+void Bot::ProcessBotOwnerRefDelete(Mob* botOwner) {
+	if(botOwner) {
+		if(botOwner->IsClient()) {
+			std::list<Bot*> BotList = entity_list.GetBotsByBotOwnerCharacterID(botOwner->CastToClient()->CharacterID());
+
+			if(!BotList.empty()) {
+				for(std::list<Bot*>::iterator botListItr = BotList.begin(); botListItr != BotList.end(); botListItr++) {
+					Bot* tempBot = *botListItr;
+
+					if(tempBot) {
+						tempBot->SetBotOwner(0);
+					}
+				}
+			}
+		}
+	}
+}
+
 sint32 Bot::CalcMaxMana() {
 	sint32 WisInt = 0;
 	sint32 MindLesserFactor, MindFactor;
