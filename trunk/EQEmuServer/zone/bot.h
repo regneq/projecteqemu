@@ -292,6 +292,8 @@ private:
 	void SetBotItemInSlot(uint32 slotID, uint32 itemID, std::string* errorMessage);
 	uint32 GetBotItemsCount(std::string* errorMessage);
 	uint32 GetTotalPlayTime();
+	void SaveBuffs();	// Saves existing buffs to the database to persist zoning and camping
+	void LoadBuffs();	// Retrieves saved buffs from the database on spawning
 };
 
 #endif // BOTS
