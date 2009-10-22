@@ -982,6 +982,9 @@ bool Bot::Save() {
 
 		Result = false;
 	}
+	else {
+		SaveBuffs();
+	}
 
 	return Result;
 }
@@ -1001,6 +1004,116 @@ uint32 Bot::GetTotalPlayTime() {
 	Result = (uint32)TempTotalPlayTime;
 
 	return Result;
+}
+
+void Bot::SaveBuffs() {
+	std::string errorMessage;
+	char* Query = 0;
+	char TempErrorMessageBuffer[MYSQL_ERRMSG_SIZE];
+	int BuffCount = 0;
+	int InsertCount = 0;
+
+	while(BuffCount < BUFF_COUNT) {
+		if(buffs[BuffCount].spellid > 0 && buffs[BuffCount].spellid != SPELL_UNKNOWN) {
+			if(InsertCount == 0) {
+				// Remove any existing buff saves
+				if(!database.RunQuery(Query, MakeAnyLenString(&Query, "DELETE FROM botbuffs WHERE BotId = %u", GetBotID()), TempErrorMessageBuffer)) {
+					errorMessage = std::string(TempErrorMessageBuffer);
+					safe_delete(Query);
+					Query = 0;
+					break;
+				}
+			}
+
+			int IsPersistent = 0;
+
+			if(buffs[BuffCount].persistant_buff)
+				IsPersistent = 1;
+			else
+				IsPersistent = 0;
+
+			if(!database.RunQuery(Query, MakeAnyLenString(&Query, "INSERT INTO botbuffs (BotId, SpellId, CasterLevel, DurationFormula, TicsRemaining, PoisonCounters, DiseaseCounters, CurseCounters, HitCount, MeleeRune, MagicRune, DeathSaveSuccessChance, CasterAARank, Persistent) VALUES (%u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u);", GetBotID(), buffs[BuffCount].spellid, buffs[BuffCount].casterlevel, buffs[BuffCount].durationformula, buffs[BuffCount].ticsremaining, buffs[BuffCount].poisoncounters, buffs[BuffCount].diseasecounters, buffs[BuffCount].cursecounters, buffs[BuffCount].numhits, buffs[BuffCount].melee_rune, buffs[BuffCount].magic_rune, buffs[BuffCount].deathSaveSuccessChance, buffs[BuffCount].casterAARank, IsPersistent), TempErrorMessageBuffer)) {
+				errorMessage = std::string(TempErrorMessageBuffer);
+				safe_delete(Query);
+				Query = 0;
+				break;
+			}
+			else {
+				safe_delete(Query);
+				Query = 0;
+				InsertCount++;
+			}
+		}
+
+		BuffCount++;
+	}
+
+	if(!errorMessage.empty()) {
+		// TODO: Record this error message to zone error log
+	}
+}
+
+void Bot::LoadBuffs() {
+	std::string errorMessage;
+	char* Query = 0;
+	char TempErrorMessageBuffer[MYSQL_ERRMSG_SIZE];
+	MYSQL_RES* DatasetResult;
+	MYSQL_ROW DataRow;
+
+	bool BuffsLoaded = false;
+
+	if(!database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT SpellId, CasterLevel, DurationFormula, TicsRemaining, PoisonCounters, DiseaseCounters, CurseCounters, HitCount, MeleeRune, MagicRune, DeathSaveSuccessChance, CasterAARank, Persistent FROM botbuffs WHERE BotId = %u", GetBotID()), TempErrorMessageBuffer, &DatasetResult)) {
+		errorMessage = std::string(TempErrorMessageBuffer);
+	}
+	else {
+		int BuffCount = 0;
+
+		while(DataRow = mysql_fetch_row(DatasetResult)) {
+			if(BuffCount == BUFF_COUNT)
+				break;
+
+			buffs[BuffCount].spellid = atoi(DataRow[0]);
+			buffs[BuffCount].casterlevel = atoi(DataRow[1]);
+			buffs[BuffCount].durationformula = atoi(DataRow[2]);
+			buffs[BuffCount].ticsremaining = atoi(DataRow[3]);
+			buffs[BuffCount].poisoncounters = atoi(DataRow[4]);
+			buffs[BuffCount].diseasecounters = atoi(DataRow[5]);
+			buffs[BuffCount].cursecounters = atoi(DataRow[6]);
+			buffs[BuffCount].numhits = atoi(DataRow[7]);
+			buffs[BuffCount].melee_rune = atoi(DataRow[8]);
+			buffs[BuffCount].magic_rune = atoi(DataRow[9]);
+			buffs[BuffCount].deathSaveSuccessChance = atoi(DataRow[10]);
+			buffs[BuffCount].casterAARank = atoi(DataRow[11]);
+
+			bool IsPersistent = false;
+
+			if(atoi(DataRow[12]))
+				IsPersistent = true;
+
+			buffs[BuffCount].persistant_buff = IsPersistent;
+
+			BuffCount++;
+		}
+
+		mysql_free_result(DatasetResult);
+
+		BuffsLoaded = true;
+	}
+
+	safe_delete(Query);
+	Query = 0;
+
+	if(errorMessage.empty() && BuffsLoaded) {
+		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "DELETE FROM botbuffs WHERE BotId = %u", GetBotID()), TempErrorMessageBuffer)) {
+			errorMessage = std::string(TempErrorMessageBuffer);
+			safe_delete(Query);
+			Query = 0;
+		}
+	}
+
+	if(!errorMessage.empty()) {
+		// TODO: Record this error message to zone error log
+	}
 }
 
 bool Bot::Process() {
@@ -2800,6 +2913,9 @@ void Bot::Spawn(Client* botCharacterOwner, std::string* errorMessage) {
 		// Rename the bot name to make sure that Mob::GetName() matches Mob::GetCleanName() so we dont have a bot named "Jesuschrist001"
 		strcpy(name, GetCleanName());
 
+		// Load saved buffs
+		LoadBuffs();
+
 		// Spawn the bot at the bow owner's loc
 		this->x_pos = botCharacterOwner->GetX();
 		this->y_pos = botCharacterOwner->GetY();
@@ -3767,29 +3883,28 @@ bool Bot::RemoveBotFromGroup(Bot* bot, Group* group) {
 
 	if(bot && group) {
 		if(bot->HasGroup()) {
-			if(bot->GetGroup() == group) {
-				if(!group->IsLeader(bot)) {
-					bot->SetFollowID(0);
+			if(!group->IsLeader(bot)) {
+				bot->SetFollowID(0);
 
-					if(group->DelMember(bot))
-						database.SetGroupID(bot->GetCleanName(), 0, bot->GetBotID());
+				if(group->DelMember(bot))
+					database.SetGroupID(bot->GetCleanName(), 0, bot->GetBotID());
 
-					if(group->GroupCount() <= 1)
-						group->DisbandGroup();
-				}
-				else {
-					for(int i = 0; i < MAX_GROUP_MEMBERS; i++) {
-						if(!group->members[i])
-							continue;
-
-						group->members[i]->SetFollowID(0);
-					}
-
+				if(group->GroupCount() <= 1)
 					group->DisbandGroup();
+			}
+			else {
+				for(int i = 0; i < MAX_GROUP_MEMBERS; i++) {
+					if(!group->members[i])
+						continue;
+
+					group->members[i]->SetFollowID(0);
 				}
 
-				Result = true;
+				group->DisbandGroup();
+				database.SetGroupID(bot->GetCleanName(), 0, bot->GetBotID());
 			}
+
+			Result = true;
 		}
 	}
 
