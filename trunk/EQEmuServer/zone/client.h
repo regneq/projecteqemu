@@ -301,6 +301,7 @@ public:
 	inline int8		GetBaseTattoo()		const { return m_pp.drakkin_tattoo; }
 	inline int8		GetBaseDetails()	const { return m_pp.drakkin_details; }
 	sint32			CalcMaxMana();
+	sint32			CalcBaseMana();
 	const sint32&	SetMana(sint32 amount);
 
 	void	ServerFilter(SetServerFilter_Struct* filter);
@@ -405,6 +406,8 @@ public:
 	/*Endurance and such*/
 	//This calculates the maximum endurance we can have
 	void	CalcMaxEndurance();
+	//Calculates Base End
+	sint32	CalcBaseEndurance();
 	//This gets our current endurance
 	sint32	GetEndurance()	const {return cur_end;}
 	//This gets our endurance from the last CalcMaxEndurance() call
@@ -604,6 +607,7 @@ public:
 	void	ChangeTributeSettings(TributeInfo_Struct *t);
 	void	SendTributeTimer();
 	void	ToggleTribute(bool enabled);
+	void	TributeSoFUpdateSlot(sint16 slot);
 	void	SendPathPacket(vector<FindPerson_Point> &path);
 
 	inline PTimerList &GetPTimers() { return(p_timers); }

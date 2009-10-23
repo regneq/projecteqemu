@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==10/23/2009==
+KLS: Added discussed work around for SoF > level 75 issue from forums.
+
 ==10/21/2009==
 WildcardX: Bots will now persist their buffs to the database while zoning or camped.
 

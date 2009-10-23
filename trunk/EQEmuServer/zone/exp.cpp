@@ -385,7 +385,7 @@ void Client::SetLevel(int8 set_level, bool command)
         safe_delete(outapp);
         this->SendAppearancePacket(AT_WhoLevel, set_level); // who level change
 
-    LogFile->write(EQEMuLog::Normal,"Setting Level for %s to %i", GetName(), set_level);
+		LogFile->write(EQEMuLog::Normal,"Setting Level for %s to %i", GetName(), set_level);
 
         CalcBonuses();
         if(!RuleB(Character, HealOnLevel))
@@ -398,7 +398,8 @@ void Client::SetLevel(int8 set_level, bool command)
         {
                 SetHP(CalcMaxHP());             // Why not, lets give them a free heal
         }
-
+		
+		DoTributeUpdate();
         SendHPUpdate();
         SetMana(CalcMaxMana());
         UpdateWho();

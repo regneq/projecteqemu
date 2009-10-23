@@ -885,6 +885,62 @@ sint32 Client::CalcMaxMana()
 	return max_mana;
 }
 
+sint32 Client::CalcBaseMana()
+{
+	int WisInt = 0;
+	int MindLesserFactor, MindFactor;
+	sint32 max_m = 0;
+	switch(GetCasterClass())
+	{
+		case 'I': 
+			WisInt = GetINT();
+
+			if((( WisInt - 199 ) / 2) > 0)
+				MindLesserFactor = ( WisInt - 199 ) / 2;
+			else
+				MindLesserFactor = 0;
+
+			MindFactor = WisInt - MindLesserFactor;
+			if(WisInt > 100)
+				max_m = (((5 * (MindFactor + 20)) / 2) * 3 * GetLevel() / 40);
+			else
+				max_m = (((5 * (MindFactor + 200)) / 2) * 3 * GetLevel() / 100);	
+			
+			break;
+
+		case 'W':
+			WisInt = GetWIS();
+
+			if((( WisInt - 199 ) / 2) > 0)
+				MindLesserFactor = ( WisInt - 199 ) / 2;
+			else
+				MindLesserFactor = 0;
+
+			MindFactor = WisInt - MindLesserFactor;
+			if(WisInt > 100)
+				max_m = (((5 * (MindFactor + 20)) / 2) * 3 * GetLevel() / 40);
+			else
+				max_m = (((5 * (MindFactor + 200)) / 2) * 3 * GetLevel() / 100);	
+			
+			break;
+				
+		case 'N': {
+			max_m = 0;
+			break;
+		}
+		default: {
+			LogFile->write(EQEMuLog::Debug, "Invalid Class '%c' in CalcMaxMana", GetCasterClass());
+			max_m = 0;
+			break;
+		}
+	}
+
+#if EQDEBUG >= 11
+	LogFile->write(EQEMuLog::Debug, "Client::CalcBaseMana() called for %s - returning %d", GetName(), max_m);
+#endif
+	return max_m;
+}
+
 uint32 Client::CalcCurrentWeight() {
 	const Item_Struct* TempItem = 0;
 	ItemInst* ins;
@@ -1644,5 +1700,37 @@ void Client::CalcMaxEndurance()
 	max_end += spellbonuses.Endurance + itembonuses.Endurance;
 }
 
+sint32 Client::CalcBaseEndurance()
+{
+	sint32 base_end = 0;
+	int Stats = GetSTR()+GetSTA()+GetDEX()+GetAGI();
+	int LevelBase = GetLevel() * 15;
 
+	int at_most_800 = Stats;
+	if(at_most_800 > 800)
+		at_most_800 = 800;
+	
+	int Bonus400to800 = 0;
+	int HalfBonus400to800 = 0;
+	int Bonus800plus = 0;
+	int HalfBonus800plus = 0;
+	
+	int BonusUpto800 = int( at_most_800 / 4 ) ;
+	if(Stats > 400) {
+		Bonus400to800 = int( (at_most_800 - 400) / 4 );
+		HalfBonus400to800 = int( max( ( at_most_800 - 400 ), 0 ) / 8 );
+		
+		if(Stats > 800) {
+			Bonus800plus = int( (Stats - 800) / 8 ) * 2;
+			HalfBonus800plus = int( (Stats - 800) / 16 );
+		}
+	}
+	int bonus_sum = BonusUpto800 + Bonus400to800 + HalfBonus400to800 + Bonus800plus + HalfBonus800plus;
+	
+	base_end = LevelBase;
+
+	//take all of the sums from above, then multiply by level*0.075
+	base_end += ( bonus_sum * 3 * GetLevel() ) / 40;
+	return base_end;
+}
 
