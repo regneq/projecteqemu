@@ -1968,11 +1968,6 @@ void Database::SetGroupLeaderName(int32 gid, const char* name) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
 
-	if(!RunQuery(query, MakeAnyLenString(&query, "DELETE FROM group_leaders WHERE leadername = '%s'", name), errbuf))
-		printf("Unable to remove any existing group leader records for: %s\n", errbuf);
-	
-	query = 0;
-
 	if (!RunQuery(query, MakeAnyLenString(&query, "Replace into group_leaders set gid=%lu, leadername='%s'",(unsigned long)gid,name), errbuf))
 		printf("Unable to set group leader: %s\n",errbuf);
 

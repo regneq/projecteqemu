@@ -2,6 +2,11 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==10/23/2009==
 KLS: Added discussed work around for SoF > level 75 issue from forums.
+WildcardX: Bot pets and bot pet items and bot pet buffs will now save their state to the database between zones and camps just like a character.
+WildcardX: Add SQL to create unique columns in group_id and group_leaders tables in hopes of removing the last of the seemingly random issues with groups and zoning.
+
+<SQL Optional> 1038_grouptablesuniquecolumndefinitions.sql
+<SQL Required for BOTS> 1038_botpetstatepersists.sql
 
 ==10/21/2009==
 WildcardX: Bots will now persist their buffs to the database while zoning or camped.

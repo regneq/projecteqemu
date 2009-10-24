@@ -294,6 +294,18 @@ private:
 	uint32 GetTotalPlayTime();
 	void SaveBuffs();	// Saves existing buffs to the database to persist zoning and camping
 	void LoadBuffs();	// Retrieves saved buffs from the database on spawning
+	void LoadPetBuffs(SpellBuff_Struct* petBuffs, uint32 botPetSaveId);
+	void SavePetBuffs(SpellBuff_Struct* petBuffs, uint32 botPetSaveId);
+	void LoadPetItems(int32* petItems, uint32 botPetSaveId);
+	void SavePetItems(int32* petItems, uint32 botPetSaveId);
+	void LoadPetStats(std::string* petName, int16* petMana, int16* petHitPoints, uint32* botPetId, uint32 botPetSaveId);
+	uint32 SavePetStats(std::string petName, int16 petMana, int16 petHitPoints, uint32 botPetId);
+	void LoadPet();	// Load and spawn bot pet if there is one
+	void SavePet();	// Save and depop bot pet if there is one
+	uint32 GetPetSaveId();
+	void DeletePetBuffs(uint32 botPetSaveId);
+	void DeletePetItems(uint32 botPetSaveId);
+	void DeletePetStats(uint32 botPetSaveId);
 };
 
 #endif // BOTS

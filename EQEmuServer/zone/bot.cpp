@@ -984,6 +984,7 @@ bool Bot::Save() {
 	}
 	else {
 		SaveBuffs();
+		SavePet();
 	}
 
 	return Result;
@@ -1113,6 +1114,365 @@ void Bot::LoadBuffs() {
 
 	if(!errorMessage.empty()) {
 		// TODO: Record this error message to zone error log
+	}
+}
+
+uint32 Bot::GetPetSaveId() {
+	uint32 Result = 0;
+	std::string errorMessage;
+	char* Query = 0;
+	char TempErrorMessageBuffer[MYSQL_ERRMSG_SIZE];
+	MYSQL_RES* DatasetResult;
+	MYSQL_ROW DataRow;
+
+	if(!database.RunQuery(Query, MakeAnyLenString(&Query, "select BotPetsId from botpets where BotId = %u;", GetBotID()), TempErrorMessageBuffer, &DatasetResult)) {
+		errorMessage = std::string(TempErrorMessageBuffer);
+	}
+	else {
+		while(DataRow = mysql_fetch_row(DatasetResult)) {
+			Result = atoi(DataRow[0]);
+			break;
+		}
+
+		mysql_free_result(DatasetResult);
+	}
+
+	safe_delete(Query);
+
+	if(!errorMessage.empty()) {
+		// TODO: Record this error message to zone error log
+	}
+
+	return Result;
+}
+
+void Bot::LoadPet() {
+	uint32 PetSaveId = GetPetSaveId();
+
+	if(PetSaveId > 0 && !GetPet() && PetSaveId <= SPDAT_RECORDS) {
+		std::string petName;
+		int16 petMana = 0;
+		int16 petHitPoints = 0;
+		uint32 botPetId = 0;
+
+		LoadPetStats(&petName, &petMana, &petHitPoints, &botPetId, PetSaveId);
+
+		MakePet(botPetId, spells[botPetId].teleport_zone, petName.c_str());
+
+		if(GetPet() && GetPet()->IsNPC()) {
+			NPC *pet = GetPet()->CastToNPC();
+			SpellBuff_Struct petBuffs[BUFF_COUNT];
+			int32 petItems[MAX_MATERIALS];
+
+			LoadPetBuffs(petBuffs, PetSaveId);
+			LoadPetItems(petItems, PetSaveId);
+
+			pet->SetPetState(petBuffs, petItems);
+			pet->CalcBonuses();
+			pet->SetHP(petHitPoints);
+			pet->SetMana(petMana);
+		}
+
+		DeletePetStats(PetSaveId);
+	}
+}
+
+void Bot::LoadPetStats(std::string* petName, int16* petMana, int16* petHitPoints, uint32* botPetId, uint32 botPetSaveId) {
+	if(botPetSaveId > 0) {
+		std::string errorMessage;
+		char* Query = 0;
+		char TempErrorMessageBuffer[MYSQL_ERRMSG_SIZE];
+		MYSQL_RES* DatasetResult;
+		MYSQL_ROW DataRow;
+
+		bool statsLoaded = false;
+
+		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "select PetId, Name, Mana, HitPoints from botpets where BotPetsId = %u;", botPetSaveId), TempErrorMessageBuffer, &DatasetResult)) {
+			errorMessage = std::string(TempErrorMessageBuffer);
+		}
+		else {
+			while(DataRow = mysql_fetch_row(DatasetResult)) {
+				*botPetId = atoi(DataRow[0]);
+				*petName = std::string(DataRow[1]);
+				*petMana = atoi(DataRow[2]);
+				*petHitPoints = atoi(DataRow[3]);
+				break;
+			}
+
+			mysql_free_result(DatasetResult);
+
+			statsLoaded = true;
+		}
+
+		safe_delete(Query);
+		Query = 0;
+
+		/*if(errorMessage.empty() && statsLoaded) {
+			if(!database.RunQuery(Query, MakeAnyLenString(&Query, "DELETE from botpets where BotPetsId = %u;", botPetSaveId), TempErrorMessageBuffer)) {
+				errorMessage = std::string(TempErrorMessageBuffer);
+				safe_delete(Query);
+				Query = 0;
+			}
+		}*/
+
+		if(!errorMessage.empty()) {
+			// TODO: Record this error message to zone error log
+		}
+	}
+}
+
+void Bot::LoadPetBuffs(SpellBuff_Struct* petBuffs, uint32 botPetSaveId) {
+	if(petBuffs && botPetSaveId > 0) {
+		std::string errorMessage;
+		char* Query = 0;
+		char TempErrorMessageBuffer[MYSQL_ERRMSG_SIZE];
+		MYSQL_RES* DatasetResult;
+		MYSQL_ROW DataRow;
+
+		bool BuffsLoaded = false;
+
+		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT SpellId, CasterLevel, Duration FROM botpetbuffs WHERE BotPetsId = %u;", botPetSaveId), TempErrorMessageBuffer, &DatasetResult)) {
+			errorMessage = std::string(TempErrorMessageBuffer);
+		}
+		else {
+			int BuffCount = 0;
+
+			while(DataRow = mysql_fetch_row(DatasetResult)) {
+				if(BuffCount == BUFF_COUNT)
+					break;
+
+				petBuffs[BuffCount].spellid = atoi(DataRow[0]);
+				petBuffs[BuffCount].level = atoi(DataRow[1]);
+				petBuffs[BuffCount].duration = atoi(DataRow[2]);
+
+				BuffCount++;
+			}
+
+			mysql_free_result(DatasetResult);
+
+			BuffsLoaded = true;
+		}
+
+		safe_delete(Query);
+		Query = 0;
+
+		if(errorMessage.empty() && BuffsLoaded) {
+			if(!database.RunQuery(Query, MakeAnyLenString(&Query, "DELETE FROM botpetbuffs WHERE BotPetsId = %u;", botPetSaveId), TempErrorMessageBuffer)) {
+				errorMessage = std::string(TempErrorMessageBuffer);
+				safe_delete(Query);
+				Query = 0;
+			}
+		}
+
+		if(!errorMessage.empty()) {
+			// TODO: Record this error message to zone error log
+		}
+	}
+}
+
+void Bot::LoadPetItems(int32* petItems, uint32 botPetSaveId) {
+	if(petItems && botPetSaveId > 0) {
+		std::string errorMessage;
+		char* Query = 0;
+		char TempErrorMessageBuffer[MYSQL_ERRMSG_SIZE];
+		MYSQL_RES* DatasetResult;
+		MYSQL_ROW DataRow;
+
+		bool itemsLoaded = false;
+
+		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT ItemId FROM botpetinventory WHERE BotPetsId = %u;", botPetSaveId), TempErrorMessageBuffer, &DatasetResult)) {
+			errorMessage = std::string(TempErrorMessageBuffer);
+		}
+		else {
+			int BuffCount = 0;
+
+			while(DataRow = mysql_fetch_row(DatasetResult)) {
+				if(BuffCount == BUFF_COUNT)
+					break;
+
+				petItems[BuffCount] = atoi(DataRow[0]);
+
+				BuffCount++;
+			}
+
+			mysql_free_result(DatasetResult);
+
+			itemsLoaded = true;
+		}
+
+		safe_delete(Query);
+		Query = 0;
+
+		if(errorMessage.empty() && itemsLoaded) {
+			if(!database.RunQuery(Query, MakeAnyLenString(&Query, "DELETE FROM botpetinventory WHERE BotPetsId = %u;", botPetSaveId), TempErrorMessageBuffer)) {
+				errorMessage = std::string(TempErrorMessageBuffer);
+				safe_delete(Query);
+				Query = 0;
+			}
+		}
+
+		if(!errorMessage.empty()) {
+			// TODO: Record this error message to zone error log
+		}
+	}
+}
+
+void Bot::SavePet() {
+	if(GetPet() && !GetPet()->IsFamiliar() && GetPet()->CastToNPC()->GetPetSpellID() /*&& !dead*/) {
+		NPC *pet = GetPet()->CastToNPC();
+		int16 petMana = pet->GetMana();
+		int16 petHitPoints = pet->GetHP();
+		uint32 botPetId = pet->CastToNPC()->GetPetSpellID();
+		char* tempPetName = new char[64];
+		SpellBuff_Struct petBuffs[BUFF_COUNT];
+		int32 petItems[MAX_MATERIALS];
+
+		pet->GetPetState(petBuffs, petItems, tempPetName);
+		
+		uint32 existingBotPetSaveId = GetPetSaveId();
+
+		if(existingBotPetSaveId > 0) {
+			// Remove any existing pet buffs
+			DeletePetBuffs(existingBotPetSaveId);
+
+			// Remove any existing pet items
+			DeletePetItems(existingBotPetSaveId);
+		}
+
+		// Save pet stats and get a new bot pet save id
+		uint32 botPetSaveId = SavePetStats(std::string(tempPetName), petHitPoints, petMana, botPetId);
+
+		// Save pet buffs
+		SavePetBuffs(petBuffs, botPetSaveId);
+
+		// Save pet items
+		SavePetItems(petItems, botPetSaveId);
+
+		if(tempPetName)
+			safe_delete(tempPetName);
+	}
+}
+
+uint32 Bot::SavePetStats(std::string petName, int16 petMana, int16 petHitPoints, uint32 botPetId) {
+	uint32 Result = 0;
+
+	std::string errorMessage;
+	char* Query = 0;
+	char TempErrorMessageBuffer[MYSQL_ERRMSG_SIZE];
+
+	if(!database.RunQuery(Query, MakeAnyLenString(&Query, "REPLACE INTO botpets SET PetId = %u, BotId = %u, Name = '%s', Mana = %u, HitPoints = %u;", botPetId, GetBotID(), petName.c_str(), petMana, petHitPoints), TempErrorMessageBuffer, 0, 0, &Result)) {
+		errorMessage = std::string(TempErrorMessageBuffer);
+	}
+
+	safe_delete(Query);
+	Query = 0;
+
+	return Result;
+}
+
+void Bot::SavePetBuffs(SpellBuff_Struct* petBuffs, uint32 botPetSaveId) {
+	if(petBuffs && botPetSaveId > 0) {
+		std::string errorMessage;
+		char* Query = 0;
+		char TempErrorMessageBuffer[MYSQL_ERRMSG_SIZE];
+		int BuffCount = 0;
+
+		while(BuffCount < BUFF_COUNT) {
+			if(petBuffs[BuffCount].spellid > 0 && petBuffs[BuffCount].spellid != SPELL_UNKNOWN) {
+				if(!database.RunQuery(Query, MakeAnyLenString(&Query, "INSERT INTO botpetbuffs (BotPetsId, SpellId, CasterLevel, Duration) VALUES(%u, %u, %u, %u);", botPetSaveId, petBuffs[BuffCount].spellid, petBuffs[BuffCount].level, petBuffs[BuffCount].duration), TempErrorMessageBuffer)) {
+					errorMessage = std::string(TempErrorMessageBuffer);
+					safe_delete(Query);
+					Query = 0;
+					break;
+				}
+				else {
+					safe_delete(Query);
+					Query = 0;
+				}
+			}
+
+			BuffCount++;
+		}
+
+		if(!errorMessage.empty()) {
+			// TODO: Record this error message to zone error log
+		}
+	}
+}
+
+void Bot::SavePetItems(int32* petItems, uint32 botPetSaveId) {
+	if(petItems && botPetSaveId > 0) {
+		std::string errorMessage;
+		char* Query = 0;
+		char TempErrorMessageBuffer[MYSQL_ERRMSG_SIZE];
+		int ItemCount = 0;
+
+		while(ItemCount < MAX_MATERIALS) {
+			if(petItems[ItemCount] > 0) {
+				if(!database.RunQuery(Query, MakeAnyLenString(&Query, "INSERT INTO botpetinventory (BotPetsId, ItemId) VALUES(%u, %u);", botPetSaveId, petItems[ItemCount]), TempErrorMessageBuffer)) {
+					errorMessage = std::string(TempErrorMessageBuffer);
+					safe_delete(Query);
+					Query = 0;
+					break;
+				}
+				else {
+					safe_delete(Query);
+					Query = 0;
+					ItemCount++;
+				}
+			}
+
+			ItemCount++;
+		}
+
+		if(!errorMessage.empty()) {
+			// TODO: Record this error message to zone error log
+		}
+	}
+}
+
+void Bot::DeletePetBuffs(uint32 botPetSaveId) {
+	if(botPetSaveId > 0) {
+		std::string errorMessage;
+		char* Query = 0;
+		char TempErrorMessageBuffer[MYSQL_ERRMSG_SIZE];
+
+		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "DELETE FROM botpetbuffs WHERE BotPetsId = %u;", botPetSaveId), TempErrorMessageBuffer)) {
+			errorMessage = std::string(TempErrorMessageBuffer);
+		}
+
+		safe_delete(Query);
+		Query = 0;
+	}
+}
+
+void Bot::DeletePetItems(uint32 botPetSaveId) {
+	if(botPetSaveId > 0) {
+		std::string errorMessage;
+		char* Query = 0;
+		char TempErrorMessageBuffer[MYSQL_ERRMSG_SIZE];
+
+		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "DELETE FROM botpetinventory WHERE BotPetsId = %u;", botPetSaveId), TempErrorMessageBuffer)) {
+			errorMessage = std::string(TempErrorMessageBuffer);
+		}
+
+		safe_delete(Query);
+		Query = 0;
+	}
+}
+
+void Bot::DeletePetStats(uint32 botPetSaveId) {
+	if(botPetSaveId > 0) {
+		std::string errorMessage;
+		char* Query = 0;
+		char TempErrorMessageBuffer[MYSQL_ERRMSG_SIZE];
+
+		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "DELETE from botpets where BotPetsId = %u;", botPetSaveId), TempErrorMessageBuffer)) {
+			errorMessage = std::string(TempErrorMessageBuffer);
+		}
+
+		safe_delete(Query);
+		Query = 0;
 	}
 }
 
@@ -2929,6 +3289,9 @@ void Bot::Spawn(Client* botCharacterOwner, std::string* errorMessage) {
 
 		entity_list.AddBot(this, true, true);
 
+		// Load pet
+		LoadPet();
+
 		this->SendPosition();
 
 		if(!_botInventory.empty()) {
@@ -3916,9 +4279,6 @@ bool Bot::AddBotToGroup(Bot* bot, Group* group) {
 
 	if(bot && group) {
 		if(!bot->HasGroup()) {
-			// Remove any existing group records
-			database.SetGroupID(bot->GetCleanName(), 0, bot->GetBotID());
-
 			// Add bot to this group
 			if(group->AddMember(bot)) {
 				if(group->GetLeader()) {
@@ -3960,7 +4320,6 @@ bool Bot::BotGroupCreate(Bot* botGroupLeader) {
 		
 		if(newGroup) {
 			entity_list.AddGroup(newGroup);
-			database.SetGroupID(botGroupLeader->GetName(), 0, botGroupLeader->GetBotID());
 			database.SetGroupID(botGroupLeader->GetName(), newGroup->GetID(), botGroupLeader->GetBotID());
 			database.SetGroupLeaderName(newGroup->GetID(), botGroupLeader->GetName());
 
@@ -6718,160 +7077,14 @@ sint32 Bot::CheckHealAggroAmount(int16 spellid, int32 heal_possible) {
 }
 
 void Bot::MakePet(int16 spell_id, const char* pettype, const char *petname) {
-	//see if we are a special type of pet (for command filtering)
-	PetType type = petOther;
-	if(strncmp(pettype, "Familiar", 8) == 0) {
-		type = petFamiliar;
-	} else if(strncmp(pettype, "Animation", 9) == 0) {
-		type = petAnimation;
+	Mob::MakePet(spell_id, pettype, petname);
+
+	Mob* botPet = GetPet();
+
+	if(botPet) {
+		if(GetBotRaidID())
+			botPet->SetBotRaidID(GetBotRaidID());
 	}
-
-	if(HasPet())
-		return;
-
-
-	//lookup our pets table record for this type
-	PetRecord record;
-	if(!database.GetPetEntry(pettype, &record)) {
-		Message(13, "Unable to find data for pet %s", pettype);
-		LogFile->write(EQEMuLog::Error, "Unable to find data for pet %s, check pets table.", pettype);
-		return;
-	}
-
-	//find the NPC data for the specified NPC type
-	const NPCType *base = database.GetNPCType(record.npc_type);
-	if(base == NULL) {
-		Message(13, "Unable to load NPC data for pet %s", pettype);
-		LogFile->write(EQEMuLog::Error, "Unable to load NPC data for pet %s (NPC ID %d), check pets and npc_types tables.", pettype, record.npc_type);
-		return;
-	}
-
-	//we copy the npc_type data because we need to edit it a bit
-	NPCType *npc_type = new NPCType;
-	memcpy(npc_type, base, sizeof(NPCType));
-
-	if(GetClass() == MAGICIAN)
-	{
-		if(GetLevel() >= 67)
-		{ // Elemental Durability 3 AA
-			npc_type->max_hp *= 1.10;
-			npc_type->cur_hp = npc_type->max_hp;
-		}
-		else if(GetLevel() == 66)
-		{ // Elemental Durability 2 AA
-			npc_type->max_hp *= 1.05;
-			npc_type->cur_hp = npc_type->max_hp;
-		}
-		else if(GetLevel() == 65)
-		{ // Elemental Durability 1 AA
-			npc_type->max_hp *= 1.02;
-			npc_type->cur_hp = npc_type->max_hp;
-		}
-	}
-
-	switch (GetAA(aaElementalDurability))
-	{
-	case 1:
-		npc_type->max_hp *= 1.02;
-		npc_type->cur_hp = npc_type->max_hp;
-		break;
-	case 2:
-		npc_type->max_hp *= 1.05;
-		npc_type->cur_hp = npc_type->max_hp;
-		break;
-	case 3:
-		npc_type->max_hp *= 1.10;
-		npc_type->cur_hp = npc_type->max_hp;
-		break;
-	}
-
-	//TODO: think about regen (engaged vs. not engaged)
-
-	if(petname != NULL) {
-		strncpy(npc_type->name, petname, 64);
-	} else if (strncmp("Familiar", pettype, 8) == 0) {
-		strcpy(npc_type->name, this->GetName());
-		npc_type->name[19] = '\0';
-		strcat(npc_type->name, "`s_familiar");
-	} else if (strncmp("BLpet",pettype, 5) == 0) {
-		strcpy(npc_type->name, this->GetName());
-		npc_type->name[21] = 0;
-		strcat(npc_type->name, "`s_Warder");
-	} else if (this->IsClient()) {
-		//clients get a random pet name
-		strcpy(npc_type->name, GetRandPetName());
-	} else {
-		strcpy(npc_type->name, this->GetCleanName());
-		npc_type->name[25] = '\0';
-		strcat(npc_type->name, "`s_pet");
-	}
-
-
-	//handle beastlord pet appearance
-	if(strncmp(pettype, "BLpet", 5) == 0) {
-		switch ( GetBaseRace() ) {
-		case VAHSHIR: npc_type->race = TIGER; npc_type->size *= 0.8f; break;
-		case TROLL: npc_type->race = ALLIGATOR; npc_type->size *= 2.5f; break;
-		case OGRE: npc_type->race = BEAR; npc_type->texture=3; npc_type->gender=2; break;
-		case BARBARIAN: npc_type->race = WOLF; npc_type->texture=2; break;
-		case IKSAR: npc_type->race = WOLF; npc_type->texture=1; npc_type->gender=1; npc_type->size *= 2.0f; break;
-		default: npc_type->race = WOLF; npc_type->texture=0; break;
-		}
-	}
-
-	// handle monster summoning pet appearance
-	if(strncmp(pettype, "MonsterSum", 10) == 0) {
-		char errbuf[MYSQL_ERRMSG_SIZE];
-		char* query = 0;
-		MYSQL_RES *result = NULL;
-		MYSQL_ROW row = NULL;
-		uint32 monsterid;
-
-		// get a random npc id from the spawngroups assigned to this zone
-		if (database.RunQuery(query,	MakeAnyLenString(&query,
-			"SELECT npcID FROM (spawnentry INNER JOIN spawn2 ON spawn2.spawngroupID = spawnentry.spawngroupID) "
-			"INNER JOIN npc_types ON npc_types.id = spawnentry.npcID "
-			"WHERE spawn2.zone = '%s' AND npc_types.bodytype NOT IN (11, 33, 66, 67) "
-			"AND npc_types.race NOT IN (0,1,2,3,4,5,6,7,8,9,10,11,12,44,55,67,71,72,73,77,78,81,90,92,93,94,106,112,114,127,128,130,139,141,183,236,237,238,239,254,266,330,378,379,380,381,382,383,404,522) "
-			"ORDER BY RAND() LIMIT 1",	zone->GetShortName()), errbuf, &result))
-		{
-			row = mysql_fetch_row(result);
-			if (row) 
-				monsterid = atoi(row[0]);
-			else 
-				monsterid = 567;	// since we don't have any monsters, just make it look like an earth pet for now
-		}
-		else {	// if the database query failed
-			LogFile->write(EQEMuLog::Error, "Error querying database for monster summoning pet in zone %s (%s)", zone->GetShortName(), errbuf);
-			monsterid = 567;
-		}
-
-		// give the summoned pet the attributes of the monster we found
-		const NPCType* monster = database.GetNPCType(monsterid);
-		if(monster) {
-			npc_type->race = monster->race;
-			npc_type->size = monster->size;
-			npc_type->texture = monster->texture;
-			npc_type->gender = monster->gender;
-		}
-		else {
-			LogFile->write(EQEMuLog::Error, "Error loading NPC data for monster summoning pet (NPC ID %d)", monsterid);
-		}
-
-		safe_delete_array(query);
-	}
-
-	//this takes ownership of the npc_type data
-	Pet *npc = new Pet(npc_type, this, type, spell_id);
-	npc->SetTaunting(false);
-	npc->SetOwnerID(GetID());
-
-	if(GetBotRaidID()) {
-		npc->SetBotRaidID(GetBotRaidID());
-	}
-
-	entity_list.AddNPC(npc, true, true);
-	SetPetID(npc->GetID());
 }
 
 void Bot::AI_Stop() {
@@ -8406,8 +8619,18 @@ void Bot::ProcessClientZoneChange(Client* botOwner) {
 			Bot* tempBot = *itr;
 
 			if(tempBot) {
-				if(tempBot->HasGroup())
-					tempBot->Zone();
+				if(tempBot->HasGroup()) {
+					if(tempBot->GetGroup()->GetLeader()) {
+						Mob* tempGroupLeader = tempBot->GetGroup()->GetLeader();
+
+						if(tempGroupLeader->IsClient())
+							tempBot->Zone();
+						else
+							tempBot->Camp();
+					}
+					else
+						tempBot->Camp();
+				}
 				else
 					tempBot->Camp();
 			}
