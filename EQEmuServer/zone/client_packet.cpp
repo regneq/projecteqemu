@@ -3651,93 +3651,102 @@ void Client::Handle_OP_GuildInvite(const EQApplicationPacket *app)
 	else {
 
 		//ok, the invite is also used for changing rank as well.
+		Mob* invitee = entity_list.GetMob(gc->othername);
 
-		Client* client = entity_list.GetClientByName(gc->othername);
-		if(client == NULL) {
-			Message(13, "Player %s must be in zone to preform guild operations on them.", gc->othername);
+		if(!invitee) {
+			Message(13, "Prospective guild member %s must be in zone to preform guild operations on them.", gc->othername);
 			return;
 		}
 
-		//ok, figure out what they are trying to do.
-		if(client->GuildID() == GuildID()) {
-			//they are already in this guild, must be a promotion or demotion
-			if(gc->officer < client->GuildRank()) {
-				//demotion
-				if (!guild_mgr.CheckPermission(GuildID(), GuildRank(), GUILD_DEMOTE)) {
-					Message(13, "You dont have permission to demote.");
+		if(invitee->IsClient()) {
+			Client* client = invitee->CastToClient();
+
+			//ok, figure out what they are trying to do.
+			if(client->GuildID() == GuildID()) {
+				//they are already in this guild, must be a promotion or demotion
+				if(gc->officer < client->GuildRank()) {
+					//demotion
+					if (!guild_mgr.CheckPermission(GuildID(), GuildRank(), GUILD_DEMOTE)) {
+						Message(13, "You dont have permission to demote.");
+						return;
+					}
+
+					//we could send this to the member and prompt them to see if they want to
+					//be demoted (I guess), but I dont see a point in that.
+
+					mlog(GUILDS__ACTIONS, "%s (%d) is demoting %s (%d) to rank %d in guild %s (%d)",
+						GetName(), CharacterID(),
+						client->GetName(), client->CharacterID(),
+						gc->officer,
+						guild_mgr.GetGuildName(GuildID()), GuildID());
+
+					if(!guild_mgr.SetGuildRank(client->CharacterID(), gc->officer)) {
+						Message(13, "There was an error during the demotion, DB may now be inconsistent.");
+						return;
+					}
+
+				} else if(gc->officer > client->GuildRank()) {
+					//promotion
+					if (!guild_mgr.CheckPermission(GuildID(), GuildRank(), GUILD_PROMOTE)) {
+						Message(13, "You dont have permission to demote.");
+						return;
+					}
+
+					mlog(GUILDS__ACTIONS, "%s (%d) is asking to promote %s (%d) to rank %d in guild %s (%d)",
+						GetName(), CharacterID(),
+						client->GetName(), client->CharacterID(),
+						gc->officer,
+						guild_mgr.GetGuildName(GuildID()), GuildID());
+
+					//record the promotion with guild manager so we know its valid when we get the reply
+					guild_mgr.RecordInvite(client->CharacterID(), GuildID(), gc->officer);
+
+					if(gc->guildeqid == 0)
+						gc->guildeqid = GuildID();
+
+					mlog(GUILDS__OUT_PACKETS, "Sending OP_GuildInvite for promotion to %s, length %d", client->GetName(), app->size);
+					mpkt(GUILDS__OUT_PACKET_TRACE, app);
+					client->QueuePacket(app);
+
+				} else {
+					Message(13, "That member is already that rank.");
+					return;
+				}
+			} else if(!client->IsInAGuild()) {
+				//they are not in this or any other guild, this is an invite
+				if (!guild_mgr.CheckPermission(GuildID(), GuildRank(), GUILD_INVITE)) {
+					Message(13, "You dont have permission to invite.");
 					return;
 				}
 
-				//we could send this to the member and prompt them to see if they want to
-				//be demoted (I guess), but I dont see a point in that.
-
-				mlog(GUILDS__ACTIONS, "%s (%d) is demoting %s (%d) to rank %d in guild %s (%d)",
-					GetName(), CharacterID(),
+				mlog(GUILDS__ACTIONS, "Inviting %s (%d) into guild %s (%d)",
 					client->GetName(), client->CharacterID(),
-					gc->officer,
 					guild_mgr.GetGuildName(GuildID()), GuildID());
 
-				if(!guild_mgr.SetGuildRank(client->CharacterID(), gc->officer)) {
-					Message(13, "There was an error during the demotion, DB may now be inconsistent.");
-					return;
-				}
-
-			} else if(gc->officer > client->GuildRank()) {
-				//promotion
-				if (!guild_mgr.CheckPermission(GuildID(), GuildRank(), GUILD_PROMOTE)) {
-					Message(13, "You dont have permission to demote.");
-					return;
-				}
-
-				mlog(GUILDS__ACTIONS, "%s (%d) is asking to promote %s (%d) to rank %d in guild %s (%d)",
-					GetName(), CharacterID(),
-					client->GetName(), client->CharacterID(),
-					gc->officer,
-					guild_mgr.GetGuildName(GuildID()), GuildID());
-
-				//record the promotion with guild manager so we know its valid when we get the reply
+				//record the invite with guild manager so we know its valid when we get the reply
 				guild_mgr.RecordInvite(client->CharacterID(), GuildID(), gc->officer);
 
 				if(gc->guildeqid == 0)
 					gc->guildeqid = GuildID();
 
-				mlog(GUILDS__OUT_PACKETS, "Sending OP_GuildInvite for promotion to %s, length %d", client->GetName(), app->size);
+				mlog(GUILDS__OUT_PACKETS, "Sending OP_GuildInvite for invite to %s, length %d", client->GetName(), app->size);
 				mpkt(GUILDS__OUT_PACKET_TRACE, app);
 				client->QueuePacket(app);
 
 			} else {
-				Message(13, "That member is already that rank.");
+				//they are in some other guild
+				Message(13,"Player is in a guild.");
 				return;
 			}
-		} else if(!client->IsInAGuild()) {
-			//they are not in this or any other guild, this is an invite
-			if (!guild_mgr.CheckPermission(GuildID(), GuildRank(), GUILD_INVITE)) {
-				Message(13, "You dont have permission to invite.");
-				return;
-			}
-
-			mlog(GUILDS__ACTIONS, "Inviting %s (%d) into guild %s (%d)",
-				client->GetName(), client->CharacterID(),
-				guild_mgr.GetGuildName(GuildID()), GuildID());
-
-			//record the invite with guild manager so we know its valid when we get the reply
-			guild_mgr.RecordInvite(client->CharacterID(), GuildID(), gc->officer);
-
-			if(gc->guildeqid == 0)
-				gc->guildeqid = GuildID();
-
-			mlog(GUILDS__OUT_PACKETS, "Sending OP_GuildInvite for invite to %s, length %d", client->GetName(), app->size);
-			mpkt(GUILDS__OUT_PACKET_TRACE, app);
-			client->QueuePacket(app);
-
-		} else {
-			//they are in some other guild
-			Message(13,"Player is in a guild.");
+		}
+#ifdef BOTS
+		else if (invitee->IsBot()) {
+			// The guild system is too tightly coupled with the character_ table so we have to avoid using much of the system
+			Bot::ProcessGuildInvite(this, invitee->CastToBot());
 			return;
 		}
+#endif
 	}
-//	SendGuildMembers(GuildID(), true);
-	return;
 }
 
 void Client::Handle_OP_GuildRemove(const EQApplicationPacket *app)
@@ -3759,8 +3768,13 @@ void Client::Handle_OP_GuildRemove(const EQApplicationPacket *app)
 	else if (!worldserver.Connected())
 		Message(0, "Error: World server disconnected");
 	else {
-		Client* client = entity_list.GetClientByName(gc->othername);
+#ifdef BOTS
+		if(Bot::ProcessGuildRemoval(this, gc->othername))
+			return;
+#endif
 		int32 char_id;
+		Client* client = entity_list.GetClientByName(gc->othername);
+		
 		if(client) {
 			if(!client->IsInGuild(GuildID())) {
 				Message(0, "You aren't in the same guild, what do you think you are doing?");
@@ -3787,7 +3801,8 @@ void Client::Handle_OP_GuildRemove(const EQApplicationPacket *app)
 				gci.char_name.c_str(), gci.char_id,
 				guild_mgr.GetGuildName(GuildID()), GuildID());
 		}
-		if(!guild_mgr.SetGuild(char_id, GUILD_NONE, 0)){
+
+		if(!guild_mgr.SetGuild(char_id, GUILD_NONE, 0)) {
 			EQApplicationPacket* outapp = new EQApplicationPacket(OP_GuildManageRemove, sizeof(GuildManageRemove_Struct));
 			GuildManageRemove_Struct* gm = (GuildManageRemove_Struct*) outapp->pBuffer;
 			gm->guildeqid = GuildID();

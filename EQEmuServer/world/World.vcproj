@@ -4,6 +4,7 @@
 	Version="9.00"
 	Name="World"
 	ProjectGUID="{0FD472B1-CCB8-4ED2-8F4E-A1FC34E668EC}"
+	RootNamespace="World"
 	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
@@ -484,7 +485,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\clientlist.h"
+				>
+			</File>
+			<File
 				RelativePath=".\console.h"
+				>
+			</File>
+			<File
+				RelativePath=".\EQW.h"
 				>
 			</File>
 			<File

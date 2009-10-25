@@ -38,8 +38,12 @@ Bot::Bot(NPCType npcTypeData, Client* botOwner) : NPC(&npcTypeData, 0, 0, 0, 0, 
 		this->_botOwnerCharacterID = 0;
 	}
 
+	_guildRank = 0;
+	_guildId = 0;
+
 	_lastTotalPlayTime = 0;
 	_startTotalPlayTime = time(&_startTotalPlayTime);
+	_lastZoneId = 0;
 
 	_baseMR = npcTypeData.MR;
 	_baseCR = npcTypeData.CR;
@@ -80,15 +84,19 @@ Bot::Bot(NPCType npcTypeData, Client* botOwner) : NPC(&npcTypeData, 0, 0, 0, 0, 
 }
 
 // This constructor is used when the bot is loaded out of the database
-Bot::Bot(uint32 botID, uint32 botOwnerCharacterID, uint32 botSpellsID, double totalPlayTime, NPCType npcTypeData) : NPC(&npcTypeData, 0, 0, 0, 0, 0, 0, false) {
+Bot::Bot(uint32 botID, uint32 botOwnerCharacterID, uint32 botSpellsID, double totalPlayTime, int32 lastZoneId, NPCType npcTypeData) : NPC(&npcTypeData, 0, 0, 0, 0, 0, 0, false) {
 	this->_botOwnerCharacterID = botOwnerCharacterID;
 
 	if(this->_botOwnerCharacterID > 0) {
 		this->SetBotOwner(entity_list.GetClientByCharID(this->_botOwnerCharacterID));
 	}
 
+	_guildRank = 0;
+	_guildId = 0;
+
 	_lastTotalPlayTime = totalPlayTime;
 	_startTotalPlayTime = time(&_startTotalPlayTime);
+	_lastZoneId = lastZoneId;
 
 	_baseMR = npcTypeData.MR;
 	_baseCR = npcTypeData.CR;
@@ -117,6 +125,8 @@ Bot::Bot(uint32 botID, uint32 botOwnerCharacterID, uint32 botSpellsID, double to
 	this->SetBotRaidID(0);
 
 	strcpy(this->name, this->GetCleanName());
+
+	LoadGuildMembership(&_guildId, &_guildRank, &_guildName);
 
 	std::string TempErrorMessage;
 
@@ -953,7 +963,7 @@ bool Bot::Save() {
 	if(this->GetBotID() == 0) {
 		// New bot record
 		uint32 TempNewBotID = 0;
-		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "INSERT INTO bots (BotOwnerCharacterID, BotSpellsID, Name, LastName, BotLevel, Race, Class, Gender, Size, Face, LuclinHairStyle, LuclinHairColor, LuclinEyeColor, LuclinEyeColor2, LuclinBeardColor, LuclinBeard, DrakkinHeritage, DrakkinTattoo, DrakkinDetails, MR, CR, DR, FR, PR, AC, STR, STA, DEX, AGI, _INT, WIS, CHA, ATK, LastSpawnDate, TotalPlayTime) VALUES('%u', '%u', '%s', '%s', '%u', '%i', '%i', '%i', '%f', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', NOW(), 0)", this->_botOwnerCharacterID, this->GetBotSpellID(), this->GetCleanName(), this->lastname, this->GetLevel(), GetRace(), GetClass(), GetGender(), GetSize(), this->GetLuclinFace(), this->GetHairStyle(), GetHairColor(), this->GetEyeColor1(), GetEyeColor2(), this->GetBeardColor(), this->GetBeard(), this->GetDrakkinHeritage(), this->GetDrakkinTattoo(), GetDrakkinDetails(), GetMR(), GetCR(), GetDR(), GetFR(), GetPR(), GetAC(), GetSTR(), GetSTA(), GetDEX(), GetAGI(), GetINT(), GetWIS(), GetCHA(), GetATK()), TempErrorMessageBuffer, 0, &affectedRows, &TempNewBotID)) {
+		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "INSERT INTO bots (BotOwnerCharacterID, BotSpellsID, Name, LastName, BotLevel, Race, Class, Gender, Size, Face, LuclinHairStyle, LuclinHairColor, LuclinEyeColor, LuclinEyeColor2, LuclinBeardColor, LuclinBeard, DrakkinHeritage, DrakkinTattoo, DrakkinDetails, MR, CR, DR, FR, PR, AC, STR, STA, DEX, AGI, _INT, WIS, CHA, ATK, LastSpawnDate, TotalPlayTime, LastZoneId) VALUES('%u', '%u', '%s', '%s', '%u', '%i', '%i', '%i', '%f', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', NOW(), 0, %i)", this->_botOwnerCharacterID, this->GetBotSpellID(), this->GetCleanName(), this->lastname, this->GetLevel(), GetRace(), GetClass(), GetGender(), GetSize(), this->GetLuclinFace(), this->GetHairStyle(), GetHairColor(), this->GetEyeColor1(), GetEyeColor2(), this->GetBeardColor(), this->GetBeard(), this->GetDrakkinHeritage(), this->GetDrakkinTattoo(), GetDrakkinDetails(), GetMR(), GetCR(), GetDR(), GetFR(), GetPR(), GetAC(), GetSTR(), GetSTA(), GetDEX(), GetAGI(), GetINT(), GetWIS(), GetCHA(), GetATK(), _lastZoneId), TempErrorMessageBuffer, 0, &affectedRows, &TempNewBotID)) {
 			errorMessage = std::string(TempErrorMessageBuffer);
 		}
 		else {
@@ -963,7 +973,7 @@ bool Bot::Save() {
 	}
 	else {
 		// Update existing bot record
-		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "UPDATE bots SET BotOwnerCharacterID = '%u', BotSpellsID = '%u', Name = '%s', LastName = '%s', BotLevel = '%u', Race = '%i', Class = '%i', Gender = '%i', Size = '%f', Face = '%i', LuclinHairStyle = '%i', LuclinHairColor = '%i', LuclinEyeColor = '%i', LuclinEyeColor2 = '%i', LuclinBeardColor = '%i', LuclinBeard = '%i', DrakkinHeritage = '%i', DrakkinTattoo = '%i', DrakkinDetails = '%i', MR = '%i', CR = '%i', DR = '%i', FR = '%i', PR = '%i', AC = '%i', STR = '%i', STA = '%i', DEX = '%i', AGI = '%i', _INT = '%i', WIS = '%i', CHA = '%i', ATK = '%i', LastSpawnDate = NOW(), TotalPlayTime = '%u' WHERE BotID = '%u'", _botOwnerCharacterID, this->GetBotSpellID(), this->GetCleanName(), this->lastname, this->GetLevel(), _baseRace, this->GetClass(), _baseGender, GetSize(), this->GetLuclinFace(), this->GetHairStyle(), GetHairColor(), this->GetEyeColor1(), GetEyeColor2(), this->GetBeardColor(), this->GetBeard(), this->GetDrakkinHeritage(), GetDrakkinTattoo(), GetDrakkinDetails(), _baseMR, _baseCR, _baseDR, _baseFR, _basePR, _baseAC, _baseSTR, _baseSTA, _baseDEX, _baseAGI, _baseINT, _baseWIS, _baseCHA, _baseATK, GetTotalPlayTime(), GetBotID()), TempErrorMessageBuffer, 0, &affectedRows)) {
+		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "UPDATE bots SET BotOwnerCharacterID = '%u', BotSpellsID = '%u', Name = '%s', LastName = '%s', BotLevel = '%u', Race = '%i', Class = '%i', Gender = '%i', Size = '%f', Face = '%i', LuclinHairStyle = '%i', LuclinHairColor = '%i', LuclinEyeColor = '%i', LuclinEyeColor2 = '%i', LuclinBeardColor = '%i', LuclinBeard = '%i', DrakkinHeritage = '%i', DrakkinTattoo = '%i', DrakkinDetails = '%i', MR = '%i', CR = '%i', DR = '%i', FR = '%i', PR = '%i', AC = '%i', STR = '%i', STA = '%i', DEX = '%i', AGI = '%i', _INT = '%i', WIS = '%i', CHA = '%i', ATK = '%i', LastSpawnDate = NOW(), TotalPlayTime = '%u', LastZoneId = %i WHERE BotID = '%u'", _botOwnerCharacterID, this->GetBotSpellID(), this->GetCleanName(), this->lastname, this->GetLevel(), _baseRace, this->GetClass(), _baseGender, GetSize(), this->GetLuclinFace(), this->GetHairStyle(), GetHairColor(), this->GetEyeColor1(), GetEyeColor2(), this->GetBeardColor(), this->GetBeard(), this->GetDrakkinHeritage(), GetDrakkinTattoo(), GetDrakkinDetails(), _baseMR, _baseCR, _baseDR, _baseFR, _basePR, _baseAC, _baseSTR, _baseSTA, _baseDEX, _baseAGI, _baseINT, _baseWIS, _baseCHA, _baseATK, GetTotalPlayTime(), _lastZoneId, GetBotID()), TempErrorMessageBuffer, 0, &affectedRows)) {
 			errorMessage = std::string(TempErrorMessageBuffer);
 		}
 		else {
@@ -1206,14 +1216,6 @@ void Bot::LoadPetStats(std::string* petName, int16* petMana, int16* petHitPoints
 
 		safe_delete(Query);
 		Query = 0;
-
-		/*if(errorMessage.empty() && statsLoaded) {
-			if(!database.RunQuery(Query, MakeAnyLenString(&Query, "DELETE from botpets where BotPetsId = %u;", botPetSaveId), TempErrorMessageBuffer)) {
-				errorMessage = std::string(TempErrorMessageBuffer);
-				safe_delete(Query);
-				Query = 0;
-			}
-		}*/
 
 		if(!errorMessage.empty()) {
 			// TODO: Record this error message to zone error log
@@ -3273,6 +3275,14 @@ void Bot::Spawn(Client* botCharacterOwner, std::string* errorMessage) {
 		// Rename the bot name to make sure that Mob::GetName() matches Mob::GetCleanName() so we dont have a bot named "Jesuschrist001"
 		strcpy(name, GetCleanName());
 
+		// Get the zone id this bot spawned in
+		_lastZoneId = GetZoneID();
+
+		if(this->Save())
+			this->GetBotOwner()->CastToClient()->Message(0, "%s saved.", this->GetCleanName());
+		else
+			this->GetBotOwner()->CastToClient()->Message(13, "%s save failed!", this->GetCleanName());
+
 		// Load saved buffs
 		LoadBuffs();
 
@@ -3492,7 +3502,10 @@ void Bot::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho) {
 		ns->spawn.lfg = 0;
 		ns->spawn.anon = 0;
 		ns->spawn.gm = 0;
-		ns->spawn.guildID = 0xFFFFFFFF;		// 0xFFFFFFFF = NO GUILD, 0 = Unknown Guild
+		if(IsInAGuild())
+			ns->spawn.guildID = GuildID();
+		else
+			ns->spawn.guildID = 0xFFFFFFFF;		// 0xFFFFFFFF = NO GUILD, 0 = Unknown Guild
 		ns->spawn.is_npc = 0;				// 0=no, 1=yes
 		ns->spawn.is_pet = 0;
 		ns->spawn.guildrank = 0;
@@ -3557,6 +3570,38 @@ void Bot::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho) {
 	}
 }
 
+uint32 Bot::GetBotIDByBotName(std::string botName) {
+	uint32 Result = 0;
+
+	if(!botName.empty()) {
+		char* Query = 0;
+		char TempErrorMessageBuffer[MYSQL_ERRMSG_SIZE];
+		MYSQL_RES* DatasetResult;
+		MYSQL_ROW DataRow;
+		std::string errorMessage;
+
+		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT BotID FROM bots WHERE Name = '%s'", botName), TempErrorMessageBuffer, &DatasetResult)) {
+			errorMessage = std::string(TempErrorMessageBuffer);
+		}
+		else {
+			while(DataRow = mysql_fetch_row(DatasetResult)) {
+				Result = atoi(DataRow[0]);
+				break;
+			}
+
+			mysql_free_result(DatasetResult);
+		}
+
+		safe_delete_array(Query);
+
+		if(!errorMessage.empty()) {
+			// TODO: Log this error to zone error log
+		}
+	}
+
+	return Result;
+}
+
 Bot* Bot::LoadBot(uint32 botID, std::string* errorMessage) {
 	Bot* Result = 0;
 
@@ -3566,13 +3611,13 @@ Bot* Bot::LoadBot(uint32 botID, std::string* errorMessage) {
 		MYSQL_RES* DatasetResult;
 		MYSQL_ROW DataRow;
 
-		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT BotOwnerCharacterID, BotSpellsID, Name, LastName, BotLevel, Race, Class, Gender, Size, Face, LuclinHairStyle, LuclinHairColor, LuclinEyeColor, LuclinEyeColor2, LuclinBeardColor, LuclinBeard, DrakkinHeritage, DrakkinTattoo, DrakkinDetails, MR, CR, DR, FR, PR, AC, STR, STA, DEX, AGI, _INT, WIS, CHA, ATK, BotCreateDate, LastSpawnDate, TotalPlayTime FROM bots WHERE BotID = '%u'", botID), TempErrorMessageBuffer, &DatasetResult)) {
+		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT BotOwnerCharacterID, BotSpellsID, Name, LastName, BotLevel, Race, Class, Gender, Size, Face, LuclinHairStyle, LuclinHairColor, LuclinEyeColor, LuclinEyeColor2, LuclinBeardColor, LuclinBeard, DrakkinHeritage, DrakkinTattoo, DrakkinDetails, MR, CR, DR, FR, PR, AC, STR, STA, DEX, AGI, _INT, WIS, CHA, ATK, BotCreateDate, LastSpawnDate, TotalPlayTime, LastZoneId FROM bots WHERE BotID = '%u'", botID), TempErrorMessageBuffer, &DatasetResult)) {
 			*errorMessage = std::string(TempErrorMessageBuffer);
 		}
 		else {
 			while(DataRow = mysql_fetch_row(DatasetResult)) {
 				NPCType TempNPCStruct = FillNPCTypeStruct(atoi(DataRow[1]), std::string(DataRow[2]), std::string(DataRow[3]), atoi(DataRow[4]), atoi(DataRow[5]), atoi(DataRow[6]), atoi(DataRow[7]), atof(DataRow[8]), atoi(DataRow[9]), atoi(DataRow[10]), atoi(DataRow[11]), atoi(DataRow[12]), atoi(DataRow[13]), atoi(DataRow[14]), atoi(DataRow[15]), atoi(DataRow[16]), atoi(DataRow[17]), atoi(DataRow[18]), atoi(DataRow[19]), atoi(DataRow[20]), atoi(DataRow[21]), atoi(DataRow[22]), atoi(DataRow[23]), atoi(DataRow[24]), atoi(DataRow[25]), atoi(DataRow[26]), atoi(DataRow[27]), atoi(DataRow[28]), atoi(DataRow[29]), atoi(DataRow[30]), atoi(DataRow[31]), atoi(DataRow[32]));
-				Result = new Bot(botID, atoi(DataRow[0]), atoi(DataRow[1]), atof(DataRow[35]), TempNPCStruct);
+				Result = new Bot(botID, atoi(DataRow[0]), atoi(DataRow[1]), atof(DataRow[35]), atoi(DataRow[36]), TempNPCStruct);
 				break;
 			}
 
@@ -7254,6 +7299,126 @@ void Bot::ProcessBotOwnerRefDelete(Mob* botOwner) {
 	}
 }
 
+void Bot::ProcessGuildInvite(Client* guildOfficer, Bot* botToGuild) {
+	if(guildOfficer && botToGuild) {
+		// Bots can be only guild member rank
+		if(!botToGuild->IsInAGuild()) {
+			//they are not in this or any other guild, this is an invite
+			if (!guild_mgr.CheckPermission(guildOfficer->GuildID(), guildOfficer->GuildRank(), GUILD_INVITE)) {
+				guildOfficer->Message(13, "You dont have permission to invite.");
+				return;
+			}
+
+			// mlog(GUILDS__ACTIONS, "Inviting %s (%d) into guild %s (%d)", botToGuild->GetName(), botToGuild->GetBotID(), guild_mgr.GetGuildName(client->GuildID()), client->GuildID());
+
+			SetBotGuildMembership(botToGuild->GetBotID(), guildOfficer->GuildID(), GUILD_MEMBER);
+
+			//_log(GUILDS__REFRESH, "Sending char refresh for BOT %s from guild %d to world", botToGuild->GetName(), guildOfficer->GuildID();
+
+			ServerPacket* pack = new ServerPacket(ServerOP_GuildCharRefresh, sizeof(ServerGuildCharRefresh_Struct));
+			ServerGuildCharRefresh_Struct *s = (ServerGuildCharRefresh_Struct *) pack->pBuffer;
+			s->guild_id = guildOfficer->GuildID();
+			s->old_guild_id = GUILD_NONE;
+			s->char_id = botToGuild->GetBotID();
+			worldserver.SendPacket(pack);
+			safe_delete(pack);
+
+		} else {
+			//they are in some other guild
+			guildOfficer->Message(13, "Player is in a guild.");
+			return;
+		}
+	}
+}
+
+bool Bot::ProcessGuildRemoval(Client* guildOfficer, std::string botName) {
+	bool Result = false;
+
+	if(guildOfficer && !botName.empty()) {
+		Bot* botToUnGuild = entity_list.GetBotByBotName(botName);
+		if(botToUnGuild) {
+			SetBotGuildMembership(botToUnGuild->GetBotID(), 0, 0);
+			Result = true;
+		}
+		else {
+			uint32 botId = GetBotIDByBotName(botName);
+
+			if(botId > 0) {
+				// Bot is camped or in another zone
+				SetBotGuildMembership(botId, 0, 0);
+				Result = true;
+			}
+		}
+
+		if(Result) {
+			EQApplicationPacket* outapp = new EQApplicationPacket(OP_GuildManageRemove, sizeof(GuildManageRemove_Struct));
+			GuildManageRemove_Struct* gm = (GuildManageRemove_Struct*) outapp->pBuffer;
+			gm->guildeqid = guildOfficer->GuildID();
+			strcpy(gm->member, botName.c_str());
+			guildOfficer->Message(0, "%s successfully removed from your guild.", botName.c_str());
+			entity_list.QueueClientsGuild(guildOfficer, outapp, false, gm->guildeqid);
+			safe_delete(outapp);
+		}
+	}
+
+	return Result;
+}
+
+void Bot::SetBotGuildMembership(int32 botId, int32 guildid, int8 rank) {
+	if(botId > 0) {
+		std::string errorMessage;
+		char errbuf[MYSQL_ERRMSG_SIZE];
+		char *query = 0;
+		
+		if(guildid > 0) {
+			if(!database.RunQuery(query, MakeAnyLenString(&query, "REPLACE INTO botguildmembers SET char_id = %u, guild_id = %u, rank = %u;", botId, guildid, rank), errbuf)) {
+				errorMessage = std::string(errbuf);
+			}
+		}
+		else {
+			if(!database.RunQuery(query, MakeAnyLenString(&query, "DELETE FROM botguildmembers WHERE char_id = %u;", botId), errbuf)) {
+				errorMessage = std::string(errbuf);
+			}
+		}
+
+		safe_delete_array(query);
+
+		if(!errorMessage.empty()) {
+			// TODO: Log this error message to the zone error log
+		}
+	}
+}
+
+void Bot::LoadGuildMembership(int32* guildId, int8* guildRank, std::string* guildName) {
+	if(guildId && guildRank && guildName) {
+		std::string errorMessage;
+		char* Query = 0;
+		char TempErrorMessageBuffer[MYSQL_ERRMSG_SIZE];
+		MYSQL_RES* DatasetResult;
+		MYSQL_ROW DataRow;
+
+		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT gm.guild_id, gm.rank, g.name FROM vwGuildMembers AS gm JOIN guilds AS g ON gm.guild_id = g.id WHERE gm.char_id = %u AND gm.mobtype = 'B';", GetBotID()), TempErrorMessageBuffer, &DatasetResult)) {
+			errorMessage = std::string(TempErrorMessageBuffer);
+		}
+		else {
+			while(DataRow = mysql_fetch_row(DatasetResult)) {
+				*guildId = atoi(DataRow[0]);
+				*guildRank = atoi(DataRow[1]);
+				*guildName = std::string(DataRow[2]);
+				break;
+			}
+
+			mysql_free_result(DatasetResult);
+		}
+
+		safe_delete(Query);
+
+		if(!errorMessage.empty()) {
+			// TODO: Record this error message to zone error log
+		}
+	}
+}
+
 sint32 Bot::CalcMaxMana() {
 	sint32 WisInt = 0;
 	sint32 MindLesserFactor, MindFactor;
@@ -8737,10 +8902,10 @@ void Bot::CalcBotStats(bool showtext) {
 	sint32 items_hp = 0;
 	sint32 items_mana = 0;
 
-	if(this->Save())
+	/*if(this->Save())
 		this->GetBotOwner()->CastToClient()->Message(0, "%s saved.", this->GetCleanName());
 	else
-		this->GetBotOwner()->CastToClient()->Message(13, "%s save failed!", this->GetCleanName());
+		this->GetBotOwner()->CastToClient()->Message(13, "%s save failed!", this->GetCleanName());*/
 
 	memset(&itembonuses, 0, sizeof(StatBonuses));
 
