@@ -829,14 +829,10 @@ int8 *class_, int8 *level, bool *LFP, bool *LFG) {
 	
 	if (character_id && *character_id) {
 		// searching by ID should be a lil bit faster
-		querylen = MakeAnyLenString(&query, 
-			"SELECT id,profile,zonename,x,y,z,guild_id,rank,extprofile,class,level,lfp,lfg,instanceid "
-			" FROM character_ LEFT JOIN guild_members ON id=char_id WHERE id=%i", *character_id);
+		querylen = MakeAnyLenString(&query, "SELECT id,profile,zonename,x,y,z,guild_id,rank,extprofile,class,level,lfp,lfg,instanceid FROM character_ LEFT JOIN guild_members ON id=char_id WHERE id=%i", *character_id);
 	}
 	else {
-		querylen = MakeAnyLenString(&query, 
-			"SELECT id,profile,zonename,x,y,z,guild_id,rank,extprofile,class,level,lfp,lfg,instanceid "
-			" FROM character_ LEFT JOIN guild_members ON id=char_id WHERE name='%s'", name);
+		querylen = MakeAnyLenString(&query, "SELECT id,profile,zonename,x,y,z,guild_id,rank,extprofile,class,level,lfp,lfg,instanceid FROM character_ LEFT JOIN guild_members ON id=char_id WHERE name='%s'", name);
 	}
 	
 	if (RunQuery(query, querylen, errbuf, &result)) {

@@ -777,6 +777,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\guild_mgr.h"
+				>
+			</File>
+			<File
 				RelativePath=".\hate_list.h"
 				>
 			</File>

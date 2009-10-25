@@ -2,11 +2,12 @@ DROP TABLE IF EXISTS `botbuffs`;
 DROP TABLE IF EXISTS `botpetinventory`;
 DROP TABLE IF EXISTS `botpetbuffs`;
 DROP TABLE IF EXISTS `botpets`;
-DROP TABLE IF EXISTS botgroups;
-DROP TABLE IF EXISTS botinventory;
-DROP TABLE IF EXISTS bots;
+DROP TABLE IF EXISTS `botguildmembers`;
+DROP TABLE IF EXISTS `botgroups`;
+DROP TABLE IF EXISTS `botinventory`;
+DROP TABLE IF EXISTS `bots`;
 
-CREATE TABLE IF NOT EXISTS bots (
+CREATE TABLE IF NOT EXISTS `bots` (
   `BotID` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `BotOwnerCharacterID` int(10) unsigned NOT NULL,
   `BotSpellsID` int(10) unsigned NOT NULL DEFAULT '0',
@@ -44,6 +45,7 @@ CREATE TABLE IF NOT EXISTS bots (
   `BotCreateDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `LastSpawnDate` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `TotalPlayTime` int(10) unsigned NOT NULL DEFAULT '0',
+  `LastZoneId` smallint(6) NOT NULL DEFAULT '0',
   PRIMARY KEY (`BotID`)
 ) ENGINE=InnoDB;
 
@@ -78,16 +80,36 @@ INSERT INTO rule_values VALUES ('1', 'Bots:BotSpellQuest', 'false', 'Anita Thral
 
 DELIMITER $$
 
-DROP FUNCTION IF EXISTS `GetMobType` $$
-CREATE FUNCTION `GetMobType` (mobname VARCHAR(64)) RETURNS CHAR(1)
+DROP FUNCTION IF EXISTS `GetMobTypeByName` $$
+CREATE FUNCTION IF NOT EXISTS `GetMobTypeByName` (mobname VARCHAR(64)) RETURNS CHAR(1)
 BEGIN
     DECLARE Result CHAR(1);
 
     SET Result = NULL;
 
-    IF (select count(*) from character_ where name = mobname) > 0 THEN
+    IF (select id from character_ where name = mobname) > 0 THEN
       SET Result = 'C';
-    ELSEIF (select count(*) from bots where Name = mobname) > 0 THEN
+    ELSEIF (select BotID from bots where Name = mobname) > 0 THEN
+      SET Result = 'B';
+    END IF;
+
+    RETURN Result;
+END $$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP FUNCTION IF EXISTS `GetMobTypeById` $$
+CREATE FUNCTION IF NOT EXISTS `GetMobTypeById` (mobid INTEGER UNSIGNED) RETURNS CHAR(1)
+BEGIN
+    DECLARE Result CHAR(1);
+
+    SET Result = NULL;
+
+    IF (select id from character_ where id = mobid) > 0 THEN
+      SET Result = 'C';
+    ELSEIF (select BotID from bots where BotID = mobid) > 0 THEN
       SET Result = 'B';
     END IF;
 
@@ -97,9 +119,9 @@ END $$
 DELIMITER ;
 
 DROP VIEW IF EXISTS `vwGroups`;
-CREATE VIEW `vwGroups` AS
+CREATE VIEW IF NOT EXISTS `vwGroups` AS
   select g.groupid as groupid,
-GetMobType(g.name) as mobtype,
+GetMobTypeByName(g.name) as mobtype,
 g.name as name,
 g.charid as mobid,
 ifnull(c.level, b.BotLevel) as level
@@ -108,6 +130,9 @@ left join character_ as c on g.name = c.name
 left join bots as b on g.name = b.Name;
 
 ALTER TABLE `group_id` DROP PRIMARY KEY, ADD PRIMARY KEY  USING BTREE(`groupid`, `charid`, `name`);
+ALTER TABLE `guild_members` DROP PRIMARY KEY;
+ALTER TABLE `group_id` ADD UNIQUE INDEX `U_group_id_1`(`name`);
+ALTER TABLE `group_leaders` ADD UNIQUE INDEX `U_group_leaders_1`(`leadername`);
 
 CREATE TABLE IF NOT EXISTS `botbuffs` (
   `BotBuffId` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -128,7 +153,7 @@ CREATE TABLE IF NOT EXISTS `botbuffs` (
   PRIMARY KEY (`BotBuffId`),
   KEY `FK_botbuff_1` (`BotId`),
   CONSTRAINT `FK_botbuff_1` FOREIGN KEY (`BotId`) REFERENCES `bots` (`BotID`)
-) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS `botpets` (
   `BotPetsId` integer unsigned NOT NULL AUTO_INCREMENT,
@@ -141,7 +166,7 @@ CREATE TABLE IF NOT EXISTS `botpets` (
   KEY `FK_botpets_1` (`BotId`),
   CONSTRAINT `FK_botpets_1` FOREIGN KEY (`BotId`) REFERENCES `bots` (`BotID`),
   CONSTRAINT `U_botpets_1` UNIQUE (`BotId`)
-) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS `botpetbuffs` (
   `BotPetBuffId` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -152,7 +177,7 @@ CREATE TABLE IF NOT EXISTS `botpetbuffs` (
   PRIMARY KEY (`BotPetBuffId`),
   KEY `FK_botpetbuffs_1` (`BotPetsId`),
   CONSTRAINT `FK_botpetbuffs_1` FOREIGN KEY (`BotPetsId`) REFERENCES `botpets` (`BotPetsID`)
-) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS `botpetinventory` (
   `BotPetInventoryId` integer unsigned NOT NULL AUTO_INCREMENT,
@@ -161,4 +186,60 @@ CREATE TABLE IF NOT EXISTS `botpetinventory` (
   PRIMARY KEY (`BotPetInventoryId`),
   KEY `FK_botpetinventory_1` (`BotPetsId`),
   CONSTRAINT `FK_botpetinventory_1` FOREIGN KEY (`BotPetsId`) REFERENCES `botpets` (`BotPetsID`)
-) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS `botguildmembers` (
+  `char_id` int(11) NOT NULL default '0',
+  `guild_id` mediumint(8) unsigned NOT NULL default '0',
+  `rank` tinyint(3) unsigned NOT NULL default '0',
+  `tribute_enable` tinyint(3) unsigned NOT NULL default '0',
+  `total_tribute` int(10) unsigned NOT NULL default '0',
+  `last_tribute` int(10) unsigned NOT NULL default '0',
+  `banker` tinyint(3) unsigned NOT NULL default '0',
+  `public_note` text NULL,
+  PRIMARY KEY  (`char_id`)
+) ENGINE=InnoDB;
+
+DROP VIEW IF EXISTS `vwGuildMembers`;
+CREATE VIEW IF NOT EXISTS `vwGuildMembers` AS
+  select 'C' as mobtype,
+cm.char_id,
+cm.guild_id,
+cm.rank,
+cm.tribute_enable,
+cm.total_tribute,
+cm.last_tribute,
+cm.banker,
+cm.public_note
+from guild_members as cm
+union all
+select 'B' as mobtype,
+bm.char_id,
+bm.guild_id,
+bm.rank,
+bm.tribute_enable,
+bm.total_tribute,
+bm.last_tribute,
+bm.banker,
+bm.public_note
+from botguildmembers as bm;
+
+DROP VIEW IF EXISTS `vwBotCharacterMobs`;
+CREATE VIEW IF NOT EXISTS `vwBotCharacterMobs` AS
+  select 'C' as mobtype,
+c.id,
+c.name,
+c.class,
+c.level,
+c.timelaston,
+c.zoneid
+from character_ as c
+union all
+select 'B' as mobtype,
+b.BotID as id,
+b.Name as name,
+b.Class as class,
+b.BotLevel as level,
+0 as timelaston,
+0 as zoneid
+from bots as b;

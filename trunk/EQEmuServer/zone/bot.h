@@ -13,12 +13,16 @@
 #include "zonedb.h"
 #include "StringIDs.h"
 #include "../common/MiscFunctions.h"
+#include "../common/debug.h"
+#include "guild_mgr.h"
+#include "worldserver.h"
 
 #include <sstream>
 
 using namespace std;
 
 extern bool spells_loaded;
+extern WorldServer worldserver;
 
 class Bot : public NPC {
 public:
@@ -53,7 +57,7 @@ public:
 
 	// Class Constructors
 	Bot(NPCType npcTypeData, Client* botOwner);
-	Bot(uint32 botID, uint32 botOwnerCharacterID, uint32 botSpellsID, double totalPlayTime, NPCType npcTypeData);
+	Bot(uint32 botID, uint32 botOwnerCharacterID, uint32 botSpellsID, double totalPlayTime, int32 lastZoneId, NPCType npcTypeData);
 
 	//abstract virtual function implementations requird by base abstract class
 	virtual void Death(Mob* killerMob, sint32 damage, int16 spell_id, SkillType attack_skill);
@@ -63,6 +67,13 @@ public:
 	virtual bool HasGroup() { return (GetGroup() ? true : false); }
 	virtual Raid* GetRaid() { return entity_list.GetRaidByMob(this); }
 	virtual Group* GetGroup() { return entity_list.GetGroupByMob(this); }
+	
+	// Common, but informal "interfaces" with Client object
+	int32 CharacterID() { return GetBotID(); } // Just returns the Bot Id
+	inline bool IsInAGuild() const { return (_guildId != GUILD_NONE && _guildId != 0); }
+	inline bool IsInGuild(uint32 in_gid) const { return (in_gid == _guildId && IsInAGuild()); }
+	inline int32 GuildID() const { return _guildId; }
+	inline int8	GuildRank()	const { return _guildRank; }
 
 	// Class Methods
 	bool IsValidRaceClassCombo();
@@ -163,6 +174,7 @@ public:
 	static void DeleteBotGroups(uint32 characterID, std::string* errorMessage);	// Can be removed after bot raids are dumped
 	static std::list<BotGroup> LoadBotGroups(uint32 characterID, std::string* errorMessage);	// Can be removed after bot raids are dumped
 	static void DestroyBotRaidObjects(Client* client);	// Can be removed after bot raids are dumped
+	static uint32 GetBotIDByBotName(std::string botName);
 	static Bot* LoadBot(uint32 botID, std::string* errorMessage);
 	static std::list<BotsAvailableList> GetBotList(uint32 botOwnerCharacterID, std::string* errorMessage);
 	static void ProcessBotCommands(Client *c, const Seperator *sep);
@@ -188,7 +200,9 @@ public:
 	static bool GroupHasBot(Group* group);
 	static Bot* GetFirstBotInGroup(Group* group);
 	static void ProcessClientZoneChange(Client* botOwner);
-	static void ProcessBotOwnerRefDelete(Mob* botOwner);
+	static void ProcessBotOwnerRefDelete(Mob* botOwner);	// Removes a Client* reference when the Client object is destroyed
+	static void ProcessGuildInvite(Client* guildOfficer, Bot* botToGuild);	// Processes a client's request to guild a bot
+	static bool ProcessGuildRemoval(Client* guildOfficer, std::string botName);	// Processes a client's request to deguild a bot
 
 	// Static Bot Group Methods
 	static bool AddBotToGroup(Bot* bot, Group* group);
@@ -234,6 +248,8 @@ protected:
 	virtual sint16 CalcBotFocusEffect(botfocusType bottype, int16 focus_id, int16 spell_id);
 	virtual void PerformTradeWithClient(sint16 beginSlotID, sint16 endSlotID, Client* client);
 
+	static void SetBotGuildMembership(int32 botId, int32 guildid, int8 rank);
+
 private:
 	// Class Members
 	uint32 _botID;
@@ -252,6 +268,10 @@ private:
 	double _lastTotalPlayTime;
 	time_t _startTotalPlayTime;
 	Mob* _previousTarget;
+	uint32 _guildId;
+	int8 _guildRank;
+	std::string _guildName;
+	int32 _lastZoneId;
 
 	// Private "base stats" Members
 	sint16 _baseMR;
@@ -306,6 +326,7 @@ private:
 	void DeletePetBuffs(uint32 botPetSaveId);
 	void DeletePetItems(uint32 botPetSaveId);
 	void DeletePetStats(uint32 botPetSaveId);
+	void LoadGuildMembership(int32* guildId, int8* guildRank, std::string* guildName);
 };
 
 #endif // BOTS
