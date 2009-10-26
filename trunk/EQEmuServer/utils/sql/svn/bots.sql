@@ -3,7 +3,6 @@ DROP TABLE IF EXISTS `botpetinventory`;
 DROP TABLE IF EXISTS `botpetbuffs`;
 DROP TABLE IF EXISTS `botpets`;
 DROP TABLE IF EXISTS `botguildmembers`;
-DROP TABLE IF EXISTS `botgroups`;
 DROP TABLE IF EXISTS `botinventory`;
 DROP TABLE IF EXISTS `bots`;
 
@@ -57,15 +56,6 @@ CREATE TABLE IF NOT EXISTS botinventory (
   PRIMARY KEY (BotInventoryID),
   KEY FK_botinventory_1 (BotID),
   CONSTRAINT FK_botinventory_1 FOREIGN KEY (BotID) REFERENCES bots (BotID)
-) ENGINE=InnoDB;
-
-CREATE TABLE IF NOT EXISTS botgroups (
-  GroupID integer unsigned NOT NULL default 0,
-  CharID integer unsigned NOT NULL default 0,
-  BotID integer unsigned NOT NULL default 0,
-  Slot integer unsigned NOT NULL default 0,
-  PRIMARY KEY (BotID),
-  CONSTRAINT FK_botgroups_1 FOREIGN KEY (BotID) REFERENCES bots (BotID)
 ) ENGINE=InnoDB;
 
 delete from rule_values where rule_name like 'Bots%' and ruleset_id = 1;
