@@ -36,7 +36,6 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 #ifdef BOTS
 	// This block is necessary to clean up any bot objects owned by a Client
 	Bot::ProcessClientZoneChange(this);
-	Bot::DestroyBotRaidObjects(this);
 #endif
 
 	zoning = true;

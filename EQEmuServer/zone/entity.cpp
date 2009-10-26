@@ -2305,8 +2305,6 @@ void EntityList::RemoveEntity(int16 id)
 
 #ifdef BOTS
 	// This block of code is necessary to clean up bot objects
-	else if(entity_list.RemoveBotRaid(id))
-		return;
 	else if(entity_list.RemoveBot(id))
 		return;
 #endif //BOTS

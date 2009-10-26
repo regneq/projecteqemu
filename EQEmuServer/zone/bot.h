@@ -4,7 +4,6 @@
 #ifdef BOTS
 
 #include "botStructs.h"
-#include "botRaids.h"
 #include "mob.h"
 #include "client.h"
 #include "pets.h"
@@ -170,10 +169,10 @@ public:
 	void EquipBot(std::string* errorMessage);
 
 	// Static Class Methods
-	static void SaveBotGroups(uint32 groupID, uint32 characterID, uint32 botID, uint16 slotID, std::string* errorMessage);	// Can be removed after bot raids are dumped
-	static void DeleteBotGroups(uint32 characterID, std::string* errorMessage);	// Can be removed after bot raids are dumped
-	static std::list<BotGroup> LoadBotGroups(uint32 characterID, std::string* errorMessage);	// Can be removed after bot raids are dumped
-	static void DestroyBotRaidObjects(Client* client);	// Can be removed after bot raids are dumped
+	//static void SaveBotGroups(uint32 groupID, uint32 characterID, uint32 botID, uint16 slotID, std::string* errorMessage);	// Can be removed after bot raids are dumped
+	//static void DeleteBotGroups(uint32 characterID, std::string* errorMessage);	// Can be removed after bot raids are dumped
+	//static std::list<BotGroup> LoadBotGroups(uint32 characterID, std::string* errorMessage);	// Can be removed after bot raids are dumped
+	//static void DestroyBotRaidObjects(Client* client);	// Can be removed after bot raids are dumped
 	static uint32 GetBotIDByBotName(std::string botName);
 	static Bot* LoadBot(uint32 botID, std::string* errorMessage);
 	static std::list<BotsAvailableList> GetBotList(uint32 botOwnerCharacterID, std::string* errorMessage);

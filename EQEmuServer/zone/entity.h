@@ -402,13 +402,8 @@ private:
 
 		bool Bot_AICheckCloseBeneficialSpells(Bot* caster, int8 iChance, float iRange, int16 iSpellTypes);  // TODO: Evaluate this closesly in hopes to eliminate
 		void ShowSpawnWindow(Client* client, int Distance, bool NamedOnly);  // TODO: Implement ShowSpawnWindow in the bot class but it needs entity list stuff
-		BotRaids* GetBotRaidByMob(Mob *mr);	// TODO: Remove after BotRaids object is deprecated
-		bool RemoveBotRaid(int16 delete_id);	// TODO: Remove after BotRaids object is deprecated
-		void AddBotRaid(BotRaids *br);	// TODO: Remove after BotRaids object is deprecated
-		void AddBotRaid(BotRaids *br, int16 id);	// TODO: Remove after BotRaids object is deprecated
 	private:
 		LinkedList<Bot*> bot_list;
-		list<BotRaids*> botraid_list;	// TODO: Remove after BotRaids object is deprecated
 #endif
 };
 

@@ -364,11 +364,6 @@ Mob::Mob(const char*   in_name,
 	PathingRouteUpdateTimerLong = new Timer(RuleI(Pathing, RouteUpdateFrequencyLong));
 	AggroedAwayFromGrid = 0;
 	PathingTraversedNodes = 0;
-
-#ifdef BOTS
-	// Please do not add any thing to the Client class constructor below this block of code. This block is necessary to accomodate BOTS.
-	BotRaidID = 0;
-#endif
 }
 
 Mob::~Mob()
