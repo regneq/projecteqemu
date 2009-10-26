@@ -877,6 +877,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\zonedb.h"
+				>
+			</File>
+			<File
 				RelativePath=".\zonedbasync.h"
 				>
 			</File>
