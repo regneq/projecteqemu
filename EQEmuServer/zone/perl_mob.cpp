@@ -6138,6 +6138,42 @@ XS(XS_Mob_SignalClient)
 	XSRETURN_EMPTY;
 }
 
+XS(XS_Mob_CombatRange); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_CombatRange)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Mob::CombatRange(THIS, target)");
+	{
+		Mob *		THIS;
+		Mob	*		target = NULL;
+		bool		RETVAL;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		if (sv_derived_from(ST(1), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(1)));
+			target = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "target is not of type Mob");
+		if(target == NULL)
+			Perl_croak(aTHX_ "target is NULL, avoiding crash.");
+
+		RETVAL = THIS->CombatRange(target);
+		ST(0) = boolSV(RETVAL);
+		sv_2mortal(ST(0));
+	}
+	XSRETURN(1);
+}
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -6376,6 +6412,7 @@ XS(boot_Mob)
 		newXSproto(strcpy(buf, "EntityVariableExists"), XS_Mob_EntityVariableExists, file, "$$");
 		newXSproto(strcpy(buf, "GetHateList"), XS_Mob_GetHateList, file, "$");
 		newXSproto(strcpy(buf, "SignalClient"), XS_Mob_SignalClient, file, "$$$");
+		newXSproto(strcpy(buf, "CombatRange"), XS_Mob_CombatRange, file, "$$");
 	XSRETURN_YES;
 }
 
