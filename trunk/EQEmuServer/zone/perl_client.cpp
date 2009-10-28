@@ -1041,6 +1041,35 @@ XS(XS_Client_MovePC)
 	XSRETURN_EMPTY;
 }
 
+XS(XS_Client_MovePCInstance); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_MovePCInstance)
+{
+	dXSARGS;
+	if (items != 7)
+		Perl_croak(aTHX_ "Usage: Client::MovePCInstance(THIS, zoneID, instanceID, x, y, z, heading)");
+	{
+		Client *		THIS;
+		int32		zoneID = (int32)SvUV(ST(1));
+		int32		instanceID = (int32)SvUV(ST(2));
+		float		x = (float)SvNV(ST(3));
+		float		y = (float)SvNV(ST(4));
+		float		z = (float)SvNV(ST(5));
+		float		heading = (float)SvNV(ST(6));
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+		
+		THIS->MovePC(zoneID, instanceID, x, y, z, heading);
+	}
+	XSRETURN_EMPTY;
+}
+
 XS(XS_Client_ChangeLastName); /* prototype to pass -Wmissing-prototypes */
 XS(XS_Client_ChangeLastName)
 {
@@ -4071,6 +4100,7 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "SetEXP"), XS_Client_SetEXP, file, "$$$;$");
 		newXSproto(strcpy(buf, "SetBindPoint"), XS_Client_SetBindPoint, file, "$;$$$$");
 		newXSproto(strcpy(buf, "MovePC"), XS_Client_MovePC, file, "$$$$$$");
+		newXSproto(strcpy(buf, "MovePCInstance"), XS_Client_MovePC, file, "$$$$$$$");
 		newXSproto(strcpy(buf, "ChangeLastName"), XS_Client_ChangeLastName, file, "$$");
 		newXSproto(strcpy(buf, "GetFactionLevel"), XS_Client_GetFactionLevel, file, "$$$$$$$$");
 		newXSproto(strcpy(buf, "SetFactionLevel"), XS_Client_SetFactionLevel, file, "$$$$$$");
