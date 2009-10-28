@@ -16,7 +16,7 @@ void QGlobalCache::RemoveGlobal(std::string name, uint32 npcID, uint32 charID, u
 	{
 		if(name.compare((*iter).name) == 0)
 		{
-			if((npcID == (*iter).npc_id || (*iter).npc_id == 0) && (charID == (*iter).char_id || (*iter).char_id == 0) && (zoneID == (*iter).zone_id) || (*iter).zone_id == 0)
+			if((npcID == (*iter).npc_id || (*iter).npc_id == 0) && (charID == (*iter).char_id || (*iter).char_id == 0) && (zoneID == (*iter).zone_id || (*iter).zone_id == 0))
 			{
 				qGlobalBucket.erase(iter);
 				return;
