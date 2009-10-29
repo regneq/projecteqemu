@@ -1457,7 +1457,7 @@ void NPC::ModifyNPCStat(const char *identifier, const char *newValue)
 		CalcMaxMana();
 		return;
 	}
-	if(id == "int")
+	if(id == "int" || id == "_int")
 	{
 		INT = atoi(val.c_str());
 		CalcMaxMana();
@@ -1576,6 +1576,24 @@ void NPC::ModifyNPCStat(const char *identifier, const char *newValue)
 	if(id == "level")
 	{
 		SetLevel(atoi(val.c_str()));
+		return;
+	}
+
+	if(id == "aggro")
+	{
+		pAggroRange = atof(val.c_str());
+		return;
+	}
+
+	if(id == "assist")
+	{
+		pAssistRange = atof(val.c_str());
+		return;
+	}
+
+	if(id == "slow_mitigation")
+	{
+		slow_mitigation = atof(val.c_str());
 		return;
 	}
 }
@@ -1733,4 +1751,14 @@ void NPC::CalcNPCDamage() {
 	max_dmg = (max_dmg * clfact) / 220;	
 
 	return;
+}
+
+
+int32 NPC::GetSpawnPointID() const
+{
+	if(respawn2)
+	{
+		return respawn2->GetID();
+	}
+	return 0;
 }

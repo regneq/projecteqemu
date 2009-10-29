@@ -170,6 +170,7 @@ public:
 	int16 GetWaypointMax() const { return wp_m; }
 	int32 GetGrid() const { return grid; }
 	int32 GetSp2() const { return spawn_group; }
+	int32 GetSpawnPointID() const;
 
 	uint32	adventure_template_id;
 	uint32	MerchantType;
