@@ -1426,6 +1426,32 @@ XS(XS_NPC_GetNPCSpellsID)
 	XSRETURN(1);
 }
 
+XS(XS_NPC_GetSpawnPointID); /* prototype to pass -Wmissing-prototypes */
+XS(XS_NPC_GetSpawnPointID)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: NPC::GetSpawnPointID(THIS)");
+	{
+		NPC *		THIS;
+		int32		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "NPC")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(NPC *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type NPC");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetSpawnPointID();
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -1499,6 +1525,7 @@ XS(boot_NPC)
 		newXSproto(strcpy(buf, "IsGuarding"), XS_NPC_IsGuarding, file, "$");
 		newXSproto(strcpy(buf, "AI_SetRoambox"), XS_NPC_AI_SetRoambox, file, "$$$$$$;$");
 		newXSproto(strcpy(buf, "GetNPCSpellsID"), XS_NPC_GetNPCSpellsID, file, "$");
+		newXSproto(strcpy(buf, "GetSpawnPointID"), XS_NPC_GetSpawnPointID, file, "$");
 	XSRETURN_YES;
 }
 
