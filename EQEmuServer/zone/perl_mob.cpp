@@ -6174,6 +6174,53 @@ XS(XS_Mob_CombatRange)
 	XSRETURN(1);
 }
 
+XS(XS_Mob_DoSpecialAttackDamage); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_DoSpecialAttackDamage)
+{
+	dXSARGS;
+	if (items < 4 || items > 6)
+		Perl_croak(aTHX_ "Usage: Mob::DoSpecialAttackDamage(THIS, target, skill, max_damage, min_damage = 1, hate_override = -1)");
+	{
+		Mob *		THIS;
+		Mob*		target;
+		SkillType	attack_skill = (SkillType)SvUV(ST(2));
+		sint32		max_damage = (sint32)SvIV(ST(3));
+		sint32		min_damage = 1;
+		sint32		hate_override = -11;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		if (sv_derived_from(ST(1), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(1)));
+			target = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "target is not of type Mob");
+		if(target == NULL)
+			Perl_croak(aTHX_ "target is NULL, avoiding crash.");
+
+		if (items == 5)
+		{
+			min_damage = (sint32)SvIV(ST(4));
+		}
+
+		if (items == 6)
+		{
+			hate_override = (sint32)SvIV(ST(5));
+		}
+
+		THIS->DoSpecialAttackDamage(target, attack_skill, max_damage, min_damage, hate_override);
+	}
+	XSRETURN_EMPTY;
+}
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -6413,6 +6460,7 @@ XS(boot_Mob)
 		newXSproto(strcpy(buf, "GetHateList"), XS_Mob_GetHateList, file, "$");
 		newXSproto(strcpy(buf, "SignalClient"), XS_Mob_SignalClient, file, "$$$");
 		newXSproto(strcpy(buf, "CombatRange"), XS_Mob_CombatRange, file, "$$");
+		newXSproto(strcpy(buf, "DoSpecialAttackDamage"), XS_Mob_DoSpecialAttackDamage, file, "$$$$;$$");
 	XSRETURN_YES;
 }
 
