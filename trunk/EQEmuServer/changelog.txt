@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==10/30/2009==
+KLS: Exported DoSpecialAttackDamage() to perl::mob;
+
 ==10/25/2009==
 WildcardX: Tweaked guilds a little to accomodate integrating BOTS.
 WildcardX: Bots can not join guilds in the same way as characters can. Bots can only be members, not officers.
