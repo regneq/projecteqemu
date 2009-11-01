@@ -98,6 +98,7 @@ public:
 	static CategoryType FindCategory(const char *catname);
 	bool ListRules(const char *catname, std::vector<const char *> &into);
 	bool ListCategories(std::vector<const char *> &into);
+	bool GetRule(const char *rule_name, std::string &ret_val);
 	bool SetRule(const char *rule_name, const char *rule_value, Database *db = NULL, bool db_save = false);
 
 	int GetActiveRulesetID() const { return(m_activeRuleset); }

@@ -995,36 +995,42 @@ void Mob::ShowStats(Client* client) {
 
 	attackRating = GetATK();
 
+	Client *c = NULL;
+	if (this->IsClient())
+		c = this->CastToClient();
+
 	client->Message(0, "Name: %s %s", GetName(), lastname);
 	client->Message(0, "  Level: %i  MaxHP: %i  CurHP: %i  AC: %i  Class: %i", GetLevel(), GetMaxHP(), GetHP(), GetAC(), GetClass());
 	client->Message(0, "  MaxMana: %i  CurMana: %i  Size: %1.1f", GetMaxMana(), GetMana(), GetSize());
 	client->Message(0, "  Total ATK: %i  Worn/Spell ATK (Cap 250): %i  Server Used ATK: %i", this->CastToClient()->GetTotalATK(), GetATKBonus(), attackRating);
 	client->Message(0, "  STR: %i  STA: %i  DEX: %i  AGI: %i  INT: %i  WIS: %i  CHA: %i", GetSTR(), GetSTA(), GetDEX(), GetAGI(), GetINT(), GetWIS(), GetCHA());
 	client->Message(0, "  MR: %i  PR: %i  FR: %i  CR: %i  DR: %i  Haste: %i", GetMR(), GetPR(), GetFR(), GetCR(), GetDR(), GetHaste());
-	if (this->IsClient())
-		client->Message(0, "  Weight: %.1f/%d", (float)this->CastToClient()->CalcCurrentWeight() / 10.0f, this->CastToClient()->GetSTR());
+	if (c)
+		client->Message(0, "  Weight: %.1f/%d  HPRegen: %i  ManaRegen: %i", (float)c->CalcCurrentWeight() / 10.0f, c->GetSTR(), c->CalcHPRegen(), c->CalcManaRegen());
 	client->Message(0, "  Race: %i  BaseRace: %i  Texture: %i  HelmTexture: %i  Gender: %i  BaseGender: %i", GetRace(), GetBaseRace(), GetTexture(), GetHelmTexture(), GetGender(), GetBaseGender());
 	if (client->Admin() >= 100) {
 		client->Message(0, "  EntityID: %i  PetID: %i  OwnerID: %i  AIControlled: %i  Targetted: %i", 
-				this->GetID(), this->GetPetID(), this->GetOwnerID(), this->IsAIControlled(), targeted);
-		if (this->IsClient()) {
-			client->Message(0, "  CharID: %i  PetID: %i", this->CastToClient()->CharacterID(), this->GetPetID());
-			client->Message(0, "  Endurance: %i, Max Endurance %i",client->GetEndurance(), client->GetMaxEndurance());
+				this->GetID(), this->GetPetID(), this->GetOwnerID(), this->IsAIControlled(), this->targeted);
+		if (c) {
+			client->Message(0, "  CharID: %i  PetID: %i", c->CharacterID(), this->GetPetID());
+			client->Message(0, "  Endurance: %i, Max Endurance: %i  Endurance Regen: %i",c->GetEndurance(), c->GetMaxEndurance(), c->CalcEnduranceRegen());
 		}
 		else if (this->IsCorpse()) {
 			if (this->IsPlayerCorpse()) {
-				client->Message(0, "  CharID: %i  PlayerCorpse: %i", this->CastToCorpse()->GetCharID(), this->CastToCorpse()->GetDBID());
+				Corpse *corpse = this->CastToCorpse();
+				client->Message(0, "  CharID: %i  PlayerCorpse: %i", corpse->GetCharID(), corpse->GetDBID());
 			}
 			else {
 				client->Message(0, "  NPCCorpse", this->GetID());
 			}
 		}
 		else if (this->IsNPC()) {
+			NPC *n = this->CastToNPC();
 			int32 spawngroupid = 0;
-			if(this->CastToNPC()->respawn2 != 0)
-				spawngroupid = this->CastToNPC()->respawn2->SpawnGroupID();
-			client->Message(0, "  NPCID: %u  SpawnGroupID: %u LootTable: %u  FactionID: %i  SpellsID: %u MerchantID: %i", this->GetNPCTypeID(),spawngroupid, this->CastToNPC()->GetLoottableID(), this->CastToNPC()->GetNPCFactionID(), this->CastToNPC()->GetNPCSpellsID(),this->CastToNPC()->MerchantType);
-			client->Message(0, "  Accuracy: %i", CastToNPC()->GetAccuracyRating());
+			if(n->respawn2 != 0)
+				spawngroupid = n->respawn2->SpawnGroupID();
+			client->Message(0, "  NPCID: %u  SpawnGroupID: %u LootTable: %u  FactionID: %i  SpellsID: %u MerchantID: %i", this->GetNPCTypeID(),spawngroupid, n->GetLoottableID(), n->GetNPCFactionID(), n->GetNPCSpellsID(), n->MerchantType);
+			client->Message(0, "  Accuracy: %i", n->GetAccuracyRating());
 		}
 		if (this->IsAIControlled()) {
 			client->Message(0, "  AIControlled: AggroRange: %1.0f  AssistRange: %1.0f", this->GetAggroRange(), this->GetAssistRange());

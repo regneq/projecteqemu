@@ -18,6 +18,7 @@
 #ifndef RACES_H
 #define RACES_H
 #include "../common/types.h"
+#include <cmath>
 
 //theres a big list straight from the client below.
 
@@ -74,6 +75,7 @@
 const char* GetRaceName(int16 race);
 
 int32 GetArrayRace(int16 race);
+inline uint32 GetRaceBitmask(int16 race) { return uint32(pow(2.0f, float(GetArrayRace(race) - 1))); }
 
 #define Array_Race_UNKNOWN		0
 #define Array_Race_HUMAN		1

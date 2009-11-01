@@ -1726,41 +1726,15 @@ void Client::OPGMSummon(const EQApplicationPacket *app)
 }
 
 void Client::DoHPRegen() {
-	sint32 normal_regen = LevelRegen();
-	sint32 item_regen = itembonuses.HPRegen;
-	sint32 spell_regen = spellbonuses.HPRegen;
-	sint32 total_regen = normal_regen + item_regen + spell_regen;
-	total_regen = (total_regen * RuleI(Character, HPRegenMultiplier)) / 100;
-	SetHP(GetHP() + total_regen + RestRegenHP);
+	SetHP(GetHP() + CalcHPRegen() + RestRegenHP);
 	SendHPUpdate();
 }
 
 void Client::DoManaRegen() {
 	if (GetMana() >= max_mana)
 		return;
-	int32 level=GetLevel();
-	int32 regen = 0;
-	if (IsSitting() ||(GetHorseId() != 0)) {		//this should be changed so we dont med while camping, etc...
-		if(HasSkill(MEDITATE)) {
-			medding = true;
-			regen = (((GetSkill(MEDITATE)/10)+(level-(level/4)))/4)+4;
-			regen += spellbonuses.ManaRegen + itembonuses.ManaRegen;
-			CheckIncreaseSkill(MEDITATE, NULL, -5);
-		}
-		else
-			regen = 2+spellbonuses.ManaRegen+itembonuses.ManaRegen+(level/5);
-	}
-	else {
-		medding = false;
-		regen = 2+spellbonuses.ManaRegen+itembonuses.ManaRegen+(level/5);
-	}
-
-	//AAs
-	regen += GetAA(aaMentalClarity) + GetAA(aaBodyAndMindRejuvenation);
-
-	regen = (regen * RuleI(Character, ManaRegenMultiplier)) / 100;
 	
-	SetMana(GetMana() + regen + RestRegenMana);
+	SetMana(GetMana() + CalcManaRegen() + RestRegenMana);
 	SendManaUpdatePacket();
 }
 
@@ -1793,15 +1767,7 @@ void Client::DoEnduranceRegen()
 	if(GetEndurance() >= GetMaxEndurance())
 		return;
 
-	int32 level=GetLevel();
-	int32 regen = 0;
-
-	regen = int(level*4/10) + 2;
-	regen += spellbonuses.EnduranceRegen + itembonuses.EnduranceRegen;
-	
-	regen = (regen * RuleI(Character, EnduranceRegenMultiplier)) / 100;
-
-	SetEndurance(GetEndurance() + regen);
+	SetEndurance(GetEndurance() + CalcEnduranceRegen());
 }
 
 void Client::DoEnduranceUpkeep() {

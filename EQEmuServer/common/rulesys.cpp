@@ -133,6 +133,32 @@ bool RuleManager::ListCategories(std::vector<const char *> &into) {
 	return(true);
 }
 
+
+bool RuleManager::GetRule(const char *rule_name, std::string &ret_val) {
+	RuleType type;
+	uint16 index;
+	if (!_FindRule(rule_name, type, index))
+		return false;
+
+	char tmp[255] = "";
+	switch(type) {
+		case IntRule:
+			sprintf(tmp, "%i", m_RuleIntValues[index]);
+			break;
+		case RealRule:
+			sprintf(tmp, "%f", m_RuleRealValues[index]);
+			break;
+		case BoolRule:
+			std::string tmp_val = m_RuleBoolValues[index] ? "true" : "false";
+			sprintf(tmp, "%s", tmp_val.c_str());
+			break;
+	}
+
+	ret_val = tmp;
+
+	return true;
+}
+
 bool RuleManager::SetRule(const char *rule_name, const char *rule_value, Database *db, bool db_save) {
 	if(rule_name == NULL || rule_value == NULL)
 		return(false);
