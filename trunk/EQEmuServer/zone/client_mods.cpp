@@ -145,116 +145,84 @@ sint16 Client::GetMaxFR() const {
 sint32 Client::LevelRegen()
 {
 	bool sitting = IsSitting();
+	bool feigned = GetFeigned();
 	int level = GetLevel();
-	
+	bool bonus = GetRaceBitmask(GetBaseRace()) & RuleI(Character, BaseHPRegenBonusRaces);
+	uint8 multiplier1 = bonus ? 2 : 1;
 	sint32 hp = 0;
-	if(GetBaseRace() == IKSAR || GetBaseRace() == TROLL) 
-	{
-		if (level <= 19) {
-			if(sitting)
-				hp+=4;
-			else
-				hp += 2;
-		}
-		else if(level <= 49) {
-			if(sitting)
-				hp+=6;
-			else
-				hp+=2;
-		}
-		else if(level == 50) {
-			if(sitting)
-				hp+=8;
-			else
-				hp+=2;
-		}
-		else if(level == 51) {
-			if(sitting)
-				hp+=12;
-			else
-				hp+=6;
-		}
-		else if(level <= 56) {
-			if(sitting)
-				hp+=16;
-			else
-				hp+=10;
-		}
-		else if(level <= 65) {
-			if(sitting)
-				hp+=18;
-			else
-				hp+=12;
-		}
-		else {
-			if(sitting)
-				hp+=20;
-			else
-				hp+=10;
-		}
-	}
-	else
-	{
-		if (level <= 19) {
-			if(IsSitting())
-				hp+=2;
-			else
-				hp+=1;
-		}
-		else if(level <= 49) {
-			if(sitting)
-				hp+=3;
-			else
-				hp+=1;
-		}
-		else if(level == 50) {
-			if(sitting)
-				hp+=4;
 
-			else
-				hp+=1;
+	//these calculations should match up with the info from Monkly Business, which was last updated ~05/2008: http://www.monkly-business.net/index.php?pageid=abilities
+	if (level < 51) {
+		if (sitting) {
+			if (level < 20)
+				hp += 2 * multiplier1;
+			else if (level < 50)
+				hp += 3 * multiplier1;
+			else	//level == 50
+				hp += 4 * multiplier1;
 		}
-		else if(level <= 55) {
-			if(sitting)
-				hp+=5;
-			else
-				hp+=2;
-		}
-		else if(level <= 58) {
-			if(sitting)
-				hp+=6;
-			else
-				hp+=3;
-		}
-		else if(level <= 65) {
-			if(sitting)
-				hp+=7;
-			else
-				hp+=4;
-		}
-		else {
-			if(sitting)
-				hp+=8;
-			else
-				hp+=5;
-		}
+		else	//feigned or standing
+			hp += 1 * multiplier1;
 	}
-	// AA Regens
-	hp += (GetAA(aaInnateRegeneration)
+	//there may be an easier way to calculate this next part, but I don't know what it is
+	else {	//level >= 51
+		sint32 tmp = 0;
+		float multiplier2 = 1;
+		if (level < 56) {
+			tmp = 2;
+			if (bonus)
+				multiplier2 = 3;
+		}
+		else if (level < 60) {
+			tmp = 3;
+			if (bonus)
+				multiplier2 = 3.34;
+		}
+		else if (level < 61) {
+			tmp = 4;
+			if (bonus)
+				multiplier2 = 3;
+		}
+		else if (level < 63) {
+			tmp = 5;
+			if (bonus)
+				multiplier2 = 2.8;
+		}
+		else if (level < 65) {
+			tmp = 6;
+			if (bonus)
+				multiplier2 = 2.67;
+		}
+		else {	//level >= 65
+			tmp = 7;
+			if (bonus)
+				multiplier2 = 2.58;
+		}
+
+		hp += sint32(float(tmp) * multiplier2);
+
+		if (sitting)
+			hp += 3 * multiplier1;
+		else if (feigned)
+			hp += 1 * multiplier1;
+	}
+
+	return hp;
+}
+
+sint32 Client::CalcHPRegen() {
+	sint32 regen = LevelRegen() + itembonuses.HPRegen + spellbonuses.HPRegen;
+	//AAs
+	regen += GetAA(aaInnateRegeneration)
 		//+ GetAA(aaInnateRegeneration2) //not currently in the AA table anymore, so why bother?
 		+ GetAA(aaNaturalHealing)
 		+ GetAA(aaBodyAndMindRejuvenation)
 		+ GetAA(aaConvalescence)
 		+ GetAA(aaHealthyAura)
-		+ GroupLeadershipAAHealthRegeneration()
-	);
-	if (GetAppearance() == eaDead) {	//stunned/mezzed
-		hp /= 4;
-	}
-	
-	return hp;
+		+ GroupLeadershipAAHealthRegeneration();
+	regen = (regen * RuleI(Character, HPRegenMultiplier)) / 100;
+	return regen;
 }
-
 sint32 Client::CalcMaxHP() {
 	int32 nd = 10000;
 	max_hp = (CalcBaseHP() + itembonuses.HP);
@@ -941,6 +909,32 @@ sint32 Client::CalcBaseMana()
 	return max_m;
 }
 
+
+sint32 Client::CalcManaRegen() {
+	uint8 clevel = GetLevel();
+	sint32 regen = 0;
+	if (IsSitting() || (GetHorseId() != 0)) {		//this should be changed so we dont med while camping, etc...
+		if(HasSkill(MEDITATE)) {
+			this->medding = true;
+			regen = (((GetSkill(MEDITATE) / 10) + (clevel - (clevel / 4))) / 4) + 4;
+			regen += spellbonuses.ManaRegen + itembonuses.ManaRegen;
+			CheckIncreaseSkill(MEDITATE, NULL, -5);
+		}
+		else
+			regen = 2 + spellbonuses.ManaRegen + itembonuses.ManaRegen + (clevel / 5);
+	}
+	else {
+		this->medding = false;
+		regen = 2 + spellbonuses.ManaRegen + itembonuses.ManaRegen + (clevel / 5);
+	}
+
+	//AAs
+	regen += GetAA(aaMentalClarity) + GetAA(aaBodyAndMindRejuvenation);
+
+	regen = (regen * RuleI(Character, ManaRegenMultiplier)) / 100;
+
+	return regen;
+}
 uint32 Client::CalcCurrentWeight() {
 	const Item_Struct* TempItem = 0;
 	ItemInst* ins;
@@ -1734,3 +1728,9 @@ sint32 Client::CalcBaseEndurance()
 	return base_end;
 }
 
+sint32 Client::CalcEnduranceRegen() {
+	sint32 regen = sint32(GetLevel() * 4 / 10) + 2;
+	regen += spellbonuses.EnduranceRegen + itembonuses.EnduranceRegen;
+	regen = (regen * RuleI(Character, EnduranceRegenMultiplier)) / 100;
+	return regen;
+}

@@ -404,20 +404,14 @@ public:
 
 
 	/*Endurance and such*/
-	//This calculates the maximum endurance we can have
-	void	CalcMaxEndurance();
-	//Calculates Base End
-	sint32	CalcBaseEndurance();
-	//This gets our current endurance
-	sint32	GetEndurance()	const {return cur_end;}
-	//This gets our endurance from the last CalcMaxEndurance() call
-	sint32	GetMaxEndurance() const {return max_end;}
-	//This sets the current endurance to the new value
-	void SetEndurance(sint32 newEnd);
-	//This Regenerates endurance
-	void DoEnduranceRegen();
-	//does the endurance upkeep
-	void DoEnduranceUpkeep();
+	void	CalcMaxEndurance();	//This calculates the maximum endurance we can have
+	sint32	CalcBaseEndurance();	//Calculates Base End
+	sint32	CalcEnduranceRegen();	//Calculates endurance regen used in DoEnduranceRegen()
+	sint32	GetEndurance()	const {return cur_end;}	//This gets our current endurance
+	sint32	GetMaxEndurance() const {return max_end;}	//This gets our endurance from the last CalcMaxEndurance() call
+	void SetEndurance(sint32 newEnd);	//This sets the current endurance to the new value
+	void DoEnduranceRegen();	//This Regenerates endurance
+	void DoEnduranceUpkeep();	//does the endurance upkeep
 
 	//This calculates total Attack Rating to match very close to what the client should show
 	uint16 GetTotalATK();
@@ -969,6 +963,8 @@ private:
 	sint16	CalcCR();
 	sint32	CalcMaxHP();
 	sint32	CalcBaseHP();
+	sint32	CalcHPRegen();
+	sint32	CalcManaRegen();
 	void DoHPRegen();
 	void DoManaRegen();
 	void DoStaminaUpdate();

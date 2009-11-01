@@ -1,5 +1,12 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==10/31/2009==
+AndMetal: Changed HP regen calculations to be Live-like. Basically higher level regen will be about 50% more than it is currently & FD regen should be better than standing, but less than sitting (instead of 25% of sitting regen).
+AndMetal: Races that get the HP Regen "bonus" (Iksar & Troll by default) can be customized as a bitmask via rule Character:BaseHPRegenBonusRaces(4352).
+AndMetal: Added #setallskills alias for #setallskill/#setskillall.
+AndMetal: Added '#rules get [rule]' for a single rule & '#rules values [catname]' for a category to allow real-time viewing of the rule values from the zone (not the DB).
+AndMetal: Added client HP, Mana, & Endurance regen info to #showstats/#mystats
+
 ==10/30/2009==
 KLS: Exported DoSpecialAttackDamage() to perl::mob;
 

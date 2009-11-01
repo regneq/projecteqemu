@@ -67,6 +67,8 @@ RULE_INT ( Character, KillsPerGroupLeadershipAA, 250) // Number of dark blues or
 RULE_INT ( Character, KillsPerRaidLeadershipAA, 250) // Number of dark blues or above per Raid Leadership AA
 RULE_INT ( Character, MaxFearDurationForPlayerCharacter, 4) //4 tics, each tic calculates every 6 seconds.
 RULE_INT ( Character, MaxCharmDurationForPlayerCharacter, 15)
+RULE_INT ( Character, BaseHPRegenBonusRaces, 4352)	//a bitmask of race(s) that receive the regen bonus. Iksar (4096) & Troll (256) = 4352. see common/races.h for the bitmask values
+
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Guild )

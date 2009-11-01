@@ -251,6 +251,7 @@ int command_init(void) {
 		command_add("setskill","[skillnum] [value] - Set your target's skill skillnum to value",50,command_setskill) ||
 		command_add("setskillall","[value] - Set all of your target's skills to value",50,command_setskillall) ||
 		command_add("setallskill",NULL,0,command_setskillall) ||
+		command_add("setallskills",NULL,0,command_setskillall) ||
 		command_add("race","[racenum] - Change your or your target's race.  Use racenum 0 to return to normal",50,command_race) ||
 		command_add("gender","[0/1/2] - Change your or your target's  gender to male/female/neuter",50,command_gender) ||
 		command_add("makepet","[level] [class] [race] [texture] - Make a pet",50,command_makepet) ||
@@ -8156,10 +8157,11 @@ void command_rules(Client *c, const Seperator *sep) {
 		c->Message(0, "---------------------");
 		c->Message(0, "-- Running Rule Manipulation  --");
 		c->Message(0, "...reset - Reset all rules to their default values");
+		c->Message(0, "...get [rule] - Get the specified rule's local value");
 		c->Message(0, "...set (rule) (value) - Set the specified rule to the specified value locally only");
 		c->Message(0, "...setdb (rule) (value) - Set the specified rule to the specified value locally and in the DB");
 		c->Message(0, "...list [catname] - List all rules in the specified category (or all categiries if omitted)");
-//		c->Message(0, "...values (catname) - List the value of all rules in the specified category");
+		c->Message(0, "...values [catname] - List the value of all rules in the specified category");
 		return;
 	}
 	
@@ -8231,6 +8233,18 @@ void command_rules(Client *c, const Seperator *sep) {
 	} else if(!strcasecmp(sep->arg[1], "reset")) {
 		rules->ResetRules();
 		c->Message(0, "The running ruleset has been set to defaults");
+
+	} else if(!strcasecmp(sep->arg[1], "get")) {
+		if(sep->argnum != 2) {
+			c->Message(13, "Invalid argument count, see help.");
+			return;
+		}
+		std::string value;
+		if(!rules->GetRule(sep->arg[2], value))
+			c->Message(13, "Unable to find rule %s", sep->arg[2]);
+		else
+			c->Message(0, "%s - %s", sep->arg[2], value.c_str());
+
 	} else if(!strcasecmp(sep->arg[1], "set")) {
 		if(sep->argnum != 3) {
 			c->Message(13, "Invalid argument count, see help.");
@@ -8284,6 +8298,29 @@ void command_rules(Client *c, const Seperator *sep) {
 		} else {
 			c->Message(13, "Invalid argument count, see help.");
 		}
+	} else if(!strcasecmp(sep->arg[1], "values")) {
+		if(sep->argnum != 2) {
+			c->Message(13, "Invalid argument count, see help.");
+			return;
+		} else {
+			const char *catfilt = NULL;
+			if(std::string("all") != sep->arg[2])
+				catfilt = sep->arg[2];
+			std::vector<const char *> rule_list;
+			if(!rules->ListRules(catfilt, rule_list)) {
+				c->Message(13, "Failed to list rules!");
+				return;
+			}
+			c->Message(0, "Rules & values in category %s:", sep->arg[2]);
+			std::vector<const char *>::iterator cur, end;
+			cur = rule_list.begin();
+			end = rule_list.end();
+			for(std::string tmp_value; cur != end; cur++) {
+				if (rules->GetRule(*cur, tmp_value))
+					c->Message(0, " %s - %s", *cur, tmp_value.c_str());
+			}
+		}
+
 	} else {
 		c->Message(15, "Invalid action specified. use '#rules help' for help");
 	}

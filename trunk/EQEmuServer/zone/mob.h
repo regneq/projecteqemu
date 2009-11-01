@@ -589,6 +589,7 @@ bool logpos;
 
 	inline StatBonuses GetItemBonuses() const { return itembonuses; }
 	inline StatBonuses GetSpellBonuses() const { return spellbonuses; }
+	inline StatBonuses GetAABonuses() const { return aabonuses; }
 
 	inline virtual sint16  GetMaxSTR() const { return GetSTR(); }
 	inline virtual sint16  GetMaxSTA() const { return GetSTA(); }
