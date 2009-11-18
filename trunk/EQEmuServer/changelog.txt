@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==11/18/2009==
+KLS: Added check for character deletion as pointed out by Rogean.
+
 ==10/31/2009==
 AndMetal: Changed HP regen calculations to be Live-like. Basically higher level regen will be about 50% more than it is currently & FD regen should be better than standing, but less than sitting (instead of 25% of sitting regen).
 AndMetal: Races that get the HP Regen "bonus" (Iksar & Troll by default) can be customized as a bitmask via rule Character:BaseHPRegenBonusRaces(4352).

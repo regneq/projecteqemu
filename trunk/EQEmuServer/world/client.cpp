@@ -707,9 +707,13 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 			break;
 		}
 		case OP_DeleteCharacter: {
-			clog(WORLD__CLIENT,"Delete character: %s",app->pBuffer);
-			database.DeleteCharacter((char *)app->pBuffer);
-			SendCharInfo();
+			int32 char_acct_id = database.GetAccountIDByChar((char*)app->pBuffer);
+			if(char_acct_id == GetAccountID())
+			{
+				clog(WORLD__CLIENT,"Delete character: %s",app->pBuffer);
+				database.DeleteCharacter((char *)app->pBuffer);
+				SendCharInfo();
+			}
 			break;
 		}
 		case OP_ApproveWorld:
