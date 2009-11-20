@@ -611,11 +611,11 @@ bool Client::TradeskillExecute(DBTradeskillRecipe_Struct *spec) {
 		return(false);
 	
 	int16 user_skill = GetSkill(spec->tradeskill);
-	float chance = 0;
-	float skillup_modifier;
+	float chance = 0.0;
+	float skillup_modifier = 0.0;
 	sint16 thirdstat = 0;
 	sint16 stat_modifier = 15;
-	uint16 success_modifier;
+	uint16 success_modifier = 0;
 
 	// Rework based on the info on eqtraders.com
 	// http://mboards.eqtraders.com/eq/showthread.php?t=22246

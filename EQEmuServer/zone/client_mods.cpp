@@ -51,8 +51,6 @@ sint16 Client::GetMaxStat() const {
 		base = 330;
 	}
 	
-	base += GetAA(aaPlanarPower) * 5;
-	base += GetAA(aaChaoticPotential) * 5;
 	return(base);
 }
 
@@ -62,10 +60,8 @@ sint16 Client::GetMaxResist() const
 
 	sint16 base = 500;
 	
-	if(level > 65)
-		base += ((level - 65) * 5);
-
-	base +=  (GetAA(aaDiscordantDefiance) * 5);
+	if(level > 60)
+		base += ((level - 60) * 5);
 
 	return base;
 }
