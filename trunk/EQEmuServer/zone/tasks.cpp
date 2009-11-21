@@ -1172,6 +1172,8 @@ void TaskManager::SendTaskSelector(Client *c, Mob *mob, int TaskCount, int *Task
 
 		if(!IsTaskRepeatable(TaskList[i]) && c->IsTaskCompleted(TaskList[i])) continue;
 
+		if(!c->IsTaskEnabled(TaskList[i])) continue;
+
 		ValidTasks++;
 
 		PacketLength = PacketLength + sizeof(AvailableTaskData1_Struct) + strlen(Tasks[TaskList[i]]->Title) + 1 +
@@ -1202,6 +1204,8 @@ void TaskManager::SendTaskSelector(Client *c, Mob *mob, int TaskCount, int *Task
 		if(c->IsTaskActive(TaskList[i])) continue;
 
 		if(!IsTaskRepeatable(TaskList[i]) && c->IsTaskCompleted(TaskList[i])) continue;
+
+		if(!c->IsTaskEnabled(TaskList[i])) continue;
 
 		AvailableTaskData1 = (AvailableTaskData1_Struct*)Ptr;
 
