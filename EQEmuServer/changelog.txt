@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==11/21/2009==
+KLS: Ad hoc task selectors should ignore tasks that are not enabled now.
+
 ==11/19/2009==
 Congdar: Fixed Resist Stat Caps, Removed GetMax...() methods calculating some AA's twice.
 
