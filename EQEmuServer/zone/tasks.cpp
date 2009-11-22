@@ -1871,10 +1871,13 @@ void ClientTaskState::IncrementDoneCount(Client *c, TaskInformation* Task, int T
 			  ActivityID);
 
 #ifdef EMBPERL
-		char buf[24];
-		snprintf(buf, 23, "%d %d", ActiveTasks[TaskIndex].TaskID, ActiveTasks[TaskIndex].Activity[ActivityID].ActivityID);
-		buf[23] = '\0';
-		((PerlembParser*)parse)->Event(EVENT_TASK_STAGE_COMPLETE, 0, buf, (NPC*)NULL, c);
+		if(Task->Activity[ActivityID].GoalMethod != METHODQUEST)
+		{
+			char buf[24];
+			snprintf(buf, 23, "%d %d", ActiveTasks[TaskIndex].TaskID, ActiveTasks[TaskIndex].Activity[ActivityID].ActivityID);
+			buf[23] = '\0';
+			((PerlembParser*)parse)->Event(EVENT_TASK_STAGE_COMPLETE, 0, buf, (NPC*)NULL, c);
+		}
 #endif
 
 		// Flag the activity as complete
@@ -2949,6 +2952,7 @@ void ClientTaskState::AcceptNewTask(Client *c, int TaskID, int NPCID) {
 	if(!npc) {
 		c->Message(clientMessageYellow, "Task Giver ID is %i", NPCID);
 		c->Message(clientMessageError, "Unable to find NPC to send EVENT_TASKACCEPTD to. Report this bug.");
+		safe_delete_array(buf);
 		return;
 	}
 	taskmanager->SaveClientState(c, this);
