@@ -3577,9 +3577,17 @@ void Client::MelodyTrySong() {
 		if (IsValidSpell(songID) ) {
 			Mob *target = this->GetTarget() == NULL ? this->CastToMob() : this->GetTarget();
 			int32 cast_time = spells[songID].cast_time;
-			int16 mana_cost = spells[songID].mana;
-			this->CastSpell(songID, target->GetID(), 10, cast_time, mana_cost);
-			//this->DoCastSpell(songID, target->GetID(), 10, cast_time, mana_cost);
+			if(GetMana() >= spells[songID].mana)
+			{
+				SetMana(GetMana() - spells[songID].mana);
+				this->CastSpell(songID, target->GetID(), 10, cast_time);
+			}
+			else
+			{
+				Message(13, "Insufficient Mana.");
+				MelodyClearSongs();
+				MelodySetState(false);
+			}
 		}
 	}
 
