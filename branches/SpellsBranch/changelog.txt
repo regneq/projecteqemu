@@ -1,0 +1,4 @@
+EQEmu Spells Branch Changelog (Started on Dec 23, 2009 9:25)
+-----------------------------------------------------------
+
+12/23/09 - Initial Checkin
