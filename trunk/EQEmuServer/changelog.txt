@@ -1,5 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==12/23/2009==
+cavedude: (Kilelen) Added quest functions quest::checktitle(int titleset), quest::enabletitle(int titleset), and quest::removetitle(int titleset) to allow Perl to enable or remove titles for a player.
+
+Required SQL: utils/sql/svn/1057_titles.sql
+
 ==11/21/2009==
 KLS: Ad hoc task selectors should ignore tasks that are not enabled now.
 

@@ -42,6 +42,7 @@ struct TitleEntry
 	int ItemID;
 	string Prefix;
 	string Suffix;
+	int TitleSet;
 };
 
 class TitleManager
@@ -50,7 +51,7 @@ public:
 	TitleManager();
 
 	bool LoadTitles();
-	
+
 	EQApplicationPacket *MakeTitlesPacket(Client *c);
 	string GetPrefix(int TitleID);
 	string GetSuffix(int TitleID);
@@ -60,7 +61,7 @@ public:
 	bool IsNewTradeSkillTitleAvailable(int SkillID, int SkillValue);
 	void CreateNewPlayerTitle(Client *c, const char *Title);
 	void CreateNewPlayerSuffix(Client *c, const char *Suffix);
-	
+
 protected:
 	vector<TitleEntry> Titles;
 };

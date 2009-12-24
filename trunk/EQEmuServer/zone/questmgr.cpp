@@ -193,7 +193,7 @@ void QuestManager::EndQuest() {
 
 //quest perl functions
 void QuestManager::echo(int colour, const char *str) {
-   entity_list.MessageClose(initiator, false, 200, colour, str); 
+   entity_list.MessageClose(initiator, false, 200, colour, str);
 }
 
 void QuestManager::say(const char *str) {
@@ -319,7 +319,7 @@ int16 QuestManager::spawn_from_spawn2(int32 spawn2_id)
 
 		if(tmp->unique_spawn_by_name)
 		{
-			if(!entity_list.LimitCheckName(tmp->name)) 
+			if(!entity_list.LimitCheckName(tmp->name))
 			{
 				return 0;
 			}
@@ -327,7 +327,7 @@ int16 QuestManager::spawn_from_spawn2(int32 spawn2_id)
 
 		if(tmp->spawn_limit > 0)
 		{
-			if(!entity_list.LimitCheckType(npcid, tmp->spawn_limit)) 
+			if(!entity_list.LimitCheckType(npcid, tmp->spawn_limit))
 			{
 				return 0;
 			}
@@ -336,7 +336,7 @@ int16 QuestManager::spawn_from_spawn2(int32 spawn2_id)
 		database.UpdateSpawn2Timeleft(spawn2_id, zone->GetInstanceID(), 0);
 		found_spawn->SetCurrentNPCID(npcid);
 
-		NPC* npc = new NPC(tmp, found_spawn, found_spawn->GetX(), found_spawn->GetY(), found_spawn->GetZ(), 
+		NPC* npc = new NPC(tmp, found_spawn, found_spawn->GetX(), found_spawn->GetY(), found_spawn->GetZ(),
 			found_spawn->GetHeading(), FlyMode3);
 
 		found_spawn->SetNPCPointer(npc);
@@ -347,7 +347,7 @@ int16 QuestManager::spawn_from_spawn2(int32 spawn2_id)
 
 		if(sg->roamdist && sg->roambox[0] && sg->roambox[1] && sg->roambox[2] && sg->roambox[3] && sg->delay)
 			npc->AI_SetRoambox(sg->roamdist,sg->roambox[0],sg->roambox[1],sg->roambox[2],sg->roambox[3],sg->delay);
-		if(zone->InstantGrids()) 
+		if(zone->InstantGrids())
 		{
 			found_spawn->LoadGrid();
 		}
@@ -1127,7 +1127,7 @@ int QuestManager::InsertQuestGlobal(
 	return 0;
 }
 
-void QuestManager::targlobal(const char *varname, const char *value, const char *duration, int qgNpcid, int qgCharid, int qgZoneid) 
+void QuestManager::targlobal(const char *varname, const char *value, const char *duration, int qgNpcid, int qgCharid, int qgZoneid)
 {
 	InsertQuestGlobal(qgCharid, qgNpcid, qgZoneid, varname, value, QGVarDuration(duration));
 }
@@ -1441,7 +1441,7 @@ bool QuestManager::summonburriedplayercorpse(int32 char_id, float dest_x, float 
 
 	if(char_id > 0) {
 		Corpse* PlayerCorpse = database.SummonBurriedPlayerCorpse(char_id, zone->GetZoneID(), zone->GetInstanceID(), dest_x, dest_y, dest_z, dest_heading);
-		
+
 		if(PlayerCorpse) {
 			PlayerCorpse->Spawn();
 			Result = true;
@@ -1658,7 +1658,7 @@ void QuestManager::npcfeature(char *feature, int setting)
 										DrakkinHeritage, DrakkinTattoo, DrakkinDetails, Size);
 }
 
-void QuestManager::popup(char *title, char *text, int32 popupid, int32 buttons, int32 Duration) 
+void QuestManager::popup(char *title, char *text, int32 popupid, int32 buttons, int32 Duration)
 {
          if(initiator) initiator->SendPopupToClient(title, text, popupid, buttons, Duration);
 }
@@ -1681,24 +1681,24 @@ bool QuestManager::botquest()
 #endif //BOTS
 
 void QuestManager::taskselector(int taskcount, int *tasks) {
-	if(RuleB(TaskSystem, EnableTaskSystem) && initiator && owner && taskmanager) 
+	if(RuleB(TaskSystem, EnableTaskSystem) && initiator && owner && taskmanager)
 		taskmanager->SendTaskSelector(initiator, owner, taskcount, tasks);
 }
 void QuestManager::enabletask(int taskcount, int *tasks) {
 
-	if(RuleB(TaskSystem, EnableTaskSystem) && initiator && taskmanager) 
+	if(RuleB(TaskSystem, EnableTaskSystem) && initiator && taskmanager)
 		initiator->EnableTask(taskcount, tasks);
 }
 
 void QuestManager::disabletask(int taskcount, int *tasks) {
 
-	if(RuleB(TaskSystem, EnableTaskSystem) && initiator && taskmanager) 
+	if(RuleB(TaskSystem, EnableTaskSystem) && initiator && taskmanager)
 		initiator->DisableTask(taskcount, tasks);
 }
 
 bool QuestManager::istaskenabled(int taskid) {
 
-	if(RuleB(TaskSystem, EnableTaskSystem) && initiator && taskmanager) 
+	if(RuleB(TaskSystem, EnableTaskSystem) && initiator && taskmanager)
 		return initiator->IsTaskEnabled(taskid);
 
 	return false;
@@ -1706,7 +1706,7 @@ bool QuestManager::istaskenabled(int taskid) {
 
 void QuestManager::tasksetselector(int tasksetid) {
 	_log(TASKS__UPDATE, "TaskSetSelector called for task set %i", tasksetid);
-	if(RuleB(TaskSystem, EnableTaskSystem) && initiator && owner && taskmanager) 
+	if(RuleB(TaskSystem, EnableTaskSystem) && initiator && owner && taskmanager)
 		initiator->TaskSetSelector(owner, tasksetid);
 }
 
@@ -1833,13 +1833,13 @@ void QuestManager::clearspawntimers() {
 		//TODO: Dec 19, 2008, replace with code updated for current spawn timers.
 		LinkedListIterator<Spawn2*> iterator(zone->spawn2_list);
 		iterator.Reset();
-		while (iterator.MoreElements()) 
+		while (iterator.MoreElements())
 		{
 			char errbuf[MYSQL_ERRMSG_SIZE];
 			char *query = 0;
 			database.RunQuery(query, MakeAnyLenString(&query, "DELETE FROM respawn_times WHERE id=%lu AND "
 				"instance_id=%lu",(unsigned long)iterator.GetData()->GetID(), (unsigned long)zone->GetInstanceID()), errbuf);
-			safe_delete_array(query);		
+			safe_delete_array(query);
 			iterator.Advance();
 		}
 	}
@@ -1917,9 +1917,9 @@ int QuestManager::collectitems_processSlot(sint16 slot_id, uint32 item_id,
 {
 	ItemInst *item;
 	int quantity = 0;
- 
+
 	item = initiator->GetInv().GetItem(slot_id);
- 
+
 	// If we have found matching item, add quantity
 	if (item && item->GetID() == item_id)
 	{
@@ -1932,34 +1932,34 @@ int QuestManager::collectitems_processSlot(sint16 slot_id, uint32 item_id,
 		{
 			quantity = 1;
 		}
- 
+
 		// Remove item from inventory
 		if (remove)
 		{
 			initiator->DeleteItemInInventory(slot_id, 0, true);
 		}
 	}
- 
+
 	return quantity;
 }
- 
+
 // Returns number of item_id that exist in inventory
 // If remove is true, items are removed as they are counted.
 int QuestManager::collectitems(uint32 item_id, bool remove)
 {
 	int quantity = 0;
 	int slot_id;
- 
+
 	for (slot_id = 22; slot_id <= 29; ++slot_id)
 	{
 		quantity += collectitems_processSlot(slot_id, item_id, remove);
 	}
- 
+
 	for (slot_id = 251; slot_id <= 330; ++slot_id)
 	{
 		quantity += collectitems_processSlot(slot_id, item_id, remove);
 	}
- 
+
 	return quantity;
 }
 
@@ -1970,7 +1970,7 @@ void QuestManager::UpdateSpawnTimer(int32 id, int32 newTime)
 	database.UpdateSpawn2Timeleft(id, 0, (newTime/1000));
 	LinkedListIterator<Spawn2*> iterator(zone->spawn2_list);
 	iterator.Reset();
-	while (iterator.MoreElements()) 
+	while (iterator.MoreElements())
 	{
 		if(iterator.GetData()->GetID() == id)
 		{
@@ -2000,23 +2000,23 @@ void QuestManager::UpdateSpawnTimer(int32 id, int32 newTime)
 // used to set the number of an item in the selected merchant's temp item list.  Defaults to zero if no quantity is specified.
 void QuestManager::MerchantSetItem(int32 NPCid, int32 itemid, int32 quantity) {
 	Mob* merchant = entity_list.GetMobByNpcTypeID(NPCid);
-	
-	if (merchant == 0 || !merchant->IsNPC() || (merchant->GetClass() != MERCHANT)) 
+
+	if (merchant == 0 || !merchant->IsNPC() || (merchant->GetClass() != MERCHANT))
 		return;	// don't do anything if NPCid isn't a merchant
-	
+
 	const Item_Struct* item = NULL;
 	item = database.GetItem(itemid);
 	if (!item) return;		// if the item id doesn't correspond to a real item, do nothing
-	
+
 	zone->SaveTempItem(merchant->CastToNPC()->MerchantType, NPCid, itemid, quantity);
 }
 
 int32 QuestManager::MerchantCountItem(int32 NPCid, int32 itemid) {
 	Mob* merchant = entity_list.GetMobByNpcTypeID(NPCid);
-	
+
 	if (merchant == 0 || !merchant->IsNPC() || (merchant->GetClass() != MERCHANT))
 		return 0;	// if it isn't a merchant, it doesn't have any items
-	
+
 	const Item_Struct* item = NULL;
 	item = database.GetItem(itemid);
 	if (!item) return 0;		// likewise, if it isn't a valid item, the merchant doesn't have any
@@ -2026,7 +2026,7 @@ int32 QuestManager::MerchantCountItem(int32 NPCid, int32 itemid) {
 	std::list<TempMerchantList>::const_iterator itr;
 	TempMerchantList ml;
 	int32 Quant = 0;
-		
+
 	for(itr = MerchList.begin(); itr != MerchList.end(); itr++){
 		ml = *itr;
 		if (ml.item == itemid) {	// if this is the item we're looking for
@@ -2196,7 +2196,7 @@ const char* QuestManager::saylink(char* Phrase, bool silent, char* LinkName) {
 					mysql_free_result(result);
 				}
 			}
-			else 
+			else
 			{
 				LogFile->write(EQEMuLog::Error, ERR_MYSQLERROR, errbuf);
 			}
@@ -2204,7 +2204,7 @@ const char* QuestManager::saylink(char* Phrase, bool silent, char* LinkName) {
 		}
 	}
 	safe_delete_array(query);
-	
+
 	if(silent)
 		sayid = sayid + 750000;
 	else
@@ -2248,13 +2248,13 @@ void QuestManager::FlyMode(int8 flymode)
 	}
 }
 
-uint8 QuestManager::FactionValue() 
+uint8 QuestManager::FactionValue()
 {
 	FACTION_VALUE oldfac;
 	uint8 newfac = 0;
 	if(initiator && owner->IsNPC()) {
 		oldfac = initiator->GetFactionLevel(initiator->GetID(), owner->GetID(), initiator->GetRace(), initiator->GetClass(), initiator->GetDeity(), owner->GetPrimaryFaction(), owner);
-		
+
 		// now, reorder the faction to have it make sense (higher values are better)
 		switch (oldfac) {
 			case FACTION_SCOWLS:
@@ -2286,7 +2286,20 @@ uint8 QuestManager::FactionValue()
 				break;
 		}
 	}
-	
+
 	return newfac;
 }
 
+void QuestManager::enabletitle(int titleset) {
+   initiator->EnableTitle(titleset);
+}
+
+
+
+bool QuestManager::checktitle(int titleset) {
+   return initiator->CheckTitle(titleset);
+}
+
+void QuestManager::removetitle(int titleset) {
+   initiator->RemoveTitle(titleset);
+}

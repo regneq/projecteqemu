@@ -220,7 +220,7 @@ XS(XS_EntityList_new)
 
 //Any creation of new quest items gets the current quest item
 XS(XS_QuestItem_new);
-XS(XS_QuestItem_new) 
+XS(XS_QuestItem_new)
 {
 	dXSARGS;
 	if (items != 1)
@@ -238,7 +238,7 @@ XS(XS_QuestItem_new)
 
 //Any creation of new quest items gets the current quest item
 XS(XS_MobList_new);
-XS(XS_MobList_new) 
+XS(XS_MobList_new)
 {
 	dXSARGS;
 	if (items != 1)
@@ -262,7 +262,7 @@ XS(XS__echo) {
 	dXSARGS;
 
    if (items != 2)
-      Perl_croak(aTHX_ "Usage: echo(id#, str)"); 
+      Perl_croak(aTHX_ "Usage: echo(id#, str)");
 
 	quest_manager.echo(SvUV(ST(0)), SvPV_nolen(ST(1)));
 
@@ -275,7 +275,7 @@ XS(XS__say) {
 
 	if (items == 1)
 		quest_manager.say(SvPV_nolen(ST(0)));
-	else if (items == 2) 
+	else if (items == 2)
 		quest_manager.say(SvPV_nolen(ST(0)), (int)SvIV(ST(1)));
 	else
 		Perl_croak(aTHX_ "Usage: say(str [, language])");
@@ -2423,9 +2423,9 @@ XS(XS__istaskappropriate)
 
 	if(items == 5)
 		duration = (int)SvIV(ST(4));
- 
+
         quest_manager.popup(SvPV_nolen(ST(0)), SvPV_nolen(ST(1)), popupid, buttons, duration);
- 
+
         XSRETURN_EMPTY;
  }
 XS(XS__clearspawntimers);
@@ -2531,7 +2531,7 @@ XS(XS__collectitems)
 	dXSARGS;
 	if (items != 2)
 		Perl_croak(aTHX_ "Usage: collectitems(item_id, remove?)");
-	
+
 	uint32 item_id = (int)SvIV(ST(0));
 	bool remove = ((int)SvIV(ST(1))) == 0?false:true;
 
@@ -2597,7 +2597,7 @@ XS(XS__varlink) {
 	char text[250];
 	uint32 itemID;
 	itemID = (int)SvUV(ST(0));
-	
+
 	RETVAL = quest_manager.varlink(text, itemID);
 
 	sv_setpv(TARG, RETVAL); XSprePUSH; PUSHTARG;
@@ -2696,7 +2696,7 @@ XS(XS__MovePCInstance)
 	{
 		quest_manager.MovePCInstance(zoneid, instanceid, x, y, z, 0.0f);
 	}
-	else 
+	else
 	{
 		float heading = (float)SvNV(ST(5));
 		quest_manager.MovePCInstance(zoneid, instanceid, x, y, z, heading);
@@ -2871,6 +2871,51 @@ XS(XS_FactionValue) {
 
 	uint8 fac = quest_manager.FactionValue();
 	XSRETURN_UV(fac);
+}
+
+XS(XS__enabletitle);
+XS(XS__enabletitle)
+{
+   dXSARGS;
+   if (items != 1)
+      Perl_croak(aTHX_ "Usage: enabletitle(titleset)");
+
+   int   titleset = (int)SvIV(ST(0));
+
+   quest_manager.enabletitle(titleset);
+
+   XSRETURN_EMPTY;
+}
+
+XS(XS__checktitle);
+XS(XS__checktitle)
+{
+   dXSARGS;
+   if (items != 1)
+      Perl_croak(aTHX_ "Usage: checktitle(titleset)");
+
+   bool RETVAL;
+   int   titleset = (int)SvIV(ST(0));
+
+   RETVAL = quest_manager.checktitle(titleset);
+
+    ST(0) = boolSV(RETVAL);
+    sv_2mortal(ST(0));
+    XSRETURN(1);
+}
+
+XS(XS__removetitle);
+XS(XS__removetitle)
+{
+   dXSARGS;
+   if (items != 1)
+      Perl_croak(aTHX_ "Usage: removetitle(titleset)");
+
+   int   titleset = (int)SvIV(ST(0));
+
+   quest_manager.removetitle(titleset);
+
+   XSRETURN_EMPTY;
 }
 
 /*
@@ -3063,6 +3108,9 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "GetSpellTargetType"), XS__GetSpellTargetType, file);
 		newXS(strcpy(buf, "FlyMode"), XS__FlyMode, file);
 		newXS(strcpy(buf, "factionvalue"), XS_FactionValue, file);
+		newXS(strcpy(buf, "checktitle"), XS__checktitle, file);
+		newXS(strcpy(buf, "enabletitle"), XS__enabletitle, file);
+		newXS(strcpy(buf, "removetitle"), XS__removetitle, file);
 	XSRETURN_YES;
 }
 
