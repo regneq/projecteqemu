@@ -33,14 +33,14 @@ class QuestManager {
 public:
 	QuestManager();
 	virtual ~QuestManager();
-	
+
 	void StartQuest(Mob *_owner, Client *_initiator = NULL, ItemInst* _questitem = NULL);
 	void EndQuest();
-	
+
 	void Process();
-	
+
 	void ClearTimers(Mob *who);
-	
+
 	//quest perl functions
 	void echo(int colour, const char *str);
 	void say(const char *str);
@@ -185,6 +185,9 @@ public:
     int getlevel(uint8 type);
     int collectitems(uint32 item_id, bool remove);
     int collectitems_processSlot(sint16 slot_id, uint32 item_id, bool remove);
+    void enabletitle(int titleset);
+   	bool checktitle(int titlecheck);
+   	void removetitle(int titlecheck);
 
 	void CreateGroundObject(int32 itemid, float x, float y, float z, float heading, int32 decay_time = 300000);
 	void ModifyNPCStat(const char *identifier, const char *newValue);
@@ -202,7 +205,7 @@ public:
 	void MovePCInstance(int zone_id, int instance_id, float x, float y, float z, float heading);
 	void FlagInstanceByGroupLeader(int32 zone, int16 version);
 	void FlagInstanceByRaidLeader(int32 zone, int16 version);
-	
+
 	const char* varlink(char* perltext, int item_id);
 	const char* saylink(char* Phrase, bool silent, char* LinkName);
 	void SetRunning(bool val);
@@ -212,7 +215,7 @@ public:
 
 	//not in here because it retains perl types
 	//thing ChooseRandom(array_of_things)
-	
+
 	inline Client *GetInitiator() const { return(initiator); }
 	inline NPC *GetNPC() const { return(owner->IsNPC()?owner->CastToNPC():NULL); }
 	inline Mob *GetOwner() const { return(owner); }
@@ -229,12 +232,12 @@ protected:
 	Mob *owner;	//NPC is never NULL when functions are called.
 	Client *initiator;	//this can be null.
 	ItemInst* questitem;	// this is usually NULL.
-	
+
 	bool depop_npc;	//true if EndQuest should depop the NPC
-	
+
 	Mutex quest_mutex;
 	bool HaveProximitySays;
-	
+
 	int QGVarDuration(const char *fmt);
 	int InsertQuestGlobal(int charid, int npcid, int zoneid, const char *name, const char *value, int expdate);
 

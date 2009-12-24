@@ -4,13 +4,13 @@
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation; version 2 of the License.
-  
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY except by those people which sell it, which
 	are required to give you total support for your newly bought product;
 	without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 	A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-	
+
 	  You should have received a copy of the GNU General Public License
 	  along with this program; if not, write to the Free Software
 	  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -32,15 +32,15 @@ bool TitleManager::LoadTitles()
 	Titles.clear();
 
 	TitleEntry Title;
-	
+
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = NULL;
 	MYSQL_RES *result;
 	MYSQL_ROW row;
 
-	if (!database.RunQuery(query, MakeAnyLenString(&query, 
+	if (!database.RunQuery(query, MakeAnyLenString(&query,
 		"SELECT `id`, `skill_id`, `min_skill_value`, `max_skill_value`, `min_aa_points`, `max_aa_points`, `class`, `gender`, "
-		"`char_id`, `status`, `item_id`, `prefix`, `suffix` from titles"), errbuf, &result))
+		"`char_id`, `status`, `item_id`, `prefix`, `suffix`, `title_set` from titles"), errbuf, &result))
 	{
 		LogFile->write(EQEMuLog::Error, "Unable to load titles: %s : %s", query, errbuf);
 		safe_delete_array(query);
@@ -48,7 +48,7 @@ bool TitleManager::LoadTitles()
 	}
 
 	safe_delete_array(query);
-	
+
 	while ((row = mysql_fetch_row(result))) {
 		Title.TitleID = atoi(row[0]);
 		Title.SkillID = (SkillType) atoi(row[1]);
@@ -63,10 +63,11 @@ bool TitleManager::LoadTitles()
 		Title.ItemID = atoi(row[10]);
 		Title.Prefix = row[11];
 		Title.Suffix = row[12];
+		Title.TitleSet = atoi(row[13]);
 		Titles.push_back(Title);
 	}
 	mysql_free_result(result);
-	
+
 	return(true);
 }
 
@@ -101,7 +102,7 @@ EQApplicationPacket *TitleManager::MakeTitlesPacket(Client *c)
 	char *Buffer = (char *)outapp->pBuffer;
 
 	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, AvailableTitles.size());
-	
+
 	Iterator = AvailableTitles.begin();
 
 	while(Iterator != AvailableTitles.end())
@@ -205,6 +206,9 @@ bool TitleManager::IsClientEligibleForTitle(Client *c, vector<TitleEntry>::itera
 		if((Title->ItemID >= 1) && (c->GetInv().HasItem(Title->ItemID, 0, 0xFF) == SLOT_INVALID))
 			return false;
 
+      	if (!c->CheckTitle(Title->TitleSet))
+         	return false;
+
 		return true;
 }
 
@@ -256,8 +260,8 @@ void TitleManager::CreateNewPlayerTitle(Client *c, const char *Title)
 	c->SetAATitle(Title);
 
 	database.DoEscapeString(EscTitle, Title, strlen(Title));
-	
-	if (database.RunQuery(query, MakeAnyLenString(&query, 
+
+	if (database.RunQuery(query, MakeAnyLenString(&query,
 		"SELECT `id` from titles where `prefix` = '%s' and char_id = %i", EscTitle, c->CharacterID()), errbuf, &result))
 	{
 		if(mysql_num_rows(result) > 0)
@@ -300,8 +304,8 @@ void TitleManager::CreateNewPlayerSuffix(Client *c, const char *Suffix)
 	c->SetTitleSuffix(Suffix);
 
 	database.DoEscapeString(EscSuffix, Suffix, strlen(Suffix));
-	
-	if (database.RunQuery(query, MakeAnyLenString(&query, 
+
+	if (database.RunQuery(query, MakeAnyLenString(&query,
 		"SELECT `id` from titles where `suffix` = '%s' and char_id = %i", EscSuffix, c->CharacterID()), errbuf, &result))
 	{
 		if(mysql_num_rows(result) > 0)
@@ -365,3 +369,69 @@ void Client::SetTitleSuffix(const char *Suffix)
 
 	safe_delete(outapp);
 }
+
+void Client::EnableTitle(int titleset) {
+
+   if (CheckTitle(titleset)) {
+      return;
+   }
+
+   char errbuf[MYSQL_ERRMSG_SIZE];
+   char *query = 0;
+
+   if(!database.RunQuery(query,MakeAnyLenString(&query, "INSERT INTO player_titlesets (char_id, title_set) VALUES (%i, %i)", CharacterID(), titleset), errbuf)) {
+      LogFile->write(EQEMuLog::Error, "Error in EnableTitle query for titleset %i and charid %i", titleset, CharacterID());
+      safe_delete_array(query);
+      return;
+   }
+   else {
+      safe_delete_array(query);
+      return;
+   }
+}
+
+bool Client::CheckTitle(int titleset) {
+
+   char errbuf[MYSQL_ERRMSG_SIZE];
+    char *query = 0;
+    MYSQL_RES *result;
+    MYSQL_ROW row;
+
+   if (database.RunQuery(query, MakeAnyLenString(&query, "SELECT `id` FROM player_titlesets WHERE `title_set`=%i AND `char_id`=%i LIMIT 1", titleset, CharacterID()), errbuf, &result)) {
+      safe_delete_array(query);
+      if (mysql_num_rows(result) >= 1) {
+         mysql_free_result(result);
+         return(true);
+      }
+         mysql_free_result(result);
+   }
+
+   else {
+      LogFile->write(EQEMuLog::Error, "Error in CheckTitle query '%s': %s", query,  errbuf);
+      safe_delete_array(query);
+   }
+
+   return(false);
+}
+
+void Client::RemoveTitle(int titleset) {
+
+   if (!CheckTitle(titleset)) {
+      return;
+   }
+
+   char errbuf[MYSQL_ERRMSG_SIZE];
+    char *query = 0;
+
+   if (database.RunQuery(query, MakeAnyLenString(&query, "DELETE FROM player_titlesets WHERE `title_set`=%i AND `char_id`=%i", titleset, CharacterID()), errbuf)) {
+      safe_delete_array(query);
+   }
+
+   else {
+      LogFile->write(EQEMuLog::Error, "Error in RemoveTitle query '%s': %s", query,  errbuf);
+      safe_delete_array(query);
+   }
+
+   return;
+}
+
