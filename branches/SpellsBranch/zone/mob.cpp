@@ -224,11 +224,14 @@ Mob::Mob(const char*   in_name,
 	qglobal=0;
 
 	int i = 0;
-
+	
+	//TODO:
 	uint32 j;
+	/*
 	for (j = 0; j < BUFF_COUNT; j++) {
 		buffs[j].spellid = SPELL_UNKNOWN;
 	}
+	*/
 
     // clear the proc arrays
 	for (j = 0; j < MAX_PROCS; j++)
@@ -1053,9 +1056,9 @@ void Mob::DoAnim(const int animnum, int type, bool ackreq, eqFilterType filter) 
 	entity_list.QueueCloseClients(this, outapp, false, 200, 0, ackreq, filter);
 	safe_delete(outapp);
 }
-
+//TODO:
 void Mob::ShowBuffs(Client* client) {
-	if (!spells_loaded)
+	/*if (!spells_loaded)
 		return;
 	client->Message(0, "Buffs on: %s", this->GetName());
 	uint32 i;
@@ -1083,13 +1086,15 @@ void Mob::ShowBuffs(Client* client) {
 		client->Message(0, "SvMagic:%i SvFire:%i SvCold:%i SvPoison:%i SvDisease:%i",
 				spellbonuses.MR,spellbonuses.FR,spellbonuses.CR,spellbonuses.PR,spellbonuses.DR);
 		client->Message(0, "DmgShield:%i Haste:%i", spellbonuses.DamageShield, spellbonuses.haste );
-	}
+	}*/
 }
 
+//TODO:
 void Mob::ShowBuffList(Client* client) {
 	if (!spells_loaded)
 		return;
 
+	/*
 	client->Message(0, "Buffs on: %s", this->GetCleanName());
 	uint32 i;
 	for (i=0; i < BUFF_COUNT; i++) {
@@ -1099,7 +1104,7 @@ void Mob::ShowBuffList(Client* client) {
 			else
 				client->Message(0, "  %i: %s: %i tics left", i, spells[buffs[i].spellid].name, buffs[i].ticsremaining);
 		}
-	}
+	}*/
 }
 
 void Mob::GMMove(float x, float y, float z, float heading, bool SendUpdate) {
@@ -2464,6 +2469,8 @@ void Mob::Warp( float x, float y, float z )
 
 bool Mob::DivineAura() const
 {
+	//TODO:
+	/*
 	uint32 l;
 	for (l = 0; l < BUFF_COUNT; l++)
 	{
@@ -2478,6 +2485,8 @@ bool Mob::DivineAura() const
 			}
 		}
 	}
+	return false;
+	*/
 	return false;
 }
 
@@ -2662,6 +2671,8 @@ float Mob::FindGroundZ(float new_x, float new_y, float z_offset)
 //helper function for npc AI; needs to be mob:: cause we need to be able to count buffs on other clients and npcs
 int Mob::CountDispellableBuffs()
 {
+	//TODO:
+	/*
 	int val = 0;
 	for(int x = 0; x < BUFF_COUNT; x++)
 	{
@@ -2678,6 +2689,8 @@ int Mob::CountDispellableBuffs()
 			val++;
 	}
 	return val;
+	*/
+	return 0;
 }
 
 // Returns the % that a mob is snared (as a positive value). -1 means not snared
@@ -2685,6 +2698,8 @@ int Mob::GetSnaredAmount()
 {
 	int worst_snare = -1;
 
+	//TODO:
+	/*
 	for (int i = 0; i < BUFF_COUNT; i++)
 	{
 		if (!IsValidSpell(buffs[i].spellid))
@@ -2701,6 +2716,7 @@ int Mob::GetSnaredAmount()
 			}
 		}
 	}
+	*/
 
 	return worst_snare;
 }

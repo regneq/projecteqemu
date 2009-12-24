@@ -1891,7 +1891,7 @@ void Client::Handle_OP_ItemVerifyRequest(const EQApplicationPacket *app)
 		{
 			if ((item->Click.Type == ET_ClickEffect) || (item->Click.Type == ET_Expendable) || (item->Click.Type == ET_EquipClick) || (item->Click.Type == ET_ClickEffect2))
 			{
-				CastSpell(item->Click.Effect, target_id, 10, item->CastTime, 0, 0, slot_id);
+				//CastSpell(item->Click.Effect, target_id, 10, item->CastTime, 0, 0, slot_id);
 			}
 			else
 			{
@@ -3994,7 +3994,7 @@ LogFile->write(EQEMuLog::Debug, "OP CastSpell: slot=%d, spell=%d, target=%d, inv
 					{
 						if(GetLevel() >= item->Click.Level2)
 						{
-							CastSpell(item->Click.Effect, castspell->target_id, castspell->slot, item->CastTime, 0, 0, castspell->inventoryslot);
+							//CastSpell(item->Click.Effect, castspell->target_id, castspell->slot, item->CastTime, 0, 0, castspell->inventoryslot);
 						}
 						else
 						{
@@ -4005,7 +4005,7 @@ LogFile->write(EQEMuLog::Debug, "OP CastSpell: slot=%d, spell=%d, target=%d, inv
 					}
 					else
 					{
-						CastSpell(item->Click.Effect, castspell->target_id, castspell->slot, item->CastTime, 0, 0, castspell->inventoryslot);
+						//CastSpell(item->Click.Effect, castspell->target_id, castspell->slot, item->CastTime, 0, 0, castspell->inventoryslot);
 					}
 				}
 				else
@@ -4097,7 +4097,7 @@ LogFile->write(EQEMuLog::Debug, "OP CastSpell: slot=%d, spell=%d, target=%d, inv
 			else*/
 			//try disciplines
 
-		CastSpell(spell_to_cast, castspell->target_id, castspell->slot);
+		//CastSpell(spell_to_cast, castspell->target_id, castspell->slot);
 	}
 	return;
 }
@@ -7726,6 +7726,8 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 				UnmemSpell(z, false);
 		}
 
+		//TODO:
+		/*
 		for (i = 0; i < BUFF_COUNT; i++) {
 			for(uint32 z = 0; z < BUFF_COUNT; z++) {
 			// check for duplicates
@@ -7783,10 +7785,12 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 				m_pp.buffs[i].effect = 0;
 				m_pp.buffs[i].dmg_shield_remaining = 0;
 			}
-		}
+		}*/
 
+		//TODO:
 		//I believe these effects are stripped off because if they
 		//are not, they result in permanent effects on the player
+		/*
 		for (uint32 j1=0; j1 < BUFF_COUNT; j1++) {
 			if (buffs[j1].spellid <= (int32)SPDAT_RECORDS) {
 				for (uint32 x1=0; x1 < EFFECT_COUNT; x1++) {
@@ -7816,7 +7820,7 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 					}
 				}
 			}
-		}
+		}*/
 
 		//Validity check for memorized
 		if(Admin() < minStatusToHaveInvalidSpells) {
@@ -8155,6 +8159,8 @@ void Client::CompleteConnect()
 	//bulk raid send in here eventually
 
 	//reapply some buffs
+	//TODO:
+	/*
 	for (uint32 j1=0; j1 < BUFF_COUNT; j1++) {
 		if (buffs[j1].spellid > (int32)SPDAT_RECORDS)
 			continue;
@@ -8270,7 +8276,7 @@ void Client::CompleteConnect()
 					}
 			}
 		}
-	}
+	}*/
 
 	//sends appearances for all mobs not doing anim_stand aka sitting, looting, playing dead
 	entity_list.SendZoneAppearance(this);

@@ -990,7 +990,8 @@ protected:
 	float 	slow_mitigation;	// Allows for a slow mitigation based on a % in decimal form.  IE, 1 = 100% mitigation, .5 is 50%
 	int8	maxlevel;
 	int32	scalerate;
-	Buffs_Struct	buffs[BUFF_COUNT];
+	//Buffs todo!
+	//Buffs_Struct	buffs[BUFF_COUNT];
 	StatBonuses		itembonuses;
 	StatBonuses		spellbonuses;
 	StatBonuses		aabonuses;

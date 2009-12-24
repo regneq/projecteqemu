@@ -460,12 +460,12 @@ void NPC::GetPetState(SpellBuff_Struct *pet_buffs, int32 *items, char *name) {
 		//exist for the pet, nobody else can get at them AFAIK
 	}
 	
+	//TODO:
 	//save their buffs.
-	for (i=0; i < BUFF_COUNT; i++) {
+	/*for (i=0; i < BUFF_COUNT; i++) {
 		if (buffs[i].spellid != SPELL_UNKNOWN) {
 			pet_buffs[i].spellid = buffs[i].spellid;
-// solar: fix this if buffs struct is fixed
-			pet_buffs[i].slotid = i+1/*2*/;
+			pet_buffs[i].slotid = i+1;
 			pet_buffs[i].duration = buffs[i].ticsremaining;
 			pet_buffs[i].level = buffs[i].casterlevel;
 			pet_buffs[i].effect = 10;
@@ -481,11 +481,14 @@ void NPC::GetPetState(SpellBuff_Struct *pet_buffs, int32 *items, char *name) {
 			pet_buffs[i].reserved = 0;
 		}
 	}
+	*/
 }
 
 void NPC::SetPetState(SpellBuff_Struct *pet_buffs, int32 *items) {
 	//restore their buffs...
-	
+	int i;
+	//TODO:
+	/*
 	int i;
 	for (i = 0; i < BUFF_COUNT; i++) {
 		for(int z = 0; z < BUFF_COUNT; z++) {
@@ -538,6 +541,7 @@ void NPC::SetPetState(SpellBuff_Struct *pet_buffs, int32 *items) {
 			}
 		}
 	}
+	*/
 	
 	//restore their equipment...
 	for(i = 0; i < MAX_MATERIALS; i++) {

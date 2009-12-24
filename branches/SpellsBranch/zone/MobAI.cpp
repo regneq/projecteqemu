@@ -354,7 +354,7 @@ void NPC::AIDoSpellCast(int8 i, Mob* tar, sint32 mana_cost, int32* oDontDoAgainB
 		SetMoving(false);
 	}
 	
-	CastSpell(AIspells[i].spellid, tar->GetID(), 1, AIspells[i].manacost == -2 ? 0 : -1, mana_cost, oDontDoAgainBefore);
+	//CastSpell(AIspells[i].spellid, tar->GetID(), 1, AIspells[i].manacost == -2 ? 0 : -1, mana_cost, oDontDoAgainBefore);
 }
 
 bool EntityList::AICheckCloseBeneficialSpells(NPC* caster, int8 iChance, float iRange, int16 iSpellTypes) {
@@ -681,7 +681,7 @@ void Client::AI_SpellCast()
 					SendPosition();
 					SetMoving(false);
 				}
-				CastSpell(spell_to_cast, tar->GetID(), slot_to_use);
+				//CastSpell(spell_to_cast, tar->GetID(), slot_to_use);
 				return;
 			}
 		}
@@ -697,7 +697,7 @@ void Client::AI_SpellCast()
 				SendPosition();
 				SetMoving(false);
 			}
-			CastSpell(spell_to_cast, tar->GetID(), slot_to_use);
+			//CastSpell(spell_to_cast, tar->GetID(), slot_to_use);
 			return;
 		}
 	}

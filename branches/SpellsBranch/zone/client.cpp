@@ -482,6 +482,8 @@ bool Client::Save(int8 iCommitNow) {
 	m_pp.mana = cur_mana;
 	m_pp.endurance = cur_end;
 
+	//TODO:
+	/*
 	for (int i=0; i < BUFF_COUNT; i++) {
 		if (buffs[i].spellid != SPELL_UNKNOWN) {
 			m_pp.buffs[i].spellid = buffs[i].spellid;
@@ -524,7 +526,7 @@ bool Client::Save(int8 iCommitNow) {
 			m_pp.buffs[i].player_id = 0;
 			m_pp.buffs[i].dmg_shield_remaining = 0;
 		}
-	}
+	}*/
 
 	TotalSecondsPlayed += (time(NULL) - m_pp.lastlogin);
 	m_pp.timePlayedMin = (TotalSecondsPlayed / 60);
@@ -3580,7 +3582,7 @@ void Client::MelodyTrySong() {
 			if(GetMana() >= spells[songID].mana)
 			{
 				SetMana(GetMana() - spells[songID].mana);
-				this->CastSpell(songID, target->GetID(), 10, cast_time);
+				//this->CastSpell(songID, target->GetID(), 10, cast_time);
 			}
 			else
 			{

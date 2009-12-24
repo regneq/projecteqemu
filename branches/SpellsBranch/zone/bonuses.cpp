@@ -606,10 +606,12 @@ void Mob::CalcSpellBonuses(StatBonuses* newbon)
 	newbon->AggroRange = -1;
 	newbon->AssistRange = -1;
 
+	//TODO:
+	/*
 	for(i = 0; i < BUFF_COUNT; i++) {
 		if(buffs[i].spellid != SPELL_UNKNOWN)
 			ApplySpellsBonuses(buffs[i].spellid, buffs[i].casterlevel, newbon, buffs[i].casterid);
-	}
+	}*/
 	
 	//this prolly suffer from roundoff error slightly...
 	newbon->AC = newbon->AC * 10 / 34;	//ratio determined impirically from client.

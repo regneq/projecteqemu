@@ -645,7 +645,7 @@ bool Client::UseDiscipline(int32 spell_id, int32 target) {
 		return(false);
 	}
 	
-	CastSpell(spell_id, target, DISCIPLINE_SPELL_SLOT);
+	//CastSpell(spell_id, target, DISCIPLINE_SPELL_SLOT);
 
 	if(spell.recast_time > 0)
 	{

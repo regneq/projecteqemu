@@ -807,12 +807,14 @@ int Mob::GetWeaponDamage(Mob *against, const ItemInst *weapon_item, int32 *hate)
 			if(weapon_item->GetItem() && weapon_item->GetItem()->Magic) 
 				MagicWeapon = true;
 			else {					// if it isn't, check to see if a MagicWeapon buff is active
+				//TODO:
+				/*
 				int buffs_i;
 				for (buffs_i = 0; buffs_i < BUFF_COUNT; buffs_i++)
 					if(IsEffectInSpell(buffs[buffs_i].spellid, SE_MagicWeapon)) { 
 						MagicWeapon = true;
 						break;		// no need to keep looking once we find one
-					}
+					}*/
 			}
 			
 			if(MagicWeapon) {
@@ -1447,6 +1449,8 @@ void Client::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_
 
 	if(spell != SPELL_UNKNOWN)
 	{
+		//TODO:
+		/*
 		for(uint16 buffIt = 0; buffIt < BUFF_COUNT; buffIt++)
 		{
 			if(buffs[buffIt].spellid == spell && buffs[buffIt].client)
@@ -1454,7 +1458,7 @@ void Client::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_
 				exploss = 0;	// no exp loss for pvp dot
 				break;
 			}
-		}
+		}*/
 	}
 	
 	// now we apply the exp loss, unmem their spells, and make a corpse
@@ -2770,12 +2774,13 @@ sint32 Mob::ReduceDamage(sint32 damage){
 		int slot = GetBuffSlotFromType(SE_Rune);
 
 		while(slot >= 0) {
-			int16 melee_rune_left = this->buffs[slot].melee_rune;
+			//TODO:
+			int16 melee_rune_left = 0; //this->buffs[slot].melee_rune;
 	
 			if(melee_rune_left >= damage) {
 				melee_rune_left -= damage;
 				damage = -6;
-				this->buffs[slot].melee_rune = melee_rune_left;
+				//this->buffs[slot].melee_rune = melee_rune_left;
 				break;
 	}
 			else {
@@ -2800,12 +2805,13 @@ sint32 Mob::ReduceMagicalDamage(sint32 damage) {
 		int slot = GetBuffSlotFromType(SE_AbsorbMagicAtt);
 	
 		while(slot >= 0) {
-			int16 magic_rune_left = this->buffs[slot].magic_rune;
+			//TODO:
+			int16 magic_rune_left = 0;//this->buffs[slot].magic_rune;
 
 			if(magic_rune_left >= damage) {
 				magic_rune_left -= damage;
 		damage = -6;
-				this->buffs[slot].magic_rune = magic_rune_left;
+				//this->buffs[slot].magic_rune = magic_rune_left;
 				break;
 	}
 			else {
@@ -2925,6 +2931,8 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
     // damage shield calls this function with spell_id set, so its unavoidable
 	if (attacker && damage > 0 && spell_id == SPELL_UNKNOWN && skill_used != ARCHERY && skill_used != THROWING) {
 		this->DamageShield(attacker);
+		//TODO:
+		/*
 		for(uint32 bs = 0; bs < BUFF_COUNT; bs++){
 			if(buffs[bs].numhits > 0 && !IsDiscipline(buffs[bs].spellid)){
 				if(buffs[bs].numhits == 1){
@@ -2934,7 +2942,7 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 					buffs[bs].numhits--;
 				}
 			}
-		}		
+		}*/		
 	}
 	
 	if(attacker){
@@ -3820,7 +3828,8 @@ void Mob::ApplyMeleeDamageBonus(int16 skill, sint32 &damage){
 	}
 
 	//Rogue sneak attack disciplines make use of this, they are active for one hit
-	for(int bs = 0; bs < BUFF_COUNT; bs++){
+	//TODO:
+	/*for(int bs = 0; bs < BUFF_COUNT; bs++){
 		if(buffs[bs].numhits > 0 && IsDiscipline(buffs[bs].spellid)){
 			if(skill == spells[buffs[bs].spellid].skill){
 				if(buffs[bs].numhits == 1){
@@ -3831,7 +3840,7 @@ void Mob::ApplyMeleeDamageBonus(int16 skill, sint32 &damage){
 				}
 			}
 		}	
-	}	
+	}*/	
 }
 
 bool Mob::HasDied() {

@@ -1877,14 +1877,18 @@ void command_npccast(Client *c, const Seperator *sep)
 	if (c->GetTarget() && c->GetTarget()->IsNPC() && !sep->IsNumber(1) && sep->arg[1] != 0 && sep->IsNumber(2)) {
 		Mob* spelltar = entity_list.GetMob(sep->arg[1]);
 		if (spelltar)
-			c->GetTarget()->CastSpell(atoi(sep->arg[2]), spelltar->GetID());
+		{
+			//c->GetTarget()->CastSpell(atoi(sep->arg[2]), spelltar->GetID());
+		}
 		else
 			c->Message(0, "Error: %s not found", sep->arg[1]);
 	}
 	else if (c->GetTarget() && c->GetTarget()->IsNPC() && sep->IsNumber(1) && sep->IsNumber(2) ) {
 		Mob* spelltar = entity_list.GetMob(atoi(sep->arg[1]));
 		if (spelltar) 
-			c->GetTarget()->CastSpell(atoi(sep->arg[2]), spelltar->GetID());
+		{
+			//c->GetTarget()->CastSpell(atoi(sep->arg[2]), spelltar->GetID());
+		}
 		else
 			c->Message(0, "Error: target ID %i not found", atoi(sep->arg[1]));
 	}
@@ -2576,15 +2580,25 @@ void command_castspell(Client *c, const Seperator *sep)
 			c->Message(0, "Error: #CastSpell: Arguement out of range");
 		else
 			if (c->GetTarget() == 0)
+			{
 				if(c->Admin() >= commandInstacast)
+				{
 					c->SpellFinished(spellid, 0, 10, 0);
+				}
 				else
-					c->CastSpell(spellid, 0, 10, 0);
+				{
+					//c->CastSpell(spellid, 0, 10, 0);
+				}
+			}
 			else
 				if(c->Admin() >= commandInstacast)
+				{
 					c->SpellFinished(spellid, c->GetTarget(), 10, 0);
+				}
 				else
-					c->CastSpell(spellid, c->GetTarget()->GetID(), 10, 0);
+				{
+					//c->CastSpell(spellid, c->GetTarget()->GetID(), 10, 0);
+				}
 	}
 }
 

@@ -128,15 +128,16 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 		Message(0, "You are affected by spell '%s' (id %d)", spell.name, spell_id);
 		if(buffslot >= 0)
 		{
-			Message(0, "Buff slot:  %d  Duration:  %d tics", buffslot, buffs[buffslot].ticsremaining);
+			//TODO:
+			//Message(0, "Buff slot:  %d  Duration:  %d tics", buffslot, buffs[buffslot].ticsremaining);
 		}
 #endif
 
-		 if(buffslot >= 0) 
+		 /*if(buffslot >= 0) 
 		 {
 			 buffs[buffslot].melee_rune = 0;
 			 buffs[buffslot].magic_rune = 0;
-		 }
+		 }*/
 
 	// iterate through the effects in the spell
 	for (i = 0; i < EFFECT_COUNT; i++)
@@ -265,6 +266,8 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				//this is in the wrong spot, it should be in the immune
 				//section so the buff timer does not get refreshed!
 
+				//TODO:
+				/*
 				int i;
 				bool inuse = false;
 				for(i = 0; i < BUFF_COUNT; i++) {
@@ -276,7 +279,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				}
 				if(inuse)
 					break;
-
+				*/
 				Heal();
 				break;
 			}
@@ -701,13 +704,15 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				{
 					int resistMod = partial + (GetCHA()/25);
 					resistMod = resistMod > 100 ? 100 : resistMod;
-					buffs[buffslot].ticsremaining = resistMod * buffs[buffslot].ticsremaining / 100;
+					//TODO:
+					//buffs[buffslot].ticsremaining = resistMod * buffs[buffslot].ticsremaining / 100;
 				}
 
 				if(IsClient())
 				{
-					if(buffs[buffslot].ticsremaining > RuleI(Character, MaxCharmDurationForPlayerCharacter))
-						buffs[buffslot].ticsremaining = RuleI(Character, MaxCharmDurationForPlayerCharacter);
+					//TODO:
+					//if(buffs[buffslot].ticsremaining > RuleI(Character, MaxCharmDurationForPlayerCharacter))
+					//	buffs[buffslot].ticsremaining = RuleI(Character, MaxCharmDurationForPlayerCharacter);
 				}
 
 				break;
@@ -734,12 +739,13 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				snprintf(effect_desc, _EDLEN, "Fear: %+i", effect_value);
 #endif
 				//use resistance value for duration...
-				buffs[buffslot].ticsremaining = ((buffs[buffslot].ticsremaining * partial) / 100);
+				//TODO:
+				//buffs[buffslot].ticsremaining = ((buffs[buffslot].ticsremaining * partial) / 100);
 
 				if(IsClient())
 				{
-					if(buffs[buffslot].ticsremaining > RuleI(Character, MaxFearDurationForPlayerCharacter))
-						buffs[buffslot].ticsremaining = RuleI(Character, MaxFearDurationForPlayerCharacter);
+					//if(buffs[buffslot].ticsremaining > RuleI(Character, MaxFearDurationForPlayerCharacter))
+					//	buffs[buffslot].ticsremaining = RuleI(Character, MaxFearDurationForPlayerCharacter);
 				}
 
 				if(RuleB(Combat, EnableFearPathing)){
@@ -757,7 +763,8 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				} 
 				else 
 				{
-					Stun(buffs[buffslot].ticsremaining * 6000 - (6000 - tic_timer.GetRemainingTime()));
+					//TODO:
+					//Stun(buffs[buffslot].ticsremaining * 6000 - (6000 - tic_timer.GetRemainingTime()));
 				}
 				break;
 			}
@@ -909,7 +916,8 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				snprintf(effect_desc, _EDLEN, "Cancel Magic: %d", effect_value);
 #endif
 				// solar: TODO proper dispel counters, including poison/disease/curse
-				int slot;
+				//TODO:
+				/*int slot;
 				for(slot = 0; slot < BUFF_COUNT; slot++)
 				{
 					if(buffs[slot].diseasecounters || buffs[slot].poisoncounters || buffs[slot].cursecounters) //if we have poison or disease counters then we can't remove this with dispel
@@ -924,7 +932,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 						BuffFadeBySlot(slot);
 						slot = BUFF_COUNT;
 					}
-				}
+				}*/
 				break;
 			}
 
@@ -933,6 +941,8 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Dispel Detrimental: %d", effect_value);
 #endif
+				//TODO:
+				/*
 				int slot;
 				for(slot = 0; slot < BUFF_COUNT; slot++)
 				{
@@ -949,7 +959,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 						BuffFadeBySlot(slot);
 						slot = BUFF_COUNT;
 					}
-				}
+				}*/
 				break;
 			}
 
@@ -1101,8 +1111,9 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Melee Absorb Rune: %+i", effect_value);
 #endif
-				buffs[buffslot].melee_rune = effect_value;	
-					SetHasRune(true);
+				//TODO:
+				//buffs[buffslot].melee_rune = effect_value;	
+				SetHasRune(true);
 				break;
 			}
 
@@ -1112,7 +1123,8 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				snprintf(effect_desc, _EDLEN, "Spell Absorb Rune: %+i", effect_value);
 #endif
 				if(effect_value > 0) {
-				buffs[buffslot].magic_rune = effect_value;	
+					//TODO:
+					//buffs[buffslot].magic_rune = effect_value;	
 					SetHasSpellRune(true);
 				}
 				break;
@@ -1168,9 +1180,13 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 					SendWearChange(x);
 				}
 				if(caster && caster->GetAA(aaPermanentIllusion))
-					buffs[buffslot].persistant_buff = 1;
+				{
+					//TODO: buffs[buffslot].persistant_buff = 1;
+				}
 				else
-					buffs[buffslot].persistant_buff = 0;
+				{
+					//TODO: buffs[buffslot].persistant_buff = 0;
+				}
 				break;
 			}
 
@@ -1260,7 +1276,9 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				{
 					// solar: the spinning is handled by the client
 					if(buffslot >= 0)
-						Stun(buffs[buffslot].ticsremaining * 6000);
+					{
+						//TODO: Stun(buffs[buffslot].ticsremaining * 6000);
+					}
 				}
 				break;
 			}
@@ -1856,10 +1874,14 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				snprintf(effect_desc, _EDLEN, "Poison Counter: %+i", effect_value);
 #endif
 				if (effect_value > 0)
-					buffs[buffslot].poisoncounters = effect_value;
+				{
+					//TODO: buffs[buffslot].poisoncounters = effect_value;
+				}
 				else
 				{
 					effect_value = 0 - effect_value;
+					//TODO:
+					/*
 					for (int j=0; j < BUFF_COUNT; j++) {
 						if (buffs[j].spellid >= (int16)SPDAT_RECORDS)
 							continue;
@@ -1876,7 +1898,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 							effect_value = 0;
 							break;
 						}
-					}
+					}*/
 				}
 				break;
 			}
@@ -1887,10 +1909,14 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				snprintf(effect_desc, _EDLEN, "Disease Counter: %+i", effect_value);
 #endif
 				if (effect_value > 0)
-					buffs[buffslot].diseasecounters = effect_value;
+				{
+					//TODO: buffs[buffslot].diseasecounters = effect_value;
+				}
 				else
 				{
 					effect_value = 0 - effect_value;
+					//TODO:
+					/*
 					for (int j=0; j < BUFF_COUNT; j++) {
 						if (buffs[j].spellid >= (int16)SPDAT_RECORDS)
 							continue;
@@ -1910,7 +1936,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 							effect_value = 0;
 							break;
 						}
-					}
+					}*/
 				}
 				break;
 			}
@@ -1921,9 +1947,13 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				snprintf(effect_desc, _EDLEN, "Curse Counter: %+i", effect_value);
 #endif
 				if (effect_value > 0)
-					buffs[buffslot].cursecounters = effect_value;
+				{
+					//TODO: buffs[buffslot].cursecounters = effect_value;
+				}
 				else
 				{
+					//TODO:
+					/*
 					effect_value = 0 - effect_value;
 					for (int j=0; j < BUFF_COUNT; j++) {
 						if (buffs[j].spellid >= (int16)SPDAT_RECORDS)
@@ -1944,7 +1974,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 							effect_value = 0;
 							break;
 						}
-					}
+					}*/
 				}
 				break;
 			}
@@ -2701,8 +2731,8 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #ifdef SPELL_EFFECT_SPAM
 					snprintf(effect_desc, _EDLEN, "Death Save Chance: %+i", SuccessChance);
 #endif
-					buffs[buffslot].deathSaveSuccessChance = SuccessChance;
-					buffs[buffslot].casterAARank = caster->GetAA(aaUnfailingDivinity);
+					//TODO: buffs[buffslot].deathSaveSuccessChance = SuccessChance;
+					//buffs[buffslot].casterAARank = caster->GetAA(aaUnfailingDivinity);
 					SetDeathSaveChance(true);
 				}
 
@@ -2984,6 +3014,8 @@ snare has both of them negative, yet their range should work the same:
 
 
 void Mob::BuffProcess() {
+	//TODO:
+	/*
 	for (int buffs_i=0; buffs_i<BUFF_COUNT; buffs_i++) {
 		if (buffs[buffs_i].spellid != SPELL_UNKNOWN) {
 			DoBuffTic(buffs[buffs_i].spellid, buffs[buffs_i].ticsremaining, buffs[buffs_i].casterlevel, entity_list.GetMob(buffs[buffs_i].casterid));
@@ -3004,6 +3036,7 @@ void Mob::BuffProcess() {
 			}
 		}
 	}
+	*/
 }
 
 void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob* caster) {
@@ -3213,6 +3246,8 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 // solar: removes the buff in the buff slot 'slot'
 void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 {
+	//TODO:
+	/*
 	if(slot < 0 || slot > BUFF_COUNT)
 		return;
 
@@ -3256,9 +3291,6 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 			{
 				if(IsClient())
 				{
-					/*Mob* horse = entity_list.GetMob(this->CastToClient()->GetHorseId());
-					if (horse) horse->Depop();
-					CastToClient()->SetHasMount(false);*/
 					CastToClient()->SetHorseId(0);
 				}
 				break;
@@ -3522,6 +3554,7 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 
 	if (iRecalcBonuses)
 		CalcBonuses();
+		*/
 }
 
 //given an item/spell's focus ID and the spell being cast, determine the focus ammount, if any
@@ -3814,6 +3847,8 @@ sint16 Client::GetFocusEffect(focusType type, int16 spell_id) {
 	sint16 Total2 = 0;
 	sint16 realTotal2 = 0;
 
+	//TODO:
+	/*
 	for (int y = 0; y < BUFF_COUNT; y++) {
 		int16 focusspellid = buffs[y].spellid;
 		if (focusspellid == 0 || focusspellid >= SPDAT_RECORDS)
@@ -3825,7 +3860,7 @@ sint16 Client::GetFocusEffect(focusType type, int16 spell_id) {
 			} else if (Total2 < 0 && Total2 < realTotal2) {
 				realTotal2 = Total2;
 			}
-	}
+	}*/
 
 	if(type == focusReagentCost && IsSummonPetSpell(spell_id) && GetAA(aaElementalPact))
 		return 100;
@@ -3931,9 +3966,11 @@ bool Mob::TryDeathSave() {
 	int buffSlot = GetBuffSlotFromType(SE_DeathSave);
 
 	if(buffSlot >= 0) {
-		int8 SuccessChance = buffs[buffSlot].deathSaveSuccessChance;
-		int8 CasterUnfailingDivinityAARank = buffs[buffSlot].casterAARank;
-		int16 BuffSpellID = buffs[buffSlot].spellid;
+
+		//TODO:
+		int8 SuccessChance = 0;//buffs[buffSlot].deathSaveSuccessChance;
+		int8 CasterUnfailingDivinityAARank = 0;//buffs[buffSlot].casterAARank;
+		int16 BuffSpellID = 0;//buffs[buffSlot].spellid;
 		int SaveRoll = MakeRandomInt(0, 100);
 
 		LogFile->write(EQEMuLog::Debug, "%s chance for a death save was %i and the roll was %i", GetCleanName(), SuccessChance, SaveRoll);
@@ -4032,8 +4069,8 @@ bool Mob::AffectedExcludingSlot(int slot, int effect)
 		if (i == slot)
 			continue;
 
-		if (IsEffectInSpell(buffs[i].spellid, effect))
-			return true;
+		//TODO:if (IsEffectInSpell(buffs[i].spellid, effect))
+			//return true;
 	}
 	return false;
 }

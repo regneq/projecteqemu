@@ -3556,7 +3556,7 @@ XS(XS_Mob_CastSpell)
 			mana_cost = (sint32)SvIV(ST(5));
 		}
 
-		THIS->CastSpell(spell_id, target_id, slot, casttime, mana_cost);
+		//THIS->CastSpell(spell_id, target_id, slot, casttime, mana_cost);
 	}
 	XSRETURN_EMPTY;
 }

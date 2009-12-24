@@ -1775,6 +1775,8 @@ void Client::DoEnduranceUpkeep() {
 
 	int cost_redux = spellbonuses.EnduranceReduction + itembonuses.EnduranceReduction;
 
+	//TODO:
+	/*
 	uint32 buffs_i;
 	for (buffs_i=0; buffs_i<BUFF_COUNT; buffs_i++) {
 		if (buffs[buffs_i].spellid != SPELL_UNKNOWN) {
@@ -1793,7 +1795,7 @@ void Client::DoEnduranceUpkeep() {
 				}
 			}
 		}
-	}
+	}*/
 	
 	if(upkeep_sum != 0)
 		SetEndurance(GetEndurance() - upkeep_sum);
@@ -1816,6 +1818,8 @@ void Client::CalcRestState() {
 	if(!rest_timer.Check(false))
 		return;
 
+	//TODO:
+	/*
 	for (unsigned int j = 0; j < BUFF_COUNT; j++) {
 
 		if(buffs[j].spellid != SPELL_UNKNOWN) {
@@ -1825,7 +1829,7 @@ void Client::CalcRestState() {
 				return;
 			}
 		}
-	}
+	}*/
 
 	RestRegenHP = (GetMaxHP() * RuleI(Character, RestRegenPercent) / 100);
 

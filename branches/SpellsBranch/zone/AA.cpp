@@ -269,7 +269,7 @@ void Client::ActivateAA(aaID activate){
 	if(caa->spell_id > 0 && caa->spell_id < SPDAT_RECORDS) {
 		//I dont know when we need to mem and when we do not, if ever...
 		//MemorizeSpell(8, spell_id, 3);
-		if(!CastSpell(caa->spell_id, target_id))
+		//if(!CastSpell(caa->spell_id, target_id))
 			return;
 	}
 	
@@ -504,7 +504,7 @@ void Client::HandleAAAction(aaID activate) {
 	if(spell_id > 0 && spell_id < SPDAT_RECORDS) {
 		//I dont know when we need to mem and when we do not, if ever...
 		//MemorizeSpell(8, spell_id, 3);
-		CastSpell(spell_id, target_id);
+		//CastSpell(spell_id, target_id);
 	}
 	
 	//handle the duration timer if we have one.   
@@ -1290,8 +1290,10 @@ int Client::GroupLeadershipAAOffenseEnhancement()
 	return 0;
 }
 
+//TODO:
 void Client::InspectBuffs(Client* Inspector, int Rank)
 {
+	/*
 	if(!Inspector || (Rank == 0)) return;
 
 	Inspector->Message_StringID(0, CURRENT_SPELL_EFFECTS, GetName());
@@ -1317,7 +1319,7 @@ void Client::InspectBuffs(Client* Inspector, int Rank)
 				}
 			}
 		}
-	}
+	}*/
 }
 
 //this really need to be renamed to LoadAAActions()

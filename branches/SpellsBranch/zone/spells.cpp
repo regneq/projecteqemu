@@ -1843,6 +1843,8 @@ bool Mob::ApplyNextBardPulse(int16 spell_id, Mob *spell_target, int16 slot) {
 }
 
 void Mob::BardPulse(uint16 spell_id, Mob *caster) {
+	//TODO:
+	/*
 	int buffs_i;
 	for (buffs_i = 0; buffs_i < BUFF_COUNT; buffs_i++) {
 		if(buffs[buffs_i].spellid != spell_id)
@@ -1954,6 +1956,7 @@ void Mob::BardPulse(uint16 spell_id, Mob *caster) {
 	mlog(SPELLS__BARDS, "Bard Song Pulse %d: Buff not found, reapplying spell.", spell_id);
 	//this spell is not affecting this mob, apply it.
 	caster->SpellOnTarget(spell_id, this);
+	*/
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2345,6 +2348,8 @@ int Mob::AddBuff(Mob *caster, int16 spell_id, int duration, sint32 level_overrid
 	// it would overwrite, and then hitting a buff we can't stack with.
 	// we also check if overwriting will occur.  this is so after this loop
 	// we can determine if there will be room for this buff
+	//TODO:
+	/*
 	for(buffslot = 0; buffslot < BUFF_COUNT; buffslot++)
 	{
 		const Buffs_Struct &curbuf = buffs[buffslot];
@@ -2398,6 +2403,7 @@ int Mob::AddBuff(Mob *caster, int16 spell_id, int duration, sint32 level_overrid
  			return -1;
  		}
  	}
+	*/
 
 	// solar: at this point we know that this buff will stick, but we have
 	// to remove some other buffs already worn if will_overwrite is true
@@ -2418,8 +2424,8 @@ int Mob::AddBuff(Mob *caster, int16 spell_id, int duration, sint32 level_overrid
 	}
 
 	// now add buff at emptyslot
-	assert(buffs[emptyslot].spellid == SPELL_UNKNOWN);	// sanity check
-	
+	//TODO: assert(buffs[emptyslot].spellid == SPELL_UNKNOWN);	// sanity check
+	/*
 	buffs[emptyslot].spellid = spell_id;
 	buffs[emptyslot].casterlevel = caster_level;
 	buffs[emptyslot].casterid = caster ? caster->GetID() : 0;
@@ -2438,7 +2444,7 @@ int Mob::AddBuff(Mob *caster, int16 spell_id, int duration, sint32 level_overrid
 	else{ 
 		if(buffs[emptyslot].ticsremaining > (1+CalcBuffDuration_formula(caster_level, spells[spell_id].buffdurationformula, spells[spell_id].buffduration)))
 			buffs[emptyslot].UpdateClient = true;
-	}
+	}*/
 		
 	mlog(SPELLS__BUFFS, "Buff %d added to slot %d with caster level %d", spell_id, emptyslot, caster_level);
 	if(IsPet() && GetOwner() && GetOwner()->IsClient()) {
@@ -2459,6 +2465,8 @@ int Mob::AddBuff(Mob *caster, int16 spell_id, int duration, sint32 level_overrid
 // returns -1 on stack failure, -2 if all slots full, the slot number if the buff should overwrite another buff, or a free buff slot
 int Mob::CanBuffStack(int16 spellid, int8 caster_level, bool iFailIfOverwrite)
 {
+	//TODO:
+	/*
 	int i, ret, firstfree = -2;
 	
 	mlog(AI__BUFFS, "Checking if buff %d cast at level %d can stack on me.%s", spellid, caster_level, iFailIfOverwrite?" failing if we would overwrite something":"");
@@ -2499,6 +2507,8 @@ int Mob::CanBuffStack(int16 spellid, int8 caster_level, bool iFailIfOverwrite)
 	mlog(AI__BUFFS, "Reporting that buff %d could successfully be placed into slot %d", spellid, firstfree);
 
 	return firstfree;
+	*/
+	return 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2996,31 +3006,37 @@ bool Mob::FindBuff(int16 spellid)
 {
 	int i;
 
+	//TODO:
+	/*
 	for(i = 0; i < BUFF_COUNT; i++)
 		if(buffs[i].spellid == spellid)
 			return true;
-
+	*/
 	return false;
 }
 
 // solar: removes all buffs
 void Mob::BuffFadeAll()
 {
+	//TODO:
+	/*
 	for (int j = 0; j < BUFF_COUNT; j++) {
 		if(buffs[j].spellid != SPELL_UNKNOWN)
 			BuffFadeBySlot(j, false);
-	}
+	}*/
 	//we tell BuffFadeBySlot not to recalc, so we can do it only once when were done
 	CalcBonuses();
 }
 
 void Mob::BuffFadeDetrimental() {
+	//TODO:
+	/*
 	for (int j = 0; j < BUFF_COUNT; j++) {
 		if(buffs[j].spellid != SPELL_UNKNOWN) {
 			if(IsDetrimentalSpell(buffs[j].spellid))
 				BuffFadeBySlot(j, false);
 		}
-	}
+	}*/
 }
 
 void Mob::BuffFadeDetrimentalByCaster(Mob *caster)
@@ -3028,6 +3044,8 @@ void Mob::BuffFadeDetrimentalByCaster(Mob *caster)
 	if(!caster)
 		return;
 
+	//TODO:
+	/*
 	for (int j = 0; j < BUFF_COUNT; j++) {
 		if(buffs[j].spellid != SPELL_UNKNOWN) {
 			if(IsDetrimentalSpell(buffs[j].spellid))
@@ -3039,18 +3057,20 @@ void Mob::BuffFadeDetrimentalByCaster(Mob *caster)
 					BuffFadeBySlot(j, false);
 			}
 		}
-	}
+	}*/
 }
 
 // solar: removes the buff matching spell_id
 void Mob::BuffFadeBySpellID(int16 spell_id)
 {
+	//TODO:
+	/*
 	for (int j = 0; j < BUFF_COUNT; j++)
 	{
 		if (buffs[j].spellid == spell_id)
 			BuffFadeBySlot(j, false);
 	}
-
+	*/
 	//we tell BuffFadeBySlot not to recalc, so we can do it only once when were done
 	CalcBonuses();
 }
@@ -3060,6 +3080,7 @@ void Mob::BuffFadeByEffect(int effectid, int skipslot)
 {
 	int i;
 
+	/*
 	for(i = 0; i < BUFF_COUNT; i++)
 	{
 		if(buffs[i].spellid == SPELL_UNKNOWN)
@@ -3067,6 +3088,7 @@ void Mob::BuffFadeByEffect(int effectid, int skipslot)
 		if(IsEffectInSpell(buffs[i].spellid, effectid) && i != skipslot)
 			BuffFadeBySlot(i, false);
 	}
+	*/
 
 	//we tell BuffFadeBySlot not to recalc, so we can do it only once when were done
 	CalcBonuses();
@@ -4131,6 +4153,8 @@ int16 Mob::FindSpell(int16 classp, int16 level, int8 type, int8 spelltype) {
 
 // solar: TODO get rid of this
 sint8 Mob::GetBuffSlotFromType(int8 type) {
+	//TODO:
+	/*
 	for (int i = 0; i < BUFF_COUNT; i++) {
 		if (buffs[i].spellid != SPELL_UNKNOWN) {
 			for (int j = 0; j < EFFECT_COUNT; j++) {
@@ -4138,12 +4162,14 @@ sint8 Mob::GetBuffSlotFromType(int8 type) {
 					return i;
 			}
 		}
-	}
+	}*/
     return -1;
 }
 
 
 bool Mob::FindType(int8 type, bool bOffensive, int16 threshold) {
+	//TODO:
+	/*
 	for (int i = 0; i < BUFF_COUNT; i++) {
 		if (buffs[i].spellid != SPELL_UNKNOWN) {
 
@@ -4169,6 +4195,7 @@ bool Mob::FindType(int8 type, bool bOffensive, int16 threshold) {
 			}
 		}
 	}
+	*/
 	return false;
 }
 
@@ -4374,6 +4401,8 @@ void Mob::SendPetBuffsToClient()
 	memset(outapp->pBuffer,0,outapp->size);
 	pbs->petid=GetID();
 
+	//TODO:
+	/*
 	for(int buffslot = 0; buffslot < BUFF_COUNT; buffslot++) {
 		if(buffs[buffslot].spellid != SPELL_UNKNOWN) {
 			pbs->spellid[PetBuffCount] = buffs[buffslot].spellid;
@@ -4381,6 +4410,7 @@ void Mob::SendPetBuffsToClient()
 			PetBuffCount++;
 		}
 	}
+	*/
 
 	pbs->buffcount=PetBuffCount;
 	GetOwner()->CastToClient()->QueuePacket(outapp);
@@ -4389,6 +4419,8 @@ void Mob::SendPetBuffsToClient()
 
 void Mob::BuffModifyDurationBySpellID(int16 spell_id, sint32 newDuration)
 {
+	//TODO:
+	/*
 	for(int i = 0; i < BUFF_COUNT; ++i)
 	{
 		if (buffs[i].spellid == spell_id)
@@ -4399,5 +4431,5 @@ void Mob::BuffModifyDurationBySpellID(int16 spell_id, sint32 newDuration)
 				CastToClient()->SendBuffDurationPacket(buffs[i].spellid, buffs[i].ticsremaining, buffs[i].casterlevel);
 			}
 		}
-	}
+	}*/
 }
