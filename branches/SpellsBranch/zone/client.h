@@ -332,10 +332,10 @@ public:
 	inline bool MelodyIsActive() const { return(melodystate); } // is activated
 	void		MelodySetSong(int gem_id, int slot = -1); // set a specific song in the array
 	inline void MelodySetState(bool state) { melodystate = state; this->Message(0, "Melody %s.", state ? "activated" : "deactivated"); } // activate / deactivate melody
-	void		MelodyTrySong();	
-	
-	
-	
+	void		MelodyTrySong();
+
+
+
 
 	/*
 		Begin client modifiers
@@ -680,7 +680,7 @@ public:
 	void	LinkDead();
 	void	Insight(int32 t_id);
     bool	CheckDoubleAttack(bool tripleAttack = false);
-	
+
 	//remove charges/multiple objects from inventory:
 	//bool	DecreaseByType(int32 type, int8 amt);
 	bool	DecreaseByID(int32 type, int8 amt);
@@ -709,6 +709,11 @@ public:
 	bool	TrainDiscipline(int32 itemid);
 	void	SendDisciplineUpdate();
 	bool	UseDiscipline(int32 spell_id, int32 target);
+
+   	bool   CheckTitle(int titleset);
+   	void   EnableTitle(int titleset);
+   	void   RemoveTitle(int titleset);
+
 #ifdef PACKET_UPDATE_MANAGER
 	inline UpdateManager *GetUpdateManager() { return(&update_manager); }
 #endif
@@ -1033,7 +1038,7 @@ private:
 	ExtendedProfile_Struct		m_epp;
 	Inventory					m_inv;
 	Object*						m_tradeskill_object;
-	
+
 	AdventureInfo* m_offered_adventure;
 	AdventureDetails *m_current_adventure;
 
