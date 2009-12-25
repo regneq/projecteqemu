@@ -83,6 +83,7 @@ Copyright (C) 2001-2002  EQEMu Development Team (http://eqemu.org)
 #include "../common/bodytypes.h"
 #include "../common/classes.h"
 #include "../common/rulesys.h"
+#include "spells.h"
 #include <math.h>
 #include <assert.h>
 #ifndef WIN32
@@ -4432,4 +4433,78 @@ void Mob::BuffModifyDurationBySpellID(int16 spell_id, sint32 newDuration)
 			}
 		}
 	}*/
+}
+
+int Client::GetMaxBuffSlots()
+{
+	return 15 + GetAA(aaMysticalAttuning);
+}
+
+int Client::GetMaxSongSlots()
+{
+	return 6 + GetAA(aaMysticalAttuning);
+}
+
+void Client::InitializeBuffSlots()
+{
+	buffs = new Spell*[36];
+	for(int x = 0; x < 36; ++x)
+	{
+		buffs[x] = NULL;
+	}
+}
+
+void Client::UninitializeBuffSlots()
+{
+	for(int x = 0; x < 36; ++x)
+	{
+		delete buffs[x];
+	}
+	safe_delete_array(buffs);
+}
+
+int Client::GetFreeBuffSlot(int32 spell_id)
+{
+	if(spells[spell_id].short_buff_box)
+	{
+		for(int x = 25; x < (25 + GetMaxSongSlots()); ++x)
+		{
+			if(buffs[x] == NULL)
+			{
+				return x;
+			}
+		}
+		return 25;
+	}
+	else
+	{
+		for(int x = 0; x < GetMaxBuffSlots(); ++x)
+		{
+			if(buffs[x] == NULL)
+			{
+				return x;
+			}
+		}
+		return 0;
+	}
+
+	return -1;
+}
+
+void NPC::InitializeBuffSlots()
+{
+	buffs = new Spell*[35];
+	for(int x = 0; x < 35; ++x)
+	{
+		buffs[x] = NULL;
+	}
+}
+
+void NPC::UninitializeBuffSlots()
+{
+	for(int x = 0; x < 35; ++x)
+	{
+		delete buffs[x];
+	}
+	safe_delete_array(buffs);
 }

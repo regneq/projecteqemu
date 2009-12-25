@@ -383,6 +383,7 @@ public:
 	inline int8	GetBaseAGI()	const { return m_pp.AGI; }
 	inline int8	GetBaseWIS()	const { return m_pp.WIS; }
 
+	//Spell related stuff
 	float  GetActSpellRange(int16 spell_id, float range);
 	sint32  GetActSpellDamage(int16 spell_id, sint32 value);
 	sint32  GetActSpellHealing(int16 spell_id, sint32 value);
@@ -391,6 +392,11 @@ public:
 	sint32  GetActSpellCasttime(int16 spell_id, sint32);
 	sint32  GetDotFocus(int16 spell_id, sint32 value);
 	virtual bool CheckFizzle(int16 spell_id);
+	virtual int GetMaxBuffSlots();
+	virtual int GetMaxSongSlots();
+	virtual void InitializeBuffSlots();
+	virtual void UninitializeBuffSlots();
+	virtual int GetFreeBuffSlot(int32 spell_id);
 
 	inline const sint32	GetBaseHP() const { return base_hp; }
 

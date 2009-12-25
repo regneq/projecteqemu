@@ -709,6 +709,10 @@
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
+				RelativePath=".\AA.h"
+				>
+			</File>
+			<File
 				RelativePath=".\beacon.h"
 				>
 			</File>
@@ -850,6 +854,10 @@
 			</File>
 			<File
 				RelativePath=".\spdat.h"
+				>
+			</File>
+			<File
+				RelativePath=".\spells.h"
 				>
 			</File>
 			<File

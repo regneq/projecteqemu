@@ -1,4 +1,7 @@
 EQEmu Spells Branch Changelog (Started on Dec 23, 2009 9:25)
 -----------------------------------------------------------
 
+12/24/09 - Branch compiles again, but spells are completely unusable at the moment.
+12/24/09 - Working on buff memory layout.
+12/24/09 - Gutted some more functions.
 12/23/09 - Initial Checkin

@@ -88,6 +88,13 @@ public:
 	virtual bool	AI_IdleCastCheck();
 	virtual void	AI_Event_SpellCastFinished(bool iCastSucceeded, int8 slot);
 
+	//Spell related stuff
+	virtual int GetMaxBuffSlots() { return 25; }
+	virtual int GetMaxSongSlots() { return 10; }
+	virtual void InitializeBuffSlots();
+	virtual void UninitializeBuffSlots();
+	virtual int GetFreeBuffSlot(int32 spell_id) { return 0; }
+
 	void LevelScale();
 	void CalcNPCResists();
 	void CalcNPCRegen();
@@ -95,8 +102,7 @@ public:
 	
 	virtual void SetTarget(Mob* mob);
 	virtual uint16 GetSkill(SkillType skill_num) const { if (skill_num <= HIGHEST_SKILL) { return skills[skill_num]; } return 0; }
-/*  virtual void SetSkill(int in_skill_num, int8 in_skill_value) { // socket 12-29-01
-        if (in_skill_num <= HIGHEST_SKILL) { skills[in_skill_num + 1] = in_skill_value; } }*/
+
 
 	void CalcItemBonuses(StatBonuses *newbon);
 	virtual void CalcBonuses();

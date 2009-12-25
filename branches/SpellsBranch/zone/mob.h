@@ -67,6 +67,7 @@
 #include "../common/bodytypes.h"
 #include "pathing.h"
 #include "map.h"
+#include "spells.h"
 #include <set>
 #include <vector>
 #include <string>
@@ -395,7 +396,6 @@ bool logpos;
 
 	inline virtual bool IsMob() const { return true; }
 	inline virtual bool InZone() const { return true; }
-	void	BuffProcess();
 	virtual void SetLevel(uint8 in_level, bool command = false) { level = in_level; }
 	void	SendLevelAppearance();
 
@@ -500,11 +500,7 @@ bool logpos;
 	bool	HasBuffIcon(Mob* caster, Mob* target, int16 spell_id);
 
 	virtual void MakePet(int16 spell_id, const char* pettype, const char *petname = NULL);
-//	inline void	MakePetType(int16 spell_id, const char* pettype, const char *petname = NULL) { MakePet(spell_id, pettype, petname); }	//for perl
-//	void	MakePet(int16 spell_id, int8 in_level, int8 in_class, int16 in_race, int8 in_texture = 0, int8 in_pettype = 0, float in_size = 0, int8 type = 0, int32 min_dmg = 0, int32 max_dmg = 0, const char *petname = NULL);
-
 	bool	CombatRange(Mob* other);
-//	int8	flag[60];		//this is for quests or something...
 
 	virtual inline int16	GetBaseRace()	const { return base_race; }
 	virtual inline int8	GetBaseGender()		const { return base_gender; }
@@ -655,6 +651,15 @@ bool logpos;
 	void QuestJournalledSay(Client *QuestInitiator, const char *str);
 
 
+	//Spell related things.
+	void BuffProcess();
+	virtual int GetMaxBuffSlots() { return 25; }
+	virtual int GetMaxSongSlots() { return 10; }
+	virtual void InitializeBuffSlots() { buffs = NULL; }
+	virtual void UninitializeBuffSlots() { }
+	virtual int GetFreeBuffSlot(int32 spell_id) { return 0; }
+	
+
 	virtual void SpellProcess();
 	virtual bool CheckFizzle(int16 spell_id);
 	void ZeroCastingVars();
@@ -671,7 +676,6 @@ bool logpos;
 	virtual bool DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_center, CastAction_type &CastAction);
 	int		CalcBuffDuration(Mob *caster, Mob *target, int16 spell_id, sint32 caster_level_override = -1);
 	void	SendPetBuffsToClient();
-//	int		CheckAddBuff(Mob* caster, const int16& spell_id, const int& caster_level, int* buffdur, int ticsremaining = -1);
 	int		AddBuff(Mob *caster, const int16 spell_id, int duration = 0, sint32 level_override = -1);
 	virtual bool SpellEffect(Mob* caster, int16 spell_id, float partial = 100);
 	virtual bool IsImmuneToSpell(int16 spell_id, Mob *caster);
@@ -720,10 +724,6 @@ bool logpos;
 	void TempPets(bool i) { hasTempPet = i; }
 
     inline const	bodyType	GetBodyType() const	{ return bodytype; }
-//    int16   FindSpell(int16 classp, int16 level, int type, FindSpellType spelltype, float distance, sint32 mana_avail);
-//	void	CheckBuffs();
-//	bool	CheckSelfBuffs();
-//	void	CheckPet();
 
  	void    SendSpellBarDisable();
  	void    SendSpellBarEnable(int16 spellid);
@@ -990,8 +990,8 @@ protected:
 	float 	slow_mitigation;	// Allows for a slow mitigation based on a % in decimal form.  IE, 1 = 100% mitigation, .5 is 50%
 	int8	maxlevel;
 	int32	scalerate;
-	//Buffs todo!
-	//Buffs_Struct	buffs[BUFF_COUNT];
+	//TODO:
+	Spell **buffs;
 	StatBonuses		itembonuses;
 	StatBonuses		spellbonuses;
 	StatBonuses		aabonuses;

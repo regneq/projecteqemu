@@ -233,6 +233,8 @@ Mob::Mob(const char*   in_name,
 	}
 	*/
 
+	InitializeBuffSlots();
+
     // clear the proc arrays
 	for (j = 0; j < MAX_PROCS; j++)
     {
@@ -272,7 +274,6 @@ Mob::Mob(const char*   in_name,
 	israidgrouped = false;
 	_appearance = eaStanding;
 	pRunAnimSpeed = 0;
-//	guildeqid = GUILD_NONE;
 	
     spellend_timer.Disable();
 	bardsong_timer.Disable();
@@ -298,9 +299,7 @@ Mob::Mob(const char*   in_name,
 	silenced = false;
 	inWater = false;
     int m;
-/*	for (m = 0; m < 60; m++) {
-		flag[m]=0;
-	}*/
+
 	for (m = 0; m < MAX_SHIELDERS; m++)
 	{
 		shielder[m].shielder_id = 0;
@@ -406,6 +405,7 @@ Mob::~Mob()
 	safe_delete(PathingLOSCheckTimer);
 	safe_delete(PathingRouteUpdateTimerShort);
 	safe_delete(PathingRouteUpdateTimerLong);
+	UninitializeBuffSlots();
 }
 
 int32 Mob::GetAppearanceValue(EmuAppearance iAppearance) {

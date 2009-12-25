@@ -3013,30 +3013,8 @@ snare has both of them negative, yet their range should work the same:
 }
 
 
-void Mob::BuffProcess() {
-	//TODO:
-	/*
-	for (int buffs_i=0; buffs_i<BUFF_COUNT; buffs_i++) {
-		if (buffs[buffs_i].spellid != SPELL_UNKNOWN) {
-			DoBuffTic(buffs[buffs_i].spellid, buffs[buffs_i].ticsremaining, buffs[buffs_i].casterlevel, entity_list.GetMob(buffs[buffs_i].casterid));
-			if (buffs[buffs_i].durationformula != 50) {
-				buffs[buffs_i].ticsremaining--;
-				if (buffs[buffs_i].ticsremaining <= 0) {
-					mlog(SPELLS__BUFFS, "Buff %d in slot %d has expired. Fading.", buffs[buffs_i].spellid, buffs_i);
-					BuffFadeBySlot(buffs_i);
-				} else {
-					mlog(SPELLS__BUFFS, "Buff %d in slot %d has %d tics remaining.", buffs[buffs_i].spellid, buffs_i, buffs[buffs_i].ticsremaining);
-				}
-			}
-			if(IsClient()){
-				if(buffs[buffs_i].UpdateClient == true){
-					CastToClient()->SendBuffDurationPacket(buffs[buffs_i].spellid, buffs[buffs_i].ticsremaining, buffs[buffs_i].casterlevel);
-					buffs[buffs_i].UpdateClient = false;
-				}
-			}
-		}
-	}
-	*/
+void Mob::BuffProcess() 
+{
 }
 
 void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob* caster) {
