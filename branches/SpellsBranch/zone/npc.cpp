@@ -237,7 +237,6 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 	
 	pet_spell_id = 0;
 	
-	delaytimer = false;
 	combat_event = false;
 	attack_speed = d->attack_speed;
 

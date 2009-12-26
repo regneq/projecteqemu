@@ -8049,7 +8049,7 @@ bool Bot::CastSpell(int16 spell_id, int16 target_id, int16 slot, sint32 cast_tim
 				if(IsSilenced())
 					Message_StringID(13, SILENCED_STRING);
 				if(casting_spell_id)
-					AI_Event_SpellCastFinished(false, casting_spell_slot);
+					AI_Event_SpellCastFinished(false, casting_spell->GetSpellSlot());
 				return(false);
 			}
 		}
@@ -8057,7 +8057,7 @@ bool Bot::CastSpell(int16 spell_id, int16 target_id, int16 slot, sint32 cast_tim
 		if(IsDetrimentalSpell(spell_id) && !zone->CanDoCombat()){
 			Message_StringID(13, SPELL_WOULDNT_HOLD);
 			if(casting_spell_id)
-				AI_Event_SpellCastFinished(false, casting_spell_slot);
+				AI_Event_SpellCastFinished(false, casting_spell->GetSpellSlot());
 			return(false);
 		}
 

@@ -226,7 +226,6 @@ Client::Client(EQStreamInterface* ieqs)
 	proximity_x = FLT_MAX;	//arbitrary large number
 	proximity_y = FLT_MAX;
 	proximity_z = FLT_MAX;
-	casting_spell_id = 0;
 	npcflag = false;
 	npclevel = 0;
 	pQueuedSaveWorkID = 0;
@@ -244,7 +243,6 @@ Client::Client(EQStreamInterface* ieqs)
 	m_tradeskill_object = NULL;
 	m_offered_adventure = NULL;
 	m_current_adventure = NULL;
-	delaytimer = false;
 	pendingrezzexp = 1;
 	numclients++;
 	// emuerror;
@@ -1648,7 +1646,7 @@ void Client::SendManaUpdatePacket() {
 		ManaChange_Struct* manachange = (ManaChange_Struct*)outapp->pBuffer;
 		manachange->new_mana = cur_mana;
 		manachange->stamina = cur_end;
-		manachange->spell_id = casting_spell_id;	//always going to be 0... since we check IsCasting()
+		manachange->spell_id = 0;
 		outapp->priority = 6;
 		QueuePacket(outapp);
 		safe_delete(outapp);

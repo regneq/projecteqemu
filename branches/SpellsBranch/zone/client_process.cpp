@@ -217,9 +217,10 @@ bool Client::Process() {
 				- being stunned or mezzed
 				- having used a ranged weapon recently
 		*/
+
+		//TODO: not casting unless hybrid spell
 		if(auto_attack) {
 			if(!IsAIControlled() && !dead
-				&& !(spellend_timer.Enabled() && (spells[casting_spell_id].classes[7] < 1 && spells[casting_spell_id].classes[7] > 65)) 
 				&& !IsStunned() && !IsFeared() && !IsMezzed() && GetAppearance() != eaDead
 				)
 				may_use_attacks = true;

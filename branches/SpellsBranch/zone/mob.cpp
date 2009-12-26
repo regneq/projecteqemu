@@ -105,7 +105,6 @@ Mob::Mob(const char*   in_name,
 		ranged_timer(2000),
 		tic_timer(6000),
 		mana_timer(2000),
-		spellend_timer(0),
 		rewind_timer(30000), //Timer used for determining amount of time between actual player position updates for /rewind.
 		stunned_timer(0),
 		bardsong_timer(6000),
@@ -234,6 +233,7 @@ Mob::Mob(const char*   in_name,
 	*/
 
 	InitializeBuffSlots();
+	casting_spell = NULL;
 
     // clear the proc arrays
 	for (j = 0; j < MAX_PROCS; j++)
@@ -275,11 +275,9 @@ Mob::Mob(const char*   in_name,
 	_appearance = eaStanding;
 	pRunAnimSpeed = 0;
 	
-    spellend_timer.Disable();
 	bardsong_timer.Disable();
 	bardsong = 0;
 	bardsong_target_id = 0;
-	casting_spell_id = 0;
 	target = 0;
 	
 	memset(&itembonuses, 0, sizeof(StatBonuses));
@@ -406,6 +404,10 @@ Mob::~Mob()
 	safe_delete(PathingRouteUpdateTimerShort);
 	safe_delete(PathingRouteUpdateTimerLong);
 	UninitializeBuffSlots();
+	if(casting_spell)
+	{
+		safe_delete(casting_spell);
+	}
 }
 
 int32 Mob::GetAppearanceValue(EmuAppearance iAppearance) {

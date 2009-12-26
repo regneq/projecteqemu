@@ -658,6 +658,8 @@ bool logpos;
 	virtual void InitializeBuffSlots() { buffs = NULL; }
 	virtual void UninitializeBuffSlots() { }
 	virtual int GetFreeBuffSlot(int32 spell_id) { return 0; }
+	virtual bool CastSpell(Spell **casted_spell, int32* spell_will_finish = 0);
+	virtual bool CastSpell(int16 spell_id, int16 target_id, int16 slot = 10, sint32 casttime = -1, sint32 mana_cost = -1, int32* oSpellWillFinish = 0, int32 item_slot = 0xFFFFFFFF);
 	
 
 	virtual void SpellProcess();
@@ -666,7 +668,6 @@ bool logpos;
 	bool UseBardSpellLogic(int16 spell_id = 0xffff, int slot = -1);
 	void InterruptSpell(int16 spellid = SPELL_UNKNOWN);
 	void InterruptSpell(int16, int16, int16 spellid = SPELL_UNKNOWN);
-	virtual bool CastSpell(int16 spell_id, int16 target_id, int16 slot = 10, sint32 casttime = -1, sint32 mana_cost = -1, int32* oSpellWillFinish = 0, int32 item_slot = 0xFFFFFFFF);
 	virtual bool DoCastSpell(int16 spell_id, int16 target_id, int16 slot = 10, sint32 casttime = -1, sint32 mana_cost = -1, int32* oSpellWillFinish = 0, int32 item_slot = 0xFFFFFFFF);
 	void	CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16 mana_used, int32 inventory_slot = 0xFFFFFFFF);
 	bool	SpellFinished(int16 spell_id, Mob *target, int16 slot = 10, int16 mana_used = 0, int32 inventory_slot = 0xFFFFFFFF);
@@ -688,8 +689,8 @@ bool logpos;
 	void	BuffFadeDetrimentalByCaster(Mob *caster);
 	void	BuffModifyDurationBySpellID(int16 spell_id, sint32 newDuration);
 	int		CanBuffStack(int16 spellid, int8 caster_level, bool iFailIfOverwrite = false);
-	inline	bool	IsCasting() const { return((casting_spell_id != 0)); }
-	int16	CastingSpellID() const { return casting_spell_id; }
+	inline	bool	IsCasting() const { return((casting_spell != NULL)); }
+	int16	CastingSpellID() const { return casting_spell ? casting_spell->GetSpellID() : 0; }
 	virtual float GetAOERange(uint16 spell_id);
 	void	TemporaryPets(int16 spell_id, Mob *target, const char *name_override = NULL, uint32 duration_override = 0);
 	void	WakeTheDead(int16 spell_id, Mob *target, uint32 duration);
@@ -889,7 +890,7 @@ bool logpos;
 	int CalcSpellEffectValue(int16 spell_id, int effect_id, int caster_level = 1, Mob *caster = NULL, int ticsremaining = 0);
 	int CalcSpellEffectValue_formula(int formula, int base, int max, int caster_level, int16 spell_id, int ticsremaining = 0);
 	virtual int CheckStackConflict(int16 spellid1, int caster_level1, int16 spellid2, int caster_level2, Mob* caster1 = NULL, Mob* caster2 = NULL);
-	int32 GetCastedSpellInvSlot() const { return casting_spell_inventory_slot; }
+	int32 GetCastedSpellInvSlot() const { return casting_spell ? casting_spell->GetInventorySpellSlot() : 0; }
 
 //	inline EGNode *GetEGNode() { return(_egnode); }
 //	inline void SetEGNode(EGNode *s) { _egnode = s; }
@@ -1072,18 +1073,11 @@ protected:
 	Timer	mana_timer;
 
 	//spell casting vars
-	Timer spellend_timer;
-	int16	casting_spell_id;
+	Spell *casting_spell;
     float spell_x, spell_y, spell_z;
 	int	attacked_count;
-	bool	delaytimer;
-	int16 casting_spell_targetid;
-	int16 casting_spell_slot;
-	int16 casting_spell_mana;
-	int32 casting_spell_inventory_slot;
 	int16	bardsong;
 	int8	bardsong_slot;
-//	Mob*	bardsong_target;
 	int32	bardsong_target_id;
 
 

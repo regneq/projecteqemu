@@ -115,22 +115,10 @@ uchar blah2[]={0x12,0x00,0x00,0x00,0x16,0x01,0x00,0x00};
 // solar: this is run constantly for every mob
 void Mob::SpellProcess()
 {
+	//TODO:
 	// check the rapid recast prevention timer
-	if(delaytimer == true && spellend_timer.Check())
-	{
-		spellend_timer.Disable();
-		delaytimer = false;
-		return;
-	}
 
 	// a timed spell is finished casting
-	if (casting_spell_id != 0 && spellend_timer.Check())
-	{
-		spellend_timer.Disable();
-		delaytimer = false;
-		CastedSpellFinished(casting_spell_id, casting_spell_targetid, casting_spell_slot, casting_spell_mana, casting_spell_inventory_slot);
-	}
-
 }
 
 void NPC::SpellProcess()
@@ -171,13 +159,25 @@ void NPC::SpellProcess()
 // but things like SpellFinished() can run concurrent with a triggered cast
 // to allow procs to work
 bool Mob::CastSpell(int16 spell_id, int16 target_id, int16 slot,
-	sint32 cast_time, sint32 mana_cost, int32* oSpellWillFinish, int32 item_slot)
+	sint32 cast_time, sint32 mana_cost, int32* spell_will_finish, int32 item_slot)
+{
+	if(!IsValidSpell(spell_id))
+		return false;
+
+	Spell *pass_spell = new Spell(spell_id, this, entity_list.GetMobID(target_id), slot, cast_time, mana_cost);
+	pass_spell->SetInventorySpellSlot(item_slot);
+	return CastSpell(&pass_spell, spell_will_finish);
+}
+
+bool Mob::CastSpell(Spell **casted_spell, int32* spell_will_finish)
 {
 	_ZP(Mob_CastSpell);
-	
-	mlog(SPELLS__CASTING, "CastSpell called for spell %s (%d) on entity %d, slot %d, time %d, mana %d, from item slot %d",
-		spells[spell_id].name, spell_id, target_id, slot, cast_time, mana_cost, (item_slot==0xFFFFFFFF)?999:item_slot);
-	
+
+	mlog(SPELLS__CASTING, "Mob::CastSpell called for %s with spell (%d): %s on entity %s, slot %d, time %d, mana %d from item slot %d", GetName(), 
+		(*casted_spell)->GetSpellID(), spells[(*casted_spell)->GetSpellID()].name, 
+		(*casted_spell)->GetTarget() != NULL ? (*casted_spell)->GetTarget()->GetName() : "NULL TARGET", 
+		(*casted_spell)->GetSpellSlot(), (*casted_spell)->GetCastTime(), (*casted_spell)->GetManaCost(), (*casted_spell)->GetInventorySpellSlot());
+	/*	
 	if(casting_spell_id == spell_id)
 		ZeroCastingVars();
 	
@@ -200,7 +200,7 @@ bool Mob::CastSpell(int16 spell_id, int16 target_id, int16 slot,
 		if(IsClient())
 			CastToClient()->SendSpellBarEnable(spell_id);
 		if(casting_spell_id && IsNPC())
-			CastToNPC()->AI_Event_SpellCastFinished(false, casting_spell_slot);
+			CastToNPC()->AI_Event_SpellCastFinished(false, casting_spell->GetSpellSlot());
 		return(false);
 	}
 	
@@ -209,7 +209,7 @@ bool Mob::CastSpell(int16 spell_id, int16 target_id, int16 slot,
 		if(IsClient())
 			CastToClient()->SendSpellBarEnable(spell_id);
 		if(casting_spell_id && IsNPC())
-			CastToNPC()->AI_Event_SpellCastFinished(false, casting_spell_slot);
+			CastToNPC()->AI_Event_SpellCastFinished(false, casting_spell->GetSpellSlot());
 		return(false);
 	}
 
@@ -241,7 +241,7 @@ bool Mob::CastSpell(int16 spell_id, int16 target_id, int16 slot,
     	mlog(SPELLS__BARDS, "Casting a new spell/song while singing a song. Killing old song %d.", bardsong);
     	//Note: this does NOT tell the client
         _StopSong();
-    }
+    }*/
 	/*------------------------------
 	Added to prevent MQ2 
 	exploitation of equipping 
@@ -249,7 +249,7 @@ bool Mob::CastSpell(int16 spell_id, int16 target_id, int16 slot,
 	with effects and clicking them
 	for benefits. - ndnet
 	---------------------------------*/
-	if(item_slot && IsClient() && ((slot == USE_ITEM_SPELL_SLOT) || (slot == POTION_BELT_SPELL_SLOT)))
+	/*if(item_slot && IsClient() && ((slot == USE_ITEM_SPELL_SLOT) || (slot == POTION_BELT_SPELL_SLOT)))
 	{
 		ItemInst *itm = CastToClient()->GetInv().GetItem(item_slot);
 		int bitmask = 1;
@@ -261,7 +261,8 @@ bool Mob::CastSpell(int16 spell_id, int16 target_id, int16 slot,
 			return(false);
 		}
 	}	
-	return(DoCastSpell(spell_id, target_id, slot, cast_time, mana_cost, oSpellWillFinish, item_slot));
+	return(DoCastSpell(spell_id, target_id, slot, cast_time, mana_cost, oSpellWillFinish, item_slot));*/
+	return false;
 }
 
 //
@@ -294,9 +295,6 @@ bool Mob::DoCastSpell(int16 spell_id, int16 target_id, int16 slot,
 		spell.name, spell_id, target_id, slot, cast_time, mana_cost, item_slot==0xFFFFFFFF?999:item_slot);
 	
 	
-	casting_spell_id = spell_id;
-	casting_spell_slot = slot;
-	casting_spell_inventory_slot = item_slot;
 
 	SaveSpellLoc();
 	mlog(SPELLS__CASTING, "Casting %d Started at (%.3f,%.3f,%.3f)", spell_id, spell_x, spell_y, spell_z);
@@ -336,9 +334,6 @@ bool Mob::DoCastSpell(int16 spell_id, int16 target_id, int16 slot,
 		}
 		return(false);
 	}
-
-	// ok now we know the target
-	casting_spell_targetid = target_id;
 
 	if (mana_cost == -1) {
 		mana_cost = spell.mana;
@@ -381,9 +376,6 @@ bool Mob::DoCastSpell(int16 spell_id, int16 target_id, int16 slot,
 	if(mana_cost > GetMana())
 		mana_cost = GetMana();
 
-	// we know our mana cost now
-	casting_spell_mana = mana_cost;
-	
 	mlog(SPELLS__CASTING, "Spell %d: Casting time %d (orig %d), mana cost %d", orgcasttime, cast_time, mana_cost);
 
 	// cast time is 0, just finish it right now and be done with it
@@ -393,7 +385,7 @@ bool Mob::DoCastSpell(int16 spell_id, int16 target_id, int16 slot,
 	}
 
 	// ok we know it has a cast time so we can start the timer now
-	spellend_timer.Start(cast_time);
+	//spellend_timer.Start(cast_time);
 	
 	if (IsAIControlled())
 	{
@@ -627,19 +619,13 @@ void Mob::ZeroCastingVars()
 {
 	// zero out the state keeping vars
 	attacked_count = 0;
-	spellend_timer.Disable();
-	casting_spell_id = 0;
-	casting_spell_targetid = 0;
-	casting_spell_slot = 0;
-	casting_spell_mana = 0;
-	casting_spell_inventory_slot = 0;
-	delaytimer = false;
+	casting_spell = NULL;
 }
 
 void Mob::InterruptSpell(int16 spellid)
 {
 	if (spellid == SPELL_UNKNOWN)
-		spellid = casting_spell_id;
+		spellid = casting_spell ? casting_spell->GetSpellID() : 0;
 
 	InterruptSpell(0, 0x121, spellid);
 }
@@ -651,10 +637,10 @@ void Mob::InterruptSpell(int16 message, int16 color, int16 spellid)
 	int16 message_other;
 
 	if (spellid == SPELL_UNKNOWN)
-		spellid = casting_spell_id;
+		spellid = casting_spell ? casting_spell->GetSpellID() : 0;
 
-	if(casting_spell_id && IsNPC()) {
-		CastToNPC()->AI_Event_SpellCastFinished(false, casting_spell_slot);
+	if(casting_spell && IsNPC()) {
+		CastToNPC()->AI_Event_SpellCastFinished(false, casting_spell->GetSpellSlot());
 	}
 	
 	ZeroCastingVars();	// resets all the state keeping stuff
@@ -664,7 +650,7 @@ void Mob::InterruptSpell(int16 message, int16 color, int16 spellid)
 	if(!spellid)
 		return;
 	
-	if (bardsong || IsBardSong(casting_spell_id))
+	if (bardsong || IsBardSong(casting_spell ? casting_spell->GetSpellID() : 0))
 		_StopSong();
 	
 	if(!message)
@@ -758,9 +744,10 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16
 		return;
 	}
 
+	//TODO:
 	// prevent rapid recast - this can happen if somehow the spell gems
 	// become desynced and the player casts again.
-	if(IsClient())
+	/*if(IsClient())
 	{
 		if(delaytimer)
 		{
@@ -769,16 +756,17 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16
 			InterruptSpell();
 			return;
 		}
-	}
+	}*/
 
+	//TODO: will this still be needed?
 	// make sure they aren't somehow casting 2 timed spells at once
-	if (casting_spell_id != spell_id)
+	/*if (casting_spell_id != spell_id)
 	{
 		mlog(SPELLS__CASTING_ERR, "Casting of %d canceled: already casting", spell_id);
 		Message_StringID(13,ALREADY_CASTING);
 		InterruptSpell();
 		return;
-	}
+	}*/
 
 	bool bard_song_mode = false;
 	bool regain_conc = false;
@@ -1050,9 +1038,6 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16
 		{
 			this->CastToClient()->CheckSongSkillIncrease(spell_id);
 		}
-		// go again in 6 seconds
-		//this is handled with bardsong_timer
-		//		DoCastSpell(casting_spell_id, casting_spell_targetid, casting_spell_slot, 6000, casting_spell_mana);
 
 		mlog(SPELLS__CASTING, "Bard song %d should be started", spell_id);
 	}
@@ -1084,9 +1069,8 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16
 		// there should be no casting going on now
 		ZeroCastingVars();
 
+		//TODO:
 		// set the rapid recast timer for next time around
-		delaytimer = true;
-		spellend_timer.Start(400,true);
 		
 		mlog(SPELLS__CASTING, "Spell casting of %d is finished.", spell_id);
 	}
@@ -3560,7 +3544,7 @@ void Mob::Stun(int duration)
 	if(stunned && stunned_timer.GetRemainingTime() > uint32(duration))
 		return;
 	
-	if(casting_spell_id)
+	if(casting_spell)
 		InterruptSpell();
 
 	if(duration > 0)
@@ -3617,20 +3601,8 @@ void Mob::Mesmerize()
 {
 	mezzed = true;
 
-	if (casting_spell_id)
+	if (casting_spell)
 		InterruptSpell();
-
-/* this stuns the client for max time, with no way to break it -solar
-	if (this->IsClient()){
-		EQApplicationPacket* outapp = new EQApplicationPacket(OP_Stun, sizeof(Stun_Struct));
-		Stun_Struct* stunon = (Stun_Struct*) outapp->pBuffer;
-		stunon->duration = 0xFFFF;
-		this->CastToClient()->QueuePacket(outapp);
-		safe_delete(outapp);
-    } else {
-		SetRunAnimSpeed(0);
-	}
-*/
 }
 
 void Client::MakeBuffFadePacket(int16 spell_id, int slot_id, bool send_message)
@@ -4313,10 +4285,10 @@ bool Mob::RemoveRangedProc(int16 spell_id, bool bAll)
 bool Mob::UseBardSpellLogic(int16 spell_id, int slot)
 {
 	if(spell_id == SPELL_UNKNOWN)
-		spell_id = casting_spell_id;
+		spell_id = casting_spell ? casting_spell->GetSpellID() : 0;
 
 	if(slot == -1)
-		slot = casting_spell_slot;
+		slot = casting_spell->GetSpellSlot();
 
 	// should we treat this as a bard singing?
 	return
@@ -4345,13 +4317,13 @@ int Mob::GetCasterLevel(int16 spell_id) {
 //you should really know what your doing before you call this
 void Mob::_StopSong()
 {
-	if (IsClient() && (bardsong || IsBardSong(casting_spell_id)))
+	if (IsClient() && (bardsong || IsBardSong(casting_spell ? casting_spell->GetSpellID() : 0)))
 	{
 		EQApplicationPacket* outapp = new EQApplicationPacket(OP_ManaChange, sizeof(ManaChange_Struct));
 		ManaChange_Struct* manachange = (ManaChange_Struct*)outapp->pBuffer;
 		manachange->new_mana = cur_mana;
 		if (!bardsong)
-			manachange->spell_id = casting_spell_id;
+			manachange->spell_id = casting_spell ? casting_spell->GetSpellID() : 0;
 		else
 			manachange->spell_id = bardsong;
 		manachange->stamina = CastToClient()->GetEndurance();
@@ -4507,4 +4479,35 @@ void NPC::UninitializeBuffSlots()
 		delete buffs[x];
 	}
 	safe_delete_array(buffs);
+}
+
+Spell::Spell(uint32 spell_id, Mob* caster, Mob* target, uint32 slot, uint32 cast_time, uint32 mana_cost)
+{
+	this->spell_id = spell_id;
+	this->caster = caster;
+	this->target = target;
+	this->spell_slot = slot;
+	this->cast_time = cast_time;
+	this->mana_cost = mana_cost;
+
+	effect_container.reserve(12);
+	for(int i = 0; i < 12; ++i)
+	{
+		SpellEffect *temp_se = new SpellEffect;
+		temp_se->base1 = spells[spell_id].base[i];
+		temp_se->base2 = spells[spell_id].base2[i];
+		temp_se->effect_id = spells[spell_id].effectid[i];
+		temp_se->formula = spells[spell_id].formula[i];
+		temp_se->max = spells[spell_id].max[i];
+		effect_container.push_back(temp_se);
+	}
+}
+
+Spell::~Spell()
+{
+	for(int i = 0; i < 12; ++i)
+	{
+		SpellEffect *temp_se = effect_container[i];
+		delete temp_se;
+	}
 }
