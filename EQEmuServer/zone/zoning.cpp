@@ -487,13 +487,13 @@ void Client::ZonePC(int32 zoneID, int32 instance_id, float x, float y, float z, 
 			x = zone->safe_x();
 			y = zone->safe_y();
 			z = zone->safe_z();
-			heading = heading;
+			SetHeading(heading);
 			break;
 		case GMSummon:
 			zonesummon_x = x_pos = x;
 			zonesummon_y = y_pos = y;
 			zonesummon_z = z_pos = z;
-			heading = heading;
+			SetHeading(heading);
 			
 			zonesummon_id = zoneID;
 			zonesummon_ignorerestrictions = 1;
@@ -502,7 +502,7 @@ void Client::ZonePC(int32 zoneID, int32 instance_id, float x, float y, float z, 
 			zonesummon_x = x;
 			zonesummon_y = y;
 			zonesummon_z = z;
-			heading = heading;
+			SetHeading(heading);
 			
 			zonesummon_id = zoneID;
 			zonesummon_ignorerestrictions = ignorerestrictions;
@@ -526,14 +526,14 @@ void Client::ZonePC(int32 zoneID, int32 instance_id, float x, float y, float z, 
 			zonesummon_x = x_pos = x;
 			zonesummon_y = y_pos = y;
 			zonesummon_z = z_pos = z;
-			heading = heading;
+			SetHeading(heading);
 			break;
 		case Rewind:
 			LogFile->write(EQEMuLog::Debug, "%s has requested a /rewind from %f, %f, %f, to %f, %f, %f in %s", GetName(), x_pos, y_pos, z_pos, rewind_x, rewind_y, rewind_z, zone->GetShortName());
 			zonesummon_x = x_pos = x;
 			zonesummon_y = y_pos = y;
 			zonesummon_z = z_pos = z;
-			heading = heading;
+			SetHeading(heading);
 			break;
 		default:
 			LogFile->write(EQEMuLog::Error, "Client::ZonePC() received a reguest to perform an unsupported client zone operation.");
