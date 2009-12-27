@@ -68,6 +68,7 @@
 #include "pathing.h"
 #include "map.h"
 #include "spells.h"
+#include "buff.h"
 #include <set>
 #include <vector>
 #include <string>
@@ -992,7 +993,7 @@ protected:
 	int8	maxlevel;
 	int32	scalerate;
 	//TODO:
-	Spell **buffs;
+	Buff **buffs;
 	StatBonuses		itembonuses;
 	StatBonuses		spellbonuses;
 	StatBonuses		aabonuses;

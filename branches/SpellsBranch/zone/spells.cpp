@@ -84,6 +84,7 @@ Copyright (C) 2001-2002  EQEMu Development Team (http://eqemu.org)
 #include "../common/classes.h"
 #include "../common/rulesys.h"
 #include "spells.h"
+#include "buff.h"
 #include <math.h>
 #include <assert.h>
 #ifndef WIN32
@@ -4419,7 +4420,7 @@ int Client::GetMaxSongSlots()
 
 void Client::InitializeBuffSlots()
 {
-	buffs = new Spell*[36];
+	buffs = new Buff*[36];
 	for(int x = 0; x < 36; ++x)
 	{
 		buffs[x] = NULL;
@@ -4430,7 +4431,7 @@ void Client::UninitializeBuffSlots()
 {
 	for(int x = 0; x < 36; ++x)
 	{
-		delete buffs[x];
+		safe_delete(buffs[x]);
 	}
 	safe_delete_array(buffs);
 }
@@ -4465,7 +4466,7 @@ int Client::GetFreeBuffSlot(int32 spell_id)
 
 void NPC::InitializeBuffSlots()
 {
-	buffs = new Spell*[35];
+	buffs = new Buff*[35];
 	for(int x = 0; x < 35; ++x)
 	{
 		buffs[x] = NULL;
@@ -4489,25 +4490,8 @@ Spell::Spell(uint32 spell_id, Mob* caster, Mob* target, uint32 slot, uint32 cast
 	this->spell_slot = slot;
 	this->cast_time = cast_time;
 	this->mana_cost = mana_cost;
-
-	effect_container.reserve(12);
-	for(int i = 0; i < 12; ++i)
-	{
-		SpellEffect *temp_se = new SpellEffect;
-		temp_se->base1 = spells[spell_id].base[i];
-		temp_se->base2 = spells[spell_id].base2[i];
-		temp_se->effect_id = spells[spell_id].effectid[i];
-		temp_se->formula = spells[spell_id].formula[i];
-		temp_se->max = spells[spell_id].max[i];
-		effect_container.push_back(temp_se);
-	}
 }
 
 Spell::~Spell()
 {
-	for(int i = 0; i < 12; ++i)
-	{
-		SpellEffect *temp_se = effect_container[i];
-		delete temp_se;
-	}
 }

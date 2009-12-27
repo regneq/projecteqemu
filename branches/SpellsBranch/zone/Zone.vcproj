@@ -725,6 +725,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\buff.h"
+				>
+			</File>
+			<File
 				RelativePath=".\client.h"
 				>
 			</File>
