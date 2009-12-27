@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==12/27/2009==
+Derision: Fix to set required heading when zoning.
+
 ==12/23/2009==
 cavedude: (Kilelen) Added quest functions quest::checktitle(int titleset), quest::enabletitle(int titleset), and quest::removetitle(int titleset) to allow Perl to enable or remove titles for a player.
 
