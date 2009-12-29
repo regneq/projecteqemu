@@ -206,7 +206,7 @@ bool TitleManager::IsClientEligibleForTitle(Client *c, vector<TitleEntry>::itera
 		if((Title->ItemID >= 1) && (c->GetInv().HasItem(Title->ItemID, 0, 0xFF) == SLOT_INVALID))
 			return false;
 
-      	if (!c->CheckTitle(Title->TitleSet))
+      	if((Title->TitleSet > 0) && (!c->CheckTitle(Title->TitleSet)))
          	return false;
 
 		return true;
