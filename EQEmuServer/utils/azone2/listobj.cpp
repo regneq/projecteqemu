@@ -35,11 +35,13 @@ typedef unsigned long  DWORD;
 #include "file_loader.hpp"
 #include "zon.hpp"
 #include "ter.hpp"
+#include "zonv4.hpp"
 
 
 
 bool ProcessZoneFile(const char *shortname);
 void ListPlaceable(FileLoader *fileloader, char *ZoneFileName);
+void ListPlaceableV4(FileLoader *fileloader, char *ZoneFileName);
 enum EQFileType { S3D, EQG, UNKNOWN };
 
 
@@ -87,6 +89,8 @@ bool ProcessZoneFile(const char *shortname) {
 		return(false);
 	}
 
+	bool V4Zone = false;
+
 	switch(FileType) {
 		case S3D: 
   			fileloader = new WLDLoader();
@@ -95,11 +99,17 @@ bool ProcessZoneFile(const char *shortname) {
 	  			return(false);
   			}
 			break;
+
 		case EQG:
 			fileloader = new ZonLoader();
 			if(fileloader->Open(NULL, (char *) shortname, archive) == 0) {
-				printf("Error reading ZON/TER from %s\n", bufs);
-				return(false);
+				delete fileloader;
+				fileloader = new Zonv4Loader();
+				if(fileloader->Open(NULL, (char *) shortname, archive) == 0) {
+					printf("Error reading ZON/TER from %s\n", bufs);
+					return(false);
+				}
+				V4Zone = true;
 	        	}
 			break;
 		case UNKNOWN:
@@ -108,8 +118,11 @@ bool ProcessZoneFile(const char *shortname) {
 
 
 	zm = fileloader->model_data.zone_model;
-  
-	ListPlaceable(fileloader, bufs);
+ 
+ 	if(!V4Zone)
+		ListPlaceable(fileloader, bufs);
+	else
+		ListPlaceableV4(fileloader, bufs);
 
 	return(true);
 }
@@ -125,18 +138,77 @@ void ListPlaceable(FileLoader *fileloader, char *ZoneFileName) {
 	        	fileloader->model_data.placeable[i]->z,
 			fileloader->model_data.placeable[i]->model,
 			fileloader->model_data.models[fileloader->model_data.placeable[i]->model]->name); 
-
-		//if((fileloader->model_data.placeable[i]->scale[0] != 1) ||
-		//  (fileloader->model_data.placeable[i]->scale[1] != 1))
-		//if((fileloader->model_data.placeable[i]->scale[0] != (fileloader->model_data.placeable[i]->scale[1])))
-		//if((fileloader->model_data.placeable[i]->scale[0] != 1.0))
-		//printf("   XScale = %9.2f, YScale = %9.2f, ZScale = %9.2f\n",
-		//	fileloader->model_data.placeable[i]->scale[0],
-		//	fileloader->model_data.placeable[i]->scale[1],
-		//	fileloader->model_data.placeable[i]->scale[2]);
-
-
 	}
 }
 
 			
+void ListPlaceableV4(FileLoader *fileloader, char *ZoneFileName)
+{
+
+	float XOffset, YOffset, ZOffset;
+	float RotX, RotY, RotZ;
+	float XScale, YScale, ZScale;
+
+
+	vector<ObjectGroupEntry>::iterator Iterator;
+
+	int OGNum = 0;
+
+	Iterator = fileloader->model_data.ObjectGroups.begin();
+
+	while(Iterator != fileloader->model_data.ObjectGroups.end())
+	{
+		printf("ObjectGroup Number: %i\n", OGNum++);
+
+		printf("ObjectGroup Coordinates: %8.3f, %8.3f, %8.3f\n",
+			(*Iterator).x, (*Iterator).y, (*Iterator).z);
+
+		printf("Tile: %8.3f, %8.3f, %8.3f\n",
+			(*Iterator).TileX, (*Iterator).TileY, (*Iterator).TileZ);
+
+		printf("ObjectGroup Rotations  : %8.3f, %8.3f, %8.3f\n",
+			(*Iterator).RotX, (*Iterator).RotY, (*Iterator).RotZ);
+
+		printf("ObjectGroup Scale      : %8.3f, %8.3f, %8.3f\n",
+			(*Iterator).ScaleX, (*Iterator).ScaleY, (*Iterator).ScaleZ);
+
+		list<int>::iterator ModelIterator;
+
+		ModelIterator = (*Iterator).SubObjects.begin();
+	
+		while(ModelIterator != (*Iterator).SubObjects.end())
+		{
+			int SubModel = (*ModelIterator);
+
+			Model *model = fileloader->model_data.models[fileloader->model_data.placeable[SubModel]->model];
+
+			printf("  SubModel: %i [Model: %i, %s] ", SubModel, fileloader->model_data.placeable[SubModel]->model, model->name );
+			printf("Default to include in map: %s\n", model->IncludeInMap ? "YES" : "NO");
+
+			XOffset = fileloader->model_data.placeable[SubModel]->x;
+			YOffset = fileloader->model_data.placeable[SubModel]->y;
+			ZOffset = fileloader->model_data.placeable[SubModel]->z;
+
+			printf("   Translations: %8.3f, %8.3f, %8.3f\n", XOffset, YOffset, ZOffset);
+			printf("   Rotations   : %8.3f, %8.3f, %8.3f\n", fileloader->model_data.placeable[SubModel]->rx,
+				fileloader->model_data.placeable[SubModel]->ry, fileloader->model_data.placeable[SubModel]->rz);
+			printf("   Scale       : %8.3f, %8.3f, %8.3f\n", fileloader->model_data.placeable[SubModel]->scale[0],
+				fileloader->model_data.placeable[SubModel]->scale[1], fileloader->model_data.placeable[SubModel]->scale[2]);
+
+
+			RotX = fileloader->model_data.placeable[SubModel]->rx * 3.14159 / 180;  // Convert from degrees to radians
+			RotY = fileloader->model_data.placeable[SubModel]->ry * 3.14159 / 180;
+			RotZ = fileloader->model_data.placeable[SubModel]->rz * 3.14159 / 180;
+
+			XScale = fileloader->model_data.placeable[SubModel]->scale[0];
+			YScale = fileloader->model_data.placeable[SubModel]->scale[1];
+			ZScale = fileloader->model_data.placeable[SubModel]->scale[2];
+
+			++ModelIterator;
+		}
+		printf("\n");
+		Iterator++;
+	}
+
+
+}

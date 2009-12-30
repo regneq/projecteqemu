@@ -61,10 +61,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="zlib.lib"
+				AdditionalDependencies="zlib.lib Ws2_32.lib"
 				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="2"
-				IgnoreDefaultLibraryNames="MSVCRT"
+				IgnoreDefaultLibraryNames="MSVCRTD LIBCMT"
 				GenerateDebugInformation="true"
 				AssemblyDebug="1"
 				RandomizedBaseAddress="1"
@@ -181,6 +181,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\dat.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\file.cpp"
 				>
 			</File>
@@ -202,6 +206,10 @@
 			</File>
 			<File
 				RelativePath=".\zon.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\zonv4.cpp"
 				>
 			</File>
 		</Filter>
@@ -228,6 +236,10 @@
 			</File>
 			<File
 				RelativePath=".\azone.h"
+				>
+			</File>
+			<File
+				RelativePath=".\dat.hpp"
 				>
 			</File>
 			<File
@@ -272,6 +284,10 @@
 			</File>
 			<File
 				RelativePath=".\zon.hpp"
+				>
+			</File>
+			<File
+				RelativePath=".\zonv4.hpp"
 				>
 			</File>
 		</Filter>

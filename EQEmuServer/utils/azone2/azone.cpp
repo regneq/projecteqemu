@@ -40,8 +40,8 @@ typedef unsigned long  DWORD;
 #include <string.h>
 #include <math.h>
 //#include "EQWldData.h"
-#include "azone.h"
 #include "types.h"
+#include "azone.h"
 #include "wld.hpp"
 
 #include "archive.hpp"
@@ -50,6 +50,7 @@ typedef unsigned long  DWORD;
 #include "file_loader.hpp"
 #include "zon.hpp"
 #include "ter.hpp"
+#include "zonv4.hpp"
 
 //TODO: I am trimming faces for which all vertices are above MAX_Z
 //	but I am not taking out the vertices to go with them.
@@ -58,7 +59,7 @@ typedef unsigned long  DWORD;
 //this un-commented works with my map.cpp code correctly.
 //with both of my inverts there commented.
 #define INVERSEXY 1
-
+//#define DEBUG
 #include <vector>
 #include <map>
 using namespace std;
@@ -130,6 +131,7 @@ bool QTBuilder::build(const char *shortname) {
 	FILE *fff;
 	EQFileType FileType = UNKNOWN;
 
+	bool V4Zone = false;
 	
 	sprintf(bufs, "%s.s3d", shortname);
 
@@ -165,15 +167,19 @@ bool QTBuilder::build(const char *shortname) {
 		case EQG:
 			fileloader = new ZonLoader();
 			if(fileloader->Open(NULL, (char *) shortname, archive) == 0) {
-				printf("Error reading ZON/TER from %s\n", bufs);
-				return(false);
+				delete fileloader;
+				fileloader = new Zonv4Loader();
+				if(fileloader->Open(NULL, (char *) shortname, archive) == 0) {
+					printf("Error reading ZON/TER from %s\n", bufs);
+					return(false);
+				}
+				V4Zone = true;
 	        	}
 			break;
 		case UNKNOWN:
 			// Just here to stop the compiler warning
 			break;
 	}
-
 
 	zm = fileloader->model_data.zone_model;
   
@@ -204,18 +210,27 @@ bool QTBuilder::build(const char *shortname) {
 		v3.y = zm->verts[zm->polys[i]->v3]->y;
 #endif
 		v3.z = zm->verts[zm->polys[i]->v3]->z;
-		
+	
 		AddFace(v1, v2, v3);
 	}
 
 	printf("There are %u vertices and %u faces.\n", _FaceList.size()*3, _FaceList.size());
 
 	if(fileloader->model_data.plac_count)
-		AddPlaceable(fileloader, bufs, false);
+	{
+		if(V4Zone)
+		{
+			vector<ObjectGroupEntry>::iterator Iterator;
+
+			Iterator = fileloader->model_data.ObjectGroups.begin();
+			AddPlaceableV4(fileloader, bufs, false);
+		}
+		else
+			AddPlaceable(fileloader, bufs, false);
+	}
 	else 
 		printf("No placeable objects (or perhaps %s_obj.s3d not present).\n", shortname);
 	
-
 	printf("After processing placeable objects, there are %u vertices and %u faces.\n", _FaceList.size()*3, _FaceList.size());
 
 	unsigned long r;
@@ -299,10 +314,17 @@ bool QTBuilder::build(const char *shortname) {
 	printf("Done building quad tree...\n");
 
 #ifdef COUNT_MACTHES
-	fprintf(stderr, "Match counters: %lu easy in, %lu easy out, %lu hard in, %lu hard out.\n", gEasyMatches, gEasyExcludes, gHardMatches, gHardExcludes);
+	printf("Match counters: %lu easy in, %lu easy out, %lu hard in, %lu hard out.\n", gEasyMatches, gEasyExcludes, gHardMatches, gHardExcludes);
 #endif
-	
-	
+
+	fileloader->Close();
+
+	delete fileloader;
+
+	archive->Close();
+
+	delete archive;
+
 	return(true);
 }
 
@@ -873,11 +895,6 @@ void QTNode::doSplit() {
 void QTBuilder::AddFace(VERTEX &v1, VERTEX &v2, VERTEX &v3) {
 	FACE f;
 	
-//	printf("AddFace: V1: %8.3f, %8.3f, %8.3f\n", v1.x, v1.y, v1.z);
-//	printf("         V2: %8.3f, %8.3f, %8.3f\n", v2.x, v2.y, v2.z);
-//	printf("         V3: %8.3f, %8.3f, %8.3f\n", v3.x, v3.y, v3.z);
-//	printf("\n");
-
 #ifdef MAX_Z
 	if(v1.z > MAX_Z && v2.z > MAX_Z && v3.z > MAX_Z)
 		return;
@@ -1175,7 +1192,7 @@ void QTBuilder::AddPlaceable(FileLoader *fileloader, char *ZoneFileName, bool Li
 		YOffset = fileloader->model_data.placeable[i]->y;
 		ZOffset = fileloader->model_data.placeable[i]->z;
 
-		RotX = fileloader->model_data.placeable[i]->rx * 3.14159 / 180;
+		RotX = fileloader->model_data.placeable[i]->rx * 3.14159 / 180;  // Convert from degrees to radians
 		RotY = fileloader->model_data.placeable[i]->ry * 3.14159 / 180;
 		RotZ = fileloader->model_data.placeable[i]->rz * 3.14159 / 180;
 
@@ -1220,14 +1237,327 @@ void QTBuilder::AddPlaceable(FileLoader *fileloader, char *ZoneFileName, bool Li
 			tmpv = v3; v3.x = tmpv.y; v3.y = tmpv.x;
 
 			AddFace(v1, v2, v3);
-
-				
-			
 		}
-
 	}
 }  	
 		
+
+void QTBuilder::AddPlaceableV4(FileLoader *fileloader, char *ZoneFileName, bool ListPlaceable) {
+	Polygon *poly;
+	Vertex *verts[3];
+	float XOffset, YOffset, ZOffset;
+	float RotX, RotY, RotZ;
+	float XScale, YScale, ZScale;
+	VERTEX v1, v2, v3, tmpv;
+
+	//return;
+
+	printf("EQG V4 Placeable Zone Support\n");
+	printf("ObjectGroupCount = %i\n", fileloader->model_data.ObjectGroups.size());
+
+	vector<ObjectGroupEntry>::iterator Iterator;
+
+	int OGNum = 0;
+
+	bool BailOut = false;
+
+	// Ghetto ini file parser to see which models to include
+	// The format of each line in azone.ini is:
+	//
+	// shortname.[eqg|s3d],model number, model numner, ...
+	// E.g.
+	// tox.s3d,1,17,34
+	// anguish.eqg,25,69,70
+	//
+
+	const int IniBufferSize = 255;
+	enum ReadingState { ReadingZoneName, ReadingModelNumbers };
+	ReadingState State = ReadingZoneName;
+	bool INIEntryFound = false;
+	int INIModelCount = 0;
+	char IniBuffer[IniBufferSize], ch;
+	vector<int> ModelNumbers;
+	int StrIndex = 0;
+	int ModelNumber;
+
+	FILE *IniFile = fopen("azone.ini", "rb");
+
+	if(!IniFile)
+		printf("azone.ini not found in current directory. Including default models.\n");
+	else
+	{
+		printf("Processing azone.ini for placeable models.\n");
+
+		while(!feof(IniFile)) {
+			ch = fgetc(IniFile);
+			if((ch=='#')&&(StrIndex==0)) { // Discard comment lines beginning with a hash
+				while((ch!=EOF)&&(ch!='\n'))
+		       	        	ch = fgetc(IniFile);
+	
+       		         	continue;
+       		 	}
+			if((ch=='\n') && (State==ReadingZoneName)) {
+				StrIndex = 0;
+				continue;
+			}
+    		   	if(ch=='\r') continue;
+			if((ch==EOF)||(ch=='\n')) {
+				IniBuffer[StrIndex] = '\0';
+				if(State == ReadingModelNumbers) {
+					bool Exclude = false;
+					bool Group = false;
+					if(IniBuffer[0]=='-')
+					{
+						Exclude = true;
+						strcpy(IniBuffer, IniBuffer+1);
+					}
+					if(IniBuffer[0]=='g')
+					{
+						Group = true;
+						strcpy(IniBuffer, IniBuffer+1);
+					}
+					ModelNumber = atoi(IniBuffer);
+					if(!Group)
+					{
+						if((ModelNumber >= 0) && (ModelNumber <= fileloader->model_data.model_count))
+							fileloader->model_data.models[ModelNumber]->IncludeInMap = Exclude ? false : true;
+					}
+					else
+					{
+						if((ModelNumber >= 0) && ((unsigned int)ModelNumber < fileloader->model_data.ObjectGroups.size()))
+							fileloader->model_data.ObjectGroups[ModelNumber].IncludeInMap = Exclude ? false : true;
+	
+					}
+				}
+				break;
+			}
+			if(ch==',') {
+				IniBuffer[StrIndex]='\0';
+				StrIndex = 0;
+				if(State == ReadingZoneName)  {
+					if(strcmp(ZoneFileName, IniBuffer)) {
+						StrIndex = 0;
+						// Not our zone, skip to next line
+						while((ch!=EOF)&&(ch!='\n'))
+		       	        			ch = fgetc(IniFile);
+						continue;
+					}
+					else {
+						State = ReadingModelNumbers;
+						INIEntryFound = true;
+					}
+				}
+				else  {
+					bool Exclude = false;
+					bool Group = false;
+					if(IniBuffer[0]=='-')
+					{
+						Exclude = true;
+						strcpy(IniBuffer, IniBuffer+1);
+					}
+					if(IniBuffer[0]=='g')
+					{
+						Group = true;
+						strcpy(IniBuffer, IniBuffer+1);
+					}
+					ModelNumber = atoi(IniBuffer);
+					if(!Group)
+					{
+						if((ModelNumber >= 0) && (ModelNumber <= fileloader->model_data.model_count))
+							fileloader->model_data.models[ModelNumber]->IncludeInMap = Exclude ? false : true;
+					}
+					else
+					{
+						if((ModelNumber >= 0) && ((unsigned int)ModelNumber < fileloader->model_data.ObjectGroups.size()))
+							fileloader->model_data.ObjectGroups[ModelNumber].IncludeInMap = Exclude ? false : true;
+	
+					}
+				}
+				continue;
+			}
+			IniBuffer[StrIndex++] = tolower(ch);
+		}	
+		fclose(IniFile);
+
+		if(INIEntryFound)
+			printf("azone.ini entry found for this zone. ");
+		else
+			printf("No azone.ini entry found for zone %s\n", ZoneFileName);
+	}
+		
+	Iterator = fileloader->model_data.ObjectGroups.begin();
+
+	while(Iterator != fileloader->model_data.ObjectGroups.end())
+	{
+		if(!(*Iterator).IncludeInMap)
+		{
+			++OGNum;
+			++Iterator;
+			continue;
+		}
+
+
+#ifdef DEBUG
+		printf("ObjectGroup Number: %i\n", OGNum++);
+
+		printf("ObjectGroup Coordinates: %8.3f, %8.3f, %8.3f\n",
+			(*Iterator).x, (*Iterator).y, (*Iterator).z);
+
+		printf("Tile: %8.3f, %8.3f, %8.3f\n",
+			(*Iterator).TileX, (*Iterator).TileY, (*Iterator).TileZ);
+
+		printf("ObjectGroup Rotations  : %8.3f, %8.3f, %8.3f\n",
+			(*Iterator).RotX, (*Iterator).RotY, (*Iterator).RotZ);
+
+		printf("ObjectGroup Scale      : %8.3f, %8.3f, %8.3f\n",
+			(*Iterator).ScaleX, (*Iterator).ScaleY, (*Iterator).ScaleZ);
+#endif
+
+		list<int>::iterator ModelIterator;
+
+		ModelIterator = (*Iterator).SubObjects.begin();
+	
+		while(ModelIterator != (*Iterator).SubObjects.end())
+		{
+			int SubModel = (*ModelIterator);
+			
+#ifdef DEBUG
+			printf("  SubModel: %i\n", (*ModelIterator));
+#endif
+
+			XOffset = fileloader->model_data.placeable[SubModel]->x;
+			YOffset = fileloader->model_data.placeable[SubModel]->y;
+			ZOffset = fileloader->model_data.placeable[SubModel]->z;
+#ifdef DEBUG
+			printf("   Translations: %8.3f, %8.3f, %8.3f\n", XOffset, YOffset, ZOffset);
+			printf("   Rotations   : %8.3f, %8.3f, %8.3f\n", fileloader->model_data.placeable[SubModel]->rx,
+				fileloader->model_data.placeable[SubModel]->ry, fileloader->model_data.placeable[SubModel]->rz);
+			printf("   Scale       : %8.3f, %8.3f, %8.3f\n", fileloader->model_data.placeable[SubModel]->scale[0],
+				fileloader->model_data.placeable[SubModel]->scale[1], fileloader->model_data.placeable[SubModel]->scale[2]);
+#endif
+
+			RotX = fileloader->model_data.placeable[SubModel]->rx * 3.14159 / 180;  // Convert from degrees to radians
+			RotY = fileloader->model_data.placeable[SubModel]->ry * 3.14159 / 180;
+			RotZ = fileloader->model_data.placeable[SubModel]->rz * 3.14159 / 180;
+
+			XScale = fileloader->model_data.placeable[SubModel]->scale[0];
+			YScale = fileloader->model_data.placeable[SubModel]->scale[1];
+			ZScale = fileloader->model_data.placeable[SubModel]->scale[2];
+
+			Model *model = fileloader->model_data.models[fileloader->model_data.placeable[SubModel]->model];
+
+#ifdef DEBUG
+			printf("Model %i, name is %s\n", fileloader->model_data.placeable[SubModel]->model, model->name);
+#endif
+			if(!model->IncludeInMap)
+			{
+				++ModelIterator;
+#ifdef DEBUG
+				printf("Not including in .map\n");
+#endif
+				continue;
+			}
+			for(int j = 0; j < model->poly_count; ++j) {
+
+				poly = model->polys[j];
+
+				verts[0] = model->verts[poly->v1];
+				verts[1] = model->verts[poly->v2];
+				verts[2] = model->verts[poly->v3];
+
+				v1.x = verts[0]->x; v1.y = verts[0]->y; v1.z = verts[0]->z;
+				v2.x = verts[1]->x; v2.y = verts[1]->y; v2.z = verts[1]->z;
+				v3.x = verts[2]->x; v3.y = verts[2]->y; v3.z = verts[2]->z;
+
+				// Scale by the values specified for the individual object.
+				//
+				ScaleVertex(v1, XScale, YScale, ZScale);
+				ScaleVertex(v2, XScale, YScale, ZScale);
+				ScaleVertex(v3, XScale, YScale, ZScale);
+				// Translate by the values specified for the individual object
+				//
+				TranslateVertex(v1, XOffset, YOffset, ZOffset);
+				TranslateVertex(v2, XOffset, YOffset, ZOffset);
+				TranslateVertex(v3, XOffset, YOffset, ZOffset);
+				// Rotate by the values specified for the group
+				// TODO: The X/Y rotations can be combined
+				//
+				RotateVertex(v1, (*Iterator).RotX * 3.14159 / 180.0f, 0, 0);
+				RotateVertex(v2, (*Iterator).RotX * 3.14159 / 180.0f, 0, 0);
+				RotateVertex(v3, (*Iterator).RotX * 3.14159 / 180.0f, 0, 0);
+
+				RotateVertex(v1, 0, (*Iterator).RotY * 3.14159 / 180.0f, 0);
+				RotateVertex(v2, 0, (*Iterator).RotY * 3.14159 / 180.0f, 0);
+				RotateVertex(v3, 0, (*Iterator).RotY * 3.14159 / 180.0f, 0);
+
+				// To make things align properly, we need to translate the object back to the origin
+				// before applying the model Z rotation. This is what the Correction VERTEX is for.
+				//
+				VERTEX Correction(XOffset, YOffset, ZOffset);
+
+				RotateVertex(Correction, (*Iterator).RotX * 3.14159 / 180.0f, 0, 0);
+
+				TranslateVertex(v1, -Correction.x, -Correction.y, -Correction.z);
+				TranslateVertex(v2, -Correction.x, -Correction.y, -Correction.z);
+				TranslateVertex(v3, -Correction.x, -Correction.y, -Correction.z);
+				// Rotate by model Z rotation
+				//
+				//
+				RotateVertex(v1, RotX, 0, 0);
+				RotateVertex(v2, RotX, 0, 0);
+				RotateVertex(v3, RotX, 0, 0);
+				
+				// Don't know why the Y rotation needs to be negative 
+				//
+				RotateVertex(v1, 0, -RotY, 0);
+				RotateVertex(v2, 0, -RotY, 0);
+				RotateVertex(v3, 0, -RotY, 0);
+
+				RotateVertex(v1, 0, 0, RotZ);
+				RotateVertex(v2, 0, 0, RotZ);
+				RotateVertex(v3, 0, 0, RotZ);
+				// Now we have applied the individual model rotations, translate back to where we were.
+				//
+				TranslateVertex(v1, Correction.x, Correction.y, Correction.z);
+				TranslateVertex(v2, Correction.x, Correction.y, Correction.z);
+				TranslateVertex(v3, Correction.x, Correction.y, Correction.z);
+				// Rotate by the Z rotation value specified for the object group
+				//
+				RotateVertex(v1, 0, 0, (*Iterator).RotZ * 3.14159 / 180.0f);
+				RotateVertex(v2, 0, 0, (*Iterator).RotZ * 3.14159 / 180.0f);
+				RotateVertex(v3, 0, 0, (*Iterator).RotZ * 3.14159 / 180.0f);
+				// Scale by the object group values
+				//
+				ScaleVertex(v1, (*Iterator).ScaleX, (*Iterator).ScaleY, (*Iterator).ScaleZ);
+				ScaleVertex(v2, (*Iterator).ScaleX, (*Iterator).ScaleY, (*Iterator).ScaleZ);
+				ScaleVertex(v3, (*Iterator).ScaleX, (*Iterator).ScaleY, (*Iterator).ScaleZ);
+				// Translate to the relevant tile starting co-ordinates
+				//
+				TranslateVertex(v1, (*Iterator).TileX, (*Iterator).TileY, (*Iterator).TileZ); // Y+14, Z + 68
+				TranslateVertex(v2, (*Iterator).TileX, (*Iterator).TileY, (*Iterator).TileZ);
+				TranslateVertex(v3, (*Iterator).TileX, (*Iterator).TileY, (*Iterator).TileZ);
+				// Translate to the position within the tile for this object group
+				//
+				TranslateVertex(v1, (*Iterator).x, (*Iterator).y, (*Iterator).z);
+				TranslateVertex(v2, (*Iterator).x, (*Iterator).y, (*Iterator).z);
+				TranslateVertex(v3, (*Iterator).x, (*Iterator).y, (*Iterator).z);
+				// Swap X & Y
+				//
+				tmpv = v1; v1.x = tmpv.y; v1.y = tmpv.x; 
+				tmpv = v2; v2.x = tmpv.y; v2.y = tmpv.x;
+				tmpv = v3; v3.x = tmpv.y; v3.y = tmpv.x;
+
+				AddFace(v1, v2, v3);
+			
+			}
+			++ModelIterator;
+		}
+
+		++Iterator;
+	}
+
+
+}
 
 void QTBuilder::RotateVertex(VERTEX &v, float XRotation, float YRotation, float ZRotation) {
 

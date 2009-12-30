@@ -63,7 +63,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="OPENGL32.LIB GLU32.LIB ZLIB.LIB Ws2_32.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;C:\temp\zlib-1.2.3\projects\visualc6\Win32_LIB_Release&quot;"
+				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				TargetMachine="1"
@@ -178,6 +178,10 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\dat.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\file.cpp"
 				>
 			</File>
@@ -205,6 +209,10 @@
 				RelativePath=".\zon.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\zonv4.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -221,6 +229,10 @@
 			</File>
 			<File
 				RelativePath=".\archive.hpp"
+				>
+			</File>
+			<File
+				RelativePath=".\dat.hpp"
 				>
 			</File>
 			<File
@@ -265,6 +277,10 @@
 			</File>
 			<File
 				RelativePath=".\zon.hpp"
+				>
+			</File>
+			<File
+				RelativePath=".\zonv4.hpp"
 				>
 			</File>
 		</Filter>

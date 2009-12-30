@@ -23,7 +23,7 @@ ZonLoader::~ZonLoader() {
 }
 
 int ZonLoader::Open(char *base_path, char *zone_name, Archive *archive) {
-  uchar *buffer;
+  uchar *buffer, *orig_buffer;
   int buf_len;
 
   Texture **tex;
@@ -65,6 +65,9 @@ int ZonLoader::Open(char *base_path, char *zone_name, Archive *archive) {
     	FSZonName[11] = toupper(FSZonName[11]);
     printf(".ZON file not found inside EQG. Looking for %s in filesystem. ", FSZonName);
     FILE *FSZon = fopen(FSZonName, "rb");
+
+    delete [] FSZonName;
+
     if(FSZon) {
     	printf("Found.\n");
 	fseek(FSZon, 0, SEEK_END);
@@ -81,6 +84,8 @@ int ZonLoader::Open(char *base_path, char *zone_name, Archive *archive) {
    }
   }
   delete[] filename;
+
+  orig_buffer = buffer;
 
   zon_header *hdr = (zon_header *) buffer;
   zon_placeable *plac;
@@ -248,10 +253,8 @@ int ZonLoader::Open(char *base_path, char *zone_name, Archive *archive) {
     	
 
   }
-  // Derision: Ucommented this next line ...   
+
   model_loaders = new TERLoader[this->model_data.model_count];
-  // and commented out this next one
-  //model_loaders = 0;
 
   tex_count = this->model_data.zone_model->tex_count;
 #ifdef DEBUGEQG
@@ -326,15 +329,9 @@ int ZonLoader::Open(char *base_path, char *zone_name, Archive *archive) {
 
 //  printf("Tex count is %i %X\n", tex_count, tex_count);
   // Allocate a new Texture array
-  tex = new Texture *[tex_count];
-  // Set tex_count to the number of textures in the zone model
-  tex_count = this->model_data.zone_model->tex_count;
+  tex_count = 0;
   tex_tmp = 1;
   // Set the first tex_count textures in the new Texture array to the textures from the zone model
-  for(i = 0; i < tex_count; ++i) {
-    tex[i] = this->model_data.zone_model->tex[i];
-//    printf("Tex[%d] filename is %s\n", i, tex[i]->filenames[0]);
-  }
     // For i in each model
   for(i = 0; i < this->model_data.model_count; ++i) {
     if(!this->model_data.models[i]) {
@@ -386,17 +383,14 @@ int ZonLoader::Open(char *base_path, char *zone_name, Archive *archive) {
       }
     }
 
-    for(j = 0; j < this->model_data.models[i]->poly_count; ++j) {
-#ifdef DEBUGEQG
-  printf("this->model_data.models[%d]->polys[%d]->tex is %d\n", i, j, this->model_data.models[i]->polys[j]->tex);
-#endif
-      this->model_data.models[i]->polys[j]->tex = tex_map[this->model_data.models[i]->polys[j]->tex];
-    }
     delete[] tex_map;
   }
-  delete[] this->model_data.zone_model->tex;
-  this->model_data.zone_model->tex = tex;
-  this->model_data.zone_model->tex_count = tex_count;
+
+  delete [] model_names;
+
+  this->model_data.zone_model->tex = 0;
+  this->model_data.zone_model->tex_count = 0;
+  delete [] orig_buffer;
 
   this->status = 1;
   return 1;
@@ -404,15 +398,36 @@ int ZonLoader::Open(char *base_path, char *zone_name, Archive *archive) {
 
 
 int ZonLoader::Close() {
-  int i;
 
-  if(!this->status)
-    return 1;
+	int i;
 
-  this->terloader.Close();
-  for(i = 0; i < this->model_data.model_count; ++i)
-    this->model_loaders[i].Close();
-  delete[] this->model_loaders;
+	if(!this->status)
+		return 1;
+
+	this->terloader.Close();
+
+	for(i = 0; i < this->model_data.model_count; ++i)
+		this->model_loaders[i].Close();
+
+	for(i = 0; i < this->model_data.model_count; ++i)
+	{
+		if(this->model_data.models[i])
+		{
+			delete [] this->model_data.models[i]->name;
+			delete this->model_data.models[i];
+		}
+	}
+
+	for(i = 0; i < this->model_data.plac_count; ++i)
+		delete this->model_data.placeable[i];
+
+	delete [] this->model_data.placeable;
+
+	delete [] this->model_data.models;
+
+	delete[] this->model_loaders;
+
+	status = 0;
 
   return 1;
 }

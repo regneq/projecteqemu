@@ -108,6 +108,7 @@ public:
 	bool build(const char *shortname);
 	bool build_eqg(const char *shortname);
 	void AddPlaceable(FileLoader *fileloader, char *ZoneFileName, bool ListPlaceable=false);
+	void AddPlaceableV4(FileLoader *fileloader, char *ZoneFileName, bool ListPlaceable=false);
 	void RotateVertex(VERTEX &v, float XRotation, float YRotation, float ZRotation);
 	void ScaleVertex(VERTEX &v, float XScale, float YScale, float ZScale);
 	void TranslateVertex(VERTEX &v, float XOffset, float YOffset, float ZOffset);
