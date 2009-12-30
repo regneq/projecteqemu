@@ -842,8 +842,8 @@ int DATLoader::Open(char *base_path, char *zone_name, Archive *archive) {
 						{
 #ifdef DEBUGDAT
 							printf("Skipping %s\n", Token.c_str());
-							Token = GetToken(TogBuffer, TogPosition);
 #endif
+							Token = GetToken(TogBuffer, TogPosition);
 						}
 					}
 
