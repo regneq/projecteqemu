@@ -57,8 +57,8 @@ float HeightWithinQuad(VERTEX p1, VERTEX p2, VERTEX p3, VERTEX p4, float x, floa
 	{
 		inTriangle = 2;
 		f.a = p1;
-		f.b = p2;
-		f.c = p3;
+		f.b = p3;
+		f.c = p4;
 	}
 
 	if(inTriangle == 0)
