@@ -1,8 +1,8 @@
 
-CFLAGS=-Wall -g -I.
+CFLAGS=-Wall -Wno-unused -g -I.
 LDFLAGS=-g -lz
 
-OBJS_COMMON=wld.o zon.o pfs.o ter.o file.o global.o
+OBJS_COMMON=wld.o zon.o zonv4.o pfs.o ter.o dat.o file.o global.o
 OBJS_AZONE=azone.o $(OBJS_COMMON)
 OBJS_AWATER=awater.o $(OBJS_COMMON)
 OBJS_LISTOBJ=listobj.o $(OBJS_COMMON)

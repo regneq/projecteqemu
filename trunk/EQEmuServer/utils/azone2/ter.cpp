@@ -95,42 +95,9 @@ int TERLoader::Open(char *base_path, char *zone_name, Archive *archive) {
 #endif
   for(j=0; j< thdr->mat_count; j++) {
      struct ter_object *tobj = (struct ter_object *)buffer;
-#ifdef DEBUGTER
-     printf("Object: %d, Name %s\n", tobj->index, (char *)(StartOfNameList+tobj->name_offset));
-#endif
      buffer += sizeof(struct ter_object);
      for (unsigned int i=0; i<(unsigned int)tobj->property_count; i++) {
         struct ter_property *tprop = (struct ter_property *)buffer;
-	if(tprop->type==2) {
-#ifdef DEBUGTER
-	    printf("Property name %s, value %s\n", (char *)(StartOfNameList+tprop->name_offset),
-	                                           (char *)(StartOfNameList+tprop->value));
-#endif
-	    if(!strcmp((char *)(StartOfNameList+tprop->name_offset), "e_TextureDiffuse0")) {
-#ifdef DEBUGTER
-	    	printf("Normal Texture\n");
-#endif
-      		mlist[mat_count].basetex = new char[strlen((char *)(StartOfNameList+tprop->value))+1];
-			
-      		memcpy(mlist[mat_count].basetex, (char *)(StartOfNameList+tprop->value), 
-		  			 strlen((char *)(StartOfNameList+tprop->value))+1); 
-#ifdef DEBUGTER
-		printf("Copied %s to basetex mlist[%d].basetex\n", mlist[mat_count].basetex, mat_count);
-#endif
-      		++mat_count;
-	    }
-	    else if(!strcmp((char *)(StartOfNameList+tprop->name_offset), "e_TextureDiffuse0")) {
-#ifdef DEBUGTER
-	    	printf("Diffuse Texture\n");
-#endif
-      		mlist[mat_count].name = new char[strlen((char *)(StartOfNameList+tprop->value))+1];
-      		memcpy(mlist[mat_count].name, (char *)(StartOfNameList+tprop->value), 
-		  			 strlen((char *)(StartOfNameList+tprop->value))+1); 
-#ifdef DEBUGTER
-		printf("Copied %s to name\n", mlist[mat_count].name);
-#endif
-	    }
-	}
      	buffer += sizeof(struct ter_property);
      }
 
@@ -217,7 +184,7 @@ int TERLoader::Open(char *base_path, char *zone_name, Archive *archive) {
     zm->polys[j]->v2 = ttri->v2;
     zm->polys[j]->v3 = ttri->v3;
 #endif
-
+    zm->polys[j]->flags = ttri->unk;
 
 
     if(ttri->group == -1) {
@@ -241,41 +208,11 @@ int TERLoader::Open(char *base_path, char *zone_name, Archive *archive) {
   
   zm->poly_count = j;
   
-#ifdef DEBUGTER
-  printf("TERLoader:: thdr->mat_count is %d\n", thdr->mat_count);
-  fflush(stdout);
-#endif
-
-  zm->tex_count = thdr->mat_count;
-  zm->tex = new Texture *[thdr->mat_count];
-  
-  for(i = 0; i < thdr->mat_count; ++i) {
-
-    zm->tex[i] = new Texture;
-    zm->tex[i]->frame_count = 1;
-    zm->tex[i]->current_frame = 0; // Derision
-	zm->tex[i]->archive = archive;
-    zm->tex[i]->filenames = new char *[1];
-	zm->tex[i]->filenames[0] = NULL;
-
-    if(mlist[i].basetex) {
-
-      zm->tex[i]->filenames[0] = new char[strlen(mlist[i].basetex) + 1];
-
-      memcpy(zm->tex[i]->filenames[0], mlist[i].basetex, strlen(mlist[i].basetex) + 1);
-
-
-      delete[] mlist[i].basetex;
-    }
-    else if(mlist[i].name) {
-
-      zm->tex[i]->filenames[0] = new char[strlen(mlist[i].name) + 1];
-      memcpy(zm->tex[i]->filenames[0], mlist[i].name, strlen(mlist[i].name) + 1);
-      delete[] mlist[i].name;
-    }
-  }
+  zm->tex_count = 0;
   
   delete[] mlist;
+
+  delete [] ter_orig;
 
   this->status = 1;
   return 1;
@@ -285,7 +222,7 @@ int TERLoader::Close() {
   Zone_Model *zm = this->model_data.zone_model;
   int i;
 
-  return 1;
+  //return 1;
 
   if(!this->status)
     return 1;
@@ -294,16 +231,13 @@ int TERLoader::Close() {
     delete zm->verts[i];
   for(i = 0; i < zm->poly_count; ++i)
     delete zm->polys[i];
-  for(i = 0; i < zm->tex_count; ++i) {
-    delete[] zm->tex[i]->filenames[0];
-    delete[] zm->tex[i]->filenames;
-    delete zm->tex[i];
-  }
 
   delete[] zm->verts;
   delete[] zm->polys;
 
   delete this->model_data.zone_model;
+
+  status = 0;
 
   return 1;
 }

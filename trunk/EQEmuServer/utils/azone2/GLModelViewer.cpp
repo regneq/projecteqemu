@@ -22,6 +22,7 @@
 #include "pfs.hpp"
 #include "file_loader.hpp"
 #include "zon.hpp"
+#include "zonv4.hpp"
 #include "ter.hpp"
 
 
@@ -455,10 +456,13 @@ bool ProcessZoneFile(const char *shortname) {
 		case EQG:
 			mfileloader = new ZonLoader();
 			if(mfileloader->Open(NULL, (char *) shortname, archive) == 0) {
-				
-				MessageBox(NULL,"Error reading ZON/TER from container file","ERROR",MB_OK|MB_ICONEXCLAMATION);
-				return(false);
+				delete mfileloader;
+				mfileloader = new Zonv4Loader();
+                if(mfileloader->Open(NULL, (char *) shortname, archive) == 0) {
+                    MessageBox(NULL,"Error reading ZON/TER from container file","ERROR",MB_OK|MB_ICONEXCLAMATION);
+					return(false);
 	        	}
+			}
 			break;
 		case UNKNOWN:
 			break;

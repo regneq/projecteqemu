@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==12/30/2009==
+Derision: Update azone2 with EQG v4 support.
+
 ==12/27/2009==
 Derision: Fix to set required heading when zoning.
 
