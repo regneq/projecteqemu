@@ -370,8 +370,17 @@ void Serverlist::SendServerListPacket(EQStream* Client) {
 	int PacketSize = sizeof(ServerListHeader_Struct);
 	int NumberOfServers = 0;
 
-	for(Iterator = EQServers.begin(); Iterator != EQServers.end(); Iterator++) {
-		PacketSize += strlen((*Iterator).WorldServerReg->GetServerListDisplayName().c_str()) + 1 + 8 + strlen((*Iterator).WorldServerReg->GetPublicIPAddress().c_str()) + 1 + 6 + 8;
+	for(Iterator = EQServers.begin(); Iterator != EQServers.end(); Iterator++) 
+	{
+		if(Client->GetRemoteIP() == (*Iterator).IPAddress)
+		{
+			PacketSize += strlen((*Iterator).WorldServerReg->GetServerListDisplayName().c_str()) + 1 + 8 + strlen((*Iterator).WorldServerReg->GetLocalIPAddress().c_str()) + 1 + 6 + 8;
+		}
+		else
+		{
+			PacketSize += strlen((*Iterator).WorldServerReg->GetServerListDisplayName().c_str()) + 1 + 8 + strlen((*Iterator).WorldServerReg->GetPublicIPAddress().c_str()) + 1 + 6 + 8;
+		}
+
 		NumberOfServers++;
 	}
 
