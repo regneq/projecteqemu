@@ -403,7 +403,7 @@ private:
 		bool Bot_AICheckCloseBeneficialSpells(Bot* caster, int8 iChance, float iRange, int16 iSpellTypes);  // TODO: Evaluate this closesly in hopes to eliminate
 		void ShowSpawnWindow(Client* client, int Distance, bool NamedOnly);  // TODO: Implement ShowSpawnWindow in the bot class but it needs entity list stuff
 	private:
-		LinkedList<Bot*> bot_list;
+		std::list<Bot*> bot_list;
 #endif
 };
 
