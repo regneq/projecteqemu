@@ -68,8 +68,27 @@ int main() {
 		cout << "Security Module Load Failed." << endl;
 	}
 
-	CL = new Clientlist;
-	SL = new Serverlist;
+	try
+	{
+		if(RunLoops)
+			CL = new Clientlist;
+	}
+	catch(std::exception const &Ex)
+	{
+		cout << "Error Starting Client List: " << Ex.what() << endl;
+		RunLoops = false;
+	}
+
+	try
+	{
+		if(RunLoops)
+			SL = new Serverlist;
+	}
+	catch(std::exception const &Ex)
+	{
+		cout << "Error Starting Server List: " << Ex.what() << endl;
+		RunLoops = false;
+	}
 
 	while(RunLoops) {
 		Timer::SetCurrentTime();
@@ -80,6 +99,8 @@ int main() {
 		Sleep(100);
 	}
 
+	safe_delete(CL);
+	safe_delete(SL);
 }
 
 void UpdateWindowTitle(char* iNewTitle) {

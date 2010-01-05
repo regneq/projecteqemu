@@ -105,8 +105,8 @@ bool EQEmuDatabase::TestDBConnection() {
 	MakeAnyLenString(&mQuery, "SELECT COUNT(*) FROM tblLoginServerAccounts");
 	if (mysql_query(_mysql, mQuery)) 
 	{
-		safe_delete_array(mQuery);
 		cout << "Query failed: " << mQuery << endl;
+		safe_delete_array(mQuery);
 		return false;
 	}
 	safe_delete_array(mQuery);
