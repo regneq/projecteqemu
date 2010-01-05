@@ -2401,6 +2401,18 @@ void EntityList::Depop(bool StartSpawnTimer) {
 	}
 }
 
+void EntityList::DepopAll(int NPCTypeID, bool StartSpawnTimer) {
+	LinkedListIterator<NPC*> iterator(npc_list);
+	
+	iterator.Reset();
+	for(; iterator.MoreElements(); iterator.Advance())
+	{
+		NPC *it = iterator.GetData();
+		if(it && (it->GetNPCTypeID() == NPCTypeID))
+			it->Depop(StartSpawnTimer);
+	}
+}
+
 void EntityList::SendTraders(Client* client){
 	LinkedListIterator<Client*> iterator(client_list);
 	iterator.Reset();

@@ -493,8 +493,6 @@ void QuestManager::depop(int npc_type) {
 		if (tmp) {
 			if(tmp != owner){
 				tmp->CastToNPC()->Depop();
-				entity_list.RemoveNPC(tmp->GetID());
-				entity_list.RemoveMob(tmp->GetID());
 			}
 			else
 				depop_npc = true;
@@ -506,20 +504,8 @@ void QuestManager::depop(int npc_type) {
 }
 
 void QuestManager::depopall(int npc_type) {
-	if(owner->IsNPC() && npc_type > 0) {
-		Mob* tmp = entity_list.GetMobByNpcTypeID(npc_type);
-		while(tmp) {
-			if(tmp != owner){
-				tmp->CastToNPC()->Depop();
-				entity_list.RemoveNPC(tmp->GetID());
-				entity_list.RemoveMob(tmp->GetID());
-			}
-			else
-				depop_npc = true;
-
-			tmp = entity_list.GetMobByNpcTypeID(npc_type);
-		}
-	}
+	if(owner->IsNPC() && npc_type > 0)
+		entity_list.DepopAll(npc_type);
 }
 
 void QuestManager::depopzone(bool StartSpawnTimer) {

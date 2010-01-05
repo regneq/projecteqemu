@@ -359,6 +359,7 @@ public:
 	list<NPC*> GetNPCList();
 	list<Client*> GetClientList();
 	list<Corpse*> GetCorpseList();
+	void	DepopAll(int NPCTypeID, bool StartSpawnTimer = true);
 
 protected:
 	friend class Zone;
