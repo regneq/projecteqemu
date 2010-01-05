@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==01/05/2010==
+WildcardX: Fixed the EQEmuLoginServer project file, fixed a crash caused by referencing a NULL object and made a couple improvements to error handling.
+
 ==12/30/2009==
 Derision: Update azone2 with EQG v4 support.
 

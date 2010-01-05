@@ -41,8 +41,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\EQEmuAuthCrypto;..\EQEmuCommon;&quot;C:\Documents and Settings\Golgie\My Documents\LoginSVN\EQEmuLoginServer\conn2\trunk&quot;"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;CPPCONN_PUBLIC_FUNC="
+				AdditionalIncludeDirectories=""
+				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -63,9 +63,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ws2_32.lib zlib.lib libmysql.lib"
+				AdditionalDependencies="ws2_32.lib zlib.lib mysqlclient.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;C:\Documents and Settings\Golgie\My Documents\LoginSVN\EQEmuLoginServer\conn2\trunk\driver\Debug&quot;"
+				AdditionalLibraryDirectories=""
 				IgnoreDefaultLibraryNames=""
 				GenerateDebugInformation="true"
 				SubSystem="1"

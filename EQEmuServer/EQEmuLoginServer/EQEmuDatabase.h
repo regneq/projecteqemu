@@ -36,7 +36,7 @@ using namespace std;
 #include <ctime>
 #include <iostream>
 
-#pragma comment ( lib, "libmysql" )
+//#pragma comment ( lib, "libmysql" )
 
 class EQEmuDatabase 
 {
