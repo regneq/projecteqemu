@@ -55,8 +55,8 @@ void QGlobalCache::PurgeExpiredGlobals()
 		QGlobal cur = (*iter);
 		if(Timer::GetTimeSeconds() > cur.expdate)
 		{
-			qGlobalBucket.erase(iter);
-			iter = qGlobalBucket.begin();
+			iter = qGlobalBucket.erase(iter);
+			continue;
 		}
 		++iter;
 	}

@@ -8718,13 +8718,15 @@ void Bot::ProcessClientZoneChange(Client* botOwner) {
 
 			if(tempBot) {
 				if(tempBot->HasGroup()) {
-					if(tempBot->GetGroup()->GetLeader()) {
+					Group* g = tempBot->GetGroup();
+					if(g && g->GetLeader()) {
 						Mob* tempGroupLeader = tempBot->GetGroup()->GetLeader();
-
-						if(tempGroupLeader->IsClient())
-							tempBot->Zone();
-						else
-							tempBot->Camp();
+						if(tempGroupLeader && tempGroupLeader->IsClient()) {
+							if(tempBot->GetBotOwnerCharacterID() == tempGroupLeader->CastToClient()->CharacterID())
+								tempBot->Zone();
+							else
+								tempBot->Camp();
+						}
 					}
 					else
 						tempBot->Camp();
@@ -12242,6 +12244,7 @@ Mob* EntityList::GetMobByBotID(uint32 botID) {
 		while(iterator.MoreElements()) {
 			if(iterator.GetData()->IsBot() && iterator.GetData()->CastToBot()->GetBotID() == botID) {
 				Result = iterator.GetData();
+				break;
 			}
 
 			iterator.Advance();
@@ -12255,16 +12258,13 @@ Bot* EntityList::GetBotByBotID(uint32 botID) {
 	Bot* Result = 0;
 
 	if(botID > 0) {
-		LinkedListIterator<Mob*> iterator(mob_list);
-	
-		iterator.Reset();
+		for(list<Bot*>::iterator botListItr = bot_list.begin(); botListItr != bot_list.end(); botListItr++) {
+			Bot* tempBot = *botListItr;
 
-		while(iterator.MoreElements()) {
-			if(iterator.GetData()->IsBot() && iterator.GetData()->CastToBot()->GetBotID() == botID) {
-				Result = iterator.GetData()->CastToBot();
+			if(tempBot && tempBot->GetBotID() == botID) {
+				Result = tempBot;
+				break;
 			}
-
-			iterator.Advance();
 		}
 	}
 
@@ -12275,14 +12275,13 @@ Bot* EntityList::GetBotByBotName(std::string botName) {
 	Bot* Result = 0;
 
 	if(!botName.empty()) {
-		LinkedListIterator<Mob*> itr(mob_list);
-		itr.Reset();
+		for(list<Bot*>::iterator botListItr = bot_list.begin(); botListItr != bot_list.end(); botListItr++) {
+			Bot* tempBot = *botListItr;
 
-		while(itr.MoreElements()) {
-			if(itr.GetData()->IsBot() && std::string(itr.GetData()->CastToBot()->GetName()) == botName)
-				Result = itr.GetData()->CastToBot();
-
-			itr.Advance();
+			if(tempBot && std::string(tempBot->GetName()) == botName) {
+				Result = tempBot;
+				break;
+			}
 		}
 	}
 
@@ -12314,10 +12313,7 @@ void EntityList::AddBot(Bot *newBot, bool SendSpawnPacket, bool dontqueue) {
 			parse->Event(EVENT_SPAWN, 0, 0, 0, newBot);
 		}
 
-		bot_list.Insert(newBot);
-
-		if(!bot_list.dont_delete)
-			bot_list.dont_delete = true;
+		bot_list.push_back(newBot);
 
 		mob_list.Insert(newBot);
 	}
@@ -12327,12 +12323,12 @@ list<Bot*> EntityList::GetBotsByBotOwnerCharacterID(uint32 botOwnerCharacterID) 
 	list<Bot*> Result;
 
 	if(botOwnerCharacterID > 0) {
-		LinkedListIterator<Bot*> botItr(bot_list);
-		botItr.Reset();
-		while(botItr.MoreElements()) {
-			if(botItr.GetData() && botItr.GetData()->GetBotOwnerCharacterID() == botOwnerCharacterID)
-				Result.push_back(botItr.GetData());
-			botItr.Advance();
+		for(list<Bot*>::iterator botListItr = bot_list.begin(); botListItr != bot_list.end(); botListItr++)
+		{
+			Bot* tempBot = *botListItr;
+
+			if(tempBot && tempBot->GetBotOwnerCharacterID() == botOwnerCharacterID)
+				Result.push_back(tempBot);
 		}
 	}
 
@@ -12343,29 +12339,15 @@ bool EntityList::RemoveBot(int16 entityID) {
 	bool Result = false;
 
 	if(entityID > 0) {
-		LinkedListIterator<Bot*> iterator(bot_list);
-		
-		iterator.Reset();
-		
-		while(iterator.MoreElements())
+		for(list<Bot*>::iterator botListItr = bot_list.begin(); botListItr != bot_list.end(); botListItr++)
 		{
-			if(iterator.GetData()->GetID() == entityID){
-				//make sure its proximity is removed
-				//RemoveProximity(iterator.GetData()->GetID());
-				
-				//take it out of the list
-				iterator.RemoveCurrent(false);//Already Deleted
-				
-				//take it out of our limit list
-				/*if(npc_limit_list.count(delete_id) == 1)
-					npc_limit_list.erase(delete_id);*/
-				
-				Result = true;
+			Bot* tempBot = *botListItr;
 
+			if(tempBot && tempBot->GetID() == entityID) {
+				bot_list.erase(botListItr);
+				Result = true;
 				break;
 			}
-
-			iterator.Advance();
 		}
 	}
 
