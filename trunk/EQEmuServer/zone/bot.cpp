@@ -2055,6 +2055,7 @@ bool Bot::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 			// Bad info from database can trigger this incorrectly, but that should be fixed in DB, not here
 			continue;
 		}
+
 		if (iSpellTypes & AIspells[i].type) {
 			// manacost has special values, -1 is no mana cost, -2 is instant cast (no mana)
 			sint32 mana_cost = AIspells[i].manacost;
@@ -2082,8 +2083,7 @@ bool Bot::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 
 					switch (AIspells[i].type) {
 					case SpellType_Heal: {
-						if (
-							( (spells[AIspells[i].spellid].targettype==ST_GroupTeleport || spells[AIspells[i].spellid].targettype == ST_Target || tar == this)
+						if (((spells[AIspells[i].spellid].targettype==ST_GroupTeleport || spells[AIspells[i].spellid].targettype == ST_Target || tar == this)
 							&& tar->DontHealMeBefore() < Timer::GetCurrentTime()
 							&& tar->CanBuffStack(AIspells[i].spellid, botLevel, true) >= 0))
 						{
@@ -2092,9 +2092,10 @@ bool Bot::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 									break;
 								}
 							}
+							
 							int8 hpr = (int8)tar->GetHPRatio();
-							if(hpr<= 80 || ((tar->IsClient()||tar->IsPet()) && (hpr <= 98)) || (botClass == BARD))
-							{
+							
+							if(hpr <= 85 || (tar->IsClient() && (hpr <= 95)) || (botClass == BARD)) {
 								if(tar->GetClass() == NECROMANCER) {
 									// Necro bots use too much cleric mana with thier
 									// mana for life spells... give them a chance
@@ -2104,6 +2105,14 @@ bool Bot::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 									}
 								}
 
+								if(tar->FindType(SE_HealOverTime)) {
+									// Let the heal over time buff do it's thing ...
+									if(tar->IsEngaged() && hpr >= 70)
+										break;
+									else if(!tar->IsEngaged())
+										break;
+								}
+
 								int32 TempDontHealMeBeforeTime = tar->DontHealMeBefore();
 
 								AIDoSpellCast(i, tar, mana_cost, &TempDontHealMeBeforeTime);
@@ -2111,21 +2120,11 @@ bool Bot::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 								if(TempDontHealMeBeforeTime != tar->DontHealMeBefore())
 									tar->SetDontHealMeBefore(TempDontHealMeBeforeTime);
 
-								// If the healer is casting a HoT don't immediately cast the regular heal afterwards
-								// The first HoT is at level 19 and is priority 1
-								// The regular heal is priority 2
-								// Let the HoT heal for at least 3 tics before checking for the regular heal
 								// For non-HoT heals, do a 4 second delay
-								if((botClass == CLERIC || botClass == PALADIN) && (botLevel >= 19) && (AIspells[i].priority == 1)) {
-									if(tar->GetOwnerID()) {
-										tar->SetDontHealMeBefore(Timer::GetCurrentTime() + 18000);
-									}
-									else {
-										tar->SetDontHealMeBefore(Timer::GetCurrentTime() + 12000);
-									}
-								}
-								else if((botClass == CLERIC || botClass == PALADIN) && (botLevel >= 19) && (AIspells[i].priority == 2)) {
-									if(AIspells[i].spellid == 13) { 
+								// TODO: Replace this code with logic that calculates the delay based on number of clerics in rotation
+								//			and ignores heals for anyone except the main tank
+								if(!IsHealOverTimeSpell(AIspells[i].spellid)) {
+									if(IsCompleteHealSpell(AIspells[i].spellid)) { 
 										// Complete Heal 4 second rotation
 										tar->SetDontHealMeBefore(Timer::GetCurrentTime() + 4000);
 									}
@@ -2133,6 +2132,7 @@ bool Bot::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 										tar->SetDontHealMeBefore(Timer::GetCurrentTime() + 1000);
 									}
 								}
+
 								return true;
 							}
 						}
@@ -2618,6 +2618,10 @@ void Bot::AI_Process() {
 
 		FaceTarget(GetTarget());
 
+		// Stop attacking if the target is enraged
+		if(IsEngaged() && !IsBotArcher() && !BehindMob(GetTarget(), GetX(), GetY()) && GetTarget()->IsEnraged())
+			return;
+
 		if(DivineAura())
 			return;
 
@@ -3008,14 +3012,17 @@ void Bot::PetAIProcess() {
 	if (!botPet->IsAIControlled())
 		return;
 
-	if (!(botPet->GetAIThinkTimer()->Check() || botPet->GetAttackTimer().Check(false)))
+	/*if (!(botPet->GetAIThinkTimer()->Check() || botPet->GetAttackTimer().Check(false)))
+		return;*/
+
+	if(botPet->GetAttackTimer().Check(false))
 		return;
 
 	if (botPet->IsCasting())
 		return;
 
-	// if our owner isn't a pet or if he is not a client...
-	if (!botPet->GetOwner()->IsBot() || ( !botPet->GetOwner()->IsBot() && !botPet->GetOwner()->IsClient() ) )
+	// Return if the owner of the bot pet isnt a bot.
+	if (!botPet->GetOwner()->IsBot())
 		return;
 
 	if (IsEngaged()) {
@@ -3060,6 +3067,7 @@ void Bot::PetAIProcess() {
 		// Ok, we 're a melee or any other class lvl<12. Yes, because after it becomes hard to go in melee for casters.. even for bots..
 		if( is_combat_range ) {
 			botPet->GetAIMovementTimer()->Check();
+			
 			if(botPet->IsMoving()) {
 				botPet->SetRunAnimSpeed(0);
 				botPet->SetHeading(botPet->GetTarget()->GetHeading());
@@ -3070,29 +3078,43 @@ void Bot::PetAIProcess() {
 				}
 			}
 
-			if(!botPet->IsMoving() && botPet->GetClass() == ROGUE && !botPet->BehindMob(GetTarget(), botPet->GetX(), botPet->GetY())) {
-				// Move the rogue to behind the mob
+			if(!botPet->IsMoving()) {
 				float newX = 0;
 				float newY = 0;
 				float newZ = 0;
 
-				if(botPet->PlotPositionAroundTarget(GetTarget(), newX, newY, newZ)) {
-					botPet->CalculateNewPosition2(newX, newY, newZ, botPet->GetRunspeed());
-					return;
+				if(botPet->GetClass() == ROGUE && !botPet->BehindMob(botPet->GetTarget(), botPet->GetX(), botPet->GetY())) {
+					// Move the rogue to behind the mob
+					if(botPet->PlotPositionAroundTarget(GetTarget(), newX, newY, newZ)) {
+						botPet->CalculateNewPosition2(newX, newY, newZ, botPet->GetRunspeed());
+						return;
+					}
 				}
-			}
-			else if(!botPet->IsMoving() && botPet->GetClass() != ROGUE && (botPet->DistNoRootNoZ(*GetTarget()) < GetTarget()->GetSize())) {
-				// If we are not a rogue trying to backstab, let's try to adjust our melee range so we don't appear to be bunched up
-				float newX = 0;
-				float newY = 0;
-				float newZ = 0;
+				else if(GetTarget() == botPet->GetTarget() && !botPet->BehindMob(botPet->GetTarget(), botPet->GetX(), botPet->GetY())) {
+					// If the bot owner and the bot are fighting the same mob, then move the pet to the rear arc of the mob
+					if(botPet->PlotPositionAroundTarget(botPet->GetTarget(), newX, newY, newZ)) {
+						botPet->CalculateNewPosition2(newX, newY, newZ, botPet->GetRunspeed());
+						return;
+					}
+				}
+				else if(botPet->DistNoRootNoZ(*botPet->GetTarget()) < botPet->GetTarget()->GetSize()) {
+					// Let's try to adjust our melee range so we don't appear to be bunched up
+					bool isBehindMob = false;
 
-				if(botPet->PlotPositionAroundTarget(GetTarget(), newX, newY, newZ, false)) {
-					botPet->CalculateNewPosition2(newX, newY, newZ, GetRunspeed());
-					return;
+					if(botPet->BehindMob(botPet->GetTarget(), botPet->GetX(), botPet->GetY()))
+						isBehindMob = true;
+
+					if(botPet->PlotPositionAroundTarget(botPet->GetTarget(), newX, newY, newZ, isBehindMob)) {
+						botPet->CalculateNewPosition2(newX, newY, newZ, botPet->GetRunspeed());
+						return;
+					}
 				}
 			}
 			
+			// Stop attacking while we are on a front arc and the target is enraged
+			if(botPet->IsEngaged() && !botPet->BehindMob(botPet->GetTarget(), botPet->GetX(), botPet->GetY()) && botPet->GetTarget()->IsEnraged())
+				return;
+
 			// we can't fight if we don't have a target, are stun/mezzed or dead..
 			if(botPet->GetTarget() && !botPet->IsStunned() && !botPet->IsMezzed() && (botPet->GetAppearance() != eaDead)) 
 			{

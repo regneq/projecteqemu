@@ -3,6 +3,8 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==01/05/2010==
 WildcardX: Fixed the EQEmuLoginServer project file, fixed a crash caused by referencing a NULL object and made a couple improvements to error handling.
 Derision: Fix for quest::depopall related crash.
+WildcardX: Improved healing for Bots inspired by contribtions from Bad_Captain! Bot healers won't let a HoT spell block them from casting a heal spell when in combat.
+WildcardX: Bot pets will now seek to engage their target's from behind when their Bot master's are fighting the same mob from in front.
 
 ==12/30/2009==
 Derision: Update azone2 with EQG v4 support.
