@@ -679,6 +679,8 @@ bool IsPlayerIllusionSpell(int16 spell_id); // seveian 2008-09-23
 bool IsLDoNObjectSpell(int16 spell_id);
 sint32 GetSpellResistType(int16 spell_id);
 sint32 GetSpellTargetType(int16 spell_id);
+bool IsHealOverTimeSpell(int16 spell_id);
+bool IsCompleteHealSpell(int16 spell_id);
 
 int CalcPetHp(int levelb, int classb, int STA = 75);
 const char *GetRandPetName();
