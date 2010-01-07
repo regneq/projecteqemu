@@ -5,6 +5,7 @@ WildcardX: Fixed a bug that prevented Bot casters from casting if a mob becomes 
 WildcardX: Changed #bot list and #bot spawn commands to use bot name instead of the bot table id
 WildcardX: Added new commands to save, load, delete and view bot groups. See the #bot botgroup help command to view them.
 WildcardX: Fixed SQL syntax issues with database scripts for bots.
+WildcardX: Fixed a bug that may have made it difficult to add bots to bot only groups.
 
 <SQL Required for BOTS> 1077_botgroups.sql
 
