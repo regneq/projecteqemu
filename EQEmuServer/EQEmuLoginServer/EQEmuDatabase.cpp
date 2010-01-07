@@ -54,8 +54,13 @@ bool EQEmuDatabase::GetLoginDataByLSAccountName(std::string LSAccountName, std::
 	MakeAnyLenString(&mQuery, "SELECT LoginServerID, AccountPassword FROM tblLoginServerAccounts WHERE AccountName = '%s'", LSAccountName.c_str());
 	if (mysql_query(_mysql, mQuery)) 
 	{
-		cout << "Query failed: " << mQuery << endl;
+		if(mQuery)
+			cout << "Query failed: " << mQuery << endl;
+		else
+			cout << "Error: Query string is empty." << endl;
+
 		safe_delete_array(mQuery);
+
 		return false;
 	}
 	safe_delete_array(mQuery);
@@ -87,7 +92,10 @@ void EQEmuDatabase::UpdateLSAccountData(uint32 LSAccountID, std::string LastIPAd
 	MakeAnyLenString(&mQuery, "UPDATE tblLoginServerAccounts SET LastIPAddress = '%s', LastLoginDate = now() where LoginServerID = %u", LastIPAddress.c_str(), LSAccountID);
 	if (mysql_query(_mysql, mQuery)) 
 	{
-		cout << "Query failed: " << mQuery << endl;
+		if(mQuery)
+			cout << "Query failed: " << mQuery << endl;
+		else
+			cout << "Error: Query string is empty." << endl;
 	}
 	safe_delete_array(mQuery);
 	return;
@@ -105,7 +113,11 @@ bool EQEmuDatabase::TestDBConnection() {
 	MakeAnyLenString(&mQuery, "SELECT COUNT(*) FROM tblLoginServerAccounts");
 	if (mysql_query(_mysql, mQuery)) 
 	{
-		cout << "Query failed: " << mQuery << endl;
+		if(mQuery)
+			cout << "Query failed: " << mQuery << endl;
+		else
+			cout << "Error: Query string is empty." << endl;
+
 		safe_delete_array(mQuery);
 		return false;
 	}
@@ -138,7 +150,11 @@ bool EQEmuDatabase::GetWorldServerRegistrationInfo(std::string longServerName,
 		" = '%s' AND WSR.ServerShortName = '%s'", longServerName.c_str(), shortServerName.c_str()); 
 	if (mysql_query(_mysql, mQuery)) 
 	{
-		cout << "Query failed: " << mQuery << endl;
+		if(mQuery)
+			cout << "Query failed: " << mQuery << endl;
+		else
+			cout << "Error: Query string is empty." << endl;
+
 		safe_delete_array(mQuery);
 		return false;
 	}
@@ -177,7 +193,10 @@ void EQEmuDatabase::UpdateWorldServerRegistration(uint32 serverID, std::string s
 	MakeAnyLenString(&mQuery, "UPDATE tblWorldServerRegistration SET ServerLastLoginDate = now(), ServerLastIPAddr = '%s' where ServerID = %u", serverIP,  serverID);
 	if (mysql_query(_mysql, mQuery)) 
 	{
-		cout << "Query failed: " << mQuery << endl;
+		if(mQuery)
+			cout << "Query failed: " << mQuery << endl;
+		else
+			cout << "Error: Query string is empty." << endl;
 	}
 	safe_delete_array(mQuery);
 	return;	
