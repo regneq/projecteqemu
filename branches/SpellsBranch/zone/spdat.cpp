@@ -812,3 +812,17 @@ sint32 GetSpellTargetType(int16 spell_id)
 {
 	return (sint32)spells[spell_id].targettype;
 }
+
+bool IsHealOverTimeSpell(int16 spell_id) {
+	if(IsEffectInSpell(spell_id, SE_HealOverTime))
+		return true;
+	else
+		return false;
+}
+
+bool IsCompleteHealSpell(int16 spell_id) {
+	if(spell_id == 13 || IsEffectInSpell(spell_id, SE_CompleteHeal) || IsEffectInSpell(spell_id, SE_PercentalHeal))
+		return true;
+	else
+		return false;
+}
