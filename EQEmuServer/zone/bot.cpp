@@ -11755,8 +11755,8 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 	if(!strcasecmp(sep->arg[1], "botgroup") && !strcasecmp(sep->arg[2], "help")) {
 		c->Message(0, "#bot botgroup help - will show this help.");
 		c->Message(0, "#bot botgroup create <bot group leader name or target>. This will designate a bot to be a bot group leader.");
-		c->Message(0, "#bot botgroup add <bot group leader name or target> <bot group member name to add>");
-		c->Message(0, "#bot botgroup remove <bot group member name to remove>");
+		c->Message(0, "#bot botgroup add <bot group member name to add> <bot group leader name or target>");
+		c->Message(0, "#bot botgroup remove <bot group member name to remove or target>");
 		c->Message(0, "#bot botgroup disband <bot group leader name or target>. Disbands the designated bot group leader's bot group.");
 		c->Message(0, "#bot botgroup summon <bot group leader name or target>. Summons the bot group to your location.");
 		c->Message(0, "#bot botgroup follow <bot group leader name or target>");
@@ -11796,72 +11796,90 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 	}
 
 	if(!strcasecmp(sep->arg[1], "botgroup") && !strcasecmp(sep->arg[2], "add")) {
-		std::string botGroupLeaderName = std::string(sep->arg[3]);
-		std::string botGroupMemberName = std::string(sep->arg[4]);
-		Bot* botGroupMember = 0;
+		int argCount = 0;
 
-		if(c->GetTarget()) {
-			if(c->GetTarget()->IsBot())
-				botGroupMember = c->GetTarget()->CastToBot();
+		argCount = sep->argnum;
+
+		std::string botGroupLeaderName;
+		std::string botGroupMemberName;
+
+		if(argCount >= 3)
+			botGroupMemberName = std::string(sep->arg[3]);
+
+		Bot* botGroupMember = entity_list.GetBotByBotName(botGroupMemberName);
+
+		if(!botGroupMember) {
+			if(botGroupMemberName.empty())
+				c->Message(13, "You must target a bot in this zone. Please try again.");
+			else
+				c->Message(13, "%s is not a bot in this zone. Please try again.", botGroupMemberName.c_str());
+
+			return;
 		}
-		
-		if(!botGroupLeaderName.empty()) {
-			Bot* botGroupLeader = entity_list.GetBotByBotName(botGroupLeaderName);
 
-			if(botGroupLeader) {
-				if(botGroupLeader->HasGroup()) {
-					Group* g = botGroupLeader->GetGroup();
+		Bot* botGroupLeader = 0;
 
-					if(g) {
-						if(g->IsLeader(botGroupLeader)) {
-							if(g->GroupCount() < MAX_GROUP_MEMBERS) {
-								if(!botGroupMemberName.empty() && botGroupMember) {
-									botGroupMember = entity_list.GetBotByBotName(botGroupMemberName);
-								}
+		if(argCount == 4) {
+			botGroupLeaderName = std::string(sep->arg[4]);
 
-								if(botGroupMember) {
-									if(!botGroupMember->HasGroup()) {
-										// invite
-										if(Bot::AddBotToGroup(botGroupMember, g)) {
-											database.SetGroupID(botGroupMember->GetName(), g->GetID(), botGroupMember->GetBotID());
-											botGroupMember->Say("I have joined %s\'s group.", botGroupLeader->GetName());
-										}
-										else {
-											botGroupMember->Say("I can not join %s\'s group.", botGroupLeader->GetName());
-										}
-									}
-									else {
-										// "I am already in a group."
-										Group* tempGroup = botGroupMember->GetGroup();
-										if(tempGroup)
-											botGroupMember->Say("I can not join %s\'s group. I am already a member in %s\'s group.", botGroupLeader->GetName(), tempGroup->GetLeaderName());
-									}
+			botGroupLeader = entity_list.GetBotByBotName(botGroupLeaderName);
+		}
+		else if(c->GetTarget() && c->GetTarget()->IsBot())
+			botGroupLeader = c->GetTarget()->CastToBot();
+
+		if(!botGroupLeader) {
+			if(botGroupLeaderName.empty())
+				c->Message(13, "You must target a bot in this zone. Please try again.");
+			else
+				c->Message(13, "%s is not a bot in this zone. Please try again.", botGroupLeaderName.c_str());
+
+			return;
+		}
+
+		if(botGroupLeader->HasGroup()) {
+			Group* g = botGroupLeader->GetGroup();
+
+			if(g) {
+				if(g->IsLeader(botGroupLeader)) {
+					if(g->GroupCount() < MAX_GROUP_MEMBERS) {
+						if(!botGroupMemberName.empty() && botGroupMember) {
+							botGroupMember = entity_list.GetBotByBotName(botGroupMemberName);
+						}
+
+						if(botGroupMember) {
+							if(!botGroupMember->HasGroup()) {
+								// invite
+								if(Bot::AddBotToGroup(botGroupMember, g)) {
+									database.SetGroupID(botGroupMember->GetName(), g->GetID(), botGroupMember->GetBotID());
+									botGroupMember->Say("I have joined %s\'s group.", botGroupLeader->GetName());
 								}
 								else {
-									// must target a bot message
-									c->Message(13, "You must target a spawned bot first.");
+									botGroupMember->Say("I can not join %s\'s group.", botGroupLeader->GetName());
 								}
 							}
 							else {
-								// "My group is full."
-								botGroupLeader->Say("I have no more openings in my group, %s.", c->GetName());
+								// "I am already in a group."
+								Group* tempGroup = botGroupMember->GetGroup();
+								if(tempGroup)
+									botGroupMember->Say("I can not join %s\'s group. I am already a member in %s\'s group.", botGroupLeader->GetName(), tempGroup->GetLeaderName());
 							}
 						}
 						else {
-							// "I am not a group leader."
-							Group* tempGroup = botGroupLeader->GetGroup();
-							if(tempGroup)
-								botGroupLeader->Say("I can not lead anyone because I am a member in %s\'s group.", tempGroup->GetLeaderName());
+							// must target a bot message
+							c->Message(13, "You must target a spawned bot first.");
 						}
+					}
+					else {
+						// "My group is full."
+						botGroupLeader->Say("I have no more openings in my group, %s.", c->GetName());
 					}
 				}
 				else {
-					// TODO: "I do not belong to a group."
-					botGroupLeader->Say("I am not a leader and do not belong to a group, %s.", c->GetName());
+					// "I am not a group leader."
+					Group* tempGroup = botGroupLeader->GetGroup();
+					if(tempGroup)
+						botGroupLeader->Say("I can not lead anyone because I am a member in %s\'s group.", tempGroup->GetLeaderName());
 				}
-			}
-			else {
-				c->Message(13, "You must target a bot group leader first.");
 			}
 		}
 

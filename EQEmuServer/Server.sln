@@ -1,5 +1,5 @@
 Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual C++ Express 2008
+# Visual Studio 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EMuShareMem", "EMuShareMem\EMuShareMem.vcproj", "{21168136-6906-4039-B486-6086E164E743}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "World", "world\World.vcproj", "{0FD472B1-CCB8-4ED2-8F4E-A1FC34E668EC}"
