@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==01/07/2010==
 WildcardX: Fixed a EQEmuLoginServer crash that can happen as the result of a null reference in the database code.
+WildcardX: Fixed a bug with bot archery. The command shouldn't crash the zone and the bot should correctly display the bow only.
 
 ==01/06/2010==
 WildcardX: Fixed a bug that prevented Bot casters from casting if a mob becomes enraged.
