@@ -54,8 +54,8 @@ bool EQEmuDatabase::GetLoginDataByLSAccountName(std::string LSAccountName, std::
 	MakeAnyLenString(&mQuery, "SELECT LoginServerID, AccountPassword FROM tblLoginServerAccounts WHERE AccountName = '%s'", LSAccountName.c_str());
 	if (mysql_query(_mysql, mQuery)) 
 	{
-		safe_delete_array(mQuery);
 		cout << "Query failed: " << mQuery << endl;
+		safe_delete_array(mQuery);
 		return false;
 	}
 	safe_delete_array(mQuery);
@@ -138,8 +138,8 @@ bool EQEmuDatabase::GetWorldServerRegistrationInfo(std::string longServerName,
 		" = '%s' AND WSR.ServerShortName = '%s'", longServerName.c_str(), shortServerName.c_str()); 
 	if (mysql_query(_mysql, mQuery)) 
 	{
-		safe_delete_array(mQuery);
 		cout << "Query failed: " << mQuery << endl;
+		safe_delete_array(mQuery);
 		return false;
 	}
 	safe_delete_array(mQuery);
@@ -177,7 +177,6 @@ void EQEmuDatabase::UpdateWorldServerRegistration(uint32 serverID, std::string s
 	MakeAnyLenString(&mQuery, "UPDATE tblWorldServerRegistration SET ServerLastLoginDate = now(), ServerLastIPAddr = '%s' where ServerID = %u", serverIP,  serverID);
 	if (mysql_query(_mysql, mQuery)) 
 	{
-		safe_delete_array(mQuery);
 		cout << "Query failed: " << mQuery << endl;
 	}
 	safe_delete_array(mQuery);
