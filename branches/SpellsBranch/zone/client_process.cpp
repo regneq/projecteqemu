@@ -164,7 +164,8 @@ bool Client::Process() {
 			m_TimeSinceLastPositionCheck = Timer::GetCurrentTime();
 		}
 
-		if (bardsong_timer.Check() && bardsong != 0) {
+		//TODO:
+		/*if (bardsong_timer.Check() && bardsong != 0) {
 			//NOTE: this is kinda a heavy-handed check to make sure the mob still exists before
 			//doing the next pulse on them...
 			Mob *song_target;
@@ -181,7 +182,7 @@ bool Client::Process() {
 					InterruptSpell(SONG_ENDS_ABRUPTLY, 0x121, bardsong);
 //				SpellFinished(bardsong, bardsong_target, bardsong_slot, spells[bardsong].mana);
 			}
-		}
+		}*/
 		
 		if(IsAIControlled())
 			AI_Process();

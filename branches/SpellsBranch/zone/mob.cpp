@@ -233,7 +233,7 @@ Mob::Mob(const char*   in_name,
 	*/
 
 	InitializeBuffSlots();
-	casting_spell = NULL;
+	ZeroCastingVars();
 
     // clear the proc arrays
 	for (j = 0; j < MAX_PROCS; j++)
@@ -276,9 +276,7 @@ Mob::Mob(const char*   in_name,
 	pRunAnimSpeed = 0;
 	
 	bardsong_timer.Disable();
-	bardsong = 0;
-	bardsong_target_id = 0;
-	target = 0;
+	bard_song = NULL;
 	
 	memset(&itembonuses, 0, sizeof(StatBonuses));
 	memset(&spellbonuses, 0, sizeof(StatBonuses));

@@ -659,18 +659,23 @@ bool logpos;
 	virtual void InitializeBuffSlots() { buffs = NULL; }
 	virtual void UninitializeBuffSlots() { }
 	virtual int GetFreeBuffSlot(int32 spell_id) { return 0; }
-	virtual bool CastSpell(Spell **casted_spell, int32* spell_will_finish = 0);
+	virtual bool CastSpell(Spell **casted_spell_ptr, int32* spell_will_finish = 0);
 	virtual bool CastSpell(int16 spell_id, int16 target_id, int16 slot = 10, sint32 casttime = -1, sint32 mana_cost = -1, int32* oSpellWillFinish = 0, int32 item_slot = 0xFFFFFFFF);
-	
-
-	virtual void SpellProcess();
+	virtual bool DoCastSpell(Spell **casted_spell_ptr, int32* spell_will_finish = 0);
+	void CastedSpellFinished(Spell **casted_spell_ptr);
+	virtual bool ValidateStartSpellCast(const Spell *spell_to_cast);
 	virtual bool CheckFizzle(int16 spell_id);
-	void ZeroCastingVars();
-	bool UseBardSpellLogic(int16 spell_id = 0xffff, int slot = -1);
 	void InterruptSpell(int16 spellid = SPELL_UNKNOWN);
 	void InterruptSpell(int16, int16, int16 spellid = SPELL_UNKNOWN);
-	virtual bool DoCastSpell(int16 spell_id, int16 target_id, int16 slot = 10, sint32 casttime = -1, sint32 mana_cost = -1, int32* oSpellWillFinish = 0, int32 item_slot = 0xFFFFFFFF);
-	void	CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16 mana_used, int32 inventory_slot = 0xFFFFFFFF);
+	void ZeroCastingVars();
+	void ZeroAndFreeCastingVars();
+	
+
+
+	virtual void SpellProcess();
+	bool UseBardSpellLogic(int16 spell_id = 0xffff, int slot = -1);
+	//virtual bool DoCastSpell(int16 spell_id, int16 target_id, int16 slot = 10, sint32 casttime = -1, sint32 mana_cost = -1, int32* oSpellWillFinish = 0, int32 item_slot = 0xFFFFFFFF);
+	//void	CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16 mana_used, int32 inventory_slot = 0xFFFFFFFF);
 	bool	SpellFinished(int16 spell_id, Mob *target, int16 slot = 10, int16 mana_used = 0, int32 inventory_slot = 0xFFFFFFFF);
 	virtual bool SpellOnTarget(int16 spell_id, Mob* spelltar);
 	bool	ApplyNextBardPulse(int16 spell_id, Mob *spell_target, int16 slot);
@@ -877,9 +882,7 @@ bool logpos;
 	sint16	GetResist(int8 type) const;
 	Mob*	GetShieldTarget()			const { return shield_target; }
 	void	SetShieldTarget(Mob* mob)	{ shield_target = mob; }
-//	Mob*	GetSongTarget()			{ return bardsong_target; }
-//	void	SetSongTarget(Mob* mob)	{ bardsong_target = mob; }
-	bool	HasActiveSong() const { return(bardsong != 0); }
+	bool	HasActiveSong() const { return(bard_song != NULL); }
 	bool	Charmed() const { return charmed; }
 	static int32	GetLevelHP(int8 tlevel);
 	int32	GetZoneID() const;	//for perl
@@ -1075,12 +1078,9 @@ protected:
 
 	//spell casting vars
 	Spell *casting_spell;
+	Spell *bard_song;
     float spell_x, spell_y, spell_z;
 	int	attacked_count;
-	int16	bardsong;
-	int8	bardsong_slot;
-	int32	bardsong_target_id;
-
 
 	int8	haircolor;
 	int8	beardcolor;

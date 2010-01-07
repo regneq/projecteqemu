@@ -19,23 +19,17 @@ Copyright (C) 2001-2010  EQEMu Development Team (http://eqemu.org)
 #ifndef EQEMU_SPELLS_H
 #define EQEMU_SPELLS_H
 
+#include "../common/debug.h"
 #include "../common/types.h"
 #include "../common/timer.h"
 #include "spdat.h"
 #include "buff.h"
 #include <string>
-#include <vector>
+#include <map>
 
 enum SpellAttribute
 {
 	SA_NONE,
-};
-template <class T>
-class SpellAttributeValue
-{
-public:
-	SpellAttribute sa;
-	T value;
 };
 
 class Spell
@@ -47,11 +41,11 @@ public:
 	void SetSpellID(uint32 id) { spell_id = id; }
 	uint32 GetSpellID() const { return spell_id; }
 
-	void SetCaster(Mob *c) { caster = c; }
-	Mob *GetCaster() const { return caster; }
+	void SetCaster(Mob *c);
+	Mob *GetCaster() const;
 
-	void SetTarget(Mob *t) { target = t; }
-	Mob *GetTarget() const { return target; }
+	void SetTarget(Mob *t);
+	Mob *GetTarget() const;
 
 	void SetSpellSlot(sint32 slot) { spell_slot = slot; }
 	sint32 GetSpellSlot() const { return spell_slot; }
@@ -74,11 +68,15 @@ public:
 	
 	Buff *CreateBuff() { return NULL; }
 
+	void StartCastTimer(uint32 duration);
+	bool IsCastTimerFinished() const;
+	void StopCastTimer();
+
 protected:
 	uint32 spell_id;
 	uint16 caster_level;
-	Mob *caster;
-	Mob *target;
+	uint32 caster_id;
+	uint32 target_id;
 	uint32 spell_slot;
 	uint32 spell_slot_inventory;
 	sint32 cast_time;
@@ -87,9 +85,9 @@ protected:
 	uint32 timer_id;
 	sint32 timer_id_duration;
 
-	std::vector<SpellAttributeValue<uint32> > sa_container_uint32;
-	std::vector<SpellAttributeValue<sint32> > sa_container_sint32;
-	std::vector<SpellAttributeValue<double> > sa_container_double;
+	std::map<SpellAttribute, uint32> sa_container_uint32;
+	std::map<SpellAttribute, sint32> sa_container_sint32;
+	std::map<SpellAttribute, double> sa_container_double;
 };
 
 #endif

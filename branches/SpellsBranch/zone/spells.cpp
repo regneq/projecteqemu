@@ -116,10 +116,14 @@ uchar blah2[]={0x12,0x00,0x00,0x00,0x16,0x01,0x00,0x00};
 // solar: this is run constantly for every mob
 void Mob::SpellProcess()
 {
-	//TODO:
-	// check the rapid recast prevention timer
-
-	// a timed spell is finished casting
+	if(casting_spell)
+	{
+		if(casting_spell->IsCastTimerFinished())
+		{
+			casting_spell->StopCastTimer();
+			CastedSpellFinished(&casting_spell);
+		}
+	}
 }
 
 void NPC::SpellProcess()
@@ -146,19 +150,6 @@ void NPC::SpellProcess()
 	}
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// functions related to begin/finish casting, fizzling etc
-
-//
-// solar: only CastSpell and DoCastSpell should be setting casting_spell_id.
-// basically casting_spell_id is only set when casting a triggered spell from
-// the spell bar gems, an ability, or an item.  note that it's actually set
-// even if it's a 0 cast time, but then the spell is finished right after and
-// it's unset.  this is ok, since the 0 cast time spell is still a triggered
-// one.
-// the rule is you can cast one triggered (usually timed) spell at a time
-// but things like SpellFinished() can run concurrent with a triggered cast
-// to allow procs to work
 bool Mob::CastSpell(int16 spell_id, int16 target_id, int16 slot,
 	sint32 cast_time, sint32 mana_cost, int32* spell_will_finish, int32 item_slot)
 {
@@ -170,79 +161,43 @@ bool Mob::CastSpell(int16 spell_id, int16 target_id, int16 slot,
 	return CastSpell(&pass_spell, spell_will_finish);
 }
 
-bool Mob::CastSpell(Spell **casted_spell, int32* spell_will_finish)
+bool Mob::CastSpell(Spell **casted_spell_ptr, int32* spell_will_finish)
 {
 	_ZP(Mob_CastSpell);
+	Spell *casted_spell = *casted_spell_ptr;
 
 	mlog(SPELLS__CASTING, "Mob::CastSpell called for %s with spell (%d): %s on entity %s, slot %d, time %d, mana %d from item slot %d", GetName(), 
-		(*casted_spell)->GetSpellID(), spells[(*casted_spell)->GetSpellID()].name, 
-		(*casted_spell)->GetTarget() != NULL ? (*casted_spell)->GetTarget()->GetName() : "NULL TARGET", 
-		(*casted_spell)->GetSpellSlot(), (*casted_spell)->GetCastTime(), (*casted_spell)->GetManaCost(), (*casted_spell)->GetInventorySpellSlot());
-	/*	
-	if(casting_spell_id == spell_id)
-		ZeroCastingVars();
-	
-	if
-	(
-		!IsValidSpell(spell_id) ||
-		casting_spell_id ||
-		delaytimer ||
-		spellend_timer.Enabled() ||
-		IsStunned() ||
-		IsFeared() ||
-		IsMezzed() ||
-		IsSilenced()
-	)
-	{
-		mlog(SPELLS__CASTING_ERR, "Spell casting canceled: not able to cast now. Valid? %d, casting %d, waiting? %d, spellend? %d, stunned? %d, feared? %d, mezed? %d, silenced? %d",
-			IsValidSpell(spell_id), casting_spell_id, delaytimer, spellend_timer.Enabled(), IsStunned(), IsFeared(), IsMezzed(), IsSilenced() );
-		if(IsSilenced())
-			Message_StringID(13, SILENCED_STRING);
-		if(IsClient())
-			CastToClient()->SendSpellBarEnable(spell_id);
-		if(casting_spell_id && IsNPC())
-			CastToNPC()->AI_Event_SpellCastFinished(false, casting_spell->GetSpellSlot());
-		return(false);
-	}
-	
-	if(IsDetrimentalSpell(spell_id) && !zone->CanDoCombat()){
-		Message_StringID(13, SPELL_WOULDNT_HOLD);
-		if(IsClient())
-			CastToClient()->SendSpellBarEnable(spell_id);
-		if(casting_spell_id && IsNPC())
-			CastToNPC()->AI_Event_SpellCastFinished(false, casting_spell->GetSpellSlot());
-		return(false);
-	}
+		casted_spell->GetSpellID(), spells[casted_spell->GetSpellID()].name, 
+		casted_spell->GetTarget() != NULL ? casted_spell->GetTarget()->GetName() : "NULL TARGET", 
+		casted_spell->GetSpellSlot(), casted_spell->GetCastTime(), casted_spell->GetManaCost(), casted_spell->GetInventorySpellSlot());
 
-	
-	//cannot cast under deivne aura
-	if(DivineAura()) {
-		mlog(SPELLS__CASTING_ERR, "Spell casting canceled: cannot cast while Divine Aura is in effect.");
-		InterruptSpell(173, 0x121, false);
-		return(false);
+	uint32 spell_id = casted_spell->GetSpellID();
+	if(!ValidateStartSpellCast(casted_spell))
+	{
+		safe_delete(*casted_spell_ptr);
+		return false;
 	}
 	
-	// check for fizzle
-	// note that CheckFizzle itself doesn't let NPCs fizzle,
-	// but this code allows for it.
-	if(slot < MAX_PP_MEMSPELL && !CheckFizzle(spell_id))
+	if(casted_spell->GetSpellSlot() < MAX_PP_MEMSPELL && !CheckFizzle(casted_spell->GetSpellID()))
 	{
-		int fizzle_msg = IsBardSong(spell_id) ? MISS_NOTE : SPELL_FIZZLE;
-		InterruptSpell(fizzle_msg, 0x121, spell_id);
+		int fizzle_msg = IsBardSong(casted_spell->GetSpellID()) ? MISS_NOTE : SPELL_FIZZLE;
+		InterruptSpell(fizzle_msg, 0x121, casted_spell->GetSpellID());
 		
-		uint32 use_mana = ((spells[spell_id].mana) / 4);
+		uint32 use_mana = ((spells[casted_spell->GetSpellID()].mana) / 4);
 		mlog(SPELLS__CASTING_ERR, "Spell casting canceled: fizzled. %d mana has been consumed", use_mana);
 		
 		// fizzle 1/4 the mana away
 		SetMana(GetMana() - use_mana);
-		return(false);
+		safe_delete(*casted_spell_ptr);
+		return false;
 	}
-	
-    if (HasActiveSong()) {
-    	mlog(SPELLS__BARDS, "Casting a new spell/song while singing a song. Killing old song %d.", bardsong);
-    	//Note: this does NOT tell the client
+
+	if (HasActiveSong()) 
+	{
+		mlog(SPELLS__BARDS, "Casting a new spell/song while singing a song. Killing old song %d.", bard_song->GetSpellID());
         _StopSong();
-    }*/
+    }
+
 	/*------------------------------
 	Added to prevent MQ2 
 	exploitation of equipping 
@@ -250,166 +205,158 @@ bool Mob::CastSpell(Spell **casted_spell, int32* spell_will_finish)
 	with effects and clicking them
 	for benefits. - ndnet
 	---------------------------------*/
-	/*if(item_slot && IsClient() && ((slot == USE_ITEM_SPELL_SLOT) || (slot == POTION_BELT_SPELL_SLOT)))
+	if(casted_spell->GetInventorySpellSlot() && IsClient() && ((casted_spell->GetSpellSlot() == USE_ITEM_SPELL_SLOT) || (casted_spell->GetSpellSlot() == POTION_BELT_SPELL_SLOT)))
 	{
-		ItemInst *itm = CastToClient()->GetInv().GetItem(item_slot);
+		ItemInst *itm = CastToClient()->GetInv().GetItem(casted_spell->GetInventorySpellSlot());
 		int bitmask = 1;
 		bitmask = bitmask << (CastToClient()->GetClass() - 1);
 		if( itm && itm->GetItem()->Classes != 65535 && (itm->GetItem()->Click.Type == ET_EquipClick) && !( itm->GetItem()->Classes & bitmask ) ){
 			// They are casting a spell on an item that requires equipping but shouldn't let them equip it
 			LogFile->write(EQEMuLog::Error, "HACKER: %s (account: %s) attempted to click an equip-only effect on item %s (id: %d) which they shouldn't be able to equip!", CastToClient()->GetCleanName(), CastToClient()->AccountName(), itm->GetItem()->Name, itm->GetItem()->ID);
 			database.SetHackerFlag(CastToClient()->AccountName(), CastToClient()->GetCleanName(), "Clicking equip-only item with an invalid class");
-			return(false);
+			safe_delete(*casted_spell_ptr);
+			return false;
 		}
-	}	
-	return(DoCastSpell(spell_id, target_id, slot, cast_time, mana_cost, oSpellWillFinish, item_slot));*/
-	return false;
+	}
+	return(DoCastSpell(casted_spell_ptr, spell_will_finish));
 }
 
-//
-// solar: the order of things here is intentional and important.  make sure you
-// understand the whole spell casting process and the flags that are passed
-// around if you're gonna modify this
-//
-// this is the 2nd phase of CastSpell, broken up like this to make it easier
-// to repeat a spell for bard songs
-//
-bool Mob::DoCastSpell(int16 spell_id, int16 target_id, int16 slot,
-                    sint32 cast_time, sint32 mana_cost, int32* oSpellWillFinish, int32 item_slot)
+bool Mob::DoCastSpell(Spell **casted_spell_ptr, int32* spell_will_finish)
 {
 	_ZP(Mob_DoCastSpell);
-	
-	Mob* pMob = NULL;
-//	float mobDist;
-	sint32 orgcasttime;
-//	float modrange;
-	EQApplicationPacket *outapp = NULL;
-
-	if(!IsValidSpell(spell_id)) {
-		InterruptSpell();
-		return(false);
-	}
-	
-	const SPDat_Spell_Struct &spell = spells[spell_id];
-	
-	mlog(SPELLS__CASTING, "DoCastSpell called for spell %s (%d) on entity %d, slot %d, time %d, mana %d, from item %d",
-		spell.name, spell_id, target_id, slot, cast_time, mana_cost, item_slot==0xFFFFFFFF?999:item_slot);
-	
-	
+	Spell *casted_spell = *casted_spell_ptr;
+	sint32 orig_cast_time;
+	const SPDat_Spell_Struct &spell = spells[casted_spell->GetSpellID()];
 
 	SaveSpellLoc();
-	mlog(SPELLS__CASTING, "Casting %d Started at (%.3f,%.3f,%.3f)", spell_id, spell_x, spell_y, spell_z);
+	mlog(SPELLS__CASTING, "Casting %d Started at (%.3f,%.3f,%.3f)", casted_spell->GetSpellID(), spell_x, spell_y, spell_z);
 
-	// if this spell doesn't require a target, or if it's an optional target
-	// and a target wasn't provided, then it's us; unless TGB is on and this
-	// is a TGB compatible spell.
-	if((IsGroupSpell(spell_id) || 
-		spell.targettype == ST_Self ||
-		spell.targettype == ST_AECaster ||
-		spell.targettype == ST_TargetOptional) && target_id == 0)
+	if(casted_spell->GetCastTime() <= -1)
 	{
-		mlog(SPELLS__CASTING, "Spell %d auto-targeted the caster. Group? %d, target type %d", spell_id, IsGroupSpell(spell_id), spell.targettype);
-		target_id = GetID();
-	}
-
-	if(cast_time <= -1) {
-		// save the non-reduced cast time to use in the packet
-		cast_time = orgcasttime = spell.cast_time;
-		// if there's a cast time, check if they have a modifier for it
-		if(cast_time) {
-			cast_time = GetActSpellCasttime(spell_id, cast_time);	
+		sint32 new_cast_time = orig_cast_time = spell.cast_time;
+		if(new_cast_time > 0)
+		{
+			new_cast_time = GetActSpellCasttime(casted_spell->GetSpellID(), new_cast_time);
 		}
+		casted_spell->SetCastTime(new_cast_time);
 	}
 	else
-		orgcasttime = cast_time;
-
-	// we checked for spells not requiring targets above
-	if(target_id == 0) {
-		mlog(SPELLS__CASTING_ERR, "Spell Error: no target. spell=%d\n", GetName(), spell_id);
-		if(IsClient()) {
-			//clients produce messages... npcs should not for this case
-			Message_StringID(13, SPELL_NEED_TAR);
-			InterruptSpell();
-		} else {
-			InterruptSpell(0, 0, 0);	//the 0 args should cause no messages
-		}
-		return(false);
-	}
-
-	if (mana_cost == -1) {
-		mana_cost = spell.mana;
-		mana_cost = GetActSpellCost(spell_id, mana_cost);
-	}
-
-	if(IsClient() && CastToClient()->CheckAAEffect(aaEffectMassGroupBuff) && IsGroupSpell(spell_id))
-		mana_cost *= 2;
-	
-	// neotokyo: 19-Nov-02
-	// mana is checked for clients on the frontend. we need to recheck it for NPCs though
-	// fix: items dont need mana :-/
-	// Quagmire: If you're at full mana, let it cast even if you dont have enough mana
-
-	// we calculated this above, now enforce it
-	if(mana_cost > 0 && slot != 10)
 	{
-		int my_curmana = GetMana();
-		int my_maxmana = GetMaxMana();
-		if(my_curmana < spell.mana)	// not enough mana
+		orig_cast_time = casted_spell->GetCastTime();
+	}
+
+	if(casted_spell->GetManaCost() <= -1) 
+	{
+		sint32 new_mana_cost = spell.mana;
+		new_mana_cost = GetActSpellCost(casted_spell->GetSpellID(), new_mana_cost);
+		casted_spell->SetManaCost(new_mana_cost);
+	}
+
+	if(IsClient() && CastToClient()->CheckAAEffect(aaEffectMassGroupBuff) && IsGroupSpell(casted_spell->GetSpellID()))
+	{
+		casted_spell->SetManaCost(casted_spell->GetManaCost() * 2);
+	}
+
+	if(casted_spell->GetManaCost() > 0 && casted_spell->GetSpellSlot() != 10)
+	{
+		sint32 current_mana = GetMana();
+		sint32 max_mana = GetMaxMana();
+		if(current_mana < spell.mana)
 		{
 			//this is a special case for NPCs with no mana...
-			if(IsNPC() && my_curmana == my_maxmana)
+			if(IsNPC() && current_mana == max_mana)
 			{
-				mana_cost = 0;
-			} else {
-				mlog(SPELLS__CASTING_ERR, "Spell Error not enough mana spell=%d mymana=%d cost=%d\n", GetName(), spell_id, my_curmana, mana_cost);
-				if(IsClient()) {
-					//clients produce messages... npcs should not for this case
+				casted_spell->SetManaCost(0);
+			} 
+			else 
+			{
+				mlog(SPELLS__CASTING_ERR, "Spell Error not enough mana spell=%d my mana=%d cost=%d\n", GetName(), casted_spell->GetSpellID(), current_mana, spell.mana);
+				if(IsClient()) 
+				{
 					Message_StringID(13, INSUFFICIENT_MANA);
 					InterruptSpell();
-				} else {
+				} 
+				else 
+				{
 					InterruptSpell(0, 0, 0);	//the 0 args should cause no messages
 				}
-				return(false);
+
+				safe_delete(*casted_spell_ptr);
+				return false;
 			}
 		}
 	}
 
-	if(mana_cost > GetMana())
-		mana_cost = GetMana();
-
-	mlog(SPELLS__CASTING, "Spell %d: Casting time %d (orig %d), mana cost %d", orgcasttime, cast_time, mana_cost);
-
-	// cast time is 0, just finish it right now and be done with it
-	if(cast_time == 0) {
-		CastedSpellFinished(spell_id, target_id, slot, mana_cost, item_slot);
-		return(true);
+	if(casted_spell->GetManaCost() > GetMana())
+	{
+		casted_spell->SetManaCost(GetMana());
+	}
+	
+	if((IsGroupSpell(casted_spell->GetSpellID()) || 
+		spell.targettype == ST_Self ||
+		spell.targettype == ST_AECaster ||
+		spell.targettype == ST_TargetOptional) && casted_spell->GetTarget() == NULL)
+	{
+		mlog(SPELLS__CASTING, "Spell %d auto-targeted the caster. Group? %d, target type %d", casted_spell->GetSpellID(), IsGroupSpell(casted_spell->GetSpellID()), spell.targettype);
+		casted_spell->SetTarget(this);
 	}
 
-	// ok we know it has a cast time so we can start the timer now
-	//spellend_timer.Start(cast_time);
-	
-	if (IsAIControlled())
+	// we checked for spells not requiring targets above
+	if(casted_spell->GetTarget() == NULL) 
+	{
+		mlog(SPELLS__CASTING_ERR, "Spell Error: no target. spell=%d\n", GetName(), casted_spell->GetSpellID());
+		if(IsClient()) 
+		{
+			Message_StringID(13, SPELL_NEED_TAR);
+			InterruptSpell();
+		} 
+		else 
+		{
+			InterruptSpell(0, 0, 0);
+		}
+
+		safe_delete(*casted_spell_ptr);
+		return false;
+	}
+
+	if(casted_spell->GetCastTime() == 0)
+	{
+		casted_spell->StartCastTimer(1);
+	}
+	else
+	{
+		casted_spell->StartCastTimer(casted_spell->GetCastTime());
+	}
+
+	if(IsAIControlled())
 	{
 		SetRunAnimSpeed(0);
-		if(this != pMob)
-			this->FaceTarget(pMob);
+		if(this != casted_spell->GetTarget())
+		{
+			FaceTarget(casted_spell->GetTarget());
+		}
 	}
-	
-	// if we got here we didn't fizzle, and are starting our cast
-	if (oSpellWillFinish)
-		*oSpellWillFinish = Timer::GetCurrentTime() + cast_time + 100;
+
+	if(spell_will_finish)
+	{
+		*spell_will_finish = Timer::GetCurrentTime() + casted_spell->GetCastTime() + 100;
+	}
+
+	EQApplicationPacket *outapp = NULL;	
 
 	// now tell the people in the area
-	outapp = new EQApplicationPacket(OP_BeginCast,sizeof(BeginCast_Struct));
-	BeginCast_Struct* begincast = (BeginCast_Struct*)outapp->pBuffer;
-	begincast->caster_id = GetID();
-	begincast->spell_id = spell_id;
-	begincast->cast_time = orgcasttime; // client calculates reduced time by itself
+	outapp = new EQApplicationPacket(OP_BeginCast, sizeof(BeginCast_Struct));
+	BeginCast_Struct* begin_cast = (BeginCast_Struct*)outapp->pBuffer;
+	begin_cast->caster_id = GetID();
+	begin_cast->spell_id = casted_spell->GetSpellID();
+	begin_cast->cast_time = orig_cast_time;
 	outapp->priority = 3;
-	entity_list.QueueCloseClients(this, outapp, false, 200, 0, true); //IsClient() ? FILTER_PCSPELLS : FILTER_NPCSPELLS);
+	entity_list.QueueCloseClients(this, outapp, false, 200, 0, true);
 	safe_delete(outapp);
-	outapp = NULL;
-	return(true);
+
+	casting_spell = casted_spell;
+
+	return true;
 }
 
 uint16 Mob::GetSpecializeSkillValue(int16 spell_id) const {
@@ -623,6 +570,13 @@ void Mob::ZeroCastingVars()
 	casting_spell = NULL;
 }
 
+void Mob::ZeroAndFreeCastingVars()
+{
+	// zero out the state keeping vars
+	attacked_count = 0;
+	safe_delete(casting_spell);
+}
+
 void Mob::InterruptSpell(int16 spellid)
 {
 	if (spellid == SPELL_UNKNOWN)
@@ -644,14 +598,14 @@ void Mob::InterruptSpell(int16 message, int16 color, int16 spellid)
 		CastToNPC()->AI_Event_SpellCastFinished(false, casting_spell->GetSpellSlot());
 	}
 	
-	ZeroCastingVars();	// resets all the state keeping stuff
+	ZeroAndFreeCastingVars();
 	
 	mlog(SPELLS__CASTING, "Spell %d has been interrupted.", spellid);
 	
 	if(!spellid)
 		return;
 	
-	if (bardsong || IsBardSong(casting_spell ? casting_spell->GetSpellID() : 0))
+	if (bard_song || IsBardSong(casting_spell ? casting_spell->GetSpellID() : 0))
 		_StopSong();
 	
 	if(!message)
@@ -704,16 +658,13 @@ void Mob::InterruptSpell(int16 message, int16 color, int16 spellid)
 
 }
 
-// solar: this is called after the timer is up and the spell is finished
-// casting.  everything goes through here, including items with zero cast time
-// only to be used from SpellProcess
-// NOTE: do not put range checking, etc into this function.  this should
-// just check timed spell specific things before passing off to SpellFinished
-// which figures out proper targets etc
-void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16 mana_used, int32 inventory_slot)
+void Mob::CastedSpellFinished(Spell **casted_spell_ptr)
 {
 	_ZP(Mob_CastedSpellFinished);
-	
+	printf("Spell cast finished!\n");
+	safe_delete(*casted_spell_ptr);
+
+	/*
 	if(IsClient() && slot != USE_ITEM_SPELL_SLOT && slot != POTION_BELT_SPELL_SLOT && spells[spell_id].recast_time > 1000) { // 10 is item
 		if(!CastToClient()->GetPTimers().Expired(&database, pTimerSpellStart + spell_id, false)) {
 			//should we issue a  message or send them a spell gem packet?
@@ -748,7 +699,7 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16
 	//TODO:
 	// prevent rapid recast - this can happen if somehow the spell gems
 	// become desynced and the player casts again.
-	/*if(IsClient())
+	if(IsClient())
 	{
 		if(delaytimer)
 		{
@@ -757,17 +708,17 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16
 			InterruptSpell();
 			return;
 		}
-	}*/
+	}
 
 	//TODO: will this still be needed?
 	// make sure they aren't somehow casting 2 timed spells at once
-	/*if (casting_spell_id != spell_id)
+	if (casting_spell_id != spell_id)
 	{
 		mlog(SPELLS__CASTING_ERR, "Casting of %d canceled: already casting", spell_id);
 		Message_StringID(13,ALREADY_CASTING);
 		InterruptSpell();
 		return;
-	}*/
+	}
 
 	bool bard_song_mode = false;
 	bool regain_conc = false;
@@ -780,15 +731,15 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16
 			if(spells[spell_id].buffduration == 0xFFFF || spells[spell_id].recast_time != 0) {
 				mlog(SPELLS__BARDS, "Bard song %d not applying bard logic because duration or recast is wrong: dur=%d, recast=%d", spells[spell_id].buffduration, spells[spell_id].recast_time);
 			} else {
-				bardsong = spell_id;
-				bardsong_slot = slot;
+				//bardsong = spell_id;
+				//bardsong_slot = slot;
 				//NOTE: theres a lot more target types than this to think about...
-				if (spell_target == NULL || (spells[spell_id].targettype != ST_Target && spells[spell_id].targettype != ST_AETarget))
-					bardsong_target_id = GetID();
-				else
-					bardsong_target_id = spell_target->GetID();
+				//if (spell_target == NULL || (spells[spell_id].targettype != ST_Target && spells[spell_id].targettype != ST_AETarget))
+				//	bardsong_target_id = GetID();
+				//else
+					//bardsong_target_id = spell_target->GetID();
 				bardsong_timer.Start(6000);
-				mlog(SPELLS__BARDS, "Bard song %d started: slot %d, target id %d", bardsong, bardsong_slot, bardsong_target_id);
+				//mlog(SPELLS__BARDS, "Bard song %d started: slot %d, target id %d", bardsong, bardsong_slot, bardsong_target_id);
 				bard_song_mode = true;
 			}
 		}
@@ -1075,6 +1026,7 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16
 		
 		mlog(SPELLS__CASTING, "Spell casting of %d is finished.", spell_id);
 	}
+	*/
 	
 }
 
@@ -4318,24 +4270,22 @@ int Mob::GetCasterLevel(int16 spell_id) {
 //you should really know what your doing before you call this
 void Mob::_StopSong()
 {
-	if (IsClient() && (bardsong || IsBardSong(casting_spell ? casting_spell->GetSpellID() : 0)))
+	if (IsClient() && (bard_song || IsBardSong(casting_spell ? casting_spell->GetSpellID() : 0)))
 	{
 		EQApplicationPacket* outapp = new EQApplicationPacket(OP_ManaChange, sizeof(ManaChange_Struct));
 		ManaChange_Struct* manachange = (ManaChange_Struct*)outapp->pBuffer;
 		manachange->new_mana = cur_mana;
-		if (!bardsong)
+		if (!bard_song)
 			manachange->spell_id = casting_spell ? casting_spell->GetSpellID() : 0;
 		else
-			manachange->spell_id = bardsong;
+			manachange->spell_id = bard_song->GetSpellID();
 		manachange->stamina = CastToClient()->GetEndurance();
 		if (CastToClient()->Hungry())
 			manachange->stamina = 0;
 		CastToClient()->QueuePacket(outapp);
 		delete outapp;
 	}
-	bardsong = 0;
-	bardsong_target_id = 0;
-	bardsong_slot = 0;
+	safe_delete(bard_song);
 	bardsong_timer.Disable();
 }
 
@@ -4482,16 +4432,113 @@ void NPC::UninitializeBuffSlots()
 	safe_delete_array(buffs);
 }
 
+bool Mob::ValidateStartSpellCast(const Spell *spell_to_cast)
+{
+	bool return_value = true;
+	if(!IsValidSpell(spell_to_cast->GetSpellID()) || casting_spell != NULL)
+	{
+		mlog(SPELLS__CASTING_ERR, "Spell casting canceled: not able to cast now. Spell is either not valid or we already have a spell casting.");
+		return_value = false;
+	}
+	else if(IsStunned() || IsFeared() || IsMezzed())
+	{
+		mlog(SPELLS__CASTING_ERR, "Spell casting canceled: not able to cast now. The mob is not in control of it self and therefor cannot cast.");
+		return_value = false;
+	} 
+	else if(IsSilenced())
+	{
+		Message_StringID(13, SILENCED_STRING);
+		mlog(SPELLS__CASTING_ERR, "Spell casting canceled: not able to cast now. The mob is not able to speak and therefor cannot cast.");
+		return_value = false;
+	}
+	else if(DivineAura())
+	{
+		mlog(SPELLS__CASTING_ERR, "Spell casting canceled: not able to cast now. The mob is invulnerable and therefor cannot cast.");
+		//InterruptSpell(173, 0x121, false);
+		return_value = false;
+	}
+
+	if(return_value && (IsDetrimentalSpell(spell_to_cast->GetSpellID()) && !zone->CanDoCombat()))
+	{
+		mlog(SPELLS__CASTING_ERR, "Spell casting canceled: this is a detrimental spell in a non-combat flagged zone.");
+		Message_StringID(13, SPELL_WOULDNT_HOLD);
+		return_value = false;
+	}
+
+	if(IsClient())
+	{
+		CastToClient()->SendSpellBarEnable(spell_to_cast->GetSpellID());
+	}
+
+	if(IsNPC() && casting_spell != NULL)
+	{
+		CastToNPC()->AI_Event_SpellCastFinished(false, casting_spell->GetSpellSlot());
+	}
+
+	return return_value;
+}
+
 Spell::Spell(uint32 spell_id, Mob* caster, Mob* target, uint32 slot, uint32 cast_time, uint32 mana_cost)
 {
 	this->spell_id = spell_id;
-	this->caster = caster;
-	this->target = target;
+	this->caster_id = caster->GetID();
+	this->target_id = target->GetID();
 	this->spell_slot = slot;
 	this->cast_time = cast_time;
 	this->mana_cost = mana_cost;
+	cast_timer = NULL;
 }
 
 Spell::~Spell()
 {
+	safe_delete(cast_timer);
+}
+
+void Spell::StartCastTimer(uint32 duration)
+{
+	if(cast_timer)
+	{
+		cast_timer->Start(duration);
+	}
+	else
+	{
+		cast_timer = new Timer(duration);
+	}
+}
+
+bool Spell::IsCastTimerFinished() const
+{
+	if(cast_timer)
+	{
+		return cast_timer->Check(false);
+	}
+	else
+	{
+		return false;
+	}
+}
+
+void Spell::StopCastTimer()
+{
+	safe_delete(cast_timer);
+}
+
+void Spell::SetCaster(Mob *c) 
+{ 
+	caster_id = c->GetID(); 
+}
+
+Mob *Spell::GetCaster() const 
+{ 
+	return entity_list.GetMob(caster_id); 
+}
+
+void Spell::SetTarget(Mob *t) 
+{ 
+	target_id = t->GetID(); 
+}
+
+Mob *Spell::GetTarget() const 
+{ 
+	return entity_list.GetMob(target_id); 
 }
