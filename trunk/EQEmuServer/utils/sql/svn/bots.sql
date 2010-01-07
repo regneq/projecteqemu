@@ -1,3 +1,5 @@
+DROP TABLE IF EXISTS `botgroupmembers`;
+DROP TABLE IF EXISTS `botgroup`;
 DROP TABLE IF EXISTS `botbuffs`;
 DROP TABLE IF EXISTS `botpetinventory`;
 DROP TABLE IF EXISTS `botpetbuffs`;
@@ -71,7 +73,7 @@ INSERT INTO rule_values VALUES ('1', 'Bots:BotSpellQuest', 'false', 'Anita Thral
 DELIMITER $$
 
 DROP FUNCTION IF EXISTS `GetMobTypeByName` $$
-CREATE FUNCTION IF NOT EXISTS `GetMobTypeByName` (mobname VARCHAR(64)) RETURNS CHAR(1)
+CREATE FUNCTION `GetMobTypeByName` (mobname VARCHAR(64)) RETURNS CHAR(1)
 BEGIN
     DECLARE Result CHAR(1);
 
@@ -91,7 +93,7 @@ DELIMITER ;
 DELIMITER $$
 
 DROP FUNCTION IF EXISTS `GetMobTypeById` $$
-CREATE FUNCTION IF NOT EXISTS `GetMobTypeById` (mobid INTEGER UNSIGNED) RETURNS CHAR(1)
+CREATE FUNCTION `GetMobTypeById` (mobid INTEGER UNSIGNED) RETURNS CHAR(1)
 BEGIN
     DECLARE Result CHAR(1);
 
@@ -109,7 +111,7 @@ END $$
 DELIMITER ;
 
 DROP VIEW IF EXISTS `vwGroups`;
-CREATE VIEW IF NOT EXISTS `vwGroups` AS
+CREATE VIEW `vwGroups` AS
   select g.groupid as groupid,
 GetMobTypeByName(g.name) as mobtype,
 g.name as name,
@@ -191,7 +193,7 @@ CREATE TABLE IF NOT EXISTS `botguildmembers` (
 ) ENGINE=InnoDB;
 
 DROP VIEW IF EXISTS `vwGuildMembers`;
-CREATE VIEW IF NOT EXISTS `vwGuildMembers` AS
+CREATE VIEW `vwGuildMembers` AS
   select 'C' as mobtype,
 cm.char_id,
 cm.guild_id,
@@ -215,7 +217,7 @@ bm.public_note
 from botguildmembers as bm;
 
 DROP VIEW IF EXISTS `vwBotCharacterMobs`;
-CREATE VIEW IF NOT EXISTS `vwBotCharacterMobs` AS
+CREATE VIEW `vwBotCharacterMobs` AS
   select 'C' as mobtype,
 c.id,
 c.name,
@@ -233,3 +235,36 @@ b.BotLevel as level,
 0 as timelaston,
 0 as zoneid
 from bots as b;
+
+CREATE TABLE IF NOT EXISTS `botgroup` (
+  `BotGroupId` integer unsigned NOT NULL AUTO_INCREMENT,
+  `BotGroupLeaderBotId` integer unsigned NOT NULL DEFAULT '0',
+  `BotGroupName` varchar(64) NOT NULL,
+  PRIMARY KEY  (`BotGroupId`),
+  KEY FK_botgroup_1 (BotGroupLeaderBotId),
+  CONSTRAINT FK_botgroup_1 FOREIGN KEY (BotGroupLeaderBotId) REFERENCES bots (BotID)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS `botgroupmembers` (
+  `BotGroupMemberId` integer unsigned NOT NULL AUTO_INCREMENT,
+  `BotGroupId` integer unsigned NOT NULL DEFAULT '0',
+  `BotId` integer unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY  (`BotGroupMemberId`),
+  KEY FK_botgroupmembers_1 (BotGroupId),
+  CONSTRAINT FK_botgroupmembers_1 FOREIGN KEY (BotGroupId) REFERENCES botgroup (BotGroupId),
+  KEY FK_botgroupmembers_2 (BotId),
+  CONSTRAINT FK_botgroupmembers_2 FOREIGN KEY (BotId) REFERENCES bots (BotID)
+) ENGINE=InnoDB;
+
+DROP VIEW IF EXISTS `vwBotGroups`;
+CREATE VIEW `vwBotGroups` AS
+select g.BotGroupId,
+g.BotGroupName,
+g.BotGroupLeaderBotId,
+b.Name as BotGroupLeaderName,
+b.BotOwnerCharacterId,
+c.name as BotOwnerCharacterName
+from botgroup as g
+join bots as b on g.BotGroupLeaderBotId = b.BotID
+join character_ as c on b.BotOwnerCharacterID = c.id
+order by b.BotOwnerCharacterId, g.BotGroupName;
