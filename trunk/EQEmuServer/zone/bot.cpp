@@ -1822,10 +1822,18 @@ bool Bot::BotRangedAttack(Mob* other) {
 		return false;
 	}
 
-	const Item_Struct* RangeWeapon = database.GetItem(equipment[MATERIAL_SECONDARY]);
-	const Item_Struct* Ammo = database.GetItem(equipment[MATERIAL_PRIMARY]);
+	uint32 rangedItemId = 0;
+	uint32 ammoItemId = 0;
+
+	rangedItemId = GetBotItem(SLOT_RANGE);
+	ammoItemId = GetBotItem(SLOT_AMMO);
+
+	const Item_Struct* RangeWeapon = database.GetItem(rangedItemId);
+	const Item_Struct* Ammo = database.GetItem(ammoItemId);
+	
 	ItemInst* RangeItem = new ItemInst(RangeWeapon);
 	ItemInst* AmmoItem = new ItemInst(Ammo);
+	
 	mlog(COMBAT__RANGED, "Shooting %s with bow %s (%d) and arrow %s (%d)", other->GetCleanName(), RangeWeapon->Name, RangeWeapon->ID, Ammo->Name, Ammo->ID);
 	
 	if(!IsAttackAllowed(other) || 
@@ -1843,7 +1851,7 @@ bool Bot::BotRangedAttack(Mob* other) {
 	SendItemAnimation(other, Ammo, ARCHERY);
 
 	// Hit?
-	if(!this->CalcBotHitChance(other, ARCHERY, SLOT_PRIMARY)) {
+	if(!this->CalcBotHitChance(other, ARCHERY, SLOT_RANGE)) {
 		mlog(COMBAT__RANGED, "Ranged attack missed %s.", other->GetCleanName());
 		other->Damage(this, 0, SPELL_UNKNOWN, ARCHERY);
 	}
@@ -9564,69 +9572,86 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 			return;
 		}
 
-		Mob *archerbot = c->GetTarget();
-		if((archerbot->GetClass()==WARRIOR)||(archerbot->GetClass()==PALADIN)||(archerbot->GetClass()==RANGER)||(archerbot->GetClass()==SHADOWKNIGHT)||(archerbot->GetClass()==ROGUE)) {
-			//const Item_Struct* botweapon = database.GetItem(archerbot->CastToBot()->GetItem(SLOT_RANGE));
-			const Item_Struct* botweapon = database.GetItem(archerbot->CastToBot()->GetItem(SLOT_RANGE)->item_id);
+		Bot* archerbot = c->GetTarget()->CastToBot();
+
+		if((archerbot->GetClass()==WARRIOR) || (archerbot->GetClass()==PALADIN) || (archerbot->GetClass()==RANGER)
+			|| (archerbot->GetClass()==SHADOWKNIGHT) ||(archerbot->GetClass()==ROGUE)) 
+		{
+			uint32 rangedItemId = archerbot->GetBotItem(SLOT_RANGE);
+
+			if(rangedItemId == 0) {
+				archerbot->Say("I don't have a ranged weapon to do archery with, %s.", c->GetName());
+				return;
+			}
+
+			const Item_Struct* botweapon = database.GetItem(rangedItemId);
 			uint32 archeryMaterial;
 			uint32 archeryColor;
 			uint32 archeryBowID;
 			uint32 archeryAmmoID;
 			uint32 range = 0;
-			if(botweapon && (botweapon->ItemType == ItemTypeBow)) {
+			
+			if(botweapon && botweapon->ItemType == ItemTypeBow) {
 				archeryMaterial = atoi(botweapon->IDFile+2);
 				archeryBowID = botweapon->ID;
 				archeryColor = botweapon->Color;
 				range =+ botweapon->Range;
-				botweapon = database.GetItem(archerbot->CastToNPC()->GetItem(SLOT_AMMO)->item_id);
+
+				uint32 arrowItemId = archerbot->GetBotItem(SLOT_AMMO);
+
+				botweapon = database.GetItem(arrowItemId);
+				
 				if(!botweapon || (botweapon->ItemType != ItemTypeArrow)) {
 					archerbot->Say("I don't have any arrows.");
-					archerbot->CastToBot()->SetBotArcheryRange(0);
+					archerbot->SetBotArcheryRange(0);
 					return;
 				}
+
 				range += botweapon->Range;
 				archeryAmmoID = botweapon->ID;
 			}
 			else {
 				archerbot->Say("I don't have a bow.");
-				archerbot->CastToBot()->SetBotArcheryRange(0);
+				archerbot->SetBotArcheryRange(0);
 				return;
 			}
-			if(archerbot->CastToBot()->IsBotArcher()) {
-				archerbot->CastToBot()->SetBotArcher(false);
+
+			if(archerbot->IsBotArcher()) {
+				archerbot->SetBotArcher(false);
 				archerbot->Say("Using melee skills.");
-				archerbot->CastToBot()->BotAddEquipItem(SLOT_PRIMARY, archerbot->CastToBot()->GetBotItemBySlot(SLOT_PRIMARY, &TempErrorMessage));
+				archerbot->BotAddEquipItem(SLOT_PRIMARY, archerbot->GetBotItemBySlot(SLOT_PRIMARY, &TempErrorMessage));
 
 				if(!TempErrorMessage.empty()) {
 					c->Message(13, "Database Error: %s", TempErrorMessage.c_str());
 					return;
 				}
 				//archerbot->SendWearChange(MATERIAL_PRIMARY);
-				archerbot->CastToBot()->BotAddEquipItem(SLOT_SECONDARY, archerbot->CastToBot()->GetBotItemBySlot(SLOT_SECONDARY, &TempErrorMessage));
+				archerbot->BotAddEquipItem(SLOT_SECONDARY, archerbot->GetBotItemBySlot(SLOT_SECONDARY, &TempErrorMessage));
 
 				if(!TempErrorMessage.empty()) {
 					c->Message(13, "Database Error: %s", TempErrorMessage.c_str());
 					return;
 				}
 				//archerbot->SendWearChange(MATERIAL_SECONDARY);
-				archerbot->CastToBot()->SetBotArcheryRange(0);
+				archerbot->SetBotArcheryRange(0);
 			}
 			else {
-				archerbot->CastToBot()->SetBotArcher(true);
+				archerbot->SetBotArcher(true);
 				archerbot->Say("Using archery skills.");
-				archerbot->CastToBot()->BotRemoveEquipItem(SLOT_PRIMARY);
+				archerbot->BotRemoveEquipItem(SLOT_PRIMARY);
 				//archerbot->SendWearChange(MATERIAL_PRIMARY);
-				archerbot->CastToBot()->BotRemoveEquipItem(SLOT_SECONDARY);
+				archerbot->BotRemoveEquipItem(SLOT_SECONDARY);
 				//archerbot->SendWearChange(MATERIAL_SECONDARY);
-				archerbot->CastToBot()->BotAddEquipItem(SLOT_SECONDARY, archeryBowID);
-				archerbot->CastToBot()->SendBotArcheryWearChange(MATERIAL_SECONDARY, archeryMaterial, archeryColor);
-				archerbot->CastToBot()->BotAddEquipItem(SLOT_PRIMARY, archeryAmmoID);
-				archerbot->CastToBot()->SetBotArcheryRange(range);
+				archerbot->BotAddEquipItem(SLOT_AMMO, archeryAmmoID);
+				archerbot->BotAddEquipItem(SLOT_SECONDARY, archeryBowID);
+				//archerbot->SendBotArcheryWearChange(MATERIAL_PRIMARY, archeryMaterial, archeryColor);
+				archerbot->SetBotArcheryRange(range);
 			}
 		}
 		else {
 			archerbot->Say("I don't know how to use a bow.");
 		}
+
 		return;
 	}
 
