@@ -1,5 +1,13 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==01/06/2010==
+WildcardX: Fixed a bug that prevented Bot casters from casting if a mob becomes enraged.
+WildcardX: Changed #bot list and #bot spawn commands to use bot name instead of the bot table id
+WildcardX: Added new commands to save, load, delete and view bot groups. See the #bot botgroup help command to view them.
+WildcardX: Fixed SQL syntax issues with database scripts for bots.
+
+<SQL Required for BOTS> 1077_botgroups.sql
+
 ==01/05/2010==
 WildcardX: Fixed the EQEmuLoginServer project file, fixed a crash caused by referencing a NULL object and made a couple improvements to error handling.
 Derision: Fix for quest::depopall related crash.

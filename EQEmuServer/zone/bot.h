@@ -169,9 +169,14 @@ public:
 	void EquipBot(std::string* errorMessage);
 
 	// Static Class Methods
-	//static void SaveBotGroups(uint32 groupID, uint32 characterID, uint32 botID, uint16 slotID, std::string* errorMessage);	// Can be removed after bot raids are dumped
-	//static void DeleteBotGroups(uint32 characterID, std::string* errorMessage);	// Can be removed after bot raids are dumped
-	//static std::list<BotGroup> LoadBotGroups(uint32 characterID, std::string* errorMessage);	// Can be removed after bot raids are dumped
+	static void SaveBotGroup(Group* botGroup, std::string botGroupName, std::string* errorMessage);
+	static void DeleteBotGroup(std::string botGroupName, std::string* errorMessage);
+	static std::list<BotGroup> LoadBotGroup(std::string botGroupName, std::string* errorMessage);
+	static uint32 CanLoadBotGroup(uint32 botOwnerCharacterId, std::string botGroupName, std::string* errorMessage);
+	static uint32 GetBotGroupIdByBotGroupName(std::string botGroupName, std::string* errorMessage);
+	static uint32 GetBotGroupLeaderIdByBotGroupName(std::string botGroupName);
+	static std::list<BotGroupList> GetBotGroupListByBotOwnerCharacterId(uint32 botOwnerCharacterId, std::string* errorMessage);
+	static bool DoesBotGroupNameExist(std::string botGroupName);
 	//static void DestroyBotRaidObjects(Client* client);	// Can be removed after bot raids are dumped
 	static uint32 GetBotIDByBotName(std::string botName);
 	static Bot* LoadBot(uint32 botID, std::string* errorMessage);

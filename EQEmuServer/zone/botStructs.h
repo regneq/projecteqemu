@@ -5,6 +5,10 @@
 
 #include "../common/types.h"
 
+#include <sstream>
+
+using namespace std;
+
 struct BotsAvailableList {
 	uint32 BotID;
 	char BotName[64];
@@ -14,9 +18,13 @@ struct BotsAvailableList {
 };
 
 struct BotGroup {
-	uint32 GroupID;
+	uint32 BotGroupID;
 	uint32 BotID;
-	uint32 CharacterID;
+};
+
+struct BotGroupList {
+	std::string BotGroupName;
+	std::string BotGroupLeaderName;
 };
 
 struct SpawnedBotsList {
