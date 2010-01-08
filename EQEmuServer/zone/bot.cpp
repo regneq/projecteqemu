@@ -925,7 +925,7 @@ bool Bot::IsBotNameAvailable(std::string* errorMessage) {
 		MYSQL_RES* DatasetResult;
 		MYSQL_ROW DataRow;
 
-		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT COUNT(BotID) FROM bots WHERE Name LIKE '%s'", this->GetCleanName()), TempErrorMessageBuffer, &DatasetResult)) {
+		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT COUNT(id) FROM vwbotcharactermobs WHERE name LIKE '%s'", this->GetCleanName()), TempErrorMessageBuffer, &DatasetResult)) {
 			*errorMessage = std::string(TempErrorMessageBuffer);
 		}
 		else {

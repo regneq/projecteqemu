@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==01/08/2010==
+WildcardX: Fixed a bug that allowed a bot to be created with the same name as an existing player character. This would cause said bot to not zone with other bots the group.
+
 ==01/07/2010==
 WildcardX: Fixed a EQEmuLoginServer crash that can happen as the result of a null reference in the database code.
 WildcardX: Fixed a bug with bot archery. The command shouldn't crash the zone and the bot should correctly display the bow only.
