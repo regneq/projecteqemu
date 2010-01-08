@@ -1578,9 +1578,9 @@ bool Bot::Process() {
 	if (IsStunned()||IsMezzed())
 		return true;
 
-	if (enraged_timer.Check()){
+	/*if (enraged_timer.Check()){
 		ProcessEnrage();
-	}
+	}*/
 
 	//Handle assists...
 	/*if(assist_timer.Check() && !Charmed() && GetTarget() != NULL) {
@@ -1691,9 +1691,9 @@ void Bot::BotMeditate(bool isSitting) {
 		if(GetManaRatio() < 99.0f) {
 			if(mana_timer.Check(true)) {
 				SetAppearance(eaSitting, false);
-				if(!((int)GetManaRatio() % 24)) {
+				/*if(!((int)GetManaRatio() % 24)) {
 					Say("Medding for Mana. I have %3.1f%% of %d mana. It is: %d", GetManaRatio(), GetMaxMana(), GetMana());
-				}
+				}*/
 				int32 level = GetLevel();
 				int32 regen = (((GetSkill(MEDITATE)/10)+(level-(level/4)))/4)+4;
 				spellbonuses.ManaRegen = 0;
@@ -1755,9 +1755,9 @@ void Bot::BotMeditate(bool isSitting) {
 	else {
 		// Let's check our mana in fights..
 		if(mana_timer.Check(true)) {
-			if((!((int)GetManaRatio() % 12)) && ((int)GetManaRatio() < 10)) {
+			/*if((!((int)GetManaRatio() % 12)) && ((int)GetManaRatio() < 10)) {
 				Say("Medding for Mana. I have %3.1f%% of %d mana. It is: %d", GetManaRatio(), GetMaxMana(), GetMana());
-			}
+			}*/
 			int32 level = GetLevel();
 			spellbonuses.ManaRegen = 0;
 			for(int j=0; j<BUFF_COUNT; j++) {
@@ -9286,6 +9286,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		c->Message(0, "#bot camp - Tells your bot to camp out of the game.");
 		c->Message(0, "#bot group help - Displays the commands available to manage any BOTs in your group.");
 		c->Message(0, "#bot botgroup help - Displays the commands available to manage BOT ONLY groups.");
+		c->Message(0, "#bot mana [<bot name or target> | all] - Displays a mana report for all your spawned bots.");
 		return;
 	}
 
@@ -9458,6 +9459,45 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		else {
 			c->Message(0, "You have no bots created. Use the #bot create command to create a bot.");
 		}
+	}
+
+	if(!strcasecmp(sep->arg[1], "mana")) {
+		bool listAll = false;
+		Bot* bot = 0;
+
+		if(sep->argnum == 2) {
+			if(std::string(sep->arg[2]).compare("all") == 0)
+				listAll = true;
+			else {
+				string botName = std::string(sep->arg[2]);
+				bot = entity_list.GetBotByBotName(botName);
+			}
+		}
+		else {
+			if(c->GetTarget() && c->GetTarget()->IsBot())
+				bot = c->GetTarget()->CastToBot();
+		}
+
+		if(bot && !listAll) {
+			// Specific bot only
+			c->Message(0, "Name: %s -- Mana: %3.1f%%", bot->GetCleanName(), bot->GetManaRatio());
+		}
+		else {
+			// List all
+			std::list<Bot*> spawnedBots = entity_list.GetBotsByBotOwnerCharacterID(c->CharacterID());
+
+			if(!spawnedBots.empty()) {
+				for(std::list<Bot*>::iterator botsListItr = spawnedBots.begin(); botsListItr != spawnedBots.end(); botsListItr++) {
+					Bot* tempBot = *botsListItr;
+					c->Message(0, "Name: %s -- Mana: %3.1f%%", tempBot->GetCleanName(), tempBot->GetManaRatio());
+				}
+			}
+			else {
+				c->Message(0, "You have no spawned bots in this zone.");
+			}
+		}
+
+		return;
 	}
 
 	if(!strcasecmp(sep->arg[1], "spawn") ) {
