@@ -5390,34 +5390,45 @@ void Client::Handle_OP_GroupInvite2(const EQApplicationPacket *app)
 			sizeof(GroupInvite_Struct), app->size);
 		return;
 	}
+	
+	GroupInvite_Struct* gis = (GroupInvite_Struct*) app->pBuffer;
 
-	if(GetTarget()) {
-		if(GetTarget()->IsClient()) {
-			if(!GetTarget()->IsGrouped() && !GetTarget()->IsRaidGrouped()) {
+	Mob *Invitee = entity_list.GetMob(gis->invitee_name);
+
+	if(Invitee == this)
+	{
+		Message_StringID(clientMessageWhite, GROUP_INVITEE_SELF);
+		return;
+	}
+
+	if(Invitee) {
+		if(Invitee->IsClient()) {
+			if(!Invitee->IsGrouped() && !Invitee->IsRaidGrouped()) {
 				if(app->GetOpcode() == OP_GroupInvite2)
 				{
 					//Make a new packet using all the same information but make sure it's a fixed GroupInvite opcode so we
 					//Don't have to deal with GroupFollow2 crap.
 					EQApplicationPacket* outapp = new EQApplicationPacket(OP_GroupInvite, sizeof(GroupInvite_Struct));
 					memcpy(outapp->pBuffer, app->pBuffer, outapp->size);
-					this->GetTarget()->CastToClient()->QueuePacket(outapp);
+					Invitee->CastToClient()->QueuePacket(outapp);
 					safe_delete(outapp);
 					return;
 				}
 				else
 				{
 					//The correct opcode, no reason to bother wasting time reconstructing the packet
-					this->GetTarget()->CastToClient()->QueuePacket(app);
+					Invitee->CastToClient()->QueuePacket(app);
 				}
 			}
 		}
 #ifdef BOTS
-		else if(GetTarget()->IsBot()) {
-			GroupInvite_Struct* gi = (GroupInvite_Struct*) app->pBuffer;
-			Bot::ProcessBotGroupInvite(this, std::string(gi->invitee_name));
+		else if(Invitee->IsBot()) {
+			Bot::ProcessBotGroupInvite(this, std::string(Invitee->GetName()));
 		}
 #endif
 	}
+	else
+		Message_StringID(clientMessageWhite, GROUP_INVITEE_NOT_FOUND);
 
 	/*if(this->GetTarget() != 0 && this->GetTarget()->IsNPC() && this->GetTarget()->CastToNPC()->IsInteractive()) {
 		if(!this->GetTarget()->CastToNPC()->IsGrouped()) {
