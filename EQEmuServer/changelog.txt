@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==01/10/2010==
+Derision: /invite can now be used to invite a player in another zone into a regular group.
+
 ==01/09/2010==
 Derision: Changed Client::GroupInvite2 to use the Invitee name passed in the OP_GroupInvite packet rather than the player's target.
 

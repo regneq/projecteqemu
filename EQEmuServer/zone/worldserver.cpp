@@ -807,12 +807,209 @@ void WorldServer::Process() {
 			}
 			break;
 		}
+		case ServerOP_GroupInvite: {
+			// A player in another zone invited a player in this zone to join their group.
+			//
+			GroupInvite_Struct* gis = (GroupInvite_Struct*)pack->pBuffer;
 
+			Mob *Invitee = entity_list.GetMob(gis->invitee_name);
+
+			if(Invitee && Invitee->IsClient() && !Invitee->IsGrouped() && !Invitee->IsRaidGrouped())
+			{
+				EQApplicationPacket* outapp = new EQApplicationPacket(OP_GroupInvite, sizeof(GroupInvite_Struct));
+				memcpy(outapp->pBuffer, gis, sizeof(GroupInvite_Struct));
+				Invitee->CastToClient()->QueuePacket(outapp);
+				safe_delete(outapp);
+			}
+
+			break;
+		}
+		case ServerOP_GroupFollow: {
+			// Player in another zone accepted a group invitation from a player in this zone.
+			//
+			ServerGroupFollow_Struct* sgfs = (ServerGroupFollow_Struct*) pack->pBuffer;
+
+			Mob* Inviter = entity_list.GetClientByName(sgfs->gf.name1);
+
+			if(Inviter && Inviter->IsClient())
+			{
+				Group* group = entity_list.GetGroupByClient(Inviter->CastToClient());
+
+				if(!group){
+			
+					group = new Group(Inviter);
+
+					if(!group)
+						break;
+
+					entity_list.AddGroup(group);
+
+					if(group->GetID() == 0) {
+						Inviter->Message(13, "Unable to get new group id. Cannot create group.");
+						break;
+					}
+
+					database.SetGroupID(Inviter->GetName(), group->GetID(), Inviter->CastToClient()->CharacterID());
+
+					database.SetGroupLeaderName(group->GetID(), Inviter->GetName());
+
+					group->UpdateGroupAAs();
+
+					EQApplicationPacket* outapp=new EQApplicationPacket(OP_GroupUpdate, sizeof(GroupJoin_Struct));
+
+					GroupJoin_Struct* outgj = (GroupJoin_Struct*)outapp->pBuffer;
+
+					strn0cpy(outgj->membername, Inviter->GetName(), sizeof(outgj->membername));
+
+					strn0cpy(outgj->yourname, Inviter->GetName(), sizeof(outgj->yourname));
+
+					outgj->action = groupActInviteInitial;
+
+					group->GetGroupAAs(&outgj->leader_aas);
+
+					Inviter->CastToClient()->QueuePacket(outapp);
+
+					safe_delete(outapp);
+				}
+				if(!group)
+					break;
+
+				EQApplicationPacket* outapp=new EQApplicationPacket(OP_GroupFollow, sizeof(GroupGeneric_Struct));
+
+				GroupGeneric_Struct *gg = (GroupGeneric_Struct *)outapp->pBuffer;
+
+				strn0cpy(gg->name1, sgfs->gf.name1, sizeof(gg->name1));
+
+				strn0cpy(gg->name2, sgfs->gf.name2, sizeof(gg->name2));
+				
+				Inviter->CastToClient()->QueuePacket(outapp);
+
+				safe_delete(outapp);
+
+				if(!group->AddMember(NULL, sgfs->gf.name2, sgfs->CharacterID))
+					break;
+
+				if(Inviter->CastToClient()->IsLFP())
+					Inviter->CastToClient()->UpdateLFP();
+
+				ServerPacket* pack2 = new ServerPacket(ServerOP_GroupJoin, sizeof(ServerGroupJoin_Struct));
+
+				ServerGroupJoin_Struct* gj = (ServerGroupJoin_Struct*)pack2->pBuffer;
+
+				gj->gid = group->GetID();
+
+				gj->zoneid = zone->GetZoneID();
+
+				gj->instance_id = zone->GetInstanceID();
+
+				strn0cpy(gj->member_name, sgfs->gf.name2, sizeof(gj->member_name));
+
+				worldserver.SendPacket(pack2);
+
+				safe_delete(pack2);
+
+				// Send acknowledgement back to the Invitee to let them know we have added them to the group.
+				//
+				ServerPacket* pack3 = new ServerPacket(ServerOP_GroupFollowAck, sizeof(ServerGroupFollowAck_Struct));
+
+				ServerGroupFollowAck_Struct* sgfas = (ServerGroupFollowAck_Struct*)pack3->pBuffer;
+
+				strn0cpy(sgfas->Name, sgfs->gf.name2, sizeof(sgfas->Name));
+
+				worldserver.SendPacket(pack3);
+
+				safe_delete(pack3);
+			}
+			break;
+		}
+		case ServerOP_GroupFollowAck: {
+			// The Inviter (in another zone) has successfully added the Invitee (in this zone) to the group.
+			//
+			ServerGroupFollowAck_Struct* sgfas = (ServerGroupFollowAck_Struct*)pack->pBuffer;
+
+			Client *c = entity_list.GetClientByName(sgfas->Name);
+
+			if(!c)
+				break;
+			
+			int32 groupid = database.GetGroupID(c->GetName());
+
+			Group* group = NULL;
+
+			if(groupid > 0)
+			{
+				group = entity_list.GetGroupByID(groupid);
+
+				if(!group)
+				{	//nobody from our group is here... start a new group
+					group = new Group(groupid);
+
+					if(group->GetID() != 0)
+						entity_list.AddGroup(group, groupid);
+					else
+						group = NULL;
+				}	//else, somebody from our group is already here...
+
+				if(group)
+					group->UpdatePlayer(c);
+				else
+					database.SetGroupID(c->GetName(), 0, c->CharacterID());	//cannot re-establish group, kill it
+
+			}
+
+			if(group)
+			{
+				database.RefreshGroupFromDB(c);
+
+				group->SendHPPacketsTo(c);
+
+				// If the group leader is not set, pull the group leader infomrmation from the database.
+				if(!group->GetLeader())
+				{
+					char ln[64];
+					char AssistName[64];
+					char NPCMarkerName[64];
+					GroupLeadershipAA_Struct GLAA;
+					memset(ln, 0, 64);
+					strcpy(ln, database.GetGroupLeadershipInfo(group->GetID(), ln, AssistName, NPCMarkerName, &GLAA));
+					Client *lc = entity_list.GetClientByName(ln);
+					if(lc)
+						group->SetLeader(lc);
+	
+					group->SetMainAssist(AssistName);
+					group->SetNPCMarker(NPCMarkerName);
+					group->SetGroupAAs(&GLAA);
+
+				}
+			}
+			break;
+
+		}
+		case ServerOP_GroupCancelInvite: {
+
+			GroupCancel_Struct* sgcs = (GroupCancel_Struct*) pack->pBuffer;
+
+			Mob* Inviter = entity_list.GetClientByName(sgcs->name1);
+
+			if(Inviter && Inviter->IsClient())
+			{
+				EQApplicationPacket* outapp = new EQApplicationPacket(OP_GroupCancelInvite, sizeof(GroupCancel_Struct));
+				memcpy(outapp->pBuffer, sgcs, sizeof(GroupCancel_Struct));
+				Inviter->CastToClient()->QueuePacket(outapp);
+				safe_delete(outapp);
+			}
+			break;
+		}
 		case ServerOP_GroupJoin: {
 			ServerGroupJoin_Struct* gj = (ServerGroupJoin_Struct*)pack->pBuffer;
 			if(zone){
 				if(gj->zoneid == zone->GetZoneID() && gj->instance_id == zone->GetInstanceID())
 					break;
+			
+				Group* g = entity_list.GetGroupByID(gj->gid);
+
+				if(g)
+					g->AddMember(gj->member_name);
 
 				entity_list.SendGroupJoin(gj->gid, gj->member_name);
 			}
