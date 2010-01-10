@@ -99,6 +99,10 @@
 #define ServerOP_RaidChangeGroup	0x010C //in use
 #define ServerOP_RaidGroupAdd		0x010D
 #define ServerOP_RaidGroupRemove	0x010E
+#define ServerOP_GroupInvite		0x010F
+#define ServerOP_GroupFollow		0x0110
+#define ServerOP_GroupFollowAck		0x0111
+#define ServerOP_GroupCancelInvite	0x0112
 
 #define ServerOP_InstanceUpdateTime 0x014F
 #define ServerOP_AdventureCreate	0x0150
@@ -262,6 +266,16 @@ struct SendGroup_Struct{
 	char	thismember[64];
 	char	members[5][64];
 };
+
+struct ServerGroupFollow_Struct {
+	int32 CharacterID;
+	GroupGeneric_Struct gf;
+};
+
+struct ServerGroupFollowAck_Struct {
+	char Name[64];
+};
+
 struct ServerChannelMessage_Struct {
 	char  deliverto[64];
 	char  to[64];
