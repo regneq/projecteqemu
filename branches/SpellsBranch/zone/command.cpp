@@ -7645,32 +7645,30 @@ void command_undyeme(Client *c, const Seperator *sep)
 
 void command_ginfo(Client *c, const Seperator *sep)
 {
+	Client *t;
+
 	if(c->GetTarget() && c->GetTarget()->IsClient())
-	{
-		Client *t = c->GetTarget()->CastToClient();
-		Group *g = t->GetGroup();
-		if(!g) {
-			c->Message(0, "This client is not in a group");
-			return;
-		}
-		
-		c->Message(0, "Group #%lu:", (unsigned long)g->GetID());
-		
-		uint32 r;
-		for(r = 0; r < MAX_GROUP_MEMBERS; r++) {
-			if(g->members[r] == NULL) {
-				if(g->membername[r][0] == '\0')
-					continue;
-				c->Message(0, "...Zoned Member: %s", g->membername[r]);
-			} else {
-				c->Message(0, "...In-Zone Member: %s (0x%x)", g->membername[r], g->members[r]);
-			}
-		}
-		
-	}
+		t = c->GetTarget()->CastToClient();
 	else
-	{
-		c->Message(0, "ERROR: Client target required");
+		t = c;
+
+	Group *g = t->GetGroup();
+	if(!g) {
+		c->Message(0, "This client is not in a group");
+		return;
+	}
+		
+	c->Message(0, "Player: %s is in Group #%lu: with %i members", t->GetName(), (unsigned long)g->GetID(), g->GroupCount());
+	
+	uint32 r;
+	for(r = 0; r < MAX_GROUP_MEMBERS; r++) {
+		if(g->members[r] == NULL) {
+			if(g->membername[r][0] == '\0')
+				continue;
+			c->Message(0, "...Zoned Member: %s", g->membername[r]);
+		} else {
+			c->Message(0, "...In-Zone Member: %s (0x%x)", g->membername[r], g->members[r]);
+		}
 	}
 }
 

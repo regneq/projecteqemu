@@ -239,6 +239,8 @@
 #define BACKSTAB_STRING				12199	//backstab
 #define BASH_STRING					12201	//bash
 #define GUILD_NOT_MEMBER			12242	//You are not a member of any guild.
+#define GROUP_INVITEE_NOT_FOUND			12268	//You must target a player or use /invite <name> to invite someone to your group.
+#define GROUP_INVITEE_SELF			12270	//12270 You cannot invite yourself.
 #define NOT_IN_CONTROL				12368	//You do not have control of yourself right now.
 #define ALREADY_CASTING				12442	//You are already casting a spell!
 #define NOT_HOLDING_ITEM			12452	//You are not holding an item!

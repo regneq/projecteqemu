@@ -5390,33 +5390,49 @@ void Client::Handle_OP_GroupInvite2(const EQApplicationPacket *app)
 			sizeof(GroupInvite_Struct), app->size);
 		return;
 	}
+	
+	GroupInvite_Struct* gis = (GroupInvite_Struct*) app->pBuffer;
 
-	if(GetTarget()) {
-		if(GetTarget()->IsClient()) {
-			if(!GetTarget()->IsGrouped() && !GetTarget()->IsRaidGrouped()) {
+	Mob *Invitee = entity_list.GetMob(gis->invitee_name);
+
+	if(Invitee == this)
+	{
+		Message_StringID(clientMessageWhite, GROUP_INVITEE_SELF);
+		return;
+	}
+
+	if(Invitee) {
+		if(Invitee->IsClient()) {
+			if(!Invitee->IsGrouped() && !Invitee->IsRaidGrouped()) {
 				if(app->GetOpcode() == OP_GroupInvite2)
 				{
 					//Make a new packet using all the same information but make sure it's a fixed GroupInvite opcode so we
 					//Don't have to deal with GroupFollow2 crap.
 					EQApplicationPacket* outapp = new EQApplicationPacket(OP_GroupInvite, sizeof(GroupInvite_Struct));
 					memcpy(outapp->pBuffer, app->pBuffer, outapp->size);
-					this->GetTarget()->CastToClient()->QueuePacket(outapp);
+					Invitee->CastToClient()->QueuePacket(outapp);
 					safe_delete(outapp);
 					return;
 				}
 				else
 				{
 					//The correct opcode, no reason to bother wasting time reconstructing the packet
-					this->GetTarget()->CastToClient()->QueuePacket(app);
+					Invitee->CastToClient()->QueuePacket(app);
 				}
 			}
 		}
 #ifdef BOTS
-		else if(GetTarget()->IsBot()) {
-			GroupInvite_Struct* gi = (GroupInvite_Struct*) app->pBuffer;
-			Bot::ProcessBotGroupInvite(this, std::string(gi->invitee_name));
+		else if(Invitee->IsBot()) {
+			Bot::ProcessBotGroupInvite(this, std::string(Invitee->GetName()));
 		}
 #endif
+	}
+	else
+	{
+		ServerPacket* pack = new ServerPacket(ServerOP_GroupInvite, sizeof(GroupInvite_Struct));
+		memcpy(pack->pBuffer, gis, sizeof(GroupInvite_Struct));
+		worldserver.SendPacket(pack);
+		safe_delete(pack);
 	}
 
 	/*if(this->GetTarget() != 0 && this->GetTarget()->IsNPC() && this->GetTarget()->CastToNPC()->IsInteractive()) {
@@ -5457,8 +5473,18 @@ void Client::Handle_OP_GroupCancelInvite(const EQApplicationPacket *app)
 	GroupCancel_Struct* gf = (GroupCancel_Struct*) app->pBuffer;
 	Mob* inviter = entity_list.GetClientByName(gf->name1);
 
-	if(inviter != NULL && inviter->IsClient())
-		inviter->CastToClient()->QueuePacket(app);
+	if(inviter != NULL)
+	{
+		if(inviter->IsClient())
+			inviter->CastToClient()->QueuePacket(app);
+	}
+	else
+	{
+		ServerPacket* pack = new ServerPacket(ServerOP_GroupCancelInvite, sizeof(GroupCancel_Struct));
+		memcpy(pack->pBuffer, gf, sizeof(GroupCancel_Struct));
+		worldserver.SendPacket(pack);
+		safe_delete(pack);
+	}
 
 	database.SetGroupID(GetName(), 0, CharacterID());
 	return;
@@ -5602,6 +5628,16 @@ void Client::Handle_OP_GroupFollow2(const EQApplicationPacket *app)
 		worldserver.SendPacket(pack);
 		safe_delete(pack);
 	}
+	else if(inviter == NULL)
+	{
+		ServerPacket* pack = new ServerPacket(ServerOP_GroupFollow, sizeof(ServerGroupFollow_Struct));
+		ServerGroupFollow_Struct *sgfs = (ServerGroupFollow_Struct *)pack->pBuffer;
+		sgfs->CharacterID = CharacterID();
+		strn0cpy(sgfs->gf.name1, gf->name1, sizeof(sgfs->gf.name1));
+		strn0cpy(sgfs->gf.name2, gf->name2, sizeof(sgfs->gf.name2));
+		worldserver.SendPacket(pack);
+		safe_delete(pack);
+	}
 	return;
 }
 
@@ -5678,13 +5714,14 @@ void Client::Handle_OP_GroupDisband(const EQApplicationPacket *app)
 				Mob* tempMember = entity_list.GetMob(gd->name2);
 				if(tempMember) {
 					if(tempMember->IsBot())
+					{
 						Bot::ProcessBotGroupDisband(this, std::string(tempMember->GetCleanName()));
+					}
 				}
 			}
 		}
 	}
 #endif
-
 	if((group->IsLeader(this) && (GetTarget() == 0 || GetTarget() == this)) || (group->GroupCount()<3)) {
 		group->DisbandGroup();
 	} else {
@@ -5694,10 +5731,14 @@ void Client::Handle_OP_GroupDisband(const EQApplicationPacket *app)
 		if(!memberToDisband)
 			memberToDisband = entity_list.GetMob(gd->name2);
 		if(memberToDisband ){
-			if(group->IsLeader(this)) // the group leader can kick other members out of the group...
+			if(group->IsLeader(this))
+			{// the group leader can kick other members out of the group...
 				group->DelMember(memberToDisband,false);
-			else						// ...but other members can only remove themselves
+			}
+			else 
+			{// ...but other members can only remove themselves
 				group->DelMember(this,false);
+			}
 		}
 		else
 			LogFile->write(EQEMuLog::Error, "Failed to remove player from group. Unable to find player named %s in player group", gd->name2);
@@ -5713,7 +5754,6 @@ void Client::Handle_OP_GroupDisband(const EQApplicationPacket *app)
 void Client::Handle_OP_GroupDelete(const EQApplicationPacket *app)
 {
 //should check for leader, only they should be able to do this..
-	printf("Group Delete Request\n");
 	Group* group = GetGroup();
 	if (group)
 		group->DisbandGroup();

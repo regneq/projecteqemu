@@ -925,7 +925,7 @@ bool Bot::IsBotNameAvailable(std::string* errorMessage) {
 		MYSQL_RES* DatasetResult;
 		MYSQL_ROW DataRow;
 
-		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT COUNT(BotID) FROM bots WHERE Name LIKE '%s'", this->GetCleanName()), TempErrorMessageBuffer, &DatasetResult)) {
+		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT COUNT(id) FROM vwbotcharactermobs WHERE name LIKE '%s'", this->GetCleanName()), TempErrorMessageBuffer, &DatasetResult)) {
 			*errorMessage = std::string(TempErrorMessageBuffer);
 		}
 		else {
@@ -1578,9 +1578,9 @@ bool Bot::Process() {
 	if (IsStunned()||IsMezzed())
 		return true;
 
-	if (enraged_timer.Check()){
+	/*if (enraged_timer.Check()){
 		ProcessEnrage();
-	}
+	}*/
 
 	//Handle assists...
 	/*if(assist_timer.Check() && !Charmed() && GetTarget() != NULL) {
@@ -1691,9 +1691,9 @@ void Bot::BotMeditate(bool isSitting) {
 		if(GetManaRatio() < 99.0f) {
 			if(mana_timer.Check(true)) {
 				SetAppearance(eaSitting, false);
-				if(!((int)GetManaRatio() % 24)) {
+				/*if(!((int)GetManaRatio() % 24)) {
 					Say("Medding for Mana. I have %3.1f%% of %d mana. It is: %d", GetManaRatio(), GetMaxMana(), GetMana());
-				}
+				}*/
 				int32 level = GetLevel();
 				int32 regen = (((GetSkill(MEDITATE)/10)+(level-(level/4)))/4)+4;
 				spellbonuses.ManaRegen = 0;
@@ -1755,9 +1755,9 @@ void Bot::BotMeditate(bool isSitting) {
 	else {
 		// Let's check our mana in fights..
 		if(mana_timer.Check(true)) {
-			if((!((int)GetManaRatio() % 12)) && ((int)GetManaRatio() < 10)) {
+			/*if((!((int)GetManaRatio() % 12)) && ((int)GetManaRatio() < 10)) {
 				Say("Medding for Mana. I have %3.1f%% of %d mana. It is: %d", GetManaRatio(), GetMaxMana(), GetMana());
-			}
+			}*/
 			int32 level = GetLevel();
 			spellbonuses.ManaRegen = 0;
 			for(int j=0; j<BUFF_COUNT; j++) {
@@ -1822,10 +1822,18 @@ bool Bot::BotRangedAttack(Mob* other) {
 		return false;
 	}
 
-	const Item_Struct* RangeWeapon = database.GetItem(equipment[MATERIAL_SECONDARY]);
-	const Item_Struct* Ammo = database.GetItem(equipment[MATERIAL_PRIMARY]);
+	uint32 rangedItemId = 0;
+	uint32 ammoItemId = 0;
+
+	rangedItemId = GetBotItem(SLOT_RANGE);
+	ammoItemId = GetBotItem(SLOT_AMMO);
+
+	const Item_Struct* RangeWeapon = database.GetItem(rangedItemId);
+	const Item_Struct* Ammo = database.GetItem(ammoItemId);
+	
 	ItemInst* RangeItem = new ItemInst(RangeWeapon);
 	ItemInst* AmmoItem = new ItemInst(Ammo);
+	
 	mlog(COMBAT__RANGED, "Shooting %s with bow %s (%d) and arrow %s (%d)", other->GetCleanName(), RangeWeapon->Name, RangeWeapon->ID, Ammo->Name, Ammo->ID);
 	
 	if(!IsAttackAllowed(other) || 
@@ -1843,7 +1851,7 @@ bool Bot::BotRangedAttack(Mob* other) {
 	SendItemAnimation(other, Ammo, ARCHERY);
 
 	// Hit?
-	if(!this->CalcBotHitChance(other, ARCHERY, SLOT_PRIMARY)) {
+	if(!this->CalcBotHitChance(other, ARCHERY, SLOT_RANGE)) {
 		mlog(COMBAT__RANGED, "Ranged attack missed %s.", other->GetCleanName());
 		other->Damage(this, 0, SPELL_UNKNOWN, ARCHERY);
 	}
@@ -9022,6 +9030,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		c->Message(0, "#bot camp - Tells your bot to camp out of the game.");
 		c->Message(0, "#bot group help - Displays the commands available to manage any BOTs in your group.");
 		c->Message(0, "#bot botgroup help - Displays the commands available to manage BOT ONLY groups.");
+		c->Message(0, "#bot mana [<bot name or target> | all] - Displays a mana report for all your spawned bots.");
 		return;
 	}
 
@@ -9199,7 +9208,47 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		}
 	}
 
-	if(!strcasecmp(sep->arg[1], "spawn") ){
+	if(!strcasecmp(sep->arg[1], "mana")) {
+		bool listAll = false;
+		Bot* bot = 0;
+
+		if(sep->argnum == 2) {
+			if(std::string(sep->arg[2]).compare("all") == 0)
+				listAll = true;
+			else {
+				string botName = std::string(sep->arg[2]);
+				bot = entity_list.GetBotByBotName(botName);
+			}
+		}
+		else {
+			if(c->GetTarget() && c->GetTarget()->IsBot())
+				bot = c->GetTarget()->CastToBot();
+		}
+
+		if(bot && !listAll) {
+			// Specific bot only
+			c->Message(0, "Name: %s -- Mana: %3.1f%%", bot->GetCleanName(), bot->GetManaRatio());
+		}
+		else {
+			// List all
+			std::list<Bot*> spawnedBots = entity_list.GetBotsByBotOwnerCharacterID(c->CharacterID());
+
+			if(!spawnedBots.empty()) {
+				for(std::list<Bot*>::iterator botsListItr = spawnedBots.begin(); botsListItr != spawnedBots.end(); botsListItr++) {
+					Bot* tempBot = *botsListItr;
+					c->Message(0, "Name: %s -- Mana: %3.1f%%", tempBot->GetCleanName(), tempBot->GetManaRatio());
+				}
+			}
+			else {
+				c->Message(0, "You have no spawned bots in this zone.");
+			}
+		}
+
+		return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "spawn") ) {
+		uint32 botId = GetBotIDByBotName(std::string(sep->arg[2]));
 
 		if(GetBotOwnerCharacterID(atoi(sep->arg[2]), &TempErrorMessage) != c->CharacterID()) {
 			c->Message(0, "You can't spawn a bot that you don't own.");
@@ -9309,69 +9358,86 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 			return;
 		}
 
-		Mob *archerbot = c->GetTarget();
-		if((archerbot->GetClass()==WARRIOR)||(archerbot->GetClass()==PALADIN)||(archerbot->GetClass()==RANGER)||(archerbot->GetClass()==SHADOWKNIGHT)||(archerbot->GetClass()==ROGUE)) {
-			//const Item_Struct* botweapon = database.GetItem(archerbot->CastToBot()->GetItem(SLOT_RANGE));
-			const Item_Struct* botweapon = database.GetItem(archerbot->CastToBot()->GetItem(SLOT_RANGE)->item_id);
+		Bot* archerbot = c->GetTarget()->CastToBot();
+
+		if((archerbot->GetClass()==WARRIOR) || (archerbot->GetClass()==PALADIN) || (archerbot->GetClass()==RANGER)
+			|| (archerbot->GetClass()==SHADOWKNIGHT) ||(archerbot->GetClass()==ROGUE)) 
+		{
+			uint32 rangedItemId = archerbot->GetBotItem(SLOT_RANGE);
+
+			if(rangedItemId == 0) {
+				archerbot->Say("I don't have a ranged weapon to do archery with, %s.", c->GetName());
+				return;
+			}
+
+			const Item_Struct* botweapon = database.GetItem(rangedItemId);
 			uint32 archeryMaterial;
 			uint32 archeryColor;
 			uint32 archeryBowID;
 			uint32 archeryAmmoID;
 			uint32 range = 0;
-			if(botweapon && (botweapon->ItemType == ItemTypeBow)) {
+			
+			if(botweapon && botweapon->ItemType == ItemTypeBow) {
 				archeryMaterial = atoi(botweapon->IDFile+2);
 				archeryBowID = botweapon->ID;
 				archeryColor = botweapon->Color;
 				range =+ botweapon->Range;
-				botweapon = database.GetItem(archerbot->CastToNPC()->GetItem(SLOT_AMMO)->item_id);
+
+				uint32 arrowItemId = archerbot->GetBotItem(SLOT_AMMO);
+
+				botweapon = database.GetItem(arrowItemId);
+				
 				if(!botweapon || (botweapon->ItemType != ItemTypeArrow)) {
 					archerbot->Say("I don't have any arrows.");
-					archerbot->CastToBot()->SetBotArcheryRange(0);
+					archerbot->SetBotArcheryRange(0);
 					return;
 				}
+
 				range += botweapon->Range;
 				archeryAmmoID = botweapon->ID;
 			}
 			else {
 				archerbot->Say("I don't have a bow.");
-				archerbot->CastToBot()->SetBotArcheryRange(0);
+				archerbot->SetBotArcheryRange(0);
 				return;
 			}
-			if(archerbot->CastToBot()->IsBotArcher()) {
-				archerbot->CastToBot()->SetBotArcher(false);
+
+			if(archerbot->IsBotArcher()) {
+				archerbot->SetBotArcher(false);
 				archerbot->Say("Using melee skills.");
-				archerbot->CastToBot()->BotAddEquipItem(SLOT_PRIMARY, archerbot->CastToBot()->GetBotItemBySlot(SLOT_PRIMARY, &TempErrorMessage));
+				archerbot->BotAddEquipItem(SLOT_PRIMARY, archerbot->GetBotItemBySlot(SLOT_PRIMARY, &TempErrorMessage));
 
 				if(!TempErrorMessage.empty()) {
 					c->Message(13, "Database Error: %s", TempErrorMessage.c_str());
 					return;
 				}
 				//archerbot->SendWearChange(MATERIAL_PRIMARY);
-				archerbot->CastToBot()->BotAddEquipItem(SLOT_SECONDARY, archerbot->CastToBot()->GetBotItemBySlot(SLOT_SECONDARY, &TempErrorMessage));
+				archerbot->BotAddEquipItem(SLOT_SECONDARY, archerbot->GetBotItemBySlot(SLOT_SECONDARY, &TempErrorMessage));
 
 				if(!TempErrorMessage.empty()) {
 					c->Message(13, "Database Error: %s", TempErrorMessage.c_str());
 					return;
 				}
 				//archerbot->SendWearChange(MATERIAL_SECONDARY);
-				archerbot->CastToBot()->SetBotArcheryRange(0);
+				archerbot->SetBotArcheryRange(0);
 			}
 			else {
-				archerbot->CastToBot()->SetBotArcher(true);
+				archerbot->SetBotArcher(true);
 				archerbot->Say("Using archery skills.");
-				archerbot->CastToBot()->BotRemoveEquipItem(SLOT_PRIMARY);
+				archerbot->BotRemoveEquipItem(SLOT_PRIMARY);
 				//archerbot->SendWearChange(MATERIAL_PRIMARY);
-				archerbot->CastToBot()->BotRemoveEquipItem(SLOT_SECONDARY);
+				archerbot->BotRemoveEquipItem(SLOT_SECONDARY);
 				//archerbot->SendWearChange(MATERIAL_SECONDARY);
-				archerbot->CastToBot()->BotAddEquipItem(SLOT_SECONDARY, archeryBowID);
-				archerbot->CastToBot()->SendBotArcheryWearChange(MATERIAL_SECONDARY, archeryMaterial, archeryColor);
-				archerbot->CastToBot()->BotAddEquipItem(SLOT_PRIMARY, archeryAmmoID);
-				archerbot->CastToBot()->SetBotArcheryRange(range);
+				archerbot->BotAddEquipItem(SLOT_AMMO, archeryAmmoID);
+				archerbot->BotAddEquipItem(SLOT_SECONDARY, archeryBowID);
+				//archerbot->SendBotArcheryWearChange(MATERIAL_PRIMARY, archeryMaterial, archeryColor);
+				archerbot->SetBotArcheryRange(range);
 			}
 		}
 		else {
 			archerbot->Say("I don't know how to use a bow.");
 		}
+
 		return;
 	}
 
