@@ -3720,363 +3720,6 @@ int Client::FindSpellBookSlotBySpellID(int16 spellid) {
 	return -1;	//default
 }
 
-//this is one nasty function... FindType and FindSpell are rather complex operations...
-/*void Mob::CheckBuffs() {
-	if (!IsCasting()) {
-		
-		//try to summon a pet if we havent yet
-		CheckPet();
-		
-		int8 newtype[15] = { SE_ArmorClass, SE_STR, SE_DEX, SE_AGI, SE_WIS,
-                             SE_INT, SE_CHA, SE_AttackSpeed, SE_MovementSpeed,
-                             SE_DamageShield, SE_ResistFire, SE_ResistCold,
-                             SE_ResistMagic, SE_ResistPoison, SE_ResistDisease };
-		for (int h=0; h<15; h++) {
-			if (!this->FindType(newtype[h])) {
-				int16 buffid = FindSpell(this->class_, this->level,
-                                         newtype[h], SPELLTYPE_SELF, 0,
-                                         GetMana());
-				if (buffid != 0) {
-					this->CastSpell(buffid, this->GetID());
-				}
-			}
-		}
-	}
-}
-
-void Mob::CheckPet() {
-	if(HasPet())
-		return;
-	int16 buffid = 0;
-	if ((GetClass() == NECROMANCER || GetClass() == MAGICIAN)) {
-		if (this->GetClass() == MAGICIAN) {
-			buffid = FindSpell(class_, level,
-                               SE_SummonPet, SPELLTYPE_OTHER, 0,
-                               GetMana());
-        } else if (GetClass() == NECROMANCER) {
-			buffid = FindSpell(class_, level,
-                               SE_NecPet, SPELLTYPE_OTHER, 0,
-                               GetMana());
-		}
-		if (buffid != 0) {
-			CastSpell(buffid, GetID());
-		}
-	}
-}
-
-int16 Mob::FindSpell(int16 classp, int16 level, int type,
-                     FindSpellType spelltype, float distance,
-                     sint32 mana_avail) {
-    int i,j;
-
-    int bestvalue = -1;
-    int bestid = 0;
-
-    if (classp < 1)
-        return 0;
-    if (level < 1)
-        return 0;
-	classp = GetEQArrayEQClass(classp);
-
-    // purpose: find a suited spell for a class and level and type
-    // the if's are here to filter out anything which isnt normal.
-    // its possible that we miss some valid spells, but who cares.
-    //  - neotokyo 19-Nov-02
-
-	for (i = 0; i < SPDAT_RECORDS; i++) {
-				if(!IsValidSpell(i))
-					continue;
-        // Filter all spells that should never be used
-        if (spells[i].effectid[0] == SE_NegateIfCombat)
-            continue;
-        if (spells[i].targettype == ST_Group)
-            continue;
-        if (i == 2632)  // neotokyo: fix for obsolete BST pet summon spell
-            continue;
-        if (i == 1576)  // neotokyo: fix for torpor
-            continue;
-        if (spells[i].cast_time < 11)
-            continue;
-        if (spells[i].mana == 0)
-            continue;
-
-        // now for closer checks
-        if (spelltype == SPELLTYPE_SELF) {
-            if ( i == 357)  // fix for dark empathy
-                continue;
-            // check buffs 12 would be max, but 90% of all effects are in the first 4 slots
-            for (j = 0; j < 5; j++) {
-                // neotokyo: fix for pets
-                if ( spells[i].effectid[j] == SE_Illusion &&
-                     type != SE_Illusion)  // only let illusions thru if explicitly requested
-                    continue;
-                if ( spells[i].effectid[j] == type &&
-                     spells[i].goodEffect != 0 &&
-                     spells[i].classes[classp] <= level &&
-                     spells[i].classes[classp] <= 65 &&
-                     (spells[i].recast_time < 10000 ||
-                      type == SE_SummonPet ||
-                      type == SE_SummonBSTPet) && // neotokyo: fix for druid pets
-                     (type == SE_AbsorbMagicAtt || type == SE_Rune ||
-                      type == SE_NecPet || type == SE_SummonPet ||
-                      spells[i].components[0] == -1 ) &&
-                     spells[i].targettype != ST_Undead &&   // neotokyo: for  necro mend series
-                     spells[i].targettype != ST_Group &&    // neotokyo: fix for group spells
-                     spells[i].targettype != ST_Pet &&      // neotokyo: fix for beastlords casting pet heals on self
-                     spells[i].targettype != ST_Summoned && // neotokyo: fix for vs. summoned spells on normal npcs
-                     spells[i].targettype != ST_AETarget && // neotokyo: dont let em cast AEtarget spells
-                     spells[i].mana <= mana_avail &&
-                     spells[i].range >= distance) {
-                    sint32 spellvalue;
-
-                    // lets assume pet is always better if higher, so no formula needed
-                    if (type == SE_NecPet ||
-                        type == SE_SummonPet ||
-                        type == SE_SummonBSTPet) {
-                        spellvalue = spells[i].classes[classp];
-                    } else {
-											spellvalue = CalcSpellEffectValue_formula(spells[i].formula[j],
-                                                    spells[i].base[j],
-                                                    spells[i].max[j],
-                                                    level, i);
-                    }
-
-                    if (abs(spellvalue) > bestvalue) {
-                        bestvalue = abs(spellvalue);
-                        bestid = i;
-                    }
-                }
-            }
-        } else if (spelltype == SPELLTYPE_OFFENSIVE) {
-            // check offensive spells
-            for (j = 0; j < 5; j++) {
-                if (spells[i].effectid[j] == SE_Illusion &&
-                    type != SE_Illusion)  // only let illusions thru if explicitly requested
-                    continue;
-                if (spells[i].effectid[j] == type &&
-                    spells[i].goodEffect == 0 &&
-                    spells[i].classes[classp] <= level &&
-                    spells[i].classes[classp] <= 65 &&
-                    spells[i].recast_time < 10000 &&
-                    spells[i].components[0] == -1 &&
-                    spells[i].mana <= mana_avail &&
-                    spells[i].targettype != ST_Undead &&   // neotokyo: thats for the necro mend series
-                    spells[i].targettype != ST_Group &&    // neotokyo: fix for group spells
-                    spells[i].targettype != ST_Pet &&      // neotokyo: fix for beastlords casting pet heals on self
-                    spells[i].targettype != ST_Summoned && // neotokyo: fix for vs. summoned spells on normal npcs
-                    spells[i].targettype != ST_AETarget && // neotokyo: dont let em cast AEtarget spells
-                    spells[i].range >= distance) {
-                    sint32 spellvalue = CalcSpellEffectValue_formula(spells[i].formula[j],
-                                                       spells[i].base[j],
-                                                       spells[i].max[j],
-                                                       level, i);
-                    if ( abs(spellvalue) > bestvalue ) {
-                        bestvalue = abs(spellvalue);
-                        bestid = i;
-                    }
-                }
-            }
-        } else if (spelltype == SPELLTYPE_OTHER) {
-            if ( i == 357)  // fix for dark empathy
-                continue;
-            // healing and such
-            for (j = 0; j < 5; j++) {
-                if (spells[i].effectid[j] == SE_Illusion &&
-                    type != SE_Illusion)  // only let illusions thru if explicitly requested
-                    continue;
-                if (spells[i].effectid[j] == type &&
-                    spells[i].targettype != ST_Self &&
-                    spells[i].goodEffect != 0 &&
-                    spells[i].classes[classp] <= level &&
-                    spells[i].classes[classp] <= 65 &&
-                    spells[i].recast_time < 10000 &&
-                    spells[i].components[0] == -1 &&
-                    spells[i].targettype != ST_Undead &&   // neotokyo: thats for the necro mend series
-                    spells[i].targettype != ST_Group &&    // neotokyo: fix for group spells
-                    spells[i].targettype != ST_Pet &&      // neotokyo: fix for beastlords casting pet heals on self
-                    spells[i].targettype != ST_Summoned && // neotokyo: fix for vs. summoned spells on normal npcs
-                    spells[i].targettype != ST_AETarget && // neotokyo: dont let em cast AEtarget spells
-                    spells[i].mana <= mana_avail &&
-                    spells[i].range >= distance) {
-                    sint32 spellvalue = CalcSpellEffectValue_formula(spells[i].formula[j],
-                                                       spells[i].base[j],
-                                                       spells[i].max[j],
-                                                       level, i);
-                    if ( abs(spellvalue) > bestvalue ) {
-                        bestvalue = abs(spellvalue);
-                        bestid = i;
-                    }
-                }
-            }
-        }
-    } // for i
-
-//    g_LogFile.write("for combination [class %02d][level %02d][SE_type %02d][type %02d] i selected the spell: %s",
-//        classp, level, (int16)type, int16(spelltype), spells[bestid].name);
-    return bestid;
-}
-
-#if 0
-int16 Mob::FindSpell(int16 classp, int16 level, int8 type, int8 spelltype) {
-	if (this->casting_spell_id != 0)
-		return 0;
-
-	if (spelltype == 2) // for future use
-		spelltype = 0;
-
-	//int count=0;
-	int16 bestsofar = 0;
-	int16 bestspellid = 0;
-	for (int i = 0; i < SPDAT_RECORDS; i++) {
-		if ((IsLifetapSpell(i) && spelltype == 1) || (spells[i].targettype != ST_Group && spells[i].targettype != ST_Undead && spells[i].targettype != ST_Summoned && spells[i].targettype != ST_Pet && strstr(spells[i].name,"Summoning") == NULL)) {
-			int Canuse = CanUseSpell(i, classp, level);
-			if (Canuse != 0) {
-				for (int z=0; z < 12; z++) {
-					int spfo = CalcSpellValue(spells[i].formula[z], spells[i].base[z], spells[i].max[z], this->GetLevel());
-					if (spells[i].effectid[z] == SE_ArmorClass && type == SE_ArmorClass && !FindBuff(i)) {
-						if (spfo > 0 && (spfo + spells[i].buffduration) > bestsofar) {
-							bestsofar = spfo + spells[i].buffduration;
-							bestspellid = i;
-						}
-					}
-					if (spells[i].effectid[z] == SE_TotalHP && type == SE_TotalHP && !FindBuff(i)) {
-						if (spfo > 0 && (spfo + spells[i].buffduration) > bestsofar) {
-							bestsofar = spfo + spells[i].buffduration;
-							bestspellid = i;
-						}
-					}
-					if (spells[i].effectid[z] == SE_STR && type == SE_STR && !FindBuff(i)) {
-						if (spfo > 0 && (spfo + spells[i].buffduration) > bestsofar) {
-							bestsofar = spfo + spells[i].buffduration;
-
-							bestspellid = i;
-						}
-					}
-					if (spells[i].effectid[z] == SE_DEX && type == SE_DEX && !FindBuff(i)) {
-						if (spfo > 0 && (spfo + spells[i].buffduration) > bestsofar) {
-							bestsofar = spfo + spells[i].buffduration;
-							bestspellid = i;
-						}
-					}
-
-					if (spells[i].effectid[z] == SE_AGI && type == SE_AGI && !FindBuff(i)) {
-
-						if (spfo > 0 && (spfo + spells[i].buffduration) > bestsofar) {
-
-							bestsofar = spfo + spells[i].buffduration;
-							bestspellid = i;
-						}
-					}
-
-					if (spells[i].effectid[z] == SE_WIS && type == SE_WIS && !FindBuff(i)) {
-						if (spfo > 0 && (spfo + spells[i].buffduration) > bestsofar) {
-							bestsofar = spfo + spells[i].buffduration;
-							bestspellid = i;
-						}
-					}
-
-					if (spells[i].effectid[z] == SE_INT && type == SE_INT && !FindBuff(i)) {
-						if (spfo > 0 && (spfo + spells[i].buffduration) > bestsofar) {
-							bestsofar = spfo + spells[i].buffduration;
-							bestspellid = i;
-						}
-					}
-					if (spells[i].effectid[z] == SE_CHA && type == SE_CHA && !FindBuff(i)) {
-						if (spfo > 0 && (spfo + spells[i].buffduration) > bestsofar) {
-							bestsofar = spfo + spells[i].buffduration;
-							bestspellid = i;
-						}
-					}
-
-					if (spells[i].effectid[z] == SE_MovementSpeed && type == SE_MovementSpeed && !FindBuff(i)) {
-						if (spfo > 0 && (spfo + spells[i].buffduration) > bestsofar) {
-							bestsofar = spfo + spells[i].buffduration;
-							bestspellid = i;
-						}
-					}
-
-					if (spells[i].effectid[z] == SE_AttackSpeed && type == SE_AttackSpeed && !FindBuff(i)) {
-						if (spfo > 0 && (spfo + spells[i].buffduration) > bestsofar) {
-							bestsofar = spfo + spells[i].buffduration;
-							bestspellid = i;
-						}
-					}
-					if (spells[i].effectid[z] == SE_ResistFire && type == SE_ResistFire && !FindBuff(i)) {
-						if (spfo > 0 && (spfo + spells[i].buffduration) > bestsofar) {
-							bestsofar = spfo + spells[i].buffduration;
-							bestspellid = i;
-						}
-					}
-					if (spells[i].effectid[z] == SE_ResistCold && type == SE_ResistCold && !FindBuff(i)) {
-						if (spfo > 0 && (spfo + spells[i].buffduration) > bestsofar) {
-							bestsofar = spfo + spells[i].buffduration;
-							bestspellid = i;
-						}
-					}
-					if (spells[i].effectid[z] == SE_ResistMagic && type == SE_ResistMagic && !FindBuff(i)) {
-						if (spfo > 0 && (spfo + spells[i].buffduration) > bestsofar) {
-							bestsofar = spfo + spells[i].buffduration;
-							bestspellid = i;
-						}
-					}
-					if (spells[i].effectid[z] == SE_ResistDisease && type == SE_ResistDisease && !FindBuff(i)) {
-						if (spfo > 0 && (spfo + spells[i].buffduration) > bestsofar) {
-							bestsofar = spfo + spells[i].buffduration;
-							bestspellid = i;
-
-						}
-					}
-					if (spells[i].effectid[z] == SE_ResistPoison && type == SE_ResistPoison && !FindBuff(i)) {
-						if (spfo > 0 && (spfo + spells[i].buffduration) > bestsofar) {
-							bestsofar = spfo + spells[i].buffduration;
-							bestspellid = i;
-						}
-					}
-					if (spells[i].effectid[z] == SE_DamageShield && type == SE_DamageShield && !FindBuff(i)) {
-						if (spfo > 0 && (spfo + spells[i].buffduration) > bestsofar) {
-							bestsofar = spfo + spells[i].buffduration;
-							bestspellid = i;
-						}
-					}
-					if (spells[i].effectid[z] == SE_CurrentHPOnce && type == SE_CurrentHPOnce && !FindBuff(i)) {
-						if (spfo > 0 && (spfo + spells[i].buffduration) > bestsofar) {
-							bestsofar = spfo + spells[i].buffduration;
-							bestspellid = i;
-						}
-					}
-					if (spells[i].effectid[z] == SE_SummonPet && type == SE_SummonPet && !FindBuff(i)) {
-						if (Canuse > bestsofar) {
-							bestsofar = Canuse;
-							bestspellid = i;
-						}
-					}
-					if (spells[i].effectid[z] == SE_NecPet && type == SE_NecPet && !FindBuff(i)) {
-						if (Canuse > bestsofar) {
-							bestsofar = Canuse;
-							bestspellid = i;
-						}
-					}
-					if (spells[i].effectid[z] == SE_CurrentHP && type == SE_CurrentHP && !FindBuff(i)) {
-						if (spfo < 0 && (spells[i].buffduration + spfo) < bestsofar && spelltype == 1) {
-							bestsofar = ((spells[i].buffduration * -1) + spfo);
-							bestspellid = i;
-						}
-						if ((spfo + spells[i].buffduration) > bestsofar && spfo > 0 && spelltype == 0) {
-							bestsofar = spfo + spells[i].buffduration;
-							bestspellid = i;
-						}
-
-					}
-				}
-			}
-		}
-	}
-
-	return bestspellid;
-}
-#endif
-*/
-
 // solar: TODO get rid of this
 sint8 Mob::GetBuffSlotFromType(int8 type) {
 	//TODO:
@@ -4454,7 +4097,6 @@ bool Mob::ValidateStartSpellCast(const Spell *spell_to_cast)
 	else if(DivineAura())
 	{
 		mlog(SPELLS__CASTING_ERR, "Spell casting canceled: not able to cast now. The mob is invulnerable and therefor cannot cast.");
-		//InterruptSpell(173, 0x121, false);
 		return_value = false;
 	}
 
@@ -4465,18 +4107,20 @@ bool Mob::ValidateStartSpellCast(const Spell *spell_to_cast)
 		return_value = false;
 	}
 
-	if(IsClient())
-	{
-		CastToClient()->SendSpellBarEnable(spell_to_cast->GetSpellID());
-	}
-
-	if(IsNPC() && casting_spell != NULL)
-	{
-		CastToNPC()->AI_Event_SpellCastFinished(false, casting_spell->GetSpellSlot());
-	}
-
+	ValidateSpellCastFinish(spell_to_cast);
 	return return_value;
 }
+
+void Client::ValidateSpellCastFinish(const Spell *spell_to_cast)
+{
+	SendSpellBarEnable(spell_to_cast->GetSpellID());
+}
+
+void NPC::ValidateSpellCastFinish(const Spell *spell_to_cast)
+{
+	AI_Event_SpellCastFinished(false, spell_to_cast->GetSpellSlot());
+}
+
 
 Spell::Spell(uint32 spell_id, Mob* caster, Mob* target, uint32 slot, uint32 cast_time, uint32 mana_cost)
 {
@@ -4487,6 +4131,8 @@ Spell::Spell(uint32 spell_id, Mob* caster, Mob* target, uint32 slot, uint32 cast
 	this->cast_time = cast_time;
 	this->mana_cost = mana_cost;
 	cast_timer = NULL;
+	timer_id = -1;
+	timer_id_duration = -1;
 }
 
 Spell::~Spell()

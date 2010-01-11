@@ -60,8 +60,8 @@ public:
 	uint32 GetInventorySpellSlot() const { return spell_slot_inventory; }
 
 	//The timer id this mob/player will trigger when it finishes, 0 = ignored.
-	void SetTimerID(uint32 timer) { timer_id = timer; }
-	uint32 GetTimerID() const { return timer_id; }
+	void SetTimerID(sint32 timer) { timer_id = timer; }
+	sint32 GetTimerID() const { return timer_id; }
 
 	void SetTimerIDDuration(sint32 duration) { timer_id_duration = duration; }
 	sint32 GetTimerIDDuration() const { return timer_id_duration; }
@@ -82,7 +82,7 @@ protected:
 	sint32 cast_time;
 	sint32 mana_cost;
 	Timer * cast_timer;
-	uint32 timer_id;
+	sint32 timer_id;
 	sint32 timer_id_duration;
 
 	std::map<SpellAttribute, uint32> sa_container_uint32;
