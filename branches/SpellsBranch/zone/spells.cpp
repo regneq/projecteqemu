@@ -4015,8 +4015,8 @@ int Client::GetMaxSongSlots()
 
 void Client::InitializeBuffSlots()
 {
-	buffs = new Buff*[36];
-	for(int x = 0; x < 36; ++x)
+	buffs = new Buff*[38];
+	for(int x = 0; x < 38; ++x)
 	{
 		buffs[x] = NULL;
 	}
@@ -4024,7 +4024,7 @@ void Client::InitializeBuffSlots()
 
 void Client::UninitializeBuffSlots()
 {
-	for(int x = 0; x < 36; ++x)
+	for(int x = 0; x < 38; ++x)
 	{
 		safe_delete(buffs[x]);
 	}
@@ -4033,6 +4033,11 @@ void Client::UninitializeBuffSlots()
 
 int Client::GetFreeBuffSlot(int32 spell_id)
 {
+	if(IsDiscipline(spell_id))
+	{
+		return 37;
+	}
+
 	if(spells[spell_id].short_buff_box)
 	{
 		for(int x = 25; x < (25 + GetMaxSongSlots()); ++x)
