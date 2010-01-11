@@ -26,8 +26,8 @@ class Spell;
 class Buff
 {
 public:
-	Buff(Spell* spell);
-	~Buff();
+	//Buff(Spell* spell);
+	//~Buff();
 
 	void SetDurationRemaining(uint32 duration) { spell_duration_remaining = duration; }
 	uint32 GetDurationRemaining() const { return spell_duration_remaining; }

@@ -94,7 +94,7 @@ public:
 	virtual void InitializeBuffSlots();
 	virtual void UninitializeBuffSlots();
 	virtual int GetFreeBuffSlot(int32 spell_id) { return 0; }
-	inline virtual void ValidateSpellCastFinish(const Spell *spell_to_cast);
+	virtual void ValidateSpellCastFinish(const Spell *spell_to_cast);
 
 	void LevelScale();
 	void CalcNPCResists();

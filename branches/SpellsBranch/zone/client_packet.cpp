@@ -3936,7 +3936,6 @@ void Client::Handle_OP_CastSpell(const EQApplicationPacket *app)
 	}
 	if (IsAIControlled()) {
 		this->Message_StringID(13,NOT_IN_CONTROL);
-		//Message(13, "You cant cast right now, you arent in control of yourself!");
 		return;
 	}
 
@@ -3994,7 +3993,7 @@ LogFile->write(EQEMuLog::Debug, "OP CastSpell: slot=%d, spell=%d, target=%d, inv
 					{
 						if(GetLevel() >= item->Click.Level2)
 						{
-							//CastSpell(item->Click.Effect, castspell->target_id, castspell->slot, item->CastTime, 0, 0, castspell->inventoryslot);
+							CastSpell(item->Click.Effect, castspell->target_id, castspell->slot, item->CastTime, 0, 0, castspell->inventoryslot);
 						}
 						else
 						{
@@ -4005,7 +4004,7 @@ LogFile->write(EQEMuLog::Debug, "OP CastSpell: slot=%d, spell=%d, target=%d, inv
 					}
 					else
 					{
-						//CastSpell(item->Click.Effect, castspell->target_id, castspell->slot, item->CastTime, 0, 0, castspell->inventoryslot);
+						CastSpell(item->Click.Effect, castspell->target_id, castspell->slot, item->CastTime, 0, 0, castspell->inventoryslot);
 					}
 				}
 				else
@@ -4097,7 +4096,7 @@ LogFile->write(EQEMuLog::Debug, "OP CastSpell: slot=%d, spell=%d, target=%d, inv
 			else*/
 			//try disciplines
 
-		//CastSpell(spell_to_cast, castspell->target_id, castspell->slot);
+		CastSpell(spell_to_cast, castspell->target_id, castspell->slot);
 	}
 	return;
 }

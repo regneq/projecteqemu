@@ -857,33 +857,42 @@ void command_optest(Client *c, const Seperator *sep)
 		{
 			case 1:
 			{
-				EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureFinish, sizeof(AdventureFinish_Struct));
-				AdventureFinish_Struct *af = (AdventureFinish_Struct*)outapp->pBuffer;
-				af->win_lose = 1;
-				af->points = 125;
-				c->FastQueuePacket(&outapp);
-				break;
-			}
-			case 2:
-			{
-				EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureData, sizeof(AdventureRequestResponse_Struct));
-				AdventureRequestResponse_Struct *arr = (AdventureRequestResponse_Struct*)outapp->pBuffer;
-				if(sep->IsHexNumber(2))
-					arr->unknown000 = hextoi(sep->arg[2]);
-				else
-					arr->unknown000 = 0xBFC40100;
-				arr->risk = 1;
-				arr->showcompass = 1;
-				strcpy(arr->text, "This is some text for an adventure packet!\0");
-				arr->timeleft = 60*60;
-				//arr->timetoenter = 30*60;
-				if(sep->IsHexNumber(3))
-					arr->unknown2080=hextoi(sep->arg[3]);
-				else
-					arr->unknown2080=0x0A;
-				arr->x = c->GetY();
-				arr->y = c->GetX();
-				arr->z = c->GetZ();
+				int32 spellid = 0;
+				if(sep->IsNumber(2))
+					spellid = atoi(sep->arg[2]);
+
+				int32 level = 0;
+				if(sep->IsNumber(3))
+					level = atoi(sep->arg[3]);
+
+				int32 duration = 0;
+				if(sep->IsNumber(4))
+					duration = atoi(sep->arg[4]);
+
+				int32 slot = 0;
+				if(sep->IsNumber(5))
+					slot = atoi(sep->arg[5]);
+
+				int32 effect = 0;
+				if(sep->IsNumber(6))
+					effect = atoi(sep->arg[6]);
+
+				int32 buffade = 0;
+				if(sep->IsNumber(7))
+					buffade = atoi(sep->arg[7]);
+
+				EQApplicationPacket* outapp;
+				outapp = new EQApplicationPacket(OP_Buff, sizeof(SpellBuffFade_Struct));
+				SpellBuffFade_Struct* sbf = (SpellBuffFade_Struct*) outapp->pBuffer;
+
+				sbf->entityid = c->GetID();
+				sbf->slot=2;
+				sbf->spellid=spellid;
+				sbf->slotid=slot;
+				sbf->effect = effect; //instrument mod
+				sbf->level = level > 0 ? level : c->GetLevel(); //level
+				sbf->bufffade = buffade; //0x03 = create new buff //0x00 = update current buff
+				sbf->duration = duration;
 				c->FastQueuePacket(&outapp);
 				break;
 			}

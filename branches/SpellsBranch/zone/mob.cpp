@@ -203,6 +203,7 @@ Mob::Mob(const char*   in_name,
 	ExtraHaste = 0;
 	bEnraged = false;
 
+	target = NULL;
 	shield_target = NULL;
 	cur_mana = 0;
 	max_mana = 0;

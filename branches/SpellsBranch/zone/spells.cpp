@@ -122,6 +122,7 @@ void Mob::SpellProcess()
 		{
 			casting_spell->StopCastTimer();
 			CastedSpellFinished(&casting_spell);
+			printf("%p\n", casting_spell);
 		}
 	}
 }
@@ -661,6 +662,7 @@ void Mob::InterruptSpell(int16 message, int16 color, int16 spellid)
 void Mob::CastedSpellFinished(Spell **casted_spell_ptr)
 {
 	_ZP(Mob_CastedSpellFinished);
+	Spell *casted_spell = *casted_spell_ptr;
 	printf("Spell cast finished!\n");
 	safe_delete(*casted_spell_ptr);
 
@@ -3884,7 +3886,7 @@ bool Mob::UseBardSpellLogic(int16 spell_id, int slot)
 		spell_id = casting_spell ? casting_spell->GetSpellID() : 0;
 
 	if(slot == -1)
-		slot = casting_spell->GetSpellSlot();
+		slot = casting_spell ? casting_spell->GetSpellSlot() : 0;
 
 	// should we treat this as a bard singing?
 	return

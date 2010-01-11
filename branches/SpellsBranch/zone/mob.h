@@ -664,7 +664,7 @@ bool logpos;
 	virtual bool DoCastSpell(Spell **casted_spell_ptr, int32* spell_will_finish = 0);
 	void CastedSpellFinished(Spell **casted_spell_ptr);
 	virtual bool ValidateStartSpellCast(const Spell *spell_to_cast);
-	inline virtual void ValidateSpellCastFinish(const Spell *spell_to_cast){ }
+	virtual void ValidateSpellCastFinish(const Spell *spell_to_cast){ }
 	virtual bool CheckFizzle(int16 spell_id);
 	void InterruptSpell(int16 spellid = SPELL_UNKNOWN);
 	void InterruptSpell(int16, int16, int16 spellid = SPELL_UNKNOWN);
