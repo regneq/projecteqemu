@@ -821,8 +821,29 @@ bool IsHealOverTimeSpell(int16 spell_id) {
 }
 
 bool IsCompleteHealSpell(int16 spell_id) {
-	if(spell_id == 13 || IsEffectInSpell(spell_id, SE_CompleteHeal) || IsEffectInSpell(spell_id, SE_PercentalHeal))
+	
+	if(spell_id == 13 || IsEffectInSpell(spell_id, SE_CompleteHeal) || IsPercentalHealSpell(spell_id))
 		return true;
 	else
 		return false;
+}
+
+bool IsFastHealSpell(int16 spell_id) {
+	const int MaxFastHealCastingTime = 2000;
+
+	if(spells[spell_id].cast_time <= MaxFastHealCastingTime && spells[spell_id].effectid[0] == 0 && spells[spell_id].base[0] > 0)
+		return true;
+	else
+		return false;
+}
+
+bool IsRegularSingleTargetHealSpell(int16 spell_id) {
+	bool result = false;
+
+	if(spells[spell_id].effectid[0] == 0 && spells[spell_id].base[0] > 0 && spells[spell_id].targettype == ST_Target
+		&& !IsFastHealSpell(spell_id) && !IsCompleteHealSpell(spell_id) && !IsHealOverTimeSpell(spell_id)) {
+		result = true;
+	}
+
+	return result;
 }

@@ -43,27 +43,6 @@ extern EntityList entity_list;
 extern Zone *zone;
 extern Parser * parse;
 
-const int Z_AGGRO=10;
-
-const int MobAISpellRange=100; // max range of buffs
-const int SpellType_Nuke=1;
-const int SpellType_Heal=2;
-const int SpellType_Root=4;
-const int SpellType_Buff=8;
-const int SpellType_Escape=16;
-const int SpellType_Pet=32;
-const int SpellType_Lifetap=64;
-const int SpellType_Snare=128;
-const int SpellType_DOT=256;
-const int SpellType_Dispel=512;
-const int SpellType_InCombatBuff=1024;
-const int SpellType_Mez=2048;
-const int SpellType_Charm=4096;
-
-const int SpellTypes_Detrimental = SpellType_Nuke|SpellType_Root|SpellType_Lifetap|SpellType_Snare|SpellType_DOT|SpellType_Dispel|SpellType_Mez|SpellType_Charm;
-const int SpellTypes_Beneficial = SpellType_Heal|SpellType_Buff|SpellType_Escape|SpellType_Pet|SpellType_InCombatBuff;
-
-#define SpellType_Any		0xFFFF
 #ifdef _EQDEBUG
 	#define MobAI_DEBUG_Spells	-1
 #else
@@ -341,7 +320,7 @@ bool NPC::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 	return false;
 }
 
-void NPC::AIDoSpellCast(int8 i, Mob* tar, sint32 mana_cost, int32* oDontDoAgainBefore) {
+bool NPC::AIDoSpellCast(int8 i, Mob* tar, sint32 mana_cost, int32* oDontDoAgainBefore) {
 #if MobAI_DEBUG_Spells >= 1
 	cout << "Mob::AIDoSpellCast: spellid=" << AIspells[i].spellid << ", tar=" << tar->GetName() << ", mana=" << mana_cost << ", Name: " << spells[AIspells[i].spellid].name << endl;
 #endif
@@ -354,7 +333,7 @@ void NPC::AIDoSpellCast(int8 i, Mob* tar, sint32 mana_cost, int32* oDontDoAgainB
 		SetMoving(false);
 	}
 	
-	CastSpell(AIspells[i].spellid, tar->GetID(), 1, AIspells[i].manacost == -2 ? 0 : -1, mana_cost, oDontDoAgainBefore);
+	return CastSpell(AIspells[i].spellid, tar->GetID(), 1, AIspells[i].manacost == -2 ? 0 : -1, mana_cost, oDontDoAgainBefore);
 }
 
 bool EntityList::AICheckCloseBeneficialSpells(NPC* caster, int8 iChance, float iRange, int16 iSpellTypes) {

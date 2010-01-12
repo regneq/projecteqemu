@@ -23,6 +23,9 @@ using namespace std;
 extern bool spells_loaded;
 extern WorldServer worldserver;
 
+const int SpellType_Slow=8192;
+const int SpellType_StatDebuff=16384;
+
 class Bot : public NPC {
 public:
 	// Class enums
@@ -126,6 +129,13 @@ public:
 	virtual void AddToHateList(Mob* other, sint32 hate = 0, sint32 damage = 0, bool iYellForHelp = true, bool bFrenzy = false, bool iBuffTic = false);
 	virtual void SetTarget(Mob* mob);
 	virtual void Zone();
+	std::vector<AISpells_Struct> GetBotSpells() { return AIspells; }
+
+	// AI Methods
+	virtual bool AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes);
+	virtual bool AI_EngagedCastCheck();
+	virtual bool AI_PursueCastCheck();
+	virtual bool AI_IdleCastCheck();
 
 	// Mob AI Virtual Override Methods
 	virtual void AI_Process();
@@ -156,12 +166,6 @@ public:
 	bool Bot_Command_CalmTarget(Mob *target);
 	bool Bot_Command_RezzTarget(Mob *target);
 	bool Bot_Command_Cure(int curetype, int level);
-
-	// AI Methods
-	virtual bool AI_EngagedCastCheck();
-	virtual bool Bot_AI_PursueCastCheck();
-	virtual bool Bot_AI_IdleCastCheck();
-	virtual bool Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes);
 
 	// Bot Equipment & Inventory Class Methods
 	void BotTradeSwapItem(Client* client, sint16 lootSlot, uint32 id, sint16 maxCharges, uint32 equipableSlots, std::string* errorMessage, bool swap = true);
@@ -207,17 +211,38 @@ public:
 	static void ProcessBotOwnerRefDelete(Mob* botOwner);	// Removes a Client* reference when the Client object is destroyed
 	static void ProcessGuildInvite(Client* guildOfficer, Bot* botToGuild);	// Processes a client's request to guild a bot
 	static bool ProcessGuildRemoval(Client* guildOfficer, std::string botName);	// Processes a client's request to deguild a bot
+	static std::list<BotSpell> GetBotSpellsForSpellEffect(Bot* botCaster, int spellEffect);
+	static std::list<BotSpell> GetBotSpellsForSpellEffectAndTargetType(Bot* botCaster, int spellEffect, SpellTargetType targetType);
+	static std::list<BotSpell> GetBotSpellsBySpellType(Bot* botCaster, int16 spellType);
+	static BotSpell GetFirstBotSpellBySpellType(Bot* botCaster, int16 spellType);
+	static BotSpell GetBestBotSpellForFastHeal(Bot* botCaster);
+	static BotSpell GetBestBotSpellForHealOverTime(Bot* botCaster);
+	static BotSpell GetBestBotSpellForPercentageHeal(Bot* botCaster);
+	static BotSpell GetBestBotSpellForRegularSingleTargetHeal(Bot* botCaster);
+	static BotSpell GetBestBotSpellForMagicBasedSlow(Bot* botCaster);
+	static BotSpell GetBestBotSpellForDiseaseBasedSlow(Bot* botCaster);
+	static Mob* GetFirstIncomingMobToMez(Bot* botCaster, BotSpell botSpell);
+	static BotSpell GetBestBotSpellForMez(Bot* botCaster);
+	static BotSpell GetBestBotMagicianPetSpell(Bot* botCaster);
+	static std::string GetBotMagicianPetType(Bot* botCaster);
+	//static BotSpell GetBestBotMagicianNukeSpell(Bot* botCaster, Mob* target);
+	static BotSpell GetBestBotSpellForNukeByTargetType(Bot* botCaster, SpellTargetType targetType);
 
 	// Static Bot Group Methods
 	static bool AddBotToGroup(Bot* bot, Group* group);
 	static bool RemoveBotFromGroup(Bot* bot, Group* group);
 	static bool BotGroupCreate(std::string botGroupLeaderName);
 	static bool BotGroupCreate(Bot* botGroupLeader);
+	static bool	GroupHasClass(Group* group, uint8 classId);
+	static bool GroupHasClericClass(Group* group) { return GroupHasClass(group, CLERIC); }
+	static bool GroupHasDruidClass(Group* group) { return GroupHasClass(group, DRUID); }
+	static bool GroupHasShamanClass(Group* group) { return GroupHasClass(group, SHAMAN); }
+	static bool GroupHasPriestClass(Group* group) { return GroupHasClass(group, CLERIC | DRUID | SHAMAN); }
 
 	// "GET" Class Methods
 	uint32 GetBotID() { return _botID; }
 	uint32 GetBotOwnerCharacterID() { return _botOwnerCharacterID; }
-	uint32 GetBotSpellID() { return _botSpellID; }
+	uint32 GetBotSpellID() { return npc_spells_id; }
 	Mob* GetBotOwner() { return this->_botOwner; }
 	uint32 GetBotArcheryRange() { return _botArcheryRange; }
 	virtual bool GetSpawnStatus() { return _spawnStatus; }
@@ -251,6 +276,7 @@ protected:
 	virtual sint16 GetBotFocusEffect(botfocusType bottype, int16 spell_id);
 	virtual sint16 CalcBotFocusEffect(botfocusType bottype, int16 focus_id, int16 spell_id);
 	virtual void PerformTradeWithClient(sint16 beginSlotID, sint16 endSlotID, Client* client);
+	virtual bool AIDoSpellCast(int8 i, Mob* tar, sint32 mana_cost, int32* oDontDoAgainBefore = 0);
 
 	static void SetBotGuildMembership(int32 botId, int32 guildid, int8 rank);
 
@@ -258,7 +284,7 @@ private:
 	// Class Members
 	uint32 _botID;
 	uint32 _botOwnerCharacterID;
-	uint32 _botSpellID;
+	//uint32 _botSpellID;
 	bool _spawnStatus;
 	Mob* _botOwner;
 	bool _botOrderAttack;
