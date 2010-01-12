@@ -89,12 +89,18 @@ public:
 	virtual void	AI_Event_SpellCastFinished(bool iCastSucceeded, int8 slot);
 
 	//Spell related stuff
+	virtual int GetCurrentBuffSlots() { return 25; }
+	virtual int GetCurrentSongSlots() { return 10; }
+	virtual int GetCurrentDiscSlots() { return 1; }
 	virtual int GetMaxBuffSlots() { return 25; }
 	virtual int GetMaxSongSlots() { return 10; }
+	virtual int GetMaxDiscSlots() { return 1; }
+	virtual int GetMaxTotalSlots() { return 36; }
 	virtual void InitializeBuffSlots();
 	virtual void UninitializeBuffSlots();
-	virtual int GetFreeBuffSlot(int32 spell_id) { return 0; }
+	virtual int GetFreeBuffSlot(int32 spell_id);
 	virtual void ValidateSpellCastFinish(const Spell *spell_to_cast);
+	virtual bool DoComponentCheck(Spell *spell_to_cast) { return true; }
 
 	void LevelScale();
 	void CalcNPCResists();

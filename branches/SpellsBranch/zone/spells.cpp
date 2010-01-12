@@ -356,7 +356,6 @@ bool Mob::DoCastSpell(Spell **casted_spell_ptr, int32* spell_will_finish)
 	safe_delete(outapp);
 
 	casting_spell = casted_spell;
-
 	return true;
 }
 
@@ -595,22 +594,28 @@ void Mob::InterruptSpell(int16 message, int16 color, int16 spellid)
 	if (spellid == SPELL_UNKNOWN)
 		spellid = casting_spell ? casting_spell->GetSpellID() : 0;
 
-	if(casting_spell && IsNPC()) {
+	if(casting_spell && IsNPC())
+	{
 		CastToNPC()->AI_Event_SpellCastFinished(false, casting_spell->GetSpellSlot());
 	}
-	
-	ZeroAndFreeCastingVars();
 	
 	mlog(SPELLS__CASTING, "Spell %d has been interrupted.", spellid);
 	
 	if(!spellid)
+	{
+		ZeroAndFreeCastingVars();
 		return;
+	}
 	
 	if (bard_song || IsBardSong(casting_spell ? casting_spell->GetSpellID() : 0))
+	{
 		_StopSong();
+	}
 	
 	if(!message)
+	{
 		message = IsBardSong(spellid) ? SONG_ENDS_ABRUPTLY : INTERRUPT_SPELL;
+	}
 
 	// clients need some packets
 	if (IsClient())
@@ -656,285 +661,80 @@ void Mob::InterruptSpell(int16 message, int16 color, int16 spellid)
 	strcpy(ic->message, GetCleanName());
 	entity_list.QueueCloseClients(this, outapp, true, 200, 0, true, IsClient() ? FILTER_PCSPELLS : FILTER_NPCSPELLS);
 	safe_delete(outapp);
-
+	ZeroAndFreeCastingVars();
 }
 
 void Mob::CastedSpellFinished(Spell **casted_spell_ptr)
 {
 	_ZP(Mob_CastedSpellFinished);
 	Spell *casted_spell = *casted_spell_ptr;
-	printf("Spell cast finished!\n");
-	safe_delete(*casted_spell_ptr);
 
-	/*
-	if(IsClient() && slot != USE_ITEM_SPELL_SLOT && slot != POTION_BELT_SPELL_SLOT && spells[spell_id].recast_time > 1000) { // 10 is item
-		if(!CastToClient()->GetPTimers().Expired(&database, pTimerSpellStart + spell_id, false)) {
-			//should we issue a  message or send them a spell gem packet?
+	if(IsClient() && casted_spell->GetSpellSlot() != USE_ITEM_SPELL_SLOT && casted_spell->GetSpellSlot() != POTION_BELT_SPELL_SLOT && spells[casted_spell->GetSpellID()].recast_time > 1000) 
+	{
+		if(!CastToClient()->GetPTimers().Expired(&database, pTimerSpellStart + casted_spell->GetSpellID(), false)) 
+		{
 			Message_StringID(13, SPELL_RECAST);
-			mlog(SPELLS__CASTING_ERR, "Casting of %d canceled: spell reuse timer not expired", spell_id);
+			mlog(SPELLS__CASTING_ERR, "Casting of %d canceled: spell reuse timer not expired", casted_spell->GetSpellID());
 			InterruptSpell();
 			return;
 		}
 	}
 
-	if(IsClient() && ((slot == USE_ITEM_SPELL_SLOT) || (slot == POTION_BELT_SPELL_SLOT)))
+	if(IsClient() && ((casted_spell->GetSpellSlot() == USE_ITEM_SPELL_SLOT) || (casted_spell->GetSpellSlot() == POTION_BELT_SPELL_SLOT)))
 	{
-		ItemInst *itm = CastToClient()->GetInv().GetItem(inventory_slot);
+		ItemInst *itm = CastToClient()->GetInv().GetItem(casted_spell->GetInventorySpellSlot());
 		if(itm && itm->GetItem()->RecastDelay > 0)
 		{
-			if(!CastToClient()->GetPTimers().Expired(&database, (pTimerItemStart + itm->GetItem()->RecastType), false)) {
+			if(!CastToClient()->GetPTimers().Expired(&database, (pTimerItemStart + itm->GetItem()->RecastType), false)) 
+			{
 				Message_StringID(13, SPELL_RECAST);
-				mlog(SPELLS__CASTING_ERR, "Casting of %d canceled: item spell reuse timer not expired", spell_id);
+				mlog(SPELLS__CASTING_ERR, "Casting of %d canceled: item spell reuse timer not expired", casted_spell->GetSpellID());
 				InterruptSpell();
 				return;
 			}
 		}
-	}
-	 
-	if(!IsValidSpell(spell_id))
-	{
-		mlog(SPELLS__CASTING_ERR, "Casting of %d canceled: invalid spell id", spell_id);
-		InterruptSpell();
-		return;
-	}
-
-	//TODO:
-	// prevent rapid recast - this can happen if somehow the spell gems
-	// become desynced and the player casts again.
-	if(IsClient())
-	{
-		if(delaytimer)
-		{
-			mlog(SPELLS__CASTING_ERR, "Casting of %d canceled: recast too quickly", spell_id);
-			Message(13, "You are unable to focus.");
-			InterruptSpell();
-			return;
-		}
-	}
-
-	//TODO: will this still be needed?
-	// make sure they aren't somehow casting 2 timed spells at once
-	if (casting_spell_id != spell_id)
-	{
-		mlog(SPELLS__CASTING_ERR, "Casting of %d canceled: already casting", spell_id);
-		Message_StringID(13,ALREADY_CASTING);
-		InterruptSpell();
-		return;
 	}
 
 	bool bard_song_mode = false;
 	bool regain_conc = false;
-	Mob *spell_target = entity_list.GetMob(target_id);
+	Mob *spell_target = casted_spell->GetTarget();
+
 	// here we do different things if this is a bard casting a bard song from
 	// a spell bar slot
 	if(GetClass() == BARD) // bard's can move when casting any spell...
 	{
-		if (IsBardSong(spell_id)) {
-			if(spells[spell_id].buffduration == 0xFFFF || spells[spell_id].recast_time != 0) {
-				mlog(SPELLS__BARDS, "Bard song %d not applying bard logic because duration or recast is wrong: dur=%d, recast=%d", spells[spell_id].buffduration, spells[spell_id].recast_time);
-			} else {
-				//bardsong = spell_id;
-				//bardsong_slot = slot;
-				//NOTE: theres a lot more target types than this to think about...
-				//if (spell_target == NULL || (spells[spell_id].targettype != ST_Target && spells[spell_id].targettype != ST_AETarget))
-				//	bardsong_target_id = GetID();
-				//else
-					//bardsong_target_id = spell_target->GetID();
+		if (IsBardSong(casted_spell->GetSpellID())) 
+		{
+			if(spells[casted_spell->GetSpellID()].buffduration == 0xFFFF || spells[casted_spell->GetSpellID()].recast_time != 0) 
+			{
+				mlog(SPELLS__BARDS, "Bard song %d not applying bard logic because duration or recast is wrong: dur=%d, recast=%d", spells[casted_spell->GetSpellID()].buffduration, spells[casted_spell->GetSpellID()].recast_time);
+			} 
+			else
+			{
+				//Set our bard song...
+				bard_song = casted_spell->CopySpell();
 				bardsong_timer.Start(6000);
-				//mlog(SPELLS__BARDS, "Bard song %d started: slot %d, target id %d", bardsong, bardsong_slot, bardsong_target_id);
+				mlog(SPELLS__BARDS, "Bard song %d started: slot %d", bard_song->GetSpellID(), bard_song->GetSpellSlot());
 				bard_song_mode = true;
 			}
 		}
 	}
-	else // not bard, check movement
+	else // not bard, check channeling
 	{
-		// if has been attacked, or moved while casting
-		// check for regain concentration
-		if
-		(
-			attacked_count > 0 ||
-			GetX() != GetSpellX() ||
-			GetY() != GetSpellY()
-		)
+		if(!DoChannelCheck(regain_conc))
 		{
-			// modify the chance based on how many times they were hit
-			// but cap it so it's not that large a factor
-			if(attacked_count > 15) attacked_count = 15;
-			
-			float channelchance, distance_moved, d_x, d_y, distancemod;
-
-			if(IsClient())
-			{
-				// max 93% chance at 252 skill
-				channelchance = 30 + GetSkill(CHANNELING) / 400.0f * 100;
-				channelchance -= attacked_count * 2;			
-				channelchance += channelchance * (GetAA(aaChanellingFocus)*5) / 100; 
-				channelchance += channelchance * (GetAA(aaInternalMetronome)*5) / 100;
-			} else {
-				// NPCs are just hard to interrupt, otherwise they get pwned
-				channelchance = 85;
-				channelchance -= attacked_count;
-			}
-		
-			// solar: as you get farther from your casting location,
-			// it gets squarely harder to regain concentration
-			if(GetX() != GetSpellX() || GetY() != GetSpellY())
-			{
-				d_x = fabs(fabs(GetX()) - fabs(GetSpellX()));
-				d_y = fabs(fabs(GetY()) - fabs(GetSpellY()));
-				if(d_x < 5 && d_y < 5)
-				{
-					//avoid the square root...
-					distance_moved = d_x * d_x + d_y * d_y;
-					// if you moved 1 unit, that's 25% off your chance to regain.
-					// if you moved 2, you lose 100% off your chance
-					distancemod = distance_moved * 25;
-					channelchance -= distancemod;
-				}
-				else
-				{
-					channelchance = 0;
-				}
-			}
-			
-			mlog(SPELLS__CASTING, "Checking Interruption: spell x: %f  spell y: %f  cur x: %f  cur y: %f channelchance %f channeling skill %d\n", GetSpellX(), GetSpellY(), GetX(), GetY(), channelchance, GetSkill(CHANNELING));
-
-			if(MakeRandomFloat(0, 100) > channelchance) {
-				mlog(SPELLS__CASTING_ERR, "Casting of %d canceled: interrupted.", spell_id);
-				InterruptSpell();
-				return;
-			}
-			// if we got here, we regained concentration
-			regain_conc = true;
-			Message_StringID(MT_Spells,REGAIN_AND_CONTINUE);
-			entity_list.MessageClose_StringID(this, true, 200, MT_Spells, OTHER_REGAIN_CAST, this->GetCleanName());
+			return;
 		}
 	}
-	
-	
-	// Check for consumables and Reagent focus items
-	// first check for component reduction
-	if(IsClient()) {
-		int reg_focus = CastToClient()->GetFocusEffect(focusReagentCost,spell_id);
-		if(MakeRandomInt(0, 100) <= reg_focus) {
-			mlog(SPELLS__CASTING, "Spell %d: Reagent focus item prevented reagent consumption (%d chance)", spell_id, reg_focus);
-		} else {
-			if(reg_focus > 0)
-				mlog(SPELLS__CASTING, "Spell %d: Reagent focus item failed to prevent reagent consumption (%d chance)", spell_id, reg_focus);
-	    	Client *c = this->CastToClient();
-	    	int component, component_count, inv_slot_id;
-		    for(int t_count = 0; t_count < 4; t_count++) {
-				component = spells[spell_id].components[t_count];
-				component_count = spells[spell_id].component_counts[t_count];
-	
-				if (component == -1)
-					continue;
 
-				// bard components are requirements for a certain instrument type, not a specific item
-				if(bard_song_mode) {
-					bool HasInstrument = true;
-					int InstComponent = spells[spell_id].NoexpendReagent[0];
-															
-					switch (InstComponent) {
-						case -1:
-							continue;		// no instrument required, go to next component
-						
-						// percussion songs (13000 = hand drum)
-						case 13000:
-							if(itembonuses.percussionMod == 0) {			// check for the appropriate instrument type
-								HasInstrument = false;
-								c->Message_StringID(13, SONG_NEEDS_DRUM);	// send an error message if missing
-							}
-							break;
-												
-						// wind songs (13001 = wooden flute)
-						case 13001:
-							if(itembonuses.windMod == 0) {
-								HasInstrument = false;
-								c->Message_StringID(13, SONG_NEEDS_WIND);
-							}
-							break;
-						
-						// string songs (13011 = lute)
-						case 13011:
-							if(itembonuses.stringedMod == 0) {
-								HasInstrument = false;
-								c->Message_StringID(13, SONG_NEEDS_STRINGS);
-							}
-							break;
-						
-						// brass songs (13012 = horn)
-						case 13012:
-							if(itembonuses.brassMod == 0) {
-								HasInstrument = false;
-								c->Message_StringID(13, SONG_NEEDS_BRASS);
-							}
-							break;
-						
-						default:	// some non-instrument component.  Let it go, but record it in the log
-							mlog(SPELLS__CASTING_ERR, "Something odd happened: Song %d required component %s", spell_id, component);
-					}
-					
-					if(!HasInstrument) {	// if the instrument is missing, log it and interrupt the song
-						mlog(SPELLS__CASTING_ERR, "Song %d: Canceled. Missing required instrument %s", spell_id, component);
-						if(c->GetGM())
-							c->Message(0, "Your GM status allows you to finish casting even though you're missing a required instrument.");
-						else {
-							InterruptSpell();
-							return;
-						}
-					}
-				}	// end bard component section
+	if(!DoComponentCheck(casted_spell))
+	{
+		return;
+	}
 
+	safe_delete(*casted_spell_ptr);
 
-				// handle the components for traditional casters
-				else {
-					if(c->GetInv().HasItem(component, component_count, invWhereWorn|invWherePersonal) == -1) // item not found
-					{
-						c->Message_StringID(13, MISSING_SPELL_COMP);
-	
-						const Item_Struct *item = database.GetItem(component);
-						if(item) {
-							c->Message_StringID(13, MISSING_SPELL_COMP_ITEM, item->Name);
-							mlog(SPELLS__CASTING_ERR, "Spell %d: Canceled. Missing required reagent %s (%d)", spell_id, item->Name, component);
-						}
-						else {
-							char TempItemName[64];
-							strcpy((char*)&TempItemName, "UNKNOWN");
-							mlog(SPELLS__CASTING_ERR, "Spell %d: Canceled. Missing required reagent %s (%d)", spell_id, TempItemName, component);
-						}
-
-						if(c->GetGM())
-							c->Message(0, "Your GM status allows you to finish casting even though you're missing required components.");
-						else {
-							InterruptSpell();
-							return;
-						}
-					
-					}
-					else
-					{
-						mlog(SPELLS__CASTING_ERR, "Spell %d: Consuming %d of spell component item id %d", spell_id, component, component_count);
-						// Components found, Deleteing
-						// now we go looking for and deleting the items one by one
-						for(int s = 0; s < component_count; s++)
-						{
-							inv_slot_id = c->GetInv().HasItem(component, 1, invWhereWorn|invWherePersonal);
-							if(inv_slot_id != -1)
-							{
-								c->DeleteItemInInventory(inv_slot_id, 1, true);
-							}
-							else
-							{	// some kind of error in the code if this happens
-								c->Message(13, "ERROR: reagent item disappeared while processing?");
-							}
-						}
-					}
-				} // end bard/not bard ifs
-			} // end reagent loop
-		} // end `focus did not help us`
-	} // end IsClient() for reagents
-	
+	/*		
 
 	// this is common to both bard and non bard
 
@@ -4003,20 +3803,21 @@ void Mob::BuffModifyDurationBySpellID(int16 spell_id, sint32 newDuration)
 	}*/
 }
 
-int Client::GetMaxBuffSlots()
+int Client::GetCurrentBuffSlots()
 {
 	return 15 + GetAA(aaMysticalAttuning);
 }
 
-int Client::GetMaxSongSlots()
+int Client::GetCurrentSongSlots()
 {
 	return 6 + GetAA(aaMysticalAttuning);
 }
 
 void Client::InitializeBuffSlots()
 {
-	buffs = new Buff*[38];
-	for(int x = 0; x < 38; ++x)
+	int max_slots = GetMaxTotalSlots();
+	buffs = new Buff*[max_slots];
+	for(int x = 0; x < max_slots; ++x)
 	{
 		buffs[x] = NULL;
 	}
@@ -4024,7 +3825,28 @@ void Client::InitializeBuffSlots()
 
 void Client::UninitializeBuffSlots()
 {
-	for(int x = 0; x < 38; ++x)
+	int max_slots = GetMaxTotalSlots();
+	for(int x = 0; x < max_slots; ++x)
+	{
+		safe_delete(buffs[x]);
+	}
+	safe_delete_array(buffs);
+}
+
+void NPC::InitializeBuffSlots()
+{
+	int max_slots = GetMaxTotalSlots();
+	buffs = new Buff*[max_slots];
+	for(int x = 0; x < max_slots; ++x)
+	{
+		buffs[x] = NULL;
+	}
+}
+
+void NPC::UninitializeBuffSlots()
+{
+	int max_slots = GetMaxTotalSlots();
+	for(int x = 0; x < max_slots; ++x)
 	{
 		safe_delete(buffs[x]);
 	}
@@ -4033,21 +3855,32 @@ void Client::UninitializeBuffSlots()
 
 int Client::GetFreeBuffSlot(int32 spell_id)
 {
+	//this isn't technically required since clients only have one spell slot for discs but since 
+	//I was doing it anyway might as well make it easy to add another in the future *shrug*
 	if(IsDiscipline(spell_id))
 	{
-		return 37;
-	}
-
-	if(spells[spell_id].short_buff_box)
-	{
-		for(int x = 25; x < (25 + GetMaxSongSlots()); ++x)
+		int start = GetMaxBuffSlots() + GetMaxSongSlots();
+		for(int x = start; x < (start + GetMaxDiscSlots()); ++x)
 		{
 			if(buffs[x] == NULL)
 			{
 				return x;
 			}
 		}
-		return 25;
+		return start;
+	}
+
+	if(spells[spell_id].short_buff_box)
+	{
+		int start = GetMaxBuffSlots();
+		for(int x = start; x < (start + GetMaxSongSlots()); ++x)
+		{
+			if(buffs[x] == NULL)
+			{
+				return x;
+			}
+		}
+		return start;
 	}
 	else
 	{
@@ -4064,22 +3897,46 @@ int Client::GetFreeBuffSlot(int32 spell_id)
 	return -1;
 }
 
-void NPC::InitializeBuffSlots()
+int NPC::GetFreeBuffSlot(int32 spell_id)
 {
-	buffs = new Buff*[35];
-	for(int x = 0; x < 35; ++x)
+	if(IsDiscipline(spell_id))
 	{
-		buffs[x] = NULL;
+		int start = GetMaxBuffSlots() + GetMaxSongSlots();
+		for(int x = start; x < (start + GetMaxDiscSlots()); ++x)
+		{
+			if(buffs[x] == NULL)
+			{
+				return x;
+			}
+		}
+		return start;
 	}
-}
 
-void NPC::UninitializeBuffSlots()
-{
-	for(int x = 0; x < 35; ++x)
+	if(spells[spell_id].short_buff_box)
 	{
-		delete buffs[x];
+		int start = GetMaxBuffSlots();
+		for(int x = start; x < (start + GetMaxSongSlots()); ++x)
+		{
+			if(buffs[x] == NULL)
+			{
+				return x;
+			}
+		}
+		return start;
 	}
-	safe_delete_array(buffs);
+	else
+	{
+		for(int x = 0; x < GetMaxBuffSlots(); ++x)
+		{
+			if(buffs[x] == NULL)
+			{
+				return x;
+			}
+		}
+		return 0;
+	}
+
+	return -1;
 }
 
 bool Mob::ValidateStartSpellCast(const Spell *spell_to_cast)
@@ -4128,6 +3985,220 @@ void NPC::ValidateSpellCastFinish(const Spell *spell_to_cast)
 	AI_Event_SpellCastFinished(false, spell_to_cast->GetSpellSlot());
 }
 
+bool Mob::DoChannelCheck(bool &did_regain_conc)
+{
+	// if has been attacked, or moved while casting
+	// check for regain concentration
+	if(attacked_count > 0 || GetX() != GetSpellX() || GetY() != GetSpellY())
+	{
+		// modify the chance based on how many times they were hit
+		// but cap it so it's not that large a factor
+		if(attacked_count > 15) attacked_count = 15;
+
+		float channelchance, distance_moved, d_x, d_y, distancemod;
+
+		if(IsClient())
+		{
+			// max 93% chance at 252 skill
+			channelchance = 30 + GetSkill(CHANNELING) / 400.0f * 100;
+			channelchance -= attacked_count * 2;			
+			channelchance += channelchance * (GetAA(aaChanellingFocus) * 5) / 100; 
+			channelchance += channelchance * (GetAA(aaInternalMetronome) * 5) / 100;
+		} 
+		else 
+		{
+			// NPCs are just hard to interrupt, otherwise they get pwned
+			channelchance = 45 + GetLevel();
+			channelchance -= attacked_count;
+		}
+
+		// solar: as you get farther from your casting location,
+		// it gets squarely harder to regain concentration
+		if(GetX() != GetSpellX() || GetY() != GetSpellY())
+		{
+			d_x = fabs(fabs(GetX()) - fabs(GetSpellX()));
+			d_y = fabs(fabs(GetY()) - fabs(GetSpellY()));
+			if(d_x < 5 && d_y < 5)
+			{
+				//avoid the square root...
+				distance_moved = d_x * d_x + d_y * d_y;
+				// if you moved 1 unit, that's 25% off your chance to regain.
+				// if you moved 2, you lose 100% off your chance
+				distancemod = distance_moved * 25;
+				channelchance -= distancemod;
+			}
+			else
+			{
+				channelchance = 0;
+			}
+		}
+
+		mlog(SPELLS__CASTING, "Checking Interruption: spell x: %f  spell y: %f  cur x: %f  cur y: %f channelchance %f channeling skill %d\n", GetSpellX(), GetSpellY(), GetX(), GetY(), channelchance, GetSkill(CHANNELING));
+
+		if(MakeRandomFloat(0, 100) > channelchance) 
+		{
+			mlog(SPELLS__CASTING_ERR, "Casting of %d canceled: interrupted.", casting_spell ? casting_spell->GetSpellID() : 0xFFFF);
+			InterruptSpell();
+			did_regain_conc = false;
+			return false;
+		}
+
+		// if we got here, we regained concentration
+		Message_StringID(MT_Spells, REGAIN_AND_CONTINUE);
+		entity_list.MessageClose_StringID(this, true, 200, MT_Spells, OTHER_REGAIN_CAST, this->GetCleanName());
+		did_regain_conc = true;
+		return true;
+	}
+	else
+	{
+		did_regain_conc = false;
+		return true;
+	}
+}
+
+bool Client::DoComponentCheck(Spell *spell_to_cast)
+{
+	int reg_focus = CastToClient()->GetFocusEffect(focusReagentCost, spell_to_cast->GetSpellID());
+	if(MakeRandomInt(0, 100) <= reg_focus) 
+	{
+		mlog(SPELLS__CASTING, "Spell %d: Reagent focus item prevented reagent consumption (%d chance)", spell_to_cast->GetSpellID(), reg_focus);
+	}
+	else
+	{
+		if(reg_focus > 0)
+		{
+			mlog(SPELLS__CASTING, "Spell %d: Reagent focus item failed to prevent reagent consumption (%d chance)", spell_to_cast->GetSpellID(), reg_focus);
+		}
+
+		int component, component_count, inv_slot_id;
+		for(int t_count = 0; t_count < 4; t_count++)
+		{
+			component = spell_to_cast->GetSpell().components[t_count];
+			component_count = spell_to_cast->GetSpell().component_counts[t_count];
+			if(component == -1)
+			{
+				continue;
+			}
+
+			if(bard_song_mode) 
+			{
+				bool has_instrument = true;
+				int inst_component = spell_to_cast->GetSpell().NoexpendReagent[0];
+				switch (InstComponent) 
+				{
+					// no instrument required, go to next component
+				case -1:
+					continue;
+
+					// percussion songs (13000 = hand drum)
+				case 13000:
+					if(itembonuses.percussionMod == 0) 
+					{
+						HasInstrument = false;
+						Message_StringID(13, SONG_NEEDS_DRUM);	// send an error message if missing
+					}
+					break;
+
+					// wind songs (13001 = wooden flute)
+				case 13001:
+					if(itembonuses.windMod == 0) 
+					{
+						HasInstrument = false;
+						Message_StringID(13, SONG_NEEDS_WIND);
+					}
+					break;
+
+					// string songs (13011 = lute)
+				case 13011:
+					if(itembonuses.stringedMod == 0) 
+					{
+						HasInstrument = false;
+						Message_StringID(13, SONG_NEEDS_STRINGS);
+					}
+					break;
+
+					// brass songs (13012 = horn)
+				case 13012:
+					if(itembonuses.brassMod == 0) 
+					{
+						HasInstrument = false;
+						Message_StringID(13, SONG_NEEDS_BRASS);
+					}
+					break;
+
+				default:	// some non-instrument component.  Let it go, but record it in the log
+					mlog(SPELLS__CASTING_ERR, "Something odd happened: Song %d required component %s", spell_to_cast->GetSpellID(), component);
+				}
+
+				if(!HasInstrument)
+				{	
+					// if the instrument is missing, log it and interrupt the song
+					mlog(SPELLS__CASTING_ERR, "Song %d: Canceled. Missing required instrument %s", spell_id, component);
+					if(GetGM())
+					{
+						Message(0, "Your GM status allows you to finish casting even though you're missing a required instrument.");
+					}
+					else 
+					{
+						InterruptSpell();
+						return false;
+					}
+				}
+			}
+			else 
+			{
+				if(GetInv().HasItem(component, component_count, invWhereWorn|invWherePersonal) == -1) // item not found
+				{
+					Message_StringID(13, MISSING_SPELL_COMP);
+
+					const Item_Struct *item = database.GetItem(component);
+					if(item) 
+					{
+						Message_StringID(13, MISSING_SPELL_COMP_ITEM, item->Name);
+						mlog(SPELLS__CASTING_ERR, "Spell %d: Canceled. Missing required reagent %s (%d)", spell_to_cast->GetSpellID(), item->Name, component);
+					}
+					else 
+					{
+						char TempItemName[64];
+						strcpy((char*)&TempItemName, "UNKNOWN");
+						mlog(SPELLS__CASTING_ERR, "Spell %d: Canceled. Missing required reagent %s (%d)", spell_to_cast->GetSpellID(), TempItemName, component);
+					}
+
+					if(GetGM())
+					{
+						Message(0, "Your GM status allows you to finish casting even though you're missing required components.");
+					}
+					else 
+					{
+						InterruptSpell();
+						return false;
+					}
+
+				}
+				else
+				{
+					mlog(SPELLS__CASTING_ERR, "Spell %d: Consuming %d of spell component item id %d", spell_to_cast->GetSpellID(), component, component_count);
+					// Components found, Deleteing
+					// now we go looking for and deleting the items one by one
+					for(int s = 0; s < component_count; s++)
+					{
+						inv_slot_id = GetInv().HasItem(component, 1, invWhereWorn|invWherePersonal);
+						if(inv_slot_id != -1)
+						{
+							DeleteItemInInventory(inv_slot_id, 1, true);
+						}
+						else
+						{	
+							// some kind of error in the code if this happens
+							Message(13, "ERROR: reagent item disappeared while processing?");
+						}
+					}
+				}
+			}
+		}
+	}
+	return true;
+}
 
 Spell::Spell(uint32 spell_id, Mob* caster, Mob* target, uint32 slot, uint32 cast_time, uint32 mana_cost)
 {
@@ -4140,6 +4211,9 @@ Spell::Spell(uint32 spell_id, Mob* caster, Mob* target, uint32 slot, uint32 cast
 	cast_timer = NULL;
 	timer_id = -1;
 	timer_id_duration = -1;
+
+	const SPDat_Spell_Struct &spell = spells[spell_id];
+	memcpy((void*)&raw_spell, (const void*)&spell, sizeof(SPDat_Spell_Struct));
 }
 
 Spell::~Spell()
@@ -4194,4 +4268,26 @@ void Spell::SetTarget(Mob *t)
 Mob *Spell::GetTarget() const 
 { 
 	return entity_list.GetMob(target_id); 
+}
+
+Spell* Spell::CopySpell()
+{
+	Spell *return_value = new Spell();
+	return_value->spell_id = this->spell_id;
+	return_value->caster_level = this->caster_level;
+	return_value->caster_id = this->caster_id;
+	return_value->target_id = this->target_id;
+	return_value->spell_slot = this->spell_slot;
+	return_value->spell_slot_inventory = this->spell_slot_inventory;
+	return_value->cast_time = this->cast_time;
+	return_value->mana_cost = this->mana_cost;
+	return_value->timer_id = this->timer_id;
+	return_value->timer_id_duration = this->timer_id_duration;
+	if(this->cast_timer)
+	{
+		return_value->cast_timer = new Timer(this->cast_timer->GetRemainingTime());
+	}
+
+	memcpy((void*)&return_value->raw_spell, (const void*)&this->raw_spell, sizeof(SPDat_Spell_Struct));
+	return return_value;
 }

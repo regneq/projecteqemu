@@ -654,8 +654,13 @@ bool logpos;
 
 	//Spell related things.
 	void BuffProcess();
+	virtual int GetCurrentBuffSlots() { return 25; }
+	virtual int GetCurrentSongSlots() { return 10; }
+	virtual int GetCurrentDiscSlots() { return 1; }
 	virtual int GetMaxBuffSlots() { return 25; }
 	virtual int GetMaxSongSlots() { return 10; }
+	virtual int GetMaxDiscSlots() { return 1; }
+	virtual int GetMaxTotalSlots() { return 36; }
 	virtual void InitializeBuffSlots() { buffs = NULL; }
 	virtual void UninitializeBuffSlots() { }
 	virtual int GetFreeBuffSlot(int32 spell_id) { return 0; }
@@ -670,6 +675,8 @@ bool logpos;
 	void InterruptSpell(int16, int16, int16 spellid = SPELL_UNKNOWN);
 	void ZeroCastingVars();
 	void ZeroAndFreeCastingVars();
+	bool DoChannelCheck(bool &did_regain_conc);
+	virtual bool DoComponentCheck(Spell *spell_to_cast) { return true; }
 	
 
 

@@ -392,12 +392,18 @@ public:
 	sint32  GetActSpellCasttime(int16 spell_id, sint32);
 	sint32  GetDotFocus(int16 spell_id, sint32 value);
 	virtual bool CheckFizzle(int16 spell_id);
-	virtual int GetMaxBuffSlots();
-	virtual int GetMaxSongSlots();
+	virtual int GetCurrentBuffSlots();
+	virtual int GetCurrentSongSlots();
+	virtual int GetCurrentDiscSlots() { return 1; }
+	virtual int GetMaxBuffSlots() { return 25; }
+	virtual int GetMaxSongSlots() { return 12; }
+	virtual int GetMaxDiscSlots() { return 1; }
+	virtual int GetMaxTotalSlots() { return 38; }
 	virtual void InitializeBuffSlots();
 	virtual void UninitializeBuffSlots();
 	virtual int GetFreeBuffSlot(int32 spell_id);
 	virtual void ValidateSpellCastFinish(const Spell *spell_to_cast);
+	virtual bool DoComponentCheck(Spell *spell_to_cast);
 
 	inline const sint32	GetBaseHP() const { return base_hp; }
 

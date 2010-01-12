@@ -33,7 +33,7 @@ public:
 	uint32 GetDurationRemaining() const { return spell_duration_remaining; }
 
 	//A permanant duration spell is supposed to last forever and never tic down, the client does this via a special duration send
-	void SetPermanantDuration(bool d) { is_perm_duration = d; if(d) { tic_timer->Disable(); } }
+	void SetPermanantDuration(bool d) { is_perm_duration = d; }
 	bool IsPermanantDuration() const { return is_perm_duration; }
 	
 	//The first four are for counters via dispel the last is for the numhits modifier in the spell field.
@@ -73,7 +73,6 @@ public:
 
 protected:
 	uint32 spell_duration_remaining;
-	Timer * tic_timer;
 	bool is_perm_duration;
 	bool is_perm_illusion;
 

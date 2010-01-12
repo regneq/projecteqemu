@@ -29,12 +29,22 @@ Copyright (C) 2001-2010  EQEMu Development Team (http://eqemu.org)
 
 enum SpellAttribute
 {
-	SA_NONE,
+	SA_NONE = 0,
+	SA_COMPONENT1,
+	SA_COMPONENT2,
+	SA_COMPONENT3,
+	SA_COMPONENT4,
+	SA_COMPONENT1_COUNT,
+	SA_COMPONENT2_COUNT,
+	SA_COMPONENT3_COUNT,
+	SA_COMPONENT4_COUNT,
+	SA_TARGET_TYPE,
 };
 
 class Spell
 {
 public:
+	Spell() { }
 	Spell(uint32 spell_id, Mob* caster, Mob* target, uint32 slot = 10, uint32 cast_time = -1, uint32 mana_cost = -1);
 	~Spell();
 	
@@ -67,10 +77,84 @@ public:
 	sint32 GetTimerIDDuration() const { return timer_id_duration; }
 	
 	Buff *CreateBuff() { return NULL; }
+	Spell* CopySpell();
 
 	void StartCastTimer(uint32 duration);
 	bool IsCastTimerFinished() const;
 	void StopCastTimer();
+
+	const SPDat_Spell_Struct GetSpell() const { return raw_spell; } 
+
+	bool IsTargetableAESpell();
+	bool IsSacrificeSpell();
+	bool IsLifetapSpell();
+	bool IsMezSpell();
+	bool IsStunSpell();
+	bool IsSlowSpell();
+	bool IsHasteSpell();
+	bool IsHarmonySpell();
+	bool IsPercentalHealSpell();
+	bool IsGroupOnlySpell();
+	bool IsBeneficialSpell();
+	bool IsDetrimentalSpell();
+	bool IsInvulnerabilitySpell();
+	bool IsCHDurationSpell();
+	bool IsPoisonCounterSpell();
+	bool IsDiseaseCounterSpell();
+	bool IsSummonItemSpell();
+	bool IsSummonSkeletonSpell();
+	bool IsSummonPetSpell();
+	bool IsCharmSpell();
+	bool IsBlindSpell();
+	bool IsEffectHitpointsSpell();
+	bool IsReduceCastTimeSpell();
+	bool IsIncreaseDurationSpell();
+	bool IsReduceManaSpell();
+	bool IsExtRangeSpell();
+	bool IsImprovedHealingSpell();
+	bool IsImprovedDamageSpell();
+	bool IsAEDurationSpell();
+	bool IsPureNukeSpell();
+	bool IsPartialCapableSpell();
+	bool IsResistableSpell();
+	bool IsGroupSpell();
+	bool IsTGBCompatibleSpell();
+	bool IsBardSong();
+	bool IsEffectInSpell(int effect);
+	bool IsBlankSpellEffect(int effect_index);
+	bool IsValidSpell();
+	bool IsSummonSpell();
+	bool IsEvacSpell();
+	bool IsDamageSpell();
+	bool IsFearSpell();
+	bool BeneficialSpell();
+	bool GroupOnlySpell();
+	int GetSpellEffectIndex(int effect);
+	//int CanUseSpell(int classa, int level);
+	int GetMinLevel();
+	//int CalcBuffDuration_formula(int level, int formula, int duration);
+	sint32 CalculatePoisonCounters();
+	sint32 CalculateDiseaseCounters();
+	sint32 CalculateCurseCounters();
+	bool IsDiscipline();
+	bool IsResurrectionEffects();
+	bool IsRuneSpell();
+	bool IsMagicRuneSpell();
+	bool IsManaTapSpell();
+	bool IsAllianceSpellLine();
+	bool IsDeathSaveSpell();
+	bool IsFullDeathSaveSpell();
+	bool IsPartialDeathSaveSpell();
+	bool IsShadowStepSpell();
+	bool IsSuccorSpell();
+	bool IsTeleportSpell();
+	bool IsGateSpell();
+	bool IsPlayerIllusionSpell(); // seveian 2008-09-23
+	bool IsLDoNObjectSpell();
+	sint32 GetSpellResistType();
+	sint32 GetSpellTargetType();
+	bool IsHealOverTimeSpell();
+	bool IsCompleteHealSpell();
 
 protected:
 	uint32 spell_id;
@@ -85,9 +169,7 @@ protected:
 	sint32 timer_id;
 	sint32 timer_id_duration;
 
-	std::map<SpellAttribute, uint32> sa_container_uint32;
-	std::map<SpellAttribute, sint32> sa_container_sint32;
-	std::map<SpellAttribute, double> sa_container_double;
+	SPDat_Spell_Struct raw_spell;
 };
 
 #endif
