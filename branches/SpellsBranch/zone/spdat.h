@@ -44,6 +44,28 @@
 
 #define EFFECT_COUNT 12
 
+const int Z_AGGRO=10;
+
+const int MobAISpellRange=100; // max range of buffs
+const int SpellType_Nuke=1;
+const int SpellType_Heal=2;
+const int SpellType_Root=4;
+const int SpellType_Buff=8;
+const int SpellType_Escape=16;
+const int SpellType_Pet=32;
+const int SpellType_Lifetap=64;
+const int SpellType_Snare=128;
+const int SpellType_DOT=256;
+const int SpellType_Dispel=512;
+const int SpellType_InCombatBuff=1024;
+const int SpellType_Mez=2048;
+const int SpellType_Charm=4096;
+
+const int SpellTypes_Detrimental = SpellType_Nuke|SpellType_Root|SpellType_Lifetap|SpellType_Snare|SpellType_DOT|SpellType_Dispel|SpellType_Mez|SpellType_Charm;
+const int SpellTypes_Beneficial = SpellType_Heal|SpellType_Buff|SpellType_Escape|SpellType_Pet|SpellType_InCombatBuff;
+
+#define SpellType_Any		0xFFFF
+
 enum SpellAffectIndex {
 	SAI_Calm			= 12, // Lull and Alliance Spells
 	SAI_Dispell_Sight	= 14, // Dispells and Spells like Bind Sight
@@ -681,6 +703,8 @@ sint32 GetSpellResistType(int16 spell_id);
 sint32 GetSpellTargetType(int16 spell_id);
 bool IsHealOverTimeSpell(int16 spell_id);
 bool IsCompleteHealSpell(int16 spell_id);
+bool IsFastHealSpell(int16 spell_id);
+bool IsRegularSingleTargetHealSpell(int16 spell_id);
 
 int CalcPetHp(int levelb, int classb, int STA = 75);
 const char *GetRandPetName();

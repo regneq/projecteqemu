@@ -3,29 +3,7 @@
 #include "bot.h"
 
 // TODO: The following declarations are redudant to declarations made in MobAI.cpp. Best move both blocks to a common header file.
-const int Z_AGGRO=10;
 
-const int MobAISpellRange=100; // max range of buffs
-const int SpellType_Nuke=1;
-const int SpellType_Heal=2;
-const int SpellType_Root=4;
-const int SpellType_Buff=8;
-const int SpellType_Escape=16;
-const int SpellType_Pet=32;
-const int SpellType_Lifetap=64;
-const int SpellType_Snare=128;
-const int SpellType_DOT=256;
-const int SpellType_Dispel=512;
-
-const int SpellTypes_Detrimental = SpellType_Nuke|SpellType_Root|SpellType_Lifetap|SpellType_Snare|SpellType_DOT|SpellType_Dispel;
-const int SpellTypes_Beneficial = SpellType_Heal|SpellType_Buff|SpellType_Escape|SpellType_Pet;
-
-#define SpellType_Any		0xFFFF
-#ifdef _EQDEBUG
-	#define MobAI_DEBUG_Spells	-1
-#else
-	#define MobAI_DEBUG_Spells	-1
-#endif
 
 // This constructor is used during the bot create command
 Bot::Bot(NPCType npcTypeData, Client* botOwner) : NPC(&npcTypeData, 0, 0, 0, 0, 0, 0, false) {
@@ -153,7 +131,7 @@ void Bot::SetBotID(uint32 botID) {
 }
 
 void Bot::SetBotSpellID(uint32 newSpellID) {
-	this->_botSpellID = newSpellID;
+	//this->_botSpellID = newSpellID;
 	this->npc_spells_id = newSpellID;
 }
 
@@ -1596,95 +1574,6 @@ bool Bot::Process() {
 	return true;
 }
 
-// franck: EQoffline
-// Depending of the class:
-// -- Cleric, Druid, Shaman, Paladin will first check if there is someone to heal.
-// -- Wizard, Mage, Necro will start the nuke.  
-// -- TODO : Enchanter will nuke untill it it sees if there is an add. 
-bool Bot::AI_EngagedCastCheck() {
-	if (GetTarget() && AIautocastspell_timer->Check(false)) {
-		_ZP(Bot_AI_Process_engaged_cast);
-
-		AIautocastspell_timer->Disable();	//prevent the timer from going off AGAIN while we are casting.
-
-		int8 botClass = GetClass();
-		uint8 botLevel = GetLevel();
-
-		mlog(AI__SPELLS, "Engaged autocast check triggered. Trying to cast healing spells then maybe offensive spells.");
-
-		if(botClass == CLERIC) {
-			if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 100, MobAISpellRange, SpellType_Heal)) {
-				if(!Bot_AICastSpell(this, 100, SpellType_Escape)) {
-					if(!Bot_AICastSpell(this, 100, SpellType_Heal)) {
-						if(!Bot_AICastSpell(GetTarget(), 5, SpellType_DOT | SpellType_Nuke | SpellType_Lifetap | SpellType_Dispel)) {
-							AIautocastspell_timer->Start(RandomTimer(500, 2000), false);
-							return true;
-						}
-					}
-				}
-			}
-		}
-		else if((botClass == DRUID) || (botClass == SHAMAN) || (botClass == PALADIN) || (botClass == SHADOWKNIGHT) || (botClass == BEASTLORD) || (botClass == RANGER))
-		{
-			if (!Bot_AICastSpell(this, 100, SpellType_Escape | SpellType_Pet)) {
-				if (!Bot_AICastSpell(this, 100, SpellType_Heal)) {
-					if (!entity_list.Bot_AICheckCloseBeneficialSpells(this, 80, MobAISpellRange, SpellType_Heal)) {
-						if(!Bot_AICastSpell(GetTarget(), 80, SpellType_Root | SpellType_Snare | SpellType_DOT | SpellType_Nuke | SpellType_Lifetap | SpellType_Dispel)) {
-							AIautocastspell_timer->Start(RandomTimer(1000, 5000), false);
-							return true;
-						}
-					}
-				}
-			}
-		}
-		else if((botClass == WIZARD) || (botClass == MAGICIAN) || (botClass == NECROMANCER)) {
-			if (!Bot_AICastSpell(this, 100, SpellType_Escape | SpellType_Pet)) {
-				if(!Bot_AICastSpell(GetTarget(), 80, SpellType_Root | SpellType_Snare | SpellType_DOT | SpellType_Nuke | SpellType_Lifetap | SpellType_Dispel)) {
-					//no spell to cast, try again soon.
-					AIautocastspell_timer->Start(RandomTimer(500, 2000), false);
-					return true;
-				}
-			}
-		}		
-		else if(botClass == ENCHANTER) {
-			// TODO: Make enchanter to be able to mez
-			if (!Bot_AICastSpell(this, 100, SpellType_Escape | SpellType_Pet)) {
-				if(!Bot_AICastSpell(GetTarget(), 80, SpellType_DOT | SpellType_Nuke | SpellType_Dispel)) {
-					AIautocastspell_timer->Start(RandomTimer(500, 2000), false);
-					return true;
-				}
-			}
-		}
-		else if(botClass == BARD) {
-			if(!Bot_AICastSpell(this, 100, SpellType_Buff)) {
-				if(!Bot_AICastSpell(GetTarget(), 100, SpellType_Nuke | SpellType_Dispel | SpellType_Escape)) {// Bards will use their debuff songs
-					AIautocastspell_timer->Start(RandomTimer(10, 50), false);
-					return true;
-				}					
-			}
-		}
-		else {
-			// And for all the others classes..
-			if(!Bot_AICastSpell(this, 100, SpellType_Heal | SpellType_Escape)) {                                 // heal itself
-				if (!entity_list.Bot_AICheckCloseBeneficialSpells(this, 80, MobAISpellRange, SpellType_Heal)) {	// heal others
-					if(!Bot_AICastSpell(GetTarget(), 80, SpellTypes_Detrimental)) {		// nuke..
-						AIautocastspell_timer->Start(RandomTimer(500, 2000), false);							// timer 5 t 20 seconds
-						return true;
-					}
-				}
-			}
-		}
-
-		if(botClass != BARD) {
-			AIautocastspell_timer->Start(RandomTimer(500, 2000), false);
-		}
-
-		return true;
-	}
-
-	return false;
-}
-
 void Bot::BotMeditate(bool isSitting) {
 	if(isSitting) {
 		// If the bot is a caster has less than 99% mana while its not engaged, he needs to sit to meditate
@@ -2014,549 +1903,6 @@ bool Bot::CheckBotDoubleAttack(bool tripleAttack) {
 		return true;
 	}
 
-	return false;
-}
-
-// Franck-add: EQoffline
-// This function was reworked a bit for bots.
-bool Bot::Bot_AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
-	_ZP(NPC_Bot_AICastSpell);
-
-	if (!tar) {
-		return false;
-	}
-
-	if(!AI_HasSpells())
-		return false;
-
-	if(tar->GetAppearance() == eaDead) {
-		if(tar->IsClient() && tar->CastToClient()->GetFeigned()) {
-			// do nothing
-		}
-		else {
-			return false;
-		}
-	}
-
-	if (iChance < 100) {
-		if (MakeRandomInt(0, 100) > iChance){
-			return false;
-		}
-	}
-
-	int8 botClass = GetClass();
-	uint8 botLevel = GetLevel();
-
-	float dist2;
-
-	if (iSpellTypes & SpellType_Escape) {
-		dist2 = 0; 
-	} else 
-		dist2 = DistNoRoot(*tar);
-
-	bool checked_los = false;	//we do not check LOS until we are absolutely sure we need to, and we only do it once.
-
-	float manaR = GetManaRatio();
-	for (int i=AIspells.size()-1; i >= 0; i--) {
-		if (AIspells[i].spellid <= 0 || AIspells[i].spellid >= SPDAT_RECORDS) {
-			// this is both to quit early to save cpu and to avoid casting bad spells
-			// Bad info from database can trigger this incorrectly, but that should be fixed in DB, not here
-			continue;
-		}
-
-		if (iSpellTypes & AIspells[i].type) {
-			// manacost has special values, -1 is no mana cost, -2 is instant cast (no mana)
-			sint32 mana_cost = AIspells[i].manacost;
-			if (mana_cost == -1)
-				mana_cost = spells[AIspells[i].spellid].mana;
-			else if (mana_cost == -2)
-				mana_cost = 0;
-			sint32 extraMana = 0;
-			sint32 hasMana = GetMana();
-			if(RuleB(Bots, BotFinishBuffing)) {
-				if(mana_cost > hasMana) {
-					// Let's have the bots complete the buff time process
-					if(iSpellTypes & SpellType_Buff) {
-						extraMana = mana_cost - hasMana;
-						SetMana(mana_cost);
-					}
-				}
-			}
-			if (((((spells[AIspells[i].spellid].targettype==ST_GroupTeleport && AIspells[i].type==2)
-				|| spells[AIspells[i].spellid].targettype==ST_AECaster
-				|| spells[AIspells[i].spellid].targettype==ST_Group
-				|| spells[AIspells[i].spellid].targettype==ST_AEBard)
-				&& dist2 <= spells[AIspells[i].spellid].aoerange*spells[AIspells[i].spellid].aoerange)
-				|| dist2 <= spells[AIspells[i].spellid].range*spells[AIspells[i].spellid].range) && (mana_cost <= GetMana() || GetMana() == GetMaxMana())) {
-
-					switch (AIspells[i].type) {
-					case SpellType_Heal: {
-						if (((spells[AIspells[i].spellid].targettype==ST_GroupTeleport || spells[AIspells[i].spellid].targettype == ST_Target || tar == this)
-							&& tar->DontHealMeBefore() < Timer::GetCurrentTime()
-							&& tar->CanBuffStack(AIspells[i].spellid, botLevel, true) >= 0))
-						{
-							if(botClass == BARD) {
-								if(IsEffectInSpell(AIspells[i].spellid, SE_MovementSpeed) && !zone->CanCastOutdoor()) {
-									break;
-								}
-							}
-							
-							int8 hpr = (int8)tar->GetHPRatio();
-							
-							if(hpr <= 85 || (tar->IsClient() && (hpr <= 95)) || (botClass == BARD)) {
-								if(tar->GetClass() == NECROMANCER) {
-									// Necro bots use too much cleric mana with thier
-									// mana for life spells... give them a chance
-									// to lifetap something
-									if(hpr > 60) {
-										break;
-									}
-								}
-
-								if(tar->FindType(SE_HealOverTime)) {
-									// Let the heal over time buff do it's thing ...
-									if(tar->IsEngaged() && hpr >= 70)
-										break;
-									else if(!tar->IsEngaged())
-										break;
-								}
-
-								int32 TempDontHealMeBeforeTime = tar->DontHealMeBefore();
-
-								AIDoSpellCast(i, tar, mana_cost, &TempDontHealMeBeforeTime);
-
-								if(TempDontHealMeBeforeTime != tar->DontHealMeBefore())
-									tar->SetDontHealMeBefore(TempDontHealMeBeforeTime);
-
-								// For non-HoT heals, do a 4 second delay
-								// TODO: Replace this code with logic that calculates the delay based on number of clerics in rotation
-								//			and ignores heals for anyone except the main tank
-								if(!IsHealOverTimeSpell(AIspells[i].spellid)) {
-									if(IsCompleteHealSpell(AIspells[i].spellid)) { 
-										// Complete Heal 4 second rotation
-										tar->SetDontHealMeBefore(Timer::GetCurrentTime() + 4000);
-									}
-									else {
-										tar->SetDontHealMeBefore(Timer::GetCurrentTime() + 1000);
-									}
-								}
-
-								return true;
-							}
-						}
-						break;
-										 }
-					case SpellType_Root: {
-						if (
-							!tar->IsRooted() 
-							&& tar->DontRootMeBefore() < Timer::GetCurrentTime()
-							&& tar->CanBuffStack(AIspells[i].spellid, botLevel, true) >= 0
-							) {
-								if(!checked_los) {
-									if(!CheckLosFN(tar))
-										return(false);	//cannot see target... we assume that no spell is going to work since we will only be casting detrimental spells in this call
-									checked_los = true;
-								}
-								int32 TempDontRootMeBefore = tar->DontRootMeBefore();
-								AIDoSpellCast(i, tar, mana_cost, &TempDontRootMeBefore);
-								if(TempDontRootMeBefore != tar->DontRootMeBefore())
-									tar->SetDontRootMeBefore(TempDontRootMeBefore);
-								return true;
-						}
-						break;
-										 }
-					case SpellType_Buff: {
-						if (
-							(spells[AIspells[i].spellid].targettype == ST_Target || tar == this)
-							&& tar->DontBuffMeBefore() < Timer::GetCurrentTime()
-							&& !tar->IsImmuneToSpell(AIspells[i].spellid, this)
-							&& (tar->CanBuffStack(AIspells[i].spellid, botLevel, true) >= 0)
-							&&  !(tar->IsPet() && tar->CastToBot()->GetBotOwner()->IsClient() && this != tar)	//no buffing PC's pets, but they can buff themself
-
-							) {
-								// Put the zone levitate and movement check here since bots are able to bypass the client casting check
-								if(	(IsEffectInSpell(AIspells[i].spellid, SE_Levitate) && !zone->CanLevitate()) ||
-									(IsEffectInSpell(AIspells[i].spellid, SE_MovementSpeed) && !zone->CanCastOutdoor())) {
-										break;
-								}
-								// when a pet class buffs its pet, it only needs to do it once
-								if(spells[AIspells[i].spellid].targettype == ST_Pet) {
-									Mob* newtar = GetPet();
-									if(newtar) {
-										if(!(newtar->CanBuffStack(AIspells[i].spellid, botLevel, true) >= 0)) {
-											break;
-										}
-									}
-									else {
-										break;
-									}
-								}
-								int32 TempDontBuffMeBefore = tar->DontBuffMeBefore();
-								AIDoSpellCast(i, tar, mana_cost, &TempDontBuffMeBefore);
-								if(TempDontBuffMeBefore != tar->DontBuffMeBefore())
-									tar->SetDontBuffMeBefore(TempDontBuffMeBefore);
-
-								if(extraMana) {
-									// If the bot is just looping through spells and not casting
-									// then don't let them keep the extra mana we gave them during
-									// buff time
-									SetMana(GetMana() - extraMana);
-								}
-								return true;
-						}
-						break;
-										 }
-					case SpellType_Escape: {
-						int8 hpr = (int8)GetHPRatio();
-#ifdef IPC          
-						if (hpr <= 5 || (IsNPC() && CastToNPC()->IsInteractive() && tar != this) )
-#else
-						if ((hpr <= 15) && (tar == this))
-#endif
-						{
-							AIDoSpellCast(i, this, mana_cost);
-							return true;
-						}
-						break;
-										   }
-					case SpellType_Nuke: {
-						if(((MakeRandomInt(1, 100) < 50) || ((botClass == BARD) || (botClass == SHAMAN) || (botClass == ENCHANTER)))
-							&& ((tar->GetHPRatio() <= 95.0f) || ((botClass == BARD) || (botClass == SHAMAN) || (botClass == ENCHANTER)))
-							&& !tar->IsImmuneToSpell(AIspells[i].spellid, this)
-							&& (tar->CanBuffStack(AIspells[i].spellid, botLevel, true) >= 0))
-						{
-							if(!checked_los) {
-								if(!CheckLosFN(tar))
-									return(false);	//cannot see target... we assume that no spell is going to work since we will only be casting detrimental spells in this call
-								checked_los = true;
-							}
-
-							if(IsFearSpell(AIspells[i].spellid))
-							{ // don't let fear cast if the npc isn't snared or rooted
-								if(tar->GetSnaredAmount() == -1)
-								{
-									if(!tar->IsRooted())
-										return false;
-								}
-							}
-
-							AIDoSpellCast(i, tar, mana_cost);
-							return true;
-						}
-						break;
-										 }
-					case SpellType_Dispel: {
-						if(tar->GetHPRatio() > 95.0f)
-						{
-							if(!checked_los) {
-								if(!CheckLosFN(tar))
-									return(false);	//cannot see target... we assume that no spell is going to work since we will only be casting detrimental spells in this call
-								checked_los = true;
-							}
-							if(tar->CountDispellableBuffs() > 0)
-							{
-								AIDoSpellCast(i, tar, mana_cost);
-								return true;
-							}
-						}
-						break;
-										   }
-					case SpellType_Pet:
-						{
-							//keep mobs from recasting pets when they have them.
-							if (!IsPet() && !GetPetID() && !IsBotCharmer())
-							{
-								if(botClass == MAGICIAN)
-								{
-									if(IsPetChooser())
-									{
-										bool ChoosePet = true;
-										while(ChoosePet)
-										{
-											switch(GetPetChooserID())
-											{
-											case 0:
-												if(!strncmp(spells[AIspells[i].spellid].teleport_zone, "SumWater", 8))
-												{
-													ChoosePet = false;
-												}
-												break;
-											case 1:
-												if(!strncmp(spells[AIspells[i].spellid].teleport_zone, "SumFire", 7))
-												{
-													ChoosePet = false;
-												}
-												break;
-											case 2:
-												if(!strncmp(spells[AIspells[i].spellid].teleport_zone, "SumAir", 6))
-												{
-													ChoosePet = false;
-												}
-												break;
-											case 3:
-												if(!strncmp(spells[AIspells[i].spellid].teleport_zone, "SumEarth", 8))
-												{
-													ChoosePet = false;
-												}
-												break;
-											default:
-												if(!strncmp(spells[AIspells[i].spellid].teleport_zone, "MonsterSum", 10))
-												{
-													ChoosePet = false;
-												}
-												break;
-											}
-											if(ChoosePet)
-											{
-												--i;
-											}
-										}
-									}
-									else
-									{
-										// have the magician bot randomly summon
-										// the air, earth, fire or water pet
-										// include monster summoning after they
-										// become level 30 magicians
-										int randpets;
-										if(botLevel >= 30)
-										{
-											randpets = 4;
-										}
-										else
-										{
-											randpets = 3;
-										}
-										if(GetLevel() == 2)
-										{
-											// Do nothing
-										}
-										else if(GetLevel() == 3)
-										{
-											i = MakeRandomInt(i-1, i);
-										}
-										else if(GetLevel() == 4)
-										{
-											i = MakeRandomInt(i-2, i);
-										}
-										else
-										{
-											i = MakeRandomInt(i-randpets, i);
-										}
-									}
-								}
-								AIDoSpellCast(i, tar, mana_cost);
-								return true;
-							}
-							break;
-						}
-					case SpellType_Lifetap: {
-						if ((tar->GetHPRatio() <= 90.0f)
-							&& !tar->IsImmuneToSpell(AIspells[i].spellid, this)
-							&& (tar->CanBuffStack(AIspells[i].spellid, botLevel, true) >= 0))
-						{
-							if(!checked_los) {
-								if(!CheckLosFN(tar))
-									return(false);	//cannot see target... we assume that no spell is going to work since we will only be casting detrimental spells in this call
-								checked_los = true;
-							}
-							AIDoSpellCast(i, tar, mana_cost);
-							return true;
-						}
-						break;
-											}
-					case SpellType_Snare: {
-						if (
-							!tar->IsRooted()
-							&& !tar->IsImmuneToSpell(AIspells[i].spellid, this)
-							&& tar->DontSnareMeBefore() < Timer::GetCurrentTime()
-							&& tar->CanBuffStack(AIspells[i].spellid, botLevel, true) >= 0
-							) {
-								if(!checked_los) {
-									if(!CheckLosFN(tar))
-										return(false);	//cannot see target... we assume that no spell is going to work since we will only be casting detrimental spells in this call
-									checked_los = true;
-								}
-								int32 TempDontSnareMeBefore = tar->DontSnareMeBefore();
-								AIDoSpellCast(i, tar, mana_cost, &TempDontSnareMeBefore);
-								if(TempDontSnareMeBefore != tar->DontSnareMeBefore())
-									tar->SetDontSnareMeBefore(TempDontSnareMeBefore);
-
-								return true;
-						}
-						break;
-										  }
-					case SpellType_DOT: {
-						if (
-							((tar->GetHPRatio()<=80.0f))
-							&& !tar->IsImmuneToSpell(AIspells[i].spellid, this)
-							&& tar->DontDotMeBefore() < Timer::GetCurrentTime()
-							&& tar->CanBuffStack(AIspells[i].spellid, botLevel, true) >= 0
-							) {
-								if(!checked_los) {
-									if(!CheckLosFN(tar))
-										return(false);	//cannot see target... we assume that no spell is going to work since we will only be casting detrimental spells in this call
-									checked_los = true;
-								}
-								int32 TempDontDotMeBefore = tar->DontDotMeBefore();
-								AIDoSpellCast(i, tar, mana_cost, &TempDontDotMeBefore);
-								if(TempDontDotMeBefore != tar->DontDotMeBefore())
-									tar->SetDontDotMeBefore(TempDontDotMeBefore);
-
-								return true;
-						}
-						break;
-										}
-					default: {
-						// TODO: log this error
-						//cout<<"Error: Unknown spell type in AICastSpell. caster:"<<this->GetCleanName()<<" type:"<<AIspells[i].type<<" slot:"<<i<<endl;
-						break;
-							 }
-					}
-			}
-			if(extraMana) {
-				// If the bot is just looping through spells and not casting
-				// then don't let them keep the extra mana we gave them during
-				// buff time
-				SetMana(hasMana);
-				extraMana = false;
-			}
-		}
-	}
-	return false;
-}
-
-bool Bot::Bot_AI_PursueCastCheck() {
-	if (AIautocastspell_timer->Check(false)) {
-		_ZP(Bot_AI_Process_pursue_cast);
-		AIautocastspell_timer->Disable();	//prevent the timer from going off AGAIN while we are casting.
-		
-		mlog(AI__SPELLS, "Bot Engaged (pursuing) autocast check triggered. Trying to cast offensive spells.");
-		if(!Bot_AICastSpell(GetTarget(), 90, SpellType_Root | SpellType_Nuke | SpellType_Lifetap | SpellType_Snare | SpellType_DOT | SpellType_Dispel)) {
-			//no spell cast, try again soon.
-			AIautocastspell_timer->Start(RandomTimer(500, 2000), false);
-		} //else, spell casting finishing will reset the timer.
-		return(true);
-	}
-	return(false);
-}
-
-// Franck-add: EQoffline
-// This function was reworked a bit for bots.
-bool Bot::Bot_AI_IdleCastCheck() {
-	if (AIautocastspell_timer->Check(false)) {
-		_ZP(NPC_Bot_AI_IdleCastCheck);
-#if MobAI_DEBUG_Spells >= 25
-		cout << "Non-Engaged autocast check triggered: " << this->GetCleanName() << endl;
-#endif
-		AIautocastspell_timer->Disable();	//prevent the timer from going off AGAIN while we are casting.
-
-		//Ok, IdleCastCheck depends of class. 
-		// Healers WITHOUT pets will check if a heal is needed before buffing.
-		int8 botClass = GetClass();
-		if(botClass == CLERIC || botClass == PALADIN || botClass == RANGER)
-		{
-			if (!Bot_AICastSpell(this, 50, SpellType_Heal | SpellType_Buff))
-			{
-				if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 50, MobAISpellRange, SpellType_Heal))
-				{
-					if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 50, MobAISpellRange, SpellType_Buff))
-					{
-						if(IsGrouped())
-						{
-							Group *g = GetGroup();
-							if(g) {
-								for(int i=0; i<MAX_GROUP_MEMBERS; ++i)
-								{
-									if(g->members[i] && !g->members[i]->qglobal && (g->members[i]->GetHPRatio() < 99))
-									{
-										if(Bot_AICastSpell(g->members[i], 100, SpellType_Heal))
-										{
-											AIautocastspell_timer->Start(RandomTimer(1000, 5000), false);
-											return true;
-										}
-									}
-									if(g->members[i] && !g->members[i]->qglobal && g->members[i]->GetPetID())
-									{
-										if(Bot_AICastSpell(g->members[i]->GetPet(), 100, SpellType_Heal))
-										{
-											AIautocastspell_timer->Start(RandomTimer(1000, 5000), false);
-											return true;
-										}
-									}
-								}
-							}
-						}
-						AIautocastspell_timer->Start(RandomTimer(1000, 5000), false);
-						return(true);
-					}
-				}
-			}
-		}
-		// Pets class will first cast their pet, then buffs
-		else if(botClass == DRUID || botClass == MAGICIAN || botClass == SHADOWKNIGHT || botClass == SHAMAN || botClass == NECROMANCER || botClass == ENCHANTER || botClass == BEASTLORD  || botClass == WIZARD)
-		{			
-			if (!Bot_AICastSpell(this, 100, SpellType_Pet))
-			{
-				if (!Bot_AICastSpell(this, 50, SpellType_Heal | SpellType_Buff))
-				{
-					if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 50, MobAISpellRange, SpellType_Heal))
-					{
-						if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 50, MobAISpellRange, SpellType_Buff)) // then buff the group
-						{
-							if(IsGrouped())
-							{
-								Group *g = GetGroup();
-								if(g) {
-									for(int i=0; i<MAX_GROUP_MEMBERS; ++i)
-									{
-										if(g->members[i] && !g->members[i]->qglobal && (g->members[i]->GetHPRatio() < 99))
-										{
-											if(Bot_AICastSpell(g->members[i], 100, SpellType_Heal))
-											{
-												AIautocastspell_timer->Start(RandomTimer(1000, 5000), false);
-												return true;
-											}
-										}
-										if(g->members[i] && !g->members[i]->qglobal && g->members[i]->GetPetID())
-										{
-											if(Bot_AICastSpell(g->members[i]->GetPet(), 100, SpellType_Heal))
-											{
-												AIautocastspell_timer->Start(RandomTimer(1000, 5000), false);
-												return true;
-											}
-										}
-									}
-								}
-							}
-							AIautocastspell_timer->Start(RandomTimer(1000, 5000), false);
-							return(true);
-						}
-					}
-				}
-			}
-		}		
-		// bard bots
-		else if(botClass == BARD)
-		{
-			Bot_AICastSpell(this, 100, SpellType_Heal);
-			AIautocastspell_timer->Start(1000, false);
-			return true;
-		}
-
-		// and standard buffing for others..
-		else {
-			if (!Bot_AICastSpell(this, 100, SpellType_Heal | SpellType_Buff | SpellType_Pet))
-			{
-				if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 50, MobAISpellRange, SpellType_Heal | SpellType_Buff)) {
-					AIautocastspell_timer->Start(RandomTimer(1000, 5000), false);
-					return true;
-				}
-			}
-		}
-		AIautocastspell_timer->Start(RandomTimer(1000, 5000), false);
-		return true;
-	}
 	return false;
 }
 
@@ -2940,31 +2286,51 @@ void Bot::AI_Process() {
 			// Then, use their special engaged AI.
 			this->AI_EngagedCastCheck();
 		} //end is within combat range
-		else {
-			//we cannot reach our target...
-			// See if we can summon the mob to us
-			if(!HateSummon() && !IsBotArcher())
-			{
-				//could not summon them, start pursuing...
-				// TODO: Check here for another person on hate list with close hate value
-				if(GetTarget() && Bot_AI_PursueCastCheck())
-				{}
-				else if(GetTarget() && AImovement_timer->Check())
-				{
-					if(!IsRooted()) {
-						mlog(AI__WAYPOINTS, "Pursuing %s while engaged.", GetTarget()->GetCleanName());
-						CalculateNewPosition2(GetTarget()->GetX(), GetTarget()->GetY(), GetTarget()->GetZ(), GetRunspeed(), false);
-					} else {
-						SetHeading(GetTarget()->GetHeading());
-						if(moved) {
-							moved=false;
-							SetMoving(false);
-							SendPosUpdate();
-						}
-					}
+
+		if(GetTarget() && AI_PursueCastCheck())
+		{}
+		else if(GetTarget() && AImovement_timer->Check())
+		{
+			if(!IsRooted()) {
+				mlog(AI__WAYPOINTS, "Pursuing %s while engaged.", GetTarget()->GetCleanName());
+				CalculateNewPosition2(GetTarget()->GetX(), GetTarget()->GetY(), GetTarget()->GetZ(), GetRunspeed(), false);
+			} else {
+				SetHeading(GetTarget()->GetHeading());
+
+				if(moved) {
+					moved=false;
+					SetMoving(false);
+					SendPosUpdate();
 				}
 			}
 		}
+		//else {
+		//	//we cannot reach our target...
+		//	// See if we can summon the mob to us
+		//	//if(!HateSummon() && !IsBotArcher()) {
+		//	//	//could not summon them, start pursuing...
+		//	//	// TODO: Check here for another person on hate list with close hate value
+		//	//	if(GetTarget() && AI_PursueCastCheck())
+		//	//	{}
+		//	//	else if(GetTarget() && AImovement_timer->Check())
+		//	//	{
+		//	//		if(!IsRooted()) {
+		//	//			mlog(AI__WAYPOINTS, "Pursuing %s while engaged.", GetTarget()->GetCleanName());
+		//	//			CalculateNewPosition2(GetTarget()->GetX(), GetTarget()->GetY(), GetTarget()->GetZ(), GetRunspeed(), false);
+		//	//		} else {
+		//	//			SetHeading(GetTarget()->GetHeading());
+		//	//			
+		//	//			if(moved) {
+		//	//				moved=false;
+		//	//				SetMoving(false);
+		//	//				SendPosUpdate();
+		//	//			}
+		//	//		}
+		//	//	}
+		//	//}
+
+		//	
+		//}
 	}
 	else {
 		// Franck: EQoffline
@@ -2973,7 +2339,7 @@ void Bot::AI_Process() {
 
 		if(!IsMoving()) {
 			BotMeditate(true);
-			Bot_AI_IdleCastCheck(); // let's rebuff, heal, etc..
+			AI_IdleCastCheck(); // let's rebuff, heal, etc..
 		}
 
 		// now the followID: that's what happening as the bots follow their leader.
@@ -3848,6 +3214,282 @@ std::list<SpawnedBotsList> Bot::ListSpawnedBots(uint32 characterID, std::string*
 //
 //	return Result;
 //}
+
+		if(tempGroupLeader->IsBot()) {
+			uint32 botGroupId = 0;
+
+			uint32 botGroupLeaderBotId = tempGroupLeader->CastToBot()->GetBotID();
+		
+			if(!database.RunQuery(query, MakeAnyLenString(&query, "INSERT into botgroup (BotGroupLeaderBotId, BotGroupName) values (%u, '%s')", botGroupLeaderBotId, botGroupName.c_str()), errbuf, 0, 0, &botGroupId)) {
+				*errorMessage = std::string(errbuf);
+			}
+			else {
+				if(botGroupId > 0) {
+					for(int counter = 0; counter < botGroup->GroupCount(); counter++) {
+						Mob* tempBot = botGroup->members[counter];
+
+						if(tempBot && tempBot->IsBot()) {
+							uint32 botGroupMemberBotId = tempBot->CastToBot()->GetBotID();
+
+							safe_delete_array(query);
+
+							if(!database.RunQuery(query, MakeAnyLenString(&query, "INSERT into botgroupmembers (BotGroupId, BotId) values (%u, %u)", botGroupId, botGroupMemberBotId), errbuf)) {
+								*errorMessage = std::string(errbuf);
+							}
+						}
+					}
+				}
+			}
+
+			safe_delete_array(query);
+		}
+	}
+}
+
+void Bot::DeleteBotGroup(std::string botGroupName, std::string* errorMessage) {
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+
+	if(!botGroupName.empty()) {
+		uint32 botGroupId = GetBotGroupIdByBotGroupName(botGroupName, errorMessage);
+
+		if(errorMessage->empty() && botGroupId > 0) {
+			if(!database.RunQuery(query, MakeAnyLenString(&query, "DELETE FROM botgroupmembers WHERE BotGroupId = %u", botGroupId), errbuf)) {
+				*errorMessage = std::string(errbuf);
+			}
+			else {
+				safe_delete_array(query);
+
+				if(!database.RunQuery(query, MakeAnyLenString(&query, "DELETE FROM botgroup WHERE BotGroupId = %u", botGroupId), errbuf)) {
+					*errorMessage = std::string(errbuf);
+				}
+			}
+
+			safe_delete_array(query);
+		}
+	}
+}
+
+std::list<BotGroup> Bot::LoadBotGroup(std::string botGroupName, std::string* errorMessage) {
+	std::list<BotGroup> Result;
+	char ErrBuf[MYSQL_ERRMSG_SIZE];
+	char* Query = 0;
+	MYSQL_RES* DatasetResult;
+	MYSQL_ROW DataRow;
+
+	if(!botGroupName.empty()) {
+		uint32 botGroupId = GetBotGroupIdByBotGroupName(botGroupName, errorMessage);
+
+		if(botGroupId > 0) {
+			if(!database.RunQuery(Query, MakeAnyLenString(&Query, "select BotId from botgroupmembers where BotGroupId = %u", botGroupId), ErrBuf, &DatasetResult)) {
+				*errorMessage = std::string(ErrBuf);
+			}
+			else {
+				uint32 RowCount = mysql_num_rows(DatasetResult);
+
+				if(RowCount > 0) {
+					for(int iCounter = 0; iCounter < RowCount; iCounter++) {
+						DataRow = mysql_fetch_row(DatasetResult);
+
+						if(DataRow) {
+							BotGroup tempBotGroup;
+							tempBotGroup.BotGroupID = botGroupId;
+							tempBotGroup.BotID = atoi(DataRow[0]);
+
+							Result.push_back(tempBotGroup);
+						}
+					}
+				}
+
+				mysql_free_result(DatasetResult);
+			}
+
+			safe_delete_array(Query);
+		}
+	}
+
+	return Result;
+}
+
+std::list<BotGroupList> Bot::GetBotGroupListByBotOwnerCharacterId(uint32 botOwnerCharacterId, std::string* errorMessage) {
+	std::list<BotGroupList> result;
+
+	if(botOwnerCharacterId > 0) {
+		char ErrBuf[MYSQL_ERRMSG_SIZE];
+		char* Query = 0;
+		MYSQL_RES* DatasetResult;
+		MYSQL_ROW DataRow;
+
+		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "select BotGroupName, BotGroupLeaderName from vwBotGroups where BotOwnerCharacterId = %u", botOwnerCharacterId), ErrBuf, &DatasetResult)) {
+			*errorMessage = std::string(ErrBuf);
+		}
+		else {
+			uint32 RowCount = mysql_num_rows(DatasetResult);
+
+			if(RowCount > 0) {
+				for(int iCounter = 0; iCounter < RowCount; iCounter++) {
+					DataRow = mysql_fetch_row(DatasetResult);
+
+					if(DataRow) {
+						BotGroupList botGroupList;
+						botGroupList.BotGroupName = std::string(DataRow[0]);
+						botGroupList.BotGroupLeaderName = std::string(DataRow[1]);
+
+						result.push_back(botGroupList);
+					}
+				}
+			}
+
+			mysql_free_result(DatasetResult);
+		}
+
+		safe_delete_array(Query);
+	}
+
+	return result;
+}
+
+bool Bot::DoesBotGroupNameExist(std::string botGroupName) {
+	bool result = false;
+	
+	if(!botGroupName.empty()) {
+		char* Query = 0;
+		MYSQL_RES* DatasetResult;
+		MYSQL_ROW DataRow;
+
+		if(database.RunQuery(Query, MakeAnyLenString(&Query, "select BotGroupId from vwBotGroups where BotGroupName = '%s'", botGroupName.c_str()), 0, &DatasetResult)) {
+			uint32 RowCount = mysql_num_rows(DatasetResult);
+
+			if(RowCount > 0) {
+				for(int iCounter = 0; iCounter < RowCount; iCounter++) {
+					DataRow = mysql_fetch_row(DatasetResult);
+
+					if(DataRow) {
+						uint32 tempBotGroupId = atoi(DataRow[0]);
+						std::string tempBotGroupName = std::string(DataRow[1]);
+
+						if(botGroupName == tempBotGroupName) {
+							result = tempBotGroupId;
+							break;
+						}
+					}
+				}
+			}
+
+			mysql_free_result(DatasetResult);
+		}
+
+		safe_delete_array(Query);
+	}
+
+	return result;
+}
+
+uint32 Bot::CanLoadBotGroup(uint32 botOwnerCharacterId, std::string botGroupName, std::string* errorMessage) {
+	uint32 result = 0;
+
+	if(botOwnerCharacterId > 0 && !botGroupName.empty()) {
+		char ErrBuf[MYSQL_ERRMSG_SIZE];
+		char* Query = 0;
+		MYSQL_RES* DatasetResult;
+		MYSQL_ROW DataRow;
+
+		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "select BotGroupId, BotGroupName from vwBotGroups where BotOwnerCharacterId = %u", botOwnerCharacterId), ErrBuf, &DatasetResult)) {
+			*errorMessage = std::string(ErrBuf);
+		}
+		else {
+			uint32 RowCount = mysql_num_rows(DatasetResult);
+
+			if(RowCount > 0) {
+				for(int iCounter = 0; iCounter < RowCount; iCounter++) {
+					DataRow = mysql_fetch_row(DatasetResult);
+
+					if(DataRow) {
+						uint32 tempBotGroupId = atoi(DataRow[0]);
+						std::string tempBotGroupName = std::string(DataRow[1]);
+
+						if(botGroupName == tempBotGroupName) {
+							result = tempBotGroupId;
+							break;
+						}
+					}
+				}
+			}
+
+			mysql_free_result(DatasetResult);
+		}
+
+		safe_delete_array(Query);
+	}
+
+	return result;
+}
+
+uint32 Bot::GetBotGroupIdByBotGroupName(std::string botGroupName, std::string* errorMessage) {
+	uint32 result = 0;
+	
+	if(!botGroupName.empty()) {
+		char ErrBuf[MYSQL_ERRMSG_SIZE];
+		char* Query = 0;
+		MYSQL_RES* DatasetResult;
+		MYSQL_ROW DataRow;
+
+		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "select BotGroupId from vwBotGroups where BotGroupName = '%s'", botGroupName.c_str()), ErrBuf, &DatasetResult)) {
+			*errorMessage = std::string(ErrBuf);
+		}
+		else {
+			uint32 RowCount = mysql_num_rows(DatasetResult);
+
+			if(RowCount > 0) {
+				for(int iCounter = 0; iCounter < RowCount; iCounter++) {
+					DataRow = mysql_fetch_row(DatasetResult);
+
+					if(DataRow) {
+						result = atoi(DataRow[0]);
+						break;
+					}
+				}
+			}
+
+			mysql_free_result(DatasetResult);
+		}
+
+		safe_delete_array(Query);
+	}
+
+	return result;
+}
+
+uint32 Bot::GetBotGroupLeaderIdByBotGroupName(std::string botGroupName) {
+	uint32 result = 0;
+	
+	if(!botGroupName.empty()) {
+		char* Query = 0;
+		MYSQL_RES* DatasetResult;
+		MYSQL_ROW DataRow;
+
+		if(database.RunQuery(Query, MakeAnyLenString(&Query, "select BotGroupLeaderBotId from vwBotGroups where BotGroupName = '%s'", botGroupName.c_str()), 0, &DatasetResult)) {
+			uint32 RowCount = mysql_num_rows(DatasetResult);
+
+			if(RowCount > 0) {
+				for(int iCounter = 0; iCounter < RowCount; iCounter++) {
+					DataRow = mysql_fetch_row(DatasetResult);
+
+					if(DataRow) {
+						result = atoi(DataRow[0]);
+						break;
+					}
+				}
+			}
+
+			mysql_free_result(DatasetResult);
+		}
+
+		safe_delete_array(Query);
+	}
+
+	return result;
+}
 
 uint32 Bot::AllowedBotSpawns(uint32 botOwnerCharacterID, std::string* errorMessage) {
 	uint32 Result = 0;
@@ -8981,6 +8623,21 @@ void Bot::CalcBotStats(bool showtext) {
 	}
 }
 
+bool Bot::GroupHasClass(Group* group, uint8 classId) {
+	bool result = false;
+
+	if(group) {
+		for(int counter = 0; counter < MAX_GROUP_MEMBERS; counter++) {
+			if(group->members[counter]->GetClass() & classId) {
+				result = true;
+				break;
+			}
+		}
+	}
+
+	return result;
+}
+
 void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 	// All bot command processing occurs here now instead of in command.cpp
 
@@ -12243,52 +11900,50 @@ bool EntityList::Bot_AICheckCloseBeneficialSpells(Bot* caster, int8 iChance, flo
 			return false;
 	}
 
-	// Franck: EQoffline.
-	// Ok, Beneficial spells depend of the class of the caster also..
-	int8 botCasterClass = caster->GetClass();;
+	int8 botCasterClass = caster->GetClass();
 
-	// Heal and buffs spells might have a different chance, that's why I separe them .
 	if( botCasterClass == CLERIC || botCasterClass == DRUID || botCasterClass == SHAMAN || botCasterClass == PALADIN || botCasterClass == BEASTLORD || botCasterClass == RANGER) {
 		//If AI_EngagedCastCheck() said to the healer that he had to heal
-		if( iSpellTypes == SpellType_Heal )	// 
-		{
-			// check raids
-			//if( caster->CastToMob()->IsGrouped() && caster->GetBotRaidID() && (entity_list.GetBotRaidByMob(caster) != NULL)) {
-			//	BotRaids *br = entity_list.GetBotRaidByMob(caster);
-			//	// boolean trying to ai the heal rotation, prolly not working well.
-			//	if(br) {
-			//		if(br->GetBotMainTank() && (br->GetBotMainTank()->GetHPRatio() < 80))
-			//		{
-			//			if(caster->Bot_AICastSpell(br->GetBotMainTank(), 80, SpellType_Heal)) {
-			//				return true;
-			//			}
-			//		}
-			//		else if(br->GetBotSecondTank() && (br->GetBotSecondTank()->GetHPRatio() < 80))
-			//		{
-			//			if(caster->Bot_AICastSpell(br->GetBotSecondTank(), 80, SpellType_Heal)) {
-			//				return true;
-			//			}
-			//		}
-			//	}
-			//}
-
+		if( iSpellTypes == SpellType_Heal )	{
 			// check in group
-			if(caster->IsGrouped()) {
-				Group *g = entity_list.GetGroupByMob(caster);
+			if(caster->HasGroup()) {
+				Group *g = caster->GetGroup();
 				
 				if(g) {
-					for( int i = 0; i<MAX_GROUP_MEMBERS; i++) {
-						if(g->members[i] && !g->members[i]->qglobal && (g->members[i]->GetHPRatio() < 80)) {
-							if(caster->Bot_AICastSpell(g->members[i], 100, SpellType_Heal))
-								return true;
+					for(int i = 0; i < MAX_GROUP_MEMBERS; i++) {
+						if(g->members[i] && !g->members[i]->qglobal) {
+							if(g->members[i]->IsClient() && g->members[i]->GetHPRatio() < 90) {
+								if(caster->AICastSpell(g->members[i], iChance, SpellType_Heal))
+									return true;
+							}
+							else if((g->members[i]->GetClass() ==  WARRIOR || g->members[i]->GetClass() == PALADIN || g->members[i]->GetClass() == SHADOWKNIGHT) &&
+								g->members[i]->GetHPRatio() < 95) 
+							{
+								if(caster->AICastSpell(g->members[i], iChance, SpellType_Heal))
+									return true;
+							}
+							else if(g->members[i]->GetClass() ==  ENCHANTER && g->members[i]->GetHPRatio() < 80) {
+								if(caster->AICastSpell(g->members[i], iChance, SpellType_Heal))
+									return true;
+							}
+							else if(g->members[i]->GetHPRatio() < 70) {
+								if(caster->AICastSpell(g->members[i], iChance, SpellType_Heal))
+									return true;
+							}
 						}
-						if(g->members[i] && !g->members[i]->qglobal && g->members[i]->GetPetID()) {
-							if(caster->Bot_AICastSpell(g->members[i]->GetPet(), 60, SpellType_Heal))
+
+						if(g->members[i] && !g->members[i]->qglobal && g->members[i]->HasPet() && g->members[i]->GetPet()->GetHPRatio() < 50) {
+							if(g->members[i]->GetPet()->GetOwner() != caster && caster->IsEngaged() && g->members[i]->IsCasting() && g->members[i]->GetClass() != ENCHANTER )
+								continue;
+
+							if(caster->AICastSpell(g->members[i]->GetPet(), iChance, SpellType_Heal))
 								return true;
 						}
 					}
 				}
 			}
+
+			// TODO: raid heals
 		}
 	}
 
@@ -12296,26 +11951,29 @@ bool EntityList::Bot_AICheckCloseBeneficialSpells(Bot* caster, int8 iChance, flo
 	if( iSpellTypes == SpellType_Buff) {
 		// Let's try to make Bard working...
 		if(botCasterClass == BARD) {
-			if(caster->Bot_AICastSpell(caster, 100, SpellType_Buff))
+			if(caster->AICastSpell(caster, 100, SpellType_Buff))
 				return true;
 			else
 				return false;
 		}
 
-		if(caster->IsGrouped() )
-		{
-			Group *g = entity_list.GetGroupByMob(caster);
+		if(caster->HasGroup() ) {
+			Group *g = caster->GetGroup();
 			
 			if(g) {
-				for( int i = 0; i<MAX_GROUP_MEMBERS; i++) {
+				for( int i = 0; i < MAX_GROUP_MEMBERS; i++) {
 					if(g->members[i]) {
-						if(caster->Bot_AICastSpell(g->members[i], 100, SpellType_Buff)) {
+						if(caster->AICastSpell(g->members[i], iChance, SpellType_Buff))
 							return true;
-						}
+
+						if(caster->AICastSpell(g->members[i]->GetPet(), iChance, SpellType_Buff))
+							return true; 
 					}
 				}
 			}
 		}
+
+		// TODO: raid buffs
 	}
 
 	return false;

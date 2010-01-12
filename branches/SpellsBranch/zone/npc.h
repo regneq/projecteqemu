@@ -329,8 +329,8 @@ protected:
 	std::vector<AISpells_Struct> AIspells;
 	bool HasAISpell;
 	void AddSpellToNPCList(sint16 iPriority, sint16 iSpellID, uint16 iType, sint16 iManaCost, sint32 iRecastDelay);
-	bool AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes);
-	void AIDoSpellCast(int8 i, Mob* tar, sint32 mana_cost, int32* oDontDoAgainBefore = 0);
+	virtual bool AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes);
+	virtual bool AIDoSpellCast(int8 i, Mob* tar, sint32 mana_cost, int32* oDontDoAgainBefore = 0);
 	
 	
 	int32	max_dmg;
