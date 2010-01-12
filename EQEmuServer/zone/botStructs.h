@@ -33,6 +33,12 @@ struct SpawnedBotsList {
 	uint32 BotLeaderCharID;
 };
 
+struct BotSpell {
+	int16 SpellId;
+	int SpellIndex;
+	sint16 ManaCost;
+};
+
 #endif // BOTS
 
 #endif // BOT_STRUCTS
