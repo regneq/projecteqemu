@@ -63,6 +63,7 @@
 #include "../common/rulesys.h"
 #include "StringIDs.h"
 #include "map.h"
+#include "spells.h"
 using namespace std;
 
 
@@ -1077,7 +1078,8 @@ void Client::OPRezzAnswer(const EQApplicationPacket* app) {
 		if((SpellEffectDescNum == 82) || (SpellEffectDescNum == 39067)) {
 			SetMana(0);
 			SetHP(GetMaxHP()/5);
-			SpellOnTarget(756,this); // Rezz effects
+
+			SpellOnTarget(756, this); // Rezz effects
 		}
 		else {
 			SetMana(GetMaxMana());

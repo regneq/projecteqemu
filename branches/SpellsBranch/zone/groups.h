@@ -25,6 +25,7 @@
 #include "entity.h"
 #include "mob.h"
 #include "features.h"
+#include "spells.h"
 #include "../common/servertalk.h"
 
 #define MAX_MARKED_NPCS 3
@@ -70,7 +71,7 @@ public:
 	bool	IsGroupMember(Mob* client);
 	bool	Process();
 	bool	IsGroup()			{ return true; }
-	void	CastGroupSpell(Mob* caster,uint16 spellid);
+	void	CastGroupSpell(Mob* caster, Spell *spell_to_cast);
 	void	GroupBardPulse(Mob* caster,uint16 spellid);
 	void	SplitExp(uint32 exp, Mob* other);
 	void	GroupMessage(Mob* sender,int8 language,int8 lang_skill,const char* message);

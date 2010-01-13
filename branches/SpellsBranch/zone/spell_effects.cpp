@@ -3935,7 +3935,9 @@ bool Mob::TryDeathSave() {
 			SetHP(this->max_hp * touchHealAmount);
 
 			// and "Touch of the Divine", an Invulnerability/HoT/Purify effect, only one for all 5 levels
-			SpellOnTarget(4789, this);
+			Spell *tod_spell = new Spell(4789, this, this);
+			SpellOnTarget(tod_spell, this);
+			safe_delete(tod_spell);
 
 			// skip checking for DI fire if this goes off...
 			if (Result == true) {

@@ -21,6 +21,7 @@
 
 #include "entity.h"
 #include "mob.h"
+#include "spells.h"
 #include "../common/types.h"
 #include "../common/timer.h"
 
@@ -42,13 +43,13 @@ public:
 	bool	IsBeacon()			const { return true; }
 	bool	Process();
 	virtual void	Depop(bool not_used = true)	{ remove_me = true; }
-	void AELocationSpell(Mob *caster, int16 cast_spell_id);
+	void AELocationSpell(Mob *caster, Spell *spell_to_cast);
 
 protected:
 	Timer remove_timer;
 	bool remove_me;
 
-	int16 spell_id;
+	Spell *beacon_spell;
 	int spell_iterations;
 	Timer spell_timer;
 

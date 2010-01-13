@@ -531,7 +531,8 @@ bool Group::DelMember(Mob* oldmember,bool ignoresender){
 }
 
 // does the caster + group
-void Group::CastGroupSpell(Mob* caster, uint16 spell_id) {
+void Group::CastGroupSpell(Mob* caster, Spell* spell_to_cast) 
+{
 	uint32 z;
 	float range, distance;
 
@@ -539,30 +540,29 @@ void Group::CastGroupSpell(Mob* caster, uint16 spell_id) {
 		return;
 
 	castspell = true;
-	//TODO:
-	range = 0;//caster->GetAOERange(spell_id);
-	
+
+	range = caster->GetAOERange(spell_to_cast);
 	float range2 = range*range;
 
-//	caster->SpellOnTarget(spell_id, caster);
+	caster->SpellOnTarget(spell_to_cast, caster);
 
 	for(z=0; z < MAX_GROUP_MEMBERS; z++)
 	{
 		if(members[z] == caster) {
-			caster->SpellOnTarget(spell_id, caster);
+			caster->SpellOnTarget(spell_to_cast, caster);
 #ifdef GROUP_BUFF_PETS
 			if(caster->GetPet() && caster->GetAA(aaPetAffinity) && !caster->GetPet()->IsCharmed())
-				caster->SpellOnTarget(spell_id, caster->GetPet());
+				caster->SpellOnTarget(spell_to_cast, caster->GetPet());
 #endif
 		}
 		else if(members[z] != NULL)
 		{
 			distance = caster->DistNoRoot(*members[z]);
 			if(distance <= range2) {
-				caster->SpellOnTarget(spell_id, members[z]);
+				caster->SpellOnTarget(spell_to_cast, members[z]);
 #ifdef GROUP_BUFF_PETS
 				if(members[z]->GetPet() && members[z]->GetAA(aaPetAffinity) && !members[z]->GetPet()->IsCharmed())
-					caster->SpellOnTarget(spell_id, members[z]->GetPet());
+					caster->SpellOnTarget(spell_to_cast, members[z]->GetPet());
 #endif
 			} else
 				_log(SPELLS__CASTING, "Group spell: %s is out of range %f at distance %f from %s", members[z]->GetName(), range, distance, caster->GetName());

@@ -125,7 +125,7 @@ XS(XS_Group_CastGroupSpell)
 		if(caster == NULL)
 			Perl_croak(aTHX_ "caster is NULL, avoiding crash.");
 
-		THIS->CastGroupSpell(caster, spellid);
+		//TODO: THIS->CastGroupSpell(caster, spellid);
 	}
 	XSRETURN_EMPTY;
 }

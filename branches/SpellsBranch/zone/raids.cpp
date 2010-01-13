@@ -400,25 +400,24 @@ Client *Raid::GetClientByIndex(int16 index)
 	return members[index].member;
 }
 
-void Raid::CastGroupSpell(Mob* caster, uint16 spellid, int32 gid)
+void Raid::CastGroupSpell(Mob* caster, Spell *spell_to_cast, int32 gid)
 {
 	float range, distance;
 
 	if(!caster)
 		return;
 
-	//TODO:
-	range = 0;//caster->GetAOERange(spellid);
+	range = caster->GetAOERange(spell_to_cast);
 	
 	float range2 = range*range;
 
 	for(int x = 0; x < MAX_RAID_MEMBERS; x++)
 	{
 		if(members[x].member == caster) {
-			caster->SpellOnTarget(spellid, caster);
+			caster->SpellOnTarget(spell_to_cast, caster);
 #ifdef GROUP_BUFF_PETS
 			if(caster->GetPet() && caster->GetAA(aaPetAffinity) && !caster->GetPet()->IsCharmed())
-				caster->SpellOnTarget(spellid, caster->GetPet());
+				caster->SpellOnTarget(spell_to_cast, caster->GetPet());
 #endif
 		}
 		else if(members[x].member != NULL)
@@ -426,10 +425,10 @@ void Raid::CastGroupSpell(Mob* caster, uint16 spellid, int32 gid)
 			if(members[x].GroupNumber == gid){
 				distance = caster->DistNoRoot(*members[x].member);
 				if(distance <= range2){
-					caster->SpellOnTarget(spellid, members[x].member);
+					caster->SpellOnTarget(spell_to_cast, members[x].member);
 #ifdef GROUP_BUFF_PETS
 					if(members[x].member->GetPet() && members[x].member->GetAA(aaPetAffinity) && !members[x].member->GetPet()->IsCharmed())
-						caster->SpellOnTarget(spellid, members[x].member->GetPet());
+						caster->SpellOnTarget(spell_to_cast, members[x].member->GetPet());
 #endif
 				}
 				else{

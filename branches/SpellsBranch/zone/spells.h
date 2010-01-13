@@ -70,11 +70,11 @@ public:
 	uint32 GetInventorySpellSlot() const { return spell_slot_inventory; }
 
 	//The timer id this mob/player will trigger when it finishes, 0 = ignored.
-	void SetTimerID(sint32 timer) { timer_id = timer; }
-	sint32 GetTimerID() const { return timer_id; }
+	void SetTimerID(uint32 timer) { timer_id = timer; }
+	uint32 GetTimerID() const { return timer_id; }
 
-	void SetTimerIDDuration(sint32 duration) { timer_id_duration = duration; }
-	sint32 GetTimerIDDuration() const { return timer_id_duration; }
+	void SetTimerIDDuration(uint32 duration) { timer_id_duration = duration; }
+	uint32 GetTimerIDDuration() const { return timer_id_duration; }
 	
 	Buff *CreateBuff() { return NULL; }
 	Spell* CopySpell();
@@ -165,8 +165,8 @@ protected:
 	sint32 cast_time;
 	sint32 mana_cost;
 	Timer * cast_timer;
-	sint32 timer_id;
-	sint32 timer_id_duration;
+	uint32 timer_id;
+	uint32 timer_id_duration;
 
 	SPDat_Spell_Struct raw_spell;
 };

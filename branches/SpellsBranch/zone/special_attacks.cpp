@@ -26,6 +26,7 @@ Copyright (C) 2001-2002  EQEMu Development Team (http://eqemulator.net)
 #include "StringIDs.h"
 #include "../common/MiscFunctions.h"
 #include "../common/rulesys.h"
+#include "spells.h"
 
 int Mob::GetKickDamage() const {
 	int multiple=(GetLevel()*100/5);

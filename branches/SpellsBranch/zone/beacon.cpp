@@ -53,9 +53,9 @@ Beacon::Beacon(Mob *at_mob, int lifetime)
 	remove_timer.Disable();
 	spell_timer.Disable();
 	remove_me = false;
-	spell_id = 0xFFFF;
 	spell_iterations = 0;
 	caster_id = 0;
+	beacon_spell = NULL;
 
 	// copy location
 	x_pos = at_mob->GetX();
@@ -77,6 +77,7 @@ Beacon::~Beacon()
 #ifdef SOLAR
 	entity_list.Message(0, 0, "Beacon %d being removed at %0.2f %0.2f %0.2f heading %0.2f", GetID(), GetX(), GetY(), GetZ(), GetHeading());
 #endif
+	safe_delete(beacon_spell);
 }
 
 bool Beacon::Process()
@@ -90,19 +91,19 @@ bool Beacon::Process()
 	(
 		spell_timer.Enabled() &&
 		spell_timer.Check() &&
-		IsValidSpell(spell_id)
+		beacon_spell != NULL
 	)
 	{
 		Mob *caster = entity_list.GetMob(caster_id);
 		if(caster && spell_iterations--)
 		{
 			bool affect_caster = (!caster->IsNPC() && !caster->IsAIControlled());	//NPC AE spells do not affect the NPC caster
-			entity_list.AESpell(caster, this, spell_id, affect_caster);
+			entity_list.AESpell(caster, this, beacon_spell, affect_caster);
 		}
 		else
 		{
 			// spell is done casting, or caster disappeared
-			spell_id = 0xFFFF;
+			safe_delete(beacon_spell);
 			spell_iterations = 0;
 			spell_timer.Disable();
 			caster_id = 0;
@@ -117,14 +118,15 @@ bool Beacon::Process()
 	return true;
 }
 
-void Beacon::AELocationSpell(Mob *caster, int16 cast_spell_id)
+void Beacon::AELocationSpell(Mob *caster, Spell *spell_to_cast)
 {
-	if(!IsValidSpell(cast_spell_id) || !caster)
+	if(!spell_to_cast || !caster)
 		return;
 	
 	caster_id = caster->GetID();
-	spell_id = cast_spell_id;
-	spell_iterations = spells[spell_id].AEDuration / 2500;
+	safe_delete(beacon_spell);
+	beacon_spell = spell_to_cast->CopySpell();
+	spell_iterations = beacon_spell->GetSpell().AEDuration / 2500;
 	spell_iterations = spell_iterations < 1 ? 1 : spell_iterations;	// at least 1
 	spell_timer.Start(2500);
 	spell_timer.Trigger();

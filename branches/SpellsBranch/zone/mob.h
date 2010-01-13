@@ -668,6 +668,8 @@ bool logpos;
 	virtual bool CastSpell(int16 spell_id, int16 target_id, int16 slot = 10, sint32 casttime = -1, sint32 mana_cost = -1, int32* oSpellWillFinish = 0, int32 item_slot = 0xFFFFFFFF);
 	virtual bool DoCastSpell(Spell **casted_spell_ptr, int32* spell_will_finish = 0);
 	void CastedSpellFinished(Spell **casted_spell_ptr);
+	virtual bool SpellOnTarget(Spell *spell_to_cast, Mob* spell_target);
+	virtual bool SpellOnTarget(uint16 spell_id, Mob* spell_target);
 	virtual bool ValidateStartSpellCast(const Spell *spell_to_cast);
 	virtual void ValidateSpellCastFinish(const Spell *spell_to_cast){ }
 	virtual bool CheckFizzle(int16 spell_id);
@@ -689,7 +691,6 @@ bool logpos;
 	bool UseBardSpellLogic(int16 spell_id = 0xffff, int slot = -1);
 	//virtual bool DoCastSpell(int16 spell_id, int16 target_id, int16 slot = 10, sint32 casttime = -1, sint32 mana_cost = -1, int32* oSpellWillFinish = 0, int32 item_slot = 0xFFFFFFFF);
 	//void	CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16 mana_used, int32 inventory_slot = 0xFFFFFFFF);
-	virtual bool SpellOnTarget(int16 spell_id, Mob* spelltar);
 	bool	ApplyNextBardPulse(int16 spell_id, Mob *spell_target, int16 slot);
 	void	BardPulse(uint16 spell_id, Mob *caster);
 	void	SendPetBuffsToClient();
@@ -1114,7 +1115,6 @@ protected:
 	bool	rooted;
 	bool	silenced;
 	bool	inWater;	// Set to true or false by Water Detection code if enabled by rules
-//	Timer mezzed_timer;
 	Timer  stunned_timer;
 	Timer	bardsong_timer;
 	int16	adverrorinfo;

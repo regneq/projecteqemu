@@ -1185,63 +1185,48 @@ bool Mob::SpellFinished(Spell *spell_to_cast)
 
 	range = GetActSpellRange(spell_to_cast, range);
 
-	/*	
-	
 
-	range = GetActSpellRange(spell_id, range);
-// seveian 2008-09-23
-	if(IsPlayerIllusionSpell(spell_id)
+	if(spell_to_cast->IsPlayerIllusionSpell()
 		&& IsClient()
-		&& CastToClient()->CheckAAEffect(aaEffectProjectIllusion)){
+		&& CastToClient()->CheckAAEffect(aaEffectProjectIllusion))
+	{
 		range = 100;
 	}
-	if(spell_target != NULL && spell_target != this) {
+
+	if(spell_target != NULL && spell_target != this) 
+	{
 		//casting a spell on somebody but ourself, make sure they are in range
 		float dist2 = DistNoRoot(*spell_target);
 		float range2 = range * range;
 		if(dist2 > range2) {
 			//target is out of range.
-			mlog(SPELLS__CASTING, "Spell %d: Spell target is out of range (squared: %f > %f)", spell_id, dist2, range2);
+			mlog(SPELLS__CASTING, "Spell %d: Spell target is out of range (squared: %f > %f)", spell_to_cast->GetSpellID(), dist2, range2);
 			Message_StringID(13, TARGET_OUT_OF_RANGE);
-			return(false);
+			return false;
 		}
 	}
 
-	//
-	// solar: Switch #2 - execute the spell
-	//
 	switch(CastAction)
 	{
 		default:
 		case CastActUnknown:
 		case SingleTarget:
 		{
-
-#ifdef BOTS
-			if(IsBot()) {
-				bool StopLogic = false;
-				if(!this->CastToBot()->DoFinishedSpellSingleTarget(spell_id, spell_target, slot, StopLogic))
-					return false;
-				if(StopLogic)
-					break;
-			}
-#endif //BOTS
-
-			if(spell_target == NULL) {
-				mlog(SPELLS__CASTING, "Spell %d: Targeted spell, but we have no target", spell_id);
+			if(spell_target == NULL) 
+			{
+				mlog(SPELLS__CASTING, "Spell %d: Targeted spell, but we have no target", spell_to_cast->GetSpellID());
 				return(false);
 			}
-			SpellOnTarget(spell_id, spell_target);
-// seveian 2008-09-23
+			SpellOnTarget(spell_to_cast, spell_target);
 
-			if(IsPlayerIllusionSpell(spell_id)
+			if(spell_to_cast->IsPlayerIllusionSpell()
 			&& IsClient()
 			&& CastToClient()->CheckAAEffect(aaEffectProjectIllusion)){
-				mlog(AA__MESSAGE, "Effect Project Illusion for %s on spell id: %d was ON", GetName(), spell_id);
+				mlog(AA__MESSAGE, "Effect Project Illusion for %s on spell id: %d was ON", GetName(), spell_to_cast->GetSpellID());
 				CastToClient()->DisableAAEffect(aaEffectProjectIllusion);
 			}
 			else{
-				mlog(AA__MESSAGE, "Effect Project Illusion for %s on spell id: %d was OFF", GetName(), spell_id);
+				mlog(AA__MESSAGE, "Effect Project Illusion for %s on spell id: %d was OFF", GetName(), spell_to_cast->GetSpellID());
 			}
 			break;
 		}
@@ -1249,53 +1234,37 @@ bool Mob::SpellFinished(Spell *spell_to_cast)
 		case AECaster:
 		case AETarget:
 		{
-#ifdef BOTS
-			if(IsBot()) {
-				bool StopLogic = false;
-				if(!this->CastToBot()->DoFinishedSpellAETarget(spell_id, spell_target, slot, StopLogic))
-					return false;
-				if(StopLogic)
-					break;
-			}
-#endif //BOTS
-
 			// we can't cast an AE spell without something to center it on
 			assert(ae_center != NULL);
 
 			if(ae_center->IsBeacon()) {
 				// special ae duration spell
-				ae_center->CastToBeacon()->AELocationSpell(this, spell_id);
+				ae_center->CastToBeacon()->AELocationSpell(this, spell_to_cast);
 			} else {
 				// regular PB AE or targeted AE spell - spell_target is null if PB
 				if(spell_target)	// this must be an AETarget spell
 				{
 					// affect the target too
-					SpellOnTarget(spell_id, spell_target);
+					SpellOnTarget(spell_to_cast, spell_target);
 				}
-				if(ae_center && ae_center == this && IsBeneficialSpell(spell_id))
-					SpellOnTarget(spell_id, this);
+
+				if(ae_center && ae_center == this && spell_to_cast->IsBeneficialSpell())
+				{
+					SpellOnTarget(spell_to_cast, this);
+				}
 				
 				bool affect_caster = !IsNPC();	//NPC AE spells do not affect the NPC caster
-				entity_list.AESpell(this, ae_center, spell_id, affect_caster);
+				entity_list.AESpell(this, ae_center, spell_to_cast, affect_caster);
 			}
 			break;
 		}
 
 		case GroupSpell:
 		{
-#ifdef BOTS
-			if(IsBot()) {
-				bool StopLogic = false;
-				if(!this->CastToBot()->DoFinishedSpellGroupTarget(spell_id, spell_target, slot, StopLogic))
-					return false;
-				if(StopLogic)
-					break;
-			}
-#endif //BOTS
-
-			if(IsClient() && CastToClient()->CheckAAEffect(aaEffectMassGroupBuff)){
-				SpellOnTarget(spell_id, this);
-				entity_list.AESpell(this, this, spell_id, true);
+			if(IsClient() && CastToClient()->CheckAAEffect(aaEffectMassGroupBuff))
+			{
+				SpellOnTarget(spell_to_cast, this);
+				entity_list.AESpell(this, this, spell_to_cast, true);
 				CastToClient()->DisableAAEffect(aaEffectMassGroupBuff);
 			}
 			else
@@ -1309,7 +1278,7 @@ bool Mob::SpellFinished(Spell *spell_to_cast)
 					Group *target_group = entity_list.GetGroupByMob(spell_target);
 					if(target_group)
 					{
-						target_group->CastGroupSpell(this, spell_id);
+						target_group->CastGroupSpell(this, spell_to_cast);
 					}
 				}
 				else if(spell_target->IsRaidGrouped() && spell_target->IsClient())
@@ -1319,9 +1288,13 @@ bool Mob::SpellFinished(Spell *spell_to_cast)
 					if(target_raid){
 						gid = target_raid->GetGroup(spell_target->GetName());
 						if(gid < 12)
-							target_raid->CastGroupSpell(this, spell_id, gid);
+						{
+							target_raid->CastGroupSpell(this, spell_to_cast, gid);
+						}
 						else
-							SpellOnTarget(spell_id, spell_target);
+						{
+							SpellOnTarget(spell_to_cast, spell_target);
+						}
 					}
 				}
 				else
@@ -1329,81 +1302,86 @@ bool Mob::SpellFinished(Spell *spell_to_cast)
 					// if target is grouped, CastGroupSpell will cast it on the caster
 					// too, but if not then we have to do that here.
 					if(spell_target != this){
-						SpellOnTarget(spell_id, this);
+						SpellOnTarget(spell_to_cast, this);
 	#ifdef GROUP_BUFF_PETS
 						//pet too
 						if (GetPet() && GetAA(aaPetAffinity) && !GetPet()->IsCharmed())
-							SpellOnTarget(spell_id, GetPet());
+						{
+							SpellOnTarget(spell_to_cast, GetPet());
+						}
 	#endif					
 					}
 
-					SpellOnTarget(spell_id, spell_target);
+					SpellOnTarget(spell_to_cast, spell_target);
 	#ifdef GROUP_BUFF_PETS
 					//pet too
 					if (spell_target->GetPet() && GetAA(aaPetAffinity) && !spell_target->GetPet()->IsCharmed())
-						SpellOnTarget(spell_id, spell_target->GetPet());
+					{
+						SpellOnTarget(spell_to_cast, spell_target->GetPet());
+					}
 	#endif
 				}
 			}
 			break;
 		}
-	}*/
+	}
 
-	// animation
-/*	outapp = new EQApplicationPacket(OP_Animation, sizeof(Animation_Struct));
-	Animation_Struct* a = (Animation_Struct*)outapp->pBuffer;
-	a->spawn_id = GetID();
-	a->animation_speed = 10;
-	a->animation = spells[spell_id].CastingAnim;
-	outapp->priority = 2;
-	entity_list.QueueCloseClients(this, outapp, false, 200, 0, true, IsClient() ? FILTER_PCSPELLS : FILTER_NPCSPELLS);
-	safe_delete(outapp);
-*/
-/*	DoAnim(spells[spell_id].CastingAnim, 0, true, IsClient() ? FILTER_PCSPELLS : FILTER_NPCSPELLS);
-	
+	DoAnim(spell_to_cast->GetSpell().CastingAnim, 0, true, IsClient() ? FILTER_PCSPELLS : FILTER_NPCSPELLS);
+
 	// if this was a spell slot or an ability use up the mana for it
 	// CastSpell already reduced the cost for it if we're a client with focus
-	if(slot != USE_ITEM_SPELL_SLOT  && slot != POTION_BELT_SPELL_SLOT && mana_used > 0)
+	if(spell_to_cast->GetSpellSlot() != USE_ITEM_SPELL_SLOT  && spell_to_cast->GetSpellSlot() != POTION_BELT_SPELL_SLOT && spell_to_cast->GetManaCost() > 0)
 	{
-		mlog(SPELLS__CASTING, "Spell %d: consuming %d mana", spell_id, mana_used);
-		SetMana(GetMana() - mana_used);
-	}
-	
-	//set our reuse timer on long ass reuse_time spells...
-	if(IsClient() && spells[spell_id].recast_time > 1000) {
-		int recast = spells[spell_id].recast_time/1000;
-		if (spell_id == SPELL_LAY_ON_HANDS)	//lay on hands
-		{
-			recast -= GetAA(aaFervrentBlessing) * 420;
-		}
-		else if (spell_id == SPELL_HARM_TOUCH || spell_id == SPELL_HARM_TOUCH2)	//harm touch
-		{
-			recast -= GetAA(aaTouchoftheWicked) * 420;
-		}
-		mlog(SPELLS__CASTING, "Spell %d: Setting long reuse timer to %d s (orig %d)", spell_id, recast, spells[spell_id].recast_time);
-		CastToClient()->GetPTimers().Start(pTimerSpellStart + spell_id, recast);
+		mlog(SPELLS__CASTING, "Spell %d: consuming %d mana", spell_to_cast->GetSpellID(), spell_to_cast->GetManaCost());
+		SetMana(GetMana() - spell_to_cast->GetManaCost());
 	}
 
-	if(IsClient() && ((slot == USE_ITEM_SPELL_SLOT) || (slot == POTION_BELT_SPELL_SLOT)))
+	if(IsClient())
 	{
-		ItemInst *itm = CastToClient()->GetInv().GetItem(inventory_slot);
-		if(itm && itm->GetItem()->RecastDelay > 0){
-			CastToClient()->GetPTimers().Start((pTimerItemStart + itm->GetItem()->RecastType), itm->GetItem()->RecastDelay);
+		uint32 recast_time = 0;
+		uint32 recast_timer = 0;
+		if((spell_to_cast->GetSpellSlot() == USE_ITEM_SPELL_SLOT) || (spell_to_cast->GetSpellSlot() == POTION_BELT_SPELL_SLOT))
+		{
+			ItemInst *itm = CastToClient()->GetInv().GetItem(spell_to_cast->GetInventorySpellSlot());
+			if(itm && itm->GetItem()->RecastDelay > 0)
+			{
+				recast_timer = pTimerItemStart + itm->GetItem()->RecastType;
+				recast_time = itm->GetItem()->RecastDelay;
+			}
+		}
+		else
+		{
+			if(spell_to_cast->GetTimerID() > 0)
+			{
+				recast_timer = spell_to_cast->GetTimerID();
+				recast_time = spell_to_cast->GetTimerIDDuration();
+			}
+			else
+			{
+				recast_timer = pTimerSpellStart + spell_to_cast->GetSpellID();
+				recast_time = spell_to_cast->GetSpell().recast_time / 1000;
+			}
+		}
+
+		if(recast_time > 0)
+		{
+			CastToClient()->GetPTimers().Start(recast_timer, recast_time);
 		}
 	}
-	
+
 	if(IsNPC())
-		CastToNPC()->AI_Event_SpellCastFinished(true, slot);
+		CastToNPC()->AI_Event_SpellCastFinished(true, spell_to_cast->GetSpellSlot());
 
 	if (IsClient() && CastToClient()->MelodyIsActive()) {
 		Client *c = CastToClient();
-		if (IsBardSong(spell_id)) {
+		if (spell_to_cast->IsBardSong()) {
 			c->InterruptSpell(0, 0, 0);
 			c->MelodyAdvanceSong();
 			c->MelodyTrySong();
 		}
 	}
-*/
+
+	ZeroAndFreeCastingVars();
 	return true;	
 }
 
@@ -1496,11 +1474,11 @@ bool Mob::ApplyNextBardPulse(int16 spell_id, Mob *spell_target, int16 slot) {
 
 		case AECaster:
 		{
-			if(IsBeneficialSpell(spell_id))
-				SpellOnTarget(spell_id, this);
+			//if(IsBeneficialSpell(spell_id))
+			//	SpellOnTarget(spell_id, this);
 			
 			bool affect_caster = !IsNPC();	//NPC AE spells do not affect the NPC caster
-			entity_list.AEBardPulse(this, this, spell_id, affect_caster);
+//			entity_list.AEBardPulse(this, this, spell_to_cast, affect_caster);
 			break;		
 		}
 		case AETarget:
@@ -1520,7 +1498,7 @@ bool Mob::ApplyNextBardPulse(int16 spell_id, Mob *spell_target, int16 slot) {
 				mlog(SPELLS__BARDS, "Bard Song Pulse: spell %d, AE with no target", spell_id);
 			}
 			bool affect_caster = !IsNPC();	//NPC AE spells do not affect the NPC caster
-			entity_list.AEBardPulse(this, ae_center, spell_id, affect_caster);
+//			entity_list.AEBardPulse(this, ae_center, spell_to_cast, affect_caster);
 			break;
 		}
 
@@ -2238,7 +2216,6 @@ int Mob::CanBuffStack(int16 spellid, int8 caster_level, bool iFailIfOverwrite)
 
 ///////////////////////////////////////////////////////////////////////////////
 // spell effect related functions
-
 //
 // solar:
 // this is actually applying a spell cast from 'this' on 'spelltar'
@@ -2254,8 +2231,18 @@ int Mob::CanBuffStack(int16 spellid, int8 caster_level, bool iFailIfOverwrite)
 // and if you don't want effects just return false.  interrupting here will
 // break stuff
 //
-bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar)
+bool Mob::SpellOnTarget(uint16 spell_id, Mob* spell_target)
 {
+	Spell *spell_to_cast = new Spell(spell_id, this, spell_target);
+	bool return_value = SpellOnTarget(spell_to_cast, spell_target);
+	safe_delete(spell_to_cast);
+	return return_value;
+}
+
+bool Mob::SpellOnTarget(Spell *spell_to_cast, Mob* spell_target)
+{
+	printf("Spell %s(%d) on %s\n", spell_to_cast->GetSpell().name, spell_to_cast->GetSpellID(), spell_target->GetName());
+	/*
 	EQApplicationPacket *action_packet, *message_packet;
 	float spell_effectiveness;
 
@@ -2305,11 +2292,7 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar)
 	}
 
 	// select target
-	if	// Bind Sight line of spells 
-	(
-		spell_id == 500 || 	// bind sight
-		spell_id == 407 		// cast sight
-	)
+	if(spell_to_cast->HasSpellEffect(SE_BindSight))
 	{ 
 		action->target = GetID(); 
 	} 
@@ -2333,9 +2316,10 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar)
 	entity_list.QueueCloseClients(spelltar, action_packet, true, 200, this, true, spelltar->IsClient() ? FILTER_PCSPELLS : FILTER_NPCSPELLS);
 
 // end of action packet
+*/
 
        /* Send the EVENT_CAST_ON event */
-       if(spelltar->IsNPC())
+     /*  if(spelltar->IsNPC())
        {       char temp1[100];
                sprintf(temp1, "%d", spell_id);
                parse->Event(EVENT_CAST_ON, spelltar->GetNPCTypeID(), temp1, spelltar->CastToNPC(), this);
@@ -2692,7 +2676,7 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar)
 	safe_delete(message_packet);
 	
 	mlog(SPELLS__CASTING, "Cast of %d by %s on %s complete successfully.", spell_id, GetName(), spelltar->GetName());
-		
+		*/
 	return true;
 }
 

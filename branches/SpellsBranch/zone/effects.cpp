@@ -694,7 +694,7 @@ void EntityList::AETaunt(Client* taunter, float range) {
 // spell_id.
 // NPC spells will only affect other NPCs with compatible faction
 //TODO: FIXME
-void EntityList::AESpell(Mob *caster, Mob *center, int16 spell_id, bool affect_caster)
+void EntityList::AESpell(Mob *caster, Mob *center, Spell *spell_to_cast, bool affect_caster)
 {
 	LinkedListIterator<Mob*> iterator(mob_list);
 	Mob *curmob;
@@ -702,7 +702,7 @@ void EntityList::AESpell(Mob *caster, Mob *center, int16 spell_id, bool affect_c
 	float dist = 0; //caster->GetAOERange(spell_id);
 	float dist2 = dist * dist;
 	
-	bool bad = IsDetrimentalSpell(spell_id);
+	bool bad = spell_to_cast->IsDetrimentalSpell();
 	bool isnpc = caster->IsNPC();
 	const int MAX_TARGETS_ALLOWED = 4;
 	int iCounter = 0;
@@ -742,12 +742,17 @@ void EntityList::AESpell(Mob *caster, Mob *center, int16 spell_id, bool affect_c
 		}
 
 		//if we get here... cast the spell.
-		if(IsTargetableAESpell(spell_id) && bad) {
+		if(spell_to_cast->IsTargetableAESpell() && bad) 
+		{
 			if(iCounter < MAX_TARGETS_ALLOWED)
-				caster->SpellOnTarget(spell_id, curmob);
+			{
+				caster->SpellOnTarget(spell_to_cast, curmob);
+			}
 		}
 		else
-			caster->SpellOnTarget(spell_id, curmob);
+		{
+			caster->SpellOnTarget(spell_to_cast, curmob);
+		}
 
 		if(!isnpc) //npcs are not target limited...
 			iCounter++;
@@ -758,7 +763,7 @@ void EntityList::AESpell(Mob *caster, Mob *center, int16 spell_id, bool affect_c
 // solar: causes caster to hit every mob within dist range of center with
 // a bard pulse of spell_id.
 // NPC spells will only affect other NPCs with compatible faction
-void EntityList::AEBardPulse(Mob *caster, Mob *center, int16 spell_id, bool affect_caster)
+void EntityList::AEBardPulse(Mob *caster, Mob *center, Spell *spell_to_cast, bool affect_caster)
 {
 	LinkedListIterator<Mob*> iterator(mob_list);
 	Mob *curmob;
@@ -766,7 +771,7 @@ void EntityList::AEBardPulse(Mob *caster, Mob *center, int16 spell_id, bool affe
 	float dist = 0; //caster->GetAOERange(spell_id);
 	float dist2 = dist * dist;
 	
-	bool bad = IsDetrimentalSpell(spell_id);
+	bool bad = spell_to_cast->IsDetrimentalSpell();
 	bool isnpc = caster->IsNPC();
 	
 	for(iterator.Reset(); iterator.MoreElements(); iterator.Advance())
@@ -797,10 +802,11 @@ void EntityList::AEBardPulse(Mob *caster, Mob *center, int16 spell_id, bool affe
 				continue;
 		}
 		//if we get here... cast the spell.
-		curmob->BardPulse(spell_id, caster);
+		//TODO:
+		//curmob->BardPulse(spell_id, caster);
 	}
 	if(caster->IsClient())
-		caster->CastToClient()->CheckSongSkillIncrease(spell_id);
+		caster->CastToClient()->CheckSongSkillIncrease(spell_to_cast->GetSpellID());
 }
 
 //Dook- Rampage and stuff for clients.

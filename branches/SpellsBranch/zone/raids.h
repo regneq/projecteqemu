@@ -21,6 +21,7 @@
 #include "../common/types.h"
 #include "../common/linked_list.h"
 #include "groups.h"
+#include "spells.h"
 #include <vector>
 #include <string>
 #include <queue>
@@ -145,7 +146,7 @@ public:
 	 *  Actual Implementation Stuff
 	 */
 
-	void	CastGroupSpell(Mob* caster,uint16 spellid, int32 gid);
+	void	CastGroupSpell(Mob* caster, Spell *spell_to_cast, int32 gid);
 	void	SplitExp(uint32 exp, Mob* other);
 	int32	GetTotalRaidDamage(Mob* other);
 	void	BalanceHP(sint32 penalty, int32 gid);

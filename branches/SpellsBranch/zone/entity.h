@@ -26,6 +26,7 @@
 #include "zonedbasync.h"
 #include "../common/servertalk.h"
 #include "QGlobals.h"
+#include "spells.h"
 
 // max number of newspawns to send per bulk packet
 #define SPAWNS_PER_POINT_DATARATE 10
@@ -266,8 +267,8 @@ public:
 
 	void	AEAttack(Mob *attacker, float dist, int Hand = 13, int count = 0);
 	void	AETaunt(Client *caster, float range = 0);
-	void	AESpell(Mob *caster, Mob *center, int16 spell_id, bool affect_caster = true);
-	void	AEBardPulse(Mob *caster, Mob *center, int16 spell_id, bool affect_caster = true);
+	void	AESpell(Mob *caster, Mob *center, Spell *spell_to_cast, bool affect_caster = true);
+	void	AEBardPulse(Mob *caster, Mob *center, Spell *spell_to_cast, bool affect_caster = true);
 	
 	void 	RadialSetLogging(Mob *around, bool enabled, bool clients, bool non_clients, float range = 0);
 
