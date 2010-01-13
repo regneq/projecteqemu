@@ -189,10 +189,10 @@ public:
 	static std::string ClassIdToString(uint16 classId);
 	static std::string RaceIdToString(uint16 raceId);
 	static bool IsBotAttackAllowed(Mob* attacker, Mob* target, bool& hasRuleDefined);
-	static void BotGroupOrderFollow(Group* group);
-	static void BotGroupOrderGuard(Group* group);
-	static void BotGroupOrderAttack(Group* group, Mob* target);
-	static void BotGroupSummon(Group* group);
+	static void BotGroupOrderFollow(Group* group, Client* client);
+	static void BotGroupOrderGuard(Group* group, Client* client);
+	static void BotGroupOrderAttack(Group* group, Mob* target, Client* client);
+	static void BotGroupSummon(Group* group, Client* client);
 	static Bot* GetBotByBotClientOwnerAndBotName(Client* c, std::string botName);
 	static void ProcessBotGroupInvite(Client* c, std::string botName);
 	static void ProcessBotGroupDisband(Client* c, std::string botName);
@@ -220,8 +220,8 @@ public:
 	static BotSpell GetBestBotSpellForMez(Bot* botCaster);
 	static BotSpell GetBestBotMagicianPetSpell(Bot* botCaster);
 	static std::string GetBotMagicianPetType(Bot* botCaster);
-	//static BotSpell GetBestBotMagicianNukeSpell(Bot* botCaster, Mob* target);
 	static BotSpell GetBestBotSpellForNukeByTargetType(Bot* botCaster, SpellTargetType targetType);
+	static BotSpell GetBestBotWizardNukeSpellByTargetResists(Bot* botCaster, Mob* target);
 
 	// Static Bot Group Methods
 	static bool AddBotToGroup(Bot* bot, Group* group);
