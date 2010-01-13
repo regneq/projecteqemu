@@ -2,6 +2,8 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==01/12/2010==
 WildcardX: Implemented a bot spellcasting ai overhaul that improves upon the existing ai and creates a framework to expand additional ai enchancements around for bot coders. NOTE: Please evaluate this version of bots BEFORE you replace your existing server as this is still a work in progress.
+WildcardX: Implemented bot wizard nuke spell selection for the new bot spellcasting ai.
+WildcardX: Fixed various bugs to now allow any characters except the bot owner to give bot commands or spawn the bot. Also fixed #bot mana command to filter out non-caster bots.
 
 ==01/10/2010==
 Derision: /invite can now be used to invite a player in another zone into a regular group.

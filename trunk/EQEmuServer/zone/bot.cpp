@@ -2669,7 +2669,7 @@ bool Bot::DeleteBot(std::string* errorMessage) {
 }
 
 void Bot::Spawn(Client* botCharacterOwner, std::string* errorMessage) {
-	if(this->GetBotID() > 0 && this->_botOwnerCharacterID > 0 && botCharacterOwner) {
+	if(GetBotID() > 0 && _botOwnerCharacterID > 0 && botCharacterOwner && botCharacterOwner->CharacterID() == _botOwnerCharacterID) {
 		// Rename the bot name to make sure that Mob::GetName() matches Mob::GetCleanName() so we dont have a bot named "Jesuschrist001"
 		strcpy(name, GetCleanName());
 
@@ -6858,10 +6858,8 @@ void Bot::BotOrderCampAll(Client* c) {
 	if(c) {
 		std::list<Bot*> BotList = entity_list.GetBotsByBotOwnerCharacterID(c->CharacterID());
 
-		if(!BotList.empty()) {
-			for(std::list<Bot*>::iterator botListItr = BotList.begin(); botListItr != BotList.end(); botListItr++) {
-				(*botListItr)->Camp();
-			}
+		for(std::list<Bot*>::iterator botListItr = BotList.begin(); botListItr != BotList.end(); botListItr++) {
+			(*botListItr)->Camp();
 		}
 	}
 }
@@ -8218,8 +8216,8 @@ void Bot::Zone() {
 }
 
 // Orders all bots in the specified group to follow their group leader.
-void Bot::BotGroupOrderFollow(Group* group) {
-	if(group) {
+void Bot::BotGroupOrderFollow(Group* group, Client* client) {
+	if(group && client) {
 		Mob* groupLeader = group->GetLeader();
 
 		if(groupLeader) {
@@ -8227,7 +8225,7 @@ void Bot::BotGroupOrderFollow(Group* group) {
 				if(group->members[i] && group->members[i]->IsBot()) {
 					Bot* botGroupMember = group->members[i]->CastToBot();
 
-					if(botGroupMember) {
+					if(botGroupMember && botGroupMember->GetBotOwnerCharacterID() == client->CharacterID()) {
 						if(group->IsLeader(botGroupMember) && botGroupMember->GetBotOwner()) {
 							botGroupMember->SetFollowID(botGroupMember->GetBotOwner()->GetID());
 							if(botGroupMember->GetBotOwner())
@@ -8247,23 +8245,25 @@ void Bot::BotGroupOrderFollow(Group* group) {
 }
 
 // Orders all bots in the specified group to guard their current location.
-void Bot::BotGroupOrderGuard(Group* group) {
-	if(group) {
+void Bot::BotGroupOrderGuard(Group* group, Client* client) {
+	if(group && client) {
 		for(int i = 0; i< MAX_GROUP_MEMBERS; i++) {
 			if(group->members[i] && group->members[i]->IsBot()) {
 				Bot* botGroupMember = group->members[i]->CastToBot();
 
-				botGroupMember->SetFollowID(0);
-				botGroupMember->Say("Guarding here.");
+				if(botGroupMember && botGroupMember->GetBotOwnerCharacterID() == client->CharacterID()) {
+					botGroupMember->SetFollowID(0);
+					botGroupMember->Say("Guarding here.");
 
-				botGroupMember->WipeHateList();
+					botGroupMember->WipeHateList();
+				}
 			}
 		}
 	}
 }
 
 // Orders all bots in the specified group to attack their group leader's target.
-void Bot::BotGroupOrderAttack(Group* group, Mob* target) {
+void Bot::BotGroupOrderAttack(Group* group, Mob* target, Client* client) {
 	if(group && target) {
 		Mob* groupLeader = group->GetLeader();
 
@@ -8272,7 +8272,8 @@ void Bot::BotGroupOrderAttack(Group* group, Mob* target) {
 				if(group->members[i] && group->members[i]->IsBot()) {
 					Bot* botGroupMember = group->members[i]->CastToBot();
 
-					botGroupMember->AddToHateList(target, 1);
+					if(botGroupMember->GetBotOwnerCharacterID() == client->CharacterID())
+						botGroupMember->AddToHateList(target, 1);
 				}
 			}
 		}
@@ -8280,19 +8281,21 @@ void Bot::BotGroupOrderAttack(Group* group, Mob* target) {
 }
 
 // Summons all bot group members to ther owners location.
-void Bot::BotGroupSummon(Group* group) {
+void Bot::BotGroupSummon(Group* group, Client* client) {
 	if(group) {
 		for(int i = 0; i < MAX_GROUP_MEMBERS; i++) {
 			if(group->members[i] && group->members[i]->IsBot()) {
 				Bot* botMember = group->members[i]->CastToBot();
 
-				botMember->SetTarget(botMember->GetBotOwner());
-				
-				botMember->Warp(botMember->GetBotOwner()->GetX(), botMember->GetBotOwner()->GetY(), botMember->GetBotOwner()->GetZ());
-				
-				if(botMember->HasPet() && botMember->GetPet()) {
-					botMember->GetPet()->SetTarget(botMember);
-					botMember->GetPet()->Warp(botMember->GetBotOwner()->GetX(), botMember->GetBotOwner()->GetY(), botMember->GetBotOwner()->GetZ());
+				if(botMember->GetBotOwnerCharacterID() == client->CharacterID()) {
+					botMember->SetTarget(botMember->GetBotOwner());
+
+					botMember->Warp(botMember->GetBotOwner()->GetX(), botMember->GetBotOwner()->GetY(), botMember->GetBotOwner()->GetZ());
+
+					if(botMember->HasPet() && botMember->GetPet()) {
+						botMember->GetPet()->SetTarget(botMember);
+						botMember->GetPet()->Warp(botMember->GetBotOwner()->GetX(), botMember->GetBotOwner()->GetY(), botMember->GetBotOwner()->GetZ());
+					}
 				}
 			}
 		}
@@ -8851,7 +8854,12 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 				listAll = true;
 			else {
 				string botName = std::string(sep->arg[2]);
-				bot = entity_list.GetBotByBotName(botName);
+				
+				Bot* tempBot = entity_list.GetBotByBotName(botName);
+				
+				if(tempBot && tempBot->GetBotOwner() == c) {
+					bot = tempBot;
+				}
 			}
 		}
 		else {
@@ -8861,7 +8869,8 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 
 		if(bot && !listAll) {
 			// Specific bot only
-			c->Message(0, "Name: %s -- Mana: %3.1f%%", bot->GetCleanName(), bot->GetManaRatio());
+			if(bot->GetClass() !=  WARRIOR && bot->GetClass() !=  MONK && bot->GetClass() !=  BARD && bot->GetClass() !=  BERSERKER && bot->GetClass() !=  ROGUE)
+				c->Message(0, "Name: %s -- Class: %s -- Mana: %3.1f%%", bot->GetCleanName(), ClassIdToString(bot->GetClass()).c_str(), bot->GetManaRatio());
 		}
 		else {
 			// List all
@@ -8870,7 +8879,10 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 			if(!spawnedBots.empty()) {
 				for(std::list<Bot*>::iterator botsListItr = spawnedBots.begin(); botsListItr != spawnedBots.end(); botsListItr++) {
 					Bot* tempBot = *botsListItr;
-					c->Message(0, "Name: %s -- Mana: %3.1f%%", tempBot->GetCleanName(), tempBot->GetManaRatio());
+					if(tempBot) {
+						if(tempBot->GetClass() !=  WARRIOR && tempBot->GetClass() !=  MONK && tempBot->GetClass() !=  BARD && tempBot->GetClass() !=  BERSERKER && tempBot->GetClass() !=  ROGUE)
+							c->Message(0, "Name: %s -- Class: %s -- Mana: %3.1f%%", tempBot->GetCleanName(), ClassIdToString(tempBot->GetClass()).c_str(), tempBot->GetManaRatio());
+					}
 				}
 			}
 			else {
@@ -8929,7 +8941,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 			return;
 		}
 
-		const int spawnedBotCount = SpawnedBotCount(c->CharacterID(), &TempErrorMessage);
+		int spawnedBotCount = SpawnedBotCount(c->CharacterID(), &TempErrorMessage);
 
 		if(!TempErrorMessage.empty()) {
 			c->Message(13, "Database Error: %s", TempErrorMessage.c_str());
@@ -11176,22 +11188,22 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 	if(!strcasecmp(sep->arg[1], "group")) {
 		if(!strcasecmp(sep->arg[2], "follow")) {
 			if(c->IsGrouped())
-				BotGroupOrderFollow(c->GetGroup());
+				BotGroupOrderFollow(c->GetGroup(), c);
 		}
 		else if(!strcasecmp(sep->arg[2], "guard")) {
 			if(c->IsGrouped())
-				BotGroupOrderGuard(c->GetGroup());
+				BotGroupOrderGuard(c->GetGroup(), c);
 		}
 		else if(!strcasecmp(sep->arg[2], "attack")) {
 			if(c->IsGrouped() && (c->GetTarget() != NULL) && c->IsAttackAllowed(c->GetTarget())) {
-				BotGroupOrderAttack(c->GetGroup(), c->GetTarget());
+				BotGroupOrderAttack(c->GetGroup(), c->GetTarget(), c);
 			}
 			else
 				c->Message(15, "You must target a monster.");
 		}
 		else if(!strcasecmp(sep->arg[2], "summon")) {
 			if(c->IsGrouped())
-				BotGroupSummon(c->GetGroup());
+				BotGroupSummon(c->GetGroup(), c);
 		}
 
 		return;
@@ -11417,11 +11429,11 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 				Group* g = botGroupLeader->GetGroup();
 				
 				if(g->IsLeader(botGroupLeader))
-					BotGroupSummon(g);
+					BotGroupSummon(g, c);
 			}
 		}
 		else if(c->HasGroup())
-			BotGroupSummon(c->GetGroup());
+			BotGroupSummon(c->GetGroup(), c);
 
 		return;
 	}
@@ -11444,11 +11456,11 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 				Group* g = botGroupLeader->GetGroup();
 				
 				if(g->IsLeader(botGroupLeader))
-					BotGroupOrderFollow(g);
+					BotGroupOrderFollow(g, c);
 			}
 		}
 		else if(c->HasGroup())
-			BotGroupOrderFollow(c->GetGroup());
+			BotGroupOrderFollow(c->GetGroup(), c);
 
 		return;
 	}
@@ -11471,11 +11483,11 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 				Group* g = botGroupLeader->GetGroup();
 				
 				if(g->IsLeader(botGroupLeader))
-					BotGroupOrderGuard(g);
+					BotGroupOrderGuard(g, c);
 			}
 		}
 		else if(c->HasGroup())
-			BotGroupOrderGuard(c->GetGroup());
+			BotGroupOrderGuard(c->GetGroup(), c);
 
 		return;
 	}
@@ -11501,11 +11513,11 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 
 							if(g) {
 								if(g->IsLeader(botGroupLeader))
-									BotGroupOrderAttack(g, targetMob);
+									BotGroupOrderAttack(g, targetMob, c);
 							}
 						}
 						else if(c->HasGroup())
-							BotGroupOrderAttack(c->GetGroup(), targetMob);
+							BotGroupOrderAttack(c->GetGroup(), targetMob, c);
 					}
 					else
 						c->Message(13, "You must target a monster.");
@@ -11864,8 +11876,7 @@ list<Bot*> EntityList::GetBotsByBotOwnerCharacterID(uint32 botOwnerCharacterID) 
 	list<Bot*> Result;
 
 	if(botOwnerCharacterID > 0) {
-		for(list<Bot*>::iterator botListItr = bot_list.begin(); botListItr != bot_list.end(); botListItr++)
-		{
+		for(list<Bot*>::iterator botListItr = bot_list.begin(); botListItr != bot_list.end(); botListItr++) {
 			Bot* tempBot = *botListItr;
 
 			if(tempBot && tempBot->GetBotOwnerCharacterID() == botOwnerCharacterID)
