@@ -384,13 +384,13 @@ public:
 	inline int8	GetBaseWIS()	const { return m_pp.WIS; }
 
 	//Spell related stuff
-	float  GetActSpellRange(int16 spell_id, float range);
-	sint32  GetActSpellDamage(int16 spell_id, sint32 value);
-	sint32  GetActSpellHealing(int16 spell_id, sint32 value);
-	sint32  GetActSpellCost(int16 spell_id, sint32);
-	sint32  GetActSpellDuration(int16 spell_id, sint32);
-	sint32  GetActSpellCasttime(int16 spell_id, sint32);
-	sint32  GetDotFocus(int16 spell_id, sint32 value);
+	float  GetActSpellRange(Spell *spell_to_cast, float range);
+	sint32  GetActSpellDamage(Spell *spell_to_cast, sint32 value);
+	sint32  GetActSpellHealing(Spell *spell_to_cast, sint32 value);
+	sint32  GetActSpellCost(Spell *spell_to_cast, sint32);
+	sint32  GetActSpellDuration(Spell *spell_to_cast, sint32);
+	sint32  GetActSpellCasttime(Spell *spell_to_cast, sint32);
+	sint32  GetDotFocus(Spell *spell_to_cast, sint32 value);
 	virtual bool CheckFizzle(int16 spell_id);
 	virtual int GetCurrentBuffSlots();
 	virtual int GetCurrentSongSlots();
@@ -403,7 +403,7 @@ public:
 	virtual void UninitializeBuffSlots();
 	virtual int GetFreeBuffSlot(int32 spell_id);
 	virtual void ValidateSpellCastFinish(const Spell *spell_to_cast);
-	virtual bool DoComponentCheck(Spell *spell_to_cast);
+	virtual bool DoComponentCheck(Spell *spell_to_cast, bool bard_song_mode);
 
 	inline const sint32	GetBaseHP() const { return base_hp; }
 
@@ -928,8 +928,8 @@ protected:
 	void MakeBuffFadePacket(int16 spell_id, int slot_id, bool send_message = true);
 	bool client_data_loaded;
 
-	sint16	GetFocusEffect(focusType type, int16 spell_id);
-	sint16	CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id);
+	sint16	GetFocusEffect(focusType type, Spell *spell_to_cast);
+	sint16	CalcFocusEffect(focusType type, int16 focus_id, Spell *spell_to_cast);
 
 	bool	MoveItemToInventory(ItemInst *BInst, bool UpdateClient = false);
 

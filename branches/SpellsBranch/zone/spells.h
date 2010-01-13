@@ -86,24 +86,24 @@ public:
 	const SPDat_Spell_Struct GetSpell() const { return raw_spell; } 
 
 	bool IsTargetableAESpell();
-	bool IsSacrificeSpell();
+	bool IsSacrificeSpell(); //impl
 	bool IsLifetapSpell();
 	bool IsMezSpell();
 	bool IsStunSpell();
 	bool IsSlowSpell();
 	bool IsHasteSpell();
-	bool IsHarmonySpell();
+	bool IsHarmonySpell(); //impl
 	bool IsPercentalHealSpell();
 	bool IsGroupOnlySpell();
-	bool IsBeneficialSpell();
-	bool IsDetrimentalSpell();
+	bool IsBeneficialSpell(); //impl
+	bool IsDetrimentalSpell(); //impl
 	bool IsInvulnerabilitySpell();
 	bool IsCHDurationSpell();
 	bool IsPoisonCounterSpell();
 	bool IsDiseaseCounterSpell();
 	bool IsSummonItemSpell();
 	bool IsSummonSkeletonSpell();
-	bool IsSummonPetSpell();
+	bool IsSummonPetSpell(); //impl
 	bool IsCharmSpell();
 	bool IsBlindSpell();
 	bool IsEffectHitpointsSpell();
@@ -113,14 +113,14 @@ public:
 	bool IsExtRangeSpell();
 	bool IsImprovedHealingSpell();
 	bool IsImprovedDamageSpell();
-	bool IsAEDurationSpell();
+	bool IsAEDurationSpell(); //impl
 	bool IsPureNukeSpell();
 	bool IsPartialCapableSpell();
 	bool IsResistableSpell();
-	bool IsGroupSpell();
-	bool IsTGBCompatibleSpell();
-	bool IsBardSong();
-	bool IsEffectInSpell(int effect);
+	bool IsGroupSpell(); //impl
+	bool IsTGBCompatibleSpell(); //impl
+	bool IsBardSong(); //impl
+	bool IsEffectInSpell(int effect); //impl
 	bool IsBlankSpellEffect(int effect_index);
 	bool IsValidSpell();
 	bool IsSummonSpell();
@@ -130,9 +130,8 @@ public:
 	bool BeneficialSpell();
 	bool GroupOnlySpell();
 	int GetSpellEffectIndex(int effect);
-	//int CanUseSpell(int classa, int level);
+	int CanUseSpell(int classa, int level);
 	int GetMinLevel();
-	//int CalcBuffDuration_formula(int level, int formula, int duration);
 	sint32 CalculatePoisonCounters();
 	sint32 CalculateDiseaseCounters();
 	sint32 CalculateCurseCounters();
@@ -140,7 +139,7 @@ public:
 	bool IsResurrectionEffects();
 	bool IsRuneSpell();
 	bool IsMagicRuneSpell();
-	bool IsManaTapSpell();
+	bool IsManaTapSpell(); //impl
 	bool IsAllianceSpellLine();
 	bool IsDeathSaveSpell();
 	bool IsFullDeathSaveSpell();
@@ -149,8 +148,8 @@ public:
 	bool IsSuccorSpell();
 	bool IsTeleportSpell();
 	bool IsGateSpell();
-	bool IsPlayerIllusionSpell(); // seveian 2008-09-23
-	bool IsLDoNObjectSpell();
+	bool IsPlayerIllusionSpell(); //impl
+	bool IsLDoNObjectSpell(); //impl
 	sint32 GetSpellResistType();
 	sint32 GetSpellTargetType();
 	bool IsHealOverTimeSpell();

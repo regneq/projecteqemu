@@ -1292,7 +1292,8 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 
 		if(IsClient())
 		{
-			HateMod += CastToClient()->GetFocusEffect(focusSpellHateMod, spell_id);
+			//TODO:
+			//HateMod += CastToClient()->GetFocusEffect(focusSpellHateMod, spell_id);
 		}
 
 		int aaSubtlety = ( GetAA(aaSpellCastingSubtlety) > GetAA(aaSpellCastingSubtlety2) ) ? GetAA(aaSpellCastingSubtlety) : GetAA(aaSpellCastingSubtlety2);
@@ -1359,7 +1360,8 @@ sint32 Mob::CheckHealAggroAmount(int16 spellid, int32 heal_possible) {
 
 		if(IsClient())
 		{
-			HateMod += CastToClient()->GetFocusEffect(focusSpellHateMod, spell_id);
+			//TODO:
+			//HateMod += CastToClient()->GetFocusEffect(focusSpellHateMod, spell_id);
 		}
 
 		int aaSubtlety = ( GetAA(aaSpellCastingSubtlety) > GetAA(aaSpellCastingSubtlety2) ) ? GetAA(aaSpellCastingSubtlety) : GetAA(aaSpellCastingSubtlety2);

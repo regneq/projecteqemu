@@ -3886,7 +3886,7 @@ void Client::Handle_OP_ManaChange(const EQApplicationPacket *app)
 {
 	if(app->size == 0) {
 		// i think thats the sign to stop the songs
-		if(IsBardSong(casting_spell ? casting_spell->GetSpellID() : 0))
+		if(casting_spell ? casting_spell->IsBardSong() : 0)
 			InterruptSpell(SONG_ENDS, 0x121);
 		else
 			InterruptSpell(INTERRUPT_SPELL, 0x121);

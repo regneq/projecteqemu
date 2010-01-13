@@ -2913,7 +2913,7 @@ XS(XS_Mob_GetActSpellRange)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		RETVAL = THIS->GetActSpellRange(spell_id, range);
+		RETVAL = 0;//THIS->GetActSpellRange(spell_id, range);
 		XSprePUSH; PUSHn((double)RETVAL);
 	}
 	XSRETURN(1);
@@ -2941,7 +2941,7 @@ XS(XS_Mob_GetActSpellDamage)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		RETVAL = THIS->GetActSpellDamage(spell_id, value);
+		RETVAL = 0;//THIS->GetActSpellDamage(spell_id, value);
 		XSprePUSH; PUSHi((IV)RETVAL);
 	}
 	XSRETURN(1);
@@ -2969,7 +2969,7 @@ XS(XS_Mob_GetActSpellHealing)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		RETVAL = THIS->GetActSpellHealing(spell_id, value);
+		RETVAL = 0;//THIS->GetActSpellHealing(spell_id, value);
 		XSprePUSH; PUSHi((IV)RETVAL);
 	}
 	XSRETURN(1);
@@ -2997,7 +2997,7 @@ XS(XS_Mob_GetActSpellCost)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		RETVAL = THIS->GetActSpellCost(spell_id, cost);
+		RETVAL = 0;//THIS->GetActSpellCost(spell_id, cost);
 		XSprePUSH; PUSHi((IV)RETVAL);
 	}
 	XSRETURN(1);
@@ -3025,7 +3025,7 @@ XS(XS_Mob_GetActSpellDuration)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		RETVAL = THIS->GetActSpellDuration(spell_id, duration);
+		RETVAL = 0;//THIS->GetActSpellDuration(spell_id, duration);
 		XSprePUSH; PUSHi((IV)RETVAL);
 	}
 	XSRETURN(1);
@@ -3053,7 +3053,7 @@ XS(XS_Mob_GetActSpellCasttime)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		RETVAL = THIS->GetActSpellCasttime(spell_id, casttime);
+		RETVAL = 0;//THIS->GetActSpellCasttime(spell_id, casttime);
 		XSprePUSH; PUSHi((IV)RETVAL);
 	}
 	XSRETURN(1);

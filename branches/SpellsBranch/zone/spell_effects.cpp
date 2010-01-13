@@ -17,6 +17,7 @@ Copyright (C) 2001-2004  EQEMu Development Team (http://eqemu.org)
 */
 #include "../common/debug.h"
 #include "spdat.h"
+#include "spells.h"
 #include "masterentity.h"
 #include "../common/packet_dump.h"
 #include "../common/moremath.h"
@@ -49,10 +50,11 @@ extern WorldServer worldserver;
 
 // the spell can still fail here, if the buff can't stack
 // in this case false will be returned, true otherwise
+//TODO: FIXME
 bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 {
 	_ZP(Mob_SpellEffect);
-
+/*
 	int caster_level, buffslot, effect, effect_value, i;
 	ItemInst *SummonedItem=NULL;
 #ifdef SPELL_EFFECT_SPAM
@@ -132,12 +134,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			//Message(0, "Buff slot:  %d  Duration:  %d tics", buffslot, buffs[buffslot].ticsremaining);
 		}
 #endif
-
-		 /*if(buffslot >= 0) 
-		 {
-			 buffs[buffslot].melee_rune = 0;
-			 buffs[buffslot].magic_rune = 0;
-		 }*/
+		
 
 	// iterate through the effects in the spell
 	for (i = 0; i < EFFECT_COUNT; i++)
@@ -267,7 +264,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				//section so the buff timer does not get refreshed!
 
 				//TODO:
-				/*
+				
 				int i;
 				bool inuse = false;
 				for(i = 0; i < BUFF_COUNT; i++) {
@@ -279,7 +276,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				}
 				if(inuse)
 					break;
-				*/
+				
 				Heal();
 				break;
 			}
@@ -917,7 +914,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #endif
 				// solar: TODO proper dispel counters, including poison/disease/curse
 				//TODO:
-				/*int slot;
+				int slot;
 				for(slot = 0; slot < BUFF_COUNT; slot++)
 				{
 					if(buffs[slot].diseasecounters || buffs[slot].poisoncounters || buffs[slot].cursecounters) //if we have poison or disease counters then we can't remove this with dispel
@@ -932,7 +929,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 						BuffFadeBySlot(slot);
 						slot = BUFF_COUNT;
 					}
-				}*/
+				}
 				break;
 			}
 
@@ -942,7 +939,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				snprintf(effect_desc, _EDLEN, "Dispel Detrimental: %d", effect_value);
 #endif
 				//TODO:
-				/*
+				
 				int slot;
 				for(slot = 0; slot < BUFF_COUNT; slot++)
 				{
@@ -959,7 +956,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 						BuffFadeBySlot(slot);
 						slot = BUFF_COUNT;
 					}
-				}*/
+				}
 				break;
 			}
 
@@ -1881,7 +1878,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				{
 					effect_value = 0 - effect_value;
 					//TODO:
-					/*
+					
 					for (int j=0; j < BUFF_COUNT; j++) {
 						if (buffs[j].spellid >= (int16)SPDAT_RECORDS)
 							continue;
@@ -1898,7 +1895,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 							effect_value = 0;
 							break;
 						}
-					}*/
+					}
 				}
 				break;
 			}
@@ -1916,7 +1913,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				{
 					effect_value = 0 - effect_value;
 					//TODO:
-					/*
+					
 					for (int j=0; j < BUFF_COUNT; j++) {
 						if (buffs[j].spellid >= (int16)SPDAT_RECORDS)
 							continue;
@@ -1936,7 +1933,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 							effect_value = 0;
 							break;
 						}
-					}*/
+					}
 				}
 				break;
 			}
@@ -1953,7 +1950,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				else
 				{
 					//TODO:
-					/*
+					
 					effect_value = 0 - effect_value;
 					for (int j=0; j < BUFF_COUNT; j++) {
 						if (buffs[j].spellid >= (int16)SPDAT_RECORDS)
@@ -1974,7 +1971,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 							effect_value = 0;
 							break;
 						}
-					}*/
+					}
 				}
 				break;
 			}
@@ -2518,7 +2515,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				sint32 tDmg = 0; //total damage done
 				int mDmg = 1; //minimume damage done
 				
-				/* for this, spells[spell_id].base2[i] is the damage for the attack "weapon damage" */
+				// for this, spells[spell_id].base2[i] is the damage for the attack "weapon damage" 
 				
 				//if we are a client, do stuff involving clients attacks
 				if(caster->IsClient())
@@ -2813,7 +2810,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 		c->PushItemOnCursor(*SummonedItem);
 		c->SendItemPacket(SLOT_CURSOR, SummonedItem, ItemPacketSummonItem);
 		safe_delete(SummonedItem);
-	}
+	}*/
 
 	return true;
 }
@@ -3046,13 +3043,14 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 			effect_value = CalcSpellEffectValue(spell_id, i, caster_level, caster, ticsremaining);
 
 			//TODO: account for AAs and stuff
+			//TODO: FIXME
 
 			//dont know what the signon this should be... - makes sense
 			if (caster && caster->IsClient() &&
 				IsDetrimentalSpell(spell_id) &&
 				effect_value < 0) {
 				sint32 modifier = 100;
-				modifier += caster->CastToClient()->GetFocusEffect(focusImprovedDamage, spell_id);
+				//modifier += caster->CastToClient()->GetFocusEffect(focusImprovedDamage, spell_id);
 
 				if(caster){
 					if(caster->IsClient() && !caster->CastToClient()->GetFeigned()){
@@ -3075,8 +3073,8 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 			} else if(effect_value > 0) {
 				//healing spell...
 				//healing aggro would go here; removed for now
-				if(caster)
-					effect_value = caster->GetActSpellHealing(spell_id, effect_value);
+				//if(caster)
+					//effect_value = caster->GetActSpellHealing(spell_id, effect_value);
 				HealDamage(effect_value, caster);
 			}
 
@@ -3537,10 +3535,10 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 
 //given an item/spell's focus ID and the spell being cast, determine the focus ammount, if any
 //assumes that spell_id is not a bard spell and that both ids are valid spell ids
-sint16 Client::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id) {
+sint16 Client::CalcFocusEffect(focusType type, int16 focus_id, Spell *spell_to_cast) {
 
 	const SPDat_Spell_Struct &focus_spell = spells[focus_id];
-	const SPDat_Spell_Struct &spell = spells[spell_id];
+	const SPDat_Spell_Struct &spell = spell_to_cast->GetSpell();
 
 	sint16 value = 0;
 	int lvlModifier = 100;
@@ -3585,17 +3583,17 @@ sint16 Client::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id) {
 			break;
 
 		case SE_LimitCastTime:
-			if (spells[spell_id].cast_time < (uint16)focus_spell.base[i])
+			if (spell.cast_time < (uint16)focus_spell.base[i])
 				return(0);
 			break;
 
 		case SE_LimitSpell:
 			if(focus_spell.base[i] < 0) {	//exclude spell
-				if (spell_id == (focus_spell.base[i]*-1))
+				if (spell_to_cast->GetSpellID() == (focus_spell.base[i]*-1))
 					return(0);
 			} else {
 				//this makes the assumption that only one spell can be explicitly included...
-				if (spell_id != focus_spell.base[i])
+				if (spell_to_cast->GetSpellID()!= focus_spell.base[i])
 					return(0);
 			}
 			break;
@@ -3607,21 +3605,25 @@ sint16 Client::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id) {
 
 		case SE_LimitEffect:
 			if(focus_spell.base[i] < 0){
-				if(IsEffectInSpell(spell_id,focus_spell.base[i])){ //we limit this effect, can't have
+				if(spell_to_cast->IsEffectInSpell(focus_spell.base[i]))
+				{ 
+					//we limit this effect, can't have
 					return 0;
 				}
 			}
 			else{
 				if(focus_spell.base[i] == SE_SummonPet) //summoning haste special case
 				{	//must have one of the three pet effects to qualify
-					if(!IsEffectInSpell(spell_id, SE_SummonPet) &&
-						!IsEffectInSpell(spell_id, SE_NecPet) &&
-						!IsEffectInSpell(spell_id, SE_SummonBSTPet))
+					if(!spell_to_cast->IsEffectInSpell(SE_SummonPet) &&
+						!spell_to_cast->IsEffectInSpell(SE_NecPet) &&
+						!spell_to_cast->IsEffectInSpell(SE_SummonBSTPet))
 					{
 						return 0;
 					}
 				}
-				else if(!IsEffectInSpell(spell_id,focus_spell.base[i])){ //we limit this effect, must have
+				else if(!spell_to_cast->IsEffectInSpell(focus_spell.base[i]))
+				{ 
+					//we limit this effect, must have
 					return 0;
 				}
 			}
@@ -3632,11 +3634,11 @@ sint16 Client::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id) {
 			switch( focus_spell.base[i] )
 			{
 				case 0:
-					if (!IsDetrimentalSpell(spell_id))
+					if (!spell_to_cast->IsDetrimentalSpell())
 						return 0;
 					break;
 				case 1:
-					if (!IsBeneficialSpell(spell_id))
+					if (!spell_to_cast->IsBeneficialSpell())
 						return 0;
 					break;
 				default:
@@ -3769,8 +3771,9 @@ sint16 Client::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id) {
 	return(value*lvlModifier/100);
 }
 
-sint16 Client::GetFocusEffect(focusType type, int16 spell_id) {
-	if (IsBardSong(spell_id))
+sint16 Client::GetFocusEffect(focusType type, Spell *spell_to_cast) 
+{
+	if(spell_to_cast->IsBardSong())
 		return 0;
 	const Item_Struct* TempItem = 0;
 	const Item_Struct* UsedItem = 0;
@@ -3786,7 +3789,7 @@ sint16 Client::GetFocusEffect(focusType type, int16 spell_id) {
 			continue;
 		TempItem = ins->GetItem();
 		if (TempItem && TempItem->Focus.Effect > 0 && TempItem->Focus.Effect != SPELL_UNKNOWN) {
-			Total = CalcFocusEffect(type, TempItem->Focus.Effect, spell_id);
+			Total = CalcFocusEffect(type, TempItem->Focus.Effect, spell_to_cast);
 
 			if (Total > 0 && realTotal >= 0 && Total > realTotal) {
 				realTotal = Total;
@@ -3804,7 +3807,7 @@ sint16 Client::GetFocusEffect(focusType type, int16 spell_id) {
 			{
 				const Item_Struct* TempItemAug = aug->GetItem();
 				if (TempItemAug && TempItemAug->Focus.Effect > 0 && TempItemAug->Focus.Effect != SPELL_UNKNOWN) {
-					Total = CalcFocusEffect(type, TempItemAug->Focus.Effect, spell_id);
+					Total = CalcFocusEffect(type, TempItemAug->Focus.Effect, spell_to_cast);
 					if (Total > 0 && realTotal >= 0 && Total > realTotal) {
 						realTotal = Total;
 						UsedItem = TempItem;
@@ -3817,7 +3820,7 @@ sint16 Client::GetFocusEffect(focusType type, int16 spell_id) {
 		}
 	}
 
-	if (realTotal != 0 && UsedItem && spells[spell_id].buffduration == 0) {
+	if (realTotal != 0 && UsedItem && spell_to_cast->GetSpell().buffduration == 0) {
 		Message_StringID(MT_Spells, BEGINS_TO_GLOW, UsedItem->Name);
 	}
 
@@ -3840,10 +3843,10 @@ sint16 Client::GetFocusEffect(focusType type, int16 spell_id) {
 			}
 	}*/
 
-	if(type == focusReagentCost && IsSummonPetSpell(spell_id) && GetAA(aaElementalPact))
+	if(type == focusReagentCost && spell_to_cast->IsSummonPetSpell() && GetAA(aaElementalPact))
 		return 100;
 
-	if(type == focusReagentCost && (IsEffectInSpell(spell_id, SE_SummonItem) || IsSacrificeSpell(spell_id))){
+	if(type == focusReagentCost && (spell_to_cast->IsEffectInSpell(SE_SummonItem) || spell_to_cast->IsSacrificeSpell())){
 		return 0;
 	//Summon Spells that require reagents are typically imbue type spells, enchant metal, sacrifice and shouldn't be affected
 	//by reagent conservation for obvious reasons.

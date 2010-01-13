@@ -30,16 +30,16 @@
 #include "StringIDs.h"
 #include "NpcAI.h"
 
-float Client::GetActSpellRange(int16 spell_id, float range)
+float Client::GetActSpellRange(Spell *spell_to_cast, float range)
 {
 	float extrange = 100;
 
-	extrange += GetFocusEffect(focusRange, spell_id);
+	extrange += GetFocusEffect(focusRange, spell_to_cast);
 	
 	return (range * extrange) / 100;
 }
 
-sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
+sint32 Client::GetActSpellDamage(Spell *spell_to_cast, sint32 value) {
 	// Important variables:
 	// value: the actual damage after resists, passed from Mob::SpellEffect
 	// modifier: modifier to damage (from spells & focus effects?)
@@ -51,24 +51,24 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 	sint32 modifier = 100;
 	
 	//Dunno if this makes sense:
-	if (spells[spell_id].resisttype > 0)
-		modifier += GetFocusEffect((focusType)(0-spells[spell_id].resisttype), spell_id);
+	if (spell_to_cast->GetSpell().resisttype > 0)
+		modifier += GetFocusEffect((focusType)(0-spell_to_cast->GetSpell().resisttype), spell_to_cast);
 	
 	
-	int tt = spells[spell_id].targettype;
+	int tt = spell_to_cast->GetSpell().targettype;
 	if (tt == ST_UndeadAE || tt == ST_Undead || tt == ST_Summoned) {
 		//undead/summoned spells
-		modifier += GetFocusEffect(focusImprovedUndeadDamage, spell_id);
+		modifier += GetFocusEffect(focusImprovedUndeadDamage, spell_to_cast);
     } else {
     	//damage spells.
-		modifier += GetFocusEffect(focusImprovedDamage, spell_id);
+		modifier += GetFocusEffect(focusImprovedDamage, spell_to_cast);
 	}
 	
 	//these spell IDs could be wrong
-	if (spell_id == SPELL_LEECH_TOUCH) {	//leech touch
+	if (spell_to_cast->GetSpellID() == SPELL_LEECH_TOUCH) {	//leech touch
 		value -= GetAA(aaConsumptionoftheSoul) * 500;
 	}
-	if (spell_id == SPELL_IMP_HARM_TOUCH) {	//harm touch
+	if (spell_to_cast->GetSpellID() == SPELL_IMP_HARM_TOUCH) {	//harm touch
 		switch(GetAA(aaUnholyTouch)) {
 			case 1:
 				modifier += 25;
@@ -159,7 +159,7 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 
 		if(tt == ST_Tap) {
 			
-			if(spells[spell_id].classes[SHADOWKNIGHT-1] >= 254 && spell_id != SPELL_LEECH_TOUCH){
+			if(spell_to_cast->GetSpell().classes[SHADOWKNIGHT-1] >= 254 && spell_to_cast->GetSpellID() != SPELL_LEECH_TOUCH){
 				if(ratio < 100)	//chance increase and ratio are made up, not confirmed
 					ratio = 100;
 
@@ -180,7 +180,7 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 		
 		chance += GetAA(aaIngenuity); //nothing stating it's DD only, so we'll apply to all damage spells
 		
-		chance += GetFocusEffect(focusImprovedCritical, spell_id);
+		chance += GetFocusEffect(focusImprovedCritical, spell_to_cast);
 
 		//crit damage modifiers
 		if (GetClass() == WIZARD) { //wizards get an additional bonus
@@ -200,7 +200,7 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 		}
 		
 		if (chance > 0) {
-			mlog(SPELLS__CRITS, "Attempting spell crit. Spell: %s (%d), Value: %d, Modifier: %d, Chance: %d, Ratio: %d", spells[spell_id].name, spell_id, value, modifier, chance, ratio);
+			mlog(SPELLS__CRITS, "Attempting spell crit. Spell: %s (%d), Value: %d, Modifier: %d, Chance: %d, Ratio: %d", spell_to_cast->GetSpell().name, spell_to_cast->GetSpellID(), value, modifier, chance, ratio);
 			if(MakeRandomInt(0,100) <= chance) {
 				modifier += modifier*ratio/100;
 				mlog(SPELLS__CRITS, "Spell crit successful. Final damage modifier: %d, Final Damage: %d", modifier, (value * modifier) / 100);
@@ -213,12 +213,12 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 	return (value * modifier) / 100;
 }
 
-sint32 Client::GetActSpellHealing(int16 spell_id, sint32 value) {
+sint32 Client::GetActSpellHealing(Spell *spell_to_cast, sint32 value) {
 	sint32 modifier = 100;
 
-	modifier += GetFocusEffect(focusImprovedHeal, spell_id);
+	modifier += GetFocusEffect(focusImprovedHeal, spell_to_cast);
 						
-	if(spells[spell_id].buffduration < 1) {
+	if(spell_to_cast->GetSpell().buffduration < 1) {
 		//non-dot
 		switch(GetAA(aaHealingAdept)) {
 		case 1:
@@ -258,7 +258,7 @@ sint32 Client::GetActSpellHealing(int16 spell_id, sint32 value) {
 		}
 		chance += GetAA(aaAdvancedHealingGift) * 2;
 
-   if(spells[spell_id].targettype == ST_Tap) {
+   if(spell_to_cast->GetSpell().targettype == ST_Tap) {
    switch(GetAA(aaTheftofLife)) {
       case 1:
          chance += 2;
@@ -305,13 +305,12 @@ sint32 Client::GetActSpellHealing(int16 spell_id, sint32 value) {
 	return (value * modifier) / 100;
 }
 
-sint32 Client::GetActSpellCost(int16 spell_id, sint32 cost)
+sint32 Client::GetActSpellCost(Spell *spell_to_cast, sint32 cost)
 {
 	// This formula was derived from the following resource:
 	// http://www.eqsummoners.com/eq1/specialization-library.html
-	// WildcardX
 	float PercentManaReduction = 0;
-	float SpecializeSkill = GetSpecializeSkillValue(spell_id);
+	float SpecializeSkill = GetSpecializeSkillValue(spell_to_cast->GetSpellID());
 	int SuccessChance = MakeRandomInt(0, 100);
 
 	float bonus = 1.0;
@@ -360,7 +359,7 @@ sint32 Client::GetActSpellCost(int16 spell_id, sint32 cost)
 		}
 	}
 
-	sint16 focus_redux = GetFocusEffect(focusManaCost, spell_id);
+	sint16 focus_redux = GetFocusEffect(focusManaCost, spell_to_cast);
 
 	if(focus_redux > 0)
 	{
@@ -375,12 +374,12 @@ sint32 Client::GetActSpellCost(int16 spell_id, sint32 cost)
 	return cost;
 }
 
-sint32 Client::GetActSpellDuration(int16 spell_id, sint32 duration)
+sint32 Client::GetActSpellDuration(Spell *spell_to_cast, sint32 duration)
 {
 	int increase = 100;
-	increase += GetFocusEffect(focusSpellDuration, spell_id);
+	increase += GetFocusEffect(focusSpellDuration, spell_to_cast);
 	
-	if(IsBeneficialSpell(spell_id))
+	if(spell_to_cast->IsBeneficialSpell())
 	{
 		switch(GetAA(aaSpellCastingReinforcement)) {
 		case 1:
@@ -400,20 +399,20 @@ sint32 Client::GetActSpellDuration(int16 spell_id, sint32 duration)
 	return (duration * increase) / 100;
 }
 
-sint32 Client::GetActSpellCasttime(int16 spell_id, sint32 casttime)
+sint32 Client::GetActSpellCasttime(Spell *spell_to_cast, sint32 casttime)
 {
 	sint32 cast_reducer = 0;
-	cast_reducer += GetFocusEffect(focusSpellHaste, spell_id);
+	cast_reducer += GetFocusEffect(focusSpellHaste, spell_to_cast);
 
 	//this function loops through the effects of spell_id many times
 	//could easily be consolidated.
 
-	if (GetLevel() >= 51 && casttime >= 3000 && !BeneficialSpell(spell_id) 
+	if (GetLevel() >= 51 && casttime >= 3000 && !spell_to_cast->BeneficialSpell() 
 		&& (GetClass() == SHADOWKNIGHT || GetClass() == RANGER 
 			|| GetClass() == PALADIN || GetClass() == BEASTLORD ))
 		cast_reducer += (GetLevel()-50)*3;
 	
-	if(casttime >= 4000 && BeneficialSpell(spell_id) && CalcBuffDuration(this, this, spell_id) > 0){
+	if(casttime >= 4000 && spell_to_cast->IsBeneficialSpell() && CalcBuffDuration(this, this, spell_to_cast) > 0){
 		switch (GetAA(aaSpellCastingDeftness)) {
 			case 1:
 				cast_reducer += 5;
@@ -439,7 +438,7 @@ sint32 Client::GetActSpellCasttime(int16 spell_id, sint32 casttime)
 				break;
 		}
 	}
-	if (IsSummonSpell(spell_id))
+	if (spell_to_cast->IsSummonSpell())
 	{
 		switch (GetAA(aaQuickSummoning))
 		{
@@ -454,7 +453,7 @@ sint32 Client::GetActSpellCasttime(int16 spell_id, sint32 casttime)
 				break;
 		}
 	}
-	if (IsEvacSpell(spell_id))
+	if (spell_to_cast->IsEvacSpell())
 	{
 		switch (GetAA(aaQuickEvacuation))
 		{
@@ -469,7 +468,7 @@ sint32 Client::GetActSpellCasttime(int16 spell_id, sint32 casttime)
 				break;
 		}
 	}
-	if (IsDamageSpell(spell_id) && spells[spell_id].cast_time >= 4000)
+	if (spell_to_cast->IsDamageSpell() && spell_to_cast->GetSpell().cast_time >= 4000)
 	{
 		switch (GetAA(aaQuickDamage))
 		{
@@ -694,12 +693,13 @@ void EntityList::AETaunt(Client* taunter, float range) {
 // solar: causes caster to hit every mob within dist range of center with
 // spell_id.
 // NPC spells will only affect other NPCs with compatible faction
+//TODO: FIXME
 void EntityList::AESpell(Mob *caster, Mob *center, int16 spell_id, bool affect_caster)
 {
 	LinkedListIterator<Mob*> iterator(mob_list);
 	Mob *curmob;
 	
-	float dist = caster->GetAOERange(spell_id);
+	float dist = 0; //caster->GetAOERange(spell_id);
 	float dist2 = dist * dist;
 	
 	bool bad = IsDetrimentalSpell(spell_id);
@@ -754,6 +754,7 @@ void EntityList::AESpell(Mob *caster, Mob *center, int16 spell_id, bool affect_c
 	}	
 }
 
+//TODO: FIXME
 // solar: causes caster to hit every mob within dist range of center with
 // a bard pulse of spell_id.
 // NPC spells will only affect other NPCs with compatible faction
@@ -762,7 +763,7 @@ void EntityList::AEBardPulse(Mob *caster, Mob *center, int16 spell_id, bool affe
 	LinkedListIterator<Mob*> iterator(mob_list);
 	Mob *curmob;
 	
-	float dist = caster->GetAOERange(spell_id);
+	float dist = 0; //caster->GetAOERange(spell_id);
 	float dist2 = dist * dist;
 	
 	bool bad = IsDetrimentalSpell(spell_id);

@@ -2583,7 +2583,7 @@ int32 Mob::GetLevelHP(int8 tlevel)
 	return multiplier;
 }
 
-sint32 Mob::GetActSpellCasttime(int16 spell_id, sint32 casttime) {
+sint32 Mob::GetActSpellCasttime(Spell *spell_to_cast, sint32 casttime) {
 	if (level >= 60 && casttime > 1000)
 	{
 		casttime = casttime / 2;
@@ -2739,12 +2739,16 @@ void Mob::SetDeltas(float dx, float dy, float dz, float dh) {
 }
 
 
+//TODO: FIXME
 bool Mob::HasBuffIcon(Mob *caster, Mob *target, int16 spell_id)
 {
+	/*
 	if((caster->CalcBuffDuration(caster, target, spell_id)-1) > 0)
 		return true;
 	else
 		return false;
+	*/
+	return false;
 }
 
 void Mob::SetEntityVariable(int32 id, const char *m_var)

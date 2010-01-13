@@ -407,7 +407,8 @@ void Raid::CastGroupSpell(Mob* caster, uint16 spellid, int32 gid)
 	if(!caster)
 		return;
 
-	range = caster->GetAOERange(spellid);
+	//TODO:
+	range = 0;//caster->GetAOERange(spellid);
 	
 	float range2 = range*range;
 
@@ -587,7 +588,8 @@ void Raid::GroupBardPulse(Mob* caster, uint16 spellid, int32 gid){
 	if(!caster)
 		return;
 
-	range = caster->GetAOERange(spellid);
+	//TODO:
+	range = 0;//caster->GetAOERange(spellid);
 	
 	float range2 = range*range;
 

@@ -2959,7 +2959,8 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 		if(attacker) {
 			if(spell_id == SPELL_HARM_TOUCH2 && attacker->IsClient() && attacker->CastToClient()->CheckAAEffect(aaEffectLeechTouch)){
 				int healed = damage;
-				healed = attacker->GetActSpellHealing(spell_id, healed);
+				//TODO:
+				//healed = attacker->GetActSpellHealing(spell_id, healed);
 				attacker->HealDamage(healed);
 				entity_list.MessageClose(this, true, 300, MT_Emote, "%s beams a smile at %s", attacker->GetCleanName(), this->GetCleanName() );
 				attacker->CastToClient()->DisableAAEffect(aaEffectLeechTouch);
@@ -2969,7 +2970,8 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 			if (spell_id != SPELL_UNKNOWN && IsLifetapSpell( spell_id )) {
 				int healed = damage;
 
-				healed = attacker->GetActSpellHealing(spell_id, healed);				
+				//TODO:
+				//healed = attacker->GetActSpellHealing(spell_id, healed);				
 				mlog(COMBAT__DAMAGE, "Applying lifetap heal of %d to %s", healed, attacker->GetName());
 				attacker->HealDamage(healed);
 

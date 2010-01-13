@@ -247,8 +247,8 @@ void Mob::MakePet(int16 spell_id, const char* pettype, const char *petname) {
 	//we copy the npc_type data because we need to edit it a bit
 	NPCType *npc_type = new NPCType;
 	memcpy(npc_type, base, sizeof(NPCType));
-	
-	if (this->IsClient() && CastToClient()->GetFocusEffect(focusPetPower, spell_id) > 0)
+	//TODO:
+/*	if (this->IsClient() && CastToClient()->GetFocusEffect(focusPetPower, spell_id) > 0)
 	{
 		npc_type->max_hp *= 1.20;
 		npc_type->cur_hp = npc_type->max_hp;
@@ -257,7 +257,7 @@ void Mob::MakePet(int16 spell_id, const char* pettype, const char *petname) {
 		npc_type->min_dmg = (npc_type->min_dmg * 110 / 100);
 		npc_type->max_dmg = (npc_type->max_dmg * 110 / 100);
 		npc_type->size *= 1.15;
-	}
+	}*/
 
 	switch (GetAA(aaElementalDurability))
 	{

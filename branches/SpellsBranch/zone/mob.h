@@ -601,12 +601,12 @@ bool logpos;
 	inline virtual sint16  GetMaxCR() const { return 255; }
 	inline virtual sint16  GetMaxFR() const { return 255; }
 
-	virtual float GetActSpellRange(int16 spell_id, float range){ return range;}
-	virtual sint32  GetActSpellDamage(int16 spell_id, sint32 value) { return value; }
-	virtual sint32  GetActSpellHealing(int16 spell_id, sint32 value) { return value; }
-	virtual sint32 GetActSpellCost(int16 spell_id, sint32 cost){ return cost;}
-	virtual sint32 GetActSpellDuration(int16 spell_id, sint32 duration){ return duration;}
-	virtual sint32 GetActSpellCasttime(int16 spell_id, sint32 casttime);
+	virtual float GetActSpellRange(Spell *spell_to_cast, float range){ return range;}
+	virtual sint32  GetActSpellDamage(Spell *spell_to_cast, sint32 value) { return value; }
+	virtual sint32  GetActSpellHealing(Spell *spell_to_cast, sint32 value) { return value; }
+	virtual sint32 GetActSpellCost(Spell *spell_to_cast, sint32 cost){ return cost;}
+	virtual sint32 GetActSpellDuration(Spell *spell_to_cast, sint32 duration){ return duration;}
+	virtual sint32 GetActSpellCasttime(Spell *spell_to_cast, sint32 casttime);
 	float ResistSpell(int8 resist_type, int16 spell_id, Mob *caster);
 	uint16 GetSpecializeSkillValue(int16 spell_id) const;
 
@@ -676,7 +676,12 @@ bool logpos;
 	void ZeroCastingVars();
 	void ZeroAndFreeCastingVars();
 	bool DoChannelCheck(bool &did_regain_conc);
-	virtual bool DoComponentCheck(Spell *spell_to_cast) { return true; }
+	virtual bool DoComponentCheck(Spell *spell_to_cast, bool bard_song_mode) { return true; }
+	bool SpellFinished(int16 spell_id, Mob *target, int16 slot = 10, int16 mana_used = 0, int32 inventory_slot = 0xFFFFFFFF);
+	bool SpellFinished(Spell *spell_to_cast);
+	virtual bool DetermineSpellTargets(Spell *spell_to_cast, Mob *&spell_target, Mob *&ae_center, CastAction_type &CastAction);
+	int	CalcBuffDuration(Mob *caster, Mob *target, Spell *spell_to_cast, sint32 caster_level_override = -1);
+	virtual float GetAOERange(Spell *spell_to_cast);
 	
 
 
@@ -684,12 +689,9 @@ bool logpos;
 	bool UseBardSpellLogic(int16 spell_id = 0xffff, int slot = -1);
 	//virtual bool DoCastSpell(int16 spell_id, int16 target_id, int16 slot = 10, sint32 casttime = -1, sint32 mana_cost = -1, int32* oSpellWillFinish = 0, int32 item_slot = 0xFFFFFFFF);
 	//void	CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16 mana_used, int32 inventory_slot = 0xFFFFFFFF);
-	bool	SpellFinished(int16 spell_id, Mob *target, int16 slot = 10, int16 mana_used = 0, int32 inventory_slot = 0xFFFFFFFF);
 	virtual bool SpellOnTarget(int16 spell_id, Mob* spelltar);
 	bool	ApplyNextBardPulse(int16 spell_id, Mob *spell_target, int16 slot);
 	void	BardPulse(uint16 spell_id, Mob *caster);
-	virtual bool DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_center, CastAction_type &CastAction);
-	int		CalcBuffDuration(Mob *caster, Mob *target, int16 spell_id, sint32 caster_level_override = -1);
 	void	SendPetBuffsToClient();
 	int		AddBuff(Mob *caster, const int16 spell_id, int duration = 0, sint32 level_override = -1);
 	virtual bool SpellEffect(Mob* caster, int16 spell_id, float partial = 100);
@@ -705,7 +707,6 @@ bool logpos;
 	int		CanBuffStack(int16 spellid, int8 caster_level, bool iFailIfOverwrite = false);
 	inline	bool	IsCasting() const { return((casting_spell != NULL)); }
 	int16	CastingSpellID() const { return casting_spell ? casting_spell->GetSpellID() : 0; }
-	virtual float GetAOERange(uint16 spell_id);
 	void	TemporaryPets(int16 spell_id, Mob *target, const char *name_override = NULL, uint32 duration_override = 0);
 	void	WakeTheDead(int16 spell_id, Mob *target, uint32 duration);
 	void	TryDotCritical(int16 spell_id, Mob *caster, int &damage);

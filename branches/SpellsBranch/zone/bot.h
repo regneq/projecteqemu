@@ -142,13 +142,13 @@ public:
 	virtual void AI_Stop();
 
 	// Mob Spell Virtual Override Methods
-	virtual sint32 GetActSpellDamage(int16 spell_id, sint32 value);
-	virtual sint32 GetActSpellHealing(int16 spell_id, sint32 value);
-	virtual sint32 GetActSpellCasttime(int16 spell_id, sint32 casttime);
-	virtual sint32 GetActSpellCost(int16 spell_id, sint32 cost);
-	virtual float GetActSpellRange(int16 spell_id, float range);
-	virtual sint32 GetActSpellDuration(int16 spell_id, sint32 duration);
-	virtual float GetAOERange(uint16 spell_id);
+	virtual sint32 GetActSpellDamage(Spell *spell_to_cast, sint32 value);
+	virtual sint32 GetActSpellHealing(Spell *spell_to_cast, sint32 value);
+	virtual sint32 GetActSpellCasttime(Spell *spell_to_cast, sint32 casttime);
+	virtual sint32 GetActSpellCost(Spell *spell_to_cast, sint32 cost);
+	virtual float GetActSpellRange(Spell *spell_to_cast, float range);
+	virtual sint32 GetActSpellDuration(Spell *spell_to_cast, sint32 duration);
+	virtual float GetAOERange(Spell *spell_to_cast);
 	virtual bool SpellEffect(Mob* caster, int16 spell_id, float partial = 100);
 	virtual void DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob* caster = 0);
 	virtual bool CastSpell(int16 spell_id, int16 target_id, int16 slot = 10, sint32 casttime = -1, sint32 mana_cost = -1, int32* oSpellWillFinish = 0, int32 item_slot = 0xFFFFFFFF);

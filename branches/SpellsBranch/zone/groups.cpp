@@ -539,7 +539,8 @@ void Group::CastGroupSpell(Mob* caster, uint16 spell_id) {
 		return;
 
 	castspell = true;
-	range = caster->GetAOERange(spell_id);
+	//TODO:
+	range = 0;//caster->GetAOERange(spell_id);
 	
 	float range2 = range*range;
 
@@ -581,7 +582,8 @@ void Group::GroupBardPulse(Mob* caster, uint16 spell_id) {
 		return;
 
 	castspell = true;
-	range = caster->GetAOERange(spell_id);
+	//TODO:
+	range = 0;//caster->GetAOERange(spell_id);
 	
 	float range2 = range*range;
 
