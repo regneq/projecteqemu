@@ -105,6 +105,16 @@ bool IsTargetableAESpell(int16 spell_id) {
 	return bResult;
 }
 
+bool Spell::IsTargetableAESpell() 
+{
+	if (raw_spell.targettype == ST_AETarget) 
+	{
+		return true;
+	}
+
+	return false;
+}
+
 bool IsSacrificeSpell(int16 spell_id)
 {
 	return IsEffectInSpell(spell_id, SE_Sacrifice);
@@ -152,8 +162,26 @@ bool IsSummonSpell(int16 spellid) {
 	return false;
 }
 
+bool Spell::IsSummonSpell() 
+{
+	for (int o = 0; o < EFFECT_COUNT; o++)
+	{
+		int32 tid = raw_spell.effectid[o];
+		if(tid == SE_SummonPet || tid == SE_SummonItem || tid == SE_SummonPC)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 bool IsEvacSpell(int16 spellid) {
 	return IsEffectInSpell(spellid, SE_Succor);
+}
+
+bool Spell::IsEvacSpell() 
+{
+	return IsEffectInSpell(SE_Succor);
 }
 
 bool IsDamageSpell(int16 spellid) {
@@ -161,6 +189,19 @@ bool IsDamageSpell(int16 spellid) {
 	{
 		int32 tid = spells[spellid].effectid[o];
 		if((tid == SE_CurrentHPOnce || tid == SE_CurrentHP) && spells[spellid].targettype != ST_Tap && spells[spellid].buffduration < 1 && spells[spellid].base[o] < 0)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+bool Spell::IsDamageSpell() 
+{
+	for (int o = 0; o < EFFECT_COUNT; o++)
+	{
+		int32 tid = raw_spell.effectid[o];
+		if((tid == SE_CurrentHPOnce || tid == SE_CurrentHP) && raw_spell.targettype != ST_Tap && raw_spell.buffduration < 1 && raw_spell.base[o] < 0)
 		{
 			return true;
 		}
@@ -628,6 +669,22 @@ bool BeneficialSpell(int16 spell_id)
 		return true;
 	}
 	switch (spells[spell_id].goodEffect)
+	{
+		case 1:
+		case 3:
+			return true;
+	}
+	return false;
+}
+
+bool Spell::BeneficialSpell()
+{
+	if (GetSpellID() <= 0 || GetSpellID() >= SPDAT_RECORDS 
+		/*|| spells[spell_id].stacking == 27*/ )
+	{
+		return true;
+	}
+	switch (raw_spell.goodEffect)
 	{
 		case 1:
 		case 3:

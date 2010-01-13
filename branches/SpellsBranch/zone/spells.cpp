@@ -122,7 +122,6 @@ void Mob::SpellProcess()
 		{
 			casting_spell->StopCastTimer();
 			CastedSpellFinished(&casting_spell);
-			printf("%p\n", casting_spell);
 		}
 	}
 }
@@ -4186,6 +4185,11 @@ Spell::Spell(uint32 spell_id, Mob* caster, Mob* target, uint32 slot, uint32 cast
 
 	const SPDat_Spell_Struct &spell = spells[spell_id];
 	memcpy((void*)&raw_spell, (const void*)&spell, sizeof(SPDat_Spell_Struct));
+}
+
+Spell::Spell()
+{
+	cast_timer = NULL;
 }
 
 Spell::~Spell()

@@ -44,7 +44,7 @@ enum SpellAttribute
 class Spell
 {
 public:
-	Spell() { }
+	Spell();
 	Spell(uint32 spell_id, Mob* caster, Mob* target, uint32 slot = 10, uint32 cast_time = -1, uint32 mana_cost = -1);
 	~Spell();
 	
@@ -85,7 +85,7 @@ public:
 
 	const SPDat_Spell_Struct GetSpell() const { return raw_spell; } 
 
-	bool IsTargetableAESpell();
+	bool IsTargetableAESpell(); //impl
 	bool IsSacrificeSpell(); //impl
 	bool IsLifetapSpell();
 	bool IsMezSpell();
@@ -123,9 +123,9 @@ public:
 	bool IsEffectInSpell(int effect); //impl
 	bool IsBlankSpellEffect(int effect_index);
 	bool IsValidSpell();
-	bool IsSummonSpell();
-	bool IsEvacSpell();
-	bool IsDamageSpell();
+	bool IsSummonSpell(); //impl
+	bool IsEvacSpell(); //impl
+	bool IsDamageSpell(); //impl
 	bool IsFearSpell();
 	bool BeneficialSpell();
 	bool GroupOnlySpell();
