@@ -1,5 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==01/13/2010==
+WildcardX: Implemented auto melee or archery weapon selection for the bot ranger if the bot ranger is level 61 or better and the bot owner toggled the #bot archery command. After toggeling once, the bot then decides on archery or melee until the #bot archery command is toggled again or the bot zones or camps.
+WildcardX: Fixed a bug that prevented bots from being created on systems running MySQL on a linux OS. Windows MySQL servers were unaffected.
+WildcardX: Enchanter bots will no longer cast any illusions as part of "buffing". In the near future, I will implement a new #bot command to cast illusions instead.
+WildcardX: Fixed a bug that prevent enchanter bots from casting any damage over time or nuke spells against their target.
+
 ==01/12/2010==
 WildcardX: Implemented a bot spellcasting ai overhaul that improves upon the existing ai and creates a framework to expand additional ai enchancements around for bot coders. NOTE: Please evaluate this version of bots BEFORE you replace your existing server as this is still a work in progress.
 WildcardX: Implemented bot wizard nuke spell selection for the new bot spellcasting ai.
