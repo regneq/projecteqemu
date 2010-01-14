@@ -153,6 +153,11 @@ bool Bot::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 					if(selectedBotSpell.SpellId == 0)
 						continue;
 
+					// no buffs with illusions.. use #bot command to cast illusions
+					if(IsEffectInSpell(selectedBotSpell.SpellId, SE_Illusion))
+						continue;
+
+					// can not cast buffs for your own pet only on another pet that isn't yours
 					if((spells[selectedBotSpell.SpellId].targettype == ST_Pet) && (tar != this->GetPet()))
 						continue;
 
@@ -326,7 +331,7 @@ bool Bot::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 			break;
 							  }
 		case SpellType_DOT: {
-			if ((tar->GetHPRatio() <= 98.0f) && (tar->DontDotMeBefore() < Timer::GetCurrentTime()) && (tar->GetHPRatio() > 15)) {
+			if ((tar->GetHPRatio() <= 98.0f) && (tar->DontDotMeBefore() < Timer::GetCurrentTime()) && (tar->GetHPRatio() > 15.0f)) {
 				if(!checked_los) {
 					if(!CheckLosFN(tar))
 						break;	//cannot see target... we assume that no spell is going to work since we will only be casting detrimental spells in this call
@@ -702,7 +707,7 @@ bool Bot::AI_EngagedCastCheck() {
 			if (!AICastSpell(GetTarget(), 100, SpellType_Mez)) {
 				if (!AICastSpell(GetTarget(), 100, SpellType_Slow)) {
 					if (!AICastSpell(this, 100, SpellType_Pet)) {
-						if (!AICastSpell(this, 100, SpellType_DOT)) {
+						if (!AICastSpell(GetTarget(), 100, SpellType_DOT)) {
 							if (!AICastSpell(GetTarget(), 50, SpellType_Nuke)) {
 								if(!AICastSpell(GetTarget(), 50, SpellType_Escape)) {
 									AIautocastspell_timer->Start(RandomTimer(300, 1000), false);
