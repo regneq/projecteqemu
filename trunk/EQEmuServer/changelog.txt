@@ -3,6 +3,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==01/14/2010==
 WildcardX: Fixed a bug in the EQEmuLoginServer that resulted in the server not processing login requests because the application's connection to its MySQL database engine was closed. I have implemented an auto reconnect feature of the MySQL client api.
 WildcardX: Cleaned up a couple compiler warnings for EQEmuLoginServer.
+WildcardX: Refactored some code that worked fine on a Windows OS, but was incompatible with a Linux OS. New code is compatible with both operating systems.
 
 ==01/13/2010==
 WildcardX: Implemented auto melee or archery weapon selection for the bot ranger if the bot ranger is level 61 or better and the bot owner toggled the #bot archery command. After toggeling once, the bot then decides on archery or melee until the #bot archery command is toggled again or the bot zones or camps.

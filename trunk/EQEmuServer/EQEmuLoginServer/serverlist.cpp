@@ -17,6 +17,9 @@
 */
 
 #include "serverlist.h"
+#include <stdexcept>
+
+using namespace std;
 
 extern IniFile inifile;
 
@@ -40,12 +43,14 @@ Serverlist::Serverlist() {
 
 	_db = new EQEmuDatabase(inifile.DBServerName, inifile.DBCatalogName, inifile.DBUserName, inifile.DBPassword);
 
-	if(!_db)
-		throw std::exception("Null reference exception attempting to instantiate the EQEmuDatabase object.");
+	if(!_db) {
+		_log(WORLD__LS_ERR, "Null reference exception attempting to instantiate the EQEmuDatabase object.");
+		throw std::runtime_error("Null reference exception attempting to instantiate the EQEmuDatabase object.");
+	}
 
 	if(!_db->TestDBConnection()) {
 		_log(WORLD__LS_ERR, "Unable to connect to the specified database server. (%s/%s using login account name %s)", _db->GetServerName().c_str(), _db->GetDatabaseName().c_str(), _db->GetDBUsername().c_str());
-		throw std::exception("Unable to connect to the database server.");
+		throw std::runtime_error("Unable to connect to the database server.");
 	}
 }
 
@@ -402,9 +407,9 @@ void Serverlist::SendServerListPacket(EQStream* Client) {
 
 	for(Iterator = EQServers.begin(); Iterator != EQServers.end(); Iterator++) {
 		if(Client->GetRemoteIP() == (*Iterator).IPAddress)
-			sprintf(buf, (*Iterator).WorldServerReg->GetLocalIPAddress().c_str());
+			strcpy(buf, (*Iterator).WorldServerReg->GetLocalIPAddress().c_str());
 		else
-			sprintf(buf, (*Iterator).WorldServerReg->GetPublicIPAddress().c_str());
+			strcpy(buf, (*Iterator).WorldServerReg->GetPublicIPAddress().c_str());
 
 		buf = buf + strlen(buf) + 1;
 		// The next 32 bit word determines if the server is Normal/Preferred/Legends
@@ -431,7 +436,7 @@ void Serverlist::SendServerListPacket(EQStream* Client) {
 		buf += 4;
 		*(uint32*)buf = (*Iterator).WorldServerReg->GetUniqueRuntimeID();
 		buf += 4;
-		sprintf(buf, (*Iterator).WorldServerReg->GetServerListDisplayName().c_str());
+		strcpy(buf, (*Iterator).WorldServerReg->GetServerListDisplayName().c_str());
 		buf = buf + strlen(buf) + 1;
 		sprintf(buf, "EN");
 		buf += 3;
