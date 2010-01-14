@@ -25,8 +25,13 @@ EQEmuDatabase::EQEmuDatabase(std::string ServerName, std::string DatabaseName, s
 	SetDBPassword(DBPassword);
 
 	_mysql = mysql_init(NULL);
+	
 	if(_mysql)
 	{
+		// Allows the server to attempt an auto reconnection with MySQL if the connection is closed.
+		my_bool reconnect = 1;
+		mysql_options(_mysql, MYSQL_OPT_RECONNECT, &reconnect);
+
 		if (!mysql_real_connect(_mysql, GetServerName().c_str(), GetDBUsername().c_str(), 
 			GetDBPassword().c_str(), GetDatabaseName().c_str(), 0, NULL, 0)) 
 		{
