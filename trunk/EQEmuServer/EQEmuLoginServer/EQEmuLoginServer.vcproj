@@ -66,6 +66,7 @@
 				AdditionalDependencies="ws2_32.lib zlib.lib mysqlclient.lib"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
+				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames=""
 				GenerateDebugInformation="true"
 				SubSystem="1"

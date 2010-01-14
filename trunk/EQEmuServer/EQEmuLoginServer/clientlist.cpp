@@ -51,9 +51,11 @@ Clientlist::Clientlist() {
 }
 
 void Clientlist::Process() {
-	EQStream *eqs;
+	EQStream *eqs = 0;
 
-	while(eqs = eqsf->Pop()) {
+	eqs = eqsf->Pop();
+
+	while(eqs) {
 		struct in_addr in;
 		in.s_addr = eqs->GetRemoteIP();
 
@@ -61,6 +63,7 @@ void Clientlist::Process() {
 
 		eqs->SetOpcodeManager(&OpMgr);
 		ClientConnections.push_back(eqs);
+		eqs = eqsf->Pop();
 	}
 
 	list<EQStream*>::iterator Iterator;
@@ -74,17 +77,14 @@ void Clientlist::Process() {
 
 			for(CredentialIterator = _credentials.begin(); CredentialIterator != _credentials.end(); CredentialIterator++) {
 				if((*CredentialIterator)->GetIPAddress() == (*Iterator)->GetRemoteIP() && (*CredentialIterator)->GetPort() == (*Iterator)->GetRemotePort()) {
+#ifdef _DEBUG
 					uint32 LoginServerID = (*CredentialIterator)->GetAccountID();
 					std::string UserName = (*CredentialIterator)->GetAccountUserName();
-
-					CredentialIterator = _credentials.erase(CredentialIterator);
-
-#ifdef _DEBUG
 					cout << "Removed Credential for account " << LoginServerID << "." << endl;
 					cout << "There are " << _credentials.size() << " credential record(s)." << endl;
 					_log(WORLD__LS, "Removing AuthCredential record for %s (%u)", UserName.c_str(), LoginServerID);
 #endif
-					
+					CredentialIterator = _credentials.erase(CredentialIterator);				
 				}
 
 				if(CredentialIterator == _credentials.end())
