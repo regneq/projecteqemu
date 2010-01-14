@@ -130,6 +130,8 @@ public:
 	virtual void SetTarget(Mob* mob);
 	virtual void Zone();
 	std::vector<AISpells_Struct> GetBotSpells() { return AIspells; }
+	bool IsArcheryRange(Mob* target);
+	void ChangeBotArcherWeapons(bool isArcher);
 
 	// AI Methods
 	virtual bool AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes);
@@ -244,24 +246,25 @@ public:
 	uint32 GetBotOwnerCharacterID() { return _botOwnerCharacterID; }
 	uint32 GetBotSpellID() { return npc_spells_id; }
 	Mob* GetBotOwner() { return this->_botOwner; }
-	uint32 GetBotArcheryRange() { return _botArcheryRange; }
+	uint32 GetBotArcheryRange();
 	virtual bool GetSpawnStatus() { return _spawnStatus; }
 	int8 GetPetChooserID() { return _petChooserID; }
 	bool IsPetChooser() { return _petChooser; }
 	bool IsBotArcher() { return _botArcher; }
 	bool IsBotCharmer() { return _botCharmer; }
 	virtual bool IsBot() const { return true; }
+	bool GetRangerAutoWeaponSelect() { return _rangerAutoWeaponSelect; }
 
 	// "SET" Class Methods
 	void SetBotSpellID(uint32 newSpellID);
 	virtual void SetSpawnStatus(bool spawnStatus) { _spawnStatus = spawnStatus; }
-	void SetBotArcheryRange(uint32 archeryRange) { _botArcheryRange = archeryRange; }
 	void SetPetChooserID(int8 id) { _petChooserID = id; }
 	void SetBotArcher(bool a) { _botArcher = a; }
 	void SetBotCharmer(bool c) { _botCharmer = c; }
 	void SetPetChooser(bool p) { _petChooser = p; }
 	void SetBotOwner(Mob* botOwner) { this->_botOwner = botOwner; }
 	// void SetBotOwnerCharacterID(uint32 botOwnerCharacterID) { _botOwnerCharacterID = botOwnerCharacterID; }
+	void SetRangerAutoWeaponSelect(bool enable) { GetClass() == RANGER ? _rangerAutoWeaponSelect = enable : _rangerAutoWeaponSelect = false; }
 
 	// Class Destructors
 	virtual ~Bot();
@@ -292,7 +295,6 @@ private:
 	bool _botCharmer;
 	bool _petChooser;
 	int8 _petChooserID;
-	uint32 _botArcheryRange;
 	bool cast_last_time;
 	BotInventory _botInventory;
 	double _lastTotalPlayTime;
@@ -302,6 +304,7 @@ private:
 	int8 _guildRank;
 	std::string _guildName;
 	int32 _lastZoneId;
+	bool _rangerAutoWeaponSelect;
 
 	// Private "base stats" Members
 	sint16 _baseMR;
@@ -337,7 +340,7 @@ private:
 	uint32 GetBotItem(uint32 slotID);
 	void BotRemoveEquipItem(int slot);
 	void BotAddEquipItem(int slot, uint32 id);
-	uint32 GetBotItemBySlot(uint32 slotID, std::string* errorMessage);
+	uint32 GetBotItemBySlot(uint32 slotID);
 	void RemoveBotItemBySlot(uint32 slotID, std::string* errorMessage);
 	void SetBotItemInSlot(uint32 slotID, uint32 itemID, std::string* errorMessage);
 	uint32 GetBotItemsCount(std::string* errorMessage);
