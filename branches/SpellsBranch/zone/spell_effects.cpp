@@ -2815,33 +2815,28 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 	return true;
 }
 
-int Mob::CalcSpellEffectValue(int16 spell_id, int effect_id, int caster_level, Mob *caster, int ticsremaining)
+int Mob::CalcSpellEffectValue(Spell *spell_to_cast, int effect_id, int caster_level, Mob *caster, int ticsremaining)
 {
 	int formula, base, max, effect_value;
 
-	if
-	(
-		!IsValidSpell(spell_id) ||
-		effect_id < 0 ||
-		effect_id >= EFFECT_COUNT
-	)
+	if(effect_id < 0 || effect_id >= EFFECT_COUNT)
 		return 0;
 
-	formula = spells[spell_id].formula[effect_id];
-	base = spells[spell_id].base[effect_id];
-	max = spells[spell_id].max[effect_id];
+	formula = spell_to_cast->GetSpell().formula[effect_id];
+	base = spell_to_cast->GetSpell().base[effect_id];
+	max = spell_to_cast->GetSpell().max[effect_id];
 
-	if(IsBlankSpellEffect(spell_id, effect_id))
+	if(spell_to_cast->IsBlankSpellEffect(effect_id))
 		return 0;
 
-	effect_value = CalcSpellEffectValue_formula(formula, base, max, caster_level, spell_id, ticsremaining);
+	effect_value = CalcSpellEffectValue_formula(formula, base, max, caster_level, spell_to_cast, ticsremaining);
 
-	if(caster && IsBardSong(spell_id) &&
-	(spells[spell_id].effectid[effect_id] != SE_AttackSpeed) &&
-	(spells[spell_id].effectid[effect_id] != SE_AttackSpeed2) &&
-	(spells[spell_id].effectid[effect_id] != SE_AttackSpeed3)) {
+	if(caster && spell_to_cast->IsBardSong() &&
+	(spell_to_cast->GetSpell().effectid[effect_id] != SE_AttackSpeed) &&
+	(spell_to_cast->GetSpell().effectid[effect_id] != SE_AttackSpeed2) &&
+	(spell_to_cast->GetSpell().effectid[effect_id] != SE_AttackSpeed3)) {
 		int oval = effect_value;
-		int mod = caster->GetInstrumentMod(spell_id);
+		int mod = caster->GetInstrumentMod(spell_to_cast);
 		effect_value = effect_value * mod / 10;
 		mlog(SPELLS__BARDS, "Effect value %d altered with bard modifier of %d to yeild %d", oval, mod, effect_value);
 	}
@@ -2850,7 +2845,7 @@ int Mob::CalcSpellEffectValue(int16 spell_id, int effect_id, int caster_level, M
 }
 
 // solar: generic formula calculations
-int Mob::CalcSpellEffectValue_formula(int formula, int base, int max, int caster_level, int16 spell_id, int ticsremaining)
+int Mob::CalcSpellEffectValue_formula(int formula, int base, int max, int caster_level, Spell* spell_to_cast, int ticsremaining)
 {
 /*
 neotokyo: i need those formulas checked!!!!
@@ -2904,7 +2899,7 @@ snare has both of them negative, yet their range should work the same:
 	}
 
 	mlog(SPELLS__EFFECT_VALUES, "CSEV: spell %d, formula %d, base %d, max %d, lvl %d. Up/Down %d",
-		spell_id, formula, base, max, caster_level, updownsign);
+		spell_to_cast->GetSpellID(), formula, base, max, caster_level, updownsign);
 
 	switch(formula)
 	{
@@ -2938,30 +2933,30 @@ snare has both of them negative, yet their range should work the same:
 			result = ubase + (caster_level / 5); break;
 
 		case 111:
-            result = updownsign * (ubase + 6 * (caster_level - GetMinLevel(spell_id))); break;
+            result = updownsign * (ubase + 6 * (caster_level - spell_to_cast->GetMinLevel())); break;
 		case 112:
-            result = updownsign * (ubase + 8 * (caster_level - GetMinLevel(spell_id))); break;
+            result = updownsign * (ubase + 8 * (caster_level - spell_to_cast->GetMinLevel())); break;
 		case 113:
-            result = updownsign * (ubase + 10 * (caster_level - GetMinLevel(spell_id))); break;
+            result = updownsign * (ubase + 10 * (caster_level - spell_to_cast->GetMinLevel())); break;
 		case 114:
-            result = updownsign * (ubase + 15 * (caster_level - GetMinLevel(spell_id))); break;
+            result = updownsign * (ubase + 15 * (caster_level - spell_to_cast->GetMinLevel())); break;
 
         //these formula were updated according to lucy 10/16/04
 		case 115:	// solar: this is only in symbol of transal
-			result = ubase + 6 * (caster_level - GetMinLevel(spell_id)); break;
+			result = ubase + 6 * (caster_level - spell_to_cast->GetMinLevel()); break;
 		case 116:	// solar: this is only in symbol of ryltan
-            result = ubase + 8 * (caster_level - GetMinLevel(spell_id)); break;
+            result = ubase + 8 * (caster_level - spell_to_cast->GetMinLevel()); break;
 		case 117:	// solar: this is only in symbol of pinzarn
-            result = ubase + 12 * (caster_level - GetMinLevel(spell_id)); break;
+            result = ubase + 12 * (caster_level - spell_to_cast->GetMinLevel()); break;
 		case 118:	// solar: used in naltron and a few others
-            result = ubase + 20 * (caster_level - GetMinLevel(spell_id)); break;
+            result = ubase + 20 * (caster_level - spell_to_cast->GetMinLevel()); break;
 
 		case 119:	// solar: confirmed 2/6/04
 			result = ubase + (caster_level / 8); break;
 		case 121:	// solar: corrected 2/6/04
 			result = ubase + (caster_level / 3); break;
 		case 122: {
-			int ticdif = spells[spell_id].buffduration - (ticsremaining-1);
+			int ticdif = spell_to_cast->GetSpell().buffduration - (ticsremaining-1);
 			if(ticdif < 0)
 				ticdif = 0;
 			result = -(11 + 11*ticdif);
@@ -3040,7 +3035,7 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 		{
 		case SE_CurrentHP:
 		{
-			effect_value = CalcSpellEffectValue(spell_id, i, caster_level, caster, ticsremaining);
+			effect_value = 0;//CalcSpellEffectValue(spell_id, i, caster_level, caster, ticsremaining);
 
 			//TODO: account for AAs and stuff
 			//TODO: FIXME
@@ -3082,7 +3077,7 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 		}
 		case SE_HealOverTime:
 		{
-			effect_value = CalcSpellEffectValue(spell_id, i, caster_level);
+			effect_value = 0;//CalcSpellEffectValue(spell_id, i, caster_level);
 
 			//is this affected by stuff like GetActSpellHealing??
 			HealDamage(effect_value, caster);
@@ -3092,7 +3087,7 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 
 		case SE_CurrentMana:
 		{
-			effect_value = CalcSpellEffectValue(spell_id, i, caster_level);
+			effect_value = 0;//CalcSpellEffectValue(spell_id, i, caster_level);
 
 			SetMana(GetMana() + effect_value);
 			break;
@@ -3100,7 +3095,7 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 
 		case SE_CurrentEndurance: {
 			if(IsClient()) {
-				effect_value = CalcSpellEffectValue(spell_id, i, caster_level);
+				effect_value = 0;//CalcSpellEffectValue(spell_id, i, caster_level);
 
 				CastToClient()->SetEndurance(CastToClient()->GetEndurance() + effect_value);
 			}
@@ -3109,7 +3104,7 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 
 		case SE_BardAEDot:
 		{
-			effect_value = CalcSpellEffectValue(spell_id, i, caster_level);
+			effect_value = 0;//CalcSpellEffectValue(spell_id, i, caster_level);
 
 			if (invulnerable || /*effect_value > 0 ||*/ DivineAura())
 				break;
@@ -3133,7 +3128,7 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 		}
 
 		case SE_Hate2:{
-			effect_value = CalcSpellEffectValue(spell_id, i, caster_level);
+			effect_value = 0;//CalcSpellEffectValue(spell_id, i, caster_level);
 			if(caster){
 				if(effect_value > 0){
 					if(caster){
@@ -3156,18 +3151,18 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 		}
 
 		case SE_Charm: {
-			if (!caster || !PassCharismaCheck(caster, this, spell_id)) {
+			/*if (!caster || !PassCharismaCheck(caster, this, spell_id)) {
 				BuffFadeByEffect(SE_Charm);
-			}
+			}*/
 
 			break;
 		}
 
 		case SE_Root: {
-			float SpellEffectiveness = ResistSpell(spells[spell_id].resisttype, spell_id, caster);
+			/*float SpellEffectiveness = ResistSpell(spells[spell_id].resisttype, spell_id, caster);
 			if(SpellEffectiveness < 25) {
 				BuffFadeByEffect(SE_Root);
-			}
+			}*/
 
 			break;
 		}

@@ -633,7 +633,7 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 		if(IsBlankSpellEffect(spell_id, i))
 			continue;
 
-		effect_value = CalcSpellEffectValue(spell_id, i, casterlevel, caster);
+		effect_value = 0; //TODO: CalcSpellEffectValue(spell_id, i, casterlevel, caster);
 
 		switch (spells[spell_id].effectid[i])
 		{

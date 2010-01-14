@@ -1782,6 +1782,7 @@ int CalcBuffDuration_formula(int level, int formula, int duration)
 //if all effects are better or the same, we overwrite, else we do nothing
 int Mob::CheckStackConflict(int16 spellid1, int caster_level1, int16 spellid2, int caster_level2, Mob* caster1, Mob* caster2)
 {
+	/*
 	const SPDat_Spell_Struct &sp1 = spells[spellid1];
 	const SPDat_Spell_Struct &sp2 = spells[spellid2];
 	
@@ -1818,6 +1819,7 @@ int Mob::CheckStackConflict(int16 spellid1, int caster_level1, int16 spellid2, i
 	/*
 	One of these is a bard song and one isn't and they're both beneficial so they should stack.
 	*/
+	/*
 	if(IsBardSong(spellid1) != IsBardSong(spellid2)) 
 	{
 		if(!IsDetrimentalSpell(spellid1) && !IsDetrimentalSpell(spellid2))
@@ -1838,6 +1840,7 @@ int Mob::CheckStackConflict(int16 spellid1, int caster_level1, int16 spellid2, i
 			The logic here is if you're comparing the same spells they can't block each other
 			from refreshing
 			*/
+	/*
 			if(spellid1 == spellid2)
 				continue;
 
@@ -1926,6 +1929,7 @@ int Mob::CheckStackConflict(int16 spellid1, int caster_level1, int16 spellid2, i
 		Quick check, are the effects the same, if so then
 		keep going else ignore it for stacking purposes.
 		*/
+/*
 		if(effect1 != effect2)
 			continue;
 
@@ -1933,6 +1937,7 @@ int Mob::CheckStackConflict(int16 spellid1, int caster_level1, int16 spellid2, i
 		If target is a npc and caster1 and caster2 exist
 		If Caster1 isn't the same as Caster2 and the effect is a DoT then ignore it.
 		*/
+/*
 		if(IsNPC() && caster1 && caster2 && caster1 != caster2) {
 			if(effect1 == SE_CurrentHP && sp1_detrimental && sp2_detrimental) {
 				continue;
@@ -1951,6 +1956,7 @@ int Mob::CheckStackConflict(int16 spellid1, int caster_level1, int16 spellid2, i
 		sp1 = detrimental & sp2 = beneficial
 		Then this effect should be ignored for stacking purposes.
 		*/
+/*
 		if(sp_det_mismatch)
 		{
 			mlog(SPELLS__STACKING, "The effects are the same but the spell types are not, passing the effect");
@@ -1961,6 +1967,7 @@ int Mob::CheckStackConflict(int16 spellid1, int caster_level1, int16 spellid2, i
 		If the spells aren't the same
 		and the effect is a dot we can go ahead and stack it
 		*/
+/*
 		if(effect1 == SE_CurrentHP && spellid1 != spellid2 && sp1_detrimental && sp2_detrimental) {
 			mlog(SPELLS__STACKING, "The spells are not the same and it is a detrimental dot, passing");
 			continue;
@@ -2007,7 +2014,7 @@ int Mob::CheckStackConflict(int16 spellid1, int caster_level1, int16 spellid2, i
 		return(1);
 	}
 	
-	mlog(SPELLS__STACKING, "Stacking code decided that %s is not affected by %s.", sp2.name, sp1.name);
+	mlog(SPELLS__STACKING, "Stacking code decided that %s is not affected by %s.", sp2.name, sp1.name);*/
 	return 0;
 }
 
@@ -2241,234 +2248,283 @@ bool Mob::SpellOnTarget(uint16 spell_id, Mob* spell_target)
 bool Mob::SpellOnTarget(Spell *spell_to_cast, Mob* spell_target)
 {
 	printf("Spell %s(%d) on %s\n", spell_to_cast->GetSpell().name, spell_to_cast->GetSpellID(), spell_target->GetName());
-	/*
-	EQApplicationPacket *action_packet, *message_packet;
-	float spell_effectiveness;
-
-	if(!IsValidSpell(spell_id))
-		return false;
-
-	// well we can't cast a spell on target without a target
-	if(!spelltar)
+	int16 caster_level = GetCasterLevel(spell_to_cast->GetSpellID());
+	
+	int sequence = SendActionSpellPacket(spell_to_cast, spell_target, caster_level);
+	
+	if(spell_target->IsNPC())
 	{
-		mlog(SPELLS__CASTING_ERR, "Unable to apply spell %d without a target", spell_id);
-		Message(13, "SOT: You must have a target for this spell.");
+		char temp1[100];
+		sprintf(temp1, "%d", spell_to_cast->GetSpellID());
+		parse->Event(EVENT_CAST_ON, spell_target->GetNPCTypeID(), temp1, spell_target->CastToNPC(), this);
+	}
+	
+	mlog(SPELLS__CASTING, "Casting spell %d on %s with effective caster level %d", spell_to_cast->GetSpellID(), spell_target->GetName(), caster_level);
+	
+	if(spell_target->GetInvul() || spell_target->DivineAura()) 
+	{
+		mlog(SPELLS__CASTING_ERR, "Casting spell %d on %s aborted: they are invulnerable.", spell_to_cast->GetSpellID(), spell_target->GetName());
 		return false;
 	}
+	
+	bodyType bt = spell_target->GetBodyType();
+	if(bt == BT_NoTarget || bt == BT_NoTarget2) 
+	{
+		mlog(SPELLS__CASTING_ERR, "Casting spell %d on %s aborted: they are untargetable", spell_to_cast->GetSpellID(), spell_target->GetName());
+		return false;
+	}
+	
+	if(spell_to_cast->GetSpell().targettype == ST_UndeadAE)
+	{
+		if(spell_target->GetBodyType() != BT_SummonedUndead && 
+			spell_target->GetBodyType() != BT_Undead && 
+			spell_target->GetBodyType() != BT_Vampire)
+		{
+			mlog(SPELLS__CASTING_ERR, "Casting spell %d on %s aborted: they are not undead and this spell is undead target only.", spell_to_cast->GetSpellID(), spell_target->GetName());
+			return false;
+		}
+	}
+	
+	//TODO: do something about double invis
+	if(!WillSpellHold(spell_to_cast, spell_target))
+	{
+		return false;
+	}
+	
+	if(spell_target->IsImmuneToSpell(spell_to_cast, this))
+	{
+		mlog(SPELLS__RESISTS, "Spell %d can't take hold due to immunity %s -> %s", spell_to_cast->GetSpellID(), GetName(), spell_target->GetName());
+		return false;
+	}
+	
+	float spell_effectiveness = DoSpellOnTargetResistCheck(spell_to_cast, spell_target);
+	
+	if(spell_effectiveness == 0)
+	{
+		mlog(SPELLS__RESISTS, "Spell %d can't take hold due to full resist %s -> %s", spell_to_cast->GetSpellID(), GetName(), spell_target->GetName());
+		return false;
+	}
+	
+	DoSpellOnTargetRecourse(spell_to_cast, spell_target);
+	
+	//Cazic Touch
+	if(spell_to_cast->GetSpellID() == 982)
+	{
+		char target_name[64];
+		strcpy(target_name, spell_target->GetCleanName());
+		strupr(target_name);
+		Shout("%s!", target_name);
+	}
+	
+	if(spell_target->IsAIControlled() && spell_to_cast->IsDetrimentalSpell() && !spell_to_cast->IsHarmonySpell()) 
+	{
+		sint32 aggro_amount = CheckAggroAmount(spell_to_cast);
+		mlog(SPELLS__CASTING, "Spell %d cast on %s generated %d hate", spell_to_cast->GetSpellID(), spell_target->GetName(), aggro_amount);
+		if(aggro_amount > 0)
+			spell_target->AddToHateList(this, aggro_amount);
+		else{
+			sint32 newhate = spell_target->GetHateAmount(this) + aggro_amount;
+			if (newhate < 1) {
+				spell_target->SetHate(this, 1);
+			} else {
+				spell_target->SetHate(this, newhate);
+			}
+		}
+	}
+	else if (spell_to_cast->IsBeneficialSpell())
+		entity_list.AddHealAggro(spell_target, this, CheckHealAggroAmount(spell_to_cast, (spell_target->GetMaxHP() - spell_target->GetHP())));
+		
+		
+	/*if(!spell_target->SpellEffect(this, spell_to_cast, spell_effectiveness))
+	{
+		mlog(SPELLS__CASTING_ERR, "Spell %d could not apply its effects %s -> %s\n", spell_to_cast->GetSpellID(), GetName(), spell_target->GetName());
+		Message_StringID(MT_Shout, SPELL_NO_HOLD);
+		return false;
+	}*/
+	
+	if(!spell_to_cast->IsEffectInSpell(SE_TossUp))
+	{
+		if(spell_to_cast->GetSpell().pushback > 0 || spell_to_cast->GetSpell().pushup > 0)
+		{
+			SendKnockBackPacket(spell_to_cast->GetSpell().pushback, spell_to_cast->GetSpell().pushup);
+		}
+	}
+	
+	
+	//TODO: Move Exemptions from here to SpellEffect as well as needed action 0x04 packets.
+	//Shadow Step -> Target
+	//Bind Affinity -> Caster and Target
 
-	int16 caster_level = GetCasterLevel(spell_id);
+	SendCombatDamageSpellPacket(spell_to_cast, spell_target, sequence);
 	
-	mlog(SPELLS__CASTING, "Casting spell %d on %s with effective caster level %d", spell_id, spelltar->GetName(), caster_level);
-	
-	// Actual cast action - this causes the caster animation and the particles
-	// around the target
-	// solar: we do this first, that way we get the particles even if the spell
-	// doesn't land due to pvp protection
-	// note: this packet is sent again if the spell is successful, with a flag
-	// set
-	action_packet = new EQApplicationPacket(OP_Action, sizeof(Action_Struct));
+	mlog(SPELLS__CASTING, "Cast of %d by %s on %s complete successfully.", spell_to_cast->GetSpellID(), GetName(), spell_target->GetName());	
+	return true;
+}
+
+int Mob::SendActionSpellPacket(Spell *spell_to_cast, Mob *spell_target, int caster_level)
+{
+	EQApplicationPacket *action_packet = new EQApplicationPacket(OP_Action, sizeof(Action_Struct));
 	Action_Struct* action = (Action_Struct*) action_packet->pBuffer;
-
-	// select source
+	uint32 sequence = 0;
+	
 	if(IsClient() && CastToClient()->GMHideMe())
 	{
-		action->source = spelltar->GetID();
+		action->source = spell_target->GetID();
 	}
 	else
 	{
 		action->source = GetID();
-		// solar: this is a hack that makes detrimental buffs work client to client
-		// TODO figure out how to do this right
-		if
-		(
-			IsDetrimentalSpell(spell_id) &&
-			IsClient() &&
-			spelltar->IsClient()
-		)
-		{
-			action->source = spelltar->GetID();
-		}
 	}
-
-	// select target
-	if(spell_to_cast->HasSpellEffect(SE_BindSight))
+	
+	if(spell_to_cast->IsEffectInSpell(SE_BindSight))
 	{ 
 		action->target = GetID(); 
 	} 
 	else
 	{ 
-		action->target = spelltar->GetID(); 
+		action->target = spell_target->GetID(); 
 	} 
-
-	action->level = caster_level;	// caster level, for animation only
-	action->type = 231;	// 231 means a spell
-	action->spell = spell_id;
-	action->sequence = (int32) (GetHeading() * 2);	// just some random number
-	action->instrument_mod = GetInstrumentMod(spell_id);
+	
+	action->level = caster_level;
+	action->type = 231;
+	action->spell = spell_to_cast->GetSpellID();
+	action->sequence = MakeRandomInt(250, 32000);
+	action->instrument_mod = GetInstrumentMod(spell_to_cast);
 	action->buff_unknown = 0;
+	sequence = action->sequence;
 	
-	if(spelltar->IsClient())	// send to target
-		spelltar->CastToClient()->QueuePacket(action_packet);
-	if(IsClient())	// send to caster
+	if(spell_target->IsClient())
+	{
+		spell_target->CastToClient()->QueuePacket(action_packet);
+	}
+	
+	if(IsClient())
+	{
 		CastToClient()->QueuePacket(action_packet);
-	// send to people in the area, ignoring caster and target
-	entity_list.QueueCloseClients(spelltar, action_packet, true, 200, this, true, spelltar->IsClient() ? FILTER_PCSPELLS : FILTER_NPCSPELLS);
-
-// end of action packet
-*/
-
-       /* Send the EVENT_CAST_ON event */
-     /*  if(spelltar->IsNPC())
-       {       char temp1[100];
-               sprintf(temp1, "%d", spell_id);
-               parse->Event(EVENT_CAST_ON, spelltar->GetNPCTypeID(), temp1, spelltar->CastToNPC(), this);
-       }
-
-	// solar: now check if the spell is allowed to land
-	
-	// invuln mobs can't be affected by any spells, good or bad
-	if(spelltar->GetInvul() || spelltar->DivineAura()) {
-		mlog(SPELLS__CASTING_ERR, "Casting spell %d on %s aborted: they are invulnerable.", spell_id, spelltar->GetName());
-		safe_delete(action_packet);
-		return false;
 	}
 	
-	//cannot hurt untargetable mobs
-	bodyType bt = spelltar->GetBodyType();
-	if(bt == BT_NoTarget || bt == BT_NoTarget2) {
-		mlog(SPELLS__CASTING_ERR, "Casting spell %d on %s aborted: they are untargetable", spell_id, spelltar->GetName());
-		safe_delete(action_packet);
-		return(false);
-	}
+	entity_list.QueueCloseClients(spell_target, action_packet, true, 200, this, true, spell_target->IsClient() ? FILTER_PCSPELLS : FILTER_NPCSPELLS);
+	safe_delete(action_packet);
+	return sequence;
+}
 
-	// Prevent double invising, which made you uninvised
-	// Not sure if all 3 should be stacking
-	if(IsEffectInSpell(spell_id, SE_Invisibility))
+void Mob::SendCombatDamageSpellPacket(Spell *spell_to_cast, Mob *spell_target, int sequence)
+{
+	EQApplicationPacket *message_packet;
+
+	message_packet = new EQApplicationPacket(OP_Damage, sizeof(CombatDamage_Struct));
+	CombatDamage_Struct *cd = (CombatDamage_Struct *)message_packet->pBuffer;
+	cd->type = 231;
+	cd->spellid = spell_to_cast->GetSpellID();
+	cd->sequence = sequence;
+	cd->damage = 0;
+	
+	if(IsClient() && CastToClient()->GMHideMe())
 	{
-		if(spelltar->invisible)
-		{
-			spelltar->Message_StringID(MT_Shout, ALREADY_INVIS, GetCleanName());
-			safe_delete(action_packet);
-			return false;
-		}
+		cd->source = spell_target->GetID();
 	}
-
-	if(IsEffectInSpell(spell_id, SE_InvisVsUndead))
+	else
 	{
-		if(spelltar->invisible_undead)
-		{
-			spelltar->Message_StringID(MT_Shout, ALREADY_INVIS, GetCleanName());
-			safe_delete(action_packet);
-			return false;
-		}
+		cd->source = GetID();
 	}
-
-	if(IsEffectInSpell(spell_id, SE_InvisVsAnimals))
+	
+	if(spell_to_cast->IsEffectInSpell(SE_BindSight))
+	{ 
+		cd->target = GetID(); 
+	} 
+	else
+	{ 
+		cd->target = spell_target->GetID(); 
+	}
+	
+	if(!spell_to_cast->IsEffectInSpell(SE_BindAffinity))
 	{
-		if(spelltar->invisible_animals)
-		{
-			spelltar->Message_StringID(MT_Shout, ALREADY_INVIS, GetCleanName());
-			safe_delete(action_packet);
-			return false;
-		}
+		entity_list.QueueCloseClients(spell_target, message_packet, false, 200, 0, true, spell_target->IsClient() ? FILTER_PCSPELLS : FILTER_NPCSPELLS);
 	}
+	
+	safe_delete(message_packet);
+}
 
-	if(!(IsClient() && CastToClient()->GetGM()) && !IsHarmonySpell(spell_id))	// GMs can cast on anything
+bool Mob::WillSpellHold(Spell *spell_to_cast, Mob *spell_target)
+{
+	if(!(IsClient() && CastToClient()->GetGM()) && !spell_to_cast->IsHarmonySpell())	// GMs can cast on anything
 	{
 		// Beneficial spells check
-		if(IsBeneficialSpell(spell_id))
+		if(spell_to_cast->IsBeneficialSpell())
 		{
 			if
 			(
 				IsClient() &&	//let NPCs do beneficial spells on anybody if they want, should be the job of the AI, not the spell code to prevent this from going wrong
-				spelltar != this &&
+				spell_target != this &&
 				(
-					!IsBeneficialAllowed(spelltar) ||
+					!IsBeneficialAllowed(spell_target) ||
 					(
-						IsGroupOnlySpell(spell_id) &&
+						spell_to_cast->IsGroupOnlySpell() &&
 						!(
 							(entity_list.GetGroupByMob(this) &&
-							entity_list.GetGroupByMob(this)->IsGroupMember(spelltar)) ||
-							(spelltar == GetPet()) //should be able to cast grp spells on self and pet despite grped status.
+							entity_list.GetGroupByMob(this)->IsGroupMember(spell_target)) ||
+							(spell_target == GetPet()) //should be able to cast grp spells on self and pet despite grped status.
 						)
 					)
 				)
 			)
 			{
-				mlog(SPELLS__CASTING_ERR, "Beneficial spell %d can't take hold %s -> %s, IBA? %d", spell_id, GetName(), spelltar->GetName(), IsBeneficialAllowed(spelltar));
+				mlog(SPELLS__CASTING_ERR, "Beneficial spell %d can't take hold %s -> %s, IBA? %d", spell_to_cast->GetSpellID(), GetName(), spell_target->GetName(), IsBeneficialAllowed(spell_target));
 				Message_StringID(MT_Shout, SPELL_NO_HOLD);
-				safe_delete(action_packet);
 				return false;
 			}
 		}
-		else if	( !IsAttackAllowed(spelltar, true) && !IsResurrectionEffects(spell_id)) // Detrimental spells - PVP check
+		else if(!IsAttackAllowed(spell_target, true) && !spell_to_cast->IsResurrectionEffects()) // Detrimental spells - PVP check
 		{
-			mlog(SPELLS__CASTING_ERR, "Detrimental spell %d can't take hold %s -> %s", spell_id, GetName(), spelltar->GetName());
-			spelltar->Message_StringID(MT_Shout, YOU_ARE_PROTECTED, GetCleanName());
-			safe_delete(action_packet);
+			mlog(SPELLS__CASTING_ERR, "Detrimental spell %d can't take hold %s -> %s", spell_to_cast->GetSpellID(), GetName(), spell_target->GetName());
+			spell_target->Message_StringID(MT_Shout, YOU_ARE_PROTECTED, GetCleanName());
 			return false;
 		}
 	}
+	return true;
+}
 
-	// solar: ok at this point the spell is permitted to affect the target,
-	// but we need to check special cases and resists
-
-
-	// check immunities
-	if(spelltar->IsImmuneToSpell(spell_id, this))
+int Mob::DoSpellOnTargetResistCheck(Spell *spell_to_cast, Mob *spell_target)
+{
+	float spell_effectiveness;
+	if(spell_to_cast->IsResistableSpell())
 	{
-		//the above call does the message to the client if needed
-		mlog(SPELLS__RESISTS, "Spell %d can't take hold due to immunity %s -> %s", spell_id, GetName(), spelltar->GetName());
-		safe_delete(action_packet);
-		return false;
-	}
-
-	//check for AE_Undead
-	if(spells[spell_id].targettype == ST_UndeadAE){
-		if(spelltar->GetBodyType() != BT_SummonedUndead && 
-			spelltar->GetBodyType() != BT_Undead && 
-			spelltar->GetBodyType() != BT_Vampire)
-		{
-			return false;
-		}
-	}
-
-
-	// solar: resist check - every spell can be resisted, beneficial or not
-	// add: ok this isn't true, eqlive's spell data is fucked up, buffs are
-	// not all unresistable, so changing this to only check certain spells
-	if(IsResistableSpell(spell_id))
-	{
-		spell_effectiveness = spelltar->ResistSpell(spells[spell_id].resisttype, spell_id, this);
+		int spell_effectiveness = spell_target->ResistSpell(spell_to_cast->GetSpell().resisttype, spell_to_cast, this);
 		if(spell_effectiveness < 100)
 		{
-			if(spell_effectiveness == 0 || !IsPartialCapableSpell(spell_id) )
+			if(spell_effectiveness == 0 || !spell_to_cast->IsPartialCapableSpell())
 			{
-				mlog(SPELLS__RESISTS, "Spell %d was completely resisted by %s", spell_id, spelltar->GetName());
-				Message_StringID(MT_Shout, TARGET_RESISTED, spells[spell_id].name);
-				spelltar->Message_StringID(MT_Shout, YOU_RESIST, spells[spell_id].name);
+				mlog(SPELLS__RESISTS, "Spell %d was completely resisted by %s", spell_to_cast->GetSpellID(), spell_target->GetName());
+				Message_StringID(MT_Shout, TARGET_RESISTED, spell_to_cast->GetSpell().name);
+				spell_target->Message_StringID(MT_Shout, YOU_RESIST, spell_to_cast->GetSpell().name);
 
-				if(spelltar->IsAIControlled()){
-					sint32 aggro = CheckAggroAmount(spell_id);
-					if(aggro > 0) {
-						if(!IsHarmonySpell(spell_id))
-						spelltar->AddToHateList(this, aggro);
+				if(spell_target->IsAIControlled())
+				{
+					sint32 aggro = CheckAggroAmount(spell_to_cast);
+					if(aggro > 0) 
+					{
+						if(!spell_to_cast->IsHarmonySpell())
+						{
+							spell_target->AddToHateList(this, aggro);
+						}
 						else
-							if(!PassCharismaCheck(this, spelltar, spell_id))
-								spelltar->AddToHateList(this, aggro);
+							if(!PassCharismaCheck(this, spell_target, spell_to_cast))
+								spell_target->AddToHateList(this, aggro);
 					}
-					else{
-						sint32 newhate = spelltar->GetHateAmount(this) + aggro;
-						if (newhate < 1) {
-							spelltar->SetHate(this,1);
-						} else {
-							spelltar->SetHate(this,newhate);
+					else
+					{
+						sint32 newhate = spell_target->GetHateAmount(this) + aggro;
+						if(newhate < 1) 
+						{
+							spell_target->SetHate(this, 1);
+						}
+						else 
+						{
+							spell_target->SetHate(this, newhate);
 						}
 					}
 				}
-
-				safe_delete(action_packet);
-				return false;
+				return 0;
 			}
 		}
 	}
@@ -2476,207 +2532,122 @@ bool Mob::SpellOnTarget(Spell *spell_to_cast, Mob* spell_target)
 	{
 		spell_effectiveness = 100;
 	}
+	
+	return spell_effectiveness;
+}
 
-		// Recourse means there is a spell linked to that spell in that the recourse spell will
-		// be automatically casted on the casters group or the caster only depending on Targettype
-		// solar: this is for things like dark empathy, shadow vortex
-		int recourse_spell=0;
-		recourse_spell = spells[spell_id].RecourseLink;
-		if(recourse_spell)
+void Mob::DoSpellOnTargetRecourse(Spell *spell_on_target, Mob *spell_target)
+{
+	int recourse_spell_id = spell_on_target->GetSpell().RecourseLink;
+	if(!recourse_spell_id)
+	{
+		return;
+	}
+	
+	Spell *recourse_spell = new Spell(recourse_spell_id, this, spell_target);
+	if(spell_on_target->GetSpell().targettype == ST_Group || spell_on_target->GetSpell().targettype == ST_GroupTeleport)
+	{
+		if(IsGrouped())
 		{
-			if(spells[recourse_spell].targettype == ST_Group || spells[recourse_spell].targettype == ST_GroupTeleport)
+			Group *g = entity_list.GetGroupByMob(this);
+			g->CastGroupSpell(this, recourse_spell);
+		}
+		else if(IsRaidGrouped() && IsClient())
+		{
+			Raid *r = entity_list.GetRaidByClient(CastToClient());
+			int32 gid = 0xFFFFFFFF;
+			gid = r->GetGroup(GetName());
+			if(gid < 12)
 			{
-				if(IsGrouped())
-				{
-					Group *g = entity_list.GetGroupByMob(this);
-					g->CastGroupSpell(this, recourse_spell);
-				}
-				else if(IsRaidGrouped() && IsClient())
-				{
-					Raid *r = entity_list.GetRaidByClient(CastToClient());
-					int32 gid = 0xFFFFFFFF;
-					gid = r->GetGroup(GetName());
-					if(gid < 12)
-					{
-						r->CastGroupSpell(this, recourse_spell, gid);
-					}
-					else{
-						SpellOnTarget(recourse_spell, this);
-#ifdef GROUP_BUFF_PETS
-						if (GetPet())
-							SpellOnTarget(recourse_spell, GetPet());
-#endif
-					}
-				}
-				else if(HasOwner())
-				{
-					if(GetOwner()->IsGrouped())
-					{
-						Group *g = entity_list.GetGroupByMob(GetOwner());
-						g->CastGroupSpell(this, recourse_spell);
-					}
-					else if(GetOwner()->IsRaidGrouped() && GetOwner()->IsClient())
-					{
-						Raid *r = entity_list.GetRaidByClient(GetOwner()->CastToClient());
-						int32 gid = r->GetGroup(GetOwner()->GetName());
-						if(gid < 12)
-						{
-							r->CastGroupSpell(this, recourse_spell, gid);
-						}
-						else
-						{
-							SpellOnTarget(recourse_spell, GetOwner());
-							SpellOnTarget(recourse_spell, this);
-						}
-					}
-					else
-					{
-						SpellOnTarget(recourse_spell, GetOwner());
-						SpellOnTarget(recourse_spell, this);
-					}
-				}
-				else
-				{
-					SpellOnTarget(recourse_spell, this);
-#ifdef GROUP_BUFF_PETS
-					if (GetPet())
-						SpellOnTarget(recourse_spell, GetPet());
-#endif
-				}	
-
+				r->CastGroupSpell(this, recourse_spell, gid);
 			}
 			else
 			{
 				SpellOnTarget(recourse_spell, this);
+#ifdef GROUP_BUFF_PETS
+				if (GetPet())
+					SpellOnTarget(recourse_spell, GetPet());
+#endif
 			}
 		}
-
-
-	if(spell_id == 982)	// Cazic Touch, hehe =P
-	{
-		char target_name[64];
-		strcpy(target_name, spelltar->GetCleanName());
-		strupr(target_name);
-		Shout("%s!", target_name);
-	}
-
-	if (spelltar->IsAIControlled() && IsDetrimentalSpell(spell_id) && !IsHarmonySpell(spell_id)) {
-		sint32 aggro_amount = CheckAggroAmount(spell_id);
-		mlog(SPELLS__CASTING, "Spell %d cast on %s generated %d hate", spell_id, spelltar->GetName(), aggro_amount);
-		if(aggro_amount > 0)
-			spelltar->AddToHateList(this, aggro_amount);
-		else{
-			sint32 newhate = spelltar->GetHateAmount(this) + aggro_amount;
-			if (newhate < 1) {
-				spelltar->SetHate(this,1);
-			} else {
-				spelltar->SetHate(this,newhate);
-			}
-		}
-	}
-	else if (IsBeneficialSpell(spell_id))
-		entity_list.AddHealAggro(spelltar, this, CheckHealAggroAmount(spell_id, (spelltar->GetMaxHP() - spelltar->GetHP())));
-
-	// cause the effects to the target
-	if(!spelltar->SpellEffect(this, spell_id, spell_effectiveness))
-	{
-		// solar: if SpellEffect returned false there's a problem applying the
-		// spell.  It's most likely a buff that can't stack.
-		mlog(SPELLS__CASTING_ERR, "Spell %d could not apply its effects %s -> %s\n", spell_id, GetName(), spelltar->GetName());
-		Message_StringID(MT_Shout, SPELL_NO_HOLD);
-		safe_delete(action_packet);
-		return false;
-	}
-
-	// solar: send the action packet again now that the spell is successful
-	// NOTE: this is what causes the buff icon to appear on the client, if
-	// this is a buff - but it sortof relies on the first packet.
-	// the complete sequence is 2 actions and 1 damage message
-	action->buff_unknown = 0x04;	// this is a success flag
-
-	if(IsEffectInSpell(spell_id, SE_TossUp))
-	{
-		action->buff_unknown = 0;
-	}
-	else if(spells[spell_id].pushback > 0 || spells[spell_id].pushup > 0)
-	{
-		if(spelltar->IsClient())
+		else if(HasOwner())
 		{
-			if(HasBuffIcon(this, spelltar, spell_id) == false)
+			if(GetOwner()->IsGrouped())
 			{
-				spelltar->CastToClient()->SetKnockBackExemption(true);
+				Group *g = entity_list.GetGroupByMob(GetOwner());
+				g->CastGroupSpell(this, recourse_spell);
+			}
+			else if(GetOwner()->IsRaidGrouped() && GetOwner()->IsClient())
+			{
+				Raid *r = entity_list.GetRaidByClient(GetOwner()->CastToClient());
+				int32 gid = r->GetGroup(GetOwner()->GetName());
+				if(gid < 12)
+				{
+					r->CastGroupSpell(this, recourse_spell, gid);
+				}
+				else
+				{
+					SpellOnTarget(recourse_spell, GetOwner());
+					SpellOnTarget(recourse_spell, this);
+				}
+			}
+			else
+			{
+				SpellOnTarget(recourse_spell, GetOwner());
+				SpellOnTarget(recourse_spell, this);
+			}
+		}
+		else
+		{
+			SpellOnTarget(recourse_spell, this);
+#ifdef GROUP_BUFF_PETS
+			if (GetPet())
+				SpellOnTarget(recourse_spell, GetPet());
+#endif
+		}	
+	}
+	else
+	{
+		SpellOnTarget(recourse_spell, this);
+	}
+}
 
-				action->buff_unknown = 0;
-				EQApplicationPacket* outapp_push = new EQApplicationPacket(OP_ClientUpdate, sizeof(PlayerPositionUpdateServer_Struct));
-				PlayerPositionUpdateServer_Struct* spu = (PlayerPositionUpdateServer_Struct*)outapp_push->pBuffer;
+void Mob::SendKnockBackPacket(int push_up, int push_back)
+{
+	if(IsClient())
+	{
+		CastToClient()->SetKnockBackExemption(true);
+		EQApplicationPacket* outapp_push = new EQApplicationPacket(OP_ClientUpdate, sizeof(PlayerPositionUpdateServer_Struct));
+		PlayerPositionUpdateServer_Struct* spu = (PlayerPositionUpdateServer_Struct*)outapp_push->pBuffer;
 
-				double look_heading = CalculateHeadingToTarget(spelltar->GetX(), spelltar->GetY());
-				look_heading /= 256;
-				look_heading *= 360;
-				if(look_heading > 360)
-					look_heading -= 360;
+		double look_heading = CalculateHeadingToTarget(GetX(), GetY());
+		look_heading /= 256;
+		look_heading *= 360;
+		if(look_heading > 360)
+			look_heading -= 360;
 
 				//x and y are crossed mkay
-				double new_x = spells[spell_id].pushback * sin(double(look_heading * 3.141592 / 180.0));
-				double new_y = spells[spell_id].pushback * cos(double(look_heading * 3.141592 / 180.0));
+		double new_x = push_back * sin(double(look_heading * 3.141592 / 180.0));
+		double new_y = push_back * cos(double(look_heading * 3.141592 / 180.0));
 
-				spu->spawn_id	= spelltar->GetID();
-				spu->x_pos		= FloatToEQ19(spelltar->GetX());
-				spu->y_pos		= FloatToEQ19(spelltar->GetY());
-				spu->z_pos		= FloatToEQ19(spelltar->GetZ());
-				spu->delta_x	= NewFloatToEQ13(new_x);
-				spu->delta_y	= NewFloatToEQ13(new_y);
-				spu->delta_z	= NewFloatToEQ13(spells[spell_id].pushup);
-				spu->heading	= FloatToEQ19(spelltar->GetHeading());
-				spu->padding0002	=0;
-				spu->padding0006	=7;
-				spu->padding0014	=0x7f;
-				spu->padding0018	=0x5df27;
-				spu->animation = 0;
-				spu->delta_heading = NewFloatToEQ13(0);
-				outapp_push->priority = 6;
-				entity_list.QueueClients(this, outapp_push, true);
-				spelltar->CastToClient()->FastQueuePacket(&outapp_push);
-			}
-		}
+		spu->spawn_id	= GetID();
+		spu->x_pos		= FloatToEQ19(GetX());
+		spu->y_pos		= FloatToEQ19(GetY());
+		spu->z_pos		= FloatToEQ19(GetZ());
+		spu->delta_x	= NewFloatToEQ13(new_x);
+		spu->delta_y	= NewFloatToEQ13(new_y);
+		spu->delta_z	= NewFloatToEQ13(push_up);
+		spu->heading	= FloatToEQ19(GetHeading());
+		spu->padding0002	=0;
+		spu->padding0006	=7;
+		spu->padding0014	=0x7f;
+		spu->padding0018	=0x5df27;
+		spu->animation = 0;
+		spu->delta_heading = NewFloatToEQ13(0);
+		outapp_push->priority = 6;
+		entity_list.QueueClients(this, outapp_push, true);
+		CastToClient()->FastQueuePacket(&outapp_push);
 	}
-
-	if(spelltar->IsClient() && IsEffectInSpell(spell_id, SE_ShadowStep))
-	{
-		spelltar->CastToClient()->SetShadowStepExemption(true);
-	}
-
-	if(!IsEffectInSpell(spell_id, SE_BindAffinity))
-	{
-		if(spelltar->IsClient())	// send to target
-			spelltar->CastToClient()->QueuePacket(action_packet);
-		if(IsClient())	// send to caster
-			CastToClient()->QueuePacket(action_packet);
-	}
-	// send to people in the area, ignoring caster and target
-	//live dosent send this to anybody but the caster
-	//entity_list.QueueCloseClients(spelltar, action_packet, true, 200, this, true, spelltar->IsClient() ? FILTER_PCSPELLS : FILTER_NPCSPELLS);
-
-	// solar: TEMPORARY - this is the message for the spell.
-	// double message on effects that use ChangeHP - working on this
-	message_packet = new EQApplicationPacket(OP_Damage, sizeof(CombatDamage_Struct));
-	CombatDamage_Struct *cd = (CombatDamage_Struct *)message_packet->pBuffer;
-	cd->target = action->target;
-	cd->source = action->source;
-	cd->type = action->type;
-	cd->spellid = action->spell;
-	cd->sequence = action->sequence;
-	cd->damage = 0;
-	if(!IsEffectInSpell(spell_id, SE_BindAffinity))
-	{
-		entity_list.QueueCloseClients(spelltar, message_packet, false, 200, 0, true, spelltar->IsClient() ? FILTER_PCSPELLS : FILTER_NPCSPELLS);
-	}
-	safe_delete(action_packet);
-	safe_delete(message_packet);
-	
-	mlog(SPELLS__CASTING, "Cast of %d by %s on %s complete successfully.", spell_id, GetName(), spelltar->GetName());
-		*/
-	return true;
 }
 
 void Corpse::CastRezz(int16 spellid, Mob* Caster){
@@ -2804,7 +2775,7 @@ void Mob::BuffFadeByEffect(int effectid, int skipslot)
 
 // solar: checks if 'this' can be affected by spell_id from caster
 // returns true if the spell should fail, false otherwise
-bool Mob::IsImmuneToSpell(int16 spell_id, Mob *caster)
+bool Mob::IsImmuneToSpell(Spell *spell_to_cast, Mob *caster)
 {
 	_ZP(Mob_IsImmuneToSpell);
 	int effect_index;
@@ -2816,12 +2787,9 @@ bool Mob::IsImmuneToSpell(int16 spell_id, Mob *caster)
 	//this spell like 10 times, this could easily be consolidated
 	//into one loop through with a switch statement.
 	
-	mlog(SPELLS__RESISTS, "Checking to see if we are immune to spell %d cast by %s", spell_id, caster->GetName());
-	
-	if(!IsValidSpell(spell_id))
-		return true;
+	mlog(SPELLS__RESISTS, "Checking to see if we are immune to spell %d cast by %s", spell_to_cast->GetSpellID(), caster->GetName());
 
-	if(IsMezSpell(spell_id))
+	if(spell_to_cast->IsMezSpell())
 	{
 		if(SpecAttacks[UNMEZABLE]) {
 			mlog(SPELLS__RESISTS, "We are immune to Mez spells.");
@@ -2831,18 +2799,18 @@ bool Mob::IsImmuneToSpell(int16 spell_id, Mob *caster)
 		}
 
 		// check max level for spell
-		effect_index = GetSpellEffectIndex(spell_id, SE_Mez);
+		effect_index = spell_to_cast->GetSpellEffectIndex(SE_Mez);
 		assert(effect_index >= 0);
-		if(GetLevel() > spells[spell_id].max[effect_index])
+		if(GetLevel() > spell_to_cast->GetSpell().max[effect_index])
 		{
-			mlog(SPELLS__RESISTS, "Our level (%d) is higher than the limit of this Mez spell (%d)", GetLevel(), spells[spell_id].max[effect_index]);
+			mlog(SPELLS__RESISTS, "Our level (%d) is higher than the limit of this Mez spell (%d)", GetLevel(), spell_to_cast->GetSpell().max[effect_index]);
 			caster->Message_StringID(MT_Shout, CANNOT_MEZ_WITH_SPELL);
 			return true;
 		}
 	}
 
 	// slow and haste spells
-	if(SpecAttacks[UNSLOWABLE] && IsEffectInSpell(spell_id, SE_AttackSpeed))
+	if(SpecAttacks[UNSLOWABLE] && spell_to_cast->IsEffectInSpell(SE_AttackSpeed))
 	{
 		mlog(SPELLS__RESISTS, "We are immune to Slow spells.");
 		caster->Message_StringID(MT_Shout, IMMUNE_ATKSPEED);
@@ -2850,9 +2818,9 @@ bool Mob::IsImmuneToSpell(int16 spell_id, Mob *caster)
 	}
 
 	// client vs client fear
-	if(IsEffectInSpell(spell_id, SE_Fear))
+	if(spell_to_cast->IsEffectInSpell(SE_Fear))
 	{
-		effect_index = GetSpellEffectIndex(spell_id, SE_Fear);
+		effect_index = spell_to_cast->GetSpellEffectIndex(SE_Fear);
 		if(SpecAttacks[UNFEARABLE]) {
 			mlog(SPELLS__RESISTS, "We are immune to Fear spells.");
 			caster->Message_StringID(MT_Shout, IMMUNE_FEAR);
@@ -2863,7 +2831,7 @@ bool Mob::IsImmuneToSpell(int16 spell_id, Mob *caster)
 			caster->Message_StringID(MT_Shout, IMMUNE_FEAR);
 			return true;
 		}
-		else if(GetLevel() > spells[spell_id].max[effect_index] && spells[spell_id].max[effect_index] != 0)
+		else if(GetLevel() > spell_to_cast->GetSpell().max[effect_index] && spell_to_cast->GetSpell().max[effect_index] != 0)
 		{
 			mlog(SPELLS__RESISTS, "Level is %d, cannot be feared by this spell.", GetLevel());
 			caster->Message_StringID(MT_Shout, SPELL_NO_EFFECT);
@@ -2871,7 +2839,7 @@ bool Mob::IsImmuneToSpell(int16 spell_id, Mob *caster)
 		}
 	}
 
-	if(IsCharmSpell(spell_id))
+	if(spell_to_cast->IsCharmSpell())
 	{
 		if(SpecAttacks[UNCHARMABLE])
 		{
@@ -2891,11 +2859,11 @@ bool Mob::IsImmuneToSpell(int16 spell_id, Mob *caster)
 		if(!caster->IsNPC())
 		{
 			// check level limit of charm spell
-			effect_index = GetSpellEffectIndex(spell_id, SE_Charm);
+			effect_index = spell_to_cast->GetSpellEffectIndex(SE_Charm);
 			assert(effect_index >= 0);
-			if(GetLevel() > spells[spell_id].max[effect_index] && spells[spell_id].max[effect_index] != 0)
+			if(GetLevel() > spell_to_cast->GetSpell().max[effect_index] && spell_to_cast->GetSpell().max[effect_index] != 0)
 			{
-				mlog(SPELLS__RESISTS, "Our level (%d) is higher than the limit of this Charm spell (%d)", GetLevel(), spells[spell_id].max[effect_index]);
+				mlog(SPELLS__RESISTS, "Our level (%d) is higher than the limit of this Charm spell (%d)", GetLevel(), spell_to_cast->GetSpell().max[effect_index]);
 				caster->Message_StringID(MT_Shout, CANNOT_CHARM_YET);
 				return true;
 			}
@@ -2904,8 +2872,8 @@ bool Mob::IsImmuneToSpell(int16 spell_id, Mob *caster)
 
 	if
 	(
-		IsEffectInSpell(spell_id, SE_Root) ||
-		IsEffectInSpell(spell_id, SE_MovementSpeed)
+		spell_to_cast->IsEffectInSpell(SE_Root) ||
+		spell_to_cast->IsEffectInSpell(SE_MovementSpeed)
 	)
 	{
 		if(SpecAttacks[UNSNAREABLE]) {
@@ -2915,7 +2883,7 @@ bool Mob::IsImmuneToSpell(int16 spell_id, Mob *caster)
 		}
 	}
 
-	if(IsLifetapSpell(spell_id))
+	if(spell_to_cast->IsLifetapSpell())
 	{
 		if(this == caster)
 		{
@@ -2925,7 +2893,7 @@ bool Mob::IsImmuneToSpell(int16 spell_id, Mob *caster)
 		}
 	}
 
-	if(IsSacrificeSpell(spell_id))
+	if(spell_to_cast->IsSacrificeSpell())
 	{
 		if(this == caster)
 		{
@@ -2935,7 +2903,7 @@ bool Mob::IsImmuneToSpell(int16 spell_id, Mob *caster)
 		}
 	}
 
-	mlog(SPELLS__RESISTS, "No immunities to spell %d found.", spell_id);
+	mlog(SPELLS__RESISTS, "No immunities to spell %d found.", spell_to_cast->GetSpellID());
 	
 	return false;
 }
@@ -2946,25 +2914,20 @@ bool Mob::IsImmuneToSpell(int16 spell_id, Mob *caster)
 // it landed, and anything else means it was resisted; however there are some
 // spells that can be partially effective, and this value can be used there.
 //
-float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster)
+float Mob::ResistSpell(int8 resist_type, Spell *spell_to_cast, Mob *caster)
 {
 	int caster_level, target_level, resist;
 	float roll, fullchance, resistchance;
 	
-	if(spell_id != 0 && !IsValidSpell(spell_id))
-	{
-		return 0;
-	}
-	
 	//this is checked here instead of in the Immune code so it only applies to detrimental spells
 	if(SpecAttacks[IMMUNE_MAGIC]) {
-		mlog(SPELLS__RESISTS, "We are immune to magic, so we fully resist the spell %d", spell_id);
+		mlog(SPELLS__RESISTS, "We are immune to magic, so we fully resist the spell %d", spell_to_cast->GetSpellID());
 		return(0);
 	}
 	
 	if(resist_type == RESIST_NONE) {
 		//unresistable...
-		mlog(SPELLS__RESISTS, "The spell %d is unresistable (type %d)", spell_id, resist_type);
+		mlog(SPELLS__RESISTS, "The spell %d is unresistable (type %d)", spell_to_cast->GetSpellID(), resist_type);
 		return(100);
 	}
 
@@ -2979,10 +2942,10 @@ float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster)
 
 	target_level = GetLevel();
 	
-	if(spell_id == 0) {
+	if(!spell_to_cast) {
 		caster_level = caster->GetLevel();
 	} else {
-		caster_level = caster ? caster->GetCasterLevel(spell_id) : target_level;
+		caster_level = caster ? caster->GetCasterLevel(spell_to_cast->GetSpellID()) : target_level;
 	}
 
 	// if NPC target and more than X levels above caster, it's always resisted
@@ -2993,7 +2956,7 @@ float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster)
 	
 	//check for buff/item/aa based fear moditifers
 	//still working on this...
-	if (spell_id != 0 && IsFearSpell(spell_id)) {
+	if (spell_to_cast && spell_to_cast->IsFearSpell()) {
 		sint16 rchance = 0;
 		switch (GetAA(aaFearResistance))
 		{
@@ -3014,10 +2977,10 @@ float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster)
 		
 		//I dont think these should get factored into standard spell resist...
 		if(MakeRandomInt(0, 99) < rchance) {
-			mlog(SPELLS__RESISTS, "Had a %d chance of resisting the fear spell %d, and succeeded.", rchance, spell_id);
+			mlog(SPELLS__RESISTS, "Had a %d chance of resisting the fear spell %d, and succeeded.", rchance, spell_to_cast->GetSpellID());
 			return(0);
 		}
-		mlog(SPELLS__RESISTS, "Had a %d chance of resisting the fear spell %d, and failed.", rchance, spell_id);
+		mlog(SPELLS__RESISTS, "Had a %d chance of resisting the fear spell %d, and failed.", rchance, spell_to_cast->GetSpellID());
 	}
 
 	switch(resist_type) {
@@ -3075,8 +3038,8 @@ float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster)
 	}
 
 	// value in spell to adjust base resist by
-	if(spell_id != 0)
-		resist += spells[spell_id].ResistDiff;
+	if(spell_to_cast)
+		resist += spell_to_cast->GetSpell().ResistDiff;
 		
 	//This is our base resist chance given no resists and no level diff, set to a modest 2% by default
 	resistchance = RuleR(Spells, ResistChance); 
@@ -3100,12 +3063,8 @@ float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster)
 
 	if(caster && caster->IsClient())
 	{
-		if(IsValidSpell(spell_id))
-		{
-			//TODO: FIXME
-			//sint32 focusResist = caster->CastToClient()->GetFocusEffect(focusResistRate, spell_id);
-			//resistchance = (resistchance * (100-focusResist) / 100);
-		}
+		sint32 focusResist = caster->CastToClient()->GetFocusEffect(focusResistRate, spell_to_cast);
+		resistchance = (resistchance * (100-focusResist) / 100);
 	}
 
 #ifdef EQBOTS
@@ -3123,31 +3082,42 @@ float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster)
 
 	//Resist chance makes up the upper limit of our partial range
 	//Fullchance makes up the lower limit of our partial range
-	if(!IsFearSpell(spell_id))
-		fullchance = (resistchance * (1 - RuleR(Spells, PartialHitChance))); //default 0.7
+	if(spell_to_cast)
+	{
+		if(spell_to_cast->IsFearSpell())
+		{
+			fullchance = (resistchance * (1 - RuleR(Spells, PartialHitChanceFear))); //default 0.25
+		}
+		else
+		{
+			fullchance = (resistchance * (1 - RuleR(Spells, PartialHitChance))); //default 0.7
+		}
+	}
 	else
-		fullchance = (resistchance * (1 - RuleR(Spells, PartialHitChanceFear))); //default 0.25
+	{
+		fullchance = (resistchance * (1 - RuleR(Spells, PartialHitChance))); //default 0.7
+	}
 
 	roll = MakeRandomFloat(0, 100);
 
 	mlog(SPELLS__RESISTS, "Spell %d: Resist Amount: %d, ResistChance: %.2f, Resist Bonuses: %.2f", 
-		spell_id, resist, resistchance, (spellbonuses.ResistSpellChance + itembonuses.ResistSpellChance));	
+		spell_to_cast->GetSpellID(), resist, resistchance, (spellbonuses.ResistSpellChance + itembonuses.ResistSpellChance));	
 	
 	if (roll > resistchance)
 	{
-		mlog(SPELLS__RESISTS, "Spell %d: Roll of %.2f > resist chance of %.2f, no resist", spell_id, roll, resistchance);
+		mlog(SPELLS__RESISTS, "Spell %d: Roll of %.2f > resist chance of %.2f, no resist", spell_to_cast->GetSpellID(), roll, resistchance);
 		return(100);
 	}
 	else
 	{
 		if (roll <= fullchance)
  		{
-			mlog(SPELLS__RESISTS, "Spell %d: Roll of %.2f <= fullchance %.2f, fully resisted", spell_id, roll, fullchance);
+			mlog(SPELLS__RESISTS, "Spell %d: Roll of %.2f <= fullchance %.2f, fully resisted", spell_to_cast->GetSpellID(), roll, fullchance);
 			return(0);
 		}
 		else
 		{
-			mlog(SPELLS__RESISTS, "Spell %d: Roll of %.2f > fullchance %.2f, partially resisted, returned %.2f", spell_id, roll, fullchance, (100 * ((roll-fullchance)/(resistchance-fullchance))));
+			mlog(SPELLS__RESISTS, "Spell %d: Roll of %.2f > fullchance %.2f, partially resisted, returned %.2f", spell_to_cast->GetSpellID(), roll, fullchance, (100 * ((roll-fullchance)/(resistchance-fullchance))));
 			//Remove the lower range so it doesn't throw off the proportion.
 			return(100 * ((roll-fullchance)/(resistchance-fullchance)));
 		}

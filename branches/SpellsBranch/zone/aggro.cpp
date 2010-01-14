@@ -27,6 +27,7 @@ Copyright (C) 2001-2002  EQEMu Development Team (http://eqemu.org)
 #include "../common/rulesys.h"
 #include "StringIDs.h"
 #include <iostream>
+#include "spells.h"
 
 extern Zone* zone;
 //#define LOSDEBUG 6
@@ -1099,23 +1100,23 @@ bool Mob::CheckLosFN(float posX, float posY, float posZ, float mobSize) {
 }
 
 //offensive spell aggro
-sint32 Mob::CheckAggroAmount(int16 spellid) {
-	int16 spell_id = spellid;
+sint32 Mob::CheckAggroAmount(Spell *spell_to_cast) 
+{
 	sint32 AggroAmount = 0;
 	sint32 nonModifiedAggro = 0;
 	int16 slevel = GetLevel();
 
 	for (int o = 0; o < EFFECT_COUNT; o++) {
-		switch(spells[spell_id].effectid[o]) {
+		switch(spell_to_cast->GetSpell().effectid[o]) {
 			case SE_CurrentHPOnce:
 			case SE_CurrentHP:{
-					int val = CalcSpellEffectValue_formula(spells[spell_id].formula[o], spells[spell_id].base[o], spells[spell_id].max[o], this->GetLevel(), spell_id);
+					int val = CalcSpellEffectValue_formula(spell_to_cast->GetSpell().formula[o], spell_to_cast->GetSpell().base[o], spell_to_cast->GetSpell().max[o], this->GetLevel(), spell_to_cast);
 					if(val < 0)
 						AggroAmount -= val;
 					break;
 				}
 			case SE_MovementSpeed: {
-				int val = CalcSpellEffectValue_formula(spells[spell_id].formula[o], spells[spell_id].base[o], spells[spell_id].max[o], this->GetLevel(), spell_id);
+				int val = CalcSpellEffectValue_formula(spell_to_cast->GetSpell().formula[o], spell_to_cast->GetSpell().base[o], spell_to_cast->GetSpell().max[o], this->GetLevel(), spell_to_cast);
 				if (val < 0)
 				{
 					AggroAmount += (2 + ((slevel * slevel) / 8));
@@ -1126,7 +1127,7 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 			case SE_AttackSpeed:
 			case SE_AttackSpeed2:
 			case SE_AttackSpeed3:{
-				int val = CalcSpellEffectValue_formula(spells[spell_id].formula[o], spells[spell_id].base[o], spells[spell_id].max[o], this->GetLevel(), spell_id);
+				int val = CalcSpellEffectValue_formula(spell_to_cast->GetSpell().formula[o], spell_to_cast->GetSpell().base[o], spell_to_cast->GetSpell().max[o], this->GetLevel(), spell_to_cast);
 				if (val < 100)
 				{
 					AggroAmount += (5 + ((slevel * slevel) / 5));
@@ -1159,7 +1160,7 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 			}
 			case SE_ATK:
 			case SE_ArmorClass:	{
-				int val = CalcSpellEffectValue_formula(spells[spell_id].formula[o], spells[spell_id].base[o], spells[spell_id].max[o], this->GetLevel(), spell_id);
+				int val = CalcSpellEffectValue_formula(spell_to_cast->GetSpell().formula[o], spell_to_cast->GetSpell().base[o], spell_to_cast->GetSpell().max[o], this->GetLevel(), spell_to_cast);
 				if (val < 0)
 				{
 					AggroAmount -= val*2;			
@@ -1171,7 +1172,7 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 			case SE_ResistCold:
 			case SE_ResistPoison:
 			case SE_ResistDisease:{
-					int val = CalcSpellEffectValue_formula(spells[spell_id].formula[o], spells[spell_id].base[o], spells[spell_id].max[o], this->GetLevel(), spell_id);
+					int val = CalcSpellEffectValue_formula(spell_to_cast->GetSpell().formula[o], spell_to_cast->GetSpell().base[o], spell_to_cast->GetSpell().max[o], this->GetLevel(), spell_to_cast);
 					if (val < 0)
 					{
 						AggroAmount -= val*3;
@@ -1179,7 +1180,7 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 					break;
 			}
 			case SE_ResistAll:{
-					int val = CalcSpellEffectValue_formula(spells[spell_id].formula[o], spells[spell_id].base[o], spells[spell_id].max[o], this->GetLevel(), spell_id);
+					int val = CalcSpellEffectValue_formula(spell_to_cast->GetSpell().formula[o], spell_to_cast->GetSpell().base[o], spell_to_cast->GetSpell().max[o], this->GetLevel(), spell_to_cast);
 					if (val < 0)
 					{
 						AggroAmount -= val*6;
@@ -1193,7 +1194,7 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 			case SE_INT:
 			case SE_WIS:
 			case SE_CHA:{
-				int val = CalcSpellEffectValue_formula(spells[spell_id].formula[o], spells[spell_id].base[o], spells[spell_id].max[o], this->GetLevel(), spell_id);
+				int val = CalcSpellEffectValue_formula(spell_to_cast->GetSpell().formula[o], spell_to_cast->GetSpell().base[o], spell_to_cast->GetSpell().max[o], this->GetLevel(), spell_to_cast);
 				if (val < 0)
 				{
 					AggroAmount -= val*2;
@@ -1201,7 +1202,7 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 				break;
 			}
 			case SE_AllStats:{
-					int val = CalcSpellEffectValue_formula(spells[spell_id].formula[o], spells[spell_id].base[o], spells[spell_id].max[o], this->GetLevel(), spell_id);
+					int val = CalcSpellEffectValue_formula(spell_to_cast->GetSpell().formula[o], spell_to_cast->GetSpell().base[o], spell_to_cast->GetSpell().max[o], this->GetLevel(), spell_to_cast);
 					if (val < 0)
 					{
 						AggroAmount -= val*6;
@@ -1250,7 +1251,7 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 			case SE_CurrentMana:	
 			case SE_ManaPool:
 			case SE_CurrentEndurance:{
-				int val = CalcSpellEffectValue_formula(spells[spell_id].formula[o], spells[spell_id].base[o], spells[spell_id].max[o], this->GetLevel(), spell_id);
+				int val = CalcSpellEffectValue_formula(spell_to_cast->GetSpell().formula[o], spell_to_cast->GetSpell().base[o], spell_to_cast->GetSpell().max[o], this->GetLevel(), spell_to_cast);
 				if (val < 0)
 				{
 					AggroAmount -= val*2;
@@ -1263,24 +1264,24 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 				break;
 			}
 			case SE_Calm:{
-				int val = CalcSpellEffectValue_formula(spells[spell_id].formula[o], spells[spell_id].base[o], spells[spell_id].max[o], this->GetLevel(), spell_id);
+				int val = CalcSpellEffectValue_formula(spell_to_cast->GetSpell().formula[o], spell_to_cast->GetSpell().base[o], spell_to_cast->GetSpell().max[o], this->GetLevel(), spell_to_cast);
 				nonModifiedAggro = val;
 				break;
 			}
 		}
 	}
 
-	if(IsAEDurationSpell(spell_id))
+	if(spell_to_cast->IsAEDurationSpell())
 	{
 		AggroAmount /= 2;
 	}
 
-	if(spells[spell_id].HateAdded > 0)
+	if(spell_to_cast->GetSpell().HateAdded > 0)
 	{
-		AggroAmount = spells[spell_id].HateAdded;
+		AggroAmount = spell_to_cast->GetSpell().HateAdded;
 	}
 
-	if (IsBardSong(spell_id))
+	if (spell_to_cast->IsBardSong())
 		AggroAmount = AggroAmount * RuleI(Aggro, SongAggroMod) / 100;
 	if (GetOwner())
 		AggroAmount = AggroAmount * RuleI(Aggro, PetSpellAggroMod) / 100;
@@ -1324,24 +1325,24 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 
 
 
-	AggroAmount += (slevel*slevel/72) + spells[spell_id].bonushate + nonModifiedAggro;
+	AggroAmount += (slevel*slevel/72) + spell_to_cast->GetSpell().bonushate + nonModifiedAggro;
 	return AggroAmount;
 }
 
 //healing and buffing aggro
-sint32 Mob::CheckHealAggroAmount(int16 spellid, int32 heal_possible) {
-	int16 spell_id = spellid;
+sint32 Mob::CheckHealAggroAmount(Spell *spell_to_cast, int32 heal_possible) 
+{
 	sint32 AggroAmount = 0;
 
 	for (int o = 0; o < EFFECT_COUNT; o++) {
-		switch(spells[spell_id].effectid[o]) {
+		switch(spell_to_cast->GetSpell().effectid[o]) {
 			case SE_CurrentHP: 
 			case SE_Rune: {
-				AggroAmount += spells[spell_id].mana;
+				AggroAmount += spell_to_cast->GetSpell().mana;
 				break;
 			}
 			case SE_HealOverTime:{
-				AggroAmount += CalcSpellEffectValue_formula(spells[spell_id].formula[o], spells[spell_id].base[o], spells[spell_id].max[o], this->GetLevel(), spell_id);
+				AggroAmount += CalcSpellEffectValue_formula(spell_to_cast->GetSpell().formula[o], spell_to_cast->GetSpell().base[o], spell_to_cast->GetSpell().max[o], this->GetLevel(), spell_to_cast);
 				break;
 			}
 			default:{
@@ -1349,9 +1350,9 @@ sint32 Mob::CheckHealAggroAmount(int16 spellid, int32 heal_possible) {
  			}
 		}
 	}
-	if (IsBardSong(spell_id))
+	if(spell_to_cast->IsBardSong())
 		AggroAmount = AggroAmount * RuleI(Aggro, SongAggroMod) / 100;
-	if (GetOwner())
+	if(GetOwner())
 		AggroAmount = AggroAmount * RuleI(Aggro, PetSpellAggroMod) / 100;
 
 	if(AggroAmount > 0)
@@ -1360,8 +1361,7 @@ sint32 Mob::CheckHealAggroAmount(int16 spellid, int32 heal_possible) {
 
 		if(IsClient())
 		{
-			//TODO:
-			//HateMod += CastToClient()->GetFocusEffect(focusSpellHateMod, spell_id);
+			HateMod += CastToClient()->GetFocusEffect(focusSpellHateMod, spell_to_cast);
 		}
 
 		int aaSubtlety = ( GetAA(aaSpellCastingSubtlety) > GetAA(aaSpellCastingSubtlety2) ) ? GetAA(aaSpellCastingSubtlety) : GetAA(aaSpellCastingSubtlety2);
@@ -1426,18 +1426,18 @@ void Mob::ClearFeignMemory() {
 		AIfeignremember_timer->Disable();
 }
 
-bool Mob::PassCharismaCheck(Mob* caster, Mob* spellTarget, int16 spell_id) {
+bool Mob::PassCharismaCheck(Mob* caster, Mob* spellTarget, Spell *spell_to_cast) {
 	bool Result = false;
 
 	if(!caster) return false;
 
-	if(spells[spell_id].ResistDiff <= -600)
+	if(spell_to_cast->GetSpell().ResistDiff <= -600)
 		return true;
 
 	float r1 = ((((float)spellTarget->GetMR() + spellTarget->GetLevel()) / 3) / spellTarget->GetMaxMR()) + ((float)MakeRandomFloat(-10, 10) / 100.0f);
 	float r2 = 0.0f;
 
-	if(IsCharmSpell(spell_id)) {
+	if(spell_to_cast->IsCharmSpell()) {
 		// Assume this is a charm spell
 		int32 TotalDominationRank = 0.00f;
 		float TotalDominationBonus = 0.00f;

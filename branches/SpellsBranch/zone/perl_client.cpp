@@ -3080,7 +3080,7 @@ XS(XS_Client_GetInstrumentMod)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		RETVAL = THIS->GetInstrumentMod(spell_id);
+		RETVAL = THIS->GetInstrumentMod(&Spell(spell_id, THIS, THIS));
 		XSprePUSH; PUSHu((UV)RETVAL);
 	}
 	XSRETURN(1);

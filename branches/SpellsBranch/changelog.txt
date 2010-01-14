@@ -1,7 +1,8 @@
 EQEmu Spells Branch Changelog (Started on Dec 23, 2009 9:25)
 -----------------------------------------------------------
-
-12/26/09 - Added spell class basic implemintation and basic buff list implementation.
+1/13/10 - Compiled once again, should be close to finishing spell casting without effects yet implemented.  Bard songs still completely broken.
+1/13/10 - Missed a bunch of change log stuff with the behind the scenes implementation.
+12/26/09 - Added spell class basic implementation and basic buff list implementation.
 12/24/09 - Branch compiles again, but spells are completely unusable at the moment.
 12/24/09 - Working on buff memory layout.
 12/24/09 - Gutted some more functions.

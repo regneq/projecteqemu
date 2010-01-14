@@ -34,6 +34,7 @@ typedef const char Const_char;
 
 #include "mob.h"
 #include "client.h"
+#include "spells.h"
 
 #ifdef THIS	 /* this macro seems to leak out on some systems */
 #undef THIS		
@@ -2913,7 +2914,7 @@ XS(XS_Mob_GetActSpellRange)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		RETVAL = 0;//THIS->GetActSpellRange(spell_id, range);
+		RETVAL = THIS->GetActSpellRange(&Spell(spell_id, THIS, THIS), range);
 		XSprePUSH; PUSHn((double)RETVAL);
 	}
 	XSRETURN(1);
@@ -2941,7 +2942,7 @@ XS(XS_Mob_GetActSpellDamage)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		RETVAL = 0;//THIS->GetActSpellDamage(spell_id, value);
+		RETVAL = THIS->GetActSpellDamage(&Spell(spell_id, THIS, THIS), value);
 		XSprePUSH; PUSHi((IV)RETVAL);
 	}
 	XSRETURN(1);
@@ -2969,7 +2970,7 @@ XS(XS_Mob_GetActSpellHealing)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		RETVAL = 0;//THIS->GetActSpellHealing(spell_id, value);
+		RETVAL = THIS->GetActSpellHealing(&Spell(spell_id, THIS, THIS), value);
 		XSprePUSH; PUSHi((IV)RETVAL);
 	}
 	XSRETURN(1);
@@ -2997,7 +2998,7 @@ XS(XS_Mob_GetActSpellCost)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		RETVAL = 0;//THIS->GetActSpellCost(spell_id, cost);
+		RETVAL = THIS->GetActSpellCost(&Spell(spell_id, THIS, THIS), cost);
 		XSprePUSH; PUSHi((IV)RETVAL);
 	}
 	XSRETURN(1);
@@ -3025,7 +3026,7 @@ XS(XS_Mob_GetActSpellDuration)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		RETVAL = 0;//THIS->GetActSpellDuration(spell_id, duration);
+		RETVAL = THIS->GetActSpellDuration(&Spell(spell_id, THIS, THIS), duration);
 		XSprePUSH; PUSHi((IV)RETVAL);
 	}
 	XSRETURN(1);
@@ -3053,7 +3054,7 @@ XS(XS_Mob_GetActSpellCasttime)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		RETVAL = 0;//THIS->GetActSpellCasttime(spell_id, casttime);
+		RETVAL = THIS->GetActSpellCasttime(&Spell(spell_id, THIS, THIS), casttime);
 		XSprePUSH; PUSHi((IV)RETVAL);
 	}
 	XSRETURN(1);
@@ -3091,7 +3092,7 @@ XS(XS_Mob_ResistSpell)
 		if(caster == NULL)
 			Perl_croak(aTHX_ "caster is NULL, avoiding crash.");
 
-		RETVAL = THIS->ResistSpell(ressit_type, spell_id, caster);
+		RETVAL = THIS->ResistSpell(ressit_type, &Spell(spell_id, THIS, THIS), caster);
 		XSprePUSH; PUSHn((double)RETVAL);
 	}
 	XSRETURN(1);
@@ -3591,7 +3592,7 @@ XS(XS_Mob_IsImmuneToSpell)
 		if(caster == NULL)
 			Perl_croak(aTHX_ "caster is NULL, avoiding crash.");
 
-		RETVAL = THIS->IsImmuneToSpell(spell_id, caster);
+		RETVAL = THIS->IsImmuneToSpell(&Spell(spell_id, THIS, THIS), caster);
 		ST(0) = boolSV(RETVAL);
 		sv_2mortal(ST(0));
 	}
@@ -5750,7 +5751,7 @@ XS(XS_Mob_CheckAggroAmount)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		RETVAL = THIS->CheckAggroAmount(spellid);
+		RETVAL = THIS->CheckAggroAmount(&Spell(spellid, THIS, THIS));
 		XSprePUSH; PUSHu((UV)RETVAL);
 	}
 	XSRETURN(1);
@@ -5783,7 +5784,7 @@ XS(XS_Mob_CheckHealAggroAmount)
 			possible = (int32)SvUV(ST(2));
 		}
 
-		RETVAL = THIS->CheckHealAggroAmount(spellid, possible);
+		RETVAL = THIS->CheckHealAggroAmount(&Spell(spellid, THIS, THIS), possible);
 		XSprePUSH; PUSHu((UV)RETVAL);
 	}
 	XSRETURN(1);

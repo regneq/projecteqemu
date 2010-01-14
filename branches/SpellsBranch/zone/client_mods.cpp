@@ -30,6 +30,7 @@
 #include "../common/logsys.h"
 #include "StringIDs.h"
 #include "NpcAI.h"
+#include "spells.h"
 
 
 // Return max stat value for level
@@ -1567,7 +1568,7 @@ sint16  Client::CalcATK() {
 	return(ATK);
 }
 
-int16 Mob::GetInstrumentMod(int16 spell_id) const {
+int16 Mob::GetInstrumentMod(Spell *spell_to_cast) const {
 	if(GetClass() != BARD)
 		return(10);
 	
@@ -1578,7 +1579,7 @@ int16 Mob::GetInstrumentMod(int16 spell_id) const {
 	//because the spells are supposed to act just like having the intrument.
 	
 	//item mods are in 10ths of percent increases
-	switch(spells[spell_id].skill) {
+	switch(spell_to_cast->GetSpell().skill) {
 		case PERCUSSION_INSTRUMENTS:
 			if(itembonuses.percussionMod == 0 && spellbonuses.percussionMod == 0)
 				effectmod = 10;
@@ -1632,7 +1633,7 @@ int16 Mob::GetInstrumentMod(int16 spell_id) const {
 			break;
 	}
 	
-	if(spells[spell_id].skill == SINGING)
+	if(spell_to_cast->GetSpell().skill == SINGING)
 	{
 		effectmod += 2*GetAA(aaSingingMastery);
 		effectmod += 2*GetAA(aaImprovedSingingMastery);
@@ -1649,7 +1650,7 @@ int16 Mob::GetInstrumentMod(int16 spell_id) const {
 	if(effectmod < 10)
 		effectmod = 10;
 	
-	_log(SPELLS__BARDS, "%s::GetInstrumentMod() spell=%d mod=%d\n", GetName(), spell_id, effectmod);
+	_log(SPELLS__BARDS, "%s::GetInstrumentMod() spell=%d mod=%d\n", GetName(), spell_to_cast->GetSpellID(), effectmod);
 	
 	return(effectmod);
 }
