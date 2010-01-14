@@ -123,12 +123,14 @@ void Clientlist::Process() {
 					lcms->Unknown2 = 0x01000000;
 					lcms->Unknown3 = 0x00000065;
 					lcms->Unknown4 = 0x00;
-					sprintf(lcms->ChatMessage, ChatMessage);
+
+					strcpy(lcms->ChatMessage, ChatMessage);
 
 					if(inifile.DumpPacketsOut)
 						DumpPacket(outapp);
 
 					(*Iterator)->QueuePacket(outapp);
+
 					safe_delete(outapp);
 
 					break;
