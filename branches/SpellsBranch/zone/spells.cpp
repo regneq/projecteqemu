@@ -124,6 +124,14 @@ void Mob::SpellProcess()
 			CastedSpellFinished(&casting_spell);
 		}
 	}
+
+	if(spell_recovery_timer)
+	{
+		if(spell_recovery_timer->Check(false))
+		{
+			safe_delete(spell_recovery_timer);
+		}
+	}
 }
 
 void NPC::SpellProcess()
@@ -174,6 +182,13 @@ bool Mob::CastSpell(Spell **casted_spell_ptr, int32* spell_will_finish)
 	uint32 spell_id = casted_spell->GetSpellID();
 	if(!ValidateStartSpellCast(casted_spell))
 	{
+		safe_delete(*casted_spell_ptr);
+		return false;
+	}
+
+	if(spell_recovery_timer)
+	{
+		Message(13, "You have not recovered...");
 		safe_delete(*casted_spell_ptr);
 		return false;
 	}
@@ -242,6 +257,7 @@ bool Mob::DoCastSpell(Spell **casted_spell_ptr, int32* spell_will_finish)
 	else
 	{
 		orig_cast_time = casted_spell->GetCastTime();
+		printf("orig cast time... %u", orig_cast_time);
 	}
 
 	if(casted_spell->GetManaCost() <= -1) 
@@ -325,15 +341,17 @@ bool Mob::DoCastSpell(Spell **casted_spell_ptr, int32* spell_will_finish)
 	}
 	else
 	{
+		printf("starting cast timer of %u\n", casted_spell->GetCastTime());
 		casted_spell->StartCastTimer(casted_spell->GetCastTime());
 	}
 
 	if(IsAIControlled())
 	{
 		SetRunAnimSpeed(0);
-		if(this != casted_spell->GetTarget())
+		Mob *sp_tar = casted_spell->GetTarget();
+		if(this != sp_tar)
 		{
-			FaceTarget(casted_spell->GetTarget());
+			FaceTarget(sp_tar);
 		}
 	}
 
@@ -344,12 +362,13 @@ bool Mob::DoCastSpell(Spell **casted_spell_ptr, int32* spell_will_finish)
 
 	EQApplicationPacket *outapp = NULL;	
 
+	printf("orig_cast_time: %u\n", orig_cast_time);
 	// now tell the people in the area
 	outapp = new EQApplicationPacket(OP_BeginCast, sizeof(BeginCast_Struct));
 	BeginCast_Struct* begin_cast = (BeginCast_Struct*)outapp->pBuffer;
 	begin_cast->caster_id = GetID();
 	begin_cast->spell_id = casted_spell->GetSpellID();
-	begin_cast->cast_time = orig_cast_time;
+	begin_cast->cast_time = casted_spell->GetCastTime();
 	outapp->priority = 3;
 	entity_list.QueueCloseClients(this, outapp, false, 200, 0, true);
 	safe_delete(outapp);
@@ -667,6 +686,7 @@ void Mob::CastedSpellFinished(Spell **casted_spell_ptr)
 {
 	_ZP(Mob_CastedSpellFinished);
 	Spell *casted_spell = *casted_spell_ptr;
+	printf("spell id: %u\n", casted_spell->GetSpellID());
 
 	if(IsClient() && casted_spell->GetSpellSlot() != USE_ITEM_SPELL_SLOT && casted_spell->GetSpellSlot() != POTION_BELT_SPELL_SLOT && casted_spell->GetSpell().recast_time > 1000) 
 	{
@@ -757,12 +777,14 @@ void Mob::CastedSpellFinished(Spell **casted_spell_ptr)
 		}
 	}
 
+	printf("spell id: %u\n", casted_spell->GetSpellID());
 	if(!SpellFinished(casted_spell))
 	{
 		mlog(SPELLS__CASTING_ERR, "Casting of %d canceled: SpellFinished returned false.", casted_spell->GetSpellID());
 		InterruptSpell();
 		return;
 	}
+	printf("spell id: %u\n", casted_spell->GetSpellID());
 
 	#ifdef EMBPERL
 	if(this->IsClient()) 
@@ -775,32 +797,38 @@ void Mob::CastedSpellFinished(Spell **casted_spell_ptr)
 	}
 	#endif
 
+	printf("spell id: %u\n", casted_spell->GetSpellID());
+	uint32 spell_slot = casted_spell->GetSpellSlot();
+	uint32 spell_id = casted_spell->GetSpellID();
+	SkillType spell_skill = casted_spell->GetSpell().skill;
+
 	if(bard_song_mode)
 	{
 		if(IsClient())
 		{
-			CastToClient()->CheckSongSkillIncrease(casted_spell->GetSpellID());
+			CastToClient()->CheckSongSkillIncrease(spell_id);
 		}
 
-		mlog(SPELLS__CASTING, "Bard song %d should be started", casted_spell->GetSpellID());
+		mlog(SPELLS__CASTING, "Bard song %d should be started", spell_id);
 	}
 	else
 	{
 		if(IsClient())
 		{
 			Client *c = CastToClient();
-			SendSpellBarEnable(casted_spell->GetSpellID());
-			c->MemorizeSpell(casted_spell->GetSpellSlot(), casted_spell->GetSpellID(), memSpellSpellbar);
+			SendSpellBarEnable(spell_id);
+			c->MemorizeSpell(spell_slot, spell_id, memSpellSpellbar);
 			SetMana(GetMana());
 
 			// skills
-			if(casted_spell->GetSpellSlot() < MAX_PP_MEMSPELL)
+			if(spell_slot < MAX_PP_MEMSPELL)
 			{
-				c->CheckIncreaseSkill(casted_spell->GetSpell().skill, NULL);
+				c->CheckIncreaseSkill(spell_skill, NULL);
 				c->CheckIncreaseSkill(CHANNELING, NULL, regain_conc ? 5 : 0);
-				c->CheckSpecializeIncrease(casted_spell->GetSpellID());	
+				c->CheckSpecializeIncrease(spell_id);	
 			}
 		}
+		spell_recovery_timer = new Timer(100);
 
 		// there should be no casting going on now
 		ZeroAndFreeCastingVars();
@@ -1086,7 +1114,6 @@ bool Mob::SpellFinished(int16 spell_id, Mob *target, int16 slot, int16 mana_used
 bool Mob::SpellFinished(Spell *spell_to_cast)
 {
 	_ZP(Mob_SpellFinished);
-
 	if(spell_to_cast->GetSpell().zonetype == 1 && !zone->CanCastOutdoor())
 	{
 		if(IsClient())
@@ -1380,7 +1407,6 @@ bool Mob::SpellFinished(Spell *spell_to_cast)
 		}
 	}
 
-	ZeroAndFreeCastingVars();
 	return true;	
 }
 
@@ -2355,6 +2381,7 @@ bool Mob::SpellOnTarget(Spell *spell_to_cast, Mob* spell_target)
 	//Shadow Step -> Target
 	//Bind Affinity -> Caster and Target
 
+	SendActionSpellPacket(spell_to_cast, spell_target, sequence, caster_level);
 	SendCombatDamageSpellPacket(spell_to_cast, spell_target, sequence);
 	
 	mlog(SPELLS__CASTING, "Cast of %d by %s on %s complete successfully.", spell_to_cast->GetSpellID(), GetName(), spell_target->GetName());	
@@ -2388,10 +2415,12 @@ int Mob::SendActionSpellPacket(Spell *spell_to_cast, Mob *spell_target, int cast
 	action->level = caster_level;
 	action->type = 231;
 	action->spell = spell_to_cast->GetSpellID();
-	action->sequence = MakeRandomInt(250, 32000);
+	action->sequence = GetHeading() * 2;
 	action->instrument_mod = GetInstrumentMod(spell_to_cast);
 	action->buff_unknown = 0;
 	sequence = action->sequence;
+
+	printf("action1: %u %u %u\n", action->source, action->target, action->sequence);
 	
 	if(spell_target->IsClient())
 	{
@@ -2406,6 +2435,52 @@ int Mob::SendActionSpellPacket(Spell *spell_to_cast, Mob *spell_target, int cast
 	entity_list.QueueCloseClients(spell_target, action_packet, true, 200, this, true, spell_target->IsClient() ? FILTER_PCSPELLS : FILTER_NPCSPELLS);
 	safe_delete(action_packet);
 	return sequence;
+}
+
+void Mob::SendActionSpellPacket(Spell *spell_to_cast, Mob *spell_target, uint32 sequence, int caster_level)
+{
+	EQApplicationPacket *action_packet = new EQApplicationPacket(OP_Action, sizeof(Action_Struct));
+	Action_Struct* action = (Action_Struct*) action_packet->pBuffer;
+	
+	if(IsClient() && CastToClient()->GMHideMe())
+	{
+		action->source = spell_target->GetID();
+	}
+	else
+	{
+		action->source = GetID();
+	}
+	
+	if(spell_to_cast->IsEffectInSpell(SE_BindSight))
+	{ 
+		action->target = GetID(); 
+	} 
+	else
+	{ 
+		action->target = spell_target->GetID(); 
+	} 
+	
+	action->level = caster_level;
+	action->type = 231;
+	action->spell = spell_to_cast->GetSpellID();
+	action->sequence = sequence;
+	action->instrument_mod = GetInstrumentMod(spell_to_cast);
+	action->buff_unknown = 0;
+
+	printf("action2: %u %u %u\n", action->source, action->target, action->sequence);
+	
+	if(spell_target->IsClient())
+	{
+		spell_target->CastToClient()->QueuePacket(action_packet);
+	}
+	
+	if(IsClient())
+	{
+		CastToClient()->QueuePacket(action_packet);
+	}
+	
+	//entity_list.QueueCloseClients(spell_target, action_packet, true, 200, this, true, spell_target->IsClient() ? FILTER_PCSPELLS : FILTER_NPCSPELLS);
+	safe_delete(action_packet);
 }
 
 void Mob::SendCombatDamageSpellPacket(Spell *spell_to_cast, Mob *spell_target, int sequence)
@@ -2436,6 +2511,8 @@ void Mob::SendCombatDamageSpellPacket(Spell *spell_to_cast, Mob *spell_target, i
 	{ 
 		cd->target = spell_target->GetID(); 
 	}
+
+	printf("damage1: %u %u %u\n", cd->source, cd->target, cd->sequence);
 	
 	if(!spell_to_cast->IsEffectInSpell(SE_BindAffinity))
 	{
@@ -2486,7 +2563,7 @@ bool Mob::WillSpellHold(Spell *spell_to_cast, Mob *spell_target)
 
 int Mob::DoSpellOnTargetResistCheck(Spell *spell_to_cast, Mob *spell_target)
 {
-	float spell_effectiveness;
+	float spell_effectiveness = 0;
 	if(spell_to_cast->IsResistableSpell())
 	{
 		int spell_effectiveness = spell_target->ResistSpell(spell_to_cast->GetSpell().resisttype, spell_to_cast, this);
@@ -4175,7 +4252,7 @@ void Spell::StartCastTimer(uint32 duration)
 	}
 	else
 	{
-		cast_timer = new Timer(duration);
+		cast_timer = new Timer(duration, true);
 	}
 }
 

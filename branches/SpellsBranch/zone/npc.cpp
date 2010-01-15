@@ -530,7 +530,7 @@ bool NPC::Process()
 
     adverrorinfo = 2;
     
-    SpellProcess();
+	SpellProcess();
     
     if (tic_timer.Check()) 
 	{	

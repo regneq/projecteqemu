@@ -685,8 +685,9 @@ bool logpos;
 	int	CalcBuffDuration(Mob *caster, Mob *target, Spell *spell_to_cast, sint32 caster_level_override = -1);
 	virtual float GetAOERange(Spell *spell_to_cast);
 	virtual bool IsImmuneToSpell(Spell *spell_to_cast, Mob *caster);
-	int SendActionSpellPacket(Spell *spell_to_cast, Mob *spell_target, int caster_level);
-	void SendCombatDamageSpellPacket(Spell *spell_to_cast, Mob *spell_target, int sequence);
+	int SendActionSpellPacket(Spell *spell_to_cast, Mob *spell_target, int caster_level); //first action packet
+	void SendActionSpellPacket(Spell *spell_to_cast, Mob *spell_target, uint32 sequence, int caster_level); //2nd action
+	void SendCombatDamageSpellPacket(Spell *spell_to_cast, Mob *spell_target, int sequence); //combat damage packet
 	bool WillSpellHold(Spell *spell_to_cast, Mob *spell_target);
 	int DoSpellOnTargetResistCheck(Spell *spell_to_cast, Mob *spell_target);
 	void DoSpellOnTargetRecourse(Spell *spell_on_target, Mob *spell_target);
@@ -1097,6 +1098,7 @@ protected:
 	Spell *bard_song;
     float spell_x, spell_y, spell_z;
 	int	attacked_count;
+	Timer *spell_recovery_timer;
 
 	int8	haircolor;
 	int8	beardcolor;

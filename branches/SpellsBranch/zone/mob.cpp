@@ -222,6 +222,7 @@ Mob::Mob(const char*   in_name,
 	invulnerable = false;
 	IsFullHP	= (cur_hp == max_hp);
 	qglobal=0;
+	spell_recovery_timer = NULL;
 
 	int i = 0;
 	
@@ -403,10 +404,8 @@ Mob::~Mob()
 	safe_delete(PathingRouteUpdateTimerShort);
 	safe_delete(PathingRouteUpdateTimerLong);
 	UninitializeBuffSlots();
-	if(casting_spell)
-	{
-		safe_delete(casting_spell);
-	}
+	safe_delete(casting_spell);
+	safe_delete(spell_recovery_timer);
 }
 
 int32 Mob::GetAppearanceValue(EmuAppearance iAppearance) {

@@ -41,6 +41,16 @@ enum SpellAttribute
 	SA_TARGET_TYPE,
 };
 
+class SpellCooldownEvent
+{
+public:
+	SpellCooldownEvent() { cooldown_timer = NULL; }
+	~SpellCooldownEvent() { safe_delete(cooldown_timer); }
+	uint32 spell_id;
+	uint32 slot_id;
+	Timer *cooldown_timer;
+};
+
 class Spell
 {
 public:
@@ -87,14 +97,14 @@ public:
 
 	bool IsTargetableAESpell(); //impl
 	bool IsSacrificeSpell(); //impl
-	bool IsLifetapSpell();
-	bool IsMezSpell();
+	bool IsLifetapSpell(); //impl
+	bool IsMezSpell(); //impl
 	bool IsStunSpell();
 	bool IsSlowSpell();
 	bool IsHasteSpell();
 	bool IsHarmonySpell(); //impl
 	bool IsPercentalHealSpell();
-	bool IsGroupOnlySpell();
+	bool IsGroupOnlySpell(); //impl
 	bool IsBeneficialSpell(); //impl
 	bool IsDetrimentalSpell(); //impl
 	bool IsInvulnerabilitySpell();
@@ -104,7 +114,7 @@ public:
 	bool IsSummonItemSpell();
 	bool IsSummonSkeletonSpell();
 	bool IsSummonPetSpell(); //impl
-	bool IsCharmSpell();
+	bool IsCharmSpell(); //impl
 	bool IsBlindSpell();
 	bool IsEffectHitpointsSpell();
 	bool IsReduceCastTimeSpell();
@@ -114,29 +124,29 @@ public:
 	bool IsImprovedHealingSpell();
 	bool IsImprovedDamageSpell();
 	bool IsAEDurationSpell(); //impl
-	bool IsPureNukeSpell();
-	bool IsPartialCapableSpell();
-	bool IsResistableSpell();
+	bool IsPureNukeSpell(); //impl
+	bool IsPartialCapableSpell(); //impl
+	bool IsResistableSpell(); //impl
 	bool IsGroupSpell(); //impl
 	bool IsTGBCompatibleSpell(); //impl
 	bool IsBardSong(); //impl
 	bool IsEffectInSpell(int effect); //impl
-	bool IsBlankSpellEffect(int effect_index);
+	bool IsBlankSpellEffect(int effect_index); //impl
 	bool IsValidSpell();
 	bool IsSummonSpell(); //impl
 	bool IsEvacSpell(); //impl
 	bool IsDamageSpell(); //impl
-	bool IsFearSpell();
-	bool BeneficialSpell();
+	bool IsFearSpell(); //impl
+	bool BeneficialSpell(); //impl
 	bool GroupOnlySpell();
-	int GetSpellEffectIndex(int effect);
+	int GetSpellEffectIndex(int effect); //impl
 	int CanUseSpell(int classa, int level);
-	int GetMinLevel();
+	int GetMinLevel(); //impl
 	sint32 CalculatePoisonCounters();
 	sint32 CalculateDiseaseCounters();
 	sint32 CalculateCurseCounters();
 	bool IsDiscipline();
-	bool IsResurrectionEffects();
+	bool IsResurrectionEffects(); //impl
 	bool IsRuneSpell();
 	bool IsMagicRuneSpell();
 	bool IsManaTapSpell(); //impl

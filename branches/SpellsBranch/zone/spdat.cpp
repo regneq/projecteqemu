@@ -140,9 +140,19 @@ bool IsLifetapSpell(int16 spell_id)
 	);
 }
 
+bool Spell::IsLifetapSpell()
+{
+	return (raw_spell.targettype == ST_Tap || spell_id == 2115);
+}
+
 bool IsMezSpell(int16 spell_id)
 {
 	return IsEffectInSpell(spell_id, SE_Mez);
+}
+
+bool Spell::IsMezSpell()
+{
+	return IsEffectInSpell(SE_Mez);
 }
 
 bool IsStunSpell(int16 spell_id)
@@ -214,6 +224,12 @@ bool IsFearSpell(int16 spell_id) {
 	return IsEffectInSpell(spell_id, SE_Fear);
 }
 
+bool Spell::IsFearSpell() 
+{
+	return IsEffectInSpell(SE_Fear);
+}
+
+
 bool IsSlowSpell(int16 spell_id)
 {
 	int i;
@@ -264,6 +280,11 @@ bool IsPercentalHealSpell(int16 spell_id)
 bool IsGroupOnlySpell(int16 spell_id)
 {
 	return IsValidSpell(spell_id) && spells[spell_id].goodEffect == 2;
+}
+
+bool Spell::IsGroupOnlySpell()
+{
+	return raw_spell.goodEffect == 2;
 }
 
 bool IsBeneficialSpell(int16 spell_id)
@@ -384,6 +405,11 @@ bool IsCharmSpell(int16 spell_id)
 	return IsEffectInSpell(spell_id, SE_Charm);
 }
 
+bool Spell::IsCharmSpell()
+{
+	return IsEffectInSpell(SE_Charm);
+}
+
 bool IsBlindSpell(int16 spell_id)
 {
 	return IsEffectInSpell(spell_id, SE_Blind);
@@ -456,12 +482,37 @@ bool IsPureNukeSpell(int16 spell_id)
 	);
 }
 
+bool Spell::IsPureNukeSpell()
+{
+	int i, effect_count = 0, last_index = 0;
+
+	for(i = 0; i < EFFECT_COUNT; i++)
+	{
+		if(!IsBlankSpellEffect(i))
+		{
+			last_index = i;
+			effect_count++;
+		}
+	}
+
+	return
+	(
+		raw_spell.effectid[last_index] == SE_CurrentHP &&
+		effect_count == 1
+	);
+}
+
 bool IsPartialCapableSpell(int16 spell_id)
 {
 	if(IsPureNukeSpell(spell_id) || IsFearSpell(spell_id) || IsEffectInSpell(spell_id,SE_Charm))
 		return true;
 	
 	return false;
+}
+
+bool Spell::IsPartialCapableSpell()
+{
+	return (IsPureNukeSpell() || IsFearSpell() || IsEffectInSpell(SE_Charm));
 }
 
 bool IsResistableSpell(int16 spell_id)
@@ -474,6 +525,11 @@ bool IsResistableSpell(int16 spell_id)
 	}
 
 	return false;
+}
+
+bool Spell::IsResistableSpell()
+{
+	return IsDetrimentalSpell();
 }
 
 // solar: checks if this spell affects your group
@@ -585,6 +641,28 @@ bool IsBlankSpellEffect(int16 spellid, int effect_index)
 	);
 }
 
+bool Spell::IsBlankSpellEffect(int effect_index)
+{
+	int effect, base, formula;
+
+	effect = raw_spell.effectid[effect_index];
+	base = raw_spell.base[effect_index];
+	formula = raw_spell.formula[effect_index];
+
+	return
+	(
+		effect == SE_Blank ||	// blank marker
+		(	// spacer
+			effect == SE_CHA && 
+			base == 0 &&
+			formula == 100
+		)
+		||
+		effect == SE_StackingCommand_Block ||	// these are only used by stacking code
+		effect == SE_StackingCommand_Overwrite
+	);
+}
+
 // solar: checks some things about a spell id, to see if we can proceed
 bool IsValidSpell(int16 spellid)
 {
@@ -617,6 +695,24 @@ int GetMinLevel(int16 spell_id) {
 		return(min);
 }
 
+int Spell::GetMinLevel() 
+{
+	int r;
+	int min = 255;
+	for(r = 0; r < PLAYER_CLASS_COUNT; r++) 
+	{
+		if(raw_spell.classes[r] < min)
+			min = raw_spell.classes[r];
+	}
+	
+	//if we can't cast the spell return 0
+	//just so it wont screw up calculations used in other areas of the code
+	if(min == 255)
+		return 0;
+	else
+		return(min);
+}
+
 // solar: this will find the first occurance of effect.  this is handy
 // for spells like mez and charm, but if the effect appears more than once
 // in a spell this will just give back the first one.
@@ -630,6 +726,17 @@ int GetSpellEffectIndex(int16 spell_id, int effect)
 	for(i = 0; i < EFFECT_COUNT; i++)
 	{
 		if(spells[spell_id].effectid[i] == effect)
+			return i;
+	}
+
+	return -1;
+}
+
+int Spell::GetSpellEffectIndex(int effect)
+{
+	for(int i = 0; i < EFFECT_COUNT; i++)
+	{
+		if(raw_spell.effectid[i] == effect)
 			return i;
 	}
 
@@ -771,6 +878,12 @@ bool IsResurrectionEffects(int16 spell_id) {
 
 	return Result;
 }
+
+bool Spell::IsResurrectionEffects() 
+{
+	return (GetSpellID() == 756);
+}
+
 
 bool IsRuneSpell(int16 spell_id) {
 	bool Result = false;
