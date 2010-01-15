@@ -1561,8 +1561,6 @@ void Bot::DeletePetStats(uint32 botPetSaveId) {
 
 bool Bot::Process() {
 	_ZP(Bot_Process);
-
-	//adverrorinfo = 1;
 	
 	if (IsStunned() && stunned_timer.Check()) {
 		this->stunned = false;
@@ -1583,12 +1581,10 @@ bool Bot::Process() {
 		return false;
 	}
 
-	//adverrorinfo = 2;
-
 	if (tic_timer.Check()) {
 		//6 seconds, or whatever the rule is set to has passed, send this position to everyone to avoid ghosting
-		if(!IsMoving())
-			SendPosition();
+		if(!IsMoving() && !IsEngaged())
+			SendPosUpdate();
 
 		SpellProcess();
 
@@ -2076,7 +2072,7 @@ void Bot::AI_Process() {
 				SetMoving(false);
 				moved = false;
 				SetHeading(0);
-				SendPosition();
+				SendPosUpdate();
 				tar_ndx = 0;
 			}
 
@@ -2111,7 +2107,7 @@ void Bot::AI_Process() {
 				SetMoving(false);
 				moved = false;
 				SetHeading(CalculateHeadingToTarget(GetTarget()->GetX(), GetTarget()->GetY()));
-				SendPosition();
+				SendPosUpdate();
 				tar_ndx = 0;
 			}
 
@@ -2128,13 +2124,26 @@ void Bot::AI_Process() {
 		if(atCombatRange) {			
 			if(AImovement_timer->Check()) {
 				SetRunAnimSpeed(0);
+
+				if(!IsMoving()) {
+					//fix up Z problem since CalculateNewPosition2 ignores pure-Z-movement now...
+					float zdiff = GetZ() - GetTarget()->GetZ();
+
+					if(zdiff < 0)
+						zdiff = 0 - zdiff;
+
+					if(zdiff > 2.0f) {
+						SendTo(GetX(), GetY(), GetTarget()->GetZ());
+						SendPosUpdate();
+					}
+				}
 			}
 
 			if(IsMoving()) {
 				SetMoving(false);
 				moved = false;
 				SetHeading(CalculateHeadingToTarget(GetTarget()->GetX(), GetTarget()->GetY()));
-				SendPosition();
+				SendPosUpdate();
 				tar_ndx = 0;
 			}
 
@@ -2362,7 +2371,7 @@ void Bot::AI_Process() {
 					SetMoving(false);
 					moved = false;
 					SetHeading(CalculateHeadingToTarget(GetTarget()->GetX(), GetTarget()->GetY()));
-					SendPosition();
+					SendPosUpdate();
 					tar_ndx = 0;
 				}
 			}
@@ -2386,6 +2395,9 @@ void Bot::AI_Process() {
 		}
 
 		if(AImovement_timer->Check()) {
+			if(!IsMoving())
+				SendPosUpdate();
+
 			// now the followID: that's what happening as the bots follow their leader.
 			if(GetFollowID()) {
 				Mob* follow = entity_list.GetMob(GetFollowID());
@@ -2402,26 +2414,27 @@ void Bot::AI_Process() {
 						SetRunAnimSpeed(speed);
 
 						CalculateNewPosition2(follow->GetX(), follow->GetY(), follow->GetZ(), speed);
+						return;
 					}
 					else {
 						SetHeading(follow->GetHeading());
 
 						if(moved) {	
 							SetMoving(false);
-							SendPosition();
+							SendPosUpdate();
 						}
 					}
 
 					//fix up Z problem since CalculateNewPosition2 ignores pure-Z-movement now...
-					/*float zdiff = GetZ() - follow->GetZ();
+					float zdiff = GetZ() - follow->GetZ();
 
 					if(zdiff < 0)
 						zdiff = 0 - zdiff;
 
 					if(zdiff > 2.0f) {
 						SendTo(GetX(), GetY(), follow->GetZ());
-						SendPosition();
-					}*/
+						SendPosUpdate();
+					}
 				}
 			}
 		}
