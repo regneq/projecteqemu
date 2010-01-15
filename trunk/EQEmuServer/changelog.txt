@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==01/15/2010==
+WildcardX: Refactored the general bot ai logic. It appears I have bots properly showing their run animations and bots will now stand before they cast a spell. Because I touched soo much bot ai code, this rev should be evaluated fully before implementing on a public play server. I may decide to revert this rev of the bot code if it proves too unstable.
+
 ==01/14/2010==
 WildcardX: Fixed a bug in the EQEmuLoginServer that resulted in the server not processing login requests because the application's connection to its MySQL database engine was closed. I have implemented an auto reconnect feature of the MySQL client api.
 WildcardX: Cleaned up a couple compiler warnings for EQEmuLoginServer.

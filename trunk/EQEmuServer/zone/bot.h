@@ -132,6 +132,10 @@ public:
 	std::vector<AISpells_Struct> GetBotSpells() { return AIspells; }
 	bool IsArcheryRange(Mob* target);
 	void ChangeBotArcherWeapons(bool isArcher);
+	void Sit();
+	void Stand();
+	bool IsSitting();
+	bool IsStanding();
 
 	// AI Methods
 	virtual bool AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes);
@@ -295,7 +299,6 @@ private:
 	bool _botCharmer;
 	bool _petChooser;
 	int8 _petChooserID;
-	bool cast_last_time;
 	BotInventory _botInventory;
 	double _lastTotalPlayTime;
 	time_t _startTotalPlayTime;
