@@ -9697,9 +9697,22 @@ void Client::Handle_OP_ApplyPoison(const EQApplicationPacket *app) {
 	ApplyPoison_Struct* ApplyPoisonData = (ApplyPoison_Struct*)app->pBuffer;
 	const ItemInst* PrimaryWeapon = GetInv().GetItem(SLOT_PRIMARY);
 	const ItemInst* SecondaryWeapon = GetInv().GetItem(SLOT_SECONDARY);
+	const ItemInst* PoisonItemInstance = GetInv()[ApplyPoisonData->inventorySlot];
 
-	if(this->GetClass() == ROGUE) {
-		if((PrimaryWeapon && PrimaryWeapon->GetItem()->ItemType == ItemTypePierce) || (SecondaryWeapon && SecondaryWeapon->GetItem()->ItemType == ItemTypePierce)) {
+	bool IsPoison = PoisonItemInstance && (PoisonItemInstance->GetItem()->ItemType == ItemTypePoison);
+
+	if(!IsPoison)
+	{
+		mlog(SPELLS__CASTING_ERR, "Item used to cast spell effect from a poison item was missing from inventory slot %d "
+					  "after casting, or is not a poison!", ApplyPoisonData->inventorySlot);
+
+		Message(0, "Error: item not found for inventory slot #%i or is not a poison", ApplyPoisonData->inventorySlot);
+	}
+	else if(GetClass() == ROGUE)
+	{
+		if((PrimaryWeapon && PrimaryWeapon->GetItem()->ItemType == ItemTypePierce) || 
+		   (SecondaryWeapon && SecondaryWeapon->GetItem()->ItemType == ItemTypePierce))
+		   {
 			float SuccessChance = (GetSkill(APPLY_POISON) + GetLevel()) / 400.0f;
 			double ChanceRoll = MakeRandomFloat(0, 1);
 		
@@ -9707,19 +9720,10 @@ void Client::Handle_OP_ApplyPoison(const EQApplicationPacket *app) {
 				
 			if(ChanceRoll < SuccessChance) {
 				ApplyPoisonSuccessResult = 1;
-				const ItemInst* PoisonItemInstance = GetInv()[ApplyPoisonData->inventorySlot];
-				if(PoisonItemInstance){
-					// NOTE: Someone may want to tweak the chance to proc the poison effect that is added to the weapon here.
-					// My thinking was that DEX should be apart of the calculation.
-					AddProcToWeapon(PoisonItemInstance->GetItem()->Proc.Effect, false, (GetDEX()/100) + 103);
-				}
-				else {
-					mlog(SPELLS__CASTING_ERR, "Item used to cast spell effect from a poison item was missing from inventory slot %d after casting!", ApplyPoisonData->inventorySlot);
-					Message(0, "Error: item not found for inventory slot #%i", ApplyPoisonData->inventorySlot);
-				}
+				// NOTE: Someone may want to tweak the chance to proc the poison effect that is added to the weapon here.
+				// My thinking was that DEX should be apart of the calculation.
+				AddProcToWeapon(PoisonItemInstance->GetItem()->Proc.Effect, false, (GetDEX()/100) + 103);
 			}
-			else
-				ApplyPoisonSuccessResult = 0;
 
 			DeleteItemInInventory(ApplyPoisonData->inventorySlot, 1, true);
 
