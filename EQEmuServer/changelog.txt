@@ -1,6 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==01/15/2010==
+Derision: Added check in Handle_ApplyPoison to verify the specified inventory slot contains a poison in case the player moved items around after beginning to apply the poison.
+
+==01/15/2010==
 WildcardX: Refactored the general bot ai logic. It appears I have bots properly showing their run animations and bots will now stand before they cast a spell. Because I touched soo much bot ai code, this rev should be evaluated fully before implementing on a public play server. I may decide to revert this rev of the bot code if it proves too unstable.
 
 ==01/14/2010==
