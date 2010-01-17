@@ -1423,7 +1423,7 @@ void Bot::SavePet() {
 		}
 
 		// Save pet stats and get a new bot pet save id
-		uint32 botPetSaveId = SavePetStats(std::string(tempPetName), petHitPoints, petMana, botPetId);
+		uint32 botPetSaveId = SavePetStats(std::string(tempPetName), petMana, petHitPoints, botPetId);
 
 		// Save pet buffs
 		SavePetBuffs(petBuffs, botPetSaveId);
@@ -1628,10 +1628,11 @@ bool Bot::Process() {
 			SetMana(GetMana() + mana_regen + bonus);
 	}
 
-	if (sendhpupdate_timer.Check() && IsTargeted()) {
-		if(!IsFullHP || cur_hp < max_hp){
-			SendHPUpdate();
-		}
+	if (sendhpupdate_timer.Check()) {
+		SendHPUpdate();
+
+		if(HasPet())
+			GetPet()->SendHPUpdate();
 	}
 
 	if (IsStunned() || IsMezzed())
@@ -2541,6 +2542,7 @@ void Bot::PetAIProcess() {
 
 	if (IsEngaged()) {
 		_ZP(Bot_PET_Process_IsEngaged);
+		
 		if (botPet->IsRooted())
 			botPet->SetTarget(hate_list.GetClosest(botPet));
 		else

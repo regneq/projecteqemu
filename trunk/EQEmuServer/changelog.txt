@@ -3,6 +3,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==01/17/2010==
 WildcardX: More bot ai refactoring that is focused on making the bot movements more smooth and accurate. Still a lingering issue when bots fight a mob that has a giant body type.
 WildcardX: Bots in melee range of their target will now seperate themselves some so they won't appear so much on top of each other in combat. "Tank" classes will always be closer than "DPS" classes.
+WildcardX: Fixed a issue with bot pet hitpoints not persisting correctly to the database and an issue that prevented the client from getting all HP updates for bots and their pets.
 
 ==01/15/2010==
 Derision: Added check in Handle_ApplyPoison to verify the specified inventory slot contains a poison in case the player moved items around after beginning to apply the poison.
