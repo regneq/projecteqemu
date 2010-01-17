@@ -2004,6 +2004,46 @@ void Bot::SendBotPosUpdate() {
 	safe_delete(app);
 }
 
+float Bot::GetMaxMeleeRangeToTarget(Mob* target) {
+	float result = 0;
+	
+	if(target) {
+		float size_mod = GetSize();
+		float other_size_mod = target->GetSize();
+
+		if(GetRace() == 49 || GetRace() == 158 || GetRace() == 196) //For races with a fixed size
+			size_mod = 60.0f;
+		else if (size_mod < 6.0)
+			size_mod = 8.0f;
+
+		if(target->GetRace() == 49 || target->GetRace() == 158 || target->GetRace() == 196) //For races with a fixed size
+			other_size_mod = 60.0f;
+		else if (other_size_mod < 6.0)
+			other_size_mod = 8.0f;
+
+		if (other_size_mod > size_mod) {
+			size_mod = other_size_mod;
+		}
+
+		// this could still use some work, but for now it's an improvement....
+
+		if (size_mod > 29)
+			size_mod *= size_mod;
+		else if (size_mod > 19)
+			size_mod *= size_mod * 2;
+		else
+			size_mod *= size_mod * 4;
+
+		// prevention of ridiculously sized hit boxes
+		if (size_mod > 10000)
+			size_mod = size_mod / 7;
+
+		result = size_mod;
+	}
+
+	return result;
+}
+
 // AI Processing for the Bot object
 void Bot::AI_Process() {
 	_ZP(Mob_BOT_Process);
@@ -2085,7 +2125,21 @@ void Bot::AI_Process() {
 			return;
 		}
 
-		bool atCombatRange = CombatRange(GetTarget());
+		// bool atCombatRange = CombatRange(GetTarget());
+		bool atCombatRange = false;
+		
+		float meleeDistance = GetMaxMeleeRangeToTarget(GetTarget());
+
+		if(botClass == SHADOWKNIGHT || botClass == PALADIN || botClass == WARRIOR) {
+			meleeDistance = meleeDistance * .25;
+		}
+		else {
+			if(MakeRandomInt(1, 2) == 1)
+				meleeDistance = meleeDistance * .50;
+			else
+				meleeDistance = meleeDistance * .75;
+		}
+		
 		bool atArcheryRange = IsArcheryRange(GetTarget());
 
 		if(GetRangerAutoWeaponSelect()) {
@@ -2116,13 +2170,9 @@ void Bot::AI_Process() {
 
 			atCombatRange = true;
 		}
-
-		// We're engaged, each class type has a special AI
-		// Only melee class will go to melee. Casters and healers will stop and stay behind.
-		// We 're a melee or any other class lvl<12. Yes, because after it becomes hard to go into melee for casters.. even for bots..
-		/*if((botLevel <= 12) || (botClass == WARRIOR) || (botClass == PALADIN) || (botClass == RANGER) || (botClass == SHADOWKNIGHT) || (botClass == MONK) || (botClass == ROGUE) || (botClass == BEASTLORD) || (botClass == BERSERKER) || (botClass == BARD)) {
-		cast_last_time = true;
-		}*/
+		else if(DistNoRoot(*GetTarget()) <= meleeDistance) {
+			atCombatRange = true;
+		}
 
 		if(atCombatRange) {	
 			if(IsMoving()) {
@@ -2406,10 +2456,6 @@ void Bot::AI_Process() {
 			AI_EngagedCastCheck();
 			BotMeditate(false);
 		}
-		/*if(botClass == BARD || botClass == RANGER || botClass == SHADOWKNIGHT || botClass == PALADIN || botClass == BEASTLORD)
-			BotMeditate(false);
-		else if(botClass == CLERIC || botClass == DRUID || botClass == SHAMAN || botClass == NECROMANCER || botClass == WIZARD || botClass == MAGICIAN || botClass == ENCHANTER)
-			BotMeditate(true);*/
 	} // end IsEngaged()
 	else {
 		// Not engaged in combat
