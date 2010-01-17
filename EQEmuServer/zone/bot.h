@@ -284,6 +284,7 @@ protected:
 	virtual sint16 CalcBotFocusEffect(botfocusType bottype, int16 focus_id, int16 spell_id);
 	virtual void PerformTradeWithClient(sint16 beginSlotID, sint16 endSlotID, Client* client);
 	virtual bool AIDoSpellCast(int8 i, Mob* tar, sint32 mana_cost, int32* oDontDoAgainBefore = 0);
+	virtual void SendBotPosUpdate();
 
 	static void SetBotGuildMembership(int32 botId, int32 guildid, int8 rank);
 
