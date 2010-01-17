@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==01/17/2010==
+WildcardX: More bot ai refactoring that is focused on making the bot movements more smooth and accurate. Still a lingering issue when bots fight a mob that has a giant body type.
+
 ==01/15/2010==
 Derision: Added check in Handle_ApplyPoison to verify the specified inventory slot contains a poison in case the player moved items around after beginning to apply the poison.
 Derision: Fixed a bug where Mend would not report failures for skill levels below 75.
