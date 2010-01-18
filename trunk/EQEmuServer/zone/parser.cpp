@@ -455,7 +455,14 @@ void Parser::Event(QuestEventID event, int32 npcid, const char * data, NPC* npcm
 			SendCommands("event_npc_slay", qstID, npcmob, mob);
 			break;
 		}
-		case EVENT_WAYPOINT: {
+		case EVENT_WAYPOINT_ARRIVE: {
+			temp = "wp." + (string)itoa(npcid);
+			AddVar(temp,data);
+			SendCommands("event_waypoint", qstID, npcmob, mob);
+			break;
+		}
+		case EVENT_WAYPOINT:
+		case EVENT_WAYPOINT_DEPART: {
 			temp = "wp." + (string)itoa(npcid);
 			AddVar(temp,data);
 			SendCommands("event_waypoint", qstID, npcmob, mob);
