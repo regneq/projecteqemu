@@ -841,7 +841,13 @@ bool ZoneDatabase::SetCharacterFactionLevel(int32 char_id, sint32 faction_id, si
 		safe_delete_array(query);
 		return false;
 	}
-	
+
+	if(value == 0)
+	{
+		safe_delete_array(query);
+		return true;
+	}
+
 	if (!RunQuery(query, MakeAnyLenString(&query, 
 		"INSERT INTO faction_values (char_id,faction_id,current_value) VALUES (%i,%i,%i)", 
 		char_id, faction_id,value), errbuf, 0, &affected_rows)) {
