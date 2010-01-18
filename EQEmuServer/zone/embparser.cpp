@@ -537,11 +537,8 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 			perl->eval(std::string("++$").append(hashname).append("{$").append(packagename).append("::item4};").c_str());
 			break;
 		}
-		case EVENT_WAYPOINT_ARRIVE: {
-			ExportVar(packagename.c_str(), "wp", data);
-			break;
-		}
 		case EVENT_WAYPOINT:
+		case EVENT_WAYPOINT_ARRIVE:
 		case EVENT_WAYPOINT_DEPART: {
 			ExportVar(packagename.c_str(), "wp", data);
 			break;
