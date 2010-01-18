@@ -21,8 +21,6 @@
 
 #ifdef WIN32
 #include <windows.h>
-#endif
-
 #include <string>
 
 typedef char*(*DLLFUNC_DecryptUsernamePassword)(const char*, unsigned int, int);
@@ -50,14 +48,11 @@ public:
 	void DeleteHeap(char* buffer);
 protected:
 
-#ifdef WIN32
 	HINSTANCE hDLL;
-#else
-	void* hDLL;
-#endif
 
 	DLLFUNC_Encrypt EncryptFunc;
 	DLLFUNC_DecryptUsernamePassword DecryptFunc;
 	DLLFUNC_HeapDelete DeleteFunc;
 };
+#endif
 #endif

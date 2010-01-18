@@ -195,7 +195,7 @@ void EQEmuDatabase::UpdateWorldServerRegistration(uint32 serverID, std::string s
 	}
 
 	char * mQuery = 0;
-	MakeAnyLenString(&mQuery, "UPDATE tblWorldServerRegistration SET ServerLastLoginDate = now(), ServerLastIPAddr = '%s' where ServerID = %u", serverIP,  serverID);
+	MakeAnyLenString(&mQuery, "UPDATE tblWorldServerRegistration SET ServerLastLoginDate = now(), ServerLastIPAddr = '%s' where ServerID = %u", serverIP.length() > 0 ? serverIP.c_str() : "",  serverID);
 	if (mysql_query(_mysql, mQuery)) 
 	{
 		if(mQuery)

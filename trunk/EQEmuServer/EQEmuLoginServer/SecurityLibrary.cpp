@@ -16,20 +16,12 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+#ifdef WIN32
 #include "SecurityLibrary.h"
 #include <iostream>
 #include <stdio.h>
 
-#ifdef WIN32
-	#define EQSecurityLibraryName "EQEmuAuthCrypto"
-#else
-	#define EQSecurityLibraryName "libEQEmuAuthCrypto.so"
-	#include <dlfcn.h>
-    #define GetProcAddress(a,b) dlsym(a,b)
-	#define LoadLibrary(a) dlopen(a, RTLD_NOW) 
-	#define  FreeLibrary(a) dlclose(a)
-	#define GetLastError() dlerror()
-#endif
+#define EQSecurityLibraryName "EQEmuAuthCrypto"
 
 SecurityLibrary::SecurityLibrary()
 {
@@ -46,14 +38,9 @@ SecurityLibrary::~SecurityLibrary()
 
 bool SecurityLibrary::Load(const char *name)
 {
-#ifdef WIN32
 	SetLastError(0);
 	hDLL = LoadLibrary(name);
 
-#else
-	hDLL = LoadLibrary(name);
-#endif
-	
 	if(!hDLL) {
 		const char *load_error = GetError();
 
@@ -68,12 +55,10 @@ bool SecurityLibrary::Load(const char *name)
 		}
 		return false;
 	}
-#ifdef WIN32
     else 
 	{ 
 		SetLastError(0); 
 	}
-#endif
 	
 	return(true);
 }
@@ -81,11 +66,6 @@ bool SecurityLibrary::Load(const char *name)
 void SecurityLibrary::Unload() {
 	if (hDLL != NULL) {
 		FreeLibrary(hDLL);
-#ifndef WIN32
-		const char* error;
-		if ((error = GetError()) != NULL)
-			fprintf(stderr, "FreeLibrary() error = %s", error);
-#endif
 		hDLL = NULL;
 	}
 }
@@ -115,7 +95,6 @@ bool SecurityLibrary::GetSym(const char *name, void **sym)
 
 const char *SecurityLibrary::GetError()
 {
-#ifdef WIN32
 	//not thread safe, dont care.
 	static char ErrBuf[128];
 	unsigned long err = GetLastError();
@@ -123,9 +102,6 @@ const char *SecurityLibrary::GetError()
 		return(NULL);
 	sprintf(ErrBuf, "Error #%lu", (unsigned long)err);
 	return(ErrBuf);
-#else
-	return GetLastError();
-#endif
 }
 
 bool SecurityLibrary::LoadCrypto()
@@ -180,3 +156,5 @@ void SecurityLibrary::DeleteHeap(char* buffer)
 		DeleteFunc(buffer);
 	}
 }
+
+#endif

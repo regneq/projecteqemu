@@ -20,11 +20,17 @@
 #include "SecurityLibrary.h"
 #include <iostream>
 #include <stdexcept>
+#ifndef WIN32
+#include "EQCryptoAPI.h"
+#endif
+
 using namespace std;
 
 extern IniFile inifile;
 extern Serverlist *SL;
+#ifdef WIN32
 extern SecurityLibrary EQCrypto;
+#endif
 
 Clientlist::Clientlist() {
 	eqsf = new EQStreamFactory(LoginStream, inifile.PortNumber);
@@ -157,7 +163,11 @@ void Clientlist::Process() {
 					uint32 LSAccountID = 0;
 					std::string LSAccountPassword;
 
+#ifdef WIN32
 					char *CryptoBuffer = EQCrypto.DecryptUsernamePassword((const char*)app->pBuffer, app->Size(), 5);
+#else
+					char *CryptoBuffer = DecryptUsernamePassword((const char*)app->pBuffer, app->Size(), 5);
+#endif
 					PassHash.assign(CryptoBuffer, strlen(CryptoBuffer));
 					UserName.assign(CryptoBuffer+strlen(CryptoBuffer)+1, strlen(CryptoBuffer+strlen(CryptoBuffer)+1));
 
@@ -230,10 +240,18 @@ void Clientlist::Process() {
 						memcpy(lrbs->key, NewAuth->GetKey().c_str(), NewAuth->GetKey().size());
 
 						unsigned int enc_size;
+#ifdef WIN32
 						char * enc = EQCrypto.Encrypt((const char*)lrbs, 75, enc_size);
+#else
+						char * enc = Encrypt((const char*)lrbs, 75, enc_size);
+#endif
 						memcpy(llas->encrypt, enc, 80);
 
+#ifdef WIN32
 						EQCrypto.DeleteHeap(enc);
+#else
+						_HeapDeleteCharBuffer(enc);
+#endif
 						if(inifile.DumpPacketsOut)
 							DumpPacket(outapp);
 
@@ -261,7 +279,11 @@ void Clientlist::Process() {
 						(*Iterator)->QueuePacket(outapp);
 						safe_delete(outapp);
 					}
+#ifdef WIN32
 					EQCrypto.DeleteHeap(CryptoBuffer);
+#else
+					_HeapDeleteCharBuffer(CryptoBuffer);
+#endif
 					break;
 				}
 

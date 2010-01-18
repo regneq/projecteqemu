@@ -29,7 +29,7 @@ WorldRegistration::WorldRegistration() {
 
 bool WorldRegistration::SetPublicIPAddress(string publicIPAddress) {
 	bool Result = false;
-	const int32 MaxInternetIPLengthAsString = 15;
+	const int32 MaxInternetIPLengthAsString = 125;
 
 	if(publicIPAddress.length() > 0 && publicIPAddress.length() <= MaxInternetIPLengthAsString) {
 		// TODO: More Validation Checking Goes Here
@@ -43,7 +43,7 @@ bool WorldRegistration::SetPublicIPAddress(string publicIPAddress) {
 
 bool WorldRegistration::SetLocalIPAddress(std::string localIPAddress) {
 	bool Result = false;
-	const int32 MaxInternetIPLengthAsString = 15;
+	const int32 MaxInternetIPLengthAsString = 125;
 
 	if(localIPAddress.length() > 0 && localIPAddress.length() <= MaxInternetIPLengthAsString) {
 		// TODO: More Validation Checking Goes Here

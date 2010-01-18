@@ -27,7 +27,9 @@ volatile bool RunLoops = true;
 Clientlist *CL;
 Serverlist *SL;
 IniFile inifile;
+#ifdef WIN32
 SecurityLibrary EQCrypto;
+#endif
 
 void CatchSignal(int sig_num) 
 {
@@ -63,10 +65,12 @@ int main() {
 
 	cout << endl << endl;
 
+#ifdef WIN32
 	if(!EQCrypto.LoadCrypto())
 	{
 		cout << "Security Module Load Failed." << endl;
 	}
+#endif
 
 	try
 	{
