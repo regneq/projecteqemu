@@ -48,7 +48,7 @@ Bot::Bot(NPCType npcTypeData, Client* botOwner) : NPC(&npcTypeData, 0, 0, 0, 0, 
 	SetPetChooser(false);
 	SetRangerAutoWeaponSelect(false);
 
-	SetFollowDistance(100);
+	SetFollowDistance(184);
 
 	// Do this once and only in this constructor
 	GenerateAppearance();
@@ -102,7 +102,7 @@ Bot::Bot(uint32 botID, uint32 botOwnerCharacterID, uint32 botSpellsID, double to
 	SetPetChooser(false);
 	SetRangerAutoWeaponSelect(false);
 
-	SetFollowDistance(100);
+	SetFollowDistance(184);
 
 	strcpy(this->name, this->GetCleanName());
 
@@ -128,7 +128,8 @@ Bot::Bot(uint32 botID, uint32 botOwnerCharacterID, uint32 botSpellsID, double to
 }
 
 Bot::~Bot() {
-	// TODO: dependancy resource deallocation goes here (if any!)
+	entity_list.RemoveBot(GetID());
+	AI_Stop();
 }
 
 void Bot::SetBotID(uint32 botID) {
@@ -1571,20 +1572,18 @@ bool Bot::Process() {
 		Camp();
 
 	if (GetDepop()) {
-		//Mob* owner = entity_list.GetMob(this->ownerid);
-		//if (owner != 0) {
-		//	//if(GetBodyType() != BT_SwarmPet)
-		//	//    owner->SetPetID(0);
-		//	this->ownerid = 0;
-		//	this->petid = 0;
-		//}
+		_botOwner = 0;
+		_botOwnerCharacterID = 0;
+		_previousTarget = 0;
+
 		return false;
 	}
 
 	if (tic_timer.Check()) {
 		//6 seconds, or whatever the rule is set to has passed, send this position to everyone to avoid ghosting
-		if(!IsMoving() && !IsEngaged())
-			SendBotPosUpdate();
+		if(!IsMoving() && !IsEngaged()) {
+			SendPosition();
+		}
 
 		SpellProcess();
 
@@ -1994,17 +1993,6 @@ void Bot::SetTarget(Mob* mob) {
 	}
 }
 
-void Bot::SendBotPosUpdate() {
-	EQApplicationPacket* app = new EQApplicationPacket(OP_ClientUpdate, sizeof(PlayerPositionUpdateServer_Struct));
-	PlayerPositionUpdateServer_Struct* spu = (PlayerPositionUpdateServer_Struct*)app->pBuffer;
-	
-	MakeSpawnUpdate(spu);
-
-	entity_list.QueueCloseClients(this, app, true, 5000, 0, false);
-
-	safe_delete(app);
-}
-
 float Bot::GetMaxMeleeRangeToTarget(Mob* target) {
 	float result = 0;
 	
@@ -2117,10 +2105,13 @@ void Bot::AI_Process() {
 
 			if(IsMoving()) {
 				SetRunAnimSpeed(0);
-				SetMoving(false);
-				moved = false;
-				SendBotPosUpdate();
-				tar_ndx = 0;
+				SetHeading(0);
+
+				if(moved) {
+					moved = false;
+					SetMoving(false);
+					SendPosition();
+				}
 			}
 
 			return;
@@ -2162,11 +2153,13 @@ void Bot::AI_Process() {
 		if(IsBotArcher() && atArcheryRange) {
 			if(IsMoving()) {
 				SetRunAnimSpeed(0);
-				SetMoving(false);
-				moved = false;
 				SetHeading(CalculateHeadingToTarget(GetTarget()->GetX(), GetTarget()->GetY()));
-				SendBotPosUpdate();
-				tar_ndx = 0;
+
+				if(moved) {
+					moved = false;
+					SetMoving(false);
+					SendPosition();
+				}
 			}
 
 			atCombatRange = true;
@@ -2183,22 +2176,15 @@ void Bot::AI_Process() {
 				if(moved) {
 					moved = false;
 					SetMoving(false);
-					SendBotPosUpdate();
+					SendPosition();
 				}
 			}
 
 			if(AImovement_timer->Check()) {
-				//fix up Z problem since CalculateNewPosition2 ignores pure-Z-movement now...
-				float zdiff = GetZ() - GetTarget()->GetZ();
-
-				if(zdiff < 0)
-					zdiff = 0 - zdiff;
-
-				if(zdiff > 2.0f) {
-					SendTo(GetX(), GetY(), GetTarget()->GetZ());
-				}
-
-				SendBotPosUpdate();	
+				if(IsMoving())
+					SendPosUpdate();
+				else
+					SendPosition();
 			}
 
 			if(!IsMoving() && GetClass() == ROGUE && !BehindMob(GetTarget(), GetX(), GetY())) {
@@ -2208,7 +2194,7 @@ void Bot::AI_Process() {
 				float newZ = 0;
 
 				if(PlotPositionAroundTarget(GetTarget(), newX, newY, newZ)) {
-					CalculateNewPosition2(newX, newY, newZ, GetRunspeed(), false);
+					CalculateNewPosition2(newX, newY, newZ, GetRunspeed());
 					return;
 				}
 			}
@@ -2219,7 +2205,7 @@ void Bot::AI_Process() {
 				float newZ = 0;
 
 				if(PlotPositionAroundTarget(GetTarget(), newX, newY, newZ, false)) {
-					CalculateNewPosition2(newX, newY, newZ, GetRunspeed(), false);
+					CalculateNewPosition2(newX, newY, newZ, GetRunspeed());
 					return;
 				}
 			}
@@ -2417,39 +2403,20 @@ void Bot::AI_Process() {
 				AI_PursueCastCheck();
 			}
 			
-			/*if(IsMoving()) {
-				SetRunAnimSpeed(0);
-				SetMoving(false);
-				moved = false;
-				SetHeading(CalculateHeadingToTarget(GetTarget()->GetX(), GetTarget()->GetY()));
-				SendBotPosUpdate();
-				tar_ndx = 0;
-			}*/
-			
 			if (AImovement_timer->Check()) {
 				if(!IsRooted()) {
 					if(!(botClass == CLERIC || botClass == DRUID || botClass == SHAMAN || botClass == NECROMANCER || botClass == WIZARD || botClass == MAGICIAN || botClass == ENCHANTER) || GetLevel() < 12) {
 						mlog(AI__WAYPOINTS, "Pursuing %s while engaged.", GetTarget()->GetCleanName());
 						SetRunAnimSpeed(GetRunspeed());
-						CalculateNewPosition2(GetTarget()->GetX(), GetTarget()->GetY(), GetTarget()->GetZ(), GetRunspeed(), false);
+						CalculateNewPosition2(GetTarget()->GetX(), GetTarget()->GetY(), GetTarget()->GetZ(), GetRunspeed());
 						return;
 					}
 
-					//fix up Z problem since CalculateNewPosition2 ignores pure-Z-movement now...
-					float zdiff = GetZ() - GetTarget()->GetZ();
-
-					if(zdiff < 0)
-						zdiff = 0 - zdiff;
-
-					if(zdiff > 2.0f) {
-						SendTo(GetX(), GetY(), GetTarget()->GetZ());
-					}
-
 					if(IsMoving())
-						SendBotPosUpdate();
+						SendPosUpdate();
+					else
+						SendPosition();
 				}
-				
-				// SendBotPosUpdate();
 			}
 		} // end not in combat range
 
@@ -2467,45 +2434,53 @@ void Bot::AI_Process() {
 			BotMeditate(true);
 		}
 
-		if(GetFollowID()) {
-			Mob* follow = entity_list.GetMob(GetFollowID());
+		if(AImovement_timer->Check()) {
+			if(GetFollowID()) {
+				Mob* follow = entity_list.GetMob(GetFollowID());
 
-			float dist = DistNoRoot(*follow);
+				if(follow) {
+					float dist = DistNoRoot(*follow);
 
-			if(follow && moved && dist <= GetFollowDistance()) {
-				SetRunAnimSpeed(0);
-				SetMoving(false);
-				moved = false;
-				SendBotPosUpdate();
-			}
+					SetRunAnimSpeed(0);
 
-			if(follow && AImovement_timer->Check()) {
-				if (dist > GetFollowDistance()) {
-					float speed = GetWalkspeed();
-
-					if (dist >= GetFollowDistance() + 150)
-						speed = GetRunspeed();
-
-					SetRunAnimSpeed(speed);
-
-					CalculateNewPosition2(follow->GetX(), follow->GetY(), follow->GetZ(), speed, false);
-					return;
+					if(dist > GetFollowDistance()) {
+						CalculateNewPosition2(follow->GetX(), follow->GetY(), follow->GetZ(), follow->GetRunspeed());
+						return;
+					} 
+					else {
+						SetHeading(GetReciprocalHeading(follow));
+						
+						if(moved) {
+							moved=false;
+							SetMoving(false);
+							SendPosition();
+						}
+					}
 				}
-
-				//fix up Z problem since CalculateNewPosition2 ignores pure-Z-movement now...
-				float zdiff = GetZ() - follow->GetZ();
-
-				if(zdiff < 0)
-					zdiff = 0 - zdiff;
-
-				if(zdiff > 2.0f) {
-					SendTo(GetX(), GetY(), follow->GetZ());
-				}
-
-				if(IsMoving())
-					SendBotPosUpdate();
 			}
 		}
+		/*if(AImovement_timer->Check()) {
+			if(GetFollowID()) {
+				Mob* follow = entity_list.GetMob(GetFollowID());
+				
+				if(follow) {
+					float dist = DistNoRoot(*follow);
+
+					float speed = dist >= GetFollowDistance() + 150 ? GetRunspeed() : GetWalkspeed();
+
+					SetHeading(GetReciprocalHeading(follow));
+
+					if(!CalculateNewPosition2(follow->GetX(), follow->GetY(), follow->GetZ(), speed)) {
+						if(moved) {
+							moved = false;
+							SetMoving(false);
+							SetRunAnimSpeed(0);
+							SendPosition();
+						}
+					}
+				}
+			}
+		}*/
 	}
 }
 
@@ -2590,7 +2565,7 @@ void Bot::PetAIProcess() {
 				if(moved) {
 					moved=false;
 					botPet->SetMoving(false);
-					botPet->SendPosUpdate();
+					botPet->SendPosition();
 				}
 			}
 
@@ -2602,14 +2577,14 @@ void Bot::PetAIProcess() {
 				if(botPet->GetClass() == ROGUE && !botPet->BehindMob(botPet->GetTarget(), botPet->GetX(), botPet->GetY())) {
 					// Move the rogue to behind the mob
 					if(botPet->PlotPositionAroundTarget(botPet->GetTarget(), newX, newY, newZ)) {
-						botPet->CalculateNewPosition2(newX, newY, newZ, botPet->GetRunspeed(), false);
+						botPet->CalculateNewPosition2(newX, newY, newZ, botPet->GetRunspeed());
 						return;
 					}
 				}
 				else if(GetTarget() == botPet->GetTarget() && !botPet->BehindMob(botPet->GetTarget(), botPet->GetX(), botPet->GetY())) {
 					// If the bot owner and the bot are fighting the same mob, then move the pet to the rear arc of the mob
 					if(botPet->PlotPositionAroundTarget(botPet->GetTarget(), newX, newY, newZ)) {
-						botPet->CalculateNewPosition2(newX, newY, newZ, botPet->GetRunspeed(), false);
+						botPet->CalculateNewPosition2(newX, newY, newZ, botPet->GetRunspeed());
 						return;
 					}
 				}
@@ -2621,7 +2596,7 @@ void Bot::PetAIProcess() {
 						isBehindMob = true;
 
 					if(botPet->PlotPositionAroundTarget(botPet->GetTarget(), newX, newY, newZ, isBehindMob)) {
-						botPet->CalculateNewPosition2(newX, newY, newZ, botPet->GetRunspeed(), false);
+						botPet->CalculateNewPosition2(newX, newY, newZ, botPet->GetRunspeed());
 						return;
 					}
 				}
@@ -2688,14 +2663,15 @@ void Bot::PetAIProcess() {
 					botPet->SetRunAnimSpeed(0);
 					if(!botPet->IsRooted()) {
 						mlog(AI__WAYPOINTS, "Pursuing %s while engaged.", botPet->GetTarget()->GetCleanName());
-						botPet->CalculateNewPosition2(botPet->GetTarget()->GetX(), botPet->GetTarget()->GetY(), botPet->GetTarget()->GetZ(), botPet->GetOwner()->GetRunspeed(), false);
+						botPet->CalculateNewPosition2(botPet->GetTarget()->GetX(), botPet->GetTarget()->GetY(), botPet->GetTarget()->GetZ(), botPet->GetOwner()->GetRunspeed());
+						return;
 					}
 					else {
 						botPet->SetHeading(botPet->GetTarget()->GetHeading());
 						if(moved) {
 							moved=false;
 							botPet->SetMoving(false);
-							botPet->SendPosUpdate();
+							botPet->SendPosition();
 						}
 					}
 				}
@@ -2720,14 +2696,15 @@ void Bot::PetAIProcess() {
 						float dist = botPet->DistNoRoot(*botPet->GetTarget());
 						botPet->SetRunAnimSpeed(0);
 						if(dist > 184) {
-							botPet->CalculateNewPosition2(botPet->GetTarget()->GetX(), botPet->GetTarget()->GetY(), botPet->GetTarget()->GetZ(), botPet->GetTarget()->GetRunspeed(), false);
+							botPet->CalculateNewPosition2(botPet->GetTarget()->GetX(), botPet->GetTarget()->GetY(), botPet->GetTarget()->GetZ(), botPet->GetTarget()->GetRunspeed());
+							return;
 						}
 						else {
 							botPet->SetHeading(botPet->GetTarget()->GetHeading());
 							if(moved) {
 								moved=false;
 								botPet->SetMoving(false);
-								botPet->SendPosUpdate();
+								botPet->SendPosition();
 							}
 						}
 					}
@@ -8308,8 +8285,6 @@ void Bot::Camp(bool databaseSave) {
 	if(databaseSave)
 		Save();
 
-	SetBotOwner(0);
-
 	Depop();
 }
 
@@ -8319,7 +8294,6 @@ void Bot::Zone() {
 	}
 
 	Save();
-	SetBotOwner(0);
 	Depop();
 }
 
