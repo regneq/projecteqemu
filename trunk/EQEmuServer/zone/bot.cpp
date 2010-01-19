@@ -128,8 +128,15 @@ Bot::Bot(uint32 botID, uint32 botOwnerCharacterID, uint32 botSpellsID, double to
 }
 
 Bot::~Bot() {
-	entity_list.RemoveBot(GetID());
 	AI_Stop();
+
+	if(HasGroup())
+		Bot::RemoveBotFromGroup(this, GetGroup());
+
+	if(HasPet())
+		GetPet()->Depop();
+
+	entity_list.RemoveBot(GetID());
 }
 
 void Bot::SetBotID(uint32 botID) {
@@ -1569,7 +1576,7 @@ bool Bot::Process() {
 	}
 
 	if(!GetBotOwner())
-		Camp();
+		return false;
 
 	if (GetDepop()) {
 		_botOwner = 0;
@@ -2065,15 +2072,24 @@ void Bot::AI_Process() {
 			if(BotOwner && BotOwner->CastToClient()->AutoAttackEnabled() && BotOwner->GetTarget() &&
 				BotOwner->GetTarget()->IsNPC() && BotOwner->GetTarget()->GetHateAmount(BotOwner)) {
 					AddToHateList(BotOwner->GetTarget(), 1);
+					
+					if(HasPet())
+						GetPet()->AddToHateList(BotOwner->GetTarget(), 1);
 			}
 			else {
 				Group* g = GetGroup();
 
 				if(g) {
 					for(int counter = 0; counter < g->GroupCount(); counter++) {
-						if(g->members[counter]->IsEngaged() && g->members[counter]->GetTarget()) {
-							AddToHateList(g->members[counter]->GetTarget(), 1);
-							break;
+						if(g->members[counter]) {
+							if(g->members[counter]->IsEngaged() && g->members[counter]->GetTarget()) {
+								AddToHateList(g->members[counter]->GetTarget(), 1);
+
+								if(HasPet())
+									GetPet()->AddToHateList(BotOwner->GetTarget(), 1);
+
+								break;
+							}
 						}
 					}
 				}
@@ -2104,8 +2120,8 @@ void Bot::AI_Process() {
 			WipeHateList();
 
 			if(IsMoving()) {
-				SetRunAnimSpeed(0);
 				SetHeading(0);
+				SetRunAnimSpeed(0);
 
 				if(moved) {
 					moved = false;
@@ -2117,19 +2133,15 @@ void Bot::AI_Process() {
 			return;
 		}
 
-		// bool atCombatRange = CombatRange(GetTarget());
 		bool atCombatRange = false;
 		
 		float meleeDistance = GetMaxMeleeRangeToTarget(GetTarget());
 
 		if(botClass == SHADOWKNIGHT || botClass == PALADIN || botClass == WARRIOR) {
-			meleeDistance = meleeDistance * .25;
+			meleeDistance = meleeDistance * .30;
 		}
 		else {
-			if(MakeRandomInt(1, 2) == 1)
-				meleeDistance = meleeDistance * .50;
-			else
-				meleeDistance = meleeDistance * .75;
+			meleeDistance *= (float)MakeRandomFloat(.50, .85);
 		}
 		
 		bool atArcheryRange = IsArcheryRange(GetTarget());
@@ -2152,8 +2164,8 @@ void Bot::AI_Process() {
 
 		if(IsBotArcher() && atArcheryRange) {
 			if(IsMoving()) {
-				SetRunAnimSpeed(0);
 				SetHeading(CalculateHeadingToTarget(GetTarget()->GetX(), GetTarget()->GetY()));
+				SetRunAnimSpeed(0);
 
 				if(moved) {
 					moved = false;
@@ -2170,8 +2182,8 @@ void Bot::AI_Process() {
 
 		if(atCombatRange) {	
 			if(IsMoving()) {
-				SetRunAnimSpeed(0);
 				SetHeading(CalculateHeadingToTarget(GetTarget()->GetX(), GetTarget()->GetY()));
+				SetRunAnimSpeed(0);
 				
 				if(moved) {
 					moved = false;
@@ -2407,7 +2419,6 @@ void Bot::AI_Process() {
 				if(!IsRooted()) {
 					if(!(botClass == CLERIC || botClass == DRUID || botClass == SHAMAN || botClass == NECROMANCER || botClass == WIZARD || botClass == MAGICIAN || botClass == ENCHANTER) || GetLevel() < 12) {
 						mlog(AI__WAYPOINTS, "Pursuing %s while engaged.", GetTarget()->GetCleanName());
-						SetRunAnimSpeed(GetRunspeed());
 						CalculateNewPosition2(GetTarget()->GetX(), GetTarget()->GetY(), GetTarget()->GetZ(), GetRunspeed());
 						return;
 					}
@@ -2447,9 +2458,7 @@ void Bot::AI_Process() {
 						CalculateNewPosition2(follow->GetX(), follow->GetY(), follow->GetZ(), follow->GetRunspeed());
 						return;
 					} 
-					else {
-						SetHeading(GetReciprocalHeading(follow));
-						
+					else {						
 						if(moved) {
 							moved=false;
 							SetMoving(false);
@@ -2459,28 +2468,6 @@ void Bot::AI_Process() {
 				}
 			}
 		}
-		/*if(AImovement_timer->Check()) {
-			if(GetFollowID()) {
-				Mob* follow = entity_list.GetMob(GetFollowID());
-				
-				if(follow) {
-					float dist = DistNoRoot(*follow);
-
-					float speed = dist >= GetFollowDistance() + 150 ? GetRunspeed() : GetWalkspeed();
-
-					SetHeading(GetReciprocalHeading(follow));
-
-					if(!CalculateNewPosition2(follow->GetX(), follow->GetY(), follow->GetZ(), speed)) {
-						if(moved) {
-							moved = false;
-							SetMoving(false);
-							SetRunAnimSpeed(0);
-							SendPosition();
-						}
-					}
-				}
-			}
-		}*/
 	}
 }
 
@@ -2607,7 +2594,7 @@ void Bot::PetAIProcess() {
 				// check the delay on the attack
 				if(botPet->GetAttackTimer().Check()) {		
 					// Stop attacking while we are on a front arc and the target is enraged
-					if(botPet->IsEngaged() && !botPet->BehindMob(botPet->GetTarget(), botPet->GetX(), botPet->GetY()) && botPet->GetTarget()->IsEnraged())
+					if(!botPet->BehindMob(botPet->GetTarget(), botPet->GetX(), botPet->GetY()) && botPet->GetTarget()->IsEnraged())
 						return;
 
 					if(botPet->Attack(GetTarget(), 13))			// try the main hand
@@ -2721,6 +2708,21 @@ void Bot::PetAIProcess() {
 }
 
 void Bot::Depop() {
+	WipeHateList();
+	
+	entity_list.RemoveFromHateLists(this);
+	
+	if(HasGroup())
+		Bot::RemoveBotFromGroup(this, GetGroup());
+
+	if(HasPet()) {
+		GetPet()->Depop();
+	}
+	
+	_botOwner = 0;
+	_botOwnerCharacterID = 0;
+	_previousTarget = 0;
+	
 	NPC::Depop(false);
 }
 
@@ -6800,8 +6802,8 @@ void Bot::MakePet(int16 spell_id, const char* pettype, const char *petname) {
 }
 
 void Bot::AI_Stop() {
-	Mob::AI_Stop();
 	NPC::AI_Stop();
+	Mob::AI_Stop();
 }
 
 //this is called with 'this' as the mob being looked at, and
