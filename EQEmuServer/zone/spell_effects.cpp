@@ -2732,6 +2732,14 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 					CastToClient()->GoToBind(4);
 				break;
 			}
+			case SE_SuspendMinion:
+			case SE_SuspendPet:
+			{
+				if(IsClient())
+					CastToClient()->SuspendMinion();
+
+				break;
+			}
 
 			case SE_ImprovedDamage:
 			case SE_ImprovedHeal:

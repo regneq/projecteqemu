@@ -520,9 +520,10 @@ struct SpellBuff_Struct
 /*008*/ int32	duration;
 /*012*/	int16	dmg_shield_remaining;
 //these last four bytes are really the caster's global player ID for wearoff
-/*013*/ int8	persistant_buff;	//prolly not real, used for perm illusions
-/*014*/ int8	reserved;		//proll not real, reserved will use for something else later
-/*012*/	int32	player_id;	//'global' ID of the caster, for wearoff messages
+/*014*/ int8	persistant_buff;	//prolly not real, used for perm illusions
+/*015*/ int8	reserved;		//proll not real, reserved will use for something else later
+/*016*/	int32	player_id;	//'global' ID of the caster, for wearoff messages
+/*020*/
 };
 
 struct SpellBuffFade_Struct {
@@ -749,6 +750,16 @@ struct BindStruct {
    /*020*/
 };
 
+struct SuspendedMinion_Struct
+{
+	uint16			SpellID;
+	uint32			HP;
+	uint32			Mana;
+	SpellBuff_Struct	Buffs[BUFF_COUNT];
+	uint32			Items[MAX_MATERIALS];
+	char			Name[64];
+};
+
 
 /*
 ** Player Profile
@@ -971,7 +982,8 @@ struct PlayerProfile_Struct
 /*12804*/	uint32				aapoints;	//avaliable, unspent
 /*12808*/	uint8				unknown12808[36];
 /*12844*/	Bandolier_Struct	bandoliers[MAX_PLAYER_BANDOLIER];
-/*14124*/	uint8				unknown14124[5116];
+/*14124*/	uint8				unknown14124[4506];
+/*18630*/	SuspendedMinion_Struct		SuspendedMinion;
 /*19240*/	uint32				timeentitledonaccount;
 /*19244*/	PotionBelt_Struct	potionbelt;	//there should be 3 more of these
 /*19532*/	uint8				unknown19532[8];

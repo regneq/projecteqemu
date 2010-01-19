@@ -3,6 +3,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==01/19/2010==
 WildcardX: Tweaked bot spell healing ai to improve general group healing.
 WildcardX: Fixed a zone crash caused by adding an non-existent mob to a bot's hate list.
+blmille2: Implemented Suspend Minion and Persistent Minion AA.
 
 ==01/18/2010==
 WildcardX: Potential bug fix for #bot camp zone crash bug. Continued work on bot animations. (thanks much to Frumph and Secrets for their assistance)
