@@ -528,8 +528,8 @@ bool Client::CheckFizzle(int16 spell_id)
 	if (GetGM()) return(true);
 	
 	int no_fizzle_level = 0;
-	if (GetAA(aaMasteryofthePast)) {
-		switch (GetAA(aaMasteryofthePast)) {
+	if (GetAA(aaMasteryofthePast) || GetAA(aaMasteryofthePast2)) {
+		switch (GetAA(aaMasteryofthePast) + GetAA(aaMasteryofthePast2)) {
 			case 1:
 				no_fizzle_level = 53;
 				break;
