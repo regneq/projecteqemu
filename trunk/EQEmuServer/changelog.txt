@@ -5,6 +5,8 @@ WildcardX: Tweaked bot spell healing ai to improve general group healing.
 WildcardX: Fixed a zone crash caused by adding an non-existent mob to a bot's hate list.
 blmille2: Implemented Suspend Minion and Persistent Minion AA.
 garim12: Mastery of the Past AA Ranger/Beastlord version fix.
+WildcardX: Added new command, #distance to return the in game distance between you and your target.
+WildcardX: Bot casters will now stay in ange to cast heals and other spells during combat.
 
 ==01/18/2010==
 WildcardX: Potential bug fix for #bot camp zone crash bug. Continued work on bot animations. (thanks much to Frumph and Secrets for their assistance)
