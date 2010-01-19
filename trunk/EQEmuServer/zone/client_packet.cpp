@@ -7757,6 +7757,9 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 			aa_points[id] = aa[a]->value;
 	}
 
+	if(!GetAA(aaPersistentMinion))
+		memset(&m_pp.SuspendedMinion, 0, sizeof(SuspendedMinion_Struct));
+
 	if (spells_loaded)
 	{
 		for(uint32 z=0;z<MAX_PP_MEMSPELL;z++)

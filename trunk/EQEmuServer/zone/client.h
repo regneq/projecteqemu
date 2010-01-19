@@ -894,6 +894,7 @@ public:
 	void CalcItemScale();
 	bool CalcItemScale(int32 slot_x, int32 slot_y);
 	void SummonAndRezzAllCorpses();
+	void SuspendMinion();
 	void NotifyNewTitlesAvailable();
 	void Signal(int32 data);
 	Mob *GetBindSightTarget() { return bind_sight_target; }
