@@ -2179,6 +2179,10 @@ void Bot::AI_Process() {
 
 			atCombatRange = true;
 		}
+		else if(IsBotCaster() && GetLevel() > 12) {
+			if(IsBotCasterCombatRange(GetTarget()))
+				atCombatRange = true;
+		}
 		else if(DistNoRoot(*GetTarget()) <= meleeDistance) {
 			atCombatRange = true;
 		}
@@ -2196,40 +2200,40 @@ void Bot::AI_Process() {
 			}
 
 			if(AImovement_timer->Check()) {
+				if(!IsMoving() && GetClass() == ROGUE && !BehindMob(GetTarget(), GetX(), GetY())) {
+					// Move the rogue to behind the mob
+					float newX = 0;
+					float newY = 0;
+					float newZ = 0;
+
+					if(PlotPositionAroundTarget(GetTarget(), newX, newY, newZ)) {
+						CalculateNewPosition2(newX, newY, newZ, GetRunspeed());
+						return;
+					}
+				}
+				else if(!IsMoving() && GetClass() != ROGUE && (DistNoRootNoZ(*GetTarget()) < GetTarget()->GetSize())) {
+					// If we are not a rogue trying to backstab, let's try to adjust our melee range so we don't appear to be bunched up
+					float newX = 0;
+					float newY = 0;
+					float newZ = 0;
+
+					if(PlotPositionAroundTarget(GetTarget(), newX, newY, newZ, false)) {
+						CalculateNewPosition2(newX, newY, newZ, GetRunspeed());
+						return;
+					}
+				}
+
 				if(IsMoving())
 					SendPosUpdate();
 				else
 					SendPosition();
 			}
 
-			if(!IsMoving() && GetClass() == ROGUE && !BehindMob(GetTarget(), GetX(), GetY())) {
-				// Move the rogue to behind the mob
-				float newX = 0;
-				float newY = 0;
-				float newZ = 0;
-
-				if(PlotPositionAroundTarget(GetTarget(), newX, newY, newZ)) {
-					CalculateNewPosition2(newX, newY, newZ, GetRunspeed());
-					return;
-				}
-			}
-			else if(!IsMoving() && GetClass() != ROGUE && (DistNoRootNoZ(*GetTarget()) < GetTarget()->GetSize())) {
-				// If we are not a rogue trying to backstab, let's try to adjust our melee range so we don't appear to be bunched up
-				float newX = 0;
-				float newY = 0;
-				float newZ = 0;
-
-				if(PlotPositionAroundTarget(GetTarget(), newX, newY, newZ, false)) {
-					CalculateNewPosition2(newX, newY, newZ, GetRunspeed());
-					return;
-				}
-			}
-
 			if(IsBotArcher() && ranged_timer.Check(false)) {
 				if(GetTarget()->GetHPRatio() < 98)
 					BotRangedAttack(GetTarget());
 			}
-			else if(!IsBotArcher() && GetTarget() && !IsStunned() && !IsMezzed() && (GetAppearance() != eaDead)) {
+			else if(!IsBotArcher() && (!(IsBotCaster() && GetLevel() > 12)) && GetTarget() && !IsStunned() && !IsMezzed() && (GetAppearance() != eaDead)) {
 				// we can't fight if we don't have a target, are stun/mezzed or dead..
 				// Stop attacking if the target is enraged
 				if(IsEngaged() && !BehindMob(GetTarget(), GetX(), GetY()) && GetTarget()->IsEnraged())
@@ -2418,7 +2422,7 @@ void Bot::AI_Process() {
 				AI_PursueCastCheck();
 			}
 			
-			if (AImovement_timer->Check()) {
+			/*if (AImovement_timer->Check()) {
 				if(!IsRooted()) {
 					if(!(botClass == CLERIC || botClass == DRUID || botClass == SHAMAN || botClass == NECROMANCER || botClass == WIZARD || botClass == MAGICIAN || botClass == ENCHANTER) || GetLevel() < 12) {
 						mlog(AI__WAYPOINTS, "Pursuing %s while engaged.", GetTarget()->GetCleanName());
@@ -2431,6 +2435,19 @@ void Bot::AI_Process() {
 					else
 						SendPosition();
 				}
+			}*/
+
+			if (AImovement_timer->Check()) {
+				if(!IsRooted()) {
+					mlog(AI__WAYPOINTS, "Pursuing %s while engaged.", GetTarget()->GetCleanName());
+					CalculateNewPosition2(GetTarget()->GetX(), GetTarget()->GetY(), GetTarget()->GetZ(), GetRunspeed());
+					return;
+				}
+
+				if(IsMoving())
+					SendPosUpdate();
+				else
+					SendPosition();
 			}
 		} // end not in combat range
 
@@ -2491,9 +2508,6 @@ void Bot::PetAIProcess() {
 
 	if (!botPet->IsAIControlled())
 		return;
-
-	/*if (!(botPet->GetAIThinkTimer()->Check() || botPet->GetAttackTimer().Check(false)))
-		return;*/
 
 	if(botPet->GetAttackTimer().Check(false))
 		return;
@@ -4321,14 +4335,14 @@ bool Bot::Bot_Command_Cure(int curetype, int level) {
 }
 
 // Completes a trade with a client bot owner
-void Bot::FinishTrade(Client* client, botTradeType tradeType) {
+void Bot::FinishTrade(Client* client, BotTradeType tradeType) {
 	if(client) {
-		if(tradeType == botTradeClientNormal) {
+		if(tradeType == BotTradeClientNormal) {
 			// Items being traded are found in the normal trade window used to trade between a Client and a Client or NPC
 			// Items in this mode are found in slot ids 3000 thru 3003
 			PerformTradeWithClient(3000, 3003, client);
 		}
-		else if(tradeType == botTradeClientNoDropNoTrade) {
+		else if(tradeType == BotTradeClientNoDropNoTrade) {
 			// Items being traded are found on the Client's cursor slot, slot id 30. This item can be either a single item or it can be a bag.
 			// If it is a bag, then we have to search for items in slots 331 thru 340
 			PerformTradeWithClient(SLOT_CURSOR, SLOT_CURSOR, client);
@@ -5030,7 +5044,7 @@ bool Bot::Attack(Mob* other, int Hand, bool FromRiposte) {
 	}
 }
 
-sint16 Bot::GetBotFocusEffect(botfocusType bottype, int16 spell_id) {
+sint16 Bot::GetBotFocusEffect(BotfocusType bottype, int16 spell_id) {
 	if (IsBardSong(spell_id))
 		return 0;
 
@@ -5072,10 +5086,10 @@ sint16 Bot::GetBotFocusEffect(botfocusType bottype, int16 spell_id) {
 		MagicianElementalPactAA = 1;
 	}
 
-	if(bottype == botfocusReagentCost && IsSummonPetSpell(spell_id) && MagicianElementalPactAA)
+	if(bottype == BotfocusReagentCost && IsSummonPetSpell(spell_id) && MagicianElementalPactAA)
 		return 100;
 
-	if(bottype == botfocusReagentCost && (IsEffectInSpell(spell_id, SE_SummonItem) || IsSacrificeSpell(spell_id))){
+	if(bottype == BotfocusReagentCost && (IsEffectInSpell(spell_id, SE_SummonItem) || IsSacrificeSpell(spell_id))){
 		return 0;
 	//Summon Spells that require reagents are typically imbue type spells, enchant metal, sacrifice and shouldn't be affected
 	//by reagent conservation for obvious reasons.
@@ -5084,20 +5098,7 @@ sint16 Bot::GetBotFocusEffect(botfocusType bottype, int16 spell_id) {
 	return realTotal + realTotal2;
 }
 
-//uint32 Bot::GetItemID(int slot_id) {
-//	ItemList::iterator cur,end;
-//	cur = itemlist.begin();
-//	end = itemlist.end();
-//	for(; cur != end; cur++) {
-//		ServerLootItem_Struct* item = *cur;
-//		if (item->lootslot == slot_id) {
-//			return item->item_id;
-//		}
-//	}
-//	return(NULL);
-//}
-
-sint16 Bot::CalcBotFocusEffect(botfocusType bottype, int16 focus_id, int16 spell_id) {
+sint16 Bot::CalcBotFocusEffect(BotfocusType bottype, int16 focus_id, int16 spell_id) {
 	const SPDat_Spell_Struct &focus_spell = spells[focus_id];
 	const SPDat_Spell_Struct &spell = spells[spell_id];
 
@@ -5201,19 +5202,19 @@ sint16 Bot::CalcBotFocusEffect(botfocusType bottype, int16 focus_id, int16 spell
 			switch (focus_spell.max[i])
 			{
 				case 0:
-					if (bottype == botfocusImprovedDamage && focus_spell.base[i] > value)
+					if (bottype == BotfocusImprovedDamage && focus_spell.base[i] > value)
 					{
 						value = focus_spell.base[i];
 					}
 					break;
 				case 1:
-					if (bottype == botfocusImprovedCritical && focus_spell.base[i] > value)
+					if (bottype == BotfocusImprovedCritical && focus_spell.base[i] > value)
 					{
 						value = focus_spell.base[i];
 					}
 					break;
 				case 2:
-					if (bottype == botfocusImprovedUndeadDamage && focus_spell.base[i] > value)
+					if (bottype == BotfocusImprovedUndeadDamage && focus_spell.base[i] > value)
 					{
 						value = focus_spell.base[i];
 					}
@@ -5225,7 +5226,7 @@ sint16 Bot::CalcBotFocusEffect(botfocusType bottype, int16 focus_id, int16 spell
 					}
 					break;
 				default: //Resist stuff
-					if (bottype == (botfocusType)focus_spell.max[i] && focus_spell.base[i] > value)
+					if (bottype == (BotfocusType)focus_spell.max[i] && focus_spell.base[i] > value)
 					{
 						value = focus_spell.base[i];
 					}
@@ -5233,43 +5234,43 @@ sint16 Bot::CalcBotFocusEffect(botfocusType bottype, int16 focus_id, int16 spell
 			}
 			break;
 		case SE_ImprovedHeal:
-			if (bottype == botfocusImprovedHeal && focus_spell.base[i] > value)
+			if (bottype == BotfocusImprovedHeal && focus_spell.base[i] > value)
 			{
 				value = focus_spell.base[i];
 			}
 			break;
 		case SE_IncreaseSpellHaste:
-			if (bottype == botfocusSpellHaste && focus_spell.base[i] > value)
+			if (bottype == BotfocusSpellHaste && focus_spell.base[i] > value)
 			{
 				value = focus_spell.base[i];
 			}
 			break;
 		case SE_IncreaseSpellDuration:
-			if (bottype == botfocusSpellDuration && BeneficialSpell(spell_id) && focus_spell.base[i] > value)
+			if (bottype == BotfocusSpellDuration && BeneficialSpell(spell_id) && focus_spell.base[i] > value)
 			{
 				value = focus_spell.base[i];
 			}
 			break;
 		case SE_IncreaseRange:
-			if (bottype == botfocusRange && focus_spell.base[i] > value)
+			if (bottype == BotfocusRange && focus_spell.base[i] > value)
 			{
 				value = focus_spell.base[i];
 			}
 			break;
 		case SE_ReduceReagentCost:
-			if (bottype == botfocusReagentCost && focus_spell.base[i] > value)
+			if (bottype == BotfocusReagentCost && focus_spell.base[i] > value)
 			{
 				value = focus_spell.base[i];
 			}
 			break;
 		case SE_ReduceManaCost:
-			if (bottype == botfocusManaCost && focus_spell.base[i] > value)
+			if (bottype == BotfocusManaCost && focus_spell.base[i] > value)
 			{
 				value = focus_spell.base[i];
 			}
 			break;
 		case SE_PetPowerIncrease:
-			if (bottype == botfocusPetPower && focus_spell.base[i] > value)
+			if (bottype == BotfocusPetPower && focus_spell.base[i] > value)
 			{
 				value = focus_spell.base[i];
 			}
@@ -6784,7 +6785,7 @@ sint32 Bot::CheckAggroAmount(int16 spellid) {
 		AggroAmount = AggroAmount * 80 / 100;
 	}
 
-	sint32 focusAggro = GetBotFocusEffect(botfocusHateReduction, spellid);
+	sint32 focusAggro = GetBotFocusEffect(BotfocusHateReduction, spellid);
 	AggroAmount = (AggroAmount * (100+focusAggro) / 100);
 
 	return AggroAmount;
@@ -6793,7 +6794,7 @@ sint32 Bot::CheckAggroAmount(int16 spellid) {
 sint32 Bot::CheckHealAggroAmount(int16 spellid, int32 heal_possible) {
 	sint32 AggroAmount = Mob::CheckHealAggroAmount(spellid, heal_possible);
 
-	sint32 focusAggro = GetBotFocusEffect(botfocusHateReduction, spellid);
+	sint32 focusAggro = GetBotFocusEffect(BotfocusHateReduction, spellid);
 	
 	AggroAmount = (AggroAmount * (100 + focusAggro) / 100);
 
@@ -7458,7 +7459,7 @@ sint32 Bot::GetActSpellDamage(int16 spell_id, sint32 value) {
 sint32 Bot::GetActSpellHealing(int16 spell_id, sint32 value) {
 	sint32 modifier = 100;
 
-	modifier += GetBotFocusEffect(botfocusImprovedHeal, spell_id);
+	modifier += GetBotFocusEffect(BotfocusImprovedHeal, spell_id);
 
 	if(spells[spell_id].buffduration < 1) {
 		uint8 botlevel = GetLevel();
@@ -7552,7 +7553,7 @@ sint32 Bot::GetActSpellHealing(int16 spell_id, sint32 value) {
 
 sint32 Bot::GetActSpellCasttime(int16 spell_id, sint32 casttime) {
 	sint32 cast_reducer = 0;
-	cast_reducer += GetBotFocusEffect(botfocusSpellHaste, spell_id);
+	cast_reducer += GetBotFocusEffect(BotfocusSpellHaste, spell_id);
 
 	uint8 botlevel = GetLevel();
 	int8 botclass = GetClass();
@@ -7665,7 +7666,7 @@ sint32 Bot::GetActSpellCost(int16 spell_id, sint32 cost) {
 			PercentManaReduction += 5;
 		}
 
-		PercentManaReduction += GetBotFocusEffect(botfocusManaCost, spell_id);
+		PercentManaReduction += GetBotFocusEffect(BotfocusManaCost, spell_id);
 		cost -= (cost * (PercentManaReduction / 100));
 	}
 
@@ -7679,13 +7680,13 @@ sint32 Bot::GetActSpellCost(int16 spell_id, sint32 cost) {
 
 float Bot::GetActSpellRange(int16 spell_id, float range) {
 	float extrange = 100;
-	extrange += GetBotFocusEffect(botfocusRange, spell_id);
+	extrange += GetBotFocusEffect(BotfocusRange, spell_id);
 	return (range * extrange) / 100;
 }
 
 sint32 Bot::GetActSpellDuration(int16 spell_id, sint32 duration) {
 	int increase = 100;
-	increase += GetBotFocusEffect(botfocusSpellDuration, spell_id);
+	increase += GetBotFocusEffect(BotfocusSpellDuration, spell_id);
 
 	if(GetLevel() >= 57) { // Spell Casting Reinforcement AA
 		increase += 30;
@@ -8323,6 +8324,28 @@ bool Bot::IsArcheryRange(Mob *target) {
 	return result;
 }
 
+bool Bot::IsBotCasterCombatRange(Mob *target) {
+	bool result = false;
+
+	if(target) {
+		float range = BotAISpellRange;
+
+		range *= range;
+
+		// half the max so the bot doesn't always stop at max range to allow combat movement
+		range *= .5;
+
+		float targetDistance = DistNoRootNoZ(*target);
+
+		if(targetDistance > range)		
+			result = false;
+		else
+			result = true;
+	}
+
+	return result;
+}
+
 // Orders all bots in the specified group to follow their group leader.
 void Bot::BotGroupOrderFollow(Group* group, Client* client) {
 	if(group && client) {
@@ -8793,7 +8816,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 			// Its a bot targetted and this client is the bots owner
 			Bot* targetedBot = c->GetTarget()->CastToBot();
 				if(targetedBot)
-					targetedBot->FinishTrade(c, botTradeClientNoDropNoTrade);
+					targetedBot->FinishTrade(c, BotTradeClientNoDropNoTrade);
 		}
 		else {
 			c->Message(15, "You must target a bot you own to do this.");

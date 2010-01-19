@@ -23,39 +23,41 @@ using namespace std;
 extern bool spells_loaded;
 extern WorldServer worldserver;
 
-const int BotAISpellRange = 300; // TODO: Write a method that calcs what the bot's spell range is based on spell, equipment, AA, whatever and replace this
+const int BotAISpellRange = 100; // TODO: Write a method that calcs what the bot's spell range is based on spell, equipment, AA, whatever and replace this
 const int SpellType_Slow = 8192;
 
 class Bot : public NPC {
 public:
 	// Class enums
-	enum botfocusType {	//focus types
-		botfocusSpellHaste = 1,
-		botfocusSpellDuration,
-		botfocusRange,
-		botfocusReagentCost,
-		botfocusManaCost,
-		botfocusImprovedHeal,
-		botfocusImprovedDamage,
-		botfocusImprovedDOT,		//i dont know about this...
-		botfocusImprovedCritical,
-		botfocusImprovedUndeadDamage,
-		botfocusPetPower,
-		botfocusResistRate,
-		botfocusHateReduction,
+	typedef enum BotfocusType {	//focus types
+		BotfocusSpellHaste = 1,
+		BotfocusSpellDuration,
+		BotfocusRange,
+		BotfocusReagentCost,
+		BotfocusManaCost,
+		BotfocusImprovedHeal,
+		BotfocusImprovedDamage,
+		BotfocusImprovedDOT,		//i dont know about this...
+		BotfocusImprovedCritical,
+		BotfocusImprovedUndeadDamage,
+		BotfocusPetPower,
+		BotfocusResistRate,
+		BotfocusHateReduction
 	};
-
-	typedef enum botfocusType botfocusType;
 
 	typedef std::map<uint32, uint32> BotInventory;
 	typedef std::pair<uint32, uint32> BotInventoryItem;
 
-	enum botTradeType {	// types of trades a bot can do
-		botTradeClientNormal,
-		botTradeClientNoDropNoTrade
+	typedef enum BotTradeType {	// types of trades a bot can do
+		BotTradeClientNormal,
+		BotTradeClientNoDropNoTrade
 	};
 
-	typedef enum botTradeType botTradeType;
+	typedef enum BotRoleType {
+		BotRoleMainAssist,
+		BotRoleGroupHealer,
+		BotRoleRaidHealer
+	};
 
 	// Class Constructors
 	Bot(NPCType npcTypeData, Client* botOwner);
@@ -86,7 +88,7 @@ public:
 	virtual void SetLevel(uint8 in_level, bool command = false);
 	virtual void FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho);
 	virtual bool Process();
-	void FinishTrade(Client* client, botTradeType tradeType);
+	void FinishTrade(Client* client, BotTradeType tradeType);
 	virtual bool Save();
 	virtual void Depop();
 	void CalcBotStats(bool showtext = true);
@@ -136,6 +138,7 @@ public:
 	void Stand();
 	bool IsSitting();
 	bool IsStanding();
+	bool IsBotCasterCombatRange(Mob *target);
 
 	// AI Methods
 	virtual bool AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes);
@@ -258,6 +261,8 @@ public:
 	bool IsBotCharmer() { return _botCharmer; }
 	virtual bool IsBot() const { return true; }
 	bool GetRangerAutoWeaponSelect() { return _rangerAutoWeaponSelect; }
+	BotRoleType GetBotRole() { return _botRole; }
+	bool IsBotCaster() { return (GetClass() == CLERIC || GetClass() == DRUID || GetClass() == SHAMAN || GetClass() == NECROMANCER || GetClass() == WIZARD || GetClass() == MAGICIAN || GetClass() == ENCHANTER); }
 
 	// "SET" Class Methods
 	void SetBotSpellID(uint32 newSpellID);
@@ -269,6 +274,7 @@ public:
 	void SetBotOwner(Mob* botOwner) { this->_botOwner = botOwner; }
 	// void SetBotOwnerCharacterID(uint32 botOwnerCharacterID) { _botOwnerCharacterID = botOwnerCharacterID; }
 	void SetRangerAutoWeaponSelect(bool enable) { GetClass() == RANGER ? _rangerAutoWeaponSelect = enable : _rangerAutoWeaponSelect = false; }
+	void SetBotRole(BotRoleType botRole) { _botRole = botRole; }
 
 	// Class Destructors
 	virtual ~Bot();
@@ -280,8 +286,8 @@ protected:
 	virtual void BotMeditate(bool isSitting);
 	virtual bool BotRangedAttack(Mob* other);
 	virtual bool CheckBotDoubleAttack(bool Triple = false);
-	virtual sint16 GetBotFocusEffect(botfocusType bottype, int16 spell_id);
-	virtual sint16 CalcBotFocusEffect(botfocusType bottype, int16 focus_id, int16 spell_id);
+	virtual sint16 GetBotFocusEffect(BotfocusType bottype, int16 spell_id);
+	virtual sint16 CalcBotFocusEffect(BotfocusType bottype, int16 focus_id, int16 spell_id);
 	virtual void PerformTradeWithClient(sint16 beginSlotID, sint16 endSlotID, Client* client);
 	virtual bool AIDoSpellCast(int8 i, Mob* tar, sint32 mana_cost, int32* oDontDoAgainBefore = 0);
 	virtual float GetMaxMeleeRangeToTarget(Mob* target);
@@ -309,6 +315,7 @@ private:
 	std::string _guildName;
 	int32 _lastZoneId;
 	bool _rangerAutoWeaponSelect;
+	BotRoleType _botRole;
 
 	// Private "base stats" Members
 	sint16 _baseMR;
