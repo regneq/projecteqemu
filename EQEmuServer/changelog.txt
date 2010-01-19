@@ -4,6 +4,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 WildcardX: Potential bug fix for #bot camp zone crash bug. Continued work on bot animations. (thanks much to Frumph and Secrets for their assistance)
 joligario: New EVENT_WAYPOINT_ARRIVE and EVENT_WAYPOINT_DEPART. The old EVENT_WAYPOINT will be removed shortly, so be sure to replace all occurences of EVENT_WAYPOINT with EVENT_WAYPOINT_DEPART in all your current scripts.
 joligario: Faction values of zero are no longer written to the faction_values table.
+WildcardX: Smoothed out bot melee animations. Another attempt at isolating the #bot camp zone crash bug.
 
 ==01/17/2010==
 WildcardX: More bot ai refactoring that is focused on making the bot movements more smooth and accurate. Still a lingering issue when bots fight a mob that has a giant body type.
