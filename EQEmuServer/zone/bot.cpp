@@ -2086,7 +2086,7 @@ void Bot::AI_Process() {
 								AddToHateList(g->members[counter]->GetTarget(), 1);
 
 								if(HasPet())
-									GetPet()->AddToHateList(BotOwner->GetTarget(), 1);
+									GetPet()->AddToHateList(g->members[counter]->GetTarget(), 1);
 
 								break;
 							}
@@ -2107,6 +2107,9 @@ void Bot::AI_Process() {
 
 		if(!GetTarget())
 			return;
+
+		if(HasPet())
+			GetPet()->SetTarget(GetTarget());
 
 		FaceTarget(GetTarget());
 
@@ -8377,8 +8380,12 @@ void Bot::BotGroupOrderAttack(Group* group, Mob* target, Client* client) {
 				if(group->members[i] && group->members[i]->IsBot()) {
 					Bot* botGroupMember = group->members[i]->CastToBot();
 
-					if(botGroupMember->GetBotOwnerCharacterID() == client->CharacterID())
+					if(botGroupMember->GetBotOwnerCharacterID() == client->CharacterID()) {
 						botGroupMember->AddToHateList(target, 1);
+
+						if(botGroupMember->HasPet())
+							botGroupMember->GetPet()->AddToHateList(target, 1);
+					}
 				}
 			}
 		}
