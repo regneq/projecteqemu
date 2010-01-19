@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==01/19/2010==
+WildcardX: Tweaked bot spell healing ai to improve general group healing.
+
 ==01/18/2010==
 WildcardX: Potential bug fix for #bot camp zone crash bug. Continued work on bot animations. (thanks much to Frumph and Secrets for their assistance)
 joligario: New EVENT_WAYPOINT_ARRIVE and EVENT_WAYPOINT_DEPART. The old EVENT_WAYPOINT will be removed shortly, so be sure to replace all occurences of EVENT_WAYPOINT with EVENT_WAYPOINT_DEPART in all your current scripts.

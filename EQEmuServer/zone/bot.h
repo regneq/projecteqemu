@@ -23,8 +23,8 @@ using namespace std;
 extern bool spells_loaded;
 extern WorldServer worldserver;
 
-const int SpellType_Slow=8192;
-const int SpellType_StatDebuff=16384;
+const int BotAISpellRange = 300; // TODO: Write a method that calcs what the bot's spell range is based on spell, equipment, AA, whatever and replace this
+const int SpellType_Slow = 8192;
 
 class Bot : public NPC {
 public:
