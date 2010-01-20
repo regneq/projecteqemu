@@ -1035,6 +1035,7 @@ protected:
 	float FindGroundZ(float new_x, float new_y, float z_offset=0.0);
 	VERTEX UpdatePath(float ToX, float ToY, float ToZ, float Speed, bool &WaypointChange, bool &NodeReached);
 	void PrintRoute();
+	void UpdateRuneFlags();
 
 	enum {MAX_PROCS = 4};
 	tProc PermaProcs[MAX_PROCS];

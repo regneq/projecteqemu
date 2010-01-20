@@ -524,6 +524,7 @@ void NPC::SetPetState(SpellBuff_Struct *pet_buffs, int32 *items) {
 				switch (spells[buffs[j1].spellid].effectid[x1]) {
 					case SE_Charm:
 					case SE_Rune:
+					case SE_NegateAttacks:
 					case SE_Illusion:
 						buffs[j1].spellid = SPELL_UNKNOWN;
 						pet_buffs[j1].spellid = SPELLBOOK_UNKNOWN;
@@ -538,7 +539,8 @@ void NPC::SetPetState(SpellBuff_Struct *pet_buffs, int32 *items) {
 			}
 		}
 	}
-	
+	UpdateRuneFlags();
+
 	//restore their equipment...
 	for(i = 0; i < MAX_MATERIALS; i++) {
 		if(items[i] == 0)

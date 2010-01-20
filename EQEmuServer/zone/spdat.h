@@ -278,7 +278,7 @@ typedef enum  {
 #define SE_StackingCommand_Block	148
 #define SE_StackingCommand_Overwrite 149
 #define SE_DeathSave				150
-#define SE_SuspendPet				151	//not implemented. Suspend Minion. base1: 0 = lose buffs & equip, 1 = keep buffs & equip
+#define SE_SuspendPet				151	// Suspend Minion. base1: 0 = lose buffs & equip, 1 = keep buffs & equip
 #define SE_TemporaryPets			152	// Swarm of Fear III
 #define SE_BalanceHP				153	// Divine Arbitration
 #define SE_DispelDetrimental		154
@@ -290,7 +290,7 @@ typedef enum  {
 #define SE_MakeDrunk				160
 #define SE_MitigateSpellDamage		161	//not implemented rune type, with max value
 #define SE_MitigateMeleeDamage		162	//not implemented rune type, with max value
-#define SE_NegateAttacks			163	//not implemented pet targeted, seems to negate `base` number of melee or spells
+#define SE_NegateAttacks			163
 #define SE_AppraiseLDonChest		164
 #define SE_DisarmLDoNTrap			165
 #define SE_UnlockLDoNChest			166
@@ -435,7 +435,7 @@ typedef enum  {
 #define SE_MitigateDamageShield		305 //not implemented
 #define SE_WakeTheDead2				306 //not implemented
 #define SE_Appraisal				307 //not implemented
-#define SE_SuspendMinion			308 //not implemented
+#define SE_SuspendMinion			308
 #define SE_YetAnotherGate			309 //not implemented, spell 5953
 #define SE_ReduceReuseTimer			310 //not implemented
 #define SE_NoCombatSkills			311 //not implemented
