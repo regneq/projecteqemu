@@ -4401,3 +4401,45 @@ void Mob::BuffModifyDurationBySpellID(int16 spell_id, sint32 newDuration)
 		}
 	}
 }
+void Mob::UpdateRuneFlags()
+{
+
+	bool Has_SE_Rune = false, Has_SE_AbsorbMagicAtt = false, Has_SE_NegateAttacks = false;
+
+	for (unsigned int i = 0; i < BUFF_COUNT; ++i)
+	{
+		if (buffs[i].spellid != SPELL_UNKNOWN)
+		{
+			for (int j = 0; j < EFFECT_COUNT; ++j)
+			{
+				switch(spells[buffs[i].spellid].effectid[j])
+				{
+					case SE_Rune:
+					{
+						Has_SE_Rune = true;
+						break;
+					}
+					case SE_AbsorbMagicAtt:
+					{
+						Has_SE_AbsorbMagicAtt = true;
+						break;
+					}
+					case SE_NegateAttacks:
+					{
+						Has_SE_NegateAttacks = true;
+						break;
+					}
+
+					default:
+						break;
+				}
+						
+			}
+		}
+	}
+
+	SetHasRune(Has_SE_Rune || Has_SE_NegateAttacks);
+
+	SetHasSpellRune(Has_SE_AbsorbMagicAtt || Has_SE_NegateAttacks);
+}
+

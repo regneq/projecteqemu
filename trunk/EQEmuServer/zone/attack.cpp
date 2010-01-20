@@ -2766,60 +2766,100 @@ int Mob::GetMonkHandToHandDelay(void)
 }
 
 sint32 Mob::ReduceDamage(sint32 damage){
-	if(damage > 0 && HasRune()) {
-		int slot = GetBuffSlotFromType(SE_Rune);
 
-		while(slot >= 0) {
-			int16 melee_rune_left = this->buffs[slot].melee_rune;
+	if((damage <= 0) || !HasRune())
+		return damage;
+
+	int slot = GetBuffSlotFromType(SE_NegateAttacks);
 	
-			if(melee_rune_left >= damage) {
-				melee_rune_left -= damage;
-				damage = -6;
-				this->buffs[slot].melee_rune = melee_rune_left;
-				break;
+	if(slot >= 0 && buffs[slot].melee_rune > 0)
+	{
+		if(--buffs[slot].melee_rune == 0)
+		{
+			BuffFadeBySlot(slot);
+
+			UpdateRuneFlags();
+		}
+		return -6;
 	}
-			else {
-				if(melee_rune_left > 0) {
-					damage -= melee_rune_left;
-					melee_rune_left = 0;
-				}
-				LogFile->write(EQEMuLog::Debug, "Fading rune from slot %d", slot);
-            BuffFadeBySlot(slot);
-				slot = GetBuffSlotFromType(SE_Rune);
-				if(slot < 0)
-					SetHasRune(false);
-			}
+
+	slot = GetBuffSlotFromType(SE_Rune);
+
+	while(slot >= 0)
+	{
+		int16 melee_rune_left = buffs[slot].melee_rune;
+	
+		if(melee_rune_left >= damage)
+		{
+			melee_rune_left -= damage;
+
+			damage = -6;
+
+			buffs[slot].melee_rune = melee_rune_left;
+
+			break;
+		}
+		else
+		{
+			if(melee_rune_left > 0)
+				damage -= melee_rune_left;
+
+			BuffFadeBySlot(slot);
+
+			slot = GetBuffSlotFromType(SE_Rune);
+
+			UpdateRuneFlags();
 		}
 	}
 
-		return(damage);
+	return(damage);
 }
 	
 sint32 Mob::ReduceMagicalDamage(sint32 damage) {
-	if(damage > 0 && HasSpellRune()) {
-		int slot = GetBuffSlotFromType(SE_AbsorbMagicAtt);
-	
-		while(slot >= 0) {
-			int16 magic_rune_left = this->buffs[slot].magic_rune;
 
-			if(magic_rune_left >= damage) {
-				magic_rune_left -= damage;
-		damage = -6;
-				this->buffs[slot].magic_rune = magic_rune_left;
-				break;
+	if((damage <= 0) || !HasSpellRune())
+		return damage;
+
+	int slot = GetBuffSlotFromType(SE_NegateAttacks);
+	
+	if(slot >= 0 && buffs[slot].melee_rune > 0)
+	{
+		if(--buffs[slot].melee_rune == 0)
+		{
+			BuffFadeBySlot(slot);
+
+			UpdateRuneFlags();
+		}
+		return 0;
 	}
-			else {
-				if(magic_rune_left > 0) {
-					damage -= magic_rune_left;
-					magic_rune_left = 0;
-				}
-				LogFile->write(EQEMuLog::Debug, "Fading spell rune from slot %d", slot);
-            BuffFadeBySlot(slot);
-				slot = GetBuffSlotFromType(SE_AbsorbMagicAtt);
-				if(slot < 0)
-					SetHasSpellRune(false);
+
+	slot = GetBuffSlotFromType(SE_AbsorbMagicAtt);
+	
+	while(slot >= 0)
+	{
+		int16 magic_rune_left = buffs[slot].magic_rune;
+
+		if(magic_rune_left >= damage)
+		{
+			magic_rune_left -= damage;
+
+			damage = 0;
+
+			buffs[slot].magic_rune = magic_rune_left;
+
+			break;
 			}
-	}
+		else
+		{
+			if(magic_rune_left > 0)
+				damage -= magic_rune_left;
+
+			BuffFadeBySlot(slot);
+
+			slot = GetBuffSlotFromType(SE_AbsorbMagicAtt);
+
+			UpdateRuneFlags();
+		}
 	}
 
 	return(damage);

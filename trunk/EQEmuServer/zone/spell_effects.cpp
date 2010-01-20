@@ -1489,6 +1489,16 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				break;
 			}
 
+			case SE_NegateAttacks:
+			{
+#ifdef SPELL_EFFECT_SPAM
+				snprintf(effect_desc, _EDLEN, "Melee Negate Attack Rune: %+i", effect_value);
+#endif
+				buffs[buffslot].melee_rune = effect_value;
+				SetHasRune(true);
+				SetHasSpellRune(true);
+				break;				  
+			}
 			case SE_AppraiseLDonChest:
 			{
 				if(IsNPC())
