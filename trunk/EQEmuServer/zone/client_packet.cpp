@@ -7797,7 +7797,18 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 				buffs[i].numhits			= spells[buffs[i].spellid].numhits;
 				buffs[i].persistant_buff	= m_pp.buffs[i].persistant_buff;
 				buffs[i].UpdateClient		= false;
-
+				if(IsRuneSpell(m_pp.buffs[i].spellid) || IsMagicRuneSpell(m_pp.buffs[i].spellid)) {
+					if(IsRuneSpell(m_pp.buffs[i].spellid)) {
+						 buffs[i].melee_rune = m_pp.buffs[i].dmg_shield_remaining;
+							 SetHasRune(true);
+						 LogFile->write(EQEMuLog::Debug, "%s has a melee rune spell buff with %i points remaining.", GetCleanName(), buffs[i].melee_rune);
+					}
+					else {
+						 buffs[i].magic_rune = m_pp.buffs[i].dmg_shield_remaining;
+							 SetHasSpellRune(true);
+						 LogFile->write(EQEMuLog::Debug, "%s has a spell rune buff with %i points remaining.", GetCleanName(), buffs[i].magic_rune);
+				}
+				}
 				if(IsDeathSaveSpell(m_pp.buffs[i].spellid)) {
 					buffs[i].deathSaveSuccessChance = m_pp.buffs[i].effect;
 					buffs[i].casterAARank = m_pp.buffs[i].reserved;
@@ -7815,7 +7826,6 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 				m_pp.buffs[i].dmg_shield_remaining = 0;
 			}
 		}
-		UpdateRuneFlags();
 
 		//I believe these effects are stripped off because if they
 		//are not, they result in permanent effects on the player

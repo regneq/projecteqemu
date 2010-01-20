@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==01/20/2010==
 blmille2: Implemented Calliav line of spells.
+Derision: Reverted flawed change to client_packet.cpp.
 
 ==01/19/2010==
 WildcardX: Tweaked bot spell healing ai to improve general group healing.
