@@ -865,6 +865,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\spell_effects.h"
+				>
+			</File>
+			<File
 				RelativePath=".\spells.h"
 				>
 			</File>

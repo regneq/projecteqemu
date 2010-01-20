@@ -310,7 +310,7 @@ sint32 Client::GetActSpellCost(Spell *spell_to_cast, sint32 cost)
 	// This formula was derived from the following resource:
 	// http://www.eqsummoners.com/eq1/specialization-library.html
 	float PercentManaReduction = 0;
-	float SpecializeSkill = GetSpecializeSkillValue(spell_to_cast->GetSpellID());
+	float SpecializeSkill = GetSpecializeSkillValue(spell_to_cast);
 	int SuccessChance = MakeRandomInt(0, 100);
 
 	float bonus = 1.0;
@@ -802,8 +802,7 @@ void EntityList::AEBardPulse(Mob *caster, Mob *center, Spell *spell_to_cast, boo
 				continue;
 		}
 		//if we get here... cast the spell.
-		//TODO:
-		//curmob->BardPulse(spell_id, caster);
+		curmob->BardPulse(spell_to_cast, caster);
 	}
 	if(caster->IsClient())
 		caster->CastToClient()->CheckSongSkillIncrease(spell_to_cast->GetSpellID());

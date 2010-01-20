@@ -149,6 +149,7 @@ bool zoneprocess;
 
 void Shutdown();
 extern void MapOpcodes();
+extern void MapSpellEffects();
 
 //bool ZoneBootup(int32 iZoneID, bool iStaticZone = false);
 //char *strsep(char **stringp, const char *delim);
@@ -248,6 +249,8 @@ int main(int argc, char** argv) {
 	
 	_log(ZONE__INIT, "Mapping Incoming Opcodes");
 	MapOpcodes();
+	_log(ZONE__INIT, "Mapping Spell Effect Dispatch.");
+	MapSpellEffects();
 	_log(ZONE__INIT, "Loading Variables");
 	database.LoadVariables();
 	_log(ZONE__INIT, "Loading zone names");

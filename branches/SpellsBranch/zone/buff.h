@@ -26,8 +26,8 @@ class Spell;
 class Buff
 {
 public:
-	//Buff(Spell* spell);
-	//~Buff();
+	Buff(Spell* spell);
+	~Buff();
 
 	void SetDurationRemaining(uint32 duration) { spell_duration_remaining = duration; }
 	uint32 GetDurationRemaining() const { return spell_duration_remaining; }
@@ -69,7 +69,10 @@ public:
 	void SetCasterAARank(uint8 rank) { caster_aa_rank = rank; }
 	uint8 GetCasterAARank() const { return caster_aa_rank; }
 
-	const Spell* GetSpell() const { return spell; }
+	const SPDat_Spell_Struct GetSpell() const { return spell; }
+
+	uint32 GetCasterID() const { return 0; }
+
 
 protected:
 	uint32 spell_duration_remaining;
@@ -87,7 +90,11 @@ protected:
 	uint8 death_save_chance;
 	uint8 caster_aa_rank;
 
-	Spell *spell;
+	uint32 instrument_modifier;
+	sint32 damage_modifier;
+	sint32 healing_modifier;
+
+	SPDat_Spell_Struct spell;
 };
 
 #endif

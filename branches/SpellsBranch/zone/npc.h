@@ -98,7 +98,7 @@ public:
 	virtual int GetMaxTotalSlots() { return 36; }
 	virtual void InitializeBuffSlots();
 	virtual void UninitializeBuffSlots();
-	virtual int GetFreeBuffSlot(int32 spell_id);
+	virtual int GetFreeBuffSlot(const Spell *spell_to_cast);
 	virtual void ValidateSpellCastFinish(const Spell *spell_to_cast);
 	virtual bool DoComponentCheck(Spell *spell_to_cast, bool bard_song_mode) { return true; }
 

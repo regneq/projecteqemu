@@ -391,7 +391,7 @@ public:
 	sint32  GetActSpellDuration(Spell *spell_to_cast, sint32);
 	sint32  GetActSpellCasttime(Spell *spell_to_cast, sint32);
 	sint32  GetDotFocus(Spell *spell_to_cast, sint32 value);
-	virtual bool CheckFizzle(int16 spell_id);
+	virtual bool CheckFizzle(const Spell *spell_to_cast);
 	virtual int GetCurrentBuffSlots();
 	virtual int GetCurrentSongSlots();
 	virtual int GetCurrentDiscSlots() { return 1; }
@@ -401,7 +401,7 @@ public:
 	virtual int GetMaxTotalSlots() { return 38; }
 	virtual void InitializeBuffSlots();
 	virtual void UninitializeBuffSlots();
-	virtual int GetFreeBuffSlot(int32 spell_id);
+	virtual int GetFreeBuffSlot(const Spell *spell_to_cast);
 	virtual void ValidateSpellCastFinish(const Spell *spell_to_cast);
 	virtual bool DoComponentCheck(Spell *spell_to_cast, bool bard_song_mode);
 

@@ -316,6 +316,9 @@ bool logpos;
                           CLIENT_KICKED, DISCONNECTED, CLIENT_ERROR, CLIENT_CONNECTINGALL };
 	enum eStandingPetOrder { SPO_Follow, SPO_Sit, SPO_Guard };
 
+	//include our spell effects.
+	#include "spell_effects.h"
+
 	//all of this shit is public due to #pf:
 	float	tarx;
 	float	tary;
@@ -555,7 +558,7 @@ bool logpos;
 	bool IsRunning() const { return m_is_running; }
 	void SetRunning(bool val) { m_is_running = val; }
 
-	virtual int GetCasterLevel(int16 spell_id);
+	virtual int GetCasterLevel();
 	void ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newbon, int16 casterID = 0);
 
 	inline sint32	GetMaxMana()	const { return max_mana; }
@@ -608,7 +611,7 @@ bool logpos;
 	virtual sint32 GetActSpellDuration(Spell *spell_to_cast, sint32 duration){ return duration;}
 	virtual sint32 GetActSpellCasttime(Spell *spell_to_cast, sint32 casttime);
 	float ResistSpell(int8 resist_type, Spell *spell_to_cast, Mob *caster);
-	uint16 GetSpecializeSkillValue(int16 spell_id) const;
+	uint16 GetSpecializeSkillValue(const Spell* spell_to_cast) const;
 
 	void ShowStats(Client* client);
 	void ShowBuffs(Client* client);
@@ -663,7 +666,7 @@ bool logpos;
 	virtual int GetMaxTotalSlots() { return 36; }
 	virtual void InitializeBuffSlots() { buffs = NULL; }
 	virtual void UninitializeBuffSlots() { }
-	virtual int GetFreeBuffSlot(int32 spell_id) { return 0; }
+	virtual int GetFreeBuffSlot(const Spell *spell_to_cast) { return 0; }
 	virtual bool CastSpell(Spell **casted_spell_ptr, int32* spell_will_finish = 0);
 	virtual bool CastSpell(int16 spell_id, int16 target_id, int16 slot = 10, sint32 casttime = -1, sint32 mana_cost = -1, int32* oSpellWillFinish = 0, int32 item_slot = 0xFFFFFFFF);
 	virtual bool DoCastSpell(Spell **casted_spell_ptr, int32* spell_will_finish = 0);
@@ -672,7 +675,7 @@ bool logpos;
 	virtual bool SpellOnTarget(uint16 spell_id, Mob* spell_target);
 	virtual bool ValidateStartSpellCast(const Spell *spell_to_cast);
 	virtual void ValidateSpellCastFinish(const Spell *spell_to_cast){ }
-	virtual bool CheckFizzle(int16 spell_id);
+	virtual bool CheckFizzle(const Spell *spell_to_cast);
 	void InterruptSpell(int16 spellid = SPELL_UNKNOWN);
 	void InterruptSpell(int16, int16, int16 spellid = SPELL_UNKNOWN);
 	void ZeroCastingVars();
@@ -692,15 +695,15 @@ bool logpos;
 	int DoSpellOnTargetResistCheck(Spell *spell_to_cast, Mob *spell_target);
 	void DoSpellOnTargetRecourse(Spell *spell_on_target, Mob *spell_target);
 	void SendKnockBackPacket(int push_up, int push_back);
-	
+	virtual bool SpellEffect(Mob* caster, Spell *spell_to_cast, float partial = 100);
+	bool ApplyNextBardPulse(Spell *spell_to_cast);
+	void BardPulse(Spell *spell_to_cast, Mob *caster);
 
 
 	virtual void SpellProcess();
 	bool UseBardSpellLogic(int16 spell_id = 0xffff, int slot = -1);
 	//virtual bool DoCastSpell(int16 spell_id, int16 target_id, int16 slot = 10, sint32 casttime = -1, sint32 mana_cost = -1, int32* oSpellWillFinish = 0, int32 item_slot = 0xFFFFFFFF);
 	//void	CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16 mana_used, int32 inventory_slot = 0xFFFFFFFF);
-	bool	ApplyNextBardPulse(int16 spell_id, Mob *spell_target, int16 slot);
-	void	BardPulse(uint16 spell_id, Mob *caster);
 	void	SendPetBuffsToClient();
 	int		AddBuff(Mob *caster, const int16 spell_id, int duration = 0, sint32 level_override = -1);
 	virtual bool SpellEffect(Mob* caster, int16 spell_id, float partial = 100);

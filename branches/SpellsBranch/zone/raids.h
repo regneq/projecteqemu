@@ -151,7 +151,7 @@ public:
 	int32	GetTotalRaidDamage(Mob* other);
 	void	BalanceHP(sint32 penalty, int32 gid);
 	void	SplitMoney(uint32 copper, uint32 silver, uint32 gold, uint32 platinum, Client *splitter = NULL);
-	void	GroupBardPulse(Mob* caster, uint16 spellid, int32 gid);
+	void	GroupBardPulse(Mob* caster, Spell *spell_to_cast, int32 gid);
 
 	void	TeleportGroup(Mob* sender, int32 zoneID, int16 instance_id, float x, float y, float z, float heading, int32 gid);
 	void	TeleportRaid(Mob* sender, int32 zoneID, int16 instance_id, float x, float y, float z, float heading);

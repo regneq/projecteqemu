@@ -165,6 +165,13 @@ bool Client::Process() {
 			m_TimeSinceLastPositionCheck = Timer::GetCurrentTime();
 		}
 
+		if(bard_song && bardsong_timer.Check())
+		{
+			if(!ApplyNextBardPulse(bard_song))
+			{
+				InterruptSpell(SONG_ENDS_ABRUPTLY, 0x121, bard_song->GetSpellID());
+			}
+		}
 		//TODO:
 		/*if (bardsong_timer.Check() && bardsong != 0) {
 			//NOTE: this is kinda a heavy-handed check to make sure the mob still exists before

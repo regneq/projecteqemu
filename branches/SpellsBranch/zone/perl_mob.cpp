@@ -2222,12 +2222,11 @@ XS(XS_Mob_GetCasterLevel)
 {
 	dXSARGS;
 	if (items != 2)
-		Perl_croak(aTHX_ "Usage: Mob::GetCasterLevel(THIS, spell_id)");
+		Perl_croak(aTHX_ "Usage: Mob::GetCasterLevel(THIS)");
 	{
 		Mob *		THIS;
 		int		RETVAL;
 		dXSTARG;
-		int16		spell_id = (int16)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -2238,7 +2237,7 @@ XS(XS_Mob_GetCasterLevel)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		RETVAL = THIS->GetCasterLevel(spell_id);
+		RETVAL = THIS->GetCasterLevel();
 		XSprePUSH; PUSHi((IV)RETVAL);
 	}
 	XSRETURN(1);
@@ -3119,7 +3118,7 @@ XS(XS_Mob_GetSpecializeSkillValue)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		RETVAL = THIS->GetSpecializeSkillValue(spell_id);
+		RETVAL = THIS->GetSpecializeSkillValue(&Spell(spell_id, THIS, THIS));
 		XSprePUSH; PUSHu((UV)RETVAL);
 	}
 	XSRETURN(1);
@@ -6320,7 +6319,7 @@ XS(boot_Mob)
 		newXSproto(strcpy(buf, "GetMaxHP"), XS_Mob_GetMaxHP, file, "$");
 		newXSproto(strcpy(buf, "GetWalkspeed"), XS_Mob_GetWalkspeed, file, "$");
 		newXSproto(strcpy(buf, "GetRunspeed"), XS_Mob_GetRunspeed, file, "$");
-		newXSproto(strcpy(buf, "GetCasterLevel"), XS_Mob_GetCasterLevel, file, "$$");
+		newXSproto(strcpy(buf, "GetCasterLevel"), XS_Mob_GetCasterLevel, file, "$");
 		newXSproto(strcpy(buf, "GetMaxMana"), XS_Mob_GetMaxMana, file, "$");
 		newXSproto(strcpy(buf, "GetMana"), XS_Mob_GetMana, file, "$");
 		newXSproto(strcpy(buf, "SetMana"), XS_Mob_SetMana, file, "$$");

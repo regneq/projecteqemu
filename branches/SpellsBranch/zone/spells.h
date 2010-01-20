@@ -41,16 +41,6 @@ enum SpellAttribute
 	SA_TARGET_TYPE,
 };
 
-class SpellCooldownEvent
-{
-public:
-	SpellCooldownEvent() { cooldown_timer = NULL; }
-	~SpellCooldownEvent() { safe_delete(cooldown_timer); }
-	uint32 spell_id;
-	uint32 slot_id;
-	Timer *cooldown_timer;
-};
-
 class Spell
 {
 public:
@@ -63,9 +53,11 @@ public:
 
 	void SetCaster(Mob *c);
 	Mob *GetCaster() const;
+	uint32 GetCasterID() const { return caster_id; }
 
 	void SetTarget(Mob *t);
 	Mob *GetTarget() const;
+	uint32 GetTargetID() const { return target_id; }
 
 	void SetSpellSlot(sint32 slot) { spell_slot = slot; }
 	sint32 GetSpellSlot() const { return spell_slot; }
@@ -95,75 +87,75 @@ public:
 
 	const SPDat_Spell_Struct GetSpell() const { return raw_spell; } 
 
-	bool IsTargetableAESpell(); //impl
-	bool IsSacrificeSpell(); //impl
-	bool IsLifetapSpell(); //impl
-	bool IsMezSpell(); //impl
-	bool IsStunSpell();
-	bool IsSlowSpell();
-	bool IsHasteSpell();
-	bool IsHarmonySpell(); //impl
-	bool IsPercentalHealSpell();
-	bool IsGroupOnlySpell(); //impl
-	bool IsBeneficialSpell(); //impl
-	bool IsDetrimentalSpell(); //impl
-	bool IsInvulnerabilitySpell();
-	bool IsCHDurationSpell();
-	bool IsPoisonCounterSpell();
-	bool IsDiseaseCounterSpell();
-	bool IsSummonItemSpell();
-	bool IsSummonSkeletonSpell();
-	bool IsSummonPetSpell(); //impl
-	bool IsCharmSpell(); //impl
-	bool IsBlindSpell();
-	bool IsEffectHitpointsSpell();
-	bool IsReduceCastTimeSpell();
-	bool IsIncreaseDurationSpell();
-	bool IsReduceManaSpell();
-	bool IsExtRangeSpell();
-	bool IsImprovedHealingSpell();
-	bool IsImprovedDamageSpell();
-	bool IsAEDurationSpell(); //impl
-	bool IsPureNukeSpell(); //impl
-	bool IsPartialCapableSpell(); //impl
-	bool IsResistableSpell(); //impl
-	bool IsGroupSpell(); //impl
-	bool IsTGBCompatibleSpell(); //impl
-	bool IsBardSong(); //impl
-	bool IsEffectInSpell(int effect); //impl
-	bool IsBlankSpellEffect(int effect_index); //impl
-	bool IsValidSpell();
-	bool IsSummonSpell(); //impl
-	bool IsEvacSpell(); //impl
-	bool IsDamageSpell(); //impl
-	bool IsFearSpell(); //impl
-	bool BeneficialSpell(); //impl
-	bool GroupOnlySpell();
-	int GetSpellEffectIndex(int effect); //impl
-	int CanUseSpell(int classa, int level);
-	int GetMinLevel(); //impl
-	sint32 CalculatePoisonCounters();
-	sint32 CalculateDiseaseCounters();
-	sint32 CalculateCurseCounters();
-	bool IsDiscipline();
-	bool IsResurrectionEffects(); //impl
-	bool IsRuneSpell();
-	bool IsMagicRuneSpell();
-	bool IsManaTapSpell(); //impl
-	bool IsAllianceSpellLine();
-	bool IsDeathSaveSpell();
-	bool IsFullDeathSaveSpell();
-	bool IsPartialDeathSaveSpell();
-	bool IsShadowStepSpell();
-	bool IsSuccorSpell();
-	bool IsTeleportSpell();
-	bool IsGateSpell();
-	bool IsPlayerIllusionSpell(); //impl
-	bool IsLDoNObjectSpell(); //impl
-	sint32 GetSpellResistType();
-	sint32 GetSpellTargetType();
-	bool IsHealOverTimeSpell();
-	bool IsCompleteHealSpell();
+	bool IsTargetableAESpell() const; //impl
+	bool IsSacrificeSpell() const; //impl
+	bool IsLifetapSpell() const; //impl
+	bool IsMezSpell() const; //impl
+	bool IsStunSpell() const;
+	bool IsSlowSpell() const;
+	bool IsHasteSpell() const;
+	bool IsHarmonySpell() const; //impl
+	bool IsPercentalHealSpell() const;
+	bool IsGroupOnlySpell() const; //impl
+	bool IsBeneficialSpell() const; //impl
+	bool IsDetrimentalSpell() const; //impl
+	bool IsInvulnerabilitySpell() const;
+	bool IsCHDurationSpell() const;
+	bool IsPoisonCounterSpell() const;
+	bool IsDiseaseCounterSpell() const;
+	bool IsSummonItemSpell() const;
+	bool IsSummonSkeletonSpell() const;
+	bool IsSummonPetSpell() const; //impl
+	bool IsCharmSpell() const; //impl
+	bool IsBlindSpell() const;
+	bool IsEffectHitpointsSpell() const;
+	bool IsReduceCastTimeSpell() const;
+	bool IsIncreaseDurationSpell() const;
+	bool IsReduceManaSpell() const;
+	bool IsExtRangeSpell() const;
+	bool IsImprovedHealingSpell() const;
+	bool IsImprovedDamageSpell() const;
+	bool IsAEDurationSpell() const; //impl
+	bool IsPureNukeSpell() const; //impl
+	bool IsPartialCapableSpell() const; //impl
+	bool IsResistableSpell() const; //impl
+	bool IsGroupSpell() const; //impl
+	bool IsTGBCompatibleSpell() const; //impl
+	bool IsBardSong() const; //impl
+	bool IsEffectInSpell(int effect) const; //impl
+	bool IsBlankSpellEffect(int effect_index) const; //impl
+	bool IsValidSpell() const;
+	bool IsSummonSpell() const; //impl
+	bool IsEvacSpell() const; //impl
+	bool IsDamageSpell() const; //impl
+	bool IsFearSpell() const; //impl
+	bool BeneficialSpell() const; //impl
+	bool GroupOnlySpell() const;
+	int GetSpellEffectIndex(int effect) const; //impl
+	int CanUseSpell(int classa, int level) const;
+	int GetMinLevel() const; //impl
+	sint32 CalculatePoisonCounters() const;
+	sint32 CalculateDiseaseCounters() const;
+	sint32 CalculateCurseCounters() const;
+	bool IsDiscipline() const;
+	bool IsResurrectionEffects() const; //impl
+	bool IsRuneSpell() const;
+	bool IsMagicRuneSpell() const;
+	bool IsManaTapSpell() const; //impl
+	bool IsAllianceSpellLine() const;
+	bool IsDeathSaveSpell() const;
+	bool IsFullDeathSaveSpell() const;
+	bool IsPartialDeathSaveSpell() const;
+	bool IsShadowStepSpell() const;
+	bool IsSuccorSpell() const;
+	bool IsTeleportSpell() const;
+	bool IsGateSpell() const;
+	bool IsPlayerIllusionSpell() const; //impl
+	bool IsLDoNObjectSpell() const; //impl
+	sint32 GetSpellResistType() const;
+	sint32 GetSpellTargetType() const;
+	bool IsHealOverTimeSpell() const;
+	bool IsCompleteHealSpell() const;
 
 protected:
 	uint32 spell_id;

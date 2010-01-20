@@ -515,6 +515,7 @@ typedef enum  {
 #define SE_Leap						383 //used to leap forward? probably something like a small knock back reverse to push you forward
 //#define SE_Unknown384				384	//not used
 //#define SE_Unknown385				385	//not used
+#define SE_LAST_EFFECT 383
 //last effect
 
 #define DF_Permanent		50

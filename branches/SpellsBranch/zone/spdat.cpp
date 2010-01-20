@@ -105,7 +105,7 @@ bool IsTargetableAESpell(int16 spell_id) {
 	return bResult;
 }
 
-bool Spell::IsTargetableAESpell() 
+bool Spell::IsTargetableAESpell() const
 {
 	if (raw_spell.targettype == ST_AETarget) 
 	{
@@ -120,7 +120,7 @@ bool IsSacrificeSpell(int16 spell_id)
 	return IsEffectInSpell(spell_id, SE_Sacrifice);
 }
 
-bool Spell::IsSacrificeSpell()
+bool Spell::IsSacrificeSpell() const
 {
 	return IsEffectInSpell(SE_Sacrifice);
 }
@@ -140,7 +140,7 @@ bool IsLifetapSpell(int16 spell_id)
 	);
 }
 
-bool Spell::IsLifetapSpell()
+bool Spell::IsLifetapSpell() const
 {
 	return (raw_spell.targettype == ST_Tap || spell_id == 2115);
 }
@@ -150,7 +150,7 @@ bool IsMezSpell(int16 spell_id)
 	return IsEffectInSpell(spell_id, SE_Mez);
 }
 
-bool Spell::IsMezSpell()
+bool Spell::IsMezSpell() const
 {
 	return IsEffectInSpell(SE_Mez);
 }
@@ -172,7 +172,7 @@ bool IsSummonSpell(int16 spellid) {
 	return false;
 }
 
-bool Spell::IsSummonSpell() 
+bool Spell::IsSummonSpell() const 
 {
 	for (int o = 0; o < EFFECT_COUNT; o++)
 	{
@@ -189,7 +189,7 @@ bool IsEvacSpell(int16 spellid) {
 	return IsEffectInSpell(spellid, SE_Succor);
 }
 
-bool Spell::IsEvacSpell() 
+bool Spell::IsEvacSpell() const
 {
 	return IsEffectInSpell(SE_Succor);
 }
@@ -206,7 +206,7 @@ bool IsDamageSpell(int16 spellid) {
 	return false;
 }
 
-bool Spell::IsDamageSpell() 
+bool Spell::IsDamageSpell() const
 {
 	for (int o = 0; o < EFFECT_COUNT; o++)
 	{
@@ -224,7 +224,7 @@ bool IsFearSpell(int16 spell_id) {
 	return IsEffectInSpell(spell_id, SE_Fear);
 }
 
-bool Spell::IsFearSpell() 
+bool Spell::IsFearSpell() const
 {
 	return IsEffectInSpell(SE_Fear);
 }
@@ -267,7 +267,7 @@ bool IsHarmonySpell(int16 spell_id)
 	return (IsEffectInSpell(spell_id, SE_Harmony) || IsEffectInSpell(spell_id, SE_Lull));
 }
 
-bool Spell::IsHarmonySpell()
+bool Spell::IsHarmonySpell() const
 {
 	return (IsEffectInSpell(SE_Harmony) || IsEffectInSpell(SE_Lull));
 }
@@ -282,7 +282,7 @@ bool IsGroupOnlySpell(int16 spell_id)
 	return IsValidSpell(spell_id) && spells[spell_id].goodEffect == 2;
 }
 
-bool Spell::IsGroupOnlySpell()
+bool Spell::IsGroupOnlySpell() const
 {
 	return raw_spell.goodEffect == 2;
 }
@@ -311,7 +311,7 @@ bool IsBeneficialSpell(int16 spell_id)
 	return spells[spell_id].goodEffect != 0 || IsGroupSpell(spell_id);
 }
 
-bool Spell::IsBeneficialSpell()
+bool Spell::IsBeneficialSpell() const
 {
 	if(raw_spell.goodEffect == 1)
 	{
@@ -351,7 +351,7 @@ bool IsDetrimentalSpell(int16 spell_id)
 	return !IsBeneficialSpell(spell_id);
 }
 
-bool Spell::IsDetrimentalSpell()
+bool Spell::IsDetrimentalSpell() const
 {
 	return !IsBeneficialSpell();
 }
@@ -395,7 +395,7 @@ bool IsSummonPetSpell(int16 spell_id)
 	);
 }
 
-bool Spell::IsSummonPetSpell()
+bool Spell::IsSummonPetSpell() const
 {
 	return (IsEffectInSpell(SE_SummonPet) || IsEffectInSpell(SE_SummonBSTPet));
 }
@@ -405,7 +405,7 @@ bool IsCharmSpell(int16 spell_id)
 	return IsEffectInSpell(spell_id, SE_Charm);
 }
 
-bool Spell::IsCharmSpell()
+bool Spell::IsCharmSpell() const
 {
 	return IsEffectInSpell(SE_Charm);
 }
@@ -457,7 +457,7 @@ bool IsAEDurationSpell(int16 spell_id)
 		&& spells[spell_id].AEDuration !=0;
 }
 
-bool Spell::IsAEDurationSpell()
+bool Spell::IsAEDurationSpell() const
 {
 	return (raw_spell.targettype == ST_AETarget || raw_spell.targettype == ST_UndeadAE)	&& raw_spell.AEDuration != 0;
 }
@@ -482,7 +482,7 @@ bool IsPureNukeSpell(int16 spell_id)
 	);
 }
 
-bool Spell::IsPureNukeSpell()
+bool Spell::IsPureNukeSpell() const
 {
 	int i, effect_count = 0, last_index = 0;
 
@@ -510,7 +510,7 @@ bool IsPartialCapableSpell(int16 spell_id)
 	return false;
 }
 
-bool Spell::IsPartialCapableSpell()
+bool Spell::IsPartialCapableSpell() const
 {
 	return (IsPureNukeSpell() || IsFearSpell() || IsEffectInSpell(SE_Charm));
 }
@@ -527,7 +527,7 @@ bool IsResistableSpell(int16 spell_id)
 	return false;
 }
 
-bool Spell::IsResistableSpell()
+bool Spell::IsResistableSpell() const
 {
 	return IsDetrimentalSpell();
 }
@@ -546,7 +546,7 @@ bool IsGroupSpell(int16 spell_id)
 	);
 }
 
-bool Spell::IsGroupSpell()
+bool Spell::IsGroupSpell() const
 {
 	return
 	(
@@ -571,7 +571,7 @@ bool IsTGBCompatibleSpell(int16 spell_id)
 	);
 }
 
-bool Spell::IsTGBCompatibleSpell()
+bool Spell::IsTGBCompatibleSpell() const
 {
 	return (!IsDetrimentalSpell() && raw_spell.buffduration != 0 && !IsBardSong() && !IsEffectInSpell(SE_Illusion));
 }
@@ -585,7 +585,7 @@ bool IsBardSong(int16 spell_id)
 	);
 }
 
-bool Spell::IsBardSong()
+bool Spell::IsBardSong() const
 {
 	return (raw_spell.classes[BARD - 1] < 255);
 }
@@ -604,7 +604,7 @@ bool IsEffectInSpell(int16 spellid, int effect)
 	return false;
 }
 
-bool Spell::IsEffectInSpell(int effect)
+bool Spell::IsEffectInSpell(int effect) const
 {
 	for(int j = 0; j < EFFECT_COUNT; j++)
 	{
@@ -641,7 +641,7 @@ bool IsBlankSpellEffect(int16 spellid, int effect_index)
 	);
 }
 
-bool Spell::IsBlankSpellEffect(int effect_index)
+bool Spell::IsBlankSpellEffect(int effect_index) const
 {
 	int effect, base, formula;
 
@@ -695,7 +695,7 @@ int GetMinLevel(int16 spell_id) {
 		return(min);
 }
 
-int Spell::GetMinLevel() 
+int Spell::GetMinLevel() const
 {
 	int r;
 	int min = 255;
@@ -732,7 +732,7 @@ int GetSpellEffectIndex(int16 spell_id, int effect)
 	return -1;
 }
 
-int Spell::GetSpellEffectIndex(int effect)
+int Spell::GetSpellEffectIndex(int effect) const
 {
 	for(int i = 0; i < EFFECT_COUNT; i++)
 	{
@@ -784,7 +784,7 @@ bool BeneficialSpell(int16 spell_id)
 	return false;
 }
 
-bool Spell::BeneficialSpell()
+bool Spell::BeneficialSpell() const
 {
 	if (GetSpellID() <= 0 || GetSpellID() >= SPDAT_RECORDS 
 		/*|| spells[spell_id].stacking == 27*/ )
@@ -879,7 +879,7 @@ bool IsResurrectionEffects(int16 spell_id) {
 	return Result;
 }
 
-bool Spell::IsResurrectionEffects() 
+bool Spell::IsResurrectionEffects() const
 {
 	return (GetSpellID() == 756);
 }
@@ -930,7 +930,7 @@ bool IsManaTapSpell(int16 spell_id) {
 	return Result;
 }
 
-bool Spell::IsManaTapSpell() 
+bool Spell::IsManaTapSpell() const
 {
 	if(raw_spell.targettype == ST_Tap && IsEffectInSpell(SE_CurrentMana))
 	{
@@ -1022,7 +1022,7 @@ bool IsPlayerIllusionSpell(int16 spell_id) {
 
 }
 
-bool Spell::IsPlayerIllusionSpell() 
+bool Spell::IsPlayerIllusionSpell() const
 {
 	if(this->IsEffectInSpell(SE_Illusion) && raw_spell.targettype == ST_Self)
 	{
@@ -1086,7 +1086,7 @@ bool IsLDoNObjectSpell(int16 spell_id)
 	}
 }
 
-bool Spell::IsLDoNObjectSpell()
+bool Spell::IsLDoNObjectSpell() const
 {
 	if(IsEffectInSpell(SE_AppraiseLDonChest) || 
 		IsEffectInSpell(SE_DisarmLDoNTrap) || 
