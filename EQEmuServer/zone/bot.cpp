@@ -2474,8 +2474,11 @@ void Bot::AI_Process() {
 
 					SetRunAnimSpeed(0);
 
-					if(dist > GetFollowDistance()) {
-						CalculateNewPosition2(follow->GetX(), follow->GetY(), follow->GetZ(), follow->GetRunspeed());
+					if(dist > GetFollowDistance()) 
+					{
+						float passed_speed = follow->GetRunspeed();
+						animation  = passed_speed * 21;
+						CalculateNewPosition2(follow->GetX(), follow->GetY(), follow->GetZ(), passed_speed);
 						return;
 					} 
 					else {						
