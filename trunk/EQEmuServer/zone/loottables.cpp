@@ -393,9 +393,14 @@ void ZoneDatabase::AddLootDropToNPC(NPC* npc,int32 lootdrop_id, ItemList* itemli
 	uint32 thischance = 0;
 	unsigned short k;
 	bool found = false;
-	
+
+	k = MakeRandomInt(0, lds->NumEntries-1);
+
 	while(!found) {
-		k = MakeRandomInt(0, lds->NumEntries-1);
+
+		if (k > (lds->NumEntries - 1)) {
+			k = 0;
+		}
 		
 		thischance = lds->Entries[k].chance;
 		unsigned int drop_chance = rand() % totalchance;
@@ -416,6 +421,7 @@ void ZoneDatabase::AddLootDropToNPC(NPC* npc,int32 lootdrop_id, ItemList* itemli
 			break;
 			//continue;
 		}	//end if it will drop
+		k++;	//Cycle to the next droppable item in the list
 	}	//end loop
 #endif
 	

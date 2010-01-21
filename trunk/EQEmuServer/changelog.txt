@@ -1,6 +1,7 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==01/21/2010==
+Trevius: Minor change to how NPC loot tables are handled for selecting drops.  This should make actual drop rates a bit closer to how they are set in the database.
 WildcardX: Implemented a new client animation rate to server-side speed ratio for bots to make bot movement as precise and natural looking as possible. It is possible all other Mob's could benefit from this same tuning if anyone wants to try it on their server.
 
 ==01/20/2010==
