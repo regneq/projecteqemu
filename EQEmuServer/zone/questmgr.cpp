@@ -2289,3 +2289,10 @@ bool QuestManager::checktitle(int titleset) {
 void QuestManager::removetitle(int titleset) {
    initiator->RemoveTitle(titleset);
 }
+
+void QuestManager::wearchange(int8 slot, int16 texture)
+{
+	if(owner){
+		owner->SendTextureWC(slot, texture);
+	}
+}

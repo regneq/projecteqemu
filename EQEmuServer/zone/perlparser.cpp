@@ -2918,6 +2918,21 @@ XS(XS__removetitle)
    XSRETURN_EMPTY;
 }
 
+XS(XS__wearchange);
+XS(XS__wearchange)
+{
+    dXSARGS;
+    if (items != 2)
+        Perl_croak(aTHX_ "Usage: wearchange(slot, texture)");
+
+	int8		slot = (int)SvUV(ST(0));
+	int16		texture = (int)SvUV(ST(1));
+
+	quest_manager.wearchange(slot, texture);
+
+	XSRETURN_EMPTY;
+}
+
 /*
 This is the callback perl will look for to setup the
 quest package's XSUBs
@@ -3111,6 +3126,7 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "checktitle"), XS__checktitle, file);
 		newXS(strcpy(buf, "enabletitle"), XS__enabletitle, file);
 		newXS(strcpy(buf, "removetitle"), XS__removetitle, file);
+		newXS(strcpy(buf, "wearchange"), XS__wearchange, file);
 	XSRETURN_YES;
 }
 
