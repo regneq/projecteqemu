@@ -1571,7 +1571,7 @@ void NPC::AI_DoMovement() {
 				} else {
 					movetimercompleted=false; 
 					
-					mlog(QUESTS__PATHING, "We have reached waypoint %d.", cur_wp);
+					mlog(QUESTS__PATHING, "We are departing waypoint %d.", cur_wp);
 
 					if(AggroedAwayFromGrid > 0)
 						--AggroedAwayFromGrid;
@@ -1586,9 +1586,10 @@ void NPC::AI_DoMovement() {
 					//not sure why we do this...
 					SetAppearance(eaStanding, false);
 					
-					//kick off event_waypoint
+					//kick off event_waypoint depart
 					char temp[16]; 
 					sprintf(temp, "%d", cur_wp);
+					parse->Event(EVENT_WAYPOINT_DEPART,this->GetNPCTypeID(), temp, CastToNPC(), NULL); 
 					parse->Event(EVENT_WAYPOINT,this->GetNPCTypeID(), temp, CastToNPC(), NULL); 
 					
 					entity_list.OpenDoorsNear(CastToNPC());
@@ -1607,6 +1608,11 @@ void NPC::AI_DoMovement() {
 					SetAppearance(eaStanding, false);
 					SetMoving(false);
 					SendPosition();
+					
+					//kick off event_waypoint arrive
+					char temp[16]; 
+					sprintf(temp, "%d", cur_wp);
+					parse->Event(EVENT_WAYPOINT_ARRIVE,this->GetNPCTypeID(), temp, CastToNPC(), NULL); 
 					
 					// EverHood - wipe feign memory since we reached our first waypoint
 					if(cur_wp == 1)

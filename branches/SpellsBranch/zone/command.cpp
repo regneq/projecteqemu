@@ -421,7 +421,7 @@ int command_init(void) {
 		command_add("melody", "- Used by bards to twist multiple songs.", 0, command_melody) ||
 
 #ifdef BOTS
-		command_add("bot"," Type \"#bot help\" to the see the list of available commands for bots.", 0, command_bot) ||
+		command_add("bot","- Type \"#bot help\" to the see the list of available commands for bots.", 0, command_bot) ||
 #endif
 
 		command_add("traindisc","[level] - Trains all the disciplines usable by the target, up to level specified. (may freeze client for a few seconds)",150,command_traindisc) ||
@@ -438,7 +438,8 @@ int command_init(void) {
 		command_add("netstats","- Gets the network stats for a stream.",200,command_netstats) ||
 		command_add("object","List|Add|Edit|Move|Rotate|Copy|Save|Undo|Delete - Manipulate static and tradeskill objects within the zone",100,command_object) ||
 		command_add("raidloot","LEADER|GROUPLEADER|SELECTED|ALL - Sets your raid loot settings if you have permission to do so.",0,command_raidloot) ||
-		command_add("globalview","Lists all qglobals in cache if you were to do a quest with this target.",80,command_globalview)
+		command_add("globalview","Lists all qglobals in cache if you were to do a quest with this target.",80,command_globalview) ||
+		command_add("distance","- Reports the distance between you and your target.", 80, command_distance)
 		)
 	{
 		command_deinit();
@@ -10809,5 +10810,13 @@ void command_globalview(Client *c, const Seperator *sep)
 			++gcount;
 		}
 		c->Message(0, "%u globals loaded.", gcount);
+	}
+}
+
+void command_distance(Client *c, const Seperator *sep) {
+	if(c && c->GetTarget()) {
+		Mob* target = c->GetTarget();
+
+		c->Message(0, "Your target, %s, is %1.1f units from you.", c->GetTarget()->GetName(), c->Dist(*target));
 	}
 }

@@ -65,6 +65,7 @@
 #define IMMUNE_MOVEMENT				244		//Your target is immune to changes in its run speed.
 #define ONLY_ONE_PET				246		//You cannot have more than one pet at a time.
 #define CANNOT_CHARM_YET			248		//Your target is too high of a level for your charm spell.
+#define SUSPEND_MINION_HAS_AGGRO       256             //Your pet is the focus of something's attention.
 #define NO_PET						255		//You do not have a pet.
 #define CORPSE_CANT_SENSE			262		//You cannot sense any corpses for this PC in this zone.
 #define SPELL_NO_HOLD				263		//Your spell did not take hold.
@@ -184,6 +185,9 @@
 #define DOORS_SUCCESSFUL_PICK		1457	//You successfully picked the lock.
 #define PLAYER_CHARMED				1461	//You lose control of yourself!
 #define TRADER_BUSY					1468	//That Trader is currently with a customer. Please wait until their transaction is finished.
+#define SUSPEND_MINION_UNSUSPEND	3267	//%1 tells you, 'I live again...'
+#define SUSPEND_MINION_SUSPEND		3268	//%1 tells you, 'By your command, master.'
+#define SUSPEND_MINION_FIGHTING		3270    //Your pet must be at peace, first.
 #define WHOALL_NO_RESULTS			5029	//There are no players in EverQuest that match those who filters.
 #define PETITION_NO_DELETE			5053	//You do not have a petition in the queue.
 #define PETITION_DELETED			5054	//Your petition was successfully deleted.

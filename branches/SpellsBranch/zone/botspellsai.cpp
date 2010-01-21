@@ -44,10 +44,10 @@ bool Bot::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 			if (tar->DontHealMeBefore() < Timer::GetCurrentTime()) {
 				int8 hpr = (int8)tar->GetHPRatio();
 
-				if(hpr <= 95 || (tar->IsClient() && (hpr <= 95)) || (botClass == BARD)) {
+				if(hpr < 95 || (tar->IsClient() && (hpr < 95)) || (botClass == BARD)) {
 					if(tar->GetClass() == NECROMANCER) {
 						// Give necromancers a chance to go lifetap something or cleric can spend too much mana on a necro
-						if(hpr > 40) {
+						if(hpr >= 40) {
 							break;
 						}
 					}
@@ -62,9 +62,9 @@ bool Bot::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 
 					// Evaluate the situation
 					if((tar->IsEngaged()) && ((botClass == CLERIC) || (botClass == DRUID) || (botClass == SHAMAN))) {
-						if(hpr <= 35)
+						if(hpr < 35)
 							botSpell = GetBestBotSpellForFastHeal(this);
-						else if(hpr > 35 && hpr < 70)
+						else if(hpr >= 35 && hpr < 70)
 							botSpell = GetBestBotSpellForPercentageHeal(this);
 						else if(hpr >= 70 && hpr < 90)
 							botSpell = GetBestBotSpellForRegularSingleTargetHeal(this);
@@ -72,9 +72,9 @@ bool Bot::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 							botSpell = GetBestBotSpellForHealOverTime(this);
 					}
 					else if ((botClass == CLERIC) || (botClass == DRUID) || (botClass == SHAMAN)) {
-						if(hpr <= 30)
+						if(hpr < 30)
 							botSpell = GetBestBotSpellForPercentageHeal(this);
-						else if(hpr > 30 && hpr < 75)
+						else if(hpr >= 30 && hpr < 75)
 							botSpell = GetBestBotSpellForRegularSingleTargetHeal(this);
 						else
 							botSpell = GetBestBotSpellForHealOverTime(this);
@@ -96,20 +96,24 @@ bool Bot::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 
 					castedSpell = AIDoSpellCast(botSpell.SpellIndex, tar, botSpell.ManaCost, &TempDontHealMeBeforeTime);
 
-					if(TempDontHealMeBeforeTime != tar->DontHealMeBefore())
-						tar->SetDontHealMeBefore(TempDontHealMeBeforeTime);
+					if(castedSpell) {
+						/*if(TempDontHealMeBeforeTime != tar->DontHealMeBefore())
+							tar->SetDontHealMeBefore(TempDontHealMeBeforeTime);
 
-					// For non-HoT heals, do a 4 second delay
-					// TODO: Replace this code with logic that calculates the delay based on number of clerics in rotation
-					//			and ignores heals for anyone except the main tank
-					if(!IsHealOverTimeSpell(botSpell.SpellId)) {
-						if(IsCompleteHealSpell(botSpell.SpellId)) { 
-							// Complete Heal 4 second rotation
-							tar->SetDontHealMeBefore(Timer::GetCurrentTime() + 4000);
-						}
-						else {
-							tar->SetDontHealMeBefore(Timer::GetCurrentTime() + 1000);
-						}
+						// For non-HoT heals, do a 4 second delay
+						// TODO: Replace this code with logic that calculates the delay based on number of clerics in rotation
+						//			and ignores heals for anyone except the main tank
+						if(!IsHealOverTimeSpell(botSpell.SpellId)) {
+							if(IsCompleteHealSpell(botSpell.SpellId)) { 
+								// Complete Heal 4 second rotation
+								tar->SetDontHealMeBefore(Timer::GetCurrentTime() + 4000);
+							}
+							else {
+								tar->SetDontHealMeBefore(Timer::GetCurrentTime() + 1000);
+							}
+						}*/
+
+						tar->SetDontHealMeBefore(Timer::GetCurrentTime() + 2000);
 					}
 				}
 			}
@@ -144,7 +148,7 @@ bool Bot::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 			break;
 							 }
 		case SpellType_Buff: {
-			if ((tar->DontBuffMeBefore() < Timer::GetCurrentTime())) {
+			if (tar->DontBuffMeBefore() < Timer::GetCurrentTime()) {
 				std::list<BotSpell> buffSpellList = GetBotSpellsBySpellType(this, SpellType_Buff);
 
 				for(std::list<BotSpell>::iterator itr = buffSpellList.begin(); itr != buffSpellList.end(); itr++) {
@@ -512,10 +516,9 @@ bool Bot::AI_IdleCastCheck() {
 		if(botClass == CLERIC || botClass == PALADIN || botClass == RANGER) {
 			if (!AICastSpell(this, 100, SpellType_Buff)) {
 				if (!AICastSpell(this, 100, SpellType_Heal)) {
-					if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 100, MobAISpellRange, SpellType_Buff)) {
-						if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 100, MobAISpellRange, SpellType_Heal)) {
-							AIautocastspell_timer->Start(RandomTimer(1000, 5000), false);
-							return(true);
+					if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 100, BotAISpellRange, SpellType_Heal)) {
+						if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 100, BotAISpellRange, SpellType_Buff)) {
+							//
 						}
 					}
 				}
@@ -526,10 +529,9 @@ bool Bot::AI_IdleCastCheck() {
 			if (!AICastSpell(this, 100, SpellType_Pet)) {
 				if (!AICastSpell(this, 100, SpellType_Buff)) {
 					if (!AICastSpell(this, 100, SpellType_Heal)) {
-						if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 100, MobAISpellRange, SpellType_Buff)) {
-							if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 100, MobAISpellRange, SpellType_Heal)) {
-								AIautocastspell_timer->Start(RandomTimer(1000, 5000), false);
-								return(true);
+						if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 100, BotAISpellRange, SpellType_Heal)) {
+							if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 100, BotAISpellRange, SpellType_Buff)) {
+								//
 							}
 						}
 					}
@@ -579,7 +581,7 @@ bool Bot::AI_EngagedCastCheck() {
 
 		if(botClass == CLERIC) {
 			if(!AICastSpell(this, 100, SpellType_Heal)) {
-				if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 100, MobAISpellRange, SpellType_Heal)) {
+				if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 100, BotAISpellRange, SpellType_Heal)) {
 					if(!AICastSpell(GetTarget(), 50, SpellType_Nuke)) {
 						AIautocastspell_timer->Start(RandomTimer(100, 250), false);		// Do not give healer classes a lot of time off or your tank's die
 						return true;
@@ -590,8 +592,8 @@ bool Bot::AI_EngagedCastCheck() {
 		else if(botClass == DRUID) {
 			if (!AICastSpell(GetTarget(), 100, SpellType_DOT)) {
 				if(!AICastSpell(this, 100, SpellType_Heal)) {
-					if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 100, MobAISpellRange, SpellType_Heal)) {
-						if(!AICastSpell(GetTarget(), 100, SpellType_Nuke)) {
+					if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 100, BotAISpellRange, SpellType_Heal)) {
+						if(!AICastSpell(GetTarget(), 50, SpellType_Nuke)) {
 							AIautocastspell_timer->Start(RandomTimer(100, 250), false);		// Do not give healer classes a lot of time off or your tank's die
 							return true;
 						}
@@ -605,8 +607,8 @@ bool Bot::AI_EngagedCastCheck() {
 					if (!AICastSpell(GetTarget(), 100, SpellType_DOT)) {
 						if(!AICastSpell(this, 100, SpellType_Heal)) {
 							if (!AICastSpell(GetPet(), 100, SpellType_Heal)) {
-								if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 100, MobAISpellRange, SpellType_Heal)) {
-									if(!AICastSpell(GetTarget(), 100, SpellType_Nuke)) {
+								if(!entity_list.Bot_AICheckCloseBeneficialSpells(this, 100, BotAISpellRange, SpellType_Heal)) {
+									if(!AICastSpell(GetTarget(), 50, SpellType_Nuke)) {
 										AIautocastspell_timer->Start(RandomTimer(100, 250), false);		// Do not give healer classes a lot of time off or your tank's die
 										return true;
 									}
@@ -618,11 +620,12 @@ bool Bot::AI_EngagedCastCheck() {
 			}
 		}
 		else if(botClass == RANGER) {
-			if (!AICastSpell(GetTarget(), 100, SpellType_DOT)) {
-				if (!entity_list.Bot_AICheckCloseBeneficialSpells(this, 50, MobAISpellRange, SpellType_Heal)) {
-					if (!AICastSpell(GetTarget(), 100, SpellType_Nuke)) {
-						AIautocastspell_timer->Start(RandomTimer(500, 1000), false);
-						return true;
+			if (!AICastSpell(GetTarget(), 50, SpellType_DOT)) {
+				if (!AICastSpell(this, 100, SpellType_Heal)) {
+					if (!entity_list.Bot_AICheckCloseBeneficialSpells(this, 30, BotAISpellRange, SpellType_Heal)) {
+						if (!AICastSpell(GetTarget(), 50, SpellType_Nuke)) {
+							//
+						}
 					}
 				}
 			}
@@ -633,10 +636,9 @@ bool Bot::AI_EngagedCastCheck() {
 					if (!AICastSpell(GetTarget(), 80, SpellType_DOT)) {
 						if (!AICastSpell(this, 100, SpellType_Heal)) {
 							if (!AICastSpell(GetPet(), 100, SpellType_Heal)) {
-								if (!entity_list.Bot_AICheckCloseBeneficialSpells(this, 50, MobAISpellRange, SpellType_Heal)) {
-									if(!AICastSpell(GetTarget(), 100, SpellType_Nuke)) {
-										AIautocastspell_timer->Start(RandomTimer(500, 1000), false);
-										return true;
+								if (!entity_list.Bot_AICheckCloseBeneficialSpells(this, 30, BotAISpellRange, SpellType_Heal)) {
+									if(!AICastSpell(GetTarget(), 50, SpellType_Nuke)) {
+										//
 									}
 								}
 							}
@@ -655,10 +657,9 @@ bool Bot::AI_EngagedCastCheck() {
 		}
 		else if(botClass == PALADIN) {
 			if (!AICastSpell(this, 100, SpellType_Heal)) {
-				if (!entity_list.Bot_AICheckCloseBeneficialSpells(this, 50, MobAISpellRange, SpellType_Heal)) {
-					if (!AICastSpell(GetTarget(), 100, SpellType_Nuke)) {
-						AIautocastspell_timer->Start(RandomTimer(500, 1000), false);
-						return true;
+				if (!entity_list.Bot_AICheckCloseBeneficialSpells(this, 30, BotAISpellRange, SpellType_Heal)) {
+					if (!AICastSpell(GetTarget(), 50, SpellType_Nuke)) {
+						//
 					}
 				}
 			}

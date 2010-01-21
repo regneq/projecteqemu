@@ -706,7 +706,7 @@ bool logpos;
 	//void	CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16 mana_used, int32 inventory_slot = 0xFFFFFFFF);
 	void	SendPetBuffsToClient();
 	int		AddBuff(Mob *caster, const int16 spell_id, int duration = 0, sint32 level_override = -1);
-	virtual bool SpellEffect(Mob* caster, int16 spell_id, float partial = 100);
+	//virtual bool SpellEffect(Mob* caster, int16 spell_id, float partial = 100);
 	virtual void DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob* caster = 0);
 	void	BuffFadeBySpellID(int16 spell_id);
 	void	BuffFadeByEffect(int effectid, int skipslot = -1);
@@ -1061,6 +1061,7 @@ protected:
 	float FindGroundZ(float new_x, float new_y, float z_offset=0.0);
 	VERTEX UpdatePath(float ToX, float ToY, float ToZ, float Speed, bool &WaypointChange, bool &NodeReached);
 	void PrintRoute();
+	void UpdateRuneFlags();
 
 	enum {MAX_PROCS = 4};
 	tProc PermaProcs[MAX_PROCS];

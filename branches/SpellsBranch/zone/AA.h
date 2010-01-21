@@ -495,7 +495,7 @@ typedef enum {	//AA IDs
 	aaDanceofBlades = 1110,
 	aaShieldofNotes = 1116,
 	aaRoarofThunder = 1119,
-	aaPersisentMinion = 1122,
+	aaPersistentMinion = 1122,
 	aaPerfectionofSpirit = 1123,
 	aaReplentishCompanion = 1126,
 	aaAdvancedPetDiscipline = 1129,

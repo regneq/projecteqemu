@@ -4298,7 +4298,7 @@ void Client::Handle_OP_TradeAcceptClick(const EQApplicationPacket *app)
 			FinishTrade(with->CastToNPC());
 #ifdef BOTS
 		else if(with->IsBot())
-			with->CastToBot()->FinishTrade(this, Bot::botTradeClientNormal);
+			with->CastToBot()->FinishTrade(this, Bot::BotTradeClientNormal);
 #endif
 		trade->Reset();
 	}
@@ -7756,6 +7756,9 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 		else
 			aa_points[id] = aa[a]->value;
 	}
+
+	if(!GetAA(aaPersistentMinion))
+		memset(&m_pp.SuspendedMinion, 0, sizeof(SuspendedMinion_Struct));
 
 	if (spells_loaded)
 	{

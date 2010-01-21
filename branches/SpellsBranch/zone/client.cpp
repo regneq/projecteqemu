@@ -266,7 +266,7 @@ Client::Client(EQStreamInterface* ieqs)
 	//for good measure:
 	memset(&m_pp, 0, sizeof(m_pp));
 	memset(&m_epp, 0, sizeof(m_epp));
-    PendingTranslocate = false;
+	PendingTranslocate = false;
 	PendingSacrifice = false;
 	BoatID = 0;
 
@@ -5515,3 +5515,97 @@ void Client::UpdateLDoNLosses(int32 t, sint32 n)
 		return;
 	}
 }
+
+
+void Client::SuspendMinion()
+{
+	NPC *CurrentPet =  GetPet()->CastToNPC();
+	
+	int AALevel = GetAA(aaSuspendedMinion);
+
+	if(AALevel == 0)
+		return;
+	
+	if(!CurrentPet)
+	{
+		if(m_pp.SuspendedMinion.SpellID > 0)
+		{
+			MakePet(m_pp.SuspendedMinion.SpellID, spells[m_pp.SuspendedMinion.SpellID].teleport_zone);
+
+			CurrentPet = GetPet()->CastToNPC();
+
+			if(!CurrentPet)
+			{
+				Message(13, "Failed to recall suspended minion.");
+				return;
+			}
+
+			if(AALevel >= 2)
+			{
+				CurrentPet->SetPetState(m_pp.SuspendedMinion.Buffs, m_pp.SuspendedMinion.Items);
+
+				CurrentPet->SendPetBuffsToClient();
+			}
+			CurrentPet->CalcBonuses();
+
+			CurrentPet->SetHP(m_pp.SuspendedMinion.HP);
+
+			CurrentPet->SetMana(m_pp.SuspendedMinion.Mana);
+
+			Message_StringID(clientMessageTell, SUSPEND_MINION_UNSUSPEND, CurrentPet->GetCleanName());
+			
+			memset(&m_pp.SuspendedMinion, 0, sizeof(SuspendedMinion_Struct));
+		}
+		else
+			return;
+
+	}
+	else
+	{
+		int16 SpellID = CurrentPet->GetPetSpellID();
+
+		if(SpellID)
+		{
+			if(m_pp.SuspendedMinion.SpellID > 0)
+			{
+				Message_StringID(clientMessageError,ONLY_ONE_PET);
+
+				return;
+			}
+			else if(CurrentPet->IsEngaged())
+			{
+				Message_StringID(clientMessageError,SUSPEND_MINION_FIGHTING);
+
+				return;
+			}
+			else if(entity_list.Fighting(CurrentPet))
+			{
+				Message_StringID(clientMessageBlue,SUSPEND_MINION_HAS_AGGRO);
+			}
+			else
+			{
+				m_pp.SuspendedMinion.SpellID = SpellID;
+
+				m_pp.SuspendedMinion.HP = CurrentPet->GetHP();;
+
+				m_pp.SuspendedMinion.Mana = CurrentPet->GetMana();
+
+				if(AALevel >= 2)
+					CurrentPet->GetPetState(m_pp.SuspendedMinion.Buffs, m_pp.SuspendedMinion.Items, m_pp.SuspendedMinion.Name);
+
+				Message_StringID(clientMessageTell, SUSPEND_MINION_SUSPEND, CurrentPet->GetCleanName());
+
+				CurrentPet->Depop(false);
+
+				SetPetID(0);
+			}
+		}
+		else
+		{
+			Message(13,"Error getting the spell_id from the npc_type id.");
+
+			return;
+		}
+	}
+}
+

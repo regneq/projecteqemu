@@ -870,6 +870,15 @@ bool IsDiscipline(int16 spell_id)
 	return false;
 }
 
+bool Spell::IsDiscipline() const
+{
+	if(raw_spell.mana == 0 && (raw_spell.EndurCost || raw_spell.EndurUpkeep))
+	{
+		return true;
+	}
+	return false;
+}
+
 bool IsResurrectionEffects(int16 spell_id) {
 	bool Result = false;
 
