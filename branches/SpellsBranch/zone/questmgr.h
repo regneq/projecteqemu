@@ -212,6 +212,7 @@ public:
 	bool IsRunning();
 	void FlyMode(int8 flymode);
 	uint8 FactionValue();
+	void wearchange(int8 slot, int16 texture);
 
 	//not in here because it retains perl types
 	//thing ChooseRandom(array_of_things)

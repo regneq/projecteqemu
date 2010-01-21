@@ -135,6 +135,7 @@ public:
 	bool IsArcheryRange(Mob* target);
 	void ChangeBotArcherWeapons(bool isArcher);
 	bool IsBotCasterCombatRange(Mob *target);
+	bool CalculateNewPosition2(float x, float y, float z, float speed, bool checkZ = true) ;
 
 	// AI Methods
 	virtual bool AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes);

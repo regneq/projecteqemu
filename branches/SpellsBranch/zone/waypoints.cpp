@@ -402,7 +402,7 @@ float Mob::CalculateHeadingToTarget(float in_x, float in_y) {
 	return (256*(360-angle)/360.0f);
 }
 
-bool Mob::CalculateNewPosition2(float x, float y, float z, float speed, bool checkZ) {
+bool Mob::MakeNewPositionAndSendUpdate(float x, float y, float z, float speed, bool checkZ) {
 	if(GetID()==0)
 		return true;
 	
@@ -483,8 +483,8 @@ bool Mob::CalculateNewPosition2(float x, float y, float z, float speed, bool che
 	tar_vy = y - ny;
 	tar_vz = z - nz;
 
-	pRunAnimSpeed = (sint8)(speed*NPC_RUNANIM_RATIO);
-	speed *= NPC_SPEED_MULTIPLIER;
+	//pRunAnimSpeed = (sint8)(speed*NPC_RUNANIM_RATIO);
+	//speed *= NPC_SPEED_MULTIPLIER;
 
 	mlog(AI__WAYPOINTS, "Calculating new position2 to (%.3f, %.3f, %.3f), new vector (%.3f, %.3f, %.3f) rate %.3f, RAS %d", x, y, z, tar_vx, tar_vy, tar_vz, speed, pRunAnimSpeed);
 
@@ -574,6 +574,15 @@ bool Mob::CalculateNewPosition2(float x, float y, float z, float speed, bool che
 	SetAppearance(eaStanding, false);
 	pLastChange = Timer::GetCurrentTime();
 	return true;
+}
+
+bool Mob::CalculateNewPosition2(float x, float y, float z, float speed, bool checkZ) {
+	if(IsNPC() || IsClient() || IsPet()) {
+		pRunAnimSpeed = (sint8)(speed*NPC_RUNANIM_RATIO);
+		speed *= NPC_SPEED_MULTIPLIER;
+	}
+
+	return MakeNewPositionAndSendUpdate(x, y, z, speed, checkZ);
 }
 
 bool Mob::CalculateNewPosition(float x, float y, float z, float speed, bool checkZ) {
