@@ -208,6 +208,7 @@ RULE_INT ( Spells, TranslocateTimeLimit, 0) // If not zero, time in seconds to a
 RULE_INT ( Spells, SacrificeMinLevel, 46)	//first level Sacrifice will work on
 RULE_INT ( Spells, SacrificeMaxLevel, 69)	//last level Sacrifice will work on
 RULE_INT ( Spells, SacrificeItemID, 9963)	//Item ID of the item Sacrifice will return (defaults to an EE)
+RULE_BOOL ( Spells, EnableSpellGlobals, false)	// If Enabled, spells check the spell_globals table and compare character data from the quest globals before allowing that spell to scribe with scribespells
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Combat )

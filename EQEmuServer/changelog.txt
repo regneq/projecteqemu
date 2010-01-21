@@ -1,8 +1,12 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==01/21/2010==
+Trevius: Added new Spell Globals system.  Adding spells to the new spell_globals table with a qglobal name and value there will require characters to have the matching qglobal in the quest_globals table in order to scribe spells via the quest::scribespells command. Note: Only integers can be used for values currently.
+Trevius: Added EnableSpellGlobals rule to enable/disable the new Spell Globals system.
 Trevius: Minor change to how NPC loot tables are handled for selecting drops.  This should make actual drop rates a bit closer to how they are set in the database.
 WildcardX: Implemented a new client animation rate to server-side speed ratio for bots to make bot movement as precise and natural looking as possible. It is possible all other Mob's could benefit from this same tuning if anyone wants to try it on their server.
+
+Required SQL: utils/sql/svn/1136_spell_globals.sql
 
 ==01/20/2010==
 Trevius: Added quest::wearchange(slot, texture) to allow any slot to be changed to any texture/weapon model.  This works just like the #wc <slot>, <texture> command.
