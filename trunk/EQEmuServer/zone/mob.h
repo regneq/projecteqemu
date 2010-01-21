@@ -843,7 +843,7 @@ bool logpos;
 	inline bool			CheckAggro(Mob* other) {return hate_list.IsOnHateList(other);}
     float				CalculateHeadingToTarget(float in_x, float in_y);
     bool				CalculateNewPosition(float x, float y, float z, float speed, bool checkZ = false);
-	bool				CalculateNewPosition2(float x, float y, float z, float speed, bool checkZ = true);
+	virtual bool		CalculateNewPosition2(float x, float y, float z, float speed, bool checkZ = true);
     float				CalculateDistance(float x, float y, float z);
 	void				SendTo(float new_x, float new_y, float new_z);
 	void				SendToFixZ(float new_x, float new_y, float new_z);
@@ -938,6 +938,7 @@ protected:
 	void CommonDamage(Mob* other, sint32 &damage, const uint16 spell_id, const SkillType attack_skill, bool &avoidable, const sint8 buffslot, const bool iBuffTic);
 	static uint16 GetProcID(uint16 spell_id, uint8 effect_index);
 	float _GetMovementSpeed(int mod) const;
+	virtual bool MakeNewPositionAndSendUpdate(float x, float y, float z, float speed, bool checkZ);
 
 	virtual bool AI_EngagedCastCheck() { return(false); }
 	virtual bool AI_PursueCastCheck() { return(false); }
