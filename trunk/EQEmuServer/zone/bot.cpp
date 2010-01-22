@@ -8841,6 +8841,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		c->Message(0, "#bot group help - Displays the commands available to manage any BOTs in your group.");
 		c->Message(0, "#bot botgroup help - Displays the commands available to manage BOT ONLY groups.");
 		c->Message(0, "#bot mana [<bot name or target> | all] - Displays a mana report for all your spawned bots.");
+		c->Message(0, "#bot [hair|haircolor|beard|beardcolor|face <value>] - Change your BOTs appearance.");
 		// TODO:
 		// c->Message(0, "#bot illusion <bot/client name or target> - Enchanter Bot cast an illusion buff spell on you or your target.");
 		return;
@@ -11781,6 +11782,67 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 				c->Message(0, "The bot group name already exists. Please choose another name to save your bot group as.");
 		}
 
+		return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "haircolor") || !strcasecmp(sep->arg[1], "hair") || !strcasecmp(sep->arg[1], "beard") || !strcasecmp(sep->arg[1], "beardcolor") || !strcasecmp(sep->arg[1], "face")) {
+		if(c->GetTarget() && c->GetTarget()->IsBot()) {
+			if  (sep->IsNumber(2)) {
+				if (c->GetTarget()->CastToBot()->GetBotOwnerCharacterID() == c->CharacterID()) {
+					Mob *target = c->GetTarget();
+					int16 Race = target->GetRace();
+					int8 Gender = target->GetGender();
+					int8 Texture = 0xFF;
+					int8 HelmTexture = 0xFF;
+					int8 HairStyle = target->GetHairStyle();
+					int8 HairColor = target->GetHairColor();
+					int8 BeardColor = target->GetBeardColor();
+					int8 EyeColor1 = target->GetEyeColor1();
+					int8 EyeColor2 = target->GetEyeColor2();
+						
+					int8 LuclinFace = target->GetLuclinFace();
+					int8 Beard = target->GetBeard();
+					int32 DrakkinHeritage = target->GetDrakkinHeritage();
+					int32 DrakkinTattoo = target->GetDrakkinTattoo();
+					int32 DrakkinDetails = target->GetDrakkinDetails();
+
+					if (!strcasecmp(sep->arg[1], "hair"))
+						HairStyle = atoi(sep->arg[2]);
+					if (!strcasecmp(sep->arg[1], "haircolor"))
+						HairColor = atoi(sep->arg[2]);
+					if (!strcasecmp(sep->arg[1], "beard") || !strcasecmp(sep->arg[1], "beardcolor")) {
+						if (!Gender || Race == 8) {
+							if (!strcasecmp(sep->arg[1], "beard"))
+								Beard = atoi(sep->arg[2]);
+							if (!strcasecmp(sep->arg[1], "beardcolor"))
+								BeardColor = atoi(sep->arg[2]);
+						} else {
+							c->Message(0, "Must be a male bot, or dwarf.");
+							return;
+						}
+					}
+					if (!strcasecmp(sep->arg[1], "face")) 
+						LuclinFace = atoi(sep->arg[2]);
+						
+					target->SendIllusionPacket(Race, Gender, Texture, HelmTexture, HairColor, BeardColor,
+												EyeColor1, EyeColor2, HairStyle, LuclinFace, Beard, 0xFF,
+												DrakkinHeritage, DrakkinTattoo, DrakkinDetails);
+
+					if(target->CastToBot()->Save())
+						c->Message(0, "%s saved.", target->GetCleanName());
+					else
+						c->Message(13, "%s save failed!", target->GetCleanName());
+
+					c->Message(0,"Feature changed.");
+				} else {
+					c->Message(0, "You must own the bot to make changes.");
+				}
+			} else {
+				c->Message(0, "Requires a value.");
+			}
+		} else {
+			c->Message(0,"A bot needs to be targetted.");
+		}
 		return;
 	}
 }
