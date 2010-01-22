@@ -2309,5 +2309,8 @@ void QuestManager::wearchange(int8 slot, int16 texture)
 {
 	if(owner){
 		owner->SendTextureWC(slot, texture);
+		if(owner->IsNPC()) {
+			owner->CastToNPC()->NPCSlotTexture(slot, texture);
+		}
 	}
 }
