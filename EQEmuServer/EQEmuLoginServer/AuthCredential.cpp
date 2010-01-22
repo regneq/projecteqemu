@@ -24,6 +24,8 @@ AuthCredential::AuthCredential() {
 	SetIPAddress(0);
 	SetPort(0);
 	time(&this->_createTime);
+	play_server_id = 0;
+	play_sequence_id = 0;
 }
 
 void AuthCredential::AddCredential(std::string AccountUserName, uint32 AccountID, uint32 IPAddress, uint16 Port) {

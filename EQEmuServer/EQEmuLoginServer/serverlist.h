@@ -78,7 +78,7 @@ public:
 	void Process();
 	void SendClientAuth(int32 IPAddress, std::string accountName, std::string userKey, uint32 loginServerAccountID, int32 UniqueServerID);
 	void SendServerListPacket(EQStream* Client);
-	void SendUserToWorldRequest(int32 IPAddress, int32 UniqueServerID);	
+	void SendUserToWorldRequest(int32 UniqueServerID, int32 LSAccountID);	
 
 private:
 	list<EQServerEntry> EQServers;

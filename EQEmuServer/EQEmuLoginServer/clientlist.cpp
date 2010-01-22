@@ -93,7 +93,9 @@ void Clientlist::Process() {
 					cout << "There are " << _credentials.size() << " credential record(s)." << endl;
 					_log(WORLD__LS, "Removing AuthCredential record for %s (%u)", UserName.c_str(), LoginServerID);
 #endif
-					CredentialIterator = _credentials.erase(CredentialIterator);				
+					AuthCredential *acred = (*CredentialIterator);
+					CredentialIterator = _credentials.erase(CredentialIterator);
+					safe_delete(acred);
 				}
 
 				if(CredentialIterator == _credentials.end())
@@ -295,31 +297,15 @@ void Clientlist::Process() {
 					break;
 				}
 
-				case OP_PlayEverquestRequest: {
+				case OP_PlayEverquestRequest: 
+				{
 					if(inifile.Trace)
-						printf("PLAY EVERQUEST Request\n");
+						printf("OP_PlayEverquestRequest recieved: sending auth to the world server.\n");
 
 					if(inifile.DumpPacketsIn)
 						DumpPacket(app);
 
-					EQApplicationPacket *outapp = new EQApplicationPacket(OP_PlayEverquestResponse, sizeof(PlayEverquestResponse_Struct));
 					PlayEverquestRequest_Struct *PlayReq = (PlayEverquestRequest_Struct*)app->pBuffer;
-					PlayEverquestResponse_Struct *peqrs = (PlayEverquestResponse_Struct*)outapp->pBuffer;
-					peqrs->Unknown1 = 0x00000005;
-					peqrs->Unknown2 = 0x00000000;
-					peqrs->Unknown3 = 0x65010000;
-					peqrs->Unknown4 = 0x00000000;
-					peqrs->Unknown5 = 0x00000001;
-
-					if(inifile.Trace)
-						printf("Sending PLAY EVERQUEST Response\n");
-
-					if(inifile.DumpPacketsOut)
-						DumpPacket(outapp);
-
-					(*Iterator)->QueuePacket(outapp);
-					safe_delete(outapp);
-
 					std::string UserName;
 					std::string UserKey;
 					uint32 LoginServerID = 0;
@@ -330,12 +316,8 @@ void Clientlist::Process() {
 							UserName = (*CredentialIterator)->GetAccountUserName();
 							LoginServerID = (*CredentialIterator)->GetAccountID();
 							UserKey = (*CredentialIterator)->GetKey();
-							CredentialIterator = _credentials.erase(CredentialIterator);
-#ifdef _DEBUG
-							cout << "Removed Credential for account " << LoginServerID << "." << endl;
-							cout << "There are " << _credentials.size() << " credential record(s)." << endl;
-							_log(WORLD__LS, "Removing AuthCredential record for %s (%u)", UserName.c_str(), LoginServerID);
-#endif
+							(*CredentialIterator)->SetPlaySequence(PlayReq->Sequence);
+							(*CredentialIterator)->SetPlayServer(PlayReq->ServerNumber);
 							break;
 						}
 
@@ -343,10 +325,8 @@ void Clientlist::Process() {
 							break;
 					}
 
-					// TODO: The line below was for minilogin
-					// SL->SendClientAuth((*Iterator)->GetRemoteIP(), PlayReq->ServerNumber);
 
-					SL->SendClientAuth((*Iterator)->GetRemoteIP(), UserName, UserKey, LoginServerID, PlayReq->ServerNumber);
+					SL->SendUserToWorldRequest(PlayReq->ServerNumber, LoginServerID);
 
 					break;
 				}

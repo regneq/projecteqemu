@@ -23,6 +23,7 @@ IniFile::IniFile() {
 	DumpPacketsIn = false;
 	DumpPacketsOut = false;
 	Trace = false;
+	AllowRegisteredServersOnly = false;
 }
 
 IniFile::~IniFile() {
@@ -75,6 +76,10 @@ bool IniFile::Load(const char *Filename) {
 			}
 			if(!strcmp(Option, "opcodepathandfilename")) {
 				OPCodePathAndFileName = Param;
+				continue;
+			}
+			if(!strcmp(Option, "allowunregistered")) { 
+				AllowRegisteredServersOnly = !atoi(Param);
 				continue;
 			}
 		}
