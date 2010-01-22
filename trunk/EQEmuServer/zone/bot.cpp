@@ -2446,8 +2446,7 @@ void Bot::AI_Process() {
 		SetTarget(0);
 
 		if(!IsMoving() && AIthink_timer->Check()) {
-			AI_IdleCastCheck();
-			if(!IsCasting())
+			if(!AI_IdleCastCheck() && !IsCasting())
 				BotMeditate(true);
 		}
 
@@ -2477,9 +2476,6 @@ void Bot::AI_Process() {
 					}
 				}
 			}
-
-			if(!IsMoving())
-				SendPosition();
 		}
 	}
 }

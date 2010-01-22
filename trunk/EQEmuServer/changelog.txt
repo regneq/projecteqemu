@@ -7,6 +7,7 @@ Trevius: Minor change to how NPC loot tables are handled for selecting drops.  T
 WildcardX: Implemented a new client animation rate to server-side speed ratio for bots to make bot movement as precise and natural looking as possible. It is possible all other Mob's could benefit from this same tuning if anyone wants to try it on their server.
 WildcardX: (Frumph) Implemented a new set of #bot commands to customize bot appearances within the game!
 WildcardX: (Frumph) Fixed so bot spell casters don't ghost while casting a spell with a long cast time and bot casters don't sit while a spell is being casted.
+WildcardX: Fixed bot casters from doing rapidly and repeatidly going from sit to stand and back to sit during buff casting.
 
 Required SQL: utils/sql/svn/1136_spell_globals.sql
 

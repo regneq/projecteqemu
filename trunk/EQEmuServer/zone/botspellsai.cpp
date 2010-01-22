@@ -471,10 +471,10 @@ bool Bot::AIDoSpellCast(int8 i, Mob* tar, sint32 mana_cost, int32* oDontDoAgainB
 				&& dist2 <= spells[AIspells[i].spellid].aoerange*spells[AIspells[i].spellid].aoerange)
 				|| dist2 <= spells[AIspells[i].spellid].range*spells[AIspells[i].spellid].range) && (mana_cost <= GetMana() || GetMana() == GetMaxMana()))
 	{
-		if(IsSitting())
-			Stand();
-
 		result = NPC::AIDoSpellCast(i, tar, mana_cost, oDontDoAgainBefore);
+
+		if(IsCasting() && IsSitting())
+			Stand();
 	}
 
 	// if the spell wasn't casted, then take back any extra mana that was given to the bot to cast that spell
