@@ -1762,3 +1762,17 @@ int32 NPC::GetSpawnPointID() const
 	}
 	return 0;
 }
+
+void NPC::NPCSlotTexture(int8 slot, int16 texture)
+{
+	if (slot == 7) {
+		d_meele_texture1 = texture;
+	}
+	else if (slot == 8) {
+		d_meele_texture2 = texture;
+	}
+	else if (slot < 6) {
+		// Reserved for texturing individual armor slots
+	}
+	return;
+}
