@@ -218,10 +218,10 @@ void Bot::ChangeBotArcherWeapons(bool isArcher) {
 
 void Bot::Sit() {
 	if(IsMoving()) {
-		SetMoving(false);
 		moved = false;
 		// SetHeading(CalculateHeadingToTarget(GetTarget()->GetX(), GetTarget()->GetY()));
 		SendPosition();
+		SetMoving(false);
 		tar_ndx = 0;
 	}
 
@@ -2128,8 +2128,8 @@ void Bot::AI_Process() {
 
 				if(moved) {
 					moved = false;
-					SetMoving(false);
 					SendPosition();
+					SetMoving(false);
 				}
 			}
 
@@ -2172,8 +2172,8 @@ void Bot::AI_Process() {
 
 				if(moved) {
 					moved = false;
-					SetMoving(false);
 					SendPosition();
+					SetMoving(false);
 				}
 			}
 
@@ -2194,8 +2194,8 @@ void Bot::AI_Process() {
 				
 				if(moved) {
 					moved = false;
-					SetMoving(false);
 					SendPosition();
+					SetMoving(false);
 				}
 			}
 
@@ -2447,7 +2447,8 @@ void Bot::AI_Process() {
 
 		if(!IsMoving() && AIthink_timer->Check()) {
 			AI_IdleCastCheck();
-			BotMeditate(true);
+			if(!IsCasting())
+				BotMeditate(true);
 		}
 
 		if(AImovement_timer->Check()) {
@@ -2456,22 +2457,29 @@ void Bot::AI_Process() {
 
 				if(follow) {
 					float dist = DistNoRoot(*follow);
+					float speed = follow->GetRunspeed();
+
+					if(dist < GetFollowDistance() + 1000) 
+						speed = follow->GetWalkspeed();
 
 					SetRunAnimSpeed(0);
 
 					if(dist > GetFollowDistance()) {
-						CalculateNewPosition2(follow->GetX(), follow->GetY(), follow->GetZ(), follow->GetRunspeed());
+						CalculateNewPosition2(follow->GetX(), follow->GetY(), follow->GetZ(), speed);
 						return;
 					} 
 					else {						
 						if(moved) {
 							moved=false;
-							SetMoving(false);
 							SendPosition();
+							SetMoving(false);
 						}
 					}
 				}
 			}
+
+			if(!IsMoving())
+				SendPosition();
 		}
 	}
 }
@@ -2553,8 +2561,8 @@ void Bot::PetAIProcess() {
 				botPet->SetHeading(botPet->GetTarget()->GetHeading());
 				if(moved) {
 					moved=false;
-					botPet->SetMoving(false);
 					botPet->SendPosition();
+					botPet->SetMoving(false);
 				}
 			}
 
@@ -2659,8 +2667,8 @@ void Bot::PetAIProcess() {
 						botPet->SetHeading(botPet->GetTarget()->GetHeading());
 						if(moved) {
 							moved=false;
-							botPet->SetMoving(false);
 							botPet->SendPosition();
+							botPet->SetMoving(false);
 						}
 					}
 				}
@@ -2692,8 +2700,8 @@ void Bot::PetAIProcess() {
 							botPet->SetHeading(botPet->GetTarget()->GetHeading());
 							if(moved) {
 								moved=false;
-								botPet->SetMoving(false);
 								botPet->SendPosition();
+								botPet->SetMoving(false);
 							}
 						}
 					}
