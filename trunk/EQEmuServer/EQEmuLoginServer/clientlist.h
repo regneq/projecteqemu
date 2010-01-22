@@ -39,6 +39,9 @@ public:
 	Clientlist();
 	void Process();
 
+	list<AuthCredential*> &GetCredentials() { return _credentials; }
+	list<EQStream*> &GetClientConnections() { return ClientConnections; }
+
 private:
 	EQStreamFactory *eqsf;
 	list<EQStream*> ClientConnections;

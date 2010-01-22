@@ -63,6 +63,9 @@ int main() {
 	cout << "  Database Password: " << inifile.DBPassword << endl;
 #endif
 
+	if(inifile.AllowRegisteredServersOnly)
+		cout << "  Allowing Secure Sever Registration Only" << endl;
+
 	cout << endl << endl;
 
 #ifdef WIN32

@@ -22,6 +22,7 @@
 using namespace std;
 
 extern IniFile inifile;
+extern Clientlist *CL;
 
 Serverlist::Serverlist() {
 	UniqueServerID = 1;
@@ -211,14 +212,17 @@ void Serverlist::Process() {
 							}
 						}
 						else {
-							printf("Server logging in as unregistered...\n");
-							// Request to login as a Standard server (unregistered)
+							if(!inifile.AllowRegisteredServersOnly)
+							{
+								printf("Server logging in as unregistered...\n");
+								// Request to login as a Standard server (unregistered)
 
-							// TODO: Check to make sure there isn't already another standard server on the serverlist with the same name
+								// TODO: Check to make sure there isn't already another standard server on the serverlist with the same name
 
-							// Set this server to be listed on the serverlist as a Standard server.
-							NewWorldReq->SetServerListTypeID(3);
-							NewWorldReq->SetAuthorized(true);
+								// Set this server to be listed on the serverlist as a Standard server.
+								NewWorldReq->SetServerListTypeID(3);
+								NewWorldReq->SetAuthorized(true);
+							}
 						}
 
 						if(NewWorldReq->IsAuthorized()) {
@@ -238,26 +242,6 @@ void Serverlist::Process() {
 
 					break;
 				}
-				// TODO: Deprecate this packet in WORLD
-				//case ServerOP_LSInfo: {
-				//	ServerLSInfo_Struct* SLIS = (ServerLSInfo_Struct*)SP->pBuffer;
-
-				//	if(inifile.Trace) {
-				//		printf("ServerOP_LSInfo: ");
-				//		printf("  Name: %s ", SLIS->name);
-				//		printf("  Addr: %s ", SLIS->address);
-				//		printf("  Acc : %s ", SLIS->account);
-				//		printf("   Pwd: %s ", SLIS->password);
-				//		printf("  Prot: %s ", SLIS->protocolversion);
-				//		printf("    SV: %s ", SLIS->serverversion);
-				//		printf("  Type: %i\n", SLIS->servertype);
-				//	}
-
-				//	// AddServer((*Iterator), SLIS);
-
-				//	break;
-
-				//}
 
 				case ServerOP_LSStatus: {
 					ServerLSStatus_Struct* SLS = (ServerLSStatus_Struct*)SP->pBuffer;
@@ -282,6 +266,85 @@ void Serverlist::Process() {
 					break;
 				}
 					
+				case ServerOP_UsertoWorldResp:
+				{
+					UsertoWorldResponse_Struct *uwr = (UsertoWorldResponse_Struct*)SP->pBuffer;
+					AuthCredential *found_auth = NULL;
+
+					std::list<AuthCredential*>::iterator iter = CL->GetCredentials().begin();
+					while(iter != CL->GetCredentials().end())
+					{
+						if((*iter)->GetAccountID() == uwr->lsaccountid)
+						{
+							found_auth = (*iter);
+							break;
+						}
+						iter++;
+					}
+
+					if(found_auth)
+					{
+						EQStream *eqs = NULL;
+						list<EQStream*>::iterator stream_iter = CL->GetClientConnections().begin();
+						while(stream_iter != CL->GetClientConnections().end())
+						{
+							if((*stream_iter)->GetRemoteIP() == found_auth->GetIPAddress() 
+								&& (*stream_iter)->GetRemotePort() == found_auth->GetPort())
+							{
+								eqs = (*stream_iter);
+								break;
+							}
+							stream_iter++;
+						}
+
+						if(eqs)
+						{
+							//send play packet
+							EQApplicationPacket *outapp = new EQApplicationPacket(OP_PlayEverquestResponse, sizeof(PlayEverquestResponse_Struct));
+							PlayEverquestResponse_Struct *per = (PlayEverquestResponse_Struct*)outapp->pBuffer;
+							per->Allowed = uwr->response > 0 ? 1 : 0;
+							per->Sequence = found_auth->GetPlaySequence();
+							per->ServerNumber = found_auth->GetPlayServer();
+							switch(uwr->response)
+							{
+							case 1:
+								per->Message = 101;
+								break;
+							case 0:
+								per->Message = 326;
+								break;
+							case -1:
+								per->Message = 337;
+								break;
+							case -2:
+								per->Message = 338;
+								break;
+							case -3:
+								per->Message = 303;
+								break;
+							}
+							eqs->QueuePacket(outapp);
+							safe_delete(outapp);
+
+							//send auth if our responce is > 0
+							if(uwr->response > 0)
+							{
+								uint32 LoginServerID = found_auth->GetAccountID();
+								string UserName = found_auth->GetAccountUserName();
+								SendClientAuth(eqs->GetRemoteIP(), found_auth->GetAccountUserName(), 
+									found_auth->GetKey(), found_auth->GetAccountID(), uwr->worldid);
+#ifdef _DEBUG
+								cout << "Removed Credential for account " << LoginServerID << "." << endl;
+								cout << "There are " << CL->GetCredentials().size() << " credential record(s)." << endl;
+								_log(WORLD__LS, "Removing AuthCredential record for %s (%u)", UserName.c_str(), LoginServerID);
+#endif
+								CL->GetCredentials().erase(iter);
+								safe_delete(found_auth);
+							}
+						}
+					}
+					break;
+				}
 
 				default: {
 					if(inifile.Trace)
@@ -292,40 +355,6 @@ void Serverlist::Process() {
 		}
 	}
 }
-
-//void Serverlist::AddServer(EmuTCPConnection* ServerConnection, ServerLSInfo_Struct* info) {
-//	list<EQServerEntry>::iterator Iterator;
-//
-//	for(Iterator = EQServers.begin(); Iterator != EQServers.end(); Iterator++) {
-//
-//		if((*Iterator).IPAddress == ServerConnection->GetrIP()) {
-//			if(inifile.Trace)
-//				printf("AddServer. Found entry for server already. Deleting\n");
-//
-//			Iterator = EQServers.erase(Iterator);
-//			if(Iterator == EQServers.end())
-//				break;
-//		}
-//	}
-//
-//	EQServerEntry NewServer;
-//	NewServer.UniqueServerID = UniqueServerID++;
-//	NewServer.ServerConnection = ServerConnection;
-//	NewServer.IPAddress = ServerConnection->GetrIP();
-//	strcpy(NewServer.Info.name, info->name);
-//	strcpy(NewServer.Info.address, info->address);
-//	strcpy(NewServer.Info.account, info->account);
-//	strcpy(NewServer.Info.password, info->password);
-//	strcpy(NewServer.Info.protocolversion, info->protocolversion);
-//	strcpy(NewServer.Info.serverversion, info->serverversion);
-//	NewServer.Info.servertype = info->servertype;
-//
-//	NewServer.Status.status = -1;
-//	NewServer.Status.num_players = 0;
-//	NewServer.Status.num_zones = 0;
-//
-//	EQServers.push_back(NewServer);
-//}
 
 void Serverlist::AddServer(EmuTCPConnection *serverConnection, WorldRegistration *worldRegistrationInfo) {
 	list<EQServerEntry>::iterator Iterator;
@@ -447,7 +476,7 @@ void Serverlist::SendServerListPacket(EQStream* Client) {
 		// So it is a bitfield, bit 0 = Up/Down, bit 2 = locked ?
 		// TODO: Check server status and send correct status to the serverlist
 		//*(uint32*)buf = (*Iterator).Status.status;
-		*(uint32*)buf = 0x00000002;
+		*(uint32*)buf = (*Iterator).Status.status;//0x00000002;
 		buf += 4;
 		// The next field is the number of users online
 		*(uint32*)buf = (*Iterator).Status.num_players;
@@ -462,8 +491,28 @@ void Serverlist::SendServerListPacket(EQStream* Client) {
 
 }
 
-void Serverlist::SendUserToWorldRequest(int32 IPAddress, int32 UniqueServerID) {
+void Serverlist::SendUserToWorldRequest(int32 UniqueServerID, int32 LSAccountID) 
+{
+	list<EQServerEntry>::iterator Iterator;
 
+	for(Iterator = EQServers.begin(); Iterator != EQServers.end(); Iterator++) 
+	{
+		if((*Iterator).WorldServerReg->GetUniqueRuntimeID() == UniqueServerID)
+		{
+			EmuTCPConnection* tcpc = FindWorldServer((*Iterator).IPAddress);
+
+			if(!tcpc || tcpc->GetState() != 100)
+				break;
+
+			ServerPacket *outapp = new ServerPacket(ServerOP_UsertoWorldReq, sizeof(UsertoWorldRequest_Struct));
+			UsertoWorldRequest_Struct *utwr = (UsertoWorldRequest_Struct*)outapp->pBuffer;
+			utwr->worldid = UniqueServerID;
+			utwr->lsaccountid = LSAccountID;
+
+			tcpc->SendPacket(outapp);
+			safe_delete(outapp);
+		}
+	}
 }
 
 void Serverlist::SendClientAuth(int32 IPAddress, std::string accountName, std::string userKey, uint32 loginServerAccountID, int32 UniqueServerID) {

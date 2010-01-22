@@ -98,20 +98,22 @@ struct ServerListHeader_Struct {
 	int32 NumberOfServers;
 };
 
-struct PlayEverquestRequest_Struct {
-	int32 Unknown1;
-	int32 Unknown2;
-	int16 Unknown4;
-	int32 ServerNumber;
+struct PlayEverquestRequest_Struct 
+{
+	uint16 Sequence;
+	uint32 Unknown1;
+	uint32 Unknown2;
+	uint32 ServerNumber;
 };
 
 
 struct PlayEverquestResponse_Struct {
-	int32 Unknown1;
-	int32 Unknown2;
-	int32 Unknown3;
-	int32 Unknown4;
-	int32 Unknown5;
+	uint8 Sequence;
+	uint8 Unknown1[9];
+	uint8 Allowed;
+	uint16 Message;
+	uint8 Unknown2[3];
+	uint32 ServerNumber;
 };
 
 static const char FailedLoginResponseData[] = {

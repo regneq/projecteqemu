@@ -37,6 +37,7 @@ public:
 
 	bool DumpPacketsIn;
 	bool DumpPacketsOut;
+	bool AllowRegisteredServersOnly;
 	int  PortNumber;
 	bool Trace;
 	string DBServerName;

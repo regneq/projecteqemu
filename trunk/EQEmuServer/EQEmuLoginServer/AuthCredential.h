@@ -33,6 +33,9 @@ private:
 	uint16 _port;
 	time_t _createTime;
 	string _key;
+
+	uint32 play_server_id;
+	uint32 play_sequence_id;
 	
 	void SetCreateTime(time_t CreateTime);
 public:
@@ -47,6 +50,10 @@ public:
 	uint16 GetPort() { return this->_port; };
 	time_t GetCreateTime() { return this->_createTime; };
 	void AddCredential(string AccountUserName, uint32 AccountID, uint32 IPAddress, uint16 Port);
+	void SetPlayServer(uint32 server_in) { play_server_id = server_in; }
+	uint32 GetPlayServer() const { return play_server_id; }
+	void SetPlaySequence(uint32 sequence_in) { play_sequence_id = sequence_in; }
+	uint32 GetPlaySequence() const { return play_sequence_id; }
 	std::string GetKey() { return this->_key; }
 	void GenerateKey();
 };
