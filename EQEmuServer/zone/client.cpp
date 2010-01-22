@@ -2118,38 +2118,90 @@ int8 Client::SkillTrainLevel(SkillType skillid, int16 class_){
 	return(database.GetTrainLevel(class_, skillid, RuleI(Character, MaxLevel)));
 }
 
-int16 Client::GetMaxSkillAfterSpecializationRules(SkillType skillid, int16 maxSkill) {
+int16 Client::GetMaxSkillAfterSpecializationRules(SkillType skillid, int16 maxSkill)
+{
 	int16 Result = maxSkill;
 
-	if(skillid >= SPECIALIZE_ABJURE && skillid <= SPECIALIZE_EVOCATION) {
+	int16 PrimarySpecialization = 0, SecondaryForte = 0;
+
+	int16 PrimarySkillValue = 0, SecondarySkillValue = 0;
+
+	int16 MaxSpecializations = GetAA(aaSecondaryForte) ? 2 : 1;
+
+	if(skillid >= SPECIALIZE_ABJURE && skillid <= SPECIALIZE_EVOCATION)
+	{
 		bool HasPrimarySpecSkill = false;
+
 		int NumberOfPrimarySpecSkills = 0;
 
-		for(int i = SPECIALIZE_ABJURE; i <= SPECIALIZE_EVOCATION; i++) {
-			if(m_pp.skills[i] > 50 && i != skillid) {
+		for(int i = SPECIALIZE_ABJURE; i <= SPECIALIZE_EVOCATION; ++i)
+		{
+			if(m_pp.skills[i] > 50)
+			{
 				HasPrimarySpecSkill = true;
 				NumberOfPrimarySpecSkills++;
 			}
+			if(m_pp.skills[i] > PrimarySkillValue)
+			{
+				if(PrimarySkillValue > SecondarySkillValue)
+				{
+					SecondarySkillValue = PrimarySkillValue;
+					SecondaryForte = PrimarySpecialization;
+				}
+
+				PrimarySpecialization = i;
+				PrimarySkillValue = m_pp.skills[i];
+			}
+			else if(m_pp.skills[i] > SecondarySkillValue)
+			{
+				SecondaryForte = i;
+				SecondarySkillValue = m_pp.skills[i];
+			}
 		}
 
-		if(HasPrimarySpecSkill && NumberOfPrimarySpecSkills == 1)
-			Result = 50;
-		else if(HasPrimarySpecSkill && NumberOfPrimarySpecSkills > 1) {
-			// Tell player we are resetting specialization skills
-			Message(13, "Your spell casting specializations skills have been reset. Only one primary specialization skill is allowed.");
+		if(SecondarySkillValue <=50)
+			SecondaryForte = 0;
 
-			// Reset all Specialization Skills to 1
-			for(int i = SPECIALIZE_ABJURE; i <= SPECIALIZE_EVOCATION; i++)
-				this->SetSkill((SkillType)i, 1);
+		if(HasPrimarySpecSkill)
+		{
+			if(NumberOfPrimarySpecSkills <= MaxSpecializations)
+			{
+				if(MaxSpecializations == 1)
+				{
+					if(skillid != PrimarySpecialization)
+					{
+						Result = 50;
+					}
+				}
+				else
+				{
+					if((skillid != PrimarySpecialization) && ((skillid == SecondaryForte) || (SecondaryForte == 0)))
+					{
+						if((PrimarySkillValue > 100) || (!SecondaryForte))
+							Result = 100;
+					}
+					else if(skillid != PrimarySpecialization)
+					{
+						Result = 50;
+					}
+				}
+			}
+			else
+			{
+				Message(13, "Your spell casting specializations skills have been reset. "
+					    "Only %i primary specialization skill is allowed.", MaxSpecializations);
 
-			// Save player's profile since we just changed it and tell player
-			Save();
+				for(int i = SPECIALIZE_ABJURE; i <= SPECIALIZE_EVOCATION; ++i)
+					SetSkill((SkillType)i, 1);
 
-			// Leave a log entry
-			LogFile->write(EQEMuLog::Normal, "Reset %s's caster specialization skills to 1. One or more specializations skills were above 50.", GetCleanName());
+				Save();
+	
+				LogFile->write(EQEMuLog::Normal, "Reset %s's caster specialization skills to 1. "
+								 "Too many specializations skills were above 50.", GetCleanName());
+			}
+
 		}
 	}
-
 	return Result;
 }
 

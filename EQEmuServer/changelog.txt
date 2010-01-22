@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==01/22/2010==
 Trevius: Adjusted quest::wearchange(slot, texture) so it will now show the weapon slot changes to players who zone in after the change has already happened.
+Derision: Implemented Secondary Forte AA.
 
 ==01/21/2010==
 Trevius: Added new Spell Globals system.  Adding spells to the new spell_globals table with a qglobal name and value there will require characters to have the matching qglobal in the quest_globals table in order to scribe spells via the quest::scribespells command. Note: Only integers can be used for values currently.
