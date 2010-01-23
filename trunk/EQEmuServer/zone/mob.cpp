@@ -158,6 +158,7 @@ Mob::Mob(const char*   in_name,
 	level		= in_level;
 	npctype_id	= in_npctype_id; // rembrant, Dec. 20, 2001
 	size		= in_size;
+	base_size	= size;
 	runspeed   = in_runspeed;
 
 	
