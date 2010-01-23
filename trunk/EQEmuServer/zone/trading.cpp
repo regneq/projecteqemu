@@ -367,34 +367,66 @@ void Client::FinishTrade(Mob* tradingWith) {
 				}
 			}
 
-			// Money @merth: look into how NPC's receive cash
+			// Money - look into how NPC's receive cash
 			this->AddMoneyToPP(other->trade->cp, other->trade->sp, other->trade->gp, other->trade->pp, true);
 
 			//Do not reset the trade here, done by the caller.
 		}
 	}
 	else if(tradingWith && tradingWith->IsNPC()) {
-		int32 items[4]={0};
-		int8 charges[4]={0};
 
-		for (sint16 i=3000; i<=3003; i++) {
-			const ItemInst* inst = m_inv[i];
-			if (inst) {
-				items[i-3000]=inst->GetItem()->ID;
-				charges[i-3000]=inst->GetCharges();
-				DeleteItemInInventory(i);
-			}
-		}
-
-		//dont bother with this crap unless we have a quest...
-		//pets can have quests! (especially charmed NPCs)
-		bool did_quest = false;
+		bool quest_npc = false;
 
 #ifdef EMBPERL
 		if(((PerlembParser *)parse)->HasQuestSub(tradingWith->GetNPCTypeID(), "EVENT_ITEM")) {
 #else
 		if(parse->HasQuestFile(tradingWith->GetNPCTypeID())) {
 #endif
+			// This is a quest NPC
+			quest_npc = true;
+		}
+
+		int32 items[4]={0};
+		int8 charges[4]={0};
+
+		int xy = tradingWith->CastToNPC()->CountLoot();
+
+		for (sint16 i=3000; i<=3003; i++) {
+			const ItemInst* inst = m_inv[i];
+			if (inst) {
+				items[i-3000]=inst->GetItem()->ID;
+				charges[i-3000]=inst->GetCharges();
+				const Item_Struct* item2 = database.GetItem(items[i-3000]);
+				// Handle non-quest NPC trading
+				if (item2 && quest_npc == false) {
+					//if it was not a NO DROP item (or if a GM is trading), let the NPC have it
+					if(GetGM() || item2->NoDrop != 0) {
+						xy++;
+						if (xy <= 20) {	// 20 items max in an NPC loot table
+							tradingWith->CastToNPC()->AddLootDrop(item2, &tradingWith->CastToNPC()->itemlist, charges[i-3000], true, true);
+						}
+					}
+					// Return NO DROP items being handed into a non-quest NPC if the rule is true
+					else if (RuleB(NPC, ReturnNonQuestNoDropItems)) {
+						PushItemOnCursor(*inst, true);
+					}
+				}
+				DeleteItemInInventory(i);
+			}
+		}
+
+		if(RuleB(TaskSystem, EnableTaskSystem)) {
+			int Cash = trade->cp + (trade->sp * 10) + (trade->gp * 100) + (trade->pp * 1000);
+			if(UpdateTasksOnDeliver(items, Cash, tradingWith->GetNPCTypeID())) {
+				if(!tradingWith->IsMoving()) 
+					tradingWith->FaceTarget(this);
+			}
+		}
+
+		//dont bother with this crap unless we have a quest...
+		//pets can have quests! (especially charmed NPCs)
+		if (quest_npc) {
+
 			char temp1[100];
 			memset(temp1,0x0,100);
 			char temp2[100];
@@ -432,42 +464,6 @@ void Client::FinishTrade(Mob* tradingWith) {
 			//		memset(temp1,0x0,100);
 			//		memset(temp2,0x0,100);
 			parse->Event(EVENT_ITEM, tradingWith->GetNPCTypeID(), NULL, tradingWith->CastToNPC(), this);
-			did_quest = true;
-		}
-
-		if(RuleB(TaskSystem, EnableTaskSystem)) {
-			int Cash = trade->cp + (trade->sp * 10) + (trade->gp * 100) + (trade->pp * 1000);
-			if(UpdateTasksOnDeliver(items, Cash, tradingWith->GetNPCTypeID())) {
-				if(!tradingWith->IsMoving()) 
-					tradingWith->FaceTarget(this);
-			}
-		}
-		//		Message(0, "Normal NPC: keeping items.");
-
-		//else, we do not have a quest, give the items to the NPC
-		if(did_quest) {
-			//only continue if we are a charmed NPC
-			if(!tradingWith->HasOwner() || tradingWith->GetPetType() != petCharmed)
-				return;
-		}
-
-		int xy = tradingWith->CastToNPC()->CountLoot();
-
-		for(int y=0; y < 4; y++) {
-			if (xy >= 20)
-				break;
-			xy++;
-			//NPC* npc=with->CastToNPC();
-			const Item_Struct* item2 = database.GetItem(items[y]);
-			if (item2) {
-
-
-				//if was not no drop item, let the NPC have it
-				if(GetGM() || item2->NoDrop != 0)
-					tradingWith->CastToNPC()->AddLootDrop(item2, &tradingWith->CastToNPC()->itemlist, charges[y], true, true);
-				//else 
-				//	with->AddLootDrop(item2, NULL, charges[y], false, true);
-			}
 		}
 	}
 }

@@ -1,11 +1,17 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==01/23/2010==
+Trevius: Added NPC:ReturnNonQuestNoDropItems rule to enable/disable a new feature that allows all NO DROP items to be returned if turned into a non-item-quest NPC (no EVENT_ITEM).
+Trevius: Removed a possible exploit with quest turn-ins.
+
+Optional SQL: utils/sql/svn/1144_optional_rule_return_nodrop
+
 ==01/22/2010==
 Trevius: Adjusted quest::wearchange(slot, texture) so it will now show the weapon slot changes to players who zone in after the change has already happened.
 Derision: Implemented Secondary Forte AA.
 
 ==01/21/2010==
-Trevius: Added new Spell Globals system.  Adding spells to the new spell_globals table with a qglobal name and value there will require characters to have the matching qglobal in the quest_globals table in order to scribe spells via the quest::scribespells command. Note: Only integers can be used for values currently.
+Trevius/Andmetal: Added new Spell Globals system.  Adding spells to the new spell_globals table with a qglobal name and value there will require characters to have the matching qglobal in the quest_globals table in order to scribe spells via the quest::scribespells command. Note: Only integers can be used for values currently.
 Trevius: Added EnableSpellGlobals rule to enable/disable the new Spell Globals system.
 Trevius: Minor change to how NPC loot tables are handled for selecting drops.  This should make actual drop rates a bit closer to how they are set in the database.
 WildcardX: Implemented a new client animation rate to server-side speed ratio for bots to make bot movement as precise and natural looking as possible. It is possible all other Mob's could benefit from this same tuning if anyone wants to try it on their server.
