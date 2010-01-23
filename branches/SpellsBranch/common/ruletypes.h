@@ -208,6 +208,7 @@ RULE_INT ( Spells, TranslocateTimeLimit, 0) // If not zero, time in seconds to a
 RULE_INT ( Spells, SacrificeMinLevel, 46)	//first level Sacrifice will work on
 RULE_INT ( Spells, SacrificeMaxLevel, 69)	//last level Sacrifice will work on
 RULE_INT ( Spells, SacrificeItemID, 9963)	//Item ID of the item Sacrifice will return (defaults to an EE)
+RULE_BOOL ( Spells, EnableSpellGlobals, false)	// If Enabled, spells check the spell_globals table and compare character data from the quest globals before allowing that spell to scribe with scribespells
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Combat )
@@ -264,6 +265,7 @@ RULE_BOOL ( NPC, EnableNPCQuestJournal, false)
 RULE_INT ( NPC, LastFightingDelayMovingMin, 10000)
 RULE_INT ( NPC, LastFightingDelayMovingMax, 20000)
 RULE_BOOL ( NPC, SmartLastFightingDelayMoving, true)
+RULE_BOOL ( NPC, ReturnNonQuestNoDropItems, false)	// Returns NO DROP items on NPCs that don't have an EVENT_ITEM sub in their script
 RULE_CATEGORY_END()
 
 RULE_CATEGORY ( Aggro )

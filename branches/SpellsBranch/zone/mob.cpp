@@ -157,6 +157,7 @@ Mob::Mob(const char*   in_name,
 	level		= in_level;
 	npctype_id	= in_npctype_id; // rembrant, Dec. 20, 2001
 	size		= in_size;
+	base_size	= size;
 	runspeed   = in_runspeed;
 
 	
@@ -984,11 +985,7 @@ void Mob::MakeSpawnUpdate(PlayerPositionUpdateServer_Struct* spu) {
 	spu->padding0006	=7;
 	spu->padding0014	=0x7f;
 	spu->padding0018	=0x5df27;
-#ifdef BOTS
-	if(this->IsClient() || this->IsBot())
-#else
 	if(this->IsClient())
-#endif
 		spu->animation = animation;
 	else
 		spu->animation	= pRunAnimSpeed;//animation;

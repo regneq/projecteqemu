@@ -637,6 +637,7 @@ bool logpos;
 	inline const float	GetZ() const		{ return z_pos; }
 	inline const float	GetHeading() const	{ return heading; }
 	inline const float	GetSize() const		{ return size; }
+	inline const float	GetBaseSize() const		{ return base_size; }
 	inline void			SetChanged()		{ pLastChange = Timer::GetCurrentTime(); }
 	inline const int32	LastChange() const	{ return pLastChange; }
 
@@ -1042,6 +1043,7 @@ protected:
 	float	z_pos;
 	float	heading;
 	uint16	animation;
+	float	base_size;
 	float	size;
 	float	runspeed;
 	int32 pLastChange;

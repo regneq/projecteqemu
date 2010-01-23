@@ -3775,6 +3775,10 @@ void EntityList::SendZoneAppearance(Client *c)
 			{
 				cur->SendAppearancePacket(AT_Anim, cur->GetAppearanceValue(cur->GetAppearance()), false, true, c);
 			}
+			if(cur->GetSize() != cur->GetBaseSize())
+			{
+				cur->SendAppearancePacket(AT_Size, (int32)cur->GetSize(), false, true, c);
+			}
 		}
 		iterator.Advance();
 	}

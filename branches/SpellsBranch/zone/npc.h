@@ -293,6 +293,8 @@ public:
 
 	bool GetDepop() { return p_depop; }
 
+	void NPCSlotTexture(int8 slot, int16 texture);	// Sets new material values for slots
+
 protected:
 	
 	const NPCType*	NPCTypedata;

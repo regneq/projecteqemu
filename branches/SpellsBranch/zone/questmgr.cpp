@@ -683,28 +683,43 @@ void QuestManager::permagender(int gender_id) {
 }
 
 uint16 QuestManager::scribespells(uint8 max_level, uint8 min_level) {
- 	//Cofruben:-Scribe spells for user up to his actual level.
 	uint16 book_slot, count;
 	int16 curspell;
+      
+	int16 Char_ID = initiator->CharacterID();
+	bool SpellGlobalRule = RuleB(Spells, EnableSpellGlobals);
+	bool SpellGlobalCheckResult = 0;
+
+
 	for(curspell = 0, book_slot = initiator->GetNextAvailableSpellBookSlot(), count = 0; curspell < SPDAT_RECORDS && book_slot < MAX_PP_SPELLBOOK; curspell++, book_slot = initiator->GetNextAvailableSpellBookSlot(book_slot))
 	{
 		if
 		(
-			spells[curspell].classes[WARRIOR] != 0 &&	//check if spell exists
-			spells[curspell].classes[initiator->GetPP().class_-1] <= max_level &&	//maximum level
-			spells[curspell].classes[initiator->GetPP().class_-1] >= min_level &&	//minimum level
-			spells[curspell].skill != 52
+		spells[curspell].classes[WARRIOR] != 0 &&       //check if spell exists
+		spells[curspell].classes[initiator->GetPP().class_-1] <= max_level &&   //maximum level
+		spells[curspell].classes[initiator->GetPP().class_-1] >= min_level &&   //minimum level
+		spells[curspell].skill != 52
 		)
 		{
-			if (book_slot == -1)	//no more book slots
+			if (book_slot == -1)    //no more book slots
 				break;
-			if(!IsDiscipline(curspell) && !initiator->HasSpellScribed(curspell)) {	//isn't a discipline & we don't already have it scribed
-				initiator->ScribeSpell(curspell, book_slot);
-				count++;
+			if(!IsDiscipline(curspell) && !initiator->HasSpellScribed(curspell)) {  //isn't a discipline & we don't already have it scribed
+				if (SpellGlobalRule) {
+					// Bool to see if the character has the required QGlobal to scribe it if one exists in the Spell_Globals table
+					SpellGlobalCheckResult = initiator->SpellGlobalCheck(curspell, Char_ID);
+					if (SpellGlobalCheckResult) {
+						initiator->ScribeSpell(curspell, book_slot);
+						count++;
+					}
+				}
+				else {
+					initiator->ScribeSpell(curspell, book_slot);
+					count++;
+				}
 			}
 		}
 	}
-	return count;	//how many spells were scribed successfully
+	return count;   //how many spells were scribed successfully
 }
 
 uint16 QuestManager::traindiscs(uint8 max_level, uint8 min_level) {
@@ -2294,5 +2309,8 @@ void QuestManager::wearchange(int8 slot, int16 texture)
 {
 	if(owner){
 		owner->SendTextureWC(slot, texture);
+		if(owner->IsNPC()) {
+			owner->CastToNPC()->NPCSlotTexture(slot, texture);
+		}
 	}
 }

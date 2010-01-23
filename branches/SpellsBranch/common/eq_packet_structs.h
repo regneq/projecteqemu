@@ -4103,6 +4103,13 @@ struct VeteranClaimRequest
 /*068*/	int32 unknown068;
 };
 
+struct GMSearchCorpse_Struct
+{
+/*000*/	char Unknown000[64];
+/*064*/	char Name[64];
+/*128*/	uint32 Unknown128;
+};
+
 //old structures live here:
 #include "eq_old_structs.h"
 

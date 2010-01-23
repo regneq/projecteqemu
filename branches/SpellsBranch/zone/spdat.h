@@ -110,6 +110,7 @@ typedef enum {
   ST_Corpse				= 0x0f,
   ST_UndeadAE			= 0x18,
   ST_LDoNChest_Cursed   = 0x22,
+  ST_SummonedPet	= 0x26,
   ST_GroupClient		= 0x2b,
 } SpellTargetType;
 

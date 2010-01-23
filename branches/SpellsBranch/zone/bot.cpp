@@ -216,6 +216,14 @@ void Bot::ChangeBotArcherWeapons(bool isArcher) {
 	}
 }
 
+void Bot::Sit() {
+	if(IsMoving()) {
+		moved = false;
+		// SetHeading(CalculateHeadingToTarget(GetTarget()->GetX(), GetTarget()->GetY()));
+		SendPosition();
+		SetMoving(false);
+		tar_ndx = 0;
+	}
 
 NPCType Bot::FillNPCTypeStruct(uint32 botSpellsID, std::string botName, std::string botLastName, uint8 botLevel, uint16 botRace, uint8 botClass, uint8 gender, float size, uint32 face, uint32 hairStyle, uint32 hairColor, uint32 eyeColor, uint32 eyeColor2, uint32 beardColor, uint32 beard, uint32 drakkinHeritage, uint32 drakkinTattoo, uint32 drakkinDetails, sint16 mr, sint16 cr, sint16 dr, sint16 fr, sint16 pr, sint16 ac, uint16 str, uint16 sta, uint16 dex, uint16 agi, uint16 _int, uint16 wis, uint16 cha, uint16 attack) {
 	NPCType BotNPCType;
@@ -2150,8 +2158,8 @@ void Bot::AI_Process() {
 
 				if(moved) {
 					moved = false;
-					SetMoving(false);
 					SendPosition();
+					SetMoving(false);
 				}
 			}
 
@@ -2195,8 +2203,8 @@ void Bot::AI_Process() {
 
 				if(moved) {
 					moved = false;
-					SetMoving(false);
 					SendPosition();
+					SetMoving(false);
 				}
 			}
 
@@ -2221,8 +2229,8 @@ void Bot::AI_Process() {
 				
 				if(moved) {
 					moved=false;
-					SetMoving(false);
 					SendPosition();
+					SetMoving(false);
 				}
 				tar_ndx = 0;
 			}
@@ -2457,8 +2465,9 @@ void Bot::AI_Process() {
 		// Ok if we're not engaged, what's happening..
 		SetTarget(0);
 
-		if(!IsMoving()) {
-			BotMeditate(true);
+		if(!IsMoving() && AIthink_timer->Check()) {
+			if(!AI_IdleCastCheck() && !IsCasting())
+				BotMeditate(true);
 			AI_IdleCastCheck(); // let's rebuff, heal, etc..
 		}
 
@@ -2468,21 +2477,22 @@ void Bot::AI_Process() {
 
 				if(follow) {
 					float dist = DistNoRoot(*follow);
+					float speed = follow->GetRunspeed();
+
+					if(dist < GetFollowDistance() + 1000) 
+						speed = follow->GetWalkspeed();
 
 					SetRunAnimSpeed(0);
 
-					if(dist > GetFollowDistance()) 
-					{
-						float passed_speed = follow->GetRunspeed();
-						animation  = passed_speed * 21;
-						CalculateNewPosition2(follow->GetX(), follow->GetY(), follow->GetZ(), passed_speed);
+					if(dist > GetFollowDistance()) {
+						CalculateNewPosition2(follow->GetX(), follow->GetY(), follow->GetZ(), speed);
 						return;
 					} 
 					else {						
 						if(moved) {
 							moved=false;
-							SetMoving(false);
 							SendPosition();
+							SetMoving(false);
 						}
 					}
 				}
@@ -2567,8 +2577,8 @@ void Bot::PetAIProcess() {
 				botPet->SetHeading(botPet->GetTarget()->GetHeading());
 				if(moved) {
 					moved=false;
-					botPet->SetMoving(false);
 					botPet->SendPosition();
+					botPet->SetMoving(false);
 				}
 			}
 
@@ -2677,8 +2687,8 @@ void Bot::PetAIProcess() {
 						botPet->SetHeading(botPet->GetTarget()->GetHeading());
 						if(moved) {
 							moved=false;
-							botPet->SetMoving(false);
 							botPet->SendPosition();
+							botPet->SetMoving(false);
 						}
 					}
 				}
@@ -2710,8 +2720,8 @@ void Bot::PetAIProcess() {
 							botPet->SetHeading(botPet->GetTarget()->GetHeading());
 							if(moved) {
 								moved=false;
-								botPet->SetMoving(false);
 								botPet->SendPosition();
+								botPet->SetMoving(false);
 							}
 						}
 					}
@@ -8910,6 +8920,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		c->Message(0, "#bot group help - Displays the commands available to manage any BOTs in your group.");
 		c->Message(0, "#bot botgroup help - Displays the commands available to manage BOT ONLY groups.");
 		c->Message(0, "#bot mana [<bot name or target> | all] - Displays a mana report for all your spawned bots.");
+		c->Message(0, "#bot [hair|haircolor|beard|beardcolor|face <value>] - Change your BOTs appearance.");
 		// TODO:
 		// c->Message(0, "#bot illusion <bot/client name or target> - Enchanter Bot cast an illusion buff spell on you or your target.");
 		return;
@@ -12035,6 +12046,67 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 				c->Message(13, "You must target a spawned bot group leader first.");
 		}
 
+		return;
+	}
+
+	if(!strcasecmp(sep->arg[1], "haircolor") || !strcasecmp(sep->arg[1], "hair") || !strcasecmp(sep->arg[1], "beard") || !strcasecmp(sep->arg[1], "beardcolor") || !strcasecmp(sep->arg[1], "face")) {
+		if(c->GetTarget() && c->GetTarget()->IsBot()) {
+			if  (sep->IsNumber(2)) {
+				if (c->GetTarget()->CastToBot()->GetBotOwnerCharacterID() == c->CharacterID()) {
+					Mob *target = c->GetTarget();
+					int16 Race = target->GetRace();
+					int8 Gender = target->GetGender();
+					int8 Texture = 0xFF;
+					int8 HelmTexture = 0xFF;
+					int8 HairStyle = target->GetHairStyle();
+					int8 HairColor = target->GetHairColor();
+					int8 BeardColor = target->GetBeardColor();
+					int8 EyeColor1 = target->GetEyeColor1();
+					int8 EyeColor2 = target->GetEyeColor2();
+						
+					int8 LuclinFace = target->GetLuclinFace();
+					int8 Beard = target->GetBeard();
+					int32 DrakkinHeritage = target->GetDrakkinHeritage();
+					int32 DrakkinTattoo = target->GetDrakkinTattoo();
+					int32 DrakkinDetails = target->GetDrakkinDetails();
+
+					if (!strcasecmp(sep->arg[1], "hair"))
+						HairStyle = atoi(sep->arg[2]);
+					if (!strcasecmp(sep->arg[1], "haircolor"))
+						HairColor = atoi(sep->arg[2]);
+					if (!strcasecmp(sep->arg[1], "beard") || !strcasecmp(sep->arg[1], "beardcolor")) {
+						if (!Gender || Race == 8) {
+							if (!strcasecmp(sep->arg[1], "beard"))
+								Beard = atoi(sep->arg[2]);
+							if (!strcasecmp(sep->arg[1], "beardcolor"))
+								BeardColor = atoi(sep->arg[2]);
+						} else {
+							c->Message(0, "Must be a male bot, or dwarf.");
+							return;
+						}
+					}
+					if (!strcasecmp(sep->arg[1], "face")) 
+						LuclinFace = atoi(sep->arg[2]);
+						
+					target->SendIllusionPacket(Race, Gender, Texture, HelmTexture, HairColor, BeardColor,
+												EyeColor1, EyeColor2, HairStyle, LuclinFace, Beard, 0xFF,
+												DrakkinHeritage, DrakkinTattoo, DrakkinDetails);
+
+					if(target->CastToBot()->Save())
+						c->Message(0, "%s saved.", target->GetCleanName());
+					else
+						c->Message(13, "%s save failed!", target->GetCleanName());
+
+					c->Message(0,"Feature changed.");
+				} else {
+					c->Message(0, "You must own the bot to make changes.");
+				}
+			} else {
+				c->Message(0, "Requires a value.");
+			}
+		} else {
+			c->Message(0,"A bot needs to be targetted.");
+		}
 		return;
 	}
 }
