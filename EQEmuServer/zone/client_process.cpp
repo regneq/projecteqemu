@@ -1450,6 +1450,13 @@ void Client::OPMoveCoin(const EQApplicationPacket* app)
 	// if this is a trade move, inform the person being traded with
 	if(mc->to_slot == 3 && trader && trader->IsClient())
 	{
+
+		// If one party accepted the trade then some coin was added, their state needs to be reset
+		trade->state = Trading;
+		Mob* with = trade->With();
+		if (with)
+			with->trade->state = Trading;
+	
 		Client* recipient = trader->CastToClient();
 		recipient->Message(15, "%s adds some coins to the trade.", GetName());
 		recipient->Message(15, "The total trade is: %i PP, %i GP, %i SP, %i CP",
