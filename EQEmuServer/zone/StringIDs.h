@@ -187,6 +187,7 @@
 #define TRADER_BUSY					1468	//That Trader is currently with a customer. Please wait until their transaction is finished.
 #define SUSPEND_MINION_UNSUSPEND	3267	//%1 tells you, 'I live again...'
 #define SUSPEND_MINION_SUSPEND		3268	//%1 tells you, 'By your command, master.'
+#define ONLY_SUMMONED_PETS		3269	//3269 This effect only works with summoned pets.
 #define SUSPEND_MINION_FIGHTING		3270    //Your pet must be at peace, first.
 #define WHOALL_NO_RESULTS			5029	//There are no players in EverQuest that match those who filters.
 #define PETITION_NO_DELETE			5053	//You do not have a petition in the queue.
