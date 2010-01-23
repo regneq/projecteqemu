@@ -10,6 +10,7 @@ Derision: Shrunk/Grown players/mobs will now appear the correct size to new play
 Derision: OP_GuildMemberList for SoF (used to populate Guild Management Window Roster.
 Derision: OP_GuildDemote for SoF.
 Derision: OP_GuildPublicNote for SoF.
+Derision: Corrected message produced when trying to use Suspend Minion on a charmed pet.
 
 Optional SQL: utils/sql/svn/1144_optional_rule_return_nodrop
 
