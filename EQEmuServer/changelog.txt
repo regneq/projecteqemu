@@ -4,6 +4,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 Trevius: Added NPC:ReturnNonQuestNoDropItems rule to enable/disable a new feature that allows all NO DROP items to be returned if turned into a non-item-quest NPC (no EVENT_ITEM).
 Trevius: Removed a possible exploit with quest turn-ins.
 Derision: Added check for spell target type SummonedPet (e.g. Elemental Draw).
+Derision: Implemented /searchcorpse GM command.
 
 Optional SQL: utils/sql/svn/1144_optional_rule_return_nodrop
 
