@@ -1179,7 +1179,7 @@ bool Mob::DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_ce
 			if(!spell_target || (body_type != BT_Summoned && body_type != BT_Summoned2 && body_type != BT_Summoned3))
 			{
 				//invalid target
-				mlog(SPELLS__CASTING_ERR, "Spell %d canceled: invalid target of body type %d (summoned)", spell_id, spell_target->GetBodyType());
+				mlog(SPELLS__CASTING_ERR, "Spell %d canceled: invalid target of body type %d (summoned)", spell_id, body_type);
 				Message_StringID(13,SPELL_NEED_TAR);
 				return false;
 			}
@@ -1187,6 +1187,22 @@ bool Mob::DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_ce
 			break;
 		}
 		
+		case ST_SummonedPet:
+		{
+			int8 body_type = spell_target ? spell_target->GetBodyType() : 0;
+			if(!spell_target || (spell_target != GetPet()) ||
+			   (body_type != BT_Summoned && body_type != BT_Summoned2 && body_type != BT_Summoned3))
+			{
+				mlog(SPELLS__CASTING_ERR, "Spell %d canceled: invalid target of body type %d (summoned pet)",
+							  spell_id, body_type);
+
+				Message_StringID(13, SPELL_NEED_TAR);
+
+				return false;
+			}
+			CastAction = SingleTarget;
+			break;
+		}
 		//single body type target spells...
 		//this is a little hackish, but better than duplicating code IMO
 		case ST_Plant: if(target_bt == BT_Humanoid) target_bt = BT_Plant;
