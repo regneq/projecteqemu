@@ -5,6 +5,7 @@ Trevius: Added NPC:ReturnNonQuestNoDropItems rule to enable/disable a new featur
 Trevius: Removed a possible exploit with quest turn-ins.
 Derision: Added check for spell target type SummonedPet (e.g. Elemental Draw).
 Derision: Implemented /searchcorpse GM command.
+Derision: Reset Trade Accepted state if money is added to a trade.
 
 Optional SQL: utils/sql/svn/1144_optional_rule_return_nodrop
 
