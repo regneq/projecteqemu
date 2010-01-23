@@ -7,6 +7,7 @@ Derision: Added check for spell target type SummonedPet (e.g. Elemental Draw).
 Derision: Implemented /searchcorpse GM command.
 Derision: Reset Trade Accepted state if money is added to a trade.
 Derision: Shrunk/Grown players/mobs will now appear the correct size to new players entering the zone.
+Derision: OP_GuildMemberList for SoF (used to populate Guild Management Window Roster.
 
 Optional SQL: utils/sql/svn/1144_optional_rule_return_nodrop
 
