@@ -476,7 +476,21 @@ void Serverlist::SendServerListPacket(EQStream* Client) {
 		// So it is a bitfield, bit 0 = Up/Down, bit 2 = locked ?
 		// TODO: Check server status and send correct status to the serverlist
 		//*(uint32*)buf = (*Iterator).Status.status;
-		*(uint32*)buf = (*Iterator).Status.status;//0x00000002;
+		if((*Iterator).Status.status < 0)
+		{
+			if((*Iterator).Status.num_zones == 0)
+			{
+				*(uint32*)buf = 0x01;
+			}
+			else
+			{
+				*(uint32*)buf = 0x04;
+			}
+		}
+		else
+		{
+			*(uint32*)buf = 0x02;
+		}
 		buf += 4;
 		// The next field is the number of users online
 		*(uint32*)buf = (*Iterator).Status.num_players;
