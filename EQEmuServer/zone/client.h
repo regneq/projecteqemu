@@ -492,7 +492,7 @@ public:
 	inline bool IsInGuild(uint32 in_gid) const { return(in_gid == guild_id && IsInAGuild()); }
 	inline int32	GuildID() const { return guild_id; }
 	inline int8	GuildRank()		const { return guildrank; }
-	void	SendGuildMOTD();
+	void	SendGuildMOTD(bool GetGuildMOTDReply = false);
 	void	SendGuildSpawnAppearance();
 	void	SendGuildMembers();
     void	SendGuildList();

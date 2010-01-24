@@ -7,6 +7,7 @@ Derision: Fix for armor not showing to other player's after looting your corpse.
 Derision: Call of the Hero should no longer transfer aggro to the caster.
 LeftRoad: Implemented /pet leader command.
 Derision: Fix for item loss when going Linkdead with items in the trade window.
+Derision: /getguildmotd now works.
 
 ==01/23/2010==
 Trevius: Added NPC:ReturnNonQuestNoDropItems rule to enable/disable a new feature that allows all NO DROP items to be returned if turned into a non-item-quest NPC (no EVENT_ITEM).

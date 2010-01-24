@@ -32,8 +32,21 @@
 #include "StringIDs.h"
 #include "NpcAI.h"
 
-void Client::SendGuildMOTD() {
+void Client::SendGuildMOTD(bool GetGuildMOTDReply) {
 	EQApplicationPacket *outapp = new EQApplicationPacket(OP_GuildMOTD, sizeof(GuildMOTD_Struct));
+
+	// When the Client gets an OP_GuildMOTD, it compares the text to the version it has previously stored.
+	// If the text in the OP_GuildMOTD packet is the same, it does nothing. If not the same, it displays
+	// the new MOTD and then stores the new text.
+	//
+	// When the Client receives an OP_GetGuildMOTDReply, it displays the text in the packet.
+	//
+	// So OP_GuildMOTD should be sent on zone entry and when an Officer changes the MOTD, and OP_GetGuildMOTDReply
+	// should be sent when the client issues the /getguildmotd command.
+	//
+	if(GetGuildMOTDReply)
+		outapp->SetOpcode(OP_GetGuildMOTDReply);
+
 	GuildMOTD_Struct *motd = (GuildMOTD_Struct *) outapp->pBuffer;
 	motd->unknown0 = 0;
 	strncpy(motd->name, m_pp.name, 64);
