@@ -450,9 +450,12 @@ typedef enum {
 #define	STAT_MANA		12
 #define	STAT_HP			13
 #define	STAT_AC			14
-
-
-
+#define STAT_ENDURANCE		15
+#define STAT_ATTACK		16
+#define STAT_HP_REGEN		17
+#define STAT_MANA_REGEN		18
+#define STAT_HASTE		19
+#define STAT_DAMAGE_SHIELD	20
 
   /** 
     * Recast timer types. Used as an off set to charProfileStruct timers. 
