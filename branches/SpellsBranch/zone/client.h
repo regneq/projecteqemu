@@ -404,6 +404,8 @@ public:
 	virtual int GetFreeBuffSlot(const Spell *spell_to_cast);
 	virtual void ValidateSpellCastFinish(const Spell *spell_to_cast);
 	virtual bool DoComponentCheck(Spell *spell_to_cast, bool bard_song_mode);
+	virtual void SendBuffPacket(Buff *buff, uint32 buff_index, uint32 buff_mode);
+	virtual void MakeBuffFadePacket(Buff *buff, int slot_id, bool send_message = true);
 
 	inline const sint32	GetBaseHP() const { return base_hp; }
 
@@ -748,6 +750,7 @@ public:
 
 	//This is used to later set the buff duration of the spell, in slot to duration.
 	//Doesn't appear to work directly after the client recieves an action packet.
+	//TODO: RemoveThis
 	void SendBuffDurationPacket(int16 spell_id, int duration, int inlevel);
 
 	bool ClientFinishedLoading() { return (conn_state == ClientConnectFinished); }
@@ -927,7 +930,6 @@ protected:
 	void CalcEdibleBonuses(StatBonuses* newbon);
 	void CalcAABonuses(StatBonuses* newbon);
 	void ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon);
-	void MakeBuffFadePacket(int16 spell_id, int slot_id, bool send_message = true);
 	bool client_data_loaded;
 
 	sint16	GetFocusEffect(focusType type, Spell *spell_to_cast);

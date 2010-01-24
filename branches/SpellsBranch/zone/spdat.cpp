@@ -830,6 +830,19 @@ sint32 CalculatePoisonCounters(int16 spell_id){
     return Counters;
 }
 
+sint32 Spell::CalculatePoisonCounters() const
+{
+	sint32 Counters = 0;
+	for(int i = 0; i < EFFECT_COUNT; i++)
+	{
+		if(raw_spell.effectid[i] == SE_PoisonCounter && raw_spell.base[i] > 0)
+		{
+			Counters += raw_spell.base[i];
+		}
+	}
+    return Counters;
+}
+
 sint32 CalculateDiseaseCounters(int16 spell_id){
 	if(!IsValidSpell(spell_id))
 		return 0;
@@ -844,6 +857,19 @@ sint32 CalculateDiseaseCounters(int16 spell_id){
     return Counters;
 }
 
+sint32 Spell::CalculateDiseaseCounters() const
+{
+	sint32 Counters = 0;
+	for(int i = 0; i < EFFECT_COUNT; i++)
+	{
+		if(raw_spell.effectid[i] == SE_DiseaseCounter && raw_spell.base[i] > 0)
+		{
+			Counters += raw_spell.base[i];
+		}
+	}
+    return Counters;
+}
+
 sint32 CalculateCurseCounters(int16 spell_id){
 	if(!IsValidSpell(spell_id))
 		return 0;
@@ -853,6 +879,19 @@ sint32 CalculateCurseCounters(int16 spell_id){
 	{
 		if(spells[spell_id].effectid[i] == SE_CurseCounter && spells[spell_id].base[i] > 0){
 			Counters += spells[spell_id].base[i];
+		}
+	}
+    return Counters;
+}
+
+sint32 Spell::CalculateCurseCounters() const
+{
+	sint32 Counters = 0;
+	for(int i = 0; i < EFFECT_COUNT; i++)
+	{
+		if(raw_spell.effectid[i] == SE_CurseCounter && raw_spell.base[i] > 0)
+		{
+			Counters += raw_spell.base[i];
 		}
 	}
     return Counters;

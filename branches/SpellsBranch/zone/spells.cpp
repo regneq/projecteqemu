@@ -939,7 +939,7 @@ bool Mob::DetermineSpellTargets(Spell *spell_to_cast, Mob *&spell_target, Mob *&
 			   (body_type != BT_Summoned && body_type != BT_Summoned2 && body_type != BT_Summoned3))
 			{
 				mlog(SPELLS__CASTING_ERR, "Spell %d canceled: invalid target of body type %d (summoned pet)",
-							  spell_id, body_type);
+					spell_to_cast->GetSpellID(), body_type);
 
 				Message_StringID(13, SPELL_NEED_TAR);
 
@@ -1606,33 +1606,37 @@ bool Mob::ApplyNextBardPulse(Spell *spell_to_cast)
 void Mob::BardPulse(Spell *spell_to_cast, Mob *caster) 
 {
 	Buff *found_spell = NULL;
+	uint32 buff_index = 0xFFFFFFFF;
 	int max_slots = GetMaxTotalSlots();
 	for(int i = 0; i < max_slots; i++)
 	{
 		if(buffs[i])
 		{
 			Buff *current_buff = buffs[i];
-			if(current_buff->GetSpell().id != spell_to_cast->GetSpellID())
+			if(current_buff->GetSpell()->GetSpellID() != spell_to_cast->GetSpellID())
 			{
 				continue;
 			}
 
-			if(current_buff->GetCasterID() != spell_to_cast->GetCasterID())
+			if(current_buff->GetSpell()->GetCasterID() != spell_to_cast->GetCasterID())
 			{
 				continue;
 			}
 
 			found_spell = current_buff;
+			buff_index = i;
 			break;
 		}
 	}
 
-	if(!found_spell)
+	if(found_spell)
 	{
-		return;
-	}
+		found_spell->SetInstrumentMod(caster->GetInstrumentMod(spell_to_cast));
 
-	//Add 3 tics to the buff.
+		//Add 3 tics to the buff.
+		found_spell->SetDurationRemaining(found_spell->GetDurationRemaining() + 3);
+		SendBuffPacket(found_spell, buff_index, 3);
+	}
 
 	//Knockback
 	if(!spell_to_cast->IsEffectInSpell(SE_TossUp))
@@ -1644,124 +1648,10 @@ void Mob::BardPulse(Spell *spell_to_cast, Mob *caster)
 	}
 
 	//Send the action packet to everyone
+	int seq = SendActionSpellPacket(spell_to_cast, this, caster->GetCasterLevel());
 
 	//Do the spell on target
 	caster->SpellOnTarget(spell_to_cast, this);
-
-	//TODO:
-	/*
-	int buffs_i;
-	for (buffs_i = 0; buffs_i < BUFF_COUNT; buffs_i++) {
-		if(buffs[buffs_i].spellid != spell_id)
-			continue;
-		if(buffs[buffs_i].casterid != caster->GetID()) {
-			mlog(SPELLS__BARDS, "Bard Pulse for %d: found buff from caster %d and we are pulsing for %d... are there two bards playing the same song???", spell_id, buffs[buffs_i].casterid, caster->GetID());
-			return;
-		}
-		//extend the spell if it will expire before the next pulse
-		if(buffs[buffs_i].ticsremaining <= 3) {
-			buffs[buffs_i].ticsremaining += 3;
-			mlog(SPELLS__BARDS, "Bard Song Pulse %d: extending duration in slot %d to %d tics", spell_id, buffs_i, buffs[buffs_i].ticsremaining);
-		}
-			
-		//should we send this buff update to the client... seems like it would
-		//be a lot of traffic for no reason...
-//this may be the wrong packet...
-		if(IsClient()) {
-			EQApplicationPacket *packet = new EQApplicationPacket(OP_Action, sizeof(Action_Struct));
-
-			Action_Struct* action = (Action_Struct*) packet->pBuffer;
-			action->source = caster->GetID();
-			action->target = GetID();
-			action->spell = spell_id;
-			action->sequence = (int32) (GetHeading() * 2);	// just some random number
-			action->instrument_mod = caster->GetInstrumentMod(spell_id);
-			action->buff_unknown = 0;
-			action->level = buffs[buffs_i].casterlevel;
-			action->type = SpellDamageType;
-			entity_list.QueueCloseClients(this, packet, false, 200, 0, true, IsClient() ? FILTER_PCSPELLS : FILTER_NPCSPELLS);
-			
-			action->buff_unknown = 4;
-
-			if(IsEffectInSpell(spell_id, SE_TossUp))
-			{
-				action->buff_unknown = 0;
-			}
-			else if(spells[spell_id].pushback > 0 || spells[spell_id].pushup > 0)
-			{
-				if(IsClient())
-				{
-					if(HasBuffIcon(caster, this, spell_id) == false)
-					{
-						CastToClient()->SetKnockBackExemption(true);
-
-						action->buff_unknown = 0;
-						EQApplicationPacket* outapp_push = new EQApplicationPacket(OP_ClientUpdate, sizeof(PlayerPositionUpdateServer_Struct));
-						PlayerPositionUpdateServer_Struct* spu = (PlayerPositionUpdateServer_Struct*)outapp_push->pBuffer;
-						
-						double look_heading = caster->CalculateHeadingToTarget(GetX(), GetY());
-						look_heading /= 256;
-						look_heading *= 360;
-						if(look_heading > 360)
-							look_heading -= 360;
-
-						//x and y are crossed mkay
-						double new_x = spells[spell_id].pushback * sin(double(look_heading * 3.141592 / 180.0));
-						double new_y = spells[spell_id].pushback * cos(double(look_heading * 3.141592 / 180.0));
-
-						spu->spawn_id	= GetID();
-						spu->x_pos		= FloatToEQ19(GetX());
-						spu->y_pos		= FloatToEQ19(GetY());
-						spu->z_pos		= FloatToEQ19(GetZ());
-						spu->delta_x	= NewFloatToEQ13(new_x);
-						spu->delta_y	= NewFloatToEQ13(new_y);
-						spu->delta_z	= NewFloatToEQ13(spells[spell_id].pushup);
-						spu->heading	= FloatToEQ19(GetHeading());
-						spu->padding0002	=0;
-						spu->padding0006	=7;
-						spu->padding0014	=0x7f;
-						spu->padding0018	=0x5df27;
-						spu->animation = 0;
-						spu->delta_heading = NewFloatToEQ13(0);
-						outapp_push->priority = 6;
-						entity_list.QueueClients(this, outapp_push, true);
-						CastToClient()->FastQueuePacket(&outapp_push);
-					}
-				}
-			}
-
-			if(IsClient() && IsEffectInSpell(spell_id, SE_ShadowStep))
-			{
-				CastToClient()->SetShadowStepExemption(true);
-			}
-
-			if(!IsEffectInSpell(spell_id, SE_BindAffinity))
-			{
-				CastToClient()->FastQueuePacket(&packet);
-			}
-			
-			EQApplicationPacket *message_packet = new EQApplicationPacket(OP_Damage, sizeof(CombatDamage_Struct));
-			CombatDamage_Struct *cd = (CombatDamage_Struct *)message_packet->pBuffer;
-			cd->target = action->target;
-			cd->source = action->source;
-			cd->type = SpellDamageType;
-			cd->spellid = action->spell;
-			cd->sequence = action->sequence;
-			cd->damage = 0;
-			if(!IsEffectInSpell(spell_id, SE_BindAffinity))
-			{
-				entity_list.QueueCloseClients(this, message_packet, false, 200, 0, true, IsClient() ? FILTER_PCSPELLS : FILTER_NPCSPELLS);
-			}
-			safe_delete(message_packet);
-			
-		}
-		//we are done...
-		return;
-	}
-	mlog(SPELLS__BARDS, "Bard Song Pulse %d: Buff not found, reapplying spell.", spell_id);
-	//this spell is not affecting this mob, apply it.
-	caster->SpellOnTarget(spell_id, this);
-	*/
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1881,7 +1771,7 @@ int CalcBuffDuration_formula(int level, int formula, int duration)
 // -1 if they can't stack and spellid2 should be stopped
 //currently, a spell will not land if it would overwrite a better spell on any effect
 //if all effects are better or the same, we overwrite, else we do nothing
-int Mob::CheckStackConflict(int16 spellid1, int caster_level1, int16 spellid2, int caster_level2, Mob* caster1, Mob* caster2)
+int Mob::CheckStackConflict(const Spell* spell_1, const Spell *spell_2)
 {
 	/*
 	const SPDat_Spell_Struct &sp1 = spells[spellid1];
@@ -2125,147 +2015,32 @@ int Mob::CheckStackConflict(int16 spellid1, int caster_level1, int16 spellid2, i
 // stacking problems, and -2 if this is not a buff
 // if caster is null, the buff will be added with the caster level being
 // the level of the mob
-int Mob::AddBuff(Mob *caster, int16 spell_id, int duration, sint32 level_override)
+Buff *Mob::AddBuff(Mob *caster, Spell *spell_to_cast, uint32 duration)
 {
-	
-	int buffslot, ret, caster_level, emptyslot = -1;
-	bool will_overwrite = false;
-	vector<int> overwrite_slots;
-	
-	if(level_override > 0)
-		caster_level = level_override;
-	else
-		caster_level = caster ? caster->GetCasterLevel() : GetCasterLevel();
-    
 	if(duration == 0)
 	{
-		//duration = CalcBuffDuration(caster, this, spell_id);
+		duration = CalcBuffDuration(caster, this, spell_to_cast);
 
-		//if(caster)
-		//	duration = caster->GetActSpellDuration(spell_id, duration);
-	}
+		if(caster)
+			duration = caster->GetActSpellDuration(spell_to_cast, duration);
 
-	if(duration == 0) {
-		mlog(SPELLS__BUFFS, "Buff %d failed to add because its duration came back as 0.", spell_id);
-		return -2;	// no duration? this isn't a buff
-	}
-	
-	mlog(SPELLS__BUFFS, "Trying to add buff %d cast by %s (cast level %d) with duration %d",
-		spell_id, caster?caster->GetName():"UNKNOWN", caster_level, duration);
-
-	// solar: first we loop through everything checking that the spell
-	// can stack with everything.  this is to avoid stripping the spells
-	// it would overwrite, and then hitting a buff we can't stack with.
-	// we also check if overwriting will occur.  this is so after this loop
-	// we can determine if there will be room for this buff
-	//TODO:
-	/*
-	for(buffslot = 0; buffslot < BUFF_COUNT; buffslot++)
-	{
-		const Buffs_Struct &curbuf = buffs[buffslot];
-
-		if(curbuf.spellid != SPELL_UNKNOWN)
+		if(duration == 0) 
 		{
-			// there's a buff in this slot
-			ret = CheckStackConflict(curbuf.spellid, curbuf.casterlevel, spell_id, caster_level, entity_list.GetMobID(curbuf.casterid), caster);
-			if(ret == -1) {	// stop the spell
-				mlog(SPELLS__BUFFS, "Adding buff %d failed: stacking prevented by spell %d in slot %d with caster level %d", spell_id, curbuf.spellid, buffslot, curbuf.casterlevel);
-				return -1;
-			}
-			if(ret == 1) {	// set a flag to indicate that there will be overwriting
-				mlog(SPELLS__BUFFS, "Adding buff %d will overwrite spell %d in slot %d with caster level %d", spell_id, curbuf.spellid, buffslot, curbuf.casterlevel);
-				will_overwrite = true;
-				overwrite_slots.push_back(buffslot);
-			}
-		}
-		else
-		{
-			if(emptyslot == -1)
-				emptyslot = buffslot;
+			mlog(SPELLS__BUFFS, "Buff %d failed to add because its duration came back as 0.", spell_to_cast->GetSpellID());
+			return NULL;
 		}
 	}
-	
-	// we didn't find an empty slot to put it in, and it's not overwriting
-	// anything so there must not be any room left.
- 	if(emptyslot == -1 && !will_overwrite)
- 	//	return -1;
- 	{
- 		if(IsDetrimentalSpell(spell_id)) //Sucks to be you, bye bye one of your buffs
- 		{
- 			for(buffslot = 0; buffslot < BUFF_COUNT; buffslot++)
- 			{
- 				const Buffs_Struct &curbuf = buffs[buffslot];
- 				if(IsBeneficialSpell(curbuf.spellid))
- 				{
- 					mlog(SPELLS__BUFFS, "No slot for detrimental buff %d, so we are overwriting a beneficial buff %d in slot %d", spell_id, curbuf.spellid, buffslot);
- 					BuffFadeBySlot(buffslot,false);
- 					emptyslot = buffslot;
-					break;
- 				}
- 			}
- 			if(emptyslot == -1) {
-	 			mlog(SPELLS__BUFFS, "Unable to find a buff slot for detrimental buff %d", spell_id);
-				return(-1);
- 			}
- 		}
- 		else {
- 			mlog(SPELLS__BUFFS, "Unable to find a buff slot for beneficial buff %d", spell_id);
- 			return -1;
- 		}
- 	}
-	*/
 
-	// solar: at this point we know that this buff will stick, but we have
-	// to remove some other buffs already worn if will_overwrite is true
-	if(will_overwrite)
+	int buff_slot = GetFreeBuffSlot(spell_to_cast);
+	if(buff_slot == -1)
 	{
-		vector<int>::iterator cur, end;
-		cur = overwrite_slots.begin();
-		end = overwrite_slots.end();
-		for(; cur != end; cur++) {
-			// strip spell
-			BuffFadeBySlot(*cur, false);
-
-			// if we hadn't found a free slot before, or if this is earlier
-			// we use it
-			if(emptyslot == -1 || *cur < emptyslot)
-				emptyslot = *cur;
-		}
+		return NULL;
 	}
 
-	// now add buff at emptyslot
-	//TODO: assert(buffs[emptyslot].spellid == SPELL_UNKNOWN);	// sanity check
-	/*
-	buffs[emptyslot].spellid = spell_id;
-	buffs[emptyslot].casterlevel = caster_level;
-	buffs[emptyslot].casterid = caster ? caster->GetID() : 0;
-	buffs[emptyslot].durationformula = spells[spell_id].buffdurationformula;
-	buffs[emptyslot].ticsremaining = duration;
-	buffs[emptyslot].diseasecounters = 0;
-	buffs[emptyslot].poisoncounters = 0;
-	buffs[emptyslot].cursecounters = 0;
-	buffs[emptyslot].numhits = spells[spell_id].numhits;
-	buffs[emptyslot].client = caster ? caster->IsClient() : 0;
+	buffs[buff_slot] = new Buff(spell_to_cast, duration);
+	SendBuffPacket(buffs[buff_slot], buff_slot, 3);
 
-	if(level_override > 0)
-	{
-		buffs[emptyslot].UpdateClient = true;
-	}
-	else{ 
-		if(buffs[emptyslot].ticsremaining > (1+CalcBuffDuration_formula(caster_level, spells[spell_id].buffdurationformula, spells[spell_id].buffduration)))
-			buffs[emptyslot].UpdateClient = true;
-	}*/
-		
-	mlog(SPELLS__BUFFS, "Buff %d added to slot %d with caster level %d", spell_id, emptyslot, caster_level);
-	if(IsPet() && GetOwner() && GetOwner()->IsClient()) {
-		SendPetBuffsToClient();
-	}
-	
-	
-	// recalculate bonuses since we stripped/added buffs
-	CalcBonuses();
-
-	return emptyslot;
+	return buffs[buff_slot];
 }
 
 // solar: used by some MobAI stuff
@@ -2849,25 +2624,27 @@ bool Mob::FindBuff(int16 spellid)
 // solar: removes all buffs
 void Mob::BuffFadeAll()
 {
-	//TODO:
-	/*
-	for (int j = 0; j < BUFF_COUNT; j++) {
-		if(buffs[j].spellid != SPELL_UNKNOWN)
+	int max_slots = GetMaxBuffSlots();
+	for (int j = 0; j < max_slots; j++) 
+	{
+		if(buffs[j])
 			BuffFadeBySlot(j, false);
-	}*/
+	}
 	//we tell BuffFadeBySlot not to recalc, so we can do it only once when were done
 	CalcBonuses();
 }
 
-void Mob::BuffFadeDetrimental() {
-	//TODO:
-	/*
-	for (int j = 0; j < BUFF_COUNT; j++) {
-		if(buffs[j].spellid != SPELL_UNKNOWN) {
-			if(IsDetrimentalSpell(buffs[j].spellid))
+void Mob::BuffFadeDetrimental() 
+{
+	int max_slots = GetMaxBuffSlots();
+	for (int j = 0; j < max_slots; j++) 
+	{
+		if(buffs[j]) 
+		{
+			if(buffs[j]->GetSpell()->IsDetrimentalSpell())
 				BuffFadeBySlot(j, false);
 		}
-	}*/
+	}
 }
 
 void Mob::BuffFadeDetrimentalByCaster(Mob *caster)
@@ -2875,33 +2652,32 @@ void Mob::BuffFadeDetrimentalByCaster(Mob *caster)
 	if(!caster)
 		return;
 
-	//TODO:
-	/*
-	for (int j = 0; j < BUFF_COUNT; j++) {
-		if(buffs[j].spellid != SPELL_UNKNOWN) {
-			if(IsDetrimentalSpell(buffs[j].spellid))
+	int max_slots = GetMaxBuffSlots();
+	for (int j = 0; j < max_slots; j++) 
+	{
+		if(buffs[j]) 
+		{
+			if(buffs[j]->GetSpell()->IsDetrimentalSpell())
 			{
-				//this is a pretty terrible way to do this but 
-				//there really isn't another way till I rewrite the basics
-				Mob * c = entity_list.GetMob(buffs[j].casterid);
-				if(c && c == caster)
+				if(caster->GetID() == buffs[j]->GetCasterID())
+				{
 					BuffFadeBySlot(j, false);
+				}
 			}
 		}
-	}*/
+	}
 }
 
 // solar: removes the buff matching spell_id
 void Mob::BuffFadeBySpellID(int16 spell_id)
 {
-	//TODO:
-	/*
-	for (int j = 0; j < BUFF_COUNT; j++)
+	int max_slots = GetMaxBuffSlots();
+	for (int j = 0; j < max_slots; j++)
 	{
-		if (buffs[j].spellid == spell_id)
+		if (buffs[j] && buffs[j]->GetSpell()->GetSpellID() == spell_id)
 			BuffFadeBySlot(j, false);
 	}
-	*/
+	
 	//we tell BuffFadeBySlot not to recalc, so we can do it only once when were done
 	CalcBonuses();
 }
@@ -2911,15 +2687,15 @@ void Mob::BuffFadeByEffect(int effectid, int skipslot)
 {
 	int i;
 
-	/*
-	for(i = 0; i < BUFF_COUNT; i++)
+	int max_slots = GetMaxBuffSlots();
+	for(i = 0; i < max_slots; i++)
 	{
-		if(buffs[i].spellid == SPELL_UNKNOWN)
+		if(!buffs[i])
 			continue;
-		if(IsEffectInSpell(buffs[i].spellid, effectid) && i != skipslot)
+
+		if(buffs[i]->GetSpell()->IsEffectInSpell(effectid) && i != skipslot)
 			BuffFadeBySlot(i, false);
 	}
-	*/
 
 	//we tell BuffFadeBySlot not to recalc, so we can do it only once when were done
 	CalcBonuses();
@@ -3452,48 +3228,19 @@ void Mob::Mesmerize()
 		InterruptSpell();
 }
 
-void Client::MakeBuffFadePacket(int16 spell_id, int slot_id, bool send_message)
+void Client::MakeBuffFadePacket(Buff* buff, int slot_id, bool send_message)
 {
-	EQApplicationPacket* outapp;
-	
-	outapp = new EQApplicationPacket(OP_Buff, sizeof(SpellBuffFade_Struct));
-	SpellBuffFade_Struct* sbf = (SpellBuffFade_Struct*) outapp->pBuffer;
-
-	sbf->entityid=GetID();
-	// solar: i dont know why but this works.. for now
-	sbf->slot=2;
-//	sbf->slot=m_pp.buffs[slot_id].slotid;
-//	sbf->level=m_pp.buffs[slot_id].level;
-//	sbf->effect=m_pp.buffs[slot_id].effect;
-	sbf->spellid=spell_id;
-	sbf->slotid=slot_id;
-	sbf->bufffade = 1;
-#if EQDEBUG >= 11
-	printf("Sending SBF 1 from server:\n");
-	DumpPacket(outapp);
-#endif
-	QueuePacket(outapp);
-
-/*
-	sbf->effect=0;
-	sbf->level=0;
-	sbf->slot=0;
-*/
-	sbf->spellid=0xffffffff;
-#if EQDEBUG >= 11
-	printf("Sending SBF 2 from server:\n");
-	DumpPacket(outapp);
-#endif
-	QueuePacket(outapp);
-	safe_delete(outapp);
+	SendBuffPacket(buff, slot_id, 1);
 	
 	if(send_message)
 	{
-		const char *fadetext = spells[spell_id].spell_fades;
-		outapp = new EQApplicationPacket(OP_BuffFadeMsg, sizeof(BuffFadeMsg_Struct) + strlen(fadetext));
+		const char *fade_text = buff->GetSpell()->GetSpell().spell_fades;
+		uint32 fade_text_len = strlen(fade_text);
+
+		EQApplicationPacket *outapp = new EQApplicationPacket(OP_BuffFadeMsg, sizeof(BuffFadeMsg_Struct) + fade_text_len);
 		BuffFadeMsg_Struct *bfm = (BuffFadeMsg_Struct *) outapp->pBuffer;
 		bfm->color = MT_Spells;
-		memcpy(bfm->msg, fadetext, strlen(fadetext));
+		memcpy(bfm->msg, fade_text, fade_text_len);
 		QueuePacket(outapp);
 		safe_delete(outapp);
 	}
@@ -3852,28 +3599,22 @@ void Client::SendBuffDurationPacket(int16 spell_id, int duration, int inlevel)
 
 void Mob::SendPetBuffsToClient()
 {
-	// Don't really need this check, as it should be checked before this method is called, but it doesn't hurt
-	// too much to check again.
-	if(!(GetOwner() && GetOwner()->IsClient())) return;
-
-	int PetBuffCount = 0;
-
-
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_PetBuffWindow,sizeof(PetBuff_Struct));
 	PetBuff_Struct* pbs=(PetBuff_Struct*)outapp->pBuffer;
 	memset(outapp->pBuffer,0,outapp->size);
-	pbs->petid=GetID();
+	pbs->petid = GetID();
 
-	//TODO:
-	/*
-	for(int buffslot = 0; buffslot < BUFF_COUNT; buffslot++) {
-		if(buffs[buffslot].spellid != SPELL_UNKNOWN) {
-			pbs->spellid[PetBuffCount] = buffs[buffslot].spellid;
-			pbs->ticsremaining[PetBuffCount] = buffs[buffslot].ticsremaining;
+	int PetBuffCount = 0;
+	int max_slots = GetMaxBuffSlots();
+	for(int buffslot = 0; buffslot < max_slots; buffslot++) 
+	{
+		if(buffs[buffslot]) 
+		{
+			pbs->spellid[PetBuffCount] = buffs[buffslot]->GetSpell()->GetSpellID();
+			pbs->ticsremaining[PetBuffCount] = buffs[buffslot]->GetDurationRemaining();
 			PetBuffCount++;
 		}
 	}
-	*/
 
 	pbs->buffcount=PetBuffCount;
 	GetOwner()->CastToClient()->QueuePacket(outapp);
@@ -3954,41 +3695,20 @@ int Client::GetFreeBuffSlot(const Spell *spell_to_cast)
 	if(spell_to_cast->IsDiscipline())
 	{
 		int start = GetMaxBuffSlots() + GetMaxSongSlots();
-		for(int x = start; x < (start + GetMaxDiscSlots()); ++x)
-		{
-			if(buffs[x] == NULL)
-			{
-				return x;
-			}
-		}
-		return start;
+		int end = start + GetMaxDiscSlots();
+		return CheckBuffSlotStackConflicts(spell_to_cast, start, end);
 	}
 
 	if(spell_to_cast->GetSpell().short_buff_box)
 	{
 		int start = GetMaxBuffSlots();
-		for(int x = start; x < (start + GetMaxSongSlots()); ++x)
-		{
-			if(buffs[x] == NULL)
-			{
-				return x;
-			}
-		}
-		return start;
-	}
-	else
-	{
-		for(int x = 0; x < GetMaxBuffSlots(); ++x)
-		{
-			if(buffs[x] == NULL)
-			{
-				return x;
-			}
-		}
-		return 0;
+		int end = start + GetMaxSongSlots();
+		return CheckBuffSlotStackConflicts(spell_to_cast, start, end);
 	}
 
-	return -1;
+	int start = 0;
+	int end = GetMaxBuffSlots();
+	return CheckBuffSlotStackConflicts(spell_to_cast, start, end);
 }
 
 int NPC::GetFreeBuffSlot(const Spell *spell_to_cast)
@@ -3996,41 +3716,124 @@ int NPC::GetFreeBuffSlot(const Spell *spell_to_cast)
 	if(spell_to_cast->IsDiscipline())
 	{
 		int start = GetMaxBuffSlots() + GetMaxSongSlots();
-		for(int x = start; x < (start + GetMaxDiscSlots()); ++x)
-		{
-			if(buffs[x] == NULL)
-			{
-				return x;
-			}
-		}
-		return start;
+		int end = start + GetMaxDiscSlots();
+		return CheckBuffSlotStackConflicts(spell_to_cast, start, end);
 	}
 
 	if(spell_to_cast->GetSpell().short_buff_box)
 	{
 		int start = GetMaxBuffSlots();
-		for(int x = start; x < (start + GetMaxSongSlots()); ++x)
-		{
-			if(buffs[x] == NULL)
-			{
-				return x;
-			}
-		}
-		return start;
-	}
-	else
-	{
-		for(int x = 0; x < GetMaxBuffSlots(); ++x)
-		{
-			if(buffs[x] == NULL)
-			{
-				return x;
-			}
-		}
-		return 0;
+		int end = start + GetMaxSongSlots();
+		return CheckBuffSlotStackConflicts(spell_to_cast, start, end);
 	}
 
-	return -1;
+	for(int x = 0; x < GetMaxBuffSlots(); ++x)
+	{
+		if(buffs[x] == NULL)
+		{
+			return x;
+		}
+	}
+
+	int start = 0;
+	int end = GetMaxBuffSlots();
+	return CheckBuffSlotStackConflicts(spell_to_cast, start, end);
+}
+
+int Mob::CheckBuffSlotStackConflicts(const Spell* spell_to_cast, int start, int end)
+{
+	sint32 buff_slot = 0;
+	bool will_overwrite = false;
+	vector<int> overwrite_slots;
+	int empty_slot = -1;
+	
+	for(buff_slot = start; buff_slot < end; buff_slot++)
+	{
+		Buff *cur_buff = buffs[buff_slot];
+		if(cur_buff)
+		{
+			// there's a buff in this slot
+			int ret = CheckStackConflict(spell_to_cast, cur_buff->GetSpell());
+			if(ret == -1) 
+			{
+				// stop the spell
+				mlog(SPELLS__BUFFS, "Adding buff %d failed: stacking prevented by spell %d in slot %d with caster level %d",
+					spell_to_cast->GetSpellID(), cur_buff->GetSpell()->GetSpellID(), buff_slot, cur_buff->GetSpell()->GetCasterLevel());
+				return -1;
+			}
+			else if(ret == 1) 
+			{
+				// set a flag to indicate that there will be overwriting
+				mlog(SPELLS__BUFFS, "Adding buff %d will overwrite spell %d in slot %d with caster level %d", 
+					spell_to_cast->GetSpellID(), cur_buff->GetSpell()->GetSpellID(), buff_slot, cur_buff->GetSpell()->GetCasterLevel());
+				will_overwrite = true;
+				overwrite_slots.push_back(buff_slot);
+			}
+		}
+		else
+		{
+			if(empty_slot == -1)
+				empty_slot = buff_slot;
+		}
+	}
+	
+	mlog(SPELLS__BUFFS, "Checking where buff %d (cast level %d) can be added safelt...",
+		spell_to_cast->GetSpellID(), spell_to_cast->GetCasterLevel());
+
+	// first we loop through everything checking that the spell
+	// can stack with everything.  this is to avoid stripping the spells
+	// it would overwrite, and then hitting a buff we can't stack with.
+	// we also check if overwriting will occur.  this is so after this loop
+	// we can determine if there will be room for this buff
+	// we didn't find an empty slot to put it in, and it's not overwriting
+	// anything so there must not be any room left.
+ 	if(empty_slot == -1 && !will_overwrite)
+ 	{
+ 		if(spell_to_cast->IsDetrimentalSpell()) //Sucks to be you, bye bye one of your buffs
+ 		{
+ 			for(buff_slot = start; buff_slot < end; buff_slot++)
+ 			{
+ 				Buff *cur_buff = buffs[buff_slot];
+				if(cur_buff->GetSpell()->IsBeneficialSpell())
+ 				{
+ 					mlog(SPELLS__BUFFS, "No slot for detrimental buff %d, so we are overwriting a beneficial buff %d in slot %d", 
+						spell_to_cast->GetSpellID(), cur_buff->GetSpell()->GetSpellID(), buff_slot);
+ 					BuffFadeBySlot(buff_slot, false);
+ 					empty_slot = buff_slot;
+					break;
+ 				}
+ 			}
+ 			if(empty_slot == -1) 
+			{
+	 			mlog(SPELLS__BUFFS, "Unable to find a buff slot for detrimental buff %d", spell_to_cast->GetSpellID());
+				return -1;
+ 			}
+ 		}
+ 		else 
+		{
+			mlog(SPELLS__BUFFS, "Unable to find a buff slot for beneficial buff %d", spell_to_cast->GetSpellID());
+ 			return -1;
+ 		}
+ 	}
+
+	if(will_overwrite)
+	{
+		vector<int>::iterator cur, end;
+		cur = overwrite_slots.begin();
+		end = overwrite_slots.end();
+		for(; cur != end; cur++) 
+		{
+			// strip spell
+			BuffFadeBySlot(*cur, false);
+
+			// if we hadn't found a free slot before, or if this is earlier
+			// we use it
+			if(empty_slot == -1 || *cur < empty_slot)
+				empty_slot = *cur;
+		}
+	}
+	
+	return empty_slot;
 }
 
 bool Mob::ValidateStartSpellCast(const Spell *spell_to_cast)
@@ -4294,10 +4097,34 @@ bool Client::DoComponentCheck(Spell *spell_to_cast, bool bard_song_mode)
 	return true;
 }
 
+void Client::SendBuffPacket(Buff *buff, uint32 buff_index, uint32 buff_mode)
+{
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_Buff, sizeof(SpellBuffFade_Struct));
+	SpellBuffFade_Struct* sbf = (SpellBuffFade_Struct*) outapp->pBuffer;
+
+	sbf->entityid = GetID();
+	sbf->slot = 2;
+	sbf->spellid = buff->GetSpell()->GetSpellID();
+	sbf->slotid = buff_index;
+	sbf->effect = buff->GetInstrumentMod();
+	sbf->level = buff->GetSpell()->GetCasterLevel();
+	sbf->bufffade = buff_mode; //0x03 = create new buff, 0x01 = buff fade, 0x00 = update current buff
+	sbf->duration = buff->GetDurationRemaining();
+	QueuePacket(outapp);
+
+	if(buff_mode == 1)
+	{
+		sbf->spellid = 0xFFFFFFFF;
+		QueuePacket(outapp);
+	}
+	safe_delete(outapp);
+}
+
 Spell::Spell(uint32 spell_id, Mob* caster, Mob* target, uint32 slot, uint32 cast_time, uint32 mana_cost)
 {
 	this->spell_id = spell_id;
 	this->caster_id = caster->GetID();
+	this->caster_level = caster->GetCasterLevel();
 	this->target_id = target->GetID();
 	this->spell_slot = slot;
 	this->cast_time = cast_time;
@@ -4390,3 +4217,21 @@ Spell* Spell::CopySpell()
 	memcpy((void*)&return_value->raw_spell, (const void*)&this->raw_spell, sizeof(SPDat_Spell_Struct));
 	return return_value;
 }
+
+Buff::Buff(Spell *spell, uint32 duration)
+{
+	spell_duration_remaining = duration;
+	is_perm_illusion = 0;
+	magic_remaining_charges = 1;
+	poison_remaining_charges = spell->CalculatePoisonCounters();
+	disease_remaining_charges = spell->CalculateDiseaseCounters();
+	curse_remaining_charges = spell->CalculateCurseCounters();
+	general_remaining_charges = spell->GetSpell().numhits;	
+	melee_shield_remaining = 0;
+	magic_shield_remaining = 0;
+	death_save_chance = 0;
+	caster_aa_rank = 0;
+	instrument_mod = 10;
+	buff_spell = spell->CopySpell();
+}
+

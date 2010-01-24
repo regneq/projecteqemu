@@ -5661,3 +5661,66 @@ void Client::SuspendMinion()
 	}
 }
 
+bool Client::SpellGlobalCheck(int16 Spell_ID, int16 Char_ID) {
+
+	std::string Spell_Global_Name;
+	int Spell_Global_Value;
+	int Global_Value;
+
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+
+	if (database.RunQuery(query,MakeAnyLenString(&query, "SELECT qglobal, value FROM spell_globals WHERE spellid=%i", Spell_ID), errbuf, &result)) {
+		safe_delete_array(query);
+
+		if (mysql_num_rows(result) == 1) {
+			row = mysql_fetch_row(result);
+			Spell_Global_Name = row[0];
+			Spell_Global_Value = atoi(row[1]);
+
+			mysql_free_result(result); 
+
+			if (Spell_Global_Name.empty()) {   // If the entry in the spell_globals table has nothing set for the qglobal name
+				return true;
+			}
+			else if (database.RunQuery(query,MakeAnyLenString(&query, "SELECT value FROM quest_globals WHERE charid=%i AND name='%s'", Char_ID, Spell_Global_Name.c_str()), errbuf, &result)) {
+				safe_delete_array(query);
+			   
+				if (mysql_num_rows(result) == 1) {
+					row = mysql_fetch_row(result);
+
+					Global_Value = atoi(row[0]);
+					mysql_free_result(result);
+					if (Global_Value == Spell_Global_Value) {   // If the values match from both tables, allow the spell to be scribed
+						return true;
+					}
+					else if (Global_Value > Spell_Global_Value) {   // Check if the qglobal value is greater than the require spellglobal value
+						return true;
+					}
+					else   // If no matching result found in qglobals, don't scribe this spell
+					{
+						LogFile->write(EQEMuLog::Error, "Char ID: %i Spell_globals Name: '%s' Value: '%i' did not match QGlobal Value: '%i' for Spell ID %i", Char_ID, Spell_Global_Name.c_str(), Spell_Global_Value, Global_Value, Spell_ID);
+						return false;
+					}
+				}
+				else
+					LogFile->write(EQEMuLog::Error, "Char ID: %i does not have the Qglobal Name: '%s' for Spell ID %i", Char_ID, Spell_Global_Name.c_str(), Spell_ID);
+					safe_delete_array(query);
+			}
+			else
+				LogFile->write(EQEMuLog::Error, "Spell ID %i query of spell_globals with Name: '%s' Value: '%i' failed", Spell_ID, Spell_Global_Name.c_str(), Spell_Global_Value);
+		}
+		else {
+			return true;   // Spell ID isn't listed in the spells_global table, so it is not restricted from scribing
+		}
+		mysql_free_result(result); 
+	}
+	else {
+		LogFile->write(EQEMuLog::Error, "Error while querying Spell ID %i spell_globals table query '%s': %s", Spell_ID, query,  errbuf);
+		safe_delete_array(query);
+		return false;   // Query failed, so prevent spell from scribing just in case
+	}
+	return false;   // Default is false
+}

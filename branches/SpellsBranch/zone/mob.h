@@ -668,6 +668,7 @@ bool logpos;
 	virtual void InitializeBuffSlots() { buffs = NULL; }
 	virtual void UninitializeBuffSlots() { }
 	virtual int GetFreeBuffSlot(const Spell *spell_to_cast) { return 0; }
+	int CheckBuffSlotStackConflicts(const Spell* spell_to_cast, int start, int end);
 	virtual bool CastSpell(Spell **casted_spell_ptr, int32* spell_will_finish = 0);
 	virtual bool CastSpell(int16 spell_id, int16 target_id, int16 slot = 10, sint32 casttime = -1, sint32 mana_cost = -1, int32* oSpellWillFinish = 0, int32 item_slot = 0xFFFFFFFF);
 	virtual bool DoCastSpell(Spell **casted_spell_ptr, int32* spell_will_finish = 0);
@@ -699,6 +700,18 @@ bool logpos;
 	virtual bool SpellEffect(Mob* caster, Spell *spell_to_cast, float partial = 100);
 	bool ApplyNextBardPulse(Spell *spell_to_cast);
 	void BardPulse(Spell *spell_to_cast, Mob *caster);
+	virtual void SendBuffPacket(Buff *buff, uint32 buff_index, uint32 buff_mode) { }
+	virtual void MakeBuffFadePacket(Buff *buff, int slot_id, bool send_message = true) { }
+	Buff *AddBuff(Mob *caster, Spell *spell_to_cast, uint32 duration = 0);
+	void BuffFadeBySpellID(int16 spell_id);
+	void BuffFadeByEffect(int effectid, int skipslot = -1);
+	void BuffFadeAll();
+	void BuffFadeDetrimental();
+	void BuffFadeBySlot(int slot, bool iRecalcBonuses = true);
+	void BuffFadeDetrimentalByCaster(Mob *caster);
+	int16	CastingSpellID() const { return casting_spell ? casting_spell->GetSpellID() : 0; }
+	inline	bool	IsCasting() const { return((casting_spell != NULL)); }
+
 
 
 	virtual void SpellProcess();
@@ -706,19 +719,11 @@ bool logpos;
 	//virtual bool DoCastSpell(int16 spell_id, int16 target_id, int16 slot = 10, sint32 casttime = -1, sint32 mana_cost = -1, int32* oSpellWillFinish = 0, int32 item_slot = 0xFFFFFFFF);
 	//void	CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16 mana_used, int32 inventory_slot = 0xFFFFFFFF);
 	void	SendPetBuffsToClient();
-	int		AddBuff(Mob *caster, const int16 spell_id, int duration = 0, sint32 level_override = -1);
+	//int		AddBuff(Mob *caster, const int16 spell_id, int duration = 0, sint32 level_override = -1);
 	//virtual bool SpellEffect(Mob* caster, int16 spell_id, float partial = 100);
 	virtual void DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob* caster = 0);
-	void	BuffFadeBySpellID(int16 spell_id);
-	void	BuffFadeByEffect(int effectid, int skipslot = -1);
-	void	BuffFadeAll();
-	void	BuffFadeDetrimental();
-	void	BuffFadeBySlot(int slot, bool iRecalcBonuses = true);
-	void	BuffFadeDetrimentalByCaster(Mob *caster);
 	void	BuffModifyDurationBySpellID(int16 spell_id, sint32 newDuration);
 	int		CanBuffStack(int16 spellid, int8 caster_level, bool iFailIfOverwrite = false);
-	inline	bool	IsCasting() const { return((casting_spell != NULL)); }
-	int16	CastingSpellID() const { return casting_spell ? casting_spell->GetSpellID() : 0; }
 	void	TemporaryPets(int16 spell_id, Mob *target, const char *name_override = NULL, uint32 duration_override = 0);
 	void	WakeTheDead(int16 spell_id, Mob *target, uint32 duration);
 	void	TryDotCritical(int16 spell_id, Mob *caster, int &damage);
@@ -914,7 +919,7 @@ bool logpos;
 	int16	GetInstrumentMod(Spell *spell_to_cast) const;
 	int CalcSpellEffectValue(Spell *spell_to_cast, int effect_id, int caster_level = 1, Mob *caster = NULL, int ticsremaining = 0);
 	int CalcSpellEffectValue_formula(int formula, int base, int max, int caster_level, Spell *spell_to_cast, int ticsremaining = 0);
-	virtual int CheckStackConflict(int16 spellid1, int caster_level1, int16 spellid2, int caster_level2, Mob* caster1 = NULL, Mob* caster2 = NULL);
+	virtual int CheckStackConflict(const Spell* spell_1, const Spell *spell_2);
 	int32 GetCastedSpellInvSlot() const { return casting_spell ? casting_spell->GetInventorySpellSlot() : 0; }
 
 //	inline EGNode *GetEGNode() { return(_egnode); }

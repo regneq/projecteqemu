@@ -87,11 +87,16 @@ bool Mob::SpellEffect(Mob* caster, Spell *spell_to_cast, float partial)
 	else
 		caster_level = caster ? caster->GetCasterLevel() : GetCasterLevel();
 
+	spell_to_cast->SetCasterLevel(caster_level);
+
 	//Add the buff and junk
 	sint32 buff_duration = CalcBuffDuration(caster, this, spell_to_cast, caster_level) - 1;
+	if(caster)
+		buff_duration = caster->GetActSpellDuration(spell_to_cast, buff_duration);
+
 	if(buff_duration > 0)
 	{
-		//new_buff = AddBuff(caster, spell_to_cast, buff_duration, caster_level);
+		new_buff = AddBuff(caster, spell_to_cast, buff_duration);
 		if(!new_buff)
 		{
 			mlog(SPELLS__EFFECT_VALUES, "Unable to apply buff for spell %s(%d) via Mob::AddBuff()", spell_to_cast->GetSpell().name, spell_to_cast->GetSpellID());
@@ -131,6 +136,7 @@ bool Mob::SpellEffect(Mob* caster, Spell *spell_to_cast, float partial)
 
 void Mob::Handle_SE_CurrentHP(const Spell *spell_to_cast, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use)
 {
+	printf("Spell effect Current HP\n");
 }
 
 int Mob::CalcSpellEffectValue(Spell *spell_to_cast, int effect_id, int caster_level, Mob *caster, int ticsremaining)
@@ -535,20 +541,43 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 // solar: removes the buff in the buff slot 'slot'
 void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 {
+	if(slot < 0 || slot > GetMaxBuffSlots())
+	{
+		return;
+	}
+
+	mlog(SPELLS__BUFFS, "Fading buff %d from slot %d", buffs[slot]->GetSpell()->GetSpellID(), slot);
+
+	for(int i = 0; i < EFFECT_COUNT; i++)
+	{
+	}
+
+	Mob *p = entity_list.GetMob(buffs[slot]->GetCasterID());
+	if (p && p != this && !buffs[slot]->GetSpell()->IsBardSong())
+	{
+		Mob *notify = p;
+		if(p->IsPet())
+			notify = p->GetOwner();
+		if(p) 
+		{
+			notify->Message_StringID(MT_Broadcasts, SPELL_WORN_OFF_OF,
+				buffs[slot]->GetSpell()->GetSpell().name, GetCleanName());
+		}
+	}
+
+	MakeBuffFadePacket(buffs[slot], slot, true);
+	safe_delete(buffs[slot]);
+
+	if(IsPet() && GetOwner() && GetOwner()->IsClient()) 
+	{
+		SendPetBuffsToClient();
+	}
+
+	if(iRecalcBonuses)
+		CalcBonuses();
+
 	//TODO:
-	/*
-	if(slot < 0 || slot > BUFF_COUNT)
-		return;
-
-	if(!IsValidSpell(buffs[slot].spellid))
-		return;
-
-	if (IsClient() && !CastToClient()->IsDead())
-		CastToClient()->MakeBuffFadePacket(buffs[slot].spellid, slot);
-
-	mlog(SPELLS__BUFFS, "Fading buff %d from slot %d", buffs[slot].spellid, slot);
-
-	for (int i=0; i < EFFECT_COUNT; i++)
+	/*for (int i=0; i < EFFECT_COUNT; i++)
 	{
 		if(IsBlankSpellEffect(buffs[slot].spellid, i))
 			continue;
@@ -822,28 +851,7 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 			}
 		}
 	}
-
-	// notify caster (or their master) of buff that it's worn off
-	Mob *p = entity_list.GetMob(buffs[slot].casterid);
-	if (p && p != this && !IsBardSong(buffs[slot].spellid))
-	{
-		Mob *notify = p;
-		if(p->IsPet())
-			notify = p->GetOwner();
-		if(p) {
-			notify->Message_StringID(MT_Broadcasts, SPELL_WORN_OFF_OF,
-				spells[buffs[slot].spellid].name, GetCleanName());
-		}
-	}
-
-	buffs[slot].spellid = SPELL_UNKNOWN;
-	if(IsPet() && GetOwner() && GetOwner()->IsClient()) {
-		SendPetBuffsToClient();
-	}
-
-	if (iRecalcBonuses)
-		CalcBonuses();
-		*/
+	*/
 }
 
 //given an item/spell's focus ID and the spell being cast, determine the focus ammount, if any

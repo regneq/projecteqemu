@@ -77,8 +77,10 @@ public:
 
 	void SetTimerIDDuration(uint32 duration) { timer_id_duration = duration; }
 	uint32 GetTimerIDDuration() const { return timer_id_duration; }
+
+	uint32 GetCasterLevel() const { return caster_level; }
+	void SetCasterLevel(uint32 level) { caster_level = level; }
 	
-	Buff *CreateBuff() { return NULL; }
 	Spell* CopySpell();
 
 	void StartCastTimer(uint32 duration);
@@ -134,10 +136,10 @@ public:
 	int GetSpellEffectIndex(int effect) const; //impl
 	int CanUseSpell(int classa, int level) const;
 	int GetMinLevel() const; //impl
-	sint32 CalculatePoisonCounters() const;
-	sint32 CalculateDiseaseCounters() const;
-	sint32 CalculateCurseCounters() const;
-	bool IsDiscipline() const;
+	sint32 CalculatePoisonCounters() const; //impl
+	sint32 CalculateDiseaseCounters() const; //impl
+	sint32 CalculateCurseCounters() const; //impl
+	bool IsDiscipline() const; //impl
 	bool IsResurrectionEffects() const; //impl
 	bool IsRuneSpell() const;
 	bool IsMagicRuneSpell() const;
@@ -159,7 +161,7 @@ public:
 
 protected:
 	uint32 spell_id;
-	uint16 caster_level;
+	uint32 caster_level;
 	uint32 caster_id;
 	uint32 target_id;
 	uint32 spell_slot;

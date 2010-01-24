@@ -26,15 +26,12 @@ class Spell;
 class Buff
 {
 public:
-	Buff(Spell* spell);
+	Buff(Spell* spell, uint32 duration);
 	~Buff(){ }
 
 	void SetDurationRemaining(uint32 duration) { spell_duration_remaining = duration; }
 	uint32 GetDurationRemaining() const { return spell_duration_remaining; }
-
-	//A permanant duration spell is supposed to last forever and never tic down, the client does this via a special duration send
-	void SetPermanantDuration(bool d) { is_perm_duration = d; }
-	bool IsPermanantDuration() const { return is_perm_duration; }
+	bool IsPermanantDuration() const { return spell_duration_remaining == 0xFFFFFFFF; }
 	
 	//The first four are for counters via dispel the last is for the numhits modifier in the spell field.
 	sint32 GetRemainingChargesMagic() const { return magic_remaining_charges; }
@@ -69,14 +66,16 @@ public:
 	void SetCasterAARank(uint8 rank) { caster_aa_rank = rank; }
 	uint8 GetCasterAARank() const { return caster_aa_rank; }
 
-	const SPDat_Spell_Struct GetSpell() const { return spell; }
+	void SetInstrumentMod(uint32 mod) { instrument_mod = mod; }
+	uint32 GetInstrumentMod() const { return instrument_mod; }
+
+	const Spell* GetSpell() const { return buff_spell; }
 
 	uint32 GetCasterID() const { return 0; }
 
 
 protected:
 	uint32 spell_duration_remaining;
-	bool is_perm_duration;
 	bool is_perm_illusion;
 
 	sint32 magic_remaining_charges;
@@ -90,11 +89,9 @@ protected:
 	uint8 death_save_chance;
 	uint8 caster_aa_rank;
 
-	uint32 instrument_modifier;
-	sint32 damage_modifier;
-	sint32 healing_modifier;
+	uint32 instrument_mod;
 
-	SPDat_Spell_Struct spell;
+	Spell *buff_spell;
 };
 
 #endif
