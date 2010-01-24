@@ -159,6 +159,7 @@
 #define PET_GUARDINGLIFE			1134	//Guarding with my life..oh splendid one.
 #define PET_GETLOST_STRING			1135	//As you wish, oh great one.
 #define PET_LEADERIS				1136	//My leader is %3.
+#define I_FOLLOW_NOONE				1137	//I follow no one.
 #define MERCHANT_BUSY				1143	//I'm sorry, I am busy right now.
 #define MERCHANT_GREETING			1144	//Welcome to my shop, %3.
 #define MERCHANT_HANDY_ITEM1		1145	//Hello there, %3. How about a nice %4?
