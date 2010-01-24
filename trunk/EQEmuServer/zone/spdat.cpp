@@ -282,6 +282,11 @@ bool IsSummonPetSpell(int16 spell_id)
 	);
 }
 
+bool IsSummonPCSpell(int16 spell_id)
+{
+	return IsEffectInSpell(spell_id, SE_SummonPC);
+}
+
 bool IsCharmSpell(int16 spell_id)
 {
 	return IsEffectInSpell(spell_id, SE_Charm);
