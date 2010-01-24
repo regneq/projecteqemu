@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==01/24/2010==
 Trevius: Exported CheckLoS() to perl::mob.
+Trevius: Added SoF Decode/Encode for OP_InspectAnswer.  SoF clients can now inspect Titanium clients and everything shows up properly.  SoF clients still cannot be inspected at all by either client.
 Derision: Fix for armor not showing to other player's after looting your corpse.
 
 ==01/23/2010==
