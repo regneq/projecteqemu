@@ -51,6 +51,7 @@ E(OP_AdventureMerchantSell)
 E(OP_RaidUpdate)
 E(OP_RaidJoin)
 E(OP_VetRewardsAvaliable)
+E(OP_InspectAnswer)
 
 //list of packets we need to decode on the way in:
 D(OP_SetServerFilter)
@@ -80,5 +81,6 @@ D(OP_FaceChange)
 D(OP_AdventureMerchantSell)
 D(OP_TradeSkillCombine)
 D(OP_RaidInvite)
+D(OP_InspectAnswer)
 #undef E
 #undef D
