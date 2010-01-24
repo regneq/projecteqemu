@@ -654,6 +654,7 @@ bool IsDiseaseCounterSpell(int16 spell_id);
 bool IsSummonItemSpell(int16 spell_id);
 bool IsSummonSkeletonSpell(int16 spell_id);
 bool IsSummonPetSpell(int16 spell_id);
+bool IsSummonPCSpell(int16 spell_id);
 bool IsCharmSpell(int16 spell_id);
 bool IsBlindSpell(int16 spell_id);
 bool IsEffectHitpointsSpell(int16 spell_id);

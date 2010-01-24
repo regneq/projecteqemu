@@ -750,7 +750,23 @@ void Client::OnDisconnect(bool hard_disconnect) {
 		if (MyRaid)
 			MyRaid->MemberZoned(this);
 	}
-	
+
+	Mob *Other = trade->With();
+
+	if(Other)
+	{
+		mlog(TRADING__CLIENT, "Client disconnected during a trade. Returning their items.");
+
+		FinishTrade(this);
+
+		if(Other->IsClient())
+			Other->CastToClient()->FinishTrade(Other);
+
+		trade->Reset();
+
+		Other->trade->Reset();
+	}
+
 	//remove ourself from all proximities
 	ClearAllProximities();
 	

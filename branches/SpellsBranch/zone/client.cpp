@@ -5654,7 +5654,7 @@ void Client::SuspendMinion()
 		}
 		else
 		{
-			Message(13,"Error getting the spell_id from the npc_type id.");
+			Message_StringID(clientMessageError, ONLY_SUMMONED_PETS);
 
 			return;
 		}

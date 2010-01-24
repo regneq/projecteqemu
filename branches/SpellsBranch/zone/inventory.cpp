@@ -430,12 +430,12 @@ bool Client::AutoPutLootInInventory(ItemInst& inst, bool try_worn, bool try_curs
 				if (inst.IsEquipable(i))	// Equippable at this slot?
 				{
 					//send worn to everyone...
+					PutLootInInventory(i, inst);
 					int8 worn_slot_material = Inventory::CalcMaterialFromSlot(i);
 					if(worn_slot_material != 0xFF)
 					{
 						SendWearChange(worn_slot_material);
 					}
-					PutLootInInventory(i, inst);
 					return true;
 				}
 			}

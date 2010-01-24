@@ -1210,6 +1210,7 @@ void Client::SendBazaarResults(int32 TraderID, int32 Class_, int32 Race, int32 I
 			Search.append(Tmp);
 	}
 	if(Type!=0xFFFFFFFF){
+
 		switch(Type){
 
 			case 0:
@@ -1236,7 +1237,7 @@ void Client::SendBazaarResults(int32 TraderID, int32 Class_, int32 Race, int32 I
 				Search.append(Tmp);
 		}
 	}
-		
+
 	switch(ItemStat) {
 
 		case STAT_AC:
@@ -1312,6 +1313,36 @@ void Client::SendBazaarResults(int32 TraderID, int32 Class_, int32 Race, int32 I
 		case STAT_MANA:
 			Search.append(" and items.mana>0");
 			Values.append(",items.mana");
+			break;
+
+		case STAT_ENDURANCE:
+			Search.append(" and items.endur>0");
+			Values.append(",items.endur");
+			break;
+
+		case STAT_ATTACK:
+			Search.append(" and items.attack>0");
+			Values.append(",items.attack");
+			break;
+
+		case STAT_HP_REGEN:
+			Search.append(" and items.regen>0");
+			Values.append(",items.regen");
+			break;
+
+		case STAT_MANA_REGEN:
+			Search.append(" and items.manaregen>0");
+			Values.append(",items.manaregen");
+			break;
+
+		case STAT_HASTE:
+			Search.append(" and items.haste>0");
+			Values.append(",items.haste");
+			break;
+
+		case STAT_DAMAGE_SHIELD:
+			Search.append(" and items.damageshield>00");
+			Values.append(",items.damageshield");
 			break;
 
 		default:

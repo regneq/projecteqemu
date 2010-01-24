@@ -2098,16 +2098,16 @@ struct Inspect_Struct {
 	int16 TargetID;
 	int16 PlayerID;
 };
-//OP_InspectAnswer
-struct InspectResponse_Struct{//Cofruben:need to send two of this for the inspect response.
+
+//OP_InspectAnswer - Size: 1860
+struct InspectResponse_Struct{
 /*000*/	int32 TargetID;
 /*004*/	int32 playerid;
-/*008*/	char itemnames[22][64]; //was [21][64]
-/*1416*/char unknown_zero[64];//fill with zero's.
-/*1480*/int32 itemicons[22]; //was 21
+/*008*/	char itemnames[22][64];
+/*1416*/char unknown_zero[64];
+/*1480*/int32 itemicons[22];
 /*1568*/int32 unknown_zero2;
-/*1572*/char text[200];
-/*1772*/ uint8 unknown1772[88];        // ***Placeholder
+/*1572*/char text[288];	// Max number of chars in Inspect Window appears to be 254
 /*1860*/
 };
 

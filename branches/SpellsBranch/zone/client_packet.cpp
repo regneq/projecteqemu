@@ -3441,7 +3441,7 @@ void Client::Handle_OP_GetGuildMOTD(const EQApplicationPacket *app)
 	mlog(GUILDS__IN_PACKETS, "Received OP_GetGuildMOTD");
 	mpkt(GUILDS__IN_PACKET_TRACE, app);
 
-	SendGuildMOTD();
+	SendGuildMOTD(true);
 }
 
 void Client::Handle_OP_GetGuildsList(const EQApplicationPacket *app)
@@ -5979,7 +5979,27 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 	char val1[20]={0};
 	PetCommand_Struct* pet = (PetCommand_Struct*) app->pBuffer;
 	Mob* mypet = this->GetPet();
-	if(!mypet) return;
+
+	if(!mypet || pet->command == PET_LEADER)
+	{
+		if(pet->command == PET_LEADER)
+		{
+			if(mypet && (!GetTarget() || GetTarget() == mypet))
+			{
+				mypet->Say_StringID(PET_LEADERIS, GetName());
+			}
+			else if((mypet = GetTarget()))
+			{
+				Mob *Owner = mypet->GetOwner();
+				if(Owner)
+					mypet->Say_StringID(PET_LEADERIS, Owner->GetCleanName());
+				else
+					mypet->Say_StringID(I_FOLLOW_NOONE);
+			}
+		}
+
+		return;
+	}
 
 	if(mypet->GetPetType() == petAnimation && (pet->command != PET_HEALTHREPORT && pet->command != PET_GETLOST) && !GetAA(aaAnimationEmpathy))
 		return;
@@ -6049,10 +6069,6 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 		}
 		*/
 
-		break;
-	}
-	case PET_LEADER: {
-		mypet->Say_StringID(PET_LEADERIS);
 		break;
 	}
 	case PET_GUARDHERE: {

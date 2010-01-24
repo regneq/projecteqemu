@@ -1,5 +1,15 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==01/24/2010==
+Trevius: Exported CheckLoS() to perl::mob.
+Trevius: Added SoF Decode/Encode for OP_InspectAnswer.  SoF clients can now inspect Titanium clients and everything shows up properly.  SoF clients still cannot be inspected at all by either client.
+Derision: Fix for armor not showing to other player's after looting your corpse.
+Derision: Call of the Hero should no longer transfer aggro to the caster.
+LeftRoad: Implemented /pet leader command.
+Derision: Fix for item loss when going Linkdead with items in the trade window.
+Derision: /getguildmotd now works.
+Derision: Fixed Bazaar search filter for Endurance, Attack, HP & Mana Regen, Haste and Damage Shield.
+
 ==01/23/2010==
 Trevius: Added NPC:ReturnNonQuestNoDropItems rule to enable/disable a new feature that allows all NO DROP items to be returned if turned into a non-item-quest NPC (no EVENT_ITEM).
 Trevius: Removed a possible exploit with quest turn-ins.
@@ -9,6 +19,8 @@ Derision: Reset Trade Accepted state if money is added to a trade.
 Derision: Shrunk/Grown players/mobs will now appear the correct size to new players entering the zone.
 Derision: OP_GuildMemberList for SoF (used to populate Guild Management Window Roster.
 Derision: OP_GuildDemote for SoF.
+Derision: OP_GuildPublicNote for SoF.
+Derision: Corrected message produced when trying to use Suspend Minion on a charmed pet.
 
 Optional SQL: utils/sql/svn/1144_optional_rule_return_nodrop
 
