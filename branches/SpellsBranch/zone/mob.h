@@ -694,7 +694,7 @@ bool logpos;
 	void SendActionSpellPacket(Spell *spell_to_cast, Mob *spell_target, uint32 sequence, int caster_level); //2nd action
 	void SendCombatDamageSpellPacket(Spell *spell_to_cast, Mob *spell_target, int sequence); //combat damage packet
 	bool WillSpellHold(Spell *spell_to_cast, Mob *spell_target);
-	int DoSpellOnTargetResistCheck(Spell *spell_to_cast, Mob *spell_target);
+	float DoSpellOnTargetResistCheck(Spell *spell_to_cast, Mob *spell_target);
 	void DoSpellOnTargetRecourse(Spell *spell_on_target, Mob *spell_target);
 	void SendKnockBackPacket(int push_up, int push_back);
 	virtual bool SpellEffect(Mob* caster, Spell *spell_to_cast, float partial = 100);

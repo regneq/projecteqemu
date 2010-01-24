@@ -341,7 +341,6 @@ bool Mob::DoCastSpell(Spell **casted_spell_ptr, int32* spell_will_finish)
 	}
 	else
 	{
-		printf("starting cast timer of %u\n", casted_spell->GetCastTime());
 		casted_spell->StartCastTimer(casted_spell->GetCastTime());
 	}
 
@@ -775,14 +774,12 @@ void Mob::CastedSpellFinished(Spell **casted_spell_ptr)
 		}
 	}
 
-	printf("spell id: %u\n", casted_spell->GetSpellID());
 	if(!SpellFinished(casted_spell))
 	{
 		mlog(SPELLS__CASTING_ERR, "Casting of %d canceled: SpellFinished returned false.", casted_spell->GetSpellID());
 		InterruptSpell();
 		return;
 	}
-	printf("spell id: %u\n", casted_spell->GetSpellID());
 
 	#ifdef EMBPERL
 	if(this->IsClient()) 
@@ -795,7 +792,6 @@ void Mob::CastedSpellFinished(Spell **casted_spell_ptr)
 	}
 	#endif
 
-	printf("spell id: %u\n", casted_spell->GetSpellID());
 	uint32 spell_slot = casted_spell->GetSpellSlot();
 	uint32 spell_id = casted_spell->GetSpellID();
 	SkillType spell_skill = casted_spell->GetSpell().skill;
@@ -833,8 +829,8 @@ void Mob::CastedSpellFinished(Spell **casted_spell_ptr)
 
 		//TODO:
 		// set the rapid recast timer for next time around
-		
-		mlog(SPELLS__CASTING, "Spell casting of %d is finished.", casted_spell->GetSpellID());
+
+		mlog(SPELLS__CASTING, "Spell casting of %d is finished.", spell_id);
 	}
 }
 
@@ -2123,7 +2119,6 @@ bool Mob::SpellOnTarget(uint16 spell_id, Mob* spell_target)
 
 bool Mob::SpellOnTarget(Spell *spell_to_cast, Mob* spell_target)
 {
-	printf("Spell %s(%d) on %s\n", spell_to_cast->GetSpell().name, spell_to_cast->GetSpellID(), spell_target->GetName());
 	int16 caster_level = GetCasterLevel();
 	
 	int sequence = SendActionSpellPacket(spell_to_cast, spell_target, caster_level);
@@ -2211,12 +2206,12 @@ bool Mob::SpellOnTarget(Spell *spell_to_cast, Mob* spell_target)
 		entity_list.AddHealAggro(spell_target, this, CheckHealAggroAmount(spell_to_cast, (spell_target->GetMaxHP() - spell_target->GetHP())));
 		
 		
-	/*if(!spell_target->SpellEffect(this, spell_to_cast, spell_effectiveness))
+	if(!spell_target->SpellEffect(this, spell_to_cast, spell_effectiveness))
 	{
 		mlog(SPELLS__CASTING_ERR, "Spell %d could not apply its effects %s -> %s\n", spell_to_cast->GetSpellID(), GetName(), spell_target->GetName());
 		Message_StringID(MT_Shout, SPELL_NO_HOLD);
 		return false;
-	}*/
+	}
 	
 	if(!spell_to_cast->IsEffectInSpell(SE_TossUp))
 	{
@@ -2269,8 +2264,6 @@ int Mob::SendActionSpellPacket(Spell *spell_to_cast, Mob *spell_target, int cast
 	action->instrument_mod = GetInstrumentMod(spell_to_cast);
 	action->buff_unknown = 0;
 	sequence = action->sequence;
-
-	printf("action1: %u %u %u\n", action->source, action->target, action->sequence);
 	
 	if(spell_target->IsClient())
 	{
@@ -2316,8 +2309,6 @@ void Mob::SendActionSpellPacket(Spell *spell_to_cast, Mob *spell_target, uint32 
 	action->sequence = sequence;
 	action->instrument_mod = GetInstrumentMod(spell_to_cast);
 	action->buff_unknown = 0;
-
-	printf("action2: %u %u %u\n", action->source, action->target, action->sequence);
 	
 	if(spell_target->IsClient())
 	{
@@ -2361,8 +2352,6 @@ void Mob::SendCombatDamageSpellPacket(Spell *spell_to_cast, Mob *spell_target, i
 	{ 
 		cd->target = spell_target->GetID(); 
 	}
-
-	printf("damage1: %u %u %u\n", cd->source, cd->target, cd->sequence);
 	
 	if(!spell_to_cast->IsEffectInSpell(SE_BindAffinity))
 	{
@@ -2411,12 +2400,12 @@ bool Mob::WillSpellHold(Spell *spell_to_cast, Mob *spell_target)
 	return true;
 }
 
-int Mob::DoSpellOnTargetResistCheck(Spell *spell_to_cast, Mob *spell_target)
+float Mob::DoSpellOnTargetResistCheck(Spell *spell_to_cast, Mob *spell_target)
 {
 	float spell_effectiveness = 0;
 	if(spell_to_cast->IsResistableSpell())
 	{
-		int spell_effectiveness = spell_target->ResistSpell(spell_to_cast->GetSpell().resisttype, spell_to_cast, this);
+		spell_effectiveness = spell_target->ResistSpell(spell_to_cast->GetSpell().resisttype, spell_to_cast, this);
 		if(spell_effectiveness < 100)
 		{
 			if(spell_effectiveness == 0 || !spell_to_cast->IsPartialCapableSpell())
@@ -2459,7 +2448,7 @@ int Mob::DoSpellOnTargetResistCheck(Spell *spell_to_cast, Mob *spell_target)
 	{
 		spell_effectiveness = 100;
 	}
-	
+
 	return spell_effectiveness;
 }
 

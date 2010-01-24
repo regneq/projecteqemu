@@ -234,8 +234,6 @@ Mob::Mob(const char*   in_name,
 		buffs[j].spellid = SPELL_UNKNOWN;
 	}
 	*/
-
-	InitializeBuffSlots();
 	ZeroCastingVars();
 
     // clear the proc arrays
@@ -404,7 +402,6 @@ Mob::~Mob()
 	safe_delete(PathingLOSCheckTimer);
 	safe_delete(PathingRouteUpdateTimerShort);
 	safe_delete(PathingRouteUpdateTimerLong);
-	UninitializeBuffSlots();
 	safe_delete(casting_spell);
 	safe_delete(spell_recovery_timer);
 }

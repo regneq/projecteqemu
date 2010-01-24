@@ -145,7 +145,6 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 	max_wp=0;
 	save_wp = 0;
 	spawn_group = 0;
-// for quest signal() command
 	signaled = false;
 	signal_id = 0;
     guard_x = 0;
@@ -153,8 +152,6 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 	guard_z = 0;
 	guard_heading = 0;
 	swarmInfoPtr = NULL;
-
-//	SaveSpawnSpot();
 
 	logging_enabled = NPC_DEFAULT_LOGGING_ENABLED;
 	
@@ -337,6 +334,7 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 		ldon_trap_detected = 0;
 	}
 	qGlobals = NULL;
+	InitializeBuffSlots();
 }
 	  
 NPC::~NPC()
@@ -388,6 +386,7 @@ NPC::~NPC()
 
 	safe_delete(swarmInfoPtr);
 	safe_delete(qGlobals);
+	UninitializeBuffSlots();
 }
 
 void NPC::SetTarget(Mob* mob) {
