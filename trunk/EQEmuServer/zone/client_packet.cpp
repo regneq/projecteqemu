@@ -3441,7 +3441,7 @@ void Client::Handle_OP_GetGuildMOTD(const EQApplicationPacket *app)
 	mlog(GUILDS__IN_PACKETS, "Received OP_GetGuildMOTD");
 	mpkt(GUILDS__IN_PACKET_TRACE, app);
 
-	SendGuildMOTD();
+	SendGuildMOTD(true);
 }
 
 void Client::Handle_OP_GetGuildsList(const EQApplicationPacket *app)
