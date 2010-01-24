@@ -5,6 +5,7 @@ Trevius: Exported CheckLoS() to perl::mob.
 Trevius: Added SoF Decode/Encode for OP_InspectAnswer.  SoF clients can now inspect Titanium clients and everything shows up properly.  SoF clients still cannot be inspected at all by either client.
 Derision: Fix for armor not showing to other player's after looting your corpse.
 Derision: Call of the Hero should no longer transfer aggro to the caster.
+LeftRoad: Implemented /pet leader command.
 
 ==01/23/2010==
 Trevius: Added NPC:ReturnNonQuestNoDropItems rule to enable/disable a new feature that allows all NO DROP items to be returned if turned into a non-item-quest NPC (no EVENT_ITEM).
