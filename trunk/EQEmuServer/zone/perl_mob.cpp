@@ -6221,6 +6221,42 @@ XS(XS_Mob_DoSpecialAttackDamage)
 	XSRETURN_EMPTY;
 }
 
+XS(XS_Mob_CheckLoS); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_CheckLoS)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Mob::CheckLoS(THIS, mob)");
+	{
+		Mob *		THIS;
+		Mob*		mob;
+		bool		RETVAL;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		if (sv_derived_from(ST(1), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(1)));
+			mob = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "mob is not of type Mob");
+		if(mob == NULL)
+			Perl_croak(aTHX_ "mob is NULL, avoiding crash.");
+
+		RETVAL = THIS->CheckLosFN(mob);
+		ST(0) = boolSV(RETVAL);
+		sv_2mortal(ST(0));
+	}
+	XSRETURN(1);
+}
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -6461,6 +6497,7 @@ XS(boot_Mob)
 		newXSproto(strcpy(buf, "SignalClient"), XS_Mob_SignalClient, file, "$$$");
 		newXSproto(strcpy(buf, "CombatRange"), XS_Mob_CombatRange, file, "$$");
 		newXSproto(strcpy(buf, "DoSpecialAttackDamage"), XS_Mob_DoSpecialAttackDamage, file, "$$$$;$$");
+		newXSproto(strcpy(buf, "CheckLoS"), XS_Mob_CheckLoS, file, "$$");
 	XSRETURN_YES;
 }
 
