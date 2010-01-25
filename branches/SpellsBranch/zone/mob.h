@@ -883,6 +883,7 @@ bool logpos;
     bool				CalculateNewPosition(float x, float y, float z, float speed, bool checkZ = false);
 	virtual bool		CalculateNewPosition2(float x, float y, float z, float speed, bool checkZ = true);
     float				CalculateDistance(float x, float y, float z);
+	float				GetGroundZ(float new_x, float new_y, float z_offset=0.0);
 	void				SendTo(float new_x, float new_y, float new_z);
 	void				SendToFixZ(float new_x, float new_y, float new_z);
 	void				NPCSpecialAttacks(const char* parse, int permtag);
