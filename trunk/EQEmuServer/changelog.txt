@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==01/25/2010==
+Trevius: Exported CheckLoSToLoc(x, y, z, [mob_size]) to perl::mob.
+Trevius: Exported FindGroundZ(x, y, [z_offset]) to perl::mob.
+
 ==01/24/2010==
 Trevius: Exported CheckLoS() to perl::mob.
 Trevius: Added SoF Decode/Encode for OP_InspectAnswer.  SoF clients can now inspect Titanium clients and everything shows up properly.  SoF clients still cannot be inspected at all by either client.
