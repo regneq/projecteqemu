@@ -226,17 +226,10 @@ Mob::Mob(const char*   in_name,
 	spell_recovery_timer = NULL;
 
 	int i = 0;
-	
-	//TODO:
-	uint32 j;
-	/*
-	for (j = 0; j < BUFF_COUNT; j++) {
-		buffs[j].spellid = SPELL_UNKNOWN;
-	}
-	*/
 	ZeroCastingVars();
-
-    // clear the proc arrays
+    
+	// clear the proc arrays
+	uint32 j;
 	for (j = 0; j < MAX_PROCS; j++)
     {
         PermaProcs[j].spellID = SPELL_UNKNOWN;
@@ -1054,18 +1047,28 @@ void Mob::DoAnim(const int animnum, int type, bool ackreq, eqFilterType filter) 
 	entity_list.QueueCloseClients(this, outapp, false, 200, 0, ackreq, filter);
 	safe_delete(outapp);
 }
-//TODO:
-void Mob::ShowBuffs(Client* client) {
-	/*if (!spells_loaded)
+
+void Mob::ShowBuffs(Client* client) 
+{
+	if(!spells_loaded)
 		return;
+
 	client->Message(0, "Buffs on: %s", this->GetName());
-	uint32 i;
-	for (i=0; i < BUFF_COUNT; i++) {
-		if (buffs[i].spellid != SPELL_UNKNOWN) {
-			if (buffs[i].durationformula == DF_Permanent)
-				client->Message(0, "  %i: %s: Permanent", i, spells[buffs[i].spellid].name);
+
+	int max_slots = GetMaxTotalSlots();
+	for(int buffs_i = 0; buffs_i < max_slots; buffs_i++)
+	{
+		if(buffs[buffs_i])
+		{
+			if(buffs[buffs_i]->IsPermanantDuration())
+			{
+				client->Message(0, "  %i: %s: Permanent", buffs_i, buffs[buffs_i]->GetSpell()->GetSpell().name);
+			}
 			else
-				client->Message(0, "  %i: %s: %i tics left", i, spells[buffs[i].spellid].name, buffs[i].ticsremaining);
+			{
+				client->Message(0, "  %i: %s: %i tics left", buffs_i, buffs[buffs_i]->GetSpell()->GetSpell().name, 
+					buffs[buffs_i]->GetDurationRemaining());
+			}
 
 		}
 	}
@@ -1084,25 +1087,30 @@ void Mob::ShowBuffs(Client* client) {
 		client->Message(0, "SvMagic:%i SvFire:%i SvCold:%i SvPoison:%i SvDisease:%i",
 				spellbonuses.MR,spellbonuses.FR,spellbonuses.CR,spellbonuses.PR,spellbonuses.DR);
 		client->Message(0, "DmgShield:%i Haste:%i", spellbonuses.DamageShield, spellbonuses.haste );
-	}*/
+	}
 }
 
-//TODO:
 void Mob::ShowBuffList(Client* client) {
 	if (!spells_loaded)
 		return;
 
-	/*
 	client->Message(0, "Buffs on: %s", this->GetCleanName());
-	uint32 i;
-	for (i=0; i < BUFF_COUNT; i++) {
-		if (buffs[i].spellid != SPELL_UNKNOWN) {
-			if (buffs[i].durationformula == DF_Permanent)
-				client->Message(0, "  %i: %s: Permanent", i, spells[buffs[i].spellid].name);
+	int max_slots = GetMaxTotalSlots();
+	for(int buffs_i = 0; buffs_i < max_slots; buffs_i++)
+	{
+		if(buffs[buffs_i])
+		{
+			if(buffs[buffs_i]->IsPermanantDuration())
+			{
+				client->Message(0, "  %i: %s: Permanent", buffs_i, buffs[buffs_i]->GetSpell()->GetSpell().name);
+			}
 			else
-				client->Message(0, "  %i: %s: %i tics left", i, spells[buffs[i].spellid].name, buffs[i].ticsremaining);
+			{
+				client->Message(0, "  %i: %s: %i tics left", buffs_i, buffs[buffs_i]->GetSpell()->GetSpell().name, 
+					buffs[buffs_i]->GetDurationRemaining());
+			}
 		}
-	}*/
+	}
 }
 
 void Mob::GMMove(float x, float y, float z, float heading, bool SendUpdate) {
@@ -2467,24 +2475,20 @@ void Mob::Warp( float x, float y, float z )
 
 bool Mob::DivineAura() const
 {
-	//TODO:
-	/*
-	uint32 l;
-	for (l = 0; l < BUFF_COUNT; l++)
+	int max_slots = GetMaxTotalSlots();
+	for(int buffs_i = 0; buffs_i < max_slots; buffs_i++)
 	{
-		if (buffs[l].spellid != SPELL_UNKNOWN)
+		if(buffs[buffs_i])
 		{
-			for (int k = 0; k < EFFECT_COUNT; k++)
+			for(int j = 0; j < EFFECT_COUNT; j++)
 			{
-				if (spells[buffs[l].spellid].effectid[k] == SE_DivineAura)
+				if(buffs[buffs_i]->GetSpell()->GetSpell().effectid[j] == SE_DivineAura)
 				{
 					return true;
 				}
 			}
 		}
 	}
-	return false;
-	*/
 	return false;
 }
 
@@ -2669,26 +2673,31 @@ float Mob::FindGroundZ(float new_x, float new_y, float z_offset)
 //helper function for npc AI; needs to be mob:: cause we need to be able to count buffs on other clients and npcs
 int Mob::CountDispellableBuffs()
 {
-	//TODO:
-	/*
 	int val = 0;
-	for(int x = 0; x < BUFF_COUNT; x++)
+	int max_slots = GetMaxTotalSlots();
+	for(int buffs_i = 0; buffs_i < max_slots; buffs_i++)
 	{
-		if(!IsValidSpell(buffs[x].spellid))
-			continue;
+		if(buffs[buffs_i])
+		{
+			if(buffs[buffs_i]->GetRemainingChargesDisease() || 
+				buffs[buffs_i]->GetRemainingChargesPoison() ||
+				buffs[buffs_i]->GetRemainingChargesCurse())
+			{
+				continue;
+			}
 
-		if(buffs[x].diseasecounters || buffs[x].poisoncounters || buffs[x].cursecounters)
-			continue;
-		
-		if(spells[buffs[x].spellid].goodEffect == 0)
-			continue;
+			if(buffs[buffs_i]->GetSpell()->GetSpell().goodEffect == 0)
+			{
+				continue;
+			}
 
-		if(buffs[x].spellid != SPELL_UNKNOWN &&	buffs[x].durationformula != DF_Permanent)
-			val++;
+			if(!buffs[buffs_i]->IsPermanantDuration())
+			{
+				val++;
+			}
+		}
 	}
 	return val;
-	*/
-	return 0;
 }
 
 // Returns the % that a mob is snared (as a positive value). -1 means not snared
@@ -2696,25 +2705,27 @@ int Mob::GetSnaredAmount()
 {
 	int worst_snare = -1;
 
-	//TODO:
-	/*
-	for (int i = 0; i < BUFF_COUNT; i++)
+	int max_slots = GetMaxTotalSlots();
+	for(int buffs_i = 0; buffs_i < max_slots; buffs_i++)
 	{
-		if (!IsValidSpell(buffs[i].spellid))
-			continue;
-
-		for(int j = 0; j < EFFECT_COUNT; j++)
+		if(buffs[buffs_i])
 		{
-			if (spells[buffs[i].spellid].effectid[j] == SE_MovementSpeed)
+			for(int j = 0; j < EFFECT_COUNT; j++)
 			{
-				int val = CalcSpellEffectValue_formula(spells[buffs[i].spellid].formula[j], spells[buffs[i].spellid].base[j], spells[buffs[i].spellid].max[j], buffs[i].casterlevel, buffs[i].spellid);
-				//int effect = CalcSpellEffectValue(buffs[i].spellid, spells[buffs[i].spellid].effectid[j], buffs[i].casterlevel);
-				if (val < 0 && abs(val) > worst_snare)
-					worst_snare = abs(val);
+				if(buffs[buffs_i]->GetSpell()->GetSpell().effectid[j] == SE_MovementSpeed)
+				{
+					int val = CalcSpellEffectValue_formula(buffs[buffs_i]->GetSpell()->GetSpell().formula[j], 
+						buffs[buffs_i]->GetSpell()->GetSpell().base[j], 
+						buffs[buffs_i]->GetSpell()->GetSpell().max[j], 
+						buffs[buffs_i]->GetSpell()->GetCasterLevel(), 
+						buffs[buffs_i]->GetSpell(), 
+						buffs[buffs_i]->GetDurationRemaining());
+					if (val < 0 && abs(val) > worst_snare)
+						worst_snare = abs(val);
+				}
 			}
 		}
 	}
-	*/
 
 	return worst_snare;
 }
@@ -2736,15 +2747,12 @@ void Mob::SetDeltas(float dx, float dy, float dz, float dh) {
 }
 
 
-//TODO: FIXME
 bool Mob::HasBuffIcon(Mob *caster, Mob *target, int16 spell_id)
 {
-	/*
-	if((caster->CalcBuffDuration(caster, target, spell_id)-1) > 0)
+	if((caster->CalcBuffDuration(caster, target, &Spell(spell_id, caster, target))) > 0)
 		return true;
 	else
 		return false;
-	*/
 	return false;
 }
 

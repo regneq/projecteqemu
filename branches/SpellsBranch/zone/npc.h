@@ -89,13 +89,13 @@ public:
 	virtual void	AI_Event_SpellCastFinished(bool iCastSucceeded, int8 slot);
 
 	//Spell related stuff
-	virtual int GetCurrentBuffSlots() { return 25; }
-	virtual int GetCurrentSongSlots() { return 10; }
-	virtual int GetCurrentDiscSlots() { return 1; }
-	virtual int GetMaxBuffSlots() { return 25; }
-	virtual int GetMaxSongSlots() { return 10; }
-	virtual int GetMaxDiscSlots() { return 1; }
-	virtual int GetMaxTotalSlots() { return 36; }
+	virtual int GetCurrentBuffSlots() const { return 25; }
+	virtual int GetCurrentSongSlots() const { return 10; }
+	virtual int GetCurrentDiscSlots() const { return 1; }
+	virtual int GetMaxBuffSlots() const { return 25; }
+	virtual int GetMaxSongSlots() const { return 10; }
+	virtual int GetMaxDiscSlots() const { return 1; }
+	virtual int GetMaxTotalSlots() const { return 36; }
 	virtual void InitializeBuffSlots();
 	virtual void UninitializeBuffSlots();
 	virtual int GetFreeBuffSlot(const Spell *spell_to_cast);

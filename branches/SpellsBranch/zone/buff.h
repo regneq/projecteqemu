@@ -31,7 +31,10 @@ public:
 
 	void SetDurationRemaining(uint32 duration) { spell_duration_remaining = duration; }
 	uint32 GetDurationRemaining() const { return spell_duration_remaining; }
-	bool IsPermanantDuration() const { return spell_duration_remaining == 0xFFFFFFFF; }
+	bool IsPermanantDuration() const { return is_perm_duration; }
+
+	void SetIsClientBuff(bool c) { is_client = c; }
+	bool IsClientBuff() const { return is_client; }
 	
 	//The first four are for counters via dispel the last is for the numhits modifier in the spell field.
 	sint32 GetRemainingChargesMagic() const { return magic_remaining_charges; }
@@ -77,6 +80,8 @@ public:
 protected:
 	uint32 spell_duration_remaining;
 	bool is_perm_illusion;
+	bool is_perm_duration;
+	bool is_client;
 
 	sint32 magic_remaining_charges;
 	sint32 poison_remaining_charges;
@@ -88,7 +93,6 @@ protected:
 	sint32 magic_shield_remaining;
 	uint8 death_save_chance;
 	uint8 caster_aa_rank;
-
 	uint32 instrument_mod;
 
 	Spell *buff_spell;

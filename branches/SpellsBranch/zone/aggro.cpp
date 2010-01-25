@@ -1293,8 +1293,7 @@ sint32 Mob::CheckAggroAmount(Spell *spell_to_cast)
 
 		if(IsClient())
 		{
-			//TODO:
-			//HateMod += CastToClient()->GetFocusEffect(focusSpellHateMod, spell_id);
+			HateMod += CastToClient()->GetFocusEffect(focusSpellHateMod, spell_to_cast);
 		}
 
 		int aaSubtlety = ( GetAA(aaSpellCastingSubtlety) > GetAA(aaSpellCastingSubtlety2) ) ? GetAA(aaSpellCastingSubtlety) : GetAA(aaSpellCastingSubtlety2);

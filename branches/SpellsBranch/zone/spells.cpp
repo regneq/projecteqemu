@@ -2054,7 +2054,6 @@ Buff *Mob::AddBuff(Mob *caster, Spell *spell_to_cast, sint32 &buff_slot, uint32 
 		return NULL;
 	}
 
-	printf("Current buff count: %d\n", current_buff_count);
 	if(current_buff_count == 0)
 	{
 		buff_tic_timer = new Timer(6000);
@@ -2063,7 +2062,17 @@ Buff *Mob::AddBuff(Mob *caster, Spell *spell_to_cast, sint32 &buff_slot, uint32 
 	buffs[buff_slot] = new Buff(spell_to_cast, duration);
 	SendBuffPacket(buffs[buff_slot], buff_slot, 3);
 
+	if(caster && caster->IsClient())
+	{
+		buffs[buff_slot]->SetIsClientBuff(true);
+	}
+
 	return buffs[buff_slot];
+}
+
+int Mob::CanBuffStack(int16 spell_id, Mob *caster, bool iFailIfOverwrite)
+{
+	return CanBuffStack(&Spell(spell_id, caster, this), iFailIfOverwrite);
 }
 
 // Used by some MobAI stuff
@@ -2071,52 +2080,53 @@ Buff *Mob::AddBuff(Mob *caster, Spell *spell_to_cast, sint32 &buff_slot, uint32 
 // note that this should not be used for determining which slot to place a 
 // buff into
 // returns -1 on stack failure, -2 if all slots full, the slot number if the buff should overwrite another buff, or a free buff slot
-int Mob::CanBuffStack(int16 spellid, int8 caster_level, bool iFailIfOverwrite)
+int Mob::CanBuffStack(const Spell *spell_to_check, bool iFailIfOverwrite)
 {
-	//TODO:
-	/*
-	int i, ret, firstfree = -2;
 	
-	mlog(AI__BUFFS, "Checking if buff %d cast at level %d can stack on me.%s", spellid, caster_level, iFailIfOverwrite?" failing if we would overwrite something":"");
+	int ret, first_free = -2;
 	
-	for (i=0; i < BUFF_COUNT; i++)
+	mlog(AI__BUFFS, "Checking if buff %d cast at level %d can stack on me.%s", spell_to_check->GetSpellID(), 
+		spell_to_check->GetCasterLevel(), iFailIfOverwrite ? " failing if we would overwrite something" : "");
+	
+	int max_slots = GetMaxTotalSlots();
+	for(int buffs_i = 0; buffs_i < max_slots; buffs_i++)
 	{
-		const Buffs_Struct &curbuf = buffs[i];
-
-		// no buff in this slot
-		if (curbuf.spellid == SPELL_UNKNOWN)
+		if(!buffs[buffs_i])
 		{
-			// if we haven't found a free slot, this is the first one so save it
-			if(firstfree == -2)
-				firstfree = i;
+			if(first_free == -2)
+			{
+				first_free = buffs_i;
+			}
 			continue;
 		}
 
-		if(curbuf.spellid == spellid)
-			return(-1);	//do not recast a buff we already have on, we recast fast enough that we dont need to refresh our buffs
+		if(buffs[buffs_i]->GetSpell()->GetSpellID() == spell_to_check->GetSpellID())
+		{
+			return -1;
+		}
 
-		// there's a buff in this slot
-		ret = CheckStackConflict(curbuf.spellid, curbuf.casterlevel, spellid, caster_level);
-		if(ret == 1) {
-			// should overwrite current slot
-			if(iFailIfOverwrite) {
-				mlog(AI__BUFFS, "Buff %d would overwrite %d in slot %d, reporting stack failure", spellid, curbuf.spellid, i);
+		ret = CheckStackConflict(buffs[buffs_i]->GetSpell(), spell_to_check);
+		if(ret == 1)
+		{
+			if(iFailIfOverwrite) 
+			{
+				mlog(AI__BUFFS, "Buff %d would overwrite %d in slot %d, reporting stack failure", 
+					spell_to_check->GetSpellID(), buffs[buffs_i]->GetSpell()->GetSpellID(), buffs_i);
 				return(-1);
 			}
-			if(firstfree == -2)
-				firstfree = i;
-		}	
-		if(ret == -1) {
-			mlog(AI__BUFFS, "Buff %d would conflict with %d in slot %d, reporting stack failure", spellid, curbuf.spellid, i);
-			return -1;	// stop the spell, can't stack it
+		}
+		else if(ret == -1)
+		{
+			mlog(AI__BUFFS, "Buff %d would conflict with %d in slot %d, reporting stack failure", 
+				spell_to_check->GetSpellID(), buffs[buffs_i]->GetSpell()->GetSpellID(), buffs_i);
+			return -1;
 		}
 	}
 	
-	mlog(AI__BUFFS, "Reporting that buff %d could successfully be placed into slot %d", spellid, firstfree);
+	mlog(AI__BUFFS, "Reporting that buff %d could successfully be placed into slot %d", spell_to_check->GetSpellID(), 
+		first_free);
 
-	return firstfree;
-	*/
-	return 0;
+	return first_free;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2623,14 +2633,15 @@ void Corpse::CastRezz(int16 spellid, Mob* Caster){
 
 bool Mob::FindBuff(int16 spellid)
 {
-	int i;
-
-	//TODO:
-	/*
-	for(i = 0; i < BUFF_COUNT; i++)
-		if(buffs[i].spellid == spellid)
-			return true;
-	*/
+	int max_slots = GetMaxTotalSlots();
+	for(int buffs_i = 0; buffs_i < max_slots; buffs_i++)
+	{
+		if(buffs[buffs_i])
+		{
+			if(buffs[buffs_i]->GetSpell()->GetSpellID() == spellid)
+				return true;
+		}
+	}
 	return false;
 }
 
@@ -3374,51 +3385,57 @@ int Client::FindSpellBookSlotBySpellID(int16 spellid) {
 	return -1;	//default
 }
 
-// solar: TODO get rid of this
-sint8 Mob::GetBuffSlotFromType(int8 type) {
-	//TODO:
-	/*
-	for (int i = 0; i < BUFF_COUNT; i++) {
-		if (buffs[i].spellid != SPELL_UNKNOWN) {
-			for (int j = 0; j < EFFECT_COUNT; j++) {
-				if (spells[buffs[i].spellid].effectid[j] == type )
+sint8 Mob::GetBuffSlotFromType(int8 type) 
+{
+	for (int i = 0; i < BUFF_COUNT; i++) 
+	{
+		if(buffs[i]) 
+		{
+			for (int j = 0; j < EFFECT_COUNT; j++) 
+			{
+				if(buffs[i]->GetSpell()->GetSpell().effectid[j] == type)
 					return i;
 			}
 		}
-	}*/
+	}
     return -1;
 }
 
 
-bool Mob::FindType(int8 type, bool bOffensive, int16 threshold) {
-	//TODO:
-	/*
-	for (int i = 0; i < BUFF_COUNT; i++) {
-		if (buffs[i].spellid != SPELL_UNKNOWN) {
-
-			for (int j = 0; j < EFFECT_COUNT; j++) {
+bool Mob::FindType(int8 type, bool bOffensive, int16 threshold) 
+{
+	int max_slots = GetMaxTotalSlots();
+	for (int i = 0; i < max_slots; i++) 
+	{
+		if (buffs[i]) 
+		{
+			for (int j = 0; j < EFFECT_COUNT; j++) 
+			{
                 // adjustments necessary for offensive npc casting behavior
-                if (bOffensive) {
-				    if (spells[buffs[i].spellid].effectid[j] == type) {
-                        sint16 value = 
-                                CalcSpellEffectValue_formula(buffs[i].durationformula,
-                                               spells[buffs[i].spellid].base[j],
-                                               spells[buffs[i].spellid].max[j],
-                                               buffs[i].casterlevel, buffs[i].spellid);
-                        LogFile->write(EQEMuLog::Normal, 
-                                "FindType: type = %d; value = %d; threshold = %d",
-                                type, value, threshold);
+                if (bOffensive) 
+				{
+					if(buffs[i]->GetSpell()->GetSpell().effectid[j] == type) 
+					{
+						sint16 value = CalcSpellEffectValue_formula(buffs[i]->GetSpell()->GetSpell().formula[j],
+							buffs[i]->GetSpell()->GetSpell().base[j],
+							buffs[i]->GetSpell()->GetSpell().max[j],
+							buffs[i]->GetSpell()->GetCasterLevel(), 
+							buffs[i]->GetSpell(),
+							buffs[i]->GetDurationRemaining());
+                        LogFile->write(EQEMuLog::Normal, "FindType: type = %d; value = %d; threshold = %d",
+							type, value, threshold);
                         if (value < threshold)
                             return true;
                     }
-                } else {
-				    if (spells[buffs[i].spellid].effectid[j] == type )
+                } 
+				else 
+				{
+				    if(buffs[i]->GetSpell()->GetSpell().effectid[j] == type)
 					    return true;
                 }
 			}
 		}
 	}
-	*/
 	return false;
 }
 
@@ -3454,9 +3471,12 @@ bool Mob::AddProcToWeapon(int16 spell_id, bool bPerma, int16 iChance) {
     return false;
 }
 
-bool Mob::RemoveProcFromWeapon(int16 spell_id, bool bAll) {
-	for (int i = 0; i < MAX_PROCS; i++) {
-		if (bAll || SpellProcs[i].spellID == spell_id) {
+bool Mob::RemoveProcFromWeapon(int16 spell_id, bool bAll)
+{
+	for (int i = 0; i < MAX_PROCS; i++)
+	{
+		if (bAll || SpellProcs[i].spellID == spell_id)
+		{
 			SpellProcs[i].spellID = SPELL_UNKNOWN;
 			SpellProcs[i].chance = 0;
 			SpellProcs[i].pTimer = NULL;
@@ -3488,7 +3508,8 @@ bool Mob::AddDefensiveProc(int16 spell_id, int16 iChance)
 bool Mob::RemoveDefensiveProc(int16 spell_id, bool bAll)
 {
 	for (int i = 0; i < MAX_PROCS; i++) {
-		if (bAll || DefensiveProcs[i].spellID == spell_id) {
+		if (bAll || DefensiveProcs[i].spellID == spell_id)
+		{
 			DefensiveProcs[i].spellID = SPELL_UNKNOWN;
 			DefensiveProcs[i].chance = 0;
 			DefensiveProcs[i].pTimer = NULL;
@@ -3503,9 +3524,10 @@ bool Mob::AddRangedProc(int16 spell_id, int16 iChance)
 	if(spell_id == SPELL_UNKNOWN)
 		return(false);
 	
-	int i;
-	for (i = 0; i < MAX_PROCS; i++) {
-		if (RangedProcs[i].spellID == SPELL_UNKNOWN) {
+	for (int i = 0; i < MAX_PROCS; i++) 
+	{
+		if (RangedProcs[i].spellID == SPELL_UNKNOWN)
+		{
 			RangedProcs[i].spellID = spell_id;
 			RangedProcs[i].chance = iChance;
 			RangedProcs[i].pTimer = NULL;
@@ -3519,8 +3541,10 @@ bool Mob::AddRangedProc(int16 spell_id, int16 iChance)
 
 bool Mob::RemoveRangedProc(int16 spell_id, bool bAll)
 {
-	for (int i = 0; i < MAX_PROCS; i++) {
-		if (bAll || RangedProcs[i].spellID == spell_id) {
+	for (int i = 0; i < MAX_PROCS; i++)
+	{
+		if (bAll || RangedProcs[i].spellID == spell_id)
+		{
 			RangedProcs[i].spellID = SPELL_UNKNOWN;
 			RangedProcs[i].chance = 0;
 			RangedProcs[i].pTimer = NULL;
@@ -3530,7 +3554,6 @@ bool Mob::RemoveRangedProc(int16 spell_id, bool bAll)
     return true;
 }
 
-//TODO: REWRITE THIS
 // solar: this is checked in a few places to decide wether special bard
 // behavior should be used.
 bool Mob::UseBardSpellLogic(int16 spell_id, int slot)
@@ -3589,28 +3612,6 @@ void Mob::_StopSong()
 	bardsong_timer.Disable();
 }
 
-//This member function sets the buff duration on the client
-//however it does not work if sent quickly after an action packets, which is what one might perfer to do
-//Thus I use this in the buff process to update the correct duration once after casting
-//this allows AAs and focus effects that increase buff duration to work correctly, but could probably
-//be used for other things as well
-void Client::SendBuffDurationPacket(int16 spell_id, int duration, int inlevel)
-{
-	EQApplicationPacket* outapp;
-	outapp = new EQApplicationPacket(OP_Buff, sizeof(SpellBuffFade_Struct));
-	SpellBuffFade_Struct* sbf = (SpellBuffFade_Struct*) outapp->pBuffer;
-
-	sbf->entityid = GetID();
-	sbf->slot=2;
-	sbf->spellid=spell_id;
-	sbf->slotid=0;
-	sbf->effect = inlevel > 0 ? inlevel : GetLevel();
-	sbf->level = inlevel > 0 ? inlevel : GetLevel();
-	sbf->bufffade = 0;
-	sbf->duration = duration;
-	FastQueuePacket(&outapp);
-}
-
 void Mob::SendPetBuffsToClient()
 {
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_PetBuffWindow,sizeof(PetBuff_Struct));
@@ -3651,12 +3652,12 @@ void Mob::BuffModifyDurationBySpellID(int16 spell_id, sint32 newDuration)
 	}
 }
 
-int Client::GetCurrentBuffSlots()
+int Client::GetCurrentBuffSlots() const
 {
 	return 15 + GetAA(aaMysticalAttuning);
 }
 
-int Client::GetCurrentSongSlots()
+int Client::GetCurrentSongSlots() const
 {
 	return 6 + GetAA(aaMysticalAttuning);
 }
@@ -3850,6 +3851,8 @@ bool Mob::ValidateStartSpellCast(const Spell *spell_to_cast)
 	bool return_value = true;
 	if(!IsValidSpell(spell_to_cast->GetSpellID()) || casting_spell != NULL)
 	{
+		printf("%d\n", spell_to_cast->GetSpellID());
+		printf("%p\n", casting_spell);
 		mlog(SPELLS__CASTING_ERR, "Spell casting canceled: not able to cast now. Spell is either not valid or we already have a spell casting.");
 		return_value = false;
 	}
@@ -4134,11 +4137,10 @@ void Client::SendBuffPacket(Buff *buff, uint32 buff_index, uint32 buff_mode)
 
 Spell::Spell(uint32 spell_id, Mob* caster, Mob* target, uint32 slot, uint32 cast_time, uint32 mana_cost)
 {
-	this->spell_id = spell_id;
-	this->caster_id = caster->GetID();
-	this->caster_level = caster ? caster->GetCasterLevel() : 0;
-	this->target_id = target ? target->GetID() : 0;
-	this->spell_slot = slot;
+	caster_id = caster ? caster->GetID() : 0;
+	caster_level = caster ? caster->GetCasterLevel() : 0;
+	target_id = target ? target->GetID() : 0;
+	spell_slot = slot;
 	this->cast_time = cast_time;
 	this->mana_cost = mana_cost;
 	cast_timer = NULL;
@@ -4147,6 +4149,7 @@ Spell::Spell(uint32 spell_id, Mob* caster, Mob* target, uint32 slot, uint32 cast
 
 	const SPDat_Spell_Struct &spell = spells[spell_id];
 	memcpy((void*)&raw_spell, (const void*)&spell, sizeof(SPDat_Spell_Struct));
+	raw_spell.id = spell_id;
 }
 
 Spell::Spell()
@@ -4211,7 +4214,6 @@ Mob *Spell::GetTarget() const
 Spell* Spell::CopySpell()
 {
 	Spell *return_value = new Spell();
-	return_value->spell_id = this->spell_id;
 	return_value->caster_level = this->caster_level;
 	return_value->caster_id = this->caster_id;
 	return_value->target_id = this->target_id;
@@ -4227,6 +4229,7 @@ Spell* Spell::CopySpell()
 	}
 
 	memcpy((void*)&return_value->raw_spell, (const void*)&this->raw_spell, sizeof(SPDat_Spell_Struct));
+	return_value->raw_spell.id = GetSpellID();
 	return return_value;
 }
 
@@ -4244,6 +4247,8 @@ Buff::Buff(Spell *spell, uint32 duration)
 	death_save_chance = 0;
 	caster_aa_rank = 0;
 	instrument_mod = 10;
+	is_client = 0;
 	buff_spell = spell->CopySpell();
+	is_perm_duration = (spell->GetSpell().buffdurationformula == 50);
 }
 

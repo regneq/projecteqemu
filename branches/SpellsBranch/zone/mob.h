@@ -559,6 +559,7 @@ bool logpos;
 	void SetRunning(bool val) { m_is_running = val; }
 
 	virtual int GetCasterLevel();
+	void ApplySpellsBonuses(const Buff *buff_to_use, StatBonuses* newbon, int16 casterID = 0);
 	void ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newbon, int16 casterID = 0);
 
 	inline sint32	GetMaxMana()	const { return max_mana; }
@@ -658,13 +659,13 @@ bool logpos;
 
 	//Spell related things.
 	void BuffProcess();
-	virtual int GetCurrentBuffSlots() { return 25; }
-	virtual int GetCurrentSongSlots() { return 10; }
-	virtual int GetCurrentDiscSlots() { return 1; }
-	virtual int GetMaxBuffSlots() { return 25; }
-	virtual int GetMaxSongSlots() { return 10; }
-	virtual int GetMaxDiscSlots() { return 1; }
-	virtual int GetMaxTotalSlots() { return 36; }
+	virtual int GetCurrentBuffSlots() const { return 25; }
+	virtual int GetCurrentSongSlots() const { return 10; }
+	virtual int GetCurrentDiscSlots() const { return 1; }
+	virtual int GetMaxBuffSlots() const { return 25; }
+	virtual int GetMaxSongSlots() const { return 10; }
+	virtual int GetMaxDiscSlots() const { return 1; }
+	virtual int GetMaxTotalSlots() const { return 36; }
 	virtual void InitializeBuffSlots() { buffs = NULL; }
 	virtual void UninitializeBuffSlots() { }
 	virtual int GetFreeBuffSlot(const Spell *spell_to_cast) { return 0; }
@@ -715,17 +716,19 @@ bool logpos;
 	void DoBuffWearOffEffect(const Buff *buff_to_use, uint32 buff_slot);
 	virtual void DoBuffTic(const Buff *buff_to_use);
 	void BuffModifyDurationBySpellID(int16 spell_id, sint32 newDuration);
-
-
-
 	virtual void SpellProcess();
+	int CanBuffStack(const Spell *spell_to_check, bool iFailIfOverwrite = false);
+	int CanBuffStack(int16 spell_id, Mob *caster, bool iFailIfOverwrite = false);
+
+
+
+
 	bool UseBardSpellLogic(int16 spell_id = 0xffff, int slot = -1);
 	//virtual bool DoCastSpell(int16 spell_id, int16 target_id, int16 slot = 10, sint32 casttime = -1, sint32 mana_cost = -1, int32* oSpellWillFinish = 0, int32 item_slot = 0xFFFFFFFF);
 	//void	CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16 mana_used, int32 inventory_slot = 0xFFFFFFFF);
 	void	SendPetBuffsToClient();
 	//int		AddBuff(Mob *caster, const int16 spell_id, int duration = 0, sint32 level_override = -1);
 	//virtual bool SpellEffect(Mob* caster, int16 spell_id, float partial = 100);
-	int		CanBuffStack(int16 spellid, int8 caster_level, bool iFailIfOverwrite = false);
 	void	TemporaryPets(int16 spell_id, Mob *target, const char *name_override = NULL, uint32 duration_override = 0);
 	void	WakeTheDead(int16 spell_id, Mob *target, uint32 duration);
 	void	TryDotCritical(int16 spell_id, Mob *caster, int &damage);
@@ -969,7 +972,7 @@ bool logpos;
 
 protected:
 	void CommonDamage(Mob* other, sint32 &damage, const uint16 spell_id, const SkillType attack_skill, bool &avoidable, const sint8 buffslot, const bool iBuffTic);
-	static uint16 GetProcID(uint16 spell_id, uint8 effect_index);
+	static uint16 GetProcID(const Spell *spell_to_use, uint8 effect_index);
 	float _GetMovementSpeed(int mod) const;
 	virtual bool MakeNewPositionAndSendUpdate(float x, float y, float z, float speed, bool checkZ);
 

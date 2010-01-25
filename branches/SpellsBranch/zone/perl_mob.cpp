@@ -3710,6 +3710,7 @@ XS(XS_Mob_BuffFadeBySlot)
 XS(XS_Mob_CanBuffStack); /* prototype to pass -Wmissing-prototypes */
 XS(XS_Mob_CanBuffStack)
 {
+	//TODO: fix this
 	dXSARGS;
 	if (items < 3 || items > 4)
 		Perl_croak(aTHX_ "Usage: Mob::CanBuffStack(THIS, spellid, caster_level, iFailIfOverwrite= false)");
@@ -3736,7 +3737,7 @@ XS(XS_Mob_CanBuffStack)
 			iFailIfOverwrite = (bool)SvTRUE(ST(3));
 		}
 
-		RETVAL = THIS->CanBuffStack(spellid, caster_level, iFailIfOverwrite);
+		RETVAL = 0;//THIS->CanBuffStack(spellid, caster_level, iFailIfOverwrite);
 		XSprePUSH; PUSHi((IV)RETVAL);
 	}
 	XSRETURN(1);

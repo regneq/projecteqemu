@@ -134,7 +134,7 @@ bool NPC::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 							&& dist2 >= 900 
 							&& MakeRandomInt(0, 99) < 50
 							&& tar->DontRootMeBefore() < Timer::GetCurrentTime()
-							&& tar->CanBuffStack(AIspells[i].spellid, GetLevel(), true) >= 0
+							&& tar->CanBuffStack(AIspells[i].spellid, this, true) >= 0
 							) {
 							if(!checked_los) {
 								if(!CheckLosFN(tar))
@@ -153,7 +153,7 @@ bool NPC::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 							(spells[AIspells[i].spellid].targettype == ST_Target || tar == this)
 							&& tar->DontBuffMeBefore() < Timer::GetCurrentTime()
 							&& !tar->IsImmuneToSpell(&Spell(AIspells[i].spellid, this, tar), this)
-							&& tar->CanBuffStack(AIspells[i].spellid, GetLevel(), true) >= 0
+							&& tar->CanBuffStack(AIspells[i].spellid, this, true) >= 0
 							&& !(tar->IsPet() && tar->GetOwner()->IsClient() && this != tar)	//no buffing PC's pets, but they can buff themself
 							) {
 								int32 tempTime = 0;
@@ -188,7 +188,7 @@ bool NPC::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 					case SpellType_Nuke: {
 						if (
 							manaR >= 10 && (rand()%100) < 70
-							&& tar->CanBuffStack(AIspells[i].spellid, GetLevel(), true) >= 0
+							&& tar->CanBuffStack(AIspells[i].spellid, this, true) >= 0
 							) {
 							if(!checked_los) {
 								if(!CheckLosFN(tar))
@@ -222,7 +222,7 @@ bool NPC::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 							Mob * mezTar = NULL;
 							mezTar = entity_list.GetTargetForMez(this);
 
-							if(mezTar && mezTar->CanBuffStack(AIspells[i].spellid, GetLevel(), true) >= 0)
+							if(mezTar && mezTar->CanBuffStack(AIspells[i].spellid, this, true) >= 0)
 							{
 								AIDoSpellCast(i, mezTar, mana_cost);
 								return true;
@@ -236,7 +236,7 @@ bool NPC::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 						if(MakeRandomInt(0, 99) < 20)
 						{
 							Mob * chrmTar = GetHateRandom();
-							if(chrmTar && chrmTar->CanBuffStack(AIspells[i].spellid, GetLevel(), true) >= 0)
+							if(chrmTar && chrmTar->CanBuffStack(AIspells[i].spellid, this, true) >= 0)
 							{
 								AIDoSpellCast(i, chrmTar, mana_cost);
 								return true;
@@ -256,7 +256,7 @@ bool NPC::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 					case SpellType_Lifetap: {
 						if (   GetHPRatio() <= 95
 							&& MakeRandomInt(0, 99) < 50
-							&& tar->CanBuffStack(AIspells[i].spellid, GetLevel(), true) >= 0
+							&& tar->CanBuffStack(AIspells[i].spellid, this, true) >= 0
 							) {
 							if(!checked_los) {
 								if(!CheckLosFN(tar))
@@ -273,7 +273,7 @@ bool NPC::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 							   !tar->IsRooted()
 							&& MakeRandomInt(0, 99) < 50
 							&& tar->DontSnareMeBefore() < Timer::GetCurrentTime()
-							&& tar->CanBuffStack(AIspells[i].spellid, GetLevel(), true) >= 0
+							&& tar->CanBuffStack(AIspells[i].spellid, this, true) >= 0
 							) {
 							if(!checked_los) {
 								if(!CheckLosFN(tar))
@@ -291,7 +291,7 @@ bool NPC::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 						if (
 							MakeRandomInt(0, 99) < 60
 							&& tar->DontDotMeBefore() < Timer::GetCurrentTime()
-							&& tar->CanBuffStack(AIspells[i].spellid, GetLevel(), true) >= 0
+							&& tar->CanBuffStack(AIspells[i].spellid, this, true) >= 0
 							) {
 							if(!checked_los) {
 								if(!CheckLosFN(tar))
@@ -616,7 +616,7 @@ void Client::AI_SpellCast()
 			continue;
 		}
 
-		if(targ->CanBuffStack(current_spell, GetLevel(), true) < 0)
+		if(targ->CanBuffStack(current_spell, this, true) < 0)
 		{
 			continue;
 		}

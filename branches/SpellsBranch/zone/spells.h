@@ -48,8 +48,8 @@ public:
 	Spell(uint32 spell_id, Mob* caster, Mob* target, uint32 slot = 10, uint32 cast_time = -1, uint32 mana_cost = -1);
 	~Spell();
 	
-	void SetSpellID(uint32 id) { spell_id = id; }
-	uint32 GetSpellID() const { return spell_id; }
+	void SetSpellID(uint32 id) {  raw_spell.id = id; }
+	uint32 GetSpellID() const { return raw_spell.id; }
 
 	void SetCaster(Mob *c);
 	Mob *GetCaster() const;
@@ -160,7 +160,6 @@ public:
 	bool IsCompleteHealSpell() const;
 
 protected:
-	uint32 spell_id;
 	uint32 caster_level;
 	uint32 caster_id;
 	uint32 target_id;

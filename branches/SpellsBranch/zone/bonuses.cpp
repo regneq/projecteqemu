@@ -606,15 +606,524 @@ void Mob::CalcSpellBonuses(StatBonuses* newbon)
 	newbon->AggroRange = -1;
 	newbon->AssistRange = -1;
 
-	//TODO:
-	/*
-	for(i = 0; i < BUFF_COUNT; i++) {
-		if(buffs[i].spellid != SPELL_UNKNOWN)
-			ApplySpellsBonuses(buffs[i].spellid, buffs[i].casterlevel, newbon, buffs[i].casterid);
-	}*/
+	int max_slots = GetMaxTotalSlots();
+	for(int buffs_i = 0; buffs_i < max_slots; buffs_i++)
+	{
+		if(buffs[buffs_i])
+		{
+			ApplySpellsBonuses(buffs[buffs_i], newbon, buffs[buffs_i]->GetCasterID());
+		}
+	}
 	
 	//this prolly suffer from roundoff error slightly...
 	newbon->AC = newbon->AC * 10 / 34;	//ratio determined impirically from client.
+}
+
+//Keep in mind when adding/removing things from this that there are 2 ApplySpellBonuses 
+//that need to be changed
+void Mob::ApplySpellsBonuses(const Buff *buff_to_use, StatBonuses* newbon, int16 casterId)
+{
+	int i, effect_value;
+	Mob *caster = NULL;
+	const Spell *spell_to_cast = buff_to_use->GetSpell();
+
+	if(casterId > 0)
+		caster = entity_list.GetMob(casterId);
+	
+	for (i = 0; i < EFFECT_COUNT; i++)
+	{
+		if(spell_to_cast->IsBlankSpellEffect(i))
+			continue;
+
+		effect_value = CalcSpellEffectValue(spell_to_cast, i, spell_to_cast->GetCasterLevel(), 
+			caster, buff_to_use->GetDurationRemaining());
+
+		switch(spell_to_cast->GetSpell().effectid[i])
+		{
+
+			case SE_ChangeFrenzyRad:
+			{
+				if
+				(
+					newbon->AggroRange == -1 ||
+					effect_value < newbon->AggroRange
+				)
+				{
+					newbon->AggroRange = effect_value;
+				}
+				break;
+			}
+
+			case SE_Harmony:
+			{
+				// neotokyo: Harmony effect as buff - kinda tricky
+				// harmony could stack with a lull spell, which has better aggro range
+				// take the one with less range in any case
+				if
+				(
+					newbon->AssistRange == -1 ||
+					effect_value < newbon->AssistRange
+				)
+				{
+					newbon->AssistRange = effect_value;
+				}
+				break;
+			}
+
+			case SE_AttackSpeed:
+			{
+				if ((effect_value - 100) > 0) { // Haste
+					if (newbon->haste < 0) break; // Slowed - Don't apply haste
+					if ((effect_value - 100) > newbon->haste) {
+						newbon->haste = effect_value - 100;
+					}
+				} else if ((effect_value - 100) < 0) { // Slow
+					//Slow Mitigation works by taking the amount that would be slowed, and adding a multiplied version of the difference.
+					int new_effect_value;
+					float slow_amount_mitigated = 100 - effect_value; //Gives us a value that actually represents the slow amount.
+					slow_amount_mitigated *= this->slow_mitigation;
+					new_effect_value = effect_value + slow_amount_mitigated;
+					if (new_effect_value > 100)
+						new_effect_value = 100;
+					if ((new_effect_value - 100) < newbon->haste) 
+					{
+						newbon->haste = new_effect_value - 100;
+					}
+				}
+				break;
+			}
+
+ 			case SE_AttackSpeed2:
+			{
+				if ((effect_value - 100) > 0) { // Haste V2 - Stacks with V1 but does not Overcap
+					if ((effect_value - 100) > newbon->hastetype2) {
+						newbon->hastetype2 = effect_value - 100;
+					}
+				}
+				break;
+ 			}
+ 
+ 			case SE_AttackSpeed3:
+ 			{
+				if (effect_value > 0) { // Haste V3 - Stacks and Overcaps
+					if (effect_value > newbon->hastetype3) {
+						newbon->hastetype3 = effect_value;
+					}
+				}
+				break;
+ 			}
+
+			case SE_TotalHP:
+			{
+				newbon->HP += effect_value;
+				break;
+			}
+
+			case SE_ManaPool:
+			{
+				newbon->Mana += effect_value;
+				break;
+			}
+
+			case SE_Stamina:
+			{
+				newbon->EnduranceReduction += effect_value;
+				break;
+			}
+			
+			case SE_ArmorClass:
+			{
+				newbon->AC += effect_value;
+				break;
+			}
+
+			case SE_ATK:
+			{
+				newbon->ATK += effect_value;
+				break;
+			}
+
+			case SE_STR:
+			{
+				newbon->STR += effect_value;
+				break;
+			}
+
+			case SE_DEX:
+			{
+				newbon->DEX += effect_value;
+				break;
+			}
+
+			case SE_AGI:
+			{
+				newbon->AGI += effect_value;
+				break;
+			}
+
+			case SE_STA:
+			{
+				newbon->STA += effect_value;
+				break;
+			}
+
+			case SE_INT:
+			{
+				newbon->INT += effect_value;
+				break;
+			}
+
+			case SE_WIS:
+			{
+				newbon->WIS += effect_value;
+				break;
+			}
+
+			case SE_CHA:
+			{
+				if (spell_to_cast->GetSpell().base[i] != 0) {
+					newbon->CHA += effect_value;
+				}
+				break;
+			}
+
+			case SE_AllStats:
+			{
+				newbon->STR += effect_value;
+				newbon->DEX += effect_value;
+				newbon->AGI += effect_value;
+				newbon->STA += effect_value;
+				newbon->INT += effect_value;
+				newbon->WIS += effect_value;
+				newbon->CHA += effect_value;
+				break;
+			}
+
+			case SE_ResistFire:
+			{
+				newbon->FR += effect_value;
+				break;
+			}
+
+			case SE_ResistCold:
+			{
+				newbon->CR += effect_value;
+				break;
+			}
+
+			case SE_ResistPoison:
+			{
+				newbon->PR += effect_value;
+				break;
+			}
+
+			case SE_ResistDisease:
+			{
+				newbon->DR += effect_value;
+				break;
+			}
+
+			case SE_ResistMagic:
+			{
+				newbon->MR += effect_value;
+				break;
+			}
+
+			case SE_ResistAll:
+			{
+				newbon->MR += effect_value;
+				newbon->DR += effect_value;
+				newbon->PR += effect_value;
+				newbon->CR += effect_value;
+				newbon->FR += effect_value;
+				break;
+			}
+
+			case SE_RaiseStatCap:
+			{
+				switch(spell_to_cast->GetSpell().base2[i])
+				{
+					//are these #define'd somewhere?
+					case 0: //str
+						newbon->STRCapMod += effect_value;
+						break;
+					case 1: //sta
+						newbon->STACapMod += effect_value;
+						break;
+					case 2: //agi
+						newbon->AGICapMod += effect_value;
+						break;
+					case 3: //dex
+						newbon->DEXCapMod += effect_value;
+						break;
+					case 4: //wis
+						newbon->WISCapMod += effect_value;
+						break;
+					case 5: //int
+						newbon->INTCapMod += effect_value;
+						break;
+					case 6: //cha
+						newbon->CHACapMod += effect_value;
+						break;
+					case 7: //mr
+						newbon->MRCapMod += effect_value;
+						break;
+					case 8: //cr
+						newbon->CRCapMod += effect_value;
+						break;
+					case 9: //fr
+						newbon->FRCapMod += effect_value;
+						break;
+					case 10: //pr
+						newbon->PRCapMod += effect_value;
+						break;
+					case 11: //dr
+						newbon->DRCapMod += effect_value;
+						break;
+				}
+				break;
+			}
+
+			case SE_CastingLevel:	// Brilliance of Ro
+			{
+				newbon->effective_casting_level += effect_value;
+				break;
+			}
+
+			case SE_MovementSpeed:
+			{
+				newbon->movementspeed += effect_value;
+				break;
+			}
+
+			case SE_DamageShield:
+			{
+				newbon->DamageShield += effect_value;
+				newbon->DamageShieldSpellID = spell_to_cast->GetSpellID();
+				newbon->DamageShieldType = GetDamageShieldType(spell_to_cast->GetSpellID());
+				break;
+			}
+			
+			case SE_SpellDamageShield:
+			{
+				newbon->SpellDamageShield += effect_value;
+				break;
+			}
+
+			case SE_ReverseDS:
+			{
+				newbon->ReverseDamageShield += effect_value;
+				newbon->ReverseDamageShieldSpellID = spell_to_cast->GetSpellID();
+				newbon->ReverseDamageShieldType = GetDamageShieldType(spell_to_cast->GetSpellID());
+				break;
+			}
+
+			case SE_Reflect:
+			{
+				newbon->reflect_chance += effect_value;
+				break;
+			}
+
+			case SE_SingingSkill:
+			{
+				if(effect_value > newbon->singingMod)
+					newbon->singingMod = effect_value;
+				break;
+			}
+			
+			case SE_ChangeAggro:
+			{
+				newbon->hatemod += effect_value;
+				break;
+			}
+			case SE_MeleeMitigation:
+			{
+				//for some reason... this value is negative for increased mitigation
+				newbon->MeleeMitigation -= effect_value;
+				break;
+			}
+			
+			/*
+				Assuming that none of these chances stack... they just pick the highest
+				
+				perhaps some smarter logic is needed here to handle the case
+				where there is a chance increase and a decrease
+				because right now, the increase will completely offset the decrease...
+				
+			*/
+			case SE_CriticalHitChance:
+			{
+				if(newbon->CriticalHitChance < effect_value)
+					newbon->CriticalHitChance = effect_value;
+				break;
+			}
+				
+			case SE_CrippBlowChance:
+			{
+				if(newbon->CrippBlowChance < effect_value)
+					newbon->CrippBlowChance = effect_value;
+				break;
+			}
+				
+			case SE_AvoidMeleeChance:
+			{
+				//multiplier is to be compatible with item effects
+				//watching for overflow too
+				effect_value = effect_value<3000? effect_value * 10 : 30000;
+				if(newbon->AvoidMeleeChance < effect_value)
+					newbon->AvoidMeleeChance = effect_value;
+				break;
+			}
+				
+			case SE_RiposteChance:
+			{
+				if(newbon->RiposteChance < effect_value)
+					newbon->RiposteChance = effect_value;
+				break;
+			}
+				
+			case SE_DodgeChance:
+			{
+				if(newbon->DodgeChance < effect_value)
+					newbon->DodgeChance = effect_value;
+				break;
+			}
+				
+			case SE_ParryChance:
+			{
+				if(newbon->ParryChance < effect_value)
+					newbon->ParryChance = effect_value;
+				break;
+			}
+				
+			case SE_DualWeildChance:
+			{
+				if(newbon->DualWeildChance < effect_value)
+					newbon->DualWeildChance = effect_value;
+				break;
+			}
+				
+			case SE_DoubleAttackChance:
+			{
+				if(newbon->DoubleAttackChance < effect_value)
+					newbon->DoubleAttackChance = effect_value;
+				break;
+			}
+				
+			case SE_MeleeLifetap:
+			{
+				newbon->MeleeLifetap = true;
+				break;
+			}
+				
+			case SE_AllInstrunmentMod:
+			{
+				if(effect_value > newbon->singingMod)
+					newbon->singingMod = effect_value;
+				if(effect_value > newbon->brassMod)
+					newbon->brassMod = effect_value;
+				if(effect_value > newbon->percussionMod)
+					newbon->percussionMod = effect_value;
+				if(effect_value > newbon->windMod)
+					newbon->windMod = effect_value;
+				if(effect_value > newbon->stringedMod)
+					newbon->stringedMod = effect_value;
+				break;
+			}
+				
+			case SE_ResistSpellChance:
+			{
+				if(newbon->ResistSpellChance < effect_value)
+					newbon->ResistSpellChance = effect_value;
+				break;
+			}
+				
+			case SE_ResistFearChance:
+			{
+				if(newbon->ResistFearChance < effect_value)
+					newbon->ResistFearChance = effect_value;
+				break;
+			}
+				
+ 			case SE_HundredHands:
+ 			{
+				if(spell_to_cast->IsBeneficialSpell()){ //If it's a beneficial spell we switch it cause
+					effect_value *= -1; //of the way it's stored by sony, negative for both ben and det spells
+				}
+				effect_value = effect_value > 120 ? 120 : (effect_value < -120 ? -120 : effect_value);
+				newbon->HundredHands = newbon->HundredHands > effect_value ? newbon->HundredHands : effect_value;
+ 				break;
+ 			}
+				
+			case SE_MeleeSkillCheck:
+			{
+				if(newbon->MeleeSkillCheck < effect_value) {
+					newbon->MeleeSkillCheck = effect_value;
+					newbon->MeleeSkillCheckSkill = spell_to_cast->GetSpell().base2[i]==-1?255:spell_to_cast->GetSpell().base2[i];
+				}
+				break;
+			}
+				
+			case SE_HitChance:
+			{
+				//multiplier is to be compatible with item effects
+				//watching for overflow too
+				effect_value = effect_value<2000? effect_value * 15 : 30000;
+				if(newbon->HitChance < effect_value) {
+					newbon->HitChance = effect_value;
+					newbon->HitChanceSkill = spell_to_cast->GetSpell().base2[i]==-1?255:spell_to_cast->GetSpell().base2[i];
+				}
+				break;
+			}
+				
+			case SE_DamageModifier:
+			{
+				if(newbon->DamageModifier < effect_value) {
+					newbon->DamageModifier = effect_value;
+					newbon->DamageModifierSkill = spell_to_cast->GetSpell().base2[i]==-1?255:spell_to_cast->GetSpell().base2[i];
+				}
+				break;
+			}
+				
+			case SE_MinDamageModifier:
+			{
+				if(newbon->MinDamageModifier < effect_value)
+					newbon->MinDamageModifier = effect_value;
+				break;
+			}
+				
+			case SE_StunResist:
+			{
+				if(newbon->StunResist < effect_value)
+					newbon->StunResist = effect_value;
+				break;
+			}
+				
+			case SE_ProcChance:
+			{
+				//multiplier is to be compatible with item effects
+				//watching for overflow too
+				effect_value = effect_value<3000? effect_value : 3000;
+				if(newbon->ProcChance < effect_value)
+					newbon->ProcChance = effect_value;
+				break;
+			}
+				
+			case SE_ExtraAttackChance:
+			{
+				if(newbon->ExtraAttackChance < effect_value)
+					newbon->ExtraAttackChance = effect_value;
+				break;
+			}
+			case SE_PercentXPIncrease:
+			{
+				if(newbon->XPRateMod < effect_value)
+					newbon->XPRateMod = effect_value;
+				break;
+			}
+				
+		}
+	}
 }
 
 void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newbon, int16 casterId)
@@ -633,7 +1142,7 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 		if(IsBlankSpellEffect(spell_id, i))
 			continue;
 
-		effect_value = 0; //TODO: CalcSpellEffectValue(spell_id, i, casterlevel, caster);
+		effect_value = CalcSpellEffectValue(&Spell(spell_id, caster, this), i, casterlevel, caster);
 
 		switch (spells[spell_id].effectid[i])
 		{

@@ -392,13 +392,13 @@ public:
 	sint32  GetActSpellCasttime(const Spell *spell_to_cast, sint32);
 	sint32  GetDotFocus(Spell *spell_to_cast, sint32 value);
 	virtual bool CheckFizzle(const Spell *spell_to_cast);
-	virtual int GetCurrentBuffSlots();
-	virtual int GetCurrentSongSlots();
-	virtual int GetCurrentDiscSlots() { return 1; }
-	virtual int GetMaxBuffSlots() { return 25; }
-	virtual int GetMaxSongSlots() { return 12; }
-	virtual int GetMaxDiscSlots() { return 1; }
-	virtual int GetMaxTotalSlots() { return 38; }
+	virtual int GetCurrentBuffSlots() const;
+	virtual int GetCurrentSongSlots() const;
+	virtual int GetCurrentDiscSlots() const { return 1; }
+	virtual int GetMaxBuffSlots() const { return 25; }
+	virtual int GetMaxSongSlots() const { return 12; }
+	virtual int GetMaxDiscSlots() const { return 1; }
+	virtual int GetMaxTotalSlots() const { return 38; }
 	virtual void InitializeBuffSlots();
 	virtual void UninitializeBuffSlots();
 	virtual int GetFreeBuffSlot(const Spell *spell_to_cast);
@@ -747,11 +747,6 @@ public:
 	void CheatDetected(CheatTypes CheatType, float x, float y, float z);
 	const bool IsMQExemptedArea(int32 zoneID, float x, float y, float z) const;
 	bool CanUseReport;
-
-	//This is used to later set the buff duration of the spell, in slot to duration.
-	//Doesn't appear to work directly after the client recieves an action packet.
-	//TODO: RemoveThis
-	void SendBuffDurationPacket(int16 spell_id, int duration, int inlevel);
 
 	bool ClientFinishedLoading() { return (conn_state == ClientConnectFinished); }
 	int FindSpellBookSlotBySpellID(int16 spellid);

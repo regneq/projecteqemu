@@ -53,7 +53,21 @@ void MapSpellEffects()
 {
 	memset(SpellEffectDispatch, 0, sizeof(SpellEffectDispatch));
 	SpellEffectDispatch[SE_CurrentHP] = &Mob::Handle_SE_CurrentHP;
-
+	SpellEffectDispatch[SE_ArmorClass] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_ATK] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_MovementSpeed] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_STR] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_DEX] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_AGI] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_STA] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_INT] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_WIS] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_CHA] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_AttackSpeed] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_Invisibility] = &Mob::Handle_SE_Invisibility;
+	SpellEffectDispatch[SE_SeeInvis] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_WaterBreathing] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_CurrentMana] = &Mob::Handle_SE_CurrentMana;
 }
 
 // the spell can still fail here, if the buff can't stack
@@ -401,7 +415,10 @@ void Mob::BuffProcess()
 
 	if(num_buffs > 0)
 	{
-		CalcBonuses();
+		CalcSpellBonuses(&spellbonuses);
+		CalcMaxHP();
+		CalcMaxMana();
+		SetAttackTimer();
 	}
 }
 
@@ -670,7 +687,7 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 
 void Mob::DoBuffWearOffEffect(const Buff *buff_to_use, uint32 buff_slot)
 {
-	for (int i=0; i < EFFECT_COUNT; i++)
+	for (int i = 0; i < EFFECT_COUNT; i++)
 	{
 		if(buff_to_use->GetSpell()->IsBlankSpellEffect(i))
 			continue;
@@ -681,23 +698,22 @@ void Mob::DoBuffWearOffEffect(const Buff *buff_to_use, uint32 buff_slot)
 		{
 			case SE_WeaponProc:
 			{
-				//TODO:
-				//uint16 procid = GetProcID(buffs[slot].spellid, i);
-				//RemoveProcFromWeapon(procid, false);
+				uint16 procid = GetProcID(buff_to_use->GetSpell(), i);
+				RemoveProcFromWeapon(procid, false);
 				break;
 			}
 
 			case SE_DefensiveProc:
 			{
-				//uint16 procid = GetProcID(buffs[slot].spellid, i);
-				//RemoveDefensiveProc(procid);
+				uint16 procid = GetProcID(buff_to_use->GetSpell(), i);
+				RemoveDefensiveProc(procid);
 				break;
 			}
 
 			case SE_RangedProc:
 			{
-				//uint16 procid = GetProcID(buffs[slot].spellid, i);
-				//RemoveRangedProc(procid);
+				uint16 procid = GetProcID(buff_to_use->GetSpell(), i);
+				RemoveRangedProc(procid);
 				break;
 			}
 
@@ -1241,20 +1257,23 @@ sint16 Client::GetFocusEffect(focusType type, const Spell *spell_to_cast)
 	sint16 Total2 = 0;
 	sint16 realTotal2 = 0;
 
-	//TODO:
-	/*
-	for (int y = 0; y < BUFF_COUNT; y++) {
-		int16 focusspellid = buffs[y].spellid;
-		if (focusspellid == 0 || focusspellid >= SPDAT_RECORDS)
-			continue;
-
-		Total2 = CalcFocusEffect(type, focusspellid, spell_id);
-		if (Total2 > 0 && realTotal2 >= 0 && Total2 > realTotal2) {
+	int max_slots = GetMaxTotalSlots();
+	for(int buffs_i = 0; buffs_i < max_slots; buffs_i++)
+	{
+		if(buffs[buffs_i])
+		{
+			uint32 focus_spell_id = buffs[buffs_i]->GetSpell()->GetSpellID();
+			Total2 = CalcFocusEffect(type, focus_spell_id, spell_to_cast);
+			if (Total2 > 0 && realTotal2 >= 0 && Total2 > realTotal2) 
+			{
 				realTotal2 = Total2;
-			} else if (Total2 < 0 && Total2 < realTotal2) {
+			} 
+			else if(Total2 < 0 && Total2 < realTotal2) 
+			{
 				realTotal2 = Total2;
 			}
-	}*/
+		}
+	}
 
 	if(type == focusReagentCost && spell_to_cast->IsSummonPetSpell() && GetAA(aaElementalPact))
 		return 100;
@@ -1269,27 +1288,29 @@ sint16 Client::GetFocusEffect(focusType type, const Spell *spell_to_cast)
 }
 
 //for some stupid reason SK procs return theirs one base off...
-uint16 Mob::GetProcID(uint16 spell_id, uint8 effect_index) {
+uint16 Mob::GetProcID(const Spell* spell_to_use, uint8 effect_index) 
+{
 	bool sk = false;
 	bool other = false;
 	for(int x = 0; x < 16; x++)
 	{
-		if(x == 4){
-			if(spells[spell_id].classes[4] < 255)
+		if(x == 4)
+		{
+			if(spell_to_use->GetSpell().classes[4] < 255)
 				sk = true;
 		}
 		else{
-			if(spells[spell_id].classes[x] < 255)
+			if(spell_to_use->GetSpell().classes[x] < 255)
 				other = true;
 		}
 	}
 	
 	if(sk && !other)
 	{
-		return(spells[spell_id].base[effect_index] + 1);
+		return(spell_to_use->GetSpell().base[effect_index] + 1);
 	}
 	else{
-		return(spells[spell_id].base[effect_index]);
+		return(spell_to_use->GetSpell().base[effect_index]);
 	}
 }
 
@@ -1361,12 +1382,11 @@ bool Mob::TryDeathSave() {
 
 	int buffSlot = GetBuffSlotFromType(SE_DeathSave);
 
-	if(buffSlot >= 0) {
-
-		//TODO:
-		int8 SuccessChance = 0;//buffs[buffSlot].deathSaveSuccessChance;
-		int8 CasterUnfailingDivinityAARank = 0;//buffs[buffSlot].casterAARank;
-		int16 BuffSpellID = 0;//buffs[buffSlot].spellid;
+	if(buffSlot >= 0 && buffs[buffSlot]) 
+	{
+		int8 SuccessChance = buffs[buffSlot]->GetDeathSaveChance();
+		int8 CasterUnfailingDivinityAARank = buffs[buffSlot]->GetCasterAARank();
+		int16 BuffSpellID = buffs[buffSlot]->GetSpell()->GetSpellID();
 		int SaveRoll = MakeRandomInt(0, 100);
 
 		LogFile->write(EQEMuLog::Debug, "%s chance for a death save was %i and the roll was %i", GetCleanName(), SuccessChance, SaveRoll);

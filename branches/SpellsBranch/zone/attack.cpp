@@ -806,15 +806,21 @@ int Mob::GetWeaponDamage(Mob *against, const ItemInst *weapon_item, int32 *hate)
 			bool MagicWeapon = false;
 			if(weapon_item->GetItem() && weapon_item->GetItem()->Magic) 
 				MagicWeapon = true;
-			else {					// if it isn't, check to see if a MagicWeapon buff is active
-				//TODO:
-				/*
-				int buffs_i;
-				for (buffs_i = 0; buffs_i < BUFF_COUNT; buffs_i++)
-					if(IsEffectInSpell(buffs[buffs_i].spellid, SE_MagicWeapon)) { 
-						MagicWeapon = true;
-						break;		// no need to keep looking once we find one
-					}*/
+			else 
+			{
+				// if it isn't, check to see if a MagicWeapon buff is active
+				int max_slots = GetMaxTotalSlots();
+				for(int buffs_i = 0; buffs_i < max_slots; buffs_i++)
+				{
+					if(buffs[buffs_i])
+					{
+						if(buffs[buffs_i]->GetSpell()->IsEffectInSpell(SE_MagicWeapon)) 
+						{ 
+							MagicWeapon = true;
+							break;		// no need to keep looking once we find one
+						}
+					}
+				}
 			}
 			
 			if(MagicWeapon) {
@@ -1449,16 +1455,18 @@ void Client::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_
 
 	if(spell != SPELL_UNKNOWN)
 	{
-		//TODO:
-		/*
-		for(uint16 buffIt = 0; buffIt < BUFF_COUNT; buffIt++)
+		int max_slots = GetMaxTotalSlots();
+		for(int buffs_i = 0; buffs_i < max_slots; buffs_i++)
 		{
-			if(buffs[buffIt].spellid == spell && buffs[buffIt].client)
+			if(buffs[buffs_i])
 			{
-				exploss = 0;	// no exp loss for pvp dot
-				break;
+				if(buffs[buffs_i]->GetSpell()->GetSpell().id == spell && buffs[buffs_i]->IsClientBuff())
+				{
+					exploss = 0;
+					break;
+				}
 			}
-		}*/
+		}
 	}
 	
 	// now we apply the exp loss, unmem their spells, and make a corpse
@@ -2769,27 +2777,36 @@ int Mob::GetMonkHandToHandDelay(void)
 	}
 }
 
-sint32 Mob::ReduceDamage(sint32 damage){
-	if(damage > 0 && HasRune()) {
+sint32 Mob::ReduceDamage(sint32 damage)
+{
+	if(damage > 0 && HasRune()) 
+	{
 		int slot = GetBuffSlotFromType(SE_Rune);
 
-		while(slot >= 0) {
-			//TODO:
-			int16 melee_rune_left = 0; //this->buffs[slot].melee_rune;
+		if(!buffs[slot])
+		{
+			return damage;
+		}
+
+		while(slot >= 0) 
+		{
+			int16 melee_rune_left = buffs[slot]->GetMeleeShield();
 	
 			if(melee_rune_left >= damage) {
 				melee_rune_left -= damage;
 				damage = -6;
-				//this->buffs[slot].melee_rune = melee_rune_left;
+				buffs[slot]->SetMeleeShield(melee_rune_left);
 				break;
-	}
-			else {
-				if(melee_rune_left > 0) {
+		}
+			else 
+			{
+				if(melee_rune_left > 0) 
+				{
 					damage -= melee_rune_left;
 					melee_rune_left = 0;
 				}
 				LogFile->write(EQEMuLog::Debug, "Fading rune from slot %d", slot);
-            BuffFadeBySlot(slot);
+				BuffFadeBySlot(slot);
 				slot = GetBuffSlotFromType(SE_Rune);
 				if(slot < 0)
 					SetHasRune(false);
@@ -2800,32 +2817,42 @@ sint32 Mob::ReduceDamage(sint32 damage){
 		return(damage);
 }
 	
-sint32 Mob::ReduceMagicalDamage(sint32 damage) {
-	if(damage > 0 && HasSpellRune()) {
+sint32 Mob::ReduceMagicalDamage(sint32 damage) 
+{
+	if(damage > 0 && HasSpellRune()) 
+	{
 		int slot = GetBuffSlotFromType(SE_AbsorbMagicAtt);
-	
-		while(slot >= 0) {
-			//TODO:
-			int16 magic_rune_left = 0;//this->buffs[slot].magic_rune;
 
-			if(magic_rune_left >= damage) {
+		if(!buffs[slot])
+		{
+			return damage;
+		}
+	
+		while(slot >= 0) 
+		{
+			int16 magic_rune_left = buffs[slot]->GetMagicShield();
+
+			if(magic_rune_left >= damage) 
+			{
 				magic_rune_left -= damage;
-		damage = -6;
-				//this->buffs[slot].magic_rune = magic_rune_left;
+				damage = -6;
+				buffs[slot]->SetMagicShield(magic_rune_left);
 				break;
-	}
-			else {
-				if(magic_rune_left > 0) {
+			}
+			else 
+			{
+				if(magic_rune_left > 0) 
+				{
 					damage -= magic_rune_left;
 					magic_rune_left = 0;
 				}
 				LogFile->write(EQEMuLog::Debug, "Fading spell rune from slot %d", slot);
-            BuffFadeBySlot(slot);
+				BuffFadeBySlot(slot);
 				slot = GetBuffSlotFromType(SE_AbsorbMagicAtt);
 				if(slot < 0)
 					SetHasSpellRune(false);
 			}
-	}
+		}
 	}
 
 	return(damage);
@@ -2929,20 +2956,24 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 	
     // only apply DS if physical damage (no spell damage)
     // damage shield calls this function with spell_id set, so its unavoidable
-	if (attacker && damage > 0 && spell_id == SPELL_UNKNOWN && skill_used != ARCHERY && skill_used != THROWING) {
+	if (attacker && damage > 0 && spell_id == SPELL_UNKNOWN && skill_used != ARCHERY && skill_used != THROWING) 
+	{
 		this->DamageShield(attacker);
-		//TODO:
-		/*
-		for(uint32 bs = 0; bs < BUFF_COUNT; bs++){
-			if(buffs[bs].numhits > 0 && !IsDiscipline(buffs[bs].spellid)){
-				if(buffs[bs].numhits == 1){
-					BuffFadeBySlot(bs, true);
+		int max_slots = GetMaxTotalSlots();
+		for(int buffs_i = 0; buffs_i < max_slots; buffs_i++)
+		{
+			if(buffs[buffs_i])
+			{
+				if(buffs[buffs_i]->GetRemainingCharges() == 1)
+				{
+					BuffFadeBySlot(buffs_i);
 				}
-				else{
-					buffs[bs].numhits--;
+				else
+				{
+					buffs[buffs_i]->SetRemainingCharges(buffs[buffs_i]->GetRemainingCharges() - 1);
 				}
 			}
-		}*/		
+		}	
 	}
 	
 	if(attacker){
@@ -2959,8 +2990,7 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 		if(attacker) {
 			if(spell_id == SPELL_HARM_TOUCH2 && attacker->IsClient() && attacker->CastToClient()->CheckAAEffect(aaEffectLeechTouch)){
 				int healed = damage;
-				//TODO:
-				//healed = attacker->GetActSpellHealing(spell_id, healed);
+				healed = attacker->GetActSpellHealing(&Spell(spell_id, attacker, this), healed);
 				attacker->HealDamage(healed);
 				entity_list.MessageClose(this, true, 300, MT_Emote, "%s beams a smile at %s", attacker->GetCleanName(), this->GetCleanName() );
 				attacker->CastToClient()->DisableAAEffect(aaEffectLeechTouch);
@@ -2970,8 +3000,7 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 			if (spell_id != SPELL_UNKNOWN && IsLifetapSpell( spell_id )) {
 				int healed = damage;
 
-				//TODO:
-				//healed = attacker->GetActSpellHealing(spell_id, healed);				
+				healed = attacker->GetActSpellHealing(&Spell(spell_id, attacker, this), healed);				
 				mlog(COMBAT__DAMAGE, "Applying lifetap heal of %d to %s", healed, attacker->GetName());
 				attacker->HealDamage(healed);
 
@@ -3830,19 +3859,28 @@ void Mob::ApplyMeleeDamageBonus(int16 skill, sint32 &damage){
 	}
 
 	//Rogue sneak attack disciplines make use of this, they are active for one hit
-	//TODO:
-	/*for(int bs = 0; bs < BUFF_COUNT; bs++){
-		if(buffs[bs].numhits > 0 && IsDiscipline(buffs[bs].spellid)){
-			if(skill == spells[buffs[bs].spellid].skill){
-				if(buffs[bs].numhits == 1){
-					BuffFadeBySlot(bs, true);
-				}
-				else{
-					buffs[bs].numhits--;
+	
+	int max_slots = GetMaxTotalSlots();
+	for(int buffs_i = 0; buffs_i < max_slots; buffs_i++)
+	{
+		if(buffs[buffs_i])
+		{
+			if(buffs[buffs_i]->GetRemainingCharges() > 0 && buffs[buffs_i]->GetSpell()->IsDiscipline())
+			{
+				if(skill == buffs[buffs_i]->GetSpell()->GetSpell().skill)
+				{
+					if(buffs[buffs_i]->GetRemainingCharges() == 1)
+					{
+						BuffFadeBySlot(buffs_i);
+					}
+					else
+					{
+						buffs[buffs_i]->SetRemainingCharges(buffs[buffs_i]->GetRemainingCharges() - 1);
+					}
 				}
 			}
-		}	
-	}*/	
+		}
+	}	
 }
 
 bool Mob::HasDied() {

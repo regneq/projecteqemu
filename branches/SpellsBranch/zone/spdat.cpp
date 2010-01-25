@@ -142,7 +142,7 @@ bool IsLifetapSpell(int16 spell_id)
 
 bool Spell::IsLifetapSpell() const
 {
-	return (raw_spell.targettype == ST_Tap || spell_id == 2115);
+	return (raw_spell.targettype == ST_Tap || raw_spell.id == 2115);
 }
 
 bool IsMezSpell(int16 spell_id)

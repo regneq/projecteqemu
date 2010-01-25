@@ -151,7 +151,7 @@ void Client::OPCombatAbility(const EQApplicationPacket *app) {
 		return;
 	//make sure were actually able to use such an attack.
 	//TODO: not casting!
-	if(IsFeared() || IsStunned() || IsMezzed() || DivineAura() || dead)
+	if(IsFeared() || IsCasting() || IsStunned() || IsMezzed() || DivineAura() || dead)
 		return;
 	
 	CombatAbility_Struct* ca_atk = (CombatAbility_Struct*) app->pBuffer;
@@ -1474,7 +1474,7 @@ void Client::DoClassAttacks(Mob *ca_target)
 		return;
 
 	//TODO: not casting!
-	if(IsFeared() || IsStunned() || IsMezzed() || DivineAura() || dead)
+	if(IsFeared() || IsCasting() || IsStunned() || IsMezzed() || DivineAura() || dead)
 		return;
 	
 	if(!IsAttackAllowed(ca_target))

@@ -172,25 +172,6 @@ bool Client::Process() {
 				InterruptSpell(SONG_ENDS_ABRUPTLY, 0x121, bard_song->GetSpellID());
 			}
 		}
-		//TODO:
-		/*if (bardsong_timer.Check() && bardsong != 0) {
-			//NOTE: this is kinda a heavy-handed check to make sure the mob still exists before
-			//doing the next pulse on them...
-			Mob *song_target;
-			if(bardsong_target_id == GetID()) {
-				song_target = this;
-			} else {
-				song_target = entity_list.GetMob(bardsong_target_id);
-			}
-			
-			if (song_target == NULL) {
-				InterruptSpell(SONG_ENDS_ABRUPTLY, 0x121, bardsong);
-			} else {
-				if(!ApplyNextBardPulse(bardsong, song_target, bardsong_slot))
-					InterruptSpell(SONG_ENDS_ABRUPTLY, 0x121, bardsong);
-//				SpellFinished(bardsong, bardsong_target, bardsong_slot, spells[bardsong].mana);
-			}
-		}*/
 		
 		if(IsAIControlled())
 			AI_Process();
@@ -230,9 +211,23 @@ bool Client::Process() {
 		//TODO: not casting unless hybrid spell
 		if(auto_attack) {
 			if(!IsAIControlled() && !dead
-				&& !IsStunned() && !IsFeared() && !IsMezzed() && GetAppearance() != eaDead
-				)
-				may_use_attacks = true;
+				&& !IsStunned() && !IsFeared() && !IsMezzed() && GetAppearance() != eaDead)
+				if(casting_spell)
+				{
+					if(!((casting_spell->GetSpell().classes[7] < 1 
+						&& casting_spell->GetSpell().classes[7] > 100)))
+					{
+						may_use_attacks = true;
+					}
+					else
+					{
+						may_use_attacks = false;
+					}
+				}
+				else
+				{
+					may_use_attacks = true;
+				}
 			
 			if(may_use_attacks && ranged_timer.Enabled()) {
 				//if the range timer is enabled, we need to consider it
@@ -1808,19 +1803,19 @@ void Client::DoEnduranceUpkeep() {
 
 	int cost_redux = spellbonuses.EnduranceReduction + itembonuses.EnduranceReduction;
 
-	//TODO:
-	/*
-	uint32 buffs_i;
-	for (buffs_i=0; buffs_i<BUFF_COUNT; buffs_i++) {
-		if (buffs[buffs_i].spellid != SPELL_UNKNOWN) {
-			int upkeep = spells[buffs[buffs_i].spellid].EndurUpkeep;
+	int max_slots = GetMaxTotalSlots();
+	for(int buffs_i = 0; buffs_i < max_slots; buffs_i++)
+	{
+		if(buffs[buffs_i])
+		{
+			int upkeep = buffs[buffs_i]->GetSpell()->GetSpell().EndurUpkeep;
 			if(upkeep > 0) {
 				if(cost_redux > 0) {
 					if(upkeep <= cost_redux)
 						continue;	//reduced to 0
 					upkeep -= cost_redux;
 				}
-				if((upkeep+upkeep_sum) > GetEndurance()) {
+				if((upkeep + upkeep_sum) > GetEndurance()) {
 					//they do not have enough to keep this one going.
 					BuffFadeBySlot(buffs_i);
 				} else {
@@ -1828,7 +1823,7 @@ void Client::DoEnduranceUpkeep() {
 				}
 			}
 		}
-	}*/
+	}
 	
 	if(upkeep_sum != 0)
 		SetEndurance(GetEndurance() - upkeep_sum);
@@ -1851,20 +1846,18 @@ void Client::CalcRestState() {
 	if(!rest_timer.Check(false))
 		return;
 
-	//TODO:
-	/*
-	for (unsigned int j = 0; j < BUFF_COUNT; j++) {
-
-		if(buffs[j].spellid != SPELL_UNKNOWN) {
-
-			if(IsDetrimentalSpell(buffs[j].spellid) && (buffs[j].ticsremaining > 0)) {
-
+	int max_slots = GetMaxTotalSlots();
+	for(int buffs_i = 0; buffs_i < max_slots; buffs_i++)
+	{
+		if(buffs[buffs_i])
+		{
+			if(buffs[buffs_i]->GetSpell()->IsDetrimentalSpell() && (buffs[buffs_i]->GetDurationRemaining() > 0)) 
+			{
 				return;
 			}
 		}
-	}*/
+	}
 
 	RestRegenHP = (GetMaxHP() * RuleI(Character, RestRegenPercent) / 100);
-
 	RestRegenMana = (GetMaxMana() * RuleI(Character, RestRegenPercent) / 100);
 }

@@ -7787,7 +7787,37 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 				UnmemSpell(z, false);
 		}
 
-		//TODO:
+		//todo: load buffs from db here
+		for(int buffs_i = 0; buffs_i < BUFF_COUNT; buffs_i++)
+		{
+			if(buffs[buffs_i])
+			{
+				m_pp.buffs[buffs_i].slotid = 2;
+				m_pp.buffs[buffs_i].level = buffs[buffs_i]->GetSpell()->GetCasterLevel();
+				m_pp.buffs[buffs_i].bard_modifier = buffs[buffs_i]->GetInstrumentMod();
+				m_pp.buffs[buffs_i].effect = buffs[buffs_i]->GetInstrumentMod();
+				m_pp.buffs[buffs_i].spellid = buffs[buffs_i]->GetSpell()->GetSpellID();
+				m_pp.buffs[buffs_i].duration = buffs[buffs_i]->GetDurationRemaining();
+				m_pp.buffs[buffs_i].dmg_shield_remaining = 0;
+				m_pp.buffs[buffs_i].persistant_buff = 0;
+				m_pp.buffs[buffs_i].player_id = 0;
+				m_pp.buffs[buffs_i].reserved = 0;
+			}
+			else
+			{
+				m_pp.buffs[buffs_i].slotid = 0;
+				m_pp.buffs[buffs_i].level = 0;
+				m_pp.buffs[buffs_i].bard_modifier = 0;
+				m_pp.buffs[buffs_i].effect = 0;
+				m_pp.buffs[buffs_i].spellid = 0;
+				m_pp.buffs[buffs_i].duration = 0;
+				m_pp.buffs[buffs_i].dmg_shield_remaining = 0;
+				m_pp.buffs[buffs_i].persistant_buff = 0;
+				m_pp.buffs[buffs_i].player_id = 0;
+				m_pp.buffs[buffs_i].reserved = 0;
+			}
+		}
+		//TODO: Restore Buffs
 		/*
 		for (i = 0; i < BUFF_COUNT; i++) {
 			for(uint32 z = 0; z < BUFF_COUNT; z++) {
