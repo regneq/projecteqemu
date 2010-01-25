@@ -3889,15 +3889,17 @@ void Client::Handle_OP_ManaChange(const EQApplicationPacket *app)
 	if(app->size == 0) {
 		// i think thats the sign to stop the songs
 		if(casting_spell ? casting_spell->IsBardSong() : 0)
-			InterruptSpell(SONG_ENDS, 0x121);
+			InterruptSpell(SONG_ENDS, 0x121); //TODO: free without all the interrupt packets...
 		else
-			InterruptSpell(INTERRUPT_SPELL, 0x121);
+			ZeroAndFreeSong();
 
 		return;
 	}
-	else	// solar: i don't think the client sends proper manachanges
-	{			// with a length, just the 0 len ones for stopping songs
-		//ManaChange_Struct* p = (ManaChange_Struct*)app->pBuffer;
+	else
+	{
+		// solar: i don't think the client sends proper manachanges
+		// with a length, just the 0 len ones for stopping songs
+		// ManaChange_Struct* p = (ManaChange_Struct*)app->pBuffer;
 		printf("OP_ManaChange from client:\n");
 		DumpPacket(app);
 	}

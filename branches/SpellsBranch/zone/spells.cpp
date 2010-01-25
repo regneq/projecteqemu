@@ -185,7 +185,7 @@ bool Mob::CastSpell(Spell **casted_spell_ptr, int32* spell_will_finish)
 		safe_delete(*casted_spell_ptr);
 		return false;
 	}
-
+	
 	if(spell_recovery_timer)
 	{
 		Message(13, "You have not recovered...");
@@ -257,7 +257,6 @@ bool Mob::DoCastSpell(Spell **casted_spell_ptr, int32* spell_will_finish)
 	else
 	{
 		orig_cast_time = casted_spell->GetCastTime();
-		printf("orig cast time... %u", orig_cast_time);
 	}
 
 	if(casted_spell->GetManaCost() <= -1) 
@@ -359,16 +358,15 @@ bool Mob::DoCastSpell(Spell **casted_spell_ptr, int32* spell_will_finish)
 		*spell_will_finish = Timer::GetCurrentTime() + casted_spell->GetCastTime() + 100;
 	}
 
-	EQApplicationPacket *outapp = NULL;	
-
-	// now tell the people in the area
-	outapp = new EQApplicationPacket(OP_BeginCast, sizeof(BeginCast_Struct));
+	mlog(SPELLS__CASTING, "Sending spell casting packet...");
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_BeginCast, sizeof(BeginCast_Struct));
 	BeginCast_Struct* begin_cast = (BeginCast_Struct*)outapp->pBuffer;
 	begin_cast->caster_id = GetID();
 	begin_cast->spell_id = casted_spell->GetSpellID();
 	begin_cast->cast_time = casted_spell->GetCastTime();
 	outapp->priority = 3;
 	entity_list.QueueCloseClients(this, outapp, false, 200, 0, true);
+	DumpPacket(outapp);
 	safe_delete(outapp);
 
 	casting_spell = casted_spell;
@@ -593,6 +591,12 @@ void Mob::ZeroAndFreeCastingVars()
 	safe_delete(casting_spell);
 }
 
+void Mob::ZeroAndFreeSong()
+{
+	safe_delete(bard_song);
+	bardsong_timer.Disable();
+}
+
 void Mob::InterruptSpell(int16 spellid)
 {
 	if (spellid == SPELL_UNKNOWN)
@@ -804,6 +808,7 @@ void Mob::CastedSpellFinished(Spell **casted_spell_ptr)
 		}
 
 		mlog(SPELLS__CASTING, "Bard song %d should be started", spell_id);
+		ZeroAndFreeCastingVars();
 	}
 	else
 	{
@@ -3545,6 +3550,7 @@ int Mob::GetCasterLevel()
 //you should really know what your doing before you call this
 void Mob::_StopSong()
 {
+	mlog(SPELLS__CASTING, "Song has been stopped.");
 	if (IsClient() && (bard_song || casting_spell ? casting_spell->IsBardSong() : 0))
 	{
 		EQApplicationPacket* outapp = new EQApplicationPacket(OP_ManaChange, sizeof(ManaChange_Struct));
@@ -3766,7 +3772,7 @@ int Mob::CheckBuffSlotStackConflicts(const Spell* spell_to_cast, int start, int 
 		}
 	}
 	
-	mlog(SPELLS__BUFFS, "Checking where buff %d (cast level %d) can be added safelt...",
+	mlog(SPELLS__BUFFS, "Checking where buff %d (cast level %d) can be added safely...",
 		spell_to_cast->GetSpellID(), spell_to_cast->GetCasterLevel());
 
 	// first we loop through everything checking that the spell
@@ -3857,7 +3863,10 @@ bool Mob::ValidateStartSpellCast(const Spell *spell_to_cast)
 		return_value = false;
 	}
 
-	ValidateSpellCastFinish(spell_to_cast);
+	if(return_value == false)
+	{
+		ValidateSpellCastFinish(spell_to_cast);
+	}
 	return return_value;
 }
 
@@ -4113,8 +4122,8 @@ Spell::Spell(uint32 spell_id, Mob* caster, Mob* target, uint32 slot, uint32 cast
 {
 	this->spell_id = spell_id;
 	this->caster_id = caster->GetID();
-	this->caster_level = caster->GetCasterLevel();
-	this->target_id = target->GetID();
+	this->caster_level = caster ? caster->GetCasterLevel() : 0;
+	this->target_id = target ? target->GetID() : 0;
 	this->spell_slot = slot;
 	this->cast_time = cast_time;
 	this->mana_cost = mana_cost;

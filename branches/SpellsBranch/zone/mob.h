@@ -682,6 +682,7 @@ bool logpos;
 	void InterruptSpell(int16, int16, int16 spellid = SPELL_UNKNOWN);
 	void ZeroCastingVars();
 	void ZeroAndFreeCastingVars();
+	void ZeroAndFreeSong();
 	bool DoChannelCheck(bool &did_regain_conc);
 	virtual bool DoComponentCheck(Spell *spell_to_cast, bool bard_song_mode) { return true; }
 	bool SpellFinished(int16 spell_id, Mob *target, int16 slot = 10, int16 mana_used = 0, int32 inventory_slot = 0xFFFFFFFF);
@@ -709,8 +710,8 @@ bool logpos;
 	void BuffFadeDetrimental();
 	void BuffFadeBySlot(int slot, bool iRecalcBonuses = true);
 	void BuffFadeDetrimentalByCaster(Mob *caster);
-	int16	CastingSpellID() const { return casting_spell ? casting_spell->GetSpellID() : 0; }
-	inline	bool	IsCasting() const { return((casting_spell != NULL)); }
+	int16 CastingSpellID() const { return casting_spell ? casting_spell->GetSpellID() : 0; }
+	inline bool IsCasting() const { return((casting_spell != NULL)); }
 
 
 
@@ -1227,8 +1228,8 @@ protected:
 	int	flymode;
 
 private:
-	void	_StopSong();		//this is not what you think it is
-	Mob*	target;
+	void _StopSong(); //this is not what you think it is
+	Mob* target;
 };
 
 // All data associated with a single trade
