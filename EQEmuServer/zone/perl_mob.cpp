@@ -6206,7 +6206,7 @@ XS(XS_Mob_DoSpecialAttackDamage)
 		if(target == NULL)
 			Perl_croak(aTHX_ "target is NULL, avoiding crash.");
 
-		if (items == 5)
+		if (items == 5 || items == 6)
 		{
 			min_damage = (sint32)SvIV(ST(4));
 		}
@@ -6253,6 +6253,79 @@ XS(XS_Mob_CheckLoS)
 		RETVAL = THIS->CheckLosFN(mob);
 		ST(0) = boolSV(RETVAL);
 		sv_2mortal(ST(0));
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Mob_CheckLoSToLoc); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_CheckLoSToLoc)
+{
+	dXSARGS;
+	if (items != 4 && items != 5)
+		Perl_croak(aTHX_ "Usage: Mob::CheckLoSToLoc(THIS, loc_x, loc_y, loc_z, mob_size)");
+	{
+		Mob *		THIS;
+		float		loc_x = (float)SvNV(ST(1));
+		float		loc_y = (float)SvNV(ST(2));
+		float		loc_z = (float)SvNV(ST(3));
+		float		mob_size;
+		bool		RETVAL;
+
+		if (items == 5) {
+			mob_size = (float)SvNV(ST(4));
+		}
+		else {
+			mob_size = 6;
+		}
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->CheckLosFN(loc_x, loc_y, loc_z, mob_size);
+		ST(0) = boolSV(RETVAL);
+		sv_2mortal(ST(0));
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Mob_FindGroundZ); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_FindGroundZ)
+{
+	dXSARGS;
+	if (items != 3 && items != 4)
+		Perl_croak(aTHX_ "Usage: Mob::FindGroundZ(THIS, new_x, new_y, z_offset)");
+	{
+		Mob *		THIS;
+		float		new_x = (float)SvNV(ST(1));
+		float		new_y = (float)SvNV(ST(2));
+		float		z_offset;
+		float		RETVAL;
+		dXSTARG;
+
+		if (items == 4) {
+			z_offset = (float)SvNV(ST(3));
+		}
+		else {
+			z_offset = 10;
+		}
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetGroundZ(new_x, new_y, z_offset);
+		XSprePUSH; PUSHn((double)RETVAL);
 	}
 	XSRETURN(1);
 }
@@ -6498,6 +6571,8 @@ XS(boot_Mob)
 		newXSproto(strcpy(buf, "CombatRange"), XS_Mob_CombatRange, file, "$$");
 		newXSproto(strcpy(buf, "DoSpecialAttackDamage"), XS_Mob_DoSpecialAttackDamage, file, "$$$$;$$");
 		newXSproto(strcpy(buf, "CheckLoS"), XS_Mob_CheckLoS, file, "$$");
+		newXSproto(strcpy(buf, "CheckLoSToLoc"), XS_Mob_CheckLoSToLoc, file, "$$$$;$");
+		newXSproto(strcpy(buf, "FindGroundZ"), XS_Mob_FindGroundZ, file, "$$$;$");
 	XSRETURN_YES;
 }
 
