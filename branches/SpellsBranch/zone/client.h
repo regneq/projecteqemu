@@ -384,12 +384,12 @@ public:
 	inline int8	GetBaseWIS()	const { return m_pp.WIS; }
 
 	//Spell related stuff
-	float  GetActSpellRange(Spell *spell_to_cast, float range);
-	sint32  GetActSpellDamage(Spell *spell_to_cast, sint32 value);
-	sint32  GetActSpellHealing(Spell *spell_to_cast, sint32 value);
-	sint32  GetActSpellCost(Spell *spell_to_cast, sint32);
-	sint32  GetActSpellDuration(Spell *spell_to_cast, sint32);
-	sint32  GetActSpellCasttime(Spell *spell_to_cast, sint32);
+	float  GetActSpellRange(const Spell *spell_to_cast, float range);
+	sint32  GetActSpellDamage(const Spell *spell_to_cast, sint32 value);
+	sint32  GetActSpellHealing(const Spell *spell_to_cast, sint32 value);
+	sint32  GetActSpellCost(const Spell *spell_to_cast, sint32);
+	sint32  GetActSpellDuration(const Spell *spell_to_cast, sint32);
+	sint32  GetActSpellCasttime(const Spell *spell_to_cast, sint32);
 	sint32  GetDotFocus(Spell *spell_to_cast, sint32 value);
 	virtual bool CheckFizzle(const Spell *spell_to_cast);
 	virtual int GetCurrentBuffSlots();
@@ -932,8 +932,8 @@ protected:
 	void ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon);
 	bool client_data_loaded;
 
-	sint16	GetFocusEffect(focusType type, Spell *spell_to_cast);
-	sint16	CalcFocusEffect(focusType type, int16 focus_id, Spell *spell_to_cast);
+	sint16	GetFocusEffect(focusType type, const Spell *spell_to_cast);
+	sint16	CalcFocusEffect(focusType type, int16 focus_id, const Spell *spell_to_cast);
 
 	bool	MoveItemToInventory(ItemInst *BInst, bool UpdateClient = false);
 

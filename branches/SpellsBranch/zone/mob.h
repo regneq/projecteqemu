@@ -604,13 +604,13 @@ bool logpos;
 	inline virtual sint16  GetMaxCR() const { return 255; }
 	inline virtual sint16  GetMaxFR() const { return 255; }
 
-	virtual float GetActSpellRange(Spell *spell_to_cast, float range){ return range;}
-	virtual sint32  GetActSpellDamage(Spell *spell_to_cast, sint32 value) { return value; }
-	virtual sint32  GetActSpellHealing(Spell *spell_to_cast, sint32 value) { return value; }
-	virtual sint32 GetActSpellCost(Spell *spell_to_cast, sint32 cost){ return cost;}
-	virtual sint32 GetActSpellDuration(Spell *spell_to_cast, sint32 duration){ return duration;}
-	virtual sint32 GetActSpellCasttime(Spell *spell_to_cast, sint32 casttime);
-	float ResistSpell(int8 resist_type, Spell *spell_to_cast, Mob *caster);
+	virtual float GetActSpellRange(const Spell *spell_to_cast, float range){ return range;}
+	virtual sint32 GetActSpellDamage(const Spell *spell_to_cast, sint32 value) { return value; }
+	virtual sint32 GetActSpellHealing(const Spell *spell_to_cast, sint32 value) { return value; }
+	virtual sint32 GetActSpellCost(const Spell *spell_to_cast, sint32 cost){ return cost;}
+	virtual sint32 GetActSpellDuration(const Spell *spell_to_cast, sint32 duration){ return duration;}
+	virtual sint32 GetActSpellCasttime(const Spell *spell_to_cast, sint32 casttime);
+	float ResistSpell(int8 resist_type, const Spell *spell_to_cast, Mob *caster);
 	uint16 GetSpecializeSkillValue(const Spell* spell_to_cast) const;
 
 	void ShowStats(Client* client);
@@ -688,22 +688,22 @@ bool logpos;
 	bool SpellFinished(int16 spell_id, Mob *target, int16 slot = 10, int16 mana_used = 0, int32 inventory_slot = 0xFFFFFFFF);
 	bool SpellFinished(Spell *spell_to_cast);
 	virtual bool DetermineSpellTargets(Spell *spell_to_cast, Mob *&spell_target, Mob *&ae_center, CastAction_type &CastAction);
-	int	CalcBuffDuration(Mob *caster, Mob *target, Spell *spell_to_cast, sint32 caster_level_override = -1);
+	int	CalcBuffDuration(Mob *caster, Mob *target, const Spell *spell_to_cast, sint32 caster_level_override = -1);
 	virtual float GetAOERange(Spell *spell_to_cast);
 	virtual bool IsImmuneToSpell(Spell *spell_to_cast, Mob *caster);
 	int SendActionSpellPacket(Spell *spell_to_cast, Mob *spell_target, int caster_level); //first action packet
-	void SendActionSpellPacket(Spell *spell_to_cast, Mob *spell_target, uint32 sequence, int caster_level); //2nd action
+	void SendActionSpellPacket(Spell *spell_to_cast, Mob *spell_target, uint32 sequence, int caster_level, int mode = 0); //2nd action
 	void SendCombatDamageSpellPacket(Spell *spell_to_cast, Mob *spell_target, int sequence); //combat damage packet
 	bool WillSpellHold(Spell *spell_to_cast, Mob *spell_target);
 	float DoSpellOnTargetResistCheck(Spell *spell_to_cast, Mob *spell_target);
 	void DoSpellOnTargetRecourse(Spell *spell_on_target, Mob *spell_target);
 	void SendKnockBackPacket(int push_up, int push_back);
-	virtual bool SpellEffect(Mob* caster, Spell *spell_to_cast, float partial = 100);
+	virtual bool SpellEffect(Mob* caster, Spell *spell_to_cast, int action_sequence, float partial = 100);
 	bool ApplyNextBardPulse(Spell *spell_to_cast);
 	void BardPulse(Spell *spell_to_cast, Mob *caster);
 	virtual void SendBuffPacket(Buff *buff, uint32 buff_index, uint32 buff_mode) { }
 	virtual void MakeBuffFadePacket(Buff *buff, int slot_id, bool send_message = true) { }
-	Buff *AddBuff(Mob *caster, Spell *spell_to_cast, uint32 duration = 0);
+	Buff *AddBuff(Mob *caster, Spell *spell_to_cast, sint32 &buff_slot, uint32 duration = 0);
 	void BuffFadeBySpellID(int16 spell_id);
 	void BuffFadeByEffect(int effectid, int skipslot = -1);
 	void BuffFadeAll();
@@ -712,6 +712,9 @@ bool logpos;
 	void BuffFadeDetrimentalByCaster(Mob *caster);
 	int16 CastingSpellID() const { return casting_spell ? casting_spell->GetSpellID() : 0; }
 	inline bool IsCasting() const { return((casting_spell != NULL)); }
+	void DoBuffWearOffEffect(const Buff *buff_to_use, uint32 buff_slot);
+	virtual void DoBuffTic(const Buff *buff_to_use);
+	void BuffModifyDurationBySpellID(int16 spell_id, sint32 newDuration);
 
 
 
@@ -722,8 +725,6 @@ bool logpos;
 	void	SendPetBuffsToClient();
 	//int		AddBuff(Mob *caster, const int16 spell_id, int duration = 0, sint32 level_override = -1);
 	//virtual bool SpellEffect(Mob* caster, int16 spell_id, float partial = 100);
-	virtual void DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob* caster = 0);
-	void	BuffModifyDurationBySpellID(int16 spell_id, sint32 newDuration);
 	int		CanBuffStack(int16 spellid, int8 caster_level, bool iFailIfOverwrite = false);
 	void	TemporaryPets(int16 spell_id, Mob *target, const char *name_override = NULL, uint32 duration_override = 0);
 	void	WakeTheDead(int16 spell_id, Mob *target, uint32 duration);
@@ -917,9 +918,9 @@ bool logpos;
 	virtual sint32 CheckHealAggroAmount(Spell *spell_to_cast, int32 heal_possible = 0);
 	virtual int32 GetAA(int32 aa_id) const { return(0); }
 
-	int16	GetInstrumentMod(Spell *spell_to_cast) const;
-	int CalcSpellEffectValue(Spell *spell_to_cast, int effect_id, int caster_level = 1, Mob *caster = NULL, int ticsremaining = 0);
-	int CalcSpellEffectValue_formula(int formula, int base, int max, int caster_level, Spell *spell_to_cast, int ticsremaining = 0);
+	int16 GetInstrumentMod(const Spell *spell_to_cast) const;
+	int CalcSpellEffectValue(const Spell *spell_to_cast, int effect_id, int caster_level = 1, Mob *caster = NULL, int ticsremaining = 0);
+	int CalcSpellEffectValue_formula(int formula, int base, int max, int caster_level, const Spell *spell_to_cast, int ticsremaining = 0);
 	virtual int CheckStackConflict(const Spell* spell_1, const Spell *spell_2);
 	int32 GetCastedSpellInvSlot() const { return casting_spell ? casting_spell->GetInventorySpellSlot() : 0; }
 
@@ -959,7 +960,7 @@ bool logpos;
 	inline void SetHasSpellRune(bool hasSpellRune) { m_hasSpellRune = hasSpellRune; }
 	inline bool HasDeathSaveChance() const { return m_hasDeathSaveChance; }
 	inline void SetDeathSaveChance(bool hasDeathSaveChance) { m_hasDeathSaveChance = hasDeathSaveChance; }
-	bool PassCharismaCheck(Mob* caster, Mob* spellTarget, Spell *spell_to_cast);
+	bool PassCharismaCheck(Mob* caster, Mob* spellTarget, const Spell *spell_to_cast);
 	bool TryDeathSave();
 	Timer* GetAIThinkTimer() { return AIthink_timer; }
 	Timer* GetAIMovementTimer() { return AImovement_timer; }
@@ -1025,6 +1026,8 @@ protected:
 	int32	scalerate;
 	//TODO:
 	Buff **buffs;
+	uint32 current_buff_count;
+	Timer *buff_tic_timer;
 	StatBonuses		itembonuses;
 	StatBonuses		spellbonuses;
 	StatBonuses		aabonuses;
@@ -1211,8 +1214,8 @@ protected:
 	int32	pDontSnareMeBefore;
 
 	// Bind wound
-	Timer  bindwound_timer;
-	Mob*    bindwound_target;
+	Timer bindwound_timer;
+	Mob* bindwound_target;
 	// hp event
 	int nexthpevent;
 	int nextinchpevent;

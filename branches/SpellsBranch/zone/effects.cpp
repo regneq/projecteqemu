@@ -30,7 +30,7 @@
 #include "StringIDs.h"
 #include "NpcAI.h"
 
-float Client::GetActSpellRange(Spell *spell_to_cast, float range)
+float Client::GetActSpellRange(const Spell *spell_to_cast, float range)
 {
 	float extrange = 100;
 
@@ -39,7 +39,7 @@ float Client::GetActSpellRange(Spell *spell_to_cast, float range)
 	return (range * extrange) / 100;
 }
 
-sint32 Client::GetActSpellDamage(Spell *spell_to_cast, sint32 value) {
+sint32 Client::GetActSpellDamage(const Spell *spell_to_cast, sint32 value) {
 	// Important variables:
 	// value: the actual damage after resists, passed from Mob::SpellEffect
 	// modifier: modifier to damage (from spells & focus effects?)
@@ -213,7 +213,7 @@ sint32 Client::GetActSpellDamage(Spell *spell_to_cast, sint32 value) {
 	return (value * modifier) / 100;
 }
 
-sint32 Client::GetActSpellHealing(Spell *spell_to_cast, sint32 value) {
+sint32 Client::GetActSpellHealing(const Spell *spell_to_cast, sint32 value) {
 	sint32 modifier = 100;
 
 	modifier += GetFocusEffect(focusImprovedHeal, spell_to_cast);
@@ -305,7 +305,7 @@ sint32 Client::GetActSpellHealing(Spell *spell_to_cast, sint32 value) {
 	return (value * modifier) / 100;
 }
 
-sint32 Client::GetActSpellCost(Spell *spell_to_cast, sint32 cost)
+sint32 Client::GetActSpellCost(const Spell *spell_to_cast, sint32 cost)
 {
 	// This formula was derived from the following resource:
 	// http://www.eqsummoners.com/eq1/specialization-library.html
@@ -374,7 +374,7 @@ sint32 Client::GetActSpellCost(Spell *spell_to_cast, sint32 cost)
 	return cost;
 }
 
-sint32 Client::GetActSpellDuration(Spell *spell_to_cast, sint32 duration)
+sint32 Client::GetActSpellDuration(const Spell *spell_to_cast, sint32 duration)
 {
 	int increase = 100;
 	increase += GetFocusEffect(focusSpellDuration, spell_to_cast);
@@ -399,7 +399,7 @@ sint32 Client::GetActSpellDuration(Spell *spell_to_cast, sint32 duration)
 	return (duration * increase) / 100;
 }
 
-sint32 Client::GetActSpellCasttime(Spell *spell_to_cast, sint32 casttime)
+sint32 Client::GetActSpellCasttime(const Spell *spell_to_cast, sint32 casttime)
 {
 	sint32 cast_reducer = 0;
 	cast_reducer += GetFocusEffect(focusSpellHaste, spell_to_cast);

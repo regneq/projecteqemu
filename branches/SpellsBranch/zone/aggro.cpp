@@ -1426,7 +1426,8 @@ void Mob::ClearFeignMemory() {
 		AIfeignremember_timer->Disable();
 }
 
-bool Mob::PassCharismaCheck(Mob* caster, Mob* spellTarget, Spell *spell_to_cast) {
+bool Mob::PassCharismaCheck(Mob* caster, Mob* spellTarget, const Spell *spell_to_cast) 
+{
 	bool Result = false;
 
 	if(!caster) return false;

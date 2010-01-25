@@ -46,7 +46,7 @@ extern volatile bool ZoneLoaded;
 extern bool spells_loaded;
 extern WorldServer worldserver;
 
-typedef void (Mob::*SpellEffectProc)(const Spell *spell_to_cast, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use);
+typedef bool (Mob::*SpellEffectProc)(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot);
 SpellEffectProc SpellEffectDispatch[SE_LAST_EFFECT + 1];
 
 void MapSpellEffects()
@@ -58,8 +58,7 @@ void MapSpellEffects()
 
 // the spell can still fail here, if the buff can't stack
 // in this case false will be returned, true otherwise
-//TODO: FIXME
-bool Mob::SpellEffect(Mob* caster, Spell *spell_to_cast, float partial)
+bool Mob::SpellEffect(Mob* caster, Spell *spell_to_cast, int action_sequence, float partial)
 {
 	_ZP(Mob_SpellEffect);
 	ItemInst *summoned_item = NULL;
@@ -94,17 +93,21 @@ bool Mob::SpellEffect(Mob* caster, Spell *spell_to_cast, float partial)
 	if(caster)
 		buff_duration = caster->GetActSpellDuration(spell_to_cast, buff_duration);
 
+	sint32 buff_slot = -1;
 	if(buff_duration > 0)
 	{
-		new_buff = AddBuff(caster, spell_to_cast, buff_duration);
+		new_buff = AddBuff(caster, spell_to_cast, buff_slot, buff_duration);
 		if(!new_buff)
 		{
 			mlog(SPELLS__EFFECT_VALUES, "Unable to apply buff for spell %s(%d) via Mob::AddBuff()", spell_to_cast->GetSpell().name, spell_to_cast->GetSpellID());
+			SendActionSpellPacket(spell_to_cast, this, action_sequence, caster_level);
+			SendCombatDamageSpellPacket(spell_to_cast, this, action_sequence);
 			return false;
 		}
 	}
 
 	//loop through all effects...
+	bool need_04_packet = false;
 	for(int i = 0; i < EFFECT_COUNT; i++)
 	{
 		SpellEffectProc proc = SpellEffectDispatch[spell_to_cast->GetSpell().effectid[i]];
@@ -117,8 +120,25 @@ bool Mob::SpellEffect(Mob* caster, Spell *spell_to_cast, float partial)
 			continue;
 		}
 
-		(this->*proc)(spell_to_cast, i, partial, &summoned_item, new_buff);
+		if(!need_04_packet)
+		{
+			need_04_packet = (this->*proc)(spell_to_cast, caster, i, partial, &summoned_item, new_buff, buff_slot);
+		}
+		else
+		{
+			(this->*proc)(spell_to_cast, caster, i, partial, &summoned_item, new_buff, buff_slot);
+		}
 	}
+
+	if(need_04_packet)
+	{
+		SendActionSpellPacket(spell_to_cast, this, action_sequence, caster_level, 4);
+	}
+	else
+	{
+		SendActionSpellPacket(spell_to_cast, this, action_sequence, caster_level);
+	}
+	SendCombatDamageSpellPacket(spell_to_cast, this, action_sequence);
 
 	if (summoned_item) 
 	{
@@ -134,12 +154,41 @@ bool Mob::SpellEffect(Mob* caster, Spell *spell_to_cast, float partial)
 	return true;
 }
 
-void Mob::Handle_SE_CurrentHP(const Spell *spell_to_cast, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use)
+bool Mob::Handle_SE_CurrentHP(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
 {
-	printf("Spell effect Current HP\n");
+	if(!buff_in_use)
+	{
+		sint32 dmg = CalcSpellEffectValue(spell_to_cast, effect_id_index, spell_to_cast->GetCasterLevel(), 
+			caster, 0);
+
+		if(dmg < 0)
+		{
+			dmg = (sint32) (dmg * partial / 100);
+			
+			if(caster)
+				dmg = caster->GetActSpellDamage(spell_to_cast, dmg);
+
+			dmg = -dmg;
+			Damage(caster, dmg, spell_to_cast->GetSpellID(), spell_to_cast->GetSpell().skill, false, buff_slot, false);
+		}
+		else if(dmg > 0)
+		{
+			if(caster)
+				dmg = caster->GetActSpellHealing(spell_to_cast, dmg);
+
+			HealDamage(dmg, caster);
+		}
+	}
+
+	return false;
 }
 
-int Mob::CalcSpellEffectValue(Spell *spell_to_cast, int effect_id, int caster_level, Mob *caster, int ticsremaining)
+bool Mob::Handle_SE_Blank(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	return false;
+}
+
+int Mob::CalcSpellEffectValue(const Spell *spell_to_cast, int effect_id, int caster_level, Mob *caster, int ticsremaining)
 {
 	int formula, base, max, effect_value;
 
@@ -169,7 +218,7 @@ int Mob::CalcSpellEffectValue(Spell *spell_to_cast, int effect_id, int caster_le
 }
 
 // solar: generic formula calculations
-int Mob::CalcSpellEffectValue_formula(int formula, int base, int max, int caster_level, Spell* spell_to_cast, int ticsremaining)
+int Mob::CalcSpellEffectValue_formula(int formula, int base, int max, int caster_level, const Spell* spell_to_cast, int ticsremaining)
 {
 /*
 neotokyo: i need those formulas checked!!!!
@@ -331,24 +380,42 @@ snare has both of them negative, yet their range should work the same:
 
 void Mob::BuffProcess() 
 {
+	int num_buffs = current_buff_count;
+	int max_slots = GetMaxTotalSlots();
+	for(int i = 0; i < max_slots; i++)
+	{
+		if(buffs[i])
+		{
+			DoBuffTic(buffs[i]);
+			if(buffs[i]->GetDurationRemaining() != 0xFFFFFFFF)
+			{
+				printf("Setting duration of buff in %d to %d\n", i, buffs[i]->GetDurationRemaining() - 1);
+				buffs[i]->SetDurationRemaining(buffs[i]->GetDurationRemaining() - 1);
+				if(buffs[i]->GetDurationRemaining() == 0)
+				{
+					BuffFadeBySlot(i, false);
+				}
+			}
+		}
+	}
+
+	if(num_buffs > 0)
+	{
+		CalcBonuses();
+	}
 }
 
-void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob* caster) {
+void Mob::DoBuffTic(const Buff *buff_to_use) 
+{
 	_ZP(Mob_DoBuffTic);
 
+	Mob *caster = buff_to_use->GetSpell()->GetCaster();
 	int effect, effect_value;
+	const SPDat_Spell_Struct &spell = buff_to_use->GetSpell()->GetSpell();
 
-	if(!IsValidSpell(spell_id))
-		return;
-
-	const SPDat_Spell_Struct &spell = spells[spell_id];
-
-	if (spell_id == SPELL_UNKNOWN)
-		return;
-
-	for (int i=0; i < EFFECT_COUNT; i++)
+	for (int i = 0; i < EFFECT_COUNT; i++)
 	{
-		if(IsBlankSpellEffect(spell_id, i))
+		if(buff_to_use->GetSpell()->IsBlankSpellEffect(i))
 			continue;
 
 		effect = spell.effectid[i];
@@ -359,17 +426,16 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 		{
 		case SE_CurrentHP:
 		{
-			effect_value = 0;//CalcSpellEffectValue(spell_id, i, caster_level, caster, ticsremaining);
+			effect_value = CalcSpellEffectValue(buff_to_use->GetSpell(), i, 
+				buff_to_use->GetSpell()->GetCasterLevel(), caster, buff_to_use->GetDurationRemaining());
 
 			//TODO: account for AAs and stuff
-			//TODO: FIXME
-
 			//dont know what the signon this should be... - makes sense
 			if (caster && caster->IsClient() &&
-				IsDetrimentalSpell(spell_id) &&
+				buff_to_use->GetSpell()->IsDetrimentalSpell() &&
 				effect_value < 0) {
 				sint32 modifier = 100;
-				//modifier += caster->CastToClient()->GetFocusEffect(focusImprovedDamage, spell_id);
+				modifier += caster->CastToClient()->GetFocusEffect(focusImprovedDamage, buff_to_use->GetSpell());
 
 				if(caster){
 					if(caster->IsClient() && !caster->CastToClient()->GetFeigned()){
@@ -381,19 +447,21 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 							AddToHateList(caster, -effect_value);
 					}
 
-					TryDotCritical(spell_id, caster, effect_value);
+					//TODO: TryDotCritical(spell_id, caster, effect_value);
 				}
 				effect_value = effect_value * modifier / 100;
 			}
 
 			if(effect_value < 0) {
 				effect_value = -effect_value;
-				Damage(caster, effect_value, spell_id, spell.skill, false, i, true);
-			} else if(effect_value > 0) {
+				Damage(caster, effect_value, spell.id, spell.skill, false, i, true);
+			} 
+			else if(effect_value > 0) 
+			{
 				//healing spell...
 				//healing aggro would go here; removed for now
-				//if(caster)
-					//effect_value = caster->GetActSpellHealing(spell_id, effect_value);
+				if(caster)
+					effect_value = caster->GetActSpellHealing(buff_to_use->GetSpell(), effect_value);
 				HealDamage(effect_value, caster);
 			}
 
@@ -401,7 +469,8 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 		}
 		case SE_HealOverTime:
 		{
-			effect_value = 0;//CalcSpellEffectValue(spell_id, i, caster_level);
+			effect_value = CalcSpellEffectValue(buff_to_use->GetSpell(), i, 
+				buff_to_use->GetSpell()->GetCasterLevel(), caster, buff_to_use->GetDurationRemaining());
 
 			//is this affected by stuff like GetActSpellHealing??
 			HealDamage(effect_value, caster);
@@ -411,7 +480,8 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 
 		case SE_CurrentMana:
 		{
-			effect_value = 0;//CalcSpellEffectValue(spell_id, i, caster_level);
+			effect_value = CalcSpellEffectValue(buff_to_use->GetSpell(), i, 
+				buff_to_use->GetSpell()->GetCasterLevel(), caster, buff_to_use->GetDurationRemaining());
 
 			SetMana(GetMana() + effect_value);
 			break;
@@ -419,7 +489,8 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 
 		case SE_CurrentEndurance: {
 			if(IsClient()) {
-				effect_value = 0;//CalcSpellEffectValue(spell_id, i, caster_level);
+				effect_value = CalcSpellEffectValue(buff_to_use->GetSpell(), i, 
+				buff_to_use->GetSpell()->GetCasterLevel(), caster, buff_to_use->GetDurationRemaining());
 
 				CastToClient()->SetEndurance(CastToClient()->GetEndurance() + effect_value);
 			}
@@ -428,22 +499,28 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 
 		case SE_BardAEDot:
 		{
-			effect_value = 0;//CalcSpellEffectValue(spell_id, i, caster_level);
+			effect_value = CalcSpellEffectValue(buff_to_use->GetSpell(), i, 
+				buff_to_use->GetSpell()->GetCasterLevel(), caster, buff_to_use->GetDurationRemaining());
 
 			if (invulnerable || /*effect_value > 0 ||*/ DivineAura())
 				break;
 
-			if(effect_value < 0) {
+			if(effect_value < 0) 
+			{
 				effect_value = -effect_value;
-				if(caster){
-					if(caster->IsClient() && !caster->CastToClient()->GetFeigned()){
+				if(caster)
+				{
+					if(caster->IsClient() && !caster->CastToClient()->GetFeigned())
+					{
 						AddToHateList(caster, effect_value);
 					}
 					else if(!caster->IsClient())
 						AddToHateList(caster, effect_value);
 				}
-				Damage(caster, effect_value, spell_id, spell.skill, false, i, true);
-			} else if(effect_value > 0) {
+				Damage(caster, effect_value, spell.id, spell.skill, false, i, true);
+			} 
+			else if(effect_value > 0) 
+			{
 				//healing spell...
 				HealDamage(effect_value, caster);
 				//healing aggro would go here; removed for now
@@ -451,18 +528,26 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 			break;
 		}
 
-		case SE_Hate2:{
-			effect_value = 0;//CalcSpellEffectValue(spell_id, i, caster_level);
-			if(caster){
-				if(effect_value > 0){
-					if(caster){
-						if(caster->IsClient() && !caster->CastToClient()->GetFeigned()){
+		case SE_Hate2:
+			{
+			effect_value = CalcSpellEffectValue(buff_to_use->GetSpell(), i, 
+				buff_to_use->GetSpell()->GetCasterLevel(), caster, buff_to_use->GetDurationRemaining());
+			if(caster)
+			{
+				if(effect_value > 0)
+				{
+					if(caster)
+					{
+						if(caster->IsClient() && !caster->CastToClient()->GetFeigned())
+						{
 							AddToHateList(caster, effect_value);
 						}
 						else if(!caster->IsClient())
 							AddToHateList(caster, effect_value);
 					}
-				}else{
+				}
+				else
+				{
 					sint32 newhate = GetHateAmount(caster) + effect_value;
 					if (newhate < 1) {
 						SetHate(caster,1);
@@ -475,18 +560,21 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 		}
 
 		case SE_Charm: {
-			/*if (!caster || !PassCharismaCheck(caster, this, spell_id)) {
+			if (!caster || !PassCharismaCheck(caster, this, buff_to_use->GetSpell())) 
+			{
 				BuffFadeByEffect(SE_Charm);
-			}*/
+			}
 
 			break;
 		}
 
-		case SE_Root: {
-			/*float SpellEffectiveness = ResistSpell(spells[spell_id].resisttype, spell_id, caster);
-			if(SpellEffectiveness < 25) {
+		case SE_Root: 
+			{
+			float SpellEffectiveness = ResistSpell(spell.resisttype, buff_to_use->GetSpell(), caster);
+			if(SpellEffectiveness < 25) 
+			{
 				BuffFadeByEffect(SE_Root);
-			}*/
+			}
 
 			break;
 		}
@@ -503,9 +591,9 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 		case SE_Invisibility:
 		case SE_InvisVsAnimals:
 		case SE_InvisVsUndead:
-			if(ticsremaining > 3)
+			if(buff_to_use->GetDurationRemaining() > 3)
 			{
-				if(!IsBardSong(spell_id))
+				if(!buff_to_use->GetSpell()->IsBardSong())
 				{
 					double break_chance = 2.0;
 					if(caster)
@@ -519,14 +607,14 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 
 					if(MakeRandomFloat(0.0, 100.0) < break_chance)
 					{
-						BuffModifyDurationBySpellID(spell_id, 3);
+						BuffModifyDurationBySpellID(spell.id, 3);
 					}
 				}
 			}
 		
 		case SE_Invisibility2:
 		case SE_InvisVsUndead2:
-			if(ticsremaining <= 3 && ticsremaining > 1)
+			if(buff_to_use->GetDurationRemaining() <= 3 && buff_to_use->GetDurationRemaining() > 1)
 			{
 				Message_StringID(MT_Spells, INVIS_BEGIN_BREAK);
 			}
@@ -541,16 +629,12 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 // solar: removes the buff in the buff slot 'slot'
 void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 {
-	if(slot < 0 || slot > GetMaxBuffSlots())
+	if(slot < 0 || slot > GetMaxTotalSlots())
 	{
 		return;
 	}
 
 	mlog(SPELLS__BUFFS, "Fading buff %d from slot %d", buffs[slot]->GetSpell()->GetSpellID(), slot);
-
-	for(int i = 0; i < EFFECT_COUNT; i++)
-	{
-	}
 
 	Mob *p = entity_list.GetMob(buffs[slot]->GetCasterID());
 	if (p && p != this && !buffs[slot]->GetSpell()->IsBardSong())
@@ -565,8 +649,15 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 		}
 	}
 
+	DoBuffWearOffEffect(buffs[slot], slot);
 	MakeBuffFadePacket(buffs[slot], slot, true);
 	safe_delete(buffs[slot]);
+	current_buff_count--;
+
+	if(current_buff_count == 0)
+	{
+		safe_delete(buff_tic_timer);
+	}
 
 	if(IsPet() && GetOwner() && GetOwner()->IsClient()) 
 	{
@@ -575,33 +666,38 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 
 	if(iRecalcBonuses)
 		CalcBonuses();
+}
 
-	//TODO:
-	/*for (int i=0; i < EFFECT_COUNT; i++)
+void Mob::DoBuffWearOffEffect(const Buff *buff_to_use, uint32 buff_slot)
+{
+	for (int i=0; i < EFFECT_COUNT; i++)
 	{
-		if(IsBlankSpellEffect(buffs[slot].spellid, i))
+		if(buff_to_use->GetSpell()->IsBlankSpellEffect(i))
 			continue;
 
-		switch (spells[buffs[slot].spellid].effectid[i])
+		const SPDat_Spell_Struct &sp = buff_to_use->GetSpell()->GetSpell();
+
+		switch(sp.effectid[i])
 		{
 			case SE_WeaponProc:
 			{
-				uint16 procid = GetProcID(buffs[slot].spellid, i);
-				RemoveProcFromWeapon(procid, false);
+				//TODO:
+				//uint16 procid = GetProcID(buffs[slot].spellid, i);
+				//RemoveProcFromWeapon(procid, false);
 				break;
 			}
 
 			case SE_DefensiveProc:
 			{
-				uint16 procid = GetProcID(buffs[slot].spellid, i);
-				RemoveDefensiveProc(procid);
+				//uint16 procid = GetProcID(buffs[slot].spellid, i);
+				//RemoveDefensiveProc(procid);
 				break;
 			}
 
 			case SE_RangedProc:
 			{
-				uint16 procid = GetProcID(buffs[slot].spellid, i);
-				RemoveRangedProc(procid);
+				//uint16 procid = GetProcID(buffs[slot].spellid, i);
+				//RemoveRangedProc(procid);
 				break;
 			}
 
@@ -618,28 +714,36 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 			case SE_Illusion:
 			{
 				SendIllusionPacket(0, GetBaseGender());
-				if(GetRace() == OGRE){
+				if(GetRace() == OGRE)
+				{
 					SendAppearancePacket(AT_Size, 9);
 				}
-				else if(GetRace() == TROLL){
+				else if(GetRace() == TROLL)
+				{
 					SendAppearancePacket(AT_Size, 8);
 				}
-				else if(GetRace() == VAHSHIR || GetRace() == FROGLOK || GetRace() == BARBARIAN){
+				else if(GetRace() == VAHSHIR || GetRace() == FROGLOK || GetRace() == BARBARIAN)
+				{
 					SendAppearancePacket(AT_Size, 7);
 				}
-				else if(GetRace() == HALF_ELF || GetRace() == WOOD_ELF || GetRace() == DARK_ELF){
+				else if(GetRace() == HALF_ELF || GetRace() == WOOD_ELF || GetRace() == DARK_ELF)
+				{
 					SendAppearancePacket(AT_Size, 5);
 				}
-				else if(GetRace() == DWARF){
+				else if(GetRace() == DWARF)
+				{
 					SendAppearancePacket(AT_Size, 4);
 				}
-				else if(GetRace() == HALFLING || GetRace() == GNOME){
+				else if(GetRace() == HALFLING || GetRace() == GNOME)
+				{
 					SendAppearancePacket(AT_Size, 3);
 				}
-				else{
+				else
+				{
 					SendAppearancePacket(AT_Size, 6);
 				}
-				for(int x = 0; x < 7; x++){
+				for(int x = 0; x < 7; x++)
+				{
 					SendWearChange(x);
 				}
 				break;
@@ -647,7 +751,7 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 
 			case SE_Levitate:
 			{
-				if (!AffectedExcludingSlot(slot, SE_Levitate))
+				if(!AffectedExcludingSlot(buff_slot, SE_Levitate))
 					SendAppearancePacket(AT_Levitate, 0);
 				break;
 			}
@@ -662,7 +766,7 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 			case SE_InvisVsUndead2:
 			case SE_InvisVsUndead:
 			{
-				invisible_undead = false;	// Mongrel: No longer IVU
+				invisible_undead = false;
 				break;
 			}
 
@@ -675,8 +779,8 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 			case SE_Silence:
 			{
 				Silence(false);
+				break;
 			}
-
 
 			case SE_DivineAura:
 			{
@@ -684,22 +788,11 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 				break;
 			}
 
-			case SE_Rune:
-			{
-				buffs[slot].melee_rune = 0;
-				break;
-			}
-
-			case SE_AbsorbMagicAtt:
-			{
-				buffs[slot].magic_rune = 0;
-				break;
-			}
-
 			case SE_Familiar:
 			{
 				Mob *mypet = GetPet();
-				if (mypet){
+				if (mypet)
+				{
 					if(mypet->IsNPC())
 						mypet->CastToNPC()->Depop();
 					SetPetID(0);
@@ -709,7 +802,7 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 
 			case SE_Mez:
 			{
-				SendAppearancePacket(AT_Anim, ANIM_STAND);	// unfreeze
+				SendAppearancePacket(AT_Anim, ANIM_STAND);
 				this->mezzed = false;
 				break;
 			}
@@ -764,7 +857,8 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 
 			case SE_Fear:
 			{
-				if(RuleB(Combat, EnableFearPathing)){
+				if(RuleB(Combat, EnableFearPathing))
+				{
 					if(IsClient())
 					{
 						bool charmed = FindType(SE_Charm);
@@ -772,7 +866,8 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 							AI_Stop();
 					}
 
-					if(curfp) {
+					if(curfp) 
+					{
 						curfp = false;
 						break;
 					}
@@ -807,8 +902,6 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 						{
 							if(!my_c->GetGMSpeed() && (runs >= my_c->GetBaseRunspeed() || (speed > (my_c->GetBaseRunspeed() * RuleR(Zone, MQWarpDetectionDistanceFactor)))))
 							{
-								printf("%s %i moving too fast! moved: %.2f in %ims, speed %.2f\n", __FILE__, __LINE__,
-									my_c->m_DistanceSinceLastPositionCheck, (cur_time - my_c->m_TimeSinceLastPositionCheck), speed);
 								if(my_c->IsShadowStepExempted())
 								{
 									if(my_c->m_DistanceSinceLastPositionCheck > 800)
@@ -851,12 +944,11 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 			}
 		}
 	}
-	*/
 }
 
 //given an item/spell's focus ID and the spell being cast, determine the focus ammount, if any
 //assumes that spell_id is not a bard spell and that both ids are valid spell ids
-sint16 Client::CalcFocusEffect(focusType type, int16 focus_id, Spell *spell_to_cast) {
+sint16 Client::CalcFocusEffect(focusType type, int16 focus_id, const Spell *spell_to_cast) {
 
 	const SPDat_Spell_Struct &focus_spell = spells[focus_id];
 	const SPDat_Spell_Struct &spell = spell_to_cast->GetSpell();
@@ -1092,7 +1184,7 @@ sint16 Client::CalcFocusEffect(focusType type, int16 focus_id, Spell *spell_to_c
 	return(value*lvlModifier/100);
 }
 
-sint16 Client::GetFocusEffect(focusType type, Spell *spell_to_cast) 
+sint16 Client::GetFocusEffect(focusType type, const Spell *spell_to_cast) 
 {
 	if(spell_to_cast->IsBardSong())
 		return 0;
@@ -1373,8 +1465,11 @@ bool Mob::AffectedExcludingSlot(int slot, int effect)
 		if (i == slot)
 			continue;
 
-		//TODO:if (IsEffectInSpell(buffs[i].spellid, effect))
-			//return true;
+		if(buffs[i])
+		{
+			if(buffs[i]->GetSpell()->IsEffectInSpell(effect))
+				return true;
+		}
 	}
 	return false;
 }

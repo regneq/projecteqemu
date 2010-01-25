@@ -1568,7 +1568,7 @@ sint16  Client::CalcATK() {
 	return(ATK);
 }
 
-int16 Mob::GetInstrumentMod(Spell *spell_to_cast) const {
+int16 Mob::GetInstrumentMod(const Spell *spell_to_cast) const {
 	if(GetClass() != BARD)
 		return(10);
 	

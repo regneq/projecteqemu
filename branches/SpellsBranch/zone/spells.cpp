@@ -132,6 +132,15 @@ void Mob::SpellProcess()
 			safe_delete(spell_recovery_timer);
 		}
 	}
+
+	if(buff_tic_timer)
+	{
+		if(buff_tic_timer->Check())
+		{
+			printf("buff_tic_timer_check!\n");
+			BuffProcess();
+		}
+	}
 }
 
 void NPC::SpellProcess()
@@ -366,7 +375,6 @@ bool Mob::DoCastSpell(Spell **casted_spell_ptr, int32* spell_will_finish)
 	begin_cast->cast_time = casted_spell->GetCastTime();
 	outapp->priority = 3;
 	entity_list.QueueCloseClients(this, outapp, false, 200, 0, true);
-	DumpPacket(outapp);
 	safe_delete(outapp);
 
 	casting_spell = casted_spell;
@@ -1665,7 +1673,7 @@ void Mob::BardPulse(Spell *spell_to_cast, Mob *caster)
 // even be created depending on the types of mobs involved
 //
 // right now this is just an outline, working on this..
-int Mob::CalcBuffDuration(Mob *caster, Mob *target, Spell *spell_to_cast, sint32 caster_level_override)
+int Mob::CalcBuffDuration(Mob *caster, Mob *target, const Spell *spell_to_cast, sint32 caster_level_override)
 {
 	int formula, duration;
 
@@ -1774,66 +1782,66 @@ int CalcBuffDuration_formula(int level, int formula, int duration)
 //if all effects are better or the same, we overwrite, else we do nothing
 int Mob::CheckStackConflict(const Spell* spell_1, const Spell *spell_2)
 {
-	/*
-	const SPDat_Spell_Struct &sp1 = spells[spellid1];
-	const SPDat_Spell_Struct &sp2 = spells[spellid2];
+	const SPDat_Spell_Struct &sp1 = spell_1->GetSpell();
+	const SPDat_Spell_Struct &sp2 = spell_2->GetSpell();
 	
-	int i, effect1, effect2, sp1_value, sp2_value;
+	int i, effect_1, effect_2, sp1_value, sp2_value;
 	int blocked_effect, blocked_below_value, blocked_slot;
 	int overwrite_effect, overwrite_below_value, overwrite_slot;
 
-	mlog(SPELLS__STACKING, "Check Stacking on old %s (%d) @ lvl %d (by %s) vs. new %s (%d) @ lvl %d (by %s)", sp1.name, spellid1, caster_level1, (caster1==NULL)?"Nobody":caster1->GetName(), sp2.name, spellid2, caster_level2, (caster2==NULL)?"Nobody":caster2->GetName());
+	mlog(SPELLS__STACKING, "Check Stacking on old %s (%d) @ lvl %d vs. new %s (%d) @ lvl %d", 
+		sp1.name, sp1.id, spell_1->GetCasterLevel(), sp2.name, sp2.id, spell_2->GetCasterLevel());
 
-	if(((spellid1 == spellid2) && (spellid1 == 2751)) || //special case spells that will block each other no matter what
-		((spellid1 == spellid2) && (spellid1 == 2755)) //manaburn / lifeburn
-		){
+	if(sp1.id == sp2.id)
+	{
+		if(sp1.id == 2751 || sp1.id == 2755)
+		{
 			mlog(SPELLS__STACKING, "Blocking spell because manaburn/lifeburn does not stack with itself");
 			return -1;
 		}
+	}
 
 	//resurrection effects wont count for overwrite/block stacking
-	switch(spellid1)
+	switch(sp1.id)
 	{
 	case 756:
 	case 757:
 	case 5249:
-		return (0);
+		return 0;
 	}
 
-	switch (spellid2)
+	switch (sp2.id)
 	{
 	case 756:
 	case 757:
 	case 5249:
-		return (0);
+		return 0;
 	}
 	
-	/*
-	One of these is a bard song and one isn't and they're both beneficial so they should stack.
-	*/
-	/*
-	if(IsBardSong(spellid1) != IsBardSong(spellid2)) 
+	//One of these is a bard song and one isn't and they're both beneficial so they should stack.
+	if(spell_1->IsBardSong() != spell_2->IsBardSong()) 
 	{
-		if(!IsDetrimentalSpell(spellid1) && !IsDetrimentalSpell(spellid2))
+		if(!spell_1->IsDetrimentalSpell() && !spell_2->IsDetrimentalSpell())
 		{
-			mlog(SPELLS__STACKING, "%s and %s are beneficial, and one is a bard song, no action needs to be taken", sp1.name, sp2.name);
-			return (0);
+			mlog(SPELLS__STACKING, "%s and %s are beneficial, and one is a bard song, no action needs to be taken", 
+				sp1.name, sp2.name);
+			return 0;
 		}
 	}
 
 
-	// solar: check for special stacking block command in spell1 against spell2
+	//Check for special stacking block command in spell 1 against spell 2
 	for(i = 0; i < EFFECT_COUNT; i++)
 	{
-		effect1 = sp1.effectid[i];
-		if(effect1 == SE_StackingCommand_Block)
+		effect_1 = sp1.effectid[i];
+		if(effect_1 == SE_StackingCommand_Block)
 		{
 			/*
 			The logic here is if you're comparing the same spells they can't block each other
 			from refreshing
 			*/
-	/*
-			if(spellid1 == spellid2)
+
+			if(sp1.id == sp2.id)
 				continue;
 
 			blocked_effect = sp1.base[i];
@@ -1842,19 +1850,23 @@ int Mob::CheckStackConflict(const Spell* spell_1, const Spell *spell_2)
 			
 			if(sp2.effectid[blocked_slot] == blocked_effect)
 			{
-				sp2_value = CalcSpellEffectValue(spellid2, blocked_slot, caster_level2);
+				sp2_value = CalcSpellEffectValue(spell_2, blocked_slot, spell_2->GetCasterLevel());
 				
-				mlog(SPELLS__STACKING, "%s (%d) blocks effect %d on slot %d below %d. New spell has value %d on that slot/effect. %s.",
-					sp1.name, spellid1, blocked_effect, blocked_slot, blocked_below_value, sp2_value, (sp2_value < blocked_below_value)?"Blocked":"Not blocked");
+				mlog(SPELLS__STACKING, "%s (%d) blocks effect %d on slot %d below %d. New spell has value %d"
+					" on that slot/effect. %s.", sp1.name, sp1.id, blocked_effect, blocked_slot, blocked_below_value, 
+					sp2_value, (sp2_value < blocked_below_value) ? "Blocked" : "Not blocked");
 
 				if(sp2_value < blocked_below_value)
 				{
 					mlog(SPELLS__STACKING, "Blocking spell because sp2_value < blocked_below_value");
 					return -1;	// blocked
 				}
-			} else {
-				mlog(SPELLS__STACKING, "%s (%d) blocks effect %d on slot %d below %d, but we do not have that effect on that slot. Ignored.",
-					sp1.name, spellid1, blocked_effect, blocked_slot, blocked_below_value);
+			} 
+			else 
+			{
+				mlog(SPELLS__STACKING, "%s (%d) blocks effect %d on slot %d below %d, but we do not have that"
+					" effect on that slot. Ignored.",sp1.name, sp1.id, blocked_effect, blocked_slot, 
+					blocked_below_value);
 			}
 		}
 	}
@@ -1862,34 +1874,39 @@ int Mob::CheckStackConflict(const Spell* spell_1, const Spell *spell_2)
 	// check for special stacking overwrite in spell2 against effects in spell1
 	for(i = 0; i < EFFECT_COUNT; i++)
 	{
-		effect2 = sp2.effectid[i];
-		if(effect2 == SE_StackingCommand_Overwrite)
+		effect_2 = sp2.effectid[i];
+		if(effect_2 == SE_StackingCommand_Overwrite)
 		{
 			overwrite_effect = sp2.base[i];
 			overwrite_slot = sp2.formula[i] - 201;	//they use base 1 for slots, we use base 0
 			overwrite_below_value = sp2.max[i];
 			if(sp1.effectid[overwrite_slot] == overwrite_effect)
 			{
-				sp1_value = CalcSpellEffectValue(spellid1, overwrite_slot, caster_level1);
+				sp1_value = CalcSpellEffectValue(spell_1, overwrite_slot, spell_1->GetCasterLevel());
 
-				mlog(SPELLS__STACKING, "%s (%d) overwrites existing spell if effect %d on slot %d is below %d. Old spell has value %d on that slot/effect. %s.",
-					sp2.name, spellid2, overwrite_effect, overwrite_slot, overwrite_below_value, sp1_value, (sp1_value < overwrite_below_value)?"Overwriting":"Not overwriting");
+				mlog(SPELLS__STACKING, "%s (%d) overwrites existing spell if effect %d on slot %d is below %d."
+					" Old spell has value %d on that slot/effect. %s.", sp2.name, sp2.id, overwrite_effect, 
+					overwrite_slot, overwrite_below_value, sp1_value, 
+					(sp1_value < overwrite_below_value) ? "Overwriting" : "Not overwriting");
 				
 				if(sp1_value < overwrite_below_value)
 				{
 					mlog(SPELLS__STACKING, "Overwrite spell because sp1_value < overwrite_below_value");
 					return 1;			// overwrite spell if its value is less
 				}
-			} else {
-				mlog(SPELLS__STACKING, "%s (%d) overwrites existing spell if effect %d on slot %d is below %d, but we do not have that effect on that slot. Ignored.",
-					sp2.name, spellid2, overwrite_effect, overwrite_slot, overwrite_below_value);
+			} 
+			else
+			{
+				mlog(SPELLS__STACKING, "%s (%d) overwrites existing spell if effect %d on slot %d is below"
+					" %d, but we do not have that effect on that slot. Ignored.",
+					sp2.name, sp2.id, overwrite_effect, overwrite_slot, overwrite_below_value);
 
 			}
 		}
 	}
 	
-	bool sp1_detrimental = IsDetrimentalSpell(spellid1);
-	bool sp2_detrimental = IsDetrimentalSpell(spellid2);
+	bool sp1_detrimental = spell_1->IsDetrimentalSpell();
+	bool sp2_detrimental = spell_2->IsDetrimentalSpell();
 	bool sp_det_mismatch;
 
 	if(sp1_detrimental == sp2_detrimental)
@@ -1903,78 +1920,81 @@ int Mob::CheckStackConflict(const Spell* spell_1, const Spell *spell_2)
 	bool will_overwrite = false;
 	for(i = 0; i < EFFECT_COUNT; i++)
 	{
-		if(IsBlankSpellEffect(spellid1, i) || IsBlankSpellEffect(spellid2, i))
+		if(spell_1->IsBlankSpellEffect(i) ||spell_2->IsBlankSpellEffect(i))
 			continue;
 
-		effect1 = sp1.effectid[i];
-		effect2 = sp2.effectid[i];
+		effect_1 = sp1.effectid[i];
+		effect_2 = sp2.effectid[i];
 
 		//Effects which really aren't going to affect stacking.
-		if(effect1 == SE_CurrentHPOnce ||
-			effect1 == SE_CurseCounter	||
-			effect1 == SE_DiseaseCounter ||
-			effect1 == SE_PoisonCounter){
+		if(effect_1 == SE_CurrentHPOnce ||
+			effect_1 == SE_CurseCounter	||
+			effect_1 == SE_DiseaseCounter ||
+			effect_1 == SE_PoisonCounter){
 			continue;
 			}
 
-		/*
-		Quick check, are the effects the same, if so then
-		keep going else ignore it for stacking purposes.
-		*/
-/*
-		if(effect1 != effect2)
+		
+		//Quick check, are the effects the same, if so then
+		//keep going else ignore it for stacking purposes.
+		
+
+		if(effect_1 != effect_2)
 			continue;
 
-		/*
-		If target is a npc and caster1 and caster2 exist
-		If Caster1 isn't the same as Caster2 and the effect is a DoT then ignore it.
-		*/
-/*
-		if(IsNPC() && caster1 && caster2 && caster1 != caster2) {
-			if(effect1 == SE_CurrentHP && sp1_detrimental && sp2_detrimental) {
+		
+		//If target is a npc and caster1 and caster2 exist
+		//If Caster1 isn't the same as Caster2 and the effect is a DoT then ignore it.
+		
+
+		if(IsNPC() && spell_1->GetCasterID() != spell_2->GetCasterID()) 
+		{
+			if(effect_1 == SE_CurrentHP && sp1_detrimental && sp2_detrimental) 
+			{
 				continue;
-				mlog(SPELLS__STACKING, "Both casters exist and are not the same, the effect is a detrimental dot, moving on");
+				mlog(SPELLS__STACKING, "Both casters exist and are not the same, the "
+					"effect is a detrimental dot, moving on");
 			}
 		}
 
-		if(effect1 == SE_CompleteHeal){ //SE_CompleteHeal never stacks or overwrites ever, always block.
+		if(effect_1 == SE_CompleteHeal){ //SE_CompleteHeal never stacks or overwrites ever, always block.
 			mlog(SPELLS__STACKING, "Blocking spell because complete heal never stacks or overwries");
 			return (-1);
 		}
 
-		/*
-		If the effects are the same and
-		sp1 = beneficial & sp2 = detrimental or
-		sp1 = detrimental & sp2 = beneficial
-		Then this effect should be ignored for stacking purposes.
-		*/
-/*
+		
+		//If the effects are the same and
+		//sp1 = beneficial & sp2 = detrimental or
+		//sp1 = detrimental & sp2 = beneficial
+		//Then this effect should be ignored for stacking purposes.
+		
+
 		if(sp_det_mismatch)
 		{
 			mlog(SPELLS__STACKING, "The effects are the same but the spell types are not, passing the effect");
 			continue;
 		}
 		
-		/*
-		If the spells aren't the same
-		and the effect is a dot we can go ahead and stack it
-		*/
-/*
-		if(effect1 == SE_CurrentHP && spellid1 != spellid2 && sp1_detrimental && sp2_detrimental) {
+		
+		//If the spells aren't the same
+		//and the effect is a dot we can go ahead and stack it
+		
+		if(effect_1 == SE_CurrentHP && sp1.id != sp2.id && sp1_detrimental && sp2_detrimental) 
+		{
 			mlog(SPELLS__STACKING, "The spells are not the same and it is a detrimental dot, passing");
 			continue;
 		}
 
-		sp1_value = CalcSpellEffectValue(spellid1, i, caster_level1);
-		sp2_value = CalcSpellEffectValue(spellid2, i, caster_level2);
+		sp1_value = CalcSpellEffectValue(spell_1, i, spell_1->GetCasterLevel());
+		sp2_value = CalcSpellEffectValue(spell_2, i, spell_2->GetCasterLevel());
 		
 		// some spells are hard to compare just on value.  attack speed spells
 		// have a value that's a percentage for instance
 		if
 		(
-			effect1 == SE_AttackSpeed ||
-			effect1 == SE_AttackSpeed2 ||
-			effect1 == SE_AttackSpeed3
+			effect_1 == SE_AttackSpeed ||
+			effect_1 == SE_AttackSpeed2 ||
+			effect_1 == SE_AttackSpeed3
 		)
 		{
 			sp1_value -= 100;
@@ -1986,7 +2006,8 @@ int Mob::CheckStackConflict(const Spell* spell_1, const Spell *spell_2)
 		if(sp2_value < 0)
 			sp2_value = 0 - sp2_value;
 		
-		if(sp2_value < sp1_value) {
+		if(sp2_value < sp1_value) 
+		{
 			mlog(SPELLS__STACKING, "Spell %s (value %d) is not as good as %s (value %d). Rejecting %s.",
 				sp2.name, sp2_value, sp1.name, sp1_value, sp2.name);
 			return -1;	// can't stack
@@ -1994,29 +2015,24 @@ int Mob::CheckStackConflict(const Spell* spell_1, const Spell *spell_2)
 		//we dont return here... a better value on this one effect dosent mean they are
 		//all better...
 
-		mlog(SPELLS__STACKING, "Spell %s (value %d) is not as good as %s (value %d). We will overwrite %s if there are no other conflicts.",
-			sp1.name, sp1_value, sp2.name, sp2_value, sp1.name);
+		mlog(SPELLS__STACKING, "Spell %s (value %d) is not as good as %s (value %d). We will overwrite %s"
+			" if there are no other conflicts.", sp1.name, sp1_value, sp2.name, sp2_value, sp1.name);
 		will_overwrite = true;
 	}
 	
 	//if we get here, then none of the values on the new spell are "worse"
 	//so now we see if this new spell is any better, or if its not related at all
-	if(will_overwrite) {
+	if(will_overwrite) 
+	{
 		mlog(SPELLS__STACKING, "Stacking code decided that %s should overwrite %s.", sp2.name, sp1.name);
 		return(1);
 	}
 	
-	mlog(SPELLS__STACKING, "Stacking code decided that %s is not affected by %s.", sp2.name, sp1.name);*/
+	mlog(SPELLS__STACKING, "Stacking code decided that %s is not affected by %s.", sp2.name, sp1.name);
 	return 0;
 }
 
-
-//TODO: FIXME
-// returns the slot the buff was added to, -1 if it wasn't added due to
-// stacking problems, and -2 if this is not a buff
-// if caster is null, the buff will be added with the caster level being
-// the level of the mob
-Buff *Mob::AddBuff(Mob *caster, Spell *spell_to_cast, uint32 duration)
+Buff *Mob::AddBuff(Mob *caster, Spell *spell_to_cast, sint32 &buff_slot, uint32 duration)
 {
 	if(duration == 0)
 	{
@@ -2032,19 +2048,25 @@ Buff *Mob::AddBuff(Mob *caster, Spell *spell_to_cast, uint32 duration)
 		}
 	}
 
-	int buff_slot = GetFreeBuffSlot(spell_to_cast);
+	buff_slot = GetFreeBuffSlot(spell_to_cast);
 	if(buff_slot == -1)
 	{
 		return NULL;
 	}
 
+	printf("Current buff count: %d\n", current_buff_count);
+	if(current_buff_count == 0)
+	{
+		buff_tic_timer = new Timer(6000);
+	}
+	current_buff_count++;
 	buffs[buff_slot] = new Buff(spell_to_cast, duration);
 	SendBuffPacket(buffs[buff_slot], buff_slot, 3);
 
 	return buffs[buff_slot];
 }
 
-// solar: used by some MobAI stuff
+// Used by some MobAI stuff
 // NOT USED BY SPELL CODE
 // note that this should not be used for determining which slot to place a 
 // buff into
@@ -2211,7 +2233,7 @@ bool Mob::SpellOnTarget(Spell *spell_to_cast, Mob* spell_target)
 		entity_list.AddHealAggro(spell_target, this, CheckHealAggroAmount(spell_to_cast, (spell_target->GetMaxHP() - spell_target->GetHP())));
 		
 		
-	if(!spell_target->SpellEffect(this, spell_to_cast, spell_effectiveness))
+	if(!spell_target->SpellEffect(this, spell_to_cast, sequence, spell_effectiveness))
 	{
 		mlog(SPELLS__CASTING_ERR, "Spell %d could not apply its effects %s -> %s\n", spell_to_cast->GetSpellID(), GetName(), spell_target->GetName());
 		Message_StringID(MT_Shout, SPELL_NO_HOLD);
@@ -2230,9 +2252,6 @@ bool Mob::SpellOnTarget(Spell *spell_to_cast, Mob* spell_target)
 	//TODO: Move Exemptions from here to SpellEffect as well as needed action 0x04 packets.
 	//Shadow Step -> Target
 	//Bind Affinity -> Caster and Target
-
-	SendActionSpellPacket(spell_to_cast, spell_target, sequence, caster_level);
-	SendCombatDamageSpellPacket(spell_to_cast, spell_target, sequence);
 	
 	mlog(SPELLS__CASTING, "Cast of %d by %s on %s complete successfully.", spell_to_cast->GetSpellID(), GetName(), spell_target->GetName());	
 	return true;
@@ -2285,7 +2304,7 @@ int Mob::SendActionSpellPacket(Spell *spell_to_cast, Mob *spell_target, int cast
 	return sequence;
 }
 
-void Mob::SendActionSpellPacket(Spell *spell_to_cast, Mob *spell_target, uint32 sequence, int caster_level)
+void Mob::SendActionSpellPacket(Spell *spell_to_cast, Mob *spell_target, uint32 sequence, int caster_level, int mode)
 {
 	EQApplicationPacket *action_packet = new EQApplicationPacket(OP_Action, sizeof(Action_Struct));
 	Action_Struct* action = (Action_Struct*) action_packet->pBuffer;
@@ -2313,7 +2332,7 @@ void Mob::SendActionSpellPacket(Spell *spell_to_cast, Mob *spell_target, uint32 
 	action->spell = spell_to_cast->GetSpellID();
 	action->sequence = sequence;
 	action->instrument_mod = GetInstrumentMod(spell_to_cast);
-	action->buff_unknown = 0;
+	action->buff_unknown = mode;
 	
 	if(spell_target->IsClient())
 	{
@@ -2618,7 +2637,7 @@ bool Mob::FindBuff(int16 spellid)
 // solar: removes all buffs
 void Mob::BuffFadeAll()
 {
-	int max_slots = GetMaxBuffSlots();
+	int max_slots = GetMaxTotalSlots();
 	for (int j = 0; j < max_slots; j++) 
 	{
 		if(buffs[j])
@@ -2630,7 +2649,7 @@ void Mob::BuffFadeAll()
 
 void Mob::BuffFadeDetrimental() 
 {
-	int max_slots = GetMaxBuffSlots();
+	int max_slots = GetMaxTotalSlots();
 	for (int j = 0; j < max_slots; j++) 
 	{
 		if(buffs[j]) 
@@ -2646,7 +2665,7 @@ void Mob::BuffFadeDetrimentalByCaster(Mob *caster)
 	if(!caster)
 		return;
 
-	int max_slots = GetMaxBuffSlots();
+	int max_slots = GetMaxTotalSlots();
 	for (int j = 0; j < max_slots; j++) 
 	{
 		if(buffs[j]) 
@@ -2665,7 +2684,7 @@ void Mob::BuffFadeDetrimentalByCaster(Mob *caster)
 // solar: removes the buff matching spell_id
 void Mob::BuffFadeBySpellID(int16 spell_id)
 {
-	int max_slots = GetMaxBuffSlots();
+	int max_slots = GetMaxTotalSlots();
 	for (int j = 0; j < max_slots; j++)
 	{
 		if (buffs[j] && buffs[j]->GetSpell()->GetSpellID() == spell_id)
@@ -2681,7 +2700,7 @@ void Mob::BuffFadeByEffect(int effectid, int skipslot)
 {
 	int i;
 
-	int max_slots = GetMaxBuffSlots();
+	int max_slots = GetMaxTotalSlots();
 	for(i = 0; i < max_slots; i++)
 	{
 		if(!buffs[i])
@@ -2836,7 +2855,7 @@ bool Mob::IsImmuneToSpell(Spell *spell_to_cast, Mob *caster)
 // it landed, and anything else means it was resisted; however there are some
 // spells that can be partially effective, and this value can be used there.
 //
-float Mob::ResistSpell(int8 resist_type, Spell *spell_to_cast, Mob *caster)
+float Mob::ResistSpell(int8 resist_type, const Spell *spell_to_cast, Mob *caster)
 {
 	int caster_level, target_level, resist;
 	float roll, fullchance, resistchance;
@@ -3600,7 +3619,7 @@ void Mob::SendPetBuffsToClient()
 	pbs->petid = GetID();
 
 	int PetBuffCount = 0;
-	int max_slots = GetMaxBuffSlots();
+	int max_slots = GetMaxTotalSlots();
 	for(int buffslot = 0; buffslot < max_slots; buffslot++) 
 	{
 		if(buffs[buffslot]) 
@@ -3618,19 +3637,18 @@ void Mob::SendPetBuffsToClient()
 
 void Mob::BuffModifyDurationBySpellID(int16 spell_id, sint32 newDuration)
 {
-	//TODO:
-	/*
-	for(int i = 0; i < BUFF_COUNT; ++i)
+	int max_slots = GetMaxTotalSlots();
+	for(int i = 0; i < max_slots; ++i)
 	{
-		if (buffs[i].spellid == spell_id)
+		if(buffs[i])
 		{
-			buffs[i].ticsremaining = newDuration;
-			if(IsClient())
+			if(buffs[i]->GetSpell()->GetSpellID() == spell_id)
 			{
-				CastToClient()->SendBuffDurationPacket(buffs[i].spellid, buffs[i].ticsremaining, buffs[i].casterlevel);
+				buffs[i]->SetDurationRemaining(newDuration);
+				SendBuffPacket(buffs[i], i, 0);
 			}
 		}
-	}*/
+	}
 }
 
 int Client::GetCurrentBuffSlots()
@@ -3651,6 +3669,8 @@ void Client::InitializeBuffSlots()
 	{
 		buffs[x] = NULL;
 	}
+	current_buff_count = 0;
+	buff_tic_timer = NULL;
 }
 
 void Client::UninitializeBuffSlots()
@@ -3671,6 +3691,8 @@ void NPC::InitializeBuffSlots()
 	{
 		buffs[x] = NULL;
 	}
+	current_buff_count = 0;
+	buff_tic_timer = NULL;
 }
 
 void NPC::UninitializeBuffSlots()
@@ -3690,19 +3712,19 @@ int Client::GetFreeBuffSlot(const Spell *spell_to_cast)
 	if(spell_to_cast->IsDiscipline())
 	{
 		int start = GetMaxBuffSlots() + GetMaxSongSlots();
-		int end = start + GetMaxDiscSlots();
+		int end = start + GetCurrentDiscSlots();
 		return CheckBuffSlotStackConflicts(spell_to_cast, start, end);
 	}
 
 	if(spell_to_cast->GetSpell().short_buff_box)
 	{
 		int start = GetMaxBuffSlots();
-		int end = start + GetMaxSongSlots();
+		int end = start + GetCurrentSongSlots();
 		return CheckBuffSlotStackConflicts(spell_to_cast, start, end);
 	}
 
 	int start = 0;
-	int end = GetMaxBuffSlots();
+	int end = GetCurrentBuffSlots();
 	return CheckBuffSlotStackConflicts(spell_to_cast, start, end);
 }
 
@@ -3711,27 +3733,19 @@ int NPC::GetFreeBuffSlot(const Spell *spell_to_cast)
 	if(spell_to_cast->IsDiscipline())
 	{
 		int start = GetMaxBuffSlots() + GetMaxSongSlots();
-		int end = start + GetMaxDiscSlots();
+		int end = start + GetCurrentDiscSlots();
 		return CheckBuffSlotStackConflicts(spell_to_cast, start, end);
 	}
 
 	if(spell_to_cast->GetSpell().short_buff_box)
 	{
 		int start = GetMaxBuffSlots();
-		int end = start + GetMaxSongSlots();
+		int end = start + GetCurrentSongSlots();
 		return CheckBuffSlotStackConflicts(spell_to_cast, start, end);
 	}
 
-	for(int x = 0; x < GetMaxBuffSlots(); ++x)
-	{
-		if(buffs[x] == NULL)
-		{
-			return x;
-		}
-	}
-
 	int start = 0;
-	int end = GetMaxBuffSlots();
+	int end = GetCurrentBuffSlots();
 	return CheckBuffSlotStackConflicts(spell_to_cast, start, end);
 }
 
@@ -3748,7 +3762,7 @@ int Mob::CheckBuffSlotStackConflicts(const Spell* spell_to_cast, int start, int 
 		if(cur_buff)
 		{
 			// there's a buff in this slot
-			int ret = CheckStackConflict(spell_to_cast, cur_buff->GetSpell());
+			int ret = CheckStackConflict(cur_buff->GetSpell(), spell_to_cast);
 			if(ret == -1) 
 			{
 				// stop the spell

@@ -532,9 +532,7 @@ bool NPC::Process()
 	SpellProcess();
     
     if (tic_timer.Check()) 
-	{	
-		BuffProcess();
-		
+	{			
 		if(curfp)
 			ProcessFlee();
 		
@@ -547,7 +545,7 @@ bool NPC::Process()
 		if(oocregen > 0){ //should pull from Mob class
 			OOCRegen += GetMaxHP() * oocregen / 100;
 			}
-		//Lieka Edit:  Fixing NPC regen.  NPCs should regen to full during a set duration, not based on their HPs.  Increase NPC's HPs by % of total HPs / tick.
+		//Fixing NPC regen.  NPCs should regen to full during a set duration, not based on their HPs.  Increase NPC's HPs by % of total HPs / tick.
 		if((GetHP() < GetMaxHP()) && !IsPet()) {
 			if(!IsEngaged()) {//NPC out of combat
 				if(hp_regen > OOCRegen)

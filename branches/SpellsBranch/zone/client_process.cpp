@@ -604,7 +604,6 @@ bool Client::Process() {
 			DoHPRegen();
 			DoManaRegen();
 			DoEnduranceRegen();
-			BuffProcess();
 			DoStaminaUpdate();
 		
 			if(tribute_timer.Check()) {

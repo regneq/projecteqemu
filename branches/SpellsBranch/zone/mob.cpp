@@ -2580,7 +2580,7 @@ int32 Mob::GetLevelHP(int8 tlevel)
 	return multiplier;
 }
 
-sint32 Mob::GetActSpellCasttime(Spell *spell_to_cast, sint32 casttime) {
+sint32 Mob::GetActSpellCasttime(const Spell *spell_to_cast, sint32 casttime) {
 	if (level >= 60 && casttime > 1000)
 	{
 		casttime = casttime / 2;
