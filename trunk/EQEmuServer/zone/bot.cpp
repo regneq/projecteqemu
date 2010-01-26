@@ -4027,6 +4027,7 @@ bool Bot::AddBotToGroup(Bot* bot, Group* group) {
 
 					// Need to send this only once when a group is formed with a bot so the client knows it is also the group leader
 					if(group->GroupCount() == 2 && group->GetLeader()->IsClient()) {
+						group->UpdateGroupAAs();
 						Mob *TempLeader = group->GetLeader();
 						group->SendUpdate(groupActUpdate, TempLeader);
 					}
@@ -8507,6 +8508,7 @@ void Bot::ProcessBotGroupInvite(Client* c, std::string botName) {
 				if(AddBotToGroup(invitedBot, g)) {
 					entity_list.AddGroup(g);
 					database.SetGroupLeaderName(g->GetID(), c->GetName());
+					g->SaveGroupLeaderAA();
 					database.SetGroupID(c->GetName(), g->GetID(), c->CharacterID());
 					database.SetGroupID(invitedBot->GetCleanName(), g->GetID(), invitedBot->GetBotID());
 				}
