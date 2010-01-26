@@ -8,13 +8,15 @@ This page is intended to explain how to compile the EQEmu source code to enable 
 
 = Details =
 
+BOTS can be compiled easily for both a Windows and a Linux server. The following are the instructions for what must be done to enable BOTS for either platform.
+
 ===Windows===
----
+
   # Open up Visual Studio and select the *"ReleaseBots"* configuration from the _Configuration Manager_ in the _Build_ menu.
   # Compile it.
 
 ===Linux===
----
+
   # Edit your "makefile" in _.\zone_ and add "-DBOTS" to DFLAGS.
   # Edit your "makefile.common" file in _.\zone_ and add both "bot.o" and "botspellsai.o"
   # Edit your "makefile" in _.\world_ and add "-DBOTS" to DFLAGS.
