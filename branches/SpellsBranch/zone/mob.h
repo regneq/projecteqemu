@@ -719,6 +719,7 @@ bool logpos;
 	virtual void SpellProcess();
 	int CanBuffStack(const Spell *spell_to_check, bool iFailIfOverwrite = false);
 	int CanBuffStack(int16 spell_id, Mob *caster, bool iFailIfOverwrite = false);
+	void TryDotCritical(const Spell *spell_to_cast, Mob *caster, int &damage);
 
 
 
@@ -731,7 +732,6 @@ bool logpos;
 	//virtual bool SpellEffect(Mob* caster, int16 spell_id, float partial = 100);
 	void	TemporaryPets(int16 spell_id, Mob *target, const char *name_override = NULL, uint32 duration_override = 0);
 	void	WakeTheDead(int16 spell_id, Mob *target, uint32 duration);
-	void	TryDotCritical(int16 spell_id, Mob *caster, int &damage);
 
 	void	SendIllusionPacket(int16 in_race, int8 in_gender = 0xFF, int8 in_texture = 0xFF, int8 in_helmtexture = 0xFF, int8 in_haircolor = 0xFF, int8 in_beardcolor = 0xFF, int8 in_eyecolor1 = 0xFF, int8 in_eyecolor2 = 0xFF, int8 in_hairstyle = 0xFF, int8 in_luclinface = 0xFF, int8 in_beard = 0xFF, int8 in_aa_title = 0xFF, int32 in_drakkin_heritage = 0xFFFFFFFF, int32 in_drakkin_tattoo = 0xFFFFFFFF, int32 in_drakkin_details = 0xFFFFFFFF, float in_size = 0xFFFFFFFF);
 	

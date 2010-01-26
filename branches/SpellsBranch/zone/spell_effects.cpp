@@ -68,6 +68,22 @@ void MapSpellEffects()
 	SpellEffectDispatch[SE_SeeInvis] = &Mob::Handle_SE_Blank;
 	SpellEffectDispatch[SE_WaterBreathing] = &Mob::Handle_SE_Blank;
 	SpellEffectDispatch[SE_CurrentMana] = &Mob::Handle_SE_CurrentMana;
+	SpellEffectDispatch[SE_Lull] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_AddFaction] = &Mob::Handle_SE_AddFaction;
+	SpellEffectDispatch[SE_Blind] = &Mob::Handle_SE_Blind;
+	SpellEffectDispatch[SE_Stun] = &Mob::Handle_SE_Stun;
+	SpellEffectDispatch[SE_Charm] = &Mob::Handle_SE_Charm;
+	SpellEffectDispatch[SE_Fear] = &Mob::Handle_SE_Fear;
+	SpellEffectDispatch[SE_Stamina] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_BindAffinity] = &Mob::Handle_SE_BindAffinity;
+	SpellEffectDispatch[SE_Gate] = &Mob::Handle_SE_Gate;
+	SpellEffectDispatch[SE_CancelMagic] = &Mob::Handle_SE_CancelMagic;
+	SpellEffectDispatch[SE_InvisVsUndead] = &Mob::Handle_SE_InvisVsUndead;
+	SpellEffectDispatch[SE_InvisVsAnimals] = &Mob::Handle_SE_InvisVsAnimals;
+	SpellEffectDispatch[SE_ChangeFrenzyRad] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_Mez] = &Mob::Handle_SE_Mez;
+	SpellEffectDispatch[SE_SummonItem] = &Mob::Handle_SE_SummonItem;
+	SpellEffectDispatch[SE_SummonPet] = &Mob::Handle_SE_SummonPet;
 }
 
 // the spell can still fail here, if the buff can't stack
@@ -202,6 +218,240 @@ bool Mob::Handle_SE_Blank(const Spell *spell_to_cast, Mob *caster, const uint32 
 	return false;
 }
 
+bool Mob::Handle_SE_Invisibility(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	SetInvisible(true);
+	return false;
+}
+
+bool Mob::Handle_SE_CurrentMana(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	sint32 effect_value = CalcSpellEffectValue(spell_to_cast, effect_id_index, spell_to_cast->GetCasterLevel(), caster, 0);
+	if(spell_to_cast->IsManaTapSpell())
+	{
+		if(GetCasterClass() != 'N')
+		{
+			SetMana(GetMana() + effect_value);
+			caster->SetMana(caster->GetMana() + abs(effect_value));
+		}
+	}
+	else
+	{
+		if(!buff_in_use)
+		{
+			SetMana(GetMana() + effect_value);
+		}
+	}
+	return false;
+}
+
+bool Mob::Handle_SE_AddFaction(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	if(caster && GetPrimaryFaction() >0) 
+	{
+		//TODO: Is this right? Are they always base 0? Remember to look into it later.
+		caster->AddFactionBonus(GetPrimaryFaction(), spell_to_cast->GetSpell().base[0]);
+	}
+	return false;
+}
+
+bool Mob::Handle_SE_Blind(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	if(spell_to_cast->GetSpell().base[effect_id_index] == 1)
+		BuffFadeByEffect(SE_Blind);
+	return false;
+}
+
+bool Mob::Handle_SE_Stun(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	if(SpecAttacks[UNSTUNABLE])
+	{
+		if(caster)
+		{
+			caster->Message_StringID(MT_Shout, IMMUNE_STUN);
+		}
+	}
+	else
+	{
+		sint32 effect_value = CalcSpellEffectValue(spell_to_cast, effect_id_index, spell_to_cast->GetCasterLevel(), caster, 0);
+		Stun(effect_value);
+	}
+	return false;
+}
+
+bool Mob::Handle_SE_Charm(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	//This is one of the more involved spell effects and needs both a caster and buff to be successful
+	if(!caster)
+		return false;
+
+	if(!buff_in_use)
+		return false;
+
+	InterruptSpell();
+	entity_list.RemoveDebuffs(this);
+	entity_list.RemoveFromTargets(this);
+	WipeHateList();
+
+	if (IsClient() && caster->IsClient())
+	{
+		caster->Message(0, "Unable to cast charm on a fellow player.");
+		BuffFadeByEffect(SE_Charm);
+		return false;
+	} 
+	else if(IsCorpse()) 
+	{
+		caster->Message(0, "Unable to cast charm on a corpse.");
+		BuffFadeByEffect(SE_Charm);
+		return false;
+	}
+	else if(caster->GetPet() != NULL && caster->IsClient())
+	{
+		caster->Message(0, "You cannot charm something when you already have a pet.");
+		BuffFadeByEffect(SE_Charm);
+		return false;
+	}
+	else if(GetOwner())
+	{
+		caster->Message(0, "You cannot charm someone else's pet!");
+		BuffFadeByEffect(SE_Charm);
+		return false;
+	}
+
+	Mob *my_pet = GetPet();
+	if(my_pet)
+	{
+		my_pet->Kill();
+	}
+
+	caster->SetPet(this);
+	SetOwnerID(caster->GetID());
+	SetPetOrder(SPO_Follow);
+
+	//Sends the pet update so the pet window will work for charmed pets
+	if(caster->IsClient())
+	{
+		EQApplicationPacket *app = new EQApplicationPacket(OP_Charm, sizeof(Charm_Struct));
+		Charm_Struct *ps = (Charm_Struct*)app->pBuffer;
+		ps->owner_id = caster->GetID();
+		ps->pet_id = this->GetID();
+		ps->command = 1;
+		entity_list.QueueClients(this, app);
+		safe_delete(app);
+		SendPetBuffsToClient();
+	}
+
+	//If we're a client we start our AI and freeze the client so it can't move
+	if (IsClient()) 
+	{
+		AI_Start();
+		SendAppearancePacket(14, 100, true, true);
+	} 
+	else if(IsNPC()) 
+	{
+		CastToNPC()->SetPetSpellID(0);	//not a pet spell.
+	}
+
+	bool b_break = false;
+
+	// define spells with fixed duration
+	// this is handled by the server, and not by the spell database
+	switch(spell_to_cast->GetSpellID())
+	{
+	case 3371:	//call of the banshee
+	case 1707:	//dictate
+		b_break = true;
+	}
+
+	if (!b_break)
+	{
+		int resist_mod = partial + (GetCHA() / 25);
+		resist_mod = resist_mod > 100 ? 100 : resist_mod;
+
+		buff_in_use->SetDurationRemaining(resist_mod * buff_in_use->GetDurationRemaining() / 100);
+	}
+
+	if(IsClient())
+	{
+		if(buff_in_use->GetDurationRemaining() > RuleI(Character, MaxCharmDurationForPlayerCharacter))
+			buff_in_use->SetDurationRemaining(RuleI(Character, MaxCharmDurationForPlayerCharacter));
+	}
+	return false;
+}
+
+bool Mob::Handle_SE_Fear(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	if(!buff_in_use)
+		return false;
+
+	buff_in_use->SetDurationRemaining(buff_in_use->GetDurationRemaining() * partial / 100);
+
+	if(IsClient())
+	{
+		if(buff_in_use->GetDurationRemaining() > RuleI(Character, MaxFearDurationForPlayerCharacter))
+			buff_in_use->SetDurationRemaining(RuleI(Character, MaxFearDurationForPlayerCharacter));
+	}
+
+	if(RuleB(Combat, EnableFearPathing))
+	{
+		if(IsClient())
+		{
+			AI_Start();
+		}
+
+		CalculateNewFearpoint();
+		if(curfp) 
+		{
+			return false;
+		}
+	}
+	else 
+	{
+		Stun(buff_in_use->GetDurationRemaining() * 6000 - (6000 - tic_timer.GetRemainingTime()));
+	}
+	return false;
+}
+
+bool Mob::Handle_SE_BindAffinity(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	return false;
+}
+
+bool Mob::Handle_SE_Gate(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	return false;
+}
+
+bool Mob::Handle_SE_CancelMagic(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	return false;
+}
+
+bool Mob::Handle_SE_InvisVsUndead(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	return false;
+}
+
+bool Mob::Handle_SE_InvisVsAnimals(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	return false;
+}
+
+bool Mob::Handle_SE_Mez(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	return false;
+}
+
+bool Mob::Handle_SE_SummonItem(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	return false;
+}
+
+bool Mob::Handle_SE_SummonPet(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	return false;
+}
+
 int Mob::CalcSpellEffectValue(const Spell *spell_to_cast, int effect_id, int caster_level, Mob *caster, int ticsremaining)
 {
 	int formula, base, max, effect_value;
@@ -234,46 +484,42 @@ int Mob::CalcSpellEffectValue(const Spell *spell_to_cast, int effect_id, int cas
 // solar: generic formula calculations
 int Mob::CalcSpellEffectValue_formula(int formula, int base, int max, int caster_level, const Spell* spell_to_cast, int ticsremaining)
 {
-/*
-neotokyo: i need those formulas checked!!!!
-
-0 = base
-1 - 99 = base + level * formulaID
-100 = base
-101 = base + level / 2
-102 = base + level
-103 = base + level * 2
-104 = base + level * 3
-105 = base + level * 4
-106 ? base + level * 5
-107 ? min + level / 2
-108 = min + level / 3
-109 = min + level / 4
-110 = min + level / 5
-119 ? min + level / 8
-121 ? min + level / 4
-122 = splurt
-123 ?
-203 = stacking issues ? max
-205 = stacking issues ? 105
-
-
-  0x77 = min + level / 8
-*/
+	/*	
+	0 = base
+	1 - 99 = base + level * formulaID
+	100 = base
+	101 = base + level / 2
+	102 = base + level
+	103 = base + level * 2
+	104 = base + level * 3
+	105 = base + level * 4
+	106 ? base + level * 5
+	107 ? min + level / 2
+	108 = min + level / 3
+	109 = min + level / 4
+	110 = min + level / 5
+	119 ? min + level / 8
+	121 ? min + level / 4
+	122 = splurt
+	123 ?
+	203 = stacking issues ? max
+	205 = stacking issues ? 105
+	0x77 = min + level / 8
+	*/
 
 	int result = 0, updownsign = 1, ubase = base;
 	if(ubase < 0)
 		ubase = 0 - ubase;
 
-	// solar: this updown thing might look messed up but if you look at the
+	// This updown thing might look messed up but if you look at the
 	// spells it actually looks like some have a positive base and max where
 	// the max is actually less than the base, hence they grow downward
-/*
-This seems to mainly catch spells where both base and max are negative.
-Strangely, damage spells  have a negative base and positive max, but
-snare has both of them negative, yet their range should work the same:
-(meaning they both start at a negative value and the value gets lower)
-*/
+	/*
+	This seems to mainly catch spells where both base and max are negative.
+	Strangely, damage spells  have a negative base and positive max, but
+	snare has both of them negative, yet their range should work the same:
+	(meaning they both start at a negative value and the value gets lower)
+	*/
 	if (max < base && max != 0)
 	{
 		// values are calculated down
@@ -391,7 +637,6 @@ snare has both of them negative, yet their range should work the same:
 	return result;
 }
 
-
 void Mob::BuffProcess() 
 {
 	int num_buffs = current_buff_count;
@@ -403,7 +648,6 @@ void Mob::BuffProcess()
 			DoBuffTic(buffs[i]);
 			if(buffs[i]->GetDurationRemaining() != 0xFFFFFFFF)
 			{
-				printf("Setting duration of buff in %d to %d\n", i, buffs[i]->GetDurationRemaining() - 1);
 				buffs[i]->SetDurationRemaining(buffs[i]->GetDurationRemaining() - 1);
 				if(buffs[i]->GetDurationRemaining() == 0)
 				{
@@ -464,7 +708,7 @@ void Mob::DoBuffTic(const Buff *buff_to_use)
 							AddToHateList(caster, -effect_value);
 					}
 
-					//TODO: TryDotCritical(spell_id, caster, effect_value);
+					TryDotCritical(buff_to_use->GetSpell(), caster, effect_value);
 				}
 				effect_value = effect_value * modifier / 100;
 			}
@@ -643,7 +887,7 @@ void Mob::DoBuffTic(const Buff *buff_to_use)
 	}
 }
 
-// solar: removes the buff in the buff slot 'slot'
+// Removes the buff in the buff slot 'slot'
 void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 {
 	if(slot < 0 || slot > GetMaxTotalSlots())
@@ -1427,7 +1671,7 @@ bool Mob::TryDeathSave() {
 	return Result;
 }
 
-void Mob::TryDotCritical(int16 spell_id, Mob *caster, int &damage)
+void Mob::TryDotCritical(const Spell *spell_to_cast, Mob *caster, int &damage)
 {
 	if(!caster)
 		return;
@@ -1466,11 +1710,13 @@ void Mob::TryDotCritical(int16 spell_id, Mob *caster, int &damage)
 
 	// since DOTs are the Necromancer forte, give an innate bonus
 	// however, no chance to crit unless they've trained atleast one level in the AA first
-	if (caster->GetClass() == NECROMANCER && critChance > 0.0f){
+	if (caster->GetClass() == NECROMANCER && critChance > 0.0f)
+	{
 		critChance += 0.05f;
 	}
 
-	if (critChance > 0.0f){
+	if (critChance > 0.0f)
+	{
 		if (MakeRandomFloat(0, 1) <= critChance)
 		{
 			damage *= 2;
