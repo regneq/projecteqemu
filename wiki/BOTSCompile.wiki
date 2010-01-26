@@ -12,7 +12,7 @@ BOTS can be compiled easily for both a Windows and a Linux server. The following
 
 ===Windows===
 
-  # Open up Visual Studio and select the *ReleaseBots* configuration from the _Configuration Manager_ in the _Build_ menu.
+  # Open up Visual Studio and select the "ReleaseBots" configuration from the _Configuration Manager_ in the _Build_ menu.
   # Compile it.
 
 ===Linux===
