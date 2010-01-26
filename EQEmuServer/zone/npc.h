@@ -172,6 +172,14 @@ public:
 	int32 GetSp2() const { return spawn_group; }
 	int32 GetSpawnPointID() const;
 
+	float GetSpawnPointX()	const { return org_x; }
+	float GetSpawnPointY()	const { return org_y; }
+	float GetSpawnPointZ()	const { return org_z; }
+	float GetSpawnPointH()	const { return org_heading; }
+	float GetGuardPointX()	const { return guard_x; }
+	float GetGuardPointY()	const { return guard_y; }
+	float GetGuardPointZ()	const { return guard_z; }
+
 	uint32	adventure_template_id;
 	uint32	MerchantType;
 	void	Depop(bool StartSpawnTimer = true);

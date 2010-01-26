@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==01/26/2010==
+Trevius: Exported new ProjectileAnim(mob, item_id, [IsArrow?, speed, angle, tilt, arc]) command to perl::mob.
+Trevius: Added the following to perl::NPC - GetSpawnPointX(), GetSpawnPointY(), GetSpawnPointZ(), GetSpawnPointH(), GetGuardPointX(), GetGuardPointY(), and GetGuardPointZ()
+
 ==01/25/2010==
 Trevius: Exported CheckLoSToLoc(x, y, z, [mob_size]) to perl::mob.
 Trevius: Exported FindGroundZ(x, y, [z_offset]) to perl::mob.
