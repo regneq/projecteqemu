@@ -1,0 +1,24 @@
+#summary Instructions for how to enable and compile BOTS.
+#labels bot,BOTS
+
+= Introduction =
+
+This page is intended to explain how to compile the EQEmu source code to enable BOTS.
+
+
+= Details =
+
+===Windows===
+---
+  # Open up Visual Studio and select the *"ReleaseBots"* configuration from the _Configuration Manager_ in the _Build_ menu.
+  # Compile it.
+
+===Linux===
+---
+  # Edit your "makefile" in _.\zone_ and add "-DBOTS" to DFLAGS.
+  # Edit your "makefile.common" file in _.\zone_ and add both "bot.o" and "botspellsai.o"
+  # Edit your "makefile" in _.\world_ and add "-DBOTS" to DFLAGS.
+  # Compile it.
+
+===Notes===
+If you are building a brand new database, then after you source the latest [http://www.projecteq.net/ PEQ] world database, be sure to also source the "bots.sql" file to install all the required BOTS database objects.
