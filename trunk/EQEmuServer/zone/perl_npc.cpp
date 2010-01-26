@@ -1452,6 +1452,196 @@ XS(XS_NPC_GetSpawnPointID)
 	XSRETURN(1);
 }
 
+XS(XS_NPC_GetSpawnPointX); /* prototype to pass -Wmissing-prototypes */
+XS(XS_NPC_GetSpawnPointX)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: NPC::GetSpawnPointX(THIS)");
+	{
+		NPC *		THIS;
+		float		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "NPC")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(NPC *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type NPC");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+
+		RETVAL = THIS->GetSpawnPointX();
+		XSprePUSH; PUSHn((double)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_NPC_GetSpawnPointY); /* prototype to pass -Wmissing-prototypes */
+XS(XS_NPC_GetSpawnPointY)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: NPC::GetSpawnPointY(THIS)");
+	{
+		NPC *		THIS;
+		float		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "NPC")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(NPC *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type NPC");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+
+		RETVAL = THIS->GetSpawnPointY();
+		XSprePUSH; PUSHn((double)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_NPC_GetSpawnPointZ); /* prototype to pass -Wmissing-prototypes */
+XS(XS_NPC_GetSpawnPointZ)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: NPC::GetSpawnPointZ(THIS)");
+	{
+		NPC *		THIS;
+		float		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "NPC")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(NPC *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type NPC");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+
+		RETVAL = THIS->GetSpawnPointZ();
+		XSprePUSH; PUSHn((double)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_NPC_GetSpawnPointH); /* prototype to pass -Wmissing-prototypes */
+XS(XS_NPC_GetSpawnPointH)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: NPC::GetSpawnPointH(THIS)");
+	{
+		NPC *		THIS;
+		float		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "NPC")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(NPC *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type NPC");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+
+		RETVAL = THIS->GetSpawnPointH();
+		XSprePUSH; PUSHn((double)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_NPC_GetGuardPointX); /* prototype to pass -Wmissing-prototypes */
+XS(XS_NPC_GetGuardPointX)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: NPC::GetGuardPointX(THIS)");
+	{
+		NPC *		THIS;
+		float		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "NPC")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(NPC *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type NPC");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+
+		RETVAL = THIS->GetGuardPointX();
+		XSprePUSH; PUSHn((double)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_NPC_GetGuardPointY); /* prototype to pass -Wmissing-prototypes */
+XS(XS_NPC_GetGuardPointY)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: NPC::GetGuardPointY(THIS)");
+	{
+		NPC *		THIS;
+		float		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "NPC")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(NPC *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type NPC");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+
+		RETVAL = THIS->GetGuardPointY();
+		XSprePUSH; PUSHn((double)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_NPC_GetGuardPointZ); /* prototype to pass -Wmissing-prototypes */
+XS(XS_NPC_GetGuardPointZ)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: NPC::GetGuardPointZ(THIS)");
+	{
+		NPC *		THIS;
+		float		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "NPC")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(NPC *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type NPC");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+
+		RETVAL = THIS->GetGuardPointZ();
+		XSprePUSH; PUSHn((double)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -1526,6 +1716,13 @@ XS(boot_NPC)
 		newXSproto(strcpy(buf, "AI_SetRoambox"), XS_NPC_AI_SetRoambox, file, "$$$$$$;$");
 		newXSproto(strcpy(buf, "GetNPCSpellsID"), XS_NPC_GetNPCSpellsID, file, "$");
 		newXSproto(strcpy(buf, "GetSpawnPointID"), XS_NPC_GetSpawnPointID, file, "$");
+		newXSproto(strcpy(buf, "GetSpawnPointX"), XS_NPC_GetSpawnPointX, file, "$");
+		newXSproto(strcpy(buf, "GetSpawnPointY"), XS_NPC_GetSpawnPointY, file, "$");
+		newXSproto(strcpy(buf, "GetSpawnPointZ"), XS_NPC_GetSpawnPointZ, file, "$");
+		newXSproto(strcpy(buf, "GetSpawnPointH"), XS_NPC_GetSpawnPointH, file, "$");
+		newXSproto(strcpy(buf, "GetGuardPointX"), XS_NPC_GetGuardPointX, file, "$");
+		newXSproto(strcpy(buf, "GetGuardPointY"), XS_NPC_GetGuardPointY, file, "$");
+		newXSproto(strcpy(buf, "GetGuardPointZ"), XS_NPC_GetGuardPointZ, file, "$");
 	XSRETURN_YES;
 }
 
