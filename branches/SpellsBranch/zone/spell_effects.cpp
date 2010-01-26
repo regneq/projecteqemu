@@ -414,41 +414,147 @@ bool Mob::Handle_SE_Fear(const Spell *spell_to_cast, Mob *caster, const uint32 e
 
 bool Mob::Handle_SE_BindAffinity(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
 {
+	if(IsClient())
+	{
+		if(CastToClient()->GetGM() || RuleB(Character, BindAnywhere))
+		{
+			CastToClient()->SetBindPoint();
+			Save();
+			return true;
+		}
+		else
+		{
+			if(!zone->CanBind())
+			{
+				Message_StringID(13, CANNOT_BIND);
+				return false;
+			}
+
+			if(!zone->IsCity())
+			{
+				if(caster != this)
+				{
+					Message_StringID(13, CANNOT_BIND);
+					return false;
+				}
+				else
+				{
+					CastToClient()->SetBindPoint();
+					Save();
+					return true;
+				}
+			}
+			else
+			{
+				CastToClient()->SetBindPoint();
+				Save();
+				return true;
+			}
+		}
+	}
 	return false;
 }
 
 bool Mob::Handle_SE_Gate(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
 {
+	Gate();
 	return false;
 }
 
 bool Mob::Handle_SE_CancelMagic(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
 {
+	int max_slots = GetMaxTotalSlots();
+	for(int buffs_i = 0; buffs_i < max_slots; buffs_i++)
+	{
+		if(!buffs[buffs_i])
+		{
+			continue;
+		}
+
+		if(buffs[buffs_i]->GetRemainingChargesDisease() > 0 ||
+			buffs[buffs_i]->GetRemainingChargesPoison() > 0 ||
+			buffs[buffs_i]->GetRemainingChargesCurse() > 0)
+		{
+			continue;
+		}
+
+		if(!buffs[buffs_i]->IsPermanantDuration())
+		{
+			BuffFadeBySlot(buffs_i);
+			return false;
+		}
+	}
 	return false;
 }
 
 bool Mob::Handle_SE_InvisVsUndead(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
 {
+	invisible_undead = true;
 	return false;
 }
 
 bool Mob::Handle_SE_InvisVsAnimals(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
 {
+	invisible_animals = true;
 	return false;
 }
 
 bool Mob::Handle_SE_Mez(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
 {
+	Mesmerize();
 	return false;
 }
 
 bool Mob::Handle_SE_SummonItem(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
 {
+	const Item_Struct *item = database.GetItem(spell_to_cast->GetSpell().base[effect_id_index]);
+	if(IsClient())
+	{
+		Client *c = CastToClient();
+		if(c->CheckLoreConflict(item))
+		{
+			Message_StringID(0,PICK_LORE);
+			return false;
+		}
+		else
+		{
+			int charges;
+			if(spell_to_cast->GetSpell().formula[effect_id_index] < 100)
+			{
+				charges = spell_to_cast->GetSpell().formula[effect_id_index];
+			}
+			else
+			{
+				charges = CalcSpellEffectValue_formula(spell_to_cast->GetSpell().formula[effect_id_index], 
+					0, 20, spell_to_cast->GetCasterLevel(), spell_to_cast);
+			}
+			//This is hard to read, TODO: rewrite this to not suck so hard
+			charges = (spell_to_cast->GetSpell().formula[effect_id_index] < 100) ? charges :
+				(charges > 20) ? 20 : (spell_to_cast->GetSpell().max[effect_id_index] < 1) ? item->MaxCharges :
+				spell_to_cast->GetSpell().max[effect_id_index];
+
+			if(*summoned_item)
+			{
+				c->PushItemOnCursor(*(*summoned_item));
+				c->SendItemPacket(SLOT_CURSOR, *summoned_item, ItemPacketSummonItem);
+				safe_delete(*summoned_item);
+			}
+			*summoned_item = database.CreateItem(spell_to_cast->GetSpell().base[effect_id_index], charges);
+		}
+	}
 	return false;
 }
 
 bool Mob::Handle_SE_SummonPet(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
 {
+	if(GetPet())
+	{
+		Message_StringID(MT_Shout, ONLY_ONE_PET);
+	}
+	else
+	{
+		MakePet(spell_to_cast, spell_to_cast->GetSpell().teleport_zone);
+	}
 	return false;
 }
 

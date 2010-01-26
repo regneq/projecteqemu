@@ -5584,7 +5584,7 @@ void Client::SuspendMinion()
 	{
 		if(m_pp.SuspendedMinion.SpellID > 0)
 		{
-			MakePet(m_pp.SuspendedMinion.SpellID, spells[m_pp.SuspendedMinion.SpellID].teleport_zone);
+			//TODO: MakePet(m_pp.SuspendedMinion.SpellID, spells[m_pp.SuspendedMinion.SpellID].teleport_zone);
 
 			CurrentPet = GetPet()->CastToNPC();
 

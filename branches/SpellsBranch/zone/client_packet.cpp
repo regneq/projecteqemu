@@ -8075,7 +8075,7 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 	//this was moved before the spawn packets are sent
 	//in hopes that it adds more consistency...
 	//Remake pet
-	if (m_epp.pet_id > 1 && !GetPet() && m_epp.pet_id <= SPDAT_RECORDS)
+	/*TODO: if (m_epp.pet_id > 1 && !GetPet() && m_epp.pet_id <= SPDAT_RECORDS)
 	{
 		MakePet(m_epp.pet_id, spells[m_epp.pet_id].teleport_zone, m_epp.pet_name);
 		if (GetPet() && GetPet()->IsNPC()) {
@@ -8086,7 +8086,7 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 			pet->SetMana(m_epp.pet_mana);
 		}
 		m_epp.pet_id = 0;
-	}
+	}*/
 
 	////////////////////////////////////////////////////////////
 	// Server Zone Entry Packet

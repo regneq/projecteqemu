@@ -1477,7 +1477,7 @@ XS(XS_Mob_MakePet)
 			name = (char *)SvPV_nolen(ST(3));
 		}
 
-		THIS->MakePet(spell_id, pettype, name);
+		//TODO: THIS->MakePet(spell_id, pettype, name);
 	}
 	XSRETURN_EMPTY;
 }

@@ -215,7 +215,7 @@ const char *GetRandPetName()
 */
 
 
-void Mob::MakePet(int16 spell_id, const char* pettype, const char *petname) {
+void Mob::MakePet(const Spell *spell_to_cast, const char* pettype, const char *petname) {
 	//see if we are a special type of pet (for command filtering)
 	PetType type = petOther;
 	if(strncmp(pettype, "Familiar", 8) == 0) {
@@ -248,7 +248,7 @@ void Mob::MakePet(int16 spell_id, const char* pettype, const char *petname) {
 	NPCType *npc_type = new NPCType;
 	memcpy(npc_type, base, sizeof(NPCType));
 	//TODO:
-/*	if (this->IsClient() && CastToClient()->GetFocusEffect(focusPetPower, spell_id) > 0)
+	if (IsClient() && CastToClient()->GetFocusEffect(focusPetPower, spell_to_cast) > 0)
 	{
 		npc_type->max_hp *= 1.20;
 		npc_type->cur_hp = npc_type->max_hp;
@@ -257,7 +257,7 @@ void Mob::MakePet(int16 spell_id, const char* pettype, const char *petname) {
 		npc_type->min_dmg = (npc_type->min_dmg * 110 / 100);
 		npc_type->max_dmg = (npc_type->max_dmg * 110 / 100);
 		npc_type->size *= 1.15;
-	}*/
+	}
 
 	switch (GetAA(aaElementalDurability))
 	{
@@ -352,7 +352,7 @@ void Mob::MakePet(int16 spell_id, const char* pettype, const char *petname) {
 	}
 
 	//this takes ownership of the npc_type data
-	Pet *npc = new Pet(npc_type, this, type, spell_id);
+	Pet *npc = new Pet(npc_type, this, type, spell_to_cast->GetSpellID());
 
 	entity_list.AddNPC(npc, true, true);
 	SetPetID(npc->GetID());

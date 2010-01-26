@@ -503,7 +503,6 @@ bool logpos;
 	int		CountDispellableBuffs();
 	bool	HasBuffIcon(Mob* caster, Mob* target, int16 spell_id);
 
-	virtual void MakePet(int16 spell_id, const char* pettype, const char *petname = NULL);
 	bool	CombatRange(Mob* other);
 
 	virtual inline int16	GetBaseRace()	const { return base_race; }
@@ -720,6 +719,7 @@ bool logpos;
 	int CanBuffStack(const Spell *spell_to_check, bool iFailIfOverwrite = false);
 	int CanBuffStack(int16 spell_id, Mob *caster, bool iFailIfOverwrite = false);
 	void TryDotCritical(const Spell *spell_to_cast, Mob *caster, int &damage);
+	virtual void MakePet(const Spell *spell_to_cast, const char* pettype, const char *petname = NULL);
 
 
 
