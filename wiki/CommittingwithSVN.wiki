@@ -14,6 +14,8 @@ There are many ways to submit code, but I am going to use TortoiseSVN (Windows) 
 
 7. Here's why we chose TortoiseSVN. Make a change to a file in the repo. Let's say you made a change to _zone/attack.cpp_. Once you save the file, the file's icon will change from a green check mark, to a red exclamation point. This indicates that the file on your drive is different than the one in our repo. 
 
+
+
 ===Additional Useful Tips:===
   * To commit that change in our repo, go back to the root directory of the source (currently, EQEmuServer) and right click anywhere in the explorer window. Select SVN Commit. Make sure the files you want committed are selected, and please fill in a message, even if it's just See Changelog (Make sure you update that as well!) Click OK, and you're set!
 
