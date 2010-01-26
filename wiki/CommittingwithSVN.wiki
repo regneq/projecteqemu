@@ -8,13 +8,13 @@ There are many ways to submit code, but I am going to use TortoiseSVN (Windows) 
 
 4. At the prompt type: "svn checkout https://projecteqemu.googlecode.com/svn/trunk/ projecteqemu --username yourname"
 
-5. Hit "p" to accept Google's cert permanently. It will ask you for your password. Go to this page: [http://code.google.com/p/projecteqemu/source/checkout http://code.google.com/p/projecteqemu/source/checkout] and click "googlecode.com password." (Make sure you are logged in first) This will give you your password, just copy and paste it at the prompt. 
+5. Hit "p" to accept Google's cert permanently. It will ask you for your password. Go to this page: http://code.google.com/p/projecteqemu/source/checkout and click "googlecode.com password." (Make sure you are logged in first) This will give you your password, just copy and paste it at the prompt. 
 
 6. You'll see the files come down, and if all goes right, it will end with Revision <#> You are now setup with a directory on your hard drive that has write access to our repo.
 
 7. Here's why we chose TortoiseSVN. Make a change to a file in the repo. Let's say you made a change to _zone/attack.cpp_. Once you save the file, the file's icon will change from a green check mark, to a red exclamation point. This indicates that the file on your drive is different than the one in our repo. 
 
-===Some Useful Tops:===
+===Additional Useful Tips:===
   * To commit that change in our repo, go back to the root directory of the source (currently, EQEmuServer) and right click anywhere in the explorer window. Select SVN Commit. Make sure the files you want committed are selected, and please fill in a message, even if it's just See Changelog (Make sure you update that as well!) Click OK, and you're set!
 
   * Before committing, it's a good idea to update your source, in case another developer made a change before you. To do this, simply right click in the root directory and click SVN Update. That'll pull down any files changed by another author (it will NOT revert files you have changed but not yet submitted - if you changed a file that was also updated, SVN will attempt to merge them for you.)
