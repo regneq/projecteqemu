@@ -2314,3 +2314,33 @@ void QuestManager::wearchange(int8 slot, int16 texture)
 		}
 	}
 }
+
+void QuestManager::voicetell(char *str, int macronum, int racenum, int gendernum)
+{
+	if(owner && str)
+	{
+		Client *c = entity_list.GetClientByName(str);
+
+		if(c)
+		{
+			EQApplicationPacket* outapp = new EQApplicationPacket(OP_VoiceMacroOut, sizeof(VoiceMacroOut_Struct));
+
+			VoiceMacroOut_Struct* vmo = (VoiceMacroOut_Struct*)outapp->pBuffer;
+
+			strn0cpy(vmo->From, owner->GetCleanName(), sizeof(vmo->From));
+
+			vmo->Type = 1;
+
+			vmo->Voice = (racenum * 2) + gendernum;
+
+			vmo->MacroNumber = macronum;
+
+			c->QueuePacket(outapp);
+
+			safe_delete(outapp);
+		}
+		else
+			LogFile->write(EQEMuLog::Quest, "QuestManager::voicetell from %s. Client %s not found.", owner->GetName(), str);
+	}
+}
+

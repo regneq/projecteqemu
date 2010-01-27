@@ -2933,6 +2933,24 @@ XS(XS__wearchange)
 	XSRETURN_EMPTY;
 }
 
+XS(XS__voicetell);
+XS(XS__voicetell)
+{
+	dXSARGS;
+	if (items != 4)
+		Perl_croak(aTHX_ "Usage: voicetell(clientname, type, race, gender)");
+
+	char *	str = (char *)SvPV_nolen(ST(0));
+	int	macronum = (int)SvIV(ST(1));
+	int	racenum = (int)SvIV(ST(2));
+	int	gendernum = (int)SvIV(ST(3));
+
+	quest_manager.voicetell(str, macronum, racenum, gendernum);
+
+	XSRETURN_EMPTY;
+}
+
+
 /*
 This is the callback perl will look for to setup the
 quest package's XSUBs
@@ -3127,6 +3145,7 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "enabletitle"), XS__enabletitle, file);
 		newXS(strcpy(buf, "removetitle"), XS__removetitle, file);
 		newXS(strcpy(buf, "wearchange"), XS__wearchange, file);
+		newXS(strcpy(buf, "voicetell"), XS__voicetell, file);
 	XSRETURN_YES;
 }
 

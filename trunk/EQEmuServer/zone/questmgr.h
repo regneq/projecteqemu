@@ -213,6 +213,7 @@ public:
 	void FlyMode(int8 flymode);
 	uint8 FactionValue();
 	void wearchange(int8 slot, int16 texture);
+	void voicetell(char *str, int macronum, int racenum, int gendernum);
 
 	//not in here because it retains perl types
 	//thing ChooseRandom(array_of_things)
