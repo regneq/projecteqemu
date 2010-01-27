@@ -103,7 +103,19 @@ void MapSpellEffects()
 	SpellEffectDispatch[SE_Levitate] = &Mob::Handle_SE_Levitate;
 	SpellEffectDispatch[SE_Illusion] = &Mob::Handle_SE_Illusion;
 	SpellEffectDispatch[SE_DamageShield] = &Mob::Handle_SE_Blank;
-	SpellEffectDispatch[SE_Identify] = &Mob::Handle_SE_Identify;
+	SpellEffectDispatch[SE_Identify] = &Mob::Handle_SE_BlankWithPacket;
+	SpellEffectDispatch[SE_WipeHateList] = &Mob::Handle_SE_WipeHateList;
+	SpellEffectDispatch[SE_SpinTarget] = &Mob::Handle_SE_Stun;
+	SpellEffectDispatch[SE_InfraVision] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_UltraVision] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_EyeOfZomm] = &Mob::Handle_SE_EyeOfZomm;
+	SpellEffectDispatch[SE_ReclaimPet] = &Mob::Handle_SE_ReclaimPet;
+	SpellEffectDispatch[SE_TotalHP] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_NecPet] = &Mob::Handle_SE_SummonPet;
+	SpellEffectDispatch[SE_BindSight] = &Mob::Handle_SE_BindSight;
+	SpellEffectDispatch[SE_FeignDeath] = &Mob::Handle_SE_FeignDeath;
+	SpellEffectDispatch[SE_VoiceGraft] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_Sentinel] = &Mob::Handle_SE_Blank;
 }
 
 // the spell can still fail here, if the buff can't stack
@@ -146,13 +158,37 @@ bool Mob::SpellEffect(Mob* caster, Spell *spell_to_cast, int action_sequence, fl
 	sint32 buff_slot = -1;
 	if(buff_duration > 0)
 	{
-		new_buff = AddBuff(caster, spell_to_cast, buff_slot, buff_duration);
-		if(!new_buff)
+		if(spell_to_cast->IsEffectInSpell(SE_BindSight))
 		{
-			mlog(SPELLS__EFFECT_VALUES, "Unable to apply buff for spell %s(%d) via Mob::AddBuff()", spell_to_cast->GetSpell().name, spell_to_cast->GetSpellID());
-			SendActionSpellPacket(spell_to_cast, this, action_sequence, caster_level);
-			SendCombatDamageSpellPacket(spell_to_cast, this, action_sequence);
-			return false;
+			if(caster)
+			{
+				new_buff = caster->AddBuff(caster, spell_to_cast, buff_slot, buff_duration);
+				if(!new_buff)
+				{
+					mlog(SPELLS__EFFECT_VALUES, "Unable to apply buff for spell %s(%d) via Mob::AddBuff()", spell_to_cast->GetSpell().name, spell_to_cast->GetSpellID());
+					SendActionSpellPacket(spell_to_cast, this, action_sequence, caster_level);
+					SendCombatDamageSpellPacket(spell_to_cast, this, action_sequence);
+					return false;
+				}
+			}
+			else
+			{
+				mlog(SPELLS__EFFECT_VALUES, "Unable to apply buff for spell %s(%d) via Mob::AddBuff()", spell_to_cast->GetSpell().name, spell_to_cast->GetSpellID());
+				SendActionSpellPacket(spell_to_cast, this, action_sequence, caster_level);
+				SendCombatDamageSpellPacket(spell_to_cast, this, action_sequence);
+				return false;
+			}
+		}
+		else
+		{
+			new_buff = AddBuff(caster, spell_to_cast, buff_slot, buff_duration);
+			if(!new_buff)
+			{
+				mlog(SPELLS__EFFECT_VALUES, "Unable to apply buff for spell %s(%d) via Mob::AddBuff()", spell_to_cast->GetSpell().name, spell_to_cast->GetSpellID());
+				SendActionSpellPacket(spell_to_cast, this, action_sequence, caster_level);
+				SendCombatDamageSpellPacket(spell_to_cast, this, action_sequence);
+				return false;
+			}
 		}
 	}
 
@@ -737,6 +773,7 @@ bool Mob::Handle_SE_Illusion(const Spell *spell_to_cast, Mob *caster, const uint
 
 	const SPDat_Spell_Struct &spell = spell_to_cast->GetSpell();
 	SendIllusionPacket(spell.base[effect_id_index], GetDefaultGender(spell.base[effect_id_index], GetGender()), spell.base2[effect_id_index]);
+
 	switch(spell.base[effect_id_index])
 	{
 	case OGRE:
@@ -779,6 +816,98 @@ bool Mob::Handle_SE_Illusion(const Spell *spell_to_cast, Mob *caster, const uint
 	return false;
 }
 
+bool Mob::Handle_SE_WipeHateList(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	int wipe_chance = spell_to_cast->GetSpell().base[effect_id_index];
+	if(MakeRandomInt(0, 99) < wipe_chance)
+	{
+		if(IsAIControlled())
+		{
+			WipeHateList();
+		}
+		Message(13, "Your mind fogs. Who are my friends? Who are my enemies?... it was all so clear a moment ago...");
+	}
+	return false;
+}
+
+bool Mob::Handle_SE_EyeOfZomm(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	if(caster && caster->IsClient())
+	{
+		char eye_name[64];
+		snprintf(eye_name, sizeof(eye_name), "Eye_of_%s", caster->GetCleanName());
+		int pet_duration = CalcBuffDuration(caster, this, spell_to_cast) * 6;
+		caster->TemporaryPets(spell_to_cast, NULL, eye_name, pet_duration);
+	}
+	return false;
+}
+
+bool Mob::Handle_SE_ReclaimPet(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	if(IsNPC())
+	{
+		if(caster && caster->GetID() == GetOwnerID())
+		{
+			if(GetPetType() != petCharmed)
+			{
+				if(caster->GetAA(aaImprovedReclaimEnergy) || caster->GetAA(aaImprovedReclaimEnergy2))
+				{
+					caster->SetMana(caster->GetMana() + (GetLevel() * 8));
+				}
+				else
+				{
+					caster->SetMana(caster->GetMana() + (GetLevel() * 4));
+				}
+
+				caster->SetPetID(0);
+				SetOwnerID(0);
+			}
+		}
+	}
+	return false;
+}
+
+bool Mob::Handle_SE_BindSight(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	if(caster && caster->IsClient())
+	{
+		caster->CastToClient()->SetBindSightTarget(this);
+	}
+	return false;
+}
+
+bool Mob::Handle_SE_FeignDeath(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	if(spell_to_cast->GetSpellID() == 2488)
+		return false;
+
+	if(IsClient())
+	{
+		CastToClient()->SetFeigned(true);
+		SendAppearancePacket(AT_Anim, ANIM_DEATH);
+	}
+
+	return false;
+}
+
+bool Mob::Handle_SE_Sentinel(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	if(caster)
+	{
+		if(caster == this)
+		{
+			caster->Message_StringID(MT_Spells, SENTINEL_TRIG_YOU);
+			return false;
+		}
+		else
+		{
+			caster->Message_StringID(MT_Spells, SENTINEL_TRIG_OTHER, GetCleanName());
+		}
+	}
+
+	Message_StringID(MT_Spells, SENTINEL_TRIG_YOU);
+	return false;
+}
 
 int Mob::CalcSpellEffectValue(const Spell *spell_to_cast, int effect_id, int caster_level, Mob *caster, int ticsremaining)
 {

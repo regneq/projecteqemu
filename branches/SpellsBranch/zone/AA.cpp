@@ -513,20 +513,15 @@ void Client::HandleAAAction(aaID activate) {
 	}
 }
 
+void Mob::TemporaryPets(const Spell *spell_to_cast, Mob *targ, const char *name_override, uint32 duration_override) 
+{
+	const SPDat_Spell_Struct &spell = spell_to_cast->GetSpell();
 
-//Originally written by Branks
-//functionality rewritten by Father Nitwit
-void Mob::TemporaryPets(int16 spell_id, Mob *targ, const char *name_override, uint32 duration_override) {
-	
-	//It might not be a bad idea to put these into the database, eventually..
-	
-	//Dook- swarms and wards 
-	
 	PetRecord record;
-	if(!database.GetPetEntry(spells[spell_id].teleport_zone, &record))
+	if(!database.GetPetEntry(spell.teleport_zone, &record))
 	{
-		LogFile->write(EQEMuLog::Error, "Unknown swarm pet spell id: %d, check pets table", spell_id);
-		Message(13, "Unable to find data for pet %s", spells[spell_id].teleport_zone);
+		LogFile->write(EQEMuLog::Error, "Unknown swarm pet spell id: %d, check pets table", spell.id);
+		Message(13, "Unable to find data for pet %s", spell.teleport_zone);
 		return;
 	}
 	
@@ -536,25 +531,27 @@ void Mob::TemporaryPets(int16 spell_id, Mob *targ, const char *name_override, ui
 
 	for(int x = 0; x < 12; x++)
 	{
-		if(spells[spell_id].effectid[x] == SE_TemporaryPets)
+		if(spell.effectid[x] == SE_TemporaryPets)
 		{
-			pet.count = spells[spell_id].base[x];
-			pet.duration = spells[spell_id].max[x];
+			pet.count = spell.base[x];
+			pet.duration = spell.max[x];
 		}
 	}
-	pet.npc_id = record.npc_type;
 
+	pet.npc_id = record.npc_type;
 	NPCType *made_npc = NULL;
 	
 	const NPCType *npc_type = database.GetNPCType(pet.npc_id);
-	if(npc_type == NULL) {
+	if(npc_type == NULL) 
+	{
 		//log write
-		LogFile->write(EQEMuLog::Error, "Unknown npc type for swarm pet spell id: %d", spell_id);
+		LogFile->write(EQEMuLog::Error, "Unknown npc type for swarm pet spell id: %d", spell.id);
 		Message(0,"Unable to find pet!");
 		return;
 	}
 	
-	if(name_override != NULL) {
+	if(name_override != NULL) 
+	{
 		//we have to make a custom NPC type for this name change
 		made_npc = new NPCType; 
 		memcpy(made_npc, npc_type, sizeof(NPCType));
@@ -576,7 +573,8 @@ void Mob::TemporaryPets(int16 spell_id, Mob *targ, const char *name_override, ui
 														8, 8, -8, -8 };
 	TempPets(true);
 
-	while(summon_count > 0) {
+	while(summon_count > 0) 
+	{
 		int pet_duration = pet.duration;
 		if(duration_override > 0)
 			pet_duration = duration_override;
@@ -584,7 +582,8 @@ void Mob::TemporaryPets(int16 spell_id, Mob *targ, const char *name_override, ui
 		//this is a little messy, but the only way to do it right
 		//it would be possible to optimize out this copy for the last pet, but oh well
 		NPCType *npc_dup = NULL;
-		if(made_npc != NULL) {
+		if(made_npc != NULL) 
+		{
 			npc_dup = new NPCType;
 			memcpy(npc_dup, made_npc, sizeof(NPCType));
 		}
@@ -592,25 +591,28 @@ void Mob::TemporaryPets(int16 spell_id, Mob *targ, const char *name_override, ui
 		NPC* npca = new NPC(
 				(npc_dup!=NULL)?npc_dup:npc_type,	//make sure we give the NPC the correct data pointer
 				0, 
-				GetX()+swarm_pet_x[summon_count], GetY()+swarm_pet_y[summon_count], 
+				GetX() + swarm_pet_x[summon_count], GetY() + swarm_pet_y[summon_count], 
 				GetZ(), GetHeading(), FlyMode3);
 
-		if((spell_id == 6882) || (spell_id == 6884))
+		if((spell.id == 6882) || (spell.id == 6884))
 			npca->SetFollowID(GetID());
 
-		if(!npca->GetSwarmInfo()){
+		if(!npca->GetSwarmInfo())
+		{
 			AA_SwarmPetInfo* nSI = new AA_SwarmPetInfo;
 			npca->SetSwarmInfo(nSI);
-			npca->GetSwarmInfo()->duration = new Timer(pet_duration*1000);
+			npca->GetSwarmInfo()->duration = new Timer(pet_duration * 1000);
 		}
-		else{
-			npca->GetSwarmInfo()->duration->Start(pet_duration*1000);
+		else
+		{
+			npca->GetSwarmInfo()->duration->Start(pet_duration * 1000);
 		}
 
 		npca->GetSwarmInfo()->owner = this;
 
 		//give the pets somebody to "love"
-		if(targ != NULL){
+		if(targ != NULL)
+		{
 			npca->AddToHateList(targ, 1000, 1000);
 			npca->GetSwarmInfo()->target = targ->GetID();
 		}

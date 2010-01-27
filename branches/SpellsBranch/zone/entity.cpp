@@ -1238,6 +1238,21 @@ void EntityList::RemoveFromTargets(Mob* mob)
 	}	
 }
 
+void EntityList::RemoveBindSightReferences(Mob *b)
+{
+	LinkedListIterator<Client*> iterator(client_list);
+
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		if(iterator.GetData()->GetBindSightTarget() == b)
+		{
+			iterator.GetData()->SetBindSightTarget(0);
+		}
+		iterator.Advance();
+	}
+}
+
 void EntityList::QueueClientsByTarget(Mob* sender, const EQApplicationPacket* app, bool iSendToSender, Mob* SkipThisMob, bool ackreq) {
 	LinkedListIterator<Client*> iterator(client_list);
 	
