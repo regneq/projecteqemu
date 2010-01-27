@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==01/27/2010==
+Trevius: Suspend Minion AA now requires level 62 or greater to use it.
+
 ==01/26/2010==
 Trevius: Exported new ProjectileAnim(mob, item_id, [IsArrow?, speed, angle, tilt, arc]) command to perl::mob.
 Trevius: Added the following to perl::NPC - GetSpawnPointX(), GetSpawnPointY(), GetSpawnPointZ(), GetSpawnPointH(), GetGuardPointX(), GetGuardPointY(), and GetGuardPointZ()
