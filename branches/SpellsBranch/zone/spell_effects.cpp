@@ -103,9 +103,7 @@ void MapSpellEffects()
 	SpellEffectDispatch[SE_Levitate] = &Mob::Handle_SE_Levitate;
 	SpellEffectDispatch[SE_Illusion] = &Mob::Handle_SE_Illusion;
 	SpellEffectDispatch[SE_DamageShield] = &Mob::Handle_SE_Blank;
-
-#define SE_Levitate					57
-#define SE_Illusion					58
+	SpellEffectDispatch[SE_Identify] = &Mob::Handle_SE_Identify;
 }
 
 // the spell can still fail here, if the buff can't stack
