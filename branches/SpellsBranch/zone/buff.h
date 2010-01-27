@@ -31,10 +31,13 @@ public:
 
 	void SetDurationRemaining(uint32 duration) { spell_duration_remaining = duration; }
 	uint32 GetDurationRemaining() const { return spell_duration_remaining; }
-	bool IsPermanantDuration() const { return is_perm_duration; }
+	bool IsPermanentDuration() const { return is_perm_duration; }
 
 	void SetIsClientBuff(bool c) { is_client = c; }
 	bool IsClientBuff() const { return is_client; }
+
+	void SetPermanentIllusion(bool b) { is_perm_illusion = b; }
+	bool IsPermanentIllusion() const { return is_perm_illusion; }
 	
 	//The first four are for counters via dispel the last is for the numhits modifier in the spell field.
 	sint32 GetRemainingChargesMagic() const { return magic_remaining_charges; }

@@ -1060,7 +1060,7 @@ void Mob::ShowBuffs(Client* client)
 	{
 		if(buffs[buffs_i])
 		{
-			if(buffs[buffs_i]->IsPermanantDuration())
+			if(buffs[buffs_i]->IsPermanentDuration())
 			{
 				client->Message(0, "  %i: %s: Permanent", buffs_i, buffs[buffs_i]->GetSpell()->GetSpell().name);
 			}
@@ -1100,7 +1100,7 @@ void Mob::ShowBuffList(Client* client) {
 	{
 		if(buffs[buffs_i])
 		{
-			if(buffs[buffs_i]->IsPermanantDuration())
+			if(buffs[buffs_i]->IsPermanentDuration())
 			{
 				client->Message(0, "  %i: %s: Permanent", buffs_i, buffs[buffs_i]->GetSpell()->GetSpell().name);
 			}
@@ -2716,7 +2716,7 @@ int Mob::CountDispellableBuffs()
 				continue;
 			}
 
-			if(!buffs[buffs_i]->IsPermanantDuration())
+			if(!buffs[buffs_i]->IsPermanentDuration())
 			{
 				val++;
 			}

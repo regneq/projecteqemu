@@ -84,6 +84,28 @@ void MapSpellEffects()
 	SpellEffectDispatch[SE_Mez] = &Mob::Handle_SE_Mez;
 	SpellEffectDispatch[SE_SummonItem] = &Mob::Handle_SE_SummonItem;
 	SpellEffectDispatch[SE_SummonPet] = &Mob::Handle_SE_SummonPet;
+	SpellEffectDispatch[SE_DiseaseCounter] = &Mob::Handle_SE_DiseaseCounter;
+	SpellEffectDispatch[SE_PoisonCounter] = &Mob::Handle_SE_PoisonCounter;
+	SpellEffectDispatch[SE_DivineAura] = &Mob::Handle_SE_DivineAura;
+	SpellEffectDispatch[SE_Destroy] = &Mob::Handle_SE_Destroy;
+	SpellEffectDispatch[SE_ShadowStep] = &Mob::Handle_SE_BlankWithPacket;
+	SpellEffectDispatch[SE_Lycanthropy] = NULL;
+	SpellEffectDispatch[SE_ResistFire] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_ResistCold] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_ResistPoison] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_ResistDisease] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_ResistMagic] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_SenseDead] = &Mob::Handle_SE_BlankWithPacket;
+	SpellEffectDispatch[SE_SenseSummoned] = &Mob::Handle_SE_BlankWithPacket;
+	SpellEffectDispatch[SE_SenseAnimals] = &Mob::Handle_SE_BlankWithPacket;
+	SpellEffectDispatch[SE_Rune] = &Mob::Handle_SE_Rune;
+	SpellEffectDispatch[SE_TrueNorth] = &Mob::Handle_SE_BlankWithPacket;
+	SpellEffectDispatch[SE_Levitate] = &Mob::Handle_SE_Levitate;
+	SpellEffectDispatch[SE_Illusion] = &Mob::Handle_SE_Illusion;
+	SpellEffectDispatch[SE_DamageShield] = &Mob::Handle_SE_Blank;
+
+#define SE_Levitate					57
+#define SE_Illusion					58
 }
 
 // the spell can still fail here, if the buff can't stack
@@ -140,6 +162,15 @@ bool Mob::SpellEffect(Mob* caster, Spell *spell_to_cast, int action_sequence, fl
 	bool need_04_packet = false;
 	for(int i = 0; i < EFFECT_COUNT; i++)
 	{
+		if(spell_to_cast->GetSpell().effectid[i] >= SE_LAST_EFFECT)
+		{
+			mlog(SPELLS__EFFECT_VALUES, "Out of range spell effect: %s(%d) effect id %d at index %d", spell_to_cast->GetSpell().name, 
+				spell_to_cast->GetSpellID(), spell_to_cast->GetSpell().effectid[i], i);
+			Message(13, "Out of range spell effect: %s(%d) effect id %d at index %d", spell_to_cast->GetSpell().name, 
+				spell_to_cast->GetSpellID(), spell_to_cast->GetSpell().effectid[i], i);
+			continue;
+		}
+
 		SpellEffectProc proc = SpellEffectDispatch[spell_to_cast->GetSpell().effectid[i]];
 		if(proc == NULL) 
 		{
@@ -184,12 +215,27 @@ bool Mob::SpellEffect(Mob* caster, Spell *spell_to_cast, int action_sequence, fl
 	return true;
 }
 
+bool Mob::Handle_SE_Blank(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	return false;
+}
+
+bool Mob::Handle_SE_BlankWithPacket(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	if(buff_in_use)
+	{
+		Message(13, "Illegal Spell Operation: handle spell with a 0x04 Action Packet returned; this"
+			" was called for a spell with a buff. ID: %d", spell_to_cast->GetSpell());
+		return false;
+	}
+	return true;
+}
+
 bool Mob::Handle_SE_CurrentHP(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
 {
 	if(!buff_in_use)
 	{
-		sint32 dmg = CalcSpellEffectValue(spell_to_cast, effect_id_index, spell_to_cast->GetCasterLevel(), 
-			caster, 0);
+		sint32 dmg = CalcSpellEffectValue(spell_to_cast, effect_id_index, spell_to_cast->GetCasterLevel(), caster, 0);
 
 		if(dmg < 0)
 		{
@@ -210,11 +256,6 @@ bool Mob::Handle_SE_CurrentHP(const Spell *spell_to_cast, Mob *caster, const uin
 		}
 	}
 
-	return false;
-}
-
-bool Mob::Handle_SE_Blank(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
-{
 	return false;
 }
 
@@ -247,7 +288,7 @@ bool Mob::Handle_SE_CurrentMana(const Spell *spell_to_cast, Mob *caster, const u
 
 bool Mob::Handle_SE_AddFaction(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
 {
-	if(caster && GetPrimaryFaction() >0) 
+	if(caster && GetPrimaryFaction() > 0) 
 	{
 		//TODO: Is this right? Are they always base 0? Remember to look into it later.
 		caster->AddFactionBonus(GetPrimaryFaction(), spell_to_cast->GetSpell().base[0]);
@@ -478,7 +519,7 @@ bool Mob::Handle_SE_CancelMagic(const Spell *spell_to_cast, Mob *caster, const u
 			continue;
 		}
 
-		if(!buffs[buffs_i]->IsPermanantDuration())
+		if(!buffs[buffs_i]->IsPermanentDuration())
 		{
 			BuffFadeBySlot(buffs_i);
 			return false;
@@ -557,6 +598,189 @@ bool Mob::Handle_SE_SummonPet(const Spell *spell_to_cast, Mob *caster, const uin
 	}
 	return false;
 }
+
+bool Mob::Handle_SE_DiseaseCounter(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	sint32 effect_value = CalcSpellEffectValue(spell_to_cast, effect_id_index, spell_to_cast->GetCasterLevel(), caster, 0);
+	if(effect_value > 0)
+	{
+		if(buff_in_use)
+		{
+			buff_in_use->SetRemainingChargesDisease(effect_value);
+		}
+	}
+	else
+	{
+		effect_value = -effect_value;
+		int max_slots = GetMaxTotalSlots();
+		for(int buffs_i = 0; buffs_i < max_slots; buffs_i++)
+		{
+			if(!buffs[buffs_i])
+			{
+				continue;
+			}
+
+			if(buffs[buffs_i]->GetRemainingChargesDisease() == 0)
+			{
+				continue;
+			}
+
+			if(effect_value > buffs[buffs_i]->GetRemainingChargesDisease())
+			{
+				effect_value -= buffs[buffs_i]->GetRemainingChargesDisease();
+				if(caster)
+				{
+					caster->Message(MT_Spells, "You have cured your target from %s!", buffs[buffs_i]->GetSpell()->GetSpell().name);
+					BuffFadeBySlot(buffs_i);
+				}
+			}
+			else
+			{
+				buffs[buffs_i]->SetRemainingChargesDisease(buffs[buffs_i]->GetRemainingChargesDisease() - effect_value);
+				effect_value = 0; 
+			}
+		}
+	}
+	return false;						
+}
+
+bool Mob::Handle_SE_DivineAura(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	SetInvul(true);
+	return false;
+}
+
+bool Mob::Handle_SE_Destroy(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	if(!IsNPC())
+	{
+		return false;
+	}
+
+	if(GetLevel() <= 52)
+	{
+		CastToNPC()->Depop();
+	}
+	else
+	{
+		Message(13, "Your target is too high level to be affected by this spell.");
+	}
+	return false;
+}
+
+bool Mob::Handle_SE_PoisonCounter(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	sint32 effect_value = CalcSpellEffectValue(spell_to_cast, effect_id_index, spell_to_cast->GetCasterLevel(), caster, 0);
+	if(effect_value > 0)
+	{
+		if(buff_in_use)
+		{
+			buff_in_use->SetRemainingChargesPoison(effect_value);
+		}
+	}
+	else
+	{
+		effect_value = -effect_value;
+		int max_slots = GetMaxTotalSlots();
+		for(int buffs_i = 0; buffs_i < max_slots; buffs_i++)
+		{
+			if(!buffs[buffs_i])
+			{
+				continue;
+			}
+
+			if(buffs[buffs_i]->GetRemainingChargesPoison() == 0)
+			{
+				continue;
+			}
+
+			if(effect_value > buffs[buffs_i]->GetRemainingChargesPoison())
+			{
+				effect_value -= buffs[buffs_i]->GetRemainingChargesPoison();
+				if(caster)
+				{
+					caster->Message(MT_Spells, "You have cured your target from %s!", buffs[buffs_i]->GetSpell()->GetSpell().name);
+					BuffFadeBySlot(buffs_i);
+				}
+			}
+			else
+			{
+				buffs[buffs_i]->SetRemainingChargesPoison(buffs[buffs_i]->GetRemainingChargesPoison() - effect_value);
+				effect_value = 0; 
+			}
+		}
+	}
+	return false;
+}
+
+bool Mob::Handle_SE_Rune(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	if(buff_in_use)
+	{
+		sint32 effect_value = CalcSpellEffectValue(spell_to_cast, effect_id_index, spell_to_cast->GetCasterLevel(), caster, 0);
+		buff_in_use->SetMeleeShield(effect_value);
+		SetHasRune(true);
+	}
+	return false;
+}
+
+bool Mob::Handle_SE_Levitate(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	SendAppearancePacket(AT_Levitate, 2, true, true);
+	return false;
+}
+
+bool Mob::Handle_SE_Illusion(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	if(!buff_in_use)
+	{
+		return false;
+	}
+
+	const SPDat_Spell_Struct &spell = spell_to_cast->GetSpell();
+	SendIllusionPacket(spell.base[effect_id_index], GetDefaultGender(spell.base[effect_id_index], GetGender()), spell.base2[effect_id_index]);
+	switch(spell.base[effect_id_index])
+	{
+	case OGRE:
+		SendAppearancePacket(AT_Size, 9);
+		break;
+	case TROLL:
+		SendAppearancePacket(AT_Size, 8);
+		break;
+	case VAHSHIR:
+	case BARBARIAN:
+		SendAppearancePacket(AT_Size, 7);
+		break;
+	case HALF_ELF:
+	case WOOD_ELF:
+	case DARK_ELF:
+	case FROGLOK:
+		SendAppearancePacket(AT_Size, 5);
+		break;
+	case DWARF:
+		SendAppearancePacket(AT_Size, 4);
+		break;
+	case HALFLING:
+	case GNOME:
+		SendAppearancePacket(AT_Size, 3);
+		break;
+	case WOLF:
+		SendAppearancePacket(AT_Size, 2);
+		break;
+	default:
+		SendAppearancePacket(AT_Size, 6);
+	}
+
+	for(int x = 0; x < 7; x++)
+	{
+		SendWearChange(x);
+	}
+	
+	if(caster && caster->GetAA(aaPermanentIllusion))
+		buff_in_use->SetPermanentIllusion(true);
+	return false;
+}
+
 
 int Mob::CalcSpellEffectValue(const Spell *spell_to_cast, int effect_id, int caster_level, Mob *caster, int ticsremaining)
 {

@@ -4236,7 +4236,7 @@ Spell* Spell::CopySpell()
 Buff::Buff(Spell *spell, uint32 duration)
 {
 	spell_duration_remaining = duration;
-	is_perm_illusion = 0;
+	is_perm_illusion = false;
 	magic_remaining_charges = 1;
 	poison_remaining_charges = spell->CalculatePoisonCounters();
 	disease_remaining_charges = spell->CalculateDiseaseCounters();
@@ -4247,7 +4247,7 @@ Buff::Buff(Spell *spell, uint32 duration)
 	death_save_chance = 0;
 	caster_aa_rank = 0;
 	instrument_mod = 10;
-	is_client = 0;
+	is_client = false;
 	buff_spell = spell->CopySpell();
 	is_perm_duration = (spell->GetSpell().buffdurationformula == 50);
 }

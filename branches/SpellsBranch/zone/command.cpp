@@ -1955,7 +1955,7 @@ void command_permarace(Client *c, const Seperator *sep)
 		c->Message(0,"Target is not a client.");
 	else {
 		c->Message(0, "Setting %s's race - zone to take effect",t->GetName());
-		LogFile->write(EQEMuLog::Normal,"Permanant race change request from %s for %s, requested race:%i", c->GetName(), t->GetName(), atoi(sep->arg[1]) );
+		LogFile->write(EQEMuLog::Normal,"Permanent race change request from %s for %s, requested race:%i", c->GetName(), t->GetName(), atoi(sep->arg[1]) );
 		int32 tmp = Mob::GetDefaultGender(atoi(sep->arg[1]), t->GetBaseGender());
 		t->SetBaseRace(atoi(sep->arg[1]));
 		t->SetBaseGender(tmp);
@@ -1979,7 +1979,7 @@ void command_permagender(Client *c, const Seperator *sep)
 		c->Message(0,"Target is not a client.");
 	else {
 		c->Message(0, "Setting %s's gender - zone to take effect",t->GetName());
-		LogFile->write(EQEMuLog::Normal,"Permanant gender change request from %s for %s, requested gender:%i", c->GetName(), t->GetName(), atoi(sep->arg[1]) );
+		LogFile->write(EQEMuLog::Normal,"Permanent gender change request from %s for %s, requested gender:%i", c->GetName(), t->GetName(), atoi(sep->arg[1]) );
 		t->SetBaseGender(atoi(sep->arg[1]));
 		t->Save();
 		t->SendIllusionPacket(atoi(sep->arg[1]));
