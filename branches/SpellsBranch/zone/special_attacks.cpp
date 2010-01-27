@@ -1256,8 +1256,8 @@ void Mob::SendItemAnimation(Mob *to, const Item_Struct *item, SkillType skillInU
 	//these angle and tilt used together seem to make the arrow/knife throw as straight as I can make it
 
 	as->launch_angle = CalculateHeadingToTarget(to->GetX(), to->GetY()) * 2;
-	as->tilt = 150;
-	as->arc = 0;
+	as->tilt = 125;
+	as->arc = 50;
 	
 	
 	//fill in some unknowns, we dont know their meaning yet
@@ -1268,6 +1268,67 @@ void Mob::SendItemAnimation(Mob *to, const Item_Struct *item, SkillType skillInU
 	entity_list.QueueCloseClients(this, outapp);
 	safe_delete(outapp);
 }
+
+void Mob::ProjectileAnimation(Mob* to, int16 item_id, bool IsArrow, float speed, float angle, float tilt, float arc) {
+
+	const Item_Struct* item = NULL;
+	int8 item_type = 0;
+
+	if(!item_id) {
+		item = database.GetItem(8005);   // Arrow will be default
+	}
+	else {
+		item = database.GetItem(item_id);   // Use the item input into the command
+	}
+
+	if(!item) {
+		return;
+	}
+	if(IsArrow) {
+		item_type = 27;
+	}
+	if(!item_type) {
+		item_type = item->ItemType;
+	}
+	if(!speed) {
+		speed = 4.0;
+	}
+	if(!angle) {
+		angle = CalculateHeadingToTarget(to->GetX(), to->GetY()) * 2;
+	}
+	if(!tilt) {
+		tilt = 125;
+	}
+	if(!arc) {
+		arc = 50;
+	}
+
+
+	// See SendItemAnimation() for some notes on this struct
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_SomeItemPacketMaybe, sizeof(Arrow_Struct));
+	Arrow_Struct *as = (Arrow_Struct *) outapp->pBuffer;
+	as->type = 1;
+	as->src_x = GetX();
+	as->src_y = GetY();
+	as->src_z = GetZ();
+	as->source_id = GetID();
+	as->target_id = to->GetID();
+	as->item_id = item->ID;
+	as->item_type = item_type;
+	as->skill = 0;	// Doesn't seem to have any effect
+	strncpy(as->model_name, item->IDFile, 16);
+	as->velocity = speed;
+	as->launch_angle = angle;
+	as->tilt = tilt;
+	as->arc = arc;
+	as->unknown088 = 125;
+	as->unknown092 = 16;
+	
+	entity_list.QueueCloseClients(this, outapp);
+	safe_delete(outapp);
+
+}
+
 
 void NPC::DoClassAttacks(Mob *target) {
 	if(target == NULL)

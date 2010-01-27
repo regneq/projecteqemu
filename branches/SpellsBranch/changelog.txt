@@ -1,5 +1,14 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==01/27/2010==
+Trevius: Suspend Minion AA now requires level 62 or greater to use it.
+Secrets: Implemented quest::voicetell(PlayerName, MacroNumber, RaceNumber, GenderNumer).
+
+==01/26/2010==
+Trevius: Exported new ProjectileAnim(mob, item_id, [IsArrow?, speed, angle, tilt, arc]) command to perl::mob.
+Trevius: Added the following to perl::NPC - GetSpawnPointX(), GetSpawnPointY(), GetSpawnPointZ(), GetSpawnPointH(), GetGuardPointX(), GetGuardPointY(), and GetGuardPointZ()
+Derision: Leadership abilities should now work correctly for groups with 1 Player + Bots.
+
 ==01/25/2010==
 Trevius: Exported CheckLoSToLoc(x, y, z, [mob_size]) to perl::mob.
 Trevius: Exported FindGroundZ(x, y, [z_offset]) to perl::mob.

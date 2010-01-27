@@ -444,6 +444,7 @@ bool logpos;
 	int MonkSpecialAttack(Mob* other, int8 skill_used);
 	virtual void TryBackstab(Mob *other);
 	void DoAnim(const int animnum, int type=0, bool ackreq = true, eqFilterType filter = FilterNone);
+	void ProjectileAnimation(Mob* to, int16 item_id, bool IsArrow = false, float speed = 0, float angle = 0, float tilt = 0, float arc = 0);
 
 	void ChangeSize(float in_size, bool bNoRestriction = false);
 	virtual void GMMove(float x, float y, float z, float heading = 0.01, bool SendUpdate = true);

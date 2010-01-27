@@ -5579,6 +5579,9 @@ void Client::SuspendMinion()
 
 	if(AALevel == 0)
 		return;
+
+	if(GetLevel() < 62)
+		return;
 	
 	if(!CurrentPet)
 	{

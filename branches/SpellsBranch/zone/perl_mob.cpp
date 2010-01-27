@@ -6207,7 +6207,7 @@ XS(XS_Mob_DoSpecialAttackDamage)
 		if(target == NULL)
 			Perl_croak(aTHX_ "target is NULL, avoiding crash.");
 
-		if (items == 5 || items == 6)
+		if (items > 4)
 		{
 			min_damage = (sint32)SvIV(ST(4));
 		}
@@ -6329,6 +6329,63 @@ XS(XS_Mob_FindGroundZ)
 		XSprePUSH; PUSHn((double)RETVAL);
 	}
 	XSRETURN(1);
+}
+
+XS(XS_Mob_ProjectileAnim); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_ProjectileAnim)
+{
+	dXSARGS;
+	if (items < 3 || items > 8)
+	   Perl_croak(aTHX_ "Usage: Mob::ProjectileAnim(THIS, mob, item_id, IsArrow?, speed, angle, tilt, arc)");
+
+	{
+		Mob *		THIS;
+		Mob*		mob;
+		int16		item_id = (int16)SvUV(ST(2));
+		bool		IsArrow = false;
+		float		speed = 0;
+		float		angle = 0;
+		float		tilt = 0;
+		float		arc = 0;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		if (sv_derived_from(ST(1), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(1)));
+			mob = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "mob is not of type Mob");
+		if(mob == NULL)
+			Perl_croak(aTHX_ "mob is NULL, avoiding crash.");
+
+		if(items > 3){
+			IsArrow = (bool)SvTRUE(ST(3));
+		}
+		if(items > 4){
+			speed = (float)SvNV(ST(4));
+		}
+		if(items > 5){
+			angle = (float)SvNV(ST(5));
+		}
+		if(items > 6){
+			tilt = (float)SvNV(ST(6));
+		}
+		if(items > 7){
+			arc = (float)SvNV(ST(7));
+		}
+
+		THIS->ProjectileAnimation(mob, item_id, IsArrow, speed, angle, tilt, arc);
+
+	}
+	XSRETURN_EMPTY;
 }
 
 #ifdef __cplusplus
@@ -6574,6 +6631,7 @@ XS(boot_Mob)
 		newXSproto(strcpy(buf, "CheckLoS"), XS_Mob_CheckLoS, file, "$$");
 		newXSproto(strcpy(buf, "CheckLoSToLoc"), XS_Mob_CheckLoSToLoc, file, "$$$$;$");
 		newXSproto(strcpy(buf, "FindGroundZ"), XS_Mob_FindGroundZ, file, "$$$;$");
+		newXSproto(strcpy(buf, "ProjectileAnim"), XS_Mob_ProjectileAnim, file, "$$$;$$$$$");
 	XSRETURN_YES;
 }
 
