@@ -6334,7 +6334,7 @@ XS(XS_Mob_ProjectileAnim); /* prototype to pass -Wmissing-prototypes */
 XS(XS_Mob_ProjectileAnim)
 {
 	dXSARGS;
-	if (items < 4 || items > 8)
+	if (items < 3 || items > 8)
 	   Perl_croak(aTHX_ "Usage: Mob::ProjectileAnim(THIS, mob, item_id, IsArrow?, speed, angle, tilt, arc)");
 
 	{
