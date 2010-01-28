@@ -384,11 +384,13 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 	//and met all the reqs for opening
 	//everything to do with closed doors has already been taken care of
 	//we return because we don't want people using teleports on an unlocked door (exploit!)
-	safe_delete(outapp);
 	if(md->action == CLOSE_DOOR)
 	{
+		safe_delete(outapp);
 		return;
 	}
+
+	safe_delete(outapp);
 
 	if((GetTriggerDoorID() != 0) && (GetTriggerType() == 1))
 	{

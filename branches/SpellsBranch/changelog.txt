@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==01/28/2010==
+Rabayn: Fixed reference to freed memory in Doors::HandleClick.
+Derision: Anti Kill-Stealing fix.
+
 ==01/27/2010==
 Trevius: Suspend Minion AA now requires level 62 or greater to use it.
 Secrets: Implemented quest::voicetell(PlayerName, MacroNumber, RaceNumber, GenderNumer).
