@@ -233,6 +233,7 @@ bool Mob::SpellEffect(Mob* caster, Spell *spell_to_cast, int action_sequence, fl
 
 	if(need_04_packet)
 	{
+		Message(0, "need_04_packet called");
 		SendActionSpellPacket(spell_to_cast, this, action_sequence, caster_level, 4);
 	}
 	else

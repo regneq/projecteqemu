@@ -121,7 +121,12 @@ void Mob::SpellProcess()
 		if(casting_spell->IsCastTimerFinished())
 		{
 			casting_spell->StopCastTimer();
-			CastedSpellFinished(&casting_spell);
+			//This may seem odd but it's use becomes apparent when you get into spells
+			//That have components that interrupt and are cast on the caster, they 
+			//would free themselves pre-maturely otherwise.
+			casting_spell_finished = casting_spell;
+			casting_spell = NULL;
+			CastedSpellFinished(&casting_spell_finished);
 		}
 	}
 
@@ -590,13 +595,18 @@ void Mob::ZeroCastingVars()
 	// zero out the state keeping vars
 	attacked_count = 0;
 	casting_spell = NULL;
+	casting_spell_finished = NULL;
 }
 
-void Mob::ZeroAndFreeCastingVars()
+void Mob::ZeroAndFreeCastingVars(bool all)
 {
 	// zero out the state keeping vars
 	attacked_count = 0;
 	safe_delete(casting_spell);
+	if(all)
+	{
+		safe_delete(casting_spell_finished);
+	}
 }
 
 void Mob::ZeroAndFreeSong()
@@ -631,7 +641,7 @@ void Mob::InterruptSpell(int16 message, int16 color, int16 spellid)
 	
 	if(!spellid)
 	{
-		ZeroAndFreeCastingVars();
+		ZeroAndFreeCastingVars(false);
 		return;
 	}
 	
@@ -689,7 +699,7 @@ void Mob::InterruptSpell(int16 message, int16 color, int16 spellid)
 	strcpy(ic->message, GetCleanName());
 	entity_list.QueueCloseClients(this, outapp, true, 200, 0, true, IsClient() ? FILTER_PCSPELLS : FILTER_NPCSPELLS);
 	safe_delete(outapp);
-	ZeroAndFreeCastingVars();
+	ZeroAndFreeCastingVars(false);
 }
 
 void Mob::CastedSpellFinished(Spell **casted_spell_ptr)
@@ -2241,7 +2251,6 @@ bool Mob::SpellOnTarget(Spell *spell_to_cast, Mob* spell_target)
 	}
 	else if (spell_to_cast->IsBeneficialSpell())
 		entity_list.AddHealAggro(spell_target, this, CheckHealAggroAmount(spell_to_cast, (spell_target->GetMaxHP() - spell_target->GetHP())));
-		
 		
 	if(!spell_target->SpellEffect(this, spell_to_cast, sequence, spell_effectiveness))
 	{

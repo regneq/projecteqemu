@@ -397,6 +397,7 @@ Mob::~Mob()
 	safe_delete(PathingRouteUpdateTimerShort);
 	safe_delete(PathingRouteUpdateTimerLong);
 	safe_delete(casting_spell);
+	safe_delete(casting_spell_finished);
 	safe_delete(spell_recovery_timer);
 }
 

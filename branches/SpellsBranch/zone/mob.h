@@ -682,7 +682,7 @@ bool logpos;
 	void InterruptSpell(int16 spellid = SPELL_UNKNOWN);
 	void InterruptSpell(int16, int16, int16 spellid = SPELL_UNKNOWN);
 	void ZeroCastingVars();
-	void ZeroAndFreeCastingVars();
+	void ZeroAndFreeCastingVars(bool all = true);
 	void ZeroAndFreeSong();
 	bool DoChannelCheck(bool &did_regain_conc);
 	virtual bool DoComponentCheck(Spell *spell_to_cast, bool bard_song_mode) { return true; }
@@ -1116,6 +1116,7 @@ protected:
 
 	//spell casting vars
 	Spell *casting_spell;
+	Spell *casting_spell_finished;
 	Spell *bard_song;
     float spell_x, spell_y, spell_z;
 	int	attacked_count;
