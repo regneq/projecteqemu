@@ -91,7 +91,7 @@ public:
 	void	LootItem(Client* client, const EQApplicationPacket* app);
 	void	EndLoot(Client* client, const EQApplicationPacket* app);
 	void	Summon(Client* client, bool spell);
-	void	CastRezz(int16 spellid, Mob* Caster);
+	void	CastRezz(uint16 spellid, Mob* Caster);
 	void	CompleteRezz();
 	void	SetPKItem(sint32 id) { pkitem = id; }
 	sint32	GetPKItem() { return pkitem; }

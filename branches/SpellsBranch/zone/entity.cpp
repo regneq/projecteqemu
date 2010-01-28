@@ -2897,9 +2897,9 @@ void EntityList::Evade(Mob *who)
 void EntityList::ClearAggro(Mob* targ) {
 	LinkedListIterator<NPC*> iterator(npc_list);
 	iterator.Reset();
-	while(iterator.MoreElements()) {
-		if (iterator.GetData()->CheckAggro(targ))
-			iterator.GetData()->RemoveFromHateList(targ);
+	while(iterator.MoreElements()) 
+	{
+		iterator.GetData()->RemoveFromHateList(targ);
 		iterator.GetData()->RemoveFromFeignMemory(targ->CastToClient()); //just in case we feigned
 		iterator.Advance();
 	}

@@ -115,7 +115,13 @@ void MapSpellEffects()
 	SpellEffectDispatch[SE_BindSight] = &Mob::Handle_SE_BindSight;
 	SpellEffectDispatch[SE_FeignDeath] = &Mob::Handle_SE_FeignDeath;
 	SpellEffectDispatch[SE_VoiceGraft] = &Mob::Handle_SE_Blank;
-	SpellEffectDispatch[SE_Sentinel] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_Sentinel] = &Mob::Handle_SE_Sentinel;
+	SpellEffectDispatch[SE_LocateCorpse] = &Mob::Handle_SE_BlankWithPacket;
+	SpellEffectDispatch[SE_AbsorbMagicAtt] = &Mob::Handle_SE_AbsorbMagicAtt;
+	SpellEffectDispatch[SE_CurrentHPOnce] = &Mob::Handle_SE_CurrentHPOnce;
+	SpellEffectDispatch[SE_Revive] = &Mob::Handle_SE_Revive;
+	SpellEffectDispatch[SE_SummonPC] = &Mob::Handle_SE_SummonPC;
+	SpellEffectDispatch[SE_Teleport] = &Mob::Handle_SE_Teleport;
 }
 
 // the spell can still fail here, if the buff can't stack
@@ -752,8 +758,15 @@ bool Mob::Handle_SE_Rune(const Spell *spell_to_cast, Mob *caster, const uint32 e
 	if(buff_in_use)
 	{
 		sint32 effect_value = CalcSpellEffectValue(spell_to_cast, effect_id_index, spell_to_cast->GetCasterLevel(), caster, 0);
-		buff_in_use->SetMeleeShield(effect_value);
-		SetHasRune(true);
+		if(effect_value > 0)
+		{
+			buff_in_use->SetMeleeShield(effect_value);
+			SetHasRune(true);
+		}
+		else
+		{
+			//some error
+		}
 	}
 	return false;
 }
@@ -906,6 +919,151 @@ bool Mob::Handle_SE_Sentinel(const Spell *spell_to_cast, Mob *caster, const uint
 	}
 
 	Message_StringID(MT_Spells, SENTINEL_TRIG_YOU);
+	return false;
+}
+
+bool Mob::Handle_SE_AbsorbMagicAtt(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	if(buff_in_use)
+	{
+		sint32 effect_value = CalcSpellEffectValue(spell_to_cast, effect_id_index, spell_to_cast->GetCasterLevel(), caster, 0);
+		if(effect_value > 0)
+		{
+			buff_in_use->SetMagicShield(effect_value);
+			SetHasSpellRune(true);
+		}
+		else
+		{
+			//some error
+		}
+	}	
+	return false;
+}
+
+bool Mob::Handle_SE_CurrentHPOnce(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	const SPDat_Spell_Struct &spell = spell_to_cast->GetSpell();
+	sint32 effect_value = CalcSpellEffectValue(spell_to_cast, effect_id_index, spell_to_cast->GetCasterLevel(), caster, 0);
+	if(caster)
+	{
+		if(spell_to_cast->GetSpellID() == 2751)
+		{
+			effect_value = -(caster->GetMana() * 3);
+		}
+		else if(spell_to_cast->GetSpellID() == 2751)
+		{
+			effect_value = -((caster->GetHP() * 3) / 2);
+			caster->SetHP(1);
+			bool feign_return = Handle_SE_FeignDeath(spell_to_cast, caster, effect_id_index, partial, summoned_item, buff_in_use, buff_slot);
+		}
+		else if(spell_to_cast->GetSpellID() == 2766)
+		{
+			effect_value -= (500 * caster->GetAA(aaImprovedConsumptionofSoul));
+		}
+	}
+
+	if(effect_value < 0)
+	{
+		Damage(caster, effect_value, spell.id, spell.skill, false, buff_slot, false);
+	}
+	else if(effect_value > 0)
+	{
+		HealDamage(effect_value, caster);
+	}
+	return false;
+}
+
+bool Mob::Handle_SE_Revive(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	if(!IsCorpse())
+	{
+		return false;
+	}
+
+	if(caster)
+		mlog(SPELLS__REZ, "Corpse being rezzed using spell %i by %s", spell_to_cast->GetSpellID(), caster->GetName());
+
+	CastToCorpse()->CastRezz(spell_to_cast->GetSpellID(), caster);
+
+	return false;
+}
+
+bool Mob::Handle_SE_SummonPC(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	if(caster)
+	{
+		if(IsClient())
+		{
+			CastToClient()->MovePC(zone->GetZoneID(), zone->GetInstanceID(), caster->GetX(), caster->GetY(), caster->GetZ(), caster->GetHeading(), 2, SummonPC);
+			Message(15, "You have been summoned!");
+			entity_list.ClearAggro(this);
+		}
+		else
+			caster->Message(13, "This spell can only be cast on players.");
+	}
+
+	return false;
+}
+
+bool Mob::Handle_SE_Teleport(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	const SPDat_Spell_Struct &spell = spell_to_cast->GetSpell();
+	float x, y, z, heading;
+	const char *target_zone;
+
+	x = spell.base[1];
+	y = spell.base[0];
+	z = spell.base[2];
+	heading = spell.base[3];
+
+	if(!strcmp(spell.teleport_zone, "same"))
+	{
+		target_zone = 0;
+	}
+	else
+	{
+		target_zone = spell.teleport_zone;
+		if(IsNPC() && target_zone != zone->GetShortName())
+		{
+			if(!GetOwner())
+			{
+				CastToNPC()->Depop();
+				return false;
+			}
+			else
+			{
+				if(!GetOwner()->IsClient())
+					CastToNPC()->Depop();
+				return false;
+			}
+		}
+	}
+
+	if(spell.effectid[effect_id_index] == SE_YetAnotherGate && caster->IsClient())
+	{
+		if(!caster)
+			return false;
+
+		x = caster->CastToClient()->GetBindX();
+		y = caster->CastToClient()->GetBindY();
+		z = caster->CastToClient()->GetBindZ();
+		heading = caster->CastToClient()->GetBindHeading();
+		CastToClient()->MovePC(caster->CastToClient()->GetBindZoneID(), 0, x, y, z, heading);
+		return false;
+	}
+
+	if(IsClient())
+	{
+		if(!target_zone)
+			CastToClient()->MovePC(zone->GetZoneID(), zone->GetInstanceID(), x, y, z, heading);
+		else
+			CastToClient()->MovePC(target_zone, x, y, z, heading);
+	}
+	else
+	{
+		if(!target_zone)
+			GMMove(x, y, z, heading);
+	}
 	return false;
 }
 
