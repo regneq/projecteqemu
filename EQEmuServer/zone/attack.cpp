@@ -2146,6 +2146,15 @@ void Mob::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHel
 		return;
 
 	// first add self
+	
+	// The damage on the hate list is used to award XP to the killer. This check is to prevent Killstealing.
+	// e.g. Mob has 5000 hit points, Player A melees it down to 500 hp, Player B executes a headshot (10000 damage).
+	// If we add 10000 damage, Player B would get the kill credit, so we only award damage credit to player B of the
+	// amount of HP the mob had left.
+	//
+	if(damage > GetHP())
+		damage = GetHP();
+
 	hate_list.Add(other, hate, damage, bFrenzy, !iBuffTic);
 
 #ifdef BOTS
