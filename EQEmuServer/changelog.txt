@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==01/30/2010==
+cybernine186: Implemented the #suspend command.
+
 ==01/28/2010==
 gaeorn: added EQEmuLoginServer/EQCryptoAPI.h (contents from a EQEmu forum post by KLS)
 
