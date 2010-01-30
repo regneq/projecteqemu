@@ -384,6 +384,7 @@ int command_init(void) {
 		command_add("nologs","[status|normal|error|debug|quest|all] - Unsubscribe to a log type",250,command_nologs) ||
 		command_add("datarate","[rate] - Query/set datarate",100,command_datarate) ||
 		command_add("ban","[name] - Ban by character name",150,command_ban) ||
+		command_add("suspend","[name][days] - Suspend by character name and for specificed number of days",150,command_suspend) ||
 		command_add("ipban","[IP address] - Ban IP by character name",200,command_ipban) ||
 		command_add("oocmute","[1/0] - Mutes OOC chat",200,command_oocmute) ||
 		command_add("revoke","[charname] [1/0] - Makes charname unable to talk on OOC",200,command_revoke) ||
@@ -6284,6 +6285,64 @@ void command_ban(Client *c, const Seperator *sep)
 		{
 			safe_delete_array(query);
 		}
+	}
+}
+
+void command_suspend(Client *c, const Seperator *sep)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = NULL;
+
+	if((sep->arg[1][0] == 0) || (sep->arg[2][0] == 0))
+		c->Message(0, "Usage:  #suspend <charname> <days>  (Specify 0 days to lift the suspension immediately)");
+	else
+	{
+		int Duration = atoi(sep->arg[2]);
+
+		if(Duration < 0)
+			Duration = 0;
+
+		char *EscName = new char[strlen(sep->arg[1]) * 2 + 1];
+
+		database.DoEscapeString(EscName, sep->arg[1], strlen(sep->arg[1]));
+
+		int AccountID;
+
+		if((AccountID = database.GetAccountIDByChar(EscName)) > 0)
+		{
+			database.RunQuery(query, MakeAnyLenString(&query, "UPDATE `account` SET `suspendeduntil` = DATE_ADD(NOW(), INTERVAL %i DAY)"
+									  " WHERE `id` = %i", Duration, AccountID), errbuf, 0);
+
+			if(Duration)
+				c->Message(13,"Account number %i with the character %s has been temporarily suspended for %i day(s).", AccountID, sep->arg[1],
+					   Duration);
+			else
+				c->Message(13,"Account number %i with the character %s s no longer suspended.", AccountID, sep->arg[1]);
+
+			safe_delete_array(query);
+
+			Client *BannedClient = entity_list.GetClientByName(sep->arg[1]);
+
+			if(BannedClient)
+				BannedClient->Kick();
+			else
+			{
+				ServerPacket* pack = new ServerPacket(ServerOP_KickPlayer, sizeof(ServerKickPlayer_Struct));
+				ServerKickPlayer_Struct* sks = (ServerKickPlayer_Struct*) pack->pBuffer;
+
+				strn0cpy(sks->adminname, c->GetName(), sizeof(sks->adminname));
+				strn0cpy(sks->name, sep->arg[1], sizeof(sks->name));
+				sks->adminrank = c->Admin();
+
+				worldserver.SendPacket(pack);
+
+				safe_delete(pack);
+			}
+
+		} else
+			c->Message(13,"Character does not exist.");
+	
+		safe_delete_array(EscName);
 	}
 }
 

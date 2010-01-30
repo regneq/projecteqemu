@@ -303,18 +303,30 @@ void Database::LoginIP(int32 AccountID, const char* LoginIP)
 sint16 Database::CheckStatus(int32 account_id)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
-    char *query = 0;
-    MYSQL_RES *result;
-    MYSQL_ROW row;
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
 
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT status FROM account WHERE id='%i'", account_id), errbuf, &result)) {
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT `status`, UNIX_TIMESTAMP(`suspendeduntil`) as `suspendeduntil`, UNIX_TIMESTAMP() as `current`"
+						     " FROM `account` WHERE `id` = %i", account_id), errbuf, &result))
+	{
 		safe_delete_array(query);
+
 		if (mysql_num_rows(result) == 1)
 		{
 			row = mysql_fetch_row(result);
+
 			sint16 status = atoi(row[0]);
 
+			sint32 suspendeduntil = atoi(row[1]);
+
+			sint32 current = atoi(row[2]);
+
 			mysql_free_result(result);
+
+			if(suspendeduntil > current)
+				return -1;
+
 			return status;
 		}
 		else

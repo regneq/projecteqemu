@@ -245,6 +245,7 @@ void command_setaaxp(Client *c, const Seperator *sep);
 void command_setaapts(Client *c, const Seperator *sep);
 void command_stun(Client *c, const Seperator *sep);
 void command_ban(Client *c, const Seperator *sep);
+void command_suspend(Client *c, const Seperator *sep);
 void command_ipban(Client *c, const Seperator *sep);
 void command_oocmute(Client *c, const Seperator *sep);
 void command_revoke(Client *c, const Seperator *sep);
