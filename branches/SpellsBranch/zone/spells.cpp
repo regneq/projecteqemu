@@ -348,11 +348,7 @@ bool Mob::DoCastSpell(Spell **casted_spell_ptr, int32* spell_will_finish)
 		return false;
 	}
 
-	if(casted_spell->GetCastTime() == 0)
-	{
-		casted_spell->StartCastTimer(1);
-	}
-	else
+	if(casted_spell->GetCastTime() != 0)
 	{
 		casted_spell->StartCastTimer(casted_spell->GetCastTime());
 	}
@@ -381,6 +377,13 @@ bool Mob::DoCastSpell(Spell **casted_spell_ptr, int32* spell_will_finish)
 	outapp->priority = 3;
 	entity_list.QueueCloseClients(this, outapp, false, 200, 0, true);
 	safe_delete(outapp);
+
+	if(casted_spell->GetCastTime() == 0)
+	{
+		CastedSpellFinished(&casted_spell);
+		safe_delete(*casted_spell_ptr);
+		return true;
+	}
 
 	casting_spell = casted_spell;
 	return true;
@@ -2585,7 +2588,7 @@ void Mob::SendKnockBackPacket(int push_up, int push_back)
 		if(look_heading > 360)
 			look_heading -= 360;
 
-				//x and y are crossed mkay
+		//x and y are crossed mkay
 		double new_x = push_back * sin(double(look_heading * 3.141592 / 180.0));
 		double new_y = push_back * cos(double(look_heading * 3.141592 / 180.0));
 
@@ -4253,6 +4256,9 @@ Buff::Buff(Spell *spell, uint32 duration)
 	general_remaining_charges = spell->GetSpell().numhits;	
 	melee_shield_remaining = 0;
 	magic_shield_remaining = 0;
+	melee_shield_reduction = 0;
+	magic_shield_reduction = 0;
+	attacks_negated = 0;
 	death_save_chance = 0;
 	caster_aa_rank = 0;
 	instrument_mod = 10;
@@ -4261,3 +4267,7 @@ Buff::Buff(Spell *spell, uint32 duration)
 	is_perm_duration = (spell->GetSpell().buffdurationformula == 50);
 }
 
+uint32 Buff::GetCasterID() const
+{
+	return GetSpell()->GetCasterID();
+}

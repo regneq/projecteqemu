@@ -59,12 +59,17 @@ public:
 	void SetRemainingCharges(sint32 charges) { general_remaining_charges = charges; }
 
 	void SetMeleeShield(sint32 shield) { melee_shield_remaining = shield; }
-	void AddMeleeShield(sint32 shield) { melee_shield_remaining += shield; }
+	void SetMeleeShieldReduction(sint32 percentage) { melee_shield_reduction = percentage; }
 	sint32 GetMeleeShield() const { return melee_shield_remaining; }
+	sint32 GetMeleeShieldReduction() const { return melee_shield_reduction; }
 
 	void SetMagicShield(sint32 shield) { magic_shield_remaining = shield; }
-	void AddMagicShield(sint32 shield) { magic_shield_remaining += shield; }
+	void SetMagicShieldReduction(sint32 percentage) { magic_shield_reduction = percentage; }
 	sint32 GetMagicShield() const { return magic_shield_remaining; }
+	sint32 GetMagicShieldReduction() const { return magic_shield_reduction; }
+
+	void SetAttacksNegated(sint32 attack_num) { attacks_negated = attack_num; }	
+	sint32 GetAttacksNegated() { return attacks_negated; }
 
 	void SetDeathSaveChance(uint8 chance) { death_save_chance = chance; }
 	uint8 GetDeathSaveChance() const { return death_save_chance; }
@@ -77,7 +82,7 @@ public:
 
 	const Spell* GetSpell() const { return buff_spell; }
 
-	uint32 GetCasterID() const { return 0; }
+	uint32 GetCasterID() const;
 
 
 protected:
@@ -94,6 +99,9 @@ protected:
 	
 	sint32 melee_shield_remaining;
 	sint32 magic_shield_remaining;
+	sint32 melee_shield_reduction;
+	sint32 magic_shield_reduction;
+	sint32 attacks_negated;
 	uint8 death_save_chance;
 	uint8 caster_aa_rank;
 	uint32 instrument_mod;

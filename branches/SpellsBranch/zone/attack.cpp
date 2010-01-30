@@ -2786,85 +2786,161 @@ int Mob::GetMonkHandToHandDelay(void)
 	}
 }
 
+//TODO: check this
 sint32 Mob::ReduceDamage(sint32 damage)
 {
-	if(damage > 0 && HasRune()) 
+	if(damage < 1)
+	{
+		return damage;
+	}
+
+	int negate_slot = GetBuffSlotFromType(SE_NegateAttacks);
+	if(negate_slot != -1 && buffs[negate_slot])
+	{
+		if(buffs[negate_slot]->GetAttacksNegated() <= 1)
+		{
+			BuffFadeBySlot(negate_slot);
+			return -6;
+		}
+		else
+		{
+			buffs[negate_slot]->SetAttacksNegated(buffs[negate_slot]->GetAttacksNegated() - 1);
+			return -6;
+		}
+	}
+
+	if(HasPartialMeleeRune())
+	{
+		int slot = GetBuffSlotFromType(SE_MitigateMeleeDamage);
+		if(slot != -1 && buffs[slot])
+		{
+			int damage_to_reduce = damage * buffs[slot]->GetMeleeShieldReduction() / 100;
+			if(damage_to_reduce >= buffs[slot]->GetMeleeShield())
+			{
+				damage -= damage_to_reduce;
+				BuffFadeBySlot(slot);
+
+				slot = GetBuffSlotFromType(SE_MitigateMeleeDamage);
+				if(slot == -1)
+				{
+					SetHasPartialMeleeRune(false);
+				}
+			}
+			else
+			{
+				buffs[slot]->SetMeleeShield(buffs[slot]->GetMeleeShield() - damage_to_reduce);
+				damage -= damage_to_reduce;
+			}
+		}
+	}
+
+	if(damage < 1)
+	{
+		return -6;
+	}
+
+	if(HasRune())
 	{
 		int slot = GetBuffSlotFromType(SE_Rune);
-
-		if(!buffs[slot])
+		if(slot != -1 && buffs[slot])
 		{
-			return damage;
-		}
-
-		while(slot >= 0) 
-		{
-			int16 melee_rune_left = buffs[slot]->GetMeleeShield();
-	
-			if(melee_rune_left >= damage) {
-				melee_rune_left -= damage;
-				damage = -6;
-				buffs[slot]->SetMeleeShield(melee_rune_left);
-				break;
-		}
-			else 
+			if(buffs[slot]->GetMeleeShield() <= damage)
 			{
-				if(melee_rune_left > 0) 
-				{
-					damage -= melee_rune_left;
-					melee_rune_left = 0;
-				}
-				LogFile->write(EQEMuLog::Debug, "Fading rune from slot %d", slot);
+				damage -= buffs[slot]->GetMeleeShield();
 				BuffFadeBySlot(slot);
+
 				slot = GetBuffSlotFromType(SE_Rune);
-				if(slot < 0)
+				if(slot == -1)
+				{
 					SetHasRune(false);
+				}
+			}
+			else
+			{
+				buffs[slot]->SetMeleeShield(buffs[slot]->GetMeleeShield() - damage);
+				return -6;
 			}
 		}
 	}
-
-		return(damage);
+	return damage;
 }
-	
+//TODO: check this
 sint32 Mob::ReduceMagicalDamage(sint32 damage) 
 {
-	if(damage > 0 && HasSpellRune()) 
+	if(damage < 1)
 	{
-		int slot = GetBuffSlotFromType(SE_AbsorbMagicAtt);
+		return damage;
+	}
 
-		if(!buffs[slot])
+	int negate_slot = GetBuffSlotFromType(SE_NegateAttacks);
+	if(negate_slot != -1 && buffs[negate_slot])
+	{
+		if(buffs[negate_slot]->GetAttacksNegated() <= 1)
 		{
-			return damage;
+			BuffFadeBySlot(negate_slot);
+			return -6;
 		}
-	
-		while(slot >= 0) 
+		else
 		{
-			int16 magic_rune_left = buffs[slot]->GetMagicShield();
+			buffs[negate_slot]->SetAttacksNegated(buffs[negate_slot]->GetAttacksNegated() - 1);
+			return -6;
+		}
+	}
 
-			if(magic_rune_left >= damage) 
+	if(HasPartialSpellRune())
+	{
+		int slot = GetBuffSlotFromType(SE_MitigateSpellDamage);
+		if(slot != -1 && buffs[slot])
+		{
+			int damage_to_reduce = damage * buffs[slot]->GetMagicShieldReduction() / 100;
+			if(damage_to_reduce >= buffs[slot]->GetMagicShield())
 			{
-				magic_rune_left -= damage;
-				damage = -6;
-				buffs[slot]->SetMagicShield(magic_rune_left);
-				break;
-			}
-			else 
-			{
-				if(magic_rune_left > 0) 
-				{
-					damage -= magic_rune_left;
-					magic_rune_left = 0;
-				}
-				LogFile->write(EQEMuLog::Debug, "Fading spell rune from slot %d", slot);
+				damage -= damage_to_reduce;
 				BuffFadeBySlot(slot);
-				slot = GetBuffSlotFromType(SE_AbsorbMagicAtt);
-				if(slot < 0)
-					SetHasSpellRune(false);
+
+				slot = GetBuffSlotFromType(SE_MitigateSpellDamage);
+				if(slot == -1)
+				{
+					SetHasPartialSpellRune(false);
+				}
+			}
+			else
+			{
+				buffs[slot]->SetMagicShield(buffs[slot]->GetMagicShield() - damage_to_reduce);
+				damage -= damage_to_reduce;
 			}
 		}
 	}
 
-	return(damage);
+	if(damage < 1)
+	{
+		return -6;
+	}
+
+	if(HasSpellRune())
+	{
+		int slot = GetBuffSlotFromType(SE_AbsorbMagicAtt);
+		if(slot != -1 && buffs[slot])
+		{
+			if(buffs[slot]->GetMagicShield() <= damage)
+			{
+				damage -= buffs[slot]->GetMagicShield();
+				BuffFadeBySlot(slot);
+
+				slot = GetBuffSlotFromType(SE_AbsorbMagicAtt);
+				if(slot == -1)
+				{
+					SetHasSpellRune(false);
+				}
+			}
+			else
+			{
+				buffs[slot]->SetMagicShield(buffs[slot]->GetMagicShield() - damage);
+				return -6;
+			}
+		}
+	}
+	return damage;
 }
 
 bool Mob::HasProcs() const

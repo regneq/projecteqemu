@@ -122,6 +122,79 @@ void MapSpellEffects()
 	SpellEffectDispatch[SE_Revive] = &Mob::Handle_SE_Revive;
 	SpellEffectDispatch[SE_SummonPC] = &Mob::Handle_SE_SummonPC;
 	SpellEffectDispatch[SE_Teleport] = &Mob::Handle_SE_Teleport;
+	SpellEffectDispatch[SE_TossUp] = &Mob::Handle_SE_TossUp;
+	SpellEffectDispatch[SE_WeaponProc] = &Mob::Handle_SE_WeaponProc;
+	SpellEffectDispatch[SE_Harmony] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_MagnifyVision] = &Mob::Handle_SE_BlankWithPacket;
+	SpellEffectDispatch[SE_Succor] = &Mob::Handle_SE_Succor;
+	SpellEffectDispatch[SE_ModelSize] = &Mob::Handle_SE_ModelSize;
+	SpellEffectDispatch[SE_Cloak] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_SummonCorpse] = &Mob::Handle_SE_SummonCorpse;
+	SpellEffectDispatch[SE_Calm] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_StopRain] = &Mob::Handle_SE_StopRain;
+	SpellEffectDispatch[SE_NegateIfCombat] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_Sacrifice] = &Mob::Handle_SE_Sacrifice;
+	SpellEffectDispatch[SE_Silence] = &Mob::Handle_SE_Silence;
+	SpellEffectDispatch[SE_ManaPool] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_AttackSpeed2] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_Root] = &Mob::Handle_SE_Root;
+	SpellEffectDispatch[SE_HealOverTime] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_CompleteHeal] = &Mob::Handle_SE_CompleteHeal;
+	SpellEffectDispatch[SE_Fearless] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_CallPet] = &Mob::Handle_SE_CallPet;
+	SpellEffectDispatch[SE_Translocate] = &Mob::Handle_SE_Translocate;
+	SpellEffectDispatch[SE_AntiGate] = NULL;
+	SpellEffectDispatch[SE_SummonBSTPet] = &Mob::Handle_SE_SummonPet;
+	SpellEffectDispatch[SE_Familiar] = &Mob::Handle_SE_SummonPet;
+	SpellEffectDispatch[SE_SummonItemIntoBag] = &Mob::Handle_SE_SummonItemIntoBag;
+	SpellEffectDispatch[SE_ResistAll] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_CastingLevel] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_SummonHorse] = &Mob::Handle_SE_SummonHorse;
+	SpellEffectDispatch[SE_ChangeAggro] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_Hunger] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_CurseCounter] = &Mob::Handle_SE_CurseCounter;
+	SpellEffectDispatch[SE_MagicWeapon] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_SingingSkill] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_AttackSpeed3] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_HealRate] = NULL;
+	SpellEffectDispatch[SE_ReverseDS] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_Screech] = NULL;
+	SpellEffectDispatch[SE_ImprovedDamage] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_ImprovedHeal] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_SpellResistReduction] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_IncreaseSpellHaste] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_IncreaseSpellDuration] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_IncreaseRange] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_SpellHateMod] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_ReduceReagentCost] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_ReduceManaCost] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_LimitMaxLevel] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_LimitResist] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_LimitTarget] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_LimitEffect] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_LimitSpellType] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_LimitSpell] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_LimitMinDur] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_LimitInstant] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_LimitMinLevel] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_LimitCastTime] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_Teleport2] = &Mob::Handle_SE_Teleport;
+	SpellEffectDispatch[SE_StackingCommand_Block] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_StackingCommand_Overwrite] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_DeathSave] = &Mob::Handle_SE_DeathSave;
+	SpellEffectDispatch[SE_SuspendPet] = &Mob::Handle_SE_SuspendPet;
+	SpellEffectDispatch[SE_TemporaryPets] = &Mob::Handle_SE_TemporaryPets;
+	SpellEffectDispatch[SE_BalanceHP] = &Mob::Handle_SE_BalanceHP;
+	SpellEffectDispatch[SE_DispelDetrimental] = &Mob::Handle_SE_DispelDetrimental;
+	SpellEffectDispatch[SE_IllusionCopy] = &Mob::Handle_SE_IllusionCopy;
+	SpellEffectDispatch[SE_SpellDamageShield] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_Reflect] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_AllStats] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_MakeDrunk] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_MitigateSpellDamage] = &Mob::Handle_SE_MitigateSpellDamage;
+	SpellEffectDispatch[SE_MitigateMeleeDamage] = &Mob::Handle_SE_MitigateMeleeDamage;
+	SpellEffectDispatch[SE_NegateAttacks] = &Mob::Handle_SE_NegateAttacks;
+	//SpellEffectDispatch[SE_] = &Mob::Handle_SE_;
 }
 
 // the spell can still fail here, if the buff can't stack
@@ -965,7 +1038,7 @@ bool Mob::Handle_SE_CurrentHPOnce(const Spell *spell_to_cast, Mob *caster, const
 
 	if(effect_value < 0)
 	{
-		Damage(caster, effect_value, spell.id, spell.skill, false, buff_slot, false);
+		Damage(caster, -effect_value, spell.id, spell.skill, false, buff_slot, false);
 	}
 	else if(effect_value > 0)
 	{
@@ -1067,6 +1140,583 @@ bool Mob::Handle_SE_Teleport(const Spell *spell_to_cast, Mob *caster, const uint
 	}
 	return false;
 }
+
+bool Mob::Handle_SE_TossUp(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	//SendKnockBackPacket()
+	const SPDat_Spell_Struct &spell = spell_to_cast->GetSpell();
+	double toss_amt = (double)spell.base[effect_id_index];
+	if(toss_amt < 0)
+		toss_amt = -toss_amt;
+
+	if(IsNPC())
+	{
+		Stun(toss_amt);
+	}
+	toss_amt = sqrt(toss_amt) - 2.0;
+
+	if(toss_amt < 0.0)
+		toss_amt = 0.0;
+
+	if(toss_amt > 20.0)
+		toss_amt = 20.0;
+
+	if(IsClient())
+	{
+		CastToClient()->SetKnockBackExemption(true);
+	}
+
+	double look_heading = GetHeading();
+	look_heading /= 256;
+	look_heading *= 360;
+	look_heading += 180;
+	if(look_heading > 360)
+		look_heading -= 360;
+
+	//x and y are crossed mkay
+	double new_x = spell.pushback * sin(double(look_heading * 3.141592 / 180.0));
+	double new_y = spell.pushback * cos(double(look_heading * 3.141592 / 180.0));
+
+	EQApplicationPacket* outapp_push = new EQApplicationPacket(OP_ClientUpdate, sizeof(PlayerPositionUpdateServer_Struct));
+	PlayerPositionUpdateServer_Struct* spu = (PlayerPositionUpdateServer_Struct*)outapp_push->pBuffer;
+
+	spu->spawn_id	= GetID();
+	spu->x_pos		= FloatToEQ19(GetX());
+	spu->y_pos		= FloatToEQ19(GetY());
+	spu->z_pos		= FloatToEQ19(GetZ());
+	spu->delta_x	= NewFloatToEQ13(new_x);
+	spu->delta_y	= NewFloatToEQ13(new_y);
+	spu->delta_z	= NewFloatToEQ13(toss_amt);
+	spu->heading	= FloatToEQ19(GetHeading());
+	spu->padding0002	=0;
+	spu->padding0006	=7;
+	spu->padding0014	=0x7f;
+	spu->padding0018	=0x5df27;
+	spu->animation = 0;
+	spu->delta_heading = NewFloatToEQ13(0);
+	outapp_push->priority = 5;
+	entity_list.QueueClients(this, outapp_push, true);
+	if(IsClient())
+		CastToClient()->FastQueuePacket(&outapp_push);
+	else
+		safe_delete(outapp_push);
+
+	return false;
+}
+
+bool Mob::Handle_SE_WeaponProc(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	uint16 procid = GetProcID(spell_to_cast, effect_id_index);
+
+	if(spell_to_cast->GetSpell().base2[effect_id_index] == 0)
+		AddProcToWeapon(procid, false, 100);
+	else
+		AddProcToWeapon(procid, false, spell_to_cast->GetSpell().base2[effect_id_index] + 100);
+	return false;
+}
+
+bool Mob::Handle_SE_Succor(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	const SPDat_Spell_Struct &spell = spell_to_cast->GetSpell();
+	float x, y, z, heading;
+	const char *target_zone;
+
+	x = spell.base[1];
+	y = spell.base[0];
+	z = spell.base[2];
+	heading = spell.base[3];
+
+	if(!strcmp(spell.teleport_zone, "same"))
+	{
+		target_zone = 0;
+	}
+	else
+	{
+		target_zone = spell.teleport_zone;
+		if(IsNPC() && target_zone != zone->GetShortName())
+		{
+			if(!GetOwner())
+			{
+				CastToNPC()->Depop();
+				return false;
+			}
+			else
+			{
+				if(!GetOwner()->IsClient())
+					CastToNPC()->Depop();
+				return false;
+			}
+		}
+	}
+
+	if(IsClient())
+	{
+		// Below are the spellid's for known evac/succor spells that send player
+		// to the current zone's safe points.
+		// Succor = 1567
+		// Lesser Succor = 2183
+		// Evacuate = 1628
+		// Lesser Evacuate = 2184
+		// Decession = 2558
+		// Greater Decession = 3244
+		// Egress = 1566
+
+		if(!target_zone) 
+		{
+			if(IsClient())
+				CastToClient()->MovePC(zone->GetZoneID(), zone->GetInstanceID(), x, y, z, heading, 0, EvacToSafeCoords);
+			else
+				GMMove(x, y, z, heading);
+		}
+		else 
+		{
+			if(IsClient())
+				CastToClient()->MovePC(target_zone, x, y, z, heading);
+		}
+	}
+
+	return false;
+}
+
+bool Mob::Handle_SE_ModelSize(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	//TODO: upper/lower limits for this
+	sint32 effect_value = CalcSpellEffectValue(spell_to_cast, effect_id_index, spell_to_cast->GetCasterLevel(), caster, 0);
+	ChangeSize(GetSize() * (effect_value / 100.0));
+	return false;
+}
+
+bool Mob::Handle_SE_SummonCorpse(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	if(IsClient())
+	{
+		Client* target_client = 0;
+		if(GetTarget())
+			target_client = GetTarget()->CastToClient();
+		else
+			target_client = CastToClient();
+
+		// We now have a valid target for this spell. Either the caster himself or a 
+		//targetted player. Lets see if the target is in the group.
+		Group* group = entity_list.GetGroupByClient(target_client);
+		if(group) 
+		{
+			if(!group->IsGroupMember(target_client))
+			{
+				Message(13, "Your target must be a group member for this spell.");
+				return false;
+			}
+		}
+		else
+		{
+			if(target_client != CastToClient()) 
+			{
+				Message(13, "Your target must be a group member for this spell.");
+				return false;
+			}
+		}
+
+		// Now we should either be casting this on self or its being cast on a valid group member
+		if(target_client) 
+		{
+			Corpse *corpse = entity_list.GetCorpseByOwner(target_client);
+			if(corpse) 
+			{
+				if(target_client == CastToClient())
+					Message_StringID(4, SUMMONING_CORPSE, target_client->GetCleanName());
+				else
+					Message_StringID(4, SUMMONING_CORPSE_OTHER, target_client->GetCleanName());
+							
+				corpse->Summon(CastToClient(), true);
+			}
+			else
+			{
+				// No corpse found in the zone
+				Message_StringID(4, CORPSE_CANT_SENSE);
+			}
+		}
+		else
+		{
+			Message_StringID(4, TARGET_NOT_FOUND);
+			LogFile->write(EQEMuLog::Error, "%s attempted to cast spell id %u with spell effect SE_SummonCorpse, "
+				"but could not cast target into a Client object.", GetCleanName(), spell_to_cast->GetSpellID());
+		}
+	}
+	return false;
+}
+
+bool Mob::Handle_SE_StopRain(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	zone->zone_weather = 0;
+	zone->weatherSend();
+	return false;
+}
+
+bool Mob::Handle_SE_Sacrifice(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	if(IsClient() && caster->IsClient())
+	{
+		CastToClient()->SacrificeConfirm(caster->CastToClient());
+	}
+	return false;
+}
+
+bool Mob::Handle_SE_Silence(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	InterruptSpell();
+	Silence(true);
+	return false;
+}
+
+bool Mob::Handle_SE_Root(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	rooted = true;
+	return false;
+}
+
+bool Mob::Handle_SE_CompleteHeal(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	bool in_use = false;
+	int max_slots = GetMaxTotalSlots();
+	for(int buffs_i = 0; buffs_i < max_slots; buffs_i++) 
+	{
+		if(buffs[buffs_i] && buffs[buffs_i]->GetSpell()->GetSpellID() == spell_to_cast->GetSpellID() && buffs_i != buff_slot) 
+		{
+			Message(0, "You must wait before you can be affected by this spell again.");
+			in_use = true;
+			break;
+		}
+	}
+	
+	if(in_use)
+		return false;
+
+	HealDamage(GetMaxHP(), caster);
+	return false;
+}
+
+bool Mob::Handle_SE_CallPet(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	if(GetPet() && GetPet()->IsNPC())
+	{
+		GetPet()->CastToNPC()->GMMove(GetX(), GetY(), GetZ(), GetHeading());
+	}
+	return false;
+}
+
+bool Mob::Handle_SE_Translocate(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	if(IsClient())
+	{
+		if(caster) 
+			CastToClient()->SendOPTranslocateConfirm(caster, spell_to_cast->GetSpellID());
+	}
+	return false;
+}
+
+bool Mob::Handle_SE_SummonItemIntoBag(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	const SPDat_Spell_Struct &spell = spell_to_cast->GetSpell();
+	const Item_Struct *item = database.GetItem(spell.base[effect_id_index]);
+
+	uint8 slot;
+
+	if(!*summoned_item || !(*summoned_item)->IsType(ItemClassContainer))
+	{
+		if(caster) 
+			caster->Message(13, "SE_SummonItemIntoBag but no bag has been summoned!");
+	} 
+	else if((slot = (*summoned_item)->FirstOpenSlot()) == 0xff) 
+	{
+		if(caster) 
+			caster->Message(13, "SE_SummonItemIntoBag but no room in summoned bag!");
+	} 
+	else if(IsClient()) 
+	{
+		if (CastToClient()->CheckLoreConflict(item))
+		{
+			Message_StringID(0, PICK_LORE);
+		} 
+		else 
+		{
+			int charges;
+			if (spell.formula[effect_id_index] < 100)
+			{
+				charges = spell.formula[effect_id_index];
+			}
+			else	// variable charges
+			{
+				charges = CalcSpellEffectValue_formula(spell.formula[effect_id_index], 0, 20, spell_to_cast->GetCasterLevel(), spell_to_cast);
+			}
+			
+			charges = charges < 1 ? 1 : (charges > 20 ? 20 : charges);
+			ItemInst *sub_item = database.CreateItem(spell.base[effect_id_index], charges);
+			if(sub_item != NULL)
+			{
+				(*summoned_item)->PutItem(slot, *sub_item);
+				safe_delete(sub_item);
+			}
+		}
+	}
+
+	return false;
+}
+
+bool Mob::Handle_SE_SummonHorse(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	if(IsClient())
+	{
+		//Todo: custom horses
+		CastToClient()->SummonHorse(spell_to_cast->GetSpellID());
+	}
+	return false;
+}
+
+bool Mob::Handle_SE_CurseCounter(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	sint32 effect_value = CalcSpellEffectValue(spell_to_cast, effect_id_index, spell_to_cast->GetCasterLevel(), caster, 0);
+	if(effect_value > 0)
+	{
+		if(buff_in_use)
+		{
+			buff_in_use->SetRemainingChargesCurse(effect_value);
+		}
+	}
+	else
+	{
+		effect_value = -effect_value;
+		int max_slots = GetMaxTotalSlots();
+		for(int buffs_i = 0; buffs_i < max_slots; buffs_i++)
+		{
+			if(!buffs[buffs_i])
+			{
+				continue;
+			}
+
+			if(buffs[buffs_i]->GetRemainingChargesCurse() == 0)
+			{
+				continue;
+			}
+
+			if(effect_value > buffs[buffs_i]->GetRemainingChargesCurse())
+			{
+				effect_value -= buffs[buffs_i]->GetRemainingChargesCurse();
+				if(caster)
+				{
+					caster->Message(MT_Spells, "You have cured your target from %s!", buffs[buffs_i]->GetSpell()->GetSpell().name);
+					BuffFadeBySlot(buffs_i);
+				}
+			}
+			else
+			{
+				buffs[buffs_i]->SetRemainingChargesCurse(buffs[buffs_i]->GetRemainingChargesCurse() - effect_value);
+				effect_value = 0; 
+			}
+		}
+	}
+	return false;						
+}
+
+bool Mob::Handle_SE_DeathSave(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	if(!buff_in_use)
+	{
+		return false;
+	}
+
+	const SPDat_Spell_Struct &spell = spell_to_cast->GetSpell();
+	sint32 effect_value = CalcSpellEffectValue(spell_to_cast, effect_id_index, spell_to_cast->GetCasterLevel(), caster, 0);
+	if(caster) 
+	{
+		int8 success_chance = 0;
+		float base_chance = 0.00f;
+		float bonus_chance = 0.00f;
+
+		switch(effect_value) 
+		{
+		case 1: 
+			{
+				base_chance = 0.10f;
+			}
+			break;
+		case 2: 
+			{
+				base_chance = 0.30f;
+			}
+			break;
+		default: 
+			{
+				LogFile->write(EQEMuLog::Error, "Unknown SE_DeathSave effect value in spell: %s (%i).", spell.name, spell.id);
+			}
+		}
+
+		switch(caster->GetAA(aaUnfailingDivinity)) 
+		{
+		case 1: 
+			{
+				bonus_chance = 0.10f;
+				break;
+			}
+		case 2: 
+			{
+				bonus_chance = 0.10f;
+				break;
+			}
+		case 3: 
+			{
+				bonus_chance = 0.10f;
+				break;
+			}
+		}
+
+		success_chance = (((float)GetCHA() * 0.0005f) + base_chance + bonus_chance) * 100;
+		buff_in_use->SetDeathSaveChance(success_chance);
+		buff_in_use->SetCasterAARank(caster->GetAA(aaUnfailingDivinity));
+		SetDeathSaveChance(true);
+	}
+	return false;
+}
+
+bool Mob::Handle_SE_SuspendPet(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	if(IsClient())
+		CastToClient()->SuspendMinion();
+	return false;
+}
+
+bool Mob::Handle_SE_TemporaryPets(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	if(caster)
+	{
+		const SPDat_Spell_Struct &spell = spell_to_cast->GetSpell();
+		if((spell.id != 6882) && (spell.id != 6884)) // Chaotic Jester/Steadfast Servant
+		{
+			char pet_name[64];
+			snprintf(pet_name, sizeof(pet_name), "%s`s pet", caster->GetCleanName());
+			caster->TemporaryPets(spell_to_cast, this, pet_name);
+		}
+		else
+			caster->TemporaryPets(spell_to_cast, this, NULL);
+	}
+	return false;
+}
+
+bool Mob::Handle_SE_BalanceHP(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	if(!caster)
+		return false;
+
+	if(!caster->IsClient())
+		return false;
+
+	const SPDat_Spell_Struct &spell = spell_to_cast->GetSpell();
+	Raid *r = entity_list.GetRaidByClient(caster->CastToClient());
+	if(r)
+	{
+		int32 gid = 0xFFFFFFFF;
+		gid = r->GetGroup(caster->GetName());
+		if(gid < 11)
+		{
+			r->BalanceHP(spell.base[effect_id_index], gid);
+			return false;
+		}
+	}
+
+	Group *g = entity_list.GetGroupByClient(caster->CastToClient());
+
+	if(!g)
+		return false;
+
+	g->BalanceHP(spell.base[effect_id_index]);
+		return false;
+}
+
+bool Mob::Handle_SE_DispelDetrimental(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	const SPDat_Spell_Struct &spell = spell_to_cast->GetSpell();
+
+	int max_slots = GetMaxTotalSlots();
+	for(int buffs_i = 0; buffs_i < max_slots; buffs_i++)
+	{
+		if(!buffs[buffs_i])
+		{
+			continue;
+		}
+		
+		if(buffs[buffs_i]->GetRemainingChargesDisease() || 
+			buffs[buffs_i]->GetRemainingChargesPoison() || 
+			buffs[buffs_i]->GetRemainingChargesCurse())
+		{
+			continue;
+		}
+
+		if(buffs[buffs_i]->GetSpell()->IsDetrimentalSpell() && !buffs[buffs_i]->IsPermanentDuration())
+		{
+			BuffFadeBySlot(buffs_i);
+			return false;
+		}
+	}
+
+	return false;
+}
+
+bool Mob::Handle_SE_IllusionCopy(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	const SPDat_Spell_Struct &spell = spell_to_cast->GetSpell();
+	if(caster && caster->GetTarget())
+	{
+		Mob *t = caster->GetTarget();
+		SendIllusionPacket(t->GetRace(), t->GetGender(), t->GetTexture());
+		caster->SendAppearancePacket(AT_Size, t->GetSize());
+		for(int x = 0; x < 7; x++)
+		{
+			caster->SendWearChange(x);
+		}
+	}
+
+	return false;
+}
+
+bool Mob::Handle_SE_MitigateSpellDamage(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	if(!buff_in_use)
+	{
+		return false;
+	}
+
+	const SPDat_Spell_Struct &spell = spell_to_cast->GetSpell();
+	buff_in_use->SetMagicShield(spell.max[effect_id_index]);
+	buff_in_use->SetMagicShieldReduction(spell.base[effect_id_index]);
+	SetHasPartialSpellRune(true);
+	return false;
+}
+
+bool Mob::Handle_SE_MitigateMeleeDamage(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	if(!buff_in_use)
+	{
+		return false;
+	}
+
+	const SPDat_Spell_Struct &spell = spell_to_cast->GetSpell();
+	buff_in_use->SetMeleeShield(spell.max[effect_id_index]);
+	buff_in_use->SetMeleeShieldReduction(spell.base[effect_id_index]);
+	SetHasPartialMeleeRune(true);
+	return false;
+}
+
+bool Mob::Handle_SE_NegateAttacks(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	if(!buff_in_use)
+	{
+		return false;
+	}
+
+	sint32 effect_value = CalcSpellEffectValue(spell_to_cast, effect_id_index, spell_to_cast->GetCasterLevel(), caster, 0);
+	buff_in_use->SetAttacksNegated(effect_value);
+	return false;
+}
+
 
 int Mob::CalcSpellEffectValue(const Spell *spell_to_cast, int effect_id, int caster_level, Mob *caster, int ticsremaining)
 {

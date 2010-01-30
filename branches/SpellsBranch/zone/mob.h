@@ -961,8 +961,12 @@ bool logpos;
 	inline bool IsTrackable() const { return(trackable); }
 	inline bool HasRune() const { return m_hasRune; }
 	inline bool HasSpellRune() const { return m_hasSpellRune; }
+	inline bool HasPartialSpellRune() const { return m_hasPartialSpellRune; }
+	inline bool HasPartialMeleeRune() const { return m_hasPartialMeleeRune; }
 	inline void SetHasRune(bool hasRune) { m_hasRune = hasRune; }
 	inline void SetHasSpellRune(bool hasSpellRune) { m_hasSpellRune = hasSpellRune; }
+	inline void SetHasPartialSpellRune(bool hasRune) { m_hasPartialSpellRune = hasRune; }
+	inline void SetHasPartialMeleeRune(bool hasRune) { m_hasPartialMeleeRune = hasRune; }
 	inline bool HasDeathSaveChance() const { return m_hasDeathSaveChance; }
 	inline void SetDeathSaveChance(bool hasDeathSaveChance) { m_hasDeathSaveChance = hasDeathSaveChance; }
 	bool PassCharismaCheck(Mob* caster, Mob* spellTarget, const Spell *spell_to_cast);
@@ -1231,9 +1235,11 @@ protected:
 
 	EGNode *_egnode;	//the EG node we are in
 
-	bool	m_hasRune;
-	bool	m_hasSpellRune;
-	bool	m_hasDeathSaveChance;
+	bool m_hasRune;
+	bool m_hasSpellRune;
+	bool m_hasDeathSaveChance;
+	bool m_hasPartialSpellRune;
+	bool m_hasPartialMeleeRune;
 	int	flymode;
 
 private:
