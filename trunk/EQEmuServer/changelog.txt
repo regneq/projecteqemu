@@ -1,6 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==01/28/2010==
+gaeorn: added EQEmuLoginServer/EQCryptoAPI.h (contents from a EQEmu forum post by KLS)
+
+==01/28/2010==
 Rabayn: Fixed reference to freed memory in Doors::HandleClick.
 Derision: Anti Kill-Stealing fix.
 
