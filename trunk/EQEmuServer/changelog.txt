@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==01/31/2010==
+Trevius: Exported new BoolNPCSpecAtks() to Perl::Mob.  This can be used to check if an NPC has certain special attacks set.
+
 ==01/30/2010==
 cybernine186: Implemented the #suspend command.
 
