@@ -920,7 +920,14 @@ struct PlayerProfile_Struct //23576 Octets
 /*17604*/ LeadershipAA_Struct leader_abilities; // [128]Leader AA ranks
 /*17732*/ uint8 unknown14772[128];
 /*17860*/ uint32  air_remaining;       // Air supply (seconds)
-/*17864*/ uint8 unknown14904[4608];
+/*17864*/ uint32  PVPKills;
+/*17868*/ uint32  PVPDeaths;
+/*17872*/ uint32  PVPCurrentPoints;
+/*17876*/ uint32  PVPCareerPoints;
+/*17880*/ uint32  PVPBestKillStreak;
+/*17884*/ uint32  PVPWorstDeathStreak;
+/*17888*/ uint32  PVPCurrentKillStreak;
+/*17892*/ uint8 unknown17892[4580];
 /*22472*/ uint32 expAA;               // Exp earned in current AA point
 /*22476*/ uint8 unknown19516[40];
 /*22516*/ uint32 currentRadCrystals;  // Current count of radiant crystals

@@ -980,7 +980,14 @@ struct PlayerProfile_Struct
 /*12796*/	uint32				aapoints_spent;
 /*12800*/	uint32				expAA;
 /*12804*/	uint32				aapoints;	//avaliable, unspent
-/*12808*/	uint8				unknown12808[36];
+/*12808*/	uint32				PVPKills;
+/*12812*/	uint32				PVPDeaths;
+/*12816*/	uint32				PVPCurrentPoints;
+/*12820*/	uint32				PVPCareerPoints;
+/*12824*/	uint32				PVPBestKillStreak;
+/*12828*/	uint32				PVPWorstDeathStreak;
+/*12832*/	uint32				PVPCurrentKillStreak;
+/*12836*/	uint8				unknown12808[8];
 /*12844*/	Bandolier_Struct	bandoliers[MAX_PLAYER_BANDOLIER];
 /*14124*/	uint8				unknown14124[4506];
 /*18630*/	SuspendedMinion_Struct		SuspendedMinion;
@@ -1763,14 +1770,14 @@ struct Merchant_DelItem_Struct{
 /*012*/	uint32	unknown012;
 };
 struct Adventure_Purchase_Struct {
-/*000*/	int32	some_flag;	//set to 1 generally...
+/*000*/	int32	Type;	// 1 = LDoN, 2 = Discord, 4 = Norrath's Keepers, 5 = Dark Reign
 /*000*/	int32	npcid;
 /*004*/	int32	itemid;
 /*008*/	int32	variable;
 };
 
 struct Adventure_Sell_Struct {
-/*000*/	int32	unknown000;	//0x01
+/*000*/	int32   unknown000;	//0x01
 /*004*/	int32	npcid;
 /*008*/	int32	slot;
 /*012*/	int32	charges;
@@ -3725,8 +3732,10 @@ struct Consent_Struct {
 	char name[1];	//always at least a null
 };
 
+enum { LDoNMerchant = 1, DiscordMerchant = 2, NorrathsKeepersMerchant = 4, DarkReignMerchant = 5 };
+
 struct AdventureMerchant_Struct {
-	uint32	unknown_flag;		//seems to be 1
+	uint32	Type;	// 1 = LDoN, 2 = Discord, 4 = Norrath's Keepers, 5 = Dark Reign
 	uint32	entity_id;
 };
 
@@ -4108,6 +4117,14 @@ struct GMSearchCorpse_Struct
 /*000*/	char Unknown000[64];
 /*064*/	char Name[64];
 /*128*/	uint32 Unknown128;
+};
+
+struct CrystalCountUpdate_Struct
+{
+/*000*/	uint32	CurrentRadiantCrystals;
+/*004*/	uint32	CurrentEbonCrystals;
+/*008*/	uint32	CareerRadiantCrystals;
+/*012*/	uint32	CareerEbonCrystals;
 };
 
 //old structures live here:
