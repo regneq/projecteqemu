@@ -389,25 +389,37 @@ bool Mob::SpellEffect(Mob* caster, Spell *spell_to_cast, int action_sequence, fl
 		}
 	}
 
-	if(need_04_packet)
+	if(new_buff)
 	{
-		if(new_buff)
-		{
-			mlog(SPELLS__EFFECT_VALUES, "Packet with 0x04 type needed and there is a buff.  This will cause issues.");
-			SendActionSpellPacket(spell_to_cast, this, action_sequence, caster_level);
-		}
-		else
-		{
-			mlog(SPELLS__EFFECT_VALUES, "Packet with 0x04 type needed and there is no buff.");
-			SendActionSpellPacket(spell_to_cast, this, action_sequence, caster_level, 4);
-		}
+		SendActionSpellPacket(spell_to_cast, this, action_sequence, caster_level, 4);
 	}
 	else
 	{
-		SendActionSpellPacket(spell_to_cast, this, action_sequence, caster_level);
+		if(need_04_packet)
+		{
+			SendActionSpellPacket(spell_to_cast, this, action_sequence, caster_level, 4);
+		}
+		else
+		{
+			SendActionSpellPacket(spell_to_cast, this, action_sequence, caster_level, 0);
+		}
 	}
 
 	SendCombatDamageSpellPacket(spell_to_cast, this, action_sequence);
+	if(new_buff)
+	{
+		if(spell_to_cast->IsEffectInSpell(SE_BindSight))
+		{
+			action_sequence = caster->SendActionSpellPacket(spell_to_cast, caster, caster_level);
+			caster->SendActionSpellPacket(spell_to_cast, this, action_sequence, caster_level, 4);
+			caster->SendCombatDamageSpellPacket(spell_to_cast, this, action_sequence);
+			caster->SendBuffPacket(new_buff, buff_slot, 4, action_sequence);
+		}
+		else
+		{
+			SendBuffPacket(new_buff, buff_slot, 4, action_sequence);
+		}
+	}
 
 	if (summoned_item) 
 	{
@@ -430,12 +442,6 @@ bool Mob::Handle_SE_Blank(const Spell *spell_to_cast, Mob *caster, const uint32 
 
 bool Mob::Handle_SE_BlankWithPacket(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
 {
-	if(buff_in_use)
-	{
-		Message(13, "Illegal Spell Operation: handle spell with a 0x04 Action Packet returned; this"
-			" was called for a spell with a buff. ID: %d", spell_to_cast->GetSpell());
-		return false;
-	}
 	return true;
 }
 

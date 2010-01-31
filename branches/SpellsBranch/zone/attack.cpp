@@ -2789,6 +2789,7 @@ int Mob::GetMonkHandToHandDelay(void)
 //TODO: check this
 sint32 Mob::ReduceDamage(sint32 damage)
 {
+	mlog(SPELLS__EFFECT_VALUES, "Mob::ReduceDamage(%d) called", damage);
 	if(damage < 1)
 	{
 		mlog(SPELLS__EFFECT_VALUES, "Mob::ReduceDamage(%d) called, below 0.", damage);
@@ -2868,8 +2869,8 @@ sint32 Mob::ReduceDamage(sint32 damage)
 			}
 			else
 			{
-				mlog(SPELLS__EFFECT_VALUES, "Mob::ReduceDamage SE_Rune %d damage negated.", 
-					buffs[slot]->GetMeleeShield());
+				mlog(SPELLS__EFFECT_VALUES, "Mob::ReduceDamage SE_Rune %d damage negated. %d damage remaining.", 
+					damage, buffs[slot]->GetMeleeShield() - damage);
 				buffs[slot]->SetMeleeShield(buffs[slot]->GetMeleeShield() - damage);
 				return -6;
 			}

@@ -121,12 +121,7 @@ void Mob::SpellProcess()
 		if(casting_spell->IsCastTimerFinished())
 		{
 			casting_spell->StopCastTimer();
-			//This may seem odd but it's use becomes apparent when you get into spells
-			//That have components that interrupt and are cast on the caster, they 
-			//would free themselves pre-maturely otherwise.
-			casting_spell_finished = casting_spell;
-			casting_spell = NULL;
-			CastedSpellFinished(&casting_spell_finished);
+			CastedSpellFinished(&casting_spell);
 		}
 	}
 
@@ -142,7 +137,6 @@ void Mob::SpellProcess()
 	{
 		if(buff_tic_timer->Check())
 		{
-			printf("buff_tic_timer_check!\n");
 			BuffProcess();
 		}
 	}
@@ -799,9 +793,17 @@ void Mob::CastedSpellFinished(Spell **casted_spell_ptr)
 		}
 	}
 
+	//This casting_spell_finished stuff doesn't seem to make much sense on the
+	//outside but it's extremely important for the proper function of spell 
+	//effects with stuns in them.
+	casting_spell_finished = casting_spell;
+	casting_spell = NULL;
 	if(!SpellFinished(casted_spell))
 	{
 		mlog(SPELLS__CASTING_ERR, "Casting of %d canceled: SpellFinished returned false.", casted_spell->GetSpellID());
+		//The above block disabled interrupts, lets re-enable it for one last one.
+		casting_spell = casting_spell_finished;
+		casting_spell_finished = NULL;
 		InterruptSpell();
 		return;
 	}
@@ -1402,21 +1404,21 @@ bool Mob::SpellFinished(Spell *spell_to_cast)
 	{
 		uint32 recast_time = 0;
 		uint32 recast_timer = 0;
-		if((spell_to_cast->GetSpellSlot() == USE_ITEM_SPELL_SLOT) || (spell_to_cast->GetSpellSlot() == POTION_BELT_SPELL_SLOT))
+		if(spell_to_cast->GetTimerID() > 0)
 		{
-			ItemInst *itm = CastToClient()->GetInv().GetItem(spell_to_cast->GetInventorySpellSlot());
-			if(itm && itm->GetItem()->RecastDelay > 0)
-			{
-				recast_timer = pTimerItemStart + itm->GetItem()->RecastType;
-				recast_time = itm->GetItem()->RecastDelay;
-			}
+			recast_timer = spell_to_cast->GetTimerID();
+			recast_time = spell_to_cast->GetTimerIDDuration();
 		}
 		else
 		{
-			if(spell_to_cast->GetTimerID() > 0)
+			if((spell_to_cast->GetSpellSlot() == USE_ITEM_SPELL_SLOT) || (spell_to_cast->GetSpellSlot() == POTION_BELT_SPELL_SLOT))
 			{
-				recast_timer = spell_to_cast->GetTimerID();
-				recast_time = spell_to_cast->GetTimerIDDuration();
+				ItemInst *itm = CastToClient()->GetInv().GetItem(spell_to_cast->GetInventorySpellSlot());
+				if(itm && itm->GetItem()->RecastDelay > 0)
+				{
+					recast_timer = pTimerItemStart + itm->GetItem()->RecastType;
+					recast_time = itm->GetItem()->RecastDelay;
+				}
 			}
 			else
 			{
@@ -1431,7 +1433,7 @@ bool Mob::SpellFinished(Spell *spell_to_cast)
 			if(spell_to_cast->GetSpellType() == SC_AA)
 			{
 				time_t timestamp = time(NULL);
-				CastToClient()->SendAATimer(recast_timer, timestamp, timestamp);
+				CastToClient()->SendAATimer(recast_timer-pTimerAAStart, timestamp, timestamp);
 			}
 			else if(spell_to_cast->GetSpellType() == SC_DISC)
 			{
@@ -2090,13 +2092,19 @@ Buff *Mob::AddBuff(Mob *caster, Spell *spell_to_cast, sint32 &buff_slot, uint32 
 	}
 	current_buff_count++;
 	buffs[buff_slot] = new Buff(spell_to_cast, duration);
-	SendBuffPacket(buffs[buff_slot], buff_slot, 3);
+	//SendBuffPacket(buffs[buff_slot], buff_slot, 3);
 
 	if(caster && caster->IsClient())
 	{
 		buffs[buff_slot]->SetIsClientBuff(true);
 	}
 
+	if(IsPet() && GetOwner() && GetOwner()->IsClient()) 
+	{
+		SendPetBuffsToClient();
+	}
+
+	CalcBonuses();
 	return buffs[buff_slot];
 }
 
@@ -4141,7 +4149,7 @@ bool Client::DoComponentCheck(Spell *spell_to_cast, bool bard_song_mode)
 	return true;
 }
 
-void Client::SendBuffPacket(Buff *buff, uint32 buff_index, uint32 buff_mode)
+void Client::SendBuffPacket(Buff *buff, uint32 buff_index, uint32 buff_mode, uint32 action)
 {
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_Buff, sizeof(SpellBuffFade_Struct));
 	SpellBuffFade_Struct* sbf = (SpellBuffFade_Struct*) outapp->pBuffer;
@@ -4154,6 +4162,7 @@ void Client::SendBuffPacket(Buff *buff, uint32 buff_index, uint32 buff_mode)
 	sbf->level = buff->GetSpell()->GetCasterLevel();
 	sbf->bufffade = buff_mode; //0x03 = create new buff, 0x01 = buff fade, 0x00 = update current buff
 	sbf->duration = buff->GetDurationRemaining();
+	sbf->unknown016 = action;
 	QueuePacket(outapp);
 
 	if(buff_mode == 1)
@@ -4176,6 +4185,7 @@ Spell::Spell(uint32 spell_id, Mob* caster, Mob* target, uint32 slot, uint32 cast
 	timer_id = -1;
 	timer_id_duration = -1;
 	spell_class_type = SC_NORMAL;
+	spell_slot_inventory = 0xFFFFFFFF;
 
 	const SPDat_Spell_Struct &spell = spells[spell_id];
 	memcpy((void*)&raw_spell, (const void*)&spell, sizeof(SPDat_Spell_Struct));

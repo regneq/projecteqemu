@@ -702,7 +702,7 @@ bool logpos;
 	virtual bool SpellEffect(Mob* caster, Spell *spell_to_cast, int action_sequence, float partial = 100);
 	bool ApplyNextBardPulse(Spell *spell_to_cast);
 	void BardPulse(Spell *spell_to_cast, Mob *caster);
-	virtual void SendBuffPacket(Buff *buff, uint32 buff_index, uint32 buff_mode) { }
+	virtual void SendBuffPacket(Buff *buff, uint32 buff_index, uint32 buff_mode, uint32 action = 0) { }
 	virtual void MakeBuffFadePacket(Buff *buff, int slot_id, bool send_message = true) { }
 	Buff *AddBuff(Mob *caster, Spell *spell_to_cast, sint32 &buff_slot, uint32 duration = 0);
 	void BuffFadeBySpellID(int16 spell_id);

@@ -404,7 +404,7 @@ public:
 	virtual int GetFreeBuffSlot(const Spell *spell_to_cast);
 	virtual void ValidateSpellCastFinish(const Spell *spell_to_cast);
 	virtual bool DoComponentCheck(Spell *spell_to_cast, bool bard_song_mode);
-	virtual void SendBuffPacket(Buff *buff, uint32 buff_index, uint32 buff_mode);
+	virtual void SendBuffPacket(Buff *buff, uint32 buff_index, uint32 buff_mode, uint32 action = 0);
 	virtual void MakeBuffFadePacket(Buff *buff, int slot_id, bool send_message = true);
 
 	inline const sint32	GetBaseHP() const { return base_hp; }
