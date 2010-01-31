@@ -41,6 +41,14 @@ enum SpellAttribute
 	SA_TARGET_TYPE,
 };
 
+enum SpellClass
+{
+	SC_NORMAL = 0,
+	SC_DISC,
+	SC_AA,
+	SC_PROC,
+};
+
 class Spell
 {
 public:
@@ -77,6 +85,9 @@ public:
 
 	void SetTimerIDDuration(uint32 duration) { timer_id_duration = duration; }
 	uint32 GetTimerIDDuration() const { return timer_id_duration; }
+
+	void SetSpellType(SpellClass type) { spell_class_type = type; }
+	SpellClass GetSpellType() const { return spell_class_type; }
 
 	uint32 GetCasterLevel() const { return caster_level; }
 	void SetCasterLevel(uint32 level) { caster_level = level; }
@@ -170,6 +181,7 @@ protected:
 	Timer * cast_timer;
 	uint32 timer_id;
 	uint32 timer_id_duration;
+	SpellClass spell_class_type;
 
 	SPDat_Spell_Struct raw_spell;
 };

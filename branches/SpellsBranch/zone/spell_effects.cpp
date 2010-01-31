@@ -194,7 +194,92 @@ void MapSpellEffects()
 	SpellEffectDispatch[SE_MitigateSpellDamage] = &Mob::Handle_SE_MitigateSpellDamage;
 	SpellEffectDispatch[SE_MitigateMeleeDamage] = &Mob::Handle_SE_MitigateMeleeDamage;
 	SpellEffectDispatch[SE_NegateAttacks] = &Mob::Handle_SE_NegateAttacks;
-	//SpellEffectDispatch[SE_] = &Mob::Handle_SE_;
+	SpellEffectDispatch[SE_AppraiseLDonChest] = &Mob::Handle_SE_AppraiseLDonChest;
+	SpellEffectDispatch[SE_DisarmLDoNTrap] = &Mob::Handle_SE_DisarmLDoNTrap;
+	SpellEffectDispatch[SE_UnlockLDoNChest] = &Mob::Handle_SE_UnlockLDoNChest;
+	SpellEffectDispatch[SE_PetPowerIncrease] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_MeleeMitigation] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_CriticalHitChance] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_SpellCritChance] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_CrippBlowChance] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_AvoidMeleeChance] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_RiposteChance] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_DodgeChance] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_ParryChance] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_DualWeildChance] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_DoubleAttackChance] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_MeleeLifetap] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_AllInstrunmentMod] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_ResistSpellChance] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_ResistFearChance] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_HundredHands] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_MeleeSkillCheck] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_HitChance] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_DamageModifier] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_MinDamageModifier] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_IncreaseBlockChance] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_CurrentEndurance] = &Mob::Handle_SE_CurrentEndurance;
+	SpellEffectDispatch[SE_EndurancePool] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_Amnesia] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_Hate2] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_SkillAttack] = &Mob::Handle_SE_SkillAttack;
+	SpellEffectDispatch[SE_FadingMemories] = &Mob::Handle_SE_FadingMemories;
+	SpellEffectDispatch[SE_StunResist] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_Strikethrough] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_SkillDamageTaken] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_CurrentEnduranceOnce] = &Mob::Handle_SE_CurrentEndurance;
+	SpellEffectDispatch[SE_Taunt] = &Mob::Handle_SE_Taunt;
+	SpellEffectDispatch[SE_ProcChance] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_RangedProc] = &Mob::Handle_SE_RangedProc;
+	SpellEffectDispatch[SE_IllusionOther] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_MassGroupBuff] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_GroupFearImmunity] = &Mob::Handle_SE_GroupFearImmunity;
+	SpellEffectDispatch[SE_Rampage] = &Mob::Handle_SE_Rampage;
+	SpellEffectDispatch[SE_AETaunt] = &Mob::Handle_SE_AETaunt;
+	SpellEffectDispatch[SE_FleshToBone] = &Mob::Handle_SE_FleshToBone;
+	SpellEffectDispatch[SE_FadingMemories2] = &Mob::Handle_SE_FadingMemories;
+	SpellEffectDispatch[SE_PetShield] = NULL; //pretty sure these three are AA effects
+	SpellEffectDispatch[SE_AEMelee] = NULL;
+	SpellEffectDispatch[SE_ProlongedDestruction] = NULL;
+	SpellEffectDispatch[SE_MaxHPChange] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_Accuracy] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_PetCriticalHit] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_SlayUndead] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_SkillDamageAmount] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_Packrat] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_GiveDoubleRiposte] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_GiveDoubleAttack] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_TwoHandBash] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_ReduceSkillTimer] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_PersistantCasting] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_DivineSave] = &Mob::Handle_SE_Blank; //Handle this with bonuses
+	SpellEffectDispatch[SE_ChannelingChance] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_GivePetGroupTarget] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_SetBreathLevel] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_SecondaryForte] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_SecondaryDmgInc] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_Blank] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_PetDiscipline] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_TripleBackstab] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_CombatStability] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_AddInstrumentMod] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_RaiseStatCap] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_TradeSkillMastery] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_HastenedAASkill] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_MasteryofPast] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_ExtraAttackChance] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_PetDiscipline2] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_ReduceTradeskillFail] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_BaseMovementSpeed] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_CastingLevel2] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_CriticalDoTChance] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_CriticalHealChance] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_Ambidexterity] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_FinishingBlow] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_Flurry] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_PetFlurry] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_SpellDamage] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_FocusCombatDurationMod] = &Mob::Handle_SE_Blank;
 }
 
 // the spell can still fail here, if the buff can't stack
@@ -306,13 +391,22 @@ bool Mob::SpellEffect(Mob* caster, Spell *spell_to_cast, int action_sequence, fl
 
 	if(need_04_packet)
 	{
-		Message(0, "need_04_packet called");
-		SendActionSpellPacket(spell_to_cast, this, action_sequence, caster_level, 4);
+		if(new_buff)
+		{
+			mlog(SPELLS__EFFECT_VALUES, "Packet with 0x04 type needed and there is a buff.  This will cause issues.");
+			SendActionSpellPacket(spell_to_cast, this, action_sequence, caster_level);
+		}
+		else
+		{
+			mlog(SPELLS__EFFECT_VALUES, "Packet with 0x04 type needed and there is no buff.");
+			SendActionSpellPacket(spell_to_cast, this, action_sequence, caster_level, 4);
+		}
 	}
 	else
 	{
 		SendActionSpellPacket(spell_to_cast, this, action_sequence, caster_level);
 	}
+
 	SendCombatDamageSpellPacket(spell_to_cast, this, action_sequence);
 
 	if (summoned_item) 
@@ -839,7 +933,7 @@ bool Mob::Handle_SE_Rune(const Spell *spell_to_cast, Mob *caster, const uint32 e
 		}
 		else
 		{
-			//some error
+			mlog(SPELLS__EFFECT_VALUES, "Rune cast with <= 0 effect value.  We can't work with this value");
 		}
 	}
 	return false;
@@ -1008,7 +1102,7 @@ bool Mob::Handle_SE_AbsorbMagicAtt(const Spell *spell_to_cast, Mob *caster, cons
 		}
 		else
 		{
-			//some error
+			mlog(SPELLS__EFFECT_VALUES, "Spell rune cast with <= 0 effect value.  We can't work with this value");
 		}
 	}	
 	return false;
@@ -1069,7 +1163,6 @@ bool Mob::Handle_SE_SummonPC(const Spell *spell_to_cast, Mob *caster, const uint
 		if(IsClient())
 		{
 			CastToClient()->MovePC(zone->GetZoneID(), zone->GetInstanceID(), caster->GetX(), caster->GetY(), caster->GetZ(), caster->GetHeading(), 2, SummonPC);
-			Message(15, "You have been summoned!");
 			entity_list.ClearAggro(this);
 		}
 		else
@@ -1143,7 +1236,6 @@ bool Mob::Handle_SE_Teleport(const Spell *spell_to_cast, Mob *caster, const uint
 
 bool Mob::Handle_SE_TossUp(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
 {
-	//SendKnockBackPacket()
 	const SPDat_Spell_Struct &spell = spell_to_cast->GetSpell();
 	double toss_amt = (double)spell.base[effect_id_index];
 	if(toss_amt < 0)
@@ -1180,18 +1272,18 @@ bool Mob::Handle_SE_TossUp(const Spell *spell_to_cast, Mob *caster, const uint32
 	EQApplicationPacket* outapp_push = new EQApplicationPacket(OP_ClientUpdate, sizeof(PlayerPositionUpdateServer_Struct));
 	PlayerPositionUpdateServer_Struct* spu = (PlayerPositionUpdateServer_Struct*)outapp_push->pBuffer;
 
-	spu->spawn_id	= GetID();
-	spu->x_pos		= FloatToEQ19(GetX());
-	spu->y_pos		= FloatToEQ19(GetY());
-	spu->z_pos		= FloatToEQ19(GetZ());
-	spu->delta_x	= NewFloatToEQ13(new_x);
-	spu->delta_y	= NewFloatToEQ13(new_y);
-	spu->delta_z	= NewFloatToEQ13(toss_amt);
-	spu->heading	= FloatToEQ19(GetHeading());
-	spu->padding0002	=0;
-	spu->padding0006	=7;
-	spu->padding0014	=0x7f;
-	spu->padding0018	=0x5df27;
+	spu->spawn_id = GetID();
+	spu->x_pos = FloatToEQ19(GetX());
+	spu->y_pos = FloatToEQ19(GetY());
+	spu->z_pos = FloatToEQ19(GetZ());
+	spu->delta_x = NewFloatToEQ13(new_x);
+	spu->delta_y = NewFloatToEQ13(new_y);
+	spu->delta_z = NewFloatToEQ13(toss_amt);
+	spu->heading = FloatToEQ19(GetHeading());
+	spu->padding0002 = 0;
+	spu->padding0006 = 7;
+	spu->padding0014 = 0x7f;
+	spu->padding0018 = 0x5df27;
 	spu->animation = 0;
 	spu->delta_heading = NewFloatToEQ13(0);
 	outapp_push->priority = 5;
@@ -1209,9 +1301,14 @@ bool Mob::Handle_SE_WeaponProc(const Spell *spell_to_cast, Mob *caster, const ui
 	uint16 procid = GetProcID(spell_to_cast, effect_id_index);
 
 	if(spell_to_cast->GetSpell().base2[effect_id_index] == 0)
+	{
 		AddProcToWeapon(procid, false, 100);
+	}
 	else
+	{
 		AddProcToWeapon(procid, false, spell_to_cast->GetSpell().base2[effect_id_index] + 100);
+	}
+
 	return false;
 }
 
@@ -1444,7 +1541,7 @@ bool Mob::Handle_SE_SummonItemIntoBag(const Spell *spell_to_cast, Mob *caster, c
 			{
 				charges = spell.formula[effect_id_index];
 			}
-			else	// variable charges
+			else //variable charges
 			{
 				charges = CalcSpellEffectValue_formula(spell.formula[effect_id_index], 0, 20, spell_to_cast->GetCasterLevel(), spell_to_cast);
 			}
@@ -1634,7 +1731,6 @@ bool Mob::Handle_SE_BalanceHP(const Spell *spell_to_cast, Mob *caster, const uin
 bool Mob::Handle_SE_DispelDetrimental(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
 {
 	const SPDat_Spell_Struct &spell = spell_to_cast->GetSpell();
-
 	int max_slots = GetMaxTotalSlots();
 	for(int buffs_i = 0; buffs_i < max_slots; buffs_i++)
 	{
@@ -1717,6 +1813,313 @@ bool Mob::Handle_SE_NegateAttacks(const Spell *spell_to_cast, Mob *caster, const
 	return false;
 }
 
+bool Mob::Handle_SE_AppraiseLDonChest(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	if(IsNPC())
+	{
+		const SPDat_Spell_Struct &spell = spell_to_cast->GetSpell();
+		int check = spell.max[0];
+		int target = spell.targettype;
+		if(target == ST_LDoNChest_Cursed)
+		{
+			if(caster && caster->IsClient())
+			{
+				caster->CastToClient()->HandleLDoNSenseTraps(CastToNPC(), check, LDoNTypeCursed);
+			}
+		}
+		else if(target == ST_Target)
+		{
+			if(caster && caster->IsClient())
+			{
+				caster->CastToClient()->HandleLDoNSenseTraps(CastToNPC(), check, LDoNTypeMagical);
+			}
+		}
+	}
+	return false;
+}
+
+bool Mob::Handle_SE_DisarmLDoNTrap(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	if(IsNPC())
+	{
+		const SPDat_Spell_Struct &spell = spell_to_cast->GetSpell();
+		int check = spell.max[0];
+		int target = spell.targettype;
+		if(target == ST_LDoNChest_Cursed)
+		{
+			if(caster && caster->IsClient())
+			{
+				caster->CastToClient()->HandleLDoNDisarm(CastToNPC(), check, LDoNTypeCursed);
+			}
+		}
+		else if(target == ST_Target)
+		{
+			if(caster && caster->IsClient())
+			{
+				caster->CastToClient()->HandleLDoNDisarm(CastToNPC(), check, LDoNTypeMagical);
+			}
+		}
+	}	
+	return false;
+}
+
+bool Mob::Handle_SE_UnlockLDoNChest(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	if(IsNPC())
+	{
+		const SPDat_Spell_Struct &spell = spell_to_cast->GetSpell();
+		int check = spell.max[0];
+		int target = spell.targettype;
+		if(target == ST_LDoNChest_Cursed)
+		{
+			if(caster && caster->IsClient())
+			{
+				caster->CastToClient()->HandleLDoNPickLock(CastToNPC(), check, LDoNTypeCursed);
+			}
+		}
+		else if(target == ST_Target)
+		{
+			if(caster && caster->IsClient())
+			{
+				caster->CastToClient()->HandleLDoNPickLock(CastToNPC(), check, LDoNTypeMagical);
+			}
+		}
+	}	
+	return false;
+}
+
+bool Mob::Handle_SE_CurrentEndurance(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	sint32 effect_value = CalcSpellEffectValue(spell_to_cast, effect_id_index, spell_to_cast->GetCasterLevel(), caster, 0);
+	if(IsClient()) 
+	{
+		CastToClient()->SetEndurance(CastToClient()->GetEndurance() + effect_value);
+	}
+	return false;
+}
+
+bool Mob::Handle_SE_SkillAttack(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	sint32 effect_value = CalcSpellEffectValue(spell_to_cast, effect_id_index, spell_to_cast->GetCasterLevel(), caster, 0);
+	const SPDat_Spell_Struct &spell = spell_to_cast->GetSpell();
+	const ItemInst* itm = NULL;
+	sint32 t_dmg = 0; //total damage done
+	int m_dmg = 1; //min damage done
+	
+	/* for this, spells[spell_id].base2[i] is the damage for the attack "weapon damage" */
+				
+	//if we are a client, do stuff involving clients attacks
+	if(caster->IsClient())
+	{
+		//which skill are we using, get the damage based on that skill
+		switch(spell.skill)
+		{
+		case THROWING:
+			caster->CastToClient()->GetThrownDamage(spell.base[effect_id_index], t_dmg, m_dmg);
+			break;
+		case ARCHERY:
+			itm = caster->CastToClient()->GetInv().GetItem(SLOT_RANGE);
+			if(itm)
+			{
+				t_dmg = effect_value + itm->GetItem()->Damage * 2 + (itm->GetItem()->Damage * 
+				(GetSkill(spell.skill) + spell.base[effect_id_index] + GetDEX()) / 225);
+			}
+			break;
+		case BASH:
+			itm = caster->CastToClient()->GetInv().GetItem(SLOT_SECONDARY);
+			if(itm)
+				t_dmg = effect_value + ((itm->GetItem()->AC / 4) + 1) * 2 + (((itm->GetItem()->AC / 4) + 1) 
+				* (GetSkill(spell.skill) + GetSTR()) / 225);
+			break;
+		case KICK:
+		case FLYING_KICK:
+		case ROUND_KICK:
+			itm = caster->CastToClient()->GetInv().GetItem(SLOT_FEET);
+			if(itm)
+				t_dmg = effect_value + ((itm->GetItem()->AC / 2) + 1) * 2 + (((itm->GetItem()->AC / 2) + 1) *
+				(GetSkill(spell.skill) + GetSTR()) / 225);
+			break;
+		case HAND_TO_HAND:
+		case EAGLE_STRIKE:
+		case TIGER_CLAW:
+			itm = caster->CastToClient()->GetInv().GetItem(SLOT_HANDS);
+			if(itm)
+				t_dmg = effect_value + ((itm->GetItem()->AC / 2) + 1) + (((itm->GetItem()->AC / 2) + 1) * 
+				(GetSkill(spell.skill) + GetSTR()) / 225);
+			break;
+		default:
+			itm = caster->CastToClient()->GetInv().GetItem(SLOT_PRIMARY);
+			if(itm)
+				t_dmg = effect_value + itm->GetItem()->Damage * 2 + (itm->GetItem()->Damage * 
+				(GetSkill(spell.skill) + GetSTR()) / 225);
+			break;
+		}
+
+	}
+
+	if(t_dmg == 0)
+		t_dmg = effect_value;
+				
+	//these are considered magical attacks, so we don't need to test that
+	//if they are resistable that's been taken care of, all these discs have a 10000 hit chance so they auto hit, no need to test
+	if(RuleB(Combat, UseIntervalAC))
+		caster->DoSpecialAttackDamage(this, spell.skill, t_dmg, m_dmg);
+	else
+		caster->DoSpecialAttackDamage(this, spell.skill, MakeRandomInt(1, t_dmg), m_dmg);
+	
+	return false;
+}
+
+bool Mob::Handle_SE_FadingMemories(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	const SPDat_Spell_Struct &spell = spell_to_cast->GetSpell();
+
+	if(caster && caster->IsClient())
+	{
+		if(caster->GetClass() == BARD && caster->GetMana() < spell.mana)
+		{
+			caster->Message(13, "Insufficient Mana to use this effect.");
+			return false;
+		}
+	}
+
+	entity_list.RemoveFromTargets(caster);
+	return false;
+}
+
+bool Mob::Handle_SE_Taunt(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	if(IsAIControlled() && caster)
+	{
+		sint32 effect_value = CalcSpellEffectValue(spell_to_cast, effect_id_index, spell_to_cast->GetCasterLevel(), caster, 0);
+		if(MakeRandomInt(0, 99) < effect_value)
+		{
+			Mob* hate_top = GetHateMost();
+			if(hate_top != caster)
+			{
+				sint32 new_hate = hate_list.GetEntHate(hate_top) - hate_list.GetEntHate(caster) + 
+					(MakeRandomInt(5, 10) * caster->GetLevel());
+				AddToHateList(caster, new_hate);
+			}
+		}
+	}
+	return false;
+}
+
+bool Mob::Handle_SE_RangedProc(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	const SPDat_Spell_Struct &spell = spell_to_cast->GetSpell();
+	uint16 proc_id = GetProcID(spell_to_cast, effect_id_index);
+	AddRangedProc(proc_id, spell.base2[effect_id_index]);
+	return false;
+}
+
+bool Mob::Handle_SE_GroupFearImmunity(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	const SPDat_Spell_Struct &spell = spell_to_cast->GetSpell();
+	if(IsClient())
+	{
+		Group *g = GetGroup();
+		Raid *r = GetRaid();
+		uint32 time = spell.base[effect_id_index] * 10;
+		if(g)
+		{
+			for(int gi = 0; gi < 6; gi++)
+			{
+				if(g->members[gi] && g->members[gi]->IsClient())
+				{
+					g->members[gi]->CastToClient()->EnableAAEffect(aaEffectWarcry, time);
+				}
+			}
+		}
+		else if(r)
+		{
+			uint32 raid_group = r->GetGroup(GetName());
+			if(raid_group = 0xFFFFFFFF)
+			{
+				CastToClient()->EnableAAEffect(aaEffectWarcry, time);
+			}
+			else
+			{
+				for(int ri = 0; ri < 72; ri++)
+				{
+					if(r->members[ri].member)
+					{
+						if(r->members[ri].GroupNumber == raid_group)
+						{
+							r->members[ri].member->EnableAAEffect(aaEffectWarcry, time);
+						}
+					}
+				}
+			}
+		}
+		else
+		{
+			CastToClient()->EnableAAEffect(aaEffectWarcry, time);
+		}
+	}
+
+	return false;
+}
+
+bool Mob::Handle_SE_Rampage(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	entity_list.AEAttack(caster, 30);
+	return false;
+}
+
+bool Mob::Handle_SE_AETaunt(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	if(caster)
+		entity_list.AETaunt(caster);
+
+	return false;
+}
+
+bool Mob::Handle_SE_FleshToBone(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	sint32 effect_value = CalcSpellEffectValue(spell_to_cast, effect_id_index, spell_to_cast->GetCasterLevel(), caster, 0);
+	const SPDat_Spell_Struct &spell = spell_to_cast->GetSpell();
+
+	if(IsClient())
+	{
+		ItemInst* trans_item = CastToClient()->GetInv().GetItem(SLOT_CURSOR);
+		if(trans_item && trans_item->IsType(ItemClassCommon) && trans_item->IsStackable())
+		{
+			uint32 f_charges = trans_item->GetCharges();
+			//Does it sound like meat... maybe should check if it looks like meat too...
+			if(strstr(trans_item->GetItem()->Name, "meat") ||
+				strstr(trans_item->GetItem()->Name, "Meat") ||
+				strstr(trans_item->GetItem()->Name, "flesh") ||
+				strstr(trans_item->GetItem()->Name, "Flesh") ||
+				strstr(trans_item->GetItem()->Name, "parts") ||
+				strstr(trans_item->GetItem()->Name, "Parts"))
+			{
+				CastToClient()->DeleteItemInInventory(SLOT_CURSOR, f_charges, true);
+				CastToClient()->SummonItem(13073, f_charges);
+			}
+			else
+			{
+				Message(13, "You can only transmute flesh to bone.");
+			}
+		}
+		else
+		{
+			Message(13, "You can only transmute flesh to bone.");
+		}
+	}
+
+	return false;
+}
+
+/*
+bool Mob::Handle_(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	sint32 effect_value = CalcSpellEffectValue(spell_to_cast, effect_id_index, spell_to_cast->GetCasterLevel(), caster, 0);
+	const SPDat_Spell_Struct &spell = spell_to_cast->GetSpell();
+	return false;
+}
+*/
 
 int Mob::CalcSpellEffectValue(const Spell *spell_to_cast, int effect_id, int caster_level, Mob *caster, int ticsremaining)
 {

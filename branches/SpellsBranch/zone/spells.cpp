@@ -1428,6 +1428,23 @@ bool Mob::SpellFinished(Spell *spell_to_cast)
 		if(recast_time > 0)
 		{
 			CastToClient()->GetPTimers().Start(recast_timer, recast_time);
+			if(spell_to_cast->GetSpellType() == SC_AA)
+			{
+				time_t timestamp = time(NULL);
+				CastToClient()->SendAATimer(recast_timer, timestamp, timestamp);
+			}
+			else if(spell_to_cast->GetSpellType() == SC_DISC)
+			{
+				if(spell_to_cast->GetSpell().EndurTimerIndex < MAX_DISCIPLINE_TIMERS)
+				{
+					EQApplicationPacket *disc_packet = new EQApplicationPacket(OP_DisciplineTimer, sizeof(DisciplineTimer_Struct));
+					DisciplineTimer_Struct *dts = (DisciplineTimer_Struct *)disc_packet->pBuffer;
+					dts->TimerID = spell_to_cast->GetSpell().EndurTimerIndex;
+					dts->Duration = spell_to_cast->GetSpell().recast_time / 1000;
+					CastToClient()->QueuePacket(disc_packet);
+					safe_delete(disc_packet);
+				}
+			}
 		}
 	}
 
@@ -4158,6 +4175,7 @@ Spell::Spell(uint32 spell_id, Mob* caster, Mob* target, uint32 slot, uint32 cast
 	cast_timer = NULL;
 	timer_id = -1;
 	timer_id_duration = -1;
+	spell_class_type = SC_NORMAL;
 
 	const SPDat_Spell_Struct &spell = spells[spell_id];
 	memcpy((void*)&raw_spell, (const void*)&spell, sizeof(SPDat_Spell_Struct));
@@ -4167,6 +4185,7 @@ Spell::Spell(uint32 spell_id, Mob* caster, Mob* target, uint32 slot, uint32 cast
 Spell::Spell()
 {
 	cast_timer = NULL;
+	spell_class_type = SC_NORMAL;
 }
 
 Spell::~Spell()
@@ -4235,6 +4254,7 @@ Spell* Spell::CopySpell()
 	return_value->mana_cost = this->mana_cost;
 	return_value->timer_id = this->timer_id;
 	return_value->timer_id_duration = this->timer_id_duration;
+	return_value->spell_class_type = this->spell_class_type;
 	if(this->cast_timer)
 	{
 		return_value->cast_timer = new Timer(this->cast_timer->GetRemainingTime());

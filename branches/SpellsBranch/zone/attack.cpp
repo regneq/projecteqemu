@@ -2791,6 +2791,7 @@ sint32 Mob::ReduceDamage(sint32 damage)
 {
 	if(damage < 1)
 	{
+		mlog(SPELLS__EFFECT_VALUES, "Mob::ReduceDamage(%d) called, below 0.", damage);
 		return damage;
 	}
 
@@ -2799,11 +2800,15 @@ sint32 Mob::ReduceDamage(sint32 damage)
 	{
 		if(buffs[negate_slot]->GetAttacksNegated() <= 1)
 		{
+			mlog(SPELLS__EFFECT_VALUES, "Mob::ReduceDamage SE_NegateAttacks %d attacks remaining, fading buff.", 
+				buffs[negate_slot]->GetAttacksNegated() - 1);
 			BuffFadeBySlot(negate_slot);
 			return -6;
 		}
 		else
 		{
+			mlog(SPELLS__EFFECT_VALUES, "Mob::ReduceDamage SE_NegateAttacks %d attacks remaining.", 
+				buffs[negate_slot]->GetAttacksNegated() - 1);
 			buffs[negate_slot]->SetAttacksNegated(buffs[negate_slot]->GetAttacksNegated() - 1);
 			return -6;
 		}
@@ -2817,6 +2822,8 @@ sint32 Mob::ReduceDamage(sint32 damage)
 			int damage_to_reduce = damage * buffs[slot]->GetMeleeShieldReduction() / 100;
 			if(damage_to_reduce >= buffs[slot]->GetMeleeShield())
 			{
+				mlog(SPELLS__EFFECT_VALUES, "Mob::ReduceDamage SE_MitigateMeleeDamage %d damage negated, %d"
+					" damage remaining, fading buff.", damage_to_reduce, buffs[slot]->GetMeleeShield());
 				damage -= damage_to_reduce;
 				BuffFadeBySlot(slot);
 
@@ -2828,6 +2835,8 @@ sint32 Mob::ReduceDamage(sint32 damage)
 			}
 			else
 			{
+				mlog(SPELLS__EFFECT_VALUES, "Mob::ReduceDamage SE_MitigateMeleeDamage %d damage negated, %d"
+					" damage remaining.", damage_to_reduce, buffs[slot]->GetMeleeShield());
 				buffs[slot]->SetMeleeShield(buffs[slot]->GetMeleeShield() - damage_to_reduce);
 				damage -= damage_to_reduce;
 			}
@@ -2846,6 +2855,8 @@ sint32 Mob::ReduceDamage(sint32 damage)
 		{
 			if(buffs[slot]->GetMeleeShield() <= damage)
 			{
+				mlog(SPELLS__EFFECT_VALUES, "Mob::ReduceDamage SE_Rune %d damage negated, fading buff.", 
+					buffs[slot]->GetMeleeShield());
 				damage -= buffs[slot]->GetMeleeShield();
 				BuffFadeBySlot(slot);
 
@@ -2857,6 +2868,8 @@ sint32 Mob::ReduceDamage(sint32 damage)
 			}
 			else
 			{
+				mlog(SPELLS__EFFECT_VALUES, "Mob::ReduceDamage SE_Rune %d damage negated.", 
+					buffs[slot]->GetMeleeShield());
 				buffs[slot]->SetMeleeShield(buffs[slot]->GetMeleeShield() - damage);
 				return -6;
 			}
@@ -2869,6 +2882,7 @@ sint32 Mob::ReduceMagicalDamage(sint32 damage)
 {
 	if(damage < 1)
 	{
+		mlog(SPELLS__EFFECT_VALUES, "Mob::ReduceMagicalDamage(%d) called, below 0.", damage);
 		return damage;
 	}
 
@@ -2877,11 +2891,15 @@ sint32 Mob::ReduceMagicalDamage(sint32 damage)
 	{
 		if(buffs[negate_slot]->GetAttacksNegated() <= 1)
 		{
+			mlog(SPELLS__EFFECT_VALUES, "Mob::ReduceMagicalDamage SE_NegateAttacks %d attacks remaining, fading buff.", 
+				buffs[negate_slot]->GetAttacksNegated() - 1);
 			BuffFadeBySlot(negate_slot);
 			return -6;
 		}
 		else
 		{
+			mlog(SPELLS__EFFECT_VALUES, "Mob::ReduceMagicalDamage SE_NegateAttacks %d attacks remaining.", 
+				buffs[negate_slot]->GetAttacksNegated() - 1);
 			buffs[negate_slot]->SetAttacksNegated(buffs[negate_slot]->GetAttacksNegated() - 1);
 			return -6;
 		}
@@ -2895,6 +2913,8 @@ sint32 Mob::ReduceMagicalDamage(sint32 damage)
 			int damage_to_reduce = damage * buffs[slot]->GetMagicShieldReduction() / 100;
 			if(damage_to_reduce >= buffs[slot]->GetMagicShield())
 			{
+				mlog(SPELLS__EFFECT_VALUES, "Mob::ReduceMagicalDamage SE_MitigateMagicDamage %d damage negated, %d"
+					" damage remaining, fading buff.", damage_to_reduce, buffs[slot]->GetMagicShield());
 				damage -= damage_to_reduce;
 				BuffFadeBySlot(slot);
 
@@ -2906,6 +2926,8 @@ sint32 Mob::ReduceMagicalDamage(sint32 damage)
 			}
 			else
 			{
+				mlog(SPELLS__EFFECT_VALUES, "Mob::ReduceMagicalDamage SE_MitigateMagicDamage %d damage negated, %d"
+					" damage remaining.", damage_to_reduce, buffs[slot]->GetMagicShield());
 				buffs[slot]->SetMagicShield(buffs[slot]->GetMagicShield() - damage_to_reduce);
 				damage -= damage_to_reduce;
 			}
@@ -2924,6 +2946,8 @@ sint32 Mob::ReduceMagicalDamage(sint32 damage)
 		{
 			if(buffs[slot]->GetMagicShield() <= damage)
 			{
+				mlog(SPELLS__EFFECT_VALUES, "Mob::ReduceMagicalDamage SE_AbsorbMagicAtt %d damage negated, fading buff.", 
+					buffs[slot]->GetMagicShield());
 				damage -= buffs[slot]->GetMagicShield();
 				BuffFadeBySlot(slot);
 
@@ -2935,6 +2959,8 @@ sint32 Mob::ReduceMagicalDamage(sint32 damage)
 			}
 			else
 			{
+				mlog(SPELLS__EFFECT_VALUES, "Mob::ReduceMagicalDamage SE_AbsorbMagicAtt %d damage negated.", 
+					buffs[slot]->GetMagicShield());
 				buffs[slot]->SetMagicShield(buffs[slot]->GetMagicShield() - damage);
 				return -6;
 			}
@@ -3448,10 +3474,12 @@ void Mob::TryDefensiveProc(Mob *on) {
 	// iterate through our defensive procs and try each of them
 	for (int i = 0; i < MAX_PROCS; i++) {
 		if (DefensiveProcs[i].spellID != SPELL_UNKNOWN &&
-			IsValidSpell(DefensiveProcs[i].spellID)) {
-				if (MakeRandomInt(0, 100) < MakeRandomInt(0, 20)) {
-					ExecWeaponProc(DefensiveProcs[i].spellID, on);
-				}
+			IsValidSpell(DefensiveProcs[i].spellID)) 
+		{
+			if (MakeRandomInt(0, 100) < MakeRandomInt(0, 20)) 
+			{
+				ExecWeaponProc(DefensiveProcs[i].spellID, on);
+			}
 		}
 	}
 

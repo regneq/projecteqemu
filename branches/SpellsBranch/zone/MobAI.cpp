@@ -661,7 +661,7 @@ void Client::AI_SpellCast()
 					SendPosition();
 					SetMoving(false);
 				}
-				//CastSpell(spell_to_cast, tar->GetID(), slot_to_use);
+				CastSpell(spell_to_cast, tar->GetID(), slot_to_use);
 				return;
 			}
 		}
@@ -677,7 +677,7 @@ void Client::AI_SpellCast()
 				SendPosition();
 				SetMoving(false);
 			}
-			//CastSpell(spell_to_cast, tar->GetID(), slot_to_use);
+			CastSpell(spell_to_cast, tar->GetID(), slot_to_use);
 			return;
 		}
 	}

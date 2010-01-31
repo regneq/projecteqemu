@@ -267,7 +267,7 @@ public:
 	void    QueueManaged(Mob* sender, const EQApplicationPacket* app, bool ignore_sender=false, bool ackreq = true);
 
 	void	AEAttack(Mob *attacker, float dist, int Hand = 13, int count = 0);
-	void	AETaunt(Client *caster, float range = 0);
+	void	AETaunt(Mob *caster, float range = 0);
 	void	AESpell(Mob *caster, Mob *center, Spell *spell_to_cast, bool affect_caster = true);
 	void	AEBardPulse(Mob *caster, Mob *center, Spell *spell_to_cast, bool affect_caster = true);
 	

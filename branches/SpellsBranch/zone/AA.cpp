@@ -220,36 +220,40 @@ void Client::ActivateAA(aaID activate){
 	
 	//everything should be configured out now
 	
-	int16 target_id = 0;
+	Mob *aa_target = NULL;
 	
 	//figure out our target
-	switch(caa->target) {
+	switch(caa->target) 
+	{
 		case aaTargetUser:
-			target_id = GetID();
+			aa_target = this;
 			break;
 		case aaTargetCurrent:
-			if(GetTarget() == NULL) {
+			if(GetTarget() == NULL) 
+			{
 				Message_StringID(0, AA_NO_TARGET);	//You must first select a target for this ability!
 				return;
 			}
-			target_id = GetTarget()->GetID();
+			aa_target = GetTarget();
 			break;
 		case aaTargetGroup:
-			target_id = GetID();
+			aa_target = this;
 			break;
 		case aaTargetCurrentGroup:
-			if(GetTarget() == NULL) {
+			if(GetTarget() == NULL) 
+			{
 				Message_StringID(0, AA_NO_TARGET);	//You must first select a target for this ability!
 				return;
 			}
-			target_id = GetTarget()->GetID();
+			aa_target = GetTarget();
 			break;
 		case aaTargetPet:
-			if(GetPet() == NULL) {
+			if(GetPet() == NULL) 
+			{
 				Message(0, "A pet is required for this skill.");
 				return;
 			}
-			target_id = GetPetID();
+			aa_target = GetPet();
 			break;
 	}
 	
@@ -266,28 +270,27 @@ void Client::ActivateAA(aaID activate){
 	}
 	
 	//cast the spell, if we have one
-	if(caa->spell_id > 0 && caa->spell_id < SPDAT_RECORDS) {
-		//I dont know when we need to mem and when we do not, if ever...
-		//MemorizeSpell(8, spell_id, 3);
-		//if(!CastSpell(caa->spell_id, target_id))
-			return;
-	}
-	
-	//set our re-use timer.
-	if(caa->reuse_time > 0) {
+	if(caa->spell_id > 0 && caa->spell_id < SPDAT_RECORDS) 
+	{
+		Spell *aa_spell = new Spell(caa->spell_id, aa_target, aa_target);
+		aa_spell->SetSpellType(SC_AA);
 
-		int32 timer_base = CalcAAReuseTimer(caa);
-
-		if(activate == aaImprovedHarmTouch || activate == aaLeechTouch)
-			p_timers.Start(pTimerHarmTouch, HarmTouchReuseTime);	
-		
-		//start the usage timer
-		p_timers.Start(AATimerID + pTimerAAStart, timer_base);
-		
-		//notify the client
-		//I do not know why we do not put the proper end time in here:
-		time_t timestamp = time(NULL);
-		SendAATimer(AATimerID, timestamp, timestamp);
+		//set our re-use timer.
+		if(caa->reuse_time > 0) 
+		{
+			if(activate == aaImprovedHarmTouch || activate == aaLeechTouch)
+			{
+				aa_spell->SetTimerIDDuration(HarmTouchReuseTime);
+				aa_spell->SetTimerID(pTimerHarmTouch);
+			}
+			else
+			{
+				uint32 timer_base = CalcAAReuseTimer(caa);
+				aa_spell->SetTimerIDDuration(timer_base);
+				aa_spell->SetTimerID(AATimerID + pTimerAAStart);
+			}
+		}
+		CastSpell(&aa_spell);
 	}
 }
 
@@ -501,10 +504,9 @@ void Client::HandleAAAction(aaID activate) {
 	}
 	
 	//cast the spell, if we have one
-	if(spell_id > 0 && spell_id < SPDAT_RECORDS) {
-		//I dont know when we need to mem and when we do not, if ever...
-		//MemorizeSpell(8, spell_id, 3);
-		//CastSpell(spell_id, target_id);
+	if(spell_id > 0 && spell_id < SPDAT_RECORDS) 
+	{
+		CastSpell(spell_id, target_id);
 	}
 	
 	//handle the duration timer if we have one.   

@@ -644,28 +644,27 @@ bool Client::UseDiscipline(int32 spell_id, int32 target) {
 		return(false);
 	}
 	
-	//CastSpell(spell_id, target, DISCIPLINE_SPELL_SLOT);
+	Mob *mob_target = entity_list.GetMobID(target);
+	Spell *disc_spell = new Spell(spell_id, this, mob_target);
+	disc_spell->SetSpellType(SC_DISC);
+	disc_spell->SetSpellSlot(DISCIPLINE_SPELL_SLOT);
 
 	if(spell.recast_time > 0)
 	{
-		p_timers.Start(DiscTimer, spell.recast_time / 1000);
-		if(spells[spell_id].EndurTimerIndex < MAX_DISCIPLINE_TIMERS)
-		{
-			EQApplicationPacket *outapp = new EQApplicationPacket(OP_DisciplineTimer, sizeof(DisciplineTimer_Struct));
-			DisciplineTimer_Struct *dts = (DisciplineTimer_Struct *)outapp->pBuffer;
-			dts->TimerID = spells[spell_id].EndurTimerIndex;
-			dts->Duration = spell.recast_time / 1000;
-			QueuePacket(outapp);
-			safe_delete(outapp);
-		}	
+		disc_spell->SetTimerID(DiscTimer);
+		disc_spell->SetTimerIDDuration(spell.recast_time / 1000);
 	}
+
+	CastSpell(&disc_spell);
 	return(true);
 }
 
-void EntityList::AETaunt(Client* taunter, float range) {
+void EntityList::AETaunt(Mob* taunter, float range) 
+{
 	LinkedListIterator<NPC*> iterator(npc_list);
 	
-	if(range == 0) {
+	if(range == 0) 
+	{
 		range = 100;		//arbitrary default...
 	}
 	
@@ -680,9 +679,11 @@ void EntityList::AETaunt(Client* taunter, float range) {
 			zdiff *= -1;
 		if (zdiff < 10
 			&& taunter->IsAttackAllowed(them)
-			&& taunter->DistNoRootNoZ(*them) <= range) {
+			&& taunter->DistNoRootNoZ(*them) <= range) 
+		{
 			
-			if (taunter->CheckLosFN(them)) {
+			if (taunter->CheckLosFN(them)) 
+			{
 				taunter->Taunt(them, true);
 			}
 		}

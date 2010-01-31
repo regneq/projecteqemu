@@ -360,7 +360,7 @@ typedef enum  {
 #define SE_PersistantCasting		229 //aa effect
 //#define SE_Unknown230				230	//not used
 //#define SE_Unknown231				231	//not used
-#define SE_DivineSave				232	//not implemented (base == % chance on death to insta-res)
+#define SE_DivineSave				232	//not implemented (base == % chance on death to become invulnerable instead of dying, sorta like death pact with invul instead of heal)
 //#define SE_Unknown233				233	//not used
 //#define SE_Unknown234				234	//not used
 #define	SE_ChannelingChance			235 //Appears to only be used in AAs
