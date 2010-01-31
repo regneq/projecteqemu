@@ -375,7 +375,14 @@ ENCODE(OP_PlayerProfile) {
 	OUT_array(leader_abilities.ranks, structs::MAX_LEADERSHIP_AA_ARRAY);
 //	OUT(unknown14772[128]);
 	OUT(air_remaining);
-//	OUT(unknown14904[4608]);
+	OUT(PVPKills);
+	OUT(PVPDeaths);
+	OUT(PVPCurrentPoints);
+	OUT(PVPCareerPoints);
+	OUT(PVPBestKillStreak);
+	OUT(PVPWorstDeathStreak);
+	OUT(PVPCurrentKillStreak);
+//	OUT(unknown14932[4580]);
 	OUT(expAA);
 //	OUT(unknown19516[40]);
 	OUT(currentRadCrystals);

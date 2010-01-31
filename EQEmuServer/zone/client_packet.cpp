@@ -1930,7 +1930,6 @@ void Client::Handle_OP_AdventureMerchantRequest(const EQApplicationPacket *app)
 		LogFile->write(EQEMuLog::Error, "OP size error: OP_AdventureMerchantRequest expected:%i got:%i", sizeof(AdventureMerchant_Struct), app->size);
 		return;
 	}
-
 	std::stringstream ss(std::stringstream::in | std::stringstream::out);
 
 	int8 count = 0;
@@ -1938,7 +1937,8 @@ void Client::Handle_OP_AdventureMerchantRequest(const EQApplicationPacket *app)
 	int32 merchantid = 0;
 
 	Mob* tmp = entity_list.GetMob(eid->entity_id);
-	if (tmp == 0 || !tmp->IsNPC() || tmp->GetClass() != ADVENTUREMERCHANT)
+	if (tmp == 0 || !tmp->IsNPC() || ((tmp->GetClass() != ADVENTUREMERCHANT) &&
+	   (tmp->GetClass() != DISCORD_MERCHANT) && (tmp->GetClass() != NORRATHS_KEEPERS_MERCHANT) && (tmp->GetClass() != DARK_REIGN_MERCHANT)))
 		return;
 
 	//you have to be somewhat close to them to be properly using them
@@ -2023,7 +2023,8 @@ void Client::Handle_OP_AdventureMerchantPurchase(const EQApplicationPacket *app)
 */
 	int32 merchantid = 0;
 	Mob* tmp = entity_list.GetMob(aps->npcid);
-	if (tmp == 0 || !tmp->IsNPC() || tmp->GetClass() != ADVENTUREMERCHANT)
+	if (tmp == 0 || !tmp->IsNPC() || ((tmp->GetClass() != ADVENTUREMERCHANT) &&
+	   (tmp->GetClass() != DISCORD_MERCHANT) && (tmp->GetClass() != NORRATHS_KEEPERS_MERCHANT) && (tmp->GetClass() != DARK_REIGN_MERCHANT)))
 		return;
 
 	//you have to be somewhat close to them to be properly using them
@@ -2051,55 +2052,88 @@ void Client::Handle_OP_AdventureMerchantPurchase(const EQApplicationPacket *app)
 		Message(13, "Error: The item you purchased does not exist!");
 		return;
 	}
+	
+	if(aps->Type == LDoNMerchant)
+	{
+		if(m_pp.ldon_points_available < sint32(item->LDoNPrice)) {
+			Message(13, "You cannot afford that item.");
+			return;
+		}
 
-	if(m_pp.ldon_points_available < sint32(item->LDoNPrice)) {
-		Message(13, "You cannot afford that item.");
+		if(item->LDoNTheme <= 16)
+		{
+			if(item->LDoNTheme & 16)
+			{
+				if(m_pp.ldon_points_tak < sint32(item->LDoNPrice))
+				{
+					Message(13, "You need at least %u points in tak to purchase this item.", sint32(item->LDoNPrice));
+					return;
+				}
+			}
+			else if(item->LDoNTheme & 8)
+			{
+				if(m_pp.ldon_points_ruj < sint32(item->LDoNPrice))
+				{
+					Message(13, "You need at least %u points in ruj to purchase this item.", sint32(item->LDoNPrice));
+					return;
+				}
+			}
+			else if(item->LDoNTheme & 4)
+			{
+				if(m_pp.ldon_points_mmc < sint32(item->LDoNPrice))
+				{
+					Message(13, "You need at least %u points in mmc to purchase this item.", sint32(item->LDoNPrice));
+					return;
+				}
+			}
+			else if(item->LDoNTheme & 2)
+			{
+				if(m_pp.ldon_points_mir < sint32(item->LDoNPrice))
+				{
+					Message(13, "You need at least %u points in mir to purchase this item.", sint32(item->LDoNPrice));
+					return;
+				}
+			}
+			else if(item->LDoNTheme & 1)
+			{
+				if(m_pp.ldon_points_guk < sint32(item->LDoNPrice))
+				{
+					Message(13, "You need at least %u points in guk to purchase this item.", sint32(item->LDoNPrice));
+					return;
+				}
+			}
+		}
+	}
+	else if(aps->Type == DiscordMerchant)
+	{
+		if(GetPVPPoints() < item->LDoNPrice)
+		{
+			Message(13, "You need at least %u PVP points to purchase this item.", sint32(item->LDoNPrice));
+			return;
+		}
+	}
+	else if(aps->Type == NorrathsKeepersMerchant)
+	{
+		if(GetRadiantCrystals() < item->LDoNPrice)
+		{
+			Message(13, "You need at least %u Radiant Crystals to purchase this item.", sint32(item->LDoNPrice));
+			return;
+		}
+	}
+	else if(aps->Type == DarkReignMerchant)
+	{
+		if(GetEbonCrystals() < item->LDoNPrice)
+		{
+			Message(13, "You need at least %u Ebon Crystals to purchase this item.", sint32(item->LDoNPrice));
+			return;
+		}
+	}
+	else
+	{
+		Message(13, "Unknown Adventure Merchant type.");
 		return;
 	}
 
-	if(item->LDoNTheme <= 16)
-	{
-		if(item->LDoNTheme & 16)
-		{
-			if(m_pp.ldon_points_tak < sint32(item->LDoNPrice))
-			{
-				Message(13, "You need at least %u points in tak to purchase this item.", sint32(item->LDoNPrice));
-				return;
-			}
-		}
-		else if(item->LDoNTheme & 8)
-		{
-			if(m_pp.ldon_points_ruj < sint32(item->LDoNPrice))
-			{
-				Message(13, "You need at least %u points in ruj to purchase this item.", sint32(item->LDoNPrice));
-				return;
-			}
-		}
-		else if(item->LDoNTheme & 4)
-		{
-			if(m_pp.ldon_points_mmc < sint32(item->LDoNPrice))
-			{
-				Message(13, "You need at least %u points in mmc to purchase this item.", sint32(item->LDoNPrice));
-				return;
-			}
-		}
-		else if(item->LDoNTheme & 2)
-		{
-			if(m_pp.ldon_points_mir < sint32(item->LDoNPrice))
-			{
-				Message(13, "You need at least %u points in mir to purchase this item.", sint32(item->LDoNPrice));
-				return;
-			}
-		}
-		else if(item->LDoNTheme & 1)
-		{
-			if(m_pp.ldon_points_guk < sint32(item->LDoNPrice))
-			{
-				Message(13, "You need at least %u points in guk to purchase this item.", sint32(item->LDoNPrice));
-				return;
-			}
-		}
-	}
 
 	if(CheckLoreConflict(item))
 	{
@@ -2107,15 +2141,33 @@ void Client::Handle_OP_AdventureMerchantPurchase(const EQApplicationPacket *app)
 		return;
 	}
 
-	sint32 requiredpts = (sint32)item->LDoNPrice*-1;
+	if(aps->Type == LDoNMerchant)
+	{
+		sint32 requiredpts = (sint32)item->LDoNPrice*-1;
 
-	if(!UpdateLDoNPoints(requiredpts, 6))
-		return;
-
+		if(!UpdateLDoNPoints(requiredpts, 6))
+			return;
+	}
+	else if(aps->Type == DiscordMerchant)
+	{
+		SetPVPPoints(GetPVPPoints() - (sint32)item->LDoNPrice);
+		SendPVPStats();
+	}
+	else if(aps->Type == NorrathsKeepersMerchant)
+	{
+		SetRadiantCrystals(GetRadiantCrystals() - (sint32)item->LDoNPrice);
+		SendCrystalCounts();
+	}
+	else if(aps->Type == DarkReignMerchant)
+	{
+		SetEbonCrystals(GetEbonCrystals() - (sint32)item->LDoNPrice);
+		SendCrystalCounts();
+	}
 	sint8 charges=1;
 	if(item->MaxCharges != 0)
 		charges = item->MaxCharges;
 	SummonItem(aps->itemid, charges);
+	Save(1);
 }
 
 void Client::Handle_OP_ConsiderCorpse(const EQApplicationPacket *app)
@@ -9867,11 +9919,11 @@ void Client::Handle_OP_AdventureMerchantSell(const EQApplicationPacket *app)
 		return;
 	}
 
-	DumpPacket(app);
 	Adventure_Sell_Struct *ams_in = (Adventure_Sell_Struct*)app->pBuffer;
 
 	Mob* vendor = entity_list.GetMob(ams_in->npcid);
-	if (vendor == 0 || !vendor->IsNPC() || vendor->GetClass() != ADVENTUREMERCHANT)
+	if (vendor == 0 || !vendor->IsNPC() || ((vendor->GetClass() != ADVENTUREMERCHANT) &&
+	    (vendor->GetClass() != NORRATHS_KEEPERS_MERCHANT) && (vendor->GetClass() != DARK_REIGN_MERCHANT)))
 	{
 		Message(13, "Vendor was not found.");
 		return;
@@ -9898,6 +9950,19 @@ void Client::Handle_OP_AdventureMerchantSell(const EQApplicationPacket *app)
 		return;
 	}
 
+	// Note that Lucy has ldonsold values of 4 and 5 for items sold by Norrath's Keepers and Dark Reign, whereas 13th Floor
+	// has ldonsold = 0 for these items, so some manual editing of the items DB will be required to support sell back of the
+	// items.
+	//
+	// The Merchant seems to have some other way of knowing whether he will accept the item, other than the ldonsold field,
+	// e.g. if you summon items 76036 and 76053 (good and evil versions of Spell: Ward Of Vengeance), if you are interacting
+	// with a Norrath's Keeper merchant and click on 76036 in your inventory, he says he will give you radiant crystals for
+	// it, but he will refuse for item 76053. 
+	// 
+	// Similarly, just giving a cloth cap an ldonsold value of 4 will not make the Merchant buy it. 
+	//
+	// Note that the the Client will not allow you to sell anything back to a Discord merchant, so there is no need to handle
+	// that case here.
 	if(item->LDoNSold == 0)
 	{
 		Message(13, "The merchant does not want that item.");
@@ -9950,7 +10015,29 @@ void Client::Handle_OP_AdventureMerchantSell(const EQApplicationPacket *app)
 	ams->charges = ams_in->charges;
 	ams->sell_price = price;
 	FastQueuePacket(&outapp);
-	UpdateLDoNPoints(price, 6);
+
+	switch(vendor->GetClass())
+	{
+		case ADVENTUREMERCHANT:
+		{
+			UpdateLDoNPoints(price, 6);
+			break;
+		}
+		case NORRATHS_KEEPERS_MERCHANT:
+		{
+			SetRadiantCrystals(GetRadiantCrystals() + price);
+			break;
+		}
+		case DARK_REIGN_MERCHANT:
+		{
+			SetEbonCrystals(GetEbonCrystals() + price);
+			break;
+		}
+
+		default:
+			break;
+	}
+
 	Save(1);
 }
 

@@ -306,11 +306,13 @@ int command_init(void) {
 		command_add("unfreeze","- Unfreeze your target",80,command_unfreeze) ||
 		command_add("pvp","[on/off] - Set your or your player target's PVP status",100,command_pvp) ||
 		command_add("setxp","[value] - Set your or your player target's experience",100,command_setxp) ||
+		command_add("setpvppoints","[value] - Set your or your player target's PVP points",100,command_setpvppoints) ||
 		command_add("setexp",NULL,0,command_setxp) ||
 		command_add("setaaxp","[value] - Set your or your player target's AA experience",100,command_setaaxp) ||
 		command_add("setaaexp",NULL,0,command_setaaxp) ||
 		command_add("setaapts","[value] - Set your or your player target's available AA points",100,command_setaapts) ||
 		command_add("setaapoints",NULL,0,command_setaapts) ||
+		command_add("setcrystals","[value] - Set your or your player target's available radiant or ebon crystals",100,command_setcrystals) ||
 		command_add("name","[newname] - Rename your player target",150,command_name) ||
 		command_add("npcspecialattk","[flagchar] [perm] - Set NPC special attack flags.  Flags are E(nrage) F(lurry) R(ampage) S(ummon).",80,command_npcspecialattk) ||
 		command_add("npcspecialattack",NULL,0,command_npcspecialattk) ||
@@ -4358,6 +4360,27 @@ void command_setxp(Client *c, const Seperator *sep)
 		c->Message(0, "Usage: #setxp number");
 }
 
+void command_setpvppoints(Client *c, const Seperator *sep)
+{
+	Client *t=c;
+
+	if(c->GetTarget() && c->GetTarget()->IsClient())
+		t=c->GetTarget()->CastToClient();
+
+	if (sep->IsNumber(1)) {
+		if (atoi(sep->arg[1]) > 9999999)
+			c->Message(0, "Error: Value too high.");
+		else
+		{
+			t->SetPVPPoints(atoi(sep->arg[1]));
+			t->Save();
+			t->SendPVPStats();
+		}
+	}
+	else
+		c->Message(0, "Usage: #setpvppoints number");
+}
+
 void command_name(Client *c, const Seperator *sep)
 {
 	Client *target;
@@ -6113,6 +6136,35 @@ void command_setaapts(Client *c, const Seperator *sep)
 	}
 }
 
+void command_setcrystals(Client *c, const Seperator *sep)
+{
+	Client *t=c;
+
+	if(c->GetTarget() && c->GetTarget()->IsClient())
+		t=c->GetTarget()->CastToClient();
+
+	if(sep->arg[1][0] == '\0' || sep->arg[2][0] == '\0')
+		c->Message(0, "Usage: #setcrystals <radiant|ebon> <new crystal count value>");
+	else if(atoi(sep->arg[2]) <= 0 || atoi(sep->arg[2]) > 100000)
+		c->Message(0, "You must have a number greater than 0 for crystals and no more than 100000.");
+	else if(!strcasecmp(sep->arg[1], "radiant"))
+	{
+		t->SetRadiantCrystals(atoi(sep->arg[2]));
+		t->SendCrystalCounts();
+		t->Save();
+	}
+	else if(!strcasecmp(sep->arg[1], "ebon"))
+	{
+		t->SetEbonCrystals(atoi(sep->arg[2]));
+		t->SendCrystalCounts();
+		t->Save();
+	}
+	else
+	{
+		c->Message(0, "Usage: #setcrystals <radiant|ebon> <new crystal count value>");
+	}
+}
+
 void command_stun(Client *c, const Seperator *sep)
 {
 	Mob *t=c->CastToMob();
@@ -6317,7 +6369,7 @@ void command_suspend(Client *c, const Seperator *sep)
 				c->Message(13,"Account number %i with the character %s has been temporarily suspended for %i day(s).", AccountID, sep->arg[1],
 					   Duration);
 			else
-				c->Message(13,"Account number %i with the character %s s no longer suspended.", AccountID, sep->arg[1]);
+				c->Message(13,"Account number %i with the character %s is no longer suspended.", AccountID, sep->arg[1]);
 
 			safe_delete_array(query);
 
