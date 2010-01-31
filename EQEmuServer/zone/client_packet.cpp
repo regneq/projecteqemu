@@ -9379,15 +9379,19 @@ void Client::Handle_OP_PopupResponse(const EQApplicationPacket *app) {
 	}
 	PopupResponse_Struct *prs = (PopupResponse_Struct*)app->pBuffer;
 
+	char *buf = 0;
+	MakeAnyLenString(&buf, "%d", prs->popupid);
+
+	parse->Event(EVENT_POPUPRESPONSE, 0, buf, (NPC*)NULL, this);
+
 	Mob* Target = GetTarget();
 
 	if(Target && Target->IsNPC()) {
-		char *buf = 0;
-		MakeAnyLenString(&buf, "%d", prs->popupid);
 
 		parse->Event(EVENT_POPUPRESPONSE, Target->GetNPCTypeID(), buf, Target->CastToNPC(), this);
-		safe_delete_array(buf);
 	}
+
+	safe_delete_array(buf);
 }
 
 void Client::Handle_OP_PotionBelt(const EQApplicationPacket *app) {
