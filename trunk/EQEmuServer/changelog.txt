@@ -5,6 +5,7 @@ Trevius: Exported new BoolNPCSpecAtks() to Perl::Mob.  This can be used to check
 Derision: Added support for purchasing from Discord Merchant (Class 59).
 Derision: Added support for purchasing from Norrath's Keepers and Dark Reign Merchants (Classes 67 and 68).
 Derision: Added commands #setpvppoints <amount> and #setcrystals <radiant|ebon> <amount>
+Derision: EVENT_POPUPRESPONSE is now passed to player.pl
 
 ==01/30/2010==
 cybernine186: Implemented the #suspend command.
