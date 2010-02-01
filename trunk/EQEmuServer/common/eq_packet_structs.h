@@ -678,6 +678,18 @@ struct AA_Array
 };
 
 
+typedef struct
+{
+/*00*/ char Name[64];
+/*64*/ uint32 Level;
+/*68*/ uint32 Race;
+/*72*/ uint32 Class;
+/*76*/ uint32 Zone;
+/*80*/ uint32 Time;
+/*84*/ uint32 Points;
+/*88*/
+} PVPStatsEntry_Struct;
+
 static const uint32 MAX_PP_DISCIPLINES = 100;
 static const uint32 MAX_DISCIPLINE_TIMERS = 20;
 
@@ -976,18 +988,21 @@ struct PlayerProfile_Struct
 /*7924*/	LeadershipAA_Struct	leader_abilities;
 /*8052*/	uint8				unknown8052[132];
 /*8184*/	uint32				air_remaining;
-/*8188*/	uint8				unknown8188[4608]; //probably raid members 4608 = 64 * 72
+/*8188*/	uint32				PVPKills;
+/*8192*/	uint32				PVPDeaths;
+/*8196*/	uint32				PVPCurrentPoints;
+/*8200*/	uint32				PVPCareerPoints;
+/*8204*/	uint32				PVPBestKillStreak;
+/*8208*/	uint32				PVPWorstDeathStreak;
+/*8212*/	uint32				PVPCurrentKillStreak;
+/*8216*/	PVPStatsEntry_Struct		PVPLastKill;
+/*8304*/	PVPStatsEntry_Struct		PVPLastDeath;
+/*8392*/	uint32				PVPNumberOfKillsInLast24Hours;
+/*8396*/	PVPStatsEntry_Struct		PVPRecentKills[50];
 /*12796*/	uint32				aapoints_spent;
 /*12800*/	uint32				expAA;
 /*12804*/	uint32				aapoints;	//avaliable, unspent
-/*12808*/	uint32				PVPKills;
-/*12812*/	uint32				PVPDeaths;
-/*12816*/	uint32				PVPCurrentPoints;
-/*12820*/	uint32				PVPCareerPoints;
-/*12824*/	uint32				PVPBestKillStreak;
-/*12828*/	uint32				PVPWorstDeathStreak;
-/*12832*/	uint32				PVPCurrentKillStreak;
-/*12836*/	uint8				unknown12808[8];
+/*12808*/	uint8				unknown12808[36];
 /*12844*/	Bandolier_Struct	bandoliers[MAX_PLAYER_BANDOLIER];
 /*14124*/	uint8				unknown14124[4506];
 /*18630*/	SuspendedMinion_Struct		SuspendedMinion;
@@ -3991,18 +4006,6 @@ struct ClearObject_Struct
 /*000*/	uint8	Clear;	// If this is not set to non-zero there is a random chance of a client crash.
 /*001*/	uint8	Unknown001[7];
 };
-
-typedef struct
-{
-/*00*/ char Name[64];
-/*64*/ uint32 Level;
-/*68*/ uint32 Race;
-/*72*/ uint32 Class;
-/*76*/ uint32 Zone;
-/*80*/ uint32 Time;
-/*84*/ uint32 Points;
-/*88*/
-} PVPStatsEntry_Struct;
 
 struct PVPStats_Struct
 {

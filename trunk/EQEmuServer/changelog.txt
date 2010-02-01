@@ -3,6 +3,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==02/01/2010==
 Trevius: Renamed BoolNPCSpecAtks() to HasNPCSpecialAtk() to fit better into the proper naming format and to make more sense.
 Derision: Added $client quest methods to get current PVP point and crystal counts and to award PVP points and crystals.
+Derision: Mapped out the part of the player profile used for recording recent PVP kills.
 
 ==01/31/2010==
 Trevius: Exported new BoolNPCSpecAtks() to Perl::Mob.  This can be used to check if an NPC has certain special attacks set.

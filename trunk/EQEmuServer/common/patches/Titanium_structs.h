@@ -844,7 +844,10 @@ struct PlayerProfile_Struct
 /*14920*/ uint32  PVPBestKillStreak;
 /*14924*/ uint32  PVPWorstDeathStreak;
 /*14928*/ uint32  PVPCurrentKillStreak;
-/*14932*/ uint8 unknown14932[4580];
+/*14932*/ PVPStatsEntry_Struct PVPLastKill;
+/*15020*/ PVPStatsEntry_Struct PVPLastDeath;
+/*15108*/ uint32  PVPNumberOfKillsInLast24Hours;
+/*15112*/ PVPStatsEntry_Struct PVPRecentKills[50];
 /*19512*/ uint32 expAA;               // Exp earned in current AA point
 /*19516*/ uint8 unknown19516[40];
 /*19556*/ uint32 currentRadCrystals;  // Current count of radiant crystals
@@ -3165,7 +3168,6 @@ struct VeteranReward
 
 	};	//end namespace structs
 };	//end namespace Titanium
-
 
 
 
