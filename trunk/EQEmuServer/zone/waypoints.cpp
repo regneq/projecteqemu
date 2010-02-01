@@ -124,7 +124,7 @@ void NPC::ResumeWandering()
 			itoa(cur_wp,temp,10);	//do this before updating to next waypoint
 			CalculateNewWaypoint(); 
 	        SetAppearance(eaStanding, false); 
-			parse->Event(EVENT_WAYPOINT,this->GetNPCTypeID(), temp, this, NULL); 
+			parse->Event(EVENT_WAYPOINT_DEPART, this->GetNPCTypeID(), temp, this, NULL); 
 		}	// if not currently at a waypoint, we continue on to the one we were headed to before the stop
 	}
 	else
