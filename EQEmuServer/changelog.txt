@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==02/02/2010==
+Trevius: Renamed BoolNPCSpecAtks() to HasNPCSpecialAtk() to fit better into the proper naming format and to make more sense.
+
 ==01/31/2010==
 Trevius: Exported new BoolNPCSpecAtks() to Perl::Mob.  This can be used to check if an NPC has certain special attacks set.
 Derision: Added support for purchasing from Discord Merchant (Class 59).

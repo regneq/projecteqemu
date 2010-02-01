@@ -907,7 +907,7 @@ bool logpos;
 
 	bool DivineAura() const;
     bool SpecAttacks[SPECATK_MAXNUM];
-	bool BoolNPCSpecAtks(const char* parse);
+	bool HasNPCSpecialAtk(const char* parse);
 	Shielders_Struct shielder[MAX_SHIELDERS];
 	Trade* trade;
 
