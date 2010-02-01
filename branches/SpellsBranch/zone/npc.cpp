@@ -1387,6 +1387,126 @@ void Mob::NPCSpecialAttacks(const char* parse, int permtag) {
 	}
 }
 
+bool Mob::BoolNPCSpecAtks(const char* parse) {
+	
+	const char* orig_parse = parse;
+	bool HasAllAttacks = true;
+
+    while (*parse && HasAllAttacks == true)
+    {
+        switch(*parse)
+        {
+	    case 'E':
+    	    if (!SpecAttacks[SPECATK_ENRAGE])
+				HasAllAttacks = false;
+    		break;
+	    case 'F':
+    	    if (!SpecAttacks[SPECATK_FLURRY])
+				HasAllAttacks = false;
+    		break;
+	    case 'R':
+    	    if (!SpecAttacks[SPECATK_RAMPAGE])
+				HasAllAttacks = false;
+    		break;
+		case 'r':
+			if (!SpecAttacks[SPECATK_AREA_RAMPAGE])
+				HasAllAttacks = false;
+			break;
+	    case 'S':
+    	    if (!SpecAttacks[SPECATK_SUMMON])
+				HasAllAttacks = false;
+    		break;
+	    case 'T':
+            if (!SpecAttacks[SPECATK_TRIPLE])
+				HasAllAttacks = false;
+            break;
+	    case 'Q':
+            if (!SpecAttacks[SPECATK_QUAD])
+				HasAllAttacks = false;
+            break;
+	    case 'b':
+            if (!SpecAttacks[SPECATK_BANE])
+				HasAllAttacks = false;
+            break;
+		case 'm':
+            if (!SpecAttacks[SPECATK_MAGICAL])
+				HasAllAttacks = false;
+            break;
+		case 'U':
+			if (!SpecAttacks[UNSLOWABLE])
+				HasAllAttacks = false;
+			break;
+		case 'M':
+			if (!SpecAttacks[UNMEZABLE])
+				HasAllAttacks = false;
+			break;
+		case 'C':
+			if (!SpecAttacks[UNCHARMABLE])
+				HasAllAttacks = false;
+			break;
+		case 'N':
+			if (!SpecAttacks[UNSTUNABLE])
+				HasAllAttacks = false;
+			break;
+		case 'I':
+			if (!SpecAttacks[UNSNAREABLE])
+				HasAllAttacks = false;
+			break;
+		case 'D':
+			if (!SpecAttacks[UNFEARABLE])
+				HasAllAttacks = false;
+			break;
+		case 'A':
+			if (!SpecAttacks[IMMUNE_MELEE])
+				HasAllAttacks = false;
+			break;
+		case 'B':
+			if (!SpecAttacks[IMMUNE_MAGIC])
+				HasAllAttacks = false;
+			break;
+		case 'f':
+			if (!SpecAttacks[IMMUNE_FLEEING])
+				HasAllAttacks = false;
+			break;
+		case 'O':
+			if (!SpecAttacks[IMMUNE_MELEE_EXCEPT_BANE])
+				HasAllAttacks = false;
+			break;
+		case 'W':
+			if (!SpecAttacks[IMMUNE_MELEE_NONMAGICAL])
+				HasAllAttacks = false;
+			break;
+		case 'H':
+			if (!SpecAttacks[IMMUNE_AGGRO])
+				HasAllAttacks = false;
+			break;
+		case 'G':
+			if (!SpecAttacks[IMMUNE_TARGET])
+				HasAllAttacks = false;
+			break;
+		case 'g':
+			if (!SpecAttacks[IMMUNE_CASTING_FROM_RANGE])
+				HasAllAttacks = false;
+			break;
+		case 'd':
+			if (!SpecAttacks[IMMUNE_FEIGN_DEATH])
+				HasAllAttacks = false;
+			break;
+		case 'Y':
+			if (!SpecAttacks[SPECATK_RANGED_ATK])
+				HasAllAttacks = false;
+			break;
+
+        default:
+			HasAllAttacks = false;
+            break;
+        }
+        parse++;
+    }
+	
+	return HasAllAttacks;
+}
+
 void NPC::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho) {
 	Mob::FillSpawnStruct(ns, ForWho);
 	

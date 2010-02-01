@@ -55,12 +55,15 @@
 #define BERSERKERGM 35
 #define BANKER 40 
 #define MERCHANT 41
+#define DISCORD_MERCHANT 59
 #define ADVENTURERECRUITER 60
 #define ADVENTUREMERCHANT 61
 #define LDON_TREASURE 62 //objects you can use /open on first seen in LDONs
 #define CORPSE_CLASS 62	//only seen on Danvi's Corpse in Akheva so far..
 #define TRIBUTE_MASTER	63
 #define GUILD_TRIBUTE_MASTER	64	//not sure
+#define NORRATHS_KEEPERS_MERCHANT 67
+#define DARK_REIGN_MERCHANT 68
 #define warrior_1 1
 #define monk_1 64
 #define paladin_1 4

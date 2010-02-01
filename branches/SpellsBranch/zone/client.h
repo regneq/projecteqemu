@@ -441,6 +441,13 @@ public:
 
 
 	bool	UpdateLDoNPoints(sint32 points, int32 theme);
+	void	SetPVPPoints(int32 Points) { m_pp.PVPCurrentPoints = Points; }
+	int32	GetPVPPoints() { return m_pp.PVPCurrentPoints; }
+	uint32	GetRadiantCrystals() { return m_pp.currentRadCrystals; }
+	void	SetRadiantCrystals(uint32 Crystals) { m_pp.currentRadCrystals = Crystals; }
+	uint32	GetEbonCrystals() { return m_pp.currentEbonCrystals; }
+	void	SetEbonCrystals(uint32 Crystals) { m_pp.currentEbonCrystals = Crystals; }
+	void	SendCrystalCounts();
 
 	void	AddEXP(uint32 in_add_exp, int8 conlevel = 0xFF, bool resexp = false);
 	void	SetEXP(uint32 set_exp, uint32 set_aaxp, bool resexp=false);

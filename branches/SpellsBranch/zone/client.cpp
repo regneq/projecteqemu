@@ -3847,9 +3847,32 @@ void Client::SendPVPStats()
 	// from Client::CompleteConnect, and also when the player makes a PVP kill.
 	//
 	EQApplicationPacket *outapp = new EQApplicationPacket(OP_PVPStats, sizeof(PVPStats_Struct));
-	/*PVPStats_Struct *pvps = (PVPStats_Struct *)outapp->pBuffer;*/	//unused until we record & send PVP Stats
+	PVPStats_Struct *pvps = (PVPStats_Struct *)outapp->pBuffer;
 
-	// TODO: Record and send PVP Stats
+	pvps->Kills = m_pp.PVPKills;
+	pvps->Deaths = m_pp.PVPDeaths;
+	pvps->PVPPointsAvailable = m_pp.PVPCurrentPoints;
+	pvps->TotalPVPPoints = m_pp.PVPCareerPoints;
+	pvps->BestKillStreak = m_pp.PVPBestKillStreak;
+	pvps->WorstDeathStreak = m_pp.PVPWorstDeathStreak;
+	pvps->CurrentKillStreak = m_pp.PVPCurrentKillStreak;
+
+	// TODO: Record and send other PVP Stats
+
+	QueuePacket(outapp);
+	safe_delete(outapp);
+}
+
+void Client::SendCrystalCounts()
+{
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_CrystalCountUpdate, sizeof(CrystalCountUpdate_Struct));
+	CrystalCountUpdate_Struct *ccus = (CrystalCountUpdate_Struct *)outapp->pBuffer;
+
+	ccus->CurrentRadiantCrystals = GetRadiantCrystals();
+	ccus->CurrentEbonCrystals = GetEbonCrystals();
+	ccus->CareerRadiantCrystals = m_pp.careerRadCrystals;
+	ccus->CareerEbonCrystals = m_pp.careerEbonCrystals;
+
 
 	QueuePacket(outapp);
 	safe_delete(outapp);
