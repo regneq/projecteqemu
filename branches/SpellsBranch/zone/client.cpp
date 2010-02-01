@@ -485,7 +485,7 @@ bool Client::Save(int8 iCommitNow) {
 		m_epp.pet_id = pet->CastToNPC()->GetPetSpellID();
 		m_epp.pet_hp = pet->GetHP();
 		m_epp.pet_mana = pet->GetMana();
-		pet->GetPetState(m_epp.pet_buffs, m_epp.pet_items, m_epp.pet_name);
+		pet->GetPetState(m_epp.pet_items, m_epp.pet_name, false);
 	} else {
 		m_epp.pet_id = 0;
 		m_epp.pet_hp = 0;
@@ -5562,7 +5562,7 @@ void Client::SuspendMinion()
 
 			if(AALevel >= 2)
 			{
-				CurrentPet->SetPetState(m_pp.SuspendedMinion.Buffs, m_pp.SuspendedMinion.Items);
+				CurrentPet->SetPetState(m_pp.SuspendedMinion.Items, true);
 
 				CurrentPet->SendPetBuffsToClient();
 			}
@@ -5611,7 +5611,7 @@ void Client::SuspendMinion()
 				m_pp.SuspendedMinion.Mana = CurrentPet->GetMana();
 
 				if(AALevel >= 2)
-					CurrentPet->GetPetState(m_pp.SuspendedMinion.Buffs, m_pp.SuspendedMinion.Items, m_pp.SuspendedMinion.Name);
+					CurrentPet->GetPetState(m_pp.SuspendedMinion.Items, m_pp.SuspendedMinion.Name, true);
 
 				Message_StringID(clientMessageTell, SUSPEND_MINION_SUSPEND, CurrentPet->GetCleanName());
 

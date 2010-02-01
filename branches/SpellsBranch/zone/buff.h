@@ -26,8 +26,9 @@ namespace BuffStorage
 	enum BuffStorageType
 	{
 		BUFF_ST_CHARACTER = 0,
-		BUFF_ST__PET,
-		BUFF_ST__SUSPENDED_PET,
+		BUFF_ST_PET,
+		BUFF_ST_SUSPENDED_PET,
+		BUFF_ST_BOT,
 	};
 
 #pragma pack(1)

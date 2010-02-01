@@ -101,6 +101,7 @@ public:
 	virtual int GetFreeBuffSlot(const Spell *spell_to_cast);
 	virtual void ValidateSpellCastFinish(const Spell *spell_to_cast);
 	virtual bool DoComponentCheck(Spell *spell_to_cast, bool bard_song_mode) { return true; }
+	virtual void SaveBuffs(uint8 mode = 0);
 
 	void LevelScale();
 	void CalcNPCResists();
@@ -130,10 +131,10 @@ public:
 	void	GoToBind(uint8 bindnum = 0)	{ GMMove(org_x, org_y, org_z, org_heading); }
 	void	Gate();
 
-	void	GetPetState(SpellBuff_Struct *buffs, int32 *items, char *name);
-	void	SetPetState(SpellBuff_Struct *buffs, int32 *items);
-	void	InteractiveChat(int8 chan_num, int8 language, const char * message, const char* targetname,Mob* sender);
-	void	TakenAction(int8 action,Mob* actiontaker);
+	void GetPetState(int32 *items, char *name, bool suspended_pet);
+	void SetPetState(int32 *items, bool suspended_pet);
+	void InteractiveChat(int8 chan_num, int8 language, const char * message, const char* targetname,Mob* sender);
+	void TakenAction(int8 action,Mob* actiontaker);
 	virtual void SpellProcess();
 	virtual void FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho);
 

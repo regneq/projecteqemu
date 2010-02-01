@@ -4184,7 +4184,7 @@ void Mob::SetBuffCount(uint32 new_buff_count)
 	current_buff_count = new_buff_count; 
 }
 
-void Client::SaveBuffs()
+void Client::SaveBuffs(uint8 mode)
 {
 	//We only save the first 25 buffs.
 	//The pp doesn't support more than 25 buffs so
@@ -4238,7 +4238,76 @@ void Client::SaveBuffs()
 	header.number_of_buffs = buff_count;
 	ss.seekp(stringstream::beg);
 	ss.write((const char*)&header, sizeof(BuffStorage::buff_header));
-	database.SetBuff(GetID(), BuffStorage::BUFF_ST_CHARACTER, ss.str().c_str(), ss.str().length());
+	database.SetBuff(CharacterID(), BuffStorage::BUFF_ST_CHARACTER, ss.str().c_str(), ss.str().length());
+}
+
+void NPC::SaveBuffs(uint8 mode)
+{
+	Mob *owner = GetOwner();
+	
+	if(owner)
+	{
+		if(!owner->IsClient())
+		{
+			return;
+		}
+	}
+	else
+	{
+		return;
+	}
+
+	stringstream ss (stringstream::in | stringstream::out);
+	BuffStorage::buff_header header;
+	header.version_identifier = 1;
+	header.number_of_buffs = 0;
+	
+	uint32 buff_count = 0;
+	uint32 max_count = GetMaxTotalSlots();
+	for(int i = 0; i < max_count; i++)
+	{
+		if(buffs[i])
+		{
+			BuffStorage::Version1::buff_entry buff_entry;
+			buff_entry.buff_slot = i;
+			buff_entry.duration = buffs[i]->GetDurationRemaining();
+			buff_entry.is_perm_illusion = buffs[i]->IsPermanentIllusion();
+			buff_entry.is_client = buffs[i]->IsClientBuff();
+			buff_entry.magic_remaining_charges = buffs[i]->GetRemainingChargesMagic();
+			buff_entry.poison_remaining_charges = buffs[i]->GetRemainingChargesPoison();
+			buff_entry.disease_remaining_charges = buffs[i]->GetRemainingChargesDisease();
+			buff_entry.curse_remaining_charges = buffs[i]->GetRemainingChargesCurse();
+			buff_entry.general_remaining_charges = buffs[i]->GetRemainingCharges();
+			buff_entry.melee_shield_remaining = buffs[i]->GetMeleeShield();
+			buff_entry.melee_shield_reduction = buffs[i]->GetMeleeShieldReduction();
+			buff_entry.magic_shield_remaining = buffs[i]->GetMagicShield();
+			buff_entry.magic_shield_reduction = buffs[i]->GetMagicShieldReduction();
+			buff_entry.attacks_negated = buffs[i]->GetAttacksNegated();
+			buff_entry.death_save_chance = buffs[i]->GetDeathSaveChance();
+			buff_entry.caster_aa_rank = buffs[i]->GetCasterAARank();
+			buff_entry.instrument_mod = buffs[i]->GetInstrumentMod();
+			buff_entry.is_custom_spell = buffs[i]->GetSpell()->IsCustomSpell();
+			ss.write((const char*)&buff_entry, sizeof(BuffStorage::Version1::buff_entry));
+
+			if(buff_entry.is_custom_spell)
+			{
+				BuffStorage::Version1::buff_spell_entry buff_spell_entry;
+				buff_spell_entry.caster_level = buffs[i]->GetSpell()->GetCasterLevel();
+				buff_spell_entry.spell_slot = buffs[i]->GetSpell()->GetSpellSlot();
+				buff_spell_entry.spell_slot_inventory = buffs[i]->GetSpell()->GetInventorySpellSlot();
+				buff_spell_entry.spell_class_type = buffs[i]->GetSpell()->GetSpellType();
+				memcpy(&buff_spell_entry.raw_spell, &buffs[i]->GetSpell()->GetSpell(), sizeof(SPDat_Spell_Struct));
+				ss.write((const char*)&buff_spell_entry, sizeof(BuffStorage::Version1::buff_spell_entry));
+			}
+
+			buff_count++;
+		}
+	}
+	header.number_of_buffs = buff_count;
+	ss.seekp(stringstream::beg);
+	ss.write((const char*)&header, sizeof(BuffStorage::buff_header));
+	database.SetBuff(owner->CastToClient()->CharacterID(), mode == 0 ? BuffStorage::BUFF_ST_PET : BuffStorage::BUFF_ST_SUSPENDED_PET,
+		ss.str().c_str(), ss.str().length());
 }
 
 Spell::Spell(uint32 spell_id, Mob* caster, Mob* target, uint32 slot, uint32 cast_time, uint32 mana_cost)

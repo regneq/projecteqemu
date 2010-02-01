@@ -437,7 +437,8 @@ void Mob::SetPetID(int16 NewPetID) {
 	petid = NewPetID;
 }
 
-void NPC::GetPetState(SpellBuff_Struct *pet_buffs, int32 *items, char *name) {
+void NPC::GetPetState(int32 *items, char *name, bool suspended_pet) 
+{
 	//save the pet name
 	strncpy(name, GetName(), 64);
 	name[63] = '\0';
@@ -459,7 +460,8 @@ void NPC::GetPetState(SpellBuff_Struct *pet_buffs, int32 *items, char *name) {
 		//dont need to save anything else... since these items only
 		//exist for the pet, nobody else can get at them AFAIK
 	}
-	
+
+	SaveBuffs(suspended_pet ? 1 : 0);	
 	//TODO:
 	//save their buffs.
 	/*for (i=0; i < BUFF_COUNT; i++) {
@@ -484,7 +486,8 @@ void NPC::GetPetState(SpellBuff_Struct *pet_buffs, int32 *items, char *name) {
 	*/
 }
 
-void NPC::SetPetState(SpellBuff_Struct *pet_buffs, int32 *items) {
+void NPC::SetPetState(int32 *items, bool suspended_pet) 
+{
 	//restore their buffs...
 	int i;
 	//TODO:

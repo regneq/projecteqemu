@@ -722,7 +722,7 @@ bool logpos;
 	void TryDotCritical(const Spell *spell_to_cast, Mob *caster, int &damage);
 	virtual void MakePet(const Spell *spell_to_cast, const char* pettype, const char *petname = NULL);
 	void TemporaryPets(const Spell *spell_to_cast, Mob *target, const char *name_override = NULL, uint32 duration_override = 0);
-	virtual void SaveBuffs() { }
+	virtual void SaveBuffs(uint8 mode = 0) { }
 
 
 
