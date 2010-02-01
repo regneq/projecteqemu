@@ -244,9 +244,10 @@ public:
 	inline bool		IsLFP() { return LFP; }
 	void			UpdateLFP();
 
-	virtual bool	Save() { return Save(0); }
-			bool	Save(int8 iCommitNow); // 0 = delayed, 1=async now, 2=sync now
-			void	SaveBackup();
+	virtual bool Save() { return Save(0); }
+	bool Save(int8 iCommitNow); // 0 = delayed, 1=async now, 2=sync now
+	void SaveBackup();
+	virtual void SaveBuffs();
 
 	inline bool ClientDataLoaded() const { return client_data_loaded; }
 	inline bool	Connected()		const { return (client_state == CLIENT_CONNECTED); }

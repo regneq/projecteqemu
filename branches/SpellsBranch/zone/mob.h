@@ -722,7 +722,7 @@ bool logpos;
 	void TryDotCritical(const Spell *spell_to_cast, Mob *caster, int &damage);
 	virtual void MakePet(const Spell *spell_to_cast, const char* pettype, const char *petname = NULL);
 	void TemporaryPets(const Spell *spell_to_cast, Mob *target, const char *name_override = NULL, uint32 duration_override = 0);
-
+	virtual void SaveBuffs() { }
 
 
 
@@ -975,6 +975,9 @@ bool logpos;
 	Timer* GetAIMovementTimer() { return AImovement_timer; }
 	Timer GetAttackTimer() { return attack_timer; }
 	Timer GetAttackDWTimer() { return attack_dw_timer; }
+
+	uint32 GetBuffCount() const { return current_buff_count; }
+	void SetBuffCount(uint32 new_buff_count);
 
 protected:
 	void CommonDamage(Mob* other, sint32 &damage, const uint16 spell_id, const SkillType attack_skill, bool &avoidable, const sint8 buffslot, const bool iBuffTic);

@@ -427,20 +427,6 @@ void Client::ReportConnectingState() {
 }
 
 bool Client::Save(int8 iCommitNow) {
-#if 0
-// Orig. Offset: 344 / 0x00000000
-//       Length: 36 / 0x00000024
-   unsigned char rawData[36] =
-{
-    0x0D, 0x30, 0xE1, 0x30, 0x1E, 0x10, 0x22, 0x10, 0x20, 0x10, 0x21, 0x10, 0x1C, 0x20, 0x1F, 0x10,
-    0x7C, 0x10, 0x68, 0x10, 0x51, 0x10, 0x78, 0x10, 0xBD, 0x10, 0xD2, 0x10, 0xCD, 0x10, 0xD1, 0x10,
-    0x01, 0x10, 0x6D, 0x10
-} ;
-	for (int tmp = 0;tmp <=35;tmp++){
-		m_pp.unknown0256[89+tmp] = rawData[tmp];
-	}
-#endif
-
 	if(!ClientDataLoaded())
 		return false;
 	_ZP(Client_Save);
@@ -482,51 +468,8 @@ bool Client::Save(int8 iCommitNow) {
 	m_pp.mana = cur_mana;
 	m_pp.endurance = cur_end;
 
-	//TODO:
-	/*
-	for (int i=0; i < BUFF_COUNT; i++) {
-		if (buffs[i].spellid != SPELL_UNKNOWN) {
-			m_pp.buffs[i].spellid = buffs[i].spellid;
-			m_pp.buffs[i].slotid = 2;	//this is obviously not really 'slot id'
-			m_pp.buffs[i].duration = buffs[i].ticsremaining;
-			m_pp.buffs[i].level = buffs[i].casterlevel;
-			m_pp.buffs[i].bard_modifier = 10;
-			m_pp.buffs[i].effect = 0;
-			m_pp.buffs[i].persistant_buff = buffs[i].persistant_buff;
-			m_pp.buffs[i].reserved = 0;
-			//temp hack, just put some number in here to make the client think its a real player ID
-			m_pp.buffs[i].player_id = 0x2211;
-			if(IsRuneSpell(buffs[i].spellid) || IsMagicRuneSpell(buffs[i].spellid)) {
-				if(IsRuneSpell(buffs[i].spellid))
-					m_pp.buffs[i].dmg_shield_remaining = buffs[i].melee_rune;
-				else
-					m_pp.buffs[i].dmg_shield_remaining = buffs[i].magic_rune;
-			}
-			else
-				m_pp.buffs[i].dmg_shield_remaining = 0;
-
-			if(IsDeathSaveSpell(buffs[i].spellid)) {
-				m_pp.buffs[i].effect = buffs[i].deathSaveSuccessChance;
-				m_pp.buffs[i].reserved = buffs[i].casterAARank;
-			}
-			else {
-				m_pp.buffs[i].effect = 0;
-				m_pp.buffs[i].reserved = 0;
-			}
-		}
-		else {
-			m_pp.buffs[i].spellid = SPELLBOOK_UNKNOWN;
-			m_pp.buffs[i].slotid = 0;
-			m_pp.buffs[i].duration = 0;
-			m_pp.buffs[i].level = 0;
-			m_pp.buffs[i].bard_modifier = 0;
-			m_pp.buffs[i].effect = 0;
-			m_pp.buffs[i].persistant_buff = 0;
-			m_pp.buffs[i].reserved = 0;
-			m_pp.buffs[i].player_id = 0;
-			m_pp.buffs[i].dmg_shield_remaining = 0;
-		}
-	}*/
+	//TODO SaveBuffs:
+	SaveBuffs();
 
 	TotalSecondsPlayed += (time(NULL) - m_pp.lastlogin);
 	m_pp.timePlayedMin = (TotalSecondsPlayed / 60);
@@ -556,9 +499,6 @@ bool Client::Save(int8 iCommitNow) {
 	}
 
 	p_timers.Store(&database);
-
-//	printf("Dumping inventory on save:\n");
-//	m_inv.dumpInventory();
 
 	SaveTaskState();
 	if (iCommitNow <= 1) {

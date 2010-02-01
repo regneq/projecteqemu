@@ -1811,8 +1811,7 @@ void ZoneDatabase::ListAllInstances(Client* c, int32 charid)
 	MYSQL_RES *result;
 	MYSQL_ROW row;
 
-
-	if (RunQuery(query,MakeAnyLenString(&query, "SELECT instance_lockout.id, zone, version FROM instance_lockout JOIN"
+	if(RunQuery(query, MakeAnyLenString(&query, "SELECT instance_lockout.id, zone, version FROM instance_lockout JOIN"
 		" instance_lockout_player ON instance_lockout.id = instance_lockout_player.id"
 		" WHERE instance_lockout_player.charid=%lu", (unsigned long)charid),errbuf,&result))
 	{
@@ -1842,4 +1841,70 @@ void ZoneDatabase::QGlobalPurge()
 	database.RunQuery(query, MakeAnyLenString(&query, "DELETE FROM quest_globals WHERE expdate < UNIX_TIMESTAMP()"), 
 		errbuf);
 	safe_delete_array(query);
+}
+
+void ZoneDatabase::SetBuff(uint32 id, uint8 type, const char *unescaped_data, uint32 data_len)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	char* escaped_string = NULL;
+	if(data_len > 0)
+	{
+		escaped_string = new char[2 * data_len + 1];
+		memset(escaped_string, 0, (2 * data_len + 1));
+		DoEscapeString(escaped_string, unescaped_data, data_len);
+
+		if(!RunQuery(query, MakeAnyLenString(&query, "REPLACE INTO character_buffs (id, type, buff_data)"
+			" VALUES (%u, %u, '%s')", id, type, escaped_string), errbuf))
+		{
+			cerr << "Error in ZoneDatabase::SetBuff: " << query << " : " << errbuf << endl;
+		}
+		safe_delete_array(query);
+		safe_delete_array(escaped_string);
+	}
+	else
+	{
+		if(!RunQuery(query, MakeAnyLenString(&query, "DELETE FROM character_buffs WHERE id=%u AND type=%u",
+			id, type), errbuf))
+		{
+			cerr << "Error in ZoneDatabase::SetBuff: " << query << " : " << errbuf << endl;
+		}
+		safe_delete_array(query);
+	}
+}
+
+char *ZoneDatabase::GetBuff(uint32 id, uint8 type)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	unsigned long* lengths = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+
+	if(RunQuery(query, MakeAnyLenString(&query, "SELECT buff_data FROM character_buffs WHERE"
+		" id=%u AND type=%u", id, type), errbuf, &result))
+	{
+		safe_delete_array(query);
+		if(mysql_num_rows(result) == 1) 
+		{
+			row = mysql_fetch_row(result);
+			lengths = mysql_fetch_lengths(result);
+			char * return_data = new char[lengths[0]];
+			memcpy(return_data, row[0], lengths[0]);
+
+			mysql_free_result(result);
+			return return_data;
+		}
+		else
+		{
+			mysql_free_result(result);
+			return NULL;
+		}
+	}
+	else
+	{
+		cerr << "Error in ZoneDatabase::GetBuff: " << query << " : " << errbuf << endl;
+		safe_delete_array(query);
+		return NULL;
+	}
 }

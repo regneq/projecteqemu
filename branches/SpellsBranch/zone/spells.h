@@ -54,6 +54,7 @@ class Spell
 public:
 	Spell();
 	Spell(uint32 spell_id, Mob* caster, Mob* target, uint32 slot = 10, uint32 cast_time = -1, uint32 mana_cost = -1);
+	Spell(SPDat_Spell_Struct *new_spell, uint32 caster_level = 0, uint32 slot = 10, uint32 inventory_slot = 0xFFFFFFFF, uint32 spell_type = 0);
 	~Spell();
 	
 	void SetSpellID(uint32 id) {  raw_spell.id = id; }
@@ -91,6 +92,9 @@ public:
 
 	uint32 GetCasterLevel() const { return caster_level; }
 	void SetCasterLevel(uint32 level) { caster_level = level; }
+
+	bool IsCustomSpell() const { return custom_data; }
+	void SetCustomSpell(bool c) { custom_data = c; }
 	
 	Spell* CopySpell();
 
@@ -182,6 +186,7 @@ protected:
 	uint32 timer_id;
 	uint32 timer_id_duration;
 	SpellClass spell_class_type;
+	bool custom_data;
 
 	SPDat_Spell_Struct raw_spell;
 };

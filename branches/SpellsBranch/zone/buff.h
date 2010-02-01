@@ -21,6 +21,65 @@ Copyright (C) 2001-2010  EQEMu Development Team (http://eqemu.org)
 
 #include "spells.h"
 
+namespace BuffStorage
+{
+	enum BuffStorageType
+	{
+		BUFF_ST_CHARACTER = 0,
+		BUFF_ST__PET,
+		BUFF_ST__SUSPENDED_PET,
+	};
+
+#pragma pack(1)
+	struct buff_header
+	{
+	//256 versions
+	//More than we will ever need unless we're stupid
+	/* 000 */ uint8 version_identifier;
+	
+	//65535 possible buffs
+	//More than we will ever need
+	/* 001 */ uint16 number_of_buffs;
+	};
+#pragma pack()
+
+	namespace Version1
+	{
+#pragma pack(1)
+		struct buff_spell_entry
+		{
+			uint32 caster_level;
+			uint32 spell_slot;
+			uint32 spell_slot_inventory;
+			uint32 spell_class_type;
+			SPDat_Spell_Struct raw_spell;	
+		};
+
+		struct buff_entry
+		{
+			uint8 buff_slot;
+			uint32 duration;
+			bool is_perm_illusion;
+			bool is_client;
+			sint32 magic_remaining_charges;
+			sint32 poison_remaining_charges;
+			sint32 disease_remaining_charges;
+			sint32 curse_remaining_charges;
+			sint32 general_remaining_charges;
+			sint32 melee_shield_remaining;
+			sint32 magic_shield_remaining;
+			sint32 melee_shield_reduction;
+			sint32 magic_shield_reduction;
+			sint32 attacks_negated;
+			uint8 death_save_chance;
+			uint8 caster_aa_rank;
+			uint32 instrument_mod;
+			bool is_custom_spell;
+		};
+#pragma pack()
+	}
+}
+
 class Spell;
 
 class Buff
@@ -87,9 +146,9 @@ public:
 
 protected:
 	uint32 spell_duration_remaining;
+	bool is_perm_duration;	
+	bool is_client;	
 	bool is_perm_illusion;
-	bool is_perm_duration;
-	bool is_client;
 
 	sint32 magic_remaining_charges;
 	sint32 poison_remaining_charges;

@@ -94,10 +94,6 @@ public:
 	Ground_Spawns*	LoadGroundSpawns(int32 zone_id, int16 version, Ground_Spawns* gs);
 	
 	/*
-	 * Adventures
-	 */
-	
-	/*
 	 * Traders
 	 */
 
@@ -120,21 +116,24 @@ public:
 	/*
 	 * General Character Related Stuff
 	 */
-	bool	SetServerFilters(char* name, ServerSideFilters_Struct *ssfs);
-	int32	GetServerFilters(char* name, ServerSideFilters_Struct *ssfs);
-	bool	GetAccountInfoForLogin(int32 account_id, sint16* admin = 0, char* account_name = 0, 
+	bool SetServerFilters(char* name, ServerSideFilters_Struct *ssfs);
+	int32 GetServerFilters(char* name, ServerSideFilters_Struct *ssfs);
+	bool GetAccountInfoForLogin(int32 account_id, sint16* admin = 0, char* account_name = 0, 
 				int32* lsaccountid = 0, int8* gmspeed = 0, bool* revoked = 0, bool* gmhideme = 0);
-	bool	GetAccountInfoForLogin_result(MYSQL_RES* result, sint16* admin = 0, char* account_name = 0, 
+	bool GetAccountInfoForLogin_result(MYSQL_RES* result, sint16* admin = 0, char* account_name = 0, 
 				int32* lsaccountid = 0, int8* gmspeed = 0, bool* revoked = 0, bool* gmhideme = false);
-	bool	GetCharacterInfoForLogin_result(MYSQL_RES* result, uint32* character_id = 0, char* current_zone = 0, 
+	bool GetCharacterInfoForLogin_result(MYSQL_RES* result, uint32* character_id = 0, char* current_zone = 0, 
 				PlayerProfile_Struct* pp = 0, Inventory* inv = 0, ExtendedProfile_Struct *ext = 0, uint32* pplen = 0, 
 				uint32* guilddbid = 0, int8* guildrank = 0, uint8 *class_=  0, uint8 *level = 0, bool *LFP = 0,
 				bool *LFG = 0);
-	bool	GetCharacterInfoForLogin(const char* name, uint32* character_id = 0, char* current_zone = 0, 
+	bool GetCharacterInfoForLogin(const char* name, uint32* character_id = 0, char* current_zone = 0, 
 				PlayerProfile_Struct* pp = 0, Inventory* inv = 0, ExtendedProfile_Struct *ext = 0, uint32* pplen = 0, 
 				uint32* guilddbid = 0, int8* guildrank = 0, uint8 *class_ = 0, uint8 *level = 0, bool *LFP = 0,
 				bool *LFG = 0);
 	
+	void SetBuff(uint32 id, uint8 type, const char *unescaped_data, uint32 data_len);
+	char *GetBuff(uint32 id, uint8 type);
+
 	/*
 	 * Character Inventory
 	 */
@@ -240,7 +239,7 @@ public:
 	/*
 	 * NPCs
 	 */
-	const NPCType*			GetNPCType(uint32 id);
+	const NPCType* GetNPCType(uint32 id);
 	int32	NPCSpawnDB(int8 command, const char* zone, Client *c, NPC* spawn = 0, int32 extra = 0); // 0 = Create 1 = Add; 2 = Update; 3 = Remove; 4 = Delete
 	bool	SetSpecialAttkFlag(int8 id, const char* flag);
 	bool	GetPetEntry(const char *pet_type, PetRecord *into);

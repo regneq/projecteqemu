@@ -87,6 +87,7 @@ Copyright (C) 2001-2002  EQEMu Development Team (http://eqemu.org)
 #include "buff.h"
 #include <math.h>
 #include <assert.h>
+#include <sstream>
 #ifndef WIN32
 //	#include <pthread.h>
 #include <stdlib.h>
@@ -109,8 +110,6 @@ extern volatile bool ZoneLoaded;
 #endif
 extern bool spells_loaded;
 extern WorldServer worldserver;
-uchar blah[]={0x0D,0x00,0x00,0x00,0x01,0x00,0x00,0x00};
-uchar blah2[]={0x12,0x00,0x00,0x00,0x16,0x01,0x00,0x00};
 
 
 // solar: this is run constantly for every mob
@@ -2092,7 +2091,6 @@ Buff *Mob::AddBuff(Mob *caster, Spell *spell_to_cast, sint32 &buff_slot, uint32 
 	}
 	current_buff_count++;
 	buffs[buff_slot] = new Buff(spell_to_cast, duration);
-	//SendBuffPacket(buffs[buff_slot], buff_slot, 3);
 
 	if(caster && caster->IsClient())
 	{
@@ -4173,6 +4171,76 @@ void Client::SendBuffPacket(Buff *buff, uint32 buff_index, uint32 buff_mode, uin
 	safe_delete(outapp);
 }
 
+void Mob::SetBuffCount(uint32 new_buff_count)
+{
+	if(current_buff_count == 0 && new_buff_count > 0)
+	{
+		buff_tic_timer = new Timer(6000);
+	}
+	else if(current_buff_count > 0 && new_buff_count == 0)
+	{
+		safe_delete(buff_tic_timer);
+	}
+	current_buff_count = new_buff_count; 
+}
+
+void Client::SaveBuffs()
+{
+	//We only save the first 25 buffs.
+	//The pp doesn't support more than 25 buffs so
+	//we don't try to save anymore than that for now.
+	//(Maybe we can find a field for spells/disc later!)
+	stringstream ss (stringstream::in | stringstream::out);
+	BuffStorage::buff_header header;
+	header.version_identifier = 1;
+	header.number_of_buffs = 0;
+	
+	uint32 buff_count = 0;
+	for(int i = 0; i < 25; i++)
+	{
+		if(buffs[i])
+		{
+			BuffStorage::Version1::buff_entry buff_entry;
+			buff_entry.buff_slot = i;
+			buff_entry.duration = buffs[i]->GetDurationRemaining();
+			buff_entry.is_perm_illusion = buffs[i]->IsPermanentIllusion();
+			buff_entry.is_client = buffs[i]->IsClientBuff();
+			buff_entry.magic_remaining_charges = buffs[i]->GetRemainingChargesMagic();
+			buff_entry.poison_remaining_charges = buffs[i]->GetRemainingChargesPoison();
+			buff_entry.disease_remaining_charges = buffs[i]->GetRemainingChargesDisease();
+			buff_entry.curse_remaining_charges = buffs[i]->GetRemainingChargesCurse();
+			buff_entry.general_remaining_charges = buffs[i]->GetRemainingCharges();
+			buff_entry.melee_shield_remaining = buffs[i]->GetMeleeShield();
+			buff_entry.melee_shield_reduction = buffs[i]->GetMeleeShieldReduction();
+			buff_entry.magic_shield_remaining = buffs[i]->GetMagicShield();
+			buff_entry.magic_shield_reduction = buffs[i]->GetMagicShieldReduction();
+			buff_entry.attacks_negated = buffs[i]->GetAttacksNegated();
+			buff_entry.death_save_chance = buffs[i]->GetDeathSaveChance();
+			buff_entry.caster_aa_rank = buffs[i]->GetCasterAARank();
+			buff_entry.instrument_mod = buffs[i]->GetInstrumentMod();
+			buff_entry.is_custom_spell = buffs[i]->GetSpell()->IsCustomSpell();
+			ss.write((const char*)&buff_entry, sizeof(BuffStorage::Version1::buff_entry));
+
+			if(buff_entry.is_custom_spell)
+			{
+				BuffStorage::Version1::buff_spell_entry buff_spell_entry;
+				buff_spell_entry.caster_level = buffs[i]->GetSpell()->GetCasterLevel();
+				buff_spell_entry.spell_slot = buffs[i]->GetSpell()->GetSpellSlot();
+				buff_spell_entry.spell_slot_inventory = buffs[i]->GetSpell()->GetInventorySpellSlot();
+				buff_spell_entry.spell_class_type = buffs[i]->GetSpell()->GetSpellType();
+				memcpy(&buff_spell_entry.raw_spell, &buffs[i]->GetSpell()->GetSpell(), sizeof(SPDat_Spell_Struct));
+				ss.write((const char*)&buff_spell_entry, sizeof(BuffStorage::Version1::buff_spell_entry));
+			}
+
+			buff_count++;
+		}
+	}
+	header.number_of_buffs = buff_count;
+	ss.seekp(stringstream::beg);
+	ss.write((const char*)&header, sizeof(BuffStorage::buff_header));
+	database.SetBuff(GetID(), BuffStorage::BUFF_ST_CHARACTER, ss.str().c_str(), ss.str().length());
+}
+
 Spell::Spell(uint32 spell_id, Mob* caster, Mob* target, uint32 slot, uint32 cast_time, uint32 mana_cost)
 {
 	caster_id = caster ? caster->GetID() : 0;
@@ -4186,6 +4254,7 @@ Spell::Spell(uint32 spell_id, Mob* caster, Mob* target, uint32 slot, uint32 cast
 	timer_id_duration = -1;
 	spell_class_type = SC_NORMAL;
 	spell_slot_inventory = 0xFFFFFFFF;
+	custom_data = false;
 
 	const SPDat_Spell_Struct &spell = spells[spell_id];
 	memcpy((void*)&raw_spell, (const void*)&spell, sizeof(SPDat_Spell_Struct));
@@ -4196,6 +4265,7 @@ Spell::Spell()
 {
 	cast_timer = NULL;
 	spell_class_type = SC_NORMAL;
+	custom_data = true;
 }
 
 Spell::~Spell()
@@ -4265,6 +4335,8 @@ Spell* Spell::CopySpell()
 	return_value->timer_id = this->timer_id;
 	return_value->timer_id_duration = this->timer_id_duration;
 	return_value->spell_class_type = this->spell_class_type;
+	return_value->custom_data = this->custom_data;
+
 	if(this->cast_timer)
 	{
 		return_value->cast_timer = new Timer(this->cast_timer->GetRemainingTime());
