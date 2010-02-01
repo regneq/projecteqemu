@@ -5687,3 +5687,25 @@ void Client::SuspendMinion()
 	}
 }
 
+void Client::AddPVPPoints(uint32 Points)
+{
+	m_pp.PVPCurrentPoints += Points;
+	m_pp.PVPCareerPoints += Points;
+
+	Save();
+
+	SendPVPStats();
+}
+
+void Client::AddCrystals(uint32 Radiant, uint32 Ebon)
+{
+	m_pp.currentRadCrystals += Radiant;
+	m_pp.careerRadCrystals += Radiant;
+	m_pp.currentEbonCrystals += Ebon;
+	m_pp.careerEbonCrystals += Ebon;
+
+	Save();
+
+	SendCrystalCounts();
+}
+
