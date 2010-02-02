@@ -1590,7 +1590,6 @@ void NPC::AI_DoMovement() {
 					char temp[16]; 
 					sprintf(temp, "%d", cur_wp);
 					parse->Event(EVENT_WAYPOINT_DEPART,this->GetNPCTypeID(), temp, CastToNPC(), NULL); 
-					parse->Event(EVENT_WAYPOINT,this->GetNPCTypeID(), temp, CastToNPC(), NULL); 
 					
 					entity_list.OpenDoorsNear(CastToNPC());
 					//setup our next waypoint, if we are still on our normal grid

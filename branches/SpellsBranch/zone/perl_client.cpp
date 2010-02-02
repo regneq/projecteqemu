@@ -4039,7 +4039,136 @@ XS(XS_Client_KeyRingCheck)
 	XSRETURN(1);
 }
 
+XS(XS_Client_AddPVPPoints);
+XS(XS_Client_AddPVPPoints)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Client::AddPVPPoints(THIS, Points)");
+	{
+		Client *	THIS;
+		bool		RETVAL;
+		dXSTARG;
+		uint32		Points = (uint32)SvUV(ST(1));
 
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->AddPVPPoints(Points);
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_Client_AddCrystals);
+XS(XS_Client_AddCrystals)
+{
+	dXSARGS;
+	if (items != 3)
+		Perl_croak(aTHX_ "Usage: Client::AddCrystals(THIS, RadiantCount, EbonCount)");
+	{
+		Client *	THIS;
+		bool		RETVAL;
+		dXSTARG;
+		uint32		Radiant = (uint32)SvUV(ST(1));
+		uint32		Ebon = (uint32)SvUV(ST(2));
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->AddCrystals(Radiant, Ebon);
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_Client_GetPVPPoints); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_GetPVPPoints)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Client::GetPVPPoints(THIS)");
+	{
+		Client *		THIS;
+		int32		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetPVPPoints();
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Client_GetRadiantCrystals); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_GetRadiantCrystals)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Client::GetRadiantCrystals(THIS)");
+	{
+		Client *		THIS;
+		int32		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetRadiantCrystals();
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Client_GetEbonCrystals); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_GetEbonCrystals)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Client::GetEbonCrystals(THIS)");
+	{
+		Client *		THIS;
+		int32		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetEbonCrystals();
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
 
 #ifdef __cplusplus
 extern "C"
@@ -4210,7 +4339,11 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "SetStartZone"), XS_Client_SetStartZone, file, "$$");
 		newXSproto(strcpy(buf, "KeyRingAdd"), XS_Client_KeyRingAdd, file, "$$");
 		newXSproto(strcpy(buf, "KeyRingCheck"), XS_Client_KeyRingCheck, file, "$$");
-		
+		newXSproto(strcpy(buf, "AddPVPPoints"), XS_Client_AddPVPPoints, file, "$$");
+		newXSproto(strcpy(buf, "AddCrystals"), XS_Client_AddCrystals, file, "$$");
+		newXSproto(strcpy(buf, "GetPVPPoints"), XS_Client_GetPVPPoints, file, "$");
+		newXSproto(strcpy(buf, "GetRadiantCrystals"), XS_Client_GetRadiantCrystals, file, "$");
+		newXSproto(strcpy(buf, "GetEbonCrystals"), XS_Client_GetEbonCrystals, file, "$");
 	XSRETURN_YES;
 }
 

@@ -1387,9 +1387,8 @@ void Mob::NPCSpecialAttacks(const char* parse, int permtag) {
 	}
 }
 
-bool Mob::BoolNPCSpecAtks(const char* parse) {
-	
-	const char* orig_parse = parse;
+bool Mob::HasNPCSpecialAtk(const char* parse) {
+
 	bool HasAllAttacks = true;
 
     while (*parse && HasAllAttacks == true)

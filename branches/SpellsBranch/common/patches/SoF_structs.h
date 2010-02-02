@@ -927,7 +927,10 @@ struct PlayerProfile_Struct //23576 Octets
 /*17880*/ uint32  PVPBestKillStreak;
 /*17884*/ uint32  PVPWorstDeathStreak;
 /*17888*/ uint32  PVPCurrentKillStreak;
-/*17892*/ uint8 unknown17892[4580];
+/*17892*/ PVPStatsEntry_Struct PVPLastKill;
+/*17980*/ PVPStatsEntry_Struct PVPLastDeath;
+/*18068*/ uint32  PVPNumberOfKillsInLast24Hours;
+/*18072*/ PVPStatsEntry_Struct PVPRecentKills[50];
 /*22472*/ uint32 expAA;               // Exp earned in current AA point
 /*22476*/ uint8 unknown19516[40];
 /*22516*/ uint32 currentRadCrystals;  // Current count of radiant crystals

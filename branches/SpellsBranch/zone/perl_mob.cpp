@@ -6388,12 +6388,12 @@ XS(XS_Mob_ProjectileAnim)
 	XSRETURN_EMPTY;
 }
 
-XS(XS_Mob_BoolNPCSpecAtks); /* prototype to pass -Wmissing-prototypes */
-XS(XS_Mob_BoolNPCSpecAtks)
+XS(XS_Mob_HasNPCSpecialAtk); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_HasNPCSpecialAtk)
 {
 	dXSARGS;
 	if (items != 2)
-		Perl_croak(aTHX_ "Usage: Mob::BoolNPCSpecAtks(THIS, parse)");
+		Perl_croak(aTHX_ "Usage: Mob::HasNPCSpecialAtk(THIS, parse)");
 	{
 		Mob *		THIS;
 		char*		parse = (char *)SvPV_nolen(ST(1));
@@ -6408,7 +6408,7 @@ XS(XS_Mob_BoolNPCSpecAtks)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		RETVAL = THIS->BoolNPCSpecAtks(parse);
+		RETVAL = THIS->HasNPCSpecialAtk(parse);
 		ST(0) = boolSV(RETVAL);
 		sv_2mortal(ST(0));
 	}
@@ -6659,7 +6659,7 @@ XS(boot_Mob)
 		newXSproto(strcpy(buf, "CheckLoSToLoc"), XS_Mob_CheckLoSToLoc, file, "$$$$;$");
 		newXSproto(strcpy(buf, "FindGroundZ"), XS_Mob_FindGroundZ, file, "$$$;$");
 		newXSproto(strcpy(buf, "ProjectileAnim"), XS_Mob_ProjectileAnim, file, "$$$;$$$$$");
-		newXSproto(strcpy(buf, "BoolNPCSpecAtks"), XS_Mob_BoolNPCSpecAtks, file, "$$");
+		newXSproto(strcpy(buf, "HasNPCSpecialAtk"), XS_Mob_HasNPCSpecialAtk, file, "$$");
 	XSRETURN_YES;
 }
 

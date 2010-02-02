@@ -11,7 +11,6 @@ typedef enum {
 	EVENT_AGGRO,		//entering combat mode due to a PC attack
 	EVENT_SLAY,			//killing a PC
 	EVENT_NPC_SLAY,		//killing an NPC
-	EVENT_WAYPOINT,		// departing a waypoint on a grid
 	EVENT_WAYPOINT_ARRIVE,	// reaching a waypoint on a grid
 	EVENT_WAYPOINT_DEPART,	// departing a waypoint on a grid
 	EVENT_TIMER,
