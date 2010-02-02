@@ -7839,7 +7839,57 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 				UnmemSpell(z, false);
 		}
 
-		//todo: load buffs from db here
+		LoadBuffs();
+
+		std::vector<int> slots_to_fade;
+		int max_count = GetMaxTotalSlots();
+		for(int x = 0; x < max_count; x++) 
+		{
+			if(buffs[x])
+			{
+				for(int e = 0; e < EFFECT_COUNT; e++)
+				{
+					switch(buffs[x]->GetSpell()->GetSpell().effectid[e])
+					{
+					case SE_Charm:
+						{
+							slots_to_fade.push_back(x);
+						}
+						break;
+					case SE_Illusion:
+						{
+							if(!buffs[x]->IsPermanentIllusion())
+							{
+								slots_to_fade.push_back(x);
+							}
+						}
+						break;
+					case SE_Levitate:
+						{
+							if(!zone->CanLevitate())
+							{
+								if(!GetGM())
+								{
+									slots_to_fade.push_back(x);
+									SendAppearancePacket(AT_Levitate, 0);
+								}
+							}
+						}
+						break;
+					default:
+						{
+						}
+					}
+				}
+			}
+		}
+
+		for(int s = 0; s < slots_to_fade.size(); s++)
+		{
+			safe_delete(buffs[slots_to_fade[s]]);
+		}
+
+		uint32 buff_count = 0;
 		for(int buffs_i = 0; buffs_i < BUFF_COUNT; buffs_i++)
 		{
 			if(buffs[buffs_i])
@@ -7854,6 +7904,7 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 				m_pp.buffs[buffs_i].persistant_buff = 0;
 				m_pp.buffs[buffs_i].player_id = 0;
 				m_pp.buffs[buffs_i].reserved = 0;
+				buff_count++;
 			}
 			else
 			{
@@ -7869,101 +7920,11 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 				m_pp.buffs[buffs_i].reserved = 0;
 			}
 		}
-		//TODO: Restore Buffs
-		/*
-		for (i = 0; i < BUFF_COUNT; i++) {
-			for(uint32 z = 0; z < BUFF_COUNT; z++) {
-			// check for duplicates
-				if(buffs[z].spellid != SPELL_UNKNOWN && buffs[z].spellid == m_pp.buffs[i].spellid) {
-					buffs[z].spellid = SPELL_UNKNOWN;
-					m_pp.buffs[i].spellid = SPELLBOOK_UNKNOWN;
-					m_pp.buffs[i].slotid = 0;
-				}
-			}
 
-			if (m_pp.buffs[i].spellid <= (int32)SPDAT_RECORDS && m_pp.buffs[i].spellid != 0
-				&& m_pp.buffs[i].duration > 0
-				&& !IsBardSong(m_pp.buffs[i].spellid)		//bard spells will re-apply if the bard is around
-			) {
-				if(m_pp.buffs[i].level == 0 || m_pp.buffs[i].level > 100)
-					m_pp.buffs[i].level = 1;
-				if(m_pp.buffs[i].duration < 3)	//make em last till they get in
-					m_pp.buffs[i].duration = 3;
-				buffs[i].spellid			= m_pp.buffs[i].spellid;
-				buffs[i].ticsremaining		= m_pp.buffs[i].duration;
-				buffs[i].casterlevel		= m_pp.buffs[i].level;
-				buffs[i].casterid			= 0;
-				buffs[i].durationformula	= spells[buffs[i].spellid].buffdurationformula;
-				buffs[i].poisoncounters		= CalculatePoisonCounters(m_pp.buffs[i].spellid);
-				buffs[i].diseasecounters	= CalculateDiseaseCounters(m_pp.buffs[i].spellid);
-				buffs[i].cursecounters		= CalculateCurseCounters(m_pp.buffs[i].spellid);
-				buffs[i].numhits			= spells[buffs[i].spellid].numhits;
-				buffs[i].persistant_buff	= m_pp.buffs[i].persistant_buff;
-				buffs[i].UpdateClient		= false;
-				if(IsRuneSpell(m_pp.buffs[i].spellid) || IsMagicRuneSpell(m_pp.buffs[i].spellid)) {
-					if(IsRuneSpell(m_pp.buffs[i].spellid)) {
-						 buffs[i].melee_rune = m_pp.buffs[i].dmg_shield_remaining;
-							 SetHasRune(true);
-						 LogFile->write(EQEMuLog::Debug, "%s has a melee rune spell buff with %i points remaining.", GetCleanName(), buffs[i].melee_rune);
-					}
-					else {
-						 buffs[i].magic_rune = m_pp.buffs[i].dmg_shield_remaining;
-							 SetHasSpellRune(true);
-						 LogFile->write(EQEMuLog::Debug, "%s has a spell rune buff with %i points remaining.", GetCleanName(), buffs[i].magic_rune);
-				}
-				}
-				if(IsDeathSaveSpell(m_pp.buffs[i].spellid)) {
-					buffs[i].deathSaveSuccessChance = m_pp.buffs[i].effect;
-					buffs[i].casterAARank = m_pp.buffs[i].reserved;
-					SetDeathSaveChance(true);
-					LogFile->write(EQEMuLog::Debug, "%s has a %i percent chance of successfully being saved from death. Caster UnfailingDivinityAA rank was %i.", GetCleanName(), buffs[i].deathSaveSuccessChance, buffs[i].casterAARank);
-				}
-			}
-			else {
-				buffs[i].spellid = SPELL_UNKNOWN;
-				m_pp.buffs[i].spellid = SPELLBOOK_UNKNOWN;
-				m_pp.buffs[i].slotid = 0;
-				m_pp.buffs[i].level = 0;
-				m_pp.buffs[i].duration = 0;
-				m_pp.buffs[i].effect = 0;
-				m_pp.buffs[i].dmg_shield_remaining = 0;
-			}
-		}*/
-
-		//TODO:
-		//I believe these effects are stripped off because if they
-		//are not, they result in permanent effects on the player
-		/*
-		for (uint32 j1=0; j1 < BUFF_COUNT; j1++) {
-			if (buffs[j1].spellid <= (int32)SPDAT_RECORDS) {
-				for (uint32 x1=0; x1 < EFFECT_COUNT; x1++) {
-					switch (spells[buffs[j1].spellid].effectid[x1]) {
-						case SE_Charm:
-						//case SE_Rune:
-							buffs[j1].spellid = SPELL_UNKNOWN;
-							m_pp.buffs[j1].spellid = SPELLBOOK_UNKNOWN;
-							m_pp.buffs[j1].slotid = 0;
-							m_pp.buffs[j1].level = 0;
-							m_pp.buffs[j1].duration = 0;
-							m_pp.buffs[j1].effect = 0;
-							x1 = EFFECT_COUNT;
-							break;
-						case SE_Illusion:
-							if(m_pp.buffs[j1].persistant_buff != 1){ //anything other than 1=non persistant
-								buffs[j1].spellid = SPELL_UNKNOWN;
-								m_pp.buffs[j1].spellid = SPELLBOOK_UNKNOWN;
-								m_pp.buffs[j1].slotid = 0;
-								m_pp.buffs[j1].level = 0;
-								m_pp.buffs[j1].duration = 0;
-								m_pp.buffs[j1].effect = 0;
-								x1 = EFFECT_COUNT;
-							}
-							break;
-						// We can't send appearance packets yet, put down at CompleteConnect
-					}
-				}
-			}
-		}*/
+		if(buff_count > 0)
+		{
+			SetBuffCount(buff_count);
+		}
 
 		//Validity check for memorized
 		if(Admin() < minStatusToHaveInvalidSpells) {
@@ -8301,27 +8262,29 @@ void Client::CompleteConnect()
 
 	//bulk raid send in here eventually
 
-	//reapply some buffs
-	//TODO:
-	/*
-	for (uint32 j1=0; j1 < BUFF_COUNT; j1++) {
-		if (buffs[j1].spellid > (int32)SPDAT_RECORDS)
+	int max_count = GetMaxTotalSlots();
+	for(uint32 j1 = 0; j1 < max_count; j1++) 
+	{
+		if(!buffs[j1])
 			continue;
 
-		const SPDat_Spell_Struct &spell = spells[buffs[j1].spellid];
-
-		for (int x1=0; x1 < EFFECT_COUNT; x1++) {
-			switch (spell.effectid[x1]) {
-                        case SE_IllusionCopy:
-				case SE_Illusion: {
-					if (spell.base[x1] == -1) {
+		const SPDat_Spell_Struct &spell = buffs[j1]->GetSpell()->GetSpell();
+		for(int x1 = 0; x1 < EFFECT_COUNT; x1++) 
+		{
+			switch (spell.effectid[x1]) 
+			{
+				case SE_IllusionCopy:
+				case SE_Illusion: 
+					{
+					if(spell.base[x1] == -1) 
+					{
 						if (gender == 1)
 							gender = 0;
 						else if (gender == 0)
 							gender = 1;
 						SendIllusionPacket(GetRace(), gender, 0xFFFF, 0xFFFF);
 					}
-					else if (spell.base[x1] == -2)
+					else if(spell.base[x1] == -2)
 					{
 						if (GetRace() == 128 || GetRace() == 130 || GetRace() <= 12)
 							SendIllusionPacket(GetRace(), GetGender(), spell.max[x1], spell.max[x1]);
@@ -8334,7 +8297,8 @@ void Client::CompleteConnect()
 					{
 						SendIllusionPacket(spell.base[x1], 0xFF, 0xFFFF, 0xFFFF);
 					}
-					switch(spell.base[x1]){
+					switch(spell.base[x1])
+					{
 						case OGRE:
 							SendAppearancePacket(AT_Size, 9);
 							break;
@@ -8364,62 +8328,73 @@ void Client::CompleteConnect()
 					}
 					break;
 				}
-				case SE_SummonHorse: {
-					SummonHorse(buffs[j1].spellid);
-					//hasmount = true;	//this was false, is that the correct thing?
+				case SE_SummonHorse: 
+					{
+						SummonHorse(spell.id);
+					}
 					break;
-				}
 				case SE_Silence:
 					{
 						Silence(true);
-						break;
 					}
+					break;
 				case SE_DivineAura:
 					{
-					invulnerable = true;
-					break;
+						invulnerable = true;
 					}
+					break;
+				case SE_Rune:
+					{
+						SetHasRune(true);
+					}
+					break;
+				case SE_AbsorbMagicAtt:
+					{
+						SetHasSpellRune(true);
+					}
+					break;
+				case SE_MitigateMeleeDamage:
+					{
+						SetHasPartialMeleeRune(true);
+					}
+					break;
+				case SE_MitigateSpellDamage:
+					{
+						SetHasPartialSpellRune(true);
+					}
+					break;
+				case SE_DeathSave:
+					{
+						SetDeathSaveChance(true);
+					}
+					break;
 				case SE_Invisibility2:
 				case SE_Invisibility:
 					{
-					invisible = true;
-					SendAppearancePacket(AT_Invis, 1);
-					break;
+						invisible = true;
+						SendAppearancePacket(AT_Invis, 1);
 					}
-				case SE_Levitate:
-					{
-                        if( !zone->CanLevitate() )
-                        {
-                            if(!GetGM())
-                            {
-                                SendAppearancePacket(AT_Levitate, 0);
-                                BuffFadeByEffect(SE_Levitate);
-                                Message(13, "You can't levitate in this zone.");
-                            }
-                        }else{
-                            SendAppearancePacket(AT_Levitate, 2);
-                        }
 					break;
-					}
 				case SE_InvisVsUndead2:
 				case SE_InvisVsUndead:
 					{
-					invisible_undead = true;
-					break;
+						invisible_undead = true;
 					}
+					break;
 				case SE_InvisVsAnimals:
 					{
-					invisible_animals = true;
-					break;
+						invisible_animals = true;
 					}
+					break;
                 case SE_WeaponProc:
 					{
-					AddProcToWeapon(GetProcID(buffs[j1].spellid, x1), false, 100+spells[buffs[j1].spellid].base2[x1]);
-					break;
+						AddProcToWeapon(GetProcID(buffs[j1]->GetSpell(), x1), 
+							false, 100 + spell.base2[x1]);
 					}
+					break;
 			}
 		}
-	}*/
+	}
 
 	//sends appearances for all mobs not doing anim_stand aka sitting, looting, playing dead
 	entity_list.SendZoneAppearance(this);

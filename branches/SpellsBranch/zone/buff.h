@@ -47,18 +47,10 @@ namespace BuffStorage
 	namespace Version1
 	{
 #pragma pack(1)
-		struct buff_spell_entry
-		{
-			uint32 caster_level;
-			uint32 spell_slot;
-			uint32 spell_slot_inventory;
-			uint32 spell_class_type;
-			SPDat_Spell_Struct raw_spell;	
-		};
-
 		struct buff_entry
 		{
 			uint8 buff_slot;
+			uint32 spell_id;
 			uint32 duration;
 			bool is_perm_illusion;
 			bool is_client;
@@ -75,6 +67,10 @@ namespace BuffStorage
 			uint8 death_save_chance;
 			uint8 caster_aa_rank;
 			uint32 instrument_mod;
+			uint32 caster_level;
+			uint32 spell_slot;
+			uint32 spell_slot_inventory;
+			uint32 spell_class_type;
 			bool is_custom_spell;
 		};
 #pragma pack()

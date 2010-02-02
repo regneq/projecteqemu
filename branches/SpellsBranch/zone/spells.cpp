@@ -4190,18 +4190,38 @@ void Client::SaveBuffs(uint8 mode)
 	//The pp doesn't support more than 25 buffs so
 	//we don't try to save anymore than that for now.
 	//(Maybe we can find a field for spells/disc later!)
-	stringstream ss (stringstream::in | stringstream::out);
+	uint32 total_size = sizeof(BuffStorage::buff_header);
+	uint32 buff_count = 0;
+	for(int i = 0; i < 25; i++)
+	{
+		if(buffs[i])
+		{
+			total_size += sizeof(BuffStorage::Version1::buff_entry);
+			if(buffs[i]->GetSpell()->IsCustomSpell())
+			{
+				total_size += sizeof(SPDat_Spell_Struct);
+			}
+			buff_count++;
+		}
+	}
+
+	char *data = new char[total_size];
+	uint32 offset = 0;
+
 	BuffStorage::buff_header header;
 	header.version_identifier = 1;
-	header.number_of_buffs = 0;
-	
-	uint32 buff_count = 0;
+	header.number_of_buffs = buff_count;
+
+	memcpy(data + offset, &header, sizeof(BuffStorage::buff_header));
+	offset += sizeof(BuffStorage::buff_header);
+
 	for(int i = 0; i < 25; i++)
 	{
 		if(buffs[i])
 		{
 			BuffStorage::Version1::buff_entry buff_entry;
 			buff_entry.buff_slot = i;
+			buff_entry.spell_id = buffs[i]->GetSpell()->GetSpellID();
 			buff_entry.duration = buffs[i]->GetDurationRemaining();
 			buff_entry.is_perm_illusion = buffs[i]->IsPermanentIllusion();
 			buff_entry.is_client = buffs[i]->IsClientBuff();
@@ -4218,27 +4238,22 @@ void Client::SaveBuffs(uint8 mode)
 			buff_entry.death_save_chance = buffs[i]->GetDeathSaveChance();
 			buff_entry.caster_aa_rank = buffs[i]->GetCasterAARank();
 			buff_entry.instrument_mod = buffs[i]->GetInstrumentMod();
+			buff_entry.caster_level = buffs[i]->GetSpell()->GetCasterLevel();
+			buff_entry.spell_slot = buffs[i]->GetSpell()->GetSpellSlot();
+			buff_entry.spell_slot_inventory = buffs[i]->GetSpell()->GetInventorySpellSlot();
+			buff_entry.spell_class_type = buffs[i]->GetSpell()->GetSpellType();	
 			buff_entry.is_custom_spell = buffs[i]->GetSpell()->IsCustomSpell();
-			ss.write((const char*)&buff_entry, sizeof(BuffStorage::Version1::buff_entry));
+			memcpy(data + offset, &buff_entry, sizeof(BuffStorage::Version1::buff_entry));
+			offset += sizeof(BuffStorage::Version1::buff_entry);
 
 			if(buff_entry.is_custom_spell)
 			{
-				BuffStorage::Version1::buff_spell_entry buff_spell_entry;
-				buff_spell_entry.caster_level = buffs[i]->GetSpell()->GetCasterLevel();
-				buff_spell_entry.spell_slot = buffs[i]->GetSpell()->GetSpellSlot();
-				buff_spell_entry.spell_slot_inventory = buffs[i]->GetSpell()->GetInventorySpellSlot();
-				buff_spell_entry.spell_class_type = buffs[i]->GetSpell()->GetSpellType();
-				memcpy(&buff_spell_entry.raw_spell, &buffs[i]->GetSpell()->GetSpell(), sizeof(SPDat_Spell_Struct));
-				ss.write((const char*)&buff_spell_entry, sizeof(BuffStorage::Version1::buff_spell_entry));
+				memcpy(data + offset, &buffs[i]->GetSpell()->GetSpell(), sizeof(SPDat_Spell_Struct));
+				offset += sizeof(SPDat_Spell_Struct);
 			}
-
-			buff_count++;
 		}
 	}
-	header.number_of_buffs = buff_count;
-	ss.seekp(stringstream::beg);
-	ss.write((const char*)&header, sizeof(BuffStorage::buff_header));
-	database.SetBuff(CharacterID(), BuffStorage::BUFF_ST_CHARACTER, ss.str().c_str(), ss.str().length());
+	database.SetBuff(CharacterID(), BuffStorage::BUFF_ST_CHARACTER, data, total_size);
 }
 
 void NPC::SaveBuffs(uint8 mode)
@@ -4257,12 +4272,31 @@ void NPC::SaveBuffs(uint8 mode)
 		return;
 	}
 
-	stringstream ss (stringstream::in | stringstream::out);
+	uint32 total_size = sizeof(BuffStorage::buff_header);
+	uint32 buff_count = 0;
+	for(int i = 0; i < 25; i++)
+	{
+		if(buffs[i])
+		{
+			total_size += sizeof(BuffStorage::Version1::buff_entry);
+			if(buffs[i]->GetSpell()->IsCustomSpell())
+			{
+				total_size += sizeof(SPDat_Spell_Struct);
+			}
+			buff_count++;
+		}
+	}
+
+	char *data = new char[total_size];
+	uint32 offset = 0;
+
 	BuffStorage::buff_header header;
 	header.version_identifier = 1;
-	header.number_of_buffs = 0;
-	
-	uint32 buff_count = 0;
+	header.number_of_buffs = buff_count;
+
+	memcpy(data + offset, &header, sizeof(BuffStorage::buff_header));
+	offset += sizeof(BuffStorage::buff_header);
+
 	uint32 max_count = GetMaxTotalSlots();
 	for(int i = 0; i < max_count; i++)
 	{
@@ -4270,6 +4304,7 @@ void NPC::SaveBuffs(uint8 mode)
 		{
 			BuffStorage::Version1::buff_entry buff_entry;
 			buff_entry.buff_slot = i;
+			buff_entry.spell_id = buffs[i]->GetSpell()->GetSpellID();
 			buff_entry.duration = buffs[i]->GetDurationRemaining();
 			buff_entry.is_perm_illusion = buffs[i]->IsPermanentIllusion();
 			buff_entry.is_client = buffs[i]->IsClientBuff();
@@ -4286,29 +4321,148 @@ void NPC::SaveBuffs(uint8 mode)
 			buff_entry.death_save_chance = buffs[i]->GetDeathSaveChance();
 			buff_entry.caster_aa_rank = buffs[i]->GetCasterAARank();
 			buff_entry.instrument_mod = buffs[i]->GetInstrumentMod();
+			buff_entry.caster_level = buffs[i]->GetSpell()->GetCasterLevel();
+			buff_entry.spell_slot = buffs[i]->GetSpell()->GetSpellSlot();
+			buff_entry.spell_slot_inventory = buffs[i]->GetSpell()->GetInventorySpellSlot();
+			buff_entry.spell_class_type = buffs[i]->GetSpell()->GetSpellType();	
 			buff_entry.is_custom_spell = buffs[i]->GetSpell()->IsCustomSpell();
-			ss.write((const char*)&buff_entry, sizeof(BuffStorage::Version1::buff_entry));
+			memcpy(data + offset, &buff_entry, sizeof(BuffStorage::Version1::buff_entry));
+			offset += sizeof(BuffStorage::Version1::buff_entry);
 
 			if(buff_entry.is_custom_spell)
 			{
-				BuffStorage::Version1::buff_spell_entry buff_spell_entry;
-				buff_spell_entry.caster_level = buffs[i]->GetSpell()->GetCasterLevel();
-				buff_spell_entry.spell_slot = buffs[i]->GetSpell()->GetSpellSlot();
-				buff_spell_entry.spell_slot_inventory = buffs[i]->GetSpell()->GetInventorySpellSlot();
-				buff_spell_entry.spell_class_type = buffs[i]->GetSpell()->GetSpellType();
-				memcpy(&buff_spell_entry.raw_spell, &buffs[i]->GetSpell()->GetSpell(), sizeof(SPDat_Spell_Struct));
-				ss.write((const char*)&buff_spell_entry, sizeof(BuffStorage::Version1::buff_spell_entry));
+				memcpy(data + offset, &buffs[i]->GetSpell()->GetSpell(), sizeof(SPDat_Spell_Struct));
+				offset += sizeof(SPDat_Spell_Struct);
 			}
-
-			buff_count++;
 		}
 	}
-	header.number_of_buffs = buff_count;
-	ss.seekp(stringstream::beg);
-	ss.write((const char*)&header, sizeof(BuffStorage::buff_header));
 	database.SetBuff(owner->CastToClient()->CharacterID(), mode == 0 ? BuffStorage::BUFF_ST_PET : BuffStorage::BUFF_ST_SUSPENDED_PET,
-		ss.str().c_str(), ss.str().length());
+		data, total_size);
 }
+
+void Client::LoadBuffs(uint8 mode)
+{
+	char *data = database.GetBuff(CharacterID(), BuffStorage::BUFF_ST_CHARACTER);
+	if(data)
+	{
+		BuffStorage::buff_header *header = (BuffStorage::buff_header *)data;
+		switch(header->version_identifier)
+		{
+		case 1:
+			{
+				LoadBuffsVersion1(data);
+				break;
+			}
+		default:
+			{
+			}
+		}
+		safe_delete_array(data);
+	}
+}
+
+void NPC::LoadBuffs(uint8 mode)
+{
+	Mob *owner = GetOwner();
+	
+	if(owner)
+	{
+		if(!owner->IsClient())
+		{
+			return;
+		}
+	}
+	else
+	{
+		return;
+	}
+
+	char *data = database.GetBuff(owner->CastToClient()->CharacterID(), mode == 0 ? BuffStorage::BUFF_ST_PET : BuffStorage::BUFF_ST_SUSPENDED_PET);
+	if(data)
+	{
+		BuffStorage::buff_header *header = (BuffStorage::buff_header *)data;
+		switch(header->version_identifier)
+		{
+		case 1:
+			{
+				LoadBuffsVersion1(data);
+				break;
+			}
+		default:
+			{
+			}
+		}
+		safe_delete_array(data);
+	}
+}
+
+void Mob::LoadBuffsVersion1(char *data)
+{
+	char *data_ptr = data;
+	BuffStorage::buff_header *header = (BuffStorage::buff_header *)data_ptr;
+	data_ptr += sizeof(BuffStorage::buff_header);
+
+	for(int i = 0; i < header->number_of_buffs; i++)
+	{
+		BuffStorage::Version1::buff_entry *buff_entry = (BuffStorage::Version1::buff_entry *) data_ptr;
+
+		if(buff_entry->is_custom_spell == 0)
+		{
+			Spell *new_spell = new Spell(buff_entry->spell_id, NULL, this, buff_entry->spell_slot);
+			new_spell->SetInventorySpellSlot(buff_entry->spell_slot_inventory);
+			new_spell->SetCasterLevel(buff_entry->caster_level);
+			new_spell->SetSpellType((SpellClass)buff_entry->spell_class_type);
+			buffs[buff_entry->buff_slot] = new Buff(new_spell, buff_entry->duration);
+			buffs[buff_entry->buff_slot]->SetIsClientBuff(buff_entry->is_client);
+			buffs[buff_entry->buff_slot]->SetPermanentIllusion(buff_entry->is_perm_illusion);
+			buffs[buff_entry->buff_slot]->SetRemainingChargesMagic(buff_entry->magic_remaining_charges);
+			buffs[buff_entry->buff_slot]->SetRemainingChargesPoison(buff_entry->poison_remaining_charges);
+			buffs[buff_entry->buff_slot]->SetRemainingChargesDisease(buff_entry->disease_remaining_charges);
+			buffs[buff_entry->buff_slot]->SetRemainingChargesCurse(buff_entry->curse_remaining_charges);
+			buffs[buff_entry->buff_slot]->SetRemainingCharges(buff_entry->general_remaining_charges);
+			buffs[buff_entry->buff_slot]->SetMeleeShield(buff_entry->melee_shield_remaining);
+			buffs[buff_entry->buff_slot]->SetMagicShield(buff_entry->magic_shield_remaining);
+			buffs[buff_entry->buff_slot]->SetMeleeShieldReduction(buff_entry->melee_shield_reduction);
+			buffs[buff_entry->buff_slot]->SetMagicShieldReduction(buff_entry->magic_shield_reduction);
+			buffs[buff_entry->buff_slot]->SetAttacksNegated(buff_entry->attacks_negated);
+			buffs[buff_entry->buff_slot]->SetDeathSaveChance(buff_entry->death_save_chance);
+			buffs[buff_entry->buff_slot]->SetCasterAARank(buff_entry->caster_aa_rank);
+			buffs[buff_entry->buff_slot]->SetInstrumentMod(buff_entry->instrument_mod);
+			
+			safe_delete(new_spell);
+			data_ptr += sizeof(BuffStorage::Version1::buff_entry);
+		}
+		else
+		{
+			data_ptr += sizeof(BuffStorage::Version1::buff_entry);
+			SPDat_Spell_Struct *spell_data = (SPDat_Spell_Struct *)data_ptr;
+			
+			Spell *new_spell = new Spell(spell_data, buff_entry->caster_level, buff_entry->spell_slot, 
+				buff_entry->spell_slot_inventory, buff_entry->spell_class_type);
+			new_spell->SetTarget(this);
+			buffs[buff_entry->buff_slot] = new Buff(new_spell, buff_entry->duration);
+			buffs[buff_entry->buff_slot]->SetIsClientBuff(buff_entry->is_client);
+			buffs[buff_entry->buff_slot]->SetPermanentIllusion(buff_entry->is_perm_illusion);
+			buffs[buff_entry->buff_slot]->SetRemainingChargesMagic(buff_entry->magic_remaining_charges);
+			buffs[buff_entry->buff_slot]->SetRemainingChargesPoison(buff_entry->poison_remaining_charges);
+			buffs[buff_entry->buff_slot]->SetRemainingChargesDisease(buff_entry->disease_remaining_charges);
+			buffs[buff_entry->buff_slot]->SetRemainingChargesCurse(buff_entry->curse_remaining_charges);
+			buffs[buff_entry->buff_slot]->SetRemainingCharges(buff_entry->general_remaining_charges);
+			buffs[buff_entry->buff_slot]->SetMeleeShield(buff_entry->melee_shield_remaining);
+			buffs[buff_entry->buff_slot]->SetMagicShield(buff_entry->magic_shield_remaining);
+			buffs[buff_entry->buff_slot]->SetMeleeShieldReduction(buff_entry->melee_shield_reduction);
+			buffs[buff_entry->buff_slot]->SetMagicShieldReduction(buff_entry->magic_shield_reduction);
+			buffs[buff_entry->buff_slot]->SetAttacksNegated(buff_entry->attacks_negated);
+			buffs[buff_entry->buff_slot]->SetDeathSaveChance(buff_entry->death_save_chance);
+			buffs[buff_entry->buff_slot]->SetCasterAARank(buff_entry->caster_aa_rank);
+			buffs[buff_entry->buff_slot]->SetInstrumentMod(buff_entry->instrument_mod);
+
+			safe_delete(new_spell);
+			data_ptr += sizeof(SPDat_Spell_Struct);
+		}
+	}
+}
+
 
 Spell::Spell(uint32 spell_id, Mob* caster, Mob* target, uint32 slot, uint32 cast_time, uint32 mana_cost)
 {
@@ -4334,6 +4488,23 @@ Spell::Spell()
 {
 	cast_timer = NULL;
 	spell_class_type = SC_NORMAL;
+	custom_data = true;
+}
+
+Spell::Spell(SPDat_Spell_Struct *new_spell, uint32 caster_level, uint32 slot, uint32 inventory_slot, uint32 spell_type)
+{
+	memcpy((void*)&raw_spell, (const void*)new_spell, sizeof(SPDat_Spell_Struct));
+	caster_id = 0;
+	caster_level = caster_level;
+	target_id = 0;
+	spell_slot = slot;
+	this->cast_time = -1;
+	this->mana_cost = -1;
+	cast_timer = NULL;
+	timer_id = -1;
+	timer_id_duration = -1;
+	spell_class_type = (SpellClass)spell_type;
+	spell_slot_inventory = inventory_slot;
 	custom_data = true;
 }
 

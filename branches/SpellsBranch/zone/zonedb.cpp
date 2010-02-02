@@ -1891,7 +1891,6 @@ char *ZoneDatabase::GetBuff(uint32 id, uint8 type)
 			lengths = mysql_fetch_lengths(result);
 			char * return_data = new char[lengths[0]];
 			memcpy(return_data, row[0], lengths[0]);
-
 			mysql_free_result(result);
 			return return_data;
 		}

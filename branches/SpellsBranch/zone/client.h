@@ -248,6 +248,7 @@ public:
 	bool Save(int8 iCommitNow); // 0 = delayed, 1=async now, 2=sync now
 	void SaveBackup();
 	virtual void SaveBuffs(uint8 mode = 0);
+	virtual void LoadBuffs(uint8 mode = 0);
 
 	inline bool ClientDataLoaded() const { return client_data_loaded; }
 	inline bool	Connected()		const { return (client_state == CLIENT_CONNECTED); }

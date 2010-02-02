@@ -722,7 +722,23 @@ bool logpos;
 	void TryDotCritical(const Spell *spell_to_cast, Mob *caster, int &damage);
 	virtual void MakePet(const Spell *spell_to_cast, const char* pettype, const char *petname = NULL);
 	void TemporaryPets(const Spell *spell_to_cast, Mob *target, const char *name_override = NULL, uint32 duration_override = 0);
+	inline bool HasRune() const { return m_hasRune; }
+	inline bool HasSpellRune() const { return m_hasSpellRune; }
+	inline bool HasPartialSpellRune() const { return m_hasPartialSpellRune; }
+	inline bool HasPartialMeleeRune() const { return m_hasPartialMeleeRune; }
+	inline void SetHasRune(bool hasRune) { m_hasRune = hasRune; }
+	inline void SetHasSpellRune(bool hasSpellRune) { m_hasSpellRune = hasSpellRune; }
+	inline void SetHasPartialSpellRune(bool hasRune) { m_hasPartialSpellRune = hasRune; }
+	inline void SetHasPartialMeleeRune(bool hasRune) { m_hasPartialMeleeRune = hasRune; }
+	inline bool HasDeathSaveChance() const { return m_hasDeathSaveChance; }
+	inline void SetDeathSaveChance(bool hasDeathSaveChance) { m_hasDeathSaveChance = hasDeathSaveChance; }
+	bool PassCharismaCheck(Mob* caster, Mob* spellTarget, const Spell *spell_to_cast);
+	bool TryDeathSave();
+	uint32 GetBuffCount() const { return current_buff_count; }
+	void SetBuffCount(uint32 new_buff_count);
 	virtual void SaveBuffs(uint8 mode = 0) { }
+	virtual void LoadBuffs(uint8 mode = 0) { }
+	void LoadBuffsVersion1(char *data);
 
 
 
@@ -960,25 +976,10 @@ bool logpos;
 	virtual FACTION_VALUE GetReverseFactionCon(Mob* iOther) { return FACTION_INDIFFERENT; }
 	
 	inline bool IsTrackable() const { return(trackable); }
-	inline bool HasRune() const { return m_hasRune; }
-	inline bool HasSpellRune() const { return m_hasSpellRune; }
-	inline bool HasPartialSpellRune() const { return m_hasPartialSpellRune; }
-	inline bool HasPartialMeleeRune() const { return m_hasPartialMeleeRune; }
-	inline void SetHasRune(bool hasRune) { m_hasRune = hasRune; }
-	inline void SetHasSpellRune(bool hasSpellRune) { m_hasSpellRune = hasSpellRune; }
-	inline void SetHasPartialSpellRune(bool hasRune) { m_hasPartialSpellRune = hasRune; }
-	inline void SetHasPartialMeleeRune(bool hasRune) { m_hasPartialMeleeRune = hasRune; }
-	inline bool HasDeathSaveChance() const { return m_hasDeathSaveChance; }
-	inline void SetDeathSaveChance(bool hasDeathSaveChance) { m_hasDeathSaveChance = hasDeathSaveChance; }
-	bool PassCharismaCheck(Mob* caster, Mob* spellTarget, const Spell *spell_to_cast);
-	bool TryDeathSave();
 	Timer* GetAIThinkTimer() { return AIthink_timer; }
 	Timer* GetAIMovementTimer() { return AImovement_timer; }
 	Timer GetAttackTimer() { return attack_timer; }
 	Timer GetAttackDWTimer() { return attack_dw_timer; }
-
-	uint32 GetBuffCount() const { return current_buff_count; }
-	void SetBuffCount(uint32 new_buff_count);
 
 protected:
 	void CommonDamage(Mob* other, sint32 &damage, const uint16 spell_id, const SkillType attack_skill, bool &avoidable, const sint8 buffslot, const bool iBuffTic);

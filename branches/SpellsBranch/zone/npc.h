@@ -102,6 +102,7 @@ public:
 	virtual void ValidateSpellCastFinish(const Spell *spell_to_cast);
 	virtual bool DoComponentCheck(Spell *spell_to_cast, bool bard_song_mode) { return true; }
 	virtual void SaveBuffs(uint8 mode = 0);
+	virtual void LoadBuffs(uint8 mode = 0);
 
 	void LevelScale();
 	void CalcNPCResists();

@@ -462,92 +462,47 @@ void NPC::GetPetState(int32 *items, char *name, bool suspended_pet)
 	}
 
 	SaveBuffs(suspended_pet ? 1 : 0);	
-	//TODO:
-	//save their buffs.
-	/*for (i=0; i < BUFF_COUNT; i++) {
-		if (buffs[i].spellid != SPELL_UNKNOWN) {
-			pet_buffs[i].spellid = buffs[i].spellid;
-			pet_buffs[i].slotid = i+1;
-			pet_buffs[i].duration = buffs[i].ticsremaining;
-			pet_buffs[i].level = buffs[i].casterlevel;
-			pet_buffs[i].effect = 10;
-			pet_buffs[i].persistant_buff = buffs[i].persistant_buff;
-			pet_buffs[i].reserved = 0;
-		}
-		else {
-			pet_buffs[i].spellid = SPELL_UNKNOWN;
-			pet_buffs[i].duration = 0;
-			pet_buffs[i].level = 0;
-			pet_buffs[i].effect = 0;
-			pet_buffs[i].persistant_buff = 0;
-			pet_buffs[i].reserved = 0;
-		}
-	}
-	*/
 }
 
 void NPC::SetPetState(int32 *items, bool suspended_pet) 
 {
-	//restore their buffs...
-	int i;
-	//TODO:
-	/*
-	int i;
-	for (i = 0; i < BUFF_COUNT; i++) {
-		for(int z = 0; z < BUFF_COUNT; z++) {
-		// check for duplicates
-			if(buffs[z].spellid != SPELL_UNKNOWN && buffs[z].spellid == pet_buffs[i].spellid) {
-				buffs[z].spellid = SPELL_UNKNOWN;
-				pet_buffs[i].spellid = 0xFFFFFFFF;
-			}
-		}
-		
-		if (pet_buffs[i].spellid <= (int32)SPDAT_RECORDS && pet_buffs[i].spellid != 0 && pet_buffs[i].duration > 0) {
-			if(pet_buffs[i].level == 0 || pet_buffs[i].level > 100)
-				pet_buffs[i].level = 1;
-			buffs[i].spellid			= pet_buffs[i].spellid;
-			buffs[i].ticsremaining		= pet_buffs[i].duration;
-			buffs[i].casterlevel		= pet_buffs[i].level;
-			buffs[i].casterid			= 0;
-			buffs[i].durationformula	= spells[buffs[i].spellid].buffdurationformula;
-			buffs[i].poisoncounters		= CalculatePoisonCounters(pet_buffs[i].spellid);
-			buffs[i].diseasecounters	= CalculateDiseaseCounters(pet_buffs[i].spellid);
-			buffs[i].cursecounters		= CalculateCurseCounters(pet_buffs[i].spellid);
-			buffs[i].numhits			= spells[pet_buffs[i].spellid].numhits;
-		}
-		else {
-			buffs[i].spellid = SPELL_UNKNOWN;
-			pet_buffs[i].spellid = 0xFFFFFFFF;
-			pet_buffs[i].slotid = 0;
-			pet_buffs[i].level = 0;
-			pet_buffs[i].duration = 0;
-			pet_buffs[i].effect = 0;
-		}
-	}
-	for (int j1=0; j1 < BUFF_COUNT; j1++) {
-		if (buffs[j1].spellid <= (int32)SPDAT_RECORDS) {
-			for (int x1=0; x1 < EFFECT_COUNT; x1++) {
-				switch (spells[buffs[j1].spellid].effectid[x1]) {
-					case SE_Charm:
-					case SE_Rune:
-					case SE_Illusion:
-						buffs[j1].spellid = SPELL_UNKNOWN;
-						pet_buffs[j1].spellid = SPELLBOOK_UNKNOWN;
-						pet_buffs[j1].slotid = 0;
-						pet_buffs[j1].level = 0;
-						pet_buffs[j1].duration = 0;
-						pet_buffs[j1].effect = 0;
-						x1 = EFFECT_COUNT;
+	LoadBuffs(suspended_pet ? 1 : 0);
+
+	uint32 buff_count = 0;
+	uint32 max_count = GetMaxTotalSlots();
+	for(int i = 0; i < max_count; i++)
+	{
+		if(buffs[i])
+		{
+			for(int e = 0; e < EFFECT_COUNT; e++)
+			{
+				switch(buffs[i]->GetSpell()->GetSpell().effectid[e])
+				{
+				case SE_Charm:
+				case SE_Illusion:
+					{
+						safe_delete(buffs[i]);
 						break;
-					// We can't send appearance packets yet, put down at CompleteConnect
+					}
+					break;
 				}
 			}
+			if(buffs[i])
+			{
+				buff_count++;
+			}
 		}
 	}
-	*/
+
+	if(buff_count > 0)
+	{
+		SetBuffCount(buff_count);
+	}
+
+	//TODO: Apply some effects?
 	
 	//restore their equipment...
-	for(i = 0; i < MAX_MATERIALS; i++) {
+	for(int i = 0; i < MAX_MATERIALS; i++) {
 		if(items[i] == 0)
 			continue;
 		
