@@ -62,7 +62,7 @@ HTML
 } else {
 	my $acctE = $EQDB->escape_string($acct);
 	my $q;
-	$q="select id,charname,sharedplat,status,revoked from account where name rlike '$acctE'";
+	$q="select id,charname,sharedplat,status,revoked from account where name='$acctE'";
 	
 	my $res=$EQDB->query($q);
 	if ($res) { 
