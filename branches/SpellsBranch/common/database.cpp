@@ -616,9 +616,18 @@ bool Database::DeleteCharacter(char *name)
 		return false;
 	}
 #if DEBUG >= 5
-    printf(" keyring");
+    printf(" keyring ");
 #endif
     RunQuery(query, MakeAnyLenString(&query, "DELETE FROM keyring WHERE char_id='%d'", charid), errbuf, NULL, &affected_rows);
+    if(query)
+    {
+        safe_delete_array(query);
+        query = NULL;
+    }
+#if DEBUG >= 5
+    printf(" buffs");
+#endif
+    RunQuery(query, MakeAnyLenString(&query, "DELETE FROM character_buffs WHERE id='%d' and type >= 0 and type <= 2", charid), errbuf, NULL, &affected_rows);
     if(query)
     {
         safe_delete_array(query);
