@@ -2776,7 +2776,7 @@ bool Mob::IsImmuneToSpell(Spell *spell_to_cast, Mob *caster)
 	
 	mlog(SPELLS__RESISTS, "Checking to see if we are immune to spell %d cast by %s", spell_to_cast->GetSpellID(), caster->GetName());
 
-	if(spell_to_cast->IsMezSpell())
+	if(spell_to_cast->IsEffectInSpell(SE_Mez))
 	{
 		if(SpecAttacks[UNMEZABLE]) {
 			mlog(SPELLS__RESISTS, "We are immune to Mez spells.");
@@ -2826,7 +2826,7 @@ bool Mob::IsImmuneToSpell(Spell *spell_to_cast, Mob *caster)
 		}
 	}
 
-	if(spell_to_cast->IsCharmSpell())
+	if(spell_to_cast->IsEffectInSpell(SE_Charm))
 	{
 		if(SpecAttacks[UNCHARMABLE])
 		{
@@ -2880,7 +2880,7 @@ bool Mob::IsImmuneToSpell(Spell *spell_to_cast, Mob *caster)
 		}
 	}
 
-	if(spell_to_cast->IsSacrificeSpell())
+	if(spell_to_cast->IsEffectInSpell(SE_Sacrifice))
 	{
 		if(this == caster)
 		{
@@ -2943,7 +2943,7 @@ float Mob::ResistSpell(int8 resist_type, const Spell *spell_to_cast, Mob *caster
 	
 	//check for buff/item/aa based fear moditifers
 	//still working on this...
-	if (spell_to_cast && spell_to_cast->IsFearSpell()) {
+	if (spell_to_cast && spell_to_cast->IsEffectInSpell(SE_Fear)) {
 		sint16 rchance = 0;
 		switch (GetAA(aaFearResistance))
 		{
@@ -3071,7 +3071,7 @@ float Mob::ResistSpell(int8 resist_type, const Spell *spell_to_cast, Mob *caster
 	//Fullchance makes up the lower limit of our partial range
 	if(spell_to_cast)
 	{
-		if(spell_to_cast->IsFearSpell())
+		if(spell_to_cast->IsEffectInSpell(SE_Fear))
 		{
 			fullchance = (resistchance * (1 - RuleR(Spells, PartialHitChanceFear))); //default 0.25
 		}
@@ -3155,8 +3155,7 @@ float Mob::GetAOERange(Spell *spell_to_cast) {
 			}
 			range += mod;
 		}
-		
-		//TODO: FIXME
+
 		range = CastToClient()->GetActSpellRange(spell_to_cast, range);
 	}
 	
@@ -4463,6 +4462,16 @@ void Mob::LoadBuffsVersion1(char *data)
 	}
 }
 
+void Mob::FreeSpell(Spell **spell)
+{
+	safe_delete(*spell);
+}
+
+Spell *Mob::CreateSpell(uint32 spell_id, Mob* caster, Mob* target)
+{
+	Spell *ret_val = new Spell(spell_id, caster, target);
+	return ret_val;
+}
 
 Spell::Spell(uint32 spell_id, Mob* caster, Mob* target, uint32 slot, uint32 cast_time, uint32 mana_cost)
 {
@@ -4585,6 +4594,1744 @@ Spell* Spell::CopySpell()
 	memcpy((void*)&return_value->raw_spell, (const void*)&this->raw_spell, sizeof(SPDat_Spell_Struct));
 	return_value->raw_spell.id = GetSpellID();
 	return return_value;
+}
+
+std::string Spell::GetSpellAttribute(std::string field) const
+{
+	std::stringstream ss(stringstream::in | stringstream::out);
+
+	if(field.compare("id") == 0)
+	{
+		ss << raw_spell.id;
+	}
+	else if(field.compare("name") == 0)
+	{
+		ss << raw_spell.name;
+	}
+	else if(field.compare("player_1") == 0)
+	{
+		ss << raw_spell.player_1;
+	}
+	else if(field.compare("teleport_zone") == 0)
+	{
+		ss << raw_spell.teleport_zone;
+	}
+	else if(field.compare("you_cast") == 0)
+	{
+		ss << raw_spell.you_cast;
+	}
+	else if(field.compare("other_casts") == 0)
+	{
+		ss << raw_spell.other_casts;
+	}
+	else if(field.compare("cast_on_you") == 0)
+	{
+		ss << raw_spell.cast_on_you;
+	}
+	else if(field.compare("cast_on_other") == 0)
+	{
+		ss << raw_spell.cast_on_other;
+	}
+	else if(field.compare("spell_fades") == 0)
+	{
+		ss << raw_spell.spell_fades;
+	}
+	else if(field.compare("range") == 0)
+	{
+		ss << raw_spell.range;
+	}
+	else if(field.compare("aoerange") == 0)
+	{
+		ss << raw_spell.aoerange;
+	}
+	else if(field.compare("pushback") == 0)
+	{
+		ss << raw_spell.pushback;
+	}
+	else if(field.compare("pushup") == 0)
+	{
+		ss << raw_spell.pushup;
+	}
+	else if(field.compare("cast_time") == 0)
+	{
+		ss << raw_spell.cast_time;
+	}
+	else if(field.compare("recovery_time") == 0)
+	{
+		ss << raw_spell.recovery_time;
+	}
+	else if(field.compare("recast_time") == 0)
+	{
+		ss << raw_spell.recast_time;
+	}
+	else if(field.compare("buffdurationformula") == 0)
+	{
+		ss << raw_spell.buffdurationformula;
+	}
+	else if(field.compare("buffduration") == 0)
+	{
+		ss << raw_spell.buffduration;
+	}
+	else if(field.compare("AEduration") == 0)
+	{
+		ss << raw_spell.AEDuration;
+	}
+	else if(field.compare("mana") == 0)
+	{
+		ss << raw_spell.mana;
+	}
+	else if(field.compare("base[0]") == 0)
+	{
+		ss << raw_spell.base[0];
+	}
+	else if(field.compare("base[1]") == 0)
+	{
+		ss << raw_spell.base[1];
+	}
+	else if(field.compare("base[2]") == 0)
+	{
+		ss << raw_spell.base[2];
+	}
+	else if(field.compare("base[3]") == 0)
+	{
+		ss << raw_spell.base[3];
+	}
+	else if(field.compare("base[4]") == 0)
+	{
+		ss << raw_spell.base[4];
+	}
+	else if(field.compare("base[5]") == 0)
+	{
+		ss << raw_spell.base[5];
+	}
+	else if(field.compare("base[6]") == 0)
+	{
+		ss << raw_spell.base[6];
+	}
+	else if(field.compare("base[7]") == 0)
+	{
+		ss << raw_spell.base[7];
+	}
+	else if(field.compare("base[8]") == 0)
+	{
+		ss << raw_spell.base[8];
+	}
+	else if(field.compare("base[9]") == 0)
+	{
+		ss << raw_spell.base[9];
+	}
+	else if(field.compare("base[10]") == 0)
+	{
+		ss << raw_spell.base[10];
+	}
+	else if(field.compare("base[11]") == 0)
+	{
+		ss << raw_spell.base[11];
+	}
+	else if(field.compare("base2[0]") == 0)
+	{
+		ss << raw_spell.base2[0];
+	}
+	else if(field.compare("base2[1]") == 0)
+	{
+		ss << raw_spell.base2[1];
+	}
+	else if(field.compare("base2[2]") == 0)
+	{
+		ss << raw_spell.base2[2];
+	}
+	else if(field.compare("base2[3]") == 0)
+	{
+		ss << raw_spell.base2[3];
+	}
+	else if(field.compare("base2[4]") == 0)
+	{
+		ss << raw_spell.base2[4];
+	}
+	else if(field.compare("base2[5]") == 0)
+	{
+		ss << raw_spell.base2[5];
+	}
+	else if(field.compare("base2[6]") == 0)
+	{
+		ss << raw_spell.base2[6];
+	}
+	else if(field.compare("base2[7]") == 0)
+	{
+		ss << raw_spell.base2[7];
+	}
+	else if(field.compare("base2[8]") == 0)
+	{
+		ss << raw_spell.base2[8];
+	}
+	else if(field.compare("base2[9]") == 0)
+	{
+		ss << raw_spell.base2[9];
+	}
+	else if(field.compare("base2[10]") == 0)
+	{
+		ss << raw_spell.base2[10];
+	}
+	else if(field.compare("base2[11]") == 0)
+	{
+		ss << raw_spell.base2[11];
+	}
+	else if(field.compare("max[0]") == 0)
+	{
+		ss << raw_spell.max[0];
+	}
+	else if(field.compare("max[1]") == 0)
+	{
+		ss << raw_spell.max[1];
+	}
+	else if(field.compare("max[2]") == 0)
+	{
+		ss << raw_spell.max[2];
+	}
+	else if(field.compare("max[3]") == 0)
+	{
+		ss << raw_spell.max[3];
+	}
+	else if(field.compare("max[4]") == 0)
+	{
+		ss << raw_spell.max[4];
+	}
+	else if(field.compare("max[5]") == 0)
+	{
+		ss << raw_spell.max[5];
+	}
+	else if(field.compare("max[6]") == 0)
+	{
+		ss << raw_spell.max[6];
+	}
+	else if(field.compare("max[7]") == 0)
+	{
+		ss << raw_spell.max[7];
+	}
+	else if(field.compare("max[8]") == 0)
+	{
+		ss << raw_spell.max[8];
+	}
+	else if(field.compare("max[9]") == 0)
+	{
+		ss << raw_spell.max[9];
+	}
+	else if(field.compare("max[10]") == 0)
+	{
+		ss << raw_spell.max[10];
+	}
+	else if(field.compare("max[11]") == 0)
+	{
+		ss << raw_spell.max[11];
+	}
+	else if(field.compare("icon") == 0)
+	{
+		ss << raw_spell.icon;
+	}
+	else if(field.compare("memicon") == 0)
+	{
+		ss << raw_spell.memicon;
+	}
+	else if(field.compare("components[0]") == 0)
+	{
+		ss << raw_spell.components[0];
+	}
+	else if(field.compare("components[1]") == 0)
+	{
+		ss << raw_spell.components[1];
+	}
+	else if(field.compare("components[2]") == 0)
+	{
+		ss << raw_spell.components[2];
+	}
+	else if(field.compare("components[3]") == 0)
+	{
+		ss << raw_spell.components[3];
+	}
+	else if(field.compare("component_counts[0]") == 0)
+	{
+		ss << raw_spell.component_counts[0];
+	}
+	else if(field.compare("component_counts[1]") == 0)
+	{
+		ss << raw_spell.component_counts[1];
+	}
+	else if(field.compare("component_counts[2]") == 0)
+	{
+		ss << raw_spell.component_counts[2];
+	}
+	else if(field.compare("component_counts[3]") == 0)
+	{
+		ss << raw_spell.component_counts[3];
+	}
+	else if(field.compare("NoexpendReagent[0]") == 0)
+	{
+		ss << raw_spell.NoexpendReagent[0];
+	}
+	else if(field.compare("NoexpendReagent[1]") == 0)
+	{
+		ss << raw_spell.NoexpendReagent[1];
+	}
+	else if(field.compare("NoexpendReagent[2]") == 0)
+	{
+		ss << raw_spell.NoexpendReagent[2];
+	}
+	else if(field.compare("NoexpendReagent[3]") == 0)
+	{
+		ss << raw_spell.NoexpendReagent[3];
+	}
+	else if(field.compare("formula[0]") == 0)
+	{
+		ss << raw_spell.formula[0];
+	}
+	else if(field.compare("formula[1]") == 0)
+	{
+		ss << raw_spell.formula[1];
+	}
+	else if(field.compare("formula[2]") == 0)
+	{
+		ss << raw_spell.formula[2];
+	}
+	else if(field.compare("formula[3]") == 0)
+	{
+		ss << raw_spell.formula[3];
+	}
+	else if(field.compare("formula[4]") == 0)
+	{
+		ss << raw_spell.formula[4];
+	}
+	else if(field.compare("formula[5]") == 0)
+	{
+		ss << raw_spell.formula[5];
+	}
+	else if(field.compare("formula[6]") == 0)
+	{
+		ss << raw_spell.formula[6];
+	}
+	else if(field.compare("formula[7]") == 0)
+	{
+		ss << raw_spell.formula[7];
+	}
+	else if(field.compare("formula[8]") == 0)
+	{
+		ss << raw_spell.formula[8];
+	}
+	else if(field.compare("formula[9]") == 0)
+	{
+		ss << raw_spell.formula[9];
+	}
+	else if(field.compare("formula[10]") == 0)
+	{
+		ss << raw_spell.formula[10];
+	}
+	else if(field.compare("formula[11]") == 0)
+	{
+		ss << raw_spell.formula[11];
+	}
+	else if(field.compare("LightType") == 0)
+	{
+		ss << raw_spell.LightType;
+	}
+	else if(field.compare("goodEffect") == 0)
+	{
+		ss << raw_spell.goodEffect;
+	}
+	else if(field.compare("Activated") == 0)
+	{
+		ss << raw_spell.Activated;
+	}
+	else if(field.compare("resisttype") == 0)
+	{
+		ss << raw_spell.resisttype;
+	}
+	else if(field.compare("effectid[0]") == 0)
+	{
+		ss << raw_spell.effectid[0];
+	}
+	else if(field.compare("effectid[1]") == 0)
+	{
+		ss << raw_spell.effectid[1];
+	}
+	else if(field.compare("effectid[2]") == 0)
+	{
+		ss << raw_spell.effectid[2];
+	}
+	else if(field.compare("effectid[3]") == 0)
+	{
+		ss << raw_spell.effectid[3];
+	}
+	else if(field.compare("effectid[4]") == 0)
+	{
+		ss << raw_spell.effectid[4];
+	}
+	else if(field.compare("effectid[5]") == 0)
+	{
+		ss << raw_spell.effectid[5];
+	}
+	else if(field.compare("effectid[6]") == 0)
+	{
+		ss << raw_spell.effectid[6];
+	}
+	else if(field.compare("effectid[7]") == 0)
+	{
+		ss << raw_spell.effectid[7];
+	}
+	else if(field.compare("effectid[8]") == 0)
+	{
+		ss << raw_spell.effectid[8];
+	}
+	else if(field.compare("effectid[9]") == 0)
+	{
+		ss << raw_spell.effectid[9];
+	}
+	else if(field.compare("effectid[10]") == 0)
+	{
+		ss << raw_spell.effectid[10];
+	}
+	else if(field.compare("effectid[11]") == 0)
+	{
+		ss << raw_spell.effectid[11];
+	}
+	else if(field.compare("targettype") == 0)
+	{
+		ss << (uint32)raw_spell.targettype;
+	}
+	else if(field.compare("basediff") == 0)
+	{
+		ss << raw_spell.basediff;
+	}
+	else if(field.compare("skill") == 0)
+	{
+		ss << (uint32)raw_spell.skill;
+	}
+	else if(field.compare("zonetype") == 0)
+	{
+		ss << raw_spell.zonetype;
+	}
+	else if(field.compare("EnvironmentType") == 0)
+	{
+		ss << raw_spell.EnvironmentType;
+	}
+	else if(field.compare("TimeOfDay") == 0)
+	{
+		ss << raw_spell.TimeOfDay;
+	}
+	else if(field.compare("classes[0]") == 0)
+	{
+		ss << raw_spell.classes[0];
+	}
+	else if(field.compare("classes[1]") == 0)
+	{
+		ss << raw_spell.classes[1];
+	}
+	else if(field.compare("classes[2]") == 0)
+	{
+		ss << raw_spell.classes[2];
+	}
+	else if(field.compare("classes[3]") == 0)
+	{
+		ss << raw_spell.classes[3];
+	}
+	else if(field.compare("classes[4]") == 0)
+	{
+		ss << raw_spell.classes[4];
+	}
+	else if(field.compare("classes[5]") == 0)
+	{
+		ss << raw_spell.classes[5];
+	}
+	else if(field.compare("classes[6]") == 0)
+	{
+		ss << raw_spell.classes[6];
+	}
+	else if(field.compare("classes[7]") == 0)
+	{
+		ss << raw_spell.classes[7];
+	}
+	else if(field.compare("classes[8]") == 0)
+	{
+		ss << raw_spell.classes[8];
+	}
+	else if(field.compare("classes[9]") == 0)
+	{
+		ss << raw_spell.classes[9];
+	}
+	else if(field.compare("classes[10]") == 0)
+	{
+		ss << raw_spell.classes[10];
+	}
+	else if(field.compare("classes[11]") == 0)
+	{
+		ss << raw_spell.classes[11];
+	}
+	else if(field.compare("classes[12]") == 0)
+	{
+		ss << raw_spell.classes[12];
+	}
+	else if(field.compare("classes[13]") == 0)
+	{
+		ss << raw_spell.classes[13];
+	}
+	else if(field.compare("classes[14]") == 0)
+	{
+		ss << raw_spell.classes[14];
+	}
+	else if(field.compare("classes[15]") == 0)
+	{
+		ss << raw_spell.classes[15];
+	}
+	else if(field.compare("CastingAnim") == 0)
+	{
+		ss << raw_spell.CastingAnim;
+	}
+	else if(field.compare("TargetAnim") == 0)
+	{
+		ss << raw_spell.TargetAnim;
+	}
+	
+	if(field.compare("TravelType") == 0)
+	{
+		ss << raw_spell.TravelType;
+	}
+	else if(field.compare("SpellAffectIndex") == 0)
+	{
+		ss << raw_spell.SpellAffectIndex;
+	}
+	else if(field.compare("spacing124[0]") == 0)
+	{
+		ss << raw_spell.spacing124[0];
+	}
+	else if(field.compare("spacing124[1]") == 0)
+	{
+		ss << raw_spell.spacing124[1];
+	}
+		else if(field.compare("deities[0]") == 0)
+	{
+		ss << raw_spell.deities[0];
+	}
+	else if(field.compare("deities[1]") == 0)
+	{
+		ss << raw_spell.deities[1];
+	}
+	else if(field.compare("deities[2]") == 0)
+	{
+		ss << raw_spell.deities[2];
+	}
+	else if(field.compare("deities[3]") == 0)
+	{
+		ss << raw_spell.deities[3];
+	}
+	else if(field.compare("deities[4]") == 0)
+	{
+		ss << raw_spell.deities[4];
+	}
+	else if(field.compare("deities[5]") == 0)
+	{
+		ss << raw_spell.deities[5];
+	}
+	else if(field.compare("deities[6]") == 0)
+	{
+		ss << raw_spell.deities[6];
+	}
+	else if(field.compare("deities[7]") == 0)
+	{
+		ss << raw_spell.deities[7];
+	}
+	else if(field.compare("deities[8]") == 0)
+	{
+		ss << raw_spell.deities[8];
+	}
+	else if(field.compare("deities[9]") == 0)
+	{
+		ss << raw_spell.deities[9];
+	}
+	else if(field.compare("deities[10]") == 0)
+	{
+		ss << raw_spell.deities[10];
+	}
+	else if(field.compare("deities[11]") == 0)
+	{
+		ss << raw_spell.deities[11];
+	}
+	else if(field.compare("deities[12]") == 0)
+	{
+		ss << raw_spell.deities[12];
+	}
+	else if(field.compare("deities[13]") == 0)
+	{
+		ss << raw_spell.deities[13];
+	}
+	else if(field.compare("deities[14]") == 0)
+	{
+		ss << raw_spell.deities[14];
+	}
+	else if(field.compare("deities[15]") == 0)
+	{
+		ss << raw_spell.deities[15];
+	}
+	else if(field.compare("spacing142[0]") == 0)
+	{
+		ss << raw_spell.spacing142[0];
+	}
+	else if(field.compare("spacing142[1]") == 0)
+	{
+		ss << raw_spell.spacing142[1];
+	}
+	else if(field.compare("new_icon") == 0)
+	{
+		ss << raw_spell.new_icon;
+	}
+	else if(field.compare("spellanim") == 0)
+	{
+		ss << raw_spell.spellanim;
+	}
+	else if(field.compare("uninterruptable") == 0)
+	{
+		ss << raw_spell.uninterruptable;
+	}
+	else if(field.compare("ResistDiff") == 0)
+	{
+		ss << raw_spell.ResistDiff;
+	}
+	else if(field.compare("dot_stacking_exempt") == 0)
+	{
+		ss << raw_spell.dot_stacking_exempt;
+	}
+	else if(field.compare("deletable") == 0)
+	{
+		ss << raw_spell.deletable;
+	}
+	else if(field.compare("RecourseLink") == 0)
+	{
+		ss << raw_spell.RecourseLink;
+	}
+	else if(field.compare("spacing151[0]") == 0)
+	{
+		ss << raw_spell.spacing151[0];
+	}
+	else if(field.compare("spacing151[1]") == 0)
+	{
+		ss << raw_spell.spacing151[1];
+	}
+	else if(field.compare("spacing151[2]") == 0)
+	{
+		ss << raw_spell.spacing151[2];
+	}
+	else if(field.compare("short_buff_box") == 0)
+	{
+		ss << raw_spell.short_buff_box;
+	}
+	else if(field.compare("descnum") == 0)
+	{
+		ss << raw_spell.descnum;
+	}
+	else if(field.compare("typedescnum") == 0)
+	{
+		ss << raw_spell.typedescnum;
+	}
+	else if(field.compare("effectdescnum") == 0)
+	{
+		ss << raw_spell.effectdescnum;
+	}
+	else if(field.compare("spacing158[0]") == 0)
+	{
+		ss << raw_spell.spacing158[0];
+	}
+	else if(field.compare("spacing158[1]") == 0)
+	{
+		ss << raw_spell.spacing158[1];
+	}
+	else if(field.compare("spacing158[2]") == 0)
+	{
+		ss << raw_spell.spacing158[2];
+	}
+	else if(field.compare("spacing158[3]") == 0)
+	{
+		ss << raw_spell.spacing158[3];
+	}
+	else if(field.compare("bonushate") == 0)
+	{
+		ss << raw_spell.bonushate;
+	}
+	else if(field.compare("spacing163[0]") == 0)
+	{
+		ss << raw_spell.spacing163[0];
+	}
+	else if(field.compare("spacing163[1]") == 0)
+	{
+		ss << raw_spell.spacing163[1];
+	}
+	else if(field.compare("spacing163[2]") == 0)
+	{
+		ss << raw_spell.spacing163[2];
+	}
+	else if(field.compare("EndurCost") == 0)
+	{
+		ss << raw_spell.EndurCost;
+	}
+		else if(field.compare("EndurTimerIndex") == 0)
+	{
+		ss << raw_spell.EndurTimerIndex;
+	}
+	else if(field.compare("spacing168[0]") == 0)
+	{
+		ss << raw_spell.spacing168[0];
+	}
+	else if(field.compare("spacing168[1]") == 0)
+	{
+		ss << raw_spell.spacing168[1];
+	}
+	else if(field.compare("spacing168[2]") == 0)
+	{
+		ss << raw_spell.spacing168[2];
+	}
+	else if(field.compare("spacing168[3]") == 0)
+	{
+		ss << raw_spell.spacing168[3];
+	}
+	else if(field.compare("spacing168[4]") == 0)
+	{
+		ss << raw_spell.spacing168[4];
+	}
+	else if(field.compare("HateAdded") == 0)
+	{
+		ss << raw_spell.HateAdded;
+	}
+	else if(field.compare("EndurUpkeep") == 0)
+	{
+		ss << raw_spell.EndurUpkeep;
+	}
+	else if(field.compare("spacing175") == 0)
+	{
+		ss << raw_spell.spacing175;
+	}
+	else if(field.compare("numhits") == 0)
+	{
+		ss << raw_spell.numhits;
+	}
+	else if(field.compare("pvpresistbase") == 0)
+	{
+		ss << raw_spell.pvpresistbase;
+	}
+	else if(field.compare("pvpresistcalc") == 0)
+	{
+		ss << raw_spell.pvpresistcalc;
+	}
+	else if(field.compare("pvpresistcap") == 0)
+	{
+		ss << raw_spell.pvpresistcap;
+	}
+	else if(field.compare("spell_category") == 0)
+	{
+		ss << raw_spell.spell_category;
+	}
+	else if(field.compare("spacing181[0]") == 0)
+	{
+		ss << raw_spell.spacing181[0];
+	}
+	else if(field.compare("spacing181[1]") == 0)
+	{
+		ss << raw_spell.spacing181[1];
+	}
+	else if(field.compare("spacing181[2]") == 0)
+	{
+		ss << raw_spell.spacing181[2];
+	}
+	else if(field.compare("spacing181[3]") == 0)
+	{
+		ss << raw_spell.spacing181[3];
+	}
+	else if(field.compare("can_mgb") == 0)
+	{
+		ss << raw_spell.can_mgb;
+	}
+	else if(field.compare("no_dispel") == 0)
+	{
+		ss << raw_spell.no_dispel;
+	}
+	else if(field.compare("npc_category") == 0)
+	{
+		ss << raw_spell.npc_category;
+	}
+	else if(field.compare("npc_usefulness") == 0)
+	{
+		ss << raw_spell.npc_usefulness;
+	}
+	else if(field.compare("spellgroup") == 0)
+	{
+		ss << raw_spell.spellgroup;
+	}
+	else if(field.compare("DamageShieldType") == 0)
+	{
+		ss << raw_spell.DamageShieldType;
+	}
+	
+	if(ss.str().length() == 0)
+	{
+		ss << "UNKNOWN FIELD";
+	}
+
+	return ss.str();
+}
+
+void Spell::SetSpellAttribute(std::string attribute, std::string field)
+{
+	SetCustomSpell(true);
+	if(field.compare("id") == 0)
+	{
+		raw_spell.id = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("name") == 0)
+	{
+		strcpy(raw_spell.name, attribute.c_str());
+		return;
+	}
+	else if(field.compare("player_1") == 0)
+	{
+		strcpy(raw_spell.player_1, attribute.c_str());
+		return;
+	}
+	else if(field.compare("teleport_zone") == 0)
+	{
+		strcpy(raw_spell.teleport_zone, attribute.c_str());
+		return;
+	}
+	else if(field.compare("you_cast") == 0)
+	{
+		strcpy(raw_spell.you_cast, attribute.c_str());
+		return;
+	}
+	else if(field.compare("other_casts") == 0)
+	{
+		strcpy(raw_spell.other_casts, attribute.c_str());
+		return;
+	}
+	else if(field.compare("cast_on_you") == 0)
+	{
+		strcpy(raw_spell.cast_on_you, attribute.c_str());
+		return;
+	}
+	else if(field.compare("cast_on_other") == 0)
+	{
+		strcpy(raw_spell.cast_on_other, attribute.c_str());
+		return;
+	}
+	else if(field.compare("spell_fades") == 0)
+	{
+		strcpy(raw_spell.spell_fades, attribute.c_str());
+		return;
+	}
+	else if(field.compare("range") == 0)
+	{
+		raw_spell.range = atof(attribute.c_str());
+		return;
+	}
+	else if(field.compare("aoerange") == 0)
+	{
+		raw_spell.aoerange = atof(attribute.c_str());
+		return;
+	}
+	else if(field.compare("pushback") == 0)
+	{
+		raw_spell.pushback = atof(attribute.c_str());
+		return;
+	}
+	else if(field.compare("pushup") == 0)
+	{
+		raw_spell.pushup = atof(attribute.c_str());
+		return;
+	}
+	else if(field.compare("cast_time") == 0)
+	{
+		raw_spell.cast_time = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("recovery_time") == 0)
+	{
+		raw_spell.recovery_time = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("recast_time") == 0)
+	{
+		raw_spell.recast_time = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("buffdurationformula") == 0)
+	{
+		raw_spell.buffdurationformula = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("buffduration") == 0)
+	{
+		raw_spell.buffduration = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("AEduration") == 0)
+	{
+		raw_spell.AEDuration = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("mana") == 0)
+	{
+		raw_spell.mana = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("base[0]") == 0)
+	{
+		raw_spell.base[0] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("base[1]") == 0)
+	{
+		raw_spell.base[1] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("base[2]") == 0)
+	{
+		raw_spell.base[2] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("base[3]") == 0)
+	{
+		raw_spell.base[3] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("base[4]") == 0)
+	{
+		raw_spell.base[4] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("base[5]") == 0)
+	{
+		raw_spell.base[5] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("base[6]") == 0)
+	{
+		raw_spell.base[6] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("base[7]") == 0)
+	{
+		raw_spell.base[7] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("base[8]") == 0)
+	{
+		raw_spell.base[8] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("base[9]") == 0)
+	{
+		raw_spell.base[9] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("base[10]") == 0)
+	{
+		raw_spell.base[10] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("base[11]") == 0)
+	{
+		raw_spell.base[11] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("base2[0]") == 0)
+	{
+		raw_spell.base2[0] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("base2[1]") == 0)
+	{
+		raw_spell.base2[1] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("base2[2]") == 0)
+	{
+		raw_spell.base2[2] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("base2[3]") == 0)
+	{
+		raw_spell.base2[3] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("base2[4]") == 0)
+	{
+		raw_spell.base2[4] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("base2[5]") == 0)
+	{
+		raw_spell.base2[5] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("base2[6]") == 0)
+	{
+		raw_spell.base2[6] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("base2[7]") == 0)
+	{
+		raw_spell.base2[7] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("base2[8]") == 0)
+	{
+		raw_spell.base2[8] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("base2[9]") == 0)
+	{
+		raw_spell.base2[9] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("base2[10]") == 0)
+	{
+		raw_spell.base2[10] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("base2[11]") == 0)
+	{
+		raw_spell.base2[11] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("max[0]") == 0)
+	{
+		raw_spell.max[0] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("max[1]") == 0)
+	{
+		raw_spell.max[1] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("max[2]") == 0)
+	{
+		raw_spell.max[2] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("max[3]") == 0)
+	{
+		raw_spell.max[3] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("max[4]") == 0)
+	{
+		raw_spell.max[4] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("max[5]") == 0)
+	{
+		raw_spell.max[5] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("max[6]") == 0)
+	{
+		raw_spell.max[6] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("max[7]") == 0)
+	{
+		raw_spell.max[7] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("max[8]") == 0)
+	{
+		raw_spell.max[8] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("max[9]") == 0)
+	{
+		raw_spell.max[9] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("max[10]") == 0)
+	{
+		raw_spell.max[10] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("max[11]") == 0)
+	{
+		raw_spell.max[11] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("icon") == 0)
+	{
+		raw_spell.icon = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("memicon") == 0)
+	{
+		raw_spell.memicon = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("components[0]") == 0)
+	{
+		raw_spell.components[0] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("components[1]") == 0)
+	{
+		raw_spell.components[1] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("components[2]") == 0)
+	{
+		raw_spell.components[2] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("components[3]") == 0)
+	{
+		raw_spell.components[3] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("component_counts[0]") == 0)
+	{
+		raw_spell.component_counts[0] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("component_counts[1]") == 0)
+	{
+		raw_spell.component_counts[1] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("component_counts[2]") == 0)
+	{
+		raw_spell.component_counts[2] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("component_counts[3]") == 0)
+	{
+		raw_spell.component_counts[3] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("NoexpendReagent[0]") == 0)
+	{
+		raw_spell.NoexpendReagent[0] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("NoexpendReagent[1]") == 0)
+	{
+		raw_spell.NoexpendReagent[1] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("NoexpendReagent[2]") == 0)
+	{
+		raw_spell.NoexpendReagent[2] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("NoexpendReagent[3]") == 0)
+	{
+		raw_spell.NoexpendReagent[3] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("formula[0]") == 0)
+	{
+		raw_spell.formula[0] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("formula[1]") == 0)
+	{
+		raw_spell.formula[1] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("formula[2]") == 0)
+	{
+		raw_spell.formula[2] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("formula[3]") == 0)
+	{
+		raw_spell.formula[3] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("formula[4]") == 0)
+	{
+		raw_spell.formula[4] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("formula[5]") == 0)
+	{
+		raw_spell.formula[5] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("formula[6]") == 0)
+	{
+		raw_spell.formula[6] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("formula[7]") == 0)
+	{
+		raw_spell.formula[7] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("formula[8]") == 0)
+	{
+		raw_spell.formula[8] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("formula[9]") == 0)
+	{
+		raw_spell.formula[9] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("formula[10]") == 0)
+	{
+		raw_spell.formula[10] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("formula[11]") == 0)
+	{
+		raw_spell.formula[11] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("LightType") == 0)
+	{
+		raw_spell.LightType = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("goodEffect") == 0)
+	{
+		raw_spell.goodEffect = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("Activated") == 0)
+	{
+		raw_spell.Activated = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("resisttype") == 0)
+	{
+		raw_spell.resisttype = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("effectid[0]") == 0)
+	{
+		raw_spell.effectid[0] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("effectid[1]") == 0)
+	{
+		raw_spell.effectid[1] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("effectid[2]") == 0)
+	{
+		raw_spell.effectid[2] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("effectid[3]") == 0)
+	{
+		raw_spell.effectid[3] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("effectid[4]") == 0)
+	{
+		raw_spell.effectid[4] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("effectid[5]") == 0)
+	{
+		raw_spell.effectid[5] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("effectid[6]") == 0)
+	{
+		raw_spell.effectid[6] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("effectid[7]") == 0)
+	{
+		raw_spell.effectid[7] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("effectid[8]") == 0)
+	{
+		raw_spell.effectid[8] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("effectid[9]") == 0)
+	{
+		raw_spell.effectid[9] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("effectid[10]") == 0)
+	{
+		raw_spell.effectid[10] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("effectid[11]") == 0)
+	{
+		raw_spell.effectid[11] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("targettype") == 0)
+	{
+		raw_spell.targettype = (SpellTargetType)atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("basediff") == 0)
+	{
+		raw_spell.basediff = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("skill") == 0)
+	{
+		raw_spell.skill = (SkillType)atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("zonetype") == 0)
+	{
+		raw_spell.zonetype = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("EnvironmentType") == 0)
+	{
+		raw_spell.EnvironmentType = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("TimeOfDay") == 0)
+	{
+		raw_spell.TimeOfDay = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("classes[0]") == 0)
+	{
+		raw_spell.classes[0] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("classes[1]") == 0)
+	{
+		raw_spell.classes[1] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("classes[2]") == 0)
+	{
+		raw_spell.classes[2] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("classes[3]") == 0)
+	{
+		raw_spell.classes[3] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("classes[4]") == 0)
+	{
+		raw_spell.classes[4] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("classes[5]") == 0)
+	{
+		raw_spell.classes[5] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("classes[6]") == 0)
+	{
+		raw_spell.classes[6] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("classes[7]") == 0)
+	{
+		raw_spell.classes[7] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("classes[8]") == 0)
+	{
+		raw_spell.classes[8] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("classes[9]") == 0)
+	{
+		raw_spell.classes[9] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("classes[10]") == 0)
+	{
+		raw_spell.classes[10] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("classes[11]") == 0)
+	{
+		raw_spell.classes[11] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("classes[12]") == 0)
+	{
+		raw_spell.classes[12] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("classes[13]") == 0)
+	{
+		raw_spell.classes[13] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("classes[14]") == 0)
+	{
+		raw_spell.classes[14] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("classes[15]") == 0)
+	{
+		raw_spell.classes[15] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("CastingAnim") == 0)
+	{
+		raw_spell.CastingAnim = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("TargetAnim") == 0)
+	{
+		raw_spell.TargetAnim = atoi(attribute.c_str());
+		return;
+	}
+	
+	if(field.compare("TravelType") == 0)
+	{
+		raw_spell.TravelType = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("SpellAffectIndex") == 0)
+	{
+		raw_spell.SpellAffectIndex = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("spacing124[0]") == 0)
+	{
+		raw_spell.spacing124[0] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("spacing124[1]") == 0)
+	{
+		raw_spell.spacing124[1] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("deities[0]") == 0)
+	{
+		raw_spell.deities[0] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("deities[1]") == 0)
+	{
+		raw_spell.deities[1] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("deities[2]") == 0)
+	{
+		raw_spell.deities[2] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("deities[3]") == 0)
+	{
+		raw_spell.deities[3] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("deities[4]") == 0)
+	{
+		raw_spell.deities[4] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("deities[5]") == 0)
+	{
+		raw_spell.deities[5] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("deities[6]") == 0)
+	{
+		raw_spell.deities[6] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("deities[7]") == 0)
+	{
+		raw_spell.deities[7] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("deities[8]") == 0)
+	{
+		raw_spell.deities[8] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("deities[9]") == 0)
+	{
+		raw_spell.deities[9] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("deities[10]") == 0)
+	{
+		raw_spell.deities[10] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("deities[11]") == 0)
+	{
+		raw_spell.deities[11] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("deities[12]") == 0)
+	{
+		raw_spell.deities[12] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("deities[13]") == 0)
+	{
+		raw_spell.deities[13] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("deities[14]") == 0)
+	{
+		raw_spell.deities[14] = atoi(attribute.c_str());return;
+	}
+	else if(field.compare("deities[15]") == 0)
+	{
+		raw_spell.deities[15] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("spacing142[0]") == 0)
+	{
+		raw_spell.spacing142[0] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("spacing142[1]") == 0)
+	{
+		raw_spell.spacing142[1] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("new_icon") == 0)
+	{
+		raw_spell.new_icon = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("spellanim") == 0)
+	{
+		raw_spell.spellanim = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("uninterruptable") == 0)
+	{
+		raw_spell.uninterruptable = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("ResistDiff") == 0)
+	{
+		raw_spell.ResistDiff = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("dot_stacking_exempt") == 0)
+	{
+		raw_spell.dot_stacking_exempt = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("deletable") == 0)
+	{
+		raw_spell.deletable = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("RecourseLink") == 0)
+	{
+		raw_spell.RecourseLink = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("spacing151[0]") == 0)
+	{
+		raw_spell.spacing151[0] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("spacing151[1]") == 0)
+	{
+		raw_spell.spacing151[1] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("spacing151[2]") == 0)
+	{
+		raw_spell.spacing151[2] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("short_buff_box") == 0)
+	{
+		raw_spell.short_buff_box = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("descnum") == 0)
+	{
+		raw_spell.descnum = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("typedescnum") == 0)
+	{
+		raw_spell.typedescnum = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("effectdescnum") == 0)
+	{
+		raw_spell.effectdescnum = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("spacing158[0]") == 0)
+	{
+		raw_spell.spacing158[0] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("spacing158[1]") == 0)
+	{
+		raw_spell.spacing158[1] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("spacing158[2]") == 0)
+	{
+		raw_spell.spacing158[2] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("spacing158[3]") == 0)
+	{
+		raw_spell.spacing158[3] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("bonushate") == 0)
+	{
+		raw_spell.bonushate = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("spacing163[0]") == 0)
+	{
+		raw_spell.spacing163[0] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("spacing163[1]") == 0)
+	{
+		raw_spell.spacing163[1] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("spacing163[2]") == 0)
+	{
+		raw_spell.spacing163[2] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("EndurCost") == 0)
+	{
+		raw_spell.EndurCost = atoi(attribute.c_str());
+		return;
+	}
+		else if(field.compare("EndurTimerIndex") == 0)
+	{
+		raw_spell.EndurTimerIndex = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("spacing168[0]") == 0)
+	{
+		raw_spell.spacing168[0] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("spacing168[1]") == 0)
+	{
+		raw_spell.spacing168[1] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("spacing168[2]") == 0)
+	{
+		raw_spell.spacing168[2] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("spacing168[3]") == 0)
+	{
+		raw_spell.spacing168[3] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("spacing168[4]") == 0)
+	{
+		raw_spell.spacing168[4] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("HateAdded") == 0)
+	{
+		raw_spell.HateAdded = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("EndurUpkeep") == 0)
+	{
+		raw_spell.EndurUpkeep = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("spacing175") == 0)
+	{
+		raw_spell.spacing175 = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("numhits") == 0)
+	{
+		raw_spell.numhits = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("pvpresistbase") == 0)
+	{
+		raw_spell.pvpresistbase = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("pvpresistcalc") == 0)
+	{
+		raw_spell.pvpresistcalc = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("pvpresistcap") == 0)
+	{
+		raw_spell.pvpresistcap = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("spell_category") == 0)
+	{
+		raw_spell.spell_category = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("spacing181[0]") == 0)
+	{
+		raw_spell.spacing181[0] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("spacing181[1]") == 0)
+	{
+		raw_spell.spacing181[1] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("spacing181[2]") == 0)
+	{
+		raw_spell.spacing181[2] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("spacing181[3]") == 0)
+	{
+		raw_spell.spacing181[3] = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("can_mgb") == 0)
+	{
+		raw_spell.can_mgb = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("no_dispel") == 0)
+	{
+		raw_spell.no_dispel = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("npc_category") == 0)
+	{
+		raw_spell.npc_category = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("npc_usefulness") == 0)
+	{
+		raw_spell.npc_usefulness = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("spellgroup") == 0)
+	{
+		raw_spell.spellgroup = atoi(attribute.c_str());
+		return;
+	}
+	else if(field.compare("DamageShieldType") == 0)
+	{
+		raw_spell.DamageShieldType = atoi(attribute.c_str());
+		return;
+	}
 }
 
 Buff::Buff(Spell *spell, uint32 duration)

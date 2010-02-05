@@ -739,6 +739,8 @@ bool logpos;
 	virtual void SaveBuffs(uint8 mode = 0) { }
 	virtual void LoadBuffs(uint8 mode = 0) { }
 	void LoadBuffsVersion1(char *data);
+	void FreeSpell(Spell **spell);
+	Spell *CreateSpell(uint32 spell_id, Mob* caster, Mob* target);
 
 
 

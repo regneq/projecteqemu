@@ -1477,7 +1477,7 @@ XS(XS_Mob_MakePet)
 			name = (char *)SvPV_nolen(ST(3));
 		}
 
-		//TODO: THIS->MakePet(spell_id, pettype, name);
+		THIS->MakePet(&Spell(spell_id, THIS, THIS), pettype, name);
 	}
 	XSRETURN_EMPTY;
 }
@@ -3737,7 +3737,9 @@ XS(XS_Mob_CanBuffStack)
 			iFailIfOverwrite = (bool)SvTRUE(ST(3));
 		}
 
-		RETVAL = 0;//THIS->CanBuffStack(spellid, caster_level, iFailIfOverwrite);
+		Spell new_spell(spellid, THIS, THIS);
+		new_spell.SetCasterLevel(caster_level);
+		RETVAL = THIS->CanBuffStack(&new_spell, iFailIfOverwrite);
 		XSprePUSH; PUSHi((IV)RETVAL);
 	}
 	XSRETURN(1);
@@ -6415,6 +6417,120 @@ XS(XS_Mob_HasNPCSpecialAtk)
 	XSRETURN(1);
 }
 
+XS(XS_Mob_CreateSpell); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_CreateSpell)
+{
+	dXSARGS;
+	if (items != 4)
+		Perl_croak(aTHX_ "Usage: Mob::CreateSpell(THIS, spell_id, caster, target)");
+	{
+		Mob *       THIS;
+		uint32      spell_id = (uint32)SvUV(ST(1));
+		Mob *       caster;
+		Mob *       target;
+		Spell *     RETVAL;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		if (sv_derived_from(ST(2), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(2)));
+			caster = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "caster is not of type Mob");
+
+		if (sv_derived_from(ST(3), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(3)));
+			target = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "target is not of type Mob");
+
+		RETVAL = THIS->CreateSpell(spell_id, caster, target);
+		ST(0) = sv_newmortal();
+		sv_setref_pv(ST(0), "Spell", (void*)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Mob_FreeSpell); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_FreeSpell)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Mob::CreateSpell(THIS, spell)");
+	{
+		Mob *       THIS;
+		Spell *     spell;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		if (sv_derived_from(ST(1), "Spell")) {
+			IV tmp = SvIV((SV*)SvRV(ST(1)));
+			spell = INT2PTR(Spell *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "spell is not of type Spell");
+		if(spell == NULL)
+			Perl_croak(aTHX_ "spell is NULL, avoiding crash.");
+		
+		THIS->FreeSpell(&spell);
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_Mob_CastCustomSpell); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_CastCustomSpell)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Mob::CreateSpell(THIS, spell)");
+	{
+		Mob *       THIS;
+		Spell *     spell;
+		bool        RETVAL;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		if (sv_derived_from(ST(1), "Spell")) {
+			IV tmp = SvIV((SV*)SvRV(ST(1)));
+			spell = INT2PTR(Spell *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "spell is not of type Spell");
+		if(spell == NULL)
+			Perl_croak(aTHX_ "spell is NULL, avoiding crash.");
+		
+		RETVAL = THIS->CastSpell(&spell);
+		ST(0) = boolSV(RETVAL);
+		sv_2mortal(ST(0));
+	}
+	XSRETURN(1);
+}
+
+		/*newXSproto(strcpy(buf, "CastCustomSpell"), XS_Mob_CastCustomSpell, file, "$$");*/
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -6660,6 +6776,9 @@ XS(boot_Mob)
 		newXSproto(strcpy(buf, "FindGroundZ"), XS_Mob_FindGroundZ, file, "$$$;$");
 		newXSproto(strcpy(buf, "ProjectileAnim"), XS_Mob_ProjectileAnim, file, "$$$;$$$$$");
 		newXSproto(strcpy(buf, "HasNPCSpecialAtk"), XS_Mob_HasNPCSpecialAtk, file, "$$");
+		newXSproto(strcpy(buf, "CreateSpell"), XS_Mob_CreateSpell, file, "$$$$");
+		newXSproto(strcpy(buf, "FreeSpell"), XS_Mob_FreeSpell, file, "$$");
+		newXSproto(strcpy(buf, "CastCustomSpell"), XS_Mob_CastCustomSpell, file, "$$");
 	XSRETURN_YES;
 }
 

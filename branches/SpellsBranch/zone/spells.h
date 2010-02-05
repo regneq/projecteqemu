@@ -27,20 +27,6 @@ Copyright (C) 2001-2010  EQEMu Development Team (http://eqemu.org)
 #include <string>
 #include <map>
 
-enum SpellAttribute
-{
-	SA_NONE = 0,
-	SA_COMPONENT1,
-	SA_COMPONENT2,
-	SA_COMPONENT3,
-	SA_COMPONENT4,
-	SA_COMPONENT1_COUNT,
-	SA_COMPONENT2_COUNT,
-	SA_COMPONENT3_COUNT,
-	SA_COMPONENT4_COUNT,
-	SA_TARGET_TYPE,
-};
-
 enum SpellClass
 {
 	SC_NORMAL = 0,
@@ -102,36 +88,26 @@ public:
 	bool IsCastTimerFinished() const;
 	void StopCastTimer();
 
-	const SPDat_Spell_Struct GetSpell() const { return raw_spell; } 
+	const SPDat_Spell_Struct GetSpell() const { return raw_spell; }
+	SPDat_Spell_Struct &GetSpellEditable() { return raw_spell; }
+
+	//These aren't fast because of a lot of string comparisons
+	//but they're designed ONLY for the quest interface
+	//If you're using these in raw C++ code: you're doing it wrong.
+	//Use GetSpell() & GetSpellEditable() instead.
+	std::string GetSpellAttribute(std::string field) const;
+	void SetSpellAttribute(std::string attribute, std::string field);
 
 	bool IsTargetableAESpell() const; //impl
-	bool IsSacrificeSpell() const; //impl
 	bool IsLifetapSpell() const; //impl
-	bool IsMezSpell() const; //impl
 	bool IsStunSpell() const;
 	bool IsSlowSpell() const;
 	bool IsHasteSpell() const;
 	bool IsHarmonySpell() const; //impl
-	bool IsPercentalHealSpell() const;
 	bool IsGroupOnlySpell() const; //impl
 	bool IsBeneficialSpell() const; //impl
 	bool IsDetrimentalSpell() const; //impl
-	bool IsInvulnerabilitySpell() const;
-	bool IsCHDurationSpell() const;
-	bool IsPoisonCounterSpell() const;
-	bool IsDiseaseCounterSpell() const;
-	bool IsSummonItemSpell() const;
-	bool IsSummonSkeletonSpell() const;
 	bool IsSummonPetSpell() const; //impl
-	bool IsCharmSpell() const; //impl
-	bool IsBlindSpell() const;
-	bool IsEffectHitpointsSpell() const;
-	bool IsReduceCastTimeSpell() const;
-	bool IsIncreaseDurationSpell() const;
-	bool IsReduceManaSpell() const;
-	bool IsExtRangeSpell() const;
-	bool IsImprovedHealingSpell() const;
-	bool IsImprovedDamageSpell() const;
 	bool IsAEDurationSpell() const; //impl
 	bool IsPureNukeSpell() const; //impl
 	bool IsPartialCapableSpell() const; //impl
@@ -143,9 +119,7 @@ public:
 	bool IsBlankSpellEffect(int effect_index) const; //impl
 	bool IsValidSpell() const;
 	bool IsSummonSpell() const; //impl
-	bool IsEvacSpell() const; //impl
 	bool IsDamageSpell() const; //impl
-	bool IsFearSpell() const; //impl
 	bool BeneficialSpell() const; //impl
 	bool GroupOnlySpell() const;
 	int GetSpellEffectIndex(int effect) const; //impl
@@ -156,17 +130,8 @@ public:
 	sint32 CalculateCurseCounters() const; //impl
 	bool IsDiscipline() const; //impl
 	bool IsResurrectionEffects() const; //impl
-	bool IsRuneSpell() const;
-	bool IsMagicRuneSpell() const;
 	bool IsManaTapSpell() const; //impl
-	bool IsAllianceSpellLine() const;
-	bool IsDeathSaveSpell() const;
-	bool IsFullDeathSaveSpell() const;
-	bool IsPartialDeathSaveSpell() const;
-	bool IsShadowStepSpell() const;
-	bool IsSuccorSpell() const;
-	bool IsTeleportSpell() const;
-	bool IsGateSpell() const;
+	bool IsFullDeathSaveSpell() const; // impl
 	bool IsPlayerIllusionSpell() const; //impl
 	bool IsLDoNObjectSpell() const; //impl
 	sint32 GetSpellResistType() const;

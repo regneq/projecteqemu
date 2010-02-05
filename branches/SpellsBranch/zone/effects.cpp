@@ -438,6 +438,7 @@ sint32 Client::GetActSpellCasttime(const Spell *spell_to_cast, sint32 casttime)
 				break;
 		}
 	}
+
 	if (spell_to_cast->IsSummonSpell())
 	{
 		switch (GetAA(aaQuickSummoning))
@@ -453,7 +454,8 @@ sint32 Client::GetActSpellCasttime(const Spell *spell_to_cast, sint32 casttime)
 				break;
 		}
 	}
-	if (spell_to_cast->IsEvacSpell())
+
+	if (spell_to_cast->IsEffectInSpell(SE_Succor))
 	{
 		switch (GetAA(aaQuickEvacuation))
 		{

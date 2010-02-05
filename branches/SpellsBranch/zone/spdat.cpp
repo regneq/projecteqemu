@@ -115,16 +115,6 @@ bool Spell::IsTargetableAESpell() const
 	return false;
 }
 
-bool IsSacrificeSpell(int16 spell_id)
-{
-	return IsEffectInSpell(spell_id, SE_Sacrifice);
-}
-
-bool Spell::IsSacrificeSpell() const
-{
-	return IsEffectInSpell(SE_Sacrifice);
-}
-
 
 bool IsLifetapSpell(int16 spell_id)
 {
@@ -143,21 +133,6 @@ bool IsLifetapSpell(int16 spell_id)
 bool Spell::IsLifetapSpell() const
 {
 	return (raw_spell.targettype == ST_Tap || raw_spell.id == 2115);
-}
-
-bool IsMezSpell(int16 spell_id)
-{
-	return IsEffectInSpell(spell_id, SE_Mez);
-}
-
-bool Spell::IsMezSpell() const
-{
-	return IsEffectInSpell(SE_Mez);
-}
-
-bool IsStunSpell(int16 spell_id)
-{
-	return IsEffectInSpell(spell_id, SE_Stun);
 }
 
 bool IsSummonSpell(int16 spellid) {
@@ -185,15 +160,6 @@ bool Spell::IsSummonSpell() const
 	return false;
 }
 
-bool IsEvacSpell(int16 spellid) {
-	return IsEffectInSpell(spellid, SE_Succor);
-}
-
-bool Spell::IsEvacSpell() const
-{
-	return IsEffectInSpell(SE_Succor);
-}
-
 bool IsDamageSpell(int16 spellid) {
 	for (int o = 0; o < EFFECT_COUNT; o++)
 	{
@@ -218,17 +184,6 @@ bool Spell::IsDamageSpell() const
 	}
 	return false;
 }
-
-
-bool IsFearSpell(int16 spell_id) {
-	return IsEffectInSpell(spell_id, SE_Fear);
-}
-
-bool Spell::IsFearSpell() const
-{
-	return IsEffectInSpell(SE_Fear);
-}
-
 
 bool IsSlowSpell(int16 spell_id)
 {
@@ -270,11 +225,6 @@ bool IsHarmonySpell(int16 spell_id)
 bool Spell::IsHarmonySpell() const
 {
 	return (IsEffectInSpell(SE_Harmony) || IsEffectInSpell(SE_Lull));
-}
-
-bool IsPercentalHealSpell(int16 spell_id)
-{
-	return IsEffectInSpell(spell_id, SE_PercentalHeal);
 }
 
 bool IsGroupOnlySpell(int16 spell_id)
@@ -356,36 +306,6 @@ bool Spell::IsDetrimentalSpell() const
 	return !IsBeneficialSpell();
 }
 
-bool IsInvulnerabilitySpell(int16 spell_id)
-{
-	return IsEffectInSpell(spell_id, SE_DivineAura);
-}
-
-bool IsCHDurationSpell(int16 spell_id)
-{
-	return IsEffectInSpell(spell_id, SE_CompleteHeal);
-}
-
-bool IsPoisonCounterSpell(int16 spell_id)
-{
-	return IsEffectInSpell(spell_id, SE_PoisonCounter);
-}
-
-bool IsDiseaseCounterSpell(int16 spell_id)
-{
-	return IsEffectInSpell(spell_id, SE_DiseaseCounter);
-}
-
-bool IsSummonItemSpell(int16 spell_id)
-{
-	return IsEffectInSpell(spell_id, SE_SummonItem);
-}
-
-bool IsSummonSkeletonSpell(int16 spell_id)
-{
-	return IsEffectInSpell(spell_id, SE_NecPet);
-}
-
 bool IsSummonPetSpell(int16 spell_id)
 {
 	return
@@ -400,54 +320,9 @@ bool Spell::IsSummonPetSpell() const
 	return (IsEffectInSpell(SE_SummonPet) || IsEffectInSpell(SE_SummonBSTPet));
 }
 
-bool IsCharmSpell(int16 spell_id)
-{
-	return IsEffectInSpell(spell_id, SE_Charm);
-}
-
-bool Spell::IsCharmSpell() const
-{
-	return IsEffectInSpell(SE_Charm);
-}
-
 bool IsBlindSpell(int16 spell_id)
 {
 	return IsEffectInSpell(spell_id, SE_Blind);
-}
-
-bool IsEffectHitpointsSpell(int16 spell_id)
-{
-	return IsEffectInSpell(spell_id, SE_CurrentHP);
-}
-
-bool IsReduceCastTimeSpell(int16 spell_id)
-{
-	return IsEffectInSpell(spell_id, SE_IncreaseSpellHaste);
-}
-
-bool IsIncreaseDurationSpell(int16 spell_id)
-{
-	return IsEffectInSpell(spell_id, SE_IncreaseSpellDuration);
-}
-
-bool IsReduceManaSpell(int16 spell_id)
-{
-	return IsEffectInSpell(spell_id, SE_ReduceManaCost);
-}
-
-bool IsExtRangeSpell(int16 spell_id)
-{
-	return IsEffectInSpell(spell_id, SE_IncreaseRange);
-}
-
-bool IsImprovedHealingSpell(int16 spell_id)
-{
-	return IsEffectInSpell(spell_id, SE_ImprovedHeal);
-}
-
-bool IsImprovedDamageSpell(int16 spell_id)
-{
-	return IsEffectInSpell(spell_id, SE_ImprovedDamage);
 }
 
 bool IsAEDurationSpell(int16 spell_id)
@@ -504,7 +379,7 @@ bool Spell::IsPureNukeSpell() const
 
 bool IsPartialCapableSpell(int16 spell_id)
 {
-	if(IsPureNukeSpell(spell_id) || IsFearSpell(spell_id) || IsEffectInSpell(spell_id,SE_Charm))
+	if(IsPureNukeSpell(spell_id) || IsEffectInSpell(spell_id, SE_Fear) || IsEffectInSpell(spell_id, SE_Charm))
 		return true;
 	
 	return false;
@@ -512,7 +387,7 @@ bool IsPartialCapableSpell(int16 spell_id)
 
 bool Spell::IsPartialCapableSpell() const
 {
-	return (IsPureNukeSpell() || IsFearSpell() || IsEffectInSpell(SE_Charm));
+	return (IsPureNukeSpell() || IsEffectInSpell(SE_Fear) || IsEffectInSpell(SE_Charm));
 }
 
 bool IsResistableSpell(int16 spell_id)
@@ -932,37 +807,6 @@ bool Spell::IsResurrectionEffects() const
 	return (GetSpellID() == 756);
 }
 
-
-bool IsRuneSpell(int16 spell_id) {
-	bool Result = false;
-
-	if(IsValidSpell(spell_id)) {
-		for(int i = 0; i < EFFECT_COUNT; i++) {
-			if(spells[spell_id].effectid[i] == SE_Rune) {
-				Result = true;
-				break;
-			}
-		}
-	}
-
-	return Result;
-}
-
-bool IsMagicRuneSpell(int16 spell_id) {
-	bool Result = false;
-
-	if(IsValidSpell(spell_id)) {
-		for(int i = 0; i < EFFECT_COUNT; i++) {
-			if(spells[spell_id].effectid[i] == SE_AbsorbMagicAtt) {
-				Result = true;
-				break;
-			}
-		}
-	}
-
-	return Result;
-}
-
 bool IsManaTapSpell(int16 spell_id) {
 	bool Result = false;
 
@@ -987,81 +831,11 @@ bool Spell::IsManaTapSpell() const
 	return false;
 }
 
-bool IsAllianceSpellLine(int16 spell_id) {
-	bool Result = false;
-
-	if(IsValidSpell(spell_id))
-		Result = IsEffectInSpell(spell_id, SE_AddFaction);
-
-	return Result;
+bool Spell::IsFullDeathSaveSpell() const
+{
+	return (raw_spell.id == 1546);
 }
 
-bool IsDeathSaveSpell(int16 spell_id) {
-	bool Result = false;
-
-	if(IsValidSpell(spell_id))
-		Result = IsEffectInSpell(spell_id, SE_DeathSave);
-
-	return Result;
-}
-
-bool IsPartialDeathSaveSpell(int16 spell_id) {
-	bool Result = false;
-
-	// Death Pact
-	if(spell_id == 1547)
-		Result = true;
-
-	return Result;
-}
-
-bool IsFullDeathSaveSpell(int16 spell_id) {
-	bool Result = false;
-
-	// Divine Intervention
-	if(spell_id == 1546)
-		Result = true;
-
-	return Result;
-}
-
-bool IsShadowStepSpell(int16 spell_id) {
-	if (IsEffectInSpell(spell_id, SE_ShadowStep)){
-		return true;
-
-	}
-	else {
-		return false;
-	}
-}
-
-bool IsSuccorSpell(int16 spell_id) {
-	if (IsEffectInSpell(spell_id, SE_Succor)){
-		return true;
-	}
-	else {
-		return false;
-	}
-}
-
-bool IsTeleportSpell(int16 spell_id) {
-	if (IsEffectInSpell(spell_id, SE_Teleport)){
-		return true;
-	}
-	else {
-		return false;
-	}
-}
-
-bool IsGateSpell(int16 spell_id) {
-	if (IsEffectInSpell(spell_id, SE_Gate)){
-		return true;
-	}
-	else {
-		return false;
-	}
-}
-// seveian 2008-09-23
 bool IsPlayerIllusionSpell(int16 spell_id) {
 	if(IsEffectInSpell(spell_id, SE_Illusion) && spells[spell_id].targettype == ST_Self)
 		return true;
@@ -1167,7 +941,7 @@ bool IsHealOverTimeSpell(int16 spell_id) {
 
 bool IsCompleteHealSpell(int16 spell_id) {
 	
-	if(spell_id == 13 || IsEffectInSpell(spell_id, SE_CompleteHeal) || IsPercentalHealSpell(spell_id))
+	if(spell_id == 13 || IsEffectInSpell(spell_id, SE_CompleteHeal) || IsEffectInSpell(spell_id, SE_PercentalHeal))
 		return true;
 	else
 		return false;

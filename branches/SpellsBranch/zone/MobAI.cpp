@@ -647,13 +647,13 @@ void Client::AI_SpellCast()
 		slot_to_use = slots[idx];
 	}
 
-	if(IsMezSpell(spell_to_cast) || IsFearSpell(spell_to_cast))
+	if(IsEffectInSpell(spell_to_cast, SE_Mez) || IsEffectInSpell(spell_to_cast, SE_Fear))
 	{
 		Mob *tar = entity_list.GetTargetForMez(this);
 		if(!tar)
 		{
 			tar = GetTarget();
-			if(tar && IsFearSpell(spell_to_cast))
+			if(tar && IsEffectInSpell(spell_to_cast, SE_Fear))
 			{
 				if(!IsBardSong(spell_to_cast)) 
 				{

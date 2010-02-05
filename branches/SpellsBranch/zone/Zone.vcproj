@@ -588,6 +588,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\perl_spell.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\perlpacket.cpp"
 				>
 			</File>

@@ -90,6 +90,9 @@ void PerlXSParser::map_funs() {
 	"package HateEntry;"
 	"&boot_HateEntry;"	// load quest item XS
 
+	"package Spell;"
+	"&boot_Spell;"	// load Spell XS
+
 #endif
 	"package main;"
 	"}"

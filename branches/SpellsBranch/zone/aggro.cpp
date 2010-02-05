@@ -1437,7 +1437,7 @@ bool Mob::PassCharismaCheck(Mob* caster, Mob* spellTarget, const Spell *spell_to
 	float r1 = ((((float)spellTarget->GetMR() + spellTarget->GetLevel()) / 3) / spellTarget->GetMaxMR()) + ((float)MakeRandomFloat(-10, 10) / 100.0f);
 	float r2 = 0.0f;
 
-	if(spell_to_cast->IsCharmSpell()) {
+	if(spell_to_cast->IsEffectInSpell(SE_Charm)) {
 		// Assume this is a charm spell
 		int32 TotalDominationRank = 0.00f;
 		float TotalDominationBonus = 0.00f;

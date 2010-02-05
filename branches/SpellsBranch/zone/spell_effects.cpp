@@ -3197,7 +3197,7 @@ sint16 Client::GetFocusEffect(focusType type, const Spell *spell_to_cast)
 	if(type == focusReagentCost && spell_to_cast->IsSummonPetSpell() && GetAA(aaElementalPact))
 		return 100;
 
-	if(type == focusReagentCost && (spell_to_cast->IsEffectInSpell(SE_SummonItem) || spell_to_cast->IsSacrificeSpell())){
+	if(type == focusReagentCost && (spell_to_cast->IsEffectInSpell(SE_SummonItem) || spell_to_cast->IsEffectInSpell(SE_Sacrifice))){
 		return 0;
 	//Summon Spells that require reagents are typically imbue type spells, enchant metal, sacrifice and shouldn't be affected
 	//by reagent conservation for obvious reasons.
@@ -3233,16 +3233,15 @@ uint16 Mob::GetProcID(const Spell* spell_to_use, uint8 effect_index)
 	}
 }
 
-bool Mob::TryDeathSave() {
-	bool Result = false;
-
+bool Mob::TryDeathSave()
+{
 	int aaClientTOTD = IsClient() ? CastToClient()->GetAA(aaTouchoftheDivine) : -1;
 
-	if (aaClientTOTD > 0) {
-		int aaChance = (1.2 * CastToClient()->GetAA(aaTouchoftheDivine));
-		
-		if (MakeRandomInt(0,100) < aaChance) {
-			Result = true;
+	if (aaClientTOTD > 0) 
+	{
+		int aaChance = (1.2 * CastToClient()->GetAA(aaTouchoftheDivine));	
+		if (MakeRandomInt(0,100) < aaChance) 
+		{
 			/*
 			int touchHealSpellID = 4544;
 			switch (aaClientTOTD) {
@@ -3266,7 +3265,8 @@ bool Mob::TryDeathSave() {
 			// The above spell effect is not currently working. So, do a manual heal instead:
 
 			float touchHealAmount = 0;
-			switch (aaClientTOTD) {
+			switch (aaClientTOTD) 
+			{
 				case 1:
 					touchHealAmount = 0.15;
 					break;
@@ -3293,9 +3293,7 @@ bool Mob::TryDeathSave() {
 			safe_delete(tod_spell);
 
 			// skip checking for DI fire if this goes off...
-			if (Result == true) {
-				return Result;
-			}
+			return true;
 		}
 	}
 
@@ -3310,11 +3308,10 @@ bool Mob::TryDeathSave() {
 
 		LogFile->write(EQEMuLog::Debug, "%s chance for a death save was %i and the roll was %i", GetCleanName(), SuccessChance, SaveRoll);
 
-		if(SuccessChance >= SaveRoll) {
-			// Success
-			Result = true;
-
-			if(IsFullDeathSaveSpell(BuffSpellID)) {
+		if(SuccessChance >= SaveRoll) 
+		{
+			if(buffs[buffSlot]->GetSpell()->IsFullDeathSaveSpell()) 
+			{
 				// Lazy man's full heal.
 				SetHP(50000);
 			}
@@ -3326,24 +3323,25 @@ bool Mob::TryDeathSave() {
 
 			// Fade the buff
 			BuffFadeBySlot(buffSlot);
-
 			SetDeathSaveChance(false);
+			return true;
 		}
-		else if (CasterUnfailingDivinityAARank >= 1) {
+		else if (CasterUnfailingDivinityAARank >= 1) 
+		{
 			// Roll the virtual dice to see if the target atleast gets a heal out of this
 			SuccessChance = 30;
 			SaveRoll = MakeRandomInt(0, 100);
-
 			LogFile->write(EQEMuLog::Debug, "%s chance for a Unfailing Divinity AA proc was %i and the roll was %i", GetCleanName(), SuccessChance, SaveRoll);
 
-			if(SuccessChance >= SaveRoll) {
+			if(SuccessChance >= SaveRoll) 
+			{
 				// Yep, target gets a modest heal
 				SetHP(1500);
 			}
 		}
 	}
 
-	return Result;
+	return false;
 }
 
 void Mob::TryDotCritical(const Spell *spell_to_cast, Mob *caster, int &damage)

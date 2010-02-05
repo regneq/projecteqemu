@@ -357,10 +357,10 @@ public:
 	void	UpdateQGlobal(uint32 qid, QGlobal newGlobal);
 	void	DeleteQGlobal(std::string name, uint32 npcID, uint32 charID, uint32 zoneID);
 
-	list<Mob*> GetMobList();
-	list<NPC*> GetNPCList();
-	list<Client*> GetClientList();
-	list<Corpse*> GetCorpseList();
+	void GetMobList(list<Mob*> &m_list);
+	void GetNPCList(list<NPC*> &n_list);
+	void GetClientList(list<Client*> &c_list);
+	void GetCorpseList(list<Corpse*> &c_list);
 	void	DepopAll(int NPCTypeID, bool StartSpawnTimer = true);
 
 protected:
