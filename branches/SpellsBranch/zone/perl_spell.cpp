@@ -21,6 +21,7 @@
 #include "../common/debug.h"
 #include "embperl.h"
 
+#include <string>
 #include "mob.h"
 #include "spells.h"
 #include "buff.h"
@@ -626,6 +627,61 @@ XS(XS_Spell_CopySpell) {
 	XSRETURN(1);
 }
 
+XS(XS_Spell_GetSpellAttribute);
+XS(XS_Spell_GetSpellAttribute) {
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Spell::GetSpellAttribute(THIS, field)");
+	{
+		Spell *             THIS;
+		const char *        field = (const char *)SvPV_nolen(ST(1));
+		std::string         RETSTR;
+		const char *        RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Spell")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Spell *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Spell");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETSTR = THIS->GetSpellAttribute(field);
+		RETVAL = RETSTR.c_str();
+		sv_setpv(TARG, RETVAL); 
+		XSprePUSH; 
+		PUSHTARG;
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Spell_SetSpellAttribute);
+XS(XS_Spell_SetSpellAttribute) {
+	dXSARGS;
+	if (items != 3)
+		Perl_croak(aTHX_ "Usage: Spell::SetSpellAttribute(THIS, field, attribute)");
+	{
+		Spell *             THIS;
+		const char *        field = (const char *)SvPV_nolen(ST(1));
+		const char *        attribute = (const char *)SvPV_nolen(ST(1));
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Spell")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Spell *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Spell");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->SetSpellAttribute(field, attribute);
+	}
+	XSRETURN_EMPTY;
+}
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -668,7 +724,9 @@ XS(boot_Spell)
 		newXSproto(strcpy(buf, "GetCasterLevel"), XS_Spell_GetCasterLevel, file, "$");
 		newXSproto(strcpy(buf, "SetCasterLevel"), XS_Spell_SetCasterLevel, file, "$$");
 		newXSproto(strcpy(buf, "IsCustomSpell"), XS_Spell_IsCustomSpell, file, "$");
-		/*newXSproto(strcpy(buf, "CopySpell"), XS_Spell_CopySpell, file, "$");*/
+		newXSproto(strcpy(buf, "CopySpell"), XS_Spell_CopySpell, file, "$");
+		newXSproto(strcpy(buf, "GetSpellAttribute"), XS_Spell_GetSpellAttribute, file, "$$");
+		newXSproto(strcpy(buf, "SetSpellAttribute"), XS_Spell_SetSpellAttribute, file, "$$$");
 
 	XSRETURN_YES;
 }

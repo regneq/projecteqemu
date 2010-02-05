@@ -883,7 +883,7 @@ bool logpos;
 	void				ClearFeignMemory();
 	void				PrintHateListToClient(Client *who) { hate_list.PrintToClient(who); }
 
-	std::list<tHateEntry*> GetHateList() { return hate_list.GetHateList(); }
+	void GetHateList(std::list<tHateEntry*> &h_list) { return hate_list.GetHateList(h_list); }
 
 
 	int					GetCurWp(){ return cur_wp; }
