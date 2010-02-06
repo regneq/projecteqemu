@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==02/06/2010==
+Trevius: Added an account status setting option to the database page of the EQEmu Web Tool.
+
 ==02/02/2010==
 Richardo: Added options wep1 and wep2 to #npcedit to allow changing primary and secondary weapon models.
 
