@@ -530,7 +530,7 @@ typedef enum  {
 //
 struct SPDat_Spell_Struct
 {
-/* 000 */ int   id;	                      // not used
+/* 000 */ sint32 id;	                  // not used
 /* 001 */ char  name[32];                 // Name of the spell
 /* 002 */ char  player_1[32];             // "PLAYER_1"
 /* 003 */ char  teleport_zone[32];	      // Teleport zone, pet name summoned, or item summoned
@@ -551,73 +551,73 @@ struct SPDat_Spell_Struct
 /* 018 */ int32  AEDuration;	            // sentinel, rain of something
 /* 019 */ int16  mana;                      // Mana Used
 /* 020 */ sint32 base[EFFECT_COUNT];	    //various purposes
-/* 032 */ int    base2[EFFECT_COUNT];       //various purposes
+/* 032 */ sint32 base2[EFFECT_COUNT];       //various purposes
 /* 044 */ sint16 max[EFFECT_COUNT];
-/* 056 */ int16  icon;                      // Spell icon
-/* 057 */ int16  memicon;                   // Icon on membarthing
+/* 056 */ uint16 icon;                      // Spell icon
+/* 057 */ uint16 memicon;                   // Icon on membarthing
 /* 058 */ sint32 components[4];             // reagents
-/* 062 */ int    component_counts[4];       // amount of regents used
-/* 066 */ signed NoexpendReagent[4];        // focus items (Need but not used; Flame Lick has a Fire Beetle Eye focus.)
+/* 062 */ sint32 component_counts[4];       // amount of regents used
+/* 066 */ sint32 NoexpendReagent[4];        // focus items (Need but not used; Flame Lick has a Fire Beetle Eye focus.)
                                             // If it is a number between 1-4 it means components[number] is a focus and not to expend it
                                             // If it is a valid itemid it means this item is a focus as well
 /* 070 */ int16 formula[EFFECT_COUNT];      // Spell's value formula
-/* 082 */ int LightType;                    // probaly another effecttype flag
-/* 083 */ int goodEffect;                   //0=detrimental, 1=Beneficial, 2=Beneficial, Group Only
-/* 084 */ int Activated;                    // probaly another effecttype flag	
-/* 085 */ int resisttype;
-/* 086 */ int effectid[EFFECT_COUNT];       // Spell's effects
+/* 082 */ sint32 LightType;                 // probaly another effecttype flag
+/* 083 */ sint32 goodEffect;                //0=detrimental, 1=Beneficial, 2=Beneficial, Group Only
+/* 084 */ sint32 Activated;                 // probaly another effecttype flag	
+/* 085 */ sint32 resisttype;
+/* 086 */ sint32 effectid[EFFECT_COUNT];    // Spell's effects
 /* 098 */ SpellTargetType targettype;       // Spell's Target
-/* 099 */ int basediff;                     // base difficulty fizzle adjustment
+/* 099 */ sint32 basediff;                  // base difficulty fizzle adjustment
 /* 100 */ SkillType skill;
 /* 101 */ sint16 zonetype;	                // 01=Outdoors, 02=dungeons, ff=Any 
 /* 102 */ int16 EnvironmentType;
-/* 103 */ int TimeOfDay;
+/* 103 */ sint32 TimeOfDay;
 /* 104 */ int8 classes[PLAYER_CLASS_COUNT]; // Classes, and their min levels
 /* 120 */ int8 CastingAnim;
 /* 121 */ int8 TargetAnim;
 /* 122 */ int32 TravelType;
 /* 123 */ int16 SpellAffectIndex;
-/* 124 */ int spacing124[2];    // 124: high-end Yaulp spells (V, VI, VII, VIII [Rk 1, 2, & 3], & Gallenite's Bark of Fury
+/* 124 */ sint32 spacing124[2]; // 124: high-end Yaulp spells (V, VI, VII, VIII [Rk 1, 2, & 3], & Gallenite's Bark of Fury
                                 // 125: Words of the Skeptic
 /* 126 */ sint8	deities[16];    // Deity check. 201 - 216 per http://www.eqemulator.net/wiki/wikka.php?wakka=DeityList
 										// -1: Restrict to Deity; 1: Restrict to Deity, but only used on non-Live (Test Server "Blessing of ...") spells; 0: Don't restrict
-/* 142 */ int spacing142[2];    // 142: between 0 & 100
+/* 142 */ sint32 spacing142[2]; // 142: between 0 & 100
                                 // 143: always set to 0
 /* 144 */ sint16 new_icon;      // Spell icon used by the client in uifiles/default/spells??.tga, both for spell gems & buff window. Looks to depreciate icon & memicon
 /* 145 */ sint16 spellanim;	    // Doesn't look like it's the same as #doanim, so not sure what this is
 /* 146 */ sint8 uninterruptable;// Looks like anything != 0 is uninterruptable. Values are mostly -1, 0, & 1 (Fetid Breath = 90?)
 /* 147 */ sint16 ResistDiff; 
-/* 148 */ int dot_stacking_exempt;
-/* 149 */ int deletable;
+/* 148 */ sint32 dot_stacking_exempt;
+/* 149 */ sint32 deletable;
 /* 150 */ int16 RecourseLink;
-/* 151 */ int spacing151[3];    // 151: -1, 0, or 1
+/* 151 */ sint32 spacing151[3]; // 151: -1, 0, or 1
                                 // 152 & 153: all set to 0
 /* 154 */ sint8	short_buff_box;	// != 0, goes to short buff box. Not really supported in the server code
-/* 155 */ int descnum;          // eqstr of description of spell
-/* 156 */ int typedescnum;      // eqstr of type description
-/* 157 */ int effectdescnum;    // eqstr of effect description
-/* 158 */ int spacing158[4];
-/* 162 */ int bonushate;
-/* 163 */ int spacing163[3];
-/* 166 */ int EndurCost;
-/* 167 */ int EndurTimerIndex;
-/* 168 */ int spacing168[5];
-/* 173 */ int HateAdded;
-/* 174 */ int EndurUpkeep;
-/* 175 */ int spacing175;
-/* 176 */ int numhits;
-/* 177 */ int pvpresistbase;
-/* 178 */ int pvpresistcalc;
-/* 179 */ int pvpresistcap;
-/* 180 */ int spell_category;
-/* 181 */ int spacing181[4];
-/* 185 */ int can_mgb;            //0 = no, -1 or 1 = yes
+/* 155 */ sint32 descnum;       // eqstr of description of spell
+/* 156 */ sint32 typedescnum;   // eqstr of type description
+/* 157 */ sint32 effectdescnum; // eqstr of effect description
+/* 158 */ sint32 spacing158[4];
+/* 162 */ sint32 bonushate;
+/* 163 */ sint32 spacing163[3];
+/* 166 */ sint32 EndurCost;
+/* 167 */ sint32 EndurTimerIndex;
+/* 168 */ sint32 spacing168[5];
+/* 173 */ sint32 HateAdded;
+/* 174 */ sint32 EndurUpkeep;
+/* 175 */ sint32 spacing175;
+/* 176 */ sint32 numhits;
+/* 177 */ sint32 pvpresistbase;
+/* 178 */ sint32 pvpresistcalc;
+/* 179 */ sint32 pvpresistcap;
+/* 180 */ sint32 spell_category;
+/* 181 */ sint32 spacing181[4];
+/* 185 */ sint32 can_mgb;         //0 = no, -1 or 1 = yes
 /* 186 */ sint8	 no_dispel;       //0 = can be dispelled, -1 = can't be dispelled at all, 1 = most can be cancelled w/ a cure but not dispelled
 /* 187 */ uint8  npc_category;    //0=not used, 1=AoE Detrimental, 2=DD, 3=Buffs, 4=Pets, 5=Healing, 6=Gate, 7=Debuff, 8=Dispell
 /* 188 */ uint32 npc_usefulness;  // higher number = more useful, lower number = less useful
-/* 189 */ int    spacing189[18];
+/* 189 */ sint32 spacing189[18];
 /* 207 */ uint32 spellgroup;
-/* 208 */ int    spacing208[7];
+/* 208 */ sint32 spacing208[7];
 /* 236 */ int8   DamageShieldType; // This field does not exist in spells_us.txt
 };
 
