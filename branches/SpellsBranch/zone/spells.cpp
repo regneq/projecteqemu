@@ -88,6 +88,7 @@ Copyright (C) 2001-2002  EQEMu Development Team (http://eqemu.org)
 #include <math.h>
 #include <assert.h>
 #include <sstream>
+#include <algorithm>
 #ifndef WIN32
 //	#include <pthread.h>
 #include <stdlib.h>
@@ -4600,8 +4601,9 @@ Spell* Spell::CopySpell()
 
 std::string Spell::GetSpellAttribute(std::string field) const
 {
+	//transform the entire inc string using int tolower(int __C)
+	std::transform(field.begin(), field.end(), field.begin(), tolower);
 	std::stringstream ss(stringstream::in | stringstream::out);
-
 	if(field.length() < 2)
 	{
 		ss << "UNKNOWN FIELD";
@@ -5373,8 +5375,844 @@ std::string Spell::GetSpellAttribute(std::string field) const
 
 void Spell::SetSpellAttribute(std::string attribute, std::string field)
 {
-	SetCustomSpell(true);
+	//transform the entire inc string using int tolower(int __C)
+	std::transform(field.begin(), field.end(), field.begin(), tolower);
+	std::stringstream ss(stringstream::in | stringstream::out);
+
+	if(field.length() < 2)
+	{
+		return;
+	}
+
+	size_t string_loc;
+	switch (field[0])
+	{
+		case 'a':
+			{
+				string_loc = field.find("aoerange");
+				if(string_loc != string::npos)
+				{
+					raw_spell.aoerange = atof(attribute.c_str());
+					SetCustomSpell(true);
+					return;
+				}
+				
+				string_loc = field.find("aeduration");
+				if(string_loc != string::npos)
+				{
+					raw_spell.AEDuration = atoul(attribute.c_str());
+					SetCustomSpell(true);
+					return;
+				}
+				
+				string_loc = field.find("activated");
+				if(string_loc != string::npos)
+				{
+					raw_spell.Activated = atoi(attribute.c_str());
+					SetCustomSpell(true);
+					return;
+				}
+			}
+			break;
+		case 'b':
+			{
+				if(field[1] == 'a')
+				{
+					string_loc = field.find("base2");
+					if(string_loc != string::npos)
+					{
+						//get index
+						if(field[field.length()-1] != ']')
+						{
+							return;
+						}
+						
+						if(field[field.length()-4] == '[')
+						{
+							string index = field.substr(field.length()-3, 2);
+							raw_spell.base2[atoi(index.c_str())] = atoi(attribute.c_str());
+							SetCustomSpell(true);
+							return;
+						}
+						else if(field[field.length()-3] == '[')
+						{
+							string index = field.substr(field.length()-2, 1);
+							raw_spell.base2[atoi(index.c_str())] = atoi(attribute.c_str());
+							SetCustomSpell(true);
+							return;
+						}
+					}
+					string_loc = field.find("base");
+					if(string_loc != string::npos)
+					{
+						//get index
+						if(field[field.length()-1] != ']')
+						{
+							return;
+						}
+						
+						if(field[field.length()-4] == '[')
+						{
+							string index = field.substr(field.length()-3, 2);
+							raw_spell.base[atoi(index.c_str())] = atoi(attribute.c_str());
+							SetCustomSpell(true);
+							return;
+						}
+						else if(field[field.length()-3] == '[')
+						{
+							string index = field.substr(field.length()-2, 1);
+							raw_spell.base[atoi(index.c_str())] = atoi(attribute.c_str());
+							SetCustomSpell(true);
+							return;
+						}
+					}
+				}
+				else if(field[1] == 'u')
+				{
+					string_loc = field.find("buffdurationformula");
+					if(string_loc != string::npos)
+					{
+						raw_spell.buffdurationformula = atoul(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+					string_loc = field.find("buffduration");
+					if(string_loc != string::npos)
+					{
+						raw_spell.buffduration = atoul(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+				}
+				else
+				{
+					string_loc = field.find("bonushate");
+					if(string_loc != string::npos)
+					{
+						raw_spell.bonushate = atoi(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+				}
+			}
+			break;	
+		case 'c':
+			{
+				if(field[1] == 'a')
+				{
+					string_loc = field.find("cast_time");
+					if(string_loc != string::npos)
+					{
+						raw_spell.cast_time = atoul(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+					string_loc = field.find("cast_on_you");
+					if(string_loc != string::npos)
+					{
+						strcpy(raw_spell.cast_on_you, attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+					string_loc = field.find("cast_on_other");
+					if(string_loc != string::npos)
+					{
+						strcpy(raw_spell.cast_on_other, attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+					string_loc = field.find("castinganim");
+					if(string_loc != string::npos)
+					{
+						raw_spell.CastingAnim = atoul(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+					string_loc = field.find("can_mgb");
+					if(string_loc != string::npos)
+					{
+						raw_spell.can_mgb = atoi(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+				}
+				else if(field[1] == 'o')
+				{
+					string_loc = field.find("components");
+					if(string_loc != string::npos)
+					{
+						//get index
+						if(field[field.length()-1] != ']')
+						{
+							return;
+						}
+						
+						if(field[field.length()-4] == '[')
+						{
+							string index = field.substr(field.length()-3, 2);
+							raw_spell.components[atoi(index.c_str())] = atoi(attribute.c_str());
+							SetCustomSpell(true);
+							return;
+						}
+						else if(field[field.length()-3] == '[')
+						{
+							string index = field.substr(field.length()-2, 1);
+							raw_spell.components[atoi(index.c_str())] = atoi(attribute.c_str());
+							SetCustomSpell(true);
+							return;
+						}
+					}
+					
+					string_loc = field.find("component_counts");
+					if(string_loc != string::npos)
+					{
+						//get index
+						if(field[field.length()-1] != ']')
+						{
+							return;
+						}
+						
+						if(field[field.length()-4] == '[')
+						{
+							string index = field.substr(field.length()-3, 2);
+							raw_spell.component_counts[atoi(index.c_str())] = atoi(attribute.c_str());
+							SetCustomSpell(true);
+							return;
+						}
+						else if(field[field.length()-3] == '[')
+						{
+							string index = field.substr(field.length()-2, 1);
+							raw_spell.component_counts[atoi(index.c_str())] = atoi(attribute.c_str());
+							SetCustomSpell(true);
+							return;
+						}
+					}
+				}
+				else
+				{
+					string_loc = field.find("classes");
+					if(string_loc != string::npos)
+					{
+						//get index
+						if(field[field.length()-1] != ']')
+						{
+							return;
+						}
+						
+						if(field[field.length()-4] == '[')
+						{
+							string index = field.substr(field.length()-3, 2);
+							raw_spell.classes[atoi(index.c_str())] = atoul(attribute.c_str());
+							SetCustomSpell(true);
+							return;
+						}
+						else if(field[field.length()-3] == '[')
+						{
+							string index = field.substr(field.length()-2, 1);
+							raw_spell.classes[atoi(index.c_str())] = atoul(attribute.c_str());
+							SetCustomSpell(true);
+							return;
+						}
+					}
+				}
+			}
+			break;
+		case 'd':
+			{
+				if(field[1] == 'e')
+				{
+					string_loc = field.find("deletable");
+					if(string_loc != string::npos)
+					{
+						raw_spell.deletable = atoi(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+					string_loc = field.find("descnum");
+					if(string_loc != string::npos)
+					{
+						raw_spell.descnum = atoi(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+					string_loc = field.find("deities");
+					if(string_loc != string::npos)
+					{
+						//get index
+						if(field[field.length()-1] != ']')
+						{
+							return;
+						}
+						
+						if(field[field.length()-4] == '[')
+						{
+							string index = field.substr(field.length()-3, 2);
+							raw_spell.deities[atoi(index.c_str())] = atoi(attribute.c_str());
+							SetCustomSpell(true);
+							return;
+						}
+						else if(field[field.length()-3] == '[')
+						{
+							string index = field.substr(field.length()-2, 1);
+							raw_spell.deities[atoi(index.c_str())] = atoi(attribute.c_str());
+							SetCustomSpell(true);
+							return;
+						}
+					}
+					
+				}
+				else
+				{
+					string_loc = field.find("dot_stacking_exempt");
+					if(string_loc != string::npos)
+					{
+						raw_spell.dot_stacking_exempt = atoi(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+					string_loc = field.find("damageshieldtype");
+					if(string_loc != string::npos)
+					{
+						raw_spell.DamageShieldType = atoul(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+				}
+			}
+			break;	
+		case 'e':
+			{
+				if(field[1] == 'f')
+				{
+					string_loc = field.find("effectdescnum");
+					if(string_loc != string::npos)
+					{
+						raw_spell.effectdescnum = atoi(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+					string_loc = field.find("effectid");
+					if(string_loc != string::npos)
+					{
+						//get index
+						if(field[field.length()-1] != ']')
+						{
+							return;
+						}
+						
+						if(field[field.length()-4] == '[')
+						{
+							string index = field.substr(field.length()-3, 2);
+							raw_spell.effectid[atoi(index.c_str())] = atoi(attribute.c_str());
+							SetCustomSpell(true);
+							return;
+						}
+						else if(field[field.length()-3] == '[')
+						{
+							string index = field.substr(field.length()-2, 1);
+							raw_spell.effectid[atoi(index.c_str())] = atoi(attribute.c_str());
+							SetCustomSpell(true);
+							return;
+						}
+					}
+				}
+				else if(field[1] == 'n')
+				{
+					string_loc = field.find("endurcost");
+					if(string_loc != string::npos)
+					{
+						raw_spell.EndurCost = atoi(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+					string_loc = field.find("endurtimerindex");
+					if(string_loc != string::npos)
+					{
+						raw_spell.EndurTimerIndex = atoi(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+					string_loc = field.find("endurupkeep");
+					if(string_loc != string::npos)
+					{
+						raw_spell.EndurUpkeep = atoi(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+				}
+				else
+				{
+					string_loc = field.find("environmenttype");
+					if(string_loc != string::npos)
+					{
+						raw_spell.EnvironmentType = atoul(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+				}
+			}
+			break;	
+		case 'f':
+			{
+				string_loc = field.find("formula");
+				if(string_loc != string::npos)
+				{
+					//get index
+					if(field[field.length()-1] != ']')
+					{
+						return;
+					}
+					
+					if(field[field.length()-4] == '[')
+					{
+						string index = field.substr(field.length()-3, 2);
+						raw_spell.formula[atoi(index.c_str())] = atoul(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+					else if(field[field.length()-3] == '[')
+					{
+						string index = field.substr(field.length()-2, 1);
+						raw_spell.formula[atoi(index.c_str())] = atoul(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+				}
+			}
+			break;	
+		case 'g':
+			{
+				string_loc = field.find("goodeffect");
+				if(string_loc != string::npos)
+				{
+					raw_spell.goodEffect = atoi(attribute.c_str());
+					SetCustomSpell(true);
+					return;
+				}
+			}
+			break;
+		case 'h':
+			{
+				string_loc = field.find("hateadded");
+				if(string_loc != string::npos)
+				{
+					raw_spell.HateAdded = atoi(attribute.c_str());
+					SetCustomSpell(true);
+					return;
+				}
+			}
+			break;	
+		case 'i':
+			{
+				string_loc = field.find("id");
+				if(string_loc != string::npos)
+				{
+					raw_spell.id = atoi(attribute.c_str());
+					SetCustomSpell(true);
+					return;
+				}
+				string_loc = field.find("icon");
+				if(string_loc != string::npos)
+				{
+					raw_spell.icon = atoul(attribute.c_str());
+					SetCustomSpell(true);
+					return;
+				}
+			}
+			break;
+		case 'l':
+			{
+				string_loc = field.find("lighttype");
+				if(string_loc != string::npos)
+				{
+					raw_spell.LightType = atoi(attribute.c_str());
+					SetCustomSpell(true);
+					return;
+				}
+			}
+			break;	
+		case 'm':
+			{
+				string_loc = field.find("mana");
+				if(string_loc != string::npos)
+				{
+					raw_spell.mana = atoul(attribute.c_str());
+					SetCustomSpell(true);
+					return;
+				}
+				string_loc = field.find("memicon");
+				if(string_loc != string::npos)
+				{
+					raw_spell.memicon = atoul(attribute.c_str());
+					SetCustomSpell(true);
+					return;
+				}
+				string_loc = field.find("max");
+				if(string_loc != string::npos)
+				{
+					//get index
+					if(field[field.length()-1] != ']')
+					{
+						return;
+					}
+					
+					if(field[field.length()-4] == '[')
+					{
+						string index = field.substr(field.length()-3, 2);
+						raw_spell.max[atoi(index.c_str())] = atoi(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+					else if(field[field.length()-3] == '[')
+					{
+						string index = field.substr(field.length()-2, 1);
+						raw_spell.max[atoi(index.c_str())] = atoi(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+				}
+			}
+			break;	
+		case 'n':
+			{
+				string_loc = field.find("numhits");
+				if(string_loc != string::npos)
+				{
+					raw_spell.numhits = atoi(attribute.c_str());
+					SetCustomSpell(true);
+					return;
+				}
+				string_loc = field.find("no_dispel");
+				if(string_loc != string::npos)
+				{
+					raw_spell.no_dispel = atoi(attribute.c_str());
+					SetCustomSpell(true);
+					return;
+				}
+				string_loc = field.find("newicon");
+				if(string_loc != string::npos)
+				{
+					raw_spell.new_icon = atoi(attribute.c_str());
+					SetCustomSpell(true);
+					return;
+				}
+				string_loc = field.find("name");
+				if(string_loc != string::npos)
+				{
+					strcpy(raw_spell.name, attribute.c_str());
+					SetCustomSpell(true);
+					return;
+				}
+				string_loc = field.find("npc_category");
+				if(string_loc != string::npos)
+				{
+					raw_spell.npc_category = atoul(attribute.c_str());
+					SetCustomSpell(true);
+					return;
+				}
+				string_loc = field.find("npc_usefulness");
+				if(string_loc != string::npos)
+				{
+					raw_spell.npc_usefulness = atoul(attribute.c_str());
+					SetCustomSpell(true);
+					return;
+				}
+				
+				string_loc = field.find("noexpendreagent");
+				if(string_loc != string::npos)
+				{
+					//get index
+					if(field[field.length()-1] != ']')
+					{
+						return;
+					}
+					
+					if(field[field.length()-4] == '[')
+					{
+						string index = field.substr(field.length()-3, 2);
+						raw_spell.NoexpendReagent[atoi(index.c_str())] = atoi(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+					else if(field[field.length()-3] == '[')
+					{
+						string index = field.substr(field.length()-2, 1);
+						raw_spell.NoexpendReagent[atoi(index.c_str())] = atoi(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+				}
+			}
+			break;
+		case 'o':
+			{
+				string_loc = field.find("other_casts");
+				if(string_loc != string::npos)
+				{
+					strcpy(raw_spell.other_casts, attribute.c_str());
+					SetCustomSpell(true);
+					return;
+				}
+			}
+			break;
+		case 'p':
+			{
+				if(field[1] == 'v')
+				{
+					string_loc = field.find("pvpresistbase");
+					if(string_loc != string::npos)
+					{
+						raw_spell.pvpresistbase = atoi(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+					string_loc = field.find("pvpresistcalc");
+					if(string_loc != string::npos)
+					{
+						raw_spell.pvpresistcalc = atoi(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+					string_loc = field.find("pvpresistcap");
+					if(string_loc != string::npos)
+					{
+						raw_spell.pvpresistcap = atoi(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+				}
+				else if(field[1] == 'u')
+				{
+					string_loc = field.find("pushup");
+					if(string_loc != string::npos)
+					{
+						raw_spell.pushup = atof(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+					string_loc = field.find("pushback");
+					if(string_loc != string::npos)
+					{
+						raw_spell.pushback = atof(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+				}
+				else
+				{
+					string_loc = field.find("player");
+					if(string_loc != string::npos)
+					{
+						strcpy(raw_spell.player_1, attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+				}
+			}
+			break;
+		case 'r':
+			{
+				if(field[1] == 'e')
+				{
+					string_loc = field.find("resisttype");
+					if(string_loc != string::npos)
+					{
+						raw_spell.resisttype = atoi(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+					string_loc = field.find("resistdiff");
+					if(string_loc != string::npos)
+					{
+						raw_spell.ResistDiff = atoi(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+					string_loc = field.find("recourselink");
+					if(string_loc != string::npos)
+					{
+						raw_spell.RecourseLink = atoul(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+					string_loc = field.find("recast_time");
+					if(string_loc != string::npos)
+					{
+						raw_spell.recast_time = atoul(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+					string_loc = field.find("recovery_time");
+					if(string_loc != string::npos)
+					{
+						raw_spell.recovery_time = atoul(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+				}
+				else
+				{
+					string_loc = field.find("range");
+					if(string_loc != string::npos)
+					{
+						raw_spell.range = atof(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+				}
+			}
+			break;	
+		case 's':
+			{
+				if(field[1] == 'p')
+				{
+					string_loc = field.find("spellgroup");
+					if(string_loc != string::npos)
+					{
+						raw_spell.spellgroup = atoul(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+					string_loc = field.find("spellaffectindex");
+					if(string_loc != string::npos)
+					{
+						raw_spell.SpellAffectIndex = atoul(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+					string_loc = field.find("spellanim");
+					if(string_loc != string::npos)
+					{
+						raw_spell.spellanim = atoi(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+					string_loc = field.find("spell_category");
+					if(string_loc != string::npos)
+					{
+						raw_spell.spell_category = atoi(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+					string_loc = field.find("spell_fades");
+					if(string_loc != string::npos)
+					{
+						strcpy(raw_spell.spell_fades, attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+				}
+				else
+				{
+					string_loc = field.find("skill");
+					if(string_loc != string::npos)
+					{
+						raw_spell.skill = (SkillType)atoi(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+					
+					string_loc = field.find("short_buff_box");
+					if(string_loc != string::npos)
+					{
+						raw_spell.short_buff_box = atoi(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+				}
+			}
+			break;
+		case 't':
+			{
+				if(field[1] == 'a')
+				{
+					string_loc = field.find("targettype");
+					if(string_loc != string::npos)
+					{
+						raw_spell.targettype = (SpellTargetType)atoi(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+					string_loc = field.find("targetanim");
+					if(string_loc != string::npos)
+					{
+						raw_spell.TargetAnim = atoul(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+				}
+				else
+				{
+					string_loc = field.find("teleport_zone");
+					if(string_loc != string::npos)
+					{
+						strcpy(raw_spell.teleport_zone, attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+					string_loc = field.find("timeofday");
+					if(string_loc != string::npos)
+					{
+						raw_spell.TimeOfDay = atoi(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+					string_loc = field.find("traveltype");
+					if(string_loc != string::npos)
+					{
+						raw_spell.TravelType = atoul(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+					string_loc = field.find("typedescnum");
+					if(string_loc != string::npos)
+					{
+						raw_spell.typedescnum = atoi(attribute.c_str());
+						SetCustomSpell(true);
+						return;
+					}
+				}
+			}
+			break;
+		case 'u':
+			{
+				string_loc = field.find("uninterruptable");
+				if(string_loc != string::npos)
+				{
+					raw_spell.uninterruptable = atoi(attribute.c_str());
+					SetCustomSpell(true);
+					return;
+				}
+			}
+			break;	
+		case 'y':
+			{
+				string_loc = field.find("you_cast");
+				if(string_loc != string::npos)
+				{
+					strcpy(raw_spell.you_cast, attribute.c_str());
+					SetCustomSpell(true);
+					return;
+				}
+			}
+		case 'z':
+			{
+				string_loc = field.find("zonetype");
+				if(string_loc != string::npos)
+				{
+					raw_spell.zonetype = atoi(attribute.c_str());
+					SetCustomSpell(true);
+					return;
+				}
+			}
+			break;	
+		default:
+			return;
+	}
+
+	return;
 }
+
 
 Buff::Buff(Spell *spell, uint32 duration)
 {
