@@ -12,6 +12,8 @@
 <hr/>
 <?
 $query = $request->get("name", "");
+$accid = $request->getInt("accountid", 0);
+$newstatus = $request->getInt("newstatus", 0);
 $type = $request->get("type", "");
 ?>
 <form method="get" action="accounts.html">
@@ -23,6 +25,12 @@ $type = $request->get("type", "");
 <input name="" type="submit" value="Search">
 </form>
 <?
+if($accid > 0) {
+	my $q2 = "UPDATE account SET status=$newstatus WHERE id=$accid";
+	$EQDB->query($q2);
+	print "Status update for Account ID: $accid Completed";
+}
+
 if ($query) {
 	$query = $EQDB->escape_string($query);
 	my $q;
@@ -34,6 +42,7 @@ if ($query) {
 
 	my $res=$EQDB->query($q);
 	if ($res) { 
+		
 		print "<table border=\"1\" cellspacing=\"2\" cellpadding=\"3\" class=\"zonelist\">\n";
 		print "\t<tr>\n";
 		if ($type eq "char") {
@@ -42,6 +51,7 @@ if ($query) {
 		printf "\t\t<th scope=\"col\" width=\"75\">ID</th>\n";
 		printf "\t\t<th scope=\"col\" width=\"150\">Acct Name</th>\n";
 		printf "\t\t<th scope=\"col\" width=\"75\">Status</th>\n";
+		printf "\t\t<th scope=\"col\" width=\"130\">New Status</th>\n";
 		printf "\t</tr>\n";
 		while(my $row=$res->fetch_row_hash) {
 			print "\t<tr>\n";
@@ -51,7 +61,13 @@ if ($query) {
 			printf "\t\t<td>%d</td>\n",$row->{id};
 			printf "\t\t<td><a href=\"account.html?name=%s\">%s</a></td>\n",$row->{name},$row->{name};
 			printf "\t\t<td>%d</td>\n",$row->{status};
+			print "<form method=\"get\" action=\"accounts.html\">";
+			printf "\t\t<input type=\"hidden\" name=\"accountid\" value=\"%d\">\n",$row->{id};
+			printf "\t\t<input type=\"hidden\" name=\"name\" value=\"$query\">\n",
+			printf "\t\t<input type=\"hidden\" name=\"type\" value=\"$type\">\n",
+			printf "\t\t<td><input name=\"newstatus\" type=\"text\" size=\"1\" value=\"0\">  <input name=\"\" type=\"submit\" value=\"Set Status\"></td>\n";
 			print "\t</tr>\n";
+			print "</form>";
 		}
 		print "</table>";
 	}
@@ -59,4 +75,3 @@ if ($query) {
 ?>
 </body>
 </html>
-
