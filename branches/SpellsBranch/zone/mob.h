@@ -698,7 +698,7 @@ bool logpos;
 	bool WillSpellHold(Spell *spell_to_cast, Mob *spell_target);
 	float DoSpellOnTargetResistCheck(Spell *spell_to_cast, Mob *spell_target);
 	void DoSpellOnTargetRecourse(Spell *spell_on_target, Mob *spell_target);
-	void SendKnockBackPacket(int push_up, int push_back);
+	void SendKnockBackPacket(Mob *caster, int push_up, int push_back);
 	virtual bool SpellEffect(Mob* caster, Spell *spell_to_cast, int action_sequence, float partial = 100);
 	bool ApplyNextBardPulse(Spell *spell_to_cast);
 	void BardPulse(Spell *spell_to_cast, Mob *caster);

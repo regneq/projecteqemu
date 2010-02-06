@@ -1683,7 +1683,7 @@ void Mob::BardPulse(Spell *spell_to_cast, Mob *caster)
 	{
 		if(spell_to_cast->GetSpell().pushback > 0 || spell_to_cast->GetSpell().pushup > 0)
 		{
-			SendKnockBackPacket(spell_to_cast->GetSpell().pushback, spell_to_cast->GetSpell().pushup);
+			SendKnockBackPacket(caster, spell_to_cast->GetSpell().pushup, spell_to_cast->GetSpell().pushback);
 		}
 	}
 
@@ -2289,7 +2289,7 @@ bool Mob::SpellOnTarget(Spell *spell_to_cast, Mob* spell_target)
 	{
 		if(spell_to_cast->GetSpell().pushback > 0 || spell_to_cast->GetSpell().pushup > 0)
 		{
-			SendKnockBackPacket(spell_to_cast->GetSpell().pushback, spell_to_cast->GetSpell().pushup);
+			spell_target->SendKnockBackPacket(this, spell_to_cast->GetSpell().pushup, spell_to_cast->GetSpell().pushback);
 		}
 	}
 	
@@ -2597,7 +2597,7 @@ void Mob::DoSpellOnTargetRecourse(Spell *spell_on_target, Mob *spell_target)
 	}
 }
 
-void Mob::SendKnockBackPacket(int push_up, int push_back)
+void Mob::SendKnockBackPacket(Mob *caster, int push_up, int push_back)
 {
 	if(IsClient())
 	{
@@ -2605,7 +2605,7 @@ void Mob::SendKnockBackPacket(int push_up, int push_back)
 		EQApplicationPacket* outapp_push = new EQApplicationPacket(OP_ClientUpdate, sizeof(PlayerPositionUpdateServer_Struct));
 		PlayerPositionUpdateServer_Struct* spu = (PlayerPositionUpdateServer_Struct*)outapp_push->pBuffer;
 
-		double look_heading = CalculateHeadingToTarget(GetX(), GetY());
+		double look_heading = caster->CalculateHeadingToTarget(GetX(), GetY());
 		look_heading /= 256;
 		look_heading *= 360;
 		if(look_heading > 360)
@@ -4487,6 +4487,7 @@ Spell::Spell(uint32 spell_id, Mob* caster, Mob* target, uint32 slot, uint32 cast
 	spell_class_type = SC_NORMAL;
 	spell_slot_inventory = 0xFFFFFFFF;
 	custom_data = false;
+	cast_timer = NULL;
 
 	const SPDat_Spell_Struct &spell = spells[spell_id];
 	memcpy((void*)&raw_spell, (const void*)&spell, sizeof(SPDat_Spell_Struct));
@@ -4515,6 +4516,7 @@ Spell::Spell(SPDat_Spell_Struct *new_spell, uint32 caster_level, uint32 slot, ui
 	spell_class_type = (SpellClass)spell_type;
 	spell_slot_inventory = inventory_slot;
 	custom_data = true;
+	cast_timer = NULL;
 }
 
 Spell::~Spell()
@@ -5376,6 +5378,7 @@ std::string Spell::GetSpellAttribute(std::string field) const
 
 void Spell::SetSpellAttribute(std::string attribute, std::string field)
 {
+	printf("SetSpellAttribute['%s'] = '%s';\n", field.c_str(), attribute.c_str());
 	SetCustomSpell(true);
 	if(field.compare("id") == 0)
 	{

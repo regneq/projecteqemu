@@ -665,7 +665,7 @@ XS(XS_Spell_SetSpellAttribute) {
 	{
 		Spell *             THIS;
 		const char *        field = (const char *)SvPV_nolen(ST(1));
-		const char *        attribute = (const char *)SvPV_nolen(ST(1));
+		const char *        attribute = (const char *)SvPV_nolen(ST(2));
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Spell")) {
@@ -677,7 +677,7 @@ XS(XS_Spell_SetSpellAttribute) {
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		THIS->SetSpellAttribute(field, attribute);
+		THIS->SetSpellAttribute(attribute, field);
 	}
 	XSRETURN_EMPTY;
 }
