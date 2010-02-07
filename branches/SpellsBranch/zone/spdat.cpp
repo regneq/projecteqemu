@@ -94,17 +94,6 @@ extern bool spells_loaded;
 
 ///////////////////////////////////////////////////////////////////////////////
 // spell property testing functions
-
-bool IsTargetableAESpell(int16 spell_id) {
-	bool bResult = false;
-
-	if (IsValidSpell(spell_id) && spells[spell_id].targettype == ST_AETarget) {
-		bResult = true;
-	}
-
-	return bResult;
-}
-
 bool Spell::IsTargetableAESpell() const
 {
 	if (raw_spell.targettype == ST_AETarget) 
@@ -239,19 +228,9 @@ bool Spell::IsHasteSpell() const
 	return false;
 }
 
-bool IsHarmonySpell(int16 spell_id)
-{
-	return (IsEffectInSpell(spell_id, SE_Harmony) || IsEffectInSpell(spell_id, SE_Lull));
-}
-
 bool Spell::IsHarmonySpell() const
 {
 	return (IsEffectInSpell(SE_Harmony) || IsEffectInSpell(SE_Lull));
-}
-
-bool IsGroupOnlySpell(int16 spell_id)
-{
-	return IsValidSpell(spell_id) && spells[spell_id].goodEffect == 2;
 }
 
 bool Spell::IsGroupOnlySpell() const
@@ -347,13 +326,6 @@ bool IsBlindSpell(int16 spell_id)
 	return IsEffectInSpell(spell_id, SE_Blind);
 }
 
-bool IsAEDurationSpell(int16 spell_id)
-{
-	return IsValidSpell(spell_id) &&
-		(spells[spell_id].targettype == ST_AETarget || spells[spell_id].targettype == ST_UndeadAE )
-		&& spells[spell_id].AEDuration !=0;
-}
-
 bool Spell::IsAEDurationSpell() const
 {
 	return (raw_spell.targettype == ST_AETarget || raw_spell.targettype == ST_UndeadAE)	&& raw_spell.AEDuration >= 2500;
@@ -399,29 +371,9 @@ bool Spell::IsPureNukeSpell() const
 	);
 }
 
-bool IsPartialCapableSpell(int16 spell_id)
-{
-	if(IsPureNukeSpell(spell_id) || IsEffectInSpell(spell_id, SE_Fear) || IsEffectInSpell(spell_id, SE_Charm))
-		return true;
-	
-	return false;
-}
-
 bool Spell::IsPartialCapableSpell() const
 {
 	return (IsPureNukeSpell() || IsEffectInSpell(SE_Fear) || IsEffectInSpell(SE_Charm));
-}
-
-bool IsResistableSpell(int16 spell_id)
-{
-	// solar: for now only detrimental spells are resistable.  later on i will
-	// add specific exceptions for the beneficial spells that are resistable
-	if(IsDetrimentalSpell(spell_id))
-	{
-		return true;
-	}
-
-	return false;
 }
 
 bool Spell::IsResistableSpell() const
@@ -429,17 +381,13 @@ bool Spell::IsResistableSpell() const
 	return IsDetrimentalSpell();
 }
 
-// solar: checks if this spell affects your group
 bool IsGroupSpell(int16 spell_id)
 {
 	return
 	(
-		IsValidSpell(spell_id) &&
-		(
-			spells[spell_id].targettype == ST_AEBard ||
-			spells[spell_id].targettype == ST_Group || 
-			spells[spell_id].targettype == ST_GroupTeleport
-		)
+		spells[spell_id].targettype == ST_AEBard ||
+		spells[spell_id].targettype == ST_Group || 
+		spells[spell_id].targettype == ST_GroupTeleport
 	);
 }
 
@@ -450,21 +398,6 @@ bool Spell::IsGroupSpell() const
 		raw_spell.targettype == ST_AEBard ||
 		raw_spell.targettype == ST_Group || 
 		raw_spell.targettype == ST_GroupTeleport
-	);
-}
-
-// solar: checks if this spell can be targeted
-bool IsTGBCompatibleSpell(int16 spell_id)
-{
-	return
-	(
-		IsValidSpell(spell_id) &&
-		(
-			!IsDetrimentalSpell(spell_id) &&
-			spells[spell_id].buffduration != 0 &&
-			!IsBardSong(spell_id) &&
-			!IsEffectInSpell(spell_id, SE_Illusion)
-		)
 	);
 }
 
@@ -574,24 +507,6 @@ bool IsValidSpell(int16 spellid)
 	);
 }
 
-//returns the lowest level of any caster which can use the spell
-int GetMinLevel(int16 spell_id) {
-	int r;
-	int min = 255;
-	const SPDat_Spell_Struct &spell = spells[spell_id];
-	for(r = 0; r < PLAYER_CLASS_COUNT; r++) {
-		if(spell.classes[r] < min)
-			min = spell.classes[r];
-	}
-	
-	//if we can't cast the spell return 0
-	//just so it wont screw up calculations used in other areas of the code
-	if(min == 255)
-		return 0;
-	else
-		return(min);
-}
-
 int Spell::GetMinLevel() const
 {
 	int r;
@@ -610,25 +525,6 @@ int Spell::GetMinLevel() const
 		return(min);
 }
 
-// solar: this will find the first occurance of effect.  this is handy
-// for spells like mez and charm, but if the effect appears more than once
-// in a spell this will just give back the first one.
-int GetSpellEffectIndex(int16 spell_id, int effect)
-{
-	int i;
-
-	if(!IsValidSpell(spell_id))
-		return -1;
-
-	for(i = 0; i < EFFECT_COUNT; i++)
-	{
-		if(spells[spell_id].effectid[i] == effect)
-			return i;
-	}
-
-	return -1;
-}
-
 int Spell::GetSpellEffectIndex(int effect) const
 {
 	for(int i = 0; i < EFFECT_COUNT; i++)
@@ -639,31 +535,6 @@ int Spell::GetSpellEffectIndex(int effect) const
 
 	return -1;
 }
-
-// solar: returns the level required to use the spell if that class/level
-// can use it, 0 otherwise
-// note: this isn't used by anything right now
-int CanUseSpell(int16 spellid, int classa, int level)
-{
-	int level_to_use;
-	
-	if(!IsValidSpell(spellid) || classa >= PLAYER_CLASS_COUNT)
-		return 0;
-
-	level_to_use = spells[spellid].classes[classa - 1];
-
-	if
-	(
-		level_to_use &&
-		level_to_use != 255 &&
-		level >= level_to_use
-	)
-		return level_to_use;
-
-	return 0;
-}
-
-
 
 bool BeneficialSpell(int16 spell_id)
 {
@@ -697,20 +568,6 @@ bool Spell::BeneficialSpell() const
 	return false;
 }
 
-sint32 CalculatePoisonCounters(int16 spell_id){
-	if(!IsValidSpell(spell_id))
-		return 0;
-
-	sint32 Counters = 0;
-	for(int i = 0; i < EFFECT_COUNT; i++)
-	{
-		if(spells[spell_id].effectid[i] == SE_PoisonCounter && spells[spell_id].base[i] > 0){
-			Counters += spells[spell_id].base[i];
-		}
-	}
-    return Counters;
-}
-
 sint32 Spell::CalculatePoisonCounters() const
 {
 	sint32 Counters = 0;
@@ -724,20 +581,6 @@ sint32 Spell::CalculatePoisonCounters() const
     return Counters;
 }
 
-sint32 CalculateDiseaseCounters(int16 spell_id){
-	if(!IsValidSpell(spell_id))
-		return 0;
-
-	sint32 Counters = 0;
-	for(int i = 0; i < EFFECT_COUNT; i++)
-	{
-		if(spells[spell_id].effectid[i] == SE_DiseaseCounter && spells[spell_id].base[i] > 0){
-			Counters += spells[spell_id].base[i];
-		}
-	}
-    return Counters;
-}
-
 sint32 Spell::CalculateDiseaseCounters() const
 {
 	sint32 Counters = 0;
@@ -746,20 +589,6 @@ sint32 Spell::CalculateDiseaseCounters() const
 		if(raw_spell.effectid[i] == SE_DiseaseCounter && raw_spell.base[i] > 0)
 		{
 			Counters += raw_spell.base[i];
-		}
-	}
-    return Counters;
-}
-
-sint32 CalculateCurseCounters(int16 spell_id){
-	if(!IsValidSpell(spell_id))
-		return 0;
-
-	sint32 Counters = 0;
-	for(int i = 0; i < EFFECT_COUNT; i++)
-	{
-		if(spells[spell_id].effectid[i] == SE_CurseCounter && spells[spell_id].base[i] > 0){
-			Counters += spells[spell_id].base[i];
 		}
 	}
     return Counters;
@@ -799,33 +628,9 @@ bool Spell::IsDiscipline() const
 	return false;
 }
 
-bool IsResurrectionEffects(int16 spell_id) {
-	bool Result = false;
-
-	if(IsValidSpell(spell_id) && spell_id == 756)		// spell id 756 is Resurrection Effects spell
-		Result = true;
-
-	return Result;
-}
-
 bool Spell::IsResurrectionEffects() const
 {
 	return (GetSpellID() == 756);
-}
-
-bool IsManaTapSpell(int16 spell_id) {
-	bool Result = false;
-
-	if(IsValidSpell(spell_id)) {
-		for(int i = 0; i < EFFECT_COUNT; i++) {
-			if(spells[spell_id].effectid[i] == SE_CurrentMana && spells[spell_id].targettype == ST_Tap) {
-				Result = true;
-				break;
-			}
-		}
-	}
-
-	return Result;
 }
 
 bool Spell::IsManaTapSpell() const
@@ -840,14 +645,6 @@ bool Spell::IsManaTapSpell() const
 bool Spell::IsFullDeathSaveSpell() const
 {
 	return (raw_spell.id == 1546);
-}
-
-bool IsPlayerIllusionSpell(int16 spell_id) {
-	if(IsEffectInSpell(spell_id, SE_Illusion) && spells[spell_id].targettype == ST_Self)
-		return true;
-	else
-		return false;
-
 }
 
 bool Spell::IsPlayerIllusionSpell() const
@@ -900,18 +697,24 @@ DmgShieldType GetDamageShieldType(int16 spell_id)
 	return DS_THORNS;
 }
 
-bool IsLDoNObjectSpell(int16 spell_id) 
+DmgShieldType Spell::GetDamageShieldType() const
 {
-	if(IsEffectInSpell(spell_id, SE_AppraiseLDonChest) || 
-		IsEffectInSpell(spell_id, SE_DisarmLDoNTrap) || 
-		IsEffectInSpell(spell_id, SE_UnlockLDoNChest))
+	if(raw_spell.DamageShieldType)
+		return (DmgShieldType)raw_spell.DamageShieldType;
+
+	switch(raw_spell.resisttype) 
 	{
-		return true;
+		case RESIST_COLD:
+			return DS_TORMENT;
+		case RESIST_FIRE:
+			return DS_BURN;
+		case RESIST_DISEASE:
+			return DS_DECAY;
+		default:
+			return DS_THORNS;
 	}
-	else
-	{
-		return false;
-	}
+
+	return DS_THORNS;
 }
 
 bool Spell::IsLDoNObjectSpell() const

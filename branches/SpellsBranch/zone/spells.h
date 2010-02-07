@@ -131,7 +131,8 @@ public:
 	bool IsPlayerIllusionSpell() const; //impl
 	bool IsLDoNObjectSpell() const; //impl
 	bool IsCompleteHealSpell() const; //impl
-	uint32 GetMorphTrigger() const;
+	uint32 GetMorphTrigger() const; //impl
+	DmgShieldType GetDamageShieldType() const; //impl
 
 protected:
 	uint32 caster_level;

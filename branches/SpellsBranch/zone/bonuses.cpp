@@ -900,7 +900,7 @@ void Mob::ApplySpellsBonuses(const Buff *buff_to_use, StatBonuses* newbon, int16
 			{
 				newbon->DamageShield += effect_value;
 				newbon->DamageShieldSpellID = spell_to_cast->GetSpellID();
-				newbon->DamageShieldType = GetDamageShieldType(spell_to_cast->GetSpellID());
+				newbon->DamageShieldType = spell_to_cast->GetDamageShieldType();
 				break;
 			}
 			
@@ -914,7 +914,7 @@ void Mob::ApplySpellsBonuses(const Buff *buff_to_use, StatBonuses* newbon, int16
 			{
 				newbon->ReverseDamageShield += effect_value;
 				newbon->ReverseDamageShieldSpellID = spell_to_cast->GetSpellID();
-				newbon->ReverseDamageShieldType = GetDamageShieldType(spell_to_cast->GetSpellID());
+				newbon->ReverseDamageShieldType = spell_to_cast->GetDamageShieldType();
 				break;
 			}
 

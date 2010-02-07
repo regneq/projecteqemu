@@ -628,22 +628,13 @@ struct SPDat_Spell_Struct
 	#define SPDAT_RECORDS	3602
 #endif
 
-bool IsTargetableAESpell(int16 spell_id);
 bool IsLifetapSpell(int16 spell_id);
 bool IsSlowSpell(int16 spell_id);
 bool IsHasteSpell(int16 spell_id);
-bool IsHarmonySpell(int16 spell_id);
-bool IsGroupOnlySpell(int16 spell_id);
 bool IsBeneficialSpell(int16 spell_id);
 bool IsDetrimentalSpell(int16 spell_id);
 bool IsSummonPetSpell(int16 spell_id);
-bool IsSummonPCSpell(int16 spell_id);
-bool IsAEDurationSpell(int16 spell_id);
 bool IsPureNukeSpell(int16 spell_id);
-bool IsPartialCapableSpell(int16 spell_id);
-bool IsResistableSpell(int16 spell_id);
-bool IsGroupSpell(int16 spell_id);
-bool IsTGBCompatibleSpell(int16 spell_id);
 bool IsBardSong(int16 spell_id);
 bool IsEffectInSpell(int16 spellid, int effect);
 bool IsBlankSpellEffect(int16 spellid, int effect_index);
@@ -651,27 +642,18 @@ bool IsValidSpell(int16 spellid);
 bool IsSummonSpell(int16 spellid);
 bool IsDamageSpell(int16 spellid);
 bool BeneficialSpell(int16 spell_id);
-int GetSpellEffectIndex(int16 spell_id, int effect);
-int CanUseSpell(int16 spellid, int classa, int level);
-int GetMinLevel(int16 spell_id);
-int CalcBuffDuration_formula(int level, int formula, int duration);
-sint32 CalculatePoisonCounters(int16 spell_id);
-sint32 CalculateDiseaseCounters(int16 spell_id);
-sint32 CalculateCurseCounters(int16 spell_id);
+bool IsGroupSpell(int16 spell_id);
 bool IsDiscipline(int16 spell_id);
-bool IsResurrectionEffects(int16 spell_id);
-bool IsManaTapSpell(int16 spell_id);
-bool IsPlayerIllusionSpell(int16 spell_id);
-bool IsLDoNObjectSpell(int16 spell_id);
 sint32 GetSpellResistType(int16 spell_id);
 sint32 GetSpellTargetType(int16 spell_id);
 bool IsCompleteHealSpell(int16 spell_id);
 bool IsFastHealSpell(int16 spell_id);
 bool IsRegularSingleTargetHealSpell(int16 spell_id);
+DmgShieldType GetDamageShieldType(int16 spell_id);
+int GetSpellEffectDescNum(int16 spell_id);
 
+int CalcBuffDuration_formula(int level, int formula, int duration);
 int CalcPetHp(int levelb, int classb, int STA = 75);
 const char *GetRandPetName();
-int GetSpellEffectDescNum(int16 spell_id);
-DmgShieldType GetDamageShieldType(int16 spell_id);
 
 #endif
