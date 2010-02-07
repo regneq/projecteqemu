@@ -60,8 +60,7 @@ public:
 	Group(int32 gid);
 	~Group();
 	
-	bool	AddMember(Mob* newmember, const char* NewMemberName = NULL, int32 CharacterID = 0);
-	void	AddMember(const char* NewMemberName);
+	bool	AddMember(Mob* newmember);
 	void	SendUpdate(int32 type,Mob* member);
 	void	SendLeadershipAAUpdate();
 	void	SendWorldGroup(int32 zone_id,Mob* zoningmember);

@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==02/07/2010==
+Derision: Reverted cross-zone group invites from Rev1086
+
 ==02/06/2010==
 Trevius: Added an account status setting option to the database page of the EQEmu Web Tool.
 

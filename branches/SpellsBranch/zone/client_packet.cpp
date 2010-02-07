@@ -5482,12 +5482,7 @@ void Client::Handle_OP_GroupInvite2(const EQApplicationPacket *app)
 #endif
 	}
 	else
-	{
-		ServerPacket* pack = new ServerPacket(ServerOP_GroupInvite, sizeof(GroupInvite_Struct));
-		memcpy(pack->pBuffer, gis, sizeof(GroupInvite_Struct));
-		worldserver.SendPacket(pack);
-		safe_delete(pack);
-	}
+		Message_StringID(clientMessageWhite, GROUP_INVITEE_NOT_FOUND);
 
 	/*if(this->GetTarget() != 0 && this->GetTarget()->IsNPC() && this->GetTarget()->CastToNPC()->IsInteractive()) {
 		if(!this->GetTarget()->CastToNPC()->IsGrouped()) {
@@ -5527,18 +5522,8 @@ void Client::Handle_OP_GroupCancelInvite(const EQApplicationPacket *app)
 	GroupCancel_Struct* gf = (GroupCancel_Struct*) app->pBuffer;
 	Mob* inviter = entity_list.GetClientByName(gf->name1);
 
-	if(inviter != NULL)
-	{
-		if(inviter->IsClient())
-			inviter->CastToClient()->QueuePacket(app);
-	}
-	else
-	{
-		ServerPacket* pack = new ServerPacket(ServerOP_GroupCancelInvite, sizeof(GroupCancel_Struct));
-		memcpy(pack->pBuffer, gf, sizeof(GroupCancel_Struct));
-		worldserver.SendPacket(pack);
-		safe_delete(pack);
-	}
+	if(inviter != NULL && inviter->IsClient())
+		inviter->CastToClient()->QueuePacket(app);
 
 	database.SetGroupID(GetName(), 0, CharacterID());
 	return;
@@ -5682,16 +5667,6 @@ void Client::Handle_OP_GroupFollow2(const EQApplicationPacket *app)
 		worldserver.SendPacket(pack);
 		safe_delete(pack);
 	}
-	else if(inviter == NULL)
-	{
-		ServerPacket* pack = new ServerPacket(ServerOP_GroupFollow, sizeof(ServerGroupFollow_Struct));
-		ServerGroupFollow_Struct *sgfs = (ServerGroupFollow_Struct *)pack->pBuffer;
-		sgfs->CharacterID = CharacterID();
-		strn0cpy(sgfs->gf.name1, gf->name1, sizeof(sgfs->gf.name1));
-		strn0cpy(sgfs->gf.name2, gf->name2, sizeof(sgfs->gf.name2));
-		worldserver.SendPacket(pack);
-		safe_delete(pack);
-	}
 	return;
 }
 
@@ -5768,9 +5743,7 @@ void Client::Handle_OP_GroupDisband(const EQApplicationPacket *app)
 				Mob* tempMember = entity_list.GetMob(gd->name2);
 				if(tempMember) {
 					if(tempMember->IsBot())
-					{
 						Bot::ProcessBotGroupDisband(this, std::string(tempMember->GetCleanName()));
-					}
 				}
 			}
 		}
@@ -5785,14 +5758,10 @@ void Client::Handle_OP_GroupDisband(const EQApplicationPacket *app)
 		if(!memberToDisband)
 			memberToDisband = entity_list.GetMob(gd->name2);
 		if(memberToDisband ){
-			if(group->IsLeader(this))
-			{// the group leader can kick other members out of the group...
+			if(group->IsLeader(this)) // the group leader can kick other members out of the group...
 				group->DelMember(memberToDisband,false);
-			}
-			else 
-			{// ...but other members can only remove themselves
+			else						// ...but other members can only remove themselves
 				group->DelMember(this,false);
-			}
 		}
 		else
 			LogFile->write(EQEMuLog::Error, "Failed to remove player from group. Unable to find player named %s in player group", gd->name2);
