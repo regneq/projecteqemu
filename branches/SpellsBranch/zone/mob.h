@@ -1044,7 +1044,6 @@ protected:
 	float 	slow_mitigation;	// Allows for a slow mitigation based on a % in decimal form.  IE, 1 = 100% mitigation, .5 is 50%
 	int8	maxlevel;
 	int32	scalerate;
-	//TODO:
 	Buff **buffs;
 	uint32 current_buff_count;
 	Timer *buff_tic_timer;

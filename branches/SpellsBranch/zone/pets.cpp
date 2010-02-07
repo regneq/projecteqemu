@@ -247,7 +247,6 @@ void Mob::MakePet(const Spell *spell_to_cast, const char* pettype, const char *p
 	//we copy the npc_type data because we need to edit it a bit
 	NPCType *npc_type = new NPCType;
 	memcpy(npc_type, base, sizeof(NPCType));
-	//TODO:
 	if (IsClient() && CastToClient()->GetFocusEffect(focusPetPower, spell_to_cast) > 0)
 	{
 		npc_type->max_hp *= 1.20;
@@ -497,10 +496,149 @@ void NPC::SetPetState(int32 *items, bool suspended_pet)
 	if(buff_count > 0)
 	{
 		SetBuffCount(buff_count);
-	}
 
-	//TODO: Apply some effects?
-	
+		//Reapply some buff effects
+		int max_count = GetMaxTotalSlots();
+		for(uint32 j1 = 0; j1 < max_count; j1++) 
+		{
+			if(!buffs[j1])
+				continue;
+
+			const SPDat_Spell_Struct &spell = buffs[j1]->GetSpell()->GetSpell();
+			for(int x1 = 0; x1 < EFFECT_COUNT; x1++) 
+			{
+				switch (spell.effectid[x1]) 
+				{
+					case SE_IllusionCopy:
+					case SE_Illusion: 
+						{
+						if(spell.base[x1] == -1) 
+						{
+							if (gender == 1)
+								gender = 0;
+							else if (gender == 0)
+								gender = 1;
+							SendIllusionPacket(GetRace(), gender, 0xFFFF, 0xFFFF);
+						}
+						else if(spell.base[x1] == -2)
+						{
+							if (GetRace() == 128 || GetRace() == 130 || GetRace() <= 12)
+								SendIllusionPacket(GetRace(), GetGender(), spell.max[x1], spell.max[x1]);
+						}
+						else if (spell.max[x1] > 0)
+						{
+							SendIllusionPacket(spell.base[x1], 0xFF, spell.max[x1], spell.max[x1]);
+						}
+						else
+						{
+							SendIllusionPacket(spell.base[x1], 0xFF, 0xFFFF, 0xFFFF);
+						}
+						switch(spell.base[x1])
+						{
+							case OGRE:
+								SendAppearancePacket(AT_Size, 9);
+								break;
+							case TROLL:
+								SendAppearancePacket(AT_Size, 8);
+								break;
+							case VAHSHIR:
+							case BARBARIAN:
+								SendAppearancePacket(AT_Size, 7);
+								break;
+							case HALF_ELF:
+							case WOOD_ELF:
+							case DARK_ELF:
+							case FROGLOK:
+								SendAppearancePacket(AT_Size, 5);
+								break;
+							case DWARF:
+								SendAppearancePacket(AT_Size, 4);
+								break;
+							case HALFLING:
+							case GNOME:
+								SendAppearancePacket(AT_Size, 3);
+								break;
+							default:
+								SendAppearancePacket(AT_Size, 6);
+								break;
+						}
+						break;
+					}
+					case SE_Silence:
+						{
+							Silence(true);
+						}
+						break;
+					case SE_DivineAura:
+						{
+							invulnerable = true;
+						}
+						break;
+					case SE_Rune:
+						{
+							SetHasRune(true);
+						}
+						break;
+					case SE_AbsorbMagicAtt:
+						{
+							SetHasSpellRune(true);
+						}
+						break;
+					case SE_MitigateMeleeDamage:
+						{
+							SetHasPartialMeleeRune(true);
+						}
+						break;
+					case SE_MitigateSpellDamage:
+						{
+							SetHasPartialSpellRune(true);
+						}
+						break;
+					case SE_DeathSave:
+						{
+							SetDeathSaveChance(true);
+						}
+						break;
+					case SE_Invisibility2:
+					case SE_Invisibility:
+						{
+							invisible = true;
+							SendAppearancePacket(AT_Invis, 1);
+						}
+						break;
+					case SE_InvisVsUndead2:
+					case SE_InvisVsUndead:
+						{
+							invisible_undead = true;
+						}
+						break;
+					case SE_InvisVsAnimals:
+						{
+							invisible_animals = true;
+						}
+						break;
+					case SE_WeaponProc:
+						{
+							AddProcToWeapon(GetProcID(buffs[j1]->GetSpell(), x1), 
+								false, 100 + spell.base2[x1]);
+						}
+						break;
+					case SE_RangedProc:
+						{
+							AddRangedProc(GetProcID(buffs[j1]->GetSpell(), x1), 
+								100 + spell.base2[x1]);
+						}
+						break;
+					case SE_DefensiveProc:
+						{
+							AddDefensiveProc(GetProcID(buffs[j1]->GetSpell(), x1), 
+								100 + spell.base2[x1]);
+						}
+						break;
+				}
+			}
+		}
+	}
 	//restore their equipment...
 	for(int i = 0; i < MAX_MATERIALS; i++) {
 		if(items[i] == 0)

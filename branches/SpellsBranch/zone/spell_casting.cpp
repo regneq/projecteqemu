@@ -1033,7 +1033,6 @@ bool Mob::ApplyNextBardPulse(Spell *spell_to_cast)
 		}
 	}
 	
-	//TODO:
 	//do we need to do this???
 	DoAnim(spell_to_cast->GetSpell().CastingAnim, 0, true, IsClient() ? FILTER_PCSPELLS : FILTER_NPCSPELLS);
 	if(IsClient())

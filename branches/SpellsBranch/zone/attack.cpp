@@ -2786,7 +2786,6 @@ int Mob::GetMonkHandToHandDelay(void)
 	}
 }
 
-//TODO: check this
 sint32 Mob::ReduceDamage(sint32 damage)
 {
 	mlog(SPELLS__EFFECT_VALUES, "Mob::ReduceDamage(%d) called", damage);
@@ -2878,7 +2877,7 @@ sint32 Mob::ReduceDamage(sint32 damage)
 	}
 	return damage;
 }
-//TODO: check this
+
 sint32 Mob::ReduceMagicalDamage(sint32 damage) 
 {
 	if(damage < 1)

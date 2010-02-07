@@ -150,7 +150,6 @@ void Client::OPCombatAbility(const EQApplicationPacket *app) {
 	if(!GetTarget())
 		return;
 	//make sure were actually able to use such an attack.
-	//TODO: not casting!
 	if(IsFeared() || IsCasting() || IsStunned() || IsMezzed() || DivineAura() || dead)
 		return;
 	
@@ -1534,7 +1533,6 @@ void Client::DoClassAttacks(Mob *ca_target)
 	if(!ca_target)
 		return;
 
-	//TODO: not casting!
 	if(IsFeared() || IsCasting() || IsStunned() || IsMezzed() || DivineAura() || dead)
 		return;
 	

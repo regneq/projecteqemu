@@ -1294,36 +1294,37 @@ int Client::GroupLeadershipAAOffenseEnhancement()
 	return 0;
 }
 
-//TODO:
 void Client::InspectBuffs(Client* Inspector, int Rank)
 {
-	/*
+	
 	if(!Inspector || (Rank == 0)) return;
 
 	Inspector->Message_StringID(0, CURRENT_SPELL_EFFECTS, GetName());
 
-	for (uint32 i = 0; i < BUFF_COUNT; ++i)
+	uint32 max_count = GetMaxTotalSlots();
+	for (uint32 i = 0; i < max_count; ++i)
 	{
-		if (buffs[i].spellid != SPELL_UNKNOWN)
+		if (buffs[i])
 		{
+			const SPDat_Spell_Struct &spell = buffs[i]->GetSpell()->GetSpell();
 			if(Rank == 1)
-				Inspector->Message(0, "%s", spells[buffs[i].spellid].name);
+				Inspector->Message(0, "%s", spell.name);
 			else
 			{
-				if (buffs[i].durationformula == DF_Permanent)
-					Inspector->Message(0, "%s (Permanent)", spells[buffs[i].spellid].name);
+				if (buffs[i]->IsPermanentDuration())
+					Inspector->Message(0, "%s (Permanent)", spell.name);
 				else {
 					char *TempString = NULL;
 
-					MakeAnyLenString(&TempString, "%.1f", static_cast<float>(buffs[i].ticsremaining) / 10.0f);
+					MakeAnyLenString(&TempString, "%.1f", static_cast<float>(buffs[i]->GetDurationRemaining()) / 10.0f);
 
-					Inspector->Message_StringID(0, BUFF_MINUTES_REMAINING, spells[buffs[i].spellid].name, TempString);
+					Inspector->Message_StringID(0, BUFF_MINUTES_REMAINING, spell.name, TempString);
 
 					safe_delete_array(TempString);
 				}
 			}
 		}
-	}*/
+	}
 }
 
 //this really need to be renamed to LoadAAActions()

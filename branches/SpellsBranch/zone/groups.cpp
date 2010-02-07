@@ -583,7 +583,6 @@ void Group::GroupBardPulse(Mob* caster, Spell *spell_to_cast)
 		return;
 
 	castspell = true;
-	//TODO:
 	range = caster->GetAOERange(spell_to_cast);
 	
 	float range2 = range*range;

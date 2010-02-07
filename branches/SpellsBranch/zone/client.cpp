@@ -468,7 +468,6 @@ bool Client::Save(int8 iCommitNow) {
 	m_pp.mana = cur_mana;
 	m_pp.endurance = cur_end;
 
-	//TODO SaveBuffs:
 	SaveBuffs();
 
 	TotalSecondsPlayed += (time(NULL) - m_pp.lastlogin);
@@ -5550,7 +5549,7 @@ void Client::SuspendMinion()
 	{
 		if(m_pp.SuspendedMinion.SpellID > 0)
 		{
-			//TODO: MakePet(m_pp.SuspendedMinion.SpellID, spells[m_pp.SuspendedMinion.SpellID].teleport_zone);
+			MakePet(&Spell(m_pp.SuspendedMinion.SpellID, this, this), spells[m_pp.SuspendedMinion.SpellID].teleport_zone);
 
 			CurrentPet = GetPet()->CastToNPC();
 

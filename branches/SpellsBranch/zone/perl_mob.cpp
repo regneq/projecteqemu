@@ -3710,7 +3710,6 @@ XS(XS_Mob_BuffFadeBySlot)
 XS(XS_Mob_CanBuffStack); /* prototype to pass -Wmissing-prototypes */
 XS(XS_Mob_CanBuffStack)
 {
-	//TODO: fix this
 	dXSARGS;
 	if (items < 3 || items > 4)
 		Perl_croak(aTHX_ "Usage: Mob::CanBuffStack(THIS, spellid, caster_level, iFailIfOverwrite= false)");

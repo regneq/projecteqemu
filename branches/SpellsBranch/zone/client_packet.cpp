@@ -8088,18 +8088,18 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 	//this was moved before the spawn packets are sent
 	//in hopes that it adds more consistency...
 	//Remake pet
-	/*TODO: if (m_epp.pet_id > 1 && !GetPet() && m_epp.pet_id <= SPDAT_RECORDS)
+	if (m_epp.pet_id > 1 && !GetPet() && m_epp.pet_id <= SPDAT_RECORDS)
 	{
-		MakePet(m_epp.pet_id, spells[m_epp.pet_id].teleport_zone, m_epp.pet_name);
+		MakePet(&Spell(m_epp.pet_id, this, this), spells[m_epp.pet_id].teleport_zone, m_epp.pet_name);
 		if (GetPet() && GetPet()->IsNPC()) {
 			NPC *pet = GetPet()->CastToNPC();
-			pet->SetPetState(m_epp.pet_buffs, m_epp.pet_items);
+			pet->SetPetState(m_epp.pet_items, false);
 			pet->CalcBonuses();
 			pet->SetHP(m_epp.pet_hp);
 			pet->SetMana(m_epp.pet_mana);
 		}
 		m_epp.pet_id = 0;
-	}*/
+	}
 
 	////////////////////////////////////////////////////////////
 	// Server Zone Entry Packet
@@ -8390,6 +8390,18 @@ void Client::CompleteConnect()
 					{
 						AddProcToWeapon(GetProcID(buffs[j1]->GetSpell(), x1), 
 							false, 100 + spell.base2[x1]);
+					}
+					break;
+				case SE_RangedProc:
+					{
+						AddRangedProc(GetProcID(buffs[j1]->GetSpell(), x1), 
+							100 + spell.base2[x1]);
+					}
+					break;
+				case SE_DefensiveProc:
+					{
+						AddDefensiveProc(GetProcID(buffs[j1]->GetSpell(), x1), 
+							100 + spell.base2[x1]);
 					}
 					break;
 			}
