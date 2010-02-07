@@ -356,7 +356,7 @@ bool IsAEDurationSpell(int16 spell_id)
 
 bool Spell::IsAEDurationSpell() const
 {
-	return (raw_spell.targettype == ST_AETarget || raw_spell.targettype == ST_UndeadAE)	&& raw_spell.AEDuration != 0;
+	return (raw_spell.targettype == ST_AETarget || raw_spell.targettype == ST_UndeadAE)	&& raw_spell.AEDuration >= 2500;
 }
 
 bool IsPureNukeSpell(int16 spell_id)

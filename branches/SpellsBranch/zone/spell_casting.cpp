@@ -617,7 +617,7 @@ bool Mob::SpellFinished(Spell *spell_to_cast)
 		Mob *beacon_loc =  spell_target ? spell_target : this;
 		Beacon *beacon = new Beacon(beacon_loc, spell_to_cast->GetSpell().AEDuration);
 		entity_list.AddBeacon(beacon);
-		mlog(SPELLS__CASTING, "Spell %d: AE duration beacon created, entity id %d", spell_to_cast->GetSpellID(), beacon->GetName());
+		mlog(SPELLS__CASTING, "Spell %d: AE duration beacon created, entity id %d", spell_to_cast->GetSpellID(), beacon->GetID());
 		spell_target = NULL;
 		ae_center = beacon;
 		CastAction = AECaster;
@@ -1185,7 +1185,8 @@ bool Mob::SpellOnTarget(Spell *spell_to_cast, Mob* spell_target)
 		Shout("%s!", target_name);
 	}
 	
-	if(spell_target->IsAIControlled() && spell_to_cast->IsDetrimentalSpell() && !spell_to_cast->IsHarmonySpell()) 
+	if(spell_target->IsAIControlled() && spell_to_cast->IsDetrimentalSpell() && 
+		!spell_to_cast->IsHarmonySpell() && !spell_to_cast->IsEffectInSpell(SE_BindSight)) 
 	{
 		sint32 aggro_amount = CheckAggroAmount(spell_to_cast);
 		mlog(SPELLS__CASTING, "Spell %d cast on %s generated %d hate", spell_to_cast->GetSpellID(), spell_target->GetName(), aggro_amount);

@@ -2402,6 +2402,13 @@ void Mob::BuffProcess()
 		if(buffs[i])
 		{
 			DoBuffTic(buffs[i]);
+			
+			//because things like dmg/death in DoBuffTic can get rid of buffs.
+			if(!buffs[i])
+			{
+				continue;
+			}
+			
 			if(buffs[i]->GetDurationRemaining() != 0xFFFFFFFF)
 			{
 				buffs[i]->SetDurationRemaining(buffs[i]->GetDurationRemaining() - 1);
@@ -2410,7 +2417,12 @@ void Mob::BuffProcess()
 					if(buffs[i]->GetSpell()->IsEffectInSpell(SE_ImprovedSpellEffect))
 					{
 						uint32 morph_trigger = buffs[i]->GetSpell()->GetMorphTrigger();
-						SpellOnTarget(morph_trigger, this);
+						Mob *morph_caster = entity_list.GetMobID(buffs[i]->GetCasterID());
+
+						if(morph_caster)
+							morph_caster->SpellOnTarget(morph_trigger, this);
+						else
+							SpellOnTarget(morph_trigger, this);
 					}
 					else
 					{
@@ -2440,6 +2452,9 @@ void Mob::DoBuffTic(const Buff *buff_to_use)
 
 	for (int i = 0; i < EFFECT_COUNT; i++)
 	{
+		if(IsDead())
+			return;
+
 		if(buff_to_use->GetSpell()->IsBlankSpellEffect(i))
 			continue;
 

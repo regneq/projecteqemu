@@ -1903,6 +1903,7 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 	d->damage = damage;
 	app->priority = 6;
 	entity_list.QueueClients(killerMob, app, false);
+	dead = true;
 	
 	if(respawn2) {
 		respawn2->DeathReset();

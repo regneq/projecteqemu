@@ -179,7 +179,6 @@ Client::Client(EQStreamInterface* ieqs)
 	client_data_loaded = false;
 	feigned = false;
 	berserk = false;
-	dead = false;
 	eqs = ieqs;
 	ip = eqs->GetRemoteIP();
 	port = ntohs(eqs->GetRemotePort());
@@ -3573,7 +3572,7 @@ void Client::MelodyTrySong() {
 			if(GetMana() >= spells[songID].mana)
 			{
 				SetMana(GetMana() - spells[songID].mana);
-				//this->CastSpell(songID, target->GetID(), 10, cast_time);
+				this->CastSpell(songID, target->GetID(), 10, cast_time);
 			}
 			else
 			{

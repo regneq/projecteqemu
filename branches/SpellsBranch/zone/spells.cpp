@@ -1802,7 +1802,7 @@ int Mob::GetCasterLevel()
 void Mob::_StopSong()
 {
 	mlog(SPELLS__CASTING, "Song has been stopped.");
-	if (IsClient() && (bard_song || casting_spell ? casting_spell->IsBardSong() : 0))
+	if (IsClient() && (bard_song || (casting_spell && casting_spell->IsBardSong())))
 	{
 		EQApplicationPacket* outapp = new EQApplicationPacket(OP_ManaChange, sizeof(ManaChange_Struct));
 		ManaChange_Struct* manachange = (ManaChange_Struct*)outapp->pBuffer;

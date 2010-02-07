@@ -693,16 +693,15 @@ void EntityList::AETaunt(Mob* taunter, float range)
 	}
 }
 
-// solar: causes caster to hit every mob within dist range of center with
+// causes caster to hit every mob within dist range of center with
 // spell_id.
 // NPC spells will only affect other NPCs with compatible faction
-//TODO: FIXME
 void EntityList::AESpell(Mob *caster, Mob *center, Spell *spell_to_cast, bool affect_caster)
 {
 	LinkedListIterator<Mob*> iterator(mob_list);
 	Mob *curmob;
 	
-	float dist = 0; //caster->GetAOERange(spell_id);
+	float dist = caster->GetAOERange(spell_to_cast);
 	float dist2 = dist * dist;
 	
 	bool bad = spell_to_cast->IsDetrimentalSpell();
@@ -739,10 +738,6 @@ void EntityList::AESpell(Mob *caster, Mob *center, Spell *spell_to_cast, bool af
 			if(!center->CheckLosFN(curmob))
 				continue;
 		}
-		else {
-			if(!caster->IsBeneficialAllowed(curmob))
-				continue;
-		}
 
 		//if we get here... cast the spell.
 		if(spell_to_cast->IsTargetableAESpell() && bad) 
@@ -762,8 +757,7 @@ void EntityList::AESpell(Mob *caster, Mob *center, Spell *spell_to_cast, bool af
 	}	
 }
 
-//TODO: FIXME
-// solar: causes caster to hit every mob within dist range of center with
+// causes caster to hit every mob within dist range of center with
 // a bard pulse of spell_id.
 // NPC spells will only affect other NPCs with compatible faction
 void EntityList::AEBardPulse(Mob *caster, Mob *center, Spell *spell_to_cast, bool affect_caster)
@@ -771,7 +765,7 @@ void EntityList::AEBardPulse(Mob *caster, Mob *center, Spell *spell_to_cast, boo
 	LinkedListIterator<Mob*> iterator(mob_list);
 	Mob *curmob;
 	
-	float dist = 0; //caster->GetAOERange(spell_id);
+	float dist = caster->GetAOERange(spell_to_cast);
 	float dist2 = dist * dist;
 	
 	bool bad = spell_to_cast->IsDetrimentalSpell();

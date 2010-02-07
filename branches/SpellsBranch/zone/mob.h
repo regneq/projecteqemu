@@ -422,6 +422,7 @@ bool logpos;
 	bool	AffectedExcludingSlot(int slot, int effect);
 
 	// abstract methods
+	bool IsDead() const { return(dead); }
 	virtual void Death(Mob* killerMob, sint32 damage, int16 spell_id, SkillType attack_skill) = 0;
 	virtual void Damage(Mob* from, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable = true, sint8 buffslot = -1, bool iBuffTic = false) = 0;
 	virtual bool Attack(Mob* other, int Hand = 13, bool FromRiposte = false) = 0;	// 13 = Primary (default), 14 = secondary
@@ -1047,12 +1048,13 @@ protected:
 	Buff **buffs;
 	uint32 current_buff_count;
 	Timer *buff_tic_timer;
-	StatBonuses		itembonuses;
-	StatBonuses		spellbonuses;
-	StatBonuses		aabonuses;
-	int16			petid;
-	int16			ownerid;
-	PetType			typeofpet;
+	StatBonuses itembonuses;
+	StatBonuses spellbonuses;
+	StatBonuses aabonuses;
+	int16 petid;
+	int16 ownerid;
+	PetType typeofpet;
+	bool dead;
 
 	int32			follow;
 	int32			follow_dist;

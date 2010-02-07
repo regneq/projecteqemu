@@ -240,7 +240,6 @@ public:
 	inline bool		GetHideMe()			const { return gmhideme; }
 	void			SetHideMe(bool hm);
 	inline int16	GetPort()		const { return port; }
-	bool			IsDead() const { return(dead); }
 	inline bool		IsLFP() { return LFP; }
 	void			UpdateLFP();
 
@@ -1038,7 +1037,6 @@ private:
 	int16				pClientSideTarget;
 	uint32				weight;
 	bool				berserk;
-	bool				dead;
 	int16				BoatID;
 	bool				IsTracking;
 	int16				CustomerID;

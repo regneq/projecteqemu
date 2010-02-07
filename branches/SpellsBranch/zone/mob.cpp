@@ -126,6 +126,7 @@ Mob::Mob(const char*   in_name,
 	fear_walkto_y = -999999;
 	fear_walkto_z = -999999;
 	curfp = false;
+	dead = false;
 
 	AI_Init();
 	SetMoving(false);
