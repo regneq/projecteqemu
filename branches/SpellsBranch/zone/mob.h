@@ -657,7 +657,7 @@ bool logpos;
 	void QuestJournalledSay(Client *QuestInitiator, const char *str);
 
 
-	//Spell related things.
+	//Buff Related
 	void BuffProcess();
 	virtual int GetCurrentBuffSlots() const { return 25; }
 	virtual int GetCurrentSongSlots() const { return 10; }
@@ -669,59 +669,73 @@ bool logpos;
 	virtual void InitializeBuffSlots() { buffs = NULL; }
 	virtual void UninitializeBuffSlots() { }
 	virtual int GetFreeBuffSlot(const Spell *spell_to_cast) { return 0; }
-	int CheckBuffSlotStackConflicts(const Spell* spell_to_cast, int start, int end);
-	virtual bool CastSpell(Spell **casted_spell_ptr, int32* spell_will_finish = 0);
-	virtual bool CastSpell(int16 spell_id, int16 target_id, int16 slot = 10, sint32 casttime = -1, sint32 mana_cost = -1, int32* oSpellWillFinish = 0, int32 item_slot = 0xFFFFFFFF);
-	virtual bool DoCastSpell(Spell **casted_spell_ptr, int32* spell_will_finish = 0);
-	void CastedSpellFinished(Spell **casted_spell_ptr);
-	virtual bool SpellOnTarget(Spell *spell_to_cast, Mob* spell_target);
-	virtual bool SpellOnTarget(uint16 spell_id, Mob* spell_target);
-	virtual bool ValidateStartSpellCast(const Spell *spell_to_cast);
-	virtual void ValidateSpellCastFinish(const Spell *spell_to_cast){ }
-	virtual bool CheckFizzle(const Spell *spell_to_cast);
-	void InterruptSpell(int16 spellid = SPELL_UNKNOWN);
-	void InterruptSpell(int16, int16, int16 spellid = SPELL_UNKNOWN);
-	void ZeroCastingVars();
-	void ZeroAndFreeCastingVars(bool all = true);
-	void ZeroAndFreeSong();
-	bool DoChannelCheck(bool &did_regain_conc);
-	virtual bool DoComponentCheck(Spell *spell_to_cast, bool bard_song_mode) { return true; }
-	bool SpellFinished(int16 spell_id, Mob *target, int16 slot = 10, int16 mana_used = 0, int32 inventory_slot = 0xFFFFFFFF);
-	bool SpellFinished(Spell *spell_to_cast);
-	virtual bool DetermineSpellTargets(Spell *spell_to_cast, Mob *&spell_target, Mob *&ae_center, CastAction_type &CastAction);
-	int	CalcBuffDuration(Mob *caster, Mob *target, const Spell *spell_to_cast, sint32 caster_level_override = -1);
-	virtual float GetAOERange(Spell *spell_to_cast);
-	virtual bool IsImmuneToSpell(Spell *spell_to_cast, Mob *caster);
-	int SendActionSpellPacket(Spell *spell_to_cast, Mob *spell_target, int caster_level); //first action packet
-	void SendActionSpellPacket(Spell *spell_to_cast, Mob *spell_target, uint32 sequence, int caster_level, int mode = 0); //2nd action
-	void SendCombatDamageSpellPacket(Spell *spell_to_cast, Mob *spell_target, int sequence); //combat damage packet
-	bool WillSpellHold(Spell *spell_to_cast, Mob *spell_target);
-	float DoSpellOnTargetResistCheck(Spell *spell_to_cast, Mob *spell_target);
-	void DoSpellOnTargetRecourse(Spell *spell_on_target, Mob *spell_target);
-	void SendKnockBackPacket(Mob *caster, int push_up, int push_back);
-	virtual bool SpellEffect(Mob* caster, Spell *spell_to_cast, int action_sequence, float partial = 100);
-	bool ApplyNextBardPulse(Spell *spell_to_cast);
-	void BardPulse(Spell *spell_to_cast, Mob *caster);
-	virtual void SendBuffPacket(Buff *buff, uint32 buff_index, uint32 buff_mode, uint32 action = 0) { }
-	virtual void MakeBuffFadePacket(Buff *buff, int slot_id, bool send_message = true) { }
 	Buff *AddBuff(Mob *caster, Spell *spell_to_cast, sint32 &buff_slot, uint32 duration = 0);
+	int	CalcBuffDuration(Mob *caster, Mob *target, const Spell *spell_to_cast, sint32 caster_level_override = -1);
+	bool WillSpellHold(Spell *spell_to_cast, Mob *spell_target);
+	int CheckBuffSlotStackConflicts(const Spell* spell_to_cast, int start, int end);
+	int CanBuffStack(const Spell *spell_to_check, bool iFailIfOverwrite = false);
+	int CanBuffStack(int16 spell_id, Mob *caster, bool iFailIfOverwrite = false);
+	virtual void DoBuffTic(const Buff *buff_to_use);
+	void BuffModifyDurationBySpellID(int16 spell_id, sint32 newDuration);
 	void BuffFadeBySpellID(int16 spell_id);
 	void BuffFadeByEffect(int effectid, int skipslot = -1);
 	void BuffFadeAll();
 	void BuffFadeDetrimental();
 	void BuffFadeBySlot(int slot, bool iRecalcBonuses = true);
 	void BuffFadeDetrimentalByCaster(Mob *caster);
+	uint32 GetBuffCount() const { return current_buff_count; }
+	void SetBuffCount(uint32 new_buff_count);
+	virtual void SaveBuffs(uint8 mode = 0) { }
+	virtual void LoadBuffs(uint8 mode = 0) { }
+	void LoadBuffsVersion1(char *data);
+
+	//Basic Casting
+	virtual bool CastSpell(Spell **casted_spell_ptr, int32* spell_will_finish = 0);
+	virtual bool CastSpell(int16 spell_id, int16 target_id, int16 slot = 10, sint32 casttime = -1, sint32 mana_cost = -1, int32* oSpellWillFinish = 0, int32 item_slot = 0xFFFFFFFF);
+	virtual bool DoCastSpell(Spell **casted_spell_ptr, int32* spell_will_finish = 0);
+	void CastedSpellFinished(Spell **casted_spell_ptr);
+	bool SpellFinished(int16 spell_id, Mob *target, int16 slot = 10, int16 mana_used = 0, int32 inventory_slot = 0xFFFFFFFF);
+	bool SpellFinished(Spell *spell_to_cast);
+	virtual bool ValidateStartSpellCast(const Spell *spell_to_cast);
+	virtual void ValidateSpellCastFinish(const Spell *spell_to_cast){ }
+	virtual bool CheckFizzle(const Spell *spell_to_cast);
+	virtual bool DoComponentCheck(Spell *spell_to_cast, bool bard_song_mode) { return true; }
+	bool DoChannelCheck(bool &did_regain_conc);
+	void InterruptSpell(int16 spellid = SPELL_UNKNOWN);
+	void InterruptSpell(int16, int16, int16 spellid = SPELL_UNKNOWN);
+	virtual void SpellProcess();
+
+	//Bard
+	bool ApplyNextBardPulse(Spell *spell_to_cast);
+	void BardPulse(Spell *spell_to_cast, Mob *caster);
+
+	//Spell Memory
+	void ZeroCastingVars();
+	void ZeroAndFreeCastingVars(bool all = true);
+	void ZeroAndFreeSong();
+	Spell *CreateSpell(uint32 spell_id, Mob* caster, Mob* target);
+	void FreeSpell(Spell **spell);
+
+	//Spell Utility
+	virtual float GetAOERange(Spell *spell_to_cast);
+	virtual bool IsImmuneToSpell(Spell *spell_to_cast, Mob *caster);
 	int16 CastingSpellID() const { return casting_spell ? casting_spell->GetSpellID() : 0; }
 	inline bool IsCasting() const { return((casting_spell != NULL)); }
+	bool PassCharismaCheck(Mob* caster, Mob* spellTarget, const Spell *spell_to_cast);
+	bool UseBardSpellLogic(int16 spell_id = 0xffff, int slot = -1);
+
+	//Spell Effects
+	virtual bool DetermineSpellTargets(Spell *spell_to_cast, Mob *&spell_target, Mob *&ae_center, CastAction_type &CastAction);
+	virtual bool SpellEffect(Mob* caster, Spell *spell_to_cast, int action_sequence, float partial = 100);
+	virtual bool SpellOnTarget(Spell *spell_to_cast, Mob* spell_target);
+	virtual bool SpellOnTarget(uint16 spell_id, Mob* spell_target);
+	float DoSpellOnTargetResistCheck(Spell *spell_to_cast, Mob *spell_target);
+	void DoSpellOnTargetRecourse(Spell *spell_on_target, Mob *spell_target);
 	void DoBuffWearOffEffect(const Buff *buff_to_use, uint32 buff_slot);
-	virtual void DoBuffTic(const Buff *buff_to_use);
-	void BuffModifyDurationBySpellID(int16 spell_id, sint32 newDuration);
-	virtual void SpellProcess();
-	int CanBuffStack(const Spell *spell_to_check, bool iFailIfOverwrite = false);
-	int CanBuffStack(int16 spell_id, Mob *caster, bool iFailIfOverwrite = false);
 	void TryDotCritical(const Spell *spell_to_cast, Mob *caster, int &damage);
 	virtual void MakePet(const Spell *spell_to_cast, const char* pettype, const char *petname = NULL);
 	void TemporaryPets(const Spell *spell_to_cast, Mob *target, const char *name_override = NULL, uint32 duration_override = 0);
+	void WakeTheDead(const Spell* spell_to_cast, Mob *target, uint32 duration);
 	inline bool HasRune() const { return m_hasRune; }
 	inline bool HasSpellRune() const { return m_hasSpellRune; }
 	inline bool HasPartialSpellRune() const { return m_hasPartialSpellRune; }
@@ -732,28 +746,18 @@ bool logpos;
 	inline void SetHasPartialMeleeRune(bool hasRune) { m_hasPartialMeleeRune = hasRune; }
 	inline bool HasDeathSaveChance() const { return m_hasDeathSaveChance; }
 	inline void SetDeathSaveChance(bool hasDeathSaveChance) { m_hasDeathSaveChance = hasDeathSaveChance; }
-	bool PassCharismaCheck(Mob* caster, Mob* spellTarget, const Spell *spell_to_cast);
 	bool TryDeathSave();
-	uint32 GetBuffCount() const { return current_buff_count; }
-	void SetBuffCount(uint32 new_buff_count);
-	virtual void SaveBuffs(uint8 mode = 0) { }
-	virtual void LoadBuffs(uint8 mode = 0) { }
-	void LoadBuffsVersion1(char *data);
-	void FreeSpell(Spell **spell);
-	Spell *CreateSpell(uint32 spell_id, Mob* caster, Mob* target);
 
-
-
-	bool UseBardSpellLogic(int16 spell_id = 0xffff, int slot = -1);
-	//virtual bool DoCastSpell(int16 spell_id, int16 target_id, int16 slot = 10, sint32 casttime = -1, sint32 mana_cost = -1, int32* oSpellWillFinish = 0, int32 item_slot = 0xFFFFFFFF);
-	//void	CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16 mana_used, int32 inventory_slot = 0xFFFFFFFF);
-	void	SendPetBuffsToClient();
-	//int		AddBuff(Mob *caster, const int16 spell_id, int duration = 0, sint32 level_override = -1);
-	//virtual bool SpellEffect(Mob* caster, int16 spell_id, float partial = 100);
-	void	WakeTheDead(int16 spell_id, Mob *target, uint32 duration);
+	//Spell Network
+	int SendActionSpellPacket(Spell *spell_to_cast, Mob *spell_target, int caster_level); //first action packet
+	void SendActionSpellPacket(Spell *spell_to_cast, Mob *spell_target, uint32 sequence, int caster_level, int mode = 0); //2nd action
+	void SendCombatDamageSpellPacket(Spell *spell_to_cast, Mob *spell_target, int sequence); //combat damage packet
+	void SendKnockBackPacket(Mob *caster, int push_up, int push_back);
+	virtual void SendBuffPacket(Buff *buff, uint32 buff_index, uint32 buff_mode, uint32 action = 0) { }
+	virtual void MakeBuffFadePacket(Buff *buff, int slot_id, bool send_message = true) { }
+	void SendPetBuffsToClient();
 
 	void	SendIllusionPacket(int16 in_race, int8 in_gender = 0xFF, int8 in_texture = 0xFF, int8 in_helmtexture = 0xFF, int8 in_haircolor = 0xFF, int8 in_beardcolor = 0xFF, int8 in_eyecolor1 = 0xFF, int8 in_eyecolor2 = 0xFF, int8 in_hairstyle = 0xFF, int8 in_luclinface = 0xFF, int8 in_beard = 0xFF, int8 in_aa_title = 0xFF, int32 in_drakkin_heritage = 0xFFFFFFFF, int32 in_drakkin_tattoo = 0xFFFFFFFF, int32 in_drakkin_details = 0xFFFFFFFF, float in_size = 0xFFFFFFFF);
-	
 	static	int32	GetAppearanceValue(EmuAppearance iAppearance);
 	void	SendAppearancePacket(int32 type, int32 value, bool WholeZone = true, bool iIgnoreSelf = false, Client *specific_target=NULL);
 	void	SetAppearance(EmuAppearance app, bool iIgnoreSelf = true);

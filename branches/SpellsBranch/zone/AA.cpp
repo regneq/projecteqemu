@@ -632,7 +632,7 @@ void Mob::TemporaryPets(const Spell *spell_to_cast, Mob *targ, const char *name_
 		targ->AddToHateList(this, 1, 0);
 }
 
-void Mob::WakeTheDead(int16 spell_id, Mob *target, uint32 duration)
+void Mob::WakeTheDead(const Spell *spell_to_cast, Mob *target, uint32 duration)
 {
 	Corpse *CorpseToUse = NULL;
 	CorpseToUse = entity_list.GetClosestCorpse(this);
@@ -696,7 +696,7 @@ void Mob::WakeTheDead(int16 spell_id, Mob *target, uint32 duration)
 	//part of their spell list; can't think of any smooth
 	//way to do this
 	//some basic combat mods here too since it's convienent
-	switch(CorpseToUse->class_)
+	switch(CorpseToUse->GetClass())
 	{
 	case CLERIC:
 		make_npc->npc_spells_id = 1;

@@ -203,6 +203,17 @@ bool IsSlowSpell(int16 spell_id)
 	return false;
 }
 
+bool Spell::IsSlowSpell() const
+{
+	for(int i = 0; i < EFFECT_COUNT; i++)
+	{
+		if(raw_spell.effectid[i] == SE_AttackSpeed && raw_spell.base[i] < 100)
+			return true;
+	}
+
+	return false;
+}
+
 bool IsHasteSpell(int16 spell_id)
 {
 	int i;
@@ -212,6 +223,17 @@ bool IsHasteSpell(int16 spell_id)
 	{
 		if(sp.effectid[i] == SE_AttackSpeed)
 			return(sp.base[i] < 100);
+	}
+
+	return false;
+}
+
+bool Spell::IsHasteSpell() const 
+{
+	for(int i = 0; i < EFFECT_COUNT; i++)
+	{
+		if(raw_spell.effectid[i] == SE_AttackSpeed && raw_spell.base[i] > 100)
+			return true;
 	}
 
 	return false;
@@ -675,22 +697,6 @@ bool Spell::BeneficialSpell() const
 	return false;
 }
 
-bool GroupOnlySpell(int16 spell_id)
-{
-	switch (spells[spell_id].goodEffect)
-	{
-		case 2:
-		case 3:
-			return true;
-	}
-	switch (spell_id)
-	{
-		case 1771:
-			return true;
-	}
-	return false;
-}
-
 sint32 CalculatePoisonCounters(int16 spell_id){
 	if(!IsValidSpell(spell_id))
 		return 0;
@@ -932,19 +938,20 @@ sint32 GetSpellTargetType(int16 spell_id)
 	return (sint32)spells[spell_id].targettype;
 }
 
-bool IsHealOverTimeSpell(int16 spell_id) {
-	if(IsEffectInSpell(spell_id, SE_HealOverTime))
-		return true;
-	else
-		return false;
-}
-
 bool IsCompleteHealSpell(int16 spell_id) {
 	
 	if(spell_id == 13 || IsEffectInSpell(spell_id, SE_CompleteHeal) || IsEffectInSpell(spell_id, SE_PercentalHeal))
 		return true;
 	else
 		return false;
+}
+
+bool Spell::IsCompleteHealSpell() const
+{
+	if(raw_spell.id == 13 || IsEffectInSpell(SE_CompleteHeal) || IsEffectInSpell(SE_PercentalHeal))
+		return true;
+
+	return false;
 }
 
 bool IsFastHealSpell(int16 spell_id) {
@@ -960,9 +967,22 @@ bool IsRegularSingleTargetHealSpell(int16 spell_id) {
 	bool result = false;
 
 	if(spells[spell_id].effectid[0] == 0 && spells[spell_id].base[0] > 0 && spells[spell_id].targettype == ST_Target
-		&& !IsFastHealSpell(spell_id) && !IsCompleteHealSpell(spell_id) && !IsHealOverTimeSpell(spell_id)) {
+		&& !IsFastHealSpell(spell_id) && !IsCompleteHealSpell(spell_id) && !IsEffectInSpell(spell_id, SE_HealOverTime)) {
 		result = true;
 	}
 
 	return result;
+}
+
+uint32 Spell::GetMorphTrigger() const
+{
+	for(int i = 0; i < EFFECT_COUNT; i++)
+	{
+		if(raw_spell.effectid[i] == SE_ImprovedSpellEffect)
+		{
+			return raw_spell.base[i];
+		}
+	}
+
+	return 0xFFFFFFFF;
 }

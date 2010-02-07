@@ -100,9 +100,8 @@ public:
 
 	bool IsTargetableAESpell() const; //impl
 	bool IsLifetapSpell() const; //impl
-	bool IsStunSpell() const;
-	bool IsSlowSpell() const;
-	bool IsHasteSpell() const;
+	bool IsSlowSpell() const; //impl
+	bool IsHasteSpell() const; //impl
 	bool IsHarmonySpell() const; //impl
 	bool IsGroupOnlySpell() const; //impl
 	bool IsBeneficialSpell() const; //impl
@@ -117,13 +116,10 @@ public:
 	bool IsBardSong() const; //impl
 	bool IsEffectInSpell(int effect) const; //impl
 	bool IsBlankSpellEffect(int effect_index) const; //impl
-	bool IsValidSpell() const;
 	bool IsSummonSpell() const; //impl
 	bool IsDamageSpell() const; //impl
 	bool BeneficialSpell() const; //impl
-	bool GroupOnlySpell() const;
 	int GetSpellEffectIndex(int effect) const; //impl
-	int CanUseSpell(int classa, int level) const;
 	int GetMinLevel() const; //impl
 	sint32 CalculatePoisonCounters() const; //impl
 	sint32 CalculateDiseaseCounters() const; //impl
@@ -134,10 +130,8 @@ public:
 	bool IsFullDeathSaveSpell() const; // impl
 	bool IsPlayerIllusionSpell() const; //impl
 	bool IsLDoNObjectSpell() const; //impl
-	sint32 GetSpellResistType() const;
-	sint32 GetSpellTargetType() const;
-	bool IsHealOverTimeSpell() const;
-	bool IsCompleteHealSpell() const;
+	bool IsCompleteHealSpell() const; //impl
+	uint32 GetMorphTrigger() const;
 
 protected:
 	uint32 caster_level;

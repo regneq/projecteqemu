@@ -630,7 +630,6 @@ struct SPDat_Spell_Struct
 
 bool IsTargetableAESpell(int16 spell_id);
 bool IsLifetapSpell(int16 spell_id);
-bool IsStunSpell(int16 spell_id);
 bool IsSlowSpell(int16 spell_id);
 bool IsHasteSpell(int16 spell_id);
 bool IsHarmonySpell(int16 spell_id);
@@ -652,7 +651,6 @@ bool IsValidSpell(int16 spellid);
 bool IsSummonSpell(int16 spellid);
 bool IsDamageSpell(int16 spellid);
 bool BeneficialSpell(int16 spell_id);
-bool GroupOnlySpell(int16 spell_id);
 int GetSpellEffectIndex(int16 spell_id, int effect);
 int CanUseSpell(int16 spellid, int classa, int level);
 int GetMinLevel(int16 spell_id);
@@ -667,7 +665,6 @@ bool IsPlayerIllusionSpell(int16 spell_id);
 bool IsLDoNObjectSpell(int16 spell_id);
 sint32 GetSpellResistType(int16 spell_id);
 sint32 GetSpellTargetType(int16 spell_id);
-bool IsHealOverTimeSpell(int16 spell_id);
 bool IsCompleteHealSpell(int16 spell_id);
 bool IsFastHealSpell(int16 spell_id);
 bool IsRegularSingleTargetHealSpell(int16 spell_id);

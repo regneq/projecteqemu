@@ -420,6 +420,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\buffs.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\client.cpp"
 				>
 			</File>
@@ -641,6 +645,10 @@
 			</File>
 			<File
 				RelativePath=".\special_attacks.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\spell_casting.cpp"
 				>
 			</File>
 			<File

@@ -55,7 +55,7 @@ namespace BuffStorage
 			uint32 duration;
 			bool is_perm_illusion;
 			bool is_client;
-			sint32 magic_remaining_charges;
+			sint32 corruption_remaining_charges;
 			sint32 poison_remaining_charges;
 			sint32 disease_remaining_charges;
 			sint32 curse_remaining_charges;
@@ -97,19 +97,19 @@ public:
 	bool IsPermanentIllusion() const { return is_perm_illusion; }
 	
 	//The first four are for counters via dispel the last is for the numhits modifier in the spell field.
-	sint32 GetRemainingChargesMagic() const { return magic_remaining_charges; }
+	sint32 GetRemainingChargesCorruption() const { return corruption_remaining_charges; }
 	sint32 GetRemainingChargesPoison() const { return poison_remaining_charges; }
 	sint32 GetRemainingChargesDisease() const { return disease_remaining_charges; }
 	sint32 GetRemainingChargesCurse() const { return curse_remaining_charges; }
 	sint32 GetRemainingCharges() const { return general_remaining_charges; }
 	
-	void AddRemainingChargesMagic(sint32 charges) { magic_remaining_charges += charges; }
+	void AddRemainingChargesCorruption(sint32 charges) { corruption_remaining_charges += charges; }
 	void AddRemainingChargesPoison(sint32 charges) { poison_remaining_charges += charges; }
 	void AddRemainingChargesDisease(sint32 charges) { disease_remaining_charges += charges; }
 	void AddRemainingChargesCurse(sint32 charges) { curse_remaining_charges += charges; }
 	void AddRemainingCharges(sint32 charges) { general_remaining_charges += charges; }
 	
-	void SetRemainingChargesMagic(sint32 charges) { magic_remaining_charges = charges; }
+	void SetRemainingChargesCorruption(sint32 charges) { corruption_remaining_charges = charges; }
 	void SetRemainingChargesPoison(sint32 charges) { poison_remaining_charges = charges; }
 	void SetRemainingChargesDisease(sint32 charges) { disease_remaining_charges = charges; }
 	void SetRemainingChargesCurse(sint32 charges) { curse_remaining_charges = charges; }
@@ -148,7 +148,7 @@ protected:
 	bool is_client;	
 	bool is_perm_illusion;
 
-	sint32 magic_remaining_charges;
+	sint32 corruption_remaining_charges;
 	sint32 poison_remaining_charges;
 	sint32 disease_remaining_charges;
 	sint32 curse_remaining_charges;

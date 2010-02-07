@@ -280,6 +280,16 @@ void MapSpellEffects()
 	SpellEffectDispatch[SE_PetFlurry] = &Mob::Handle_SE_Blank;
 	SpellEffectDispatch[SE_SpellDamage] = &Mob::Handle_SE_Blank;
 	SpellEffectDispatch[SE_FocusCombatDurationMod] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_ImprovedSpellEffect] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_ChangeHeight] = &Mob::Handle_SE_ModelSize;
+	SpellEffectDispatch[SE_SuspendMinion] = &Mob::Handle_SE_SuspendPet;
+	SpellEffectDispatch[SE_Invisibility2] = &Mob::Handle_SE_Invisibility;
+	SpellEffectDispatch[SE_InvisVsUndead2] = &Mob::Handle_SE_InvisVsUndead;
+	SpellEffectDispatch[SE_GateToHomeCity] = &Mob::Handle_SE_GateToHomeCity;
+	SpellEffectDispatch[SE_DefensiveProc] = &Mob::Handle_SE_DefensiveProc;
+	SpellEffectDispatch[SE_BardAEDot] = &Mob::Handle_SE_BardAEDot;
+	SpellEffectDispatch[SE_PercentXPIncrease] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_SummonAndResAllCorpses] = &Mob::Handle_SE_SummonAndResAllCorpses;
 }
 
 // the spell can still fail here, if the buff can't stack
@@ -2118,6 +2128,77 @@ bool Mob::Handle_SE_FleshToBone(const Spell *spell_to_cast, Mob *caster, const u
 	return false;
 }
 
+bool Mob::Handle_SE_WakeTheDead(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	if(caster->IsClient())
+	{
+		int duration = 60;
+		if(spell_to_cast->GetSpellID() == 3269)
+			duration += 15;
+		else if(spell_to_cast->GetSpellID() == 3270)
+			duration += 30;
+
+		caster->WakeTheDead(spell_to_cast, caster->GetTarget(), duration);
+	}
+	return false;
+}
+
+bool Mob::Handle_SE_GateToHomeCity(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	if(IsClient())
+	{
+		CastToClient()->GoToBind(4);
+	}
+	return false;
+}
+
+bool Mob::Handle_SE_DefensiveProc(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	const SPDat_Spell_Struct &spell = spell_to_cast->GetSpell();
+	uint16 proc_id = GetProcID(spell_to_cast, effect_id_index);
+	AddDefensiveProc(proc_id, spell.base2[effect_id_index]);
+	return false;
+}
+
+bool Mob::Handle_SE_BardAEDot(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	if(buff_in_use)
+	{
+		return false;
+	}
+
+	sint32 effect_value = CalcSpellEffectValue(spell_to_cast, effect_id_index, spell_to_cast->GetCasterLevel(), caster, 0);
+	const SPDat_Spell_Struct &spell = spell_to_cast->GetSpell();
+
+	sint32 dmg = effect_value;
+	if(dmg < 0)
+	{
+		dmg = (sint32) (dmg * partial / 100);
+
+		if(caster)
+			dmg = caster->GetActSpellDamage(spell_to_cast, dmg);
+
+		dmg = -dmg;
+		Damage(caster, dmg, spell.id, spell.skill, false, buff_slot, false);
+	} 
+	else if(dmg > 0) 
+	{
+		if(caster)
+			dmg = caster->GetActSpellHealing(spell_to_cast, dmg);
+		HealDamage(dmg, caster);
+	}
+	return false;
+}
+
+bool Mob::Handle_SE_SummonAndResAllCorpses(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	if(IsClient())
+	{
+		CastToClient()->SummonAndRezzAllCorpses();
+	}
+	return false;
+}
+
 /*
 bool Mob::Handle_(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
 {
@@ -2326,7 +2407,15 @@ void Mob::BuffProcess()
 				buffs[i]->SetDurationRemaining(buffs[i]->GetDurationRemaining() - 1);
 				if(buffs[i]->GetDurationRemaining() == 0)
 				{
-					BuffFadeBySlot(i, false);
+					if(buffs[i]->GetSpell()->IsEffectInSpell(SE_ImprovedSpellEffect))
+					{
+						uint32 morph_trigger = buffs[i]->GetSpell()->GetMorphTrigger();
+						SpellOnTarget(morph_trigger, this);
+					}
+					else
+					{
+						BuffFadeBySlot(i, false);
+					}
 				}
 			}
 		}
