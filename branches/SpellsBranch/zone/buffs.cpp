@@ -22,15 +22,11 @@
 #include "spells.h"
 #include "buff.h"
 #include "StringIDs.h"
-#include "../common/MiscFunctions.h"
 #include "../common/rulesys.h"
 #ifndef WIN32
 #include <stdlib.h>
 #include "../common/unix.h"
 #endif
-
-extern DBAsyncFinishedQueue MTdbafq;
-extern DBAsync *dbasync;
 
 ///////////////////////////////////////////////////////////////////////////////
 // buff related functions
@@ -39,6 +35,7 @@ extern DBAsync *dbasync;
 // this is the place to figure out random duration buffs like fear and charm.
 // both the caster and target mobs are passed in, so different behavior can
 // even be created depending on the types of mobs involved
+//
 // right now this is just an outline, working on this..
 int Mob::CalcBuffDuration(Mob *caster, Mob *target, const Spell *spell_to_cast, sint32 caster_level_override)
 {
@@ -894,7 +891,7 @@ void Mob::SetBuffCount(uint32 new_buff_count)
 	current_buff_count = new_buff_count; 
 }
 
-void Client::SaveBuffs(uint8 mode, bool delayed)
+void Client::SaveBuffs(uint8 mode)
 {
 	//We only save the first 25 buffs.
 	//The pp doesn't support more than 25 buffs so
@@ -963,38 +960,10 @@ void Client::SaveBuffs(uint8 mode, bool delayed)
 			}
 		}
 	}
-
-	if(total_size == 0)
-	{
-		return;
-	}
-	
-	if(delayed)
-	{
-		char *query = NULL;
-		uint32 query_len = 0;
-
-		//prevent against sql injection with a rogue crafted spell
-		char* escaped_string = NULL;
-		escaped_string = new char[2 * total_size + 1];
-		memset(escaped_string, 0, (2 * total_size + 1));
-		database.DoEscapeString(escaped_string, data, total_size);
-
-		query_len = MakeAnyLenString(&query, "REPLACE INTO character_buffs (id, type, buff_data)"
-				" VALUES (%u, %u, '%s')", CharacterID(), BuffStorage::BUFF_ST_CHARACTER, escaped_string);
-
-		DBAsyncWork* dbaw = new DBAsyncWork(&database, &MTdbafq, 0, DBAsync::Write, 0xFFFFFFFF);
-		dbaw->AddQuery(true, &query, query_len, false, false);
-		dbasync->AddWork(&dbaw, 0);
-
-		safe_delete_array(query);
-		safe_delete_array(escaped_string);
-	}
-	else
-		database.SetBuff(CharacterID(), BuffStorage::BUFF_ST_CHARACTER, data, total_size);
+	database.SetBuff(CharacterID(), BuffStorage::BUFF_ST_CHARACTER, data, total_size);
 }
 
-void NPC::SaveBuffs(uint8 mode, bool delayed)
+void NPC::SaveBuffs(uint8 mode)
 {
 	Mob *owner = GetOwner();
 	

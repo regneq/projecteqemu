@@ -686,7 +686,7 @@ bool logpos;
 	void BuffFadeDetrimentalByCaster(Mob *caster);
 	uint32 GetBuffCount() const { return current_buff_count; }
 	void SetBuffCount(uint32 new_buff_count);
-	virtual void SaveBuffs(uint8 mode = 0, bool delayed = false) { }
+	virtual void SaveBuffs(uint8 mode = 0) { }
 	virtual void LoadBuffs(uint8 mode = 0) { }
 	void LoadBuffsVersion1(char *data);
 

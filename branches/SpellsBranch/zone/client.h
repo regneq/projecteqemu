@@ -246,7 +246,7 @@ public:
 	virtual bool Save() { return Save(0); }
 	bool Save(int8 iCommitNow); // 0 = delayed, 1=async now, 2=sync now
 	void SaveBackup();
-	virtual void SaveBuffs(uint8 mode = 0, bool delayed = false);
+	virtual void SaveBuffs(uint8 mode = 0);
 	virtual void LoadBuffs(uint8 mode = 0);
 
 	inline bool ClientDataLoaded() const { return client_data_loaded; }
@@ -1034,7 +1034,6 @@ private:
 	int16				horseId;
 	bool				revoked;
 	int32				pQueuedSaveWorkID;
-	int32				pQueuedSaveBuffsWorkID;
 	int16				pClientSideTarget;
 	uint32				weight;
 	bool				berserk;
