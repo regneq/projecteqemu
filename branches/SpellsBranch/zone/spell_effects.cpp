@@ -553,6 +553,11 @@ bool Mob::Handle_SE_Charm(const Spell *spell_to_cast, Mob *caster, const uint32 
 	if(!buff_in_use)
 		return false;
 
+	if(IsNPC())
+	{
+		CastToNPC()->SaveGuardSpotCharm();
+	}
+
 	InterruptSpell();
 	entity_list.RemoveDebuffs(this);
 	entity_list.RemoveFromTargets(this);
@@ -2848,6 +2853,10 @@ void Mob::DoBuffWearOffEffect(const Buff *buff_to_use, uint32 buff_slot)
 
 			case SE_Charm:
 			{
+				if(IsNPC())
+				{
+					CastToNPC()->RestoreGuardSpotCharm();
+				}
 				Mob* tempmob = GetOwner();
 				SetOwnerID(0);
 				if(tempmob)
@@ -2873,6 +2882,7 @@ void Mob::DoBuffWearOffEffect(const Buff *buff_to_use, uint32 buff_slot)
 					entity_list.QueueClients(this, app);
 					safe_delete(app);
 				}
+
 				if(IsClient())
 				{
 					InterruptSpell();

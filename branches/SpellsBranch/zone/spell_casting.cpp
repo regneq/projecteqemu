@@ -135,6 +135,7 @@ bool Mob::CastSpell(Spell **casted_spell_ptr, int32* spell_will_finish)
 	if(spell_recovery_timer)
 	{
 		Message(13, "You have not recovered...");
+		InterruptSpell();
 		safe_delete(*casted_spell_ptr);
 		return false;
 	}
@@ -524,22 +525,28 @@ void Mob::CastedSpellFinished(Spell **casted_spell_ptr)
 				c->CheckSpecializeIncrease(spell_id);	
 			}
 		}
-		spell_recovery_timer = new Timer(100);
+
+		//recovery cast time
+		if(casted_spell->GetSpellType() == SC_NORMAL)
+		{
+			spell_recovery_timer = new Timer(casted_spell->GetSpell().recovery_time);
+		}
 
 		// there should be no casting going on now
 		ZeroAndFreeCastingVars();
-
-		//TODO:
-		// set the rapid recast timer for next time around
 
 		mlog(SPELLS__CASTING, "Spell casting of %d is finished.", spell_id);
 	}
 }
 
-bool Mob::SpellFinished(int16 spell_id, Mob *target, int16 slot, int16 mana_used, int32 inventory_slot)
+bool Mob::SpellFinished(int16 spell_id, Mob *target, int16 slot, int16 mana_used, int32 inventory_slot, bool is_proc)
 {
 	bool return_value;
 	Spell *new_spell = new Spell(spell_id, this, target, slot, -1, mana_used);
+	if(is_proc)
+	{
+		new_spell->SetSpellType(SC_PROC);
+	}
 
 	return_value = SpellFinished(new_spell);
 	safe_delete(new_spell);
@@ -1186,7 +1193,8 @@ bool Mob::SpellOnTarget(Spell *spell_to_cast, Mob* spell_target)
 	}
 	
 	if(spell_target->IsAIControlled() && spell_to_cast->IsDetrimentalSpell() && 
-		!spell_to_cast->IsHarmonySpell() && !spell_to_cast->IsEffectInSpell(SE_BindSight)) 
+		!spell_to_cast->IsHarmonySpell() && !spell_to_cast->IsEffectInSpell(SE_BindSight) &&
+		!spell_to_cast->IsEffectInSpell(SE_Sentinel)) 
 	{
 		sint32 aggro_amount = CheckAggroAmount(spell_to_cast);
 		mlog(SPELLS__CASTING, "Spell %d cast on %s generated %d hate", spell_to_cast->GetSpellID(), spell_target->GetName(), aggro_amount);

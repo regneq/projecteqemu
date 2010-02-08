@@ -1121,13 +1121,15 @@ float Mob::ResistSpell(int8 resist_type, const Spell *spell_to_cast, Mob *caster
 	
 	//this is checked here instead of in the Immune code so it only applies to detrimental spells
 	if(SpecAttacks[IMMUNE_MAGIC]) {
-		mlog(SPELLS__RESISTS, "We are immune to magic, so we fully resist the spell %d", spell_to_cast->GetSpellID());
+		mlog(SPELLS__RESISTS, "We are immune to magic, so we fully resist the spell %d", spell_to_cast 
+			? spell_to_cast->GetSpellID() : 0xFFFF);
 		return(0);
 	}
 	
 	if(resist_type == RESIST_NONE) {
 		//unresistable...
-		mlog(SPELLS__RESISTS, "The spell %d is unresistable (type %d)", spell_to_cast->GetSpellID(), resist_type);
+		mlog(SPELLS__RESISTS, "The spell %d is unresistable (type %d)", 
+			spell_to_cast ? spell_to_cast->GetSpellID() : 0xFFFF, resist_type);
 		return(100);
 	}
 
@@ -1150,7 +1152,8 @@ float Mob::ResistSpell(int8 resist_type, const Spell *spell_to_cast, Mob *caster
 
 	// if NPC target and more than X levels above caster, it's always resisted
 	if(IsNPC() && target_level - caster_level > RuleI(Spells, AutoResistDiff)) {
-		mlog(SPELLS__RESISTS, "We are %d levels above the caster, which is higher than the %d level auto-resist gap. Fully resisting.",  target_level - caster_level, RuleI(Spells, AutoResistDiff));
+		mlog(SPELLS__RESISTS, "We are %d levels above the caster, which is higher than the %d level"
+			" auto-resist gap. Fully resisting.",  target_level - caster_level, RuleI(Spells, AutoResistDiff));
  		return 0;
 	}
 	
@@ -1177,10 +1180,12 @@ float Mob::ResistSpell(int8 resist_type, const Spell *spell_to_cast, Mob *caster
 		
 		//I dont think these should get factored into standard spell resist...
 		if(MakeRandomInt(0, 99) < rchance) {
-			mlog(SPELLS__RESISTS, "Had a %d chance of resisting the fear spell %d, and succeeded.", rchance, spell_to_cast->GetSpellID());
+			mlog(SPELLS__RESISTS, "Had a %d chance of resisting the fear spell %d, and succeeded.", 
+				rchance, spell_to_cast->GetSpellID());
 			return(0);
 		}
-		mlog(SPELLS__RESISTS, "Had a %d chance of resisting the fear spell %d, and failed.", rchance, spell_to_cast->GetSpellID());
+		mlog(SPELLS__RESISTS, "Had a %d chance of resisting the fear spell %d, and failed.", 
+			rchance, spell_to_cast->GetSpellID());
 	}
 
 	switch(resist_type) {
@@ -1261,7 +1266,7 @@ float Mob::ResistSpell(int8 resist_type, const Spell *spell_to_cast, Mob *caster
 	resistchance += resist * RuleR(Spells, ResistMod); 
 	resistchance += spellbonuses.ResistSpellChance + itembonuses.ResistSpellChance;
 
-	if(caster && caster->IsClient())
+	if(caster && spell_to_cast && caster->IsClient())
 	{
 		sint32 focusResist = caster->CastToClient()->GetFocusEffect(focusResistRate, spell_to_cast);
 		resistchance = (resistchance * (100-focusResist) / 100);
@@ -1305,19 +1310,23 @@ float Mob::ResistSpell(int8 resist_type, const Spell *spell_to_cast, Mob *caster
 	
 	if (roll > resistchance)
 	{
-		mlog(SPELLS__RESISTS, "Spell %d: Roll of %.2f > resist chance of %.2f, no resist", spell_to_cast->GetSpellID(), roll, resistchance);
+		mlog(SPELLS__RESISTS, "Spell %d: Roll of %.2f > resist chance of %.2f, no resist", 
+			spell_to_cast ? spell_to_cast->GetSpellID() : 0xFFFF, roll, resistchance);
 		return(100);
 	}
 	else
 	{
 		if (roll <= fullchance)
  		{
-			mlog(SPELLS__RESISTS, "Spell %d: Roll of %.2f <= fullchance %.2f, fully resisted", spell_to_cast->GetSpellID(), roll, fullchance);
+			mlog(SPELLS__RESISTS, "Spell %d: Roll of %.2f <= fullchance %.2f, fully resisted", 
+				spell_to_cast ? spell_to_cast->GetSpellID() : 0xFFFF, roll, fullchance);
 			return(0);
 		}
 		else
 		{
-			mlog(SPELLS__RESISTS, "Spell %d: Roll of %.2f > fullchance %.2f, partially resisted, returned %.2f", spell_to_cast->GetSpellID(), roll, fullchance, (100 * ((roll-fullchance)/(resistchance-fullchance))));
+			mlog(SPELLS__RESISTS, "Spell %d: Roll of %.2f > fullchance %.2f, partially resisted, returned %.2f", 
+				spell_to_cast? spell_to_cast->GetSpellID() : 0xFFFF, roll, 
+				fullchance, (100 * ((roll-fullchance)/(resistchance-fullchance))));
 			//Remove the lower range so it doesn't throw off the proportion.
 			return(100 * ((roll-fullchance)/(resistchance-fullchance)));
 		}

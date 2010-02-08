@@ -357,6 +357,7 @@ Mob::Mob(const char*   in_name,
 	PathingRouteUpdateTimerLong = new Timer(RuleI(Pathing, RouteUpdateFrequencyLong));
 	AggroedAwayFromGrid = 0;
 	PathingTraversedNodes = 0;
+	return_to_heading_timer = NULL;
 }
 
 Mob::~Mob()
@@ -400,6 +401,7 @@ Mob::~Mob()
 	safe_delete(casting_spell);
 	safe_delete(casting_spell_finished);
 	safe_delete(spell_recovery_timer);
+	safe_delete(return_to_heading_timer);
 }
 
 int32 Mob::GetAppearanceValue(EmuAppearance iAppearance) {
@@ -2258,6 +2260,15 @@ void Mob::FaceTarget(Mob* MobToFace) {
 		{
 			SendPosition();
 		}
+
+		if(return_to_heading_timer)
+		{
+			return_to_heading_timer->Start(15000);
+		}
+		else
+		{
+			return_to_heading_timer = new Timer(15000);
+		}
 	}
 }
 
@@ -2608,9 +2619,9 @@ void Mob::ExecWeaponProc(uint16 spell_id, Mob *on) {
 	if(spell_id == SPELL_UNKNOWN)
 		return;
 	if ( IsBeneficialSpell(spell_id) )
-		SpellFinished(spell_id, this, 10, 0);
+		SpellFinished(spell_id, this, 10, 0, -1, true);
 	else if(!(on->IsClient() && on->CastToClient()->dead))	//dont proc on dead clients
-		SpellFinished(spell_id, on, 10, 0);
+		SpellFinished(spell_id, on, 10, 0, -1, true);
 }
 
 int32 Mob::GetZoneID() const {

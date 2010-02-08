@@ -340,6 +340,21 @@ void NPC::SaveGuardSpot(bool iClearGuardSpot) {
 	}
 }
 
+void NPC::SaveGuardSpotCharm()
+{
+	guard_x_saved = guard_x;
+	guard_y_saved = guard_y;
+	guard_z_saved = guard_z;
+	guard_heading_saved = guard_heading;
+}
+void NPC::RestoreGuardSpotCharm()
+{
+	guard_x = guard_x_saved;
+	guard_y = guard_y_saved;
+	guard_z = guard_z_saved;
+	guard_heading = guard_heading_saved;
+}
+
 void NPC::NextGuardPosition() {
 	if (!CalculateNewPosition2(guard_x, guard_y, guard_z, GetMovespeed())) {
 		SetHeading(guard_heading);

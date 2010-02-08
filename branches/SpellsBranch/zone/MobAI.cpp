@@ -1278,7 +1278,7 @@ void Mob::AI_Process() {
 			if (!HateSummon()) 
 			{
 				//could not summon them, start pursuing...
-// TODO: Check here for another person on hate list with close hate value
+				// TODO: Check here for another person on hate list with close hate value
 				if(AI_PursueCastCheck()){
 					//we did something, so do not process movement.
 				}
@@ -1562,10 +1562,10 @@ void NPC::AI_DoMovement() {
 		
 		sint16 gridno = CastToNPC()->GetGrid(); 
 
-// handle quest command roamers with no grids too
+		// handle quest command roamers with no grids too
 		if (gridno > 0 || cur_wp==-2)  {
 			if (movetimercompleted==true) {  // time to pause at wp is over
-// MYRA - Added code to depop at end of grid for wander type 4
+				// Added code to depop at end of grid for wander type 4
 				if (wandertype == 4 && cur_wp == CastToNPC()->GetMaxWp()) {
 		           CastToNPC()->Depop(); 
 				} else {
@@ -1690,6 +1690,18 @@ void NPC::AI_DoMovement() {
 				FaceTarget(GetTarget()); 
 			}
 			SendPosition();			
+		}
+		else
+		{
+			if(return_to_heading_timer)
+			{
+				if(return_to_heading_timer->Check())
+				{
+					SetHeading(guard_heading);
+					SendPosition();
+					safe_delete(return_to_heading_timer);
+				}
+			}
 		}
 	 } 
   } 

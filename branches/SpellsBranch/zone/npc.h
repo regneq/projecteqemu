@@ -245,6 +245,8 @@ public:
 	void				NextGuardPosition();
 	void				SaveGuardSpot(bool iClearGuardSpot = false);
 	inline bool			IsGuarding() const { return(guard_heading != 0); }
+	void				SaveGuardSpotCharm();
+	void				RestoreGuardSpotCharm();
 /*	void				SaveSpawnSpot();
 	inline const float	GetSpawnX() const { return spawn_x; }
 	inline const float	GetSpawnY() const { return spawn_y; }
@@ -365,6 +367,7 @@ protected:
 	int		max_wp;
 	int		save_wp;
     float guard_x, guard_y, guard_z, guard_heading;
+    float guard_x_saved, guard_y_saved, guard_z_saved, guard_heading_saved;
 	float roambox_max_x;
 	float roambox_max_y;
 	float roambox_min_x;

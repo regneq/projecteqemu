@@ -147,10 +147,6 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 	spawn_group = 0;
 	signaled = false;
 	signal_id = 0;
-    guard_x = 0;
-	guard_y = 0;
-	guard_z = 0;
-	guard_heading = 0;
 	swarmInfoPtr = NULL;
 
 	logging_enabled = NPC_DEFAULT_LOGGING_ENABLED;
@@ -214,6 +210,10 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 	guard_y = -1;
 	guard_z = -1;
 	guard_heading = 0;
+	guard_x_saved = -1;
+	guard_y_saved = -1;
+	guard_z_saved = -1;
+	guard_heading_saved = 0;
 	roambox_distance = 0;
 	roambox_max_x = -2;
 	roambox_max_y = -2;
