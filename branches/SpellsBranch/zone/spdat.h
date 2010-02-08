@@ -530,29 +530,29 @@ typedef enum  {
 //
 struct SPDat_Spell_Struct
 {
-/* 000 */ sint32 id;	                  // not used
-/* 001 */ char  name[32];                 // Name of the spell
-/* 002 */ char  player_1[32];             // "PLAYER_1"
-/* 003 */ char  teleport_zone[32];	      // Teleport zone, pet name summoned, or item summoned
-/* 004 */ char  you_cast[64];             // Message when you cast
-/* 005 */ char  other_casts[64];          // Message when other casts
-/* 006 */ char  cast_on_you[64];          // Message when spell is cast on you 
-/* 007 */ char  cast_on_other[64];        // Message when spell is cast on someone else
-/* 008 */ char  spell_fades[64];          // Spell fades
-/* 009 */ float  range;
-/* 010 */ float  aoerange;
-/* 011 */ float  pushback;
-/* 012 */ float  pushup;
-/* 013 */ int32  cast_time;                // Cast time
-/* 014 */ int32  recovery_time;            // Recovery time
-/* 015 */ int32  recast_time;              // Recast same spell time
-/* 016 */ int32  buffdurationformula;
-/* 017 */ int32  buffduration;
-/* 018 */ int32  AEDuration;	            // sentinel, rain of something
-/* 019 */ int16  mana;                      // Mana Used
+/* 000 */ uint16 id;	                  // the spell #
+/* 001 */ char name[32];                  // Name of the spell
+/* 002 */ char player_1[32];              // "PLAYER_1"
+/* 003 */ char teleport_zone[32];         // Teleport zone, pet name summoned, or item summoned
+/* 004 */ char you_cast[64];              // Message when you cast
+/* 005 */ char other_casts[64];           // Message when other casts
+/* 006 */ char cast_on_you[64];           // Message when spell is cast on you 
+/* 007 */ char cast_on_other[64];         // Message when spell is cast on someone else
+/* 008 */ char spell_fades[64];           // Spell fades
+/* 009 */ float range;
+/* 010 */ float aoerange;
+/* 011 */ float pushback;
+/* 012 */ float pushup;
+/* 013 */ uint32 cast_time;                // Cast time
+/* 014 */ uint32 recovery_time;            // Recovery time
+/* 015 */ uint32 recast_time;              // Recast same spell time
+/* 016 */ uint32 buffdurationformula;
+/* 017 */ uint32 buffduration;
+/* 018 */ uint32 AEDuration;               // sentinel, rain of something
+/* 019 */ int16 mana;                      // Mana Used
 /* 020 */ sint32 base[EFFECT_COUNT];	    //various purposes
 /* 032 */ sint32 base2[EFFECT_COUNT];       //various purposes
-/* 044 */ sint16 max[EFFECT_COUNT];
+/* 044 */ sint32 max[EFFECT_COUNT];         //typically used for effect val calcs as the max val
 /* 056 */ uint16 icon;                      // Spell icon
 /* 057 */ uint16 memicon;                   // Icon on membarthing
 /* 058 */ sint32 components[4];             // reagents
@@ -562,25 +562,25 @@ struct SPDat_Spell_Struct
                                             // If it is a valid itemid it means this item is a focus as well
 /* 070 */ int16 formula[EFFECT_COUNT];      // Spell's value formula
 /* 082 */ sint32 LightType;                 // probaly another effecttype flag
-/* 083 */ sint32 goodEffect;                //0=detrimental, 1=Beneficial, 2=Beneficial, Group Only
+/* 083 */ sint8 goodEffect;                 //0=detrimental, 1=Beneficial, 2=Beneficial, Group Only
 /* 084 */ sint32 Activated;                 // probaly another effecttype flag	
 /* 085 */ sint32 resisttype;
-/* 086 */ sint32 effectid[EFFECT_COUNT];    // Spell's effects
+/* 086 */ sint16 effectid[EFFECT_COUNT];    // Spell's effects
 /* 098 */ SpellTargetType targettype;       // Spell's Target
 /* 099 */ sint32 basediff;                  // base difficulty fizzle adjustment
 /* 100 */ SkillType skill;
 /* 101 */ sint16 zonetype;	                // 01=Outdoors, 02=dungeons, ff=Any 
-/* 102 */ int16 EnvironmentType;
+/* 102 */ uint16 EnvironmentType;
 /* 103 */ sint32 TimeOfDay;
-/* 104 */ int8 classes[PLAYER_CLASS_COUNT]; // Classes, and their min levels
-/* 120 */ int8 CastingAnim;
-/* 121 */ int8 TargetAnim;
-/* 122 */ int32 TravelType;
-/* 123 */ int16 SpellAffectIndex;
+/* 104 */ uint8 classes[PLAYER_CLASS_COUNT]; // Classes, and their min levels
+/* 120 */ uint8 CastingAnim;
+/* 121 */ uint8 TargetAnim;
+/* 122 */ uint32 TravelType;
+/* 123 */ uint16 SpellAffectIndex;
 /* 124 */ sint32 spacing124[2]; // 124: high-end Yaulp spells (V, VI, VII, VIII [Rk 1, 2, & 3], & Gallenite's Bark of Fury
                                 // 125: Words of the Skeptic
 /* 126 */ sint8	deities[16];    // Deity check. 201 - 216 per http://www.eqemulator.net/wiki/wikka.php?wakka=DeityList
-										// -1: Restrict to Deity; 1: Restrict to Deity, but only used on non-Live (Test Server "Blessing of ...") spells; 0: Don't restrict
+                                // -1: Restrict to Deity; 1: Restrict to Deity, but only used on non-Live (Test Server "Blessing of ...") spells; 0: Don't restrict
 /* 142 */ sint32 spacing142[2]; // 142: between 0 & 100
                                 // 143: always set to 0
 /* 144 */ sint16 new_icon;      // Spell icon used by the client in uifiles/default/spells??.tga, both for spell gems & buff window. Looks to depreciate icon & memicon
@@ -589,7 +589,7 @@ struct SPDat_Spell_Struct
 /* 147 */ sint16 ResistDiff; 
 /* 148 */ sint32 dot_stacking_exempt;
 /* 149 */ sint32 deletable;
-/* 150 */ int16 RecourseLink;
+/* 150 */ uint16 RecourseLink;
 /* 151 */ sint32 spacing151[3]; // 151: -1, 0, or 1
                                 // 152 & 153: all set to 0
 /* 154 */ sint8	short_buff_box;	// != 0, goes to short buff box. Not really supported in the server code
@@ -611,14 +611,14 @@ struct SPDat_Spell_Struct
 /* 179 */ sint32 pvpresistcap;
 /* 180 */ sint32 spell_category;
 /* 181 */ sint32 spacing181[4];
-/* 185 */ sint32 can_mgb;         //0 = no, -1 or 1 = yes
+/* 185 */ sint8 can_mgb;         //0 = no, -1 or 1 = yes
 /* 186 */ sint8	 no_dispel;       //0 = can be dispelled, -1 = can't be dispelled at all, 1 = most can be cancelled w/ a cure but not dispelled
 /* 187 */ uint8  npc_category;    //0=not used, 1=AoE Detrimental, 2=DD, 3=Buffs, 4=Pets, 5=Healing, 6=Gate, 7=Debuff, 8=Dispell
 /* 188 */ uint32 npc_usefulness;  // higher number = more useful, lower number = less useful
 /* 189 */ sint32 spacing189[18];
 /* 207 */ uint32 spellgroup;
 /* 208 */ sint32 spacing208[7];
-/* 236 */ int8   DamageShieldType; // This field does not exist in spells_us.txt
+/* 236 */ uint8 DamageShieldType; // This field does not exist in spells_us.txt
 };
 
 #if defined(NEW_LoadSPDat) || defined(DB_LoadSPDat)
