@@ -228,6 +228,7 @@ Client::Client(EQStreamInterface* ieqs)
 	npcflag = false;
 	npclevel = 0;
 	pQueuedSaveWorkID = 0;
+	pQueuedSaveBuffsWorkID = 0;
 	position_timer_counter = 0;
 	fishing_timer.Disable();
 	shield_timer.Disable();
@@ -467,8 +468,6 @@ bool Client::Save(int8 iCommitNow) {
 	m_pp.mana = cur_mana;
 	m_pp.endurance = cur_end;
 
-	SaveBuffs();
-
 	TotalSecondsPlayed += (time(NULL) - m_pp.lastlogin);
 	m_pp.timePlayedMin = (TotalSecondsPlayed / 60);
 	m_pp.RestTimer = rest_timer.GetRemainingTime() / 1000;
@@ -497,8 +496,9 @@ bool Client::Save(int8 iCommitNow) {
 	}
 
 	p_timers.Store(&database);
-
+	SaveBuffs(0, (iCommitNow <= 1));
 	SaveTaskState();
+
 	if (iCommitNow <= 1) {
 		char* query = 0;
 		uint32_breakdown workpt;
