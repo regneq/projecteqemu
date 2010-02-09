@@ -754,7 +754,8 @@ bool Mob::SpellFinished(Spell *spell_to_cast)
 				{
 					Raid *target_raid = entity_list.GetRaidByClient(spell_target->CastToClient());
 					int32 gid = 0xFFFFFFFF;
-					if(target_raid){
+					if(target_raid)
+					{
 						gid = target_raid->GetGroup(spell_target->GetName());
 						if(gid < 12)
 						{
@@ -965,8 +966,11 @@ bool Mob::ApplyNextBardPulse(Spell *spell_to_cast)
 		case AECaster:
 		{
 			if(spell_to_cast->IsBeneficialSpell())
-				SpellOnTarget(spell_to_cast, this);
-			
+			{
+				BardPulse(spell_to_cast, this);
+				//SpellOnTarget(spell_to_cast, this);
+			}
+
 			bool affect_caster = !IsNPC();	//NPC AE spells do not affect the NPC caster
 			entity_list.AEBardPulse(this, this, spell_to_cast, affect_caster);
 			break;		
@@ -1041,7 +1045,7 @@ bool Mob::ApplyNextBardPulse(Spell *spell_to_cast)
 	}
 	
 	//do we need to do this???
-	DoAnim(spell_to_cast->GetSpell().CastingAnim, 0, true, IsClient() ? FILTER_PCSPELLS : FILTER_NPCSPELLS);
+	//DoAnim(spell_to_cast->GetSpell().CastingAnim, 0, true, IsClient() ? FILTER_PCSPELLS : FILTER_NPCSPELLS);
 	if(IsClient())
 		CastToClient()->CheckSongSkillIncrease(spell_to_cast->GetSpellID());
 
@@ -1074,13 +1078,20 @@ void Mob::BardPulse(Spell *spell_to_cast, Mob *caster)
 		}
 	}
 
+	//Send the action packet to everyone
+	int seq = SendActionSpellPacket(spell_to_cast, this, caster->GetCasterLevel());
+
 	if(found_spell)
 	{
 		found_spell->SetInstrumentMod(caster->GetInstrumentMod(spell_to_cast));
 
-		//Add 3 tics to the buff.
-		found_spell->SetDurationRemaining(found_spell->GetDurationRemaining() + 3);
-		SendBuffPacket(found_spell, buff_index, 3);
+		//set buff duration to max
+		sint32 buff_duration = CalcBuffDuration(caster, this, spell_to_cast, spell_to_cast->GetCasterLevel()) - 1;
+		if(caster)
+			buff_duration = caster->GetActSpellDuration(spell_to_cast, buff_duration);
+
+		found_spell->SetDurationRemaining(buff_duration);
+		SendBuffPacket(found_spell, buff_index, 3, seq);
 	}
 
 	//Knockback
@@ -1092,11 +1103,11 @@ void Mob::BardPulse(Spell *spell_to_cast, Mob *caster)
 		}
 	}
 
-	//Send the action packet to everyone
-	int seq = SendActionSpellPacket(spell_to_cast, this, caster->GetCasterLevel());
-
-	//Do the spell on target
-	caster->SpellOnTarget(spell_to_cast, this);
+	if(!found_spell)
+	{
+		//We couldn't find a buff to extend cast the spell on target instead
+		caster->SpellOnTarget(spell_to_cast, this);
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////

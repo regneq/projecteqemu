@@ -88,6 +88,7 @@ void Raid::AddMember(Client *c, int32 group, bool rleader, bool groupleader, boo
 	SendRaidAddAll(c->GetName());
 
 	c->SetRaidGrouped(true);
+	c->SetGrouped(false);
 
 	ServerPacket *pack = new ServerPacket(ServerOP_RaidAdd, sizeof(ServerRaidGeneralAction_Struct));
 	ServerRaidGeneralAction_Struct *rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
@@ -118,6 +119,7 @@ void Raid::RemoveMember(const char *c)
 
 	if(m){
 		m->SetRaidGrouped(false);
+		m->SetGrouped(false);
 	}
 
 	ServerPacket *pack = new ServerPacket(ServerOP_RaidRemove, sizeof(ServerRaidGeneralAction_Struct));
