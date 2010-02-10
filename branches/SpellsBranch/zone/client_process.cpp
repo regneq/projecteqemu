@@ -1149,7 +1149,7 @@ void Client::OPMemorizeSpell(const EQApplicationPacket* app)
 	
 	if(!IsValidSpell(memspell->spell_id))
 	{
-		Message(13, "Unexpected error: spell id out of range");
+		Message(13, "Unexpected error: spell id out of range %d", memspell->spell_id);
 		return;
 	}
 

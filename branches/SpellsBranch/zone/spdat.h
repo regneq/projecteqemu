@@ -530,7 +530,7 @@ typedef enum  {
 //
 struct SPDat_Spell_Struct
 {
-/* 000 */ uint16 id;	                  // the spell #
+/* 000 */ sint32 id;	                  // the spell #
 /* 001 */ char name[32];                  // Name of the spell
 /* 002 */ char player_1[32];              // "PLAYER_1"
 /* 003 */ char teleport_zone[32];         // Teleport zone, pet name summoned, or item summoned
