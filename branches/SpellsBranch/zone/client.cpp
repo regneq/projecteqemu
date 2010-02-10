@@ -296,6 +296,7 @@ Client::Client(EQStreamInterface* ieqs)
 	aa_los_them_mob = NULL;
 	los_status = false;
 	qGlobals = NULL;
+	buff_save_timer = NULL;
 	InitializeBuffSlots();
 }
 
@@ -382,6 +383,7 @@ Client::~Client() {
 	eqs->Close();
 	eqs->ReleaseFromUse();
 
+	safe_delete(buff_save_timer);
 	UninitializeBuffSlots();
 	entity_list.RemoveClient(this);
 }
@@ -501,7 +503,19 @@ bool Client::Save(int8 iCommitNow) {
 	}
 
 	p_timers.Store(&database);
-	SaveBuffs();
+	if(buff_save_timer)
+	{
+		if(buff_save_timer->Check())
+		{
+			SaveBuffs();
+		}
+	}
+	else
+	{
+		buff_save_timer = new Timer(6000);
+		SaveBuffs();
+	}
+
 	SaveTaskState();
 
 	if (iCommitNow <= 1) {

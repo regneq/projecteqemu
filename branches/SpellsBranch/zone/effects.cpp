@@ -757,6 +757,51 @@ void EntityList::AESpell(Mob *caster, Mob *center, Spell *spell_to_cast, bool af
 	}	
 }
 
+void EntityList::AESpellMGB(Mob *caster, Mob *center, Spell *spell_to_cast, bool affect_caster)
+{
+	LinkedListIterator<Mob*> iterator(mob_list);
+	Mob *curmob;
+	
+	float dist = caster->GetAOERange(spell_to_cast);
+	float dist2 = dist * dist;
+	
+	bool bad = spell_to_cast->IsDetrimentalSpell();
+	bool isnpc = caster->IsNPC();
+	
+	for(iterator.Reset(); iterator.MoreElements(); iterator.Advance())
+	{
+		curmob = iterator.GetData();
+		if(curmob == center)	//do not affect center
+			continue;
+		if(curmob == caster && !affect_caster)	//watch for caster too
+			continue;
+		if(center->DistNoRoot(*curmob) > dist2)	//make sure they are in range
+			continue;
+		if(isnpc && curmob->IsNPC()) {	//check npc->npc casting
+			FACTION_VALUE f = curmob->GetReverseFactionCon(caster);
+			if(bad) 
+			{
+					//can never MGB det spells
+					continue;
+			} 
+			else 
+			{
+				//only affect mobs we would assist.
+				if(!(f <= FACTION_AMIABLE))
+					continue;
+			}
+		}
+		
+		if(bad) 
+		{
+			//can never MGB det spells
+			continue;
+		}
+
+		caster->SpellOnTarget(spell_to_cast, curmob);
+	}	
+}
+
 // causes caster to hit every mob within dist range of center with
 // a bard pulse of spell_id.
 // NPC spells will only affect other NPCs with compatible faction

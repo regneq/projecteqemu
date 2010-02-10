@@ -7355,17 +7355,17 @@ void Bot::SetAttackTimer() {
 	}	
 }
 
-sint32 Bot::GetActSpellDamage(int16 spell_id, sint32 value) {
+sint32 Bot::GetActSpellDamage(const Spell *spell_to_cast, sint32 value) {
 	sint32 modifier = 100;
 	int8 casterClass = GetClass();
 	int8 casterLevel = GetLevel();
 
 	//Dunno if this makes sense:
-	if (spells[spell_id].resisttype > 0)
+	if (spell_to_cast->GetSpell().resisttype > 0)
 		modifier += 5;
 
 
-	int tt = spells[spell_id].targettype;
+	int tt = spell_to_cast->GetSpell().targettype;
 	if (tt == ST_UndeadAE || tt == ST_Undead || tt == ST_Summoned) {
 		//undead/summoned spells
 		modifier += 10;
@@ -7375,7 +7375,7 @@ sint32 Bot::GetActSpellDamage(int16 spell_id, sint32 value) {
 	}
 
 	//these spell IDs could be wrong
-	if (spell_id == SPELL_LEECH_TOUCH) {	//leech touch
+	if (spell_to_cast->GetSpellID() == SPELL_LEECH_TOUCH) {	//leech touch
 		if(casterLevel >= 65) { // Consumption of the Soul 3 AA
 			value -= 1500;
 		}
@@ -7467,7 +7467,7 @@ sint32 Bot::GetActSpellDamage(int16 spell_id, sint32 value) {
 
 		if(tt == ST_Tap) {
 
-			if(spells[spell_id].classes[SHADOWKNIGHT-1] >= 254 && spell_id != SPELL_LEECH_TOUCH) {
+			if(spell_to_cast->GetSpell().classes[SHADOWKNIGHT-1] >= 254 && spell_id != SPELL_LEECH_TOUCH) {
 				if(ratio < 100)	//chance increase and ratio are made up, not confirmed
 					ratio = 100;
 
@@ -7510,7 +7510,8 @@ sint32 Bot::GetActSpellDamage(int16 spell_id, sint32 value) {
 		}
 
 		if (chance > 0) {
-			mlog(SPELLS__CRITS, "Attempting spell crit. Spell: %s (%d), Value: %d, Modifier: %d, Chance: %d, Ratio: %d", spells[spell_id].name, spell_id, value, modifier, chance, ratio);
+			mlog(SPELLS__CRITS, "Attempting spell crit. Spell: %s (%d), Value: %d, Modifier: %d, Chance: %d, Ratio: %d",
+				spell_to_cast->GetSpell().name, spell_to_cast->GetSpellID(), value, modifier, chance, ratio);
 			if(MakeRandomInt(1,100) <= chance) {
 				modifier += modifier*ratio/100;
 				mlog(SPELLS__CRITS, "Spell crit successful. Final damage modifier: %d, Final Damage: %d", modifier, (value * modifier) / 100);
@@ -7523,7 +7524,7 @@ sint32 Bot::GetActSpellDamage(int16 spell_id, sint32 value) {
 	return (value * modifier) / 100;
 }
 
-sint32 Bot::GetActSpellHealing(int16 spell_id, sint32 value) {
+sint32 Bot::GetActSpellHealing(const Spell* spell_to_cast, sint32 value) {
 	sint32 modifier = 100;
 
 	modifier += GetBotFocusEffect(BotfocusImprovedHeal, spell_id);

@@ -270,6 +270,7 @@ public:
 	void	AETaunt(Mob *caster, float range = 0);
 	void	AESpell(Mob *caster, Mob *center, Spell *spell_to_cast, bool affect_caster = true);
 	void	AEBardPulse(Mob *caster, Mob *center, Spell *spell_to_cast, bool affect_caster = true);
+	void	AESpellMGB(Mob *caster, Mob *center, Spell *spell_to_cast, bool affect_caster = true);
 	
 	void 	RadialSetLogging(Mob *around, bool enabled, bool clients, bool non_clients, float range = 0);
 

@@ -733,7 +733,7 @@ bool Mob::SpellFinished(Spell *spell_to_cast)
 			if(IsClient() && CastToClient()->CheckAAEffect(aaEffectMassGroupBuff))
 			{
 				SpellOnTarget(spell_to_cast, this);
-				entity_list.AESpell(this, this, spell_to_cast, true);
+				entity_list.AESpellMGB(this, this, spell_to_cast, true);
 				CastToClient()->DisableAAEffect(aaEffectMassGroupBuff);
 			}
 			else
@@ -881,7 +881,6 @@ bool Mob::SpellFinished(Spell *spell_to_cast)
  * 
  * return false to stop the song
  */
-//TODO: FIXME
 bool Mob::ApplyNextBardPulse(Spell *spell_to_cast) 
 {
 	Mob *spell_target = spell_to_cast->GetTarget();
@@ -1054,6 +1053,12 @@ bool Mob::ApplyNextBardPulse(Spell *spell_to_cast)
 
 void Mob::BardPulse(Spell *spell_to_cast, Mob *caster) 
 {
+	if(spell_to_cast->IsDetrimentalSpell())
+	{
+		caster->SpellOnTarget(spell_to_cast, this);
+		return;
+	}
+
 	Buff *found_spell = NULL;
 	uint32 buff_index = 0xFFFFFFFF;
 	int max_slots = GetMaxTotalSlots();
@@ -1237,11 +1242,6 @@ bool Mob::SpellOnTarget(Spell *spell_to_cast, Mob* spell_target)
 			spell_target->SendKnockBackPacket(this, spell_to_cast->GetSpell().pushup, spell_to_cast->GetSpell().pushback);
 		}
 	}
-	
-	
-	//TODO: Move Exemptions from here to SpellEffect as well as needed action 0x04 packets.
-	//Shadow Step -> Target
-	//Bind Affinity -> Caster and Target
 	
 	mlog(SPELLS__CASTING, "Cast of %d by %s on %s complete successfully.", spell_to_cast->GetSpellID(), GetName(), spell_target->GetName());	
 	return true;

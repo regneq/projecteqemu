@@ -243,7 +243,7 @@ struct StatBonuses {
 
 	sint8 HundredHands;		//extra haste, stacks with all other haste  i
 	bool MeleeLifetap;  //i
-	int XPRateMod;
+	int XPRateMod; //i
 
 	sint8	Packrat;	//weight reduction for items, 1 point = 10%
 };

@@ -30,6 +30,7 @@ using namespace std;
 #include "loottable.h"
 #include "zonedump.h"
 #include "QGlobals.h"
+#include "../common/rulesys.h"
 
 #ifdef WIN32
 	#define  M_PI	3.141592
@@ -89,13 +90,13 @@ public:
 	virtual void	AI_Event_SpellCastFinished(bool iCastSucceeded, int8 slot);
 
 	//Spell related stuff
-	virtual int GetCurrentBuffSlots() const { return 25; }
-	virtual int GetCurrentSongSlots() const { return 10; }
-	virtual int GetCurrentDiscSlots() const { return 1; }
-	virtual int GetMaxBuffSlots() const { return 25; }
-	virtual int GetMaxSongSlots() const { return 10; }
-	virtual int GetMaxDiscSlots() const { return 1; }
-	virtual int GetMaxTotalSlots() const { return 36; }
+	virtual int GetCurrentBuffSlots() const { return RuleI(Spells, MaxBuffSlotsNPC); }
+	virtual int GetCurrentSongSlots() const { return RuleI(Spells, MaxSongSlotsNPC); }
+	virtual int GetCurrentDiscSlots() const { return RuleI(Spells, MaxDiscSlotsNPC); }
+	virtual int GetMaxBuffSlots() const { return RuleI(Spells, MaxBuffSlotsNPC); }
+	virtual int GetMaxSongSlots() const { return RuleI(Spells, MaxSongSlotsNPC); }
+	virtual int GetMaxDiscSlots() const { return RuleI(Spells, MaxDiscSlotsNPC); }
+	virtual int GetMaxTotalSlots() const { return RuleI(Spells, MaxTotalSlotsNPC); }
 	virtual void InitializeBuffSlots();
 	virtual void UninitializeBuffSlots();
 	virtual int GetFreeBuffSlot(const Spell *spell_to_cast);

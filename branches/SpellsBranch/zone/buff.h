@@ -44,7 +44,6 @@ namespace BuffStorage
 	};
 #pragma pack()
 
-	//TODO: custom spell struct so we can change the real one without much trouble.
 	namespace Version1
 	{
 #pragma pack(1)

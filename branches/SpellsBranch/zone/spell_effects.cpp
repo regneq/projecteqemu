@@ -88,16 +88,16 @@ void MapSpellEffects()
 	SpellEffectDispatch[SE_PoisonCounter] = &Mob::Handle_SE_PoisonCounter;
 	SpellEffectDispatch[SE_DivineAura] = &Mob::Handle_SE_DivineAura;
 	SpellEffectDispatch[SE_Destroy] = &Mob::Handle_SE_Destroy;
-	SpellEffectDispatch[SE_ShadowStep] = &Mob::Handle_SE_BlankWithPacket;
+	SpellEffectDispatch[SE_ShadowStep] = &Mob::Handle_SE_ShadowStep;
 	SpellEffectDispatch[SE_Lycanthropy] = NULL;
 	SpellEffectDispatch[SE_ResistFire] = &Mob::Handle_SE_Blank;
 	SpellEffectDispatch[SE_ResistCold] = &Mob::Handle_SE_Blank;
 	SpellEffectDispatch[SE_ResistPoison] = &Mob::Handle_SE_Blank;
 	SpellEffectDispatch[SE_ResistDisease] = &Mob::Handle_SE_Blank;
 	SpellEffectDispatch[SE_ResistMagic] = &Mob::Handle_SE_Blank;
-	SpellEffectDispatch[SE_SenseDead] = &Mob::Handle_SE_BlankWithPacket;
-	SpellEffectDispatch[SE_SenseSummoned] = &Mob::Handle_SE_BlankWithPacket;
-	SpellEffectDispatch[SE_SenseAnimals] = &Mob::Handle_SE_BlankWithPacket;
+	SpellEffectDispatch[SE_SenseDead] = &Mob::Handle_SE_Sense;
+	SpellEffectDispatch[SE_SenseSummoned] = &Mob::Handle_SE_Sense;
+	SpellEffectDispatch[SE_SenseAnimals] = &Mob::Handle_SE_Sense;
 	SpellEffectDispatch[SE_Rune] = &Mob::Handle_SE_Rune;
 	SpellEffectDispatch[SE_TrueNorth] = &Mob::Handle_SE_BlankWithPacket;
 	SpellEffectDispatch[SE_Levitate] = &Mob::Handle_SE_Levitate;
@@ -879,6 +879,15 @@ bool Mob::Handle_SE_DivineAura(const Spell *spell_to_cast, Mob *caster, const ui
 	return false;
 }
 
+bool Mob::Handle_SE_Sense(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	if(IsClient())
+	{
+		CastToClient()->SetSenseExemption(true);
+	}
+	return true;
+}
+
 bool Mob::Handle_SE_Destroy(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
 {
 	if(!IsNPC())
@@ -895,6 +904,15 @@ bool Mob::Handle_SE_Destroy(const Spell *spell_to_cast, Mob *caster, const uint3
 		Message(13, "Your target is too high level to be affected by this spell.");
 	}
 	return false;
+}
+
+bool Mob::Handle_SE_ShadowStep(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	if(IsClient())
+	{
+		CastToClient()->SetShadowStepExemption(true);
+	}
+	return true;
 }
 
 bool Mob::Handle_SE_PoisonCounter(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
