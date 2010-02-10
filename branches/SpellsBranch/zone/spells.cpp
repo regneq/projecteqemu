@@ -165,7 +165,7 @@ bool Client::CheckFizzle(const Spell *spell_to_cast)
 {
 	// GMs don't fizzle
 	if (GetGM()) return(true);
-	
+
 	int no_fizzle_level = 0;
 	if (GetAA(aaMasteryofthePast) || GetAA(aaMasteryofthePast2)) {
 		switch (GetAA(aaMasteryofthePast) + GetAA(aaMasteryofthePast2)) {
@@ -194,14 +194,14 @@ bool Client::CheckFizzle(const Spell *spell_to_cast)
 	}
 	if (spell_to_cast->GetSpell().classes[GetClass()-1] <= no_fizzle_level)
 		return true;
-	
+
 	//is there any sort of focus that affects fizzling?
-	
-	
+
+
 	// neotokyo: this is my try to get something going
 	int par_skill;
 	int act_skill;
-	
+
 	par_skill = spell_to_cast->GetSpell().classes[GetClass()-1] * 5 - 10;//IIRC even if you are lagging behind the skill levels you don't fizzle much
 	/*par_skill = spells[spell_id].classes[GetClass()-1] * 5 + 5;*/
 	if (par_skill > 235)
@@ -211,7 +211,7 @@ bool Client::CheckFizzle(const Spell *spell_to_cast)
 
 	act_skill = GetSkill(spell_to_cast->GetSpell().skill);
 	act_skill += GetLevel(); // maximum of whatever the client can cheat
-	
+
 	//FatherNitwit: spell specialization
 	float specialize = GetSpecializeSkillValue(spell_to_cast);
 		//VERY rough success formula, needs research
@@ -233,7 +233,7 @@ bool Client::CheckFizzle(const Spell *spell_to_cast)
 			specialize = 0.0f;
 		}
 	}
-	
+
 	// == 0 --> on par
 	// > 0  --> skill is lower, higher chance of fizzle
 	// < 0  --> skill is better, lower chance of fizzle
@@ -255,7 +255,7 @@ bool Client::CheckFizzle(const Spell *spell_to_cast)
 	float fizzle_roll = MakeRandomFloat(0, 100);
 
 	mlog(SPELLS__CASTING, "Check Fizzle %s  spell %d  fizzlechance: %0.2f%%   diff: %0.2f  roll: %0.2f", GetName(), spell_to_cast->GetSpellID(), fizzlechance, diff, fizzle_roll);
-	
+
 	if(fizzle_roll > fizzlechance)
 		return(true);
 	return(false);
@@ -307,20 +307,20 @@ void Mob::InterruptSpell(int16 message, int16 color, int16 spellid)
 	{
 		CastToNPC()->AI_Event_SpellCastFinished(false, casting_spell->GetSpellSlot());
 	}
-	
+
 	mlog(SPELLS__CASTING, "Spell %d has been interrupted.", spellid);
-	
+
 	if(!spellid)
 	{
 		ZeroAndFreeCastingVars(false);
 		return;
 	}
-	
+
 	if (bard_song || (casting_spell ? casting_spell->IsBardSong() : 0))
 	{
 		_StopSong();
 	}
-	
+
 	if(!message)
 	{
 		message = (casting_spell ? casting_spell->IsBardSong() : 0) ? SONG_ENDS_ABRUPTLY : INTERRUPT_SPELL;
@@ -373,20 +373,20 @@ void Mob::InterruptSpell(int16 message, int16 color, int16 spellid)
 	ZeroAndFreeCastingVars(false);
 }
 
-bool Mob::DetermineSpellTargets(Spell *spell_to_cast, Mob *&spell_target, Mob *&ae_center, CastAction_type &CastAction) 
+bool Mob::DetermineSpellTargets(Spell *spell_to_cast, Mob *&spell_target, Mob *&ae_center, CastAction_type &CastAction)
 {
 	/*
 	The basic types of spells:
-	
+
 	Single target - some might be undead only, self only, etc, but these
 	all affect the target of the caster.
 
 	AE around caster - these affect entities close to the caster, and have
 	no target.
-	
+
 	AE around target - these have a target, and affect the target as well as
 	entities close to the target.
-	
+
 	AE on location - this is a tricky one that is cast on a mob target but
 	has a special AE duration that keeps it recasting every 2.5 sec on the
 	same location.  These work the same as AE around target spells, except
@@ -404,7 +404,7 @@ bool Mob::DetermineSpellTargets(Spell *spell_to_cast, Mob *&spell_target, Mob *&
 
 	// during this switch, this variable gets set to one of these things
 	// and that causes the spell to be executed differently
-	
+
 	bodyType target_bt = BT_Humanoid;
 	SpellTargetType targetType = spell_to_cast->GetSpell().targettype;
 
@@ -439,7 +439,7 @@ bool Mob::DetermineSpellTargets(Spell *spell_to_cast, Mob *&spell_target, Mob *&
 		// target required for these
 		case ST_Undead: {
 			if(!spell_target || (
-				spell_target->GetBodyType() != BT_SummonedUndead 
+				spell_target->GetBodyType() != BT_SummonedUndead
 				&& spell_target->GetBodyType() != BT_Undead
 				&& spell_target->GetBodyType() != BT_Vampire
 				)
@@ -453,7 +453,7 @@ bool Mob::DetermineSpellTargets(Spell *spell_to_cast, Mob *&spell_target, Mob *&
 			CastAction = SingleTarget;
 			break;
 		}
-		
+
 		case ST_Summoned: {
 			int8 body_type = spell_target ? spell_target->GetBodyType() : 0;
 			if(!spell_target || (body_type != BT_Summoned && body_type != BT_Summoned2 && body_type != BT_Summoned3))
@@ -466,7 +466,7 @@ bool Mob::DetermineSpellTargets(Spell *spell_to_cast, Mob *&spell_target, Mob *&
 			CastAction = SingleTarget;
 			break;
 		}
-		
+
 		case ST_SummonedPet:
 		{
 			int8 body_type = spell_target ? spell_target->GetBodyType() : 0;
@@ -500,7 +500,7 @@ bool Mob::DetermineSpellTargets(Spell *spell_to_cast, Mob *&spell_target, Mob *&
 			CastAction = SingleTarget;
 			break;
 		}
-		
+
 		case ST_Tap:
 		case ST_LDoNChest_Cursed:
 		case ST_Target: {
@@ -635,7 +635,7 @@ bool Mob::DetermineSpellTargets(Spell *spell_to_cast, Mob *&spell_target, Mob *&
 			else
 				CastAction = SingleTarget;
 			break;
-		}		
+		}
 
 		default:
 		{
@@ -653,7 +653,7 @@ int Mob::SendActionSpellPacket(Spell *spell_to_cast, Mob *spell_target, int cast
 	EQApplicationPacket *action_packet = new EQApplicationPacket(OP_Action, sizeof(Action_Struct));
 	Action_Struct* action = (Action_Struct*) action_packet->pBuffer;
 	uint32 sequence = 0;
-	
+
 	if(IsClient() && CastToClient()->GMHideMe())
 	{
 		action->source = spell_target->GetID();
@@ -662,16 +662,16 @@ int Mob::SendActionSpellPacket(Spell *spell_to_cast, Mob *spell_target, int cast
 	{
 		action->source = GetID();
 	}
-	
+
 	if(spell_to_cast->IsEffectInSpell(SE_BindSight))
-	{ 
-		action->target = GetID(); 
-	} 
+	{
+		action->target = GetID();
+	}
 	else
-	{ 
-		action->target = spell_target->GetID(); 
-	} 
-	
+	{
+		action->target = spell_target->GetID();
+	}
+
 	action->level = caster_level;
 	action->type = 231;
 	action->spell = spell_to_cast->GetSpellID();
@@ -679,17 +679,17 @@ int Mob::SendActionSpellPacket(Spell *spell_to_cast, Mob *spell_target, int cast
 	action->instrument_mod = GetInstrumentMod(spell_to_cast);
 	action->buff_unknown = 0;
 	sequence = action->sequence;
-	
+
 	if(spell_target->IsClient())
 	{
 		spell_target->CastToClient()->QueuePacket(action_packet);
 	}
-	
+
 	if(IsClient())
 	{
 		CastToClient()->QueuePacket(action_packet);
 	}
-	
+
 	entity_list.QueueCloseClients(spell_target, action_packet, true, 200, this, true, spell_target->IsClient() ? FILTER_PCSPELLS : FILTER_NPCSPELLS);
 	safe_delete(action_packet);
 	return sequence;
@@ -699,7 +699,7 @@ void Mob::SendActionSpellPacket(Spell *spell_to_cast, Mob *spell_target, uint32 
 {
 	EQApplicationPacket *action_packet = new EQApplicationPacket(OP_Action, sizeof(Action_Struct));
 	Action_Struct* action = (Action_Struct*) action_packet->pBuffer;
-	
+
 	if(IsClient() && CastToClient()->GMHideMe())
 	{
 		action->source = spell_target->GetID();
@@ -708,33 +708,33 @@ void Mob::SendActionSpellPacket(Spell *spell_to_cast, Mob *spell_target, uint32 
 	{
 		action->source = GetID();
 	}
-	
+
 	if(spell_to_cast->IsEffectInSpell(SE_BindSight))
-	{ 
-		action->target = GetID(); 
-	} 
+	{
+		action->target = GetID();
+	}
 	else
-	{ 
-		action->target = spell_target->GetID(); 
-	} 
-	
+	{
+		action->target = spell_target->GetID();
+	}
+
 	action->level = caster_level;
 	action->type = 231;
 	action->spell = spell_to_cast->GetSpellID();
 	action->sequence = sequence;
 	action->instrument_mod = GetInstrumentMod(spell_to_cast);
 	action->buff_unknown = mode;
-	
+
 	if(spell_target->IsClient())
 	{
 		spell_target->CastToClient()->QueuePacket(action_packet);
 	}
-	
+
 	if(IsClient())
 	{
 		CastToClient()->QueuePacket(action_packet);
 	}
-	
+
 	//entity_list.QueueCloseClients(spell_target, action_packet, true, 200, this, true, spell_target->IsClient() ? FILTER_PCSPELLS : FILTER_NPCSPELLS);
 	safe_delete(action_packet);
 }
@@ -749,7 +749,7 @@ void Mob::SendCombatDamageSpellPacket(Spell *spell_to_cast, Mob *spell_target, i
 	cd->spellid = spell_to_cast->GetSpellID();
 	cd->sequence = sequence;
 	cd->damage = 0;
-	
+
 	if(IsClient() && CastToClient()->GMHideMe())
 	{
 		cd->source = spell_target->GetID();
@@ -758,21 +758,21 @@ void Mob::SendCombatDamageSpellPacket(Spell *spell_to_cast, Mob *spell_target, i
 	{
 		cd->source = GetID();
 	}
-	
+
 	if(spell_to_cast->IsEffectInSpell(SE_BindSight))
-	{ 
-		cd->target = GetID(); 
-	} 
-	else
-	{ 
-		cd->target = spell_target->GetID(); 
+	{
+		cd->target = GetID();
 	}
-	
+	else
+	{
+		cd->target = spell_target->GetID();
+	}
+
 	if(!spell_to_cast->IsEffectInSpell(SE_BindAffinity))
 	{
 		entity_list.QueueCloseClients(spell_target, message_packet, false, 200, 0, true, spell_target->IsClient() ? FILTER_PCSPELLS : FILTER_NPCSPELLS);
 	}
-	
+
 	safe_delete(message_packet);
 }
 
@@ -793,7 +793,7 @@ float Mob::DoSpellOnTargetResistCheck(Spell *spell_to_cast, Mob *spell_target)
 				if(spell_target->IsAIControlled())
 				{
 					sint32 aggro = CheckAggroAmount(spell_to_cast);
-					if(aggro > 0) 
+					if(aggro > 0)
 					{
 						if(!spell_to_cast->IsHarmonySpell())
 						{
@@ -806,11 +806,11 @@ float Mob::DoSpellOnTargetResistCheck(Spell *spell_to_cast, Mob *spell_target)
 					else
 					{
 						sint32 newhate = spell_target->GetHateAmount(this) + aggro;
-						if(newhate < 1) 
+						if(newhate < 1)
 						{
 							spell_target->SetHate(this, 1);
 						}
-						else 
+						else
 						{
 							spell_target->SetHate(this, newhate);
 						}
@@ -835,7 +835,7 @@ void Mob::DoSpellOnTargetRecourse(Spell *spell_on_target, Mob *spell_target)
 	{
 		return;
 	}
-	
+
 	Spell *recourse_spell = new Spell(recourse_spell_id, this, spell_target);
 	if(spell_on_target->GetSpell().targettype == ST_Group || spell_on_target->GetSpell().targettype == ST_GroupTeleport)
 	{
@@ -896,7 +896,7 @@ void Mob::DoSpellOnTargetRecourse(Spell *spell_on_target, Mob *spell_target)
 			if (GetPet())
 				SpellOnTarget(recourse_spell, GetPet());
 #endif
-		}	
+		}
 	}
 	else
 	{
@@ -982,11 +982,11 @@ bool Mob::IsImmuneToSpell(Spell *spell_to_cast, Mob *caster)
 
 	if(caster == NULL)
 		return(false);
-	
-	//TODO: this function loops through the effect list for 
+
+	//TODO: this function loops through the effect list for
 	//this spell like 10 times, this could easily be consolidated
 	//into one loop through with a switch statement.
-	
+
 	mlog(SPELLS__RESISTS, "Checking to see if we are immune to spell %d cast by %s", spell_to_cast->GetSpellID(), caster->GetName());
 
 	if(spell_to_cast->IsEffectInSpell(SE_Mez))
@@ -1104,7 +1104,7 @@ bool Mob::IsImmuneToSpell(Spell *spell_to_cast, Mob *caster)
 	}
 
 	mlog(SPELLS__RESISTS, "No immunities to spell %d found.", spell_to_cast->GetSpellID());
-	
+
 	return false;
 }
 
@@ -1118,17 +1118,17 @@ float Mob::ResistSpell(int8 resist_type, const Spell *spell_to_cast, Mob *caster
 {
 	int caster_level, target_level, resist;
 	float roll, fullchance, resistchance;
-	
+
 	//this is checked here instead of in the Immune code so it only applies to detrimental spells
 	if(SpecAttacks[IMMUNE_MAGIC]) {
-		mlog(SPELLS__RESISTS, "We are immune to magic, so we fully resist the spell %d", spell_to_cast 
+		mlog(SPELLS__RESISTS, "We are immune to magic, so we fully resist the spell %d", spell_to_cast
 			? spell_to_cast->GetSpellID() : 0xFFFF);
 		return(0);
 	}
-	
+
 	if(resist_type == RESIST_NONE) {
 		//unresistable...
-		mlog(SPELLS__RESISTS, "The spell %d is unresistable (type %d)", 
+		mlog(SPELLS__RESISTS, "The spell %d is unresistable (type %d)",
 			spell_to_cast ? spell_to_cast->GetSpellID() : 0xFFFF, resist_type);
 		return(100);
 	}
@@ -1143,7 +1143,7 @@ float Mob::ResistSpell(int8 resist_type, const Spell *spell_to_cast, Mob *caster
 	}
 
 	target_level = GetLevel();
-	
+
 	if(!spell_to_cast) {
 		caster_level = caster->GetLevel();
 	} else {
@@ -1156,7 +1156,7 @@ float Mob::ResistSpell(int8 resist_type, const Spell *spell_to_cast, Mob *caster
 			" auto-resist gap. Fully resisting.",  target_level - caster_level, RuleI(Spells, AutoResistDiff));
  		return 0;
 	}
-	
+
 	//check for buff/item/aa based fear moditifers
 	//still working on this...
 	if (spell_to_cast && spell_to_cast->IsEffectInSpell(SE_Fear)) {
@@ -1174,17 +1174,17 @@ float Mob::ResistSpell(int8 resist_type, const Spell *spell_to_cast, Mob *caster
 				break;
 		}
 		rchance += itembonuses.ResistFearChance + spellbonuses.ResistFearChance;
-		
+
 		if(GetAA(aaFearless) || (IsClient() && CastToClient()->CheckAAEffect(aaEffectWarcry)))
 			rchance = 100;
-		
+
 		//I dont think these should get factored into standard spell resist...
 		if(MakeRandomInt(0, 99) < rchance) {
-			mlog(SPELLS__RESISTS, "Had a %d chance of resisting the fear spell %d, and succeeded.", 
+			mlog(SPELLS__RESISTS, "Had a %d chance of resisting the fear spell %d, and succeeded.",
 				rchance, spell_to_cast->GetSpellID());
 			return(0);
 		}
-		mlog(SPELLS__RESISTS, "Had a %d chance of resisting the fear spell %d, and failed.", 
+		mlog(SPELLS__RESISTS, "Had a %d chance of resisting the fear spell %d, and failed.",
 			rchance, spell_to_cast->GetSpellID());
 	}
 
@@ -1196,29 +1196,29 @@ float Mob::ResistSpell(int8 resist_type, const Spell *spell_to_cast, Mob *caster
 	case RESIST_FIRE:
 		resist = GetFR();
 		break;
-	
+
 	case RESIST_COLD:
 		resist = GetCR();
 		break;
-	
+
 	case RESIST_POISON:
 		resist = GetPR();
 		break;
-	
+
 	case RESIST_DISEASE:
 		resist = GetDR();
 		break;
-	
+
 	// Hvitrev: Primsatic = average of all resists
 	case RESIST_PRISMATIC:
 		resist = (GetDR()+GetMR()+GetFR()+GetCR()+GetPR())/5;
 		break;
-	
+
 	// Hvitrev: Chromatic = lowest of all resists
 	case RESIST_CHROMATIC: {
 		sint16 tempresist = GetMR();
 		sint16 tempresist2 = GetFR();
-		
+
 		if ( tempresist < tempresist2 )
 			resist = tempresist;
 		else
@@ -1234,7 +1234,7 @@ float Mob::ResistSpell(int8 resist_type, const Spell *spell_to_cast, Mob *caster
 			resist = tempresist;
 		break;
 	}
-	
+
 	// solar: I don't know how to calculate this stuff
 	case RESIST_PHYSICAL:
 	default:
@@ -1245,10 +1245,10 @@ float Mob::ResistSpell(int8 resist_type, const Spell *spell_to_cast, Mob *caster
 	// value in spell to adjust base resist by
 	if(spell_to_cast)
 		resist += spell_to_cast->GetSpell().ResistDiff;
-		
+
 	//This is our base resist chance given no resists and no level diff, set to a modest 2% by default
-	resistchance = RuleR(Spells, ResistChance); 
-	
+	resistchance = RuleR(Spells, ResistChance);
+
 	//changed this again, just straight 8.5 resist points per level above you
 	float lvldiff = caster_level - target_level;
 	resist += (RuleI(Spells, ResistPerLevelDiff) * (-lvldiff) / 10);
@@ -1263,7 +1263,7 @@ float Mob::ResistSpell(int8 resist_type, const Spell *spell_to_cast, Mob *caster
 
 	//default 0.40: 500 resist = 200% Base resist while 40 resist = 16% resist base.
 	//Set ResistMod lower to require more resist points per percentage point of resistance.
-	resistchance += resist * RuleR(Spells, ResistMod); 
+	resistchance += resist * RuleR(Spells, ResistMod);
 	resistchance += spellbonuses.ResistSpellChance + itembonuses.ResistSpellChance;
 
 	if(caster && spell_to_cast && caster->IsClient())
@@ -1305,12 +1305,12 @@ float Mob::ResistSpell(int8 resist_type, const Spell *spell_to_cast, Mob *caster
 
 	roll = MakeRandomFloat(0, 100);
 
-	mlog(SPELLS__RESISTS, "Spell %d: Resist Amount: %d, ResistChance: %.2f, Resist Bonuses: %.2f", 
-		spell_to_cast->GetSpellID(), resist, resistchance, (spellbonuses.ResistSpellChance + itembonuses.ResistSpellChance));	
-	
+	mlog(SPELLS__RESISTS, "Spell %d: Resist Amount: %d, ResistChance: %.2f, Resist Bonuses: %.2f",
+		spell_to_cast->GetSpellID(), resist, resistchance, (spellbonuses.ResistSpellChance + itembonuses.ResistSpellChance));
+
 	if (roll > resistchance)
 	{
-		mlog(SPELLS__RESISTS, "Spell %d: Roll of %.2f > resist chance of %.2f, no resist", 
+		mlog(SPELLS__RESISTS, "Spell %d: Roll of %.2f > resist chance of %.2f, no resist",
 			spell_to_cast ? spell_to_cast->GetSpellID() : 0xFFFF, roll, resistchance);
 		return(100);
 	}
@@ -1318,14 +1318,14 @@ float Mob::ResistSpell(int8 resist_type, const Spell *spell_to_cast, Mob *caster
 	{
 		if (roll <= fullchance)
  		{
-			mlog(SPELLS__RESISTS, "Spell %d: Roll of %.2f <= fullchance %.2f, fully resisted", 
+			mlog(SPELLS__RESISTS, "Spell %d: Roll of %.2f <= fullchance %.2f, fully resisted",
 				spell_to_cast ? spell_to_cast->GetSpellID() : 0xFFFF, roll, fullchance);
 			return(0);
 		}
 		else
 		{
-			mlog(SPELLS__RESISTS, "Spell %d: Roll of %.2f > fullchance %.2f, partially resisted, returned %.2f", 
-				spell_to_cast? spell_to_cast->GetSpellID() : 0xFFFF, roll, 
+			mlog(SPELLS__RESISTS, "Spell %d: Roll of %.2f > fullchance %.2f, partially resisted, returned %.2f",
+				spell_to_cast? spell_to_cast->GetSpellID() : 0xFFFF, roll,
 				fullchance, (100 * ((roll-fullchance)/(resistchance-fullchance))));
 			//Remove the lower range so it doesn't throw off the proportion.
 			return(100 * ((roll-fullchance)/(resistchance-fullchance)));
@@ -1335,13 +1335,13 @@ float Mob::ResistSpell(int8 resist_type, const Spell *spell_to_cast, Mob *caster
 
 float Mob::GetAOERange(Spell *spell_to_cast) {
 	float range;
-	
+
 	range = spell_to_cast->GetSpell().aoerange;
 	if(range == 0)	//for TGB spells, they prolly do not have an aoe range
 		range = spell_to_cast->GetSpell().range;
 	if(range == 0)
 		range = 10;	//something....
-	
+
 	float mod = 0;
 	if (IsClient()) {
 		if(spell_to_cast->IsBardSong()) {
@@ -1380,7 +1380,7 @@ float Mob::GetAOERange(Spell *spell_to_cast) {
 
 		range = CastToClient()->GetActSpellRange(spell_to_cast, range);
 	}
-	
+
 	return(range);
 }
 
@@ -1421,7 +1421,7 @@ void Mob::SendSpellBarDisable()
 {
 	if (!IsClient())
 		return;
-	
+
 	CastToClient()->MemorizeSpell(0, SPELLBAR_UNLOCK, memSpellSpellbar);
 }
 
@@ -1446,7 +1446,7 @@ void Mob::Stun(int duration)
 	//make sure a shorter stun does not overwrite a longer one.
 	if(stunned && stunned_timer.GetRemainingTime() > uint32(duration))
 		return;
-	
+
 	if(casting_spell)
 		InterruptSpell();
 
@@ -1456,14 +1456,14 @@ void Mob::Stun(int duration)
 		stunned_timer.Start(duration);
 	}
 }
-		
+
 void Mob::UnStun() {
 	if(stunned && stunned_timer.Enabled()) {
 		stunned = false;
 		stunned_timer.Disable();
 	}
 }
-		
+
 // Hogie - Stuns "this"
 void Client::Stun(int duration)
 {
@@ -1511,7 +1511,7 @@ void Mob::Mesmerize()
 void Client::MakeBuffFadePacket(Buff* buff, int slot_id, bool send_message)
 {
 	SendBuffPacket(buff, slot_id, 1);
-	
+
 	if(send_message)
 	{
 		const char *fade_text = buff->GetSpell()->GetSpell().spell_fades;
@@ -1565,7 +1565,7 @@ void Client::UnmemSpell(int slot, bool update_client)
 void Client::UnmemSpellAll(bool update_client)
 {
 	int i;
-	
+
 	for(i = 0; i < MAX_PP_MEMSPELL; i++)
 		if(m_pp.mem_spells[i] != 0xFFFFFFFF)
 			UnmemSpell(i, update_client);
@@ -1641,13 +1641,13 @@ int Client::FindSpellBookSlotBySpellID(int16 spellid) {
 	return -1;	//default
 }
 
-sint8 Mob::GetBuffSlotFromType(int8 type) 
+sint8 Mob::GetBuffSlotFromType(int8 type)
 {
-	for (int i = 0; i < BUFF_COUNT; i++) 
+	for (int i = 0; i < BUFF_COUNT; i++)
 	{
-		if(buffs[i]) 
+		if(buffs[i])
 		{
-			for (int j = 0; j < EFFECT_COUNT; j++) 
+			for (int j = 0; j < EFFECT_COUNT; j++)
 			{
 				if(buffs[i]->GetSpell()->GetSpell().effectid[j] == type)
 					return i;
@@ -1708,7 +1708,7 @@ bool Mob::AddDefensiveProc(int16 spell_id, int16 iChance)
 {
 	if(spell_id == SPELL_UNKNOWN)
 		return(false);
-	
+
 	int i;
 	for (i = 0; i < MAX_PROCS; i++) {
 		if (DefensiveProcs[i].spellID == SPELL_UNKNOWN) {
@@ -1741,8 +1741,8 @@ bool Mob::AddRangedProc(int16 spell_id, int16 iChance)
 {
 	if(spell_id == SPELL_UNKNOWN)
 		return(false);
-	
-	for (int i = 0; i < MAX_PROCS; i++) 
+
+	for (int i = 0; i < MAX_PROCS; i++)
 	{
 		if (RangedProcs[i].spellID == SPELL_UNKNOWN)
 		{
@@ -1794,7 +1794,7 @@ bool Mob::UseBardSpellLogic(int16 spell_id, int slot)
 	);
 }
 
-int Mob::GetCasterLevel() 
+int Mob::GetCasterLevel()
 {
 	int level = GetLevel();
 	level += spellbonuses.effective_casting_level;
@@ -1839,9 +1839,9 @@ void Mob::SendPetBuffsToClient()
 
 	int PetBuffCount = 0;
 	int max_slots = GetMaxTotalSlots();
-	for(int buffslot = 0; buffslot < max_slots; buffslot++) 
+	for(int buffslot = 0; buffslot < max_slots; buffslot++)
 	{
-		if(buffs[buffslot]) 
+		if(buffs[buffslot])
 		{
 			pbs->spellid[PetBuffCount] = buffs[buffslot]->GetSpell()->GetSpellID();
 			pbs->ticsremaining[PetBuffCount] = buffs[buffslot]->GetDurationRemaining();
@@ -1866,7 +1866,7 @@ bool Mob::ValidateStartSpellCast(const Spell *spell_to_cast)
 	{
 		mlog(SPELLS__CASTING_ERR, "Spell casting canceled: not able to cast now. The mob is not in control of it self and therefor cannot cast.");
 		return_value = false;
-	} 
+	}
 	else if(IsSilenced())
 	{
 		Message_StringID(13, SILENCED_STRING);
@@ -1919,11 +1919,11 @@ bool Mob::DoChannelCheck(bool &did_regain_conc)
 		{
 			// max 93% chance at 252 skill
 			channelchance = 30 + GetSkill(CHANNELING) / 400.0f * 100;
-			channelchance -= attacked_count * 2;			
-			channelchance += channelchance * (GetAA(aaChanellingFocus) * 5) / 100; 
+			channelchance -= attacked_count * 2;
+			channelchance += channelchance * (GetAA(aaChanellingFocus) * 5) / 100;
 			channelchance += channelchance * (GetAA(aaInternalMetronome) * 5) / 100;
-		} 
-		else 
+		}
+		else
 		{
 			// NPCs are just hard to interrupt, otherwise they get pwned
 			channelchance = 45 + GetLevel();
@@ -1953,7 +1953,7 @@ bool Mob::DoChannelCheck(bool &did_regain_conc)
 
 		mlog(SPELLS__CASTING, "Checking Interruption: spell x: %f  spell y: %f  cur x: %f  cur y: %f channelchance %f channeling skill %d\n", GetSpellX(), GetSpellY(), GetX(), GetY(), channelchance, GetSkill(CHANNELING));
 
-		if(MakeRandomFloat(0, 100) > channelchance) 
+		if(MakeRandomFloat(0, 100) > channelchance)
 		{
 			mlog(SPELLS__CASTING_ERR, "Casting of %d canceled: interrupted.", casting_spell ? casting_spell->GetSpellID() : 0xFFFF);
 			InterruptSpell();
@@ -1977,7 +1977,7 @@ bool Mob::DoChannelCheck(bool &did_regain_conc)
 bool Client::DoComponentCheck(Spell *spell_to_cast, bool bard_song_mode)
 {
 	int reg_focus = CastToClient()->GetFocusEffect(focusReagentCost, spell_to_cast);
-	if(MakeRandomInt(0, 100) <= reg_focus) 
+	if(MakeRandomInt(0, 100) <= reg_focus)
 	{
 		mlog(SPELLS__CASTING, "Spell %d: Reagent focus item prevented reagent consumption (%d chance)", spell_to_cast->GetSpellID(), reg_focus);
 	}
@@ -1998,11 +1998,11 @@ bool Client::DoComponentCheck(Spell *spell_to_cast, bool bard_song_mode)
 				continue;
 			}
 
-			if(bard_song_mode) 
+			if(bard_song_mode)
 			{
 				bool has_instrument = true;
 				int inst_component = spell_to_cast->GetSpell().NoexpendReagent[0];
-				switch(inst_component) 
+				switch(inst_component)
 				{
 					// no instrument required, go to next component
 				case -1:
@@ -2010,7 +2010,7 @@ bool Client::DoComponentCheck(Spell *spell_to_cast, bool bard_song_mode)
 
 					// percussion songs (13000 = hand drum)
 				case 13000:
-					if(itembonuses.percussionMod == 0) 
+					if(itembonuses.percussionMod == 0)
 					{
 						has_instrument = false;
 						Message_StringID(13, SONG_NEEDS_DRUM);	// send an error message if missing
@@ -2019,7 +2019,7 @@ bool Client::DoComponentCheck(Spell *spell_to_cast, bool bard_song_mode)
 
 					// wind songs (13001 = wooden flute)
 				case 13001:
-					if(itembonuses.windMod == 0) 
+					if(itembonuses.windMod == 0)
 					{
 						has_instrument = false;
 						Message_StringID(13, SONG_NEEDS_WIND);
@@ -2028,7 +2028,7 @@ bool Client::DoComponentCheck(Spell *spell_to_cast, bool bard_song_mode)
 
 					// string songs (13011 = lute)
 				case 13011:
-					if(itembonuses.stringedMod == 0) 
+					if(itembonuses.stringedMod == 0)
 					{
 						has_instrument = false;
 						Message_StringID(13, SONG_NEEDS_STRINGS);
@@ -2037,7 +2037,7 @@ bool Client::DoComponentCheck(Spell *spell_to_cast, bool bard_song_mode)
 
 					// brass songs (13012 = horn)
 				case 13012:
-					if(itembonuses.brassMod == 0) 
+					if(itembonuses.brassMod == 0)
 					{
 						has_instrument = false;
 						Message_StringID(13, SONG_NEEDS_BRASS);
@@ -2049,33 +2049,33 @@ bool Client::DoComponentCheck(Spell *spell_to_cast, bool bard_song_mode)
 				}
 
 				if(!has_instrument)
-				{	
+				{
 					// if the instrument is missing, log it and interrupt the song
 					mlog(SPELLS__CASTING_ERR, "Song %d: Canceled. Missing required instrument %s", spell_to_cast->GetSpellID(), component);
 					if(GetGM())
 					{
 						Message(0, "Your GM status allows you to finish casting even though you're missing a required instrument.");
 					}
-					else 
+					else
 					{
 						InterruptSpell();
 						return false;
 					}
 				}
 			}
-			else 
+			else
 			{
 				if(GetInv().HasItem(component, component_count, invWhereWorn|invWherePersonal) == -1) // item not found
 				{
 					Message_StringID(13, MISSING_SPELL_COMP);
 
 					const Item_Struct *item = database.GetItem(component);
-					if(item) 
+					if(item)
 					{
 						Message_StringID(13, MISSING_SPELL_COMP_ITEM, item->Name);
 						mlog(SPELLS__CASTING_ERR, "Spell %d: Canceled. Missing required reagent %s (%d)", spell_to_cast->GetSpellID(), item->Name, component);
 					}
-					else 
+					else
 					{
 						char TempItemName[64];
 						strcpy((char*)&TempItemName, "UNKNOWN");
@@ -2086,7 +2086,7 @@ bool Client::DoComponentCheck(Spell *spell_to_cast, bool bard_song_mode)
 					{
 						Message(0, "Your GM status allows you to finish casting even though you're missing required components.");
 					}
-					else 
+					else
 					{
 						InterruptSpell();
 						return false;
@@ -2106,7 +2106,7 @@ bool Client::DoComponentCheck(Spell *spell_to_cast, bool bard_song_mode)
 							DeleteItemInInventory(inv_slot_id, 1, true);
 						}
 						else
-						{	
+						{
 							// some kind of error in the code if this happens
 							Message(13, "ERROR: reagent item disappeared while processing?");
 						}
@@ -2233,24 +2233,24 @@ void Spell::StopCastTimer()
 	safe_delete(cast_timer);
 }
 
-void Spell::SetCaster(Mob *c) 
-{ 
-	caster_id = c->GetID(); 
+void Spell::SetCaster(Mob *c)
+{
+	caster_id = c->GetID();
 }
 
-Mob *Spell::GetCaster() const 
-{ 
-	return entity_list.GetMob(caster_id); 
+Mob *Spell::GetCaster() const
+{
+	return entity_list.GetMob(caster_id);
 }
 
-void Spell::SetTarget(Mob *t) 
-{ 
-	target_id = t->GetID(); 
+void Spell::SetTarget(Mob *t)
+{
+	target_id = t->GetID();
 }
 
-Mob *Spell::GetTarget() const 
-{ 
-	return entity_list.GetMob(target_id); 
+Mob *Spell::GetTarget() const
+{
+	return entity_list.GetMob(target_id);
 }
 
 Spell* Spell::CopySpell()
@@ -2281,7 +2281,7 @@ Spell* Spell::CopySpell()
 std::string Spell::GetSpellAttribute(std::string field) const
 {
 	//transform the entire inc string using int tolower(int __C)
-	std::transform(field.begin(), field.end(), field.begin(), tolower);
+	std::transform(field.begin(), field.end(), field.begin(), (int (*)(int))tolower);
 	std::stringstream ss(stringstream::in | stringstream::out);
 	if(field.length() < 2)
 	{
@@ -2300,14 +2300,14 @@ std::string Spell::GetSpellAttribute(std::string field) const
 					ss << raw_spell.aoerange;
 					return ss.str();
 				}
-				
+
 				string_loc = field.find("aeduration");
 				if(string_loc != string::npos)
 				{
 					ss << raw_spell.AEDuration;
 					return ss.str();
 				}
-				
+
 				string_loc = field.find("activated");
 				if(string_loc != string::npos)
 				{
@@ -2329,7 +2329,7 @@ std::string Spell::GetSpellAttribute(std::string field) const
 							ss << "UNKNOWN FIELD";
 							return ss.str();
 						}
-						
+
 						if(field[field.length()-4] == '[')
 						{
 							string index = field.substr(field.length()-3, 2);
@@ -2352,7 +2352,7 @@ std::string Spell::GetSpellAttribute(std::string field) const
 							ss << "UNKNOWN FIELD";
 							return ss.str();
 						}
-						
+
 						if(field[field.length()-4] == '[')
 						{
 							string index = field.substr(field.length()-3, 2);
@@ -2392,7 +2392,7 @@ std::string Spell::GetSpellAttribute(std::string field) const
 					}
 				}
 			}
-			break;	
+			break;
 		case 'c':
 			{
 				if(field[1] == 'a')
@@ -2439,7 +2439,7 @@ std::string Spell::GetSpellAttribute(std::string field) const
 							ss << "UNKNOWN FIELD";
 							return ss.str();
 						}
-						
+
 						if(field[field.length()-4] == '[')
 						{
 							string index = field.substr(field.length()-3, 2);
@@ -2453,7 +2453,7 @@ std::string Spell::GetSpellAttribute(std::string field) const
 							return ss.str();
 						}
 					}
-					
+
 					string_loc = field.find("component_counts");
 					if(string_loc != string::npos)
 					{
@@ -2463,7 +2463,7 @@ std::string Spell::GetSpellAttribute(std::string field) const
 							ss << "UNKNOWN FIELD";
 							return ss.str();
 						}
-						
+
 						if(field[field.length()-4] == '[')
 						{
 							string index = field.substr(field.length()-3, 2);
@@ -2489,7 +2489,7 @@ std::string Spell::GetSpellAttribute(std::string field) const
 							ss << "UNKNOWN FIELD";
 							return ss.str();
 						}
-						
+
 						if(field[field.length()-4] == '[')
 						{
 							string index = field.substr(field.length()-3, 2);
@@ -2535,7 +2535,7 @@ std::string Spell::GetSpellAttribute(std::string field) const
 							ss << "UNKNOWN FIELD";
 							return ss.str();
 						}
-						
+
 						if(field[field.length()-4] == '[')
 						{
 							string index = field.substr(field.length()-3, 2);
@@ -2549,7 +2549,7 @@ std::string Spell::GetSpellAttribute(std::string field) const
 							return ss.str();
 						}
 					}
-					
+
 				}
 				else
 				{
@@ -2567,7 +2567,7 @@ std::string Spell::GetSpellAttribute(std::string field) const
 					}
 				}
 			}
-			break;	
+			break;
 		case 'e':
 			{
 				if(field[1] == 'f')
@@ -2587,7 +2587,7 @@ std::string Spell::GetSpellAttribute(std::string field) const
 							ss << "UNKNOWN FIELD";
 							return ss.str();
 						}
-						
+
 						if(field[field.length()-4] == '[')
 						{
 							string index = field.substr(field.length()-3, 2);
@@ -2633,7 +2633,7 @@ std::string Spell::GetSpellAttribute(std::string field) const
 					}
 				}
 			}
-			break;	
+			break;
 		case 'f':
 			{
 				string_loc = field.find("formula");
@@ -2645,7 +2645,7 @@ std::string Spell::GetSpellAttribute(std::string field) const
 						ss << "UNKNOWN FIELD";
 						return ss.str();
 					}
-					
+
 					if(field[field.length()-4] == '[')
 					{
 						string index = field.substr(field.length()-3, 2);
@@ -2660,7 +2660,7 @@ std::string Spell::GetSpellAttribute(std::string field) const
 					}
 				}
 			}
-			break;	
+			break;
 		case 'g':
 			{
 				string_loc = field.find("goodeffect");
@@ -2680,7 +2680,7 @@ std::string Spell::GetSpellAttribute(std::string field) const
 					return ss.str();
 				}
 			}
-			break;	
+			break;
 		case 'i':
 			{
 				string_loc = field.find("id");
@@ -2706,7 +2706,7 @@ std::string Spell::GetSpellAttribute(std::string field) const
 					return ss.str();
 				}
 			}
-			break;	
+			break;
 		case 'm':
 			{
 				string_loc = field.find("mana");
@@ -2730,7 +2730,7 @@ std::string Spell::GetSpellAttribute(std::string field) const
 						ss << "UNKNOWN FIELD";
 						return ss.str();
 					}
-					
+
 					if(field[field.length()-4] == '[')
 					{
 						string index = field.substr(field.length()-3, 2);
@@ -2745,7 +2745,7 @@ std::string Spell::GetSpellAttribute(std::string field) const
 					}
 				}
 			}
-			break;	
+			break;
 		case 'n':
 			{
 				string_loc = field.find("numhits");
@@ -2784,7 +2784,7 @@ std::string Spell::GetSpellAttribute(std::string field) const
 					ss << raw_spell.npc_usefulness;
 					return ss.str();
 				}
-				
+
 				string_loc = field.find("noexpendreagent");
 				if(string_loc != string::npos)
 				{
@@ -2794,7 +2794,7 @@ std::string Spell::GetSpellAttribute(std::string field) const
 						ss << "UNKNOWN FIELD";
 						return ss.str();
 					}
-					
+
 					if(field[field.length()-4] == '[')
 					{
 						string index = field.substr(field.length()-3, 2);
@@ -2914,7 +2914,7 @@ std::string Spell::GetSpellAttribute(std::string field) const
 					}
 				}
 			}
-			break;	
+			break;
 		case 's':
 			{
 				if(field[1] == 'p')
@@ -2958,7 +2958,7 @@ std::string Spell::GetSpellAttribute(std::string field) const
 						ss << raw_spell.skill;
 						return ss.str();
 					}
-					
+
 					string_loc = field.find("short_buff_box");
 					if(string_loc != string::npos)
 					{
@@ -3023,7 +3023,7 @@ std::string Spell::GetSpellAttribute(std::string field) const
 					return ss.str();
 				}
 			}
-			break;	
+			break;
 		case 'y':
 			{
 				string_loc = field.find("you_cast");
@@ -3042,7 +3042,7 @@ std::string Spell::GetSpellAttribute(std::string field) const
 					return ss.str();
 				}
 			}
-			break;	
+			break;
 		default:
 			ss << "UNKNOWN FIELD";
 			return ss.str();
@@ -3055,7 +3055,7 @@ std::string Spell::GetSpellAttribute(std::string field) const
 void Spell::SetSpellAttribute(std::string attribute, std::string field)
 {
 	//transform the entire inc string using int tolower(int __C)
-	std::transform(field.begin(), field.end(), field.begin(), tolower);
+	std::transform(field.begin(), field.end(), field.begin(), (int (*)(int))tolower);
 	std::stringstream ss(stringstream::in | stringstream::out);
 
 	if(field.length() < 2)
@@ -3075,7 +3075,7 @@ void Spell::SetSpellAttribute(std::string attribute, std::string field)
 					SetCustomSpell(true);
 					return;
 				}
-				
+
 				string_loc = field.find("aeduration");
 				if(string_loc != string::npos)
 				{
@@ -3083,7 +3083,7 @@ void Spell::SetSpellAttribute(std::string attribute, std::string field)
 					SetCustomSpell(true);
 					return;
 				}
-				
+
 				string_loc = field.find("activated");
 				if(string_loc != string::npos)
 				{
@@ -3105,7 +3105,7 @@ void Spell::SetSpellAttribute(std::string attribute, std::string field)
 						{
 							return;
 						}
-						
+
 						if(field[field.length()-4] == '[')
 						{
 							string index = field.substr(field.length()-3, 2);
@@ -3129,7 +3129,7 @@ void Spell::SetSpellAttribute(std::string attribute, std::string field)
 						{
 							return;
 						}
-						
+
 						if(field[field.length()-4] == '[')
 						{
 							string index = field.substr(field.length()-3, 2);
@@ -3174,7 +3174,7 @@ void Spell::SetSpellAttribute(std::string attribute, std::string field)
 					}
 				}
 			}
-			break;	
+			break;
 		case 'c':
 			{
 				if(field[1] == 'a')
@@ -3225,7 +3225,7 @@ void Spell::SetSpellAttribute(std::string attribute, std::string field)
 						{
 							return;
 						}
-						
+
 						if(field[field.length()-4] == '[')
 						{
 							string index = field.substr(field.length()-3, 2);
@@ -3241,7 +3241,7 @@ void Spell::SetSpellAttribute(std::string attribute, std::string field)
 							return;
 						}
 					}
-					
+
 					string_loc = field.find("component_counts");
 					if(string_loc != string::npos)
 					{
@@ -3250,7 +3250,7 @@ void Spell::SetSpellAttribute(std::string attribute, std::string field)
 						{
 							return;
 						}
-						
+
 						if(field[field.length()-4] == '[')
 						{
 							string index = field.substr(field.length()-3, 2);
@@ -3277,7 +3277,7 @@ void Spell::SetSpellAttribute(std::string attribute, std::string field)
 						{
 							return;
 						}
-						
+
 						if(field[field.length()-4] == '[')
 						{
 							string index = field.substr(field.length()-3, 2);
@@ -3322,7 +3322,7 @@ void Spell::SetSpellAttribute(std::string attribute, std::string field)
 						{
 							return;
 						}
-						
+
 						if(field[field.length()-4] == '[')
 						{
 							string index = field.substr(field.length()-3, 2);
@@ -3338,7 +3338,7 @@ void Spell::SetSpellAttribute(std::string attribute, std::string field)
 							return;
 						}
 					}
-					
+
 				}
 				else
 				{
@@ -3358,7 +3358,7 @@ void Spell::SetSpellAttribute(std::string attribute, std::string field)
 					}
 				}
 			}
-			break;	
+			break;
 		case 'e':
 			{
 				if(field[1] == 'f')
@@ -3378,7 +3378,7 @@ void Spell::SetSpellAttribute(std::string attribute, std::string field)
 						{
 							return;
 						}
-						
+
 						if(field[field.length()-4] == '[')
 						{
 							string index = field.substr(field.length()-3, 2);
@@ -3430,7 +3430,7 @@ void Spell::SetSpellAttribute(std::string attribute, std::string field)
 					}
 				}
 			}
-			break;	
+			break;
 		case 'f':
 			{
 				string_loc = field.find("formula");
@@ -3441,7 +3441,7 @@ void Spell::SetSpellAttribute(std::string attribute, std::string field)
 					{
 						return;
 					}
-					
+
 					if(field[field.length()-4] == '[')
 					{
 						string index = field.substr(field.length()-3, 2);
@@ -3458,7 +3458,7 @@ void Spell::SetSpellAttribute(std::string attribute, std::string field)
 					}
 				}
 			}
-			break;	
+			break;
 		case 'g':
 			{
 				string_loc = field.find("goodeffect");
@@ -3480,7 +3480,7 @@ void Spell::SetSpellAttribute(std::string attribute, std::string field)
 					return;
 				}
 			}
-			break;	
+			break;
 		case 'i':
 			{
 				string_loc = field.find("id");
@@ -3509,7 +3509,7 @@ void Spell::SetSpellAttribute(std::string attribute, std::string field)
 					return;
 				}
 			}
-			break;	
+			break;
 		case 'm':
 			{
 				string_loc = field.find("mana");
@@ -3534,7 +3534,7 @@ void Spell::SetSpellAttribute(std::string attribute, std::string field)
 					{
 						return;
 					}
-					
+
 					if(field[field.length()-4] == '[')
 					{
 						string index = field.substr(field.length()-3, 2);
@@ -3551,7 +3551,7 @@ void Spell::SetSpellAttribute(std::string attribute, std::string field)
 					}
 				}
 			}
-			break;	
+			break;
 		case 'n':
 			{
 				string_loc = field.find("numhits");
@@ -3596,7 +3596,7 @@ void Spell::SetSpellAttribute(std::string attribute, std::string field)
 					SetCustomSpell(true);
 					return;
 				}
-				
+
 				string_loc = field.find("noexpendreagent");
 				if(string_loc != string::npos)
 				{
@@ -3605,7 +3605,7 @@ void Spell::SetSpellAttribute(std::string attribute, std::string field)
 					{
 						return;
 					}
-					
+
 					if(field[field.length()-4] == '[')
 					{
 						string index = field.substr(field.length()-3, 2);
@@ -3740,7 +3740,7 @@ void Spell::SetSpellAttribute(std::string attribute, std::string field)
 					}
 				}
 			}
-			break;	
+			break;
 		case 's':
 			{
 				if(field[1] == 'p')
@@ -3790,7 +3790,7 @@ void Spell::SetSpellAttribute(std::string attribute, std::string field)
 						SetCustomSpell(true);
 						return;
 					}
-					
+
 					string_loc = field.find("short_buff_box");
 					if(string_loc != string::npos)
 					{
@@ -3863,7 +3863,7 @@ void Spell::SetSpellAttribute(std::string attribute, std::string field)
 					return;
 				}
 			}
-			break;	
+			break;
 		case 'y':
 			{
 				string_loc = field.find("you_cast");
@@ -3884,7 +3884,7 @@ void Spell::SetSpellAttribute(std::string attribute, std::string field)
 					return;
 				}
 			}
-			break;	
+			break;
 		default:
 			return;
 	}
