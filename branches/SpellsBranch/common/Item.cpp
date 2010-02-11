@@ -626,7 +626,8 @@ void Inventory::SwapItem(sint16 slot_a, sint16 slot_b)
 {
 	// Temp holding area for a
 	ItemInst* inst_a = GetItem(slot_a);
-	if(!inst_a)
+	ItemInst* inst_b = GetItem(slot_b);
+	if(!inst_a || !inst_b)
 	{
 		return;
 	}
@@ -634,7 +635,7 @@ void Inventory::SwapItem(sint16 slot_a, sint16 slot_b)
 	if(!inst_a->IsSlotAllowed(slot_b))
 		return;
 	// Copy b->a
-	_PutItem(slot_a, GetItem(slot_b));
+	_PutItem(slot_a, inst_b);
 	
 	// Copy a->b
 	_PutItem(slot_b, inst_a);
