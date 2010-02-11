@@ -3530,7 +3530,7 @@ void EntityList::DestroyTempPets(Mob *owner)
 		NPC* n = iterator.GetData();
 		if(n->GetSwarmInfo())
 		{
-			if(n->GetSwarmInfo()->owner == owner)
+			if(n->GetSwarmInfo()->owner_id == owner->GetID())
 			{
 				n->Depop();
 			}

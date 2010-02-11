@@ -73,6 +73,8 @@
 #include <vector>
 #include <string>
 
+extern EntityList entity_list;
+
 /*enum FindSpellType {
 	SPELLTYPE_SELF,
 	SPELLTYPE_OFFENSIVE,
@@ -291,11 +293,12 @@ typedef enum {
 
 class AA_SwarmPetInfo {
 public:
-	AA_SwarmPetInfo() { target = 0; owner = NULL; duration = NULL;}
-	~AA_SwarmPetInfo() { target = 0; owner = NULL; safe_delete(duration); }
+	AA_SwarmPetInfo() { target = 0; owner_id = 0; duration = NULL;}
+	~AA_SwarmPetInfo() { target = 0; owner_id = 0; safe_delete(duration); }
+	Mob * GetOwner() { return entity_list.GetMobID(owner_id); }
 	Timer *duration;
 	int32 target; //the target ID
-	Mob *owner;
+	uint32 owner_id;
 };
 
 typedef enum {

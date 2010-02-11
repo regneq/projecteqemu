@@ -610,7 +610,7 @@ void Mob::TemporaryPets(const Spell *spell_to_cast, Mob *targ, const char *name_
 			npca->GetSwarmInfo()->duration->Start(pet_duration * 1000);
 		}
 
-		npca->GetSwarmInfo()->owner = this;
+		npca->GetSwarmInfo()->owner_id = GetID();
 
 		//give the pets somebody to "love"
 		if(targ != NULL)
@@ -791,7 +791,7 @@ void Mob::WakeTheDead(const Spell *spell_to_cast, Mob *target, uint32 duration)
 		npca->GetSwarmInfo()->duration->Start(duration*1000);
 	}
 
-	npca->GetSwarmInfo()->owner = this;
+	npca->GetSwarmInfo()->owner_id = GetID();
 
 	//give the pet somebody to "love"
 	if(target != NULL){

@@ -1441,7 +1441,7 @@ Mob* Mob::GetOwnerOrSelf() {
 		return owner;
 	}
 	if(IsNPC() && CastToNPC()->GetSwarmInfo()){
-		return (CastToNPC()->GetSwarmInfo()->owner);
+		return (CastToNPC()->GetSwarmInfo()->GetOwner());
 	}
 	SetOwnerID(0);
 	return this;
@@ -1454,7 +1454,7 @@ Mob* Mob::GetOwner() {
 		return owner;
 	}
 	if(IsNPC() && CastToNPC()->GetSwarmInfo()){
-		return (CastToNPC()->GetSwarmInfo()->owner);
+		return (CastToNPC()->GetSwarmInfo()->GetOwner());
 	}
 	SetOwnerID(0);
 	return 0;

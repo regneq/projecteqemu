@@ -355,7 +355,7 @@ void NPC::SpellProcess()
 	Mob::SpellProcess();
 	
 	if(GetSwarmInfo()){
-		if(!GetSwarmInfo()->owner)
+		if(!GetSwarmInfo()->owner_id)
 		{
 			Depop();
 		}
