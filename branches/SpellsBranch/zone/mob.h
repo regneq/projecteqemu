@@ -660,13 +660,13 @@ bool logpos;
 
 	//Buff Related
 	void BuffProcess();
-	virtual int GetCurrentBuffSlots() const { return 25; }
-	virtual int GetCurrentSongSlots() const { return 10; }
-	virtual int GetCurrentDiscSlots() const { return 1; }
-	virtual int GetMaxBuffSlots() const { return 25; }
-	virtual int GetMaxSongSlots() const { return 10; }
-	virtual int GetMaxDiscSlots() const { return 1; }
-	virtual int GetMaxTotalSlots() const { return 36; }
+	virtual int GetCurrentBuffSlots() const { return 0; }
+	virtual int GetCurrentSongSlots() const { return 0; }
+	virtual int GetCurrentDiscSlots() const { return 0; }
+	virtual int GetMaxBuffSlots() const { return 0; }
+	virtual int GetMaxSongSlots() const { return 0; }
+	virtual int GetMaxDiscSlots() const { return 0; }
+	virtual int GetMaxTotalSlots() const { return 0; }
 	virtual void InitializeBuffSlots() { buffs = NULL; }
 	virtual void UninitializeBuffSlots() { }
 	virtual int GetFreeBuffSlot(const Spell *spell_to_cast) { return 0; }
