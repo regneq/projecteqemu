@@ -179,6 +179,7 @@ void MapSpellEffects()
 	SpellEffectDispatch[SE_LimitMinLevel] = &Mob::Handle_SE_Blank;
 	SpellEffectDispatch[SE_LimitCastTime] = &Mob::Handle_SE_Blank;
 	SpellEffectDispatch[SE_Teleport2] = &Mob::Handle_SE_Teleport;
+	SpellEffectDispatch[SE_PercentalHeal] = &Mob::Handle_SE_PercentalHeal;
 	SpellEffectDispatch[SE_StackingCommand_Block] = &Mob::Handle_SE_Blank;
 	SpellEffectDispatch[SE_StackingCommand_Overwrite] = &Mob::Handle_SE_Blank;
 	SpellEffectDispatch[SE_DeathSave] = &Mob::Handle_SE_DeathSave;
@@ -1651,6 +1652,25 @@ bool Mob::Handle_SE_CurseCounter(const Spell *spell_to_cast, Mob *caster, const 
 		}
 	}
 	return false;						
+}
+
+bool Mob::Handle_SE_PercentalHeal(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
+{
+	const SPDat_Spell_Struct &spell = spell_to_cast->GetSpell();
+	sint32 val = spell.max[effect_id_index];
+
+	if(caster)
+		val = caster->GetActSpellHealing(spell_to_cast, val);
+
+	sint32 mhp = GetMaxHP();
+	sint32 cap = mhp * spell.base[effect_id_index] / 100;
+
+	if(cap < val)
+		val = cap;
+
+	if(val > 0)
+		HealDamage(val, caster);	
+	return false;
 }
 
 bool Mob::Handle_SE_DeathSave(const Spell *spell_to_cast, Mob *caster, const uint32 effect_id_index, const float partial, ItemInst **summoned_item, Buff *buff_in_use, sint32 buff_slot)
