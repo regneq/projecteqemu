@@ -83,7 +83,7 @@ class Buff
 {
 public:
 	Buff(Spell* spell, uint32 duration);
-	~Buff(){ }
+	~Buff(){ safe_delete(buff_spell); }
 
 	void SetDurationRemaining(uint32 duration) { spell_duration_remaining = duration; }
 	uint32 GetDurationRemaining() const { return spell_duration_remaining; }
