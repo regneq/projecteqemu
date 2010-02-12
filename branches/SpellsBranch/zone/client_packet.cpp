@@ -4048,7 +4048,11 @@ LogFile->write(EQEMuLog::Debug, "OP CastSpell: slot=%d, spell=%d, target=%d, inv
 					{
 						if(GetLevel() >= item->Click.Level2)
 						{
-							CastSpell(item->Click.Effect, castspell->target_id, castspell->slot, item->CastTime, 0, 0, castspell->inventoryslot);
+							Spell *cast_spell = new Spell(item->Click.Effect, this, NULL, castspell->slot, 0,0);
+							cast_spell->SetInventorySpellSlot(castspell->inventoryslot);
+							cast_spell->SetSpellType(SC_ITEM);
+							cast_spell->SetTarget(castspell->target_id);
+							CastSpell(&cast_spell);
 						}
 						else
 						{
@@ -4059,7 +4063,11 @@ LogFile->write(EQEMuLog::Debug, "OP CastSpell: slot=%d, spell=%d, target=%d, inv
 					}
 					else
 					{
-						CastSpell(item->Click.Effect, castspell->target_id, castspell->slot, item->CastTime, 0, 0, castspell->inventoryslot);
+						Spell *cast_spell = new Spell(item->Click.Effect, this, NULL, castspell->slot, 0,0);
+						cast_spell->SetInventorySpellSlot(castspell->inventoryslot);
+						cast_spell->SetSpellType(SC_ITEM);
+						cast_spell->SetTarget(castspell->target_id);
+						CastSpell(&cast_spell);
 					}
 				}
 				else
@@ -4151,7 +4159,13 @@ LogFile->write(EQEMuLog::Debug, "OP CastSpell: slot=%d, spell=%d, target=%d, inv
 			else*/
 			//try disciplines
 
-		CastSpell(spell_to_cast, castspell->target_id, castspell->slot);
+		Spell *cast_spell = new Spell(spell_to_cast, this, NULL, castspell->slot);
+		if(castspell->slot == ABILITY_SPELL_SLOT)
+		{
+			cast_spell->SetSpellType(SC_ABILITY);
+		}
+		cast_spell->SetTarget(castspell->target_id);
+		CastSpell(&cast_spell);
 	}
 	return;
 }

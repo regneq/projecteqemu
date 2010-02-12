@@ -135,7 +135,7 @@ bool Mob::CastSpell(Spell **casted_spell_ptr, int32* spell_will_finish)
 	if(spell_recovery_timer)
 	{
 		Message(13, "You have not recovered...");
-		InterruptSpell();
+		InterruptSpell(INTERRUPT_SPELL, 0x121, casted_spell->GetSpellID());
 		safe_delete(*casted_spell_ptr);
 		return false;
 	}
@@ -235,7 +235,7 @@ bool Mob::DoCastSpell(Spell **casted_spell_ptr, int32* spell_will_finish)
 				if(IsClient()) 
 				{
 					Message_StringID(13, INSUFFICIENT_MANA);
-					InterruptSpell();
+					InterruptSpell(INTERRUPT_SPELL, 0x121, casted_spell->GetSpellID());
 				} 
 				else 
 				{
@@ -270,7 +270,7 @@ bool Mob::DoCastSpell(Spell **casted_spell_ptr, int32* spell_will_finish)
 		if(IsClient()) 
 		{
 			Message_StringID(13, SPELL_NEED_TAR);
-			InterruptSpell();
+			InterruptSpell(INTERRUPT_SPELL, 0x121, casted_spell->GetSpellID());
 		} 
 		else 
 		{

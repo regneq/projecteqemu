@@ -33,6 +33,8 @@ enum SpellClass
 	SC_DISC,
 	SC_AA,
 	SC_PROC,
+	SC_ITEM,
+	SC_ABILITY,
 };
 
 class Spell
@@ -47,10 +49,12 @@ public:
 	uint32 GetSpellID() const { return raw_spell.id; }
 
 	void SetCaster(Mob *c);
+	void SetCaster(uint32 new_id) { caster_id = new_id; }
 	Mob *GetCaster() const;
 	uint32 GetCasterID() const { return caster_id; }
 
 	void SetTarget(Mob *t);
+	void SetTarget(uint32 new_id) { target_id = new_id; }
 	Mob *GetTarget() const;
 	uint32 GetTargetID() const { return target_id; }
 

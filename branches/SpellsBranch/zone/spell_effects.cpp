@@ -2496,8 +2496,22 @@ void Mob::DoBuffTic(const Buff *buff_to_use)
 
 	for (int i = 0; i < EFFECT_COUNT; i++)
 	{
+		//We can die during the first effect
 		if(IsDead())
 			return;
+
+		//Our buff can be destroyed during the first effect
+		//ex: if root or charm fails it's check there wont be 
+		//a buff on the next index so a check per index is appropriate
+		if(!buff_to_use)
+		{
+			return;
+		}
+
+		if(!buff_to_use->GetSpell())
+		{
+			return;
+		}
 
 		if(buff_to_use->GetSpell()->IsBlankSpellEffect(i))
 			continue;
