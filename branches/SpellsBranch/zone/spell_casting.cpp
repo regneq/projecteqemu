@@ -810,7 +810,7 @@ bool Mob::SpellFinished(Spell *spell_to_cast)
 	{
 		uint32 recast_time = 0;
 		uint32 recast_timer = 0;
-		if(spell_to_cast->GetTimerID() > 0)
+		if(spell_to_cast->GetTimerID() != 0xFFFFFFFF)
 		{
 			recast_timer = spell_to_cast->GetTimerID();
 			recast_time = spell_to_cast->GetTimerIDDuration();

@@ -4048,7 +4048,7 @@ LogFile->write(EQEMuLog::Debug, "OP CastSpell: slot=%d, spell=%d, target=%d, inv
 					{
 						if(GetLevel() >= item->Click.Level2)
 						{
-							Spell *cast_spell = new Spell(item->Click.Effect, this, NULL, castspell->slot, 0,0);
+							Spell *cast_spell = new Spell(item->Click.Effect, this, NULL, castspell->slot, item->CastTime, 0);
 							cast_spell->SetInventorySpellSlot(castspell->inventoryslot);
 							cast_spell->SetSpellType(SC_ITEM);
 							cast_spell->SetTarget(castspell->target_id);
@@ -4063,7 +4063,7 @@ LogFile->write(EQEMuLog::Debug, "OP CastSpell: slot=%d, spell=%d, target=%d, inv
 					}
 					else
 					{
-						Spell *cast_spell = new Spell(item->Click.Effect, this, NULL, castspell->slot, 0,0);
+						Spell *cast_spell = new Spell(item->Click.Effect, this, NULL, castspell->slot, item->CastTime, 0);
 						cast_spell->SetInventorySpellSlot(castspell->inventoryslot);
 						cast_spell->SetSpellType(SC_ITEM);
 						cast_spell->SetTarget(castspell->target_id);

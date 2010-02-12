@@ -2508,14 +2508,6 @@ void Mob::DoBuffTic(const Buff *buff_to_use)
 			return;
 		}
 
-		if(!buff_to_use->GetSpell())
-		{
-			return;
-		}
-
-		if(buff_to_use->GetSpell()->IsBlankSpellEffect(i))
-			continue;
-
 		effect = spell.effectid[i];
 		//I copied the calculation into each case which needed it instead of
 		//doing it every time up here, since most buff effects dont need it
@@ -2661,6 +2653,7 @@ void Mob::DoBuffTic(const Buff *buff_to_use)
 			if (!caster || !PassCharismaCheck(caster, this, buff_to_use->GetSpell())) 
 			{
 				BuffFadeByEffect(SE_Charm);
+				return;
 			}
 
 			break;
@@ -2672,6 +2665,7 @@ void Mob::DoBuffTic(const Buff *buff_to_use)
 			if(SpellEffectiveness < 25) 
 			{
 				BuffFadeByEffect(SE_Root);
+				return;
 			}
 
 			break;
