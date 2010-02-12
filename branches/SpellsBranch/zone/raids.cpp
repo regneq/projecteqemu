@@ -58,7 +58,7 @@ bool Raid::Process()
 		int count = 0;
 		for(int x = 0; x < MAX_RAID_MEMBERS; x++)
 		{
-			if(strlen(members[x].membername) == 0)
+			if(members[x].membername[0] == '\0')
 				continue;
 			else
 				count++;
@@ -88,7 +88,6 @@ void Raid::AddMember(Client *c, int32 group, bool rleader, bool groupleader, boo
 	SendRaidAddAll(c->GetName());
 
 	c->SetRaidGrouped(true);
-	c->SetGrouped(false);
 
 	ServerPacket *pack = new ServerPacket(ServerOP_RaidAdd, sizeof(ServerRaidGeneralAction_Struct));
 	ServerRaidGeneralAction_Struct *rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
@@ -119,7 +118,6 @@ void Raid::RemoveMember(const char *c)
 
 	if(m){
 		m->SetRaidGrouped(false);
-		m->SetGrouped(false);
 	}
 
 	ServerPacket *pack = new ServerPacket(ServerOP_RaidRemove, sizeof(ServerRaidGeneralAction_Struct));
@@ -285,8 +283,11 @@ int32 Raid::GetFreeGroup()
 		int count = 0;
 		for(int y = 0; y < MAX_RAID_MEMBERS; y++)
 		{
-			if(members[y].GroupNumber == x && (strlen(members[y].membername)>0))
+			if(members[y].GroupNumber == x && members[y].membername[0] != '\0')
+			{
 				count++;
+				break;
+			}
 		}
 		if(count == 0)
 			return x;
@@ -302,7 +303,7 @@ int8 Raid::GroupCount(int32 gid)
 	{
 		for(int x = 0; x < MAX_RAID_MEMBERS; x++)
 		{
-			if(members[x].GroupNumber == gid && strlen(members[x].membername)>0)
+			if(members[x].GroupNumber == gid && members[x].membername[0] != '\0')
 			{
 				count++;
 			}
@@ -312,7 +313,7 @@ int8 Raid::GroupCount(int32 gid)
 	{
 		for(int x = 0; x < MAX_RAID_MEMBERS; x++)
 		{
-			if(members[x].GroupNumber > 11 && strlen(members[x].membername)>0)
+			if(members[x].GroupNumber > 11 && members[x].membername[0] != '\0')
 			{
 				count++;
 			}
@@ -326,7 +327,7 @@ int8 Raid::RaidCount()
 	int count = 0;
 	for(int x = 0; x < MAX_RAID_MEMBERS; x++)
 	{
-		if(strlen(members[x].membername) > 0)
+		if(members[x].membername[0] != '\0')
 			count++;
 	}
 	return count;
@@ -750,7 +751,7 @@ int32 Raid::GetHighestLevel()
 	int32 highlvl = 0;
 	for(int x = 0; x < MAX_RAID_MEMBERS; x++)
 	{
-		if(strlen(members[x].membername))
+		if(members[x].membername[0] != '\0')
 		{
 			if(members[x].level > highlvl)
 				highlvl = members[x].level;
@@ -764,7 +765,7 @@ int32 Raid::GetLowestLevel()
 	int32 lowlvl = 1000;
 	for(int x = 0; x < MAX_RAID_MEMBERS; x++)
 	{
-		if(strlen(members[x].membername))
+		if(members[x].membername[0] != '\0')
 		{
 			if(members[x].level < lowlvl)
 				lowlvl = members[x].level;
@@ -945,7 +946,7 @@ void Raid::SendBulkRaid(Client *to)
 
 	for(int x = 0; x < MAX_RAID_MEMBERS; x++)
 	{
-		if(strlen(members[x].membername) > 0 && (strcmp(members[x].membername, to->GetName()) != 0)) //don't send ourself
+		if(members[x].membername[0] != '\0' && (strcmp(members[x].membername, to->GetName()) != 0)) //don't send ourself
 		{
 			SendRaidAdd(members[x].membername, to);
 		}
@@ -1022,7 +1023,7 @@ void Raid::SendGroupUpdate(Client *to)
 	}
 	for(int x = 0; x < MAX_RAID_MEMBERS; x++)
 	{
-		if(members[x].GroupNumber == grp && strlen(members[x].membername) > 0)
+		if(members[x].GroupNumber == grp && members[x].membername[0] != '\0')
 		{
 			if(members[x].IsGroupLeader){
 				strncpy(gu->leadersname, members[x].membername, 64);
@@ -1039,7 +1040,8 @@ void Raid::SendGroupUpdate(Client *to)
 			}
 		}
 	}
-	if(strlen(gu->leadersname) < 1){
+	if(gu->leadersname[0] == '\0')
+	{
 		strncpy(gu->leadersname, to->GetName(), 64);
 	}
 	strncpy(gu->yourname, to->GetName(), 64);
@@ -1053,7 +1055,7 @@ void Raid::GroupUpdate(int32 gid, bool initial)
 		return;
 	for(int x = 0; x < MAX_RAID_MEMBERS; x++)
 	{
-		if(strlen(members[x].membername) > 0){
+		if(members[x].membername[0] != '\0'){
 			if(members[x].GroupNumber == gid){
 				if(members[x].member)
 					SendGroupUpdate(members[x].member);
@@ -1257,7 +1259,7 @@ void Raid::VerifyRaid()
 {
 	for(int x = 0; x < MAX_RAID_MEMBERS; x++)
 	{
-		if(strlen(members[x].membername) == 0){
+		if(members[x].membername[0] == '\0'){
 			members[x].member = NULL;
 		}
 		else{
@@ -1270,7 +1272,7 @@ void Raid::VerifyRaid()
 			}
 		}
 		if(members[x].IsRaidLeader){
-			if(strlen(members[x].membername) > 0){
+			if(members[x].membername[0] != '\0'){
 				SetLeader(members[x].member);
 				strncpy(leadername, members[x].membername, 64);
 			}
@@ -1335,7 +1337,7 @@ uint16 Raid::GetAvgLevel()
 	uint8 numMem = 0;
 	while(i < MAX_RAID_MEMBERS)
 	{
-		if(strlen(members[i].membername))
+		if(members[i].membername[0] != '\0')
 		{
 			levelHolder = levelHolder + members[i].level;
 			numMem++;

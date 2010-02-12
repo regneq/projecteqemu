@@ -5553,7 +5553,7 @@ void Client::Handle_OP_GroupFollow2(const EQApplicationPacket *app)
 	Mob* inviter = entity_list.GetClientByName(gf->name1);
 
 	if(inviter != NULL && inviter->IsClient()) {
-		isgrouped = true;
+		//isgrouped = true;
 		strncpy(gf->name1,inviter->GetName(), 64);
 		strncpy(gf->name2,this->GetName(), 64);
 
@@ -7025,7 +7025,7 @@ void Client::Handle_OP_Split(const EQApplicationPacket *app)
 	//Implemented by Father Nitwit
 	//Per the note above, Im not exactly sure what to do on error
 	//to notify the client of the error...
-	if(!isgrouped) {
+	if(!IsGrouped()) {
 		Message(13, "You can not split money if your not in a group.");
 		return;
 	}
@@ -7932,7 +7932,10 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 		}	//else, somebody from our group is allready here...
 
 		if(group)
+		{
 			group->UpdatePlayer(this);
+			SetGrouped(true);
+		}
 		else
 			database.SetGroupID(GetName(), 0, CharacterID());	//cannot re-establish group, kill it
 

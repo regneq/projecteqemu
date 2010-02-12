@@ -931,9 +931,9 @@ bool logpos;
 	inline float GetSpellY() const {return spell_y;}
 	inline float GetSpellZ() const {return spell_z;}
 	inline bool	IsGrouped()	 const { return isgrouped; }
-	void SetGrouped(bool v) { isgrouped = v; }
+	void SetGrouped(bool v) { isgrouped = v; if(v) { israidgrouped = false; } }
 	inline bool IsRaidGrouped() const { return israidgrouped; }
-	void SetRaidGrouped(bool v) { israidgrouped = v; }
+	void SetRaidGrouped(bool v) { israidgrouped = v; if(v) { isgrouped = false; } }
 
 	bool CheckWillAggro(Mob *mob);
 

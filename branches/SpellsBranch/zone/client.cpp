@@ -356,7 +356,7 @@ Client::~Client() {
 		GetTarget()->IsTargeted(-1);
 
 	//if we are in a group and we are not zoning, force leave the group
-	if(isgrouped && !zoning)
+	if(IsGrouped() && !zoning)
 		LeaveGroup();
 
 	Raid *r = GetRaid();

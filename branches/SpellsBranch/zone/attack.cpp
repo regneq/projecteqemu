@@ -1405,7 +1405,7 @@ void Client::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_
 	entity_list.RemoveFromTargets(this);
 	hate_list.RemoveEnt(this);
 	
-	if(isgrouped) {
+	if(IsGrouped()) {
 		Group *g = GetGroup();
 		if(g)
 			g->MemberZoned(this);
@@ -1512,7 +1512,7 @@ void Client::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_
 					new_corpse->SetPKItem(1);
 				else
 					new_corpse->SetPKItem(0);
-				if(killerMob->CastToClient()->isgrouped) {
+				if(killerMob->CastToClient()->IsGrouped()) {
 					Group* group = entity_list.GetGroupByClient(killerMob->CastToClient());
 					if(group != 0) 
 					{
@@ -1546,7 +1546,7 @@ void Client::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_
 	if (IsBecomeNPC() == true)
 	{
 		if (killerMob != NULL && killerMob->IsClient()) {
-			if (killerMob->CastToClient()->isgrouped && entity_list.GetGroupByMob(killerMob) != 0)
+			if (killerMob->CastToClient()->IsGrouped() && entity_list.GetGroupByMob(killerMob) != 0)
 				entity_list.GetGroupByMob(killerMob->CastToClient())->SplitExp((uint32)(level*level*75*3.5f), this);
 
 			else
@@ -1561,7 +1561,7 @@ void Client::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_
 			killerMob = killerMob->GetOwner();
 		if(killerMob != 0 && killerMob->IsClient()) {
 			corpse->AllowMobLoot(killerMob, 0);
-			if(killerMob->CastToClient()->isgrouped) {
+			if(killerMob->CastToClient()->IsGrouped()) {
 				Group* group = entity_list.GetGroupByClient(killerMob->CastToClient());
 				if(group != 0) {
 					for(int i=0; i < MAX_GROUP_MEMBERS; i++) { // Doesnt work right, needs work

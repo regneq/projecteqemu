@@ -893,7 +893,7 @@ void Client::LeaveGroup() {
 		database.SetGroupID(GetName(), 0, CharacterID());
 	}
 	
-	isgrouped = false;
+	SetGrouped(false);
 }
 
 void Group::BalanceHP(sint32 penalty)
