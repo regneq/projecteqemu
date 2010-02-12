@@ -280,17 +280,30 @@ void Client::ActivateAA(aaID activate){
 		{
 			if(activate == aaImprovedHarmTouch || activate == aaLeechTouch)
 			{
-				aa_spell->SetTimerIDDuration(HarmTouchReuseTime);
-				aa_spell->SetTimerID(pTimerHarmTouch);
+				p_timers.Start(pTimerHarmTouch, HarmTouchReuseTime);
 			}
-			else
-			{
-				uint32 timer_base = CalcAAReuseTimer(caa);
-				aa_spell->SetTimerIDDuration(timer_base);
-				aa_spell->SetTimerID(AATimerID + pTimerAAStart);
-			}
+			
+			uint32 timer_base = CalcAAReuseTimer(caa);
+			aa_spell->SetTimerIDDuration(timer_base);
+			aa_spell->SetTimerID(AATimerID + pTimerAAStart);
 		}
 		CastSpell(&aa_spell);
+	}
+	else
+	{
+		if(caa->reuse_time > 0)
+		{
+			uint32 timer_base = CalcAAReuseTimer(caa);
+			if(activate == aaImprovedHarmTouch || activate == aaLeechTouch)
+			{
+				p_timers.Start(pTimerHarmTouch, HarmTouchReuseTime);
+			}
+
+			p_timers.Start(AATimerID + pTimerAAStart, timer_base);
+
+			time_t timestamp = time(NULL);
+			SendAATimer(AATimerID, timestamp, timestamp);
+		}
 	}
 }
 

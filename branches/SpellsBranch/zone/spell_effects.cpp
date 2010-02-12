@@ -283,6 +283,7 @@ void MapSpellEffects()
 	SpellEffectDispatch[SE_FocusCombatDurationMod] = &Mob::Handle_SE_Blank;
 	SpellEffectDispatch[SE_ImprovedSpellEffect] = &Mob::Handle_SE_Blank;
 	SpellEffectDispatch[SE_ChangeHeight] = &Mob::Handle_SE_ModelSize;
+	SpellEffectDispatch[SE_WakeTheDead] = &Mob::Handle_SE_WakeTheDead;
 	SpellEffectDispatch[SE_SuspendMinion] = &Mob::Handle_SE_SuspendPet;
 	SpellEffectDispatch[SE_Invisibility2] = &Mob::Handle_SE_Invisibility;
 	SpellEffectDispatch[SE_InvisVsUndead2] = &Mob::Handle_SE_InvisVsUndead;

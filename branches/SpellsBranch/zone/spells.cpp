@@ -837,7 +837,7 @@ void Mob::DoSpellOnTargetRecourse(Spell *spell_on_target, Mob *spell_target)
 	}
 
 	Spell *recourse_spell = new Spell(recourse_spell_id, this, spell_target);
-	if(spell_on_target->GetSpell().targettype == ST_Group || spell_on_target->GetSpell().targettype == ST_GroupTeleport)
+	if(recourse_spell->GetSpell().targettype == ST_Group || recourse_spell->GetSpell().targettype == ST_GroupTeleport)
 	{
 		if(IsGrouped())
 		{
@@ -864,28 +864,29 @@ void Mob::DoSpellOnTargetRecourse(Spell *spell_on_target, Mob *spell_target)
 		}
 		else if(HasOwner())
 		{
-			if(GetOwner()->IsGrouped())
+			Mob *owner = GetOwner();
+			if(owner->IsGrouped())
 			{
-				Group *g = entity_list.GetGroupByMob(GetOwner());
+				Group *g = entity_list.GetGroupByMob(owner);
 				g->CastGroupSpell(this, recourse_spell);
 			}
-			else if(GetOwner()->IsRaidGrouped() && GetOwner()->IsClient())
+			else if(owner->IsRaidGrouped() && owner->IsClient())
 			{
-				Raid *r = entity_list.GetRaidByClient(GetOwner()->CastToClient());
-				int32 gid = r->GetGroup(GetOwner()->GetName());
+				Raid *r = entity_list.GetRaidByClient(owner->CastToClient());
+				int32 gid = r->GetGroup(owner->GetName());
 				if(gid < 12)
 				{
 					r->CastGroupSpell(this, recourse_spell, gid);
 				}
 				else
 				{
-					SpellOnTarget(recourse_spell, GetOwner());
+					SpellOnTarget(recourse_spell, owner);
 					SpellOnTarget(recourse_spell, this);
 				}
 			}
 			else
 			{
-				SpellOnTarget(recourse_spell, GetOwner());
+				SpellOnTarget(recourse_spell, owner);
 				SpellOnTarget(recourse_spell, this);
 			}
 		}

@@ -766,7 +766,6 @@ void EntityList::AESpellMGB(Mob *caster, Mob *center, Spell *spell_to_cast, bool
 	float dist2 = dist * dist;
 	
 	bool bad = spell_to_cast->IsDetrimentalSpell();
-	bool isnpc = caster->IsNPC();
 	
 	for(iterator.Reset(); iterator.MoreElements(); iterator.Advance())
 	{
@@ -777,21 +776,24 @@ void EntityList::AESpellMGB(Mob *caster, Mob *center, Spell *spell_to_cast, bool
 			continue;
 		if(center->DistNoRoot(*curmob) > dist2)	//make sure they are in range
 			continue;
-		if(isnpc && curmob->IsNPC()) {	//check npc->npc casting
-			FACTION_VALUE f = curmob->GetReverseFactionCon(caster);
-			if(bad) 
+
+		//Only npcs mgb should hit are client pets...
+		if(curmob->IsNPC())
+		{
+			Mob *owner = curmob->GetOwner();
+			if(owner)
 			{
-					//can never MGB det spells
+				if(!owner->IsClient())
+				{
 					continue;
-			} 
-			else 
+				}
+			}
+			else
 			{
-				//only affect mobs we would assist.
-				if(!(f <= FACTION_AMIABLE))
-					continue;
+				continue;
 			}
 		}
-		
+
 		if(bad) 
 		{
 			//can never MGB det spells
