@@ -3081,7 +3081,7 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 				{
 					BuffFadeBySlot(buffs_i);
 				}
-				else
+				else if(buffs[buffs_i]->GetRemainingCharges() > 0)
 				{
 					buffs[buffs_i]->SetRemainingCharges(buffs[buffs_i]->GetRemainingCharges() - 1);
 				}

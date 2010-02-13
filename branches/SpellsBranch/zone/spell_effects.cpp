@@ -2445,7 +2445,7 @@ void Mob::BuffProcess()
 	{
 		if(buffs[i])
 		{
-			DoBuffTic(buffs[i]);
+			DoBuffTic(i);
 			
 			//because things like dmg/death in DoBuffTic can get rid of buffs.
 			if(!buffs[i])
@@ -2486,29 +2486,28 @@ void Mob::BuffProcess()
 	}
 }
 
-void Mob::DoBuffTic(const Buff *buff_to_use) 
+void Mob::DoBuffTic(uint32 index) 
 {
 	_ZP(Mob_DoBuffTic);
 
+	Buff *buff_to_use = buffs[index];
+	if(!buff_to_use)
+	{
+		return;
+	}
+
 	Mob *caster = buff_to_use->GetSpell()->GetCaster();
 	int effect, effect_value;
-	const SPDat_Spell_Struct &spell = buff_to_use->GetSpell()->GetSpell();
 
 	for (int i = 0; i < EFFECT_COUNT; i++)
 	{
-		//We can die during the first effect
-		if(IsDead())
-			return;
-
-		//Our buff can be destroyed during the first effect
-		//ex: if root or charm fails it's check there wont be 
-		//a buff on the next index so a check per index is appropriate
+		buff_to_use = buffs[index];
 		if(!buff_to_use)
 		{
 			return;
 		}
 
-		effect = spell.effectid[i];
+		effect = buff_to_use->GetSpell()->GetSpell().effectid[i];
 		//I copied the calculation into each case which needed it instead of
 		//doing it every time up here, since most buff effects dont need it
 
@@ -2544,7 +2543,7 @@ void Mob::DoBuffTic(const Buff *buff_to_use)
 
 			if(effect_value < 0) {
 				effect_value = -effect_value;
-				Damage(caster, effect_value, spell.id, spell.skill, false, i, true);
+				Damage(caster, effect_value, buff_to_use->GetSpell()->GetSpellID(), buff_to_use->GetSpell()->GetSpell().skill, false, i, true);
 			} 
 			else if(effect_value > 0) 
 			{
@@ -2607,7 +2606,7 @@ void Mob::DoBuffTic(const Buff *buff_to_use)
 					else if(!caster->IsClient())
 						AddToHateList(caster, effect_value);
 				}
-				Damage(caster, effect_value, spell.id, spell.skill, false, i, true);
+				Damage(caster, effect_value, buff_to_use->GetSpell()->GetSpellID(), buff_to_use->GetSpell()->GetSpell().skill, false, i, true);
 			} 
 			else if(effect_value > 0) 
 			{
@@ -2661,7 +2660,7 @@ void Mob::DoBuffTic(const Buff *buff_to_use)
 
 		case SE_Root: 
 			{
-			float SpellEffectiveness = ResistSpell(spell.resisttype, buff_to_use->GetSpell(), caster);
+			float SpellEffectiveness = ResistSpell(buff_to_use->GetSpell()->GetSpell().resisttype, buff_to_use->GetSpell(), caster);
 			if(SpellEffectiveness < 25) 
 			{
 				BuffFadeByEffect(SE_Root);
@@ -2699,7 +2698,7 @@ void Mob::DoBuffTic(const Buff *buff_to_use)
 
 					if(MakeRandomFloat(0.0, 100.0) < break_chance)
 					{
-						BuffModifyDurationBySpellID(spell.id, 3);
+						BuffModifyDurationBySpellID(buff_to_use->GetSpell()->GetSpellID(), 3);
 					}
 				}
 			}

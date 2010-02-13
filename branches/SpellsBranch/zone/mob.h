@@ -679,7 +679,7 @@ bool logpos;
 	int CheckBuffSlotStackConflicts(const Spell* spell_to_cast, int start, int end);
 	int CanBuffStack(const Spell *spell_to_check, bool iFailIfOverwrite = false);
 	int CanBuffStack(int16 spell_id, Mob *caster, bool iFailIfOverwrite = false);
-	virtual void DoBuffTic(const Buff *buff_to_use);
+	virtual void DoBuffTic(uint32 index);
 	void BuffModifyDurationBySpellID(int16 spell_id, sint32 newDuration);
 	void BuffFadeBySpellID(int16 spell_id);
 	void BuffFadeByEffect(int effectid, int skipslot = -1);
