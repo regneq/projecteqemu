@@ -467,6 +467,7 @@ void NPC::SetPetState(int32 *items, bool suspended_pet)
 {
 	LoadBuffs(suspended_pet ? 1 : 0);
 
+	vector<int> slots_to_dispel;
 	uint32 buff_count = 0;
 	uint32 max_count = GetMaxTotalSlots();
 	for(int i = 0; i < max_count; i++)
@@ -480,17 +481,22 @@ void NPC::SetPetState(int32 *items, bool suspended_pet)
 				case SE_Charm:
 				case SE_Illusion:
 					{
-						safe_delete(buffs[i]);
+						slots_to_dispel.push_back(i);
+						e = EFFECT_COUNT;
 						break;
 					}
 					break;
 				}
 			}
-			if(buffs[i])
-			{
-				buff_count++;
-			}
+			buff_count++;
 		}
+	}
+
+	buff_count -= slots_to_dispel.size();
+	for(int x = 0; x < slots_to_dispel.size(); x++)
+	{
+		int slot_to_dispel = slots_to_dispel[x];
+		safe_delete(buffs[slot_to_dispel]);
 	}
 
 	if(buff_count > 0)
