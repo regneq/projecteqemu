@@ -398,6 +398,11 @@ int Mob::CheckStackConflict(const Spell* spell_1, const Spell *spell_2)
 
 Buff *Mob::AddBuff(Mob *caster, Spell *spell_to_cast, sint32 &buff_slot, uint32 duration)
 {
+	if(!buffs)
+	{
+		return NULL;
+	}
+
 	if(duration == 0)
 	{
 		duration = CalcBuffDuration(caster, this, spell_to_cast);
