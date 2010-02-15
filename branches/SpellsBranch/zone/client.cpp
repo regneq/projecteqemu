@@ -296,7 +296,6 @@ Client::Client(EQStreamInterface* ieqs)
 	aa_los_them_mob = NULL;
 	los_status = false;
 	qGlobals = NULL;
-	buff_save_timer = NULL;
 	InitializeBuffSlots();
 }
 
@@ -383,7 +382,6 @@ Client::~Client() {
 	eqs->Close();
 	eqs->ReleaseFromUse();
 
-	safe_delete(buff_save_timer);
 	UninitializeBuffSlots();
 	entity_list.RemoveClient(this);
 }

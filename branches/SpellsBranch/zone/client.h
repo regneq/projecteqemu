@@ -1045,7 +1045,6 @@ private:
 	string	BuyerWelcomeMessage;
 	bool	AbilityTimer;
 	int Haste;  //precalced value
-	Timer *buff_save_timer;
 
 	sint32				max_end;
 	sint32				cur_end;
