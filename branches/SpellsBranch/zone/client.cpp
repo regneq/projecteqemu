@@ -503,19 +503,7 @@ bool Client::Save(int8 iCommitNow) {
 	}
 
 	p_timers.Store(&database);
-	if(buff_save_timer)
-	{
-		if(buff_save_timer->Check())
-		{
-			SaveBuffs();
-		}
-	}
-	else
-	{
-		buff_save_timer = new Timer(6000);
-		SaveBuffs();
-	}
-
+	SaveBuffs();
 	SaveTaskState();
 
 	if (iCommitNow <= 1) {
