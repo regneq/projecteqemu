@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==02/15/2010==
+Gaeorn: (iRFNA) Fixed flaw in IsPureNukeSpell() logic. Fixes bug where bots were healing enemies.
+
 ==02/07/2010==
 Derision: Reverted cross-zone group invites from Rev1086
 
