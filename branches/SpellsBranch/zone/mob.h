@@ -697,7 +697,7 @@ bool logpos;
 	virtual bool CastSpell(Spell **casted_spell_ptr, int32* spell_will_finish = 0);
 	virtual bool CastSpell(int16 spell_id, int16 target_id, int16 slot = 10, sint32 casttime = -1, sint32 mana_cost = -1, int32* oSpellWillFinish = 0, int32 item_slot = 0xFFFFFFFF);
 	virtual bool DoCastSpell(Spell **casted_spell_ptr, int32* spell_will_finish = 0);
-	void CastedSpellFinished(Spell **casted_spell_ptr);
+	void CastedSpellFinished(Spell *casted_spell);
 	bool SpellFinished(int16 spell_id, Mob *target, int16 slot = 10, int16 mana_used = 0, int32 inventory_slot = 0xFFFFFFFF, bool is_proc = false);
 	bool SpellFinished(Spell *spell_to_cast);
 	virtual bool ValidateStartSpellCast(const Spell *spell_to_cast);

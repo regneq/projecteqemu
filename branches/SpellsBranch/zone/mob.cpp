@@ -400,6 +400,7 @@ Mob::~Mob()
 	safe_delete(PathingRouteUpdateTimerLong);
 	safe_delete(casting_spell);
 	safe_delete(casting_spell_finished);
+	safe_delete(bard_song);
 	safe_delete(spell_recovery_timer);
 	safe_delete(return_to_heading_timer);
 }

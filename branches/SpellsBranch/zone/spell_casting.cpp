@@ -313,7 +313,7 @@ bool Mob::DoCastSpell(Spell **casted_spell_ptr, int32* spell_will_finish)
 
 	if(casted_spell->GetCastTime() == 0)
 	{
-		CastedSpellFinished(&casted_spell);
+		CastedSpellFinished(casted_spell);
 		safe_delete(*casted_spell_ptr);
 		return true;
 	}
@@ -329,7 +329,7 @@ void Mob::SpellProcess()
 		if(casting_spell->IsCastTimerFinished())
 		{
 			casting_spell->StopCastTimer();
-			CastedSpellFinished(&casting_spell);
+			CastedSpellFinished(casting_spell);
 		}
 	}
 
@@ -374,10 +374,9 @@ void NPC::SpellProcess()
 	}
 }
 
-void Mob::CastedSpellFinished(Spell **casted_spell_ptr)
+void Mob::CastedSpellFinished(Spell *casted_spell)
 {
 	_ZP(Mob_CastedSpellFinished);
-	Spell *casted_spell = *casted_spell_ptr;
 
 	if(IsClient() && casted_spell->GetSpellSlot() != USE_ITEM_SPELL_SLOT && casted_spell->GetSpellSlot() != POTION_BELT_SPELL_SLOT && casted_spell->GetSpell().recast_time > 1000) 
 	{
