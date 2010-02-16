@@ -1,2 +1,2 @@
-ALTER TABLE `account` ADD `suspendeduntil` DATETIME NOT NULL;
+ALTER TABLE `account` ADD `suspendeduntil` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00';
 
