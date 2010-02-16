@@ -672,7 +672,7 @@ bool logpos;
 	virtual int GetMaxTotalSlots() const { return 0; }
 	virtual void InitializeBuffSlots() { buffs = NULL; }
 	virtual void UninitializeBuffSlots() { }
-	virtual int GetFreeBuffSlot(const Spell *spell_to_cast) { return 0; }
+	virtual int GetFreeBuffSlot(const Spell *spell_to_cast) { return -1; }
 	Buff *AddBuff(Mob *caster, Spell *spell_to_cast, sint32 &buff_slot, uint32 duration = 0);
 	int	CalcBuffDuration(Mob *caster, Mob *target, const Spell *spell_to_cast, sint32 caster_level_override = -1);
 	bool WillSpellHold(Spell *spell_to_cast, Mob *spell_target);
@@ -952,7 +952,7 @@ bool logpos;
 	int16 GetInstrumentMod(const Spell *spell_to_cast) const;
 	int CalcSpellEffectValue(const Spell *spell_to_cast, int effect_id, int caster_level = 1, Mob *caster = NULL, int ticsremaining = 0);
 	int CalcSpellEffectValue_formula(int formula, int base, int max, int caster_level, const Spell *spell_to_cast, int ticsremaining = 0);
-	virtual int CheckStackConflict(const Spell* spell_1, const Spell *spell_2);
+	virtual int CheckStackConflict(const Spell* spell_1, const Spell *spell_2, sint32 instrument_mod_1, sint32 instrument_mod_2);
 	int32 GetCastedSpellInvSlot() const { return casting_spell ? casting_spell->GetInventorySpellSlot() : 0; }
 
 //	inline EGNode *GetEGNode() { return(_egnode); }

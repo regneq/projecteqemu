@@ -163,6 +163,10 @@ protected:
 	uint32 instrument_mod;
 
 	Spell *buff_spell;
+	
+	//TODO: Remove this
+	//Just to debug crash
+	sint32 id;
 };
 
 #endif

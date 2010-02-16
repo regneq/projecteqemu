@@ -153,6 +153,10 @@ protected:
 	bool custom_data;
 
 	SPDat_Spell_Struct raw_spell;
+
+	//TODO: Remove this
+	//Just to debug crash
+	sint32 id;
 };
 
 #endif

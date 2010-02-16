@@ -144,7 +144,7 @@ int CalcBuffDuration_formula(int level, int formula, int duration)
 // -1 if they can't stack and spellid2 should be stopped
 //currently, a spell will not land if it would overwrite a better spell on any effect
 //if all effects are better or the same, we overwrite, else we do nothing
-int Mob::CheckStackConflict(const Spell* spell_1, const Spell *spell_2)
+int Mob::CheckStackConflict(const Spell* spell_1, const Spell *spell_2, sint32 instrument_mod_1, sint32 instrument_mod_2)
 {
 	const SPDat_Spell_Struct &sp1 = spell_1->GetSpell();
 	const SPDat_Spell_Struct &sp2 = spell_2->GetSpell();
@@ -398,7 +398,12 @@ int Mob::CheckStackConflict(const Spell* spell_1, const Spell *spell_2)
 
 Buff *Mob::AddBuff(Mob *caster, Spell *spell_to_cast, sint32 &buff_slot, uint32 duration)
 {
-	if(!buffs)
+	if(!spell_to_cast)
+	{
+		return NULL;
+	}
+
+	if(GetMaxTotalSlots() == 0)
 	{
 		return NULL;
 	}
@@ -479,7 +484,9 @@ int Mob::CanBuffStack(const Spell *spell_to_check, bool iFailIfOverwrite)
 			return -1;
 		}
 
-		ret = CheckStackConflict(buffs[buffs_i]->GetSpell(), spell_to_check);
+
+		Mob *caster = spell_to_check->GetCaster();
+		ret = CheckStackConflict(buffs[buffs_i]->GetSpell(), spell_to_check, buffs[buffs_i]->GetInstrumentMod(), caster ? caster->GetInstrumentMod(spell_to_check) : 0);
 		if(ret == 1)
 		{
 			if(iFailIfOverwrite) 
@@ -800,7 +807,8 @@ int Mob::CheckBuffSlotStackConflicts(const Spell* spell_to_cast, int start, int 
 		if(cur_buff)
 		{
 			// there's a buff in this slot
-			int ret = CheckStackConflict(cur_buff->GetSpell(), spell_to_cast);
+			Mob *caster = spell_to_cast->GetCaster();
+			int ret = CheckStackConflict(cur_buff->GetSpell(), spell_to_cast, cur_buff->GetInstrumentMod(), caster ? caster->GetInstrumentMod(spell_to_cast) : 0);
 			if(ret == -1) 
 			{
 				// stop the spell
@@ -1195,6 +1203,7 @@ Buff::Buff(Spell *spell, uint32 duration)
 	is_client = false;
 	buff_spell = spell->CopySpell();
 	is_perm_duration = (spell->GetSpell().buffdurationformula == 50);
+	id = spell->GetSpell().id;
 }
 
 uint32 Buff::GetCasterID() const

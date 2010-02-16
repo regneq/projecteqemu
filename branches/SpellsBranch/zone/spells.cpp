@@ -2173,6 +2173,7 @@ Spell::Spell(uint32 spell_id, Mob* caster, Mob* target, uint32 slot, uint32 cast
 	const SPDat_Spell_Struct &spell = spells[spell_id];
 	memcpy((void*)&raw_spell, (const void*)&spell, sizeof(SPDat_Spell_Struct));
 	raw_spell.id = spell_id;
+	id = spell_id;
 }
 
 Spell::Spell()
@@ -2180,6 +2181,7 @@ Spell::Spell()
 	cast_timer = NULL;
 	spell_class_type = SC_NORMAL;
 	custom_data = true;
+	id = 0xffffcccc;
 }
 
 Spell::Spell(SPDat_Spell_Struct *new_spell, uint32 caster_level, uint32 slot, uint32 inventory_slot, uint32 spell_type)
@@ -2198,6 +2200,7 @@ Spell::Spell(SPDat_Spell_Struct *new_spell, uint32 caster_level, uint32 slot, ui
 	spell_slot_inventory = inventory_slot;
 	custom_data = true;
 	cast_timer = NULL;
+	id = new_spell->id;
 }
 
 Spell::~Spell()
@@ -2276,6 +2279,7 @@ Spell* Spell::CopySpell()
 
 	memcpy((void*)&return_value->raw_spell, (const void*)&this->raw_spell, sizeof(SPDat_Spell_Struct));
 	return_value->raw_spell.id = GetSpellID();
+	id = GetSpellID();
 	return return_value;
 }
 
