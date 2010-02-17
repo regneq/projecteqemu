@@ -2787,13 +2787,25 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar)
 				if(IsGrouped())
 				{
 					Group *g = entity_list.GetGroupByMob(this);
-					g->CastGroupSpell(this, recourse_spell);
+					if(g)
+						g->CastGroupSpell(this, recourse_spell);
+					else{
+						SpellOnTarget(recourse_spell, this);
+#ifdef GROUP_BUFF_PETS
+						if (GetPet())
+							SpellOnTarget(recourse_spell, GetPet());
+#endif
+					}
 				}
 				else if(IsRaidGrouped() && IsClient())
 				{
 					Raid *r = entity_list.GetRaidByClient(CastToClient());
 					int32 gid = 0xFFFFFFFF;
-					gid = r->GetGroup(GetName());
+					if(r)
+						gid = r->GetGroup(GetName());
+					else
+						gid = 13;	// Forces ungrouped spell casting
+
 					if(gid < 12)
 					{
 						r->CastGroupSpell(this, recourse_spell, gid);
@@ -2811,12 +2823,22 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar)
 					if(GetOwner()->IsGrouped())
 					{
 						Group *g = entity_list.GetGroupByMob(GetOwner());
-						g->CastGroupSpell(this, recourse_spell);
+						if(g)
+							g->CastGroupSpell(this, recourse_spell);
+						else{
+							SpellOnTarget(recourse_spell, GetOwner());
+							SpellOnTarget(recourse_spell, this);
+						}
 					}
 					else if(GetOwner()->IsRaidGrouped() && GetOwner()->IsClient())
 					{
 						Raid *r = entity_list.GetRaidByClient(GetOwner()->CastToClient());
-						int32 gid = r->GetGroup(GetOwner()->GetName());
+						int32 gid = 0xFFFFFFFF;
+						if(r)
+							gid = r->GetGroup(GetOwner()->GetName());
+						else
+							gid = 13;	// Forces ungrouped spell casting
+
 						if(gid < 12)
 						{
 							r->CastGroupSpell(this, recourse_spell, gid);
@@ -3673,7 +3695,6 @@ void Client::MakeBuffFadePacket(int16 spell_id, int slot_id, bool send_message)
 	}
 }
 
-// solar: add/update a spell in the client's spell bar
 void Client::MemSpell(int16 spell_id, int slot, bool update_client)
 {
 	if(slot >= MAX_PP_MEMSPELL || slot < 0)
@@ -3694,7 +3715,6 @@ void Client::MemSpell(int16 spell_id, int slot, bool update_client)
 	}
 }
 
-// solar: remove a spell from the client's spell bar
 void Client::UnmemSpell(int slot, bool update_client)
 {
 	if(slot > MAX_PP_MEMSPELL || slot < 0)
@@ -3718,7 +3738,6 @@ void Client::UnmemSpellAll(bool update_client)
 			UnmemSpell(i, update_client);
 }
 
-// solar: add a spell to client's spellbook
 void Client::ScribeSpell(int16 spell_id, int slot, bool update_client)
 {
 	if(slot >= MAX_PP_SPELLBOOK || slot < 0)
@@ -3739,7 +3758,6 @@ void Client::ScribeSpell(int16 spell_id, int slot, bool update_client)
 	}
 }
 
-// solar: remove a spell from client's spellbook
 void Client::UnscribeSpell(int slot, bool update_client)
 {
 	if(slot >= MAX_PP_SPELLBOOK || slot < 0)
@@ -3767,6 +3785,31 @@ void Client::UnscribeSpellAll(bool update_client)
 	{
 		if(m_pp.spell_book[i] != 0xFFFFFFFF)
 			UnscribeSpell(i, update_client);
+	}
+}
+
+void Client::UntrainDisc(int slot, bool update_client)
+{
+	if(slot >= MAX_PP_DISCIPLINES || slot < 0)
+		return;
+
+	mlog(CLIENT__SPELLS, "Discipline %d untrained from slot %d", m_pp.disciplines.values[slot], slot);
+	m_pp.disciplines.values[slot] = 0;
+
+	if(update_client)
+	{
+		SendDisciplineUpdate();
+	}
+}
+
+void Client::UntrainDiscAll(bool update_client)
+{
+	int i;
+
+	for(i = 0; i < MAX_PP_DISCIPLINES; i++)
+	{
+		if(m_pp.disciplines.values[i] != 0)
+			UntrainDisc(i, update_client);
 	}
 }
 

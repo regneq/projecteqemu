@@ -573,6 +573,8 @@ public:
 	void ScribeSpell(int16 spell_id, int slot, bool update_client = true);
 	void UnscribeSpell(int slot, bool update_client = true);
 	void UnscribeSpellAll(bool update_client = true);
+	void UntrainDisc(int slot, bool update_client = true);
+	void UntrainDiscAll(bool update_client = true);
 	bool SpellGlobalCheck(int16 Spell_ID, int16 Char_ID);
 
 	inline bool	IsSitting() const {return (playeraction == 1);}

@@ -2280,6 +2280,67 @@ XS(XS_Client_UnscribeSpellAll)
 	XSRETURN_EMPTY;
 }
 
+XS(XS_Client_UntrainDisc); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_UntrainDisc)
+{
+	dXSARGS;
+	if (items < 2 || items > 3)
+		Perl_croak(aTHX_ "Usage: Client::UntrainDisc(THIS, slot, update_client= true)");
+	{
+		Client *		THIS;
+		int		slot = (int)SvIV(ST(1));
+		bool		update_client;
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		if (items < 3)
+			update_client = true;
+		else {
+			update_client = (bool)SvTRUE(ST(2));
+		}
+
+		THIS->UntrainDisc(slot, update_client);
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_Client_UntrainDiscAll); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_UntrainDiscAll)
+{
+	dXSARGS;
+	if (items < 1 || items > 2)
+		Perl_croak(aTHX_ "Usage: Client::UntrainDiscAll(THIS, update_client= true)");
+	{
+		Client *		THIS;
+		bool		update_client;
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		if (items < 2)
+			update_client = true;
+		else {
+			update_client = (bool)SvTRUE(ST(1));
+		}
+
+		THIS->UntrainDiscAll(update_client);
+	}
+	XSRETURN_EMPTY;
+}
+
 XS(XS_Client_IsSitting); /* prototype to pass -Wmissing-prototypes */
 XS(XS_Client_IsSitting)
 {
@@ -4274,6 +4335,8 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "ScribeSpell"), XS_Client_ScribeSpell, file, "$$$;$");
 		newXSproto(strcpy(buf, "UnscribeSpell"), XS_Client_UnscribeSpell, file, "$$;$");
 		newXSproto(strcpy(buf, "UnscribeSpellAll"), XS_Client_UnscribeSpellAll, file, "$;$");
+		newXSproto(strcpy(buf, "UntrainDisc"), XS_Client_UntrainDisc, file, "$$;$");
+		newXSproto(strcpy(buf, "UntrainDiscAll"), XS_Client_UntrainDiscAll, file, "$;$");
 		newXSproto(strcpy(buf, "IsSitting"), XS_Client_IsSitting, file, "$");
 		newXSproto(strcpy(buf, "IsBecomeNPC"), XS_Client_IsBecomeNPC, file, "$");
 		newXSproto(strcpy(buf, "GetBecomeNPCLevel"), XS_Client_GetBecomeNPCLevel, file, "$");

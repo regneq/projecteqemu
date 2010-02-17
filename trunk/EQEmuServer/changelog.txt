@@ -1,5 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==02/17/2010==
+Trevius: Added new quest::untraindiscs() command to untrain all disciplines
+Trevius: Added Client Perl Objects UntrainDisc(slot) and UntrainDiscAll() to untrain either just 1 discipline slot or all disciplines
+Trevius: Added functionality to quest::traindisc() to allow it to use the spell_globals table and system
+Trevius: Added in code to prevent a zone crash related to group/raids using group recourse spells as a temporary fix until the Spells branch goes live
+
 ==02/15/2010==
 Gaeorn: (iRFNA) Fixed flaw in IsPureNukeSpell() logic. Fixes bug where bots were healing enemies.
 Derision: Added default value to suspendeduntil column in utils/sql/svn/1195_account_suspendeduntil.sql

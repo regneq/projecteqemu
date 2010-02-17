@@ -723,9 +723,13 @@ uint16 QuestManager::scribespells(uint8 max_level, uint8 min_level) {
 }
 
 uint16 QuestManager::traindiscs(uint8 max_level, uint8 min_level) {
- 	//Trevius: Train Disc for user up to their actual level.
 	uint16 count;
 	int16 curspell;
+	
+	int16 Char_ID = initiator->CharacterID();
+	bool SpellGlobalRule = RuleB(Spells, EnableSpellGlobals);
+	bool SpellGlobalCheckResult = 0;
+	
 	for(curspell = 0, count = 0; curspell < SPDAT_RECORDS; curspell++)
 	{
 		if
@@ -742,12 +746,26 @@ uint16 QuestManager::traindiscs(uint8 max_level, uint8 min_level) {
 					if(initiator->GetPP().disciplines.values[r] == curspell) {
 						initiator->Message(13, "You already know this discipline.");
 						break;	//continue the 1st loop
-					} else if(initiator->GetPP().disciplines.values[r] == 0) {
+					}
+					else if(initiator->GetPP().disciplines.values[r] == 0) {
+						if (SpellGlobalRule) {
+							// Bool to see if the character has the required QGlobal to train it if one exists in the Spell_Globals table
+							SpellGlobalCheckResult = initiator->SpellGlobalCheck(curspell, Char_ID);
+							if (SpellGlobalCheckResult) {
+								initiator->GetPP().disciplines.values[r] = curspell;
+								initiator->SendDisciplineUpdate();
+								initiator->Message(0, "You have learned a new discipline!");
+								count++;	//success counter
+							}
+							break;	//continue the 1st loop
+						}
+						else {
 						initiator->GetPP().disciplines.values[r] = curspell;
 						initiator->SendDisciplineUpdate();
 						initiator->Message(0, "You have learned a new discipline!");
 						count++;	//success counter
 						break;	//continue the 1st loop
+						}
 					}	//if we get to this point, there's already a discipline in this slot, so we skip it
 				}
 			}
@@ -757,9 +775,12 @@ uint16 QuestManager::traindiscs(uint8 max_level, uint8 min_level) {
 }
 
 void QuestManager::unscribespells() {
-	//aza: unscribes all spells of the user
 	initiator->UnscribeSpellAll();
 	}
+
+void QuestManager::untraindiscs() {
+	initiator->UntrainDiscAll();
+}
 
 void QuestManager::givecash(int copper, int silver, int gold, int platinum) {
 	if (initiator && initiator->IsClient())
