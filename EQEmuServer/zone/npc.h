@@ -180,6 +180,11 @@ public:
 	float GetGuardPointY()	const { return guard_y; }
 	float GetGuardPointZ()	const { return guard_z; }
 
+	int8 GetPrimSkill()	const { return prim_melee_type; }
+	int8 GetSecSkill()	const { return sec_melee_type; }
+	void SetPrimSkill(int8 skill_type)	{ prim_melee_type = skill_type; }
+	void SetSecSkill(int8 skill_type)	{ sec_melee_type = skill_type; }
+
 	uint32	adventure_template_id;
 	uint32	MerchantType;
 	void	Depop(bool StartSpawnTimer = true);
@@ -361,9 +366,10 @@ protected:
 	
 	int16   skills[HIGHEST_SKILL+1];
 	int32   equipment[MAX_MATERIALS];	//this is an array of item IDs
-	int16	d_meele_texture1;		//this is an item Material value
-	int16	d_meele_texture2;		//this is an item Material value (offhand)
-
+	int16	d_meele_texture1;			//this is an item Material value
+	int16	d_meele_texture2;			//this is an item Material value (offhand)
+	int8	prim_melee_type;			//Sets the Primary Weapon attack message and animation
+	int8	sec_melee_type;				//Sets the Secondary Weapon attack message and animation
 	AA_SwarmPetInfo *swarmInfoPtr;
 	
 	bool ldon_trapped;
