@@ -256,6 +256,14 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 	d_meele_texture1 = d->d_meele_texture1;
 	d_meele_texture2 = d->d_meele_texture2;
 	memset(equipment, 0, sizeof(equipment));
+	prim_melee_type = d->prim_melee_type;
+	sec_melee_type = d->sec_melee_type;
+
+	// If Melee Textures are not set, set attack type to Hand to Hand as default
+	if(!d_meele_texture1)
+		prim_melee_type = 28;
+	if(!d_meele_texture2)
+		sec_melee_type = 28;
 	
 	//give NPCs skill values...
 	int r;
@@ -743,7 +751,7 @@ NPC* NPC::SpawnNPC(const char* spawncommand, float in_x, float in_y, float in_z,
 			sprintf(sep.arg[7],"0");
 		if (!strcmp(sep.arg[4],"-"))
 			sprintf(sep.arg[4]," "); 
-		if (!sep.IsNumber(10))	// solar: bodytype
+		if (!sep.IsNumber(10))	// bodytype
 			sprintf(sep.arg[10], "0");
 		//Calc MaxHP if client neglected to enter it...
 		if (!sep.IsNumber(4)) {
@@ -882,6 +890,9 @@ NPC* NPC::SpawnNPC(const char* spawncommand, float in_x, float in_y, float in_z,
 		npc_type->INT = 150;
 		npc_type->WIS = 150;
 		npc_type->CHA = 150;
+
+		npc_type->prim_melee_type = 28;
+		npc_type->sec_melee_type = 28;
 		
 		NPC* npc = new NPC(npc_type, 0, in_x, in_y, in_z, in_heading/8, FlyMode3);
 		npc->GiveNPCTypeData(npc_type);
@@ -891,7 +902,6 @@ NPC* NPC::SpawnNPC(const char* spawncommand, float in_x, float in_y, float in_z,
 		return npc;
 	}
 }
-
 
 int32 ZoneDatabase::NPCSpawnDB(int8 command, const char* zone, Client *c, NPC* spawn, int32 extra) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
@@ -907,7 +917,7 @@ int32 ZoneDatabase::NPCSpawnDB(int8 command, const char* zone, Client *c, NPC* s
 			char tmpstr[64];
 			//char tmpstr2[64];
 			EntityList::RemoveNumbers(strn0cpy(tmpstr, spawn->GetName(), sizeof(tmpstr)));
-			if (!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO npc_types (name, level, race, class, hp, gender, texture, helmtexture, size, loottable_id, merchant_id, face, runspeed) values(\"%s\",%i,%i,%i,%i,%i,%i,%i,%f,%i,%i,%i,%f)", tmpstr, spawn->GetLevel(), spawn->GetRace(), spawn->GetClass(), spawn->GetMaxHP(), spawn->GetGender(), spawn->GetTexture(), spawn->GetHelmTexture(), spawn->GetSize(), spawn->GetLoottableID(), spawn->MerchantType, 0, spawn->GetRunspeed()), errbuf, 0, 0, &npc_type_id)) {
+			if (!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO npc_types (name, level, race, class, hp, gender, texture, helmtexture, size, loottable_id, merchant_id, face, runspeed, prim_melee_type, sec_melee_type) values(\"%s\",%i,%i,%i,%i,%i,%i,%i,%f,%i,%i,%i,%f,%i,%i)", tmpstr, spawn->GetLevel(), spawn->GetRace(), spawn->GetClass(), spawn->GetMaxHP(), spawn->GetGender(), spawn->GetTexture(), spawn->GetHelmTexture(), spawn->GetSize(), spawn->GetLoottableID(), spawn->MerchantType, 0, spawn->GetRunspeed(), 28, 28), errbuf, 0, 0, &npc_type_id)) {
 				safe_delete(query);
 				return false;
 			}
@@ -1077,7 +1087,7 @@ int32 ZoneDatabase::NPCSpawnDB(int8 command, const char* zone, Client *c, NPC* s
 			char tmpstr[64];
 			//char tmpstr2[64];
 			EntityList::RemoveNumbers(strn0cpy(tmpstr, spawn->GetName(), sizeof(tmpstr)));
-			if (!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO npc_types (name, level, race, class, hp, gender, texture, helmtexture, size, loottable_id, merchant_id, face, runspeed) values(\"%s\",%i,%i,%i,%i,%i,%i,%i,%f,%i,%i,%i,%f)", tmpstr, spawn->GetLevel(), spawn->GetRace(), spawn->GetClass(), spawn->GetMaxHP(), spawn->GetGender(), spawn->GetTexture(), spawn->GetHelmTexture(), spawn->GetSize(), spawn->GetLoottableID(), spawn->MerchantType, 0, spawn->GetRunspeed()), errbuf, 0, 0, &npc_type_id)) {
+			if (!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO npc_types (name, level, race, class, hp, gender, texture, helmtexture, size, loottable_id, merchant_id, face, runspeed, prim_melee_type, sec_melee_type) values(\"%s\",%i,%i,%i,%i,%i,%i,%i,%f,%i,%i,%i,%f,%i,%i)", tmpstr, spawn->GetLevel(), spawn->GetRace(), spawn->GetClass(), spawn->GetMaxHP(), spawn->GetGender(), spawn->GetTexture(), spawn->GetHelmTexture(), spawn->GetSize(), spawn->GetLoottableID(), spawn->MerchantType, 0, spawn->GetRunspeed(), 28, 28), errbuf, 0, 0, &npc_type_id)) {
 				safe_delete(query);
 				return false;
 			}

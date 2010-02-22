@@ -94,6 +94,8 @@ struct NPCType
 //	float	fixedZ;
     int16	d_meele_texture1;
 	int16	d_meele_texture2;
+	int8	prim_melee_type;
+	int8	sec_melee_type;
 	sint32	hp_regen;
 	sint32  mana_regen;
 	sint32	aggroradius; // added for AI improvement - neotokyo

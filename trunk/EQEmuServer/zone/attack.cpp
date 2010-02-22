@@ -65,63 +65,108 @@ bool Mob::AttackAnimation(SkillType &skillinuse, int Hand, const ItemInst* weapo
 #endif		
 		switch (item->ItemType)
 		{
-		case ItemType1HS: // 1H Slashing
-		{
-			skillinuse = _1H_SLASHING;
-			type = anim1HWeapon;
-			break;
-		}
-		case ItemType2HS: // 2H Slashing
-		{
-			skillinuse = _2H_SLASHING;
-			type = anim2HSlashing;
-			break;
-		}
-		case ItemTypePierce: // Piercing
-		{
-			skillinuse = PIERCING;
-			type = animPiercing;
-			break;
-		}
-		case ItemType1HB: // 1H Blunt
-		{
-			skillinuse = _1H_BLUNT;
-			type = anim1HWeapon;
-			break;
-		}
-		case ItemType2HB: // 2H Blunt
-		{
-			skillinuse = _2H_BLUNT;
-			type = anim2HWeapon;
-			break;
-		}
-		case ItemType2HPierce: // 2H Piercing
-		{
-			skillinuse = PIERCING;
-			type = anim2HWeapon;
-			break;
-		}
-		case ItemTypeHand2Hand:
-		{
-			skillinuse = HAND_TO_HAND;
-			type = animHand2Hand;
-			break;
-		}
-		default:
-		{
-			skillinuse = HAND_TO_HAND;
-			type = animHand2Hand;
-			break;
-		}
+			case ItemType1HS: // 1H Slashing
+			{
+				skillinuse = _1H_SLASHING;
+				type = anim1HWeapon;
+				break;
+			}
+			case ItemType2HS: // 2H Slashing
+			{
+				skillinuse = _2H_SLASHING;
+				type = anim2HSlashing;
+				break;
+			}
+			case ItemTypePierce: // Piercing
+			{
+				skillinuse = PIERCING;
+				type = animPiercing;
+				break;
+			}
+			case ItemType1HB: // 1H Blunt
+			{
+				skillinuse = _1H_BLUNT;
+				type = anim1HWeapon;
+				break;
+			}
+			case ItemType2HB: // 2H Blunt
+			{
+				skillinuse = _2H_BLUNT;
+				type = anim2HWeapon;
+				break;
+			}
+			case ItemType2HPierce: // 2H Piercing
+			{
+				skillinuse = PIERCING;
+				type = anim2HWeapon;
+				break;
+			}
+			case ItemTypeHand2Hand:
+			{
+				skillinuse = HAND_TO_HAND;
+				type = animHand2Hand;
+				break;
+			}
+			default:
+			{
+				skillinuse = HAND_TO_HAND;
+				type = animHand2Hand;
+				break;
+			}
 		}// switch
 	}
-	else
-	{
+	else if(IsNPC()) {
+
+		switch (skillinuse)
+		{
+			case _1H_SLASHING: // 1H Slashing
+			{
+				type = anim1HWeapon;
+				break;
+			}
+			case _2H_SLASHING: // 2H Slashing
+			{
+				type = anim2HSlashing;
+				break;
+			}
+			case PIERCING: // Piercing
+			{
+				type = animPiercing;
+				break;
+			}
+			case _1H_BLUNT: // 1H Blunt
+			{
+				type = anim1HWeapon;
+				break;
+			}
+			case _2H_BLUNT: // 2H Blunt
+			{
+				type = anim2HWeapon;
+				break;
+			}
+			//case PIERCING: // 2H Piercing
+			//{
+			//	type = anim2HWeapon;
+			//	break;
+			//}
+			case HAND_TO_HAND:
+			{
+				type = animHand2Hand;
+				break;
+			}
+			default:
+			{
+				type = animHand2Hand;
+				break;
+			}
+		}// switch
+	}
+	else {
 		skillinuse = HAND_TO_HAND;
 		type = animHand2Hand;
 	}
 	
-	// Kaiyodo - If we're attacking with the seconary hand, play the duel wield anim
+	// If we're attacking with the secondary hand, play the dual wield anim
 	if (Hand == 14)	// DW anim
 		type = animDualWeild;
 	
@@ -129,12 +174,11 @@ bool Mob::AttackAnimation(SkillType &skillinuse, int Hand, const ItemInst* weapo
     return true;
 }
 
-// solar: called when a mob is attacked, does the checks to see if it's a hit
+// called when a mob is attacked, does the checks to see if it's a hit
 // and does other mitigation checks.  'this' is the mob being attacked.
 bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 {
 /*
-	Father Nitwit:
 		Reworked a lot of this code to achieve better balance at higher levels.
 		The old code basically meant that any in high level (50+) combat,
 		both parties always had 95% chance to hit the other one.
@@ -1611,6 +1655,12 @@ bool NPC::Attack(Mob* other, int Hand, bool bRiposte)	 // Kaiyodo - base functio
 	FaceTarget(GetTarget());
 	
 	SkillType skillinuse = HAND_TO_HAND;
+	if (Hand == 13) {
+		skillinuse = GetPrimSkill();
+	}
+	if (Hand == 14) {
+		skillinuse = GetSecSkill();
+	}
 
 	//figure out what weapon they are using, if any
 	const Item_Struct* weapon = NULL;

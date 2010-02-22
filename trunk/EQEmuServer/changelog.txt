@@ -1,5 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==02/22/2010==
+Trevius: Added 2 new fields (prim_melee_type and sec_melee_type) to the npc_types table to allow setting attack animations/messages to go with weapon models (Default is 28 - Hand to Hand)
+Trevius: Added Perl Quest Objects; GetPrimSkill(), GetSecSkill(), SetPrimSkill(skill_type), SetSecSkill(skill_type) for altering the above setting temporarily.
+
+Required SQL: utils/sql/svn/1259_npc_skill_types.sql
+
 ==02/17/2010==
 Trevius: Added new quest::untraindiscs() command to untrain all disciplines
 Trevius: Added Client Perl Objects UntrainDisc(slot) and UntrainDiscAll() to untrain either just 1 discipline slot or all disciplines
@@ -35,9 +41,7 @@ Derision: EVENT_POPUPRESPONSE is now passed to player.pl
 ==01/30/2010==
 cybernine186: Implemented the #suspend command.
 
-REQUIRED SQL:
-
-ALTER TABLE `account` ADD `suspendeduntil` DATETIME NOT NULL;
+Required SQL: utils/sql/svn/1195_account_suspendeduntil.sql
 
 ==01/28/2010==
 gaeorn: added EQEmuLoginServer/EQCryptoAPI.h (contents from a EQEmu forum post by KLS)
