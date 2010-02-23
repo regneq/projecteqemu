@@ -1656,10 +1656,10 @@ bool NPC::Attack(Mob* other, int Hand, bool bRiposte)	 // Kaiyodo - base functio
 	
 	SkillType skillinuse = HAND_TO_HAND;
 	if (Hand == 13) {
-		skillinuse = GetPrimSkill();
+		skillinuse = static_cast<SkillType>(GetPrimSkill());
 	}
 	if (Hand == 14) {
-		skillinuse = GetSecSkill();
+		skillinuse = static_cast<SkillType>(GetSecSkill());
 	}
 
 	//figure out what weapon they are using, if any
