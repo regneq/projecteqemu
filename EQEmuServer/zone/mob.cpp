@@ -1366,6 +1366,31 @@ void Mob::SendLevelAppearance(){
 	safe_delete(outapp);
 }
 
+void Mob::SendAppearanceEffect(int32 parm1, int32 parm2, int32 parm3, int32 parm4, int32 parm5 ){
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_LevelAppearance, sizeof(LevelAppearance_Struct));
+	LevelAppearance_Struct* la = (LevelAppearance_Struct*)outapp->pBuffer;
+	la->spawn_id = GetID();
+	la->parm1 = parm1;
+	la->parm2 = parm2;
+	la->parm3 = parm3;
+	la->parm4 = parm4;
+	la->parm5 = parm5;
+	// Note that setting the b values to 0 will disable the related effect from the corresponding parameter.
+	// Setting the a value appears to have no affect at all.
+	la->value1a = 1;
+	la->value1b = 1;
+	la->value2a = 1;
+	la->value2b = 1;
+	la->value3a = 1;
+	la->value3b = 1;
+	la->value4a = 1;
+	la->value4b = 1;
+	la->value5a = 1;
+	la->value5b = 1;
+	entity_list.QueueCloseClients(this,outapp);
+	safe_delete(outapp);
+}
+
 const sint32& Mob::SetMana(sint32 amount)
 {
 	CalcMaxMana();
