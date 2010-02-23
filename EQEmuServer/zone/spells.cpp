@@ -1126,6 +1126,7 @@ bool Mob::DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_ce
 	
 	bodyType target_bt = BT_Humanoid;
 	SpellTargetType targetType = spells[spell_id].targettype;
+	bodyType mob_body = spell_target->GetBodyType();
 
 	// seveian 2008-09-23
 	if(IsPlayerIllusionSpell(spell_id)
@@ -1209,12 +1210,20 @@ bool Mob::DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_ce
 		case ST_Dragon: if(target_bt == BT_Humanoid) target_bt = BT_Dragon;
 		case ST_Giant: if(target_bt == BT_Humanoid) target_bt = BT_Giant;
 		case ST_Animal: if(target_bt == BT_Humanoid) target_bt = BT_Animal;
+		
+		// check for special case body types (Velious dragons/giants)
+		if(mob_body == BT_RaidGiant) mob_body = BT_Giant;
+		if(mob_body == BT_VeliousDragon) mob_body = BT_Dragon;
+
 		{
-			if(!spell_target || spell_target->GetBodyType() != target_bt)
+			if(!spell_target || mob_body != target_bt)
 			{
 				//invalid target
 				mlog(SPELLS__CASTING_ERR, "Spell %d canceled: invalid target of body type %d (want body Type %d)", spell_id, spell_target->GetBodyType(), target_bt);
-				Message_StringID(13,SPELL_NEED_TAR);
+				if(!spell_target)
+					Message_StringID(13,SPELL_NEED_TAR);
+				else
+					Message_StringID(13,CANNOT_AFFECT_NPC);
 				return false;
 			}
 			CastAction = SingleTarget;

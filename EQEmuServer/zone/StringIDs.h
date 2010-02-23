@@ -65,6 +65,7 @@
 #define IMMUNE_MOVEMENT				244		//Your target is immune to changes in its run speed.
 #define ONLY_ONE_PET				246		//You cannot have more than one pet at a time.
 #define CANNOT_CHARM_YET			248		//Your target is too high of a level for your charm spell.
+#define CANNOT_AFFECT_NPC			251		//That spell can not affect this target NPC.
 #define SUSPEND_MINION_HAS_AGGRO       256             //Your pet is the focus of something's attention.
 #define NO_PET						255		//You do not have a pet.
 #define CORPSE_CANT_SENSE			262		//You cannot sense any corpses for this PC in this zone.
