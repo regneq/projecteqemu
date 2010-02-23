@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==02/23/2010==
+Trevius: Added new Perl::Mob quest object SendAppearanceEffect(effect1, effect2, effect3, effect4, effect5) which can send up to 5 particle effects at once.
+
 ==02/22/2010==
 Trevius: Added 2 new fields (prim_melee_type and sec_melee_type) to the npc_types table to allow setting attack animations/messages to go with weapon models (Default is 28 - Hand to Hand)
 Trevius: Added Perl Quest Objects; GetPrimSkill(), GetSecSkill(), SetPrimSkill(skill_type), SetSecSkill(skill_type) for altering the above setting temporarily.
