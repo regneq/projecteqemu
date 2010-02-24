@@ -3949,7 +3949,11 @@ void EntityList::ZoneWho(Client *c, Who_All_Struct* Who) {
 
 			WhoAllPlayerPart2* WAPP2 = (WhoAllPlayerPart2*)Buffer;
 
-			if(ClientEntry->Admin() >= 10)
+			if(ClientEntry->IsTrader())
+				WAPP2->RankMSGID = 12315;
+			else if(ClientEntry->IsBuyer())
+				WAPP2->RankMSGID = 6056;
+			else if(ClientEntry->Admin() >= 10)
 				WAPP2->RankMSGID = 12312;
 			else
 				WAPP2->RankMSGID = 0xFFFFFFFF;
