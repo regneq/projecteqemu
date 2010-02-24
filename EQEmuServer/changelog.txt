@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==02/24/2010==
+Derision: SoF: TRADER/BUYER will now be displayed as appropriate in /who for SoF clients.
+
 ==02/23/2010==
 Trevius: Added new Perl::Mob quest object SendAppearanceEffect(effect1, effect2, effect3, effect4, effect5) which can send up to 5 particle effects at once.
 realityincarnate: spells requiring dragon/giant targets will now work on velious raid targets
