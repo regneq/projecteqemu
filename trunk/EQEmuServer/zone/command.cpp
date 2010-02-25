@@ -236,7 +236,7 @@ int command_init(void) {
 		command_add("setpass","[accountname] [password] - Set local password for accountname",150,command_setpass) ||
 		command_add("grid","[add/delete] [grid_num] [wandertype] [pausetype] - Create/delete a wandering grid",170,command_grid) ||
 		command_add("wp","[add/delete] [grid_num] [pause] [wp_num] - Add/delete a waypoint to/from a wandering grid",170,command_wp) ||
-		command_add("wpadd","[circular/random/patrol] [pause] - Add your current location as a waypoint to your NPC target's AI path",170,command_wpadd) ||
+		command_add("wpadd","[pause] - Add your current location as a waypoint to your NPC target's AI path",170,command_wpadd) ||
 		command_add("wpinfo","- Show waypoint info about your NPC target",170,command_wpinfo) ||
 		command_add("iplookup","[charname] - Look up IP address of charname",200,command_iplookup) ||
 		command_add("size","[size] - Change size of you or your target",50,command_size) ||
@@ -5893,31 +5893,40 @@ void command_wpinfo(Client *c, const Seperator *sep)
 void command_wpadd(Client *c, const Seperator *sep)
 {
 	int	type1=0,
-		type2=1,
-		pause=14;	// Defaults for a new grid if the arguments are omitted from the command
+		type2=0,
+		pause=0;	// Defaults for a new grid
 
 	Mob *t=c->GetTarget();
 	if (t && t->IsNPC())
-	{	Spawn2* s2info = t->CastToNPC()->respawn2;
+	{
+		Spawn2* s2info = t->CastToNPC()->respawn2;
 
 		if(s2info == NULL)	// Can't figure out where this mob's spawn came from... maybe a dynamic mob created by #spawn
-		{	c->Message(0,"#wpadd FAILED -- Can't determine which spawn record in the database this mob came from!");
+		{
+			c->Message(0,"#wpadd FAILED -- Can't determine which spawn record in the database this mob came from!");
 			return;
 		}
-		else 
-		{   if (sep->arg[1] && !strcasecmp(strlwr(sep->arg[1]),"circular")) type1=0;
-		if (sep->arg[1] && !strcasecmp(strlwr(sep->arg[1]),"random"))	type1=2;
-		if (sep->arg[1] && !strcasecmp(strlwr(sep->arg[1]),"patrol"))	type1=3;
-		if (sep->arg[2] && atoi(sep->arg[2]) > 0)	pause=atoi(sep->arg[2]);
-		    int32 tmp_grid = database.AddWPForSpawn(c, s2info->GetID(), c->GetX(),c->GetY(),c->GetZ(), pause, type1, type2, zone->GetZoneID());
+		
+		if (sep->arg[1][0])
+		{
+			if (atoi(sep->arg[1]) >= 0)
+				pause=atoi(sep->arg[1]);
+			else
+			{
+				c->Message(0,"Usage: #wpadd [pause]");
+				return;
+			}
+		}
+		int32 tmp_grid = database.AddWPForSpawn(c, s2info->GetID(), c->GetX(),c->GetY(),c->GetZ(), pause, type1, type2, zone->GetZoneID());
 		if (tmp_grid)
 			t->CastToNPC()->SetGrid(tmp_grid);
-		t->CastToNPC()->AssignWaypoints(t->CastToNPC()->GetGrid());
-	}
-	}
-	else
-		c->Message(0,"Usage: #wpadd [circular/random/patrol] [pause]");
-} /*** END command_wpadd ***/
+
+ 		t->CastToNPC()->AssignWaypoints(t->CastToNPC()->GetGrid());
+		c->Message(0,"Waypoint added. Use #wpinfo to see waypoints for this NPC.");
+ 	}
+ 	else
+		c->Message(0,"You must target an NPC to use this.");
+}
 
 
 void command_interrupt(Client *c, const Seperator *sep)

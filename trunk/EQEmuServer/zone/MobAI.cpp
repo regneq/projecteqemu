@@ -1020,7 +1020,7 @@ void Client::AI_Process()
 			float dist = DistNoRoot(*owner);
 			if (dist >= 100) 
 			{
-				float speed = dist >= 25 ? GetRunspeed() : GetWalkspeed();
+				float speed = dist >= 225 ? GetRunspeed() : GetWalkspeed();
 				animation = 21 * speed;
 				CalculateNewPosition2(owner->GetX(), owner->GetY(), owner->GetZ(), speed);
 			}
