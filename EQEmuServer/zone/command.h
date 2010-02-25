@@ -135,7 +135,6 @@ void command_delacct(Client *c, const Seperator *sep);
 void command_setpass(Client *c, const Seperator *sep);
 void command_grid(Client *c, const Seperator *sep);
 void command_wp(Client *c, const Seperator *sep);
-void command_wp(Client *c, const Seperator *sep);
 void command_iplookup(Client *c, const Seperator *sep);
 void command_size(Client *c, const Seperator *sep);
 void command_mana(Client *c, const Seperator *sep);
