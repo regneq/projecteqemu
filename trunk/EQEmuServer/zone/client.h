@@ -520,6 +520,7 @@ public:
 	void	Stun(int duration);
 	void	UnStun();
 	void	ReadBook(BookRequest_Struct *book);
+	void	QuestReadBook(const char* text, int8 type);
 	void	SendClientMoneyUpdate(int8 type,int32 amount);
 	void	SendMoneyUpdate();
 	bool	TakeMoneyFromPP(uint64 copper);

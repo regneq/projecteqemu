@@ -4231,6 +4231,32 @@ XS(XS_Client_GetEbonCrystals)
 	XSRETURN(1);
 }
 
+XS(XS_Client_ReadBook); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_ReadBook)
+{
+	dXSARGS;
+	if (items != 3)
+		Perl_croak(aTHX_ "Usage: Client::ReadBook(THIS, Book Text, Type)");
+	{
+		Client *		THIS;
+		char*			in_txt = (char *)SvPV_nolen(ST(1));
+		int8			type = (int8)SvUV(ST(2));
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+			THIS->QuestReadBook(in_txt, type);
+	}
+XSRETURN_EMPTY;
+}
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -4407,6 +4433,7 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "GetPVPPoints"), XS_Client_GetPVPPoints, file, "$");
 		newXSproto(strcpy(buf, "GetRadiantCrystals"), XS_Client_GetRadiantCrystals, file, "$");
 		newXSproto(strcpy(buf, "GetEbonCrystals"), XS_Client_GetEbonCrystals, file, "$");
+		newXSproto(strcpy(buf, "ReadBook"), XS_Client_ReadBook, file, "$$$");
 	XSRETURN_YES;
 }
 
