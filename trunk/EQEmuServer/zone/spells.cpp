@@ -1126,7 +1126,7 @@ bool Mob::DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_ce
 	
 	bodyType target_bt = BT_Humanoid;
 	SpellTargetType targetType = spells[spell_id].targettype;
-	bodyType mob_body = spell_target ? spell_target->GetBodyType() : 0;
+	bodyType mob_body = spell_target ? spell_target->GetBodyType() : BT_Humanoid;
 
 	// seveian 2008-09-23
 	if(IsPlayerIllusionSpell(spell_id)
