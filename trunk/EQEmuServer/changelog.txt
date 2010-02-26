@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==02/26/2010==
+Derision: Fix for crash in Mob::DetermineSpellTargets.
+
 ==02/25/2010==
 Secrets: Added new Perl::Client command, ReadBook(Book Text, Type), to allow sending a book/scroll to clients via quests.  Type 0 = scroll, type 1 = book.
 Trevius: GMs with #gm on should now be able to /target NPCs across the zone again.
