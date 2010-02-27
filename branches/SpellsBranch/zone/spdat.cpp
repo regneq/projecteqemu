@@ -347,6 +347,7 @@ bool IsPureNukeSpell(int16 spell_id)
 	return
 	(
 		spells[spell_id].effectid[0] == SE_CurrentHP &&
+		spells[spell_id].base[0] < 0 &&
 		effect_count == 1
 	);
 }
@@ -367,6 +368,7 @@ bool Spell::IsPureNukeSpell() const
 	return
 	(
 		raw_spell.effectid[last_index] == SE_CurrentHP &&
+		raw_spell.base[last_index] < 0 &&
 		effect_count == 1
 	);
 }

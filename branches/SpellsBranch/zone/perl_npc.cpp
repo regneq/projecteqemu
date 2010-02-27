@@ -1641,6 +1641,105 @@ XS(XS_NPC_GetGuardPointZ)
 	XSRETURN(1);
 }
 
+XS(XS_NPC_SetPrimSkill); /* prototype to pass -Wmissing-prototypes */
+XS(XS_NPC_SetPrimSkill)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: NPC::SetPrimSkill(THIS, skill_id)");
+	{
+		NPC *		THIS;
+		int		skill_id = (int)SvIV(ST(1));
+
+		if (sv_derived_from(ST(0), "NPC")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(NPC *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type NPC");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->SetPrimSkill(skill_id);
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_NPC_SetSecSkill); /* prototype to pass -Wmissing-prototypes */
+XS(XS_NPC_SetSecSkill)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: NPC::SetSecSkill(THIS, skill_id)");
+	{
+		NPC *		THIS;
+		int		skill_id = (int)SvIV(ST(1));
+
+		if (sv_derived_from(ST(0), "NPC")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(NPC *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type NPC");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->SetSecSkill(skill_id);
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_NPC_GetPrimSkill); /* prototype to pass -Wmissing-prototypes */
+XS(XS_NPC_GetPrimSkill)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: NPC::GetPrimSkill(THIS)");
+	{
+		NPC *		THIS;
+		int32		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "NPC")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(NPC *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type NPC");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetPrimSkill();
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_NPC_GetSecSkill); /* prototype to pass -Wmissing-prototypes */
+XS(XS_NPC_GetSecSkill)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: NPC::GetSecSkill(THIS)");
+	{
+		NPC *		THIS;
+		int32		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "NPC")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(NPC *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type NPC");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetSecSkill();
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
 
 #ifdef __cplusplus
 extern "C"
@@ -1723,6 +1822,10 @@ XS(boot_NPC)
 		newXSproto(strcpy(buf, "GetGuardPointX"), XS_NPC_GetGuardPointX, file, "$");
 		newXSproto(strcpy(buf, "GetGuardPointY"), XS_NPC_GetGuardPointY, file, "$");
 		newXSproto(strcpy(buf, "GetGuardPointZ"), XS_NPC_GetGuardPointZ, file, "$");
+		newXSproto(strcpy(buf, "SetPrimSkill"), XS_NPC_SetPrimSkill, file, "$$");
+		newXSproto(strcpy(buf, "SetSecSkill"), XS_NPC_SetSecSkill, file, "$$");
+		newXSproto(strcpy(buf, "GetPrimSkill"), XS_NPC_GetPrimSkill, file, "$");
+		newXSproto(strcpy(buf, "GetSecSkill"), XS_NPC_GetSecSkill, file, "$");
 	XSRETURN_YES;
 }
 

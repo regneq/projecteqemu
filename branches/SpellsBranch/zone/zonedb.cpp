@@ -987,7 +987,7 @@ bool ZoneDatabase::DBSetItemStatus(int32 id, int8 status) {
 }
 
 
-/* Searches npctable for matchind id, and returns the item if found,
+/* Searches npctable for matching id, and returns the item if found,
  * or NULL otherwise. If id passed is 0, loads all npc_types for
  * the current zone, returning the last item added.
  */
@@ -1042,6 +1042,8 @@ const NPCType* ZoneDatabase::GetNPCType (uint32 id) {
             "npc_types.npc_spells_id,"
 			"npc_types.d_meele_texture1,"
             "npc_types.d_meele_texture2,"
+			"npc_types.prim_melee_type,"
+			"npc_types.sec_melee_type,"
             "npc_types.runspeed,"
 			"npc_types.findable,"
 			"npc_types.trackable,"
@@ -1125,8 +1127,10 @@ const NPCType* ZoneDatabase::GetNPCType (uint32 id) {
 				tmpNPCType->max_dmg = atoi(row[r++]);
 				strcpy(tmpNPCType->npc_attacks,row[r++]);
 				tmpNPCType->npc_spells_id = atoi(row[r++]);
-				tmpNPCType->d_meele_texture1= atoi(row[r++]);
-				tmpNPCType->d_meele_texture2= atoi(row[r++]);
+				tmpNPCType->d_meele_texture1 = atoi(row[r++]);
+				tmpNPCType->d_meele_texture2 = atoi(row[r++]);
+				tmpNPCType->prim_melee_type = atoi(row[r++]);
+				tmpNPCType->sec_melee_type = atoi(row[r++]);
 				tmpNPCType->runspeed= atof(row[r++]);
 				tmpNPCType->findable = atoi(row[r++]) == 0? false : true;
 				tmpNPCType->trackable = atoi(row[r++]) == 0? false : true;

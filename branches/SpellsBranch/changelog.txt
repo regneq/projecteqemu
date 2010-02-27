@@ -1,5 +1,38 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==02/26/2010==
+Derision: Fix for crash in Mob::DetermineSpellTargets.
+
+==02/25/2010==
+Secrets: Added new Perl::Client command, ReadBook(Book Text, Type), to allow sending a book/scroll to clients via quests.  Type 0 = scroll, type 1 = book.
+Trevius: GMs with #gm on should now be able to /target NPCs across the zone again.
+joligario: Fixed typo relating to Pet pursuit speed in MobAI.cpp
+joligario: Manual WP Add fix.
+joligario: Fixed duplicate declaration of command_wp in command.h
+
+==02/24/2010==
+Derision: SoF: TRADER/BUYER will now be displayed as appropriate in /who for SoF clients.
+
+==02/23/2010==
+Trevius: Added new Perl::Mob quest object SendAppearanceEffect(effect1, effect2, effect3, effect4, effect5) which can send up to 5 particle effects at once.
+realityincarnate: spells requiring dragon/giant targets will now work on velious raid targets
+
+==02/22/2010==
+Trevius: Added 2 new fields (prim_melee_type and sec_melee_type) to the npc_types table to allow setting attack animations/messages to go with weapon models (Default is 28 - Hand to Hand)
+Trevius: Added Perl Quest Objects; GetPrimSkill(), GetSecSkill(), SetPrimSkill(skill_type), SetSecSkill(skill_type) for altering the above setting temporarily.
+
+Required SQL: utils/sql/svn/1259_npc_skill_types.sql
+
+==02/17/2010==
+Trevius: Added new quest::untraindiscs() command to untrain all disciplines
+Trevius: Added Client Perl Objects UntrainDisc(slot) and UntrainDiscAll() to untrain either just 1 discipline slot or all disciplines
+Trevius: Added functionality to quest::traindisc() to allow it to use the spell_globals table and system
+Trevius: Added in code to prevent a zone crash related to group/raids using group recourse spells as a temporary fix until the Spells branch goes live
+
+==02/15/2010==
+Gaeorn: (iRFNA) Fixed flaw in IsPureNukeSpell() logic. Fixes bug where bots were healing enemies.
+Derision: Added default value to suspendeduntil column in utils/sql/svn/1195_account_suspendeduntil.sql
+
 ==02/07/2010==
 Derision: Reverted cross-zone group invites from Rev1086
 
@@ -25,9 +58,7 @@ Derision: EVENT_POPUPRESPONSE is now passed to player.pl
 ==01/30/2010==
 cybernine186: Implemented the #suspend command.
 
-REQUIRED SQL:
-
-ALTER TABLE `account` ADD `suspendeduntil` DATETIME NOT NULL;
+Required SQL: utils/sql/svn/1195_account_suspendeduntil.sql
 
 ==01/28/2010==
 gaeorn: added EQEmuLoginServer/EQCryptoAPI.h (contents from a EQEmu forum post by KLS)

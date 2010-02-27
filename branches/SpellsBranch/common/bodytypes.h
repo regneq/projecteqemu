@@ -27,6 +27,7 @@ typedef enum {
 	BT_Extraplanar		= 6,
 	BT_Magical			= 7,	//this name might be a bit off, 
 	BT_SummonedUndead	= 8,
+	BT_RaidGiant		= 9,
 	//					...
 	BT_NoTarget			= 11,	//no name, can't target this bodytype
 	BT_Vampire			= 12,

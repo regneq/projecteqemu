@@ -1815,6 +1815,21 @@ void Client::ReadBook(BookRequest_Struct *book) {
 	}
 }
 
+void Client::QuestReadBook(const char* text, int8 type) {
+	string booktxt2 = text;	
+	int length = booktxt2.length();
+	if (booktxt2[0] != '\0') {
+		EQApplicationPacket* outapp = new EQApplicationPacket(OP_ReadBook, length + sizeof(BookText_Struct));
+		BookText_Struct *out = (BookText_Struct *) outapp->pBuffer;
+		out->window = 0xFF;
+		out->type = type;
+		out->invslot = 0;
+		memcpy(out->booktext, booktxt2.c_str(), length);
+		QueuePacket(outapp);
+		safe_delete(outapp);
+	}
+}
+
 void Client::SendClientMoneyUpdate(int8 type,int32 amount){
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_TradeMoneyUpdate,sizeof(TradeMoneyUpdate_Struct));
 	TradeMoneyUpdate_Struct* mus= (TradeMoneyUpdate_Struct*)outapp->pBuffer;

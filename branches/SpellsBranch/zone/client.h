@@ -536,6 +536,7 @@ public:
 	void	Stun(int duration);
 	void	UnStun();
 	void	ReadBook(BookRequest_Struct *book);
+	void	QuestReadBook(const char* text, int8 type);
 	void	SendClientMoneyUpdate(int8 type,int32 amount);
 	void	SendMoneyUpdate();
 	bool	TakeMoneyFromPP(uint64 copper);
@@ -589,6 +590,8 @@ public:
 	void ScribeSpell(int16 spell_id, int slot, bool update_client = true);
 	void UnscribeSpell(int slot, bool update_client = true);
 	void UnscribeSpellAll(bool update_client = true);
+	void UntrainDisc(int slot, bool update_client = true);
+	void UntrainDiscAll(bool update_client = true);
 	bool SpellGlobalCheck(int16 Spell_ID, int16 Char_ID);
 
 	inline bool	IsSitting() const {return (playeraction == 1);}

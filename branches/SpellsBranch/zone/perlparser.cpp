@@ -931,6 +931,19 @@ XS(XS__unscribespells)
 	XSRETURN_EMPTY;
 }
 
+XS(XS__untraindiscs);
+XS(XS__untraindiscs)
+{
+	dXSARGS;
+	if (items != 0)
+		Perl_croak(aTHX_ "Usage: untraindiscs()");
+
+
+	quest_manager.untraindiscs();
+
+	XSRETURN_EMPTY;
+}
+
 XS(XS__givecash);
 XS(XS__givecash)
 {
@@ -3016,6 +3029,7 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "scribespells"), XS__scribespells, file);
        	newXS(strcpy(buf, "traindiscs"), XS__traindiscs, file);
 		newXS(strcpy(buf, "unscribespells"), XS__unscribespells, file);
+		newXS(strcpy(buf, "untraindiscs"), XS__untraindiscs, file);
 		newXS(strcpy(buf, "givecash"), XS__givecash, file);
 		newXS(strcpy(buf, "pvp"), XS__pvp, file);
 		newXS(strcpy(buf, "movepc"), XS__movepc, file);
