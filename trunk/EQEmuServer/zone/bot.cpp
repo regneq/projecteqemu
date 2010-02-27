@@ -8594,8 +8594,8 @@ void Bot::ProcessBotInspectionRequest(Bot* inspectedBot, Client* client) {
 	if(inspectedBot && client) {
 		EQApplicationPacket* outapp = new EQApplicationPacket(OP_InspectAnswer, sizeof(InspectResponse_Struct));
 		InspectResponse_Struct* insr = (InspectResponse_Struct*) outapp->pBuffer;
-		insr->TargetID = inspectedBot->GetID();
-		insr->playerid = client->GetID();
+		insr->TargetID = inspectedBot->GetNPCTypeID();
+		insr->playerid = inspectedBot->GetID();
 
 		const Item_Struct* item = 0;
 		

@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==02/26/2010==
 Derision: Fix for crash in Mob::DetermineSpellTargets.
+Congdar: fixed bot right-click inspect window title bar shows player name instead of target bot name.
 
 ==02/25/2010==
 Secrets: Added new Perl::Client command, ReadBook(Book Text, Type), to allow sending a book/scroll to clients via quests.  Type 0 = scroll, type 1 = book.
