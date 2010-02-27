@@ -1887,10 +1887,10 @@ char *ZoneDatabase::GetBuff(uint32 id, uint8 type)
 		safe_delete_array(query);
 		if(mysql_num_rows(result) == 1) 
 		{
+			row = mysql_fetch_row(result);
 			lengths = mysql_fetch_lengths(result);
 			if(lengths[0] > 0)
 			{
-				row = mysql_fetch_row(result);
 				char * return_data = new char[lengths[0]];
 				memcpy(return_data, row[0], lengths[0]);
 				mysql_free_result(result);
