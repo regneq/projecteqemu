@@ -316,10 +316,10 @@ void Mob::InterruptSpell(int16 message, int16 color, int16 spellid)
 		return;
 	}
 
-	if (bard_song || (casting_spell ? casting_spell->IsBardSong() : 0))
+	/*if (bard_song || (casting_spell ? casting_spell->IsBardSong() : 0))
 	{
 		_StopSong();
-	}
+	}*/
 
 	if(!message)
 	{
@@ -1825,7 +1825,7 @@ void Mob::_StopSong()
 		if (CastToClient()->Hungry())
 			manachange->stamina = 0;
 		CastToClient()->QueuePacket(outapp);
-		delete outapp;
+		safe_delete(outapp);
 	}
 	safe_delete(bard_song);
 	bardsong_timer.Disable();

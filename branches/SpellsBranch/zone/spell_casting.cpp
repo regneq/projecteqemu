@@ -154,7 +154,7 @@ bool Mob::CastSpell(Spell **casted_spell_ptr, int32* spell_will_finish)
 		return false;
 	}
 
-	if (HasActiveSong()) 
+	if(HasActiveSong()) 
 	{
 		mlog(SPELLS__BARDS, "Casting a new spell/song while singing a song. Killing old song %d.", bard_song->GetSpellID());
         _StopSong();
@@ -421,9 +421,9 @@ void Mob::CastedSpellFinished(Spell *casted_spell)
 			else
 			{
 				//Set our bard song...
-				bard_song = casted_spell->CopySpell();
-				bardsong_timer.Start(6000);
-				mlog(SPELLS__BARDS, "Bard song %d started: slot %d", bard_song->GetSpellID(), bard_song->GetSpellSlot());
+				//bard_song = casted_spell->CopySpell();
+				//bardsong_timer.Start(6000);
+				//mlog(SPELLS__BARDS, "Bard song %d started: slot %d", bard_song->GetSpellID(), bard_song->GetSpellSlot());
 				bard_song_mode = true;
 			}
 		}

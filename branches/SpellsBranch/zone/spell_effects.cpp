@@ -1162,8 +1162,7 @@ bool Mob::Handle_SE_CurrentHPOnce(const Spell *spell_to_cast, Mob *caster, const
 		else if(spell_to_cast->GetSpellID() == 2751)
 		{
 			effect_value = -((caster->GetHP() * 3) / 2);
-			caster->SetHP(1);
-			bool feign_return = Handle_SE_FeignDeath(spell_to_cast, caster, effect_id_index, partial, summoned_item, buff_in_use, buff_slot);
+			caster->SetHP(caster->GetMaxHP() / 4);
 		}
 		else if(spell_to_cast->GetSpellID() == 2766)
 		{
