@@ -481,8 +481,13 @@ void QuestManager::shout2(const char *str) {
 	worldserver.SendEmoteMessage(0,0,0,13, "%s shouts, '%s'", owner->GetCleanName(), str);
 }
 
-void QuestManager::gmsay(const char *str) {
-	worldserver.SendChannelMessage(0,0,11,0, 0, "%s", str);
+void QuestManager::gmsay(const char *str, int32 color, bool send_to_world) {
+	if(send_to_world) {
+        worldserver.SendEmoteMessage(0, 0, 80, color, "%s", str);
+	}
+	else {
+		entity_list.MessageStatus(0, 80, color, "%s", str);
+	}
 }
 
 void QuestManager::depop(int npc_type) {

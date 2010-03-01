@@ -144,11 +144,11 @@ bool Mob::AttackAnimation(SkillType &skillinuse, int Hand, const ItemInst* weapo
 				type = anim2HWeapon;
 				break;
 			}
-			//case PIERCING: // 2H Piercing
-			//{
-			//	type = anim2HWeapon;
-			//	break;
-			//}
+			case 99: // 2H Piercing
+			{
+				type = anim2HWeapon;
+				break;
+			}
 			case HAND_TO_HAND:
 			{
 				type = animHand2Hand;
@@ -1715,6 +1715,10 @@ bool NPC::Attack(Mob* other, int Hand, bool bRiposte)	 // Kaiyodo - base functio
 	sint16 charges = 0;
 	ItemInst weapon_inst(weapon, charges);
 	AttackAnimation(skillinuse, Hand, &weapon_inst);
+
+	//Work-around for there being no 2HP skill - We use 99 for the 2HB animation and 36 for pierce messages
+	if(skillinuse == 99)
+		skillinuse = 36;
 
 	//basically "if not immune" then do the attack
 	if((weapon_damage) > 0) {

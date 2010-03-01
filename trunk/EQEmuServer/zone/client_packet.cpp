@@ -2833,7 +2833,15 @@ void Client::Handle_OP_ItemLinkClick(const EQApplicationPacket *app)
 			}
 			else
 			{
-				Message(13, "Error: Say Links require a target.");
+				if(silentsaylink)
+				{
+					Message(13, "Error: Silent Say Links require an NPC target.");
+				}
+				else
+				{
+					Message(7, "You say,'%s'",response);
+					this->ChannelMessageReceived(8, 0, 100, response);
+				}
 				return;
 			}
 		}

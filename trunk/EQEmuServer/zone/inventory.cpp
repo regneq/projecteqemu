@@ -686,6 +686,27 @@ void Client::SendLootItemInPacket(const ItemInst* inst, sint16 slot_id)
 	SendItemPacket(slot_id,inst, ItemPacketTrade);
 }
 
+bool Client::IsValidSlot(uint32 slot)
+{
+	if((slot == -1) ||						// Deleting item
+		(slot >= 0 && slot <= 30) ||		// Worn inventory, normal inventory, and cursor
+		(slot >= 251 && slot <= 340) ||		// Normal inventory bags and cursor bag
+		(slot >= 400 && slot <= 404) ||		// Tribute
+		(slot >= 2000 && slot <= 2023) ||	// Bank
+		(slot >= 2031 && slot <= 2270) ||	// Bank bags
+		(slot >= 2500 && slot <= 2501) ||	// Shared bank
+		(slot >= 2531 && slot <= 2550) ||	// Shared bank bags
+		(slot >= 3000 && slot <= 3007) ||	// Trade window
+		(slot >= 4000 && slot <= 4009) ||	// Tradeskill container
+		(slot == 9999))						// Power Source
+	{
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
 // Moves items around both internally and in the database
 // In the future, this can be optimized by pushing all changes through one database REPLACE call
 bool Client::SwapItem(MoveItem_Struct* move_in) {
@@ -704,7 +725,26 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 	// Step 1: Variables
 	sint16 src_slot_id = (sint16)move_in->from_slot;
 	sint16 dst_slot_id = (sint16)move_in->to_slot;
-	
+	uint32 src_slot_check = move_in->from_slot;
+	uint32 dst_slot_check = move_in->to_slot;
+	uint32 stack_count_check = move_in->number_in_stack;
+
+	if(!IsValidSlot(src_slot_check)){
+		// SoF seems to send something for the first 16bits of this 32bit field on occasion. Don't warn for those.
+		if(src_slot_check < 3000000000)
+			Message(13, "Warning: Invalid slot move from slot %u to slot %u with %u charges!", src_slot_check, dst_slot_check, stack_count_check);
+		mlog(INVENTORY__SLOTS, "Invalid slot move from slot %u to slot %u with %u charges!", src_slot_check, dst_slot_check, stack_count_check);
+		return false;
+	}
+
+	if(!IsValidSlot(dst_slot_check)) {
+		// SoF seems to send something for the first 16bits of this 32bit field on occasion. Don't warn for those.
+		if(src_slot_check < 3000000000)
+			Message(13, "Warning: Invalid slot move from slot %u to slot %u with %u charges!", src_slot_check, dst_slot_check, stack_count_check);
+		mlog(INVENTORY__SLOTS, "Invalid slot move from slot %u to slot %u with %u charges!", src_slot_check, dst_slot_check, stack_count_check);
+		return false;
+	}
+
 	if (shield_target && (move_in->from_slot == 14 || move_in->to_slot == 14))
 	{
 		entity_list.MessageClose(this,false,100,0,"%s ceases shielding %s.",GetName(),shield_target->GetName());
