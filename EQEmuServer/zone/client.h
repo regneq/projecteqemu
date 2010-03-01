@@ -671,6 +671,7 @@ public:
 	void	SendItemLink(const ItemInst* inst, bool sendtoall=false);
 	void	SendLootItemInPacket(const ItemInst* inst, sint16 slot_id);
 	void	SendItemPacket(sint16 slot_id, const ItemInst* inst, ItemPacketType packet_type);
+	bool	IsValidSlot(uint32 slot);
 
 	inline	bool IsTrader() const { return(Trader); }
 	inline	bool IsBuyer() const { return(Buyer); }

@@ -1,5 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==03/01/2010==
+Trevius: Added 2 new optional arguments to quest::gmsay(text, [color, send_to_world?]) - allows changing color and sending to world or just zone.
+Trevius: Normal Saylinks should now work without requiring a target for proximity says.  Silent saylinks still require a target.
+Trevius: Added a check for valid slots when moving items from 1 slot to another.
+Trevius: NPCs using 2 Hand Pierce weapon models can be set to skill 99 in the prim_melee_type field of the npc_types table to show the correct attack animations and messages.
+
 ==02/26/2010==
 Derision: Fix for crash in Mob::DetermineSpellTargets.
 Congdar: fixed bot right-click inspect window title bar shows player name instead of target bot name.
