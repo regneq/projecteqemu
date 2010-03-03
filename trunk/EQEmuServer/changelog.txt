@@ -2,6 +2,8 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==03/03/2010==
 Trevius: Added functionality to the EQEmu Web Tool to show IP information based on account searches.
+Derision: Set Message Type for spells wearing off, experience and leadership messages so they aren't classed as 'Other' by the client chat filters.
+Derision: Removed -fpermissive from zone/makefile so invalid type conversions should now cause an error rather than a warning for Linux compiles.
 
 ==03/01/2010==
 Trevius: Added 2 new optional arguments to quest::gmsay(text, [color, send_to_world?]) - allows changing color and sending to world or just zone.
