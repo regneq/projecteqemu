@@ -1718,7 +1718,7 @@ bool NPC::Attack(Mob* other, int Hand, bool bRiposte)	 // Kaiyodo - base functio
 
 	//Work-around for there being no 2HP skill - We use 99 for the 2HB animation and 36 for pierce messages
 	if(skillinuse == 99)
-		skillinuse = 36;
+		skillinuse = static_cast<SkillType>(36);
 
 	//basically "if not immune" then do the attack
 	if((weapon_damage) > 0) {
