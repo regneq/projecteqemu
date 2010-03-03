@@ -274,7 +274,7 @@ typedef enum {
 #define MT_Experience			334
 #define MT_System				335
 #define MT_PetSpell				336
-#define MT_PetResponce			337
+#define MT_PetResponse			337
 #define MT_ItemSpeech			338
 #define MT_StrikeThrough		339
 #define MT_Stun					340

@@ -136,10 +136,10 @@ void Client::AddEXP(int32 in_add_exp, int8 conlevel, bool resexp) {
 				   && (RuleI(Character, KillsPerGroupLeadershipAA) > 0))
 				{
 					AddLeadershipEXP(GROUP_EXP_PER_POINT / RuleI(Character, KillsPerGroupLeadershipAA), 0);
-					Message_StringID(15, GAIN_GROUP_LEADERSHIP_EXP);
+					Message_StringID(MT_Leadership, GAIN_GROUP_LEADERSHIP_EXP);
 				}
 				else
-					Message_StringID(15, MAX_GROUP_LEADERSHIP_POINTS);
+					Message_StringID(MT_Leadership, MAX_GROUP_LEADERSHIP_POINTS);
 			}
 			else
 			{
@@ -147,10 +147,10 @@ void Client::AddEXP(int32 in_add_exp, int8 conlevel, bool resexp) {
 				   && (RuleI(Character, KillsPerRaidLeadershipAA) > 0))
 				{
 					AddLeadershipEXP(0, RAID_EXP_PER_POINT / RuleI(Character, KillsPerRaidLeadershipAA));
-					Message_StringID(15, GAIN_RAID_LEADERSHIP_EXP);
+					Message_StringID(MT_Leadership, GAIN_RAID_LEADERSHIP_EXP);
 				}
 				else
-					Message_StringID(15, MAX_RAID_LEADERSHIP_POINTS);
+					Message_StringID(MT_Leadership, MAX_RAID_LEADERSHIP_POINTS);
 			}
 
 		}
@@ -193,14 +193,14 @@ void Client::SetEXP(int32 set_exp, int32 set_aaxp, bool isrezzexp) {
 	
 	if ((set_exp + set_aaxp) > (m_pp.exp+m_pp.expAA)) {
 		if (isrezzexp)
-			this->Message_StringID(15,REZ_REGAIN);
+			this->Message_StringID(MT_Experience, REZ_REGAIN);
 		else{
 			if(this->IsGrouped())
-				this->Message_StringID(15,GAIN_GROUPXP);
+				this->Message_StringID(MT_Experience, GAIN_GROUPXP);
 			else if(IsRaidGrouped())
-				Message_StringID(15, GAIN_RAIDEXP);
+				Message_StringID(MT_Experience, GAIN_RAIDEXP);
 			else
-				this->Message_StringID(15,GAIN_XP);
+				this->Message_StringID(MT_Experience, GAIN_XP);
 		}
 	}
 	else if((set_exp + set_aaxp) < (m_pp.exp+m_pp.expAA)){ //only loss message if you lose exp, no message if you gained/lost nothing.
@@ -261,7 +261,7 @@ void Client::SetEXP(int32 set_exp, int32 set_aaxp, bool isrezzexp) {
 		
 		//Message(15, "You have gained %d skill points!!", m_pp.aapoints - last_unspentAA);
 		char val1[20]={0};
-		Message_StringID(15,GAIN_ABILITY_POINT,ConvertArray(m_pp.aapoints, val1),m_pp.aapoints == 1 ? "" : "(s)");	//You have gained an ability point!  You now have %1 ability point%2.
+		Message_StringID(MT_Experience, GAIN_ABILITY_POINT,ConvertArray(m_pp.aapoints, val1),m_pp.aapoints == 1 ? "" : "(s)");	//You have gained an ability point!  You now have %1 ability point%2.
 		//Message(15, "You now have %d skill points available to spend.", m_pp.aapoints);
 	}
 
@@ -278,12 +278,12 @@ void Client::SetEXP(int32 set_exp, int32 set_aaxp, bool isrezzexp) {
 	if ((GetLevel() != check_level) && !(check_level >= maxlevel)) {
 		char val1[20]={0};
 		if (GetLevel() == check_level-1){
-			Message_StringID(15,GAIN_LEVEL,ConvertArray(check_level,val1));
+			Message_StringID(MT_Experience, GAIN_LEVEL,ConvertArray(check_level,val1));
 			SendLevelAppearance();
 			//Message(15, "You have gained a level! Welcome to level %i!", check_level);
 		}
 		if (GetLevel() == check_level){
-			Message_StringID(15,LOSE_LEVEL,ConvertArray(check_level,val1));
+			Message_StringID(MT_Experience, LOSE_LEVEL,ConvertArray(check_level,val1));
 			//Message(15, "You lost a level! You are now level %i!", check_level);
 		}
 		else
@@ -325,7 +325,7 @@ void Client::SetEXP(int32 set_exp, int32 set_aaxp, bool isrezzexp) {
 		char val1[20]={0};
 		char val2[20]={0};
 		char val3[20]={0};
-		Message_StringID(15,GM_GAINXP,ConvertArray(set_aaxp,val1),ConvertArray(set_exp,val2),ConvertArray(GetEXPForLevel(GetLevel()+1),val3));	//[GM] You have gained %1 AXP and %2 EXP (%3).
+		Message_StringID(MT_Experience, GM_GAINXP,ConvertArray(set_aaxp,val1),ConvertArray(set_exp,val2),ConvertArray(GetEXPForLevel(GetLevel()+1),val3));	//[GM] You have gained %1 AXP and %2 EXP (%3).
 		//Message(15, "[GM] You now have %d / %d EXP and %d / %d AA exp.", set_exp, GetEXPForLevel(GetLevel()+1), set_aaxp, max_AAXP);
 	}
 }
@@ -571,12 +571,12 @@ void Client::SetLeadershipEXP(uint32 group_exp, uint32 raid_exp) {
 	while(group_exp >= GROUP_EXP_PER_POINT) {
 		group_exp -= GROUP_EXP_PER_POINT;
 		m_pp.group_leadership_points++;
-		Message_StringID(15, GAIN_GROUP_LEADERSHIP_POINT);
+		Message_StringID(MT_Leadership, GAIN_GROUP_LEADERSHIP_POINT);
 	}
 	while(raid_exp >= RAID_EXP_PER_POINT) {
 		raid_exp -= RAID_EXP_PER_POINT;
 		m_pp.raid_leadership_points++;
-		Message_StringID(15, GAIN_RAID_LEADERSHIP_POINT);
+		Message_StringID(MT_Leadership, GAIN_RAID_LEADERSHIP_POINT);
 	}
 	
 	m_pp.group_leadership_exp = group_exp;
