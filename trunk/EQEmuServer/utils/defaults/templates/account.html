@@ -59,6 +59,47 @@ HTML
 			}
 		}
 	}
+} elsif($act eq "listips") {
+	my $ipadd = $request->get("ipaddress", "NONE");
+	my $acctE = $EQDB->escape_string($acct);
+	if($ipadd eq '') {
+		print "Missing IP Address";
+	} else {
+		my $q = "SELECT accid FROM account_ip WHERE ip='$ipadd'";
+		my $res=$EQDB->query($q);
+		if($res) {
+			print <<"HTML";
+			<br>
+			<table border='1'>
+			<tr>
+			<th align="center">Account ID</th>
+			<th align="center">Account Name</th>
+			<th align="center">IP Address</th>
+			</tr>
+HTML
+			while(my $row4 = $res->fetch_row_hash) {
+				my $accountid = $row4->{accid};
+				my $q;
+				$q = "SELECT name FROM account WHERE id=$accountid";
+				my $res2=$EQDB->query($q);
+				if ($res2) { 
+					my $row5=$res2->fetch_row_hash;
+					print <<"CHAR";
+						<tr>
+						<td align="center">$row4->{accid}</td>
+						<td align="center"><a href="accounts.html?name=$row5->{name}&action=accounts.html&type='account'">$row5->{name}</a></td>
+						<td align="center">$ipadd</td>
+						</tr>
+CHAR
+				} else {
+					print "Account Name query error.";
+				}
+			}
+			print "</table>";	
+		} else {
+			print "IP Address query error.";
+		}
+	}
 } else {
 	my $acctE = $EQDB->escape_string($acct);
 	my $q;
@@ -104,12 +145,35 @@ HTML
 					</tr>
 CHAR
 			}
-			print "</table>";
-			
+			print "</table>";	
 		} else {
 			print "Char query error.";
 		}
 		
+		$q="SELECT ip,count FROM account_ip WHERE accid=$row->{id}";
+		my $res3=$EQDB->query($q);
+		if($res3) {
+			print <<"HTML";
+			<br>
+			<table border='1'>
+			<tr>
+			<th align="center">IPs Used</th>
+			<th align="center">Count</th>
+			</tr>
+HTML
+			while(my $row3 = $res3->fetch_row_hash) {
+				print <<"CHAR";
+					<tr>
+					<td align="center"><a href="?name=$acct&action=listips&ipaddress=$row3->{ip}">$row3->{ip}</a></td>
+					<td align="center">$row3->{count}</td>
+					</tr>				
+CHAR
+			}
+			print "</table>";
+		} else {
+			print "No IPs associated with this account or IP query error.";
+		}
+
 		print <<"HTML";
 		<hr>
 		<form action="action.html" method="POST">
@@ -128,4 +192,3 @@ HTML
 ?>
 </body>
 </html>
-
