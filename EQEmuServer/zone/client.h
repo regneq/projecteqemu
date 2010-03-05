@@ -750,19 +750,20 @@ public:
 	//Doesn't appear to work directly after the client recieves an action packet.
 	void SendBuffDurationPacket(int16 spell_id, int duration, int inlevel);
 
-	bool ClientFinishedLoading() { return (conn_state == ClientConnectFinished); }
-	int FindSpellBookSlotBySpellID(int16 spellid);
-	int GetNextAvailableSpellBookSlot(int starting_slot = 0);
+	void	ProcessInspectRequest(Client* requestee, Client* requester);
+	bool	ClientFinishedLoading() { return (conn_state == ClientConnectFinished); }
+	int		FindSpellBookSlotBySpellID(int16 spellid);
+	int		GetNextAvailableSpellBookSlot(int starting_slot = 0);
 	inline int32 GetSpellByBookSlot(int book_slot) { return m_pp.spell_book[book_slot]; }
 	inline bool HasSpellScribed(int spellid) { return (FindSpellBookSlotBySpellID(spellid) != -1 ? true : false); }
 	int16	GetMaxSkillAfterSpecializationRules(SkillType skillid, int16 maxSkill);
-	void SendPopupToClient(const char *Title, const char *Text, int32 PopupID = 0, int32 Buttons = 0, int32 Duration = 0);
+	void	SendPopupToClient(const char *Title, const char *Text, int32 PopupID = 0, int32 Buttons = 0, int32 Duration = 0);
 	bool	PendingTranslocate;
 	time_t	TranslocateTime;
  	bool	PendingSacrifice;
  	string	SacrificeCaster;
  	struct	Translocate_Struct PendingTranslocateData;
- 	void SendOPTranslocateConfirm(Mob *Caster, int16 SpellID);
+ 	void	SendOPTranslocateConfirm(Mob *Caster, int16 SpellID);
 
 	//      Task System Methods
 	void	LoadClientTaskState();

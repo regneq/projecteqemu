@@ -5724,3 +5724,47 @@ void Client::AddCrystals(uint32 Radiant, uint32 Ebon)
 	SendCrystalCounts();
 }
 
+// Processes a client request to inspect a SoF client's equipment.
+void Client::ProcessInspectRequest(Client* requestee, Client* requester) {
+	if(requestee && requester) {
+		EQApplicationPacket* outapp = new EQApplicationPacket(OP_InspectAnswer, sizeof(InspectResponse_Struct));
+		InspectResponse_Struct* insr = (InspectResponse_Struct*) outapp->pBuffer;
+		insr->TargetID = requester->GetID();
+		insr->playerid = requestee->GetID();
+
+		const Item_Struct* item = NULL;
+		
+		for (sint16 L=0; L <= 21; L++) {
+			const ItemInst* inst = requestee->GetInv().GetItem(L);
+
+			if(inst) {
+				item = inst->GetItem();
+				if(item) {
+					strcpy(insr->itemnames[L], item->Name);
+					insr->itemicons[L] = item->Icon;
+				}
+				else
+					insr->itemicons[L] = 0xFFFFFFFF;
+			}
+		}
+		/*
+		// Special handling for Power Source slot on SoF clients
+		if(requestee->GetClientVersion() >= EQClientSoF && requester->GetClientVersion() >= EQClientSoF) {
+			const ItemInst* inst = requestee->GetInv().GetItem(9999);
+			if(inst) {
+				item = inst->GetItem();
+				if(item) {
+					strcpy(insr->itemnames[22], item->Name);
+					insr->itemicons[22] = item->Icon;
+				}
+				else
+					insr->itemicons[22] = 0xFFFFFFFF;
+			}
+		}
+		*/
+
+		//Need to add the player inspect notes code here at some point...
+
+		requester->QueuePacket(outapp); // Send answer to requester
+	}
+}
