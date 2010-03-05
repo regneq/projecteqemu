@@ -707,6 +707,7 @@ bool logpos;
 	void	SetPet(Mob* newpet);
 	virtual Mob* GetOwner();
 	virtual Mob* GetOwnerOrSelf();
+	Mob* GetUltimateOwner();
 	void	SetPetID(int16 NewPetID);
 	inline int16	GetPetID()		const			{ return petid;  }
 	inline PetType GetPetType() const { return typeofpet; }

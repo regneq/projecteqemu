@@ -1470,6 +1470,19 @@ Mob* Mob::GetOwner() {
 	return 0;
 }
 
+Mob* Mob::GetUltimateOwner()
+{
+	Mob* Owner = GetOwner();
+
+	if(!Owner)
+		return this;
+
+	while(Owner && Owner->HasOwner())
+		Owner = Owner->GetOwner();
+
+	return Owner ? Owner : this;
+}
+
 void Mob::SetOwnerID(int16 NewOwnerID) {
 	if (NewOwnerID == GetID() && NewOwnerID != 0) // ok, no charming yourself now =p
 		return;

@@ -5822,7 +5822,7 @@ void Client::Handle_OP_InspectRequest(const EQApplicationPacket *app)
 			tmp->CastToClient()->QueuePacket(app); // Send request to target
 		}
 		else {	//Inspecting an SoF or later client which make the server handle the request
-			CastToClient()->ProcessInspectRequest(tmp, this);
+			ProcessInspectRequest(tmp->CastToClient(), this);
 		}
 
 	}
