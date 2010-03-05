@@ -1961,9 +1961,10 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 
 	if(give_exp == NULL)
 		give_exp = killer;
-	if(give_exp && give_exp->GetOwner() != 0)
-		give_exp = give_exp->GetOwner();
-	
+
+	if(give_exp && give_exp->HasOwner())
+		give_exp = give_exp->GetUltimateOwner();
+
 	Client *give_exp_client = NULL;
 	if(give_exp && give_exp->IsClient())
 		give_exp_client = give_exp->CastToClient();
@@ -2080,7 +2081,7 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 		hate_list.DoFactionHits(GetNPCFactionID());
 	
 	if (!HasOwner() && class_ != MERCHANT && class_ != ADVENTUREMERCHANT && !GetSwarmInfo()
-		&& MerchantType == 0 && killer && (killer->IsClient() || (killer->HasOwner() && killer->GetOwner()->IsClient()) ||
+		&& MerchantType == 0 && killer && (killer->IsClient() || (killer->HasOwner() && killer->GetUltimateOwner()->IsClient()) ||
 		(killer->IsNPC() && killer->CastToNPC()->GetSwarmInfo() && killer->CastToNPC()->GetSwarmInfo()->owner && killer->CastToNPC()->GetSwarmInfo()->owner->IsClient()))) {
 		Corpse* corpse = new Corpse(this, &itemlist, GetNPCTypeID(), &NPCTypedata,level>54?RuleI(NPC,MajorNPCCorpseDecayTimeMS):RuleI(NPC,MinorNPCCorpseDecayTimeMS));
 		entity_list.LimitRemoveNPC(this);
