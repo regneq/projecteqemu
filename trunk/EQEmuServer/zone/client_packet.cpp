@@ -4976,7 +4976,12 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 		else {
 			// Update the charges/quantity in the merchant window
 			inst->SetCharges(new_charges);
-			inst->SetPrice(mpo->price);
+
+			if (RuleB(Merchant, UsePriceMod))
+				inst->SetPrice((item->Price * (RuleR(Merchant, SellCostMod)) * item->SellRate * Client::CalcPriceMod(tmp, false)));
+			else
+				inst->SetPrice((item->Price * (RuleR(Merchant, SellCostMod)) * item->SellRate));
+
 			inst->SetMerchantSlot(mp->itemslot);
 			inst->SetMerchantCount(new_charges);
 
