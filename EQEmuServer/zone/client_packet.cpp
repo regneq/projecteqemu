@@ -4936,11 +4936,15 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 		}
 	}
 
-	if (RuleB(Merchant, UsePriceMod)){
-	mpo->price = (item->Price*(RuleR(Merchant, SellCostMod))*item->SellRate*Client::CalcPriceMod(tmp,false))*mp->quantity;
-	}
+	int SinglePrice = 0;
+
+	if (RuleB(Merchant, UsePriceMod))
+		SinglePrice = (item->Price * (RuleR(Merchant, SellCostMod)) * item->SellRate * Client::CalcPriceMod(tmp, false));	
 	else
-		mpo->price = (item->Price*(RuleR(Merchant, SellCostMod))*item->SellRate)*mp->quantity;
+		SinglePrice = (item->Price * (RuleR(Merchant, SellCostMod)) * item->SellRate);
+
+	mpo->price = SinglePrice * mp->quantity;
+
 	if(freeslotid == SLOT_INVALID || (mpo->price < 0 ) || !TakeMoneyFromPP(mpo->price))
 	{
 		safe_delete(outapp);
@@ -4976,12 +4980,7 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 		else {
 			// Update the charges/quantity in the merchant window
 			inst->SetCharges(new_charges);
-
-			if (RuleB(Merchant, UsePriceMod))
-				inst->SetPrice((item->Price * (RuleR(Merchant, SellCostMod)) * item->SellRate * Client::CalcPriceMod(tmp, false)));
-			else
-				inst->SetPrice((item->Price * (RuleR(Merchant, SellCostMod)) * item->SellRate));
-
+			inst->SetPrice(SinglePrice);
 			inst->SetMerchantSlot(mp->itemslot);
 			inst->SetMerchantCount(new_charges);
 
