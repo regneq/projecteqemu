@@ -4130,6 +4130,15 @@ struct CrystalCountUpdate_Struct
 /*012*/	uint32	CareerEbonCrystals;
 };
 
+struct BeggingResponse_Struct
+{
+/*00*/	uint32	Unknown00;
+/*04*/	uint32	Unknown04;
+/*08*/	uint32	Unknown08;
+/*12*/	uint32	Result;	// 0 = Fail, 1 = Plat, 2 = Gold, 3 = Silver, 4 = Copper
+/*16*/	uint32	Amount;
+};
+
 //old structures live here:
 #include "eq_old_structs.h"
 

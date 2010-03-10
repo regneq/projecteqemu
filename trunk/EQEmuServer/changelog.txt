@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==03/10/2010==
+Derision: Begging should no longer bug the client. Still needs some work around chance/amount/skillups etc.
+
 ==03/07/2010==
 Derision: Fix for temporary items on merchants appearing to increase in price.
 Leere: Refinement to above and fix for purchase price of stacked items != displayed price * quantity.
