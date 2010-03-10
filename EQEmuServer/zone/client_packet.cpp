@@ -2269,45 +2269,60 @@ void Client::Handle_OP_Consider(const EQApplicationPacket *app)
 
 void Client::Handle_OP_Begging(const EQApplicationPacket *app)
 {
-	if(!HasSkill(BEGGING))
+	if(!HasSkill(BEGGING) || !GetTarget())
 		return;
 
-	if(GetTarget() && GetTarget()->GetClass() == LDON_TREASURE)
+	if(GetTarget()->GetClass() == LDON_TREASURE)
 		return;
 
-	int ran=MakeRandomInt(0,100);
-	int chancetoattack=0;
-	if(this->GetLevel() > this->GetTarget()->GetLevel())
-		chancetoattack=MakeRandomInt(0,15);
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_Begging, sizeof(BeggingResponse_Struct));
+	BeggingResponse_Struct *brs = (BeggingResponse_Struct*) outapp->pBuffer;
+
+	brs->Result = 0; // Default, Fail.
+
+	int RandomChance = MakeRandomInt(0 ,100);
+
+	int ChanceToAttack = 0;
+
+	if(GetLevel() > GetTarget()->GetLevel())
+		ChanceToAttack = MakeRandomInt(0, 15);
 	else
-		chancetoattack=MakeRandomInt(((this->GetTarget()->GetLevel() - this->GetLevel())*10)-5,((this->GetTarget()->GetLevel() - this->GetLevel())*10));
-	if(chancetoattack<0)
-		chancetoattack=-chancetoattack;
-	if(ran<chancetoattack){
-		this->GetTarget()->Attack(this);
-		return;
-	}
-	float chancetobeg=((float)(GetSkill(BEGGING)/700.0f) + 0.15f) * 100;
+		ChanceToAttack = MakeRandomInt(((this->GetTarget()->GetLevel() - this->GetLevel())*10)-5,((this->GetTarget()->GetLevel() - this->GetLevel())*10));
 
-	if(ran<chancetobeg)
+	if(ChanceToAttack < 0)
+		ChanceToAttack = -ChanceToAttack;
+
+	if(RandomChance < ChanceToAttack)
 	{
-		EQApplicationPacket* outapp = new EQApplicationPacket(OP_MoneyOnCorpse, sizeof(moneyOnCorpseStruct));
-		moneyOnCorpseStruct* d = (moneyOnCorpseStruct*) outapp->pBuffer;
-		d->copper=MakeRandomInt(1,3);
-		d->silver=MakeRandomInt(1,1);
-		d->platinum=0;
-		d->gold=0;
-		d->response      = 1;
-		d->unknown1      = 0x5a;
-		d->unknown2      = 0x40;
-		d->unknown3      = 0;
-		AddMoneyToPP(d->copper, d->silver, d->gold, d->platinum,true);
+		GetTarget()->Attack(this);
 		QueuePacket(outapp);
 		safe_delete(outapp);
-		Message(0,"Begging success!.Received %i silver and %i copper!",d->silver,d->copper);
+		return;
 	}
-	else
-		Message(0,"Your attempt to beg was not succesful.");
+
+	uint16 CurrentSkill = GetSkill(BEGGING);
+
+	float ChanceToBeg=((float)(CurrentSkill/700.0f) + 0.15f) * 100;
+
+	if(RandomChance < ChanceToBeg)
+	{
+		brs->Amount = MakeRandomInt(1, 10);
+		// This needs some work to determine how much money they can beg, based on skill level etc.
+		if(CurrentSkill < 50)
+		{
+			brs->Result = 4;	// Copper
+			AddMoneyToPP(brs->Amount, false);
+		}
+		else
+		{
+			brs->Result = 3;	// Silver
+			AddMoneyToPP(brs->Amount * 10, false);
+		}
+
+	}
+	QueuePacket(outapp);
+	safe_delete(outapp);
+	CheckIncreaseSkill(BEGGING, NULL, -10);
 }
 
 void Client::Handle_OP_TestBuff(const EQApplicationPacket *app)
