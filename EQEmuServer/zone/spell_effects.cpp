@@ -2293,10 +2293,10 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			}
 
 
-			case SE_DualWeildChance:
+			case SE_DualWieldChance:
 			{
 #ifdef SPELL_EFFECT_SPAM
-				snprintf(effect_desc, _EDLEN, "Dual Weild Chance: +%+i%%", effect_value);
+				snprintf(effect_desc, _EDLEN, "Dual Wield Chance: +%+i%%", effect_value);
 #endif
 				// handled with bonuses
 				break;

@@ -1594,7 +1594,7 @@ void Mob::SetAttackTimer() {
 
 			//clients must have the skill to use it...
 			if(IsClient()) {
-				//if we cant dual weild, skip it
+				//if we cant dual wield, skip it
 				if (!CanThisClassDualWield()) {
 					attack_dw_timer.Disable();
 					continue;
@@ -1685,7 +1685,7 @@ void Mob::SetAttackTimer() {
 	
 }
 
-bool Mob::CanThisClassDualWield(void) const //Dual wield not Duel, busy someone else fix it (fixed! bUsh)
+bool Mob::CanThisClassDualWield(void) const
 {
 	// All npcs over level 13 can dual wield
 	if (this->IsNPC() && (this->GetLevel() >= 13))
@@ -1744,7 +1744,7 @@ bool Mob::CanThisClassDualWield(void) const //Dual wield not Duel, busy someone 
 				return false;
 		} else {
 			//No weapon in hand... using hand-to-hand...
-			//only monks and beastlords? can dual weild their fists.
+			//only monks and beastlords? can dual wield their fists.
 			return(dh2h);
 		}
 		

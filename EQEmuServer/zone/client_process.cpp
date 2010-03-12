@@ -491,7 +491,7 @@ bool Client::Process() {
 				if(GetAA(aaAmbidexterity))
 					DualWieldProbability += 0.1f;
 				//discipline effects:
-				DualWieldProbability += (spellbonuses.DualWeildChance + itembonuses.DualWeildChance) / 100.0f;
+				DualWieldProbability += (spellbonuses.DualWieldChance + itembonuses.DualWieldChance) / 100.0f;
 				
 				float random = MakeRandomFloat(0, 1);
 				CheckIncreaseSkill(DUAL_WIELD, auto_attack_target, -10);

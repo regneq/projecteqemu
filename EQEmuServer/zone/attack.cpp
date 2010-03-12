@@ -168,7 +168,7 @@ bool Mob::AttackAnimation(SkillType &skillinuse, int Hand, const ItemInst* weapo
 	
 	// If we're attacking with the secondary hand, play the dual wield anim
 	if (Hand == 14)	// DW anim
-		type = animDualWeild;
+		type = animDualWield;
 	
 	DoAnim(type);
     return true;

@@ -44,7 +44,7 @@
 #define DODGE				19
 #define DOUBLE_ATTACK		20
 #define DRAGON_PUNCH		21
-#define DUEL_WIELD			22
+#define DUAL_WIELD			22
 #define EAGLE_STRIKE		23
 #define EVOCATION			24
 #define FEIGN_DEATH			25
@@ -123,7 +123,7 @@
 #define DODGE					19
 #define DOUBLE_ATTACK			20
 #define DRAGON_PUNCH			21
-#define DUEL_WIELD				22
+#define DUAL_WIELD				22
 #define EAGLE_STRIKE			23
 #define EVOCATION				24
 #define FEIGN_DEATH				25

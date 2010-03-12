@@ -204,7 +204,7 @@ enum {	//some random constants
 //an npc can be and still let the theif PP them
 #define THIEF_PICKPOCKET_OVER 5
 
-//this is the % chance that an NPC will dual weild a 2nd weapon 
+//this is the % chance that an NPC will dual wield a 2nd weapon 
 //in its loot table, if it is able to.
 //Aug 2007: was 5% chance.. changed to 100% by default since that seems more normal
 //Kept it intact codewise incase someone wants to or is already using it.
