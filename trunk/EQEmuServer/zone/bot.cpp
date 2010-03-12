@@ -2380,7 +2380,7 @@ void Bot::AI_Process() {
 				if(GetTarget() && attack_dw_timer.Check() && CanThisClassDualWield()) {
 					const ItemInst* instweapon = GetBotItem(SLOT_SECONDARY);
 					const Item_Struct* weapon = 0;
-					//can only dual weild without a weapon if you're a monk
+					//can only dual wield without a weapon if you're a monk
 					if(instweapon || (botClass == MONK)) {
 						if(instweapon)
 							weapon = instweapon->GetItem();
@@ -2401,7 +2401,7 @@ void Bot::AI_Process() {
 							}
 
 							//discipline effects:
-							DualWieldProbability += (spellbonuses.DualWeildChance + itembonuses.DualWeildChance) / 100.0f;
+							DualWieldProbability += (spellbonuses.DualWieldChance + itembonuses.DualWieldChance) / 100.0f;
 
 							float random = MakeRandomFloat(0, 1);
 

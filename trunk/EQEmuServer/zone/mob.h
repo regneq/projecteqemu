@@ -223,7 +223,7 @@ struct StatBonuses {
 	sint16 RiposteChance;	//i
 	sint16 DodgeChance;		//i
 	sint16 ParryChance;		//i
-	sint16 DualWeildChance;		//i
+	sint16 DualWieldChance;		//i
 	sint16 DoubleAttackChance;	//i
 	sint16 ResistSpellChance;	//i
 	sint16 ResistFearChance;	//i
@@ -266,7 +266,7 @@ enum {	//type arguments to DoAnim
 	anim2HSlashing			= 3,
 	anim2HWeapon			= 4,
 	anim1HWeapon			= 5,
-	animDualWeild			= 6,
+	animDualWield			= 6,
 	animTailRake			= 7,	//slam & Dpunch too
 	animHand2Hand			= 8,
 	animShootBow			= 9,

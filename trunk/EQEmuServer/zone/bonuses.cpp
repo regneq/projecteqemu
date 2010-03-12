@@ -992,10 +992,10 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 				break;
 			}
 				
-			case SE_DualWeildChance:
+			case SE_DualWieldChance:
 			{
-				if(newbon->DualWeildChance < effect_value)
-					newbon->DualWeildChance = effect_value;
+				if(newbon->DualWieldChance < effect_value)
+					newbon->DualWieldChance = effect_value;
 				break;
 			}
 				

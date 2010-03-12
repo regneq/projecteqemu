@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==03/12/2010==
+joligario: Fixed some spelling mistakes.
+
 ==03/11/2010==
 Congdar: bots can now equip items with augments.  required sql:  \utils\sql\svn\1280_bot_augs.sql
 Congdar: new bot command '#bot augmentitem' Allows you to augment items for your other bot classes. Your must have the Augmentation Sealer window filled.
