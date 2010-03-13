@@ -2828,3 +2828,16 @@ bool Mob::EntityVariableExists(int32 id)
 	}
 	return false;
 }
+
+void Mob::SetFlyMode(int8 flymode)
+{
+	if(IsClient() && flymode >= 0 && flymode < 3)
+	{
+		this->SendAppearancePacket(AT_Levitate, flymode);
+	}
+	else if(IsNPC() && flymode >= 0 && flymode <= 3)
+	{
+		this->SendAppearancePacket(AT_Levitate, flymode);
+		this->CastToNPC()->SetFlyMode(flymode);
+	}
+}
