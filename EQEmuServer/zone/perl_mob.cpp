@@ -6447,6 +6447,30 @@ XS(XS_Mob_SendAppearanceEffect)
 	XSRETURN_EMPTY;
 }
 
+XS(XS_Mob_SetFlyMode); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_SetFlyMode)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Mob::SetFlyMode(THIS, 0|1|2|3)");
+	{
+		Mob *		THIS;
+		int8		flymode = (int8)SvIV(ST(1));
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->SetFlyMode(flymode);
+	}
+	XSRETURN_EMPTY;
+}
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -6693,6 +6717,7 @@ XS(boot_Mob)
 		newXSproto(strcpy(buf, "ProjectileAnim"), XS_Mob_ProjectileAnim, file, "$$$;$$$$$");
 		newXSproto(strcpy(buf, "HasNPCSpecialAtk"), XS_Mob_HasNPCSpecialAtk, file, "$$");
 		newXSproto(strcpy(buf, "SendAppearanceEffect"), XS_Mob_SendAppearanceEffect, file, "$$:$$$$");
+		newXSproto(strcpy(buf, "SetFlyMode"), XS_Mob_SetFlyMode, file, "$$");
 	XSRETURN_YES;
 }
 

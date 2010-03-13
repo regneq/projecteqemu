@@ -2269,8 +2269,16 @@ void QuestManager::FlyMode(int8 flymode)
 {
 	if(initiator)
 	{
-		if (flymode >= 0 && flymode < 3 && initiator->IsClient()) {
+		if (flymode >= 0 && flymode < 3) {
 			initiator->SendAppearancePacket(AT_Levitate, flymode);
+			return;
+		}
+	}
+	if(owner)
+	{
+		if (flymode >= 0 && flymode < 3) {
+			owner->SendAppearancePacket(AT_Levitate, flymode);
+			return;
 		}
 	}
 }

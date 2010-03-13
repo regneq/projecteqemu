@@ -483,6 +483,8 @@ bool logpos;
 	bool IsInvisible(Mob* other = 0) const;
 	void SetInvisible(bool state);
 
+	void SetFlyMode(int8 flymode);
+
 	bool AttackAnimation(SkillType &skillinuse, int Hand, const ItemInst* weapon);
 	virtual bool AvoidDamage(Mob* attacker, sint32 &damage);
 	virtual bool CheckHitChance(Mob* attacker, SkillType skillinuse, int Hand);
