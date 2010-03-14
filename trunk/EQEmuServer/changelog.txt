@@ -3,6 +3,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==03/13/2010==
 Trevius: Added new SetFlyMode(0|1|2|3) Perl Mob command.
 Trevius: NPCs in flymode 1 or 2 will no longer use BestZ when pathing to waypoints.
+Trevius: Added new optional single client argument to SendAppearanceEffect(effect1, effect2, effect3, effect4, effect5, client) to allow sending the effect only to specific players.
 
 ==03/12/2010==
 joligario: Fixed some spelling mistakes.

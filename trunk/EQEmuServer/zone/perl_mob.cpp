@@ -6418,8 +6418,8 @@ XS(XS_Mob_SendAppearanceEffect); /* prototype to pass -Wmissing-prototypes */
 XS(XS_Mob_SendAppearanceEffect)
 {
 	dXSARGS;
-	if (items < 2 || items > 6)
-		Perl_croak(aTHX_ "Usage: Mob::SendAppearanceEffect(THIS, parm1, parm2, parm3, parm4, parm5)");
+	if (items < 2 || items > 7)
+		Perl_croak(aTHX_ "Usage: Mob::SendAppearanceEffect(THIS, parm1, parm2, parm3, parm4, parm5, singleclient)");
 	{
 		Mob *		THIS;
 		sint32		parm1 = (sint32)SvIV(ST(1));
@@ -6427,6 +6427,7 @@ XS(XS_Mob_SendAppearanceEffect)
 		sint32		parm3 = 0;
 		sint32		parm4 = 0;
 		sint32		parm5 = 0;
+		Client*		client = NULL;
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -6441,8 +6442,18 @@ XS(XS_Mob_SendAppearanceEffect)
 		if (items > 3)	{	parm3 = (sint32)SvIV(ST(3));	}
 		if (items > 4)	{	parm4 = (sint32)SvIV(ST(4));	}
 		if (items > 5)	{	parm5 = (sint32)SvIV(ST(5));	}
+		if (items > 6)	{
+			if (sv_derived_from(ST(6), "Client")) {
+				IV tmp = SvIV((SV*)SvRV(ST(6)));
+				client = INT2PTR(Client *,tmp);
+			}
+			else
+				Perl_croak(aTHX_ "client is not of type Client");
+			if(client == NULL)
+				Perl_croak(aTHX_ "client is NULL, avoiding crash.");
+		}
 
-		THIS->SendAppearanceEffect(parm1, parm2, parm3, parm4, parm5);
+		THIS->SendAppearanceEffect(parm1, parm2, parm3, parm4, parm5, client);
 	}
 	XSRETURN_EMPTY;
 }
