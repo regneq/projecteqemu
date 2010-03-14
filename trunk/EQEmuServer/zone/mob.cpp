@@ -1340,7 +1340,7 @@ void Mob::SendAppearancePacket(int32 type, int32 value, bool WholeZone, bool iIg
 	if (WholeZone)
 		entity_list.QueueClients(this, outapp, iIgnoreSelf);
 	else if(specific_target != NULL)
-		specific_target->(outapp, false, Client::CLIENT_CONNECTED);
+		specific_target->QueuePacket(outapp, false, Client::CLIENT_CONNECTED);
 	else if (this->IsClient())
 		this->CastToClient()->QueuePacket(outapp, false, Client::CLIENT_CONNECTED);
 	safe_delete(outapp);
