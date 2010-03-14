@@ -1340,7 +1340,7 @@ void Mob::SendAppearancePacket(int32 type, int32 value, bool WholeZone, bool iIg
 	if (WholeZone)
 		entity_list.QueueClients(this, outapp, iIgnoreSelf);
 	else if(specific_target != NULL)
-		specific_target->QueuePacket(outapp, false, Client::CLIENT_CONNECTED);
+		specific_target->(outapp, false, Client::CLIENT_CONNECTED);
 	else if (this->IsClient())
 		this->CastToClient()->QueuePacket(outapp, false, Client::CLIENT_CONNECTED);
 	safe_delete(outapp);
@@ -1366,7 +1366,7 @@ void Mob::SendLevelAppearance(){
 	safe_delete(outapp);
 }
 
-void Mob::SendAppearanceEffect(int32 parm1, int32 parm2, int32 parm3, int32 parm4, int32 parm5 ){
+void Mob::SendAppearanceEffect(int32 parm1, int32 parm2, int32 parm3, int32 parm4, int32 parm5, Client *specific_target){
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_LevelAppearance, sizeof(LevelAppearance_Struct));
 	LevelAppearance_Struct* la = (LevelAppearance_Struct*)outapp->pBuffer;
 	la->spawn_id = GetID();
@@ -1387,7 +1387,12 @@ void Mob::SendAppearanceEffect(int32 parm1, int32 parm2, int32 parm3, int32 parm
 	la->value4b = 1;
 	la->value5a = 1;
 	la->value5b = 1;
-	entity_list.QueueCloseClients(this,outapp);
+	if(specific_target == NULL) {
+		entity_list.QueueCloseClients(this,outapp);
+	}
+	else if (specific_target->IsClient()) {
+		specific_target->CastToClient()->QueuePacket(outapp, false);
+	}
 	safe_delete(outapp);
 }
 
