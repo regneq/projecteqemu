@@ -2237,18 +2237,26 @@ const char* QuestManager::saylink(char* Phrase, bool silent, char* LinkName) {
 	else
 		sayid = sayid + 500000;
 
-	//Create the say link as an item link hash
-	char linktext[250];
-	if (initiator->GetClientVersion() == EQClientSoF)
+		//Create the say link as an item link hash
+		char linktext[250];
+
+	if(initiator)
 	{
-		sprintf(linktext,"%c%06X%s%s%c",0x12,sayid,"00000000000000000000000000000000000000000000",LinkName,0x12);
+		if (initiator->GetClientVersion() == EQClientSoF)
+		{
+			sprintf(linktext,"%c%06X%s%s%c",0x12,sayid,"00000000000000000000000000000000000000000000",LinkName,0x12);
+		}
+		else
+		{
+			sprintf(linktext,"%c%06X%s%s%c",0x12,sayid,"000000000000000000000000000000000000000",LinkName,0x12);
+		}
 	}
-	else
-	{
-		sprintf(linktext,"%c%06X%s%s%c",0x12,sayid,"000000000000000000000000000000000000000",LinkName,0x12);
+	else {	// If no initiator, create an SoF saylink, since Titanium handles SoF ones better than SoF handles Titanium ones.
+		sprintf(linktext,"%c%06X%s%s%c",0x12,sayid,"00000000000000000000000000000000000000000000",LinkName,0x12);
 	}
 	strcpy(Phrase,linktext);
 	return Phrase;
+
 }
 
 void QuestManager::SetRunning(bool val)
