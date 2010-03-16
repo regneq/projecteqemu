@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==03/16/2010==
+Trevius: Saylinks should no longer cause zone crashes if used outside of EVENTs.  They should function from anywhere now.
+
 ==03/13/2010==
 Trevius: Added new SetFlyMode(0|1|2|3) Perl Mob command.
 Trevius: NPCs in flymode 1 or 2 will no longer use BestZ when pathing to waypoints.
