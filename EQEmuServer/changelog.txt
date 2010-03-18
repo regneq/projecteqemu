@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==03/18/2010==
+Trevius: Added 3 new Perl Entity commands - GetMobByID(id), GetNPCByID(id), and GetNPCByNPCTypeID(npc_id).
+
 ==03/16/2010==
 Trevius: Saylinks should no longer cause zone crashes if used outside of EVENTs.  They should function from anywhere now.
 

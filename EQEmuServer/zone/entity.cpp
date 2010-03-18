@@ -969,6 +969,41 @@ Entity* EntityList::GetID(int16 get_id)
 		return 0;
 }
 
+NPC* EntityList::GetNPCByID(int16 id) {
+	LinkedListIterator<NPC*> iterator(npc_list);
+
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		if (iterator.GetData())
+		{
+			if (iterator.GetData()->GetID() == id) {
+				return iterator.GetData();
+			}
+		}
+		iterator.Advance();
+	}
+	return 0;
+}
+
+NPC* EntityList::GetNPCByNPCTypeID(int32 npc_id)
+{
+	if (npc_id == 0)
+		return 0;
+	LinkedListIterator<NPC*> iterator(npc_list);
+	
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		if (iterator.GetData()->GetNPCTypeID() == npc_id)
+		{
+			return iterator.GetData();
+		}
+		iterator.Advance();
+	}
+	return 0;
+}
+
 Mob* EntityList::GetMob(int16 get_id)
 {
 	Entity* ent=0;
