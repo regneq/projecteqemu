@@ -130,6 +130,8 @@ public:
 	inline Mob*	GetMobID(int16 id) { return(GetMob(id)); }	//for perl
 	Mob*	GetMob(const char* name);
 	Mob*	GetMobByNpcTypeID(int32 get_id);
+	NPC*	GetNPCByID(int16 id);
+	NPC*	GetNPCByNPCTypeID(int32 npc_id);
 	Client* GetClientByName(const char *name); 
 	Client* GetClientByAccID(int32 accid);
 	Client* GetClientByID(int16 id);
