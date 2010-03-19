@@ -5520,6 +5520,25 @@ bool Client::TryReward(int32 claim_id)
 	return true;
 }
 
+int32 Client::GetLDoNPointsTheme(int32 t)
+{
+	switch(t)
+	{
+	case 1:
+		return m_pp.ldon_points_guk;
+	case 2:
+		return m_pp.ldon_points_mir;
+	case 3:
+		return m_pp.ldon_points_mmc;
+	case 4:
+		return m_pp.ldon_points_ruj;
+	case 5:
+		return m_pp.ldon_points_tak;
+	default:
+		return 0;
+	}
+}
+
 int32 Client::GetLDoNWinsTheme(int32 t)
 {
 	switch(t)

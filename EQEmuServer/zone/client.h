@@ -314,7 +314,6 @@ public:
 	void	SendPickPocketResponse(Mob *from, uint32 amt, int type, const Item_Struct* item = NULL);
 
 	inline const char*	GetLastName() const	{ return lastname; }
-	inline int32		GetLDoNPoints() { return 0; }
 
 	inline float ProximityX() const { return(proximity_x); }
 	inline float ProximityY() const { return(proximity_y); }
@@ -897,6 +896,7 @@ public:
 	int32 GetLDoNLosses() { return (m_pp.ldon_losses_guk + m_pp.ldon_losses_mir + m_pp.ldon_losses_mmc + m_pp.ldon_losses_ruj + m_pp.ldon_losses_tak); }
 	int32 GetLDoNWinsTheme(int32 t);
 	int32 GetLDoNLossesTheme(int32 t);
+	int32 GetLDoNPointsTheme(int32 t);
 	void UpdateLDoNWins(int32 t, sint32 n);
 	void UpdateLDoNLosses(int32 t, sint32 n);
 
