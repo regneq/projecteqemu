@@ -2,6 +2,7 @@
 
 #include "bot.h"
 #include "object.h"
+#include "doors.h"
 
 // TODO: The following declarations are redudant to declarations made in MobAI.cpp. Best move both blocks to a common header file.
 
@@ -7022,8 +7023,8 @@ void Bot::ProcessBotOwnerRefDelete(Mob* botOwner) {
 					Bot* tempBot = *botListItr;
 
 					if(tempBot) {
-						tempBot->SetBotOwner(0);
 						tempBot->SetTarget(0);
+						tempBot->SetBotOwner(0);
 					}
 				}
 			}
@@ -9330,7 +9331,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 			c->Message(15, "You must target a rogue bot!");
 		}
 		else {
-			entity_list.OpenDoorsNear(c->GetTarget()->CastToNPC());
+			entity_list.BotPickLock(c->GetTarget()->CastToBot());
 		}
 
 		return;
@@ -10135,6 +10136,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 				if(g && g->members[i] && g->members[i]->IsBot() && ((g->members[i]->GetClass() == NECROMANCER)||(g->members[i]->GetClass() == SHADOWKNIGHT))) {
 					hassummoner = true;
 					summonerlevel = g->members[i]->GetLevel();
+					g->members[i]->InterruptSpell();
 					if(!t->IsClient()) {
 						g->members[i]->Say("You have to target a player with a corpse in the zone");
 						return;
@@ -10152,14 +10154,9 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 						g->members[i]->CastSpell(3, t->GetID(), 1, -1, -1);
 						return;
 					}
-					else if((summonerlevel > 70) && (summonerlevel < 76)) {
+					else if(summonerlevel > 70) {
 						g->members[i]->Say("Attempting to summon %s\'s corpse.", t->GetCleanName());
 						g->members[i]->CastSpell(10042, t->GetID(), 1, -1, -1);
-						return;
-					}
-					else if((summonerlevel > 75) && (summonerlevel < 81)) {
-						g->members[i]->Say("Attempting to summon %s\'s corpse.", t->GetCleanName());
-						g->members[i]->CastSpell(14823, t->GetID(), 1, -1, -1);
 						return;
 					}
 				}
@@ -12239,6 +12236,54 @@ list<Bot*> EntityList::GetBotsByBotOwnerCharacterID(uint32 botOwnerCharacterID) 
 	}
 
 	return Result;
+}
+
+void EntityList::BotPickLock(Bot* rogue)
+{
+	LinkedListIterator<Doors*> iterator(door_list);
+	iterator.Reset();
+	while(iterator.MoreElements()) {
+		Doors *cdoor = iterator.GetData();
+		if(cdoor && !cdoor->IsDoorOpen()) {
+			float zdiff = rogue->GetZ() - cdoor->GetZ();
+			if(zdiff < 0)
+				zdiff = 0 - zdiff;
+			float curdist = 0;
+			float tmp = rogue->GetX() - cdoor->GetX();
+			curdist += (tmp * tmp);
+			tmp = rogue->GetY() - cdoor->GetY();
+			curdist += (tmp * tmp);
+			if((zdiff < 10) && (curdist <= 130)) {
+				// All rogue items with lock pick bonuses are hands or primary
+				const ItemInst* item1 = rogue->GetBotItem(SLOT_HANDS);
+				const ItemInst* item2 = rogue->GetBotItem(SLOT_PRIMARY);
+
+				float bonus1 = 0.0f;
+				float bonus2 = 0.0f;
+				float skill = rogue->GetSkill(PICK_LOCK);
+
+				if(item1) { // Hand slot item
+					if(item1->GetItem()->SkillModType == PICK_LOCK) {
+						bonus1 = skill * (((float)item1->GetItem()->SkillModValue) / 100.0f);
+					}
+				}
+
+				if(item2) { // Primary slot item
+					if(item2->GetItem()->SkillModType == PICK_LOCK) {
+						bonus2 = skill * (((float)item2->GetItem()->SkillModValue) / 100.0f);
+					}
+				}
+
+				if((skill+bonus1+bonus2) >= cdoor->GetLockpick()) {
+					cdoor->ForceOpen(rogue);
+				}
+				else {
+					rogue->Say("I am not skilled enough for this lock.");
+				}
+			}
+		}
+		iterator.Advance();
+	}
 }
 
 bool EntityList::RemoveBot(int16 entityID) {

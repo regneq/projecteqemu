@@ -397,6 +397,7 @@ private:
 #ifdef BOTS
 	public:
 		void AddBot(Bot* newBot, bool SendSpawnPacket = true, bool dontqueue = false);
+		void BotPickLock(Bot* rogue);
 		bool RemoveBot(int16 entityID);
 		Mob* GetMobByBotID(uint32 botID);
 		Bot* GetBotByBotID(uint32 botID);

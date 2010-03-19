@@ -252,6 +252,7 @@ public:
 	uint32 GetBotSpellID() { return npc_spells_id; }
 	Mob* GetBotOwner() { return this->_botOwner; }
 	uint32 GetBotArcheryRange();
+	ItemInst* GetBotItem(uint32 slotID);
 	virtual bool GetSpawnStatus() { return _spawnStatus; }
 	int8 GetPetChooserID() { return _petChooserID; }
 	bool IsPetChooser() { return _petChooser; }
@@ -346,7 +347,6 @@ private:
 
 	// Private "Inventory" Methods
 	void GetBotItems(std::string* errorMessage, Inventory &inv);
-	ItemInst* GetBotItem(uint32 slotID);
 	void BotRemoveEquipItem(int slot);
 	void BotAddEquipItem(int slot, uint32 id);
 	uint32 GetBotItemBySlot(uint32 slotID);
