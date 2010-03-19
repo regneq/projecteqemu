@@ -4,6 +4,9 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 Trevius: Added new EVENT_TARGET_CHANGE perl event.  It triggers when an NPC target changes or is removed. It exports $hastarget which is 0 if no target and 1 if there is a target.
 Trevius: Exported new quest objects to Perl Mob - SetRace(race), SetGender(gender), and SetTexture(texture).
 Trevius: Exported to Perl Mob - SendIllusion(race,[gender,texture,helmtexture,face,hairstyle,haircolor,beard,beardcolor,drakkin_heritage,drakkin_tattoo,drakkin_details,size]).
+Trevius: Added rule: Character:DeathExpLossMaxLevel - Any level greater than this will no longer lose experience.  Default is 255 (disabled).
+
+Optional SQL: utils/sql/svn/1290_optional_exp_loss_rule.sql
 
 ==03/18/2010==
 Trevius: Added 3 new Perl Entity commands - GetMobByID(id), GetNPCByID(id), and GetNPCByNPCTypeID(npc_id).

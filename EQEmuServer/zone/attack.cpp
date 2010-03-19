@@ -1473,7 +1473,7 @@ void Client::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_
 		exploss = (int)(GetLevel() * (GetLevel() / 18.0) * 12000);
 	}
 
-	if( (GetLevel() < RuleI(Character, DeathExpLossLevel)) || IsBecomeNPC() )
+	if( (GetLevel() < RuleI(Character, DeathExpLossLevel)) || (GetLevel() > RuleI(Character, DeathExpLossMaxLevel)) || IsBecomeNPC() )
 	{
 		exploss = 0;
 	}

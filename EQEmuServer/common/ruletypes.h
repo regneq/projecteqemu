@@ -23,7 +23,8 @@
 RULE_CATEGORY( Character )
 RULE_INT ( Character, MaxLevel, 65 )
 RULE_INT ( Character, MaxExpLevel, 0 ) //Sets the Max Level attainable via Experience
-RULE_INT ( Character, DeathExpLossLevel, 10 )
+RULE_INT ( Character, DeathExpLossLevel, 10 )	// Any level greater than this will lose exp on death
+RULE_INT ( Character, DeathExpLossMaxLevel, 255 )	// Any level greater than this will no longer lose exp on death
 RULE_INT ( Character, DeathItemLossLevel, 10 )
 RULE_INT ( Character, DeathExpLossMultiplier, 3) //Adjust how much exp is lost
 RULE_BOOL( Character, UseDeathExpLossMult, false ) //Adjust to use the above multiplier or to use code default.
