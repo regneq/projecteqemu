@@ -68,7 +68,8 @@ const char *QuestEventSubroutines[_LargestEventID] = {
 	"EVENT_POPUPRESPONSE",
 	"EVENT_PROXIMITY_SAY",
 	"EVENT_CAST",
-	"EVENT_SCALE_CALC"
+	"EVENT_SCALE_CALC",
+	"EVENT_TARGET_CHANGE"
 };
 
 PerlembParser::PerlembParser(void) : Parser()
@@ -622,6 +623,17 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 		case EVENT_SCALE_CALC: {
 			ExportVar(packagename.c_str(), "itemid", objid);
 			ExportVar(packagename.c_str(), "itemname", iteminst->GetItem()->Name);
+			break;
+		}
+		case EVENT_TARGET_CHANGE: {
+			if (npcmob->GetTarget()) {
+				//ExportVar(packagename.c_str(), "target", npcmob->GetTarget());
+				ExportVar(packagename.c_str(), "hastarget", 1);
+			}
+			else {
+				//ExportVar(packagename.c_str(), "target", 0);
+				ExportVar(packagename.c_str(), "hastarget", 0);
+			}
 			break;
 		}
 		//nothing special about these events

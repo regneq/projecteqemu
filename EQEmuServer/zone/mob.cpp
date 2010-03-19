@@ -2676,6 +2676,9 @@ int Mob::GetHaste() {
 void Mob::SetTarget(Mob* mob) {
 	if (target == mob) return;
 	target = mob;
+	if(this->IsNPC()) {
+		parse->Event(EVENT_TARGET_CHANGE, this->GetNPCTypeID(), 0, this->CastToNPC(), mob);
+	}
 	entity_list.UpdateHoTT(this);
 }
 
