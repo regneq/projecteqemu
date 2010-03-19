@@ -580,16 +580,17 @@ XS(XS_Client_GetLastName)
 	XSRETURN(1);
 }
 
-XS(XS_Client_GetLDoNPoints); /* prototype to pass -Wmissing-prototypes */
-XS(XS_Client_GetLDoNPoints)
+XS(XS_Client_GetLDoNPointsTheme); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_GetLDoNPointsTheme)
 {
 	dXSARGS;
-	if (items != 1)
-		Perl_croak(aTHX_ "Usage: Client::GetLDoNPoints(THIS)");
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Client::GetLDoNPointsTheme(THIS, theme)");
 	{
 		Client *		THIS;
 		int32		RETVAL;
 		dXSTARG;
+		sint32 theme_out = (sint32)SvIV(ST(1));
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -600,7 +601,7 @@ XS(XS_Client_GetLDoNPoints)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		RETVAL = THIS->GetLDoNPoints();
+		RETVAL = THIS->GetLDoNPointsTheme(theme_out);
 		XSprePUSH; PUSHu((UV)RETVAL);
 	}
 	XSRETURN(1);
@@ -1035,7 +1036,7 @@ XS(XS_Client_MovePC)
 			Perl_croak(aTHX_ "THIS is not of type Client");
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
-		
+
 		THIS->MovePC(zoneID, x, y, z, heading);
 	}
 	XSRETURN_EMPTY;
@@ -1064,7 +1065,7 @@ XS(XS_Client_MovePCInstance)
 			Perl_croak(aTHX_ "THIS is not of type Client");
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
-		
+
 		THIS->MovePC(zoneID, instanceID, x, y, z, heading);
 	}
 	XSRETURN_EMPTY;
@@ -3570,7 +3571,7 @@ XS(XS_Client_SetAATitle)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		if(strlen(txt) > 31) 
+		if(strlen(txt) > 31)
 			Perl_croak(aTHX_ "Title must be 31 characters or less");
 
 		if(items == 3)
@@ -3629,12 +3630,12 @@ XS(XS_Client_SetTitleSuffix) {
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		if(strlen(txt) > 31) 
+		if(strlen(txt) > 31)
 			Perl_croak(aTHX_ "Title must be 31 characters or less");
 
 		if(items == 3)
 			SaveSuffix = (SvIV(ST(2)) != 0);
-		
+
 		if(!SaveSuffix)
 			THIS->SetTitleSuffix(txt);
 		else
@@ -3651,7 +3652,7 @@ XS(XS_Client_SetAAPoints) {
 	{
 		Client * THIS;
 		uint32 points = SvUV(ST(1));
-		
+
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
 			THIS = INT2PTR(Client *,tmp);
@@ -3676,7 +3677,7 @@ XS(XS_Client_GetAAPoints) {
 	{
 		Client * THIS;
 		uint32 RETVAL;
-				
+
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
 			THIS = INT2PTR(Client *,tmp);
@@ -3701,7 +3702,7 @@ XS(XS_Client_GetSpentAA) {
 	{
 		Client * THIS;
 		uint32 RETVAL;
-				
+
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
 			THIS = INT2PTR(Client *,tmp);
@@ -3725,7 +3726,7 @@ XS(XS_Client_AddAAPoints) {
 	{
 		Client * THIS;
 		uint32 points = SvUV(ST(1));
-		
+
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
 			THIS = INT2PTR(Client *,tmp);
@@ -3748,7 +3749,7 @@ XS(XS_Client_RefundAA) {
 		Perl_croak(aTHX_ "Usage: Client::RefundAA(THIS)");
 	{
 		Client * THIS;
-				
+
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
 			THIS = INT2PTR(Client *,tmp);
@@ -3989,7 +3990,7 @@ XS(XS_Client_GetAugmentAt)
 }
 
 XS(XS_Client_GetStartZone);
-XS(XS_Client_GetStartZone) 
+XS(XS_Client_GetStartZone)
 {
 	dXSARGS;
 	if (items != 1)
@@ -3998,7 +3999,7 @@ XS(XS_Client_GetStartZone)
 		Client *	THIS;
 		uint32		RETVAL;
 		dXSTARG;
-		
+
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
 			THIS = INT2PTR(Client *,tmp);
@@ -4026,7 +4027,7 @@ XS(XS_Client_SetStartZone)
 		float		x = 0;
 		float		y = 0;
 		float		z = 0;
-		
+
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
 			THIS = INT2PTR(Client *,tmp);
@@ -4267,7 +4268,7 @@ XS(boot_Client)
 	char file[256];
 	strncpy(file, __FILE__, 256);
 	file[255] = 0;
-	
+
 	if(items != 1)
 		fprintf(stderr, "boot_quest does not take any arguments.");
 	char buf[128];
@@ -4300,7 +4301,7 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "GetBaseFace"), XS_Client_GetBaseFace, file, "$");
 		newXSproto(strcpy(buf, "GetLanguageSkill"), XS_Client_GetLanguageSkill, file, "$$");
 		newXSproto(strcpy(buf, "GetLastName"), XS_Client_GetLastName, file, "$");
-		newXSproto(strcpy(buf, "GetLDoNPoints"), XS_Client_GetLDoNPoints, file, "$");
+		newXSproto(strcpy(buf, "GetLDoNPointsTheme"), XS_Client_GetLDoNPointsTheme, file, "$");
 		newXSproto(strcpy(buf, "GetBaseSTR"), XS_Client_GetBaseSTR, file, "$");
 		newXSproto(strcpy(buf, "GetBaseSTA"), XS_Client_GetBaseSTA, file, "$");
 		newXSproto(strcpy(buf, "GetBaseCHA"), XS_Client_GetBaseCHA, file, "$");
@@ -4390,7 +4391,7 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "LeaveGroup"), XS_Client_LeaveGroup, file, "$");
 		newXSproto(strcpy(buf, "GetRaid"), XS_Client_GetRaid, file, "$");
 		newXSproto(strcpy(buf, "IsGrouped"), XS_Client_IsGrouped, file, "$");
-		newXSproto(strcpy(buf, "IsRaidGrouped"), XS_Client_IsRaidGrouped, file, "$");		
+		newXSproto(strcpy(buf, "IsRaidGrouped"), XS_Client_IsRaidGrouped, file, "$");
 		newXSproto(strcpy(buf, "Hungry"), XS_Client_Hungry, file, "$");
 		newXSproto(strcpy(buf, "Thirsty"), XS_Client_Thirsty, file, "$");
 		newXSproto(strcpy(buf, "GetInstrumentMod"), XS_Client_GetInstrumentMod, file, "$$");
