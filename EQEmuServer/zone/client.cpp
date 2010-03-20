@@ -3829,6 +3829,24 @@ void Client::ClearGroupAAs() {
 	Save();
 }
 
+void Client::UpdateGroupAAs(sint32 points, int32 type) {
+	
+	switch(type)
+	{
+	case 0:
+		{
+		m_pp.group_leadership_points += points;
+		break;
+		}
+	case 1:
+		{
+		m_pp.raid_leadership_points += points;
+		break;
+		}
+	}
+	SendLeadershipEXPUpdate();
+}
+
 bool Client::IsLeadershipEXPOn()
 {
 

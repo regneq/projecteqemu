@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==03/20/2010==
+cavedude: Added $client->UpdateGroupAAs(), exported GetGroupPoints() and GetRaidPoints() to Perl.
+
 ==03/19/2010==
 cavedude: Added $client->GetLDoNPointsTheme() Perl function.
 Trevius: Added new EVENT_TARGET_CHANGE perl event.  It triggers when an NPC target changes or is removed. It exports $hastarget which is 0 if no target and 1 if there is a target.

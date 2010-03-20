@@ -4258,6 +4258,84 @@ XS(XS_Client_ReadBook)
 XSRETURN_EMPTY;
 }
 
+XS(XS_Client_UpdateGroupAAs); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_UpdateGroupAAs)
+{
+	dXSARGS;
+	if (items != 3)
+		Perl_croak(aTHX_ "Usage: Client::UpdateGroupAAs(THIS, points, type)");
+	{
+		Client *		THIS;
+		bool		RETVAL;
+		sint32		points = (sint32)SvIV(ST(1));
+		int32		type = (int32)SvUV(ST(2));
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->UpdateGroupAAs(points, type);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Client_GetGroupPoints); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_GetGroupPoints)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Client::GetGroupPoints(THIS)");
+	{
+		Client *		THIS;
+		int32		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetGroupPoints();
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Client_GetRaidPoints); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_GetRaidPoints)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Client::GetRaidPoints(THIS)");
+	{
+		Client *		THIS;
+		int32		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetRaidPoints();
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -4435,6 +4513,9 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "GetRadiantCrystals"), XS_Client_GetRadiantCrystals, file, "$");
 		newXSproto(strcpy(buf, "GetEbonCrystals"), XS_Client_GetEbonCrystals, file, "$");
 		newXSproto(strcpy(buf, "ReadBook"), XS_Client_ReadBook, file, "$$$");
+		newXSproto(strcpy(buf, "UpdateGroupAAs"), XS_Client_UpdateGroupAAs, file, "$$$");
+		newXSproto(strcpy(buf, "GetGroupPoints"), XS_Client_GetGroupPoints, file, "$");
+		newXSproto(strcpy(buf, "GetRaidPoints"), XS_Client_GetRaidPoints, file, "$");
 	XSRETURN_YES;
 }
 
