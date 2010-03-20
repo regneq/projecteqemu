@@ -471,6 +471,7 @@ public:
 	void	ChangeLastName(const char* in_lastname);
 	void	GetGroupAAs(GroupLeadershipAA_Struct *into) const;
 	void	ClearGroupAAs();
+	void	UpdateGroupAAs(sint32 points, int32 type);
 	void	SacrificeConfirm(Client* caster);
 	void	Sacrifice(Client* caster);
 	void	GoToDeath();
