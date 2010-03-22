@@ -10454,11 +10454,25 @@ void Client::Handle_OP_GuildBank(const EQApplicationPacket *app)
 
 	uint32 Action = VARSTRUCT_DECODE_TYPE(uint32, Buffer);
 
+	if(!IsInAGuild())
+	{
+		Message(13, "You must be in a Guild to use the Guild Bank.");
+
+		if(Action == GuildBankDeposit)
+			GuildBankDepositAck(true);
+		else
+			GuildBankAck();
+
+		return;
+	}
+
 	if(!IsGuildBanker())
 	{
 		if((Action != GuildBankDeposit) && (Action != GuildBankViewItem) && (Action != GuildBankWithdraw))
 		{
 			_log(GUILDS__BANK_ERROR, "Suspected hacking attempt on guild bank from %s", GetName());
+
+			GuildBankAck();
 
 			return;
 		}

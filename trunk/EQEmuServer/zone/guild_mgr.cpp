@@ -581,7 +581,7 @@ bool GuildBankManager::IsLoaded(int32 GuildID)
 
 void GuildBankManager::SendGuildBank(Client *c)
 {
-	if(!c)
+	if(!c || !c->IsInAGuild())
 		return;
 
 	if(!IsLoaded(c->GuildID()))
