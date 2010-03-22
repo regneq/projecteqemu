@@ -150,7 +150,7 @@ void Client::RefreshGuildInfo()
 			gsrs->Rank = guildrank;
 			strn0cpy(gsrs->MemberName, GetName(), sizeof(gsrs->MemberName));
 			gsrs->Banker = GuildBanker;
-			DumpPacket(outapp);
+
 			FastQueuePacket(&outapp);
 		}
 
