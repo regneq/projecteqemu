@@ -786,7 +786,8 @@ struct PlayerProfile_Struct
 /*13053*/ uint8   anon;               // 2=roleplay, 1=anon, 0=not anon     
 /*13054*/ uint8   gm;                 // 0=no, 1=yes (guessing!)
 /*13055*/ int8    guildrank;        // 0=member, 1=officer, 2=guildleader
-/*13056*/ uint8 unknown13054[12];
+/*13056*/ uint32  guildbanker;
+/*13060*/ uint8 unknown13054[8];
 /*13068*/ uint32  exp;                // Current Experience
 /*13072*/ uint8 unknown13072[8];
 /*13080*/ uint32 timeentitledonaccount; // In days, displayed in /played

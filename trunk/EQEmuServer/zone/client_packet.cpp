@@ -361,6 +361,7 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_Report] = &Client::Handle_OP_Report;
 	ConnectedOpcodes[OP_VetClaimRequest] = &Client::Handle_OP_VetClaimRequest;
 	ConnectedOpcodes[OP_GMSearchCorpse] = &Client::Handle_OP_GMSearchCorpse;
+	ConnectedOpcodes[OP_GuildBank] = &Client::Handle_OP_GuildBank;
 }
 
 int Client::HandlePacket(const EQApplicationPacket *app)
@@ -3955,6 +3956,9 @@ void Client::Handle_OP_GuildInviteAccept(const EQApplicationPacket *app)
 				Message(13, "There was an error during the invite, DB may now be inconsistent.");
 				return;
 			}
+			if(zone->GetZoneID() == RuleI(World, GuildBankZoneID) && GuildBanks)
+				GuildBanks->SendGuildBank(this);
+
 		}
 	}
 }
@@ -7738,7 +7742,14 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 		m_pp.guild_id = GUILD_NONE;
 	}
 	else
+	{
 		m_pp.guild_id = GuildID();
+
+		if(zone->GetZoneID() == RuleI(World, GuildBankZoneID))
+			GuildBanker = (guild_mgr.IsGuildLeader(GuildID(), CharacterID()) || guild_mgr.GetBankerFlag(CharacterID()));
+	}
+
+	m_pp.guildbanker = GuildBanker;
 
 	switch (race)
 	{
@@ -8466,6 +8477,9 @@ void Client::CompleteConnect()
 
 	SendRewards();
 	CalcItemScale();
+
+	if(zone->GetZoneID() == RuleI(World, GuildBankZoneID) && GuildBanks)
+		GuildBanks->SendGuildBank(this);
 }
 
 void Client::Handle_OP_KeyRing(const EQApplicationPacket *app) {
@@ -10422,4 +10436,248 @@ void Client::Handle_OP_GMSearchCorpse(const EQApplicationPacket *app)
 	}
 	safe_delete_array(Query);
 	safe_delete_array(EscSearchString);
+}
+
+void Client::Handle_OP_GuildBank(const EQApplicationPacket *app)
+{
+	if(!GuildBanks)
+		return;
+
+	if((int)zone->GetZoneID() != RuleI(World, GuildBankZoneID))
+	{
+		Message(13, "The Guild Bank is not available in this zone.");
+
+		return;
+	}
+
+	char *Buffer = (char *)app->pBuffer;
+
+	uint32 Action = VARSTRUCT_DECODE_TYPE(uint32, Buffer);
+
+	if(!IsGuildBanker())
+	{
+		if((Action != GuildBankDeposit) && (Action != GuildBankViewItem) && (Action != GuildBankWithdraw))
+		{
+			_log(GUILDS__BANK_ERROR, "Suspected hacking attempt on guild bank from %s", GetName());
+
+			return;
+		}
+	}
+
+	switch(Action)
+	{
+		case GuildBankPromote:
+		{
+			if(GuildBanks->IsAreaFull(GuildID(), GuildBankMainArea))
+			{
+				Message_StringID(13, GUILD_BANK_FULL);
+
+				GuildBankDepositAck(true);
+
+				return;
+			}
+
+			GuildBankPromote_Struct *gbps = (GuildBankPromote_Struct*)app->pBuffer;
+
+			int Slot = GuildBanks->Promote(GuildID(), gbps->Slot);
+
+			if(Slot >= 0)
+			{
+				ItemInst* inst = GuildBanks->GetItem(GuildID(), GuildBankMainArea, Slot, 1);
+
+				if(inst)
+				{
+					Message_StringID(clientMessageWhite, GUILD_BANK_TRANSFERRED, inst->GetItem()->Name);
+					safe_delete(inst);
+				}
+			}
+			else
+				Message(13, "Unexpected error while moving item into Guild Bank.");
+
+			GuildBankAck();
+
+			break;
+		}
+
+		case GuildBankViewItem:
+		{
+			GuildBankViewItem_Struct *gbvis = (GuildBankViewItem_Struct*)app->pBuffer;
+
+			ItemInst* inst = GuildBanks->GetItem(GuildID(), gbvis->Area, gbvis->SlotID, 1);
+
+			if(!inst)
+				break;
+
+			SendItemPacket(0, inst, ItemPacketViewLink);
+
+			safe_delete(inst);
+
+			break;
+		}
+			
+		case GuildBankDeposit:	// Deposit Item
+		{
+			if(GuildBanks->IsAreaFull(GuildID(), GuildBankDepositArea))
+			{
+				Message_StringID(13, GUILD_BANK_FULL);
+
+				GuildBankDepositAck(true);
+
+				return;
+			}
+
+			ItemInst *CursorItemInst = GetInv().GetItem(SLOT_CURSOR);
+
+			bool Allowed = true;
+
+			if(!CursorItemInst)
+			{
+				Message(13, "No Item on the cursor.");
+
+				GuildBankDepositAck(true);
+
+				return;
+			}
+
+			const Item_Struct* CursorItem = CursorItemInst->GetItem();
+
+			if(!CursorItem->NoDrop || CursorItemInst->IsInstNoDrop())
+			{
+				Message_StringID(13, GUILD_BANK_CANNOT_DEPOSIT);
+
+				Allowed = false;
+			}
+			else if(CursorItemInst->IsNoneEmptyContainer())
+			{
+				Message_StringID(13, GUILD_BANK_CANNOT_DEPOSIT);
+
+				Allowed = false;
+			}
+			else if(CursorItemInst->IsAugmented())
+			{
+				Message_StringID(13, GUILD_BANK_CANNOT_DEPOSIT);
+
+				Allowed = false;
+			}
+			else if(CursorItem->NoRent == 0)
+			{
+				Message_StringID(13, GUILD_BANK_CANNOT_DEPOSIT);
+
+				Allowed = false;
+			}
+			else if(CursorItem->LoreFlag && GuildBanks->HasItem(GuildID(), CursorItem->ID))
+			{
+				Message_StringID(13, GUILD_BANK_CANNOT_DEPOSIT);
+
+				Allowed = false;
+			}
+
+			if(!Allowed)
+			{
+				GuildBankDepositAck(true);
+
+				return;
+			}
+
+			if(GuildBanks->AddItem(GuildID(), GuildBankDepositArea, CursorItem->ID, CursorItemInst->GetCharges(), GetName(), GuildBankBankerOnly, ""))
+			{
+				GuildBankDepositAck(false);
+
+				DeleteItemInInventory(SLOT_CURSOR, 0, false);
+			}
+
+			break;
+		}
+
+		case GuildBankPermissions:
+		{
+			GuildBankPermissions_Struct *gbps = (GuildBankPermissions_Struct*)app->pBuffer;
+
+			if(gbps->Permissions == 1)
+				GuildBanks->SetPermissions(GuildID(), gbps->SlotID, gbps->Permissions, gbps->MemberName);
+			else
+				GuildBanks->SetPermissions(GuildID(), gbps->SlotID, gbps->Permissions, "");
+
+			GuildBankAck();
+			break;
+		}
+
+		case GuildBankWithdraw:
+		{
+			if(GetInv()[SLOT_CURSOR])
+			{
+				Message_StringID(13, GUILD_BANK_EMPTY_HANDS);
+
+				GuildBankAck();
+
+				break;
+			}
+
+			GuildBankWithdrawItem_Struct *gbwis = (GuildBankWithdrawItem_Struct*)app->pBuffer;
+
+			ItemInst* inst = GuildBanks->GetItem(GuildID(), gbwis->Area, gbwis->SlotID, gbwis->Quantity);
+			
+			if(!inst)
+			{
+				GuildBankAck();
+
+				break;
+			}
+			
+			if(!IsGuildBanker() && !GuildBanks->AllowedToWithdraw(GuildID(), gbwis->Area, gbwis->SlotID, GetName()))
+			{
+				_log(GUILDS__BANK_ERROR, "Suspected attempted hack on the guild bank from %s", GetName());
+
+				GuildBankAck();
+
+				break;
+			}
+
+			PushItemOnCursor(*inst);
+
+			SendItemPacket(SLOT_CURSOR, inst, ItemPacketSummonItem);
+
+			GuildBanks->DeleteItem(GuildID(), gbwis->Area, gbwis->SlotID, gbwis->Quantity);
+
+			safe_delete(inst);
+
+			GuildBankAck();
+
+			break;
+		}
+		
+		case GuildBankSplitStacks:
+		{
+			if(GuildBanks->IsAreaFull(GuildID(), GuildBankMainArea))
+				Message_StringID(13, GUILD_BANK_FULL);
+			else
+			{
+				GuildBankWithdrawItem_Struct *gbwis = (GuildBankWithdrawItem_Struct*)app->pBuffer;
+			
+				GuildBanks->SplitStack(GuildID(), gbwis->SlotID, gbwis->Quantity);
+			}
+
+			GuildBankAck();
+
+			break;
+		}
+
+		case GuildBankMergeStacks:
+		{
+			GuildBankWithdrawItem_Struct *gbwis = (GuildBankWithdrawItem_Struct*)app->pBuffer;
+
+			GuildBanks->MergeStacks(GuildID(), gbwis->SlotID);
+
+			GuildBankAck();
+
+			break;
+		}
+
+		default:
+		{
+			Message(13, "Unexpected GuildBank action.");
+
+			_log(GUILDS__BANK_ERROR, "Received unexpected guild bank action code %i from %s", Action, GetName());
+		}
+	}
 }

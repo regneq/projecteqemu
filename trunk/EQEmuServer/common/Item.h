@@ -291,6 +291,7 @@ public:
 	void Clear();
 	void ClearByFlags(byFlagSetting is_nodrop, byFlagSetting is_norent);
 	uint8 FirstOpenSlot() const;
+	bool IsNoneEmptyContainer();
 
 	//
 	// Augments
@@ -301,6 +302,7 @@ public:
 	void PutAugment(SharedDatabase *db, uint8 slot, uint32 item_id);
 	void DeleteAugment(uint8 slot);
 	ItemInst* RemoveAugment(uint8 index);
+	bool IsAugmented();
 
 	// Has attack/delay?
 	virtual bool IsWeapon() const;

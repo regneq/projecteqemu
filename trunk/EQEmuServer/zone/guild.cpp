@@ -120,9 +120,14 @@ void Client::SendGuildMembers() {
 	FastQueuePacket(&outapp);
 }
 
-void Client::RefreshGuildInfo() {
+void Client::RefreshGuildInfo()
+{
+	uint32 OldGuildID = guild_id;
+
 	guildrank = GUILD_RANK_NONE;
 	guild_id = GUILD_NONE;
+
+	bool WasBanker = GuildBanker;
 	
 	CharGuildInfo info;
 	if(!guild_mgr.GetCharInfo(CharacterID(), info)) {
@@ -132,6 +137,31 @@ void Client::RefreshGuildInfo() {
 	
 	guildrank = info.rank;
 	guild_id = info.guild_id;
+	GuildBanker = info.banker || guild_mgr.IsGuildLeader(GuildID(), CharacterID());
+
+	if(((int)zone->GetZoneID() == RuleI(World, GuildBankZoneID)))
+	{
+		if(WasBanker != GuildBanker)
+		{
+			EQApplicationPacket *outapp = new EQApplicationPacket(OP_SetGuildRank, sizeof(GuildSetRank_Struct));
+
+			GuildSetRank_Struct *gsrs = (GuildSetRank_Struct*)outapp->pBuffer;
+
+			gsrs->Rank = guildrank;
+			strn0cpy(gsrs->MemberName, GetName(), sizeof(gsrs->MemberName));
+			gsrs->Banker = GuildBanker;
+			DumpPacket(outapp);
+			FastQueuePacket(&outapp);
+		}
+
+		if((guild_id != OldGuildID) && GuildBanks)
+		{
+			ClearGuildBank();
+
+			if(guild_id != GUILD_NONE)
+				GuildBanks->SendGuildBank(this);
+		}
+	}
 	
 	SendGuildSpawnAppearance();
 }

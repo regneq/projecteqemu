@@ -920,6 +920,10 @@ public:
 	bool TryReward(int32 claim_id);
 	QGlobalCache *GetQGlobals() { return qGlobals; }
 	QGlobalCache *CreateQGlobals() { qGlobals = new QGlobalCache(); return qGlobals; }
+	void GuildBankAck();
+	void GuildBankDepositAck(bool Fail);
+	inline bool IsGuildBanker() { return GuildBanker; }
+	void ClearGuildBank();
 
 protected:
 	friend class Mob;
@@ -1010,6 +1014,7 @@ private:
 	sint16				admin;
 	int32				guild_id;
 	int8				guildrank; // player's rank in the guild, 0-GUILD_MAX_RANK
+	bool				GuildBanker;
 	int16				duel_target;
 	bool				duelaccepted;
 	std::list<int32> keyring;

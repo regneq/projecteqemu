@@ -318,7 +318,8 @@ ENCODE(OP_PlayerProfile) {
 	OUT(anon);
 	OUT(gm);
 	OUT(guildrank);
-//	OUT(unknown13054[12]);
+	OUT(guildbanker);
+//	OUT(unknown13054[8]);
 	OUT(exp);
 //	OUT(unknown13072[12]);
 	OUT(timeentitledonaccount);

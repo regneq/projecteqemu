@@ -1,5 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==03/22/2010==
+Derision: Implemented the Guild Bank.
+
+REQUIRED SQL: utils/sql/svn/1293_guild_bank.sql
+
 ==03/20/2010==
 cavedude: Added $client->UpdateGroupAAs(), exported GetGroupPoints() and GetRaidPoints() to Perl.
 

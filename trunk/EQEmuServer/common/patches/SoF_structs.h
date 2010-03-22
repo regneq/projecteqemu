@@ -869,7 +869,8 @@ struct PlayerProfile_Struct //23576 Octets
 /*15245*/ uint8   anon;               // 2=roleplay, 1=anon, 0=not anon
 /*15246*/ uint8   gm;                 // 0=no, 1=yes (guessing!)
 /*15247*/ int8    guildrank;        // 0=member, 1=officer, 2=guildleader
-/*15248*/ uint8 unknown13054[12];  //[12]
+/*15248*/ uint32  guildbanker;
+/*15252*/ uint8 unknown13054[8];  //[12]
 /*15260*/ uint32  exp;                // Current Experience
 /*15264*/ uint8 unknown13072[8];
 /*15272*/ uint32  timeentitledonaccount;

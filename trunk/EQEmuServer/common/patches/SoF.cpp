@@ -586,6 +586,7 @@ ENCODE(OP_PlayerProfile) {
 	OUT(anon);
 	OUT(gm);
 	OUT(guildrank);
+	OUT(guildbanker);
 //	OUT(unknown13054[12]);
 	OUT(exp);
 //	OUT(unknown13072[8]);
