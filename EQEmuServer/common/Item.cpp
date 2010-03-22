@@ -213,47 +213,10 @@ bool ItemInst::IsStackable() const
 
 bool ItemInst::IsEquipable(int16 race, int16 class_) const
 {
-	if (!m_item)
+	if (!m_item || (m_item->Slots == 0))
 		return false;
-	
-	bool israce = false;
-	bool isclass = false;
-	
-	if (m_item->Slots == 0) {
-		return false;
-	}
-	
-	uint32 classes_ = m_item->Classes;
-	uint32 races_ = m_item->Races;
-	int32 race_ = 0;
-	#ifndef PACKETCOLLECTOR
-	race_ = GetArrayRace(race);
-	#endif
 
-	for (int cur_class = 1; cur_class<=PLAYER_CLASS_COUNT; cur_class++) {
-		if (classes_ % 2 == 1) {
-    		if (cur_class == class_) {
-    			isclass = true;
-				break;
-			}
-		}
-		classes_ >>= 1;
-	}
-
-	race_ = (race_==18? 16 : race_);
-	// @merth: can this be optimized?  i.e., will (race & common->Races) suffice?
-
-	for (unsigned int cur_race = 1; cur_race <= PLAYER_RACE_COUNT; cur_race++) {
-		
-		if (races_ % 2 == 1) {
-    		if (cur_race == race_) {
-    			israce = true;
-				break;
-   			}
-		}
-		races_ >>= 1;
-	}
-	return (israce && isclass);
+	return m_item->IsEquipable(race, class_);
 }
 
 // Can equip at this slot?
@@ -1453,6 +1416,27 @@ uint8 ItemInst::FirstOpenSlot() const
 	return (i<slots) ? i : 0xff;
 }
 
+bool ItemInst::IsNoneEmptyContainer()
+{
+	if(m_item->ItemClass != ItemClassContainer)
+		return false;
+
+	for(int i = 0; i < m_item->BagSlots; ++i)
+		if(GetItem(i))
+			return true;
+	
+	return false;
+}
+
+bool ItemInst::IsAugmented()
+{
+	for(int i = 0; i < MAX_AUGMENT_SLOTS; ++i)
+		if (GetAugmentItemID(i))
+			return true;
+	
+	return false;
+}
+
 // Calculate slot_id for an item within a bag
 sint16 Inventory::CalcSlotId(sint16 bagslot_id, uint8 bagidx)
 {
@@ -1825,4 +1809,45 @@ EvolveInfo::EvolveInfo(uint32 first, uint8 max, bool allkills, uint32 L2, uint32
 	LvlKills[6] = L8;
 	LvlKills[7] = L9;
 	LvlKills[8] = L10;
+}
+
+bool Item_Struct::IsEquipable(int16 Race, int16 Class_) const
+{
+	bool IsRace = false;
+	bool IsClass = false;
+	
+	uint32 Classes_ = Classes;
+
+	uint32 Races_ = Races;
+
+	int32 Race_ = GetArrayRace(Race);
+
+	for (int CurrentClass = 1; CurrentClass <= PLAYER_CLASS_COUNT; ++CurrentClass)
+	{
+		if (Classes_ % 2 == 1)
+		{
+   	 		if (CurrentClass == Class_)
+			{
+    				IsClass = true;
+				break;
+			}
+		}
+		Classes_ >>= 1;
+	}
+
+	Race_ = (Race_ == 18 ? 16 : Race_);
+
+	for (unsigned int CurrentRace = 1; CurrentRace <= PLAYER_RACE_COUNT; ++CurrentRace)
+	{
+		if (Races_ % 2 == 1)
+		{
+	    		if (CurrentRace == Race_)
+			{
+    				IsRace = true;
+				break;
+   			}
+		}
+		Races_ >>= 1;
+	}
+	return (IsRace && IsClass);
 }

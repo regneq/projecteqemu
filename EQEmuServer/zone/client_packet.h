@@ -253,3 +253,4 @@
 	void Handle_OP_Report(const EQApplicationPacket *app);
 	void Handle_OP_VetClaimRequest(const EQApplicationPacket *app);
 	void Handle_OP_GMSearchCorpse(const EQApplicationPacket *app);
+	void Handle_OP_GuildBank(const EQApplicationPacket *app);

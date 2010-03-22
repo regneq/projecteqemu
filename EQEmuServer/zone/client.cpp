@@ -196,6 +196,7 @@ Client::Client(EQStreamInterface* ieqs)
 	SQL_log = NULL;
 	guild_id = GUILD_NONE;
 	guildrank = 0;
+	GuildBanker = false;
 	memset(lskey, 0, sizeof(lskey));
 	strcpy(account_name, "");
 	tellsoff = false;
@@ -5804,4 +5805,43 @@ void Client::ProcessInspectRequest(Client* requestee, Client* requester) {
 
 		requester->QueuePacket(outapp); // Send answer to requester
 	}
+}
+
+void Client::GuildBankAck()
+{
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_GuildBank, sizeof(GuildBankAck_Struct));
+
+	GuildBankAck_Struct *gbas = (GuildBankAck_Struct*) outapp->pBuffer;
+
+	gbas->Action = GuildBankAcknowledge;
+
+	FastQueuePacket(&outapp);
+}
+
+void Client::GuildBankDepositAck(bool Fail)
+{
+
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_GuildBank, sizeof(GuildBankDepositAck_Struct));
+
+	GuildBankDepositAck_Struct *gbdas = (GuildBankDepositAck_Struct*) outapp->pBuffer;
+
+	gbdas->Action = GuildBankDeposit;
+
+	gbdas->Fail = Fail ? 1 : 0;
+
+	DumpPacket(outapp);
+	FastQueuePacket(&outapp);
+}
+
+void Client::ClearGuildBank()
+{
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_GuildBank, sizeof(GuildBankClear_Struct));
+
+	GuildBankClear_Struct *gbcs = (GuildBankClear_Struct*) outapp->pBuffer;
+
+	gbcs->Action = GuildBankBulkItems;
+	gbcs->DepositAreaCount = 0;
+	gbcs->MainAreaCount = 0;
+
+	FastQueuePacket(&outapp);
 }

@@ -1912,6 +1912,37 @@ void EntityList::QueueClientsGuild(Mob* sender, const EQApplicationPacket* app, 
 	}
 }
 
+void EntityList::QueueClientsGuildBankItemUpdate(const GuildBankItemUpdate_Struct *gbius, uint32 GuildID)
+{
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_GuildBank, sizeof(GuildBankItemUpdate_Struct));
+
+	GuildBankItemUpdate_Struct *outgbius = (GuildBankItemUpdate_Struct*)outapp->pBuffer;
+
+	memcpy(outgbius, gbius, sizeof(GuildBankItemUpdate_Struct));
+
+	const Item_Struct *Item = database.GetItem(gbius->ItemID);
+
+	LinkedListIterator<Client*> iterator(client_list);
+
+	iterator.Reset();
+
+	while(iterator.MoreElements())
+	{
+		Client* client = iterator.GetData()->CastToClient();
+
+		if (client->IsInGuild(GuildID))
+		{
+			if(Item && (gbius->Permissions == GuildBankPublicIfUsable))
+				outgbius->Useable = Item->IsEquipable(client->GetBaseRace(), client->GetBaseClass());
+
+			client->QueuePacket(outapp);
+		}
+
+		iterator.Advance();
+	}
+	safe_delete(outapp);
+}
+
 void EntityList::MessageStatus(int32 to_guild_id, int to_minstatus, int32 type, const char* message, ...) {
 	va_list argptr;
 	char buffer[4096];

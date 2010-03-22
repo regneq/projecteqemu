@@ -58,6 +58,7 @@ using namespace std;
 #include "event_codes.h"
 #include "client_logs.h"
 #include "../common/rulesys.h"
+#include "guild_mgr.h"
 
 #ifdef WIN32
 #define snprintf	_snprintf
@@ -826,6 +827,11 @@ Zone::Zone(int32 in_zoneid, int32 in_instanceid, const char* in_short_name)
 	}
 
 	database.QGlobalPurge();
+
+	if(zoneid == RuleI(World, GuildBankZoneID))
+		GuildBanks = new GuildBankManager;
+	else
+		GuildBanks = NULL;
 }
 
 Zone::~Zone() {
@@ -860,6 +866,8 @@ Zone::~Zone() {
 #ifdef CLIENT_LOGS
 	client_logs.clear();
 #endif
+
+	safe_delete(GuildBanks);
 }
 
 //Modified for timezones.
