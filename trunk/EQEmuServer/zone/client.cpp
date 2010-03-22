@@ -5829,7 +5829,6 @@ void Client::GuildBankDepositAck(bool Fail)
 
 	gbdas->Fail = Fail ? 1 : 0;
 
-	DumpPacket(outapp);
 	FastQueuePacket(&outapp);
 }
 

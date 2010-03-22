@@ -707,7 +707,7 @@ bool BaseGuildManager::GetBankerFlag(int32 CharID)
 	{
 		_log(GUILDS__ERROR, "Error retrieving banker flag '%s': %s", query, errbuf);
 
-		safe_delete(query);
+		safe_delete_array(query);
 
 		return false;
 	}
