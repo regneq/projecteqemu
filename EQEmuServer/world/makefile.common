@@ -16,7 +16,7 @@ SF= ../common/timer.o ../common/packet_dump.o ../common/races.o ../common/unix.o
    ../common/EQStreamIdent.o ../common/StructStrategy.o \
    ../common/EQStreamProxy.o ../common/patches/patches.o \
    ../common/patches/Client62.o ../common/patches/Titanium.o ../common/patches/Live.o \
-   ../common/patches/Anniversary.o ../common/patches/SoF.o \
+   ../common/patches/Anniversary.o ../common/patches/SoF.o ../common/patches/SoD.o \
    ../common/EQDB.o ../common/perl_EQDB.o EQLConfig.o perl_EQLConfig.o \
    ../common/EQDBRes.o ../common/perl_EQDBRes.o ../common/EmuTCPServer.o \
    ../common/TCPServer.o ../common/EmuTCPConnection.o \

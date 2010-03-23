@@ -516,7 +516,7 @@ bool Client::MakeItemLink(char* &ret_link, const ItemInst *inst) {
 	int8 evolvedlevel = 0;
 	int hash = 0;
 	//int hash = GetItemLinkHash(inst);	//eventually this will work (currently crashes zone), but for now we'll skip the extra overhead
-	if (GetClientVersion() == EQClientSoF)
+	if (GetClientVersion() >= EQClientSoF)
 	{
 		MakeAnyLenString(&ret_link, "%1X" "%05X" "%05X" "%05X" "%05X" "%05X" "%05X" "%1X" "%04X" "%1X" "%05X" "%08X", 
 			0,
@@ -801,7 +801,7 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 	// Step 2: Validate item in from_slot
 	// After this, we can assume src_inst is a valid ptr
 	if (!src_inst && (src_slot_id<4000 || src_slot_id>4009)) {
-		if (GetClientVersion() != EQClientSoF)  // SoF client sends invalid slots regularly for an unknown use, so don't warn them about this.
+		if (GetClientVersion() < EQClientSoF)  // SoF client sends invalid slots regularly for an unknown use, so don't warn them about this.
 			Message(13, "Error: Server found no item in slot %i (->%i), Deleting Item!", src_slot_id, dst_slot_id);
 
 		LogFile->write(EQEMuLog::Debug, "Error: Server found no item in slot %i (->%i), Deleting Item!", src_slot_id, dst_slot_id);
@@ -1248,7 +1248,7 @@ void Client::RemoveNoRent() {
 		if(TempItem->NoRent == 0)
 			DeleteItemInInventory(x,0,true);
 	}
-	if(GetClientVersion() == EQClientSoF)
+	if(GetClientVersion() >= EQClientSoF)
 	{
 		TempItem = 0;
 		ins = GetInv().GetItem(9999);
