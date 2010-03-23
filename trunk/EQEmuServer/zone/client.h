@@ -136,7 +136,8 @@ typedef enum {
 	EQClientUnknown = 0,
 	EQClient62,
 	EQClientTitanium,
-	EQClientSoF
+	EQClientSoF,
+	EQClientSoD
 } EQClientVersion;
 
 struct ClientReward

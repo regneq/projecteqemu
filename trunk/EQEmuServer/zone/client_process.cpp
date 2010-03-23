@@ -811,7 +811,7 @@ void Client::BulkSendInventoryItems()
 		}
 	}
 	// Power Source
-	if(GetClientVersion() == EQClientSoF)
+	if(GetClientVersion() >= EQClientSoF)
 	{	
 		slot_id = 9999;
 		const ItemInst* inst = m_inv[slot_id];
@@ -1662,7 +1662,7 @@ void Client::OPGMTrainSkill(const EQApplicationPacket *app)
 		}
 	}
 
-	if(GetClientVersion() == EQClientSoF) {
+	if(GetClientVersion() >= EQClientSoF) {
 		// The following packet decreases the skill points left in the Training Window and
 		// produces the 'You have increased your skill / learned the basics of' message.
 		//

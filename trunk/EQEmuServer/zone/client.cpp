@@ -3889,7 +3889,7 @@ void Client::IncrementAggroCount() {
 	if(AggroCount > 1)
 		return;
 
-	if(GetClientVersion() == EQClientSoF) {
+	if(GetClientVersion() >= EQClientSoF) {
 
 		EQApplicationPacket *outapp = new EQApplicationPacket(OP_RestState, 1);
 		char *Buffer = (char *)outapp->pBuffer;
@@ -3920,7 +3920,7 @@ void Client::DecrementAggroCount() {
 
 	rest_timer.Start(RuleI(Character, RestRegenTimeToActivate) * 1000);
 
-	if(GetClientVersion() == EQClientSoF) {
+	if(GetClientVersion() >= EQClientSoF) {
 
 		EQApplicationPacket *outapp = new EQApplicationPacket(OP_RestState, 5);
 		char *Buffer = (char *)outapp->pBuffer;

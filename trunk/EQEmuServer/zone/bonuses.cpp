@@ -138,7 +138,7 @@ void Client::CalcItemBonuses(StatBonuses* newbon) {
 	}
 	
 	//Power Source Slot
-	if (GetClientVersion() == EQClientSoF)
+	if (GetClientVersion() >= EQClientSoF)
 	{
 		const ItemInst* inst = m_inv[9999];
 		if(inst)

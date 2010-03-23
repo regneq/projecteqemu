@@ -491,6 +491,8 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 		ClientVersion = EQClient62;
 	else if(StreamDescription == "Patch SoF")
 		ClientVersion = EQClientSoF;
+	else if(StreamDescription == "Patch SoD")
+		ClientVersion = EQClientSoD;
 
 	// Quagmire - Antighost code
 	// tmp var is so the search doesnt find this object
@@ -2585,7 +2587,7 @@ void Client::Handle_OP_SpawnAppearance(const EQApplicationPacket *app)
 		{
 			if(!HasSkill(HIDE) && GetSkill(HIDE) == 0)
 			{
-				if(GetClientVersion() != EQClientSoF)
+				if(GetClientVersion() < EQClientSoF)
 				{
 					char *hack_str = NULL;
 					MakeAnyLenString(&hack_str, "Player sent OP_SpawnAppearance with AT_Invis: %i", sa->parameter);
@@ -6304,7 +6306,7 @@ void Client::Handle_OP_ReadBook(const EQApplicationPacket *app)
 {
 	BookRequest_Struct* book = (BookRequest_Struct*) app->pBuffer;
 	ReadBook(book);
-	if(GetClientVersion() == EQClientSoF)
+	if(GetClientVersion() >= EQClientSoF)
 	{
 		EQApplicationPacket EndOfBook(OP_FinishWindow, 0);
 		QueuePacket(&EndOfBook);
