@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==03/24/2010==
+Trevius: SoD - Updated the NewZone struct and encode
+
 ==03/23/2010==
 Trevius: SoD - Initial addition of the Seeds of Destruction patch files.  Note: The SoD Client is not functional at all yet, but work has begun!
 

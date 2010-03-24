@@ -722,23 +722,23 @@ ENCODE(OP_NewZone) {
 	OUT(zone_instance);
 	
     /*fill in some unknowns with observed values, hopefully it will help */
-	eq->unknown796 = -1;
-	eq->unknown840 = 600;
-	eq->unknown876 = 50;
-	eq->unknown880 = 10;
-	eq->unknown884 = 1;
-	eq->unknown885 = 0;
-	eq->unknown886 = 1;
-	eq->unknown887 = 0;
-	eq->unknown888 = 0;
+	eq->unknown800 = -1;
+	eq->unknown844 = 600;
+	eq->unknown880 = 50;
+	eq->unknown884 = 10;
+	eq->unknown888 = 1;
 	eq->unknown889 = 0;
-	eq->fall_damage = 0;	// 0 = Fall Damage on, 1 = Fall Damage off
+	eq->unknown890 = 1;
 	eq->unknown891 = 0;
-	eq->unknown892 = 180;
+	eq->unknown892 = 0;
+	eq->unknown893 = 0;
+	eq->fall_damage = 0;	// 0 = Fall Damage on, 1 = Fall Damage off
+	eq->unknown895 = 0;
 	eq->unknown896 = 180;
 	eq->unknown900 = 180;
-	eq->unknown904 = 2;
+	eq->unknown904 = 180;
 	eq->unknown908 = 2;
+	eq->unknown912 = 2;
 
 	FINISH_ENCODE();
 }
