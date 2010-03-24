@@ -352,6 +352,7 @@ void Serverlist::Process() {
 					break;
 				}
 			}
+			safe_delete(SP);
 		}
 	}
 }
