@@ -383,8 +383,8 @@ struct NewZone_Struct {
 /*0516*/	float	gravity;
 /*0520*/	int8	time_type;
 /*0521*/	uint8	unknown521[49];
-/*0570*/	uint32	sky;					// Sky Type
-/*0571*/	uint8	unknown571[10];			// ***Placeholder
+/*0570*/	uint8	sky;					// Sky Type
+/*0571*/	uint8	unknown571[13];			// ***Placeholder
 /*0584*/	float	zone_exp_multiplier;	// Experience Multiplier
 /*0588*/	float	safe_y;					// Zone Safe Y
 /*0592*/	float	safe_x;					// Zone Safe X
