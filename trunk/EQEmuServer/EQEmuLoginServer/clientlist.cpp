@@ -338,6 +338,7 @@ void Clientlist::Process() {
 					break;
 				}
 			}
+			safe_delete(app);
 		}
 	}
 }
