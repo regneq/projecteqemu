@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==03/25/2010==
+Trevius: SoD - Updated PlayerProfile_Struct and CharacterSelectEntry_Struct
+
 ==03/24/2010==
 Trevius: SoD - Updated the NewZone struct and encode
 
