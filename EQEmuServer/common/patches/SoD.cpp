@@ -776,10 +776,21 @@ ENCODE(OP_ZoneSpawns) {
 	int k;
 	for(r = 0; r < entrycount; r++, eq++, emu++) {
 
+		// Some temp hacks to get in game
+		eq->unknown1 = 7.7974553108215;	// Size?
+		eq->unknown3 = -1;
+		eq->nullterm1 = 0;
+		eq->unknown8 = -1;
+		eq->unknown11 = -1;
+		eq->lastNameNull = 0;
+		eq->unknown14 = 128;
+		eq->unknown16 = -1;
+		eq->unknown17 = -1;
+
 		eq->showname = 1; //New Field - Toggles Name Display on or off - 0 = off, 1 = on
 		eq->linkdead = 0; //New Field - Toggles LD on or off after name - 0 = off, 1 = on
 		eq->statue = 0; //New Field - 1 freezes animation
-		eq->showhelm = emu->showhelm;
+		//eq->showhelm = emu->showhelm;
 		eq->deity = emu->deity;
 		eq->drakkin_heritage = emu->drakkin_heritage;
 		eq->gender = emu->gender;
@@ -791,16 +802,16 @@ ENCODE(OP_ZoneSpawns) {
 		}
 		eq->StandState = 0x64;
 		eq->guildID = emu->guildID;
-		eq->spelleffect = 0;
-		eq->spelleffect2 = 0;
-		eq->spelleffect3 = 0;
-		eq->spelleffect4 = 0;
-		eq->spelleffect5 = 0;
-		eq->spelleffect6 = 0;
+		//eq->spelleffect = 0;
+		//eq->spelleffect2 = 0;
+		//eq->spelleffect3 = 0;
+		//eq->spelleffect4 = 0;
+		//eq->spelleffect5 = 0;
+		//eq->spelleffect6 = 0;
 		eq->class_ = emu->class_;
-		eq->flymode = emu->flymode;
+		//eq->flymode = emu->flymode;
 		eq->gm = emu->gm;
-		eq->helm = emu->helm;
+		//eq->helm = emu->helm;
 		eq->drakkin_tattoo = emu->drakkin_tattoo;
 		eq->beardcolor = emu->beardcolor;
 		eq->runspeed = emu->runspeed;
@@ -810,8 +821,8 @@ ENCODE(OP_ZoneSpawns) {
 		eq->hairstyle = emu->hairstyle;
 		eq->haircolor = emu->haircolor;
 		eq->race = emu->race;
-		strcpy(eq->suffix, emu->suffix);
-		eq->findable = emu->findable;
+		//strcpy(eq->suffix, emu->suffix);
+		//eq->findable = emu->findable;
 		if(emu->bodytype >= 66)
 		{
 			eq->bodytype = 11;	//non-targetable
@@ -824,12 +835,12 @@ ENCODE(OP_ZoneSpawns) {
 			eq->bodytype = emu->bodytype;
 		}
 		//eq->bodytype2 = 0;
-		eq->equip_chest2 = emu->equip_chest2;
+		//eq->equip_chest2 = emu->equip_chest2;
 		eq->curHp = emu->curHp;
 		eq->invis = emu->invis;
-		strcpy(eq->lastName, emu->lastName);
+		//strcpy(eq->lastName, emu->lastName);
 		eq->eyecolor1 = emu->eyecolor1;
-		strcpy(eq->title, emu->title);
+		//strcpy(eq->title, emu->title);
 		eq->beard = emu->beard;
 		eq->targetable = 1; //New Field - Toggle Targetable on or off - 0 = off, 1 = on
 		eq->NPC = emu->NPC;
@@ -844,7 +855,7 @@ ENCODE(OP_ZoneSpawns) {
 		eq->animation = emu->animation;
 		eq->heading = emu->heading;
 		eq->spawnId = emu->spawnId;
-		eq->nonvisible = 0;
+		//eq->nonvisible = 0;
 		strcpy(eq->name, emu->name);
 		eq->petOwnerId = emu->petOwnerId;
 		eq->pvp = 0;	// 0 = non-pvp colored name, 1 = red pvp name
