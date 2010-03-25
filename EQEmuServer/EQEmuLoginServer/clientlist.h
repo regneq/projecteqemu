@@ -33,6 +33,12 @@
 
 #include <list>
 
+struct ClientConnection
+{
+	EQStream *eqs;
+	char version;
+};
+
 class Clientlist {
 
 public:
@@ -40,12 +46,14 @@ public:
 	void Process();
 
 	list<AuthCredential*> &GetCredentials() { return _credentials; }
-	list<EQStream*> &GetClientConnections() { return ClientConnections; }
+	list<ClientConnection*> &GetClientConnections() { return ClientConnections; }
 
 private:
 	EQStreamFactory *eqsf;
-	list<EQStream*> ClientConnections;
+	EQStreamFactory *eqsf_sod;
+	list<ClientConnection*> ClientConnections;
 	OpcodeManager *OpMgr;
+	OpcodeManager *OpMgrSoD;
 	list<AuthCredential*> _credentials;
 	EQEmuDatabase* _db;
 };

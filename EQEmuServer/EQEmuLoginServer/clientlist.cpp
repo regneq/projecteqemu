@@ -34,15 +34,28 @@ extern SecurityLibrary EQCrypto;
 
 Clientlist::Clientlist() {
 	eqsf = new EQStreamFactory(LoginStream, inifile.PortNumber);
+	eqsf_sod = new EQStreamFactory(LoginStream, inifile.SoDPortNumber);
 	OpMgr = new RegularOpcodeManager;
+	OpMgrSoD = new RegularOpcodeManager;
 
 	if(!OpMgr->LoadOpcodes(inifile.OPCodePathAndFileName.c_str()))
 		exit(1);
+
+	if(!OpMgrSoD->LoadOpcodes(inifile.SoDOPCodePathAndFileName.c_str()))
+		exit(1);
+
 
 	if (eqsf->Open()) {
 		_log(WORLD__LS,"Client (UDP) listener started.");
 	} else {
 		_log(WORLD__LS_ERR,"Failed to start client (UDP) listener (port %-4i)", inifile.PortNumber);
+		exit(1);
+	}
+
+	if (eqsf_sod->Open()) {
+		_log(WORLD__LS,"Client (UDP) listener started.");
+	} else {
+		_log(WORLD__LS_ERR,"Failed to start client (UDP) listener (port %-4i)", inifile.SoDPortNumber);
 		exit(1);
 	}
 
@@ -70,22 +83,43 @@ void Clientlist::Process() {
 
 		printf("New Client UDP connection from %s:%d\n", inet_ntoa(in),ntohs(eqs->GetRemotePort())); fflush(stdout);
 
+		ClientConnection *newcon = new ClientConnection;
+		newcon->eqs = eqs;
+		newcon->version = 0;
+
 		eqs->SetOpcodeManager(&OpMgr);
-		ClientConnections.push_back(eqs);
+		ClientConnections.push_back(newcon);
 		eqs = eqsf->Pop();
 	}
 
-	list<EQStream*>::iterator Iterator;
+	eqs = eqsf_sod->Pop();
+
+	while(eqs) {
+		struct in_addr in;
+		in.s_addr = eqs->GetRemoteIP();
+
+		printf("New Client UDP connection from %s:%d\n", inet_ntoa(in),ntohs(eqs->GetRemotePort())); fflush(stdout);
+
+		ClientConnection *newcon = new ClientConnection;
+		newcon->eqs = eqs;
+		newcon->version = 1;
+
+		eqs->SetOpcodeManager(&OpMgrSoD);
+		ClientConnections.push_back(newcon);
+		eqs = eqsf_sod->Pop();
+	}
+
+	list<ClientConnection*>::iterator Iterator;
 
 	for(Iterator = ClientConnections.begin(); Iterator != ClientConnections.end(); Iterator++) {
-		if((*Iterator)->CheckClosed()) {
+		if((*Iterator)->eqs->CheckClosed()) {
 			if(inifile.Trace)
 				printf("Client connection closed.\n");
 
 			list<AuthCredential*>::iterator CredentialIterator;
 
 			for(CredentialIterator = _credentials.begin(); CredentialIterator != _credentials.end(); CredentialIterator++) {
-				if((*CredentialIterator)->GetIPAddress() == (*Iterator)->GetRemoteIP() && (*CredentialIterator)->GetPort() == (*Iterator)->GetRemotePort()) {
+				if((*CredentialIterator)->GetIPAddress() == (*Iterator)->eqs->GetRemoteIP() && (*CredentialIterator)->GetPort() == (*Iterator)->eqs->GetRemotePort()) {
 #ifdef _DEBUG
 					uint32 LoginServerID = (*CredentialIterator)->GetAccountID();
 					std::string UserName = (*CredentialIterator)->GetAccountUserName();
@@ -102,7 +136,10 @@ void Clientlist::Process() {
 					break;
 			}
 
+			ClientConnection* cur = (*Iterator);
 			Iterator = ClientConnections.erase(Iterator);
+			safe_delete(cur);
+
 			if(Iterator == ClientConnections.end())
 				break;
 
@@ -111,7 +148,7 @@ void Clientlist::Process() {
 
 		EQApplicationPacket *app = 0;
 
-		while( (app = (EQApplicationPacket *)(*Iterator)->PopPacket())) {
+		while( (app = (EQApplicationPacket *)(*Iterator)->eqs->PopPacket())) {
 			if(inifile.DumpPacketsIn)
 				DumpPacket(app);
 
@@ -124,6 +161,17 @@ void Clientlist::Process() {
 				case OP_SessionReady: {
 					if(inifile.Trace)
 						printf("OP_Session_Ready\n");
+
+					if((*Iterator)->version == 1)
+					{
+						EQApplicationPacket *outapp = new EQApplicationPacket(OP_ChatMessage, 17);
+						outapp->pBuffer[0] = 0x02;
+						outapp->pBuffer[10] = 0x01;
+						outapp->pBuffer[11] = 0x65;
+						(*Iterator)->eqs->QueuePacket(outapp);
+						safe_delete(outapp);
+						break;
+					}
 
 					const char *ChatMessage = "ChatMessage";
 					EQApplicationPacket *outapp = new EQApplicationPacket(OP_ChatMessage, sizeof(LoginChatMessage_Struct) + strlen(ChatMessage));
@@ -140,7 +188,7 @@ void Clientlist::Process() {
 					if(inifile.DumpPacketsOut)
 						DumpPacket(outapp);
 
-					(*Iterator)->QueuePacket(outapp);
+					(*Iterator)->eqs->QueuePacket(outapp);
 
 					safe_delete(outapp);
 
@@ -184,7 +232,7 @@ void Clientlist::Process() {
 					// TODO: clean up the code block below.
 					if(strcmp(PassHash.c_str(), LSAccountPassword.c_str()) == 0) {
 						AuthCredential* NewAuth = new AuthCredential();
-						NewAuth->AddCredential(UserName, LSAccountID, (*Iterator)->GetRemoteIP(), (*Iterator)->GetRemotePort());
+						NewAuth->AddCredential(UserName, LSAccountID, (*Iterator)->eqs->GetRemoteIP(), (*Iterator)->eqs->GetRemotePort());
 						_credentials.push_back(NewAuth);
 #ifdef _DEBUG
 						cout << "Creating credential for account " << NewAuth->GetAccountID() << "." << endl;
@@ -192,7 +240,7 @@ void Clientlist::Process() {
 #endif
 
 						ostringstream TempIPAddress;
-						uint32 TempUIntIpAddress = (*Iterator)->GetRemoteIP();
+						uint32 TempUIntIpAddress = (*Iterator)->eqs->GetRemoteIP();
 						TempIPAddress << (TempUIntIpAddress & 0xff) << '.' << ((TempUIntIpAddress >> 8) & 0xff) << '.' << ((TempUIntIpAddress >> 16) & 0xff) << '.' << ((TempUIntIpAddress >> 24) & 0xff) << endl;
 
 						_db->UpdateLSAccountData(LSAccountID, TempIPAddress.str());
@@ -257,7 +305,7 @@ void Clientlist::Process() {
 						if(inifile.DumpPacketsOut)
 							DumpPacket(outapp);
 
-						(*Iterator)->QueuePacket(outapp);
+						(*Iterator)->eqs->QueuePacket(outapp);
 						safe_delete(outapp);
 					}
 					else {
@@ -278,7 +326,7 @@ void Clientlist::Process() {
 						if(inifile.DumpPacketsOut)
 							DumpPacket(outapp);
 
-						(*Iterator)->QueuePacket(outapp);
+						(*Iterator)->eqs->QueuePacket(outapp);
 						safe_delete(outapp);
 					}
 #ifdef WIN32
@@ -293,7 +341,7 @@ void Clientlist::Process() {
 					if(inifile.Trace)
 						printf("SERVER LIST Request\n\n");
 
-					SL->SendServerListPacket(*Iterator);
+					SL->SendServerListPacket((*Iterator)->eqs);
 					break;
 				}
 
@@ -312,7 +360,7 @@ void Clientlist::Process() {
 					list<AuthCredential*>::iterator CredentialIterator;
 
 					for(CredentialIterator = _credentials.begin(); CredentialIterator != _credentials.end(); CredentialIterator++) {
-						if((*CredentialIterator)->GetIPAddress() == (*Iterator)->GetRemoteIP() && (*CredentialIterator)->GetPort() == (*Iterator)->GetRemotePort()) {
+						if((*CredentialIterator)->GetIPAddress() == (*Iterator)->eqs->GetRemoteIP() && (*CredentialIterator)->GetPort() == (*Iterator)->eqs->GetRemotePort()) {
 							UserName = (*CredentialIterator)->GetAccountUserName();
 							LoginServerID = (*CredentialIterator)->GetAccountID();
 							UserKey = (*CredentialIterator)->GetKey();

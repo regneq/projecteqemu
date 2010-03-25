@@ -39,12 +39,14 @@ public:
 	bool DumpPacketsOut;
 	bool AllowRegisteredServersOnly;
 	int  PortNumber;
+	int  SoDPortNumber;
 	bool Trace;
 	string DBServerName;
 	string DBCatalogName;
 	string DBUserName;
 	string DBPassword;
 	string OPCodePathAndFileName;
+	string SoDOPCodePathAndFileName;
 
 private:
 	char ReadLine(FILE *fp, char *Option, char *Param);

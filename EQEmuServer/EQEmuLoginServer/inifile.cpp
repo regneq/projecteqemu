@@ -46,6 +46,10 @@ bool IniFile::Load(const char *Filename) {
 				PortNumber= atoi(Param);
 				continue;
 			}
+			if(!strcmp(Option, "sodport")) { 
+				SoDPortNumber= atoi(Param);
+				continue;
+			}
 			if(!strcmp(Option, "dumppacketsin")) { 
 				DumpPacketsIn = atoi(Param);
 				continue;
@@ -76,6 +80,10 @@ bool IniFile::Load(const char *Filename) {
 			}
 			if(!strcmp(Option, "opcodepathandfilename")) {
 				OPCodePathAndFileName = Param;
+				continue;
+			}
+			if(!strcmp(Option, "sodopcodepathandfilename")) {
+				SoDOPCodePathAndFileName = Param;
 				continue;
 			}
 			if(!strcmp(Option, "allowunregistered")) { 

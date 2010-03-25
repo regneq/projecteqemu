@@ -284,20 +284,20 @@ void Serverlist::Process() {
 
 					if(found_auth)
 					{
-						EQStream *eqs = NULL;
-						list<EQStream*>::iterator stream_iter = CL->GetClientConnections().begin();
+						ClientConnection *found_conn = NULL;
+						list<ClientConnection*>::iterator stream_iter = CL->GetClientConnections().begin();
 						while(stream_iter != CL->GetClientConnections().end())
 						{
-							if((*stream_iter)->GetRemoteIP() == found_auth->GetIPAddress() 
-								&& (*stream_iter)->GetRemotePort() == found_auth->GetPort())
+							if((*stream_iter)->eqs->GetRemoteIP() == found_auth->GetIPAddress() 
+								&& (*stream_iter)->eqs->GetRemotePort() == found_auth->GetPort())
 							{
-								eqs = (*stream_iter);
+								found_conn = (*stream_iter);
 								break;
 							}
 							stream_iter++;
 						}
 
-						if(eqs)
+						if(found_conn)
 						{
 							//send play packet
 							EQApplicationPacket *outapp = new EQApplicationPacket(OP_PlayEverquestResponse, sizeof(PlayEverquestResponse_Struct));
@@ -323,7 +323,7 @@ void Serverlist::Process() {
 								per->Message = 303;
 								break;
 							}
-							eqs->QueuePacket(outapp);
+							found_conn->eqs->QueuePacket(outapp);
 							safe_delete(outapp);
 
 							//send auth if our responce is > 0
@@ -331,7 +331,7 @@ void Serverlist::Process() {
 							{
 								uint32 LoginServerID = found_auth->GetAccountID();
 								string UserName = found_auth->GetAccountUserName();
-								SendClientAuth(eqs->GetRemoteIP(), found_auth->GetAccountUserName(), 
+								SendClientAuth(found_conn->eqs->GetRemoteIP(), found_auth->GetAccountUserName(), 
 									found_auth->GetKey(), found_auth->GetAccountID(), uwr->worldid);
 #ifdef _DEBUG
 								cout << "Removed Credential for account " << LoginServerID << "." << endl;
