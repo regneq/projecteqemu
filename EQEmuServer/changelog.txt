@@ -5,6 +5,7 @@ Trevius: SoD - Finished updated Opcodes and they should now be caught up with wh
 Trevius: SoD - Updated Item Struct and now 1 inventory item can load correctly.
 Trevius: SoD - Updated Position Update packet structures.
 Trevius: SoD - Character Inventory now fully loads.
+Trevius: SoD - AAs now load and appear to function properly.
 
 ==03/25/2010==
 Trevius: SoD - Updated PlayerProfile_Struct and CharacterSelectEntry_Struct
