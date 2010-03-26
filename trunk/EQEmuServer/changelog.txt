@@ -6,6 +6,8 @@ Trevius: SoD - Updated Item Struct and now 1 inventory item can load correctly.
 Trevius: SoD - Updated Position Update packet structures.
 Trevius: SoD - Character Inventory now fully loads.
 Trevius: SoD - AAs now load and appear to function properly.
+Derision: SoD - Spawns work, sometimes. Client will crash randomly sometimes when receiving spawns
+Derision: SoD - Added SoD.cpp to .vcproj files
 
 ==03/25/2010==
 Trevius: SoD - Updated PlayerProfile_Struct and CharacterSelectEntry_Struct

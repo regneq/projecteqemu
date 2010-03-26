@@ -189,32 +189,56 @@ struct EquipStruct {
 showeq -> eqemu
 sed -e 's/_t//g' -e 's/seto_0xFF/set_to_0xFF/g'
 */
+
+struct Spawn_Struct_Bitfields
+{
+
+	unsigned   padding1:1;
+	 unsigned   afk:1;			// 0=no, 1=afk
+	 unsigned   sneak:1;
+	 unsigned   lfg:1;
+	 unsigned   padding5:1;
+	 unsigned   invis:1;		// 0 = visible, 1 = invis/sneaking
+	 unsigned   padding7:11;
+	 unsigned   gm:1;
+	 unsigned   anon:2;			// 0=normal, 1=anon, 2=roleplay
+	 unsigned   gender:2;		// Gender (0=male, 1=female, 2=monster)
+	 unsigned   linkdead:1;		// Toggles LD on or off after name
+	 unsigned   betabuffed:1;
+	 unsigned   padding26:2;
+	 unsigned   targetable:1;	// 1 = Targetable 0 = Not Targetable (is_npc?)
+	 unsigned   targetable_with_hotkey:1;	// is_npc?
+	 unsigned   padding30:2;
+	 unsigned   trader:1;
+	 unsigned   buyer:1;
+};
+
+struct Spawn_Struct_Position
+{
+/*0000*/ signed   padding0000:12; // ***Placeholder
+         signed   deltaX:13;      // change in x
+         signed   padding0005:7;  // ***Placeholder
+/*0000*/ signed   deltaHeading:10;// change in heading
+         signed   deltaY:13;      // change in y
+         signed   padding0006:9;  // ***Placeholder
+/*0000*/ signed   y:19;           // y coord
+         signed   animation:13;   // animation
+/*0000*/ unsigned heading:12;     // heading
+         signed   x:19;           // x coord
+         signed   padding0014:1;  // ***Placeholder
+/*0000*/ signed   z:19;           // z coord
+         signed   deltaZ:13;      // change in z
+};
+
 struct Spawn_Struct
 {
-/*0000*/ char     name[7];	//name[64];
-/*0000*/ int8     nullterm1; // hack to null terminate name
+/*0000*/ char     name[0];	//name[64];
+/*0000*/ //int8     nullterm1; // hack to null terminate name
 /*0064*/ uint32 spawnId;
 /*0068*/ uint8  level;
 /*0069*/ float    unknown1;
 /*0073*/ uint8  NPC;           // 0=player,1=npc,2=pc corpse,3=npc corpse
-/*0074*/ unsigned   padding1:1;
-		 unsigned   afk:1;			// 0=no, 1=afk
-		 unsigned   sneak:1;
-		 unsigned   lfg:1;
-		 unsigned   padding5:1;
-		 unsigned   invis:1;		// 0 = visible, 1 = invis/sneaking
-		 unsigned   padding7:11;
-		 unsigned   gm:1;
-		 unsigned   anon:2;			// 0=normal, 1=anon, 2=roleplay
-		 unsigned   gender:2;		// Gender (0=male, 1=female, 2=monster)
-		 unsigned   linkdead:1;		// Toggles LD on or off after name
-		 unsigned   betabuffed:1;
-		 unsigned   padding26:2;
-		 unsigned   targetable:1;	// 1 = Targetable 0 = Not Targetable (is_npc?)
-		 unsigned   targetable_with_hotkey:1;	// is_npc?
-		 unsigned   padding30:2;
-		 unsigned   trader:1;
-		 unsigned   buyer:1;
+	 Spawn_Struct_Bitfields	Bitfields;
 /*0000*/ uint8  otherData; // & 4 - has title, & 8 - has suffix, & 1 - it's a chest or untargetable
 /*0000*/ float unknown3;	// seen -1
 /*0000*/ float unknown4;
@@ -251,8 +275,8 @@ struct Spawn_Struct
 /*0000*/ uint8  unknown10;
 /*0000*/ uint8  unknown11;
 /*0000*/ //char     lastName[0];
-/*0000*/ uint8     lastNameNull; //hack!
-/*0000*/ uint32 aaitle;		// 0=none, 1=general, 2=archtype, 3=class was AARank
+/*0000*/ //uint8     lastNameNull; //hack!
+/*0000*/ uint32 aatitle;		// 0=none, 1=general, 2=archtype, 3=class was AARank
 /*0000*/ uint8  unknown12;
 /*0000*/ uint32 petOwnerId;
 /*0000*/ uint8  unknown13;
@@ -262,19 +286,7 @@ struct Spawn_Struct
 /*0000*/ uint32 unknown17;
 /*0000*/ uint32 unknown18;
 /*0000*/ uint32 unknown19;
-/*0000*/ signed   padding0000:12; // ***Placeholder
-         signed   deltaX:13;      // change in x
-         signed   padding0005:7;  // ***Placeholder
-/*0000*/ signed   deltaHeading:10;// change in heading
-         signed   deltaY:13;      // change in y
-         signed   padding0006:9;  // ***Placeholder
-/*0000*/ signed   y:19;           // y coord
-         signed   animation:13;   // animation
-/*0000*/ unsigned heading:12;     // heading
-         signed   x:19;           // x coord
-         signed   padding0014:1;  // ***Placeholder
-/*0000*/ signed   z:19;           // z coord
-         signed   deltaZ:13;      // change in z
+	 Spawn_Struct_Position Position;
 /*0000*/ union
          {
            struct
@@ -312,7 +324,7 @@ struct Spawn_Struct
 
 /*0000*/ //char title[0];  // only read if(hasTitleOrSuffix & 4)
 /*0000*/ //char suffix[0]; // only read if(hasTitleOrSuffix & 8)
-/*0000*/ char unknown20[33];
+/*0000*/ char unknown20[33]; // Was 33
 };
 
 
