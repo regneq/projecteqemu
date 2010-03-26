@@ -10,6 +10,8 @@ Derision: SoD - Spawns work, sometimes. Client will crash randomly sometimes whe
 Derision: SoD - Added SoD.cpp to .vcproj files
 Derision: SoD - Found showname field in Spawn Struct.
 Derision: SoD - Identified equip_chest2 field in Spawn Struct.
+Trevius: SoD - Looting now works.
+Trevius: SoD - Commands that display item links now show links correctly.
 
 ==03/25/2010==
 Trevius: SoD - Updated PlayerProfile_Struct and CharacterSelectEntry_Struct

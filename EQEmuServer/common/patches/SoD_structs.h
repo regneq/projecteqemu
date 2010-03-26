@@ -1723,16 +1723,13 @@ struct moneyOnCorpseStruct {
 /*0016*/ uint32	copper;			// Copper Pieces
 };
 
-//opcode = 0x5220
-// size 292
-
-
 struct LootingItem_Struct {
 /*000*/	int32	lootee;
-/*002*/	int32	looter;
-/*004*/	int16	slot_id;
-/*006*/	int8	unknown3[2];
-/*008*/	int32	auto_loot;
+/*004*/	int32	looter;
+/*008*/	int32	slot_id;
+/*012*/	int32	auto_loot;
+/*016*/	int32	unknown16;
+/*020*/
 };
 
 struct GuildManageStatus_Struct{
