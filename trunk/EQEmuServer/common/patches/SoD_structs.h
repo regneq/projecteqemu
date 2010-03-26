@@ -4086,10 +4086,10 @@ struct ItemTertiaryBodyStruct
 	sint32 HeroicSVCorrup;
 	sint32 HealAmt;
 	sint32 SpellDmg;
-	//sint32 unknown16; // clairvoyance?
+	sint32 unknown16; // clairvoyance?
 	//uint16 questItem2;
 	//uint16 unknown17; //something to do with power - Power Source Capacity?
-	//uint8 unknown18;
+	uint8 unknown18;
 	uint32 evolve_string; // Some String, but being evolution related is just a guess
 	uint32 subitem_count;
 };

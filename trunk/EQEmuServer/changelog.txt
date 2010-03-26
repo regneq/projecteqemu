@@ -4,6 +4,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 Trevius: SoD - Finished updated Opcodes and they should now be caught up with what we have in SoF.
 Trevius: SoD - Updated Item Struct and now 1 inventory item can load correctly.
 Trevius: SoD - Updated Position Update packet structures.
+Trevius: SoD - Character Inventory now fully loads.
 
 ==03/25/2010==
 Trevius: SoD - Updated PlayerProfile_Struct and CharacterSelectEntry_Struct
