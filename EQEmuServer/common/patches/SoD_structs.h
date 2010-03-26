@@ -233,6 +233,9 @@ struct Spawn_Struct_Position
 
 struct Spawn_Struct
 {
+// Note this struct is not used as such, it is here for reference. As the struct is variable sized, the packets
+// are constructed in SoD.cpp
+//
 /*0000*/ char     name[1];	//name[64];
 /*0000*/ //int8     nullterm1; // hack to null terminate name
 /*0064*/ uint32 spawnId;
@@ -271,7 +274,7 @@ struct Spawn_Struct
 /*0000*/ uint8  StandState;			// stand state - 0x64 for normal animation
 /*0000*/ uint8  light;
 /*0000*/ uint8  unknown7;
-/*0000*/ uint8  unknown8;
+/*0000*/ uint8  equip_chest2;
 /*0000*/ uint8  unknown9;
 /*0000*/ uint8  unknown10;
 /*0000*/ uint8  unknown11;
