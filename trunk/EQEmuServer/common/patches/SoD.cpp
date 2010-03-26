@@ -813,7 +813,8 @@ ENCODE(OP_ZoneSpawns) {
 			Bitfields->targetable_with_hotkey = 1;
 			Bitfields->trader = 0;
 			Bitfields->buyer = 0;
-		
+			Bitfields->showname = 1;
+			
 			Buffer += sizeof(structs::Spawn_Struct_Bitfields);
 
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0x0);	// otherData was zero
@@ -843,7 +844,7 @@ ENCODE(OP_ZoneSpawns) {
 
 			// Setting this next field to zero will cause a crash. Looking at ShowEQ, if it is zero, the bodytype field is not
 			// present. Will sort that out later.
-			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 1);	// showname
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 1);	// This is a properties count field
 			if(emu->bodytype >=66)
 			{
 				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 11);	// non-targetable bodytype

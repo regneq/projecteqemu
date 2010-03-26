@@ -208,7 +208,8 @@ struct Spawn_Struct_Bitfields
 	 unsigned   padding26:2;
 	 unsigned   targetable:1;	// 1 = Targetable 0 = Not Targetable (is_npc?)
 	 unsigned   targetable_with_hotkey:1;	// is_npc?
-	 unsigned   padding30:2;
+	 unsigned   showname:1;
+	 unsigned   padding30:1;
 	 unsigned   trader:1;
 	 unsigned   buyer:1;
 };
