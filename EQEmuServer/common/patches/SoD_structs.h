@@ -1415,31 +1415,31 @@ struct RespawnWindow_Struct {
 
 
 /*
-** Spawn position update - Size: 26
+** Spawn position update - Size: 22
 **	Struct sent from server->client to update position of
 **	another spawn's position update in zone (whether NPC or PC)
 **
 */
-
 struct PlayerPositionUpdateServer_Struct
 {
-/*0000*/ uint16   spawn_id;			// Entity ID of the Spawn/Player
-/*0002*/ signed   padding0000:12;	// ***Placeholder
-		 signed   x_pos:19;			// x coord
-		 signed   padding0290:1;	// ***Placeholder
-/*0006*/ signed   delta_x:13;		// change in x
-		 signed   delta_y:13;		// change in y
-		 signed   padding0294:6;	// ***Placeholder
-/*0010*/ signed   z_pos:19;			// z coord
-		 signed   delta_heading:10;	// change in heading
-		 signed   padding0298:3;	// ***Placeholder
-/*0014*/ signed   y_pos:19;			// y coord
-		 signed   delta_z:13;		// change in z
-/*0022*/ signed   animation:10;		// animation
-		 unsigned heading:12;		// heading
-		 signed   padding0302:10;	// ***Placeholder
-/*0026*/
+/*0000*/ uint16		spawn_id;
+/*0002*/ signed		padding0000:12; // ***Placeholder
+         signed		delta_x:13;      // change in x
+         signed		padding0005:7;  // ***Placeholder
+/*0006*/ signed		delta_heading:10;// change in heading
+         signed		delta_y:13;      // change in y
+         signed		padding0006:9;  // ***Placeholder
+/*0010*/ signed		y_pos:19;           // y coord
+         signed		animation:10;   // animation
+         signed		padding0010:3;  // ***Placeholder
+/*0014*/ unsigned	heading:12;     // heading
+         signed		x_pos:19;           // x coord
+         signed		padding0014:1;  // ***Placeholder
+/*0018*/ signed		z_pos:19;           // z coord
+         signed		delta_z:13;      // change in z
+/*0022*/
 };
+
 
 /*
 ** Player position update - Size: 40
@@ -1449,20 +1449,21 @@ struct PlayerPositionUpdateServer_Struct
 */
 struct PlayerPositionUpdateClient_Struct
 {
-/*0000*/ uint16 spawn_id;			// Player's Entity ID - Verified
-/*0002*/ uint16	sequence;			//increments one each packet - Verified
-/*0004*/ uint8 unknown0004[4];		// ***Placeholder
-/*0008*/ float delta_z;				// Change in z
-/*0012*/ float x_pos;				// x coord - Verified
-/*0016*/ signed delta_heading:10;	// Change in heading
-		 signed animation:10;		// Animation
-         unsigned padding0028:12;	// Seems to always be 0
-/*0020*/ float y_pos;				// y coord - Verified
-/*0024*/ float delta_x;				// Change in x
-/*0028*/ unsigned heading:12;		// Directional heading - Verified
-         unsigned padding0032:20;	// ***Placeholder - Some Static Number
-/*0032*/ float delta_y;				// Change in y
-/*0036*/ float z_pos;				// z coord - Verified
+/*0000*/ uint16		spawn_id;			// Player's spawn id
+/*0002*/ uint16		sequence;			// increments one each packet - Verified
+/*0004*/ uint8		unknown0004[4];		// ***Placeholder
+/*0008*/ float		x_pos;				// x coord (2nd loc value)
+/*0012*/ float		y_pos;				// y coord (1st loc value)
+/*0016*/ signed		delta_heading:10;	// change in heading
+         unsigned	animation:10;		// animation
+         unsigned	padding0016:12;		// ***Placeholder 
+/*0020*/ float		delta_x;			// Change in x
+/*0024*/ float		delta_y;			// Change in y
+/*0028*/ float		z_pos;				// z coord (3rd loc value)
+/*0032*/ float		delta_z;			// Change in z
+/*0036*/ unsigned	padding0036:10;		// ***Placeholder 
+         unsigned	heading:12;			// Directional heading
+         unsigned	padding0037:10;		// ***Placeholder 
 /*0040*/
 };
 
