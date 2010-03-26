@@ -3854,6 +3854,7 @@ struct ItemSerializationHeader
 	uint32 unknown056; //0
 	uint8 unknown060; //0
 	uint8 unknown061; //0 - Add Evolving Item struct if this isn't set to 0?
+	uint8 unknown062; // New to SoD
 	uint8 ItemClass; //0, 1, or 2
 };
 
