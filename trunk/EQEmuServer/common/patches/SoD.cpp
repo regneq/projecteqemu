@@ -779,8 +779,8 @@ ENCODE(OP_ZoneSpawns) {
 
 			int PacketSize = sizeof(structs::Spawn_Struct);
 
-			PacketSize += strlen(emu->name) + 1;
-			PacketSize += strlen(emu->lastName) + 1;
+			PacketSize += strlen(emu->name);
+			PacketSize += strlen(emu->lastName);
 			if(!((emu->NPC == 0) || (emu->race <=12) || (emu->race == 128) || (emu ->race == 130) || (emu->race == 330) || (emu->race == 522)))
 			{
 				PacketSize -= (sizeof(structs::EquipStruct) * 9);

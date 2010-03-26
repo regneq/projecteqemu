@@ -232,7 +232,7 @@ struct Spawn_Struct_Position
 
 struct Spawn_Struct
 {
-/*0000*/ char     name[0];	//name[64];
+/*0000*/ char     name[1];	//name[64];
 /*0000*/ //int8     nullterm1; // hack to null terminate name
 /*0064*/ uint32 spawnId;
 /*0068*/ uint8  level;
@@ -274,7 +274,7 @@ struct Spawn_Struct
 /*0000*/ uint8  unknown9;
 /*0000*/ uint8  unknown10;
 /*0000*/ uint8  unknown11;
-/*0000*/ //char     lastName[0];
+/*0000*/ char     lastName[1];
 /*0000*/ //uint8     lastNameNull; //hack!
 /*0000*/ uint32 aatitle;		// 0=none, 1=general, 2=archtype, 3=class was AARank
 /*0000*/ uint8  unknown12;
