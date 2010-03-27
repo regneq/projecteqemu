@@ -615,7 +615,6 @@ public:
 	void	ChangeTributeSettings(TributeInfo_Struct *t);
 	void	SendTributeTimer();
 	void	ToggleTribute(bool enabled);
-	void	TributeSoFUpdateSlot(sint16 slot);
 	void	SendPathPacket(vector<FindPerson_Point> &path);
 
 	inline PTimerList &GetPTimers() { return(p_timers); }

@@ -137,7 +137,6 @@ void Client::DoTributeUpdate() {
 	
 	SendTributeTimer();
 	
-	sint16 send_slot = -1;
 	if(m_pp.tribute_active) {
 		//send and equip tribute items...
 		for(r = 0; r < MAX_PLAYER_TRIBUTES; r++) {
@@ -172,14 +171,7 @@ void Client::DoTributeUpdate() {
 				continue;
 
 			PutItemInInventory(TRIBUTE_SLOT_START+r, *inst, false);
-			if(send_slot == -1)
-			{
-				send_slot = TRIBUTE_SLOT_START+r;
-			}
-			else
-			{
-				SendItemPacket(TRIBUTE_SLOT_START+r, inst, ItemPacketTributeItem);
-			}
+			SendItemPacket(TRIBUTE_SLOT_START+r, inst, ItemPacketTributeItem);
 			safe_delete(inst);
 		}
 	} else {
@@ -189,60 +181,7 @@ void Client::DoTributeUpdate() {
 				DeleteItemInInventory(TRIBUTE_SLOT_START+r, 0, false);
 		}
 	}
-	TributeSoFUpdateSlot(send_slot);
 	CalcBonuses();
-}
-
-void Client::TributeSoFUpdateSlot(sint16 slot)
-{
-	if(slot == -1)
-	{
-		Item_Struct base;
-		memset(&base, 0, sizeof(Item_Struct));
-
-		base.ID = 999;
-		base.Classes = 65535;
-		base.Races =  	65535;
-		base.Icon = 639;
-		strcpy(base.IDFile, "IT63");
-		strcpy(base.Name, "FakeTribute");
-		strcpy(base.Lore, "FakeTribute");
-
-		if(GetClientVersion() == EQClientSoF && GetLevel() > 75)
-		{
-			base.HP = (GetBaseHP() - 5);
-			base.Mana = CalcBaseMana();
-			base.Endur = CalcBaseEndurance();
-		}
-
-		ItemInst *inst = database.CreateBaseItem(&base, 0);
-
-		if(inst)
-		{
-			SendItemPacket(TRIBUTE_SLOT_START, inst, ItemPacketTributeItem);
-		}
-
-		safe_delete(inst);
-	}
-	else
-	{
-		const ItemInst *inst = m_inv[slot];
-		Item_Struct base;
-		memcpy(&base, inst->GetItem(), sizeof(Item_Struct));
-
-		if(GetClientVersion() == EQClientSoF && GetLevel() > 75)
-		{
-			base.HP += (GetBaseHP() - 5);
-			base.Mana += CalcBaseMana();
-			base.Endur += CalcBaseEndurance();
-		}
-
-		ItemInst *clone_inst = inst->Clone();
-		clone_inst->SetItem(&base);
-
-		SendItemPacket(slot, clone_inst, ItemPacketTributeItem);
-		safe_delete(clone_inst);
-	}
 }
 
 void Client::SendTributeTimer() {
