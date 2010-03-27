@@ -2819,6 +2819,36 @@ struct WhoAllReturnStruct {
 	struct WhoAllPlayer player[0];
 };
 
+// The following four structs are the WhoAllPlayer struct above broken down
+// for use in World ClientList::SendFriendsWho to accomodate the user of variable
+// length strings within the struct above.
+
+struct	WhoAllPlayerPart1 {
+	int32	FormatMSGID;
+	int32	Unknown04;
+	int32	Unknown08;
+	char	Name[1];
+};
+
+struct	WhoAllPlayerPart2 {
+	int32	RankMSGID;
+	char	Guild[1];
+};
+
+struct	WhoAllPlayerPart3 {
+	int32	Unknown80[2];
+	int32	ZoneMSGID;
+	int32	Zone;
+	int32	Class_;
+	int32	Level;
+	int32	Race;
+	char	Account[1];
+};
+
+struct	WhoAllPlayerPart4 {
+	int32	Unknown100;
+};
+
 struct Trader_Struct {
 	int32	code;
 	int32	itemid[160];
