@@ -2076,13 +2076,23 @@ struct ZoneUnavail_Struct {
 struct GroupInvite_Struct {
 /*0000*/	char invitee_name[64];
 /*0064*/	char inviter_name[64];
-/*0128*/
+/*0128*/	int32 unknown0128;
+/*0132*/	int32 unknown0132;
+/*0136*/	int32 unknown0136;
+/*0140*/	int32 unknown0140;
+/*0144*/	int32 unknown0144;
+/*0148*/
 };
 
 struct GroupGeneric_Struct {
 /*0000*/	char name1[64];
 /*0064*/	char name2[64];
-/*0128*/
+/*0128*/	int32 unknown0128;
+/*0132*/	int32 unknown0132;
+/*0136*/	int32 unknown0136;
+/*0140*/	int32 unknown0140;
+/*0144*/	int32 unknown0144;
+/*0148*/
 };
 
 struct GroupCancel_Struct {
@@ -2092,7 +2102,7 @@ struct GroupCancel_Struct {
 /*0129*/
 };
 
-struct GroupUpdate_Struct {	// From Titanium Structs
+struct GroupUpdate_Struct {
 /*0000*/	int32	action;
 /*0004*/	char	yourname[64];
 /*0068*/	char	membername[5][64];
@@ -2110,7 +2120,32 @@ struct GroupUpdate2_Struct {
 /*0768*/
 };
 
-struct GroupJoin_Struct {
+struct GroupUpdate_Struct_SoD {	// New for SoD
+/*0000*/	int32	groupid;		// Guess - Matches unknown0136 from GroupFollow_Struct
+/*0004*/	int32	totalmembers;	// Guess
+/*0000*/	int32	leadersname[0];	// Group Leader Name Null Terminated
+/*0008*/	//GroupMembers_Struct groupmembers;
+};
+
+struct GroupMembers_Struct {	// New for SoD
+/*0000*/	int32	membernumber;	// Guess - number of member in the group (0 to 5?)
+/*0000*/	char	membername[0];	// Member Name Null Terminated
+/*0000*/	int8	unknown001[3];	// Seen 0
+/*0000*/	int32	memberlevel;	// Guess
+/*0000*/	int8	unknown002[11];	// Seen 0
+};
+
+struct GroupJoin_Struct {	// New for SoD
+/*0000*/	int32	unknown0000;	// Matches unknown0136 from GroupFollow_Struct
+/*0004*/	int32	action;
+/*0008*/	int8	unknown0008[5];	// Seen 0
+/*0013*/	char	membername[0];	// Null Terminated?
+/*0000*/	int8	unknown0013[3];	// Seen 0
+/*0000*/	int32	unknown0016;	// Matches unknown0132 from GroupFollow_Struct
+/*0000*/	int8	unknown0020[11];	// Seen 0
+};
+
+struct GroupJoin_Struct_SoF {
 /*0000*/	int32	action;
 /*0004*/	char	yourname[64];
 /*0068*/	char	membername[64];
@@ -2118,11 +2153,15 @@ struct GroupJoin_Struct {
 /*0216*/
 };
 
-struct GroupFollow_Struct { // SoF Follow Struct
+struct GroupFollow_Struct { // SoD Follow Struct
 /*0000*/	char	name1[64];	// inviter
 /*0064*/	char	name2[64];	// invitee
-/*0128*/	int32	unknown0128;
-/*0132*/
+/*0128*/	int32 unknown0128;	// Seen 0
+/*0132*/	int32 unknown0132;	// Group ID or member level?
+/*0136*/	int32 unknown0136;	// Maybe Voice Chat Channel or Group ID?
+/*0140*/	int32 unknown0140;	// Seen 0
+/*0144*/	int32 unknown0144;	// Seen 0
+/*0148*/
 };
 
 struct LFG_Struct {
