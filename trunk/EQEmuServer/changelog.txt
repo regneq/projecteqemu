@@ -4,6 +4,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 Trevius: SoD - A couple more Opcode updates.
 Trevius: SoD - Some group structures work, but grouping is still not functional.
 Derision: SoD - Fixed random client crashes due to spawn packets and invisible mobs should now be invisible.
+Derision: SoD - Did a basic Encode on OP_WhoAllResponse. Still needs work for various flags (LD/Trader/Buyer) etc.
 
 ==03/26/2010==
 Trevius: SoD - Finished updated Opcodes and they should now be caught up with what we have in SoF.

@@ -945,8 +945,8 @@ ENCODE(OP_ZoneSpawns) {
 
 			Buffer += 33; // Unknown;
 
-			_log(NET__ERROR, "Sending zone spawn for %s", emu->name);
-			_hex(NET__ERROR, outapp->pBuffer, outapp->size);
+			//_log(NET__ERROR, "Sending zone spawn for %s", emu->name);
+			//_hex(NET__ERROR, outapp->pBuffer, outapp->size);
 			dest->FastQueuePacket(&outapp, ack_req);
 	}
 	
@@ -1722,7 +1722,7 @@ ENCODE(OP_VetRewardsAvaliable)
 	EQApplicationPacket *outapp_create = new EQApplicationPacket(OP_VetRewardsAvaliable, (sizeof(structs::VeteranReward)*count));
 	uchar *old_data = __emu_buffer;
 	uchar *data = outapp_create->pBuffer;
-	for(int i = 0; i < count; ++i)
+	for(unsigned int i = 0; i < count; ++i)
 	{
 		structs::VeteranReward *vr = (structs::VeteranReward*)data;
 		InternalVeteranReward *ivr = (InternalVeteranReward*)old_data;
@@ -1744,6 +1744,70 @@ ENCODE(OP_VetRewardsAvaliable)
 	dest->FastQueuePacket(&outapp_create);
 	delete[] __emu_buffer;
 }
+
+ENCODE(OP_WhoAllResponse)
+{
+	EQApplicationPacket *in = *p;
+	*p = NULL;
+
+	char *InBuffer = (char *)in->pBuffer;
+
+	WhoAllReturnStruct *wars = (WhoAllReturnStruct*)InBuffer;
+
+	int Count = wars->playercount;
+
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_WhoAllResponse, in->size + (Count * 4));
+
+	char *OutBuffer = (char *)outapp->pBuffer;
+
+	memcpy(OutBuffer, InBuffer, sizeof(WhoAllReturnStruct));
+
+	OutBuffer += sizeof(WhoAllReturnStruct);
+	InBuffer += sizeof(WhoAllReturnStruct);
+
+	for(int i = 0; i < Count; ++i)
+	{
+		uint32 x;
+
+		x = VARSTRUCT_DECODE_TYPE(uint32, InBuffer);
+
+		VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, x);
+
+		InBuffer += 4;
+		VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0);
+		VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0xffffffff);
+
+		char Name[64];
+
+
+		VARSTRUCT_DECODE_STRING(Name, InBuffer);	// Char Name
+		VARSTRUCT_ENCODE_STRING(OutBuffer, Name);
+
+		x = VARSTRUCT_DECODE_TYPE(uint32, InBuffer);
+		VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, x);
+
+		VARSTRUCT_DECODE_STRING(Name, InBuffer);	// Guild Name
+		VARSTRUCT_ENCODE_STRING(OutBuffer, Name);
+
+		for(int j = 0; j < 7; ++j)
+		{
+			x = VARSTRUCT_DECODE_TYPE(uint32, InBuffer);
+			VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, x);
+		}
+
+		VARSTRUCT_DECODE_STRING(Name, InBuffer);		// Account
+		VARSTRUCT_ENCODE_STRING(OutBuffer, Name);
+
+		x = VARSTRUCT_DECODE_TYPE(uint32, InBuffer);
+		VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, x);
+	}
+
+	//_hex(NET__ERROR, outapp->pBuffer, outapp->size);
+	dest->FastQueuePacket(&outapp);
+
+	delete in;
+}
+
 
 ENCODE(OP_InspectAnswer) {
 	ENCODE_LENGTH_EXACT(InspectResponse_Struct);
