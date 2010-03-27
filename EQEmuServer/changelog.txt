@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==03/27/2010==
+Trevius: SoD - A couple more Opcode updates.
+Trevius: SoD - Some group structures work, but grouping is still not functional.
+
 ==03/26/2010==
 Trevius: SoD - Finished updated Opcodes and they should now be caught up with what we have in SoF.
 Trevius: SoD - Updated Item Struct and now 1 inventory item can load correctly.

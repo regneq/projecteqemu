@@ -1751,6 +1751,38 @@ ENCODE(OP_InspectAnswer) {
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_GroupInvite) {
+	ENCODE_LENGTH_EXACT(GroupGeneric_Struct);
+	SETUP_DIRECT_ENCODE(GroupGeneric_Struct, structs::GroupInvite_Struct);
+	memcpy(eq->invitee_name, emu->name1, sizeof(eq->invitee_name));
+	memcpy(eq->inviter_name, emu->name2, sizeof(eq->inviter_name));
+	FINISH_ENCODE();
+}
+
+ENCODE(OP_GroupFollow) {
+	ENCODE_LENGTH_EXACT(GroupGeneric_Struct);
+	SETUP_DIRECT_ENCODE(GroupGeneric_Struct, structs::GroupFollow_Struct);
+	memcpy(eq->name1, emu->name1, sizeof(eq->name1));
+	memcpy(eq->name2, emu->name2, sizeof(eq->name2));
+	FINISH_ENCODE();
+}
+
+ENCODE(OP_GroupFollow2) {
+	ENCODE_LENGTH_EXACT(GroupGeneric_Struct);
+	SETUP_DIRECT_ENCODE(GroupGeneric_Struct, structs::GroupFollow_Struct);
+	memcpy(eq->name1, emu->name1, sizeof(eq->name1));
+	memcpy(eq->name2, emu->name2, sizeof(eq->name2));
+	FINISH_ENCODE();
+}
+
+ENCODE(OP_GroupUpdate) {
+	ENCODE_LENGTH_EXACT(GroupJoin_Struct);
+	SETUP_DIRECT_ENCODE(GroupJoin_Struct, structs::GroupJoin_Struct);
+	eq->action = emu->action;
+	memcpy(eq->membername, emu->membername, sizeof(eq->membername));
+	FINISH_ENCODE();
+}
+
 DECODE(OP_InspectAnswer) {
 	DECODE_LENGTH_EXACT(structs::InspectResponse_Struct);
 	SETUP_DIRECT_DECODE(InspectResponse_Struct, structs::InspectResponse_Struct);
@@ -1972,6 +2004,14 @@ DECODE(OP_WhoAllRequest) {
 	IN(guildid);
 	IN(type);
 	
+	FINISH_DIRECT_DECODE();
+}
+
+DECODE(OP_GroupInvite) {
+	DECODE_LENGTH_EXACT(structs::GroupInvite_Struct);
+	SETUP_DIRECT_DECODE(GroupGeneric_Struct, structs::GroupInvite_Struct);
+	memcpy(emu->name1, eq->invitee_name, sizeof(emu->name1));
+	memcpy(emu->name2, eq->inviter_name, sizeof(emu->name2));
 	FINISH_DIRECT_DECODE();
 }
 
@@ -2490,7 +2530,3 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 }
 
 } //end namespace SoF
-
-
-
-
