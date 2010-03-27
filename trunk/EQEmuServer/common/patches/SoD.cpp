@@ -781,6 +781,15 @@ ENCODE(OP_ZoneSpawns) {
 
 			PacketSize += strlen(emu->name);
 			PacketSize += strlen(emu->lastName);
+		
+			bool ShowName = 1;
+			if(emu->bodytype >= 66)
+			{
+				emu->race = 127;
+				emu->bodytype = 11;
+				emu->gender = 0;
+				ShowName = 0;
+			}
 			if(!((emu->NPC == 0) || (emu->race <=12) || (emu->race == 128) || (emu ->race == 130) || (emu->race == 330) || (emu->race == 522)))
 			{
 				PacketSize -= (sizeof(structs::EquipStruct) * 9);
@@ -799,10 +808,7 @@ ENCODE(OP_ZoneSpawns) {
 
 			Bitfields->afk = 0;
 			Bitfields->linkdead = 0;
-			if(emu->bodytype >=66)
-				Bitfields->gender = 0;
-			else
-				Bitfields->gender = emu->gender;
+			Bitfields->gender = emu->gender;
 
 			Bitfields->invis = emu->invis;
 			Bitfields->sneak = 0;
@@ -813,25 +819,20 @@ ENCODE(OP_ZoneSpawns) {
 			Bitfields->targetable_with_hotkey = 1;
 			Bitfields->trader = 0;
 			Bitfields->buyer = 0;
-			Bitfields->showname = 1;
-			
+
+			Bitfields->showname = ShowName;
+
 			Buffer += sizeof(structs::Spawn_Struct_Bitfields);
 
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0x0);	// otherData was zero
+
 			VARSTRUCT_ENCODE_TYPE(float, Buffer, -1);	// unknown3
 			VARSTRUCT_ENCODE_TYPE(float, Buffer, 0);	// unknown4
 			VARSTRUCT_ENCODE_TYPE(float, Buffer, emu->size);
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->face);
 			VARSTRUCT_ENCODE_TYPE(float, Buffer, emu->walkspeed);
 			VARSTRUCT_ENCODE_TYPE(float, Buffer, emu->runspeed);
-			if(emu->bodytype >=66)
-			{
-				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 127);	// Invisible man
-			}
-			else
-			{
-				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->race);
-			}
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->race);
 			/*
 			if(emu->bodytype >=66)
 			{
@@ -845,14 +846,8 @@ ENCODE(OP_ZoneSpawns) {
 			// Setting this next field to zero will cause a crash. Looking at ShowEQ, if it is zero, the bodytype field is not
 			// present. Will sort that out later.
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 1);	// This is a properties count field
-			if(emu->bodytype >=66)
-			{
-				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 11);	// non-targetable bodytype
-			}
-			else
-			{
-				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->bodytype);
-			}
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->bodytype);
+		
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->curHp);
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->haircolor);
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->beardcolor);
@@ -865,8 +860,16 @@ ENCODE(OP_ZoneSpawns) {
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->drakkin_details);
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);	// statue
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->deity);
-			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->guildID);
-			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->guildrank);
+			if(emu->NPC)
+			{
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0xFFFFFFFF);
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0x00000000);
+			}
+			else
+			{
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->guildID);
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->guildrank);
+			}
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->class_);
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);	// pvp
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0x64);	// standstate
@@ -875,7 +878,14 @@ ENCODE(OP_ZoneSpawns) {
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->equip_chest2); // unknown8
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0); // unknown9
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0); // unknown10
-			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0x01); // unknown11
+			if(emu->NPC)
+			{
+				VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0xFF); // unknown11
+			}
+			else
+			{
+				VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0x01); // unknown11
+			}
 			VARSTRUCT_ENCODE_STRING(Buffer, emu->lastName);
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);	// aatitle
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0); // unknown12
@@ -885,8 +895,8 @@ ENCODE(OP_ZoneSpawns) {
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // unknown15
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // unknown16
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // unknown17
-			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0xffff); // unknown18
-			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0xffff); // unknown19
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0xffffffff); // unknown18
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0xffffffff); // unknown19
 
 
 			structs::Spawn_Struct_Position *Position = (structs::Spawn_Struct_Position*)Buffer;
@@ -905,7 +915,18 @@ ENCODE(OP_ZoneSpawns) {
 		
 			for(k = 0; k < 9; ++k)
 			{
-				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->colors[k].color);
+				if(emu->NPC)
+				{
+					// Sending colours for some NPCs was causing the client to crash. It may be that only certain
+					// races have this problem, as zones with predominantly mobs of playable races didn't seem
+					// to have the problem. For now we will not send colours for NPCs.
+					VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+				}
+				else
+				{
+					VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->colors[k].color);
+				}
+
 			}
 
 
