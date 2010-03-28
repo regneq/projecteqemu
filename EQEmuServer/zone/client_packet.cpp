@@ -1308,6 +1308,11 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 	// Outgoing client packet
 	if (ppu->y_pos != y_pos || ppu->x_pos != x_pos || ppu->heading != heading || ppu->animation != animation)
 	{
+		x_pos			= ppu->x_pos;
+		y_pos			= ppu->y_pos;
+		z_pos			= ppu->z_pos;
+		animation		= ppu->animation;
+
 		EQApplicationPacket* outapp = new EQApplicationPacket(OP_ClientUpdate, sizeof(PlayerPositionUpdateServer_Struct));
 		PlayerPositionUpdateServer_Struct* ppu = (PlayerPositionUpdateServer_Struct*)outapp->pBuffer;
 		MakeSpawnUpdate(ppu);
@@ -1330,10 +1335,6 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 		}
 	}
 
-	x_pos			= ppu->x_pos;
-	y_pos			= ppu->y_pos;
-	z_pos			= ppu->z_pos;
-	animation		= ppu->animation;
 	return;
 }
 
