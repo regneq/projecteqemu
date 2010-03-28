@@ -3,6 +3,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==03/28/2010==
 Derision: SoD - Fixed client animation/runspeed glitch.
 Derision: All Clients - Player position updates to other players should be more accurate.
+Trevius: Updated #race and #fixmob commands to allow up to race 626 which is the total for the SoD client.
 
 ==03/27/2010==
 Trevius: SoD - A couple more Opcode updates.
