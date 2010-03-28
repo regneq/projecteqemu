@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==03/28/2010==
+Derision: SoD - Fixed client animation/runspeed glitch.
+Derision: All Clients - Player position updates to other players should be more accurate.
+
 ==03/27/2010==
 Trevius: SoD - A couple more Opcode updates.
 Trevius: SoD - Some group structures work, but grouping is still not functional.

@@ -1471,13 +1471,13 @@ struct PlayerPositionUpdateClient_Struct
 /*0008*/ float		x_pos;				// x coord (2nd loc value)
 /*0012*/ float		y_pos;				// y coord (1st loc value)
 /*0016*/ signed		delta_heading:10;	// change in heading
-         unsigned	animation:10;		// animation
+         unsigned	padding0036:10;		// animation
          unsigned	padding0016:12;		// ***Placeholder 
 /*0020*/ float		delta_x;			// Change in x
 /*0024*/ float		delta_y;			// Change in y
 /*0028*/ float		z_pos;				// z coord (3rd loc value)
 /*0032*/ float		delta_z;			// Change in z
-/*0036*/ unsigned	padding0036:10;		// ***Placeholder 
+/*0036*/ unsigned	animation:10;		// ***Placeholder 
          unsigned	heading:12;			// Directional heading
          unsigned	padding0037:10;		// ***Placeholder 
 /*0040*/
