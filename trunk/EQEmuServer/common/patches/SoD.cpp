@@ -1861,11 +1861,109 @@ ENCODE(OP_GroupFollow2) {
 }
 
 ENCODE(OP_GroupUpdate) {
-	ENCODE_LENGTH_EXACT(GroupJoin_Struct);
-	SETUP_DIRECT_ENCODE(GroupJoin_Struct, structs::GroupJoin_Struct);
-	eq->action = emu->action;
-	memcpy(eq->membername, emu->membername, sizeof(eq->membername));
-	FINISH_ENCODE();
+	EQApplicationPacket *in = *p;
+	*p = NULL;
+
+	//_log(NET__ERROR, "Outgoing Group Update Packet");
+	//_hex(NET__ERROR, in->pBuffer, in->size);
+
+	if(in->size == sizeof(GroupJoin_Struct))
+	{
+		//_log(NET__ERROR, "Struct is GroupJoin");
+		/*
+		ENCODE_LENGTH_EXACT(GroupJoin_Struct);
+		SETUP_DIRECT_ENCODE(GroupJoin_Struct, structs::GroupJoin_Struct);
+		eq->action = emu->action;
+		memcpy(eq->membername, emu->membername, sizeof(eq->membername));
+		FINISH_ENCODE();
+		*/
+		
+		// Sending this to the SoD client would cause it to lose it's group members
+		delete in;
+
+	}
+	else if(in->size == sizeof(GroupUpdate2_Struct))
+	{
+		// Group Update2
+		//_log(NET__ERROR, "Struct is GroupUpdate2");
+		//consume the packet
+		/*
+		EQApplicationPacket *in = *p;
+		*p = NULL;
+		*/
+		
+		//store away the emu struct
+		unsigned char *__emu_buffer = in->pBuffer;
+		GroupUpdate2_Struct *gu2 = (GroupUpdate2_Struct*) __emu_buffer;
+	
+		//_log(NET__ERROR, "Yourname is %s", gu2->yourname);
+
+		int MemberCount = 1;
+
+		int PacketLength = 8 + strlen(gu2->leadersname) + 1 + 22 + strlen(gu2->yourname) + 1;
+
+		for(int i = 0; i < 5; ++i)
+		{
+			//_log(NET__ERROR, "Membername[%i] is %s", i,  gu2->membername[i]);
+			if(gu2->membername[i][0] != '\0')
+			{
+				PacketLength += (22 + strlen(gu2->membername[i]) + 1);
+				++MemberCount;
+			}
+		}
+
+		//_log(NET__ERROR, "Leadername is %s", gu2->leadersname);
+
+		EQApplicationPacket *outapp = new EQApplicationPacket(OP_GroupUpdate, PacketLength);
+
+		char *Buffer = (char *)outapp->pBuffer;
+	
+		// Header
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);	// Think this should be SpawnID, but it doesn't seem to matter
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, MemberCount);
+		VARSTRUCT_ENCODE_STRING(Buffer, gu2->leadersname);
+
+		// Leader
+		//
+		
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+		VARSTRUCT_ENCODE_STRING(Buffer, gu2->yourname);
+		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);
+		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);
+		//VARSTRUCT_ENCODE_STRING(Buffer, "");
+		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);	// This is a string
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0x46);	// Observed 0x41 and 0x46 here
+		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+		VARSTRUCT_ENCODE_TYPE(uint16, Buffer, 0);
+
+		int MemberNumber = 1;
+
+		for(int i = 0; i < 5; ++i)
+		{
+			if(gu2->membername[i][0] == '\0')
+				continue;
+
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, MemberNumber++);
+			VARSTRUCT_ENCODE_STRING(Buffer, gu2->membername[i]);
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);
+			//VARSTRUCT_ENCODE_STRING(Buffer, "");
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);	// This is a string
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0x41);	// Observed 0x41 and 0x46 here
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+			VARSTRUCT_ENCODE_TYPE(uint16, Buffer, 0);
+		}
+
+		//_hex(NET__ERROR, outapp->pBuffer, outapp->size);
+		dest->FastQueuePacket(&outapp);
+
+		delete in;
+
+	}
 }
 
 DECODE(OP_InspectAnswer) {
@@ -2092,7 +2190,16 @@ DECODE(OP_WhoAllRequest) {
 	FINISH_DIRECT_DECODE();
 }
 
+DECODE(OP_GroupInvite2)
+{
+	//_log(NET__ERROR, "Received incoming OP_GroupInvite2. Forwarding");
+	DECODE_FORWARD(OP_GroupInvite);
+}
+
 DECODE(OP_GroupInvite) {
+	//EQApplicationPacket *in = __packet;
+	//_log(NET__ERROR, "Received incoming OP_GroupInvite");
+	//_hex(NET__ERROR, in->pBuffer, in->size);
 	DECODE_LENGTH_EXACT(structs::GroupInvite_Struct);
 	SETUP_DIRECT_DECODE(GroupGeneric_Struct, structs::GroupInvite_Struct);
 	memcpy(emu->name1, eq->invitee_name, sizeof(emu->name1));
@@ -2101,6 +2208,9 @@ DECODE(OP_GroupInvite) {
 }
 
 DECODE(OP_GroupFollow) {
+	//EQApplicationPacket *in = __packet;
+	//_log(NET__ERROR, "Received incoming OP_GroupFollow");
+	//_hex(NET__ERROR, in->pBuffer, in->size);
 	DECODE_LENGTH_EXACT(structs::GroupFollow_Struct);
 	SETUP_DIRECT_DECODE(GroupGeneric_Struct, structs::GroupFollow_Struct);
 	memcpy(emu->name1, eq->name1, sizeof(emu->name1));
@@ -2109,6 +2219,9 @@ DECODE(OP_GroupFollow) {
 }
 
 DECODE(OP_GroupFollow2) {
+	//EQApplicationPacket *in = __packet;
+	//_log(NET__ERROR, "Received incoming OP_GroupFollow2");
+	//_hex(NET__ERROR, in->pBuffer, in->size);
 	DECODE_LENGTH_EXACT(structs::GroupFollow_Struct);
 	SETUP_DIRECT_DECODE(GroupGeneric_Struct, structs::GroupFollow_Struct);
 	memcpy(emu->name1, eq->name1, sizeof(emu->name1));

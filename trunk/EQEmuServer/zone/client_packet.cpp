@@ -5673,6 +5673,7 @@ void Client::Handle_OP_GroupFollow2(const EQApplicationPacket *app)
 			group->GetGroupAAs(&outgj->leader_aas);
 			inviter->CastToClient()->QueuePacket(outapp);
 			safe_delete(outapp);
+			
 		}
 		if(!group)
 			return;
@@ -5690,6 +5691,10 @@ void Client::Handle_OP_GroupFollow2(const EQApplicationPacket *app)
 
 		database.RefreshGroupFromDB(this);
 		group->SendHPPacketsTo(this);
+
+		// Temporary hack for SoD, as things seem to work quite differently
+		if(inviter->CastToClient()->GetClientVersion() >= EQClientSoD)
+			database.RefreshGroupFromDB(inviter->CastToClient());
 
 		//send updates to clients out of zone...
 		ServerPacket* pack = new ServerPacket(ServerOP_GroupJoin, sizeof(ServerGroupJoin_Struct));

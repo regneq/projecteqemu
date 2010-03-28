@@ -2161,7 +2161,8 @@ struct GroupFollow_Struct { // SoD Follow Struct
 /*0136*/	int32	unknown0136;	// Maybe Voice Chat Channel or Group ID?
 /*0140*/	int32	unknown0140;	// Seen 0
 /*0144*/	int32	unknown0144;	// Seen 0
-/*0148*/
+/*0148*/	int32	unknown0148;
+/*0152*/
 };
 
 struct LFG_Struct {
