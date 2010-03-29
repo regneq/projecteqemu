@@ -296,9 +296,6 @@ Mob::Mob(const char*   in_name,
 	silenced = false;
 	inWater = false;
     int m;
-/*	for (m = 0; m < 60; m++) {
-		flag[m]=0;
-	}*/
 	for (m = 0; m < MAX_SHIELDERS; m++)
 	{
 		shielder[m].shielder_id = 0;
@@ -365,6 +362,7 @@ Mob::Mob(const char*   in_name,
 	PathingRouteUpdateTimerLong = new Timer(RuleI(Pathing, RouteUpdateFrequencyLong));
 	AggroedAwayFromGrid = 0;
 	PathingTraversedNodes = 0;
+	hate_list.SetOwner(this);
 }
 
 Mob::~Mob()
@@ -2676,9 +2674,6 @@ int Mob::GetHaste() {
 void Mob::SetTarget(Mob* mob) {
 	if (target == mob) return;
 	target = mob;
-	if(this->IsNPC()) {
-		parse->Event(EVENT_TARGET_CHANGE, this->GetNPCTypeID(), 0, this->CastToNPC(), mob);
-	}
 	entity_list.UpdateHoTT(this);
 }
 

@@ -69,7 +69,8 @@ const char *QuestEventSubroutines[_LargestEventID] = {
 	"EVENT_PROXIMITY_SAY",
 	"EVENT_CAST",
 	"EVENT_SCALE_CALC",
-	"EVENT_TARGET_CHANGE"
+	"EVENT_TARGET_CHANGE",
+	"EVENT_HATE_LIST"
 };
 
 PerlembParser::PerlembParser(void) : Parser()
@@ -625,17 +626,11 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 			ExportVar(packagename.c_str(), "itemname", iteminst->GetItem()->Name);
 			break;
 		}
-		case EVENT_TARGET_CHANGE: {
-			if (npcmob->GetTarget()) {
-				//ExportVar(packagename.c_str(), "target", npcmob->GetTarget());
-				ExportVar(packagename.c_str(), "hastarget", 1);
-			}
-			else {
-				//ExportVar(packagename.c_str(), "target", 0);
-				ExportVar(packagename.c_str(), "hastarget", 0);
-			}
+		case EVENT_HATE_LIST: {
+			ExportVar(packagename.c_str(), "hate_state", data);
 			break;
 		}
+
 		//nothing special about these events
 		case EVENT_DEATH:
 		case EVENT_SPAWN:
@@ -647,6 +642,7 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 		case EVENT_ENTERZONE:
 		case EVENT_LEVEL_UP:
 		case EVENT_KILLED_MERIT:
+		case EVENT_TARGET_CHANGE:
 			break;
 
 		default: {
