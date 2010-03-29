@@ -27,6 +27,7 @@
 
 HateList::HateList()
 {
+	owner = NULL;
 }
 
 HateList::~HateList()
@@ -52,10 +53,11 @@ void HateList::Wipe()
 	LinkedListIterator<tHateEntry*> iterator(list);
 	iterator.Reset();
 
-	while(iterator.MoreElements()) {
+	while(iterator.MoreElements()) 
+	{
 		Mob* m = iterator.GetData()->ent;
-
-        	iterator.RemoveCurrent();
+		parse->Event(EVENT_HATE_LIST, owner->GetNPCTypeID(), "0", owner->CastToNPC(), m);
+       	iterator.RemoveCurrent();
 
 		if(m->IsClient())
 			m->CastToClient()->DecrementAggroCount();
@@ -76,7 +78,7 @@ tHateEntry *HateList::Find(Mob *ent)
     iterator.Reset();
 	while(iterator.MoreElements())
     {
-        if (iterator.GetData()->ent == ent)
+        if(iterator.GetData()->ent == ent)
             return iterator.GetData();
         iterator.Advance();
     }
@@ -86,11 +88,11 @@ tHateEntry *HateList::Find(Mob *ent)
 void HateList::Set(Mob* other, int32 in_hate, int32 in_dam)
 {
     tHateEntry *p = Find(other);
-    if (p)
+    if(p)
     {
-		if (in_dam > 0)
+		if(in_dam > 0)
         	p->damage = in_dam;
-		if (in_hate > 0)
+		if(in_hate > 0)
     		p->hate = in_hate;
     }
 }
@@ -188,9 +190,10 @@ void HateList::Add(Mob *ent, sint32 in_hate, sint32 in_dam, bool bFrenzy, bool i
         p->hate = in_hate;
         p->bFrenzy = bFrenzy;
         list.Append(p);
+		parse->Event(EVENT_HATE_LIST, owner->GetNPCTypeID(), "1", owner->CastToNPC(), ent);
 
-	if(ent->IsClient())
-		ent->CastToClient()->IncrementAggroCount();
+		if(ent->IsClient())
+			ent->CastToClient()->IncrementAggroCount();
     }
 }
 
@@ -202,8 +205,9 @@ bool HateList::RemoveEnt(Mob *ent)
 
 	while(iterator.MoreElements())
 	{
-		if (iterator.GetData()->ent == ent)
+		if(iterator.GetData()->ent == ent)
 		{
+			parse->Event(EVENT_HATE_LIST, owner->GetNPCTypeID(), "0", owner->CastToNPC(), ent);
 			iterator.RemoveCurrent();
 			found = true;
 

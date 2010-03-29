@@ -34,6 +34,7 @@ typedef enum {
 	EVENT_CAST,
 	EVENT_SCALE_CALC,
 	EVENT_TARGET_CHANGE,	//target selected, target changed, or target removed
+	EVENT_HATE_LIST, 
 	
 	_LargestEventID
 } QuestEventID;
