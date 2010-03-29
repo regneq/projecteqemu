@@ -47,7 +47,7 @@ public:
 	/**
 	 * Destructor, frees our database if needed.
 	 */
-	~DatabaseMySQL();
+	virtual ~DatabaseMySQL();
 
 	/**
 	 * @return Returns true if the database successfully connected.
