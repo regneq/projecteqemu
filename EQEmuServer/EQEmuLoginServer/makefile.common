@@ -1,6 +1,6 @@
 APP=EQEmuLoginServer
-SF=AuthCredential.o clientlist.o EQEmuDatabase.o inifile.o LoginMain.o \
-RuntimeCredential.o SecurityLibrary.o serverlist.o WorldRegistration.o \
+SF=Client.o ClientManager.o Config.o DatabaseMySQL.o ErrorLog.o \
+Main.o ServerManager.o WorldServer.o \
 .obj/BasePacket.o .obj/Condition.o .obj/CRC16.o \
 .obj/crc32.o .obj/debug.o .obj/emu_opcodes.o \
 .obj/EmuTCPConnection.o .obj/EmuTCPServer.o .obj/EQPacket.o \
