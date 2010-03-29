@@ -64,7 +64,7 @@ char *Encryption::DecryptUsernamePassword(const char* encrypted_buffer, unsigned
 	return NULL;
 }
 
-char* Encryption::Encrypt(const char* buffer, unsigned int buffer_size, unsigned int &out_size)
+char *Encryption::Encrypt(const char* buffer, unsigned int buffer_size, unsigned int &out_size)
 {
 	if(encrypt_func)
 	{
@@ -73,7 +73,7 @@ char* Encryption::Encrypt(const char* buffer, unsigned int buffer_size, unsigned
 	return NULL;
 }
 
-void Encryption::DeleteHeap(char* buffer)
+void Encryption::DeleteHeap(char *buffer)
 {
 	if(delete_func)
 	{
