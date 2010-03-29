@@ -181,39 +181,43 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\AuthCredential.cpp"
+				RelativePath=".\Client.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\ClientList.cpp"
+				RelativePath=".\ClientManager.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\EQEmuDatabase.cpp"
+				RelativePath=".\Config.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\iniFile.cpp"
+				RelativePath=".\DatabaseMySQL.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\LoginMain.cpp"
+				RelativePath=".\DatabasePostgreSQL.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\RuntimeCredential.cpp"
+				RelativePath=".\Encryption.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\SecurityLibrary.cpp"
+				RelativePath=".\ErrorLog.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Serverlist.cpp"
+				RelativePath=".\Main.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\WorldRegistration.cpp"
+				RelativePath=".\ServerManager.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\WorldServer.cpp"
 				>
 			</File>
 		</Filter>
@@ -223,39 +227,55 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\AuthCredential.h"
+				RelativePath=".\Client.h"
 				>
 			</File>
 			<File
-				RelativePath=".\ClientList.h"
+				RelativePath=".\ClientManager.h"
 				>
 			</File>
 			<File
-				RelativePath=".\EQEmuDatabase.h"
+				RelativePath=".\Config.h"
 				>
 			</File>
 			<File
-				RelativePath=".\iniFile.h"
+				RelativePath=".\Database.h"
 				>
 			</File>
 			<File
-				RelativePath=".\LoginMain.h"
+				RelativePath=".\DatabaseMySQL.h"
 				>
 			</File>
 			<File
-				RelativePath=".\RuntimeCredential.h"
+				RelativePath=".\DatabasePostgreSQL.h"
 				>
 			</File>
 			<File
-				RelativePath=".\SecurityLibrary.h"
+				RelativePath=".\Encryption.h"
 				>
 			</File>
 			<File
-				RelativePath=".\Serverlist.h"
+				RelativePath=".\ErrorLog.h"
 				>
 			</File>
 			<File
-				RelativePath=".\WorldRegistration.h"
+				RelativePath=".\LoginServer.h"
+				>
+			</File>
+			<File
+				RelativePath=".\LoginStructures.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Options.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ServerManager.h"
+				>
+			</File>
+			<File
+				RelativePath=".\WorldServer.h"
 				>
 			</File>
 		</Filter>

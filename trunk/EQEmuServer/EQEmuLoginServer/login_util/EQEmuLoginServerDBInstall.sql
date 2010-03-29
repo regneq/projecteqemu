@@ -10,6 +10,8 @@ CREATE TABLE IF NOT EXISTS tblLoginServerAccounts (
   PRIMARY KEY (LoginServerID, AccountName)
 ) ENGINE=InnoDB;
 
+insert into tblLoginServerAccounts (AccountName, AccountPassword, AccountEmail, LastLoginDate, LastIPAddress) values('Admin', sha('password'), 'admin@somewhere.com', now(), '127.0.0.1');
+
 DROP TABLE IF EXISTS tblServerListType;
 CREATE TABLE IF NOT EXISTS tblServerListType (
 	ServerListTypeID integer unsigned NOT NULL,
@@ -34,6 +36,8 @@ CREATE TABLE IF NOT EXISTS tblServerAdminRegistration (
 	PRIMARY KEY (ServerAdminID, Email)
 ) ENGINE=MyISAM;
 
+INSERT INTO tblServerAdminRegistration (AccountName, AccountPassword, FirstName, LastName, Email, RegistrationDate, RegistrationIPAddr) VALUES ('Admin', 'Password', 'Tom', 'Wilson', 'Tom.Wilson@gmail.com', now(), '0.0.0.0');
+
 DROP TABLE IF EXISTS tblWorldServerRegistration;
 CREATE TABLE IF NOT EXISTS tblWorldServerRegistration (
   ServerID integer unsigned NOT NULL auto_increment,
@@ -49,4 +53,4 @@ CREATE TABLE IF NOT EXISTS tblWorldServerRegistration (
 ) ENGINE=InnoDB;
 
 
-insert into tblLoginServerAccounts (AccountName, AccountPassword, AccountEmail, LastLoginDate, LastIPAddress) values('Admin', sha('password'), 'admin@somewhere.com', now(), '127.0.0.1');
+INSERT INTO tblWorldServerRegistration (ServerLongName, ServerTagDescription, ServerShortName, ServerListTypeID, ServerLastLoginDate, ServerLastIPAddr, ServerAdminID, Note) VALUES ('My Test Server', 'A test server', 'MTST', 1, now(), '0.0.0.0', 1, 'This is a note for the test server');

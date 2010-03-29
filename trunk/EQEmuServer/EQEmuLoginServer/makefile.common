@@ -1,15 +1,15 @@
 APP=EQEmuLoginServer
-SF=AuthCredential.o clientlist.o EQEmuDatabase.o inifile.o LoginMain.o \
-RuntimeCredential.o SecurityLibrary.o serverlist.o WorldRegistration.o \
-.obj/BasePacket.o .obj/Condition.o .obj/CRC16.o \
-.obj/crc32.o .obj/debug.o .obj/emu_opcodes.o \
-.obj/EmuTCPConnection.o .obj/EmuTCPServer.o .obj/EQPacket.o \
-.obj/EQStream.o .obj/EQStreamFactory.o .obj/logsys.o \
-.obj/logsys_eqemu.o .obj/misc.o .obj/MiscFunctions.o \
-.obj/Mutex.o .obj/opcodemgr.o .obj/packet_dump.o \
-.obj/packet_functions.o .obj/rdtsc.o .obj/TCPConnection.o \
-.obj/TCPServer.o .obj/timeoutmgr.o .obj/timer.o \
-.obj/unix.o
+SF=Client.o ClientManager.o Config.o DatabaseMySQL.o ErrorLog.o \
+Main.o ServerManager.o WorldServer.o \
+../common/BasePacket.o ../common/Condition.o .obj/CRC16.o \
+../common/crc32.o .obj/debug.o .obj/emu_opcodes.o \
+../common/EmuTCPConnection.o ../common/EmuTCPServer.o .obj/EQPacket.o \
+.obj/EQStream.o .obj/EQStreamFactory.o ../common/logsys.o \
+../common/logsys_eqemu.o ../common/misc.o ../common/MiscFunctions.o \
+../common/Mutex.o ../common/opcodemgr.o ../common/packet_dump.o \
+../common/packet_functions.o ../common/rdtsc.o ../common/TCPConnection.o \
+../common/TCPServer.o ../common/timeoutmgr.o ../common/timer.o \
+../common/unix.o
 
 
 all: $(APP)
@@ -25,10 +25,6 @@ clean:
 	$(CC) $(NOLINK) $(COPTS) $< $(OUT)$@
 
 .obj/%.o: ../common/%.cpp ../common/%.h
-	mkdir -p .obj
-	$(CC) $(COPTS) $(NOLINK) $< $(OUT)$@
-
-.obj/%.o: ../common/%.cpp
 	mkdir -p .obj
 	$(CC) $(COPTS) $(NOLINK) $< $(OUT)$@
 
