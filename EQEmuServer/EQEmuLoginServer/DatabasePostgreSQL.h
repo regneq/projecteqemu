@@ -47,7 +47,7 @@ public:
 	/**
 	 * Destructor, frees our database if needed.
 	 */
-	~DatabasePostgreSQL();
+	virtual ~DatabasePostgreSQL();
 
 	/**
 	 * Returns true if the database successfully connected.

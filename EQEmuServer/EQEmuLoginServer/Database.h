@@ -32,7 +32,7 @@ class Database
 {
 public:
 	Database() : user(""), pass(""), host(""), port(""), name("") { }
-	~Database() { }
+	virtual ~Database() { }
 
 	/**
 	 * Returns true if the database successfully connected.
