@@ -1,34 +1,5 @@
-/*  EQEMu:  Everquest Server Emulator
-    Copyright (C) 2001-2009  EQEMu Development Team (http://eqemulator.net)
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; version 2 of the License.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY except by those people which sell it, which
-	are required to give you total support for your newly bought product;
-	without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-	A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*/
-
-#if !defined(_L__LOGINMAIN__H)
-#define _L__LOGINMAIN__H
-
-#include "../common/debug.h"
-#include "../common/types.h"
-#include "../common/opcodemgr.h"
-#include "../common/EQStreamFactory.h"
-
-#include "clientlist.h"
-#include "serverlist.h"
-#include "inifile.h"
-
-#include <list>
+#ifndef EQEMU_LOGINSTRUCTURES_H
+#define EQEMU_LOGINSTRUCTURES_H
 
 #pragma pack(1)
 
@@ -106,7 +77,6 @@ struct PlayEverquestRequest_Struct
 	uint32 ServerNumber;
 };
 
-
 struct PlayEverquestResponse_Struct {
 	uint8 Sequence;
 	uint8 Unknown1[9];
@@ -123,9 +93,6 @@ static const char FailedLoginResponseData[] = {
 
 
 #pragma pack()
-
-void CatchSignal(int sig_num);
-void UpdateWindowTitle(char* iNewTitle);
 
 #endif
 
