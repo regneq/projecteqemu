@@ -1294,6 +1294,15 @@ struct PlayerPositionUpdateClient_Struct
 /*0036*/
 };
 
+struct SpawnPositionUpdate_Struct
+{
+/*0000*/ int16  spawn_id;
+/*0002*/ int64  y_pos:19, z_pos:19, x_pos:19, padding002:7;
+/*0010*/ unsigned heading:12;
+         signed padding010:4;
+/*0012*/
+};
+
 /*
 ** Spawn HP Update
 ** Length: 10 Bytes
@@ -1301,16 +1310,56 @@ struct PlayerPositionUpdateClient_Struct
 */
 struct SpawnHPUpdate_Struct
 {
-/*00*/ uint32	cur_hp;               // Id of spawn to update
-/*04*/ sint32	max_hp;                 // Maximum hp of spawn
-/*08*/ sint16	spawn_id;                 // Current hp of spawn
+/*00*/ uint32	cur_hp;		// Id of spawn to update
+/*04*/ sint32	max_hp;		// Maximum hp of spawn
+/*08*/ sint16	spawn_id;	// Current hp of spawn
 /*10*/
 };
+
+struct ManaUpdate_Struct
+{
+/*00*/ int32	cur_mana;
+/*04*/ int32	max_mana;
+/*08*/ uint16	spawn_id;
+/*10*/
+};
+
+struct EnduranceUpdate_Struct
+{
+/*00*/ int32	cur_end;
+/*04*/ int32	max_end;
+/*08*/ uint16	spawn_id;
+/*10*/
+};
+
 struct SpawnHPUpdate_Struct2
 {
-/*01*/ sint16	spawn_id;
-/*00*/ int8	hp;
+/*00*/ sint16	spawn_id;
+/*02*/ int8		hp;			//HP Percentage
+/*03*/
 };
+
+struct MobManaUpdate_Struct
+{
+/*00*/ int16	spawn_id;
+/*02*/ int8		mana;		//Mana Percentage
+/*03*/
+};
+
+struct MobEnduranceUpdate_Struct
+{
+/*00*/ int16	spawn_id;
+/*02*/ int8		endurance;	//Endurance Percentage
+/*03*/
+};
+
+// Is this even used?
+struct MobHealth
+{
+	/*0000*/	int8	hp;	//health percent
+	/*0001*/	int16	id;	//mobs id
+};
+
 /*
 ** Stamina
 ** Length: 8 Bytes
@@ -2734,12 +2783,6 @@ struct ClientError_Struct
 /*00134*/	char	unknown134[192];
 /*00133*/	char	message[31994];
 /*32136*/
-};
-
-struct MobHealth
-{
-	/*0000*/	int8	hp; //health percent
-	/*0001*/	int16	id;//mobs id
 };
 
 struct Track_Struct {
