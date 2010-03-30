@@ -240,7 +240,15 @@ void WorldServer::Handle_NewLSInfo(ServerNewLSInfo_Struct* i)
 
 	if(strlen(i->local_address) <= 125)
 	{
-		local_ip = i->local_address;
+		if(strlen(i->local_address) == 0)
+		{
+			log->Log(log_network_error, "Handle_NewLSInfo error, local address was null, defaulting to localhost");
+			local_ip = "127.0.0.1";
+		}
+		else
+		{
+			local_ip = i->local_address;
+		}
 	}
 	else
 	{
@@ -252,6 +260,7 @@ void WorldServer::Handle_NewLSInfo(ServerNewLSInfo_Struct* i)
 	{
 		if(strlen(i->remote_address) == 0)
 		{
+			log->Log(log_network_error, "Handle_NewLSInfo error, remote address was null, defaulting to stream address %s.", remote_ip.c_str());
 			in_addr in;
 			in.s_addr = GetConnection()->GetrIP();
 			remote_ip = inet_ntoa(in);
