@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==03/30/2010==
+Trevius: SoD - Corrected the opcode for Mob Health Updates so they update properly.
+Trevius: SoD - Added a few new Opcodes and Structures for SoD packets that aren't used yet.
+
 ==03/28/2010==
 Derision: SoD - Fixed client animation/runspeed glitch.
 Derision: All Clients - Player position updates to other players should be more accurate.
