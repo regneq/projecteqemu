@@ -227,8 +227,7 @@ bool Group::AddMember(Mob* newmember) {
 
 			if(members[i]->IsClient())
 			{
-				if(members[i]->CastToClient()->GetClientVersion() < EQClientSoD)
-					members[i]->CastToClient()->QueuePacket(outapp);
+				members[i]->CastToClient()->QueuePacket(outapp);
 
 				//put new member into existing person's list
 				strcpy(members[i]->CastToClient()->GetPP().groupMembers[this->GroupCount()-1], newmember->GetCleanName());
@@ -259,12 +258,6 @@ bool Group::AddMember(Mob* newmember) {
 	}
 	
 	safe_delete(outapp);
-
-	// Hack for SoD
-	for (i = 0;i < MAX_GROUP_MEMBERS; i++)
-		if (members[i] && (members[i] != newmember) && (members[i]->IsClient()))
-			if(members[i]->CastToClient()->GetClientVersion() >= EQClientSoD)
-				database.RefreshGroupFromDB(members[i]->CastToClient()); 
 
 	return true;
 }
@@ -1455,8 +1448,12 @@ void Group::ChangeLeader(Mob* newleader)
 	UpdateGroupAAs();
 	gu->leader_aas = LeaderAbilities;
 	for (uint32 i = 0; i < MAX_GROUP_MEMBERS; i++) {
-		if (members[i] && members[i]->IsClient()) {
-			members[i]->CastToClient()->QueuePacket(outapp);
+		if (members[i] && members[i]->IsClient())
+		{
+			if(members[i]->CastToClient()->GetClientVersion() >= EQClientSoD)
+				members[i]->CastToClient()->SendGroupLeaderChangePacket(newleader->GetName());
+			else
+				members[i]->CastToClient()->QueuePacket(outapp);
 		}
 	}
 	safe_delete(outapp);

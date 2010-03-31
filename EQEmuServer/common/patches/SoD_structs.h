@@ -2096,10 +2096,11 @@ struct GroupGeneric_Struct {
 };
 
 struct GroupCancel_Struct {
-/*0000*/	char	name1[64];
-/*0064*/	char	name2[64];
-/*0128*/	uint8	toggle;
-/*0129*/
+/*000*/	char	name1[64];
+/*064*/	char	name2[64];
+/*128*/	uint8	unknown128[20];
+/*148*/	uint32	toggle;
+/*152*/
 };
 
 struct GroupUpdate_Struct {
@@ -2146,11 +2147,10 @@ struct GroupJoin_Struct_SoD {	// New for SoD
 };
 
 struct GroupJoin_Struct {
-/*0000*/	int32	action;
-/*0004*/	char	yourname[64];
-/*0068*/	char	membername[64];
-/*0132*/	int8	unknown[84];
-/*0216*/
+/*000*/	char	unknown000[64];
+/*064*/	char	membername[64];
+/*128*/	int8	unknown128[20];	// Leadership AA ?
+/*148*/
 };
 
 struct GroupFollow_Struct { // SoD Follow Struct

@@ -3699,7 +3699,7 @@ void EntityList::SendGroupLeave(int32 gid, const char *name) {
 					GroupJoin_Struct* gj = (GroupJoin_Struct*) outapp->pBuffer;	
 					strcpy(gj->membername, name);
 					gj->action = groupActLeave;
-					strcpy(gj->yourname, name);
+					strcpy(gj->yourname, c->GetName());
 					Mob *Leader = g->GetLeader();
 					if(Leader)
 						Leader->CastToClient()->GetGroupAAs(&gj->leader_aas);					

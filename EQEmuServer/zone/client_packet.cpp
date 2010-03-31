@@ -5665,14 +5665,27 @@ void Client::Handle_OP_GroupFollow2(const EQApplicationPacket *app)
 			group->UpdateGroupAAs();
 
 			//Invite the inviter into the group first.....dont ask
-			EQApplicationPacket* outapp=new EQApplicationPacket(OP_GroupUpdate,sizeof(GroupJoin_Struct));
-			GroupJoin_Struct* outgj=(GroupJoin_Struct*)outapp->pBuffer;
-			strcpy(outgj->membername, inviter->GetName());
-			strcpy(outgj->yourname, inviter->GetName());
-			outgj->action = groupActInviteInitial; // 'You have formed the group'.
-			group->GetGroupAAs(&outgj->leader_aas);
-			inviter->CastToClient()->QueuePacket(outapp);
-			safe_delete(outapp);
+			if(inviter->CastToClient()->GetClientVersion() < EQClientSoD)
+			{
+				EQApplicationPacket* outapp=new EQApplicationPacket(OP_GroupUpdate,sizeof(GroupJoin_Struct));
+				GroupJoin_Struct* outgj=(GroupJoin_Struct*)outapp->pBuffer;
+				strcpy(outgj->membername, inviter->GetName());
+				strcpy(outgj->yourname, inviter->GetName());
+				outgj->action = groupActInviteInitial; // 'You have formed the group'.
+				group->GetGroupAAs(&outgj->leader_aas);
+				inviter->CastToClient()->QueuePacket(outapp);
+				safe_delete(outapp);
+			}
+			else
+			{
+				// SoD and later
+				//
+				inviter->CastToClient()->SendGroupCreatePacket();				
+				
+				inviter->CastToClient()->SendGroupLeaderChangePacket(inviter->GetName());
+
+				inviter->CastToClient()->SendGroupJoinAcknowledge();	
+			}
 			
 		}
 		if(!group)
@@ -5688,6 +5701,9 @@ void Client::Handle_OP_GroupFollow2(const EQApplicationPacket *app)
 			// their group.
 			inviter->CastToClient()->UpdateLFP();
 		}
+
+		if(GetClientVersion() >= EQClientSoD)
+			SendGroupJoinAcknowledge();	
 
 		database.RefreshGroupFromDB(this);
 		group->SendHPPacketsTo(this);

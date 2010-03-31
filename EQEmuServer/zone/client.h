@@ -924,6 +924,9 @@ public:
 	void GuildBankDepositAck(bool Fail);
 	inline bool IsGuildBanker() { return GuildBanker; }
 	void ClearGuildBank();
+	void SendGroupCreatePacket();
+	void SendGroupLeaderChangePacket(const char *LeaderName);
+	void SendGroupJoinAcknowledge();
 
 protected:
 	friend class Mob;
