@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==03/31/2010==
+Derision: SoD - Groups should be as functional as previous clients, except Group Leadership AA doesn't work.
+
 ==03/30/2010==
 Trevius: SoD - Corrected the opcode for Mob Health Updates so they update properly.
 Trevius: SoD - Added a few new Opcodes and Structures for SoD packets that aren't used yet.

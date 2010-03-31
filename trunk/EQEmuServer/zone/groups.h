@@ -29,16 +29,6 @@
 
 #define MAX_MARKED_NPCS 3
 
-enum {	//Group  action fields
-	groupActJoin = 0,
-	groupActLeave = 1,
-	groupActDisband = 6,
-	groupActUpdate = 7,
-	groupActMakeLeader = 8,
-	groupActInviteInitial = 9,
-	groupActAAUpdate = 10
-};
-
 class GroupIDConsumer {
 public:
 	GroupIDConsumer() { id = 0; }

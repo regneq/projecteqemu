@@ -2028,6 +2028,16 @@ struct ZoneUnavail_Struct {
 	sint16 unknown[4];
 };
 
+enum {	//Group  action fields
+	groupActJoin = 0,
+	groupActLeave = 1,
+	groupActDisband = 6,
+	groupActUpdate = 7,
+	groupActMakeLeader = 8,
+	groupActInviteInitial = 9,
+	groupActAAUpdate = 10
+};
+
 struct GroupGeneric_Struct {
 	char name1[64];
 	char name2[64];
@@ -2073,6 +2083,13 @@ struct GroupFollow_Struct { // SoF Follow Struct
 /*0064*/	char	name2[64];	// invitee
 /*0128*/	int32	unknown0128;
 /*0132*/
+};
+
+struct GroupLeaderChange_Struct
+{
+/*000*/		char	Unknown000[64];
+/*064*/		char	LeaderName[64];
+/*128*/		char	Unknown128[20];
 };
 
 struct FaceChange_Struct {

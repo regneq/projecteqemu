@@ -1860,39 +1860,62 @@ ENCODE(OP_GroupFollow2) {
 	FINISH_ENCODE();
 }
 
-ENCODE(OP_GroupUpdate) {
+ENCODE(OP_GroupCancelInvite)
+{
+	ENCODE_LENGTH_EXACT(GroupCancel_Struct);
+	SETUP_DIRECT_ENCODE(GroupCancel_Struct, structs::GroupCancel_Struct);
+	memcpy(eq->name1, emu->name1, sizeof(eq->name1));
+	memcpy(eq->name2, emu->name2, sizeof(eq->name2));
+	OUT(toggle);
+	FINISH_ENCODE();
+}
+
+ENCODE(OP_GroupUpdate)
+{
+	//_log(NET__ERROR, "OP_GroupUpdate");
 	EQApplicationPacket *in = *p;
-	*p = NULL;
 
-	//_log(NET__ERROR, "Outgoing Group Update Packet");
-	//_hex(NET__ERROR, in->pBuffer, in->size);
-
-	if(in->size == sizeof(GroupJoin_Struct))
+	GroupJoin_Struct *gjs = (GroupJoin_Struct*)in->pBuffer;
+	
+	//_log(NET__ERROR, "Received outgoing OP_GroupUpdate with action code %i", gjs->action);
+	if((gjs->action == groupActLeave) || (gjs->action == groupActDisband))
 	{
-		//_log(NET__ERROR, "Struct is GroupJoin");
-		/*
-		ENCODE_LENGTH_EXACT(GroupJoin_Struct);
-		SETUP_DIRECT_ENCODE(GroupJoin_Struct, structs::GroupJoin_Struct);
-		eq->action = emu->action;
-		memcpy(eq->membername, emu->membername, sizeof(eq->membername));
-		FINISH_ENCODE();
-		*/
-		
-		// Sending this to the SoD client would cause it to lose it's group members
+		if((gjs->action == groupActDisband) || !strcmp(gjs->yourname, gjs->membername))
+		{
+			//_log(NET__ERROR, "Group Leave, yourname = %s, membername = %s", gjs->yourname, gjs->membername);
+
+			EQApplicationPacket *outapp = new EQApplicationPacket(OP_GroupDisbandYou, sizeof(structs::GroupGeneric_Struct));
+
+			structs::GroupGeneric_Struct *ggs = (structs::GroupGeneric_Struct*)outapp->pBuffer;
+			memcpy(ggs->name1, gjs->yourname, sizeof(ggs->name1));
+			memcpy(ggs->name2, gjs->membername, sizeof(ggs->name1));
+			dest->FastQueuePacket(&outapp);
+
+			delete in;
+
+			return;
+		}
+		//if(gjs->action == groupActLeave)
+		//	_log(NET__ERROR, "Group Leave, yourname = %s, membername = %s", gjs->yourname, gjs->membername);
+
+		EQApplicationPacket *outapp = new EQApplicationPacket(OP_GroupDisbandOther, sizeof(structs::GroupGeneric_Struct));
+
+		structs::GroupGeneric_Struct *ggs = (structs::GroupGeneric_Struct*)outapp->pBuffer;
+		memcpy(ggs->name1, gjs->yourname, sizeof(ggs->name1));
+		memcpy(ggs->name2, gjs->membername, sizeof(ggs->name2));
+		//_hex(NET__ERROR, outapp->pBuffer, outapp->size);
+		dest->FastQueuePacket(&outapp);
 		delete in;
+		return;
+
 
 	}
-	else if(in->size == sizeof(GroupUpdate2_Struct))
+
+	if(in->size == sizeof(GroupUpdate2_Struct))
 	{
 		// Group Update2
 		//_log(NET__ERROR, "Struct is GroupUpdate2");
-		//consume the packet
-		/*
-		EQApplicationPacket *in = *p;
-		*p = NULL;
-		*/
 		
-		//store away the emu struct
 		unsigned char *__emu_buffer = in->pBuffer;
 		GroupUpdate2_Struct *gu2 = (GroupUpdate2_Struct*) __emu_buffer;
 	
@@ -1914,7 +1937,7 @@ ENCODE(OP_GroupUpdate) {
 
 		//_log(NET__ERROR, "Leadername is %s", gu2->leadersname);
 
-		EQApplicationPacket *outapp = new EQApplicationPacket(OP_GroupUpdate, PacketLength);
+		EQApplicationPacket *outapp = new EQApplicationPacket(OP_GroupUpdateB, PacketLength);
 
 		char *Buffer = (char *)outapp->pBuffer;
 	
@@ -1963,7 +1986,17 @@ ENCODE(OP_GroupUpdate) {
 
 		delete in;
 
+		return;
+
 	}
+	//_log(NET__ERROR, "Generic GroupUpdate, yourname = %s, membername = %s", gjs->yourname, gjs->membername);
+	ENCODE_LENGTH_EXACT(GroupJoin_Struct);
+	SETUP_DIRECT_ENCODE(GroupJoin_Struct, structs::GroupJoin_Struct);
+
+	memcpy(eq->membername, emu->membername, sizeof(eq->membername));
+
+	//_hex(NET__ERROR, __packet->pBuffer, __packet->size);
+	FINISH_ENCODE();
 }
 
 DECODE(OP_InspectAnswer) {
@@ -2226,6 +2259,27 @@ DECODE(OP_GroupFollow2) {
 	SETUP_DIRECT_DECODE(GroupGeneric_Struct, structs::GroupFollow_Struct);
 	memcpy(emu->name1, eq->name1, sizeof(emu->name1));
 	memcpy(emu->name2, eq->name2, sizeof(emu->name2));
+	FINISH_DIRECT_DECODE();
+}
+
+DECODE(OP_GroupDisband) {
+	//EQApplicationPacket *in = __packet;
+	//_log(NET__ERROR, "Received incoming OP_Disband");
+	//_hex(NET__ERROR, in->pBuffer, in->size);
+	DECODE_LENGTH_EXACT(structs::GroupGeneric_Struct);
+	SETUP_DIRECT_DECODE(GroupGeneric_Struct, structs::GroupGeneric_Struct);
+	memcpy(emu->name1, eq->name1, sizeof(emu->name1));
+	memcpy(emu->name2, eq->name2, sizeof(emu->name2));
+	FINISH_DIRECT_DECODE();
+}
+
+DECODE(OP_GroupCancelInvite)
+{
+	DECODE_LENGTH_EXACT(structs::GroupCancel_Struct);
+	SETUP_DIRECT_DECODE(GroupCancel_Struct, structs::GroupCancel_Struct);
+	memcpy(emu->name1, eq->name1, sizeof(emu->name1));
+	memcpy(emu->name2, eq->name2, sizeof(emu->name2));
+	IN(toggle);
 	FINISH_DIRECT_DECODE();
 }
 
