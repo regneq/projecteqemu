@@ -3937,9 +3937,9 @@ struct ItemSerializationHeader
 /*052*/	uint32 unknown052; //0
 /*056*/	uint32 unknown056; //0
 /*060*/	uint8 unknown060; //0
-/*064*/	uint8 unknown061; //0 - Add Evolving Item struct if this isn't set to 0?
-/*068*/	uint8 unknown062; // New to SoD
-/*072*/	uint8 ItemClass; //0, 1, or 2
+/*061*/	uint8 unknown061; //0 - Add Evolving Item struct if this isn't set to 0?
+/*062*/	uint8 unknown062; // New to SoD
+/*063*/	uint8 ItemClass; //0, 1, or 2
 };
 
 struct ItemBodyStruct
