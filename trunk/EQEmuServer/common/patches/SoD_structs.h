@@ -3921,25 +3921,25 @@ struct ItemVerifyReply_Struct {
 
 struct ItemSerializationHeader
 {
-	uint32 stacksize;
-	uint32 unknown004;
-	uint32 slot;
-	uint32 price;
-	uint32 merchant_slot; //1 if not a merchant item
-	uint32 unknown020; //0
-	uint32 instance_id; //unique instance id if not merchant item, else is merchant slot
-	uint32 unknown028; //0
-	uint32 last_cast_time;	// Unix Time from PP of last cast for this recast type if recast delay > 0
-	uint32 charges; //Total Charges an item has (-1 for unlimited)
-	uint32 inst_nodrop; // 1 if the item is no drop (attuned items)
-	uint32 unknown044; //0
-	uint32 unknown048; //0
-	uint32 unknown052; //0
-	uint32 unknown056; //0
-	uint8 unknown060; //0
-	uint8 unknown061; //0 - Add Evolving Item struct if this isn't set to 0?
-	uint8 unknown062; // New to SoD
-	uint8 ItemClass; //0, 1, or 2
+/*000*/	uint32 stacksize;
+/*004*/	uint32 unknown004;
+/*008*/	uint32 slot;
+/*012*/	uint32 price;
+/*016*/	uint32 merchant_slot; //1 if not a merchant item
+/*020*/	uint32 unknown020; //0
+/*024*/	uint32 instance_id; //unique instance id if not merchant item, else is merchant slot
+/*028*/	uint32 unknown028; //0
+/*032*/	uint32 last_cast_time;	// Unix Time from PP of last cast for this recast type if recast delay > 0
+/*036*/	uint32 charges; //Total Charges an item has (-1 for unlimited)
+/*040*/	uint32 inst_nodrop; // 1 if the item is no drop (attuned items)
+/*044*/	uint32 unknown044; //0
+/*048*/	uint32 unknown048; //0
+/*052*/	uint32 unknown052; //0
+/*056*/	uint32 unknown056; //0
+/*060*/	uint8 unknown060; //0
+/*064*/	uint8 unknown061; //0 - Add Evolving Item struct if this isn't set to 0?
+/*068*/	uint8 unknown062; // New to SoD
+/*072*/	uint8 ItemClass; //0, 1, or 2
 };
 
 struct ItemBodyStruct

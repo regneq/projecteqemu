@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==03/31/2010==
 Derision: SoD - Groups should be as functional as previous clients, except Group Leadership AA doesn't work.
+Derision: SoD - Fixed items being incorrectly flagged as No Trade/Copied
 
 ==03/30/2010==
 Trevius: SoD - Corrected the opcode for Mob Health Updates so they update properly.

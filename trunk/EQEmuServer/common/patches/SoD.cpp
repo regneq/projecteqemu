@@ -2462,6 +2462,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	hdr.unknown056 = 0;
 	hdr.unknown060 = 0;
 	hdr.unknown061 = 0;
+	hdr.unknown062 = 0;
 	hdr.ItemClass = item->ItemClass;
 
 	ss.write((const char*)&hdr, sizeof(SoD::structs::ItemSerializationHeader));
