@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==04/01/2010==
 Derision: SoD - Tracking
+Derision: SoD - Fixed price bug when buying from merchants.
 
 ==03/31/2010==
 Derision: SoD - Groups should be as functional as previous clients, except Group Leadership AA doesn't work.

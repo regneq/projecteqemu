@@ -57,6 +57,7 @@ E(OP_GroupUpdate)
 E(OP_GroupCancelInvite)
 E(OP_WhoAllResponse)
 E(OP_Track)
+E(OP_ShopPlayerBuy)
 
 //list of packets we need to decode on the way in:
 D(OP_SetServerFilter)
@@ -91,5 +92,6 @@ D(OP_AdventureMerchantSell)
 D(OP_TradeSkillCombine)
 D(OP_RaidInvite)
 D(OP_InspectAnswer)
+D(OP_ShopPlayerBuy)
 #undef E
 #undef D
