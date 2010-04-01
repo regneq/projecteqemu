@@ -1926,11 +1926,15 @@ struct Merchant_Sell_Struct {
 /*000*/	int32	npcid;			// Merchant NPC's entity id
 /*004*/	int32	playerid;		// Player's entity id
 /*008*/	int32	itemslot;
-		int32	unknown12;
+/*012*/	int32	unknown12;
 /*016*/	int8	quantity;		// Already sold
-/*017*/ int8	Unknown016[3];
-/*020*/ int32	price;
+/*017*/ int8	Unknown017[3];
+/*020*/	uint32	Unknown020;
+/*024*/	uint32	price;
+/*028*/	uint32	pricehighorderbits;	// It appears the price is 64 bits in SoD+
+/*032*/
 };
+
 struct Merchant_Purchase_Struct {
 /*000*/	int32	npcid;			// Merchant NPC's entity id
 /*004*/	int32	itemslot;		// Player's entity id
