@@ -927,6 +927,7 @@ public:
 	void SendGroupCreatePacket();
 	void SendGroupLeaderChangePacket(const char *LeaderName);
 	void SendGroupJoinAcknowledge();
+	void DoTracking();
 
 protected:
 	friend class Mob;
@@ -1043,6 +1044,7 @@ private:
 	bool				dead;
 	int16				BoatID;
 	bool				IsTracking;
+	int16				TrackingID;
 	int16				CustomerID;
 	bool	Trader;
 	bool	Buyer;
@@ -1118,6 +1120,7 @@ private:
 	Timer	charm_class_attacks_timer;
 	Timer	charm_cast_timer;
 	Timer	qglobal_purge_timer;
+	Timer	TrackingTimer;
 
 	float	proximity_x;
 	float	proximity_y;

@@ -167,10 +167,11 @@ Client::Client(EQStreamInterface* ieqs)
 	proximity_timer(ClientProximity_interval),
 	TaskPeriodic_Timer(RuleI(TaskSystem, PeriodicCheckTimer) * 1000),
 	charm_update_timer(60000),
+	rest_timer(1),
 	charm_class_attacks_timer(3000),
 	charm_cast_timer(3500),
 	qglobal_purge_timer(30000),
-	rest_timer(1)
+	TrackingTimer(2000)
 {
 	for(int cf=0; cf < _FilterCount; cf++)
 		ClientFilters[cf] = FilterShow;
@@ -188,6 +189,7 @@ Client::Client(EQStreamInterface* ieqs)
 	Buyer = false;
 	CustomerID = 0;
 	IsTracking=false;
+	TrackingID = 0;
 	WID = 0;
 	account_id = 0;
 	admin = 0;

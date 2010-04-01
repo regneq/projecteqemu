@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==04/01/2010==
+Derision: SoD - Tracking
+
 ==03/31/2010==
 Derision: SoD - Groups should be as functional as previous clients, except Group Leadership AA doesn't work.
 Derision: SoD - Fixed items being incorrectly flagged as No Trade/Copied

@@ -52,6 +52,7 @@ E(OP_RaidUpdate)
 E(OP_RaidJoin)
 E(OP_VetRewardsAvaliable)
 E(OP_InspectAnswer)
+E(OP_Track)
 
 //list of packets we need to decode on the way in:
 D(OP_SetServerFilter)

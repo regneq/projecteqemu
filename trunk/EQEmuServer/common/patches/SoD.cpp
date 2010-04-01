@@ -744,6 +744,54 @@ ENCODE(OP_NewZone) {
 }
 
 
+ENCODE(OP_Track)
+{
+
+	EQApplicationPacket *in = *p;
+	*p = NULL;
+
+	unsigned char *__emu_buffer = in->pBuffer;
+	Track_Struct *emu = (Track_Struct *) __emu_buffer;
+
+	int EntryCount = in->size / sizeof(Track_Struct);
+
+	if(EntryCount == 0 || ((in->size % sizeof(Track_Struct))) != 0)
+	{
+		_log(NET__STRUCTS, "Wrong size on outbound %s: Got %d, expected multiple of %d", opcodes->EmuToName(in->GetOpcode()), in->size, sizeof(Track_Struct));
+		delete in;
+		return;
+	}
+
+	int PacketSize = 2;
+
+	for(int i = 0; i < EntryCount; ++i, ++emu)
+		PacketSize += (12 + strlen(emu->name));
+
+	emu = (Track_Struct *) __emu_buffer;
+
+	in->size = PacketSize;
+	in->pBuffer = new unsigned char[in->size];
+
+	char *Buffer = (char *)in->pBuffer;
+
+	VARSTRUCT_ENCODE_TYPE(uint8, Buffer, EntryCount);
+	VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);
+
+	for(int i = 0; i < EntryCount; ++i, ++emu)
+	{
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->entityid);
+		VARSTRUCT_ENCODE_TYPE(float, Buffer, emu->distance);
+		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->level);
+		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 1);	// Unknown
+		VARSTRUCT_ENCODE_STRING(Buffer, emu->name);
+		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);	// Unknown
+	}
+
+	delete[] __emu_buffer;
+
+	dest->FastQueuePacket(&in, ack_req);
+}
+
 ENCODE(OP_NewSpawn) {  ENCODE_FORWARD(OP_ZoneSpawns); }
 ENCODE(OP_ZoneEntry){  ENCODE_FORWARD(OP_ZoneSpawns); }
 ENCODE(OP_ZoneSpawns) {

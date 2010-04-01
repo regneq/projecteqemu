@@ -56,6 +56,7 @@ E(OP_GroupFollow2)
 E(OP_GroupUpdate)
 E(OP_GroupCancelInvite)
 E(OP_WhoAllResponse)
+E(OP_Track)
 
 //list of packets we need to decode on the way in:
 D(OP_SetServerFilter)
