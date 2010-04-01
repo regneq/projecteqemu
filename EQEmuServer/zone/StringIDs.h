@@ -258,6 +258,12 @@
 #define LDON_SENSE_TRAP3			12476	//You don't sense any traps.
 #define INTERRUPT_SPELL_OTHER		12478	//%1's casting is interrupted!
 #define YOU_HIT_NONMELEE			12481	//You were hit by non-melee for %1 damage.
+#define TRACK_LOST_TARGET			12681	//You have lost your tracking target.
+#define TRACK_STRAIGHT_AHEAD			12676
+#define TRACK_AHEAD_AND_TO			12677
+#define TRACK_TO_THE				12678
+#define TRACK_BEHIND_AND_TO			12679
+#define TRACK_BEHIND_YOU			12680
 #define BEAM_SMILE					12501	//%1 beams a smile at %2
 #define SONG_ENDS_ABRUPTLY			12686	//Your song ends abruptly.
 #define SONG_ENDS					12687	//Your song ends.

@@ -6997,14 +6997,42 @@ void Client::Handle_OP_Bind_Wound(const EQApplicationPacket *app)
 
 void Client::Handle_OP_TrackTarget(const EQApplicationPacket *app)
 {
-	// Looks like an entityid should probably do something with it.
 	IsTracking=(IsTracking==false);
-	return;
+
+	if(!IsTracking)
+	{
+		TrackingID = 0;
+		return;
+	}
+
+	if(GetClientVersion() < EQClientSoD)
+		return;
+	
+	int PlayerClass = GetClass();
+
+	if((PlayerClass != RANGER) && (PlayerClass != DRUID) && (PlayerClass != BARD))
+		return;
+
+	if (app->size != sizeof(TrackTarget_Struct))
+	{
+		LogFile->write(EQEMuLog::Error, "Invalid size for OP_TrackTarget: Expected: %i, Got: %i",
+			sizeof(TrackTarget_Struct), app->size);
+		return;
+	}
+
+	TrackTarget_Struct *tts = (TrackTarget_Struct*)app->pBuffer;
+
+	if(tts->EntityID)
+		TrackingID = tts->EntityID;
+	else
+	{
+		IsTracking = false;
+		TrackingID = 0;
+	}
 }
 
 void Client::Handle_OP_Track(const EQApplicationPacket *app)
 {
-	IsTracking=false;
 	if(GetClass() != RANGER && GetClass() != DRUID && GetClass() != BARD)
 		return;
 

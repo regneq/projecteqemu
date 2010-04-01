@@ -2633,6 +2633,7 @@ void EntityList::ListNPCs(Client* client, const char* arg1, const char* arg2, in
 	client->Message(0, "NPCs in the zone:");
 	if(searchtype == 0) {
 		while(iterator.MoreElements()) {
+
 			client->Message(0, "  %5d: %s", iterator.GetData()->GetID(), iterator.GetData()->GetName());
 			x++;
 			z++;
@@ -3026,7 +3027,8 @@ void EntityList::SignalMobsByNPCID(int32 snpc, int signal_id)
 }
 
 
-bool EntityList::MakeTrackPacket(Client* client){
+bool EntityList::MakeTrackPacket(Client* client)
+{
 	int32 distance = 0;
 	float MobDistance;
 
@@ -3067,6 +3069,8 @@ bool EntityList::MakeTrackPacket(Client* client){
 				Mob* cur_entity = iterator.GetData();
 				track_ent->entityid = cur_entity->GetID();
 				track_ent->distance = MobDistance;
+				track_ent->level = cur_entity->GetLevel();
+				strn0cpy(track_ent->name, cur_entity->GetName(), sizeof(track_ent->name));
 				memcpy(&track_array->Entrys[array_counter], track_ent, sizeof(Track_Struct));
 				array_counter++;
 			}

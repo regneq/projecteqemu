@@ -2806,10 +2806,18 @@ struct Track_Struct {
 	int16 entityid;
 	int16 padding002;
 	float distance;
+	// Fields for SoD and later
+	uint8 level;
+	char name[64];
 };
 
 struct Tracking_Struct {
 	Track_Struct Entrys[0];
+};
+
+struct TrackTarget_Struct
+{
+	uint32	EntityID;
 };
 
 /*
