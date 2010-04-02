@@ -1897,7 +1897,21 @@ void Client::Handle_OP_ItemVerifyRequest(const EQApplicationPacket *app)
 		{
 			if ((item->Click.Type == ET_ClickEffect) || (item->Click.Type == ET_Expendable) || (item->Click.Type == ET_EquipClick) || (item->Click.Type == ET_ClickEffect2))
 			{
-				CastSpell(item->Click.Effect, target_id, 10, item->CastTime, 0, 0, slot_id);
+				if(item->Click.Level2 > 0)
+				{
+					if(GetLevel() >= item->Click.Level2)
+					{
+						CastSpell(item->Click.Effect, target_id, 10, item->CastTime, 0, 0, slot_id);
+					}
+					else
+					{
+						Message(0, "Error: level not high enough.");
+					}					
+				}
+				else
+				{
+					CastSpell(item->Click.Effect, target_id, 10, item->CastTime, 0, 0, slot_id);
+				}
 			}
 			else
 			{
@@ -1907,13 +1921,11 @@ void Client::Handle_OP_ItemVerifyRequest(const EQApplicationPacket *app)
 		else
 		{
 			Message(0, "Error: item not found in inventory slot #%i", slot_id);
-			InterruptSpell(spell_id);
 		}
 	}
 	else
 	{
 		Message(0, "Error: Inventory Slot >= 30 (inventory slot #%i)", slot_id);
-		InterruptSpell(spell_id);
 	}
 
 	EQApplicationPacket *outapp;
