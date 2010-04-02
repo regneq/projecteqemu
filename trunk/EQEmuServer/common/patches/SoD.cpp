@@ -1952,6 +1952,12 @@ ENCODE(OP_GroupUpdate)
 			memcpy(ggs->name2, gjs->membername, sizeof(ggs->name1));
 			dest->FastQueuePacket(&outapp);
 
+			// Make an empty GLAA packet to clear out their useable GLAAs
+			//
+			outapp = new EQApplicationPacket(OP_GroupLeadershipAAUpdate, sizeof(GroupLeadershipAAUpdate_Struct));
+
+			dest->FastQueuePacket(&outapp);
+
 			delete in;
 
 			return;
@@ -1966,6 +1972,7 @@ ENCODE(OP_GroupUpdate)
 		memcpy(ggs->name2, gjs->membername, sizeof(ggs->name2));
 		//_hex(NET__ERROR, outapp->pBuffer, outapp->size);
 		dest->FastQueuePacket(&outapp);
+
 		delete in;
 		return;
 
@@ -2045,6 +2052,14 @@ ENCODE(OP_GroupUpdate)
 		//_hex(NET__ERROR, outapp->pBuffer, outapp->size);
 		dest->FastQueuePacket(&outapp);
 
+		outapp = new EQApplicationPacket(OP_GroupLeadershipAAUpdate, sizeof(GroupLeadershipAAUpdate_Struct));
+
+		GroupLeadershipAAUpdate_Struct *GLAAus = (GroupLeadershipAAUpdate_Struct*)outapp->pBuffer;
+
+		GLAAus->NPCMarkerID = gu2->NPCMarkerID;
+		memcpy(&GLAAus->LeaderAAs, &gu2->leader_aas, sizeof(GLAAus->LeaderAAs));
+		
+		dest->FastQueuePacket(&outapp);
 		delete in;
 
 		return;
@@ -2056,8 +2071,17 @@ ENCODE(OP_GroupUpdate)
 
 	memcpy(eq->membername, emu->membername, sizeof(eq->membername));
 
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_GroupLeadershipAAUpdate, sizeof(GroupLeadershipAAUpdate_Struct));
+
+	GroupLeadershipAAUpdate_Struct *GLAAus = (GroupLeadershipAAUpdate_Struct*)outapp->pBuffer;
+
+	GLAAus->NPCMarkerID = emu->NPCMarkerID;
+
+	memcpy(&GLAAus->LeaderAAs, &emu->leader_aas, sizeof(GLAAus->LeaderAAs));
 	//_hex(NET__ERROR, __packet->pBuffer, __packet->size);
 	FINISH_ENCODE();
+
+	dest->FastQueuePacket(&outapp);
 }
 
 DECODE(OP_InspectAnswer) {

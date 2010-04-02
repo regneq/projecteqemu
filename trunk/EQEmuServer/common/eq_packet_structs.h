@@ -2078,6 +2078,17 @@ struct GroupJoin_Struct {
 /*0452*/
 };
 
+// SoD+ Struct
+struct GroupLeadershipAAUpdate_Struct
+{
+/*000*/	uint32	Unknown000;	// GroupID or Leader EntityID ?
+/*004*/	GroupLeadershipAA_Struct LeaderAAs;
+/*068*/	uint32	Unknown068[49];	// Was 63
+/*264*/	uint32	NPCMarkerID;
+/*268*/	uint32	Unknown268[13];
+/*320*/
+};
+
 struct GroupFollow_Struct { // SoF Follow Struct
 /*0000*/	char	name1[64];	// inviter
 /*0064*/	char	name2[64];	// invitee
@@ -3692,6 +3703,8 @@ struct MarkNPC_Struct
 {
 /*00*/	uint32	TargetID;	// Target EntityID
 /*04*/	uint32	Number;		// Number to mark them with (1, 2 or 3)
+	// The following field is for SoD+
+/*08**/	char	Name[64];
 };
 
 struct RaidGeneral_Struct {

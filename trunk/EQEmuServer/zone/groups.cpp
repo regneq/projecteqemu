@@ -993,6 +993,11 @@ void Group::MarkNPC(Mob* Target, int Number)
 
 	mnpcs->Number = Number;
 
+	Mob *m = entity_list.GetMob(EntityID);
+
+	if(m)
+		sprintf(mnpcs->Name, "%s", m->GetCleanName());
+
 	QueuePacket(outapp);
 
 	safe_delete(outapp);
@@ -1337,6 +1342,11 @@ void Group::SendMarkedNPCsToMember(Client *c, bool Clear)
 		if(MarkedNPCs[i])
 		{
 			mnpcs->TargetID = MarkedNPCs[i];
+
+			Mob *m = entity_list.GetMob(MarkedNPCs[i]);
+
+			if(m)
+				sprintf(mnpcs->Name, "%s", m->GetCleanName());
 
 			if(!Clear)
 				mnpcs->Number = i + 1;
