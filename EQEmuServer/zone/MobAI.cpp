@@ -1381,16 +1381,15 @@ void Mob::AI_Process() {
 						//	printf("Pet start pos: (%f, %f, %f)\n", GetX(), GetY(), GetZ());
 						
 						float dist = DistNoRoot(*owner);
-						if (dist >= 100) 
+						if (dist >= 400) 
 						{
 							float speed = GetWalkspeed();
-							if (dist >= 225)
+							if (dist >= 5625)
 								speed = GetRunspeed();
 							CalculateNewPosition2(owner->GetX(), owner->GetY(), owner->GetZ(), speed);
 						}
 						else
 						{
-							SetHeading(owner->GetHeading());
 							if(moved)
 							{
 								moved=false;

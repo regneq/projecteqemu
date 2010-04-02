@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==04/02/2010==
+Derision: SoD - Group Leadership AA should mostly work (Main Assist is no longer a GLAA and Health Awareness seems intermittent).
+joligario: Pet behavious change.
+
 ==04/01/2010==
 Derision: SoD - Tracking
 Derision: SoD - Fixed price bug when buying from merchants.
