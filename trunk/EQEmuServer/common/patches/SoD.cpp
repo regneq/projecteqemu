@@ -746,7 +746,6 @@ ENCODE(OP_NewZone) {
 
 ENCODE(OP_Track)
 {
-
 	EQApplicationPacket *in = *p;
 	*p = NULL;
 
@@ -786,6 +785,43 @@ ENCODE(OP_Track)
 		VARSTRUCT_ENCODE_STRING(Buffer, emu->name);
 		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);	// Unknown
 	}
+
+	delete[] __emu_buffer;
+
+	dest->FastQueuePacket(&in, ack_req);
+}
+
+ENCODE(OP_PetBuffWindow)
+{
+	EQApplicationPacket *in = *p;
+	*p = NULL;
+
+	unsigned char *__emu_buffer = in->pBuffer;
+
+	PetBuff_Struct *emu = (PetBuff_Struct *) __emu_buffer;
+
+	int PacketSize = 7 + (emu->buffcount * 13);
+
+	in->size = PacketSize;
+
+	in->pBuffer = new unsigned char[in->size];
+
+	char *Buffer = (char *)in->pBuffer;
+
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->petid);
+	VARSTRUCT_ENCODE_TYPE(uint16, Buffer, emu->buffcount);
+
+	for(unsigned int i = 0; i < BUFF_COUNT; ++i)
+	{
+		if(emu->spellid[i])
+		{
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, i);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->spellid[i]);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->ticsremaining[i]);
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);	// This is a string. Name of the caster of the buff.
+		}
+	}
+	VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->buffcount);
 
 	delete[] __emu_buffer;
 
