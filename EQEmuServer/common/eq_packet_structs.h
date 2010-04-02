@@ -1582,6 +1582,7 @@ struct OnLevelMessage_Struct {
 /*4232*/       uint32  PopupID;
 /*4236*/       uint32  unknown4236;
 /*4240*/       uint32  unknown4240;
+/*4244*/
 };
 
 struct PopupResponse_Struct {
