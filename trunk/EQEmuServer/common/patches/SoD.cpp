@@ -828,6 +828,47 @@ ENCODE(OP_PetBuffWindow)
 	dest->FastQueuePacket(&in, ack_req);
 }
 
+ENCODE(OP_Barter)
+{
+	EQApplicationPacket *in = *p;
+	*p = NULL;
+
+	char *Buffer = (char *)in->pBuffer;
+
+	uint32 SubAction = VARSTRUCT_DECODE_TYPE(uint32, Buffer);
+
+	if(SubAction != Barter_BuyerAppearance)
+	{
+		dest->FastQueuePacket(&in, ack_req);
+
+		return;
+	}
+
+	unsigned char *__emu_buffer = in->pBuffer;
+
+	in->size = 80;
+
+	in->pBuffer = new unsigned char[in->size];
+
+	char *OutBuffer = (char *)in->pBuffer;
+
+	char Name[64];
+
+	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, SubAction);
+	uint32 EntityID = VARSTRUCT_DECODE_TYPE(uint32, Buffer);
+	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, EntityID);
+	uint8 Toggle = VARSTRUCT_DECODE_TYPE(uint8, Buffer);
+	VARSTRUCT_DECODE_STRING(Name, Buffer);
+	VARSTRUCT_ENCODE_STRING(OutBuffer, Name);
+	OutBuffer = (char *)in->pBuffer + 72;
+	VARSTRUCT_ENCODE_TYPE(uint8, OutBuffer, Toggle);
+
+	delete[] __emu_buffer;
+
+	dest->FastQueuePacket(&in, ack_req);
+	
+}
+
 ENCODE(OP_NewSpawn) {  ENCODE_FORWARD(OP_ZoneSpawns); }
 ENCODE(OP_ZoneEntry){  ENCODE_FORWARD(OP_ZoneSpawns); }
 ENCODE(OP_ZoneSpawns) {
