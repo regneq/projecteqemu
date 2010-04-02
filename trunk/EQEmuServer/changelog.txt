@@ -7,6 +7,7 @@ Trevius: SoF/SoD - Added clicky item checks to match previous clients. All click
 Trevius: Added an extra hacker check for clicking a must equip effect without having it equipped.
 Trevius: SoD - Removed the opcodes for the Pet Buff Window until the structure is updated.  Prevents pet classes from crashing when pets are buffed.
 Derision: SoD - Pet Buff Window now works.
+Derision: SoD - Fixed OnLevelMessage struct (popup windows).
 
 ==04/01/2010==
 Derision: SoD - Tracking
