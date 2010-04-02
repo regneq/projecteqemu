@@ -8,6 +8,7 @@ Trevius: Added an extra hacker check for clicking a must equip effect without ha
 Trevius: SoD - Removed the opcodes for the Pet Buff Window until the structure is updated.  Prevents pet classes from crashing when pets are buffed.
 Derision: SoD - Pet Buff Window now works.
 Derision: SoD - Fixed OnLevelMessage struct (popup windows).
+Derision: SoD - Fixed Barter mode.
 
 ==04/01/2010==
 Derision: SoD - Tracking
