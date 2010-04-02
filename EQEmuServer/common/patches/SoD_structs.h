@@ -976,9 +976,9 @@ struct PlayerProfile_Struct
 /*04164*/ uint32  AGI;					// Agility - 5f 00 00 00 - 95
 /*04168*/ uint32  WIS;					// Wisdom - 46 00 00 00 - 70
 /*04172*/ uint8   face;					// Player face
-/*04173*/ uint8 unknown02264[139];		// was [147]
-/*04312*/ int32   spell_book[MAX_PP_SPELLBOOK];	// List of the Spells in spellbook 480 = 60 pages [1920]
-/*06232*/ uint8   unknown4184[164];		// was [128][136] 6360
+/*04173*/ uint8 unknown02264[175];		// was [139]
+/*04348*/ int32   spell_book[MAX_PP_SPELLBOOK];	// List of the Spells in spellbook 480 = 60 pages [1920]
+/*06268*/ uint8   unknown4184[128];		// was [164] Seen -1
 /*06396*/ int32   mem_spells[MAX_PP_MEMSPELL]; // List of spells memorized
 /*06436*/ uint8 unknown04396[28];		//#### uint8 unknown04396[32]; in Titanium ####[28]
 /*06464*/ uint32  platinum;				// Platinum Pieces on player
