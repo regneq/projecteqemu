@@ -58,6 +58,7 @@ E(OP_GroupCancelInvite)
 E(OP_WhoAllResponse)
 E(OP_Track)
 E(OP_ShopPlayerBuy)
+E(OP_PetBuffWindow)
 
 //list of packets we need to decode on the way in:
 D(OP_SetServerFilter)
