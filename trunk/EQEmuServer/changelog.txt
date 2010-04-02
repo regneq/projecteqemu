@@ -5,6 +5,7 @@ Derision: SoD - Group Leadership AA should mostly work (Main Assist is no longer
 joligario: Pet behavious change.
 Trevius: SoF/SoD - Added clicky item checks to match previous clients. All clicky item hacker entries should now be actual hack attempts.
 Trevius: Added an extra hacker check for clicking a must equip effect without having it equipped.
+Trevius: SoD - Removed the opcodes for the Pet Buff Window until the structure is updated.  Prevents pet classes from crashing when pets are buffed.
 
 ==04/01/2010==
 Derision: SoD - Tracking
