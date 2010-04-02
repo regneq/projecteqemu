@@ -9598,9 +9598,11 @@ void Client::Handle_OP_LFPGetMatchesRequest(const EQApplicationPacket *app) {
 	return;
 }
 
-void Client::Handle_OP_Barter(const EQApplicationPacket *app) {
+void Client::Handle_OP_Barter(const EQApplicationPacket *app)
+{
 
-	if(app->size < 4) {
+	if(app->size < 4)
+	{
 		LogFile->write(EQEMuLog::Debug, "OP_Barter packet below minimum expected size. The packet was %i bytes.", app->size);
 		DumpPacket(app);
 		return;
@@ -9615,109 +9617,137 @@ void Client::Handle_OP_Barter(const EQApplicationPacket *app) {
 
 	_pkt(TRADING__BARTER, app);
 
-	switch(Action) {
+	switch(Action)
+	{
 
 		case Barter_BuyerSearch:
+		{
 			BuyerItemSearch(app);
 			break;
+		}
 
-		case Barter_SellerSearch: {
-				BarterSearchRequest_Struct *bsr = (BarterSearchRequest_Struct*)app->pBuffer;
-				SendBuyerResults(bsr->SearchString, bsr->SearchID);
-				break;
-			}
+		case Barter_SellerSearch:
+		{
+			BarterSearchRequest_Struct *bsr = (BarterSearchRequest_Struct*)app->pBuffer;
+			SendBuyerResults(bsr->SearchString, bsr->SearchID);
+			break;
+		}
 
-		case Barter_BuyerModeOn: {
-				if(!Trader) {
-					ToggleBuyerMode(true);
-				}
-				else {
-					Buf = (char *)app->pBuffer;
-					VARSTRUCT_ENCODE_TYPE(uint32, Buf, Barter_BuyerModeOff);
-					Message(13, "You cannot be a Trader and Buyer at the same time.");
-				}
-				QueuePacket(app);
-				break;
+		case Barter_BuyerModeOn:
+		{
+			if(!Trader) {
+				ToggleBuyerMode(true);
 			}
+			else {
+				Buf = (char *)app->pBuffer;
+				VARSTRUCT_ENCODE_TYPE(uint32, Buf, Barter_BuyerModeOff);
+				Message(13, "You cannot be a Trader and Buyer at the same time.");
+			}
+			QueuePacket(app);
+			break;
+		}
 
 		case Barter_BuyerModeOff:
+		{
 			QueuePacket(app);
 			ToggleBuyerMode(false);
 			break;
+		}
 
 		case Barter_BuyerItemUpdate:
+		{
 			UpdateBuyLine(app);
 			break;
+		}
 
-		case Barter_BuyerItemRemove: {
-				BuyerRemoveItem_Struct* bris = (BuyerRemoveItem_Struct*)app->pBuffer;
-				database.RemoveBuyLine(CharacterID(), bris->BuySlot);
-				QueuePacket(app);
-				break;
-			}
+		case Barter_BuyerItemRemove:
+		{
+			BuyerRemoveItem_Struct* bris = (BuyerRemoveItem_Struct*)app->pBuffer;
+			database.RemoveBuyLine(CharacterID(), bris->BuySlot);
+			QueuePacket(app);
+			break;
+		}
 
 		case Barter_SellItem:
+		{
 			SellToBuyer(app);
 			break;
+		}
 
 		case Barter_BuyerInspectBegin:
+		{
 			ShowBuyLines(app);
 			break;
+		}
 
-		case Barter_BuyerInspectEnd: {
+		case Barter_BuyerInspectEnd:
+		{
+			BuyerInspectRequest_Struct* bir = ( BuyerInspectRequest_Struct*)app->pBuffer;
+			Client *Buyer = entity_list.GetClientByID(bir->BuyerID);
+			if(Buyer)
+				Buyer->WithCustomer(0);
 
-				BuyerInspectRequest_Struct* bir = ( BuyerInspectRequest_Struct*)app->pBuffer;
-				Client *Buyer = entity_list.GetClientByID(bir->BuyerID);
-				if(Buyer)
-					Buyer->WithCustomer(0);
+			break;
+		}
 
-				break;
-			}
+		case Barter_BarterItemInspect:
+		{
+			BarterItemSearchLinkRequest_Struct* bislr = (BarterItemSearchLinkRequest_Struct*)app->pBuffer;
 
-		case Barter_BarterItemInspect: {
-				BarterItemSearchLinkRequest_Struct* bislr = (BarterItemSearchLinkRequest_Struct*)app->pBuffer;
-
-				const Item_Struct* item = database.GetItem(bislr->ItemID);
+			const Item_Struct* item = database.GetItem(bislr->ItemID);
 	
-				if (!item) 
-					Message(13, "Error: This item does not exist!");
-				else {
-					ItemInst* inst = database.CreateItem(item);
-					if (inst) {
-						SendItemPacket(0, inst, ItemPacketViewLink);
-						safe_delete(inst);
-					}
+			if (!item) 
+				Message(13, "Error: This item does not exist!");
+			else
+			{
+				ItemInst* inst = database.CreateItem(item);
+				if (inst)
+				{
+					SendItemPacket(0, inst, ItemPacketViewLink);
+					safe_delete(inst);
 				}
-				break;
 			}
+			break;
+		}
 
 		case Barter_Welcome:
+		{
 			SendBazaarWelcome();
 			break;
+		}
 
-		case Barter_WelcomeMessageUpdate: {
-				BuyerWelcomeMessageUpdate_Struct* bwmu = (BuyerWelcomeMessageUpdate_Struct*)app->pBuffer;
-				SetBuyerWelcomeMessage(bwmu->WelcomeMessage);
-				break;
-			}
+		case Barter_WelcomeMessageUpdate:
+		{
+			BuyerWelcomeMessageUpdate_Struct* bwmu = (BuyerWelcomeMessageUpdate_Struct*)app->pBuffer;
+			SetBuyerWelcomeMessage(bwmu->WelcomeMessage);
+			break;
+		}
 
-		case Barter_BuyerItemInspect: {
+		case Barter_BuyerItemInspect:
+		{
+			BuyerItemSearchLinkRequest_Struct* bislr = (BuyerItemSearchLinkRequest_Struct*)app->pBuffer;
 
-				BuyerItemSearchLinkRequest_Struct* bislr = (BuyerItemSearchLinkRequest_Struct*)app->pBuffer;
+			const Item_Struct* item = database.GetItem(bislr->ItemID);
 
-				const Item_Struct* item = database.GetItem(bislr->ItemID);
-
-				if (!item) 
-					Message(13, "Error: This item does not exist!");
-				else {
-					ItemInst* inst = database.CreateItem(item);
-					if (inst) {
-						SendItemPacket(0, inst, ItemPacketViewLink);
-						safe_delete(inst);
-					}
+			if (!item) 
+				Message(13, "Error: This item does not exist!");
+			else
+			{
+				ItemInst* inst = database.CreateItem(item);
+				if (inst)
+				{
+					SendItemPacket(0, inst, ItemPacketViewLink);
+					safe_delete(inst);
 				}
-				break;
 			}
+			break;
+		}
+
+		case Barter_Unknown23:
+		{
+				// Sent by SoD client for no discernible reason.
+				break;
+		}
 
 		default:
 			Message(13, "Unrecognised Barter action.");

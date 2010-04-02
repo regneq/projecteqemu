@@ -2637,7 +2637,8 @@ enum {
 	Barter_BuyerSearchResults = 16,
 	Barter_Welcome = 17,
 	Barter_WelcomeMessageUpdate = 19,
-	Barter_BuyerItemInspect = 21
+	Barter_BuyerItemInspect = 21,
+	Barter_Unknown23 = 23
 };
 
 struct BuyerWelcomeMessageUpdate_Struct {
