@@ -2160,6 +2160,8 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 	p_depop = true;
 	if(killerMob && killerMob->GetTarget() == this) //we can kill things without having them targeted
 		killerMob->SetTarget(NULL); //via AE effects and such..
+
+	entity_list.UpdateFindableNPCState(this, true);
 }
 
 void Mob::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHelp, bool bFrenzy, bool iBuffTic) {

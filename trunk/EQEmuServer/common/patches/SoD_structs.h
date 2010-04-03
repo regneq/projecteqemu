@@ -273,7 +273,7 @@ struct Spawn_Struct
 /*0000*/ uint8  pvp;					// 0 = normal name color, 2 = PVP name color
 /*0000*/ uint8  StandState;			// stand state - 0x64 for normal animation
 /*0000*/ uint8  light;
-/*0000*/ uint8  unknown7;
+/*0000*/ uint8  flymode;
 /*0000*/ uint8  equip_chest2;
 /*0000*/ uint8  unknown9;
 /*0000*/ uint8  unknown10;

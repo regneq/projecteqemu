@@ -615,6 +615,8 @@ void EntityList::AddNPC(NPC* npc, bool SendSpawnPacket, bool dontqueue) {
 			safe_delete(ns);
 			parse->Event(EVENT_SPAWN, npc->GetNPCTypeID(), 0, npc, NULL);
 		}
+		if(npc->IsFindable())
+			UpdateFindableNPCState(npc, false);
 	}
 	
 	npc_list.Insert(npc);
@@ -2463,6 +2465,10 @@ void EntityList::Depop(bool StartSpawnTimer) {
 		//do not depop player's pets...
 		if(it && own && own->IsClient())
 			continue;
+
+		if(it->IsFindable())
+			UpdateFindableNPCState(it, true);
+
 		it->Depop(StartSpawnTimer);
 	}
 }
@@ -4416,3 +4422,87 @@ void EntityList::DeleteQGlobal(std::string name, uint32 npcID, uint32 charID, ui
 		iterator.Advance();
 	}
 }
+
+void EntityList::SendFindableNPCList(Client *c)
+{
+	if(!c)
+		return;
+
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_SendFindableNPCs, sizeof(FindableNPC_Struct));
+
+	FindableNPC_Struct *fnpcs = (FindableNPC_Struct *)outapp->pBuffer;
+
+	fnpcs->Unknown109 = 0x16;
+	fnpcs->Unknown110 = 0x06;
+	fnpcs->Unknown109 = 0x24;
+
+	fnpcs->Action = 0;
+
+
+	LinkedListIterator<NPC*> iterator(npc_list);
+
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		if (iterator.GetData())
+		{
+			NPC *n = iterator.GetData();
+
+			if(n->IsFindable())
+			{
+				fnpcs->EntityID = n->GetID();
+				strn0cpy(fnpcs->Name, n->GetCleanName(), sizeof(fnpcs->Name));
+				strn0cpy(fnpcs->LastName, n->GetLastName(), sizeof(fnpcs->LastName));
+				fnpcs->Race = n->GetRace();
+				fnpcs->Class = n->GetClass();
+
+				c->QueuePacket(outapp);
+			}
+
+		}
+		iterator.Advance();
+	}
+	safe_delete(outapp);
+}
+
+void EntityList::UpdateFindableNPCState(NPC *n, bool Remove)
+{
+	if(!n || !n->IsFindable())
+		return;
+
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_SendFindableNPCs, sizeof(FindableNPC_Struct));
+
+	FindableNPC_Struct *fnpcs = (FindableNPC_Struct *)outapp->pBuffer;
+
+	fnpcs->Unknown109 = 0x16;
+	fnpcs->Unknown110 = 0x06;
+	fnpcs->Unknown109 = 0x24;
+
+	fnpcs->Action = Remove ? 1: 0;
+
+	fnpcs->EntityID = n->GetID();
+
+	strn0cpy(fnpcs->Name, n->GetCleanName(), sizeof(fnpcs->Name));
+
+	strn0cpy(fnpcs->LastName, n->GetLastName(), sizeof(fnpcs->LastName));
+
+	fnpcs->Race = n->GetRace();
+
+	fnpcs->Class = n->GetClass();
+
+	LinkedListIterator<Client*> iterator(client_list); 
+
+	iterator.Reset();
+
+	while(iterator.MoreElements()) 
+	{
+		Client *c = iterator.GetData();
+		if(c && (c->GetClientVersion() >= EQClientSoD))
+			c->QueuePacket(outapp);
+		
+		iterator.Advance();
+	}
+
+	safe_delete(outapp);
+}
+

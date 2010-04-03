@@ -4343,6 +4343,20 @@ struct GuildBankClear_Struct
 /*12*/	uint32	MainAreaCount;
 };
 
+struct FindableNPC_Struct
+{
+/*000*/	uint32	Action;		// 0 = Add, 1 = Remove
+/*004*/	uint32	EntityID;
+/*008*/	char	Name[64];
+/*072*/	char	LastName[32];
+/*104*/	uint32	Race;
+/*108*/	uint8	Class;
+/*109*/	uint8	Unknown109;	// Observed 0x16
+/*110*/	uint8	Unknown110;	// Observed 0x06
+/*111*/	uint8	Unknown111;	// Observed 0x24
+/*112*/
+};
+
 
 //old structures live here:
 #include "eq_old_structs.h"
