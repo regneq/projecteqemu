@@ -858,7 +858,8 @@ struct PlayerProfile_Struct
 /*0242*/	uint8				anon;		// 2=roleplay, 1=anon, 0=not anon
 /*0243*/	uint8				gm;
 /*0244*/	uint8				guildrank;
-/*0245*/	uint8				unknown0245[7];	//
+/*0245*/	uint8				guildbanker;
+/*0246*/	uint8				unknown0245[6];	//
 /*0252*/	uint32				intoxication;
 /*0256*/	uint32				spellSlotRefresh[MAX_PP_MEMSPELL];	//in ms
 /*0292*/	uint32				abilitySlotRefresh;
@@ -1293,6 +1294,15 @@ struct PlayerPositionUpdateClient_Struct
 /*0036*/
 };
 
+struct SpawnPositionUpdate_Struct
+{
+/*0000*/ int16  spawn_id;
+/*0002*/ int64  y_pos:19, z_pos:19, x_pos:19, padding002:7;
+/*0010*/ unsigned heading:12;
+         signed padding010:4;
+/*0012*/
+};
+
 /*
 ** Spawn HP Update
 ** Length: 10 Bytes
@@ -1300,16 +1310,56 @@ struct PlayerPositionUpdateClient_Struct
 */
 struct SpawnHPUpdate_Struct
 {
-/*00*/ uint32	cur_hp;               // Id of spawn to update
-/*04*/ sint32	max_hp;                 // Maximum hp of spawn
-/*08*/ sint16	spawn_id;                 // Current hp of spawn
+/*00*/ uint32	cur_hp;		// Id of spawn to update
+/*04*/ sint32	max_hp;		// Maximum hp of spawn
+/*08*/ sint16	spawn_id;	// Current hp of spawn
 /*10*/
 };
+
+struct ManaUpdate_Struct
+{
+/*00*/ int32	cur_mana;
+/*04*/ int32	max_mana;
+/*08*/ uint16	spawn_id;
+/*10*/
+};
+
+struct EnduranceUpdate_Struct
+{
+/*00*/ int32	cur_end;
+/*04*/ int32	max_end;
+/*08*/ uint16	spawn_id;
+/*10*/
+};
+
 struct SpawnHPUpdate_Struct2
 {
-/*01*/ sint16	spawn_id;
-/*00*/ int8	hp;
+/*00*/ sint16	spawn_id;
+/*02*/ int8		hp;			//HP Percentage
+/*03*/
 };
+
+struct MobManaUpdate_Struct
+{
+/*00*/ int16	spawn_id;
+/*02*/ int8		mana;		//Mana Percentage
+/*03*/
+};
+
+struct MobEnduranceUpdate_Struct
+{
+/*00*/ int16	spawn_id;
+/*02*/ int8		endurance;	//Endurance Percentage
+/*03*/
+};
+
+// Is this even used?
+struct MobHealth
+{
+	/*0000*/	int8	hp;	//health percent
+	/*0001*/	int16	id;	//mobs id
+};
+
 /*
 ** Stamina
 ** Length: 8 Bytes
@@ -1532,6 +1582,7 @@ struct OnLevelMessage_Struct {
 /*4232*/       uint32  PopupID;
 /*4236*/       uint32  unknown4236;
 /*4240*/       uint32  unknown4240;
+/*4244*/
 };
 
 struct PopupResponse_Struct {
@@ -1544,6 +1595,18 @@ struct GuildManageBanker_Struct {
 	char myname[64];
 	char member[64];
 	uint32	enabled;
+};
+
+// Server -> Client
+// Update a guild members rank and banker status
+struct GuildSetRank_Struct
+{
+/*00*/	uint32	Unknown00;
+/*04*/	uint32	Unknown04;
+/*08*/	uint32	Rank;
+/*12*/	char	MemberName[64];
+/*76*/	uint32	Banker;
+/*80*/
 };
 
 // Opcode OP_GMZoneRequest
@@ -1966,6 +2029,16 @@ struct ZoneUnavail_Struct {
 	sint16 unknown[4];
 };
 
+enum {	//Group  action fields
+	groupActJoin = 0,
+	groupActLeave = 1,
+	groupActDisband = 6,
+	groupActUpdate = 7,
+	groupActMakeLeader = 8,
+	groupActInviteInitial = 9,
+	groupActAAUpdate = 10
+};
+
 struct GroupGeneric_Struct {
 	char name1[64];
 	char name2[64];
@@ -2006,11 +2079,29 @@ struct GroupJoin_Struct {
 /*0452*/
 };
 
+// SoD+ Struct
+struct GroupLeadershipAAUpdate_Struct
+{
+/*000*/	uint32	Unknown000;	// GroupID or Leader EntityID ?
+/*004*/	GroupLeadershipAA_Struct LeaderAAs;
+/*068*/	uint32	Unknown068[49];	// Was 63
+/*264*/	uint32	NPCMarkerID;
+/*268*/	uint32	Unknown268[13];
+/*320*/
+};
+
 struct GroupFollow_Struct { // SoF Follow Struct
 /*0000*/	char	name1[64];	// inviter
 /*0064*/	char	name2[64];	// invitee
 /*0128*/	int32	unknown0128;
 /*0132*/
+};
+
+struct GroupLeaderChange_Struct
+{
+/*000*/		char	Unknown000[64];
+/*064*/		char	LeaderName[64];
+/*128*/		char	Unknown128[20];
 };
 
 struct FaceChange_Struct {
@@ -2546,7 +2637,8 @@ enum {
 	Barter_BuyerSearchResults = 16,
 	Barter_Welcome = 17,
 	Barter_WelcomeMessageUpdate = 19,
-	Barter_BuyerItemInspect = 21
+	Barter_BuyerItemInspect = 21,
+	Barter_Unknown23 = 23
 };
 
 struct BuyerWelcomeMessageUpdate_Struct {
@@ -2723,20 +2815,22 @@ struct ClientError_Struct
 /*32136*/
 };
 
-struct MobHealth
-{
-	/*0000*/	int8	hp; //health percent
-	/*0001*/	int16	id;//mobs id
-};
-
 struct Track_Struct {
 	int16 entityid;
 	int16 padding002;
 	float distance;
+	// Fields for SoD and later
+	uint8 level;
+	char name[64];
 };
 
 struct Tracking_Struct {
 	Track_Struct Entrys[0];
+};
+
+struct TrackTarget_Struct
+{
+	uint32	EntityID;
 };
 
 /*
@@ -3611,6 +3705,8 @@ struct MarkNPC_Struct
 {
 /*00*/	uint32	TargetID;	// Target EntityID
 /*04*/	uint32	Number;		// Number to mark them with (1, 2 or 3)
+	// The following field is for SoD+
+/*08**/	char	Name[64];
 };
 
 struct RaidGeneral_Struct {
@@ -4129,6 +4225,115 @@ struct CrystalCountUpdate_Struct
 /*008*/	uint32	CareerRadiantCrystals;
 /*012*/	uint32	CareerEbonCrystals;
 };
+
+struct BeggingResponse_Struct
+{
+/*00*/	uint32	Unknown00;
+/*04*/	uint32	Unknown04;
+/*08*/	uint32	Unknown08;
+/*12*/	uint32	Result;	// 0 = Fail, 1 = Plat, 2 = Gold, 3 = Silver, 4 = Copper
+/*16*/	uint32	Amount;
+};
+
+struct GuildBankAck_Struct
+{
+/*00*/	uint32	Action;	//	10
+/*04*/	uint32	Unknown04;
+};
+
+struct GuildBankDepositAck_Struct
+{
+/*00*/	uint32	Action;	//	10
+/*04*/	uint32	Unknown04;
+/*08*/	uint32	Fail;	//1 = Fail, 0 = Success
+};
+
+struct GuildBankPromote_Struct
+{
+/*00*/	uint32	Action;	// 3
+/*04*/	uint32	Unknown04;
+/*08*/	uint32	Slot;
+/*12*/	uint32	Slot2;	// Always appears to be the same as Slot for Action code 3
+};
+
+struct GuildBankPermissions_Struct
+{
+/*00*/	uint32	Action;	// 6
+/*04*/	uint32	Unknown04;
+/*08*/	uint16	SlotID;
+/*10*/	uint16	Unknown10; // Saw 1, probably indicating it is the main area rather than deposits
+/*12*/	uint32	ItemID;
+/*16*/	uint32	Permissions;
+/*20*/	char	MemberName[64];
+};
+
+struct GuildBankViewItem_Struct
+{
+/*00*/	uint32	Action;
+/*04*/	uint32	Unknown04;
+/*08*/	uint16	SlotID;	// 0 = Deposit area, 1 = Main area
+/*10*/	uint16	Area;
+/*12*/	uint32	Unknown12;
+/*16*/	uint32	Unknown16;
+};
+
+struct GuildBankWithdrawItem_Struct
+{
+/*00*/	uint32	Action;
+/*04*/	uint32	Unknown04;
+/*08*/	uint16	SlotID;
+/*10*/	uint16	Area;
+/*12*/	uint32	Unknown12;
+/*16*/	uint32	Quantity;
+/*20*/
+};
+
+struct GuildBankItemUpdate_Struct
+{
+	void Init(uint32 inAction, uint32 inUnknown004, uint16 inSlotID, uint16 inArea, uint16 inUnknown012, uint32 inItemID, uint32 inIcon, uint32 inQuantity,
+		  uint32 inPermissions, uint32 inAllowMerge, bool inUseable)
+	{
+		Action = inAction;
+		Unknown004 = inUnknown004;
+		SlotID = inSlotID;
+		Area = inArea;
+		Unknown012 = inUnknown012;
+		ItemID = inItemID;
+		Icon = inIcon;
+		Quantity = inQuantity;
+		Permissions = inPermissions;
+		AllowMerge = inAllowMerge;
+		Useable = inUseable;
+		ItemName[0] = '\0';
+		Donator[0] = '\0';
+		WhoFor[0] = '\0';
+	};
+
+/*000*/	uint32	Action;
+/*004*/	uint32	Unknown004;
+/*008*/	uint16	SlotID;
+/*010*/	uint16	Area;
+/*012*/	uint32	Unknown012;
+/*016*/	uint32	ItemID;
+/*020*/	uint32	Icon;
+/*024*/	uint32	Quantity;
+/*028*/	uint32	Permissions;
+/*032*/	uint8	AllowMerge;
+/*033*/	uint8	Useable;	// Used in conjunction with the Public-if-useable permission.
+/*034*/	char	ItemName[64];
+/*098*/	char	Donator[64];
+/*162*/ char	WhoFor[64];
+/*226*/	uint16	Unknown226;
+};
+
+struct GuildBankClear_Struct
+{
+/*00*/	uint32	Action;
+/*04*/	uint32	Unknown04;
+/*08*/	uint32	DepositAreaCount;
+/*12*/	uint32	MainAreaCount;
+};
+
 
 //old structures live here:
 #include "eq_old_structs.h"

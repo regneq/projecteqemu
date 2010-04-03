@@ -138,7 +138,7 @@ void Client::CalcItemBonuses(StatBonuses* newbon) {
 	}
 	
 	//Power Source Slot
-	if (GetClientVersion() == EQClientSoF)
+	if (GetClientVersion() >= EQClientSoF)
 	{
 		const ItemInst* inst = m_inv[9999];
 		if(inst)
@@ -996,10 +996,10 @@ void Mob::ApplySpellsBonuses(const Buff *buff_to_use, StatBonuses* newbon, int16
 				break;
 			}
 				
-			case SE_DualWeildChance:
+			case SE_DualWieldChance:
 			{
-				if(newbon->DualWeildChance < effect_value)
-					newbon->DualWeildChance = effect_value;
+				if(newbon->DualWieldChance < effect_value)
+					newbon->DualWieldChance = effect_value;
 				break;
 			}
 				
@@ -1503,10 +1503,10 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 				break;
 			}
 				
-			case SE_DualWeildChance:
+			case SE_DualWieldChance:
 			{
-				if(newbon->DualWeildChance < effect_value)
-					newbon->DualWeildChance = effect_value;
+				if(newbon->DualWieldChance < effect_value)
+					newbon->DualWieldChance = effect_value;
 				break;
 			}
 				

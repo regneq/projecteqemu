@@ -131,6 +131,8 @@ public:
 	inline Mob*	GetMobID(int16 id) { return(GetMob(id)); }	//for perl
 	Mob*	GetMob(const char* name);
 	Mob*	GetMobByNpcTypeID(int32 get_id);
+	NPC*	GetNPCByID(int16 id);
+	NPC*	GetNPCByNPCTypeID(int32 npc_id);
 	Client* GetClientByName(const char *name); 
 	Client* GetClientByAccID(int32 accid);
 	Client* GetClientByID(int16 id);
@@ -262,6 +264,7 @@ public:
 	void    QueueClients(Mob* sender, const EQApplicationPacket* app, bool ignore_sender=false, bool ackreq = true);
 	void	QueueClientsStatus(Mob* sender, const EQApplicationPacket* app, bool ignore_sender = false, int8 minstatus = 0, int8 maxstatus = 0);
 	void	QueueClientsGuild(Mob* sender, const EQApplicationPacket* app, bool ignore_sender = false, int32 guildeqid = 0);
+	void	QueueClientsGuildBankItemUpdate(const GuildBankItemUpdate_Struct *gbius, uint32 GuildID);
 	void	QueueClientsByTarget(Mob* sender, const EQApplicationPacket* app, bool iSendToSender = true, Mob* SkipThisMob = 0, bool ackreq = true);
 	void	QueueToGroupsForNPCHealthAA(Mob* sender, const EQApplicationPacket* app);
 	void    QueueManaged(Mob* sender, const EQApplicationPacket* app, bool ignore_sender=false, bool ackreq = true);
@@ -398,6 +401,7 @@ private:
 #ifdef BOTS
 	public:
 		void AddBot(Bot* newBot, bool SendSpawnPacket = true, bool dontqueue = false);
+		void BotPickLock(Bot* rogue);
 		bool RemoveBot(int16 entityID);
 		Mob* GetMobByBotID(uint32 botID);
 		Bot* GetBotByBotID(uint32 botID);

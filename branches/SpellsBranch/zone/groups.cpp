@@ -225,7 +225,8 @@ bool Group::AddMember(Mob* newmember) {
 			//fill in group join & send it
 			strcpy(gj->yourname, members[i]->GetCleanName());
 
-			if(members[i]->IsClient()) {
+			if(members[i]->IsClient())
+			{
 				members[i]->CastToClient()->QueuePacket(outapp);
 
 				//put new member into existing person's list
@@ -998,6 +999,11 @@ void Group::MarkNPC(Mob* Target, int Number)
 
 	mnpcs->Number = Number;
 
+	Mob *m = entity_list.GetMob(EntityID);
+
+	if(m)
+		sprintf(mnpcs->Name, "%s", m->GetCleanName());
+
 	QueuePacket(outapp);
 
 	safe_delete(outapp);
@@ -1343,6 +1349,11 @@ void Group::SendMarkedNPCsToMember(Client *c, bool Clear)
 		{
 			mnpcs->TargetID = MarkedNPCs[i];
 
+			Mob *m = entity_list.GetMob(MarkedNPCs[i]);
+
+			if(m)
+				sprintf(mnpcs->Name, "%s", m->GetCleanName());
+
 			if(!Clear)
 				mnpcs->Number = i + 1;
 			else
@@ -1453,8 +1464,12 @@ void Group::ChangeLeader(Mob* newleader)
 	UpdateGroupAAs();
 	gu->leader_aas = LeaderAbilities;
 	for (uint32 i = 0; i < MAX_GROUP_MEMBERS; i++) {
-		if (members[i] && members[i]->IsClient()) {
-			members[i]->CastToClient()->QueuePacket(outapp);
+		if (members[i] && members[i]->IsClient())
+		{
+			if(members[i]->CastToClient()->GetClientVersion() >= EQClientSoD)
+				members[i]->CastToClient()->SendGroupLeaderChangePacket(newleader->GetName());
+			else
+				members[i]->CastToClient()->QueuePacket(outapp);
 		}
 	}
 	safe_delete(outapp);

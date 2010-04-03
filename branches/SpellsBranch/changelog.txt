@@ -1,7 +1,125 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==04/02/2010==
+Derision: SoD - Group Leadership AA should mostly work (Main Assist is no longer a GLAA and Health Awareness seems intermittent).
+joligario: Pet behavious change.
+Trevius: SoF/SoD - Added clicky item checks to match previous clients. All clicky item hacker entries should now be actual hack attempts.
+Trevius: Added an extra hacker check for clicking a must equip effect without having it equipped.
+Trevius: SoD - Removed the opcodes for the Pet Buff Window until the structure is updated.  Prevents pet classes from crashing when pets are buffed.
+Derision: SoD - Pet Buff Window now works.
+Derision: SoD - Fixed OnLevelMessage struct (popup windows).
+Derision: SoD - Fixed Barter mode.
+
+==04/01/2010==
+Derision: SoD - Tracking
+Derision: SoD - Fixed price bug when buying from merchants.
+Trevius: SoD - Spell books now display all scribed spells (was previously hiding the first 9 slots).
+Trevius: SoD - Stopped the Barter error that was reporting when logging in due to an incorrect opcode.
+
+==03/31/2010==
+Derision: SoD - Groups should be as functional as previous clients, except Group Leadership AA doesn't work.
+Derision: SoD - Fixed items being incorrectly flagged as No Trade/Copied
+
+==03/30/2010==
+Trevius: SoD - Corrected the opcode for Mob Health Updates so they update properly.
+Trevius: SoD - Added a few new Opcodes and Structures for SoD packets that aren't used yet.
+
+==03/28/2010==
+Derision: SoD - Fixed client animation/runspeed glitch.
+Derision: All Clients - Player position updates to other players should be more accurate.
+Trevius: Updated #race and #fixmob commands to allow up to race 626 which is the total for the SoD client.
+Derision: SoD - Very preliminary work on groups. You can form a group, but nothing else.
+
+==03/27/2010==
+Trevius: SoD - A couple more Opcode updates.
+Trevius: SoD - Some group structures work, but grouping is still not functional.
+Derision: SoD - Fixed random client crashes due to spawn packets and invisible mobs should now be invisible.
+Derision: SoD - Did a basic Encode on OP_WhoAllResponse. Still needs work for various flags (LD/Trader/Buyer) etc.
+
+==03/26/2010==
+Trevius: SoD - Finished updated Opcodes and they should now be caught up with what we have in SoF.
+Trevius: SoD - Updated Item Struct and now 1 inventory item can load correctly.
+Trevius: SoD - Updated Position Update packet structures.
+Trevius: SoD - Character Inventory now fully loads.
+Trevius: SoD - AAs now load and appear to function properly.
+Derision: SoD - Spawns work, sometimes. Client will crash randomly sometimes when receiving spawns
+Derision: SoD - Added SoD.cpp to .vcproj files
+Derision: SoD - Found showname field in Spawn Struct.
+Derision: SoD - Identified equip_chest2 field in Spawn Struct.
+Trevius: SoD - Looting now works.
+Trevius: SoD - Commands that display item links now show links correctly.
+
+==03/25/2010==
+Trevius: SoD - Updated PlayerProfile_Struct and CharacterSelectEntry_Struct
+Trevius: SoD - Updated Spawn_Struct and the encode (hackish for now), but can get in game with it!
+
+==03/24/2010==
+Trevius: SoD - Updated the NewZone struct and encode
+
+==03/23/2010==
+Trevius: SoD - Initial addition of the Seeds of Destruction patch files.  Note: The SoD Client is not functional at all yet, but work has begun!
+
+==03/22/2010==
+Derision: Implemented the Guild Bank.
+
+REQUIRED SQL: utils/sql/svn/1293_guild_bank.sql
+
+==03/20/2010==
+cavedude: Added $client->UpdateGroupAAs(), exported GetGroupPoints() and GetRaidPoints() to Perl.
+
+==03/19/2010==
+cavedude: Added $client->GetLDoNPointsTheme() Perl function.
+Trevius: Added new EVENT_TARGET_CHANGE perl event.  It triggers when an NPC target changes or is removed. It exports $hastarget which is 0 if no target and 1 if there is a target.
+Trevius: Exported new quest objects to Perl Mob - SetRace(race), SetGender(gender), and SetTexture(texture).
+Trevius: Exported to Perl Mob - SendIllusion(race,[gender,texture,helmtexture,face,hairstyle,haircolor,beard,beardcolor,drakkin_heritage,drakkin_tattoo,drakkin_details,size]).
+Trevius: Added rule: Character:DeathExpLossMaxLevel - Any level greater than this will no longer lose experience.  Default is 255 (disabled).
+
+Optional SQL: utils/sql/svn/1290_optional_exp_loss_rule.sql
+
+==03/18/2010==
+Trevius: Added 3 new Perl Entity commands - GetMobByID(id), GetNPCByID(id), and GetNPCByNPCTypeID(npc_id).
+Congdar: Bots: Fixed picklock and summon corpse
+
+==03/16/2010==
+Trevius: Saylinks should no longer cause zone crashes if used outside of EVENTs.  They should function from anywhere now.
+
+==03/13/2010==
+Trevius: Added new SetFlyMode(0|1|2|3) Perl Mob command.
+Trevius: NPCs in flymode 1 or 2 will no longer use BestZ when pathing to waypoints.
+Trevius: Added new optional single client argument to SendAppearanceEffect(effect1, effect2, effect3, effect4, effect5, client) to allow sending the effect only to specific players.
+
+==03/12/2010==
+joligario: Fixed some spelling mistakes.
+
+==03/11/2010==
+Congdar: bots can now equip items with augments.  required sql:  \utils\sql\svn\1280_bot_augs.sql
+Congdar: new bot command '#bot augmentitem' Allows you to augment items for your other bot classes. Your must have the Augmentation Sealer window filled.
+
+==03/10/2010==
+Derision: Begging should no longer bug the client. Still needs some work around chance/amount/skillups etc.
+
+==03/07/2010==
+Derision: Fix for temporary items on merchants appearing to increase in price.
+Leere: Refinement to above and fix for purchase price of stacked items != displayed price * quantity.
+
+==03/05/2010==
+Trevius: Inspecting SoF players is now possible.
+Derision: A mob corpse will now be left even if a Bot's pet does the most damage.
+
+==03/03/2010==
+Trevius: Added functionality to the EQEmu Web Tool to show IP information based on account searches.
+Derision: Set Message Type for spells wearing off, experience and leadership messages so they aren't classed as 'Other' by the client chat filters.
+Derision: Removed -fpermissive from zone/makefile so invalid type conversions should now cause an error rather than a warning for Linux compiles.
+
+==03/01/2010==
+Trevius: Added 2 new optional arguments to quest::gmsay(text, [color, send_to_world?]) - allows changing color and sending to world or just zone.
+Trevius: Normal Saylinks should now work without requiring a target for proximity says.  Silent saylinks still require a target.
+Trevius: Added a check for valid slots when moving items from 1 slot to another.
+Trevius: NPCs using 2 Hand Pierce weapon models can be set to skill 99 in the prim_melee_type field of the npc_types table to show the correct attack animations and messages.
+
 ==02/26/2010==
 Derision: Fix for crash in Mob::DetermineSpellTargets.
+Congdar: fixed bot right-click inspect window title bar shows player name instead of target bot name.
 
 ==02/25/2010==
 Secrets: Added new Perl::Client command, ReadBook(Book Text, Type), to allow sending a book/scroll to clients via quests.  Type 0 = scroll, type 1 = book.

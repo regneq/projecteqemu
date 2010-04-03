@@ -227,7 +227,7 @@ struct StatBonuses {
 	sint16 RiposteChance;	//i
 	sint16 DodgeChance;		//i
 	sint16 ParryChance;		//i
-	sint16 DualWeildChance;		//i
+	sint16 DualWieldChance;		//i
 	sint16 DoubleAttackChance;	//i
 	sint16 ResistSpellChance;	//i
 	sint16 ResistFearChance;	//i
@@ -270,7 +270,7 @@ enum {	//type arguments to DoAnim
 	anim2HSlashing			= 3,
 	anim2HWeapon			= 4,
 	anim1HWeapon			= 5,
-	animDualWeild			= 6,
+	animDualWield			= 6,
 	animTailRake			= 7,	//slam & Dpunch too
 	animHand2Hand			= 8,
 	animShootBow			= 9,
@@ -405,7 +405,7 @@ bool logpos;
 	inline virtual bool InZone() const { return true; }
 	virtual void SetLevel(uint8 in_level, bool command = false) { level = in_level; }
 	void	SendLevelAppearance();
-	void	SendAppearanceEffect(int32 parm1, int32 parm2, int32 parm3, int32 parm4, int32 parm5);
+	void	SendAppearanceEffect(int32 parm1, int32 parm2, int32 parm3, int32 parm4, int32 parm5, Client *specific_target=NULL);
 
 	virtual inline sint32 GetPrimaryFaction() const { return 0; }
 	virtual uint16 GetSkill(SkillType skill_num) const { return 0; } //overloaded by things which actually have skill (NPC|client)
@@ -490,6 +490,8 @@ bool logpos;
 
 	bool IsInvisible(Mob* other = 0) const;
 	void SetInvisible(bool state);
+
+	void SetFlyMode(int8 flymode);
 
 	bool AttackAnimation(SkillType &skillinuse, int Hand, const ItemInst* weapon);
 	virtual bool AvoidDamage(Mob* attacker, sint32 &damage);
@@ -774,6 +776,7 @@ bool logpos;
 	void	SetPet(Mob* newpet);
 	virtual Mob* GetOwner();
 	virtual Mob* GetOwnerOrSelf();
+	Mob* GetUltimateOwner();
 	void	SetPetID(int16 NewPetID);
 	inline int16	GetPetID()		const			{ return petid;  }
 	inline PetType GetPetType() const { return typeofpet; }

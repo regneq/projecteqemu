@@ -2209,6 +2209,9 @@ void Client::SellToBuyer(const EQApplicationPacket *app) {
 	VARSTRUCT_ENCODE_TYPE(uint32,	Buf, Quantity);
 	VARSTRUCT_ENCODE_TYPE(uint32,	Buf, Quantity * Price);
 
+	if(GetClientVersion() >= EQClientSoD)
+		VARSTRUCT_ENCODE_TYPE(uint32,	Buf, 0);	// Think this is the upper 32 bits of a 64 bit price
+
 	sprintf(Buf, "%s", Buyer->GetName()); Buf += 64;
 
 	VARSTRUCT_ENCODE_TYPE(uint32,	Buf, 0x00);
@@ -2228,6 +2231,9 @@ void Client::SellToBuyer(const EQApplicationPacket *app) {
 	VARSTRUCT_ENCODE_TYPE(uint32, Buf, Barter_BuyerTransactionComplete);
 	VARSTRUCT_ENCODE_TYPE(uint32,	Buf, Quantity);
 	VARSTRUCT_ENCODE_TYPE(uint32,	Buf, Quantity * Price);
+
+	if(GetClientVersion() >= EQClientSoD)
+		VARSTRUCT_ENCODE_TYPE(uint32,	Buf, 0);	// Think this is the upper 32 bits of a 64 bit price
 
 	sprintf(Buf, "%s", GetName()); Buf += 64;
 
@@ -2318,13 +2324,14 @@ void Client::SendBuyerPacket(Client* Buyer) {
 
 	// This is the Buyer Appearance packet. This method is called for each Buyer when a Client connects to the zone.
 	//
-	EQApplicationPacket* outapp = new EQApplicationPacket(OP_Barter, 12);
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_Barter, 13 + strlen(GetName()));
 
 	char* Buf = (char*)outapp->pBuffer;
 
 	VARSTRUCT_ENCODE_TYPE(uint32, Buf, Barter_BuyerAppearance);
 	VARSTRUCT_ENCODE_TYPE(uint32, Buf, Buyer->GetID());
 	VARSTRUCT_ENCODE_TYPE(uint32, Buf, 0x01);
+	VARSTRUCT_ENCODE_STRING(Buf, GetName());
 
 	QueuePacket(outapp);
 	safe_delete(outapp);
@@ -2332,7 +2339,7 @@ void Client::SendBuyerPacket(Client* Buyer) {
 
 void Client::ToggleBuyerMode(bool TurnOn) {
 
-	EQApplicationPacket* outapp = new EQApplicationPacket(OP_Barter, 12);
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_Barter, 13 + strlen(GetName()));
 
 	char* Buf = (char*)outapp->pBuffer;
 
@@ -2347,6 +2354,8 @@ void Client::ToggleBuyerMode(bool TurnOn) {
 		database.DeleteBuyLines(CharacterID());
 		CustomerID = 0;
 	}
+
+	VARSTRUCT_ENCODE_STRING(Buf, GetName());
 
 	entity_list.QueueClients(this, outapp, false);
 

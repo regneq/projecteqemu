@@ -167,10 +167,11 @@ Client::Client(EQStreamInterface* ieqs)
 	proximity_timer(ClientProximity_interval),
 	TaskPeriodic_Timer(RuleI(TaskSystem, PeriodicCheckTimer) * 1000),
 	charm_update_timer(60000),
+	rest_timer(1),
 	charm_class_attacks_timer(3000),
 	charm_cast_timer(3500),
 	qglobal_purge_timer(30000),
-	rest_timer(1)
+	TrackingTimer(2000)
 {
 	for(int cf=0; cf < _FilterCount; cf++)
 		ClientFilters[cf] = FilterShow;
@@ -187,6 +188,7 @@ Client::Client(EQStreamInterface* ieqs)
 	Buyer = false;
 	CustomerID = 0;
 	IsTracking=false;
+	TrackingID = 0;
 	WID = 0;
 	account_id = 0;
 	admin = 0;
@@ -195,6 +197,7 @@ Client::Client(EQStreamInterface* ieqs)
 	SQL_log = NULL;
 	guild_id = GUILD_NONE;
 	guildrank = 0;
+	GuildBanker = false;
 	memset(lskey, 0, sizeof(lskey));
 	strcpy(account_name, "");
 	tellsoff = false;
@@ -3774,6 +3777,24 @@ void Client::ClearGroupAAs() {
 	Save();
 }
 
+void Client::UpdateGroupAAs(sint32 points, int32 type) {
+	
+	switch(type)
+	{
+	case 0:
+		{
+		m_pp.group_leadership_points += points;
+		break;
+		}
+	case 1:
+		{
+		m_pp.raid_leadership_points += points;
+		break;
+		}
+	}
+	SendLeadershipEXPUpdate();
+}
+
 bool Client::IsLeadershipEXPOn()
 {
 
@@ -3815,7 +3836,7 @@ void Client::IncrementAggroCount() {
 	if(AggroCount > 1)
 		return;
 
-	if(GetClientVersion() == EQClientSoF) {
+	if(GetClientVersion() >= EQClientSoF) {
 
 		EQApplicationPacket *outapp = new EQApplicationPacket(OP_RestState, 1);
 		char *Buffer = (char *)outapp->pBuffer;
@@ -3846,7 +3867,7 @@ void Client::DecrementAggroCount() {
 
 	rest_timer.Start(RuleI(Character, RestRegenTimeToActivate) * 1000);
 
-	if(GetClientVersion() == EQClientSoF) {
+	if(GetClientVersion() >= EQClientSoF) {
 
 		EQApplicationPacket *outapp = new EQApplicationPacket(OP_RestState, 5);
 		char *Buffer = (char *)outapp->pBuffer;
@@ -4886,7 +4907,7 @@ void Client::ShowSkillsWindow()
 	// this list of names must keep the same order as that in common/skills.h
 	const char* SkillName[] = {"1H Blunt","1H Slashing","2H Blunt","2H Slashing","Abjuration","Alteration","Apply Poison","Archery",
 		"Backstab","Bind Wound","Bash","Block","Brass Instruments","Channeling","Conjuration","Defense","Disarm","Disarm Traps","Divination",
-		"Dodge","Double Attack","Dragon Punch","Duel Wield","Eagle Strike","Evocation","Feign Death","Flying Kick","Forage","Hand to Hand",
+		"Dodge","Double Attack","Dragon Punch","Dual Wield","Eagle Strike","Evocation","Feign Death","Flying Kick","Forage","Hand to Hand",
 		"Hide","Kick","Meditate","Mend","Offense","Parry","Pick Lock","Piercing","Ripost","Round Kick","Safe Fall","Sense Heading",
 		"Singing","Sneak","Specialize Abjuration","Specialize Alteration","Specialize Conjuration","Specialize Divination","Specialize Evocation","Pick Pockets",
 		"Stringed Instruments","Swimming","Throwing","Tiger Claw","Tracking","Wind Instruments","Fishing","Make Poison","Tinkering","Research",
@@ -5465,6 +5486,25 @@ bool Client::TryReward(int32 claim_id)
 	return true;
 }
 
+int32 Client::GetLDoNPointsTheme(int32 t)
+{
+	switch(t)
+	{
+	case 1:
+		return m_pp.ldon_points_guk;
+	case 2:
+		return m_pp.ldon_points_mir;
+	case 3:
+		return m_pp.ldon_points_mmc;
+	case 4:
+		return m_pp.ldon_points_ruj;
+	case 5:
+		return m_pp.ldon_points_tak;
+	default:
+		return 0;
+	}
+}
+
 int32 Client::GetLDoNWinsTheme(int32 t)
 {
 	switch(t)
@@ -5733,3 +5773,132 @@ void Client::AddCrystals(uint32 Radiant, uint32 Ebon)
 	SendCrystalCounts();
 }
 
+// Processes a client request to inspect a SoF client's equipment.
+void Client::ProcessInspectRequest(Client* requestee, Client* requester) {
+	if(requestee && requester) {
+		EQApplicationPacket* outapp = new EQApplicationPacket(OP_InspectAnswer, sizeof(InspectResponse_Struct));
+		InspectResponse_Struct* insr = (InspectResponse_Struct*) outapp->pBuffer;
+		insr->TargetID = requester->GetID();
+		insr->playerid = requestee->GetID();
+
+		const Item_Struct* item = NULL;
+		
+		for (sint16 L=0; L <= 21; L++) {
+			const ItemInst* inst = requestee->GetInv().GetItem(L);
+
+			if(inst) {
+				item = inst->GetItem();
+				if(item) {
+					strcpy(insr->itemnames[L], item->Name);
+					insr->itemicons[L] = item->Icon;
+				}
+				else
+					insr->itemicons[L] = 0xFFFFFFFF;
+			}
+		}
+		/*
+		// Special handling for Power Source slot on SoF clients
+		if(requestee->GetClientVersion() >= EQClientSoF && requester->GetClientVersion() >= EQClientSoF) {
+			const ItemInst* inst = requestee->GetInv().GetItem(9999);
+			if(inst) {
+				item = inst->GetItem();
+				if(item) {
+					strcpy(insr->itemnames[22], item->Name);
+					insr->itemicons[22] = item->Icon;
+				}
+				else
+					insr->itemicons[22] = 0xFFFFFFFF;
+			}
+		}
+		*/
+
+		//Need to add the player inspect notes code here at some point...
+
+		requester->QueuePacket(outapp); // Send answer to requester
+	}
+}
+
+void Client::GuildBankAck()
+{
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_GuildBank, sizeof(GuildBankAck_Struct));
+
+	GuildBankAck_Struct *gbas = (GuildBankAck_Struct*) outapp->pBuffer;
+
+	gbas->Action = GuildBankAcknowledge;
+
+	FastQueuePacket(&outapp);
+}
+
+void Client::GuildBankDepositAck(bool Fail)
+{
+
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_GuildBank, sizeof(GuildBankDepositAck_Struct));
+
+	GuildBankDepositAck_Struct *gbdas = (GuildBankDepositAck_Struct*) outapp->pBuffer;
+
+	gbdas->Action = GuildBankDeposit;
+
+	gbdas->Fail = Fail ? 1 : 0;
+
+	FastQueuePacket(&outapp);
+}
+
+void Client::ClearGuildBank()
+{
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_GuildBank, sizeof(GuildBankClear_Struct));
+
+	GuildBankClear_Struct *gbcs = (GuildBankClear_Struct*) outapp->pBuffer;
+
+	gbcs->Action = GuildBankBulkItems;
+	gbcs->DepositAreaCount = 0;
+	gbcs->MainAreaCount = 0;
+
+	FastQueuePacket(&outapp);
+}
+
+void Client::SendGroupCreatePacket()
+{
+	// For SoD and later clients, this is sent the Group Leader upon initial creation of the group
+	//
+	EQApplicationPacket *outapp=new EQApplicationPacket(OP_GroupUpdateB, 32 + strlen(GetName()));
+
+	char *Buffer = (char *)outapp->pBuffer;
+	// Header
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1);
+	VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);	// Null Leader name
+	
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);	// Member 0 
+	VARSTRUCT_ENCODE_STRING(Buffer, GetName());
+	VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);
+	VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);
+	VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);	// This is a string
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, GetLevel());
+	VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+	VARSTRUCT_ENCODE_TYPE(uint16, Buffer, 0);
+
+	FastQueuePacket(&outapp);
+}
+
+void Client::SendGroupLeaderChangePacket(const char *LeaderName)
+{
+	// For SoD and later, send name of Group Leader to this client
+	
+	EQApplicationPacket *outapp=new EQApplicationPacket(OP_GroupLeaderChange, sizeof(GroupLeaderChange_Struct));
+
+	GroupLeaderChange_Struct *glcs = (GroupLeaderChange_Struct*)outapp->pBuffer;
+
+	strn0cpy(glcs->LeaderName, LeaderName, sizeof(glcs->LeaderName));
+
+	FastQueuePacket(&outapp);
+}
+
+void Client::SendGroupJoinAcknowledge()
+{
+	// For SoD and later, This produces the 'You have joined the group' message.
+	EQApplicationPacket* outapp=new EQApplicationPacket(OP_GroupAcknowledge, 4);
+	
+	FastQueuePacket(&outapp);
+}

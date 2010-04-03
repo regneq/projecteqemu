@@ -98,8 +98,12 @@ bool Client::Process() {
 		if(dead)
 			SetHP(-100);
 		
+		if(IsTracking && (GetClientVersion() >= EQClientSoD) && TrackingTimer.Check())
+			DoTracking();
+
 		if(hpupdate_timer.Check())
 			SendHPUpdate();	
+
 		if(mana_timer.Check())
 			SendManaUpdatePacket();
 		if(dead && dead_timer.Check()) {
@@ -496,7 +500,7 @@ bool Client::Process() {
 				if(GetAA(aaAmbidexterity))
 					DualWieldProbability += 0.1f;
 				//discipline effects:
-				DualWieldProbability += (spellbonuses.DualWeildChance + itembonuses.DualWeildChance) / 100.0f;
+				DualWieldProbability += (spellbonuses.DualWieldChance + itembonuses.DualWieldChance) / 100.0f;
 				
 				float random = MakeRandomFloat(0, 1);
 				CheckIncreaseSkill(DUAL_WIELD, auto_attack_target, -10);
@@ -815,7 +819,7 @@ void Client::BulkSendInventoryItems()
 		}
 	}
 	// Power Source
-	if(GetClientVersion() == EQClientSoF)
+	if(GetClientVersion() >= EQClientSoF)
 	{	
 		slot_id = 9999;
 		const ItemInst* inst = m_inv[slot_id];
@@ -1667,7 +1671,7 @@ void Client::OPGMTrainSkill(const EQApplicationPacket *app)
 		}
 	}
 
-	if(GetClientVersion() == EQClientSoF) {
+	if(GetClientVersion() >= EQClientSoF) {
 		// The following packet decreases the skill points left in the Training Window and
 		// produces the 'You have increased your skill / learned the basics of' message.
 		//
@@ -1860,4 +1864,60 @@ void Client::CalcRestState() {
 
 	RestRegenHP = (GetMaxHP() * RuleI(Character, RestRegenPercent) / 100);
 	RestRegenMana = (GetMaxMana() * RuleI(Character, RestRegenPercent) / 100);
+}
+
+void Client::DoTracking()
+{
+	if(TrackingID == 0)
+	{
+		IsTracking = false;
+		return;
+	}
+
+	NPC *m = entity_list.GetNPCByID(TrackingID);
+
+	if(!m)
+	{
+		Message_StringID(MT_Skills, TRACK_LOST_TARGET);
+		IsTracking = false;
+		TrackingID = 0;
+		return;
+	}
+	float RelativeHeading = GetHeading() - CalculateHeadingToTarget(m->GetX(), m->GetY());
+
+	if(RelativeHeading < 0)
+		RelativeHeading += 256;
+
+	if((RelativeHeading <= 16) || (RelativeHeading >= 240))
+	{
+		Message_StringID(MT_Skills, TRACK_STRAIGHT_AHEAD, m->GetCleanName());
+	}
+	else if((RelativeHeading > 16) && (RelativeHeading <= 48))
+	{
+		Message_StringID(MT_Skills, TRACK_AHEAD_AND_TO, m->GetCleanName(), "right");
+	}
+	else if((RelativeHeading > 48) && (RelativeHeading <= 80))
+	{
+		Message_StringID(MT_Skills, TRACK_TO_THE, m->GetCleanName(), "right");
+	}
+	else if((RelativeHeading > 80) && (RelativeHeading <= 112))
+	{
+		Message_StringID(MT_Skills, TRACK_BEHIND_AND_TO, m->GetCleanName(), "right");
+	}
+	else if((RelativeHeading > 112) && (RelativeHeading <= 144))
+	{
+		Message_StringID(MT_Skills, TRACK_BEHIND_YOU, m->GetCleanName());
+	}
+	else if((RelativeHeading > 144) && (RelativeHeading <= 176))
+	{
+		Message_StringID(MT_Skills, TRACK_BEHIND_AND_TO, m->GetCleanName(), "left");
+	}
+	else if((RelativeHeading > 176) && (RelativeHeading <= 208))
+	{
+		Message_StringID(MT_Skills, TRACK_TO_THE, m->GetCleanName(), "left");
+	}
+	else if((RelativeHeading > 208) && (RelativeHeading < 240))
+	{
+		Message_StringID(MT_Skills, TRACK_AHEAD_AND_TO, m->GetCleanName(), "left");
+	}
 }

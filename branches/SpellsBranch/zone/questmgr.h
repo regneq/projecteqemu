@@ -65,7 +65,7 @@ public:
 	void emote(const char *str);
 	void shout(const char *str);
 	void shout2(const char *str);
-	void gmsay(const char *str);
+	void gmsay(const char *str, int32 color, bool send_to_world);
 	void depop(int npc_type = 0);
 	void depopall(int npc_type = 0);
 	void depopzone(bool StartSpawnTimer = true);

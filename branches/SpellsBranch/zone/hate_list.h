@@ -68,10 +68,14 @@ public:
 	//For accessing the hate list via perl; don't use for anything else
 	void GetHateList(std::list<tHateEntry*> &h_list);
 
+	//setting owner
+	void SetOwner(Mob *newOwner) { owner = newOwner; }
+
 protected:
     tHateEntry *Find(Mob *ent);
 private:
     LinkedList<tHateEntry*> list;
+	Mob *owner;
 };
 
 #endif

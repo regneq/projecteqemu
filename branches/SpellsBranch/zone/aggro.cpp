@@ -1234,7 +1234,7 @@ sint32 Mob::CheckAggroAmount(Spell *spell_to_cast)
 			case SE_RiposteChance:
 			case SE_DodgeChance:
 			case SE_ParryChance:
-			case SE_DualWeildChance:
+			case SE_DualWieldChance:
 			case SE_DoubleAttackChance:
 			case SE_MeleeSkillCheck:
 			case SE_HitChance:

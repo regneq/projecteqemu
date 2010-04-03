@@ -207,7 +207,7 @@ void MapSpellEffects()
 	SpellEffectDispatch[SE_RiposteChance] = &Mob::Handle_SE_Blank;
 	SpellEffectDispatch[SE_DodgeChance] = &Mob::Handle_SE_Blank;
 	SpellEffectDispatch[SE_ParryChance] = &Mob::Handle_SE_Blank;
-	SpellEffectDispatch[SE_DualWeildChance] = &Mob::Handle_SE_Blank;
+	SpellEffectDispatch[SE_DualWieldChance] = &Mob::Handle_SE_Blank;
 	SpellEffectDispatch[SE_DoubleAttackChance] = &Mob::Handle_SE_Blank;
 	SpellEffectDispatch[SE_MeleeLifetap] = &Mob::Handle_SE_Blank;
 	SpellEffectDispatch[SE_AllInstrunmentMod] = &Mob::Handle_SE_Blank;

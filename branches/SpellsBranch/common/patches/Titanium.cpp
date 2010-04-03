@@ -318,7 +318,8 @@ ENCODE(OP_PlayerProfile) {
 	OUT(anon);
 	OUT(gm);
 	OUT(guildrank);
-//	OUT(unknown13054[12]);
+	OUT(guildbanker);
+//	OUT(unknown13054[8]);
 	OUT(exp);
 //	OUT(unknown13072[12]);
 	OUT(timeentitledonaccount);
@@ -413,6 +414,40 @@ const uint8 bytes[] = {
 	CRC32::SetEQChecksum(__packet->pBuffer, sizeof(structs::PlayerProfile_Struct)-4);
 	
 	FINISH_ENCODE();
+}
+
+ENCODE(OP_Track)
+{
+
+	EQApplicationPacket *in = *p;
+	*p = NULL;
+
+	unsigned char *__emu_buffer = in->pBuffer;
+	Track_Struct *emu = (Track_Struct *) __emu_buffer;
+
+	int EntryCount = in->size / sizeof(Track_Struct);
+
+	if(EntryCount == 0 || ((in->size % sizeof(Track_Struct))) != 0)
+	{
+		_log(NET__STRUCTS, "Wrong size on outbound %s: Got %d, expected multiple of %d", opcodes->EmuToName(in->GetOpcode()), in->size, sizeof(Track_Struct));
+		delete in;
+		return;
+	}
+
+	in->size = sizeof(structs::Track_Struct) * EntryCount;
+	in->pBuffer = new unsigned char[in->size];
+	structs::Track_Struct *eq = (structs::Track_Struct *) in->pBuffer;
+
+	for(int i = 0; i < EntryCount; ++i, ++eq, ++emu)
+	{
+		OUT(entityid);
+		OUT(padding002);
+		OUT(distance);
+	}
+
+	delete[] __emu_buffer;
+
+	dest->FastQueuePacket(&in, ack_req);
 }
 
 ENCODE(OP_NewSpawn) {  ENCODE_FORWARD(OP_ZoneSpawns); }

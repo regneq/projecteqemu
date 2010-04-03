@@ -416,7 +416,7 @@ void NPC::SetTarget(Mob* mob) {
 		//attack_timer.Disable();
 		attack_dw_timer.Disable();
 	}
-	//CastToMob()->SetTarget(mob);
+	parse->Event(EVENT_TARGET_CHANGE, this->GetNPCTypeID(), 0, this->CastToNPC(), mob);
 	Mob::SetTarget(mob);
 }
 
@@ -475,7 +475,7 @@ void NPC::QueryLoot(Client* to) {
 	for(; cur != end; cur++) {
 		const Item_Struct* item = database.GetItem((*cur)->item_id);
 		if (item)
-			if (to->GetClientVersion() == EQClientSoF)
+			if (to->GetClientVersion() >= EQClientSoF)
 			{
 				to->Message(0, "  %i: %c%06X00000000000000000000000000000000000000000000%s%c",(int) item->ID,0x12, item->ID, item->Name, 0x12);
 			}

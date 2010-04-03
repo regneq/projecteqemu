@@ -196,6 +196,9 @@ public:
 	float GetGuardPointY()	const { return guard_y; }
 	float GetGuardPointZ()	const { return guard_z; }
 
+	void SetFlyMode(int8 FlyMode){ flymode=FlyMode; }
+	int32 GetFlyMode() const { return flymode; }
+
 	int8 GetPrimSkill()	const { return prim_melee_type; }
 	int8 GetSecSkill()	const { return sec_melee_type; }
 	void SetPrimSkill(int8 skill_type)	{ prim_melee_type = skill_type; }

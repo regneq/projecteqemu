@@ -136,7 +136,8 @@ typedef enum {
 	EQClientUnknown = 0,
 	EQClient62,
 	EQClientTitanium,
-	EQClientSoF
+	EQClientSoF,
+	EQClientSoD
 } EQClientVersion;
 
 struct ClientReward
@@ -315,7 +316,6 @@ public:
 	void	SendPickPocketResponse(Mob *from, uint32 amt, int type, const Item_Struct* item = NULL);
 
 	inline const char*	GetLastName() const	{ return lastname; }
-	inline int32		GetLDoNPoints() { return 0; }
 
 	inline float ProximityX() const { return(proximity_x); }
 	inline float ProximityY() const { return(proximity_y); }
@@ -488,6 +488,7 @@ public:
 	void	ChangeLastName(const char* in_lastname);
 	void	GetGroupAAs(GroupLeadershipAA_Struct *into) const;
 	void	ClearGroupAAs();
+	void	UpdateGroupAAs(sint32 points, int32 type);
 	void	SacrificeConfirm(Client* caster);
 	void	Sacrifice(Client* caster);
 	void	GoToDeath();
@@ -630,7 +631,6 @@ public:
 	void	ChangeTributeSettings(TributeInfo_Struct *t);
 	void	SendTributeTimer();
 	void	ToggleTribute(bool enabled);
-	void	TributeSoFUpdateSlot(sint16 slot);
 	void	SendPathPacket(vector<FindPerson_Point> &path);
 
 	inline PTimerList &GetPTimers() { return(p_timers); }
@@ -687,6 +687,7 @@ public:
 	void	SendItemLink(const ItemInst* inst, bool sendtoall=false);
 	void	SendLootItemInPacket(const ItemInst* inst, sint16 slot_id);
 	void	SendItemPacket(sint16 slot_id, const ItemInst* inst, ItemPacketType packet_type);
+	bool	IsValidSlot(uint32 slot);
 
 	inline	bool IsTrader() const { return(Trader); }
 	inline	bool IsBuyer() const { return(Buyer); }
@@ -761,19 +762,20 @@ public:
 	const bool IsMQExemptedArea(int32 zoneID, float x, float y, float z) const;
 	bool CanUseReport;
 
-	bool ClientFinishedLoading() { return (conn_state == ClientConnectFinished); }
-	int FindSpellBookSlotBySpellID(int16 spellid);
-	int GetNextAvailableSpellBookSlot(int starting_slot = 0);
+	void	ProcessInspectRequest(Client* requestee, Client* requester);
+	bool	ClientFinishedLoading() { return (conn_state == ClientConnectFinished); }
+	int		FindSpellBookSlotBySpellID(int16 spellid);
+	int		GetNextAvailableSpellBookSlot(int starting_slot = 0);
 	inline int32 GetSpellByBookSlot(int book_slot) { return m_pp.spell_book[book_slot]; }
 	inline bool HasSpellScribed(int spellid) { return (FindSpellBookSlotBySpellID(spellid) != -1 ? true : false); }
 	int16	GetMaxSkillAfterSpecializationRules(SkillType skillid, int16 maxSkill);
-	void SendPopupToClient(const char *Title, const char *Text, int32 PopupID = 0, int32 Buttons = 0, int32 Duration = 0);
+	void	SendPopupToClient(const char *Title, const char *Text, int32 PopupID = 0, int32 Buttons = 0, int32 Duration = 0);
 	bool	PendingTranslocate;
 	time_t	TranslocateTime;
  	bool	PendingSacrifice;
  	string	SacrificeCaster;
  	struct	Translocate_Struct PendingTranslocateData;
- 	void SendOPTranslocateConfirm(Mob *Caster, int16 SpellID);
+ 	void	SendOPTranslocateConfirm(Mob *Caster, int16 SpellID);
 
 	//      Task System Methods
 	void	LoadClientTaskState();
@@ -907,6 +909,7 @@ public:
 	int32 GetLDoNLosses() { return (m_pp.ldon_losses_guk + m_pp.ldon_losses_mir + m_pp.ldon_losses_mmc + m_pp.ldon_losses_ruj + m_pp.ldon_losses_tak); }
 	int32 GetLDoNWinsTheme(int32 t);
 	int32 GetLDoNLossesTheme(int32 t);
+	int32 GetLDoNPointsTheme(int32 t);
 	void UpdateLDoNWins(int32 t, sint32 n);
 	void UpdateLDoNLosses(int32 t, sint32 n);
 
@@ -929,6 +932,14 @@ public:
 	bool TryReward(int32 claim_id);
 	QGlobalCache *GetQGlobals() { return qGlobals; }
 	QGlobalCache *CreateQGlobals() { qGlobals = new QGlobalCache(); return qGlobals; }
+	void GuildBankAck();
+	void GuildBankDepositAck(bool Fail);
+	inline bool IsGuildBanker() { return GuildBanker; }
+	void ClearGuildBank();
+	void SendGroupCreatePacket();
+	void SendGroupLeaderChangePacket(const char *LeaderName);
+	void SendGroupJoinAcknowledge();
+	void DoTracking();
 
 protected:
 	friend class Mob;
@@ -1018,6 +1029,7 @@ private:
 	sint16				admin;
 	int32				guild_id;
 	int8				guildrank; // player's rank in the guild, 0-GUILD_MAX_RANK
+	bool				GuildBanker;
 	int16				duel_target;
 	bool				duelaccepted;
 	std::list<int32> keyring;
@@ -1042,6 +1054,7 @@ private:
 	bool				berserk;
 	int16				BoatID;
 	bool				IsTracking;
+	int16				TrackingID;
 	int16				CustomerID;
 	bool	Trader;
 	bool	Buyer;
@@ -1117,6 +1130,7 @@ private:
 	Timer	charm_class_attacks_timer;
 	Timer	charm_cast_timer;
 	Timer	qglobal_purge_timer;
+	Timer	TrackingTimer;
 
 	float	proximity_x;
 	float	proximity_y;

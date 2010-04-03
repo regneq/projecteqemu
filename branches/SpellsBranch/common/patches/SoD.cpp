@@ -1,6 +1,6 @@
 
 #include "../debug.h"
-#include "SoF.h"
+#include "SoD.h"
 #include "../opcodemgr.h"
 #include "../logsys.h"
 #include "../EQStreamIdent.h"
@@ -9,15 +9,15 @@
 #include "../eq_packet_structs.h"
 #include "../MiscFunctions.h"
 #include "../Item.h"
-#include "SoF_structs.h"
+#include "SoD_structs.h"
 #include "../rulesys.h"
 
 #include <iostream>
 #include <sstream>
 
-namespace SoF {
+namespace SoD {
 
-static const char *name = "SoF";
+static const char *name = "SoD";
 static OpcodeManager *opcodes = NULL;
 static Strategy struct_strategy;
 
@@ -89,7 +89,7 @@ Strategy::Strategy()
 {
 	//all opcodes default to passthrough.
 	#include "SSRegister.h"
-	#include "SoF_ops.h"
+	#include "SoD_ops.h"
 }
 
 std::string Strategy::Describe() const {
@@ -104,65 +104,65 @@ std::string Strategy::Describe() const {
 #include "SSDefine.h"
 
 
-// Converts Titanium Slot IDs to SoF Slot IDs for use in Encodes
-static inline int32 TitaniumToSoFSlot(int32 TitaniumSlot) {
-	int32 SoFSlot = 0;
+// Converts Titanium Slot IDs to SoD Slot IDs for use in Encodes
+static inline int32 TitaniumToSoDSlot(int32 TitaniumSlot) {
+	int32 SoDSlot = 0;
 
 	if(TitaniumSlot >= 21 && TitaniumSlot <= 50)	// Cursor/Ammo/Power Source and Normal Inventory Slots
 	{
-		SoFSlot = TitaniumSlot + 1;
+		SoDSlot = TitaniumSlot + 1;
 	}
 	else if(TitaniumSlot >= 251 && TitaniumSlot <= 340)		// Bag Slots for Normal Inventory and Cursor 
 	{
-		SoFSlot = TitaniumSlot + 11;
+		SoDSlot = TitaniumSlot + 11;
 	}
 	else if(TitaniumSlot >= 2031 && TitaniumSlot <= 2270)	// Bank Bag Slots
 	{
-		SoFSlot = TitaniumSlot + 1;
+		SoDSlot = TitaniumSlot + 1;
 	}
 	else if(TitaniumSlot >= 2531 && TitaniumSlot <= 2550)	// Shared Bank Bag Slots
 	{
-		SoFSlot = TitaniumSlot + 1;
+		SoDSlot = TitaniumSlot + 1;
 	}
 	else if(TitaniumSlot == 9999)	//Unused slot ID to give a place to save Power Slot
 	{
-		SoFSlot = 21;
+		SoDSlot = 21;
 	}
 	else
 	{
-		SoFSlot = TitaniumSlot;
+		SoDSlot = TitaniumSlot;
 	}	
 	
-	return SoFSlot;
+	return SoDSlot;
 }
 
-// Converts Sof Slot IDs to Titanium Slot IDs for use in Decodes
-static inline int32 SoFToTitaniumSlot(int32 SoFSlot) {
+// Converts SoD Slot IDs to Titanium Slot IDs for use in Decodes
+static inline int32 SoDToTitaniumSlot(int32 SoDSlot) {
 	int32 TitaniumSlot = 0;
 	
-	if(SoFSlot >= 22 && SoFSlot <= 51)	// Cursor/Ammo/Power Source and Normal Inventory Slots
+	if(SoDSlot >= 22 && SoDSlot <= 51)	// Cursor/Ammo/Power Source and Normal Inventory Slots
 	{
-		TitaniumSlot = SoFSlot - 1;
+		TitaniumSlot = SoDSlot - 1;
 	}
-	else if(SoFSlot >= 262 && SoFSlot <= 351)	// Bag Slots for Normal Inventory and Cursor 
+	else if(SoDSlot >= 262 && SoDSlot <= 351)	// Bag Slots for Normal Inventory and Cursor 
 	{
-		TitaniumSlot = SoFSlot - 11;
+		TitaniumSlot = SoDSlot - 11;
 	}
-	else if(SoFSlot >= 2032 && SoFSlot <= 2271)	// Bank Bag Slots
+	else if(SoDSlot >= 2032 && SoDSlot <= 2271)	// Bank Bag Slots
 	{
-		TitaniumSlot = SoFSlot - 1;
+		TitaniumSlot = SoDSlot - 1;
 	}
-	else if(SoFSlot >= 2532 && SoFSlot <= 2551)	// Shared Bank Bag Slots
+	else if(SoDSlot >= 2532 && SoDSlot <= 2551)	// Shared Bank Bag Slots
 	{
-		TitaniumSlot = SoFSlot - 1;
+		TitaniumSlot = SoDSlot - 1;
 	}
-	else if(SoFSlot == 21)
+	else if(SoDSlot == 21)
 	{
 		TitaniumSlot = 9999;	//Unused slot ID to give a place to save Power Slot
 	}
 	else
 	{
-		TitaniumSlot = SoFSlot;
+		TitaniumSlot = SoDSlot;
 	}
 
 	return TitaniumSlot;
@@ -722,26 +722,27 @@ ENCODE(OP_NewZone) {
 	OUT(zone_instance);
 	
     /*fill in some unknowns with observed values, hopefully it will help */
-	eq->unknown796 = -1;
-	eq->unknown840 = 600;
-	eq->unknown876 = 50;
-	eq->unknown880 = 10;
-	eq->unknown884 = 1;
-	eq->unknown885 = 0;
-	eq->unknown886 = 1;
-	eq->unknown887 = 0;
-	eq->unknown888 = 0;
+	eq->unknown800 = -1;
+	eq->unknown844 = 600;
+	eq->unknown880 = 50;
+	eq->unknown884 = 10;
+	eq->unknown888 = 1;
 	eq->unknown889 = 0;
-	eq->fall_damage = 0;	// 0 = Fall Damage on, 1 = Fall Damage off
+	eq->unknown890 = 1;
 	eq->unknown891 = 0;
-	eq->unknown892 = 180;
+	eq->unknown892 = 0;
+	eq->unknown893 = 0;
+	eq->fall_damage = 0;	// 0 = Fall Damage on, 1 = Fall Damage off
+	eq->unknown895 = 0;
 	eq->unknown896 = 180;
 	eq->unknown900 = 180;
-	eq->unknown904 = 2;
+	eq->unknown904 = 180;
 	eq->unknown908 = 2;
+	eq->unknown912 = 2;
 
 	FINISH_ENCODE();
 }
+
 
 ENCODE(OP_Track)
 {
@@ -760,15 +761,29 @@ ENCODE(OP_Track)
 		return;
 	}
 
-	in->size = sizeof(structs::Track_Struct) * EntryCount;
-	in->pBuffer = new unsigned char[in->size];
-	structs::Track_Struct *eq = (structs::Track_Struct *) in->pBuffer;
+	int PacketSize = 2;
 
-	for(int i = 0; i < EntryCount; ++i, ++eq, ++emu)
+	for(int i = 0; i < EntryCount; ++i, ++emu)
+		PacketSize += (12 + strlen(emu->name));
+
+	emu = (Track_Struct *) __emu_buffer;
+
+	in->size = PacketSize;
+	in->pBuffer = new unsigned char[in->size];
+
+	char *Buffer = (char *)in->pBuffer;
+
+	VARSTRUCT_ENCODE_TYPE(uint8, Buffer, EntryCount);
+	VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);
+
+	for(int i = 0; i < EntryCount; ++i, ++emu)
 	{
-		OUT(entityid);
-		OUT(padding002);
-		OUT(distance);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->entityid);
+		VARSTRUCT_ENCODE_TYPE(float, Buffer, emu->distance);
+		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->level);
+		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 1);	// Unknown
+		VARSTRUCT_ENCODE_STRING(Buffer, emu->name);
+		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);	// Unknown
 	}
 
 	delete[] __emu_buffer;
@@ -776,234 +791,299 @@ ENCODE(OP_Track)
 	dest->FastQueuePacket(&in, ack_req);
 }
 
+ENCODE(OP_PetBuffWindow)
+{
+	EQApplicationPacket *in = *p;
+	*p = NULL;
+
+	unsigned char *__emu_buffer = in->pBuffer;
+
+	PetBuff_Struct *emu = (PetBuff_Struct *) __emu_buffer;
+
+	int PacketSize = 7 + (emu->buffcount * 13);
+
+	in->size = PacketSize;
+
+	in->pBuffer = new unsigned char[in->size];
+
+	char *Buffer = (char *)in->pBuffer;
+
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->petid);
+	VARSTRUCT_ENCODE_TYPE(uint16, Buffer, emu->buffcount);
+
+	for(unsigned int i = 0; i < BUFF_COUNT; ++i)
+	{
+		if(emu->spellid[i])
+		{
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, i);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->spellid[i]);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->ticsremaining[i]);
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);	// This is a string. Name of the caster of the buff.
+		}
+	}
+	VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->buffcount);
+
+	delete[] __emu_buffer;
+
+	dest->FastQueuePacket(&in, ack_req);
+}
+
+ENCODE(OP_Barter)
+{
+	EQApplicationPacket *in = *p;
+	*p = NULL;
+
+	char *Buffer = (char *)in->pBuffer;
+
+	uint32 SubAction = VARSTRUCT_DECODE_TYPE(uint32, Buffer);
+
+	if(SubAction != Barter_BuyerAppearance)
+	{
+		dest->FastQueuePacket(&in, ack_req);
+
+		return;
+	}
+
+	unsigned char *__emu_buffer = in->pBuffer;
+
+	in->size = 80;
+
+	in->pBuffer = new unsigned char[in->size];
+
+	char *OutBuffer = (char *)in->pBuffer;
+
+	char Name[64];
+
+	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, SubAction);
+	uint32 EntityID = VARSTRUCT_DECODE_TYPE(uint32, Buffer);
+	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, EntityID);
+	uint8 Toggle = VARSTRUCT_DECODE_TYPE(uint8, Buffer);
+	VARSTRUCT_DECODE_STRING(Name, Buffer);
+	VARSTRUCT_ENCODE_STRING(OutBuffer, Name);
+	OutBuffer = (char *)in->pBuffer + 72;
+	VARSTRUCT_ENCODE_TYPE(uint8, OutBuffer, Toggle);
+
+	delete[] __emu_buffer;
+
+	dest->FastQueuePacket(&in, ack_req);
+	
+}
+
 ENCODE(OP_NewSpawn) {  ENCODE_FORWARD(OP_ZoneSpawns); }
 ENCODE(OP_ZoneEntry){  ENCODE_FORWARD(OP_ZoneSpawns); }
 ENCODE(OP_ZoneSpawns) {
-	//consume the packet
-	EQApplicationPacket *in = *p;
-	*p = NULL;
-	
-	//store away the emu struct
-	unsigned char *__emu_buffer = in->pBuffer;
-	Spawn_Struct *emu = (Spawn_Struct *) __emu_buffer;
-	
-	//determine and verify length
-	int entrycount = in->size / sizeof(Spawn_Struct);
-	if(entrycount == 0 || (in->size % sizeof(Spawn_Struct)) != 0) {
-		_log(NET__STRUCTS, "Wrong size on outbound %s: Got %d, expected multiple of %d", opcodes->EmuToName(in->GetOpcode()), in->size, sizeof(Spawn_Struct));
-		delete in;
-		return;
-	}
-	
-	//make the EQ struct.
-	in->size = sizeof(structs::Spawn_Struct)*entrycount;
-	in->pBuffer = new unsigned char[in->size];
-	structs::Spawn_Struct *eq = (structs::Spawn_Struct *) in->pBuffer;
-	
-	//zero out the packet. We could avoid this memset by setting all fields (including unknowns)
-	//in the loop.
-	memset(in->pBuffer, 0, in->size);
-	
-	//do the transform...
-	int r;
-	int k;
-	for(r = 0; r < entrycount; r++, eq++, emu++) {
+		//consume the packet
+		EQApplicationPacket *in = *p;
+		*p = NULL;
+		
+		//store away the emu struct
+		unsigned char *__emu_buffer = in->pBuffer;
+		Spawn_Struct *emu = (Spawn_Struct *) __emu_buffer;
+		
+		//determine and verify length
+		int entrycount = in->size / sizeof(Spawn_Struct);
+		if(entrycount == 0 || (in->size % sizeof(Spawn_Struct)) != 0) {
+			_log(NET__STRUCTS, "Wrong size on outbound %s: Got %d, expected multiple of %d", opcodes->EmuToName(in->GetOpcode()), in->size, sizeof(Spawn_Struct));
+			delete in;
+			return;
+		}
 
-		eq->showname = 1; //New Field - Toggles Name Display on or off - 0 = off, 1 = on
-		eq->linkdead = 0; //New Field - Toggles LD on or off after name - 0 = off, 1 = on
-		eq->statue = 0; //New Field - 1 freezes animation
-		eq->showhelm = emu->showhelm;
-		eq->deity = emu->deity;
-		eq->drakkin_heritage = emu->drakkin_heritage;
-		eq->gender = emu->gender;
-		for(k = 0; k < 9; k++) {
-			eq->equipment[k].equip0 = emu->equipment[k];
-			eq->equipment[k].equip1 = 0;
-			eq->equipment[k].itemId = 0;
-			eq->colors[k].color = emu->colors[k].color;
-		}
-		eq->StandState = 0x64;
-		eq->guildID = emu->guildID;
-		eq->spelleffect = 0;
-		eq->spelleffect2 = 0;
-		eq->spelleffect3 = 0;
-		eq->spelleffect4 = 0;
-		eq->spelleffect5 = 0;
-		eq->spelleffect6 = 0;
-		eq->class_ = emu->class_;
-		eq->flymode = emu->flymode;
-		eq->gm = emu->gm;
-		eq->helm = emu->helm;
-		eq->drakkin_tattoo = emu->drakkin_tattoo;
-		eq->beardcolor = emu->beardcolor;
-		eq->runspeed = emu->runspeed;
-		eq->light = emu->light;
-		eq->level = emu->level;
-		eq->lfg = emu->lfg;
-		eq->hairstyle = emu->hairstyle;
-		eq->haircolor = emu->haircolor;
-		eq->race = emu->race;
-		strcpy(eq->suffix, emu->suffix);
-		eq->findable = emu->findable;
-		if(emu->bodytype >= 66)
-		{
-			eq->bodytype = 11;	//non-targetable
-			eq->showname = 0;	//no visible name
-			eq->race = 127;		//invisible man
-			eq->gender = 0;		//invisible men are gender 0
-		}
-		else
-		{
-			eq->bodytype = emu->bodytype;
-		}
-		//eq->bodytype2 = 0;
-		eq->equip_chest2 = emu->equip_chest2;
-		eq->curHp = emu->curHp;
-		eq->invis = emu->invis;
-		strcpy(eq->lastName, emu->lastName);
-		eq->eyecolor1 = emu->eyecolor1;
-		strcpy(eq->title, emu->title);
-		eq->beard = emu->beard;
-		eq->targetable = 1; //New Field - Toggle Targetable on or off - 0 = off, 1 = on
-		eq->NPC = emu->NPC;
-		eq->targetable_with_hotkey = 1;//New Field - Toggle Targetable on or off - 0 = off, 1 = on
-		eq->x = emu->x;
-		eq->deltaX = emu->deltaX;
-		eq->deltaY = emu->deltaY;
-		eq->z = emu->z;
-		eq->deltaHeading = emu->deltaHeading;
-		eq->y = emu->y;
-		eq->deltaZ = emu->deltaZ;
-		eq->animation = emu->animation;
-		eq->heading = emu->heading;
-		eq->spawnId = emu->spawnId;
-		eq->nonvisible = 0;
-		strcpy(eq->name, emu->name);
-		eq->petOwnerId = emu->petOwnerId;
-		eq->pvp = 0;	// 0 = non-pvp colored name, 1 = red pvp name
-		for(k = 0; k < 9; k++) {
-			eq->colors[k].color = emu->colors[k].color;
-		}
-		eq->anon = emu->anon;
-		eq->face = emu->face;
-		eq->drakkin_details = emu->drakkin_details;
-		eq->size = emu->size;
-		eq->walkspeed = emu->walkspeed;
-		/*
-		//Uncomment this section to use this hack test with NPC last names
-		//Hack Test for finding more fields in the Struct:
-		if (emu->lastName[0] == '*') // Test NPC!
-		{
-			char code = emu->lastName[1];
-			size_t len = strlen(emu->lastName);
-			char* sep = (char*)memchr(&emu->lastName[2], '=', len - 2);
+		
+		//_log(NET__STRUCTS, "Spawn name is [%s]", emu->name);
 
-			uint32 ofs;
-			uint32 val;
-			uint8 rnd = rand() & 0x0F;
-			if (sep == NULL)
+		emu = (Spawn_Struct *) __emu_buffer;
+
+		//_log(NET__STRUCTS, "Spawn packet size is %i, entries = %i", in->size, entrycount);
+
+		char *Buffer = (char *) in->pBuffer;
+
+		
+		int r;
+		int k;
+		for(r = 0; r < entrycount; r++, emu++) {
+
+			int PacketSize = sizeof(structs::Spawn_Struct);
+
+			PacketSize += strlen(emu->name);
+			PacketSize += strlen(emu->lastName);
+		
+			bool ShowName = 1;
+			if(emu->bodytype >= 66)
 			{
-				ofs = 0;
-				if ((emu->lastName[2] < '0') || (emu->lastName[2] > '9'))
-				{
-					val = rnd;
-				}
-				else
-				{
-					val = atoi(&emu->lastName[2]);
-				}
+				emu->race = 127;
+				emu->bodytype = 11;
+				emu->gender = 0;
+				ShowName = 0;
+			}
+			if(!((emu->NPC == 0) || (emu->race <=12) || (emu->race == 128) || (emu ->race == 130) || (emu->race == 330) || (emu->race == 522)))
+			{
+				PacketSize -= (sizeof(structs::EquipStruct) * 9);
+			}
+
+			EQApplicationPacket *outapp = new EQApplicationPacket(OP_ZoneEntry, PacketSize);
+			Buffer = (char *) outapp->pBuffer;
+
+			VARSTRUCT_ENCODE_STRING(Buffer, emu->name);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->spawnId);
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->level);
+			VARSTRUCT_ENCODE_TYPE(float, Buffer, 7.7974553108215);	// unknown1
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->NPC);
+
+			structs::Spawn_Struct_Bitfields *Bitfields = (structs::Spawn_Struct_Bitfields*)Buffer;
+
+			Bitfields->afk = 0;
+			Bitfields->linkdead = 0;
+			Bitfields->gender = emu->gender;
+
+			Bitfields->invis = emu->invis;
+			Bitfields->sneak = 0;
+			Bitfields->lfg = emu->lfg;
+			Bitfields->gm = emu->gm;
+			Bitfields->anon = emu->anon;
+			Bitfields->targetable = 1;
+			Bitfields->targetable_with_hotkey = 1;
+			Bitfields->trader = 0;
+			Bitfields->buyer = 0;
+
+			Bitfields->showname = ShowName;
+
+			Buffer += sizeof(structs::Spawn_Struct_Bitfields);
+
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0x0);	// otherData was zero
+
+			VARSTRUCT_ENCODE_TYPE(float, Buffer, -1);	// unknown3
+			VARSTRUCT_ENCODE_TYPE(float, Buffer, 0);	// unknown4
+			VARSTRUCT_ENCODE_TYPE(float, Buffer, emu->size);
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->face);
+			VARSTRUCT_ENCODE_TYPE(float, Buffer, emu->walkspeed);
+			VARSTRUCT_ENCODE_TYPE(float, Buffer, emu->runspeed);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->race);
+			/*
+			if(emu->bodytype >=66)
+			{
+				VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);	// showname
 			}
 			else
 			{
-				sep[0] = NULL;
-				ofs = atoi(&emu->lastName[2]);
-				sep[0] = '=';
-				if ((sep[1] < '0') || (sep[1] > '9'))
+				VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 1);	// showname
+			}*/
+
+			// Setting this next field to zero will cause a crash. Looking at ShowEQ, if it is zero, the bodytype field is not
+			// present. Will sort that out later.
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 1);	// This is a properties count field
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->bodytype);
+		
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->curHp);
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->haircolor);
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->beardcolor);
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->eyecolor1);
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->eyecolor2);
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->hairstyle);
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->beard);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->drakkin_heritage);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->drakkin_tattoo);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->drakkin_details);
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);	// statue
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->deity);
+			if(emu->NPC)
+			{
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0xFFFFFFFF);
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0x00000000);
+			}
+			else
+			{
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->guildID);
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->guildrank);
+			}
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->class_);
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);	// pvp
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0x64);	// standstate
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->light);
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0); // unknown7  Flymode ?
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->equip_chest2); // unknown8
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0); // unknown9
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0); // unknown10
+			if(emu->NPC)
+			{
+				VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0xFF); // unknown11
+			}
+			else
+			{
+				VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0x01); // unknown11
+			}
+			VARSTRUCT_ENCODE_STRING(Buffer, emu->lastName);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);	// aatitle
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0); // unknown12
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->petOwnerId);
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0); // unknown13
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // unknown14
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // unknown15
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // unknown16
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // unknown17
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0xffffffff); // unknown18
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0xffffffff); // unknown19
+
+
+			structs::Spawn_Struct_Position *Position = (structs::Spawn_Struct_Position*)Buffer;
+
+			Position->deltaX = emu->deltaX;
+			Position->deltaHeading = emu->deltaHeading;
+			Position->deltaY = emu->deltaY;
+			Position->y = emu->y;
+			Position->animation = emu->animation;
+			Position->heading = emu->heading;
+			Position->x = emu->x;
+			Position->z = emu->z;
+			Position->deltaZ = emu->deltaZ;
+
+			Buffer += sizeof(structs::Spawn_Struct_Position);
+		
+			for(k = 0; k < 9; ++k)
+			{
+				if(emu->NPC)
 				{
-					val = rnd;
+					// Sending colours for some NPCs was causing the client to crash. It may be that only certain
+					// races have this problem, as zones with predominantly mobs of playable races didn't seem
+					// to have the problem. For now we will not send colours for NPCs.
+					VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
 				}
 				else
 				{
-					val = atoi(&sep[1]);
+					VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->colors[k].color);
 				}
+
 			}
 
-			char hex[] = "0123456789ABCDEF";
-			
-			eq->lastName[len + 0] = ' ';
-			eq->lastName[len + 1] = code;
-			eq->lastName[len + 2] = '0' + ((ofs / 1000) % 10);
-			eq->lastName[len + 3] = '0' + ((ofs / 100) % 10);
-			eq->lastName[len + 4] = '0' + ((ofs / 10) % 10);
-			eq->lastName[len + 5] = '0' + (ofs % 10);
-			eq->lastName[len + 6] = '=';
-			eq->lastName[len + 7] = '0' + ((val / 100) % 10);
-			eq->lastName[len + 8] = '0' + ((val / 10) % 10);
-			eq->lastName[len + 9] = '0' + (val % 10);
-			eq->lastName[len + 10] = 0x00;
 
-			switch (code)
+			if((emu->NPC == 0) || (emu->race <=12) || (emu->race == 128) || (emu ->race == 130) || (emu->race == 330) || (emu->race == 522))
 			{
-				case 'a':
-					eq->unknown0001[ofs % 4] = val; break;
-				case 'b':
-					eq->unknown0008 = val; break;
-				case 'c':
-					eq->unknown0011[ofs % 3] = val; break;
-				case 'd':
-					eq->unknown0018[ofs % 4] = val; break;
-				case 'e':
-					eq->unknown0023[ofs % 4] = val; break;
-				case 'f':
-					eq->unknown0136 = val; break;
-				case 'g':
-					eq->unknown0166[ofs % 8] = val; break;
-				case 'h':
-					eq->unknown0175[ofs % 192] = val; break;
-				case 'i':
-					eq->unknown0370[ofs % 3] = val; break;
-				case 'j':
-					eq->unknown0374[ofs % 128] = val; break;
-				case 'k':
-					eq->unknown0507[ofs % 4] = val; break;
-				case 'l':
-					eq->unknown0512[ofs % 16] = val; break;
-				case 'm':
-					eq->unknown0529[ofs % 4] = val; break;
-				case 'n':
-					eq->unknown0539[ofs % 41] = val; break;
-				case 'o':
-					eq->unknown0614[ofs % 11] = val; break;
-				case 'p':
-					eq->unknown0626[ofs % 28] = val; break;
-				case 'q':
-					eq->unknown0690 = val; break;
-				case 'r':
-					eq->unknown0726[ofs % 4] = val; break;
-				case 's':
-					eq->unknown0731[ofs % 11] = val; break;
-				case 't':
-					eq->unknown0767[ofs % 3] = val; break;
-				case 'u':
-					eq->unknown0883[ofs % 4] = val; break;
-				case 'v':
-					eq->unknown0895[ofs % 2] = val; break;
-				case 'X':
-					((uint8*)eq)[ofs % 897] = val; break;
-				case 'Z':
-					eq->size = (float)val; break; // Test w/ size.
+				structs::EquipStruct *Equipment = (structs::EquipStruct *)Buffer;
+
+				for(k = 0; k < 9; k++) {
+					Equipment[k].equip0 = emu->equipment[k];
+					Equipment[k].equip1 = 0;
+					Equipment[k].itemId = 0;
+				}
+
+				Buffer += (sizeof(structs::EquipStruct) * 9);
 			}
-		}*/
+
+			Buffer += 33; // Unknown;
+
+			//_log(NET__ERROR, "Sending zone spawn for %s", emu->name);
+			//_hex(NET__ERROR, outapp->pBuffer, outapp->size);
+			dest->FastQueuePacket(&outapp, ack_req);
 	}
 	
 	
 	//kill off the emu structure and send the eq packet.
-	delete[] __emu_buffer;
+	//delete[] __emu_buffer;
 	
+	delete in;
 	//_log(NET__ERROR, "Sending zone spawns");
 	//_hex(NET__ERROR, in->pBuffer, in->size);
 	
-	dest->FastQueuePacket(&in, ack_req);
+	//dest->FastQueuePacket(&in, ack_req);
 }
 
 ENCODE(OP_ItemLinkResponse) {  ENCODE_FORWARD(OP_ItemPacket); }
@@ -1272,6 +1352,21 @@ ENCODE(OP_ManaChange) {
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_OnLevelMessage)
+{
+	ENCODE_LENGTH_EXACT(OnLevelMessage_Struct);
+	SETUP_DIRECT_ENCODE(OnLevelMessage_Struct, structs::OnLevelMessage_Struct);
+	memcpy(eq->Title, emu->Title, sizeof(eq->Title));
+	memcpy(eq->Text, emu->Text, sizeof(eq->Text));
+	OUT(Buttons);
+	OUT(Duration);
+	OUT(PopupID);
+	// These two field names are used if Buttons == 1. We should add an interface to them via Perl.
+	sprintf(eq->ButtonName0, "Yes");
+	sprintf(eq->ButtonName1, "No");
+	FINISH_ENCODE();
+}
+
 ENCODE(OP_Illusion) {
 	ENCODE_LENGTH_EXACT(Illusion_Struct);
 	SETUP_DIRECT_ENCODE(Illusion_Struct, structs::Illusion_Struct);
@@ -1292,6 +1387,19 @@ ENCODE(OP_Illusion) {
 	OUT(drakkin_heritage);
 	OUT(drakkin_tattoo);
 	OUT(drakkin_details);
+
+	FINISH_ENCODE();
+}
+
+ENCODE(OP_ShopPlayerBuy)
+{
+	ENCODE_LENGTH_EXACT(Merchant_Sell_Struct);
+	SETUP_DIRECT_ENCODE(Merchant_Sell_Struct, structs::Merchant_Sell_Struct);
+	OUT(npcid);
+	OUT(playerid);
+	OUT(itemslot);
+	OUT(quantity);
+	OUT(price);
 
 	FINISH_ENCODE();
 }
@@ -1444,7 +1552,7 @@ ENCODE(OP_ShopPlayerSell) {
 	ENCODE_LENGTH_EXACT(Merchant_Purchase_Struct);
 	SETUP_DIRECT_ENCODE(Merchant_Purchase_Struct, structs::Merchant_Purchase_Struct);
 	OUT(npcid);
-	eq->itemslot = TitaniumToSoFSlot(emu->itemslot);
+	eq->itemslot = TitaniumToSoDSlot(emu->itemslot);
 	OUT(quantity);
 	OUT(price);
 	FINISH_ENCODE();
@@ -1454,8 +1562,8 @@ ENCODE(OP_DeleteItem) {
 	ENCODE_LENGTH_EXACT(DeleteItem_Struct);
 	SETUP_DIRECT_ENCODE(DeleteItem_Struct, structs::DeleteItem_Struct);
 
-	eq->from_slot = TitaniumToSoFSlot(emu->from_slot);
-	eq->to_slot = TitaniumToSoFSlot(emu->to_slot);
+	eq->from_slot = TitaniumToSoDSlot(emu->from_slot);
+	eq->to_slot = TitaniumToSoDSlot(emu->to_slot);
 	OUT(number_in_stack);
 
 	FINISH_ENCODE();
@@ -1466,8 +1574,8 @@ ENCODE(OP_MoveItem) {
 	ENCODE_LENGTH_EXACT(MoveItem_Struct);
 	SETUP_DIRECT_ENCODE(MoveItem_Struct, structs::MoveItem_Struct);
 
-	eq->from_slot = TitaniumToSoFSlot(emu->from_slot);
-	eq->to_slot = TitaniumToSoFSlot(emu->to_slot);
+	eq->from_slot = TitaniumToSoDSlot(emu->from_slot);
+	eq->to_slot = TitaniumToSoDSlot(emu->to_slot);
 	OUT(number_in_stack);
 
 	FINISH_ENCODE();
@@ -1477,7 +1585,7 @@ ENCODE(OP_ItemVerifyReply) {
 	ENCODE_LENGTH_EXACT(ItemVerifyReply_Struct);
 	SETUP_DIRECT_ENCODE(ItemVerifyReply_Struct, structs::ItemVerifyReply_Struct);
 
-	eq->slot = TitaniumToSoFSlot(emu->slot);
+	eq->slot = TitaniumToSoDSlot(emu->slot);
 	OUT(spell);
 	OUT(target);
 
@@ -1581,7 +1689,7 @@ ENCODE(OP_TributeItem) {
 	ENCODE_LENGTH_EXACT(TributeItem_Struct);
 	SETUP_DIRECT_ENCODE(TributeItem_Struct, structs::TributeItem_Struct);
 
-	eq->slot = TitaniumToSoFSlot(emu->slot);
+	eq->slot = TitaniumToSoDSlot(emu->slot);
 	OUT(quantity);
 	OUT(tribute_master_id);
 	OUT(tribute_points);
@@ -1628,7 +1736,7 @@ ENCODE(OP_ReadBook) {
 	else
 		eq->window = emu->window;
 	OUT(type);
-	eq->invslot = TitaniumToSoFSlot(emu->invslot);
+	eq->invslot = TitaniumToSoDSlot(emu->invslot);
 	strn0cpy(eq->txtfile, emu->booktext, sizeof(eq->txtfile));
 	FINISH_ENCODE();
 }
@@ -1689,7 +1797,7 @@ ENCODE(OP_AdventureMerchantSell) {
 
 	eq->unknown000 = 1;
 	OUT(npcid);
-	eq->slot = TitaniumToSoFSlot(emu->slot);
+	eq->slot = TitaniumToSoDSlot(emu->slot);
 	OUT(charges);
 	OUT(sell_price);
 
@@ -1767,7 +1875,7 @@ ENCODE(OP_VetRewardsAvaliable)
 	EQApplicationPacket *outapp_create = new EQApplicationPacket(OP_VetRewardsAvaliable, (sizeof(structs::VeteranReward)*count));
 	uchar *old_data = __emu_buffer;
 	uchar *data = outapp_create->pBuffer;
-	for(int i = 0; i < count; ++i)
+	for(unsigned int i = 0; i < count; ++i)
 	{
 		structs::VeteranReward *vr = (structs::VeteranReward*)data;
 		InternalVeteranReward *ivr = (InternalVeteranReward*)old_data;
@@ -1789,6 +1897,70 @@ ENCODE(OP_VetRewardsAvaliable)
 	dest->FastQueuePacket(&outapp_create);
 	delete[] __emu_buffer;
 }
+
+ENCODE(OP_WhoAllResponse)
+{
+	EQApplicationPacket *in = *p;
+	*p = NULL;
+
+	char *InBuffer = (char *)in->pBuffer;
+
+	WhoAllReturnStruct *wars = (WhoAllReturnStruct*)InBuffer;
+
+	int Count = wars->playercount;
+
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_WhoAllResponse, in->size + (Count * 4));
+
+	char *OutBuffer = (char *)outapp->pBuffer;
+
+	memcpy(OutBuffer, InBuffer, sizeof(WhoAllReturnStruct));
+
+	OutBuffer += sizeof(WhoAllReturnStruct);
+	InBuffer += sizeof(WhoAllReturnStruct);
+
+	for(int i = 0; i < Count; ++i)
+	{
+		uint32 x;
+
+		x = VARSTRUCT_DECODE_TYPE(uint32, InBuffer);
+
+		VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, x);
+
+		InBuffer += 4;
+		VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0);
+		VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0xffffffff);
+
+		char Name[64];
+
+
+		VARSTRUCT_DECODE_STRING(Name, InBuffer);	// Char Name
+		VARSTRUCT_ENCODE_STRING(OutBuffer, Name);
+
+		x = VARSTRUCT_DECODE_TYPE(uint32, InBuffer);
+		VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, x);
+
+		VARSTRUCT_DECODE_STRING(Name, InBuffer);	// Guild Name
+		VARSTRUCT_ENCODE_STRING(OutBuffer, Name);
+
+		for(int j = 0; j < 7; ++j)
+		{
+			x = VARSTRUCT_DECODE_TYPE(uint32, InBuffer);
+			VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, x);
+		}
+
+		VARSTRUCT_DECODE_STRING(Name, InBuffer);		// Account
+		VARSTRUCT_ENCODE_STRING(OutBuffer, Name);
+
+		x = VARSTRUCT_DECODE_TYPE(uint32, InBuffer);
+		VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, x);
+	}
+
+	//_hex(NET__ERROR, outapp->pBuffer, outapp->size);
+	dest->FastQueuePacket(&outapp);
+
+	delete in;
+}
+
 
 ENCODE(OP_InspectAnswer) {
 	ENCODE_LENGTH_EXACT(InspectResponse_Struct);
@@ -1815,6 +1987,193 @@ ENCODE(OP_InspectAnswer) {
 	strn0cpy(eq->text, emu->text, sizeof(eq->text));
 
 	FINISH_ENCODE();
+}
+
+ENCODE(OP_GroupInvite) {
+	ENCODE_LENGTH_EXACT(GroupGeneric_Struct);
+	SETUP_DIRECT_ENCODE(GroupGeneric_Struct, structs::GroupInvite_Struct);
+	memcpy(eq->invitee_name, emu->name1, sizeof(eq->invitee_name));
+	memcpy(eq->inviter_name, emu->name2, sizeof(eq->inviter_name));
+	FINISH_ENCODE();
+}
+
+ENCODE(OP_GroupFollow) {
+	ENCODE_LENGTH_EXACT(GroupGeneric_Struct);
+	SETUP_DIRECT_ENCODE(GroupGeneric_Struct, structs::GroupFollow_Struct);
+	memcpy(eq->name1, emu->name1, sizeof(eq->name1));
+	memcpy(eq->name2, emu->name2, sizeof(eq->name2));
+	FINISH_ENCODE();
+}
+
+ENCODE(OP_GroupFollow2) {
+	ENCODE_LENGTH_EXACT(GroupGeneric_Struct);
+	SETUP_DIRECT_ENCODE(GroupGeneric_Struct, structs::GroupFollow_Struct);
+	memcpy(eq->name1, emu->name1, sizeof(eq->name1));
+	memcpy(eq->name2, emu->name2, sizeof(eq->name2));
+	FINISH_ENCODE();
+}
+
+ENCODE(OP_GroupCancelInvite)
+{
+	ENCODE_LENGTH_EXACT(GroupCancel_Struct);
+	SETUP_DIRECT_ENCODE(GroupCancel_Struct, structs::GroupCancel_Struct);
+	memcpy(eq->name1, emu->name1, sizeof(eq->name1));
+	memcpy(eq->name2, emu->name2, sizeof(eq->name2));
+	OUT(toggle);
+	FINISH_ENCODE();
+}
+
+ENCODE(OP_GroupUpdate)
+{
+	//_log(NET__ERROR, "OP_GroupUpdate");
+	EQApplicationPacket *in = *p;
+
+	GroupJoin_Struct *gjs = (GroupJoin_Struct*)in->pBuffer;
+	
+	//_log(NET__ERROR, "Received outgoing OP_GroupUpdate with action code %i", gjs->action);
+	if((gjs->action == groupActLeave) || (gjs->action == groupActDisband))
+	{
+		if((gjs->action == groupActDisband) || !strcmp(gjs->yourname, gjs->membername))
+		{
+			//_log(NET__ERROR, "Group Leave, yourname = %s, membername = %s", gjs->yourname, gjs->membername);
+
+			EQApplicationPacket *outapp = new EQApplicationPacket(OP_GroupDisbandYou, sizeof(structs::GroupGeneric_Struct));
+
+			structs::GroupGeneric_Struct *ggs = (structs::GroupGeneric_Struct*)outapp->pBuffer;
+			memcpy(ggs->name1, gjs->yourname, sizeof(ggs->name1));
+			memcpy(ggs->name2, gjs->membername, sizeof(ggs->name1));
+			dest->FastQueuePacket(&outapp);
+
+			// Make an empty GLAA packet to clear out their useable GLAAs
+			//
+			outapp = new EQApplicationPacket(OP_GroupLeadershipAAUpdate, sizeof(GroupLeadershipAAUpdate_Struct));
+
+			dest->FastQueuePacket(&outapp);
+
+			delete in;
+
+			return;
+		}
+		//if(gjs->action == groupActLeave)
+		//	_log(NET__ERROR, "Group Leave, yourname = %s, membername = %s", gjs->yourname, gjs->membername);
+
+		EQApplicationPacket *outapp = new EQApplicationPacket(OP_GroupDisbandOther, sizeof(structs::GroupGeneric_Struct));
+
+		structs::GroupGeneric_Struct *ggs = (structs::GroupGeneric_Struct*)outapp->pBuffer;
+		memcpy(ggs->name1, gjs->yourname, sizeof(ggs->name1));
+		memcpy(ggs->name2, gjs->membername, sizeof(ggs->name2));
+		//_hex(NET__ERROR, outapp->pBuffer, outapp->size);
+		dest->FastQueuePacket(&outapp);
+
+		delete in;
+		return;
+
+
+	}
+
+	if(in->size == sizeof(GroupUpdate2_Struct))
+	{
+		// Group Update2
+		//_log(NET__ERROR, "Struct is GroupUpdate2");
+		
+		unsigned char *__emu_buffer = in->pBuffer;
+		GroupUpdate2_Struct *gu2 = (GroupUpdate2_Struct*) __emu_buffer;
+	
+		//_log(NET__ERROR, "Yourname is %s", gu2->yourname);
+
+		int MemberCount = 1;
+
+		int PacketLength = 8 + strlen(gu2->leadersname) + 1 + 22 + strlen(gu2->yourname) + 1;
+
+		for(int i = 0; i < 5; ++i)
+		{
+			//_log(NET__ERROR, "Membername[%i] is %s", i,  gu2->membername[i]);
+			if(gu2->membername[i][0] != '\0')
+			{
+				PacketLength += (22 + strlen(gu2->membername[i]) + 1);
+				++MemberCount;
+			}
+		}
+
+		//_log(NET__ERROR, "Leadername is %s", gu2->leadersname);
+
+		EQApplicationPacket *outapp = new EQApplicationPacket(OP_GroupUpdateB, PacketLength);
+
+		char *Buffer = (char *)outapp->pBuffer;
+	
+		// Header
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);	// Think this should be SpawnID, but it doesn't seem to matter
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, MemberCount);
+		VARSTRUCT_ENCODE_STRING(Buffer, gu2->leadersname);
+
+		// Leader
+		//
+		
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+		VARSTRUCT_ENCODE_STRING(Buffer, gu2->yourname);
+		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);
+		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);
+		//VARSTRUCT_ENCODE_STRING(Buffer, "");
+		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);	// This is a string
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0x46);	// Observed 0x41 and 0x46 here
+		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+		VARSTRUCT_ENCODE_TYPE(uint16, Buffer, 0);
+
+		int MemberNumber = 1;
+
+		for(int i = 0; i < 5; ++i)
+		{
+			if(gu2->membername[i][0] == '\0')
+				continue;
+
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, MemberNumber++);
+			VARSTRUCT_ENCODE_STRING(Buffer, gu2->membername[i]);
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);
+			//VARSTRUCT_ENCODE_STRING(Buffer, "");
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);	// This is a string
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0x41);	// Observed 0x41 and 0x46 here
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+			VARSTRUCT_ENCODE_TYPE(uint16, Buffer, 0);
+		}
+
+		//_hex(NET__ERROR, outapp->pBuffer, outapp->size);
+		dest->FastQueuePacket(&outapp);
+
+		outapp = new EQApplicationPacket(OP_GroupLeadershipAAUpdate, sizeof(GroupLeadershipAAUpdate_Struct));
+
+		GroupLeadershipAAUpdate_Struct *GLAAus = (GroupLeadershipAAUpdate_Struct*)outapp->pBuffer;
+
+		GLAAus->NPCMarkerID = gu2->NPCMarkerID;
+		memcpy(&GLAAus->LeaderAAs, &gu2->leader_aas, sizeof(GLAAus->LeaderAAs));
+		
+		dest->FastQueuePacket(&outapp);
+		delete in;
+
+		return;
+
+	}
+	//_log(NET__ERROR, "Generic GroupUpdate, yourname = %s, membername = %s", gjs->yourname, gjs->membername);
+	ENCODE_LENGTH_EXACT(GroupJoin_Struct);
+	SETUP_DIRECT_ENCODE(GroupJoin_Struct, structs::GroupJoin_Struct);
+
+	memcpy(eq->membername, emu->membername, sizeof(eq->membername));
+
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_GroupLeadershipAAUpdate, sizeof(GroupLeadershipAAUpdate_Struct));
+
+	GroupLeadershipAAUpdate_Struct *GLAAus = (GroupLeadershipAAUpdate_Struct*)outapp->pBuffer;
+
+	GLAAus->NPCMarkerID = emu->NPCMarkerID;
+
+	memcpy(&GLAAus->LeaderAAs, &emu->leader_aas, sizeof(GLAAus->LeaderAAs));
+	//_hex(NET__ERROR, __packet->pBuffer, __packet->size);
+	FINISH_ENCODE();
+
+	dest->FastQueuePacket(&outapp);
 }
 
 DECODE(OP_InspectAnswer) {
@@ -1864,7 +2223,7 @@ DECODE(OP_AdventureMerchantSell) {
 	SETUP_DIRECT_DECODE(Adventure_Sell_Struct, structs::Adventure_Sell_Struct);
 
 	IN(npcid);
-	emu->slot = SoFToTitaniumSlot(eq->slot);
+	emu->slot = SoDToTitaniumSlot(eq->slot);
 	IN(charges);
 	IN(sell_price);
 
@@ -1876,7 +2235,7 @@ DECODE(OP_ItemVerifyRequest) {
 	DECODE_LENGTH_EXACT(structs::ItemVerifyRequest_Struct);
 	SETUP_DIRECT_DECODE(ItemVerifyRequest_Struct, structs::ItemVerifyRequest_Struct);
 
-	emu->slot = SoFToTitaniumSlot(eq->slot);
+	emu->slot = SoDToTitaniumSlot(eq->slot);
 	IN(target);
 
 	FINISH_DIRECT_DECODE();
@@ -1886,7 +2245,7 @@ DECODE(OP_Consume) {
 	DECODE_LENGTH_EXACT(structs::Consume_Struct);
 	SETUP_DIRECT_DECODE(Consume_Struct, structs::Consume_Struct);
 
-	emu->slot = SoFToTitaniumSlot(eq->slot);
+	emu->slot = SoDToTitaniumSlot(eq->slot);
 	IN(auto_consumed);
 	IN(type);
 
@@ -1899,7 +2258,7 @@ DECODE(OP_CastSpell) {
 
 	IN(slot);
 	IN(spell_id);
-	emu->inventoryslot = SoFToTitaniumSlot(eq->inventoryslot);
+	emu->inventoryslot = SoDToTitaniumSlot(eq->inventoryslot);
 	IN(target_id);
 
 	FINISH_DIRECT_DECODE();
@@ -1912,8 +2271,8 @@ DECODE(OP_MoveItem)
 
 	_log(NET__ERROR, "Moved item from %u to %u", eq->from_slot, eq->to_slot);
 
-	emu->from_slot = SoFToTitaniumSlot(eq->from_slot);
-	emu->to_slot = SoFToTitaniumSlot(eq->to_slot);
+	emu->from_slot = SoDToTitaniumSlot(eq->from_slot);
+	emu->to_slot = SoDToTitaniumSlot(eq->to_slot);
 	IN(number_in_stack);
 
 	FINISH_DIRECT_DECODE();
@@ -1970,6 +2329,19 @@ DECODE(OP_WearChange) {
 	FINISH_DIRECT_DECODE();
 }
 
+DECODE(OP_ShopPlayerBuy)
+{
+	DECODE_LENGTH_EXACT(structs::Merchant_Sell_Struct);
+	SETUP_DIRECT_DECODE(Merchant_Sell_Struct, structs::Merchant_Sell_Struct);
+
+	IN(npcid);
+	IN(playerid);
+	IN(itemslot);
+	IN(quantity);
+	IN(price);
+
+	FINISH_DIRECT_DECODE();
+}
 
 DECODE(OP_ClientUpdate) {
     // for some odd reason, there is an extra byte on the end of this on occasion.. 
@@ -2041,7 +2413,27 @@ DECODE(OP_WhoAllRequest) {
 	FINISH_DIRECT_DECODE();
 }
 
+DECODE(OP_GroupInvite2)
+{
+	//_log(NET__ERROR, "Received incoming OP_GroupInvite2. Forwarding");
+	DECODE_FORWARD(OP_GroupInvite);
+}
+
+DECODE(OP_GroupInvite) {
+	//EQApplicationPacket *in = __packet;
+	//_log(NET__ERROR, "Received incoming OP_GroupInvite");
+	//_hex(NET__ERROR, in->pBuffer, in->size);
+	DECODE_LENGTH_EXACT(structs::GroupInvite_Struct);
+	SETUP_DIRECT_DECODE(GroupGeneric_Struct, structs::GroupInvite_Struct);
+	memcpy(emu->name1, eq->invitee_name, sizeof(emu->name1));
+	memcpy(emu->name2, eq->inviter_name, sizeof(emu->name2));
+	FINISH_DIRECT_DECODE();
+}
+
 DECODE(OP_GroupFollow) {
+	//EQApplicationPacket *in = __packet;
+	//_log(NET__ERROR, "Received incoming OP_GroupFollow");
+	//_hex(NET__ERROR, in->pBuffer, in->size);
 	DECODE_LENGTH_EXACT(structs::GroupFollow_Struct);
 	SETUP_DIRECT_DECODE(GroupGeneric_Struct, structs::GroupFollow_Struct);
 	memcpy(emu->name1, eq->name1, sizeof(emu->name1));
@@ -2050,10 +2442,34 @@ DECODE(OP_GroupFollow) {
 }
 
 DECODE(OP_GroupFollow2) {
+	//EQApplicationPacket *in = __packet;
+	//_log(NET__ERROR, "Received incoming OP_GroupFollow2");
+	//_hex(NET__ERROR, in->pBuffer, in->size);
 	DECODE_LENGTH_EXACT(structs::GroupFollow_Struct);
 	SETUP_DIRECT_DECODE(GroupGeneric_Struct, structs::GroupFollow_Struct);
 	memcpy(emu->name1, eq->name1, sizeof(emu->name1));
 	memcpy(emu->name2, eq->name2, sizeof(emu->name2));
+	FINISH_DIRECT_DECODE();
+}
+
+DECODE(OP_GroupDisband) {
+	//EQApplicationPacket *in = __packet;
+	//_log(NET__ERROR, "Received incoming OP_Disband");
+	//_hex(NET__ERROR, in->pBuffer, in->size);
+	DECODE_LENGTH_EXACT(structs::GroupGeneric_Struct);
+	SETUP_DIRECT_DECODE(GroupGeneric_Struct, structs::GroupGeneric_Struct);
+	memcpy(emu->name1, eq->name1, sizeof(emu->name1));
+	memcpy(emu->name2, eq->name2, sizeof(emu->name2));
+	FINISH_DIRECT_DECODE();
+}
+
+DECODE(OP_GroupCancelInvite)
+{
+	DECODE_LENGTH_EXACT(structs::GroupCancel_Struct);
+	SETUP_DIRECT_DECODE(GroupCancel_Struct, structs::GroupCancel_Struct);
+	memcpy(emu->name1, eq->name1, sizeof(emu->name1));
+	memcpy(emu->name2, eq->name2, sizeof(emu->name2));
+	IN(toggle);
 	FINISH_DIRECT_DECODE();
 }
 
@@ -2076,7 +2492,7 @@ DECODE(OP_ShopPlayerSell) {
 	SETUP_DIRECT_DECODE(Merchant_Purchase_Struct, structs::Merchant_Purchase_Struct);
 
 	IN(npcid);
-	emu->itemslot = SoFToTitaniumSlot(eq->itemslot);
+	emu->itemslot = SoDToTitaniumSlot(eq->itemslot);
 	IN(quantity);
 	IN(price);
 
@@ -2130,7 +2546,7 @@ DECODE(OP_TributeItem) {
 	DECODE_LENGTH_EXACT(structs::TributeItem_Struct);
 	SETUP_DIRECT_DECODE(TributeItem_Struct, structs::TributeItem_Struct);
 
-	emu->slot = SoFToTitaniumSlot(eq->slot);
+	emu->slot = SoDToTitaniumSlot(eq->slot);
 	IN(quantity);
 	IN(tribute_master_id);
 	IN(tribute_points);
@@ -2143,7 +2559,7 @@ DECODE(OP_ReadBook) {
 	SETUP_DIRECT_DECODE(BookRequest_Struct, structs::BookRequest_Struct);
 
 	IN(type);
-	emu->invslot = SoFToTitaniumSlot(eq->invslot);
+	emu->invslot = SoDToTitaniumSlot(eq->invslot);
 	emu->window = (uint8) eq->window;
 	strn0cpy(emu->txtfile, eq->txtfile, sizeof(emu->txtfile));
 
@@ -2154,7 +2570,7 @@ DECODE(OP_TradeSkillCombine) {
 	DECODE_LENGTH_EXACT(structs::NewCombine_Struct);
 	SETUP_DIRECT_DECODE(NewCombine_Struct, structs::NewCombine_Struct);
 
-	emu->container_slot = SoFToTitaniumSlot(eq->container_slot);
+	emu->container_slot = SoDToTitaniumSlot(eq->container_slot);
 
 	FINISH_DIRECT_DECODE();
 }
@@ -2215,11 +2631,11 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 
 	const Item_Struct *item = inst->GetItem();
 	//_log(NET__ERROR, "Serialize called for: %s", item->Name);
-	SoF::structs::ItemSerializationHeader hdr;
+	SoD::structs::ItemSerializationHeader hdr;
 	hdr.stacksize = stackable ? charges : 1;
 	hdr.unknown004 = 0;
 
-	sint32 slot_id = TitaniumToSoFSlot(slot_id_in);
+	sint32 slot_id = TitaniumToSoDSlot(slot_id_in);
 
 	hdr.slot = (merchant_slot == 0) ? slot_id : merchant_slot;
 	hdr.price = inst->GetPrice();
@@ -2236,9 +2652,10 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	hdr.unknown056 = 0;
 	hdr.unknown060 = 0;
 	hdr.unknown061 = 0;
+	hdr.unknown062 = 0;
 	hdr.ItemClass = item->ItemClass;
 
-	ss.write((const char*)&hdr, sizeof(SoF::structs::ItemSerializationHeader));
+	ss.write((const char*)&hdr, sizeof(SoD::structs::ItemSerializationHeader));
 
 	if(strlen(item->Name) > 0)
 	{
@@ -2270,8 +2687,8 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 		ss.write((const char*)&null_term, sizeof(uint8));
 	}
 
-	SoF::structs::ItemBodyStruct ibs;
-	memset(&ibs, 0, sizeof(SoF::structs::ItemBodyStruct));
+	SoD::structs::ItemBodyStruct ibs;
+	memset(&ibs, 0, sizeof(SoD::structs::ItemBodyStruct));
 
 	uint32 adjusted_slots = item->Slots;
 
@@ -2377,7 +2794,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	ibs.FactionAmt4 = item->FactionAmt4;
 	ibs.FactionMod4 = item->FactionMod4;
 
-	ss.write((const char*)&ibs, sizeof(SoF::structs::ItemBodyStruct));
+	ss.write((const char*)&ibs, sizeof(SoD::structs::ItemBodyStruct));
 
 	//charm text
 	if(strlen(item->CharmFile) > 0)
@@ -2390,8 +2807,8 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 		ss.write((const char*)&null_term, sizeof(uint8));
 	}
 
-	SoF::structs::ItemSecondaryBodyStruct isbs;
-	memset(&isbs, 0, sizeof(SoF::structs::ItemSecondaryBodyStruct));
+	SoD::structs::ItemSecondaryBodyStruct isbs;
+	memset(&isbs, 0, sizeof(SoD::structs::ItemSecondaryBodyStruct));
 
 	isbs.augtype = item->AugType;
 	isbs.augrestrict = item->AugRestrict;
@@ -2417,7 +2834,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	isbs.book = item->Book;
 	isbs.booktype = item->BookType;
 
-	ss.write((const char*)&isbs, sizeof(SoF::structs::ItemSecondaryBodyStruct));
+	ss.write((const char*)&isbs, sizeof(SoD::structs::ItemSecondaryBodyStruct));
 
 	if(strlen(item->Filename) > 0)
 	{
@@ -2429,8 +2846,8 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 		ss.write((const char*)&null_term, sizeof(uint8));
 	}
 
-	SoF::structs::ItemTertiaryBodyStruct itbs;
-	memset(&itbs, 0, sizeof(SoF::structs::ItemTertiaryBodyStruct));
+	SoD::structs::ItemTertiaryBodyStruct itbs;
+	memset(&itbs, 0, sizeof(SoD::structs::ItemTertiaryBodyStruct));
 	
 	itbs.loregroup = item->LoreGroup;
 	itbs.artifact = item->ArtifactFlag;
@@ -2533,7 +2950,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 		}
 	}
 
-	ss.write((const char*)&itbs, sizeof(SoF::structs::ItemTertiaryBodyStruct));
+	ss.write((const char*)&itbs, sizeof(SoD::structs::ItemTertiaryBodyStruct));
 
 	for(int x = 0; x < 10; ++x) {
 
@@ -2556,7 +2973,3 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 }
 
 } //end namespace SoF
-
-
-
-

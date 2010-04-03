@@ -448,8 +448,15 @@ bool Mob::MakeNewPositionAndSendUpdate(float x, float y, float z, float speed, b
 		
 		mlog(AI__WAYPOINTS, "Calculating new position2 to (%.3f, %.3f, %.3f), old vector (%.3f, %.3f, %.3f)", x, y, z, tar_vx, tar_vy, tar_vz);
 		
+		int8 NPCFlyMode = 0;
+
+		if(IsNPC()) {
+			if(CastToNPC()->GetFlyMode() == 1 || CastToNPC()->GetFlyMode() == 2)
+				NPCFlyMode = 1;
+		}
+
 		//fix up pathing Z
-		if(checkZ && zone->HasMap() && RuleB(Map, FixPathingZWhenMoving))
+		if(!NPCFlyMode && checkZ && zone->HasMap() && RuleB(Map, FixPathingZWhenMoving))
 		{
 			if(!RuleB(Watermap, CheckForWaterWhenMoving) || !zone->HasWaterMap() ||
 			    (zone->HasWaterMap() && !zone->watermap->InWater(x_pos, y_pos, z_pos)))
@@ -550,8 +557,15 @@ bool Mob::MakeNewPositionAndSendUpdate(float x, float y, float z, float speed, b
 		mlog(AI__WAYPOINTS, "Next position2 (%.3f, %.3f, %.3f) (%d steps)", x_pos, y_pos, z_pos, numsteps);
 	}
 	
+	int8 NPCFlyMode = 0;
+
+	if(IsNPC()) {
+		if(CastToNPC()->GetFlyMode() == 1 || CastToNPC()->GetFlyMode() == 2)
+			NPCFlyMode = 1;
+	}
+
 	//fix up pathing Z
-	if(checkZ && zone->HasMap() && RuleB(Map, FixPathingZWhenMoving)) {
+	if(!NPCFlyMode && checkZ && zone->HasMap() && RuleB(Map, FixPathingZWhenMoving)) {
 
 		if(!RuleB(Watermap, CheckForWaterWhenMoving) || !zone->HasWaterMap() ||
 		   (zone->HasWaterMap() && !zone->watermap->InWater(x_pos, y_pos, z_pos)))
@@ -656,8 +670,15 @@ bool Mob::CalculateNewPosition(float x, float y, float z, float speed, bool chec
 		mlog(AI__WAYPOINTS, "Next position (%.3f, %.3f, %.3f)", x_pos, y_pos, z_pos);
 	}
 	
+	int8 NPCFlyMode = 0;
+
+	if(IsNPC()) {
+		if(CastToNPC()->GetFlyMode() == 1 || CastToNPC()->GetFlyMode() == 2)
+			NPCFlyMode = 1;
+	}
+
 	//fix up pathing Z
-	if(checkZ && zone->HasMap() && RuleB(Map, FixPathingZWhenMoving))
+	if(!NPCFlyMode && checkZ && zone->HasMap() && RuleB(Map, FixPathingZWhenMoving))
 	{
 		if(!RuleB(Watermap, CheckForWaterWhenMoving) || !zone->HasWaterMap() ||
 		   (zone->HasWaterMap() && !zone->watermap->InWater(x_pos, y_pos, z_pos)))

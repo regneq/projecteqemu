@@ -516,7 +516,7 @@ bool Client::MakeItemLink(char* &ret_link, const ItemInst *inst) {
 	int8 evolvedlevel = 0;
 	int hash = 0;
 	//int hash = GetItemLinkHash(inst);	//eventually this will work (currently crashes zone), but for now we'll skip the extra overhead
-	if (GetClientVersion() == EQClientSoF)
+	if (GetClientVersion() >= EQClientSoF)
 	{
 		MakeAnyLenString(&ret_link, "%1X" "%05X" "%05X" "%05X" "%05X" "%05X" "%05X" "%1X" "%04X" "%1X" "%05X" "%08X", 
 			0,
@@ -686,6 +686,27 @@ void Client::SendLootItemInPacket(const ItemInst* inst, sint16 slot_id)
 	SendItemPacket(slot_id,inst, ItemPacketTrade);
 }
 
+bool Client::IsValidSlot(uint32 slot)
+{
+	if((slot == -1) ||						// Deleting item
+		(slot >= 0 && slot <= 30) ||		// Worn inventory, normal inventory, and cursor
+		(slot >= 251 && slot <= 340) ||		// Normal inventory bags and cursor bag
+		(slot >= 400 && slot <= 404) ||		// Tribute
+		(slot >= 2000 && slot <= 2023) ||	// Bank
+		(slot >= 2031 && slot <= 2270) ||	// Bank bags
+		(slot >= 2500 && slot <= 2501) ||	// Shared bank
+		(slot >= 2531 && slot <= 2550) ||	// Shared bank bags
+		(slot >= 3000 && slot <= 3007) ||	// Trade window
+		(slot >= 4000 && slot <= 4009) ||	// Tradeskill container
+		(slot == 9999))						// Power Source
+	{
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
 // Moves items around both internally and in the database
 // In the future, this can be optimized by pushing all changes through one database REPLACE call
 bool Client::SwapItem(MoveItem_Struct* move_in) {
@@ -704,7 +725,26 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 	// Step 1: Variables
 	sint16 src_slot_id = (sint16)move_in->from_slot;
 	sint16 dst_slot_id = (sint16)move_in->to_slot;
-	
+	uint32 src_slot_check = move_in->from_slot;
+	uint32 dst_slot_check = move_in->to_slot;
+	uint32 stack_count_check = move_in->number_in_stack;
+
+	if(!IsValidSlot(src_slot_check)){
+		// SoF seems to send something for the first 16bits of this 32bit field on occasion. Don't warn for those.
+		if(src_slot_check < 3000000000)
+			Message(13, "Warning: Invalid slot move from slot %u to slot %u with %u charges!", src_slot_check, dst_slot_check, stack_count_check);
+		mlog(INVENTORY__SLOTS, "Invalid slot move from slot %u to slot %u with %u charges!", src_slot_check, dst_slot_check, stack_count_check);
+		return false;
+	}
+
+	if(!IsValidSlot(dst_slot_check)) {
+		// SoF seems to send something for the first 16bits of this 32bit field on occasion. Don't warn for those.
+		if(src_slot_check < 3000000000)
+			Message(13, "Warning: Invalid slot move from slot %u to slot %u with %u charges!", src_slot_check, dst_slot_check, stack_count_check);
+		mlog(INVENTORY__SLOTS, "Invalid slot move from slot %u to slot %u with %u charges!", src_slot_check, dst_slot_check, stack_count_check);
+		return false;
+	}
+
 	if (shield_target && (move_in->from_slot == 14 || move_in->to_slot == 14))
 	{
 		entity_list.MessageClose(this,false,100,0,"%s ceases shielding %s.",GetName(),shield_target->GetName());
@@ -761,7 +801,7 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 	// Step 2: Validate item in from_slot
 	// After this, we can assume src_inst is a valid ptr
 	if (!src_inst && (src_slot_id<4000 || src_slot_id>4009)) {
-		if (GetClientVersion() != EQClientSoF)  // SoF client sends invalid slots regularly for an unknown use, so don't warn them about this.
+		if (GetClientVersion() < EQClientSoF)  // SoF client sends invalid slots regularly for an unknown use, so don't warn them about this.
 			Message(13, "Error: Server found no item in slot %i (->%i), Deleting Item!", src_slot_id, dst_slot_id);
 
 		LogFile->write(EQEMuLog::Debug, "Error: Server found no item in slot %i (->%i), Deleting Item!", src_slot_id, dst_slot_id);
@@ -1208,7 +1248,7 @@ void Client::RemoveNoRent() {
 		if(TempItem->NoRent == 0)
 			DeleteItemInInventory(x,0,true);
 	}
-	if(GetClientVersion() == EQClientSoF)
+	if(GetClientVersion() >= EQClientSoF)
 	{
 		TempItem = 0;
 		ins = GetInv().GetItem(9999);

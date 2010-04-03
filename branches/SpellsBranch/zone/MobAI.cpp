@@ -941,7 +941,7 @@ void Client::AI_Process()
 				{
 					float DualWieldProbability = (GetSkill(DUAL_WIELD) + GetLevel()) / 400.0f; // 78.0 max
 					DualWieldProbability += (0.1f * GetAA(aaAmbidexterity));
-					DualWieldProbability += ((spellbonuses.DualWeildChance + itembonuses.DualWeildChance) / 100.0f);			
+					DualWieldProbability += ((spellbonuses.DualWieldChance + itembonuses.DualWieldChance) / 100.0f);			
 
 					if(MakeRandomFloat(0.0, 1.0) < DualWieldProbability)
 					{
@@ -1248,7 +1248,7 @@ void Mob::AI_Process() {
 				if (attack_dw_timer.Check() && CanThisClassDualWield()) 
 				{
 					int myclass = GetClass();
-					//can only dual weild without a weapon if your a monk
+					//can only dual wield without a weapon if your a monk
 					if((GetEquipment(MATERIAL_SECONDARY) != 0 && GetLevel() > 39) || myclass == MONK || myclass == MONKGM) {
 						float DualWieldProbability = (GetSkill(DUAL_WIELD) + GetLevel()) / 400.0f;
 						DualWieldProbability -= MakeRandomFloat(0, 1);
@@ -1382,16 +1382,15 @@ void Mob::AI_Process() {
 						//	printf("Pet start pos: (%f, %f, %f)\n", GetX(), GetY(), GetZ());
 						
 						float dist = DistNoRoot(*owner);
-						if (dist >= 100) 
+						if (dist >= 400) 
 						{
 							float speed = GetWalkspeed();
-							if (dist >= 225)
+							if (dist >= 5625)
 								speed = GetRunspeed();
 							CalculateNewPosition2(owner->GetX(), owner->GetY(), owner->GetZ(), speed);
 						}
 						else
 						{
-							SetHeading(owner->GetHeading());
 							if(moved)
 							{
 								moved=false;

@@ -2730,13 +2730,13 @@ void command_race(Client *c, const Seperator *sep)
   Mob *t=c->CastToMob();
 
 	// @merth: Need to figure out max race for LoY/LDoN: going with upper bound of 500 now for testing
-	if (sep->IsNumber(1) && atoi(sep->arg[1]) >= 0 && atoi(sep->arg[1]) <= 586) {
+	if (sep->IsNumber(1) && atoi(sep->arg[1]) >= 0 && atoi(sep->arg[1]) <= 626) {
 		if ((c->GetTarget()) && c->Admin() >= commandRaceOthers)
 			t=c->GetTarget();
 		t->SendIllusionPacket(atoi(sep->arg[1]));
 	}
 	else
-		c->Message(0, "Usage: #race [0-586]  (0 for back to normal)");
+		c->Message(0, "Usage: #race [0-626]  (0 for back to normal)");
 }
 
 void command_gender(Client *c, const Seperator *sep)
@@ -3016,7 +3016,7 @@ void command_peekinv(Client *c, const Seperator *sep)
 		for (sint16 i=0; i<=21; i++) {
 			const ItemInst* inst = client->GetInv().GetItem(i);
 			item = (inst) ? inst->GetItem() : NULL;
-			if (c->GetClientVersion() == EQClientSoF)
+			if (c->GetClientVersion() >= EQClientSoF)
 			{
 				c->Message((item==0), "WornSlot: %i, Item: %i (%c%06X00000000000000000000000000000000000000000000%s%c)", i,
 					((item==0)?0:item->ID),0x12, ((item==0)?0:item->ID),
@@ -3036,7 +3036,7 @@ void command_peekinv(Client *c, const Seperator *sep)
 		for (sint16 i=22; i<=29; i++) {
 			const ItemInst* inst = client->GetInv().GetItem(i);
 			item = (inst) ? inst->GetItem() : NULL;
-			if (c->GetClientVersion() == EQClientSoF)
+			if (c->GetClientVersion() >= EQClientSoF)
 			{
 				c->Message((item==0), "InvSlot: %i, Item: %i (%c%06X00000000000000000000000000000000000000000000%s%c)", i,
 					((item==0)?0:item->ID),0x12, ((item==0)?0:item->ID),
@@ -3053,7 +3053,7 @@ void command_peekinv(Client *c, const Seperator *sep)
 				for (uint8 j=0; j<10; j++) {
 					const ItemInst* instbag = client->GetInv().GetItem(i, j);
 					item = (instbag) ? instbag->GetItem() : NULL;
-					if (c->GetClientVersion() == EQClientSoF)
+					if (c->GetClientVersion() >= EQClientSoF)
 					{
 						c->Message((item==0), "   InvBagSlot: %i (Slot #%i, Bag #%i), Item: %i (%c%06X00000000000000000000000000000000000000000000%s%c)",
 							Inventory::CalcSlotId(i, j),
@@ -3070,7 +3070,7 @@ void command_peekinv(Client *c, const Seperator *sep)
 				}
 			}
 		}
-		if(c->GetClientVersion() == EQClientSoF)
+		if(c->GetClientVersion() >= EQClientSoF)
 		{
 			const ItemInst* inst = client->GetInv().GetItem(9999);
 			item = (inst) ? inst->GetItem() : NULL;
@@ -3087,7 +3087,7 @@ void command_peekinv(Client *c, const Seperator *sep)
 		for(it=client->GetInv().cursor_begin();it!=client->GetInv().cursor_end();it++,i++) {
 			const ItemInst* inst = *it;
 			item = (inst) ? inst->GetItem() : NULL;
-			if (c->GetClientVersion() == EQClientSoF)
+			if (c->GetClientVersion() >= EQClientSoF)
 			{
 				c->Message((item==0), "CursorSlot: %i, Depth: %i, Item: %i (%c%06X00000000000000000000000000000000000000000000%s%c)", SLOT_CURSOR,i,
 					((item==0)?0:item->ID),0x12, ((item==0)?0:item->ID),
@@ -3104,7 +3104,7 @@ void command_peekinv(Client *c, const Seperator *sep)
 				for (uint8 j=0; j<10; j++) {
 					const ItemInst* instbag = client->GetInv().GetItem(SLOT_CURSOR, j);
 					item = (instbag) ? instbag->GetItem() : NULL;
-					if (c->GetClientVersion() == EQClientSoF)
+					if (c->GetClientVersion() >= EQClientSoF)
 					{
 						c->Message((item==0), "   CursorBagSlot: %i (Slot #%i, Bag #%i), Item: %i (%c%06X00000000000000000000000000000000000000000000%s%c)",
 							Inventory::CalcSlotId(SLOT_CURSOR, j),
@@ -3129,7 +3129,7 @@ void command_peekinv(Client *c, const Seperator *sep)
 		for (i=2000; i<=2023; i++) {
 			const ItemInst* inst = client->GetInv().GetItem(i);
 			item = (inst) ? inst->GetItem() : NULL;
-			if (c->GetClientVersion() == EQClientSoF)
+			if (c->GetClientVersion() >= EQClientSoF)
 			{
 				c->Message((item==0), "BankSlot: %i, Item: %i (%c%06X00000000000000000000000000000000000000000000%s%c)", i,
 				((item==0)?0:item->ID),0x12, ((item==0)?0:item->ID),
@@ -3146,7 +3146,7 @@ void command_peekinv(Client *c, const Seperator *sep)
 				for (uint8 j=0; j<10; j++) {
 					const ItemInst* instbag = client->GetInv().GetItem(i, j);
 					item = (instbag) ? instbag->GetItem() : NULL;
-					if (c->GetClientVersion() == EQClientSoF)
+					if (c->GetClientVersion() >= EQClientSoF)
 					{
 						c->Message((item==0), "   BankBagSlot: %i (Slot #%i, Bag #%i), Item: %i (%c%06X00000000000000000000000000000000000000000000%s%c)",
 							Inventory::CalcSlotId(i, j),
@@ -3166,7 +3166,7 @@ void command_peekinv(Client *c, const Seperator *sep)
 		for (i=2500; i<=2501; i++) {
 			const ItemInst* inst = client->GetInv().GetItem(i);
 			item = (inst) ? inst->GetItem() : NULL;
-			if (c->GetClientVersion() == EQClientSoF)
+			if (c->GetClientVersion() >= EQClientSoF)
 			{
 				c->Message((item==0), "ShBankSlot: %i, Item: %i (%c%06X00000000000000000000000000000000000000000000%s%c)", i,
 					((item==0)?0:item->ID),0x12, ((item==0)?0:item->ID),
@@ -3183,7 +3183,7 @@ void command_peekinv(Client *c, const Seperator *sep)
 				for (uint8 j=0; j<10; j++) {
 					const ItemInst* instbag = client->GetInv().GetItem(i, j);
 					item = (instbag) ? instbag->GetItem() : NULL;
-					if (c->GetClientVersion() == EQClientSoF)
+					if (c->GetClientVersion() >= EQClientSoF)
 					{
 						c->Message((item==0), "   ShBankBagSlot: %i (Slot #%i, Bag #%i), Item: %i (%c%06X00000000000000000000000000000000000000000000%s%c)",
 							Inventory::CalcSlotId(i, j),
@@ -3207,7 +3207,7 @@ void command_peekinv(Client *c, const Seperator *sep)
 		for (sint16 i=3000; i<=3007; i++) {
 			const ItemInst* inst = client->GetInv().GetItem(i);
 			item = (inst) ? inst->GetItem() : NULL;
-			if (c->GetClientVersion() == EQClientSoF)
+			if (c->GetClientVersion() >= EQClientSoF)
 			{
 				c->Message((item==0), "TradeSlot: %i, Item: %i (%c%06X00000000000000000000000000000000000000000000%s%c)", i,
 					((item==0)?0:item->ID),0x12, ((item==0)?0:item->ID),
@@ -3224,7 +3224,7 @@ void command_peekinv(Client *c, const Seperator *sep)
 				for (uint8 j=0; j<10; j++) {
 					const ItemInst* instbag = client->GetInv().GetItem(i, j);
 					item = (instbag) ? instbag->GetItem() : NULL;
-					if (c->GetClientVersion() == EQClientSoF)
+					if (c->GetClientVersion() >= EQClientSoF)
 					{
 						c->Message((item==0), "   TradeBagSlot: %i (Slot #%i, Bag #%i), Item: %i (%c%06X00000000000000000000000000000000000000000000%s%c)",
 							Inventory::CalcSlotId(i, j),
@@ -3761,8 +3761,8 @@ void command_fixmob(Client *c, const Seperator *sep)
 		if (strcasecmp(command, "race") == 0)
 		{			
 			if (Race == 0 && codeMove == 'p')
-				Race = 586;
-			else if (Race >= 586 && codeMove != 'p')
+				Race = 626;
+			else if (Race >= 626 && codeMove != 'p')
 				Race = 0;
 			else
 				Race += Adjustment;
@@ -6067,7 +6067,7 @@ void command_itemsearch(Client *c, const Seperator *sep)
 		if (Seperator::IsNumber(search_criteria)) {
 			item = database.GetItem(atoi(search_criteria));
 			if (item)
-				if (c->GetClientVersion() == EQClientSoF)
+				if (c->GetClientVersion() >= EQClientSoF)
 				{
 					c->Message(0, "  %i: %c%06X00000000000000000000000000000000000000000000%s%c",(int) item->ID,0x12, item->ID, item->Name, 0x12);
 				}
@@ -6093,7 +6093,7 @@ void command_itemsearch(Client *c, const Seperator *sep)
 			strupr(sName);
 			pdest = strstr(sName, sCriteria);
 			if (pdest != NULL) {
-				if (c->GetClientVersion() == EQClientSoF)
+				if (c->GetClientVersion() >= EQClientSoF)
 				{
 					c->Message(0, "  %i: %c%06X00000000000000000000000000000000000000000000%s%c",(int) item->ID,0x12, item->ID, item->Name, 0x12);
 				}

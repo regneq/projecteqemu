@@ -5932,6 +5932,7 @@ XS(XS_Mob_ClearFeignMemory)
 	}
 	XSRETURN_EMPTY;
 }
+
 XS(XS_Mob_SetOOCRegen); /* prototype to pass -Wmissing-prototypes */
 XS(XS_Mob_SetOOCRegen)
 {
@@ -6386,8 +6387,8 @@ XS(XS_Mob_SendAppearanceEffect); /* prototype to pass -Wmissing-prototypes */
 XS(XS_Mob_SendAppearanceEffect)
 {
 	dXSARGS;
-	if (items < 2 || items > 6)
-		Perl_croak(aTHX_ "Usage: Mob::SendAppearanceEffect(THIS, parm1, parm2, parm3, parm4, parm5)");
+	if (items < 2 || items > 7)
+		Perl_croak(aTHX_ "Usage: Mob::SendAppearanceEffect(THIS, parm1, parm2, parm3, parm4, parm5, singleclient)");
 	{
 		Mob *		THIS;
 		sint32		parm1 = (sint32)SvIV(ST(1));
@@ -6395,6 +6396,7 @@ XS(XS_Mob_SendAppearanceEffect)
 		sint32		parm3 = 0;
 		sint32		parm4 = 0;
 		sint32		parm5 = 0;
+		Client*		client = NULL;
 
 		if (sv_derived_from(ST(0), "Mob")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -6409,8 +6411,164 @@ XS(XS_Mob_SendAppearanceEffect)
 		if (items > 3)	{	parm3 = (sint32)SvIV(ST(3));	}
 		if (items > 4)	{	parm4 = (sint32)SvIV(ST(4));	}
 		if (items > 5)	{	parm5 = (sint32)SvIV(ST(5));	}
+		if (items > 6)	{
+			if (sv_derived_from(ST(6), "Client")) {
+				IV tmp = SvIV((SV*)SvRV(ST(6)));
+				client = INT2PTR(Client *,tmp);
+			}
+			else
+				Perl_croak(aTHX_ "client is not of type Client");
+			if(client == NULL)
+				Perl_croak(aTHX_ "client is NULL, avoiding crash.");
+		}
 
-		THIS->SendAppearanceEffect(parm1, parm2, parm3, parm4, parm5);
+		THIS->SendAppearanceEffect(parm1, parm2, parm3, parm4, parm5, client);
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_Mob_SetFlyMode); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_SetFlyMode)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Mob::SetFlyMode(THIS, 0|1|2|3)");
+	{
+		Mob *		THIS;
+		int8		flymode = (int8)SvIV(ST(1));
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->SetFlyMode(flymode);
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_Mob_SetTexture); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_SetTexture)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Mob::SetTexture(THIS, texture)");
+	{
+		Mob *		THIS;
+		sint32		texture = (sint32)SvIV(ST(1));
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->SendIllusionPacket(THIS->GetRace(), 0xFF, texture);
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_Mob_SetRace); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_SetRace)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Mob::SetRace(THIS, race)");
+	{
+		Mob *		THIS;
+		sint32		race = (sint32)SvIV(ST(1));
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->SendIllusionPacket(race);
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_Mob_SetGender); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_SetGender)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Mob::SetGender(THIS, gender)");
+	{
+		Mob *		THIS;
+		sint32		gender = (sint32)SvIV(ST(1));
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->SendIllusionPacket(THIS->GetRace(),gender);
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_Mob_SendIllusion); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_SendIllusion)
+{
+	dXSARGS;
+	if (items < 2 || items > 14)
+		Perl_croak(aTHX_ "Usage: Mob::SendIllusion(THIS,race,gender,texture,helmtexture,face,hairstyle,haircolor,beard,beardcolor,drakkin_heritage,drakkin_tattoo,drakkin_details,size)");
+	{
+		Mob *		THIS;
+		int16		race = (int16)SvIV(ST(1));
+		int8		gender = 0xFF;
+		int8		texture = 0xFF;
+		int8		helmtexture = 0xFF;
+		int8		face = 0xFF;
+		int8		hairstyle = 0xFF;
+		int8		haircolor = 0xFF;
+		int8		beard = 0xFF;
+		int8		beardcolor = 0xFF;
+		int32		drakkin_heritage = 0xFFFFFFFF;
+		int32		drakkin_tattoo = 0xFFFFFFFF;
+		int32		drakkin_details = 0xFFFFFFFF;
+		float		size = 0xFFFFFFFF;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		if(items > 2) {gender = (int8)SvIV(ST(2));}
+		if(items > 3) {texture = (int8)SvIV(ST(3));}
+		if(items > 4) {helmtexture = (int8)SvIV(ST(4));}
+		if(items > 5) {face = (int8)SvIV(ST(5));}
+		if(items > 6) {hairstyle = (int8)SvIV(ST(6));}
+		if(items > 7) {haircolor = (int8)SvIV(ST(7));}
+		if(items > 8) {beard = (int8)SvIV(ST(8));}
+		if(items > 9) {beardcolor = (int8)SvIV(ST(9));}
+		if(items > 10) {drakkin_heritage = (int32)SvIV(ST(10));}
+		if(items > 11) {drakkin_tattoo = (int32)SvIV(ST(11));}
+		if(items > 12) {drakkin_details = (int32)SvIV(ST(12));}
+		if(items > 13) {size = (float)SvNV(ST(13));}
+
+		THIS->SendIllusionPacket(race,gender,texture,helmtexture,haircolor,beardcolor,0xFF,0xFF,
+			hairstyle,face,beard,0xFF,drakkin_heritage,drakkin_tattoo,drakkin_details,size);
 	}
 	XSRETURN_EMPTY;
 }
@@ -6775,6 +6933,11 @@ XS(boot_Mob)
 		newXSproto(strcpy(buf, "ProjectileAnim"), XS_Mob_ProjectileAnim, file, "$$$;$$$$$");
 		newXSproto(strcpy(buf, "HasNPCSpecialAtk"), XS_Mob_HasNPCSpecialAtk, file, "$$");
 		newXSproto(strcpy(buf, "SendAppearanceEffect"), XS_Mob_SendAppearanceEffect, file, "$$:$$$$");
+		newXSproto(strcpy(buf, "SetFlyMode"), XS_Mob_SetFlyMode, file, "$$");
+		newXSproto(strcpy(buf, "SetTexture"), XS_Mob_SetTexture, file, "$$");
+		newXSproto(strcpy(buf, "SetRace"), XS_Mob_SetRace, file, "$$");
+		newXSproto(strcpy(buf, "SetGender"), XS_Mob_SetGender, file, "$$");
+		newXSproto(strcpy(buf, "SendIllusion"), XS_Mob_SendIllusion, file, "$$:$$$$$$$$$$$$");
 		newXSproto(strcpy(buf, "CreateSpell"), XS_Mob_CreateSpell, file, "$$$$");
 		newXSproto(strcpy(buf, "FreeSpell"), XS_Mob_FreeSpell, file, "$$");
 		newXSproto(strcpy(buf, "CastCustomSpell"), XS_Mob_CastCustomSpell, file, "$$");

@@ -200,6 +200,10 @@
 #define DISCIPLINE_REUSE_MSG		5807	//You can use the ability %1 again in %2 hour(s) %3 minute(s) %4 seconds.
 #define DISCIPLINE_REUSE_MSG2		5808	//You can use the ability %1 again in %2 minute(s) %3 seconds.
 #define AA_NO_TARGET				5825	//You must first select a target for this ability!
+#define GUILD_BANK_CANNOT_DEPOSIT	6097	// Cannot deposit this item.  Containers must be empty, and only one of each LORE and no NO TRADE or TEMPORARY items may be deposited.
+#define GUILD_BANK_FULL			6098	// There is no more room in the Guild Bank.
+#define GUILD_BANK_TRANSFERRED		6100	// '%1' transferred to Guild Bank from Deposits.
+#define GUILD_BANK_EMPTY_HANDS		6108	// You must empty your hands to withdraw from the Guild Bank.
 #define GENERIC_STRING				6688	//%1  (used to any basic message)
 #define SENTINEL_TRIG_YOU			6724	//You have triggered your sentinel.
 #define SENTINEL_TRIG_OTHER			6725	//%1 has triggered your sentinel.
@@ -254,6 +258,12 @@
 #define LDON_SENSE_TRAP3			12476	//You don't sense any traps.
 #define INTERRUPT_SPELL_OTHER		12478	//%1's casting is interrupted!
 #define YOU_HIT_NONMELEE			12481	//You were hit by non-melee for %1 damage.
+#define TRACK_LOST_TARGET			12681	//You have lost your tracking target.
+#define TRACK_STRAIGHT_AHEAD			12676
+#define TRACK_AHEAD_AND_TO			12677
+#define TRACK_TO_THE				12678
+#define TRACK_BEHIND_AND_TO			12679
+#define TRACK_BEHIND_YOU			12680
 #define BEAM_SMILE					12501	//%1 beams a smile at %2
 #define SONG_ENDS_ABRUPTLY			12686	//Your song ends abruptly.
 #define SONG_ENDS					12687	//Your song ends.

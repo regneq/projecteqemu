@@ -144,11 +144,11 @@ bool Mob::AttackAnimation(SkillType &skillinuse, int Hand, const ItemInst* weapo
 				type = anim2HWeapon;
 				break;
 			}
-			//case PIERCING: // 2H Piercing
-			//{
-			//	type = anim2HWeapon;
-			//	break;
-			//}
+			case 99: // 2H Piercing
+			{
+				type = anim2HWeapon;
+				break;
+			}
 			case HAND_TO_HAND:
 			{
 				type = animHand2Hand;
@@ -168,7 +168,7 @@ bool Mob::AttackAnimation(SkillType &skillinuse, int Hand, const ItemInst* weapo
 	
 	// If we're attacking with the secondary hand, play the dual wield anim
 	if (Hand == 14)	// DW anim
-		type = animDualWeild;
+		type = animDualWield;
 	
 	DoAnim(type);
     return true;
@@ -1481,7 +1481,7 @@ void Client::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_
 		exploss = (int)(GetLevel() * (GetLevel() / 18.0) * 12000);
 	}
 
-	if( (GetLevel() < RuleI(Character, DeathExpLossLevel)) || IsBecomeNPC() )
+	if( (GetLevel() < RuleI(Character, DeathExpLossLevel)) || (GetLevel() > RuleI(Character, DeathExpLossMaxLevel)) || IsBecomeNPC() )
 	{
 		exploss = 0;
 	}
@@ -1728,6 +1728,10 @@ bool NPC::Attack(Mob* other, int Hand, bool bRiposte)	 // Kaiyodo - base functio
 	ItemInst weapon_inst(weapon, charges);
 	AttackAnimation(skillinuse, Hand, &weapon_inst);
 
+	//Work-around for there being no 2HP skill - We use 99 for the 2HB animation and 36 for pierce messages
+	if(skillinuse == 99)
+		skillinuse = static_cast<SkillType>(36);
+
 	//basically "if not immune" then do the attack
 	if((weapon_damage) > 0) {
 
@@ -1970,9 +1974,10 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 
 	if(give_exp == NULL)
 		give_exp = killer;
-	if(give_exp && give_exp->GetOwner() != 0)
-		give_exp = give_exp->GetOwner();
-	
+
+	if(give_exp && give_exp->HasOwner())
+		give_exp = give_exp->GetUltimateOwner();
+
 	Client *give_exp_client = NULL;
 	if(give_exp && give_exp->IsClient())
 		give_exp_client = give_exp->CastToClient();
@@ -2090,7 +2095,7 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 	
 	//TODO: rewrite this; big and slow and really makes me cringe
 	if (!HasOwner() && class_ != MERCHANT && class_ != ADVENTUREMERCHANT && !GetSwarmInfo()
-		&& MerchantType == 0 && killer && (killer->IsClient() || (killer->HasOwner() && killer->GetOwner()->IsClient()) ||
+		&& MerchantType == 0 && killer && (killer->IsClient() || (killer->HasOwner() && killer->GetUltimateOwner()->IsClient()) ||
 		(killer->IsNPC() && killer->CastToNPC()->GetSwarmInfo() && killer->CastToNPC()->GetSwarmInfo()->GetOwner() && killer->CastToNPC()->GetSwarmInfo()->GetOwner()->IsClient()))) {
 		Corpse* corpse = new Corpse(this, &itemlist, GetNPCTypeID(), &NPCTypedata,level>54?RuleI(NPC,MajorNPCCorpseDecayTimeMS):RuleI(NPC,MinorNPCCorpseDecayTimeMS));
 		entity_list.LimitRemoveNPC(this);

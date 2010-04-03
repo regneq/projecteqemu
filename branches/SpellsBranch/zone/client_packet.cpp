@@ -361,6 +361,7 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_Report] = &Client::Handle_OP_Report;
 	ConnectedOpcodes[OP_VetClaimRequest] = &Client::Handle_OP_VetClaimRequest;
 	ConnectedOpcodes[OP_GMSearchCorpse] = &Client::Handle_OP_GMSearchCorpse;
+	ConnectedOpcodes[OP_GuildBank] = &Client::Handle_OP_GuildBank;
 }
 
 int Client::HandlePacket(const EQApplicationPacket *app)
@@ -490,6 +491,8 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 		ClientVersion = EQClient62;
 	else if(StreamDescription == "Patch SoF")
 		ClientVersion = EQClientSoF;
+	else if(StreamDescription == "Patch SoD")
+		ClientVersion = EQClientSoD;
 
 	// Quagmire - Antighost code
 	// tmp var is so the search doesnt find this object
@@ -1304,6 +1307,11 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 	// Outgoing client packet
 	if (ppu->y_pos != y_pos || ppu->x_pos != x_pos || ppu->heading != heading || ppu->animation != animation)
 	{
+		x_pos			= ppu->x_pos;
+		y_pos			= ppu->y_pos;
+		z_pos			= ppu->z_pos;
+		animation		= ppu->animation;
+
 		EQApplicationPacket* outapp = new EQApplicationPacket(OP_ClientUpdate, sizeof(PlayerPositionUpdateServer_Struct));
 		PlayerPositionUpdateServer_Struct* ppu = (PlayerPositionUpdateServer_Struct*)outapp->pBuffer;
 		MakeSpawnUpdate(ppu);
@@ -1326,10 +1334,6 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 		}
 	}
 
-	x_pos			= ppu->x_pos;
-	y_pos			= ppu->y_pos;
-	z_pos			= ppu->z_pos;
-	animation		= ppu->animation;
 	return;
 }
 
@@ -1892,7 +1896,21 @@ void Client::Handle_OP_ItemVerifyRequest(const EQApplicationPacket *app)
 		{
 			if ((item->Click.Type == ET_ClickEffect) || (item->Click.Type == ET_Expendable) || (item->Click.Type == ET_EquipClick) || (item->Click.Type == ET_ClickEffect2))
 			{
-				CastSpell(item->Click.Effect, target_id, 10, item->CastTime, 0, 0, slot_id);
+				if(item->Click.Level2 > 0)
+				{
+					if(GetLevel() >= item->Click.Level2)
+					{
+						CastSpell(item->Click.Effect, target_id, 10, item->CastTime, 0, 0, slot_id);
+					}
+					else
+					{
+						Message(0, "Error: level not high enough.");
+					}					
+				}
+				else
+				{
+					CastSpell(item->Click.Effect, target_id, 10, item->CastTime, 0, 0, slot_id);
+				}
 			}
 			else
 			{
@@ -1902,13 +1920,11 @@ void Client::Handle_OP_ItemVerifyRequest(const EQApplicationPacket *app)
 		else
 		{
 			Message(0, "Error: item not found in inventory slot #%i", slot_id);
-			InterruptSpell(spell_id);
 		}
 	}
 	else
 	{
 		Message(0, "Error: Inventory Slot >= 30 (inventory slot #%i)", slot_id);
-		InterruptSpell(spell_id);
 	}
 
 	EQApplicationPacket *outapp;
@@ -2268,45 +2284,60 @@ void Client::Handle_OP_Consider(const EQApplicationPacket *app)
 
 void Client::Handle_OP_Begging(const EQApplicationPacket *app)
 {
-	if(!HasSkill(BEGGING))
+	if(!HasSkill(BEGGING) || !GetTarget())
 		return;
 
-	if(GetTarget() && GetTarget()->GetClass() == LDON_TREASURE)
+	if(GetTarget()->GetClass() == LDON_TREASURE)
 		return;
 
-	int ran=MakeRandomInt(0,100);
-	int chancetoattack=0;
-	if(this->GetLevel() > this->GetTarget()->GetLevel())
-		chancetoattack=MakeRandomInt(0,15);
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_Begging, sizeof(BeggingResponse_Struct));
+	BeggingResponse_Struct *brs = (BeggingResponse_Struct*) outapp->pBuffer;
+
+	brs->Result = 0; // Default, Fail.
+
+	int RandomChance = MakeRandomInt(0 ,100);
+
+	int ChanceToAttack = 0;
+
+	if(GetLevel() > GetTarget()->GetLevel())
+		ChanceToAttack = MakeRandomInt(0, 15);
 	else
-		chancetoattack=MakeRandomInt(((this->GetTarget()->GetLevel() - this->GetLevel())*10)-5,((this->GetTarget()->GetLevel() - this->GetLevel())*10));
-	if(chancetoattack<0)
-		chancetoattack=-chancetoattack;
-	if(ran<chancetoattack){
-		this->GetTarget()->Attack(this);
-		return;
-	}
-	float chancetobeg=((float)(GetSkill(BEGGING)/700.0f) + 0.15f) * 100;
+		ChanceToAttack = MakeRandomInt(((this->GetTarget()->GetLevel() - this->GetLevel())*10)-5,((this->GetTarget()->GetLevel() - this->GetLevel())*10));
 
-	if(ran<chancetobeg)
+	if(ChanceToAttack < 0)
+		ChanceToAttack = -ChanceToAttack;
+
+	if(RandomChance < ChanceToAttack)
 	{
-		EQApplicationPacket* outapp = new EQApplicationPacket(OP_MoneyOnCorpse, sizeof(moneyOnCorpseStruct));
-		moneyOnCorpseStruct* d = (moneyOnCorpseStruct*) outapp->pBuffer;
-		d->copper=MakeRandomInt(1,3);
-		d->silver=MakeRandomInt(1,1);
-		d->platinum=0;
-		d->gold=0;
-		d->response      = 1;
-		d->unknown1      = 0x5a;
-		d->unknown2      = 0x40;
-		d->unknown3      = 0;
-		AddMoneyToPP(d->copper, d->silver, d->gold, d->platinum,true);
+		GetTarget()->Attack(this);
 		QueuePacket(outapp);
 		safe_delete(outapp);
-		Message(0,"Begging success!.Received %i silver and %i copper!",d->silver,d->copper);
+		return;
 	}
-	else
-		Message(0,"Your attempt to beg was not succesful.");
+
+	uint16 CurrentSkill = GetSkill(BEGGING);
+
+	float ChanceToBeg=((float)(CurrentSkill/700.0f) + 0.15f) * 100;
+
+	if(RandomChance < ChanceToBeg)
+	{
+		brs->Amount = MakeRandomInt(1, 10);
+		// This needs some work to determine how much money they can beg, based on skill level etc.
+		if(CurrentSkill < 50)
+		{
+			brs->Result = 4;	// Copper
+			AddMoneyToPP(brs->Amount, false);
+		}
+		else
+		{
+			brs->Result = 3;	// Silver
+			AddMoneyToPP(brs->Amount * 10, false);
+		}
+
+	}
+	QueuePacket(outapp);
+	safe_delete(outapp);
+	CheckIncreaseSkill(BEGGING, NULL, -10);
 }
 
 void Client::Handle_OP_TestBuff(const EQApplicationPacket *app)
@@ -2568,7 +2599,7 @@ void Client::Handle_OP_SpawnAppearance(const EQApplicationPacket *app)
 		{
 			if(!HasSkill(HIDE) && GetSkill(HIDE) == 0)
 			{
-				if(GetClientVersion() != EQClientSoF)
+				if(GetClientVersion() < EQClientSoF)
 				{
 					char *hack_str = NULL;
 					MakeAnyLenString(&hack_str, "Player sent OP_SpawnAppearance with AT_Invis: %i", sa->parameter);
@@ -2832,7 +2863,15 @@ void Client::Handle_OP_ItemLinkClick(const EQApplicationPacket *app)
 			}
 			else
 			{
-				Message(13, "Error: Say Links require a target.");
+				if(silentsaylink)
+				{
+					Message(13, "Error: Silent Say Links require an NPC target.");
+				}
+				else
+				{
+					Message(7, "You say,'%s'",response);
+					this->ChannelMessageReceived(8, 0, 100, response);
+				}
 				return;
 			}
 		}
@@ -3931,6 +3970,9 @@ void Client::Handle_OP_GuildInviteAccept(const EQApplicationPacket *app)
 				Message(13, "There was an error during the invite, DB may now be inconsistent.");
 				return;
 			}
+			if(zone->GetZoneID() == RuleI(World, GuildBankZoneID) && GuildBanks)
+				GuildBanks->SendGuildBank(this);
+
 		}
 	}
 }
@@ -4942,11 +4984,15 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 		}
 	}
 
-	if (RuleB(Merchant, UsePriceMod)){
-	mpo->price = (item->Price*(RuleR(Merchant, SellCostMod))*item->SellRate*Client::CalcPriceMod(tmp,false))*mp->quantity;
-	}
+	int SinglePrice = 0;
+
+	if (RuleB(Merchant, UsePriceMod))
+		SinglePrice = (item->Price * (RuleR(Merchant, SellCostMod)) * item->SellRate * Client::CalcPriceMod(tmp, false));	
 	else
-		mpo->price = (item->Price*(RuleR(Merchant, SellCostMod))*item->SellRate)*mp->quantity;
+		SinglePrice = (item->Price * (RuleR(Merchant, SellCostMod)) * item->SellRate);
+
+	mpo->price = SinglePrice * mp->quantity;
+
 	if(freeslotid == SLOT_INVALID || (mpo->price < 0 ) || !TakeMoneyFromPP(mpo->price))
 	{
 		safe_delete(outapp);
@@ -4982,7 +5028,7 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 		else {
 			// Update the charges/quantity in the merchant window
 			inst->SetCharges(new_charges);
-			inst->SetPrice(mpo->price);
+			inst->SetPrice(SinglePrice);
 			inst->SetMerchantSlot(mp->itemslot);
 			inst->SetMerchantCount(new_charges);
 
@@ -5645,14 +5691,28 @@ void Client::Handle_OP_GroupFollow2(const EQApplicationPacket *app)
 			group->UpdateGroupAAs();
 
 			//Invite the inviter into the group first.....dont ask
-			EQApplicationPacket* outapp=new EQApplicationPacket(OP_GroupUpdate,sizeof(GroupJoin_Struct));
-			GroupJoin_Struct* outgj=(GroupJoin_Struct*)outapp->pBuffer;
-			strcpy(outgj->membername, inviter->GetName());
-			strcpy(outgj->yourname, inviter->GetName());
-			outgj->action = groupActInviteInitial; // 'You have formed the group'.
-			group->GetGroupAAs(&outgj->leader_aas);
-			inviter->CastToClient()->QueuePacket(outapp);
-			safe_delete(outapp);
+			if(inviter->CastToClient()->GetClientVersion() < EQClientSoD)
+			{
+				EQApplicationPacket* outapp=new EQApplicationPacket(OP_GroupUpdate,sizeof(GroupJoin_Struct));
+				GroupJoin_Struct* outgj=(GroupJoin_Struct*)outapp->pBuffer;
+				strcpy(outgj->membername, inviter->GetName());
+				strcpy(outgj->yourname, inviter->GetName());
+				outgj->action = groupActInviteInitial; // 'You have formed the group'.
+				group->GetGroupAAs(&outgj->leader_aas);
+				inviter->CastToClient()->QueuePacket(outapp);
+				safe_delete(outapp);
+			}
+			else
+			{
+				// SoD and later
+				//
+				inviter->CastToClient()->SendGroupCreatePacket();				
+				
+				inviter->CastToClient()->SendGroupLeaderChangePacket(inviter->GetName());
+
+				inviter->CastToClient()->SendGroupJoinAcknowledge();	
+			}
+			
 		}
 		if(!group)
 			return;
@@ -5668,8 +5728,15 @@ void Client::Handle_OP_GroupFollow2(const EQApplicationPacket *app)
 			inviter->CastToClient()->UpdateLFP();
 		}
 
+		if(GetClientVersion() >= EQClientSoD)
+			SendGroupJoinAcknowledge();	
+
 		database.RefreshGroupFromDB(this);
 		group->SendHPPacketsTo(this);
+
+		// Temporary hack for SoD, as things seem to work quite differently
+		if(inviter->CastToClient()->GetClientVersion() >= EQClientSoD)
+			database.RefreshGroupFromDB(inviter->CastToClient());
 
 		//send updates to clients out of zone...
 		ServerPacket* pack = new ServerPacket(ServerOP_GroupJoin, sizeof(ServerGroupJoin_Struct));
@@ -5823,9 +5890,15 @@ void Client::Handle_OP_InspectRequest(const EQApplicationPacket *app)
 {
 	Inspect_Struct* ins = (Inspect_Struct*) app->pBuffer;
 	Mob* tmp = entity_list.GetMob(ins->TargetID);
-	if(tmp != 0 && tmp->IsClient())
-		tmp->CastToClient()->QueuePacket(app); // Send request to target
+	if(tmp != 0 && tmp->IsClient()) {
+		if(tmp->CastToClient()->GetClientVersion() < EQClientSoF) {
+			tmp->CastToClient()->QueuePacket(app); // Send request to target
+		}
+		else {	//Inspecting an SoF or later client which make the server handle the request
+			ProcessInspectRequest(tmp->CastToClient(), this);
+		}
 
+	}
 #ifdef BOTS
 	if(tmp != 0 && tmp->IsBot())
 		Bot::ProcessBotInspectionRequest(tmp->CastToBot(), this);
@@ -6281,7 +6354,7 @@ void Client::Handle_OP_ReadBook(const EQApplicationPacket *app)
 {
 	BookRequest_Struct* book = (BookRequest_Struct*) app->pBuffer;
 	ReadBook(book);
-	if(GetClientVersion() == EQClientSoF)
+	if(GetClientVersion() >= EQClientSoF)
 	{
 		EQApplicationPacket EndOfBook(OP_FinishWindow, 0);
 		QueuePacket(&EndOfBook);
@@ -6951,14 +7024,42 @@ void Client::Handle_OP_Bind_Wound(const EQApplicationPacket *app)
 
 void Client::Handle_OP_TrackTarget(const EQApplicationPacket *app)
 {
-	// Looks like an entityid should probably do something with it.
 	IsTracking=(IsTracking==false);
-	return;
+
+	if(!IsTracking)
+	{
+		TrackingID = 0;
+		return;
+	}
+
+	if(GetClientVersion() < EQClientSoD)
+		return;
+	
+	int PlayerClass = GetClass();
+
+	if((PlayerClass != RANGER) && (PlayerClass != DRUID) && (PlayerClass != BARD))
+		return;
+
+	if (app->size != sizeof(TrackTarget_Struct))
+	{
+		LogFile->write(EQEMuLog::Error, "Invalid size for OP_TrackTarget: Expected: %i, Got: %i",
+			sizeof(TrackTarget_Struct), app->size);
+		return;
+	}
+
+	TrackTarget_Struct *tts = (TrackTarget_Struct*)app->pBuffer;
+
+	if(tts->EntityID)
+		TrackingID = tts->EntityID;
+	else
+	{
+		IsTracking = false;
+		TrackingID = 0;
+	}
 }
 
 void Client::Handle_OP_Track(const EQApplicationPacket *app)
 {
-	IsTracking=false;
 	if(GetClass() != RANGER && GetClass() != DRUID && GetClass() != BARD)
 		return;
 
@@ -7720,7 +7821,14 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 		m_pp.guild_id = GUILD_NONE;
 	}
 	else
+	{
 		m_pp.guild_id = GuildID();
+
+		if(zone->GetZoneID() == RuleI(World, GuildBankZoneID))
+			GuildBanker = (guild_mgr.IsGuildLeader(GuildID(), CharacterID()) || guild_mgr.GetBankerFlag(CharacterID()));
+	}
+
+	m_pp.guildbanker = GuildBanker;
 
 	switch (race)
 	{
@@ -8474,6 +8582,9 @@ void Client::CompleteConnect()
 
 	SendRewards();
 	CalcItemScale();
+
+	if(zone->GetZoneID() == RuleI(World, GuildBankZoneID) && GuildBanks)
+		GuildBanks->SendGuildBank(this);
 }
 
 void Client::Handle_OP_KeyRing(const EQApplicationPacket *app) {
@@ -9528,9 +9639,11 @@ void Client::Handle_OP_LFPGetMatchesRequest(const EQApplicationPacket *app) {
 	return;
 }
 
-void Client::Handle_OP_Barter(const EQApplicationPacket *app) {
+void Client::Handle_OP_Barter(const EQApplicationPacket *app)
+{
 
-	if(app->size < 4) {
+	if(app->size < 4)
+	{
 		LogFile->write(EQEMuLog::Debug, "OP_Barter packet below minimum expected size. The packet was %i bytes.", app->size);
 		DumpPacket(app);
 		return;
@@ -9545,109 +9658,137 @@ void Client::Handle_OP_Barter(const EQApplicationPacket *app) {
 
 	_pkt(TRADING__BARTER, app);
 
-	switch(Action) {
+	switch(Action)
+	{
 
 		case Barter_BuyerSearch:
+		{
 			BuyerItemSearch(app);
 			break;
+		}
 
-		case Barter_SellerSearch: {
-				BarterSearchRequest_Struct *bsr = (BarterSearchRequest_Struct*)app->pBuffer;
-				SendBuyerResults(bsr->SearchString, bsr->SearchID);
-				break;
-			}
+		case Barter_SellerSearch:
+		{
+			BarterSearchRequest_Struct *bsr = (BarterSearchRequest_Struct*)app->pBuffer;
+			SendBuyerResults(bsr->SearchString, bsr->SearchID);
+			break;
+		}
 
-		case Barter_BuyerModeOn: {
-				if(!Trader) {
-					ToggleBuyerMode(true);
-				}
-				else {
-					Buf = (char *)app->pBuffer;
-					VARSTRUCT_ENCODE_TYPE(uint32, Buf, Barter_BuyerModeOff);
-					Message(13, "You cannot be a Trader and Buyer at the same time.");
-				}
-				QueuePacket(app);
-				break;
+		case Barter_BuyerModeOn:
+		{
+			if(!Trader) {
+				ToggleBuyerMode(true);
 			}
+			else {
+				Buf = (char *)app->pBuffer;
+				VARSTRUCT_ENCODE_TYPE(uint32, Buf, Barter_BuyerModeOff);
+				Message(13, "You cannot be a Trader and Buyer at the same time.");
+			}
+			QueuePacket(app);
+			break;
+		}
 
 		case Barter_BuyerModeOff:
+		{
 			QueuePacket(app);
 			ToggleBuyerMode(false);
 			break;
+		}
 
 		case Barter_BuyerItemUpdate:
+		{
 			UpdateBuyLine(app);
 			break;
+		}
 
-		case Barter_BuyerItemRemove: {
-				BuyerRemoveItem_Struct* bris = (BuyerRemoveItem_Struct*)app->pBuffer;
-				database.RemoveBuyLine(CharacterID(), bris->BuySlot);
-				QueuePacket(app);
-				break;
-			}
+		case Barter_BuyerItemRemove:
+		{
+			BuyerRemoveItem_Struct* bris = (BuyerRemoveItem_Struct*)app->pBuffer;
+			database.RemoveBuyLine(CharacterID(), bris->BuySlot);
+			QueuePacket(app);
+			break;
+		}
 
 		case Barter_SellItem:
+		{
 			SellToBuyer(app);
 			break;
+		}
 
 		case Barter_BuyerInspectBegin:
+		{
 			ShowBuyLines(app);
 			break;
+		}
 
-		case Barter_BuyerInspectEnd: {
+		case Barter_BuyerInspectEnd:
+		{
+			BuyerInspectRequest_Struct* bir = ( BuyerInspectRequest_Struct*)app->pBuffer;
+			Client *Buyer = entity_list.GetClientByID(bir->BuyerID);
+			if(Buyer)
+				Buyer->WithCustomer(0);
 
-				BuyerInspectRequest_Struct* bir = ( BuyerInspectRequest_Struct*)app->pBuffer;
-				Client *Buyer = entity_list.GetClientByID(bir->BuyerID);
-				if(Buyer)
-					Buyer->WithCustomer(0);
+			break;
+		}
 
-				break;
-			}
+		case Barter_BarterItemInspect:
+		{
+			BarterItemSearchLinkRequest_Struct* bislr = (BarterItemSearchLinkRequest_Struct*)app->pBuffer;
 
-		case Barter_BarterItemInspect: {
-				BarterItemSearchLinkRequest_Struct* bislr = (BarterItemSearchLinkRequest_Struct*)app->pBuffer;
-
-				const Item_Struct* item = database.GetItem(bislr->ItemID);
+			const Item_Struct* item = database.GetItem(bislr->ItemID);
 	
-				if (!item) 
-					Message(13, "Error: This item does not exist!");
-				else {
-					ItemInst* inst = database.CreateItem(item);
-					if (inst) {
-						SendItemPacket(0, inst, ItemPacketViewLink);
-						safe_delete(inst);
-					}
+			if (!item) 
+				Message(13, "Error: This item does not exist!");
+			else
+			{
+				ItemInst* inst = database.CreateItem(item);
+				if (inst)
+				{
+					SendItemPacket(0, inst, ItemPacketViewLink);
+					safe_delete(inst);
 				}
-				break;
 			}
+			break;
+		}
 
 		case Barter_Welcome:
+		{
 			SendBazaarWelcome();
 			break;
+		}
 
-		case Barter_WelcomeMessageUpdate: {
-				BuyerWelcomeMessageUpdate_Struct* bwmu = (BuyerWelcomeMessageUpdate_Struct*)app->pBuffer;
-				SetBuyerWelcomeMessage(bwmu->WelcomeMessage);
-				break;
-			}
+		case Barter_WelcomeMessageUpdate:
+		{
+			BuyerWelcomeMessageUpdate_Struct* bwmu = (BuyerWelcomeMessageUpdate_Struct*)app->pBuffer;
+			SetBuyerWelcomeMessage(bwmu->WelcomeMessage);
+			break;
+		}
 
-		case Barter_BuyerItemInspect: {
+		case Barter_BuyerItemInspect:
+		{
+			BuyerItemSearchLinkRequest_Struct* bislr = (BuyerItemSearchLinkRequest_Struct*)app->pBuffer;
 
-				BuyerItemSearchLinkRequest_Struct* bislr = (BuyerItemSearchLinkRequest_Struct*)app->pBuffer;
+			const Item_Struct* item = database.GetItem(bislr->ItemID);
 
-				const Item_Struct* item = database.GetItem(bislr->ItemID);
-
-				if (!item) 
-					Message(13, "Error: This item does not exist!");
-				else {
-					ItemInst* inst = database.CreateItem(item);
-					if (inst) {
-						SendItemPacket(0, inst, ItemPacketViewLink);
-						safe_delete(inst);
-					}
+			if (!item) 
+				Message(13, "Error: This item does not exist!");
+			else
+			{
+				ItemInst* inst = database.CreateItem(item);
+				if (inst)
+				{
+					SendItemPacket(0, inst, ItemPacketViewLink);
+					safe_delete(inst);
 				}
-				break;
 			}
+			break;
+		}
+
+		case Barter_Unknown23:
+		{
+				// Sent by SoD client for no discernible reason.
+				break;
+		}
 
 		default:
 			Message(13, "Unrecognised Barter action.");
@@ -10426,4 +10567,262 @@ void Client::Handle_OP_GMSearchCorpse(const EQApplicationPacket *app)
 	}
 	safe_delete_array(Query);
 	safe_delete_array(EscSearchString);
+}
+
+void Client::Handle_OP_GuildBank(const EQApplicationPacket *app)
+{
+	if(!GuildBanks)
+		return;
+
+	if((int)zone->GetZoneID() != RuleI(World, GuildBankZoneID))
+	{
+		Message(13, "The Guild Bank is not available in this zone.");
+
+		return;
+	}
+
+	char *Buffer = (char *)app->pBuffer;
+
+	uint32 Action = VARSTRUCT_DECODE_TYPE(uint32, Buffer);
+
+	if(!IsInAGuild())
+	{
+		Message(13, "You must be in a Guild to use the Guild Bank.");
+
+		if(Action == GuildBankDeposit)
+			GuildBankDepositAck(true);
+		else
+			GuildBankAck();
+
+		return;
+	}
+
+	if(!IsGuildBanker())
+	{
+		if((Action != GuildBankDeposit) && (Action != GuildBankViewItem) && (Action != GuildBankWithdraw))
+		{
+			_log(GUILDS__BANK_ERROR, "Suspected hacking attempt on guild bank from %s", GetName());
+
+			GuildBankAck();
+
+			return;
+		}
+	}
+
+	switch(Action)
+	{
+		case GuildBankPromote:
+		{
+			if(GuildBanks->IsAreaFull(GuildID(), GuildBankMainArea))
+			{
+				Message_StringID(13, GUILD_BANK_FULL);
+
+				GuildBankDepositAck(true);
+
+				return;
+			}
+
+			GuildBankPromote_Struct *gbps = (GuildBankPromote_Struct*)app->pBuffer;
+
+			int Slot = GuildBanks->Promote(GuildID(), gbps->Slot);
+
+			if(Slot >= 0)
+			{
+				ItemInst* inst = GuildBanks->GetItem(GuildID(), GuildBankMainArea, Slot, 1);
+
+				if(inst)
+				{
+					Message_StringID(clientMessageWhite, GUILD_BANK_TRANSFERRED, inst->GetItem()->Name);
+					safe_delete(inst);
+				}
+			}
+			else
+				Message(13, "Unexpected error while moving item into Guild Bank.");
+
+			GuildBankAck();
+
+			break;
+		}
+
+		case GuildBankViewItem:
+		{
+			GuildBankViewItem_Struct *gbvis = (GuildBankViewItem_Struct*)app->pBuffer;
+
+			ItemInst* inst = GuildBanks->GetItem(GuildID(), gbvis->Area, gbvis->SlotID, 1);
+
+			if(!inst)
+				break;
+
+			SendItemPacket(0, inst, ItemPacketViewLink);
+
+			safe_delete(inst);
+
+			break;
+		}
+			
+		case GuildBankDeposit:	// Deposit Item
+		{
+			if(GuildBanks->IsAreaFull(GuildID(), GuildBankDepositArea))
+			{
+				Message_StringID(13, GUILD_BANK_FULL);
+
+				GuildBankDepositAck(true);
+
+				return;
+			}
+
+			ItemInst *CursorItemInst = GetInv().GetItem(SLOT_CURSOR);
+
+			bool Allowed = true;
+
+			if(!CursorItemInst)
+			{
+				Message(13, "No Item on the cursor.");
+
+				GuildBankDepositAck(true);
+
+				return;
+			}
+
+			const Item_Struct* CursorItem = CursorItemInst->GetItem();
+
+			if(!CursorItem->NoDrop || CursorItemInst->IsInstNoDrop())
+			{
+				Message_StringID(13, GUILD_BANK_CANNOT_DEPOSIT);
+
+				Allowed = false;
+			}
+			else if(CursorItemInst->IsNoneEmptyContainer())
+			{
+				Message_StringID(13, GUILD_BANK_CANNOT_DEPOSIT);
+
+				Allowed = false;
+			}
+			else if(CursorItemInst->IsAugmented())
+			{
+				Message_StringID(13, GUILD_BANK_CANNOT_DEPOSIT);
+
+				Allowed = false;
+			}
+			else if(CursorItem->NoRent == 0)
+			{
+				Message_StringID(13, GUILD_BANK_CANNOT_DEPOSIT);
+
+				Allowed = false;
+			}
+			else if(CursorItem->LoreFlag && GuildBanks->HasItem(GuildID(), CursorItem->ID))
+			{
+				Message_StringID(13, GUILD_BANK_CANNOT_DEPOSIT);
+
+				Allowed = false;
+			}
+
+			if(!Allowed)
+			{
+				GuildBankDepositAck(true);
+
+				return;
+			}
+
+			if(GuildBanks->AddItem(GuildID(), GuildBankDepositArea, CursorItem->ID, CursorItemInst->GetCharges(), GetName(), GuildBankBankerOnly, ""))
+			{
+				GuildBankDepositAck(false);
+
+				DeleteItemInInventory(SLOT_CURSOR, 0, false);
+			}
+
+			break;
+		}
+
+		case GuildBankPermissions:
+		{
+			GuildBankPermissions_Struct *gbps = (GuildBankPermissions_Struct*)app->pBuffer;
+
+			if(gbps->Permissions == 1)
+				GuildBanks->SetPermissions(GuildID(), gbps->SlotID, gbps->Permissions, gbps->MemberName);
+			else
+				GuildBanks->SetPermissions(GuildID(), gbps->SlotID, gbps->Permissions, "");
+
+			GuildBankAck();
+			break;
+		}
+
+		case GuildBankWithdraw:
+		{
+			if(GetInv()[SLOT_CURSOR])
+			{
+				Message_StringID(13, GUILD_BANK_EMPTY_HANDS);
+
+				GuildBankAck();
+
+				break;
+			}
+
+			GuildBankWithdrawItem_Struct *gbwis = (GuildBankWithdrawItem_Struct*)app->pBuffer;
+
+			ItemInst* inst = GuildBanks->GetItem(GuildID(), gbwis->Area, gbwis->SlotID, gbwis->Quantity);
+			
+			if(!inst)
+			{
+				GuildBankAck();
+
+				break;
+			}
+			
+			if(!IsGuildBanker() && !GuildBanks->AllowedToWithdraw(GuildID(), gbwis->Area, gbwis->SlotID, GetName()))
+			{
+				_log(GUILDS__BANK_ERROR, "Suspected attempted hack on the guild bank from %s", GetName());
+
+				GuildBankAck();
+
+				break;
+			}
+
+			PushItemOnCursor(*inst);
+
+			SendItemPacket(SLOT_CURSOR, inst, ItemPacketSummonItem);
+
+			GuildBanks->DeleteItem(GuildID(), gbwis->Area, gbwis->SlotID, gbwis->Quantity);
+
+			safe_delete(inst);
+
+			GuildBankAck();
+
+			break;
+		}
+		
+		case GuildBankSplitStacks:
+		{
+			if(GuildBanks->IsAreaFull(GuildID(), GuildBankMainArea))
+				Message_StringID(13, GUILD_BANK_FULL);
+			else
+			{
+				GuildBankWithdrawItem_Struct *gbwis = (GuildBankWithdrawItem_Struct*)app->pBuffer;
+			
+				GuildBanks->SplitStack(GuildID(), gbwis->SlotID, gbwis->Quantity);
+			}
+
+			GuildBankAck();
+
+			break;
+		}
+
+		case GuildBankMergeStacks:
+		{
+			GuildBankWithdrawItem_Struct *gbwis = (GuildBankWithdrawItem_Struct*)app->pBuffer;
+
+			GuildBanks->MergeStacks(GuildID(), gbwis->SlotID);
+
+			GuildBankAck();
+
+			break;
+		}
+
+		default:
+		{
+			Message(13, "Unexpected GuildBank action.");
+
+			_log(GUILDS__BANK_ERROR, "Received unexpected guild bank action code %i from %s", Action, GetName());
+		}
+	}
 }

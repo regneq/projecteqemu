@@ -357,6 +357,7 @@ Mob::Mob(const char*   in_name,
 	PathingRouteUpdateTimerLong = new Timer(RuleI(Pathing, RouteUpdateFrequencyLong));
 	AggroedAwayFromGrid = 0;
 	PathingTraversedNodes = 0;
+	hate_list.SetOwner(this);
 	return_to_heading_timer = NULL;
 }
 
@@ -1382,7 +1383,7 @@ void Mob::SendLevelAppearance(){
 	safe_delete(outapp);
 }
 
-void Mob::SendAppearanceEffect(int32 parm1, int32 parm2, int32 parm3, int32 parm4, int32 parm5 ){
+void Mob::SendAppearanceEffect(int32 parm1, int32 parm2, int32 parm3, int32 parm4, int32 parm5, Client *specific_target){
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_LevelAppearance, sizeof(LevelAppearance_Struct));
 	LevelAppearance_Struct* la = (LevelAppearance_Struct*)outapp->pBuffer;
 	la->spawn_id = GetID();
@@ -1403,7 +1404,12 @@ void Mob::SendAppearanceEffect(int32 parm1, int32 parm2, int32 parm3, int32 parm
 	la->value4b = 1;
 	la->value5a = 1;
 	la->value5b = 1;
-	entity_list.QueueCloseClients(this,outapp);
+	if(specific_target == NULL) {
+		entity_list.QueueCloseClients(this,outapp);
+	}
+	else if (specific_target->IsClient()) {
+		specific_target->CastToClient()->QueuePacket(outapp, false);
+	}
 	safe_delete(outapp);
 }
 
@@ -1484,6 +1490,19 @@ Mob* Mob::GetOwner() {
 	}
 	SetOwnerID(0);
 	return 0;
+}
+
+Mob* Mob::GetUltimateOwner()
+{
+	Mob* Owner = GetOwner();
+
+	if(!Owner)
+		return this;
+
+	while(Owner && Owner->HasOwner())
+		Owner = Owner->GetOwner();
+
+	return Owner ? Owner : this;
 }
 
 void Mob::SetOwnerID(int16 NewOwnerID) {
@@ -1597,7 +1616,7 @@ void Mob::SetAttackTimer() {
 
 			//clients must have the skill to use it...
 			if(IsClient()) {
-				//if we cant dual weild, skip it
+				//if we cant dual wield, skip it
 				if (!CanThisClassDualWield()) {
 					attack_dw_timer.Disable();
 					continue;
@@ -1688,7 +1707,7 @@ void Mob::SetAttackTimer() {
 	
 }
 
-bool Mob::CanThisClassDualWield(void) const //Dual wield not Duel, busy someone else fix it (fixed! bUsh)
+bool Mob::CanThisClassDualWield(void) const
 {
 	// All npcs over level 13 can dual wield
 	if (this->IsNPC() && (this->GetLevel() >= 13))
@@ -1747,7 +1766,7 @@ bool Mob::CanThisClassDualWield(void) const //Dual wield not Duel, busy someone 
 				return false;
 		} else {
 			//No weapon in hand... using hand-to-hand...
-			//only monks and beastlords? can dual weild their fists.
+			//only monks and beastlords? can dual wield their fists.
 			return(dh2h);
 		}
 		
@@ -2854,4 +2873,17 @@ bool Mob::EntityVariableExists(int32 id)
 		return true;
 	}
 	return false;
+}
+
+void Mob::SetFlyMode(int8 flymode)
+{
+	if(IsClient() && flymode >= 0 && flymode < 3)
+	{
+		this->SendAppearancePacket(AT_Levitate, flymode);
+	}
+	else if(IsNPC() && flymode >= 0 && flymode <= 3)
+	{
+		this->SendAppearancePacket(AT_Levitate, flymode);
+		this->CastToNPC()->SetFlyMode(flymode);
+	}
 }

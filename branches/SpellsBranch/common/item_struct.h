@@ -71,6 +71,7 @@ struct InternalSerializedItem_Struct {
 #define MAX_AUGMENT_SLOTS 5
 
 struct Item_Struct {
+	bool IsEquipable(int16 Race, int16 Class) const;
 	// Non packet based fields
 	uint8	MinStatus;
 

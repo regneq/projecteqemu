@@ -969,6 +969,41 @@ Entity* EntityList::GetID(int16 get_id)
 		return 0;
 }
 
+NPC* EntityList::GetNPCByID(int16 id) {
+	LinkedListIterator<NPC*> iterator(npc_list);
+
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		if (iterator.GetData())
+		{
+			if (iterator.GetData()->GetID() == id) {
+				return iterator.GetData();
+			}
+		}
+		iterator.Advance();
+	}
+	return 0;
+}
+
+NPC* EntityList::GetNPCByNPCTypeID(int32 npc_id)
+{
+	if (npc_id == 0)
+		return 0;
+	LinkedListIterator<NPC*> iterator(npc_list);
+	
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		if (iterator.GetData()->GetNPCTypeID() == npc_id)
+		{
+			return iterator.GetData();
+		}
+		iterator.Advance();
+	}
+	return 0;
+}
+
 Mob* EntityList::GetMob(int16 get_id)
 {
 	Entity* ent=0;
@@ -1892,6 +1927,37 @@ void EntityList::QueueClientsGuild(Mob* sender, const EQApplicationPacket* app, 
 	}
 }
 
+void EntityList::QueueClientsGuildBankItemUpdate(const GuildBankItemUpdate_Struct *gbius, uint32 GuildID)
+{
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_GuildBank, sizeof(GuildBankItemUpdate_Struct));
+
+	GuildBankItemUpdate_Struct *outgbius = (GuildBankItemUpdate_Struct*)outapp->pBuffer;
+
+	memcpy(outgbius, gbius, sizeof(GuildBankItemUpdate_Struct));
+
+	const Item_Struct *Item = database.GetItem(gbius->ItemID);
+
+	LinkedListIterator<Client*> iterator(client_list);
+
+	iterator.Reset();
+
+	while(iterator.MoreElements())
+	{
+		Client* client = iterator.GetData()->CastToClient();
+
+		if (client->IsInGuild(GuildID))
+		{
+			if(Item && (gbius->Permissions == GuildBankPublicIfUsable))
+				outgbius->Useable = Item->IsEquipable(client->GetBaseRace(), client->GetBaseClass());
+
+			client->QueuePacket(outapp);
+		}
+
+		iterator.Advance();
+	}
+	safe_delete(outapp);
+}
+
 void EntityList::MessageStatus(int32 to_guild_id, int to_minstatus, int32 type, const char* message, ...) {
 	va_list argptr;
 	char buffer[4096];
@@ -2582,6 +2648,7 @@ void EntityList::ListNPCs(Client* client, const char* arg1, const char* arg2, in
 	client->Message(0, "NPCs in the zone:");
 	if(searchtype == 0) {
 		while(iterator.MoreElements()) {
+
 			client->Message(0, "  %5d: %s", iterator.GetData()->GetID(), iterator.GetData()->GetName());
 			x++;
 			z++;
@@ -2975,7 +3042,8 @@ void EntityList::SignalMobsByNPCID(int32 snpc, int signal_id)
 }
 
 
-bool EntityList::MakeTrackPacket(Client* client){
+bool EntityList::MakeTrackPacket(Client* client)
+{
 	int32 distance = 0;
 	float MobDistance;
 
@@ -3016,6 +3084,8 @@ bool EntityList::MakeTrackPacket(Client* client){
 				Mob* cur_entity = iterator.GetData();
 				track_ent->entityid = cur_entity->GetID();
 				track_ent->distance = MobDistance;
+				track_ent->level = cur_entity->GetLevel();
+				strn0cpy(track_ent->name, cur_entity->GetName(), sizeof(track_ent->name));
 				memcpy(&track_array->Entrys[array_counter], track_ent, sizeof(Track_Struct));
 				array_counter++;
 			}
@@ -3648,7 +3718,7 @@ void EntityList::SendGroupLeave(int32 gid, const char *name) {
 					GroupJoin_Struct* gj = (GroupJoin_Struct*) outapp->pBuffer;	
 					strcpy(gj->membername, name);
 					gj->action = groupActLeave;
-					strcpy(gj->yourname, name);
+					strcpy(gj->yourname, c->GetName());
 					Mob *Leader = g->GetLeader();
 					if(Leader)
 						Leader->CastToClient()->GetGroupAAs(&gj->leader_aas);					

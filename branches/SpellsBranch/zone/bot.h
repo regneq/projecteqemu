@@ -45,9 +45,6 @@ public:
 		BotfocusHateReduction
 	};
 
-	typedef std::map<uint32, uint32> BotInventory;
-	typedef std::pair<uint32, uint32> BotInventoryItem;
-
 	typedef enum BotTradeType {	// types of trades a bot can do
 		BotTradeClientNormal,
 		BotTradeClientNoDropNoTrade
@@ -174,8 +171,8 @@ public:
 	bool Bot_Command_Cure(int curetype, int level);
 
 	// Bot Equipment & Inventory Class Methods
-	void BotTradeSwapItem(Client* client, sint16 lootSlot, uint32 id, sint16 maxCharges, uint32 equipableSlots, std::string* errorMessage, bool swap = true);
-	void BotTradeAddItem(uint32 id, sint16 maxCharges, uint32 equipableSlots, int16 lootSlot, std::string* errorMessage, bool addToDb = true);
+	void BotTradeSwapItem(Client* client, sint16 lootSlot, const ItemInst* inst, const ItemInst* inst_swap, uint32 equipableSlots, std::string* errorMessage, bool swap = true);
+	void BotTradeAddItem(uint32 id, const ItemInst* inst, sint16 charges, uint32 equipableSlots, int16 lootSlot, std::string* errorMessage, bool addToDb = true);
 	void EquipBot(std::string* errorMessage);
 
 	// Static Class Methods
@@ -246,6 +243,7 @@ public:
 	uint32 GetBotSpellID() { return npc_spells_id; }
 	Mob* GetBotOwner() { return this->_botOwner; }
 	uint32 GetBotArcheryRange();
+	ItemInst* GetBotItem(uint32 slotID);
 	virtual bool GetSpawnStatus() { return _spawnStatus; }
 	int8 GetPetChooserID() { return _petChooserID; }
 	bool IsPetChooser() { return _petChooser; }
@@ -340,13 +338,12 @@ private:
 	bool CalcBotHitChance(Mob* target, SkillType skillinuse, int Hand);
 
 	// Private "Inventory" Methods
-	BotInventory GetBotItems(std::string* errorMessage);
-	uint32 GetBotItem(uint32 slotID);
+	void GetBotItems(std::string* errorMessage, Inventory &inv);
 	void BotRemoveEquipItem(int slot);
 	void BotAddEquipItem(int slot, uint32 id);
 	uint32 GetBotItemBySlot(uint32 slotID);
 	void RemoveBotItemBySlot(uint32 slotID, std::string* errorMessage);
-	void SetBotItemInSlot(uint32 slotID, uint32 itemID, std::string* errorMessage);
+	void SetBotItemInSlot(uint32 slotID, uint32 itemID, const ItemInst* inst, std::string* errorMessage);
 	uint32 GetBotItemsCount(std::string* errorMessage);
 	uint32 GetTotalPlayTime();
 	void SaveBuffs();	// Saves existing buffs to the database to persist zoning and camping

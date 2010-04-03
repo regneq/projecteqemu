@@ -216,6 +216,8 @@ int main(int argc, char** argv) {
 	dbasync->AddFQ(&MTdbafq);
 	guild_mgr.SetDatabase(&database);
 
+	GuildBanks = NULL;
+
 #ifdef _EQDEBUG
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 //	_crtBreakAlloc = 2025;

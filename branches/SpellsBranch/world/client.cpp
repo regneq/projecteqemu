@@ -221,7 +221,7 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 
 			string StreamDescription = eqs->Describe();
 
-			if(StreamDescription == "Patch SoF")
+			if(StreamDescription == "Patch SoF" || StreamDescription == "Patch SoD")
 				SoFClient = true;
 
 			LoginInfo_Struct *li=(LoginInfo_Struct *)app->pBuffer;

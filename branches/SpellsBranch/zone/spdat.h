@@ -304,7 +304,7 @@ typedef enum  {
 #define SE_RiposteChance			173
 #define SE_DodgeChance				174
 #define SE_ParryChance				175
-#define SE_DualWeildChance			176
+#define SE_DualWieldChance			176
 #define SE_DoubleAttackChance		177
 #define SE_MeleeLifetap				178
 #define SE_AllInstrunmentMod		179

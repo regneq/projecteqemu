@@ -509,6 +509,10 @@ bool BaseGuildManager::DBDeleteGuild(int32 guild_id) {
 	_RunQuery(query, MakeAnyLenString(&query, 
 		"DELETE FROM guild_members WHERE guild_id=%lu", (unsigned long)guild_id), "clearing chars in guild");
 	
+	// Delete the guild bank
+	_RunQuery(query, MakeAnyLenString(&query, 
+		"DELETE FROM guild_bank WHERE guildid=%lu", (unsigned long)guild_id), "deleting guild bank");
+	
 	_log(GUILDS__DB, "Deleted guild %d from the database.", guild_id);
 	
 	return(true);
@@ -687,6 +691,39 @@ bool BaseGuildManager::DBSetBankerFlag(int32 charid, bool is_banker) {
 	return(_RunQuery(query, MakeAnyLenString(&query, 
 		"UPDATE guild_members SET banker=%d WHERE char_id=%d", 
 		is_banker?1:0, charid), "setting a guild member's banker flag"));
+}
+
+bool BaseGuildManager::GetBankerFlag(int32 CharID)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+
+	if(!m_db)
+		return false;
+
+	if(!m_db->RunQuery(query, MakeAnyLenString(&query, "select `banker` from `guild_members` where char_id=%i LIMIT 1", CharID), errbuf, &result))
+	{
+		_log(GUILDS__ERROR, "Error retrieving banker flag '%s': %s", query, errbuf);
+
+		safe_delete_array(query);
+
+		return false;
+	}
+
+	safe_delete_array(query);
+
+	if(mysql_num_rows(result) != 1)
+		return false;	
+
+	row = mysql_fetch_row(result);
+
+	bool IsBanker = atoi(row[0]);
+
+	mysql_free_result(result);
+
+	return IsBanker;
 }
 
 bool BaseGuildManager::DBSetTributeFlag(int32 charid, bool enabled) {
