@@ -1,7 +1,6 @@
-EQEMu Changelog (Started on Sept 24, 2003 15:50)
+﻿EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==04/02/2010==
-
 Derision: SoD - Group Leadership AA should mostly work (Main Assist is no longer a GLAA and Health Awareness seems intermittent).
 joligario: Pet behavious change.
 Trevius: SoF/SoD - Added clicky item checks to match previous clients. All clicky item hacker entries should now be actual hack attempts.
@@ -10,14 +9,13 @@ Trevius: SoD - Removed the opcodes for the Pet Buff Window until the structure i
 Derision: SoD - Pet Buff Window now works.
 Derision: SoD - Fixed OnLevelMessage struct (popup windows).
 Derision: SoD - Fixed Barter mode.
+Congdar: (Taurinus) Drakkin bots
 
 ==04/01/2010==
 Derision: SoD - Tracking
 Derision: SoD - Fixed price bug when buying from merchants.
 Trevius: SoD - Spell books now display all scribed spells (was previously hiding the first 9 slots).
 Trevius: SoD - Stopped the Barter error that was reporting when logging in due to an incorrect opcode.
-
-Congdar: (Taurinus) Drakkin bots
 
 ==03/31/2010==
 Derision: SoD - Groups should be as functional as previous clients, except Group Leadership AA doesn't work.
