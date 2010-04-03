@@ -1420,26 +1420,6 @@ ENCODE(OP_InterruptCast) {
 	FINISH_ENCODE();
 }
 
-
-ENCODE(OP_RespondAA) {
-	ENCODE_LENGTH_EXACT(AATable_Struct);
-	SETUP_DIRECT_ENCODE(AATable_Struct, structs::AATable_Struct);
-	
-	//int aa_spent_total = 0;
-	eq->aa_spent = 500; //aa_spent_total;
-
-	unsigned int r;
-	for(r = 0; r < MAX_PP_AA_ARRAY; r++) {
-		OUT(aa_list[r].aa_skill);
-		OUT(aa_list[r].aa_value);
-		//eq->aa_list[r].aa_value = emu->aa_list[r].aa_value;
-		//if (emu->aa_list[r].aa_value)
-		//	aa_spent_total += emu->aa_list[r].aa_value;
-		eq->aa_list[r].unknown08 = 0;
-	}
-	FINISH_ENCODE();
-}
-
 ENCODE(OP_ShopPlayerSell) {
 	ENCODE_LENGTH_EXACT(Merchant_Purchase_Struct);
 	SETUP_DIRECT_ENCODE(Merchant_Purchase_Struct, structs::Merchant_Purchase_Struct);

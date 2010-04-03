@@ -20,6 +20,7 @@ E(OP_ReadBook)
 E(OP_Illusion)
 E(OP_VetRewardsAvaliable)
 E(OP_Track)
+E(OP_RespondAA)
 
 //list of packets we need to decode on the way in:
 D(OP_SetServerFilter)

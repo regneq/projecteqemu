@@ -3863,7 +3863,7 @@ struct AltAdvStats_Struct {
 /*009*/  int8	unknown009[3];
 };
 
-struct PlayerAA_Struct {
+struct PlayerAA_Struct {						// Is this still used?
 	AA_Skills aa_list[MAX_PP_AA_ARRAY];
 };
 

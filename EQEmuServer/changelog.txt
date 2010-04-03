@@ -1,5 +1,8 @@
 ﻿EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==04/03/2010==
+Trevius: SoF/SoD - Total Spent AA Points now show correctly for these 2 clients.
+
 ==04/02/2010==
 Derision: SoD - Group Leadership AA should mostly work (Main Assist is no longer a GLAA and Health Awareness seems intermittent).
 joligario: Pet behavious change.

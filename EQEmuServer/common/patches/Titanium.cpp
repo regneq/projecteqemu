@@ -917,6 +917,19 @@ ENCODE(OP_VetRewardsAvaliable)
 	delete[] __emu_buffer;
 }
 
+ENCODE(OP_RespondAA) {
+	ENCODE_LENGTH_EXACT(AATable_Struct);
+	SETUP_DIRECT_ENCODE(AATable_Struct, structs::AATable_Struct);
+
+	unsigned int r;
+	for(r = 0; r < structs::MAX_PP_AA_ARRAY; r++) {
+		OUT(aa_list[r].aa_skill);
+		OUT(aa_list[r].aa_value);
+	}
+
+	FINISH_ENCODE();
+}
+
 DECODE(OP_TraderBuy) {
 	DECODE_LENGTH_EXACT(structs::TraderBuy_Struct);
 	SETUP_DIRECT_DECODE(TraderBuy_Struct, structs::TraderBuy_Struct);

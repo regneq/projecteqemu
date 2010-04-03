@@ -3930,9 +3930,12 @@ struct AA_Action {
 /*12*/	int32	exp_value;
 };
 
+
 struct AA_Skills {		//this should be removed and changed to AA_Array
-/*00*/	int32	aa_skill;
-/*04*/	int32	aa_value;
+/*00*/	int32	aa_skill;						// Total AAs Spent
+/*04*/  int32	aa_value;
+/*08*/  int32	unknown08;
+/*12*/
 };
 
 struct AAExpUpdate_Struct {
@@ -3951,12 +3954,13 @@ struct AltAdvStats_Struct {
 /*009*/  int8	unknown009[3];
 };
 
-struct PlayerAA_Struct {
+struct PlayerAA_Struct {						// Is this still used?
 	AA_Skills aa_list[MAX_PP_AA_ARRAY];
 };
 
 struct AATable_Struct {
-	AA_Skills aa_list[MAX_PP_AA_ARRAY];
+/*00*/ sint32    aa_spent;						// Total AAs Spent
+/*04*/ AA_Skills aa_list[MAX_PP_AA_ARRAY];
 };
 
 struct Weather_Struct {
