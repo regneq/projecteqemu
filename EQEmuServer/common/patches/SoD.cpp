@@ -960,6 +960,12 @@ ENCODE(OP_ZoneSpawns) {
 
 			PacketSize += strlen(emu->name);
 			PacketSize += strlen(emu->lastName);
+
+			if(strlen(emu->title))
+				PacketSize += strlen(emu->title) + 1;
+
+			if(strlen(emu->suffix))
+				PacketSize += strlen(emu->suffix) + 1;
 		
 			bool ShowName = 1;
 			if(emu->bodytype >= 66)
@@ -1003,7 +1009,15 @@ ENCODE(OP_ZoneSpawns) {
 
 			Buffer += sizeof(structs::Spawn_Struct_Bitfields);
 
-			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0x0);	// otherData was zero
+			uint8 OtherData = 0;
+
+			if(strlen(emu->title))
+				OtherData = OtherData | 0x04;
+
+			if(strlen(emu->suffix))
+				OtherData = OtherData | 0x08;
+
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, OtherData);
 
 			VARSTRUCT_ENCODE_TYPE(float, Buffer, -1);	// unknown3
 			VARSTRUCT_ENCODE_TYPE(float, Buffer, 0);	// unknown4
@@ -1053,7 +1067,7 @@ ENCODE(OP_ZoneSpawns) {
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);	// pvp
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0x64);	// standstate
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->light);
-			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0); // unknown7  Flymode ?
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->flymode);
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->equip_chest2); // unknown8
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0); // unknown9
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0); // unknown10
@@ -1114,7 +1128,15 @@ ENCODE(OP_ZoneSpawns) {
 
 				Buffer += (sizeof(structs::EquipStruct) * 9);
 			}
+			if(strlen(emu->title))
+			{
+				VARSTRUCT_ENCODE_STRING(Buffer, emu->title);
+			}
 
+			if(strlen(emu->suffix))
+			{
+				VARSTRUCT_ENCODE_STRING(Buffer, emu->suffix);
+			}
 			Buffer += 33; // Unknown;
 
 			//_log(NET__ERROR, "Sending zone spawn for %s", emu->name);

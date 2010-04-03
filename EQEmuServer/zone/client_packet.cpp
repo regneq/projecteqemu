@@ -8544,6 +8544,9 @@ void Client::CompleteConnect()
 
 	if(zone->GetZoneID() == RuleI(World, GuildBankZoneID) && GuildBanks)
 		GuildBanks->SendGuildBank(this);
+
+	if(GetClientVersion() >= EQClientSoD)
+		entity_list.SendFindableNPCList(this);
 }
 
 void Client::Handle_OP_KeyRing(const EQApplicationPacket *app) {
