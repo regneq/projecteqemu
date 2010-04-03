@@ -869,6 +869,60 @@ ENCODE(OP_Barter)
 	
 }
 
+ENCODE(OP_BazaarSearch)
+{
+	EQApplicationPacket *in = *p;
+	*p = NULL;
+
+	char *Buffer = (char *)in->pBuffer;
+
+	uint8 SubAction = VARSTRUCT_DECODE_TYPE(uint8, Buffer);
+
+	if(SubAction != BazaarSearchResults)
+	{
+		dest->FastQueuePacket(&in, ack_req);
+
+		return;
+	}
+
+	unsigned char *__emu_buffer = in->pBuffer;
+
+	BazaarSearchResults_Struct *emu = (BazaarSearchResults_Struct *) __emu_buffer;
+
+	int EntryCount = in->size / sizeof(BazaarSearchResults_Struct);
+
+	if(EntryCount == 0 || (in->size % sizeof(BazaarSearchResults_Struct)) != 0)
+	{
+		_log(NET__STRUCTS, "Wrong size on outbound %s: Got %d, expected multiple of %d", opcodes->EmuToName(in->GetOpcode()), in->size, sizeof(BazaarSearchResults_Struct));
+		delete in;
+		return;
+	}
+	in->size = EntryCount * sizeof(structs::BazaarSearchResults_Struct);
+
+	in->pBuffer = new unsigned char[in->size];
+
+	memset(in->pBuffer, 0, in->size);
+
+	structs::BazaarSearchResults_Struct *eq = (structs::BazaarSearchResults_Struct *)in->pBuffer;
+
+	for(int i = 0; i < EntryCount; ++i, ++emu, ++eq)
+	{
+		OUT(Beginning.Action);
+		OUT(SellerID);
+		memcpy(eq->SellerName, emu->SellerName, sizeof(eq->SellerName));
+		OUT(NumItems);
+		OUT(ItemID);
+		OUT(SerialNumber);
+		memcpy(eq->ItemName, emu->ItemName, sizeof(eq->ItemName));
+		OUT(Cost);
+		OUT(ItemStat);
+	}
+
+	delete[] __emu_buffer;
+
+	dest->FastQueuePacket(&in, ack_req);
+}
+
 ENCODE(OP_NewSpawn) {  ENCODE_FORWARD(OP_ZoneSpawns); }
 ENCODE(OP_ZoneEntry){  ENCODE_FORWARD(OP_ZoneSpawns); }
 ENCODE(OP_ZoneSpawns) {
@@ -1572,60 +1626,6 @@ ENCODE(OP_ItemVerifyReply) {
 	FINISH_ENCODE();
 }
 
-ENCODE(OP_BazaarSearch) {
-
-	if(((*p)->size == sizeof(BazaarReturnDone_Struct)) || ((*p)->size == sizeof(BazaarWelcome_Struct))) {
-
-		EQApplicationPacket *in = *p;
-		*p = NULL;
-		dest->FastQueuePacket(&in, ack_req);
-		return;
-	}
-
-	//consume the packet
-	EQApplicationPacket *in = *p;
-	*p = NULL;
-
-	//store away the emu struct
-	unsigned char *__emu_buffer = in->pBuffer;
-	BazaarSearchResults_Struct *emu = (BazaarSearchResults_Struct *) __emu_buffer;
-
-	//determine and verify length
-	int entrycount = in->size / sizeof(BazaarSearchResults_Struct);
-	if(entrycount == 0 || (in->size % sizeof(BazaarSearchResults_Struct)) != 0) {
-		_log(NET__STRUCTS, "Wrong size on outbound %s: Got %d, expected multiple of %d", 
-				   opcodes->EmuToName(in->GetOpcode()), in->size, sizeof(BazaarSearchResults_Struct));
-		delete in;
-		return;
-	}
-
-	//make the EQ struct.
-	in->size = sizeof(structs::BazaarSearchResults_Struct)*entrycount;
-	in->pBuffer = new unsigned char[in->size];
-	structs::BazaarSearchResults_Struct *eq = (structs::BazaarSearchResults_Struct *) in->pBuffer;
-
-	//zero out the packet. We could avoid this memset by setting all fields (including unknowns)
-	//in the loop.
-	memset(in->pBuffer, 0, in->size);
-
-	for(int i=0; i<entrycount; i++, eq++, emu++) {
-		eq->Beginning.Action = emu->Beginning.Action;
-		eq->Beginning.Unknown001 = emu->Beginning.Unknown001;
-		eq->Beginning.Unknown002 = emu->Beginning.Unknown002;
-		eq->NumItems = emu->NumItems;
-		eq->ItemID = emu->ItemID;
-		eq->SellerID = emu->SellerID;
-		eq->Cost = emu->Cost;
-		eq->ItemStat = emu->ItemStat;
-		strcpy(eq->Name, emu->Name);
-	}
-
-	delete[] __emu_buffer;
-	dest->FastQueuePacket(&in, ack_req);
-
-
-}
-
 ENCODE(OP_Trader) {
 
 	if((*p)->size != sizeof(TraderBuy_Struct)) {
@@ -2156,6 +2156,24 @@ ENCODE(OP_GroupUpdate)
 	dest->FastQueuePacket(&outapp);
 }
 
+DECODE(OP_BazaarSearch)
+{
+	char *Buffer = (char *)__packet->pBuffer;
+
+	uint8 SubAction = VARSTRUCT_DECODE_TYPE(uint8, Buffer);
+
+	if((SubAction != BazaarInspectItem) || (__packet->size != sizeof(structs::NewBazaarInspect_Struct)))
+		return;
+
+	SETUP_DIRECT_DECODE(NewBazaarInspect_Struct, structs::NewBazaarInspect_Struct);
+	MEMSET_IN(structs::NewBazaarInspect_Struct);
+	IN(Beginning.Action);
+	memcpy(emu->Name, eq->Name, sizeof(emu->Name));
+	IN(SerialNumber);
+
+	FINISH_DIRECT_DECODE();
+}
+
 DECODE(OP_InspectAnswer) {
 	DECODE_LENGTH_EXACT(structs::InspectResponse_Struct);
 	SETUP_DIRECT_DECODE(InspectResponse_Struct, structs::InspectResponse_Struct);
@@ -2496,7 +2514,8 @@ DECODE(OP_FindPersonRequest) {
 	FINISH_DIRECT_DECODE();
 }
 
-DECODE(OP_TraderBuy) {
+DECODE(OP_TraderBuy)
+{
 	DECODE_LENGTH_EXACT(structs::TraderBuy_Struct);
 	SETUP_DIRECT_DECODE(TraderBuy_Struct, structs::TraderBuy_Struct);
 	MEMSET_IN(TraderBuy_Struct);
@@ -2952,4 +2971,4 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	return item_serial;
 }
 
-} //end namespace SoF
+} //end namespace SoD

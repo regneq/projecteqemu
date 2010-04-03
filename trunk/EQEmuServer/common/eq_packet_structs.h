@@ -2544,7 +2544,8 @@ enum {
 	BazaarBuyItem = 10,
 	BazaarTrader_ShowItems = 11,
 	BazaarSearchDone = 12,
-	BazaarTrader_CustomerBrowsing = 13
+	BazaarTrader_CustomerBrowsing = 13,
+	BazaarInspectItem = 18
 };
 
 enum {
@@ -2606,13 +2607,17 @@ struct BazaarReturnDone_Struct{
 	int32 Unknown016;
 };
 struct BazaarSearchResults_Struct {
-	BazaarWindowStart_Struct Beginning;
-	int32	NumItems;
+/*000*/	BazaarWindowStart_Struct Beginning;
+/*004*/	int32	NumItems;
+/*008*/	int32	SerialNumber;
+/*012*/	int32	SellerID;
+/*016*/	int32	Cost;
+/*020*/	int32	ItemStat;
+/*024*/	char	ItemName[64];
+/*088*/
+	// New fields for SoD+, stripped off when encoding for older clients.
+	char	SellerName[64];
 	int32	ItemID;
-	int32	SellerID;
-	int32	Cost;
-	int32	ItemStat;
-	char	Name[64];
 };
 
 // Barter/Buyer

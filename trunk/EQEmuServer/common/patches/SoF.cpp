@@ -1505,11 +1505,11 @@ ENCODE(OP_BazaarSearch) {
 		eq->Beginning.Unknown001 = emu->Beginning.Unknown001;
 		eq->Beginning.Unknown002 = emu->Beginning.Unknown002;
 		eq->NumItems = emu->NumItems;
-		eq->ItemID = emu->ItemID;
+		eq->SerialNumber = emu->SerialNumber;
 		eq->SellerID = emu->SellerID;
 		eq->Cost = emu->Cost;
 		eq->ItemStat = emu->ItemStat;
-		strcpy(eq->Name, emu->Name);
+		strcpy(eq->ItemName, emu->ItemName);
 	}
 
 	delete[] __emu_buffer;
