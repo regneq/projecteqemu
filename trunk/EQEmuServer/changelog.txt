@@ -1,6 +1,7 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==04/02/2010==
+
 Derision: SoD - Group Leadership AA should mostly work (Main Assist is no longer a GLAA and Health Awareness seems intermittent).
 joligario: Pet behavious change.
 Trevius: SoF/SoD - Added clicky item checks to match previous clients. All clicky item hacker entries should now be actual hack attempts.
@@ -16,6 +17,8 @@ Derision: SoD - Fixed price bug when buying from merchants.
 Trevius: SoD - Spell books now display all scribed spells (was previously hiding the first 9 slots).
 Trevius: SoD - Stopped the Barter error that was reporting when logging in due to an incorrect opcode.
 
+Congdar: (Taurinus) Drakkin bots
+
 ==03/31/2010==
 Derision: SoD - Groups should be as functional as previous clients, except Group Leadership AA doesn't work.
 Derision: SoD - Fixed items being incorrectly flagged as No Trade/Copied
@@ -24,7 +27,9 @@ Derision: SoD - Fixed items being incorrectly flagged as No Trade/Copied
 Trevius: SoD - Corrected the opcode for Mob Health Updates so they update properly.
 Trevius: SoD - Added a few new Opcodes and Structures for SoD packets that aren't used yet.
 
+
 ==03/28/2010==
+
 Derision: SoD - Fixed client animation/runspeed glitch.
 Derision: All Clients - Player position updates to other players should be more accurate.
 Trevius: Updated #race and #fixmob commands to allow up to race 626 which is the total for the SoD client.
@@ -35,6 +40,7 @@ Trevius: SoD - A couple more Opcode updates.
 Trevius: SoD - Some group structures work, but grouping is still not functional.
 Derision: SoD - Fixed random client crashes due to spawn packets and invisible mobs should now be invisible.
 Derision: SoD - Did a basic Encode on OP_WhoAllResponse. Still needs work for various flags (LD/Trader/Buyer) etc.
+
 
 ==03/26/2010==
 Trevius: SoD - Finished updated Opcodes and they should now be caught up with what we have in SoF.
