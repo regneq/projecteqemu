@@ -1421,6 +1421,19 @@ void Client::SendBazaarResults(int32 TraderID, int32 Class_, int32 Race, int32 I
 			memcpy(bufptr,&Name, strlen(Name));
 
 			bufptr += 64;
+
+			// Extra fields for SoD+
+			//
+			if(Trader2)
+				sprintf(Name, "%s", Trader2->GetName());
+			else
+				sprintf(Name, "Unknown");
+
+			memcpy(bufptr,&Name, strlen(Name));
+
+			bufptr += 64;
+
+			VARSTRUCT_ENCODE_TYPE(uint32, bufptr, atoi(Row[1]));	// ItemID
 		}
 		mysql_free_result(Result);
 

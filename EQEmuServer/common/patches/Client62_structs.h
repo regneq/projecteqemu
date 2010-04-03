@@ -2055,9 +2055,9 @@ struct EnvDamage2_Struct {
 //Bazaar Stuff =D
 
 struct BazaarWindowStart_Struct {
-	int8   action;
-	int8   unknown1;
-	int16  unknown2;
+	int8   Action;
+	int8   Unknown001;
+	int16  Unknown002;
 };
 
 
@@ -2092,14 +2092,16 @@ struct BazaarReturnDone_Struct{
 	int32 unknown12;
 	int32 unknown16;
 };
+
 struct BazaarSearchResults_Struct {
-	BazaarWindowStart_Struct beginning;
-	int32	numitems;
-	int32	item_id;
-	int32	seller_nr;
-	int32	cost;
-	int32	unknown20;
-	char	name[64];
+/*000*/	BazaarWindowStart_Struct Beginning;
+/*004*/	int32	NumItems;
+/*008*/	int32	SerialNumber;
+/*012*/	int32	SellerID;
+/*016*/	int32	Cost;
+/*020*/	int32	ItemStat;
+/*024*/	char	ItemName[64];
+/*088*/
 };
 
 struct ServerSideFilters_Struct {

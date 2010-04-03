@@ -95,5 +95,6 @@ D(OP_TradeSkillCombine)
 D(OP_RaidInvite)
 D(OP_InspectAnswer)
 D(OP_ShopPlayerBuy)
+D(OP_BazaarSearch)
 #undef E
 #undef D
