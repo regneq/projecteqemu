@@ -3,7 +3,8 @@
 ==04/03/2010==
 Trevius: SoF/SoD - Total Spent AA Points now show correctly for these 2 clients.
 Trevius: Froglok characters now default to size 5 instead of 7.  This corrects size issues when using illusions.
-Derision: Bazaar Trader Mode/Bazaar Search should now work correctly.
+Derision: SoD - Bazaar Trader Mode/Bazaar Search should now work correctly.
+Derision: SoD - Found the helm field in the spawn struct.
 
 ==04/02/2010==
 Derision: SoD - Group Leadership AA should mostly work (Main Assist is no longer a GLAA and Health Awareness seems intermittent).

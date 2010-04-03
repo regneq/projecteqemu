@@ -1057,14 +1057,7 @@ ENCODE(OP_ZoneSpawns) {
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->equip_chest2); // unknown8
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0); // unknown9
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0); // unknown10
-			if(emu->NPC)
-			{
-				VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0xFF); // unknown11
-			}
-			else
-			{
-				VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0x01); // unknown11
-			}
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->helm); // unknown11
 			VARSTRUCT_ENCODE_STRING(Buffer, emu->lastName);
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);	// aatitle
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0); // unknown12

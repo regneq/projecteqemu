@@ -277,7 +277,7 @@ struct Spawn_Struct
 /*0000*/ uint8  equip_chest2;
 /*0000*/ uint8  unknown9;
 /*0000*/ uint8  unknown10;
-/*0000*/ uint8  unknown11;
+/*0000*/ uint8  helm;
 /*0000*/ char     lastName[1];
 /*0000*/ //uint8     lastNameNull; //hack!
 /*0000*/ uint32 aatitle;		// 0=none, 1=general, 2=archtype, 3=class was AARank
