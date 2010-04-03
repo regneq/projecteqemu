@@ -7822,19 +7822,19 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 		case TROLL:
 			size = 8;break;
 		case VAHSHIR:
-
-		case FROGLOK: //Frog
 		case BARBARIAN:
 			size = 7;break;
 		case HUMAN:
 		case HIGH_ELF:
 		case ERUDITE:
 		case IKSAR:
+		case DRAKKIN:
 			size = 6;break;
 		case HALF_ELF:
 			size = 5.5;break;
 		case WOOD_ELF:
 		case DARK_ELF:
+		case FROGLOK: //Frog
 			size = 5;break;
 		case DWARF:
 			size = 4;break;
