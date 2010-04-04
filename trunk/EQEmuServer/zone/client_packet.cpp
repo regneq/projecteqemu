@@ -362,6 +362,7 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_VetClaimRequest] = &Client::Handle_OP_VetClaimRequest;
 	ConnectedOpcodes[OP_GMSearchCorpse] = &Client::Handle_OP_GMSearchCorpse;
 	ConnectedOpcodes[OP_GuildBank] = &Client::Handle_OP_GuildBank;
+	ConnectedOpcodes[OP_GroupRoles] = &Client::Handle_OP_GroupRoles;
 }
 
 int Client::HandlePacket(const EQApplicationPacket *app)
@@ -1477,6 +1478,12 @@ void Client::Handle_OP_TargetCommand(const EQApplicationPacket *app)
 		{
 			SetTarget(NULL);
 			SetHoTT(0);
+
+			Group *g = GetGroup();
+
+			if(g && g->IsMainAssist(this))
+				g->SetGroupTarget(0);
+
 			return;
 		}
 	}
@@ -10791,4 +10798,22 @@ void Client::Handle_OP_GuildBank(const EQApplicationPacket *app)
 			_log(GUILDS__BANK_ERROR, "Received unexpected guild bank action code %i from %s", Action, GetName());
 		}
 	}
+}
+
+void Client::Handle_OP_GroupRoles(const EQApplicationPacket *app)
+{
+	GroupRole_Struct *grs = (GroupRole_Struct*)app->pBuffer;
+
+	if(grs->RoleNumber != 2)	// Main Assist
+		return;
+
+	Group *g = GetGroup();
+
+	if(!g)
+		return;
+
+	if(grs->Toggle)
+		g->DelegateMainAssist(grs->Name1);
+	else
+		g->DelegateMainAssist(GetName());
 }

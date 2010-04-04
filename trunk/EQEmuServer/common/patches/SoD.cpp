@@ -2119,7 +2119,7 @@ ENCODE(OP_GroupUpdate)
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);	// This is a string
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0x41);	// Observed 0x41 and 0x46 here
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);
-			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);	// Low byte is Main Assist Flag
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
 			VARSTRUCT_ENCODE_TYPE(uint16, Buffer, 0);
 		}

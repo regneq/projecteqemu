@@ -1111,23 +1111,44 @@ void Group::NotifyMainAssist(Client *c)
 	if(!MainAssistName.size())
 		return;
 
-	EQApplicationPacket *outapp = new EQApplicationPacket(OP_DelegateAbility, sizeof(DelegateAbility_Struct));
+	if(c->GetClientVersion() < EQClientSoD)
+	{
+		EQApplicationPacket *outapp = new EQApplicationPacket(OP_DelegateAbility, sizeof(DelegateAbility_Struct));
 
-	DelegateAbility_Struct* das = (DelegateAbility_Struct*)outapp->pBuffer;
+		DelegateAbility_Struct* das = (DelegateAbility_Struct*)outapp->pBuffer;
 
-	das->DelegateAbility = 0;
+		das->DelegateAbility = 0;
 
-	das->MemberNumber = 0;
+		das->MemberNumber = 0;
 
-	das->Action = 0;
+		das->Action = 0;
 
-	das->EntityID = 0;
+		das->EntityID = 0;
 
-	strn0cpy(das->Name, MainAssistName.c_str(), sizeof(das->Name));
+		strn0cpy(das->Name, MainAssistName.c_str(), sizeof(das->Name));
 
-	c->QueuePacket(outapp);
+		c->QueuePacket(outapp);
 
-	safe_delete(outapp);
+		safe_delete(outapp);
+	}
+	else
+	{
+		EQApplicationPacket *outapp = new EQApplicationPacket(OP_GroupRoles, sizeof(GroupRole_Struct));
+
+		GroupRole_Struct *grs = (GroupRole_Struct*)outapp->pBuffer;
+
+		strn0cpy(grs->Name1, MainAssistName.c_str(), sizeof(grs->Name1));
+
+		strn0cpy(grs->Name2, GetLeaderName(), sizeof(grs->Name2));
+
+		grs->RoleNumber = 2;
+
+		grs->Toggle = 1;
+
+		c->QueuePacket(outapp);
+
+		safe_delete(outapp);
+	}
 
 	NotifyTarget(c);
 
