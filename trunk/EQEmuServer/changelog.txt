@@ -4,6 +4,8 @@
 Derision: SoD - Group member (client or bot) mana and endurance should update correctly in the group window.
 Derision: SoD - Altered SpawnStruct encode to send colors for all playable races (including corpses and NPCs).
 Derision: SoD - Group Main Assist may be assigned via the Group Window. As the group leader cannot explicitly assign it to himself, use /grouproles set <leadername> 2
+Leere:	A moving mob that becomes mezzed will no longer appear to continue moving.
+Fourier: Added location to the output of #listnpc.
 
 ==04/03/2010==
 Trevius: SoF/SoD - Total Spent AA Points now show correctly for these 2 clients.
