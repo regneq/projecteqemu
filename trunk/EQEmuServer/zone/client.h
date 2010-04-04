@@ -409,6 +409,7 @@ public:
 	sint32	CalcEnduranceRegen();	//Calculates endurance regen used in DoEnduranceRegen()
 	sint32	GetEndurance()	const {return cur_end;}	//This gets our current endurance
 	sint32	GetMaxEndurance() const {return max_end;}	//This gets our endurance from the last CalcMaxEndurance() call
+	inline uint8 GetEndurancePercent() { return (uint8)((float)cur_end / (float)max_end * 100.0f); }
 	void SetEndurance(sint32 newEnd);	//This sets the current endurance to the new value
 	void DoEnduranceRegen();	//This Regenerates endurance
 	void DoEnduranceUpkeep();	//does the endurance upkeep
