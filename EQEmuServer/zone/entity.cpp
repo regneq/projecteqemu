@@ -4434,7 +4434,7 @@ void EntityList::SendFindableNPCList(Client *c)
 
 	fnpcs->Unknown109 = 0x16;
 	fnpcs->Unknown110 = 0x06;
-	fnpcs->Unknown109 = 0x24;
+	fnpcs->Unknown111 = 0x24;
 
 	fnpcs->Action = 0;
 
@@ -4476,7 +4476,7 @@ void EntityList::UpdateFindableNPCState(NPC *n, bool Remove)
 
 	fnpcs->Unknown109 = 0x16;
 	fnpcs->Unknown110 = 0x06;
-	fnpcs->Unknown109 = 0x24;
+	fnpcs->Unknown111 = 0x24;
 
 	fnpcs->Action = Remove ? 1: 0;
 
