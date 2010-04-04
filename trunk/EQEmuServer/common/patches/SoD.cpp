@@ -1101,18 +1101,14 @@ ENCODE(OP_ZoneSpawns) {
 		
 			for(k = 0; k < 9; ++k)
 			{
-				if(emu->NPC)
-				{
-					// Sending colours for some NPCs was causing the client to crash. It may be that only certain
-					// races have this problem, as zones with predominantly mobs of playable races didn't seem
-					// to have the problem. For now we will not send colours for NPCs.
-					VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
-				}
-				else
+				if((emu->NPC == 0) || (emu->race <=12) || (emu->race == 128) || (emu ->race == 130) || (emu->race == 330) || (emu->race == 522))
 				{
 					VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->colors[k].color);
 				}
-
+				else
+				{
+					VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+				}
 			}
 
 
@@ -1144,15 +1140,7 @@ ENCODE(OP_ZoneSpawns) {
 			dest->FastQueuePacket(&outapp, ack_req);
 	}
 	
-	
-	//kill off the emu structure and send the eq packet.
-	//delete[] __emu_buffer;
-	
 	delete in;
-	//_log(NET__ERROR, "Sending zone spawns");
-	//_hex(NET__ERROR, in->pBuffer, in->size);
-	
-	//dest->FastQueuePacket(&in, ack_req);
 }
 
 ENCODE(OP_ItemLinkResponse) {  ENCODE_FORWARD(OP_ItemPacket); }
