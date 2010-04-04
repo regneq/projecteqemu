@@ -4357,6 +4357,18 @@ struct FindableNPC_Struct
 /*112*/
 };
 
+struct GroupRole_Struct
+{
+/*000*/	char	Name1[64];
+/*064*/	char	Name2[64];
+/*128*/	uint32	Unknown128;
+/*132*/	uint32	Unknown132;
+/*136*/	uint32	Unknown136;
+/*140*/	uint32	RoleNumber;
+/*144*/	uint8	Toggle;
+/*145*/	uint8	Unknown145[3];
+/*148*/
+};
 
 //old structures live here:
 #include "eq_old_structs.h"
