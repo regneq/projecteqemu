@@ -2480,7 +2480,7 @@ void EntityList::DepopAll(int NPCTypeID, bool StartSpawnTimer) {
 	for(; iterator.MoreElements(); iterator.Advance())
 	{
 		NPC *it = iterator.GetData();
-		if(it && (it->GetNPCTypeID() == NPCTypeID))
+		if(it && (it->GetNPCTypeID() == (int32)NPCTypeID))
 			it->Depop(StartSpawnTimer);
 	}
 }
@@ -2638,9 +2638,11 @@ void EntityList::ListNPCs(Client* client, const char* arg1, const char* arg2, in
 	iterator.Reset();
 	client->Message(0, "NPCs in the zone:");
 	if(searchtype == 0) {
-		while(iterator.MoreElements()) {
+		while(iterator.MoreElements())
+		{
+			NPC *n = iterator.GetData();
 
-			client->Message(0, "  %5d: %s", iterator.GetData()->GetID(), iterator.GetData()->GetName());
+			client->Message(0, "  %5d: %s (%.0f, %0.f, %.0f)", n->GetID(), n->GetName(), n->GetX(), n->GetY(), n->GetZ());
 			x++;
 			z++;
 			iterator.Advance();
@@ -2656,7 +2658,8 @@ void EntityList::ListNPCs(Client* client, const char* arg1, const char* arg2, in
 			strcpy(sName, iterator.GetData()->GetName());
 			strupr(sName);
 			if (strstr(sName, tmp)) {
-				client->Message(0, "  %5d: %s", iterator.GetData()->GetID(), iterator.GetData()->GetName());
+				NPC *n = iterator.GetData();
+				client->Message(0, "  %5d: %s (%.0f, %.0f, %.0f)", n->GetID(), n->GetName(), n->GetX(), n->GetY(), n->GetZ());
 				x++;
 			}
 			iterator.Advance();
@@ -3655,7 +3658,7 @@ Corpse* EntityList::GetClosestCorpse(Mob* sender)
 	if(!sender) 
 		return NULL;
 
-	uint32 dist = 4294967295;
+	uint32 dist = 4294967295u;
 	Corpse* nc = NULL;
 
 	LinkedListIterator<Corpse*> iterator(corpse_list);

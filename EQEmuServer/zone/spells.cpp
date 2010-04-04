@@ -3649,6 +3649,7 @@ void Mob::Mesmerize()
 	if (casting_spell_id)
 		InterruptSpell();
 
+	SendPosition();
 /* this stuns the client for max time, with no way to break it -solar
 	if (this->IsClient()){
 		EQApplicationPacket* outapp = new EQApplicationPacket(OP_Stun, sizeof(Stun_Struct));
