@@ -1,5 +1,8 @@
 ﻿EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==04/05/2010==
+Derision: SoD - Loot All now works.
+
 ==04/04/2010==
 Derision: SoD - Group member (client or bot) mana and endurance should update correctly in the group window.
 Derision: SoD - Altered SpawnStruct encode to send colors for all playable races (including corpses and NPCs).
