@@ -1286,7 +1286,7 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 	delta_heading	= ppu->delta_heading;
 	heading			= EQ19toFloat(ppu->heading);
 
-	if(IsTracking && ((x_pos!=ppu->x_pos) || (y_pos!=ppu->y_pos))){
+	if(IsTracking() && ((x_pos!=ppu->x_pos) || (y_pos!=ppu->y_pos))){
 		if(MakeRandomFloat(0, 100) < 70)//should be good
 			CheckIncreaseSkill(TRACKING, NULL, -20);
 	}
@@ -7016,17 +7016,6 @@ void Client::Handle_OP_Bind_Wound(const EQApplicationPacket *app)
 
 void Client::Handle_OP_TrackTarget(const EQApplicationPacket *app)
 {
-	IsTracking=(IsTracking==false);
-
-	if(!IsTracking)
-	{
-		TrackingID = 0;
-		return;
-	}
-
-	if(GetClientVersion() < EQClientSoD)
-		return;
-	
 	int PlayerClass = GetClass();
 
 	if((PlayerClass != RANGER) && (PlayerClass != DRUID) && (PlayerClass != BARD))
@@ -7041,13 +7030,7 @@ void Client::Handle_OP_TrackTarget(const EQApplicationPacket *app)
 
 	TrackTarget_Struct *tts = (TrackTarget_Struct*)app->pBuffer;
 
-	if(tts->EntityID)
-		TrackingID = tts->EntityID;
-	else
-	{
-		IsTracking = false;
-		TrackingID = 0;
-	}
+	TrackingID = tts->EntityID;
 }
 
 void Client::Handle_OP_Track(const EQApplicationPacket *app)
