@@ -4370,6 +4370,13 @@ struct GroupRole_Struct
 /*148*/
 };
 
+struct HideCorpse_Struct
+{
+/*00*/	uint32	Action;
+/*04*/	uint32	Unknown04;
+/*08*/
+};
+
 //old structures live here:
 #include "eq_old_structs.h"
 

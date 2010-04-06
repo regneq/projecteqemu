@@ -301,6 +301,7 @@ Client::Client(EQStreamInterface* ieqs)
 	aa_los_them_mob = NULL;
 	los_status = false;
 	qGlobals = NULL;
+	HideCorpseMode = HideCorpseNone;
 }
 
 Client::~Client() {

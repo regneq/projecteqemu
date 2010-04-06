@@ -628,6 +628,15 @@ bool Group::IsGroupMember(Mob* client)
 	return Result;
 }
 
+bool Group::IsGroupMember(const char *Name)
+{
+	if(Name)
+		for(uint32 i = 0; i < MAX_GROUP_MEMBERS; i++)
+			if(!strncmp(membername[i], Name, sizeof(membername[0])))
+				return true;
+
+	return false;
+}
 void Group::GroupMessage(Mob* sender, int8 language, int8 lang_skill, const char* message) {
 	uint32 i;
 	for (i = 0; i < MAX_GROUP_MEMBERS; i++) {

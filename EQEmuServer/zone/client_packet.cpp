@@ -363,6 +363,7 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_GMSearchCorpse] = &Client::Handle_OP_GMSearchCorpse;
 	ConnectedOpcodes[OP_GuildBank] = &Client::Handle_OP_GuildBank;
 	ConnectedOpcodes[OP_GroupRoles] = &Client::Handle_OP_GroupRoles;
+	ConnectedOpcodes[OP_HideCorpse] = &Client::Handle_OP_HideCorpse;
 }
 
 int Client::HandlePacket(const EQApplicationPacket *app)
@@ -10799,4 +10800,21 @@ void Client::Handle_OP_GroupRoles(const EQApplicationPacket *app)
 		g->DelegateMainAssist(grs->Name1);
 	else
 		g->DelegateMainAssist(GetName());
+}
+
+void Client::Handle_OP_HideCorpse(const EQApplicationPacket *app)
+{
+	// New OPCode for SOD+ as /hidecorpse is handled serverside now.
+	//
+	HideCorpse_Struct *hcs = (HideCorpse_Struct*)app->pBuffer;
+
+	if(hcs->Action == HideCorpseLooted)
+		return;
+
+	if((HideCorpseMode  == HideCorpseNone) && (hcs->Action == HideCorpseNone))
+		return;
+
+	entity_list.HideCorpses(this, HideCorpseMode, hcs->Action);
+
+	HideCorpseMode = hcs->Action;
 }

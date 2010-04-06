@@ -140,6 +140,15 @@ typedef enum {
 	EQClientSoD
 } EQClientVersion;
 
+enum {
+	HideCorpseNone = 0,
+	HideCorpseAll = 1,
+	HideCorpseAllButGroup = 2,
+	HideCorpseLooted = 3,
+	HideCorpseNPC = 5
+};
+	
+
 struct ClientReward
 {
 	int32 id;
@@ -1194,6 +1203,8 @@ private:
 		ClientConnectFinished	//client finally moved to finished state, were done here
 	} conn_state;
 	void ReportConnectingState();
+
+	uint8	HideCorpseMode;
 };
 
 #include "parser.h"

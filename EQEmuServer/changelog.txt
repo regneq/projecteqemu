@@ -2,6 +2,7 @@
 -------------------------------------------------------
 ==04/06/2010==
 Derision: SoD - Players may now be tracked and fixed a bug where tracking would not work when switching tracking targets without cancelling tracking.
+Derision: SoD - Initial work on /hidecorpse serverside support. All but /hidecorpse looted should work.
 
 ==04/05/2010==
 Derision: SoD - Loot All now works.
