@@ -10806,6 +10806,16 @@ void Client::Handle_OP_HideCorpse(const EQApplicationPacket *app)
 {
 	// New OPCode for SOD+ as /hidecorpse is handled serverside now.
 	//
+	if(app->size != sizeof(HideCorpse_Struct))
+	{
+		LogFile->write(EQEMuLog::Debug, "Size mismatch in OP_HideCorpse expected %i got %i",
+		               sizeof(HideCorpse_Struct), app->size);
+
+		DumpPacket(app);
+
+		return;
+	}
+
 	HideCorpse_Struct *hcs = (HideCorpse_Struct*)app->pBuffer;
 
 	if(hcs->Action == HideCorpseLooted)
