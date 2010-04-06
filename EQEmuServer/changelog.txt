@@ -1,5 +1,8 @@
 ﻿EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==04/06/2010==
+Derision: SoD - Players may now be tracked and fixed a bug where tracking would not work when switching tracking targets without cancelling tracking.
+
 ==04/05/2010==
 Derision: SoD - Loot All now works.
 

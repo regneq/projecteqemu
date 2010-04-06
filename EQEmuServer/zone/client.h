@@ -929,6 +929,7 @@ public:
 	void SendGroupLeaderChangePacket(const char *LeaderName);
 	void SendGroupJoinAcknowledge();
 	void DoTracking();
+	inline bool IsTracking() { return (TrackingID > 0); }
 
 protected:
 	friend class Mob;
@@ -1044,7 +1045,6 @@ private:
 	bool				berserk;
 	bool				dead;
 	int16				BoatID;
-	bool				IsTracking;
 	int16				TrackingID;
 	int16				CustomerID;
 	bool	Trader;
