@@ -359,6 +359,7 @@ public:
 	void	DeleteQGlobal(std::string name, uint32 npcID, uint32 charID, uint32 zoneID);
 	void	SendFindableNPCList(Client *c);
 	void	UpdateFindableNPCState(NPC *n, bool Remove);
+	void	HideCorpses(Client *c, uint8 CurrentMode, uint8 NewMode);
 
 	list<Mob*> GetMobList();
 	list<NPC*> GetNPCList();

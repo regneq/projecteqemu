@@ -255,3 +255,4 @@
 	void Handle_OP_GMSearchCorpse(const EQApplicationPacket *app);
 	void Handle_OP_GuildBank(const EQApplicationPacket *app);
 	void Handle_OP_GroupRoles(const EQApplicationPacket *app);
+	void Handle_OP_HideCorpse(const EQApplicationPacket *app);

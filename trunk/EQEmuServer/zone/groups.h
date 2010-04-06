@@ -57,6 +57,7 @@ public:
 	bool	DelMember(Mob* oldmember,bool ignoresender = false);
 	void	DisbandGroup();
 	bool	IsGroupMember(Mob* client);
+	bool	IsGroupMember(const char *Name);
 	bool	Process();
 	bool	IsGroup()			{ return true; }
 	void	CastGroupSpell(Mob* caster,uint16 spellid);

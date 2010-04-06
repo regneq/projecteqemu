@@ -4509,3 +4509,60 @@ void EntityList::UpdateFindableNPCState(NPC *n, bool Remove)
 	safe_delete(outapp);
 }
 
+void    EntityList::HideCorpses(Client *c, uint8 CurrentMode, uint8 NewMode)
+{
+	if(!c)
+		return;
+
+	if(NewMode == HideCorpseNone)
+	{
+		SendZoneCorpses(c);
+		return;
+	}
+
+	Group *g = NULL;
+
+	if(NewMode == HideCorpseAllButGroup)
+	{
+		g = c->GetGroup();
+
+		if(!g)
+			NewMode = HideCorpseAll;
+	}
+
+	LinkedListIterator<Corpse*> iterator(corpse_list);
+
+	iterator.Reset();
+
+	while(iterator.MoreElements())
+	{
+		Corpse *b = iterator.GetData();
+
+		if(b && (b->GetCharID() != c->CharacterID()))
+		{
+			if((NewMode == HideCorpseAll) || ((NewMode == HideCorpseNPC) && (b->IsNPCCorpse())))
+			{
+				EQApplicationPacket outapp;
+		        	b->CreateDespawnPacket(&outapp);
+				c->QueuePacket(&outapp);
+			}
+			else if(NewMode == HideCorpseAllButGroup)
+			{
+				if(!g->IsGroupMember(b->GetOwnerName()))
+				{
+					EQApplicationPacket outapp;
+			        	b->CreateDespawnPacket(&outapp);
+					c->QueuePacket(&outapp);
+				}
+				else if((CurrentMode == HideCorpseAll))
+				{
+					EQApplicationPacket outapp;
+			        	b->CreateSpawnPacket(&outapp);
+					c->QueuePacket(&outapp);
+				}
+			}
+				
+		}
+		iterator.Advance();
+	}
+}
