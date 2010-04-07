@@ -421,9 +421,10 @@ void Mob::CastedSpellFinished(Spell *casted_spell)
 			else
 			{
 				//Set our bard song...
-				//bard_song = casted_spell->CopySpell();
-				//bardsong_timer.Start(6000);
-				//mlog(SPELLS__BARDS, "Bard song %d started: slot %d", bard_song->GetSpellID(), bard_song->GetSpellSlot());
+				ZeroAndFreeSong();
+				bard_song = casted_spell->CopySpell();
+				bardsong_timer.Start(6000);
+				mlog(SPELLS__BARDS, "Bard song %d started: slot %d", bard_song->GetSpellID(), bard_song->GetSpellSlot());
 				bard_song_mode = true;
 			}
 		}

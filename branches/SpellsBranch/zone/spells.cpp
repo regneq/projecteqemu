@@ -316,10 +316,10 @@ void Mob::InterruptSpell(int16 message, int16 color, int16 spellid)
 		return;
 	}
 
-	/*if (bard_song || (casting_spell ? casting_spell->IsBardSong() : 0))
+	if(bard_song)
 	{
 		_StopSong();
-	}*/
+	}
 
 	if(!message)
 	{
@@ -1843,24 +1843,25 @@ int Mob::GetCasterLevel()
 //you should really know what your doing before you call this
 void Mob::_StopSong()
 {
+	if(!bard_song)
+	{
+		return;
+	}
+
 	mlog(SPELLS__CASTING, "Song has been stopped.");
-	if (IsClient() && (bard_song || (casting_spell && casting_spell->IsBardSong())))
+	if(IsClient())
 	{
 		EQApplicationPacket* outapp = new EQApplicationPacket(OP_ManaChange, sizeof(ManaChange_Struct));
 		ManaChange_Struct* manachange = (ManaChange_Struct*)outapp->pBuffer;
 		manachange->new_mana = cur_mana;
-		if (!bard_song)
-			manachange->spell_id = casting_spell ? casting_spell->GetSpellID() : 0;
-		else
-			manachange->spell_id = bard_song->GetSpellID();
+		manachange->spell_id = bard_song->GetSpellID();
 		manachange->stamina = CastToClient()->GetEndurance();
-		if (CastToClient()->Hungry())
+		if(CastToClient()->Hungry())
 			manachange->stamina = 0;
 		CastToClient()->QueuePacket(outapp);
 		safe_delete(outapp);
 	}
-	safe_delete(bard_song);
-	bardsong_timer.Disable();
+	ZeroAndFreeSong();
 }
 
 void Mob::SendPetBuffsToClient()
@@ -2309,6 +2310,7 @@ Spell* Spell::CopySpell()
 		return_value->cast_timer = new Timer(this->cast_timer->GetRemainingTime());
 	}
 
+	//this is suspect
 	memcpy((void*)&return_value->raw_spell, (const void*)&this->raw_spell, sizeof(SPDat_Spell_Struct));
 	return_value->raw_spell.id = GetSpellID();
 	id = GetSpellID();
