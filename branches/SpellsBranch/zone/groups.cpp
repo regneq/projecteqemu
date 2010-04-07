@@ -273,13 +273,42 @@ void Group::QueuePacket(const EQApplicationPacket *app, bool ack_req)
 // solar: sends the rest of the group's hps to member.  this is useful when
 // someone first joins a group, but otherwise there shouldn't be a need to
 // call it
-void Group::SendHPPacketsTo(Mob *member) {
-	if(member && member->IsClient()) {
+void Group::SendHPPacketsTo(Mob *member)
+{
+	if(member && member->IsClient())
+	{
 		EQApplicationPacket hpapp;
-		for (uint32 i = 0; i < MAX_GROUP_MEMBERS; i++) {
-			if(members[i] && members[i] != member) {
+
+		EQApplicationPacket outapp(OP_MobManaUpdate, sizeof(MobManaUpdate_Struct));
+
+		for (uint32 i = 0; i < MAX_GROUP_MEMBERS; i++)
+		{
+			if(members[i] && members[i] != member)
+			{
 				members[i]->CreateHPPacket(&hpapp);
+
 				member->CastToClient()->QueuePacket(&hpapp, false);
+
+				if(member->CastToClient()->GetClientVersion() >= EQClientSoD)
+				{
+					outapp.SetOpcode(OP_MobManaUpdate);
+
+					MobManaUpdate_Struct *mmus = (MobManaUpdate_Struct *)outapp.pBuffer;
+
+					mmus->spawn_id = members[i]->GetID();
+
+					mmus->mana = members[i]->GetManaPercent();
+
+					member->CastToClient()->QueuePacket(&outapp);
+
+					MobEnduranceUpdate_Struct *meus = (MobEnduranceUpdate_Struct *)outapp.pBuffer;
+
+					outapp.SetOpcode(OP_MobEnduranceUpdate);
+
+					meus->endurance = members[i]->GetEndurancePercent();
+
+					member->CastToClient()->QueuePacket(&outapp);
+				}
 			}
 		}
 	}
@@ -293,10 +322,36 @@ void Group::SendHPPacketsFrom(Mob *member)
 
  	member->CreateHPPacket(&hp_app);
 
+	EQApplicationPacket outapp(OP_MobManaUpdate, sizeof(MobManaUpdate_Struct));
+
 	uint32 i;
 	for(i = 0; i < MAX_GROUP_MEMBERS; i++) {
 		if(members[i] && members[i] != member && members[i]->IsClient())
+		{
 			members[i]->CastToClient()->QueuePacket(&hp_app);
+
+			if(members[i]->CastToClient()->GetClientVersion() >= EQClientSoD)
+			{
+				outapp.SetOpcode(OP_MobManaUpdate);
+
+				MobManaUpdate_Struct *mmus = (MobManaUpdate_Struct *)outapp.pBuffer;
+
+				mmus->spawn_id = member->GetID();
+
+				mmus->mana = member->GetManaPercent();
+
+				members[i]->CastToClient()->QueuePacket(&outapp);
+
+				MobEnduranceUpdate_Struct *meus = (MobEnduranceUpdate_Struct *)outapp.pBuffer;
+
+				outapp.SetOpcode(OP_MobEnduranceUpdate);
+
+				meus->endurance = member->GetEndurancePercent();
+
+				members[i]->CastToClient()->QueuePacket(&outapp);
+
+			}
+		}
 	}
 }
 
@@ -579,6 +634,15 @@ bool Group::IsGroupMember(Mob* client)
 	return Result;
 }
 
+bool Group::IsGroupMember(const char *Name)
+{
+	if(Name)
+		for(uint32 i = 0; i < MAX_GROUP_MEMBERS; i++)
+			if(!strncmp(membername[i], Name, sizeof(membername[0])))
+				return true;
+
+	return false;
+}
 void Group::GroupMessage(Mob* sender, int8 language, int8 lang_skill, const char* message) {
 	uint32 i;
 	for (i = 0; i < MAX_GROUP_MEMBERS; i++) {
@@ -1062,23 +1126,44 @@ void Group::NotifyMainAssist(Client *c)
 	if(!MainAssistName.size())
 		return;
 
-	EQApplicationPacket *outapp = new EQApplicationPacket(OP_DelegateAbility, sizeof(DelegateAbility_Struct));
+	if(c->GetClientVersion() < EQClientSoD)
+	{
+		EQApplicationPacket *outapp = new EQApplicationPacket(OP_DelegateAbility, sizeof(DelegateAbility_Struct));
 
-	DelegateAbility_Struct* das = (DelegateAbility_Struct*)outapp->pBuffer;
+		DelegateAbility_Struct* das = (DelegateAbility_Struct*)outapp->pBuffer;
 
-	das->DelegateAbility = 0;
+		das->DelegateAbility = 0;
 
-	das->MemberNumber = 0;
+		das->MemberNumber = 0;
 
-	das->Action = 0;
+		das->Action = 0;
 
-	das->EntityID = 0;
+		das->EntityID = 0;
 
-	strn0cpy(das->Name, MainAssistName.c_str(), sizeof(das->Name));
+		strn0cpy(das->Name, MainAssistName.c_str(), sizeof(das->Name));
 
-	c->QueuePacket(outapp);
+		c->QueuePacket(outapp);
 
-	safe_delete(outapp);
+		safe_delete(outapp);
+	}
+	else
+	{
+		EQApplicationPacket *outapp = new EQApplicationPacket(OP_GroupRoles, sizeof(GroupRole_Struct));
+
+		GroupRole_Struct *grs = (GroupRole_Struct*)outapp->pBuffer;
+
+		strn0cpy(grs->Name1, MainAssistName.c_str(), sizeof(grs->Name1));
+
+		strn0cpy(grs->Name2, GetLeaderName(), sizeof(grs->Name2));
+
+		grs->RoleNumber = 2;
+
+		grs->Toggle = 1;
+
+		c->QueuePacket(outapp);
+
+		safe_delete(outapp);
+	}
 
 	NotifyTarget(c);
 

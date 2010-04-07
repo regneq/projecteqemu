@@ -362,6 +362,8 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_VetClaimRequest] = &Client::Handle_OP_VetClaimRequest;
 	ConnectedOpcodes[OP_GMSearchCorpse] = &Client::Handle_OP_GMSearchCorpse;
 	ConnectedOpcodes[OP_GuildBank] = &Client::Handle_OP_GuildBank;
+	ConnectedOpcodes[OP_GroupRoles] = &Client::Handle_OP_GroupRoles;
+	ConnectedOpcodes[OP_HideCorpse] = &Client::Handle_OP_HideCorpse;
 }
 
 int Client::HandlePacket(const EQApplicationPacket *app)
@@ -1284,7 +1286,7 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 	delta_heading	= ppu->delta_heading;
 	heading			= EQ19toFloat(ppu->heading);
 
-	if(IsTracking && ((x_pos!=ppu->x_pos) || (y_pos!=ppu->y_pos))){
+	if(IsTracking() && ((x_pos!=ppu->x_pos) || (y_pos!=ppu->y_pos))){
 		if(MakeRandomFloat(0, 100) < 70)//should be good
 			CheckIncreaseSkill(TRACKING, NULL, -20);
 	}
@@ -1476,6 +1478,12 @@ void Client::Handle_OP_TargetCommand(const EQApplicationPacket *app)
 		{
 			SetTarget(NULL);
 			SetHoTT(0);
+
+			Group *g = GetGroup();
+
+			if(g && g->IsMainAssist(this))
+				g->SetGroupTarget(0);
+
 			return;
 		}
 	}
@@ -7024,17 +7032,6 @@ void Client::Handle_OP_Bind_Wound(const EQApplicationPacket *app)
 
 void Client::Handle_OP_TrackTarget(const EQApplicationPacket *app)
 {
-	IsTracking=(IsTracking==false);
-
-	if(!IsTracking)
-	{
-		TrackingID = 0;
-		return;
-	}
-
-	if(GetClientVersion() < EQClientSoD)
-		return;
-	
 	int PlayerClass = GetClass();
 
 	if((PlayerClass != RANGER) && (PlayerClass != DRUID) && (PlayerClass != BARD))
@@ -7049,13 +7046,7 @@ void Client::Handle_OP_TrackTarget(const EQApplicationPacket *app)
 
 	TrackTarget_Struct *tts = (TrackTarget_Struct*)app->pBuffer;
 
-	if(tts->EntityID)
-		TrackingID = tts->EntityID;
-	else
-	{
-		IsTracking = false;
-		TrackingID = 0;
-	}
+	TrackingID = tts->EntityID;
 }
 
 void Client::Handle_OP_Track(const EQApplicationPacket *app)
@@ -7837,19 +7828,19 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 		case TROLL:
 			size = 8;break;
 		case VAHSHIR:
-
-		case FROGLOK: //Frog
 		case BARBARIAN:
 			size = 7;break;
 		case HUMAN:
 		case HIGH_ELF:
 		case ERUDITE:
 		case IKSAR:
+		case DRAKKIN:
 			size = 6;break;
 		case HALF_ELF:
 			size = 5.5;break;
 		case WOOD_ELF:
 		case DARK_ELF:
+		case FROGLOK: //Frog
 			size = 5;break;
 		case DWARF:
 			size = 4;break;
@@ -8585,6 +8576,9 @@ void Client::CompleteConnect()
 
 	if(zone->GetZoneID() == RuleI(World, GuildBankZoneID) && GuildBanks)
 		GuildBanks->SendGuildBank(this);
+
+	if(GetClientVersion() >= EQClientSoD)
+		entity_list.SendFindableNPCList(this);
 }
 
 void Client::Handle_OP_KeyRing(const EQApplicationPacket *app) {
@@ -10825,4 +10819,49 @@ void Client::Handle_OP_GuildBank(const EQApplicationPacket *app)
 			_log(GUILDS__BANK_ERROR, "Received unexpected guild bank action code %i from %s", Action, GetName());
 		}
 	}
+}
+
+void Client::Handle_OP_GroupRoles(const EQApplicationPacket *app)
+{
+	GroupRole_Struct *grs = (GroupRole_Struct*)app->pBuffer;
+
+	if(grs->RoleNumber != 2)	// Main Assist
+		return;
+
+	Group *g = GetGroup();
+
+	if(!g)
+		return;
+
+	if(grs->Toggle)
+		g->DelegateMainAssist(grs->Name1);
+	else
+		g->DelegateMainAssist(GetName());
+}
+
+void Client::Handle_OP_HideCorpse(const EQApplicationPacket *app)
+{
+	// New OPCode for SOD+ as /hidecorpse is handled serverside now.
+	//
+	if(app->size != sizeof(HideCorpse_Struct))
+	{
+		LogFile->write(EQEMuLog::Debug, "Size mismatch in OP_HideCorpse expected %i got %i",
+		               sizeof(HideCorpse_Struct), app->size);
+
+		DumpPacket(app);
+
+		return;
+	}
+
+	HideCorpse_Struct *hcs = (HideCorpse_Struct*)app->pBuffer;
+
+	if(hcs->Action == HideCorpseLooted)
+		return;
+
+	if((HideCorpseMode  == HideCorpseNone) && (hcs->Action == HideCorpseNone))
+		return;
+
+	entity_list.HideCorpses(this, HideCorpseMode, hcs->Action);
+
+	HideCorpseMode = hcs->Action;
 }

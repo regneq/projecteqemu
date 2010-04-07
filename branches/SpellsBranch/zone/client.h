@@ -140,6 +140,15 @@ typedef enum {
 	EQClientSoD
 } EQClientVersion;
 
+enum {
+	HideCorpseNone = 0,
+	HideCorpseAll = 1,
+	HideCorpseAllButGroup = 2,
+	HideCorpseLooted = 3,
+	HideCorpseNPC = 5
+};
+	
+
 struct ClientReward
 {
 	int32 id;
@@ -425,6 +434,7 @@ public:
 	sint32	CalcEnduranceRegen();	//Calculates endurance regen used in DoEnduranceRegen()
 	sint32	GetEndurance()	const {return cur_end;}	//This gets our current endurance
 	sint32	GetMaxEndurance() const {return max_end;}	//This gets our endurance from the last CalcMaxEndurance() call
+	inline uint8 GetEndurancePercent() { return (uint8)((float)cur_end / (float)max_end * 100.0f); }
 	void SetEndurance(sint32 newEnd);	//This sets the current endurance to the new value
 	void DoEnduranceRegen();	//This Regenerates endurance
 	void DoEnduranceUpkeep();	//does the endurance upkeep
@@ -940,6 +950,7 @@ public:
 	void SendGroupLeaderChangePacket(const char *LeaderName);
 	void SendGroupJoinAcknowledge();
 	void DoTracking();
+	inline bool IsTracking() { return (TrackingID > 0); }
 
 protected:
 	friend class Mob;
@@ -1053,7 +1064,6 @@ private:
 	uint32				weight;
 	bool				berserk;
 	int16				BoatID;
-	bool				IsTracking;
 	int16				TrackingID;
 	int16				CustomerID;
 	bool	Trader;
@@ -1203,6 +1213,8 @@ private:
 		ClientConnectFinished	//client finally moved to finished state, were done here
 	} conn_state;
 	void ReportConnectingState();
+
+	uint8	HideCorpseMode;
 };
 
 #include "parser.h"

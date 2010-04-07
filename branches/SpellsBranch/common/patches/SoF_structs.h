@@ -2451,10 +2451,10 @@ struct BazaarSearchResults_Struct {
 	BazaarWindowStart_Struct Beginning;
 	int32	SellerID;
 	int32   NumItems; // Don't know. Don't know the significance of this field.
-	int32   ItemID;
+	int32   SerialNumber;
 	int32   Unknown016;
 	int32   Unknown020; // Something to do with stats as well
-	char	Name[64];
+	char	ItemName[64];
 	int32	Cost;
 	int32	ItemStat;
 };

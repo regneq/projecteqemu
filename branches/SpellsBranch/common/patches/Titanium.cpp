@@ -700,11 +700,11 @@ ENCODE(OP_BazaarSearch) {
 		eq->Beginning.Unknown001 = emu->Beginning.Unknown001;
 		eq->Beginning.Unknown002 = emu->Beginning.Unknown002;
 		eq->NumItems = emu->NumItems;
-		eq->ItemID = emu->ItemID;
+		eq->SerialNumber = emu->SerialNumber;
 		eq->SellerID = emu->SellerID;
 		eq->Cost = emu->Cost;
 		eq->ItemStat = emu->ItemStat;
-		strcpy(eq->Name, emu->Name);
+		strcpy(eq->ItemName, emu->ItemName);
 	}
 
 	delete[] __emu_buffer;
@@ -915,6 +915,19 @@ ENCODE(OP_VetRewardsAvaliable)
 	
 	dest->FastQueuePacket(&outapp_create);
 	delete[] __emu_buffer;
+}
+
+ENCODE(OP_RespondAA) {
+	ENCODE_LENGTH_EXACT(AATable_Struct);
+	SETUP_DIRECT_ENCODE(AATable_Struct, structs::AATable_Struct);
+
+	unsigned int r;
+	for(r = 0; r < structs::MAX_PP_AA_ARRAY; r++) {
+		OUT(aa_list[r].aa_skill);
+		OUT(aa_list[r].aa_value);
+	}
+
+	FINISH_ENCODE();
 }
 
 DECODE(OP_TraderBuy) {

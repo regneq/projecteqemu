@@ -983,10 +983,13 @@ void Client::SendAATable() {
     EQApplicationPacket* outapp = new EQApplicationPacket(OP_RespondAA, sizeof(AATable_Struct));
     
     AATable_Struct* aa2 = (AATable_Struct *)outapp->pBuffer;
+	aa2->aa_spent = GetAAPointsSpent();
+
     uint32 i;
 	for(i=0;i < MAX_PP_AA_ARRAY;i++){
 		aa2->aa_list[i].aa_skill = aa[i]->AA;
 		aa2->aa_list[i].aa_value = aa[i]->value;
+		aa2->aa_list[i].unknown08 = 0;
 	}
     QueuePacket(outapp);
     safe_delete(outapp);

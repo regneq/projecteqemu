@@ -187,7 +187,6 @@ Client::Client(EQStreamInterface* ieqs)
 	Trader=false;
 	Buyer = false;
 	CustomerID = 0;
-	IsTracking=false;
 	TrackingID = 0;
 	WID = 0;
 	account_id = 0;
@@ -299,6 +298,7 @@ Client::Client(EQStreamInterface* ieqs)
 	aa_los_them_mob = NULL;
 	los_status = false;
 	qGlobals = NULL;
+	HideCorpseMode = HideCorpseNone;
 	InitializeBuffSlots();
 }
 
@@ -1598,6 +1598,34 @@ void Client::SendManaUpdatePacket() {
 		outapp->priority = 6;
 		QueuePacket(outapp);
 		safe_delete(outapp);
+
+		Group *g = GetGroup();
+
+		if(g)
+		{
+			outapp = new EQApplicationPacket(OP_MobManaUpdate, sizeof(MobManaUpdate_Struct));
+			EQApplicationPacket *outapp2 = new EQApplicationPacket(OP_MobEnduranceUpdate, sizeof(MobEnduranceUpdate_Struct));
+
+			MobManaUpdate_Struct *mmus = (MobManaUpdate_Struct *)outapp->pBuffer;
+			MobEnduranceUpdate_Struct *meus = (MobEnduranceUpdate_Struct *)outapp2->pBuffer;
+
+			mmus->spawn_id = meus->spawn_id = GetID();
+			
+			mmus->mana = GetManaPercent();
+			meus->endurance = GetEndurancePercent();
+
+
+			for(int i = 0; i < MAX_GROUP_MEMBERS; ++i)
+				if(g->members[i] && g->members[i]->IsClient() && (g->members[i] != this) && (g->members[i]->CastToClient()->GetClientVersion() >= EQClientSoD))
+				{
+					g->members[i]->CastToClient()->QueuePacket(outapp);
+					g->members[i]->CastToClient()->QueuePacket(outapp2);
+				}
+
+			safe_delete(outapp);
+			safe_delete(outapp2);
+		}
+
 
 		last_reported_mana = cur_mana;
 		last_reported_endur = cur_end;

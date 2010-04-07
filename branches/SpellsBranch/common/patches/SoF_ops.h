@@ -3,7 +3,6 @@
 
 E(OP_SendCharInfo)
 E(OP_ZoneServerInfo)
-
 E(OP_SendAATable)
 E(OP_PlayerProfile)
 E(OP_ZoneEntry)
@@ -12,7 +11,6 @@ E(OP_NewZone)
 E(OP_SpawnDoor)
 E(OP_GroundSpawn)
 E(OP_SendZonepoints)
-
 E(OP_NewSpawn)
 E(OP_ZoneSpawns)
 E(OP_ItemLinkResponse)
@@ -29,7 +27,6 @@ E(OP_Damage)
 E(OP_Buff)
 E(OP_Action)
 E(OP_Consider)
-E(OP_RespondAA)
 E(OP_CancelTrade)
 E(OP_ShopPlayerSell)
 E(OP_DeleteItem)

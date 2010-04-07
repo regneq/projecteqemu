@@ -360,6 +360,9 @@ public:
 	void	SignalAllClients(int32 data);
 	void	UpdateQGlobal(uint32 qid, QGlobal newGlobal);
 	void	DeleteQGlobal(std::string name, uint32 npcID, uint32 charID, uint32 zoneID);
+	void	SendFindableNPCList(Client *c);
+	void	UpdateFindableNPCState(NPC *n, bool Remove);
+	void	HideCorpses(Client *c, uint8 CurrentMode, uint8 NewMode);
 
 	void GetMobList(list<Mob*> &m_list);
 	void GetNPCList(list<NPC*> &n_list);

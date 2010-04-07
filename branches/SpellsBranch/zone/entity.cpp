@@ -615,6 +615,8 @@ void EntityList::AddNPC(NPC* npc, bool SendSpawnPacket, bool dontqueue) {
 			safe_delete(ns);
 			parse->Event(EVENT_SPAWN, npc->GetNPCTypeID(), 0, npc, NULL);
 		}
+		if(npc->IsFindable())
+			UpdateFindableNPCState(npc, false);
 	}
 	
 	npc_list.Insert(npc);
@@ -2478,6 +2480,10 @@ void EntityList::Depop(bool StartSpawnTimer) {
 		//do not depop player's pets...
 		if(it && own && own->IsClient())
 			continue;
+
+		if(it->IsFindable())
+			UpdateFindableNPCState(it, true);
+
 		it->Depop(StartSpawnTimer);
 	}
 }
@@ -2489,7 +2495,7 @@ void EntityList::DepopAll(int NPCTypeID, bool StartSpawnTimer) {
 	for(; iterator.MoreElements(); iterator.Advance())
 	{
 		NPC *it = iterator.GetData();
-		if(it && (it->GetNPCTypeID() == NPCTypeID))
+		if(it && (it->GetNPCTypeID() == (int32)NPCTypeID))
 			it->Depop(StartSpawnTimer);
 	}
 }
@@ -2647,9 +2653,11 @@ void EntityList::ListNPCs(Client* client, const char* arg1, const char* arg2, in
 	iterator.Reset();
 	client->Message(0, "NPCs in the zone:");
 	if(searchtype == 0) {
-		while(iterator.MoreElements()) {
+		while(iterator.MoreElements())
+		{
+			NPC *n = iterator.GetData();
 
-			client->Message(0, "  %5d: %s", iterator.GetData()->GetID(), iterator.GetData()->GetName());
+			client->Message(0, "  %5d: %s (%.0f, %0.f, %.0f)", n->GetID(), n->GetName(), n->GetX(), n->GetY(), n->GetZ());
 			x++;
 			z++;
 			iterator.Advance();
@@ -2665,7 +2673,8 @@ void EntityList::ListNPCs(Client* client, const char* arg1, const char* arg2, in
 			strcpy(sName, iterator.GetData()->GetName());
 			strupr(sName);
 			if (strstr(sName, tmp)) {
-				client->Message(0, "  %5d: %s", iterator.GetData()->GetID(), iterator.GetData()->GetName());
+				NPC *n = iterator.GetData();
+				client->Message(0, "  %5d: %s (%.0f, %.0f, %.0f)", n->GetID(), n->GetName(), n->GetX(), n->GetY(), n->GetZ());
 				x++;
 			}
 			iterator.Advance();
@@ -3664,7 +3673,7 @@ Corpse* EntityList::GetClosestCorpse(Mob* sender)
 	if(!sender) 
 		return NULL;
 
-	uint32 dist = 4294967295;
+	uint32 dist = 4294967295u;
 	Corpse* nc = NULL;
 
 	LinkedListIterator<Corpse*> iterator(corpse_list);
@@ -4424,6 +4433,147 @@ void EntityList::DeleteQGlobal(std::string name, uint32 npcID, uint32 charID, ui
 			}
 		}
 
+		iterator.Advance();
+	}
+}
+
+void EntityList::SendFindableNPCList(Client *c)
+{
+	if(!c)
+		return;
+
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_SendFindableNPCs, sizeof(FindableNPC_Struct));
+
+	FindableNPC_Struct *fnpcs = (FindableNPC_Struct *)outapp->pBuffer;
+
+	fnpcs->Unknown109 = 0x16;
+	fnpcs->Unknown110 = 0x06;
+	fnpcs->Unknown111 = 0x24;
+
+	fnpcs->Action = 0;
+
+
+	LinkedListIterator<NPC*> iterator(npc_list);
+
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		if (iterator.GetData())
+		{
+			NPC *n = iterator.GetData();
+
+			if(n->IsFindable())
+			{
+				fnpcs->EntityID = n->GetID();
+				strn0cpy(fnpcs->Name, n->GetCleanName(), sizeof(fnpcs->Name));
+				strn0cpy(fnpcs->LastName, n->GetLastName(), sizeof(fnpcs->LastName));
+				fnpcs->Race = n->GetRace();
+				fnpcs->Class = n->GetClass();
+
+				c->QueuePacket(outapp);
+			}
+
+		}
+		iterator.Advance();
+	}
+	safe_delete(outapp);
+}
+
+void EntityList::UpdateFindableNPCState(NPC *n, bool Remove)
+{
+	if(!n || !n->IsFindable())
+		return;
+
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_SendFindableNPCs, sizeof(FindableNPC_Struct));
+
+	FindableNPC_Struct *fnpcs = (FindableNPC_Struct *)outapp->pBuffer;
+
+	fnpcs->Unknown109 = 0x16;
+	fnpcs->Unknown110 = 0x06;
+	fnpcs->Unknown111 = 0x24;
+
+	fnpcs->Action = Remove ? 1: 0;
+
+	fnpcs->EntityID = n->GetID();
+
+	strn0cpy(fnpcs->Name, n->GetCleanName(), sizeof(fnpcs->Name));
+
+	strn0cpy(fnpcs->LastName, n->GetLastName(), sizeof(fnpcs->LastName));
+
+	fnpcs->Race = n->GetRace();
+
+	fnpcs->Class = n->GetClass();
+
+	LinkedListIterator<Client*> iterator(client_list); 
+
+	iterator.Reset();
+
+	while(iterator.MoreElements()) 
+	{
+		Client *c = iterator.GetData();
+		if(c && (c->GetClientVersion() >= EQClientSoD))
+			c->QueuePacket(outapp);
+		
+		iterator.Advance();
+	}
+
+	safe_delete(outapp);
+}
+
+void    EntityList::HideCorpses(Client *c, uint8 CurrentMode, uint8 NewMode)
+{
+	if(!c)
+		return;
+
+	if(NewMode == HideCorpseNone)
+	{
+		SendZoneCorpses(c);
+		return;
+	}
+
+	Group *g = NULL;
+
+	if(NewMode == HideCorpseAllButGroup)
+	{
+		g = c->GetGroup();
+
+		if(!g)
+			NewMode = HideCorpseAll;
+	}
+
+	LinkedListIterator<Corpse*> iterator(corpse_list);
+
+	iterator.Reset();
+
+	while(iterator.MoreElements())
+	{
+		Corpse *b = iterator.GetData();
+
+		if(b && (b->GetCharID() != c->CharacterID()))
+		{
+			if((NewMode == HideCorpseAll) || ((NewMode == HideCorpseNPC) && (b->IsNPCCorpse())))
+			{
+				EQApplicationPacket outapp;
+		        	b->CreateDespawnPacket(&outapp);
+				c->QueuePacket(&outapp);
+			}
+			else if(NewMode == HideCorpseAllButGroup)
+			{
+				if(!g->IsGroupMember(b->GetOwnerName()))
+				{
+					EQApplicationPacket outapp;
+			        	b->CreateDespawnPacket(&outapp);
+					c->QueuePacket(&outapp);
+				}
+				else if((CurrentMode == HideCorpseAll))
+				{
+					EQApplicationPacket outapp;
+			        	b->CreateSpawnPacket(&outapp);
+					c->QueuePacket(&outapp);
+				}
+			}
+				
+		}
 		iterator.Advance();
 	}
 }

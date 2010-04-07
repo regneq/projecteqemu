@@ -1516,6 +1516,8 @@ void Mob::Mesmerize()
 
 	if (casting_spell)
 		InterruptSpell();
+
+	SendPosition();
 }
 
 void Client::MakeBuffFadePacket(Buff* buff, int slot_id, bool send_message)

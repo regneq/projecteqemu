@@ -4,9 +4,6 @@
 #include "object.h"
 #include "doors.h"
 
-// TODO: The following declarations are redudant to declarations made in MobAI.cpp. Best move both blocks to a common header file.
-
-
 // This constructor is used during the bot create command
 Bot::Bot(NPCType npcTypeData, Client* botOwner) : NPC(&npcTypeData, 0, 0, 0, 0, 0, 0, false) {
 	if(botOwner) {
@@ -279,8 +276,8 @@ NPCType Bot::FillNPCTypeStruct(uint32 botSpellsID, std::string botName, std::str
 	BotNPCType.runspeed = 1.25;
 	BotNPCType.bodytype = 1;
 	BotNPCType.findable = 0;
-	BotNPCType.hp_regen = 0;
-	BotNPCType.mana_regen = 0;
+	BotNPCType.hp_regen = 1;
+	BotNPCType.mana_regen = 1;
 	BotNPCType.maxlevel = botLevel;
 
 	return BotNPCType;
@@ -305,9 +302,8 @@ NPCType Bot::CreateDefaultNPCTypeStructForBot(std::string botName, std::string b
 
 	// default values
 	Result.maxlevel = botLevel;
-	Result.size = 6;
+	Result.size = 6.0;
 	Result.npc_id = 0;
-	Result.bodytype = 1;
 	Result.cur_hp = 0;
 	Result.drakkin_details = 0;
 	Result.drakkin_heritage = 0;
@@ -315,8 +311,8 @@ NPCType Bot::CreateDefaultNPCTypeStructForBot(std::string botName, std::string b
 	Result.runspeed = 1.25;
 	Result.bodytype = 1;
 	Result.findable = 0;
-	Result.hp_regen = 0;
-	Result.mana_regen = 0;
+	Result.hp_regen = 1;
+	Result.mana_regen = 1;
 	Result.texture = 0;
 	Result.d_meele_texture1 = 0;
 	Result.d_meele_texture2 = 0;
@@ -366,7 +362,7 @@ void Bot::GenerateBaseStats() {
 				Agility += 10;
 				Dexterity += 10;
 				Attack += 12;
-				MagicResist += (1 / 2 + 1);
+				MagicResist += 2;
 				break;
 			case 2: // Cleric
 				BotSpellID = 701;
@@ -498,7 +494,7 @@ void Bot::GenerateBaseStats() {
 				Wisdom -= 5;
 				Intelligence -= 10;
 				Charisma -= 20;
-				BotSize = 7;
+				BotSize = 7.0;
 				ColdResist += 10;
 				break;
 			case 3: // Erudite
@@ -518,7 +514,7 @@ void Bot::GenerateBaseStats() {
 				Agility += 20;
 				Dexterity += 5;
 				Wisdom += 5;
-				BotSize = 5;
+				BotSize = 5.0;
 				break;
 			case 5: // High Elf
 				Strength -= 20;
@@ -536,7 +532,7 @@ void Bot::GenerateBaseStats() {
 				Wisdom += 8;
 				Intelligence += 24;
 				Charisma -= 15;
-				BotSize = 5;
+				BotSize = 5.0;
 				break;
 			case 7: // Half Elf
 				Strength -= 5;
@@ -554,7 +550,7 @@ void Bot::GenerateBaseStats() {
 				Wisdom += 8;
 				Intelligence -= 15;
 				Charisma -= 30;
-				BotSize = 4;
+				BotSize = 4.0;
 				MagicResist -= 5;
 				PoisonResist += 5;
 				break;
@@ -565,7 +561,7 @@ void Bot::GenerateBaseStats() {
 				Wisdom -= 15;
 				Intelligence -= 23;
 				Charisma -= 35;
-				BotSize = 8;
+				BotSize = 8.0;
 				FireResist -= 20;
 				break;
 			case 10: // Ogre
@@ -576,7 +572,7 @@ void Bot::GenerateBaseStats() {
 				Wisdom -= 8;
 				Intelligence -= 15;
 				Charisma -= 38;
-				BotSize = 9;
+				BotSize = 9.0;
 				break;
 			case 11: // Halfling
 				Strength -= 5;
@@ -597,7 +593,7 @@ void Bot::GenerateBaseStats() {
 				Wisdom -= 8;
 				Intelligence += 23;
 				Charisma -= 15;
-				BotSize = 3;
+				BotSize = 3.0;
 				break;
 			case 128: // Iksar
 				Strength -= 5;
@@ -616,19 +612,32 @@ void Bot::GenerateBaseStats() {
 				Wisdom -= 5;
 				Intelligence -= 10;
 				Charisma -= 10;
-				BotSize = 7;
+				BotSize = 7.0;
 				MagicResist -= 5;
 				FireResist -= 5;
 				break;
-			case 330: // FireResistoglok
+			case 330: // Froglok
 				Strength -= 5;
 				Stamina += 5;
 				Agility += 25;
 				Dexterity += 25;
 				Charisma -= 25;
-				BotSize = 5;
+				BotSize = 5.0;
 				MagicResist -= 5;
 				FireResist -= 5;
+				break;
+			case 522: // Drakkin
+				Strength -= 5;
+				Stamina += 5;
+				Agility += 10;
+				Intelligence += 10;
+				Wisdom += 5;
+				BotSize = 5.0;
+				PoisonResist += 2;
+				DiseaseResist += 2;
+				MagicResist += 2;
+				FireResist += 2;
+				ColdResist += 2;
 				break;
 	}
 
@@ -658,10 +667,16 @@ void Bot::GenerateAppearance() {
 	else {
 		iFace = MakeRandomInt(0, 7);
 	}
+
 	int iHair = 0;
 	int iBeard = 0;
 	int iBeardColor = 1;
-	if(this->GetGender()) {
+	if(this->GetRace() == 522) {
+		iHair = MakeRandomInt(0, 8);
+		iBeard = MakeRandomInt(0, 11);
+		iBeardColor = MakeRandomInt(0, 3);
+	}
+	else if(this->GetGender()) {
 		iHair = MakeRandomInt(0, 2);
 		if(this->GetRace() == 8) { // Dwarven Females can have a beard
 			if(MakeRandomInt(1, 100) < 50) {
@@ -674,14 +689,34 @@ void Bot::GenerateAppearance() {
 		iBeard = MakeRandomInt(0, 5);
 		iBeardColor = MakeRandomInt(0, 19);
 	}
-	int iHairColor = MakeRandomInt(0, 19);
-	int iEyeColor1 = MakeRandomInt(0, 9);
-	int iEyeColor2 = 0;
-	if(MakeRandomInt(1, 100) > 96) {
+
+	int iHairColor = 0;
+	if(this->GetRace() == 522) {
+		iHairColor = MakeRandomInt(0, 3);
+	}
+	else {
+		iHairColor = MakeRandomInt(0, 19);
+	}
+
+	int8 iEyeColor1 = (int8)MakeRandomInt(0, 9);
+	int8 iEyeColor2 = 0;
+	if(this->GetRace() == 522) {
+		iEyeColor1 = iEyeColor2 = (int8)MakeRandomInt(0, 11);
+	}
+	else if(MakeRandomInt(1, 100) > 96) {
 		iEyeColor2 = MakeRandomInt(0, 9);
 	}
 	else {
 		iEyeColor2 = iEyeColor1;
+	}
+
+	int iHeritage = 0;
+	int iTattoo = 0;
+	int iDetails = 0;
+	if(this->GetRace() == 522) {
+		iHeritage = MakeRandomInt(0, 6);
+		iTattoo = MakeRandomInt(0, 7);
+		iDetails = MakeRandomInt(0, 7);
 	}
 
 	this->luclinface = iFace;
@@ -691,6 +726,10 @@ void Bot::GenerateAppearance() {
 	this->haircolor = iHairColor;
 	this->eyecolor1 = iEyeColor1;
 	this->eyecolor2 = iEyeColor2;
+	this->drakkin_heritage = iHeritage;
+	this->drakkin_tattoo = iTattoo;
+	this->drakkin_details = iDetails;
+
 }
 
 void Bot::GenerateArmorClass() {
@@ -810,164 +849,183 @@ bool Bot::IsValidRaceClassCombo() {
 			}
 			break;
 		case 3: // Erudite
-				switch(GetClass()) {
-			case 2: // Cleric
-			case 3: // Paladin
-			case 5: // Shadowknight
-			case 11: // Necromancer
-			case 12: // Wizard
-			case 13: // Magician
-			case 14: // Enchanter
-				Result = true;
-				break;
-				}
-				break;
-			case 4: // Wood Elf
-				switch(GetClass()) {
-			case 1: // Warrior
-			case 4: // Ranger
-			case 6: // Druid
-			case 8: // Bard
-			case 9: // Rogue
-				Result = true;
-				break;
-				}
-				break;
-			case 5: // High Elf
-				switch(GetClass()) {
-			case 2: // Cleric
-			case 3: // Paladin
-			case 12: // Wizard
-			case 13: // Magician
-			case 14: // Enchanter
-				Result = true;
-				break;
-				}
-				break;
-			case 6: // Dark Elf
-				switch(GetClass()) {
-			case 1: // Warrior
-			case 2: // Cleric
-			case 5: // Shadowknight
-			case 9: // Rogue
-			case 11: // Necromancer
-			case 12: // Wizard
-			case 13: // Magician
-			case 14: // Enchanter
-				Result = true;
-				break;
-				}
-				break;
-			case 7: // Half Elf
-				switch(GetClass()) {
-			case 1: // Warrior
-			case 3: // Paladin
-			case 4: // Ranger
-			case 6: // Druid
-			case 8: // Bard
-			case 9: // Rogue
-				Result = true;
-				break;
-				}
-				break;
-			case 8: // Dwarf
-				switch(GetClass()) {
-			case 1: // Warrior
-			case 2: // Cleric
-			case 3: // Paladin
-			case 9: // Rogue
-			case 16: // Berserker
-				Result = true;
-				break;
-				}
-				break;
-			case 9: // Troll
-				switch(GetClass()) {
-			case 1: // Warrior
-			case 5: // Shadowknight
-			case 10: // Shaman
-			case 15: // Beastlord
-			case 16: // Berserker
-				Result = true;
-				break;
-				}
-				break;
-			case 10: // Ogre
-				switch(GetClass()) {
-			case 1: // Warrior
-			case 5: // Shadowknight
-			case 10: // Shaman
-			case 15: // Beastlord
-			case 16: // Berserker
-				Result = true;
-				break;
-				}
-				break;
-			case 11: // Halfling
-				switch(GetClass()) {
-			case 1: // Warrior
-			case 2: // Cleric
-			case 3: // Paladin
-			case 4: // Ranger
-			case 6: // Druid
-			case 9: // Rogue
-				Result = true;
-				break;
-				}
-				break;
-			case 12: // Gnome
-				switch(GetClass()) {
-			case 1: // Warrior
-			case 2: // Cleric
-			case 3: // Paladin
-			case 5: // Shadowknight
-			case 9: // Rogue
-			case 11: // Necromancer
-			case 12: // Wizard
-			case 13: // Magician
-			case 14: // Enchanter
-				Result = true;
-				break;
-				}
-				break;
-			case 128: // Iksar
-				switch(GetClass()) {
-			case 1: // Warrior
-			case 5: // Shadowknight
-			case 7: // Monk
-			case 10: // Shaman
-			case 11: // Necromancer
-			case 15: // Beastlord
-				Result = true;
-				break;
-				}
-				break;
-			case 130: // Vah Shir
-				switch(GetClass()) {
-			case 1: // Warrior
-			case 8: // Bard
-			case 9: // Rogue
-			case 10: // Shaman
-			case 15: // Beastlord
-			case 16: // Berserker
-				Result = true;
-				break;
-				}
-				break;
-			case 330: // Froglok
-				switch(GetClass()) {
-			case 1: // Warrior
-			case 2: // Cleric
-			case 3: // Paladin
-			case 5: // Shadowknight
-			case 9: // Rogue
-			case 10: // Shaman
-			case 11: // Necromancer
-			case 12: // Wizard
-				Result = true;
-				break;
-				}
-				break;
+			switch(GetClass()) {
+				case 2: // Cleric
+				case 3: // Paladin
+				case 5: // Shadowknight
+				case 11: // Necromancer
+				case 12: // Wizard
+				case 13: // Magician
+				case 14: // Enchanter
+					Result = true;
+					break;
+			}
+			break;
+		case 4: // Wood Elf
+			switch(GetClass()) {
+				case 1: // Warrior
+				case 4: // Ranger
+				case 6: // Druid
+				case 8: // Bard
+				case 9: // Rogue
+					Result = true;
+					break;
+			}
+			break;
+		case 5: // High Elf
+			switch(GetClass()) {
+				case 2: // Cleric
+				case 3: // Paladin
+				case 12: // Wizard
+				case 13: // Magician
+				case 14: // Enchanter
+					Result = true;
+					break;
+			}
+			break;
+		case 6: // Dark Elf
+			switch(GetClass()) {
+				case 1: // Warrior
+				case 2: // Cleric
+				case 5: // Shadowknight
+				case 9: // Rogue
+				case 11: // Necromancer
+				case 12: // Wizard
+				case 13: // Magician
+				case 14: // Enchanter
+					Result = true;
+					break;
+			}
+			break;
+		case 7: // Half Elf
+			switch(GetClass()) {
+				case 1: // Warrior
+				case 3: // Paladin
+				case 4: // Ranger
+				case 6: // Druid
+				case 8: // Bard
+				case 9: // Rogue
+					Result = true;
+					break;
+			}
+			break;
+		case 8: // Dwarf
+			switch(GetClass()) {
+				case 1: // Warrior
+				case 2: // Cleric
+				case 3: // Paladin
+				case 9: // Rogue
+				case 16: // Berserker
+					Result = true;
+					break;
+			}
+			break;
+		case 9: // Troll
+			switch(GetClass()) {
+				case 1: // Warrior
+				case 5: // Shadowknight
+				case 10: // Shaman
+				case 15: // Beastlord
+				case 16: // Berserker
+					Result = true;
+					break;
+			}
+			break;
+		case 10: // Ogre
+			switch(GetClass()) {
+				case 1: // Warrior
+				case 5: // Shadowknight
+				case 10: // Shaman
+				case 15: // Beastlord
+				case 16: // Berserker
+					Result = true;
+					break;
+			}
+			break;
+		case 11: // Halfling
+			switch(GetClass()) {
+				case 1: // Warrior
+				case 2: // Cleric
+				case 3: // Paladin
+				case 4: // Ranger
+				case 6: // Druid
+				case 9: // Rogue
+					Result = true;
+					break;
+			}
+			break;
+		case 12: // Gnome
+			switch(GetClass()) {
+				case 1: // Warrior
+				case 2: // Cleric
+				case 3: // Paladin
+				case 5: // Shadowknight
+				case 9: // Rogue
+				case 11: // Necromancer
+				case 12: // Wizard
+				case 13: // Magician
+				case 14: // Enchanter
+					Result = true;
+					break;
+			}
+			break;
+		case 128: // Iksar
+			switch(GetClass()) {
+				case 1: // Warrior
+				case 5: // Shadowknight
+				case 7: // Monk
+				case 10: // Shaman
+				case 11: // Necromancer
+				case 15: // Beastlord
+					Result = true;
+					break;
+			}
+			break;
+		case 130: // Vah Shir
+			switch(GetClass()) {
+				case 1: // Warrior
+				case 8: // Bard
+				case 9: // Rogue
+				case 10: // Shaman
+				case 15: // Beastlord
+				case 16: // Berserker
+					Result = true;
+					break;
+			}
+			break;
+		case 330: // Froglok
+			switch(GetClass()) {
+				case 1: // Warrior
+				case 2: // Cleric
+				case 3: // Paladin
+				case 5: // Shadowknight
+				case 9: // Rogue
+				case 10: // Shaman
+				case 11: // Necromancer
+				case 12: // Wizard
+					Result = true;
+					break;
+			}
+			break;
+		case 522: // Drakkin
+			switch(GetClass()) {
+				case 1: // Warrior
+				case 2: // Cleric
+				case 3: // Paladin
+				case 4: // Ranger
+				case 5: // Shadowknight
+				case 6: // Druid
+				case 7: // Monk
+				case 8: // Bard
+				case 9: // Rogue
+				case 11: // Necromancer
+				case 12: // Wizard
+				case 13: // Magician
+				case 14: // Enchanter
+					Result = true;
+					break;
+			}
+			break;
 	}
 
 	return Result;
@@ -1029,7 +1087,7 @@ bool Bot::Save() {
 	if(this->GetBotID() == 0) {
 		// New bot record
 		uint32 TempNewBotID = 0;
-		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "INSERT INTO bots (BotOwnerCharacterID, BotSpellsID, Name, LastName, BotLevel, Race, Class, Gender, Size, Face, LuclinHairStyle, LuclinHairColor, LuclinEyeColor, LuclinEyeColor2, LuclinBeardColor, LuclinBeard, DrakkinHeritage, DrakkinTattoo, DrakkinDetails, MR, CR, DR, FR, PR, AC, STR, STA, DEX, AGI, _INT, WIS, CHA, ATK, LastSpawnDate, TotalPlayTime, LastZoneId) VALUES('%u', '%u', '%s', '%s', '%u', '%i', '%i', '%i', '%f', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', NOW(), 0, %i)", this->_botOwnerCharacterID, this->GetBotSpellID(), this->GetCleanName(), this->lastname, this->GetLevel(), GetRace(), GetClass(), GetGender(), GetSize(), this->GetLuclinFace(), this->GetHairStyle(), GetHairColor(), this->GetEyeColor1(), GetEyeColor2(), this->GetBeardColor(), this->GetBeard(), this->GetDrakkinHeritage(), this->GetDrakkinTattoo(), GetDrakkinDetails(), GetMR(), GetCR(), GetDR(), GetFR(), GetPR(), GetAC(), GetSTR(), GetSTA(), GetDEX(), GetAGI(), GetINT(), GetWIS(), GetCHA(), GetATK(), _lastZoneId), TempErrorMessageBuffer, 0, &affectedRows, &TempNewBotID)) {
+		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "INSERT INTO bots (BotOwnerCharacterID, BotSpellsID, Name, LastName, BotLevel, Race, Class, Gender, Size, Face, LuclinHairStyle, LuclinHairColor, LuclinEyeColor, LuclinEyeColor2, LuclinBeardColor, LuclinBeard, DrakkinHeritage, DrakkinTattoo, DrakkinDetails, MR, CR, DR, FR, PR, AC, STR, STA, DEX, AGI, _INT, WIS, CHA, ATK, LastSpawnDate, TotalPlayTime, LastZoneId) VALUES('%u', '%u', '%s', '%s', '%u', '%i', '%i', '%i', '%f', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', NOW(), 0, %i)", this->_botOwnerCharacterID, this->GetBotSpellID(), this->GetCleanName(), this->lastname, this->GetLevel(), GetRace(), GetClass(), GetGender(), GetSize(), this->GetLuclinFace(), this->GetHairStyle(), GetHairColor(), this->GetEyeColor1(), this->GetEyeColor2(), this->GetBeardColor(), this->GetBeard(), this->GetDrakkinHeritage(), this->GetDrakkinTattoo(), this->GetDrakkinDetails(), GetMR(), GetCR(), GetDR(), GetFR(), GetPR(), GetAC(), GetSTR(), GetSTA(), GetDEX(), GetAGI(), GetINT(), GetWIS(), GetCHA(), GetATK(), _lastZoneId), TempErrorMessageBuffer, 0, &affectedRows, &TempNewBotID)) {
 			errorMessage = std::string(TempErrorMessageBuffer);
 		}
 		else {
@@ -1039,7 +1097,7 @@ bool Bot::Save() {
 	}
 	else {
 		// Update existing bot record
-		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "UPDATE bots SET BotOwnerCharacterID = '%u', BotSpellsID = '%u', Name = '%s', LastName = '%s', BotLevel = '%u', Race = '%i', Class = '%i', Gender = '%i', Size = '%f', Face = '%i', LuclinHairStyle = '%i', LuclinHairColor = '%i', LuclinEyeColor = '%i', LuclinEyeColor2 = '%i', LuclinBeardColor = '%i', LuclinBeard = '%i', DrakkinHeritage = '%i', DrakkinTattoo = '%i', DrakkinDetails = '%i', MR = '%i', CR = '%i', DR = '%i', FR = '%i', PR = '%i', AC = '%i', STR = '%i', STA = '%i', DEX = '%i', AGI = '%i', _INT = '%i', WIS = '%i', CHA = '%i', ATK = '%i', LastSpawnDate = NOW(), TotalPlayTime = '%u', LastZoneId = %i WHERE BotID = '%u'", _botOwnerCharacterID, this->GetBotSpellID(), this->GetCleanName(), this->lastname, this->GetLevel(), _baseRace, this->GetClass(), _baseGender, GetSize(), this->GetLuclinFace(), this->GetHairStyle(), GetHairColor(), this->GetEyeColor1(), GetEyeColor2(), this->GetBeardColor(), this->GetBeard(), this->GetDrakkinHeritage(), GetDrakkinTattoo(), GetDrakkinDetails(), _baseMR, _baseCR, _baseDR, _baseFR, _basePR, _baseAC, _baseSTR, _baseSTA, _baseDEX, _baseAGI, _baseINT, _baseWIS, _baseCHA, _baseATK, GetTotalPlayTime(), _lastZoneId, GetBotID()), TempErrorMessageBuffer, 0, &affectedRows)) {
+		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "UPDATE bots SET BotOwnerCharacterID = '%u', BotSpellsID = '%u', Name = '%s', LastName = '%s', BotLevel = '%u', Race = '%i', Class = '%i', Gender = '%i', Size = '%f', Face = '%i', LuclinHairStyle = '%i', LuclinHairColor = '%i', LuclinEyeColor = '%i', LuclinEyeColor2 = '%i', LuclinBeardColor = '%i', LuclinBeard = '%i', DrakkinHeritage = '%i', DrakkinTattoo = '%i', DrakkinDetails = '%i', MR = '%i', CR = '%i', DR = '%i', FR = '%i', PR = '%i', AC = '%i', STR = '%i', STA = '%i', DEX = '%i', AGI = '%i', _INT = '%i', WIS = '%i', CHA = '%i', ATK = '%i', LastSpawnDate = NOW(), TotalPlayTime = '%u', LastZoneId = %i WHERE BotID = '%u'", _botOwnerCharacterID, this->GetBotSpellID(), this->GetCleanName(), this->lastname, this->GetLevel(), _baseRace, this->GetClass(), _baseGender, GetSize(), this->GetLuclinFace(), this->GetHairStyle(), GetHairColor(), this->GetEyeColor1(), this->GetEyeColor2(), this->GetBeardColor(), this->GetBeard(), this->GetDrakkinHeritage(), GetDrakkinTattoo(), GetDrakkinDetails(), _baseMR, _baseCR, _baseDR, _baseFR, _basePR, _baseAC, _baseSTR, _baseSTA, _baseDEX, _baseAGI, _baseINT, _baseWIS, _baseCHA, _baseATK, GetTotalPlayTime(), _lastZoneId, GetBotID()), TempErrorMessageBuffer, 0, &affectedRows)) {
 			errorMessage = std::string(TempErrorMessageBuffer);
 		}
 		else {
@@ -3908,6 +3966,9 @@ std::string Bot::RaceIdToString(uint16 raceId) {
 				break;
 			case 330:
 				Result = std::string("Froglok");
+				break;
+			case 522:
+				Result = std::string("Drakkin");
 				break;
 		}
 	}
@@ -9045,7 +9106,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		c->Message(0, "#bot group help - Displays the commands available to manage any BOTs in your group.");
 		c->Message(0, "#bot botgroup help - Displays the commands available to manage BOT ONLY groups.");
 		c->Message(0, "#bot mana [<bot name or target> | all] - Displays a mana report for all your spawned bots.");
-		c->Message(0, "#bot [hair|haircolor|beard|beardcolor|face <value>] - Change your BOTs appearance.");
+		c->Message(0, "#bot [hair|haircolor|beard|beardcolor|face|eyes|heritage|tattoo|details <value>] - Change your BOTs appearance.");
 		// TODO:
 		// c->Message(0, "#bot illusion <bot/client name or target> - Enchanter Bot cast an illusion buff spell on you or your target.");
 		return;
@@ -9103,12 +9164,12 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 			c->Message(0, "Usage: #bot create [name] [class(id)] [race(id)] [gender (male/female)]");
 			return;
 		}		
-		else if(strcasecmp(sep->arg[4],"1") && strcasecmp(sep->arg[4],"2") && strcasecmp(sep->arg[4],"3") && strcasecmp(sep->arg[4],"4") && strcasecmp(sep->arg[4],"5") && strcasecmp(sep->arg[4],"6") && strcasecmp(sep->arg[4],"7") && strcasecmp(sep->arg[4],"8") && strcasecmp(sep->arg[4],"9") && strcasecmp(sep->arg[4],"10") && strcasecmp(sep->arg[4],"11") && strcasecmp(sep->arg[4],"12") && strcasecmp(sep->arg[4],"330") && strcasecmp(sep->arg[4],"128") && strcasecmp(sep->arg[4],"130")) {
-			c->Message(0, "Usage: #bot create [name] [class(1-16)] [race(1-12,128,130,330)] [gender (male/female)]");
+		else if(strcasecmp(sep->arg[4],"1") && strcasecmp(sep->arg[4],"2") && strcasecmp(sep->arg[4],"3") && strcasecmp(sep->arg[4],"4") && strcasecmp(sep->arg[4],"5") && strcasecmp(sep->arg[4],"6") && strcasecmp(sep->arg[4],"7") && strcasecmp(sep->arg[4],"8") && strcasecmp(sep->arg[4],"9") && strcasecmp(sep->arg[4],"10") && strcasecmp(sep->arg[4],"11") && strcasecmp(sep->arg[4],"12") && strcasecmp(sep->arg[4],"330") && strcasecmp(sep->arg[4],"128") && strcasecmp(sep->arg[4],"130") && strcasecmp(sep->arg[4],"522")) {
+			c->Message(0, "Usage: #bot create [name] [class(1-16)] [race(1-12,128,130,330,522)] [gender (male/female)]");
 			return;
 		}
 		else if(strcasecmp(sep->arg[5],"male") && strcasecmp(sep->arg[5],"female")) {
-			c->Message(0, "Usage: #bot create [name] [class(1-16)] [race(1-12,128,130,330)] [gender (male/female)]");
+			c->Message(0, "Usage: #bot create [name] [class(1-16)] [race(1-12,128,130,330,522)] [gender (male/female)]");
 			return;
 		}
 
@@ -9168,10 +9229,10 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 	if(!strcasecmp(sep->arg[1], "help") && !strcasecmp(sep->arg[2], "create") ){
 		c->Message(0, "Classes:  1(Warrior), 2(Cleric), 3(Paladin), 4(Ranger), 5(Sk), 6(Druid), 7(Monk), 8(Bard), 9(Rogue), 10(Shaman), 11(Necro), 12(Wiz), 13(Mag), 14(Ench), 15(Beast), 16(Bersek)");
 		c->Message(0, "------------------------------------------------------------------");
-		c->Message(0, "Races: 1(Human), 2(Barb), 3(Erudit), 4(Wood elf), 5(High elf), 6(Dark elf), 7(Half elf), 8(Dwarf), 9(Troll), 10(Ogre), 11(Halfling), 12(Gnome), 330(Froglok), 128(Iksar), 130(Vah shir)");
+		c->Message(0, "Races: 1(Human), 2(Barb), 3(Erudit), 4(Wood elf), 5(High elf), 6(Dark elf), 7(Half elf), 8(Dwarf), 9(Troll), 10(Ogre), 11(Halfling), 12(Gnome), 128(Iksar), 130(Vah shir), 330(Froglok), 522(Drakkin)");
 		c->Message(0, "------------------------------------------------------------------");
-		c->Message(0, "Usage: #bot create [name] [class(1-16)] [race(1-12,128,130,330)] [gender(male/female)]");
-		c->Message(0, "Example: #bot create Jesuschrist 9 6 male");
+		c->Message(0, "Usage: #bot create [name] [class(1-16)] [race(1-12,128,130,330,522)] [gender(male/female)]");
+		c->Message(0, "Example: #bot create Sneaky 9 6 male");
 		return;
 	}
 
@@ -12236,11 +12297,12 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		return;
 	}
 
-	if(!strcasecmp(sep->arg[1], "haircolor") || !strcasecmp(sep->arg[1], "hair") || !strcasecmp(sep->arg[1], "beard") || !strcasecmp(sep->arg[1], "beardcolor") || !strcasecmp(sep->arg[1], "face")) {
+	if(!strcasecmp(sep->arg[1], "haircolor") || !strcasecmp(sep->arg[1], "hair") || !strcasecmp(sep->arg[1], "beard") || !strcasecmp(sep->arg[1], "beardcolor") || !strcasecmp(sep->arg[1], "face")
+		|| !strcasecmp(sep->arg[1], "eyes") || !strcasecmp(sep->arg[1], "heritage") || !strcasecmp(sep->arg[1], "tattoo") || !strcasecmp(sep->arg[1], "details")) {
 		if(c->GetTarget() && c->GetTarget()->IsBot()) {
 			if  (sep->IsNumber(2)) {
 				if (c->GetTarget()->CastToBot()->GetBotOwnerCharacterID() == c->CharacterID()) {
-					Mob *target = c->GetTarget();
+					Bot *target = c->GetTarget()->CastToBot();
 					int16 Race = target->GetRace();
 					int8 Gender = target->GetGender();
 					int8 Texture = 0xFF;
@@ -12256,6 +12318,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 					int32 DrakkinHeritage = target->GetDrakkinHeritage();
 					int32 DrakkinTattoo = target->GetDrakkinTattoo();
 					int32 DrakkinDetails = target->GetDrakkinDetails();
+					float Size = target->GetSize();
 
 					if (!strcasecmp(sep->arg[1], "hair"))
 						HairStyle = atoi(sep->arg[2]);
@@ -12274,10 +12337,35 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 					}
 					if (!strcasecmp(sep->arg[1], "face")) 
 						LuclinFace = atoi(sep->arg[2]);
+
+					if (!strcasecmp(sep->arg[1], "eyes")) {
+						EyeColor1 = EyeColor2 = atoi(sep->arg[2]);
+						c->Message(0, "Eye Values = 0 - 11");
+					}
+					if(!strcasecmp(sep->arg[1], "heritage") || !strcasecmp(sep->arg[1], "tattoo") || !strcasecmp(sep->arg[1], "details")) {
+						if(Race == 522) {
+							if(!strcasecmp(sep->arg[1], "heritage")) {
+								DrakkinHeritage = atoi(sep->arg[2]);
+								c->Message(0, "Heritage Values = 0 - 6");
+							}
+							if(!strcasecmp(sep->arg[1], "tattoo")) {
+								DrakkinTattoo = atoi(sep->arg[2]);
+								c->Message(0, "Tattoo Values = 0 - 7");
+							}
+							if(!strcasecmp(sep->arg[1], "details")) {
+								DrakkinDetails = atoi(sep->arg[2]);
+								c->Message(0, "Details Values = 0 - 7");
+							}
+						}
+						else {
+							c->Message(0, "Drakkin only.");
+							return;
+						}
+					}
 						
 					target->SendIllusionPacket(Race, Gender, Texture, HelmTexture, HairColor, BeardColor,
 												EyeColor1, EyeColor2, HairStyle, LuclinFace, Beard, 0xFF,
-												DrakkinHeritage, DrakkinTattoo, DrakkinDetails);
+												DrakkinHeritage, DrakkinTattoo, DrakkinDetails, Size);
 
 					if(target->CastToBot()->Save())
 						c->Message(0, "%s saved.", target->GetCleanName());

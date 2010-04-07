@@ -98,7 +98,7 @@ bool Client::Process() {
 		if(dead)
 			SetHP(-100);
 		
-		if(IsTracking && (GetClientVersion() >= EQClientSoD) && TrackingTimer.Check())
+		if(IsTracking() && (GetClientVersion() >= EQClientSoD) && TrackingTimer.Check())
 			DoTracking();
 
 		if(hpupdate_timer.Check())
@@ -1869,20 +1869,19 @@ void Client::CalcRestState() {
 void Client::DoTracking()
 {
 	if(TrackingID == 0)
-	{
-		IsTracking = false;
 		return;
-	}
 
-	NPC *m = entity_list.GetNPCByID(TrackingID);
+	Mob *m = entity_list.GetMob(TrackingID);
 
-	if(!m)
+	if(!m || m->IsCorpse())
 	{
 		Message_StringID(MT_Skills, TRACK_LOST_TARGET);
-		IsTracking = false;
+
 		TrackingID = 0;
+
 		return;
 	}
+
 	float RelativeHeading = GetHeading() - CalculateHeadingToTarget(m->GetX(), m->GetY());
 
 	if(RelativeHeading < 0)

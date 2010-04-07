@@ -534,6 +534,7 @@ bool logpos;
 	inline int8	GetClass()					const { return class_; }
 	inline uint8	GetLevel()				const { return level; }
 	inline const char*	GetName()			const { return name; }
+	inline const char*	GetLastName()			const { return lastname; }
 	const char *GetCleanName();
 	inline Mob*			GetTarget()			const { return target; }
 	virtual void SetTarget(Mob* mob);
@@ -994,6 +995,9 @@ bool logpos;
 	Timer* GetAIMovementTimer() { return AImovement_timer; }
 	Timer GetAttackTimer() { return attack_timer; }
 	Timer GetAttackDWTimer() { return attack_dw_timer; }
+	inline bool IsFindable() { return findable; }
+	inline uint8 GetManaPercent() { return (uint8)((float)cur_mana / (float)max_mana * 100.0f); }
+	virtual uint8 GetEndurancePercent() { return 0; }
 
 protected:
 	void CommonDamage(Mob* other, sint32 &damage, const uint16 spell_id, const SkillType attack_skill, bool &avoidable, const sint8 buffslot, const bool iBuffTic);

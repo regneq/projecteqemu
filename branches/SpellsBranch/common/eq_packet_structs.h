@@ -2544,7 +2544,8 @@ enum {
 	BazaarBuyItem = 10,
 	BazaarTrader_ShowItems = 11,
 	BazaarSearchDone = 12,
-	BazaarTrader_CustomerBrowsing = 13
+	BazaarTrader_CustomerBrowsing = 13,
+	BazaarInspectItem = 18
 };
 
 enum {
@@ -2606,13 +2607,17 @@ struct BazaarReturnDone_Struct{
 	int32 Unknown016;
 };
 struct BazaarSearchResults_Struct {
-	BazaarWindowStart_Struct Beginning;
-	int32	NumItems;
+/*000*/	BazaarWindowStart_Struct Beginning;
+/*004*/	int32	NumItems;
+/*008*/	int32	SerialNumber;
+/*012*/	int32	SellerID;
+/*016*/	int32	Cost;
+/*020*/	int32	ItemStat;
+/*024*/	char	ItemName[64];
+/*088*/
+	// New fields for SoD+, stripped off when encoding for older clients.
+	char	SellerName[64];
 	int32	ItemID;
-	int32	SellerID;
-	int32	Cost;
-	int32	ItemStat;
-	char	Name[64];
 };
 
 // Barter/Buyer
@@ -3930,9 +3935,12 @@ struct AA_Action {
 /*12*/	int32	exp_value;
 };
 
+
 struct AA_Skills {		//this should be removed and changed to AA_Array
-/*00*/	int32	aa_skill;
-/*04*/	int32	aa_value;
+/*00*/	int32	aa_skill;						// Total AAs Spent
+/*04*/  int32	aa_value;
+/*08*/  int32	unknown08;
+/*12*/
 };
 
 struct AAExpUpdate_Struct {
@@ -3951,12 +3959,13 @@ struct AltAdvStats_Struct {
 /*009*/  int8	unknown009[3];
 };
 
-struct PlayerAA_Struct {
+struct PlayerAA_Struct {						// Is this still used?
 	AA_Skills aa_list[MAX_PP_AA_ARRAY];
 };
 
 struct AATable_Struct {
-	AA_Skills aa_list[MAX_PP_AA_ARRAY];
+/*00*/ sint32    aa_spent;						// Total AAs Spent
+/*04*/ AA_Skills aa_list[MAX_PP_AA_ARRAY];
 };
 
 struct Weather_Struct {
@@ -4334,6 +4343,39 @@ struct GuildBankClear_Struct
 /*12*/	uint32	MainAreaCount;
 };
 
+struct FindableNPC_Struct
+{
+/*000*/	uint32	Action;		// 0 = Add, 1 = Remove
+/*004*/	uint32	EntityID;
+/*008*/	char	Name[64];
+/*072*/	char	LastName[32];
+/*104*/	uint32	Race;
+/*108*/	uint8	Class;
+/*109*/	uint8	Unknown109;	// Observed 0x16
+/*110*/	uint8	Unknown110;	// Observed 0x06
+/*111*/	uint8	Unknown111;	// Observed 0x24
+/*112*/
+};
+
+struct GroupRole_Struct
+{
+/*000*/	char	Name1[64];
+/*064*/	char	Name2[64];
+/*128*/	uint32	Unknown128;
+/*132*/	uint32	Unknown132;
+/*136*/	uint32	Unknown136;
+/*140*/	uint32	RoleNumber;
+/*144*/	uint8	Toggle;
+/*145*/	uint8	Unknown145[3];
+/*148*/
+};
+
+struct HideCorpse_Struct
+{
+/*00*/	uint32	Action;
+/*04*/	uint32	Unknown04;
+/*08*/
+};
 
 //old structures live here:
 #include "eq_old_structs.h"

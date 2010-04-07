@@ -869,6 +869,60 @@ ENCODE(OP_Barter)
 	
 }
 
+ENCODE(OP_BazaarSearch)
+{
+	EQApplicationPacket *in = *p;
+	*p = NULL;
+
+	char *Buffer = (char *)in->pBuffer;
+
+	uint8 SubAction = VARSTRUCT_DECODE_TYPE(uint8, Buffer);
+
+	if(SubAction != BazaarSearchResults)
+	{
+		dest->FastQueuePacket(&in, ack_req);
+
+		return;
+	}
+
+	unsigned char *__emu_buffer = in->pBuffer;
+
+	BazaarSearchResults_Struct *emu = (BazaarSearchResults_Struct *) __emu_buffer;
+
+	int EntryCount = in->size / sizeof(BazaarSearchResults_Struct);
+
+	if(EntryCount == 0 || (in->size % sizeof(BazaarSearchResults_Struct)) != 0)
+	{
+		_log(NET__STRUCTS, "Wrong size on outbound %s: Got %d, expected multiple of %d", opcodes->EmuToName(in->GetOpcode()), in->size, sizeof(BazaarSearchResults_Struct));
+		delete in;
+		return;
+	}
+	in->size = EntryCount * sizeof(structs::BazaarSearchResults_Struct);
+
+	in->pBuffer = new unsigned char[in->size];
+
+	memset(in->pBuffer, 0, in->size);
+
+	structs::BazaarSearchResults_Struct *eq = (structs::BazaarSearchResults_Struct *)in->pBuffer;
+
+	for(int i = 0; i < EntryCount; ++i, ++emu, ++eq)
+	{
+		OUT(Beginning.Action);
+		OUT(SellerID);
+		memcpy(eq->SellerName, emu->SellerName, sizeof(eq->SellerName));
+		OUT(NumItems);
+		OUT(ItemID);
+		OUT(SerialNumber);
+		memcpy(eq->ItemName, emu->ItemName, sizeof(eq->ItemName));
+		OUT(Cost);
+		OUT(ItemStat);
+	}
+
+	delete[] __emu_buffer;
+
+	dest->FastQueuePacket(&in, ack_req);
+}
+
 ENCODE(OP_NewSpawn) {  ENCODE_FORWARD(OP_ZoneSpawns); }
 ENCODE(OP_ZoneEntry){  ENCODE_FORWARD(OP_ZoneSpawns); }
 ENCODE(OP_ZoneSpawns) {
@@ -906,6 +960,12 @@ ENCODE(OP_ZoneSpawns) {
 
 			PacketSize += strlen(emu->name);
 			PacketSize += strlen(emu->lastName);
+
+			if(strlen(emu->title))
+				PacketSize += strlen(emu->title) + 1;
+
+			if(strlen(emu->suffix))
+				PacketSize += strlen(emu->suffix) + 1;
 		
 			bool ShowName = 1;
 			if(emu->bodytype >= 66)
@@ -949,7 +1009,15 @@ ENCODE(OP_ZoneSpawns) {
 
 			Buffer += sizeof(structs::Spawn_Struct_Bitfields);
 
-			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0x0);	// otherData was zero
+			uint8 OtherData = 0;
+
+			if(strlen(emu->title))
+				OtherData = OtherData | 0x04;
+
+			if(strlen(emu->suffix))
+				OtherData = OtherData | 0x08;
+
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, OtherData);
 
 			VARSTRUCT_ENCODE_TYPE(float, Buffer, -1);	// unknown3
 			VARSTRUCT_ENCODE_TYPE(float, Buffer, 0);	// unknown4
@@ -999,18 +1067,11 @@ ENCODE(OP_ZoneSpawns) {
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);	// pvp
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0x64);	// standstate
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->light);
-			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0); // unknown7  Flymode ?
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->flymode);
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->equip_chest2); // unknown8
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0); // unknown9
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0); // unknown10
-			if(emu->NPC)
-			{
-				VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0xFF); // unknown11
-			}
-			else
-			{
-				VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0x01); // unknown11
-			}
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->helm); // unknown11
 			VARSTRUCT_ENCODE_STRING(Buffer, emu->lastName);
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);	// aatitle
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0); // unknown12
@@ -1040,18 +1101,14 @@ ENCODE(OP_ZoneSpawns) {
 		
 			for(k = 0; k < 9; ++k)
 			{
-				if(emu->NPC)
-				{
-					// Sending colours for some NPCs was causing the client to crash. It may be that only certain
-					// races have this problem, as zones with predominantly mobs of playable races didn't seem
-					// to have the problem. For now we will not send colours for NPCs.
-					VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
-				}
-				else
+				if((emu->NPC == 0) || (emu->race <=12) || (emu->race == 128) || (emu ->race == 130) || (emu->race == 330) || (emu->race == 522))
 				{
 					VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->colors[k].color);
 				}
-
+				else
+				{
+					VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+				}
 			}
 
 
@@ -1067,7 +1124,15 @@ ENCODE(OP_ZoneSpawns) {
 
 				Buffer += (sizeof(structs::EquipStruct) * 9);
 			}
+			if(strlen(emu->title))
+			{
+				VARSTRUCT_ENCODE_STRING(Buffer, emu->title);
+			}
 
+			if(strlen(emu->suffix))
+			{
+				VARSTRUCT_ENCODE_STRING(Buffer, emu->suffix);
+			}
 			Buffer += 33; // Unknown;
 
 			//_log(NET__ERROR, "Sending zone spawn for %s", emu->name);
@@ -1075,15 +1140,7 @@ ENCODE(OP_ZoneSpawns) {
 			dest->FastQueuePacket(&outapp, ack_req);
 	}
 	
-	
-	//kill off the emu structure and send the eq packet.
-	//delete[] __emu_buffer;
-	
 	delete in;
-	//_log(NET__ERROR, "Sending zone spawns");
-	//_hex(NET__ERROR, in->pBuffer, in->size);
-	
-	//dest->FastQueuePacket(&in, ack_req);
 }
 
 ENCODE(OP_ItemLinkResponse) {  ENCODE_FORWARD(OP_ItemPacket); }
@@ -1528,26 +1585,6 @@ ENCODE(OP_InterruptCast) {
 	FINISH_ENCODE();
 }
 
-
-ENCODE(OP_RespondAA) {
-	ENCODE_LENGTH_EXACT(AATable_Struct);
-	SETUP_DIRECT_ENCODE(AATable_Struct, structs::AATable_Struct);
-	
-	//int aa_spent_total = 0;
-	eq->aa_spent = 500; //aa_spent_total;
-
-	unsigned int r;
-	for(r = 0; r < MAX_PP_AA_ARRAY; r++) {
-		OUT(aa_list[r].aa_skill);
-		OUT(aa_list[r].aa_value);
-		//eq->aa_list[r].aa_value = emu->aa_list[r].aa_value;
-		//if (emu->aa_list[r].aa_value)
-		//	aa_spent_total += emu->aa_list[r].aa_value;
-		eq->aa_list[r].unknown08 = 0;
-	}
-	FINISH_ENCODE();
-}
-
 ENCODE(OP_ShopPlayerSell) {
 	ENCODE_LENGTH_EXACT(Merchant_Purchase_Struct);
 	SETUP_DIRECT_ENCODE(Merchant_Purchase_Struct, structs::Merchant_Purchase_Struct);
@@ -1590,60 +1627,6 @@ ENCODE(OP_ItemVerifyReply) {
 	OUT(target);
 
 	FINISH_ENCODE();
-}
-
-ENCODE(OP_BazaarSearch) {
-
-	if(((*p)->size == sizeof(BazaarReturnDone_Struct)) || ((*p)->size == sizeof(BazaarWelcome_Struct))) {
-
-		EQApplicationPacket *in = *p;
-		*p = NULL;
-		dest->FastQueuePacket(&in, ack_req);
-		return;
-	}
-
-	//consume the packet
-	EQApplicationPacket *in = *p;
-	*p = NULL;
-
-	//store away the emu struct
-	unsigned char *__emu_buffer = in->pBuffer;
-	BazaarSearchResults_Struct *emu = (BazaarSearchResults_Struct *) __emu_buffer;
-
-	//determine and verify length
-	int entrycount = in->size / sizeof(BazaarSearchResults_Struct);
-	if(entrycount == 0 || (in->size % sizeof(BazaarSearchResults_Struct)) != 0) {
-		_log(NET__STRUCTS, "Wrong size on outbound %s: Got %d, expected multiple of %d", 
-				   opcodes->EmuToName(in->GetOpcode()), in->size, sizeof(BazaarSearchResults_Struct));
-		delete in;
-		return;
-	}
-
-	//make the EQ struct.
-	in->size = sizeof(structs::BazaarSearchResults_Struct)*entrycount;
-	in->pBuffer = new unsigned char[in->size];
-	structs::BazaarSearchResults_Struct *eq = (structs::BazaarSearchResults_Struct *) in->pBuffer;
-
-	//zero out the packet. We could avoid this memset by setting all fields (including unknowns)
-	//in the loop.
-	memset(in->pBuffer, 0, in->size);
-
-	for(int i=0; i<entrycount; i++, eq++, emu++) {
-		eq->Beginning.Action = emu->Beginning.Action;
-		eq->Beginning.Unknown001 = emu->Beginning.Unknown001;
-		eq->Beginning.Unknown002 = emu->Beginning.Unknown002;
-		eq->NumItems = emu->NumItems;
-		eq->ItemID = emu->ItemID;
-		eq->SellerID = emu->SellerID;
-		eq->Cost = emu->Cost;
-		eq->ItemStat = emu->ItemStat;
-		strcpy(eq->Name, emu->Name);
-	}
-
-	delete[] __emu_buffer;
-	dest->FastQueuePacket(&in, ack_req);
-
-
 }
 
 ENCODE(OP_Trader) {
@@ -2136,7 +2119,7 @@ ENCODE(OP_GroupUpdate)
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);	// This is a string
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0x41);	// Observed 0x41 and 0x46 here
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);
-			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);	// Low byte is Main Assist Flag
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
 			VARSTRUCT_ENCODE_TYPE(uint16, Buffer, 0);
 		}
@@ -2174,6 +2157,24 @@ ENCODE(OP_GroupUpdate)
 	FINISH_ENCODE();
 
 	dest->FastQueuePacket(&outapp);
+}
+
+DECODE(OP_BazaarSearch)
+{
+	char *Buffer = (char *)__packet->pBuffer;
+
+	uint8 SubAction = VARSTRUCT_DECODE_TYPE(uint8, Buffer);
+
+	if((SubAction != BazaarInspectItem) || (__packet->size != sizeof(structs::NewBazaarInspect_Struct)))
+		return;
+
+	SETUP_DIRECT_DECODE(NewBazaarInspect_Struct, structs::NewBazaarInspect_Struct);
+	MEMSET_IN(structs::NewBazaarInspect_Struct);
+	IN(Beginning.Action);
+	memcpy(emu->Name, eq->Name, sizeof(emu->Name));
+	IN(SerialNumber);
+
+	FINISH_DIRECT_DECODE();
 }
 
 DECODE(OP_InspectAnswer) {
@@ -2516,7 +2517,8 @@ DECODE(OP_FindPersonRequest) {
 	FINISH_DIRECT_DECODE();
 }
 
-DECODE(OP_TraderBuy) {
+DECODE(OP_TraderBuy)
+{
 	DECODE_LENGTH_EXACT(structs::TraderBuy_Struct);
 	SETUP_DIRECT_DECODE(TraderBuy_Struct, structs::TraderBuy_Struct);
 	MEMSET_IN(TraderBuy_Struct);
@@ -2972,4 +2974,4 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	return item_serial;
 }
 
-} //end namespace SoF
+} //end namespace SoD

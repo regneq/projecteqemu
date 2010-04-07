@@ -351,14 +351,6 @@ ENCODE(OP_PlayerProfile) {
 	//set the checksum...
 	CRC32::SetEQChecksum(__packet->pBuffer, sizeof(structs::PlayerProfile_Struct)-4);
 	
-	printf("Resulting PP is length %d (struct %d)\nunknown2348=%d, skills=%d, tributes=%d, unknown14124=%d", 
-		__packet->size, sizeof(structs::PlayerProfile_Struct),
-		&((structs::PlayerProfile_Struct *) 0)->unknown2348,
-		&((structs::PlayerProfile_Struct *) 0)->skills,
-		&((structs::PlayerProfile_Struct *) 0)->tributes,
-		&((structs::PlayerProfile_Struct *) 0)->unknown14124
-	);
-	
 	FINISH_ENCODE();
 }
 
@@ -696,6 +688,71 @@ ENCODE(OP_Illusion) {
 	OUT(beard);
 	OUT(beardcolor);
 	OUT(size);
+
+	FINISH_ENCODE();
+}
+
+ENCODE(OP_BazaarSearch)
+{
+	EQApplicationPacket *in = *p;
+	*p = NULL;
+
+	char *Buffer = (char *)in->pBuffer;
+
+	uint8 SubAction = VARSTRUCT_DECODE_TYPE(uint8, Buffer);
+
+	if(SubAction != BazaarSearchResults)
+	{
+		dest->FastQueuePacket(&in, ack_req);
+
+		return;
+	}
+
+	unsigned char *__emu_buffer = in->pBuffer;
+
+	BazaarSearchResults_Struct *emu = (BazaarSearchResults_Struct *) __emu_buffer;
+
+	int EntryCount = in->size / sizeof(BazaarSearchResults_Struct);
+
+	if(EntryCount == 0 || (in->size % sizeof(BazaarSearchResults_Struct)) != 0)
+	{
+		_log(NET__STRUCTS, "Wrong size on outbound %s: Got %d, expected multiple of %d", opcodes->EmuToName(in->GetOpcode()), in->size, sizeof(BazaarSearchResults_Struct));
+		delete in;
+		return;
+	}
+	in->size = EntryCount * sizeof(structs::BazaarSearchResults_Struct);
+
+	in->pBuffer = new unsigned char[in->size];
+
+	memset(in->pBuffer, 0, in->size);
+
+	structs::BazaarSearchResults_Struct *eq = (structs::BazaarSearchResults_Struct *)in->pBuffer;
+
+	for(int i = 0; i < EntryCount; ++i, ++emu, ++eq)
+	{
+		OUT(Beginning.Action);
+		OUT(NumItems);
+		OUT(SerialNumber);
+		OUT(SellerID);
+		OUT(Cost);
+		OUT(ItemStat);
+		memcpy(eq->ItemName, emu->ItemName, sizeof(eq->ItemName));
+	}
+
+	delete[] __emu_buffer;
+
+	dest->FastQueuePacket(&in, ack_req);
+}
+
+ENCODE(OP_RespondAA) {
+	ENCODE_LENGTH_EXACT(AATable_Struct);
+	SETUP_DIRECT_ENCODE(AATable_Struct, structs::AATable_Struct);
+
+	unsigned int r;
+	for(r = 0; r < MAX_PP_AA_ARRAY; r++) {
+		OUT(aa_list[r].aa_skill);
+		OUT(aa_list[r].aa_value);
+	}
 
 	FINISH_ENCODE();
 }

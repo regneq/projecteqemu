@@ -1,5 +1,27 @@
-EQEMu Changelog (Started on Sept 24, 2003 15:50)
+﻿EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==04/06/2010==
+Derision: SoD - Players may now be tracked and fixed a bug where tracking would not work when switching tracking targets without cancelling tracking.
+Derision: SoD - Initial work on /hidecorpse serverside support. All but /hidecorpse looted should work.
+
+==04/05/2010==
+Derision: SoD - Loot All now works.
+
+==04/04/2010==
+Derision: SoD - Group member (client or bot) mana and endurance should update correctly in the group window.
+Derision: SoD - Altered SpawnStruct encode to send colors for all playable races (including corpses and NPCs).
+Derision: SoD - Group Main Assist may be assigned via the Group Window. As the group leader cannot explicitly assign it to himself, use /grouproles set <leadername> 2
+Leere:	A moving mob that becomes mezzed will no longer appear to continue moving.
+Fourier: Added location to the output of #listnpc.
+
+==04/03/2010==
+Trevius: SoF/SoD - Total Spent AA Points now show correctly for these 2 clients.
+Trevius: Froglok characters now default to size 5 instead of 7.  This corrects size issues when using illusions.
+Derision: SoD - Bazaar Trader Mode/Bazaar Search should now work correctly.
+Derision: SoD - Found the helm field in the spawn struct.
+Derision: SoD - Implemented new packets for sending the list of findable NPCs to the client.
+Derision: SoD - Flymode and Titles in the spawn struct.
+
 ==04/02/2010==
 Derision: SoD - Group Leadership AA should mostly work (Main Assist is no longer a GLAA and Health Awareness seems intermittent).
 joligario: Pet behavious change.
@@ -9,6 +31,7 @@ Trevius: SoD - Removed the opcodes for the Pet Buff Window until the structure i
 Derision: SoD - Pet Buff Window now works.
 Derision: SoD - Fixed OnLevelMessage struct (popup windows).
 Derision: SoD - Fixed Barter mode.
+Congdar: (Taurinus) Drakkin bots
 
 ==04/01/2010==
 Derision: SoD - Tracking
@@ -24,7 +47,9 @@ Derision: SoD - Fixed items being incorrectly flagged as No Trade/Copied
 Trevius: SoD - Corrected the opcode for Mob Health Updates so they update properly.
 Trevius: SoD - Added a few new Opcodes and Structures for SoD packets that aren't used yet.
 
+
 ==03/28/2010==
+
 Derision: SoD - Fixed client animation/runspeed glitch.
 Derision: All Clients - Player position updates to other players should be more accurate.
 Trevius: Updated #race and #fixmob commands to allow up to race 626 which is the total for the SoD client.
@@ -35,6 +60,7 @@ Trevius: SoD - A couple more Opcode updates.
 Trevius: SoD - Some group structures work, but grouping is still not functional.
 Derision: SoD - Fixed random client crashes due to spawn packets and invisible mobs should now be invisible.
 Derision: SoD - Did a basic Encode on OP_WhoAllResponse. Still needs work for various flags (LD/Trader/Buyer) etc.
+
 
 ==03/26/2010==
 Trevius: SoD - Finished updated Opcodes and they should now be caught up with what we have in SoF.

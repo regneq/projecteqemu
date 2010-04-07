@@ -202,7 +202,7 @@ Corpse::Corpse(NPC* in_npc, ItemList* in_itemlist, int32 in_npctypeid, const NPC
 	 corpse_decay_timer(in_decaytime),
 	corpse_delay_timer(RuleI(NPC, CorpseUnlockTimer)),
 	corpse_graveyard_timer(0),
-	loot_cooldown_timer(200)
+	loot_cooldown_timer(100)
 {
 	corpse_graveyard_timer.Disable();
 	memset(item_tint, 0, sizeof(item_tint));
@@ -308,7 +308,7 @@ Corpse::Corpse(Client* client, sint32 in_rezexp)
 	corpse_decay_timer(RuleI(Character, CorpseDecayTimeMS)),
 	corpse_delay_timer(RuleI(NPC, CorpseUnlockTimer)),
 	corpse_graveyard_timer(RuleI(Zone, GraveyardTimeMS)),
-	loot_cooldown_timer(200)
+	loot_cooldown_timer(100)
 {
 	int i;
 	PlayerProfile_Struct *pp = &client->GetPP();
@@ -417,7 +417,7 @@ Corpse::Corpse(int32 in_dbid, int32 in_charid, char* in_charname, ItemList* in_i
 	corpse_decay_timer(RuleI(Character, CorpseDecayTimeMS)),
 	corpse_delay_timer(RuleI(NPC, CorpseUnlockTimer)),
 	corpse_graveyard_timer(RuleI(Zone, GraveyardTimeMS)),
-	loot_cooldown_timer(200)
+	loot_cooldown_timer(100)
 {
 	if(!zone->HasGraveyard() || wasAtGraveyard)
 		corpse_graveyard_timer.Disable();
@@ -958,6 +958,11 @@ void Corpse::MakeLootRequestPackets(Client* client, const EQApplicationPacket* a
 	
 	// Disgrace: Client seems to require that we send the packet back...
 	client->QueuePacket(app);
+
+	// This is required for the 'Loot All' feature to work for SoD clients. I expect it is to tell the client that the
+	// server has now sent all the items on the corpse.
+	if(client->GetClientVersion() >= EQClientSoD)
+		SendLootReqErrorPacket(client, 6);
 }
 
 void Corpse::LootItem(Client* client, const EQApplicationPacket* app)
