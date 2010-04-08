@@ -3970,6 +3970,11 @@ struct ExpansionInfo_Struct {
 /*064*/	uint32	Expansions;
 };
 
+struct ApplyPoison_Struct {
+	uint32 inventorySlot;
+	uint32 success;
+};
+
 struct ItemVerifyRequest_Struct {
 /*000*/	sint32	slot;		// Slot being Right Clicked
 /*004*/	uint32	target;		// Target Entity ID
