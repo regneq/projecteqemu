@@ -131,6 +131,10 @@ public:
 	std::vector<AISpells_Struct> GetBotSpells() { return AIspells; }
 	bool IsArcheryRange(Mob* target);
 	void ChangeBotArcherWeapons(bool isArcher);
+	void Sit();
+	void Stand();
+	bool IsSitting();
+	bool IsStanding();
 	bool IsBotCasterCombatRange(Mob *target);
 	bool CalculateNewPosition2(float x, float y, float z, float speed, bool checkZ = true) ;
 
@@ -145,13 +149,13 @@ public:
 	virtual void AI_Stop();
 
 	// Mob Spell Virtual Override Methods
-	virtual sint32 GetActSpellDamage(Spell *spell_to_cast, sint32 value);
-	virtual sint32 GetActSpellHealing(Spell *spell_to_cast, sint32 value);
-	virtual sint32 GetActSpellCasttime(Spell *spell_to_cast, sint32 casttime);
-	virtual sint32 GetActSpellCost(Spell *spell_to_cast, sint32 cost);
-	virtual float GetActSpellRange(Spell *spell_to_cast, float range);
-	virtual sint32 GetActSpellDuration(Spell *spell_to_cast, sint32 duration);
-	virtual float GetAOERange(Spell *spell_to_cast);
+	virtual sint32 GetActSpellDamage(int16 spell_id, sint32 value);
+	virtual sint32 GetActSpellHealing(int16 spell_id, sint32 value);
+	virtual sint32 GetActSpellCasttime(int16 spell_id, sint32 casttime);
+	virtual sint32 GetActSpellCost(int16 spell_id, sint32 cost);
+	virtual float GetActSpellRange(int16 spell_id, float range);
+	virtual sint32 GetActSpellDuration(int16 spell_id, sint32 duration);
+	virtual float GetAOERange(uint16 spell_id);
 	virtual bool SpellEffect(Mob* caster, int16 spell_id, float partial = 100);
 	virtual void DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob* caster = 0);
 	virtual bool CastSpell(int16 spell_id, int16 target_id, int16 slot = 10, sint32 casttime = -1, sint32 mana_cost = -1, int32* oSpellWillFinish = 0, int32 item_slot = 0xFFFFFFFF);
@@ -176,9 +180,14 @@ public:
 	void EquipBot(std::string* errorMessage);
 
 	// Static Class Methods
-	//static void SaveBotGroups(uint32 groupID, uint32 characterID, uint32 botID, uint16 slotID, std::string* errorMessage);	// Can be removed after bot raids are dumped
-	//static void DeleteBotGroups(uint32 characterID, std::string* errorMessage);	// Can be removed after bot raids are dumped
-	//static std::list<BotGroup> LoadBotGroups(uint32 characterID, std::string* errorMessage);	// Can be removed after bot raids are dumped
+	static void SaveBotGroup(Group* botGroup, std::string botGroupName, std::string* errorMessage);
+	static void DeleteBotGroup(std::string botGroupName, std::string* errorMessage);
+	static std::list<BotGroup> LoadBotGroup(std::string botGroupName, std::string* errorMessage);
+	static uint32 CanLoadBotGroup(uint32 botOwnerCharacterId, std::string botGroupName, std::string* errorMessage);
+	static uint32 GetBotGroupIdByBotGroupName(std::string botGroupName, std::string* errorMessage);
+	static uint32 GetBotGroupLeaderIdByBotGroupName(std::string botGroupName);
+	static std::list<BotGroupList> GetBotGroupListByBotOwnerCharacterId(uint32 botOwnerCharacterId, std::string* errorMessage);
+	static bool DoesBotGroupNameExist(std::string botGroupName);
 	//static void DestroyBotRaidObjects(Client* client);	// Can be removed after bot raids are dumped
 	static uint32 GetBotIDByBotName(std::string botName);
 	static Bot* LoadBot(uint32 botID, std::string* errorMessage);
@@ -296,8 +305,7 @@ private:
 	bool _botCharmer;
 	bool _petChooser;
 	int8 _petChooserID;
-	bool cast_last_time;
-	BotInventory _botInventory;
+	Inventory m_inv;
 	double _lastTotalPlayTime;
 	time_t _startTotalPlayTime;
 	Mob* _previousTarget;
