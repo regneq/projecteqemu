@@ -2223,7 +2223,9 @@ void Client::SellToBuyer(const EQApplicationPacket *app) {
 	VARSTRUCT_ENCODE_TYPE(uint32,	Buf, Quantity * Price);
 
 	if(GetClientVersion() >= EQClientSoD)
+	{
 		VARSTRUCT_ENCODE_TYPE(uint32,	Buf, 0);	// Think this is the upper 32 bits of a 64 bit price
+	}
 
 	sprintf(Buf, "%s", Buyer->GetName()); Buf += 64;
 
@@ -2246,7 +2248,9 @@ void Client::SellToBuyer(const EQApplicationPacket *app) {
 	VARSTRUCT_ENCODE_TYPE(uint32,	Buf, Quantity * Price);
 
 	if(GetClientVersion() >= EQClientSoD)
+	{
 		VARSTRUCT_ENCODE_TYPE(uint32,	Buf, 0);	// Think this is the upper 32 bits of a 64 bit price
+	}
 
 	sprintf(Buf, "%s", GetName()); Buf += 64;
 

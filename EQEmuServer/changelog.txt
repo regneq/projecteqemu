@@ -4,6 +4,7 @@
 Derision: SoD - Tracking Auto-refresh should no longer fail with Recovery timer not met.
 Derision: SoD - Previously memmed spells are now unmemmed when loading a spell set.
 Derision: SoD - Added Slot conversion to ApplyPoison_Struct (Apply poison should work as well as Titanium).
+Derision: AllButSoD - Fixed bug in Barter code.
 
 ==04/06/2010==
 Derision: SoD - Players may now be tracked and fixed a bug where tracking would not work when switching tracking targets without cancelling tracking.
