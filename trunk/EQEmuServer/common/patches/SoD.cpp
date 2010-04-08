@@ -1595,6 +1595,14 @@ ENCODE(OP_ShopPlayerSell) {
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_ApplyPoison) {
+	ENCODE_LENGTH_EXACT(ApplyPoison_Struct);
+	SETUP_DIRECT_ENCODE(ApplyPoison_Struct, structs::ApplyPoison_Struct);
+	eq->inventorySlot = TitaniumToSoDSlot(emu->inventorySlot);
+	OUT(success);
+	FINISH_ENCODE();
+}
+
 ENCODE(OP_DeleteItem) {
 	ENCODE_LENGTH_EXACT(DeleteItem_Struct);
 	SETUP_DIRECT_ENCODE(DeleteItem_Struct, structs::DeleteItem_Struct);
@@ -2231,6 +2239,16 @@ DECODE(OP_AdventureMerchantSell) {
 	FINISH_DIRECT_DECODE();
 }
 
+
+DECODE(OP_ApplyPoison) {
+	DECODE_LENGTH_EXACT(structs::ApplyPoison_Struct);
+	SETUP_DIRECT_DECODE(ApplyPoison_Struct, structs::ApplyPoison_Struct);
+
+	emu->inventorySlot = SoDToTitaniumSlot(eq->inventorySlot);
+	IN(success);
+
+	FINISH_DIRECT_DECODE();
+}
 
 DECODE(OP_ItemVerifyRequest) {
 	DECODE_LENGTH_EXACT(structs::ItemVerifyRequest_Struct);
