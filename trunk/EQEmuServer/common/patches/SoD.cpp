@@ -2605,6 +2605,16 @@ DECODE(OP_FaceChange) {
 	FINISH_DIRECT_DECODE();
 }
 
+DECODE(OP_LoadSpellSet)
+{
+	DECODE_LENGTH_EXACT(structs::LoadSpellSet_Struct);
+	SETUP_DIRECT_DECODE(LoadSpellSet_Struct, structs::LoadSpellSet_Struct);
+
+	for(int i = 0; i < MAX_PP_MEMSPELL; ++i)
+		emu->spell[i] = eq->spell[i];
+
+	FINISH_DIRECT_DECODE();
+}
 
 int32 NextItemInstSerialNumber = 1;
 int32 MaxInstances = 2000000000;

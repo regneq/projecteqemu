@@ -96,5 +96,6 @@ D(OP_RaidInvite)
 D(OP_InspectAnswer)
 D(OP_ShopPlayerBuy)
 D(OP_BazaarSearch)
+D(OP_LoadSpellSet)
 #undef E
 #undef D

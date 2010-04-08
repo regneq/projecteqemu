@@ -155,7 +155,6 @@ enum {	//reuse times
 	FishingReuseTime = 11,
 	ForagingReuseTime = 50,
 	MendReuseTime = 290,
-	TrackingReuseTime = 9,
 	BashReuseTime = 5,
 	BackstabReuseTime = 9,
 	KickReuseTime = 5,
