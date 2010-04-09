@@ -7054,12 +7054,6 @@ void Client::Handle_OP_Track(const EQApplicationPacket *app)
 	if(GetClass() != RANGER && GetClass() != DRUID && GetClass() != BARD)
 		return;
 
-	if(!p_timers.Expired(&database, pTimerTracking, false)) {
-		Message(13,"Ability recovery time not yet met.");
-		return;
-	}
-	p_timers.Start(pTimerTracking, TrackingReuseTime-1);
-
 	if( GetSkill(TRACKING)==0 )
 		SetSkill(TRACKING,1);
 	else

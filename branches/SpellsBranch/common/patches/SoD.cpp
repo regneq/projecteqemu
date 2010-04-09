@@ -1595,6 +1595,14 @@ ENCODE(OP_ShopPlayerSell) {
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_ApplyPoison) {
+	ENCODE_LENGTH_EXACT(ApplyPoison_Struct);
+	SETUP_DIRECT_ENCODE(ApplyPoison_Struct, structs::ApplyPoison_Struct);
+	eq->inventorySlot = TitaniumToSoDSlot(emu->inventorySlot);
+	OUT(success);
+	FINISH_ENCODE();
+}
+
 ENCODE(OP_DeleteItem) {
 	ENCODE_LENGTH_EXACT(DeleteItem_Struct);
 	SETUP_DIRECT_ENCODE(DeleteItem_Struct, structs::DeleteItem_Struct);
@@ -2232,6 +2240,16 @@ DECODE(OP_AdventureMerchantSell) {
 }
 
 
+DECODE(OP_ApplyPoison) {
+	DECODE_LENGTH_EXACT(structs::ApplyPoison_Struct);
+	SETUP_DIRECT_DECODE(ApplyPoison_Struct, structs::ApplyPoison_Struct);
+
+	emu->inventorySlot = SoDToTitaniumSlot(eq->inventorySlot);
+	IN(success);
+
+	FINISH_DIRECT_DECODE();
+}
+
 DECODE(OP_ItemVerifyRequest) {
 	DECODE_LENGTH_EXACT(structs::ItemVerifyRequest_Struct);
 	SETUP_DIRECT_DECODE(ItemVerifyRequest_Struct, structs::ItemVerifyRequest_Struct);
@@ -2605,6 +2623,16 @@ DECODE(OP_FaceChange) {
 	FINISH_DIRECT_DECODE();
 }
 
+DECODE(OP_LoadSpellSet)
+{
+	DECODE_LENGTH_EXACT(structs::LoadSpellSet_Struct);
+	SETUP_DIRECT_DECODE(LoadSpellSet_Struct, structs::LoadSpellSet_Struct);
+
+	for(int i = 0; i < MAX_PP_MEMSPELL; ++i)
+		emu->spell[i] = eq->spell[i];
+
+	FINISH_DIRECT_DECODE();
+}
 
 int32 NextItemInstSerialNumber = 1;
 int32 MaxInstances = 2000000000;

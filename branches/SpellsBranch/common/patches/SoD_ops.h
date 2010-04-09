@@ -60,7 +60,7 @@ E(OP_ShopPlayerBuy)
 E(OP_PetBuffWindow)
 E(OP_OnLevelMessage)
 E(OP_Barter)
-
+E(OP_ApplyPoison)
 //list of packets we need to decode on the way in:
 D(OP_SetServerFilter)
 D(OP_CharacterCreate)
@@ -96,5 +96,7 @@ D(OP_RaidInvite)
 D(OP_InspectAnswer)
 D(OP_ShopPlayerBuy)
 D(OP_BazaarSearch)
+D(OP_LoadSpellSet)
+D(OP_ApplyPoison)
 #undef E
 #undef D
