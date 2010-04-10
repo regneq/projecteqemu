@@ -1642,8 +1642,15 @@ void Client::SendManaUpdatePacket() {
 	if (!Connected() || IsCasting())
 		return;
 
+	if (GetClientVersion() >= EQClientSoD) {
+		SendManaUpdate();
+		SendEnduranceUpdate();
+	}
+
 	//cout << "Sending mana update: " << (cur_mana - last_reported_mana) << endl;
 	if (last_reported_mana != cur_mana || last_reported_endur != cur_end) {
+
+
 
 		EQApplicationPacket* outapp = new EQApplicationPacket(OP_ManaChange, sizeof(ManaChange_Struct));
 		ManaChange_Struct* manachange = (ManaChange_Struct*)outapp->pBuffer;
@@ -1685,6 +1692,30 @@ void Client::SendManaUpdatePacket() {
 		last_reported_mana = cur_mana;
 		last_reported_endur = cur_end;
 	}
+}
+
+// sends mana update to self
+void Client::SendManaUpdate()
+{
+	EQApplicationPacket* mana_app = new EQApplicationPacket(OP_ManaUpdate,sizeof(ManaUpdate_Struct));
+	ManaUpdate_Struct* mus = (ManaUpdate_Struct*)mana_app->pBuffer; 
+	mus->cur_mana = GetMana();
+	mus->max_mana = GetMaxMana();
+	mus->spawn_id = GetID();
+	QueuePacket(mana_app);
+	safe_delete(mana_app);
+}
+
+// sends endurance update to self
+void Client::SendEnduranceUpdate()
+{
+	EQApplicationPacket* end_app = new EQApplicationPacket(OP_EnduranceUpdate,sizeof(EnduranceUpdate_Struct));
+	EnduranceUpdate_Struct* eus = (EnduranceUpdate_Struct*)end_app->pBuffer; 
+	eus->cur_end = GetEndurance();
+	eus->max_end = GetMaxEndurance();
+	eus->spawn_id = GetID();
+	QueuePacket(end_app);
+	safe_delete(end_app);
 }
 
 void Client::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho)
