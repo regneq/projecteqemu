@@ -986,7 +986,7 @@ ENCODE(OP_ZoneSpawns) {
 			VARSTRUCT_ENCODE_STRING(Buffer, emu->name);
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->spawnId);
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->level);
-			VARSTRUCT_ENCODE_TYPE(float, Buffer, 7.7974553108215);	// unknown1
+			VARSTRUCT_ENCODE_TYPE(float, Buffer, emu->size - 1);	// View Height?
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->NPC);
 
 			structs::Spawn_Struct_Bitfields *Bitfields = (structs::Spawn_Struct_Bitfields*)Buffer;
@@ -1000,8 +1000,10 @@ ENCODE(OP_ZoneSpawns) {
 			Bitfields->lfg = emu->lfg;
 			Bitfields->gm = emu->gm;
 			Bitfields->anon = emu->anon;
+			Bitfields->showhelm = emu->showhelm;
 			Bitfields->targetable = 1;
 			Bitfields->targetable_with_hotkey = 1;
+			Bitfields->statue = 0;
 			Bitfields->trader = 0;
 			Bitfields->buyer = 0;
 
@@ -1051,7 +1053,7 @@ ENCODE(OP_ZoneSpawns) {
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->drakkin_heritage);
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->drakkin_tattoo);
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->drakkin_details);
-			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);	// statue
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->deity);
 			if(emu->NPC)
 			{
@@ -1077,7 +1079,7 @@ ENCODE(OP_ZoneSpawns) {
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0); // unknown12
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->petOwnerId);
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0); // unknown13
-			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // unknown14
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // unknown14 - Stance 64 = normal 4 = aggressive 40 = stun/mezzed
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // unknown15
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // unknown16
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // unknown17

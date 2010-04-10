@@ -194,24 +194,25 @@ struct Spawn_Struct_Bitfields
 {
 
 	unsigned   padding1:1;
-	 unsigned   afk:1;			// 0=no, 1=afk
-	 unsigned   sneak:1;
-	 unsigned   lfg:1;
-	 unsigned   padding5:1;
-	 unsigned   invis:1;		// 0 = visible, 1 = invis/sneaking
-	 unsigned   padding7:11;
-	 unsigned   gm:1;
-	 unsigned   anon:2;			// 0=normal, 1=anon, 2=roleplay
-	 unsigned   gender:2;		// Gender (0=male, 1=female, 2=monster)
-	 unsigned   linkdead:1;		// Toggles LD on or off after name
-	 unsigned   betabuffed:1;
-	 unsigned   padding26:2;
-	 unsigned   targetable:1;	// 1 = Targetable 0 = Not Targetable (is_npc?)
-	 unsigned   targetable_with_hotkey:1;	// is_npc?
-	 unsigned   showname:1;
-	 unsigned   padding30:1;
-	 unsigned   trader:1;
-	 unsigned   buyer:1;
+	unsigned   afk:1;			// 0=no, 1=afk
+	unsigned   sneak:1;
+	unsigned   lfg:1;
+	unsigned   padding5:1;
+	unsigned   invis:1;		// 0 = visible, 1 = invis/sneaking
+	unsigned   padding7:11;
+	unsigned   gm:1;
+	unsigned   anon:2;			// 0=normal, 1=anon, 2=roleplay
+	unsigned   gender:2;		// Gender (0=male, 1=female, 2=monster)
+	unsigned   linkdead:1;		// Toggles LD on or off after name
+	unsigned   betabuffed:1;
+	unsigned   showhelm:1;
+	unsigned   padding26:1;
+	unsigned   targetable:1;	// 1 = Targetable 0 = Not Targetable (is_npc?)
+	unsigned   targetable_with_hotkey:1;	// is_npc?
+	unsigned   showname:1;
+	unsigned   statue:1;
+	unsigned   trader:1;
+	unsigned   buyer:1;
 };
 
 struct Spawn_Struct_Position
@@ -284,7 +285,7 @@ struct Spawn_Struct
 /*0000*/ uint8  unknown12;
 /*0000*/ uint32 petOwnerId;
 /*0000*/ uint8  unknown13;
-/*0000*/ uint32 unknown14;
+/*0000*/ uint32 unknown14;		// Stance 64 = normal 4 = aggressive 40 = stun/mezzed
 /*0000*/ uint32 unknown15;
 /*0000*/ uint32 unknown16;
 /*0000*/ uint32 unknown17;
@@ -331,138 +332,6 @@ struct Spawn_Struct
 	 char unknown20[8];
 	 uint8 IsMercenary;	// If NPC == 1 and this == 1, then the NPC name is Orange.
 /*0000*/ char unknown21[24]; // Was 33
-};
-
-
-// Temporarily here for reference purposes
-struct Spawn_Struct_SoF {
-/*0000*/ uint8  showname;			//New Field - Toggles Name Display on or off - 0 = off, 1 = on
-/*0001*/ uint8  unknown0001[4];		//
-/*0005*/ uint8  linkdead;			//New Field - Toggles LD on or off after name - 0 = off, 1 = on
-/*0006*/ uint8  statue;				//New Field - Freezes NPC into a statue pose
-/*0007*/ uint8  showhelm;			//
-/*0008*/ uint8  unknown0008;		//
-/*0009*/ int16  deity;				// Player's Deity
-/*0011*/ uint8  unknown0011[3];		//
-/*0014*/ uint32	drakkin_heritage;	// Heritage Color on Drakkin 0 - 6
-/*0018*/ uint8  unknown0018[4];		//
-/*0022*/ uint8  gender;				// Gender (0=male, 1=female, 2=monster)
-/*0023*/ uint8  unknown0023[4];		//
-/*0027*/ union
-	 {
-		struct
-		{
-		/*0027*/ EquipStruct equip_helmet; // Equiptment: Helmet visual
-		/*0039*/ EquipStruct equip_chest; // Equiptment: Chest visual
-		/*0051*/ EquipStruct equip_arms; // Equiptment: Arms visual
-		/*0063*/ EquipStruct equip_bracers; // Equiptment: Wrist visual
-		/*0075*/ EquipStruct equip_hands; // Equiptment: Hands visual
-		/*0087*/ EquipStruct equip_legs; // Equiptment: Legs visual
-		/*0099*/ EquipStruct equip_feet; // Equiptment: Boots visual
-		/*0111*/ EquipStruct equip_primary; // Equiptment: Main visual
-		/*0123*/ EquipStruct equip_secondary; // Equiptment: Off visual
-		} equip;
-		/*0027*/ EquipStruct equipment[9];
-	 };
-
-/*0135*/ uint8	StandState;	// Seems to be required to be set to 0x64 for normal animation.
-/*0136*/ uint8  unknown0136;
-/*0137*/ uint32	guildID;			// Current guild
-/*0141*/ uint32	spelleffect;	// Displays a spell effect on spawn
-/*0145*/ uint32	spelleffect2;	// Appears to be a duplicate of spelleffect
-/*0149*/ uint32	spelleffect3;	// Appears to be a duplicate of spelleffect
-/*0153*/ uint32	spelleffect4;	// Appears to be a duplicate of spelleffect
-/*0157*/ uint32	spelleffect5;	// Appears to be a duplicate of spelleffect
-/*0161*/ uint32	spelleffect6;	// Appears to be a duplicate of spelleffect
-/*0165*/ uint8  class_;				// Player's class
-/*0166*/ uint8  unknown0166[8];		//
-/*0174*/ uint8  flymode;			// 0 = flymode off, 1 = flymode on
-/*0175*/ uint8  unknown0175[192];
-/*0367*/ uint8  gm;
-/*0368*/ uint8	helm;
-/*0369*/ uint8  drakkin_tattoo;		// Tattoos on Drakkin 0 - 7
-/*0370*/ uint8  unknown0370[3];
-/*0373*/ uint8  beardcolor;			// Sets Beard Color
-/*0374*/ uint8  unknown0374[128];
-/*0502*/ float	runspeed;			// Speed when walking
-/*0506*/ uint8  light;				// Spawn's lightsource
-/*0507*/ uint8  unknown0507[4];
-/*0511*/ uint8  level;				// Spawn Level
-/*0512*/ uint8  unknown0512[16];
-/*0528*/ uint8  lfg;
-/*0529*/ uint8  unknown0529[4];
-/*0533*/ uint8  hairstyle;			// Sets the style of hair
-/*0534*/ uint8  haircolor;			// Sets Hair Color
-/*0535*/ uint32 race;				// Spawn race
-/*0539*/ uint8  unknown0539[41];
-/*0580*/ char	suffix[32];			// Player's suffix (of Veeshan, etc.)
-/*0612*/ uint8  findable;
-/*0613*/ uint8  bodytype;			// Sets the bodytype of NPCs
-/*0614*/ uint8  unknown0614[11];
-/*0625*/ uint8  bodytype2;			//New Field -  Seems to do the same thing as bodytype
-/*0626*/ uint8  unknown0626[28];
-union 
-{
-/*0654*/ int8	equip_chest2;		// This is Texture for NPCs
-/*0654*/ int8	mount_color;		// This should be merged into 1 field, "texture"
-};
-/*0655*/ uint8	curHp;				// Current hp
-/*0656*/ uint8  invis;				// 0 = visible, 1 = invis/sneaking
-/*0657*/ uint8  unknown0657;
-/*0658*/ char	lastName[32];		// Player's Lastname
-/*0690*/ int8	unknown0690;
-/*0691*/ int8	eyecolor1;
-/*0692*/ char	title[32];			// Title
-/*0724*/ uint8  beard;
-/*0725*/ uint8  targetable;			// 1 = Targetable 0 = Not Targetable (is_npc?)
-/*0726*/ uint8  unknown0726[4];
-/*0730*/ uint8  NPC;				// 0=player,1=npc,2=pc corpse,3=npc corpse
-/*0731*/ uint8  unknown0731[11];
-/*0742*/ uint8	targetable_with_hotkey;
-/*0743*/ signed   padding00:12;		// ***Placeholder
-		 signed   x:19;				// x coord
-		 signed   padding01:1;		// ***Placeholder
-/*0747*/ signed   deltaX:13;		// change in x
-		 signed   deltaY:13;		// change in y
-		 signed   padding02:6;		// ***Placeholder
-/*0751*/ signed   z:19;				// z coord
-		 signed   deltaHeading:10;	// change in heading
-		 signed   padding03:3;		// ***Placeholder
-/*0755*/ signed   y:19;				// y coord
-		 signed   deltaZ:13;		// change in z
-/*0759*/ signed   animation:10;		// animation
-		 unsigned heading:12;		// heading
-		 signed   padding04:10;		// ***Placeholder
-/*0763*/ uint32	spawnId;			// Spawn Id
-/*0767*/ uint8	unknown0767[4];
-/*0771*/ uint32	nonvisible;			//Non Visible NPC that can only be targeted with /target
-/*0775*/ char	name[64];			// Player's Name
-/*0839*/ uint32 petOwnerId;			// If this is a pet, the spawn id of owner
-/*0843*/ uint8  pvp;				// 0 = normal name color, 2 = PVP name color
-/*0844*/ union
-	 {
-		struct
-		{
-		/*0844*/ Color_Struct color_helmet;    // Color of helmet item
-		/*0848*/ Color_Struct color_chest;     // Color of chest item
-		/*0852*/ Color_Struct color_arms;      // Color of arms item
-		/*0856*/ Color_Struct color_bracers;   // Color of bracers item
-		/*0860*/ Color_Struct color_hands;     // Color of hands item
-		/*0864*/ Color_Struct color_legs;      // Color of legs item
-		/*0868*/ Color_Struct color_feet;      // Color of feet item
-		/*0872*/ Color_Struct color_primary;   // Color of primary item
-		/*0876*/ Color_Struct color_secondary; // Color of secondary item
-		} equipment_colors;
-		/*0844*/ Color_Struct colors[9]; // Array elements correspond to struct equipment_colors above
-	 };
-/*0880*/ uint8  anon;				// 0=normal, 1=anon, 2=roleplay
-/*0881*/ uint8	face;
-/*0882*/ uint8  drakkin_details;		// Face Details (Spikes) on Drakkin 0 - 7
-/*0883*/ uint8	unknown0883[4];
-/*0887*/ float	size;
-/*0891*/ float	walkspeed;			// Speed when running
-/*0895*/ uint8  unknown0895[2];
-/*0897*/
 };
 
 
