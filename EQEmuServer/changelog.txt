@@ -1,5 +1,8 @@
 ﻿EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==04/10/2010==
+Trevius: SoD - Identified showhelm in the spawn struct.
+
 ==04/08/2010==
 Derision: SoD - Tracking Auto-refresh should no longer fail with Recovery timer not met.
 Derision: SoD - Previously memmed spells are now unmemmed when loading a spell set.
