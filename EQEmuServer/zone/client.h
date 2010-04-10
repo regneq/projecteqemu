@@ -521,8 +521,8 @@ public:
 
 
 	void	SendManaUpdatePacket();
-    // Disgrace: currently set from database.CreateCharacter.
-	// Need to store in proper position in PlayerProfile...
+	void	SendManaUpdate();
+	void	SendEnduranceUpdate();
 	int8	GetFace()		const { return m_pp.face; }
 	int32	PendingGuildInvite; // Used for /guildinvite
 	void	WhoAll(Who_All_Struct* whom);

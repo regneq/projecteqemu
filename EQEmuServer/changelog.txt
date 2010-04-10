@@ -3,6 +3,7 @@
 ==04/10/2010==
 Trevius: SoD - Identified showhelm in the spawn struct.
 Trevius: SoD - Corrected Face in the Player Profile.  Frogloks and Vah Shir now show matching head and body correctly.
+Trevius: SoD - Added Mana and Endurance update packets for clients.
 
 ==04/08/2010==
 Derision: SoD - Tracking Auto-refresh should no longer fail with Recovery timer not met.
