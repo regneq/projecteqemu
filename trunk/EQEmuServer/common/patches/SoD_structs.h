@@ -846,8 +846,9 @@ struct PlayerProfile_Struct
 /*04160*/ uint32  INT;					// Intelligence - 3c 00 00 00 - 60
 /*04164*/ uint32  AGI;					// Agility - 5f 00 00 00 - 95
 /*04168*/ uint32  WIS;					// Wisdom - 46 00 00 00 - 70
-/*04172*/ uint8   face;					// Player face
-/*04173*/ uint8 unknown02264[175];		// was [139]
+/*04172*/ uint8   unknown04172[28];		// 
+/*04200*/ uint8   face;					// Player face
+/*04201*/ uint8   unknown02264[147];		// was [175]
 /*04348*/ int32   spell_book[MAX_PP_SPELLBOOK];	// List of the Spells in spellbook 480 = 60 pages [1920]
 /*06268*/ uint8   unknown4184[128];		// was [164] Seen -1
 /*06396*/ int32   mem_spells[MAX_PP_MEMSPELL]; // List of spells memorized
