@@ -781,9 +781,9 @@ ENCODE(OP_Track)
 		VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->entityid);
 		VARSTRUCT_ENCODE_TYPE(float, Buffer, emu->distance);
 		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->level);
-		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 1);	// Unknown
+		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->NPC);
 		VARSTRUCT_ENCODE_STRING(Buffer, emu->name);
-		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);	// Unknown
+		VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->GroupMember);
 	}
 
 	delete[] __emu_buffer;
