@@ -3105,16 +3105,23 @@ bool EntityList::MakeTrackPacket(Client* client)
 	LinkedListIterator<Mob*> iterator(mob_list);
 	iterator.Reset();
 
+	Group *g = client->GetGroup();
+
 	while(iterator.MoreElements())
 	{
 		if (iterator.GetData() && ((MobDistance = iterator.GetData()->DistNoZ(*client))<=distance))
 		{
-			if(iterator.GetData()->IsTrackable()) {
+			if((iterator.GetData() != client) && iterator.GetData()->IsTrackable()) {
 				memset(track_ent, 0, sizeof(Track_Struct));
 				Mob* cur_entity = iterator.GetData();
 				track_ent->entityid = cur_entity->GetID();
 				track_ent->distance = MobDistance;
 				track_ent->level = cur_entity->GetLevel();
+				track_ent->NPC = !cur_entity->IsClient();
+				if(g && cur_entity->IsClient() && g->IsGroupMember(cur_entity->GetName()))
+					track_ent->GroupMember = 1;
+				else
+					track_ent->GroupMember = 0;
 				strn0cpy(track_ent->name, cur_entity->GetName(), sizeof(track_ent->name));
 				memcpy(&track_array->Entrys[array_counter], track_ent, sizeof(Track_Struct));
 				array_counter++;

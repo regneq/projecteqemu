@@ -3,6 +3,7 @@
 ==04/11/2010==
 Derision: SoD - Corpses should now vanish instantly rather than decay when using /hidecorpse.
 Derision: SoD - Players can now see other players buffs in their target window.
+Derision: SoD - Tracking - Player filter now works.
 
 ==04/10/2010==
 Trevius: SoD - Identified showhelm in the spawn struct.

@@ -2826,6 +2826,8 @@ struct Track_Struct {
 	float distance;
 	// Fields for SoD and later
 	uint8 level;
+	uint8 NPC;
+	uint8 GroupMember;
 	char name[64];
 };
 
