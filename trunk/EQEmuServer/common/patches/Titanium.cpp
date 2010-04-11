@@ -930,6 +930,12 @@ ENCODE(OP_RespondAA) {
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_DeleteSpawn) {
+	SETUP_DIRECT_ENCODE(DeleteSpawn_Struct, structs::DeleteSpawn_Struct);
+	OUT(spawn_id);
+	FINISH_ENCODE();
+}
+
 DECODE(OP_TraderBuy) {
 	DECODE_LENGTH_EXACT(structs::TraderBuy_Struct);
 	SETUP_DIRECT_DECODE(TraderBuy_Struct, structs::TraderBuy_Struct);

@@ -279,6 +279,7 @@ Client::Client(EQStreamInterface* ieqs)
 	AttemptedMessages = 0;
 	TotalKarma = 0;
 	ClientVersion = EQClientUnknown;
+	ClientVersionBit = 0;
 	AggroCount = 0;
 	RestRegenHP = 0;
 	RestRegenMana = 0;
@@ -2792,7 +2793,7 @@ void Client::SetHideMe(bool flag)
 	if(gmhideme)
 	{
 		database.SetHideMe(AccountID(),true);
-		CreateDespawnPacket(&app);
+		CreateDespawnPacket(&app, false);
 		entity_list.RemoveFromTargets(this);
 	}
 	else
@@ -5952,3 +5953,4 @@ void Client::SendGroupJoinAcknowledge()
 	
 	FastQueuePacket(&outapp);
 }
+

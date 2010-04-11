@@ -451,7 +451,7 @@ bool logpos;
 	void MakeSpawnUpdate(PlayerPositionUpdateServer_Struct* spu);
 	void SendPosition();
 
-	void CreateDespawnPacket(EQApplicationPacket* app);
+	void CreateDespawnPacket(EQApplicationPacket* app, bool Decay);
 	void CreateHorseSpawnPacket(EQApplicationPacket* app, const char* ownername, uint16 ownerid, Mob* ForWho = 0);
 	void CreateSpawnPacket(EQApplicationPacket* app, Mob* ForWho = 0);
 	virtual void FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho);
@@ -677,6 +677,8 @@ bool logpos;
 	virtual bool DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_center, CastAction_type &CastAction);
 	int		CalcBuffDuration(Mob *caster, Mob *target, int16 spell_id, sint32 caster_level_override = -1);
 	void	SendPetBuffsToClient();
+	void	SendBuffsToClient(Client *c);
+	EQApplicationPacket *MakeTargetBuffsPacket();
 //	int		CheckAddBuff(Mob* caster, const int16& spell_id, const int& caster_level, int* buffdur, int ticsremaining = -1);
 	int		AddBuff(Mob *caster, const int16 spell_id, int duration = 0, sint32 level_override = -1);
 	virtual bool SpellEffect(Mob* caster, int16 spell_id, float partial = 100);
