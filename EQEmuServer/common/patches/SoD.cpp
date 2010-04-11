@@ -1101,16 +1101,28 @@ ENCODE(OP_ZoneSpawns) {
 
 			Buffer += sizeof(structs::Spawn_Struct_Position);
 		
-			for(k = 0; k < 9; ++k)
+			if((emu->NPC == 0) || (emu->race <=12) || (emu->race == 128) || (emu ->race == 130) || (emu->race == 330) || (emu->race == 522))
 			{
-				if((emu->NPC == 0) || (emu->race <=12) || (emu->race == 128) || (emu ->race == 130) || (emu->race == 330) || (emu->race == 522))
+				for(k = 0; k < 9; ++k)
 				{
-					VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->colors[k].color);
+					{
+						VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->colors[k].color);
+					}
 				}
-				else
-				{
-					VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
-				}
+			}
+			else
+			{
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->equipment[MATERIAL_PRIMARY]);
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->equipment[MATERIAL_SECONDARY]);
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+				VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
 			}
 
 
