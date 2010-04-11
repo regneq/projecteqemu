@@ -1797,6 +1797,12 @@ ENCODE(OP_InspectAnswer) {
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_DeleteSpawn) {
+	SETUP_DIRECT_ENCODE(DeleteSpawn_Struct, structs::DeleteSpawn_Struct);
+	OUT(spawn_id);
+	FINISH_ENCODE();
+}
+
 DECODE(OP_InspectAnswer) {
 	DECODE_LENGTH_EXACT(structs::InspectResponse_Struct);
 	SETUP_DIRECT_DECODE(InspectResponse_Struct, structs::InspectResponse_Struct);

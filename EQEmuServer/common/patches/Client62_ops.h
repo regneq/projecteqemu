@@ -18,6 +18,7 @@ E(OP_Illusion)
 E(OP_Track)
 E(OP_BazaarSearch)
 E(OP_RespondAA)
+E(OP_DeleteSpawn)
 
 //list of packets we need to decode on the way in:
 D(OP_SetServerFilter)

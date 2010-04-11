@@ -1275,17 +1275,53 @@ void EntityList::RemoveFromTargets(Mob* mob)
 	}	
 }
 
-void EntityList::QueueClientsByTarget(Mob* sender, const EQApplicationPacket* app, bool iSendToSender, Mob* SkipThisMob, bool ackreq) {
+void EntityList::QueueClientsByTarget(Mob* sender, const EQApplicationPacket* app, bool iSendToSender, Mob* SkipThisMob, bool ackreq, bool HoTT,
+				      uint32 ClientVersionBits)
+{
 	LinkedListIterator<Client*> iterator(client_list);
 	
 	iterator.Reset();
-	while(iterator.MoreElements()) {
-		if ((iSendToSender || (iterator.GetData() != sender && (iterator.GetData()->GetTarget() == sender || 
-			(iterator.GetData()->GetTarget() && iterator.GetData()->GetTarget()->GetTarget() && iterator.GetData()->GetTarget()->GetTarget() == sender)))) 
-			&& iterator.GetData() != SkipThisMob) {
-			iterator.GetData()->QueuePacket(app, ackreq);
-		}
+
+	while(iterator.MoreElements())
+	{
+		Client *c = iterator.GetData();
+
 		iterator.Advance();
+
+		Mob *Target = c->GetTarget();
+
+		if(!Target)
+			continue;
+
+		Mob *TargetsTarget = NULL;
+
+		if(Target)
+			TargetsTarget = Target->GetTarget();
+
+		bool Send = false;
+
+		if(c == SkipThisMob)
+			continue;
+
+		if(iSendToSender)
+			if(c == sender)
+				Send = true;
+	
+		if(c != sender)
+		{
+			if(Target == sender)
+			{
+				Send = true;
+			}
+			else if(HoTT)
+			{
+				if(TargetsTarget == sender)
+					Send = true;
+			}
+		}
+		
+		if(Send && (c->GetClientVersionBit() & ClientVersionBits))
+			c->QueuePacket(app, ackreq);
 	}	
 }
 
@@ -4543,7 +4579,7 @@ void    EntityList::HideCorpses(Client *c, uint8 CurrentMode, uint8 NewMode)
 			if((NewMode == HideCorpseAll) || ((NewMode == HideCorpseNPC) && (b->IsNPCCorpse())))
 			{
 				EQApplicationPacket outapp;
-		        	b->CreateDespawnPacket(&outapp);
+		        	b->CreateDespawnPacket(&outapp, false);
 				c->QueuePacket(&outapp);
 			}
 			else if(NewMode == HideCorpseAllButGroup)
@@ -4551,7 +4587,7 @@ void    EntityList::HideCorpses(Client *c, uint8 CurrentMode, uint8 NewMode)
 				if(!g->IsGroupMember(b->GetOwnerName()))
 				{
 					EQApplicationPacket outapp;
-			        	b->CreateDespawnPacket(&outapp);
+			        	b->CreateDespawnPacket(&outapp, false);
 					c->QueuePacket(&outapp);
 				}
 				else if((CurrentMode == HideCorpseAll))

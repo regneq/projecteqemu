@@ -1056,7 +1056,7 @@ struct PetCommand_Struct {
 struct DeleteSpawn_Struct
 {
 /*00*/ int32 spawn_id;             // Spawn ID to delete
-/*04*/
+/*04*/ uint8 Decay;	   // 0 = vanish immediately, 1 = 'Decay' sparklies for corpses.
 };
 
 /*

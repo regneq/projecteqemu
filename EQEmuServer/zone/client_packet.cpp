@@ -488,13 +488,25 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 	string StreamDescription = Connection()->Describe();
 
 	if(StreamDescription == "Patch Titanium")
+	{
 		ClientVersion = EQClientTitanium;
+		ClientVersionBit = BIT_Titanium;
+	}
 	else if(StreamDescription == "Patch 6.2")
+	{
 		ClientVersion = EQClient62;
+		ClientVersionBit = BIT_Client62;
+	}
 	else if(StreamDescription == "Patch SoF")
+	{
 		ClientVersion = EQClientSoF;
+		ClientVersionBit = BIT_SoF;
+	}
 	else if(StreamDescription == "Patch SoD")
+	{
 		ClientVersion = EQClientSoD;
+		ClientVersionBit = BIT_SoD;
+	}
 
 	// Quagmire - Antighost code
 	// tmp var is so the search doesnt find this object
@@ -1470,10 +1482,13 @@ void Client::Handle_OP_TargetCommand(const EQApplicationPacket *app)
 	pClientSideTarget = ct->new_target;
 	if(!IsAIControlled())
 	{
-		Mob *new_target = entity_list.GetMob(ct->new_target);
-		if(new_target)
+		Mob *nt = entity_list.GetMob(ct->new_target);
+		if(nt)
 		{
-			SetTarget(new_target);
+			SetTarget(nt);
+			if((nt->IsClient() && !nt->CastToClient()->GetPVP()) ||
+			   (nt->IsPet() && nt->GetOwner() && nt->GetOwner()->IsClient() && !nt->GetOwner()->CastToClient()->GetPVP()))
+				nt->SendBuffsToClient(this);
 		}
 		else
 		{

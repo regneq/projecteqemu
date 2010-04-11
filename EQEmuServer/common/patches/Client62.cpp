@@ -181,6 +181,12 @@ ENCODE(OP_LeadershipExpUpdate) {
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_DeleteSpawn) {
+	SETUP_DIRECT_ENCODE(DeleteSpawn_Struct, structs::DeleteSpawn_Struct);
+	OUT(spawn_id);
+	FINISH_ENCODE();
+}
+
 ENCODE(OP_PlayerProfile) {
 	SETUP_DIRECT_ENCODE(PlayerProfile_Struct, structs::PlayerProfile_Struct);
 	

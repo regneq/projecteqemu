@@ -1,5 +1,9 @@
 ﻿EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==04/11/2010==
+Derision: SoD - Corpses should now vanish instantly rather than decay when using /hidecorpse.
+Derision: SoD - Players can now see other players buffs in their target window.
+
 ==04/10/2010==
 Trevius: SoD - Identified showhelm in the spawn struct.
 Trevius: SoD - Corrected Face in the Player Profile.  Frogloks and Vah Shir now show matching head and body correctly.

@@ -387,7 +387,7 @@ Mob::~Mob()
 		safe_delete(SpecAttackTimers[i]);
 	}
 	EQApplicationPacket app;
-	CreateDespawnPacket(&app);
+	CreateDespawnPacket(&app, !IsCorpse());
 	Corpse* corpse = entity_list.GetCorpseByID(GetID());
 	if(!corpse || (corpse && !corpse->IsPlayerCorpse()))
 		entity_list.QueueClients(this, &app, true);
@@ -778,7 +778,7 @@ void Mob::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho)
 	
 }
 
-void Mob::CreateDespawnPacket(EQApplicationPacket* app)
+void Mob::CreateDespawnPacket(EQApplicationPacket* app, bool Decay)
 {
 	app->SetOpcode(OP_DeleteSpawn);
 	app->size = sizeof(DeleteSpawn_Struct);
@@ -786,6 +786,8 @@ void Mob::CreateDespawnPacket(EQApplicationPacket* app)
 	memset(app->pBuffer, 0, app->size);
 	DeleteSpawn_Struct* ds = (DeleteSpawn_Struct*)app->pBuffer;
 	ds->spawn_id = GetID();
+	// The next field only applies to corpses. If 0, they vanish instantly, otherwise they 'decay'
+	ds->Decay = Decay ? 1 : 0;
 }
 
 void Mob::CreateHPPacket(EQApplicationPacket* app)
@@ -861,7 +863,7 @@ void Mob::SendHPUpdate()
 	entity_list.QueueManaged(this, &hp_app, true);
 #else
 	// send to people who have us targeted
- 	entity_list.QueueClientsByTarget(this, &hp_app, false, 0, false);
+ 	entity_list.QueueClientsByTarget(this, &hp_app, false, 0, false, true, BIT_AllClients);
 	entity_list.QueueToGroupsForNPCHealthAA(this, &hp_app);
 
 	// send to group

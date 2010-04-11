@@ -132,6 +132,13 @@ typedef enum {
 	MQGhost
 } CheatTypes;
 
+#define BIT_Client62	1
+#define BIT_Titanium	2
+#define BIT_SoF		4
+#define BIT_SoD		8
+#define BIT_SoDAndLater	0xFFFFFFF8
+#define BIT_AllClients	0xFFFFFFFF
+
 typedef enum {
 	EQClientUnknown = 0,
 	EQClient62,
@@ -880,6 +887,8 @@ public:
 	 	   { return (taskstate ? taskstate->CompletedTasksInSet(TaskSet) :0); }
 
 	inline const EQClientVersion GetClientVersion() const { return ClientVersion; }
+	inline const uint32 GetClientVersionBit() const { return ClientVersionBit; }
+
 	int GetAggroCount();
 	void IncrementAggroCount();
 	void DecrementAggroCount();
@@ -1180,6 +1189,8 @@ private:
 	uint32 AttemptedMessages;
 
 	EQClientVersion ClientVersion;
+	uint32	ClientVersionBit;
+
 	int XPRate;
 
 	bool m_ShadowStepExemption;

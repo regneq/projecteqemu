@@ -2475,7 +2475,16 @@ int Mob::AddBuff(Mob *caster, int16 spell_id, int duration, sint32 level_overrid
 		SendPetBuffsToClient();
 	}
 	
-	
+
+	if((IsClient() && !CastToClient()->GetPVP()) || (IsPet() && GetOwner() && GetOwner()->IsClient() && !GetOwner()->CastToClient()->GetPVP()))
+	{
+		EQApplicationPacket *outapp = MakeTargetBuffsPacket();
+
+		entity_list.QueueClientsByTarget(this, outapp, true, NULL, true, false, BIT_SoDAndLater);
+
+		safe_delete(outapp);
+	}
+
 	// recalculate bonuses since we stripped/added buffs
 	CalcBonuses();
 
@@ -4524,6 +4533,45 @@ void Mob::SendPetBuffsToClient()
 	GetOwner()->CastToClient()->QueuePacket(outapp);
 	safe_delete(outapp);
 }
+
+void Mob::SendBuffsToClient(Client *c)
+{
+	if(!c)
+		return;
+
+	EQApplicationPacket *outapp = MakeTargetBuffsPacket();
+
+	c->FastQueuePacket(&outapp);
+}
+
+EQApplicationPacket *Mob::MakeTargetBuffsPacket()
+{
+	int BuffCount = 0;
+
+	for(unsigned int i = 0; i < BUFF_COUNT; ++i)
+		if(buffs[i].spellid != SPELL_UNKNOWN)
+			++BuffCount;
+
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_TargetBuffs, 6 + (BuffCount * 13));
+
+	char *Buffer = (char *)outapp->pBuffer;
+
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, GetID());
+	VARSTRUCT_ENCODE_TYPE(uint16, Buffer, BuffCount);
+
+	for(unsigned int i = 0; i < BUFF_COUNT; ++i)
+		if(buffs[i].spellid != SPELL_UNKNOWN)
+		{
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, i);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, buffs[i].spellid);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, buffs[i].ticsremaining);
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);	// This is a string
+		}
+	
+	return outapp;
+}
+
+
 
 void Mob::BuffModifyDurationBySpellID(int16 spell_id, sint32 newDuration)
 {
