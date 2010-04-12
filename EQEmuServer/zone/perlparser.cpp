@@ -2635,7 +2635,7 @@ XS(XS__CreateInstance) {
 
 	char * zone = (char *)SvPV_nolen(ST(0));
 	int16 version = (int)SvUV(ST(1));
-	int16 duration = (int)SvUV(ST(2));
+	int32 duration = (int)SvUV(ST(2));
 	int32 id = quest_manager.CreateInstance(zone, version, duration);
 
 	XSRETURN_UV(id);
