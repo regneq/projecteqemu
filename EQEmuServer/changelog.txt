@@ -1,5 +1,8 @@
 ﻿EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==04/12/2010==
+Derision: SoD - /who <name>, /whotarget now work.
+
 ==04/11/2010==
 Derision: SoD - Corpses should now vanish instantly rather than decay when using /hidecorpse.
 Derision: SoD - Players can now see other players buffs in their target window.
