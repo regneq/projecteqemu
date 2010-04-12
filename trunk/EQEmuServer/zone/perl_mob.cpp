@@ -6054,7 +6054,8 @@ XS(XS_Mob_GetHateList)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		std::list<tHateEntry*> hate_list = THIS->GetHateList();
+		std::list<tHateEntry*> hate_list;
+		THIS->GetHateList(hate_list);
 		std::list<tHateEntry*>::iterator iter = hate_list.begin();
 
 		while(iter != hate_list.end())
