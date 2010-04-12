@@ -3914,6 +3914,8 @@ void EntityList::ZoneWho(Client *c, Who_All_Struct* Who) {
 
 	int32 Entries = 0;
 
+	uint8 WhomLength = strlen(Who->whom);
+
 	LinkedListIterator<Client*> iterator(client_list); 
 	
 	iterator.Reset(); 
@@ -3926,24 +3928,36 @@ void EntityList::ZoneWho(Client *c, Who_All_Struct* Who) {
 
 		if(ClientEntry) {
 
-			if(ClientEntry->GMHideMe(c)) continue;
+			if(ClientEntry->GMHideMe(c))
+				continue;
 
-			if((Who->wrace != 0xFFFFFFFF) && (ClientEntry->GetRace() != Who->wrace)) continue;
+			if((Who->wrace != 0xFFFFFFFF) && (ClientEntry->GetRace() != Who->wrace))
+				continue;
 
-			if((Who->wclass != 0xFFFFFFFF) && (ClientEntry->GetClass() != Who->wclass)) continue;
+			if((Who->wclass != 0xFFFFFFFF) && (ClientEntry->GetClass() != Who->wclass))
+				continue;
 
-			if((Who->lvllow != 0xFFFFFFFF) && (ClientEntry->GetLevel() < Who->lvllow)) continue;
+			if((Who->lvllow != 0xFFFFFFFF) && (ClientEntry->GetLevel() < Who->lvllow))
+				continue;
 
-			if((Who->lvlhigh != 0xFFFFFFFF) && (ClientEntry->GetLevel() > Who->lvlhigh)) continue;
+			if((Who->lvlhigh != 0xFFFFFFFF) && (ClientEntry->GetLevel() > Who->lvlhigh))
+				continue;
 
 			if(Who->guildid != 0xFFFFFFFF) {
 
-				if((Who->guildid == 0xFFFFFFFC) && !ClientEntry->IsTrader()) continue;
+				if((Who->guildid == 0xFFFFFFFC) && !ClientEntry->IsTrader())
+					continue;
 
-				if((Who->guildid == 0xFFFFFFFB) && !ClientEntry->IsBuyer()) continue;
+				if((Who->guildid == 0xFFFFFFFB) && !ClientEntry->IsBuyer())
+					continue;
 
-				if(Who->guildid != ClientEntry->GuildID()) continue;
+				if(Who->guildid != ClientEntry->GuildID())
+					continue;
 			}
+
+			if(WhomLength && strncasecmp(Who->whom, ClientEntry->GetName(), WhomLength) &&
+			   strncasecmp(guild_mgr.GetGuildName(ClientEntry->GuildID()), Who->whom, WhomLength))
+				continue;
 
 			Entries++;
 
@@ -4007,22 +4021,33 @@ void EntityList::ZoneWho(Client *c, Who_All_Struct* Who) {
 
 			if(ClientEntry->GMHideMe(c)) continue;
 
-			if((Who->wrace != 0xFFFFFFFF) && (ClientEntry->GetRace() != Who->wrace)) continue;
+			if((Who->wrace != 0xFFFFFFFF) && (ClientEntry->GetRace() != Who->wrace))
+				continue;
 
-			if((Who->wclass != 0xFFFFFFFF) && (ClientEntry->GetClass() != Who->wclass)) continue;
+			if((Who->wclass != 0xFFFFFFFF) && (ClientEntry->GetClass() != Who->wclass))
+				continue;
 
-			if((Who->lvllow != 0xFFFFFFFF) && (ClientEntry->GetLevel() < Who->lvllow)) continue;
+			if((Who->lvllow != 0xFFFFFFFF) && (ClientEntry->GetLevel() < Who->lvllow))
+				continue;
 
-			if((Who->lvlhigh != 0xFFFFFFFF) && (ClientEntry->GetLevel() > Who->lvlhigh)) continue;
+			if((Who->lvlhigh != 0xFFFFFFFF) && (ClientEntry->GetLevel() > Who->lvlhigh))
+				continue;
 
 			if(Who->guildid != 0xFFFFFFFF) {
 
-				if((Who->guildid == 0xFFFFFFFC) && !ClientEntry->IsTrader()) continue;
+				if((Who->guildid == 0xFFFFFFFC) && !ClientEntry->IsTrader())
+					continue;
 
-				if((Who->guildid == 0xFFFFFFFB) && !ClientEntry->IsBuyer()) continue;
+				if((Who->guildid == 0xFFFFFFFB) && !ClientEntry->IsBuyer())
+					continue;
 
-				if(Who->guildid != ClientEntry->GuildID()) continue;
+				if(Who->guildid != ClientEntry->GuildID())
+					continue;
 			}
+
+			if(WhomLength && strncasecmp(Who->whom, ClientEntry->GetName(), WhomLength) &&
+			   strncasecmp(guild_mgr.GetGuildName(ClientEntry->GuildID()), Who->whom, WhomLength))
+				continue;
 
 			string GuildName;
 
