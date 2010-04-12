@@ -2,6 +2,7 @@
 -------------------------------------------------------
 ==04/12/2010==
 Derision: SoD - /who <name>, /whotarget now work.
+Derision: Corpses summoned in Shadowrest should no longer decay before you can finish looting them.
 
 ==04/11/2010==
 Derision: SoD - Corpses should now vanish instantly rather than decay when using /hidecorpse.
