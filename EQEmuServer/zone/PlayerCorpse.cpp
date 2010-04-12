@@ -1751,7 +1751,7 @@ void Corpse::LoadPlayerCorpseDecayTime(int32 dbid){
 			if(atoi(row[0]) > 0 && RuleI(Character, CorpseDecayTimeMS) > (atoi(row[0]) * 1000))
 				corpse_decay_timer.SetTimer(RuleI(Character, CorpseDecayTimeMS) - (atoi(row[0]) * 1000));
 			else
-				corpse_decay_timer.SetTimer(5000);
+				corpse_decay_timer.SetTimer(300000);
 		}
 		mysql_free_result(result);
 	}
