@@ -607,7 +607,7 @@ void Mob::TemporaryPets(int16 spell_id, Mob *targ, const char *name_override, ui
 			npca->GetSwarmInfo()->duration->Start(pet_duration*1000);
 		}
 
-		npca->GetSwarmInfo()->owner = this;
+		npca->GetSwarmInfo()->owner_id = GetID();
 
 		//give the pets somebody to "love"
 		if(targ != NULL){
@@ -787,7 +787,7 @@ void Mob::WakeTheDead(int16 spell_id, Mob *target, uint32 duration)
 		npca->GetSwarmInfo()->duration->Start(duration*1000);
 	}
 
-	npca->GetSwarmInfo()->owner = this;
+	npca->GetSwarmInfo()->owner_id = GetID();
 
 	//give the pet somebody to "love"
 	if(target != NULL){
@@ -1298,8 +1298,8 @@ void Client::InspectBuffs(Client* Inspector, int Rank)
 	if(!Inspector || (Rank == 0)) return;
 
 	Inspector->Message_StringID(0, CURRENT_SPELL_EFFECTS, GetName());
-
-	for (uint32 i = 0; i < BUFF_COUNT; ++i)
+	uint32 buff_count = GetMaxTotalSlots();
+	for (uint32 i = 0; i < buff_count; ++i)
 	{
 		if (buffs[i].spellid != SPELL_UNKNOWN)
 		{
@@ -1311,11 +1311,8 @@ void Client::InspectBuffs(Client* Inspector, int Rank)
 					Inspector->Message(0, "%s (Permanent)", spells[buffs[i].spellid].name);
 				else {
 					char *TempString = NULL;
-
 					MakeAnyLenString(&TempString, "%.1f", static_cast<float>(buffs[i].ticsremaining) / 10.0f);
-
 					Inspector->Message_StringID(0, BUFF_MINUTES_REMAINING, spells[buffs[i].spellid].name, TempString);
-
 					safe_delete_array(TempString);
 				}
 			}

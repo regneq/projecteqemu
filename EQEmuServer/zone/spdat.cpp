@@ -853,3 +853,15 @@ bool IsRegularSingleTargetHealSpell(int16 spell_id) {
 
 	return result;
 }
+
+uint32 GetMorphTrigger(uint32 spell_id) 
+{
+	for(int i = 0; i < EFFECT_COUNT; ++i)
+	{
+		if(spells[spell_id].effectid[i] == SE_ImprovedSpellEffect)
+		{
+			return spells[spell_id].base[i];
+		}
+	}
+	return 0;
+}

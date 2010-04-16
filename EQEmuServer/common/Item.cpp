@@ -588,10 +588,14 @@ sint16 Inventory::PutItem(sint16 slot_id, const ItemInst& inst)
 void Inventory::SwapItem(sint16 slot_a, sint16 slot_b)
 {
 	// Temp holding area for a
-
 	ItemInst* inst_a = GetItem(slot_a);
-	if(!inst_a->IsSlotAllowed(slot_b))
-		return;
+
+	if(inst_a)
+	{
+		if(!inst_a->IsSlotAllowed(slot_b))
+			return;
+	}
+
 	// Copy b->a
 	_PutItem(slot_a, GetItem(slot_b));
 	

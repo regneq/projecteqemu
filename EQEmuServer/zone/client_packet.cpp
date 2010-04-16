@@ -7915,8 +7915,9 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 				UnmemSpell(z, false);
 		}
 
-		for (i = 0; i < BUFF_COUNT; i++) {
-			for(uint32 z = 0; z < BUFF_COUNT; z++) {
+		uint32 buff_count = GetMaxBuffSlots();
+		for (i = 0; i < buff_count; i++) {
+			for(uint32 z = 0; z < buff_count; z++) {
 			// check for duplicates
 				if(buffs[z].spellid != SPELL_UNKNOWN && buffs[z].spellid == m_pp.buffs[i].spellid) {
 					buffs[z].spellid = SPELL_UNKNOWN;
@@ -7976,7 +7977,8 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 
 		//I believe these effects are stripped off because if they
 		//are not, they result in permanent effects on the player
-		for (uint32 j1=0; j1 < BUFF_COUNT; j1++) {
+		buff_count = GetMaxBuffSlots();
+		for (uint32 j1=0; j1 < buff_count; j1++) {
 			if (buffs[j1].spellid <= (int32)SPDAT_RECORDS) {
 				for (uint32 x1=0; x1 < EFFECT_COUNT; x1++) {
 					switch (spells[buffs[j1].spellid].effectid[x1]) {
@@ -8344,7 +8346,8 @@ void Client::CompleteConnect()
 	//bulk raid send in here eventually
 
 	//reapply some buffs
-	for (uint32 j1=0; j1 < BUFF_COUNT; j1++) {
+	uint32 buff_count = GetMaxTotalSlots();
+	for (uint32 j1=0; j1 < buff_count; j1++) {
 		if (buffs[j1].spellid > (int32)SPDAT_RECORDS)
 			continue;
 
