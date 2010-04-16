@@ -436,6 +436,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\LoginServerList.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\net.cpp"
 				>
 			</File>
@@ -505,6 +509,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\LoginServerList.h"
+				>
+			</File>
+			<File
 				RelativePath=".\net.h"
 				>
 			</File>
@@ -542,11 +550,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\common\patches\SoF.cpp"
+				RelativePath="..\common\patches\SoD.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\common\patches\SoD.cpp"
+				RelativePath="..\common\patches\SoF.cpp"
 				>
 			</File>
 			<File
