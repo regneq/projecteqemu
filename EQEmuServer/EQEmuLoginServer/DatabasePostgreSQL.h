@@ -67,7 +67,7 @@ public:
 	 * Returns true if the record was found, false otherwise.
 	 */
 	virtual bool GetWorldRegistration(string long_name, string short_name, unsigned int &id, string &desc, unsigned int &list_id, 
-		string &list_desc, string &account, string &password);
+		unsigned int &trusted, string &list_desc, string &account, string &password);
 
 	/**
 	 * Updates the ip address of the client with account id = id

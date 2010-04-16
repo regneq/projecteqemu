@@ -101,7 +101,7 @@ bool DatabasePostgreSQL::GetLoginDataFromAccountName(string name, string &passwo
 }
 
 bool DatabasePostgreSQL::GetWorldRegistration(string long_name, string short_name, unsigned int &id, string &desc, unsigned int &list_id, 
-		string &list_desc, string &account, string &password)
+		unsigned int &trusted, string &list_desc, string &account, string &password)
 {
 	if(!db)
 	{
@@ -122,7 +122,7 @@ bool DatabasePostgreSQL::GetWorldRegistration(string long_name, string short_nam
 	}
 
 	stringstream query(stringstream::in | stringstream::out);
-	query << "SELECT WSR.ServerID, WSR.ServerTagDescription, SLT.ServerListTypeID, ";
+	query << "SELECT WSR.ServerID, WSR.ServerTagDescription, WSR.ServerTrusted, SLT.ServerListTypeID, ";
 	query << "SLT.ServerListTypeDescription, SAR.AccountName, SAR.AccountPassword FROM " << server.options.GetWorldRegistrationTable();
 	query << " AS WSR JOIN " << server.options.GetWorldServerTypeTable() << " AS SLT ON WSR.ServerListTypeID = SLT.ServerListTypeID JOIN ";
 	query << server.options.GetWorldAdminRegistrationTable() << " AS SAR ON WSR.ServerAdminID = SAR.ServerAdminID WHERE WSR.ServerLongName";
@@ -146,10 +146,11 @@ bool DatabasePostgreSQL::GetWorldRegistration(string long_name, string short_nam
 	{
 		id = atoi(PQgetvalue(res, 0, 0));
 		desc = PQgetvalue(res, 0, 1);
-		list_id = atoi(PQgetvalue(res, 0, 2));
-		list_desc = PQgetvalue(res, 0, 3);
-		account = PQgetvalue(res, 0, 4); 
-		password = PQgetvalue(res, 0, 5);
+		trusted = atoi(PQgetvalue(res, 0, 2));
+		list_id = atoi(PQgetvalue(res, 0, 3));
+		list_desc = PQgetvalue(res, 0, 4);
+		account = PQgetvalue(res, 0, 5); 
+		password = PQgetvalue(res, 0, 6);
 
 		PQclear(res);
 		return true;
