@@ -126,7 +126,7 @@ float Mob::GetFearSpeed() {
         float ratio = GetHPRatio();
 
 		// mob's movement will halt with a decent snare at HP specified by rule.
-		if (ratio <= RuleI(Combat, FleeSnareHPRatio) && GetSnaredAmount() > 50) {
+		if (ratio <= RuleI(Combat, FleeSnareHPRatio) && GetSnaredAmount() > 40) {
 				return 0.0001f;
 		}
 

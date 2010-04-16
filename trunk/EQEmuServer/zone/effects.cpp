@@ -64,24 +64,23 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 		modifier += GetFocusEffect(focusImprovedDamage, spell_id);
 	}
 	
-	//these spell IDs could be wrong
-	if (spell_id == SPELL_LEECH_TOUCH) {	//leech touch
-		value -= GetAA(aaConsumptionoftheSoul) * 500;
+	// Need to scale HT damage differently after level 40! It no longer scales by the constant value in the spell file. It scales differently, instead of 10 more damage per level, it does 30 more damage per level. So we multiply the level minus 40 times 20 if they are over level 40.
+	if ( spell_id == SPELL_HARM_TOUCH || spell_id == SPELL_HARM_TOUCH2 || spell_id == SPELL_IMP_HARM_TOUCH ) {
+		if (this->GetLevel() > 40)
+			value -= (this->GetLevel() - 40) * 20;  
 	}
-	if (spell_id == SPELL_IMP_HARM_TOUCH) {	//harm touch
-		switch(GetAA(aaUnholyTouch)) {
-			case 1:
-				modifier += 25;
-				break;
-			case 2:
-				modifier += 50;
-				break;
-			case 3:
-				modifier += 75;
-				break;
-		}
+
+	//This adds the extra damage from the AA Unholy Touch, 450 per level to the AA Improved Harm TOuch.
+	if (spell_id == SPELL_IMP_HARM_TOUCH) {  //Improved Harm Touch
+			value -= GetAA(aaUnholyTouch) * 450; //Unholy Touch
 	}
-	
+   
+	// This adds the extra damage for the AA's Consumption of the Soul and Improved Consumption of the Soul, 200 per level to the AA Leech Curse for Shadowknights.
+	if (spell_id == SPELL_LEECH_TOUCH) {   //Leech Touch
+		value -= GetAA(aaConsumptionoftheSoul) * 200; //Consumption of the Soul
+		value -= GetAA(aaImprovedConsumptionofSoul) * 200; //Improved Consumption of the Soul
+	}
+
 	//spell crits, dont make sense if cast on self.
 	if(tt != ST_Self) {
 		int chance = RuleI(Spells, BaseCritChance);
@@ -119,6 +118,12 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 			break;
 		}
 		
+		//Improved Harm Touch is a guaranteed crit if you have at least one level of SCF.
+		if (spell_id == SPELL_IMP_HARM_TOUCH) {
+			if ( (GetAA(aaSpellCastingFury) > 0) && (GetAA(aaUnholyTouch) > 0) )
+				chance = 100;
+		} 
+
 		switch (GetAA(aaSpellCastingFury)) //not sure why this was different from Mastery before, both are DD only
 		{
 			case 1:

@@ -214,12 +214,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 						caster->CastToClient()->SetFeigned(true);
 						caster->SendAppearancePacket(AT_Anim, 115);
 					}
-				} else if (spell_id == 2766) // Improved Consumption of the Soul
-				{
-					if (caster->IsClient()) {
-						dmg += (500 * caster->GetAA(aaImprovedConsumptionofSoul));
-					}
-				}
+				} 
 
 				//do any AAs apply to these spells?
 				if(dmg < 0) {
