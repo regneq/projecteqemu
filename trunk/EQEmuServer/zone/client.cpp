@@ -303,6 +303,7 @@ Client::Client(EQStreamInterface* ieqs)
 	los_status = false;
 	qGlobals = NULL;
 	HideCorpseMode = HideCorpseNone;
+	InitializeBuffSlots();
 }
 
 Client::~Client() {
@@ -383,6 +384,7 @@ Client::~Client() {
 	eqs->ReleaseFromUse();
 
 	entity_list.RemoveClient(this);
+	UninitializeBuffSlots();
 }
 
 void Client::SendLogoutPackets() {
@@ -486,7 +488,8 @@ bool Client::Save(int8 iCommitNow) {
 	m_pp.mana = cur_mana;
 	m_pp.endurance = cur_end;
 
-	for (int i=0; i < BUFF_COUNT; i++) {
+	uint32 buff_count = GetMaxBuffSlots();
+	for (int i=0; i < buff_count; i++) {
 		if (buffs[i].spellid != SPELL_UNKNOWN) {
 			m_pp.buffs[i].spellid = buffs[i].spellid;
 			m_pp.buffs[i].slotid = 2;	//this is obviously not really 'slot id'

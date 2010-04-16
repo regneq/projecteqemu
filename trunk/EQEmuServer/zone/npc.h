@@ -30,6 +30,7 @@ using namespace std;
 #include "loottable.h"
 #include "zonedump.h"
 #include "QGlobals.h"
+#include "../common/rulesys.h"
 
 #ifdef WIN32
 	#define  M_PI	3.141592
@@ -95,15 +96,19 @@ public:
 	
 	virtual void SetTarget(Mob* mob);
 	virtual uint16 GetSkill(SkillType skill_num) const { if (skill_num <= HIGHEST_SKILL) { return skills[skill_num]; } return 0; }
-/*  virtual void SetSkill(int in_skill_num, int8 in_skill_value) { // socket 12-29-01
-        if (in_skill_num <= HIGHEST_SKILL) { skills[in_skill_num + 1] = in_skill_value; } }*/
 
 	void CalcItemBonuses(StatBonuses *newbon);
 	virtual void CalcBonuses();
+	virtual int GetCurrentBuffSlots() const { return RuleI(Spells, MaxBuffSlotsNPC); }
+	virtual int GetCurrentSongSlots() const { return RuleI(Spells, MaxSongSlotsNPC); }
+	virtual int GetCurrentDiscSlots() const { return RuleI(Spells, MaxDiscSlotsNPC); }
+	virtual int GetMaxBuffSlots() const { return RuleI(Spells, MaxBuffSlotsNPC); }
+	virtual int GetMaxSongSlots() const { return RuleI(Spells, MaxSongSlotsNPC); }
+	virtual int GetMaxDiscSlots() const { return RuleI(Spells, MaxDiscSlotsNPC); }
+	virtual int GetMaxTotalSlots() const { return RuleI(Spells, MaxTotalSlotsNPC); }
+	virtual void InitializeBuffSlots();
+	virtual void UninitializeBuffSlots();
 
-	
-	// neotokyo: added frenzy
-	//bool	Attack(Mob* other, int Hand = 13, bool = false);
 	virtual void	RangedAttack(Mob* other);
 	virtual void	ThrowingAttack(Mob* other) { }
 
@@ -238,12 +243,8 @@ public:
 	void				NextGuardPosition();
 	void				SaveGuardSpot(bool iClearGuardSpot = false);
 	inline bool			IsGuarding() const { return(guard_heading != 0); }
-/*	void				SaveSpawnSpot();
-	inline const float	GetSpawnX() const { return spawn_x; }
-	inline const float	GetSpawnY() const { return spawn_y; }
-	inline const float	GetSpawnZ() const { return spawn_z; }
-	inline const float	GetSpawnHeading() const { return spawn_heading; }
-	*/
+	void				SaveGuardSpotCharm();
+	void				RestoreGuardSpotCharm();
 	void				AI_SetRoambox(float iDist, float iRoamDist, int32 iDelay = 2500);
 	void				AI_SetRoambox(float iDist, float iMaxX, float iMinX, float iMaxY, float iMinY, int32 iDelay = 2500);
 	
@@ -355,9 +356,10 @@ protected:
 	//waypoint crap:
 	vector<wplist> Waypoints;
 	void _ClearWaypints();
-	int		max_wp;
-	int		save_wp;
+	int max_wp;
+	int save_wp;
     float guard_x, guard_y, guard_z, guard_heading;
+	float guard_x_saved, guard_y_saved, guard_z_saved, guard_heading_saved;
 	float roambox_max_x;
 	float roambox_max_y;
 	float roambox_min_x;

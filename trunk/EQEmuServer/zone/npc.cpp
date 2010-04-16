@@ -346,6 +346,11 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 		ldon_trap_detected = 0;
 	}
 	qGlobals = NULL;
+	guard_x_saved = 0;
+	guard_y_saved = 0;
+	guard_z_saved = 0;
+	guard_heading_saved = 0;
+	InitializeBuffSlots();
 }
 	  
 NPC::~NPC()
@@ -397,6 +402,7 @@ NPC::~NPC()
 
 	safe_delete(swarmInfoPtr);
 	safe_delete(qGlobals);
+	UninitializeBuffSlots();
 }
 
 void NPC::SetTarget(Mob* mob) {

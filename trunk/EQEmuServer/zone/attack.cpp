@@ -852,7 +852,8 @@ int Mob::GetWeaponDamage(Mob *against, const ItemInst *weapon_item, int32 *hate)
 				MagicWeapon = true;
 			else {					// if it isn't, check to see if a MagicWeapon buff is active
 				int buffs_i;
-				for (buffs_i = 0; buffs_i < BUFF_COUNT; buffs_i++)
+				uint32 buff_count = GetMaxTotalSlots();
+				for (buffs_i = 0; buffs_i < buff_count; buffs_i++)
 					if(IsEffectInSpell(buffs[buffs_i].spellid, SE_MagicWeapon)) { 
 						MagicWeapon = true;
 						break;		// no need to keep looking once we find one
@@ -1491,7 +1492,8 @@ void Client::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_
 
 	if(spell != SPELL_UNKNOWN)
 	{
-		for(uint16 buffIt = 0; buffIt < BUFF_COUNT; buffIt++)
+		uint32 buff_count = GetMaxTotalSlots();
+		for(uint16 buffIt = 0; buffIt < buff_count; buffIt++)
 		{
 			if(buffs[buffIt].spellid == spell && buffs[buffIt].client)
 			{
@@ -2082,7 +2084,7 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 	
 	if (!HasOwner() && class_ != MERCHANT && class_ != ADVENTUREMERCHANT && !GetSwarmInfo()
 		&& MerchantType == 0 && killer && (killer->IsClient() || (killer->HasOwner() && killer->GetUltimateOwner()->IsClient()) ||
-		(killer->IsNPC() && killer->CastToNPC()->GetSwarmInfo() && killer->CastToNPC()->GetSwarmInfo()->owner && killer->CastToNPC()->GetSwarmInfo()->owner->IsClient()))) {
+		(killer->IsNPC() && killer->CastToNPC()->GetSwarmInfo() && killer->CastToNPC()->GetSwarmInfo()->GetOwner() && killer->CastToNPC()->GetSwarmInfo()->GetOwner()->IsClient()))) {
 		Corpse* corpse = new Corpse(this, &itemlist, GetNPCTypeID(), &NPCTypedata,level>54?RuleI(NPC,MajorNPCCorpseDecayTimeMS):RuleI(NPC,MinorNPCCorpseDecayTimeMS));
 		entity_list.LimitRemoveNPC(this);
 		entity_list.AddCorpse(corpse, this->GetID());
@@ -3031,7 +3033,8 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
     // damage shield calls this function with spell_id set, so its unavoidable
 	if (attacker && damage > 0 && spell_id == SPELL_UNKNOWN && skill_used != ARCHERY && skill_used != THROWING) {
 		this->DamageShield(attacker);
-		for(uint32 bs = 0; bs < BUFF_COUNT; bs++){
+		uint32 buff_count = GetMaxTotalSlots();
+		for(uint32 bs = 0; bs < buff_count; bs++){
 			if(buffs[bs].numhits > 0 && !IsDiscipline(buffs[bs].spellid)){
 				if(buffs[bs].numhits == 1){
 					BuffFadeBySlot(bs, true);
@@ -3926,7 +3929,8 @@ void Mob::ApplyMeleeDamageBonus(int16 skill, sint32 &damage){
 	}
 
 	//Rogue sneak attack disciplines make use of this, they are active for one hit
-	for(int bs = 0; bs < BUFF_COUNT; bs++){
+	uint32 buff_count = GetMaxTotalSlots();
+	for(int bs = 0; bs < buff_count; bs++){
 		if(buffs[bs].numhits > 0 && IsDiscipline(buffs[bs].spellid)){
 			if(skill == spells[buffs[bs].spellid].skill){
 				if(buffs[bs].numhits == 1){

@@ -224,14 +224,11 @@ Mob::Mob(const char*   in_name,
 	IsFullHP	= (cur_hp == max_hp);
 	qglobal=0;
 
-	int i = 0;
-
-	uint32 j;
-	for (j = 0; j < BUFF_COUNT; j++) {
-		buffs[j].spellid = SPELL_UNKNOWN;
-	}
+	InitializeBuffSlots();
 
     // clear the proc arrays
+	int i;
+	int j;
 	for (j = 0; j < MAX_PROCS; j++)
     {
         PermaProcs[j].spellID = SPELL_UNKNOWN;
@@ -402,6 +399,7 @@ Mob::~Mob()
 	safe_delete(PathingLOSCheckTimer);
 	safe_delete(PathingRouteUpdateTimerShort);
 	safe_delete(PathingRouteUpdateTimerLong);
+	UninitializeBuffSlots();
 }
 
 int32 Mob::GetAppearanceValue(EmuAppearance iAppearance) {
@@ -1060,7 +1058,8 @@ void Mob::ShowBuffs(Client* client) {
 		return;
 	client->Message(0, "Buffs on: %s", this->GetName());
 	uint32 i;
-	for (i=0; i < BUFF_COUNT; i++) {
+	uint32 buff_count = GetMaxTotalSlots();
+	for (i=0; i < buff_count; i++) {
 		if (buffs[i].spellid != SPELL_UNKNOWN) {
 			if (buffs[i].durationformula == DF_Permanent)
 				client->Message(0, "  %i: %s: Permanent", i, spells[buffs[i].spellid].name);
@@ -1093,7 +1092,8 @@ void Mob::ShowBuffList(Client* client) {
 
 	client->Message(0, "Buffs on: %s", this->GetCleanName());
 	uint32 i;
-	for (i=0; i < BUFF_COUNT; i++) {
+	uint32 buff_count = GetMaxTotalSlots();
+	for (i=0; i < buff_count; i++) {
 		if (buffs[i].spellid != SPELL_UNKNOWN) {
 			if (buffs[i].durationformula == DF_Permanent)
 				client->Message(0, "  %i: %s: Permanent", i, spells[buffs[i].spellid].name);
@@ -1456,7 +1456,7 @@ Mob* Mob::GetOwnerOrSelf() {
 		return owner;
 	}
 	if(IsNPC() && CastToNPC()->GetSwarmInfo()){
-		return (CastToNPC()->GetSwarmInfo()->owner);
+		return (CastToNPC()->GetSwarmInfo()->GetOwner());
 	}
 	SetOwnerID(0);
 	return this;
@@ -1469,7 +1469,7 @@ Mob* Mob::GetOwner() {
 		return owner;
 	}
 	if(IsNPC() && CastToNPC()->GetSwarmInfo()){
-		return (CastToNPC()->GetSwarmInfo()->owner);
+		return (CastToNPC()->GetSwarmInfo()->GetOwner());
 	}
 	SetOwnerID(0);
 	return 0;
@@ -2509,7 +2509,8 @@ void Mob::Warp( float x, float y, float z )
 bool Mob::DivineAura() const
 {
 	uint32 l;
-	for (l = 0; l < BUFF_COUNT; l++)
+	uint32 buff_count = GetMaxTotalSlots();
+	for (l = 0; l < buff_count; l++)
 	{
 		if (buffs[l].spellid != SPELL_UNKNOWN)
 		{
@@ -2732,7 +2733,8 @@ float Mob::GetGroundZ(float new_x, float new_y, float z_offset)
 int Mob::CountDispellableBuffs()
 {
 	int val = 0;
-	for(int x = 0; x < BUFF_COUNT; x++)
+	uint32 buff_count = GetMaxTotalSlots();
+	for(int x = 0; x < buff_count; x++)
 	{
 		if(!IsValidSpell(buffs[x].spellid))
 			continue;
@@ -2754,7 +2756,8 @@ int Mob::GetSnaredAmount()
 {
 	int worst_snare = -1;
 
-	for (int i = 0; i < BUFF_COUNT; i++)
+	uint32 buff_count = GetMaxTotalSlots();
+	for (int i = 0; i < buff_count; i++)
 	{
 		if (!IsValidSpell(buffs[i].spellid))
 			continue;

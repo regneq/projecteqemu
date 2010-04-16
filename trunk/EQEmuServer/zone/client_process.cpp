@@ -1803,7 +1803,8 @@ void Client::DoEnduranceUpkeep() {
 	int cost_redux = spellbonuses.EnduranceReduction + itembonuses.EnduranceReduction;
 
 	uint32 buffs_i;
-	for (buffs_i=0; buffs_i<BUFF_COUNT; buffs_i++) {
+	uint32 buff_count = GetMaxTotalSlots();
+	for (buffs_i = 0; buffs_i < buff_count; buffs_i++) {
 		if (buffs[buffs_i].spellid != SPELL_UNKNOWN) {
 			int upkeep = spells[buffs[buffs_i].spellid].EndurUpkeep;
 			if(upkeep > 0) {
@@ -1843,12 +1844,10 @@ void Client::CalcRestState() {
 	if(!rest_timer.Check(false))
 		return;
 
-	for (unsigned int j = 0; j < BUFF_COUNT; j++) {
-
+	uint32 buff_count = GetMaxTotalSlots();
+	for (unsigned int j = 0; j < buff_count; j++) {
 		if(buffs[j].spellid != SPELL_UNKNOWN) {
-
 			if(IsDetrimentalSpell(buffs[j].spellid) && (buffs[j].ticsremaining > 0)) {
-
 				return;
 			}
 		}

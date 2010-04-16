@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==04/16/2010==
+KLS: (Leere) Melody Fix.
+KLS: Other merges from spell branch, some more to come.  Tell me if there are any crashes I only tested it for about 25 minutes.
+
 ==04/15/2010==
 cavedude (Leere): Increased the number of tradeskill favorites that can be stored client side to 500.
 cavedude (Leere): Fixed avgcoin. 

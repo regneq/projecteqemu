@@ -606,7 +606,8 @@ void Mob::CalcSpellBonuses(StatBonuses* newbon)
 	newbon->AggroRange = -1;
 	newbon->AssistRange = -1;
 
-	for(i = 0; i < BUFF_COUNT; i++) {
+	uint32 buff_count = GetMaxTotalSlots();
+	for(i = 0; i < buff_count; i++) {
 		if(buffs[i].spellid != SPELL_UNKNOWN)
 			ApplySpellsBonuses(buffs[i].spellid, buffs[i].casterlevel, newbon, buffs[i].casterid);
 	}

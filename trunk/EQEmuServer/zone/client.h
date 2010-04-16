@@ -399,14 +399,23 @@ public:
 	inline int8	GetBaseAGI()	const { return m_pp.AGI; }
 	inline int8	GetBaseWIS()	const { return m_pp.WIS; }
 
-	float  GetActSpellRange(int16 spell_id, float range);
-	sint32  GetActSpellDamage(int16 spell_id, sint32 value);
-	sint32  GetActSpellHealing(int16 spell_id, sint32 value);
-	sint32  GetActSpellCost(int16 spell_id, sint32);
-	sint32  GetActSpellDuration(int16 spell_id, sint32);
-	sint32  GetActSpellCasttime(int16 spell_id, sint32);
-	sint32  GetDotFocus(int16 spell_id, sint32 value);
+	float GetActSpellRange(int16 spell_id, float range);
+	sint32 GetActSpellDamage(int16 spell_id, sint32 value);
+	sint32 GetActSpellHealing(int16 spell_id, sint32 value);
+	sint32 GetActSpellCost(int16 spell_id, sint32);
+	sint32 GetActSpellDuration(int16 spell_id, sint32);
+	sint32 GetActSpellCasttime(int16 spell_id, sint32);
+	sint32 GetDotFocus(int16 spell_id, sint32 value);
 	virtual bool CheckFizzle(int16 spell_id);
+	virtual int GetCurrentBuffSlots() const;
+	virtual int GetCurrentSongSlots() const;
+	virtual int GetCurrentDiscSlots() const { return 1; }
+	virtual int GetMaxBuffSlots() const { return 25; }
+	virtual int GetMaxSongSlots() const { return 12; }
+	virtual int GetMaxDiscSlots() const { return 1; }
+	virtual int GetMaxTotalSlots() const { return 38; }
+	virtual void InitializeBuffSlots();
+	virtual void UninitializeBuffSlots();
 
 	inline const sint32	GetBaseHP() const { return base_hp; }
 

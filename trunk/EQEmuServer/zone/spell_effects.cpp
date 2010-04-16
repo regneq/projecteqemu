@@ -262,7 +262,8 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 
 				int i;
 				bool inuse = false;
-				for(i = 0; i < BUFF_COUNT; i++) {
+				uint32 buff_count = GetMaxTotalSlots();
+				for(i = 0; i < buff_count; i++) {
 					if(buffs[i].spellid == spell_id && i != buffslot) {
 						Message(0, "You must wait before you can be affected by this spell again.");
 						inuse = true;
@@ -628,6 +629,10 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				if (!caster)	// can't be someone's pet unless we know who that someone is
 					break;
 
+				if(IsNPC())
+				{
+					CastToNPC()->SaveGuardSpotCharm();
+				}
 				InterruptSpell();
 				entity_list.RemoveDebuffs(this);
 				entity_list.RemoveFromTargets(this);
@@ -905,7 +910,8 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #endif
 				// solar: TODO proper dispel counters, including poison/disease/curse
 				int slot;
-				for(slot = 0; slot < BUFF_COUNT; slot++)
+				uint32 buff_count = GetMaxTotalSlots();
+				for(slot = 0; slot < buff_count; slot++)
 				{
 					if(buffs[slot].diseasecounters || buffs[slot].poisoncounters || buffs[slot].cursecounters) //if we have poison or disease counters then we can't remove this with dispel
 						continue;
@@ -917,7 +923,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				    )
 				    {
 						BuffFadeBySlot(slot);
-						slot = BUFF_COUNT;
+						slot = buff_count;
 					}
 				}
 				break;
@@ -929,7 +935,8 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				snprintf(effect_desc, _EDLEN, "Dispel Detrimental: %d", effect_value);
 #endif
 				int slot;
-				for(slot = 0; slot < BUFF_COUNT; slot++)
+				uint32 buff_count = GetMaxTotalSlots();
+				for(slot = 0; slot < buff_count; slot++)
 				{
 					if(buffs[slot].diseasecounters || buffs[slot].poisoncounters || buffs[slot].cursecounters)
 						continue;
@@ -942,7 +949,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 					)
 				    {
 						BuffFadeBySlot(slot);
-						slot = BUFF_COUNT;
+						slot = buff_count;
 					}
 				}
 				break;
@@ -1865,7 +1872,8 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				else
 				{
 					effect_value = 0 - effect_value;
-					for (int j=0; j < BUFF_COUNT; j++) {
+					uint32 buff_count = GetMaxTotalSlots();
+					for (int j=0; j < buff_count; j++) {
 						if (buffs[j].spellid >= (int16)SPDAT_RECORDS)
 							continue;
 						if (buffs[j].poisoncounters == 0)
@@ -1896,7 +1904,8 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				else
 				{
 					effect_value = 0 - effect_value;
-					for (int j=0; j < BUFF_COUNT; j++) {
+					uint32 buff_count = GetMaxTotalSlots();
+					for (int j=0; j < buff_count; j++) {
 						if (buffs[j].spellid >= (int16)SPDAT_RECORDS)
 							continue;
 						if (buffs[j].diseasecounters == 0)
@@ -1930,7 +1939,8 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				else
 				{
 					effect_value = 0 - effect_value;
-					for (int j=0; j < BUFF_COUNT; j++) {
+					uint32 buff_count = GetMaxTotalSlots();
+					for (int j=0; j < buff_count; j++) {
 						if (buffs[j].spellid >= (int16)SPDAT_RECORDS)
 							continue;
 						if (buffs[j].cursecounters == 0)
@@ -2997,7 +3007,8 @@ snare has both of them negative, yet their range should work the same:
 
 
 void Mob::BuffProcess() {
-	for (int buffs_i=0; buffs_i<BUFF_COUNT; buffs_i++) {
+	uint32 buff_count = GetMaxTotalSlots();
+	for (int buffs_i = 0; buffs_i < buff_count; buffs_i++) {
 		if (buffs[buffs_i].spellid != SPELL_UNKNOWN) {
 			DoBuffTic(buffs[buffs_i].spellid, buffs[buffs_i].ticsremaining, buffs[buffs_i].casterlevel, entity_list.GetMob(buffs[buffs_i].casterid));
 			if (buffs[buffs_i].durationformula != 50) {
@@ -3226,7 +3237,7 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 // solar: removes the buff in the buff slot 'slot'
 void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 {
-	if(slot < 0 || slot > BUFF_COUNT)
+	if(slot < 0 || slot > GetMaxTotalSlots())
 		return;
 
 	if(!IsValidSpell(buffs[slot].spellid))
@@ -3379,6 +3390,11 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 
 			case SE_Charm:
 			{
+				if(IsNPC())
+				{
+					CastToNPC()->RestoreGuardSpotCharm();
+				}
+
 				Mob* tempmob = GetOwner();
 				SetOwnerID(0);
 				if(tempmob)
@@ -3835,7 +3851,8 @@ sint16 Client::GetFocusEffect(focusType type, int16 spell_id) {
 	sint16 Total2 = 0;
 	sint16 realTotal2 = 0;
 
-	for (int y = 0; y < BUFF_COUNT; y++) {
+	uint32 buff_count = GetMaxTotalSlots();
+	for (int y = 0; y < buff_count; y++) {
 		int16 focusspellid = buffs[y].spellid;
 		if (focusspellid == 0 || focusspellid >= SPDAT_RECORDS)
 			continue;

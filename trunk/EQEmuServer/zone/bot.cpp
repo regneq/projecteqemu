@@ -1173,6 +1173,7 @@ void Bot::SaveBuffs() {
 	int BuffCount = 0;
 	int InsertCount = 0;
 
+	uint32 buff_count = GetMaxTotalSlots();
 	while(BuffCount < BUFF_COUNT) {
 		if(buffs[BuffCount].spellid > 0 && buffs[BuffCount].spellid != SPELL_UNKNOWN) {
 			if(InsertCount == 0) {

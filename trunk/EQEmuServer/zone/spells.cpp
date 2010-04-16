@@ -137,7 +137,8 @@ void NPC::SpellProcess()
 	Mob::SpellProcess();
 	
 	if(GetSwarmInfo()){
-		if(!GetSwarmInfo()->owner)
+		Mob *swp_o = GetSwarmInfo()->GetOwner();
+		if(!swp_o)
 		{
 			Depop();
 		}
@@ -675,7 +676,7 @@ void Mob::InterruptSpell(int16 message, int16 color, int16 spellid)
 		message = IsBardSong(spellid) ? SONG_ENDS_ABRUPTLY : INTERRUPT_SPELL;
 
 	// clients need some packets
-	if (IsClient())
+	if (IsClient() && message != SONG_ENDS)
 	{
 		// the interrupt message
 		outapp = new EQApplicationPacket(OP_InterruptCast, sizeof(InterruptCast_Struct));
@@ -1053,6 +1054,7 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16
 		if(IsClient())
 		{
 			this->CastToClient()->CheckSongSkillIncrease(spell_id);
+			this->CastToClient()->MemorizeSpell(slot, spell_id, memSpellSpellbar);
 		}
 		// go again in 6 seconds
 		//this is handled with bardsong_timer
@@ -1326,7 +1328,7 @@ bool Mob::DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_ce
 			break;
 		}
 
-// Group spells
+		// Group spells
 		case ST_GroupTeleport:
 		case ST_Group:
 		{
@@ -1874,7 +1876,8 @@ bool Mob::ApplyNextBardPulse(int16 spell_id, Mob *spell_target, int16 slot) {
 
 void Mob::BardPulse(uint16 spell_id, Mob *caster) {
 	int buffs_i;
-	for (buffs_i = 0; buffs_i < BUFF_COUNT; buffs_i++) {
+	uint32 buff_count = GetMaxTotalSlots();
+	for (buffs_i = 0; buffs_i < buff_count; buffs_i++) {
 		if(buffs[buffs_i].spellid != spell_id)
 			continue;
 		if(buffs[buffs_i].casterid != caster->GetID()) {
@@ -2375,7 +2378,26 @@ int Mob::AddBuff(Mob *caster, int16 spell_id, int duration, sint32 level_overrid
 	// it would overwrite, and then hitting a buff we can't stack with.
 	// we also check if overwriting will occur.  this is so after this loop
 	// we can determine if there will be room for this buff
-	for(buffslot = 0; buffslot < BUFF_COUNT; buffslot++)
+	uint32 buff_count = GetMaxTotalSlots();
+	uint32 start_slot = 0;
+	uint32 end_slot = 0;
+	if(IsDiscipline(spell_id))
+	{
+		start_slot = GetMaxBuffSlots() + GetMaxSongSlots();
+		end_slot = start_slot + GetCurrentDiscSlots();
+	}
+	else if(spells[spell_id].short_buff_box)
+	{
+		start_slot = GetMaxBuffSlots();
+		end_slot = start_slot + GetCurrentSongSlots();
+	}
+	else
+	{
+		start_slot = 0;
+		end_slot = GetCurrentBuffSlots();
+	}
+
+	for(buffslot = 0; buffslot < buff_count; buffslot++)
 	{
 		const Buffs_Struct &curbuf = buffs[buffslot];
 
@@ -2396,7 +2418,12 @@ int Mob::AddBuff(Mob *caster, int16 spell_id, int duration, sint32 level_overrid
 		else
 		{
 			if(emptyslot == -1)
-				emptyslot = buffslot;
+			{
+				if(buffslot >= start_slot && buffslot < end_slot)
+				{
+					emptyslot = buffslot;
+				}
+			}
 		}
 	}
 	
@@ -2407,7 +2434,7 @@ int Mob::AddBuff(Mob *caster, int16 spell_id, int duration, sint32 level_overrid
  	{
  		if(IsDetrimentalSpell(spell_id)) //Sucks to be you, bye bye one of your buffs
  		{
- 			for(buffslot = 0; buffslot < BUFF_COUNT; buffslot++)
+ 			for(buffslot = 0; buffslot < buff_count; buffslot++)
  			{
  				const Buffs_Struct &curbuf = buffs[buffslot];
  				if(IsBeneficialSpell(curbuf.spellid))
@@ -2502,7 +2529,8 @@ int Mob::CanBuffStack(int16 spellid, int8 caster_level, bool iFailIfOverwrite)
 	
 	mlog(AI__BUFFS, "Checking if buff %d cast at level %d can stack on me.%s", spellid, caster_level, iFailIfOverwrite?" failing if we would overwrite something":"");
 	
-	for (i=0; i < BUFF_COUNT; i++)
+	uint32 buff_count = GetMaxTotalSlots();
+	for (i=0; i < buff_count; i++)
 	{
 		const Buffs_Struct &curbuf = buffs[i];
 
@@ -2629,7 +2657,7 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar)
 	action->instrument_mod = GetInstrumentMod(spell_id);
 	action->buff_unknown = 0;
 	
-	if(spelltar->IsClient())	// send to target
+	if(spelltar != this && spelltar->IsClient())	// send to target
 		spelltar->CastToClient()->QueuePacket(action_packet);
 	if(IsClient())	// send to caster
 		CastToClient()->QueuePacket(action_packet);
@@ -2991,7 +3019,7 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar)
 
 	if(!IsEffectInSpell(spell_id, SE_BindAffinity))
 	{
-		if(spelltar->IsClient())	// send to target
+		if(spelltar != this && spelltar->IsClient())	// send to target
 			spelltar->CastToClient()->QueuePacket(action_packet);
 		if(IsClient())	// send to caster
 			CastToClient()->QueuePacket(action_packet);
@@ -3057,7 +3085,8 @@ bool Mob::FindBuff(int16 spellid)
 {
 	int i;
 
-	for(i = 0; i < BUFF_COUNT; i++)
+	uint32 buff_count = GetMaxTotalSlots();
+	for(i = 0; i < buff_count; i++)
 		if(buffs[i].spellid == spellid)
 			return true;
 
@@ -3067,7 +3096,8 @@ bool Mob::FindBuff(int16 spellid)
 // solar: removes all buffs
 void Mob::BuffFadeAll()
 {
-	for (int j = 0; j < BUFF_COUNT; j++) {
+	uint32 buff_count = GetMaxTotalSlots();
+	for (int j = 0; j < buff_count; j++) {
 		if(buffs[j].spellid != SPELL_UNKNOWN)
 			BuffFadeBySlot(j, false);
 	}
@@ -3076,7 +3106,8 @@ void Mob::BuffFadeAll()
 }
 
 void Mob::BuffFadeDetrimental() {
-	for (int j = 0; j < BUFF_COUNT; j++) {
+	uint32 buff_count = GetMaxTotalSlots();
+	for (int j = 0; j < buff_count; j++) {
 		if(buffs[j].spellid != SPELL_UNKNOWN) {
 			if(IsDetrimentalSpell(buffs[j].spellid))
 				BuffFadeBySlot(j, false);
@@ -3089,7 +3120,8 @@ void Mob::BuffFadeDetrimentalByCaster(Mob *caster)
 	if(!caster)
 		return;
 
-	for (int j = 0; j < BUFF_COUNT; j++) {
+	uint32 buff_count = GetMaxTotalSlots();
+	for (int j = 0; j < buff_count; j++) {
 		if(buffs[j].spellid != SPELL_UNKNOWN) {
 			if(IsDetrimentalSpell(buffs[j].spellid))
 			{
@@ -3106,7 +3138,8 @@ void Mob::BuffFadeDetrimentalByCaster(Mob *caster)
 // solar: removes the buff matching spell_id
 void Mob::BuffFadeBySpellID(int16 spell_id)
 {
-	for (int j = 0; j < BUFF_COUNT; j++)
+	uint32 buff_count = GetMaxTotalSlots();
+	for (int j = 0; j < buff_count; j++)
 	{
 		if (buffs[j].spellid == spell_id)
 			BuffFadeBySlot(j, false);
@@ -3121,7 +3154,8 @@ void Mob::BuffFadeByEffect(int effectid, int skipslot)
 {
 	int i;
 
-	for(i = 0; i < BUFF_COUNT; i++)
+	uint32 buff_count = GetMaxTotalSlots();
+	for(i = 0; i < buff_count; i++)
 	{
 		if(buffs[i].spellid == SPELL_UNKNOWN)
 			continue;
@@ -4278,7 +4312,8 @@ int16 Mob::FindSpell(int16 classp, int16 level, int8 type, int8 spelltype) {
 
 // solar: TODO get rid of this
 sint8 Mob::GetBuffSlotFromType(int8 type) {
-	for (int i = 0; i < BUFF_COUNT; i++) {
+	uint32 buff_count = GetMaxTotalSlots();
+	for (int i = 0; i < buff_count; i++) {
 		if (buffs[i].spellid != SPELL_UNKNOWN) {
 			for (int j = 0; j < EFFECT_COUNT; j++) {
 				if (spells[buffs[i].spellid].effectid[j] == type )
@@ -4291,7 +4326,8 @@ sint8 Mob::GetBuffSlotFromType(int8 type) {
 
 
 bool Mob::FindType(int8 type, bool bOffensive, int16 threshold) {
-	for (int i = 0; i < BUFF_COUNT; i++) {
+	uint32 buff_count = GetMaxTotalSlots();
+	for (int i = 0; i < buff_count; i++) {
 		if (buffs[i].spellid != SPELL_UNKNOWN) {
 
 			for (int j = 0; j < EFFECT_COUNT; j++) {
@@ -4464,21 +4500,6 @@ int Mob::GetCasterLevel(int16 spell_id) {
 //you should really know what your doing before you call this
 void Mob::_StopSong()
 {
-	if (IsClient() && (bardsong || IsBardSong(casting_spell_id)))
-	{
-		EQApplicationPacket* outapp = new EQApplicationPacket(OP_ManaChange, sizeof(ManaChange_Struct));
-		ManaChange_Struct* manachange = (ManaChange_Struct*)outapp->pBuffer;
-		manachange->new_mana = cur_mana;
-		if (!bardsong)
-			manachange->spell_id = casting_spell_id;
-		else
-			manachange->spell_id = bardsong;
-		manachange->stamina = CastToClient()->GetEndurance();
-		if (CastToClient()->Hungry())
-			manachange->stamina = 0;
-		CastToClient()->QueuePacket(outapp);
-		delete outapp;
-	}
 	bardsong = 0;
 	bardsong_target_id = 0;
 	bardsong_slot = 0;
@@ -4548,7 +4569,8 @@ EQApplicationPacket *Mob::MakeTargetBuffsPacket()
 {
 	int BuffCount = 0;
 
-	for(unsigned int i = 0; i < BUFF_COUNT; ++i)
+	uint32 buff_count = GetMaxTotalSlots();
+	for(unsigned int i = 0; i < buff_count; ++i)
 		if(buffs[i].spellid != SPELL_UNKNOWN)
 			++BuffCount;
 
@@ -4559,7 +4581,7 @@ EQApplicationPacket *Mob::MakeTargetBuffsPacket()
 	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, GetID());
 	VARSTRUCT_ENCODE_TYPE(uint16, Buffer, BuffCount);
 
-	for(unsigned int i = 0; i < BUFF_COUNT; ++i)
+	for(unsigned int i = 0; i < buff_count; ++i)
 		if(buffs[i].spellid != SPELL_UNKNOWN)
 		{
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, i);
@@ -4575,7 +4597,8 @@ EQApplicationPacket *Mob::MakeTargetBuffsPacket()
 
 void Mob::BuffModifyDurationBySpellID(int16 spell_id, sint32 newDuration)
 {
-	for(int i = 0; i < BUFF_COUNT; ++i)
+	uint32 buff_count = GetMaxTotalSlots();
+	for(int i = 0; i < buff_count; ++i)
 	{
 		if (buffs[i].spellid == spell_id)
 		{
@@ -4589,10 +4612,9 @@ void Mob::BuffModifyDurationBySpellID(int16 spell_id, sint32 newDuration)
 }
 void Mob::UpdateRuneFlags()
 {
-
 	bool Has_SE_Rune = false, Has_SE_AbsorbMagicAtt = false, Has_SE_NegateAttacks = false;
-
-	for (unsigned int i = 0; i < BUFF_COUNT; ++i)
+	uint32 buff_count = GetMaxTotalSlots();
+	for (unsigned int i = 0; i < buff_count; ++i)
 	{
 		if (buffs[i].spellid != SPELL_UNKNOWN)
 		{
@@ -4618,14 +4640,56 @@ void Mob::UpdateRuneFlags()
 
 					default:
 						break;
-				}
-						
+				}					
 			}
 		}
 	}
 
 	SetHasRune(Has_SE_Rune || Has_SE_NegateAttacks);
-
 	SetHasSpellRune(Has_SE_AbsorbMagicAtt || Has_SE_NegateAttacks);
+}
+
+int Client::GetCurrentBuffSlots() const
+{
+	return 15 + GetAA(aaMysticalAttuning);
+}
+
+int Client::GetCurrentSongSlots() const
+{
+	return 6 + GetAA(aaMysticalAttuning);
+}
+
+void Client::InitializeBuffSlots()
+{
+	int max_slots = GetMaxTotalSlots();
+	buffs = new Buffs_Struct[max_slots];
+	for(int x = 0; x < max_slots; ++x)
+	{
+		buffs[x].spellid = SPELL_UNKNOWN;
+	}
+	current_buff_count = 0;
+	buff_tic_timer = NULL;
+}
+
+void Client::UninitializeBuffSlots()
+{
+	safe_delete_array(buffs);
+}
+
+void NPC::InitializeBuffSlots()
+{
+	int max_slots = GetMaxTotalSlots();
+	buffs = new Buffs_Struct[max_slots];
+	for(int x = 0; x < max_slots; ++x)
+	{
+		buffs[x].spellid = SPELL_UNKNOWN;
+	}
+	current_buff_count = 0;
+	buff_tic_timer = NULL;
+}
+
+void NPC::UninitializeBuffSlots()
+{
+	safe_delete_array(buffs);
 }
 
