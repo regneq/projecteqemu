@@ -19,6 +19,14 @@
 #define __EQEmuConfig_H
 
 #include "XMLParser.h"
+#include "linked_list.h"
+
+struct LoginConfig {
+	string LoginHost;
+	string LoginAccount;
+	string LoginPassword;
+	uint16 LoginPort;
+};
 
 class EQEmuConfig : public XMLParser {
 public:
@@ -33,6 +41,8 @@ public:
 	string LoginAccount;
 	string LoginPassword;
 	uint16 LoginPort;
+	uint32 LoginCount;
+	LinkedList<LoginConfig*> loginlist;
 	bool Locked;
 	uint16 WorldTCPPort;
 	string WorldIP;
@@ -170,6 +180,8 @@ protected:
 		//DynamicCount=5;
 		
 		MaxClients=-1;
+		
+		LoginCount=0;
 		
 	}
 	virtual ~EQEmuConfig() {}

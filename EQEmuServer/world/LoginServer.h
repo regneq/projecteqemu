@@ -26,35 +26,36 @@
 #include "../common/Mutex.h"
 #include "../common/EmuTCPConnection.h"
 
-#ifdef WIN32
-	void AutoInitLoginServer(void *tmp);
-#else
-	void *AutoInitLoginServer(void *tmp);
-#endif
-bool InitLoginServer();
-
 class LoginServer{
 public:
-	LoginServer(const char* iAddress = 0, int16 iPort = 5999);
-    ~LoginServer();
+	LoginServer(const char*, int16, const char*, const char*);
+	~LoginServer();
+
+	bool InitLoginServer();
 
 	bool Process();
-	bool Connect(const char* iAddress = 0, int16 iPort = 0);
+	bool Connect();
 
 	void SendInfo();
 	void SendNewInfo();
 	void SendStatus();
 
 	void SendPacket(ServerPacket* pack) { tcpc->SendPacket(pack); }
+	void SendAccountUpdate(ServerPacket* pack);
 	bool ConnectReady() { return tcpc->ConnectReady(); }
 	bool Connected() { return tcpc->Connected(); }
 	bool MiniLogin() { return minilogin; }
+	bool CanUpdate() { return CanAccountUpdate; }
 
 private:
 	bool minilogin;
 	EmuTCPConnection* tcpc;
+	char	LoginServerAddress[256];
 	int32	LoginServerIP;
 	int16	LoginServerPort;
+	char	LoginAccount[32];
+	char	LoginPassword[32];
+	bool	CanAccountUpdate;
 
 	Timer statusupdate_timer;
 };

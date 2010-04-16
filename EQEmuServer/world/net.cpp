@@ -85,6 +85,7 @@ CommonProfiler _cp;
 #include "zoneserver.h"
 #include "console.h"
 #include "LoginServer.h"
+#include "LoginServerList.h"
 #include "EQWHTTPHandler.h"
 #include "../common/dbasync.h"
 #include "../common/EmuTCPServer.h"
@@ -104,7 +105,7 @@ ClientList client_list;
 GroupLFPList LFPGroupList;
 extern ConsoleList console_list;
 ZSList zoneserver_list;
-LoginServer loginserver;
+LoginServerList loginserverlist;
 volatile bool RunLoops = true;
 uint32 numclients = 0;
 uint32 numzones = 0;
@@ -151,6 +152,23 @@ int main(int argc, char** argv) {
 		return 0;
 	}
 	#endif
+
+	// add login server config to list
+	if (Config->LoginCount == 0) {
+		if (Config->LoginHost.length()) {
+			loginserverlist.Add(Config->LoginHost.c_str(), Config->LoginPort, Config->LoginAccount.c_str(), Config->LoginPassword.c_str());
+			_log(WORLD__INIT, "Added loginserver %s:%i", Config->LoginHost.c_str(), Config->LoginPort);
+		}
+	} else {
+		LinkedList<LoginConfig*> loginlist=Config->loginlist;
+		LinkedListIterator<LoginConfig*> iterator(loginlist);
+		iterator.Reset();
+		while(iterator.MoreElements()) {
+			loginserverlist.Add(iterator.GetData()->LoginHost.c_str(), iterator.GetData()->LoginPort, iterator.GetData()->LoginAccount.c_str(), iterator.GetData()->LoginPassword.c_str());
+			_log(WORLD__INIT, "Added loginserver %s:%i", iterator.GetData()->LoginHost.c_str(), iterator.GetData()->LoginPort);
+			iterator.Advance();
+		}
+	}
 	
 	_log(WORLD__INIT, "Connecting to MySQL...");
 	if (!database.Connect(
@@ -409,7 +427,7 @@ int main(int argc, char** argv) {
 		//check for timeouts in other threads
 		timeout_manager.CheckTimeouts();
 		
-		loginserver.Process();
+		loginserverlist.Process();
 		
 		console_list.Process();
 		
@@ -423,7 +441,7 @@ int main(int argc, char** argv) {
 			InterserverTimer.Start();
 			database.ping();
 			AsyncLoadVariables(dbasync, &database);
-			if (Config->LoginHost.length() && loginserver.Connected() == false) {
+			if (loginserverlist.Connected() == false) {
 #ifdef WIN32
 				_beginthread(AutoInitLoginServer, 0, NULL);
 #else

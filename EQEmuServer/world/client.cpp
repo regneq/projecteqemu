@@ -49,6 +49,7 @@ using namespace std;
 #include "../common/extprofile.h"
 #include "WorldConfig.h"
 #include "LoginServer.h"
+#include "LoginServerList.h"
 #include "zoneserver.h"
 #include "zonelist.h"
 #include "clientlist.h"
@@ -57,7 +58,7 @@ using namespace std;
 #include "SoFCharCreateData.h"
 
 extern ZSList zoneserver_list;
-extern LoginServer loginserver;
+extern LoginServerList loginserverlist;
 extern ClientList client_list;
 extern uint32 numclients;
 extern volatile bool RunLoops;
@@ -246,7 +247,7 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 			tmpip.s_addr = ip;
 #endif
 			int32 id=0;
-			bool minilogin = loginserver.MiniLogin();
+			bool minilogin = loginserverlist.MiniLogin();
 			if(minilogin){
 				struct in_addr miniip;
 				miniip.s_addr = ip;
@@ -259,7 +260,7 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 #ifdef IPBASED_AUTH_HACK
 			if ((cle = zoneserver_list.CheckAuth(inet_ntoa(tmpip), password)))
 #else
-			if (loginserver.Connected() == false && !pZoning) {
+			if (loginserverlist.Connected() == false && !pZoning) {
 				clog(WORLD__CLIENT_ERR,"Error: Login server login while not connected to login server.");
 				ret = false;
 				break;
@@ -297,7 +298,7 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 					ServerLSPlayerJoinWorld_Struct* join =(ServerLSPlayerJoinWorld_Struct*)pack->pBuffer;
 					strcpy(join->key,GetLSKey());
 					join->lsaccount_id = GetLSID();
-					loginserver.SendPacket(pack);
+					loginserverlist.SendPacket(pack);
 					safe_delete(pack);
 				}
 
@@ -794,7 +795,7 @@ bool Client::Process() {
 			ServerLSPlayerLeftWorld_Struct* logout =(ServerLSPlayerLeftWorld_Struct*)pack->pBuffer;
 			strcpy(logout->key,GetLSKey());
 			logout->lsaccount_id = GetLSID();
-			loginserver.SendPacket(pack);
+			loginserverlist.SendPacket(pack);
 			safe_delete(pack);
 		}
 		clog(WORLD__CLIENT,"Client disconnected (not active in process)");

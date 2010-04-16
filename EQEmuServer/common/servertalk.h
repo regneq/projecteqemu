@@ -124,6 +124,7 @@
 #define ServerOP_PeerConnect		0x1007
 #define ServerOP_NewLSInfo			0x1008
 #define ServerOP_LSRemoteAddr		0x1009
+#define ServerOP_LSAccountUpdate		0x100A
 
 #define ServerOP_EncapPacket		0x2007	// Packet within a packet
 #define ServerOP_WorldListUpdate	0x2008
@@ -385,6 +386,15 @@ struct ServerNewLSInfo_Struct {
 	char	protocolversion[25];	// Major protocol version number
 	char	serverversion[64];		// minor server software version number
 	int8	servertype;				// 0=world, 1=chat, 2=login, 3=MeshLogin
+};
+
+struct ServerLSAccountUpdate_Struct {			// for updating info on login server
+	char	worldaccount[31];			// account name for the worldserver
+	char	worldpassword[31];			// password for the name
+	int32	useraccountid;				// player account ID
+	char	useraccount[31];			// player account name
+	char	userpassword[51];			// player account password
+	char	useremail[101];				// player account email address
 };
 
 struct ServerLSStatus_Struct {

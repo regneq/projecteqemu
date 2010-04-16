@@ -234,6 +234,7 @@ int command_init(void) {
 		command_add("shutdown","- Shut this zone process down",150,command_shutdown) ||
 		command_add("delacct","[accountname] - Delete an account",150,command_delacct) ||
 		command_add("setpass","[accountname] [password] - Set local password for accountname",150,command_setpass) ||
+		command_add("setlsinfo","[email] [password] - Set login server email address and password (if supported by login server)",10,command_setlsinfo) ||
 		command_add("grid","[add/delete] [grid_num] [wandertype] [pausetype] - Create/delete a wandering grid",170,command_grid) ||
 		command_add("wp","[add/delete] [grid_num] [pause] [wp_num] - Add/delete a waypoint to/from a wandering grid",170,command_wp) ||
 		command_add("wpadd","[pause] - Add your current location as a waypoint to your NPC target's AI path",170,command_wpadd) ||
@@ -2391,6 +2392,22 @@ void command_setpass(Client *c, const Seperator *sep)
 			c->Message(0, "Password changed.");
 		else
 			c->Message(0, "Error changing password.");
+	}
+}
+
+void command_setlsinfo(Client *c, const Seperator *sep)
+{
+	if(sep->argnum != 2)
+		c->Message(0, "Format: #setlsinfo email password");
+	else {
+		ServerPacket* pack = new ServerPacket(ServerOP_LSAccountUpdate, sizeof(ServerLSAccountUpdate_Struct));
+		ServerLSAccountUpdate_Struct* s = (ServerLSAccountUpdate_Struct *) pack->pBuffer;
+		s->useraccountid = c->LSAccountID();
+		strncpy(s->useraccount, c->AccountName(), 30);
+		strncpy(s->useremail, sep->arg[1], 100);
+		strncpy(s->userpassword, sep->arg[2], 50);
+		worldserver.SendPacket(pack);
+		c->Message(0, "Login Server update packet sent.");
 	}
 }
 

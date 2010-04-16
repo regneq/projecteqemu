@@ -98,7 +98,7 @@ bool DatabaseMySQL::GetLoginDataFromAccountName(string name, string &password, u
 }
 
 bool DatabaseMySQL::GetWorldRegistration(string long_name, string short_name, unsigned int &id, string &desc, unsigned int &list_id, 
-		string &list_desc, string &account, string &password)
+		unsigned int &trusted, string &list_desc, string &account, string &password)
 {
 	if(!db)
 	{
@@ -108,7 +108,7 @@ bool DatabaseMySQL::GetWorldRegistration(string long_name, string short_name, un
 	MYSQL_RES *res;
 	MYSQL_ROW row;
 	stringstream query(stringstream::in | stringstream::out);
-	query << "SELECT WSR.ServerID, WSR.ServerTagDescription, SLT.ServerListTypeID, ";
+	query << "SELECT WSR.ServerID, WSR.ServerTagDescription, WSR.ServerTrusted, SLT.ServerListTypeID, ";
 	query << "SLT.ServerListTypeDescription, SAR.AccountName, SAR.AccountPassword FROM " << server.options.GetWorldRegistrationTable();
 	query << " AS WSR JOIN " << server.options.GetWorldServerTypeTable() << " AS SLT ON WSR.ServerListTypeID = SLT.ServerListTypeID JOIN ";
 	query << server.options.GetWorldAdminRegistrationTable() << " AS SAR ON WSR.ServerAdminID = SAR.ServerAdminID WHERE WSR.ServerLongName";
@@ -131,10 +131,11 @@ bool DatabaseMySQL::GetWorldRegistration(string long_name, string short_name, un
 		{
 			id = atoi(row[0]);
 			desc = row[1];
-			list_id = atoi(row[2]);
-			list_desc = row[3];
-			account = row[4]; 
-			password = row[5];
+			trusted = atoi(row[2]);
+			list_id = atoi(row[3]);
+			list_desc = row[4];
+			account = row[5]; 
+			password = row[6];
 			mysql_free_result(res);
 			return true;
 		}
@@ -156,6 +157,25 @@ void DatabaseMySQL::UpdateLSAccountData(unsigned int id, string ip_address)
 	query << ip_address;
 	query << "', LastLoginDate = now() where LoginServerID = ";
 	query << id;
+
+	if(mysql_query(db, query.str().c_str()) != 0)
+	{
+		log->Log(log_database, "Mysql query failed: %s", query.str().c_str());
+	}
+}
+
+void DatabaseMySQL::UpdateLSAccountInfo(unsigned int id, string name, string password, string email)
+{
+	if(!db)
+	{
+		return;
+	}
+
+	stringstream query(stringstream::in | stringstream::out);
+	query << "REPLACE " << server.options.GetAccountTable() << " SET LoginServerID = ";
+	query << id << ", AccountName = '" << name << "', AccountPassword = sha('";
+	query << password << "'), AccountCreateDate = now(), AccountEmail = '" << email;
+	query << "', LastIPAddress = '0.0.0.0', LastLoginDate = now()";
 
 	if(mysql_query(db, query.str().c_str()) != 0)
 	{

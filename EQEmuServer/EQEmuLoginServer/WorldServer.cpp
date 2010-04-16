@@ -33,6 +33,7 @@ WorldServer::WorldServer(EmuTCPConnection *c)
 	server_list_id = 0;
 	server_type = 0;
 	authorized = false;
+	trusted = false;
 	logged_in = false;
 }
 
@@ -178,6 +179,23 @@ bool WorldServer::Process()
 				}
 				break;
 			}
+		case ServerOP_LSAccountUpdate:
+			{
+				log->Log(log_network_trace, "ServerOP_LSAccountUpdate packet recieved");
+				ServerLSAccountUpdate_Struct *lsau = (ServerLSAccountUpdate_Struct*)app->pBuffer;
+				if(trusted)
+				{
+					log->Log(log_network_trace, "ServerOP_LSAccountUpdate update processed");
+					string	name;
+					string	password;
+					string	email;
+					name.assign(lsau->useraccount);
+					password.assign(lsau->userpassword);
+					email.assign(lsau->useremail);
+					server.db->UpdateLSAccountInfo(lsau->useraccountid, name, password, email);
+				}
+				break;
+			}
 		default:
 			{
 				log->Log(log_network_error, "Recieved application packet from server that had an unknown operation code 0x%.4X.", app->opcode);
@@ -307,11 +325,12 @@ void WorldServer::Handle_NewLSInfo(ServerNewLSInfo_Struct* i)
 		{
 			unsigned int s_id = 0;
 			unsigned int s_list_type = 0;
+			unsigned int s_trusted = 0;
 			string s_desc;
 			string s_list_desc;
 			string s_acct_name;
 			string s_acct_pass;
-			if(server.db->GetWorldRegistration(long_name, short_name, s_id, s_desc, s_list_type, s_list_desc, s_acct_name, s_acct_pass))
+			if(server.db->GetWorldRegistration(long_name, short_name, s_id, s_desc, s_list_type, s_trusted, s_list_desc, s_acct_name, s_acct_pass))
 			{
 				if(s_acct_name.compare(account_name) == 0 && s_acct_pass.compare(account_password) == 0)
 				{
@@ -321,6 +340,13 @@ void WorldServer::Handle_NewLSInfo(ServerNewLSInfo_Struct* i)
 					id = s_id;
 					server_list_id = s_list_type;
 					desc = s_desc;
+					if(s_trusted)
+					{
+						log->Log(log_network_trace, "ServerOP_LSAccountUpdate sent to world");
+						trusted = true;
+						ServerPacket *outapp = new ServerPacket(ServerOP_LSAccountUpdate, 0);
+						connection->SendPacket(outapp);
+					}
 				}
 				else
 				{
@@ -349,11 +375,12 @@ void WorldServer::Handle_NewLSInfo(ServerNewLSInfo_Struct* i)
 		{
 			unsigned int s_id = 0;
 			unsigned int s_list_type = 0;
+			unsigned int s_trusted = 0;
 			string s_desc;
 			string s_list_desc;
 			string s_acct_name;
 			string s_acct_pass;
-			if(server.db->GetWorldRegistration(long_name, short_name, s_id, s_desc, s_list_type, s_list_desc, s_acct_name, s_acct_pass))
+			if(server.db->GetWorldRegistration(long_name, short_name, s_id, s_desc, s_list_type, s_trusted, s_list_desc, s_acct_name, s_acct_pass))
 			{
 				if(s_acct_name.compare(account_name) == 0 && s_acct_pass.compare(account_password) == 0)
 				{
@@ -363,6 +390,13 @@ void WorldServer::Handle_NewLSInfo(ServerNewLSInfo_Struct* i)
 					id = s_id;
 					server_list_id = s_list_type;
 					desc = s_desc;
+					if(s_trusted)
+					{
+						log->Log(log_network_trace, "ServerOP_LSAccountUpdate sent to world");
+						trusted = true;
+						ServerPacket *outapp = new ServerPacket(ServerOP_LSAccountUpdate, 0);
+						connection->SendPacket(outapp);
+					}
 				}
 				else
 				{

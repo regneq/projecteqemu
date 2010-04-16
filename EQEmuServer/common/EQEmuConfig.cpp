@@ -19,6 +19,7 @@
 #include "EQEmuConfig.h"
 #include "MiscFunctions.h"
 #include <iostream>
+#include <sstream>
 
 string EQEmuConfig::ConfigFile = "eqemu_config.xml";
 EQEmuConfig *EQEmuConfig::_config = NULL;
@@ -70,6 +71,31 @@ void EQEmuConfig::do_world(TiXmlElement *ele) {
 		text=ParseTextBlock(sub_ele,"password",true);
 		if (text)
 			LoginPassword=text;
+	} else {
+		char	str[32];
+		do {
+			sprintf(str, "loginserver%i", ++LoginCount);
+			sub_ele = ele->FirstChildElement(str);
+			if (sub_ele) {
+				LoginConfig* loginconfig = new LoginConfig;
+				text=ParseTextBlock(sub_ele,"host",true);
+				if (text)
+					loginconfig->LoginHost=text;
+
+				text=ParseTextBlock(sub_ele,"port",true);
+				if (text)
+					loginconfig->LoginPort=atoi(text);
+
+				text=ParseTextBlock(sub_ele,"account",true);
+				if (text)
+					loginconfig->LoginAccount=text;
+
+				text=ParseTextBlock(sub_ele,"password",true);
+				if (text)
+					loginconfig->LoginPassword=text;
+				loginlist.Insert(loginconfig);
+			}
+		} while(sub_ele);
 	}
 	
 	// Check for locked

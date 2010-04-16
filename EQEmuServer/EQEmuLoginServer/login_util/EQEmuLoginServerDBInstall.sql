@@ -48,9 +48,10 @@ CREATE TABLE IF NOT EXISTS tblWorldServerRegistration (
   ServerLastLoginDate datetime NULL,
   ServerLastIPAddr varchar(15) NULL,
   ServerAdminID integer NOT NULL,
+  ServerTrusted integer NOT NULL,
   Note varchar(300) NULL,
   PRIMARY KEY (ServerID, ServerLongName)
 ) ENGINE=InnoDB;
 
 
-INSERT INTO tblWorldServerRegistration (ServerLongName, ServerTagDescription, ServerShortName, ServerListTypeID, ServerLastLoginDate, ServerLastIPAddr, ServerAdminID, Note) VALUES ('My Test Server', 'A test server', 'MTST', 1, now(), '0.0.0.0', 1, 'This is a note for the test server');
+INSERT INTO tblWorldServerRegistration (ServerLongName, ServerTagDescription, ServerShortName, ServerListTypeID, ServerLastLoginDate, ServerLastIPAddr, ServerAdminID, Note) VALUES ('My Test Server', 'A test server', 'MTST', 1, now(), '0.0.0.0', 1, 0, 'This is a note for the test server');

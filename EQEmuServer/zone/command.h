@@ -133,6 +133,7 @@ void command_copychar(Client *c, const Seperator *sep);
 void command_shutdown(Client *c, const Seperator *sep);
 void command_delacct(Client *c, const Seperator *sep);
 void command_setpass(Client *c, const Seperator *sep);
+void command_setlsinfo(Client *c, const Seperator *sep);
 void command_grid(Client *c, const Seperator *sep);
 void command_wp(Client *c, const Seperator *sep);
 void command_iplookup(Client *c, const Seperator *sep);

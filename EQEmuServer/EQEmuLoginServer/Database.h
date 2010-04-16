@@ -52,12 +52,17 @@ public:
 	 * Returns true if the record was found, false otherwise.
 	 */
 	virtual bool GetWorldRegistration(string long_name, string short_name, unsigned int &id, string &desc, unsigned int &list_id, 
-		string &list_desc, string &account, string &password) { return false; }
+		unsigned int &trusted, string &list_desc, string &account, string &password) { return false; }
 
 	/**
 	 * Updates the ip address of the client with account id = id
 	 */
 	virtual void UpdateLSAccountData(unsigned int id, string ip_address) { }
+
+	/**
+	 * Updates or creates the login server account with info from world server
+	 */
+	virtual void UpdateLSAccountInfo(unsigned int id, string name, string password, string email) { }
 
 	/**
 	 * Updates the ip address of the world with account id = id
