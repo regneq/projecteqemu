@@ -19,13 +19,14 @@
 #include "cliententry.h"
 #include "clientlist.h"
 #include "LoginServer.h"
+#include "LoginServerList.h"
 #include "worlddb.h"
 #include "zoneserver.h"
 #include "WorldConfig.h"
 #include "../common/guilds.h"
 
 extern int32 numplayers;
-extern LoginServer loginserver;
+extern LoginServerList loginserverlist;
 extern ClientList		client_list;
 extern volatile bool RunLoops;
 
@@ -126,7 +127,7 @@ void ClientListEntry::LSUpdate(ZoneServer* iZS){
 		zone->count=iZS->NumPlayers();
 		zone->zone = iZS->GetZoneID();
 		zone->zone_wid = iZS->GetID();
-		loginserver.SendPacket(pack);
+		loginserverlist.SendPacket(pack);
 		safe_delete(pack);
 	}
 }
@@ -140,7 +141,7 @@ void ClientListEntry::LSZoneChange(ZoneToZone_Struct* ztz){
 		zonechange->lsaccount_id = LSID();
 		zonechange->from = ztz->current_zone_id;
 		zonechange->to = ztz->requested_zone_id;
-		loginserver.SendPacket(pack);
+		loginserverlist.SendPacket(pack);
 		safe_delete(pack);
 	}
 }

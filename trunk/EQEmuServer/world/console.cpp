@@ -32,6 +32,7 @@ using namespace std;
 #include "../common/eq_packet_structs.h"
 #include "../common/EQPacket.h"
 #include "LoginServer.h"
+#include "LoginServerList.h"
 #include "../common/serverinfo.h"
 #include "../common/md5.h"
 #include "../common/files.h"
@@ -54,7 +55,7 @@ using namespace std;
 
 extern ZSList	zoneserver_list;
 extern uint32	numzones;
-extern LoginServer loginserver;
+extern LoginServerList loginserverlist;
 extern ClientList client_list;
 extern LauncherList launcher_list;
 extern volatile bool	RunLoops;
@@ -700,8 +701,8 @@ void Console::ProcessCommand(const char* command) {
 			}
 			else if (strcasecmp(sep.arg[0], "lock") == 0 && admin >= consoleLockStatus) {
 				WorldConfig::LockWorld();
-				if (loginserver.Connected()) {
-					loginserver.SendStatus();
+				if (loginserverlist.Connected()) {
+					loginserverlist.SendStatus();
 					SendMessage(1, "World locked.");
 				}
 				else {
@@ -710,8 +711,8 @@ void Console::ProcessCommand(const char* command) {
 			}
 			else if (strcasecmp(sep.arg[0], "unlock") == 0 && admin >= consoleLockStatus) {
 				WorldConfig::UnlockWorld();
-				if (loginserver.Connected()) {
-					loginserver.SendStatus();
+				if (loginserverlist.Connected()) {
+					loginserverlist.SendStatus();
 					SendMessage(1, "World unlocked.");
 				}
 				else {

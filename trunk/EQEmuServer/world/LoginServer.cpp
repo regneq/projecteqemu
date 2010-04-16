@@ -58,6 +58,7 @@ using namespace std;
 
 #include "../common/servertalk.h"
 #include "LoginServer.h"
+#include "LoginServerList.h"
 #include "../common/eq_packet_structs.h"
 #include "../common/packet_dump.h"
 #include "zoneserver.h"
@@ -67,20 +68,19 @@ using namespace std;
 #include "WorldConfig.h"
 
 extern ZSList zoneserver_list;
-extern LoginServer loginserver;
 extern ClientList client_list;
 extern uint32 numzones;
 extern int32 numplayers;
 extern volatile bool	RunLoops;
-volatile bool LoginLoopRunning = false;
 
-bool AttemptingConnect = false;
-
-LoginServer::LoginServer(const char* iAddress, int16 iPort)
+LoginServer::LoginServer(const char* iAddress, int16 iPort, const char* Account, const char* Password)
 : statusupdate_timer(LoginServer_StatusUpdateInterval)
 {
-	LoginServerIP = ResolveIP(iAddress);
+	strncpy(LoginServerAddress,iAddress,256);
 	LoginServerPort = iPort;
+	strncpy(LoginAccount,Account,31);
+	strncpy(LoginPassword,Password,31);
+	CanAccountUpdate = false;
 	tcpc = new EmuTCPConnection(true);
 	tcpc->SetPacketMode(EmuTCPConnection::packetModeLogin);
 }
@@ -185,6 +185,11 @@ bool LoginServer::Process() {
 			}
 			break;
 		}
+		case ServerOP_LSAccountUpdate: {
+			_log(WORLD__LS, "Received ServerOP_LSAccountUpdate packet from loginserver");
+			CanAccountUpdate = true;
+			break;
+		}
 		default:
 		{
 			_log(WORLD__LS_ERR, "Unknown LSOpCode: 0x%04x size=%d",(int)pack->opcode,pack->size);
@@ -199,39 +204,13 @@ DumpPacket(pack->pBuffer, pack->size);
 	return true;
 }
 
-// this should always be called in a new thread
-#ifdef WIN32
-	void AutoInitLoginServer(void *tmp) {
-#else
-	void *AutoInitLoginServer(void *tmp) {
-#endif
-	srand(time(NULL));
-	if (loginserver.ConnectReady()) {
-		InitLoginServer();
-	}
-#ifndef WIN32
-	return 0;
-#endif
-}
-
-bool InitLoginServer() {
+bool LoginServer::InitLoginServer() {
 	_log(WORLD__LS, "Connecting to login server...");
-	const WorldConfig *Config=WorldConfig::get();
-	if (!loginserver.ConnectReady()) {
-		_log(WORLD__LS_ERR,"InitLoginServer() while already attempting connect");
-		return false;
-	}
-	if (!Config->LoginHost.length()) {
-		_log(WORLD__LS_ERR,"Login server info not loaded");
-		return false;
-	}
-
-	AttemptingConnect = true;
-	loginserver.Connect(Config->LoginHost.c_str(), Config->LoginPort);
+	Connect();
 	return true;
 }
 
-bool LoginServer::Connect(const char* iAddress, int16 iPort) {
+bool LoginServer::Connect() {
 	char tmp[25];
 	if(database.GetVariable("loginType",tmp,sizeof(tmp)) && strcasecmp(tmp,"MinILogin") == 0){
 		minilogin = true;
@@ -246,18 +225,10 @@ bool LoginServer::Connect(const char* iAddress, int16 iPort) {
 	}
 
 	char errbuf[TCPConnection_ErrorBufferSize];
-	if (iAddress == 0) {
-		_log(WORLD__LS_ERR, "Null address given to LoginServer::Connect");
+	if ((LoginServerIP = ResolveIP(LoginServerAddress, errbuf)) == 0) {
+		_log(WORLD__LS_ERR, "Unable to resolve '%s' to an IP.",LoginServerAddress);
 		return false;
 	}
-	else {
-		if ((LoginServerIP = ResolveIP(iAddress, errbuf)) == 0) {
-			_log(WORLD__LS_ERR, "Unable to resolve '%s' to an IP.",iAddress);
-			return false;
-		}
-	}
-	if (iPort != 0)
-		LoginServerPort = iPort;
 
 	if (LoginServerIP == 0 || LoginServerPort == 0) {
 		_log(WORLD__LS_ERR, "LoginServer::Connect: Connect info incomplete, cannot connect");
@@ -265,7 +236,7 @@ bool LoginServer::Connect(const char* iAddress, int16 iPort) {
 	}
 
 	if (tcpc->ConnectIP(LoginServerIP, LoginServerPort, errbuf)) {
-		_log(WORLD__LS, "Connected to Loginserver: %s:%d",iAddress,LoginServerPort);
+		_log(WORLD__LS, "Connected to Loginserver: %s:%d",LoginServerAddress,LoginServerPort);
 		if (minilogin)
 			SendInfo();
 		else
@@ -291,8 +262,8 @@ void LoginServer::SendInfo() {
 	strcpy(lsi->protocolversion, EQEMU_PROTOCOL_VERSION);
 	strcpy(lsi->serverversion, CURRENT_VERSION);
 	strcpy(lsi->name, Config->LongName.c_str());
-	strcpy(lsi->account, Config->LoginAccount.c_str());
-	strcpy(lsi->password, Config->LoginPassword.c_str());
+	strcpy(lsi->account, LoginAccount);
+	strcpy(lsi->password, LoginPassword);
 	strcpy(lsi->address, Config->WorldAddress.c_str());
 	SendPacket(pack);
 	delete pack;
@@ -312,8 +283,8 @@ void LoginServer::SendNewInfo() {
 	strcpy(lsi->serverversion, CURRENT_VERSION);
 	strcpy(lsi->name, Config->LongName.c_str());
 	strcpy(lsi->shortname, Config->ShortName.c_str());
-	strcpy(lsi->account, Config->LoginAccount.c_str());
-	strcpy(lsi->password, Config->LoginPassword.c_str());
+	strcpy(lsi->account, LoginAccount);
+	strcpy(lsi->password, LoginPassword);
 	if (Config->WorldAddress.length())
 		strcpy(lsi->remote_address, Config->WorldAddress.c_str());
 	if (Config->LocalAddress.length())
@@ -346,5 +317,15 @@ void LoginServer::SendStatus() {
 	lss->num_players = numplayers;
 	SendPacket(pack);
 	delete pack;
+}
+
+void LoginServer::SendAccountUpdate(ServerPacket* pack) {
+	ServerLSAccountUpdate_Struct* s = (ServerLSAccountUpdate_Struct *) pack->pBuffer;
+	if(CanUpdate()) {
+		_log(WORLD__LS, "Sending ServerOP_LSAccountUpdate packet to loginserver");
+		strncpy(s->worldaccount, LoginAccount, 30);
+		strncpy(s->worldpassword, LoginPassword, 30);
+		SendPacket(pack);
+	}
 }
 

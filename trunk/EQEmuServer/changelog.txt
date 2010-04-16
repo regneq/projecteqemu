@@ -1,5 +1,11 @@
 ﻿EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==04/15/2010==
+gaeorn: multiple login server support in world. protocol to update login server account information from within game. "trusted" field for world accounts in loginserver to limit where account updates can come from. in eqemu_config.xml, use <loginserver1></loginserver1> to specify first of multiple login servers. increment the number to specify additional login servers. NOTE: be sure to replace the <loginserver></loginserver> entry or you will be limited to just one login server. MULTIPLE LOGIN SERVERS WILL NOT WORK WITH MINILOGIN.
+
+Required SQL for loginserver tables:
+alter table tblWorldServerRegistration add ServerTrusted integer NOT NULL after ServerAdminID;
+
 ==04/12/2010==
 Derision: SoD - /who <name>, /whotarget now work.
 Derision: Corpses summoned in Shadowrest should no longer decay before you can finish looting them.

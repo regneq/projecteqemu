@@ -31,6 +31,7 @@
 #include "clientlist.h"
 #include "cliententry.h"
 #include "LoginServer.h"
+#include "LoginServerList.h"
 #include "worlddb.h"
 #include "client.h"
 #include "LauncherList.h"
@@ -44,7 +45,7 @@ using namespace std;
 extern ZSList	zoneserver_list;
 extern ClientList	client_list;
 extern uint32	numzones;
-extern LoginServer loginserver;
+extern LoginServerList loginserverlist;
 extern LauncherList launcher_list;
 extern volatile bool	RunLoops;
 
@@ -85,15 +86,15 @@ const std::string &EQW::GetOutput() const {
 
 void EQW::LockWorld() {
 	WorldConfig::LockWorld();
-	if (loginserver.Connected()) {
-		loginserver.SendStatus();
+	if (loginserverlist.Connected()) {
+		loginserverlist.SendStatus();
 	}
 }
 
 void EQW::UnlockWorld() {
 	WorldConfig::UnlockWorld();
-	if (loginserver.Connected()) {
-		loginserver.SendStatus();
+	if (loginserverlist.Connected()) {
+		loginserverlist.SendStatus();
 	}
 }
 
@@ -103,7 +104,7 @@ Const_char *EQW::GetConfig(Const_char *var_name) {
 }
 
 bool EQW::LSConnected() {
-	return(loginserver.Connected());
+	return(loginserverlist.Connected());
 }
 
 int EQW::CountZones() {

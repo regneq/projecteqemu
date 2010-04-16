@@ -19,6 +19,7 @@
 #include "zoneserver.h"
 #include "clientlist.h"
 #include "LoginServer.h"
+#include "LoginServerList.h"
 #include "zonelist.h"
 #include "worlddb.h"
 #include "console.h"
@@ -36,7 +37,7 @@ extern ClientList	client_list;
 extern GroupLFPList LFPGroupList;
 extern ZSList		zoneserver_list;
 extern ConsoleList		console_list;
-extern LoginServer loginserver;
+extern LoginServerList loginserverlist;
 extern volatile bool RunLoops;
 
 ZoneServer::ZoneServer(EmuTCPConnection* itcpc) 
@@ -119,7 +120,7 @@ void ZoneServer::LSShutDownUpdate(int32 zoneid){
 		else
 			zsd->zone = zoneid;
 		zsd->zone_wid = GetID();
-		loginserver.SendPacket(pack);
+		loginserverlist.SendPacket(pack);
 		safe_delete(pack);
 	}
 }
@@ -139,7 +140,7 @@ void ZoneServer::LSBootUpdate(int32 zoneid, int32 instanceid, bool startup){
 		bootup->zone = zoneid;
 		bootup->zone_wid = GetID();
 		bootup->instance = instanceid;
-		loginserver.SendPacket(pack);
+		loginserverlist.SendPacket(pack);
 		safe_delete(pack);
 	}
 }
@@ -154,7 +155,7 @@ void ZoneServer::LSSleepUpdate(int32 zoneid){
 		ServerLSZoneSleep_Struct* sleep =(ServerLSZoneSleep_Struct*)pack->pBuffer;
 		sleep->zone = zoneid;
 		sleep->zone_wid = GetID();
-		loginserver.SendPacket(pack);
+		loginserverlist.SendPacket(pack);
 		safe_delete(pack);
 	}
 }
@@ -817,8 +818,8 @@ bool ZoneServer::Process() {
 				WorldConfig::LockWorld();
 			else
 				WorldConfig::UnlockWorld();
-			if (loginserver.Connected()) {
-				loginserver.SendStatus();
+			if (loginserverlist.Connected()) {
+				loginserverlist.SendStatus();
 				if (slock->mode >= 1)
 					this->SendEmoteMessage(slock->myname, 0, 0, 13, "World locked");
 				else
@@ -1109,6 +1110,13 @@ bool ZoneServer::Process() {
 
 			zoneserver_list.SendPacket(pack);
 			break;		
+		}
+
+		case ServerOP_LSAccountUpdate:
+		{
+			zlog(WORLD__ZONE, "Received ServerOP_LSAccountUpdate packet from zone");
+			loginserverlist.SendAccountUpdate(pack);
+			break;
 		}
 
 		case ServerOP_AdventureCreate:

@@ -151,6 +151,7 @@ private:
 	string version;
 	bool authorized;
 	bool logged_in;
+	bool trusted;
 };
 
 #endif
