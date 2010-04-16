@@ -282,9 +282,15 @@ void ZoneDatabase::AddLootTableToNPC(NPC* npc,int32 loottable_id, ItemList* item
 				*copper = (rand() % (maxcoin - mincoin)) + mincoin - 1;
 				*silver = (rand() % (maxcoin - mincoin)) + mincoin - 1;
 				*gold = (rand() % (maxcoin - mincoin)) + mincoin - 1;
+			if(*copper > cash) { *copper = cash; }
 				cash -= *copper;
-				cash -= *silver * 10;
-				cash -= *gold * 100;
+            if(*silver>(cash/10)) { *silver = (cash/10); }
+				cash -= *silver*10;
+            if(*gold > (cash/100)) { *gold = (cash/100); }
+				cash -= *gold*100;
+         }
+         if (cash < 0) {
+            cash = 0;
 			}
 			*plat = cash / 1000;
 			cash -= *plat * 1000;

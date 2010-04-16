@@ -5265,14 +5265,14 @@ void Client::Handle_OP_RecipesFavorite(const EQApplicationPacket *app)
 	}
 
 char *query = 0;
-	char buf[1100];	//gotta be big enough for 100 IDs
+	char buf[5500];   //gotta be big enough for 500 IDs
 
 	bool first = true;
-	uint8 r;
+	uint16 r;
 	char *pos = buf;
 
 	//Assumes item IDs are <10 characters long
-	for(r = 0; r < 100; r++) {
+	for(r = 0; r < 500; r++) { 
 		if(tsf->favorite_recipes[r] == 0)
 			break;	//assume the first 0 is the end...
 

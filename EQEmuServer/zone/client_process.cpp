@@ -679,7 +679,7 @@ bool Client::Process() {
 	
 	if (client_state != CLIENT_LINKDEAD && (client_state == CLIENT_ERROR || client_state == DISCONNECTED || client_state == CLIENT_KICKED || !eqs->CheckState(ESTABLISHED))) {
 		//client logged out or errored out
-		ResetTrade();
+		//ResetTrade();
 		if (client_state != CLIENT_KICKED) {
 			Save();
 		}

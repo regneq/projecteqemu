@@ -1,6 +1,10 @@
-﻿EQEMu Changelog (Started on Sept 24, 2003 15:50)
+EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==04/15/2010==
+cavedude (Leere): Increased the number of tradeskill favorites that can be stored client side to 500.
+cavedude (Leere): Fixed avgcoin. 
+cavedude (renoofturks): Fixes to SK harm touch.
+cavedude: Lowered snare movement speed when fleeing to 41% or higher to allow "Snare" to prevent movement at all levels.
 gaeorn: multiple login server support in world. protocol to update login server account information from within game. "trusted" field for world accounts in loginserver to limit where account updates can come from. in eqemu_config.xml, use <loginserver1></loginserver1> to specify first of multiple login servers. increment the number to specify additional login servers. NOTE: be sure to replace the <loginserver></loginserver> entry or you will be limited to just one login server. MULTIPLE LOGIN SERVERS WILL NOT WORK WITH MINILOGIN.
 
 Required SQL for loginserver tables:

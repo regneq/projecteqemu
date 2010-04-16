@@ -2958,7 +2958,7 @@ bool Mob::HasRangedProcs() const
 bool Client::CheckDoubleAttack(bool tripleAttack) {
 
 	// If you don't have the double attack skill, return
-	if(!HasSkill(DOUBLE_ATTACK))
+	if(!HasSkill(DOUBLE_ATTACK) && !(GetClass() == BARD || GetClass() == BEASTLORD))
 		return false;
 	
 	// You start with no chance of double attacking
