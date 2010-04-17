@@ -99,7 +99,7 @@ bool strn0cpyt(char* dest, const char* source, int32 size) {
 		return 0;
 	if (size == 0 || source == 0) {
 		dest[0] = 0;
-		return dest;
+		return false;
 	}
 	strncpy(dest, source, size);
 	dest[size - 1] = 0;
