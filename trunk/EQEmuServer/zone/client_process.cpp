@@ -158,11 +158,6 @@ bool Client::Process() {
 			this->stunned_timer.Disable();
 		}
 		
-		// Bard Melody twisting
-		if (this->MelodyIsActive()) {
-			this->MelodyTrySong();
-		}
-
 		if(!m_CheatDetectMoved)
 		{
 			m_TimeSinceLastPositionCheck = Timer::GetCurrentTime();

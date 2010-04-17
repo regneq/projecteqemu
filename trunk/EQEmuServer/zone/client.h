@@ -338,22 +338,6 @@ public:
 	inline void ClearAllProximities() { entity_list.ProcessMove(this, FLT_MAX, FLT_MAX, FLT_MAX); proximity_x = FLT_MAX; proximity_y = FLT_MAX; proximity_z = FLT_MAX; }
 
 	/*
-		Melody functions
-	*/
-	void		MelodyAdvanceSong(); // advance song one.
-	void		MelodyClearSongs(); // clear all songs from the array
-	int			MelodyGetCurrentGem() { return melodygems[melody_current_song]; }
-	int32		MelodyGetCurrentSpellID() { return MelodyGetSpellID(MelodyGetCurrentGem()); }
-	int32		MelodyGetSpellID(int gem_id); // lookup the spellid based on the client gem provided
-	inline bool MelodyIsActive() const { return(melodystate); } // is activated
-	void		MelodySetSong(int gem_id, int slot = -1); // set a specific song in the array
-	inline void MelodySetState(bool state) { melodystate = state; this->Message(0, "Melody %s.", state ? "activated" : "deactivated"); } // activate / deactivate melody
-	void		MelodyTrySong();
-
-
-
-
-	/*
 		Begin client modifiers
 	*/
 
@@ -1184,11 +1168,6 @@ private:
 
 	ClientTaskState *taskstate;
 	int TotalSecondsPlayed;
-
-	bool melodystate;
-	int melodygems[MAX_PP_MEMSPELL];
-	int melody_current_song; // should be 0-5, this is an index of melodysongs[current_song]
-
 
 	//Anti Spam Stuff
 	Timer *KarmaUpdateTimer;
