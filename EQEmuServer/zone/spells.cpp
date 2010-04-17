@@ -171,7 +171,7 @@ void NPC::SpellProcess()
 // but things like SpellFinished() can run concurrent with a triggered cast
 // to allow procs to work
 bool Mob::CastSpell(int16 spell_id, int16 target_id, int16 slot,
-	sint32 cast_time, sint32 mana_cost, int32* oSpellWillFinish, int32 item_slot)
+	sint32 cast_time, sint32 mana_cost, int32* oSpellWillFinish, int32 item_slot, uint32 timer, uint32 timer_duration, uint32 type)
 {
 	_ZP(Mob_CastSpell);
 	
@@ -266,7 +266,7 @@ bool Mob::CastSpell(int16 spell_id, int16 target_id, int16 slot,
 			return(false);
 		}
 	}	
-	return(DoCastSpell(spell_id, target_id, slot, cast_time, mana_cost, oSpellWillFinish, item_slot));
+	return(DoCastSpell(spell_id, target_id, slot, cast_time, mana_cost, oSpellWillFinish, item_slot, timer, timer_duration, type));
 }
 
 //
@@ -278,14 +278,12 @@ bool Mob::CastSpell(int16 spell_id, int16 target_id, int16 slot,
 // to repeat a spell for bard songs
 //
 bool Mob::DoCastSpell(int16 spell_id, int16 target_id, int16 slot,
-                    sint32 cast_time, sint32 mana_cost, int32* oSpellWillFinish, int32 item_slot)
+                    sint32 cast_time, sint32 mana_cost, int32* oSpellWillFinish, int32 item_slot, uint32 timer, uint32 timer_duration, uint32 type)
 {
 	_ZP(Mob_DoCastSpell);
 	
 	Mob* pMob = NULL;
-//	float mobDist;
 	sint32 orgcasttime;
-//	float modrange;
 	EQApplicationPacket *outapp = NULL;
 
 	if(!IsValidSpell(spell_id)) {
@@ -302,6 +300,12 @@ bool Mob::DoCastSpell(int16 spell_id, int16 target_id, int16 slot,
 	casting_spell_id = spell_id;
 	casting_spell_slot = slot;
 	casting_spell_inventory_slot = item_slot;
+	if(casting_spell_timer != 0xFFFFFFFF)
+	{
+		casting_spell_timer = timer;
+		casting_spell_timer_duration = timer_duration;
+	}
+	casting_spell_type = type;
 
 	SaveSpellLoc();
 	mlog(SPELLS__CASTING, "Casting %d Started at (%.3f,%.3f,%.3f)", spell_id, spell_x, spell_y, spell_z);
@@ -638,6 +642,9 @@ void Mob::ZeroCastingVars()
 	casting_spell_slot = 0;
 	casting_spell_mana = 0;
 	casting_spell_inventory_slot = 0;
+	casting_spell_timer = 0;
+	casting_spell_timer_duration = 0;
+	casting_spell_type = 0;
 	delaytimer = false;
 }
 
@@ -1676,18 +1683,31 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
 	}
 	
 	//set our reuse timer on long ass reuse_time spells...
-	if(IsClient() && spells[spell_id].recast_time > 1000) {
-		int recast = spells[spell_id].recast_time/1000;
-		if (spell_id == SPELL_LAY_ON_HANDS)	//lay on hands
+	if(IsClient())
+	{
+		if(spell_id == casting_spell_id && casting_spell_timer != 0xFFFFFFFF)
 		{
-			recast -= GetAA(aaFervrentBlessing) * 420;
+			CastToClient()->GetPTimers().Start(casting_spell_timer, casting_spell_timer_duration);
+			mlog(SPELLS__CASTING, "Spell %d: Setting custom reuse timer %d to %d", spell_id, casting_spell_timer, casting_spell_timer_duration);
+			if(casting_spell_type == 1) //AA
+			{
+				time_t timestamp = time(NULL);
+				CastToClient()->SendAATimer((casting_spell_timer - pTimerAAStart), timestamp, timestamp);
+			}
 		}
-		else if (spell_id == SPELL_HARM_TOUCH || spell_id == SPELL_HARM_TOUCH2)	//harm touch
-		{
-			recast -= GetAA(aaTouchoftheWicked) * 420;
+		else if(spells[spell_id].recast_time > 1000) {
+			int recast = spells[spell_id].recast_time/1000;
+			if (spell_id == SPELL_LAY_ON_HANDS)	//lay on hands
+			{
+				recast -= GetAA(aaFervrentBlessing) * 420;
+			}
+			else if (spell_id == SPELL_HARM_TOUCH || spell_id == SPELL_HARM_TOUCH2)	//harm touch
+			{
+				recast -= GetAA(aaTouchoftheWicked) * 420;
+			}
+			mlog(SPELLS__CASTING, "Spell %d: Setting long reuse timer to %d s (orig %d)", spell_id, recast, spells[spell_id].recast_time);
+			CastToClient()->GetPTimers().Start(pTimerSpellStart + spell_id, recast);
 		}
-		mlog(SPELLS__CASTING, "Spell %d: Setting long reuse timer to %d s (orig %d)", spell_id, recast, spells[spell_id].recast_time);
-		CastToClient()->GetPTimers().Start(pTimerSpellStart + spell_id, recast);
 	}
 
 	if(IsClient() && ((slot == USE_ITEM_SPELL_SLOT) || (slot == POTION_BELT_SPELL_SLOT)))

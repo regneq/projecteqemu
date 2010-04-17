@@ -665,8 +665,8 @@ bool logpos;
  	void SendSpellBarEnable(int16 spellid);
 	void ZeroCastingVars();
 	virtual void SpellProcess();
-	virtual bool CastSpell(int16 spell_id, int16 target_id, int16 slot = 10, sint32 casttime = -1, sint32 mana_cost = -1, int32* oSpellWillFinish = 0, int32 item_slot = 0xFFFFFFFF);
-	virtual bool DoCastSpell(int16 spell_id, int16 target_id, int16 slot = 10, sint32 casttime = -1, sint32 mana_cost = -1, int32* oSpellWillFinish = 0, int32 item_slot = 0xFFFFFFFF);
+	virtual bool CastSpell(int16 spell_id, int16 target_id, int16 slot = 10, sint32 casttime = -1, sint32 mana_cost = -1, int32* oSpellWillFinish = 0, int32 item_slot = 0xFFFFFFFF, uint32 timer = 0xFFFFFFFF, uint32 timer_duration = 0, uint32 type = 0);
+	virtual bool DoCastSpell(int16 spell_id, int16 target_id, int16 slot = 10, sint32 casttime = -1, sint32 mana_cost = -1, int32* oSpellWillFinish = 0, int32 item_slot = 0xFFFFFFFF, uint32 timer = 0xFFFFFFFF, uint32 timer_duration = 0, uint32 type = 0);
 	void CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16 mana_used, int32 inventory_slot = 0xFFFFFFFF);
 	bool SpellFinished(int16 spell_id, Mob *target, int16 slot = 10, int16 mana_used = 0, int32 inventory_slot = 0xFFFFFFFF);
 	virtual bool SpellOnTarget(int16 spell_id, Mob* spelltar);
@@ -1094,38 +1094,41 @@ protected:
     float spell_x, spell_y, spell_z;
 	int	attacked_count;
 	bool delaytimer;
-	int16 casting_spell_targetid;
-	int16 casting_spell_slot;
-	int16 casting_spell_mana;
-	int32 casting_spell_inventory_slot;
-	int16 bardsong;
-	int8 bardsong_slot;
-	int32 bardsong_target_id;
+	uint16 casting_spell_targetid;
+	uint16 casting_spell_slot;
+	uint16 casting_spell_mana;
+	uint32 casting_spell_inventory_slot;
+	uint32 casting_spell_timer;
+	uint32 casting_spell_timer_duration;
+	uint32 casting_spell_type;
+	uint16 bardsong;
+	uint8 bardsong_slot;
+	uint32 bardsong_target_id;
 
 
-	int8	haircolor;
-	int8	beardcolor;
-	int8	eyecolor1; // the eyecolors always seem to be the same, maybe left and right eye?
-	int8	eyecolor2;
-	int8	hairstyle;
-	int8	luclinface; // 
-	int8	beard;
-	int32	drakkin_heritage;
-	int32	drakkin_tattoo;
-	int32	drakkin_details;
-	int32	armor_tint[MAX_MATERIALS];
+	int8 haircolor;
+	int8 beardcolor;
+	int8 eyecolor1; // the eyecolors always seem to be the same, maybe left and right eye?
+	int8 eyecolor2;
+	int8 hairstyle;
+	int8 luclinface; // 
+	int8 beard;
+	int32 drakkin_heritage;
+	int32 drakkin_tattoo;
+	int32 drakkin_details;
+	int32 armor_tint[MAX_MATERIALS];
 
-	int8	aa_title;
+	int8 aa_title;
 
-	Mob*	shield_target;
+	Mob* shield_target;
 
 	int ExtraHaste;	// for the #haste command
-	bool	mezzed;
-	bool	stunned;
-	bool	charmed;	//this isnt fully implemented yet
-	bool	rooted;
-	bool	silenced;
-	bool	inWater;	// Set to true or false by Water Detection code if enabled by rules
+	bool mezzed;
+	bool stunned;
+	bool charmed;	//this isnt fully implemented yet
+	bool rooted;
+	bool silenced;
+	bool inWater;	// Set to true or false by Water Detection code if enabled by rules
 //	Timer mezzed_timer;
 	Timer  stunned_timer;
 	Timer	bardsong_timer;
@@ -1162,20 +1165,20 @@ protected:
 	bool flee_mode;
 	Timer flee_timer;
 
-	bool	pAIControlled;
-	bool	roamer;
-	bool	logging_enabled;
+	bool pAIControlled;
+	bool roamer;
+	bool logging_enabled;
 
-	int		wandertype;
-	int		pausetype;
+	int wandertype;
+	int pausetype;
 
-	int		cur_wp;
-	float		cur_wp_x;
-	float		cur_wp_y;
-	float		cur_wp_z;
-	int		cur_wp_pause;
+	int cur_wp;
+	float cur_wp_x;
+	float cur_wp_y;
+	float cur_wp_z;
+	int cur_wp_pause;
 
-	int		patrol;
+	int patrol;
 	float fear_walkto_x;
 	float fear_walkto_y;
 	float fear_walkto_z;
@@ -1195,15 +1198,15 @@ protected:
 	int AggroedAwayFromGrid;
 	int PathingTraversedNodes;
 
-	int32	pDontHealMeBefore;
-	int32	pDontBuffMeBefore;
-	int32	pDontDotMeBefore;
-	int32	pDontRootMeBefore;
-	int32	pDontSnareMeBefore;
+	int32 pDontHealMeBefore;
+	int32 pDontBuffMeBefore;
+	int32 pDontDotMeBefore;
+	int32 pDontRootMeBefore;
+	int32 pDontSnareMeBefore;
 
 	// Bind wound
-	Timer  bindwound_timer;
-	Mob*    bindwound_target;
+	Timer bindwound_timer;
+	Mob* bindwound_target;
 	// hp event
 	int nexthpevent;
 	int nextinchpevent;
@@ -1213,14 +1216,14 @@ protected:
 
 	EGNode *_egnode;	//the EG node we are in
 
-	bool	m_hasRune;
-	bool	m_hasSpellRune;
-	bool	m_hasDeathSaveChance;
+	bool m_hasRune;
+	bool m_hasSpellRune;
+	bool m_hasDeathSaveChance;
 	int	flymode;
 
 private:
-	void	_StopSong();		//this is not what you think it is
-	Mob*	target;
+	void _StopSong();		//this is not what you think it is
+	Mob* target;
 };
 
 // All data associated with a single trade
