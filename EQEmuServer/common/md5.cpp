@@ -188,7 +188,7 @@ void MD5::Final(int8 digest[16], MD5Context *ctx) {
 #define F3(x, y, z) (x ^ y ^ z)
 #define F4(x, y, z) (y ^ (x | ~z))
 /* This is the central step in the MD5 algorithm. */
-#define MD5STEP(f,w,x,y,z,in,s) (w += f(x,y,z)+in, w = (w<<s | w>>32-s) + x)
+#define MD5STEP(f,w,x,y,z,in,s) (w += f(x,y,z)+in, w = (w<<s | w>>(32-s)) + x)
 
 
 
