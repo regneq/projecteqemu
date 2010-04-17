@@ -421,7 +421,6 @@ int command_init(void) {
 		command_add("guildlist","[guildapproveid] - Lists character names who have approved the guild specified by the approve id",0,command_guildlist) ||
 		command_add("altactivate", "[argument] - activates alternate advancement abilities, use altactivate help for more information", 0, command_altactivate) ||
 		command_add("refundaa", "- Refunds your target's AA points, will disconnect them in the process as well.", 100, command_refundaa) ||
-		command_add("melody", "- Used by bards to twist multiple songs.", 0, command_melody) ||
 
 #ifdef BOTS
 		command_add("bot","- Type \"#bot help\" to the see the list of available commands for bots.", 0, command_bot) ||
@@ -9111,47 +9110,6 @@ void command_modifynpcstat(Client *c, const Seperator *sep)
 		return;
 
 	c->GetTarget()->CastToNPC()->ModifyNPCStat(sep->arg[1], sep->arg[2]);
-}
-
-void command_melody(Client *c, const Seperator *sep)
-{
-	if (!c)
-		return;
-
-	if (c->GetClass() != BARD)
-		return;
-
-	// no arguments = disable melody
-	if (strlen(sep->arg[1]) == 0) {
-		c->MelodySetState(false);
-		c->Message(0, "For help type #melody help.");
-		return;
-	}
-
-	if (strcasecmp( sep->arg[1], "help" ) == 0) {
-		c->Message(0, "Usage: #melody 1 2 3 4");
-		c->Message(0, "Where 1/2/3/4 corresponds to the gems you wish to twist.");
-		return;
-	}
-
-	c->MelodyClearSongs();
-	c->MelodySetState(false);
-
-	for (int i = 1; i <= sep->GetMaxArgNum(); i++) {
-		int gem = atoi(sep->arg[i]);
-
-		if (gem == 0)
-			break;
-
-		gem -= 1; // this is to compensate for the fact that spell gem #1 is actually gem[0]
-
-		c->MelodySetSong(gem);
-	}
-
-	// Good to go! Activate the Melody flag
-	c->MelodySetState(true);
-
-	return;
 }
 
 void command_instance(Client *c, const Seperator *sep)
