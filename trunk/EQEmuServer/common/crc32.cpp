@@ -120,7 +120,7 @@ void CRC32::SetEQChecksum(uchar* in_data, int32 in_length)
 #undef i386
 #endif
 
-uint32 CRC32::Update(const int8* buf, uint32 bufsize, uint32 crc32) {
+uint32 CRC32::Update(const int8* buf, uint32 bufsize, uint32 crc32var) {
 #if defined(WIN32)
 	// Register use:
 	//		eax - CRC32 value
@@ -137,7 +137,7 @@ uint32 CRC32::Update(const int8* buf, uint32 bufsize, uint32 crc32) {
 
 //		mov eax, dwCrc32			// Load the pointer to dwCrc32
 //		mov ecx, [eax]				// Dereference the pointer to load dwCrc32
-		mov ecx, crc32				// Load crc32 -Quag
+		mov ecx, crc32var			// Load crc32var -Quag
 
 		lea edi, CRC32Table			// Load the CRC32 table
 
@@ -167,14 +167,14 @@ uint32 CRC32::Update(const int8* buf, uint32 bufsize, uint32 crc32) {
 
 //		mov eax, dwCrc32			// Load the pointer to dwCrc32
 //		mov [eax], ecx				// Write the result
-		mov crc32, ecx				// Write the result -Quag
+		mov crc32var, ecx			// Write the result -Quag
 	}
 	
-	return crc32;
+	return crc32var;
 }
 #elif defined(i386)
 		register uint32  val __asm ( "ax" );
-		val = crc32;
+		val = crc32var;
 __asm __volatile (
 		"push  %%ebx\n"
 		"xorl	%%ebx, %%ebx\n"
@@ -250,11 +250,11 @@ __asm __volatile (
 }
 #else
 	for(uint32 i=0; i < bufsize; i++)
-		Calc(buf[i], crc32);
-	return crc32;
+		Calc(buf[i], crc32var);
+	return crc32var;
 }
 #endif
 
-inline void CRC32::Calc(const int8 byte, int32& crc32) {
-	crc32 = ((crc32) >> 8) ^ CRC32Table[(byte) ^ ((crc32) & 0x000000FF)];
+inline void CRC32::Calc(const int8 byte, int32& crc32var) {
+	crc32var = ((crc32var) >> 8) ^ CRC32Table[(byte) ^ ((crc32var) & 0x000000FF)];
 }
