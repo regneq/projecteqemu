@@ -650,11 +650,9 @@ bool Client::UseDiscipline(int32 spell_id, int32 target) {
 		return(false);
 	}
 	
-	CastSpell(spell_id, target, DISCIPLINE_SPELL_SLOT);
-
 	if(spell.recast_time > 0)
 	{
-		p_timers.Start(DiscTimer, spell.recast_time / 1000);
+		CastSpell(spell_id, target, DISCIPLINE_SPELL_SLOT, -1, -1, 0, -1, (uint32)DiscTimer, (spell.recast_time / 1000));
 		if(spells[spell_id].EndurTimerIndex < MAX_DISCIPLINE_TIMERS)
 		{
 			EQApplicationPacket *outapp = new EQApplicationPacket(OP_DisciplineTimer, sizeof(DisciplineTimer_Struct));
@@ -664,6 +662,10 @@ bool Client::UseDiscipline(int32 spell_id, int32 target) {
 			QueuePacket(outapp);
 			safe_delete(outapp);
 		}	
+	}
+	else
+	{
+		CastSpell(spell_id, target, DISCIPLINE_SPELL_SLOT);
 	}
 	return(true);
 }

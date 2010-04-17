@@ -267,27 +267,22 @@ void Client::ActivateAA(aaID activate){
 	
 	//cast the spell, if we have one
 	if(caa->spell_id > 0 && caa->spell_id < SPDAT_RECORDS) {
-		//I dont know when we need to mem and when we do not, if ever...
-		//MemorizeSpell(8, spell_id, 3);
-		if(!CastSpell(caa->spell_id, target_id))
-			return;
-	}
-	
-	//set our re-use timer.
-	if(caa->reuse_time > 0) {
-
-		int32 timer_base = CalcAAReuseTimer(caa);
-
-		if(activate == aaImprovedHarmTouch || activate == aaLeechTouch)
-			p_timers.Start(pTimerHarmTouch, HarmTouchReuseTime);	
-		
-		//start the usage timer
-		p_timers.Start(AATimerID + pTimerAAStart, timer_base);
-		
-		//notify the client
-		//I do not know why we do not put the proper end time in here:
-		time_t timestamp = time(NULL);
-		SendAATimer(AATimerID, timestamp, timestamp);
+		if(caa->reuse_time > 0)
+		{
+			int32 timer_base = CalcAAReuseTimer(caa);
+			if(activate == aaImprovedHarmTouch || activate == aaLeechTouch)
+			{
+				p_timers.Start(pTimerHarmTouch, HarmTouchReuseTime);
+			}
+			
+			if(!CastSpell(caa->spell_id, target_id, 10, -1, -1, 0, -1, AATimerID + pTimerAAStart, timer_base, 1))
+					return;
+		}
+		else
+		{
+			if(!CastSpell(caa->spell_id, target_id))
+				return;
+		}
 	}
 }
 

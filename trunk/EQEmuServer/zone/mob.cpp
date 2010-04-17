@@ -274,6 +274,9 @@ Mob::Mob(const char*   in_name,
 	bardsong = 0;
 	bardsong_target_id = 0;
 	casting_spell_id = 0;
+	casting_spell_timer = 0;
+	casting_spell_timer_duration = 0;
+	casting_spell_type = 0;
 	target = 0;
 	
 	memset(&itembonuses, 0, sizeof(StatBonuses));
