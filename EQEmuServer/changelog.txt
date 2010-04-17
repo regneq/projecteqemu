@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==04/17/2010==
+Congdar: fix windows compile: warning C4405: 'crc32' : identifier is reserved word
+
 ==04/16/2010==
 KLS: (Leere) Melody Fix.
 KLS: Other merges from spell branch, some more to come.  Tell me if there are any crashes I only tested it for about 25 minutes.
