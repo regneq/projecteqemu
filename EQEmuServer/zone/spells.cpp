@@ -574,7 +574,6 @@ bool Client::CheckFizzle(int16 spell_id)
 	int act_skill;
 	
 	par_skill = spells[spell_id].classes[GetClass()-1] * 5 - 10;//IIRC even if you are lagging behind the skill levels you don't fizzle much
-	/*par_skill = spells[spell_id].classes[GetClass()-1] * 5 + 5;*/
 	if (par_skill > 235)
 		par_skill = 235;
 
@@ -585,7 +584,6 @@ bool Client::CheckFizzle(int16 spell_id)
 	
 	//FatherNitwit: spell specialization
 	float specialize = GetSpecializeSkillValue(spell_id);
-		//VERY rough success formula, needs research
 	if(specialize > 0) {
 		switch(GetAA(aaSpellCastingMastery)){
 		case 1:
@@ -612,17 +610,25 @@ bool Client::CheckFizzle(int16 spell_id)
 	float diff = par_skill + spells[spell_id].basediff - act_skill;
 
 	// if you have high int/wis you fizzle less, you fizzle more if you are stupid
-	if (GetCasterClass() == 'W')
+	if(GetClass() == BARD)
+	{
+		diff -= (GetCHA() - 110) / 20.0;
+	}
+	else if (GetCasterClass() == 'W')
+	{
 		diff -= (GetWIS() - 125) / 20.0;
-	if (GetCasterClass() == 'I')
+	}
+	else if (GetCasterClass() == 'I')
+	{
 		diff -= (GetINT() - 125) / 20.0;
+	}
 
 	// base fizzlechance is lets say 5%, we can make it lower for AA skills or whatever
 	float basefizzle = 10;
 	float fizzlechance = basefizzle - specialize + diff / 5.0;
 
-	// always at least 5% chance to fail or succeed
-	fizzlechance = fizzlechance < 5 ? 5 : (fizzlechance > 95 ? 95 : fizzlechance);
+	// always at least 1% chance to fail or 5% to succeed
+	fizzlechance = fizzlechance < 1 ? 1 : (fizzlechance > 95 ? 95 : fizzlechance);
 	float fizzle_roll = MakeRandomFloat(0, 100);
 
 	mlog(SPELLS__CASTING, "Check Fizzle %s  spell %d  fizzlechance: %0.2f%%   diff: %0.2f  roll: %0.2f", GetName(), spell_id, fizzlechance, diff, fizzle_roll);
