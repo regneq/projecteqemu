@@ -441,7 +441,7 @@ int main(int argc, char** argv) {
 			InterserverTimer.Start();
 			database.ping();
 			AsyncLoadVariables(dbasync, &database);
-			if (loginserverlist.Connected() == false) {
+			if (loginserverlist.AllConnected() == false) {
 #ifdef WIN32
 				_beginthread(AutoInitLoginServer, 0, NULL);
 #else
