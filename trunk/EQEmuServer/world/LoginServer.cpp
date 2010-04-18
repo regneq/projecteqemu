@@ -206,7 +206,9 @@ DumpPacket(pack->pBuffer, pack->size);
 
 bool LoginServer::InitLoginServer() {
 	_log(WORLD__LS, "Connecting to login server...");
-	Connect();
+	if(Connected() == false) {
+		Connect();
+	}
 	return true;
 }
 

@@ -1,6 +1,7 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==04/17/2010==
+gaeorn: fixed login server auto-reconnect
 cavedude (Leere): Tradeskill recipe learning
 Congdar: fix windows compile: warning C4405: 'crc32' : identifier is reserved word
 Congdar: fix windows compile: warning C4554: '>>' : check operator precedence for possible error; use parentheses to clarify precedence

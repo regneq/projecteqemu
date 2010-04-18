@@ -34,6 +34,7 @@ public:
 	bool	SendPacket(ServerPacket *pack);	
 	bool	SendAccountUpdate(ServerPacket *pack);	
 	bool	Connected();
+	bool	AllConnected();
 	bool	MiniLogin();
 	bool	CanUpdate();
 	
