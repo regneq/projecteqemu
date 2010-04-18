@@ -69,6 +69,7 @@ RULE_INT ( Character, KillsPerRaidLeadershipAA, 250) // Number of dark blues or 
 RULE_INT ( Character, MaxFearDurationForPlayerCharacter, 4) //4 tics, each tic calculates every 6 seconds.
 RULE_INT ( Character, MaxCharmDurationForPlayerCharacter, 15)
 RULE_INT ( Character, BaseHPRegenBonusRaces, 4352)	//a bitmask of race(s) that receive the regen bonus. Iksar (4096) & Troll (256) = 4352. see common/races.h for the bitmask values
+RULE_BOOL ( Character, SoDClientUseSoDHPManaEnd, false)	// Setting this to true will allow SoD clients to use the SoD HP/Mana/End formulas and previous clients will use the old formulas
 
 RULE_CATEGORY_END()
 
