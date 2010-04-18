@@ -505,10 +505,11 @@ void Client::TradeskillSearchResults(const char *query, unsigned long qlen,
 		// Recipes that have either been made before or were
 		// explicitly learned are excempt from that limit
 		if (RuleB(Skills, UseLimitTradeskillSearchSkillDiff)) {
-			if ((trivial - GetSkill((SkillType)tradeskill)) > RuleI(Skills, MaxTradeskillSearchSkillDiff)
-				&& row[4] == NULL
-			)
+			if (((sint32)trivial - (sint32)GetSkill((SkillType)tradeskill)) > RuleI(Skills, MaxTradeskillSearchSkillDiff)
+				&& row[4] == NULL)
+			{
 				continue;
+			}
 		}
 		
 		
