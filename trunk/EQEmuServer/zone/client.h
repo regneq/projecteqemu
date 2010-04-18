@@ -248,6 +248,7 @@ public:
 	void	VoiceMacroReceived(int32 Type, char *Target, int32 MacroNumber);
 	void	SendSound();
 	void	CheckLDoNHail(Mob *target);
+	void	LearnRecipe(uint32 recipeID);
 
 	EQApplicationPacket*	ReturnItemPacket(sint16 slot_id, const ItemInst* inst, ItemPacketType packet_type);
 

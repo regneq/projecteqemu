@@ -78,6 +78,8 @@ RULE_CATEGORY_END()
 
 RULE_CATEGORY( Skills )
 RULE_INT ( Skills, MaxTrainTradeskills, 21 )
+RULE_BOOL ( Skills, UseLimitTradeskillSearchSkillDiff, true )
+RULE_INT ( Skills, MaxTradeskillSearchSkillDiff, 50 )
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Pets )
