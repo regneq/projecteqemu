@@ -4336,6 +4336,32 @@ XS(XS_Client_GetRaidPoints)
 	XSRETURN(1);
 }
 
+XS(XS_Client_LearnRecipe);
+XS(XS_Client_LearnRecipe)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Client::LearnRecipe(THIS, recipe_id)");
+	{
+		Client *	THIS;
+		dXSTARG;
+		uint32		recipe_id = (uint32)SvUV(ST(1));
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->LearnRecipe(recipe_id);;
+	}
+	XSRETURN_EMPTY;
+}
+
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -4516,6 +4542,7 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "UpdateGroupAAs"), XS_Client_UpdateGroupAAs, file, "$$$");
 		newXSproto(strcpy(buf, "GetGroupPoints"), XS_Client_GetGroupPoints, file, "$");
 		newXSproto(strcpy(buf, "GetRaidPoints"), XS_Client_GetRaidPoints, file, "$");
+		newXSproto(strcpy(buf, "LearnRecipe"), XS_Client_LearnRecipe, file, "$$");
 	XSRETURN_YES;
 }
 

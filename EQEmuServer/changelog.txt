@@ -1,9 +1,12 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==04/17/2010==
+cavedude (Leere): Tradeskill recipe learning
 Congdar: fix windows compile: warning C4405: 'crc32' : identifier is reserved word
 Congdar: fix windows compile: warning C4554: '>>' : check operator precedence for possible error; use parentheses to clarify precedence
 Congdar: fix windows compile: warning C4800: 'char *' : forcing value to bool 'true' or 'false' (performance warning)
+
+Required SQL: utils/sql/svn/1392_recipe_learning.sql
 
 ==04/16/2010==
 KLS: (Leere) Melody Fix.

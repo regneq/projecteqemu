@@ -5290,13 +5290,15 @@ char *query = 0;
 	//To be a good kid, I should move this SQL somewhere else...
 	//but im lazy right now, so it stays here
 	uint32 qlen = 0;
-	qlen = MakeAnyLenString(&query, "SELECT tr.id,tr.name,tr.trivial,SUM(tre.componentcount) "
+	qlen = MakeAnyLenString(&query, "SELECT tr.id,tr.name,tr.trivial,SUM(tre.componentcount),crl.madecount,tr.tradeskill "
 		" FROM tradeskill_recipe AS tr "
 		" LEFT JOIN tradeskill_recipe_entries AS tre ON tr.id=tre.recipe_id "
+		" LEFT JOIN (SELECT recipe_id, madecount FROM char_recipe_list WHERE char_id = %u) AS crl ON tr.id=crl.recipe_id " 
 		" WHERE tr.id IN (%s) "
+		"  AND tr.must_learn & 0x20 = 0 AND((tr.must_learn & 0x3 <> 0 AND crl.madecount IS NOT NULL) OR (tr.must_learn & 0x3 = 0)) "
 		" GROUP BY tr.id "
 		" HAVING sum(if(tre.item_id %s AND tre.iscontainer > 0,1,0)) > 0 "
-		" LIMIT 100 ", buf, containers);
+		" LIMIT 100 ", CharacterID(), buf, containers);
 
 	TradeskillSearchResults(query, qlen, tsf->object_type, tsf->some_id);
 
@@ -5343,14 +5345,16 @@ void Client::Handle_OP_RecipesSearch(const EQApplicationPacket *app)
 	uint32 qlen = 0;
 
 	//arbitrary limit of 200 recipes, makes sense to me.
-	qlen = MakeAnyLenString(&query, "SELECT tr.id,tr.name,tr.trivial,SUM(tre.componentcount) "
+	qlen = MakeAnyLenString(&query, "SELECT tr.id,tr.name,tr.trivial,SUM(tre.componentcount),crl.madecount,tr.tradeskill "
 		" FROM tradeskill_recipe AS tr "
 		" LEFT JOIN tradeskill_recipe_entries AS tre ON tr.id=tre.recipe_id "
+		" LEFT JOIN (SELECT recipe_id, madecount FROM char_recipe_list WHERE char_id = %u) AS crl ON tr.id=crl.recipe_id "
 		" WHERE %s tr.trivial >= %u AND tr.trivial <= %u "
+		"  AND tr.must_learn & 0x20 = 0 AND ((tr.must_learn & 0x3 <> 0 AND crl.madecount IS NOT NULL) OR (tr.must_learn & 0x3 = 0)) "
 		" GROUP BY tr.id "
 		" HAVING sum(if(tre.item_id %s AND tre.iscontainer > 0,1,0)) > 0 "
 		" LIMIT 200 "
-		, searchclause, rss->mintrivial, rss->maxtrivial, containers);
+		, CharacterID(), searchclause, rss->mintrivial, rss->maxtrivial, containers);
 
 	TradeskillSearchResults(query, qlen, rss->object_type, rss->some_id);
 

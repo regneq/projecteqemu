@@ -43,6 +43,10 @@ struct DBTradeskillRecipe_Struct {
 	vector< pair<uint32,uint8> > onsuccess;
 	vector< pair<uint32,uint8> > onfail;
 	string name;
+	uint8 must_learn;
+	bool has_learnt;
+	uint32 madecount;
+	uint32 recipe_id;
 };
 
 struct PetRecord {
@@ -269,10 +273,11 @@ public:
 	/*
 	 * Tradeskills
 	 */
-	bool	GetTradeRecipe(const ItemInst* container, uint8 c_type, uint32 some_id, DBTradeskillRecipe_Struct *spec);
-	bool	GetTradeRecipe(uint32 recipe_id, uint8 c_type, uint32 some_id, DBTradeskillRecipe_Struct *spec);
+	bool	GetTradeRecipe(const ItemInst* container, uint8 c_type, uint32 some_id, uint32 char_id, DBTradeskillRecipe_Struct *spec);
+	bool	GetTradeRecipe(uint32 recipe_id, uint8 c_type, uint32 some_id, uint32 char_id, DBTradeskillRecipe_Struct *spec);
 	int32   GetZoneForage(int32 ZoneID, int8 skill);    /* for foraging - BoB */
 	int32   GetZoneFishing(int32 ZoneID, int8 skill, uint32 &npc_id, uint8 &npc_chance);
+	void	UpdateRecipeMadecount(uint32 recipe_id, uint32 char_id, uint32 madecount);
 	
 	/*
 	 * Tribute

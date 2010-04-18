@@ -149,8 +149,23 @@ void Object::HandleCombine(Client* user, const NewCombine_Struct* in_combine, Ob
 	container = inst;
 	
  	DBTradeskillRecipe_Struct spec;
- 	if (!database.GetTradeRecipe(container, c_type, some_id, &spec)) {
+ 	if (!database.GetTradeRecipe(container, c_type, some_id, user->CharacterID(), &spec)) {
  		user->Message_StringID(4,TRADESKILL_NOCOMBINE);
+ 		EQApplicationPacket* outapp = new EQApplicationPacket(OP_TradeSkillCombine, 0);
+ 		user->QueuePacket(outapp);
+ 		safe_delete(outapp);
+ 		return;
+ 	}
+ 	
+ 	// Character hasn't learnt the recipe yet.
+ 	// must_learn:
+ 	//  bit 1 (0x01): recipe can't be experimented
+ 	//  bit 2 (0x02): can try to experiment but not useable for auto-combine until learnt
+ 	//  bit 5 (0x10): no learn message, use unlisted flag to prevent it showing up on search
+ 	//  bit 6 (0x20): unlisted recipe flag
+ 	if ((spec.must_learn&0xF) == 1 && !spec.has_learnt) {
+ 		// Made up message for the client. Just giving a DNC is the other option.
+ 		user->Message(4, "You need to learn how to combine these first.");
  		EQApplicationPacket* outapp = new EQApplicationPacket(OP_TradeSkillCombine, 0);
  		user->QueuePacket(outapp);
  		safe_delete(outapp);
@@ -207,6 +222,16 @@ void Object::HandleCombine(Client* user, const NewCombine_Struct* in_combine, Ob
 	//do the check and send results...
 	bool success = user->TradeskillExecute(&spec);
 
+	// Learn new recipe message
+	// Update Made count
+	// TODO: Trigger EVENT for scripts
+	if (success) {
+		if (!spec.has_learnt && ((spec.must_learn&0x10) != 0x10)) {
+			user->Message_StringID(4, TRADESKILL_LEARN_RECIPE, spec.name.c_str());
+		}
+		database.UpdateRecipeMadecount(spec.recipe_id, user->CharacterID(), spec.madecount+1);
+	}
+	
 	// Replace the container on success if required.
 	//
 	
@@ -234,12 +259,23 @@ void Object::HandleAutoCombine(Client* user, const RecipeAutoCombine_Struct* rac
 	
 	//ask the database for the recipe to make sure it exists...
 	DBTradeskillRecipe_Struct spec;
-	if (!database.GetTradeRecipe(rac->recipe_id, rac->object_type, rac->some_id, &spec)) {
+	if (!database.GetTradeRecipe(rac->recipe_id, rac->object_type, rac->some_id, user->CharacterID(), &spec)) {
 		LogFile->write(EQEMuLog::Error, "Unknown recipe for HandleAutoCombine: %u\n", rac->recipe_id);
 		user->QueuePacket(outapp);
 		safe_delete(outapp);
 		return;
 	}
+
+	// Character hasn't learnt the recipe yet.
+	// This shouldn't happen.
+	if ((spec.must_learn&0xf) && !spec.has_learnt) {
+		// Made up message for the client. Just giving a DNC is the other option.
+		user->Message(4, "You need to learn how to combine these first.");
+		user->QueuePacket(outapp);
+		safe_delete(outapp);
+		return;
+	}
+
 	
 	char errbuf[MYSQL_ERRMSG_SIZE];
     MYSQL_RES *result;
@@ -349,6 +385,14 @@ void Object::HandleAutoCombine(Client* user, const RecipeAutoCombine_Struct* rac
 	
 	bool success = user->TradeskillExecute(&spec);
 	
+	if (success) {
+		if (!spec.has_learnt && ((spec.must_learn & 0x10) != 0x10)) {
+			user->Message_StringID(4, TRADESKILL_LEARN_RECIPE, spec.name.c_str());
+		}
+		database.UpdateRecipeMadecount(spec.recipe_id, user->CharacterID(), spec.madecount+1);
+	}
+	
+	
 	//TODO: find in-pack containers in inventory, make sure they are really
 	//there, and then use that slot to handle replace_container too.
 	if(success && spec.replace_container) {
@@ -441,7 +485,7 @@ void Client::TradeskillSearchResults(const char *query, unsigned long qlen,
 		//search gave no results... not an error
 		return;
 	}
-	if(mysql_num_fields(result) != 4) {
+	if(mysql_num_fields(result) != 6) {
 		LogFile->write(EQEMuLog::Error, "Error in TradeskillSearchResults query '%s': Invalid column count in result", query);
 		return;		
 	}
@@ -449,12 +493,24 @@ void Client::TradeskillSearchResults(const char *query, unsigned long qlen,
 	uint8 r;
 	for(r = 0; r < qcount; r++) {
 		row = mysql_fetch_row(result);
-		if(row == NULL || row[0] == NULL || row[1] == NULL || row[2] == NULL || row[3] == NULL)
+		if(row == NULL || row[0] == NULL || row[1] == NULL || row[2] == NULL || row[3] == NULL || row[5] == NULL)
 			continue;
 		uint32 recipe = (uint32)atoi(row[0]);
 		const char *name = row[1];
 		uint32 trivial = (uint32) atoi(row[2]);
 		uint32 comp_count = (uint32) atoi(row[3]);
+		uint32 tradeskill = (uint16) atoi(row[5]);
+		
+		// Leere: Skip the recipes that exceed the threshold in skill difference
+		// Recipes that have either been made before or were
+		// explicitly learned are excempt from that limit
+		if (RuleB(Skills, UseLimitTradeskillSearchSkillDiff)) {
+			if ((trivial - GetSkill((SkillType)tradeskill)) > RuleI(Skills, MaxTradeskillSearchSkillDiff)
+				&& row[4] == NULL
+			)
+				continue;
+		}
+		
 		
 		EQApplicationPacket* outapp = new EQApplicationPacket(OP_RecipeReply, sizeof(RecipeReply_Struct));
 		RecipeReply_Struct *reply = (RecipeReply_Struct *) outapp->pBuffer;
@@ -913,7 +969,7 @@ void Client::CheckIncreaseTradeskill(sint16 bonusstat, sint16 stat_modifier, flo
 
 
 bool ZoneDatabase::GetTradeRecipe(const ItemInst* container, uint8 c_type, uint32 some_id, 
-	DBTradeskillRecipe_Struct *spec)
+	uint32 char_id, DBTradeskillRecipe_Struct *spec)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     MYSQL_RES *result;
@@ -1105,12 +1161,12 @@ bool ZoneDatabase::GetTradeRecipe(const ItemInst* container, uint8 c_type, uint3
 		return false;
 	}
 
-	return(GetTradeRecipe(recipe_id, c_type, some_id, spec));
+	return(GetTradeRecipe(recipe_id, c_type, some_id, char_id, spec));
 }
 	
 
 bool ZoneDatabase::GetTradeRecipe(uint32 recipe_id, uint8 c_type, uint32 some_id, 
-	DBTradeskillRecipe_Struct *spec)
+	uint32 char_id, DBTradeskillRecipe_Struct *spec)
 {	
 	char errbuf[MYSQL_ERRMSG_SIZE];
     MYSQL_RES *result;
@@ -1131,11 +1187,13 @@ bool ZoneDatabase::GetTradeRecipe(uint32 recipe_id, uint8 c_type, uint32 some_id
  	}
  	
  	qlen = MakeAnyLenString(&query, "SELECT tr.id, tr.tradeskill, tr.skillneeded,"
- 	" tr.trivial, tr.nofail, tr.replace_container, tr.name"
+ 	" tr.trivial, tr.nofail, tr.replace_container, tr.name, tr.must_learn, crl.madecount"
  	" FROM tradeskill_recipe AS tr inner join tradeskill_recipe_entries as tre"
  	" ON tr.id = tre.recipe_id"
+ 	" LEFT JOIN (SELECT recipe_id, madecount from char_recipe_list WHERE char_id = %u) AS crl "
+ 	"   ON tr.id = crl.recipe_id "
  	" WHERE tr.id = %lu AND tre.item_id %s"
- 	" GROUP BY tr.id", (unsigned long)recipe_id, containers);
+ 	" GROUP BY tr.id", char_id, (unsigned long)recipe_id, containers);
 		
 	if (!RunQuery(query, qlen, errbuf, &result)) {
 		LogFile->write(EQEMuLog::Error, "Error in GetTradeRecipe, query: %s", query);
@@ -1158,6 +1216,15 @@ bool ZoneDatabase::GetTradeRecipe(uint32 recipe_id, uint8 c_type, uint32 some_id
  	spec->nofail			= atoi(row[4]) ? true : false;
  	spec->replace_container	= atoi(row[5]) ? true : false;
 	spec->name = row[6];
+	spec->must_learn = (uint8)atoi(row[7]);
+	if (row[8] == NULL) {
+		spec->has_learnt = false;
+		spec->madecount = 0;
+	} else {
+		spec->has_learnt = true;
+		spec->madecount = (uint32)atoul(row[8]);
+	}
+	spec->recipe_id = recipe_id;
 	mysql_free_result(result);
 	
 	//Pull the on-success items...
@@ -1222,4 +1289,73 @@ bool ZoneDatabase::GetTradeRecipe(uint32 recipe_id, uint8 c_type, uint32 some_id
 	return(true);
 }
 
+void ZoneDatabase::UpdateRecipeMadecount(uint32 recipe_id, uint32 char_id, uint32 madecount)
+{
+	char *query = 0;
+	uint32 qlen;
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	
+	qlen = MakeAnyLenString(&query, "INSERT INTO char_recipe_list "
+		" SET recipe_id = %u, char_id = %u, madecount = %u "
+		" ON DUPLICATE KEY UPDATE madecount = %u;"
+	, recipe_id, char_id, madecount, madecount);
 
+	if (!RunQuery(query, qlen, errbuf)) {
+		LogFile->write(EQEMuLog::Error, "Error in UpdateRecipeMadecount query '%s': %s", query, errbuf);
+	}
+	safe_delete_array(query);
+}
+
+
+void Client::LearnRecipe(uint32 recipeID)
+{
+	char *query = 0;
+	uint32 qlen;
+	uint32 qcount = 0;
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+	
+	qlen = MakeAnyLenString(&query, "SELECT tr.name, crl.madecount "
+		" FROM tradeskill_recipe as tr "
+		" LEFT JOIN (SELECT recipe_id, madecount FROM char_recipe_list WHERE char_id = %u) AS crl "
+		"  ON tr.id = crl.recipe_id "
+		" WHERE tr.id = %u ;", CharacterID(), recipeID);
+	
+	if (!database.RunQuery(query, qlen, errbuf, &result)) {
+		LogFile->write(EQEMuLog::Error, "Error in Client::LearnRecipe query '%s': %s", query, errbuf);
+		safe_delete_array(query);
+		return;
+	}
+	
+	qcount = mysql_num_rows(result);
+	if (qcount != 1) {
+		LogFile->write(EQEMuLog::Normal, "Client::LearnRecipe - RecipeID: %d had %d occurences.", recipeID, qcount);
+		mysql_free_result(result);
+		safe_delete_array(query);
+		return;
+	}
+	safe_delete_array(query);
+
+	row = mysql_fetch_row(result);
+	
+	if (row != NULL && row[0] != NULL) {
+		// Only give Learn message if character doesn't know the recipe
+		if (row[1] == NULL) {
+			Message_StringID(4, TRADESKILL_LEARN_RECIPE, row[0]);
+			// Actually learn the recipe now
+			qlen = MakeAnyLenString(&query, "INSERT INTO char_recipe_list "
+				" SET recipe_id = %u, char_id = %u, madecount = 0 "
+				" ON DUPLICATE KEY UPDATE madecount = madecount;"
+			, recipeID, CharacterID());
+
+			if (!database.RunQuery(query, qlen, errbuf)) {
+				LogFile->write(EQEMuLog::Error, "Error in LearnRecipe query '%s': %s", query, errbuf);
+			}
+			safe_delete_array(query);
+		}
+	}
+	
+	mysql_free_result(result);
+	
+}
