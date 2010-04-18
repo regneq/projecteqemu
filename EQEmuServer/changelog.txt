@@ -1,5 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==04/18/2010==
+Trevius: SoD - Added HP formulas for the SoD client, and a new rule to enable them for SoD clients only.
+
+Optional SQL: utils/sql/svn/1394_optional_rule_sod_hp_mana_end.sql
+
 ==04/17/2010==
 gaeorn: fixed login server auto-reconnect
 cavedude (Leere): Tradeskill recipe learning

@@ -1009,6 +1009,7 @@ private:
 	sint32	CalcBaseHP();
 	sint32	CalcHPRegen();
 	sint32	CalcManaRegen();
+	int32	GetClassHPFactor();
 	void DoHPRegen();
 	void DoManaRegen();
 	void DoStaminaUpdate();
