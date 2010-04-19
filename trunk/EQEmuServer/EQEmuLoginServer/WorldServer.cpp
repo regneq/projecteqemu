@@ -446,7 +446,25 @@ void WorldServer::SendClientAuth(unsigned int ip, string account, string key, un
 	slsca->lsadmin = 0;
 	slsca->worldadmin = 0;
 	slsca->ip = ip;
-	slsca->local = 1;
+
+	in_addr in;
+	in.s_addr = ip;connection->GetrIP();
+	string client_address(inet_ntoa(in));
+	in.s_addr = connection->GetrIP();
+	string world_address(inet_ntoa(in));
+
+	if(client_address.compare(world_address) == 0)
+	{
+		slsca->local = 1;
+	}
+	else if(client_address.find(server.options.GetLocalNetwork()) != string::npos)
+	{
+		slsca->local = 1;
+	}
+	else
+	{
+		slsca->local = 0;
+	}
 
 	connection->SendPacket(outapp);
 
