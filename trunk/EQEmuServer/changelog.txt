@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==04/19/2010==
+gaeorn: bug fix so login server does not send world local_ip if option local_network is not set in login.ini
+
 ==04/18/2010==
 Trevius: SoD - Added HP formulas for the SoD client, and a new rule to enable them for SoD clients only.
 

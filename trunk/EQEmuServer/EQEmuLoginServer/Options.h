@@ -28,7 +28,7 @@ public:
 	/**
 	 * Constructor, sets the default options.
 	 */
-	Options() : allow_unregistered(true), trace(false), dump_in_packets(false), dump_out_packets(false), encryption_mode(5) { }
+	Options() : allow_unregistered(true), trace(false), dump_in_packets(false), dump_out_packets(false), encryption_mode(5), local_network("127.0.0.1") { }
 
 	/**
 	 * Sets allow_unregistered.
