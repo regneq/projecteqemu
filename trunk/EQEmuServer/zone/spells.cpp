@@ -629,6 +629,11 @@ bool Client::CheckFizzle(int16 spell_id)
 
 	// always at least 1% chance to fail or 5% to succeed
 	fizzlechance = fizzlechance < 1 ? 1 : (fizzlechance > 95 ? 95 : fizzlechance);
+	if(IsBardSong(spell_id))
+	{
+		fizzlechance -= GetAA(aaInternalMetronome) * 1.5f;
+	}
+
 	float fizzle_roll = MakeRandomFloat(0, 100);
 
 	mlog(SPELLS__CASTING, "Check Fizzle %s  spell %d  fizzlechance: %0.2f%%   diff: %0.2f  roll: %0.2f", GetName(), spell_id, fizzlechance, diff, fizzle_roll);
