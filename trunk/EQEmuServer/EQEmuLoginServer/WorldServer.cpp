@@ -186,9 +186,9 @@ bool WorldServer::Process()
 				if(trusted)
 				{
 					log->Log(log_network_trace, "ServerOP_LSAccountUpdate update processed");
-					string	name;
-					string	password;
-					string	email;
+					string name;
+					string password;
+					string email;
 					name.assign(lsau->useraccount);
 					password.assign(lsau->userpassword);
 					email.assign(lsau->useremail);

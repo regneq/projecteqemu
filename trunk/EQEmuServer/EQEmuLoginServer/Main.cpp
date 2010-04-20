@@ -219,7 +219,11 @@ int main()
 	}
 
 #ifdef WIN32
+#ifdef UNICODE
+	SetConsoleTitle(L"EQEmu Login Server");
+#else
 	SetConsoleTitle("EQEmu Login Server");
+#endif
 #endif
 
 	log->Log(log_debug, "Server Started.");
