@@ -1,5 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==04/21/2010==
+Trevius: SoD - The Mana and Endurance formulas are as close as I can get them for now.
+Trevius: SoD - NPC default size is now 6 if the database is set to 0.
+Trevius: It is no longer possible for current Endurance to be higher than max Endurance.
+Trevius: Corrected a mistake pointed out by Rogean that was sending an unnecessary packet when clients were moving.
+
 ==04/19/2010==
 gaeorn: bug fix so login server does not send world local_ip if option local_network is not set in login.ini
 

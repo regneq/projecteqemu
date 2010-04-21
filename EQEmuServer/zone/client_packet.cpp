@@ -1304,8 +1304,9 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 			CheckIncreaseSkill(TRACKING, NULL, -20);
 	}
 
+	// Break Hide if moving without sneaking and set rewind timer if moved
 	if(ppu->y_pos != y_pos || ppu->x_pos != x_pos){
-	    if(!sneaking && !invisible){
+	    if((hidden || improved_hidden) && (!sneaking && !invisible)){
 			hidden = false;
 			improved_hidden = false;
 			EQApplicationPacket* outapp = new EQApplicationPacket(OP_SpawnAppearance, sizeof(SpawnAppearance_Struct));
@@ -1315,8 +1316,8 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 			sa_out->parameter = 0;
 			entity_list.QueueClients(this, outapp, true);
 			safe_delete(outapp);
-			rewind_timer.Start(30000, true);
 		}
+		rewind_timer.Start(30000, true);
 	}
 
 	// Outgoing client packet

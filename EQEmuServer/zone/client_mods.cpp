@@ -866,44 +866,13 @@ sint16 Client::CalcAC() {
 
 sint32 Client::CalcMaxMana()
 {
-	int WisInt = 0;
-	int MindLesserFactor, MindFactor;
 	switch(GetCasterClass())
 	{
 		case 'I': 
-			WisInt = GetINT();
-
-			if((( WisInt - 199 ) / 2) > 0)
-				MindLesserFactor = ( WisInt - 199 ) / 2;
-			else
-				MindLesserFactor = 0;
-
-			MindFactor = WisInt - MindLesserFactor;
-			if(WisInt > 100)
-				max_mana = (((5 * (MindFactor + 20)) / 2) * 3 * GetLevel() / 40);
-			else
-				max_mana = (((5 * (MindFactor + 200)) / 2) * 3 * GetLevel() / 100);	
-			
-			max_mana += (itembonuses.Mana + spellbonuses.Mana + GroupLeadershipAAManaEnhancement());
+		case 'W': {
+			max_mana = (CalcBaseMana() + itembonuses.Mana + spellbonuses.Mana + GroupLeadershipAAManaEnhancement());
 			break;
-
-		case 'W':
-			WisInt = GetWIS();
-
-			if((( WisInt - 199 ) / 2) > 0)
-				MindLesserFactor = ( WisInt - 199 ) / 2;
-			else
-				MindLesserFactor = 0;
-
-			MindFactor = WisInt - MindLesserFactor;
-			if(WisInt > 100)
-				max_mana = (((5 * (MindFactor + 20)) / 2) * 3 * GetLevel() / 40);
-			else
-				max_mana = (((5 * (MindFactor + 200)) / 2) * 3 * GetLevel() / 100);	
-			
-			max_mana += (itembonuses.Mana + spellbonuses.Mana + GroupLeadershipAAManaEnhancement());
-			break;
-				
+		}
 		case 'N': {
 			max_mana = 0;
 			break;
@@ -928,38 +897,97 @@ sint32 Client::CalcBaseMana()
 	int WisInt = 0;
 	int MindLesserFactor, MindFactor;
 	sint32 max_m = 0;
+	int wisint_mana = 0;
+	int base_mana = 0;
+	int ConvertedWisInt = 0;
 	switch(GetCasterClass())
 	{
 		case 'I': 
 			WisInt = GetINT();
 
-			if((( WisInt - 199 ) / 2) > 0)
-				MindLesserFactor = ( WisInt - 199 ) / 2;
-			else
-				MindLesserFactor = 0;
+			if (GetClientVersion() >= EQClientSoD && RuleB(Character, SoDClientUseSoDHPManaEnd)) {
 
-			MindFactor = WisInt - MindLesserFactor;
-			if(WisInt > 100)
-				max_m = (((5 * (MindFactor + 20)) / 2) * 3 * GetLevel() / 40);
+				if (WisInt > 100) {
+					ConvertedWisInt = (((WisInt - 100) * 5 / 2) + 100);
+					if (WisInt > 201) {
+						ConvertedWisInt -= ((WisInt - 201) * 5 / 4);
+					}
+				}
+				else {
+					ConvertedWisInt = WisInt;
+				}
+
+				if (GetLevel() < 41) { 
+					wisint_mana = (GetLevel() * 75 * ConvertedWisInt / 1000);
+					base_mana = (GetLevel() * 15);
+				}
+				else if (GetLevel() < 81) {
+					wisint_mana = ((3 * ConvertedWisInt) + ((GetLevel() - 40) * 15 * ConvertedWisInt / 100));
+					base_mana = (600 + ((GetLevel() - 40) * 30));
+				}
+				else {
+					wisint_mana = (9 * ConvertedWisInt);
+					base_mana = (1800 + ((GetLevel() - 80) * 18));
+				}
+				max_m = base_mana + wisint_mana;
+			}
 			else
-				max_m = (((5 * (MindFactor + 200)) / 2) * 3 * GetLevel() / 100);	
-			
+			{
+				if((( WisInt - 199 ) / 2) > 0)
+					MindLesserFactor = ( WisInt - 199 ) / 2;
+				else
+					MindLesserFactor = 0;
+
+				MindFactor = WisInt - MindLesserFactor;
+				if(WisInt > 100)
+					max_m = (((5 * (MindFactor + 20)) / 2) * 3 * GetLevel() / 40);
+				else
+					max_m = (((5 * (MindFactor + 200)) / 2) * 3 * GetLevel() / 100);
+			}
 			break;
 
 		case 'W':
 			WisInt = GetWIS();
 
-			if((( WisInt - 199 ) / 2) > 0)
-				MindLesserFactor = ( WisInt - 199 ) / 2;
-			else
-				MindLesserFactor = 0;
+			if (GetClientVersion() >= EQClientSoD && RuleB(Character, SoDClientUseSoDHPManaEnd)) {
 
-			MindFactor = WisInt - MindLesserFactor;
-			if(WisInt > 100)
-				max_m = (((5 * (MindFactor + 20)) / 2) * 3 * GetLevel() / 40);
+				if (WisInt > 100) {
+					ConvertedWisInt = (((WisInt - 100) * 5 / 2) + 100);
+					if (WisInt > 201) {
+						ConvertedWisInt -= ((WisInt - 201) * 5 / 4);
+					}
+				}
+				else {
+					ConvertedWisInt = WisInt;
+				}
+
+				if (GetLevel() < 41) { 
+					wisint_mana = (GetLevel() * 75 * ConvertedWisInt / 1000);
+					base_mana = (GetLevel() * 15);
+				}
+				else if (GetLevel() < 81) {
+					wisint_mana = ((3 * ConvertedWisInt) + ((GetLevel() - 40) * 15 * ConvertedWisInt / 100));
+					base_mana = (600 + ((GetLevel() - 40) * 30));
+				}
+				else {
+					wisint_mana = (9 * ConvertedWisInt);
+					base_mana = (1800 + ((GetLevel() - 80) * 18));
+				}
+				max_m = base_mana + wisint_mana;
+			}
 			else
-				max_m = (((5 * (MindFactor + 200)) / 2) * 3 * GetLevel() / 100);	
-			
+			{
+				if((( WisInt - 199 ) / 2) > 0)
+					MindLesserFactor = ( WisInt - 199 ) / 2;
+				else
+					MindLesserFactor = 0;
+
+				MindFactor = WisInt - MindLesserFactor;
+				if(WisInt > 100)
+					max_m = (((5 * (MindFactor + 20)) / 2) * 3 * GetLevel() / 40);
+				else
+					max_m = (((5 * (MindFactor + 200)) / 2) * 3 * GetLevel() / 100);
+			}
 			break;
 				
 		case 'N': {
@@ -978,7 +1006,6 @@ sint32 Client::CalcBaseMana()
 #endif
 	return max_m;
 }
-
 
 sint32 Client::CalcManaRegen() {
 	uint8 clevel = GetLevel();
@@ -1728,73 +1755,79 @@ int16 Mob::GetInstrumentMod(int16 spell_id) const {
 	return(effectmod);
 }
 
-//Info taken from magelo, it's a *little* off but accurate enough.
 void Client::CalcMaxEndurance()
 {
-	int Stats = GetSTR()+GetSTA()+GetDEX()+GetAGI();
-
-	int LevelBase = GetLevel() * 15;
-
-	int at_most_800 = Stats;
-	if(at_most_800 > 800)
-		at_most_800 = 800;
-	
-	int Bonus400to800 = 0;
-	int HalfBonus400to800 = 0;
-	int Bonus800plus = 0;
-	int HalfBonus800plus = 0;
-	
-	int BonusUpto800 = int( at_most_800 / 4 ) ;
-	if(Stats > 400) {
-		Bonus400to800 = int( (at_most_800 - 400) / 4 );
-		HalfBonus400to800 = int( max( ( at_most_800 - 400 ), 0 ) / 8 );
-		
-		if(Stats > 800) {
-			Bonus800plus = int( (Stats - 800) / 8 ) * 2;
-			HalfBonus800plus = int( (Stats - 800) / 16 );
-		}
+	max_end = CalcBaseEndurance() + spellbonuses.Endurance + itembonuses.Endurance;
+	if (cur_end > max_end) {
+		cur_end = max_end;
 	}
-	int bonus_sum = BonusUpto800 + Bonus400to800 + HalfBonus400to800 + Bonus800plus + HalfBonus800plus;
-	
-	max_end = LevelBase;
-
-	//take all of the sums from above, then multiply by level*0.075
-	max_end += ( bonus_sum * 3 * GetLevel() ) / 40;
-	
-	max_end += spellbonuses.Endurance + itembonuses.Endurance;
 }
 
 sint32 Client::CalcBaseEndurance()
 {
 	sint32 base_end = 0;
-	int Stats = GetSTR()+GetSTA()+GetDEX()+GetAGI();
-	int LevelBase = GetLevel() * 15;
+	sint32 base_endurance = 0;
+	sint32 ConvertedStats = 0;
+	sint32 sta_end = 0;
 
-	int at_most_800 = Stats;
-	if(at_most_800 > 800)
-		at_most_800 = 800;
-	
-	int Bonus400to800 = 0;
-	int HalfBonus400to800 = 0;
-	int Bonus800plus = 0;
-	int HalfBonus800plus = 0;
-	
-	int BonusUpto800 = int( at_most_800 / 4 ) ;
-	if(Stats > 400) {
-		Bonus400to800 = int( (at_most_800 - 400) / 4 );
-		HalfBonus400to800 = int( max( ( at_most_800 - 400 ), 0 ) / 8 );
-		
-		if(Stats > 800) {
-			Bonus800plus = int( (Stats - 800) / 8 ) * 2;
-			HalfBonus800plus = int( (Stats - 800) / 16 );
+	if(GetClientVersion() >= EQClientSoD && RuleB(Character, SoDClientUseSoDHPManaEnd)) {
+		int Stats = ((GetSTR() + GetSTA() + GetDEX() + GetAGI()) / 4);
+
+		if (Stats > 100) {
+			ConvertedStats = (((Stats - 100) * 5 / 2) + 100);
+			if (Stats > 201) {
+				ConvertedStats -= ((Stats - 201) * 5 / 4);
+			}
 		}
-	}
-	int bonus_sum = BonusUpto800 + Bonus400to800 + HalfBonus400to800 + Bonus800plus + HalfBonus800plus;
-	
-	base_end = LevelBase;
+		else {
+			ConvertedStats = Stats;
+		}
 
-	//take all of the sums from above, then multiply by level*0.075
-	base_end += ( bonus_sum * 3 * GetLevel() ) / 40;
+		if (GetLevel() < 41) { 
+			sta_end = (GetLevel() * 75 * ConvertedStats / 1000);
+			base_endurance = (GetLevel() * 15);
+		}
+		else if (GetLevel() < 81) {
+			sta_end = ((3 * ConvertedStats) + ((GetLevel() - 40) * 15 * ConvertedStats / 100));
+			base_endurance = (600 + ((GetLevel() - 40) * 30));
+		}
+		else {
+			sta_end = (9 * ConvertedStats);
+			base_endurance = (1800 + ((GetLevel() - 80) * 18));
+		}
+		base_end = (base_endurance + sta_end);
+	}
+	else
+	{
+		int Stats = GetSTR()+GetSTA()+GetDEX()+GetAGI();
+		int LevelBase = GetLevel() * 15;
+
+		int at_most_800 = Stats;
+		if(at_most_800 > 800)
+			at_most_800 = 800;
+		
+		int Bonus400to800 = 0;
+		int HalfBonus400to800 = 0;
+		int Bonus800plus = 0;
+		int HalfBonus800plus = 0;
+		
+		int BonusUpto800 = int( at_most_800 / 4 ) ;
+		if(Stats > 400) {
+			Bonus400to800 = int( (at_most_800 - 400) / 4 );
+			HalfBonus400to800 = int( max( ( at_most_800 - 400 ), 0 ) / 8 );
+			
+			if(Stats > 800) {
+				Bonus800plus = int( (Stats - 800) / 8 ) * 2;
+				HalfBonus800plus = int( (Stats - 800) / 16 );
+			}
+		}
+		int bonus_sum = BonusUpto800 + Bonus400to800 + HalfBonus400to800 + Bonus800plus + HalfBonus800plus;
+		
+		base_end = LevelBase;
+
+		//take all of the sums from above, then multiply by level*0.075
+		base_end += ( bonus_sum * 3 * GetLevel() ) / 40;
+	}
 	return base_end;
 }
 

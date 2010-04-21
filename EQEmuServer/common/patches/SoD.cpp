@@ -979,14 +979,17 @@ ENCODE(OP_ZoneSpawns) {
 			{
 				PacketSize -= (sizeof(structs::EquipStruct) * 9);
 			}
-
+			if(emu->size == 0)
+			{
+				emu->size = 6;
+			}
 			EQApplicationPacket *outapp = new EQApplicationPacket(OP_ZoneEntry, PacketSize);
 			Buffer = (char *) outapp->pBuffer;
 
 			VARSTRUCT_ENCODE_STRING(Buffer, emu->name);
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->spawnId);
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->level);
-			VARSTRUCT_ENCODE_TYPE(float, Buffer, emu->size - 1);	// View Height?
+			VARSTRUCT_ENCODE_TYPE(float, Buffer, emu->size - 0.1);	// View Height?
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->NPC);
 
 			structs::Spawn_Struct_Bitfields *Bitfields = (structs::Spawn_Struct_Bitfields*)Buffer;
