@@ -1888,12 +1888,6 @@ void Client::Handle_OP_ItemVerifyRequest(const EQApplicationPacket *app)
 		return;
 	}
 
-	if (IsAIControlled()) {
-		this->Message_StringID(13,NOT_IN_CONTROL);
-		//Message(13, "You cant cast right now, you arent in control of yourself!");
-		return;
-	}
-
 	ItemVerifyRequest_Struct* request = (ItemVerifyRequest_Struct*)app->pBuffer;
 
 	sint32 slot_id;
@@ -1902,9 +1896,12 @@ void Client::Handle_OP_ItemVerifyRequest(const EQApplicationPacket *app)
 	slot_id = request->slot;
 	target_id = request->target;
 
-	if(slot_id < 0) {
+	if (IsAIControlled()) {
+		this->Message_StringID(13,NOT_IN_CONTROL);
+		//Message(13, "You cant cast right now, you arent in control of yourself!");
+	}
+	else if(slot_id < 0) {
 		LogFile->write(EQEMuLog::Debug, "Unknown slot being used by %s, slot being used is: %i",GetName(),request->slot);
-		return;
 	}
 	else if ((slot_id < 30) || (slot_id == 9999) || (slot_id == POTION_BELT_SPELL_SLOT))	// sanity check
 	{
@@ -1915,7 +1912,6 @@ void Client::Handle_OP_ItemVerifyRequest(const EQApplicationPacket *app)
 
 		if(spell_id <= 0) {
 			LogFile->write(EQEMuLog::Debug, "Item with no effect right clicked by %s",GetName());
-			return;
 		}
 		else if (inst && inst->IsType(ItemClassCommon))
 		{
@@ -1939,7 +1935,82 @@ void Client::Handle_OP_ItemVerifyRequest(const EQApplicationPacket *app)
 			}
 			else
 			{
-				LogFile->write(EQEMuLog::Debug, "Error: unknown item->Click.Type (%i)", item->Click.Type);
+				if(GetClientVersion() >= EQClientSoD && !inst->IsEquipable(GetBaseRace(),GetClass()))
+				{
+					if(item->ItemType != ItemTypeFood && item->ItemType != ItemTypeDrink && item->ItemType != ItemTypeAlcohol)
+					{
+						LogFile->write(EQEMuLog::Debug, "Error: unknown item->Click.Type (%i)", item->Click.Type);
+					}
+					else
+					{
+						//This is food/drink - consume it
+						uint16 cons_mod = 180;
+						switch(GetAA(aaInnateMetabolism))
+						{
+							case 1:
+								cons_mod = cons_mod * 110 * RuleI(Character, ConsumptionMultiplier) / 10000;
+								break;
+							case 2:
+								cons_mod = cons_mod * 125 * RuleI(Character, ConsumptionMultiplier) / 10000;
+								break;
+							case 3:
+								cons_mod = cons_mod * 150 * RuleI(Character, ConsumptionMultiplier) / 10000;
+								break;
+							default:
+								cons_mod = cons_mod * RuleI(Character, ConsumptionMultiplier) / 100;
+								break;
+						}
+
+						if (item->ItemType == ItemTypeFood && m_pp.hunger_level < 5000)
+						{
+#if EQDEBUG >= 1
+							LogFile->write(EQEMuLog::Debug, "Eating from slot:%i", slot_id);
+#endif
+							m_pp.hunger_level += item->CastTime*cons_mod; //roughly 1 item per 10 minutes
+							DeleteItemInInventory(slot_id, 1, false);
+							entity_list.MessageClose_StringID(this, true, 50, 0, EATING_MESSAGE, GetName(), item->Name);
+						}
+						else if (item->ItemType == ItemTypeDrink && m_pp.thirst_level < 5000)
+						{
+#if EQDEBUG >= 1
+							LogFile->write(EQEMuLog::Debug, "Drinking from slot:%i", slot_id);
+#endif
+							// 6000 is the max. value
+							m_pp.thirst_level += item->CastTime*cons_mod; //roughly 1 item per 10 minutes
+							DeleteItemInInventory(slot_id, 1, false);
+							entity_list.MessageClose_StringID(this, true, 50, 0, DRINKING_MESSAGE, GetName(), item->Name);
+						}
+						else if (item->ItemType == ItemTypeAlcohol)
+						{
+#if EQDEBUG >= 1
+							LogFile->write(EQEMuLog::Debug, "Drinking Alcohol from slot:%i", slot_id);
+#endif
+							DeleteItemInInventory(slot_id, 1, false);
+							entity_list.MessageClose_StringID(this, true, 50, 0, DRINKING_MESSAGE, GetName(), item->Name);
+							//Should add intoxication level to the PP at some point
+							CheckIncreaseSkill(ALCOHOL_TOLERANCE, NULL, 25);
+						}
+
+						if (m_pp.hunger_level > 6000)
+							m_pp.hunger_level = 6000;
+						if (m_pp.thirst_level > 6000)
+							m_pp.thirst_level = 6000;
+
+						EQApplicationPacket *outapp2;
+						outapp2 = new EQApplicationPacket(OP_Stamina, sizeof(Stamina_Struct));
+						Stamina_Struct* sta = (Stamina_Struct*)outapp2->pBuffer;
+						sta->food = m_pp.hunger_level;
+						sta->water = m_pp.thirst_level;
+
+						QueuePacket(outapp2);
+						safe_delete(outapp2);
+					}
+
+				}
+				else {
+					LogFile->write(EQEMuLog::Debug, "Error: unknown item->Click.Type (%i)", item->Click.Type);
+				}
+				
 			}
 		}
 		else

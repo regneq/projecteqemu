@@ -3,6 +3,8 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==04/22/2010==
 Trevius: Added the following to Client Perl; GetEndurance(), GetMaxEndurance(), GetEnduranceRatio(), SetEndurance(amount).
 Trevius: SoD - Size fix for player races.
+Trevius: SoD - Manual consumption of food/drink works and deletes the consumed item.
+Trevius: SoD - Consumption of alcohol now gives a chance for skilling up tolerance and also deletes the consumed item.
 
 ==04/21/2010==
 Trevius: SoD - The Mana and Endurance formulas are as close as I can get them for now.
