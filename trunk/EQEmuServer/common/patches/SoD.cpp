@@ -975,21 +975,31 @@ ENCODE(OP_ZoneSpawns) {
 				emu->gender = 0;
 				ShowName = 0;
 			}
+
+			float SpawnSize = emu->size;
 			if(!((emu->NPC == 0) || (emu->race <=12) || (emu->race == 128) || (emu ->race == 130) || (emu->race == 330) || (emu->race == 522)))
 			{
 				PacketSize -= (sizeof(structs::EquipStruct) * 9);
+
+				if(emu->size == 0)
+				{
+					emu->size = 6;
+					SpawnSize = 6;
+				}
 			}
-			if(emu->size == 0)
+
+			if(SpawnSize == 0)
 			{
-				emu->size = 6;
+				SpawnSize = 3;
 			}
+
 			EQApplicationPacket *outapp = new EQApplicationPacket(OP_ZoneEntry, PacketSize);
 			Buffer = (char *) outapp->pBuffer;
 
 			VARSTRUCT_ENCODE_STRING(Buffer, emu->name);
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->spawnId);
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->level);
-			VARSTRUCT_ENCODE_TYPE(float, Buffer, emu->size - 0.1);	// View Height?
+			VARSTRUCT_ENCODE_TYPE(float, Buffer, SpawnSize - 0.7);	// Eye Height?
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->NPC);
 
 			structs::Spawn_Struct_Bitfields *Bitfields = (structs::Spawn_Struct_Bitfields*)Buffer;
