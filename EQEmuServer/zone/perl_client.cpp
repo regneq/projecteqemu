@@ -3932,7 +3932,6 @@ XS(XS_Client_GetItemAt)
 	{
 		Client *		THIS;
 		ItemInst *		RETVAL;
-		dXSTARG;
 		uint32 slot = (sint32)SvIV(ST(1));
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -3960,7 +3959,6 @@ XS(XS_Client_GetAugmentAt)
 	{
 		Client *		THIS;
 		ItemInst *		RETVAL;
-		dXSTARG;
 		uint32 slot = (sint32)SvIV(ST(1));
 		uint32 aug_slot = (sint32)SvIV(ST(1));
 
@@ -4056,7 +4054,6 @@ XS(XS_Client_KeyRingAdd)
 		Perl_croak(aTHX_ "Usage: Client::KeyRingAdd(THIS, item_id)");
 	{
 		Client *	THIS;
-		dXSTARG;
 		uint32		item_id = (uint32)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -4082,7 +4079,6 @@ XS(XS_Client_KeyRingCheck)
 	{
 		Client *	THIS;
 		bool		RETVAL;
-		dXSTARG;
 		uint32		item_id = (uint32)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -4109,8 +4105,6 @@ XS(XS_Client_AddPVPPoints)
 		Perl_croak(aTHX_ "Usage: Client::AddPVPPoints(THIS, Points)");
 	{
 		Client *	THIS;
-		bool		RETVAL;
-		dXSTARG;
 		uint32		Points = (uint32)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -4135,8 +4129,6 @@ XS(XS_Client_AddCrystals)
 		Perl_croak(aTHX_ "Usage: Client::AddCrystals(THIS, RadiantCount, EbonCount)");
 	{
 		Client *	THIS;
-		bool		RETVAL;
-		dXSTARG;
 		uint32		Radiant = (uint32)SvUV(ST(1));
 		uint32		Ebon = (uint32)SvUV(ST(2));
 
@@ -4242,7 +4234,6 @@ XS(XS_Client_ReadBook)
 		Client *		THIS;
 		char*			in_txt = (char *)SvPV_nolen(ST(1));
 		int8			type = (int8)SvUV(ST(2));
-		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -4266,7 +4257,6 @@ XS(XS_Client_UpdateGroupAAs)
 		Perl_croak(aTHX_ "Usage: Client::UpdateGroupAAs(THIS, points, type)");
 	{
 		Client *		THIS;
-		bool		RETVAL;
 		sint32		points = (sint32)SvIV(ST(1));
 		int32		type = (int32)SvUV(ST(2));
 
@@ -4344,7 +4334,6 @@ XS(XS_Client_LearnRecipe)
 		Perl_croak(aTHX_ "Usage: Client::LearnRecipe(THIS, recipe_id)");
 	{
 		Client *	THIS;
-		dXSTARG;
 		uint32		recipe_id = (uint32)SvUV(ST(1));
 
 		if (sv_derived_from(ST(0), "Client")) {
@@ -4357,6 +4346,108 @@ XS(XS_Client_LearnRecipe)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
 		THIS->LearnRecipe(recipe_id);;
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_Client_GetEndurance); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_GetEndurance)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Client::GetEndurance(THIS)");
+	{
+		Client *	THIS;
+		int32		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetEndurance();
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Client_GetMaxEndurance); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_GetMaxEndurance)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Client::GetMaxEndurance(THIS)");
+	{
+		Client *	THIS;
+		int32		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetMaxEndurance();
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Client_GetEnduranceRatio); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_GetEnduranceRatio)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Client::GetEnduranceRatio(THIS)");
+	{
+		Client *	THIS;
+		int8		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetEndurancePercent();
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Client_SetEndurance);
+XS(XS_Client_SetEndurance)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Client::SetEndurance(THIS, Endurance)");
+	{
+		Client *	THIS;
+		sint32		Endurance = (sint32)SvUV(ST(1));
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->SetEndurance(Endurance);
 	}
 	XSRETURN_EMPTY;
 }
@@ -4543,8 +4634,11 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "GetGroupPoints"), XS_Client_GetGroupPoints, file, "$");
 		newXSproto(strcpy(buf, "GetRaidPoints"), XS_Client_GetRaidPoints, file, "$");
 		newXSproto(strcpy(buf, "LearnRecipe"), XS_Client_LearnRecipe, file, "$$");
+		newXSproto(strcpy(buf, "GetEndurance"), XS_Client_GetEndurance, file, "$");
+		newXSproto(strcpy(buf, "GetMaxEndurance"), XS_Client_GetMaxEndurance, file, "$");
+		newXSproto(strcpy(buf, "GetEnduranceRatio"), XS_Client_GetEnduranceRatio, file, "$");
+		newXSproto(strcpy(buf, "SetEndurance"), XS_Client_SetEndurance, file, "$$");
 	XSRETURN_YES;
 }
 
 #endif //EMBPERL_XS_CLASSES
-
