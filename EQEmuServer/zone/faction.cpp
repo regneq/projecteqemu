@@ -890,8 +890,7 @@ bool ZoneDatabase::LoadFactionData()
 			}
 			mysql_free_result(result);
 			
-			MakeAnyLenString(&query, "SELECT id,name,base,mod_c1,mod_c2,mod_c3,mod_c4,mod_c5,mod_c6,mod_c7,mod_c8,mod_c9,mod_c10,mod_c11,mod_c12,mod_c13,mod_c14,mod_c15,mod_c16,mod_r1,mod_r2,mod_r3,mod_r4,mod_r5,mod_r6,mod_r7,mod_r8,mod_r9,mod_r10,mod_r11,mod_r12,mod_r14,mod_r60,mod_r75,mod_r108,mod_r120,mod_r128,mod_r130,mod_r161,mod_r330,mod_d140,mod_d201,mod_d202,mod_d203,mod_d204,mod_d205,mod_d206,mod_d207,mod_d208,mod_d209,mod_d210,mod_d211,mod_d212,mod_d213,mod_d214,mod_d215,mod_d216 FROM faction_list");
-
+			MakeAnyLenString(&query, "SELECT id,name,base,mod_c1,mod_c2,mod_c3,mod_c4,mod_c5,mod_c6,mod_c7,mod_c8,mod_c9,mod_c10,mod_c11,mod_c12,mod_c13,mod_c14,mod_c15,mod_c16,mod_r1,mod_r2,mod_r3,mod_r4,mod_r5,mod_r6,mod_r7,mod_r8,mod_r9,mod_r10,mod_r11,mod_r12,mod_r14,mod_r42,mod_r75,mod_r108,mod_r128,mod_r130,mod_r161,mod_r330,mod_r367,mod_r522,mod_d140,mod_d201,mod_d202,mod_d203,mod_d204,mod_d205,mod_d206,mod_d207,mod_d208,mod_d209,mod_d210,mod_d211,mod_d212,mod_d213,mod_d214,mod_d215,mod_d216 FROM faction_list");
 			if (RunQuery(query, strlen(query), errbuf, &result))
 			{
 				safe_delete_array(query);
@@ -905,9 +904,9 @@ bool ZoneDatabase::LoadFactionData()
 					int16 i;
 					for (i=3;i != 19;i++)
 						faction_array[index]->mod_c[i-3] = atoi(row[i]);
-					for (i=19;i != 40;i++)
+					for (i=19;i != 41;i++)
 						faction_array[index]->mod_r[i-19] = atoi(row[i]);
-					for (i=40;i != 57;i++)
+					for (i=41;i != 58;i++)
 						faction_array[index]->mod_d[i-40] = atoi(row[i]);
 					//does this make sense?:
 					//faction_array[atoi(row[0])]->mod_r[20] = atoi(row[55]);

@@ -55,7 +55,7 @@ struct FactionMods
 struct Faction {
 	sint32	id;
 	sint16	mod_c[16];
-	sint16	mod_r[21];
+	sint16	mod_r[22];
 	sint16	mod_d[17];
 	sint16	base;
 	char	name[50];
