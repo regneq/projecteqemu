@@ -1,5 +1,15 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==04/23/2010==
+cavedude: Added Drakking to faction_list, updated wolf form and Skeleton.
+
+REQUIRED SQL:
+ALTER TABLE `faction_list` DROP COLUMN `mod_r60`;
+ALTER TABLE `faction_list` DROP COLUMN `mod_r120`;
+ALTER TABLE `faction_list` ADD COLUMN `mod_r42` smallint(6) NOT NULL default '0' AFTER `mod_r14`;
+ALTER TABLE `faction_list` ADD COLUMN `mod_r367` smallint(6) NOT NULL default '0' AFTER `mod_r330`;
+ALTER TABLE `faction_list` ADD COLUMN `mod_r522` smallint(6) NOT NULL default '0' AFTER `mod_r367`;
+
 ==04/22/2010==
 Trevius: Added the following to Client Perl; GetEndurance(), GetMaxEndurance(), GetEnduranceRatio(), SetEndurance(amount).
 Trevius: SoD - Size fix for player races.
