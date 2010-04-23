@@ -285,7 +285,6 @@ void ServerManager::SendUserToWorldRequest(unsigned int server_id, unsigned int 
 				DumpPacket(outapp);
 			}
 			delete outapp;
-			return;
 		}
 		iter++;
 	}

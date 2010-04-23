@@ -39,8 +39,7 @@ enum ClientStatus
 {
 	cs_not_sent_session_ready,
 	cs_waiting_for_login,
-	cs_logged_in,
-	cs_play_request
+	cs_logged_in
 };
 
 /**
