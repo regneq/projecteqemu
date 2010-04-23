@@ -317,14 +317,13 @@ void Client::Handle_Play(const char* data)
 {
 	if(status != cs_logged_in)
 	{
-		log->Log(log_client_error, "Client sent a play request when they either were not logged in or had a request pending, discarding.");
+		log->Log(log_client_error, "Client sent a play request when they either were not logged in, discarding.");
 		return;
 	}
 
 	const PlayEverquestRequest_Struct *play = (const PlayEverquestRequest_Struct*)data;
 	play_server_id = play->ServerNumber;
 	play_sequence_id = play->Sequence;
-	status = cs_play_request;
 	server.SM->SendUserToWorldRequest(play_server_id, account_id);
 }
 
