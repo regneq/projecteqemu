@@ -907,7 +907,7 @@ bool ZoneDatabase::LoadFactionData()
 					for (i=19;i != 41;i++)
 						faction_array[index]->mod_r[i-19] = atoi(row[i]);
 					for (i=41;i != 58;i++)
-						faction_array[index]->mod_d[i-40] = atoi(row[i]);
+						faction_array[index]->mod_d[i-41] = atoi(row[i]);
 					//does this make sense?:
 					//faction_array[atoi(row[0])]->mod_r[20] = atoi(row[55]);
 				}
