@@ -137,36 +137,41 @@ ENCODE(OP_SendAATable) {
 	SETUP_VAR_ENCODE(SendAA_Struct);
 	ALLOC_VAR_ENCODE(structs::SendAA_Struct, sizeof(structs::SendAA_Struct) + emu->total_abilities*sizeof(structs::AA_Ability));
 	
-	OUT(id);
-	OUT(hotkey_sid);
-	OUT(hotkey_sid2);
-	OUT(title_sid);
-	OUT(desc_sid);
-	OUT(class_type);
-	OUT(cost);
-	OUT(seq);
-	OUT(current_level);
-	OUT(prereq_skill);
-	OUT(prereq_minpoints);
-	OUT(type);
-	OUT(spellid);
-	OUT(spell_type);
-	OUT(spell_refresh);
-	OUT(classes);
-	OUT(berserker);
-	OUT(max_level);
-	OUT(last_id);
-	OUT(next_id);
-	OUT(cost2);
-	OUT(unknown80[0]);
-	OUT(unknown80[1]);
-	OUT(total_abilities);
-	unsigned int r;
-	for(r = 0; r < emu->total_abilities; r++) {
-		OUT(abilities[r].skill_id);
-		OUT(abilities[r].base1);
-		OUT(abilities[r].base2);
-		OUT(abilities[r].slot);
+	// Check clientver field to verify this AA should be sent for SoF
+	// clientver 1 is for all clients and 2 is for 6.2
+	if (emu->clientver <= 2 )
+	{
+		OUT(id);
+		OUT(hotkey_sid);
+		OUT(hotkey_sid2);
+		OUT(title_sid);
+		OUT(desc_sid);
+		OUT(class_type);
+		OUT(cost);
+		OUT(seq);
+		OUT(current_level);
+		OUT(prereq_skill);
+		OUT(prereq_minpoints);
+		OUT(type);
+		OUT(spellid);
+		OUT(spell_type);
+		OUT(spell_refresh);
+		OUT(classes);
+		OUT(berserker);
+		OUT(max_level);
+		OUT(last_id);
+		OUT(next_id);
+		OUT(cost2);
+		OUT(unknown80[0]);
+		OUT(unknown80[1]);
+		OUT(total_abilities);
+		unsigned int r;
+		for(r = 0; r < emu->total_abilities; r++) {
+			OUT(abilities[r].skill_id);
+			OUT(abilities[r].base1);
+			OUT(abilities[r].base2);
+			OUT(abilities[r].slot);
+		}
 	}
 	
 	FINISH_ENCODE();

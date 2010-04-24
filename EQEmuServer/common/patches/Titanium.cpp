@@ -148,8 +148,8 @@ ENCODE(OP_SendAATable) {
 	ALLOC_VAR_ENCODE(structs::SendAA_Struct, sizeof(structs::SendAA_Struct) + emu->total_abilities*sizeof(structs::AA_Ability));
 	
 	// Check clientver field to verify this AA should be sent for Titanium
-	// clientver 1 is for all clients and 3 is for Titanium only
-	if (emu->clientver == 1 || emu->clientver == 2 )
+	// clientver 1 is for all clients and 3 is for Titanium
+	if (emu->clientver <= 3 )
 	{
 		OUT(id);
 		eq->unknown004 = 1;
