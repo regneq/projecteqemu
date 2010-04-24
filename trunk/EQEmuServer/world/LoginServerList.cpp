@@ -82,12 +82,10 @@ bool LoginServerList::Process() {
 void LoginServerList::InitLoginServer() {
 	LinkedListIterator<LoginServer*> iterator(list);
 
+	srand(time(NULL));
 	iterator.Reset();
 	while(iterator.MoreElements()){
-		srand(time(NULL));
-		if (iterator.GetData()->ConnectReady()) {
-			iterator.GetData()->InitLoginServer();
-		}
+		iterator.GetData()->InitLoginServer();
 		iterator.Advance();
 	}
 }

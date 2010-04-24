@@ -205,9 +205,16 @@ DumpPacket(pack->pBuffer, pack->size);
 }
 
 bool LoginServer::InitLoginServer() {
-	_log(WORLD__LS, "Connecting to login server...");
 	if(Connected() == false) {
-		Connect();
+		if(ConnectReady()) {
+			_log(WORLD__LS, "Connecting to login server...");
+			Connect();
+		} else {
+			_log(WORLD__LS_ERR, "Not connected but not ready to connect. This is bad. Attempting to create new EmuTCPConnection.");
+			delete tcpc;
+			tcpc = new EmuTCPConnection(true);
+			tcpc->SetPacketMode(EmuTCPConnection::packetModeLogin);
+		}
 	}
 	return true;
 }
