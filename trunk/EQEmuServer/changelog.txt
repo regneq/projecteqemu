@@ -2,6 +2,9 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==04/24/2010==
 gaeorn: possible fix for long standing reconnect to login server problem if login server connection is down for an extended period of time.
+Trevius: SoD - Added AA support for Harm Touch and Lay on Hands to replace the innate skills of the PAL/SK classes.
+
+Optional SQL: utils/sql/svn/1410_optional_sod_aas_ht_and_loh.sql
 
 ==04/23/2010==
 cavedude: Added Drakking to faction_list, updated wolf form and Skeleton.

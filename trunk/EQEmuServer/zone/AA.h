@@ -686,6 +686,8 @@ typedef enum {	//AA IDs
 	aaRelentlessAssault = 1621,			//from dbstr_us.txt
 	aaKnightsExpertise = 1624,			//from dbstr_us.txt
 	aaSelosEnduringCadence = 1627,		//from dbstr_us.txt
+	aaHarmTouch = 7800,					//from dbstr_us.txt
+	aaLayonHands = 7850,				//from dbstr_us.txt
 
 	aaHighestID		//this should always be last, and should always
 					//follow the highest AA ID
