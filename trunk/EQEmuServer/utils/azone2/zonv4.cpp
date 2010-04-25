@@ -118,34 +118,41 @@ int Zonv4Loader::Open(char *base_path, char *zone_name, Archive *archive)
 			++str;
 		}
 
-		model_loaders[i].Open(NULL, tmp, archive);
-
-		this->model_data.models[i] = new Model;
-		this->model_data.models[i]->vert_count = model_loaders[i].model_data.zone_model->vert_count;
-		this->model_data.models[i]->poly_count = model_loaders[i].model_data.zone_model->poly_count;
-		this->model_data.models[i]->tex_count = model_loaders[i].model_data.zone_model->tex_count;
-		this->model_data.models[i]->verts = model_loaders[i].model_data.zone_model->verts;
-		this->model_data.models[i]->polys = model_loaders[i].model_data.zone_model->polys;
-		this->model_data.models[i]->tex = model_loaders[i].model_data.zone_model->tex;
-		this->model_data.models[i]->name = new char[100];
-		strcpy(this->model_data.models[i]->name, tmp);
-
-		this->model_data.models[i]->IncludeInMap = true;
-
-		// Attempt to cut down on the .map file size by defaulting some objects to not be included. The user can
-		// always change this in the azone.ini
-		//
-		// For example, taking out all the tak_braziers from elddar saves around 30MB
-		//
-		if(strstr(tmp, "tree") || strstr(tmp, "pine") || strstr(tmp, "palm") || strstr(tmp, "rock") ||
-		   strstr(tmp, "shrub") || strstr(tmp, "fern") || strstr(tmp, "bamboo") || strstr(tmp, "coral") ||
-		   strstr(tmp, "camp_bones") || strstr(tmp, "sponge") || strstr(tmp, "plant") || strstr(tmp, "shortplm") ||
-		   strstr(tmp, "tak_brazier") || strstr(tmp, "tak_banner"))
+		if(model_loaders[i].Open(NULL, tmp, archive))
 		{
-			if(!strstr(tmp, "arch"))
+			this->model_data.models[i] = new Model;
+			this->model_data.models[i]->vert_count = model_loaders[i].model_data.zone_model->vert_count;
+			this->model_data.models[i]->poly_count = model_loaders[i].model_data.zone_model->poly_count;
+			this->model_data.models[i]->tex_count = model_loaders[i].model_data.zone_model->tex_count;
+			this->model_data.models[i]->verts = model_loaders[i].model_data.zone_model->verts;
+			this->model_data.models[i]->polys = model_loaders[i].model_data.zone_model->polys;
+			this->model_data.models[i]->tex = model_loaders[i].model_data.zone_model->tex;
+			this->model_data.models[i]->name = new char[100];
+			strcpy(this->model_data.models[i]->name, tmp);
+
+			this->model_data.models[i]->IncludeInMap = true;
+
+			// Attempt to cut down on the .map file size by defaulting some objects to not be included. The user can
+			// always change this in the azone.ini
+			//
+			// For example, taking out all the tak_braziers from elddar saves around 30MB
+			//
+			if(strstr(tmp, "tree") || strstr(tmp, "pine") || strstr(tmp, "palm") || strstr(tmp, "rock") ||
+			   strstr(tmp, "shrub") || strstr(tmp, "fern") || strstr(tmp, "bamboo") || strstr(tmp, "coral") ||
+			   strstr(tmp, "camp_bones") || strstr(tmp, "sponge") || strstr(tmp, "plant") || strstr(tmp, "shortplm") ||
+			   strstr(tmp, "tak_brazier") || strstr(tmp, "tak_banner"))
 			{
-				this->model_data.models[i]->IncludeInMap = false;
+				if(!strstr(tmp, "arch"))
+				{
+					this->model_data.models[i]->IncludeInMap = false;
+				}
 			}
+		}
+		else
+		{
+			printf("Unable to open model %s, but continuing.\n", tmp);
+			this->model_data.models[i] = new Model;
+			this->model_data.models[i]->IncludeInMap = false;
 		}
 	}
 
