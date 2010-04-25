@@ -413,7 +413,7 @@ typedef enum  {
 //#define SE_Unknown282				282	//not used
 //#define SE_Unknown283				283	//not used
 //#define SE_Unknown284				284	//not used
-//#define SE_Unknown285				285	//not used
+#define SE_NimbleEvasion			285	//base1 = 100 for max
 #define SE_SpellDamage				286	//not implemented. adds direct spell damage
 #define SE_FocusCombatDurationMod	287
 //#define SE_Unknown288				288	//not used
