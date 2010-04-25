@@ -62,7 +62,7 @@ bool WorldServer::Process()
 	ServerPacket *app = NULL;
 	while(app = connection->PopPacket())
 	{
-		if(server.options.IsTraceOn())
+		if(server.options.IsWorldTraceOn())
 		{
 			log->Log(log_network_trace, "Application packet recieved from server: 0x%.4X, (size %u)", app->opcode, app->size);
 		}
@@ -83,7 +83,7 @@ bool WorldServer::Process()
 					break;
 				}
 
-				if(server.options.IsTraceOn())
+				if(server.options.IsWorldTraceOn())
 				{
 					log->Log(log_network_trace, "New Login Info Recieved.");
 				}
@@ -101,7 +101,7 @@ bool WorldServer::Process()
 					break;
 				}
 
-				if(server.options.IsTraceOn())
+				if(server.options.IsWorldTraceOn())
 				{
 					log->Log(log_network_trace, "World Server Status Recieved.");
 				}
@@ -110,15 +110,16 @@ bool WorldServer::Process()
 				Handle_LSStatus(ls_status);
 				break;
 			}
+		case ServerOP_LSZoneInfo:
 		case ServerOP_LSZoneShutdown:
 		case ServerOP_LSZoneStart:
 		case ServerOP_LSZoneBoot:
 		case ServerOP_LSZoneSleep:
+		case ServerOP_LSPlayerLeftWorld:
+		case ServerOP_LSPlayerJoinWorld:
+		case ServerOP_LSPlayerZoneChange:
 			{
-				if(server.options.IsTraceOn())
-				{
-					log->Log(log_network_trace, "Zone Status Packet Recieved.");
-				}
+				//Not logging these to cut down on spam until we implement them
 				break;
 			}
 
@@ -131,6 +132,9 @@ bool WorldServer::Process()
 					break;
 				}
 
+				//I don't use world trace for this and here is why:
+				//Because this is a part of the client login procedure it makes tracking client errors
+				//While keeping world server spam with multiple servers connected almost impossible.
 				if(server.options.IsTraceOn())
 				{
 					log->Log(log_network_trace, "User-To-World Response recieved.");
@@ -176,6 +180,10 @@ bool WorldServer::Process()
 
 					c->SendPlayResponse(outapp);
 					delete outapp;
+				}
+				else
+				{
+					log->Log(log_client_error, "Recieved User-To-World Response for %u but could not find the client referenced!.", utwr->lsaccountid);
 				}
 				break;
 			}

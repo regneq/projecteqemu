@@ -92,11 +92,6 @@ bool Client::Process()
 					break;
 				}
 
-				if(server.options.IsTraceOn())
-				{
-					log->Log(log_network, "Play recieved from client.");
-				}
-
 				Handle_Play((const char*)app->pBuffer);
 				break;
 			}
@@ -322,6 +317,12 @@ void Client::Handle_Play(const char* data)
 	}
 
 	const PlayEverquestRequest_Struct *play = (const PlayEverquestRequest_Struct*)data;
+
+	if(server.options.IsTraceOn())
+	{
+		log->Log(log_network, "Play recieved from client, server number %u sequence %u.", play->ServerNumber, play->Sequence);
+	}
+
 	play_server_id = play->ServerNumber;
 	play_sequence_id = play->Sequence;
 	server.SM->SendUserToWorldRequest(play_server_id, account_id);

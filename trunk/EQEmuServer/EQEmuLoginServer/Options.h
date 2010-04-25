@@ -51,6 +51,16 @@ public:
 	inline bool IsTraceOn() const { return trace; }
 
 	/**
+	 * Sets trace.
+	 */
+	inline void WorldTrace(bool b) { world_trace = b; }
+
+	/**
+	 * Returns the value of trace.
+	 */
+	inline bool IsWorldTraceOn() const { return world_trace; }
+
+	/**
 	 * Sets dump_in_packets.
 	 */
 	inline void DumpInPackets(bool b) { dump_in_packets = b; }
@@ -133,6 +143,7 @@ public:
 private:
 	bool allow_unregistered;
 	bool trace;
+	bool world_trace;
 	bool dump_in_packets;
 	bool dump_out_packets;
 	int encryption_mode;

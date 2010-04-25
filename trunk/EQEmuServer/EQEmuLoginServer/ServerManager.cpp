@@ -270,6 +270,7 @@ EQApplicationPacket *ServerManager::CreateServerListPacket(Client *c)
 void ServerManager::SendUserToWorldRequest(unsigned int server_id, unsigned int client_account_id)
 {
 	list<WorldServer*>::iterator iter = world_servers.begin();
+	bool found = false;
 	while(iter != world_servers.end())
 	{
 		if((*iter)->GetRuntimeID() == server_id)
@@ -279,6 +280,7 @@ void ServerManager::SendUserToWorldRequest(unsigned int server_id, unsigned int 
 			utwr->worldid = server_id;
 			utwr->lsaccountid = client_account_id;
 			(*iter)->GetConnection()->SendPacket(outapp);
+			found = true;
 			
 			if(server.options.IsDumpInPacketsOn())
 			{
@@ -287,6 +289,11 @@ void ServerManager::SendUserToWorldRequest(unsigned int server_id, unsigned int 
 			delete outapp;
 		}
 		iter++;
+	}
+
+	if(!found && server.options.IsTraceOn())
+	{
+		log->Log(log_client_error, "Client requested a user to world but supplied an invalid id of %u.", server_id);
 	}
 }
 
