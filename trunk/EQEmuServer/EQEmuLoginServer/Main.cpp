@@ -41,7 +41,11 @@ int main()
 	//Create our error log, is of format login_<number>.log
 	time_t current_time = time(NULL);
 	stringstream log_name(stringstream::in | stringstream::out);
+#ifdef WIN32
 	log_name << ".\\logs\\login_" << (unsigned int)current_time << ".log";
+#else
+	log_name << "./logs/login_" << (unsigned int)current_time << ".log";
+#endif
 	log = new ErrorLog(log_name.str().c_str());
 	log->Log(log_debug, "Logging System Init.");
 
