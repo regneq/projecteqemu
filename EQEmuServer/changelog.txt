@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==04/25/2010==
+Derision: Fixed azone2 to handle missing model files (no longer crashes on oldfieldofbone.eqg)
+
 ==04/24/2010==
 gaeorn: possible fix for long standing reconnect to login server problem if login server connection is down for an extended period of time.
 Trevius: SoD - Added AA support for Harm Touch and Lay on Hands to replace the innate skills of the PAL/SK classes.
