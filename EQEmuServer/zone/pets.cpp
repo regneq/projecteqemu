@@ -298,14 +298,36 @@ void Mob::MakePet(int16 spell_id, const char* pettype, const char *petname) {
 	
 	
 	//handle beastlord pet appearance
-	if(strncmp(pettype, "BLpet", 5) == 0) {
-		switch ( GetBaseRace() ) {
-		case VAHSHIR: npc_type->race = TIGER; npc_type->size *= 0.8f; break;
-		case TROLL: npc_type->race = ALLIGATOR; npc_type->size *= 2.5f; break;
-		case OGRE: npc_type->race = BEAR; npc_type->texture=3; npc_type->gender=2; break;
-		case BARBARIAN: npc_type->race = WOLF; npc_type->texture=2; break;
-		case IKSAR: npc_type->race = WOLF; npc_type->texture=1; npc_type->gender=1; npc_type->size *= 2.0f; break;
-		default: npc_type->race = WOLF; npc_type->texture=0; break;
+	if(strncmp(pettype, "BLpet", 5) == 0) 
+	{
+		switch(GetBaseRace()) 
+		{
+		case VAHSHIR: 
+			npc_type->race = TIGER; 
+			npc_type->size *= 0.8f; 
+			break;
+		case TROLL: 
+			npc_type->race = ALLIGATOR; 
+			npc_type->size *= 2.5f; 
+			break;
+		case OGRE: 
+			npc_type->race = BEAR; 
+			npc_type->texture = 3; 
+			npc_type->gender = 2; 
+			break;
+		case BARBARIAN: 
+			npc_type->race = WOLF; 
+			npc_type->texture = 2;
+			break;
+		case IKSAR: 
+			npc_type->race = WOLF; 
+			npc_type->texture = 1; 
+			npc_type->gender = 1; 
+			npc_type->size *= 2.0f; 
+			break;
+		default: 
+			npc_type->race = WOLF; 
+			npc_type->texture = 0;
 		}
 	}
 
