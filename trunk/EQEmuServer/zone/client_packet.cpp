@@ -7894,32 +7894,41 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 	switch (race)
 	{
 		case OGRE:
-			size = 9;break;
+			size = 9;
+			break;
 		case TROLL:
-			size = 8;break;
+			size = 8;
+			break;
 		case VAHSHIR:
 		case BARBARIAN:
-			size = 7;break;
+			size = 7;
+			break;
 		case HUMAN:
 		case HIGH_ELF:
 		case ERUDITE:
 		case IKSAR:
 		case DRAKKIN:
-			size = 6;break;
+			size = 6;
+			break;
 		case HALF_ELF:
-			size = 5.5;break;
+			size = 5.5;
+			break;
 		case WOOD_ELF:
 		case DARK_ELF:
-		case FROGLOK: //Frog
-			size = 5;break;
+		case FROGLOK:
+			size = 5;
+			break;
 		case DWARF:
-			size = 4;break;
+			size = 4;
+			break;
 		case HALFLING:
-			size = 3.5;break;
+			size = 3.5;
+			break;
 		case GNOME:
-			size = 3;break;
+			size = 3;
+			break;
 		default:
-			size = 0;break;
+			size = 0;
 	}
 
 	//validate skills
