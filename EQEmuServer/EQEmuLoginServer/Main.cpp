@@ -62,6 +62,12 @@ int main()
 		server.options.Trace(true);
 	}
 
+	//Parse trace option.
+	if(server.config->GetVariable("options", "world_trace").compare("TRUE") == 0)
+	{
+		server.options.WorldTrace(true);
+	}
+
 	//Parse packet inc dump option.
 	if(server.config->GetVariable("options", "dump_packets_in").compare("TRUE") == 0)
 	{
