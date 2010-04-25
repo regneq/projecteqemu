@@ -1098,6 +1098,7 @@ void Client::Message(uint32 type, const char* message, ...) {
 	va_start(argptr, msg);
 	vsnprintf(buffer, 4096, msg, argptr);
 	va_end(argptr);
+	delete[] msg;
 
 	len = strlen(buffer);
 
