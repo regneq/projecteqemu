@@ -1080,11 +1080,26 @@ void Client::Message(uint32 type, const char* message, ...) {
 	if (GetFilter(FilterSpellCrits) == FilterHide && type == MT_SpellCrits)
 		return;
 
-	va_start(argptr, message);
-	vsnprintf(buffer, 4096, message, argptr);
+	size_t len = strlen(message);
+	char *msg = new char[len + 1];
+	for(size_t i = 0; i < len; ++i)
+	{
+		if(message[i] == '%')
+		{
+			msg[i] = '/';
+		}
+		else
+		{
+			msg[i] = message[i];
+		}
+	}
+	msg[len] = '\0';
+
+	va_start(argptr, msg);
+	vsnprintf(buffer, 4096, msg, argptr);
 	va_end(argptr);
 
-	uint32 len = strlen(buffer);
+	len = strlen(buffer);
 
 	//client dosent like our packet all the time unless
 	//we make it really big, then it seems to not care that
