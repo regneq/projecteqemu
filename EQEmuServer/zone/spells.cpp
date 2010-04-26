@@ -214,7 +214,7 @@ bool Mob::CastSpell(int16 spell_id, int16 target_id, int16 slot,
 	}
 
 	
-	//cannot cast under deivne aura
+	//cannot cast under divine aura
 	if(DivineAura()) {
 		mlog(SPELLS__CASTING_ERR, "Spell casting canceled: cannot cast while Divine Aura is in effect.");
 		InterruptSpell(173, 0x121, false);
