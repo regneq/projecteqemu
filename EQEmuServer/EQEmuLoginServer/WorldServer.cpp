@@ -173,6 +173,12 @@ bool WorldServer::Process()
 						break;
 					}
 
+					if(server.options.IsTraceOn())
+					{
+						log->Log(log_network_trace, "Sending play response with following data, allowed %u, sequence %u, server number %u, message %u", 
+							per->Allowed, per->Sequence, per->ServerNumber, per->Message);
+					}
+
 					if(server.options.IsDumpOutPacketsOn())
 					{
 						DumpPacket(outapp);
@@ -434,6 +440,11 @@ void WorldServer::Handle_NewLSInfo(ServerNewLSInfo_Struct* i)
 	in_addr in;
 	in.s_addr = connection->GetrIP();
 	server.db->UpdateWorldRegistration(id, string(inet_ntoa(in)));
+	
+	if(authorized)
+	{
+		server.CM->UpdateServerList();
+	}
 }
 
 void WorldServer::Handle_LSStatus(ServerLSStatus_Struct *s)
