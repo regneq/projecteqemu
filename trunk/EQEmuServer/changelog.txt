@@ -1,5 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==04/26/2010==
+Trevius: SoD/SoF - Failing a clicky item cast in certain scenarios should no longer cause the client to get bugged where the spells won't refresh.
+Trevius: SoD/SoF - Cast bars from clicky items now use the cast time from the item, not from the spell.
+Trevius: SoD - Potions in the potion belt can now be used even if they are inside bags.
+
 ==04/25/2010==
 Derision: Fixed azone2 to handle missing model files (no longer crashes on oldfieldofbone.eqg)
 
