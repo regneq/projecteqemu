@@ -347,7 +347,7 @@ void Client::SendPlayResponse(EQApplicationPacket *outapp)
 {
 	if(server.options.IsTraceOn())
 	{
-		log->Log(log_network_trace, "Sending play responsed for %s.", GetAccountName());
+		log->Log(log_network_trace, "Sending play responsed for %s.", GetAccountName().c_str());
 	}
 	connection->QueuePacket(outapp);
 	status = cs_logged_in;
