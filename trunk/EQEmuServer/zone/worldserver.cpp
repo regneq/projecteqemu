@@ -1494,7 +1494,8 @@ bool WorldServer::SendChannelMessage(Client* from, const char* to, int8 chan_num
 	if(to)
 	{
 		size_t i = strlen(to);
-		for(int x = 0; x < i; ++x)
+		int x;
+		for(x = 0; x < i; ++x)
 		{
 			if(to[x] == '%')
 			{
@@ -1505,6 +1506,7 @@ bool WorldServer::SendChannelMessage(Client* from, const char* to, int8 chan_num
 				to_name[x] = to[x];
 			}
 		}
+		to_name[x] = '\0';
 	}
 	
 	va_start(argptr, message);
