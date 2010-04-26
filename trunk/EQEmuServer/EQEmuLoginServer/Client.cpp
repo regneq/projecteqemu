@@ -97,7 +97,9 @@ bool Client::Process()
 			}
 		default:
 			{
-				log->Log(log_network_error, "Recieved unhandled application packet from the client opcode index %u\n", app->GetOpcode());
+				char dump[64];
+				app->build_header_dump(dump);
+				log->Log(log_network_error, "Recieved unhandled application packet from the client: %s.", dump);
 			}
 		}
 
@@ -343,6 +345,10 @@ void Client::SendServerListPacket()
 
 void Client::SendPlayResponse(EQApplicationPacket *outapp)
 {
+	if(server.options.IsTraceOn())
+	{
+		log->Log(log_network_trace, "Sending play responsed for %s.", GetAccountName());
+	}
 	connection->QueuePacket(outapp);
 	status = cs_logged_in;
 	play_server_id = 0;

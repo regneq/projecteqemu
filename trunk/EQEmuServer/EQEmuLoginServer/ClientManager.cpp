@@ -155,6 +155,16 @@ void ClientManager::ProcessDisconnect()
 	}
 }
 
+void ClientManager::UpdateServerList()
+{
+	list<Client*>::iterator iter = clients.begin();
+	while(iter != clients.end())
+	{
+		(*iter)->SendServerListPacket();
+		iter++;
+	}
+}
+
 Client *ClientManager::GetClient(unsigned int account_id)
 {
 	list<Client*>::iterator iter = clients.begin();

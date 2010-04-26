@@ -49,6 +49,11 @@ public:
 	void Process();
 
 	/**
+	 * Sends a new server list to every client.
+	 */
+	void UpdateServerList();
+
+	/**
 	 * Gets a client (if exists) by their account id.
 	 */
 	Client *GetClient(unsigned int account_id);
