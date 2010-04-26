@@ -1001,6 +1001,14 @@ int Client::ChannelCount() {
 
 void Client::JoinChannels(string ChannelNameList) {
 
+	for(int x = 0; x < ChannelNameList.size(); ++x)
+	{
+		if(ChannelNameList[x] == '%')
+		{
+			ChannelNameList[x] = '/';
+		}
+	}
+
 	_log(UCS__TRACE, "Client: %s joining channels %s", GetName().c_str(), ChannelNameList.c_str());
 
 	int NumberOfChannels = ChannelCount();
