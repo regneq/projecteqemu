@@ -1491,20 +1491,21 @@ bool WorldServer::SendChannelMessage(Client* from, const char* to, int8 chan_num
 	char buffer[512];
 	char to_name[64];
 
-	size_t i = 0;
-	while(to[i])
+	if(to)
 	{
-		if(to[i] == '%')
+		size_t i = strlen(to);
+		for(int x = 0; x < i; ++x)
 		{
-			to_name[i] = '/';
+			if(to[x] == '%')
+			{
+				to_name[x] = '/';
+			}
+			else
+			{
+				to_name[x] = to[x];
+			}
 		}
-		else
-		{
-			to_name[i] = to[i];
-		}
-		i++;
 	}
-	to_name[i] = 0;
 	
 	va_start(argptr, message);
 	vsnprintf(buffer, 512, message, argptr);
