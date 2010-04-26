@@ -1080,8 +1080,8 @@ void Client::Message(uint32 type, const char* message, ...) {
 	if (GetFilter(FilterSpellCrits) == FilterHide && type == MT_SpellCrits)
 		return;
 
-	va_start(argptr, msg);
-	vsnprintf(buffer, 4096, msg, argptr);
+	va_start(argptr, message);
+	vsnprintf(buffer, 4096, message, argptr);
 	va_end(argptr);
 
 	size_t len = strlen(buffer);
