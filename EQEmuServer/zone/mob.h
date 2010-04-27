@@ -154,7 +154,7 @@ struct StatBonuses {
 	sint32	MaxHP;
 	sint32	ManaRegen;
 	sint32	EnduranceRegen;
-	sint16	Mana;
+	sint32	Mana;
 	sint32	Endurance;
 	sint16	ATK;
 	//would it be worth it to create a Stat_Struct?
