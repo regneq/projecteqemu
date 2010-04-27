@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==04/27/2010==
+Trevius: SoD/SoF - Clicky items with charges can no longer be cast if they have 0 charges left.
+Secrets: Mana can now exceed 32k without rolling over to 0.
+
 ==04/26/2010==
 Trevius: SoD/SoF - Failing a clicky item cast in certain scenarios should no longer cause the client to get bugged where the spells won't refresh.
 Trevius: SoD/SoF - Cast bars from clicky items now use the cast time from the item, not from the spell.
