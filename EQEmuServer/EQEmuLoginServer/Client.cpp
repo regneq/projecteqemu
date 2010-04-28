@@ -347,12 +347,10 @@ void Client::SendPlayResponse(EQApplicationPacket *outapp)
 {
 	if(server.options.IsTraceOn())
 	{
-		log->Log(log_network_trace, "Sending play responsed for %s.", GetAccountName().c_str());
+		log->Log(log_network_trace, "Sending play response for %s.", GetAccountName().c_str());
 	}
 	connection->QueuePacket(outapp);
 	status = cs_logged_in;
-	play_server_id = 0;
-	play_sequence_id = 0;
 }
 
 void Client::GenerateKey()
