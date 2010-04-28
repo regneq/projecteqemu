@@ -141,9 +141,11 @@ bool WorldServer::Process()
 				}
 
 				UsertoWorldResponse_Struct *utwr = (UsertoWorldResponse_Struct*)app->pBuffer;
+				log->Log(log_client, "Trying to find client with user id of %u.", utwr->lsaccountid); 
 				Client *c = server.CM->GetClient(utwr->lsaccountid);
 				if(c)
 				{
+					log->Log(log_client, "Trying to find client with user id of %u and account name of %s.", utwr->lsaccountid, c->GetAccountName()); 
 					EQApplicationPacket *outapp = new EQApplicationPacket(OP_PlayEverquestResponse, sizeof(PlayEverquestResponse_Struct));
 					PlayEverquestResponse_Struct *per = (PlayEverquestResponse_Struct*)outapp->pBuffer;
 					per->Sequence = c->GetPlaySequence();
