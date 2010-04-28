@@ -1489,25 +1489,6 @@ bool WorldServer::SendChannelMessage(Client* from, const char* to, int8 chan_num
 		return false;
 	va_list argptr;
 	char buffer[512];
-	char to_name[64];
-
-	if(to)
-	{
-		size_t i = strlen(to);
-		int x;
-		for(x = 0; x < i; ++x)
-		{
-			if(to[x] == '%')
-			{
-				to_name[x] = '/';
-			}
-			else
-			{
-				to_name[x] = to[x];
-			}
-		}
-		to_name[x] = '\0';
-	}
 	
 	va_start(argptr, message);
 	vsnprintf(buffer, 512, message, argptr);
@@ -1524,12 +1505,12 @@ bool WorldServer::SendChannelMessage(Client* from, const char* to, int8 chan_num
 		strcpy(scm->from, from->GetName());
 		scm->fromadmin = from->Admin();
 	}
-	if (to_name == 0) {
+	if (to == 0) {
 		scm->to[0] = 0;
 		scm->deliverto[0] = '\0';
 	} else {
-		strcpy(scm->to, to_name);
-		strcpy(scm->deliverto, to_name);
+		strcpy(scm->to, to);
+		strcpy(scm->deliverto, to);
 	}
 	scm->noreply = false;
 	scm->chan_num = chan_num;
