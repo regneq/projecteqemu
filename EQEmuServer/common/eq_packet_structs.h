@@ -2151,6 +2151,16 @@ struct CancelTrade_Struct {
 /*08*/
 };
 
+struct TradeBusy_Struct {
+/*00*/	uint32 to_mob_id;
+/*04*/	uint32 from_mob_id;
+/*08*/	uint8 type;			// Seen 01
+/*09*/	uint8 unknown09;	// Seen EF (239)
+/*10*/	uint8 unknown10;	// Seen FF (255)
+/*11*/	uint8 unknown11;	// Seen FF (255)
+/*12*/
+};
+
 struct PetitionUpdate_Struct {
 	int32 petnumber;    // Petition Number
 	int32 color;		// 0x00 = green, 0x01 = yellow, 0x02 = red
