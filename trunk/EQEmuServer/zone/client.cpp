@@ -934,7 +934,27 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, int8 lang_skil
 				}
 			}
 
-			if(!worldserver.SendChannelMessage(this, targetname, chan_num, 0, language, message))
+			char target_name[64];
+
+			if(targetname)
+			{
+				size_t i = strlen(targetname);
+				int x;
+				for(x = 0; x < i; ++x)
+				{
+					if(targetname[x] == '%')
+					{
+						target_name[x] = '/';
+					}
+					else
+					{
+						target_name[x] = targetname[x];
+					}
+				}
+				target_name[x] = '\0';
+			}			
+
+			if(!worldserver.SendChannelMessage(this, target_name, chan_num, 0, language, message))
 				Message(0, "Error: World server disconnected");
 		break;
 	}
