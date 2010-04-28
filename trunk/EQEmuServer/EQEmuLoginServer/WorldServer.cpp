@@ -145,7 +145,7 @@ bool WorldServer::Process()
 				Client *c = server.CM->GetClient(utwr->lsaccountid);
 				if(c)
 				{
-					log->Log(log_client, "Trying to find client with user id of %u and account name of %s.", utwr->lsaccountid, c->GetAccountName()); 
+					log->Log(log_client, "Trying to find client with user id of %u and account name of %s.", utwr->lsaccountid, c->GetAccountName().c_str()); 
 					EQApplicationPacket *outapp = new EQApplicationPacket(OP_PlayEverquestResponse, sizeof(PlayEverquestResponse_Struct));
 					PlayEverquestResponse_Struct *per = (PlayEverquestResponse_Struct*)outapp->pBuffer;
 					per->Sequence = c->GetPlaySequence();
@@ -295,10 +295,10 @@ void WorldServer::Handle_NewLSInfo(ServerNewLSInfo_Struct* i)
 	{
 		if(strlen(i->remote_address) == 0)
 		{
-			log->Log(log_network_error, "Handle_NewLSInfo error, remote address was null, defaulting to stream address %s.", remote_ip.c_str());
 			in_addr in;
 			in.s_addr = GetConnection()->GetrIP();
 			remote_ip = inet_ntoa(in);
+			log->Log(log_network_error, "Handle_NewLSInfo error, remote address was null, defaulting to stream address %s.", remote_ip.c_str());
 		}
 		else
 		{
@@ -307,10 +307,10 @@ void WorldServer::Handle_NewLSInfo(ServerNewLSInfo_Struct* i)
 	}
 	else
 	{
-		log->Log(log_network_error, "Handle_NewLSInfo error, remote address was too long, defaulting to stream address.");
 		in_addr in;
 		in.s_addr = GetConnection()->GetrIP();
 		remote_ip = inet_ntoa(in);
+		log->Log(log_network_error, "Handle_NewLSInfo error, remote address was too long, defaulting to stream address %s.", remote_ip.c_str());
 	}
 
 	if(strlen(i->serverversion) <= 64)
