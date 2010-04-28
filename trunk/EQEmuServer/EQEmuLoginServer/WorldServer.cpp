@@ -146,14 +146,15 @@ bool WorldServer::Process()
 				{
 					EQApplicationPacket *outapp = new EQApplicationPacket(OP_PlayEverquestResponse, sizeof(PlayEverquestResponse_Struct));
 					PlayEverquestResponse_Struct *per = (PlayEverquestResponse_Struct*)outapp->pBuffer;
+					per->Sequence = c->GetPlaySequence();
+					per->ServerNumber = c->GetPlayServerID();
 
 					if(utwr->response > 0)
 					{
 						per->Allowed = 1;
 						SendClientAuth(c->GetConnection()->GetRemoteIP(), c->GetAccountName(), c->GetKey(), c->GetAccountID());
 					}
-					per->Sequence = c->GetPlaySequence();
-					per->ServerNumber = c->GetPlayServerID();
+
 					switch(utwr->response)
 					{
 					case 1:
