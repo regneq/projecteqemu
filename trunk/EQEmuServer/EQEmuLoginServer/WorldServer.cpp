@@ -198,11 +198,11 @@ bool WorldServer::Process()
 			}
 		case ServerOP_LSAccountUpdate:
 			{
-				log->Log(log_network_trace, "ServerOP_LSAccountUpdate packet recieved");
+				log->Log(log_network_trace, "ServerOP_LSAccountUpdate packet recieved from: %s", short_name.c_str());
 				ServerLSAccountUpdate_Struct *lsau = (ServerLSAccountUpdate_Struct*)app->pBuffer;
 				if(trusted)
 				{
-					log->Log(log_network_trace, "ServerOP_LSAccountUpdate update processed");
+					log->Log(log_network_trace, "ServerOP_LSAccountUpdate update processed for: %s", lsau->useraccount);
 					string name;
 					string password;
 					string email;
