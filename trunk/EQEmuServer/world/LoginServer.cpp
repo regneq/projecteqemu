@@ -207,10 +207,11 @@ DumpPacket(pack->pBuffer, pack->size);
 bool LoginServer::InitLoginServer() {
 	if(Connected() == false) {
 		if(ConnectReady()) {
-			_log(WORLD__LS, "Connecting to login server...");
+			_log(WORLD__LS, "Connecting to login server: %s:%d",LoginServerAddress,LoginServerPort);
 			Connect();
 		} else {
-			_log(WORLD__LS_ERR, "Not connected but not ready to connect. This is bad. Attempting to create new EmuTCPConnection.");
+			_log(WORLD__LS_ERR, "Not connected but not ready to connect. This is bad. Attempting to create new EmuTCPConnection: %s:%d",
+				LoginServerAddress,LoginServerPort);
 			delete tcpc;
 			tcpc = new EmuTCPConnection(true);
 			tcpc->SetPacketMode(EmuTCPConnection::packetModeLogin);
@@ -240,7 +241,7 @@ bool LoginServer::Connect() {
 	}
 
 	if (LoginServerIP == 0 || LoginServerPort == 0) {
-		_log(WORLD__LS_ERR, "LoginServer::Connect: Connect info incomplete, cannot connect");
+		_log(WORLD__LS_ERR, "Connect info incomplete, cannot connect: %s:%d",LoginServerAddress,LoginServerPort);
 		return false;
 	}
 
@@ -255,7 +256,7 @@ bool LoginServer::Connect() {
 		return true;
 	}
 	else {
-		_log(WORLD__LS_ERR, "Could not connect to login server: %s",errbuf);
+		_log(WORLD__LS_ERR, "Could not connect to login server: %s:%d %s",LoginServerAddress,LoginServerPort,errbuf);
 		return false;
 	}
 }
@@ -331,7 +332,7 @@ void LoginServer::SendStatus() {
 void LoginServer::SendAccountUpdate(ServerPacket* pack) {
 	ServerLSAccountUpdate_Struct* s = (ServerLSAccountUpdate_Struct *) pack->pBuffer;
 	if(CanUpdate()) {
-		_log(WORLD__LS, "Sending ServerOP_LSAccountUpdate packet to loginserver");
+		_log(WORLD__LS, "Sending ServerOP_LSAccountUpdate packet to loginserver: %s:%d",LoginServerAddress,LoginServerPort);
 		strncpy(s->worldaccount, LoginAccount, 30);
 		strncpy(s->worldpassword, LoginPassword, 30);
 		SendPacket(pack);
