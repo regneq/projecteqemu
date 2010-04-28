@@ -83,6 +83,11 @@ public:
 	 * Updates the ip address of the world with account id = id
 	 */
 	virtual void UpdateWorldRegistration(unsigned int id, string ip_address);
+
+	/**
+	 * Creates new world registration for unregistered servers and returns new id
+	 */
+	virtual bool CreateWorldRegistration(string long_name, string short_name, unsigned int &id);
 protected:
 	string user, pass, host, port, name;
 	MYSQL *db;

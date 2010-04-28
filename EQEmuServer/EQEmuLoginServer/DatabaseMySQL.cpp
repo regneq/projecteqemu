@@ -109,10 +109,9 @@ bool DatabaseMySQL::GetWorldRegistration(string long_name, string short_name, un
 	MYSQL_ROW row;
 	stringstream query(stringstream::in | stringstream::out);
 	query << "SELECT WSR.ServerID, WSR.ServerTagDescription, WSR.ServerTrusted, SLT.ServerListTypeID, ";
-	query << "SLT.ServerListTypeDescription, SAR.AccountName, SAR.AccountPassword FROM " << server.options.GetWorldRegistrationTable();
-	query << " AS WSR JOIN " << server.options.GetWorldServerTypeTable() << " AS SLT ON WSR.ServerListTypeID = SLT.ServerListTypeID JOIN ";
-	query << server.options.GetWorldAdminRegistrationTable() << " AS SAR ON WSR.ServerAdminID = SAR.ServerAdminID WHERE WSR.ServerLongName";
-	query << " = '";
+	query << "SLT.ServerListTypeDescription, WSR.ServerAdminID FROM " << server.options.GetWorldRegistrationTable();
+	query << " AS WSR JOIN " << server.options.GetWorldServerTypeTable() << " AS SLT ON WSR.ServerListTypeID = SLT.ServerListTypeID";
+	query << " WHERE WSR.ServerLongName = '";
 	query << long_name;
 	query << "' AND WSR.ServerShortName = '";
 	query << short_name;
@@ -127,16 +126,43 @@ bool DatabaseMySQL::GetWorldRegistration(string long_name, string short_name, un
 	res = mysql_use_result(db);
 	if(res)
 	{
-		while((row = mysql_fetch_row(res)) != NULL)
+		if((row = mysql_fetch_row(res)) != NULL)
 		{
 			id = atoi(row[0]);
 			desc = row[1];
 			trusted = atoi(row[2]);
 			list_id = atoi(row[3]);
 			list_desc = row[4];
-			account = row[5]; 
-			password = row[6];
+			int db_account_id = atoi(row[5]);
 			mysql_free_result(res);
+
+			if(db_account_id > 0)
+			{
+				stringstream query(stringstream::in | stringstream::out);
+				query << "SELECT AccountName, AccountPassword FROM " << server.options.GetWorldAdminRegistrationTable();
+				query << " WHERE ServerAdminID = " << db_account_id;
+
+				if(mysql_query(db, query.str().c_str()) != 0)
+				{
+					log->Log(log_database, "Mysql query failed: %s", query.str().c_str());
+					return false;
+				}
+
+				res = mysql_use_result(db);
+				if(res)
+				{
+					if((row = mysql_fetch_row(res)) != NULL)
+					{
+						account = row[0]; 
+						password = row[1];
+						mysql_free_result(res);
+						return true;
+					}
+				}
+
+				log->Log(log_database, "Mysql query returned no result: %s", query.str().c_str());
+				return false;
+			}
 			return true;
 		}
 	}
@@ -200,6 +226,49 @@ void DatabaseMySQL::UpdateWorldRegistration(unsigned int id, string ip_address)
 	{
 		log->Log(log_database, "Mysql query failed: %s", query.str().c_str());
 	}
+}
+
+bool DatabaseMySQL::CreateWorldRegistration(string long_name, string short_name, unsigned int &id)
+{
+	if(!db)
+	{
+		return false;
+	}
+
+	MYSQL_RES *res;
+	MYSQL_ROW row;
+	stringstream query(stringstream::in | stringstream::out);
+	query << "SELECT max(ServerID) FROM " << server.options.GetWorldRegistrationTable();
+
+	if(mysql_query(db, query.str().c_str()) != 0)
+	{
+		log->Log(log_database, "Mysql query failed: %s", query.str().c_str());
+		return false;
+	}
+
+	res = mysql_use_result(db);
+	if(res)
+	{
+		if((row = mysql_fetch_row(res)) != NULL)
+		{
+			id = atoi(row[0]) + 1;
+			mysql_free_result(res);
+
+			stringstream query(stringstream::in | stringstream::out);
+			query << "INSERT " << server.options.GetWorldRegistrationTable() << " SET ServerID = " << id;
+			query << ", ServerLongName = '" << long_name << "', ServerShortName = '" << short_name;
+			query << "', ServerListTypeID = 3, ServerAdminID = 0, ServerTrusted = 0, ServerTagDescription = ''";
+
+			if(mysql_query(db, query.str().c_str()) != 0)
+			{
+				log->Log(log_database, "Mysql query failed: %s", query.str().c_str());
+				return false;
+			}
+			return true;
+		}
+	}
+	log->Log(log_database, "Mysql query returned no result: %s", query.str().c_str());
+	return false;
 }
 
 #endif
