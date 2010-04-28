@@ -164,6 +164,7 @@ IN(OP_Taunt, ClientTarget_Struct);
 INz(OP_InstillDoubt);
 IN(OP_RezzAnswer, Resurrect_Struct);
 IN(OP_GMSummon, GMSummon_Struct);
+IN(OP_TradeBusy, TradeBusy_Struct);
 IN(OP_TradeRequest, TradeRequest_Struct);
 IN(OP_TradeRequestAck, TradeRequest_Struct);	//follows OP_TradeRequest
 IN(OP_CancelTrade, CancelTrade_Struct);

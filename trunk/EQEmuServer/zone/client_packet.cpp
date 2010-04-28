@@ -364,6 +364,7 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_GuildBank] = &Client::Handle_OP_GuildBank;
 	ConnectedOpcodes[OP_GroupRoles] = &Client::Handle_OP_GroupRoles;
 	ConnectedOpcodes[OP_HideCorpse] = &Client::Handle_OP_HideCorpse;
+	ConnectedOpcodes[OP_TradeBusy] = &Client::Handle_OP_TradeBusy;
 }
 
 int Client::HandlePacket(const EQApplicationPacket *app)
@@ -4518,6 +4519,19 @@ void Client::Handle_OP_TradeAcceptClick(const EQApplicationPacket *app)
 	}
 
 
+	return;
+}
+
+void Client::Handle_OP_TradeBusy(const EQApplicationPacket *app)
+{
+	// Trade request recipient is cancelling the trade due to being busy
+	// Trade requester gets message "I'm busy right now"
+
+	// Send busy message on to trade initiator if client
+	Mob* with = trade->With();
+	if (with && with->IsClient()) {
+		with->CastToClient()->QueuePacket(app);
+	}
 	return;
 }
 

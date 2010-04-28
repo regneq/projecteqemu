@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==04/28/2010==
+Trevius: Attempting to trade with a player who is already in a trade will now give the "I'm busy right now" message for all clients.
+
 ==04/27/2010==
 Trevius: SoD/SoF - Clicky items with charges can no longer be cast if they have 0 charges left.
 Secrets: Mana can now exceed 32k without rolling over to 0.
