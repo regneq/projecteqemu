@@ -388,16 +388,16 @@ void WorldServer::Handle_NewLSInfo(ServerNewLSInfo_Struct* i)
 	}
 	else
 	{
-		if(account_name.size() > 0 && account_password.size() > 0)
+		unsigned int s_id = 0;
+		unsigned int s_list_type = 0;
+		unsigned int s_trusted = 0;
+		string s_desc;
+		string s_list_desc;
+		string s_acct_name;
+		string s_acct_pass;
+		if(server.db->GetWorldRegistration(long_name, short_name, s_id, s_desc, s_list_type, s_trusted, s_list_desc, s_acct_name, s_acct_pass))
 		{
-			unsigned int s_id = 0;
-			unsigned int s_list_type = 0;
-			unsigned int s_trusted = 0;
-			string s_desc;
-			string s_list_desc;
-			string s_acct_name;
-			string s_acct_pass;
-			if(server.db->GetWorldRegistration(long_name, short_name, s_id, s_desc, s_list_type, s_trusted, s_list_desc, s_acct_name, s_acct_pass))
+			if(account_name.size() > 0 && account_password.size() > 0)
 			{
 				if(s_acct_name.compare(account_name) == 0 && s_acct_pass.compare(account_password) == 0)
 				{
@@ -417,26 +417,30 @@ void WorldServer::Handle_NewLSInfo(ServerNewLSInfo_Struct* i)
 				}
 				else
 				{
-					log->Log(log_world, "Server %s(%s) attempted to log in but account and password did not match the entry in the database.", 
-						long_name.c_str(), short_name.c_str());
-					authorized = true;
-					server_list_id = 3;
+					// this is the one case where we should deny access even if unregistered is allowed
+					log->Log(log_world, "Server %s(%s) attempted to log in but account and password did not match the entry in the database.",
+						 long_name.c_str(), short_name.c_str());
 				}
 			}
 			else
 			{
-				log->Log(log_world, "Server %s(%s) attempted to log in but database couldn't find an entry.", 
+				log->Log(log_world, "Server %s(%s) did not attempt to log in but unregistered servers are allowed.", 
 					long_name.c_str(), short_name.c_str());
 				authorized = true;
+				id = s_id;
 				server_list_id = 3;
 			}
 		}
 		else
 		{
-			log->Log(log_world, "Server %s(%s) did not attempt to log in but unregistered servers are allowed.", 
-					long_name.c_str(), short_name.c_str());
-			authorized = true;
-			server_list_id = 3;
+			log->Log(log_world, "Server %s(%s) attempted to log in but database couldn't find an entry but unregistered servers are allowed.", 
+				long_name.c_str(), short_name.c_str());
+			if(server.db->CreateWorldRegistration(long_name, short_name, s_id))
+			{
+				authorized = true;
+				id = s_id;
+				server_list_id = 3;
+			}
 		}
 	}
 

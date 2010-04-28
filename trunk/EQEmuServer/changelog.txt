@@ -3,6 +3,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==04/28/2010==
 Trevius: Attempting to trade with a player who is already in a trade will now give the "I'm busy right now" message for all clients.
 Derision: Applied slot conversion so Apply Poison should now work in SoF.
+gaeorn: login server now creates db entries for unregistered servers to keep same id across sessions
 
 ==04/27/2010==
 Trevius: SoD/SoF - Clicky items with charges can no longer be cast if they have 0 charges left.
