@@ -51,6 +51,7 @@ E(OP_VetRewardsAvaliable)
 E(OP_InspectAnswer)
 E(OP_Track)
 E(OP_DeleteSpawn)
+E(OP_ApplyPoison)
 
 //list of packets we need to decode on the way in:
 D(OP_SetServerFilter)
@@ -81,5 +82,6 @@ D(OP_AdventureMerchantSell)
 D(OP_TradeSkillCombine)
 D(OP_RaidInvite)
 D(OP_InspectAnswer)
+D(OP_ApplyPoison)
 #undef E
 #undef D
