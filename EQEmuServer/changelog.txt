@@ -1,5 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==04/29/2010==
+gaeorn: fixed tables to avoid login server hang if ServerTagDescription in tblWorldServerRegistration is null
+
+Optional SQL: utils/sql/svn/1436_login_server_table_fix.sql
+
 ==04/28/2010==
 Trevius: Attempting to trade with a player who is already in a trade will now give the "I'm busy right now" message for all clients.
 Derision: Applied slot conversion so Apply Poison should now work in SoF.
