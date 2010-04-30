@@ -28,7 +28,14 @@ public:
 	/**
 	 * Constructor, sets the default options.
 	 */
-	Options() : allow_unregistered(true), trace(false), dump_in_packets(false), dump_out_packets(false), encryption_mode(5), local_network("127.0.0.1") { }
+	Options() : 
+	    allow_unregistered(true), 
+		trace(false), 
+		dump_in_packets(false), 
+		dump_out_packets(false), 
+		encryption_mode(5), 
+		local_network("127.0.0.1"), 
+		reject_duplicate_servers(false) { }
 
 	/**
 	 * Sets allow_unregistered.
@@ -140,12 +147,23 @@ public:
 	 */
 	inline string GetWorldServerTypeTable() const { return world_server_type_table; }
 
+	/**
+	 * Sets whether we are rejecting duplicate servers or not.
+	 */
+	inline void RejectDuplicateServers(bool b) { reject_duplicate_servers = b; }
+
+	/**
+	 * Returns whether we are rejecting duplicate servers or not.
+	 */
+	inline bool IsRejectingDuplicateServers() { return reject_duplicate_servers; }
+
 private:
 	bool allow_unregistered;
 	bool trace;
 	bool world_trace;
 	bool dump_in_packets;
 	bool dump_out_packets;
+	bool reject_duplicate_servers;
 	int encryption_mode;
 	string local_network;
 	string account_table;

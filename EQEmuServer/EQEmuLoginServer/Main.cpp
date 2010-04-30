@@ -98,6 +98,12 @@ int main()
 		server.options.LocalNetwork(ln);
 	}
 
+	//Parse reject duplicate servers option.
+	if(server.config->GetVariable("options", "reject_duplicate_servers").compare("TRUE") == 0)
+	{
+		server.options.RejectDuplicateServers(true);
+	}
+
 	//Parse account table option.
 	ln = server.config->GetVariable("schema", "account_table");
 	if(ln.size() > 0)

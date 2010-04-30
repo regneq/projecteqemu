@@ -81,6 +81,11 @@ public:
 	string GetLongName() const { return long_name; }
 
 	/**
+	 * Gets the short name of the server.
+	 */
+	string GetShortName() const { return short_name; }
+
+	/**
 	 * Gets whether the server is authorized to show up on the server list or not.
 	 */
 	bool IsAuthorized() const { return authorized; }
@@ -137,7 +142,6 @@ private:
 	unsigned int players_online;
 	int status;
 	unsigned int runtime_id;
-	unsigned int id;
 	unsigned int server_list_id;
 	unsigned int server_type;
 	string desc;

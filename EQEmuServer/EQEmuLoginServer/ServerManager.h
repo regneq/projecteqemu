@@ -61,6 +61,16 @@ public:
 	 */
 	EQApplicationPacket *CreateServerListPacket(Client *c);
 
+	/**
+	 * Checks to see if there is a server exists with this name, ignoring option.
+	 */
+	bool ServerExists(string l_name, string s_name, WorldServer *ignore = NULL);
+
+	/**
+	 * Destroys a server with this name, ignoring option.
+	 */
+	void DestroyServerByName(string l_name, string s_name, WorldServer *ignore = NULL);
+
 private:
 	/**
 	 * Processes all the disconnected connections in Process(), not used outside.
@@ -75,7 +85,6 @@ private:
 
 	EmuTCPServer* tcps;
 	list<WorldServer*> world_servers;
-	unsigned int unique_id_counter;
 };
 
 #endif
