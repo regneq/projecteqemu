@@ -255,7 +255,7 @@ bool DatabaseMySQL::CreateWorldRegistration(string long_name, string short_name,
 			mysql_free_result(res);
 
 			stringstream query(stringstream::in | stringstream::out);
-			query << "INSERT " << server.options.GetWorldRegistrationTable() << " SET ServerID = " << id;
+			query << "INSERT INTO " << server.options.GetWorldRegistrationTable() << " SET ServerID = " << id;
 			query << ", ServerLongName = '" << long_name << "', ServerShortName = '" << short_name;
 			query << "', ServerListTypeID = 3, ServerAdminID = 0, ServerTrusted = 0, ServerTagDescription = ''";
 
@@ -267,7 +267,7 @@ bool DatabaseMySQL::CreateWorldRegistration(string long_name, string short_name,
 			return true;
 		}
 	}
-	log->Log(log_database, "Mysql query returned no result: %s", query.str().c_str());
+	log->Log(log_database, "World registration did not exist in the database for %s %s", long_name.c_str(), short_name.c_str());
 	return false;
 }
 

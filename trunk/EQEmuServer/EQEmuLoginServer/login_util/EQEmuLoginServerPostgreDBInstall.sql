@@ -49,8 +49,9 @@ CREATE TABLE tblWorldServerRegistration (
   ServerLastLoginDate date NULL,
   ServerLastIPAddr text NOT NULL,
   ServerAdminID integer NOT NULL,
+  ServerTrusted integer NOT NULL,
   Note text NOT NULL,
   PRIMARY KEY (ServerID, ServerLongName)
 );
 
-INSERT INTO tblWorldServerRegistration (ServerLongName, ServerTagDescription, ServerShortName, ServerListTypeID, ServerLastLoginDate, ServerLastIPAddr, ServerAdminID, Note) VALUES ('My Test Server', 'A test server', 'MTST', 1, current_date, '0.0.0.0', 1, 'This is a note for the test server');
+INSERT INTO tblWorldServerRegistration (ServerLongName, ServerTagDescription, ServerShortName, ServerListTypeID, ServerLastLoginDate, ServerLastIPAddr, ServerAdminID, ServerTrusted, Note) VALUES ('My Test Server', 'A test server', 'MTST', 1, current_date, '0.0.0.0', 1, 0, 'This is a note for the test server');

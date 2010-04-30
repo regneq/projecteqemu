@@ -29,7 +29,7 @@ WorldServer::WorldServer(EmuTCPConnection *c)
 	zones_booted = 0;
 	players_online = 0;
 	status = 0;
-	runtime_id;
+	runtime_id = 0;
 	server_list_id = 0;
 	server_type = 0;
 	authorized = false;
@@ -336,6 +336,23 @@ void WorldServer::Handle_NewLSInfo(ServerNewLSInfo_Struct* i)
 	server_type = i->servertype;
 	logged_in = true;
 
+	if(server.options.IsRejectingDuplicateServers())
+	{
+		if(server.SM->ServerExists(long_name, short_name, this))
+		{
+			log->Log(log_world_error, "World tried to login but there already exists a server that has that name.");
+			return;
+		}
+	}
+	else
+	{
+		if(server.SM->ServerExists(long_name, short_name, this))
+		{
+			log->Log(log_world_error, "World tried to login but there already exists a server that has that name.");
+			server.SM->DestroyServerByName(long_name, short_name, this);
+		}
+	}
+
 	if(!server.options.IsUnregisteredAllowed())
 	{
 		if(account_name.size() > 0 && account_password.size() > 0)
@@ -349,12 +366,28 @@ void WorldServer::Handle_NewLSInfo(ServerNewLSInfo_Struct* i)
 			string s_acct_pass;
 			if(server.db->GetWorldRegistration(long_name, short_name, s_id, s_desc, s_list_type, s_trusted, s_list_desc, s_acct_name, s_acct_pass))
 			{
-				if(s_acct_name.compare(account_name) == 0 && s_acct_pass.compare(account_password) == 0)
+				if(s_acct_name.size() == 0 || s_acct_pass.size() == 0)
+				{
+					log->Log(log_world, "Server %s(%s) successfully logged into account that had no user/password requirement.", 
+						long_name.c_str(), short_name.c_str());
+					authorized = true;
+					SetRuntimeID(s_id);
+					server_list_id = s_list_type;
+					desc = s_desc;
+					if(s_trusted)
+					{
+						log->Log(log_network_trace, "ServerOP_LSAccountUpdate sent to world");
+						trusted = true;
+						ServerPacket *outapp = new ServerPacket(ServerOP_LSAccountUpdate, 0);
+						connection->SendPacket(outapp);
+					}
+				}
+				else if(s_acct_name.compare(account_name) == 0 && s_acct_pass.compare(account_password) == 0)
 				{
 					log->Log(log_world, "Server %s(%s) successfully logged in.", 
 						long_name.c_str(), short_name.c_str());
 					authorized = true;
-					id = s_id;
+					SetRuntimeID(s_id);
 					server_list_id = s_list_type;
 					desc = s_desc;
 					if(s_trusted)
@@ -404,7 +437,7 @@ void WorldServer::Handle_NewLSInfo(ServerNewLSInfo_Struct* i)
 					log->Log(log_world, "Server %s(%s) successfully logged in.", 
 						long_name.c_str(), short_name.c_str());
 					authorized = true;
-					id = s_id;
+					SetRuntimeID(s_id);
 					server_list_id = s_list_type;
 					desc = s_desc;
 					if(s_trusted)
@@ -427,7 +460,7 @@ void WorldServer::Handle_NewLSInfo(ServerNewLSInfo_Struct* i)
 				log->Log(log_world, "Server %s(%s) did not attempt to log in but unregistered servers are allowed.", 
 					long_name.c_str(), short_name.c_str());
 				authorized = true;
-				id = s_id;
+				SetRuntimeID(s_id);
 				server_list_id = 3;
 			}
 		}
@@ -438,7 +471,7 @@ void WorldServer::Handle_NewLSInfo(ServerNewLSInfo_Struct* i)
 			if(server.db->CreateWorldRegistration(long_name, short_name, s_id))
 			{
 				authorized = true;
-				id = s_id;
+				SetRuntimeID(s_id);
 				server_list_id = 3;
 			}
 		}
@@ -446,7 +479,7 @@ void WorldServer::Handle_NewLSInfo(ServerNewLSInfo_Struct* i)
 
 	in_addr in;
 	in.s_addr = connection->GetrIP();
-	server.db->UpdateWorldRegistration(id, string(inet_ntoa(in)));
+	server.db->UpdateWorldRegistration(GetRuntimeID(), string(inet_ntoa(in)));
 	
 	if(authorized)
 	{

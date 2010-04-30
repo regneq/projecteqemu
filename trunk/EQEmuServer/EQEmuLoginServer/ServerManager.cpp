@@ -25,7 +25,7 @@ extern ErrorLog *log;
 extern LoginServer server;
 extern bool run_server;
 
-ServerManager::ServerManager() : unique_id_counter(1)  
+ServerManager::ServerManager() 
 {
 	char error_buffer[TCPConnection_ErrorBufferSize];
 
@@ -72,7 +72,6 @@ void ServerManager::Process()
 		else
 		{
 			WorldServer *w = new WorldServer(tcp_c);
-			w->SetRuntimeID(unique_id_counter++);
 			world_servers.push_back(w);
 		}
 	}
@@ -297,3 +296,49 @@ void ServerManager::SendUserToWorldRequest(unsigned int server_id, unsigned int 
 	}
 }
 
+bool ServerManager::ServerExists(string l_name, string s_name, WorldServer *ignore)
+{
+	list<WorldServer*>::iterator iter = world_servers.begin();
+	while(iter != world_servers.end())
+	{
+		if((*iter) == ignore)
+		{
+			iter++;
+			continue;
+		}
+
+		if((*iter)->GetLongName().compare(l_name) == 0 && (*iter)->GetShortName().compare(s_name) == 0)
+		{
+			return true;
+		}
+
+		iter++;
+	}
+	return false;
+}
+
+void ServerManager::DestroyServerByName(string l_name, string s_name, WorldServer *ignore)
+{
+	list<WorldServer*>::iterator iter = world_servers.begin();
+	while(iter != world_servers.end())
+	{
+		if((*iter) == ignore)
+		{
+			iter++;
+		}
+
+		if((*iter)->GetLongName().compare(l_name) == 0 && (*iter)->GetShortName().compare(s_name) == 0)
+		{
+			EmuTCPConnection *c = (*iter)->GetConnection();
+			if(c->Connected())
+			{
+				c->Disconnect();
+			}
+			c->Free();
+			delete (*iter);
+			iter = world_servers.erase(iter);
+		}
+
+		iter++;
+	}
+}

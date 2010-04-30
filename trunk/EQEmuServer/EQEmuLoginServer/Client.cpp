@@ -256,9 +256,9 @@ void Client::Handle_Login(const char* data, unsigned int size)
 		lrbs->unknown5[0] = 0xe7;
 		lrbs->unknown5[1] = 0x03;
 		lrbs->unknown6[0] = 0xff;
-		lrbs->unknown6[0] = 0xff;
-		lrbs->unknown6[0] = 0xff;
-		lrbs->unknown6[0] = 0xff;
+		lrbs->unknown6[1] = 0xff;
+		lrbs->unknown6[2] = 0xff;
+		lrbs->unknown6[3] = 0xff;
 		lrbs->unknown7[0] = 0xa0;
 		lrbs->unknown7[1] = 0x05;
 		lrbs->unknown8[3] = 0x02;
