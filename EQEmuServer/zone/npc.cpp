@@ -1911,3 +1911,12 @@ void NPC::NPCSlotTexture(int8 slot, int16 texture)
 	}
 	return;
 }
+
+int32 NPC::GetSwarmOwner()
+{
+	if(GetSwarmInfo() != NULL)
+	{
+		return GetSwarmInfo()->owner_id;
+	}
+	return 0;
+}

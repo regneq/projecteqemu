@@ -1741,6 +1741,32 @@ XS(XS_NPC_GetSecSkill)
 	XSRETURN(1);
 }
 
+XS(XS_NPC_GetSwarmOwner); /* prototype to pass -Wmissing-prototypes */
+XS(XS_NPC_GetSwarmOwner)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: NPC::GetSwarmOwner(THIS)");
+	{
+		NPC *		THIS;
+		int32		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "NPC")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(NPC *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type NPC");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetSwarmOwner();
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -1826,6 +1852,7 @@ XS(boot_NPC)
 		newXSproto(strcpy(buf, "SetSecSkill"), XS_NPC_SetSecSkill, file, "$$");
 		newXSproto(strcpy(buf, "GetPrimSkill"), XS_NPC_GetPrimSkill, file, "$");
 		newXSproto(strcpy(buf, "GetSecSkill"), XS_NPC_GetSecSkill, file, "$");
+		newXSproto(strcpy(buf, "GetSwarmOwner"), XS_NPC_GetSwarmOwner, file, "$");
 	XSRETURN_YES;
 }
 

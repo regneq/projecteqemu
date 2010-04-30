@@ -198,6 +198,7 @@ public:
 	void	Depop(bool StartSpawnTimer = true);
 	void	Stun(int duration);
 	void	UnStun();
+	int32	GetSwarmOwner();
 	
 	inline void SignalNPC(int _signal_id) { signaled = true; signal_id = _signal_id; }
 	
