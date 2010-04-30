@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==04/30/2010==
+Trevius: Fixed a bug that would cause clients in an existing trade to get bugged if another client tried to trade with them during their existing trade.
+
 ==04/29/2010==
 gaeorn: fixed tables to avoid login server hang if ServerTagDescription in tblWorldServerRegistration is null
 
