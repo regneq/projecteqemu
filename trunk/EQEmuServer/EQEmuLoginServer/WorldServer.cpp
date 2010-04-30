@@ -457,11 +457,19 @@ void WorldServer::Handle_NewLSInfo(ServerNewLSInfo_Struct* i)
 			}
 			else
 			{
-				log->Log(log_world, "Server %s(%s) did not attempt to log in but unregistered servers are allowed.", 
-					long_name.c_str(), short_name.c_str());
-				authorized = true;
-				SetRuntimeID(s_id);
-				server_list_id = 3;
+				if(s_acct_name.size() > 0 || s_acct_pass.size() > 0)
+				{
+					log->Log(log_world, "Server %s(%s) did not attempt to log in but this server requires a password.",
+						 long_name.c_str(), short_name.c_str());
+				}
+				else
+				{
+					log->Log(log_world, "Server %s(%s) did not attempt to log in but unregistered servers are allowed.", 
+						long_name.c_str(), short_name.c_str());
+					authorized = true;
+					SetRuntimeID(s_id);
+					server_list_id = 3;
+				}
 			}
 		}
 		else
