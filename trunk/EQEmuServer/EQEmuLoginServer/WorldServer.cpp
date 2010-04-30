@@ -374,13 +374,6 @@ void WorldServer::Handle_NewLSInfo(ServerNewLSInfo_Struct* i)
 					SetRuntimeID(s_id);
 					server_list_id = s_list_type;
 					desc = s_desc;
-					if(s_trusted)
-					{
-						log->Log(log_network_trace, "ServerOP_LSAccountUpdate sent to world");
-						trusted = true;
-						ServerPacket *outapp = new ServerPacket(ServerOP_LSAccountUpdate, 0);
-						connection->SendPacket(outapp);
-					}
 				}
 				else if(s_acct_name.compare(account_name) == 0 && s_acct_pass.compare(account_password) == 0)
 				{
