@@ -949,41 +949,49 @@ void GuildBankManager::SetPermissions(uint32 GuildID, uint16 SlotID, uint32 Perm
 
 ItemInst*  GuildBankManager::GetItem(int32 GuildID, uint16 Area, uint16 SlotID, uint32 Quantity)
 {
-
 	std::list<GuildBank*>::iterator Iterator = GetGuildBank(GuildID);
 
 	if(Iterator == Banks.end())
 		return NULL;
+
+	GuildBankItem* BankArea = NULL;
+
+	ItemInst* inst = NULL;
 
 	if(Area == GuildBankDepositArea)
 	{
 		if((SlotID > (GUILD_BANK_DEPOSIT_AREA_SIZE - 1)))
 			return NULL;
 
-		ItemInst* inst = database.CreateItem((*Iterator)->Items.DepositArea[SlotID].ItemID, (*Iterator)->Items.DepositArea[SlotID].Quantity);
+		inst = database.CreateItem((*Iterator)->Items.DepositArea[SlotID].ItemID);
 
 		if(!inst)
 			return NULL;
 
-		return inst;
+		BankArea = &(*Iterator)->Items.DepositArea[0];
 	}
-
-	if((SlotID > (GUILD_BANK_MAIN_AREA_SIZE - 1)))
-		return NULL;
-
-	ItemInst* inst = database.CreateItem((*Iterator)->Items.MainArea[SlotID].ItemID);
-
-	if(!inst)
-		return NULL;
-
-	if(!inst->IsStackable())
-		inst->SetCharges((*Iterator)->Items.MainArea[SlotID].Quantity);
 	else
 	{
-		if(Quantity <= (*Iterator)->Items.MainArea[SlotID].Quantity)
+
+		if((SlotID > (GUILD_BANK_MAIN_AREA_SIZE - 1)))
+			return NULL;
+
+		inst = database.CreateItem((*Iterator)->Items.MainArea[SlotID].ItemID);
+
+		if(!inst)
+			return NULL;
+
+		BankArea = &(*Iterator)->Items.MainArea[0];
+	}
+
+	if(!inst->IsStackable())
+		inst->SetCharges(BankArea[SlotID].Quantity);
+	else
+	{
+		if(Quantity <= BankArea[SlotID].Quantity)
 			inst->SetCharges(Quantity);
 		else
-			inst->SetCharges((*Iterator)->Items.MainArea[SlotID].Quantity);
+			inst->SetCharges(BankArea[SlotID].Quantity);
 	}
 
 	return inst;
