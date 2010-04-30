@@ -4398,18 +4398,20 @@ void Client::Handle_OP_TradeRequest(const EQApplicationPacket *app)
 {
 	// Client requesting a trade session from an npc/client
 	// Trade session not started until OP_TradeRequestAck is sent
-	TradeRequest_Struct* msg = (TradeRequest_Struct*) app->pBuffer;
-	trade->Start(msg->to_mob_id);
-
+	
 	BreakInvis();
 
 	// Pass trade request on to recipient
-	Mob* with = trade->With();
-	if (with && with->IsClient()) {
-		with->CastToClient()->QueuePacket(app);
+	TradeRequest_Struct* msg = (TradeRequest_Struct*) app->pBuffer;
+	Mob* tradee = entity_list.GetMob(msg->to_mob_id);
+	
+	if (tradee && tradee->IsClient()) {
+		tradee->CastToClient()->QueuePacket(app);
 	}
-	else if (with) {
+	else if (tradee) {
 		//npcs always accept
+		trade->Start(msg->to_mob_id);
+		
 		EQApplicationPacket* outapp = new EQApplicationPacket(OP_TradeRequestAck, sizeof(TradeRequest_Struct));
 		TradeRequest_Struct* acc = (TradeRequest_Struct*) outapp->pBuffer;
 		acc->from_mob_id = msg->to_mob_id;
@@ -4424,12 +4426,13 @@ void Client::Handle_OP_TradeRequestAck(const EQApplicationPacket *app)
 {
 	// Trade request recipient is acknowledging they are able to trade
 	// After this, the trade session has officially started
-	//TradeRequest_Struct* msg = (TradeRequest_Struct*) app->pBuffer;
-
 	// Send ack on to trade initiator if client
-	Mob* with = trade->With();
-	if (with && with->IsClient()) {
-		with->CastToClient()->QueuePacket(app);
+	TradeRequest_Struct* msg = (TradeRequest_Struct*) app->pBuffer;
+	Mob* tradee = entity_list.GetMob(msg->to_mob_id);
+	
+	if (tradee && tradee->IsClient()) {
+		trade->Start(msg->to_mob_id);
+		tradee->CastToClient()->QueuePacket(app);
 	}
 	return;
 }
@@ -4526,11 +4529,12 @@ void Client::Handle_OP_TradeBusy(const EQApplicationPacket *app)
 {
 	// Trade request recipient is cancelling the trade due to being busy
 	// Trade requester gets message "I'm busy right now"
-
 	// Send busy message on to trade initiator if client
-	Mob* with = trade->With();
-	if (with && with->IsClient()) {
-		with->CastToClient()->QueuePacket(app);
+	TradeBusy_Struct* msg = (TradeBusy_Struct*) app->pBuffer;
+	Mob* tradee = entity_list.GetMob(msg->to_mob_id);
+	
+	if (tradee && tradee->IsClient()) {
+		tradee->CastToClient()->QueuePacket(app);
 	}
 	return;
 }
