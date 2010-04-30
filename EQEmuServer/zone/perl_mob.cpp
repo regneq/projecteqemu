@@ -1481,6 +1481,52 @@ XS(XS_Mob_MakePet)
 	XSRETURN_EMPTY;
 }
 
+XS(XS_Mob_MakeTempPet); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_MakeTempPet)
+{
+	dXSARGS;
+	if (items < 2 || items > 5)
+		Perl_croak(aTHX_ "Usage: Mob::MakeTempPet(THIS, spell_id, name=NULL, duration=0, target=NULL)");
+	{
+		Mob *		THIS;
+		int16		spell_id = (int16)SvUV(ST(1));
+		char *		name;
+		int32		duration;
+		Mob *		target;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		if (items < 3)
+			name = NULL;
+		else
+			name = (char *)SvPV_nolen(ST(2));
+
+		if (items < 4)
+			duration = 0;
+		else
+			duration = (int32)SvUV(ST(3));
+
+		if (items < 5)
+			target = NULL;
+		else if (sv_derived_from(ST(4), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(4)));
+			target = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "owner is not of type Mob");
+
+		THIS->TemporaryPets(spell_id, target, name, duration);
+	}
+	XSRETURN_EMPTY;
+}
+
 XS(XS_Mob_GetBaseRace); /* prototype to pass -Wmissing-prototypes */
 XS(XS_Mob_GetBaseRace)
 {
@@ -6857,6 +6903,7 @@ XS(boot_Mob)
 		newXSproto(strcpy(buf, "SetRace"), XS_Mob_SetRace, file, "$$");
 		newXSproto(strcpy(buf, "SetGender"), XS_Mob_SetGender, file, "$$");
 		newXSproto(strcpy(buf, "SendIllusion"), XS_Mob_SendIllusion, file, "$$:$$$$$$$$$$$$");
+		newXSproto(strcpy(buf, "MakeTempPet"), XS_Mob_MakeTempPet, file, "$$;$$$");
 	XSRETURN_YES;
 }
 
