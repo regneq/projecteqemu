@@ -199,6 +199,8 @@ public:
 	void	Stun(int duration);
 	void	UnStun();
 	int32	GetSwarmOwner();
+	int32	GetSwarmTarget();
+	void	SetSwarmTarget(int target_id = 0);
 	
 	inline void SignalNPC(int _signal_id) { signaled = true; signal_id = _signal_id; }
 	

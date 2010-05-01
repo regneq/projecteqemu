@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/01/2010==
+Trevius: Added new Perl NPC quest object GetSwarmTarget() to get the ID of a swarm pet's set target.
+Trevius: Added new Perl NPC quest object SetSwarmTarget(target_id) to set the ID of a swarm pet's target.
+
 ==04/30/2010==
 Trevius: Fixed a bug that would cause clients in an existing trade to get bugged if another client tried to trade with them during their existing trade.
 Trevius: Added new Perl Mob quest object MakeTempPet(spell_id, [name=NULL, duration=0, target=NULL]).
