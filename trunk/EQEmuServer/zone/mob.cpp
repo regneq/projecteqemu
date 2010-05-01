@@ -350,6 +350,8 @@ Mob::Mob(const char*   in_name,
 	SetHasRune(false);
 	SetHasSpellRune(false);
 
+	m_hasDeathSaveChance = false;
+
 	m_is_running = false;
 
 	flymode = FlyMode3;

@@ -298,6 +298,9 @@ Client::Client(EQStreamInterface* ieqs)
 	los_status = false;
 	qGlobals = NULL;
 	HideCorpseMode = HideCorpseNone;
+
+	cur_end = 0;
+
 	InitializeBuffSlots();
 }
 

@@ -1618,7 +1618,7 @@ bool ZoneDatabase::LoadPlayerCorpses(int32 iZoneID, int16 iInstanceID) {
 	if(!RuleB(Zone, EnableShadowrest))
 		query_length = MakeAnyLenString(&query, "SELECT id, charid, charname, x, y, z, heading, data, timeofdeath, rezzed, WasAtGraveyard FROM player_corpses WHERE zoneid='%u' AND instanceid='%u'", iZoneID, iInstanceID);
 	else
-		query_length = MakeAnyLenString(&query, "SELECT id, charid, charname, x, y, z, heading, data, timeofdeath, rezzed FROM player_corpses WHERE zoneid='%u' AND instanceid='%u' AND IsBurried=0", iZoneID, iInstanceID);
+		query_length = MakeAnyLenString(&query, "SELECT id, charid, charname, x, y, z, heading, data, timeofdeath, rezzed, 0 FROM player_corpses WHERE zoneid='%u' AND instanceid='%u' AND IsBurried=0", iZoneID, iInstanceID);
 
 	if (RunQuery(query, query_length, errbuf, &result)) {
 		safe_delete_array(query);

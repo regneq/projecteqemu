@@ -958,7 +958,7 @@ bool Database::LoadVariables_result(MYSQL_RES* result) {
 			VarCache_Struct** tmpdel = varcache_array;
 			varcache_array = tmp;
 			varcache_max = tmpnewmax;
-			delete tmpdel;
+			delete [] tmpdel;
 		}
 		while ((row = mysql_fetch_row(result))) {
 			varcache_lastupdate = atoi(row[2]);
