@@ -1920,3 +1920,21 @@ int32 NPC::GetSwarmOwner()
 	}
 	return 0;
 }
+
+int32 NPC::GetSwarmTarget()
+{
+	if(GetSwarmInfo() != NULL)
+	{
+		return GetSwarmInfo()->target;
+	}
+	return 0;
+}
+
+void NPC::SetSwarmTarget(int target_id)
+{
+	if(GetSwarmInfo() != NULL)
+	{
+		GetSwarmInfo()->target = target_id;
+	}
+	return;
+}
