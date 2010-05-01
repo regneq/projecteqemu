@@ -350,6 +350,7 @@ void Client::PutLootInInventory(sint16 slot_id, const ItemInst &inst, ServerLoot
 			interior_slot = Inventory::CalcSlotId(slot_id, i);
 			mlog(INVENTORY__SLOTS, "Putting bag loot item %s (%d) into slot %d (bag slot %d)", inst.GetItem()->Name, inst.GetItem()->ID, interior_slot, i);
 			PutLootInInventory(interior_slot, *bagitem);
+			safe_delete(bagitem);
 		}
 	}
 	

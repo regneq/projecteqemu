@@ -589,7 +589,7 @@ void  Client::SetFactionLevel(int32 char_id, int32 npc_id, int8 char_class, int8
 			char* msg = BuildFactionMessage(npc_value[i],faction_id[i],tmpValue);
 			if (msg != 0)
 				Message(0, msg);
-			safe_delete(msg);
+			safe_delete_array(msg);
 		}
 	}
 	return;

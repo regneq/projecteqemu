@@ -3035,7 +3035,7 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 		this->DamageShield(attacker);
 		uint32 buff_count = GetMaxTotalSlots();
 		for(uint32 bs = 0; bs < buff_count; bs++){
-			if(buffs[bs].numhits > 0 && !IsDiscipline(buffs[bs].spellid)){
+			if((buffs[bs].spellid != SPELL_UNKNOWN) && buffs[bs].numhits > 0 && !IsDiscipline(buffs[bs].spellid)){
 				if(buffs[bs].numhits == 1){
 					BuffFadeBySlot(bs, true);
 				}
@@ -3931,7 +3931,7 @@ void Mob::ApplyMeleeDamageBonus(int16 skill, sint32 &damage){
 	//Rogue sneak attack disciplines make use of this, they are active for one hit
 	uint32 buff_count = GetMaxTotalSlots();
 	for(int bs = 0; bs < buff_count; bs++){
-		if(buffs[bs].numhits > 0 && IsDiscipline(buffs[bs].spellid)){
+		if((buffs[bs].spellid != SPELL_UNKNOWN) && buffs[bs].numhits > 0 && IsDiscipline(buffs[bs].spellid)){
 			if(skill == spells[buffs[bs].spellid].skill){
 				if(buffs[bs].numhits == 1){
 					BuffFadeBySlot(bs, true);
