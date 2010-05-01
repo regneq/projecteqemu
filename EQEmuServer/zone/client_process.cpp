@@ -1842,9 +1842,9 @@ void Client::CalcRestState() {
 	uint32 buff_count = GetMaxTotalSlots();
 	for (unsigned int j = 0; j < buff_count; j++) {
 		if(buffs[j].spellid != SPELL_UNKNOWN) {
-			if(IsDetrimentalSpell(buffs[j].spellid) && (buffs[j].ticsremaining > 0)) {
-				return;
-			}
+			if(IsDetrimentalSpell(buffs[j].spellid) && (buffs[j].ticsremaining > 0))
+				if(!DetrimentalSpellAllowsRest(buffs[j].spellid))
+					return;
 		}
 	}
 

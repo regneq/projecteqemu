@@ -868,3 +868,11 @@ uint32 GetMorphTrigger(uint32 spell_id)
 	}
 	return 0;
 }
+
+bool DetrimentalSpellAllowsRest(int16 spell_id)
+{
+	if((spell_id > 0) && (spell_id < SPDAT_RECORDS))
+		return spells[spell_id].AllowRest;
+
+	return false;
+}
