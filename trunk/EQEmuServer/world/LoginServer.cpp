@@ -210,11 +210,8 @@ bool LoginServer::InitLoginServer() {
 			_log(WORLD__LS, "Connecting to login server: %s:%d",LoginServerAddress,LoginServerPort);
 			Connect();
 		} else {
-			_log(WORLD__LS_ERR, "Not connected but not ready to connect. This is bad. Attempting to create new EmuTCPConnection: %s:%d",
+			_log(WORLD__LS_ERR, "Not connected but not ready to connect, this is bad: %s:%d",
 				LoginServerAddress,LoginServerPort);
-			delete tcpc;
-			tcpc = new EmuTCPConnection(true);
-			tcpc->SetPacketMode(EmuTCPConnection::packetModeLogin);
 		}
 	}
 	return true;
