@@ -6,6 +6,7 @@ Trevius: Added new Perl Mob quest object MakeTempPet(spell_id, [name=NULL, durat
 Trevius: Added new Perl NPC quest object GetSwarmOwner() to get the ID of a swarm pet's owner.
 Trevius: Hide will now break if you move when not sneaking, even if you have invisibility on.
 Derision: Fixed bug in Guild Bank.
+gaeorn: reverted my change from 4/24 as it did not work.
 
 ==04/29/2010==
 gaeorn: fixed tables to avoid login server hang if ServerTagDescription in tblWorldServerRegistration is null
