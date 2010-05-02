@@ -434,7 +434,7 @@ void ClientList::SendOnlineGuildMembers(uint32 FromID, uint32 GuildID, uint16 Zo
 
 		Iterator.Advance();
 	}
-	bool Result = zoneserver_list.SendPacket(ZoneID, InstanceID, pack);
+	zoneserver_list.SendPacket(ZoneID, InstanceID, pack);
 
 	safe_delete(pack);
 }
@@ -1240,19 +1240,54 @@ void ClientList::GetClients(const char *zone_name, vector<ClientListEntry *> &re
 	}
 }
 
+void ClientList::SendClientVersionSummary(const char *Name)
+{
+	uint32 Client62Count = 0;
+	uint32 ClientTitaniumCount = 0;
+	uint32 ClientSoFCount = 0;
+	uint32 ClientSoDCount = 0;
 
+	LinkedListIterator<ClientListEntry*> Iterator(clientlist);
 
+	Iterator.Reset();
 
+	while(Iterator.MoreElements())
+	{
+		ClientListEntry* CLE = Iterator.GetData();
 
+		if(CLE && CLE->zone())
+		{
+			switch(CLE->GetClientVersion())
+			{
+				case 1:
+				{
+					++Client62Count;
+					break;
+				}
+				case 2:
+				{
+					++ClientTitaniumCount;
+					break;
+				}
+				case 3:
+				{
+					++ClientSoFCount;
+					break;
+				}
+				case 4:
+				{
+					++ClientSoDCount;
+					break;
+				}
+				default:
+					break;
+			}
+		}
 
+		Iterator.Advance();
 
+	}
 
-
-
-
-
-
-
-
-
-
+	zoneserver_list.SendEmoteMessage(Name, 0, 0, 13, "There are %i 6.2, %i Titanium, %i SoF and %i SoD clients currently connected.",
+					  Client62Count, ClientTitaniumCount, ClientSoFCount, ClientSoDCount);
+}

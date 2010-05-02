@@ -741,7 +741,12 @@ bool ZoneServer::Process() {
 			client_list.SendOnlineGuildMembers(srogms->FromID, srogms->GuildID, GetID(), GetInstanceID());
 			break;
 		}
-
+		case ServerOP_ClientVersionSummary:
+		{
+			ServerRequestClientVersionSummary_Struct *srcvss = (ServerRequestClientVersionSummary_Struct*) pack->pBuffer;
+			client_list.SendClientVersionSummary(srcvss->Name);
+			break;
+		}
 		case ServerOP_FriendsWho: {
 			ServerFriendsWho_Struct* FriendsWho = (ServerFriendsWho_Struct*) pack->pBuffer;
 			client_list.SendFriendsWho(FriendsWho, this);

@@ -179,6 +179,8 @@ void ClientListEntry::Update(ZoneServer* iZS, ServerClientList_Struct* scl, sint
 	pguild_id = scl->guild_id;
 	pLFG = scl->LFG;
 	gm = scl->gm;
+	pClientVersion = scl->ClientVersion;
+
 	// Fields from the LFG Window
 	if((scl->LFGFromLevel != 0) && (scl->LFGToLevel != 0)) {
 		pLFGFromLevel = scl->LFGFromLevel;
@@ -229,6 +231,7 @@ void ClientListEntry::ClearVars(bool iAll) {
 	pguild_id = GUILD_NONE;
 	pLFG = 0;
 	gm = 0;
+	pClientVersion = 0;
 }
 
 void ClientListEntry::Camp(ZoneServer* iZS) {

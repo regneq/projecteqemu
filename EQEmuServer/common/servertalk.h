@@ -114,7 +114,7 @@
 #define ServerOP_LFGMatches			0x0212
 #define ServerOP_LFPUpdate			0x0213
 #define ServerOP_LFPMatches			0x0214
-
+#define ServerOP_ClientVersionSummary		0x0215
 #define ServerOP_LSInfo				0x1000
 #define ServerOP_LSStatus			0x1001
 #define ServerOP_LSClientAuth		0x1002
@@ -316,6 +316,7 @@ struct ServerClientList_Struct {
 	int32	guild_id;
 	bool	LFG;
 	int8	gm;
+	int8	ClientVersion;
 	int8	LFGFromLevel;
 	int8	LFGToLevel;
 	bool	LFGMatchFilter;
@@ -910,6 +911,10 @@ struct ServerRequestOnlineGuildMembers_Struct
 	uint32	GuildID;
 };
 
+struct ServerRequestClientVersionSummary_Struct
+{
+	char Name[64];
+};
 #pragma pack()
 
 #endif

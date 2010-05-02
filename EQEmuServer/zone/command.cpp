@@ -441,7 +441,8 @@ int command_init(void) {
 		command_add("object","List|Add|Edit|Move|Rotate|Copy|Save|Undo|Delete - Manipulate static and tradeskill objects within the zone",100,command_object) ||
 		command_add("raidloot","LEADER|GROUPLEADER|SELECTED|ALL - Sets your raid loot settings if you have permission to do so.",0,command_raidloot) ||
 		command_add("globalview","Lists all qglobals in cache if you were to do a quest with this target.",80,command_globalview) ||
-		command_add("distance","- Reports the distance between you and your target.", 80, command_distance)
+		command_add("distance","- Reports the distance between you and your target.", 80, command_distance) ||
+		command_add("cvs","- Summary of client versions currently online.", 200, command_cvs)
 		)
 	{
 		command_deinit();
@@ -10907,5 +10908,22 @@ void command_distance(Client *c, const Seperator *sep) {
 		Mob* target = c->GetTarget();
 
 		c->Message(0, "Your target, %s, is %1.1f units from you.", c->GetTarget()->GetName(), c->Dist(*target));
+	}
+}
+
+void command_cvs(Client *c, const Seperator *sep)
+{
+	if(c)
+	{
+		ServerPacket *pack = new ServerPacket(ServerOP_ClientVersionSummary, sizeof(ServerRequestClientVersionSummary_Struct));
+
+		ServerRequestClientVersionSummary_Struct *srcvss = (ServerRequestClientVersionSummary_Struct*)pack->pBuffer;
+
+		strn0cpy(srcvss->Name, c->GetName(), sizeof(srcvss->Name));
+
+		worldserver.SendPacket(pack);
+
+		safe_delete(pack);
+
 	}
 }
