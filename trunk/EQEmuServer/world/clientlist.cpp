@@ -389,6 +389,56 @@ ClientListEntry* ClientList::CheckAuth(const char* iName, const char* iPassword)
 	return 0;
 }
 
+void ClientList::SendOnlineGuildMembers(uint32 FromID, uint32 GuildID, uint16 ZoneID, uint16 InstanceID)
+{
+	int PacketLength = 8;
+
+	int Count = 0;
+
+	LinkedListIterator<ClientListEntry*> Iterator(clientlist);
+
+	Iterator.Reset();
+
+	while(Iterator.MoreElements())
+	{
+		ClientListEntry* CLE = Iterator.GetData();
+
+		if(CLE && (CLE->GuildID() == GuildID))
+		{
+			PacketLength += (strlen(CLE->name()) + 5);
+			++Count;
+		}
+
+		Iterator.Advance();
+
+	}
+
+	Iterator.Reset();
+
+	ServerPacket* pack = new ServerPacket(ServerOP_OnlineGuildMembersResponse, PacketLength);
+
+	char *Buffer = (char *)pack->pBuffer;
+
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, FromID);
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, Count);
+
+	while(Iterator.MoreElements())
+	{
+		ClientListEntry* CLE = Iterator.GetData();
+
+		if(CLE && (CLE->GuildID() == GuildID))
+		{
+			VARSTRUCT_ENCODE_STRING(Buffer, CLE->name());
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, CLE->zone());
+		}
+
+		Iterator.Advance();
+	}
+	bool Result = zoneserver_list.SendPacket(ZoneID, InstanceID, pack);
+
+	safe_delete(pack);
+}
+
 
 void ClientList::SendWhoAll(int32 fromid,const char* to, sint16 admin, Who_All_Struct* whom, WorldTCPConnection* connection) {
 	try{

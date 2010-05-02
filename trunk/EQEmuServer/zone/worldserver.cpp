@@ -578,6 +578,45 @@ void WorldServer::Process() {
 //		case ServerOP_GuildJoin:
 			guild_mgr.ProcessWorldPacket(pack);
 			break;
+
+		case ServerOP_OnlineGuildMembersResponse:
+		{
+			char *Buffer = (char *)pack->pBuffer;
+
+			uint32 FromID = VARSTRUCT_DECODE_TYPE(uint32, Buffer);
+
+			Client *c = entity_list.GetClientByCharID(FromID);
+
+			if(!c || !c->IsInAGuild())
+				break;
+
+			EQApplicationPacket *outapp = new EQApplicationPacket(OP_GuildMemberUpdate, sizeof(GuildMemberUpdate_Struct));
+
+			GuildMemberUpdate_Struct *gmus = (GuildMemberUpdate_Struct*)outapp->pBuffer;
+
+			gmus->GuildID = c->GuildID();
+			gmus->InstanceID = 0;
+			gmus->LastSeen = time(NULL);
+
+			uint32 Count = VARSTRUCT_DECODE_TYPE(uint32, Buffer);
+
+			char Name[64];
+
+			for(int i = 0; i < Count; ++i)
+			{
+				VARSTRUCT_DECODE_STRING(Name, Buffer);
+
+				uint32 ZoneID = VARSTRUCT_DECODE_TYPE(uint32, Buffer);
+
+				strn0cpy(gmus->MemberName, Name, sizeof(gmus->MemberName));
+
+				gmus->ZoneID = ZoneID;
+
+				c->QueuePacket(outapp);
+			}
+			safe_delete(outapp);
+			break;
+		}
 		
 		case ServerOP_FlagUpdate: {
 			Client* client = entity_list.GetClientByAccID(*((int32*) pack->pBuffer));

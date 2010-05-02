@@ -127,12 +127,14 @@ void WorldGuildManager::ProcessZonePacket(ServerPacket *pack) {
 	}
 	
 	case ServerOP_GuildMemberUpdate: {
-/*		if(pack->size != sizeof(ServerGuildRefresh_Struct)) {
-			_log(GUILDS__ERROR, "Received ServerOP_RefreshGuild of incorrect size %d, expected %d", pack->size, sizeof(ServerGuildRefresh_Struct));
+		if(pack->size != sizeof(ServerGuildMemberUpdate_Struct))
+		{
+			_log(GUILDS__ERROR, "Received ServerOP_GuildMemberUpdate of incorrect size %d, expected %d", pack->size, sizeof(ServerGuildMemberUpdate_Struct));
 			return;
 		}
-*/		//should we ever get this from a zone?
-		_log(GUILDS__ERROR, "Unimplemented guild member update!");
+		
+		zoneserver_list.SendPacket(pack);
+
 		break;
 	}
 	
