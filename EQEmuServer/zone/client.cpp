@@ -308,7 +308,8 @@ Client::~Client() {
 #ifdef BOTS
 	Bot::ProcessBotOwnerRefDelete(this);
 #endif
-	guild_mgr.SendGuildMemberUpdateToWorld(GetName(), GuildID(), 0, time(NULL));
+	if(IsInAGuild())
+		guild_mgr.SendGuildMemberUpdateToWorld(GetName(), GuildID(), 0, time(NULL));
 
 	Mob* horse = entity_list.GetMob(this->CastToClient()->GetHorseId());
 	if (horse)
