@@ -2,6 +2,11 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==05/02/2010==
 Derision: The Guild Management Window should now reflect the true online status and zone of members at all times.
+Derision: Added a command, #cvs (Client Version Summary) to display connected client version counts.
+
+OPTIONAL SQL:
+
+utils/sql/svn/1450_cvs.sql
 
 ==05/01/2010==
 Trevius: Added new Perl NPC quest object GetSwarmTarget() to get the ID of a swarm pet's set target.

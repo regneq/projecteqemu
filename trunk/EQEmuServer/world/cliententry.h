@@ -78,6 +78,7 @@ public:
 	inline int8			GetLFGToLevel() const { return pLFGToLevel; }
 	inline bool			GetLFGMatchFilter() const { return pLFGMatchFilter; }
 	inline const char*		GetLFGComments() const { return pLFGComments; }
+	inline uint8	GetClientVersion() { return pClientVersion; }
 
 private:
 	void	ClearVars(bool iAll = false);
@@ -114,6 +115,7 @@ private:
 	int32	pguild_id;
 	bool	pLFG;
 	int8	gm;
+	int8	pClientVersion;
 	int8	pLFGFromLevel;
 	int8	pLFGToLevel;
 	bool	pLFGMatchFilter;

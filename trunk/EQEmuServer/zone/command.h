@@ -304,6 +304,7 @@ void command_object(Client* c, const Seperator *sep);
 void command_raidloot(Client* c, const Seperator *sep);
 void command_globalview(Client* c, const Seperator *sep);
 void command_distance(Client *c, const Seperator *sep);
+void command_cvs(Client *c, const Seperator *sep);
 
 #ifdef EMBPERL
 void command_embperl_plugin(Client *c, const Seperator *sep);

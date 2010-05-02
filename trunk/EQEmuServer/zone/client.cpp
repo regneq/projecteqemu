@@ -1409,6 +1409,7 @@ void Client::UpdateWho(int8 remove) {
 	else if (m_pp.anon >= 2)
 		scl->anon = 2;
 
+	scl->ClientVersion = GetClientVersion();
 	scl->tellsoff = tellsoff;
 	scl->guild_id = guild_id;
 	scl->LFG = LFG;
