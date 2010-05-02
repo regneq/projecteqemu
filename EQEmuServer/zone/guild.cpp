@@ -32,6 +32,8 @@
 #include "StringIDs.h"
 #include "NpcAI.h"
 
+extern WorldServer worldserver;
+
 void Client::SendGuildMOTD(bool GetGuildMOTDReply) {
 	EQApplicationPacket *outapp = new EQApplicationPacket(OP_GuildMOTD, sizeof(GuildMOTD_Struct));
 
@@ -118,6 +120,18 @@ void Client::SendGuildMembers() {
 	mpkt(GUILDS__OUT_PACKET_TRACE, outapp);
 	
 	FastQueuePacket(&outapp);
+
+	ServerPacket* pack = new ServerPacket(ServerOP_RequestOnlineGuildMembers, sizeof(ServerRequestOnlineGuildMembers_Struct));
+
+	ServerRequestOnlineGuildMembers_Struct *srogms = (ServerRequestOnlineGuildMembers_Struct*)pack->pBuffer;
+
+	srogms->FromID = CharacterID();
+	srogms->GuildID = GuildID();
+
+	worldserver.SendPacket(pack);
+
+	safe_delete(pack);
+
 }
 
 void Client::RefreshGuildInfo()

@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/02/2010==
+Derision: The Guild Management Window should now reflect the true online status and zone of members at all times.
+
 ==05/01/2010==
 Trevius: Added new Perl NPC quest object GetSwarmTarget() to get the ID of a swarm pet's set target.
 Trevius: Added new Perl NPC quest object SetSwarmTarget(target_id) to set the ID of a swarm pet's target.

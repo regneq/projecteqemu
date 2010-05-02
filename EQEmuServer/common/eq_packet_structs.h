@@ -3014,11 +3014,11 @@ struct SimpleMessage_Struct{
 };
 
 struct GuildMemberUpdate_Struct {
-/*00*/	int32	guild_id;
-/*04*/	char	member_name[64];
-/*68*/	int16	zone_id;
-/*70*/	int16	instance_id;	//speculated
-/*72*/	int32	some_timestamp;	//unix timestamp
+/*00*/	int32	GuildID;
+/*04*/	char	MemberName[64];
+/*68*/	int16	ZoneID;
+/*70*/	int16	InstanceID;	//speculated
+/*72*/	int32	LastSeen;	//unix timestamp
 /*76*/
 };
 

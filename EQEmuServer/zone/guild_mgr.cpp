@@ -80,6 +80,7 @@ ZoneGuildManager guild_mgr;
 GuildBankManager *GuildBanks;
 
 extern WorldServer worldserver;
+extern volatile bool ZoneLoaded;
 
 void ZoneGuildManager::SendGuildRefresh(int32 guild_id, bool name, bool motd, bool rank, bool relation) {
 	_log(GUILDS__REFRESH, "Sending guild refresh for %d to world, changes: name=%d, motd=%d, rank=d, relation=%d", guild_id, name, motd, rank, relation);
@@ -205,7 +206,7 @@ uint8 *ZoneGuildManager::MakeGuildMembers(int32 guild_id, const char *prefix_nam
 		PutField(last_tribute);
 		SlideStructString( note_buf, ci->public_note );
 		e->zoneinstance = 0;
-		PutField(zone_id);
+		e->zone_id = 0;	// Flag them as offline (zoneid 0) as world will update us with their online status afterwards.
 #undef SlideStructString
 #undef PutFieldN
 		
@@ -381,10 +382,43 @@ void ZoneGuildManager::ProcessWorldPacket(ServerPacket *pack) {
 		break;
 	}
 	
-	case ServerOP_GuildMemberUpdate: {
+	case ServerOP_GuildMemberUpdate:
+	{
+		ServerGuildMemberUpdate_Struct *sgmus = (ServerGuildMemberUpdate_Struct*)pack->pBuffer;
+	
+		if(ZoneLoaded)
+		{
+			EQApplicationPacket *outapp = new EQApplicationPacket(OP_GuildMemberUpdate, sizeof(GuildMemberUpdate_Struct));
+
+			GuildMemberUpdate_Struct *gmus = (GuildMemberUpdate_Struct*)outapp->pBuffer;
+
+			gmus->GuildID = sgmus->GuildID;
+			strn0cpy(gmus->MemberName, sgmus->MemberName, sizeof(gmus->MemberName));
+			gmus->ZoneID = sgmus->ZoneID;
+			gmus->InstanceID = 0;	// I don't think we care what Instance they are in, for the Guild Management Window.
+			gmus->LastSeen = sgmus->LastSeen;
+
+			entity_list.QueueClientsGuild(NULL, outapp, false, sgmus->GuildID);
+
+			safe_delete(outapp);
+		}
 		break;
 	}
 	}
+}
+
+void ZoneGuildManager::SendGuildMemberUpdateToWorld(const char *MemberName, uint32 GuildID, uint16 ZoneID, uint32 LastSeen)
+{
+	ServerPacket* pack = new ServerPacket(ServerOP_GuildMemberUpdate, sizeof(ServerGuildMemberUpdate_Struct));
+
+	ServerGuildMemberUpdate_Struct *sgmus = (ServerGuildMemberUpdate_Struct*)pack->pBuffer;
+	sgmus->GuildID = GuildID;
+	strn0cpy(sgmus->MemberName, MemberName, sizeof(sgmus->MemberName));
+	sgmus->ZoneID = ZoneID;
+	sgmus->LastSeen = LastSeen;
+	worldserver.SendPacket(pack);
+
+	safe_delete(pack);
 }
 
 void ZoneGuildManager::ProcessApproval()

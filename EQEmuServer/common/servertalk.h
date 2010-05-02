@@ -34,8 +34,8 @@
 //#define ServerOP_GuildJoin		0x0012
 #define ServerOP_GuildCharRefresh	0x0013
 #define ServerOP_GuildMemberUpdate	0x0014
-//#define ServerOP_GuildGMSet		0x0015
-//#define ServerOP_GuildGMSetRank	0x0016
+#define ServerOP_RequestOnlineGuildMembers	0x0015
+#define ServerOP_OnlineGuildMembersResponse	0x0016
 
 #define ServerOP_FlagUpdate			0x0018	// GM Flag updated for character, refresh the memory cache
 #define ServerOP_GMGoto				0x0019
@@ -706,9 +706,10 @@ struct ServerGuildCharRefresh_Struct {
 
 //not sure what needs to go in here.
 struct ServerGuildMemberUpdate_Struct {
-	int32 guild_id;
-	int32 char_id;
-	//...
+	int32 GuildID;
+	char MemberName[64];
+	int32 ZoneID;
+	int32 LastSeen;
 };
 
 struct SpawnPlayerCorpse_Struct {
@@ -901,6 +902,12 @@ struct ServerQGlobalDelete_Struct
 	uint32 zone_id;
 	uint32 from_zone_id;
 	uint32 from_instance_id;
+};
+
+struct ServerRequestOnlineGuildMembers_Struct
+{
+	uint32	FromID;
+	uint32	GuildID;
 };
 
 #pragma pack()

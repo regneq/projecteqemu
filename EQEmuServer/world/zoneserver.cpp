@@ -735,6 +735,13 @@ bool ZoneServer::Process() {
 			delete whom;
 			break;
 		}
+		case ServerOP_RequestOnlineGuildMembers:
+		{
+			ServerRequestOnlineGuildMembers_Struct *srogms = (ServerRequestOnlineGuildMembers_Struct*) pack->pBuffer;
+			client_list.SendOnlineGuildMembers(srogms->FromID, srogms->GuildID, GetID(), GetInstanceID());
+			break;
+		}
+
 		case ServerOP_FriendsWho: {
 			ServerFriendsWho_Struct* FriendsWho = (ServerFriendsWho_Struct*) pack->pBuffer;
 			client_list.SendFriendsWho(FriendsWho, this);

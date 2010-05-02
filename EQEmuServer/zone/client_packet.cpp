@@ -8677,6 +8677,9 @@ void Client::CompleteConnect()
 
 	if(GetClientVersion() >= EQClientSoD)
 		entity_list.SendFindableNPCList(this);
+
+	if(IsInAGuild())
+		guild_mgr.SendGuildMemberUpdateToWorld(GetName(), GuildID(), zone->GetZoneID(), time(NULL));
 }
 
 void Client::Handle_OP_KeyRing(const EQApplicationPacket *app) {
