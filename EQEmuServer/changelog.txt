@@ -1,5 +1,14 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/03/2010==
+Derision: The facility to flag 'Alts' in the Guild Management Window now works for those clients that support it.
+Derision: The facility to specify a Guild chat channel and URL now work for those clients that support it.
+Derision: SoD - Item links for Task rewards now display correctly in the task window.
+
+REQUIRED SQL:
+
+utils/sql/svn/1451_guilds.sql
+
 ==05/02/2010==
 Derision: The Guild Management Window should now reflect the true online status and zone of members at all times.
 Derision: Added a command, #cvs (Client Version Summary) to display connected client version counts.

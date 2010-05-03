@@ -514,6 +514,8 @@ public:
 	inline int32	GuildID() const { return guild_id; }
 	inline int8	GuildRank()		const { return guildrank; }
 	void	SendGuildMOTD(bool GetGuildMOTDReply = false);
+	void	SendGuildURL();
+	void	SendGuildChannel();
 	void	SendGuildSpawnAppearance();
 	void	SendGuildMembers();
     void	SendGuildList();

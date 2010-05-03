@@ -39,6 +39,7 @@ typedef unsigned long  DWORD;
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <stdlib.h>
 //#include "EQWldData.h"
 #include "types.h"
 #include "azone.h"

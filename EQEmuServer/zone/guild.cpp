@@ -71,6 +71,49 @@ void Client::SendGuildMOTD(bool GetGuildMOTDReply) {
 	FastQueuePacket(&outapp);
 }
 
+void Client::SendGuildURL()
+{
+	if(GetClientVersion() < EQClientSoF)
+		return;
+
+	if(IsInAGuild())
+	{
+		EQApplicationPacket *outapp = new EQApplicationPacket(OP_GuildUpdateURLAndChannel, sizeof(GuildUpdateURLAndChannel_Struct));
+
+		GuildUpdateURLAndChannel_Struct *guuacs = (GuildUpdateURLAndChannel_Struct*) outapp->pBuffer;
+
+		if(guild_mgr.GetGuildURL(GuildID(), guuacs->Text))
+		{
+			guuacs->Action = 0;
+			FastQueuePacket(&outapp);
+		}
+		else
+			safe_delete(outapp);
+	}
+}
+
+void Client::SendGuildChannel()
+{
+	if(GetClientVersion() < EQClientSoF)
+		return;
+
+	if(IsInAGuild())
+	{
+		EQApplicationPacket *outapp = new EQApplicationPacket(OP_GuildUpdateURLAndChannel, sizeof(GuildUpdateURLAndChannel_Struct));
+
+		GuildUpdateURLAndChannel_Struct *guuacs = (GuildUpdateURLAndChannel_Struct*) outapp->pBuffer;
+
+		if(guild_mgr.GetGuildChannel(GuildID(), guuacs->Text))
+		{
+			guuacs->Action = 1;
+
+			FastQueuePacket(&outapp);
+		}
+		else
+			safe_delete(outapp);
+	}
+}
+
 void Client::SendGuildSpawnAppearance() {
 	if (!IsInAGuild()) {
 		// clear guildtag
@@ -132,6 +175,9 @@ void Client::SendGuildMembers() {
 
 	safe_delete(pack);
 
+	// We need to send the Guild URL and Channel name again, as sending OP_GuildMemberList appears to clear this information out.
+	SendGuildURL();
+	SendGuildChannel();
 }
 
 void Client::RefreshGuildInfo()
@@ -189,6 +235,8 @@ void EntityList::SendGuildMOTD(uint32 guild_id) {
 		Client* client = iterator.GetData();
 		if (client->GuildID() == guild_id) {
 			client->SendGuildMOTD();
+			client->SendGuildURL();
+			client->SendGuildChannel();
 		}
 		iterator.Advance();
 	}
@@ -382,11 +430,4 @@ bool ZoneDatabase::SetGuildDoor(int8 doorid,int16 guild_id, const char* zone) {
 	
 	return(affected_rows > 0);
 }
-
-
-
-
-
-
-
 

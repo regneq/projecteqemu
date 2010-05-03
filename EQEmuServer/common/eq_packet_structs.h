@@ -3070,6 +3070,15 @@ struct GuildUpdate_PublicNote{
 	char	note[1]; //variable length.
 };
 
+struct GuildUpdateURLAndChannel_Struct
+{
+/*0000*/	uint32	Action;	// 0 = Update URL, 1 = Update Channel
+/*0004*/	char	Unknown0004[76];
+/*0080*/	char	Text[512];	// URL can be up to 512, SoD client caps the Channel at 128;
+/*0592*/	char	Unknown0592[3584];
+/*4176*/
+};
+
 struct GuildDemoteStruct{
 	char	name[64];
 	char	target[64];

@@ -365,6 +365,7 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_GroupRoles] = &Client::Handle_OP_GroupRoles;
 	ConnectedOpcodes[OP_HideCorpse] = &Client::Handle_OP_HideCorpse;
 	ConnectedOpcodes[OP_TradeBusy] = &Client::Handle_OP_TradeBusy;
+	ConnectedOpcodes[OP_GuildUpdateURLAndChannel] = &Client::Handle_OP_GuildUpdateURLAndChannel;
 }
 
 int Client::HandlePacket(const EQApplicationPacket *app)
@@ -835,6 +836,8 @@ void Client::Handle_Connect_OP_SendExpZonein(const EQApplicationPacket *app)
 
 	if(IsInAGuild()) {
 		SendGuildMembers();
+		SendGuildURL();
+		SendGuildChannel();
 	}
 
 	//No idea why live sends this if even were not in a guild
@@ -904,6 +907,8 @@ void Client::Handle_Connect_OP_WorldObjectsSent(const EQApplicationPacket *app)
 
 	if(IsInAGuild()) {
 		SendGuildMembers();
+		SendGuildURL();
+		SendGuildChannel();
 	}
 
 	//No idea why live sends this if even were not in a guild
@@ -3653,6 +3658,12 @@ void Client::Handle_OP_GetGuildMOTD(const EQApplicationPacket *app)
 	mpkt(GUILDS__IN_PACKET_TRACE, app);
 
 	SendGuildMOTD(true);
+
+	if(IsInAGuild())
+	{
+		SendGuildURL();
+		SendGuildChannel();
+	}
 }
 
 void Client::Handle_OP_GetGuildsList(const EQApplicationPacket *app)
@@ -3694,7 +3705,9 @@ void Client::Handle_OP_SetGuildMOTD(const EQApplicationPacket *app)
 	return;
 }
 
-void Client::Handle_OP_GuildManageBanker(const EQApplicationPacket *app) {
+void Client::Handle_OP_GuildManageBanker(const EQApplicationPacket *app)
+{
+
 	mlog(GUILDS__IN_PACKETS, "Got OP_GuildManageBanker of len %d", app->size);
 	mpkt(GUILDS__IN_PACKET_TRACE, app);
 	if(app->size != sizeof(GuildManageBanker_Struct)) {
@@ -3707,30 +3720,68 @@ void Client::Handle_OP_GuildManageBanker(const EQApplicationPacket *app) {
 		Message(13, "Your not in a guild!");
 		return;
 	}
-	if(!guild_mgr.IsGuildLeader(GuildID(), CharacterID())) {
+
+	CharGuildInfo gci;
+
+	if(!guild_mgr.GetCharInfo(gmb->member, gci))
+	{
+		Message(0, "Unable to find '%s'", gmb->member);
+		return;
+	}
+	bool IsCurrentlyABanker = guild_mgr.GetBankerFlag(gci.char_id);
+
+	bool IsCurrentlyAnAlt = guild_mgr.GetAltFlag(gci.char_id);
+
+	bool NewBankerStatus = gmb->enabled & 0x01;
+
+	bool NewAltStatus = gmb->enabled & 0x02;
+
+	if((IsCurrentlyABanker != NewBankerStatus) && !guild_mgr.IsGuildLeader(GuildID(), CharacterID()))
+	{
 		Message(13, "Only the guild leader can assign guild bankers!");
 		return;
 	}
 
-	CharGuildInfo gci;
-	if(!guild_mgr.GetCharInfo(gmb->member, gci)) {
-		Message(0, "Unable to find '%s'", gmb->member);
-		return;
+	if(IsCurrentlyAnAlt != NewAltStatus)
+	{
+		bool IsAllowed = !strncasecmp(GetName(), gmb->member, strlen(GetName())) || (GuildRank() >= GUILD_OFFICER);
+
+		if(!IsAllowed)
+		{
+			Message(13, "You are not allowed to change the alt status of %s", gmb->member);
+			return;
+		}
 	}
+
 	if(gci.guild_id != GuildID()) {
 		Message(0, "You aren't in the same guild, what do you think you are doing?");
 		return;
 	}
 
-	if(!guild_mgr.SetBankerFlag(gci.char_id, gmb->enabled)) {
-		Message(13, "Error setting guild banker flag.");
-		return;
-	}
+	if(IsCurrentlyABanker != NewBankerStatus)
+	{
+		if(!guild_mgr.SetBankerFlag(gci.char_id, NewBankerStatus)) {
+			Message(13, "Error setting guild banker flag.");
+			return;
+		}
 
-	if(gmb->enabled)
-		Message(0, "%s has been made a guild banker.", gmb->member);
-	else
-		Message(0, "%s is no longer a guild banker.", gmb->member);
+		if(NewBankerStatus)
+			Message(0, "%s has been made a guild banker.", gmb->member);
+		else
+			Message(0, "%s is no longer a guild banker.", gmb->member);
+	}
+	if(IsCurrentlyAnAlt != NewAltStatus)
+	{
+		if(!guild_mgr.SetAltFlag(gci.char_id, NewAltStatus)) {
+			Message(13, "Error setting guild alt flag.");
+			return;
+		}
+
+		if(NewAltStatus)
+			Message(0, "%s has been marked as an alt.", gmb->member);
+		else
+			Message(0, "%s is no longer marked as an alt.", gmb->member);
+	}
 }
 
 void Client::Handle_OP_GuildPeace(const EQApplicationPacket *app)
@@ -10969,4 +11020,34 @@ void Client::Handle_OP_HideCorpse(const EQApplicationPacket *app)
 	entity_list.HideCorpses(this, HideCorpseMode, hcs->Action);
 
 	HideCorpseMode = hcs->Action;
+}
+
+void Client::Handle_OP_GuildUpdateURLAndChannel(const EQApplicationPacket *app)
+{
+	if(app->size != sizeof(GuildUpdateURLAndChannel_Struct))
+	{
+		LogFile->write(EQEMuLog::Debug, "Size mismatch in OP_GuildUpdateURLAndChannel expected %i got %i",
+		               sizeof(GuildUpdateURLAndChannel_Struct), app->size);
+
+		DumpPacket(app);
+
+		return;
+	}
+
+	GuildUpdateURLAndChannel_Struct *guuacs = (GuildUpdateURLAndChannel_Struct*)app->pBuffer;
+
+	if(!IsInAGuild())
+		return;
+
+	if(!guild_mgr.IsGuildLeader(GuildID(), CharacterID()))
+	{
+		Message(13, "Only the guild leader can change the Channel or URL.!");
+		return;
+	}
+
+	if(guuacs->Action == 0)
+		guild_mgr.SetGuildURL(GuildID(), guuacs->Text);
+	else
+		guild_mgr.SetGuildChannel(GuildID(), guuacs->Text);
+
 }
