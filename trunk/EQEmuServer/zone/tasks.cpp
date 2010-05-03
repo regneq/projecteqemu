@@ -2662,20 +2662,23 @@ void TaskManager::SendActiveTaskDescription(Client *c, int TaskID, int SequenceN
 				switch(c->GetClientVersion()) {
 
 					case EQClientSoF:
-
+					case EQClientSoD:
+					{
 						MakeAnyLenString(&RewardTmp, "%c%06X00000000000000000000000000000000000014505DC2%s%c", 
 								 0x12, ItemID, Tasks[TaskID]->Reward,0x12);
 						break;
-
+					}
 					case EQClient62:
-
+					{
 						MakeAnyLenString(&RewardTmp, "%c%07i-00001-00001-00001-00001-000013E0ABA6B%s%c", 
 								 0x12, ItemID, Tasks[TaskID]->Reward,0x12);
 						break;
-
+					}
 					default:
+					{
 						MakeAnyLenString(&RewardTmp, "%c%06X000000000000000000000000000000014505DC2%s%c", 
 								 0x12, ItemID, Tasks[TaskID]->Reward,0x12);
+					}
 				}
 
 			}

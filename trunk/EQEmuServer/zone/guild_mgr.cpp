@@ -197,7 +197,7 @@ uint8 *ZoneGuildManager::MakeGuildMembers(int32 guild_id, const char *prefix_nam
 		
 		SlideStructString( name_buf, ci->char_name );
 		PutField(level);
-		PutField(banker);
+		e->banker = ci->banker + (ci->alt * 2);	// low bit is banker flag, next bit is 'alt' flag.
 		PutField(class_);
 		PutField(rank);
 		PutField(time_last_on);
@@ -298,7 +298,7 @@ void ZoneGuildManager::ProcessWorldPacket(ServerPacket *pack) {
 		}
 		ServerGuildRefresh_Struct *s = (ServerGuildRefresh_Struct *) pack->pBuffer;
 		
-		_log(GUILDS__REFRESH, "Received guild refresh from world for %d, changes: name=%d, motd=%d, rank=d, relation=%d", s->guild_id, s->name_change, s->motd_change, s->rank_change, s->relation_change);
+		_log(GUILDS__REFRESH, "Received guild refresh from world for %d, changes: name=%d, motd=%d, rank=%d, relation=%d", s->guild_id, s->name_change, s->motd_change, s->rank_change, s->relation_change);
 		
 		//reload all the guild details from the database.
 		RefreshGuild(s->guild_id);

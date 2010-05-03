@@ -56,14 +56,14 @@ bool BaseGuildManager::LoadGuilds() {
 	
 	// load up all the guilds
 	if (!m_db->RunQuery(query, MakeAnyLenString(&query, 
-		"SELECT id, name, leader, minstatus, motd, motd_setter FROM guilds"), errbuf, &result)) {
+		"SELECT id, name, leader, minstatus, motd, motd_setter,channel,url FROM guilds"), errbuf, &result)) {
 		_log(GUILDS__ERROR, "Error loading guilds '%s': %s", query, errbuf);
 		safe_delete_array(query);
 		return(false);
 	}
 	safe_delete_array(query);
 	while ((row = mysql_fetch_row(result))) {
-		_CreateGuild(atoi(row[0]), row[1], atoi(row[2]), atoi(row[3]), row[4], row[5]);
+		_CreateGuild(atoi(row[0]), row[1], atoi(row[2]), atoi(row[3]), row[4], row[5], row[6], row[7]);
 	}
 	mysql_free_result(result);
 	
@@ -121,7 +121,7 @@ bool BaseGuildManager::RefreshGuild(uint32 guild_id) {
 	
 	// load up all the guilds
 	if (!m_db->RunQuery(query, MakeAnyLenString(&query, 
-		"SELECT name, leader, minstatus, motd, motd_setter FROM guilds WHERE id=%lu", (unsigned long)guild_id), errbuf, &result)) {
+		"SELECT name, leader, minstatus, motd, motd_setter, channel,url FROM guilds WHERE id=%lu", (unsigned long)guild_id), errbuf, &result)) {
 		_log(GUILDS__ERROR, "Error reloading guilds '%s': %s", query, errbuf);
 		safe_delete_array(query);
 		return(false);
@@ -129,7 +129,7 @@ bool BaseGuildManager::RefreshGuild(uint32 guild_id) {
 	safe_delete_array(query);
 	if ((row = mysql_fetch_row(result))) {
 		//delete the old entry and create the new one.
-		info = _CreateGuild(guild_id, row[0], atoi(row[1]), atoi(row[2]), row[3], row[4]);
+		info = _CreateGuild(guild_id, row[0], atoi(row[1]), atoi(row[2]), row[3], row[4], row[5], row[6]);
 	} else {
 		_log(GUILDS__ERROR, "Unable to find guild %d in the database.", guild_id);
 		return(false);
@@ -171,7 +171,8 @@ bool BaseGuildManager::RefreshGuild(uint32 guild_id) {
 	return(true);
 }
 
-BaseGuildManager::GuildInfo *BaseGuildManager::_CreateGuild(uint32 guild_id, const char *guild_name, uint32 leader_char_id, uint8 minstatus, const char *guild_motd, const char *motd_setter) {
+BaseGuildManager::GuildInfo *BaseGuildManager::_CreateGuild(uint32 guild_id, const char *guild_name, uint32 leader_char_id, uint8 minstatus, const char *guild_motd, const char *motd_setter, const char *Channel, const char *URL)
+{
 	map<uint32, GuildInfo *>::iterator res;
 	
 	//remove any old entry.
@@ -188,6 +189,8 @@ BaseGuildManager::GuildInfo *BaseGuildManager::_CreateGuild(uint32 guild_id, con
 	info->minstatus = minstatus;
 	info->motd = guild_motd;
 	info->motd_setter = motd_setter;
+	info->url = URL;
+	info->channel = Channel;
 	m_guilds[guild_id] = info;
 	
 	//now setup default ranks (everything defaults to false)
@@ -399,6 +402,26 @@ bool BaseGuildManager::SetGuildMOTD(int32 guild_id, const char* motd, const char
 	return(true);
 }
 
+bool BaseGuildManager::SetGuildURL(int32 GuildID, const char* URL)
+{
+	if(!DBSetGuildURL(GuildID, URL))
+		return(false);
+	
+	SendGuildRefresh(GuildID, false, true, false, false);
+	
+	return(true);
+}
+
+bool BaseGuildManager::SetGuildChannel(int32 GuildID, const char* Channel)
+{
+	if(!DBSetGuildChannel(GuildID, Channel))
+		return(false);
+	
+	SendGuildRefresh(GuildID, false, true, false, false);
+	
+	return(true);
+}
+
 bool BaseGuildManager::SetGuild(int32 charid, int32 guild_id, int8 rank) {
 	if(rank > GUILD_MAX_RANK && guild_id != GUILD_NONE)
 		return(false);
@@ -441,6 +464,16 @@ bool BaseGuildManager::SetBankerFlag(int32 charid, bool is_banker) {
 	return(true);
 }
 
+bool BaseGuildManager::SetAltFlag(int32 charid, bool is_alt)
+{
+	if(!DBSetAltFlag(charid, is_alt))
+		return(false);
+	
+	SendCharRefresh(GUILD_NONE, 0, charid);
+	
+	return(true);
+}
+
 bool BaseGuildManager::SetTributeFlag(int32 charid, bool enabled) {
 	if(!DBSetTributeFlag(charid, enabled))
 		return(false);
@@ -467,7 +500,7 @@ int32 BaseGuildManager::DBCreateGuild(const char* name, int32 leader) {
 	
 	//now make the guild record in our local manager.
 	//this also sets up the default ranks for us.
-	_CreateGuild(new_id, name, leader, 0, "", "");
+	_CreateGuild(new_id, name, leader, 0, "", "", "", "");
 	
 	//now store the resulting guild setup into the DB.
 	if(!_StoreGuildDB(new_id)) {
@@ -644,6 +677,88 @@ bool BaseGuildManager::DBSetGuildMOTD(int32 guild_id, const char* motd, const ch
 	return(true);
 }
 
+bool BaseGuildManager::DBSetGuildURL(int32 GuildID, const char* URL)
+{
+	if(m_db == NULL)
+		return(false);
+	
+	map<uint32, GuildInfo *>::const_iterator res;
+
+	res = m_guilds.find(GuildID);
+
+	if(res == m_guilds.end())
+		return(false);
+
+	GuildInfo *info = res->second;
+	
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	
+	//escape our strings.
+	uint32 len = strlen(URL);
+
+	char *esc = new char[len*2+1];
+
+	m_db->DoEscapeString(esc, URL, len);
+	
+	if (!m_db->RunQuery(query, MakeAnyLenString(&query, "UPDATE guilds SET url='%s' WHERE id=%d", esc, GuildID), errbuf))
+	{
+		_log(GUILDS__ERROR, "Error setting URL for guild %d '%s': %s", GuildID, query, errbuf);
+		safe_delete_array(query);
+		safe_delete_array(esc);
+		return(false);
+	}
+	safe_delete_array(query);
+	safe_delete_array(esc);
+	
+	_log(GUILDS__DB, "Set URL for guild %d in the database", GuildID);
+	
+	info->url = URL;	//update our local record.
+	
+	return(true);
+}
+
+bool BaseGuildManager::DBSetGuildChannel(int32 GuildID, const char* Channel)
+{
+	if(m_db == NULL)
+		return(false);
+	
+	map<uint32, GuildInfo *>::const_iterator res;
+
+	res = m_guilds.find(GuildID);
+
+	if(res == m_guilds.end())
+		return(false);
+
+	GuildInfo *info = res->second;
+	
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	
+	//escape our strings.
+	uint32 len = strlen(Channel);
+
+	char *esc = new char[len*2+1];
+
+	m_db->DoEscapeString(esc, Channel, len);
+	
+	if (!m_db->RunQuery(query, MakeAnyLenString(&query, "UPDATE guilds SET channel='%s' WHERE id=%d", esc, GuildID), errbuf))
+	{
+		_log(GUILDS__ERROR, "Error setting Channel for guild %d '%s': %s", GuildID, query, errbuf);
+		safe_delete_array(query);
+		safe_delete_array(esc);
+		return(false);
+	}
+	safe_delete_array(query);
+	safe_delete_array(esc);
+	
+	_log(GUILDS__DB, "Set Channel for guild %d in the database", GuildID);
+	
+	info->channel = Channel;	//update our local record.
+	
+	return(true);
+}
+
 bool BaseGuildManager::DBSetGuild(int32 charid, int32 guild_id, int8 rank) {
 	if(m_db == NULL) {
 		_log(GUILDS__DB, "Requested to set char to guild %d when we have no database object.", guild_id);
@@ -726,6 +841,48 @@ bool BaseGuildManager::GetBankerFlag(int32 CharID)
 	return IsBanker;
 }
 
+bool BaseGuildManager::DBSetAltFlag(int32 charid, bool is_alt)
+{
+	char *query = 0;
+
+	return(_RunQuery(query, MakeAnyLenString(&query, 
+		"UPDATE guild_members SET alt=%d WHERE char_id=%d", 
+		is_alt?1:0, charid), "setting a guild member's alt flag"));
+}
+
+bool BaseGuildManager::GetAltFlag(int32 CharID)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+
+	if(!m_db)
+		return false;
+
+	if(!m_db->RunQuery(query, MakeAnyLenString(&query, "select `alt` from `guild_members` where char_id=%i LIMIT 1", CharID), errbuf, &result))
+	{
+		_log(GUILDS__ERROR, "Error retrieving alt flag '%s': %s", query, errbuf);
+
+		safe_delete_array(query);
+
+		return false;
+	}
+
+	safe_delete_array(query);
+
+	if(mysql_num_rows(result) != 1)
+		return false;	
+
+	row = mysql_fetch_row(result);
+
+	bool IsAlt = atoi(row[0]);
+
+	mysql_free_result(result);
+
+	return IsAlt;
+}
+
 bool BaseGuildManager::DBSetTributeFlag(int32 charid, bool enabled) {
 	char *query = 0;
 	return(_RunQuery(query, MakeAnyLenString(&query, 
@@ -785,13 +942,13 @@ bool BaseGuildManager::_RunQuery(char *&query, int len, const char *errmsg) {
 #define GuildMemberBaseQuery \
 "SELECT c.id,c.name,c.class,c.level,c.timelaston,c.zoneid," \
 " g.guild_id,g.rank,g.tribute_enable,g.total_tribute,g.last_tribute," \
-" g.banker,g.public_note" \
+" g.banker,g.public_note,g.alt" \
 " FROM vwBotCharacterMobs AS c LEFT JOIN vwGuildMembers AS g ON c.id=g.char_id AND c.mobtype = g.mobtype "
 #else
 #define GuildMemberBaseQuery \
 "SELECT c.id,c.name,c.class,c.level,c.timelaston,c.zoneid," \
 " g.guild_id,g.rank,g.tribute_enable,g.total_tribute,g.last_tribute," \
-" g.banker,g.public_note " \
+" g.banker,g.public_note,g.alt " \
 " FROM character_ AS c LEFT JOIN guild_members AS g ON c.id=g.char_id "
 #endif
 static void ProcessGuildMember(MYSQL_ROW &row, CharGuildInfo &into) {
@@ -811,6 +968,7 @@ static void ProcessGuildMember(MYSQL_ROW &row, CharGuildInfo &into) {
 	into.last_tribute	= row[10]? atoul(row[10]) : 0;		//timestamp
 	into.banker 		= row[11]? (row[11][0] == '0'?false:true) : false;
 	into.public_note	= row[12]? row[12] : "";
+	into.alt 		= row[13]? (row[13][0] == '0'?false:true) : false;
 	
 	//a little sanity checking/cleanup
 	if(into.guild_id == 0)
@@ -997,6 +1155,27 @@ bool BaseGuildManager::GetGuildMOTD(int32 guild_id, char *motd_buffer, char *set
 		return(false);
 	strn0cpy(motd_buffer, res->second->motd.c_str(), 512);
 	strn0cpy(setter_buffer, res->second->motd_setter.c_str(), 64);
+	return(true);
+}
+	
+bool BaseGuildManager::GetGuildURL(int32 GuildID, char *URLBuffer) const
+{
+	map<uint32, GuildInfo *>::const_iterator res;
+	res = m_guilds.find(GuildID);
+	if(res == m_guilds.end())
+		return(false);
+	strn0cpy(URLBuffer, res->second->url.c_str(), 512);
+
+	return(true);
+}
+	
+bool BaseGuildManager::GetGuildChannel(int32 GuildID, char *ChannelBuffer) const
+{
+	map<uint32, GuildInfo *>::const_iterator res;
+	res = m_guilds.find(GuildID);
+	if(res == m_guilds.end())
+		return(false);
+	strn0cpy(ChannelBuffer, res->second->channel.c_str(), 128);
 	return(true);
 }
 	

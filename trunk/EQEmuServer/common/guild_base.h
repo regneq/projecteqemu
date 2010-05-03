@@ -25,6 +25,7 @@ public:
 	int32	total_tribute;
 	int32	last_tribute;		//timestamp
 	bool	banker;
+	bool	alt;
 	std::string	public_note;
 };
 
@@ -45,12 +46,16 @@ public:
 	bool	DeleteGuild(int32 guild_id);
 	bool	RenameGuild(int32 guild_id, const char* name);
 	bool	SetGuildMOTD(int32 guild_id, const char* motd, const char *setter);
+	bool	SetGuildURL(int32 GuildID, const char* URL);
+	bool	SetGuildChannel(int32 GuildID, const char* Channel);
 	
 	//character edit actions
 	bool	SetGuildLeader(int32 guild_id, int32 leader_char_id);
 	bool	SetGuild(int32 charid, int32 guild_id, int8 rank);
 	bool	SetGuildRank(int32 charid, int8 rank);
 	bool	SetBankerFlag(int32 charid, bool is_banker);
+	bool	GetAltFlag(int32 CharID);
+	bool	SetAltFlag(int32 charid, bool is_alt);
 	bool	GetBankerFlag(int32 CharID);
 	bool	SetTributeFlag(int32 charid, bool enabled);
 	bool	SetPublicNote(int32 charid, const char *note);
@@ -61,6 +66,8 @@ public:
 	bool	GetEntireGuild(uint32 guild_id, std::vector<CharGuildInfo *> &members);	//caller is responsible for deleting each pointer in the resulting vector.
 	bool	GuildExists(uint32 guild_id) const;
 	bool	GetGuildMOTD(int32 guild_id, char *motd_buffer, char *setter_buffer) const;
+	bool	GetGuildURL(int32 GuildID, char *URLBuffer) const;
+	bool	GetGuildChannel(int32 GuildID, char *ChannelBuffer) const;
 	const char *GetRankName(uint32 guild_id, uint8 rank) const;
 	const char *GetGuildName(uint32 guild_id) const;
 	bool	GetGuildNameByID(int32 guild_id, std::string &into) const;
@@ -90,9 +97,12 @@ protected:
 	bool	DBRenameGuild(int32 guild_id, const char* name);
 	bool	DBSetGuildLeader(int32 guild_id, int32 leader_char_id);
 	bool	DBSetGuildMOTD(int32 guild_id, const char* motd, const char *setter);
+	bool	DBSetGuildURL(int32 GuildID, const char* URL);
+	bool	DBSetGuildChannel(int32 GuildID, const char* Channel);
 	bool	DBSetGuild(int32 charid, int32 guild_id, int8 rank);
 	bool	DBSetGuildRank(int32 charid, int8 rank);
 	bool	DBSetBankerFlag(int32 charid, bool is_banker);
+	bool	DBSetAltFlag(int32 charid, bool is_alt);
 	bool	DBSetTributeFlag(int32 charid, bool enabled);
 	bool	DBSetPublicNote(int32 charid, const char *note);
 	bool	_RunQuery(char *&query, int len, const char *errmsg);
@@ -112,6 +122,9 @@ protected:
 		std::string name;
 		std::string motd;
 		std::string motd_setter;
+		std::string url;
+		std::string channel;
+
 		int32 leader_char_id;
 		uint8 minstatus;
 		//tribute is not in here on purpose, since it is only valid in world!
@@ -124,7 +137,7 @@ protected:
 	Database *m_db;	//we do not own this
 	
 	bool _StoreGuildDB(uint32 guild_id);
-	GuildInfo *_CreateGuild(uint32 guild_id, const char *guild_name, uint32 account_id, uint8 minstatus, const char *guild_motd, const char *motd_setter);
+	GuildInfo *_CreateGuild(uint32 guild_id, const char *guild_name, uint32 account_id, uint8 minstatus, const char *guild_motd, const char *motd_setter, const char *Channel, const char *URL);
 	int32 _GetFreeGuildID();
 };
 
