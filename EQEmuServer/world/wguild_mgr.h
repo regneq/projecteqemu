@@ -18,6 +18,7 @@ public:
 protected:
 	virtual void SendGuildRefresh(int32 guild_id, bool name, bool motd, bool rank, bool relation);
 	virtual void SendCharRefresh(int32 old_guild_id, int32 guild_id, int32 charid);
+	virtual void SendRankUpdate(int32 CharID) { return; }
 	virtual void SendGuildDelete(int32 guild_id);
 	
 	//map<uint32, uint32> m_tribute;	//map from guild ID to current tribute ammount

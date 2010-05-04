@@ -31,7 +31,7 @@
 #define ServerOP_VoiceMacro		0x000F
 //#define ServerOP_GuildInvite		0x0010
 #define ServerOP_DeleteGuild		0x0011	// ServerGuildID_Struct
-//#define ServerOP_GuildJoin		0x0012
+#define ServerOP_GuildRankUpdate	0x0012
 #define ServerOP_GuildCharRefresh	0x0013
 #define ServerOP_GuildMemberUpdate	0x0014
 #define ServerOP_RequestOnlineGuildMembers	0x0015
@@ -705,7 +705,14 @@ struct ServerGuildCharRefresh_Struct {
 	int32 char_id;
 };
 
-//not sure what needs to go in here.
+struct ServerGuildRankUpdate_Struct
+{
+	int32 GuildID;
+	char MemberName[64];
+	uint32 Rank;
+	uint32 Banker;
+};
+
 struct ServerGuildMemberUpdate_Struct {
 	int32 GuildID;
 	char MemberName[64];

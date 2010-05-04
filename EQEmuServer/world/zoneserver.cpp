@@ -784,6 +784,11 @@ bool ZoneServer::Process() {
 			break;
 		}
 		
+		case ServerOP_GuildRankUpdate:
+		{
+			zoneserver_list.SendPacket(pack);
+			break;
+		}
 		//these opcodes get processed by the guild manager.
 		case ServerOP_RefreshGuild:
 		case ServerOP_DeleteGuild:

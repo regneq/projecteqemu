@@ -573,6 +573,7 @@ void WorldServer::Process() {
 		case ServerOP_DeleteGuild:
 		case ServerOP_GuildCharRefresh:
 		case ServerOP_GuildMemberUpdate:
+		case ServerOP_GuildRankUpdate:
 //		case ServerOP_GuildGMSet:
 //		case ServerOP_GuildGMSetRank:
 //		case ServerOP_GuildJoin:

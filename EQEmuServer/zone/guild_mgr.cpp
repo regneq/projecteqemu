@@ -118,6 +118,27 @@ void ZoneGuildManager::SendCharRefresh(int32 old_guild_id, int32 guild_id, int32
 	safe_delete(pack);
 }
 
+void ZoneGuildManager::SendRankUpdate(int32 CharID)
+{
+	CharGuildInfo gci;
+
+	if(!GetCharInfo(CharID, gci))
+		return;
+
+	ServerPacket* pack = new ServerPacket(ServerOP_GuildRankUpdate, sizeof(ServerGuildRankUpdate_Struct));
+
+	ServerGuildRankUpdate_Struct *sgrus = (ServerGuildRankUpdate_Struct*)pack->pBuffer;
+
+	sgrus->GuildID = gci.guild_id;
+	strn0cpy(sgrus->MemberName, gci.char_name.c_str(), sizeof(sgrus->MemberName));
+	sgrus->Rank = gci.rank;
+	sgrus->Banker = gci.banker + (gci.alt * 2);
+
+	worldserver.SendPacket(pack);
+
+	safe_delete(pack);
+}
+	
 void ZoneGuildManager::SendGuildDelete(int32 guild_id) {
 	_log(GUILDS__REFRESH, "Sending guild delete for guild %d to world", guild_id);
 	ServerPacket* pack = new ServerPacket(ServerOP_DeleteGuild, sizeof(ServerGuildID_Struct));
@@ -360,6 +381,36 @@ void ZoneGuildManager::ProcessWorldPacket(ServerPacket *pack) {
 		break;
 	}
 	
+	case ServerOP_GuildRankUpdate:
+	{
+		if(ZoneLoaded)
+		{
+			if(pack->size != sizeof(ServerGuildRankUpdate_Struct))
+			{
+				_log(GUILDS__ERROR, "Received ServerOP_RankUpdate of incorrect size %d, expected %d",
+				     pack->size, sizeof(ServerGuildRankUpdate_Struct));
+
+				return;
+			}
+
+			ServerGuildRankUpdate_Struct *sgrus = (ServerGuildRankUpdate_Struct*)pack->pBuffer;
+	
+			EQApplicationPacket *outapp = new EQApplicationPacket(OP_SetGuildRank, sizeof(GuildSetRank_Struct));
+
+			GuildSetRank_Struct *gsrs = (GuildSetRank_Struct*)outapp->pBuffer;
+
+			gsrs->Rank = sgrus->Rank;
+			strn0cpy(gsrs->MemberName, sgrus->MemberName, sizeof(gsrs->MemberName));
+			gsrs->Banker = sgrus->Banker;
+
+			entity_list.QueueClientsGuild(NULL, outapp, false, sgrus->GuildID);
+
+			safe_delete(outapp);
+		}
+
+		break;
+	}
+
 	case ServerOP_DeleteGuild: {
 		if(pack->size != sizeof(ServerGuildID_Struct)) {
 			_log(GUILDS__ERROR, "Received ServerOP_DeleteGuild of incorrect size %d, expected %d", pack->size, sizeof(ServerGuildID_Struct));
