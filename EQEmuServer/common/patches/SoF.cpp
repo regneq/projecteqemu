@@ -501,9 +501,9 @@ ENCODE(OP_PlayerProfile) {
 		OUT(item_tint[r].color);
 	}
 //	OUT(unknown00224[48]);
-	//NOTE: new client supports 359 AAs, our internal rep 
-	//only supports 239..
-	for(r = 0; r < structs::MAX_PP_AA_ARRAY; r++) {
+	//NOTE: new client supports 300 AAs, our internal rep/PP
+	//only supports 240..
+	for(r = 0; r < MAX_PP_AA_ARRAY; r++) {
 		OUT(aa_array[r].AA);
 		OUT(aa_array[r].value);
 	}
