@@ -459,7 +459,7 @@ bool BaseGuildManager::SetBankerFlag(int32 charid, bool is_banker) {
 	if(!DBSetBankerFlag(charid, is_banker))
 		return(false);
 	
-	SendCharRefresh(GUILD_NONE, 0, charid);
+	SendRankUpdate(charid);
 	
 	return(true);
 }
@@ -469,8 +469,8 @@ bool BaseGuildManager::SetAltFlag(int32 charid, bool is_alt)
 	if(!DBSetAltFlag(charid, is_alt))
 		return(false);
 	
-	SendCharRefresh(GUILD_NONE, 0, charid);
-	
+	SendRankUpdate(charid);
+
 	return(true);
 }
 

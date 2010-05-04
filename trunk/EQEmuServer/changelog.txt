@@ -2,6 +2,8 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==05/04/2010==
 Trevius: SoF/SoD - Resolved an issue that was preventing some AAs from being able to be trained properly.
+Derision: Updating a character's Alt or Banker flag no longer resends the entire guild member list.
+joligario: quest::givecash cleaned up.
 
 ==05/03/2010==
 Derision: The facility to flag 'Alts' in the Guild Management Window now works for those clients that support it.

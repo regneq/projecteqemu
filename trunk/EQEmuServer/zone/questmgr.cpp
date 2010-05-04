@@ -788,49 +788,50 @@ void QuestManager::untraindiscs() {
 }
 
 void QuestManager::givecash(int copper, int silver, int gold, int platinum) {
-	if (initiator && initiator->IsClient())
+	if (initiator && initiator->IsClient() && ((copper + silver + gold + platinum) > 0))
 	{
-		initiator->AddMoneyToPP(copper, silver, gold, platinum,true);
+		initiator->AddMoneyToPP(copper, silver, gold, platinum, true);
 
 		string tmp;
-		if (platinum>0){
+		if (platinum > 0)
+		{
 			tmp = "You receive ";
 			tmp += itoa(platinum);
-			tmp += " plat";
+			tmp += " platinum";
 		}
-		if (gold>0){
-			if (tmp.length()==0){
+		if (gold > 0)
+		{
+			if (tmp.length() == 0)
 				tmp = "You receive ";
-			}
-			else{
+			else
 				tmp += ",";
-			}
+			
 			tmp += itoa(gold);
 			tmp += " gold";
 		}
-		if(silver>0){
-			if (tmp.length()==0){
+		if(silver > 0)
+		{
+			if (tmp.length() == 0)
 				tmp = "You receive ";
-			}
-			else{
+			else
 				tmp += ",";
-			}
+
 			tmp += itoa(silver);
 			tmp += " silver";
 		}
-		if(copper>0){
-			if (tmp.length()==0){
+		if(copper > 0)
+		{
+			if (tmp.length() == 0)
 				tmp = "You receive ";
-			}
-			else{
+			else
 				tmp += ",";
-			}
+			
 			tmp += itoa(copper);
 			tmp += " copper";
 		}
 		tmp += " pieces.";
 		if (initiator)
-			initiator->Message(MT_OOC,tmp.c_str());
+			initiator->Message(MT_OOC, tmp.c_str());
 	}
 }
 

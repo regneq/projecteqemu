@@ -96,6 +96,7 @@ public:
 protected:
 	virtual void SendGuildRefresh(int32 guild_id, bool name, bool motd, bool rank, bool relation);
 	virtual void SendCharRefresh(int32 old_guild_id, int32 guild_id, int32 charid);
+	virtual void SendRankUpdate(int32 CharID);
 	virtual void SendGuildDelete(int32 guild_id);
 
 	std::map<int32, std::pair<int32, int8> > m_inviteQueue;	//map from char ID to guild,rank
