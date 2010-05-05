@@ -158,14 +158,14 @@ static struct SoFCCData SoFCharCreateInfo = {
               {   0,   8,   0,   0,   1,   1, 396,  58, 394 },  // Human/Warrior/Agnostic/crescent
               {   0,   8,   0,   0,   1,   1, 212,  58, 394 },  // Human/Warrior/Rodcet/crescent
               {   0,   8,   0,   0,   1,   1, 208,  58, 394 },  // Human/Warrior/Mithaniel Marr/crescent
-              {   0,   0,   0,   0,   1,   1, 396,  58, 382 },  // Human/Warrior/Agnostic/freeporteast
+              {   0,   0,   0,   0,   1,   1, 396,  58,  10 },  // Human/Warrior/Agnostic/freporte
               {   0,   0,   0,   0,   1,   1, 201,  58,  45 },  // Human/Warrior/Bertox/qcat
               {   0,   0,   0,   0,   1,   1, 207,  58,   1 },  // Human/Warrior/Karana/qeynos
-              {   0,   0,   0,   0,   1,   1, 206,  58, 382 },  // Human/Warrior/Innoruuk/freeporteast
+              {   0,   0,   0,   0,   1,   1, 206,  58,  10 },  // Human/Warrior/Innoruuk/freporte
               {   0,   0,   0,   0,   1,   1, 212,  58,   1 },  // Human/Warrior/Rodcet/qeynos
-              {   0,   0,   0,   0,   1,   1, 211,  58, 382 },  // Human/Warrior/Rallos Zek/freeporteast
-              {   0,   0,   0,   0,   1,   1, 208,  58, 382 },  // Human/Warrior/Mithaniel Marr/freeporteast
-              {   0,   0,   0,   0,   1,   1, 204,  58, 382 },  // Human/Warrior/Erollsi/freeporteast
+              {   0,   0,   0,   0,   1,   1, 211,  58,  10 },  // Human/Warrior/Rallos Zek/freporte
+              {   0,   0,   0,   0,   1,   1, 208,  58,  10 },  // Human/Warrior/Mithaniel Marr/freporte
+              {   0,   0,   0,   0,   1,   1, 204,  58,  10 },  // Human/Warrior/Erollsi/freporte
               {   0,   0,   0,   0,   1,   1, 396,  58,   1 },  // Human/Warrior/Agnostic/qeynos
               {   0,   0,   0,   0,   1,   1, 211,  58,   1 },  // Human/Warrior/Rallos Zek/qeynos
               {   0,   8,   0,   0,   1,   2, 201,  48, 394 },  // Human/Cleric/Bertox/crescent
@@ -175,19 +175,19 @@ static struct SoFCCData SoFCharCreateInfo = {
               {   0,   8,   0,   0,   1,   2, 206,  48, 394 },  // Human/Cleric/Innoruuk/crescent
               {   0,   8,   0,   0,   1,   2, 204,  48, 394 },  // Human/Cleric/Erollsi/crescent
               {   0,   0,   0,   0,   1,   2, 201,  48,  45 },  // Human/Cleric/Bertox/qcat
-              {   0,   0,   0,   0,   1,   2, 206,  48, 382 },  // Human/Cleric/Innoruuk/freeporteast
+              {   0,   0,   0,   0,   1,   2, 206,  48,  10 },  // Human/Cleric/Innoruuk/freporte
               {   0,   0,   0,   0,   1,   2, 207,  48,   1 },  // Human/Cleric/Karana/qeynos
-              {   0,   0,   0,   0,   1,   2, 204,  48, 383 },  // Human/Cleric/Erollsi/freeportwest
+              {   0,   0,   0,   0,   1,   2, 204,  48,   9 },  // Human/Cleric/Erollsi/freportw
               {   0,   0,   0,   0,   1,   2, 212,  48,   2 },  // Human/Cleric/Rodcet/qeynos2
-              {   0,   0,   0,   0,   1,   2, 208,  48, 383 },  // Human/Cleric/Mithaniel Marr/freeportwest
+              {   0,   0,   0,   0,   1,   2, 208,  48,   9 },  // Human/Cleric/Mithaniel Marr/freportw
               {   0,   8,   0,   0,   1,   3, 204,  54, 394 },  // Human/Paladin/Erollsi/crescent
               {   0,   8,   0,   0,   1,   3, 207,  54, 394 },  // Human/Paladin/Karana/crescent
               {   0,   8,   0,   0,   1,   3, 208,  54, 394 },  // Human/Paladin/Mithaniel Marr/crescent
               {   0,   8,   0,   0,   1,   3, 212,  54, 394 },  // Human/Paladin/Rodcet/crescent
               {   0,   0,   0,   0,   1,   3, 207,  54,   1 },  // Human/Paladin/Karana/qeynos
               {   0,   0,   0,   0,   1,   3, 212,  54,   2 },  // Human/Paladin/Rodcet/qeynos2
-              {   0,   0,   0,   0,   1,   3, 208,  54, 383 },  // Human/Paladin/Mithaniel Marr/freeportwest
-              {   0,   0,   0,   0,   1,   3, 204,  54, 383 },  // Human/Paladin/Erollsi/freeportwest
+              {   0,   0,   0,   0,   1,   3, 208,  54,   9 },  // Human/Paladin/Mithaniel Marr/freportw
+              {   0,   0,   0,   0,   1,   3, 204,  54,   9 },  // Human/Paladin/Erollsi/freportw
               {   0,   8,   0,   0,   1,   4, 207,  55, 394 },  // Human/Ranger/Karana/crescent
               {   0,   8,   0,   0,   1,   4, 215,  55, 394 },  // Human/Ranger/Tunare/crescent
               {   0,   0,   0,   0,   1,   4, 207,  55,   3 },  // Human/Ranger/Karana/qrg
@@ -195,7 +195,7 @@ static struct SoFCCData SoFCharCreateInfo = {
               {   0,   8,   0,   0,   1,   5, 201,  57, 394 },  // Human/SK/Bertox/crescent
               {   0,   8,   0,   0,   1,   5, 206,  57, 394 },  // Human/SK/Innoruuk/crescent
               {   0,   0,   0,   0,   1,   5, 201,  57,  45 },  // Human/SK/Bertox/qcat
-              {   0,   0,   0,   0,   1,   5, 206,  57, 382 },  // Human/SK/Innoruuk/freeporteast
+              {   0,   0,   0,   0,   1,   5, 206,  57,  10 },  // Human/SK/Innoruuk/freporte
               {   0,   8,   0,   0,   1,   6, 207,  49, 394 },  // Human/Druid/Karana/crescent
               {   0,   8,   0,   0,   1,   6, 215,  49, 394 },  // Human/Druid/Tunare/crescent
               {   0,   0,   0,   0,   1,   6, 207,  49,   3 },  // Human/Druid/Karana/qrg
@@ -203,7 +203,7 @@ static struct SoFCCData SoFCharCreateInfo = {
               {   0,   8,   0,   0,   1,   7, 210,  52, 394 },  // Human/Monk/Quellious/crescent
               {   0,   8,   0,   0,   1,   7, 396,  52, 394 },  // Human/Monk/Agnostic/crescent
               {   0,   0,   0,   0,   1,   7, 396,  52,   2 },  // Human/Monk/Agnostic/qeynos2
-              {   0,   0,   0,   0,   1,   7, 210,  52, 383 },  // Human/Monk/Quellious/freeportwest
+              {   0,   0,   0,   0,   1,   7, 210,  52,   9 },  // Human/Monk/Quellious/freportw
               {   0,   8,   0,   0,   1,   8, 202,  47, 394 },  // Human/Bard/Brell/crescent
               {   0,   8,   0,   0,   1,   8, 207,  47, 394 },  // Human/Bard/Karana/crescent
               {   0,   8,   0,   0,   1,   8, 209,  47, 394 },  // Human/Bard/Prexus/crescent
@@ -218,20 +218,20 @@ static struct SoFCCData SoFCharCreateInfo = {
               {   0,   8,   0,   0,   1,   8, 208,  47, 394 },  // Human/Bard/Mithaniel Marr/crescent
               {   0,   8,   0,   0,   1,   8, 204,  47, 394 },  // Human/Bard/Erollsi/crescent
               {   0,   8,   0,   0,   1,   8, 205,  47, 394 },  // Human/Bard/Bristlebane/crescent
-              {   0,   0,   0,   0,   1,   8, 396,  47, 382 },  // Human/Bard/Agnostic/freeporteast
-              {   0,   0,   0,   0,   1,   8, 205,  47, 382 },  // Human/Bard/Bristlebane/freeporteast
-              {   0,   0,   0,   0,   1,   8, 204,  47, 382 },  // Human/Bard/Erollsi/freeporteast
+              {   0,   0,   0,   0,   1,   8, 396,  47,  10 },  // Human/Bard/Agnostic/freporte
+              {   0,   0,   0,   0,   1,   8, 205,  47,  10 },  // Human/Bard/Bristlebane/freporte
+              {   0,   0,   0,   0,   1,   8, 204,  47,  10 },  // Human/Bard/Erollsi/freporte
               {   0,   0,   0,   0,   1,   8, 207,  47,   1 },  // Human/Bard/Karana/qeynos
               {   0,   0,   0,   0,   1,   8, 212,  47,   1 },  // Human/Bard/Rodcet/qeynos
-              {   0,   0,   0,   0,   1,   8, 209,  47, 382 },  // Human/Bard/Prexus/freeporteast
-              {   0,   0,   0,   0,   1,   8, 210,  47, 382 },  // Human/Bard/Quellious/freeporteast
-              {   0,   0,   0,   0,   1,   8, 213,  47, 382 },  // Human/Bard/Solusek/freeporteast
-              {   0,   0,   0,   0,   1,   8, 202,  47, 382 },  // Human/Bard/Brell/freeporteast
-              {   0,   0,   0,   0,   1,   8, 211,  47, 382 },  // Human/Bard/Rallos Zek/freeporteast
-              {   0,   0,   0,   0,   1,   8, 216,  47, 382 },  // Human/Bard/Veeshan/freeporteast
-              {   0,   0,   0,   0,   1,   8, 215,  47, 382 },  // Human/Bard/Tunare/freeporteast
-              {   0,   0,   0,   0,   1,   8, 214,  47, 382 },  // Human/Bard/Tribunal/freeporteast
-              {   0,   0,   0,   0,   1,   8, 208,  47, 382 },  // Human/Bard/Mithaniel Marr/freeporteast
+              {   0,   0,   0,   0,   1,   8, 209,  47,  10 },  // Human/Bard/Prexus/freporte
+              {   0,   0,   0,   0,   1,   8, 210,  47,  10 },  // Human/Bard/Quellious/freporte
+              {   0,   0,   0,   0,   1,   8, 213,  47,  10 },  // Human/Bard/Solusek/freporte
+              {   0,   0,   0,   0,   1,   8, 202,  47,  10 },  // Human/Bard/Brell/freporte
+              {   0,   0,   0,   0,   1,   8, 211,  47,  10 },  // Human/Bard/Rallos Zek/freporte
+              {   0,   0,   0,   0,   1,   8, 216,  47,  10 },  // Human/Bard/Veeshan/freporte
+              {   0,   0,   0,   0,   1,   8, 215,  47,  10 },  // Human/Bard/Tunare/freporte
+              {   0,   0,   0,   0,   1,   8, 214,  47,  10 },  // Human/Bard/Tribunal/freporte
+              {   0,   0,   0,   0,   1,   8, 208,  47,  10 },  // Human/Bard/Mithaniel Marr/freporte
               {   0,   0,   0,   0,   1,   8, 396,  47,   1 },  // Human/Bard/Agnostic/qeynos
               {   0,   0,   0,   0,   1,   8, 209,  47,   1 },  // Human/Bard/Prexus/qeynos
               {   0,   0,   0,   0,   1,   8, 213,  47,   1 },  // Human/Bard/Solusek/qeynos
@@ -249,19 +249,19 @@ static struct SoFCCData SoFCharCreateInfo = {
               {   0,   8,   0,   0,   1,   9, 396,  56, 394 },  // Human/Rogue/Agnostic/crescent
               {   0,   8,   0,   0,   1,   9, 205,  56, 394 },  // Human/Rogue/Bristlebane/crescent
               {   0,   8,   0,   0,   1,   9, 204,  56, 394 },  // Human/Rogue/Erollsi/crescent
-              {   0,   0,   0,   0,   1,   9, 396,  56, 382 },  // Human/Rogue/Agnostic/freeporteast
+              {   0,   0,   0,   0,   1,   9, 396,  56,  10 },  // Human/Rogue/Agnostic/freporte
               {   0,   0,   0,   0,   1,   9, 212,  56,   2 },  // Human/Rogue/Rodcet/qeynos2
-              {   0,   0,   0,   0,   1,   9, 204,  56, 382 },  // Human/Rogue/Erollsi/freeporteast
+              {   0,   0,   0,   0,   1,   9, 204,  56,  10 },  // Human/Rogue/Erollsi/freporte
               {   0,   0,   0,   0,   1,   9, 207,  56,   2 },  // Human/Rogue/Karana/qeynos2
               {   0,   0,   0,   0,   1,   9, 201,  56,   2 },  // Human/Rogue/Bertox/qeynos2
-              {   0,   0,   0,   0,   1,   9, 206,  56, 382 },  // Human/Rogue/Innoruuk/freeporteast
-              {   0,   0,   0,   0,   1,   9, 205,  56, 382 },  // Human/Rogue/Bristlebane/freeporteast
+              {   0,   0,   0,   0,   1,   9, 206,  56,  10 },  // Human/Rogue/Innoruuk/freporte
+              {   0,   0,   0,   0,   1,   9, 205,  56,  10 },  // Human/Rogue/Bristlebane/freporte
               {   0,   0,   0,   0,   1,   9, 396,  56,   2 },  // Human/Rogue/Agnostic/qeynos2
               {   0,   0,   0,   0,   1,   9, 205,  56,   2 },  // Human/Rogue/Bristlebane/qeynos2
               {   0,   8,   0,   0,   1,  11, 201,  53, 394 },  // Human/Necro/Bertox/crescent
               {   0,   8,   0,   0,   1,  11, 206,  53, 394 },  // Human/Necro/Innoruuk/crescent
               {   0,   0,   0,   0,   1,  11, 201,  53,  45 },  // Human/Necro/Bertox/qcat
-              {   0,   0,   0,   0,   1,  11, 206,  53, 382 },  // Human/Necro/Innoruuk/freeporteast
+              {   0,   0,   0,   0,   1,  11, 206,  53,  10 },  // Human/Necro/Innoruuk/freporte
               {   0,   8,   0,   0,   1,  12, 201,  51, 394 },  // Human/Wizard/Bertox/crescent
               {   0,   8,   0,   0,   1,  12, 204,  51, 394 },  // Human/Wizard/Erollsi/crescent
               {   0,   8,   0,   0,   1,  12, 207,  51, 394 },  // Human/Wizard/Karana/crescent
@@ -270,13 +270,13 @@ static struct SoFCCData SoFCharCreateInfo = {
               {   0,   8,   0,   0,   1,  12, 213,  51, 394 },  // Human/Wizard/Solusek/crescent
               {   0,   8,   0,   0,   1,  12, 396,  51, 394 },  // Human/Wizard/Agnostic/crescent
               {   0,   8,   0,   0,   1,  12, 212,  51, 394 },  // Human/Wizard/Rodcet/crescent
-              {   0,   0,   0,   0,   1,  12, 396,  51, 383 },  // Human/Wizard/Agnostic/freeportwest
-              {   0,   0,   0,   0,   1,  12, 213,  51, 383 },  // Human/Wizard/Solusek/freeportwest
-              {   0,   0,   0,   0,   1,  12, 206,  51, 382 },  // Human/Wizard/Innoruuk/freeporteast
+              {   0,   0,   0,   0,   1,  12, 396,  51,   9 },  // Human/Wizard/Agnostic/freportw
+              {   0,   0,   0,   0,   1,  12, 213,  51,   9 },  // Human/Wizard/Solusek/freportw
+              {   0,   0,   0,   0,   1,  12, 206,  51,  10 },  // Human/Wizard/Innoruuk/freporte
               {   0,   0,   0,   0,   1,  12, 207,  51,   1 },  // Human/Wizard/Karana/qeynos
-              {   0,   0,   0,   0,   1,  12, 204,  51, 383 },  // Human/Wizard/Erollsi/freeportwest
+              {   0,   0,   0,   0,   1,  12, 204,  51,   9 },  // Human/Wizard/Erollsi/freportw
               {   0,   0,   0,   0,   1,  12, 212,  51,   1 },  // Human/Wizard/Rodcet/qeynos
-              {   0,   0,   0,   0,   1,  12, 208,  51, 383 },  // Human/Wizard/Mithaniel Marr/freeportwest
+              {   0,   0,   0,   0,   1,  12, 208,  51,   9 },  // Human/Wizard/Mithaniel Marr/freportw
               {   0,   0,   0,   0,   1,  12, 201,  51,  45 },  // Human/Wizard/Bertox/qcat
               {   0,   0,   0,   0,   1,  12, 396,  51,   1 },  // Human/Wizard/Agnostic/qeynos
               {   0,   0,   0,   0,   1,  12, 213,  51,   1 },  // Human/Wizard/Solusek/qeynos
@@ -287,13 +287,13 @@ static struct SoFCCData SoFCharCreateInfo = {
               {   0,   8,   0,   0,   1,  13, 396,  51, 394 },  // Human/Magician/Agnostic/crescent
               {   0,   8,   0,   0,   1,  13, 206,  51, 394 },  // Human/Magician/Innoruuk/crescent
               {   0,   8,   0,   0,   1,  13, 204,  51, 394 },  // Human/Magician/Erollsi/crescent
-              {   0,   0,   0,   0,   1,  13, 396,  51, 383 },  // Human/Magician/Agnostic/freeportwest
+              {   0,   0,   0,   0,   1,  13, 396,  51,   9 },  // Human/Magician/Agnostic/freportw
               {   0,   0,   0,   0,   1,  13, 212,  51,   1 },  // Human/Magician/Rodcet/qeynos
-              {   0,   0,   0,   0,   1,  13, 208,  51, 383 },  // Human/Magician/Mithaniel Marr/freeportwest
+              {   0,   0,   0,   0,   1,  13, 208,  51,   9 },  // Human/Magician/Mithaniel Marr/freportw
               {   0,   0,   0,   0,   1,  13, 201,  51,  45 },  // Human/Magician/Bertox/qcat
-              {   0,   0,   0,   0,   1,  13, 206,  51, 382 },  // Human/Magician/Innoruuk/freeporteast
+              {   0,   0,   0,   0,   1,  13, 206,  51,  10 },  // Human/Magician/Innoruuk/freporte
               {   0,   0,   0,   0,   1,  13, 207,  51,   1 },  // Human/Magician/Karana/qeynos
-              {   0,   0,   0,   0,   1,  13, 204,  51, 383 },  // Human/Magician/Erollsi/freeportwest
+              {   0,   0,   0,   0,   1,  13, 204,  51,   9 },  // Human/Magician/Erollsi/freportw
               {   0,   0,   0,   0,   1,  13, 396,  51,   1 },  // Human/Magician/Agnostic/qeynos
               {   0,   8,   0,   0,   1,  14, 201,  50, 394 },  // Human/Enchanter/Bertox/crescent
               {   0,   8,   0,   0,   1,  14, 206,  50, 394 },  // Human/Enchanter/Innoruuk/crescent
@@ -302,12 +302,12 @@ static struct SoFCCData SoFCharCreateInfo = {
               {   0,   8,   0,   0,   1,  14, 396,  50, 394 },  // Human/Enchanter/Agnostic/crescent
               {   0,   8,   0,   0,   1,  14, 207,  50, 394 },  // Human/Enchanter/Karana/crescent
               {   0,   8,   0,   0,   1,  14, 204,  50, 394 },  // Human/Enchanter/Erollsi/crescent
-              {   0,   0,   0,   0,   1,  14, 396,  50, 383 },  // Human/Enchanter/Agnostic/freeportwest
-              {   0,   0,   0,   0,   1,  14, 208,  50, 383 },  // Human/Enchanter/Mithaniel Marr/freeportwest
+              {   0,   0,   0,   0,   1,  14, 396,  50,   9 },  // Human/Enchanter/Agnostic/freportw
+              {   0,   0,   0,   0,   1,  14, 208,  50,   9 },  // Human/Enchanter/Mithaniel Marr/freportw
               {   0,   0,   0,   0,   1,  14, 212,  50,   1 },  // Human/Enchanter/Rodcet/qeynos
-              {   0,   0,   0,   0,   1,  14, 204,  50, 383 },  // Human/Enchanter/Erollsi/freeportwest
+              {   0,   0,   0,   0,   1,  14, 204,  50,   9 },  // Human/Enchanter/Erollsi/freportw
               {   0,   0,   0,   0,   1,  14, 201,  50,  45 },  // Human/Enchanter/Bertox/qcat
-              {   0,   0,   0,   0,   1,  14, 206,  50, 382 },  // Human/Enchanter/Innoruuk/freeporteast
+              {   0,   0,   0,   0,   1,  14, 206,  50,  10 },  // Human/Enchanter/Innoruuk/freporte
               {   0,   0,   0,   0,   1,  14, 207,  50,   1 },  // Human/Enchanter/Karana/qeynos
               {   0,   0,   0,   0,   1,  14, 396,  50,   1 },  // Human/Enchanter/Agnostic/qeynos
               {   0,   8,   0,   0,   2,   1, 211,   4, 394 },  // Barbarian/Warrior/Rallos Zek/crescent
@@ -496,20 +496,20 @@ static struct SoFCCData SoFCharCreateInfo = {
               {   0,   8,   0,   0,   7,   1, 209,  36, 394 },  // Half Elf/Warrior/Prexus/crescent
               {   0,   8,   0,   0,   7,   1, 206,  36, 394 },  // Half Elf/Warrior/Innoruuk/crescent
               {   0,   0,   0,   0,   7,   1, 396,  36,  54 },  // Half Elf/Warrior/Agnostic/gfaydark
-              {   0,   0,   0,   0,   7,   1, 208,  36, 382 },  // Half Elf/Warrior/Mithaniel Marr/freeporteast
+              {   0,   0,   0,   0,   7,   1, 208,  36,  10 },  // Half Elf/Warrior/Mithaniel Marr/freporte
               {   0,   0,   0,   0,   7,   1, 211,  36,  54 },  // Half Elf/Warrior/Rallos Zek/gfaydark
               {   0,   0,   0,   0,   7,   1, 215,  36,  54 },  // Half Elf/Warrior/Tunare/gfaydark
               {   0,   0,   0,   0,   7,   1, 214,  36,  54 },  // Half Elf/Warrior/Tribunal/gfaydark
               {   0,   0,   0,   0,   7,   1, 209,  36,  54 },  // Half Elf/Warrior/Prexus/gfaydark
               {   0,   0,   0,   0,   7,   1, 212,  36,   1 },  // Half Elf/Warrior/Rodcet/qeynos
-              {   0,   0,   0,   0,   7,   1, 204,  36, 382 },  // Half Elf/Warrior/Erollsi/freeporteast
+              {   0,   0,   0,   0,   7,   1, 204,  36,  10 },  // Half Elf/Warrior/Erollsi/freporte
               {   0,   0,   0,   0,   7,   1, 201,  36,  45 },  // Half Elf/Warrior/Bertox/qcat
               {   0,   0,   0,   0,   7,   1, 207,  36,   1 },  // Half Elf/Warrior/Karana/qeynos
-              {   0,   0,   0,   0,   7,   1, 206,  36, 382 },  // Half Elf/Warrior/Innoruuk/freeporteast
-              {   0,   0,   0,   0,   7,   1, 396,  36, 382 },  // Half Elf/Warrior/Agnostic/freeporteast
-              {   0,   0,   0,   0,   7,   1, 209,  36, 382 },  // Half Elf/Warrior/Prexus/freeporteast
-              {   0,   0,   0,   0,   7,   1, 211,  36, 382 },  // Half Elf/Warrior/Rallos Zek/freeporteast
-              {   0,   0,   0,   0,   7,   1, 214,  36, 382 },  // Half Elf/Warrior/Tribunal/freeporteast
+              {   0,   0,   0,   0,   7,   1, 206,  36,  10 },  // Half Elf/Warrior/Innoruuk/freporte
+              {   0,   0,   0,   0,   7,   1, 396,  36,  10 },  // Half Elf/Warrior/Agnostic/freporte
+              {   0,   0,   0,   0,   7,   1, 209,  36,  10 },  // Half Elf/Warrior/Prexus/freporte
+              {   0,   0,   0,   0,   7,   1, 211,  36,  10 },  // Half Elf/Warrior/Rallos Zek/freporte
+              {   0,   0,   0,   0,   7,   1, 214,  36,  10 },  // Half Elf/Warrior/Tribunal/freporte
               {   0,   0,   0,   0,   7,   1, 396,  36,   1 },  // Half Elf/Warrior/Agnostic/qeynos
               {   0,   0,   0,   0,   7,   1, 211,  36,   1 },  // Half Elf/Warrior/Rallos Zek/qeynos
               {   0,   0,   0,   0,   7,   1, 214,  36,   1 },  // Half Elf/Warrior/Tribunal/qeynos
@@ -522,8 +522,8 @@ static struct SoFCCData SoFCharCreateInfo = {
               {   0,   0,   0,   0,   7,   3, 207,  33,   1 },  // Half Elf/Paladin/Karana/qeynos
               {   0,   0,   0,   0,   7,   3, 215,  33,  61 },  // Half Elf/Paladin/Tunare/felwithea
               {   0,   0,   0,   0,   7,   3, 212,  33,   2 },  // Half Elf/Paladin/Rodcet/qeynos2
-              {   0,   0,   0,   0,   7,   3, 204,  33, 383 },  // Half Elf/Paladin/Erollsi/freeportwest
-              {   0,   0,   0,   0,   7,   3, 208,  33, 383 },  // Half Elf/Paladin/Mithaniel Marr/freeportwest
+              {   0,   0,   0,   0,   7,   3, 204,  33,   9 },  // Half Elf/Paladin/Erollsi/freportw
+              {   0,   0,   0,   0,   7,   3, 208,  33,   9 },  // Half Elf/Paladin/Mithaniel Marr/freportw
               {   0,   8,   0,   0,   7,   4, 207,  34, 394 },  // Half Elf/Ranger/Karana/crescent
               {   0,   8,   0,   0,   7,   4, 215,  34, 394 },  // Half Elf/Ranger/Tunare/crescent
               {   0,   0,   0,   0,   7,   4, 207,  34,   3 },  // Half Elf/Ranger/Karana/qrg
@@ -557,21 +557,21 @@ static struct SoFCCData SoFCharCreateInfo = {
               {   0,   0,   0,   0,   7,   8, 209,  31,  54 },  // Half Elf/Bard/Prexus/gfaydark
               {   0,   0,   0,   0,   7,   8, 205,  31,  54 },  // Half Elf/Bard/Bristlebane/gfaydark
               {   0,   0,   0,   0,   7,   8, 207,  31,   1 },  // Half Elf/Bard/Karana/qeynos
-              {   0,   0,   0,   0,   7,   8, 204,  31, 382 },  // Half Elf/Bard/Erollsi/freeporteast
-              {   0,   0,   0,   0,   7,   8, 208,  31, 382 },  // Half Elf/Bard/Mithaniel Marr/freeporteast
+              {   0,   0,   0,   0,   7,   8, 204,  31,  10 },  // Half Elf/Bard/Erollsi/freporte
+              {   0,   0,   0,   0,   7,   8, 208,  31,  10 },  // Half Elf/Bard/Mithaniel Marr/freporte
               {   0,   0,   0,   0,   7,   8, 211,  31,  54 },  // Half Elf/Bard/Rallos Zek/gfaydark
               {   0,   0,   0,   0,   7,   8, 216,  31,  54 },  // Half Elf/Bard/Veeshan/gfaydark
               {   0,   0,   0,   0,   7,   8, 215,  31,  54 },  // Half Elf/Bard/Tunare/gfaydark
-              {   0,   0,   0,   0,   7,   8, 396,  31, 382 },  // Half Elf/Bard/Agnostic/freeporteast
-              {   0,   0,   0,   0,   7,   8, 209,  31, 382 },  // Half Elf/Bard/Prexus/freeporteast
-              {   0,   0,   0,   0,   7,   8, 213,  31, 382 },  // Half Elf/Bard/Solusek/freeporteast
-              {   0,   0,   0,   0,   7,   8, 214,  31, 382 },  // Half Elf/Bard/Tribunal/freeporteast
-              {   0,   0,   0,   0,   7,   8, 211,  31, 382 },  // Half Elf/Bard/Rallos Zek/freeporteast
-              {   0,   0,   0,   0,   7,   8, 216,  31, 382 },  // Half Elf/Bard/Veeshan/freeporteast
-              {   0,   0,   0,   0,   7,   8, 215,  31, 382 },  // Half Elf/Bard/Tunare/freeporteast
-              {   0,   0,   0,   0,   7,   8, 202,  31, 382 },  // Half Elf/Bard/Brell/freeporteast
-              {   0,   0,   0,   0,   7,   8, 210,  31, 382 },  // Half Elf/Bard/Quellious/freeporteast
-              {   0,   0,   0,   0,   7,   8, 205,  31, 382 },  // Half Elf/Bard/Bristlebane/freeporteast
+              {   0,   0,   0,   0,   7,   8, 396,  31,  10 },  // Half Elf/Bard/Agnostic/freporte
+              {   0,   0,   0,   0,   7,   8, 209,  31,  10 },  // Half Elf/Bard/Prexus/freporte
+              {   0,   0,   0,   0,   7,   8, 213,  31,  10 },  // Half Elf/Bard/Solusek/freporte
+              {   0,   0,   0,   0,   7,   8, 214,  31,  10 },  // Half Elf/Bard/Tribunal/freporte
+              {   0,   0,   0,   0,   7,   8, 211,  31,  10 },  // Half Elf/Bard/Rallos Zek/freporte
+              {   0,   0,   0,   0,   7,   8, 216,  31,  10 },  // Half Elf/Bard/Veeshan/freporte
+              {   0,   0,   0,   0,   7,   8, 215,  31,  10 },  // Half Elf/Bard/Tunare/freporte
+              {   0,   0,   0,   0,   7,   8, 202,  31,  10 },  // Half Elf/Bard/Brell/freporte
+              {   0,   0,   0,   0,   7,   8, 210,  31,  10 },  // Half Elf/Bard/Quellious/freporte
+              {   0,   0,   0,   0,   7,   8, 205,  31,  10 },  // Half Elf/Bard/Bristlebane/freporte
               {   0,   0,   0,   0,   7,   8, 396,  31,   1 },  // Half Elf/Bard/Agnostic/qeynos
               {   0,   0,   0,   0,   7,   8, 211,  31,   1 },  // Half Elf/Bard/Rallos Zek/qeynos
               {   0,   0,   0,   0,   7,   8, 216,  31,   1 },  // Half Elf/Bard/Veeshan/qeynos
@@ -595,9 +595,9 @@ static struct SoFCCData SoFCharCreateInfo = {
               {   0,   0,   0,   0,   7,   9, 207,  35,   2 },  // Half Elf/Rogue/Karana/qeynos2
               {   0,   0,   0,   0,   7,   9, 212,  35,   2 },  // Half Elf/Rogue/Rodcet/qeynos2
               {   0,   0,   0,   0,   7,   9, 215,  35,  54 },  // Half Elf/Rogue/Tunare/gfaydark
-              {   0,   0,   0,   0,   7,   9, 204,  35, 382 },  // Half Elf/Rogue/Erollsi/freeporteast
-              {   0,   0,   0,   0,   7,   9, 396,  35, 382 },  // Half Elf/Rogue/Agnostic/freeporteast
-              {   0,   0,   0,   0,   7,   9, 205,  35, 382 },  // Half Elf/Rogue/Bristlebane/freeporteast
+              {   0,   0,   0,   0,   7,   9, 204,  35,  10 },  // Half Elf/Rogue/Erollsi/freporte
+              {   0,   0,   0,   0,   7,   9, 396,  35,  10 },  // Half Elf/Rogue/Agnostic/freporte
+              {   0,   0,   0,   0,   7,   9, 205,  35,  10 },  // Half Elf/Rogue/Bristlebane/freporte
               {   0,   0,   0,   0,   7,   9, 396,  35,   2 },  // Half Elf/Rogue/Agnostic/qeynos2
               {   0,   0,   0,   0,   7,   9, 205,  35,   2 },  // Half Elf/Rogue/Bristlebane/qeynos2
               {   0,   8,   0,   0,   8,   1, 202,  16, 394 },  // Dward/Warrior/Brell/crescent
