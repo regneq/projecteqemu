@@ -13,18 +13,18 @@ void RegisterAllPatches(EQStreamIdentifier &into) {
 	Client62::Register(into);
 	Titanium::Register(into);
 	//Anniversary::Register(into);
-	//Live::Register(into);
 	SoF::Register(into);
 	SoD::Register(into);
+	Live::Register(into);
 }
 
 void ReloadAllPatches() {
 	Client62::Reload();
 	Titanium::Reload();
 	//Anniversary::Reload();
-	//Live::Reload();
 	SoF::Reload();
 	SoD::Reload();
+	Live::Reload();
 }
 
 

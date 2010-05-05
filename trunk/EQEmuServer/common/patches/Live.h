@@ -2,7 +2,6 @@
 #define Live_H_
 
 #include "../StructStrategy.h"
-#include "Titanium.h"
 
 class EQStreamIdentifier;
 
@@ -17,7 +16,7 @@ namespace Live {
 	//you should not directly access anything below.. 
 	//I just dont feel like making a seperate header for it.
 	
-	class Strategy : public Titanium::Strategy {
+	class Strategy : public StructStrategy {
 	public:
 		Strategy();
 		
@@ -25,10 +24,9 @@ namespace Live {
 		
 		virtual std::string Describe() const;
 		
-		//magic macro to declare our opcodes
+		//magic macro to declare our opcode processors
 		#include "SSDeclare.h"
 		#include "Live_ops.h"
-		
 	};
 	
 };

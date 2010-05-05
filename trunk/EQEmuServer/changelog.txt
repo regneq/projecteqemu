@@ -1,10 +1,13 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==05/04/2010==
+Trevius(Derision): Fixed a potential crash related to Saylinks and Antispam code.
+Trevius: Live - Initial update to the Live patch files.  Can only get to a blank character select at this point.
+
+==05/04/2010==
 Trevius: SoF/SoD - Resolved an issue that was preventing some AAs from being able to be trained properly.
 Derision: Updating a character's Alt or Banker flag no longer resends the entire guild member list.
 joligario: quest::givecash cleaned up.
-
 Congdar: SoF: Fix starting city for freeport characters.
 
 ==05/03/2010==
@@ -13,7 +16,6 @@ Derision: The facility to specify a Guild chat channel and URL now work for thos
 Derision: SoD - Item links for Task rewards now display correctly in the task window.
 
 REQUIRED SQL:
-
 utils/sql/svn/1451_guilds.sql
 
 ==05/02/2010==
@@ -21,7 +23,6 @@ Derision: The Guild Management Window should now reflect the true online status 
 Derision: Added a command, #cvs (Client Version Summary) to display connected client version counts.
 
 OPTIONAL SQL:
-
 utils/sql/svn/1450_cvs.sql
 
 ==05/01/2010==
@@ -31,11 +32,9 @@ Derision: Group member locations are now always updated in entity_list.SendPosit
 Derision: Certain detrimental spells will still allow the player to enter a rested state.
 
 REQUIRED SQL:
-
 utils/sql/svn/1446_allowrest_required.sql
 
 OPTIONAL SQL: (Read the comments in it before executing)
-
 utils/sql/svn/1446_allowrest_optional.sql
 
 

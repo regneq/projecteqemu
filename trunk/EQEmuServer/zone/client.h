@@ -136,6 +136,7 @@ typedef enum {
 #define BIT_Titanium	2
 #define BIT_SoF		4
 #define BIT_SoD		8
+#define BIT_Live	0xFFFFFFFE
 #define BIT_SoDAndLater	0xFFFFFFF8
 #define BIT_AllClients	0xFFFFFFFF
 
@@ -144,7 +145,8 @@ typedef enum {
 	EQClient62,
 	EQClientTitanium,
 	EQClientSoF,
-	EQClientSoD
+	EQClientSoD,
+	EQClientLive
 } EQClientVersion;
 
 enum {
