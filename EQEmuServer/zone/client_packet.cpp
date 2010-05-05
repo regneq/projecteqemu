@@ -509,7 +509,11 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 		ClientVersion = EQClientSoD;
 		ClientVersionBit = BIT_SoD;
 	}
-
+	else if(StreamDescription == "Patch Live")
+	{
+		ClientVersion = EQClientLive;
+		ClientVersionBit = BIT_Live;
+	}
 	// Quagmire - Antighost code
 	// tmp var is so the search doesnt find this object
 	Client* client = entity_list.GetClientByName(cze->char_name);

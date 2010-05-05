@@ -735,7 +735,7 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, int8 lang_skil
 	#endif
 
 	if (targetname == NULL) {
-		targetname = (!GetTarget()) ? NULL : GetTarget()->GetName();
+		targetname = (!GetTarget()) ? "" : GetTarget()->GetName();
 	}
 
 	if(RuleB(Chat, EnableAntiSpam))
