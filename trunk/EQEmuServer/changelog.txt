@@ -5,6 +5,8 @@ Trevius: SoF/SoD - Resolved an issue that was preventing some AAs from being abl
 Derision: Updating a character's Alt or Banker flag no longer resends the entire guild member list.
 joligario: quest::givecash cleaned up.
 
+Congdar: SoF: Fix starting city for freeport characters.
+
 ==05/03/2010==
 Derision: The facility to flag 'Alts' in the Guild Management Window now works for those clients that support it.
 Derision: The facility to specify a Guild chat channel and URL now work for those clients that support it.
