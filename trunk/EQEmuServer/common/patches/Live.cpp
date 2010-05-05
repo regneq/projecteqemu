@@ -460,7 +460,7 @@ ENCODE(OP_PlayerProfile) {
 	uint32 r;
 	
 	eq->available_slots=0xffffffff;
-	memset(eq->unknown4184, 0xff, sizeof(eq->unknown4184));
+	memset(eq->unknown06284, 0xff, sizeof(eq->unknown06284));
 	memset(eq->unknown04396, 0xff, sizeof(eq->unknown04396));
 	
 //	OUT(checksum);
