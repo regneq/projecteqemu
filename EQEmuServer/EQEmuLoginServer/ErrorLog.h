@@ -67,6 +67,11 @@ public:
 	 */
 	void Log(eqLogType type, const char *message, ...);
 
+	/**
+	 * Writes to the log system a packet.
+	 */
+	void LogPacket(eqLogType type, const char *data, size_t size);
+
 protected:
 	Mutex *log_mutex;
 	FILE* error_log;

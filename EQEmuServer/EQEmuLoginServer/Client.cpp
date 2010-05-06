@@ -30,6 +30,8 @@ Client::Client(EQStream *c, ClientVersion v)
 	version = v;
 	status = cs_not_sent_session_ready;
 	account_id = 0;
+	play_server_id = 0;
+	play_sequence_id = 0;
 }
 
 bool Client::Process()
@@ -325,8 +327,8 @@ void Client::Handle_Play(const char* data)
 		log->Log(log_network, "Play recieved from client, server number %u sequence %u.", play->ServerNumber, play->Sequence);
 	}
 
-	play_server_id = play->ServerNumber;
-	play_sequence_id = play->Sequence;
+	this->play_server_id = (unsigned int)play->ServerNumber;
+	this->play_sequence_id = (unsigned int)play->Sequence;
 	server.SM->SendUserToWorldRequest(play_server_id, account_id);
 }
 
@@ -348,6 +350,7 @@ void Client::SendPlayResponse(EQApplicationPacket *outapp)
 	if(server.options.IsTraceOn())
 	{
 		log->Log(log_network_trace, "Sending play response for %s.", GetAccountName().c_str());
+		log->LogPacket(log_network_trace, (const char*)outapp->pBuffer, outapp->size);
 	}
 	connection->QueuePacket(outapp);
 	status = cs_logged_in;

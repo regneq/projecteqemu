@@ -145,11 +145,13 @@ bool WorldServer::Process()
 				Client *c = server.CM->GetClient(utwr->lsaccountid);
 				if(c)
 				{
-					log->Log(log_client, "Trying to find client with user id of %u and account name of %s.", utwr->lsaccountid, c->GetAccountName().c_str()); 
+					log->Log(log_client, "Found client with user id of %u and account name of %s.", utwr->lsaccountid, c->GetAccountName().c_str()); 
 					EQApplicationPacket *outapp = new EQApplicationPacket(OP_PlayEverquestResponse, sizeof(PlayEverquestResponse_Struct));
 					PlayEverquestResponse_Struct *per = (PlayEverquestResponse_Struct*)outapp->pBuffer;
 					per->Sequence = c->GetPlaySequence();
 					per->ServerNumber = c->GetPlayServerID();
+					log->Log(log_client, "Found sequence and play of %u %u", c->GetPlaySequence(), c->GetPlayServerID());
+					log->LogPacket(log_network_trace, (const char*)outapp->pBuffer, outapp->size);
 
 					if(utwr->response > 0)
 					{
@@ -180,6 +182,7 @@ bool WorldServer::Process()
 					{
 						log->Log(log_network_trace, "Sending play response with following data, allowed %u, sequence %u, server number %u, message %u", 
 							per->Allowed, per->Sequence, per->ServerNumber, per->Message);
+						log->LogPacket(log_network_trace, (const char*)outapp->pBuffer, outapp->size);
 					}
 
 					if(server.options.IsDumpOutPacketsOn())
