@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/08/2010==
+Derision: Guild Bank fix.
+
 ==05/04/2010==
 Trevius(Derision): Fixed a potential crash related to Saylinks and Antispam code.
 Trevius: Live - Initial update to the Live patch files.  Can only get to a blank character select at this point.

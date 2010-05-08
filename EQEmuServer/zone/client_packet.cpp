@@ -10929,6 +10929,19 @@ void Client::Handle_OP_GuildBank(const EQApplicationPacket *app)
 
 				GuildBankAck();
 
+				safe_delete(inst);
+
+				break;
+			}
+
+			if(CheckLoreConflict(inst->GetItem()))
+			{
+				Message_StringID(13, DUP_LORE);
+
+				GuildBankAck();
+
+				safe_delete(inst);
+
 				break;
 			}
 
