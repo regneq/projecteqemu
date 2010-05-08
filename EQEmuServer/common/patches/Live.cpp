@@ -2807,7 +2807,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	ibs.Races = item->Races;
 	ibs.Deity = item->Deity;
 	ibs.SkillModValue = item->SkillModValue;
-	ibs.unknown6 = 0;
+	ibs.unknown5 = 0;
 	ibs.SkillModType = item->SkillModType;
 	ibs.BaneDmgRace = item->BaneDmgRace;
 	ibs.BaneDmgBody = item->BaneDmgBody;
@@ -2830,7 +2830,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	ibs.ItemType = item->ItemType;
 	ibs.Material = item->Material;
 	ibs.unknown7 = 0;
-	ibs.unknown8 = 0;
+	ibs.EliteMaterial = 0;
 	ibs.SellRate = item->SellRate;
 
 	ibs.CombatEffects = item->CombatEffects;
@@ -2880,7 +2880,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	isbs.ldonpoint_type = item->PointType;
 	isbs.ldontheme = item->LDoNTheme;
 	isbs.ldonprice = item->LDoNPrice;
-	isbs.unk098 = 70;
+	isbs.ldonsellbackrate = 70;
 	isbs.ldonsold = item->LDoNSold;
 
 	isbs.bagtype = item->BagType;
@@ -2954,8 +2954,15 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	itbs.scroll_effect.type = item->Scroll.Type;
 	itbs.scroll_effect.level = item->Scroll.Level;
 
+	itbs.bard_effect.effect = 0xffffffff;
+	itbs.bard_effect.level2 = 0;
+	itbs.bard_effect.type = 0;
+	itbs.bard_effect.level = 0;
+	itbs.bard_effect.unknown6 = 0xffffffff;
+
 	itbs.quest_item = item->QuestItemFlag;
-	itbs.unknown15 = 0xffffffff;
+	//itbs.unknown15 = 0xffffffff;
+	itbs.unknown15 = 0;
 
 	itbs.Purity = item->Purity;
 	itbs.BackstabDmg = item->BackstabDmg;
