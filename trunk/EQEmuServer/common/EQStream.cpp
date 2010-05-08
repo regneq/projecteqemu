@@ -491,8 +491,8 @@ uint32 length;
 	// Convert the EQApplicationPacket to 1 or more EQProtocolPackets
 	if (p->size>(MaxLen-8)) { // proto-op(2), seq(2), app-op(2) ... data ... crc(2)
 		_log(NET__FRAGMENT, _L "Making oversized packet, len %d" __L, p->size);
-		
-		unsigned char *tmpbuff=new unsigned char[p->size+2];
+
+		unsigned char *tmpbuff=new unsigned char[p->size+3];
 		length=p->serialize(opcode, tmpbuff);
 		
 		EQProtocolPacket *out=new EQProtocolPacket(OP_Fragment,NULL,MaxLen-4);
@@ -515,8 +515,13 @@ uint32 length;
 		delete p;
 		delete[] tmpbuff;
 	} else {
-		EQProtocolPacket *out=new EQProtocolPacket(OP_Packet,NULL,p->Size()+2);
-		p->serialize(opcode, out->pBuffer+2);
+
+		unsigned char *tmpbuff=new unsigned char[p->Size()+3];
+		length=p->serialize(opcode, tmpbuff+2) + 2;
+
+		EQProtocolPacket *out=new EQProtocolPacket(OP_Packet,tmpbuff,length);
+
+		delete[] tmpbuff;
 		SequencedPush(out);
 		delete p;
 	}

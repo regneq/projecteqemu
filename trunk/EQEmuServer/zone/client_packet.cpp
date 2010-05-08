@@ -1956,7 +1956,8 @@ void Client::Handle_OP_ItemVerifyRequest(const EQApplicationPacket *app)
 			{
 				if (inst->GetCharges() == 0)
 				{
-					Message(0, "This item is out of charges.");
+					//Message(0, "This item is out of charges.");
+					Message_StringID(13, ITEM_OUT_OF_CHARGES);
 					return;
 				}
 				if(item->Click.Level2 > 0)
@@ -1967,7 +1968,9 @@ void Client::Handle_OP_ItemVerifyRequest(const EQApplicationPacket *app)
 					}
 					else
 					{
-						Message(0, "Error: level not high enough.");
+						//Message(0, "You are not sufficient level to use this item.");
+						Message_StringID(13, ITEMS_INSUFFICIENT_LEVEL);
+						return;
 					}					
 				}
 				else

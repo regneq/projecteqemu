@@ -17,6 +17,7 @@
 #define DOORS_CANT_PICK				131		//This lock cannot be picked.
 #define DOORS_INSUFFICIENT_SKILL	132		//You are not sufficiently skilled to pick this lock.
 #define DOORS_GM					133		//You opened the locked door with your magic GM key.
+#define ITEMS_INSUFFICIENT_LEVEL	136		//You are not sufficient level to use this item.
 #define GAIN_XP						138		//You gain experience!!
 #define GAIN_GROUPXP				139		//You gain party experience!!
 #define BOW_DOUBLE_DAMAGE			143		//Your bow shot did double dmg.
@@ -41,7 +42,10 @@
 #define FISHING_SPILL_BEER			171		//You spill your beer while bringing in your line.
 #define FISHING_LOST_BAIT			172		//You lost your bait!
 #define SPELL_FIZZLE				173		//Your spell fizzles!
+#define MUST_EQUIP_ITEM				179		//You cannot use this item unless it is equipped.
 #define MISS_NOTE					180		//You miss a note, bringing your song to a close!
+#define CANNOT_USE_ITEM				181		//Your race, class, or deity cannot use this item.
+#define ITEM_OUT_OF_CHARGES			182		//Item is out of charges.
 #define TARGET_NO_MANA				191		//Your target has no mana to affect
 #define TARGET_GROUP_MEMBER			196		//You must first target a group member.
 #define INSUFFICIENT_MANA			199		//Insufficient Mana to cast this spell!
