@@ -331,7 +331,7 @@ struct Spawn_Struct
 /*0000*/ //char suffix[0]; // only read if(hasTitleOrSuffix & 8)
 	 char unknown20[8];
 	 uint8 IsMercenary;	// If NPC == 1 and this == 1, then the NPC name is Orange.
-/*0000*/ char unknown21[24]; // Was 33
+/*0000*/ char unknown21[28]; 
 };
 
 

@@ -1066,7 +1066,7 @@ ENCODE(OP_ZoneSpawns) {
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->drakkin_heritage);
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->drakkin_tattoo);
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->drakkin_details);
-			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);	// ShowEQ calls this 'Holding'
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->deity);
 			if(emu->NPC)
 			{
@@ -1160,7 +1160,7 @@ ENCODE(OP_ZoneSpawns) {
 			{
 				VARSTRUCT_ENCODE_STRING(Buffer, emu->suffix);
 			}
-			Buffer += 33; // Unknown;
+			Buffer += 37; // Unknown;
 
 			//_log(NET__ERROR, "Sending zone spawn for %s", emu->name);
 			//_hex(NET__ERROR, outapp->pBuffer, outapp->size);
