@@ -514,7 +514,7 @@ struct CastSpell_Struct
 	int32	spell_id;
 	int32	inventoryslot;  // slot for clicky item, 0xFFFF = normal cast
 	int32	target_id;
-	int8    cs_unknown[4];
+	int32    cs_unknown[5];
 };
 
 /*
