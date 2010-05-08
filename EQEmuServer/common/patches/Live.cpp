@@ -1531,11 +1531,23 @@ ENCODE(OP_LogServer) {
  	OUT(enablemail);
 	OUT(enable_pvp);
 	OUT(enable_FV);
- 
+
+	eq->unknown016 = 1;
+	eq->unknown020[0] = 1;
+
  	// These next two need to be set like this for the Tutorial Button to work.
  	eq->unknown263[0] = 0;
  	eq->unknown263[2] = 1;
- 
+ 	eq->unknown263[4] = 1;
+ 	eq->unknown263[5] = 1;
+ 	eq->unknown263[6] = 1;
+ 	eq->unknown263[9] = 8;
+ 	eq->unknown263[19] = 0x80;
+ 	eq->unknown263[20] = 0x3f;
+ 	eq->unknown263[23] = 0x80;
+ 	eq->unknown263[24] = 0x3f;
+ 	eq->unknown263[33] = 1;
+	
  	FINISH_ENCODE();
 }
 
