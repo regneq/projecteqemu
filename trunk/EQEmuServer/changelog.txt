@@ -9,7 +9,8 @@ Derision: Live - Added a Decode for OP_ChannelMessage
 Derision: Live - Corrected OP_Camp, OP_MoveItem and OP_ItemPacket.
 Derision: Live - Corrected: OP_SetChatServer2, OP_MemorizeSpell, OP_CastSpell, OP_Death, OP_Animation, OP_SenseHeading
 Derision: Live - Corrected: OP_Damage, OP_TargetCommand, OP_MobHealth, OP_DeleteSpawn, OP_AutoAttack, OP_AutoAttack2
-Derision: Live - Corrected: OP_SaveOnZoneReq
+Derision: Live - Corrected: OP_SaveOnZoneReq, OP_Track, OP_TrackTarget (Tracking messages not yet working, probably due to Filter opcode).
+Derision: Live - LogServer_Struct.
 
 ==05/04/2010==
 Trevius(Derision): Fixed a potential crash related to Saylinks and Antispam code.

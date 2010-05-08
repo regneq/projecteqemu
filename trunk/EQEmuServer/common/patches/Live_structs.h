@@ -2644,18 +2644,19 @@ struct LogServer_Struct {
 /*012*/	uint32	unknown012;	// htonl(1) on live
 /*016*/	uint32	unknown016;	// htonl(1) on live
 /*020*/	uint8	unknown020[12];
-/*032*/	char	worldshortname[32];
-/*064*/	uint8	unknown064[32];
-/*096*/	char	unknown096[16];	// 'pacman' on live
-/*112*/	char	unknown112[16];	// '64.37,148,36' on live
-/*126*/	uint8	unknown128[48];
-/*176*/	uint32	unknown176;	// htonl(0x00002695)
-/*180*/	char	unknown180[80];	// 'eqdataexceptions@mail.station.sony.com' on live
-/*260*/	uint8	unknown260;	// 0x01 on live
-/*261*/	uint8	enablevoicemacros;
-/*262*/	uint8	enablemail;
-/*263*/	uint8	unknown263[16];
-/*279*/
+/*032*/ uint32	unknown032;
+/*036*/	char	worldshortname[32];
+/*068*/	uint8	unknown064[32];
+/*100*/	char	unknown096[16];	// 'pacman' on live
+/*116*/	char	unknown112[16];	// '64.37,148,36' on live
+/*132*/	uint8	unknown128[48];
+/*180*/	uint32	unknown176;	// htonl(0x00002695)
+/*184*/	char	unknown180[80];	// 'eqdataexceptions@mail.station.sony.com' on live
+/*264*/	uint8	unknown260;	// 0x01 on live
+/*265*/	uint8	enablevoicemacros;
+/*266*/	uint8	enablemail;
+/*267*/	uint8	unknown263[41];
+/*308*/
 };
 
 struct ApproveWorld_Struct {
