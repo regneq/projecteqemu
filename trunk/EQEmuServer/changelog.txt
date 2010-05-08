@@ -5,6 +5,7 @@ Derision: Guild Bank fix.
 Trevius(Derision): Added special handling for certain types of opcodes to correct an issue on the Live client.
 Trevius: SoF/SoD - Type 5 clicky items can no longer be used if the character does not meet the race/class requirements of the item.
 Trevius: Live - Can now log into the game with new character fine, but some existing characters cause zoning loops.
+Derision: Live - Added a Decode for OP_ChannelMessage
 
 ==05/04/2010==
 Trevius(Derision): Fixed a potential crash related to Saylinks and Antispam code.
