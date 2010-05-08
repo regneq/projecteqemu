@@ -243,25 +243,46 @@ bool Mob::CastSpell(int16 spell_id, int16 target_id, int16 slot,
         _StopSong();
     }
 
-	//Added to prevent MQ2 exploitation of equipping normally-unequippable items with effects and clicking them for benefits.
+	//Added to prevent MQ2 exploitation of equipping normally-unequippable/clickable items with effects and clicking them for benefits.
 	if(item_slot && IsClient() && ((slot == USE_ITEM_SPELL_SLOT) || (slot == POTION_BELT_SPELL_SLOT)))
 	{
 		ItemInst *itm = CastToClient()->GetInv().GetItem(item_slot);
 		int bitmask = 1;
 		bitmask = bitmask << (CastToClient()->GetClass() - 1);
-		if( itm && itm->GetItem()->Classes != 65535 && (itm->GetItem()->Click.Type == ET_EquipClick) && !( itm->GetItem()->Classes & bitmask ) ){
-			if (CastToClient()->GetClientVersion() < EQClientSoF) {
-				// They are casting a spell on an item that requires equipping but shouldn't let them equip it
-				LogFile->write(EQEMuLog::Error, "HACKER: %s (account: %s) attempted to click an equip-only effect on item %s (id: %d) which they shouldn't be able to equip!", CastToClient()->GetCleanName(), CastToClient()->AccountName(), itm->GetItem()->Name, itm->GetItem()->ID);
-				database.SetHackerFlag(CastToClient()->AccountName(), CastToClient()->GetCleanName(), "Clicking equip-only item with an invalid class");
+		if( itm && itm->GetItem()->Classes != 65535 ) {
+			if ((itm->GetItem()->Click.Type == ET_EquipClick) && !(itm->GetItem()->Classes & bitmask)) {
+				if (CastToClient()->GetClientVersion() < EQClientSoF) {
+					// They are casting a spell from an item that requires equipping but shouldn't let them equip it
+					LogFile->write(EQEMuLog::Error, "HACKER: %s (account: %s) attempted to click an equip-only effect on item %s (id: %d) which they shouldn't be able to equip!",
+						CastToClient()->GetCleanName(), CastToClient()->AccountName(), itm->GetItem()->Name, itm->GetItem()->ID);
+					database.SetHackerFlag(CastToClient()->AccountName(), CastToClient()->GetCleanName(), "Clicking equip-only item with an invalid class");
+				}
+				else {
+					Message_StringID(13, MUST_EQUIP_ITEM);
+				}
+				return(false);
 			}
-			return(false);
+			if ((itm->GetItem()->Click.Type == ET_ClickEffect2) && !(itm->GetItem()->Classes & bitmask)) {
+				if (CastToClient()->GetClientVersion() < EQClientSoF) {
+					// They are casting a spell from an item that they don't meet the race/class requirements to cast
+					LogFile->write(EQEMuLog::Error, "HACKER: %s (account: %s) attempted to click a race/class restricted effect on item %s (id: %d) which they shouldn't be able to click!",
+						CastToClient()->GetCleanName(), CastToClient()->AccountName(), itm->GetItem()->Name, itm->GetItem()->ID);
+					database.SetHackerFlag(CastToClient()->AccountName(), CastToClient()->GetCleanName(), "Clicking race/class restricted item with an invalid class");
+				}
+				else {
+					Message_StringID(13, CANNOT_USE_ITEM);
+				}
+				return(false);
+			}
 		}
 		if( itm && (itm->GetItem()->Click.Type == ET_EquipClick) && !(item_slot < 22 || item_slot == 9999) ){
 			if (CastToClient()->GetClientVersion() < EQClientSoF) {
 				// They are attempting to cast a must equip clicky without having it equipped
 				LogFile->write(EQEMuLog::Error, "HACKER: %s (account: %s) attempted to click an equip-only effect on item %s (id: %d) without equiping it!", CastToClient()->GetCleanName(), CastToClient()->AccountName(), itm->GetItem()->Name, itm->GetItem()->ID);
 				database.SetHackerFlag(CastToClient()->AccountName(), CastToClient()->GetCleanName(), "Clicking equip-only item without equiping it");
+			}
+			else {
+				Message_StringID(13, MUST_EQUIP_ITEM);
 			}
 			return(false);
 		}
