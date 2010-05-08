@@ -7,6 +7,9 @@ Trevius: SoF/SoD - Type 5 clicky items can no longer be used if the character do
 Trevius: Live - Can now log into the game with new character fine, but some existing characters cause zoning loops.
 Derision: Live - Added a Decode for OP_ChannelMessage
 Derision: Live - Corrected OP_Camp, OP_MoveItem and OP_ItemPacket.
+Derision: Live - Corrected: OP_SetChatServer2, OP_MemorizeSpell, OP_CastSpell, OP_Death, OP_Animation, OP_SenseHeading
+Derision: Live - Corrected: OP_Damage, OP_TargetCommand, OP_MobHealth, OP_DeleteSpawn, OP_AutoAttack, OP_AutoAttack2
+Derision: Live - Corrected: OP_SaveOnZoneReq
 
 ==05/04/2010==
 Trevius(Derision): Fixed a potential crash related to Saylinks and Antispam code.
