@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==05/09/2010=
 Derision: Live - Added an encode for OP_ChannelMessage
+Derision: Live - Encoded OP_GuildsList and corrected OP_GuildUpdateURLAndChannel.
 
 ==05/08/2010==
 Derision: Guild Bank fix.
