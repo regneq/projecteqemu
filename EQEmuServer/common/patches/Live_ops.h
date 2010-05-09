@@ -62,6 +62,7 @@ E(OP_OnLevelMessage)
 E(OP_Barter)
 E(OP_ApplyPoison)
 E(OP_ChannelMessage)
+E(OP_GuildsList)
 //list of packets we need to decode on the way in:
 D(OP_SetServerFilter)
 D(OP_CharacterCreate)

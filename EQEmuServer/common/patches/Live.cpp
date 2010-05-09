@@ -2242,6 +2242,66 @@ ENCODE(OP_ChannelMessage)
 	dest->FastQueuePacket(&in, ack_req);
 }
 
+ENCODE(OP_GuildsList)
+{
+	EQApplicationPacket *in = *p;
+	*p = NULL;
+
+	uint32 NumberOfGuilds = in->size / 64;
+
+	uint32 PacketSize = 68;	// 64 x 0x00 + a uint32 that I am guessing is the highest guild ID in use.
+
+	unsigned char *__emu_buffer = in->pBuffer;
+
+	char *InBuffer = (char *)__emu_buffer;
+
+	uint32 HighestGuildID = 0;
+
+	for(unsigned int i = 0; i < NumberOfGuilds; ++i)
+	{
+		if(InBuffer[0])
+		{
+			PacketSize += (5 + strlen(InBuffer));
+			HighestGuildID = i - 1;
+		}
+		InBuffer += 64;
+	}
+		
+	PacketSize++;	// Appears to be an extra 0x00 at the very end.
+
+	in->size = PacketSize;
+
+	in->pBuffer = new unsigned char[in->size];
+
+	InBuffer = (char *)__emu_buffer;
+
+	char *OutBuffer = (char *)in->pBuffer;
+
+	// Init the first 64 bytes to zero, as per live.
+	//
+	memset(OutBuffer, 0, 64);
+
+	OutBuffer += 64;
+
+	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, HighestGuildID);
+
+	for(unsigned int i = 0; i < NumberOfGuilds; ++i)
+	{
+		if(InBuffer[0])
+		{
+			VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, i - 1);
+			VARSTRUCT_ENCODE_STRING(OutBuffer, InBuffer);
+		}
+		InBuffer += 64;
+	}
+
+	VARSTRUCT_ENCODE_TYPE(uint8, OutBuffer, 0x00);
+
+	delete[] __emu_buffer;
+
+	dest->FastQueuePacket(&in, ack_req);
+}
+
 DECODE(OP_BazaarSearch)
 {
 	char *Buffer = (char *)__packet->pBuffer;
