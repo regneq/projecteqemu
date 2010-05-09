@@ -3,6 +3,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==05/09/2010=
 Derision: Live - Added an encode for OP_ChannelMessage
 Derision: Live - Encoded OP_GuildsList and corrected OP_GuildUpdateURLAndChannel.
+Derision: Live - Door and Group OPCodes. Set OP_GroundSpawn=0x00000 until an encode can be done for it (was causing crashes, particularly in PoK).
 
 ==05/08/2010==
 Derision: Guild Bank fix.
