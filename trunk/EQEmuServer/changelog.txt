@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/09/2010=
+Derision: Live - Added an encode for OP_ChannelMessage
+
 ==05/08/2010==
 Derision: Guild Bank fix.
 Trevius(Derision): Added special handling for certain types of opcodes to correct an issue on the Live client.

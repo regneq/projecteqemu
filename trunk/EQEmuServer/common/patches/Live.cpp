@@ -2206,6 +2206,42 @@ ENCODE(OP_GroupUpdate)
 	dest->FastQueuePacket(&outapp);
 }
 
+ENCODE(OP_ChannelMessage)
+{
+	EQApplicationPacket *in = *p;
+	*p = NULL;
+
+	ChannelMessage_Struct *emu = (ChannelMessage_Struct *) in->pBuffer;
+
+	unsigned char *__emu_buffer = in->pBuffer;
+
+	in->size = strlen(emu->sender) + 1 + strlen(emu->targetname) + 1 + strlen(emu->message) + 1 + 36;
+
+	in->pBuffer = new unsigned char[in->size];
+	
+	char *OutBuffer = (char *)in->pBuffer;
+
+	VARSTRUCT_ENCODE_STRING(OutBuffer, emu->sender);
+	VARSTRUCT_ENCODE_STRING(OutBuffer, emu->targetname);
+	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0);	// Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, emu->language);
+	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, emu->chan_num);
+	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0);	// Unknown
+	VARSTRUCT_ENCODE_TYPE(uint8, OutBuffer, 0);	// Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, emu->skill_in_language);
+	VARSTRUCT_ENCODE_STRING(OutBuffer, emu->message);
+
+	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0);	// Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0);	// Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0);	// Unknown
+	VARSTRUCT_ENCODE_TYPE(uint16, OutBuffer, 0);	// Unknown
+	VARSTRUCT_ENCODE_TYPE(uint8, OutBuffer, 0);	// Unknown
+
+	delete[] __emu_buffer;
+
+	dest->FastQueuePacket(&in, ack_req);
+}
+
 DECODE(OP_BazaarSearch)
 {
 	char *Buffer = (char *)__packet->pBuffer;
@@ -2667,7 +2703,7 @@ DECODE(OP_LoadSpellSet)
 	DECODE_LENGTH_EXACT(structs::LoadSpellSet_Struct);
 	SETUP_DIRECT_DECODE(LoadSpellSet_Struct, structs::LoadSpellSet_Struct);
 
-	for(int i = 0; i < MAX_PP_MEMSPELL; ++i)
+	for(unsigned int i = 0; i < MAX_PP_MEMSPELL; ++i)
 		emu->spell[i] = eq->spell[i];
 
 	FINISH_DIRECT_DECODE();
