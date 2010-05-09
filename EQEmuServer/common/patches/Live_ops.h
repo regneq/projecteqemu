@@ -61,6 +61,7 @@ E(OP_PetBuffWindow)
 E(OP_OnLevelMessage)
 E(OP_Barter)
 E(OP_ApplyPoison)
+E(OP_ChannelMessage)
 //list of packets we need to decode on the way in:
 D(OP_SetServerFilter)
 D(OP_CharacterCreate)
