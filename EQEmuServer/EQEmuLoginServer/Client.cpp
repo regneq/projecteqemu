@@ -231,6 +231,7 @@ void Client::Handle_Login(const char* data, unsigned int size)
 
 	if(result)
 	{
+		server.CM->RemoveExistingClient(d_account_id);
 		in_addr in;
 		in.s_addr = connection->GetRemoteIP();
 		server.db->UpdateLSAccountData(d_account_id, string(inet_ntoa(in)));
@@ -321,15 +322,18 @@ void Client::Handle_Play(const char* data)
 	}
 
 	const PlayEverquestRequest_Struct *play = (const PlayEverquestRequest_Struct*)data;
+	unsigned int server_id_in = (unsigned int)play->ServerNumber;
+	unsigned int sequence_in = (unsigned int)play->Sequence;
 
 	if(server.options.IsTraceOn())
 	{
-		log->Log(log_network, "Play recieved from client, server number %u sequence %u.", play->ServerNumber, play->Sequence);
+		log->Log(log_network, "Play recieved from client, server number %u sequence %u.", server_id_in, sequence_in);
 	}
 
 	this->play_server_id = (unsigned int)play->ServerNumber;
-	this->play_sequence_id = (unsigned int)play->Sequence;
-	server.SM->SendUserToWorldRequest(play_server_id, account_id);
+	play_sequence_id = sequence_in;
+	play_server_id = server_id_in;
+	server.SM->SendUserToWorldRequest(server_id_in, account_id);
 }
 
 void Client::SendServerListPacket()

@@ -54,6 +54,11 @@ public:
 	void UpdateServerList();
 
 	/**
+	 * Removes a client with a certain account id.
+	 */
+	void RemoveExistingClient(unsigned int account_id);
+
+	/**
 	 * Gets a client (if exists) by their account id.
 	 */
 	Client *GetClient(unsigned int account_id);
