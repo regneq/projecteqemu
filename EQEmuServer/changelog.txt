@@ -1,6 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
-==05/09/2010=
+==05/10/2010==
+Trevius: Heroic Stats/Resists now increase the cap server-side as they should.
+
+==05/09/2010==
 Derision: Live - Added an encode for OP_ChannelMessage
 Derision: Live - Encoded OP_GuildsList and corrected OP_GuildUpdateURLAndChannel.
 Derision: Live - Door and Group OPCodes. Set OP_GroundSpawn=0x00000 until an encode can be done for it (was causing crashes, particularly in PoK).
