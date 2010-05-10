@@ -378,6 +378,7 @@ public:
 	sint16  GetMaxDR() const;
 	sint16  GetMaxCR() const;
 	sint16  GetMaxFR() const;
+	sint16  GetMaxCorrup() const;
 	inline int8	GetBaseSTR()	const { return m_pp.STR; }
 	inline int8	GetBaseSTA()	const { return m_pp.STA; }
 	inline int8	GetBaseCHA()	const { return m_pp.CHA; }

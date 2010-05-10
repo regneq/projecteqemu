@@ -193,19 +193,35 @@ void Client::AddItemBonuses(const ItemInst *inst, StatBonuses* newbon, bool isAu
 		newbon->HP += item->HP;
 		newbon->Mana += item->Mana;
 		newbon->Endurance += item->Endur;
-		newbon->STR += item->AStr;
-		newbon->STA += item->ASta;
-		newbon->DEX += item->ADex;
-		newbon->AGI += item->AAgi;
-		newbon->INT += item->AInt;
-		newbon->WIS += item->AWis;
-		newbon->CHA += item->ACha;
+		newbon->STR += (item->AStr + item->HeroicStr);
+		newbon->STA += (item->ASta + item->HeroicSta);
+		newbon->DEX += (item->ADex + item->HeroicDex);
+		newbon->AGI += (item->AAgi + item->HeroicAgi);
+		newbon->INT += (item->AInt + item->HeroicInt);
+		newbon->WIS += (item->AWis + item->HeroicWis);
+		newbon->CHA += (item->ACha + item->HeroicCha);
 		
-		newbon->MR += item->MR;
-		newbon->FR += item->FR;
-		newbon->CR += item->CR;
-		newbon->PR += item->PR;
-		newbon->DR += item->DR;
+		newbon->MR += (item->MR + item->HeroicMR);
+		newbon->FR += (item->FR + item->HeroicFR);
+		newbon->CR += (item->CR + item->HeroicCR);
+		newbon->PR += (item->PR + item->HeroicPR);
+		newbon->DR += (item->DR + item->HeroicDR);
+		newbon->Corrup += (item->SVCorruption + item->HeroicSVCorrup);
+
+		newbon->STRCapMod += item->HeroicStr;
+		newbon->STACapMod += item->HeroicSta;
+		newbon->DEXCapMod += item->HeroicDex;
+		newbon->AGICapMod += item->HeroicAgi;
+		newbon->INTCapMod += item->HeroicInt;
+		newbon->WISCapMod += item->HeroicWis;
+		newbon->CHACapMod += item->HeroicCha;
+		newbon->MRCapMod += item->HeroicMR;
+		newbon->CRCapMod += item->HeroicFR;
+		newbon->FRCapMod += item->HeroicCR;
+		newbon->PRCapMod += item->HeroicPR;
+		newbon->DRCapMod += item->HeroicDR;
+		newbon->CorrupCapMod += item->HeroicSVCorrup;
+
 	}
 	else
 	{
@@ -216,19 +232,34 @@ void Client::AddItemBonuses(const ItemInst *inst, StatBonuses* newbon, bool isAu
 		newbon->HP += CalcRecommendedLevelBonus( lvl, reclvl, item->HP );
 		newbon->Mana += CalcRecommendedLevelBonus( lvl, reclvl, item->Mana );
 		newbon->Endurance += CalcRecommendedLevelBonus( lvl, reclvl, item->Endur );
-		newbon->STR += CalcRecommendedLevelBonus( lvl, reclvl, item->AStr );
-		newbon->STA += CalcRecommendedLevelBonus( lvl, reclvl, item->ASta );
-		newbon->DEX += CalcRecommendedLevelBonus( lvl, reclvl, item->ADex );
-		newbon->AGI += CalcRecommendedLevelBonus( lvl, reclvl, item->AAgi );
-		newbon->INT += CalcRecommendedLevelBonus( lvl, reclvl, item->AInt );
-		newbon->WIS += CalcRecommendedLevelBonus( lvl, reclvl, item->AWis );
-		newbon->CHA += CalcRecommendedLevelBonus( lvl, reclvl, item->ACha );
+		newbon->STR += CalcRecommendedLevelBonus( lvl, reclvl, (item->AStr + item->HeroicStr) );
+		newbon->STA += CalcRecommendedLevelBonus( lvl, reclvl, (item->ASta + item->HeroicSta) );
+		newbon->DEX += CalcRecommendedLevelBonus( lvl, reclvl, (item->ADex + item->HeroicDex) );
+		newbon->AGI += CalcRecommendedLevelBonus( lvl, reclvl, (item->AAgi + item->HeroicAgi) );
+		newbon->INT += CalcRecommendedLevelBonus( lvl, reclvl, (item->AInt + item->HeroicInt) );
+		newbon->WIS += CalcRecommendedLevelBonus( lvl, reclvl, (item->AWis + item->HeroicWis) );
+		newbon->CHA += CalcRecommendedLevelBonus( lvl, reclvl, (item->ACha + item->HeroicCha) );
 
-		newbon->MR += CalcRecommendedLevelBonus( lvl, reclvl, item->MR );
-		newbon->FR += CalcRecommendedLevelBonus( lvl, reclvl, item->FR );
-		newbon->CR += CalcRecommendedLevelBonus( lvl, reclvl, item->CR );
-		newbon->PR += CalcRecommendedLevelBonus( lvl, reclvl, item->PR );
-		newbon->DR += CalcRecommendedLevelBonus( lvl, reclvl, item->DR );
+		newbon->MR += CalcRecommendedLevelBonus( lvl, reclvl, (item->MR + item->HeroicMR) );
+		newbon->FR += CalcRecommendedLevelBonus( lvl, reclvl, (item->FR + item->HeroicFR) );
+		newbon->CR += CalcRecommendedLevelBonus( lvl, reclvl, (item->CR + item->HeroicCR) );
+		newbon->PR += CalcRecommendedLevelBonus( lvl, reclvl, (item->PR + item->HeroicPR) );
+		newbon->DR += CalcRecommendedLevelBonus( lvl, reclvl, (item->DR + item->HeroicDR) );
+		newbon->Corrup += CalcRecommendedLevelBonus( lvl, reclvl, (item->SVCorruption + item->HeroicSVCorrup) );
+
+		newbon->STRCapMod += CalcRecommendedLevelBonus( lvl, reclvl, item->HeroicStr );
+		newbon->STACapMod += CalcRecommendedLevelBonus( lvl, reclvl, item->HeroicSta );
+		newbon->DEXCapMod += CalcRecommendedLevelBonus( lvl, reclvl, item->HeroicDex );
+		newbon->AGICapMod += CalcRecommendedLevelBonus( lvl, reclvl, item->HeroicAgi );
+		newbon->INTCapMod += CalcRecommendedLevelBonus( lvl, reclvl, item->HeroicInt );
+		newbon->WISCapMod += CalcRecommendedLevelBonus( lvl, reclvl, item->HeroicWis );
+		newbon->CHACapMod += CalcRecommendedLevelBonus( lvl, reclvl, item->HeroicCha );
+		newbon->MRCapMod += CalcRecommendedLevelBonus( lvl, reclvl, item->HeroicMR );
+		newbon->CRCapMod += CalcRecommendedLevelBonus( lvl, reclvl, item->HeroicFR );
+		newbon->FRCapMod += CalcRecommendedLevelBonus( lvl, reclvl, item->HeroicCR );
+		newbon->PRCapMod += CalcRecommendedLevelBonus( lvl, reclvl, item->HeroicPR );
+		newbon->DRCapMod += CalcRecommendedLevelBonus( lvl, reclvl, item->HeroicDR );
+		newbon->CorrupCapMod += item->HeroicSVCorrup;
 	}
 	
 	//FatherNitwit: New style haste, shields, and regens
@@ -1135,19 +1166,19 @@ void NPC::CalcItemBonuses(StatBonuses *newbon)
 				newbon->HP += cur->HP;
 				newbon->Mana += cur->Mana;
 				newbon->Endurance += cur->Endur;
-				newbon->STR += cur->AStr;
-				newbon->STA += cur->ASta;
-				newbon->DEX += cur->ADex;
-				newbon->AGI += cur->AAgi;
-				newbon->INT += cur->AInt;
-				newbon->WIS += cur->AWis;
-				newbon->CHA += cur->ACha;
-				newbon->MR += cur->MR;
-				newbon->FR += cur->FR;
-				newbon->CR += cur->CR;
-				newbon->PR += cur->PR;
-				newbon->DR += cur->DR;
-				
+				newbon->STR += (cur->AStr + cur->HeroicStr);
+				newbon->STA += (cur->ASta + cur->HeroicSta);
+				newbon->DEX += (cur->ADex + cur->HeroicDex);
+				newbon->AGI += (cur->AAgi + cur->HeroicAgi);
+				newbon->INT += (cur->AInt + cur->HeroicInt);
+				newbon->WIS += (cur->AWis + cur->HeroicWis);
+				newbon->CHA += (cur->ACha + cur->HeroicCha);
+				newbon->MR += (cur->MR + cur->HeroicMR);
+				newbon->FR += (cur->FR + cur->HeroicFR);
+				newbon->CR += (cur->CR + cur->HeroicCR);
+				newbon->PR += (cur->PR + cur->HeroicPR);
+				newbon->DR += (cur->DR + cur->HeroicDR);
+				newbon->Corrup += (cur->SVCorruption + cur->HeroicSVCorrup);
 
 				//more complex stats
 				if(cur->Regen > 0) {

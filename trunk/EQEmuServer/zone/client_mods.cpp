@@ -138,6 +138,12 @@ sint16 Client::GetMaxFR() const {
 		+ spellbonuses.FRCapMod
 		+ aabonuses.FRCapMod;
 }
+sint16 Client::GetMaxCorrup() const {
+	return GetMaxResist()
+		+ itembonuses.CorrupCapMod
+		+ spellbonuses.CorrupCapMod
+		+ aabonuses.CorrupCapMod;
+}
 sint32 Client::LevelRegen()
 {
 	bool sitting = IsSitting();
