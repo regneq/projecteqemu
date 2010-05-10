@@ -165,6 +165,21 @@ void ClientManager::UpdateServerList()
 	}
 }
 
+void ClientManager::RemoveExistingClient(unsigned int account_id)
+{
+	list<Client*>::iterator iter = clients.begin();
+	while(iter != clients.end())
+	{
+		if((*iter)->GetAccountID() == account_id)
+		{
+			log->Log(log_network, "Client attempting to log in and existing client already logged in, removing existing client.");
+			delete (*iter);
+			iter = clients.erase(iter);
+		}
+		iter++;
+	}
+}
+
 Client *ClientManager::GetClient(unsigned int account_id)
 {
 	list<Client*>::iterator iter = clients.begin();
@@ -173,6 +188,7 @@ Client *ClientManager::GetClient(unsigned int account_id)
 		if((*iter)->GetAccountID() == account_id)
 		{
 			return (*iter);
+
 		}
 		iter++;
 	}
