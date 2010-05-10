@@ -176,22 +176,32 @@ void ClientManager::RemoveExistingClient(unsigned int account_id)
 			delete (*iter);
 			iter = clients.erase(iter);
 		}
-		iter++;
+		else
+		{
+			iter++;
+		}
 	}
 }
 
 Client *ClientManager::GetClient(unsigned int account_id)
 {
+	Client *cur = NULL;
+	int count = 0;
 	list<Client*>::iterator iter = clients.begin();
 	while(iter != clients.end())
 	{
 		if((*iter)->GetAccountID() == account_id)
 		{
-			return (*iter);
-
+			cur = (*iter);
+			count++;
 		}
 		iter++;
 	}
-	return NULL;
+
+	if(count > 1)
+	{
+		log->Log(log_client_error, "More than one client with a given account_id existed in the client list.");
+	}
+	return cur;
 }
 
