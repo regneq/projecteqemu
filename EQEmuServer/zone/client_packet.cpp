@@ -3984,6 +3984,13 @@ void Client::Handle_OP_GuildInvite(const EQApplicationPacket *app)
 				}
 			} else if(!client->IsInAGuild()) {
 				//they are not in this or any other guild, this is an invite
+				//
+				if(client->GetPendingGuildInvitation())
+				{
+					Message(13, "That person is already considering a guild invitation.");
+					return;
+				}
+
 				if (!guild_mgr.CheckPermission(GuildID(), GuildRank(), GUILD_INVITE)) {
 					Message(13, "You dont have permission to invite.");
 					return;
@@ -4001,6 +4008,7 @@ void Client::Handle_OP_GuildInvite(const EQApplicationPacket *app)
 
 				mlog(GUILDS__OUT_PACKETS, "Sending OP_GuildInvite for invite to %s, length %d", client->GetName(), app->size);
 				mpkt(GUILDS__OUT_PACKET_TRACE, app);
+				client->SetPendingGuildInvitation(true);
 				client->QueuePacket(app);
 
 			} else {
@@ -4093,12 +4101,15 @@ void Client::Handle_OP_GuildInviteAccept(const EQApplicationPacket *app)
 	mlog(GUILDS__IN_PACKETS, "Received OP_GuildInviteAccept");
 	mpkt(GUILDS__IN_PACKET_TRACE, app);
 
+	SetPendingGuildInvitation(false);
+
 	if (app->size != sizeof(GuildInviteAccept_Struct)) {
 		cout << "Wrong size: OP_GuildInviteAccept, size=" << app->size << ", expected " << sizeof(GuildJoin_Struct) << endl;
 		return;
 	}
 
 	GuildInviteAccept_Struct* gj = (GuildInviteAccept_Struct*) app->pBuffer;
+
 	if (gj->response == 5 || gj->response == 4) {
 		//dont care if the check fails (since we dont know the rank), just want to clear the entry.
 		guild_mgr.VerifyAndClearInvite(CharacterID(), gj->guildeqid, gj->response);
