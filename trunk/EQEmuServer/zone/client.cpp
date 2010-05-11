@@ -216,7 +216,6 @@ Client::Client(EQStreamInterface* ieqs)
 	SetTarget(0);
 	auto_attack = false;
 	auto_fire = false;
-	PendingGuildInvite = 0;
 	linkdead_timer.Disable();
 	zonesummon_x = -2;
 	zonesummon_y = -2;
@@ -298,6 +297,7 @@ Client::Client(EQStreamInterface* ieqs)
 	los_status = false;
 	qGlobals = NULL;
 	HideCorpseMode = HideCorpseNone;
+	PendingGuildInvitation = false;
 
 	cur_end = 0;
 

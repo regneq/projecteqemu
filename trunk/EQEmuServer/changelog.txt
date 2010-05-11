@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/11/2010==
+Derision: Guild invitations to a player already in receipt of an invitation will now be rejected.
+
 ==05/10/2010==
 Trevius: Heroic Stats/Resists now increase the cap server-side as they should.
 

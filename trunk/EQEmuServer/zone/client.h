@@ -530,7 +530,6 @@ public:
 	void	SendManaUpdate();
 	void	SendEnduranceUpdate();
 	int8	GetFace()		const { return m_pp.face; }
-	int32	PendingGuildInvite; // Used for /guildinvite
 	void	WhoAll(Who_All_Struct* whom);
     void	FriendsWho(char *FriendsString);
 
@@ -947,6 +946,8 @@ public:
 	void SendGroupJoinAcknowledge();
 	void DoTracking();
 	inline bool IsTracking() { return (TrackingID > 0); }
+	inline void SetPendingGuildInvitation(bool inPendingGuildInvitation) { PendingGuildInvitation = inPendingGuildInvitation; }
+	inline bool GetPendingGuildInvitation() { return PendingGuildInvitation; }
 
 protected:
 	friend class Mob;
@@ -1210,7 +1211,8 @@ private:
 	} conn_state;
 	void ReportConnectingState();
 
-	uint8	HideCorpseMode;
+	uint8 HideCorpseMode;
+	bool PendingGuildInvitation;
 };
 
 #include "parser.h"
