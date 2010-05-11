@@ -837,8 +837,10 @@ void QuestManager::givecash(int copper, int silver, int gold, int platinum) {
 
 void QuestManager::pvp(const char *mode) {
 	if (!strcasecmp(mode,"on"))
+	{
 		if (initiator)
 			initiator->SetPVP(true);
+	}
 	else
 		if (initiator)
 			initiator->SetPVP(false);
