@@ -15,6 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
+#include <string.h>
 #include "ErrorLog.h"
 
 const char *eqLogTypes[_log_largest_type] =
@@ -117,7 +118,7 @@ void ErrorLog::LogPacket(eqLogType type, const char *data, size_t size)
 		m_time->tm_hour, 
 		m_time->tm_min, 
 		m_time->tm_sec, 
-		size);
+		(unsigned int)size);
 
 	if(error_log)
 	{
@@ -129,7 +130,7 @@ void ErrorLog::LogPacket(eqLogType type, const char *data, size_t size)
 			m_time->tm_hour, 
 			m_time->tm_min, 
 			m_time->tm_sec, 
-			size);
+			(unsigned int)size);
 	}
 
 	char ascii[17]; //16 columns + 1 null term
@@ -149,7 +150,7 @@ void ErrorLog::LogPacket(eqLogType type, const char *data, size_t size)
 					fprintf(error_log, " | %s\n", ascii);
 				}
 			}
-			printf("%.4u: ", i);
+			printf("%.4u: ", (unsigned int)i);
 			memset(ascii, 0, 17);
 			j = 0;
 		}
