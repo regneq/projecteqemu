@@ -107,14 +107,21 @@ bool DatabaseMySQL::GetWorldRegistration(string long_name, string short_name, un
 
 	MYSQL_RES *res;
 	MYSQL_ROW row;
+	char escaped_long_name[201];
+	char escaped_short_name[101];
+	unsigned long length;
+	length = mysql_real_escape_string(db, escaped_long_name, long_name.substr(0, 100).c_str(), long_name.substr(0, 100).length());
+	escaped_long_name[length+1] = 0;
+	length = mysql_real_escape_string(db, escaped_short_name, short_name.substr(0, 100).c_str(), short_name.substr(0, 100).length());
+	escaped_short_name[length+1] = 0;
 	stringstream query(stringstream::in | stringstream::out);
 	query << "SELECT WSR.ServerID, WSR.ServerTagDescription, WSR.ServerTrusted, SLT.ServerListTypeID, ";
 	query << "SLT.ServerListTypeDescription, WSR.ServerAdminID FROM " << server.options.GetWorldRegistrationTable();
 	query << " AS WSR JOIN " << server.options.GetWorldServerTypeTable() << " AS SLT ON WSR.ServerListTypeID = SLT.ServerListTypeID";
 	query << " WHERE WSR.ServerLongName = '";
-	query << long_name;
+	query << escaped_long_name;
 	query << "' AND WSR.ServerShortName = '";
-	query << short_name;
+	query << escaped_short_name;
 	query << "'";
 	
 	if(mysql_query(db, query.str().c_str()) != 0)
@@ -237,6 +244,13 @@ bool DatabaseMySQL::CreateWorldRegistration(string long_name, string short_name,
 
 	MYSQL_RES *res;
 	MYSQL_ROW row;
+	char escaped_long_name[201];
+	char escaped_short_name[101];
+	unsigned long length;
+	length = mysql_real_escape_string(db, escaped_long_name, long_name.substr(0, 100).c_str(), long_name.substr(0, 100).length());
+	escaped_long_name[length+1] = 0;
+	length = mysql_real_escape_string(db, escaped_short_name, short_name.substr(0, 100).c_str(), short_name.substr(0, 100).length());
+	escaped_short_name[length+1] = 0;
 	stringstream query(stringstream::in | stringstream::out);
 	query << "SELECT max(ServerID) FROM " << server.options.GetWorldRegistrationTable();
 
@@ -256,7 +270,7 @@ bool DatabaseMySQL::CreateWorldRegistration(string long_name, string short_name,
 
 			stringstream query(stringstream::in | stringstream::out);
 			query << "INSERT INTO " << server.options.GetWorldRegistrationTable() << " SET ServerID = " << id;
-			query << ", ServerLongName = '" << long_name << "', ServerShortName = '" << short_name;
+			query << ", ServerLongName = '" << escaped_long_name << "', ServerShortName = '" << escaped_short_name;
 			query << "', ServerListTypeID = 3, ServerAdminID = 0, ServerTrusted = 0, ServerTagDescription = ''";
 
 			if(mysql_query(db, query.str().c_str()) != 0)
