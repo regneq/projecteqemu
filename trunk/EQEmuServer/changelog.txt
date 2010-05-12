@@ -1,12 +1,17 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/12/2010==
+Trevius: SoD - Coin no longer adds weight for this client server-side, since the client itself no longer adds coin weight
+Trevius: SoD - Heroic Stats should now add the correct amount of HP/Endurance/Mana to match the client in most cases.
+Trevius: The scribespell and traindisc commands and quest commands should sort Disciplines properly once again.
+
 ==05/11/2010==
 Derision: Guild invitations to a player already in receipt of an invitation will now be rejected.
 Derision: Fixed quest::pvp("off")
 gaeorn: fixed a couple issues with the login server code.
 
 ==05/10/2010==
-Trevius: Heroic Stats/Resists now increase the cap server-side as they should.
+Trevius: SoD - Heroic Stats/Resists now increase the cap server-side as they should.
 
 ==05/09/2010==
 Derision: Live - Added an encode for OP_ChannelMessage

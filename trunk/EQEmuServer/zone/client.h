@@ -358,11 +358,12 @@ public:
 	inline virtual sint16	GetINT()	const { return INT; }
 	inline virtual sint16	GetWIS()	const { return WIS; }
 	inline virtual sint16	GetCHA()	const { return CHA; }
-	inline virtual sint16	GetMR() const { return MR; }
+	inline virtual sint16	GetMR()	const { return MR; }
 	inline virtual sint16	GetFR()	const { return FR; }
 	inline virtual sint16	GetDR()	const { return DR; }
 	inline virtual sint16	GetPR()	const { return PR; }
-	inline virtual sint16	GetCR() const { return CR; }
+	inline virtual sint16	GetCR()	const { return CR; }
+	inline virtual sint16	GetCorrup()	const { return Corrup; }
 
 	sint16	GetMaxStat() const;
 	sint16	GetMaxResist() const;
@@ -386,6 +387,21 @@ public:
 	inline int8	GetBaseINT()	const { return m_pp.INT; }
 	inline int8	GetBaseAGI()	const { return m_pp.AGI; }
 	inline int8	GetBaseWIS()	const { return m_pp.WIS; }
+	inline int8	GetBaseCorrup()	const { return 0; } // Need to set this in the pp at some point
+
+	inline virtual sint16	GetHeroicSTR()	const { return itembonuses.HeroicSTR; }
+	inline virtual sint16	GetHeroicSTA()	const { return itembonuses.HeroicSTA; }
+	inline virtual sint16	GetHeroicDEX()	const { return itembonuses.HeroicDEX; }
+	inline virtual sint16	GetHeroicAGI()	const { return itembonuses.HeroicAGI; }
+	inline virtual sint16	GetHeroicINT()	const { return itembonuses.HeroicINT; }
+	inline virtual sint16	GetHeroicWIS()	const { return itembonuses.HeroicWIS; }
+	inline virtual sint16	GetHeroicCHA()	const { return itembonuses.HeroicCHA; }
+	inline virtual sint16	GetHeroicMR()	const { return itembonuses.HeroicMR; }
+	inline virtual sint16	GetHeroicFR()	const { return itembonuses.HeroicFR; }
+	inline virtual sint16	GetHeroicDR()	const { return itembonuses.HeroicDR; }
+	inline virtual sint16	GetHeroicPR()	const { return itembonuses.HeroicPR; }
+	inline virtual sint16	GetHeroicCR()	const { return itembonuses.HeroicCR; }
+	inline virtual sint16	GetHeroicCorrup()	const { return itembonuses.HeroicCorrup; }
 
 	float GetActSpellRange(int16 spell_id, float range);
 	sint32 GetActSpellDamage(int16 spell_id, sint32 value);

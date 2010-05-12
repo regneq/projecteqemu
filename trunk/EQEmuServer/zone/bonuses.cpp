@@ -222,6 +222,20 @@ void Client::AddItemBonuses(const ItemInst *inst, StatBonuses* newbon, bool isAu
 		newbon->DRCapMod += item->HeroicDR;
 		newbon->CorrupCapMod += item->HeroicSVCorrup;
 
+		newbon->HeroicSTR += item->HeroicStr;
+		newbon->HeroicSTA += item->HeroicSta;
+		newbon->HeroicDEX += item->HeroicDex;
+		newbon->HeroicAGI += item->HeroicAgi;
+		newbon->HeroicINT += item->HeroicInt;
+		newbon->HeroicWIS += item->HeroicWis;
+		newbon->HeroicCHA += item->HeroicCha;
+		newbon->HeroicMR += item->HeroicMR;
+		newbon->HeroicFR += item->HeroicFR;
+		newbon->HeroicCR += item->HeroicCR;
+		newbon->HeroicPR += item->HeroicPR;
+		newbon->HeroicDR += item->HeroicDR;
+		newbon->HeroicCorrup += item->HeroicSVCorrup;
+
 	}
 	else
 	{
@@ -259,7 +273,21 @@ void Client::AddItemBonuses(const ItemInst *inst, StatBonuses* newbon, bool isAu
 		newbon->FRCapMod += CalcRecommendedLevelBonus( lvl, reclvl, item->HeroicCR );
 		newbon->PRCapMod += CalcRecommendedLevelBonus( lvl, reclvl, item->HeroicPR );
 		newbon->DRCapMod += CalcRecommendedLevelBonus( lvl, reclvl, item->HeroicDR );
-		newbon->CorrupCapMod += item->HeroicSVCorrup;
+		newbon->CorrupCapMod += CalcRecommendedLevelBonus( lvl, reclvl, item->HeroicSVCorrup );
+
+		newbon->HeroicSTR += CalcRecommendedLevelBonus( lvl, reclvl, item->HeroicStr );
+		newbon->HeroicSTA += CalcRecommendedLevelBonus( lvl, reclvl, item->HeroicSta );
+		newbon->HeroicDEX += CalcRecommendedLevelBonus( lvl, reclvl, item->HeroicDex );
+		newbon->HeroicAGI += CalcRecommendedLevelBonus( lvl, reclvl, item->HeroicAgi );
+		newbon->HeroicINT += CalcRecommendedLevelBonus( lvl, reclvl, item->HeroicInt );
+		newbon->HeroicWIS += CalcRecommendedLevelBonus( lvl, reclvl, item->HeroicWis );
+		newbon->HeroicCHA += CalcRecommendedLevelBonus( lvl, reclvl, item->HeroicCha );
+		newbon->HeroicMR += CalcRecommendedLevelBonus( lvl, reclvl, item->HeroicMR );
+		newbon->HeroicFR += CalcRecommendedLevelBonus( lvl, reclvl, item->HeroicFR );
+		newbon->HeroicCR += CalcRecommendedLevelBonus( lvl, reclvl, item->HeroicCR );
+		newbon->HeroicPR += CalcRecommendedLevelBonus( lvl, reclvl, item->HeroicPR );
+		newbon->HeroicDR += CalcRecommendedLevelBonus( lvl, reclvl, item->HeroicDR );
+		newbon->HeroicCorrup += CalcRecommendedLevelBonus( lvl, reclvl, item->HeroicSVCorrup );
 	}
 	
 	//FatherNitwit: New style haste, shields, and regens
