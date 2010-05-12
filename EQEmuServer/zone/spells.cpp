@@ -2424,7 +2424,7 @@ int Mob::AddBuff(Mob *caster, int16 spell_id, int duration, sint32 level_overrid
 	uint32 buff_count = GetMaxTotalSlots();
 	uint32 start_slot = 0;
 	uint32 end_slot = 0;
-	if(IsDiscipline(spell_id))
+	if(IsDisciplineBuff(spell_id))
 	{
 		start_slot = GetMaxBuffSlots() + GetMaxSongSlots();
 		end_slot = start_slot + GetCurrentDiscSlots();

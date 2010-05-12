@@ -1006,6 +1006,7 @@ protected:
 	sint16 FR;
 	sint16 DR;
 	sint16 PR;
+	sint16 Corrup;
 	bool moving;
 	int targeted;
 	bool findable;

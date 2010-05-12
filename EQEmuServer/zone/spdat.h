@@ -686,6 +686,7 @@ int CalcBuffDuration_formula(int level, int formula, int duration);
 sint32 CalculatePoisonCounters(int16 spell_id);
 sint32 CalculateDiseaseCounters(int16 spell_id);
 sint32 CalculateCurseCounters(int16 spell_id);
+bool IsDisciplineBuff(int16 spell_id);
 bool IsDiscipline(int16 spell_id);
 bool IsResurrectionEffects(int16 spell_id);
 bool IsRuneSpell(int16 spell_id);
