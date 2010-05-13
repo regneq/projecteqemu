@@ -3,6 +3,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==05/13/2010==
 Trevius: Live - Updated Player Profile and Spell Buff Structs to allow the May 12th Live patched client to enter the game.
 Trevius: Live - Updated about 50% of the opcodes so most basic stuff should be functional.
+Derision: Live - Encoded OP_GroundSpawn plus updated OP_ClickObject/OP_ClickObjectAction.
 
 ==05/12/2010==
 Trevius: SoD - Coin no longer adds weight for this client server-side, since the client itself no longer adds coin weight

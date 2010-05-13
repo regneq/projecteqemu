@@ -1403,27 +1403,45 @@ ENCODE(OP_SpawnDoor) {
 	FINISH_ENCODE();
 }
 
-ENCODE(OP_GroundSpawn) {
-	ENCODE_LENGTH_EXACT(Object_Struct);
-	SETUP_DIRECT_ENCODE(Object_Struct, structs::Object_Struct);
-	OUT(drop_id);
-	OUT(zone_id);
-	OUT(zone_instance);
-	OUT(heading);
-	OUT(x);
-	OUT(y);
-	OUT(z);
-	OUT_str(object_name);
-	OUT(object_type);
-	OUT(spawn_id);
+ENCODE(OP_GroundSpawn)
+{
 
-    /*fill in some unknowns with observed values, hopefully it will help */
-	eq->unknown020 = 0;
-	eq->unknown024 = 0;
-	eq->size = 1;	//This forces all objects to standard size for now
-	eq->unknown088 = 0;
-	memset(eq->unknown096, 0xFF, sizeof(eq->unknown096));
-	FINISH_ENCODE();
+	// We are not encoding the spawn_id field here, or a size but it doesn't appear to matter.
+	//
+	EQApplicationPacket *in = *p;
+	*p = NULL;
+
+	Object_Struct *emu = (Object_Struct *) in->pBuffer;
+
+	unsigned char *__emu_buffer = in->pBuffer;
+
+	in->size = strlen(emu->object_name) + 58;
+
+	in->pBuffer = new unsigned char[in->size];
+	
+	char *OutBuffer = (char *)in->pBuffer;
+
+	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, emu->drop_id);
+	VARSTRUCT_ENCODE_STRING(OutBuffer, emu->object_name);
+	VARSTRUCT_ENCODE_TYPE(uint16, OutBuffer, emu->zone_id);
+	VARSTRUCT_ENCODE_TYPE(uint16, OutBuffer, emu->zone_instance);
+	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0);	// Unknown, observed 0x00006762
+	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0);	// Unknown, observer 0x7fffbb64
+	VARSTRUCT_ENCODE_TYPE(float, OutBuffer, emu->heading);
+	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0);	// Unknown, observed 0
+	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0);	// Unknown, observed 0
+	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0);	// Unknown, observed 0x3f800000
+	VARSTRUCT_ENCODE_TYPE(float, OutBuffer, emu->y);
+	VARSTRUCT_ENCODE_TYPE(float, OutBuffer, emu->x);
+	VARSTRUCT_ENCODE_TYPE(float, OutBuffer, emu->z);
+	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, emu->object_type);	// Unknown, observed 0x00000014
+	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0xffffffff);	// Unknown, observed 0xffffffff
+	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0);	// Unknown, observed 0x00000014
+	VARSTRUCT_ENCODE_TYPE(uint8, OutBuffer, 0);	// Unknown, observed 0x00
+
+	delete[] __emu_buffer;
+	
+	dest->FastQueuePacket(&in, ack_req);
 }
 
 ENCODE(OP_ManaChange) {
