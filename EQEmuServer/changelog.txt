@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/13/2010==
+Trevius: Live - Updated Player Profile and Spell Buff Structs to allow the May 12th Live patched client to enter the game.
+
 ==05/12/2010==
 Trevius: SoD - Coin no longer adds weight for this client server-side, since the client itself no longer adds coin weight
 Trevius: SoD - Heroic Stats should now add the correct amount of HP/Endurance/Mana to match the client in most cases.
@@ -31,7 +34,7 @@ Derision: Live - Corrected: OP_SaveOnZoneReq, OP_Track, OP_TrackTarget (Tracking
 Derision: Live - LogServer_Struct.
 Derision: Live - Corrected OP_FormattedMessage and padded out ServerFilter_Struc to match live. OP_WhoAllResponse.
 
-==05/04/2010==
+==05/05/2010==
 Trevius(Derision): Fixed a potential crash related to Saylinks and Antispam code.
 Trevius: Live - Initial update to the Live patch files.  Can only get to a blank character select at this point.
 

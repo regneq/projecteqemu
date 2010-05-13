@@ -532,26 +532,23 @@ struct SpawnAppearance_Struct
 /*0008*/
 };
 
-
-// solar: this is used inside profile
+// Size 76 (was 24)
 struct SpellBuff_Struct
 {
-/*000*/	int8	slotid;		//badly named... seems to be 2 for a real buff, 0 otherwise
-/*001*/ int8	level;
-/*002*/	int8	bard_modifier;
-/*003*/	int8	effect;			//not real
-/*004*/	int32	spellid;
-/*008*/ int32	duration;
-/*012*/	int16	dmg_shield_remaining; //was int16
-/*014*/ int8	persistant_buff;	//prolly not real
-/*015*/ int8	reserved;		//proll not real
-/*016*/ uint32  unknown004;    //Might need to be swapped with player_id
-/*020*/ int32	player_id;	//'global' ID of the caster, for wearoff messages
-/*024*/
-
-
+/*000*/	int8 slotid;				//badly named... seems to be 2 for a real buff, 0 otherwise
+/*001*/ int8 level;
+/*002*/	int8 bard_modifier;
+/*003*/	int8 effect;				//not real
+/*004*/	float unknown004;			// Seen 1 for no buff
+/*008*/ int32 spellid;
+/*012*/	int32 duration;
+/*016*/ int16 dmg_shield_remaining;	//
+/*018*/ int8 persistant_buff;		//prolly not real
+/*019*/ int8 reserved;				//proll not real
+/*020*/ int32 unknown020;			//
+/*024*/	int32 player_id;			//'global' ID of the caster, for wearoff messages
+/*028*/ uint8 unknown0028[48];
 };
-
 
 struct SpellBuffFade_Struct {
 /*000*/	uint32 entityid;
@@ -562,8 +559,8 @@ struct SpellBuffFade_Struct {
 /*008*/	uint32 spellid;
 /*012*/	uint32 duration;
 /*016*/	uint32 unknown016;
-/*020*/	uint32 unknown020;	//prolly global player ID
-/*024*/ uint32 playerId;       // Player id who cast the buff
+/*020*/	uint32 unknown020;		// Global player ID?
+/*024*/ uint32 playerId;		// Player id who cast the buff
 /*028*/	uint32 slotid;
 /*032*/	uint32 bufffade;
 /*036*/
@@ -793,7 +790,8 @@ sed -e 's/_t//g' -e 's/MAX_AA/MAX_PP_AA_ARRAY/g' \
     -e 's/airRemaining/air_remaining/g' \
  */
 
-// Live May 5 2010 - Size 25312
+// Live May 5 2010 - Size 25312 + 1320
+// Live May 12 2010 - Size 26632
 struct PlayerProfile_Struct
 {
 /*00000*/ uint32  checksum;				//
@@ -867,26 +865,26 @@ struct PlayerProfile_Struct
 /*07880*/ uint32  toxicity;				// Potion Toxicity (15=too toxic, each potion adds 3)
 /*07884*/ uint32  thirst_level;			// Drink (ticks till next drink)
 /*07888*/ uint32  hunger_level;			// Food (ticks till next eat)
-/*07892*/ SpellBuff_Struct buffs[BUFF_COUNT];	// [960] Buffs currently on the player (60 Max) - was 600
-/*08492*/ uint8   unknown08492[360];		// End of Buffs
-/*08852*/ Disciplines_Struct  disciplines;	// [400] Known disciplines
-/*09252*/ uint8   unknown09252[400];		// Discs?
-/*09652*/ uint32  recastTimers[MAX_RECAST_TYPES]; // Timers (UNIX Time of last use)
-/*09732*/ uint8   unknown08124[160];		// Some type of Timers
-/*09892*/ uint32  endurance;			// Current endurance
-/*09896*/ uint8   unknown09896[20];		// ?
-/*09916*/ uint32  aapoints_spent;		// Number of spent AA points
-/*09920*/ uint32  aapoints;				// Unspent AA points
-/*09924*/ uint8 unknown06160[4];
-/*09928*/ Bandolier_Struct bandoliers[MAX_PLAYER_BANDOLIER]; // [6400] bandolier contents
-/*16328*/ PotionBelt_Struct  potionbelt;	// [360] potion belt 72 extra octets by adding 1 more belt slot
-/*16688*/ uint8 unknown12852[8];
-/*16696*/ uint32 available_slots;
-/*16700*/ uint8 unknown12864[80];		//#### uint8 uint8 unknown12864[76]; in Titanium ####[80]
-//END SUB-STRUCT used for shrouding.
-/*16780*/ char    name[64];				// Name of player
-/*16844*/ char    last_name[32];		// Last name of player
-/*16876*/ uint8   unknown19588[8];  //#### Not In Titanium #### new to SoF[12]
+/*07892*/ SpellBuff_Struct buffs[BUFF_COUNT];	// [1900] Buffs currently on the player (30 Max) - (Each Size 76)
+/*09792*/ uint8   unknown08492[380];		// End of Buffs - was [360]
+/*10172*/ Disciplines_Struct  disciplines;	// [400] Known disciplines
+/*10572*/ uint8   unknown09252[400];		// Discs?
+/*10972*/ uint32  recastTimers[MAX_RECAST_TYPES]; // Timers (UNIX Time of last use)
+/*11052*/ uint8   unknown08124[160];		// Some type of Timers
+/*11212*/ uint32  endurance;			// Current endurance
+/*11216*/ uint8   unknown09896[20];		// ?
+/*11236*/ uint32  aapoints_spent;		// Number of spent AA points
+/*11240*/ uint32  aapoints;				// Unspent AA points
+/*11244*/ uint8 unknown06160[4];
+/*11248*/ Bandolier_Struct bandoliers[MAX_PLAYER_BANDOLIER]; // [6400] bandolier contents
+/*17648*/ PotionBelt_Struct  potionbelt;	// [360] potion belt 72 extra octets by adding 1 more belt slot
+/*18008*/ uint8 unknown12852[8];
+/*18016*/ uint32 available_slots;
+/*18020*/ uint8 unknown12864[80];		//
+//END SUB-STRUCT used for shrouding. 
+/*18100*/ char    name[64];				// Name of player
+/*18164*/ char    last_name[32];		// Last name of player
+/*18196*/ uint8   unknown19588[8];  //#### Not In Titanium #### new to SoF[12]
 /*16884*/ int32   guild_id;            // guildid
 /*16888*/ uint32  birthday;       // character birthday
 /*16892*/ uint32  lastlogin;       // character last save time
