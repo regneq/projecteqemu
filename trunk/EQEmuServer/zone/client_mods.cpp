@@ -1044,10 +1044,6 @@ sint32 Client::CalcManaRegen() {
 }
 uint32 Client::CalcCurrentWeight() {
 
-	if (GetClientVersion() >= EQClientSoD) {
-		return 0;	// SoD client has no weight for coin
-	}
-
 	const Item_Struct* TempItem = 0;
 	ItemInst* ins;
 	uint32 Total = 0;
@@ -1096,7 +1092,11 @@ uint32 Client::CalcCurrentWeight() {
 	same weight reduction amount for coins. You can use other Item IDs in this range for setting coin weight reduction, but by using an existing item, at least you will know the amount the client will reduce it by before you create it.
 	This is the ONLY instance I have seen where the client is hard coded to particular Item IDs to set a certain property for an item. It is very odd.
 	*/
-	Total += (m_pp.platinum + m_pp.gold + m_pp.silver + m_pp.copper) / 4;
+
+	// SoD client has no weight for coin
+	if (GetClientVersion() < EQClientSoD) {
+		Total += (m_pp.platinum + m_pp.gold + m_pp.silver + m_pp.copper) / 4;
+	}
 
 	float Packrat = (float)spellbonuses.Packrat + (float)aabonuses.Packrat;
 	if (Packrat > 0)
