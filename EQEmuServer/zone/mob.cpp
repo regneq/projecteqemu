@@ -1401,6 +1401,23 @@ void Mob::SendAppearanceEffect(int32 parm1, int32 parm2, int32 parm3, int32 parm
 	safe_delete(outapp);
 }
 
+void Mob::QuestReward(Client *c, int32 silver, int32 gold, int32 platinum) {
+
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_Sound, sizeof(QuestReward_Struct));
+	memset(outapp->pBuffer, 0, sizeof(outapp->pBuffer));
+	QuestReward_Struct* qr = (QuestReward_Struct*) outapp->pBuffer;
+
+	qr->from_mob = GetID();		// Entity ID for the from mob name	
+	qr->silver = silver;
+	qr->gold = gold;
+	qr->platinum = platinum;
+	
+	if(c)
+		c->QueuePacket(outapp, false, Client::CLIENT_CONNECTED);
+	
+	safe_delete(outapp);
+}
+
 const sint32& Mob::SetMana(sint32 amount)
 {
 	CalcMaxMana();
