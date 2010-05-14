@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==05/14/2010==
 Trevius: Added new Perl Mob quest object QuestReward(client, silver, gold, platinum) that awards money to the client and makes the quest completed sound.
+Trevius: Added 2 new optional fields to Perl Client quest object MaxSkill(skillid, [class, level]).
 
 ==05/13/2010==
 Trevius: Live - Updated Player Profile and Spell Buff Structs to allow the May 12th Live patched client to enter the game.

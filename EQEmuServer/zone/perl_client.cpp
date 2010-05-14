@@ -1900,13 +1900,15 @@ XS(XS_Client_MaxSkill); /* prototype to pass -Wmissing-prototypes */
 XS(XS_Client_MaxSkill)
 {
 	dXSARGS;
-	if (items != 2)
-		Perl_croak(aTHX_ "Usage: Client::MaxSkill(THIS, skillid)");
+	if (items < 2 || items > 4)
+		Perl_croak(aTHX_ "Usage: Client::MaxSkill(THIS, skillid, class, level)");
 	{
 		Client *		THIS;
-		int8		RETVAL;
-		dXSTARG;
+		int16			RETVAL;
 		SkillType		skillid = (SkillType)SvUV(ST(1));
+		int16			class_ = 0;
+		int16			level = 0;
+		dXSTARG;
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -1917,7 +1919,17 @@ XS(XS_Client_MaxSkill)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		RETVAL = THIS->MaxSkill(skillid);
+		if(items > 2)
+			class_ = (int16)SvUV(ST(2));
+		else
+			class_ = THIS->GetClass();
+
+		if(items > 3)
+			level = (int16)SvUV(ST(3));
+		else
+			level = THIS->GetLevel();
+
+		RETVAL = THIS->MaxSkill(skillid, class_, level);
 		XSprePUSH; PUSHu((UV)RETVAL);
 	}
 	XSRETURN(1);
@@ -4543,7 +4555,7 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "CheckSpecializeIncrease"), XS_Client_CheckSpecializeIncrease, file, "$$");
 		newXSproto(strcpy(buf, "CheckIncreaseSkill"), XS_Client_CheckIncreaseSkill, file, "$$;$");
 		newXSproto(strcpy(buf, "SetLanguageSkill"), XS_Client_SetLanguageSkill, file, "$$$");
-		newXSproto(strcpy(buf, "MaxSkill"), XS_Client_MaxSkill, file, "$$");
+		newXSproto(strcpy(buf, "MaxSkill"), XS_Client_MaxSkill, file, "$$;$$");
 		newXSproto(strcpy(buf, "GMKill"), XS_Client_GMKill, file, "$");
 		newXSproto(strcpy(buf, "IsMedding"), XS_Client_IsMedding, file, "$");
 		newXSproto(strcpy(buf, "GetDuelTarget"), XS_Client_GetDuelTarget, file, "$");
