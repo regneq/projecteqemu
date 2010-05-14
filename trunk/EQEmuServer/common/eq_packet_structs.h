@@ -2002,6 +2002,29 @@ struct Illusion_Struct_Old {
 /**/
 };
 
+// OP_Sound - Size: 68
+struct QuestReward_Struct
+{
+/*000*/ int32	from_mob;	// ID of mob awarding the client
+/*004*/ int32	unknown004;	
+/*008*/ int32	unknown008;	
+/*012*/ int32	unknown012;	
+/*016*/ int32	unknown016;	
+/*020*/ int32	unknown020;	
+/*024*/ int32	silver;		// Gives silver to the client
+/*028*/ int32	gold;		// Gives gold to the client
+/*032*/ int32	platinum;	// Gives platinum to the client
+/*036*/ int32	unknown036;	
+/*040*/ int32	unknown040;	
+/*044*/ int32	unknown044;	
+/*048*/ int32	unknown048;	
+/*052*/ int32	unknown052;	
+/*056*/ int32	unknown056;	
+/*060*/ int32	unknown060;	
+/*064*/ int32	unknown064;	
+/*068*/
+};
+
 struct ZonePoint_Entry {
 /*0000*/	int32	iterator;
 /*0004*/	float	y;

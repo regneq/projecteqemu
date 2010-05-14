@@ -414,6 +414,7 @@ bool logpos;
 	virtual void SetLevel(uint8 in_level, bool command = false) { level = in_level; }
 	void	SendLevelAppearance();
 	void	SendAppearanceEffect(int32 parm1, int32 parm2, int32 parm3, int32 parm4, int32 parm5, Client *specific_target=NULL);
+	void	QuestReward(Client *c=NULL, int32 silver = 0, int32 gold = 0, int32 platinum = 0);
 
 	virtual inline sint32 GetPrimaryFaction() const { return 0; }
 	virtual uint16 GetSkill(SkillType skill_num) const { return 0; } //overloaded by things which actually have skill (NPC|client)
