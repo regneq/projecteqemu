@@ -1772,7 +1772,7 @@ XS(XS_Client_SetSkill)
 	{
 		Client *		THIS;
 		SkillType		skill_num = (SkillType)SvUV(ST(1));
-		int8		value = (int8)SvUV(ST(2));
+		int16		value = (int16)SvUV(ST(2));
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -1797,7 +1797,7 @@ XS(XS_Client_AddSkill)
 	{
 		Client *		THIS;
 		SkillType		skillid = (SkillType)SvUV(ST(1));
-		int8		value = (int8)SvUV(ST(2));
+		int16		value = (int16)SvUV(ST(2));
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
