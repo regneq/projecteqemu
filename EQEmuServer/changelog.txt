@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/17/2010==
+Trevius: Live - Updated more Live Opcodes.  The list should be about 95%+ accurate now.  Live Client is very playable now.
+
 ==05/14/2010==
 Trevius: Added new Perl Mob quest object QuestReward(client, silver, gold, platinum) that awards money to the client and makes the quest completed sound.
 Trevius: Added 2 new optional fields to Perl Client quest object MaxSkill(skillid, [class, level]).
