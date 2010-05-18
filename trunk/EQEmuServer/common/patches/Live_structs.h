@@ -550,6 +550,25 @@ struct SpellBuff_Struct
 /*028*/ uint8 unknown0028[48];
 };
 
+// Not functional yet, but this is what the packet looks like on Live
+struct SpellBuffFade_Struct_Live {
+/*000*/	uint32 entityid;	// Player id who cast the buff
+/*004*/	int8 slot;
+/*005*/	int8 level;
+/*006*/	int8 effect;
+/*007*/	int8 unknown7;
+/*008*/	float unknown008;
+/*012*/	uint32 spellid;
+/*016*/	uint32 duration;
+/*020*/	uint32 unknown016;
+/*024*/ uint32 playerId;	// Global player ID?		
+/*028*/	uint32 unknown020;
+/*032*/ uint8 unknown0028[48];
+/*080*/	uint32 slotid;
+/*084*/	uint32 bufffade;
+/*088*/
+};
+
 struct SpellBuffFade_Struct {
 /*000*/	uint32 entityid;
 /*004*/	int8 slot;
@@ -4085,7 +4104,7 @@ struct ItemTertiaryBodyStruct
 
 	uint32 UNK129;
 	uint8 quest_item;
-	uint8 unknown15; //0xffffffff - Power Source Capacity? was uint32
+	uint32 unknown15; //0xffffffff - Power Source Capacity?
 	uint32 Purity;
 	uint32 BackstabDmg;
 	uint32 DSMitigation;
@@ -4106,10 +4125,10 @@ struct ItemTertiaryBodyStruct
 	sint32 SpellDmg;
 	sint32 unknown16; // clairvoyance?
 	//uint16 unknown17; //something to do with power - Power Source Capacity?
-	uint8 unknown18;
+	uint8 unknown18;	// evolve filename?
 	uint32 evolve_string; // Some String, but being evolution related is just a guess
-	uint32 unknown19;	// Bard Stuff?
-	uint32 unknown20;
+	uint8 unknown19;	
+	uint32 unknown20;	// Bard Stuff?
 	uint32 unknown21;
 	uint32 unknown22;
 	uint32 subitem_count;
