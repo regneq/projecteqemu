@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/18/2010==
+Trevius: Live - Corrected the end of the Item Structure.
+
 ==05/17/2010==
 Trevius: Live - Updated more Live Opcodes.  The list should be about 95%+ accurate now.  Live Client is very playable now.
 Trevius: Increased the race max to 667 for #race and #fixmob race to match Live's current race count.
