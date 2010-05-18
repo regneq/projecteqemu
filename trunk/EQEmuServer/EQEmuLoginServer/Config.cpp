@@ -201,12 +201,9 @@ void Config::Tokenize(FILE *input, list<string> &tokens)
 		case ':':
 		case '.':
 		case '_':
-			{
-				lexeme.append((const char *)&c, 1);
-				break;
-			}
 		default:
 			{
+				lexeme.append((const char *)&c, 1);
 			}
 		}
 
