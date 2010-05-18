@@ -198,9 +198,6 @@ void Config::Tokenize(FILE *input, list<string> &tokens)
 				lexeme.clear();
 				break;
 			}
-		case ':':
-		case '.':
-		case '_':
 		default:
 			{
 				lexeme.append((const char *)&c, 1);
