@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/20/2010==
+Trevius: Added new Perl Mob quest object CameraEffect(duration, intensity, singleclient).  Duration is in ms, intensity is from 0 to 10, and singleclient can be set to a client.
+
 ==05/18/2010==
 Trevius: Live - Corrected the end of the Item Structure.
 
