@@ -2025,6 +2025,13 @@ struct QuestReward_Struct
 /*068*/
 };
 
+// Size: 8
+struct Camera_Struct
+{
+	uint32	duration;	// Duration in ms
+	uint32	intensity;	// Between 1023410176 and 1090519040
+};
+
 struct ZonePoint_Entry {
 /*0000*/	int32	iterator;
 /*0004*/	float	y;

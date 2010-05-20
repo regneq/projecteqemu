@@ -6693,6 +6693,45 @@ XS(XS_Mob_SendIllusion)
 	XSRETURN_EMPTY;
 }
 
+XS(XS_Mob_CameraEffect); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_CameraEffect)
+{
+	dXSARGS;
+	if (items < 2 || items > 4)
+		Perl_croak(aTHX_ "Usage: Mob::CameraEffect(THIS, duration, intensity, singleclient)");
+	{
+		Mob *		THIS;
+		uint32		duration = (uint32)SvUV(ST(1));
+		uint32		intensity = 0;
+		Client*		client = NULL;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		if (items > 2)	{	intensity = (uint32)SvUV(ST(2));	}
+		if (items > 3)	{
+			if (sv_derived_from(ST(3), "Client")) {
+				IV tmp = SvIV((SV*)SvRV(ST(3)));
+				client = INT2PTR(Client *,tmp);
+			}
+			else
+				Perl_croak(aTHX_ "client is not of type Client");
+			if(client == NULL)
+				Perl_croak(aTHX_ "client is NULL, avoiding crash.");
+		}
+
+		THIS->CameraEffect(duration, intensity, client);
+	}
+	XSRETURN_EMPTY;
+}
+
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -6946,6 +6985,7 @@ XS(boot_Mob)
 		newXSproto(strcpy(buf, "SendIllusion"), XS_Mob_SendIllusion, file, "$$:$$$$$$$$$$$$");
 		newXSproto(strcpy(buf, "MakeTempPet"), XS_Mob_MakeTempPet, file, "$$;$$$");
 		newXSproto(strcpy(buf, "QuestReward"), XS_Mob_QuestReward, file, "$$:$$$");
+		newXSproto(strcpy(buf, "CameraEffect"), XS_Mob_CameraEffect, file, "$$:$$");
 	XSRETURN_YES;
 }
 

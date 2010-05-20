@@ -334,6 +334,7 @@ OUT(OP_BankerChange, BankerChange_Struct);
 OUT(OP_BecomeTrader, BecomeTrader_Struct);
 OUT(OP_BeginCast, BeginCast_Struct);
 OUT(OP_Charm, Charm_Struct);
+OUT(OP_CameraEffect, Camera_Struct);
 OUT(OP_ClickObjectAction, ClickObjectAction_Struct);
 OUT(OP_ConsentResponse, ConsentResponse_Struct);
 //OUT(OP_ConsumeAmmo, MoveItem_Struct);

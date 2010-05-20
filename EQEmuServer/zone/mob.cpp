@@ -1418,6 +1418,22 @@ void Mob::QuestReward(Client *c, int32 silver, int32 gold, int32 platinum) {
 	safe_delete(outapp);
 }
 
+void Mob::CameraEffect(uint32 duration, uint32 intensity, Client *c) {
+
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_CameraEffect, sizeof(Camera_Struct));
+	memset(outapp->pBuffer, 0, sizeof(outapp->pBuffer));
+	Camera_Struct* cs = (Camera_Struct*) outapp->pBuffer;
+	cs->duration = duration;	// Duration in milliseconds
+	cs->intensity = ((intensity * 6710886) + 1023410176);	// Intensity ranges from 1023410176 to 1090519040, so simplify it from 0 to 10.
+	
+	if(c)
+		c->QueuePacket(outapp, false, Client::CLIENT_CONNECTED);
+	else
+		entity_list.QueueClients(this, outapp);
+	
+	safe_delete(outapp);
+}
+
 const sint32& Mob::SetMana(sint32 amount)
 {
 	CalcMaxMana();
