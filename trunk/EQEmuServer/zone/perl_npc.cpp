@@ -1817,6 +1817,31 @@ XS(XS_NPC_SetSwarmTarget)
 	XSRETURN_EMPTY;
 }
 
+XS(XS_NPC_ModifyNPCStat); /* prototype to pass -Wmissing-prototypes */
+XS(XS_NPC_ModifyNPCStat)
+{
+	dXSARGS;
+	if (items != 3)
+		Perl_croak(aTHX_ "Usage: NPC::ModifyNPCStat(THIS, identifier, newValue)");
+	{
+		NPC *		THIS;
+		Const_char *	identifier = (Const_char *)SvPV_nolen(ST(1));
+		Const_char *	newValue = (Const_char *)SvPV_nolen(ST(2));
+
+		if (sv_derived_from(ST(0), "NPC")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(NPC *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type NPC");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->ModifyNPCStat(identifier, newValue);
+	}
+	XSRETURN_EMPTY;
+}
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -1905,6 +1930,7 @@ XS(boot_NPC)
 		newXSproto(strcpy(buf, "GetSwarmOwner"), XS_NPC_GetSwarmOwner, file, "$");
 		newXSproto(strcpy(buf, "GetSwarmTarget"), XS_NPC_GetSwarmTarget, file, "$");
 		newXSproto(strcpy(buf, "SetSwarmTarget"), XS_NPC_SetSwarmTarget, file, "$$");
+		newXSproto(strcpy(buf, "ModifyNPCStat"), XS_NPC_ModifyNPCStat, file, "$$$");
 	XSRETURN_YES;
 }
 
