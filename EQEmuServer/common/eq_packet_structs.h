@@ -1432,6 +1432,11 @@ struct Consume_Struct
 /*0013*/ int8  unknown13[3];
 };
 
+struct DeleteItem_Struct {
+/*0000*/ uint32 from_slot;
+/*0004*/ uint32 to_slot;
+/*0008*/ uint32 number_in_stack;
+};
 
 struct MoveItem_Struct
 {
@@ -1661,12 +1666,6 @@ struct CombatAbility_Struct {
 	int32 m_target;		//the ID of the target mob
 	int32 m_atk;
 	int32 m_skill;
-};
-
-struct DeleteItem_Struct {
-/*0000*/ uint32 from_slot;
-/*0004*/ uint32 to_slot;
-/*0008*/ uint32 number_in_stack;
 };
 
 //Instill Doubt

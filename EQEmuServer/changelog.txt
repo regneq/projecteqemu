@@ -1,5 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/22/2010==
+Trevius: Exported ModifyNPCStat(identifier, newValue) to Perl NPC.
+Trevius: Added a check for destroying items to ensure the source slot is the cursor.
+Trevius: Moved the SwapItem() check to verify the source and destination slots are both valid before doing anything else.
+Trevius: The client will now be updated to delete an item if the server does not see an item in that slot while moving items around.
+
 ==05/20/2010==
 Trevius: Added new Perl Mob quest object CameraEffect(duration, intensity, singleclient).  Duration is in ms, intensity is from 0 to 10, and singleclient can be set to a client.
 
