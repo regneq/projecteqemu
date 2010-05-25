@@ -1,5 +1,22 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/25/2010==
+KLS: Many changes..
+KLS: Rewrote much of the adventure subsystem; moved from zone based calculations to world based.
+KLS: Implemented adventure leaderboard (sort by # kills only)
+KLS: Custom merchant (Adventure/PvP/Discord) purchases should attempt to put the item in a player's inventory before the cursor.
+KLS: Corpses should move to an adventure GY if possible on the end of an adventure.
+KLS: Adventures should always award points to zoning/offline players when they reconnect now.
+KLS: Collect adventures will populate the zone with enough dropped items always automatically now, relying on drop rates is now out of the picture.
+KLS: Mech. treasure chests will now be affectable by spells and destroyable; at least until we figure out the spawn structure on SoF and beyond to enable them correctly with rogue skills.
+KLS: Addressed an issue that made chests slightly harder to open than they were intended to be.
+KLS: Addressed a few issues with raids not being duplicated along with groups in the code. This should be apparent in the spell code.
+KLS: Added a default ruleset to the zone table and added a version to the zone table.  Version will default to 0 if non is found (base zone).
+KLS: OP_MoveItem will ignore requests from a slot to the same slot.
+KLS: Lowered the quick loot timer significantly, hopefully loot all works better.
+KLS: Several memory leak and exploit fixes.
+KLS: This could all probably use a bit more testing that I was able to give it as one person, I believe I got most if not all the crash bugs though!
+
 ==05/22/2010==
 Trevius: Exported ModifyNPCStat(identifier, newValue) to Perl NPC.
 Trevius: Added a check for destroying items to ensure the source slot is the cursor.

@@ -28,14 +28,15 @@ struct CharacterSelect_Struct;
 
 class WorldDatabase : public SharedDatabase {
 public:
-	bool	GetStartZone(PlayerProfile_Struct* in_pp, CharCreate_Struct* in_cc);
-	bool	GetStartZoneSoF(PlayerProfile_Struct* in_pp, CharCreate_Struct* in_cc);
+	bool GetStartZone(PlayerProfile_Struct* in_pp, CharCreate_Struct* in_cc);
+	bool GetStartZoneSoF(PlayerProfile_Struct* in_pp, CharCreate_Struct* in_cc);
 	
-    void	GetCharSelectInfo(int32 account_id, CharacterSelect_Struct*);
-      int	MoveCharacterToBind(int CharID, uint8 bindnum = 0);
+	void GetCharSelectInfo(int32 account_id, CharacterSelect_Struct*);
+	int MoveCharacterToBind(int CharID, uint8 bindnum = 0);
 	
-	void	GetLauncherList(std::vector<std::string> &result);
-	void	SetMailKey(int CharID, int IPAddress, int MailKey);
+	void GetLauncherList(std::vector<std::string> &result);
+	void SetMailKey(int CharID, int IPAddress, int MailKey);
+	bool GetCharacterLevel(const char *name, int &level);
 /*	bool	GetLauncherZone(const char *launcher_name, const char *zone_short, LauncherZone &result);
 	bool	AddLauncherZone(const char *launcher_name, const LauncherZone &it);
 	bool	UpdateLauncherZone(const char *launcher_name, const LauncherZone &it);

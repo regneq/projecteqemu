@@ -46,6 +46,7 @@
 #define INVISIBLE_MAN	127
 #define IKSAR			128
 #define VAHSHIR			130
+#define CONTROLLED_BOAT 141
 #define IKSAR_SKELETON	161
 #define FROGLOK			330
 #define FROGLOK2		74	// Not sure why /who all reports race as 74 for frogloks

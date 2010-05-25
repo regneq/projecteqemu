@@ -155,6 +155,14 @@ bool Zone::Bootup(int32 iZoneID, int32 iInstanceID, bool iStaticZone) {
 	ZoneLoaded = true;
 
 	worldserver.SetZone(iZoneID, iInstanceID);
+	if(iInstanceID != 0)
+	{
+		ServerPacket *pack = new ServerPacket(ServerOP_AdventureZoneData, sizeof(uint16));
+		*((uint16*)pack->pBuffer) = iInstanceID;
+		worldserver.SendPacket(pack);
+		delete pack;
+	}
+
 	LogFile->write(EQEMuLog::Normal, "---- Zone server %s, listening on port:%i ----", zonename, ZoneConfig::get()->ZonePort);
 	LogFile->write(EQEMuLog::Status, "Zone Bootup: %s (%i: %i)", zonename, iZoneID, iInstanceID);
 	UpdateWindowTitle();
@@ -671,23 +679,7 @@ void Zone::Shutdown(bool quite)
 		zone->npctable.erase(itr);
 	}
 
-	std::map<uint32,AdventureInfo*>::iterator itr2;
-	while(zone->adventure_list.size()) 
-	{	
-		itr2 = zone->adventure_list.begin();
-		delete itr2->second;
-		zone->adventure_list.erase(itr2);
-	}
-	zone->adventure_entry_list.clear();
 	zone->adventure_entry_list_flavor.clear();
-
-	std::map<uint32,AdventureDetails*>::iterator itr3;
-	while(zone->active_adventures.size()) 
-	{	
-		itr3 = zone->active_adventures.begin();
-		delete itr3->second;
-		zone->active_adventures.erase(itr3);
-	}
 
 	std::map<uint32,LDoNTrapTemplate*>::iterator itr4;
 	while(zone->ldon_trap_list.size()) 
@@ -751,7 +743,6 @@ Zone::Zone(int32 in_zoneid, int32 in_instanceid, const char* in_short_name)
 	autoshutdown_timer((RuleI(Zone, AutoShutdownDelay))),
 	clientauth_timer(AUTHENTICATION_TIMEOUT * 1000),
 	spawn2_timer(1000),
-	adventure_timer(2000),
 	qglobal_purge_timer(30000)
 {
 	zoneid = in_zoneid;
@@ -761,6 +752,7 @@ Zone::Zone(int32 in_zoneid, int32 in_instanceid, const char* in_short_name)
 	watermap = WaterMap::LoadWaterMapfile(in_short_name);
 	pathing = PathManager::LoadPathFile(in_short_name);
 	qGlobals = NULL;
+	default_ruleset = 0;
 
 	if(RuleB(TaskSystem, EnableTaskSystem)) {
 		taskmanager->LoadProximities(zoneid);
@@ -805,10 +797,8 @@ Zone::Zone(int32 in_zoneid, int32 in_instanceid, const char* in_short_name)
 	LogFile->write(EQEMuLog::Debug, "The next weather check for zone: %s will be in %i seconds.", short_name, Weather_Timer->GetRemainingTime()/1000);
 	weather_type = 0;
 	zone_weather = 0;
-	
 	blocked_spells = NULL;
 	totalBS = 0;
-
 	aas = NULL;
 	totalAAs = 0;
     gottime = false;
@@ -825,7 +815,8 @@ Zone::Zone(int32 in_zoneid, int32 in_instanceid, const char* in_short_name)
 	{
 		Instance_Timer = NULL;
 	}
-
+	adv_data = NULL;
+	did_adventure_actions = false;
 	database.QGlobalPurge();
 
 	if(zoneid == RuleI(World, GuildBankZoneID))
@@ -854,6 +845,7 @@ Zone::~Zone() {
 	safe_delete(Instance_Timer);
 	safe_delete(Instance_Shutdown_Timer);
 	safe_delete(qGlobals);
+	safe_delete(adv_data);
 
 	if(aas != NULL) {
 		int r;
@@ -917,6 +909,9 @@ bool Zone::Init(bool iStaticZone) {
 		LogFile->write(EQEMuLog::Error, "Loading traps failed.");
 		return false;
 	}
+
+	LogFile->write(EQEMuLog::Status, "Loading adventure flavor text...");
+	LoadAdventureFlavor();
 	
 	LogFile->write(EQEMuLog::Status, "Loading ground spawns...");
 	if (!LoadGroundSpawns())
@@ -939,11 +934,7 @@ bool Zone::Init(bool iStaticZone) {
 		database.DeleteTraderItem(0);
 		database.DeleteBuyLines(0);
 	}
-	
-	zone->LoadAdventures();
-	zone->LoadAdventureEntries();
-	zone->LoadAdventureFlavor();
-	zone->LoadActiveAdventures();
+
 	zone->LoadLDoNTraps();
 	zone->LoadLDoNTrapEntries();
 	zone->LoadVeteranRewards();
@@ -962,13 +953,21 @@ bool Zone::Init(bool iStaticZone) {
 	zone->LoadTempMerchantData();
 	
 	adverrornum = 503;
-	//g_LogFile.write("AI LEVEL set to %d\n",iAILevel);
 	petition_list.ClearPetitions();
 	petition_list.ReadDatabase();
 	
 	//load the zone config file.
-	if (!LoadZoneCFG(zone->GetShortName(), true)) // try loading the zone name...
-		LoadZoneCFG(zone->GetFileName()); // if that fails, try the file name, then load defaults
+	if (!LoadZoneCFG(zone->GetShortName(), zone->GetInstanceVersion(), true)) // try loading the zone name...
+		LoadZoneCFG(zone->GetFileName(), zone->GetInstanceVersion()); // if that fails, try the file name, then load defaults
+
+	if(rules->GetActiveRulesetID() != default_ruleset)
+	{
+		string r_name = rules->GetRulesetName(&database, default_ruleset);
+		if(r_name.size() > 0)
+		{
+			rules->LoadRules(&database, r_name.c_str());
+		}
+	}
 	
 	parse->ClearCache();
 	
@@ -1013,18 +1012,37 @@ void Zone::ReloadStaticData() {
 	zone->LoadVeteranRewards();
 	
 	//load the zone config file.
-	if (!LoadZoneCFG(zone->GetShortName(), true)) // try loading the zone name...
-		LoadZoneCFG(zone->GetFileName()); // if that fails, try the file name, then load defaults
+	if (!LoadZoneCFG(zone->GetShortName(), zone->GetInstanceVersion(), true)) // try loading the zone name...
+		LoadZoneCFG(zone->GetFileName(), zone->GetInstanceVersion()); // if that fails, try the file name, then load defaults
 	
 	LogFile->write(EQEMuLog::Status, "Zone Static Data Reloaded.");
 }
 
-bool Zone::LoadZoneCFG(const char* filename, bool DontLoadDefault) {
+bool Zone::LoadZoneCFG(const char* filename, uint16 instance_id, bool DontLoadDefault) 
+{
 	memset(&newzone_data, 0, sizeof(NewZone_Struct));
-	if(!database.GetZoneCFG(database.GetZoneID(filename), &newzone_data, can_bind, can_combat, can_levitate, can_castoutdoor, is_city, is_hotzone)) {
-		cout << "Error while loading Zone Config!\n";
-		cout << "IF YOU HAVENT DONE SO, SOURCE THE ZONECFG.SQL FILE!!!!!!\n";
-		return false;
+	if(instance_id == 0)
+	{
+		if(!database.GetZoneCFG(database.GetZoneID(filename), 0, &newzone_data, can_bind, 
+			can_combat, can_levitate, can_castoutdoor, is_city, is_hotzone, default_ruleset)) 
+		{
+			LogFile->write(EQEMuLog::Error, "Error loading the Zone Config."); 
+			return false;
+		}
+	}
+	else
+	{
+		//Fall back to base zone if we don't find the instance version.
+		if(!database.GetZoneCFG(database.GetZoneID(filename), instance_id, &newzone_data, can_bind, 
+			can_combat, can_levitate, can_castoutdoor, is_city, is_hotzone, default_ruleset)) 
+		{
+			if(!database.GetZoneCFG(database.GetZoneID(filename), 0, &newzone_data, can_bind, 
+			can_combat, can_levitate, can_castoutdoor, is_city, is_hotzone, default_ruleset)) 
+			{
+				LogFile->write(EQEMuLog::Error, "Error loading the Zone Config."); 
+				return false;
+			}
+		}
 	}
 	
 	//overwrite with our internal variables
@@ -1037,7 +1055,7 @@ bool Zone::LoadZoneCFG(const char* filename, bool DontLoadDefault) {
 }
 
 bool Zone::SaveZoneCFG() {
-	return database.SaveZoneCFG(GetZoneID(),&newzone_data);
+	return database.SaveZoneCFG(GetZoneID(), GetInstanceVersion(), &newzone_data);
 }
 
 void Zone::AddAuth(ServerZoneIncommingClient_Struct* szic) {
@@ -1136,6 +1154,10 @@ bool Zone::Process() {
 				iterator.RemoveCurrent();
 			}
 		}
+		if(adv_data && !did_adventure_actions)
+		{
+			DoAdventureActions();
+		}
 	}
 	if(initgrids_timer.Check()) {
 		//delayed grid loading stuff.
@@ -1176,134 +1198,6 @@ bool Zone::Process() {
 				StartShutdownTimer();
 				return false;
 			}
-		}
-	}
-
-	if(adventure_timer.Check())
-	{
-		std::map<uint32, AdventureDetails*>::iterator aa_iter;
-		aa_iter = active_adventures.begin();
-		while(aa_iter != active_adventures.end())
-		{
-			AdventureDetails *ad = aa_iter->second;
-			if(ad)
-			{
-				if(ad->ai)
-				{
-					timeval tv;
-					gettimeofday(&tv, NULL);
-					if(ad->time_completed > 0)
-					{
-						//if time is up then destroy this adventure
-						if((RuleI(Adventure, LDoNAdventureExpireTime) + ad->time_completed) <= tv.tv_sec)
-						{
-							if(ad->status == 2)
-							{
-								ServerPacket *pack2 = new ServerPacket(ServerOP_AdventureFinish, sizeof(ServerAdventureFinish_Struct));
-								ServerAdventureFinish_Struct *afin = (ServerAdventureFinish_Struct*)pack2->pBuffer;
-								afin->id = ad->id;
-								afin->win_lose = 0;
-								afin->points = 0;
-								afin->update_stats = false;
-								worldserver.SendPacket(pack2);
-								safe_delete(pack2);
-
-								database.DestroyAdventure(ad->id);
-								ServerPacket *pack = new ServerPacket(ServerOP_AdventureDestroy, sizeof(ServerAdventureDestroy_Struct));
-								ServerAdventureDestroy_Struct *adest = (ServerAdventureDestroy_Struct*)pack->pBuffer;
-								adest->id = ad->id;
-								worldserver.SendPacket(pack);
-								safe_delete(pack);
-							}
-							else
-							{
-								database.DestroyAdventure(ad->id);
-								ServerPacket *pack = new ServerPacket(ServerOP_AdventureDestroy, sizeof(ServerAdventureDestroy_Struct));
-								ServerAdventureDestroy_Struct *adest = (ServerAdventureDestroy_Struct*)pack->pBuffer;
-								adest->id = ad->id;
-								worldserver.SendPacket(pack);
-								safe_delete(pack);
-							}
-						}
-					}
-					else if(ad->time_zoned > 0)
-					{
-						if(ad->status == 1)
-						{
-							if((ad->ai->duration + ad->time_zoned) <= tv.tv_sec)
-							{
-								database.UpdateAllAdventureStatsEntry(ad->id, ad->ai->theme, false);
-								sint32 time_since = tv.tv_sec - (ad->ai->duration + ad->time_zoned);
-								if(time_since >= RuleI(Adventure, LDoNAdventureExpireTime)) //we're over time on our instance
-								{
-									database.DestroyAdventure(ad->id);
-									ServerPacket *pack = new ServerPacket(ServerOP_AdventureDestroy, sizeof(ServerAdventureDestroy_Struct));
-									ServerAdventureDestroy_Struct *adest = (ServerAdventureDestroy_Struct*)pack->pBuffer;
-									adest->id = ad->id;
-									worldserver.SendPacket(pack);
-									safe_delete(pack);
-								}
-								else
-								{
-									database.UpdateAdventureCompleted(ad->id, (tv.tv_sec-time_since));
-									database.UpdateAdventureStatus(ad->id, 2);
-
-									//send new status to all players
-									ServerPacket *pack = new ServerPacket(ServerOP_AdventureUpdate, sizeof(ServerAdventureUpdate_Struct));
-									ServerAdventureUpdate_Struct *au = (ServerAdventureUpdate_Struct*)pack->pBuffer;
-									au->id = ad->id;
-									au->new_timec = 1;
-									au->new_status = 1;
-									au->status = 2;
-									au->time_c = (tv.tv_sec-time_since);
-									worldserver.SendPacket(pack);
-									safe_delete(pack);
-									
-									ServerPacket *pack2 = new ServerPacket(ServerOP_AdventureFinish, sizeof(ServerAdventureFinish_Struct));
-									ServerAdventureFinish_Struct *afin = (ServerAdventureFinish_Struct*)pack2->pBuffer;
-									afin->id = ad->id;
-									afin->win_lose = 0;
-									afin->points = 0;
-									afin->update_stats = false;
-									worldserver.SendPacket(pack2);
-									safe_delete(pack2);									
-
-									char msg[] = "You failed to complete your adventure in time.  Complete your adventure goal within 30 minutes to receive a lesser reward.  This adventure will end in 30 minutes and your party will be ejected from the dungeon.\0";
-									ServerPacket *pack_msg = new ServerPacket(ServerOP_AdventureMessage, sizeof(ServerAdventureMessage_Struct) + strlen(msg) + 1);
-									ServerAdventureMessage_Struct *am = (ServerAdventureMessage_Struct*)pack_msg->pBuffer;
-									am->id = ad->id;
-									strncpy(am->message, msg, strlen(msg));
-									worldserver.SendPacket(pack_msg);
-									safe_delete(pack_msg);
-
-									//set time on instance to 30 min
-									database.SetInstanceDuration(ad->instance_id, (RuleI(Adventure, LDoNAdventureExpireTime)-time_since));
-									ServerPacket *instance_pack = new ServerPacket(ServerOP_InstanceUpdateTime, sizeof(ServerInstanceUpdateTime_Struct));
-									ServerInstanceUpdateTime_Struct *iut = (ServerInstanceUpdateTime_Struct*)instance_pack->pBuffer;
-									iut->instance_id = ad->instance_id;
-									iut->new_duration = (RuleI(Adventure, LDoNAdventureExpireTime)-time_since);
-									worldserver.SendPacket(instance_pack);
-									safe_delete(instance_pack);
-								}
-							}
-						}
-					}
-					else
-					{
-						if((ad->ai->zone_in_time + ad->time_created) <= tv.tv_sec)
-						{
-							database.UpdateAllAdventureStatsEntry(ad->id, ad->ai->theme, false);
-							database.DestroyAdventure(ad->id);
-							ServerPacket *pack = new ServerPacket(ServerOP_AdventureDestroy, sizeof(ServerAdventureDestroy_Struct));
-							ServerAdventureDestroy_Struct *adest = (ServerAdventureDestroy_Struct*)pack->pBuffer;
-							adest->id = ad->id;
-							worldserver.SendPacket(pack);
-							safe_delete(pack);
-						}
-					}
-				}
-			}
-			aa_iter++;
 		}
 	}
 
@@ -2152,259 +2046,6 @@ const char* Zone::GetSpellBlockedMessage(int32 spell_id, float nx, float ny, flo
 	return "Error: Message String Not Found\0";
 }
 
-void Zone::LoadAdventures()
-{
-	char errbuf[MYSQL_ERRMSG_SIZE];
-	char* query = 0;
-	MYSQL_RES *result;
-	MYSQL_ROW row;
-
-	if(database.RunQuery(query,MakeAnyLenString(&query,"SELECT id, zone, zone_version, "
-		"is_hard, is_raid, min_level, max_level, type, type_data, type_count, assa_x, "
-		"assa_y, assa_z, assa_h, text, duration, zone_in_time, win_points, lose_points, "
-		"theme, zone_in_zone_id, zone_in_x, zone_in_y, zone_in_object_id, dest_x, dest_y,"
-		" dest_z, dest_h FROM adventure_template"), errbuf, &result)) 
-	{
-		while((row = mysql_fetch_row(result))) 
-		{
-			int8 x = 0;
-			AdventureInfo *ai = new AdventureInfo;
-			ai->id = atoi(row[x++]);
-			ai->zone_name = row[x++];
-			ai->zone_version = atoi(row[x++]);
-			ai->is_hard = atoi(row[x++]);
-			ai->is_raid = atoi(row[x++]);
-			ai->min_level = atoi(row[x++]);
-			ai->max_level = atoi(row[x++]);
-			ai->type = (AdventureObjective)atoi(row[x++]);
-			ai->type_data = atoi(row[x++]);
-			ai->type_count = atoi(row[x++]);
-			ai->assa_x = atof(row[x++]);
-			ai->assa_y = atof(row[x++]);
-			ai->assa_z = atof(row[x++]);
-			ai->assa_h = atof(row[x++]);
-			ai->text = row[x++];
-			ai->duration = atoi(row[x++]);
-			ai->zone_in_time = atoi(row[x++]);
-			ai->win_points = atoi(row[x++]);
-			ai->lose_points = atoi(row[x++]);
-			ai->theme = atoi(row[x++]);
-			ai->zone_in_zone_id = atoi(row[x++]);
-			ai->zone_in_x = atof(row[x++]);
-			ai->zone_in_y = atof(row[x++]);
-			ai->zone_in_object_id = atoi(row[x++]);
-			ai->dest_x = atof(row[x++]);
-			ai->dest_y = atof(row[x++]);
-			ai->dest_z = atof(row[x++]);
-			ai->dest_h = atof(row[x++]);
-			adventure_list[ai->id] = ai;
-		}
-		mysql_free_result(result);
-		safe_delete_array(query);
-	}
-	else
-	{
-		LogFile->write(EQEMuLog::Error, "Error in Zone::LoadAdventures: %s (%s)", query, errbuf);
-		safe_delete_array(query);
-		return;
-	}
-}
-
-void Zone::LoadAdventureEntries()
-{
-	char errbuf[MYSQL_ERRMSG_SIZE];
-	char* query = 0;
-	MYSQL_RES *result;
-	MYSQL_ROW row;
-
-	if(database.RunQuery(query,MakeAnyLenString(&query,"SELECT id, template_id FROM adventure_template_entry"),errbuf,&result)) {
-		while((row = mysql_fetch_row(result))) 
-		{
-			int32 id = atoi(row[0]);
-			int32 template_id = atoi(row[1]);
-
-			AdventureInfo *ai = NULL;
-			std::map<uint32,AdventureInfo*>::iterator it;
-			it = adventure_list.find(template_id);
-			if(it == adventure_list.end())
-			{
-				continue;
-			}
-			else
-			{
-				ai = adventure_list[template_id];
-			}
-
-			std::list<AdventureInfo*> temp;
-			std::map<uint32,std::list<AdventureInfo*> >::iterator iter;
-
-			iter = adventure_entry_list.find(id);
-			if(iter == adventure_entry_list.end())
-			{
-				temp.push_back(ai);
-				adventure_entry_list[id] = temp;
-			}
-			else
-			{
-				temp = adventure_entry_list[id];
-				temp.push_back(ai);
-				adventure_entry_list[id] = temp;
-			}
-		}
-		mysql_free_result(result);
-		safe_delete_array(query);
-	}
-	else
-	{
-		LogFile->write(EQEMuLog::Error, "Error in Zone::LoadAdventureEntries: %s (%s)", query, errbuf);
-		safe_delete_array(query);
-		return;
-	}
-}
-
-void Zone::LoadAdventureFlavor()
-{
-	char errbuf[MYSQL_ERRMSG_SIZE];
-	char* query = 0;
-	MYSQL_RES *result;
-	MYSQL_ROW row;
-
-	if(database.RunQuery(query,MakeAnyLenString(&query,"SELECT id, text FROM adventure_template_entry_flavor"),errbuf,&result)) {
-		while((row = mysql_fetch_row(result))) 
-		{
-			int32 id = atoi(row[0]);
-			std::string in_str = row[1];
-			adventure_entry_list_flavor[id] = in_str;
-		}
-		mysql_free_result(result);
-		safe_delete_array(query);
-	}
-	else
-	{
-		LogFile->write(EQEMuLog::Error, "Error in Zone::LoadAdventureFlavor: %s (%s)", query, errbuf);
-		safe_delete_array(query);
-		return;
-	}
-}
-
-void Zone::LoadActiveAdventures()
-{
-	char errbuf[MYSQL_ERRMSG_SIZE];
-	char* query = 0;
-	MYSQL_RES *result;
-	MYSQL_ROW row;
-
-	if(database.RunQuery(query,MakeAnyLenString(&query,"SELECT `id`, `adventure_id`, `instance_id`, `count`, `assassinate_count`, `status`, "
-		"`time_created`, `time_zoned`, `time_completed` FROM `adventure_details`"),errbuf,&result)) {
-		while((row = mysql_fetch_row(result))) 
-		{
-			int8 x = 0;
-			AdventureDetails *ad = new AdventureDetails;
-			ad->id = atoi(row[x++]);
-			ad->ai = adventure_list[atoi(row[x++])];
-			ad->instance_id = atoi(row[x++]);
-			ad->count = atoi(row[x++]);
-			ad->assassinate_count = atoi(row[x++]);
-			ad->status = atoi(row[x++]);
-			ad->time_created = atoi(row[x++]);
-			ad->time_zoned = atoi(row[x++]);
-			ad->time_completed = atoi(row[x++]);
-			active_adventures[ad->id] = ad;
-		}
-		mysql_free_result(result);
-		safe_delete_array(query);
-	}
-	else
-	{
-		LogFile->write(EQEMuLog::Error, "Error in Zone::LoadActiveAdventures: %s (%s)", query, errbuf);
-		safe_delete_array(query);
-		return;
-	}
-}
-
-void Zone::UpdateAdventureCount(AdventureDetails *ad)
-{
-	if(ad && ad->ai)
-	{
-		if(ad->status == 3)
-			return;
-
-		database.IncrementAdventureCount(ad->id);
-		ServerPacket *pack = new ServerPacket(ServerOP_AdventureCount, sizeof(ServerAdventureCount_Struct));
-		ServerAdventureCount_Struct *ac = (ServerAdventureCount_Struct*)pack->pBuffer;
-		ac->id = ad->id;
-		ac->count = ++ad->count;
-		worldserver.SendPacket(pack);
-		safe_delete(pack);
-
-		if(ad->ai->type_count == (ad->count))
-		{
-			timeval tv;
-			gettimeofday(&tv, NULL);
-			database.UpdateAdventureStatus(ad->id, 3);
-			database.UpdateAllAdventureStatsEntry(ad->id, ad->ai->theme, true);
-
-			if(ad->status == 1)
-			{
-				database.UpdateAdventureCompleted(ad->id, tv.tv_sec);
-				database.RemovePlayersFromAdventure(ad->id);
-				database.RemoveClientsFromInstance(ad->instance_id);
-
-				ServerPacket *pack2 = new ServerPacket(ServerOP_AdventureFinish, sizeof(ServerAdventureFinish_Struct));
-				ServerAdventureFinish_Struct *afin = (ServerAdventureFinish_Struct*)pack2->pBuffer;
-				afin->id = ad->id;
-				afin->win_lose = 1;
-				afin->points = ad->ai->win_points;
-				afin->update_stats = true;
-				worldserver.SendPacket(pack2);
-				safe_delete(pack2);
-
-				//send new status to all players
-				ServerPacket *pack = new ServerPacket(ServerOP_AdventureUpdate, sizeof(ServerAdventureUpdate_Struct));
-				ServerAdventureUpdate_Struct *au = (ServerAdventureUpdate_Struct*)pack->pBuffer;
-				au->id = ad->id;
-				au->new_timec = 1;
-				au->new_status = 1;
-				au->status = 3;
-				au->time_c = tv.tv_sec;
-				worldserver.SendPacket(pack);
-				safe_delete(pack);
-
-				database.SetInstanceDuration(ad->instance_id, RuleI(Adventure, LDoNAdventureExpireTime));
-				ServerPacket *instance_pack = new ServerPacket(ServerOP_InstanceUpdateTime, sizeof(ServerInstanceUpdateTime_Struct));
-				ServerInstanceUpdateTime_Struct *iut = (ServerInstanceUpdateTime_Struct*)instance_pack->pBuffer;
-				iut->instance_id = ad->instance_id;
-				iut->new_duration = RuleI(Adventure, LDoNAdventureExpireTime);
-				worldserver.SendPacket(instance_pack);
-				safe_delete(instance_pack);
-			}
-			else if(ad->status == 2)
-			{
-				database.RemovePlayersFromAdventure(ad->id);
-				database.RemoveClientsFromInstance(ad->instance_id);
-
-				ServerPacket *pack2 = new ServerPacket(ServerOP_AdventureFinish, sizeof(ServerAdventureFinish_Struct));
-				ServerAdventureFinish_Struct *afin = (ServerAdventureFinish_Struct*)pack2->pBuffer;
-				afin->id = ad->id;
-				afin->win_lose = 1;
-				afin->points = ad->ai->lose_points;
-				afin->update_stats = true;
-				worldserver.SendPacket(pack2);
-				safe_delete(pack2);
-
-				//send new status to all players
-				ServerPacket *pack = new ServerPacket(ServerOP_AdventureUpdate, sizeof(ServerAdventureUpdate_Struct));
-				ServerAdventureUpdate_Struct *au = (ServerAdventureUpdate_Struct*)pack->pBuffer;
-				au->id = ad->id;
-				au->new_status = 1;
-				au->status = 3;
-				worldserver.SendPacket(pack);
-				safe_delete(pack);
-			}
-		}
-	}
-}
-
 void Zone::SetInstanceTimer(int32 new_duration)
 {
 	if(Instance_Timer)
@@ -2580,4 +2221,87 @@ void Zone::DeleteQGlobal(std::string name, uint32 npcID, uint32 charID, uint32 z
 	{
 		qGlobals->RemoveGlobal(name, npcID, charID, zoneID);
 	}
+}
+
+void Zone::LoadAdventureFlavor()
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char* query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+
+	if(database.RunQuery(query,MakeAnyLenString(&query,"SELECT id, text FROM adventure_template_entry_flavor"), errbuf, &result)) 
+	{
+		while((row = mysql_fetch_row(result))) 
+		{
+			int32 id = atoi(row[0]);
+			std::string in_str = row[1];
+			adventure_entry_list_flavor[id] = in_str;
+		}
+		mysql_free_result(result);
+		safe_delete_array(query);
+	}
+	else
+	{
+		LogFile->write(EQEMuLog::Error, "Error in Zone::LoadAdventureFlavor: %s (%s)", query, errbuf);
+		safe_delete_array(query);
+		return;
+	}
+}
+
+void Zone::DoAdventureCountIncrease()
+{
+	ServerZoneAdventureDataReply_Struct *sr = (ServerZoneAdventureDataReply_Struct*)adv_data;
+	if(sr->count < sr->total)
+	{
+		sr->count++;
+		ServerPacket *pack = new ServerPacket(ServerOP_AdventureCountUpdate, sizeof(uint16));
+		*((uint16*)pack->pBuffer) = instanceid;
+		worldserver.SendPacket(pack);
+		delete pack;
+	}
+}
+
+void Zone::DoAdventureAssassinationCountIncrease()
+{
+	ServerZoneAdventureDataReply_Struct *sr = (ServerZoneAdventureDataReply_Struct*)adv_data;
+	if(sr->assa_count < RuleI(Adventure, NumberKillsForBossSpawn))
+	{
+		sr->assa_count++;
+		ServerPacket *pack = new ServerPacket(ServerOP_AdventureAssaCountUpdate, sizeof(uint16));
+		*((uint16*)pack->pBuffer) = instanceid;
+		worldserver.SendPacket(pack);
+		delete pack;
+	}
+}
+
+void Zone::DoAdventureActions()
+{
+	ServerZoneAdventureDataReply_Struct* ds = (ServerZoneAdventureDataReply_Struct*)adv_data;
+	if(ds->type == Adventure_Collect)
+	{
+		int count = (ds->total - ds->count) * 25 / 10;
+		entity_list.AddLootToNPCS(ds->data_id, count);
+		did_adventure_actions = true;
+	}
+	else if(ds->type == Adventure_Assassinate)
+	{
+		if(ds->assa_count >= RuleI(Adventure, NumberKillsForBossSpawn))
+		{
+			const NPCType* tmp = database.GetNPCType(ds->data_id);
+			if(tmp)
+			{
+				NPC* npc = new NPC(tmp, 0, ds->assa_x, ds->assa_y, ds->assa_z, ds->assa_h, FlyMode3);
+				npc->AddLootTable();
+				entity_list.AddNPC(npc);
+				npc->Shout("Rarrrgh!");
+				did_adventure_actions = true;
+			}
+		}
+	}
+	else
+	{
+		did_adventure_actions = true;
+	}
+
 }

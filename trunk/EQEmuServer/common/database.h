@@ -174,36 +174,11 @@ public:
 	void SetInstanceDuration(int16 instance_id, int32 new_duration);
 
 	/*
-	 * Adventure
+	 * Adventure related.
 	 */
-	void GroupAdventureLevelAndRange(int32 gid, int32 &avg_level, int32 &range);
-	void RaidAdventureLevelAndRange(int32 rid, int32 &avg_level, int32 &range);
-	int32 CreateAdventure(int32 adventure_id);
-	void AddPlayerToAdventure(int32 id, int32 charid);
-	void RemovePlayerFromAdventure(int32 id, int32 charid);
-	void RemovePlayersFromAdventure(int32 id);
-	void AddGroupToAdventure(int32 id, int32 gid);
-	void AddRaidToAdventure(int32 id, int32 rid);
-	void DestroyAdventure(int32 id);
-	bool GetAdventureDetails(int32 charid, int32 &id, int32 &adventure_id, int32 &instance_id, int32 &count, 
-		int32 &ass_count, int32 &status, int32 &time_c, int32 &time_z, int32 &time_comp);
-	int32 GetAdventureID(int32 char_id);
-	int32 CountPlayersInAdventure(int32 id);
-	void PurgeAdventures();
-	void AddAdventureToInstance(int32 adv_id, int32 inst_id);
-	void UpdateAdventureStatus(int32 adv_id, int32 status);
-	void UpdateAdventureInstance(int32 adv_id, int32 inst_id, int32 time);
-	void UpdateAdventureCompleted(int32 adv_id, int32 time);
-	void UpdateAdventureCount(int32 adv_id, int32 new_count);
-	void IncrementAdventureCount(int32 adv_id);
-	int32 GetAdventureCount(int32 adv_id);
-	bool AdventureExists(int32 adv_id);
 	void UpdateAdventureStatsEntry(int32 char_id, int8 theme, bool win);
-	void UpdateAllAdventureStatsEntry(int32 adv_id, int8 theme, bool win);
 	bool GetAdventureStats(int32 char_id, int32 &guk_w, int32 &mir_w, int32 &mmc_w, int32 &ruj_w, int32 &tak_w, 
 		int32 &guk_l, int32 &mir_l, int32 &mmc_l, int32 &ruj_l, int32 &tak_l);
-	int32 AdventureGetAssassinateKills(int32 adv_id);
-	void AdventureSetAssassinateKills(int32 adv_id, int32 kills);
 
 	/*
 	 * Account Related

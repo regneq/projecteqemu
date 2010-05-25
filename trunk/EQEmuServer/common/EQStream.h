@@ -34,7 +34,7 @@ struct SessionRequest {
 };
 
 struct SessionResponse {
-        uint32 Session;
+	uint32 Session;
 	uint32 Key;
 	uint8 UnknownA;
 	uint8 Format;

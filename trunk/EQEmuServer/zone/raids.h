@@ -137,6 +137,7 @@ public:
 	int32	GetPlayerIndex(const char *name);
 	//for perl interface
 	Client *GetClientByIndex(int16 index);
+	const char *GetClientNameByIndex(uint8 index);
 
 	void	LockRaid(bool lockFlag);
 	bool	IsLocked() { return locked; }

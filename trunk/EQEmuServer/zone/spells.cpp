@@ -1179,7 +1179,8 @@ bool Mob::DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_ce
 		&& spell_target != NULL // null ptr crash safeguard
 		&& !spell_target->IsNPC() // still self only if NPC targetted
 		&& IsClient()
-		&& IsGrouped() // still self only if not grouped
+		&& (IsGrouped() // still self only if not grouped
+		|| IsRaidGrouped())
 		&& CastToClient()->CheckAAEffect(aaEffectProjectIllusion)){
 			mlog(AA__MESSAGE, "Project Illusion overwrote target caster: %s spell id: %d was ON", GetName(), spell_id);
 			targetType = ST_GroupClient;
@@ -1397,6 +1398,17 @@ bool Mob::DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_ce
 					}
 					else{
 						mlog(SPELLS__CASTING_ERR, "Spell %d canceled: Attempted to cast a Single Target Group spell on a member not in the group.", spell_id);
+						Message_StringID(13, TARGET_GROUP_MEMBER);
+						return false;
+					}
+				}
+				else if(IsClient() && IsRaidGrouped()){
+					Raid *r = entity_list.GetRaidByMob(this);
+					if(r && r->IsRaidMember(spell_target->GetName()) && spell_target != this){
+						CastAction = SingleTarget;
+					}
+					else{
+						mlog(SPELLS__CASTING_ERR, "Spell %d canceled: Attempted to cast a Single Target Group spell on a member not in the raid.", spell_id);
 						Message_StringID(13, TARGET_GROUP_MEMBER);
 						return false;
 					}

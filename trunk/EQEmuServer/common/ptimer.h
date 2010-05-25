@@ -40,6 +40,7 @@ enum {	//values for pTimerType
 	pTimerDisciplineReuseStart = 14,
 	pTimerDisciplineReuseEnd = 24,
 	pTimerCombatAbility = 25,
+	pTimerBeggingPickPocket = 26,
 	
 	pTimerLayHands = 87,		//these IDs are used by client too
 	pTimerHarmTouch = 89,		//so dont change them

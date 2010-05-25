@@ -60,18 +60,18 @@ ZoneDatabase::~ZoneDatabase() {
 	}
 }
 
-bool ZoneDatabase::SaveZoneCFG(int32 zoneid,NewZone_Struct* zd){
+bool ZoneDatabase::SaveZoneCFG(int32 zoneid, uint16 instance_id, NewZone_Struct* zd){
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
 	if (!RunQuery(query, MakeAnyLenString(&query, "update zone set underworld=%f,minclip=%f,"
 		"maxclip=%f,fog_minclip=%f,fog_maxclip=%f,fog_blue=%i,fog_red=%i,fog_green=%i,sky=%i,"
 		"ztype=%i,zone_exp_multiplier=%f,safe_x=%f,safe_y=%f,safe_z=%f "
-		"where zoneidnumber=%i",
+		"where zoneidnumber=%i and version=%i",
 		zd->underworld,zd->minclip,
 		zd->maxclip,zd->fog_minclip[0],zd->fog_maxclip[0],zd->fog_blue[0],zd->fog_red[0],zd->fog_green[0],zd->sky,
 		zd->ztype,zd->zone_exp_multiplier,
 		zd->safe_x,zd->safe_y,zd->safe_z,
-		zoneid),errbuf))	{
+		zoneid, instance_id),errbuf))	{
 			LogFile->write(EQEMuLog::Error, "Error in SaveZoneCFG query %s: %s", query, errbuf);
 			safe_delete_array(query);
 			return false;
@@ -80,7 +80,7 @@ bool ZoneDatabase::SaveZoneCFG(int32 zoneid,NewZone_Struct* zd){
 	return true;
 }
 
-bool ZoneDatabase::GetZoneCFG(int32 zoneid, NewZone_Struct *zone_data, bool &can_bind, bool &can_combat, bool &can_levitate, bool &can_castoutdoor, bool &is_city, bool &is_hotzone) {
+bool ZoneDatabase::GetZoneCFG(int32 zoneid, uint16 instance_id, NewZone_Struct *zone_data, bool &can_bind, bool &can_combat, bool &can_levitate, bool &can_castoutdoor, bool &is_city, bool &is_hotzone, int &ruleset) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
 	MYSQL_RES *result;
@@ -95,8 +95,8 @@ bool ZoneDatabase::GetZoneCFG(int32 zoneid, NewZone_Struct *zone_data, bool &can
 		"fog_red4,fog_green4,fog_blue4,fog_minclip4,fog_maxclip4,"
 		"sky,zone_exp_multiplier,safe_x,safe_y,safe_z,underworld,"
 		"minclip,maxclip,time_type,canbind,cancombat,canlevitate,"
-		"castoutdoor,hotzone"
-		" from zone where zoneidnumber=%i",zoneid), errbuf, &result)) {
+		"castoutdoor,hotzone,ruleset"
+		" from zone where zoneidnumber=%i and version=%i",zoneid, instance_id), errbuf, &result)) {
 		safe_delete_array(query);
 		while((row = mysql_fetch_row(result))) {
 			int r = 0;
@@ -131,6 +131,7 @@ bool ZoneDatabase::GetZoneCFG(int32 zoneid, NewZone_Struct *zone_data, bool &can
             can_levitate = atoi(row[r++])==0?false:true;
 			can_castoutdoor = atoi(row[r++])==0?false:true;
 			is_hotzone = atoi(row[r++])==0?false:true;
+			ruleset = atoi(row[r++]);
 			good = true;
 		}
 		mysql_free_result(result);
@@ -446,10 +447,6 @@ void ZoneDatabase::GetEventLogs(const char* name,char* target,int32 account_id,i
 		safe_delete_array(query);
 	}
 }
-
-/*
-	Cofruben:Starting adventure database functions.
-*/
 
 // Load child objects for a world container (i.e., forge, bag dropped to ground, etc)
 void ZoneDatabase::LoadWorldContainer(uint32 parentid, ItemInst* container)

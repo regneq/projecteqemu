@@ -103,6 +103,7 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 	//TODO: add check for other lockpick items
 	//////////////////////////////////////////////////////////////////
 
+	//TODO: ADVENTURE DOOR
 	if(IsLDoNDoor())
 	{
 		if(sender)
@@ -114,6 +115,7 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 					if(sender->GetInv().HasItem(RuleI(Adventure, ItemIDToEnablePorts)) == SLOT_INVALID)
 					{
 						sender->Message_StringID(13, 5141);
+						safe_delete(outapp);
 						return;
 					}
 					else
@@ -123,85 +125,19 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 				}
 			}
 
-			AdventureDetails* ad = sender->GetCurrentAdventure();
-			if(ad)
+			if(!sender->GetPendingAdventureDoorClick())
 			{
-				if(ad->ai)
-				{
-					if(ad->ai->zone_in_object_id == GetDoorDBID())
-					{
-						int32 zone_id = database.GetZoneID(ad->ai->zone_name.c_str());
-						if(ad->instance_id == -1)
-						{
-							if(zone_id < 1)
-							{
-								sender->Message(0, "Server was unable to find that zone id.");
-								return;
-							}
-
-							int16 i_id = 0;
-							if(!database.GetUnusedInstanceID(i_id))
-							{
-								sender->Message(0, "Server was unable to find a free instance id.");
-								return;
-							}
-
-							if(!database.CreateInstance(i_id, zone_id, ad->ai->zone_version, ad->ai->duration+1800))
-							{
-								sender->Message(0, "Server was unable to create a new instance.");
-								return;
-							}
-
-							database.AddAdventureToInstance(ad->id, i_id);
-							ServerPacket* pack = new ServerPacket(ServerOP_AdventureUpdate, sizeof(ServerAdventureUpdate_Struct));
-							ServerAdventureUpdate_Struct* uas = (ServerAdventureUpdate_Struct*) pack->pBuffer;
-							
-							timeval tv;
-							gettimeofday(&tv, NULL);
-
-							uas->id = ad->id;
-							
-							uas->new_timez = 1;
-							uas->time_z = tv.tv_sec;
-
-							uas->new_inst = 1;
-							uas->instance_id = i_id;
-
-							uas->new_status = 1;
-							uas->status = 1;
-
-							worldserver.SendPacket(pack);
-							safe_delete(pack);
-
-							database.UpdateAdventureStatus(ad->id, 1);
-							database.UpdateAdventureInstance(ad->id, i_id, tv.tv_sec);						
-							database.AddAdventureToInstance(ad->id, i_id);
-							sender->MovePC(zone_id, i_id, ad->ai->dest_x, ad->ai->dest_y, ad->ai->dest_z, ad->ai->dest_h, 0, ZoneSolicited);
-							return;
-						}
-						else
-						{
-							sender->MovePC(zone_id, ad->instance_id, ad->ai->dest_x, ad->ai->dest_y, ad->ai->dest_z, ad->ai->dest_h, 0, ZoneSolicited);
-							return;
-						}
-					}
-					else
-					{
-						sender->Message_StringID(13, 5143);
-						return;
-					}
-				}
-				else
-				{
-					sender->Message_StringID(13, 5141);
-					return;
-				}
+				sender->PendingAdventureDoorClick();
+				ServerPacket *pack = new ServerPacket(ServerOP_AdventureClickDoor, sizeof(ServerPlayerClickedAdventureDoor_Struct));
+				ServerPlayerClickedAdventureDoor_Struct *ads = (ServerPlayerClickedAdventureDoor_Struct*)pack->pBuffer;
+				strcpy(ads->player, sender->GetName());
+				ads->zone_id = zone->GetZoneID();
+				ads->id = GetDoorDBID();
+				worldserver.SendPacket(pack);
+				safe_delete(pack);
+				safe_delete(outapp);
 			}
-			else
-			{
-				sender->Message_StringID(13, 5141);
-				return;
-			}
+			return;
 		}
 	}
 
@@ -233,6 +169,7 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 		}
 		else
 		{
+			safe_delete(outapp);
 			return;
 		}
 	}
@@ -329,18 +266,21 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 					else
 					{
 						sender->Message_StringID(4, DOORS_INSUFFICIENT_SKILL);
+						safe_delete(outapp);
 						return;
 					}
 				}
 				else
 				{
 					sender->Message_StringID(4, DOORS_NO_PICK);
+					safe_delete(outapp);
 					return;
 				}
 			}
 			else
 			{
 				sender->Message_StringID(4, DOORS_CANT_PICK);
+				safe_delete(outapp);
 				return;
 			}
 		}
@@ -363,6 +303,7 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 			else 
 			{
 				sender->Message_StringID(4, DOORS_LOCKED);
+				safe_delete(outapp);
 				return;
 			}
 		}

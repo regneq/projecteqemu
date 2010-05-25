@@ -4243,123 +4243,6 @@ void EntityList::GateAllClients()
 	}
 }
 
-void EntityList::SendAdventureUpdate(int32 a_id)
-{
-	LinkedListIterator<Client*> iterator(client_list); 
-	iterator.Reset();
-	while(iterator.MoreElements()) 
-	{
-		Client *c = iterator.GetData();
-		if(c)
-		{
-			AdventureDetails *ad = c->GetCurrentAdventure();
-			if(ad && ad->id == a_id)
-			{
-				c->SendAdventureDetail();
-			}
-		}
-		iterator.Advance();
-	}
-}
-
-void EntityList::AdventureMessage(int32 a_id, const char *msg)
-{
-	LinkedListIterator<Client*> iterator(client_list); 
-	iterator.Reset();
-	while(iterator.MoreElements()) 
-	{
-		Client *c = iterator.GetData();
-		if(c)
-		{
-			AdventureDetails *ad = c->GetCurrentAdventure();
-			if(ad && ad->id == a_id)
-			{
-				c->Message(13, msg);
-			}
-		}
-		iterator.Advance();
-	}
-}
-
-void EntityList::AdventureFinish(int32 a_id, int8 win_lose, int32 points, bool update_stats)
-{
-	AdventureDetails *ad = NULL;
-
-	std::map<uint32, AdventureDetails*>::iterator aa_iter;
-	aa_iter = zone->active_adventures.find(a_id);
-
-	if(aa_iter == zone->active_adventures.end())
-		return;
-
-	ad = aa_iter->second;
-
-	if(!ad)
-		return;
-
-	if(!ad->ai)
-		return;
-
-	if(ad->status != 3)
-	{
-		ad->status = 3;
-		LinkedListIterator<Client*> iterator(client_list); 
-		iterator.Reset();
-		while(iterator.MoreElements()) 
-		{
-			ad = NULL;
-			Client *c = iterator.GetData();
-			if(c)
-			{
-				ad = c->GetCurrentAdventure();
-				if(ad && ad->id == a_id)
-				{
-					c->SendAdventureFinish(win_lose, points, ad->ai->theme, update_stats);
-				}
-			}
-			iterator.Advance();
-		}
-	}
-}
-
-void EntityList::AdventureDestroy(int32 a_id)
-{
-	LinkedListIterator<Client*> iterator(client_list); 
-	iterator.Reset();
-	while(iterator.MoreElements()) 
-	{
-		Client *c = iterator.GetData();
-		if(c)
-		{
-			AdventureDetails *ad = c->GetCurrentAdventure();
-			if(ad && ad->id == a_id)
-			{
-				c->SendAdventureError("You are not currently in an adventure.");
-				c->SetCurrentAdventure(NULL);
-			}
-		}
-		iterator.Advance();
-	}
-}
-
-void EntityList::AdventureCountUpdate(int32 a_id, int32 current, int32 total)
-{
-	LinkedListIterator<Client*> iterator(client_list); 
-	iterator.Reset();
-	while(iterator.MoreElements()) 
-	{
-		Client *c = iterator.GetData();
-		if(c)
-		{
-			AdventureDetails *ad = c->GetCurrentAdventure();
-			if(ad && ad->id == a_id)
-			{
-				c->SendAdventureCountUpdate(current, total);
-			}
-		}
-		iterator.Advance();
-	}
-}
-
 void EntityList::SignalAllClients(int32 data)
 {
 	LinkedListIterator<Client*> iterator(client_list); 
@@ -4580,7 +4463,7 @@ void EntityList::UpdateFindableNPCState(NPC *n, bool Remove)
 	safe_delete(outapp);
 }
 
-void    EntityList::HideCorpses(Client *c, uint8 CurrentMode, uint8 NewMode)
+void EntityList::HideCorpses(Client *c, uint8 CurrentMode, uint8 NewMode)
 {
 	if(!c)
 		return;
@@ -4636,4 +4519,113 @@ void    EntityList::HideCorpses(Client *c, uint8 CurrentMode, uint8 NewMode)
 		}
 		iterator.Advance();
 	}
+}
+
+void EntityList::AddLootToNPCS(uint32 item_id, uint32 count)
+{
+	if(count == 0)
+		return;
+
+	int npc_count = 0;
+	LinkedListIterator<NPC*> iterator(npc_list);
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		if(!iterator.GetData()->IsPet() 
+			&& iterator.GetData()->GetClass() != LDON_TREASURE
+			&& iterator.GetData()->GetBodyType() != BT_NoTarget 
+			&& iterator.GetData()->GetBodyType() != BT_NoTarget2 
+			&& iterator.GetData()->GetBodyType() != BT_Special)
+		{
+			npc_count++;
+		}
+		iterator.Advance();
+	}
+
+	if(npc_count == 0)
+	{
+		return;
+	}
+
+	NPC **npcs = new NPC*[npc_count];
+	int *counts = new int[npc_count];
+	bool *marked = new bool[npc_count];
+	memset(counts, 0, sizeof(int) * npc_count);
+	memset(marked, 0, sizeof(bool) * npc_count);
+
+	int i = 0;
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		if(!iterator.GetData()->IsPet()
+			&& iterator.GetData()->GetClass() != LDON_TREASURE
+			&& iterator.GetData()->GetBodyType() != BT_NoTarget 
+			&& iterator.GetData()->GetBodyType() != BT_NoTarget2 
+			&& iterator.GetData()->GetBodyType() != BT_Special)
+		{
+			npcs[i++] = iterator.GetData();
+		}
+		iterator.Advance();
+	}
+
+	while(count > 0)
+	{
+		vector<int> selection;
+		selection.reserve(npc_count);
+		for(int j = 0; j < npc_count; ++j)
+		{
+			selection.push_back(j);
+		}
+
+		while(selection.size() > 0 && count > 0)
+		{
+			int k = MakeRandomInt(0, selection.size() - 1);
+			counts[selection[k]]++;
+			count--;
+			selection.erase(selection.begin() + k);
+		}
+	}
+
+	for(int j = 0; j < npc_count; ++j)
+	{
+		if(counts[j] > 0)
+		{
+			for(int k = 0; k < counts[j]; ++k)
+			{
+				npcs[j]->AddItem(item_id, 1);
+			}
+		}
+	}
+
+	safe_delete_array(npcs);
+	safe_delete_array(counts);
+	safe_delete_array(marked);
+}
+
+
+NPC* EntityList::GetClosestBanker(Mob* sender, uint32 &distance)
+{
+	if(!sender) 
+		return NULL;
+
+	distance = 4294967295;
+	NPC* nc = NULL;
+
+	LinkedListIterator<NPC*> iterator(npc_list);
+	iterator.Reset();
+
+	while(iterator.MoreElements())
+	{
+		if(iterator.GetData()->GetClass() == BANKER)
+		{
+			uint32 nd = ((iterator.GetData()->GetY() - sender->GetY()) * (iterator.GetData()->GetY() - sender->GetY())) + 
+				((iterator.GetData()->GetX() - sender->GetX()) * (iterator.GetData()->GetX() - sender->GetX()));
+			if(nd < distance){
+				distance = nd;
+				nc = iterator.GetData();
+			}
+		}
+		iterator.Advance();
+	}
+	return nc;
 }

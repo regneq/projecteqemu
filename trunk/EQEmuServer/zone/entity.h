@@ -230,10 +230,6 @@ public:
 	
 	void DescribeAggro(Client *towho, NPC *from_who, float dist, bool verbose);
 
-	// Edgar's function to strip off trailing zeroes. 
-// solar: no longer used
-//	void   NPCMessage(Mob* sender, bool skipsender, float dist, int32 type, const char* message, ...); 
-
 	void	Message(int32 to_guilddbid, int32 type, const char* message, ...);
 	void	MessageStatus(int32 to_guilddbid, int to_minstatus, int32 type, const char* message, ...);
 	void	MessageClose(Mob* sender, bool skipsender, float dist, int32 type, const char* message, ...);
@@ -284,17 +280,17 @@ public:
 	void	AddHealAggro(Mob* target, Mob* caster, int16 thedam);
 	Mob*	FindDefenseNPC(int32 npcid);
 	void	OpenDoorsNear(NPC* opener);
-
 	void	UpdateWho(bool iSendFullUpdate = false);
 	void	SendPositionUpdates(Client* client, int32 cLastUpdate = 0, float range = 0, Entity* alwayssend = 0, bool iSendEvenIfNotChanged = false);
 	char*	MakeNameUnique(char* name);
-	static char*	RemoveNumbers(char* name);
+	static char* RemoveNumbers(char* name);
 	void	SignalMobsByNPCID(int32 npc_type, int signal_id);
 	void	CountNPC(int32* NPCCount, int32* NPCLootCount, int32* gmspawntype_count);
 	void	DoZoneDump(ZSDump_Spawn2* spawn2dump, ZSDump_NPC* npcdump, ZSDump_NPC_Loot* npclootdump, NPCType* gmspawntype_dump);
 	void    RemoveEntity(int16 id);
 	void	SendPetitionToAdmins(Petition* pet);
 	void	SendPetitionToAdmins();
+	void	AddLootToNPCS(uint32 item_id, uint32 count);
 
 	void	ListNPCs(Client* client, const char* arg1 = 0, const char* arg2 = 0, int8 searchtype = 0);
 	void	ListNPCCorpses(Client* client);
@@ -311,7 +307,6 @@ public:
     void    Process();
 	void	ClearAggro(Mob* targ);
 	void	ClearFeignAggro(Mob* targ);
-	// Everhood 6/17/06
 	void	ClearZoneFeignAggro(Client* targ);
 	void	AggroZone(Mob* who, int hate = 0);
 	
@@ -321,7 +316,6 @@ public:
 
 
 	void	MessageGroup(Mob* sender, bool skipclose, int32 type, const char* message, ...);
-	//void	MessageRaid(Mob* sender, bool skipclose, int32 type, const char* message, ...);
 	
 	void	LimitAddNPC(NPC *npc);
 	void	LimitRemoveNPC(NPC *npc);
@@ -339,6 +333,7 @@ public:
 	int32	CheckNPCsClose(Mob *center);
 
 	Corpse* GetClosestCorpse(Mob* sender);
+	NPC* GetClosestBanker(Mob* sender, uint32 &distance);
 	void	ForceGroupUpdate(int32 gid);
 	void	SendGroupLeave(int32 gid, const char *name);
 	void	SendGroupJoin(int32 gid, const char *name);
@@ -351,11 +346,6 @@ public:
 	void	UnMarkNPC(int16 ID);
 
 	void	GateAllClients();
-	void	SendAdventureUpdate(int32 a_id);
-	void	AdventureMessage(int32 a_id, const char *msg);
-	void	AdventureFinish(int32 a_id, int8 win_lose, int32 points, bool update_stats);
-	void	AdventureDestroy(int32 a_id);
-	void	AdventureCountUpdate(int32 a_id, int32 current, int32 total);
 	void	SignalAllClients(int32 data);
 	void	UpdateQGlobal(uint32 qid, QGlobal newGlobal);
 	void	DeleteQGlobal(std::string name, uint32 npcID, uint32 charID, uint32 zoneID);

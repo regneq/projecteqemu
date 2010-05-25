@@ -550,6 +550,32 @@ void WorldDatabase::SetMailKey(int CharID, int IPAddress, int MailKey) {
 
 }
 
+bool WorldDatabase::GetCharacterLevel(const char *name, int &level)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+    char* query = 0;
+	MYSQL_RES *result;
+    MYSQL_ROW row;
+	
+	if(RunQuery(query, MakeAnyLenString(&query, "SELECT level FROM character_ WHERE name='%s'", name), errbuf, &result))
+	{
+		if(row = mysql_fetch_row(result))
+		{
+			level = atoi(row[0]);
+			mysql_free_result(result);
+			safe_delete_array(query);
+			return true;
+		}
+		mysql_free_result(result);
+	}
+	else 
+	{
+		LogFile->write(EQEMuLog::Error, "WorldDatabase::GetCharacterLevel: %s", errbuf);
+	}
+	safe_delete_array(query);
+	return false;
+}
+
 /*
 void WorldDatabase::GetLauncherZones(const char *launcher_name, std::vector<LauncherZone> &rl) {
 }

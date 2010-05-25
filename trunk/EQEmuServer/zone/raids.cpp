@@ -1338,3 +1338,8 @@ uint16 Raid::GetAvgLevel()
 	levelHolder = ((levelHolder/(numMem))+.5); // total levels divided by num of characters
 	return (uint16(levelHolder));
 }
+
+const char *Raid::GetClientNameByIndex(uint8 index)
+{
+	return members[index].membername;
+}

@@ -671,87 +671,8 @@ void Client::Handle_Connect_OP_ReqClientSpawn(const EQApplicationPacket *app)
 	QueuePacket(outapp);
 	safe_delete(outapp);
 
-	if(strncasecmp(zone->GetShortName(),"bazaar",6)==0)
+	if(strncasecmp(zone->GetShortName(), "bazaar", 6) == 0)
 		SendBazaarWelcome();
-
-	/*Adventure Data Send*/
-	int32 adv_id = 0;
-	int32 adv_adventure_id = 0;
-	int32 adv_inst_id = 0;
-	int32 adv_count = 0;
-	int32 adv_ass_count = 0;
-	int32 adv_status = 0;
-	int32 adv_time_c = 0;
-	int32 adv_time_z = 0;
-	int32 adv_time_comp = 0;
-	if(database.GetAdventureDetails(CharacterID(), adv_id, adv_adventure_id, adv_inst_id, adv_count, adv_ass_count, adv_status, adv_time_c, adv_time_z, adv_time_comp) == true)
-	{
-		AdventureDetails* nd = NULL;
-		std::map<uint32, AdventureDetails*>::iterator ad_iter = zone->active_adventures.find(adv_id);
-		if(ad_iter == zone->active_adventures.end())
-		{
-			nd = new AdventureDetails;
-		}
-		else
-		{
-			nd = zone->active_adventures[adv_id];
-		}
-
-		nd->id = adv_id;
-		nd->instance_id = adv_inst_id;
-		nd->count = adv_count;
-		nd->assassinate_count = adv_ass_count;
-		nd->status = adv_status;
-		nd->time_created = adv_time_c;
-		nd->time_zoned = adv_time_z;
-
-		
-		std::map<uint32, AdventureInfo*>::iterator ai_iter = zone->adventure_list.find(adv_adventure_id);
-		if(ai_iter == zone->adventure_list.end())
-		{
-			safe_delete(nd);
-		}
-		else
-		{
-			AdventureInfo* ai = zone->adventure_list[adv_adventure_id];
-			if(!ai)
-			{
-				safe_delete(nd);
-			}
-			else
-			{
-				nd->ai = ai;
-				zone->active_adventures[adv_id] = nd;
-				SetCurrentAdventure(nd);
-				SendAdventureDetail();
-
-				//if we're in our adv zone and it's type assassinate and we're not 
-				//complete but we have enough kills and boss isn't up then spawn our boss
-				if(nd->ai->type == Adventure_Assassinate && zone->GetInstanceID() == nd->instance_id)
-				{
-					if(nd->status != 3)
-					{
-						int32 c = database.AdventureGetAssassinateKills(nd->id);
-						if(c >= RuleI(Adventure, NumberKillsForBossSpawn))
-						{
-							Mob* n = entity_list.GetMobByNpcTypeID(nd->ai->type_data);
-							if(!n)
-							{
-								const NPCType* nt = NULL;
-								if(nt = database.GetNPCType(nd->ai->type_data)) 
-								{
-									NPC* npc = new NPC(nt, 0, nd->ai->assa_x, nd->ai->assa_y, 
-										nd->ai->assa_z, nd->ai->assa_h, FlyMode3);
-									npc->AddLootTable();
-									entity_list.AddNPC(npc);
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
 
 	conn_state = ZoneContentsSent;
 
@@ -1651,6 +1572,11 @@ void Client::Handle_OP_TargetCommand(const EQApplicationPacket *app)
 
 void Client::Handle_OP_Shielding(const EQApplicationPacket *app)
 {
+	if(GetClass() != WARRIOR)
+	{
+		return;
+	}
+
 	if (shield_target)
 	{
 		entity_list.MessageClose(this,false,100,0,"%s ceases shielding %s.",GetName(),shield_target->GetName());
@@ -1715,7 +1641,7 @@ void Client::Handle_OP_Shielding(const EQApplicationPacket *app)
 	}
 	if (!ack)
 	{
-		Message(0,"No more than two warriors may shield the same being.");
+		Message(0, "No more than two warriors may shield the same being.");
 		shield_target = 0;
 		return;
 	}
@@ -1730,13 +1656,17 @@ void Client::Handle_OP_Jump(const EQApplicationPacket *app)
 
 void Client::Handle_OP_AdventureInfoRequest(const EQApplicationPacket *app)
 {
+	if(app->size < sizeof(EntityId_Struct))
+	{
+		LogFile->write(EQEMuLog::Error, "Handle_OP_AdventureInfoRequest had a packet that was too small.");
+		return;
+	}
 	EntityId_Struct* ent = (EntityId_Struct*)app->pBuffer;
 	Mob * m = entity_list.GetMob(ent->entity_id);
-
 	if(m && m->IsNPC())
 	{
-		std::map<uint32,std::string>::iterator it;
-		it = zone->adventure_entry_list_flavor.find(m->CastToNPC()->adventure_template_id);
+		std::map<uint32, std::string>::iterator it;
+		it = zone->adventure_entry_list_flavor.find(m->CastToNPC()->GetAdventureTemplate());
 		if(it != zone->adventure_entry_list_flavor.end())
 		{
 			EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureInfo, (it->second.size() + 2));
@@ -1745,45 +1675,174 @@ void Client::Handle_OP_AdventureInfoRequest(const EQApplicationPacket *app)
 		}
 		else
 		{
-			std::string text = "Choose your difficulty and preferred adventure type.";
-			EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureInfo, (text.size() + 2));
-			strncpy((char*)outapp->pBuffer, text.c_str(), text.size());
-			FastQueuePacket(&outapp);
+			if(m->CastToNPC()->GetAdventureTemplate() != 0)
+			{
+				std::string text = "Choose your difficulty and preferred adventure type.";
+				EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureInfo, (text.size() + 2));
+				strncpy((char*)outapp->pBuffer, text.c_str(), text.size());
+				FastQueuePacket(&outapp);
+			}
 		}
-	}
-	else
-	{
-		std::string text = "Choose your difficulty and preferred adventure type.";
-		EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureInfo, (text.size() + 2));
-		strncpy((char*)outapp->pBuffer, text.c_str(), text.size());
-		FastQueuePacket(&outapp);
 	}
 }
 
 void Client::Handle_OP_AdventureRequest(const EQApplicationPacket *app)
 {
-	AdventureRequest_Struct* ars = (AdventureRequest_Struct*)app->pBuffer;
+	if(app->size < sizeof(AdventureRequest_Struct))
+	{
+		LogFile->write(EQEMuLog::Error, "Handle_OP_AdventureRequest had a packet that was too small.");
+		return;
+	}
 
+	if(IsOnAdventure())
+	{
+		return;
+	}
+
+	if(!p_timers.Expired(&database, pTimerStartAdventureTimer, false))
+	{
+		return;
+	}
+
+	if(GetPendingAdventureRequest())
+	{
+		return;
+	}
+
+	AdventureRequest_Struct* ars = (AdventureRequest_Struct*)app->pBuffer;
+	uint8 group_members = 0;
+	Raid *r = NULL;
+	Group *g = NULL;
+
+	if(IsRaidGrouped())
+	{
+		r = GetRaid();
+		group_members = r->RaidCount();
+	}
+	else if(IsGrouped())
+	{
+		g = GetGroup();
+		group_members = g->GroupCount();
+	}
+	else
+	{
+		return;
+	}
+
+	if(group_members < RuleI(Adventure, MinNumberForGroup) || group_members > RuleI(Adventure, MaxNumberForGroup))
+	{
+		return;
+	}
+	
 	Mob* m = entity_list.GetMob(ars->entity_id);
+	uint32 template_id = 0;
 	if(m && m->IsNPC())
-		SendAdventureSelection(m, (ars->risk-1), ars->type);
+	{
+		template_id = m->CastToNPC()->GetAdventureTemplate();
+	}
+	else
+	{
+		return;
+	}
+
+	ServerPacket *packet = new ServerPacket(ServerOP_AdventureRequest, sizeof(ServerAdventureRequest_Struct) + (64 * group_members));
+	ServerAdventureRequest_Struct *sar = (ServerAdventureRequest_Struct*)packet->pBuffer;
+	sar->member_count = group_members;
+	sar->risk = ars->risk;
+	sar->type = ars->type;
+	sar->template_id = template_id;
+	strcpy(sar->leader, GetName());
+	
+	if(IsRaidGrouped())
+	{
+		int i = 0;
+		for(int x = 0; x < 72; ++x)
+		{
+			if(i == group_members)
+			{
+				break;
+			}
+
+			const char *c_name = NULL;
+			c_name = r->GetClientNameByIndex(x);
+			if(c_name)
+			{
+				memcpy((packet->pBuffer + sizeof(ServerAdventureRequest_Struct) + (64 * i)), c_name, strlen(c_name));
+				++i;
+			}
+		}
+	}
+	else
+	{
+		int i = 0;
+		for(int x = 0; x < 6; ++x)
+		{
+			if(i == group_members)
+			{
+				break;
+			}
+
+			const char *c_name = NULL;
+			c_name = g->GetClientNameByIndex(x);
+			if(c_name)
+			{
+				memcpy((packet->pBuffer + sizeof(ServerAdventureRequest_Struct) + (64 * i)), c_name, strlen(c_name));
+				++i;
+			}
+		}
+	}
+
+	packet->Deflate();
+	worldserver.SendPacket(packet);
+	delete packet;
+	p_timers.Start(pTimerStartAdventureTimer, 5);
 }
 
 void Client::Handle_OP_LDoNButton(const EQApplicationPacket *app)
 {
-	bool* p=(bool*)app->pBuffer;
-	if(*p == true ) 
+	if(app->size < sizeof(bool))
 	{
-		AcceptAdventure();
+		return;
+	}
+
+	if(GetPendingAdventureCreate())
+	{
+		return;
+	}
+
+	if(IsOnAdventure())
+	{
+		return;
+	}
+
+	bool* p = (bool*)app->pBuffer;
+	if(*p == true) 
+	{
+		ServerPacket *pack = new ServerPacket(ServerOP_AdventureRequestCreate, sizeof(ServerAdventureRequestCreate_Struct) + (64 * adv_requested_member_count));
+		ServerAdventureRequestCreate_Struct *sac = (ServerAdventureRequestCreate_Struct*)pack->pBuffer;
+		strcpy(sac->leader, GetName());
+		sac->id = adv_requested_id;
+		sac->theme = adv_requested_theme;
+		sac->member_count = adv_requested_member_count;
+		memcpy((pack->pBuffer + sizeof(ServerAdventureRequestCreate_Struct)), adv_requested_data, (64 * adv_requested_member_count));
+		pack->Deflate();
+		worldserver.SendPacket(pack);
+		delete pack;
+		PendingAdventureCreate();
+		ClearPendingAdventureData();
 	}
 	else
 	{
-		DeclineAdventure();
+		ClearPendingAdventureData();
 	}
 }
 
 void Client::Handle_OP_LeaveAdventure(const EQApplicationPacket *app)
 {
+	if(!IsOnAdventure())
+	{
+		return;
+	}
 	LeaveAdventure();
 }
 
@@ -2313,10 +2372,15 @@ void Client::Handle_OP_AdventureMerchantPurchase(const EQApplicationPacket *app)
 		SetEbonCrystals(GetEbonCrystals() - (sint32)item->LDoNPrice);
 		SendCrystalCounts();
 	}
-	sint8 charges=1;
+	sint8 charges = 1;
 	if(item->MaxCharges != 0)
 		charges = item->MaxCharges;
-	SummonItem(aps->itemid, charges);
+
+	ItemInst *inst = database.CreateItem(item, charges);
+	if(!AutoPutLootInInventory(*inst, true, true))
+	{
+		PutLootInInventory(SLOT_CURSOR, *inst);
+	}
 	Save(1);
 }
 
@@ -2419,16 +2483,34 @@ void Client::Handle_OP_Consider(const EQApplicationPacket *app)
 
 void Client::Handle_OP_Begging(const EQApplicationPacket *app)
 {
+	if(!p_timers.Expired(&database, pTimerBeggingPickPocket, false)) 
+	{
+		Message(13,"Ability recovery time not yet met.");
+
+		EQApplicationPacket* outapp = new EQApplicationPacket(OP_Begging, sizeof(BeggingResponse_Struct));
+		BeggingResponse_Struct *brs = (BeggingResponse_Struct*) outapp->pBuffer;
+		brs->Result = 0;
+		FastQueuePacket(&outapp);
+		return;
+	}
+
 	if(!HasSkill(BEGGING) || !GetTarget())
 		return;
 
 	if(GetTarget()->GetClass() == LDON_TREASURE)
 		return;
 
+	p_timers.Start(pTimerBeggingPickPocket, 8);
+
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_Begging, sizeof(BeggingResponse_Struct));
 	BeggingResponse_Struct *brs = (BeggingResponse_Struct*) outapp->pBuffer;
 
 	brs->Result = 0; // Default, Fail.
+	if(GetTarget() == this)
+	{
+		FastQueuePacket(&outapp);
+		return;
+	}
 
 	int RandomChance = MakeRandomInt(0 ,100);
 
@@ -3043,8 +3125,12 @@ void Client::Handle_OP_MoveItem(const EQApplicationPacket *app)
 		LogFile->write(EQEMuLog::Error, "Wrong size: OP_MoveItem, size=%i, expected %i", app->size, sizeof(MoveItem_Struct));
 		return;
 	}
-
 	MoveItem_Struct* mi = (MoveItem_Struct*)app->pBuffer;
+	if(mi->from_slot == mi->to_slot)
+	{
+		return;
+	}
+
 	SwapItem(mi);
 	return;
 }
@@ -6724,6 +6810,12 @@ void Client::Handle_OP_Illusion(const EQApplicationPacket *app)
 		return;
 	}
 
+	if(!GetGM())
+	{
+		database.SetMQDetectionFlag(this->AccountName(), this->GetName(), "OP_Illusion sent by non Game Master.", zone->GetShortName());
+		return;
+	}
+
 	Illusion_Struct* bnpc = (Illusion_Struct*)app->pBuffer;
 	// @merth: these need to be implemented
 	/*
@@ -7147,18 +7239,30 @@ void Client::Handle_OP_GMFind(const EQApplicationPacket *app)
 
 void Client::Handle_OP_PickPocket(const EQApplicationPacket *app)
 {
-	if(!HasSkill(PICK_POCKETS))
-		return;
-
-		if (app->size != sizeof(PickPocket_Struct)){
+	if (app->size != sizeof(PickPocket_Struct))
+	{
 		LogFile->write(EQEMuLog::Error, "Size mismatch for Pick Pocket packet");
 		DumpPacket(app);
+	}
+
+	if(!HasSkill(PICK_POCKETS))
+	{
+		return;
+	}
+
+	if(!p_timers.Expired(&database, pTimerBeggingPickPocket, false)) 
+	{
+		Message(13,"Ability recovery time not yet met.");
+		database.SetMQDetectionFlag(this->AccountName(), this->GetName(), "OP_PickPocket was sent again too quickly.", zone->GetShortName());
+		return;
 	}
 	PickPocket_Struct* pick_in = (PickPocket_Struct*) app->pBuffer;
 
 	Mob* victim = entity_list.GetMob(pick_in->to);
 	if (!victim)
 		return;
+
+	p_timers.Start(pTimerBeggingPickPocket, 8);
 	if (victim == this){
 		Message(0,"You catch yourself red-handed.");
 		EQApplicationPacket* outapp = new EQApplicationPacket(OP_PickPocket, sizeof(sPickPocket_Struct));
@@ -7628,6 +7732,15 @@ void Client::Handle_OP_ControlBoat(const EQApplicationPacket *app)
 	if (boat == 0) 
 		return;	// do nothing if the boat isn't valid
 	
+	if(!boat->IsNPC() ||  boat->GetRace() != CONTROLLED_BOAT)
+	{
+		char *hacked_string = NULL;
+		MakeAnyLenString(&hacked_string, "OP_Control Boat was sent against %s which is of race %u", boat->GetName(), boat->GetRace());
+		database.SetMQDetectionFlag(this->AccountName(), this->GetName(), hacked_string, zone->GetShortName());
+		safe_delete_array(hacked_string);
+		return;
+	}
+
 	if (cbs->TakeControl) {
 		// this uses the boat's target to indicate who has control of it.  It has to check hate to make sure the boat isn't actually attacking anyone.
 		if ((boat->GetTarget() == 0) || (boat->GetTarget() == this && boat->GetHateAmount(this) == 0)) {
@@ -8240,7 +8353,10 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 			if(group->GetID() != 0)
 				entity_list.AddGroup(group, groupid);
 			else	//error loading group members...
+			{
+				delete group;
 				group = NULL;
+			}
 		}	//else, somebody from our group is allready here...
 
 		if(group)
@@ -8751,10 +8867,17 @@ void Client::CompleteConnect()
 
 	if(IsInAGuild())
 		guild_mgr.SendGuildMemberUpdateToWorld(GetName(), GuildID(), zone->GetZoneID(), time(NULL));
+
+	/** Request adventure info **/
+	ServerPacket *pack = new ServerPacket(ServerOP_AdventureDataRequest, 64);
+	strcpy((char*)pack->pBuffer, GetName());
+	worldserver.SendPacket(pack);
+	delete pack;
 }
 
-void Client::Handle_OP_KeyRing(const EQApplicationPacket *app) {
-        KeyRingList();
+void Client::Handle_OP_KeyRing(const EQApplicationPacket *app) 
+{
+	KeyRingList();
 }
 
 void Client::Handle_OP_LeadershipExpToggle(const EQApplicationPacket *app) {
@@ -8878,9 +9001,21 @@ void Client::Handle_OP_BankerChange(const EQApplicationPacket *app)
 {
 	if(app->size != sizeof(BankerChange_Struct) && app->size!=4) // cb: Titanium only sends 4 Bytes for this
 	{
-
 		LogFile->write(EQEMuLog::Debug, "Size mismatch in OP_BankerChange expected %i got %i", sizeof(BankerChange_Struct), app->size);
 		DumpPacket(app);
+		return;
+	}
+
+	uint32 distance = 0;
+	NPC *banker = entity_list.GetClosestBanker(this, distance);
+
+	if(!banker || distance > USE_NPC_RANGE2)
+	{
+		char *hacked_string = NULL;
+		MakeAnyLenString(&hacked_string, "Player tried to make use of a banker(money) but %s is non-existant or too far away (%u units).", 
+			banker ? banker->GetName() : "UNKNOWN NPC", distance);
+		database.SetMQDetectionFlag(AccountName(), GetName(), hacked_string, zone->GetShortName());
+		safe_delete_array(hacked_string);
 		return;
 	}
 
@@ -10364,6 +10499,12 @@ void Client::Handle_OP_AdventureMerchantSell(const EQApplicationPacket *app)
 
 void Client::Handle_OP_AdventureStatsRequest(const EQApplicationPacket *app)
 {
+	if(adventure_stats_timer)
+	{
+		return;
+	}
+
+	adventure_stats_timer = new Timer(8000);
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureStatsReply, sizeof(AdventureStats_Struct));
 	AdventureStats_Struct *as = (AdventureStats_Struct*)outapp->pBuffer;
 
@@ -10389,6 +10530,16 @@ void Client::Handle_OP_AdventureStatsRequest(const EQApplicationPacket *app)
 
 void Client::Handle_OP_AdventureLeaderboardRequest(const EQApplicationPacket *app)
 {
+	if(adventure_leaderboard_timer)
+	{
+		return;
+	}
+
+	adventure_leaderboard_timer = new Timer(10000);
+	ServerPacket *pack = new ServerPacket(ServerOP_AdventureLeaderboard, 64);
+	strcpy((char*)pack->pBuffer, GetName());
+	worldserver.SendPacket(pack);
+	delete pack;
 }
 
 void Client::Handle_OP_RespawnWindow(const EQApplicationPacket *app)

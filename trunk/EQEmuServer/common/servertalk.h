@@ -71,13 +71,13 @@
 //#define ServerOP_DeleteGuild		0x0037	//ServerGuildID_Struct
 #define ServerOP_SpawnPlayerCorpse	0x0038
 #define ServerOP_Consent			0x0039
-#define ServerOP_Consent_Response	0x0040
-#define ServerOP_ForceGroupUpdate	0x0041
-#define ServerOP_OOZGroupMessage	0x0042
-#define ServerOP_DisbandGroup		0x0043 //for disbanding a whole group cross zone
-#define ServerOP_GroupJoin			0x0044 //for joining ooz folks
-#define ServerOP_UpdateSpawn		0x0045
-#define ServerOP_SpawnStatusChange	0x0046
+#define ServerOP_Consent_Response	0x003a
+#define ServerOP_ForceGroupUpdate	0x003b
+#define ServerOP_OOZGroupMessage	0x003c
+#define ServerOP_DisbandGroup		0x003d //for disbanding a whole group cross zone
+#define ServerOP_GroupJoin			0x003e //for joining ooz folks
+#define ServerOP_UpdateSpawn		0x003f
+#define ServerOP_SpawnStatusChange	0x0040
 #define ServerOP_ReloadTasks		0x0060
 #define ServerOP_DepopAllPlayersCorpses	0x0061
 #define ServerOP_ReloadTitles		0x0062
@@ -100,21 +100,33 @@
 #define ServerOP_RaidGroupAdd		0x010D
 #define ServerOP_RaidGroupRemove	0x010E
 
-#define ServerOP_InstanceUpdateTime 0x014F
-#define ServerOP_AdventureCreate	0x0150
-#define ServerOP_AdventureAddPlayer 0x0151
-#define ServerOP_AdventureDestroy	0x0152
-#define ServerOP_AdventureUpdate	0x0153
-#define ServerOP_AdventureCount		0x0154
-#define ServerOP_AdventureFinish	0x0155
-#define ServerOP_AdventureMessage	0x0156
+#define ServerOP_InstanceUpdateTime       0x014F
+#define ServerOP_AdventureRequest         0x0150 
+#define ServerOP_AdventureRequestAccept   0x0151
+#define ServerOP_AdventureRequestDeny     0x0152
+#define ServerOP_AdventureRequestCreate   0x0153 
+#define ServerOP_AdventureData            0x0154 
+#define ServerOP_AdventureDataClear       0x0155 
+#define ServerOP_AdventureCreateDeny      0x0156
+#define ServerOP_AdventureDataRequest     0x0157
+#define ServerOP_AdventureClickDoor       0x0158
+#define ServerOP_AdventureClickDoorReply  0x0159
+#define ServerOP_AdventureClickDoorError  0x015a
+#define ServerOP_AdventureLeave           0x015b
+#define ServerOP_AdventureLeaveReply      0x015c
+#define ServerOP_AdventureLeaveDeny       0x015d
+#define ServerOP_AdventureCountUpdate     0x015e
+#define ServerOP_AdventureZoneData        0x015f
+#define ServerOP_AdventureAssaCountUpdate 0x0160
+#define ServerOP_AdventureFinish          0x0161
+#define ServerOP_AdventureLeaderboard     0x0162
 
 #define ServerOP_WhoAll				0x0210
 #define ServerOP_FriendsWho			0x0211
 #define ServerOP_LFGMatches			0x0212
 #define ServerOP_LFPUpdate			0x0213
 #define ServerOP_LFPMatches			0x0214
-#define ServerOP_ClientVersionSummary		0x0215
+#define ServerOP_ClientVersionSummary 0x0215
 #define ServerOP_LSInfo				0x1000
 #define ServerOP_LSStatus			0x1001
 #define ServerOP_LSClientAuth		0x1002
@@ -825,64 +837,6 @@ struct ServerInstanceUpdateTime_Struct
 	int32 new_duration;
 };
 
-struct ServerAdventureCreate_Struct
-{
-	int32 from_zone_id;
-	int16 from_instance_id;
-	int32 id;
-	int32 adv_template_id;
-	sint32 instance_id;
-	int32 count;
-	int8 status;
-	int32 time_created;
-	int32 time_zoned;
-	int32 time_completed;
-};
-
-struct ServerAdventureAddPlayer_Struct
-{
-	int32 id;
-	char player_name[64];
-};
-
-struct ServerAdventureDestroy_Struct
-{
-	int32 id;
-};
-
-struct ServerAdventureUpdate_Struct
-{
-	int32 id;
-	int8 new_inst;
-	sint32 instance_id;
-	int8 new_status;
-	int32 status;
-	int8 new_timec;
-	int32 time_c;
-	int8 new_timez;
-	int32 time_z;
-};
-
-struct ServerAdventureCount_Struct
-{
-	int32 id;
-	int32 count;
-};
-
-struct ServerAdventureFinish_Struct
-{
-	int32 id;
-	int8 win_lose;
-	int32 points;
-	bool update_stats;
-};
-
-struct ServerAdventureMessage_Struct
-{
-	int32 id;
-	char message[0];
-};
-
 struct ServerSpawnStatusChange_Struct
 {
 	int32 id;
@@ -922,6 +876,118 @@ struct ServerRequestClientVersionSummary_Struct
 {
 	char Name[64];
 };
+
+struct ServerAdventureRequest_Struct
+{
+	char leader[64];
+	uint32 template_id;
+	uint8 type;
+	uint8 risk;
+	uint8 member_count;
+};
+
+struct ServerAdventureRequestDeny_Struct
+{
+	char leader[64];
+	char reason[512];
+};
+
+struct ServerAdventureRequestAccept_Struct
+{
+	char leader[64];
+	char text[512];
+	uint32 theme;
+	uint32 id;
+	uint32 member_count;
+};
+
+struct ServerAdventureRequestCreate_Struct
+{
+	char leader[64];
+	uint32 theme;
+	uint32 id;
+	uint32 member_count;
+};
+
+struct ServerSendAdventureData_Struct
+{
+	char player[64];
+	char text[512];
+	int32 time_left;
+	int32 time_to_enter;
+	int32 risk;
+	float x;
+	float y;
+	int count;
+	int total;
+	uint32 zone_in_id;
+	uint32 zone_in_object;
+	uint16 instance_id;
+	uint32 finished_adventures;
+};
+
+struct ServerFinishedAdventures_Struct
+{
+	uint32 zone_in_id;
+	uint32 zone_in_object;
+};
+
+struct ServerPlayerClickedAdventureDoor_Struct
+{
+	char player[64];
+	int id;
+	int zone_id;
+};
+
+struct ServerPlayerClickedAdventureDoorReply_Struct
+{
+	char player[64];
+	int zone_id;
+	int instance_id;
+	float x;
+	float y;
+	float z;
+	float h;
+};
+
+struct ServerAdventureCount_Struct
+{
+	uint16 instance_id;
+};
+
+struct ServerAdventureCountUpdate_Struct
+{
+	char player[64];
+	int count;
+	int total;
+};
+
+struct ServerZoneAdventureDataReply_Struct
+{
+	uint16 instance_id;
+	int count;
+	int total;
+	int type;
+	int data_id;
+	int assa_count;
+	int assa_x;
+	int assa_y;
+	int assa_z;
+	int assa_h;
+	int dest_x;
+	int dest_y;
+	int dest_z;
+	int dest_h;
+};
+
+struct ServerAdventureFinish_Struct
+{
+	char player[64];
+	bool win;
+	int points;
+	int theme;
+};
+
 #pragma pack()
 
 #endif

@@ -78,7 +78,7 @@ public:
 	Zone(int32 in_zoneid, int32 in_instanceid, const char* in_short_name);
 	~Zone();
 	bool	Init(bool iStaticZone);
-	bool	LoadZoneCFG(const char* filename, bool DontLoadDefault = false);
+	bool	LoadZoneCFG(const char* filename, uint16 instance_id, bool DontLoadDefault = false);
 	bool	SaveZoneCFG();
 	bool	IsLoaded();
 	bool	IsPVPZone() { return pvpzone; }
@@ -159,26 +159,24 @@ public:
 	void	LoadMerchantData_result(MYSQL_RES* result);
 	int		SaveTempItem(int32 merchantid, int32 npcid, int32 item, sint32 charges, bool sold=false);
 
-	void	SetInstanceTimer(int32 new_duration);
-	void	LoadAdventures();
-	void	LoadAdventureEntries();
-	void	LoadAdventureFlavor();
-	void	LoadActiveAdventures();
-	void	UpdateAdventureCount(AdventureDetails *ad);
-	void	LoadLDoNTraps();
-	void	LoadLDoNTrapEntries();
+	void SetInstanceTimer(int32 new_duration);
+	void LoadLDoNTraps();
+	void LoadLDoNTrapEntries();
+	void LoadAdventureFlavor();
 	
 	map<uint32,NPCType *> npctable;
 	map<uint32,std::list<MerchantList> > merchanttable;
 	map<uint32,std::list<TempMerchantList> > tmpmerchanttable;
-	map<uint32,AdventureInfo*> adventure_list;
-	map<uint32,std::list<AdventureInfo*> > adventure_entry_list;
 	map<uint32,std::string> adventure_entry_list_flavor;
-	map<uint32,AdventureDetails*> active_adventures;
 	map<uint32,LDoNTrapTemplate*> ldon_trap_list;
 	map<uint32,std::list<LDoNTrapTemplate*> > ldon_trap_entry_list;
 	list<InternalVeteranReward> VeteranRewards;
+	char *adv_data;
+	bool did_adventure_actions;
 
+	void	DoAdventureCountIncrease();
+	void	DoAdventureAssassinationCountIncrease();
+	void	DoAdventureActions();
 	void	LoadVeteranRewards();
 
 	Map*	zonemap;
@@ -248,6 +246,7 @@ private:
 	bool	is_hotzone;
 	int32	pgraveyard_id, pgraveyard_zoneid;
 	float	pgraveyard_x, pgraveyard_y, pgraveyard_z, pgraveyard_heading;
+	int     default_ruleset;
 
 	int	totalBS;
 	ZoneSpellsBlocked *blocked_spells;
@@ -271,7 +270,6 @@ private:
 	Timer	autoshutdown_timer;
 	Timer	clientauth_timer;
 	Timer	spawn2_timer;
-	Timer	adventure_timer;
 	Timer	qglobal_purge_timer;
 	Timer*  Weather_Timer;
 	Timer*	Instance_Timer;
