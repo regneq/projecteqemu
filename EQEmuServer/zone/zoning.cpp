@@ -274,8 +274,7 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 		}
 	}
 	
-	//Enforce adventure entrance rules
-
+	//TODO: ADVENTURE ENTRANCE CHECK
 
 	if(myerror == 1) {
 		//we have successfully zoned

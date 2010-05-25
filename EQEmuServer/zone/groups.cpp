@@ -1554,3 +1554,7 @@ void Group::ChangeLeader(Mob* newleader)
 	safe_delete(outapp);
 }
 
+const char *Group::GetClientNameByIndex(uint8 index)
+{
+	return membername[index];
+}

@@ -202,7 +202,7 @@ Corpse::Corpse(NPC* in_npc, ItemList* in_itemlist, int32 in_npctypeid, const NPC
 	 corpse_decay_timer(in_decaytime),
 	corpse_delay_timer(RuleI(NPC, CorpseUnlockTimer)),
 	corpse_graveyard_timer(0),
-	loot_cooldown_timer(100)
+	loot_cooldown_timer(10)
 {
 	corpse_graveyard_timer.Disable();
 	memset(item_tint, 0, sizeof(item_tint));
@@ -308,7 +308,7 @@ Corpse::Corpse(Client* client, sint32 in_rezexp)
 	corpse_decay_timer(RuleI(Character, CorpseDecayTimeMS)),
 	corpse_delay_timer(RuleI(NPC, CorpseUnlockTimer)),
 	corpse_graveyard_timer(RuleI(Zone, GraveyardTimeMS)),
-	loot_cooldown_timer(100)
+	loot_cooldown_timer(10)
 {
 	int i;
 	PlayerProfile_Struct *pp = &client->GetPP();
@@ -417,7 +417,7 @@ Corpse::Corpse(int32 in_dbid, int32 in_charid, char* in_charname, ItemList* in_i
 	corpse_decay_timer(RuleI(Character, CorpseDecayTimeMS)),
 	corpse_delay_timer(RuleI(NPC, CorpseUnlockTimer)),
 	corpse_graveyard_timer(RuleI(Zone, GraveyardTimeMS)),
-	loot_cooldown_timer(100)
+	loot_cooldown_timer(10)
 {
 	if(!zone->HasGraveyard() || wasAtGraveyard)
 		corpse_graveyard_timer.Disable();
@@ -1095,21 +1095,14 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app)
 			}
 		}
 
-		AdventureDetails *ad = client->GetCurrentAdventure();
-		if(ad && ad->ai)
+		if(zone->adv_data)
 		{
-			if(ad->instance_id == zone->GetInstanceID())
+			ServerZoneAdventureDataReply_Struct *ad = (ServerZoneAdventureDataReply_Struct*)zone->adv_data;
+			if(ad->type == Adventure_Collect && !IsPlayerCorpse())
 			{
-				if(!IsPlayerCorpse())
+				if(ad->data_id == inst->GetItem()->ID)
 				{
-					if(ad->ai->type == Adventure_Collect)
-					{
-						if(ad->ai->type_data == inst->GetItem()->ID)
-						{
-							//todo increment one for every item in stack.
-							zone->UpdateAdventureCount(ad);
-						}
-					}
+					zone->DoAdventureCountIncrease();
 				}
 			}
 		}

@@ -108,6 +108,7 @@ public:
 	void	ClearAllNPCMarks();
 	void	QueueHPPacketsForNPCHealthAA(Mob* sender, const EQApplicationPacket* app);
 	void	ChangeLeader(Mob* newleader);
+	const char *GetClientNameByIndex(uint8 index);
 	
 	Mob* members[MAX_GROUP_MEMBERS];
 	char	membername[MAX_GROUP_MEMBERS][64];

@@ -97,23 +97,27 @@ CommonProfiler _cp;
 #include "LauncherList.h"
 #include "wguild_mgr.h"
 #include "lfplist.h"
+#include "AdventureManager.h"
 
 TimeoutManager timeout_manager;
 EQStreamFactory eqsf(WorldStream,9000);
 EmuTCPServer tcps;
 ClientList client_list;
 GroupLFPList LFPGroupList;
-extern ConsoleList console_list;
 ZSList zoneserver_list;
 LoginServerList loginserverlist;
+EQWHTTPServer http_server;
+LauncherList launcher_list;
+AdventureManager adventure_manager;
+DBAsync *dbasync = NULL;
+RuleManager *rules = new RuleManager();
 volatile bool RunLoops = true;
 uint32 numclients = 0;
 uint32 numzones = 0;
 bool holdzones = false;
-EQWHTTPServer http_server;
-LauncherList launcher_list;
-DBAsync *dbasync = NULL;
-RuleManager *rules = new RuleManager();
+
+
+extern ConsoleList console_list;
 
 void CatchSignal(int sig_num);
 
@@ -323,6 +327,20 @@ int main(int argc, char** argv) {
 	_log(WORLD__INIT, "Deleted %i stale player corpses from database", database.DeleteStalePlayerCorpses());
 	_log(WORLD__INIT, "Deleted %i stale player backups from database", database.DeleteStalePlayerBackups());
 
+	_log(WORLD__INIT, "Loading adventures...");
+	if(!adventure_manager.LoadAdventureTemplates())
+	{
+		_log(WORLD__INIT_ERR, "Unable to load adventure templates.");
+	}
+
+	if(!adventure_manager.LoadAdventureEntries())
+	{
+		_log(WORLD__INIT_ERR, "Unable to load adventure templates.");
+	}
+
+	adventure_manager.Load();
+	adventure_manager.LoadLeaderboardInfo();
+
 	_log(WORLD__INIT, "Purging expired instances");
 	database.PurgeExpiredInstances();
 	Timer PurgeInstanceTimer(450000);
@@ -343,22 +361,10 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 
-	//ItemInst a((SharedDatabase *)&database,(uint32)17354,0);
-	//ItemInst b((SharedDatabase *)&database,(uint32)26885,0);
-	//ItemInst c((SharedDatabase *)&database,(uint32)41075,0);
-	//ItemInst d((SharedDatabase *)&database,(uint32)29041,0);
-	//d.PutAugment(&database,0,41006);
-	//a.PutItem(0,b);
-	//a.PutItem(1,c);
-	//a.PutItem(2,d);
-	//_log(WORLD__INIT,"%s\n",Client62::SerializeItem(&a,30,0));
-	
 	//register all the patches we have avaliable with the stream identifier.
 	EQStreamIdentifier stream_identifier;
 	RegisterAllPatches(stream_identifier);
-	
-	
-	zoneserver_list.shutdowntimer=new Timer(60000);
+	zoneserver_list.shutdowntimer = new Timer(60000);
 	zoneserver_list.shutdowntimer->Disable();
 	zoneserver_list.reminder = new Timer(20000);
 	zoneserver_list.reminder->Disable();
@@ -436,6 +442,8 @@ int main(int argc, char** argv) {
 		launcher_list.Process();
 
 		LFPGroupList.Process();
+
+		adventure_manager.Process();
 		
 		if (InterserverTimer.Check()) {
 			InterserverTimer.Start();

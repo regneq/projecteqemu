@@ -132,7 +132,7 @@ bool ZSList::SendPacket(uint32 ZoneID, ServerPacket* pack) {
 
 	iterator.Reset();
 	while(iterator.MoreElements()) {
-		if (iterator.GetData()->GetID() == ZoneID) {
+		if (iterator.GetData()->GetZoneID() == ZoneID) {
 			ZoneServer* tmp = iterator.GetData();
 			return(tmp->SendPacket(pack));
 		}
@@ -145,13 +145,26 @@ bool ZSList::SendPacket(uint32 ZoneID, uint16 instanceID, ServerPacket* pack) {
 	LinkedListIterator<ZoneServer*> iterator(list);
 
 	iterator.Reset();
-	while(iterator.MoreElements()) {
-		if (iterator.GetData()->GetID() == ZoneID 
-			&& iterator.GetData()->GetInstanceID() == instanceID) {
-			ZoneServer* tmp = iterator.GetData();
-			return(tmp->SendPacket(pack));
+	if(instanceID != 0)
+	{
+		while(iterator.MoreElements()) {
+			if(iterator.GetData()->GetInstanceID() == instanceID) {
+				ZoneServer* tmp = iterator.GetData();
+				return(tmp->SendPacket(pack));
+			}
+			iterator.Advance();
 		}
-		iterator.Advance();
+	}
+	else
+	{
+		while(iterator.MoreElements()) {
+			if (iterator.GetData()->GetZoneID() == ZoneID 
+				&& iterator.GetData()->GetInstanceID() == 0) {
+				ZoneServer* tmp = iterator.GetData();
+				return(tmp->SendPacket(pack));
+			}
+			iterator.Advance();
+		}
 	}
 	return(false);
 }

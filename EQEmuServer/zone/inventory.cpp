@@ -719,6 +719,19 @@ bool Client::IsValidSlot(uint32 slot)
 	}
 }
 
+bool Client::IsBankSlot(uint32 slot)
+{
+	if((slot >= 2000 && slot <= 2023) || // Bank
+	   (slot >= 2031 && slot <= 2270) || // Bank bags
+	   (slot >= 2500 && slot <= 2501) || // Shared bank
+	   (slot >= 2531 && slot <= 2550))   // Shared bank bags
+	{
+		return true;
+	}
+
+	return false;
+}
+
 // Moves items around both internally and in the database
 // In the future, this can be optimized by pushing all changes through one database REPLACE call
 bool Client::SwapItem(MoveItem_Struct* move_in) {
@@ -765,6 +778,25 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 	// Step 1: Variables
 	sint16 src_slot_id = (sint16)move_in->from_slot;
 	sint16 dst_slot_id = (sint16)move_in->to_slot;
+
+	if(IsBankSlot(src_slot_id) || 
+		IsBankSlot(dst_slot_id) || 
+		IsBankSlot(src_slot_check) ||
+		IsBankSlot(dst_slot_check))
+	{
+		uint32 distance = 0;
+		NPC *banker = entity_list.GetClosestBanker(this, distance);
+
+		if(!banker || distance > USE_NPC_RANGE2)
+		{
+			char *hacked_string = NULL;
+			MakeAnyLenString(&hacked_string, "Player tried to make use of a banker(items) but %s is non-existant or too far away (%u units).", 
+				banker ? banker->GetName() : "UNKNOWN NPC", distance);
+			database.SetMQDetectionFlag(AccountName(), GetName(), hacked_string, zone->GetShortName());
+			safe_delete_array(hacked_string);
+			return false;
+		}
+	}
 
 	if (shield_target && (move_in->from_slot == 14 || move_in->to_slot == 14))
 	{

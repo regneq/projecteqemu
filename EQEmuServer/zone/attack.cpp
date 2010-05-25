@@ -1898,10 +1898,22 @@ void NPC::Damage(Mob* other, sint32 damage, int16 spell_id, SkillType attack_ski
 	if (!IsEngaged())
 		zone->AddAggroMob();
 	
-	if(GetClass() == LDON_TREASURE) {
-		if(GetLDoNTrapType() > 0) {
-			if(IsLDoNLocked() || IsLDoNTrapped())
-				damage = -5;
+	if(GetClass() == LDON_TREASURE) 
+	{
+		if(IsLDoNLocked() && GetLDoNLockedSkill() != LDoNTypeMechanical) 
+		{
+			damage = -5;
+		}
+		else
+		{
+			if(IsLDoNTrapped())
+			{
+				Message_StringID(13, LDON_ACCIDENT_SETOFF2);
+				SpellFinished(GetLDoNTrapSpellID(), other, 10, 0);
+				SetLDoNTrapSpellID(0);
+				SetLDoNTrapped(false);
+				SetLDoNTrapDetected(false);
+			}
 		}
 	}
 
@@ -1970,57 +1982,6 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 	Client *give_exp_client = NULL;
 	if(give_exp && give_exp->IsClient())
 		give_exp_client = give_exp->CastToClient();
-
-	if(give_exp_client)
-	{
-		AdventureDetails *ad = give_exp_client->GetCurrentAdventure();
-		if(ad && ad->ai)
-		{
-			if(ad->instance_id == zone->GetInstanceID())
-			{
-				if(ad->ai->type == Adventure_Kill)
-				{
-					if(!IsPet() && GetClass() != LDON_TREASURE)
-					{
-						zone->UpdateAdventureCount(ad);
-					}
-				}
-				else if(ad->ai->type == Adventure_Assassinate)
-				{
-					if(GetNPCTypeID() == ad->ai->type_data)
-					{
-						zone->UpdateAdventureCount(ad);
-					}
-					else
-					{
-						if(!IsPet() && GetClass() != LDON_TREASURE)
-						{
-							if(ad->status != 3)
-							{
-								int32 c = database.AdventureGetAssassinateKills(ad->id);
-								c++;
-								if(c == RuleI(Adventure, NumberKillsForBossSpawn))
-								{
-									const NPCType* nt = NULL;
-									if(nt = database.GetNPCType(ad->ai->type_data)) 
-									{
-										NPC* npc = new NPC(nt, 0, ad->ai->assa_x, ad->ai->assa_y, ad->ai->assa_z, ad->ai->assa_h, FlyMode3);
-										npc->AddLootTable();
-										entity_list.AddNPC(npc);
-									}
-									database.AdventureSetAssassinateKills(ad->id, c);
-								}
-								else if(c < RuleI(Adventure, NumberKillsForBossSpawn))
-								{
-									database.AdventureSetAssassinateKills(ad->id, c);
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}	
 
 	bool IsLdonTreasure = (this->GetClass() == LDON_TREASURE);
 	if (give_exp_client && !IsCorpse() && MerchantType == 0)
@@ -2145,6 +2106,26 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 							break;
 						}
 					}
+				}
+			}
+		}
+
+		if(zone && zone->adv_data)
+		{
+			ServerZoneAdventureDataReply_Struct *sr = (ServerZoneAdventureDataReply_Struct*)zone->adv_data;
+			if(sr->type == Adventure_Kill)
+			{
+				zone->DoAdventureCountIncrease();
+			}
+			else if(sr->type == Adventure_Assassinate)
+			{
+				if(sr->data_id == GetNPCTypeID())
+				{
+					zone->DoAdventureCountIncrease();
+				}
+				else
+				{
+					zone->DoAdventureAssassinationCountIncrease();
 				}
 			}
 		}

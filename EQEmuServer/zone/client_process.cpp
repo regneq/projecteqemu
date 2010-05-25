@@ -80,20 +80,66 @@ bool Client::Process() {
 	_ZP(Client_Process);
 	adverrorinfo = 1;
 	bool ret = true;
-	//bool throughpacket = true;
 
-	if (Connected() || IsLD())
+	if(Connected() || IsLD())
 	{
         // try to send all packets that weren't sent before
 		if(!IsLD() && zoneinpacket_timer.Check()){
-//			zoneinpacket_timer.Start(1000);		//to decrease latency for these packets... no idea on a good value
 			SendAllPackets();
 		}
 		
 #ifdef PACKET_UPDATE_MANAGER
 		update_manager.Process();
 #endif
-		
+
+		if(adventure_request_timer)
+		{
+			if(adventure_request_timer->Check())
+			{
+				safe_delete(adventure_request_timer);
+			}
+		}
+
+		if(adventure_create_timer)
+		{
+			if(adventure_create_timer->Check())
+			{
+				safe_delete(adventure_create_timer);
+			}
+		}
+
+		if(adventure_leave_timer)
+		{
+			if(adventure_leave_timer->Check())
+			{
+				safe_delete(adventure_leave_timer);
+			}
+		}
+
+		if(adventure_door_timer)
+		{
+			if(adventure_door_timer->Check())
+			{
+				safe_delete(adventure_door_timer);
+			}
+		}
+
+		if(adventure_stats_timer)
+		{
+			if(adventure_stats_timer->Check())
+			{
+				safe_delete(adventure_stats_timer);
+			}
+		}
+
+		if(adventure_leaderboard_timer)
+		{
+			if(adventure_leaderboard_timer->Check())
+			{
+				safe_delete(adventure_leaderboard_timer);
+			}
+		}
+
 		if(dead)
 			SetHP(-100);
 		
@@ -1303,6 +1349,18 @@ void Client::OPMoveCoin(const EQApplicationPacket* app)
 		}
 		case 2:	// bank
 		{
+			uint32 distance = 0;
+			NPC *banker = entity_list.GetClosestBanker(this, distance);
+			if(!banker || distance > USE_NPC_RANGE2)
+			{
+				char *hacked_string = NULL;
+				MakeAnyLenString(&hacked_string, "Player tried to make use of a banker(coin move) but %s is non-existant or too far away (%u units).", 
+					banker ? banker->GetName() : "UNKNOWN NPC", distance);
+				database.SetMQDetectionFlag(AccountName(), GetName(), hacked_string, zone->GetShortName());
+				safe_delete_array(hacked_string);
+				return;
+			}
+
 			switch(mc->cointype1)
 			{
 				case COINTYPE_PP:
@@ -1323,6 +1381,17 @@ void Client::OPMoveCoin(const EQApplicationPacket* app)
 		}
 		case 4:	// shared bank
 		{
+			uint32 distance = 0;
+			NPC *banker = entity_list.GetClosestBanker(this, distance);
+			if(!banker || distance > USE_NPC_RANGE2)
+			{
+				char *hacked_string = NULL;
+				MakeAnyLenString(&hacked_string, "Player tried to make use of a banker(shared coin move) but %s is non-existant or too far away (%u units).", 
+					banker ? banker->GetName() : "UNKNOWN NPC", distance);
+				database.SetMQDetectionFlag(AccountName(), GetName(), hacked_string, zone->GetShortName());
+				safe_delete_array(hacked_string);
+				return;
+			}
 			if(mc->cointype1 == COINTYPE_PP)	// there's only platinum here
 				from_bucket = (sint32 *) &m_pp.platinum_shared;
 			break;
@@ -1368,6 +1437,17 @@ void Client::OPMoveCoin(const EQApplicationPacket* app)
 		}
 		case 2:	// bank
 		{
+			uint32 distance = 0;
+			NPC *banker = entity_list.GetClosestBanker(this, distance);
+			if(!banker || distance > USE_NPC_RANGE2)
+			{
+				char *hacked_string = NULL;
+				MakeAnyLenString(&hacked_string, "Player tried to make use of a banker(coin move) but %s is non-existant or too far away (%u units).", 
+					banker ? banker->GetName() : "UNKNOWN NPC", distance);
+				database.SetMQDetectionFlag(AccountName(), GetName(), hacked_string, zone->GetShortName());
+				safe_delete_array(hacked_string);
+				return;
+			}
 			switch(mc->cointype2)
 			{
 				case COINTYPE_PP:
@@ -1401,6 +1481,17 @@ void Client::OPMoveCoin(const EQApplicationPacket* app)
 		}
 		case 4:	// shared bank
 		{
+			uint32 distance = 0;
+			NPC *banker = entity_list.GetClosestBanker(this, distance);
+			if(!banker || distance > USE_NPC_RANGE2)
+			{
+				char *hacked_string = NULL;
+				MakeAnyLenString(&hacked_string, "Player tried to make use of a banker(shared coin move) but %s is non-existant or too far away (%u units).", 
+					banker ? banker->GetName() : "UNKNOWN NPC", distance);
+				database.SetMQDetectionFlag(AccountName(), GetName(), hacked_string, zone->GetShortName());
+				safe_delete_array(hacked_string);
+				return;
+			}
 			if(mc->cointype2 == COINTYPE_PP)	// there's only platinum here
 				to_bucket = (sint32 *) &m_pp.platinum_shared;
 			break;

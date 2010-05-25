@@ -69,7 +69,7 @@ problems, consider turning them off.
 
 //uncomment this to make the LOS code say all mobs can see all others
 //when no map file is loaded, opposed to the default nobody-sees-anybody
-//#define LOS_DEFAULT_CAN_SEE
+#define LOS_DEFAULT_CAN_SEE
 
 /*
 

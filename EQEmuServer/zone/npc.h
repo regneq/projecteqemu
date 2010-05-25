@@ -193,7 +193,6 @@ public:
 	void SetPrimSkill(int8 skill_type)	{ prim_melee_type = skill_type; }
 	void SetSecSkill(int8 skill_type)	{ sec_melee_type = skill_type; }
 
-	uint32	adventure_template_id;
 	uint32	MerchantType;
 	void	Depop(bool StartSpawnTimer = true);
 	void	Stun(int duration);
@@ -273,22 +272,22 @@ public:
 	void	ModifyNPCStat(const char *identifier, const char *newValue);
 	virtual void SetLevel(uint8 in_level, bool command = false);
 
-	bool IsLDoNTrapped() { return (ldon_trapped); }
+	bool IsLDoNTrapped() const { return (ldon_trapped); }
 	void SetLDoNTrapped(bool n) { ldon_trapped = n; }
 
-	int8 GetLDoNTrapType() { return (ldon_trap_type); }
+	int8 GetLDoNTrapType() const { return (ldon_trap_type); }
 	void SetLDoNTrapType(int8 n) { ldon_trap_type = n; }
 
-	int16 GetLDoNTrapSpellID() { return (ldon_spell_id); }
+	int16 GetLDoNTrapSpellID() const { return (ldon_spell_id); }
 	void SetLDoNTrapSpellID(int16 n) { ldon_spell_id = n; }
 
-	bool IsLDoNLocked() { return (ldon_locked); }
+	bool IsLDoNLocked() const { return (ldon_locked); }
 	void SetLDoNLocked(bool n) { ldon_locked = n; }
 
-	int16 GetLDoNLockedSkill() { return (ldon_locked_skill); }
+	int16 GetLDoNLockedSkill() const { return (ldon_locked_skill); }
 	void SetLDoNLockedSkill(int16 n) { ldon_locked_skill = n; }
 
-	bool IsLDoNTrapDetected() { return (ldon_trap_detected); }
+	bool IsLDoNTrapDetected() const { return (ldon_trap_detected); }
 	void SetLDoNTrapDetected(bool n) { ldon_trap_detected = n; }
 
 	const bool GetCombatEvent() const { return combat_event; }
@@ -301,6 +300,8 @@ public:
 	bool GetDepop() { return p_depop; }
 
 	void NPCSlotTexture(int8 slot, int16 texture);	// Sets new material values for slots
+
+	uint32 GetAdventureTemplate() const { return adventure_template_id; }
 
 protected:
 	
@@ -387,6 +388,7 @@ protected:
 	int16 ldon_locked_skill;
 	bool ldon_trap_detected;
 	QGlobalCache *qGlobals;
+	uint32 adventure_template_id;
 
 private:
 	int32	loottable_id;

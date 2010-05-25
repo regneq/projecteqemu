@@ -249,7 +249,6 @@ public:
 	void    QuestJournalledMessage(const char *npcname, const char* message);
 	void	VoiceMacroReceived(int32 Type, char *Target, int32 MacroNumber);
 	void	SendSound();
-	void	CheckLDoNHail(Mob *target);
 	void	LearnRecipe(uint32 recipeID);
 
 	EQApplicationPacket*	ReturnItemPacket(sint16 slot_id, const ItemInst* inst, ItemPacketType packet_type);
@@ -593,9 +592,9 @@ public:
 	void CheckIncreaseTradeskill(sint16 bonusstat, sint16 stat_modifier, float skillup_modifier, uint16 success_modifier, SkillType tradeskill);
 
 	int	pendingrezzexp;
-	void	GMKill();
+	void GMKill();
 	inline bool	IsMedding()	const {return medding;}
-	inline int16	GetDuelTarget() const { return duel_target; }
+	inline int16 GetDuelTarget() const { return duel_target; }
 	inline bool	IsDueling() const { return duelaccepted; }
 	inline void	SetDuelTarget(int16 set_id) { duel_target=set_id; }
 	inline void	SetDueling(bool duel) { duelaccepted = duel; }
@@ -615,8 +614,8 @@ public:
 	inline int8	GetBecomeNPCLevel() const { return npclevel; }
 	inline void	SetBecomeNPC(bool flag) { npcflag = flag; }
 	inline void	SetBecomeNPCLevel(int8 level) { npclevel = level; }
-	bool	LootToStack(uint32 itemid);
-	void	SetFeigned(bool in_feigned);
+	bool LootToStack(uint32 itemid);
+	void SetFeigned(bool in_feigned);
 	// EverHood 6/16/06
 	/// this cures timing issues cuz dead animation isn't done but server side feigning is?
 	inline bool    GetFeigned()	const { return(feigned); }
@@ -703,6 +702,7 @@ public:
 	void	SendLootItemInPacket(const ItemInst* inst, sint16 slot_id);
 	void	SendItemPacket(sint16 slot_id, const ItemInst* inst, ItemPacketType packet_type);
 	bool	IsValidSlot(uint32 slot);
+	bool    IsBankSlot(uint32 slot);
 
 	inline	bool IsTrader() const { return(Trader); }
 	inline	bool IsBuyer() const { return(Buyer); }
@@ -903,28 +903,38 @@ public:
 	inline const EQClientVersion GetClientVersion() const { return ClientVersion; }
 	inline const uint32 GetClientVersionBit() const { return ClientVersionBit; }
 
+	/** Adventure Stuff **/
+	void SendAdventureError(const char *error);
+	void SendAdventureDetails();
+	void SendAdventureCount(int32 count, int32 total);
+	void NewAdventure(int id, int theme, const char *text, int member_count, const char *members);
+	bool IsOnAdventure();
+	void LeaveAdventure();
+	void AdventureFinish(bool win, int theme, int points);
+	void SetAdventureData(char *data) { adv_data = data; }
+	void ClearAdventureData() { safe_delete(adv_data); }
+	bool HasAdventureData() { return adv_data != NULL; }
+	void ClearCurrentAdventure();
+	void PendingAdventureRequest() { adventure_request_timer = new Timer(8000); }
+	bool GetPendingAdventureRequest() const { return (adventure_request_timer != NULL); }
+	void ClearPendingAdventureRequest() { safe_delete(adventure_request_timer); }
+	void PendingAdventureCreate() { adventure_create_timer = new Timer(8000); }
+	bool GetPendingAdventureCreate() const { return (adventure_create_timer != NULL); }
+	void ClearPendingAdventureCreate() { safe_delete(adventure_create_timer); }
+	void PendingAdventureLeave() { adventure_leave_timer = new Timer(8000); }
+	bool GetPendingAdventureLeave() const { return (adventure_leave_timer != NULL); }
+	void ClearPendingAdventureLeave() { safe_delete(adventure_leave_timer); }
+	void PendingAdventureDoorClick() { adventure_door_timer = new Timer(8000); }
+	bool GetPendingAdventureDoorClick() const { return (adventure_door_timer != NULL); }
+	void ClearPendingAdventureDoorClick() { safe_delete(adventure_door_timer); }
+	void ClearPendingAdventureData();
+
 	int GetAggroCount();
 	void IncrementAggroCount();
 	void DecrementAggroCount();
 	void SendPVPStats();
 	void SendDisciplineTimers();
 	void SendRespawnBinds();
-
-	/*Adventure Stuff*/
-	AdventureInfo* GetOfferedAdventure() { return m_offered_adventure; }
-	void SetOfferedAdventure(AdventureInfo* ai) { m_offered_adventure = ai; }
-
-	AdventureDetails* GetCurrentAdventure() { return m_current_adventure; }
-	void SetCurrentAdventure(AdventureDetails* ad) { m_current_adventure = ad; }
-
-	void SendAdventureSelection(Mob* rec, int32 difficulty, int32 type);
-	void SendAdventureError(const char* msg, ...);
-	void SendAdventureDetail();
-	void SendAdventureFinish(int8 win, int32 points, int32 theme, bool update_stats);
-	void SendAdventureCountUpdate(int32 current, int32 total);
-	void AcceptAdventure();
-	void DeclineAdventure();
-	void LeaveAdventure();
 
 	int32 GetLDoNWins() { return (m_pp.ldon_wins_guk + m_pp.ldon_wins_mir + m_pp.ldon_wins_mmc + m_pp.ldon_wins_ruj + m_pp.ldon_wins_tak); }
 	int32 GetLDoNLosses() { return (m_pp.ldon_losses_guk + m_pp.ldon_losses_mir + m_pp.ldon_losses_mmc + m_pp.ldon_losses_ruj + m_pp.ldon_losses_tak); }
@@ -933,6 +943,7 @@ public:
 	int32 GetLDoNPointsTheme(int32 t);
 	void UpdateLDoNWins(int32 t, sint32 n);
 	void UpdateLDoNLosses(int32 t, sint32 n);
+	void CheckLDoNHail(Mob *target);
 
 	void HandleLDoNOpen(NPC *target);
 	void HandleLDoNSenseTraps(NPC *target, int16 skill, int8 type);
@@ -988,6 +999,19 @@ protected:
 	Mob *aa_los_them_mob;
 	bool los_status;
 	QGlobalCache *qGlobals;
+
+	/** Adventure Variables **/
+	Timer *adventure_request_timer;
+	Timer *adventure_create_timer;
+	Timer *adventure_leave_timer;
+	Timer *adventure_door_timer;
+	Timer *adventure_stats_timer;
+	Timer *adventure_leaderboard_timer;
+	int adv_requested_theme;
+	int adv_requested_id;
+	char *adv_requested_data;
+	int adv_requested_member_count;
+	char *adv_data;
 
 private:
 	eqFilterMode ClientFilters[_FilterCount];
@@ -1095,9 +1119,6 @@ private:
 	ExtendedProfile_Struct		m_epp;
 	Inventory					m_inv;
 	Object*						m_tradeskill_object;
-
-	AdventureInfo* m_offered_adventure;
-	AdventureDetails *m_current_adventure;
 
 	void NPCSpawn(const Seperator* sep);
 	uint32 GetEXPForLevel(uint16 level);

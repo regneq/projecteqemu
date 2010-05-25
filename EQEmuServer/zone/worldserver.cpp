@@ -1290,132 +1290,6 @@ void WorldServer::Process() {
 			break;
 		}
 
-		case ServerOP_AdventureCreate: {
-			ServerAdventureCreate_Struct *ac = (ServerAdventureCreate_Struct*)pack->pBuffer;
-			if(zone)
-			{
-				if(zone->GetZoneID() == ac->from_zone_id && zone->GetInstanceID() == ac->from_instance_id)
-					break;
-				else
-				{
-					AdventureDetails *ad = new AdventureDetails;
-					ad->ai = zone->adventure_list[ac->adv_template_id];
-					ad->id = ac->id;
-					ad->instance_id = ac->instance_id;
-					ad->status = ac->status;
-					ad->count = ac->count;
-					ad->time_created = ac->time_created;
-					ad->time_zoned = ac->time_zoned;
-					ad->time_completed = ac->time_completed;
-					zone->active_adventures[ac->id] = ad;
-				}
-			}
-			break;
-		}
-
-		case ServerOP_AdventureAddPlayer: {
-			ServerAdventureAddPlayer_Struct *ap = (ServerAdventureAddPlayer_Struct*)pack->pBuffer;
-			if(zone)
-			{
-				Client *c = entity_list.GetClientByName(ap->player_name);
-				if(c)
-				{
-					AdventureDetails *ad = zone->active_adventures[ap->id];
-					c->SetCurrentAdventure(ad);
-					c->SetOfferedAdventure(NULL);
-					c->SendAdventureDetail();
-				}
-			}
-			break;
-		}
-
-		case ServerOP_AdventureDestroy: {
-			ServerAdventureDestroy_Struct *ap = (ServerAdventureDestroy_Struct*)pack->pBuffer;
-			if(zone)
-			{
-				entity_list.AdventureDestroy(ap->id);
-				std::map<int32, AdventureDetails*>::iterator iter = zone->active_adventures.find(ap->id);
-				if(iter != zone->active_adventures.end())
-				{
-					//todo: remove any players from this group
-					delete iter->second;
-					zone->active_adventures.erase(iter);
-				}
-			}
-			break;
-		}
-
-		case ServerOP_AdventureUpdate: {
-			ServerAdventureUpdate_Struct *au = (ServerAdventureUpdate_Struct*)pack->pBuffer;
-			if(zone)
-			{
-				std::map<int32, AdventureDetails*>::iterator iter = zone->active_adventures.find(au->id);
-				if(iter != zone->active_adventures.end())
-				{
-					AdventureDetails *ad = iter->second;
-					if(ad)
-					{
-						if(au->new_inst == 1)
-						{
-							ad->instance_id = au->instance_id;
-						}
-						
-						if(au->new_status == 1)
-						{
-							ad->status = au->status;
-						}
-
-						if(au->new_timez == 1)
-						{
-							ad->time_zoned = au->time_z;
-						}
-
-						if(au->new_timec == 1)
-						{
-							ad->time_completed = au->time_c;
-						}
-						
-						entity_list.SendAdventureUpdate(au->id);
-					}
-				}
-			}
-			break;
-		}
-
-		case ServerOP_AdventureFinish: {
-			ServerAdventureFinish_Struct *af = (ServerAdventureFinish_Struct*)pack->pBuffer;
-			if(zone)
-			{
-				entity_list.AdventureFinish(af->id, af->win_lose, af->points, af->update_stats);
-			}
-			break;
-		}
-
-		case ServerOP_AdventureMessage: {
-			ServerAdventureMessage_Struct *am = (ServerAdventureMessage_Struct*)pack->pBuffer;
-			if(zone)
-			{
-				entity_list.AdventureMessage(am->id, am->message);
-			}
-			break;
-		}
-
-		case ServerOP_AdventureCount: {
-			ServerAdventureCount_Struct *ac = (ServerAdventureCount_Struct*)pack->pBuffer;
-			if(zone)
-			{
-				std::map<int32, AdventureDetails*>::iterator iter = zone->active_adventures.find(ac->id);
-				if(iter != zone->active_adventures.end())
-				{
-					AdventureDetails *ad = iter->second;
-					if(ad && ad->ai)
-					{
-						entity_list.AdventureCountUpdate(ac->id, ac->count, ad->ai->type_count);
-					}
-				}
-			}
-			break;
-		}
 		case ServerOP_DepopAllPlayersCorpses:
 		{
 			ServerDepopAllPlayersCorpses_Struct *sdapcs = (ServerDepopAllPlayersCorpses_Struct *)pack->pBuffer;
@@ -1507,6 +1381,162 @@ void WorldServer::Process() {
 					entity_list.DeleteQGlobal(std::string((char*)qgd->name), qgd->npc_id, qgd->char_id, qgd->zone_id);
 					zone->DeleteQGlobal(std::string((char*)qgd->name), qgd->npc_id, qgd->char_id, qgd->zone_id);
 				}
+			}
+			break;
+		}
+
+		case ServerOP_AdventureRequestAccept:
+		{
+			ServerAdventureRequestAccept_Struct *ars = (ServerAdventureRequestAccept_Struct*)pack->pBuffer;
+			Client *c = entity_list.GetClientByName(ars->leader);
+			if(c)
+			{
+				c->NewAdventure(ars->id, ars->theme, ars->text, ars->member_count, (const char*)(pack->pBuffer + sizeof(ServerAdventureRequestAccept_Struct)));
+				c->ClearPendingAdventureRequest();
+			}
+			break;
+		}
+
+		case ServerOP_AdventureRequestDeny:
+		{
+			ServerAdventureRequestDeny_Struct *ars = (ServerAdventureRequestDeny_Struct*)pack->pBuffer;
+			Client *c = entity_list.GetClientByName(ars->leader);
+			if(c)
+			{
+				c->SendAdventureError(ars->reason);
+				c->ClearPendingAdventureRequest();
+			}
+			break;
+		}
+
+		case ServerOP_AdventureCreateDeny:
+		{
+			Client *c = entity_list.GetClientByName((const char*)pack->pBuffer);
+			if(c)
+			{
+				c->ClearPendingAdventureData();
+				c->ClearPendingAdventureCreate();
+			}
+			break;
+		}
+
+		case ServerOP_AdventureData:
+		{
+			Client *c = entity_list.GetClientByName((const char*)pack->pBuffer);
+			if(c)
+			{
+				c->ClearAdventureData();
+				char * adv_data = new char[pack->size];
+				memcpy(adv_data, pack->pBuffer, pack->size);
+				c->SetAdventureData(adv_data);
+				c->ClearPendingAdventureData();
+				c->ClearPendingAdventureCreate();
+				c->SendAdventureDetails();
+			}
+			break;
+		}
+
+		case ServerOP_AdventureDataClear:
+		{
+			Client *c = entity_list.GetClientByName((const char*)pack->pBuffer);
+			if(c)
+			{
+				if(c->HasAdventureData())
+				{
+					c->ClearAdventureData();
+					c->SendAdventureError("You are not currently assigned to an adventure.");
+				}
+			}
+			break;
+		}
+
+		case ServerOP_AdventureClickDoorReply:
+		{
+			ServerPlayerClickedAdventureDoorReply_Struct *adr = (ServerPlayerClickedAdventureDoorReply_Struct*)pack->pBuffer;
+			Client *c = entity_list.GetClientByName(adr->player);
+			if(c)
+			{
+				c->ClearPendingAdventureDoorClick();
+				c->MovePC(adr->zone_id, adr->instance_id, adr->x, adr->y, adr->z, adr->h, 0);
+			}
+			break;
+		}
+
+		case ServerOP_AdventureClickDoorError:
+		{
+			Client *c = entity_list.GetClientByName((const char*)pack->pBuffer);
+			if(c)
+			{
+				c->ClearPendingAdventureDoorClick();
+				c->Message_StringID(13, 5141);
+			}
+			break;
+		}
+		
+		case ServerOP_AdventureLeaveReply:
+		{
+			Client *c = entity_list.GetClientByName((const char*)pack->pBuffer);
+			if(c)
+			{
+				c->ClearPendingAdventureLeave();
+				c->ClearCurrentAdventure();
+			}
+			break;
+		}
+
+		case ServerOP_AdventureLeaveDeny:
+		{
+			Client *c = entity_list.GetClientByName((const char*)pack->pBuffer);
+			if(c)
+			{
+				c->ClearPendingAdventureLeave();
+				c->Message(13, "You cannot leave this adventure at this time.");
+			}
+			break;
+		}
+
+		case ServerOP_AdventureCountUpdate:
+		{
+			ServerAdventureCountUpdate_Struct *ac = (ServerAdventureCountUpdate_Struct*)pack->pBuffer;
+			Client *c = entity_list.GetClientByName(ac->player);
+			if(c)
+			{
+				c->SendAdventureCount(ac->count, ac->total);
+			}
+			break;
+		}
+
+		case ServerOP_AdventureZoneData:
+		{
+			if(zone)
+			{
+				safe_delete(zone->adv_data);
+				zone->adv_data = new char[pack->size];
+				memcpy(zone->adv_data, pack->pBuffer, pack->size);
+				ServerZoneAdventureDataReply_Struct* ds = (ServerZoneAdventureDataReply_Struct*)zone->adv_data;
+			}
+			break;
+		}
+
+		case ServerOP_AdventureFinish:
+		{
+			ServerAdventureFinish_Struct *af = (ServerAdventureFinish_Struct*)pack->pBuffer;
+			Client *c = entity_list.GetClientByName(af->player);
+			if(c)
+			{
+				c->AdventureFinish(af->win, af->theme, af->points);
+			}
+			break;
+		}
+
+		case ServerOP_AdventureLeaderboard:
+		{
+			Client *c = entity_list.GetClientByName((const char*)pack->pBuffer);
+			if(c)
+			{
+				EQApplicationPacket* outapp = new EQApplicationPacket(OP_AdventureLeaderboardReply, sizeof(AdventureLeaderboard_Struct));
+				memcpy(outapp->pBuffer, pack->pBuffer+64, sizeof(AdventureLeaderboard_Struct));
+				c->FastQueuePacket(&outapp);
 			}
 			break;
 		}
@@ -1670,9 +1700,8 @@ void WorldServer::SendReloadTasks(int Command, int TaskID) {
 	SendPacket(pack);
 }
 
-void WorldServer::HandleReloadTasks(ServerPacket *pack) {
-
-	
+void WorldServer::HandleReloadTasks(ServerPacket *pack) 
+{	
 	ReloadTasks_Struct* rts = (ReloadTasks_Struct*) pack->pBuffer;
 
 	_log(TASKS__GLOBALLOAD, "Zone received ServerOP_ReloadTasks from World, Command %i", rts->Command);

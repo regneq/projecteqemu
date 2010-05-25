@@ -138,14 +138,13 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 	silver = 0;
 	gold = 0;
 	platinum = 0;
-	max_dmg=d->max_dmg;
-	min_dmg=d->min_dmg;
+	max_dmg = d->max_dmg;
+	min_dmg = d->min_dmg;
 	grid = 0;
 	wp_m = 0;
 	max_wp=0;
 	save_wp = 0;
 	spawn_group = 0;
-// for quest signal() command
 	signaled = false;
 	signal_id = 0;
     guard_x = 0;
@@ -153,8 +152,6 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
 	guard_z = 0;
 	guard_heading = 0;
 	swarmInfoPtr = NULL;
-
-//	SaveSpawnSpot();
 
 	logging_enabled = NPC_DEFAULT_LOGGING_ENABLED;
 	
@@ -207,7 +204,7 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
     CalcMaxMana();
     SetMana(GetMaxMana());
 
-	MerchantType=d->merchanttype; // Yodason: merchant stuff
+	MerchantType = d->merchanttype;
 	adventure_template_id = d->adventure_template;
 	org_x = x;
 	org_y = y;
@@ -547,7 +544,7 @@ bool NPC::Process()
     
     SpellProcess();
     
-    if (tic_timer.Check()) 
+    if(tic_timer.Check()) 
 	{	
 		BuffProcess();
 		
@@ -584,31 +581,25 @@ bool NPC::Process()
 			SetMana(GetMana()+mana_regen+bonus);
 		}
 
-		Mob *o = GetOwner();
-		if(o && o->IsClient())
+
+		if(zone->adv_data && !p_depop)
 		{
-			if(!p_depop)
+			ServerZoneAdventureDataReply_Struct* ds = (ServerZoneAdventureDataReply_Struct*)zone->adv_data;
+			if(ds->type == Adventure_Rescue && ds->data_id == GetNPCTypeID())
 			{
-				Client *c = o->CastToClient();
-				AdventureDetails *ad = c->GetCurrentAdventure();
-				if(ad && ad->ai)
+				Mob *o = GetOwner();
+				if(o && o->IsClient())
 				{
-					if(ad->ai->type == Adventure_Rescue)
+					float x_diff = ds->dest_x - GetX();
+					float y_diff = ds->dest_y - GetY();
+					float z_diff = ds->dest_z - GetZ();
+					float dist = ((x_diff * x_diff) + (y_diff * y_diff) + (z_diff * z_diff));
+					if(dist < RuleR(Adventure, DistanceForRescueComplete))
 					{
-						if(GetNPCTypeID() == ad->ai->type_data)
-						{
-							float xDiff = ad->ai->dest_x - GetX();
-							float yDiff = ad->ai->dest_y - GetY();
-							float zDiff = ad->ai->dest_z - GetZ();
-							float dist = ((xDiff * xDiff) + (yDiff * yDiff) + (zDiff * zDiff));
-							if(dist < RuleR(Adventure, DistanceForRescueComplete))
-							{
-								zone->UpdateAdventureCount(ad);
-								Say("You don't know what this means to me. Thank you so much for finding and saving me from"
-									" this wretched place. I'll find my way from here.");
-								Depop();
-							}
-						}
+						zone->DoAdventureCountIncrease();
+						Say("You don't know what this means to me. Thank you so much for finding and saving me from"
+							" this wretched place. I'll find my way from here.");
+						Depop();
 					}
 				}
 			}

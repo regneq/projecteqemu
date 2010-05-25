@@ -98,10 +98,6 @@ public:
 	Ground_Spawns*	LoadGroundSpawns(int32 zone_id, int16 version, Ground_Spawns* gs);
 	
 	/*
-	 * Adventures
-	 */
-	
-	/*
 	 * Traders
 	 */
 
@@ -194,8 +190,8 @@ public:
 	/*
 	 * Zone related
 	 */
-	bool	GetZoneCFG(int32 zoneid, NewZone_Struct *data, bool &can_bind, bool &can_combat, bool &can_levitate, bool &can_castoutdoor, bool &is_city, bool &is_hotzone);
-	bool	SaveZoneCFG(int32 zoneid,NewZone_Struct* zd);
+	bool	GetZoneCFG(int32 zoneid, uint16 instance_id, NewZone_Struct *data, bool &can_bind, bool &can_combat, bool &can_levitate, bool &can_castoutdoor, bool &is_city, bool &is_hotzone, int &ruleset);
+	bool	SaveZoneCFG(int32 zoneid, uint16 instance_id, NewZone_Struct* zd);
 	bool	DumpZoneState();
 	sint8	LoadZoneState(const char* zonename, LinkedList<Spawn2*>& spawn2_list);
 	bool	LoadStaticZonePoints(LinkedList<ZonePoint*>* zone_point_list,const char* zonename);

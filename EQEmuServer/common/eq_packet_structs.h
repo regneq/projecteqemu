@@ -98,51 +98,6 @@ enum AdventureObjective
 	Adventure_Rescue = 4
 };
 
-struct AdventureInfo 
-{
-	uint32 id;
-	std::string zone_name;
-	uint16 zone_version;
-	uint16 is_hard;
-	uint8 is_raid;
-	uint16 min_level;
-	uint16 max_level;
-	AdventureObjective type;
-	uint32 type_data;
-	uint16 type_count;
-	double assa_x;
-	double assa_y;
-	double assa_z;
-	double assa_h;
-	std::string text;
-	uint32 duration;
-	uint32 zone_in_time;
-	uint8 theme;
-	uint16 win_points;
-	uint16 lose_points;
-	uint16 zone_in_zone_id;
-	double zone_in_x; //loc of zone in object
-	double zone_in_y; //loc of zone in object
-	sint16 zone_in_object_id; //actually a global door id
-	double dest_x; //x we zone into
-	double dest_y; //y we zone into
-	double dest_z; //z we zone into
-	double dest_h; //h we zone into
-};
-
-struct AdventureDetails
-{
-	uint32 id;
-	AdventureInfo *ai;
-	sint32 instance_id;
-	int32 count;
-	int8 status;
-	int32 assassinate_count;
-	int32 time_created;
-	int32 time_zoned;
-	int32 time_completed;
-};
-
 typedef enum
 {
 	LDoNTypeMechanical = 1,
@@ -1935,10 +1890,10 @@ struct AdventureStats_Struct
 //I don't really care enough about the feature to work on it anymore though.
 struct AdventureLeaderboardEntry_Struct
 {
-/*004*/ char name[64];
-/*008*/ int32 success;
-/*012*/ int32 failure;
-/*016*/
+/*000*/ char name[64];
+/*064*/ int32 success;
+/*068*/ int32 failure;
+/*072*/
 };
 
 struct AdventureLeaderboard_Struct
@@ -1948,7 +1903,7 @@ struct AdventureLeaderboard_Struct
 /*008*/ int32 success;
 /*012*/ int32 failure;
 /*016*/ int32 our_rank;
-/*020*/	
+/*020*/	AdventureLeaderboardEntry_Struct entries[100];
 };
 
 /*struct Item_Shop_Struct {
