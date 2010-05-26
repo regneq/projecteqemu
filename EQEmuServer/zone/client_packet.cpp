@@ -3119,18 +3119,17 @@ void Client::Handle_OP_ItemLinkResponse(const EQApplicationPacket *app) {
 
 void Client::Handle_OP_MoveItem(const EQApplicationPacket *app)
 {
-	if(this->CharacterID()==0)
-		return;
-	if (app->size != sizeof(MoveItem_Struct)) {
-		LogFile->write(EQEMuLog::Error, "Wrong size: OP_MoveItem, size=%i, expected %i", app->size, sizeof(MoveItem_Struct));
-		return;
-	}
-	MoveItem_Struct* mi = (MoveItem_Struct*)app->pBuffer;
-	if(mi->from_slot == mi->to_slot)
+	if(!CharacterID())
 	{
 		return;
 	}
 
+	if (app->size != sizeof(MoveItem_Struct)) {
+		LogFile->write(EQEMuLog::Error, "Wrong size: OP_MoveItem, size=%i, expected %i", app->size, sizeof(MoveItem_Struct));
+		return;
+	}
+
+	MoveItem_Struct* mi = (MoveItem_Struct*)app->pBuffer;
 	SwapItem(mi);
 	return;
 }
@@ -4350,17 +4349,7 @@ LogFile->write(EQEMuLog::Debug, "OP CastSpell: slot=%d, spell=%d, target=%d, inv
 					InterruptSpell(castspell->spell_id);	//CHEATER!!
 					return;
 				}
-				//delete a charge from the item
-				/* No, this is done in CastedSpellFinished, plus OP_TraderDelItem is not the correct
-				 * Opcode to use for this purpose.
-				EQApplicationPacket* outapp = new EQApplicationPacket(OP_TraderDelItem,sizeof(TraderDelItem_Struct));
-				TraderDelItem_Struct* tdi = (TraderDelItem_Struct*)outapp->pBuffer;
-				tdi->quantity=0xFFFFFFFF;
-				tdi->unknown=0xFFFFFFFF;
-				tdi->slotid=castspell->slot;
-				QueuePacket(outapp);
-				safe_delete(outapp);
-				*/	
+				
 				if ((item->Click.Type == ET_ClickEffect) || (item->Click.Type == ET_Expendable) || (item->Click.Type == ET_EquipClick) || (item->Click.Type == ET_ClickEffect2))
 				{
 					if(item->Click.Level2 > 0)
