@@ -1218,7 +1218,7 @@ void AdventureManager::Load()
 				Adventure *adv = new Adventure(t, count, a_count, (AdventureStatus)status, instance_id, rem_time);
 				for(int j = 0; j < num_players; ++j)
 				{
-					adv->AddPlayer((const char*)ptr);
+					adv->AddPlayer((const char*)ptr, false);
 					ptr += strlen((const char*)ptr);
 					ptr += 1;
 				}

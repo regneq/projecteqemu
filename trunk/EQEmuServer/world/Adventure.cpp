@@ -48,12 +48,15 @@ Adventure::~Adventure()
 	safe_delete(current_timer);
 }
 
-void Adventure::AddPlayer(string character_name)
+void Adventure::AddPlayer(string character_name, bool add_client_to_instance)
 {
 	if(!PlayerExists(character_name))
 	{
 		int client_id = database.GetCharacterID(character_name.c_str());
-		database.AddClientToInstance(instance_id, client_id);
+		if(add_client_to_instance)
+		{
+			database.AddClientToInstance(instance_id, client_id);
+		}
 		players.push_back(character_name);
 	}
 }
