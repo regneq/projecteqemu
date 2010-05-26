@@ -60,7 +60,7 @@ public:
 	~Adventure();
 	bool Process();
 	bool IsActive();
-	void AddPlayer(string character_name);
+	void AddPlayer(string character_name, bool add_client_to_instance = true);
 	void RemovePlayer(string character_name);
 	bool PlayerExists(string character_name);
 	bool CreateInstance();
