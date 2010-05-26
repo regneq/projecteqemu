@@ -16,7 +16,7 @@ extern ClientList client_list;
 AdventureManager::AdventureManager()
 {
 	process_timer = new Timer(500);
-	save_timer = new Timer(60000);
+	save_timer = new Timer(90000);
 	leaderboard_info_timer = new Timer(300000);
 }
 
@@ -40,7 +40,6 @@ void AdventureManager::Process()
 				iter = adventure_list.erase(iter);
 				GetAdventureData(adv);
 				delete adv;
-				Save();
 				continue;
 			}
 			iter++;
@@ -155,7 +154,7 @@ void AdventureManager::CalculateAdventureRequestReply(const char *data)
 	list<AdventureTemplate*>::iterator ea_iter = eligible_adventures.begin();
 	while(ea_iter != eligible_adventures.end())
 	{
-		if((*ea_iter)->is_hard != ((sar->risk == 1) ? true : false))
+		if((*ea_iter)->is_hard != ((sar->risk == 2) ? true : false))
 		{
 			ea_iter = eligible_adventures.erase(ea_iter);
 			continue;
@@ -443,7 +442,6 @@ void AdventureManager::TryAdventureCreate(const char *data)
 	}
 
 	adventure_list.push_back(adv);
-	Save();
 }
 
 void AdventureManager::GetAdventureData(Adventure *adv)
@@ -772,7 +770,6 @@ void AdventureManager::PlayerClickedDoor(const char *player, int zone_id, int do
 					if((*iter)->GetStatus() == AS_WaitingForZoneIn)
 					{
 						(*iter)->SetStatus(AS_WaitingForPrimaryEndTime);
-						Save();
 					}
 
 					pack->Deflate();
@@ -820,7 +817,6 @@ void AdventureManager::LeaveAdventure(const char *name)
 				}
 
 				current->RemovePlayer(name);
-				Save();
 				ServerPacket *pack = new ServerPacket(ServerOP_AdventureLeaveReply, 64);
 				strcpy((char*)pack->pBuffer, name);
 				pack->Deflate();
@@ -939,14 +935,8 @@ void AdventureManager::GetZoneData(uint16 instance_id)
 	}
 }
 
-// Sort the leaderboard by wins to losses
-bool pred_s_lb1(const LeaderboardInfo &lbi1, const LeaderboardInfo &lbi2)
-{
-	return (lbi1.wins - lbi1.losses) > (lbi2.wins - lbi2.losses);
-}
-
 // Sort the leaderboard by wins.
-bool pred_s_lb2(const LeaderboardInfo &lbi1, const LeaderboardInfo &lbi2)
+bool pred_s_lb1(const LeaderboardInfo &lbi1, const LeaderboardInfo &lbi2)
 {
 	return lbi1.wins > lbi2.wins;
 }
@@ -983,7 +973,6 @@ void AdventureManager::LoadLeaderboardInfo()
 		}
 		mysql_free_result(result);
 		safe_delete_array(query);
-		leaderboard_info.sort(pred_s_lb2);
 		leaderboard_info.sort(pred_s_lb1);
 		return;
 	}
@@ -1102,6 +1091,9 @@ void AdventureManager::SendAdventureFinish(AdventureFinishEvent fe)
 
 void AdventureManager::Save()
 {
+	//disabled for now
+	return;
+
 	stringstream ss(stringstream::in | stringstream::out);
 
 	int number_of_elements = adventure_list.size();
@@ -1167,6 +1159,9 @@ void AdventureManager::Save()
 
 void AdventureManager::Load()
 {
+	//disabled for now
+	return;
+
 	char *data = NULL;
 	FILE *f = fopen("adventure_state.dat", "r");
 	if(f)
