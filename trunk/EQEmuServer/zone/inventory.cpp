@@ -763,7 +763,7 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 		return true; // Item summon, no further proccessing needed
 	
 	if (move_in->to_slot == (uint32)SLOT_INVALID) {
-		if(move_in->from_slot == SLOT_CURSOR) {
+		if(move_in->from_slot == (uint32)SLOT_CURSOR) {
 			mlog(INVENTORY__SLOTS, "Client destroyed item from cursor slot %d", move_in->from_slot);
 			DeleteItemInInventory(move_in->from_slot);
 			return true; // Item destroyed by client
@@ -781,6 +781,25 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 	// Step 1: Variables
 	sint16 src_slot_id = (sint16)move_in->from_slot;
 	sint16 dst_slot_id = (sint16)move_in->to_slot;
+
+	if(IsBankSlot(src_slot_id) || 
+		IsBankSlot(dst_slot_id) || 
+		IsBankSlot(src_slot_check) ||
+		IsBankSlot(dst_slot_check))
+	{
+		uint32 distance = 0;
+		NPC *banker = entity_list.GetClosestBanker(this, distance);
+
+		if(!banker || distance > USE_NPC_RANGE2)
+		{
+			char *hacked_string = NULL;
+			MakeAnyLenString(&hacked_string, "Player tried to make use of a banker(items) but %s is non-existant or too far away (%u units).", 
+				banker ? banker->GetName() : "UNKNOWN NPC", distance);
+			database.SetMQDetectionFlag(AccountName(), GetName(), hacked_string, zone->GetShortName());
+			safe_delete_array(hacked_string);
+			return false;
+		}
+	}
 
 	if (shield_target && (move_in->from_slot == 14 || move_in->to_slot == 14))
 	{
