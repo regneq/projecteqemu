@@ -1991,14 +1991,12 @@ void Client::Handle_OP_ItemVerifyRequest(const EQApplicationPacket *app)
 	const ItemInst* inst = m_inv[slot_id];
 	if (!inst) {
 		Message(0, "Error: item not found in inventory slot #%i", slot_id);
-		DeleteItemInInventory(slot_id,0,true);
 		return;
 	}
 
 	const Item_Struct* item = inst->GetItem();
 	if (!item) {
 		Message(0, "Error: item not found in inventory slot #%i", slot_id);
-		DeleteItemInInventory(slot_id,0,true);
 		return;
 	}
 
@@ -10519,14 +10517,23 @@ void Client::Handle_OP_AdventureStatsRequest(const EQApplicationPacket *app)
 
 void Client::Handle_OP_AdventureLeaderboardRequest(const EQApplicationPacket *app)
 {
+	if(app->size < sizeof(AdventureLeaderboardRequest_Struct))
+	{
+		return;
+	}
+
 	if(adventure_leaderboard_timer)
 	{
 		return;
 	}
 
-	adventure_leaderboard_timer = new Timer(10000);
-	ServerPacket *pack = new ServerPacket(ServerOP_AdventureLeaderboard, 64);
-	strcpy((char*)pack->pBuffer, GetName());
+	adventure_leaderboard_timer = new Timer(4000);
+	ServerPacket *pack = new ServerPacket(ServerOP_AdventureLeaderboard, sizeof(ServerLeaderboardRequest_Struct));
+	ServerLeaderboardRequest_Struct *lr = (ServerLeaderboardRequest_Struct*)pack->pBuffer;
+	strcpy(lr->player, GetName());
+
+	AdventureLeaderboardRequest_Struct *lrs = (AdventureLeaderboardRequest_Struct*)app->pBuffer;
+	lr->type = 1 + (lrs->theme * 2) + lrs->type;
 	worldserver.SendPacket(pack);
 	delete pack;
 }

@@ -1896,6 +1896,14 @@ struct AdventureLeaderboardEntry_Struct
 /*072*/
 };
 
+struct AdventureLeaderboardRequest_Struct
+{
+/*000*/ int32 type;
+/*004*/ int32 theme;
+/*008*/ int32 risk;
+/*012*/
+};
+
 struct AdventureLeaderboard_Struct
 {
 /*000*/ int32 unknown000;

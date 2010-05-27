@@ -988,6 +988,12 @@ struct ServerAdventureFinish_Struct
 	int theme;
 };
 
+struct ServerLeaderboardRequest_Struct
+{
+	char player[64];
+	uint8 type;
+};
+
 #pragma pack()
 
 #endif
