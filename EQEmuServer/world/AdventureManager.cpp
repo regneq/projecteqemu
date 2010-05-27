@@ -2015,8 +2015,8 @@ void AdventureManager::DoLeaderboardRequestPercentageTak(const char* player)
 		int our_successes;
 		int our_failures;
 		int i = 0;
-		list<LeaderboardInfo>::iterator iter = leaderboard_info_percentage_ruj.begin();
-		while(i < 100 && iter != leaderboard_info_percentage_ruj.end())
+		list<LeaderboardInfo>::iterator iter = leaderboard_info_percentage_tak.begin();
+		while(i < 100 && iter != leaderboard_info_percentage_tak.end())
 		{
 			LeaderboardInfo li = (*iter);
 			if(li.name.compare(player) == 0)
@@ -2033,9 +2033,9 @@ void AdventureManager::DoLeaderboardRequestPercentageTak(const char* player)
 			iter++;
 		}
 
-		if(place == -1 && iter != leaderboard_info_percentage_ruj.end())
+		if(place == -1 && iter != leaderboard_info_percentage_tak.end())
 		{
-			while(iter != leaderboard_info_percentage_ruj.end())
+			while(iter != leaderboard_info_percentage_tak.end())
 			{
 				LeaderboardInfo li = (*iter);
 				if(li.name.compare(player) == 0)
@@ -2052,7 +2052,7 @@ void AdventureManager::DoLeaderboardRequestPercentageTak(const char* player)
 
 		if(place == -1)
 		{
-			al->our_rank = leaderboard_info_percentage_ruj.size() + 1;
+			al->our_rank = leaderboard_info_percentage_tak.size() + 1;
 			al->success = 0;
 			al->failure = 0;
 		}
