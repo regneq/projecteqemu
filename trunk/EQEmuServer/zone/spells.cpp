@@ -1706,16 +1706,6 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
 		}
 	}
 
-	// animation
-/*	outapp = new EQApplicationPacket(OP_Animation, sizeof(Animation_Struct));
-	Animation_Struct* a = (Animation_Struct*)outapp->pBuffer;
-	a->spawn_id = GetID();
-	a->animation_speed = 10;
-	a->animation = spells[spell_id].CastingAnim;
-	outapp->priority = 2;
-	entity_list.QueueCloseClients(this, outapp, false, 200, 0, true, IsClient() ? FILTER_PCSPELLS : FILTER_NPCSPELLS);
-	safe_delete(outapp);
-*/
 	DoAnim(spells[spell_id].CastingAnim, 0, true, IsClient() ? FILTER_PCSPELLS : FILTER_NPCSPELLS);
 	
 	// if this was a spell slot or an ability use up the mana for it

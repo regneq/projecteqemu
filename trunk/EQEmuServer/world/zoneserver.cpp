@@ -1188,7 +1188,8 @@ bool ZoneServer::Process() {
 
 		case ServerOP_AdventureLeaderboard:
 		{
-			adventure_manager.DoLeaderboardRequest((const char*)pack->pBuffer);
+			ServerLeaderboardRequest_Struct *lr = (ServerLeaderboardRequest_Struct*)pack->pBuffer;
+			adventure_manager.DoLeaderboardRequest(lr->player, lr->type);
 			break;
 		}
 

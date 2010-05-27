@@ -49,7 +49,17 @@ struct LeaderboardInfo
 {
 	string name;
 	uint32 wins;
+	uint32 guk_wins;
+	uint32 mir_wins;
+	uint32 mmc_wins;
+	uint32 ruj_wins;
+	uint32 tak_wins;
 	uint32 losses;
+	uint32 guk_losses;
+	uint32 mir_losses;
+	uint32 mmc_losses;
+	uint32 ruj_losses;
+	uint32 tak_losses;
 };
 
 class Adventure
