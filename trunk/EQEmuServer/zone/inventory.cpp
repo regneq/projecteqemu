@@ -78,7 +78,10 @@ uint32 Client::NukeItem(uint32 itemnum) {
 	}
 	// Power Source Slot
 	if (GetItemIDAt(9999) == itemnum || (itemnum == 0xFFFE && GetItemIDAt(9999) != INVALID_ID)) {
-		DeleteItemInInventory(9999, 0, true);
+		if (GetClientVersion() >= EQClientSoF)
+			DeleteItemInInventory(9999, 0, true);
+		else
+			DeleteItemInInventory(9999, 0, false);	// Prevents Titanium crash
 		x = 1;
 	}	
 	return x;
@@ -239,6 +242,17 @@ void Client::DeleteItemInInventory(sint16 slot_id, sint8 quantity, bool client_u
 	#endif
 
 	if(!m_inv[slot_id]) {
+		// Make sure the client deletes anything in this slot to match the server.
+		if(client_update) {
+			EQApplicationPacket* outapp;
+			outapp = new EQApplicationPacket(OP_DeleteItem, sizeof(DeleteItem_Struct));
+			DeleteItem_Struct* delitem	= (DeleteItem_Struct*)outapp->pBuffer;
+			delitem->from_slot			= slot_id;
+			delitem->to_slot			= 0xFFFFFFFF;
+			delitem->number_in_stack	= 0xFFFFFFFF;
+			QueuePacket(outapp);
+			safe_delete(outapp);
+		}
 		return;
 	}
 
@@ -260,10 +274,10 @@ void Client::DeleteItemInInventory(sint16 slot_id, sint8 quantity, bool client_u
 		if(inst) {
 			if(!inst->IsStackable() && !isDeleted) 
 				// Non stackable item with charges = Item with clicky spell effect ? Delete a charge.
-				outapp = new EQApplicationPacket(OP_DeleteCharge, sizeof(MoveItem_Struct));
+				outapp = new EQApplicationPacket(OP_DeleteCharge, sizeof(DeleteItem_Struct));
 			else
 				// Stackable, arrows, etc ? Delete one from the stack
-				outapp = new EQApplicationPacket(OP_DeleteItem, sizeof(MoveItem_Struct));
+				outapp = new EQApplicationPacket(OP_DeleteItem, sizeof(DeleteItem_Struct));
 
 			DeleteItem_Struct* delitem	= (DeleteItem_Struct*)outapp->pBuffer;
 			delitem->from_slot			= slot_id;
@@ -274,8 +288,8 @@ void Client::DeleteItemInInventory(sint16 slot_id, sint8 quantity, bool client_u
 			safe_delete(outapp);
 		}
 		else {
-			outapp = new EQApplicationPacket(OP_MoveItem, sizeof(MoveItem_Struct));
-			MoveItem_Struct* delitem	= (MoveItem_Struct*)outapp->pBuffer;
+			outapp = new EQApplicationPacket(OP_DeleteItem, sizeof(DeleteItem_Struct));
+			DeleteItem_Struct* delitem	= (DeleteItem_Struct*)outapp->pBuffer;
 			delitem->from_slot			= slot_id;
 			delitem->to_slot			= 0xFFFFFFFF;
 			delitem->number_in_stack	= 0xFFFFFFFF;
@@ -689,7 +703,7 @@ void Client::SendLootItemInPacket(const ItemInst* inst, sint16 slot_id)
 
 bool Client::IsValidSlot(uint32 slot)
 {
-	if((slot == -1) ||						// Deleting item
+	if((slot == (uint32)SLOT_INVALID) ||	// Destroying/Dropping item
 		(slot >= 0 && slot <= 30) ||		// Worn inventory, normal inventory, and cursor
 		(slot >= 251 && slot <= 340) ||		// Normal inventory bags and cursor bag
 		(slot >= 400 && slot <= 404) ||		// Tribute
@@ -724,13 +738,41 @@ bool Client::IsBankSlot(uint32 slot)
 // Moves items around both internally and in the database
 // In the future, this can be optimized by pushing all changes through one database REPLACE call
 bool Client::SwapItem(MoveItem_Struct* move_in) {
+
+	uint32 src_slot_check = move_in->from_slot;
+	uint32 dst_slot_check = move_in->to_slot;
+	uint32 stack_count_check = move_in->number_in_stack;
+
+	if(!IsValidSlot(src_slot_check)){
+		// SoF+ sends a 3 billion+ to/from slot every 10 minutes. Don't warn for those.
+		if(src_slot_check < 3000000000)
+			Message(13, "Warning: Invalid slot move from slot %u to slot %u with %u charges!", src_slot_check, dst_slot_check, stack_count_check);
+		mlog(INVENTORY__SLOTS, "Invalid slot move from slot %u to slot %u with %u charges!", src_slot_check, dst_slot_check, stack_count_check);
+		return false;
+	}
+
+	if(!IsValidSlot(dst_slot_check)) {
+		// SoF+ sends a 3 billion+ to/from slot every 10 minutes. Don't warn for those.
+		if(src_slot_check < 3000000000)
+			Message(13, "Warning: Invalid slot move from slot %u to slot %u with %u charges!", src_slot_check, dst_slot_check, stack_count_check);
+		mlog(INVENTORY__SLOTS, "Invalid slot move from slot %u to slot %u with %u charges!", src_slot_check, dst_slot_check, stack_count_check);
+		return false;
+	}
+
 	if (move_in->from_slot == move_in->to_slot)
 		return true; // Item summon, no further proccessing needed
 	
 	if (move_in->to_slot == (uint32)SLOT_INVALID) {
-		mlog(INVENTORY__SLOTS, "Deleted item from slot %d", move_in->from_slot);
-		DeleteItemInInventory(move_in->from_slot);
-		return true; // Item deletetion
+		if(move_in->from_slot == SLOT_CURSOR) {
+			mlog(INVENTORY__SLOTS, "Client destroyed item from cursor slot %d", move_in->from_slot);
+			DeleteItemInInventory(move_in->from_slot);
+			return true; // Item destroyed by client
+		}
+		else {
+			mlog(INVENTORY__SLOTS, "Deleted item from slot %d as a result of an inventory container tradeskill combine.", move_in->from_slot);
+			DeleteItemInInventory(move_in->from_slot);
+			return true; // Item deletetion
+		}
 	}
 	if(auto_attack && (move_in->from_slot == SLOT_PRIMARY || move_in->from_slot == SLOT_SECONDARY || move_in->from_slot == SLOT_RANGE))
 		SetAttackTimer();
@@ -739,44 +781,6 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 	// Step 1: Variables
 	sint16 src_slot_id = (sint16)move_in->from_slot;
 	sint16 dst_slot_id = (sint16)move_in->to_slot;
-	uint32 src_slot_check = move_in->from_slot;
-	uint32 dst_slot_check = move_in->to_slot;
-	uint32 stack_count_check = move_in->number_in_stack;
-
-	if(!IsValidSlot(src_slot_check)){
-		// SoF seems to send something for the first 16bits of this 32bit field on occasion. Don't warn for those.
-		if(src_slot_check < 3000000000)
-			Message(13, "Warning: Invalid slot move from slot %u to slot %u with %u charges!", src_slot_check, dst_slot_check, stack_count_check);
-		mlog(INVENTORY__SLOTS, "Invalid slot move from slot %u to slot %u with %u charges!", src_slot_check, dst_slot_check, stack_count_check);
-		return false;
-	}
-
-	if(!IsValidSlot(dst_slot_check)) {
-		// SoF seems to send something for the first 16bits of this 32bit field on occasion. Don't warn for those.
-		if(src_slot_check < 3000000000)
-			Message(13, "Warning: Invalid slot move from slot %u to slot %u with %u charges!", src_slot_check, dst_slot_check, stack_count_check);
-		mlog(INVENTORY__SLOTS, "Invalid slot move from slot %u to slot %u with %u charges!", src_slot_check, dst_slot_check, stack_count_check);
-		return false;
-	}
-
-	if(IsBankSlot(src_slot_id) || 
-		IsBankSlot(dst_slot_id) || 
-		IsBankSlot(src_slot_check) ||
-		IsBankSlot(dst_slot_check))
-	{
-		uint32 distance = 0;
-		NPC *banker = entity_list.GetClosestBanker(this, distance);
-
-		if(!banker || distance > USE_NPC_RANGE2)
-		{
-			char *hacked_string = NULL;
-			MakeAnyLenString(&hacked_string, "Player tried to make use of a banker(items) but %s is non-existant or too far away (%u units).", 
-				banker ? banker->GetName() : "UNKNOWN NPC", distance);
-			database.SetMQDetectionFlag(AccountName(), GetName(), hacked_string, zone->GetShortName());
-			safe_delete_array(hacked_string);
-			return false;
-		}
-	}
 
 	if (shield_target && (move_in->from_slot == 14 || move_in->to_slot == 14))
 	{
@@ -834,17 +838,24 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 	// Step 2: Validate item in from_slot
 	// After this, we can assume src_inst is a valid ptr
 	if (!src_inst && (src_slot_id<4000 || src_slot_id>4009)) {
-		if (GetClientVersion() < EQClientSoF)  // SoF client sends invalid slots regularly for an unknown use, so don't warn them about this.
-			Message(13, "Error: Server found no item in slot %i (->%i), Deleting Item!", src_slot_id, dst_slot_id);
-
+		if (dst_inst) {
+			// If there is no source item, but there is a destination item, 
+			// move the slots around before deleting the invalid source slot item,
+			// which is now in the destination slot.
+			move_in->from_slot = dst_slot_check;
+			move_in->to_slot = src_slot_check;
+			move_in->number_in_stack = dst_inst->GetCharges();
+			SwapItem(move_in);
+		}
+		Message(13, "Error: Server found no item in slot %i (->%i), Deleting Item!", src_slot_id, dst_slot_id);
 		LogFile->write(EQEMuLog::Debug, "Error: Server found no item in slot %i (->%i), Deleting Item!", src_slot_id, dst_slot_id);
-		this->DeleteItemInInventory(src_slot_id,0,true);
+		this->DeleteItemInInventory(dst_slot_id,0,true);
 		return false;
 	}
 	//verify shared bank transactions in the database
 	if(src_inst && src_slot_id >= 2500 && src_slot_id <= 2550) {
 		if(!database.VerifyInventory(account_id, src_slot_id, src_inst)) {
-			LogFile->write(EQEMuLog::Error, "Player %s on account %s was found exploiting the shared bank. They have been banned until further review.\n", account_name, GetName());
+			LogFile->write(EQEMuLog::Error, "Player %s on account %s was found exploiting the shared bank.\n", account_name, GetName());
 			DeleteItemInInventory(dst_slot_id,0,true);
 			return(false);
 		}
@@ -859,7 +870,7 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 	}
 	if(dst_inst && dst_slot_id >= 2500 && dst_slot_id <= 2550) {
 		if(!database.VerifyInventory(account_id, dst_slot_id, dst_inst)) {
-			LogFile->write(EQEMuLog::Error, "Player %s on account %s was found exploting the shared bank. They have been banned until further review.\n", account_name, GetName());
+			LogFile->write(EQEMuLog::Error, "Player %s on account %s was found exploting the shared bank.\n", account_name, GetName());
 			DeleteItemInInventory(src_slot_id,0,true);
 			return(false);
 		}

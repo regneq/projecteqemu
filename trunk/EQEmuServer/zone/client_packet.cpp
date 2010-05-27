@@ -1991,12 +1991,14 @@ void Client::Handle_OP_ItemVerifyRequest(const EQApplicationPacket *app)
 	const ItemInst* inst = m_inv[slot_id];
 	if (!inst) {
 		Message(0, "Error: item not found in inventory slot #%i", slot_id);
+		DeleteItemInInventory(slot_id,0,true);
 		return;
 	}
 
 	const Item_Struct* item = inst->GetItem();
 	if (!item) {
 		Message(0, "Error: item not found in inventory slot #%i", slot_id);
+		DeleteItemInInventory(slot_id,0,true);
 		return;
 	}
 
