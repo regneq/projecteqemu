@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/27/2010==
+Trevius: Unreverted the revert from R1502 and added a fix for the tradeskill container combine issue.
+
 ==05/25/2010==
 KLS: Many changes..
 KLS: Rewrote much of the adventure subsystem; moved from zone based calculations to world based.
