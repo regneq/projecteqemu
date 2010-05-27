@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==05/27/2010==
 Trevius: Unreverted the revert from R1502 and added a fix for the tradeskill container combine issue.
+Trevius: Fixed a crash when using NukeItem on the Power Source slot for a Titanium client.
 
 ==05/25/2010==
 KLS: Many changes..

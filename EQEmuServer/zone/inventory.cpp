@@ -274,10 +274,10 @@ void Client::DeleteItemInInventory(sint16 slot_id, sint8 quantity, bool client_u
 		if(inst) {
 			if(!inst->IsStackable() && !isDeleted) 
 				// Non stackable item with charges = Item with clicky spell effect ? Delete a charge.
-				outapp = new EQApplicationPacket(OP_DeleteCharge, sizeof(DeleteItem_Struct));
+				outapp = new EQApplicationPacket(OP_DeleteCharge, sizeof(MoveItem_Struct));
 			else
 				// Stackable, arrows, etc ? Delete one from the stack
-				outapp = new EQApplicationPacket(OP_DeleteItem, sizeof(DeleteItem_Struct));
+				outapp = new EQApplicationPacket(OP_DeleteItem, sizeof(MoveItem_Struct));
 
 			DeleteItem_Struct* delitem	= (DeleteItem_Struct*)outapp->pBuffer;
 			delitem->from_slot			= slot_id;
@@ -288,8 +288,8 @@ void Client::DeleteItemInInventory(sint16 slot_id, sint8 quantity, bool client_u
 			safe_delete(outapp);
 		}
 		else {
-			outapp = new EQApplicationPacket(OP_DeleteItem, sizeof(DeleteItem_Struct));
-			DeleteItem_Struct* delitem	= (DeleteItem_Struct*)outapp->pBuffer;
+			outapp = new EQApplicationPacket(OP_MoveItem, sizeof(MoveItem_Struct));
+			MoveItem_Struct* delitem	= (MoveItem_Struct*)outapp->pBuffer;
 			delitem->from_slot			= slot_id;
 			delitem->to_slot			= 0xFFFFFFFF;
 			delitem->number_in_stack	= 0xFFFFFFFF;
@@ -297,6 +297,7 @@ void Client::DeleteItemInInventory(sint16 slot_id, sint8 quantity, bool client_u
 			safe_delete(outapp);
 		}
 	}
+
 }
 
 // Puts an item into the person's inventory
