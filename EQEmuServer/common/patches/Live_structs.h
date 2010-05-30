@@ -435,11 +435,11 @@ struct NewZone_Struct {
 /*0904*/	uint32	unknown904;	//seen 180
 /*0908*/	uint32	unknown908;	//seen 2
 /*0912*/	uint32	unknown912;	//seen 2
-/*0916*/	uint32	unknown916;	//seen c3 f5 a8 3e 
+/*0916*/	float	FogDensity;	//Of about 10 or so zones tested, all but one have this set to 0.33 Blightfire had 0.16
 /*0920*/	uint32	unknown920;	//seen 0
 /*0924*/	uint32	unknown924;	//seen 0
 /*0928*/	uint32	unknown928;	//seen 0
-/*0932*/
+/*0932*/	uint8  unknown932[12];
 };
 
 
