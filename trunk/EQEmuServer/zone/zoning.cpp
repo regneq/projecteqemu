@@ -141,7 +141,6 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 		if(!database.VerifyZoneInstance(target_zone_id, target_instance_id))
 		{
 			Message(13, "Instance ID was %u does not go with zone id %u", target_instance_id, target_zone_id);
-			database.SetCharacterInstance(0, CharacterID());
 			SendZoneCancel(zc);
 			return;
 		}
@@ -162,7 +161,7 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 	sint16 minstatus = 0;
 	int8 minlevel = 0;
 	char flag_needed[128];
-	if(!database.GetSafePoints(target_zone_name, &safe_x, &safe_y, &safe_z, &minstatus, &minlevel, flag_needed)) {
+	if(!database.GetSafePoints(target_zone_name, database.GetInstanceVersion(target_instance_id), &safe_x, &safe_y, &safe_z, &minstatus, &minlevel, flag_needed)) {
 		//invalid zone...
 		Message(13, "Invalid target zone while getting safe points.");
 		LogFile->write(EQEMuLog::Error, "Zoning %s: Unable to get safe coordinates for zone '%s'.", GetName(), target_zone_name);
@@ -803,7 +802,7 @@ void Client::SendZoneFlagInfo(Client *to) const {
 		sint16 minstatus = 0;
 		int8 minlevel = 0;
 		char flag_name[128];
-		if(!database.GetSafePoints(short_name, &safe_x, &safe_y, &safe_z, &minstatus, &minlevel, flag_name)) {
+		if(!database.GetSafePoints(short_name, 0, &safe_x, &safe_y, &safe_z, &minstatus, &minlevel, flag_name)) {
 			strcpy(flag_name, "(ERROR GETTING NAME)");
 		}
 		
@@ -825,7 +824,7 @@ bool Client::CanBeInZone() {
 	sint16 minstatus = 0;
 	int8 minlevel = 0;
 	char flag_needed[128];
-	if(!database.GetSafePoints(zone->GetShortName(), &safe_x, &safe_y, &safe_z, &minstatus, &minlevel, flag_needed)) {
+	if(!database.GetSafePoints(zone->GetShortName(), zone->GetInstanceVersion(), &safe_x, &safe_y, &safe_z, &minstatus, &minlevel, flag_needed)) {
 		//this should not happen...
 		_log(CLIENT__ERROR, "Unable to query zone info for ourself '%s'", zone->GetShortName());
 		return(false);

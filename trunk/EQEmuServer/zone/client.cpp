@@ -4342,7 +4342,7 @@ void Client::SetStartZone(uint32 zoneid, float x, float y, float z)
 
 	m_pp.binds[4].zoneId = zoneid;
 	if (x == 0 && y == 0 && z ==0) 
-		database.GetSafePoints(m_pp.binds[4].zoneId, &m_pp.binds[4].x, &m_pp.binds[4].y, &m_pp.binds[4].z);
+		database.GetSafePoints(m_pp.binds[4].zoneId, 0, &m_pp.binds[4].x, &m_pp.binds[4].y, &m_pp.binds[4].z);
 	else {
 		m_pp.binds[4].x = x;
 		m_pp.binds[4].y = y;

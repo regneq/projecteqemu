@@ -197,7 +197,7 @@ public:
 	bool	LoadStaticZonePoints(LinkedList<ZonePoint*>* zone_point_list,const char* zonename);
 	bool	UpdateZoneSafeCoords(const char* zonename, float x, float y, float z);
 	int8	GetUseCFGSafeCoords();
-    int		getZoneShutDownDelay(int32 zoneID);
+    int		getZoneShutDownDelay(int32 zoneID, int32 version);
 	
 	/*
 	 * Item
@@ -309,14 +309,14 @@ public:
 	/*
 	 * Time
 	 */
-	int32	GetZoneTZ(int32 zoneid);
-	bool	SetZoneTZ(int32 zoneid, int32 tz);
+	int32	GetZoneTZ(int32 zoneid, int32 version);
+	bool	SetZoneTZ(int32 zoneid, int32 version, int32 tz);
 	
 	/*
 	 * Weather
 	 */
-	int8	GetZoneWeather(int32 zoneid);
-	bool	SetZoneWeather(int32 zoneid, int8 w);
+	int8	GetZoneWeather(int32 zoneid, int32 version);
+	bool	SetZoneWeather(int32 zoneid, int32 version, int8 w);
 	/*
 	 * Group
 	 */

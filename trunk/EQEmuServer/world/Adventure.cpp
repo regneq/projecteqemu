@@ -302,6 +302,7 @@ void Adventure::Finished(AdventureWinStatus ws)
 				else
 				{
 					af->win = false;
+					af->points = 0;
 				}
 				pack->Deflate();
 				zoneserver_list.SendPacket(current->zone(), current->instance(), pack);
@@ -327,6 +328,7 @@ void Adventure::Finished(AdventureWinStatus ws)
 				else
 				{
 					afe.win = false;
+					afe.points = 0;
 				}
 				adventure_manager.AddFinishedEvent(afe);
 				database.UpdateAdventureStatsEntry(database.GetCharacterID((*iter).c_str()), GetTemplate()->theme, (ws != AWS_Lose) ? true : false);
@@ -351,6 +353,7 @@ void Adventure::Finished(AdventureWinStatus ws)
 			else
 			{
 				afe.win = false;
+				afe.points = 0;
 			}
 			adventure_manager.AddFinishedEvent(afe);
 			database.UpdateAdventureStatsEntry(database.GetCharacterID((*iter).c_str()), GetTemplate()->theme, (ws != AWS_Lose) ? true : false);

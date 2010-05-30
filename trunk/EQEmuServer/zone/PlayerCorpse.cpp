@@ -1284,7 +1284,7 @@ bool ZoneDatabase::DeleteGraveyard(int32 zone_id, int32 graveyard_id) {
 	int32 query_length = 0;
 	int32 affected_rows = 0;
 	
-	query_length = sprintf(query,"UPDATE zone SET graveyard_id=0 WHERE zoneidnumber=%u", zone_id);
+	query_length = sprintf(query,"UPDATE zone SET graveyard_id=0 WHERE zoneidnumber=%u AND version=0", zone_id);
 	
 	if (!RunQuery(query, query_length, errbuf, 0, &affected_rows)) {
 		safe_delete_array(query);
@@ -1319,7 +1319,7 @@ int32 ZoneDatabase::AddGraveyardIDToZone(int32 zone_id, int32 graveyard_id) {
 	char* end = query;
 	int32 affected_rows = 0;
 	
-	end += sprintf(end,"UPDATE zone SET graveyard_id=%u WHERE zoneidnumber=%u", graveyard_id, zone_id);
+	end += sprintf(end,"UPDATE zone SET graveyard_id=%u WHERE zoneidnumber=%u AND version=0", graveyard_id, zone_id);
 	
 	if (!RunQuery(query, (int32) (end - query), errbuf, 0, &affected_rows)) {
 		safe_delete_array(query);

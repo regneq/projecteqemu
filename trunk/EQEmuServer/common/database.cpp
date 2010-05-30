@@ -16,6 +16,7 @@
 	  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 #include "../common/debug.h"
+#include "../common/rulesys.h"
 #include <iostream>
 using namespace std;
 #include <stdio.h>
@@ -1071,7 +1072,7 @@ int32 Database::GetMiniLoginAccount(char* ip){
 }
 
 // Pyro: Get zone starting points from DB
-bool Database::GetSafePoints(const char* short_name, float* safe_x, float* safe_y, float* safe_z, sint16* minstatus, int8* minlevel, char *flag_needed) {
+bool Database::GetSafePoints(const char* short_name, int32 version, float* safe_x, float* safe_y, float* safe_z, sint16* minstatus, int8* minlevel, char *flag_needed) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
 	//	int buf_len = 256;
@@ -1082,9 +1083,9 @@ bool Database::GetSafePoints(const char* short_name, float* safe_x, float* safe_
 	if (RunQuery(query, MakeAnyLenString(&query,
 		"SELECT safe_x, safe_y, safe_z, min_status, min_level, "
 		" flag_needed FROM zone "
-		" WHERE short_name='%s'", short_name), errbuf, &result)) {
+		" WHERE short_name='%s' AND (version=%i OR version=0) ORDER BY version DESC", short_name, version), errbuf, &result)) {
 		safe_delete_array(query);
-		if (mysql_num_rows(result) == 1) {
+		if (mysql_num_rows(result) > 0) {
 			row = mysql_fetch_row(result);
 			if (safe_x != 0)
 				*safe_x = atof(row[0]);
@@ -1124,10 +1125,10 @@ bool Database::GetZoneLongName(const char* short_name, char** long_name, char* f
     MYSQL_RES *result;
     MYSQL_ROW row;
 
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT long_name, file_name, safe_x, safe_y, safe_z, graveyard_id, maxclients FROM zone WHERE short_name='%s'", short_name), errbuf, &result))
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT long_name, file_name, safe_x, safe_y, safe_z, graveyard_id, maxclients FROM zone WHERE short_name='%s' AND version=0", short_name), errbuf, &result))
 	{
 		safe_delete_array(query);
-		if (mysql_num_rows(result) == 1) {
+		if (mysql_num_rows(result) > 0) {
 			row = mysql_fetch_row(result);
 			if (long_name != 0) {
 				*long_name = strcpy(new char[strlen(row[0])+1], row[0]);
@@ -1162,20 +1163,22 @@ bool Database::GetZoneLongName(const char* short_name, char** long_name, char* f
 
 	return false;
 }
-int32 Database::GetZoneGraveyardID(int32 zone_id) {
+int32 Database::GetZoneGraveyardID(int32 zone_id, int32 version) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
     MYSQL_RES *result;
     MYSQL_ROW row;
     int32 GraveyardID = 0;
 
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT graveyard_id FROM zone WHERE zoneidnumber='%u'", zone_id), errbuf, &result))
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT graveyard_id FROM zone WHERE zoneidnumber='%u' AND (version=%i OR version=0) ORDER BY version DESC", zone_id, version), errbuf, &result))
 	{
-		if (mysql_num_rows(result) == 1) {
+		if (mysql_num_rows(result) > 0) {
 			row = mysql_fetch_row(result);
 			GraveyardID = atoi(row[0]);
 		}
 		mysql_free_result(result);
+		safe_delete_array(query);
+		return GraveyardID;
 	}
 	else
 	{
@@ -1184,6 +1187,7 @@ int32 Database::GetZoneGraveyardID(int32 zone_id) {
 	safe_delete_array(query);
 	return GraveyardID;
 }
+
 bool Database::GetZoneGraveyard(const int32 graveyard_id, int32* graveyard_zoneid, float* graveyard_x, float* graveyard_y, float* graveyard_z, float* graveyard_heading) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
@@ -1308,23 +1312,26 @@ const char* Database::GetZoneName(int32 zoneID, bool ErrorUnknown) {
 	return 0;
 }
 
-int8 Database::GetPEQZone(int32 zoneID){
+int8 Database::GetPEQZone(int32 zoneID, int32 version){
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
     MYSQL_RES *result;
 	MYSQL_ROW row;
-	int peqzone=0;
+	int peqzone = 0;
 
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT peqzone from zone where zoneidnumber='%i'", zoneID), errbuf, &result)) 
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT peqzone from zone where zoneidnumber='%i' AND (version=%i OR version=0) ORDER BY version DESC", zoneID, version), errbuf, &result)) 
 	{
-		if (mysql_num_rows(result) == 1) {
+		if (mysql_num_rows(result) > 0) 
+		{
 			row = mysql_fetch_row(result);
 			peqzone = atoi(row[0]);
 		}
-			mysql_free_result(result);
-		}
-		else
-		{
+		safe_delete_array(query);
+		mysql_free_result(result);
+		return peqzone;
+	}
+	else
+	{
 			cerr << "Error in GetPEQZone query '" << query << "' " << errbuf << endl;
 	}
 	safe_delete_array(query);
@@ -2180,16 +2187,14 @@ bool Database::VerifyInstanceAlive(int16 instance_id, int32 char_id)
 {
 
 	//we are not saved to this instance so set our instance to 0
-	if(!CharacterInInstanceGroup(instance_id, char_id))
+	if(!GlobalInstance(instance_id) && !CharacterInInstanceGroup(instance_id, char_id))
 	{
-		SetCharacterInstance(0, char_id);
 		return false;
 	}
 
 	if(CheckInstanceExpired(instance_id))
 	{
 		DeleteInstance(instance_id);
-		SetCharacterInstance(0, char_id);
 		return false;
 	}
 	return true;
@@ -2248,23 +2253,6 @@ bool Database::CharacterInInstanceGroup(int16 instance_id, int32 char_id)
 	return lockout_instance_player;
 }
 
-void Database::SetCharacterInstance(int16 instance_id, int32 char_id)
-{
-	char errbuf[MYSQL_ERRMSG_SIZE];
-	char *query = 0;
-	MYSQL_RES *result;
-	if(RunQuery(query, MakeAnyLenString(&query, "UPDATE character_ SET instanceid=%u WHERE id=%u", instance_id, 
-		char_id), errbuf, &result))
-	{
-		safe_delete_array(query);
-		mysql_free_result(result);
-	}
-	else 
-	{
-		safe_delete_array(query);
-	}
-}
-
 void Database::DeleteInstance(uint16 instance_id)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
@@ -2308,7 +2296,8 @@ bool Database::CheckInstanceExpired(uint16 instance_id)
 
 	int32 start_time = 0;
 	int32 duration = 0;
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT start_time, duration FROM instance_lockout WHERE id=%u", 
+	int32 never_expires = 0;
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT start_time, duration, never_expires FROM instance_lockout WHERE id=%u", 
 		instance_id), errbuf, &result))
 	{
 		safe_delete_array(query);
@@ -2317,6 +2306,7 @@ bool Database::CheckInstanceExpired(uint16 instance_id)
 			row = mysql_fetch_row(result);
 			start_time = atoi(row[0]);
 			duration = atoi(row[1]);
+			never_expires = atoi(row[2]);
 		}
 		else
 		{
@@ -2329,6 +2319,11 @@ bool Database::CheckInstanceExpired(uint16 instance_id)
 	{
 		safe_delete_array(query);
 		return true;
+	}
+
+	if(never_expires == 1)
+	{
+		return false;
 	}
 
 	timeval tv;
@@ -2406,7 +2401,7 @@ int32 Database::VersionFromInstanceID(uint16 instance_id)
 	return 0;
 }
 
-int32 Database::GetTimeRemainingInstance(uint16 instance_id)
+int32 Database::GetTimeRemainingInstance(uint16 instance_id, bool &is_perma)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
@@ -2414,8 +2409,9 @@ int32 Database::GetTimeRemainingInstance(uint16 instance_id)
 	MYSQL_ROW row;
 	int32 start_time = 0;
 	int32 duration = 0;
+	int32 never_expires = 0;
 
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT start_time, duration FROM instance_lockout WHERE id=%u", 
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT start_time, duration, never_expires FROM instance_lockout WHERE id=%u", 
 		instance_id), errbuf, &result))
 	{
 		safe_delete_array(query);
@@ -2424,10 +2420,12 @@ int32 Database::GetTimeRemainingInstance(uint16 instance_id)
 			row = mysql_fetch_row(result);
 			start_time = atoi(row[0]);
 			duration = atoi(row[1]);
+			never_expires = atoi(row[2]);
 		}
 		else
 		{
 			mysql_free_result(result);
+			is_perma = false;
 			return 0;
 		}
 		mysql_free_result(result);
@@ -2435,7 +2433,18 @@ int32 Database::GetTimeRemainingInstance(uint16 instance_id)
 	else 
 	{
 		safe_delete_array(query);
+		is_perma = false;
 		return 0;
+	}
+
+	if(never_expires == 1)
+	{
+		is_perma = true;
+		return 0;
+	}
+	else
+	{
+		is_perma = false;
 	}
 
 	timeval tv;
@@ -2460,7 +2469,7 @@ bool Database::GetUnusedInstanceID(uint16 &instance_id)
 			if(count == 0)
 			{
 				mysql_free_result(result);
-				instance_id = 1;
+				instance_id = RuleI(Zone, ReservedInstances) + 1;
 				return true;
 			}
 		}
@@ -2477,10 +2486,10 @@ bool Database::GetUnusedInstanceID(uint16 &instance_id)
 		return false;
 	}
 
-	int32 count = 1;
+	int32 count = RuleI(Zone, ReservedInstances) + 1;
 	int32 max = 65535;
 
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT id FROM instance_lockout ORDER BY id"), errbuf, &result))
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT id FROM instance_lockout where id >= %i ORDER BY id", count), errbuf, &result))
 	{
 		safe_delete_array(query);
 		if (mysql_num_rows(result) != 0) 
@@ -2509,7 +2518,6 @@ bool Database::GetUnusedInstanceID(uint16 &instance_id)
 		{
 			mysql_free_result(result);
 		}
-		mysql_free_result(result);
 	}
 	else 
 	{
@@ -2547,7 +2555,7 @@ void Database::PurgeExpiredInstances()
 
 	int16 id = 0;
 	if (RunQuery(query, MakeAnyLenString(&query, "SELECT id FROM instance_lockout where "
-			"(start_time+duration)<=UNIX_TIMESTAMP()"), errbuf, &result))
+			"(start_time+duration) <= UNIX_TIMESTAMP() and never_expires = 0"), errbuf, &result))
 	{
 		safe_delete_array(query);
 		if (mysql_num_rows(result) > 0) 
@@ -2875,6 +2883,36 @@ void Database::SetInstanceDuration(int16 instance_id, int32 new_duration)
 		//error
 		safe_delete_array(query);
 	}
+}
+
+bool Database::GlobalInstance(uint16 instance_id)
+{
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	MYSQL_RES *result;
+	MYSQL_ROW row;
+	bool ret;
+
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT is_global from instance_lockout where id=%u LIMIT 1", instance_id), errbuf, &result))
+	{
+		safe_delete_array(query);
+		row = mysql_fetch_row(result);
+		if(row)
+		{
+			ret = (atoi(row[0]) == 1) ? true : false;
+		}
+		else
+		{
+			mysql_free_result(result);
+			return false;
+		}
+	}
+	else 
+	{
+		safe_delete_array(query);
+		return false;
+	}
+	return ret;
 }
 
 void Database::UpdateAdventureStatsEntry(int32 char_id, int8 theme, bool win)
