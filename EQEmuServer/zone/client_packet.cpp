@@ -3468,7 +3468,7 @@ void Client::Handle_OP_GMZoneRequest(const EQApplicationPacket *app)
 		strcpy(tarzone, zname);
 
 	// this both loads the safe points and does a sanity check on zone name
-	if (!database.GetSafePoints(tarzone, &tarx, &tary, &tarz, &minstatus, &minlevel)) {
+	if (!database.GetSafePoints(tarzone, 0, &tarx, &tary, &tarz, &minstatus, &minlevel)) {
 		tarzone[0] = 0;
 	}
 

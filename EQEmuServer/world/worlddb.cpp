@@ -114,7 +114,7 @@ void WorldDatabase::GetCharSelectInfo(int32 account_id, CharacterSelect_Struct* 
 						uint32 zoneid = database.GetZoneID(startzone);
 						if(zoneid) {
 							pp->binds[4].zoneId = zoneid;
-							GetSafePoints(zoneid, &pp->binds[4].x, &pp->binds[4].y, &pp->binds[4].z);
+							GetSafePoints(zoneid, 0, &pp->binds[4].x, &pp->binds[4].y, &pp->binds[4].z);
 							altered = true;
 						}
 					}
@@ -137,7 +137,7 @@ void WorldDatabase::GetCharSelectInfo(int32 account_id, CharacterSelect_Struct* 
 							row2 = mysql_fetch_row(result2);
 							if(atoi(row2[1]) != 0) {		// if a bind_id is specified, make them start there
 								pp->binds[4].zoneId = (uint32)atoi(row2[1]);
-								GetSafePoints(pp->binds[4].zoneId, &pp->binds[4].x, &pp->binds[4].y, &pp->binds[4].z);
+								GetSafePoints(pp->binds[4].zoneId, 0, &pp->binds[4].x, &pp->binds[4].y, &pp->binds[4].z);
 							}
 							else {	// otherwise, use the zone and coordinates given
 								pp->binds[4].zoneId = (uint32)atoi(row2[0]);
@@ -145,7 +145,7 @@ void WorldDatabase::GetCharSelectInfo(int32 account_id, CharacterSelect_Struct* 
 								float y = atof(row2[3]);
 								float z = atof(row2[4]);
 								if(x == 0 & y == 0 & z == 0)
-									GetSafePoints(pp->binds[4].zoneId, &x, &y, &z);
+									GetSafePoints(pp->binds[4].zoneId, 0, &x, &y, &z);
 
 								pp->binds[4].x = x;
 								pp->binds[4].y = y;
@@ -417,10 +417,10 @@ bool WorldDatabase::GetStartZone(PlayerProfile_Struct* in_pp, CharCreate_Struct*
 	}
 
 	if(in_pp->x == 0 && in_pp->y == 0 && in_pp->z == 0)
-		database.GetSafePoints(in_pp->zone_id, &in_pp->x, &in_pp->y, &in_pp->z);
+		database.GetSafePoints(in_pp->zone_id, 0, &in_pp->x, &in_pp->y, &in_pp->z);
 
 	if(in_pp->binds[0].x == 0 && in_pp->binds[0].y == 0 && in_pp->binds[0].z == 0)
-		database.GetSafePoints(in_pp->binds[0].zoneId, &in_pp->binds[0].x, &in_pp->binds[0].y, &in_pp->binds[0].z);
+		database.GetSafePoints(in_pp->binds[0].zoneId, 0, &in_pp->binds[0].x, &in_pp->binds[0].y, &in_pp->binds[0].z);
 	if(result) 
 		mysql_free_result(result);	
 	return true;
@@ -497,10 +497,10 @@ bool WorldDatabase::GetStartZoneSoF(PlayerProfile_Struct* in_pp, CharCreate_Stru
 	}
 
 	if(in_pp->x == 0 && in_pp->y == 0 && in_pp->z == 0)
-		database.GetSafePoints(in_pp->zone_id, &in_pp->x, &in_pp->y, &in_pp->z);
+		database.GetSafePoints(in_pp->zone_id, 0, &in_pp->x, &in_pp->y, &in_pp->z);
 
 	if(in_pp->binds[0].x == 0 && in_pp->binds[0].y == 0 && in_pp->binds[0].z == 0)
-		database.GetSafePoints(in_pp->binds[0].zoneId, &in_pp->binds[0].x, &in_pp->binds[0].y, &in_pp->binds[0].z);
+		database.GetSafePoints(in_pp->binds[0].zoneId, 0, &in_pp->binds[0].x, &in_pp->binds[0].y, &in_pp->binds[0].z);
 	if(result) 
 		mysql_free_result(result);	
 	return true;

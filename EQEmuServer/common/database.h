@@ -150,12 +150,11 @@ public:
 	bool VerifyZoneInstance(int32 zone_id, int16 instance_id);
 	bool VerifyInstanceAlive(int16 instance_id, int32 char_id);
 	bool CharacterInInstanceGroup(int16 instance_id, int32 char_id);
-	void SetCharacterInstance(int16 instance_id, int32 char_id);
 	void DeleteInstance(uint16 instance_id);
 	bool CheckInstanceExpired(uint16 instance_id);
 	int32 ZoneIDFromInstanceID(uint16 instance_id);
 	int32 VersionFromInstanceID(uint16 instance_id);
-	int32 GetTimeRemainingInstance(uint16 instance_id);
+	int32 GetTimeRemainingInstance(uint16 instance_id, bool &is_perma);
 	bool GetUnusedInstanceID(uint16 &instance_id);
 	bool CreateInstance(uint16 instance_id, uint32 zone_id, uint32 version, uint32 duration);
 	void PurgeExpiredInstances();
@@ -172,6 +171,7 @@ public:
 	void FlagInstanceByGroupLeader(int32 zone, int16 version, int32 charid, int32 gid);
 	void FlagInstanceByRaidLeader(int32 zone, int16 version, int32 charid, int32 rid);
 	void SetInstanceDuration(int16 instance_id, int32 new_duration);
+	bool GlobalInstance(uint16 instance_id);
 
 	/*
 	 * Adventure related.
@@ -233,13 +233,13 @@ public:
 	bool	LoadZoneNames();
 	bool	GetZoneLongName(const char* short_name, char** long_name, char* file_name = 0, float* safe_x = 0, float* safe_y = 0, float* safe_z = 0, int32* graveyard_id = 0, int32* maxclients = 0);
 	bool	GetZoneGraveyard(const int32 graveyard_id, int32* graveyard_zoneid = 0, float* graveyard_x = 0, float* graveyard_y = 0, float* graveyard_z = 0, float* graveyard_heading = 0);
-	int32	GetZoneGraveyardID(int32 zone_id);
+	int32	GetZoneGraveyardID(int32 zone_id, int32 version);
 	int32	GetZoneID(const char* zonename);
-	int8    GetPEQZone(int32 zoneID);
+	int8    GetPEQZone(int32 zoneID, int32 version);
 	const char*	GetZoneName(int32 zoneID, bool ErrorUnknown = false);
 	int8	GetServerType();
-	bool	GetSafePoints(const char* short_name, float* safe_x = 0, float* safe_y = 0, float* safe_z = 0, sint16* minstatus = 0, int8* minlevel = 0, char *flag_needed = NULL);
-	bool	GetSafePoints(int32 zoneID, float* safe_x = 0, float* safe_y = 0, float* safe_z = 0, sint16* minstatus = 0, int8* minlevel = 0, char *flag_needed = NULL) { return GetSafePoints(GetZoneName(zoneID), safe_x, safe_y, safe_z, minstatus, minlevel, flag_needed); }
+	bool	GetSafePoints(const char* short_name, int32 version, float* safe_x = 0, float* safe_y = 0, float* safe_z = 0, sint16* minstatus = 0, int8* minlevel = 0, char *flag_needed = NULL);
+	bool	GetSafePoints(int32 zoneID, int32 version, float* safe_x = 0, float* safe_y = 0, float* safe_z = 0, sint16* minstatus = 0, int8* minlevel = 0, char *flag_needed = NULL) { return GetSafePoints(GetZoneName(zoneID), version, safe_x, safe_y, safe_z, minstatus, minlevel, flag_needed); }
 	int8	GetSkillCap(int8 skillid, int8 in_race, int8 in_class, int16 in_level);
 	int8	GetRaceSkill(int8 skillid, int8 in_race);
 	bool	LoadPTimers(uint32 charid, PTimerList &into);

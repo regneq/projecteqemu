@@ -138,7 +138,7 @@ bool Zone::Bootup(int32 iZoneID, int32 iInstanceID, bool iStaticZone) {
 		}
 	}
 
-	zone->weather_type = database.GetZoneWeather(iZoneID);
+	zone->weather_type = database.GetZoneWeather(iZoneID, zone->GetInstanceVersion());
 
 	LogFile->write(EQEMuLog::Debug, "Zone: %s has weather of type %i.", zonename, zone->weather_type);
 		
@@ -804,12 +804,21 @@ Zone::Zone(int32 in_zoneid, int32 in_instanceid, const char* in_short_name)
     gottime = false;
 	
 	Instance_Shutdown_Timer = NULL;
+	bool is_perma = false;
 	if(instanceid > 0)
 	{
-		int32 rem = database.GetTimeRemainingInstance(instanceid);
-		if(rem < 150) //give some leeway to people who are zoning in 2.5 minutes to finish zoning in and get ported out
+		int32 rem = database.GetTimeRemainingInstance(instanceid, is_perma);
+
+		if(!is_perma)
+		{
+			if(rem < 150) //give some leeway to people who are zoning in 2.5 minutes to finish zoning in and get ported out
 			rem = 150;
-		Instance_Timer = new Timer(rem * 1000);
+			Instance_Timer = new Timer(rem * 1000);
+		}
+		else
+		{
+			Instance_Timer = NULL;
+		}
 	}
 	else
 	{
@@ -972,7 +981,7 @@ bool Zone::Init(bool iStaticZone) {
 	parse->ClearCache();
 	
 	LogFile->write(EQEMuLog::Status, "Loading timezone data...");
-	zone->zone_time.setEQTimeZone(database.GetZoneTZ(zoneid));
+	zone->zone_time.setEQTimeZone(database.GetZoneTZ(zoneid, GetInstanceVersion()));
 	
 	LogFile->write(EQEMuLog::Status, "Init Finished: ZoneID = %d, Time Offset = %d", zoneid, zone->zone_time.getEQTimeZone());
 	return true;
@@ -1267,7 +1276,7 @@ void Zone::StartShutdownTimer(int32 set_time) {
 	if (set_time > autoshutdown_timer.GetRemainingTime()) {
 		if (set_time == (RuleI(Zone, AutoShutdownDelay)))
 		{
-			set_time = database.getZoneShutDownDelay(GetZoneID());
+			set_time = database.getZoneShutDownDelay(GetZoneID(), GetInstanceVersion());
 		}
 		autoshutdown_timer.Start(set_time, false);
 	}

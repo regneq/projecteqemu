@@ -1194,7 +1194,7 @@ bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 		clog(WORLD__CLIENT,"Found 'SoFStartZoneID' rule setting: %i", (RuleI(World, SoFStartZoneID)));
 		pp.zone_id = (RuleI(World, SoFStartZoneID));
 		if(pp.zone_id)
-			database.GetSafePoints(pp.zone_id, &pp.x, &pp.y, &pp.z);
+			database.GetSafePoints(pp.zone_id, 0, &pp.x, &pp.y, &pp.z);
 		else
 			clog(WORLD__CLIENT_ERR,"Error getting zone id for Zone ID %i", (RuleI(World, SoFStartZoneID)));
 	}
@@ -1206,7 +1206,7 @@ bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 			clog(WORLD__CLIENT,"Found 'startzone' variable setting: %s", startzone);
 			pp.zone_id = database.GetZoneID(startzone);
 			if(pp.zone_id)
-				database.GetSafePoints(pp.zone_id, &pp.x, &pp.y, &pp.z);
+				database.GetSafePoints(pp.zone_id, 0, &pp.x, &pp.y, &pp.z);
 			else
 				clog(WORLD__CLIENT_ERR,"Error getting zone id for '%s'", startzone);
 		}

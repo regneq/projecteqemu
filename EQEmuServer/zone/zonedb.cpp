@@ -880,7 +880,7 @@ bool ZoneDatabase::GetCharacterInfoForLogin_result(MYSQL_RES* result,
 			pp->lastlogin = time(NULL);
 			
 			if (pp->x == -1 && pp->y == -1 && pp->z == -1)
-				GetSafePoints(pp->zone_id, &pp->x, &pp->y, &pp->z);
+				GetSafePoints(pp->zone_id, database.GetInstanceVersion(pp->zoneInstance), &pp->x, &pp->y, &pp->z);
 		}
 		
 		uint32 char_id = atoi(row[0]);
@@ -1453,16 +1453,16 @@ bool ZoneDatabase::SetServerFilters(char* name, ServerSideFilters_Struct *ssfs) 
 
 
 //New functions for timezone
-int32 ZoneDatabase::GetZoneTZ(int32 zoneid) {
+int32 ZoneDatabase::GetZoneTZ(int32 zoneid, int32 version) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
     MYSQL_RES *result;
     MYSQL_ROW row;
 	
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT timezone FROM zone WHERE zoneidnumber=%i", zoneid), errbuf, &result))
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT timezone FROM zone WHERE zoneidnumber=%i AND (version=%i OR version=0) ORDER BY version DESC", zoneid, version), errbuf, &result))
 	{
 		safe_delete_array(query);
-		if (mysql_num_rows(result) == 1) {
+		if (mysql_num_rows(result) > 0) {
 			row = mysql_fetch_row(result);
 			int32 tmp = atoi(row[0]);
 			mysql_free_result(result);
@@ -1477,12 +1477,12 @@ int32 ZoneDatabase::GetZoneTZ(int32 zoneid) {
 	return 0;
 }
 
-bool ZoneDatabase::SetZoneTZ(int32 zoneid, int32 tz) {
+bool ZoneDatabase::SetZoneTZ(int32 zoneid, int32 version, int32 tz) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
 	int32 affected_rows = 0;
 	
-	if (RunQuery(query, MakeAnyLenString(&query, "UPDATE zone SET timezone=%i WHERE zoneidnumber=%i", tz, zoneid), errbuf, 0, &affected_rows)) {
+	if (RunQuery(query, MakeAnyLenString(&query, "UPDATE zone SET timezone=%i WHERE zoneidnumber=%i AND version=%i", tz, zoneid, version), errbuf, 0, &affected_rows)) {
 		safe_delete_array(query);
 
 		if (affected_rows == 1)
@@ -1502,21 +1502,20 @@ bool ZoneDatabase::SetZoneTZ(int32 zoneid, int32 tz) {
 
 
 //Functions for weather
-int8 ZoneDatabase::GetZoneWeather(int32 zoneid) {
+int8 ZoneDatabase::GetZoneWeather(int32 zoneid, int32 version) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
     MYSQL_RES *result;
     MYSQL_ROW row;
 	
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT weather FROM zone WHERE zoneidnumber=%i", zoneid), errbuf, &result))
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT weather FROM zone WHERE zoneidnumber=%i AND (version=%i OR version=0) ORDER BY version DESC", zoneid), errbuf, &result))
 	{
 		safe_delete_array(query);
-		if (mysql_num_rows(result) == 1) {
+		if (mysql_num_rows(result) > 0) {
 			row = mysql_fetch_row(result);
 			int8 tmp = atoi(row[0]);
 			mysql_free_result(result);
 			return tmp;
-
 		}
 		mysql_free_result(result);
 	}
@@ -1528,12 +1527,12 @@ int8 ZoneDatabase::GetZoneWeather(int32 zoneid) {
 	return 0;
 }
 
-bool ZoneDatabase::SetZoneWeather(int32 zoneid, int8 w) {
+bool ZoneDatabase::SetZoneWeather(int32 zoneid, int32 version, int8 w) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
 	int32 affected_rows = 0;
 	
-	if (RunQuery(query, MakeAnyLenString(&query, "UPDATE zone SET weather=%i WHERE zoneidnumber=%i", w, zoneid), errbuf, 0, &affected_rows)) {
+	if (RunQuery(query, MakeAnyLenString(&query, "UPDATE zone SET weather=%i WHERE zoneidnumber=%i AND version=%i", w, zoneid, version), errbuf, 0, &affected_rows)) {
 		safe_delete_array(query);
 		if (affected_rows == 1)
 			return true;
@@ -1732,16 +1731,16 @@ bool ZoneDatabase::LoadBlockedSpells(sint32 blockedSpellsCount, ZoneSpellsBlocke
 	return true;
 }
 
-int ZoneDatabase::getZoneShutDownDelay(int32 zoneID)
+int ZoneDatabase::getZoneShutDownDelay(int32 zoneID, int32 version)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
     char *query = 0;
     MYSQL_RES *result;
     MYSQL_ROW row;
 	
-	if (RunQuery(query, MakeAnyLenString(&query, "SELECT shutdowndelay FROM zone WHERE zoneidnumber=%i", zoneID), errbuf, &result))
+	if (RunQuery(query, MakeAnyLenString(&query, "SELECT shutdowndelay FROM zone WHERE zoneidnumber=%i AND (version=%i OR version=0) ORDER BY version DESC", zoneID, version), errbuf, &result))
 	{
-		if (mysql_num_rows(result) == 1) {
+		if (mysql_num_rows(result) > 0) {
 			row = mysql_fetch_row(result);
 			int retVal = atoi(row[0]);
 
@@ -1750,7 +1749,7 @@ int ZoneDatabase::getZoneShutDownDelay(int32 zoneID)
 			return (retVal);
 		}
 		else {
-			cerr << "Error in getZoneShutDownDelay (more than one result) query '" << query << "' " << errbuf << endl;
+			cerr << "Error in getZoneShutDownDelay no result '" << query << "' " << errbuf << endl;
 			mysql_free_result(result);
 			safe_delete_array(query);
 			return (RuleI(Zone, AutoShutdownDelay));

@@ -1545,7 +1545,7 @@ void command_peqzone(Client *c, const Seperator *sep)
        if (sep->IsNumber(1))
 	   {
 			zoneid = atoi(sep->arg[1]);
-			destzone = database.GetPEQZone(zoneid);
+			destzone = database.GetPEQZone(zoneid, 0);
 			if(destzone == 0){
                        c->Message(13, "You cannot use this command to enter that zone!");
                        return;               
@@ -1562,7 +1562,7 @@ void command_peqzone(Client *c, const Seperator *sep)
                return;
        } else {
 			   zoneid = database.GetZoneID(sep->arg[1]);
-			   destzone = database.GetPEQZone(zoneid);
+			   destzone = database.GetPEQZone(zoneid, 0);
                if(zoneid == 0) {
                        c->Message(0, "Unable to locate zone '%s'", sep->arg[1]);
                        return;
@@ -1735,7 +1735,7 @@ void command_timezone(Client *c, const Seperator *sep)
 		c->Message(13, "Setting timezone to %s h %s m", sep->arg[1], sep->arg[2]);
 		int32 ntz=(atoi(sep->arg[1])*60)+atoi(sep->arg[2]);
 		zone->zone_time.setEQTimeZone(ntz);
-		database.SetZoneTZ(zone->GetZoneID(), ntz);
+		database.SetZoneTZ(zone->GetZoneID(), zone->GetInstanceVersion(), ntz);
 
 		// Update all clients with new TZ.
 		EQApplicationPacket* outapp = new EQApplicationPacket(OP_TimeOfDay, sizeof(TimeOfDay_Struct));
@@ -3329,13 +3329,13 @@ void command_findzone(Client *c, const Seperator *sep)
 			char *EscName = new char[strlen(sep->arg[1]) * 2 + 1];
 			database.DoEscapeString(EscName, sep->arg[1], strlen(sep->arg[1]));
 
-			MakeAnyLenString(&query, "SELECT zoneidnumber,short_name,long_name" " FROM zone WHERE long_name rLIKE '%s'",
+			MakeAnyLenString(&query, "SELECT zoneidnumber,short_name,long_name FROM zone WHERE long_name rLIKE '%s' AND version=0",
 						 EscName);
 			safe_delete_array(EscName);
 		}
 		// Otherwise, look for just that zoneidnumber.
 		else
-			MakeAnyLenString(&query, "SELECT zoneidnumber,short_name,long_name FROM zone WHERE zoneidnumber=%i", id);
+			MakeAnyLenString(&query, "SELECT zoneidnumber,short_name,long_name FROM zone WHERE zoneidnumber=%i AND version=0", id);
 
 		if (database.RunQuery(query, strlen(query), errbuf, &result))
 		{
@@ -7985,8 +7985,8 @@ void command_flagedit(Client *c, const Seperator *sep) {
 		flag_name[127] = '\0';
 		
 		if(!database.RunQuery(query, MakeAnyLenString(&query, 
-			"UPDATE zone SET flag_needed='%s' WHERE zoneidnumber=%d",
-			flag_name, zoneid), errbuf))
+			"UPDATE zone SET flag_needed='%s' WHERE zoneidnumber=%d AND version=%d",
+			flag_name, zoneid, zone->GetInstanceVersion()), errbuf))
 		{
 			c->Message(13, "Error updating zone: %s", errbuf);
 		} else {
@@ -8008,8 +8008,8 @@ void command_flagedit(Client *c, const Seperator *sep) {
 		}
 		
 		if(!database.RunQuery(query, MakeAnyLenString(&query, 
-			"UPDATE zone SET flag_needed='' WHERE zoneidnumber=%d",
-			zoneid), errbuf))
+			"UPDATE zone SET flag_needed='' WHERE zoneidnumber=%d AND version=%d",
+			zoneid, zone->GetInstanceVersion()), errbuf))
 		{
 			c->Message(15, "Error updating zone: %s", errbuf);
 		} else {
@@ -8021,13 +8021,13 @@ void command_flagedit(Client *c, const Seperator *sep) {
 		MYSQL_RES *result;
 		MYSQL_ROW row;
 		if (database.RunQuery(query, MakeAnyLenString(&query, 
-			"SELECT zoneidnumber,short_name,long_name,flag_needed FROM zone WHERE flag_needed != ''"
+			"SELECT zoneidnumber,short_name,long_name,version,flag_needed FROM zone WHERE flag_needed != ''"
 			), errbuf, &result))
 		{
 			c->Message(0, "Zones which require flags:");
 			while ((row = mysql_fetch_row(result)))
 			{
-				c->Message(0, "Zone %s (%s,%s) requires key %s", row[2], row[0], row[1], row[3]);
+				c->Message(0, "Zone %s (%s,%s) version %s requires key %s", row[2], row[0], row[1], row[3], row[4]);
 			}
 			mysql_free_result(result);
 		} else {
@@ -8794,7 +8794,7 @@ void command_deletegraveyard(Client *c, const Seperator *sep)
 	}
 
 	zoneid = database.GetZoneID(sep->arg[1]);
-	graveyard_id = database.GetZoneGraveyardID(zoneid);
+	graveyard_id = database.GetZoneGraveyardID(zoneid, 0);
 	
 	if(zoneid > 0 && graveyard_id > 0) {
 		if(database.DeleteGraveyard(zoneid, graveyard_id))
