@@ -351,7 +351,7 @@ int16 Mob::GetClassLevelFactor(){
 
 sint32 Client::CalcBaseHP()
 {
-	if(GetClientVersion() >= EQClientSoD && RuleB(Character, SoDClientUseSoDHPManaEnd)) {
+	if(RuleB(Character, SoDClientUseSoDHPManaEnd)) {
 		float SoDPost255;
 		int16 NormalSTA = GetSTA();
 
@@ -391,6 +391,52 @@ sint32 Client::CalcBaseHP()
 		base_hp = (5)+(GetLevel()*lm/10) + (((GetSTA()-Post255)*GetLevel()*lm/3000)) + ((Post255*GetLevel())*lm/6000);
 	}
 	return base_hp;
+}
+
+sint32 Client::GetTitaniumHP()
+{
+	sint32 base = 1;
+	int16 Post255;
+	int16 lm=GetClassLevelFactor();
+	if((GetSTA()-255)/2 > 0)
+		Post255 = (GetSTA()-255)/2;
+	else
+		Post255 = 0;
+
+	base = (5)+(GetLevel()*lm/10) + (((GetSTA()-Post255)*GetLevel()*lm/3000)) + ((Post255*GetLevel())*lm/6000);
+	return base;
+}
+
+sint32 Client::GetSoDHP()
+{
+	float SoDPost255;
+	int16 NormalSTA = GetSTA();
+	sint32 base = 1;
+
+	if(((NormalSTA - 255) / 2) > 0)
+		SoDPost255 = ((NormalSTA - 255) / 2);
+	else
+		SoDPost255 = 0;
+
+	int hp_factor = GetClassHPFactor();
+
+	if (level < 41) {
+		base = (5 + (GetLevel() * hp_factor / 12) + 
+			((NormalSTA - SoDPost255) * GetLevel() * hp_factor / 3600));
+	}
+	else if (level < 81) {
+		base = (5 + (40 * hp_factor / 12) + ((GetLevel() - 40) * hp_factor / 6) + 
+			((NormalSTA - SoDPost255) * hp_factor / 90) + 
+			((NormalSTA - SoDPost255) * (GetLevel() - 40) * hp_factor / 1800));
+	}
+	else { 
+		base = (5 + (80 * hp_factor / 8) + ((GetLevel() - 80) * hp_factor / 10) + 
+			((NormalSTA - SoDPost255) * hp_factor / 90) + 
+			((NormalSTA - SoDPost255) * hp_factor / 45));
+	}
+
+	base += (GetHeroicSTA() * 10);
+	return base;
 }
 
 // This is for calculating Base HPs + STA bonus for SoD or later clients.
@@ -915,7 +961,7 @@ sint32 Client::CalcBaseMana()
 		case 'I': 
 			WisInt = GetINT();
 
-			if (GetClientVersion() >= EQClientSoD && RuleB(Character, SoDClientUseSoDHPManaEnd)) {
+			if (RuleB(Character, SoDClientUseSoDHPManaEnd)) {
 				
 				if (WisInt > 100) {
 					ConvertedWisInt = (((WisInt - 100) * 5 / 2) + 100);
@@ -959,7 +1005,7 @@ sint32 Client::CalcBaseMana()
 		case 'W':
 			WisInt = GetWIS();
 
-			if (GetClientVersion() >= EQClientSoD && RuleB(Character, SoDClientUseSoDHPManaEnd)) {
+			if (RuleB(Character, SoDClientUseSoDHPManaEnd)) {
 
 				if (WisInt > 100) {
 					ConvertedWisInt = (((WisInt - 100) * 5 / 2) + 100);
@@ -1014,6 +1060,134 @@ sint32 Client::CalcBaseMana()
 #if EQDEBUG >= 11
 	LogFile->write(EQEMuLog::Debug, "Client::CalcBaseMana() called for %s - returning %d", GetName(), max_m);
 #endif
+	return max_m;
+}
+
+sint32 Client::GetTitaniumMana()
+{
+	int WisInt = 0;
+	int MindLesserFactor, MindFactor;
+	sint32 max_m = 0;
+	int wisint_mana = 0;
+	int base_mana = 0;
+	int ConvertedWisInt = 0;
+	switch(GetCasterClass())
+	{
+		case 'I': 
+			WisInt = GetINT();
+			if((( WisInt - 199 ) / 2) > 0)
+				MindLesserFactor = ( WisInt - 199 ) / 2;
+			else
+				MindLesserFactor = 0;
+
+			MindFactor = WisInt - MindLesserFactor;
+			if(WisInt > 100)
+				max_m = (((5 * (MindFactor + 20)) / 2) * 3 * GetLevel() / 40);
+			else
+				max_m = (((5 * (MindFactor + 200)) / 2) * 3 * GetLevel() / 100);
+			break;
+
+		case 'W':
+			WisInt = GetWIS();
+			if((( WisInt - 199 ) / 2) > 0)
+				MindLesserFactor = ( WisInt - 199 ) / 2;
+			else
+				MindLesserFactor = 0;
+
+			MindFactor = WisInt - MindLesserFactor;
+			if(WisInt > 100)
+				max_m = (((5 * (MindFactor + 20)) / 2) * 3 * GetLevel() / 40);
+			else
+				max_m = (((5 * (MindFactor + 200)) / 2) * 3 * GetLevel() / 100);
+			break;
+				
+		case 'N': {
+			max_m = 0;
+			break;
+		}
+		default: 
+		{
+			max_m = 0;
+			break;
+		}
+	}
+	return max_m;
+}
+
+sint32 Client::GetSoDMana()
+{
+	int WisInt = 0;
+	int MindLesserFactor, MindFactor;
+	sint32 max_m = 0;
+	int wisint_mana = 0;
+	int base_mana = 0;
+	int ConvertedWisInt = 0;
+	switch(GetCasterClass())
+	{
+		case 'I': 
+			WisInt = GetINT();		
+			if (WisInt > 100) {
+				ConvertedWisInt = (((WisInt - 100) * 5 / 2) + 100);
+				if (WisInt > 201) {
+					ConvertedWisInt -= ((WisInt - 201) * 5 / 4);
+				}
+			}
+			else {
+				ConvertedWisInt = WisInt;
+			}
+
+			if (GetLevel() < 41) { 
+				wisint_mana = (GetLevel() * 75 * ConvertedWisInt / 1000);
+				base_mana = (GetLevel() * 15);
+			}
+			else if (GetLevel() < 81) {
+				wisint_mana = ((3 * ConvertedWisInt) + ((GetLevel() - 40) * 15 * ConvertedWisInt / 100));
+				base_mana = (600 + ((GetLevel() - 40) * 30));
+			}
+			else {
+				wisint_mana = (9 * ConvertedWisInt);
+				base_mana = (1800 + ((GetLevel() - 80) * 18));
+			}
+			max_m = base_mana + wisint_mana + (GetHeroicINT() * 10);
+			break;
+
+		case 'W':
+			WisInt = GetWIS();
+			if (WisInt > 100) {
+				ConvertedWisInt = (((WisInt - 100) * 5 / 2) + 100);
+				if (WisInt > 201) {
+					ConvertedWisInt -= ((WisInt - 201) * 5 / 4);
+				}
+			}
+			else {
+				ConvertedWisInt = WisInt;
+			}
+
+			if (GetLevel() < 41) { 
+				wisint_mana = (GetLevel() * 75 * ConvertedWisInt / 1000);
+				base_mana = (GetLevel() * 15);
+			}
+			else if (GetLevel() < 81) {
+				wisint_mana = ((3 * ConvertedWisInt) + ((GetLevel() - 40) * 15 * ConvertedWisInt / 100));
+				base_mana = (600 + ((GetLevel() - 40) * 30));
+			}
+			else {
+				wisint_mana = (9 * ConvertedWisInt);
+				base_mana = (1800 + ((GetLevel() - 80) * 18));
+			}
+			max_m = base_mana + wisint_mana + (GetHeroicWIS() * 10);
+			break;
+				
+		case 'N': {
+			max_m = 0;
+			break;
+		}
+		default: 
+		{
+			max_m = 0;
+			break;
+		}
+	}
 	return max_m;
 }
 
@@ -1786,7 +1960,7 @@ sint32 Client::CalcBaseEndurance()
 	sint32 sta_end = 0;
 	int Stats = 0;
 
-	if(GetClientVersion() >= EQClientSoD && RuleB(Character, SoDClientUseSoDHPManaEnd)) {
+	if(RuleB(Character, SoDClientUseSoDHPManaEnd)) {
 		int HeroicStats = 0;
 
 		Stats = ((GetSTR() + GetSTA() + GetDEX() + GetAGI()) / 4);
@@ -1847,6 +2021,78 @@ sint32 Client::CalcBaseEndurance()
 		//take all of the sums from above, then multiply by level*0.075
 		base_end += ( bonus_sum * 3 * GetLevel() ) / 40;
 	}
+	return base_end;
+}
+
+sint32 Client::GetTitaniumEndur()
+{
+	sint32 base_end = 0;
+	sint32 base_endurance = 0;
+	sint32 ConvertedStats = 0;
+	sint32 sta_end = 0;
+	int Stats = GetSTR()+GetSTA()+GetDEX()+GetAGI();
+	int LevelBase = GetLevel() * 15;
+
+	int at_most_800 = Stats;
+	if(at_most_800 > 800)
+		at_most_800 = 800;
+
+	int Bonus400to800 = 0;
+	int HalfBonus400to800 = 0;
+	int Bonus800plus = 0;
+	int HalfBonus800plus = 0;
+
+	int BonusUpto800 = int( at_most_800 / 4 ) ;
+	if(Stats > 400) {
+		Bonus400to800 = int( (at_most_800 - 400) / 4 );
+		HalfBonus400to800 = int( max( ( at_most_800 - 400 ), 0 ) / 8 );
+
+		if(Stats > 800) {
+			Bonus800plus = int( (Stats - 800) / 8 ) * 2;
+			HalfBonus800plus = int( (Stats - 800) / 16 );
+		}
+	}
+	int bonus_sum = BonusUpto800 + Bonus400to800 + HalfBonus400to800 + Bonus800plus + HalfBonus800plus;
+
+	base_end = LevelBase;
+
+	//take all of the sums from above, then multiply by level*0.075
+	base_end += ( bonus_sum * 3 * GetLevel() ) / 40;
+	return base_end;
+}
+
+sint32 Client::GetSoDEndur()
+{
+	sint32 base_end = 0;
+	sint32 base_endurance = 0;
+	sint32 ConvertedStats = 0;
+	sint32 sta_end = 0;
+	int Stats = ((GetSTR() + GetSTA() + GetDEX() + GetAGI()) / 4);
+	int HeroicStats = ((GetHeroicSTR() + GetHeroicSTA() + GetHeroicDEX() + GetHeroicAGI()) / 4);
+
+	if (Stats > 100) {
+		ConvertedStats = (((Stats - 100) * 5 / 2) + 100);
+		if (Stats > 201) {
+			ConvertedStats -= ((Stats - 201) * 5 / 4);
+		}
+	}
+	else {
+		ConvertedStats = Stats;
+	}
+
+	if (GetLevel() < 41) { 
+		sta_end = (GetLevel() * 75 * ConvertedStats / 1000);
+		base_endurance = (GetLevel() * 15);
+	}
+	else if (GetLevel() < 81) {
+		sta_end = ((3 * ConvertedStats) + ((GetLevel() - 40) * 15 * ConvertedStats / 100));
+		base_endurance = (600 + ((GetLevel() - 40) * 30));
+	}
+	else {
+		sta_end = (9 * ConvertedStats);
+		base_endurance = (1800 + ((GetLevel() - 80) * 18));
+	}
+	base_end = (base_endurance + sta_end + (HeroicStats * 10));
 	return base_end;
 }
 
