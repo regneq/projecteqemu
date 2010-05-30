@@ -3130,6 +3130,24 @@ void Client::Handle_OP_MoveItem(const EQApplicationPacket *app)
 	}
 
 	MoveItem_Struct* mi = (MoveItem_Struct*)app->pBuffer;
+	if(spellend_timer.Enabled() && casting_spell_id && !IsBardSong(casting_spell_id))
+	{
+		if(mi->from_slot != mi->to_slot)
+		{
+			char *detect = NULL;
+			const ItemInst *itm_from = GetInv().GetItem(mi->from_slot);
+			const ItemInst *itm_to = GetInv().GetItem(mi->to_slot);
+			MakeAnyLenString(&detect, "Player issued a move item from %u(item id %u) to %u(item id %u) while casting %u.", 
+				mi->from_slot, 
+				itm_from ? itm_from->GetID() : 0, 
+				mi->to_slot, 
+				itm_to ? itm_to->GetID() : 0, 
+				casting_spell_id);
+			database.SetMQDetectionFlag(AccountName(), GetName(), detect, zone->GetShortName());
+			safe_delete_array(detect);
+			return;
+		}
+	}
 	SwapItem(mi);
 	return;
 }
