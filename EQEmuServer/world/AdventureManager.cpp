@@ -102,7 +102,7 @@ void AdventureManager::CalculateAdventureRequestReply(const char *data)
 					strcpy(deny->leader, sar->leader);
 
 					stringstream ss(stringstream::out | stringstream::in);
-					ss << (data + sizeof(ServerAdventureRequest_Struct) + (64 * i)) << "is already apart of an active adventure.";
+					ss << (data + sizeof(ServerAdventureRequest_Struct) + (64 * i)) << " is already apart of an active adventure.";
 
 					strcpy(deny->reason, ss.str().c_str());
 					pack->Deflate();
@@ -558,25 +558,28 @@ Adventure **AdventureManager::GetFinishedAdventures(const char *player, int &cou
 	list<Adventure*>::iterator iter = adventure_list.begin();
 	while(iter != adventure_list.end())
 	{
-		if(!(*iter)->IsActive())
+		if((*iter)->PlayerExists(player))
 		{
-			if(ret)
+			if(!(*iter)->IsActive())
 			{
-				Adventure **t = new Adventure*[count + 1];
-				for(int i = 0; i < count; i++)
+				if(ret)
 				{
-					t[i] = ret[i];
+					Adventure **t = new Adventure*[count + 1];
+					for(int i = 0; i < count; i++)
+					{
+						t[i] = ret[i];
+					}
+					t[count] = (*iter);
+					delete[] ret;
+					ret = t;
 				}
-				t[count] = (*iter);
-				delete[] ret;
-				ret = t;
+				else
+				{
+					ret = new Adventure*[1];
+					ret[0] = (*iter);
+				}
+				count++;
 			}
-			else
-			{
-				ret = new Adventure*[1];
-				ret[0] = (*iter);
-			}
-			count++;
 		}
 		iter++;
 	}

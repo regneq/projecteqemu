@@ -235,6 +235,7 @@ private:
 	char*	short_name;
 	char	file_name[16];
 	char*	long_name;
+	char*	map_name;
 	bool pvpzone;
 	float	psafe_x, psafe_y, psafe_z;
 	int32	pMaxClients;
