@@ -1428,9 +1428,12 @@ ENCODE(OP_GroundSpawn)
 	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0);	// Unknown, observed 0x00006762
 	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0);	// Unknown, observer 0x7fffbb64
 	VARSTRUCT_ENCODE_TYPE(float, OutBuffer, emu->heading);
+	// This next field is actually a float. There is a groundspawn in freeportwest (sack of money sitting on some barrels) which requires this
+	// field to be set to (float)255.0 to appear at all, and also the size field below to be 5, to be the correct size. I think SoD has the same
+	// issue.
+	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0);	
 	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0);	// Unknown, observed 0
-	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0);	// Unknown, observed 0
-	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0);	// Unknown, observed 0x3f800000
+	VARSTRUCT_ENCODE_TYPE(uint32, OutBuffer, 0);	// This appears to be the size field.
 	VARSTRUCT_ENCODE_TYPE(float, OutBuffer, emu->y);
 	VARSTRUCT_ENCODE_TYPE(float, OutBuffer, emu->x);
 	VARSTRUCT_ENCODE_TYPE(float, OutBuffer, emu->z);
