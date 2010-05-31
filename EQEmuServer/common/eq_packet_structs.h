@@ -3123,7 +3123,7 @@ struct Ground_Spawn{
 	float min_y;
 	float max_z;
 	float heading;
-	char name[16];
+	char name[20];
 	int32 item;
 	int32 max_allowed;
 	int32 respawntimer;

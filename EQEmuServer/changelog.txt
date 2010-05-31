@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==05/31/2010=
+Derision: Increased the name field in the internal Ground_Spawn struct from 16 to 20 characters to cater for ground_spawns that are longer than 15 characters.
+
 ==05/27/2010==
 Trevius: Unreverted the revert from R1502 and added a fix for the tradeskill container combine issue.
 Trevius: Fixed a crash when using NukeItem on the Power Source slot for a Titanium client.
