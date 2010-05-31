@@ -80,7 +80,7 @@ bool ZoneDatabase::SaveZoneCFG(int32 zoneid, uint16 instance_id, NewZone_Struct*
 	return true;
 }
 
-bool ZoneDatabase::GetZoneCFG(int32 zoneid, uint16 instance_id, NewZone_Struct *zone_data, bool &can_bind, bool &can_combat, bool &can_levitate, bool &can_castoutdoor, bool &is_city, bool &is_hotzone, int &ruleset) {
+bool ZoneDatabase::GetZoneCFG(int32 zoneid, uint16 instance_id, NewZone_Struct *zone_data, bool &can_bind, bool &can_combat, bool &can_levitate, bool &can_castoutdoor, bool &is_city, bool &is_hotzone, int &ruleset, char **map_filename) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
 	MYSQL_RES *result;
@@ -88,6 +88,7 @@ bool ZoneDatabase::GetZoneCFG(int32 zoneid, uint16 instance_id, NewZone_Struct *
 	int i=0;
 	int b=0;
 	bool good = false;
+	*map_filename = new char[100];
 	if (RunQuery(query, MakeAnyLenString(&query, "SELECT ztype,"
 		"fog_red,fog_green,fog_blue,fog_minclip,fog_maxclip,"
 		"fog_red2,fog_green2,fog_blue2,fog_minclip2,fog_maxclip2,"
@@ -95,10 +96,12 @@ bool ZoneDatabase::GetZoneCFG(int32 zoneid, uint16 instance_id, NewZone_Struct *
 		"fog_red4,fog_green4,fog_blue4,fog_minclip4,fog_maxclip4,"
 		"sky,zone_exp_multiplier,safe_x,safe_y,safe_z,underworld,"
 		"minclip,maxclip,time_type,canbind,cancombat,canlevitate,"
-		"castoutdoor,hotzone,ruleset"
+		"castoutdoor,hotzone,ruleset,map_file_name,short_name"
 		" from zone where zoneidnumber=%i and version=%i",zoneid, instance_id), errbuf, &result)) {
 		safe_delete_array(query);
-		while((row = mysql_fetch_row(result))) {
+		row = mysql_fetch_row(result);
+		if(row) 
+		{
 			int r = 0;
 			memset(zone_data,0,sizeof(NewZone_Struct));
 			zone_data->ztype=atoi(row[r++]);
@@ -132,12 +135,24 @@ bool ZoneDatabase::GetZoneCFG(int32 zoneid, uint16 instance_id, NewZone_Struct *
 			can_castoutdoor = atoi(row[r++])==0?false:true;
 			is_hotzone = atoi(row[r++])==0?false:true;
 			ruleset = atoi(row[r++]);
+			char *file = row[r++];
+			if(file)
+			{
+				strcpy(*map_filename, file);
+			}
+			else
+			{
+				strcpy(*map_filename, row[r++]);
+			}
 			good = true;
 		}
 		mysql_free_result(result);
 	}
 	else
+	{
 		LogFile->write(EQEMuLog::Error, "Error in GetZoneCFG query %s: %s", query, errbuf);
+		strcpy(*map_filename, "default");
+	}
 	safe_delete_array(query);
 	
 	zone_data->zone_id = zoneid;

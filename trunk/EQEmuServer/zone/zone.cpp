@@ -107,6 +107,10 @@ bool Zone::Bootup(int32 iZoneID, int32 iInstanceID, bool iStaticZone) {
 		worldserver.SetZone(0);
 		return false;
 	}
+
+	zone->zonemap = Map::LoadMapfile(zone->map_name);
+	zone->watermap = WaterMap::LoadWaterMapfile(zone->map_name);
+	zone->pathing = PathManager::LoadPathFile(zone->map_name);
 	
 	char tmp[10];
 	//PlayerProfile_Struct* pp;
@@ -748,9 +752,9 @@ Zone::Zone(int32 in_zoneid, int32 in_instanceid, const char* in_short_name)
 	zoneid = in_zoneid;
 	instanceid = in_instanceid;
 	instanceversion = database.GetInstanceVersion(instanceid);
-	zonemap = Map::LoadMapfile(in_short_name);
-	watermap = WaterMap::LoadWaterMapfile(in_short_name);
-	pathing = PathManager::LoadPathFile(in_short_name);
+	zonemap = NULL; 
+	watermap = NULL; 
+	pathing = NULL; 
 	qGlobals = NULL;
 	default_ruleset = 0;
 
@@ -854,7 +858,8 @@ Zone::~Zone() {
 	safe_delete(Instance_Timer);
 	safe_delete(Instance_Shutdown_Timer);
 	safe_delete(qGlobals);
-	safe_delete(adv_data);
+	safe_delete_array(adv_data);
+	safe_delete_array(map_name);
 
 	if(aas != NULL) {
 		int r;
@@ -1032,8 +1037,9 @@ bool Zone::LoadZoneCFG(const char* filename, uint16 instance_id, bool DontLoadDe
 	memset(&newzone_data, 0, sizeof(NewZone_Struct));
 	if(instance_id == 0)
 	{
+		map_name = NULL;
 		if(!database.GetZoneCFG(database.GetZoneID(filename), 0, &newzone_data, can_bind, 
-			can_combat, can_levitate, can_castoutdoor, is_city, is_hotzone, default_ruleset)) 
+			can_combat, can_levitate, can_castoutdoor, is_city, is_hotzone, default_ruleset, &map_name)) 
 		{
 			LogFile->write(EQEMuLog::Error, "Error loading the Zone Config."); 
 			return false;
@@ -1042,11 +1048,13 @@ bool Zone::LoadZoneCFG(const char* filename, uint16 instance_id, bool DontLoadDe
 	else
 	{
 		//Fall back to base zone if we don't find the instance version.
+		map_name = NULL;
 		if(!database.GetZoneCFG(database.GetZoneID(filename), instance_id, &newzone_data, can_bind, 
-			can_combat, can_levitate, can_castoutdoor, is_city, is_hotzone, default_ruleset)) 
+			can_combat, can_levitate, can_castoutdoor, is_city, is_hotzone, default_ruleset, &map_name)) 
 		{
+			safe_delete_array(map_name);
 			if(!database.GetZoneCFG(database.GetZoneID(filename), 0, &newzone_data, can_bind, 
-			can_combat, can_levitate, can_castoutdoor, is_city, is_hotzone, default_ruleset)) 
+			can_combat, can_levitate, can_castoutdoor, is_city, is_hotzone, default_ruleset, &map_name)) 
 			{
 				LogFile->write(EQEMuLog::Error, "Error loading the Zone Config."); 
 				return false;
