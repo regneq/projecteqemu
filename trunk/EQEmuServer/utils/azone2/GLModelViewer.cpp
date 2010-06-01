@@ -132,7 +132,10 @@ int DrawGLScene(char *ZoneFileName)
 	glRasterPos2f(-1.15f,0.56f);
 
 	if(mfileloader->model_data.models[modelnum])
-		sprintf(textBuffer,"  %s: Model Number %4d. Name %s", ZoneFileName, modelnum, mfileloader->model_data.models[modelnum]->name);
+		if(mfileloader->model_data.models[modelnum]->name)
+			sprintf(textBuffer,"  %s: Model Number %4d. Name %s", ZoneFileName, modelnum, mfileloader->model_data.models[modelnum]->name);
+		else
+			sprintf(textBuffer,"  %s: Model Number %4d. Not Viewable (load failed).", ZoneFileName, modelnum);
 	else
 		sprintf(textBuffer,"  %s: Model Number %4d. Not Viewable (probably zone mesh).", ZoneFileName, modelnum);
 
