@@ -139,10 +139,13 @@ Mob::Mob(const char*   in_name,
 	_egnode = NULL;
 	adverrorinfo = 0;
 	name[0]=0;
+	orig_name[0]=0;
 	clean_name[0]=0;
 	lastname[0]=0;
-	if(in_name)
+	if(in_name) {
 		strncpy(name,in_name,64);
+		strncpy(orig_name,in_name,64);
+	}
 	if(in_lastname)
 		strncpy(lastname,in_lastname,64);
 	cur_hp		= in_cur_hp;
@@ -1002,22 +1005,31 @@ void Mob::ShowStats(Client* client) {
 	Client *c = NULL;
 	if (this->IsClient())
 		c = this->CastToClient();
-
+	
 	client->Message(0, "Name: %s %s", GetName(), lastname);
-	client->Message(0, "  Level: %i  MaxHP: %i  CurHP: %i  AC: %i  Class: %i", GetLevel(), GetMaxHP(), GetHP(), GetAC(), GetClass());
-	client->Message(0, "  MaxMana: %i  CurMana: %i  Size: %1.1f", GetMaxMana(), GetMana(), GetSize());
+	if (c)
+	{
+		client->Message(0, "  Level: %i  AC: %i  Class: %i  Size: %1.1f  Weight: %.1f/%d  Haste: %i", GetLevel(), GetAC(), GetClass(), GetSize(), (float)c->CalcCurrentWeight() / 10.0f, c->GetSTR(), GetHaste());
+		client->Message(0, "  HP: %i  Max HP: %i  HP Regen: %i",GetHP(), GetMaxHP(), c->CalcHPRegen());
+		client->Message(0, "  Mana: %i  Max Mana: %i  Mana Regen: %i", GetMana(), GetMaxMana(), c->CalcManaRegen());
+		client->Message(0, "  Endurance: %i, Max Endurance: %i  Endurance Regen: %i",c->GetEndurance(), c->GetMaxEndurance(), c->CalcEnduranceRegen());
+	}
+	else
+	{
+		client->Message(0, "  Level: %i  AC: %i  Class: %i  Size: %1.1f  Haste: %i", GetLevel(), GetAC(), GetClass(), GetSize(), GetHaste());
+		client->Message(0, "  HP: %i  Max HP: %i",GetHP(), GetMaxHP());
+		client->Message(0, "  Mana: %i  Max Mana: %i", GetMana(), GetMaxMana());
+	}
 	client->Message(0, "  Total ATK: %i  Worn/Spell ATK (Cap 250): %i  Server Used ATK: %i", this->CastToClient()->GetTotalATK(), GetATKBonus(), attackRating);
 	client->Message(0, "  STR: %i  STA: %i  DEX: %i  AGI: %i  INT: %i  WIS: %i  CHA: %i", GetSTR(), GetSTA(), GetDEX(), GetAGI(), GetINT(), GetWIS(), GetCHA());
-	client->Message(0, "  MR: %i  PR: %i  FR: %i  CR: %i  DR: %i  Haste: %i", GetMR(), GetPR(), GetFR(), GetCR(), GetDR(), GetHaste());
-	if (c)
-		client->Message(0, "  Weight: %.1f/%d  HPRegen: %i  ManaRegen: %i", (float)c->CalcCurrentWeight() / 10.0f, c->GetSTR(), c->CalcHPRegen(), c->CalcManaRegen());
+	client->Message(0, "  MR: %i  PR: %i  FR: %i  CR: %i  DR: %i", GetMR(), GetPR(), GetFR(), GetCR(), GetDR());
 	client->Message(0, "  Race: %i  BaseRace: %i  Texture: %i  HelmTexture: %i  Gender: %i  BaseGender: %i", GetRace(), GetBaseRace(), GetTexture(), GetHelmTexture(), GetGender(), GetBaseGender());
+	
 	if (client->Admin() >= 100) {
 		client->Message(0, "  EntityID: %i  PetID: %i  OwnerID: %i  AIControlled: %i  Targetted: %i", 
-				this->GetID(), this->GetPetID(), this->GetOwnerID(), this->IsAIControlled(), this->targeted);
+						this->GetID(), this->GetPetID(), this->GetOwnerID(), this->IsAIControlled(), this->targeted);
 		if (c) {
 			client->Message(0, "  CharID: %i  PetID: %i", c->CharacterID(), this->GetPetID());
-			client->Message(0, "  Endurance: %i, Max Endurance: %i  Endurance Regen: %i",c->GetEndurance(), c->GetMaxEndurance(), c->CalcEnduranceRegen());
 		}
 		else if (this->IsCorpse()) {
 			if (this->IsPlayerCorpse()) {
@@ -1432,6 +1444,42 @@ void Mob::CameraEffect(uint32 duration, uint32 intensity, Client *c) {
 		entity_list.QueueClients(this, outapp);
 	
 	safe_delete(outapp);
+}
+
+void Mob::TempName(const char *newname)
+{
+	char temp_name[64];
+	char old_name[64];
+	strncpy(old_name, GetName(), 64);
+
+	if(newname)
+		strncpy(temp_name, newname, 64);	
+
+	// Reset the name to the original if left null.
+	if(!newname) {
+		strncpy(temp_name, GetOrigName(), 64);
+		SetName(temp_name);
+		//CleanMobName(GetName(), temp_name);
+		strncpy(temp_name, GetCleanName(), 64);
+	}
+
+	// Make the new name unique and set it
+	strncpy(temp_name, entity_list.MakeNameUnique(temp_name), 64);
+	
+
+	// Send the new name to all clients
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_MobRename, sizeof(MobRename_Struct));
+	memset(outapp->pBuffer, 0, sizeof(outapp->pBuffer));
+	MobRename_Struct* mr = (MobRename_Struct*) outapp->pBuffer;
+	strncpy(mr->old_name, old_name, 64);
+	strncpy(mr->old_name_again, old_name, 64);
+	strncpy(mr->new_name, temp_name, 64);
+	mr->unknown192 = 0;
+	mr->unknown196 = 1;
+	entity_list.QueueClients(this, outapp);
+	safe_delete(outapp);
+
+	SetName(temp_name);
 }
 
 const sint32& Mob::SetMana(sint32 amount)
