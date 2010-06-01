@@ -52,6 +52,7 @@ public:
 	float	GetDestHeading() { return dest_heading; }
 
 	int8	IsLDoNDoor() { return is_ldon_door; }
+	int32	GetClientVersionMask() { return client_version_mask; }
 	
 	void	NPCOpen(NPC* sender);
 	void	ForceOpen(Mob *sender);
@@ -84,11 +85,13 @@ private:
 	//Timer	trigger_timer;
 
 	char	dest_zone[16];
+	int		dest_instance_id;
 	float	dest_x;
 	float	dest_y;
 	float	dest_z;
 	float	dest_heading;
 
 	int8	is_ldon_door;
+	int32	client_version_mask;
 };
 #endif

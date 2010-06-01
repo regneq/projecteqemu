@@ -37,7 +37,8 @@
 class Map;
 class WaterMap;
 
-struct ZonePoint {
+struct ZonePoint 
+{
 	float x;
 	float y;
 	float z;
@@ -47,8 +48,9 @@ struct ZonePoint {
 	float target_y;
 	float target_z;
 	float target_heading;
-	//char  target_zone[16];
 	int16 target_zone_id;
+	sint32 target_zone_instance;
+	int32 client_version_mask;
 };
 struct ZoneClientAuth_Struct {
 	int32	ip;			// client's IP address
@@ -114,9 +116,9 @@ public:
 	void	ReloadStaticData();
 	
 	int32	CountSpawn2();
-	ZonePoint* GetClosestZonePoint(float x, float y, float z, const char* to_name, float max_distance = 40000.0f);
-	ZonePoint* GetClosestZonePoint(float x, float y, float z, int32	to, float max_distance = 40000.0f, Client* client = NULL);
-	ZonePoint* GetClosestZonePointWithoutZone(float x, float y, float z, float max_distance = 40000.0f);
+	ZonePoint* GetClosestZonePoint(float x, float y, float z, const char* to_name, Client *client, float max_distance = 40000.0f);
+	ZonePoint* GetClosestZonePoint(float x, float y, float z, int32	to, Client *client, float max_distance = 40000.0f);
+	ZonePoint* GetClosestZonePointWithoutZone(float x, float y, float z, Client *client, float max_distance = 40000.0f);
 	SpawnGroupList spawn_group_list;
 
 	bool RemoveSpawnEntry(uint32 spawnid);

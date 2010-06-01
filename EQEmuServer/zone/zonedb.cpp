@@ -93,7 +93,7 @@ bool ZoneDatabase::GetZoneCFG(int32 zoneid, uint16 instance_id, NewZone_Struct *
 		"fog_red,fog_green,fog_blue,fog_minclip,fog_maxclip,"
 		"fog_red2,fog_green2,fog_blue2,fog_minclip2,fog_maxclip2,"
 		"fog_red3,fog_green3,fog_blue3,fog_minclip3,fog_maxclip3,"
-		"fog_red4,fog_green4,fog_blue4,fog_minclip4,fog_maxclip4,"
+		"fog_red4,fog_green4,fog_blue4,fog_minclip4,fog_maxclip4,fog_density,"
 		"sky,zone_exp_multiplier,safe_x,safe_y,safe_z,underworld,"
 		"minclip,maxclip,time_type,canbind,cancombat,canlevitate,"
 		"castoutdoor,hotzone,ruleset,map_file_name,short_name"
@@ -114,6 +114,7 @@ bool ZoneDatabase::GetZoneCFG(int32 zoneid, uint16 instance_id, NewZone_Struct *
 				zone_data->fog_maxclip[i]=atof(row[r++]);
 			}
 			
+			zone_data->fog_density = atof(row[r++]);;
 			zone_data->sky=atoi(row[r++]);
 			zone_data->zone_exp_multiplier=atof(row[r++]);
 			zone_data->safe_x=atof(row[r++]);

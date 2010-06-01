@@ -778,22 +778,38 @@ Object* EntityList::FindNearbyObject(float x, float y, float z, float radius)
 }
 
 
-bool EntityList::MakeDoorSpawnPacket(EQApplicationPacket* app)
+bool EntityList::MakeDoorSpawnPacket(EQApplicationPacket* app, Client *client)
 {
-	int32 count = door_list.Count();
-	if( !count || count>500)
+	int32 mask_test = client->GetClientVersionBit();
+	int count = 0;
+	LinkedListIterator<Doors*> iterator(door_list);
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		if((iterator.GetData()->GetClientVersionMask() & mask_test) && strlen(iterator.GetData()->GetDoorName()) > 3)
+		{
+			count++;
+		}
+		iterator.Advance();
+	}
+
+	if(count == 0 || count > 500)
+	{
 		return false;
+	}
 	int32 length = count * sizeof(Door_Struct);
 	uchar* packet_buffer = new uchar[length];
 	memset(packet_buffer, 0, length);
 	uchar* ptr = packet_buffer;
 	Doors *door;
-	LinkedListIterator<Doors*> iterator(door_list);
 	Door_Struct nd;
+
 	iterator.Reset();
-	while(iterator.MoreElements()){
+	while(iterator.MoreElements())
+	{
 		door = iterator.GetData();
-		if(door && strlen(door->GetDoorName()) > 3){
+		if(door && (door->GetClientVersionMask() & mask_test) && strlen(door->GetDoorName()) > 3)
+		{
 			memset(&nd, 0, sizeof(nd));
 			memcpy(nd.name, door->GetDoorName(), 32);
 			nd.xPos = door->GetX();
@@ -815,9 +831,6 @@ bool EntityList::MakeDoorSpawnPacket(EQApplicationPacket* app)
 		iterator.Advance();
 	}
 
-#if EQDEBUG >= 5
-//	LogFile->write(EQEMuLog::Debug, "MakeDoorPacket() packet length:%i qty:%i ", length, qty);
-#endif
 	app->SetOpcode(OP_SpawnDoor);
 	app->size = length;
 	app->pBuffer = packet_buffer;

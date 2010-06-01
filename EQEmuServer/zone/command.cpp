@@ -3403,7 +3403,7 @@ void command_reloadqst(Client *c, const Seperator *sep)
 
 void command_reloadzps(Client *c, const Seperator *sep)
 {
-	database.LoadStaticZonePoints(&zone->zone_point_list,zone->GetShortName());
+	database.LoadStaticZonePoints(&zone->zone_point_list, zone->GetShortName(), zone->GetInstanceVersion());
 	c->Message(0, "Reloading server zone_points.");
 }
 

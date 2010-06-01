@@ -179,7 +179,7 @@ public:
 	Doors*	FindDoor(int8 door_id);
 	Object*	FindObject(int32 object_id);
 	Object*	FindNearbyObject(float x, float y, float z, float radius);
-	bool	MakeDoorSpawnPacket(EQApplicationPacket* app);
+	bool	MakeDoorSpawnPacket(EQApplicationPacket* app, Client *client);
 	bool    MakeTrackPacket(Client* client);
 	void	SendTraders(Client* client);	
 	void    AddClient(Client*);

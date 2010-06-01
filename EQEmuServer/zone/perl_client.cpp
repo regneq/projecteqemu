@@ -3623,6 +3623,32 @@ XS(XS_Client_GetClientVersion)
 	XSRETURN(1);
 }
 
+XS(XS_Client_GetClientVersionBit); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_GetClientVersionBit)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Client::GetClientVersionBit(THIS)");
+	{
+		Client *        THIS;
+		int32           RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetClientVersionBit();
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
 XS(XS_Client_SetTitleSuffix);
 XS(XS_Client_SetTitleSuffix) {
 	dXSARGS;
@@ -4619,6 +4645,7 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "LoadZoneFlags"), XS_Client_LoadZoneFlags, file, "$");
 		newXSproto(strcpy(buf, "SetAATitle"), XS_Client_SetAATitle, file, "$$;$");
 		newXSproto(strcpy(buf, "GetClientVersion"), XS_Client_GetClientVersion, file, "$");
+		newXSproto(strcpy(buf, "GetClientVersionBit"), XS_Client_GetClientVersionBit, file, "$");
 		newXSproto(strcpy(buf, "SetTitleSuffix"), XS_Client_SetTitleSuffix, file, "$$;$");
 		newXSproto(strcpy(buf, "SetAAPoints"), XS_Client_SetAAPoints, file, "$$");
 		newXSproto(strcpy(buf, "GetAAPoints"), XS_Client_GetAAPoints, file, "$$");

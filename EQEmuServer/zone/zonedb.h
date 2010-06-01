@@ -194,7 +194,7 @@ public:
 	bool	SaveZoneCFG(int32 zoneid, uint16 instance_id, NewZone_Struct* zd);
 	bool	DumpZoneState();
 	sint8	LoadZoneState(const char* zonename, LinkedList<Spawn2*>& spawn2_list);
-	bool	LoadStaticZonePoints(LinkedList<ZonePoint*>* zone_point_list,const char* zonename);
+	bool	LoadStaticZonePoints(LinkedList<ZonePoint*>* zone_point_list,const char* zonename, int32 version);
 	bool	UpdateZoneSafeCoords(const char* zonename, float x, float y, float z);
 	int8	GetUseCFGSafeCoords();
     int		getZoneShutDownDelay(int32 zoneID, int32 version);

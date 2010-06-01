@@ -63,13 +63,14 @@ Doors::Doors(const Door* door)
 	close_timer.Disable();
 
 	strncpy(dest_zone,door->dest_zone,16);
+	dest_instance_id = door->dest_instance_id;
 	dest_x = door->dest_x;
 	dest_y = door->dest_y;
 	dest_z = door->dest_z;
 	dest_heading = door->dest_heading;
 
 	is_ldon_door = door->is_ldon_door;
-
+	client_version_mask = door->client_version_mask;
 }
 
 Doors::~Doors()
@@ -382,7 +383,7 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 			}
 			else
 			{
-				sender->MovePC(dest_zone, dest_x, dest_y, dest_z, dest_heading);
+				sender->MovePC(database.GetZoneID(dest_zone), dest_instance_id, dest_x, dest_y, dest_z, dest_heading);
 			}
 		}
 		if (( !IsDoorOpen() || opentype == 58 ) && (!keyneeded)) 
@@ -393,7 +394,7 @@ void Doors::HandleClick(Client* sender, int8 trigger)
 			}
 			else
 			{
-				sender->MovePC(dest_zone, dest_x, dest_y, dest_z, dest_heading);
+				sender->MovePC(database.GetZoneID(dest_zone), dest_instance_id, dest_x, dest_y, dest_z, dest_heading);
 			}
 		}
 	}
@@ -549,8 +550,8 @@ bool ZoneDatabase::LoadDoors(sint32 iDoorCount, Door *into, const char *zone_nam
 
 //	Door tmpDoor;
 	MakeAnyLenString(&query, "SELECT id,doorid,zone,name,pos_x,pos_y,pos_z,heading,"
-		"opentype,guild,lockpick,keyitem,nokeyring,triggerdoor,triggertype,dest_zone,dest_x,"
-		"dest_y,dest_z,dest_heading,door_param,invert_state,incline,size,is_ldon_door "
+		"opentype,guild,lockpick,keyitem,nokeyring,triggerdoor,triggertype,dest_zone,dest_instance,dest_x,"
+		"dest_y,dest_z,dest_heading,door_param,invert_state,incline,size,is_ldon_door,client_version_mask "
 		"FROM doors WHERE zone='%s' AND version=%u ORDER BY doorid asc", zone_name, version);
 	if (RunQuery(query, strlen(query), errbuf, &result)) {
 		safe_delete_array(query);
@@ -576,16 +577,18 @@ bool ZoneDatabase::LoadDoors(sint32 iDoorCount, Door *into, const char *zone_nam
 			into[r].nokeyring = atoi(row[12]);
 			into[r].trigger_door = atoi(row[13]);
 			into[r].trigger_type = atoi(row[14]);
-            strncpy(into[r].dest_zone,row[15],16);
-            into[r].dest_x = (float) atof(row[16]);
-            into[r].dest_y = (float) atof(row[17]);
-            into[r].dest_z = (float) atof(row[18]);
-            into[r].dest_heading = (float) atof(row[19]);
-			into[r].door_param=atoi(row[20]);
-			into[r].invert_state=atoi(row[21]);
-			into[r].incline=atoi(row[22]);
-			into[r].size=atoi(row[23]);
-			into[r].is_ldon_door=atoi(row[24]);
+            strncpy(into[r].dest_zone, row[15], 16);
+			into[r].dest_instance_id = atoi(row[16]);
+            into[r].dest_x = (float) atof(row[17]);
+            into[r].dest_y = (float) atof(row[18]);
+            into[r].dest_z = (float) atof(row[19]);
+            into[r].dest_heading = (float) atof(row[20]);
+			into[r].door_param=atoi(row[21]);
+			into[r].invert_state=atoi(row[22]);
+			into[r].incline=atoi(row[23]);
+			into[r].size=atoi(row[24]);
+			into[r].is_ldon_door=atoi(row[25]);
+			into[r].client_version_mask = atoi(row[26]);
 		}
 		mysql_free_result(result);
 	}

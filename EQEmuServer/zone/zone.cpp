@@ -829,6 +829,7 @@ Zone::Zone(int32 in_zoneid, int32 in_instanceid, const char* in_short_name)
 		Instance_Timer = NULL;
 	}
 	adv_data = NULL;
+	map_name = NULL;
 	did_adventure_actions = false;
 	database.QGlobalPurge();
 
@@ -893,7 +894,7 @@ bool Zone::Init(bool iStaticZone) {
 	}
 	
 	LogFile->write(EQEMuLog::Status, "Loading static zone points...");
-	if (!database.LoadStaticZonePoints(&zone_point_list, short_name)) {
+	if (!database.LoadStaticZonePoints(&zone_point_list, short_name, GetInstanceVersion())) {
 		LogFile->write(EQEMuLog::Error, "Loading static zone points failed.");
 		return false;
 	}
@@ -997,7 +998,7 @@ void Zone::ReloadStaticData() {
 	
 	LogFile->write(EQEMuLog::Status, "Reloading static zone points...");
 	zone_point_list.Clear();
-	if (!database.LoadStaticZonePoints(&zone_point_list, GetShortName())) {
+	if (!database.LoadStaticZonePoints(&zone_point_list, GetShortName(), GetInstanceVersion())) {
 		LogFile->write(EQEMuLog::Error, "Loading static zone points failed.");
 	}
 	
@@ -1367,7 +1368,7 @@ void Zone::SetTime(int8 hour, int8 minute)
 	}
 }
 
-ZonePoint* Zone::GetClosestZonePoint(float x, float y, float z, int32 to, float max_distance, Client* client) {
+ZonePoint* Zone::GetClosestZonePoint(float x, float y, float z, int32 to, Client* client, float max_distance) {
 	LinkedListIterator<ZonePoint*> iterator(zone_point_list);
 	ZonePoint* closest_zp = 0;
 	float closest_dist = FLT_MAX;
@@ -1376,6 +1377,13 @@ ZonePoint* Zone::GetClosestZonePoint(float x, float y, float z, int32 to, float 
 	while(iterator.MoreElements())
 	{
 		ZonePoint* zp = iterator.GetData();
+		int32 mask_test = client->GetClientVersionBit();
+		if(!(zp->client_version_mask & mask_test))
+		{
+			iterator.Advance();
+			continue;
+		}
+
 		if (zp->target_zone_id == to)
 		{
 			float delta_x = zp->x - x;
@@ -1407,18 +1415,18 @@ ZonePoint* Zone::GetClosestZonePoint(float x, float y, float z, int32 to, float 
 		closest_zp = NULL;
 	
 	if(!closest_zp)
-		closest_zp = GetClosestZonePointWithoutZone(x,y,z);
+		closest_zp = GetClosestZonePointWithoutZone(x,y,z, client);
 
 	return closest_zp;
 }
 
-ZonePoint* Zone::GetClosestZonePoint(float x, float y, float z, const char* to_name, float max_distance) {
+ZonePoint* Zone::GetClosestZonePoint(float x, float y, float z, const char* to_name, Client* client, float max_distance) {
 	if(to_name == NULL)
-		return GetClosestZonePointWithoutZone(x,y,z, max_distance);
-	return GetClosestZonePoint(x, y, z, database.GetZoneID(to_name), max_distance);
+		return GetClosestZonePointWithoutZone(x,y,z, client, max_distance);
+	return GetClosestZonePoint(x, y, z, database.GetZoneID(to_name), client, max_distance);
 }
 
-ZonePoint* Zone::GetClosestZonePointWithoutZone(float x, float y, float z, float max_distance) {
+ZonePoint* Zone::GetClosestZonePointWithoutZone(float x, float y, float z, Client* client, float max_distance) {
 	LinkedListIterator<ZonePoint*> iterator(zone_point_list);
 	ZonePoint* closest_zp = 0;
 	float closest_dist = FLT_MAX;
@@ -1427,19 +1435,27 @@ ZonePoint* Zone::GetClosestZonePointWithoutZone(float x, float y, float z, float
 	while(iterator.MoreElements())
 	{
 		ZonePoint* zp = iterator.GetData();
-			float delta_x = zp->x - x;
-			float delta_y = zp->y - y;
-			if(zp->x == 999999 || zp->x == -999999)
-				delta_x = 0;
-			if(zp->y == 999999 || zp->y == -999999)
-				delta_y = 0;
+		int32 mask_test = client->GetClientVersionBit();
 
-			float dist = delta_x*delta_x+delta_y*delta_y;///*+(zp->z-z)*(zp->z-z)*/;
-			if (dist < closest_dist)
-			{
-				closest_zp = zp;
-				closest_dist = dist;
-			}
+		if(!(zp->client_version_mask & mask_test))
+		{
+			iterator.Advance();
+			continue;
+		}
+
+		float delta_x = zp->x - x;
+		float delta_y = zp->y - y;
+		if(zp->x == 999999 || zp->x == -999999)
+			delta_x = 0;
+		if(zp->y == 999999 || zp->y == -999999)
+			delta_y = 0;
+
+		float dist = delta_x*delta_x+delta_y*delta_y;///*+(zp->z-z)*(zp->z-z)*/;
+		if (dist < closest_dist)
+		{
+			closest_zp = zp;
+			closest_dist = dist;
+		}
 		iterator.Advance();
 	}
 	if(closest_dist > max_distance2)
@@ -1448,7 +1464,7 @@ ZonePoint* Zone::GetClosestZonePointWithoutZone(float x, float y, float z, float
 	return closest_zp;
 }
 
-bool ZoneDatabase::LoadStaticZonePoints(LinkedList<ZonePoint*>* zone_point_list,const char* zonename)
+bool ZoneDatabase::LoadStaticZonePoints(LinkedList<ZonePoint*>* zone_point_list, const char* zonename, int32 version)
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
@@ -1456,7 +1472,10 @@ bool ZoneDatabase::LoadStaticZonePoints(LinkedList<ZonePoint*>* zone_point_list,
 	MYSQL_ROW row;
 	zone_point_list->Clear();
 	zone->numzonepoints = 0;
-	MakeAnyLenString(&query, "SELECT x,y,z,target_x,target_y,target_z,target_zone_id,heading,target_heading,number FROM zone_points WHERE zone='%s' order by number", zonename);
+	MakeAnyLenString(&query, "SELECT x, y, z, target_x, target_y, "
+		"target_z, target_zone_id, heading, target_heading, number, "
+		"target_instance, client_version_mask FROM zone_points "
+		"WHERE zone='%s' AND version=%i order by number", zonename, version);
 	if (RunQuery(query, strlen(query), errbuf, &result))
 	{
 		safe_delete_array(query);
@@ -1470,9 +1489,11 @@ bool ZoneDatabase::LoadStaticZonePoints(LinkedList<ZonePoint*>* zone_point_list,
 			zp->target_y = atof(row[4]);
 			zp->target_z = atof(row[5]);
 			zp->target_zone_id = atoi(row[6]);
-			zp->heading=atof(row[7]);
-			zp->target_heading=atof(row[8]);
-			zp->number=atoi(row[9]);
+			zp->heading = atof(row[7]);
+			zp->target_heading = atof(row[8]);
+			zp->number = atoi(row[9]);
+			zp->target_zone_instance = atoi(row[10]);
+			zp->client_version_mask = atoi(row[11]);
 			zone_point_list->Insert(zp);
 			zone->numzonepoints++;
 		}
