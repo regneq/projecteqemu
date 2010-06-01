@@ -621,41 +621,15 @@ void Client::Handle_Connect_OP_ReqClientSpawn(const EQApplicationPacket *app)
 	EQApplicationPacket* outapp = new EQApplicationPacket;
 
 	// Send Zone Doors
-	if (entity_list.MakeDoorSpawnPacket(outapp)) {
-		//DumpPacket(outapp);
+	if(entity_list.MakeDoorSpawnPacket(outapp, this)) 
+	{
 		QueuePacket(outapp);
 	}
 	safe_delete(outapp);
 
 	// Send Zone Objects
 	entity_list.SendZoneObjects(this);
-
-	// Send Zone Points
-	if (zone->numzonepoints > 0) {
-		int32 zpsize = sizeof(ZonePoints) + ((zone->numzonepoints+1) * sizeof(ZonePoint_Entry));
-		EQApplicationPacket* outapp = new EQApplicationPacket(OP_SendZonepoints,zpsize);
-		ZonePoints* zp = (ZonePoints*)outapp->pBuffer;
-		memset(zp, 0, zpsize);
-		LinkedListIterator<ZonePoint*> iterator(zone->zone_point_list);
-		iterator.Reset();
-		zp->count = zone->numzonepoints;
-		int32 count = 0;
-
-		while(iterator.MoreElements())
-		{
-			ZonePoint* data = iterator.GetData();
-			zp->zpe[count].iterator = data->number;
-			zp->zpe[count].x = data->target_x;
-			zp->zpe[count].y = data->target_y;
-			zp->zpe[count].z = data->target_z;
-			zp->zpe[count].heading=data->target_heading;
-			zp->zpe[count].zoneid = data->target_zone_id;
-			iterator.Advance();
-			count++;
-		}
-		FastQueuePacket(&outapp);
-	}
-
+	SendZonePoints();
 	// Live does this - Doodman
 	outapp = new EQApplicationPacket(OP_SendAAStats, 0);
 	FastQueuePacket(&outapp);

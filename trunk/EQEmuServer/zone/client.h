@@ -226,6 +226,7 @@ public:
 	void	BuyTraderItem(TraderBuy_Struct* tbs,Client* trader,const EQApplicationPacket* app);
 	void	TraderUpdate(int16 slot_id,int32 trader_id);
 	void	FinishTrade(Mob* with);
+	void    SendZonePoints();
 
 	void	SendBuyerResults(char *SearchQuery, uint32 SearchID);
 	void	ShowBuyLines(const EQApplicationPacket *app);

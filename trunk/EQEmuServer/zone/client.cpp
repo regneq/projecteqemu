@@ -5502,3 +5502,44 @@ void Client::CheckLDoNHail(Mob *target)
 		" I can rest easy. Please help me find my way out of here as soon as you can" 
 		" I'll stay close behind you!");
 }
+
+void Client::SendZonePoints()
+{
+	int count = 0;
+	LinkedListIterator<ZonePoint*> iterator(zone->zone_point_list);
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		ZonePoint* data = iterator.GetData();
+		if(GetClientVersionBit() & data->client_version_mask)
+		{
+			count++;
+		}
+		iterator.Advance();
+	}
+
+	int32 zpsize = sizeof(ZonePoints) + ((count + 1) * sizeof(ZonePoint_Entry));
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_SendZonepoints, zpsize);
+	ZonePoints* zp = (ZonePoints*)outapp->pBuffer;
+	zp->count = count;
+
+	int i = 0;
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		ZonePoint* data = iterator.GetData();
+		if(GetClientVersionBit() & data->client_version_mask)
+		{
+			zp->zpe[i].iterator = data->number;
+			zp->zpe[i].x = data->target_x;
+			zp->zpe[i].y = data->target_y;
+			zp->zpe[i].z = data->target_z;
+			zp->zpe[i].heading = data->target_heading;
+			zp->zpe[i].zoneid = data->target_zone_id;
+			zp->zpe[i].zoneinstance = data->target_zone_instance;
+			i++;
+		}
+		iterator.Advance();
+	}
+	FastQueuePacket(&outapp);
+}

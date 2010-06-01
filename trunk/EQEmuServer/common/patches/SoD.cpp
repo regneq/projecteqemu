@@ -739,6 +739,7 @@ ENCODE(OP_NewZone) {
 	eq->unknown904 = 180;
 	eq->unknown908 = 2;
 	eq->unknown912 = 2;
+	eq->FogDensity = emu->fog_density;
 
 	FINISH_ENCODE();
 }

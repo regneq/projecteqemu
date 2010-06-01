@@ -372,7 +372,8 @@ struct NewZone_Struct {
 /*0686*/	uint16	zone_instance;
 /*0688*/	uint32	unknown688;
 /*0692*/	uint8	unknown692[8];
-/*0700*/
+/*0700*/	float   fog_density;
+/*0704*/
 };
 
 /*
