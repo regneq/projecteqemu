@@ -412,10 +412,11 @@ bool logpos;
 	inline virtual bool IsMob() const { return true; }
 	inline virtual bool InZone() const { return true; }
 	virtual void SetLevel(uint8 in_level, bool command = false) { level = in_level; }
-	void	SendLevelAppearance();
-	void	SendAppearanceEffect(int32 parm1, int32 parm2, int32 parm3, int32 parm4, int32 parm5, Client *specific_target=NULL);
-	void	QuestReward(Client *c=NULL, int32 silver = 0, int32 gold = 0, int32 platinum = 0);
-	void	CameraEffect(uint32 duration, uint32 intensity, Client *c=NULL);
+	void SendLevelAppearance();
+	void SendAppearanceEffect(int32 parm1, int32 parm2, int32 parm3, int32 parm4, int32 parm5, Client *specific_target=NULL);
+	void QuestReward(Client *c=NULL, int32 silver = 0, int32 gold = 0, int32 platinum = 0);
+	void CameraEffect(uint32 duration, uint32 intensity, Client *c=NULL);
+	void TempName(const char *newname = NULL);
 
 	virtual inline sint32 GetPrimaryFaction() const { return 0; }
 	virtual uint16 GetSkill(SkillType skill_num) const { return 0; } //overloaded by things which actually have skill (NPC|client)
@@ -430,10 +431,10 @@ bool logpos;
 	virtual void SetMoving(bool move) { moving = move; delta_x=0; delta_y=0; delta_z=0; delta_heading=0; }
 	virtual void GoToBind(uint8 bindnum = 0) {}
 	virtual void Gate();
-	virtual void	RangedAttack(Mob* other) { }
-	virtual void	ThrowingAttack(Mob* other) { }
-	uint16  GetThrownDamage(sint16 wDmg, sint32& TotalDmg, int& minDmg);
-	bool	AffectedExcludingSlot(int slot, int effect);
+	virtual void RangedAttack(Mob* other) { }
+	virtual void ThrowingAttack(Mob* other) { }
+	uint16 GetThrownDamage(sint16 wDmg, sint32& TotalDmg, int& minDmg);
+	bool AffectedExcludingSlot(int slot, int effect);
 
 	// abstract methods
 	virtual void Death(Mob* killerMob, sint32 damage, int16 spell_id, SkillType attack_skill) = 0;
@@ -548,8 +549,10 @@ bool logpos;
 	inline int8	GetClass()					const { return class_; }
 	inline uint8	GetLevel()				const { return level; }
 	inline const char*	GetName()			const { return name; }
+	inline const char*	GetOrigName()			const { return orig_name; }
 	inline const char*	GetLastName()			const { return lastname; }
 	const char *GetCleanName();
+	virtual void SetName(const char *new_name = NULL) { new_name ? strncpy(name, new_name, 64) : strncpy(name, GetName(), 64); return;};
 	inline Mob*			GetTarget()			const { return target; }
 	virtual void SetTarget(Mob* mob);
 	virtual inline float		GetHPRatio() const { return max_hp == 0 ? 0 : ((float)cur_hp/max_hp*100); }
@@ -1080,7 +1083,8 @@ protected:
 	tProc RangedProcs[MAX_PROCS];
 
 	char    name[64];
-	char		clean_name[64];
+	char    orig_name[64];
+	char	clean_name[64];
 	char    lastname[32];
 
     bool bEnraged;

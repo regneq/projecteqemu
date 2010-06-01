@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/01/2010=
+Trevius: Added new Perl Mob quest object TempName(name) to allow changing a name temporarily.  Setting no name will return the name to the original name.
+
 ==05/31/2010=
 Derision: Increased the name field in the internal Ground_Spawn struct from 16 to 20 characters to cater for ground_spawns that are longer than 15 characters.
 

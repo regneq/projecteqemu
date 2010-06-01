@@ -6731,6 +6731,31 @@ XS(XS_Mob_CameraEffect)
 	XSRETURN_EMPTY;
 }
 
+XS(XS_Mob_TempName); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_TempName)
+{
+	dXSARGS;
+	if (items < 1 || items > 2)
+		Perl_croak(aTHX_ "Usage: Mob::TempName(THIS, name)");
+	{
+		Mob *		THIS;
+		char *		name = NULL;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		if (items > 1)	{	name = (char *)SvPV_nolen(ST(1));	}
+
+		THIS->TempName(name);
+	}
+	XSRETURN_EMPTY;
+}
 
 #ifdef __cplusplus
 extern "C"
@@ -6986,6 +7011,7 @@ XS(boot_Mob)
 		newXSproto(strcpy(buf, "MakeTempPet"), XS_Mob_MakeTempPet, file, "$$;$$$");
 		newXSproto(strcpy(buf, "QuestReward"), XS_Mob_QuestReward, file, "$$:$$$");
 		newXSproto(strcpy(buf, "CameraEffect"), XS_Mob_CameraEffect, file, "$$:$$");
+		newXSproto(strcpy(buf, "TempName"), XS_Mob_TempName, file, "$:$");
 	XSRETURN_YES;
 }
 
