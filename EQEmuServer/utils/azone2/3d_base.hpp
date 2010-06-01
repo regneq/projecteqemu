@@ -63,7 +63,7 @@ struct Texture {
 
 class Model {
 public:
-  Model() { IncludeInMap = false; }
+  Model() { IncludeInMap = false; verts = NULL; vert_count = 0; polys = NULL; poly_count = 0; tex = NULL; tex_count = 0; name = NULL; }
   ~Model() {}
 
   Vertex **verts;
