@@ -647,7 +647,6 @@ public:
 	void	SendTributeTimer();
 	void	ToggleTribute(bool enabled);
 	void	SendPathPacket(vector<FindPerson_Point> &path);
-	void    DoTributeStateEqualization(sint16 send_slot);
 
 	inline PTimerList &GetPTimers() { return(p_timers); }
 
@@ -987,13 +986,6 @@ protected:
 	void CalcAABonuses(StatBonuses* newbon);
 	void ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon);
 	void MakeBuffFadePacket(int16 spell_id, int slot_id, bool send_message = true);
-	sint32 GetTitaniumHP();
-	sint32 GetSoDHP();
-	sint32 GetTitaniumMana();
-	sint32 GetSoDMana();
-	sint32 GetTitaniumEndur();
-	sint32 GetSoDEndur();
-
 	bool client_data_loaded;
 
 	sint16	GetFocusEffect(focusType type, int16 spell_id);

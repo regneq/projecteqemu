@@ -35,6 +35,11 @@ using namespace std;
 #include "../common/rulesys.h"
 #include "features.h"
 
+struct wp_distance
+{
+	float dist;
+	int index;
+};
 
 static inline float ABS(float x) {
 	if(x < 0)
@@ -77,9 +82,6 @@ void NPC::DisplayWaypointInfo(Client *c) {
 				cur->pause );
 	}
 }
-
-
-// support for new wandering quest commands
 
 void NPC::StopWandering()
 {	// stops a mob from wandering, takes him off grid and sends him back to spawn point
@@ -202,8 +204,6 @@ void NPC::MoveTo(float mtx, float mty, float mtz, float mth, bool saveguardspot)
 	cur_wp_pause = 0;
 }
 
-
-
 void NPC::UpdateWaypoint(int wp_index)
 {
 	if(wp_index >= static_cast<int>(Waypoints.size())) {
@@ -240,60 +240,156 @@ void NPC::UpdateWaypoint(int wp_index)
 
 void NPC::CalculateNewWaypoint()
 {
-	int32 ranmax = cur_wp;
-	int32 ranmax2 = max_wp - cur_wp;
 	int old_wp = cur_wp;
-
 	bool reached_end = false;
 	bool reached_beginning = false;
-
-	//Determine if we're at the last/first waypoint
 	if (cur_wp == max_wp)
 		reached_end = true;
 	if (cur_wp == 0)
 		reached_beginning = true;
 
-	//Declare which waypoint to go to
-	switch (wandertype)
+	switch(wandertype)
 	{
-	case 0: //Circular
+	case 0: //circle
+	{
 		if (reached_end)
 			cur_wp = 0;
 		else
 			cur_wp = cur_wp + 1;
 		break;
-	case 1: //Random 5
-		if (ranmax > 5)
-			ranmax = 5;
-		if (ranmax2 > 5)
-			ranmax2 = 5;
-		cur_wp = cur_wp + rand()%(ranmax+1) - rand()%(ranmax2+1);
+	}
+	case 1: //10 closest
+	{
+		list<wplist> closest;
+		GetClosestWaypoint(closest, 10, GetX(), GetY(), GetZ());
+		list<wplist>::iterator iter = closest.begin();
+		if(closest.size() != 0)
+		{
+			int idx = MakeRandomInt(0, closest.size() - 1);
+			iter = closest.begin();
+			for(int i = 0; i < idx; ++i)
+			{
+				iter++;
+			}
+			cur_wp = (*iter).index;
+		}
+
 		break;
-	case 2: //Random
-			cur_wp = (rand()%max_wp) + (rand()%2);
+	}
+	case 2: //random
+	{
+
+		int cnt = 0;
+		while(cur_wp == old_wp)
+		{
+			if(cnt = 5)
+			{
+				cur_wp = 0;
+				break;
+			}
+			cur_wp = MakeRandomInt(0, max_wp);
+			cnt++;
+		}
+
 		break;
-	case 3: //Patrol
-		if (reached_end)
+	}
+	case 3: //patrol
+	{
+		if(reached_end)
 			patrol = 1;
-		else if (reached_beginning)
+		else if(reached_beginning)
 			patrol = 0;
-		if (patrol == 1)
+		if(patrol == 1)
 			cur_wp = cur_wp - 1;
 		else
 			cur_wp = cur_wp + 1;
+
 		break;
-// MYRA - Added wander type 4 (single run)
-		case 4:  // single run 
-			cur_wp = cur_wp + 1; 
-		break;
-// end Myra
 	}
-	tar_ndx=52;		// force new packet to be sent extra 2 times
+	case 4: //goto the end and depop
+	{
+		cur_wp = cur_wp + 1;
+		break;
+	}
+	case 5: //pick random closest 5 and pick one that's in sight  
+	{
+		list<wplist> closest;
+		GetClosestWaypoint(closest, 5, GetX(), GetY(), GetZ());
+
+		list<wplist>::iterator iter = closest.begin();
+		while(iter != closest.end())
+		{
+			if(CheckLosFN((*iter).x, (*iter).y, (*iter).z, GetSize()))
+			{
+				iter++;
+			}
+			else
+			{
+				iter = closest.erase(iter);
+			}
+		}
+
+		if(closest.size() != 0)
+		{
+			int idx = MakeRandomInt(0, closest.size() - 1);
+			iter = closest.begin();
+			for(int i = 0; i < idx; ++i)
+			{
+				iter++;
+			}
+			cur_wp = (*iter).index;
+		}
+		break;
+	}
+	}
+
+	tar_ndx = 52;
 
 	// Check to see if we need to update the waypoint. - Wes
 	if (cur_wp != old_wp)
 		UpdateWaypoint(cur_wp);
+}
 
+bool wp_distance_pred(const wp_distance& left, const wp_distance& right)
+{
+	return left.dist < right.dist;
+}
+
+void NPC::GetClosestWaypoint(list<wplist> &wp_list, int count, float m_x, float m_y, float m_z)
+{
+	wp_list.clear();
+	if(Waypoints.size() <= count)
+	{
+		for(int i = 0; i < Waypoints.size(); ++i)
+		{
+			wp_list.push_back(Waypoints[i]);
+		}
+		return;
+	}
+
+	list<wp_distance> distances;
+	for(int i = 0; i < Waypoints.size(); ++i)
+	{
+		float cur_x = (Waypoints[i].x - m_x);
+		cur_x *= cur_x;
+		float cur_y = (Waypoints[i].y - m_y);
+		cur_y *= cur_y;
+		float cur_z = (Waypoints[i].z - m_z);
+		cur_z *= cur_z;
+		float cur_dist = cur_x + cur_y + cur_z;
+		wp_distance w_dist;
+		w_dist.dist = cur_dist;
+		w_dist.index = i;
+		distances.push_back(w_dist);
+	}
+	distances.sort(wp_distance_pred);
+
+	list<wp_distance>::iterator iter = distances.begin();
+	for(int i = 0; i < count; ++i)
+	{
+		wp_list.push_back(Waypoints[(*iter).index]);
+		iter++;
+	}
 }
 
 void NPC::SetWaypointPause() 
@@ -713,14 +809,11 @@ void NPC::AssignWaypoints(int32 grid) {
 		return;		//grid ID 0 not supported
 	
 	char errbuf[MYSQL_ERRMSG_SIZE];
-  char *query = 0;
-  MYSQL_RES *result;
-  MYSQL_ROW row;
+	char *query = 0;
+	MYSQL_RES *result;
+	  MYSQL_ROW row;
 
-  bool	GridErr = false,
-	WPErr = false;		// Will be set true if any errors encountered while querying the waypoints
-
-
+	bool GridErr = false, WPErr = false;
 	Waypoints.clear();
 
 	// Retrieve the wander and pause types for this grid
@@ -802,7 +895,7 @@ void NPC::AssignWaypoints(int32 grid) {
 	} else if(!GridErr && !WPErr) {
 	    UpdateWaypoint(0);
 	    SetWaypointPause();
-	    if (wandertype == 1 || wandertype == 2)
+	    if (wandertype == 1 || wandertype == 2 || wandertype == 5)
 			CalculateNewWaypoint();
 	} else {
 		roamer = false;

@@ -225,7 +225,7 @@ public:
 	void	CheckSignal();
 	
 	//waypoint crap
-	int		GetMaxWp() const { return max_wp; }
+	int                 GetMaxWp() const { return max_wp; }
 	void				DisplayWaypointInfo(Client *to);
 	void				CalculateNewWaypoint();
 //	int8				CalculateHeadingToNextWaypoint();
@@ -238,6 +238,7 @@ public:
 	void				ResumeWandering();
 	void				PauseWandering(int pausetime);
 	void				MoveTo(float mtx, float mty, float mtz, float mth, bool saveguardspot);
+	void                GetClosestWaypoint(list<wplist> &wp_list, int count, float m_x, float m_y, float m_z);
 	
 	int32				GetEquipment(int8 material_slot) const;	// returns item id
 	sint32				GetEquipmentMaterial(int8 material_slot) const;

@@ -1519,23 +1519,18 @@ void NPC::AI_DoMovement() {
 			float movey = movedist - movex;
 			movex = sqrtf(movex);
 			movey = sqrtf(movey);
-//cout << "1: MoveDist: " << roambox_distance << " MoveX: " << movex << " MoveY: " << movey << " MaxX: " << roambox_max_x << " MinX: " << roambox_min_x << " MaxY: " << roambox_max_y << " MinY: " << roambox_min_y << endl;
 			movex *= rand()%2 ? 1 : -1;
 			movey *= rand()%2 ? 1 : -1;
 			roambox_movingto_x = GetX() + movex;
 			roambox_movingto_y = GetY() + movey;
-//printf("Roambox: Moving to: %1.2f, %1.2f  Move: %1.2f, %1.2f\n", roambox_movingto_x, roambox_movingto_y, movex, movey);
-//cout << "2: RoamBox: Moving to: " << roambox_movingto_x << ", " << roambox_movingto_y << "  Move: " << movex << ", " << movey << endl;
 			if (roambox_movingto_x > roambox_max_x || roambox_movingto_x < roambox_min_x)
 				roambox_movingto_x -= movex * 2;
 			if (roambox_movingto_y > roambox_max_y || roambox_movingto_y < roambox_min_y)
 				roambox_movingto_y -= movey * 2;
-//cout << "3: RoamBox: Moving to: " << roambox_movingto_x << ", " << roambox_movingto_y << "  Move: " << movex << ", " << movey << endl;
 			if (roambox_movingto_x > roambox_max_x || roambox_movingto_x < roambox_min_x)
 				roambox_movingto_x = roambox_max_x;
 			if (roambox_movingto_y > roambox_max_y || roambox_movingto_y < roambox_min_y)
 				roambox_movingto_y = roambox_max_y;
-//cout << "4: RoamBox: Moving to: " << roambox_movingto_x << ", " << roambox_movingto_y << "  Move: " << movex << ", " << movey << endl;
 		}
 		
 		mlog(AI__WAYPOINTS, "Roam Box: d=%.3f (%.3f->%.3f,%.3f->%.3f): Go To (%.3f,%.3f)", 
@@ -1560,10 +1555,8 @@ void NPC::AI_DoMovement() {
 		
 		sint16 gridno = CastToNPC()->GetGrid(); 
 
-// handle quest command roamers with no grids too
 		if (gridno > 0 || cur_wp==-2)  {
 			if (movetimercompleted==true) {  // time to pause at wp is over
-// MYRA - Added code to depop at end of grid for wander type 4
 				if (wandertype == 4 && cur_wp == CastToNPC()->GetMaxWp()) {
 		           CastToNPC()->Depop(); 
 				} else {
