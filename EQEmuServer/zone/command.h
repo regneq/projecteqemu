@@ -199,6 +199,7 @@ void command_pvp(Client *c, const Seperator *sep);
 void command_setxp(Client *c, const Seperator *sep);
 void command_setpvppoints(Client *c, const Seperator *sep);
 void command_name(Client *c, const Seperator *sep);
+void command_tempname(Client *c, const Seperator *sep);
 void command_npcspecialattk(Client *c, const Seperator *sep);
 void command_kill(Client *c, const Seperator *sep);
 void command_haste(Client *c, const Seperator *sep);

@@ -315,6 +315,7 @@ int command_init(void) {
 		command_add("setaapoints",NULL,0,command_setaapts) ||
 		command_add("setcrystals","[value] - Set your or your player target's available radiant or ebon crystals",100,command_setcrystals) ||
 		command_add("name","[newname] - Rename your player target",150,command_name) ||
+		command_add("tempname","[newname] - Temporarily renames your target. Leave name blank to restore the original name.",100,command_tempname) ||
 		command_add("npcspecialattk","[flagchar] [perm] - Set NPC special attack flags.  Flags are E(nrage) F(lurry) R(ampage) S(ummon).",80,command_npcspecialattk) ||
 		command_add("npcspecialattack",NULL,0,command_npcspecialattk) ||
 		command_add("npcspecialatk",NULL,0,command_npcspecialattk) ||
@@ -4418,6 +4419,26 @@ void command_name(Client *c, const Seperator *sep)
 		else
 			c->Message(13, "ERROR: Unable to rename %s.  Check that the new name '%s' isn't already taken.", oldname, sep->arg[2]);
 		free(oldname);
+	}
+}
+
+void command_tempname(Client *c, const Seperator *sep)
+{
+	Mob *target;
+	target = c->GetTarget();
+
+	if(!target)
+		c->Message(0, "Usage: #tempname newname (requires a target)");
+	else if(strlen(sep->arg[1]) > 0)
+	{
+		char *oldname = strdup(target->GetName());
+		target->TempName(sep->arg[1]);
+		c->Message(0, "Renamed %s to %s", oldname, sep->arg[1]);
+		free(oldname);
+	}
+	else {
+		target->TempName();
+		c->Message(0, "Restored the original name");
 	}
 }
 
