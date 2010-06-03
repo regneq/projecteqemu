@@ -1,5 +1,14 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/02/2010=
+KLS: Revert titanium hp boost.
+KLS: Random 10 grid type(1) will actually return the 10 closest in 3d space not the 10 closest on the grid list.
+KLS: Added new grid type(5): Random 5 with LOS.
+Trevius: Added new command #tempname <newname>, to allow temporarily renaming NPCs and Clients.  Name resets on repop or zoning.
+
+RECOMMENDED SQL:
+utils/sql/svn/1519_zone_primary_key_id.sql
+
 ==06/01/2010=
 Trevius: Added new Perl Mob quest object TempName(name) to allow changing a name temporarily.  Setting no name will return the name to the original name.
 
