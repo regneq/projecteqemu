@@ -1208,14 +1208,23 @@ void NPC::PickPocket(Client* thief) {
 		{
 			int random = MakeRandomInt(0, x-1);
 			inst = database.CreateItem(steal_items[random], charges[random]);
-			const Item_Struct* item = inst->GetItem();
-
-			if (/*item->StealSkill || */steal_skill >= stealchance)
+			if (inst)
 			{
-				thief->PutItemInInventory(slot[random], *inst);
-				thief->SendItemPacket(slot[random], inst, ItemPacketTrade);
-				RemoveItem(item->ID);
-				thief->SendPickPocketResponse(this, 0, PickPocketItem, item);
+				const Item_Struct* item = inst->GetItem();
+				if (item)
+				{
+					if (/*item->StealSkill || */steal_skill >= stealchance)
+					{
+						thief->PutItemInInventory(slot[random], *inst);
+						thief->SendItemPacket(slot[random], inst, ItemPacketTrade);
+						RemoveItem(item->ID);
+						thief->SendPickPocketResponse(this, 0, PickPocketItem, item);
+					}
+					else
+						steal_item = false;
+				}
+				else
+					steal_item = false;
 			}
 			else
 				steal_item = false;
