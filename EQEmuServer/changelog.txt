@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/04/2010=
+Trevius: Fixed a potential crash with pick pocket.
+
 ==06/02/2010=
 KLS: Revert titanium hp boost.
 KLS: Random 10 grid type(1) will actually return the 10 closest in 3d space not the 10 closest on the grid list.
