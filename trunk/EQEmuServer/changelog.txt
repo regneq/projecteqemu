@@ -1,5 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/06/2010==
+KLS: Added spell quests. Spell quests reside in {EQEMU_DIR}/quests/spells/ and are in the format of {spell_id}.pl.  (ex: C:/eqemu/quests/spells/15.pl for greater heal)
+KLS: Spell quests allow the overriding of specific spell effect. If a spell quest and sub exists then a spell's effect aside from buff duration and knockback is not used and instead the script is executed.
+KLS: Two acceptable subs for spell quests: EVENT_SPELL_EFFECT_CLIENT and EVENT_SPELL_EFFECT_NPC and has a special export of $caster_id.
+
 ==06/04/2010=
 Trevius: Fixed a potential crash with pick pocket.
 
