@@ -35,6 +35,9 @@ Copyright (C) 2001-2004  EQEMu Development Team (http://eqemu.org)
 
 #include "StringIDs.h"
 
+#ifdef EMBPERL
+#include "embparser.h"
+#endif
 
 extern Zone* zone;
 extern volatile bool ZoneLoaded;
@@ -132,11 +135,30 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 		}
 #endif
 
-		 if(buffslot >= 0) 
-		 {
-			 buffs[buffslot].melee_rune = 0;
-			 buffs[buffslot].magic_rune = 0;
-		 }
+	if(buffslot >= 0) 
+	{
+		buffs[buffslot].melee_rune = 0;
+		buffs[buffslot].magic_rune = 0;
+	}
+
+	if(IsNPC())
+	{
+		if(((PerlembParser*)parse)->SpellHasQuestSub(spell_id, "EVENT_SPELL_EFFECT_NPC"))
+		{
+			parse->Event(EVENT_SPELL_EFFECT_NPC, 0, itoa(spell_id), CastToNPC(), this, caster ? caster->GetID() : 0);
+			CalcBonuses();
+			return true;
+		}
+	}
+	else if(IsClient())
+	{
+		if(((PerlembParser*)parse)->SpellHasQuestSub(spell_id, "EVENT_SPELL_EFFECT_CLIENT"))
+		{
+			parse->Event(EVENT_SPELL_EFFECT_CLIENT, 0, itoa(spell_id), NULL, this, caster ? caster->GetID() : 0);
+			CalcBonuses();
+			return true;
+		}
+	}
 
 	// iterate through the effects in the spell
 	for (i = 0; i < EFFECT_COUNT; i++)
