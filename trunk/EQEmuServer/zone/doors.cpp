@@ -588,7 +588,7 @@ bool ZoneDatabase::LoadDoors(sint32 iDoorCount, Door *into, const char *zone_nam
 			into[r].incline=atoi(row[23]);
 			into[r].size=atoi(row[24]);
 			into[r].is_ldon_door=atoi(row[25]);
-			into[r].client_version_mask = atoi(row[26]);
+			into[r].client_version_mask = (int32)strtoul(row[26]);
 		}
 		mysql_free_result(result);
 	}
