@@ -38,6 +38,13 @@ typedef enum {
 	pQuestEventCast	// player.pl loaded, has an EVENT_CAST sub
 } playerQuestMode;
 
+typedef enum {
+	spellQuestUnloaded = 1,
+	spellQuestFullyLoaded,
+	spellQuestFailed
+} spellQuestMode;
+
+
 struct EventRecord {
 	QuestEventID event;
 	int32 objid;
@@ -58,6 +65,7 @@ protected:
 	map<int32, questMode> hasQuests;	//npcid -> questMode
 	map<std::string, playerQuestMode> playerQuestLoaded; //zone shortname -> playerQuestMode
 	map<std::string, itemQuestMode> itemQuestLoaded;		// package name - > itemQuestMode
+	map<uint32, spellQuestMode> spellQuestLoaded;
 
 	queue<EventRecord> eventQueue;		//for events that happen when perl is in use.
 	bool eventQueueProcessing;
@@ -81,6 +89,7 @@ public:
 	int LoadScript(int npcid, const char * zone, Mob* activater=0);
 	int LoadPlayerScript(const char *zone);
 	int LoadItemScript(ItemInst* iteminst, string packagename, itemQuestMode Qtype);
+	int LoadSpellScript(uint32 id);
 	
 	//expose a var to the script (probably parallels addvar))
 	//i.e. exportvar("qst1234", "name", "somemob"); 
@@ -105,6 +114,7 @@ public:
 	
 	bool HasQuestSub(int32 npcid, const char *subname);
 	bool PlayerHasQuestSub(const char *subname);
+	bool SpellHasQuestSub(uint32 spell_id, const char *subname);
 	
 #ifdef EMBPERL_COMMANDS
 	void ExecCommand(Client *c, Seperator *sep);

@@ -4538,24 +4538,24 @@ void command_npcspawn(Client *c, const Seperator *sep)
 
 	if (target && target->IsNPC()) {
 		if (strcasecmp(sep->arg[1], "create") == 0) {
-			database.NPCSpawnDB(0, zone->GetShortName(), c, target->CastToNPC());
+			database.NPCSpawnDB(0, zone->GetShortName(), zone->GetInstanceVersion(), c, target->CastToNPC());
 			c->Message(0, "%s created successfully!", target->GetName());
 		}
 		else if (strcasecmp(sep->arg[1], "add") == 0) {
-			database.NPCSpawnDB(1, zone->GetShortName(), c, target->CastToNPC(), atoi(sep->arg[2]));
+			database.NPCSpawnDB(1, zone->GetShortName(), zone->GetInstanceVersion(), c, target->CastToNPC(), atoi(sep->arg[2]));
 			c->Message(0, "%s added successfully!", target->GetName());
 		}
 		else if (strcasecmp(sep->arg[1], "update") == 0) {
-			database.NPCSpawnDB(2, zone->GetShortName(), c, target->CastToNPC());
+			database.NPCSpawnDB(2, zone->GetShortName(), zone->GetInstanceVersion(), c, target->CastToNPC());
 			c->Message(0, "%s updated!", target->GetName());
 		}
 		else if (strcasecmp(sep->arg[1], "remove") == 0) {
-			database.NPCSpawnDB(3, zone->GetShortName(), c, target->CastToNPC());
+			database.NPCSpawnDB(3, zone->GetShortName(), zone->GetInstanceVersion(), c, target->CastToNPC());
 			c->Message(0, "%s removed successfully from database!", target->GetName());
 			target->Depop(false);
 		}
 		else if (strcasecmp(sep->arg[1], "delete") == 0) {
-			database.NPCSpawnDB(4, zone->GetShortName(), c, target->CastToNPC());
+			database.NPCSpawnDB(4, zone->GetShortName(), zone->GetInstanceVersion(), c, target->CastToNPC());
 			c->Message(0, "%s deleted from database!", target->GetName());
 			target->Depop(false);
 		}
@@ -8899,7 +8899,7 @@ void command_advnpcspawn(Client *c, const Seperator *sep)
  		if (strcasecmp(sep->arg[1], "maketype") == 0){
  			if(target && target->IsNPC())
  			{
- 			database.NPCSpawnDB(6, zone->GetShortName(), c, target->CastToNPC());
+ 			database.NPCSpawnDB(6, zone->GetShortName(), zone->GetInstanceVersion(), c, target->CastToNPC());
  			}
  			else
  			c->Message(0, "Target Required!");
@@ -8985,7 +8985,7 @@ void command_advnpcspawn(Client *c, const Seperator *sep)
  			}
  		}
  		else if (strcasecmp(sep->arg[1], "addgroupspawn") == 0 && atoi(sep->arg[2])!=0) {
- 			database.NPCSpawnDB(5, zone->GetShortName(), c, 0, atoi(sep->arg[2]));
+ 			database.NPCSpawnDB(5, zone->GetShortName(), zone->GetInstanceVersion(), c, 0, atoi(sep->arg[2]));
  			c->Message(0, "Mob of group %i added successfully!", atoi(sep->arg[2]));
  		}
  		else if (strcasecmp(sep->arg[1], "removegroupspawn") == 0) {

@@ -554,7 +554,7 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 				else
 				{
 					clog(WORLD__CLIENT_ERR,"'%s' is trying to go home before they're able...",char_name);
-					database.SetHackerFlag(GetAccountName(), char_name, "MQGoHome: player tried to enter the tutorial without having go home enabled for this character.");
+					database.SetHackerFlag(GetAccountName(), char_name, "MQGoHome: player tried to go home before they were able.");
 					eqs->Close();
 					break;
 				}

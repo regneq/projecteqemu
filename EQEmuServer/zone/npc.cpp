@@ -900,7 +900,7 @@ NPC* NPC::SpawnNPC(const char* spawncommand, float in_x, float in_y, float in_z,
 	}
 }
 
-int32 ZoneDatabase::NPCSpawnDB(int8 command, const char* zone, Client *c, NPC* spawn, int32 extra) {
+int32 ZoneDatabase::NPCSpawnDB(int8 command, const char* zone, uint32 zone_version, Client *c, NPC* spawn, int32 extra) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
 	MYSQL_RES *result;
@@ -927,7 +927,7 @@ int32 ZoneDatabase::NPCSpawnDB(int8 command, const char* zone, Client *c, NPC* s
 			}
 			if(c) c->LogSQL(query);
 			safe_delete_array(query);
-			if (!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO spawn2 (zone, x, y, z, respawntime, heading, spawngroupID) values('%s', %f, %f, %f, %i, %f, %i)", zone, spawn->GetX(), spawn->GetY(), spawn->GetZ(), 1200, spawn->GetHeading(), spawngroupid), errbuf, 0, 0, &tmp)) {
+			if (!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO spawn2 (zone, version, x, y, z, respawntime, heading, spawngroupID) values('%s', %u, %f, %f, %f, %i, %f, %i)", zone, zone_version, spawn->GetX(), spawn->GetY(), spawn->GetZ(), 1200, spawn->GetHeading(), spawngroupid), errbuf, 0, 0, &tmp)) {
 				safe_delete(query);
 				return false;
 			}
@@ -963,7 +963,7 @@ int32 ZoneDatabase::NPCSpawnDB(int8 command, const char* zone, Client *c, NPC* s
 				respawntime = spawn->respawn2->RespawnTimer();
 			else
 				respawntime = 1200;
-			if (!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO spawn2 (zone, x, y, z, respawntime, heading, spawngroupID) values('%s', %f, %f, %f, %i, %f, %i)", zone, spawn->GetX(), spawn->GetY(), spawn->GetZ(), respawntime, spawn->GetHeading(), last_insert_id), errbuf, 0, 0, &spawnid)) {
+			if (!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO spawn2 (zone, version, x, y, z, respawntime, heading, spawngroupID) values('%s', %u, %f, %f, %f, %i, %f, %i)", zone, zone_version, spawn->GetX(), spawn->GetY(), spawn->GetZ(), respawntime, spawn->GetHeading(), last_insert_id), errbuf, 0, 0, &spawnid)) {
 				safe_delete(query);
 				printf("ReturnFalse: spawn2 query in NPCSpawnDB()\n");
 				return false;
@@ -1029,7 +1029,7 @@ int32 ZoneDatabase::NPCSpawnDB(int8 command, const char* zone, Client *c, NPC* s
 			break;
 		}
 		case 4: { //delete spawn from DB (including npc_type) - khuong
-			if (!RunQuery(query, MakeAnyLenString(&query, "SELECT id,spawngroupID from spawn2 where zone='%s' AND spawngroupID=%i", zone, spawn->GetSp2()), errbuf, &result)) {
+			if (!RunQuery(query, MakeAnyLenString(&query, "SELECT id,spawngroupID from spawn2 where zone='%s' AND version=%u AND spawngroupID=%i", zone, zone_version, spawn->GetSp2()), errbuf, &result)) {
 				safe_delete_array(query);
 				return(0);
 			}
@@ -1069,7 +1069,7 @@ int32 ZoneDatabase::NPCSpawnDB(int8 command, const char* zone, Client *c, NPC* s
 			break;
 		}
 		case 5: { // add a spawn from spawngroup - Ailia
-			if (!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO spawn2 (zone, x, y, z, respawntime, heading, spawngroupID) values('%s', %f, %f, %f, %i, %f, %i)", zone, c->GetX(), c->GetY(), c->GetZ(), 120, c->GetHeading(), extra), errbuf, 0, 0, &tmp)) {
+			if (!RunQuery(query, MakeAnyLenString(&query, "INSERT INTO spawn2 (zone, version, x, y, z, respawntime, heading, spawngroupID) values('%s', %u, %f, %f, %f, %i, %f, %i)", zone, zone_version, c->GetX(), c->GetY(), c->GetZ(), 120, c->GetHeading(), extra), errbuf, 0, 0, &tmp)) {
 				safe_delete(query);
 				return false;
 			}
