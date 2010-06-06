@@ -1493,7 +1493,7 @@ bool ZoneDatabase::LoadStaticZonePoints(LinkedList<ZonePoint*>* zone_point_list,
 			zp->target_heading = atof(row[8]);
 			zp->number = atoi(row[9]);
 			zp->target_zone_instance = atoi(row[10]);
-			zp->client_version_mask = (int32)strtoul(row[11]);
+			zp->client_version_mask = (int32)strtoul(row[11], NULL, 0);
 			zone_point_list->Insert(zp);
 			zone->numzonepoints++;
 		}
