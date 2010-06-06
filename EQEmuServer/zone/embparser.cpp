@@ -267,7 +267,8 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 		}
 	}
 	else if(isPlayerQuest) {
-		packagename = "player_";
+		packagename = "player";
+		packagename += "_";
 		packagename += zone->GetShortName();
 
 		if(!isloaded(packagename.c_str()))
@@ -925,6 +926,11 @@ int PerlembParser::LoadPlayerScript(const char *zone)
 	if(!perl)
 		return(0);
 
+	if(perl->InUse())
+	{
+		return 0;
+	}
+
 	if(playerQuestLoaded.count(zone) == 1) {
 		return(1);
 	}
@@ -974,6 +980,11 @@ int PerlembParser::LoadItemScript(ItemInst* iteminst, string packagename, itemQu
 	if(!perl)
 		return 0;
 
+	if(perl->InUse())
+	{
+		return 0;
+	}
+
 	// if we've already tried to load it, don't try again
 	if(itemQuestLoaded.count(packagename) == 1)
 		return 1;
@@ -1010,6 +1021,11 @@ int PerlembParser::LoadSpellScript(uint32 id)
 {
 	if(!perl)
 		return 0;
+
+	if(perl->InUse())
+	{
+		return 0;
+	}
 
 	// if we've already tried to load it, don't try again
 	if(spellQuestLoaded.count(id) == 1)
