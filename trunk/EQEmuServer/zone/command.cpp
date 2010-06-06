@@ -10479,6 +10479,7 @@ void command_object(Client *c, const Seperator *sep)
 				}
 
 				door.incline = od.unknown020; // unknown20 = optional incline value
+				door.client_version_mask = 0xFFFFFFFF;
 
 				doors = new Doors(&door);
 				entity_list.AddDoor(doors);
