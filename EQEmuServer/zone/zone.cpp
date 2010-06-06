@@ -235,7 +235,7 @@ bool Zone::LoadZoneObjects() {
 					}
 
 					d.incline = atoi(row[13]); // unknown20 = optional model incline value
-					d.client_version_mask = 0xFFFFFFFF;
+					d.client_version_mask = 0xFFFFFFFF; //We should load the mask from the zone.
 
 					Doors* door = new Doors(&d);
 					entity_list.AddDoor(door);
