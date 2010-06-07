@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/07/2010==
+gaeorn: compile fixes for linux
+
 ==06/06/2010==
 KLS: Added spell quests. Spell quests reside in {EQEMU_DIR}/quests/spells/ and are in the format of {spell_id}.pl.  (ex: C:/eqemu/quests/spells/15.pl for greater heal)
 KLS: Spell quests allow the overriding of specific spell effect. If a spell quest and sub exists then a spell's effect aside from buff duration and knockback is not used and instead the script is executed.
