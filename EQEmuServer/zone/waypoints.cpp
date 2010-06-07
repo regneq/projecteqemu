@@ -278,17 +278,23 @@ void NPC::CalculateNewWaypoint()
 	}
 	case 2: //random
 	{
-
-		int cnt = 0;
-		while(cur_wp == old_wp)
+		cur_wp = MakeRandomInt(0, Waypoints.size() - 1);
+		if(cur_wp == old_wp)
 		{
-			if(cnt = 5)
+			if(cur_wp == (Waypoints.size() - 1))
 			{
-				cur_wp = 0;
-				break;
+				if(cur_wp > 0)
+				{
+					cur_wp--;
+				}
 			}
-			cur_wp = MakeRandomInt(0, max_wp);
-			cnt++;
+			else if(cur_wp == 0)
+			{
+				if((Waypoints.size() - 1) > 0)
+				{
+					cur_wp++;
+				}
+			}
 		}
 
 		break;
