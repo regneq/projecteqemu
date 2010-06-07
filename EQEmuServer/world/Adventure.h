@@ -7,6 +7,7 @@
 #include "AdventureTemplate.h"
 #include <list>
 #include <string>
+#include <stdlib.h>
 
 using namespace std;
 
