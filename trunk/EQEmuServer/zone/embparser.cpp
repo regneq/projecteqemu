@@ -72,7 +72,10 @@ const char *QuestEventSubroutines[_LargestEventID] = {
 	"EVENT_TARGET_CHANGE",
 	"EVENT_HATE_LIST",
 	"EVENT_SPELL_EFFECT_CLIENT",
-	"EVENT_SPELL_EFFECT_NPC"
+	"EVENT_SPELL_EFFECT_NPC",
+	"EVENT_SPELL_EFFECT_BUFF_TIC_CLIENT",
+	"EVENT_SPELL_EFFECT_BUFF_TIC_NPC",
+	"EVENT_SPELL_EFFECT_TRANSLOCATE_COMPLETE"
 };
 
 PerlembParser::PerlembParser(void) : Parser()
@@ -226,7 +229,11 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 	bool isPlayerQuest = false;
 	bool isItemQuest = false;
 	bool isSpellQuest = false;
-	if(event == EVENT_SPELL_EFFECT_CLIENT || event == EVENT_SPELL_EFFECT_NPC)
+	if(event == EVENT_SPELL_EFFECT_CLIENT || 
+		event == EVENT_SPELL_EFFECT_NPC || 
+		event == EVENT_SPELL_EFFECT_BUFF_TIC_CLIENT ||
+		event == EVENT_SPELL_EFFECT_BUFF_TIC_NPC ||
+		event == EVENT_SPELL_EFFECT_TRANSLOCATE_COMPLETE)
 	{
 		isSpellQuest = true;
 	}
@@ -648,6 +655,8 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 
 		case EVENT_SPELL_EFFECT_CLIENT:
 		case EVENT_SPELL_EFFECT_NPC:
+		case EVENT_SPELL_EFFECT_BUFF_TIC_CLIENT:
+		case EVENT_SPELL_EFFECT_BUFF_TIC_NPC:
 		{
 			ExportVar(packagename.c_str(), "caster_id", extradata);
 			break;

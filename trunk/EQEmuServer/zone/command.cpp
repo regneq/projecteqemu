@@ -434,6 +434,7 @@ int command_init(void) {
 		command_add("summonburriedplayercorpse","- Summons the target's oldest burried corpse, if any exist.", 100, command_summonburriedplayercorpse) ||
 		command_add("refreshgroup","- Refreshes Group.", 0, command_refreshgroup) ||
 		command_add("advnpcspawn","[maketype|makegroup|addgroupentry|addgroupspawn][removegroupspawn|movespawn|editgroupbox|cleargroupbox]",150,command_advnpcspawn) ||
+		command_add("advnpc","analog for advnpcspawn [maketype|makegroup|addgroupentry|addgroupspawn][removegroupspawn|movespawn|editgroupbox|cleargroupbox]",150,command_advnpcspawn) ||
 		command_add("modifynpcstat","- Modifys a NPC's stats",150,command_modifynpcstat) ||
 		command_add("undyeme","- Remove dye from all of your armor slots",0,command_undyeme) ||
 		command_add("instance","- Modify Instances",200,command_instance) ||
