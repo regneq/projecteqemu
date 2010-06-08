@@ -2097,6 +2097,47 @@ void ClientTaskState::UpdateTaskActivity(Client *c, int TaskID, int ActivityID, 
 
 }
 
+void ClientTaskState::ResetTaskActivity(Client *c, int TaskID, int ActivityID) {
+
+	_log(TASKS__UPDATE, "ClientTaskState UpdateTaskActivity(%i, %i, 0).", TaskID, ActivityID);
+
+	// Quick sanity check
+	if((ActivityID<0) || (ActiveTaskCount==0)) return;
+
+	int ActiveTaskIndex = -1;
+
+	for(int i=0; i<MAXACTIVETASKS; i++) {
+		if(ActiveTasks[i].TaskID==TaskID) {
+			ActiveTaskIndex = i;
+			break;
+		}
+	}
+
+	// The client does not have this task
+	if(ActiveTaskIndex == -1) return;
+
+	TaskInformation* Task = taskmanager->Tasks[ActiveTasks[ActiveTaskIndex].TaskID];
+
+	// The task is invalid
+	if(Task==NULL) return;
+
+	// The ActivityID is out of range
+	if(ActivityID >= Task->ActivityCount) return;
+
+	// The Activity is not currently active
+	if(ActiveTasks[ActiveTaskIndex].Activity[ActivityID].State != ActivityActive) return;
+
+	_log(TASKS__UPDATE, "ResetTaskActivityCount");
+
+	ActiveTasks[ActiveTaskIndex].Activity[ActivityID].DoneCount = 0;
+
+	ActiveTasks[ActiveTaskIndex].Activity[ActivityID].Updated=true;
+
+	// Send an update packet for this single activity
+	taskmanager->SendTaskActivityLong(c, ActiveTasks[ActiveTaskIndex].TaskID, ActivityID, 
+						ActiveTaskIndex, Task->Activity[ActivityID].Optional);
+}
+
 void  ClientTaskState::ShowClientTasks(Client *c) {
 	
 	c->Message(0, "Task Information:");

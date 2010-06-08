@@ -1761,6 +1761,12 @@ void QuestManager::updatetaskactivity(int task, int activity, int count) {
 		initiator->UpdateTaskActivity(task, activity, count);
 }
 
+void QuestManager::resettaskactivity(int task, int activity) {
+
+	if(RuleB(TaskSystem, EnableTaskSystem) && initiator)
+		initiator->ResetTaskActivity(task, activity);
+}
+
 void QuestManager::taskexploredarea(int exploreid) {
 
 	if(RuleB(TaskSystem, EnableTaskSystem) && initiator)

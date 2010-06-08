@@ -178,6 +178,7 @@ public:
 	bool IsTaskActivityActive(int TaskID, int ActivityID);
 	ActivityState GetTaskActivityState(int index, int ActivityID);
 	void UpdateTaskActivity(Client *c, int TaskID, int ActivityID, int Count);
+	void ResetTaskActivity(Client *c, int TaskID, int ActivityID);
 	void CancelTask(Client *c, int SequenceNumber, bool RemoveFromDB = true);
 	void CancelAllTasks(Client *c);
 	void RemoveTask(Client *c, int SequenceNumber);

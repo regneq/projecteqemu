@@ -2173,6 +2173,21 @@ XS(XS__updatetaskactivity)
 	XSRETURN_EMPTY;
 }
 
+XS(XS__resettaskactivity);
+XS(XS__resettaskactivity)
+{
+	dXSARGS;
+	unsigned int task, activity;
+	if(items == 2) {
+		task = (int)SvIV(ST(0));
+		activity = (int)SvIV(ST(1));
+		quest_manager.resettaskactivity(task, activity);
+	} else {
+		Perl_croak(aTHX_ "Usage: resettaskactivity(task, activity)");
+	}
+
+	XSRETURN_EMPTY;
+}
 
 XS(XS__taskexploredarea);
 XS(XS__taskexploredarea)
@@ -3121,6 +3136,7 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "istaskactive"), XS__istaskactive, file);
 		newXS(strcpy(buf, "istaskactivityactive"), XS__istaskactivityactive, file);
 		newXS(strcpy(buf, "updatetaskactivity"), XS__updatetaskactivity, file);
+		newXS(strcpy(buf, "resettaskactivity"), XS__resettaskactivity, file);
 		newXS(strcpy(buf, "taskexploredarea"), XS__taskexploredarea, file);
 		newXS(strcpy(buf, "assigntask"), XS__assigntask, file);
 		newXS(strcpy(buf, "failtask"), XS__failtask, file);
