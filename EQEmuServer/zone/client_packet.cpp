@@ -9654,25 +9654,31 @@ void Client::Handle_OP_Translocate(const EQApplicationPacket *app) {
 	if(its->Complete == 1) {
 
 		int SpellID = PendingTranslocateData.SpellID;
-
-		// Derision: If the spell has a translocate to bind effect, AND we are already in the zone the client
-		// is bound in, use the GoToBind method. If we send OP_Translocate in this case, the client moves itself
-		// to the bind coords it has from the PlayerProfile, but with the X and Y reversed. I suspect they are
-		// reversed in the pp, and since spells like Gate are handled serverside, this has not mattered before.
-		if(((SpellID == 1422) || (SpellID == 1334) || (SpellID == 3243)) &&
-		   zone->GetZoneID() == PendingTranslocateData.ZoneID)  {
-			PendingTranslocate = false;
-			GoToBind();
-			return;
+		if(((PerlembParser*)parse)->SpellHasQuestSub(SpellID, "EVENT_SPELL_EFFECT_TRANSLOCATE_COMPLETE"))
+		{
+			parse->Event(EVENT_SPELL_EFFECT_TRANSLOCATE_COMPLETE, 0, itoa(SpellID), NULL, this, 0);
 		}
+		else
+		{
+			// Derision: If the spell has a translocate to bind effect, AND we are already in the zone the client
+			// is bound in, use the GoToBind method. If we send OP_Translocate in this case, the client moves itself
+			// to the bind coords it has from the PlayerProfile, but with the X and Y reversed. I suspect they are
+			// reversed in the pp, and since spells like Gate are handled serverside, this has not mattered before.
+			if(((SpellID == 1422) || (SpellID == 1334) || (SpellID == 3243)) &&
+			   zone->GetZoneID() == PendingTranslocateData.ZoneID)  {
+				PendingTranslocate = false;
+				GoToBind();
+				return;
+			}
 
-		EQApplicationPacket* outapp = new EQApplicationPacket(OP_Translocate, sizeof(Translocate_Struct));
-		Translocate_Struct *ots = (Translocate_Struct*)outapp->pBuffer;
-		memcpy(ots, &PendingTranslocateData, sizeof(Translocate_Struct));
-		
-		//Was sending the packet back to initiate client zone... 
-		//but that could be abusable, so lets go through proper channels
-		MovePC(ots->ZoneID, 0, ots->x, ots->y, ots->z, GetHeading(), 0, ZoneSolicited);
+			EQApplicationPacket* outapp = new EQApplicationPacket(OP_Translocate, sizeof(Translocate_Struct));
+			Translocate_Struct *ots = (Translocate_Struct*)outapp->pBuffer;
+			memcpy(ots, &PendingTranslocateData, sizeof(Translocate_Struct));
+			
+			//Was sending the packet back to initiate client zone... 
+			//but that could be abusable, so lets go through proper channels
+			MovePC(ots->ZoneID, 0, ots->x, ots->y, ots->z, GetHeading(), 0, ZoneSolicited);
+		}
 	}
 
 	PendingTranslocate = false;
