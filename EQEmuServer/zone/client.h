@@ -823,6 +823,9 @@ public:
 	inline void UpdateTaskActivity(int TaskID, int ActivityID, int Count)
 		    { if(taskstate) taskstate->UpdateTaskActivity(this, TaskID, ActivityID, Count); }
 
+	inline void ResetTaskActivity(int TaskID, int ActivityID)
+		    { if(taskstate) taskstate->ResetTaskActivity(this, TaskID, ActivityID); }
+
 	inline void UpdateTasksOnKill(int NPCTypeID)
 	            { if(taskstate) taskstate->UpdateTasksOnKill(this, NPCTypeID); }
 
