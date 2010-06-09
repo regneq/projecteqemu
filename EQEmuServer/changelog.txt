@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==06/09/2010==
 Trevius: Added new Perl Mob quest object SpellEffect(effect, [duration, finish_delay, zone_wide, unk20, unk26]) for sending a spell paticle effects without casting a spell.
+gaeorn: replaced random number generator with the first one on this page: http://www3.ocn.ne.jp/~harase/megenerators.html
 
 ==06/08/2010==
 Trevius: Added new quest::resettaskactivity(task, activity) command for resetting a task activity done count to 0.
