@@ -1405,7 +1405,7 @@ void Mob::SendAppearanceEffect(int32 parm1, int32 parm2, int32 parm3, int32 parm
 	la->value5a = 1;
 	la->value5b = 1;
 	if(specific_target == NULL) {
-		entity_list.QueueCloseClients(this,outapp);
+		entity_list.QueueClients(this,outapp);
 	}
 	else if (specific_target->IsClient()) {
 		specific_target->CastToClient()->QueuePacket(outapp, false);
@@ -1442,6 +1442,29 @@ void Mob::CameraEffect(uint32 duration, uint32 intensity, Client *c) {
 		c->QueuePacket(outapp, false, Client::CLIENT_CONNECTED);
 	else
 		entity_list.QueueClients(this, outapp);
+	
+	safe_delete(outapp);
+}
+
+void Mob::SendSpellEffect(uint32 effectid, int32 duration, int32 finish_delay, bool zone_wide, int32 unk020, int16 unk26) {
+
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_SpellEffect, sizeof(SpellEffect_Struct));
+	memset(outapp->pBuffer, 0, sizeof(outapp->pBuffer));
+	SpellEffect_Struct* se = (SpellEffect_Struct*) outapp->pBuffer;
+	se->EffectID = effectid;	// ID of the Particle Effect
+	se->EntityID = GetID();
+	se->EntityID2 = GetID();	// EntityID again
+	se->Duration = duration;	// In Milliseconds
+	se->FinishDelay = finish_delay;	// Seen 0
+	se->Unknown020 = unk020;	// Seen 3000
+	se->Unknown024 = 1;		// Seen 1 for SoD
+	se->Unknown025 = 1;		// Seen 1 for Live
+	se->Unknown026 = unk26;		// Seen 1157
+	
+	if(zone_wide)
+		entity_list.QueueClients(this, outapp);
+	else
+		entity_list.QueueCloseClients(this, outapp);
 	
 	safe_delete(outapp);
 }

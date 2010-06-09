@@ -381,6 +381,7 @@ OUT(OP_ShopDelItem, Merchant_DelItem_Struct);
 OUT(OP_SimpleMessage, SimpleMessage_Struct);
 OUT(OP_SkillUpdate, SkillUpdate_Struct);
 OUT(OP_SomeItemPacketMaybe, Arrow_Struct);
+OUT(OP_SpellEffect, SpellEffect_Struct);
 OUT(OP_Stamina, Stamina_Struct);
 OUT(OP_Stun, Stun_Struct);
 OUT(OP_TargetReject, TargetReject_Struct);

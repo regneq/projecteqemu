@@ -449,6 +449,21 @@ struct CastSpell_Struct
 	int8    cs_unknown[4];
 };
 
+struct SpellEffect_Struct
+{
+/*000*/	int32 EffectID;
+/*004*/	int32 EntityID;
+/*008*/	int32 EntityID2;	// EntityID again
+/*012*/	int32 Duration;		// In Milliseconds
+/*016*/	int32 FinishDelay;	// In Milliseconds - delay for final part of spell effect
+/*020*/	int32 Unknown020;	// Seen 3000
+/*024*/ int8 Unknown024;	// Seen 1 for SoD
+/*025*/ int8 Unknown025;	// Seen 1 for Live
+/*026*/ int16 Unknown026;	// Seen 1157 and 1177 - varies per char
+/*028*/
+};
+
+
 /*
 ** SpawnAppearance_Struct
 ** Changes client appearance for all other clients in zone
