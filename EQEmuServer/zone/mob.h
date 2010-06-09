@@ -416,6 +416,7 @@ bool logpos;
 	void SendAppearanceEffect(int32 parm1, int32 parm2, int32 parm3, int32 parm4, int32 parm5, Client *specific_target=NULL);
 	void QuestReward(Client *c=NULL, int32 silver = 0, int32 gold = 0, int32 platinum = 0);
 	void CameraEffect(uint32 duration, uint32 intensity, Client *c=NULL);
+	void SendSpellEffect(uint32 effectid, int32 duration, int32 finish_delay, bool zone_wide, int32 unk020, int16 unk26);
 	void TempName(const char *newname = NULL);
 
 	virtual inline sint32 GetPrimaryFaction() const { return 0; }
