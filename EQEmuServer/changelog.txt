@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/10/2010==
+gaeorn: modified method of transforming RNG output into a range of integers. this should improve the equalization of the distribution of the returned random numbers
+
 ==06/09/2010==
 Trevius: Added new Perl Mob quest object SpellEffect(effect, [duration, finish_delay, zone_wide, unk20, unk26]) for sending a spell paticle effects without casting a spell.
 gaeorn: replaced random number generator with the first one on this page: http://www3.ocn.ne.jp/~harase/megenerators.html
