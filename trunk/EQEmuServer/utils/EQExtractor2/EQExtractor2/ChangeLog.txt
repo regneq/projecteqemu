@@ -3,6 +3,7 @@
 ==06/12/2010==
 
 Derision: Updated version to 2.0 SVN
+Derision: Fixed a bug in GenerateZoneSQL where it was using the ZoneID from the NewZone packet rather than from the PP.
 
 ------------------------------------------------------------------------------------------------------------
 ==06/11/2010==
