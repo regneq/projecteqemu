@@ -658,7 +658,7 @@ namespace EQApplicationLayer
             InsertFormat += "`fog_red4` = {27}, `fog_green4` = {28}, `fog_blue4` = {29}, `fog_minclip4` = {30}, `fog_maxclip4` = {31} WHERE zoneidnumber = {5};";
 
             SQLOut(String.Format(InsertFormat, NewZone.ShortName2, NewZone.LongName, NewZone.SafeX, NewZone.SafeY, NewZone.SafeZ,
-                                               NewZone.ZoneID, NewZone.UnderWorld, NewZone.MinClip, NewZone.MaxClip, NewZone.FogMinClip[0], NewZone.FogMaxClip[0],
+                                               ZoneID, NewZone.UnderWorld, NewZone.MinClip, NewZone.MaxClip, NewZone.FogMinClip[0], NewZone.FogMaxClip[0],
                                                NewZone.FogBlue[0], NewZone.FogRed[0], NewZone.FogGreen[0], NewZone.Sky, NewZone.Type, NewZone.TimeType,
                                                NewZone.FogRed[1], NewZone.FogGreen[1], NewZone.FogBlue[1], NewZone.FogMinClip[1], NewZone.FogMaxClip[1],
                                                NewZone.FogRed[2], NewZone.FogGreen[2], NewZone.FogBlue[2], NewZone.FogMinClip[2], NewZone.FogMaxClip[2],
