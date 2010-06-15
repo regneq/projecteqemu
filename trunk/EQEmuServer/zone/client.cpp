@@ -496,15 +496,11 @@ bool Client::Save(int8 iCommitNow) {
 	m_pp.aapoints_spent = spentpoints;
 
 	if (GetHP() <= 0) {
-		if (GetMaxHP() > 30000)
-			m_pp.cur_hp = 30000;
-		else
-			m_pp.cur_hp = GetMaxHP();
+		m_pp.cur_hp = GetMaxHP();
 	}
-	else if (GetHP() > 30000)
-		m_pp.cur_hp = 30000;
 	else
 		m_pp.cur_hp = GetHP();
+
 	m_pp.mana = cur_mana;
 	m_pp.endurance = cur_end;
 
