@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/15/2010==
+Secrets: Characters with HPs higher than 30k will no longer be set back to 30k current health when zoning.
+
 ==06/10/2010==
 gaeorn: modified method of transforming RNG output into a range of integers. this should improve the equalization of the distribution of the returned random numbers
 
