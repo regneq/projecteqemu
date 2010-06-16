@@ -4118,7 +4118,7 @@ void Client::HandleLDoNSenseTraps(NPC *target, int16 skill, int8 type)
 	{
 		if(target->IsLDoNTrapped())
 		{
-			if(target->GetLDoNTrapType() == LDoNTypeCursed || target->GetLDoNTrapType() == LDoNTypeMagical && type != target->GetLDoNTrapType())
+			if((target->GetLDoNTrapType() == LDoNTypeCursed || target->GetLDoNTrapType() == LDoNTypeMagical) && type != target->GetLDoNTrapType())
 			{
 				Message_StringID(MT_Skills, LDON_CANT_DETERMINE_TRAP, target->GetCleanName());
 				return;
@@ -4165,7 +4165,7 @@ void Client::HandleLDoNDisarm(NPC *target, int16 skill, int8 type)
 				return;
 			}
 
-			if(target->GetLDoNTrapType() == LDoNTypeCursed || target->GetLDoNTrapType() == LDoNTypeMagical && type != target->GetLDoNTrapType())
+			if((target->GetLDoNTrapType() == LDoNTypeCursed || target->GetLDoNTrapType() == LDoNTypeMagical) && type != target->GetLDoNTrapType())
 			{
 				Message_StringID(MT_Skills, LDON_HAVE_NOT_DISARMED, target->GetCleanName());
 				return;
@@ -4224,7 +4224,7 @@ void Client::HandleLDoNPickLock(NPC *target, int16 skill, int8 type)
 				return;
 			}
 
-			if(target->GetLDoNTrapType() == LDoNTypeCursed || target->GetLDoNTrapType() == LDoNTypeMagical && type != target->GetLDoNTrapType())
+			if((target->GetLDoNTrapType() == LDoNTypeCursed || target->GetLDoNTrapType() == LDoNTypeMagical) && type != target->GetLDoNTrapType())
 			{
 				Message(MT_Skills, "You cannot unlock %s with this skill.", target->GetCleanName());
 				return;
