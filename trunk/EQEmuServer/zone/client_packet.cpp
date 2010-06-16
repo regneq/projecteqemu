@@ -3490,7 +3490,10 @@ void Client::Handle_OP_EndLootRequest(const EQApplicationPacket *app)
 	if (entity == 0) {
 		//DumpPacket(app);
 		Message(13, "Error: OP_EndLootRequest: Corpse not found (ent = 0)");
-		Corpse::SendLootReqErrorPacket(this);
+		if(GetClientVersion() >= EQClientSoD)
+			Corpse::SendEndLootErrorPacket(this);
+		else
+			Corpse::SendLootReqErrorPacket(this);
 		return;
 	}
 	else if (!entity->IsCorpse()) {
