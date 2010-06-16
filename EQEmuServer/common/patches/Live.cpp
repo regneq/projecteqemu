@@ -3050,7 +3050,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	
 	itbs.loregroup = item->LoreGroup;
 	itbs.artifact = item->ArtifactFlag;
-	itbs.pendinglore = item->PendingLoreFlag;
+	itbs.summonedflag = item->SummonedFlag;
 	itbs.favor = item->Favor;
 	itbs.fvnodrop = item->FVNoDrop;
 	itbs.dotshield = item->DotShielding;
@@ -3126,6 +3126,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	itbs.HeroicSVCorrup = item->HeroicSVCorrup;
 	itbs.HealAmt = item->HealAmt;
 	itbs.SpellDmg = item->SpellDmg;
+	itbs.clairvoyance = item->Clairvoyance;
 
 	itbs.subitem_count = 0;
 

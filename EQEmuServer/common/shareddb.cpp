@@ -963,6 +963,7 @@ bool SharedDatabase::DBLoadItems(sint32 iItemCount, uint32 iMaxItemID) {
 			item.LDoNSellBackRate = (uint32)atoul(row[ItemField::ldonsellbackrate]);
 			item.ScriptFileID = (uint32)atoul(row[ItemField::scriptfileid]);
 			item.ExpendableArrow = (uint16)atoul(row[ItemField::expendablearrow]);
+			item.Clairvoyance = (uint32)atoul(row[ItemField::clairvoyance]);
 
 			if (!EMuShareMemDLL.Items.cbAddItem(item.ID, &item)) {
 				LogFile->write(EQEMuLog::Error, "Database::DBLoadItems: Failure reported from EMuShareMemDLL.Items.cbAddItem(%i)", item.ID);

@@ -3800,7 +3800,7 @@ struct ItemBodyStruct
 	sint32 SpellShield;
 	sint32 Avoidance;
 	sint32 Accuracy;
-	uint32 CharmFileID; //not sure the point of this; disables all stats on item if > 0
+	uint32 CharmFileID;
 	uint32	FactionMod1;
 	sint32	FactionAmt1;
 	uint32	FactionMod2;
@@ -3809,7 +3809,6 @@ struct ItemBodyStruct
 	sint32	FactionAmt3;
 	uint32  FactionMod4;
 	sint32	FactionAmt4;
-	//sint16 unknown14;
 	
 };
 
@@ -3869,7 +3868,6 @@ struct WornEffectStruct //worn, focus and scroll effect
 struct ItemSecondaryBodyStruct{
 	uint32 augtype;
 	uint32 augrestrict;
-	//uint8 unknown2[2]; // Huh???
 	AugSlotStruct augslots[5];
 
 	uint32 ldonpoint_type;
@@ -3886,14 +3884,13 @@ struct ItemSecondaryBodyStruct{
 	uint8 book;
 	uint8 booktype;
 	//sint32 filename; filename is either 0xffffffff/0x00000000 or the null term string ex: CREWizardNote\0
-
 };
 
 struct ItemTertiaryBodyStruct
 {
 	sint32 loregroup;
 	uint8 artifact;
-	uint8 pendinglore;
+	uint8 summonedflag;
 	uint32 favor;
 	uint8 fvnodrop;
 	sint32 dotshield;
@@ -3949,10 +3946,6 @@ struct ItemTertiaryBodyStruct
 	sint32 HeroicSVCorrup;
 	sint32 HealAmt;
 	sint32 SpellDmg;
-	//sint32 unknown16; // clairvoyance?
-	//uint16 questItem2;
-	//uint16 unknown17; //something to do with power - Power Source Capacity?
-	//uint8 unknown18;
 	uint32 evolve_string; // Some String, but being evolution related is just a guess
 	uint32 subitem_count;
 };
