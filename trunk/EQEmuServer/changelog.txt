@@ -5,6 +5,7 @@ gaeorn: fixed possible bug with unlocking cursed containers in LDoN
 Trevius: SoF/SoD/Live - Corrected the item structures to allow summonedflag setting to show on items.
 Trevius: SoD/Live - Identified Clairvoyance and added it to load from the DB to be shown on items.
 Trevius: SoD - Possible fix for empty corpse looting bugging clients.
+gaeorn: fixed another issue with the integer transformation for the RNG where it was not converting from a double float properly
 
 ==06/15/2010==
 Secrets: Characters with HPs higher than 30k will no longer be set back to 30k current health when zoning.
