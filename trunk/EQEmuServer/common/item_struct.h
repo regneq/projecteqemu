@@ -235,6 +235,7 @@ struct Item_Struct {
 	uint32 LDoNSellBackRate;
 	uint32 ScriptFileID;
 	uint16 ExpendableArrow;
+	uint32 Clairvoyance;
 };
 
 #endif

@@ -4060,14 +4060,13 @@ struct ItemSecondaryBodyStruct{
 	uint8 book;
 	uint8 booktype;
 	//sint32 filename; filename is either 0xffffffff/0x00000000 or the null term string ex: CREWizardNote\0
-
 };
 
 struct ItemTertiaryBodyStruct
 {
 	sint32 loregroup;
 	uint8 artifact;
-	uint8 pendinglore;
+	uint8 summonedflag;
 	uint32 favor;
 	uint8 fvnodrop;
 	sint32 dotshield;
@@ -4124,9 +4123,8 @@ struct ItemTertiaryBodyStruct
 	sint32 HeroicSVCorrup;
 	sint32 HealAmt;
 	sint32 SpellDmg;
-	sint32 unknown16; // clairvoyance?
-	//uint16 unknown17; //something to do with power - Power Source Capacity?
-	uint8 unknown18;	// evolve filename?
+	sint32 clairvoyance;
+	uint8 unknown18;	//Power Source Capacity or evolve filename?
 	uint32 evolve_string; // Some String, but being evolution related is just a guess
 	uint8 unknown19;	
 	uint32 unknown20;	// Bard Stuff?
