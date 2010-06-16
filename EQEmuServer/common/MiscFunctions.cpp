@@ -399,10 +399,10 @@ int MakeRandomInt(int low, int high)
 		oneseed( hash( time(NULL), clock() ) );
 		WELLRNG19937 = case_1;
 	}
-	int randomnum = WELLRNG19937();
+	unsigned int randomnum = ((WELLRNG19937)());
 	if(randomnum == 0xffffffff)
 		return high;
-	return (int)(randomnum / (double)0xffffffff * (high - low + 1) + low);
+	return (int)((randomnum / (double)0xffffffff) * (high - low + 1) + low);
 }
 
 double MakeRandomFloat(double low, double high)
@@ -417,7 +417,7 @@ double MakeRandomFloat(double low, double high)
 		oneseed( hash( time(NULL), clock() ) );
 		WELLRNG19937 = case_1;
 	}
-	return (WELLRNG19937() / (double)0xffffffff * (high - low) + low);
+	return ((WELLRNG19937)() / (double)0xffffffff * (high - low) + low);
 }
 
 uint32 hash( time_t t, clock_t c )
