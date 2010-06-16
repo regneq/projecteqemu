@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/16/2010==
+gaeorn: fixed possible bug with unlocking cursed containers in LDoN
+
 ==06/15/2010==
 Secrets: Characters with HPs higher than 30k will no longer be set back to 30k current health when zoning.
 gaeorn: fixed integer transformation for RNG as it previously would only return the high value of the low to high range if the RNG returned exactly 0xffffffff
