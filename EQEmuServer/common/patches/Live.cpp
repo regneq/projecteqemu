@@ -1509,17 +1509,6 @@ ENCODE(OP_ShopPlayerBuy)
 	FINISH_ENCODE();
 }
 
-ENCODE(OP_WearChange) {
-	ENCODE_LENGTH_EXACT(WearChange_Struct);
-	SETUP_DIRECT_ENCODE(WearChange_Struct, structs::WearChange_Struct);
-	OUT(spawn_id);
-	OUT(material);
-	OUT(color.color);
-	OUT(wear_slot_id);
-	FINISH_ENCODE();
-}
-
-
 ENCODE(OP_ClientUpdate) {
 	ENCODE_LENGTH_EXACT(PlayerPositionUpdateServer_Struct);
 	SETUP_DIRECT_ENCODE(PlayerPositionUpdateServer_Struct, structs::PlayerPositionUpdateServer_Struct);
@@ -2493,17 +2482,6 @@ DECODE(OP_Consider) {
 	FINISH_DIRECT_DECODE();
 }
 
-
-DECODE(OP_WearChange) {
-	DECODE_LENGTH_EXACT(structs::WearChange_Struct);
-	SETUP_DIRECT_DECODE(WearChange_Struct, structs::WearChange_Struct);
-	IN(spawn_id);
-	IN(material);
-	IN(color.color);
-	IN(wear_slot_id);
-	FINISH_DIRECT_DECODE();
-}
-
 DECODE(OP_ShopPlayerBuy)
 {
 	DECODE_LENGTH_EXACT(structs::Merchant_Sell_Struct);
@@ -2994,7 +2972,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	ibs.ItemType = item->ItemType;
 	ibs.Material = item->Material;
 	ibs.unknown7 = 0;
-	ibs.EliteMaterial = 0;
+	ibs.EliteMaterial = item->EliteMaterial;
 	ibs.SellRate = item->SellRate;
 
 	ibs.CombatEffects = item->CombatEffects;
@@ -3044,7 +3022,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	isbs.ldonpoint_type = item->PointType;
 	isbs.ldontheme = item->LDoNTheme;
 	isbs.ldonprice = item->LDoNPrice;
-	isbs.ldonsellbackrate = 70;
+	isbs.ldonsellbackrate = item->LDoNSellBackRate;
 	isbs.ldonsold = item->LDoNSold;
 
 	isbs.bagtype = item->BagType;
@@ -3085,8 +3063,9 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 
 	itbs.potion_belt_enabled = item->PotionBelt;
 	itbs.potion_belt_slots = item->PotionBeltSlots;
-	itbs.no_transfer = item->NoTransfer;
 	itbs.stacksize = stackable ? item->StackSize : 0;
+	itbs.no_transfer = item->NoTransfer;
+	itbs.expendablearrow = item->ExpendableArrow;
 
 	itbs.click_effect.effect = item->Click.Effect;
 	itbs.click_effect.level2 = item->Click.Level2;
@@ -3124,6 +3103,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	itbs.bard_effect.level = 0;
 	itbs.bard_effect.unknown6 = 0xffffffff;
 
+	itbs.scriptfileid = item->ScriptFileID;
 	itbs.quest_item = item->QuestItemFlag;
 	//itbs.unknown15 = 0xffffffff;
 	itbs.unknown15 = 0;

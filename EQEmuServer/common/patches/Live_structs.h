@@ -1110,7 +1110,8 @@ struct SpecialMesg_Struct
 struct WearChange_Struct{
 /*000*/ int16 spawn_id;
 /*002*/ int32 material;
-/*003*/ uint8 unknown09[8];
+/*006*/ uint32 unknown06;
+/*010*/ uint32 c;	// 1 for Drakkin Elite Material
 /*014*/ Color_Struct color;
 /*018*/ int8 wear_slot_id;
 /*019*/
@@ -4085,7 +4086,7 @@ struct ItemTertiaryBodyStruct
 
 	uint32 stacksize;
 	uint8 no_transfer;
-	uint16 unk131;
+	uint16 expendablearrow;
 
 	uint32 unknown8; 
 	uint32 unknown9; 
@@ -4102,7 +4103,7 @@ struct ItemTertiaryBodyStruct
 	WornEffectStruct scroll_effect;
 	WornEffectStruct bard_effect;
 
-	uint32 UNK129;
+	uint32 scriptfileid;
 	uint8 quest_item;
 	uint32 unknown15; //0xffffffff - Power Source Capacity?
 	uint32 Purity;

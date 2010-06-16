@@ -1296,17 +1296,6 @@ ENCODE(OP_Illusion) {
 	FINISH_ENCODE();
 }
 
-ENCODE(OP_WearChange) {
-	ENCODE_LENGTH_EXACT(WearChange_Struct);
-	SETUP_DIRECT_ENCODE(WearChange_Struct, structs::WearChange_Struct);
-	OUT(spawn_id);
-	OUT(material);
-	OUT(color.color);
-	OUT(wear_slot_id);
-	FINISH_ENCODE();
-}
-
-
 ENCODE(OP_ClientUpdate) {
 	ENCODE_LENGTH_EXACT(PlayerPositionUpdateServer_Struct);
 	SETUP_DIRECT_ENCODE(PlayerPositionUpdateServer_Struct, structs::PlayerPositionUpdateServer_Struct);
@@ -1962,18 +1951,6 @@ DECODE(OP_Consider) {
 	FINISH_DIRECT_DECODE();
 }
 
-
-DECODE(OP_WearChange) {
-	DECODE_LENGTH_EXACT(structs::WearChange_Struct);
-	SETUP_DIRECT_DECODE(WearChange_Struct, structs::WearChange_Struct);
-	IN(spawn_id);
-	IN(material);
-	IN(color.color);
-	IN(wear_slot_id);
-	FINISH_DIRECT_DECODE();
-}
-
-
 DECODE(OP_ClientUpdate) {
     // for some odd reason, there is an extra byte on the end of this on occasion.. 
 	DECODE_LENGTH_ATLEAST(structs::PlayerPositionUpdateClient_Struct);
@@ -2359,7 +2336,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	ibs.ItemType = item->ItemType;
 	ibs.Material = item->Material;
 	ibs.unknown7 = 0;
-	ibs.unknown8 = 0;
+	ibs.EliteMaterial = item->EliteMaterial;
 	ibs.SellRate = item->SellRate;
 
 	ibs.CombatEffects = item->CombatEffects;
@@ -2409,7 +2386,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	isbs.ldonpoint_type = item->PointType;
 	isbs.ldontheme = item->LDoNTheme;
 	isbs.ldonprice = item->LDoNPrice;
-	isbs.unk098 = 70;
+	isbs.ldonsellbackrate = item->LDoNSellBackRate;
 	isbs.ldonsold = item->LDoNSold;
 
 	isbs.bagtype = item->BagType;
@@ -2450,8 +2427,10 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 
 	itbs.potion_belt_enabled = item->PotionBelt;
 	itbs.potion_belt_slots = item->PotionBeltSlots;
-	itbs.no_transfer = item->NoTransfer;
 	itbs.stacksize = stackable ? item->StackSize : 0;
+	itbs.no_transfer = item->NoTransfer;
+	itbs.expendablearrow = item->ExpendableArrow;
+
 
 	itbs.click_effect.effect = item->Click.Effect;
 	itbs.click_effect.level2 = item->Click.Level2;
@@ -2483,6 +2462,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	itbs.scroll_effect.type = item->Scroll.Type;
 	itbs.scroll_effect.level = item->Scroll.Level;
 
+	itbs.scriptfileid = item->ScriptFileID;
 	itbs.quest_item = item->QuestItemFlag;
 	itbs.unknown15 = 0xffffffff;
 

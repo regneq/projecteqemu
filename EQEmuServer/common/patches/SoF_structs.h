@@ -1066,7 +1066,8 @@ struct SpecialMesg_Struct
 struct WearChange_Struct{
 /*000*/ int16 spawn_id;
 /*002*/ int32 material;
-/*003*/ uint8 unknown09[8];
+/*006*/ uint32 unknown06;
+/*010*/ uint32 elite_material;	// 1 for Drakkin Elite Material
 /*014*/ Color_Struct color;
 /*018*/ int8 wear_slot_id;
 /*019*/
@@ -3788,8 +3789,8 @@ struct ItemBodyStruct
 	uint8 ItemType;
 	uint32 Material;
 	uint32 unknown7;
-	uint32 unknown8;
-	float SellRate; //was uint32
+	uint32 EliteMaterial;
+	float SellRate;
 	sint32 CombatEffects;
 	sint32 Shielding;
 	sint32 StunResist;
@@ -3874,7 +3875,7 @@ struct ItemSecondaryBodyStruct{
 	uint32 ldonpoint_type;
 	uint32 ldontheme;
 	uint32 ldonprice;
-	uint32 unk098;
+	uint32 ldonsellbackrate;
 	uint32 ldonsold;
 
 	uint8 bagtype;
@@ -3893,31 +3894,26 @@ struct ItemTertiaryBodyStruct
 	sint32 loregroup;
 	uint8 artifact;
 	uint8 pendinglore;
-	uint32 favor; // was 32
+	uint32 favor;
 	uint8 fvnodrop;
 	sint32 dotshield;
 	sint32 atk;
 	sint32 haste;
 	sint32 damage_shield;
-	uint32 guildfavor; // was 32
+	uint32 guildfavor;
 	uint32 augdistil;
-	//uint32 unknown1;
-	//uint32 unknown2;
 	sint32 unknown3;
 	uint32 unknown4;
 	uint8 no_pet;
-	uint8 unknown5; // 32
-	//uint16 unknown6;
+	uint8 unknown5;
 
 	uint8 potion_belt_enabled;
 	uint32 potion_belt_slots;
 
-	uint32 stacksize; //32
+	uint32 stacksize;
 	uint8 no_transfer;
-	uint16 unk131;
-	//uint16 quest_item; //
+	uint16 expendablearrow;
 
-	//uint8 unknown7;
 	uint32 unknown8; 
 	uint32 unknown9; 
 	uint32 unknown10; 
@@ -3932,7 +3928,7 @@ struct ItemTertiaryBodyStruct
 	WornEffectStruct focus_effect;
 	WornEffectStruct scroll_effect;
 
-	uint32 UNK129;
+	uint32 scriptfileid;
 	uint8 quest_item;
 	uint32 unknown15; //0xffffffff - Power Source Capacity?
 	uint32 Purity;

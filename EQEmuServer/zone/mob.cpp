@@ -2453,6 +2453,7 @@ void Mob::SendWearChange(int8 material_slot)
 
 	wc->spawn_id = GetID();
 	wc->material = GetEquipmentMaterial(material_slot);
+	wc->elite_material = IsEliteMaterialItem(material_slot);
 	wc->color.color = GetEquipmentColor(material_slot);
 	wc->wear_slot_id = material_slot;
 
@@ -2517,9 +2518,20 @@ uint32 Mob::GetEquipmentColor(int8 material_slot) const
 	return 0;
 }
 
-//
-// solar: works just like a printf
-//
+uint32 Mob::IsEliteMaterialItem(int8 material_slot) const
+{
+	const Item_Struct *item;
+	
+	item = database.GetItem(GetEquipment(material_slot));
+	if(item != 0)
+	{
+		return item->EliteMaterial;
+	}
+
+	return 0;
+}
+
+// works just like a printf
 void Mob::Say(const char *format, ...)
 {
 	char buf[1000];

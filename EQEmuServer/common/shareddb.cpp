@@ -840,7 +840,7 @@ bool SharedDatabase::DBLoadItems(sint32 iItemCount, uint32 iMaxItemID) {
 			item.SellRate = (float)atof(row[ItemField::sellrate]);
 			//item.Unk059 = (uint32)atoul(row[ItemField::UNK059]);
 			item.CastTime = (uint32)atoul(row[ItemField::casttime]);
-			//item.Unk061 = (uint32)atoul(row[ItemField::UNK061]);
+			item.EliteMaterial = (uint32)atoul(row[ItemField::elitematerial]);
 			item.ProcRate = (sint32)atoi(row[ItemField::procrate]);
 			item.CombatEffects = (sint8)atoi(row[ItemField::combateffects]);
 			item.Shielding = (sint8)atoi(row[ItemField::shielding]);
@@ -940,7 +940,7 @@ bool SharedDatabase::DBLoadItems(sint32 iItemCount, uint32 iMaxItemID) {
 			item.Scroll.Type = (uint8)atoul(row[ItemField::scrolltype]);
 			item.Scroll.Level = (uint8)atoul(row[ItemField::scrolllevel]);
 			item.Scroll.Level2 = (uint8)atoul(row[ItemField::scrolllevel2]);
-			item.QuestItemFlag = false;
+			item.QuestItemFlag = (atoi(row[ItemField::questitemflag])==0) ? false : true;
 			item.SVCorruption = (sint32)atoi(row[ItemField::svcorruption]);
 			item.Purity = (uint32)atoul(row[ItemField::purity]);
 			item.BackstabDmg = (uint32)atoul(row[ItemField::backstabdmg]);
@@ -960,7 +960,10 @@ bool SharedDatabase::DBLoadItems(sint32 iItemCount, uint32 iMaxItemID) {
 			item.HeroicSVCorrup = (sint32)atoi(row[ItemField::heroic_svcorrup]);
 			item.HealAmt = (sint32)atoi(row[ItemField::healamt]);
 			item.SpellDmg = (sint32)atoi(row[ItemField::spelldmg]);
-			
+			item.LDoNSellBackRate = (uint32)atoul(row[ItemField::ldonsellbackrate]);
+			item.ScriptFileID = (uint32)atoul(row[ItemField::scriptfileid]);
+			item.ExpendableArrow = (uint16)atoul(row[ItemField::expendablearrow]);
+
 			if (!EMuShareMemDLL.Items.cbAddItem(item.ID, &item)) {
 				LogFile->write(EQEMuLog::Error, "Database::DBLoadItems: Failure reported from EMuShareMemDLL.Items.cbAddItem(%i)", item.ID);
 				break;

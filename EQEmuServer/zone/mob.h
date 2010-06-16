@@ -426,6 +426,7 @@ bool logpos;
 	virtual int32 GetEquipment(int8 material_slot) const { return(0); }
 	virtual sint32 GetEquipmentMaterial(int8 material_slot) const;
 	virtual uint32 GetEquipmentColor(int8 material_slot) const;
+	virtual uint32 IsEliteMaterialItem(int8 material_slot) const;
 
 	void Warp( float x, float y, float z );
 	inline bool IsMoving() const { return moving; }

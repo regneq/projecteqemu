@@ -1074,14 +1074,16 @@ struct SpecialMesg_Struct
 /*
 ** When somebody changes what they're wearing
 **      or give a pet a weapon (model changes)
-** Length: 16 Bytes
-** Opcode: 9220
+** Length: 19 Bytes
 */
 struct WearChange_Struct{
 /*000*/ int16 spawn_id;
-/*002*/ int16 material;
-/*004*/ Color_Struct color;
-/*009*/ int8 wear_slot_id;
+/*002*/ int32 material;
+/*006*/ uint32 unknown06;
+/*010*/ uint32 elite_material;	// 1 for Drakkin Elite Material
+/*014*/ Color_Struct color;
+/*018*/ int8 wear_slot_id;
+/*019*/
 };
 
 /*
