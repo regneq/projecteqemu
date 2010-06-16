@@ -158,7 +158,7 @@ struct Item_Struct {
 		uint32  Fulfilment;	// Food fulfilment (How long it lasts)
 		sint16  CastTime;	// Cast Time for clicky effects, in milliseconds
 	};
-	//uint32	Unk061;
+	uint32 EliteMaterial;
 	sint32	ProcRate;
 	sint8	CombatEffects;	// PoP: Combat Effects +
 	sint8	Shielding;		// PoP: Shielding %
@@ -232,6 +232,9 @@ struct Item_Struct {
 	sint32 HeroicSVCorrup;
 	sint32 HealAmt;
 	sint32 SpellDmg;
+	uint32 LDoNSellBackRate;
+	uint32 ScriptFileID;
+	uint16 ExpendableArrow;
 };
 
 #endif

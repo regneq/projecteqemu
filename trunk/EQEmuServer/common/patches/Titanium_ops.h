@@ -22,6 +22,7 @@ E(OP_VetRewardsAvaliable)
 E(OP_Track)
 E(OP_RespondAA)
 E(OP_DeleteSpawn)
+E(OP_WearChange)
 
 //list of packets we need to decode on the way in:
 D(OP_SetServerFilter)
@@ -31,5 +32,6 @@ D(OP_TraderBuy)
 D(OP_WhoAllRequest)
 D(OP_ReadBook)
 D(OP_FaceChange)
+D(OP_WearChange)
 #undef E
 #undef D

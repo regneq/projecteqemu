@@ -768,6 +768,26 @@ ENCODE(OP_RespondAA) {
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_WearChange) {
+	ENCODE_LENGTH_EXACT(WearChange_Struct);
+	SETUP_DIRECT_ENCODE(WearChange_Struct, structs::WearChange_Struct);
+	OUT(spawn_id);
+	OUT(material);
+	OUT(color.color);
+	OUT(wear_slot_id);
+	FINISH_ENCODE();
+}
+
+DECODE(OP_WearChange) {
+	DECODE_LENGTH_EXACT(structs::WearChange_Struct);
+	SETUP_DIRECT_DECODE(WearChange_Struct, structs::WearChange_Struct);
+	IN(spawn_id);
+	IN(material);
+	IN(color.color);
+	IN(wear_slot_id);
+	FINISH_DIRECT_DECODE();
+}
+
 DECODE(OP_ItemLinkClick) {
 	DECODE_LENGTH_EXACT(structs::ItemViewRequest_Struct);
 	SETUP_DIRECT_DECODE(ItemViewRequest_Struct, structs::ItemViewRequest_Struct);

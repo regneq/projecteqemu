@@ -3,6 +3,12 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==06/15/2010==
 Secrets: Characters with HPs higher than 30k will no longer be set back to 30k current health when zoning.
 gaeorn: fixed integer transformation for RNG as it previously would only return the high value of the low to high range if the RNG returned exactly 0xffffffff
+Trevius: The following item fields now load from the database: EliteMaterial LDoNSellBackRate ScriptFileID ExpendableArrow QuestItemFlag.
+Trevius: Identified some unknown fields in the database from 13th floor findings, and removed multiple unused fields.
+Trevius: The summonedflag field is copied from UNK109 field.
+
+REQUIRED SQL:
+utils/sql/svn/1542_items_table_cleanup.sql
 
 ==06/10/2010==
 gaeorn: modified method of transforming RNG output into a range of integers. this should improve the equalization of the distribution of the returned random numbers
