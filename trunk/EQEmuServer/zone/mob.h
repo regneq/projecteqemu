@@ -1107,6 +1107,7 @@ protected:
 
 	float	fixedZ;
 	EmuAppearance    _appearance;
+	int8	standstate;
 	int8	pRunAnimSpeed;
 	bool	m_is_running;
 

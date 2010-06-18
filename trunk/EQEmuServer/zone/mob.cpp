@@ -269,6 +269,7 @@ Mob::Mob(const char*   in_name,
 	isgrouped = false;
 	israidgrouped = false;
 	_appearance = eaStanding;
+	standstate = GetAppearanceValue(_appearance);
 	pRunAnimSpeed = 0;
 //	guildeqid = GUILD_NONE;
 	
@@ -734,6 +735,7 @@ void Mob::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho)
 	ns->spawn.hairstyle = hairstyle;
 	ns->spawn.face = luclinface;
 	ns->spawn.beard = beard;
+	ns->spawn.StandState = standstate;
 	ns->spawn.drakkin_heritage = drakkin_heritage;
 	ns->spawn.drakkin_tattoo = drakkin_tattoo;
 	ns->spawn.drakkin_details = drakkin_details;

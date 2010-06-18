@@ -233,7 +233,8 @@ struct Spawn_Struct {
 /*0110*/ signed   deltaZ:13;      // change in z
          signed   padding0070:19; // ***Placeholder
 /*0114*/ uint8  eyecolor1;      // Player's left eye color
-/*0115*/ uint8 unknown0115[12];	// Was [24]
+/*0115*/ uint8 unknown0115[11];	// Was [24]
+/*0126*/ uint8 StandState;	// stand state for SoF+ 0x64 for normal animation
 /*0127*/ uint32 drakkin_heritage;	// Added for SoF
 /*0131*/ uint32 drakkin_tattoo;		// Added for SoF
 /*0135*/ uint32 drakkin_details;	// Added for SoF
