@@ -888,3 +888,11 @@ bool DetrimentalSpellAllowsRest(int16 spell_id)
 
 	return false;
 }
+
+uint32 GetNimbusEffect(int16 spell_id)
+{
+	if((spell_id > 0) && (spell_id < SPDAT_RECORDS))
+		return (sint32)spells[spell_id].NimbusEffect;
+
+	return 0;
+}
