@@ -6742,7 +6742,7 @@ XS(XS_Mob_SpellEffect)
 		uint32		effect = (uint32)SvUV(ST(1));
 		int32		duration = 5000;
 		int32		finish_delay = 0;
-		bool		zone_wide = false;
+		bool		zone_wide = true;
 		int32		unk20 = 3000;
 		int16		unk26 = 0;
 

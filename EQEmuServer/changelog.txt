@@ -1,5 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/18/2010==
+Trevius: Nimbus particle effects now show correctly from spells/clickies.
+
+REQUIRED SQL:
+utils/sql/svn/1548_nimbuseffect_required.sql
+
 ==06/16/2010==
 gaeorn: fixed possible bug with unlocking cursed containers in LDoN
 Trevius: SoF/SoD/Live - Corrected the item structures to allow summonedflag setting to show on items.

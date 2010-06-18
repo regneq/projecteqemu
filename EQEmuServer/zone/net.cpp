@@ -1251,7 +1251,8 @@ This is hanging on freebsd for me, not sure why...
 				sp[tempid].spacing181[y]=atoi(row[181+y]);
 
 			sp[tempid].can_mgb=atoi(row[185]);
-
+			
+			sp[tempid].NimbusEffect = atoi(row[193]);
 			sp[tempid].AllowRest = atoi(row[212]);
 
 			// May crash zone
