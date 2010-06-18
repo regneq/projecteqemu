@@ -598,6 +598,7 @@ void EntityList::AddCorpse(Corpse* corpse, int32 in_id) {
 
 void EntityList::AddNPC(NPC* npc, bool SendSpawnPacket, bool dontqueue) {
 	npc->SetID(GetFreeID());
+	parse->Event(EVENT_SPAWN, npc->GetNPCTypeID(), 0, npc, NULL);
 	
 	if (SendSpawnPacket) {
 		if (dontqueue) { // aka, SEND IT NOW BITCH!
@@ -605,7 +606,6 @@ void EntityList::AddNPC(NPC* npc, bool SendSpawnPacket, bool dontqueue) {
 			npc->CreateSpawnPacket(app,npc);
 			QueueClients(npc, app);
 			safe_delete(app);
-			parse->Event(EVENT_SPAWN, npc->GetNPCTypeID(), 0, npc, NULL);
 		}
 		else {
 			NewSpawn_Struct* ns = new NewSpawn_Struct;
@@ -613,7 +613,6 @@ void EntityList::AddNPC(NPC* npc, bool SendSpawnPacket, bool dontqueue) {
 			npc->FillSpawnStruct(ns, 0);	// Not working on player newspawns, so it's safe to use a ForWho of 0
 			AddToSpawnQueue(npc->GetID(), &ns);
 			safe_delete(ns);
-			parse->Event(EVENT_SPAWN, npc->GetNPCTypeID(), 0, npc, NULL);
 		}
 		if(npc->IsFindable())
 			UpdateFindableNPCState(npc, false);
