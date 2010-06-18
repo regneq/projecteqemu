@@ -2,6 +2,8 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==06/18/2010==
 Trevius: Nimbus particle effects now show correctly from spells/clickies.
+Trevius: Removed the ability to stack the same Nimbus particle effect repeatedly.
+Trevius: Existing Nimbus particle effects are now sent to players as they zone in.
 
 REQUIRED SQL:
 utils/sql/svn/1548_nimbuseffect_required.sql

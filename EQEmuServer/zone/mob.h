@@ -416,7 +416,7 @@ bool logpos;
 	void SendAppearanceEffect(int32 parm1, int32 parm2, int32 parm3, int32 parm4, int32 parm5, Client *specific_target=NULL);
 	void QuestReward(Client *c=NULL, int32 silver = 0, int32 gold = 0, int32 platinum = 0);
 	void CameraEffect(uint32 duration, uint32 intensity, Client *c=NULL);
-	void SendSpellEffect(uint32 effectid, int32 duration, int32 finish_delay, bool zone_wide, int32 unk020, int16 unk26);
+	void SendSpellEffect(uint32 effectid, int32 duration, int32 finish_delay, bool zone_wide, int32 unk020, int16 unk26, Client *c=NULL);
 	void TempName(const char *newname = NULL);
 
 	virtual inline sint32 GetPrimaryFaction() const { return 0; }
@@ -630,6 +630,12 @@ bool logpos;
 	inline virtual sint16  GetMaxDR() const { return 255; }
 	inline virtual sint16  GetMaxCR() const { return 255; }
 	inline virtual sint16  GetMaxFR() const { return 255; }
+
+	bool IsNimbusEffectActive(uint32 nimbus_effect);
+	void SetNimbusEffect(uint32 nimbus_effect);
+	inline virtual uint32  GetNimbusEffect1() const { return nimbus_effect1; }
+	inline virtual uint32  GetNimbusEffect2() const { return nimbus_effect2; }
+	inline virtual uint32  GetNimbusEffect3() const { return nimbus_effect3; }
 
 	virtual float GetActSpellRange(int16 spell_id, float range){ return range;}
 	virtual sint32  GetActSpellDamage(int16 spell_id, sint32 value) { return value; }
@@ -1129,6 +1135,10 @@ protected:
 	uint8 bardsong_slot;
 	uint32 bardsong_target_id;
 
+	// Currently 3 max nimbus particle effects at a time
+	uint32 nimbus_effect1;
+	uint32 nimbus_effect2;
+	uint32 nimbus_effect3;
 
 	int8 haircolor;
 	int8 beardcolor;

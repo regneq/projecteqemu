@@ -3922,6 +3922,40 @@ void EntityList::SendZoneAppearance(Client *c)
 	}
 }
 
+void EntityList::SendNimbusEffects(Client *c)
+{
+	if(!c)
+		return;
+
+	LinkedListIterator<Mob*> iterator(mob_list); 
+	iterator.Reset();
+	while(iterator.MoreElements()) {
+		Mob *cur = iterator.GetData();
+
+		if(cur)
+		{
+			if(cur == c)
+			{
+				iterator.Advance();
+				continue;
+			}
+			if(cur->GetNimbusEffect1() != 0)
+			{
+				cur->SendSpellEffect(cur->GetNimbusEffect1(), 1, 0, 1, 3000, 0, c);
+			}
+			if(cur->GetNimbusEffect2() != 0)
+			{
+				cur->SendSpellEffect(cur->GetNimbusEffect2(), 1, 0, 1, 3000, 0, c);
+			}
+			if(cur->GetNimbusEffect3() != 0)
+			{
+				cur->SendSpellEffect(cur->GetNimbusEffect3(), 1, 0, 1, 3000, 0, c);
+			}
+		}
+		iterator.Advance();
+	}
+}
+
 void EntityList::ZoneWho(Client *c, Who_All_Struct* Who) {
 
 	// This is only called for SoF clients, as regular /who is now handled server-side for that client.
