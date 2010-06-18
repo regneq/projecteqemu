@@ -8765,6 +8765,9 @@ void Client::CompleteConnect()
 	//sends appearances for all mobs not doing anim_stand aka sitting, looting, playing dead
 	entity_list.SendZoneAppearance(this);
 
+	//sends the Nimbus particle effects (up to 3) for any mob using them
+	entity_list.SendNimbusEffects(this);
+
 	client_data_loaded = true;
 	int x;
 	for(x=0;x<8;x++)

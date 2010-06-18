@@ -437,8 +437,12 @@ bool Mob::DoCastSpell(int16 spell_id, int16 target_id, int16 slot,
 		*oSpellWillFinish = Timer::GetCurrentTime() + cast_time + 100;
 
 	int NimbusEffect = GetNimbusEffect(spell_id);
-	if(NimbusEffect)
-		SendSpellEffect(NimbusEffect, cast_time, 0, 1, 3000, 0);
+	if(NimbusEffect) {
+		if(!IsNimbusEffectActive(NimbusEffect)) {
+			SendSpellEffect(NimbusEffect, cast_time, 0, 1, 3000, 0);
+			SetNimbusEffect(NimbusEffect);
+		}
+	}
 
 	// now tell the people in the area
 	outapp = new EQApplicationPacket(OP_BeginCast,sizeof(BeginCast_Struct));

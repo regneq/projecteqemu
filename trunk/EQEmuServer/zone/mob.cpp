@@ -357,6 +357,10 @@ Mob::Mob(const char*   in_name,
 
 	m_is_running = false;
 
+	nimbus_effect1 = 0;
+	nimbus_effect2 = 0;
+	nimbus_effect3 = 0;
+
 	flymode = FlyMode3;
 	// Pathing
 	PathingLOSState = UnknownLOS;
@@ -1446,7 +1450,7 @@ void Mob::CameraEffect(uint32 duration, uint32 intensity, Client *c) {
 	safe_delete(outapp);
 }
 
-void Mob::SendSpellEffect(uint32 effectid, int32 duration, int32 finish_delay, bool zone_wide, int32 unk020, int16 unk26) {
+void Mob::SendSpellEffect(uint32 effectid, int32 duration, int32 finish_delay, bool zone_wide, int32 unk020, int16 unk26, Client *c) {
 
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_SpellEffect, sizeof(SpellEffect_Struct));
 	memset(outapp->pBuffer, 0, sizeof(outapp->pBuffer));
@@ -1461,7 +1465,9 @@ void Mob::SendSpellEffect(uint32 effectid, int32 duration, int32 finish_delay, b
 	se->Unknown025 = 1;		// Seen 1 for Live
 	se->Unknown026 = unk26;		// Seen 1157
 	
-	if(zone_wide)
+	if(c)
+		c->QueuePacket(outapp, false, Client::CLIENT_CONNECTED);
+	else if(zone_wide)
 		entity_list.QueueClients(this, outapp);
 	else
 		entity_list.QueueCloseClients(this, outapp);
@@ -2968,5 +2974,30 @@ void Mob::SetFlyMode(int8 flymode)
 	{
 		this->SendAppearancePacket(AT_Levitate, flymode);
 		this->CastToNPC()->SetFlyMode(flymode);
+	}
+}
+
+bool Mob::IsNimbusEffectActive(uint32 nimbus_effect)
+{
+	if(nimbus_effect1 == nimbus_effect || nimbus_effect2 == nimbus_effect || nimbus_effect3 == nimbus_effect)
+	{
+		return true;
+	}
+	return false;
+}
+
+void Mob::SetNimbusEffect(uint32 nimbus_effect)
+{
+	if(nimbus_effect1 == 0)
+	{
+		nimbus_effect1 = nimbus_effect;
+	}
+	else if(nimbus_effect2 == 0)
+	{
+		nimbus_effect2 = nimbus_effect;
+	}
+	else
+	{
+		nimbus_effect3 = nimbus_effect;
 	}
 }
