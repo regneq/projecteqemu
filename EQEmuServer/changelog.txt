@@ -5,6 +5,7 @@ Trevius: Nimbus particle effects now show correctly from spells/clickies.
 Trevius: Removed the ability to stack the same Nimbus particle effect repeatedly.
 Trevius: Existing Nimbus particle effects are now sent to players as they zone in.
 Trevius: EVENT_SPAWN should work better for more quest commands now.  Please report any bugs/issues with this change.
+Trevius: SoF/SoD/Live - Stand state appearances are now set in the spawn struct.
 
 REQUIRED SQL:
 utils/sql/svn/1548_nimbuseffect_required.sql

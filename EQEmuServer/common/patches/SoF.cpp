@@ -822,7 +822,7 @@ ENCODE(OP_ZoneSpawns) {
 			eq->equipment[k].itemId = 0;
 			eq->colors[k].color = emu->colors[k].color;
 		}
-		eq->StandState = 0x64;
+		eq->StandState = emu->StandState;
 		eq->guildID = emu->guildID;
 		eq->spelleffect = 0;
 		eq->spelleffect2 = 0;

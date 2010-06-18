@@ -1081,7 +1081,7 @@ ENCODE(OP_ZoneSpawns) {
 			}
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->class_);
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);	// pvp
-			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0x64);	// standstate
+			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->StandState);	// standstate
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->light);
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->flymode);
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->equip_chest2); // unknown8
