@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/19/2010==
+Trevius: Stopped NPCs from sending an appearance packet for each WP they arrive at or depart from.
+
 ==06/18/2010==
 Trevius: Nimbus particle effects now show correctly from spells/clickies.
 Trevius: Removed the ability to stack the same Nimbus particle effect repeatedly.
