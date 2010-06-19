@@ -1574,8 +1574,8 @@ void NPC::AI_DoMovement() {
 						cur_wp = 0;
 					}
 					
-					//not sure why we do this...
-					SetAppearance(eaStanding, false);
+					if(GetAppearance() != eaStanding)
+						SetAppearance(eaStanding, false);
 					
 					//kick off event_waypoint depart
 					char temp[16]; 
@@ -1595,7 +1595,10 @@ void NPC::AI_DoMovement() {
 				{	// are we there yet? then stop
 					mlog(AI__WAYPOINTS, "We have reached waypoint %d (%.3f,%.3f,%.3f) on grid %d", cur_wp, GetX(), GetY(), GetZ(), GetGrid());
 					SetWaypointPause();
-					SetAppearance(eaStanding, false);
+
+					if(GetAppearance() != eaStanding)
+						SetAppearance(eaStanding, false);
+
 					SetMoving(false);
 					SendPosition();
 					
@@ -1636,7 +1639,10 @@ void NPC::AI_DoMovement() {
 			{ // time to pause has ended
 				SetGrid( 0 - GetGrid()); // revert to AI control
 				mlog(QUESTS__PATHING, "Quest pathing is finished. Resuming on grid %d", GetGrid());
-				SetAppearance(eaStanding, false); 
+
+				if(GetAppearance() != eaStanding)
+					SetAppearance(eaStanding, false);
+
 				CalculateNewWaypoint();
 			}
 		}
