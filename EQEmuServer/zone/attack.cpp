@@ -560,91 +560,155 @@ void Mob::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 		return;
 
 	Mob* defender = this;
-	int totalMit = 0;
+	float aa_mit = 0;
 
 	switch(GetAA(aaCombatStability)){
 		case 1:
-			totalMit += 2;
+			aa_mit += 0.02;
 			break;
 		case 2:
-			totalMit += 5;
+			aa_mit += 0.05;
 			break;
 		case 3:
-			totalMit += 10;
+			aa_mit += 0.10;
 			break;
 	}
 
-	totalMit += GetAA(aaPhysicalEnhancement)*2;
-	totalMit += GetAA(aaInnateDefense);
-	totalMit += GetAA(aaDefensiveInstincts)*0.5;
+	aa_mit += GetAA(aaPhysicalEnhancement) * 0.02;
+	aa_mit += GetAA(aaInnateDefense) * 0.03;
+	aa_mit += GetAA(aaDefensiveInstincts)*0.02;
 
-	if(RuleB(Combat, UseIntervalAC)){
-		//AC Mitigation
-		sint32 attackRating = 0;
-		uint16 ac_eq100 = 125;
-		if(defender->GetLevel() < 20)
+	if(RuleB(Combat, UseIntervalAC))
+	{
+		float softcap = 0.0;
+		float mitigation_rating = 0.0;
+		float attack_rating = 0.0;
+		int shield_ac = 0;
+		int armor;
+		float weight = 0.0;
+		if(IsClient())
 		{
-			ac_eq100 += 15 * defender->GetLevel();
+			armor = CastToClient()->GetRawACNoShield(shield_ac);
+			weight = (CastToClient()->CalcCurrentWeight() / 10.0);
 		}
-		else if(defender->GetLevel() < 50)
+		else if(IsNPC())
 		{
-			ac_eq100 += (285 + ((defender->GetLevel()-19)*30));
-		}
-		else if(defender->GetLevel() < 60)
-		{
-			ac_eq100 += (1185 + ((defender->GetLevel()-49)*60));
-		}
-		else if(defender->GetLevel() < 70)
-		{
-			ac_eq100 += (1785 + ((defender->GetLevel()-59)*90));
-		}
-		else
-		{
-			ac_eq100 += (2325 + ((defender->GetLevel()-69)*125));
+			armor = spellbonuses.AC + itembonuses.AC + (CastToNPC()->GetRawAC() / RuleR(Combat, NPCACFactor)) + 1;
 		}
 
-		attackRating = 10 + attacker->GetATK();
-
-		sint32 defenseRating = defender->GetAC();
-		defenseRating += 125;
-		defenseRating += (totalMit * defenseRating / 100);
-
-		double d1_chance;
-		double d2_d19_chance;
-
-		double combat_rating = (defenseRating - attackRating);
-
-		combat_rating = 100 * combat_rating / (double)ac_eq100;
-
-		d1_chance = 6.0 + (((combat_rating * 0.39) / 3));
-		d2_d19_chance = 48.0 + (((combat_rating * 0.39) / 3) * 2);
-
-		if(d1_chance < 1.0)
-			d1_chance = 1.0;
-
-		if(d2_d19_chance < 5.0)
-			d2_d19_chance = 5.0;
-
-		double roll = MakeRandomFloat(0, 100);
-	
-		int interval_used = 0;
-		if(roll <= d1_chance)
+		if(GetClass() == WIZARD || GetClass() == MAGICIAN || GetClass() == NECROMANCER || GetClass() == ENCHANTER)
 		{
-			interval_used = 1;
+			softcap = RuleI(Combat, ClothACSoftcap);
 		}
-		else if(roll <= (d2_d19_chance + d1_chance))
+		else if(GetClass() == MONK && weight <= 15.0)
 		{
-			interval_used = 1 + (int)((((roll-d1_chance) / d2_d19_chance) * 18) + 1);
+			softcap = RuleI(Combat, MonkACSoftcap);
+		}
+		else if(GetClass() == DRUID || GetClass() == BEASTLORD || GetClass() == MONK)
+		{
+			softcap = RuleI(Combat, LeatherACSoftcap);
+		}
+		else if(GetClass() == SHAMAN || GetClass() == ROGUE || GetClass() == BERSERKER || GetClass() == RANGER)
+		{
+			softcap = RuleI(Combat, ChainACSoftcap);
 		}
 		else
 		{
-			interval_used = 20;
+			softcap = RuleI(Combat, PlateACSoftcap);
+		}
+		
+		softcap += shield_ac;
+		armor += shield_ac;
+		softcap += (softcap * (aa_mit * RuleR(Combat, AAMitigationACFactor)));
+		if(armor > softcap)
+		{
+			int softcap_armor = armor - softcap;
+			if(GetClass() == WARRIOR)
+			{
+				softcap_armor = softcap_armor * RuleR(Combat, WarriorACSoftcapReturn);
+			}
+			else if(GetClass() == SHADOWKNIGHT || GetClass() == PALADIN || (GetClass() == MONK && weight <= 15.0))
+			{
+				softcap_armor = softcap_armor * RuleR(Combat, KnightACSoftcapReturn);
+			}
+			else if(GetClass() == CLERIC || GetClass() == BARD || GetClass() == BERSERKER || GetClass() == ROGUE || GetClass() == SHAMAN || GetClass() == MONK)
+			{
+				softcap_armor = softcap_armor * RuleR(Combat, LowPlateChainACSoftcapReturn);
+			}
+			else if(GetClass() == RANGER || GetClass() == BEASTLORD)
+			{
+				softcap_armor = softcap_armor * RuleR(Combat, LowChainLeatherACSoftcapReturn);
+			}
+			else if(GetClass() == WIZARD || GetClass() == MAGICIAN || GetClass() == NECROMANCER || GetClass() == ENCHANTER)
+			{
+				softcap_armor = softcap_armor * RuleR(Combat, CasterACSoftcapReturn);
+			}
+			else
+			{
+				softcap_armor = softcap_armor * RuleR(Combat, MiscACSoftcapReturn);
+			}
+			armor = softcap + softcap_armor;
 		}
 
-		//PS: this looks WRONG but there's a method to the madness
-		int db = minhit;
-		double di = ((double)(damage-minhit)/19);
-		damage = db + (di * (interval_used - 1));
+		mitigation_rating = 0.0;
+		if(GetClass() == WIZARD || GetClass() == MAGICIAN || GetClass() == NECROMANCER || GetClass() == ENCHANTER)
+		{
+			mitigation_rating = (GetSkill(DEFENSE) / 4.0) + armor + 1;
+		}
+		else
+		{
+			mitigation_rating = (GetSkill(DEFENSE) / 3.0) + (armor * 1.333333) + 1;
+		}
+		mitigation_rating *= 0.847;
+
+		if(attacker->IsClient())
+		{
+			attack_rating = (attacker->CastToClient()->CalcATK() + ((attacker->GetSTR()-66) * 0.9) + (attacker->GetSkill(OFFENSE)*1.345));
+		}
+		else
+		{
+			attack_rating = (attacker->GetATK() + (attacker->GetSkill(OFFENSE)*1.345) + ((attacker->GetSTR()-66) * 0.9));
+		}
+
+		float d = 10.0;
+		float mit_roll = MakeRandomFloat(0, mitigation_rating);
+		float atk_roll = MakeRandomFloat(0, attack_rating);
+
+		if(atk_roll > mit_roll)
+		{
+			float a_diff = (atk_roll - mit_roll);
+			float thac0 = attack_rating * RuleR(Combat, ACthac0Factor);
+			d -= 10.0 * (a_diff / thac0);
+			float thac0cap = ((attacker->GetLevel() * 9) + 20);
+			if(thac0 > thac0cap)
+			{
+				thac0 = thac0cap;
+			}
+		}
+		else if(mit_roll > atk_roll)
+		{
+			float m_diff = (mit_roll - atk_roll);
+			float thac20 = mitigation_rating * RuleR(Combat, ACthac20Factor);
+			d += 10 * (m_diff / thac20);
+			float thac20cap = ((defender->GetLevel() * 9) + 20);
+			if(thac20 > thac20cap)
+			{
+				thac20 = thac20cap;
+			}
+		}
+
+		if(d < 0.0)
+		{
+			d = 0.0;
+		}
+
+		if(d > 20)
+		{
+			d = 20.0;
+		}
+
+		float interval = (damage - minhit) / 20.0;
+		damage = damage - ((int)d * interval);
 	}
 	else{
 		////////////////////////////////////////////////////////
@@ -688,7 +752,7 @@ void Mob::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 			}
 		}
 
-		damage -= (totalMit * damage / 100);
+		damage -= (aa_mit * damage);
 
 		if(damage != 0 && damage < minhit)
 			damage = minhit;
@@ -702,8 +766,6 @@ void Mob::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 
 	if(damage < 0)
 		damage = 0;
-
-	mlog(COMBAT__DAMAGE, "Applied %d percent mitigation, remaining damage %d", totalMit, damage);
 }
 
 //Returns the weapon damage against the input mob
@@ -2814,49 +2876,67 @@ int Mob::GetMonkHandToHandDelay(void)
 	}
 }
 
-sint32 Mob::ReduceDamage(sint32 damage){
-
-	if((damage <= 0) || !HasRune())
+sint32 Mob::ReduceDamage(sint32 damage)
+{
+	if(damage <= 0 || (!HasRune() && !HasPartialMeleeRune()))
+	{
 		return damage;
+	}
 
 	int slot = GetBuffSlotFromType(SE_NegateAttacks);
-	
 	if(slot >= 0 && buffs[slot].melee_rune > 0)
 	{
 		if(--buffs[slot].melee_rune == 0)
 		{
 			BuffFadeBySlot(slot);
-
 			UpdateRuneFlags();
 		}
 		return -6;
 	}
 
-	slot = GetBuffSlotFromType(SE_Rune);
+	slot = GetBuffSlotFromType(SE_MitigateMeleeDamage);
+	if(slot >= 0)
+	{
+		int damage_to_reduce = damage * GetPartialMeleeRuneReduction(buffs[slot].spellid) / 100;
+		if(damage_to_reduce > buffs[slot].melee_rune)
+		{
+			mlog(SPELLS__EFFECT_VALUES, "Mob::ReduceDamage SE_MitigateMeleeDamage %d damage negated, %d"
+				" damage remaining, fading buff.", damage_to_reduce, buffs[slot].melee_rune);
+			damage -= damage_to_reduce;
+			BuffFadeBySlot(slot);
+			UpdateRuneFlags();
+		}
+		else
+		{
+			mlog(SPELLS__EFFECT_VALUES, "Mob::ReduceDamage SE_MitigateMeleeDamage %d damage negated, %d"
+				" damage remaining.", damage_to_reduce, buffs[slot].melee_rune);
+			buffs[slot].melee_rune = (buffs[slot].melee_rune - damage_to_reduce);
+			damage -= damage_to_reduce;
+		}
+	}
 
+	if(damage < 1)
+	{
+		return -6;
+	}
+
+	slot = GetBuffSlotFromType(SE_Rune);
 	while(slot >= 0)
 	{
 		int16 melee_rune_left = buffs[slot].melee_rune;
-	
 		if(melee_rune_left >= damage)
 		{
 			melee_rune_left -= damage;
-
 			damage = -6;
-
 			buffs[slot].melee_rune = melee_rune_left;
-
 			break;
 		}
 		else
 		{
 			if(melee_rune_left > 0)
 				damage -= melee_rune_left;
-
 			BuffFadeBySlot(slot);
-
 			slot = GetBuffSlotFromType(SE_Rune);
-
 			UpdateRuneFlags();
 		}
 	}
@@ -2864,49 +2944,67 @@ sint32 Mob::ReduceDamage(sint32 damage){
 	return(damage);
 }
 	
-sint32 Mob::ReduceMagicalDamage(sint32 damage) {
-
-	if((damage <= 0) || !HasSpellRune())
+sint32 Mob::ReduceMagicalDamage(sint32 damage) 
+{
+	if(damage <= 0 || (!HasSpellRune() && !HasPartialSpellRune()))
+	{
 		return damage;
+	}
 
 	int slot = GetBuffSlotFromType(SE_NegateAttacks);
-	
-	if(slot >= 0 && buffs[slot].melee_rune > 0)
+	if(slot >= 0 && buffs[slot].magic_rune > 0)
 	{
 		if(--buffs[slot].melee_rune == 0)
 		{
 			BuffFadeBySlot(slot);
-
 			UpdateRuneFlags();
 		}
-		return 0;
+		return -6;
+	}
+
+	slot = GetBuffSlotFromType(SE_MitigateSpellDamage);
+	if(slot >= 0)
+	{
+		int damage_to_reduce = damage * GetPartialMagicRuneReduction(buffs[slot].spellid) / 100;
+		if(damage_to_reduce > buffs[slot].magic_rune)
+		{
+			mlog(SPELLS__EFFECT_VALUES, "Mob::ReduceDamage SE_MitigateSpellDamage %d damage negated, %d"
+				" damage remaining, fading buff.", damage_to_reduce, buffs[slot].magic_rune);
+			damage -= damage_to_reduce;
+			BuffFadeBySlot(slot);
+			UpdateRuneFlags();
+		}
+		else
+		{
+			mlog(SPELLS__EFFECT_VALUES, "Mob::ReduceDamage SE_MitigateMeleeDamage %d damage negated, %d"
+				" damage remaining.", damage_to_reduce, buffs[slot].magic_rune);
+			buffs[slot].magic_rune = (buffs[slot].magic_rune - damage_to_reduce);
+			damage -= damage_to_reduce;
+		}
+	}
+
+	if(damage < 1)
+	{
+		return -6;
 	}
 
 	slot = GetBuffSlotFromType(SE_AbsorbMagicAtt);
-	
 	while(slot >= 0)
 	{
 		int16 magic_rune_left = buffs[slot].magic_rune;
-
 		if(magic_rune_left >= damage)
 		{
 			magic_rune_left -= damage;
-
 			damage = 0;
-
 			buffs[slot].magic_rune = magic_rune_left;
-
 			break;
-			}
+		}
 		else
 		{
 			if(magic_rune_left > 0)
 				damage -= magic_rune_left;
-
 			BuffFadeBySlot(slot);
-
 			slot = GetBuffSlotFromType(SE_AbsorbMagicAtt);
-
 			UpdateRuneFlags();
 		}
 	}

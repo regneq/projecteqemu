@@ -267,8 +267,9 @@ public:
 	AA_SwarmPetInfo *GetSwarmInfo() { return (swarmInfoPtr); }
 	void SetSwarmInfo(AA_SwarmPetInfo *mSwarmInfo) { swarmInfoPtr = mSwarmInfo; }
 
-	sint32	GetAccuracyRating() { return (accuracy_rating); }
+	sint32	GetAccuracyRating() const { return (accuracy_rating); }
 	void	SetAccuracyRating(sint32 d) { accuracy_rating = d;}
+	sint32 GetRawAC() const { return AC; }
 
 	void	ModifyNPCStat(const char *identifier, const char *newValue);
 	virtual void SetLevel(uint8 in_level, bool command = false);

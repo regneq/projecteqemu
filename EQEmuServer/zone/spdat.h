@@ -710,6 +710,10 @@ bool IsCompleteHealSpell(int16 spell_id);
 bool IsFastHealSpell(int16 spell_id);
 bool IsRegularSingleTargetHealSpell(int16 spell_id);
 uint32 GetMorphTrigger(uint32 spell_id);
+uint32 GetPartialMeleeRuneReduction(uint32 spell_id);
+uint32 GetPartialMagicRuneReduction(uint32 spell_id);
+uint32 GetPartialMeleeRuneAmount(uint32 spell_id);
+uint32 GetPartialMagicRuneAmount(uint32 spell_id);
 
 int CalcPetHp(int levelb, int classb, int STA = 75);
 const char *GetRandPetName();
