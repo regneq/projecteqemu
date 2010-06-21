@@ -1672,6 +1672,17 @@ void Mob::SetAttackTimer() {
 	//default value for attack timer in case they have
 	//an invalid weapon equipped:
 	attack_timer.SetAtTrigger(4000, true);
+
+	//adds a DW check even if we don't have an offhand equiped
+	if(SpecAttacks[SPECATK_INNATE_DW])
+	{
+		int speed = (int)(36*(100.0f+attack_speed)*PermaHaste);
+		if(speed < 800)
+		{
+			speed = 800;
+		}
+		attack_dw_timer.SetAtTrigger(speed, true);
+	}
 	
 	Timer* TimerToUse = NULL;
 	const Item_Struct* PrimaryWeapon = NULL;

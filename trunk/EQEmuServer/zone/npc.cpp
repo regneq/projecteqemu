@@ -1393,6 +1393,9 @@ void Mob::NPCSpecialAttacks(const char* parse, int permtag) {
 		case 'Y':
 			SpecAttacks[SPECATK_RANGED_ATK] = true;
 			break;
+		case 'L':
+			SpecAttacks[SPECATK_INNATE_DW] = true;
+			break;
 
         default:
             break;
