@@ -42,6 +42,12 @@ enum ClientStatus
 	cs_logged_in
 };
 
+enum LoginMode
+{
+	lm_initial = 2,
+	lm_from_world = 3
+};
+
 /**
  * Client class, controls a single client and it's 
  * connection to the login server.
@@ -67,7 +73,7 @@ public:
 	/**
 	 * Sends our reply to session ready packet.
 	 */
-	void Handle_SessionReady();
+	void Handle_SessionReady(const char* data, unsigned int size);
 
 	/**
 	 * Verifies login and send a reply.
