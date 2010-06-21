@@ -57,7 +57,7 @@ bool Client::Process()
 				{
 					log->Log(log_network, "Session ready recieved from client.");
 				}
-				Handle_SessionReady();
+				Handle_SessionReady((const char*)app->pBuffer, app->Size());
 				break;
 			}
 		case OP_Login:
@@ -112,11 +112,25 @@ bool Client::Process()
 	return true;
 }
 
-void Client::Handle_SessionReady()
+void Client::Handle_SessionReady(const char* data, unsigned int size)
 {
 	if(status != cs_not_sent_session_ready)
 	{
 		log->Log(log_network_error, "Session ready recieved again after already being recieved.");
+		return;
+	}
+
+	if(size < sizeof(unsigned int))
+	{
+		log->Log(log_network_error, "Session ready was too small.");
+		return;
+	}
+
+	unsigned int mode = *((unsigned int*)data);
+	if(mode == (unsigned int)LoginMode::lm_from_world)
+	{
+		log->Log(log_network, "Session ready indicated logged in from world(unsupported feature), disconnecting.");
+		connection->Close();
 		return;
 	}
 
