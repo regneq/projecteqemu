@@ -1,5 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/20/2010==
+KLS: Added command #maxskills to max your skills instead of having to #setskill everything for testing.
+KLS: Implemented partial melee and spell runes.
+KLS: Right click tome learning in sof/sod.
+KLS: Adjusted AC; should now be more sensitive to changes in gear as well as implemented softcaps.
+
 ==06/19/2010==
 Trevius: Stopped NPCs from sending an appearance packet for each WP they arrive at or depart from.
 

@@ -444,7 +444,8 @@ int command_init(void) {
 		command_add("raidloot","LEADER|GROUPLEADER|SELECTED|ALL - Sets your raid loot settings if you have permission to do so.",0,command_raidloot) ||
 		command_add("globalview","Lists all qglobals in cache if you were to do a quest with this target.",80,command_globalview) ||
 		command_add("distance","- Reports the distance between you and your target.", 80, command_distance) ||
-		command_add("cvs","- Summary of client versions currently online.", 200, command_cvs)
+		command_add("cvs","- Summary of client versions currently online.", 200, command_cvs) ||
+		command_add("maxskills","Maxes skills for you.", 200, command_max_all_skills)
 		)
 	{
 		command_deinit();
@@ -10948,5 +10949,17 @@ void command_cvs(Client *c, const Seperator *sep)
 
 		safe_delete(pack);
 
+	}
+}
+
+void command_max_all_skills(Client *c, const Seperator *sep)
+{
+	if(c)
+	{
+		for(int i = 0; i <= HIGHEST_SKILL; ++i)
+		{
+			int max_skill_level = database.GetSkillCap(c->GetClass(), (SkillType)i, c->GetLevel());
+			c->SetSkill((SkillType)i, max_skill_level);
+		}
 	}
 }

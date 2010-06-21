@@ -1142,6 +1142,20 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				break;
 			}
 
+			case SE_MitigateMeleeDamage:
+			{
+				buffs[buffslot].melee_rune = GetPartialMeleeRuneAmount(spell_id);
+				SetHasPartialMeleeRune(true);
+				break;
+			}
+
+			case SE_MitigateSpellDamage:
+			{
+				buffs[buffslot].magic_rune = GetPartialMagicRuneAmount(spell_id);
+				SetHasPartialSpellRune(true);
+				break;
+			}
+
 			case SE_Levitate:
 			{
 #ifdef SPELL_EFFECT_SPAM

@@ -59,6 +59,7 @@ RULE_INT ( Character, ItemSpellShieldingCap, 35)
 RULE_INT ( Character, ItemDoTShieldingCap, 35)
 RULE_INT ( Character, ItemStunResistCap, 35)
 RULE_INT ( Character, ItemStrikethroughCap, 35)
+RULE_INT ( Character, ItemATKCap, 250)
 RULE_INT ( Character, SkillUpModifier, 100) //skill ups are at 100%
 RULE_BOOL ( Character, SharedBankPlat, false) //off by default to prevent duping for now
 RULE_BOOL ( Character, BindAnywhere, false)
@@ -260,6 +261,21 @@ RULE_INT ( Combat, EagleStrikeBonus, 15) //% Modifier that this skill gets to st
 RULE_INT ( Combat, TigerClawBonus, 10) //% Modifier that this skill gets to str and skill bonuses
 RULE_INT ( Combat, RoundKickBonus, 5) //% Modifier that this skill gets to str and skill bonuses
 RULE_BOOL ( Combat, ProcTargetOnly, true) //true = procs will only affect our target, false = procs will affect all of our targets
+RULE_REAL ( Combat, NPCACFactor, 2.25)
+RULE_INT ( Combat, ClothACSoftcap, 75)
+RULE_INT ( Combat, LeatherACSoftcap, 100)
+RULE_INT ( Combat, MonkACSoftcap, 120)
+RULE_INT ( Combat, ChainACSoftcap, 200)
+RULE_INT ( Combat, PlateACSoftcap, 300)
+RULE_REAL ( Combat, AAMitigationACFactor, 3.0)
+RULE_REAL ( Combat, WarriorACSoftcapReturn, 0.45)
+RULE_REAL ( Combat, KnightACSoftcapReturn, 0.33)
+RULE_REAL ( Combat, LowPlateChainACSoftcapReturn, 0.23)
+RULE_REAL ( Combat, LowChainLeatherACSoftcapReturn, 0.17)
+RULE_REAL ( Combat, CasterACSoftcapReturn, 0.06)
+RULE_REAL ( Combat, MiscACSoftcapReturn, 0.3)
+RULE_REAL ( Combat, ACthac0Factor, 0.55)
+RULE_REAL ( Combat, ACthac20Factor, 0.55)
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( NPC )
@@ -371,7 +387,7 @@ RULE_INT ( Adventure, NumberKillsForBossSpawn, 45)
 RULE_REAL ( Adventure, DistanceForRescueAccept, 10000.0)
 RULE_REAL ( Adventure, DistanceForRescueComplete, 2500.0)
 RULE_INT ( Adventure, ItemIDToEnablePorts, 41000 ) //0 to disable, otherwise using a LDoN portal will require the user to have this item.
-RULE_INT ( Adventure, LDoNTrapDistanceUse, 100 )
+RULE_INT ( Adventure, LDoNTrapDistanceUse, 625 )
 RULE_REAL ( Adventure, LDoNBaseTrapDifficulty, 15.0 )
 RULE_REAL ( Adventure, LDoNCriticalFailTrapThreshold, 10.0 )
 RULE_INT ( Adventure, LDoNAdventureExpireTime, 1800) //30 minutes to expire

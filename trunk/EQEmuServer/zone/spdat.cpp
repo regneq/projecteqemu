@@ -881,6 +881,55 @@ uint32 GetMorphTrigger(uint32 spell_id)
 	return 0;
 }
 
+uint32 GetPartialMeleeRuneReduction(uint32 spell_id)
+{
+	for(int i = 0; i < EFFECT_COUNT; ++i)
+	{
+		if(spells[spell_id].effectid[i] == SE_MitigateMeleeDamage)
+		{
+			return spells[spell_id].base[i];
+		}
+	}
+	return 0;
+}
+
+uint32 GetPartialMagicRuneReduction(uint32 spell_id)
+{
+	for(int i = 0; i < EFFECT_COUNT; ++i)
+	{
+		if(spells[spell_id].effectid[i] == SE_MitigateSpellDamage)
+		{
+			return spells[spell_id].base[i];
+		}
+	}
+	return 0;
+}
+
+uint32 GetPartialMeleeRuneAmount(uint32 spell_id)
+{
+	for(int i = 0; i < EFFECT_COUNT; ++i)
+	{
+		if(spells[spell_id].effectid[i] == SE_MitigateMeleeDamage)
+		{
+			return spells[spell_id].max[i];
+		}
+	}
+	return 0;
+}
+
+uint32 GetPartialMagicRuneAmount(uint32 spell_id)
+{
+	for(int i = 0; i < EFFECT_COUNT; ++i)
+	{
+		if(spells[spell_id].effectid[i] == SE_MitigateSpellDamage)
+		{
+			return spells[spell_id].max[i];
+		}
+	}
+	return 0;
+}
+
+
 bool DetrimentalSpellAllowsRest(int16 spell_id)
 {
 	if((spell_id > 0) && (spell_id < SPDAT_RECORDS))

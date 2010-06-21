@@ -301,7 +301,14 @@ void Client::AddItemBonuses(const ItemInst *inst, StatBonuses* newbon, bool isAu
 		newbon->ManaRegen += item->ManaRegen;
 	}
 	if(item->Attack > 0) {
-		newbon->ATK += item->Attack;
+		if((newbon->ATK + item->Attack) > RuleI(Character, ItemATKCap))
+		{
+			newbon->ATK = RuleI(Character, ItemATKCap);
+		}
+		else
+		{
+			newbon->ATK += item->Attack;
+		}
 	}
 	if(item->EnduranceRegen > 0){
 		newbon->EnduranceRegen += item->EnduranceRegen;

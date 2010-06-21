@@ -1678,7 +1678,7 @@ sint16	Client::CalcCR()
 	return(CR);
 }
 
-sint16  Client::CalcATK() {
+sint16 Client::CalcATK() {
 	ATK = itembonuses.ATK + spellbonuses.ATK + GroupLeadershipAAOffenseEnhancement();
 	return(ATK);
 }
@@ -1855,4 +1855,20 @@ sint32 Client::CalcEnduranceRegen() {
 	regen += spellbonuses.EnduranceRegen + itembonuses.EnduranceRegen;
 	regen = (regen * RuleI(Character, EnduranceRegenMultiplier)) / 100;
 	return regen;
+}
+
+int Client::GetRawACNoShield(int &shield_ac) const
+{
+	int ac = itembonuses.AC + spellbonuses.AC;
+	shield_ac = 0;
+	const ItemInst *inst = m_inv.GetItem(SLOT_SECONDARY);
+	if(inst)
+	{
+		if(inst->GetItem()->ItemType == ItemTypeShield)
+		{
+			ac -= inst->GetItem()->AC;
+			shield_ac = inst->GetItem()->AC;
+		}
+	}
+	return ac;
 }

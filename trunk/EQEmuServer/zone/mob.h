@@ -599,7 +599,7 @@ bool logpos;
 	virtual sint32 CalcMaxMana();
 
 	inline virtual sint16	GetAC()		const { return AC + itembonuses.AC + spellbonuses.AC; } // Quagmire - this is NOT the right math
-	inline virtual sint16	GetATK()	const { return ATK + itembonuses.ATK + spellbonuses.ATK + (GetSTR() * 9 / 10); }
+	inline virtual sint16	GetATK()	const { return ATK + itembonuses.ATK + spellbonuses.ATK; }
 	inline virtual sint16	GetATKBonus()	const { return itembonuses.ATK + spellbonuses.ATK; }
 	inline virtual sint16	GetSTR()	const { return STR + itembonuses.STR + spellbonuses.STR; }
 	inline virtual sint16	GetSTA()	const { return STA + itembonuses.STA + spellbonuses.STA; }
@@ -738,8 +738,12 @@ bool logpos;
 	virtual void UninitializeBuffSlots() { }
 	inline bool HasRune() const { return m_hasRune; }
 	inline bool HasSpellRune() const { return m_hasSpellRune; }
+	inline bool HasPartialMeleeRune() const { return m_hasPartialMeleeRune; }
+	inline bool HasPartialSpellRune() const { return m_hasPartialSpellRune; }
 	inline void SetHasRune(bool hasRune) { m_hasRune = hasRune; }
 	inline void SetHasSpellRune(bool hasSpellRune) { m_hasSpellRune = hasSpellRune; }
+	inline void SetHasPartialMeleeRune(bool hasPartialMeleeRune) { m_hasPartialMeleeRune = hasPartialMeleeRune; }
+	inline void SetHasPartialSpellRune(bool hasPartialSpellRune) { m_hasPartialSpellRune = hasPartialSpellRune; }
 	inline bool HasDeathSaveChance() const { return m_hasDeathSaveChance; }
 	inline void SetDeathSaveChance(bool hasDeathSaveChance) { m_hasDeathSaveChance = hasDeathSaveChance; }
 	EQApplicationPacket *MakeTargetBuffsPacket();
@@ -1253,6 +1257,8 @@ protected:
 
 	bool m_hasRune;
 	bool m_hasSpellRune;
+	bool m_hasPartialMeleeRune;
+	bool m_hasPartialSpellRune;
 	bool m_hasDeathSaveChance;
 	int	flymode;
 
