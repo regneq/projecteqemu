@@ -1317,13 +1317,15 @@ sint32 Mob::CheckAggroAmount(int16 spellid) {
 		//every time you cast on live you get a certain amount of "this is a spell" aggro
 		//confirmed by EQ devs to be 100 exactly at level 85. From their wording it doesn't seem like it's affected
 		//by hate modifiers either.
-		//AggroAmount += (slevel*slevel/72); // Moved Below
+		//AggroAmount += (slevel*slevel/72); 
+		// Saved so I can reimplement it; 
+		// this should only be on the spell to aggro the npc not every spell
 
 	}
 
 
 
-	AggroAmount += (slevel*slevel/72) + spells[spell_id].bonushate + nonModifiedAggro;
+	AggroAmount += spells[spell_id].bonushate + nonModifiedAggro;
 	return AggroAmount;
 }
 
