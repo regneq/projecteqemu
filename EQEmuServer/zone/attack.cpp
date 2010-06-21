@@ -1187,8 +1187,6 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte)
 		
 		int min_hit = 1;
 		int max_hit = (2*weapon_damage*GetDamageTable(skillinuse)) / 100;
-		//int32 hate = 2*weapon_damage;
-		
 
 		if(GetLevel() < 10 && max_hit > 20)
 			max_hit = 20;
@@ -1231,6 +1229,7 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte)
 				int sinisterBonus = MakeRandomInt(5, 10);
 				min_hit += (min_hit * sinisterBonus / 100);
 				max_hit += (max_hit * sinisterBonus / 100);
+				hate += (hate * sinisterBonus / 100);
 			}
 		}
 
@@ -1249,26 +1248,12 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte)
 		if(!other->CheckHitChance(this, skillinuse, Hand)) {
 			mlog(COMBAT__ATTACKS, "Attack missed. Damage set to 0.");
 			damage = 0;
-			// other->AddToHateList(this, 0); // Rogean: Moved
 		} else {	//we hit, try to avoid it
 			other->AvoidDamage(this, damage);
 			other->MeleeMitigation(this, damage, min_hit);
 			ApplyMeleeDamageBonus(skillinuse, damage);
 			TryCriticalHit(other, skillinuse, damage);
 			mlog(COMBAT__DAMAGE, "Final damage after all reductions: %d", damage);
-
-			/* // Rogean: Moved.
-			if(damage > 0){
-				if(GetFeigned()) {
-					mlog(COMBAT__HITS, "Attacker %s avoids %d hate due to feign death", GetName(), hate);
-				} else {
-					mlog(COMBAT__HITS, "Generating hate %d towards %s", hate, GetName());
-					// now add done damage to the hate list
-					other->AddToHateList(this, hate);
-				}
-			}
-			else
-				other->AddToHateList(this, 0);*/
 		}
 
 		//riposte
@@ -1305,7 +1290,7 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte)
 		if (((damage < 0) || slippery_attack) && !bRiposte) { // Hack to still allow Strikethrough chance w/ Slippery Attacks AA
 			if(MakeRandomInt(0, 100) < (itembonuses.StrikeThrough + spellbonuses.StrikeThrough + aaStrikethroughBonus)) {
 				Message_StringID(MT_StrikeThrough, STRIKETHROUGH_STRING); // You strike through your opponents defenses!
-				Attack(other, Hand, true); // Strikethrough only gives another attempted hit
+				Attack(other, Hand, false); // Strikethrough only gives another attempted hit
 				return false;
 			}
 		}
@@ -1315,7 +1300,7 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte)
 	}
 
 
-	// Rogean: Hate Generation is on a per swing basis, regardless of a hit, miss, or block, its always the same.
+	// Hate Generation is on a per swing basis, regardless of a hit, miss, or block, its always the same.
 	// If we are this far, this means we are atleast making a swing.
 	if (!bRiposte) // Ripostes never generate any aggro.
 		other->AddToHateList(this, hate);

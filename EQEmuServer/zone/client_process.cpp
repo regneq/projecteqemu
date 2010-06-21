@@ -392,7 +392,7 @@ bool Client::Process() {
 						if(CheckAAEffect(aaEffectRampage)) {
 							entity_list.AEAttack(this, 30);
 						} else {
-							Attack(auto_attack_target, 13, true);
+							Attack(auto_attack_target, 13, false);
 						}
 					}
 					
@@ -402,13 +402,13 @@ bool Client::Process() {
 					   && CheckDoubleAttack(true))
 					{
 						tripleAttackSuccess = true;
-						Attack(auto_attack_target, 13, true);
+						Attack(auto_attack_target, 13, false);
 					}
 					
 					//quad attack, does this belong here??
 					if(SpecAttacks[SPECATK_QUAD] && CheckDoubleAttack(true)) 
 					{
-						Attack(auto_attack_target, 13, true);
+						Attack(auto_attack_target, 13, false);
 					}
 				}
 				if (auto_attack_target && GetAA(aaFlurry) > 0) {
@@ -445,8 +445,8 @@ bool Client::Process() {
 					if(MakeRandomInt(0, 999) < flurrychance) 
 					{
 						Message_StringID(MT_Flurry, 128);
-						Attack(auto_attack_target, 13, true);
-						Attack(auto_attack_target, 13, true);
+						Attack(auto_attack_target, 13, false);
+						Attack(auto_attack_target, 13, false);
 					}
 				}
 
@@ -478,9 +478,9 @@ bool Client::Process() {
 						break;
 					}
 					if (MakeRandomInt(1,100) < chance_xhit1)
-						Attack(GetTarget(), 13, true);
+						Attack(GetTarget(), 13, false);
 					if (MakeRandomInt(1,100) < chance_xhit2)
-						Attack(GetTarget(), 13, true);
+						Attack(GetTarget(), 13, false);
 				}
 				
 				if (auto_attack_target && (GetAA(aaPunishingBlade) > 0 || GetAA(aaSpeedoftheKnight) > 0)) {
@@ -494,7 +494,7 @@ bool Client::Process() {
 							extatk += GetAA(aaSpeedoftheKnight)*5;
 							if(MakeRandomInt(0, 100) < extatk)
 							{
-								Attack(auto_attack_target, 13, true);
+								Attack(auto_attack_target, 13, false);
 							}
 						}
 					}
