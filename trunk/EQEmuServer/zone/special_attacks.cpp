@@ -1808,7 +1808,7 @@ void Mob::Taunt(NPC* who, bool always_succeed) {
 		}
 		if (tauntchance > MakeRandomFloat(0, 100)) {
 			// this is the max additional hate added per succesfull taunt
-			tauntvalue = (MakeRandomInt(5, 10) * level);
+			tauntvalue = (MakeRandomInt(2, 4) * level);
 			//tauntvalue = (sint32) ((float)level * 10.0 * (float)rand()/(float)RAND_MAX + 1);
 			// new hate: find diff of player's hate and whoever's at top of list, add that plus tauntvalue to players hate
 			newhate = who->GetNPCHate(hate_top) - who->GetNPCHate(this) + tauntvalue;
@@ -1817,12 +1817,12 @@ void Mob::Taunt(NPC* who, bool always_succeed) {
 		}
 		else{
 			//generate at least some hate reguardless of the outcome.
-			who->CastToNPC()->AddToHateList(this, (MakeRandomInt(5, 10)*level));
+			who->CastToNPC()->AddToHateList(this, (MakeRandomInt(2, 4)*level));
 		}
 	}
 		
 	//generate at least some hate reguardless of the outcome.
-	who->CastToNPC()->AddToHateList(this, (MakeRandomInt(5, 10)*level));
+	who->CastToNPC()->AddToHateList(this, (MakeRandomInt(2, 4)*level));
 }
 
 void Mob::InstillDoubt(Mob *who) {
