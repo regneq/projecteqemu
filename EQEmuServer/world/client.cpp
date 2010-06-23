@@ -398,7 +398,7 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 				dlc=false;
 				if (vwl)	//last char was a vowel
 				{			// so pick a cons or cons pair
-					rndnum=MakeRandomInt(0, 62):
+					rndnum=MakeRandomInt(0, 62);
 					if (rndnum>46)
 					{	// pick a cons pair
 						if (i>namlen-3)	// last 2 chars in name?

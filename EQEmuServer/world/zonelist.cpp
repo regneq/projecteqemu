@@ -565,7 +565,7 @@ void ZSList::RebootZone(const char* ip1,int16 port,const char* ip2, int32 skipid
 		safe_delete(tmp);
 		return;
 	}
-	int32 z = MakeRandomInt(0, y-1):
+	int32 z = MakeRandomInt(0, y-1);
 	
 	ServerPacket* pack = new ServerPacket(ServerOP_ZoneReboot, sizeof(ServerZoneReboot_Struct));
 	ServerZoneReboot_Struct* s = (ServerZoneReboot_Struct*) pack->pBuffer;

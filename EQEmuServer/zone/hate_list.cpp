@@ -23,6 +23,7 @@
 #include "masterentity.h"
 #include "../common/linked_list.h"
 #include "../common/rulesys.h"
+#include "../common/MiscFunctions.h"
 #include "hate_list.h"
 
 HateList::HateList()
