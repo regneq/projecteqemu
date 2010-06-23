@@ -88,7 +88,6 @@ bool Zone::Bootup(int32 iZoneID, int32 iInstanceID, bool iStaticZone) {
 	
 	if (iZoneID == 0 || zonename == 0)
 		return false;
-	srand(time(NULL));
 	if (zone != 0 || ZoneLoaded) {
 		cerr << "Error: Zone::Bootup call when zone already booted!" << endl;
 		worldserver.SetZone(0);
@@ -1975,7 +1974,7 @@ void Zone::weatherSend()
 	if(zone_weather>0)
 		outapp->pBuffer[0] = zone_weather-1;
 	if(zone_weather>0)
-		outapp->pBuffer[4] = 0x10+(rand()%10); // This number changes in the packets, intensity?
+		outapp->pBuffer[4] = 0x10+MakeRandomInt(0, 9); // This number changes in the packets, intensity?
 	entity_list.QueueClients(0, outapp);
 	safe_delete(outapp);
 }

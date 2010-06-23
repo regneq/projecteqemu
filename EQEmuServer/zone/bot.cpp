@@ -2361,7 +2361,7 @@ void Bot::AI_Process() {
 							}
 						}
 
-						if(rand()%1000 < flurrychance) {
+						if(MakeRandomInt(0, 999) < flurrychance) {
 							Message_StringID(MT_Flurry, 128);
 							Attack(GetTarget(), SLOT_PRIMARY, true);
 							Attack(GetTarget(), SLOT_PRIMARY, true);
@@ -2687,7 +2687,7 @@ void Bot::PetAIProcess() {
 									botPet->Attack(botPet->GetTarget(), 14);
 									if (botPet->CanThisClassDoubleAttack())
 									{
-										sint32 RandRoll = rand()%100;
+										sint32 RandRoll = MakeRandomInt(0, 99);
 										if (RandRoll < (botPet->GetLevel() + 20))
 										{
 											botPet->Attack(botPet->GetTarget(), 14);
@@ -6343,7 +6343,7 @@ void Bot::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 				if (acfail>100) acfail=100;
 			}
 
-			if (acfail<=0 || rand()%101>acfail) {
+			if (acfail<=0 || MakeRandomInt(0, 100)>acfail) {
 				float acreduction=1;
 				int acrandom=300;
 				if (database.GetVariable("ACreduction", tmp, 9))

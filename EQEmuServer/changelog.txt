@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/22/2010==
+gaeorn: replaced calls to rand() with calls to MakeRandomInt()
+
 ==06/20/2010==
 KLS: Added command #maxskills to max your skills instead of having to #setskill everything for testing.
 KLS: Implemented partial melee and spell runes.

@@ -2796,7 +2796,7 @@ void command_spawn(Client *c, const Seperator *sep)
 		for (int counter=0; counter<itemcount; counter++) {
 			const Item_Struct* item = 0;
 			while (item == 0)
-			item = database.GetItem(rand() % 33000);
+			item = database.GetItem(MakeRandomInt(0, 32999));
 			npc->AddItem(item, 0, 0);
 		}
 */

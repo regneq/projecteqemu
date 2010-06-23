@@ -97,7 +97,7 @@ bool NPC::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 				 dist2 <= spells[AIspells[i].spellid].range*spells[AIspells[i].spellid].range
 				)
 				&& (mana_cost <= GetMana() || GetMana() == GetMaxMana())
-				&& (AIspells[i].time_cancast+(rand()%5)) <= Timer::GetCurrentTime() //break up the spelling casting over a period of time.
+				&& (AIspells[i].time_cancast+(MakeRandomInt(0, 4))) <= Timer::GetCurrentTime() //break up the spelling casting over a period of time.
 				) {
 
 #if MobAI_DEBUG_Spells >= 21
@@ -186,7 +186,7 @@ bool NPC::AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes) {
 					}
 					case SpellType_Nuke: {
 						if (
-							manaR >= 10 && (rand()%100) < 70
+							manaR >= 10 && MakeRandomInt(0, 99) < 70
 							&& tar->CanBuffStack(AIspells[i].spellid, GetLevel(), true) >= 0
 							) {
 							if(!checked_los) {
@@ -1255,7 +1255,7 @@ void Mob::AI_Process() {
 							Attack(target, 14);
 							if (CanThisClassDoubleAttack()) 
 							{
-								sint32 RandRoll = rand()%100;
+								sint32 RandRoll = MakeRandomInt(0, 99);
 								if (RandRoll < (GetLevel() + 20))  
 								{
 									if (Attack(target, 14));
@@ -1519,8 +1519,8 @@ void NPC::AI_DoMovement() {
 			float movey = movedist - movex;
 			movex = sqrtf(movex);
 			movey = sqrtf(movey);
-			movex *= rand()%2 ? 1 : -1;
-			movey *= rand()%2 ? 1 : -1;
+			movex *= MakeRandomInt(0, 1) ? 1 : -1;
+			movey *= MakeRandomInt(0, 1) ? 1 : -1;
 			roambox_movingto_x = GetX() + movex;
 			roambox_movingto_y = GetY() + movey;
 			if (roambox_movingto_x > roambox_max_x || roambox_movingto_x < roambox_min_x)
@@ -1731,7 +1731,7 @@ void Mob::AI_Event_NoLongerEngaged() {
 	if (minLastFightingDelayMoving == maxLastFightingDelayMoving)
 		pLastFightingDelayMoving += minLastFightingDelayMoving;
 	else
-		pLastFightingDelayMoving += (rand() % (maxLastFightingDelayMoving-minLastFightingDelayMoving)) + minLastFightingDelayMoving;
+		pLastFightingDelayMoving += MakeRandomInt(minLastFightingDelayMoving, maxLastFightingDelayMoving);
 	// EverHood - So mobs don't keep running as a ghost until AIwalking_timer fires
 	// if they were moving prior to losing all hate
 	if(IsMoving()){

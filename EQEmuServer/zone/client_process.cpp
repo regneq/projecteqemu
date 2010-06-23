@@ -1054,7 +1054,7 @@ void Client::BulkSendMerchantInventory(int merchant_id, int npcid) {
 	zone->tmpmerchanttable[npcid] = tmp_merlist;
 	if(merch != NULL && handyitem){
 		char handy_id[8]={0};
-		int greeting=rand()%5;
+		int greeting=MakeRandomInt(0, 4);
 		int greet_id=0;
 		switch(greeting){
 			case 1:

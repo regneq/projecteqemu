@@ -503,10 +503,10 @@ void NPC::AddCash(int16 in_copper, int16 in_silver, int16 in_gold, int16 in_plat
 }
 	  
 void NPC::AddCash() {
-	copper = (rand() % 100)+1;
-	silver = (rand() % 50)+1;
-	gold = (rand() % 10)+1;
-	platinum = (rand() % 5)+1;
+	copper = MakeRandomInt(1, 100);
+	silver = MakeRandomInt(1, 50);
+	gold = MakeRandomInt(1, 10);
+	platinum = MakeRandomInt(1, 5);
 }
 	  
 void NPC::RemoveCash() {
@@ -1176,7 +1176,7 @@ void NPC::PickPocket(Client* thief) {
 	memset(charges,0,50);
 	//Determine wheter to steal money or an item.
 	bool no_coin = ((money[0] + money[1] + money[2] + money[3]) == 0);
-	bool steal_item = (rand()%100 < 50 || no_coin);
+	bool steal_item = (MakeRandomInt(0, 99) < 50 || no_coin);
 	if (steal_item)
 	{
 		ItemList::iterator cur,end;
@@ -1241,7 +1241,7 @@ void NPC::PickPocket(Client* thief) {
 	}
 	if (!steal_item) //Steal money
 	{
-		uint32 amt = (rand()%((steal_skill/25)+1))+1;
+		uint32 amt = MakeRandomInt(1, (steal_skill/25)+1);
 		int steal_type = 0;
 		if (!money[0])
 		{

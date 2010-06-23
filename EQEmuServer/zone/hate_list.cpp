@@ -389,7 +389,7 @@ Mob *HateList::GetRandom()
 	if(!count)
 		return NULL;
 
-    int random = rand()%count;
+    int random = MakeRandomInt(0, count-1);
     iterator.Reset();
     for (int i = 0; i < random-1; i++)
         iterator.Advance();
