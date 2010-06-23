@@ -82,7 +82,6 @@ bool LoginServerList::Process() {
 void LoginServerList::InitLoginServer() {
 	LinkedListIterator<LoginServer*> iterator(list);
 
-	srand(time(NULL));
 	iterator.Reset();
 	while(iterator.MoreElements()){
 		iterator.GetData()->InitLoginServer();

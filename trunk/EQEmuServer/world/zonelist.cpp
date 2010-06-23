@@ -544,7 +544,6 @@ void ZSList::SOPZoneBootup(const char* adminname, int32 ZoneServerID, const char
 void ZSList::RebootZone(const char* ip1,int16 port,const char* ip2, int32 skipid, int32 zoneid){
 // get random zone
 	LinkedListIterator<ZoneServer*> iterator(list);
-	srand(time(NULL));
 	int32 x = 0;
 	iterator.Reset();
 	while(iterator.MoreElements()) {
@@ -566,7 +565,7 @@ void ZSList::RebootZone(const char* ip1,int16 port,const char* ip2, int32 skipid
 		safe_delete(tmp);
 		return;
 	}
-	int32 z = rand() % y;
+	int32 z = MakeRandomInt(0, y-1):
 	
 	ServerPacket* pack = new ServerPacket(ServerOP_ZoneReboot, sizeof(ServerZoneReboot_Struct));
 	ServerZoneReboot_Struct* s = (ServerZoneReboot_Struct*) pack->pBuffer;

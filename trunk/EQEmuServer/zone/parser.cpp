@@ -1332,7 +1332,7 @@ void Parser::HandleVars(string varname, string varparms, string& origstring, str
 	}
 	//used_pawn - random implementation. 
 	else if (!strcmp(strlwr((const char*)varname.c_str()),"random")) { 
-		Replace(origstring,format,itoa(rand()%varparms[0])); 
+		Replace(origstring,format,itoa(MakeRandomInt(0, varparms[0]-1))); 
 	}  
    else if (!strcmp(strlwr((const char*)varname.c_str()),"asc")) { 
       Replace(origstring,format,itoa(varparms[0])); 

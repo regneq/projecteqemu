@@ -35,8 +35,6 @@ bool RunLoops = false;
 void CatchSignal(int sig_num);
 
 int main(int argc, char *argv[]) {
-	srand(time(NULL));
-	
 	string launcher_name;
 	if(argc == 2) {
 		launcher_name = argv[1];

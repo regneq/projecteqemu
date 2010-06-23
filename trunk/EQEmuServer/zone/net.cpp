@@ -221,7 +221,6 @@ int main(int argc, char** argv) {
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 //	_crtBreakAlloc = 2025;
 #endif
-	srand(time(NULL));
 	
 	_log(ZONE__INIT, "CURRENT_ZONE_VERSION: %s", CURRENT_ZONE_VERSION);
 	
@@ -301,8 +300,6 @@ int main(int argc, char** argv) {
 		_log(ZONE__INIT_ERR, "Command loading FAILED");
 	else
 		_log(ZONE__INIT, "%d commands loaded", retval);
-
-	srand(time(0) * (time(0) % (retval+1)));
 
 	//rules:
 	{
@@ -1320,7 +1317,6 @@ void UpdateWindowTitle(char* iNewTitle) {
 	const char* zonename = database.GetZoneName(iStaticZone);
 	if (iZoneID == 0 || zonename == 0)
 		return false;
-	srand(time(NULL));
 	if (zone != 0 || ZoneLoaded) {
 		cerr << "Error: Zone::Bootup call when zone already booted!" << endl;
 		worldserver.SetZone(0);

@@ -273,15 +273,15 @@ void ZoneDatabase::AddLootTableToNPC(NPC* npc,int32 loottable_id, ItemList* item
 		if (lts->mincash == lts->maxcash)
 			cash = lts->mincash;
 		else
-			cash = (rand() % (lts->maxcash - lts->mincash)) + lts->mincash;
+			cash = MakeRandomInt(lts->mincash, lts->maxcash);
 		if (cash != 0) {
 			if (lts->avgcoin != 0) {
 				//this is some crazy ass stuff... and makes very little sense... dont use it, k?
 				int32 mincoin = (int32) (lts->avgcoin * 0.75 + 1);
 				int32 maxcoin = (int32) (lts->avgcoin * 1.25 + 1);
-				*copper = (rand() % (maxcoin - mincoin)) + mincoin - 1;
-				*silver = (rand() % (maxcoin - mincoin)) + mincoin - 1;
-				*gold = (rand() % (maxcoin - mincoin)) + mincoin - 1;
+				*copper = MakeRandomInt(mincoin, maxcoin);
+				*silver = MakeRandomInt(mincoin, maxcoin);
+				*gold = MakeRandomInt(mincoin, maxcoin);
 			if(*copper > cash) { *copper = cash; }
 				cash -= *copper;
             if(*silver>(cash/10)) { *silver = (cash/10); }
@@ -409,7 +409,7 @@ void ZoneDatabase::AddLootDropToNPC(NPC* npc,int32 lootdrop_id, ItemList* itemli
 		}
 		
 		thischance = lds->Entries[k].chance;
-		unsigned int drop_chance = rand() % totalchance;
+		unsigned int drop_chance = MakeRandomInt(0, totalchance-1);
 #if EQDEBUG>=11
 			LogFile->write(EQEMuLog::Debug, "Drop chance for npc: %s, total chance:%i this chance:%i, drop roll:%i", npc->GetName(), totalchance, thischance, drop_chance);
 #endif

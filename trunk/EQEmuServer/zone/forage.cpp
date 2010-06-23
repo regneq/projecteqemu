@@ -182,7 +182,7 @@ int32 ZoneDatabase::GetZoneFishing(int32 ZoneID, int8 skill, uint32 &npc_id, uin
 	npc_id = 0;
 	npc_chance = 0;
 	if (index>0) {
-		int32 random = (rand()%chancepool)+1;
+		int32 random = MakeRandomInt(1, chancepool);
 		for (int i = 0; i < index; i++)
 		{
 			if (random <= chance[i])
@@ -421,7 +421,7 @@ void Client::ForageItem() {
 		//not an else in case theres no DB food
 		if(foragedfood == 0) {
 			int8 index = 0;
-			index = rand()%MAX_COMMON_FOOD_IDS;
+			index = MakeRandomInt(0, MAX_COMMON_FOOD_IDS-1);
 			foragedfood = common_food_ids[index];
 		}
 		

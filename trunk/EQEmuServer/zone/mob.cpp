@@ -2454,7 +2454,7 @@ int32 Mob::RandomTimer(int min,int max) {
     int r = 14000;
 	if(min != 0 && max != 0 && min < max)
 	{
-	    r = (rand()  % (max - min)) + min;
+	    r = MakeRandomInt(min, max);
 	}
 	return r;
 }

@@ -411,13 +411,13 @@ void NPC::SetWaypointPause()
       switch (pausetype) 
       { 
       case 0: //Random Half 
-         AIwalking_timer->Start((cur_wp_pause - rand()%cur_wp_pause/2)*1000); 
+         AIwalking_timer->Start((cur_wp_pause - MakeRandomInt(0, cur_wp_pause-1)/2)*1000); 
          break; 
       case 1: //Full 
          AIwalking_timer->Start(cur_wp_pause*1000); 
          break; 
       case 2: //Random Full 
-         AIwalking_timer->Start((rand()%cur_wp_pause)*1000); 
+         AIwalking_timer->Start(MakeRandomInt(0, cur_wp_pause-1)*1000); 
          break; 
       } 
    } 

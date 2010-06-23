@@ -371,7 +371,7 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 			char cons[48]="bcdfghjklmnpqrstvwxzybcdgklmnprstvwbcdgkpstrkd";
 			char rndname[17]="\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
 			char paircons[33]="ngrkndstshthphsktrdrbrgrfrclcr";
-			int rndnum=rand()%76,n=1;
+			int rndnum=MakeRandomInt(0, 75),n=1;
 			bool dlc=false;
 			bool vwl=false;
 			bool dbl=false;
@@ -392,18 +392,18 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 				rndname[0]=vowels[rndnum];
 				vwl=true;
 			}
-			int namlen=(rand()%6)+5;
+			int namlen=MakeRandomInt(5, 10);
 			for (int i=n;i<namlen;i++)
 			{
 				dlc=false;
 				if (vwl)	//last char was a vowel
 				{			// so pick a cons or cons pair
-					rndnum=rand()%63;
+					rndnum=MakeRandomInt(0, 62):
 					if (rndnum>46)
 					{	// pick a cons pair
 						if (i>namlen-3)	// last 2 chars in name?
 						{	// name can only end in cons pair "rk" "st" "sh" "th" "ph" "sk" "nd" or "ng"
-							rndnum=(rand()%8)*2;
+							rndnum=MakeRandomInt(0, 7)*2;
 						}
 						else
 						{	// pick any from the set
@@ -421,12 +421,12 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 				}
 				else
 				{		// select a vowel
-					rndname[i]=vowels[rand()%17];
+					rndname[i]=vowels[MakeRandomInt(0, 16)];
 				}
 				vwl=!vwl;
 				if (!dbl && !dlc)
 				{	// one chance at double letters in name
-					if (!(rand()%(i+10)))	// chances decrease towards end of name
+					if (!MakeRandomInt(0, i+9))	// chances decrease towards end of name
 					{
 						rndname[i+1]=rndname[i];
 						dbl=true;
@@ -980,8 +980,8 @@ void Client::ZoneUnavail() {
 
 bool Client::GenPassKey(char* key) {
 	char* passKey=NULL;
-	*passKey += ((char)('A'+((int)(rand()%26))));
-	*passKey += ((char)('A'+((int)(rand()%26))));
+	*passKey += ((char)('A'+((int)MakeRandomInt(0, 25))));
+	*passKey += ((char)('A'+((int)MakeRandomInt(0, 25))));
 	memcpy(key, passKey, strlen(passKey));
 	return true;
 }

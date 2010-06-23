@@ -724,7 +724,7 @@ void Mob::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 				if (acfail>100) acfail=100;
 			}
 
-			if (acfail<=0 || rand()%101>acfail) {
+			if (acfail<=0 || MakeRandomInt(0, 100)>acfail) {
 				float acreduction=1;
 				int acrandom=300;
 				if (database.GetVariable("ACreduction", tmp, 9))

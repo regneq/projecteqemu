@@ -175,8 +175,8 @@ void Mob::CalculateNewFearpoint()
 	{
 		int ran = 250 - (loop*2);
 		loop++;
-		ranx = GetX()+rand()%ran-rand()%ran;
-		rany = GetY()+rand()%ran-rand()%ran;
+		ranx = GetX()+MakeRandomInt(0, ran-1)-MakeRandomInt(0, ran-1);
+		rany = GetY()+MakeRandomInt(0, ran-1)-MakeRandomInt(0, ran-1);
 		ranz = FindGroundZ(ranx,rany);
 		if (ranz == -999999)
 			continue;
