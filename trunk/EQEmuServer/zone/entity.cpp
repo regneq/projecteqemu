@@ -3940,15 +3940,15 @@ void EntityList::SendNimbusEffects(Client *c)
 			}
 			if(cur->GetNimbusEffect1() != 0)
 			{
-				cur->SendSpellEffect(cur->GetNimbusEffect1(), 1, 0, 1, 3000, 0, c);
+				cur->SendSpellEffect(cur->GetNimbusEffect1(), 1000, 0, 1, 3000, false, c);
 			}
 			if(cur->GetNimbusEffect2() != 0)
 			{
-				cur->SendSpellEffect(cur->GetNimbusEffect2(), 1, 0, 1, 3000, 0, c);
+				cur->SendSpellEffect(cur->GetNimbusEffect2(), 2000, 0, 1, 3000, false, c);
 			}
 			if(cur->GetNimbusEffect3() != 0)
 			{
-				cur->SendSpellEffect(cur->GetNimbusEffect3(), 1, 0, 1, 3000, 0, c);
+				cur->SendSpellEffect(cur->GetNimbusEffect3(), 3000, 0, 1, 3000, false, c);
 			}
 		}
 		iterator.Advance();
