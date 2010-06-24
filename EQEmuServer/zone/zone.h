@@ -277,6 +277,7 @@ private:
 	Timer*  Weather_Timer;
 	Timer*	Instance_Timer;
 	Timer*	Instance_Shutdown_Timer;
+	Timer*  Instance_Warning_timer;
 	LinkedList<ZoneClientAuth_Struct*> client_auth_list;
 	QGlobalCache *qGlobals;
 	

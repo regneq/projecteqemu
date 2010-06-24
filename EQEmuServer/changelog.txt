@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==06/23/2010==
+KLS: Instances can use spawn conditions now, requires SQL change in required sql folder.  Also updating will wipe all current spawn condition variables so you'll want to make sure they're set in the new table. (ps instance_id=0 for base zones!)
+KLS: Added expedition expire warning to dynamic zones that aren't LDoNs, requires conf change for SoF/SoD.
+
 ==06/22/2010==
 gaeorn: replaced calls to rand() with calls to MakeRandomInt()
 

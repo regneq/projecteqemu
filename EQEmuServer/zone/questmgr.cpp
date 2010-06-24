@@ -1433,13 +1433,13 @@ void QuestManager::pathto(float x, float y, float z) {
 }
 
 //change the value of a spawn condition
-void QuestManager::spawn_condition(const char *zone_short, uint16 condition_id, short new_value) {
-	zone->spawn_conditions.SetCondition(zone_short, condition_id, new_value);
+void QuestManager::spawn_condition(const char *zone_short, uint32 instance_id, uint16 condition_id, short new_value) {
+	zone->spawn_conditions.SetCondition(zone_short, instance_id, condition_id, new_value);
 }
 
 //get the value of a spawn condition
-short QuestManager::get_spawn_condition(const char *zone_short, uint16 condition_id) {
-	return(zone->spawn_conditions.GetCondition(zone_short, condition_id));
+short QuestManager::get_spawn_condition(const char *zone_short, uint32 instance_id, uint16 condition_id) {
+	return(zone->spawn_conditions.GetCondition(zone_short, instance_id, condition_id));
 }
 
 //toggle a spawn event

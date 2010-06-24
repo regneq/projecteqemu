@@ -1800,6 +1800,14 @@ ENCODE(OP_DeleteSpawn) {
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_DzExpeditionEndsWarning)
+{
+	ENCODE_LENGTH_EXACT(ExpeditionExpireWarning);
+	SETUP_DIRECT_ENCODE(ExpeditionExpireWarning, structs::ExpeditionExpireWarning);
+	OUT(minutes_remaining);
+	FINISH_ENCODE();
+}
+
 DECODE(OP_InspectAnswer) {
 	DECODE_LENGTH_EXACT(structs::InspectResponse_Struct);
 	SETUP_DIRECT_DECODE(InspectResponse_Struct, structs::InspectResponse_Struct);

@@ -830,6 +830,7 @@ Zone::Zone(int32 in_zoneid, int32 in_instanceid, const char* in_short_name)
 	}
 	adv_data = NULL;
 	map_name = NULL;
+	Instance_Warning_timer = NULL;
 	did_adventure_actions = false;
 	database.QGlobalPurge();
 
@@ -858,6 +859,7 @@ Zone::~Zone() {
 	
 	safe_delete(Instance_Timer);
 	safe_delete(Instance_Shutdown_Timer);
+	safe_delete(Instance_Warning_timer);
 	safe_delete(qGlobals);
 	safe_delete_array(adv_data);
 	safe_delete_array(map_name);
@@ -881,16 +883,9 @@ Zone::~Zone() {
 bool Zone::Init(bool iStaticZone) {
 	SetStaticZone(iStaticZone);
 	
-	//load up our spawn conditions before any spawn data, since the spawn
-	//data needs access to the spawn conditions to do its thing.
-	//Because the spawn conditions system isn't compatible with instances atm we wont load if we're
-	//an instanced zone but it's something I'll revisit.
-	if(GetInstanceID() == 0)
-	{
-		LogFile->write(EQEMuLog::Status, "Loading spawn conditions...");
-		if(!spawn_conditions.LoadSpawnConditions(short_name)) {
-			LogFile->write(EQEMuLog::Error, "Loading spawn conditions failed, continuing without them.");
-		}
+	LogFile->write(EQEMuLog::Status, "Loading spawn conditions...");
+	if(!spawn_conditions.LoadSpawnConditions(short_name, instanceid)) {
+		LogFile->write(EQEMuLog::Error, "Loading spawn conditions failed, continuing without them.");
 	}
 	
 	LogFile->write(EQEMuLog::Status, "Loading static zone points...");
@@ -1207,6 +1202,33 @@ bool Zone::Process() {
 				entity_list.GateAllClients();
 				database.DeleteInstance(GetInstanceID());
 				Instance_Shutdown_Timer = new Timer(20000); //20 seconds
+			}
+
+			if(adv_data == NULL)
+			{
+				if(Instance_Warning_timer == NULL)
+				{
+					uint32 rem_time = Instance_Timer->GetRemainingTime();
+					if(rem_time < 60000 && rem_time > 55000)
+					{
+						entity_list.ExpeditionWarning(1);
+						Instance_Warning_timer = new Timer(10000);
+					}
+					else if(rem_time < 300000 && rem_time > 295000)
+					{
+						entity_list.ExpeditionWarning(5);
+						Instance_Warning_timer = new Timer(10000);
+					}
+					else if(rem_time < 900000 && rem_time > 895000)
+					{
+						entity_list.ExpeditionWarning(15);
+						Instance_Warning_timer = new Timer(10000);
+					}
+				}
+				else if(Instance_Warning_timer->Check())
+				{
+					safe_delete(Instance_Warning_timer);
+				}
 			}
 		}
 		else if(Instance_Shutdown_Timer != NULL)

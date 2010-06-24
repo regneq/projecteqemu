@@ -27,6 +27,8 @@
 #include "embxs.h"
 #include "entity.h"
 #include "../common/MiscFunctions.h"
+#include "zone.h"
+extern Zone* zone;
 
 /*
 
@@ -1625,15 +1627,26 @@ XS(XS__spawn_condition);
 XS(XS__spawn_condition)
 {
 	dXSARGS;
-	if (items != 3)
-		Perl_croak(aTHX_ "Usage: spawn_condition(zone_short, condition_id, value)");
+	if (items < 3 || items > 4)
+		Perl_croak(aTHX_ "Usage: spawn_condition(zone_short, [instance_id], condition_id, value)");
 
-	char *	zone_short = (char *)SvPV_nolen(ST(0));
-	uint16	cond_id = (int)SvUV(ST(1));
-	sint16	value = (int)SvIV(ST(2));
+	if(items == 3)
+	{
+		char *	zone_short = (char *)SvPV_nolen(ST(0));
+		uint16	cond_id = (int)SvUV(ST(1));
+		sint16	value = (int)SvIV(ST(2));
 
-	quest_manager.spawn_condition(zone_short, cond_id, value);
+		quest_manager.spawn_condition(zone_short, zone->GetInstanceID(), cond_id, value);
+	}
+	else
+	{
+		char *	zone_short = (char *)SvPV_nolen(ST(0));
+		uint32	instance_id = (int)SvUV(ST(1));
+		uint16	cond_id = (int)SvUV(ST(2));
+		sint16	value = (int)SvIV(ST(3));
 
+		quest_manager.spawn_condition(zone_short, instance_id, cond_id, value);
+	}
 	XSRETURN_EMPTY;
 }
 
@@ -1641,19 +1654,36 @@ XS(XS__get_spawn_condition);
 XS(XS__get_spawn_condition)
 {
 	dXSARGS;
-	if (items != 2)
-		Perl_croak(aTHX_ "Usage: get_spawn_condition(zone_short, condition_id)");
+	if (items < 2 || items > 3)
+		Perl_croak(aTHX_ "Usage: get_spawn_condition(zone_short, [instance_id], condition_id)");
 
-	sint16		RETVAL;
-	dXSTARG;
+	if(items == 2)
+	{
+		sint16		RETVAL;
+		dXSTARG;
 
-	char *	zone_short = (char *)SvPV_nolen(ST(0));
-	uint16	cond_id = (int)SvIV(ST(1));
+		char *	zone_short = (char *)SvPV_nolen(ST(0));
+		uint16	cond_id = (int)SvIV(ST(1));
 
-	RETVAL = quest_manager.get_spawn_condition(zone_short, cond_id);
-	XSprePUSH; PUSHu((IV)RETVAL);
+		RETVAL = quest_manager.get_spawn_condition(zone_short, zone->GetInstanceID(), cond_id);
+		XSprePUSH; PUSHu((IV)RETVAL);
 
-	XSRETURN(1);
+		XSRETURN(1);
+	}
+	else
+	{
+		sint16		RETVAL;
+		dXSTARG;
+
+		char *	zone_short = (char *)SvPV_nolen(ST(0));
+		uint16	instance_id = (int)SvIV(ST(1));
+		uint16	cond_id = (int)SvIV(ST(2));
+
+		RETVAL = quest_manager.get_spawn_condition(zone_short, instance_id, cond_id);
+		XSprePUSH; PUSHu((IV)RETVAL);
+
+		XSRETURN(1);
+	}
 }
 
 XS(XS__toggle_spawn_event);

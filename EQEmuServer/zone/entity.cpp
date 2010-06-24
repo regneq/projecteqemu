@@ -4675,3 +4675,19 @@ NPC* EntityList::GetClosestBanker(Mob* sender, uint32 &distance)
 	}
 	return nc;
 }
+
+void EntityList::ExpeditionWarning(uint32 minutes_left)
+{
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_DzExpeditionEndsWarning, sizeof(ExpeditionExpireWarning));
+	ExpeditionExpireWarning *ew = (ExpeditionExpireWarning*)outapp->pBuffer;
+	ew->minutes_remaining = minutes_left;
+
+	LinkedListIterator<Client*> iterator(client_list);
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		iterator.GetData()->Message_StringID(15, 3551, itoa((int)minutes_left));
+		iterator.GetData()->QueuePacket(outapp);
+		iterator.Advance();
+	}
+}

@@ -251,7 +251,7 @@ public:
 	void	DuelMessage(Mob* winner, Mob* loser, bool flee);
 	void    QuestJournalledSayClose(Mob *sender, Client *QuestIntiator, float dist, const char* mobname, const char* message);
 	void	GroupMessage(int32 gid, const char *from, const char *message);
-
+	void	ExpeditionWarning(uint32 minutes_left);
 
 	void    RemoveFromTargets(Mob* mob);
     void    ReplaceWithTarget(Mob* pOldMob, Mob*pNewTarget);

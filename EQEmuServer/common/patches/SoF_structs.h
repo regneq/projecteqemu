@@ -3973,7 +3973,11 @@ struct VeteranReward
 /*012*/	VeteranRewardItem items[8];
 };
 
-
+struct ExpeditionExpireWarning
+{
+/*000*/ uint32 unknown000;
+/*004*/ uint32 minutes_remaining;
+};
 
 	};	//end namespace structs
 };	//end namespace SoF

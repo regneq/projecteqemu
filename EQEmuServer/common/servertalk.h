@@ -663,6 +663,7 @@ struct SimpleName_Struct{
 
 struct ServerSpawnCondition_Struct {
 	int32 zoneID;
+	int32 instanceID;
 	uint16 condition_id;
 	sint16 value;
 };
