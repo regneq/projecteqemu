@@ -1988,16 +1988,18 @@ struct DoorSpawns_Struct {
 /*
  OP Code: 	Op_ClickDoor
  Size:		16
-
- 10/10/2003-Doodman	Filled in struct
 */
 struct ClickDoor_Struct {
-/*000*/	int32	doorid;
+/*000*/	int8	doorid;
+/*001*/	int8	unknown001;		// This may be some type of action setting
+/*002*/	int8	unknown002;		// This is sometimes set after a lever is closed
+/*003*/	int8	unknown003;		// Seen 0
 /*004*/	int8	picklockskill;
 /*005*/	int8	unknown005[3];
 /*008*/ int32	item_id;
 /*012*/ int16	player_id;
 /*014*/ int8	unknown014[2];
+/*016*/
 };
 
 struct MoveDoor_Struct {

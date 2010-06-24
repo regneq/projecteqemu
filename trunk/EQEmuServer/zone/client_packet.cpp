@@ -5723,6 +5723,10 @@ void Client::Handle_OP_ClickDoor(const EQApplicationPacket *app)
 	        return;
 	}
 
+	// clients sometimes respond to door moves with a click door packet with this field set for an unknown reason
+	if(cd->unknown002 > 0)
+		return;
+
 #ifdef EMBPERL
 	char buf[10];
 	snprintf(buf, 9, "%u", cd->doorid);

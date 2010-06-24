@@ -61,7 +61,7 @@ public:
 private:
 	
 	int32	db_id;
-	sint8	door_id;
+	uint8	door_id;
 	char	zone_name[16];
 	char	door_name[32];
 	float	pos_x;
