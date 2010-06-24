@@ -2835,11 +2835,13 @@ void Client::SetHideMe(bool flag)
 		database.SetHideMe(AccountID(),true);
 		CreateDespawnPacket(&app, false);
 		entity_list.RemoveFromTargets(this);
+		trackable = false;
 	}
 	else
 	{
 		database.SetHideMe(AccountID(),false);
 		CreateSpawnPacket(&app);
+		trackable = true;
 	}
 
 	entity_list.QueueClientsStatus(this, &app, true, 0, Admin()-1);
