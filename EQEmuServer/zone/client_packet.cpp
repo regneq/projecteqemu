@@ -7964,6 +7964,10 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 		}
 		if (dbaq->QPT() == 1) {
 			database.GetAccountInfoForLogin_result(result, 0, account_name, &lsaccountid, &gmspeed, &revoked, &gmhideme);
+			if(gmhideme)
+			{
+				trackable = false;
+			}
 		}
 		else if (dbaq->QPT() == 2) {
 			loaditems = database.GetCharacterInfoForLogin_result(result, 0, 0, &m_pp, &m_inv, &m_epp, &pplen, &guild_id, &guildrank, &class_, &level, &LFP, &LFG);
