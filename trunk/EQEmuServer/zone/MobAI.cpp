@@ -1248,10 +1248,10 @@ void Mob::AI_Process() {
 				{
 					int myclass = GetClass();
 					//can only dual wield without a weapon if your a monk
-					if((GetEquipment(MATERIAL_SECONDARY) != 0 && GetLevel() > 39) || myclass == MONK || myclass == MONKGM) {
+					if(SpecAttacks[SPECATK_INNATE_DW] || (GetEquipment(MATERIAL_SECONDARY) != 0 && GetLevel() > 29) || myclass == MONK || myclass == MONKGM) {
 						float DualWieldProbability = (GetSkill(DUAL_WIELD) + GetLevel()) / 400.0f;
-						DualWieldProbability -= MakeRandomFloat(0, 1);
-						if(DualWieldProbability < 0){
+						if(MakeRandomFloat(0.0, 1.0) < DualWieldProbability)
+						{
 							Attack(target, 14);
 							if (CanThisClassDoubleAttack()) 
 							{
@@ -1260,7 +1260,7 @@ void Mob::AI_Process() {
 								{
 									if (Attack(target, 14));
 								}
-							} // if (CanThisClassDoubleAttack())
+							}
 						}
 					}
 				}

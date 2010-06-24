@@ -3973,6 +3973,8 @@ struct VeteranReward
 /*012*/	VeteranRewardItem items[8];
 };
 
+
+
 	};	//end namespace structs
 };	//end namespace SoF
 

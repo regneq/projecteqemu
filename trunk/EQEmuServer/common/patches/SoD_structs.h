@@ -4131,6 +4131,34 @@ struct VeteranReward
 /*012*/	VeteranRewardItem items[8];
 };
 
+struct ExpeditionEntryHeader_Struct
+{
+/*000*/ uint32 unknown000;
+/*000*/ uint32 number_of_entries;
+};
+
+struct ExpeditionJoinPrompt
+{
+/*000*/ uint32 unknown000;
+/*004*/ uint32 unknown004;
+/*008*/ char player_name[64];
+/*072*/ char expedition_name[64];
+};
+
+struct ExpeditionExpireWarning
+{
+/*000*/ uint32 unknown000;
+/*004*/ uint32 unknown004;
+/*008*/ uint32 minutes_remaining;
+};
+
+struct ExpeditionLeaderStatus
+{
+/*000*/ uint32 unknown000;
+/*004*/ uint32 unknown004;
+/*008*/ char leader_name[64];
+};
+
 	};	//end namespace structs
 };	//end namespace SoD
 
