@@ -4409,6 +4409,22 @@ struct HideCorpse_Struct
 /*08*/
 };
 
+struct ExpeditionEntryHeader_Struct
+{
+/*000*/ uint32 number_of_entries;
+};
+
+struct ExpeditionJoinPrompt
+{
+/*000*/ char player_name[64];
+/*064*/ char expedition_name[64];
+};
+
+struct ExpeditionExpireWarning
+{
+/*008*/ uint32 minutes_remaining;
+};
+
 //old structures live here:
 #include "eq_old_structs.h"
 
