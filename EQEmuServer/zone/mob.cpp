@@ -1454,7 +1454,7 @@ void Mob::CameraEffect(uint32 duration, uint32 intensity, Client *c) {
 	safe_delete(outapp);
 }
 
-void Mob::SendSpellEffect(uint32 effectid, int32 duration, int32 finish_delay, bool zone_wide, int32 unk020, int16 unk26, Client *c) {
+void Mob::SendSpellEffect(uint32 effectid, int32 duration, int32 finish_delay, bool zone_wide, int32 unk020, bool perm_effect, Client *c) {
 
 	EQApplicationPacket* outapp = new EQApplicationPacket(OP_SpellEffect, sizeof(SpellEffect_Struct));
 	memset(outapp->pBuffer, 0, sizeof(outapp->pBuffer));
@@ -1467,7 +1467,7 @@ void Mob::SendSpellEffect(uint32 effectid, int32 duration, int32 finish_delay, b
 	se->Unknown020 = unk020;	// Seen 3000
 	se->Unknown024 = 1;		// Seen 1 for SoD
 	se->Unknown025 = 1;		// Seen 1 for Live
-	se->Unknown026 = unk26;		// Seen 1157
+	se->Unknown026 = 0;		// Seen 1157
 	
 	if(c)
 		c->QueuePacket(outapp, false, Client::CLIENT_CONNECTED);
@@ -1477,6 +1477,13 @@ void Mob::SendSpellEffect(uint32 effectid, int32 duration, int32 finish_delay, b
 		entity_list.QueueCloseClients(this, outapp);
 	
 	safe_delete(outapp);
+
+	if (perm_effect) {
+		if(!IsNimbusEffectActive(effectid)) {
+			SetNimbusEffect(effectid);
+		}
+	}
+
 }
 
 void Mob::TempName(const char *newname)
