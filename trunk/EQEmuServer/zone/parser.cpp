@@ -994,7 +994,7 @@ void Parser::ExCommands(string o_command, string parms, int argnums, int32 npcid
 		quest_manager.toggle_spawn_event(atoi(arglist[0]),(atoi(arglist[1])!=0),(atoi(arglist[2])!=0));
 	}
 	else if (!strcmp(command,"spawn_condition")) {
-		quest_manager.spawn_condition(arglist[0], atoi(arglist[1]), atoi(arglist[2]));
+		quest_manager.spawn_condition(arglist[0], 0, atoi(arglist[1]), atoi(arglist[2]));
 	}
 	else if (!strcmp(command,"resume")) {
 		quest_manager.resume();

@@ -589,7 +589,7 @@ void SpawnConditionManager::ExecEvent(SpawnEvent &event, bool send_update) {
 	
 	//now set the condition to the new value
 	if(send_update)	//full blown update
-		SetCondition(zone->GetShortName(), cond.condition_id, new_value);
+		SetCondition(zone->GetShortName(), zone->GetInstanceID(), cond.condition_id, new_value);
 	else	//minor update done while loading
 		cond.value = new_value;
 }
@@ -614,17 +614,15 @@ void SpawnConditionManager::UpdateDBEvent(SpawnEvent &event) {
 	safe_delete_array(query);
 }
 
-void SpawnConditionManager::UpdateDBCondition(const char* zone_name, uint16 cond_id, sint16 value) {
+void SpawnConditionManager::UpdateDBCondition(const char* zone_name, uint32 instance_id, uint16 cond_id, sint16 value) {
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char* query = 0;
 	int len;
 	
 	SpawnCondition cond;
 	len = MakeAnyLenString(&query, 
-	"UPDATE spawn_conditions SET "
-	"value=%d "
-	"WHERE zone='%s' AND id=%d",
-		value, zone_name, cond_id
+		"REPLACE INTO spawn_condition_values (id, value, zone, instance_id) VALUES(%u, %u, '%s', %u)",
+		cond_id, value, zone_name, instance_id
 	);
 	if(!database.RunQuery(query, len, errbuf)) {
 		LogFile->write(EQEMuLog::Error, "Unable to update spawn condition '%s': %s\n", query, errbuf);
@@ -677,7 +675,8 @@ bool SpawnConditionManager::LoadDBEvent(uint32 event_id, SpawnEvent &event, stri
 	return(ret);
 }
 
-bool SpawnConditionManager::LoadSpawnConditions(const char* zone_name) {
+bool SpawnConditionManager::LoadSpawnConditions(const char* zone_name, uint32 instance_id) 
+{
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char* query = 0;
 	MYSQL_RES *result;
@@ -689,13 +688,13 @@ bool SpawnConditionManager::LoadSpawnConditions(const char* zone_name) {
 	
 	//load spawn conditions	
 	SpawnCondition cond;
-	len = MakeAnyLenString(&query, "SELECT id,value,onchange FROM spawn_conditions WHERE zone='%s'", zone_name);
+	len = MakeAnyLenString(&query, "SELECT id, onchange FROM spawn_conditions WHERE zone='%s'", zone_name);
 	if (database.RunQuery(query, len, errbuf, &result)) {
 		safe_delete_array(query);
 		while((row = mysql_fetch_row(result))) {
 			cond.condition_id = atoi(row[0]);
-			cond.value = atoi(row[1]);
-			cond.on_change = (SpawnCondition::OnChange) atoi(row[2]);
+			cond.value = 0;
+			cond.on_change = (SpawnCondition::OnChange) atoi(row[1]);
 			spawn_conditions[cond.condition_id] = cond;
 			
 			_log(SPAWNS__CONDITIONS, "Loaded spawn condition %d with value %d and on_change %d", cond.condition_id, cond.value, cond.on_change);
@@ -704,6 +703,28 @@ bool SpawnConditionManager::LoadSpawnConditions(const char* zone_name) {
 	} else {
 		LogFile->write(EQEMuLog::Error, "Error in LoadSpawnConditions query '%s': %s", query, errbuf);
 		safe_delete_array(query);
+		return false;
+	}
+
+	//load values
+	len = MakeAnyLenString(&query, "SELECT id, value FROM spawn_condition_values WHERE zone='%s' and instance_id=%u", zone_name, instance_id);
+	if (database.RunQuery(query, len, errbuf, &result)) {
+		safe_delete_array(query);
+		while((row = mysql_fetch_row(result))) 
+		{			
+			std::map<uint16, SpawnCondition>::iterator iter = spawn_conditions.find(atoi(row[0]));
+			if(iter != spawn_conditions.end())
+			{
+				iter->second.value = atoi(row[1]);
+			}
+		}
+		mysql_free_result(result);
+	} 
+	else 
+	{
+		LogFile->write(EQEMuLog::Error, "Error in LoadSpawnConditions query '%s': %s", query, errbuf);
+		safe_delete_array(query);
+		spawn_conditions.clear();
 		return false;
 	}
 	
@@ -826,7 +847,8 @@ void SpawnConditionManager::FindNearestEvent() {
 		_log(SPAWNS__CONDITIONS, "Next event determined to be event %d", next_id);
 }
 
-void SpawnConditionManager::SetCondition(const char *zone_short, uint16 condition_id, sint16 new_value, bool world_update) {
+void SpawnConditionManager::SetCondition(const char *zone_short, uint32 instance_id, uint16 condition_id, sint16 new_value, bool world_update) 
+{
 	if(world_update) {
 		//this is an update coming from another zone, they
 		//have allready updated the DB, just need to update our
@@ -854,7 +876,8 @@ void SpawnConditionManager::SetCondition(const char *zone_short, uint16 conditio
 			
 		//now we have to test each spawn point to see if it changed.
 		zone->SpawnConditionChanged(cond, old_value);
-	} else if(!strcasecmp(zone_short, zone->GetShortName())) {
+	} else if(!strcasecmp(zone_short, zone->GetShortName()) && instance_id == zone->GetInstanceID()) 
+	{
 		//this is a local spawn condition, we need to update the DB,
 		//our memory, then notify spawn points of the change.
 		map<uint16, SpawnCondition>::iterator condi;
@@ -876,24 +899,27 @@ void SpawnConditionManager::SetCondition(const char *zone_short, uint16 conditio
 		//set our local value
 		cond.value = new_value;
 		//save it in the DB too
-		UpdateDBCondition(zone_short, condition_id, new_value);
+		UpdateDBCondition(zone_short, instance_id, condition_id, new_value);
 		
 		_log(SPAWNS__CONDITIONS, "Local Condition update requested for %d with value %d", condition_id, new_value);
 			
 		//now we have to test each spawn point to see if it changed.
 		zone->SpawnConditionChanged(cond, old_value);
-	} else {
+	} 
+	else
+	{
 		//this is a remote spawn condition, update the DB and send
 		//an update packet to the zone if its up
 		
 		_log(SPAWNS__CONDITIONS, "Remote spawn condition %d set to %d. Updating DB and notifying world.", condition_id, new_value);
 		
-		UpdateDBCondition(zone_short, condition_id, new_value);
+		UpdateDBCondition(zone_short, instance_id, condition_id, new_value);
 		
 		ServerPacket* pack = new ServerPacket(ServerOP_SpawnCondition, sizeof(ServerSpawnCondition_Struct));
 		ServerSpawnCondition_Struct* ssc = (ServerSpawnCondition_Struct*)pack->pBuffer;
 		
 		ssc->zoneID = database.GetZoneID(zone_short);
+		ssc->instanceID = instance_id;
 		ssc->condition_id = condition_id;
 		ssc->value = new_value;
 		
@@ -1030,12 +1056,14 @@ void SpawnConditionManager::ToggleEvent(uint32 event_id, bool enabled, bool rese
 	safe_delete(pack);
 }
 
-sint16 SpawnConditionManager::GetCondition(const char *zone_short, uint16 condition_id) {
-	if(!strcasecmp(zone_short, zone->GetShortName())) {
+sint16 SpawnConditionManager::GetCondition(const char *zone_short, uint32 instance_id, uint16 condition_id) {
+	if(!strcasecmp(zone_short, zone->GetShortName()) && instance_id == zone->GetInstanceID()) 
+	{
 		//this is a local spawn condition
 		map<uint16, SpawnCondition>::iterator condi;
 		condi = spawn_conditions.find(condition_id);
-		if(condi == spawn_conditions.end()) {
+		if(condi == spawn_conditions.end()) 
+		{
 			_log(SPAWNS__CONDITIONS, "Unable to find local condition %d in Get request.", condition_id);
 			return(0);	//unable to find the spawn condition
 		}
@@ -1054,7 +1082,8 @@ sint16 SpawnConditionManager::GetCondition(const char *zone_short, uint16 condit
 		
 		//load spawn conditions	
 		SpawnCondition cond;
-		len = MakeAnyLenString(&query, "SELECT value FROM spawn_conditions WHERE zone='%s' AND id=%d", zone_short, condition_id);
+		len = MakeAnyLenString(&query, "SELECT value FROM spawn_condition_values WHERE zone='%s' AND instance_id=%u AND id=%d", 
+			zone_short, instance_id, condition_id);
 		if (database.RunQuery(query, len, errbuf, &result)) {
 			safe_delete_array(query);
 			if((row = mysql_fetch_row(result))) {

@@ -2031,6 +2031,14 @@ ENCODE(OP_GroupCancelInvite)
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_DzExpeditionEndsWarning)
+{
+	ENCODE_LENGTH_EXACT(ExpeditionExpireWarning);
+	SETUP_DIRECT_ENCODE(ExpeditionExpireWarning, structs::ExpeditionExpireWarning);
+	OUT(minutes_remaining);
+	FINISH_ENCODE();
+}
+
 ENCODE(OP_GroupUpdate)
 {
 	//_log(NET__ERROR, "OP_GroupUpdate");

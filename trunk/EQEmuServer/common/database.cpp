@@ -2298,32 +2298,17 @@ void Database::DeleteInstance(uint16 instance_id)
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;
 
-	if(RunQuery(query, MakeAnyLenString(&query, "DELETE FROM instance_lockout WHERE id=%u", instance_id), errbuf))
-	{
-		safe_delete_array(query);
-	}
-	else 
-	{
-		safe_delete_array(query);
-	}
+	RunQuery(query, MakeAnyLenString(&query, "DELETE FROM instance_lockout WHERE id=%u", instance_id), errbuf);
+	safe_delete_array(query);
 
-	if(RunQuery(query, MakeAnyLenString(&query, "DELETE FROM instance_lockout_player WHERE id=%u", instance_id), errbuf))
-	{
-		safe_delete_array(query);
-	}
-	else 
-	{
-		safe_delete_array(query);
-	}
+	RunQuery(query, MakeAnyLenString(&query, "DELETE FROM instance_lockout_player WHERE id=%u", instance_id), errbuf);
+	safe_delete_array(query);
 
-	if(RunQuery(query, MakeAnyLenString(&query, "DELETE FROM respawn_times WHERE instance_id=%u", instance_id), errbuf))
-	{
-		safe_delete_array(query);
-	}
-	else 
-	{
-		safe_delete_array(query);
-	}
+	RunQuery(query, MakeAnyLenString(&query, "DELETE FROM respawn_times WHERE instance_id=%u", instance_id), errbuf);
+	safe_delete_array(query);
+
+	RunQuery(query, MakeAnyLenString(&query, "DELETE FROM spawn_condition_values WHERE instance_id=%u", instance_id), errbuf);
+	safe_delete_array(query);
 	BuryCorpsesInInstance(instance_id);
 }
 

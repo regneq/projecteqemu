@@ -134,8 +134,8 @@ public:
 	void showgrid(int gridid);
 	void showpath(float x, float y, float z);
 	void pathto(float x, float y, float z);
-	void spawn_condition(const char *zone_short, uint16 condition_id, short new_value);
-	short get_spawn_condition(const char *zone_short, uint16 condition_id);
+	void spawn_condition(const char *zone_short, uint32 instance_id, uint16 condition_id, short new_value);
+	short get_spawn_condition(const char *zone_short, uint32 instance_id, uint16 condition_id);
 	void toggle_spawn_event(int event_id, bool enable, bool reset_base);
 	bool has_zone_flag(int zone_id);
 	void set_zone_flag(int zone_id);
