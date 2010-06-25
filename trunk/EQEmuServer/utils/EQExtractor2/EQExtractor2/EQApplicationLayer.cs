@@ -63,6 +63,8 @@ namespace EQApplicationLayer
             
             PatchList.Add(new PatchMay122010Decoder());
 
+            PatchList.Add(new PatchTestJune242010Decoder());
+
             //PatchList.Add(new PatchSoD());      // This is just for testing the multi-patch support
         }        
 
