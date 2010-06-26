@@ -17,9 +17,24 @@ namespace EQExtractor2.Patches
             return "Unsupported EQ Client Version.";
         }
 
+        virtual public int ExpectedPPLength()
+        {
+            return 0;
+        }
+
+        virtual public int GetPPZoneIDOffset()
+        {
+            return 0;
+        }
+
+        virtual public string GetPatchConfFileName()
+        {
+            return "";
+        }
+
         virtual public bool UnsupportedVersion()
         {
-            return true;
+            return ExpectedPPLength() == 0;
         }
 
         virtual public bool Init(string ConfDirectory, ref string ErrorMessage)
