@@ -4411,12 +4411,14 @@ struct HideCorpse_Struct
 /*08*/
 };
 
-struct ExpeditionEntryHeader_Struct
+struct ExpeditionInfo_Struct
 {
-/*000*/ uint32 number_of_entries;
+/*000*/ uint32 max_players;
+/*004*/ char expedition_name[128];
+/*132*/ char leader_name[64];
 };
 
-struct ExpeditionJoinPrompt
+struct ExpeditionJoinPrompt_Struct
 {
 /*000*/ char player_name[64];
 /*064*/ char expedition_name[64];
@@ -4425,6 +4427,50 @@ struct ExpeditionJoinPrompt
 struct ExpeditionExpireWarning
 {
 /*008*/ uint32 minutes_remaining;
+};
+
+struct ExpeditionCompassEntry_Struct
+{
+/*000*/ uint32 enabled; //guess
+/*004*/ float y;
+/*008*/ float x;
+/*012*/ float z;
+};
+
+struct ExpeditionCompass_Struct
+{
+/*000*/ uint32 count;
+/*004*/ ExpeditionCompassEntry_Struct entries[0];
+};
+
+struct ExpeditionMemberEntry_Struct
+{
+	char name[64];
+	char status;
+};
+
+struct ExpeditionMemberList_Struct
+{
+/*000*/ uint32 count;
+/*004*/ ExpeditionMemberEntry_Struct entries[0];
+};
+
+struct ExpeditionLockoutEntry_Struct
+{
+/*000*/ uint32 time_left;
+/*004*/ char expedition[128];
+/*132*/ char expedition_event[128];
+};
+
+struct ExpeditionLockoutList_Struct
+{
+/*000*/ uint32 count;
+/*004*/ ExpeditionLockoutEntry_Struct entries[0];
+};
+
+struct ExpeditionLeaderSet_Struct
+{
+/*000*/ char leader_name[64];
 };
 
 //old structures live here:
