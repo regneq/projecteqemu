@@ -24,8 +24,8 @@ namespace EQExtractor2
 
     public partial class EQExtractor2Form1 : Form
     {
-        string Version = "EQExtractor2 Version 2.0.3 SVN";
-        //static PacketManager pm;
+        string Version = "EQExtractor2 Version 2.0.4 SVN";
+
         static int PacketsSeen = 0;
         static long BytesRead = 0;
         static long CaptureFileSize = 0;
@@ -45,9 +45,7 @@ namespace EQExtractor2
             Text = Version;
 
             ConsoleWindow.Items.Add("EQExtractor2 Initialised.");
-                        
-            // Print SharpPcap version
-            string ver = SharpPcap.Version.VersionString;
+
             Log("");
             Log("Instructions:");
             Log("Generate a .pcap file using Wireshark. To do this, park a character in the zone you want to collect in.");
@@ -92,13 +90,11 @@ namespace EQExtractor2
             SharpPcap.OfflinePcapDevice device;
 
             try
-            {
-                // Get an offline device
+            {                
                 string CapFile = InputFileOpenDialog.FileName;
 
                 device = new SharpPcap.OfflinePcapDevice(CapFile);
-
-                // Open the device
+                             
                 device.Open();
             }
             catch
@@ -343,8 +339,7 @@ namespace EQExtractor2
 
                 Log("Finished generating SQL for Ground Spawns and/or Objects.");
             }
-            
-            //EQStreamProcessor.GenerateMerchantSQL(pm, this.WriteSQL);
+                        
             SQLStream.Close();  
         }
 
@@ -378,6 +373,8 @@ namespace EQExtractor2
                 Log("Packets dump in progress...");
 
                 DisableAllControls();
+
+                Application.DoEvents();
 
                 if (StreamProcessor.DumpPackets(PacketDumpFileDialog.FileName))
                     Log("Packets dumped successfully.");
