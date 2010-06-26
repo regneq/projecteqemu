@@ -23,29 +23,32 @@ namespace EQExtractor2.Patches
         // verision's decoder would be created, rather than creating a brand new one based off the base class, unless all of the previous
         // decoder's methods need replacing to support the new patch.
         //
-        private const string Version = "EQ Client Build Date May 12 2010. (Valid up to and including Build Date June 8 2010)";
 
-        private const string PatchConfFile = "patch_May12-2010.conf";
+        override public string GetPatchConfFileName()
+        {
+            return "patch_May12-2010.conf";
+        }
 
-        private const int PPLength = 26632;
+        override public int ExpectedPPLength()
+        {
+            return 26632;
+        }
 
-        private const int PPZoneIDOffset = 19396;
+        public override int GetPPZoneIDOffset()
+        {
+            return 19396;
+        }
 
         override public string GetVersion()
         {
-            return Version;
-        }
-
-        override public bool UnsupportedVersion()
-        {
-            return false;
+            return "EQ Client Build Date May 12 2010. (Valid up to and including Build Date June 8 2010)";
         }
 
         override public bool Init(string ConfDirectory, ref string ErrorMessage)
         {
             OpManager = new OpCodeManager();
 
-            if (!OpManager.Init(ConfDirectory + "\\" + PatchConfFile, ref ErrorMessage))
+            if (!OpManager.Init(ConfDirectory + "\\" + GetPatchConfFileName(), ref ErrorMessage))
                 return false;
 
             return true;
@@ -67,7 +70,7 @@ namespace EQExtractor2.Patches
                 return IdentificationStatus.Tentative;
 
             if ((OpCode == OpManager.OpCodeNameToNumber("OP_PlayerProfile")) && (Direction == PacketDirection.ServerToClient) &&
-                (Size == PPLength))
+                (Size == ExpectedPPLength()))
                 return IdentificationStatus.Yes;
 
             return IdentificationStatus.No;
@@ -83,13 +86,13 @@ namespace EQExtractor2.Patches
             }
             else
             {
-                if (PlayerProfilePacket[0].Length != PPLength)
+                if (PlayerProfilePacket[0].Length != ExpectedPPLength())
                 {
                     return 0;
                 }
             }
 
-            return PPLength;
+            return ExpectedPPLength();
         }
 
         override public UInt16 GetZoneNumber()
@@ -104,13 +107,13 @@ namespace EQExtractor2.Patches
             }
             else
             {
-                if (PlayerProfilePacket[0].Length != PPLength)
+                if (PlayerProfilePacket[0].Length != ExpectedPPLength())
                 {
                     return 0;
                 }
             }
 
-            return BitConverter.ToUInt16(PlayerProfilePacket[0], PPZoneIDOffset);
+            return BitConverter.ToUInt16(PlayerProfilePacket[0], GetPPZoneIDOffset());
         }
 
         override public List<Door> GetDoors()

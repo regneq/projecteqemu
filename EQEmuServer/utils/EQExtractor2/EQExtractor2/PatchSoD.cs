@@ -19,30 +19,31 @@ namespace EQExtractor2.Patches
 {
     class PatchSoD : PatchSpecficDecoder
     {
-        private const string Version = "Seeds of Destruction";
+        override public string GetPatchConfFileName()
+        {
+            return "patch_SoD.conf";
+        }
 
-        private const string PatchConfFile = "patch_SoD.conf";
+        override public int ExpectedPPLength()
+        {
+            return 23488;
+        }
 
-        private const int PPLength = 23488;
-
-        private const int PPZoneIDOffset = 16452;
-
+        public override int GetPPZoneIDOffset()
+        {
+            return 16452;
+        }
 
         override public string GetVersion()
         {
-            return Version;
-        }
-
-        override public bool UnsupportedVersion()
-        {
-            return false;
+            return "Seeds of Destruction";
         }
 
         override public bool Init(string ConfDirectory, ref string ErrorMessage)
         {
             OpManager = new OpCodeManager();
 
-            if (!OpManager.Init(ConfDirectory + "\\" + PatchConfFile, ref ErrorMessage))
+            if (!OpManager.Init(ConfDirectory + "\\" + GetPatchConfFileName(), ref ErrorMessage))
                 return false;
 
             return true;
@@ -54,7 +55,7 @@ namespace EQExtractor2.Patches
                 return IdentificationStatus.Tentative;
 
             if ((OpCode == OpManager.OpCodeNameToNumber("OP_PlayerProfile")) && (Direction == PacketDirection.ServerToClient) &&
-                (Size == PPLength))
+                (Size == ExpectedPPLength()))
                 return IdentificationStatus.Yes;
 
 
@@ -71,13 +72,13 @@ namespace EQExtractor2.Patches
             }
             else
             {
-                if (PlayerProfilePacket[0].Length != PPLength)
+                if (PlayerProfilePacket[0].Length != ExpectedPPLength())
                 {
                     return 0;
                 }
             }
 
-            return PPLength;
+            return ExpectedPPLength();
         }
 
         override public UInt16 GetZoneNumber()
@@ -90,13 +91,13 @@ namespace EQExtractor2.Patches
             }
             else
             {
-                if (PlayerProfilePacket[0].Length != PPLength)
+                if (PlayerProfilePacket[0].Length != ExpectedPPLength())
                 {
                     return 0;
                 }
             }
 
-            return BitConverter.ToUInt16(PlayerProfilePacket[0], PPZoneIDOffset);
+            return BitConverter.ToUInt16(PlayerProfilePacket[0], GetPPZoneIDOffset());
         }
 
         override public List<Door> GetDoors()

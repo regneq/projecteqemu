@@ -1,5 +1,8 @@
 ﻿EQExtractor2 Changelog. All changes since the 1.0 release.
 
+==06/26/2010==
+Derision: Removed the need to duplicate certain methods when deriving a new decoder.
+
 ==06/25/2010==
 Derision: Added support for current Test Server version (only PP length appears to have changed, no OPCode changes).
 
