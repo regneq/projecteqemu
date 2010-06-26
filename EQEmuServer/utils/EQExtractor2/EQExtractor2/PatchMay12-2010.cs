@@ -23,32 +23,24 @@ namespace EQExtractor2.Patches
         // verision's decoder would be created, rather than creating a brand new one based off the base class, unless all of the previous
         // decoder's methods need replacing to support the new patch.
         //
-
-        override public string GetPatchConfFileName()
+        public PatchMay122010Decoder()
         {
-            return "patch_May12-2010.conf";
+            Version = "EQ Client Build Date May 12 2010. (Valid up to and including Build Date June 8 2010)";
+         
+            PatchConfFileName = "patch_May12-2010.conf";
+        
+            ExpectedPPLength = 26632;
+        
+            PPZoneIDOffset = 19396;
         }
 
-        override public int ExpectedPPLength()
-        {
-            return 26632;
-        }
-
-        public override int GetPPZoneIDOffset()
-        {
-            return 19396;
-        }
-
-        override public string GetVersion()
-        {
-            return "EQ Client Build Date May 12 2010. (Valid up to and including Build Date June 8 2010)";
-        }
-
+        
+                
         override public bool Init(string ConfDirectory, ref string ErrorMessage)
         {
             OpManager = new OpCodeManager();
 
-            if (!OpManager.Init(ConfDirectory + "\\" + GetPatchConfFileName(), ref ErrorMessage))
+            if (!OpManager.Init(ConfDirectory + "\\" + PatchConfFileName, ref ErrorMessage))
                 return false;
 
             return true;
@@ -70,7 +62,7 @@ namespace EQExtractor2.Patches
                 return IdentificationStatus.Tentative;
 
             if ((OpCode == OpManager.OpCodeNameToNumber("OP_PlayerProfile")) && (Direction == PacketDirection.ServerToClient) &&
-                (Size == ExpectedPPLength()))
+                (Size == ExpectedPPLength))
                 return IdentificationStatus.Yes;
 
             return IdentificationStatus.No;
@@ -86,13 +78,13 @@ namespace EQExtractor2.Patches
             }
             else
             {
-                if (PlayerProfilePacket[0].Length != ExpectedPPLength())
+                if (PlayerProfilePacket[0].Length != ExpectedPPLength)
                 {
                     return 0;
                 }
             }
 
-            return ExpectedPPLength();
+            return ExpectedPPLength;
         }
 
         override public UInt16 GetZoneNumber()
@@ -107,13 +99,13 @@ namespace EQExtractor2.Patches
             }
             else
             {
-                if (PlayerProfilePacket[0].Length != ExpectedPPLength())
+                if (PlayerProfilePacket[0].Length != ExpectedPPLength)
                 {
                     return 0;
                 }
             }
 
-            return BitConverter.ToUInt16(PlayerProfilePacket[0], GetPPZoneIDOffset());
+            return BitConverter.ToUInt16(PlayerProfilePacket[0], PPZoneIDOffset);
         }
 
         override public List<Door> GetDoors()
@@ -237,8 +229,7 @@ namespace EQExtractor2.Patches
                             string IDFile = Buffer.ReadString(true);
 
                             UInt32 ItemID = Buffer.ReadUInt32();
-
-                            //if (Quantity == -1)
+                                                        
                             mm.AddMerchantItem(MerchantSpawnID, ItemID, ItemName, MerchantSlot, Quantity);
                         }
                     }
@@ -688,7 +679,7 @@ namespace EQExtractor2.Patches
                 // Z is in the top 13 bits of Word1 and the bottom 6 of Word2
 
                 UInt32 ZPart1 = Word1 >> 19;    // ZPart1 now has low order bits of Z in bottom 13 bits
-                UInt32 ZPart2 = Word2 & 0x3F;   // ZPart2 now has low order bits of Z in bottom 6 bits
+                UInt32 ZPart2 = Word2 & 0x3F;   // ZPart2 now has high order bits of Z in bottom 6 bits
 
                 ZPart2 = ZPart2 << 13;
 

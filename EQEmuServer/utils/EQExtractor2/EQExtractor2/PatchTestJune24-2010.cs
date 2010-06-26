@@ -3,26 +3,15 @@
 //
 // 
 
-using System;
-using System.IO;
-using System.Collections.Generic;
-using EQExtractor2.InternalTypes;
-using EQExtractor2.OpCodes;
-using EQPacket;
-using MyUtils;
-
 namespace EQExtractor2.Patches
 {
     class PatchTestJune242010Decoder : PatchMay122010Decoder
-    {        
-        override public int ExpectedPPLength()
+    {
+        public PatchTestJune242010Decoder()
         {
-            return 26640;
-        }
+            Version = "EQ Client Build Date Test Server June 24 2010.";
 
-        override public string GetVersion()
-        {
-            return "EQ Client Build Date Test Server June 24 2010.";
+            ExpectedPPLength = 26640;
         }
     }
 }

@@ -12,29 +12,22 @@ namespace EQExtractor2.Patches
 
     class PatchSpecficDecoder
     {
-        virtual public string GetVersion()
+        public PatchSpecficDecoder()
         {
-            return "Unsupported EQ Client Version.";
+            Version = "Unsupported Client Version";
+            ExpectedPPLength = 0;
+            PPZoneIDOffset = 0;
+            PatchConfFileName = "";
         }
 
-        virtual public int ExpectedPPLength()
+        public string GetVersion()
         {
-            return 0;
+            return Version;
         }
-
-        virtual public int GetPPZoneIDOffset()
-        {
-            return 0;
-        }
-
-        virtual public string GetPatchConfFileName()
-        {
-            return "";
-        }
-
+        
         virtual public bool UnsupportedVersion()
         {
-            return ExpectedPPLength() == 0;
+            return ExpectedPPLength == 0;
         }
 
         virtual public bool Init(string ConfDirectory, ref string ErrorMessage)
@@ -201,5 +194,13 @@ namespace EQExtractor2.Patches
         protected PacketManager Packets;
 
         public OpCodeManager OpManager;
-    }
+
+        protected string Version;
+
+        protected int ExpectedPPLength;
+
+        protected int PPZoneIDOffset;
+
+        protected string PatchConfFileName;
+    }        
 }

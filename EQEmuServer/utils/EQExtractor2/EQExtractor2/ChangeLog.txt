@@ -2,6 +2,7 @@
 
 ==06/26/2010==
 Derision: Removed the need to duplicate certain methods when deriving a new decoder.
+Derision: Moved patch specific variable setting (PPLength, Name etc.) into the decoder constructor
 
 ==06/25/2010==
 Derision: Added support for current Test Server version (only PP length appears to have changed, no OPCode changes).
