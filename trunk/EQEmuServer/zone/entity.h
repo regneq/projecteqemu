@@ -269,6 +269,7 @@ public:
 	void	AEAttack(Mob *attacker, float dist, int Hand = 13, int count = 0);
 	void	AETaunt(Client *caster, float range = 0);
 	void	AESpell(Mob *caster, Mob *center, int16 spell_id, bool affect_caster = true);
+	void	MassGroupBuff(Mob *caster, Mob *center, int16 spell_id, bool affect_caster = true);
 	void	AEBardPulse(Mob *caster, Mob *center, int16 spell_id, bool affect_caster = true);
 	
 	void 	RadialSetLogging(Mob *around, bool enabled, bool clients, bool non_clients, float range = 0);
