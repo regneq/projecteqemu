@@ -240,6 +240,7 @@ bool RegularOpcodeManager::LoadOpcodes(const char *filename, bool report_errors)
 	
 	//dont need to set eq_to_emu cause every element should get a value
 	memset(eq_to_emu, 0, sizeof(EmuOpcode)*MAX_EQ_OPCODE);
+	memset(emu_to_eq, 0, sizeof(uint16)*_maxEmuOpcode);
 	
 	bool ret = LoadOpcodesFile(filename, &s, report_errors);
 	MOpcodes.unlock();
