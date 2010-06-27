@@ -6113,7 +6113,6 @@ XS(XS_Mob_GetHateList)
 			num_entries++;
 			iter++;
 		}
-		printf("num entries in hatelist: %i\n", num_entries);
 	}
 	XSRETURN(num_entries);
 }

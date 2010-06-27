@@ -4304,9 +4304,9 @@ void EntityList::SignalAllClients(int32 data)
 	}
 }
 
-list<Mob*> EntityList::GetMobList()
+void EntityList::GetMobList(list<Mob*> &m_list)
 {
-	list<Mob*> m_list;
+	m_list.clear();
 	LinkedListIterator<Mob*> iterator(mob_list); 
 	iterator.Reset();
 	while(iterator.MoreElements()) 
@@ -4315,12 +4315,11 @@ list<Mob*> EntityList::GetMobList()
 		m_list.push_back(ent);
 		iterator.Advance();
 	}
-	return m_list;
 }
 
-list<NPC*> EntityList::GetNPCList()
+void EntityList::GetNPCList(list<NPC*> &n_list)
 {
-	list<NPC*> n_list;
+	n_list.clear();
 	LinkedListIterator<NPC*> iterator(npc_list); 
 	iterator.Reset();
 	while(iterator.MoreElements()) 
@@ -4329,12 +4328,11 @@ list<NPC*> EntityList::GetNPCList()
 		n_list.push_back(ent);
 		iterator.Advance();
 	}
-	return n_list;
 }
 
-list<Client*> EntityList::GetClientList()
+void EntityList::GetClientList(list<Client*> &c_list)
 {
-	list<Client*> c_list;
+	c_list.clear();
 	LinkedListIterator<Client*> iterator(client_list); 
 	iterator.Reset();
 	while(iterator.MoreElements()) 
@@ -4343,12 +4341,11 @@ list<Client*> EntityList::GetClientList()
 		c_list.push_back(ent);
 		iterator.Advance();
 	}
-	return c_list;
 }
 
-list<Corpse*> EntityList::GetCorpseList()
+void EntityList::GetCorpseList(list<Corpse*> &c_list)
 {
-	list<Corpse*> c_list;
+	c_list.clear();
 	LinkedListIterator<Corpse*> iterator(corpse_list); 
 	iterator.Reset();
 	while(iterator.MoreElements()) 
@@ -4357,7 +4354,6 @@ list<Corpse*> EntityList::GetCorpseList()
 		c_list.push_back(ent);
 		iterator.Advance();
 	}
-	return c_list;
 }
 
 void EntityList::UpdateQGlobal(uint32 qid, QGlobal newGlobal)

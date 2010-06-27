@@ -1182,7 +1182,6 @@ bool Mob::DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_ce
 	SpellTargetType targetType = spells[spell_id].targettype;
 	bodyType mob_body = spell_target ? spell_target->GetBodyType() : BT_Humanoid;
 
-	// seveian 2008-09-23
 	if(IsPlayerIllusionSpell(spell_id)
 		&& spell_target != NULL // null ptr crash safeguard
 		&& !spell_target->IsNPC() // still self only if NPC targetted
@@ -1191,7 +1190,7 @@ bool Mob::DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_ce
 		|| IsRaidGrouped())
 		&& CastToClient()->CheckAAEffect(aaEffectProjectIllusion)){
 			mlog(AA__MESSAGE, "Project Illusion overwrote target caster: %s spell id: %d was ON", GetName(), spell_id);
-			targetType = ST_GroupClient;
+			targetType = ST_GroupClientAndPet;
 	}
 
 	switch (targetType)
@@ -1352,13 +1351,20 @@ bool Mob::DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_ce
 			break;
 		}
 
-// AE spells
 		case ST_AEBard:
 		case ST_AECaster:
 		{
 			spell_target = NULL;
 			ae_center = this;
 			CastAction = AECaster;
+			break;
+		}
+
+		case ST_HateList:
+		{
+			spell_target = NULL;
+			ae_center = this;
+			CastAction = CAHateList;
 			break;
 		}
 
@@ -1391,44 +1397,98 @@ bool Mob::DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_ce
 			CastAction = GroupSpell;
 			break;
 		}
-		case ST_GroupClient:
+		case ST_GroupClientAndPet:
 		{
-			if(!spell_target){
-				mlog(SPELLS__CASTING_ERR, "Spell %d canceled: invalid target (Group: Single Target Client Only)", spell_id);
+			if(!spell_target)
+			{
+				mlog(SPELLS__CASTING_ERR, "Spell %d canceled: invalid target (Group Required: Single Target)", spell_id);
 				Message_StringID(13,SPELL_NEED_TAR);
 				return false;
 			}
-			if(spell_target != this){
-				if(IsClient() && IsGrouped()){
-					Group *g = entity_list.GetGroupByMob(this);
-					if(g && g->IsGroupMember(spell_target) && spell_target != this){
-						CastAction = SingleTarget;
+
+			if(spell_target != this)
+			{
+				if(spell_target == GetPet())
+				{
+					CastAction = SingleTarget;
+				}
+				else if(spell_target = GetOwner())
+				{
+					CastAction = SingleTarget;
+				}
+				else
+				{
+					uint32 group_id_caster = 0;
+					uint32 group_id_target = 0;
+					if(IsClient())
+					{
+						if(IsGrouped())
+						{
+							group_id_caster = GetGroup()->GetID();
+						}
+						else if(IsRaidGrouped())
+						{
+							group_id_caster = GetRaid()->GetID();
+						}
 					}
-					else{
-						mlog(SPELLS__CASTING_ERR, "Spell %d canceled: Attempted to cast a Single Target Group spell on a member not in the group.", spell_id);
+					else if(IsPet())
+					{
+						Mob *owner = GetOwner();
+						if(owner->IsGrouped())
+						{
+							group_id_caster = owner->GetGroup()->GetID();
+						}
+						else if(owner->IsRaidGrouped())
+						{
+							group_id_caster = owner->GetRaid()->GetID();
+						}
+					}
+
+					if(spell_target->IsClient())
+					{
+						if(spell_target->IsGrouped())
+						{
+							group_id_target = spell_target->GetGroup()->GetID();
+						}
+						else if(spell_target->IsRaidGrouped())
+						{
+							group_id_target = spell_target->GetRaid()->GetID();
+						}
+					}
+					else if(spell_target->IsPet())
+					{
+						Mob *owner = spell_target->GetOwner();
+						if(owner->IsGrouped())
+						{
+							group_id_target = owner->GetGroup()->GetID();
+						}
+						else if(owner->IsRaidGrouped())
+						{
+							group_id_target = owner->GetRaid()->GetID();
+						}
+					}
+
+					if(group_id_caster == 0 || group_id_target == 0)
+					{
+						mlog(SPELLS__CASTING_ERR, "Spell %d canceled: Attempted to cast a Single Target Group spell on a ungrouped member.", spell_id);
 						Message_StringID(13, TARGET_GROUP_MEMBER);
 						return false;
 					}
-				}
-				else if(IsClient() && IsRaidGrouped()){
-					Raid *r = entity_list.GetRaidByMob(this);
-					if(r && r->IsRaidMember(spell_target->GetName()) && spell_target != this){
-						CastAction = SingleTarget;
-					}
-					else{
-						mlog(SPELLS__CASTING_ERR, "Spell %d canceled: Attempted to cast a Single Target Group spell on a member not in the raid.", spell_id);
+
+					if(group_id_caster != group_id_target)
+					{
+						mlog(SPELLS__CASTING_ERR, "Spell %d canceled: Attempted to cast a Single Target Group spell on a ungrouped member.", spell_id);
 						Message_StringID(13, TARGET_GROUP_MEMBER);
 						return false;
 					}
-				}
-				else{
-					mlog(SPELLS__CASTING_ERR, "Spell %d canceled: Attempted to cast a Single Target Group spell on a member not in the group.", spell_id);
-					Message_StringID(13, TARGET_GROUP_MEMBER);
-					return false;
+
+					CastAction = SingleTarget;
 				}
 			}
 			else
+			{
 				CastAction = SingleTarget;
+			}
 			break;
 		}		
 
@@ -1554,7 +1614,6 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
 		range = spells[spell_id].aoerange;
 
 	range = GetActSpellRange(spell_id, range);
-// seveian 2008-09-23
 	if(IsPlayerIllusionSpell(spell_id)
 		&& IsClient()
 		&& CastToClient()->CheckAAEffect(aaEffectProjectIllusion)){
@@ -1573,7 +1632,7 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
 	}
 
 	//
-	// solar: Switch #2 - execute the spell
+	// Switch #2 - execute the spell
 	//
 	switch(CastAction)
 	{
@@ -1709,6 +1768,15 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
 						SpellOnTarget(spell_id, spell_target->GetPet());
 	#endif
 				}
+			}
+			break;
+		}
+
+		case CAHateList:
+		{
+			if(!IsClient())
+			{
+				hate_list.SpellCast(this, spell_id, spells[spell_id].range > spells[spell_id].aoerange ? spells[spell_id].range : spells[spell_id].aoerange);
 			}
 			break;
 		}

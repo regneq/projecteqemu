@@ -440,6 +440,7 @@ int HateList::AreaRampage(Mob *caster, Mob *target)
 		return 0;
 
 	int ret = 0;
+	std::list<uint32> id_list;
 	LinkedListIterator<tHateEntry*> iterator(list);
 	iterator.Reset();
 	while (iterator.MoreElements())
@@ -450,13 +451,70 @@ int HateList::AreaRampage(Mob *caster, Mob *target)
 		{
 			if(caster->CombatRange(h->ent))
 			{
-				caster->Attack(h->ent);
+				id_list.push_back(h->ent->GetID());
 				++ret;
 			}
 		}
 	}
+
+	std::list<uint32>::iterator iter = id_list.begin();
+	while(iter != id_list.end())
+	{
+		Mob *cur = entity_list.GetMobID((*iter));
+		if(cur)
+		{
+			caster->Attack(cur);
+		}
+		iter++;
+	}
+
 	return ret;
 }
+
+void HateList::SpellCast(Mob *caster, uint32 spell_id, float range)
+{
+	if(!caster)
+	{
+		return;
+	}
+
+	//this is slower than just iterating through the list but avoids 
+	//crashes when people kick the bucket in the middle of this call
+	//that invalidates our iterator but there's no way to know sadly
+	//So keep a list of entity ids and look up after
+	std::list<uint32> id_list;
+	range = range * range;
+	LinkedListIterator<tHateEntry*> iterator(list);
+	iterator.Reset();
+	while (iterator.MoreElements())
+	{
+		tHateEntry *h = iterator.GetData();
+		if(range > 0)
+		{
+			if(caster->DistNoRoot(*h->ent) <= range)
+			{
+				id_list.push_back(h->ent->GetID());
+			}
+		}
+		else
+		{
+			id_list.push_back(h->ent->GetID());
+		}
+		iterator.Advance();		
+	}
+
+	std::list<uint32>::iterator iter = id_list.begin();
+	while(iter != id_list.end())
+	{
+		Mob *cur = entity_list.GetMobID((*iter));
+		if(cur)
+		{
+			caster->SpellOnTarget(spell_id, cur);
+		}
+		iter++;
+	}
+}
+
 
 void HateList::GetHateList(std::list<tHateEntry*> &h_list)
 {

@@ -1709,7 +1709,8 @@ XS(XS_EntityList_GetMobList)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		std::list<Mob*> mob_list = entity_list.GetMobList();
+		std::list<Mob*> mob_list;
+		entity_list.GetMobList(mob_list);
 		std::list<Mob*>::iterator iter = mob_list.begin();
 
 		while(iter != mob_list.end())
@@ -1745,7 +1746,8 @@ XS(XS_EntityList_GetClientList)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		std::list<Client*> client_list = entity_list.GetClientList();
+		std::list<Client*> client_list;
+		entity_list.GetClientList(client_list);
 		std::list<Client*>::iterator iter = client_list.begin();
 
 		while(iter != client_list.end())
@@ -1781,7 +1783,8 @@ XS(XS_EntityList_GetNPCList)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		std::list<NPC*> npc_list = entity_list.GetNPCList();
+		std::list<NPC*> npc_list;
+		entity_list.GetNPCList(npc_list);
 		std::list<NPC*>::iterator iter = npc_list.begin();
 
 		while(iter != npc_list.end())
@@ -1817,7 +1820,8 @@ XS(XS_EntityList_GetCorpseList)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		std::list<Corpse*> corpse_list = entity_list.GetCorpseList();
+		std::list<Corpse*> corpse_list;
+		entity_list.GetCorpseList(corpse_list);
 		std::list<Corpse*>::iterator iter = corpse_list.begin();
 
 		while(iter != corpse_list.end())

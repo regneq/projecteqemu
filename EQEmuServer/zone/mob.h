@@ -318,6 +318,7 @@ typedef enum {
 	AETarget,			// causes effect in aerange of target + target
 	AECaster,			// causes effect in aerange of 'this'
 	GroupSpell,		// causes effect to caster + target's group
+	CAHateList,		// causes effect to all people on caster's hate list within some range
 	CastActUnknown
 } CastAction_type;
 

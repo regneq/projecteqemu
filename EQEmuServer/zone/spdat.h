@@ -87,31 +87,38 @@ enum RESISTTYPE
 
 //Target Type IDs
 typedef enum {
-  ST_TargetOptional		= 0x01, // Target is used if present, but not required. ex: Flare, Fireworks
-  ST_AECaster			= 0x04, // ae centered around caster
-  ST_Target				= 0x05, // single targetted
-  ST_Self				= 0x06, // self only
-  ST_AETarget			= 0x08, // ae around target
-  ST_AEBard				= 0x28, // ae friendly around self (ae bard song)
-  ST_Group				= 0x29, // group spell
-  ST_GroupTeleport		= 0x03, // EverHood - AND Necro Epic 2 Pet Owners Group (Guardian of Blood Recourse - Spell ID=6316)
-//  ST_AlterPlane		= 0x3,
-  ST_Undead				= 0x0a,
-  ST_Tap				= 0x0d,
-  ST_Pet				= 0x0e,
-  ST_Animal          	= 0x09,
-  ST_Plant				= 0x10,
-  ST_Dragon				= 0x12,
-  ST_Giant				= 0x11,
-//  ST_Unknown1			= 0x14,
-//  ST_Unknown			= 0x18,
-//  ST_Summoned			= 0x19,
-  ST_Summoned			= 0x0b, // NEOTOKYO: see spells_en.txt -> seems to be value 11 not 25
-  ST_Corpse				= 0x0f,
-  ST_UndeadAE			= 0x18,
-  ST_LDoNChest_Cursed   = 0x22,
-  ST_SummonedPet	= 0x26,
-  ST_GroupClient		= 0x2b,
+	ST_TargetOptional = 0x01,
+	ST_AEClientV1 = 0x02,
+	ST_GroupTeleport = 0x03,
+	ST_AECaster = 0x04,
+	ST_Target = 0x05,
+	ST_Self = 0x06,
+	ST_AETarget = 0x08,
+	ST_Animal = 0x09,
+	ST_Undead = 0x0a,
+	ST_Summoned = 0x0b,
+	ST_Tap = 0x0d,
+	ST_Pet = 0x0e,
+	ST_Corpse = 0x0f,
+	ST_Plant = 0x10,
+	ST_Giant = 0x11, //special giant
+	ST_Dragon = 0x12, //special dragon
+	ST_TargetAETap = 0x14,
+	ST_UndeadAE = 0x18,
+	ST_SummonedAE = 0x19,
+	ST_AECaster2 = 0x20, //ae caster hatelist maybe?
+	ST_HateList = 0x21,
+	ST_LDoNChest_Cursed = 0x22,
+	ST_Muramite = 0x23, //only works on special muramites
+	ST_AreaClientOnly = 0x24,
+	ST_AreaNPCOnly = 0x25,
+	ST_SummonedPet = 0x26,
+	ST_GroupNoPets = 0x27,
+	ST_AEBard = 0x28,
+	ST_Group = 0x29,
+	ST_Directional = 0x2a, //ae around this target between two angles
+	ST_GroupClientAndPet = 0x2b,
+	ST_Beam = 0x2c, //like directional but facing in front of you always
 } SpellTargetType;
 
 typedef enum  {
