@@ -8084,7 +8084,7 @@ bool Bot::DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_ce
 
 
 	// This is so PoK NPC Necro/Shd can create essence emeralds for pc's from perl scripts
-	if(targetType == ST_GroupClient) {
+	if(targetType == ST_GroupClientAndPet) {
 		if(((spell_id == 1768) && (zone->GetZoneID() == 202)) || (!IsDetrimentalSpell(spell_id))) {
 			CastAction = SingleTarget;
 			return true;
