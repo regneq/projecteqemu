@@ -375,7 +375,7 @@ bool Mob::DoCastSpell(int16 spell_id, int16 target_id, int16 slot,
 		mana_cost = GetActSpellCost(spell_id, mana_cost);
 	}
 
-	if(IsClient() && CastToClient()->CheckAAEffect(aaEffectMassGroupBuff) && IsGroupSpell(spell_id))
+	if(IsClient() && CastToClient()->CheckAAEffect(aaEffectMassGroupBuff) && spells[spell_id].can_mgb)
 		mana_cost *= 2;
 	
 	// neotokyo: 19-Nov-02
@@ -1412,7 +1412,7 @@ bool Mob::DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_ce
 				{
 					CastAction = SingleTarget;
 				}
-				else if(spell_target = GetOwner())
+				else if(spell_target == GetOwner())
 				{
 					CastAction = SingleTarget;
 				}
@@ -1717,9 +1717,10 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
 			}
 #endif //BOTS
 
-			if(IsClient() && CastToClient()->CheckAAEffect(aaEffectMassGroupBuff)){
+			if(spells[spell_id].can_mgb && IsClient() && CastToClient()->CheckAAEffect(aaEffectMassGroupBuff))
+			{
 				SpellOnTarget(spell_id, this);
-				entity_list.AESpell(this, this, spell_id, true);
+				entity_list.MassGroupBuff(this, this, spell_id, true);
 				CastToClient()->DisableAAEffect(aaEffectMassGroupBuff);
 			}
 			else

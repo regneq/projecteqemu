@@ -743,21 +743,68 @@ void EntityList::AESpell(Mob *caster, Mob *center, int16 spell_id, bool affect_c
 			if(!center->CheckLosFN(curmob))
 				continue;
 		}
-		else {
-			if(!caster->IsBeneficialAllowed(curmob))
-				continue;
-		}
 
 		//if we get here... cast the spell.
-		if(IsTargetableAESpell(spell_id) && bad) {
+		if(IsTargetableAESpell(spell_id) && bad) 
+		{
 			if(iCounter < MAX_TARGETS_ALLOWED)
+			{
 				caster->SpellOnTarget(spell_id, curmob);
+			}
 		}
 		else
+		{
 			caster->SpellOnTarget(spell_id, curmob);
+		}
 
 		if(!isnpc) //npcs are not target limited...
 			iCounter++;
+	}	
+}
+
+void EntityList::MassGroupBuff(Mob *caster, Mob *center, int16 spell_id, bool affect_caster)
+{
+	LinkedListIterator<Mob*> iterator(mob_list);
+	Mob *curmob;
+	
+	float dist = caster->GetAOERange(spell_id);
+	float dist2 = dist * dist;
+	
+	bool bad = IsDetrimentalSpell(spell_id);
+
+	for(iterator.Reset(); iterator.MoreElements(); iterator.Advance())
+	{
+		curmob = iterator.GetData();
+		if(curmob == center)	//do not affect center
+			continue;
+		if(curmob == caster && !affect_caster)	//watch for caster too
+			continue;
+		if(center->DistNoRoot(*curmob) > dist2)	//make sure they are in range
+			continue;
+
+		//Only npcs mgb should hit are client pets...
+		if(curmob->IsNPC())
+		{
+			Mob *owner = curmob->GetOwner();
+			if(owner)
+			{
+				if(!owner->IsClient())
+				{
+					continue;
+				}
+			}
+			else
+			{
+				continue;
+			}
+		}
+
+		if(bad) 
+		{
+			continue;
+		}
+
+		caster->SpellOnTarget(spell_id, curmob);
 	}	
 }
 
