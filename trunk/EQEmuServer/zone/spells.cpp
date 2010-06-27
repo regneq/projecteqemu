@@ -4682,9 +4682,11 @@ void Mob::SendBuffsToClient(Client *c)
 	if(!c)
 		return;
 
-	EQApplicationPacket *outapp = MakeTargetBuffsPacket();
-
-	c->FastQueuePacket(&outapp);
+	if(c->GetClientVersionBit() & BIT_SoDAndLater)
+	{
+		EQApplicationPacket *outapp = MakeTargetBuffsPacket();
+		c->FastQueuePacket(&outapp);
+	}
 }
 
 EQApplicationPacket *Mob::MakeTargetBuffsPacket()
