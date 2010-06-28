@@ -3984,10 +3984,9 @@ struct ExpeditionExpireWarning
 struct ExpeditionInfo_Struct
 {
 /*000*/ uint32 clientid;
-/*004*/ uint32 unknown004;
-/*008*/ uint32 unknown008;
-/*012*/ uint32 max_players;
-/*016*/ char expedition_name[128];
+/*004*/ uint32 enabled_max;
+/*008*/ uint32 max_players;
+/*012*/ char expedition_name[128];
 /*142*/ char leader_name[64];
 };
 
@@ -4011,9 +4010,8 @@ struct ExpeditionCompass_Struct
 struct ExpeditionJoinPrompt_Struct
 {
 /*000*/ uint32 clientid;
-/*004*/ uint32 unknown004;
-/*008*/ char player_name[64];
-/*072*/ char expedition_name[64];
+/*004*/ char player_name[64];
+/*068*/ char expedition_name[64];
 };
 
 	};	//end namespace structs
