@@ -1052,7 +1052,11 @@ Mob* Bot::GetFirstIncomingMobToMez(Bot* botCaster, BotSpell botSpell) {
 	Mob* result = 0;
 
 	if(botCaster && IsMezSpell(botSpell.SpellId)) {
-		for(std::list<NPC*>::iterator itr = entity_list.GetNPCList().begin(); itr != entity_list.GetNPCList().end(); itr++) {
+
+		std::list<NPC*> npc_list;
+		entity_list.GetNPCList(npc_list);
+
+		for(std::list<NPC*>::iterator itr = npc_list.begin(); itr != npc_list.end(); itr++) {
 			NPC* npc = *itr;
 
 			if(npc->DistNoRootNoZ(*botCaster) <= spells[botSpell.SpellId].range) {
