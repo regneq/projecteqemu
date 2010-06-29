@@ -1057,9 +1057,11 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app)
 		}
 
 #ifdef EMBPERL
-		char buf[24];
-		snprintf(buf, 23, "%d %d", inst->GetItem()->ID, inst->GetCharges());
-		buf[23] = '\0';
+		char buf[88];
+		char corpse_name[64];
+		strcpy(corpse_name, orgname);
+		snprintf(buf, 87, "%d %d %s", inst->GetItem()->ID, inst->GetCharges(), EntityList::RemoveNumbers(corpse_name));
+		buf[87] = '\0';
 		((PerlembParser*)parse)->Event(EVENT_LOOT, 0, buf, (NPC*)NULL, client);
 #endif
 

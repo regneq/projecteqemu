@@ -594,6 +594,7 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 			Seperator *sep = new Seperator(data);
 			ExportVar(packagename.c_str(), "looted_id", sep->arg[0]);
 			ExportVar(packagename.c_str(), "looted_charges", sep->arg[1]);
+			ExportVar(packagename.c_str(), "corpse", sep->arg[2]);
 			safe_delete(sep);
 			break;
 		}
