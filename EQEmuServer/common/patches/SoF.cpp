@@ -1847,7 +1847,7 @@ ENCODE(OP_DzMemberList)
 	{
 		ss.write(emu->entries[i].name, strlen(emu->entries[i].name));
 		ss.write((const char*)&client_id, sizeof(char));
-		ss.write((const char*)&emu->entries[0].status, sizeof(char));
+		ss.write((const char*)&emu->entries[i].status, sizeof(char));
 	}
 	
 	__packet->size = ss.str().length();

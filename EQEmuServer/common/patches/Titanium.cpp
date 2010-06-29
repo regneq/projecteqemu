@@ -994,7 +994,7 @@ ENCODE(OP_DzMemberList)
 	{
 		ss.write(emu->entries[i].name, strlen(emu->entries[i].name));
 		ss.write((const char*)&client_id, sizeof(char));
-		ss.write((const char*)&emu->entries[0].status, sizeof(char));
+		ss.write((const char*)&emu->entries[i].status, sizeof(char));
 	}
 	
 	__packet->size = ss.str().length();
@@ -1051,29 +1051,6 @@ ENCODE(OP_DzLeaderStatus)
 	ss.write((const char*)&client_id, sizeof(uint32));
 	ss.write((const char*)&client_id, sizeof(uint32));//1
 	ss.write((const char*)&client_id, sizeof(uint32));
-	
-	__packet->size = ss.str().length();
-	__packet->pBuffer = new unsigned char[__packet->size];
-	memcpy(__packet->pBuffer, ss.str().c_str(), __packet->size);
-
-	FINISH_ENCODE();
-}
-
-//not right yet
-ENCODE(OP_DzMemberStatus)
-{
-	SETUP_VAR_ENCODE(ExpeditionMemberEntry_Struct);
-	std::stringstream ss(std::stringstream::in | std::stringstream::out | std::stringstream::binary);
-	uint32 client_id = 0;
-
-	client_id = 0;
-	ss.write((const char*)&client_id, sizeof(uint32));
-	client_id = emu->status;
-	ss.write((const char*)&client_id, sizeof(uint32));
-	ss.write(emu->name, strlen(emu->name));
-	char null=0;
-	ss.write((const char*)&null, sizeof(char));
-	ss.write((const char*)&emu->status, sizeof(char));
 	
 	__packet->size = ss.str().length();
 	__packet->pBuffer = new unsigned char[__packet->size];
