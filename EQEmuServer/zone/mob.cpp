@@ -3012,3 +3012,28 @@ void Mob::SetNimbusEffect(uint32 nimbus_effect)
 		nimbus_effect3 = nimbus_effect;
 	}
 }
+
+
+void Mob::TryTriggerOnCast(Mob *target, uint32 spell_id)
+{
+	if(target == NULL || !IsValidSpell(spell_id))
+	{
+		return;
+	}
+
+	uint32 buff_count = GetMaxTotalSlots();
+	for(int i = 0; i < buff_count; i++) 
+	{
+		if(IsEffectInSpell(buffs[i].spellid, SE_TriggerOnCast))
+		{
+			sint32 focus = CalcFocusEffect(focusTriggerOnCast, buffs[i].spellid, spell_id);
+			if(focus == 1)
+			{
+				if(MakeRandomInt(0, 1000) < spells[buffs[i].spellid].base[0])
+				{
+					SpellOnTarget(spells[buffs[i].spellid].base2[0], target);
+				}
+			}
+		}
+	}
+}

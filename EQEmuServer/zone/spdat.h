@@ -618,6 +618,7 @@ struct SPDat_Spell_Struct
 /* 180 */   int			spell_category;
 /* 181 */ int spacing181[4];
 /* 185 */   int			can_mgb;	// 0=no, -1 or 1 = yes
+/* 186 */ int dispel_flag;
 /* 192 */   int			NimbusEffect;
 /* 212 */   bool		AllowRest;
 
