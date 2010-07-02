@@ -71,11 +71,23 @@
 #include <vector>
 #include <string>
 
-/*enum FindSpellType {
-	SPELLTYPE_SELF,
-	SPELLTYPE_OFFENSIVE,
-	SPELLTYPE_OTHER
-};*/
+
+typedef enum {	//focus types
+	focusSpellHaste = 1,
+	focusSpellDuration,
+	focusRange,
+	focusReagentCost,
+	focusManaCost,
+	focusImprovedHeal,
+	focusImprovedDamage,
+	focusImprovedDOT,		//i dont know about this...
+	focusImprovedCritical,
+	focusImprovedUndeadDamage,
+	focusPetPower,
+	focusResistRate,
+	focusSpellHateMod,
+	focusTriggerOnCast,
+} focusType;
 
 enum {
 	SPECATK_NONE = 0,
@@ -751,8 +763,8 @@ bool logpos;
 	EQApplicationPacket *MakeTargetBuffsPacket();
 	void SendBuffsToClient(Client *c);
 
-
 	//effect related
+	sint16 CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id);
 	void SendIllusionPacket(int16 in_race, int8 in_gender = 0xFF, int8 in_texture = 0xFF, int8 in_helmtexture = 0xFF, int8 in_haircolor = 0xFF, int8 in_beardcolor = 0xFF, int8 in_eyecolor1 = 0xFF, int8 in_eyecolor2 = 0xFF, int8 in_hairstyle = 0xFF, int8 in_luclinface = 0xFF, int8 in_beard = 0xFF, int8 in_aa_title = 0xFF, int32 in_drakkin_heritage = 0xFFFFFFFF, int32 in_drakkin_tattoo = 0xFFFFFFFF, int32 in_drakkin_details = 0xFFFFFFFF, float in_size = 0xFFFFFFFF);
 	virtual void Stun(int duration);
 	virtual void UnStun();
@@ -765,6 +777,7 @@ bool logpos;
 	bool PassCharismaCheck(Mob* caster, Mob* spellTarget, int16 spell_id);
 	bool TryDeathSave();
 	void DoBuffWearOffEffect(uint32 index);
+	void TryTriggerOnCast(Mob *target, uint32 spell_id);
 
 	static int32 GetAppearanceValue(EmuAppearance iAppearance);
 	void SendAppearancePacket(int32 type, int32 value, bool WholeZone = true, bool iIgnoreSelf = false, Client *specific_target=NULL);

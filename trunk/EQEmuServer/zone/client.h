@@ -79,22 +79,6 @@ enum {	//Type arguments to the Message* routines.
 	clientMessageWhite3 = 20,
 };
 
-typedef enum {	//focus types
-	focusSpellHaste = 1,
-	focusSpellDuration,
-	focusRange,
-	focusReagentCost,
-	focusManaCost,
-	focusImprovedHeal,
-	focusImprovedDamage,
-	focusImprovedDOT,		//i dont know about this...
-	focusImprovedCritical,
-	focusImprovedUndeadDamage,
-	focusPetPower,
-	focusResistRate,
-	focusSpellHateMod,
-} focusType;
-
 #define SPELLBAR_UNLOCK 0x2bc
 enum {	//scribing argument to MemorizeSpell
 	memSpellScribing = 0,
@@ -993,7 +977,6 @@ protected:
 	bool client_data_loaded;
 
 	sint16	GetFocusEffect(focusType type, int16 spell_id);
-	sint16	CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id);
 
 	bool	MoveItemToInventory(ItemInst *BInst, bool UpdateClient = false);
 

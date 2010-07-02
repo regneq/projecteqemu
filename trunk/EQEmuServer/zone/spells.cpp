@@ -3044,6 +3044,7 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar)
 			}
 		}
 
+	TryTriggerOnCast(spelltar, spell_id);
 
 	if(spell_id == 982)	// Cazic Touch, hehe =P
 	{

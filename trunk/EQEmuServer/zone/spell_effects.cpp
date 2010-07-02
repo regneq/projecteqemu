@@ -930,7 +930,6 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Cancel Magic: %d", effect_value);
 #endif
-				// solar: TODO proper dispel counters, including poison/disease/curse
 				int slot;
 				uint32 buff_count = GetMaxTotalSlots();
 				for(slot = 0; slot < buff_count; slot++)
@@ -941,7 +940,8 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 					if
 					(
 						buffs[slot].spellid != SPELL_UNKNOWN &&
-						buffs[slot].durationformula != DF_Permanent
+						buffs[slot].durationformula != DF_Permanent &&
+						spells[buffs[slot].spellid].dispel_flag < 1
 				    )
 				    {
 						BuffFadeBySlot(slot);
@@ -967,7 +967,8 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 					(
 						buffs[slot].spellid != SPELL_UNKNOWN &&
 						buffs[slot].durationformula != DF_Permanent &&
-				    	IsDetrimentalSpell(buffs[slot].spellid)
+				    	IsDetrimentalSpell(buffs[slot].spellid &&
+						spells[buffs[slot].spellid].dispel_flag < 1)
 					)
 				    {
 						BuffFadeBySlot(slot);
@@ -1914,6 +1915,8 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 							continue;
 						if (buffs[j].poisoncounters == 0)
 							continue;
+						if(spells[buffs[j].spellid].dispel_flag > 0)
+							continue;
 						if (effect_value >= buffs[j].poisoncounters) {
 							if (caster)
 								caster->Message(MT_Spells,"You have cured your target from %s!",spells[buffs[j].spellid].name);
@@ -1945,6 +1948,8 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 						if (buffs[j].spellid >= (int16)SPDAT_RECORDS)
 							continue;
 						if (buffs[j].diseasecounters == 0)
+							continue;
+						if(spells[buffs[j].spellid].dispel_flag > 0)
 							continue;
 						if (effect_value >= buffs[j].diseasecounters)
 						{
@@ -1980,6 +1985,8 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 						if (buffs[j].spellid >= (int16)SPDAT_RECORDS)
 							continue;
 						if (buffs[j].cursecounters == 0)
+							continue;
+						if(spells[buffs[j].spellid].dispel_flag > 0)
 							continue;
 						if (effect_value >= buffs[j].cursecounters)
 						{
@@ -2811,6 +2818,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			case SE_LimitMinLevel:
 			case SE_LimitCastTime:
 			case SE_NoCombatSkills:
+			case SE_TriggerOnCast:
 			{
 				break;
 			}
@@ -3616,7 +3624,7 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 
 //given an item/spell's focus ID and the spell being cast, determine the focus ammount, if any
 //assumes that spell_id is not a bard spell and that both ids are valid spell ids
-sint16 Client::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id) {
+sint16 Mob::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id) {
 
 	const SPDat_Spell_Struct &focus_spell = spells[focus_id];
 	const SPDat_Spell_Struct &spell = spells[spell_id];
@@ -3651,9 +3659,16 @@ sint16 Client::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id) {
 			int lvldiff = (spell.classes[(GetClass()%16) - 1]) - focus_spell.base[i];
 
 			if(lvldiff > 0){ //every level over cap reduces the effect by spell.base2[i] percent
-				lvlModifier -= spell.base2[i]*lvldiff;
-				if(lvlModifier < 1)
+				if(spell.base2[i] > 0)
+				{
+					lvlModifier -= spell.base2[i]*lvldiff;
+					if(lvlModifier < 1)
+						return 0;
+				}
+				else
+				{
 					return 0;
+				}
 			}
 			break;
 		}
@@ -3837,6 +3852,15 @@ sint16 Client::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id) {
 					value = focus_spell.base[i];
 			}
 			break;
+
+		case SE_TriggerOnCast:
+		{
+			if(type == focusTriggerOnCast)
+			{
+				value = 1;
+			}
+			break;
+		}
 #if EQDEBUG >= 6
 		//this spits up a lot of garbage when calculating spell focuses
 		//since they have all kinds of extra effects on them.
