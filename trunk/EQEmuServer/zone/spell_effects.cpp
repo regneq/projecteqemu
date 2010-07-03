@@ -934,14 +934,13 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				uint32 buff_count = GetMaxTotalSlots();
 				for(slot = 0; slot < buff_count; slot++)
 				{
-					if(buffs[slot].diseasecounters || buffs[slot].poisoncounters || buffs[slot].cursecounters) //if we have poison or disease counters then we can't remove this with dispel
+					if(spells[buffs[slot].spellid].dispel_flag > 0)
 						continue;
 
 					if
 					(
 						buffs[slot].spellid != SPELL_UNKNOWN &&
-						buffs[slot].durationformula != DF_Permanent &&
-						spells[buffs[slot].spellid].dispel_flag < 1
+						buffs[slot].durationformula != DF_Permanent
 				    )
 				    {
 						BuffFadeBySlot(slot);
@@ -960,15 +959,14 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				uint32 buff_count = GetMaxTotalSlots();
 				for(slot = 0; slot < buff_count; slot++)
 				{
-					if(buffs[slot].diseasecounters || buffs[slot].poisoncounters || buffs[slot].cursecounters)
+					if(spells[buffs[slot].spellid].dispel_flag > 0)
 						continue;
 
 					if
 					(
 						buffs[slot].spellid != SPELL_UNKNOWN &&
 						buffs[slot].durationformula != DF_Permanent &&
-				    	IsDetrimentalSpell(buffs[slot].spellid &&
-						spells[buffs[slot].spellid].dispel_flag < 1)
+				    	IsDetrimentalSpell(buffs[slot].spellid)
 					)
 				    {
 						BuffFadeBySlot(slot);
@@ -1915,8 +1913,6 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 							continue;
 						if (buffs[j].poisoncounters == 0)
 							continue;
-						if(spells[buffs[j].spellid].dispel_flag > 0)
-							continue;
 						if (effect_value >= buffs[j].poisoncounters) {
 							if (caster)
 								caster->Message(MT_Spells,"You have cured your target from %s!",spells[buffs[j].spellid].name);
@@ -1948,8 +1944,6 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 						if (buffs[j].spellid >= (int16)SPDAT_RECORDS)
 							continue;
 						if (buffs[j].diseasecounters == 0)
-							continue;
-						if(spells[buffs[j].spellid].dispel_flag > 0)
 							continue;
 						if (effect_value >= buffs[j].diseasecounters)
 						{
@@ -1985,8 +1979,6 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 						if (buffs[j].spellid >= (int16)SPDAT_RECORDS)
 							continue;
 						if (buffs[j].cursecounters == 0)
-							continue;
-						if(spells[buffs[j].spellid].dispel_flag > 0)
 							continue;
 						if (effect_value >= buffs[j].cursecounters)
 						{
