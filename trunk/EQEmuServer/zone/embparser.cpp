@@ -17,7 +17,6 @@
 */
 
 //extends the parser to include perl
-//Eglin
 
 #ifndef EMBPARSER_CPP
 #define EMBPARSER_CPP
@@ -82,8 +81,6 @@ PerlembParser::PerlembParser(void) : Parser()
 {
 	perl = NULL;
 	eventQueueProcessing = false;
-	//do not call ReloadQuests here...
-//	ReloadQuests();
 }
 
 PerlembParser::~PerlembParser()
@@ -100,10 +97,6 @@ void PerlembParser::ExportVar(const char * pkgprefix, const char * varname, cons
 	{
 		perl->setstr(std::string(pkgprefix).append("::").append(varname).c_str(), value);
 		//todo: consider replacing ' w/ ", so that values can be expanded on the perl side
-// MYRA - fixed eval in ExportVar per Eglin
-//		perl->eval(std::string("$").append(pkgprefix).append("::").append(varname).append("=q(").append(value).append(");").c_str());
-//end Myra
-
 	}
 	catch(const char * err)
 	{ //todo: consider rethrowing
@@ -177,10 +170,7 @@ void PerlembParser::ExportVarComplex(const char * pkgprefix, const char * varnam
 	try
 	{
 		//todo: consider replacing ' w/ ", so that values can be expanded on the perl side
-// MYRA - fixed eval in ExportVar per Eglin
 		perl->eval(std::string("$").append(pkgprefix).append("::").append(varname).append("=").append(value).append(";").c_str());
-//end Myra
-
 	}
 	catch(const char * err)
 	{ //todo: consider rethrowing
@@ -486,7 +476,6 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 	}
 
 	if (zone) {
-		// SCORPIOUS2K- added variable zoneid
 		ExportVar(packagename.c_str(), "zoneid", zone->GetZoneID());
 		ExportVar(packagename.c_str(), "zoneln", zone->GetLongName());
 		ExportVar(packagename.c_str(), "zonesn", zone->GetShortName());
@@ -500,7 +489,7 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 		ExportVar(packagename.c_str(), "zoneweather", zone->zone_weather);
 	}
 
-// $hasitem - compliments of smogo
+// $hasitem
 #define HASITEM_FIRST 0
 #define HASITEM_LAST 29 // this includes worn plus 8 base slots
 #define HASITEM_ISNULLITEM(item) ((item==-1) || (item==0))
@@ -522,7 +511,7 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 			if(!HASITEM_ISNULLITEM(itemid))
 			{
 				MakeAnyLenString(&hi_decl, "push (@{$%s{%d}},%d);",hashname.c_str(),itemid,slot);
-//Father Nitwit: this is annoying
+// this is annoying
 #if EQDEBUG >= 7
 				LogFile->write(EQEMuLog::Debug, "declare hasitem : %s",hi_decl);
 #endif
@@ -531,7 +520,18 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 			}
 		}
 	}
-
+// $oncursor
+	if(mob && mob->IsClient()) {
+		string hashname = packagename + std::string("::oncursor");
+		perl->eval(std::string("%").append(hashname).append(" = ();").c_str());
+		char *hi_decl = NULL;
+		int itemid = mob->CastToClient()->GetItemIDAt(30);
+		if(!HASITEM_ISNULLITEM(itemid)) {
+			MakeAnyLenString(&hi_decl, "push (@{$%s{%d}},%d);",hashname.c_str(),itemid,30);
+			perl->eval(hi_decl);
+			safe_delete_array(hi_decl);
+		}
+	}
 	//do any event-specific stuff...
 	switch (event) {
 		case EVENT_SAY: {
@@ -543,7 +543,7 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 		}
 		case EVENT_ITEM: {
 			npcmob->FaceTarget(mob);
-			//this is such a hack... why arnt these just set directly..
+			//this is such a hack... why aren't these just set directly..
 			ExportVar(packagename.c_str(), "item1", GetVar("item1", objid).c_str());
 			ExportVar(packagename.c_str(), "item2", GetVar("item2", objid).c_str());
 			ExportVar(packagename.c_str(), "item3", GetVar("item3", objid).c_str());
@@ -775,9 +775,6 @@ int PerlembParser::LoadScript(int npcid, const char * zone, Mob* activater)
 		curmode = questByID;
 
 #ifdef QUEST_SCRIPTS_BYNAME
-		//Father Nitwit's naming hack.
-		//untested on windows...
-
 		//assuming name limit stays 64 chars.
 		char tmpname[64];
 		int count0 = 0;
@@ -1267,16 +1264,13 @@ void PerlembParser::map_funs()
 "sub doanim{push(@cmd_queue,{func=>'doanim',args=>join(',',@_)});}"
 "sub addskill{push(@cmd_queue,{func=>'addskill',args=>join(',',@_)});}"
 "sub me{push(@cmd_queue,{func=>'me',args=>join(',',@_)});}"
-
-"sub permagender{push(@cmd_queue,{func=>'permagender',args=>join(',',@_)});}"//Cofruben:-New perma functions
+"sub permagender{push(@cmd_queue,{func=>'permagender',args=>join(',',@_)});}"
 "sub permarace{push(@cmd_queue,{func=>'permarace',args=>join(',',@_)});}"
 "sub scribespells{push(@cmd_queue,{func=>'scribespells',args=>join(',',@_)});}"
 "sub permaclass{push(@cmd_queue,{func=>'permaclass',args=>join(',',@_)});}"
 "sub surname{push(@cmd_queue,{func=>'surname',args=>join(',',@_)});}"
 "sub addldonpoint{push(@cmd_queue,{func=>'addldonpoint',args=>join(',',@_)});}"
 "sub ding{push(@cmd_queue,{func=>'ding',args=>join(',',@_)});}"
-
-// MYRA - added missing commands + itemlink to perl
 "sub faction{push(@cmd_queue,{func=>'faction',args=>join(',',@_)});}"
 "sub setguild{push(@cmd_queue,{func=>'setguild',args=>join(',',@_)});}"
 "sub rebind{push(@cmd_queue,{func=>'rebind',args=>join(',',@_)});}"
@@ -1292,30 +1286,25 @@ void PerlembParser::map_funs()
 "sub movepc{push(@cmd_queue,{func=>'movepc',args=>join(',',@_)});}"
 "sub gmmove{push(@cmd_queue,{func=>'gmmove',args=>join(',',@_)});}"
 "sub movegrp{push(@cmd_queue,{func=>'movegrp',args=>join(',',@_)});}"
-"sub setlanguage{push(@cmd_queue,{func=>'setlanguage',args=>join(',',@_)});}" // bUsh
-"sub setskill{push(@cmd_queue,{func=>'setskill',args=>join(',',@_)});}" // bUsh
+"sub setlanguage{push(@cmd_queue,{func=>'setlanguage',args=>join(',',@_)});}"
+"sub setskill{push(@cmd_queue,{func=>'setskill',args=>join(',',@_)});}"
 "sub setallskill{push(@cmd_queue,{func=>'setallskill',args=>join(',',@_)});}"
 "sub attack{push(@cmd_queue,{func=>'attack',args=>join(',',@_)});}"
 "sub save{push(@cmd_queue,{func=>'save',args=>join(',',@_)});}"
 "sub linkitem{push(@cmd_queue,{func=>'linkitem',args=>join(',',@_)});}"
-//end Myra
 "sub sethp{push(@cmd_queue,{func=>'sethp',args=>join(',',@_)});}"
 "sub signal{push(@cmd_queue,{func=>'signal',args=>join(',',@_)});}"
-// SCORPIOUS2K - add perl versions qglobal commands
 "sub setglobal{push(@cmd_queue,{func=>'setglobal',args=>join(',',@_)});}"
 "sub targlobal{push(@cmd_queue,{func=>'targlobal',args=>join(',',@_)});}"
 "sub delglobal{push(@cmd_queue,{func=>'delglobal',args=>join(',',@_)});}"
-// event hp
 "sub setnexthpevent{push(@cmd_queue,{func=>'setnexthpevent',args=>join(',',@_)});}"
 "sub setnextinchpevent{push(@cmd_queue,{func=>'setnextinchpevent',args=>join(',',@_)});}"
 "sub respawn{push(@cmd_queue,{func=>'respawn',args=>join(',',@_)});}"
-// new wandering commands
 "sub stop{push(@cmd_queue,{func=>'stop',args=>join(',',@_)});}"
 "sub pause{push(@cmd_queue,{func=>'pause',args=>join(',',@_)});}"
 "sub resume{push(@cmd_queue,{func=>'resume',args=>join(',',@_)});}"
 "sub start{push(@cmd_queue,{func=>'start',args=>join(',',@_)});}"
 "sub moveto{push(@cmd_queue,{func=>'moveto',args=>join(',',@_)});}"
-// add ldon points command
 "sub warp{push(@cmd_queue,{func=>'warp',args=>join(',',@_)});}"
 "sub changedeity{push(@cmd_queue,{func=>'changedeity',args=>join(',',@_)});}"
 "sub addldonpoints{push(@cmd_queue,{func=>'addldonpoints',args=>join(',',@_)});}"
