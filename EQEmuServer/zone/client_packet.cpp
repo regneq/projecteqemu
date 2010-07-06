@@ -3115,7 +3115,7 @@ void Client::Handle_OP_MoveItem(const EQApplicationPacket *app)
 	MoveItem_Struct* mi = (MoveItem_Struct*)app->pBuffer;
 	if(spellend_timer.Enabled() && casting_spell_id && !IsBardSong(casting_spell_id))
 	{
-		if(mi->from_slot != mi->to_slot)
+		if(mi->from_slot != mi->to_slot && IsValidSlot(mi->from_slot) && IsValidSlot(mi->to_slot))
 		{
 			char *detect = NULL;
 			const ItemInst *itm_from = GetInv().GetItem(mi->from_slot);
@@ -3128,6 +3128,7 @@ void Client::Handle_OP_MoveItem(const EQApplicationPacket *app)
 				casting_spell_id);
 			database.SetMQDetectionFlag(AccountName(), GetName(), detect, zone->GetShortName());
 			safe_delete_array(detect);
+			Kick();   // Kick client to prevent client and server from getting out-of-sync inventory slots
 			return;
 		}
 	}

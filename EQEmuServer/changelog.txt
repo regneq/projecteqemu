@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==07/06/2010==
+Trevius: Fix to prevent a potential item loss bug.
+Trevius: Fix for Nimbus Particle Effects to make them appear properly.
+
 ==06/24/2010==
 Trevius: EVENT_CLICKDOOR should now always show the correct door ID from the $doorid export.
 Trevius: Doors with IDs higher than 126 should now work.

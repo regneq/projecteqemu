@@ -824,14 +824,6 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16
 		return;
 	}
 
-	// Set and send the nimbus effect if this spell has one
-	int NimbusEffect = GetNimbusEffect(spell_id);
-	if(NimbusEffect) {
-		if(!IsNimbusEffectActive(NimbusEffect)) {
-			SendSpellEffect(NimbusEffect, 0, 0, 1, 3000, true);
-		}
-	}
-
 	bool bard_song_mode = false;
 	bool regain_conc = false;
 	Mob *spell_target = entity_list.GetMob(target_id);
@@ -1785,6 +1777,14 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
 
 	DoAnim(spells[spell_id].CastingAnim, 0, true, IsClient() ? FILTER_PCSPELLS : FILTER_NPCSPELLS);
 	
+	// Set and send the nimbus effect if this spell has one
+	int NimbusEffect = GetNimbusEffect(spell_id);
+	if(NimbusEffect) {
+		if(!IsNimbusEffectActive(NimbusEffect)) {
+			SendSpellEffect(NimbusEffect, 500, 0, 1, 3000, true);
+		}
+	}
+
 	// if this was a spell slot or an ability use up the mana for it
 	// CastSpell already reduced the cost for it if we're a client with focus
 	if(slot != USE_ITEM_SPELL_SLOT  && slot != POTION_BELT_SPELL_SLOT && mana_used > 0)
