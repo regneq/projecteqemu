@@ -1595,11 +1595,12 @@ void NPC::AI_DoMovement() {
 				{	// are we there yet? then stop
 					mlog(AI__WAYPOINTS, "We have reached waypoint %d (%.3f,%.3f,%.3f) on grid %d", cur_wp, GetX(), GetY(), GetZ(), GetGrid());
 					SetWaypointPause();
-
 					if(GetAppearance() != eaStanding)
 						SetAppearance(eaStanding, false);
-
 					SetMoving(false);
+					if (cur_wp_heading >= 0.0) {
+						SetHeading(cur_wp_heading);
+					}
 					SendPosition();
 					
 					//kick off event_waypoint arrive

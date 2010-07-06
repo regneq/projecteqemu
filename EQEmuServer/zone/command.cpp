@@ -236,8 +236,8 @@ int command_init(void) {
 		command_add("setpass","[accountname] [password] - Set local password for accountname",150,command_setpass) ||
 		command_add("setlsinfo","[email] [password] - Set login server email address and password (if supported by login server)",10,command_setlsinfo) ||
 		command_add("grid","[add/delete] [grid_num] [wandertype] [pausetype] - Create/delete a wandering grid",170,command_grid) ||
-		command_add("wp","[add/delete] [grid_num] [pause] [wp_num] - Add/delete a waypoint to/from a wandering grid",170,command_wp) ||
-		command_add("wpadd","[pause] - Add your current location as a waypoint to your NPC target's AI path",170,command_wpadd) ||
+		command_add("wp","[add/delete] [grid_num] [pause] [wp_num] [-h] - Add/delete a waypoint to/from a wandering grid",170,command_wp) ||
+		command_add("wpadd","[pause] [-h] - Add your current location as a waypoint to your NPC target's AI path",170,command_wpadd) ||
 		command_add("wpinfo","- Show waypoint info about your NPC target",170,command_wpinfo) ||
 		command_add("iplookup","[charname] - Look up IP address of charname",200,command_iplookup) ||
 		command_add("size","[size] - Change size of you or your target",50,command_size) ||
@@ -2433,14 +2433,19 @@ void command_wp(Client *c, const Seperator *sep)
 	int wp = atoi(sep->arg[4]);
 
 	if (strcasecmp("add",sep->arg[1]) == 0) {
-		if (wp == 0) //AndMetal: default to highest if it's left blank, or we enter 0
+		if (wp == 0) //default to highest if it's left blank, or we enter 0
 			wp = database.GetHighestWaypoint(zone->GetZoneID(), atoi(sep->arg[2])) + 1;
-		database.AddWP(c, atoi(sep->arg[2]),wp, c->GetX(), c->GetY(), c->GetZ(), atoi(sep->arg[3]),zone->GetZoneID());
+		if (strcasecmp("-h",sep->arg[5]) == 0) {
+			database.AddWP(c, atoi(sep->arg[2]),wp, c->GetX(), c->GetY(), c->GetZ(), atoi(sep->arg[3]),zone->GetZoneID(), c->GetHeading());
+		}
+		else {
+			database.AddWP(c, atoi(sep->arg[2]),wp, c->GetX(), c->GetY(), c->GetZ(), atoi(sep->arg[3]),zone->GetZoneID(), -1);
+		}
 	}
 	else if (strcasecmp("delete",sep->arg[1]) == 0)
 		database.DeleteWaypoint(c, atoi(sep->arg[2]),wp,zone->GetZoneID());
 	else
-		c->Message(0,"Usage: #wp add/delete grid_num pause wp_num");
+		c->Message(0,"Usage: #wp add/delete grid_num pause wp_num [-h]");
 }
 
 void command_iplookup(Client *c, const Seperator *sep)
@@ -5934,7 +5939,8 @@ void command_wpadd(Client *c, const Seperator *sep)
 {
 	int	type1=0,
 		type2=0,
-		pause=0;	// Defaults for a new grid
+		pause=0,
+		heading=-1;	// Defaults for a new grid
 
 	Mob *t=c->GetTarget();
 	if (t && t->IsNPC())
@@ -5953,16 +5959,18 @@ void command_wpadd(Client *c, const Seperator *sep)
 				pause=atoi(sep->arg[1]);
 			else
 			{
-				c->Message(0,"Usage: #wpadd [pause]");
+				c->Message(0,"Usage: #wpadd [pause] [-h]");
 				return;
 			}
 		}
-		int32 tmp_grid = database.AddWPForSpawn(c, s2info->GetID(), c->GetX(),c->GetY(),c->GetZ(), pause, type1, type2, zone->GetZoneID());
+		if (strcmp("-h",sep->arg[2]) == 0)
+			heading = c->GetHeading();
+		int32 tmp_grid = database.AddWPForSpawn(c, s2info->GetID(), c->GetX(),c->GetY(),c->GetZ(), pause, type1, type2, zone->GetZoneID(), heading);
 		if (tmp_grid)
 			t->CastToNPC()->SetGrid(tmp_grid);
 
  		t->CastToNPC()->AssignWaypoints(t->CastToNPC()->GetGrid());
-		c->Message(0,"Waypoint added. Use #wpinfo to see waypoints for this NPC.");
+		c->Message(0,"Waypoint added. Use #wpinfo to see waypoints for this NPC (may need to #repop first).");
  	}
  	else
 		c->Message(0,"You must target an NPC to use this.");

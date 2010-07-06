@@ -1231,6 +1231,7 @@ protected:
 	float cur_wp_y;
 	float cur_wp_z;
 	int cur_wp_pause;
+	float cur_wp_heading;
 
 	int patrol;
 	float fear_walkto_x;

@@ -74,11 +74,12 @@ void NPC::DisplayWaypointInfo(Client *c) {
 	cur = Waypoints.begin();
 	end = Waypoints.end();
 	for(; cur != end; cur++) {
-		c->Message(0,"Waypoint %d: (%.2f,%.2f,%.2f) pause %d", 
+		c->Message(0,"Waypoint %d: (%.2f,%.2f,%.2f,%.2f) pause %d", 
 				cur->index,
 				cur->x,
 				cur->y,
 				cur->z,
+				cur->heading,
 				cur->pause );
 	}
 }
@@ -202,6 +203,7 @@ void NPC::MoveTo(float mtx, float mty, float mtz, float mth, bool saveguardspot)
 	cur_wp_y = mty;
 	cur_wp_z = mtz;
 	cur_wp_pause = 0;
+	cur_wp_heading = mth;
 }
 
 void NPC::UpdateWaypoint(int wp_index)
@@ -218,7 +220,8 @@ void NPC::UpdateWaypoint(int wp_index)
 	cur_wp_y = cur->y;
 	cur_wp_z = cur->z;
 	cur_wp_pause = cur->pause;
-	mlog(AI__WAYPOINTS, "Next waypoint %d: (%.3f, %.3f, %.3f)", wp_index, cur_wp_x, cur_wp_y, cur_wp_z);
+	cur_wp_heading = cur->heading;
+	mlog(AI__WAYPOINTS, "Next waypoint %d: (%.3f, %.3f, %.3f, %.3f)", wp_index, cur_wp_x, cur_wp_y, cur_wp_z, cur_wp_heading);
 		
 	//fix up pathing Z
 	if(zone->HasMap() && RuleB(Map, FixPathingZAtWaypoints))
@@ -445,7 +448,7 @@ void NPC::SaveGuardSpot(bool iClearGuardSpot) {
 void NPC::NextGuardPosition() {
 	if (!CalculateNewPosition2(guard_x, guard_y, guard_z, GetMovespeed())) {
 		SetHeading(guard_heading);
-		mlog(AI__WAYPOINTS, "Unable to move to next guard position. Prolly rooted.");
+		mlog(AI__WAYPOINTS, "Unable to move to next guard position. Probably rooted.");
 	}
 	else if((x_pos == guard_x) && (y_pos == guard_y) && (z_pos == guard_z))
 	{
@@ -853,7 +856,7 @@ void NPC::AssignWaypoints(int32 grid) {
 	    adverrorinfo = 7561;
 
 	    // Retrieve all waypoints for this grid
-	    if(database.RunQuery(query,MakeAnyLenString(&query,"SELECT `x`,`y`,`z`,`pause` FROM grid_entries WHERE `gridid`=%i AND `zoneid`=%i ORDER BY `number`",grid,zone->GetZoneID()),errbuf,&result))
+	    if(database.RunQuery(query,MakeAnyLenString(&query,"SELECT `x`,`y`,`z`,`pause`,`heading` FROM grid_entries WHERE `gridid`=%i AND `zoneid`=%i ORDER BY `number`",grid,zone->GetZoneID()),errbuf,&result))
 	    {
 	    	roamer = true;
 			max_wp = -1;	// Initialize it; will increment it for each waypoint successfully added to the list
@@ -864,27 +867,28 @@ void NPC::AssignWaypoints(int32 grid) {
 			    if(row[0] != 0 && row[1] != 0 && row[2] != 0 && row[3] != 0)
 			    {
 			    	wplist newwp;
-				newwp.index = ++max_wp;
-				newwp.x = atof(row[0]);
-				newwp.y = atof(row[1]);
-				newwp.z = atof(row[2]);
+					newwp.index = ++max_wp;
+					newwp.x = atof(row[0]);
+					newwp.y = atof(row[1]);
+					newwp.z = atof(row[2]);
 					
-				if(zone->HasMap() && RuleB(Map, FixPathingZWhenLoading) )
-				{
-					if(!RuleB(Watermap, CheckWaypointsInWaterWhenLoading) || !zone->HasWaterMap() ||
-					   (zone->HasWaterMap() && !zone->watermap->InWater(newwp.x, newwp.y, newwp.z)))
+					if(zone->HasMap() && RuleB(Map, FixPathingZWhenLoading) )
 					{
-						VERTEX dest(newwp.x, newwp.y, newwp.z);
+						if(!RuleB(Watermap, CheckWaypointsInWaterWhenLoading) || !zone->HasWaterMap() ||
+						(zone->HasWaterMap() && !zone->watermap->InWater(newwp.x, newwp.y, newwp.z)))
+						{
+							VERTEX dest(newwp.x, newwp.y, newwp.z);
 
-						float newz = zone->zonemap->FindBestZ(MAP_ROOT_NODE, dest, NULL, NULL);
+							float newz = zone->zonemap->FindBestZ(MAP_ROOT_NODE, dest, NULL, NULL);
 
-						if( (newz > -2000) && ABS(newz-dest.z) < RuleR(Map, FixPathingZMaxDeltaLoading))
-							newwp.z = newz + 1;
+							if( (newz > -2000) && ABS(newz-dest.z) < RuleR(Map, FixPathingZMaxDeltaLoading))
+								newwp.z = newz + 1;
+						}
 					}
-				}
 
-				newwp.pause = atoi(row[3]);
-				Waypoints.push_back(newwp);
+					newwp.pause = atoi(row[3]);
+					newwp.heading = atof(row[4]);
+					Waypoints.push_back(newwp);
 			    }
 			}
 			mysql_free_result(result);
@@ -1039,7 +1043,7 @@ bool ZoneDatabase::GetWaypoints(int32 grid, int16 zoneid, int32 num, wplist* wp)
 	char errbuff[MYSQL_ERRMSG_SIZE];
 	MYSQL_RES *result;
 	MYSQL_ROW row;
-	if (RunQuery(query, MakeAnyLenString(&query,"SELECT x, y, z, pause from grid_entries where gridid = %i and number = %i and zoneid = %i",grid,num,zoneid),errbuff,&result)) {
+	if (RunQuery(query, MakeAnyLenString(&query,"SELECT x, y, z, pause, heading from grid_entries where gridid = %i and number = %i and zoneid = %i",grid,num,zoneid),errbuff,&result)) {
 		safe_delete_array(query);
 		if (mysql_num_rows(result) == 1) {
 			row = mysql_fetch_row(result);
@@ -1048,6 +1052,7 @@ bool ZoneDatabase::GetWaypoints(int32 grid, int16 zoneid, int32 num, wplist* wp)
 				wp->y = atof( row[1] );
 				wp->z = atof( row[2] );
 				wp->pause = atoi( row[3] );
+				wp->heading = atof( row[4] );
 			}
 			mysql_free_result(result);
 			return true;
@@ -1071,7 +1076,7 @@ void ZoneDatabase::AssignGrid(Client *client, float x, float y, int32 grid)
 	int32 affected_rows;
 	float dbx = 0, dby = 0;
 
-	// solar: looks like most of the stuff in spawn2 is straight integers
+	// looks like most of the stuff in spawn2 is straight integers
 	// so let's try that first
 	if(!RunQuery(
 		query,
@@ -1210,12 +1215,12 @@ void ZoneDatabase::ModifyGrid(Client *c, bool remove, int32 id, int8 type, int8 
 * AddWP - Adds a new waypoint to a specific grid for a specific zone.
 */
 
-void ZoneDatabase::AddWP(Client *c, int32 gridid, int32 wpnum, float xpos, float ypos, float zpos, int32 pause, int16 zoneid)
+void ZoneDatabase::AddWP(Client *c, int32 gridid, int32 wpnum, float xpos, float ypos, float zpos, int32 pause, int16 zoneid, float heading)
 {   
 	char *query = 0;
 	char errbuf[MYSQL_ERRMSG_SIZE];
 
-	if(!RunQuery(query,MakeAnyLenString(&query,"INSERT INTO grid_entries (gridid,zoneid,`number`,x,y,z,pause) values (%i,%i,%i,%f,%f,%f,%i)",gridid,zoneid,wpnum,xpos,ypos,zpos,pause), errbuf)) {
+	if(!RunQuery(query,MakeAnyLenString(&query,"INSERT INTO grid_entries (gridid,zoneid,`number`,x,y,z,pause,heading) values (%i,%i,%i,%f,%f,%f,%i,%f)",gridid,zoneid,wpnum,xpos,ypos,zpos,pause,heading), errbuf)) {
 		LogFile->write(EQEMuLog::Error, "Error adding waypoint '%s': '%s'", query, errbuf);
 	} else {
 		if(c) c->LogSQL(query);
@@ -1257,7 +1262,7 @@ void ZoneDatabase::DeleteWaypoint(Client *c, int32 grid_num, int32 wp_num, int16
 * the created grid is returned.
 */
 
-int32 ZoneDatabase::AddWPForSpawn(Client *c, int32 spawn2id, float xpos, float ypos, float zpos, int32 pause, int type1, int type2, int16 zoneid) {
+int32 ZoneDatabase::AddWPForSpawn(Client *c, int32 spawn2id, float xpos, float ypos, float zpos, int32 pause, int type1, int type2, int16 zoneid, float heading) {
 	char	*query = 0;
     int32	grid_num,	// The grid number the spawn is assigned to (if spawn has no grid, will be the grid number we end up creating)
 		next_wp_num;	// The waypoint number we should be assigning to the new waypoint
@@ -1329,7 +1334,7 @@ int32 ZoneDatabase::AddWPForSpawn(Client *c, int32 spawn2id, float xpos, float y
 	}
 
 	query = 0;
-	if(!RunQuery(query, MakeAnyLenString(&query,"INSERT INTO grid_entries(gridid,zoneid,`number`,x,y,z,pause) VALUES (%i,%i,%i,%f,%f,%f,%i)",grid_num,zoneid,next_wp_num,xpos,ypos,zpos,pause), errbuf)) {
+	if(!RunQuery(query, MakeAnyLenString(&query,"INSERT INTO grid_entries(gridid,zoneid,`number`,x,y,z,pause,heading) VALUES (%i,%i,%i,%f,%f,%f,%i,%f)",grid_num,zoneid,next_wp_num,xpos,ypos,zpos,pause,heading), errbuf)) {
 		LogFile->write(EQEMuLog::Error, "Error adding grid entry '%s': '%s'", query, errbuf);
 	} else {
 		if(c) c->LogSQL(query);
@@ -1406,9 +1411,3 @@ void NPC::RestoreGuardSpotCharm()
 	guard_z = guard_z_saved;
 	guard_heading = guard_heading_saved;
 }
-
-
-
-
-
-

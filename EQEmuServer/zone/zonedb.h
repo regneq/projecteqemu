@@ -12,6 +12,7 @@ struct wplist {
 	float y;
 	float z;
 	int	  pause;
+	float heading;
 };
 
 #pragma pack(1)
@@ -226,8 +227,8 @@ public:
 	void	DeleteGrid(Client *c, int32 sg2, int32 grid_num, bool grid_too,int16 zoneid);
 	void	DeleteWaypoint(Client *c, int32 grid_num, int32 wp_num,int16 zoneid);
 //	int32	AddWP(Client *c, int32 sg2, int16 grid_num, int8 wp_num, float xpos, float ypos, float zpos, int32 pause, float xpos1, float ypos1, float zpos1, int type1, int type2,int16 zoneid);
-	void	AddWP(Client *c, int32 gridid, int32 wpnum, float xpos, float ypos, float zpos, int32 pause, int16 zoneid);
-	int32	AddWPForSpawn(Client *c, int32 spawn2id, float xpos, float ypos, float zpos, int32 pause, int type1, int type2, int16 zoneid);
+	void	AddWP(Client *c, int32 gridid, int32 wpnum, float xpos, float ypos, float zpos, int32 pause, int16 zoneid, float heading);
+	int32	AddWPForSpawn(Client *c, int32 spawn2id, float xpos, float ypos, float zpos, int32 pause, int type1, int type2, int16 zoneid, float heading);
 	void	ModifyGrid(Client *c, bool remove, int32 id, int8 type = 0, int8 type2 = 0,int16 zoneid = 0);
 	void    ModifyWP(Client *c, int32 grid_id, int32 wp_num, float xpos, float ypos, float zpos, int32 script=0,int16 zoneid =0);
 	int8    GetGridType(int32 grid,int32 zoneid);

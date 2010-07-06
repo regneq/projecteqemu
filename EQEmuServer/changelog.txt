@@ -4,6 +4,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 Trevius: Fix to prevent a potential item loss bug.
 Trevius: Fix for Nimbus Particle Effects to make them appear properly.
 JJ: Added $oncursor as an export to the parser.
+JJ: Added ability for NPCs to use heading in waypoint table. Added option to use heading when adding waypoints in game (-h switch). NPCs will use in-stride heading if the default heading (-1) is used. Optional SQL included in the utils folder.
 
 ==06/24/2010==
 Trevius: EVENT_CLICKDOOR should now always show the correct door ID from the $doorid export.
