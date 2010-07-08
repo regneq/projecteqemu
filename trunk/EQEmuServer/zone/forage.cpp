@@ -99,16 +99,16 @@ int32 ZoneDatabase::GetZoneForage(int32 ZoneID, int8 skill) {
 		item[c] = 0;
 	}
 	
-	int32 csum = 0;
+	int32 chancepool = 0;
 	
 	if (RunQuery(query, MakeAnyLenString(&query, "SELECT itemid,chance FROM forage WHERE zoneid= '%i' and level <= '%i' LIMIT %i", ZoneID, skill, FORAGE_ITEM_LIMIT), errbuf, &result))
 	{
 		safe_delete_array(query);
 		while ((row = mysql_fetch_row(result)) && (index < FORAGE_ITEM_LIMIT)) 	{
 			item[index] = atoi(row[0]);
-			chance[index] = atoi(row[1]);
+			chance[index] = atoi(row[1])+chancepool;
 LogFile->write(EQEMuLog::Error, "Possible Forage: %d with a %d chance", item[index], chance[index]);
-			csum += chance[index];
+			chancepool = chance[index];
 			index++;
 		}
 		
@@ -120,7 +120,7 @@ LogFile->write(EQEMuLog::Error, "Possible Forage: %d with a %d chance", item[ind
 		return 0;
 	}
 	
-	if(csum == 0 || index < 1)
+	if(chancepool == 0 || index < 1)
 		return(0);
 	
 	if(index == 1) {
@@ -128,11 +128,13 @@ LogFile->write(EQEMuLog::Error, "Possible Forage: %d with a %d chance", item[ind
 	}
 	
 	ret = 0;
-	
-	while(ret == 0) {
-		rindex = MakeRandomInt(0, index-1);
-		if(MakeRandomInt(0, 100) < chance[rindex])
-			ret = item[rindex];
+
+	rindex = MakeRandomInt(1, chancepool);
+	for(int i = 0; i < index; i++) {
+		if(rindex <= chance[i]) {
+			ret = item[i];
+			break;
+		}
 	}
 	
 	return ret;

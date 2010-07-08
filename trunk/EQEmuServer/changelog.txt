@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==07/08/2010==
+gaeorn: fixed confusing and likely flawed logic in GetZoneForage()
+
 ==07/06/2010==
 Trevius: Fix to prevent a potential item loss bug.
 Trevius: Fix for Nimbus Particle Effects to make them appear properly.
