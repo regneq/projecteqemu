@@ -4885,7 +4885,7 @@ void Bot::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHel
 	Mob::AddToHateList(other, hate, damage, iYellForHelp, bFrenzy, iBuffTic);
 }
 
-bool Bot::Attack(Mob* other, int Hand, bool FromRiposte) {
+bool Bot::Attack(Mob* other, int Hand, bool FromRiposte, bool IsStrikethrough) {
 	_ZP(Bot_Attack);
 
 	if (!other) {

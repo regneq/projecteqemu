@@ -455,7 +455,7 @@ bool logpos;
 	// abstract methods
 	virtual void Death(Mob* killerMob, sint32 damage, int16 spell_id, SkillType attack_skill) = 0;
 	virtual void Damage(Mob* from, sint32 damage, int16 spell_id, SkillType attack_skill, bool avoidable = true, sint8 buffslot = -1, bool iBuffTic = false) = 0;
-	virtual bool Attack(Mob* other, int Hand = 13, bool FromRiposte = false) = 0;	// 13 = Primary (default), 14 = secondary
+	virtual bool Attack(Mob* other, int Hand = 13, bool FromRiposte = false, bool IsStrikethrough = false) = 0;	// 13 = Primary (default), 14 = secondary
 	virtual bool HasRaid() = 0;
 	virtual bool HasGroup() = 0;
 	virtual Raid* GetRaid() = 0;
