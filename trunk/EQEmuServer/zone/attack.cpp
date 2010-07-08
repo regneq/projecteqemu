@@ -1104,7 +1104,7 @@ int Mob::GetWeaponDamage(Mob *against, const ItemInst *weapon_item, int32 *hate)
 
 //note: throughout this method, setting `damage` to a negative is a way to
 //stop the attack calculations
-bool Client::Attack(Mob* other, int Hand, bool bRiposte)
+bool Client::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough)
 {
 	_ZP(Client_Attack);
 
@@ -1287,10 +1287,10 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte)
 			aaStrikethroughBonus = 6;
 			break;
 		}
-		if (((damage < 0) || slippery_attack) && !bRiposte) { // Hack to still allow Strikethrough chance w/ Slippery Attacks AA
+		if (((damage < 0) || slippery_attack) && !bRiposte && !IsStrikethrough) { // Hack to still allow Strikethrough chance w/ Slippery Attacks AA
 			if(MakeRandomInt(0, 100) < (itembonuses.StrikeThrough + spellbonuses.StrikeThrough + aaStrikethroughBonus)) {
 				Message_StringID(MT_StrikeThrough, STRIKETHROUGH_STRING); // You strike through your opponents defenses!
-				Attack(other, Hand, false); // Strikethrough only gives another attempted hit
+				Attack(other, Hand, false, true); // Strikethrough only gives another attempted hit
 				return false;
 			}
 		}
@@ -1674,7 +1674,7 @@ void Client::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_
 	GoToDeath();
 }
 
-bool NPC::Attack(Mob* other, int Hand, bool bRiposte)	 // Kaiyodo - base function has changed prototype, need to update overloaded version
+bool NPC::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough)	 // Kaiyodo - base function has changed prototype, need to update overloaded version
 {
 	_ZP(NPC_Attack);
 	int damage = 0;
