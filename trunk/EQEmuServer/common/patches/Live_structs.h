@@ -1176,18 +1176,19 @@ struct Action_Struct
  /* 04 */	uint16 level; // level of caster
  /* 06 */	uint16 instrument_mod;	// seems to be fixed to 0x0A
  /* 08 */	uint32 unknown08;
- /* 12 */	uint16 unknown16;
+ /* 12 */	uint32 unknown12;
+ /* 16 */   uint32 unknown16;
 // some kind of sequence that's the same in both actions
 // as well as the combat damage, to tie em together?
- /* 14 */	float sequence;		// was int32
- /* 18 */	uint32 unknown18;
- /* 22 */	int8 type;		// 231 (0xE7) for spells
- /* 23 */	uint32 unknown23;
- /* 27 */	int16 spell;	// spell id being cast
- /* 29 */	int8 level2;	// level of caster again? Or maybe the castee
-// this field seems to be some sort of success flag, if it's 4
- /* 30 */	int8 buff_unknown;	// if this is 4, a buff icon is made
- /* 31 */
+ /* 20 */	float sequence;		// was int32
+ /* 24 */	uint16 unknown24;
+ /* 26 */	int8 type;		// 231 (0xE7) for spells
+ /* 27 */	uint32 unknown27;
+ /* 31 */   uint16 unknown31;
+ /* 33 */	int16 spell;	// spell id being cast
+ /* 35 */	int8 level2;	// level of caster again? Or maybe the castee
+ /* 36 */   int8 buff_unknown;
+ /* 37 */
 };
 
 // Starting with 2/21/2006, OP_Actions seem to come in pairs, duplicating
