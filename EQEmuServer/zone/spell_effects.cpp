@@ -934,13 +934,11 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				uint32 buff_count = GetMaxTotalSlots();
 				for(slot = 0; slot < buff_count; slot++)
 				{
-					if(spells[buffs[slot].spellid].dispel_flag > 0)
-						continue;
-
 					if
 					(
 						buffs[slot].spellid != SPELL_UNKNOWN &&
-						buffs[slot].durationformula != DF_Permanent
+						buffs[slot].durationformula != DF_Permanent &&
+						spells[buffs[slot].spellid].dispel_flag < 1
 				    )
 				    {
 						BuffFadeBySlot(slot);
@@ -959,14 +957,12 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				uint32 buff_count = GetMaxTotalSlots();
 				for(slot = 0; slot < buff_count; slot++)
 				{
-					if(spells[buffs[slot].spellid].dispel_flag > 0)
-						continue;
-
 					if
 					(
 						buffs[slot].spellid != SPELL_UNKNOWN &&
 						buffs[slot].durationformula != DF_Permanent &&
-				    	IsDetrimentalSpell(buffs[slot].spellid)
+				    	IsDetrimentalSpell(buffs[slot].spellid &&
+						spells[buffs[slot].spellid].dispel_flag < 1)
 					)
 				    {
 						BuffFadeBySlot(slot);
