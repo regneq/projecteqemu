@@ -961,8 +961,8 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 					(
 						buffs[slot].spellid != SPELL_UNKNOWN &&
 						buffs[slot].durationformula != DF_Permanent &&
-				    	IsDetrimentalSpell(buffs[slot].spellid &&
-						spells[buffs[slot].spellid].dispel_flag < 1)
+				    	IsDetrimentalSpell(buffs[slot].spellid) &&
+						spells[buffs[slot].spellid].dispel_flag < 1
 					)
 				    {
 						BuffFadeBySlot(slot);
