@@ -535,19 +535,18 @@ struct SpawnAppearance_Struct
 // Size 76 (was 24)
 struct SpellBuff_Struct
 {
-/*000*/	int8 slotid;				//badly named... seems to be 2 for a real buff, 0 otherwise
+/*000*/	int8 slotid;				// badly named... seems to be 2 for a real buff, 0 otherwise
 /*001*/ int8 level;
 /*002*/	int8 bard_modifier;
-/*003*/	int8 effect;				//not real
+/*003*/	int8 effect;				// not real
 /*004*/	uint32 unknown004;			// Seen 1 for no buff
 /*008*/ int32 spellid;
 /*012*/	int32 duration;
 /*016*/ int16 dmg_shield_remaining;	//
-/*018*/ int8 persistant_buff;		//prolly not real
-/*019*/ int8 reserved;				//proll not real
-/*020*/ int32 unknown020;			//
-/*024*/	int32 player_id;			//'global' ID of the caster, for wearoff messages
-/*028*/ uint8 unknown0028[48];
+/*018*/ int8 persistant_buff;		// prolly not real
+/*019*/ int8 reserved;				// proll not real
+/*020*/	int32 player_id;			// 'global' ID of the caster, for wearoff messages
+/*024*/ uint8 unknown0028[52];
 };
 
 // Not functional yet, but this is what the packet looks like on Live
