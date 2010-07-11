@@ -139,6 +139,11 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 	{
 		buffs[buffslot].melee_rune = 0;
 		buffs[buffslot].magic_rune = 0;
+		if(IsClient() && CastToClient()->GetClientVersionBit() & BIT_Live)
+		{
+			EQApplicationPacket *outapp = MakeBuffsPacket(false);
+			CastToClient()->FastQueuePacket(&outapp);
+		}
 	}
 
 	if(IsNPC())
@@ -3599,11 +3604,17 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 	}
 	if((IsClient() && !CastToClient()->GetPVP()) || (IsPet() && GetOwner() && GetOwner()->IsClient() && !GetOwner()->CastToClient()->GetPVP()))
 	{
-		EQApplicationPacket *outapp = MakeTargetBuffsPacket();
+		EQApplicationPacket *outapp = MakeBuffsPacket();
 
 		entity_list.QueueClientsByTarget(this, outapp, true, NULL, true, false, BIT_SoDAndLater);
 
 		safe_delete(outapp);
+	}
+
+	if(IsClient() && CastToClient()->GetClientVersionBit() & BIT_Live)
+	{
+		EQApplicationPacket *outapp = MakeBuffsPacket(false);
+		CastToClient()->FastQueuePacket(&outapp);
 	}
 
 	if (iRecalcBonuses)

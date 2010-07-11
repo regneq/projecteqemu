@@ -1963,7 +1963,7 @@ struct Illusion_Struct {  //size: 256
 /*256*/
 };
 
-struct ZonePoint_Entry { // Size: 28 bytes
+struct ZonePoint_Entry { //28 octets
 /*0000*/	int32	iterator;
 /*0004*/	float	y;
 /*0008*/	float	x;
@@ -1971,7 +1971,7 @@ struct ZonePoint_Entry { // Size: 28 bytes
 /*0016*/	float	heading;
 /*0020*/	int16	zoneid;
 /*0022*/	int16	zoneinstance; // LDoN instance
-/*0024*/	int32	unknown0024; // New to Underfoot - Seen 0
+/*0024*/    uint32  unknown024;
 /*0028*/
 };
 
