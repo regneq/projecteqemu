@@ -760,7 +760,7 @@ bool logpos;
 	inline void SetHasPartialSpellRune(bool hasPartialSpellRune) { m_hasPartialSpellRune = hasPartialSpellRune; }
 	inline bool HasDeathSaveChance() const { return m_hasDeathSaveChance; }
 	inline void SetDeathSaveChance(bool hasDeathSaveChance) { m_hasDeathSaveChance = hasDeathSaveChance; }
-	EQApplicationPacket *MakeTargetBuffsPacket();
+	EQApplicationPacket *MakeBuffsPacket(bool for_target = true);
 	void SendBuffsToClient(Client *c);
 
 	//effect related

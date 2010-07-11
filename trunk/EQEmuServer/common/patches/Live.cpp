@@ -369,13 +369,21 @@ ENCODE(OP_ZoneServerInfo) {
 }
 
 ENCODE(OP_SendZonepoints) {
-	ENCODE_LENGTH_ATLEAST(ZonePoints);
-	
 	SETUP_VAR_ENCODE(ZonePoints);
-	ALLOC_VAR_ENCODE(structs::ZonePoints, __packet->size);
+	ALLOC_VAR_ENCODE(structs::ZonePoints, sizeof(structs::ZonePoints) + sizeof(structs::ZonePoint_Entry) * (emu->count + 1));
 
-	memcpy(eq, emu, __packet->size);
-	
+	eq->count = emu->count;
+	for(int i = 0; i < emu->count; ++i)
+	{
+		eq->zpe[i].iterator = emu->zpe[i].iterator;
+		eq->zpe[i].x = emu->zpe[i].x;
+		eq->zpe[i].y = emu->zpe[i].y;
+		eq->zpe[i].z = emu->zpe[i].z;
+		eq->zpe[i].heading = emu->zpe[i].heading;
+		eq->zpe[i].zoneid = emu->zpe[i].zoneid;
+		eq->zpe[i].zoneinstance = emu->zpe[i].zoneinstance;
+	}
+
 	FINISH_ENCODE();
 }
 
@@ -2419,6 +2427,45 @@ ENCODE(OP_DzJoinExpeditionConfirm)
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_TargetBuffs) {  ENCODE_FORWARD(OP_BuffCreate); }
+ENCODE(OP_BuffCreate)
+{
+	SETUP_VAR_ENCODE(BuffIcon_Struct);
+	std::stringstream ss(std::stringstream::in | std::stringstream::out | std::stringstream::binary);
+
+	uint32 write_var32 = 60;
+	uint8 write_var8 = 1;
+	ss.write((const char*)&emu->entity_id, sizeof(uint32));
+	ss.write((const char*)&write_var32, sizeof(uint32));
+	ss.write((const char*)&write_var8, sizeof(uint8));
+	ss.write((const char*)&emu->count, sizeof(uint16));
+	write_var32 = 0;
+	write_var8 = 0;
+	for(uint16 i = 0; i < emu->count; ++i)
+	{
+		if(emu->entries[i].buff_slot >= 25 && emu->entries[i].buff_slot < 37)
+		{
+			emu->entries[i].buff_slot += 5;
+		}
+		else if(emu->entries[i].buff_slot >= 37)
+		{
+			emu->entries[i].buff_slot += 14;
+		}
+		ss.write((const char*)&emu->entries[i].buff_slot, sizeof(uint32));
+		ss.write((const char*)&emu->entries[i].spell_id, sizeof(uint32));
+		ss.write((const char*)&emu->entries[i].tics_remaining, sizeof(uint32));
+		ss.write((const char*)&write_var32, sizeof(uint32));
+		ss.write((const char*)&write_var8, sizeof(uint8));
+	}
+	ss.write((const char*)&write_var8, sizeof(uint8));
+
+	__packet->size = ss.str().length();
+	__packet->pBuffer = new unsigned char[__packet->size];
+	memcpy(__packet->pBuffer, ss.str().c_str(), __packet->size);
+
+	FINISH_ENCODE();
+}
+
 DECODE(OP_BazaarSearch)
 {
 	char *Buffer = (char *)__packet->pBuffer;
@@ -2527,7 +2574,14 @@ DECODE(OP_CastSpell) {
 	DECODE_LENGTH_EXACT(structs::CastSpell_Struct);
 	SETUP_DIRECT_DECODE(CastSpell_Struct, structs::CastSpell_Struct);
 
-	IN(slot);
+	if(eq->slot == 13)
+	{
+		emu->slot = 10;
+	}
+	else
+	{
+		IN(slot);
+	}
 	IN(spell_id);
 	emu->inventoryslot = LiveToTitaniumSlot(eq->inventoryslot);
 	IN(target_id);

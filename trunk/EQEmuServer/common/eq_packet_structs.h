@@ -4411,6 +4411,20 @@ struct HideCorpse_Struct
 /*08*/
 };
 
+struct BuffIconEntry_Struct
+{
+	uint32 buff_slot;
+	uint32 spell_id;
+	uint32 tics_remaining;
+};
+
+struct BuffIcon_Struct
+{
+	uint32 entity_id;
+	uint32 count;
+	BuffIconEntry_Struct entries[0];
+};
+
 struct ExpeditionInfo_Struct
 {
 /*000*/ uint32 max_players;
