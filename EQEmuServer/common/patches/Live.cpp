@@ -529,17 +529,29 @@ ENCODE(OP_PlayerProfile) {
 	OUT(toxicity);
 	OUT(thirst_level);
 	OUT(hunger_level);
-	for(r = 0; r < structs::BUFF_COUNT; r++) {
-		OUT(buffs[r].slotid);
+	//PS this needs to be figured out more; but it was 'good enough'
+	for(r = 0; r < structs::BUFF_COUNT; r++) 
+	{
+		if(emu->buffs[r].spellid != 0xFFFF && emu->buffs[r].spellid != 0)
+		{
+			eq->buffs[r].unknown004 = 0x3f800000;
+			eq->buffs[r].slotid = 2;
+			eq->buffs[r].unknown020 = 0x000717fd;
+		}
+		else
+		{
+			eq->buffs[r].slotid = 0;
+		}
+		//OUT(buffs[r].slotid);
 		OUT(buffs[r].level);
-		OUT(buffs[r].bard_modifier);
-		OUT(buffs[r].effect);
+		//OUT(buffs[r].bard_modifier);
+		//OUT(buffs[r].effect);
 		OUT(buffs[r].spellid);
 		OUT(buffs[r].duration);
-		OUT(buffs[r].dmg_shield_remaining);
-		OUT(buffs[r].persistant_buff);
-		OUT(buffs[r].reserved);
-		OUT(buffs[r].player_id);
+		//OUT(buffs[r].dmg_shield_remaining);
+		//OUT(buffs[r].persistant_buff);
+		//OUT(buffs[r].reserved);
+		//OUT(buffs[r].player_id);
 	}
 	for(r = 0; r < structs::MAX_PP_DISCIPLINES; r++) {
 		OUT(disciplines.values[r]);
