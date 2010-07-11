@@ -366,32 +366,17 @@ ENCODE(OP_ZoneServerInfo) {
 	OUT_str(ip);
 	OUT(port);
 	FINISH_ENCODE();
-	
-	//this is SUCH bullshit to be doing from down here. but the 
-	// new client requires us to close immediately following this
-	// packet, so do it.
-	//dest->Close();
 }
 
-//hack hack hack
 ENCODE(OP_SendZonepoints) {
 	ENCODE_LENGTH_ATLEAST(ZonePoints);
 	
 	SETUP_VAR_ENCODE(ZonePoints);
 	ALLOC_VAR_ENCODE(structs::ZonePoints, __packet->size);
-	
+
 	memcpy(eq, emu, __packet->size);
 	
 	FINISH_ENCODE();
-//	unknown0xxx[24];
-	//this is utter crap... the client is waiting for this
-	//certain 0 length opcode to come after the reqclientspawn
-	//stuff... so this is a dirty way to put it in there. 
-	// this needs to be done better
-
-	//EQApplicationPacket hack_test(OP_PetitionUnCheckout, 0);
-	//dest->QueuePacket(&hack_test);
-
 }
 
 ENCODE(OP_SendAATable) {
@@ -2887,6 +2872,28 @@ DECODE(OP_LoadSpellSet)
 	for(unsigned int i = 0; i < MAX_PP_MEMSPELL; ++i)
 		emu->spell[i] = eq->spell[i];
 
+	FINISH_DIRECT_DECODE();
+}
+
+DECODE(OP_Damage) {
+	DECODE_LENGTH_EXACT(structs::CombatDamage_Struct);
+	SETUP_DIRECT_DECODE(CombatDamage_Struct, structs::CombatDamage_Struct);
+	IN(target);
+	IN(source);
+	IN(type);
+	IN(spellid);
+	IN(damage);
+	emu->sequence = eq->sequence;
+	FINISH_DIRECT_DECODE();
+}
+
+DECODE(OP_EnvDamage) {
+	DECODE_LENGTH_EXACT(structs::EnvDamage2_Struct);
+	SETUP_DIRECT_DECODE(EnvDamage2_Struct, structs::EnvDamage2_Struct);
+	IN(id);
+	IN(damage);
+	IN(dmgtype);
+	emu->constant = 0xFFFF;
 	FINISH_DIRECT_DECODE();
 }
 

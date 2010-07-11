@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==07/11/2010==
+Trevius: Live - Environmental damage is now functional on this client.
+
 ==07/08/2010==
 gaeorn: fixed confusing and likely flawed logic in GetZoneForage()
 

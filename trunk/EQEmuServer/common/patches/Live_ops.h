@@ -105,6 +105,8 @@ D(OP_ShopPlayerBuy)
 D(OP_BazaarSearch)
 D(OP_LoadSpellSet)
 D(OP_ApplyPoison)
+D(OP_Damage)
+D(OP_EnvDamage)
 D(OP_ChannelMessage)
 #undef E
 #undef D

@@ -1171,52 +1171,56 @@ struct Animation_Struct {
 // also causes a buff icon
 struct Action_Struct
 {
- /* 00 */	int16 target;	// id of target
- /* 02 */	int16 source;	// id of caster
- /* 04 */	uint16 level; // level of caster
- /* 06 */	uint16 instrument_mod;	// seems to be fixed to 0x0A
- /* 08 */	uint32 unknown08;
- /* 12 */	uint32 unknown12;
- /* 16 */   uint32 unknown16;
-// some kind of sequence that's the same in both actions
-// as well as the combat damage, to tie em together?
- /* 20 */	float sequence;		// was int32
- /* 24 */	uint16 unknown24;
- /* 26 */	int8 type;		// 231 (0xE7) for spells
- /* 27 */	uint32 unknown27;
- /* 31 */   uint16 unknown31;
- /* 33 */	int16 spell;	// spell id being cast
- /* 35 */	int8 level2;	// level of caster again? Or maybe the castee
- /* 36 */   int8 buff_unknown;
- /* 37 */
+/*00*/	int16 target;			// id of target
+/*02*/	int16 source;			// id of caster
+/*04*/	uint16 level;			// level of caster - Seen 0
+/*06*/	uint16 instrument_mod;	// Seen 0
+/*08*/	uint16 unknown08;		// Was uint32
+/*10*/	float unknown10;		// New field to Underfoot - Seen 1
+/*14*/	uint32 unknown14;		// Was uint16
+/*18*/	float sequence;
+/*22*/	uint32 unknown22;		// Seen 0
+/*26*/	int8 type;				// 231 (0xE7) for spells
+/*27*/	uint32 damage;
+/*31*/	int16 unknown31;		// New field to Underfoot - Seen 0
+/*33*/	int16 spell;			// spell id being cast
+/*35*/	int8 level2;			// level of caster again? Or maybe the castee
+/*36*/	int8 buff_unknown;		// if this is 4, a buff icon is made
+/*37*/
 };
+
+
 
 // Starting with 2/21/2006, OP_Actions seem to come in pairs, duplicating
 // themselves, with the second one with slightly more information. Maybe this
 // has to do with buff blocking??
-struct ActionAlt_Struct // ActionAlt_Struct - Size: 56 bytes
+struct ActionAlt_Struct
 {
-/*0000*/ uint16 target;                 // Target ID
-/*0002*/ uint16 source;                 // SourceID
-/*0004*/ uint16 level;					// level of caster
-/*0006*/ uint16 instrument_mod;				// seems to be fixed to 0x0A
-/*0008*/ uint32 unknown08;
-/*0012*/ uint16 unknown16;
-/*0014*/ int32 sequence;
-/*0018*/ uint32 unknown18;
-/*0022*/ uint8  type;                   // Casts, Falls, Bashes, etc...
-/*0023*/ int32  damage;                 // Amount of Damage
-/*0027*/ int16  spell;                  // SpellID
-/*0029*/ uint8 unknown29;
-/*0030*/ int8 buff_unknown;				// if this is 4, a buff icon is made
-/*0031*/ uint32 unknown0031;			// seen 00 00 00 00
-/*0035*/ uint8 unknown0035;				// seen 00
-/*0036*/ uint32 unknown0036;			// seen ff ff ff ff
-/*0040*/ uint32 unknown0040;			// seen ff ff ff ff
-/*0044*/ uint32 unknown0044;			// seen ff ff ff ff
-/*0048*/ uint32 unknown0048;			// seen 00 00 00 00
-/*0052*/ uint32 unknown0052;			// seen 00 00 00 00
-/*0056*/
+/*00*/	int16 target;			// id of target
+/*02*/	int16 source;			// id of caster
+/*04*/	uint16 level;			// level of caster - Seen 0
+/*06*/	uint16 instrument_mod;	// Seen 0
+/*08*/	uint16 unknown08;		// Was uint32
+/*10*/	float unknown10;		// New field to Underfoot - Seen 1
+/*14*/	uint32 unknown14;		// Was uint16
+/*18*/	float sequence;
+/*22*/	uint32 unknown22;		// Seen 0
+/*26*/	int8 type;				// 231 (0xE7) for spells
+/*27*/	uint32 damage;
+/*31*/	int16 unknown31;		// New field to Underfoot - Seen 0
+/*33*/	int16 spell;			// spell id being cast
+/*35*/	int8 level2;			// level of caster again? Or maybe the castee
+/*36*/	int8 buff_unknown;		// if this is 4, a buff icon is made
+/*37*/	int32 unknown37;		// New field to Underfoot - Seen 14
+/*41*/	int8 unknown41;			// New field to Underfoot - Seen 0
+/*42*/	int8 unknown42;			// New field to Underfoot - Seen 0
+/*43*/	int8 unknown43;			// New field to Underfoot - Seen 0
+/*44*/	int32 unknown44;		// New field to Underfoot - Seen 23
+/*48*/	int32 unknown48;		// New field to Underfoot - Seen -1
+/*52*/	int32 unknown52;		// New field to Underfoot - Seen -1
+/*56*/	int32 unknown56;		// New field to Underfoot - Seen 0
+/*60*/	int32 unknown60;		// New field to Underfoot - Seen 0
+/*64*/
 };
 
 // solar: this is what prints the You have been struck. and the regular
@@ -1234,6 +1238,7 @@ struct CombatDamage_Struct
 /* 19 */	uint8	unknown19[9];	// was [9]
 /* 28 */
 };
+    
 
 /*
 ** Consider Struct
@@ -1958,7 +1963,7 @@ struct Illusion_Struct {  //size: 256
 /*256*/
 };
 
-struct ZonePoint_Entry { //24 octets
+struct ZonePoint_Entry { // Size: 28 bytes
 /*0000*/	int32	iterator;
 /*0004*/	float	y;
 /*0008*/	float	x;
@@ -1966,6 +1971,8 @@ struct ZonePoint_Entry { //24 octets
 /*0016*/	float	heading;
 /*0020*/	int16	zoneid;
 /*0022*/	int16	zoneinstance; // LDoN instance
+/*0024*/	int32	unknown0024; // New to Underfoot - Seen 0
+/*0028*/
 };
 
 struct ZonePoints {
@@ -2496,22 +2503,23 @@ struct SetRunMode_Struct {
 	int8 unknown[3];
 };
 
-//EnvDamage is EnvDamage2 without a few bytes at the end.
-
+// EnvDamage is EnvDamage2 without a few bytes at the end.
+// Size: 37 bytes
 struct EnvDamage2_Struct {
 /*0000*/	int32 id;
 /*0004*/	int16 unknown4;
 /*0006*/	int32 damage;
-/*0010*/	int8 unknown10[12];
-/*0022*/	int8 dmgtype; //FA = Lava; FC = Falling
-/*0023*/	int8 unknown2[4];
-/*0027*/	int16 constant; //Always FFFF
-/*0029*/	int16 unknown29;
+/*0010*/	float unknown10;	// New to Underfoot - Seen 1
+/*0014*/	int8 unknown14[12];
+/*0026*/	int8 dmgtype;		// FA = Lava; FC = Falling
+/*0027*/	int8 unknown27[4];
+/*0031*/	int16 unknown31;	// New to Underfoot - Seen 66
+/*0033*/	int16 constant;		// Always FFFF
+/*0035*/	int16 unknown35;
+/*0037*/
 };
 
-
-//Bazaar Stuff =D
-//
+//Bazaar Stuff
 
 enum {
 	BazaarTrader_StartTraderMode = 1,
