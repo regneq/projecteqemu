@@ -539,7 +539,7 @@ struct SpellBuff_Struct
 /*001*/ int8 level;
 /*002*/	int8 bard_modifier;
 /*003*/	int8 effect;				//not real
-/*004*/	float unknown004;			// Seen 1 for no buff
+/*004*/	uint32 unknown004;			// Seen 1 for no buff
 /*008*/ int32 spellid;
 /*012*/	int32 duration;
 /*016*/ int16 dmg_shield_remaining;	//

@@ -8874,6 +8874,12 @@ void Client::CompleteConnect()
 	strcpy((char*)pack->pBuffer, GetName());
 	worldserver.SendPacket(pack);
 	delete pack;
+
+	if(IsClient() && CastToClient()->GetClientVersionBit() & BIT_Live)
+	{
+		EQApplicationPacket *outapp = MakeBuffsPacket(false);
+		CastToClient()->FastQueuePacket(&outapp);
+	}
 }
 
 void Client::Handle_OP_KeyRing(const EQApplicationPacket *app) 
