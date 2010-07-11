@@ -536,7 +536,7 @@ ENCODE(OP_PlayerProfile) {
 		{
 			eq->buffs[r].unknown004 = 0x3f800000;
 			eq->buffs[r].slotid = 2;
-			eq->buffs[r].unknown020 = 0x000717fd;
+			eq->buffs[r].player_id = 0x000717fd;
 		}
 		else
 		{
