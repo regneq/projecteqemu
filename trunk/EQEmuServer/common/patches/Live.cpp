@@ -725,6 +725,8 @@ ENCODE(OP_NewZone) {
 	OUT_str(zone_short_name2);
 	OUT(zone_id);
 	OUT(zone_instance);
+
+	eq->FogDensity = emu->fog_density;
 	
     /*fill in some unknowns with observed values, hopefully it will help */
 	eq->unknown800 = -1;
@@ -1591,8 +1593,22 @@ ENCODE(OP_Consider) {
 
 ENCODE(OP_Action) {
 	ENCODE_LENGTH_EXACT(Action_Struct);
-	SETUP_DIRECT_ENCODE(Action_Struct, structs::Action_Struct);
+	SETUP_DIRECT_ENCODE(Action_Struct, structs::ActionAlt_Struct);
 	OUT(target);
+	OUT(source);
+	OUT(level);
+	eq->instrument_focus = emu->bard_focus_id;
+	eq->knockback_angle = emu->sequence;
+	OUT(type);
+	OUT(spell);
+	eq->level2 = eq->level;
+	eq->effect_flag = emu->buff_unknown;
+	eq->unknown37 = 0x01;
+	eq->unknown44 = 0xFFFFFFFF;
+	eq->unknown48 = 0xFFFFFFFF;
+	eq->unknown52 = 0xFFFFFFFF;
+
+	/*OUT(target);
 	OUT(source);
 	OUT(level);
 	OUT(instrument_mod);
@@ -1604,13 +1620,13 @@ ENCODE(OP_Action) {
 	OUT(buff_unknown); // if this is 4, a buff icon is made
 	//eq->unknown0036 = -1;
 	//eq->unknown0040 = -1;
-	//eq->unknown0044 = -1;
+	//eq->unknown0044 = -1;*/
 	FINISH_ENCODE();
 }
 
 ENCODE(OP_Buff) {
 	ENCODE_LENGTH_EXACT(SpellBuffFade_Struct);
-	SETUP_DIRECT_ENCODE(SpellBuffFade_Struct, structs::SpellBuffFade_Struct);
+	SETUP_DIRECT_ENCODE(SpellBuffFade_Struct, structs::SpellBuffFade_Struct_Live);
 	OUT(entityid);
 	OUT(slot);
 	OUT(level);

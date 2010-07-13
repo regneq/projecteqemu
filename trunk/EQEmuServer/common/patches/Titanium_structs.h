@@ -1015,12 +1015,12 @@ struct Action_Struct
  /* 00 */	int16 target;	// id of target
  /* 02 */	int16 source;	// id of caster
  /* 04 */	uint16 level; // level of caster
- /* 06 */	uint16 unknown06;	// seems to be fixed to 0x0A
+ /* 06 */	uint16 instrument_mod;
  /* 08 */	uint32 unknown08;
  /* 12 */	uint16 unknown16;
 // some kind of sequence that's the same in both actions
 // as well as the combat damage, to tie em together?
- /* 14 */	int32 sequence;	
+ /* 14 */	int32 sequence;
  /* 18 */	uint32 unknown18;
  /* 22 */	int8 type;		// 231 (0xE7) for spells
  /* 23 */	uint32 unknown23;

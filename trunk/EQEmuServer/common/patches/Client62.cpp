@@ -778,6 +778,22 @@ ENCODE(OP_WearChange) {
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_Action) {
+	ENCODE_LENGTH_EXACT(Action_Struct);
+	SETUP_DIRECT_ENCODE(Action_Struct, structs::Action_Struct);
+	OUT(target);
+	OUT(source);
+	OUT(level);
+	OUT(instrument_mod);
+	OUT(sequence);
+	OUT(type);
+	//OUT(damage);
+	OUT(spell);
+	OUT(buff_unknown); // if this is 4, a buff icon is made
+	FINISH_ENCODE();
+}
+
+
 DECODE(OP_WearChange) {
 	DECODE_LENGTH_EXACT(structs::WearChange_Struct);
 	SETUP_DIRECT_DECODE(WearChange_Struct, structs::WearChange_Struct);

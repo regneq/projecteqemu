@@ -1173,19 +1173,18 @@ struct Action_Struct
 /*00*/	int16 target;			// id of target
 /*02*/	int16 source;			// id of caster
 /*04*/	uint16 level;			// level of caster - Seen 0
-/*06*/	uint16 instrument_mod;	// Seen 0
-/*08*/	uint16 unknown08;		// Was uint32
-/*10*/	float unknown10;		// New field to Underfoot - Seen 1
-/*14*/	uint32 unknown14;		// Was uint16
-/*18*/	float sequence;
-/*22*/	uint32 unknown22;		// Seen 0
-/*26*/	int8 type;				// 231 (0xE7) for spells
-/*27*/	uint32 damage;
-/*31*/	int16 unknown31;		// New field to Underfoot - Seen 0
+/*06*/  uint32 unknown06;
+/*10*/	uint16 instrument_focus;
+/*12*/	uint16 unknown12;		// seems to always be set to something and it doesn't change between casts except in special cases like changing instrument mods
+/*14*/  uint32 unknown14;       // seen 0
+/*18*/  float knockback_angle;  //seems to go from 0-512 then it rolls over again
+/*22*/  uint32 unknown22;
+/*26*/  uint8 type;
+/*27*/  uint32 damage;
+/*31*/  uint16 unknown31;
 /*33*/	int16 spell;			// spell id being cast
 /*35*/	int8 level2;			// level of caster again? Or maybe the castee
-/*36*/	int8 buff_unknown;		// if this is 4, a buff icon is made
-/*37*/
+/*36*/	int8 effect_flag;		// if this is 4, the effect is valid: or if two are sent at the same time?
 };
 
 
@@ -1198,18 +1197,18 @@ struct ActionAlt_Struct
 /*00*/	int16 target;			// id of target
 /*02*/	int16 source;			// id of caster
 /*04*/	uint16 level;			// level of caster - Seen 0
-/*06*/	uint16 instrument_mod;	// Seen 0
-/*08*/	uint16 unknown08;		// Was uint32
-/*10*/	float unknown10;		// New field to Underfoot - Seen 1
-/*14*/	uint32 unknown14;		// Was uint16
-/*18*/	float sequence;
-/*22*/	uint32 unknown22;		// Seen 0
-/*26*/	int8 type;				// 231 (0xE7) for spells
-/*27*/	uint32 damage;
-/*31*/	int16 unknown31;		// New field to Underfoot - Seen 0
+/*06*/  uint32 unknown06;
+/*10*/	uint16 instrument_focus;
+/*12*/	uint16 unknown12;		// seems to always be set to something and it doesn't change between casts except in special cases like changing instrument mods
+/*14*/  uint32 unknown14;       // seen 0
+/*18*/  float knockback_angle;  //seems to go from 0-512 then it rolls over again
+/*22*/  uint32 unknown22;
+/*26*/  uint8 type;
+/*27*/  uint32 damage;
+/*31*/  uint16 unknown31;
 /*33*/	int16 spell;			// spell id being cast
 /*35*/	int8 level2;			// level of caster again? Or maybe the castee
-/*36*/	int8 buff_unknown;		// if this is 4, a buff icon is made
+/*36*/	int8 effect_flag;		// if this is 4, the effect is valid: or if two are sent at the same time?
 /*37*/	int32 unknown37;		// New field to Underfoot - Seen 14
 /*41*/	int8 unknown41;			// New field to Underfoot - Seen 0
 /*42*/	int8 unknown42;			// New field to Underfoot - Seen 0
