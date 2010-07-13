@@ -1149,7 +1149,7 @@ struct Action_Struct
  /* 02 */	int16 source;	// id of caster
  /* 04 */	uint16 level; // level of caster
  /* 06 */	uint16 instrument_mod;
- /* 08 */	uint32 unknown08;
+ /* 08 */	uint32 bard_focus_id;
  /* 12 */	uint16 unknown16;
 // some kind of sequence that's the same in both actions
 // as well as the combat damage, to tie em together?
