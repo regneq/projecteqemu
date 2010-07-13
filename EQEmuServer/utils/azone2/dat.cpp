@@ -423,7 +423,7 @@ int DATLoader::Open(char *base_path, char *zone_name, Archive *archive) {
 		printf("Unknowns  %.1f %i (%8.3f)\n", UnkFloat, UnkUnk, UnkUnk2);
 #endif
 
-		if((UnkUnk == 1) || (UnkUnk == 2))
+		if(UnkUnk > 0)
 		{
 			int8 UnkByte = VARSTRUCT_DECODE_TYPE(uint8, buffer);
 #ifdef DEBUGDAT
