@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==07/13/2010==
 Derision: Azone2 - Fixed crash processing fungalforest and possibly other Underfoot V4 .eqg zones.
+Derision: Azone2 - Culled placeable shrooms to reduce fungalforest .map from ~80 to ~20MB.
 
 ==07/11/2010==
 Trevius: Live - Environmental damage is now functional on this client.
