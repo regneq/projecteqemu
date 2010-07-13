@@ -140,7 +140,8 @@ int Zonv4Loader::Open(char *base_path, char *zone_name, Archive *archive)
 			if(strstr(tmp, "tree") || strstr(tmp, "pine") || strstr(tmp, "palm") || strstr(tmp, "rock") ||
 			   strstr(tmp, "shrub") || strstr(tmp, "fern") || strstr(tmp, "bamboo") || strstr(tmp, "coral") ||
 			   strstr(tmp, "camp_bones") || strstr(tmp, "sponge") || strstr(tmp, "plant") || strstr(tmp, "shortplm") ||
-			   strstr(tmp, "tak_brazier") || strstr(tmp, "tak_banner"))
+			   strstr(tmp, "tak_brazier") || strstr(tmp, "tak_banner") || strstr(tmp, "fung") || strstr(tmp, "bolete") ||
+			   strstr(tmp, "amanita") || strstr(tmp, "leopita"))
 			{
 				if(!strstr(tmp, "arch"))
 				{
