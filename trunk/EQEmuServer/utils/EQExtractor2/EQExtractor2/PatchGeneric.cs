@@ -167,7 +167,7 @@ namespace EQExtractor2.Patches
                 else
                     Direction = "[Client->Server]";
 
-                PacketDumpStream.WriteLine("[OPCode: 0x" + p.OpCode.ToString("x") + "] " + (OpManager != null ? OpManager.OpCodeToName(p.OpCode) : "OP_Unknown") + " " + Direction + " [Size: " + p.Buffer.Length + "]");
+                PacketDumpStream.WriteLine("[OPCode: 0x" + p.OpCode.ToString("x4") + "] " + (OpManager != null ? OpManager.OpCodeToName(p.OpCode) : "OP_Unknown") + " " + Direction + " [Size: " + p.Buffer.Length + "]");
                 PacketDumpStream.WriteLine(Utils.HexDump(p.Buffer));
             }
 

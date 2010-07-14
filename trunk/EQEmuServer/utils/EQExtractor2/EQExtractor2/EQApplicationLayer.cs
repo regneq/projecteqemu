@@ -62,10 +62,9 @@ namespace EQApplicationLayer
             PatchList = new List<PatchSpecficDecoder>();
             
             PatchList.Add(new PatchMay122010Decoder());
+                        
+            PatchList.Add(new PatchJuly132010Decoder());
 
-            PatchList.Add(new PatchTestJune242010Decoder());
-
-            //PatchList.Add(new PatchSoD());      // This is just for testing the multi-patch support
         }        
 
         // This is called from the main form to tell us where the application was launched from (where to look for the .conf files)

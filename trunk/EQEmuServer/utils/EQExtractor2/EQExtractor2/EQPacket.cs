@@ -655,7 +655,7 @@ namespace EQPacket
                 default:
                     if (OpCode > 0xff)
                     {
-                        Debug("Uencapsulated EQ Application OpCode.");
+                        Debug("Unencapsulated EQ Application OpCode.");
                         // EQApplication OpCode
                         int AppOpCode = Payload[1] * 256 + Payload[0];
 
