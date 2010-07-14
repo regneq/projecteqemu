@@ -5,11 +5,11 @@
 
 namespace EQExtractor2.Patches
 {
-    class PatchTestJune242010Decoder : PatchMay122010Decoder
+    class PatchJuly132010Decoder : PatchMay122010Decoder
     {
-        public PatchTestJune242010Decoder()
+        public PatchJuly132010Decoder()
         {
-            Version = "EQ Client Build Date Test Server June 24 2010.";
+            Version = "EQ Client Build Date July 13 2010. (Including Test Server June 24 to July 8 2010).";
 
             ExpectedPPLength = 26640;
         }

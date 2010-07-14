@@ -19,8 +19,8 @@ namespace EQExtractor2.Patches
         // patches don't break anything, then there is no need to create a new PatchSpecificDecoder just because the client build
         // date has changed.
 
-        // I expect in most cases if a new client patch is released that breaks the extractor, than a new extractor derived from the previous
-        // verision's decoder would be created, rather than creating a brand new one based off the base class, unless all of the previous
+        // I expect in most cases if a new client patch is released that breaks the extractor, than a new decoder derived from the previous
+        // version's decoder would be created, rather than creating a brand new one based off the base class, unless all of the previous
         // decoder's methods need replacing to support the new patch.
         //
         public PatchMay122010Decoder()
@@ -33,9 +33,7 @@ namespace EQExtractor2.Patches
         
             PPZoneIDOffset = 19396;
         }
-
-        
-                
+                        
         override public bool Init(string ConfDirectory, ref string ErrorMessage)
         {
             OpManager = new OpCodeManager();
