@@ -4421,7 +4421,7 @@ struct BuffIconEntry_Struct
 struct BuffIcon_Struct
 {
 	uint32 entity_id;
-	uint32 count;
+	uint16 count;
 	BuffIconEntry_Struct entries[0];
 };
 

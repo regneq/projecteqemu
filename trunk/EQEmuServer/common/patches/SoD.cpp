@@ -2073,12 +2073,13 @@ ENCODE(OP_DzMemberList)
 	std::stringstream ss(std::stringstream::in | std::stringstream::out | std::stringstream::binary);
 
 	uint32 client_id = 0;
+	uint8 null_term = 0;
 	ss.write((const char*)&client_id, sizeof(uint32));
 	ss.write((const char*)&emu->count, sizeof(uint32));
 	for(int i = 0; i < emu->count; ++i)
 	{
 		ss.write(emu->entries[i].name, strlen(emu->entries[i].name));
-		ss.write((const char*)&client_id, sizeof(char));
+		ss.write((const char*)&null_term, sizeof(char));
 		ss.write((const char*)&emu->entries[i].status, sizeof(char));
 	}
 	
@@ -2094,16 +2095,17 @@ ENCODE(OP_DzExpeditionList)
 	SETUP_VAR_ENCODE(ExpeditionLockoutList_Struct);
 	std::stringstream ss(std::stringstream::in | std::stringstream::out | std::stringstream::binary);
 	uint32 client_id = 0;
+	uint8 null_term = 0;
 	ss.write((const char*)&client_id, sizeof(uint32));
 	ss.write((const char*)&emu->count, sizeof(uint32));
 	for(int i = 0; i < emu->count; ++i)
 	{
 		ss.write(emu->entries[i].expedition, strlen(emu->entries[i].expedition));
-		ss.write((const char*)&client_id, sizeof(char));
+		ss.write((const char*)&null_term, sizeof(char));
 		ss.write((const char*)&emu->entries[i].time_left, sizeof(uint32));
 		ss.write((const char*)&client_id, sizeof(uint32));
 		ss.write(emu->entries[i].expedition_event, strlen(emu->entries[i].expedition_event));
-		ss.write((const char*)&client_id, sizeof(char));
+		ss.write((const char*)&null_term, sizeof(char));
 	}
 
 	__packet->size = ss.str().length();
@@ -2118,11 +2120,12 @@ ENCODE(OP_DzLeaderStatus)
 	SETUP_VAR_ENCODE(ExpeditionLeaderSet_Struct);
 	std::stringstream ss(std::stringstream::in | std::stringstream::out | std::stringstream::binary);
 	uint32 client_id = 0;
+	uint8 null_term = 0;
 
 	ss.write((const char*)&client_id, sizeof(uint32));
 	ss.write((const char*)&client_id, sizeof(uint32));
 	ss.write(emu->leader_name, strlen(emu->leader_name));
-	ss.write((const char*)&client_id, sizeof(char));
+	ss.write((const char*)&null_term, sizeof(char));
 	ss.write((const char*)&client_id, sizeof(uint32));
 	ss.write((const char*)&client_id, sizeof(uint32));//0xffffffff
 	ss.write((const char*)&client_id, sizeof(uint32));
