@@ -2159,7 +2159,30 @@ ENCODE(OP_DzJoinExpeditionConfirm)
 ENCODE(OP_TargetBuffs)
 {
 	SETUP_VAR_ENCODE(BuffIcon_Struct);
-	std::stringstream ss(std::stringstream::in | std::stringstream::out | std::stringstream::binary);
+
+	uint32 sz = 7 + (13 * emu->count);
+	__packet->size = sz;
+	__packet->pBuffer = new unsigned char[sz];
+	memset(__packet->pBuffer, 0, sz);
+
+	uchar *ptr = __packet->pBuffer;
+	*((uint32*)ptr) = emu->entity_id;
+	ptr += sizeof(uint32);
+	
+	*((uint16*)ptr) = emu->count;
+	ptr += sizeof(uint16);
+
+	for(uint16 i = 0; i < emu->count; ++i)
+	{
+		*((uint32*)ptr) = emu->entries[i].buff_slot;
+		ptr += sizeof(uint32);
+		*((uint32*)ptr) = emu->entries[i].spell_id;
+		ptr += sizeof(uint32);
+		*((uint32*)ptr) = emu->entries[i].tics_remaining;
+		ptr += sizeof(uint32);
+		ptr += 1;
+	}
+	/*std::stringstream ss(std::stringstream::in | std::stringstream::out | std::stringstream::binary);
 
 	uint8 write_var8 = 1;
 	ss.write((const char*)&emu->entity_id, sizeof(uint32));
@@ -2176,6 +2199,7 @@ ENCODE(OP_TargetBuffs)
 	__packet->size = ss.str().length();
 	__packet->pBuffer = new unsigned char[__packet->size];
 	memcpy(__packet->pBuffer, ss.str().c_str(), __packet->size);
+	*/
 
 	FINISH_ENCODE();
 }
