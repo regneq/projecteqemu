@@ -2462,8 +2462,43 @@ ENCODE(OP_TargetBuffs) {  ENCODE_FORWARD(OP_BuffCreate); }
 ENCODE(OP_BuffCreate)
 {
 	SETUP_VAR_ENCODE(BuffIcon_Struct);
-	std::stringstream ss(std::stringstream::in | std::stringstream::out | std::stringstream::binary);
 
+	uint32 sz = 12 + (17 * emu->count);
+	__packet->size = sz;
+	__packet->pBuffer = new unsigned char[sz];
+	memset(__packet->pBuffer, 0, sz);
+
+	uchar *ptr = __packet->pBuffer;
+	*((uint32*)ptr) = emu->entity_id;
+	ptr += sizeof(uint32);
+	ptr += sizeof(uint32);
+	ptr += sizeof(uchar);
+	*((uint16*)ptr) = emu->count;
+	ptr += sizeof(uint16);
+
+	for(uint16 i = 0; i < emu->count; ++i)
+	{
+		uint16 buffslot = emu->entries[i].buff_slot;
+		if(emu->entries[i].buff_slot >= 25 && emu->entries[i].buff_slot < 37)
+		{
+			buffslot += 5;
+		}
+		else if(emu->entries[i].buff_slot >= 37)
+		{
+			buffslot += 14;
+		}
+
+		*((uint32*)ptr) = buffslot;
+		ptr += sizeof(uint32);
+		*((uint32*)ptr) = emu->entries[i].spell_id;
+		ptr += sizeof(uint32);
+		*((uint32*)ptr) = emu->entries[i].tics_remaining;
+		ptr += sizeof(uint32);
+		ptr += sizeof(uint32);
+		ptr += 1;
+	}
+	FINISH_ENCODE();
+	/*
 	uint32 write_var32 = 60;
 	uint8 write_var8 = 1;
 	ss.write((const char*)&emu->entity_id, sizeof(uint32));
@@ -2489,12 +2524,7 @@ ENCODE(OP_BuffCreate)
 		ss.write((const char*)&write_var8, sizeof(uint8));
 	}
 	ss.write((const char*)&write_var8, sizeof(uint8));
-
-	__packet->size = ss.str().length();
-	__packet->pBuffer = new unsigned char[__packet->size];
-	memcpy(__packet->pBuffer, ss.str().c_str(), __packet->size);
-
-	FINISH_ENCODE();
+	*/
 }
 
 DECODE(OP_BazaarSearch)
