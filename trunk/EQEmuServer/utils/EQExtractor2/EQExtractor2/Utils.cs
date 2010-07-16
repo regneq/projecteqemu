@@ -251,7 +251,7 @@ namespace MyUtils
 
                 if (((++i % 16) == 0) || (i == Length))
                 {
-                    Dump.AppendFormat("{0:000} | {1} | {2}\r\n", Offset, Hex.ToString().PadRight(48), Ascii);
+                    Dump.AppendFormat("{0:000} | {1} | {2}\r\n", Offset, Hex.PadRight(48), Ascii);
 
                     Hex = Ascii = "";
 
