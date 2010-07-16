@@ -422,10 +422,10 @@ namespace EQExtractor2.Patches
 
                 if ((OtherData & 1) > 0)
                 {
-                    // Destrucatable Objects. Not handled yet
+                    // Destructable Objects. Not handled yet
                     //
                     //SQLOut(String.Format("-- OBJECT FOUND SpawnID {0}", SpawnID.ToString("x")));
-                    //Console.WriteLine("Otherdata is {0} Skipping Stuff.", OtherData.ToString("x"));
+                    
                     NewSpawn.DestructableString1 = Buffer.ReadString(false);
 
                     NewSpawn.DestructableString2 = Buffer.ReadString(false);

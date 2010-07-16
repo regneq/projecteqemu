@@ -1,5 +1,8 @@
 ﻿EQExtractor2 Changelog. All changes since the 1.0 release.
 
+==07/16/2010==
+Derision: Replaced HexDump method with a considerably faster version.
+
 ==07/14/2010==
 Derision: Renamed PatchTestJune242010Decoder to PatchJuly132010Decoder. 
 Derision: Updated patch_May12-2010.conf with current EQEmu patch_Live.conf. Updated version number to 2.0.5

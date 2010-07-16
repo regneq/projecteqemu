@@ -9,8 +9,6 @@
 //
 // -----------------------------------------------------------
 //
-// The HexDump method is from 'HightechRider' at http://www.codeproject.com/Messages/3055516/Why-reinvent-wheels.aspx
-//
 // All other code:
 //
 // Copyright (C) 2001-2010 EQEMu Development Team (http://eqemulator.net). Distributed under GPL version 2.
@@ -239,19 +237,28 @@ namespace MyUtils
     {
         public static string HexDump(byte[] bytes)
         {
-            StringBuilder sb = new StringBuilder();
-            for (int line = 0; line < bytes.Length; line += 16)
-            {
-                byte[] lineBytes = bytes.Skip(line).Take(16).ToArray();
-                
-                sb.AppendFormat("{0:000} | ", line);
-                sb.Append(string.Join(" ", lineBytes.Select(b => b.ToString("x2")).ToArray()).PadRight(16*3));
-                sb.Append(" | ");
-                sb.Append(new string(lineBytes.Select(b => ((b < 32) || (b > 126)) ? '.' : (char)b).ToArray()));
-                sb.Append("\r\n");
-            }
+            StringBuilder Dump = new StringBuilder();
 
-            return sb.ToString();
+            string Hex = "", Ascii = "";
+
+            int Offset = 0, i = 0, Length = bytes.Length;
+
+            while (i < Length)
+            {
+                Hex += bytes[i].ToString("x2") + " ";
+
+                Ascii += (((bytes[i] >= 32) && (bytes[i] <= 126)) ? ((char)bytes[i]).ToString() : ".");
+
+                if (((++i % 16) == 0) || (i == Length))
+                {
+                    Dump.AppendFormat("{0:000} | {1} | {2}\r\n", Offset, Hex.ToString().PadRight(48), Ascii);
+
+                    Hex = Ascii = "";
+
+                    Offset = i;
+                }
+            }
+            return Dump.ToString();
         }
 
         public static string ReadNullTerminatedString(byte[] Buffer, int Offset, int MaxSize, bool Escape)
