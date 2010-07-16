@@ -2021,6 +2021,18 @@ DECODE(OP_CastSpell) {
 	FINISH_DIRECT_DECODE();
 }
 
+DECODE(OP_DeleteItem)
+{
+	DECODE_LENGTH_EXACT(structs::DeleteItem_Struct);
+	SETUP_DIRECT_DECODE(DeleteItem_Struct, structs::DeleteItem_Struct);
+
+	emu->from_slot = SoFToTitaniumSlot(eq->from_slot);
+	emu->to_slot = SoFToTitaniumSlot(eq->to_slot);
+	IN(number_in_stack);
+
+	FINISH_DIRECT_DECODE();
+}
+
 DECODE(OP_MoveItem)
 {
 	DECODE_LENGTH_EXACT(structs::MoveItem_Struct);

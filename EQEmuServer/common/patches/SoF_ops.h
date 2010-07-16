@@ -87,5 +87,6 @@ D(OP_TradeSkillCombine)
 D(OP_RaidInvite)
 D(OP_InspectAnswer)
 D(OP_ApplyPoison)
+D(OP_DeleteItem)
 #undef E
 #undef D

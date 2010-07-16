@@ -110,5 +110,6 @@ D(OP_ApplyPoison)
 D(OP_Damage)
 D(OP_EnvDamage)
 D(OP_ChannelMessage)
+D(OP_DeleteItem)
 #undef E
 #undef D
