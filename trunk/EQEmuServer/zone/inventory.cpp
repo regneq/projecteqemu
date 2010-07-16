@@ -798,20 +798,8 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 				banker ? banker->GetName() : "UNKNOWN NPC", distance);
 			database.SetMQDetectionFlag(AccountName(), GetName(), hacked_string, zone->GetShortName());
 			safe_delete_array(hacked_string);
+			Kick();	// Kicking player to avoid item loss do to client and server inventories not being sync'd
 			return false;
-		}
-	}
-
-	if (shield_target && (move_in->from_slot == 14 || move_in->to_slot == 14))
-	{
-		entity_list.MessageClose(this,false,100,0,"%s ceases shielding %s.",GetName(),shield_target->GetName());
-		for (int y = 0; y < 2; y++)
-		{
-			if (shield_target->shielder[y].shielder_id == GetID())
-			{
-				shield_target->shielder[y].shielder_id = 0;
-				shield_target->shielder[y].shielder_bonus = 0;
-			}
 		}
 	}
 	
