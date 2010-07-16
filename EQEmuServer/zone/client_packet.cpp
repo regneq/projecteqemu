@@ -2074,10 +2074,11 @@ void Client::Handle_OP_ItemVerifyRequest(const EQApplicationPacket *app)
 #if EQDEBUG >= 1
 							LogFile->write(EQEMuLog::Debug, "Drinking Alcohol from slot:%i", slot_id);
 #endif
-							DeleteItemInInventory(slot_id, 1, false);
-							entity_list.MessageClose_StringID(this, true, 50, 0, DRINKING_MESSAGE, GetName(), item->Name);
+							// This Seems to be handled in OP_DeleteItem handling
+							//DeleteItemInInventory(slot_id, 1, false);
+							//entity_list.MessageClose_StringID(this, true, 50, 0, DRINKING_MESSAGE, GetName(), item->Name);
 							//Should add intoxication level to the PP at some point
-							CheckIncreaseSkill(ALCOHOL_TOLERANCE, NULL, 25);
+							//CheckIncreaseSkill(ALCOHOL_TOLERANCE, NULL, 25);
 						}
 
 						if (m_pp.hunger_level > 6000)
