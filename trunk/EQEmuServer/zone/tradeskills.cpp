@@ -902,7 +902,7 @@ bool Client::TradeskillExecute(DBTradeskillRecipe_Struct *spec) {
 		_log(TRADESKILLS__TRACE, "Tradeskill success");
 
 		itr = spec->onsuccess.begin();
-		while(itr != spec->onsuccess.end()) {
+		while(itr != spec->onsuccess.end() && !spec->quest) {
 			//should we check this crap?
 			SummonItem(itr->first, itr->second);
                   item = database.GetItem(itr->first);
@@ -1202,7 +1202,7 @@ bool ZoneDatabase::GetTradeRecipe(uint32 recipe_id, uint8 c_type, uint32 some_id
  	}
  	
  	qlen = MakeAnyLenString(&query, "SELECT tr.id, tr.tradeskill, tr.skillneeded,"
- 	" tr.trivial, tr.nofail, tr.replace_container, tr.name, tr.must_learn, crl.madecount"
+ 	" tr.trivial, tr.nofail, tr.replace_container, tr.name, tr.must_learn, tr.quest, crl.madecount"
  	" FROM tradeskill_recipe AS tr inner join tradeskill_recipe_entries as tre"
  	" ON tr.id = tre.recipe_id"
  	" LEFT JOIN (SELECT recipe_id, madecount from char_recipe_list WHERE char_id = %u) AS crl "
@@ -1232,12 +1232,13 @@ bool ZoneDatabase::GetTradeRecipe(uint32 recipe_id, uint8 c_type, uint32 some_id
  	spec->replace_container	= atoi(row[5]) ? true : false;
 	spec->name = row[6];
 	spec->must_learn = (uint8)atoi(row[7]);
-	if (row[8] == NULL) {
+	spec->quest = atoi(row[8]) ? true : false;
+	if (row[9] == NULL) {
 		spec->has_learnt = false;
 		spec->madecount = 0;
 	} else {
 		spec->has_learnt = true;
-		spec->madecount = (uint32)atoul(row[8]);
+		spec->madecount = (uint32)atoul(row[9]);
 	}
 	spec->recipe_id = recipe_id;
 	mysql_free_result(result);

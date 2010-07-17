@@ -48,6 +48,7 @@ struct DBTradeskillRecipe_Struct {
 	bool has_learnt;
 	uint32 madecount;
 	uint32 recipe_id;
+	bool quest;
 };
 
 struct PetRecord {
