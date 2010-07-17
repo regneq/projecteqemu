@@ -74,7 +74,9 @@ const char *QuestEventSubroutines[_LargestEventID] = {
 	"EVENT_SPELL_EFFECT_NPC",
 	"EVENT_SPELL_EFFECT_BUFF_TIC_CLIENT",
 	"EVENT_SPELL_EFFECT_BUFF_TIC_NPC",
-	"EVENT_SPELL_EFFECT_TRANSLOCATE_COMPLETE"
+	"EVENT_SPELL_EFFECT_TRANSLOCATE_COMPLETE",
+	"EVENT_COMBINE_SUCCESS",
+	"EVENT_COMBINE_FAILURE"
 };
 
 PerlembParser::PerlembParser(void) : Parser()
@@ -662,7 +664,14 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 			ExportVar(packagename.c_str(), "caster_id", extradata);
 			break;
 		}
-
+		//tradeskill events
+		case EVENT_COMBINE_SUCCESS:
+		case EVENT_COMBINE_FAILURE:
+		{
+			ExportVar(packagename.c_str(), "recipe_id", objid);
+			ExportVar(packagename.c_str(), "recipe_name", data);
+			break;
+		}
 		//nothing special about these events
 		case EVENT_DEATH:
 		case EVENT_SPAWN:

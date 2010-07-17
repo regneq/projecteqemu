@@ -40,6 +40,8 @@ typedef enum {
 	EVENT_SPELL_EFFECT_BUFF_TIC_CLIENT,
 	EVENT_SPELL_EFFECT_BUFF_TIC_NPC,
 	EVENT_SPELL_EFFECT_TRANSLOCATE_COMPLETE,
+	EVENT_COMBINE_SUCCESS, //PC successfully combined a recipe
+	EVENT_COMBINE_FAILURE, //PC failed to combine a recipe
 	
 	_LargestEventID
 } QuestEventID;
