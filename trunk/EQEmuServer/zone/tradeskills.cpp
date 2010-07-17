@@ -32,6 +32,10 @@
 #include "../common/MiscFunctions.h"
 #include "../common/rulesys.h"
 
+#ifdef EMBPERL
+#include "embparser.h"
+#endif
+
 static const SkillType TradeskillUnknown = _1H_BLUNT; /* an arbitrary non-tradeskill */
 
 void Object::HandleAugmentation(Client* user, const AugmentItem_Struct* in_augment, Object *worldo)
@@ -224,7 +228,6 @@ void Object::HandleCombine(Client* user, const NewCombine_Struct* in_combine, Ob
 
 	// Learn new recipe message
 	// Update Made count
-	// TODO: Trigger EVENT for scripts
 	if (success) {
 		if (!spec.has_learnt && ((spec.must_learn&0x10) != 0x10)) {
 			user->Message_StringID(4, TRADESKILL_LEARN_RECIPE, spec.name.c_str());
@@ -243,6 +246,12 @@ void Object::HandleCombine(Client* user, const NewCombine_Struct* in_combine, Ob
 		else
 			user->DeleteItemInInventory(in_combine->container_slot, 0, true);
 	}
+#ifdef EMBPERL
+	if (success) 
+		((PerlembParser*)parse)->Event(EVENT_COMBINE_SUCCESS, spec.recipe_id, spec.name.c_str(), (NPC*)NULL, user);
+	else
+		((PerlembParser*)parse)->Event(EVENT_COMBINE_FAILURE, spec.recipe_id, spec.name.c_str(), (NPC*)NULL, user);
+#endif
 }
 
 void Object::HandleAutoCombine(Client* user, const RecipeAutoCombine_Struct* rac) {
@@ -398,7 +407,12 @@ void Object::HandleAutoCombine(Client* user, const RecipeAutoCombine_Struct* rac
 	if(success && spec.replace_container) {
 //		user->DeleteItemInInventory(in_combine->container_slot, 0, true);
 	}
-	
+#ifdef EMBPERL
+	if (success) 
+		((PerlembParser*)parse)->Event(EVENT_COMBINE_SUCCESS, spec.recipe_id, spec.name.c_str(), (NPC*)NULL, user);
+	else
+		((PerlembParser*)parse)->Event(EVENT_COMBINE_FAILURE, spec.recipe_id, spec.name.c_str(), (NPC*)NULL, user);
+#endif	
 }
 
 SkillType Object::TypeToSkill(uint32 type) {
