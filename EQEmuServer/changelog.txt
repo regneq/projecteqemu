@@ -1,7 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==07/17/2010==
-JJ: Added events for tradeskill failure and success
+JJ: Added events for tradeskill failure and success.
+JJ: Added quest flag for tradeskills to be handled by perl. Required SQL in the utils folder.
 
 ==07/14/2010==
 Trevius: Hopefully fixed the issue for SoF+ clients alcohol consumption causing item loss.
