@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==07/19/2010==
+gaeorn: fix for foraging
+
 ==07/17/2010==
 JJ: Added events for tradeskill failure and success.
 JJ: Added quest flag for tradeskills to be handled by perl. Required SQL in the utils folder.

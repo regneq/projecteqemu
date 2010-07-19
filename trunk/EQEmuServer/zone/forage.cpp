@@ -92,7 +92,7 @@ int32 ZoneDatabase::GetZoneForage(int32 ZoneID, int8 skill) {
 	
 	int8 index = 0, rindex;
 	int32 item[FORAGE_ITEM_LIMIT];
-	int8 chance[FORAGE_ITEM_LIMIT];
+	int32 chance[FORAGE_ITEM_LIMIT];
 	int32 ret;
 	
 	for (int c=0; c < FORAGE_ITEM_LIMIT; c++) 	{
