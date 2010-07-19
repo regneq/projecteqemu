@@ -2210,7 +2210,7 @@ void Mob::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHel
 	
 	if(other){
 		AddRampage(other);
-		int hatemod = 100 + other->spellbonuses.hatemod + other->itembonuses.hatemod;
+		int hatemod = 100 + other->spellbonuses.hatemod + other->itembonuses.hatemod + other->aabonuses.hatemod;
 		if(hatemod < 1)
 			hatemod = 1;
 		hate = ((hate * (hatemod))/100);
