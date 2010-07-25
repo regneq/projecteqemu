@@ -203,16 +203,20 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 
 					//handles AAs and what not...
 					if(caster)
-						dmg = caster->GetActSpellDamage(spell_id, dmg);
-
+					{
+						dmg = GetVulnerability(dmg, caster, spell_id, 0);
+						dmg = caster->GetActSpellDamage(spell_id, dmg);	
+					}
 					dmg = -dmg;
 					Damage(caster, dmg, spell_id, spell.skill, false, buffslot, false);
 				}
 				else if(dmg > 0) {
 					//healing spell...
 					if(caster)
+					{
+						dmg = GetHealRate(dmg, caster->GetTarget());
 						dmg = caster->GetActSpellHealing(spell_id, dmg);
-
+					}
 					HealDamage(dmg, caster);
 				}
 
@@ -248,34 +252,40 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 					dmg = -dmg;
 					Damage(caster, dmg, spell_id, spell.skill, false, buffslot, false);
 				} else {
+					if(caster)
+						dmg = GetHealRate(dmg, caster->GetTarget());
 					HealDamage(dmg, caster);
 				}
 				break;
 			}
 
-		      case SE_PercentalHeal:
-                        {
+			case SE_PercentalHeal:
+			{
 #ifdef SPELL_EFFECT_SPAM
-                                snprintf(effect_desc, _EDLEN, "Percental Heal: %+i (%d%% max)", spell.max[i], effect_value);
+				snprintf(effect_desc, _EDLEN, "Percental Heal: %+i (%d%% max)", spell.max[i], effect_value);
 #endif
-                                //im not 100% sure about this implementation.
-                                //the spell value forumula dosent work for these... at least spell 3232 anyways
-                                sint32 val = spell.max[i];
+				//im not 100% sure about this implementation.
+				//the spell value forumula dosent work for these... at least spell 3232 anyways
+				sint32 val = spell.max[i];
 
-                                if(caster)
-                                        val = caster->GetActSpellHealing(spell_id, val);
+				if(caster)
+					val = caster->GetActSpellHealing(spell_id, val);
 
-                                sint32 mhp = GetMaxHP();
-                                sint32 cap = mhp * spell.base[i] / 100;
+				sint32 mhp = GetMaxHP();
+				sint32 cap = mhp * spell.base[i] / 100;
 
-                                if(cap < val)
-                                        val = cap;
+				if(cap < val)
+					val = cap;
 
-                                if(val > 0)
-                                        HealDamage(val, caster);
+				if(val > 0)
+				{
+					if(caster && caster->GetTarget())
+						val = GetHealRate(val, caster->GetTarget());
+					HealDamage(val, caster);
+				}
 
-                                break;
-                        }
+				break;
+			}
 
 			case SE_CompleteHeal:
 			{
@@ -2209,17 +2219,6 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				break;
 			}
 
-			case SE_HealRate:
-			{
-#ifdef SPELL_EFFECT_SPAM
-				snprintf(effect_desc, _EDLEN, "Heal Effectiveness: %d%%", effect_value);
-#endif
-				// solar: TODO implement this
-				const char *msg = "Heal Effectiveness is not implemented.";
-				if(caster) caster->Message(13, msg);
-				break;
-			}
-
 			case SE_Screech:
 			{
 #ifdef SPELL_EFFECT_SPAM
@@ -2812,6 +2811,19 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			case SE_LimitCastTime:
 			case SE_NoCombatSkills:
 			case SE_TriggerOnCast:
+			case SE_HealRate:
+			case SE_SkillDamageTaken:
+			case SE_SpellVulnerability:
+			case SE_SpellTrigger:
+			case SE_ApplyEffect:
+			case SE_Twincast:
+			case SE_InterruptCasting:
+			case SE_ImprovedSpellEffect:
+			case SE_BossSpellTrigger:
+			case SE_CastOnWearoff:
+			case SE_EffectOnFade:
+			case SE_MaxHPChange:
+			case SE_SympatheticProc:
 			{
 				break;
 			}
@@ -3130,20 +3142,27 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 						if(!IsClient())
 							AddToHateList(caster, -effect_value);
 					}
-
+					effect_value = GetVulnerability(effect_value, caster, spell_id, ticsremaining);
 					TryDotCritical(spell_id, caster, effect_value);
 				}
 				effect_value = effect_value * modifier / 100;
 			}
 
 			if(effect_value < 0) {
+				if(caster && !caster->IsClient())
+					effect_value = GetVulnerability(effect_value, caster, spell_id, ticsremaining);
 				effect_value = -effect_value;
 				Damage(caster, effect_value, spell_id, spell.skill, false, i, true);
 			} else if(effect_value > 0) {
 				//healing spell...
 				//healing aggro would go here; removed for now
 				if(caster)
-					effect_value = caster->GetActSpellHealing(spell_id, effect_value);
+				{
+					if (caster->GetTarget())
+						effect_value = GetHealRate(effect_value, caster->GetTarget());
+ 					effect_value = caster->GetActSpellHealing(spell_id, effect_value);
+				}
+
 				HealDamage(effect_value, caster);
 			}
 
@@ -3152,7 +3171,7 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 		case SE_HealOverTime:
 		{
 			effect_value = CalcSpellEffectValue(spell_id, i, caster_level);
-
+			effect_value = GetHealRate(effect_value, this);
 			//is this affected by stuff like GetActSpellHealing??
 			HealDamage(effect_value, caster);
 			//healing aggro would go here; removed for now
@@ -3253,6 +3272,7 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 		case SE_Invisibility:
 		case SE_InvisVsAnimals:
 		case SE_InvisVsUndead:
+		{
 			if(ticsremaining > 3)
 			{
 				if(!IsBardSong(spell_id))
@@ -3273,14 +3293,38 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 					}
 				}
 			}
-		
+		}
 		case SE_Invisibility2:
 		case SE_InvisVsUndead2:
+		{
 			if(ticsremaining <= 3 && ticsremaining > 1)
 			{
 				Message_StringID(MT_Spells, INVIS_BEGIN_BREAK);
 			}
 			break;
+		}
+		case SE_InterruptCasting:
+		{	
+			if(IsCasting())
+			{
+				if(MakeRandomInt(0, 100) <= spells[spell_id].base[i])
+				{
+					InterruptSpell();
+				}
+			}
+			break;
+		}
+		// These effects always trigger when they fade.
+		case SE_ImprovedSpellEffect:
+		case SE_BossSpellTrigger:
+		case SE_CastOnWearoff:
+		{
+			if (ticsremaining == 1) 
+			{
+				SpellOnTarget(spells[spell_id].base[i], this);
+			}
+			break;
+		}
 		default: {
 			// do we need to do anyting here?
 		}
@@ -3860,6 +3904,38 @@ sint16 Mob::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id) {
 			}
 			break;
 		}
+		case SE_SpellVulnerability:
+		{
+			if(type == focusSpellVulnerability)
+			{
+				value = 1;
+			}
+			break;
+		}
+		case SE_Twincast:
+		{
+			if(type == focusTwincast)
+			{
+				value = 1;
+			}
+			break;
+		}
+		case SE_SympatheticProc:
+		{
+			if(type == focusSympatheticProc)
+			{
+				if(MakeRandomInt(0, 1000) <= focus_spell.base[i])
+				{
+					value = focus_id;
+				}
+				else
+				{
+					value = 0;
+				}
+			}
+			break;
+		}
+
 #if EQDEBUG >= 6
 		//this spits up a lot of garbage when calculating spell focuses
 		//since they have all kinds of extra effects on them.

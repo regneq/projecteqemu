@@ -1252,6 +1252,7 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough)
 			other->AvoidDamage(this, damage);
 			other->MeleeMitigation(this, damage, min_hit);
 			ApplyMeleeDamageBonus(skillinuse, damage);
+			damage = GetSkillDmgTaken(skillinuse, damage);
 			TryCriticalHit(other, skillinuse, damage);
 			mlog(COMBAT__DAMAGE, "Final damage after all reductions: %d", damage);
 		}
@@ -1828,6 +1829,7 @@ bool NPC::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough)	 // 
 		if(other->IsClient() && other->CastToClient()->IsSitting()) {
 			mlog(COMBAT__DAMAGE, "Client %s is sitting. Hitting for max damage (%d).", other->GetName(), (max_dmg+eleBane));
 			damage = (max_dmg+eleBane);
+			damage = GetSkillDmgTaken(skillinuse, damage);
 
 			mlog(COMBAT__HITS, "Generating hate %d towards %s", hate, GetName());
 			// now add done damage to the hate list
@@ -1839,6 +1841,7 @@ bool NPC::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough)	 // 
 				other->AvoidDamage(this, damage);
 				other->MeleeMitigation(this, damage, min_dmg+eleBane);
 				ApplyMeleeDamageBonus(skillinuse, damage);
+				damage = GetSkillDmgTaken(skillinuse, damage);
 				TryCriticalHit(other, skillinuse, damage);
 
 				mlog(COMBAT__HITS, "Generating hate %d towards %s", hate, GetName());
@@ -2873,7 +2876,8 @@ sint32 Mob::ReduceDamage(sint32 damage)
 	{
 		if(--buffs[slot].melee_rune == 0)
 		{
-			BuffFadeBySlot(slot);
+			if(!TryFadeEffect(slot))
+				BuffFadeBySlot(slot);
 			UpdateRuneFlags();
 		}
 		return -6;
@@ -2888,7 +2892,8 @@ sint32 Mob::ReduceDamage(sint32 damage)
 			mlog(SPELLS__EFFECT_VALUES, "Mob::ReduceDamage SE_MitigateMeleeDamage %d damage negated, %d"
 				" damage remaining, fading buff.", damage_to_reduce, buffs[slot].melee_rune);
 			damage -= damage_to_reduce;
-			BuffFadeBySlot(slot);
+			if(!TryFadeEffect(slot))
+				BuffFadeBySlot(slot);
 			UpdateRuneFlags();
 		}
 		else
@@ -2920,7 +2925,8 @@ sint32 Mob::ReduceDamage(sint32 damage)
 		{
 			if(melee_rune_left > 0)
 				damage -= melee_rune_left;
-			BuffFadeBySlot(slot);
+			if(!TryFadeEffect(slot))
+				BuffFadeBySlot(slot);
 			slot = GetBuffSlotFromType(SE_Rune);
 			UpdateRuneFlags();
 		}
@@ -2929,72 +2935,89 @@ sint32 Mob::ReduceDamage(sint32 damage)
 	return(damage);
 }
 	
-sint32 Mob::ReduceMagicalDamage(sint32 damage) 
+sint32 Mob::AffectMagicalDamage(sint32 damage, int16 spell_id, const bool iBuffTic, Mob* attacker) 
 {
-	if(damage <= 0 || (!HasSpellRune() && !HasPartialSpellRune()))
+	if(damage <= 0)
 	{
 		return damage;
 	}
 
+	// See if we block the spell outright first
 	int slot = GetBuffSlotFromType(SE_NegateAttacks);
 	if(slot >= 0 && buffs[slot].magic_rune > 0)
 	{
 		if(--buffs[slot].melee_rune == 0)
 		{
-			BuffFadeBySlot(slot);
+			if(!TryFadeEffect(slot))
+				BuffFadeBySlot(slot);
 			UpdateRuneFlags();
 		}
 		return -6;
 	}
-
-	slot = GetBuffSlotFromType(SE_MitigateSpellDamage);
-	if(slot >= 0)
+	
+	// If this is a DoT, use DoT Shielding...
+	if(iBuffTic)
 	{
-		int damage_to_reduce = damage * GetPartialMagicRuneReduction(buffs[slot].spellid) / 100;
-		if(damage_to_reduce > buffs[slot].magic_rune)
+		damage -= (damage * this->itembonuses.DoTShielding / 100);
+	}
+	// This must be a DD then so lets apply Spell Shielding and runes.
+	else 
+	{
+		// Reduce damage by the Spell Shielding first so that the runes don't take the raw damage.
+		damage -= (damage * this->itembonuses.SpellDamageShield / 100);
+	
+		// Do runes now.
+		slot = GetBuffSlotFromType(SE_MitigateSpellDamage);
+		if(slot >= 0)
 		{
-			mlog(SPELLS__EFFECT_VALUES, "Mob::ReduceDamage SE_MitigateSpellDamage %d damage negated, %d"
-				" damage remaining, fading buff.", damage_to_reduce, buffs[slot].magic_rune);
-			damage -= damage_to_reduce;
-			BuffFadeBySlot(slot);
-			UpdateRuneFlags();
+			int damage_to_reduce = damage * GetPartialMagicRuneReduction(buffs[slot].spellid) / 100;
+			if(damage_to_reduce > buffs[slot].magic_rune)
+			{
+				mlog(SPELLS__EFFECT_VALUES, "Mob::ReduceDamage SE_MitigateSpellDamage %d damage negated, %d"
+					" damage remaining, fading buff.", damage_to_reduce, buffs[slot].magic_rune);
+				damage -= damage_to_reduce;
+				if(!TryFadeEffect(slot))
+					BuffFadeBySlot(slot);
+				UpdateRuneFlags();
+			}
+			else
+			{
+				mlog(SPELLS__EFFECT_VALUES, "Mob::ReduceDamage SE_MitigateMeleeDamage %d damage negated, %d"
+					" damage remaining.", damage_to_reduce, buffs[slot].magic_rune);
+				buffs[slot].magic_rune = (buffs[slot].magic_rune - damage_to_reduce);
+				damage -= damage_to_reduce;
+			}
 		}
-		else
+
+		if(damage < 1)
 		{
-			mlog(SPELLS__EFFECT_VALUES, "Mob::ReduceDamage SE_MitigateMeleeDamage %d damage negated, %d"
-				" damage remaining.", damage_to_reduce, buffs[slot].magic_rune);
-			buffs[slot].magic_rune = (buffs[slot].magic_rune - damage_to_reduce);
-			damage -= damage_to_reduce;
+			return -6;
+		}
+
+
+		slot = GetBuffSlotFromType(SE_AbsorbMagicAtt);
+		while(slot >= 0)
+		{
+			int16 magic_rune_left = buffs[slot].magic_rune;
+			if(magic_rune_left >= damage)
+			{
+				magic_rune_left -= damage;
+				damage = 0;
+				buffs[slot].magic_rune = magic_rune_left;
+				break;
+			}
+			else
+			{
+				if(magic_rune_left > 0)
+					damage -= magic_rune_left;
+				if(!TryFadeEffect(slot))
+					BuffFadeBySlot(slot);
+				slot = GetBuffSlotFromType(SE_AbsorbMagicAtt);
+				UpdateRuneFlags();
+			}
 		}
 	}
-
-	if(damage < 1)
-	{
-		return -6;
-	}
-
-	slot = GetBuffSlotFromType(SE_AbsorbMagicAtt);
-	while(slot >= 0)
-	{
-		int16 magic_rune_left = buffs[slot].magic_rune;
-		if(magic_rune_left >= damage)
-		{
-			magic_rune_left -= damage;
-			damage = 0;
-			buffs[slot].magic_rune = magic_rune_left;
-			break;
-		}
-		else
-		{
-			if(magic_rune_left > 0)
-				damage -= magic_rune_left;
-			BuffFadeBySlot(slot);
-			slot = GetBuffSlotFromType(SE_AbsorbMagicAtt);
-			UpdateRuneFlags();
-		}
-	}
-
-	return(damage);
+	return damage;
 }
 
 bool Mob::HasProcs() const
@@ -3159,7 +3182,7 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 			mlog(COMBAT__HITS, "Melee Damage reduced to %d", damage);
 		} else {
 			sint32 origdmg = damage;
-			damage = ReduceMagicalDamage(damage);
+			damage = AffectMagicalDamage(damage, spell_id, iBuffTic, attacker);
 			mlog(COMBAT__HITS, "Melee Damage reduced to %d", damage);
 			if (origdmg != damage && attacker && attacker->IsClient()) {
 				if(attacker->CastToClient()->GetFilter(FILTER_DAMAGESHIELD) != FilterHide)

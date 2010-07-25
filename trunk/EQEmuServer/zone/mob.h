@@ -87,6 +87,9 @@ typedef enum {	//focus types
 	focusResistRate,
 	focusSpellHateMod,
 	focusTriggerOnCast,
+	focusSpellVulnerability,
+	focusTwincast,
+	focusSympatheticProc,
 } focusType;
 
 enum {
@@ -533,7 +536,8 @@ bool logpos;
 	void	DamageShield(Mob* other);
 	bool	FindBuff(int16 spellid);
 	bool	FindType(int8 type, bool bOffensive = false, int16 threshold = 100);
-	sint8	GetBuffSlotFromType(int8 type);
+	sint8	GetBuffSlotFromType(int16 type);
+	int16	GetSpellIDFromSlot(int8 slot);
 	int		CountDispellableBuffs();
 	bool	HasBuffIcon(Mob* caster, Mob* target, int16 spell_id);
 
@@ -582,7 +586,7 @@ bool logpos;
 
 	inline sint32	GetHP()			const { return cur_hp; }
 	inline sint32	GetMaxHP()		const { return max_hp; }
-	virtual inline sint32	CalcMaxHP()		{ return max_hp = (base_hp  + itembonuses.HP + spellbonuses.HP); }
+	virtual sint32	CalcMaxHP();
 	float GetWalkspeed() const { return(_GetMovementSpeed(-47)); }
 	float GetRunspeed() const { return(_GetMovementSpeed(0)); }
 	float GetBaseRunspeed() const { return runspeed; }
@@ -778,6 +782,14 @@ bool logpos;
 	bool TryDeathSave();
 	void DoBuffWearOffEffect(uint32 index);
 	void TryTriggerOnCast(Mob *target, uint32 spell_id);
+	void TrySpellTrigger(Mob *target, uint32 spell_id);
+	void TryApplyEffect(Mob *target, uint32 spell_id);
+	void TryTwincast(Mob *caster, Mob *target, uint32 spell_id);
+	void TrySympatheticProc(Mob *target, uint32 spell_id);
+	bool TryFadeEffect(int slot);
+	int32 GetHealRate(uint32 amount, Mob *target);
+	sint32 GetVulnerability(sint32 damage, Mob *caster, uint32 spell_id, int32 ticsremaining);
+	sint32 GetSkillDmgTaken(const SkillType skill_used, sint32 damage);
 
 	static int32 GetAppearanceValue(EmuAppearance iAppearance);
 	void SendAppearancePacket(int32 type, int32 value, bool WholeZone = true, bool iIgnoreSelf = false, Client *specific_target=NULL);
@@ -839,7 +851,7 @@ bool logpos;
 	inline int16	GetErrorNumber() const {return adverrorinfo;}
 
 	sint32	ReduceDamage(sint32 damage);
-	sint32  ReduceMagicalDamage(sint32 damage);
+	sint32  AffectMagicalDamage(sint32 damage, int16 spell_id, const bool iBuffTic, Mob* attacker);
 
 	virtual void DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, sint32 min_damage = 1, sint32 hate_override = -1);
     bool Flurry();
