@@ -596,6 +596,25 @@ sint32 Mob::CalcMaxMana() {
 	return max_mana;
 }
 
+sint32 Mob::CalcMaxHP() 
+{
+
+	max_hp = (base_hp  + itembonuses.HP + spellbonuses.HP);
+	
+	int slot = GetBuffSlotFromType(SE_MaxHPChange);
+	if(slot >= 0)
+	{
+		for(int i = 0; i < EFFECT_COUNT; i++)
+		{
+			if (spells[buffs[slot].spellid].effectid[i] == SE_MaxHPChange)
+			{
+				max_hp += max_hp * spells[buffs[slot].spellid].base[i] / 10000;
+			}
+		}
+	}
+	return max_hp;
+}
+
 char Mob::GetCasterClass() const {
 	switch(class_)
 	{
@@ -3033,6 +3052,311 @@ void Mob::TryTriggerOnCast(Mob *target, uint32 spell_id)
 				{
 					SpellOnTarget(spells[buffs[i].spellid].base2[0], target);
 				}
+			}
+		}
+	}
+}
+
+void Mob::TrySpellTrigger(Mob *target, uint32 spell_id)
+{
+	if(target == NULL || !IsValidSpell(spell_id))
+	{
+		return;
+	}
+	int spell_trig = 0;
+	// Count all the percentage chances to trigger for all effects
+	for(int i = 0; i < EFFECT_COUNT; i++)
+	{
+		if (spells[spell_id].effectid[i] == SE_SpellTrigger)
+			spell_trig += spells[spell_id].base[i];
+	}
+	// If all the % add to 100, then only one of the effects can fire but one has to fire.
+	if (spell_trig == 100)
+	{
+		int trig_chance = 100;
+		for(int i = 0; i < EFFECT_COUNT; i++)
+		{
+			if (spells[spell_id].effectid[i] == SE_SpellTrigger)
+			{
+				if(MakeRandomInt(0, trig_chance) <= spells[spell_id].base[i]) 
+				{
+					// If we trigger an effect then its over.
+					SpellOnTarget(spells[spell_id].base2[i], target);
+					break;
+				}
+				else
+				{
+					// Increase the chance to fire for the next effect, if all effects fail, the final effect will fire.
+					trig_chance -= spells[spell_id].base[i];
+				}
+			}
+		
+		}
+	}
+	// if the chances don't add to 100, then each effect gets a chance to fire, chance for no trigger as well.
+	else
+	{
+		for(int i = 0; i < EFFECT_COUNT; i++)
+		{
+			if (spells[spell_id].effectid[i] == SE_SpellTrigger)
+			{
+				if(MakeRandomInt(0, 100) <= spells[spell_id].base[i]) 
+				{
+					SpellOnTarget(spells[spell_id].base2[i], target);
+				}
+			}
+		}
+	}
+}
+
+void Mob::TryApplyEffect(Mob *target, uint32 spell_id)
+{
+	if(target == NULL || !IsValidSpell(spell_id))
+	{
+		return;
+	}
+
+	for(int i = 0; i < EFFECT_COUNT; i++)
+	{
+		if (spells[spell_id].effectid[i] == SE_ApplyEffect)
+		{
+			if(MakeRandomInt(0, 100) <= spells[spell_id].base[i]) 
+			{
+				SpellOnTarget(spells[spell_id].base2[i], target);
+			}
+		}
+	}
+}
+
+void Mob::TryTwincast(Mob *caster, Mob *target, uint32 spell_id)
+{
+	if(!IsValidSpell(spell_id))
+	{
+		return;
+	}
+
+	uint32 buff_count = GetMaxTotalSlots();
+	for(int i = 0; i < buff_count; i++) 
+	{
+		if(IsEffectInSpell(buffs[i].spellid, SE_Twincast))
+		{
+			sint32 focus = CalcFocusEffect(focusTwincast, buffs[i].spellid, spell_id);
+			if(focus == 1)
+			{
+				if(MakeRandomInt(0, 100) <= spells[buffs[i].spellid].base[0])
+				{
+					uint32 mana_cost = (spells[spell_id].mana);
+					if(this->IsClient())
+					{
+						mana_cost = GetActSpellCost(spell_id, mana_cost);
+						this->Message(MT_Spells,"You twincast %s!",spells[spell_id].name);
+					}
+					this->SetMana(GetMana() - mana_cost);
+					SpellOnTarget(spell_id, target);
+				}
+			}
+		}
+	}
+}
+
+sint32 Mob::GetVulnerability(sint32 damage, Mob *caster, uint32 spell_id, int32 ticsremaining)
+{
+	// If we increased the datatype on GetBuffSlotFromType, this wouldnt be needed
+	uint32 buff_count = GetMaxTotalSlots();
+	for(int i = 0; i < buff_count; i++) 
+	{
+		if(IsEffectInSpell(buffs[i].spellid, SE_SpellVulnerability))
+		{
+			// For Clients, Pets and Bots that are casting the spell, see if the vulnerability affects their spell.
+			if(!caster->IsNPC())
+			{
+				sint32 focus = caster->CalcFocusEffect(focusSpellVulnerability, buffs[i].spellid, spell_id);
+				if(focus == 1)
+				{
+					damage += damage * spells[buffs[i].spellid].base[0] / 100;
+					break;
+				}
+			}
+			// If an NPC is casting the spell on a player that has a vulnerability, relaxed restrictions on focus 
+			// so that either the Client is vulnerable to DoTs or DDs of various resists or all.
+			else if (caster->IsNPC())
+			{
+				int npc_resist = 0;
+				int npc_instant = 0;
+				int npc_duration = 0;
+				for(int j = 0; j < EFFECT_COUNT; j++)
+				{
+					switch (spells[buffs[i].spellid].effectid[j]) 
+					{
+					
+					case SE_Blank:
+						break;
+
+					case SE_LimitResist:
+						if(spells[buffs[i].spellid].base[j])
+						{
+							if(spells[spell_id].resisttype == spells[buffs[i].spellid].base[j])
+								npc_resist = 1;
+						}
+						break;
+
+					case SE_LimitInstant:
+						if(!ticsremaining) 
+						{
+							npc_instant = 1;
+							break;
+						}
+
+					case SE_LimitMinDur:
+						if(ticsremaining) 
+						{
+							npc_duration = 1;
+							break;
+						}
+
+						default:{
+						// look pretty
+							break;
+						}	
+					}
+				}
+				// DDs and Dots of all resists 
+				if ((npc_instant) || (npc_duration)) 
+					damage += damage * spells[buffs[i].spellid].base[0] / 100;
+				
+				else if (npc_resist) 
+				{
+					// DDs and Dots restricted by resists
+					if ((npc_instant) || (npc_duration)) 
+					{
+						damage += damage * spells[buffs[i].spellid].base[0] / 100;
+					}
+					// DD and Dots of 1 resist ... these are to maintain compatibility with current spells, not ideal.
+					else if (!npc_instant && !npc_duration)
+					{
+						damage += damage * spells[buffs[i].spellid].base[0] / 100;
+					}
+				}
+			}
+		}
+	}
+	return damage;
+}
+
+sint32 Mob::GetSkillDmgTaken(const SkillType skill_used, sint32 damage)
+{
+	if (this->GetTarget())
+	{
+		int slot = this->GetTarget()->GetBuffSlotFromType(SE_SkillDamageTaken);
+		if(slot >= 0)
+		{
+			int spell_id = this->GetTarget()->GetSpellIDFromSlot(slot);
+			if (spell_id)
+			{
+				for(int i = 0; i < EFFECT_COUNT; i++)
+				{
+					if (spells[spell_id].effectid[i] == SE_SkillDamageTaken)
+					{
+						// Check the skill against the spell, or allow all melee skills.
+						if(skill_used == spells[spell_id].base2[i] || spells[spell_id].base2[i] == -1)
+						{
+						damage += damage * spells[spell_id].base[i] / 100;
+						return damage;
+						}
+					}
+				}
+			}
+		}
+	}
+	return damage;
+}
+
+int32 Mob::GetHealRate(uint32 amount, Mob *target)
+{
+
+	if(target) {
+		int slot = target->GetBuffSlotFromType(SE_HealRate);
+		if(slot >= 0)
+		{
+			sint32 modify_amount = amount;
+			for(int i = 0; i < EFFECT_COUNT; i++)
+			{
+				if (spells[buffs[slot].spellid].effectid[i] == SE_HealRate)
+				{
+					// if the effect reduces the heal amount below 0, return 0.
+					if(spells[buffs[slot].spellid].base[i] < -100)
+					{
+						amount = 0;
+						break;
+					}
+					else
+					{
+						amount += (modify_amount * spells[buffs[slot].spellid].base[i] / 100);
+						break;
+					}
+				}
+			}
+		}
+	}
+	return amount;
+}
+
+bool Mob::TryFadeEffect(int slot)
+{
+	if(slot)
+	{
+		for(int i = 0; i < EFFECT_COUNT; i++)
+		{
+			if (spells[buffs[slot].spellid].effectid[i] == SE_CastOnWearoff || spells[buffs[slot].spellid].effectid[i] == SE_EffectOnFade)
+			{
+				int16 spell_id = spells[buffs[slot].spellid].base[i];
+				BuffFadeBySlot(slot);
+				if(spell_id)
+				{
+					ExecWeaponProc(spell_id, this);
+					return true;
+				}
+			}
+		}
+	}
+	return false;
+}
+
+void Mob::TrySympatheticProc(Mob *target, uint32 spell_id)
+{
+	if(target == NULL || !IsValidSpell(spell_id))
+	{
+		return;
+	}
+	
+	int focus_spell = this->CastToClient()->GetFocusEffect(focusSympatheticProc,spell_id);
+	if(focus_spell > 0)
+	{
+		int focus_trigger = spells[focus_spell].base2[0];
+		// For beneficial spells, if the triggered spell is also beneficial then proc it on the target
+		// if the triggered spell is detrimental, then it will trigger on the caster(ie cursed items)
+		if(IsBeneficialSpell(spell_id))
+		{
+			if(IsBeneficialSpell(focus_trigger))
+			{
+				SpellOnTarget(focus_trigger, target);
+			}
+			else
+			{
+				SpellOnTarget(focus_trigger, this);
+			}
+		}
+		// For detrimental spells, if the triggered spell is beneficial, then it will land on the caster
+		// if the triggered spell is also detrimental, then it will land on the target
+		else
+		{
+			if(IsBeneficialSpell(focus_trigger))
+			{
+				SpellOnTarget(focus_trigger, this);
+			}
+			else
+			{
+				SpellOnTarget(focus_trigger, target);
 			}
 		}
 	}

@@ -240,6 +240,18 @@ sint32 Client::CalcMaxHP() {
 
 	max_hp += GroupLeadershipAAHealthEnhancement();
 	
+	int slot = GetBuffSlotFromType(SE_MaxHPChange);
+	if(slot >= 0)
+	{
+		for(int i = 0; i < EFFECT_COUNT; i++)
+		{
+			if (spells[buffs[slot].spellid].effectid[i] == SE_MaxHPChange)
+			{
+				max_hp += max_hp * spells[buffs[slot].spellid].base[i] / 10000;
+			}
+		}
+	}
+
 	if (cur_hp > max_hp)
 		cur_hp = max_hp;
 	return max_hp;
@@ -1773,10 +1785,28 @@ int16 Mob::GetInstrumentMod(int16 spell_id) const {
 void Client::CalcMaxEndurance()
 {
 	max_end = CalcBaseEndurance() + spellbonuses.Endurance + itembonuses.Endurance;
+	
+	int slot = GetBuffSlotFromType(SE_EndurancePool);
+	if(slot >= 0)
+	{
+		for(int i = 0; i < EFFECT_COUNT; i++)
+		{
+			if (spells[buffs[slot].spellid].effectid[i] == SE_EndurancePool)
+			{
+				max_end += spells[buffs[slot].spellid].base[i];
+			}
+		}
+	}
+	
 	if (cur_end > max_end) {
 		cur_end = max_end;
 	}
+	if (max_end < 0) {
+		max_end = 0;
+	}
+	
 }
+
 
 sint32 Client::CalcBaseEndurance()
 {

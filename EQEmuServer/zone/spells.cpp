@@ -1064,7 +1064,12 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16
 			return;
 		}
 	}
-	
+
+	if(IsClient()) 
+		TrySympatheticProc(target, spell_id);
+
+	TryTwincast(this, target, spell_id);
+
 	// we're done casting, now try to apply the spell
 	if( !SpellFinished(spell_id, spell_target, slot, mana_used, inventory_slot) )
 	{
@@ -3045,6 +3050,8 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar)
 		}
 
 	TryTriggerOnCast(spelltar, spell_id);
+	TrySpellTrigger(spelltar, spell_id);
+	TryApplyEffect(spelltar, spell_id);
 
 	if(spell_id == 982)	// Cazic Touch, hehe =P
 	{
@@ -3874,6 +3881,7 @@ void Client::MakeBuffFadePacket(int16 spell_id, int slot_id, bool send_message)
 		QueuePacket(outapp);
 		safe_delete(outapp);
 	}
+
 }
 
 void Client::MemSpell(int16 spell_id, int slot, bool update_client)
@@ -4434,7 +4442,7 @@ int16 Mob::FindSpell(int16 classp, int16 level, int8 type, int8 spelltype) {
 */
 
 // solar: TODO get rid of this
-sint8 Mob::GetBuffSlotFromType(int8 type) {
+sint8 Mob::GetBuffSlotFromType(int16 type) {
 	uint32 buff_count = GetMaxTotalSlots();
 	for (int i = 0; i < buff_count; i++) {
 		if (buffs[i].spellid != SPELL_UNKNOWN) {
@@ -4445,6 +4453,13 @@ sint8 Mob::GetBuffSlotFromType(int8 type) {
 		}
 	}
     return -1;
+}
+
+int16 Mob::GetSpellIDFromSlot(int8 slot) 
+{
+	if (buffs[slot].spellid != SPELL_UNKNOWN) 
+		return buffs[slot].spellid;
+    return 0;
 }
 
 

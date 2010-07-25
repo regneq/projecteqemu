@@ -475,7 +475,7 @@ typedef enum  {
 #define SE_PercentXPIncrease		337	//not implemented
 #define SE_SummonAndResAllCorpses	338	//not implemented
 #define SE_TriggerOnCast			339	//not implemented
-#define SE_LifeshardChance			340	//chance to create lifeshard
+#define SE_SpellTrigger     		340	//chance to trigger spell
 //#define SE_Unknown341				341	//not used
 #define SE_ImmuneFleeing			342	//not implemented
 #define SE_InterruptCasting			343	//not implemented. % chance to interrupt spells being cast every tic. Cacophony (8272)
@@ -520,9 +520,10 @@ typedef enum  {
 #define SE_Knockdown				380 //small knock back + stun or feign?
 //#define SE_Unknown381				381	//not used
 #define SE_BlockDS					382 //something to do with blocking a % of certain ds?
-#define SE_Leap						383 //used to leap forward? probably something like a small knock back reverse to push you forward
+#define SE_SympatheticProc			383 //focus on items that has chance to proc a spell when you cast
 //#define SE_Unknown384				384	//not used
 //#define SE_Unknown385				385	//not used
+#define SE_Twincast					399 //cast 2 spells for every 1
 //last effect
 
 #define DF_Permanent		50

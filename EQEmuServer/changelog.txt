@@ -1,6 +1,12 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==07/19/2010==
+Trevius: Added the following Spell Effects submitted by Caryatis:
+		SE_SympatheticProc, SE_ImprovedSpellEffect, SE_SpellVulnerability, SE_SpellTrigger
+		SE_InterruptCasting, SE_CastOnWearoff, SE_ApplyEffect, SE_BossSpellTrigger, SE_Twincast
+		SE_HealRate, SE_SkillDamageTaken, SE_EffectOnFade, SE_MaxHPChange, and SE_EndurancePool.
+
+==07/19/2010==
 gaeorn: fix for foraging
 
 ==07/17/2010==
