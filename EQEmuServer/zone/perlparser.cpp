@@ -87,10 +87,13 @@ void PerlXSParser::map_funs() {
 	"&boot_Raid;"		//load our Raid XS
 
 	"package QuestItem;"
-	"&boot_QuestItem;"	// load quest item XS
+	"&boot_QuestItem;"	// load quest Item XS
 
 	"package HateEntry;"
-	"&boot_HateEntry;"	// load quest item XS
+	"&boot_HateEntry;"	// load quest Hate XS
+
+	"package Object;"
+	"&boot_Object;"	// load quest Object XS
 
 #endif
 	"package main;"
@@ -2563,22 +2566,48 @@ XS(XS__CreateGroundObject)
 {
 	dXSARGS;
 	if (items != 5 && items != 6)
-		Perl_croak(aTHX_ "Usage: CreateGroundObject(itemid, x, y, z, heading, [decay_time])");
+		Perl_croak(aTHX_ "Usage: creategroundobject(itemid, x, y, z, heading, [decay_time])");
 
 	int	itemid = (int)SvIV(ST(0));
 	float x = (float)SvNV(ST(1));
 	float y = (float)SvNV(ST(2));
 	float z = (float)SvNV(ST(3));
 	float heading = (float)SvNV(ST(4));
+	uint16 id = 0;
 
 	if(items == 5)
-		quest_manager.CreateGroundObject(itemid, x, y, z, heading);
+		id = quest_manager.CreateGroundObject(itemid, x, y, z, heading);
 	else{
 		int32 decay_time = (int32)SvIV(ST(5));
-		quest_manager.CreateGroundObject(itemid, x, y, z, heading, decay_time);
+		id = quest_manager.CreateGroundObject(itemid, x, y, z, heading, decay_time);
 	}
 
-	XSRETURN_EMPTY;
+	XSRETURN_IV(id);
+}
+
+XS(XS__CreateGroundObjectFromModel);
+XS(XS__CreateGroundObjectFromModel)
+{
+	dXSARGS;
+	if (items != 5 && items != 6)
+		Perl_croak(aTHX_ "Usage: creategroundobjectfrommodel(modelname, x, y, z, heading, [type])");
+
+	char *		modelname = (char *)SvPV_nolen(ST(0));
+	float x = (float)SvNV(ST(1));
+	float y = (float)SvNV(ST(2));
+	float z = (float)SvNV(ST(3));
+	float heading = (float)SvNV(ST(4));
+	uint16 id = 0;
+
+	if(items == 5)
+		id = quest_manager.CreateGroundObjectFromModel(modelname, x, y, z, heading);
+	else{
+		int32 type = (int32)SvIV(ST(5));
+		id = quest_manager.CreateGroundObjectFromModel(modelname, x, y, z, heading, type);
+	}
+
+
+	XSRETURN_IV(id);
 }
 
 XS(XS__ModifyNPCStat);
@@ -3187,6 +3216,7 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "we"), XS__we, file);
 		newXS(strcpy(buf, "getlevel"), XS__getlevel, file);
 		newXS(strcpy(buf, "creategroundobject"), XS__CreateGroundObject, file);
+		newXS(strcpy(buf, "creategroundobjectfrommodel"), XS__CreateGroundObjectFromModel, file);
 		newXS(strcpy(buf, "modifynpcstat"), XS__ModifyNPCStat, file);
         newXS(strcpy(buf, "collectitems"), XS__collectitems, file);
 		newXS(strcpy(buf, "updatespawntimer"), XS__UpdateSpawnTimer, file);

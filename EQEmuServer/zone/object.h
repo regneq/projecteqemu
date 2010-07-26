@@ -135,6 +135,7 @@ public:
 	// Loading object from client dropping item on ground
 	Object(Client* client, const ItemInst* inst);
 	Object(const ItemInst *inst, float x, float y, float z, float heading, int32 decay_time);
+	Object(const char *model, float x, float y, float z, float heading, int8 type);
 	
 	// Destructor
 	~Object();
@@ -153,6 +154,8 @@ public:
 	// Packet functions
 	void CreateSpawnPacket(EQApplicationPacket* app);
 	void CreateDeSpawnPacket(EQApplicationPacket* app);
+	void Depop();
+	void Repop();
 	
 	//Decay functions
 	void StartDecay() {decay_timer.Start();}
@@ -165,6 +168,7 @@ public:
 	// Override base class implementations
 	virtual bool IsObject()	const { return true; }
 	virtual bool Save();
+	virtual int16 VarSave();
 	virtual void SetID(int16 set_id);
 	
 	void ClearUser() { user = NULL; }
@@ -172,6 +176,7 @@ public:
 	int32 GetDBID();
 	int32 GetType();
 	void  SetType(int32 type);
+	void  SetDBID(int32 dbid);
 	int32 GetIcon();
 	void  SetIcon(int32 icon);
 	int32 GetItemID();
@@ -182,6 +187,15 @@ public:
 	void SetLocation(float x, float y, float z);
 	void GetHeading(float* heading);
 	void SetHeading(float heading);
+	float GetX();
+	float GetY();
+	float GetZ();
+	float GetHeadingData();
+	void SetX(float pos);
+	void SetY(float pos);
+	void SetZ(float pos);
+	void SetModelName(const char* modelname);
+	const char* GetModelName();
 
 protected:
 	void	ResetState();	// Set state back to original

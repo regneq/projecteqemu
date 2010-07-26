@@ -1,7 +1,17 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
-==07/19/2010==
-Trevius: Added the following Spell Effects submitted by Caryatis:
+==07/26/2010==
+Trevius: (Secrets) Added quest::creategroundobjectfrommodel(modelname, x, y, z, heading, [type]) command.
+Trevius: (Secrets) quest::creategroundobject(itemid, x, y, z, heading) now returns object ID.
+Trevius: (Secrets) Added Object List Iteration functions GetObjectByDBID(id), GetObjectByID(id), GetObjectList().
+Trevius: (Secrets) exported Objects to Perl with the following commands:
+		IsGroundSpawn(), Close(), Delete(reset_state=false), StartDecay(), DeleteItem(index), IsObject(), 
+		Save(), SetID(set_id), ClearUser(), DBID(), GetID(), GetX(), GetY(), GetZ(), GetHeading(), VarSave(), 
+		GetType(), SetType(type), GetIcon(), SetIcon(icon), GetItemID(), SetItemID(itemid), SetLocation(x, y, z), 
+		SetX(XPos), SetY(YPos), SetZ(ZPos), SetHeading(heading), SetModelName(name), GetModelName(), Repop(), Depop().
+
+==07/25/2010==
+Trevius: (Caryatis) Added the following Spell Effects:
 		SE_SympatheticProc, SE_ImprovedSpellEffect, SE_SpellVulnerability, SE_SpellTrigger
 		SE_InterruptCasting, SE_CastOnWearoff, SE_ApplyEffect, SE_BossSpellTrigger, SE_Twincast
 		SE_HealRate, SE_SkillDamageTaken, SE_EffectOnFade, SE_MaxHPChange, and SE_EndurancePool.

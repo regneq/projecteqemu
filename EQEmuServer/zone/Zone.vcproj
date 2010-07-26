@@ -572,6 +572,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\perl_object.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\perl_perlpacket.cpp"
 				>
 			</File>

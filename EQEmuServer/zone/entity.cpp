@@ -1066,6 +1066,50 @@ Mob* EntityList::GetMobByNpcTypeID(int32 get_id)
 	return 0;
 }
 
+Object* EntityList::GetObjectByDBID(int32 id)
+{
+	if (id == 0)
+		return 0;
+
+	LinkedListIterator<Object*> iterator(object_list);
+
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		if (iterator.GetData())
+		{
+			if (iterator.GetData()->CastToObject()->GetDBID() == id)
+			{
+				return iterator.GetData();
+			}
+		}
+		iterator.Advance();
+	}
+	return 0;
+}
+
+Object* EntityList::GetObjectByID(int16 id)
+{
+	if (id == 0)
+		return 0;
+
+	LinkedListIterator<Object*> iterator(object_list);
+
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		if (iterator.GetData())
+		{
+			if (iterator.GetData()->CastToObject()->GetID() == id)
+			{
+				return iterator.GetData();
+			}
+		}
+		iterator.Advance();
+	}
+	return 0;
+}
+
 int16 EntityList::GetFreeID()
 {
 	if(last_insert_id > 1500)
@@ -3833,7 +3877,7 @@ void EntityList::GroupMessage(int32 gid, const char *from, const char *message)
 	} 
 }
 
-void EntityList::CreateGroundObject(int32 itemid, float x, float y, float z, float heading, int32 decay_time)
+int16 EntityList::CreateGroundObject(int32 itemid, float x, float y, float z, float heading, int32 decay_time)
 {
 	const Item_Struct* is = database.GetItem(itemid);
 	if(is)
@@ -3845,8 +3889,26 @@ void EntityList::CreateGroundObject(int32 itemid, float x, float y, float z, flo
 			entity_list.AddObject(object, true);
 			object->StartDecay();
 			safe_delete(i);
+			if(object)
+			return object->GetID();
 		}
+		return 0; // fell through itemstruct
 	}
+	return 0; // fell through everything, this is bad/incomplete from perl
+}
+
+int16 EntityList::CreateGroundObjectFromModel(const char *model, float x, float y, float z, float heading, int8 type)
+{
+	if(model)
+	{
+			Object* object = new Object(model,x,y,z,heading,type);
+			entity_list.AddObject(object, true);
+			//object->StartDecay();
+			if(object)
+			return object->GetID();
+			// fell through itemstruct
+	}
+	return 0; // fell through everything, this is bad/incomplete from perl
 }
 
 Mob* EntityList::GetTargetForMez(Mob* caster)
@@ -4352,6 +4414,19 @@ void EntityList::GetCorpseList(list<Corpse*> &c_list)
 	{
 		Corpse *ent = iterator.GetData();
 		c_list.push_back(ent);
+		iterator.Advance();
+	}
+}
+
+void EntityList::GetObjectList(list<Object*> &o_list)
+{
+	o_list.clear();
+	LinkedListIterator<Object*> iterator(object_list); 
+	iterator.Reset();
+	while(iterator.MoreElements()) 
+	{
+		Object *ent = iterator.GetData();
+		o_list.push_back(ent);
 		iterator.Advance();
 	}
 }

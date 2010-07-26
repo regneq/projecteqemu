@@ -600,8 +600,3 @@ bool ZoneDatabase::LoadDoors(sint32 iDoorCount, Door *into, const char *zone_nam
 	}
 	return true;
 }
-
-
-
-
-

@@ -152,6 +152,8 @@ public:
 	Corpse* GetCorpseByID(int16 id);
 	Corpse* GetCorpseByDBID(int32 dbid);
 	Corpse* GetCorpseByName(char* name);
+	Object*	GetObjectByID(int16 id);
+	Object*	GetObjectByDBID(int32 id);
 	void RemoveAllCorpsesByCharID(int32 charid);
 	int RezzAllCorpsesByCharID(int32 charid);
 	bool IsMobInZone(Mob *who);
@@ -343,7 +345,8 @@ public:
 	void    SaveAllClientsTaskState();
 	void    ReloadAllClientsTaskState(int TaskID=0);
 
-	void	CreateGroundObject(int32 itemid, float x, float y, float z, float heading, int32 decay_time = 300000);
+	int16	CreateGroundObject(int32 itemid, float x, float y, float z, float heading, int32 decay_time = 300000);
+	int16	CreateGroundObjectFromModel(const char *model, float x, float y, float z, float heading, int8 type = 0x00);
 	void	ZoneWho(Client *c, Who_All_Struct* Who);
 	void	UnMarkNPC(int16 ID);
 
@@ -359,6 +362,8 @@ public:
 	void GetNPCList(list<NPC*> &n_list);
 	void GetClientList(list<Client*> &c_list);
 	void GetCorpseList(list<Corpse*> &c_list);
+	void GetObjectList(list<Object*> &o_list);
+
 	void	DepopAll(int NPCTypeID, bool StartSpawnTimer = true);
 
 protected:
