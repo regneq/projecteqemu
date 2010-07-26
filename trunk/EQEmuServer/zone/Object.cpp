@@ -221,6 +221,40 @@ Object::Object(const ItemInst *inst, float x, float y, float z, float heading, i
 	}
 }
 
+Object::Object(const char *model, float x, float y, float z, float heading, int8 type)
+ : respawn_timer(0), decay_timer(300000)
+{
+	user = NULL;
+	last_user = NULL;
+	
+	// Initialize members
+	m_id	= 0;
+	m_inst	= NULL;
+	m_type	= type;
+	m_icon	= 0;
+	m_inuse	= false;
+	m_ground_spawn = false;
+	// Set as much struct data as we can
+	memset(&m_data, 0, sizeof(Object_Struct));
+	m_data.heading = heading;
+	m_data.x = x;
+	m_data.y = y;
+	m_data.z = z;
+	m_data.zone_id = zone->GetZoneID();
+	//Hardcoded portion for unknown members
+	m_data.unknown024	= 0x7f001194;
+	m_data.unknown064	= 0;	//0x0000000D;
+	m_data.unknown068	= 0;	//0x0000001E;
+	m_data.unknown072	= 0;	//0x000032ED;
+	m_data.unknown076	= 0x0000d5fe;
+	m_data.unknown084	= 0xFFFFFFFF;
+
+	if(model)
+	strcpy(m_data.object_name, model);
+	else
+	strcpy(m_data.object_name, "IT64_ACTORDEF"); //default object name if model isn't specified for some unknown reason
+}
+
 Object::~Object()
 {
 	safe_delete(m_inst);
@@ -261,6 +295,19 @@ bool Object::Save()
 	}
 	
 	return true;
+}
+
+int16 Object::VarSave()
+{
+	if (m_id) {
+		// Update existing
+		database.UpdateObject(m_id, m_type, m_icon, m_data, m_inst);
+	}
+	else {
+		// Doesn't yet exist, add now
+		m_id = database.AddObject(m_type, m_icon, m_data, m_inst);
+	}	
+	return m_id;
 }
 
 // Remove object from database
@@ -648,6 +695,110 @@ int32 Object::GetIcon()
 	return this->m_icon;
 }
 
+float Object::GetX()
+{	
+	return this->m_data.x;
+}
+
+float Object::GetY()
+{
+	return this->m_data.y;
+}
+
+
+float Object::GetZ()
+{
+	return this->m_data.z;
+}
+
+float Object::GetHeadingData()
+{
+	return this->m_data.heading;
+}
+
+void Object::SetX(float pos)
+{
+	this->m_data.x = pos;
+
+	EQApplicationPacket* app = new EQApplicationPacket();
+	EQApplicationPacket* app2 = new EQApplicationPacket();
+	this->CreateDeSpawnPacket(app);
+	this->CreateSpawnPacket(app2);
+	entity_list.QueueClients(0, app);
+	entity_list.QueueClients(0, app2);
+	safe_delete(app);
+	safe_delete(app2);
+}
+
+void Object::SetY(float pos)
+{
+	this->m_data.y = pos;
+
+	EQApplicationPacket* app = new EQApplicationPacket();
+	EQApplicationPacket* app2 = new EQApplicationPacket();
+	this->CreateDeSpawnPacket(app);
+	this->CreateSpawnPacket(app2);
+	entity_list.QueueClients(0, app);
+	entity_list.QueueClients(0, app2);
+	safe_delete(app);
+	safe_delete(app2);
+}
+
+void Object::Depop()
+{
+	EQApplicationPacket* app = new EQApplicationPacket();
+	this->CreateDeSpawnPacket(app);
+	entity_list.QueueClients(0, app);
+	safe_delete(app);
+	entity_list.RemoveObject(this->GetID());
+}
+
+void Object::Repop()
+{
+	EQApplicationPacket* app = new EQApplicationPacket();
+	EQApplicationPacket* app2 = new EQApplicationPacket();
+	this->CreateDeSpawnPacket(app);
+	this->CreateSpawnPacket(app2);
+	entity_list.QueueClients(0, app);
+	entity_list.QueueClients(0, app2);
+	safe_delete(app);
+	safe_delete(app2);
+}
+
+
+
+void Object::SetZ(float pos)
+{
+	this->m_data.z = pos;
+
+	EQApplicationPacket* app = new EQApplicationPacket();
+	EQApplicationPacket* app2 = new EQApplicationPacket();
+	this->CreateDeSpawnPacket(app);
+	this->CreateSpawnPacket(app2);
+	entity_list.QueueClients(0, app);
+	entity_list.QueueClients(0, app2);
+	safe_delete(app);
+	safe_delete(app2);
+}
+
+void Object::SetModelName(const char* modelname)
+{
+	strncpy(m_data.object_name, modelname, 20); // 20 is the max for chars in object_name, this should be safe
+	EQApplicationPacket* app = new EQApplicationPacket();
+	EQApplicationPacket* app2 = new EQApplicationPacket();
+	this->CreateDeSpawnPacket(app);
+	this->CreateSpawnPacket(app2);
+	entity_list.QueueClients(0, app);
+	entity_list.QueueClients(0, app2);
+	safe_delete(app);
+	safe_delete(app2);
+}
+
+const char* Object::GetModelName()
+{
+	return this->m_data.object_name;
+}
+
 void Object::SetIcon(int32 icon)
 {
 	this->m_icon = icon;
@@ -719,6 +870,14 @@ void Object::SetLocation(float x, float y, float z)
 	this->m_data.x = x;
 	this->m_data.y = y;
 	this->m_data.z = z;
+	EQApplicationPacket* app = new EQApplicationPacket();
+	EQApplicationPacket* app2 = new EQApplicationPacket();
+	this->CreateDeSpawnPacket(app);
+	this->CreateSpawnPacket(app2);
+	entity_list.QueueClients(0, app);
+	entity_list.QueueClients(0, app2);
+	safe_delete(app);
+	safe_delete(app2);
 }
 
 void Object::GetHeading(float* heading)
@@ -732,5 +891,13 @@ void Object::GetHeading(float* heading)
 void Object::SetHeading(float heading)
 {
 	this->m_data.heading = heading;
+	EQApplicationPacket* app = new EQApplicationPacket();
+	EQApplicationPacket* app2 = new EQApplicationPacket();
+	this->CreateDeSpawnPacket(app);
+	this->CreateSpawnPacket(app2);
+	entity_list.QueueClients(0, app);
+	entity_list.QueueClients(0, app2);
+	safe_delete(app);
+	safe_delete(app2);
 }
 

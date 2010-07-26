@@ -191,7 +191,8 @@ public:
    	bool checktitle(int titlecheck);
    	void removetitle(int titlecheck);
 
-	void CreateGroundObject(int32 itemid, float x, float y, float z, float heading, int32 decay_time = 300000);
+	int16 CreateGroundObject(int32 itemid, float x, float y, float z, float heading, int32 decay_time = 300000);
+	int16 CreateGroundObjectFromModel(const char* model, float x, float y, float z, float heading, int8 type = 0x00);
 	void ModifyNPCStat(const char *identifier, const char *newValue);
 	void UpdateSpawnTimer(int32 id, int32 newTime);
 

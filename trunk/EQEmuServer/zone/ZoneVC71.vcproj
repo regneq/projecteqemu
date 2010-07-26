@@ -403,6 +403,9 @@
 				RelativePath=".\perl_npc.cpp">
 			</File>
 			<File
+				RelativePath=".\perl_object.cpp">
+			</File>
+			<File
 				RelativePath=".\perl_perlpacket.cpp">
 			</File>
 			<File

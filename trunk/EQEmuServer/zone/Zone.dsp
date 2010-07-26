@@ -350,6 +350,10 @@ SOURCE=.\perl_npc.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\perl_object.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\perl_perlpacket.cpp
 # End Source File
 # Begin Source File

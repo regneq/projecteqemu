@@ -1933,9 +1933,18 @@ int QuestManager::getlevel(uint8 type)
 		return 0;
 }
 
-void QuestManager::CreateGroundObject(int32 itemid, float x, float y, float z, float heading, int32 decay_time)
+int16 QuestManager::CreateGroundObject(int32 itemid, float x, float y, float z, float heading, int32 decay_time)
 {
-	entity_list.CreateGroundObject(itemid, x, y, z, heading, decay_time);
+	int16 entid = 0; //safety check
+	entid = entity_list.CreateGroundObject(itemid, x, y, z, heading, decay_time);
+	return entid;
+}
+
+int16 QuestManager::CreateGroundObjectFromModel(const char *model, float x, float y, float z, float heading, int8 type)
+{
+	int16 entid = 0; //safety check
+	entid = entity_list.CreateGroundObjectFromModel(model, x, y, z, heading, type);
+	return entid;
 }
 
 void QuestManager::ModifyNPCStat(const char *identifier, const char *newValue)

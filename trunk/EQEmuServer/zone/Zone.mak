@@ -3483,6 +3483,40 @@ SOURCE=.\perl_npc.cpp
 
 !ENDIF 
 
+SOURCE=.\perl_object.cpp
+
+!IF  "$(CFG)" == "Zone - Win32 Release"
+
+
+"$(INTDIR)\perl_object.obj" : $(SOURCE) "$(INTDIR)"
+
+
+!ELSEIF  "$(CFG)" == "Zone - Win32 Debug"
+
+
+"$(INTDIR)\perl_object.obj"	"$(INTDIR)\perl_object.sbr" : $(SOURCE) "$(INTDIR)"
+
+
+!ELSEIF  "$(CFG)" == "Zone - Win32 Raid Addicts"
+
+
+"$(INTDIR)\perl_object.obj"	"$(INTDIR)\perl_object.sbr" : $(SOURCE) "$(INTDIR)"
+
+
+!ELSEIF  "$(CFG)" == "Zone - Win32 DebugPerl"
+
+
+"$(INTDIR)\perl_object.obj"	"$(INTDIR)\perl_object.sbr" : $(SOURCE) "$(INTDIR)"
+
+
+!ELSEIF  "$(CFG)" == "Zone - Win32 ReleasePerl"
+
+
+"$(INTDIR)\perl_object.obj" : $(SOURCE) "$(INTDIR)"
+
+
+!ENDIF 
+
 SOURCE=.\perl_perlpacket.cpp
 
 !IF  "$(CFG)" == "Zone - Win32 Release"
