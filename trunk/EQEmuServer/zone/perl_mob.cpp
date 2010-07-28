@@ -3607,6 +3607,50 @@ XS(XS_Mob_CastSpell)
 	XSRETURN_EMPTY;
 }
 
+XS(XS_Mob_SpellFinished); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_SpellFinished)
+{
+	dXSARGS;
+	if (items < 2 || items > 4)
+		Perl_croak(aTHX_ "Usage: Mob::SpellFinished(spell_id, spell_target = this, mana_cost = 0)");
+	{
+		Mob *		THIS;
+		int16		spell_id = (int16)SvUV(ST(1));
+		Mob *		spell_target;
+		int16		mana_cost = 0;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		spell_target = THIS;
+
+		if (items > 2)
+		{
+			if (sv_derived_from(ST(2), "Mob")) {
+				IV tmp = SvIV((SV*)SvRV(ST(2)));
+				spell_target = INT2PTR(Mob *,tmp);
+			}
+			else
+				Perl_croak(aTHX_ "spell_target is not of type Mob");
+			if(spell_target == NULL)
+				Perl_croak(aTHX_ "spell_target is NULL, avoiding crash.");
+
+		}
+
+		if (items > 3)
+			mana_cost = (int16)SvUV(ST(3));
+
+		THIS->SpellFinished(spell_id, spell_target, 10, mana_cost);
+	}
+	XSRETURN_EMPTY;
+}
+
 XS(XS_Mob_IsImmuneToSpell); /* prototype to pass -Wmissing-prototypes */
 XS(XS_Mob_IsImmuneToSpell)
 {
@@ -6953,6 +6997,7 @@ XS(boot_Mob)
 		newXSproto(strcpy(buf, "Emote"), XS_Mob_Emote, file, "$$;@");
 		newXSproto(strcpy(buf, "InterruptSpell"), XS_Mob_InterruptSpell, file, "$;$");
 		newXSproto(strcpy(buf, "CastSpell"), XS_Mob_CastSpell, file, "$$$;$$$");
+		newXSproto(strcpy(buf, "SpellFinished"), XS_Mob_SpellFinished, file, "$$;$$");
 		newXSproto(strcpy(buf, "IsImmuneToSpell"), XS_Mob_IsImmuneToSpell, file, "$$$");
 		newXSproto(strcpy(buf, "BuffFadeBySpellID"), XS_Mob_BuffFadeBySpellID, file, "$$");
 		newXSproto(strcpy(buf, "BuffFadeByEffect"), XS_Mob_BuffFadeByEffect, file, "$$;$");

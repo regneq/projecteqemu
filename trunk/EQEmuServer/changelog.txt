@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==07/27/2010==
+Trevius: Exported SpellFinished(spell_id, spell_target = this, mana_cost = 0) to Perl Mob.
+
 ==07/26/2010==
 Trevius: (Secrets) Added quest::creategroundobjectfrommodel(modelname, x, y, z, heading, [type]) command.
 Trevius: (Secrets) quest::creategroundobject(itemid, x, y, z, heading) now returns object ID.
