@@ -639,7 +639,7 @@ void Mob::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 			{
 				softcap_armor = softcap_armor * RuleR(Combat, LowChainLeatherACSoftcapReturn);
 			}
-			else if(GetClass() == WIZARD || GetClass() == MAGICIAN || GetClass() == NECROMANCER || GetClass() == ENCHANTER)
+			else if(GetClass() == WIZARD || GetClass() == MAGICIAN || GetClass() == NECROMANCER || GetClass() == ENCHANTER || GetClass() == DRUID)
 			{
 				softcap_armor = softcap_armor * RuleR(Combat, CasterACSoftcapReturn);
 			}
