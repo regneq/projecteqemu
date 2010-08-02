@@ -3326,6 +3326,163 @@ XS(XS_Mob_GetHeading)
 	XSRETURN(1);
 }
 
+
+XS(XS_Mob_GetWaypointX); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_GetWaypointX)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Mob::GetWaypointX(THIS)");
+	{
+		Mob *		THIS;
+		float		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetCWPX();
+		XSprePUSH; PUSHn((double)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Mob_GetWaypointY); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_GetWaypointY)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Mob::GetWaypointY(THIS)");
+	{
+		Mob *		THIS;
+		float		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetCWPY();
+		XSprePUSH; PUSHn((double)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Mob_GetWaypointZ); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_GetWaypointZ)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Mob::GetWaypointZ(THIS)");
+	{
+		Mob *		THIS;
+		float		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetCWPZ();
+		XSprePUSH; PUSHn((double)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Mob_GetWaypointH); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_GetWaypointH)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Mob::GetWaypointH(THIS)");
+	{
+		Mob *		THIS;
+		float		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetCWPH();
+		XSprePUSH; PUSHn((double)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Mob_GetWaypointPause); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_GetWaypointPause)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Mob::GetWaypointPause(THIS)");
+	{
+		Mob *		THIS;
+		int32		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetCWPP();
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Mob_GetWaypointID); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_GetWaypointID)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Mob::GetWaypointID(THIS)");
+	{
+		Mob *		THIS;
+		int32		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetCWP();
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
 XS(XS_Mob_GetSize); /* prototype to pass -Wmissing-prototypes */
 XS(XS_Mob_GetSize)
 {
@@ -6987,6 +7144,12 @@ XS(boot_Mob)
 		newXSproto(strcpy(buf, "GetY"), XS_Mob_GetY, file, "$");
 		newXSproto(strcpy(buf, "GetZ"), XS_Mob_GetZ, file, "$");
 		newXSproto(strcpy(buf, "GetHeading"), XS_Mob_GetHeading, file, "$");
+		newXSproto(strcpy(buf, "GetWaypointX"), XS_Mob_GetWaypointX, file, "$");
+		newXSproto(strcpy(buf, "GetWaypointY"), XS_Mob_GetWaypointY, file, "$");
+		newXSproto(strcpy(buf, "GetWaypointZ"), XS_Mob_GetWaypointZ, file, "$");
+		newXSproto(strcpy(buf, "GetWaypointH"), XS_Mob_GetWaypointH, file, "$");
+		newXSproto(strcpy(buf, "GetWaypointPause"), XS_Mob_GetWaypointPause, file, "$");
+		newXSproto(strcpy(buf, "GetWaypointID"), XS_Mob_GetWaypointID, file, "$");
 		newXSproto(strcpy(buf, "GetSize"), XS_Mob_GetSize, file, "$");
 		newXSproto(strcpy(buf, "SetFollowID"), XS_Mob_SetFollowID, file, "$$");
 		newXSproto(strcpy(buf, "GetFollowID"), XS_Mob_GetFollowID, file, "$");
@@ -7110,4 +7273,3 @@ XS(boot_Mob)
 }
 
 #endif //EMBPERL_XS_CLASSES
-
