@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==08/01/2010==
+Trevius: Exported the following to Perl Mob: GetWaypointX(), GetWaypointY(), GetWaypointZ(), GetWaypointH(), GetWaypointPause(), and GetWaypointID().
+
 ==07/27/2010==
 Trevius: Exported SpellFinished(spell_id, spell_target = this, mana_cost = 0) to Perl Mob.
 

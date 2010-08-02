@@ -995,6 +995,7 @@ bool logpos;
 	inline float GetCWPX() const { return(cur_wp_x); }
 	inline float GetCWPY() const { return(cur_wp_y); }
 	inline float GetCWPZ() const { return(cur_wp_z); }
+	inline float GetCWPH() const { return(cur_wp_heading); }
 	inline float GetCWPP() const { return(cur_wp_pause); }
 	inline int GetCWP() const { return(cur_wp); }
 	virtual FACTION_VALUE GetReverseFactionCon(Mob* iOther) { return FACTION_INDIFFERENT; }
