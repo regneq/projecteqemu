@@ -4,6 +4,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 Derision: Added check for invalid neighbour nodes on loading .path files.
 wheeljack: Fixed Bazaar search for items with focus effects.
 wheeljack: Buff Timer Suspension.
+wheeljack: Tradeskill messages for missing components.
 
 REQUIRED SQL:
 

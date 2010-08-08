@@ -195,6 +195,8 @@
 #define SUSPEND_MINION_SUSPEND		3268	//%1 tells you, 'By your command, master.'
 #define ONLY_SUMMONED_PETS		3269	//3269 This effect only works with summoned pets.
 #define SUSPEND_MINION_FIGHTING		3270    //Your pet must be at peace, first.
+#define TRADESKILL_MISSING_ITEM		3455	//You are missing a %1.
+#define TRADESKILL_MISSING_COMPONENTS	3456	//Sorry, but you don't have everything you need for this recipe in your general inventory.
 #define TRADESKILL_LEARN_RECIPE		3457	//You have learned the recipe %1!
 #define WHOALL_NO_RESULTS			5029	//There are no players in EverQuest that match those who filters.
 #define PETITION_NO_DELETE			5053	//You do not have a petition in the queue.
