@@ -18,6 +18,7 @@
 
 #include "../common/debug.h"
 #include <stdlib.h>
+#include <list>
 
 #ifndef WIN32
 #include <netinet/in.h>	//for htonl
@@ -328,11 +329,14 @@ void Object::HandleAutoCombine(Client* user, const RecipeAutoCombine_Struct* rac
 	memset(counts, 0, sizeof(counts));
 	
 	
-	//search for all the crap in their inventory
+	//search for all the items in their inventory
 	Inventory& user_inv = user->GetInv();
 	uint8 count = 0;
 	uint8 needcount = 0;
 	uint8 r,k;
+
+	std::list<int> MissingItems;
+
 	for(r = 0; r < qcount; r++) {
 		row = mysql_fetch_row(result);
 		uint32 item = (uint32)atoi(row[0]);
@@ -345,6 +349,9 @@ void Object::HandleAutoCombine(Client* user, const RecipeAutoCombine_Struct* rac
 		//when we go to delete them because we cannot assume it is in a single stack.
 		if(user_inv.HasItem(item, num, invWherePersonal) != SLOT_INVALID)
 			count += num;
+		else
+			MissingItems.push_back(item);
+
 		//dont start deleting anything until we have found it all.
 		items[r] = item;
 		counts[r] = num;
@@ -352,9 +359,22 @@ void Object::HandleAutoCombine(Client* user, const RecipeAutoCombine_Struct* rac
 	mysql_free_result(result);
 	
 	//make sure we found it all...
-	if(count != needcount) {
+	if(count != needcount)
+	{
 		user->QueuePacket(outapp);
+
 		safe_delete(outapp);
+
+		user->Message_StringID(MT_Skills, TRADESKILL_MISSING_COMPONENTS);
+
+		for(list<int>::iterator it = MissingItems.begin(); it != MissingItems.end(); ++it)
+		{
+			const Item_Struct* item = database.GetItem(*it);
+
+			if(item)
+				user->Message_StringID(MT_Skills, TRADESKILL_MISSING_ITEM, item->Name);
+		}
+
 		return;
 	}
 	
