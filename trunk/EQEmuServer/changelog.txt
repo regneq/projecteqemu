@@ -1,6 +1,16 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==08/01/2010==
+Derision: Added check for invalid neighbour nodes on loading .path files.
+wheeljack: Fixed Bazaar search for items with focus effects.
+wheeljack: Buff Timer Suspension.
+
+REQUIRED SQL:
+
+ALTER TABLE zone ADD suspendbuffs tinyint(1) unsigned NOT NULL DEFAULT 0;
+UPDATE zone SET suspendbuffs = 1 WHERE short_name IN ('guildlobby', 'guildhall');
+
+==08/01/2010==
 Trevius: Exported the following to Perl Mob: GetWaypointX(), GetWaypointY(), GetWaypointZ(), GetWaypointH(), GetWaypointPause(), and GetWaypointID().
 
 ==07/27/2010==

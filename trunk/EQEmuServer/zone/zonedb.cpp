@@ -96,7 +96,7 @@ bool ZoneDatabase::GetZoneCFG(int32 zoneid, uint16 instance_id, NewZone_Struct *
 		"fog_red4,fog_green4,fog_blue4,fog_minclip4,fog_maxclip4,fog_density,"
 		"sky,zone_exp_multiplier,safe_x,safe_y,safe_z,underworld,"
 		"minclip,maxclip,time_type,canbind,cancombat,canlevitate,"
-		"castoutdoor,hotzone,ruleset,map_file_name,short_name"
+		"castoutdoor,hotzone,ruleset,suspendbuffs,map_file_name,short_name"
 		" from zone where zoneidnumber=%i and version=%i",zoneid, instance_id), errbuf, &result)) {
 		safe_delete_array(query);
 		row = mysql_fetch_row(result);
@@ -132,10 +132,11 @@ bool ZoneDatabase::GetZoneCFG(int32 zoneid, uint16 instance_id, NewZone_Struct *
 			can_bind = b==0?false:true;
 			is_city = b==2?true:false;
 			can_combat = atoi(row[r++])==0?false:true;
-            can_levitate = atoi(row[r++])==0?false:true;
+			can_levitate = atoi(row[r++])==0?false:true;
 			can_castoutdoor = atoi(row[r++])==0?false:true;
 			is_hotzone = atoi(row[r++])==0?false:true;
 			ruleset = atoi(row[r++]);
+			zone_data->SuspendBuffs = atoi(row[r++]);
 			char *file = row[r++];
 			if(file)
 			{

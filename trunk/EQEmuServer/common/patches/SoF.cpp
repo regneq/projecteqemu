@@ -720,6 +720,7 @@ ENCODE(OP_NewZone) {
 	OUT_str(zone_short_name2);
 	OUT(zone_id);
 	OUT(zone_instance);
+	OUT(SuspendBuffs);
 	
     /*fill in some unknowns with observed values, hopefully it will help */
 	eq->unknown796 = -1;
