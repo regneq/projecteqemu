@@ -367,7 +367,7 @@ void Object::HandleAutoCombine(Client* user, const RecipeAutoCombine_Struct* rac
 
 		user->Message_StringID(MT_Skills, TRADESKILL_MISSING_COMPONENTS);
 
-		for(list<int>::iterator it = MissingItems.begin(); it != MissingItems.end(); ++it)
+		for(std::list<int>::iterator it = MissingItems.begin(); it != MissingItems.end(); ++it)
 		{
 			const Item_Struct* item = database.GetItem(*it);
 
