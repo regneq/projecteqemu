@@ -132,13 +132,36 @@ bool PathManager::loadPaths(FILE *PathFile)
 #ifdef PATHDEBUG
 	PrintPathing();
 #endif
-	return true;
+
+	int MaxNodeID = Head.PathNodeCount - 1;
+
+	bool PathFileValid = true;
+
+	for(int32 i = 0; i < Head.PathNodeCount; ++i)
+	{
+		for(int32 j = 0; j < PATHNODENEIGHBOURS; ++j)
+		{
+			if(PathNodes[i].Neighbours[j].id > MaxNodeID)
+			{
+				LogFile->write(EQEMuLog::Error, "Path Node %i, Neighbour %i (%i) out of range.", i, j, PathNodes[i].Neighbours[j].id);
+
+				PathFileValid = false;
+			}
+		}
+	}
+
+	if(!PathFileValid)
+	{
+		safe_delete_array(PathNodes);
+	}
+
+	return PathFileValid;
 }
 
 void PathManager::PrintPathing()
 {
 
-	for(int i = 0; i < Head.PathNodeCount; ++i)
+	for(int32 i = 0; i < Head.PathNodeCount; ++i)
 	{
 		printf("PathNode: %2d id %2d. (%8.3f, %8.3f, %8.3f), BestZ: %8.3f\n",
 		       i, PathNodes[i].id, PathNodes[i].v.x, PathNodes[i].v.y, PathNodes[i].v.z, PathNodes[i].bestz);

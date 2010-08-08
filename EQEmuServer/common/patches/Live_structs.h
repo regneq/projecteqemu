@@ -419,7 +419,8 @@ struct NewZone_Struct {
 /*0848*/	sint32	unknown848;
 /*0852*/	uint16	zone_id;
 /*0854*/	uint16	zone_instance;
-/*0856*/	char	unknown856[24];
+/*0856*/	char	unknown856[20];
+/*0876*/	uint32	SuspendBuffs;
 /*0880*/	uint32	unknown880;	//seen 50
 /*0884*/	uint32	unknown884;	//seen 10
 /*0888*/	uint8	unknown888;	//seen 1

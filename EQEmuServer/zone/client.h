@@ -121,6 +121,7 @@ typedef enum {
 #define BIT_SoF		4
 #define BIT_SoD		8
 #define BIT_Live	0x80000000
+#define BIT_SoFAndLater 0xFFFFFFFC
 #define BIT_SoDAndLater	0xFFFFFFF8
 #define BIT_AllClients	0xFFFFFFFF
 

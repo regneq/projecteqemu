@@ -725,6 +725,7 @@ ENCODE(OP_NewZone) {
 	OUT_str(zone_short_name2);
 	OUT(zone_id);
 	OUT(zone_instance);
+	OUT(SuspendBuffs);
 
 	eq->FogDensity = emu->fog_density;
 	

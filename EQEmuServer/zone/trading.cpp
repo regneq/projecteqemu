@@ -1230,7 +1230,7 @@ void Client::SendBazaarResults(int32 TraderID, int32 Class_, int32 Race, int32 I
 				Search.append(" and items.spellid>=1298 and items.spellid<=1307");
 				break;
 			case 49:
-				Search.append(" and items.focusid>0");
+				Search.append(" and items.focuseffect>0");
 				break;
 			default:
 				sprintf(Tmp, " and items.itemtype=%i", Type);

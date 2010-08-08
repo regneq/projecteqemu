@@ -3055,22 +3055,42 @@ snare has both of them negative, yet their range should work the same:
 }
 
 
-void Mob::BuffProcess() {
+void Mob::BuffProcess()
+{
 	uint32 buff_count = GetMaxTotalSlots();
-	for (int buffs_i = 0; buffs_i < buff_count; buffs_i++) {
-		if (buffs[buffs_i].spellid != SPELL_UNKNOWN) {
+
+	for (int buffs_i = 0; buffs_i < buff_count; ++buffs_i)
+	{
+		if (buffs[buffs_i].spellid != SPELL_UNKNOWN)
+		{
 			DoBuffTic(buffs[buffs_i].spellid, buffs[buffs_i].ticsremaining, buffs[buffs_i].casterlevel, entity_list.GetMob(buffs[buffs_i].casterid));
-			if (buffs[buffs_i].durationformula != 50) {
-				buffs[buffs_i].ticsremaining--;
-				if (buffs[buffs_i].ticsremaining <= 0) {
-					mlog(SPELLS__BUFFS, "Buff %d in slot %d has expired. Fading.", buffs[buffs_i].spellid, buffs_i);
-					BuffFadeBySlot(buffs_i);
-				} else {
-					mlog(SPELLS__BUFFS, "Buff %d in slot %d has %d tics remaining.", buffs[buffs_i].spellid, buffs_i, buffs[buffs_i].ticsremaining);
+
+			if (buffs[buffs_i].durationformula != DF_Permanent)
+			{
+				if(!zone->BuffTimersSuspended() || IsDetrimentalSpell(buffs[buffs_i].spellid))
+				{
+					--buffs[buffs_i].ticsremaining;
+
+					if (buffs[buffs_i].ticsremaining <= 0)
+					{
+						mlog(SPELLS__BUFFS, "Buff %d in slot %d has expired. Fading.", buffs[buffs_i].spellid, buffs_i);
+						BuffFadeBySlot(buffs_i);
+					}
+					else
+					{
+						mlog(SPELLS__BUFFS, "Buff %d in slot %d has %d tics remaining.", buffs[buffs_i].spellid, buffs_i, buffs[buffs_i].ticsremaining);
+					}
+				}
+				else if(IsClient() && !(CastToClient()->GetClientVersionBit() & BIT_SoFAndLater))
+				{
+					buffs[buffs_i].UpdateClient = true;
 				}
 			}
-			if(IsClient()){
-				if(buffs[buffs_i].UpdateClient == true){
+
+			if(IsClient())
+			{
+				if(buffs[buffs_i].UpdateClient == true)
+				{
 					CastToClient()->SendBuffDurationPacket(buffs[buffs_i].spellid, buffs[buffs_i].ticsremaining, buffs[buffs_i].casterlevel);
 					buffs[buffs_i].UpdateClient = false;
 				}
