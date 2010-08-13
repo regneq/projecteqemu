@@ -193,15 +193,15 @@ sed -e 's/_t//g' -e 's/seto_0xFF/set_to_0xFF/g'
 struct Spawn_Struct_Bitfields
 {
 
-	unsigned   padding1:1;
-	unsigned   afk:1;			// 0=no, 1=afk
+	unsigned   ispet:1;		// Could be 'is summoned pet' rather than just is pet.
+	unsigned   afk:1;		// 0=no, 1=afk
 	unsigned   sneak:1;
 	unsigned   lfg:1;
 	unsigned   padding5:1;
 	unsigned   invis:1;		// 0 = visible, 1 = invis/sneaking
 	unsigned   padding7:11;
 	unsigned   gm:1;
-	unsigned   anon:2;			// 0=normal, 1=anon, 2=roleplay
+	unsigned   anon:2;		// 0=normal, 1=anon, 2=roleplay
 	unsigned   gender:2;		// Gender (0=male, 1=female, 2=monster)
 	unsigned   linkdead:1;		// Toggles LD on or off after name
 	unsigned   betabuffed:1;
