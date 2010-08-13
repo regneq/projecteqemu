@@ -1030,6 +1030,8 @@ ENCODE(OP_ZoneSpawns) {
 
 			Bitfields->showname = ShowName;
 
+			Bitfields->ispet = emu->is_pet;
+
 			Buffer += sizeof(structs::Spawn_Struct_Bitfields);
 
 			uint8 OtherData = 0;

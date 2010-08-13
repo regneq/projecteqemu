@@ -1,6 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
-==08/01/2010==
+==08/13/2010==
+Derision: Elemental Draw should now work for SoD.
+
+==08/08/2010==
 Derision: Added check for invalid neighbour nodes on loading .path files.
 wheeljack: Fixed Bazaar search for items with focus effects.
 wheeljack: Buff Timer Suspension.
