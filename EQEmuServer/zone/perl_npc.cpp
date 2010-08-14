@@ -516,7 +516,7 @@ XS(XS_NPC_SetGrid)
 		Perl_croak(aTHX_ "Usage: NPC::SetGrid(THIS, grid_)");
 	{
 		NPC *		THIS;
-		int16		grid_ = (int16)SvUV(ST(1));
+		sint32		grid_ = (sint32)SvIV(ST(1));
 
 		if (sv_derived_from(ST(0), "NPC")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -528,6 +528,30 @@ XS(XS_NPC_SetGrid)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
 		THIS->SetGrid(grid_);
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_NPC_SetSaveWaypoint); /* prototype to pass -Wmissing-prototypes */
+XS(XS_NPC_SetSaveWaypoint)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: NPC::SetSaveWaypoint(THIS, waypoint)");
+	{
+		NPC *		THIS;
+		int16		waypoint = (int16)SvUV(ST(1));
+
+		if (sv_derived_from(ST(0), "NPC")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(NPC *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type NPC");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->SetSaveWaypoint(waypoint);
 	}
 	XSRETURN_EMPTY;
 }
@@ -590,7 +614,7 @@ XS(XS_NPC_GetGrid)
 		Perl_croak(aTHX_ "Usage: NPC::GetGrid(THIS)");
 	{
 		NPC *		THIS;
-		sint16		RETVAL;
+		sint32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "NPC")) {
@@ -1882,6 +1906,7 @@ XS(boot_NPC)
 		newXSproto(strcpy(buf, "SetGold"), XS_NPC_SetGold, file, "$$");
 		newXSproto(strcpy(buf, "SetPlatinum"), XS_NPC_SetPlatinum, file, "$$");
 		newXSproto(strcpy(buf, "SetGrid"), XS_NPC_SetGrid, file, "$$");
+		newXSproto(strcpy(buf, "SetSaveWaypoint"), XS_NPC_SetSaveWaypoint, file, "$$");
 		newXSproto(strcpy(buf, "SetSp2"), XS_NPC_SetSp2, file, "$$");
 		newXSproto(strcpy(buf, "GetWaypointMax"), XS_NPC_GetWaypointMax, file, "$");
 		newXSproto(strcpy(buf, "GetGrid"), XS_NPC_GetGrid, file, "$");

@@ -168,12 +168,13 @@ public:
 
 
 
-	void SetGrid(int32 grid_){ grid=grid_; }
+	void SetGrid(sint32 grid_){ grid=grid_; }
 	void SetSp2(int32 sg2){ spawn_group=sg2; }
 	void SetWaypointMax(int16 wp_){ wp_m=wp_; }
+	void SetSaveWaypoint(int16 wp_){ save_wp=wp_; }
 
 	int16 GetWaypointMax() const { return wp_m; }
-	int32 GetGrid() const { return grid; }
+	sint32 GetGrid() const { return grid; }
 	int32 GetSp2() const { return spawn_group; }
 	int32 GetSpawnPointID() const;
 
@@ -230,7 +231,7 @@ public:
 	void				CalculateNewWaypoint();
 //	int8				CalculateHeadingToNextWaypoint();
 //	float				CalculateDistanceToNextWaypoint();
-	void				AssignWaypoints(int32 grid);
+	void				AssignWaypoints(sint32 grid);
 	void				SetWaypointPause();
 	void				UpdateWaypoint(int wp_index);
 	// quest wandering commands
@@ -316,7 +317,7 @@ protected:
 	uint32	silver;
 	uint32	gold;
 	uint32	platinum;
-	int32   grid;
+	sint32   grid;
 	int32   spawn_group;
 	int16	wp_m;
 

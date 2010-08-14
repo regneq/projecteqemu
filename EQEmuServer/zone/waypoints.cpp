@@ -813,9 +813,15 @@ bool Mob::CalculateNewPosition(float x, float y, float z, float speed, bool chec
     return true;
 }
 
-void NPC::AssignWaypoints(int32 grid) {
+void NPC::AssignWaypoints(sint32 grid) {
 	if(grid == 0)
 		return;		//grid ID 0 not supported
+
+	if(grid < 0) {
+		// Allow setting negative grid values for pausing pathing
+		this->CastToNPC()->SetGrid(grid);
+		return;
+	}
 	
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	char *query = 0;

@@ -3483,6 +3483,30 @@ XS(XS_Mob_GetWaypointID)
 	XSRETURN(1);
 }
 
+XS(XS_Mob_SetCurrentWP); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_SetCurrentWP)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Mob::SetCurrentWP(THIS, waypoint)");
+	{
+		Mob *		THIS;
+		int16		waypoint = (int16)SvUV(ST(1));
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->SetCurrentWP(waypoint);
+	}
+	XSRETURN_EMPTY;
+}
+
 XS(XS_Mob_GetSize); /* prototype to pass -Wmissing-prototypes */
 XS(XS_Mob_GetSize)
 {
@@ -7150,6 +7174,7 @@ XS(boot_Mob)
 		newXSproto(strcpy(buf, "GetWaypointH"), XS_Mob_GetWaypointH, file, "$");
 		newXSproto(strcpy(buf, "GetWaypointPause"), XS_Mob_GetWaypointPause, file, "$");
 		newXSproto(strcpy(buf, "GetWaypointID"), XS_Mob_GetWaypointID, file, "$");
+		newXSproto(strcpy(buf, "SetCurrentWP"), XS_Mob_SetCurrentWP, file, "$$");
 		newXSproto(strcpy(buf, "GetSize"), XS_Mob_GetSize, file, "$");
 		newXSproto(strcpy(buf, "SetFollowID"), XS_Mob_SetFollowID, file, "$$");
 		newXSproto(strcpy(buf, "GetFollowID"), XS_Mob_GetFollowID, file, "$");
