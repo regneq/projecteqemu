@@ -761,6 +761,37 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				if(IsClient())
 				{
 					CastToClient()->SetSenseExemption(true);
+				
+					if(CastToClient()->GetClientVersionBit() & BIT_SoDAndLater)
+					{
+						bodyType bt = BT_Undead;
+
+						int MessageID = SENSE_UNDEAD;
+
+						if(effect == SE_SenseSummoned)
+						{
+							bt = BT_Summoned;
+							MessageID = SENSE_SUMMONED;
+						}
+						else if(effect == SE_SenseAnimals)
+						{
+							bt = BT_Animal;
+							MessageID = SENSE_ANIMAL;
+						}
+
+						Mob *ClosestMob = entity_list.GetClosestMobByBodyType(this, bt);
+
+						if(ClosestMob)
+						{
+							Message_StringID(MT_Spells, MessageID);
+							SetHeading(CalculateHeadingToTarget(ClosestMob->GetX(), ClosestMob->GetY()));
+							SetTarget(ClosestMob);
+							CastToClient()->SendTargetCommand(ClosestMob->GetID());
+							SendPosUpdate(2);
+						}
+						else
+							Message_StringID(clientMessageError, SENSE_NOTHING);
+					}
 				}
 				break;
 			}
@@ -1419,7 +1450,11 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Locate Corpse");
 #endif
-				// solar: handled by client
+				// This is handled by the client prior to SoD.
+				//
+				if(IsClient() && (CastToClient()->GetClientVersionBit() & BIT_SoDAndLater))
+					CastToClient()->LocateCorpse();
+
 				break;
 			}
 
@@ -3345,6 +3380,14 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 			}
 			break;
 		}
+		case SE_LocateCorpse:
+		{
+			// This is handled by the client prior to SoD.
+
+			if(IsClient() && (CastToClient()->GetClientVersionBit() & BIT_SoDAndLater))
+				CastToClient()->LocateCorpse();
+		}
+			
 		default: {
 			// do we need to do anyting here?
 		}

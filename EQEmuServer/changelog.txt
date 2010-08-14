@@ -1,6 +1,10 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==08/13/2010==
+Derision: Spells/Songs with a Locate Corpse effect now work in SoD and later clients.
+Derision: Spells/Songs with a Sense Undead/Summoned/Animal effect now work in SoD and later clients.
+
+==08/13/2010==
 Derision: Elemental Draw should now work for SoD.
 
 ==08/08/2010==

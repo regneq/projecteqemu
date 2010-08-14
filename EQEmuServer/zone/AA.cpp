@@ -637,7 +637,7 @@ void Mob::TemporaryPets(int16 spell_id, Mob *targ, const char *name_override, ui
 void Mob::WakeTheDead(int16 spell_id, Mob *target, uint32 duration)
 {
 	Corpse *CorpseToUse = NULL;
-	CorpseToUse = entity_list.GetClosestCorpse(this);
+	CorpseToUse = entity_list.GetClosestCorpse(this, NULL);
 
 	if(!CorpseToUse)
 		return;

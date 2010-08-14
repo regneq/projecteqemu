@@ -818,7 +818,7 @@ bool logpos;
 	bool HadTempPets() const { return(hasTempPet); }
 	void TempPets(bool i) { hasTempPet = i; }
 
-    inline const bodyType GetBodyType() const { return bodytype; }
+	inline const bodyType GetBodyType() const { return bodytype; }
 
 	bool	invulnerable;
 	bool	invisible, invisible_undead, invisible_animals, sneaking, hidden, improved_hidden;

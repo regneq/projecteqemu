@@ -965,6 +965,8 @@ public:
 	inline bool IsTracking() { return (TrackingID > 0); }
 	inline void SetPendingGuildInvitation(bool inPendingGuildInvitation) { PendingGuildInvitation = inPendingGuildInvitation; }
 	inline bool GetPendingGuildInvitation() { return PendingGuildInvitation; }
+	void LocateCorpse();
+	void SendTargetCommand(uint32 EntityID);
 
 protected:
 	friend class Mob;
