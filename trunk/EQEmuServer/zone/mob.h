@@ -998,6 +998,7 @@ bool logpos;
 	inline float GetCWPH() const { return(cur_wp_heading); }
 	inline float GetCWPP() const { return(cur_wp_pause); }
 	inline int GetCWP() const { return(cur_wp); }
+	void SetCurrentWP(int16 waypoint) { cur_wp = waypoint; }
 	virtual FACTION_VALUE GetReverseFactionCon(Mob* iOther) { return FACTION_INDIFFERENT; }
 	
 	inline bool IsTrackable() const { return(trackable); }

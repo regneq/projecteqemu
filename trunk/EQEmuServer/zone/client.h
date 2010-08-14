@@ -467,6 +467,7 @@ public:
 	uint32  GetGroupPoints() { return(m_pp.group_leadership_points); }
 	uint32  GetRaidEXP() { return(m_pp.raid_leadership_exp); }
 	uint32  GetGroupEXP() { return(m_pp.group_leadership_exp); }
+	uint32  GetTotalSecondsPlayed() { return(TotalSecondsPlayed); }
 	virtual void SetLevel(uint8 set_level, bool command = false);
 	void	GoToBind(uint8 bindnum = 0);
 	void	GoToSafeCoords(uint16 zone_id, uint16 instance_id);

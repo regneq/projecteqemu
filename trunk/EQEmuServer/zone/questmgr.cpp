@@ -1277,7 +1277,7 @@ void QuestManager::rebind(int zoneid, float x, float y, float z) {
 	}
 }
 
-void QuestManager::start(int wp) {
+void QuestManager::start(sint32 wp) {
 	if(!owner->IsNPC())
 		return;
 	owner->CastToNPC()->AssignWaypoints(wp);
