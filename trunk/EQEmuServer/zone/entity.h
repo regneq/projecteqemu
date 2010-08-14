@@ -25,6 +25,7 @@
 #include "zonedump.h"
 #include "zonedbasync.h"
 #include "../common/servertalk.h"
+#include "../common/bodytypes.h"
 #include "QGlobals.h"
 
 // max number of newspawns to send per bulk packet
@@ -336,8 +337,9 @@ public:
 	Mob*	GetTargetForMez(Mob* caster);
 	int32	CheckNPCsClose(Mob *center);
 
-	Corpse* GetClosestCorpse(Mob* sender);
+	Corpse* GetClosestCorpse(Mob* sender, const char *Name);
 	NPC* GetClosestBanker(Mob* sender, uint32 &distance);
+	Mob*	GetClosestMobByBodyType(Mob* sender, bodyType BodyType);
 	void	ForceGroupUpdate(int32 gid);
 	void	SendGroupLeave(int32 gid, const char *name);
 	void	SendGroupJoin(int32 gid, const char *name);

@@ -3755,29 +3755,40 @@ void EntityList::QuestJournalledSayClose(Mob *sender, Client *QuestInitiator, fl
        }
 }
 
-Corpse* EntityList::GetClosestCorpse(Mob* sender)
+Corpse* EntityList::GetClosestCorpse(Mob* sender, const char* Name)
 {
 	if(!sender) 
 		return NULL;
 
-	uint32 dist = 4294967295u;
-	Corpse* nc = NULL;
+	uint32 CurrentDistance, ClosestDistance = 4294967295u;
+
+	Corpse *CurrentCorpse, *ClosestCorpse = NULL;
 
 	LinkedListIterator<Corpse*> iterator(corpse_list);
+
 	iterator.Reset();
 
 	while(iterator.MoreElements())
 	{
-		uint32 nd = ((iterator.GetData()->GetY() - sender->GetY()) * (iterator.GetData()->GetY() - sender->GetY())) + 
-			((iterator.GetData()->GetX() - sender->GetX()) * (iterator.GetData()->GetX() - sender->GetX()));
-		if(nd < dist){
-			dist = nd;
-			nc = iterator.GetData();
+		CurrentCorpse = iterator.GetData();
+
+		iterator.Advance();
+		
+		if(Name && strcasecmp(CurrentCorpse->GetOwnerName(), Name))
+			continue;
+
+		CurrentDistance = ((CurrentCorpse->GetY() - sender->GetY()) * (CurrentCorpse->GetY() - sender->GetY())) + 
+				  ((CurrentCorpse->GetX() - sender->GetX()) * (CurrentCorpse->GetX() - sender->GetX()));
+
+		if(CurrentDistance < ClosestDistance)
+		{
+			ClosestDistance = CurrentDistance;
+
+			ClosestCorpse = CurrentCorpse;
 
 		}
-		iterator.Advance();
 	}
-	return nc;
+	return ClosestCorpse;
 }
 
 void EntityList::ForceGroupUpdate(int32 gid) {
@@ -4761,4 +4772,41 @@ void EntityList::ExpeditionWarning(uint32 minutes_left)
 		iterator.GetData()->QueuePacket(outapp);
 		iterator.Advance();
 	}
+}
+
+Mob* EntityList::GetClosestMobByBodyType(Mob* sender, bodyType BodyType)
+{
+
+	if(!sender) 
+		return NULL;
+
+	uint32 CurrentDistance, ClosestDistance = 4294967295u;
+
+	Mob *CurrentMob, *ClosestMob = NULL;
+
+	LinkedListIterator<Mob*> iterator(mob_list);
+
+	iterator.Reset();
+
+	while(iterator.MoreElements())
+	{
+		CurrentMob = iterator.GetData();
+
+		iterator.Advance();
+		
+		if(CurrentMob->GetBodyType() != BodyType)
+			continue;
+
+		CurrentDistance = ((CurrentMob->GetY() - sender->GetY()) * (CurrentMob->GetY() - sender->GetY())) + 
+				  ((CurrentMob->GetX() - sender->GetX()) * (CurrentMob->GetX() - sender->GetX()));
+
+		if(CurrentDistance < ClosestDistance)
+		{
+			ClosestDistance = CurrentDistance;
+
+			ClosestMob = CurrentMob;
+
+		}
+	}
+	return ClosestMob;
 }

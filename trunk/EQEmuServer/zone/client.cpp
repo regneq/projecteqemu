@@ -5541,3 +5541,35 @@ void Client::SendZonePoints()
 	}
 	FastQueuePacket(&outapp);
 }
+
+void Client::SendTargetCommand(uint32 EntityID)
+{
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_TargetCommand, sizeof(ClientTarget_Struct));
+	ClientTarget_Struct *cts = (ClientTarget_Struct*)outapp->pBuffer;
+	cts->new_target = EntityID;
+	FastQueuePacket(&outapp);
+}
+
+void Client::LocateCorpse()
+{
+	Corpse *ClosestCorpse = NULL;
+	if(!GetTarget())
+		ClosestCorpse = entity_list.GetClosestCorpse(this, NULL);
+	else if(GetTarget()->IsCorpse())
+		ClosestCorpse = entity_list.GetClosestCorpse(this, GetTarget()->CastToCorpse()->GetOwnerName());
+	else
+		ClosestCorpse = entity_list.GetClosestCorpse(this, GetTarget()->GetCleanName());
+
+	if(ClosestCorpse)
+	{
+		Message_StringID(MT_Spells, SENSE_CORPSE_DIRECTION);
+		SetHeading(CalculateHeadingToTarget(ClosestCorpse->GetX(), ClosestCorpse->GetY()));
+		SetTarget(ClosestCorpse);
+		SendTargetCommand(ClosestCorpse->GetID());
+		SendPosUpdate(2);
+	}
+	else if(!GetTarget())
+		Message_StringID(clientMessageError, SENSE_CORPSE_NONE);
+	else
+		Message_StringID(clientMessageError, SENSE_CORPSE_NOT_NAME);
+}

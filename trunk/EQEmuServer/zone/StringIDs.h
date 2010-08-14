@@ -191,6 +191,7 @@
 #define DOORS_SUCCESSFUL_PICK		1457	//You successfully picked the lock.
 #define PLAYER_CHARMED				1461	//You lose control of yourself!
 #define TRADER_BUSY					1468	//That Trader is currently with a customer. Please wait until their transaction is finished.
+#define SENSE_CORPSE_DIRECTION		1563	//You sense a corpse in this direction.
 #define SUSPEND_MINION_UNSUSPEND	3267	//%1 tells you, 'I live again...'
 #define SUSPEND_MINION_SUSPEND		3268	//%1 tells you, 'By your command, master.'
 #define ONLY_SUMMONED_PETS		3269	//3269 This effect only works with summoned pets.
@@ -261,7 +262,13 @@
 #define GROUP_INVITEE_SELF			12270	//12270 You cannot invite yourself.
 #define NOT_IN_CONTROL				12368	//You do not have control of yourself right now.
 #define ALREADY_CASTING				12442	//You are already casting a spell!
+#define SENSE_CORPSE_NOT_NAME			12446	//You don't sense any corpses of that name.
+#define SENSE_CORPSE_NONE			12447	//You don't sense any corpses.
 #define NOT_HOLDING_ITEM			12452	//You are not holding an item!
+#define SENSE_UNDEAD				12471	//You sense undead in this direction.
+#define SENSE_ANIMAL				12472	//You sense an animal in this direction.
+#define SENSE_SUMMONED				12473	//You sense a summoned being in this direction.
+#define SENSE_NOTHING				12474	//You don't sense anything.
 #define LDON_SENSE_TRAP3			12476	//You don't sense any traps.
 #define INTERRUPT_SPELL_OTHER		12478	//%1's casting is interrupted!
 #define YOU_HIT_NONMELEE			12481	//You were hit by non-melee for %1 damage.
