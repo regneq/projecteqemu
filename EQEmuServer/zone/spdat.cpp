@@ -216,7 +216,9 @@ bool IsGroupOnlySpell(int16 spell_id)
 
 bool IsBeneficialSpell(int16 spell_id)
 {
-	// EverHood - These spells are actually detrimental
+	if(!IsValidSpell(spell_id))
+		return false;
+
 	if(spells[spell_id].goodEffect == 1){
 		SpellTargetType tt = spells[spell_id].targettype;
 		if(tt != ST_Self || tt != ST_Pet){
