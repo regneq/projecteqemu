@@ -3099,8 +3099,11 @@ void Mob::BuffProcess()
 		if (buffs[buffs_i].spellid != SPELL_UNKNOWN)
 		{
 			DoBuffTic(buffs[buffs_i].spellid, buffs[buffs_i].ticsremaining, buffs[buffs_i].casterlevel, entity_list.GetMob(buffs[buffs_i].casterid));
+			// If the Mob died during DoBuffTic, then the buff we are currently processing will have been removed
+			if(buffs[buffs_i].spellid == SPELL_UNKNOWN)
+				continue;
 
-			if (buffs[buffs_i].durationformula != DF_Permanent)
+			if(buffs[buffs_i].durationformula != DF_Permanent)
 			{
 				if(!zone->BuffTimersSuspended() || IsDetrimentalSpell(buffs[buffs_i].spellid))
 				{

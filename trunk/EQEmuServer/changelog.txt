@@ -1,12 +1,13 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
-==08/14/2010==
-Trevius: Exported Perl Mob SetCurrentWP(waypoint), Perl NPC SetSaveWaypoint(waypoint), and Perl Client GetTotalSecondsPlayed().
-Trevius: Changed grid from int32 to sint32 since grid pausing requires negative values.
+==08/15/2010==
+Derision: Fixed crash when a mob died to a DoT in a zone where buff timers are suspended.
 
-==08/13/2010==
+==08/14/2010==
 Derision: Spells/Songs with a Locate Corpse effect now work in SoD and later clients.
 Derision: Spells/Songs with a Sense Undead/Summoned/Animal effect now work in SoD and later clients.
+Trevius: Exported Perl Mob SetCurrentWP(waypoint), Perl NPC SetSaveWaypoint(waypoint), and Perl Client GetTotalSecondsPlayed().
+Trevius: Changed grid from int32 to sint32 since grid pausing requires negative values.
 
 ==08/13/2010==
 Derision: Elemental Draw should now work for SoD.
