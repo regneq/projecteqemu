@@ -1418,7 +1418,7 @@ void Client::Handle_OP_TargetCommand(const EQApplicationPacket *app)
 		return;
 	}
 
-	// <Rogean> HoTT
+	// HoTT
 	if (GetTarget() && GetTarget()->GetTarget()) 
 		SetHoTT(GetTarget()->GetTarget()->GetID());
 	else 
@@ -1981,6 +1981,10 @@ void Client::Handle_OP_ItemVerifyRequest(const EQApplicationPacket *app)
 
 	if ((slot_id < 30) || (slot_id == 9999) || (slot_id > 250 && slot_id < 331 && item->ItemType == ItemTypePotion))	// sanity check
 	{
+		ItemInst* p_inst = (ItemInst*)inst;
+		if (p_inst)
+			((PerlembParser *)parse)->Event(EVENT_ITEM_CLICK, p_inst->GetID(), "", p_inst, this);
+
 		if((spell_id == 0 || spell_id == 4294967295) && (item->ItemType != ItemTypeFood && item->ItemType != ItemTypeDrink && item->ItemType != ItemTypeAlcohol && item->ItemType != ItemTypeSpell))
 		{
 			LogFile->write(EQEMuLog::Debug, "Item with no effect right clicked by %s",GetName());

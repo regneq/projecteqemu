@@ -924,6 +924,7 @@ bool SharedDatabase::DBLoadItems(sint32 iItemCount, uint32 iMaxItemID) {
 			item.Click.Type = (uint8)atoul(row[ItemField::clicktype]);
 			item.Click.Level = (uint8)atoul(row[ItemField::clicklevel]);
 			item.Click.Level2 = (uint8)atoul(row[ItemField::clicklevel2]);
+			strcpy(item.CharmFile,row[ItemField::charmfile]);
 			item.Proc.Effect = (uint16)atoul(row[ItemField::proceffect]);
 			item.Proc.Type = (uint8)atoul(row[ItemField::proctype]);
 			item.Proc.Level = (uint8)atoul(row[ItemField::proclevel]);
@@ -964,6 +965,11 @@ bool SharedDatabase::DBLoadItems(sint32 iItemCount, uint32 iMaxItemID) {
 			item.ScriptFileID = (uint32)atoul(row[ItemField::scriptfileid]);
 			item.ExpendableArrow = (uint16)atoul(row[ItemField::expendablearrow]);
 			item.Clairvoyance = (uint32)atoul(row[ItemField::clairvoyance]);
+			strcpy(item.ClickName,row[ItemField::clickname]);
+			strcpy(item.ProcName,row[ItemField::procname]);
+			strcpy(item.WornName,row[ItemField::wornname]);
+			strcpy(item.FocusName,row[ItemField::focusname]);
+			strcpy(item.ScrollName,row[ItemField::scrollname]);
 
 			if (!EMuShareMemDLL.Items.cbAddItem(item.ID, &item)) {
 				LogFile->write(EQEMuLog::Error, "Database::DBLoadItems: Failure reported from EMuShareMemDLL.Items.cbAddItem(%i)", item.ID);

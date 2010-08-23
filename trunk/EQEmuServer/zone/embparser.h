@@ -29,7 +29,8 @@ typedef enum {
 	itemQuestUnloaded = 1,
 	itemQuestScale,
 	itemQuestLore,
-	itemQuestID
+	itemQuestID,
+	itemScriptFileID
 } itemQuestMode;
 
 typedef enum {

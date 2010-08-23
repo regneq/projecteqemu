@@ -310,6 +310,7 @@ public:
 
 	// Accessors
 	const uint32 GetID() const { return m_item->ID; }
+	const uint32 GetItemScriptID() const { return m_item->ScriptFileID; }
 	virtual const Item_Struct* GetItem() const		{ return m_item; }
 	void SetItem(const Item_Struct* item)	{ m_item = item; }
 	

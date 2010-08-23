@@ -421,7 +421,6 @@ void NPC::SetTarget(Mob* mob) {
 		//attack_timer.Disable();
 		attack_dw_timer.Disable();
 	}
-	parse->Event(EVENT_TARGET_CHANGE, this->GetNPCTypeID(), 0, this->CastToNPC(), mob);
 	Mob::SetTarget(mob);
 }
 

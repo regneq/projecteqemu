@@ -42,6 +42,7 @@ typedef enum {
 	EVENT_SPELL_EFFECT_TRANSLOCATE_COMPLETE,
 	EVENT_COMBINE_SUCCESS, //PC successfully combined a recipe
 	EVENT_COMBINE_FAILURE, //PC failed to combine a recipe
+	EVENT_ITEM_CLICK,	//SoF+ Item Right Clicked from worn or main/top inventory slot
 	
 	_LargestEventID
 } QuestEventID;

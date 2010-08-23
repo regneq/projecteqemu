@@ -197,6 +197,10 @@ public:
 	void SetModelName(const char* modelname);
 	const char* GetModelName();
 
+	const char* GetEntityVariable(int32 id);
+	void SetEntityVariable(int32 id, const char *m_var);
+	bool EntityVariableExists(int32 id);
+
 protected:
 	void	ResetState();	// Set state back to original
 	void	RandomSpawn(bool send_packet = false);		//spawn this ground spawn at a random place
@@ -214,6 +218,8 @@ protected:
 	float			m_z;
 	float			m_heading;
 	bool			m_ground_spawn;
+
+	std::map<int32, std::string> o_EntityVariables;
 	
 	Client *user;
 	Client *last_user;

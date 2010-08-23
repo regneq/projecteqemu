@@ -3978,73 +3978,6 @@ struct AugSlotStruct
 	uint8 unknown;
 };
 
-struct ClickEffectStruct
-{
-	sint32 effect;
-	uint8 level2;
-	uint32 type;
-	uint8 level;
-	sint32 max_charges;
-	sint32 cast_time;
-	uint32 recast;
-	sint32 recast_type;
-	uint32 clickunk5;
-	uint8 effect_string; //unused
-	sint32 clickunk7;
-};
-
-struct ProcEffectStruct
-{
-	uint32 effect;
-	uint8 level2;
-	uint32 type;
-	uint8 level;
-	uint32 unknown1; // poison?
-	uint32 unknown2;
-	uint32 unknown3;
-	uint32 unknown4;
-	uint32 procrate;
-	uint8 effect_string;
-	uint32 unknown5;
-};
-
-struct WornEffectStruct //worn, focus and scroll effect
-{
-	uint32 effect;
-	uint8 level2;
-	uint32 type;
-	uint8 level;
-	uint32 unknown1;
-	uint32 unknown2;
-	uint32 unknown3;
-	uint32 unknown4;
-	uint32 unknown5;
-	uint8 effect_string;
-	uint32 unknown6;
-};
-
-
-struct ItemSecondaryBodyStruct{
-	uint32 augtype;
-	uint32 augrestrict;
-	AugSlotStruct augslots[5];
-
-	uint32 ldonpoint_type;
-	uint32 ldontheme;
-	uint32 ldonprice;
-	uint32 ldonsellbackrate;
-	uint32 ldonsold;
-
-	uint8 bagtype;
-	uint8 bagslots;
-	uint8 bagsize;
-	uint8 wreduction;
-
-	uint8 book;
-	uint8 booktype;
-	//sint32 filename; filename is either 0xffffffff/0x00000000 or the null term string ex: CREWizardNote\0
-};
-
 struct ItemTertiaryBodyStruct
 {
 	sint32 loregroup;
@@ -4077,13 +4010,77 @@ struct ItemTertiaryBodyStruct
 	uint8 unknown12;
 	uint8 unknown13;
 	uint8 unknown14;
+};
 
-	ClickEffectStruct click_effect;
-	ProcEffectStruct proc_effect;
-	WornEffectStruct worn_effect;
-	WornEffectStruct focus_effect;
-	WornEffectStruct scroll_effect;
+struct ClickEffectStruct
+{
+	sint32 effect;
+	uint8 level2;
+	uint32 type;
+	uint8 level;
+	sint32 max_charges;
+	sint32 cast_time;
+	uint32 recast;
+	sint32 recast_type;
+	uint32 clickunk5;
+	//uint8 effect_string; //unused
+	//sint32 clickunk7;
+};
 
+struct ProcEffectStruct
+{
+	uint32 effect;
+	uint8 level2;
+	uint32 type;
+	uint8 level;
+	uint32 unknown1; // poison?
+	uint32 unknown2;
+	uint32 unknown3;
+	uint32 unknown4;
+	uint32 procrate;
+	//uint8 effect_string;
+	//uint32 unknown5;
+};
+
+struct WornEffectStruct //worn, focus and scroll effect
+{
+	uint32 effect;
+	uint8 level2;
+	uint32 type;
+	uint8 level;
+	uint32 unknown1;
+	uint32 unknown2;
+	uint32 unknown3;
+	uint32 unknown4;
+	uint32 unknown5;
+	//uint8 effect_string;
+	//uint32 unknown6;
+};
+
+
+struct ItemSecondaryBodyStruct{
+	uint32 augtype;
+	uint32 augrestrict;
+	AugSlotStruct augslots[5];
+
+	uint32 ldonpoint_type;
+	uint32 ldontheme;
+	uint32 ldonprice;
+	uint32 ldonsellbackrate;
+	uint32 ldonsold;
+
+	uint8 bagtype;
+	uint8 bagslots;
+	uint8 bagsize;
+	uint8 wreduction;
+
+	uint8 book;
+	uint8 booktype;
+	//sint32 filename; filename is either 0xffffffff/0x00000000 or the null term string ex: CREWizardNote\0
+};
+
+struct ItemQuaternaryBodyStruct
+{
 	uint32 scriptfileid;
 	uint8 quest_item;
 	uint32 unknown15; //0xffffffff - Power Source Capacity?

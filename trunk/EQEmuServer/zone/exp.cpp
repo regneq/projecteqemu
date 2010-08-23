@@ -79,12 +79,15 @@ void Client::AddEXP(int32 in_add_exp, int8 conlevel, bool resexp) {
 			zemmod *= zone->newzone_data.zone_exp_multiplier;
 		}
 
-		if(GetBaseRace() == HALFLING){
-			totalmod *= 1.05;
-		}
+		if(RuleB(Character,UseRaceClassExpBonuses))
+		{
+			if(GetBaseRace() == HALFLING){
+				totalmod *= 1.05;
+			}
 
-		if(GetClass() == ROGUE || GetClass() == WARRIOR){
-			totalmod *= 1.05;
+			if(GetClass() == ROGUE || GetClass() == WARRIOR){
+				totalmod *= 1.05;
+			}
 		}
 
 		if(zone->IsHotzone())
@@ -162,12 +165,15 @@ void Client::AddEXP(int32 in_add_exp, int8 conlevel, bool resexp) {
 		aatotalmod *= zone->newzone_data.zone_exp_multiplier;
 	}
 
-	if(GetBaseRace() == HALFLING){
-		aatotalmod *= 1.05;
-	}
+	if(RuleB(Character,UseRaceClassExpBonuses))
+	{
+		if(GetBaseRace() == HALFLING){
+			aatotalmod *= 1.05;
+		}
 
-	if(GetClass() == ROGUE || GetClass() == WARRIOR){
-		aatotalmod *= 1.05;
+		if(GetClass() == ROGUE || GetClass() == WARRIOR){
+			aatotalmod *= 1.05;
+		}
 	}
 
 	int32 exp = GetEXP() + add_exp;
