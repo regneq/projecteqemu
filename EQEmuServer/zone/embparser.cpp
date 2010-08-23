@@ -76,7 +76,8 @@ const char *QuestEventSubroutines[_LargestEventID] = {
 	"EVENT_SPELL_EFFECT_BUFF_TIC_NPC",
 	"EVENT_SPELL_EFFECT_TRANSLOCATE_COMPLETE",
 	"EVENT_COMBINE_SUCCESS",
-	"EVENT_COMBINE_FAILURE"
+	"EVENT_COMBINE_FAILURE",
+	"EVENT_ITEM_CLICK"
 };
 
 PerlembParser::PerlembParser(void) : Parser()
@@ -256,6 +257,13 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 			packagename = item->CharmFile;
 			if(!isloaded(packagename.c_str())) {
 				LoadItemScript(iteminst, packagename, itemQuestScale);
+			}
+		}
+		else if (event == EVENT_ITEM_CLICK) {
+			packagename = "script_";
+			packagename += itoa(item->ScriptFileID);
+			if(!isloaded(packagename.c_str())) {
+				LoadItemScript(iteminst, packagename, itemScriptFileID);
 			}
 		}
 		else {
@@ -651,6 +659,11 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 			ExportVar(packagename.c_str(), "itemname", iteminst->GetItem()->Name);
 			break;
 		}
+		case EVENT_ITEM_CLICK: {
+			ExportVar(packagename.c_str(), "itemid", objid);
+			ExportVar(packagename.c_str(), "itemname", iteminst->GetItem()->Name);
+			break;
+		}
 		case EVENT_HATE_LIST: {
 			ExportVar(packagename.c_str(), "hate_state", data);
 			break;
@@ -1011,6 +1024,10 @@ int PerlembParser::LoadItemScript(ItemInst* iteminst, string packagename, itemQu
 	else if(Qtype == itemQuestLore) {
 		filename += "lore_";
 		filename += itoa(iteminst->GetItem()->LoreGroup);
+	}
+	else if(Qtype == itemScriptFileID) {
+		filename += "script_";
+		filename += itoa(iteminst->GetItemScriptID());
 	}
 	else
 		filename += itoa(iteminst->GetID());

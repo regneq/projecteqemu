@@ -827,6 +827,87 @@ XS(XS_Object_Depop)
 	XSRETURN_EMPTY;
 }
 
+
+XS(XS_Object_GetEntityVariable); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Object_GetEntityVariable)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Object::GetEntityVariable(THIS, id)");
+	{
+		Object *		THIS;
+		int32		id = (int32)SvIV(ST(1));
+		Const_char *		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Object")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Object *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Object");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetEntityVariable(id);
+		sv_setpv(TARG, RETVAL); XSprePUSH; PUSHTARG;
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Object_EntityVariableExists); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Object_EntityVariableExists)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Object::EntityVariableExists(THIS, id)");
+	{
+		Object *		THIS;
+		int32		id = (int32)SvIV(ST(1));
+		bool		RETVAL;
+
+		if (sv_derived_from(ST(0), "Object")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Object *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Object");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->EntityVariableExists(id);
+		ST(0) = boolSV(RETVAL);
+		sv_2mortal(ST(0));
+	}
+	XSRETURN(1);
+}
+
+XS(XS_Object_SetEntityVariable); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Object_SetEntityVariable)
+{
+	dXSARGS;
+	if (items != 3)
+		Perl_croak(aTHX_ "Usage: Object::SetEntityVariable(THIS, id, var)");
+	{
+		Object *		THIS;
+		int32		id = (int32)SvIV(ST(1));
+		const char *	var = (const char *)SvPV_nolen(ST(2));
+
+		if (sv_derived_from(ST(0), "Object")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Object *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Object");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->SetEntityVariable(id, var);
+	}
+	XSRETURN_EMPTY;
+}
+
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -877,6 +958,9 @@ XS(boot_Object)
 		newXSproto(strcpy(buf, "Delete"),XS_Object_Delete, file, "$$");
 		newXSproto(strcpy(buf, "IsGroundSpawn"),XS_Object_IsGroundSpawn, file, "$");
 		newXSproto(strcpy(buf, "Close"),XS_Object_Close, file, "$");
+		newXSproto(strcpy(buf, "GetEntityVariable"), XS_Object_GetEntityVariable, file, "$$");
+		newXSproto(strcpy(buf, "SetEntityVariable"), XS_Object_SetEntityVariable, file, "$$$");
+		newXSproto(strcpy(buf, "EntityVariableExists"), XS_Object_EntityVariableExists, file, "$$");
 	XSRETURN_YES;
 }
 #endif //EMBPERL_XS_CLASSES

@@ -3326,68 +3326,178 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	itbs.no_transfer = item->NoTransfer;
 	itbs.expendablearrow = item->ExpendableArrow;
 
-	itbs.click_effect.effect = item->Click.Effect;
-	itbs.click_effect.level2 = item->Click.Level2;
-	itbs.click_effect.type = item->Click.Type;
-	itbs.click_effect.level = item->Click.Level;
-	itbs.click_effect.max_charges = item->MaxCharges;
-	itbs.click_effect.cast_time = item->CastTime;
-	itbs.click_effect.recast = item->RecastDelay;
-	itbs.click_effect.recast_type = item->RecastType;
+	ss.write((const char*)&itbs, sizeof(Live::structs::ItemTertiaryBodyStruct));
 
-	itbs.proc_effect.effect = item->Proc.Effect;
-	itbs.proc_effect.level2 = item->Proc.Level2;
-	itbs.proc_effect.type = item->Proc.Type;
-	itbs.proc_effect.level = item->Proc.Level;
-	itbs.proc_effect.procrate = item->ProcRate;
+	// Effect Structures Broken down to allow variable length strings for effect names
+	sint32 effect_unknown = 0;
 
-	itbs.worn_effect.effect = item->Worn.Effect;
-	itbs.worn_effect.level2 = item->Worn.Level2;
-	itbs.worn_effect.type = item->Worn.Type;
-	itbs.worn_effect.level = item->Worn.Level;
+	Live::structs::ClickEffectStruct ices;
+	memset(&ices, 0, sizeof(Live::structs::ClickEffectStruct));
 
-	itbs.focus_effect.effect = item->Focus.Effect;
-	itbs.focus_effect.level2 = item->Focus.Level2;
-	itbs.focus_effect.type = item->Focus.Type;
-	itbs.focus_effect.level = item->Focus.Level;
+	ices.effect = item->Click.Effect;
+	ices.level2 = item->Click.Level2;
+	ices.type = item->Click.Type;
+	ices.level = item->Click.Level;
+	ices.max_charges = item->MaxCharges;
+	ices.cast_time = item->CastTime;
+	ices.recast = item->RecastDelay;
+	ices.recast_type = item->RecastType;
 
-	itbs.scroll_effect.effect = item->Scroll.Effect;
-	itbs.scroll_effect.level2 = item->Scroll.Level2;
-	itbs.scroll_effect.type = item->Scroll.Type;
-	itbs.scroll_effect.level = item->Scroll.Level;
+	ss.write((const char*)&ices, sizeof(Live::structs::ClickEffectStruct));
 
-	itbs.bard_effect.effect = 0xffffffff;
-	itbs.bard_effect.level2 = 0;
-	itbs.bard_effect.type = 0;
-	itbs.bard_effect.level = 0;
-	itbs.bard_effect.unknown6 = 0xffffffff;
+	if(strlen(item->ClickName) > 0)
+	{
+		ss.write((const char*)item->ClickName, strlen(item->ClickName));
+		ss.write((const char*)&null_term, sizeof(uint8));
+	}
+	else
+	{
+		ss.write((const char*)&null_term, sizeof(uint8));
+	}
 
-	itbs.scriptfileid = item->ScriptFileID;
-	itbs.quest_item = item->QuestItemFlag;
-	//itbs.unknown15 = 0xffffffff;
-	itbs.unknown15 = 0;
+	ss.write((const char*)&effect_unknown, sizeof(sint32));	// clickunk7
 
-	itbs.Purity = item->Purity;
-	itbs.BackstabDmg = item->BackstabDmg;
-	itbs.DSMitigation = item->DSMitigation;
-	itbs.HeroicStr = item->HeroicStr;
-	itbs.HeroicInt = item->HeroicInt;
-	itbs.HeroicWis = item->HeroicWis;
-	itbs.HeroicAgi = item->HeroicAgi;
-	itbs.HeroicDex = item->HeroicDex;
-	itbs.HeroicSta = item->HeroicSta;
-	itbs.HeroicCha = item->HeroicCha;
-	itbs.HeroicMR = item->HeroicMR;
-	itbs.HeroicFR = item->HeroicFR;
-	itbs.HeroicCR = item->HeroicCR;
-	itbs.HeroicDR = item->HeroicDR;
-	itbs.HeroicPR = item->HeroicPR;
-	itbs.HeroicSVCorrup = item->HeroicSVCorrup;
-	itbs.HealAmt = item->HealAmt;
-	itbs.SpellDmg = item->SpellDmg;
-	itbs.clairvoyance = item->Clairvoyance;
+	Live::structs::ProcEffectStruct ipes;
+	memset(&ipes, 0, sizeof(Live::structs::ProcEffectStruct));
 
-	itbs.subitem_count = 0;
+	ipes.effect = item->Proc.Effect;
+	ipes.level2 = item->Proc.Level2;
+	ipes.type = item->Proc.Type;
+	ipes.level = item->Proc.Level;
+	ipes.procrate = item->ProcRate;
+
+	ss.write((const char*)&ipes, sizeof(Live::structs::ProcEffectStruct));
+
+	if(strlen(item->ProcName) > 0)
+	{
+		ss.write((const char*)item->ProcName, strlen(item->ProcName));
+		ss.write((const char*)&null_term, sizeof(uint8));
+	}
+	else
+	{
+		ss.write((const char*)&null_term, sizeof(uint8));
+	}
+
+	ss.write((const char*)&effect_unknown, sizeof(sint32));	// unknown5
+
+	Live::structs::WornEffectStruct iwes;
+	memset(&iwes, 0, sizeof(Live::structs::WornEffectStruct));
+
+	iwes.effect = item->Worn.Effect;
+	iwes.level2 = item->Worn.Level2;
+	iwes.type = item->Worn.Type;
+	iwes.level = item->Worn.Level;
+
+	ss.write((const char*)&iwes, sizeof(Live::structs::WornEffectStruct));
+
+	if(strlen(item->WornName) > 0)
+	{
+		ss.write((const char*)item->WornName, strlen(item->WornName));
+		ss.write((const char*)&null_term, sizeof(uint8));
+	}
+	else
+	{
+		ss.write((const char*)&null_term, sizeof(uint8));
+	}
+
+	ss.write((const char*)&effect_unknown, sizeof(sint32));	// unknown6
+
+	Live::structs::WornEffectStruct ifes;
+	memset(&ifes, 0, sizeof(Live::structs::WornEffectStruct));
+
+	ifes.effect = item->Focus.Effect;
+	ifes.level2 = item->Focus.Level2;
+	ifes.type = item->Focus.Type;
+	ifes.level = item->Focus.Level;
+
+	ss.write((const char*)&ifes, sizeof(Live::structs::WornEffectStruct));
+
+	if(strlen(item->FocusName) > 0)
+	{
+		ss.write((const char*)item->FocusName, strlen(item->FocusName));
+		ss.write((const char*)&null_term, sizeof(uint8));
+	}
+	else
+	{
+		ss.write((const char*)&null_term, sizeof(uint8));
+	}
+
+	ss.write((const char*)&effect_unknown, sizeof(sint32));	// unknown6
+
+	Live::structs::WornEffectStruct ises;
+	memset(&ises, 0, sizeof(Live::structs::WornEffectStruct));
+
+	ises.effect = item->Scroll.Effect;
+	ises.level2 = item->Scroll.Level2;
+	ises.type = item->Scroll.Type;
+	ises.level = item->Scroll.Level;
+
+	ss.write((const char*)&ises, sizeof(Live::structs::WornEffectStruct));
+
+	if(strlen(item->ScrollName) > 0)
+	{
+		ss.write((const char*)item->ScrollName, strlen(item->ScrollName));
+		ss.write((const char*)&null_term, sizeof(uint8));
+	}
+	else
+	{
+		ss.write((const char*)&null_term, sizeof(uint8));
+	}
+
+	ss.write((const char*)&effect_unknown, sizeof(sint32));	// unknown6
+
+	// Bard Effect?
+	Live::structs::WornEffectStruct ibes;
+	memset(&ibes, 0, sizeof(Live::structs::WornEffectStruct));
+
+	ibes.effect = 0xffffffff;
+	ibes.level2 = 0;
+	ibes.type = 0;
+	ibes.level = 0;
+	//ibes.unknown6 = 0xffffffff;
+
+	ss.write((const char*)&ibes, sizeof(Live::structs::WornEffectStruct));
+
+	/*
+	if(strlen(item->BardName) > 0)
+	{
+		ss.write((const char*)item->BardName, strlen(item->BardName));
+		ss.write((const char*)&null_term, sizeof(uint8));
+	}
+	else */
+		ss.write((const char*)&null_term, sizeof(uint8));
+
+	ss.write((const char*)&effect_unknown, sizeof(sint32));	// unknown6
+	// End of Effects
+
+	Live::structs::ItemQuaternaryBodyStruct iqbs;
+	memset(&iqbs, 0, sizeof(Live::structs::ItemQuaternaryBodyStruct));
+
+	iqbs.scriptfileid = item->ScriptFileID;
+	iqbs.quest_item = item->QuestItemFlag;
+	iqbs.unknown15 = 0;
+
+	iqbs.Purity = item->Purity;
+	iqbs.BackstabDmg = item->BackstabDmg;
+	iqbs.DSMitigation = item->DSMitigation;
+	iqbs.HeroicStr = item->HeroicStr;
+	iqbs.HeroicInt = item->HeroicInt;
+	iqbs.HeroicWis = item->HeroicWis;
+	iqbs.HeroicAgi = item->HeroicAgi;
+	iqbs.HeroicDex = item->HeroicDex;
+	iqbs.HeroicSta = item->HeroicSta;
+	iqbs.HeroicCha = item->HeroicCha;
+	iqbs.HeroicMR = item->HeroicMR;
+	iqbs.HeroicFR = item->HeroicFR;
+	iqbs.HeroicCR = item->HeroicCR;
+	iqbs.HeroicDR = item->HeroicDR;
+	iqbs.HeroicPR = item->HeroicPR;
+	iqbs.HeroicSVCorrup = item->HeroicSVCorrup;
+	iqbs.HealAmt = item->HealAmt;
+	iqbs.SpellDmg = item->SpellDmg;
+	iqbs.clairvoyance = item->Clairvoyance;
+
+	iqbs.subitem_count = 0;
 
 	char *SubSerializations[10];
 
@@ -3403,7 +3513,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 
 			int SubSlotNumber;
 
-			itbs.subitem_count++;
+			iqbs.subitem_count++;
 
 			if(slot_id_in >= 22 && slot_id_in < 30)
 				SubSlotNumber = (((slot_id_in + 3) * 10) + x + 1);
@@ -3418,7 +3528,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 		}
 	}
 
-	ss.write((const char*)&itbs, sizeof(Live::structs::ItemTertiaryBodyStruct));
+	ss.write((const char*)&iqbs, sizeof(Live::structs::ItemQuaternaryBodyStruct));
 
 	for(int x = 0; x < 10; ++x) {
 

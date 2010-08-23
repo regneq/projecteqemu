@@ -2835,6 +2835,11 @@ void Mob::SetTarget(Mob* mob) {
 	if (target == mob) return;
 	target = mob;
 	entity_list.UpdateHoTT(this);
+	if(IsNPC())
+		parse->Event(EVENT_TARGET_CHANGE, this->GetNPCTypeID(), 0, this->CastToNPC(), mob);
+	else if (IsClient())
+		parse->Event(EVENT_TARGET_CHANGE, 0, "", (NPC*)NULL, this->CastToClient());
+
 }
 
 float Mob::FindGroundZ(float new_x, float new_y, float z_offset)

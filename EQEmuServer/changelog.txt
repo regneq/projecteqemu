@@ -1,5 +1,15 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==08/23/2010==
+Trevius: EVENT_TARGET_CHANGE now also works for player scripts.
+Trevius: Added new EVENT_ITEM_CLICK for SoF+ clients.  File naming format is: /quests/items/script_<scriptfileid>.pl (I.E. /quests/items/script_12345.pl)
+Trevius: Effect Name overrides (SoF+) for the following item table fields: clickname, procname, wornname, focusname, or scrollname.
+Trevius: Added to Perl Object: SetEntityVariable(id, var), EntityVariableExists(id), and GetEntityVariable(id).
+Trevius: Added Rule UseRaceClassExpBonuses to allow choosing whether to use the Racial and Class Experience Bonuses (Default: True).
+
+OPTIONAL SQL:
+utils/sql/svn/1625_optional_rule_class_race_exp_bonus.sql
+
 ==08/15/2010==
 Derision: Fixed crash when a mob died to a DoT in a zone where buff timers are suspended.
 
