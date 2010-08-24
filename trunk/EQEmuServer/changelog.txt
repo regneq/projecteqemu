@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==08/24/2010==
+gaeorn: mana updates for group should be sent to SoD clients when in raid now
+
 ==08/23/2010==
 Trevius: EVENT_TARGET_CHANGE now also works for player scripts.
 Trevius: Added new EVENT_ITEM_CLICK for SoF+ clients.  File naming format is: /quests/items/script_<scriptfileid>.pl (I.E. /quests/items/script_12345.pl)
