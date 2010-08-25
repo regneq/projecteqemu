@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==08/25/2010==
+JJ: Updated PP comments/unknowns to match size changes over time
+
 ==08/24/2010==
 gaeorn: mana updates for group should be sent to SoD clients when in raid now
 
