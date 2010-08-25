@@ -587,7 +587,7 @@ static const uint8 SkillDamageTypes[HIGHEST_SKILL+1] = {
 #define MATERIAL_FEET		6
 #define MATERIAL_PRIMARY	7
 #define MATERIAL_SECONDARY	8
-#define MAX_MATERIALS 9	//number of equipables
+#define MAX_MATERIALS		9	//number of equipables
 
 
 
