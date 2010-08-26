@@ -7030,6 +7030,34 @@ XS(XS_Mob_TempName)
 	XSRETURN_EMPTY;
 }
 
+XS(XS_Mob_GetItemStat); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_GetItemStat)
+{
+	dXSARGS;
+	if (items != 3)
+		Perl_croak(aTHX_ "Usage: Mob::GetItemStat(THIS, itemid, stat)");
+	{
+		Mob *		THIS;
+		int32		RETVAL;
+		int32		itemid = (int32)SvUV(ST(1));
+		Const_char *	stat = (Const_char *)SvPV_nolen(ST(2));
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetItemStat(itemid, stat);
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -7294,6 +7322,7 @@ XS(boot_Mob)
 		newXSproto(strcpy(buf, "CameraEffect"), XS_Mob_CameraEffect, file, "$$:$$");
 		newXSproto(strcpy(buf, "SpellEffect"), XS_Mob_SpellEffect, file, "$$:$$$$$$");
 		newXSproto(strcpy(buf, "TempName"), XS_Mob_TempName, file, "$:$");
+		newXSproto(strcpy(buf, "GetItemStat"), XS_Mob_GetItemStat, file, "$$$");
 	XSRETURN_YES;
 }
 

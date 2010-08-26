@@ -185,7 +185,9 @@ Object::Object(const ItemInst *inst, float x, float y, float z, float heading, i
 	m_data.z = z;
 	m_data.zone_id = zone->GetZoneID();
 	
-	decay_timer.Start();
+	if (decay_time)
+		decay_timer.Start();
+
 	respawn_timer.Disable();
 
 	// Hardcoded portion for unknown members
@@ -221,15 +223,17 @@ Object::Object(const ItemInst *inst, float x, float y, float z, float heading, i
 	}
 }
 
-Object::Object(const char *model, float x, float y, float z, float heading, int8 type)
- : respawn_timer(0), decay_timer(300000)
+Object::Object(const char *model, float x, float y, float z, float heading, int8 type, int32 decay_time)
+ : respawn_timer(0), decay_timer(decay_time)
 {
 	user = NULL;
 	last_user = NULL;
+	ItemInst* inst = NULL;
+	inst = new ItemInst(ItemUseWorldContainer);
 	
 	// Initialize members
 	m_id	= 0;
-	m_inst	= NULL;
+	m_inst	= (inst) ? inst->Clone() : NULL;
 	m_type	= type;
 	m_icon	= 0;
 	m_inuse	= false;
@@ -241,6 +245,12 @@ Object::Object(const char *model, float x, float y, float z, float heading, int8
 	m_data.y = y;
 	m_data.z = z;
 	m_data.zone_id = zone->GetZoneID();
+
+	if (decay_time)
+		decay_timer.Start();
+
+	respawn_timer.Disable();
+
 	//Hardcoded portion for unknown members
 	m_data.unknown024	= 0x7f001194;
 	m_data.unknown064	= 0;	//0x0000000D;
@@ -250,9 +260,9 @@ Object::Object(const char *model, float x, float y, float z, float heading, int8
 	m_data.unknown084	= 0xFFFFFFFF;
 
 	if(model)
-	strcpy(m_data.object_name, model);
+		strcpy(m_data.object_name, model);
 	else
-	strcpy(m_data.object_name, "IT64_ACTORDEF"); //default object name if model isn't specified for some unknown reason
+		strcpy(m_data.object_name, "IT64_ACTORDEF"); //default object name if model isn't specified for some unknown reason
 }
 
 Object::~Object()

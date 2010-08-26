@@ -5573,3 +5573,36 @@ void Client::LocateCorpse()
 	else
 		Message_StringID(clientMessageError, SENSE_CORPSE_NOT_NAME);
 }
+
+void Client::NPCSpawn(NPC *target_npc, const char *identifier, uint32 respawntime)
+{
+	if (!target_npc || !identifier)
+		return;
+
+	std::string id = identifier;
+	for(int i = 0; i < id.length(); ++i)
+	{
+		id[i] = std::tolower(id[i]);
+	}
+
+	if (id == "create") {
+		database.NPCSpawnDB(0, zone->GetShortName(), zone->GetInstanceVersion(), this, target_npc->CastToNPC());
+	}
+	else if (id == "add") {
+		database.NPCSpawnDB(1, zone->GetShortName(), zone->GetInstanceVersion(), this, target_npc->CastToNPC(), respawntime);
+	}
+	else if (id == "update") {
+		database.NPCSpawnDB(2, zone->GetShortName(), zone->GetInstanceVersion(), this, target_npc->CastToNPC());
+	}
+	else if (id == "remove") {
+		database.NPCSpawnDB(3, zone->GetShortName(), zone->GetInstanceVersion(), this, target_npc->CastToNPC());
+		target_npc->Depop(false);
+	}
+	else if (id == "delete") {
+		database.NPCSpawnDB(4, zone->GetShortName(), zone->GetInstanceVersion(), this, target_npc->CastToNPC());
+		target_npc->Depop(false);
+	}
+	else {
+		return;
+	}
+}

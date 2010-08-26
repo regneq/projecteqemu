@@ -1,5 +1,13 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==08/26/2010==
+Trevius: Added new Perl Mob quest object GetItemStat(itemid, stat).
+Trevius: Added new Perl Client quest object NPCSpawn(target_npc, option, respawntime=1200) to do create, add, update, remove, and deletes just like #npcspawn.
+Trevius: Fixed a potential crash while augmenting items.
+Trevius: Fixed a crash caused by using tradeskill container objects created with the CreateGroundObjectFromModel() quest command.
+Trevius: Added an optional decay time setting for quest::creategroundobjectfrommodel(modelname, x, y, z, heading, [type], [decay_time]).
+Trevius: Decay time is now optional for quest::creategroundobject(itemid, x, y, z, heading, [decaytime]) (default is not to decay at all).
+
 ==08/25/2010==
 JJ: Updated PP comments/unknowns to match size changes over time
 

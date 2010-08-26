@@ -620,6 +620,8 @@ public:
 	void SetHorseId(int16 horseid_in);
 	int16 GetHorseId() const { return horseId; }
 
+	void NPCSpawn(NPC *target_npc, const char *identifier, uint32 respawntime = 1200);
+
 	bool BindWound(Mob* bindmob, bool start, bool fail = false);
 	void SetTradeskillObject(Object* object) { m_tradeskill_object = object; }
 	Object* GetTradeskillObject() { return m_tradeskill_object; }

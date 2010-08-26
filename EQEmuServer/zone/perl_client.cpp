@@ -4551,6 +4551,44 @@ XS(XS_Client_SendOPTranslocateConfirm)
 	XSRETURN_EMPTY;
 }
 
+XS(XS_Client_NPCSpawn); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_NPCSpawn)
+{
+	dXSARGS;
+	if (items < 3 || items > 4)
+		Perl_croak(aTHX_ "Usage: Client::NPCSpawn(THIS, target_npc, option, respawntime=1200)");
+	{
+		Client *		THIS;
+		NPC *			target_npc = NULL;
+		Const_char *	option = (Const_char *)SvPV_nolen(ST(2));
+		int32			respawntime = 1200;
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		if (sv_derived_from(ST(1), "NPC")) {
+			IV tmp = SvIV((SV*)SvRV(ST(1)));
+			target_npc = INT2PTR(NPC *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type NPC");
+		if(target_npc == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		if (items > 3)
+			respawntime = (int32)SvUV(ST(3));
+
+		THIS->NPCSpawn(target_npc, option, respawntime);
+	}
+	XSRETURN_EMPTY;
+}
+
 
 #ifdef __cplusplus
 extern "C"
@@ -4740,6 +4778,7 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "GetEnduranceRatio"), XS_Client_GetEnduranceRatio, file, "$");
 		newXSproto(strcpy(buf, "SetEndurance"), XS_Client_SetEndurance, file, "$$");
 		newXSproto(strcpy(buf, "SendOPTranslocateConfirm"), XS_Client_SendOPTranslocateConfirm, file, "$$$");
+		newXSproto(strcpy(buf, "NPCSpawn"), XS_Client_NPCSpawn, file, "$$$;$");
 	XSRETURN_YES;
 }
 

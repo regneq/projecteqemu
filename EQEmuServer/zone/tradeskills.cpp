@@ -56,6 +56,11 @@ void Object::HandleAugmentation(Client* user, const AugmentItem_Struct* in_augme
 	sint8 slot=-1;
 	ItemInst* container = worldo->m_inst;
 
+	if (!container) {
+		user->Message(13, "Error: This item is not a container!");
+		return;
+	}
+
 	if (!(tobe_auged = container->GetItem(0))) {
 		user->Message(13, "Error: No item in slot 0 of sealer");
 		return;

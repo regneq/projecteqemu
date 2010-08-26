@@ -3898,26 +3898,25 @@ int16 EntityList::CreateGroundObject(int32 itemid, float x, float y, float z, fl
 		{
 			Object* object = new Object(i,x,y,z,heading,decay_time);
 			entity_list.AddObject(object, true);
-			object->StartDecay();
+
 			safe_delete(i);
 			if(object)
-			return object->GetID();
+				return object->GetID();
 		}
 		return 0; // fell through itemstruct
 	}
 	return 0; // fell through everything, this is bad/incomplete from perl
 }
 
-int16 EntityList::CreateGroundObjectFromModel(const char *model, float x, float y, float z, float heading, int8 type)
+int16 EntityList::CreateGroundObjectFromModel(const char *model, float x, float y, float z, float heading, int8 type, int32 decay_time)
 {
 	if(model)
 	{
 			Object* object = new Object(model,x,y,z,heading,type);
 			entity_list.AddObject(object, true);
-			//object->StartDecay();
+
 			if(object)
-			return object->GetID();
-			// fell through itemstruct
+				return object->GetID();
 	}
 	return 0; // fell through everything, this is bad/incomplete from perl
 }
