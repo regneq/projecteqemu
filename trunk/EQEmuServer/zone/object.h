@@ -134,8 +134,8 @@ public:
 	Object(const ItemInst* inst, char* name,float max_x,float min_x,float max_y,float min_y,float z,float heading,int32 respawntimer);
 	// Loading object from client dropping item on ground
 	Object(Client* client, const ItemInst* inst);
-	Object(const ItemInst *inst, float x, float y, float z, float heading, int32 decay_time);
-	Object(const char *model, float x, float y, float z, float heading, int8 type);
+	Object(const ItemInst *inst, float x, float y, float z, float heading, int32 decay_time = 300000);
+	Object(const char *model, float x, float y, float z, float heading, int8 type, int32 decay_time = 0);
 	
 	// Destructor
 	~Object();

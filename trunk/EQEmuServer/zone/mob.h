@@ -705,6 +705,7 @@ bool logpos;
 	void Shout(const char *format, ...);
 	void Emote(const char *format, ...);
 	void QuestJournalledSay(Client *QuestInitiator, const char *str);
+	int32 GetItemStat(int32 itemid, const char *identifier);
 
 	//Casting related
  	void SendSpellBarDisable();

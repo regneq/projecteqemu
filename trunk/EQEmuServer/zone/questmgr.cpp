@@ -1940,10 +1940,10 @@ int16 QuestManager::CreateGroundObject(int32 itemid, float x, float y, float z, 
 	return entid;
 }
 
-int16 QuestManager::CreateGroundObjectFromModel(const char *model, float x, float y, float z, float heading, int8 type)
+int16 QuestManager::CreateGroundObjectFromModel(const char *model, float x, float y, float z, float heading, int8 type, int32 decay_time)
 {
 	int16 entid = 0; //safety check
-	entid = entity_list.CreateGroundObjectFromModel(model, x, y, z, heading, type);
+	entid = entity_list.CreateGroundObjectFromModel(model, x, y, z, heading, type, decay_time);
 	return entid;
 }
 

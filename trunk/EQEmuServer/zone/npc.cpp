@@ -1089,7 +1089,7 @@ int32 ZoneDatabase::NPCSpawnDB(int8 command, const char* zone, uint32 zone_versi
 			}
 			if(c) c->LogSQL(query);
 			safe_delete_array(query);
-			c->Message(0, "%s npc_type ID %i created successfully!", tmpstr, npc_type_id);
+			if(c) c->Message(0, "%s npc_type ID %i created successfully!", tmpstr, npc_type_id);
 			return true;
 			break;
 		}

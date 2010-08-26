@@ -2589,24 +2589,25 @@ XS(XS__CreateGroundObjectFromModel);
 XS(XS__CreateGroundObjectFromModel)
 {
 	dXSARGS;
-	if (items != 5 && items != 6)
-		Perl_croak(aTHX_ "Usage: creategroundobjectfrommodel(modelname, x, y, z, heading, [type])");
+	if (items < 5 || items > 7)
+		Perl_croak(aTHX_ "Usage: creategroundobjectfrommodel(modelname, x, y, z, heading, [type], [decay_time])");
 
 	char *		modelname = (char *)SvPV_nolen(ST(0));
 	float x = (float)SvNV(ST(1));
 	float y = (float)SvNV(ST(2));
 	float z = (float)SvNV(ST(3));
 	float heading = (float)SvNV(ST(4));
+	int32 type = 0;
+	int32 decay_time = 0;
 	uint16 id = 0;
 
-	if(items == 5)
-		id = quest_manager.CreateGroundObjectFromModel(modelname, x, y, z, heading);
-	else{
-		int32 type = (int32)SvIV(ST(5));
-		id = quest_manager.CreateGroundObjectFromModel(modelname, x, y, z, heading, type);
-	}
+	if (items > 5)
+		type = (int32)SvIV(ST(5));
 
+	if (items > 6)
+		decay_time = (int32)SvIV(ST(6));
 
+	id = quest_manager.CreateGroundObjectFromModel(modelname, x, y, z, heading, type, decay_time);
 	XSRETURN_IV(id);
 }
 

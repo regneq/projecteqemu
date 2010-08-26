@@ -348,7 +348,7 @@ public:
 	void    ReloadAllClientsTaskState(int TaskID=0);
 
 	int16	CreateGroundObject(int32 itemid, float x, float y, float z, float heading, int32 decay_time = 300000);
-	int16	CreateGroundObjectFromModel(const char *model, float x, float y, float z, float heading, int8 type = 0x00);
+	int16	CreateGroundObjectFromModel(const char *model, float x, float y, float z, float heading, int8 type = 0x00, int32 decay_time = 0);
 	void	ZoneWho(Client *c, Who_All_Struct* Who);
 	void	UnMarkNPC(int16 ID);
 
