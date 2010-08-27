@@ -18,7 +18,7 @@ namespace EQExtractor2
 {
     public partial class EQExtractor2Form1 : Form
     {
-        string Version = "EQExtractor2 Version 2.1.0 SVN";
+        string Version = "EQExtractor2 Version 2.1.1 SVN";
 
         static int PacketsSeen = 0;
         static long BytesRead = 0;
@@ -42,7 +42,7 @@ namespace EQExtractor2
             Options.PacketDumpViewerProgram.Text = Properties.Settings.Default.TextFileViewer;
             Options.ShowDebugWindowOnStartup.Checked = Properties.Settings.Default.ShowDebugWindowOnStartup;
             Options.ShowTimeStamps.Checked = Properties.Settings.Default.DumpTimeStamps;
-        
+
         }
                 
         public void Log(string Message)
@@ -400,6 +400,8 @@ namespace EQExtractor2
 
         private void menuViewDebugLog_Click(object sender, EventArgs e)
         {
+            menuViewDebugLog.Checked = DebugLog.Visible;
+
             if (!menuViewDebugLog.Checked)
             {
                 menuViewDebugLog.Checked = true;
@@ -477,7 +479,9 @@ namespace EQExtractor2
 
         private void menuOptions_Click(object sender, EventArgs e)
         {
-            if (Options.ShowDialog() == DialogResult.OK)
+            DialogResult d = Options.ShowDialog();
+
+            if (d == DialogResult.OK)
             {
                 Properties.Settings.Default.TextFileViewer = Options.PacketDumpViewerProgram.Text;
                 Properties.Settings.Default.ShowDebugWindowOnStartup = Options.ShowDebugWindowOnStartup.Checked;
@@ -513,6 +517,11 @@ namespace EQExtractor2
             DebugLog.Show();
             menuViewDebugLog.Checked = true;
             this.Focus();
+        }
+
+        private void menuView_Popup(object sender, EventArgs e)
+        {
+            menuViewDebugLog.Checked = DebugLog.Visible;
         }
     }    
 }

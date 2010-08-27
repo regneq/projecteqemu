@@ -51,8 +51,8 @@
             this.Name = "LogForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "EQExtractor2 Debug Log";
+            this.Closing += new System.ComponentModel.CancelEventHandler(this.LogForm_FormClosing);
             this.ResumeLayout(false);
-
         }
 
         #endregion
