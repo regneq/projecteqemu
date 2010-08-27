@@ -20,11 +20,13 @@ namespace EQPacket
 
     public class EQApplicationPacket
     {
-        public EQApplicationPacket(System.Net.IPAddress srcIp, System.Net.IPAddress dstIp, ushort srcPort, ushort dstPort, int OpCode, int BufferSize, byte[] Source, int Offset, PacketDirection Direction)
+        public EQApplicationPacket(System.Net.IPAddress srcIp, System.Net.IPAddress dstIp, ushort srcPort, ushort dstPort, int OpCode, int BufferSize, byte[] Source, int Offset, PacketDirection Direction, DateTime PacketTime)
         {
             this.OpCode = OpCode;
 
             this.Direction = Direction;
+
+            this.PacketTime = PacketTime;
 
             if (BufferSize < 0)
             {
@@ -40,6 +42,7 @@ namespace EQPacket
         public byte[] Buffer;
         public int OpCode;
         public PacketDirection Direction;
+        public DateTime PacketTime;
         public bool Locked = false;
     }
     
@@ -130,20 +133,22 @@ namespace EQPacket
             public int Seq;
             public PacketDirection Direction;
             public byte[] Payload;
+            public DateTime PacketTime;
             public bool SubPacket;
 
-            public CacheEntry(int inSeq, PacketDirection inDirection, byte[] inPayload, bool inSubPacket)
+            public CacheEntry(int inSeq, PacketDirection inDirection, byte[] inPayload, DateTime inPacketTime, bool inSubPacket)
             {
                 Seq = inSeq;
                 Direction = inDirection;
                 Payload = inPayload;
+                PacketTime = inPacketTime;
                 SubPacket = inSubPacket;
             }            
         }
 
         private List<CacheEntry> Cache = new List<CacheEntry>();
 
-        private void AddToCache(int Seq, PacketDirection Direction, byte[] Payload, bool SubPacket)
+        private void AddToCache(int Seq, PacketDirection Direction, byte[] Payload, DateTime PacketTime, bool SubPacket)
         {
 	        Debug("Adding packet with Seq " + Seq + " to cache.");
             foreach(CacheEntry Existing in Cache)
@@ -151,7 +156,7 @@ namespace EQPacket
                 if((Existing.Direction == Direction) && (Existing.Seq == Seq))
                     return;
             }
-            CacheEntry ce = new CacheEntry(Seq, Direction, Payload, SubPacket);
+            CacheEntry ce = new CacheEntry(Seq, Direction, Payload, PacketTime, SubPacket);
 
             Cache.Add(ce);
         }
@@ -199,7 +204,7 @@ namespace EQPacket
             
             while ( CacheElement >= 0)
             {
-                ProcessPacket(ServerIP, ClientIP, ServerPort, ClientPort, Cache[CacheElement].Payload, Cache[CacheElement].SubPacket, true);
+                ProcessPacket(ServerIP, ClientIP, ServerPort, ClientPort, Cache[CacheElement].Payload, Cache[CacheElement].PacketTime, Cache[CacheElement].SubPacket, true);
 
                 Cache.RemoveRange(CacheElement, 1);
 
@@ -210,7 +215,7 @@ namespace EQPacket
 
             while (CacheElement >= 0)
             {
-                ProcessPacket(ClientIP, ServerIP, ClientPort, ServerPort, Cache[CacheElement].Payload, Cache[CacheElement].SubPacket, true);
+                ProcessPacket(ClientIP, ServerIP, ClientPort, ServerPort, Cache[CacheElement].Payload, Cache[CacheElement].PacketTime, Cache[CacheElement].SubPacket, true);
 
                 Cache.RemoveRange(CacheElement, 1);
 
@@ -247,7 +252,7 @@ namespace EQPacket
                 ++ExpectedServerSEQ;
         } 
         
-        public void ProcessPacket(System.Net.IPAddress srcIp, System.Net.IPAddress dstIp, ushort srcPort, ushort dstPort, byte[] Payload, bool SubPacket, bool Cached)
+        public void ProcessPacket(System.Net.IPAddress srcIp, System.Net.IPAddress dstIp, ushort srcPort, ushort dstPort, byte[] Payload, DateTime PacketTime, bool SubPacket, bool Cached)
         {
             UInt32 OpCode = (UInt32)(Payload[0] * 256 + Payload[1]);
 
@@ -286,7 +291,7 @@ namespace EQPacket
                 case OP_Combined:
                 {
 		            Debug("OP_Combined");
-                    Debug(Utils.HexDump(Payload));
+                    //Debug(Utils.HexDump(Payload));
 
                     byte[] Uncompressed;
 
@@ -320,7 +325,7 @@ namespace EQPacket
 
 			            BufferPosition += SubPacketSize;
 
-                        ProcessPacket(srcIp, dstIp, srcPort, dstPort, NewPacket, true, Cached);
+                        ProcessPacket(srcIp, dstIp, srcPort, dstPort, NewPacket, PacketTime, true, Cached);
                     }
                     break;
                 }
@@ -352,9 +357,9 @@ namespace EQPacket
 			            Array.Copy(Payload, 2, Uncompressed, 0, Payload.Length - 2);
                     }
                     Debug("Raw payload is:");
-                    Debug(Utils.HexDump(Payload));
+                    //Debug(Utils.HexDump(Payload));
                     Debug("Uncompressed data is:");
-                    Debug(Utils.HexDump(Uncompressed));
+                    //Debug(Utils.HexDump(Uncompressed));
 
                     int Seq = Uncompressed[0] * 256 + Uncompressed[1];
 
@@ -363,7 +368,7 @@ namespace EQPacket
                         if (Seq > GetExpectedSeq(Direction))
                         {
                             if ((Seq - GetExpectedSeq(Direction) < 1000))
-                                AddToCache(Seq, Direction, Payload, SubPacket);
+                                AddToCache(Seq, Direction, Payload, PacketTime, SubPacket);
                             else
                             {
 			                    Log("Giving up on seeing expected fragment.");
@@ -403,7 +408,7 @@ namespace EQPacket
 
                             int AppOpCode = Uncompressed[BufferPosition++] + (Uncompressed[BufferPosition++] * 256);
                             
-                            ProcessAppPacket(srcIp, dstIp, srcPort, dstPort, AppOpCode, Size - 2, Uncompressed, BufferPosition, Direction);
+                            ProcessAppPacket(srcIp, dstIp, srcPort, dstPort, AppOpCode, Size - 2, Uncompressed, BufferPosition, Direction, PacketTime);
                             
                             BufferPosition = BufferPosition + (Size - 2);
                         }
@@ -414,7 +419,7 @@ namespace EQPacket
 
                         int AppOpCode = Uncompressed[BufferPosition++] + (Uncompressed[BufferPosition++] * 256);                     
 
-                        ProcessAppPacket(srcIp, dstIp, srcPort, dstPort, AppOpCode, Uncompressed.Length - 4, Uncompressed, BufferPosition, Direction);
+                        ProcessAppPacket(srcIp, dstIp, srcPort, dstPort, AppOpCode, Uncompressed.Length - 4, Uncompressed, BufferPosition, Direction, PacketTime);
                     }
                     break;
                 }
@@ -424,7 +429,7 @@ namespace EQPacket
                 {
 		            Debug("OP_Fragment");
                     Debug("Raw Data");
-                    Debug(Utils.HexDump(Payload));
+                    //Debug(Utils.HexDump(Payload));
 
                     byte[] Uncompressed;
 
@@ -447,14 +452,14 @@ namespace EQPacket
 			            Array.Copy(Payload, 2, Uncompressed, 0, Payload.Length - 2);
                     }
 		            Debug("Uncompressed data.");
-		            Debug(Utils.HexDump(Uncompressed));
+		            //Debug(Utils.HexDump(Uncompressed));
 
                     if (Direction == PacketDirection.ClientToServer)
                     {
                         int CSFragmentSeq = (Uncompressed[0] * 256) + Uncompressed[1];
 
                         if (CSFragmentSeq > GetExpectedSeq(Direction))
-                            AddToCache(CSFragmentSeq, Direction, Payload, SubPacket);
+                            AddToCache(CSFragmentSeq, Direction, Payload, PacketTime, SubPacket);
                         else
                         {
                             AdvanceSeq(Direction);
@@ -474,7 +479,7 @@ namespace EQPacket
                             if (FragmentSeq > GetExpectedSeq(Direction))
                             {
                                 if((FragmentSeq - GetExpectedSeq(Direction)) < 1000)
-                                    AddToCache(FragmentSeq, Direction, Payload, SubPacket);
+                                    AddToCache(FragmentSeq, Direction, Payload, PacketTime, SubPacket);
                                 else
                                 {
 			                        Log("Giving up on seeing expected fragment.");
@@ -539,7 +544,7 @@ namespace EQPacket
                             if (FragmentSeq > GetExpectedSeq(Direction))
                             {
                                 if((FragmentSeq - GetExpectedSeq(Direction)) < 1000)
-                                    AddToCache(FragmentSeq, Direction, Payload, SubPacket);
+                                    AddToCache(FragmentSeq, Direction, Payload, PacketTime, SubPacket);
 				                else
 				                {
     			                    Log("Giving up on seeing expected fragment.");
@@ -601,7 +606,7 @@ namespace EQPacket
 
                                     int AppOpCode = Fragments[BufferPosition++] + (Fragments[BufferPosition++] * 256);
                                                                         
-                                    ProcessAppPacket(srcIp, dstIp, srcPort, dstPort, AppOpCode, Size - 2, Fragments, BufferPosition, Direction);
+                                    ProcessAppPacket(srcIp, dstIp, srcPort, dstPort, AppOpCode, Size - 2, Fragments, BufferPosition, Direction, PacketTime);
                                     
                                     BufferPosition = BufferPosition + (Size - 2);
                                 }
@@ -614,7 +619,7 @@ namespace EQPacket
 
 				                Array.Copy(Fragments, 2, NewPacket, 0, Fragments.Length - 2);
                                 
-                                ProcessAppPacket(srcIp, dstIp, srcPort, dstPort, AppOpCode, NewPacket.Length, NewPacket, 0, Direction);                                
+                                ProcessAppPacket(srcIp, dstIp, srcPort, dstPort, AppOpCode, NewPacket.Length, NewPacket, 0, Direction, PacketTime);
                             }
                             Debug("Reseting FragmentSeq to -1");
                             FragmentSeq = -1;
@@ -648,7 +653,7 @@ namespace EQPacket
 
 		            Debug("OP_Ack, Seq " + Seq + " " + DirectionString);
 
-		            Debug(Utils.HexDump(Payload));
+		            //Debug(Utils.HexDump(Payload));
                     
                     break;
                 }
@@ -663,12 +668,12 @@ namespace EQPacket
 
 			            Array.Copy(Payload, 2, NewPacket, 0, Payload.Length - 2);
 
-                        ProcessAppPacket(srcIp, dstIp, srcPort, dstPort, AppOpCode, NewPacket.Length, NewPacket, 0, Direction);
+                        ProcessAppPacket(srcIp, dstIp, srcPort, dstPort, AppOpCode, NewPacket.Length, NewPacket, 0, Direction, PacketTime);
                     }
                     else
                     {
                         Debug("OP_Unknown (" + OpCode.ToString("x") + ")");
-                        Debug(Utils.HexDump(Payload));
+                        //Debug(Utils.HexDump(Payload));
                     }
                     break;
             }
@@ -677,9 +682,9 @@ namespace EQPacket
                 ProcessCache();        
         }
 
-        public void ProcessAppPacket(System.Net.IPAddress srcIp, System.Net.IPAddress dstIp, ushort srcPort, ushort dstPort, int InOpCode, int BufferSize, byte[] Source, int Offset, PacketDirection Direction)
+        public void ProcessAppPacket(System.Net.IPAddress srcIp, System.Net.IPAddress dstIp, ushort srcPort, ushort dstPort, int InOpCode, int BufferSize, byte[] Source, int Offset, PacketDirection Direction, DateTime PacketTime)
         {
-            EQApplicationPacket app = new EQApplicationPacket(srcIp, dstIp, srcPort, dstPort, InOpCode, BufferSize, Source, Offset, Direction);
+            EQApplicationPacket app = new EQApplicationPacket(srcIp, dstIp, srcPort, dstPort, InOpCode, BufferSize, Source, Offset, Direction, PacketTime);
 
             if (!Identified)
             {

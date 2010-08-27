@@ -59,6 +59,18 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GenerateSQLForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GenerateSQLForm.Designer.cs">
+      <DependentUpon>GenerateSQLForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="LogForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="LogForm.Designer.cs">
+      <DependentUpon>LogForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="OpcodeManager.cs" />
     <Compile Include="PatchGeneric.cs" />
     <Compile Include="EQApplicationLayer.cs" />
@@ -75,9 +87,21 @@
     <Compile Include="PatchJuly13-2010.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UserOptions.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UserOptions.Designer.cs">
+      <DependentUpon>UserOptions.cs</DependentUpon>
+    </Compile>
     <Compile Include="Utils.cs" />
     <EmbeddedResource Include="EQExtractor2Form1.resx">
       <DependentUpon>EQExtractor2Form1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GenerateSQLForm.resx">
+      <DependentUpon>GenerateSQLForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LogForm.resx">
+      <DependentUpon>LogForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -89,6 +113,9 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="UserOptions.resx">
+      <DependentUpon>UserOptions.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="app.config" />
     <None Include="patch_May12-2010.conf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

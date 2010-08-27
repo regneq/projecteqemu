@@ -139,6 +139,9 @@ namespace EQExtractor2.InternalTypes
         public string Title;
         public string Suffix;
         public byte IsMercenary;
+        public UInt32 Padding5;
+        public UInt32 Padding7;
+        public UInt32 Padding26;
 
     }
 

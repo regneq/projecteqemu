@@ -412,6 +412,10 @@ namespace EQExtractor2.Patches
                 NewSpawn.ShowHelm = (Bitfield >> 24) & 1;
                 NewSpawn.Gender = (Bitfield >> 20) & 3;
 
+                NewSpawn.Padding5 = (Bitfield >> 4) & 1;
+                NewSpawn.Padding7 = (Bitfield >> 6) & 2047;
+                NewSpawn.Padding26 = (Bitfield >> 25) & 1;
+
                 Byte OtherData = Buffer.ReadByte();
 
                 Buffer.SkipBytes(8);    // Skip 8 unknown bytes
@@ -759,7 +763,7 @@ namespace EQExtractor2.Patches
 
             return Utils.ReadNullTerminatedString(NewZonePacket[0], 704, 96, false);
         }
-
+                
         override public bool DumpAAs(string FileName)
         {
             List<byte[]> AAPackets = GetPacketsOfType("OP_SendAATable", PacketDirection.ServerToClient);

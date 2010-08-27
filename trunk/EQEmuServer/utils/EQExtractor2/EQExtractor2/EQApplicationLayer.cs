@@ -108,9 +108,9 @@ namespace EQApplicationLayer
             return !PatchDecoder.UnsupportedVersion();
         }
 
-        public bool DumpPackets(string FileName)
+        public bool DumpPackets(string FileName, bool ShowTimeStamps)
         {            
-            return PatchDecoder.DumpPackets(FileName);
+            return PatchDecoder.DumpPackets(FileName, ShowTimeStamps);
         }
 
         // This method is called by the PacketManager as it processes each packet in order to determine if the client patch
@@ -158,15 +158,26 @@ namespace EQApplicationLayer
             return PatchDecoder.GetPacketsOfType(OpCodeName, Direction);
         }
 
-        public void ProcessPacket(System.Net.IPAddress srcIp, System.Net.IPAddress dstIp, ushort srcPort, ushort dstPort, byte[] Payload)
+        public void ProcessPacket(System.Net.IPAddress srcIp, System.Net.IPAddress dstIp, ushort srcPort, ushort dstPort, byte[] Payload, DateTime PacketTime)
         {
-            Packets.ProcessPacket(srcIp, dstIp, srcPort, dstPort, Payload, false, false);
+            Packets.ProcessPacket(srcIp, dstIp, srcPort, dstPort, Payload, PacketTime, false, false);
         }
-         
-        
+
+        public DateTime GetCaptureStartTime()
+        {
+            return PatchDecoder.GetCaptureStartTime();
+        }
+               
         public string GetZoneName()
         {
             return PatchDecoder.GetZoneName();
+        }
+
+        public string GetZoneLongName()
+        {
+            NewZoneStruct NewZone = PatchDecoder.GetZoneData();
+
+            return NewZone.LongName;
         }
 
         public int VerifyPlayerProfile()
@@ -223,7 +234,8 @@ namespace EQApplicationLayer
 
         public void GenerateSpawnSQL(bool GenerateSpawns, bool GenerateGrids, bool GenerateMerchants,
                                             string ZoneName, UInt32 ZoneID, UInt32 SpawnVersion,
-                                            bool UpdateExistingNPCTypes, bool UseNPCTypesTint, SQLDestination SQLOut)
+                                            bool UpdateExistingNPCTypes, bool UseNPCTypesTint, string SpawnNameFilter,
+                                            bool CoalesceWaypoints, SQLDestination SQLOut)
         {
             UInt32 NPCTypeDBID = 0;
             UInt32 SpawnGroupID = 0;
@@ -278,7 +290,10 @@ namespace EQApplicationLayer
                                 
                 if (Spawn.PetOwnerID > 0)
                     continue;
-                                
+
+                if ((SpawnNameFilter.Length > 0) && (Spawn.SpawnName.IndexOf(SpawnNameFilter) == -1))
+                    continue;
+
                 bool ColoursInUse = false;
 
                 for (int ColourSlot = 0; ColourSlot < 9; ++ColourSlot)
@@ -503,29 +518,31 @@ namespace EQApplicationLayer
                         {
                             Position p = ns.Waypoints[WPNumber];
 
-                            if ((WPNumber > FirstUsableWaypoint) && (WPNumber < (ns.Waypoints.Count - 2)))
-                            {
-                                Position np = ns.Waypoints[WPNumber + 1];
-                        
-                                if ((Math.Abs(p.heading - np.heading) < 1) || (Math.Abs(p.heading - np.heading) > 255))
-                                {                                  
-                                    // Skipping waypoint as heading is the same as next.
-                                    continue;
-                                }
-                                if ((Math.Abs(p.heading - np.heading) < 5) || (Math.Abs(p.heading - np.heading) > 251))
+                            if (CoalesceWaypoints)
+                            {                            
+                                if ((WPNumber > FirstUsableWaypoint) && (WPNumber < (ns.Waypoints.Count - 2)))
                                 {
-                                    // Setting pause to 0 because headings are similar
-                                    Pause = 0;                                    
-                                }
-                                else if ((p.x == np.x) && (p.y == np.y) && (p.z == np.z))
-                                {                                    
-                                    // Skipping waypoint as same as next");
-                                    continue;
-                                }
-                                else
-                                    Pause = 10;
-                            }
+                                    Position np = ns.Waypoints[WPNumber + 1];
 
+                                    if ((Math.Abs(p.heading - np.heading) < 1) || (Math.Abs(p.heading - np.heading) > 255))
+                                    {
+                                        // Skipping waypoint as heading is the same as next.
+                                        continue;
+                                    }
+                                    if ((Math.Abs(p.heading - np.heading) < 5) || (Math.Abs(p.heading - np.heading) > 251))
+                                    {
+                                        // Setting pause to 0 because headings are similar
+                                        Pause = 0;
+                                    }
+                                    else if ((p.x == np.x) && (p.y == np.y) && (p.z == np.z))
+                                    {
+                                        // Skipping waypoint as same as next");
+                                        continue;
+                                    }
+                                    else
+                                        Pause = 10;
+                                }
+                            }
 
                             // If this is the last waypoint, and we haven't inserted any of the previous ones, then don't bother 
                             // with this one either.
