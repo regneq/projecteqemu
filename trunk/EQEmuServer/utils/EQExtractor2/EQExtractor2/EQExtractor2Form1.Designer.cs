@@ -40,7 +40,7 @@
             this.menuDumpAAs = new System.Windows.Forms.MenuItem();
             this.menuViewPackets = new System.Windows.Forms.MenuItem();
             this.menuExit = new System.Windows.Forms.MenuItem();
-            this.menuItem1 = new System.Windows.Forms.MenuItem();
+            this.menuView = new System.Windows.Forms.MenuItem();
             this.menuViewDebugLog = new System.Windows.Forms.MenuItem();
             this.menuOptions = new System.Windows.Forms.MenuItem();
             this.label1 = new System.Windows.Forms.Label();
@@ -75,7 +75,7 @@
             // 
             this.mainMenu1.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.menuFile,
-            this.menuItem1});
+            this.menuView});
             // 
             // menuFile
             // 
@@ -134,13 +134,14 @@
             this.menuExit.Text = "Exit";
             this.menuExit.Click += new System.EventHandler(this.menuExit_Click);
             // 
-            // menuItem1
+            // menuView
             // 
-            this.menuItem1.Index = 1;
-            this.menuItem1.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
+            this.menuView.Index = 1;
+            this.menuView.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.menuViewDebugLog,
             this.menuOptions});
-            this.menuItem1.Text = "View";
+            this.menuView.Text = "View";
+            this.menuView.Popup += new System.EventHandler(this.menuView_Popup);
             // 
             // menuViewDebugLog
             // 
@@ -268,7 +269,7 @@
         private System.Windows.Forms.Label PacketCountLabel;
         private System.Windows.Forms.Label ZoneLabelText;
         private System.Windows.Forms.Label ZoneLabel;
-        private System.Windows.Forms.MenuItem menuItem1;
+        private System.Windows.Forms.MenuItem menuView;
         private System.Windows.Forms.MenuItem menuViewDebugLog;
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripStatusLabel StatusBar;

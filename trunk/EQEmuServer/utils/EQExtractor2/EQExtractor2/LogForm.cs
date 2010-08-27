@@ -15,5 +15,12 @@ namespace EQExtractor2
         {
             InitializeComponent();
         }
+
+        private void LogForm_FormClosing(Object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            e.Cancel = true;
+            this.Hide();
+        }
+              
     }
 }
