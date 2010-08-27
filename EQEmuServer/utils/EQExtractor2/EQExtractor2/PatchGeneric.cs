@@ -115,7 +115,7 @@ namespace EQExtractor2.Patches
         {
             return "";
         }
-
+        
         virtual public bool DumpAAs(string FileName)
         {
             return false;
@@ -143,7 +143,17 @@ namespace EQExtractor2.Patches
 
             return ReturnList;
         }
-        public bool DumpPackets(string FileName)
+
+        public DateTime GetCaptureStartTime()
+        {
+            if (Packets.PacketList.Count > 0)
+            {
+                return Packets.PacketList[0].PacketTime;
+            }
+            return DateTime.MinValue;
+        }
+
+        public bool DumpPackets(string FileName, bool ShowTimeStamps)
         {
 
             StreamWriter PacketDumpStream;
@@ -161,6 +171,8 @@ namespace EQExtractor2.Patches
 
             foreach (EQApplicationPacket p in Packets.PacketList)
             {
+                if(ShowTimeStamps)
+                    PacketDumpStream.WriteLine(p.PacketTime.ToString());
 
                 if (p.Direction == PacketDirection.ServerToClient)
                     Direction = "[Server->Client]";

@@ -22,5 +22,41 @@ namespace EQExtractor2.Properties {
                 return defaultInstance;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("notepad.exe")]
+        public string TextFileViewer {
+            get {
+                return ((string)(this["TextFileViewer"]));
+            }
+            set {
+                this["TextFileViewer"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool ShowDebugWindowOnStartup {
+            get {
+                return ((bool)(this["ShowDebugWindowOnStartup"]));
+            }
+            set {
+                this["ShowDebugWindowOnStartup"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool DumpTimeStamps {
+            get {
+                return ((bool)(this["DumpTimeStamps"]));
+            }
+            set {
+                this["DumpTimeStamps"] = value;
+            }
+        }
     }
 }

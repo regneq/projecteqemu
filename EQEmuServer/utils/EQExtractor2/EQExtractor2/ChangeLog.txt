@@ -1,5 +1,20 @@
 ﻿EQExtractor2 Changelog. All changes since the 1.0 release.
 
+==08/27/2010==
+Derision: Redesigned the UI. Use the menu bar, or the following shortcuts:
+
+			Ctrl-L	Load .PCAP file
+			Ctrl-S	Generate SQL
+			Ctrl-P	Dump Packets
+			Ctrl-V	View Packets
+			Ctrl-A	Dump AA
+			Ctrl-D	Show Debug Window (hidden by default. Change in Options).
+			Ctrl-O	Set Options (these settings persist across sessions).			
+
+Derision: Added the ability to disable removal of redundant waypoints.
+Derision: Added an option to only generate SQL for spawns whose name contains a given string.
+Derision: Added optional timestamps to packet dump. Added capture date to SQL output.
+
 ==07/16/2010==
 Derision: Replaced HexDump method with a considerably faster version.
 
