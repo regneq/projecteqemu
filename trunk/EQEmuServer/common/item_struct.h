@@ -236,10 +236,10 @@ struct Item_Struct {
 	uint32 ScriptFileID;
 	uint16 ExpendableArrow;
 	uint32 Clairvoyance;
-	char	ClickName[33];
+	char	ClickName[64];
 	char	ProcName[33];
 	char	WornName[33];
-	char	FocusName[33];
+	char	FocusName[64];
 	char	ScrollName[33];
 
 };

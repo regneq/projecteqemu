@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==08/28/2010==
+Derision: Fixed potential buffer overrun in item_struct.
+
 ==08/26/2010==
 Trevius: Added new Perl Mob quest object GetItemStat(itemid, stat).
 Trevius: Added new Perl Client quest object NPCSpawn(target_npc, option, respawntime=1200) to do create, add, update, remove, and deletes just like #npcspawn.
