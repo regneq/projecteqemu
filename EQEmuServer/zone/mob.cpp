@@ -3385,324 +3385,319 @@ int32 Mob::GetItemStat(int32 itemid, const char *identifier)
 	std::string id = identifier;
 	for(int i = 0; i < id.length(); ++i)
 	{
-		id[i] = std::tolower(id[i]);
-	}
-
-	if(id == "id")
-	{
-		stat = int32(item->ID);
+		id[i] = tolower(id[i]);
 	}
 
 	if (id == "itemclass")
 		stat = int32(item->ItemClass);
-	else if (id == "id")
+	if (id == "id")
 		stat = int32(item->ID);
-	else if (id == "weight")
+	if (id == "weight")
 		stat = int32(item->Weight);
-	else if (id == "norent")
+	if (id == "norent")
 		stat = int32(item->NoRent);
-	else if (id == "nodrop")
+	if (id == "nodrop")
 		stat = int32(item->NoDrop);
-	else if (id == "size")
+	if (id == "size")
 		stat = int32(item->Size);
-	else if (id == "slots")
+	if (id == "slots")
 		stat = int32(item->Slots);
-	else if (id == "price")
+	if (id == "price")
 		stat = int32(item->Price);
-	else if (id == "icon")
+	if (id == "icon")
 		stat = int32(item->Icon);
-	else if (id == "loregroup")
+	if (id == "loregroup")
 		stat = int32(item->LoreGroup);
-	else if (id == "loreflag")
+	if (id == "loreflag")
 		stat = int32(item->LoreFlag);
-	else if (id == "pendingloreflag")
+	if (id == "pendingloreflag")
 		stat = int32(item->PendingLoreFlag);
-	else if (id == "artifactflag")
+	if (id == "artifactflag")
 		stat = int32(item->ArtifactFlag);
-	else if (id == "summonedflag")
+	if (id == "summonedflag")
 		stat = int32(item->SummonedFlag);
-	else if (id == "fvnodrop")
+	if (id == "fvnodrop")
 		stat = int32(item->FVNoDrop);
-	else if (id == "favor")
+	if (id == "favor")
 		stat = int32(item->Favor);
-	else if (id == "guildfavor")
+	if (id == "guildfavor")
 		stat = int32(item->GuildFavor);
-	else if (id == "pointtype")
+	if (id == "pointtype")
 		stat = int32(item->PointType);
-	else if (id == "bagtype")
+	if (id == "bagtype")
 		stat = int32(item->BagType);
-	else if (id == "bagslots")
+	if (id == "bagslots")
 		stat = int32(item->BagSlots);
-	else if (id == "bagsize")
+	if (id == "bagsize")
 		stat = int32(item->BagSize);
-	else if (id == "bagwr")
+	if (id == "bagwr")
 		stat = int32(item->BagWR);
-	else if (id == "benefitflag")
+	if (id == "benefitflag")
 		stat = int32(item->BenefitFlag);
-	else if (id == "tradeskills")
+	if (id == "tradeskills")
 		stat = int32(item->Tradeskills);
-	else if (id == "cr")
+	if (id == "cr")
 		stat = int32(item->CR);
-	else if (id == "dr")
+	if (id == "dr")
 		stat = int32(item->DR);
-	else if (id == "pr")
+	if (id == "pr")
 		stat = int32(item->PR);
-	else if (id == "mr")
+	if (id == "mr")
 		stat = int32(item->MR);
-	else if (id == "fr")
+	if (id == "fr")
 		stat = int32(item->FR);
-	else if (id == "astr")
+	if (id == "astr")
 		stat = int32(item->AStr);
-	else if (id == "asta")
+	if (id == "asta")
 		stat = int32(item->ASta);
-	else if (id == "aagi")
+	if (id == "aagi")
 		stat = int32(item->AAgi);
-	else if (id == "adex")
+	if (id == "adex")
 		stat = int32(item->ADex);
-	else if (id == "acha")
+	if (id == "acha")
 		stat = int32(item->ACha);
-	else if (id == "aint")
+	if (id == "aint")
 		stat = int32(item->AInt);
-	else if (id == "awis")
+	if (id == "awis")
 		stat = int32(item->AWis);
-	else if (id == "hp")
+	if (id == "hp")
 		stat = int32(item->HP);
-	else if (id == "mana")
+	if (id == "mana")
 		stat = int32(item->Mana);
-	else if (id == "ac")
+	if (id == "ac")
 		stat = int32(item->AC);
-	else if (id == "deity")
+	if (id == "deity")
 		stat = int32(item->Deity);
-	else if (id == "skillmodvalue")
+	if (id == "skillmodvalue")
 		stat = int32(item->SkillModValue);
-	else if (id == "skillmodtype")
+	if (id == "skillmodtype")
 		stat = int32(item->SkillModType);
-	else if (id == "banedmgrace")
+	if (id == "banedmgrace")
 		stat = int32(item->BaneDmgRace);
-	else if (id == "banedmgamt")
+	if (id == "banedmgamt")
 		stat = int32(item->BaneDmgAmt);
-	else if (id == "banedmgbody")
+	if (id == "banedmgbody")
 		stat = int32(item->BaneDmgBody);
-	else if (id == "magic")
+	if (id == "magic")
 		stat = int32(item->Magic);
-	else if (id == "casttime_")
+	if (id == "casttime_")
 		stat = int32(item->CastTime_);
-	else if (id == "reqlevel")
+	if (id == "reqlevel")
 		stat = int32(item->ReqLevel);
-	else if (id == "bardtype")
+	if (id == "bardtype")
 		stat = int32(item->BardType);
-	else if (id == "bardvalue")
+	if (id == "bardvalue")
 		stat = int32(item->BardValue);
-	else if (id == "light")
+	if (id == "light")
 		stat = int32(item->Light);
-	else if (id == "delay")
+	if (id == "delay")
 		stat = int32(item->Delay);
-	else if (id == "reclevel")
+	if (id == "reclevel")
 		stat = int32(item->RecLevel);
-	else if (id == "recskill")
+	if (id == "recskill")
 		stat = int32(item->RecSkill);
-	else if (id == "elemdmgtype")
+	if (id == "elemdmgtype")
 		stat = int32(item->ElemDmgType);
-	else if (id == "elemdmgamt")
+	if (id == "elemdmgamt")
 		stat = int32(item->ElemDmgAmt);
-	else if (id == "range")
+	if (id == "range")
 		stat = int32(item->Range);
-	else if (id == "damage")
+	if (id == "damage")
 		stat = int32(item->Damage);
-	else if (id == "color")
+	if (id == "color")
 		stat = int32(item->Color);
-	else if (id == "classes")
+	if (id == "classes")
 		stat = int32(item->Classes);
-	else if (id == "races")
+	if (id == "races")
 		stat = int32(item->Races);
-	else if (id == "maxcharges")
+	if (id == "maxcharges")
 		stat = int32(item->MaxCharges);
-	else if (id == "itemtype")
+	if (id == "itemtype")
 		stat = int32(item->ItemType);
-	else if (id == "material")
+	if (id == "material")
 		stat = int32(item->Material);
-	else if (id == "casttime")
+	if (id == "casttime")
 		stat = int32(item->CastTime);
-	else if (id == "elitematerial")
+	if (id == "elitematerial")
 		stat = int32(item->EliteMaterial);
-	else if (id == "procrate")
+	if (id == "procrate")
 		stat = int32(item->ProcRate);
-	else if (id == "combateffects")
+	if (id == "combateffects")
 		stat = int32(item->CombatEffects);
-	else if (id == "shielding")
+	if (id == "shielding")
 		stat = int32(item->Shielding);
-	else if (id == "stunresist")
+	if (id == "stunresist")
 		stat = int32(item->StunResist);
-	else if (id == "strikethrough")
+	if (id == "strikethrough")
 		stat = int32(item->StrikeThrough);
-	else if (id == "extradmgskill")
+	if (id == "extradmgskill")
 		stat = int32(item->ExtraDmgSkill);
-	else if (id == "extradmgamt")
+	if (id == "extradmgamt")
 		stat = int32(item->ExtraDmgAmt);
-	else if (id == "spellshield")
+	if (id == "spellshield")
 		stat = int32(item->SpellShield);
-	else if (id == "avoidance")
+	if (id == "avoidance")
 		stat = int32(item->Avoidance);
-	else if (id == "accuracy")
+	if (id == "accuracy")
 		stat = int32(item->Accuracy);
-	else if (id == "charmfileid")
+	if (id == "charmfileid")
 		stat = int32(item->CharmFileID);
-	else if (id == "factionmod1")
+	if (id == "factionmod1")
 		stat = int32(item->FactionMod1);
-	else if (id == "factionmod2")
+	if (id == "factionmod2")
 		stat = int32(item->FactionMod2);
-	else if (id == "factionmod3")
+	if (id == "factionmod3")
 		stat = int32(item->FactionMod3);
-	else if (id == "factionmod4")
+	if (id == "factionmod4")
 		stat = int32(item->FactionMod4);
-	else if (id == "factionamt1")
+	if (id == "factionamt1")
 		stat = int32(item->FactionAmt1);
-	else if (id == "factionamt2")
+	if (id == "factionamt2")
 		stat = int32(item->FactionAmt2);
-	else if (id == "factionamt3")
+	if (id == "factionamt3")
 		stat = int32(item->FactionAmt3);
-	else if (id == "factionamt4")
+	if (id == "factionamt4")
 		stat = int32(item->FactionAmt4);
-	else if (id == "augtype")
+	if (id == "augtype")
 		stat = int32(item->AugType);
-	else if (id == "ldontheme")
+	if (id == "ldontheme")
 		stat = int32(item->LDoNTheme);
-	else if (id == "ldonprice")
+	if (id == "ldonprice")
 		stat = int32(item->LDoNPrice);
-	else if (id == "ldonsold")
+	if (id == "ldonsold")
 		stat = int32(item->LDoNSold);
-	else if (id == "banedmgraceamt")
+	if (id == "banedmgraceamt")
 		stat = int32(item->BaneDmgRaceAmt);
-	else if (id == "augrestrict")
+	if (id == "augrestrict")
 		stat = int32(item->AugRestrict);
-	else if (id == "endur")
+	if (id == "endur")
 		stat = int32(item->Endur);
-	else if (id == "dotshielding")
+	if (id == "dotshielding")
 		stat = int32(item->DotShielding);
-	else if (id == "attack")
+	if (id == "attack")
 		stat = int32(item->Attack);
-	else if (id == "regen")
+	if (id == "regen")
 		stat = int32(item->Regen);
-	else if (id == "manaregen")
+	if (id == "manaregen")
 		stat = int32(item->ManaRegen);
-	else if (id == "enduranceregen")
+	if (id == "enduranceregen")
 		stat = int32(item->EnduranceRegen);
-	else if (id == "haste")
+	if (id == "haste")
 		stat = int32(item->Haste);
-	else if (id == "damageshield")
+	if (id == "damageshield")
 		stat = int32(item->DamageShield);
-	else if (id == "recastdelay")
+	if (id == "recastdelay")
 		stat = int32(item->RecastDelay);
-	else if (id == "recasttype")
+	if (id == "recasttype")
 		stat = int32(item->RecastType);
-	else if (id == "augdistiller")
+	if (id == "augdistiller")
 		stat = int32(item->AugDistiller);
-	else if (id == "attuneable")
+	if (id == "attuneable")
 		stat = int32(item->Attuneable);
-	else if (id == "nopet")
+	if (id == "nopet")
 		stat = int32(item->NoPet);
-	else if (id == "potionbelt")
+	if (id == "potionbelt")
 		stat = int32(item->PotionBelt);
-	else if (id == "stackable")
+	if (id == "stackable")
 		stat = int32(item->Stackable);
-	else if (id == "notransfer")
+	if (id == "notransfer")
 		stat = int32(item->NoTransfer);
-	else if (id == "questitemflag")
+	if (id == "questitemflag")
 		stat = int32(item->QuestItemFlag);
-	else if (id == "stacksize")
+	if (id == "stacksize")
 		stat = int32(item->StackSize);
-	else if (id == "potionbeltslots")
+	if (id == "potionbeltslots")
 		stat = int32(item->PotionBeltSlots);
-	else if (id == "book")
+	if (id == "book")
 		stat = int32(item->Book);
-	else if (id == "booktype")
+	if (id == "booktype")
 		stat = int32(item->BookType);
-	else if (id == "svcorruption")
+	if (id == "svcorruption")
 		stat = int32(item->SVCorruption);
-	else if (id == "purity")
+	if (id == "purity")
 		stat = int32(item->Purity);
-	else if (id == "backstabdmg")
+	if (id == "backstabdmg")
 		stat = int32(item->BackstabDmg);
-	else if (id == "dsmitigation")
+	if (id == "dsmitigation")
 		stat = int32(item->DSMitigation);
-	else if (id == "heroicstr")
+	if (id == "heroicstr")
 		stat = int32(item->HeroicStr);
-	else if (id == "heroicint")
+	if (id == "heroicint")
 		stat = int32(item->HeroicInt);
-	else if (id == "heroicwis")
+	if (id == "heroicwis")
 		stat = int32(item->HeroicWis);
-	else if (id == "heroicagi")
+	if (id == "heroicagi")
 		stat = int32(item->HeroicAgi);
-	else if (id == "heroicdex")
+	if (id == "heroicdex")
 		stat = int32(item->HeroicDex);
-	else if (id == "heroicsta")
+	if (id == "heroicsta")
 		stat = int32(item->HeroicSta);
-	else if (id == "heroiccha")
+	if (id == "heroiccha")
 		stat = int32(item->HeroicCha);
-	else if (id == "heroicmr")
+	if (id == "heroicmr")
 		stat = int32(item->HeroicMR);
-	else if (id == "heroicfr")
+	if (id == "heroicfr")
 		stat = int32(item->HeroicFR);
-	else if (id == "heroiccr")
+	if (id == "heroiccr")
 		stat = int32(item->HeroicCR);
-	else if (id == "heroicdr")
+	if (id == "heroicdr")
 		stat = int32(item->HeroicDR);
-	else if (id == "heroicpr")
+	if (id == "heroicpr")
 		stat = int32(item->HeroicPR);
-	else if (id == "heroicsvcorrup")
+	if (id == "heroicsvcorrup")
 		stat = int32(item->HeroicSVCorrup);
-	else if (id == "healamt")
+	if (id == "healamt")
 		stat = int32(item->HealAmt);
-	else if (id == "spelldmg")
+	if (id == "spelldmg")
 		stat = int32(item->SpellDmg);
-	else if (id == "ldonsellbackrate")
+	if (id == "ldonsellbackrate")
 		stat = int32(item->LDoNSellBackRate);
-	else if (id == "scriptfileid")
+	if (id == "scriptfileid")
 		stat = int32(item->ScriptFileID);
-	else if (id == "expendablearrow")
+	if (id == "expendablearrow")
 		stat = int32(item->ExpendableArrow);
-	else if (id == "clairvoyance")
+	if (id == "clairvoyance")
 		stat = int32(item->Clairvoyance);
 	// Begin Effects
-	else if (id == "clickeffect")
+	if (id == "clickeffect")
 		stat = int32(item->Click.Effect);
-	else if (id == "clicktype")
+	if (id == "clicktype")
 		stat = int32(item->Click.Type);
-	else if (id == "clicklevel")
+	if (id == "clicklevel")
 		stat = int32(item->Click.Level);
-	else if (id == "clicklevel2")
+	if (id == "clicklevel2")
 		stat = int32(item->Click.Level2);
-	else if (id == "proceffect")
+	if (id == "proceffect")
 		stat = int32(item->Proc.Effect);
-	else if (id == "proctype")
+	if (id == "proctype")
 		stat = int32(item->Proc.Type);
-	else if (id == "proclevel")
+	if (id == "proclevel")
 		stat = int32(item->Proc.Level);
-	else if (id == "proclevel2")
+	if (id == "proclevel2")
 		stat = int32(item->Proc.Level2);
-	else if (id == "worneffect")
+	if (id == "worneffect")
 		stat = int32(item->Worn.Effect);
-	else if (id == "worntype")
+	if (id == "worntype")
 		stat = int32(item->Worn.Type);
-	else if (id == "wornlevel")
+	if (id == "wornlevel")
 		stat = int32(item->Worn.Level);
-	else if (id == "wornlevel2")
+	if (id == "wornlevel2")
 		stat = int32(item->Worn.Level2);
-	else if (id == "focuseffect")
+	if (id == "focuseffect")
 		stat = int32(item->Focus.Effect);
-	else if (id == "focustype")
+	if (id == "focustype")
 		stat = int32(item->Focus.Type);
-	else if (id == "focuslevel")
+	if (id == "focuslevel")
 		stat = int32(item->Focus.Level);
-	else if (id == "focuslevel2")
+	if (id == "focuslevel2")
 		stat = int32(item->Focus.Level2);
-	else if (id == "scrolleffect")
+	if (id == "scrolleffect")
 		stat = int32(item->Scroll.Effect);
-	else if (id == "scrolltype")
+	if (id == "scrolltype")
 		stat = int32(item->Scroll.Type);
-	else if (id == "scrolllevel")
+	if (id == "scrolllevel")
 		stat = int32(item->Scroll.Level);
-	else if (id == "scrolllevel2")
+	if (id == "scrolllevel2")
 		stat = int32(item->Scroll.Level2);
 
 	safe_delete(inst);

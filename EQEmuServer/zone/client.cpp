@@ -5582,7 +5582,7 @@ void Client::NPCSpawn(NPC *target_npc, const char *identifier, uint32 respawntim
 	std::string id = identifier;
 	for(int i = 0; i < id.length(); ++i)
 	{
-		id[i] = std::tolower(id[i]);
+		id[i] = tolower(id[i]);
 	}
 
 	if (id == "create") {
