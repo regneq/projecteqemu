@@ -37,7 +37,11 @@ Copyright (C) 2001-2002  EQEMu Development Team (http://eqemu.org)
 #include "../common/bodytypes.h"
 #include "../common/guilds.h"
 #include "../common/MiscFunctions.h"
+#include "worldserver.h"
+#include "QGlobals.h"
 #include <stdio.h>
+#include <sstream>
+
 extern EntityList entity_list;
 #if !defined(NEW_LoadSPDat) && !defined(DB_LoadSPDat)
 	extern SPDat_Spell_Struct spells[SPDAT_RECORDS];
@@ -45,6 +49,7 @@ extern EntityList entity_list;
 extern bool spells_loaded;
 
 extern Zone* zone;
+extern WorldServer worldserver;
 
 Mob::Mob(const char*   in_name,
          const char*   in_lastname,
@@ -3702,4 +3707,248 @@ int32 Mob::GetItemStat(int32 itemid, const char *identifier)
 
 	safe_delete(inst);
 	return stat;
+}
+
+void Mob::SetGlobal(const char *varname, const char *newvalue, int options, const char *duration, Mob *other) {
+
+	int qgZoneid = zone->GetZoneID();
+	int qgCharid = 0;
+	int qgNpcid = 0;
+
+	if (this->IsNPC())
+	{
+		qgNpcid = this->GetNPCTypeID();
+	}
+	else if (other && other->IsNPC())
+	{
+		qgNpcid = other->GetNPCTypeID();
+	}
+
+	if (this->IsClient())
+	{
+		qgCharid = this->CastToClient()->CharacterID();
+	}
+	else if (other && other->IsClient())
+	{
+		qgCharid = other->CastToClient()->CharacterID();
+	}
+	else
+	{
+		qgCharid = -qgNpcid;		// make char id negative npc id as a fudge
+	}
+
+	if (options < 0 || options > 7)
+	{
+		//cerr << "Invalid options for global var " << varname << " using defaults" << endl;
+		options = 0;	// default = 0 (only this npcid,player and zone)
+	}
+	else
+	{
+		if (options & 1)
+			qgNpcid=0;
+		if (options & 2)
+			qgCharid=0;
+		if (options & 4)
+			qgZoneid=0;
+	}
+
+	InsertQuestGlobal(qgCharid, qgNpcid, qgZoneid, varname, newvalue, QGVarDuration(duration));
+}
+
+void Mob::TarGlobal(const char *varname, const char *value, const char *duration, int qgNpcid, int qgCharid, int qgZoneid)
+{
+	InsertQuestGlobal(qgCharid, qgNpcid, qgZoneid, varname, value, QGVarDuration(duration));
+}
+
+void Mob::DelGlobal(const char *varname) {
+	// delglobal(varname)
+	char errbuf[MYSQL_ERRMSG_SIZE];
+	char *query = 0;
+	int qgZoneid=zone->GetZoneID();
+	int qgCharid=0;
+	int qgNpcid=0;
+
+	if (this->IsNPC())
+	{
+		qgNpcid = this->GetNPCTypeID();
+	}
+
+	if (this->IsClient())
+	{
+		qgCharid = this->CastToClient()->CharacterID();
+	}
+	else
+	{
+		qgCharid = -qgNpcid;		// make char id negative npc id as a fudge
+	}
+
+	if (!database.RunQuery(query,
+	  MakeAnyLenString(&query,
+	  "DELETE FROM quest_globals WHERE name='%s'"
+	  " && (npcid=0 || npcid=%i) && (charid=0 || charid=%i) && (zoneid=%i || zoneid=0)",
+	  varname,qgNpcid,qgCharid,qgZoneid),errbuf))
+	{
+		//_log(QUESTS, "DelGlobal error deleting %s : %s", varname, errbuf);
+	}
+	safe_delete_array(query);
+
+	if(zone)
+	{
+		ServerPacket* pack = new ServerPacket(ServerOP_QGlobalDelete, sizeof(ServerQGlobalDelete_Struct));
+		ServerQGlobalDelete_Struct *qgu = (ServerQGlobalDelete_Struct*)pack->pBuffer;
+
+		qgu->npc_id = qgNpcid;
+		qgu->char_id = qgCharid;
+		qgu->zone_id = qgZoneid;
+		strcpy(qgu->name, varname);
+
+		entity_list.DeleteQGlobal(std::string((char*)qgu->name), qgu->npc_id, qgu->char_id, qgu->zone_id);
+		zone->DeleteQGlobal(std::string((char*)qgu->name), qgu->npc_id, qgu->char_id, qgu->zone_id);
+
+		worldserver.SendPacket(pack);
+		safe_delete(pack);
+	}
+}
+
+// Inserts global variable into quest_globals table
+void Mob::InsertQuestGlobal(int charid, int npcid, int zoneid, const char *varname, const char *varvalue, int duration) {
+
+	char *query = 0;
+	char errbuf[MYSQL_ERRMSG_SIZE];
+
+	// Make duration string either "unix_timestamp(now()) + xxx" or "NULL"
+	stringstream duration_ss;
+
+	if (duration == INT_MAX)
+	{
+		duration_ss << "NULL";
+	}
+	else
+	{
+		duration_ss << "unix_timestamp(now()) + " << duration;
+	}
+
+	//NOTE: this should be escaping the contents of arglist
+	//npcwise a malicious script can arbitrarily alter the DB
+	uint32 last_id = 0;
+	if (!database.RunQuery(query, MakeAnyLenString(&query,
+		"REPLACE INTO quest_globals (charid, npcid, zoneid, name, value, expdate)"
+		"VALUES (%i, %i, %i, '%s', '%s', %s)",
+		charid, npcid, zoneid, varname, varvalue, duration_ss.str().c_str()
+		), errbuf, NULL, NULL, &last_id))
+	{
+		//_log(QUESTS, "SelGlobal error inserting %s : %s", varname, errbuf);
+	}
+	safe_delete_array(query);
+
+	if(zone)
+	{
+		//first delete our global
+		ServerPacket* pack = new ServerPacket(ServerOP_QGlobalDelete, sizeof(ServerQGlobalDelete_Struct));
+		ServerQGlobalDelete_Struct *qgd = (ServerQGlobalDelete_Struct*)pack->pBuffer;
+		qgd->npc_id = npcid;
+		qgd->char_id = charid;
+		qgd->zone_id = zoneid;
+		qgd->from_zone_id = zone->GetZoneID();
+		qgd->from_instance_id = zone->GetInstanceID();
+		strcpy(qgd->name, varname);
+
+		entity_list.DeleteQGlobal(std::string((char*)qgd->name), qgd->npc_id, qgd->char_id, qgd->zone_id);
+		zone->DeleteQGlobal(std::string((char*)qgd->name), qgd->npc_id, qgd->char_id, qgd->zone_id);
+
+		worldserver.SendPacket(pack);
+		safe_delete(pack);
+
+		//then create a new one with the new id
+		pack = new ServerPacket(ServerOP_QGlobalUpdate, sizeof(ServerQGlobalUpdate_Struct));
+		ServerQGlobalUpdate_Struct *qgu = (ServerQGlobalUpdate_Struct*)pack->pBuffer;
+		qgu->npc_id = npcid;
+		qgu->char_id = charid;
+		qgu->zone_id = zoneid;
+		if(duration == INT_MAX)
+		{
+			qgu->expdate = 0xFFFFFFFF;
+		}
+		else
+		{
+			qgu->expdate = Timer::GetTimeSeconds() + duration;
+		}
+		strcpy((char*)qgu->name, varname);
+		strcpy((char*)qgu->value, varvalue);
+		qgu->id = last_id;
+		qgu->from_zone_id = zone->GetZoneID();
+		qgu->from_instance_id = zone->GetInstanceID();
+
+		QGlobal temp;
+		temp.npc_id = npcid;
+		temp.char_id = charid;
+		temp.zone_id = zoneid;
+		temp.expdate = qgu->expdate;
+		temp.name.assign(qgu->name);
+		temp.value.assign(qgu->value);
+		entity_list.UpdateQGlobal(qgu->id, temp);
+		zone->UpdateQGlobal(qgu->id, temp);
+
+		worldserver.SendPacket(pack);
+		safe_delete(pack);
+	}
+
+}
+
+// Converts duration string to duration value (in seconds)
+// Return of INT_MAX indicates infinite duration
+int Mob::QGVarDuration(const char *fmt)
+{
+	int duration = 0;
+
+	// format:	Y#### or D## or H## or M## or S## or T###### or C#######
+
+	int len = strlen(fmt);
+
+	// Default to no duration
+	if (len < 1)
+		return 0;
+
+	// Set val to value after type character
+	// e.g., for "M3924", set to 3924
+	int val = atoi(&fmt[0] + 1);
+
+	switch (fmt[0])
+	{
+		// Forever
+		case 'F':
+		case 'f':
+			duration = INT_MAX;
+			break;
+		// Years
+		case 'Y':
+		case 'y':
+			duration = val * 31556926;
+			break;
+		case 'D':
+		case 'd':
+			duration = val * 86400;
+			break;
+		// Hours
+		case 'H':
+		case 'h':
+			duration = val * 3600;
+			break;
+		// Minutes
+		case 'M':
+		case 'm':
+			duration = val * 60;
+			break;
+		// Seconds
+		case 'S':
+		case 's':
+			duration = val;
+			break;
+		// Invalid
+		default:
+			duration = 0;
+			break;
+	}
+
+	return duration;
 }
