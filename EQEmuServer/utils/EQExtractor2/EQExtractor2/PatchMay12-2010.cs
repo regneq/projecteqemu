@@ -105,7 +105,7 @@ namespace EQExtractor2.Patches
 
             return BitConverter.ToUInt16(PlayerProfilePacket[0], PPZoneIDOffset);
         }
-
+                
         override public List<Door> GetDoors()
         {
             List<Door> DoorList = new List<Door>();
@@ -632,28 +632,33 @@ namespace EQExtractor2.Patches
 
             List<byte[]> UpdatePackets = GetPacketsOfType("OP_NPCMoveUpdate", PacketDirection.ServerToClient);
 
-            foreach (byte[] UpdatePacket in UpdatePackets)
-            {
-                PositionUpdate PosUpdate = new PositionUpdate();
-
-                BitStream bs = new BitStream(UpdatePacket, 13);
-
-                PosUpdate.SpawnID = bs.readUInt(16);
-
-                UInt32 VFlags = bs.readUInt(6);
-
-                PosUpdate.p.y = (float)bs.readInt(19) / (float)(1 << 3);
-
-                PosUpdate.p.x = (float)bs.readInt(19) / (float)(1 << 3);
-
-                PosUpdate.p.z = (float)bs.readInt(19) / (float)(1 << 3);
-
-                PosUpdate.p.heading = (float)bs.readInt(12) / (float)(1 << 3);
-
-                Updates.Add(PosUpdate);
-            }
-
+            foreach (byte[] UpdatePacket in UpdatePackets)                            
+                Updates.Add(Decode_OP_NPCMoveUpdate(UpdatePacket));
+            
             return Updates;
+        }
+
+        private PositionUpdate Decode_OP_NPCMoveUpdate(byte[] UpdatePacket)
+        {
+            PositionUpdate PosUpdate = new PositionUpdate();
+
+            BitStream bs = new BitStream(UpdatePacket, 13);
+
+            PosUpdate.SpawnID = bs.readUInt(16);
+
+            UInt32 VFlags = bs.readUInt(6);
+
+            PosUpdate.p.y = (float)bs.readInt(19) / (float)(1 << 3);
+
+            PosUpdate.p.x = (float)bs.readInt(19) / (float)(1 << 3);
+
+            PosUpdate.p.z = (float)bs.readInt(19) / (float)(1 << 3);
+
+            PosUpdate.p.heading = (float)bs.readInt(12) / (float)(1 << 3);
+
+            PosUpdate.HighRes = true;
+
+            return PosUpdate;
         }
 
         override public List<PositionUpdate> GetLowResolutionMovementUpdates()
@@ -662,37 +667,115 @@ namespace EQExtractor2.Patches
 
             List<byte[]> UpdatePackets = GetPacketsOfType("OP_MobUpdate", PacketDirection.ServerToClient);
 
-            foreach (byte[] MobUpdatePacket in UpdatePackets)
+            foreach (byte[] MobUpdatePacket in UpdatePackets)            
+                Updates.Add(Decode_OP_MobUpdate(MobUpdatePacket));
+            
+            return Updates;
+        }
+
+        private PositionUpdate Decode_OP_MobUpdate(byte[] MobUpdatePacket)
+        {
+            PositionUpdate PosUpdate = new PositionUpdate();
+
+            ByteStream Buffer = new ByteStream(MobUpdatePacket);
+
+            PosUpdate.SpawnID = Buffer.ReadUInt16();
+
+            UInt32 Word1 = Buffer.ReadUInt32();
+
+            UInt32 Word2 = Buffer.ReadUInt32();
+
+            UInt16 Word3 = Buffer.ReadUInt16();
+
+            PosUpdate.p.y = Utils.EQ19ToFloat((Int32)(Word1 & 0x7FFFF));
+
+            // Z is in the top 13 bits of Word1 and the bottom 6 of Word2
+
+            UInt32 ZPart1 = Word1 >> 19;    // ZPart1 now has low order bits of Z in bottom 13 bits
+            UInt32 ZPart2 = Word2 & 0x3F;   // ZPart2 now has high order bits of Z in bottom 6 bits
+
+            ZPart2 = ZPart2 << 13;
+
+            PosUpdate.p.z = Utils.EQ19ToFloat((Int32)(ZPart1 | ZPart2));
+
+            PosUpdate.p.x = Utils.EQ19ToFloat((Int32)(Word2 >> 6) & 0x7FFFF);
+
+            PosUpdate.p.heading = Utils.EQ19ToFloat((Int32)(Word3 & 0xFFF));
+
+            PosUpdate.HighRes = false;
+
+            return PosUpdate;
+        }
+
+        override public List<PositionUpdate> GetAllMovementUpdates()
+        {
+            PositionUpdate PosUpdate = new PositionUpdate();
+
+            List<PositionUpdate> Updates = new List<PositionUpdate>();
+
+            List<EQApplicationPacket> PacketList = Packets.PacketList;
+
+            UInt32 OP_NPCMoveUpdate = OpManager.OpCodeNameToNumber("OP_NPCMoveUpdate");
+
+            UInt32 OP_MobUpdate = OpManager.OpCodeNameToNumber("OP_MobUpdate");
+
+            for (int i = 0; i < PacketList.Count; ++i)
             {
+                EQApplicationPacket p = PacketList[i];
+
+                if (p.Direction == PacketDirection.ServerToClient)
+                {
+                    if (p.OpCode == OP_NPCMoveUpdate)
+                    {
+                        PosUpdate = Decode_OP_NPCMoveUpdate(p.Buffer);
+                        PosUpdate.p.TimeStamp = p.PacketTime;
+                        Updates.Add(PosUpdate);
+                    }
+                    else if (p.OpCode == OP_MobUpdate)
+                    {
+                        PosUpdate = Decode_OP_MobUpdate(p.Buffer);
+                        PosUpdate.p.TimeStamp = p.PacketTime;
+                        Updates.Add(PosUpdate);
+                    }
+                }
+            }
+
+            return Updates;
+        }
+
+        override public List<PositionUpdate> GetClientMovementUpdates()
+        {
+            List<PositionUpdate> Updates = new List<PositionUpdate>();
+
+            List<EQApplicationPacket> PacketList = Packets.PacketList;
+
+            UInt32 OP_ClientUpdate = OpManager.OpCodeNameToNumber("OP_ClientUpdate");
+            
+            foreach (EQApplicationPacket UpdatePacket in PacketList)
+            {
+                if ((UpdatePacket.OpCode != OP_ClientUpdate) || (UpdatePacket.Direction != PacketDirection.ClientToServer))
+                    continue;
+
+                ByteStream Buffer = new ByteStream(UpdatePacket.Buffer);
+
                 PositionUpdate PosUpdate = new PositionUpdate();
 
-                ByteStream Buffer = new ByteStream(MobUpdatePacket);
-
                 PosUpdate.SpawnID = Buffer.ReadUInt16();
+                Buffer.SkipBytes(6);
+                PosUpdate.p.x = Buffer.ReadSingle();
+                PosUpdate.p.y = Buffer.ReadSingle();
+                Buffer.SkipBytes(12);
+                PosUpdate.p.z = Buffer.ReadSingle();
+                PosUpdate.p.TimeStamp = UpdatePacket.PacketTime;
+                Buffer.SkipBytes(4);
+                UInt32 Temp = Buffer.ReadUInt32();
+                Temp = Temp & 0x3FFFFF;
+                Temp = Temp >> 10;
+                PosUpdate.p.heading = Utils.EQ19ToFloat((Int32)(Temp));
 
-                UInt32 Word1 = Buffer.ReadUInt32();
-
-                UInt32 Word2 = Buffer.ReadUInt32();
-
-                UInt16 Word3 = Buffer.ReadUInt16();
-
-                PosUpdate.p.y = Utils.EQ19ToFloat((Int32)(Word1 & 0x7FFFF));
-
-                // Z is in the top 13 bits of Word1 and the bottom 6 of Word2
-
-                UInt32 ZPart1 = Word1 >> 19;    // ZPart1 now has low order bits of Z in bottom 13 bits
-                UInt32 ZPart2 = Word2 & 0x3F;   // ZPart2 now has high order bits of Z in bottom 6 bits
-
-                ZPart2 = ZPart2 << 13;
-
-                PosUpdate.p.z = Utils.EQ19ToFloat((Int32)(ZPart1 | ZPart2));
-
-                PosUpdate.p.x = Utils.EQ19ToFloat((Int32)(Word2 >> 6) & 0x7FFFF);
-
-                PosUpdate.p.heading = Utils.EQ19ToFloat((Int32)(Word3 & 0xFFF));
 
                 Updates.Add(PosUpdate);
-            }
+            }                           
 
             return Updates;
         }

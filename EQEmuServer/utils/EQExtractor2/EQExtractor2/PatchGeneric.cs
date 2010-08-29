@@ -56,7 +56,7 @@ namespace EQExtractor2.Patches
         {
             return 0;
         }
-
+        
         virtual public MerchantManager GetMerchantData(NPCSpawnList NPCSL)
         {
             return null;
@@ -91,6 +91,20 @@ namespace EQExtractor2.Patches
         }
 
         virtual public List<PositionUpdate> GetLowResolutionMovementUpdates()
+        {
+            List<PositionUpdate> Updates = new List<PositionUpdate>();
+
+            return Updates;
+        }
+
+        virtual public List<PositionUpdate> GetAllMovementUpdates()
+        {
+            List<PositionUpdate> Updates = new List<PositionUpdate>();
+
+            return Updates;
+        }
+
+        virtual public List<PositionUpdate> GetClientMovementUpdates()
         {
             List<PositionUpdate> Updates = new List<PositionUpdate>();
 
@@ -214,5 +228,5 @@ namespace EQExtractor2.Patches
         protected int PPZoneIDOffset;
 
         protected string PatchConfFileName;
-    }        
+    }
 }

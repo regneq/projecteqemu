@@ -18,7 +18,7 @@ namespace EQExtractor2
 {
     public partial class EQExtractor2Form1 : Form
     {
-        string Version = "EQExtractor2 Version 2.1.1 SVN";
+        string Version = "EQExtractor2 Version 2.2.0 SVN";
 
         static int PacketsSeen = 0;
         static long BytesRead = 0;
@@ -32,6 +32,8 @@ namespace EQExtractor2
         UserOptions Options = new UserOptions();
 
         StreamWriter SQLStream;
+        StreamWriter PacketDebugStream;
+
         EQStreamProcessor StreamProcessor;
 
         public EQExtractor2Form1()
@@ -108,7 +110,12 @@ namespace EQExtractor2
         {
             SQLStream.WriteLine(Message);
          }
-                
+
+        public void PacketDebugLogger(string Message)
+        {
+            PacketDebugStream.WriteLine(Message);
+        }
+
         private void DisableAllControls()
         {
             foreach (Control c in this.Controls)
@@ -164,6 +171,14 @@ namespace EQExtractor2
                 return;
             }
 
+            if (Options.EQPacketDebugFilename.Text.Length > 0)
+            {
+                PacketDebugStream = new StreamWriter(Options.EQPacketDebugFilename.Text);
+                StreamProcessor.Packets.SetDebugLogHandler(PacketDebugLogger);
+            }
+            else
+                StreamProcessor.Packets.SetDebugLogHandler(null);
+
             StatusBar.Text = "Reading packets from " + InputFileOpenDialog.FileName + ". Please wait...";
 
             device.OnPacketArrival +=
@@ -187,6 +202,9 @@ namespace EQExtractor2
             Log("End of file reached. Processed " + PacketsSeen + " packets and " + BytesRead + " bytes.");
 
             ProgressBar.Hide();
+
+            if (Options.EQPacketDebugFilename.Text.Length > 0)
+                PacketDebugStream.Close();
 
             PacketCountLabel.Text = PacketsSeen.ToString();
             if (StreamProcessor.Packets.ErrorsInStream)
