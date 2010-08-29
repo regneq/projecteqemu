@@ -1011,6 +1011,10 @@ bool logpos;
 	inline uint8 GetManaPercent() { return (uint8)((float)cur_mana / (float)max_mana * 100.0f); }
 	virtual uint8 GetEndurancePercent() { return 0; }
 
+	void SetGlobal(const char *varname, const char *newvalue, int options, const char *duration, Mob *other = NULL);
+	void TarGlobal(const char *varname, const char *value, const char *duration, int npcid, int charid, int zoneid);
+	void DelGlobal(const char *varname);
+
 protected:
 	void CommonDamage(Mob* other, sint32 &damage, const uint16 spell_id, const SkillType attack_skill, bool &avoidable, const sint8 buffslot, const bool iBuffTic);
 	static uint16 GetProcID(uint16 spell_id, uint8 effect_index);
@@ -1292,6 +1296,8 @@ protected:
 	bool m_hasPartialSpellRune;
 	bool m_hasDeathSaveChance;
 	int	flymode;
+	int QGVarDuration(const char *fmt);
+	void InsertQuestGlobal(int charid, int npcid, int zoneid, const char *name, const char *value, int expdate);
 
 private:
 	void _StopSong();		//this is not what you think it is

@@ -2,6 +2,9 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==08/28/2010==
 Derision: Fixed potential buffer overrun in item_struct. NOTE: Linux users may have to increase shmmax.
+Trevius: Added to Perl Mob: SetGlobal(varname, newvalue, options, duration, other=NULL).
+Trevius: Added to Perl Mob: TarGlobal(varname, value, duration, npcid, charid, zoneid).
+Trevius: Added to Perl Mob: DelGlobal(varname).
 
 ==08/26/2010==
 Trevius: Added new Perl Mob quest object GetItemStat(itemid, stat).

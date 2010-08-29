@@ -7058,6 +7058,99 @@ XS(XS_Mob_GetItemStat)
 	XSRETURN(1);
 }
 
+XS(XS_Mob_SetGlobal);
+XS(XS_Mob_SetGlobal)
+{
+	dXSARGS;
+	if (items < 5 || items > 6)
+		Perl_croak(aTHX_ "Usage: SetGlobal(THIS, varname, newvalue, options, duration, other=NULL)");
+	{
+		Mob *		THIS;
+		char *		varname = (char *)SvPV_nolen(ST(1));
+		char *		newvalue = (char *)SvPV_nolen(ST(2));
+		int			options = (int)SvIV(ST(3));
+		char *		duration = (char *)SvPV_nolen(ST(4));
+		Mob *		other = NULL;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		if (items > 5) {
+			if (sv_derived_from(ST(5), "Mob")) {
+				IV tmp = SvIV((SV*)SvRV(ST(5)));
+				other = INT2PTR(Mob *,tmp);
+			}
+			else
+				Perl_croak(aTHX_ "THIS is not of type Mob");
+			if(other == NULL)
+				Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+		}
+
+		THIS->SetGlobal(varname, newvalue, options, duration, other);
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_Mob_TarGlobal);
+XS(XS_Mob_TarGlobal)
+{
+	dXSARGS;
+	if (items != 7)
+		Perl_croak(aTHX_ "Usage: TarGlobal(THIS, varname, value, duration, npcid, charid, zoneid)");
+	{
+		Mob *		THIS;
+		char *		varname = (char *)SvPV_nolen(ST(1));
+		char *		value = (char *)SvPV_nolen(ST(2));
+		char *		duration = (char *)SvPV_nolen(ST(3));
+		int	npcid = (int)SvIV(ST(4));
+		int	charid = (int)SvIV(ST(5));
+		int	zoneid = (int)SvIV(ST(6));
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->TarGlobal(varname, value, duration, npcid, charid, zoneid);
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_Mob_DelGlobal);
+XS(XS_Mob_DelGlobal)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: DelGlobal(THIS, varname)");
+	{
+		Mob *		THIS;
+		char *		varname = (char *)SvPV_nolen(ST(1));
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->DelGlobal(varname);
+	}
+	XSRETURN_EMPTY;
+}
+
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -7311,18 +7404,21 @@ XS(boot_Mob)
 		newXSproto(strcpy(buf, "FindGroundZ"), XS_Mob_FindGroundZ, file, "$$$;$");
 		newXSproto(strcpy(buf, "ProjectileAnim"), XS_Mob_ProjectileAnim, file, "$$$;$$$$$");
 		newXSproto(strcpy(buf, "HasNPCSpecialAtk"), XS_Mob_HasNPCSpecialAtk, file, "$$");
-		newXSproto(strcpy(buf, "SendAppearanceEffect"), XS_Mob_SendAppearanceEffect, file, "$$:$$$$");
+		newXSproto(strcpy(buf, "SendAppearanceEffect"), XS_Mob_SendAppearanceEffect, file, "$$;$$$$");
 		newXSproto(strcpy(buf, "SetFlyMode"), XS_Mob_SetFlyMode, file, "$$");
 		newXSproto(strcpy(buf, "SetTexture"), XS_Mob_SetTexture, file, "$$");
 		newXSproto(strcpy(buf, "SetRace"), XS_Mob_SetRace, file, "$$");
 		newXSproto(strcpy(buf, "SetGender"), XS_Mob_SetGender, file, "$$");
-		newXSproto(strcpy(buf, "SendIllusion"), XS_Mob_SendIllusion, file, "$$:$$$$$$$$$$$$");
+		newXSproto(strcpy(buf, "SendIllusion"), XS_Mob_SendIllusion, file, "$$;$$$$$$$$$$$$");
 		newXSproto(strcpy(buf, "MakeTempPet"), XS_Mob_MakeTempPet, file, "$$;$$$");
-		newXSproto(strcpy(buf, "QuestReward"), XS_Mob_QuestReward, file, "$$:$$$");
-		newXSproto(strcpy(buf, "CameraEffect"), XS_Mob_CameraEffect, file, "$$:$$");
-		newXSproto(strcpy(buf, "SpellEffect"), XS_Mob_SpellEffect, file, "$$:$$$$$$");
+		newXSproto(strcpy(buf, "QuestReward"), XS_Mob_QuestReward, file, "$$;$$$");
+		newXSproto(strcpy(buf, "CameraEffect"), XS_Mob_CameraEffect, file, "$$;$$");
+		newXSproto(strcpy(buf, "SpellEffect"), XS_Mob_SpellEffect, file, "$$;$$$$$$");
 		newXSproto(strcpy(buf, "TempName"), XS_Mob_TempName, file, "$:$");
 		newXSproto(strcpy(buf, "GetItemStat"), XS_Mob_GetItemStat, file, "$$$");
+		newXSproto(strcpy(buf, "SetGlobal"), XS_Mob_SetGlobal, file, "$$$$$;$");
+		newXSproto(strcpy(buf, "TarGlobal"), XS_Mob_TarGlobal, file, "$$$$$$$");
+		newXSproto(strcpy(buf, "DelGlobal"), XS_Mob_DelGlobal, file, "$$");
 	XSRETURN_YES;
 }
 
