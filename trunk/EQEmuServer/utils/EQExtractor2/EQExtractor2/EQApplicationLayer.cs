@@ -65,6 +65,8 @@ namespace EQApplicationLayer
                         
             PatchList.Add(new PatchJuly132010Decoder());
 
+            //PatchList.Add(new PatchSoD());
+
         }        
 
         // This is called from the main form to tell us where the application was launched from (where to look for the .conf files)
@@ -373,7 +375,7 @@ namespace EQApplicationLayer
 
                 NPCSL.AddNPCSpawn(Spawn.SpawnID, Spawn2ID, ExistingDBID, Spawn.SpawnName);
 
-                Position p = new Position(Spawn.XPos, Spawn.YPos, Spawn.ZPos, Spawn.Heading);
+                Position p = new Position(Spawn.XPos, Spawn.YPos, Spawn.ZPos, Spawn.Heading, DateTime.MinValue);
 
                 NPCSL.AddWaypoint(Spawn.SpawnID, p, false);
 
@@ -456,25 +458,11 @@ namespace EQApplicationLayer
             }
 
             if (GenerateGrids)
-            {
-                List<PositionUpdate> HighResUpdates = PatchDecoder.GetHighResolutionMovementUpdates();
-
-                SQLOut("-- There are " + HighResUpdates.Count + " OP_NPCMoveUpdate packets.");
+            {             
+                List<PositionUpdate> AllMovementUpdates = PatchDecoder.GetAllMovementUpdates();
                 
-                foreach (PositionUpdate Update in HighResUpdates)                
-                    NPCSL.AddWaypoint(Update.SpawnID, Update.p, true);
-                
-                List<PositionUpdate> LowResUpdates = PatchDecoder.GetLowResolutionMovementUpdates();
-
-                SQLOut("-- There are " + LowResUpdates.Count + " OP_MobUpdate packets.");
-
-                foreach (PositionUpdate Update in LowResUpdates)
-                {
-                    if (NPCSL.DoesHaveHighResWaypoints(Update.SpawnID))                                        
-                        continue;
-                    
-                    NPCSL.AddWaypoint(Update.SpawnID, Update.p, false);
-                }
+                foreach (PositionUpdate Update in AllMovementUpdates)                
+                    NPCSL.AddWaypoint(Update.SpawnID, Update.p, Update.HighRes);             
 
                 SQLOut("--");
                 SQLOut("-- Grids");
@@ -516,7 +504,7 @@ namespace EQApplicationLayer
 
                         for (int WPNumber = FirstUsableWaypoint; WPNumber < ns.Waypoints.Count; ++WPNumber)
                         {
-                            Position p = ns.Waypoints[WPNumber];
+                            Position p = ns.Waypoints[WPNumber];                                                      
 
                             if (CoalesceWaypoints)
                             {                            
@@ -550,7 +538,6 @@ namespace EQApplicationLayer
                                 continue;
 
                             SQLOut("INSERT into grid_entries (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`) VALUES(@StartingGridID + " + GridDBID + ", " + ZoneID + ", " + (WPNum++) + ", " + p.x + ", " + p.y + ", " + p.z + ", " + p.heading + ", " + Pause + ");");
-
 
                             ++WaypointsInserted;                            
                         }

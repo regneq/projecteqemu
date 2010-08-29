@@ -36,6 +36,8 @@
             this.OptionsOKButton = new System.Windows.Forms.Button();
             this.OptionsCancelButton = new System.Windows.Forms.Button();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.EQPacketDebugFilename = new System.Windows.Forms.TextBox();
+            this.label2 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // label1
@@ -59,7 +61,7 @@
             // ShowDebugWindowOnStartup
             // 
             this.ShowDebugWindowOnStartup.AutoSize = true;
-            this.ShowDebugWindowOnStartup.Location = new System.Drawing.Point(15, 37);
+            this.ShowDebugWindowOnStartup.Location = new System.Drawing.Point(15, 61);
             this.ShowDebugWindowOnStartup.Name = "ShowDebugWindowOnStartup";
             this.ShowDebugWindowOnStartup.Size = new System.Drawing.Size(184, 17);
             this.ShowDebugWindowOnStartup.TabIndex = 2;
@@ -69,7 +71,7 @@
             // ShowTimeStamps
             // 
             this.ShowTimeStamps.AutoSize = true;
-            this.ShowTimeStamps.Location = new System.Drawing.Point(15, 60);
+            this.ShowTimeStamps.Location = new System.Drawing.Point(15, 84);
             this.ShowTimeStamps.Name = "ShowTimeStamps";
             this.ShowTimeStamps.Size = new System.Drawing.Size(205, 17);
             this.ShowTimeStamps.TabIndex = 3;
@@ -78,7 +80,7 @@
             // 
             // OptionsOKButton
             // 
-            this.OptionsOKButton.Location = new System.Drawing.Point(125, 98);
+            this.OptionsOKButton.Location = new System.Drawing.Point(125, 122);
             this.OptionsOKButton.Name = "OptionsOKButton";
             this.OptionsOKButton.Size = new System.Drawing.Size(75, 23);
             this.OptionsOKButton.TabIndex = 4;
@@ -89,7 +91,7 @@
             // OptionsCancelButton
             // 
             this.OptionsCancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.OptionsCancelButton.Location = new System.Drawing.Point(332, 98);
+            this.OptionsCancelButton.Location = new System.Drawing.Point(332, 122);
             this.OptionsCancelButton.Name = "OptionsCancelButton";
             this.OptionsCancelButton.Size = new System.Drawing.Size(75, 23);
             this.OptionsCancelButton.TabIndex = 5;
@@ -97,12 +99,32 @@
             this.OptionsCancelButton.UseVisualStyleBackColor = true;
             this.OptionsCancelButton.Click += new System.EventHandler(this.OptionsCancelButton_Click);
             // 
+            // EQPacketDebugFilename
+            // 
+            this.EQPacketDebugFilename.Location = new System.Drawing.Point(125, 32);
+            this.EQPacketDebugFilename.Name = "EQPacketDebugFilename";
+            this.EQPacketDebugFilename.Size = new System.Drawing.Size(390, 20);
+            this.EQPacketDebugFilename.TabIndex = 7;
+            this.toolTip1.SetToolTip(this.EQPacketDebugFilename, "Output file for low level netcode debugging");
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(12, 35);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(83, 13);
+            this.label2.TabIndex = 6;
+            this.label2.Text = "Netcode Debug";
+            this.toolTip1.SetToolTip(this.label2, "Output file for low level netcode debugging");
+            // 
             // UserOptions
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.OptionsCancelButton;
-            this.ClientSize = new System.Drawing.Size(527, 151);
+            this.ClientSize = new System.Drawing.Size(527, 166);
+            this.Controls.Add(this.EQPacketDebugFilename);
+            this.Controls.Add(this.label2);
             this.Controls.Add(this.OptionsCancelButton);
             this.Controls.Add(this.OptionsOKButton);
             this.Controls.Add(this.ShowTimeStamps);
@@ -125,5 +147,7 @@
         public System.Windows.Forms.CheckBox ShowDebugWindowOnStartup;
         public System.Windows.Forms.CheckBox ShowTimeStamps;
         private System.Windows.Forms.ToolTip toolTip1;
+        public System.Windows.Forms.TextBox EQPacketDebugFilename;
+        private System.Windows.Forms.Label label2;
     }
 }

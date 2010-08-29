@@ -48,17 +48,14 @@ namespace EQPacket
     
     public class PacketManager
     {
-        const Byte DEBUG = 0;
-    	const Byte DUMPPACKETS = 0;
-
+        bool DEBUG = false;
+        bool DUMPPACKETS = false;
+    
 	    private void Debug(string Message)
         {
-            #pragma warning disable 0162
-
-            if (DEBUG == 1)
-    	        Log(Message);
-
-            #pragma warning restore 0162
+            if (DebugLogger != null)
+                DebugLogger(Message);
+    	    //DebugLog(Message);
         }
 
         public bool ErrorsInStream = false;
@@ -87,15 +84,25 @@ namespace EQPacket
         private ushort ClientPort = 0;
         private int ExpectedClientSEQ = 0;
 
+        private ushort CryptoFlag = 0;
+
         StreamIdentifier Identifier = null;
         
         public List<EQApplicationPacket> PacketList = new List<EQApplicationPacket>();
 
 	    LogHandler Logger = null;
+        LogHandler DebugLogger = null;
 
 	    public void SetLogHandler(LogHandler Logger)
 	    {
     		this.Logger = Logger;
+    	}
+
+        public void SetDebugLogHandler(LogHandler Logger)
+	    {
+    		this.DebugLogger = Logger;
+            DEBUG = (Logger != null);
+            DUMPPACKETS = (Logger != null);
     	}
 
     	void Log(string Message)
@@ -115,10 +122,10 @@ namespace EQPacket
         {
             #pragma warning disable 0162
 
-            if (DUMPPACKETS > 0)
+            if (DUMPPACKETS)
 	        {
-                Log("[OPCode: 0x" + Packet.OpCode.ToString("x") + "] [Size: " + Packet.Buffer.Length + "]");
-	            Log(Utils.HexDump(Packet.Buffer));
+                Debug("[OPCode: 0x" + Packet.OpCode.ToString("x") + "] [Size: " + Packet.Buffer.Length + "]");
+	            Debug(Utils.HexDump(Packet.Buffer));
             }
 
             #pragma warning restore 0162
@@ -150,7 +157,9 @@ namespace EQPacket
 
         private void AddToCache(int Seq, PacketDirection Direction, byte[] Payload, DateTime PacketTime, bool SubPacket)
         {
-	        Debug("Adding packet with Seq " + Seq + " to cache.");
+            if(DEBUG)
+	            Debug("Adding packet with Seq " + Seq + " to cache.");
+
             foreach(CacheEntry Existing in Cache)
             {
                 if((Existing.Direction == Direction) && (Existing.Seq == Seq))
@@ -254,6 +263,8 @@ namespace EQPacket
         
         public void ProcessPacket(System.Net.IPAddress srcIp, System.Net.IPAddress dstIp, ushort srcPort, ushort dstPort, byte[] Payload, DateTime PacketTime, bool SubPacket, bool Cached)
         {
+            byte Flags = 0x00;
+
             UInt32 OpCode = (UInt32)(Payload[0] * 256 + Payload[1]);
 
             PacketDirection Direction = GetDirection(srcIp, dstIp, srcPort, dstPort);
@@ -261,10 +272,15 @@ namespace EQPacket
             if ((Direction == PacketDirection.Unknown) && (OpCode != OP_SessionRequest))
                 return;
 
+            // Check if this is a UCS connection and if so, skip packets until we see another OP_SessionRequest
+
+            if (((CryptoFlag & 4) > 0) && (OpCode != OP_SessionRequest))
+                return;
+
             switch (OpCode)
             {
                 case OP_SessionRequest:
-		{
+		        {
                     if (PermaLocked)
                         break;
 
@@ -282,16 +298,25 @@ namespace EQPacket
 
                     ExpectedServerSEQ = 0;
 
+                    CryptoFlag = 0;
+
                     break;
                 }
 
                 case OP_SessionResponse:
+                {
+                    CryptoFlag = (ushort)(Payload[11] + (Payload[12] * 256));
+                    Log("Stream Crypto Flag is 0x" + CryptoFlag.ToString("x4"));
                     break;
+                }
 
                 case OP_Combined:
                 {
-		            Debug("OP_Combined");
-                    //Debug(Utils.HexDump(Payload));
+                    if (DEBUG)
+                    {
+                        Debug("OP_Combined");
+                        Debug(Utils.HexDump(Payload));
+                    }
 
                     byte[] Uncompressed;
 
@@ -332,18 +357,22 @@ namespace EQPacket
 
                 case OP_Packet:
                 {
-		            Debug("OP_Packet, Subpacket = "+ SubPacket);
+                    if (DEBUG)
+		                Debug("OP_Packet, Subpacket = "+ SubPacket);
 
                     byte[] Uncompressed;
 
                     if (!SubPacket && (Payload[2] == 0x5a))
                     {
-                        Debug("Compressed");
+                        if (DEBUG)
+                            Debug("Compressed");
+
 			            Uncompressed = DecompressPacket(Payload, 3);
                     }
                     else if (!SubPacket && (Payload[2] == 0xa5))
                     {
-                        Debug("0xa5");
+                        if (DEBUG)
+                            Debug("0xa5");
                  
                         Uncompressed = new byte[Payload.Length - 5];
 
@@ -351,15 +380,20 @@ namespace EQPacket
                     }
                     else
                     {
-                        Debug("Uncompressed");
+                        if (DEBUG)
+                            Debug("Uncompressed");
+
                         Uncompressed = new byte[Payload.Length - 2];
 
 			            Array.Copy(Payload, 2, Uncompressed, 0, Payload.Length - 2);
                     }
-                    Debug("Raw payload is:");
-                    //Debug(Utils.HexDump(Payload));
-                    Debug("Uncompressed data is:");
-                    //Debug(Utils.HexDump(Uncompressed));
+                    if (DEBUG)
+                    {
+                        Debug("Raw payload is:");
+                        Debug(Utils.HexDump(Payload));
+                        Debug("Uncompressed data is:");
+                        Debug(Utils.HexDump(Uncompressed));
+                    }
 
                     int Seq = Uncompressed[0] * 256 + Uncompressed[1];
 
@@ -427,20 +461,27 @@ namespace EQPacket
 
                 case OP_Fragment:
                 {
-		            Debug("OP_Fragment");
-                    Debug("Raw Data");
-                    //Debug(Utils.HexDump(Payload));
+                    if (DEBUG)
+                    {
+                        Debug("OP_Fragment");
+                        Debug("Raw Data");
+                        Debug(Utils.HexDump(Payload));
+                    }
 
                     byte[] Uncompressed;
 
                     if (!SubPacket && (Payload[2] == 0x5a))
                     {
-		                Debug("Compressed");
+                        if (DEBUG)
+		                    Debug("Compressed");
+
                         Uncompressed = DecompressPacket(Payload, 3);
                     }
                     else if (!SubPacket && (Payload[2] == 0xa5))
                     {
-		                Debug("0xa5");
+                        if (DEBUG)
+		                    Debug("0xa5");
+
                         Uncompressed = new byte[Payload.Length - 5];
 
 			            Array.Copy(Payload, 3, Uncompressed, 0, Payload.Length - 5);
@@ -451,8 +492,11 @@ namespace EQPacket
 
 			            Array.Copy(Payload, 2, Uncompressed, 0, Payload.Length - 2);
                     }
-		            Debug("Uncompressed data.");
-		            //Debug(Utils.HexDump(Uncompressed));
+                    if (DEBUG)
+                    {
+                        Debug("Uncompressed data.");
+                        Debug(Utils.HexDump(Uncompressed));
+                    }
 
                     if (Direction == PacketDirection.ClientToServer)
                     {
@@ -463,7 +507,8 @@ namespace EQPacket
                         else
                         {
                             AdvanceSeq(Direction);
-                            Debug("Ignoring Fragmented packet from client ... can't handle it yet.");
+                            if (DEBUG)
+                                Debug("Ignoring Fragmented packet from client ... can't handle it yet.");
                         }
 
                         break;
@@ -471,9 +516,14 @@ namespace EQPacket
 
                     if (FragmentSeq == -1)
                     {
-		                Debug("First fragment.");
+                        if (DEBUG)
+		                    Debug("First fragment.");
+
                         FragmentSeq = (Uncompressed[0] * 256) + Uncompressed[1];
-                        Debug("FragmentSeq is " + FragmentSeq + " Expecting " + GetExpectedSeq(Direction));
+
+                        if (DEBUG)
+                            Debug("FragmentSeq is " + FragmentSeq + " Expecting " + GetExpectedSeq(Direction));
+
                         if (FragmentSeq != GetExpectedSeq(Direction))
                         {			                
                             if (FragmentSeq > GetExpectedSeq(Direction))
@@ -502,7 +552,8 @@ namespace EQPacket
 
 			            if((FragmentedPacketSize == 0) || (FragmentedPacketSize > 1000000))
 			            {
-			                Debug("Got a fragmented packet of size " + FragmentedPacketSize +". Discarding.");
+                            if (DEBUG)
+			                    Debug("Got a fragmented packet of size " + FragmentedPacketSize +". Discarding.");
 
 			                ErrorsInStream = true;
 
@@ -511,8 +562,9 @@ namespace EQPacket
 			                break;
 			            }
                         FragmentedBytesCollected = Uncompressed.Length - 6;
-                        
-			            Debug("Total packet size is " + FragmentedPacketSize);
+
+                        if (DEBUG)
+			                Debug("Total packet size is " + FragmentedPacketSize);
 
 			            if((Uncompressed.Length - 6) > FragmentedPacketSize)
 			            {
@@ -527,7 +579,8 @@ namespace EQPacket
 
                         Fragments = new byte[FragmentedPacketSize];
 
-                        Debug("Copying " + (Uncompressed.Length - 6) + " bytes to Fragments starting at index 0");
+                        if (DEBUG)
+                            Debug("Copying " + (Uncompressed.Length - 6) + " bytes to Fragments starting at index 0");
 
 			            Array.Copy(Uncompressed, 6, Fragments, 0, Uncompressed.Length - 6);
                     }
@@ -537,7 +590,8 @@ namespace EQPacket
 
                         FragmentSeq = (Uncompressed[0] * 256) + Uncompressed[1];
 
-                        Debug("FragmentSeq is " + FragmentSeq + ". Expecting " + GetExpectedSeq(Direction));
+                        if (DEBUG)
+                            Debug("FragmentSeq is " + FragmentSeq + ". Expecting " + GetExpectedSeq(Direction));
 
                         if (FragmentSeq != GetExpectedSeq(Direction))
                         {
@@ -561,7 +615,8 @@ namespace EQPacket
                         else
                             AdvanceSeq(Direction);
 
-                        Debug("Copying " + (Uncompressed.Length - 2) + " bytes from Uncompressed to Fragments starting at " + FragmentedBytesCollected);
+                        if (DEBUG)
+                            Debug("Copying " + (Uncompressed.Length - 2) + " bytes from Uncompressed to Fragments starting at " + FragmentedBytesCollected);
 
 			            if((Uncompressed.Length - 2) > (Fragments.Length - FragmentedBytesCollected))
 			            {
@@ -580,11 +635,13 @@ namespace EQPacket
 
                         if (FragmentedBytesCollected == FragmentedPacketSize)
                         {
-                            Debug("Got whole packet.");
+                            if (DEBUG)
+                                Debug("Got whole packet.");
 
                             if ((Fragments[0] == 0x00) && (Fragments[1] == 0x019))
                             {
-                                Debug("Multi packet.");
+                                if (DEBUG)
+                                    Debug("Multi packet.");
 
                                 int BufferPosition = 2;
 
@@ -621,7 +678,9 @@ namespace EQPacket
                                 
                                 ProcessAppPacket(srcIp, dstIp, srcPort, dstPort, AppOpCode, NewPacket.Length, NewPacket, 0, Direction, PacketTime);
                             }
-                            Debug("Reseting FragmentSeq to -1");
+                            if (DEBUG)
+                                Debug("Reseting FragmentSeq to -1");
+
                             FragmentSeq = -1;
                         }
                     }
@@ -631,7 +690,9 @@ namespace EQPacket
                 case OP_OutOfOrderAck:
                 {
                     int Seq = Payload[2] * 256 + Payload[3];
-		            Debug("OP_OutOfOrder " + Seq);
+
+                    if (DEBUG)
+		                Debug("OP_OutOfOrder " + Seq);
 
                     break;
                 }
@@ -651,29 +712,80 @@ namespace EQPacket
                     else
 		                DirectionString = "Server to Client";
 
-		            Debug("OP_Ack, Seq " + Seq + " " + DirectionString);
-
-		            //Debug(Utils.HexDump(Payload));
+                    if (DEBUG)
+                    {
+                        Debug("OP_Ack, Seq " + Seq + " " + DirectionString);
+                        Debug(Utils.HexDump(Payload));
+                    }
                     
                     break;
                 }
                 default:
                     if (OpCode > 0xff)
                     {
-                        Debug("Unencapsulated EQ Application OpCode.");
-                        // EQApplication OpCode
-                        int AppOpCode = Payload[1] * 256 + Payload[0];
+                        if (DEBUG)
+                        {
+                            Debug("Unencapsulated EQ Application OpCode. Subpacket is " + SubPacket.ToString());
+                            Debug("--- Raw payload ---");
+                            Debug(Utils.HexDump(Payload));
+                            Debug("-------------------");
+                        }
+                                                
+                        int AppOpCode;
+                        byte[] NewPacket;
 
-                        byte[] NewPacket = new byte[Payload.Length - 2];
+                        if (SubPacket)
+                        {
+                            AppOpCode = Payload[1] * 256 + Payload[0];
 
-			            Array.Copy(Payload, 2, NewPacket, 0, Payload.Length - 2);
+                            NewPacket = new byte[Payload.Length - 2];
+
+                            Array.Copy(Payload, 2, NewPacket, 0, Payload.Length - 2);
+                        }
+                        else
+                        {
+                            // This packet has a flag byte between the first and second bytes of the opcode, and also a CRC
+                            
+                            Flags = Payload[1];
+
+                            if (Flags == 0x5a)
+                            {
+                                if(DEBUG)
+                                    Debug("Compressed unencapsulated packet.");
+
+                                byte[] NewPayload = new byte[Payload.Length - 4];
+                                Array.Copy(Payload, 2, NewPayload, 0, Payload.Length - 4);
+                                byte[] Uncompressed = DecompressPacket(NewPayload, 0);
+
+                                if (DEBUG)
+                                {
+                                    Debug("Uncompressed Payload:");
+                                    Debug(Utils.HexDump(Uncompressed));
+                                }
+                                // Opcode is first byte of compressed payload and first byte of uncompressed data
+                                AppOpCode = Uncompressed[0] * 256 + Payload[0];
+                                NewPacket = new byte[Uncompressed.Length - 1];
+                                Array.Copy(Uncompressed, 1, NewPacket, 0, Uncompressed.Length - 1);
+                            }
+                            else
+                            {
+                                AppOpCode = Payload[2] * 256 + Payload[0];
+
+                                NewPacket = new byte[Payload.Length - 5];
+
+                                Array.Copy(Payload, 3, NewPacket, 0, Payload.Length - 5);
+                            }
+                        }
 
                         ProcessAppPacket(srcIp, dstIp, srcPort, dstPort, AppOpCode, NewPacket.Length, NewPacket, 0, Direction, PacketTime);
                     }
                     else
                     {
-                        Debug("OP_Unknown (" + OpCode.ToString("x") + ")");
-                        //Debug(Utils.HexDump(Payload));
+                        if (DEBUG)
+                        {
+                            Debug("OP_Unknown (" + OpCode.ToString("x") + ")");
+                            Debug(Utils.HexDump(Payload));
+                        }
                     }
                     break;
             }
@@ -700,7 +812,7 @@ namespace EQPacket
             AddPacket(app);
         }
 
-        public static byte[]  DecompressPacket(byte[] Payload, int Offset)
+        public byte[]  DecompressPacket(byte[] Payload, int Offset)
         {
             MemoryStream ms = new MemoryStream(Payload.GetUpperBound(0) - Offset);
 
@@ -720,11 +832,14 @@ namespace EQPacket
             }
             catch
             {
+                if(DEBUG)
+                    Debug("DECOMPRESSION FAILURE");
+
 		        Array.Copy(Payload, Offset - 1, Uncompressed, 0, Payload.Length - (Offset - 1));
 
                 UncompressedSize = Payload.Length - (Offset - 1);
             }
-
+                        
             zs.Close();
 
             zs.Dispose();

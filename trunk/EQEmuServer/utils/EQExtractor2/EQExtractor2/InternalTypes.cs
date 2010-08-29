@@ -530,14 +530,25 @@ namespace EQExtractor2.InternalTypes
         {
         }
 
-        public Position(float x, float y, float z, float heading)
+        public Position(float x, float y, float z, float heading, DateTime TimeStamp)
         {
             this.x = x;
             this.y = y;
             this.z = z;
             this.heading = heading;
+            this.TimeStamp = TimeStamp;
         }
+
+        public double Distance(Position p)
+        {
+            float XDiff = this.x - p.x;
+            float YDiff = this.y - p.y;
+
+            return Math.Sqrt((XDiff * XDiff) + (YDiff * YDiff));
+        }
+
         public float x, y, z, heading;
+        public DateTime TimeStamp;
     }
 
     public class PositionUpdate
@@ -550,6 +561,8 @@ namespace EQExtractor2.InternalTypes
         public UInt32 SpawnID;
 
         public Position p;
+
+        public bool HighRes;        
     }
 
     public class Door
