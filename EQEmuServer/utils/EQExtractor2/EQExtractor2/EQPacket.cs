@@ -54,8 +54,7 @@ namespace EQPacket
 	    private void Debug(string Message)
         {
             if (DebugLogger != null)
-                DebugLogger(Message);
-    	    //DebugLog(Message);
+                DebugLogger(Message);    	    
         }
 
         public bool ErrorsInStream = false;
@@ -213,9 +212,15 @@ namespace EQPacket
             
             while ( CacheElement >= 0)
             {
+                if (DEBUG)
+                    Debug("Processing packet with seq " + Cache[CacheElement].Seq + " from cache.");
+
                 ProcessPacket(ServerIP, ClientIP, ServerPort, ClientPort, Cache[CacheElement].Payload, Cache[CacheElement].PacketTime, Cache[CacheElement].SubPacket, true);
 
                 Cache.RemoveRange(CacheElement, 1);
+
+                if (DEBUG)
+                    Debug("Cache now as " + Cache.Count + " elements.");
 
                 CacheElement = FindCacheEntry(GetExpectedSeq(PacketDirection.ServerToClient), PacketDirection.ServerToClient);
             }
