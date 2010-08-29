@@ -9,6 +9,7 @@ Derision: Construct grids from both OP_NPCMoveUpdate and OP_MobUpdate packets. P
 
 Derision: Added facility in Options to specify a file to write low level netcode debug information to.
 Derision: Decoded Crypto flag from OP_SessionRequest to identify and ignore compressed UCS stream.
+Derision: Added error checking when opening netcode debug file.
 
 ==08/27/2010==
 Derision: Redesigned the UI. Use the menu bar, or the following shortcuts:

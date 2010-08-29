@@ -18,7 +18,7 @@ namespace EQExtractor2
 {
     public partial class EQExtractor2Form1 : Form
     {
-        string Version = "EQExtractor2 Version 2.2.0 SVN";
+        string Version = "EQExtractor2 Version 2.2.1 SVN";
 
         static int PacketsSeen = 0;
         static long BytesRead = 0;
@@ -173,8 +173,17 @@ namespace EQExtractor2
 
             if (Options.EQPacketDebugFilename.Text.Length > 0)
             {
-                PacketDebugStream = new StreamWriter(Options.EQPacketDebugFilename.Text);
-                StreamProcessor.Packets.SetDebugLogHandler(PacketDebugLogger);
+                try
+                {
+                    PacketDebugStream = new StreamWriter(Options.EQPacketDebugFilename.Text);
+                    StreamProcessor.Packets.SetDebugLogHandler(PacketDebugLogger);
+                }
+                catch
+                {
+                    Log("Failed to open netcode debug file for writing.");
+                    Options.EQPacketDebugFilename.Text = "";
+                    StreamProcessor.Packets.SetDebugLogHandler(null);
+                }                
             }
             else
                 StreamProcessor.Packets.SetDebugLogHandler(null);
