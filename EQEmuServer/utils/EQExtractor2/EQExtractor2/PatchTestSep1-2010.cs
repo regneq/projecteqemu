@@ -79,19 +79,21 @@ namespace EQExtractor2.Patches
                         {
                             Buffer = new ByteStream(p.Buffer);
 
-                            UInt32 StackSize = Buffer.ReadUInt32();
+                            UInt32 StackSize = Buffer.ReadUInt32();             // 00
 
                             Buffer.SkipBytes(4);
 
-                            UInt32 Slot = Buffer.ReadUInt32();
+                            UInt32 Slot = Buffer.ReadUInt32();                  // 08
 
                             Buffer.SkipBytes(1);
 
-                            UInt32 MerchantSlot = Buffer.ReadByte();
+                            UInt32 MerchantSlot = Buffer.ReadByte();            // 13
 
-                            UInt32 Price = Buffer.ReadUInt32();
+                            UInt32 Price = Buffer.ReadUInt32();                 // 14
 
-                            Int32 Quantity = Buffer.ReadInt32();
+                            Buffer.SkipBytes(5);
+
+                            Int32 Quantity = Buffer.ReadInt32();                // 23
 
                             Buffer.SetPosition(71); // Point to item name
 
