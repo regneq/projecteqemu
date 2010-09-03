@@ -220,7 +220,7 @@ namespace EQPacket
                 Cache.RemoveRange(CacheElement, 1);
 
                 if (DEBUG)
-                    Debug("Cache now as " + Cache.Count + " elements.");
+                    Debug("Cache now has " + Cache.Count + " elements.");
 
                 CacheElement = FindCacheEntry(GetExpectedSeq(PacketDirection.ServerToClient), PacketDirection.ServerToClient);
             }

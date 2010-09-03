@@ -1,5 +1,8 @@
 ﻿EQExtractor2 Changelog. All changes since the 1.0 release.
 
+==09/03/2010==
+Derision: Added support for version currently on test server (seems like a lot of opcodes have changed values).
+
 ==08/29/2010==
 Derision: Added handling of unencapsulated application packets with flags which were previously being interpreted as unknown opcodes.
 		  (Seems to only have affects position update packets).
