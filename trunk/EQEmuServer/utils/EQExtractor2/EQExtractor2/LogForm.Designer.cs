@@ -33,6 +33,9 @@
             // 
             // ConsoleWindow
             // 
+            this.ConsoleWindow.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.ConsoleWindow.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.ConsoleWindow.FormattingEnabled = true;
             this.ConsoleWindow.HorizontalScrollbar = true;
@@ -53,6 +56,7 @@
             this.Text = "EQExtractor2 Debug Log";
             this.Closing += new System.ComponentModel.CancelEventHandler(this.LogForm_FormClosing);
             this.ResumeLayout(false);
+
         }
 
         #endregion

@@ -3,6 +3,7 @@
 ==09/03/2010==
 Derision: Added support for version currently on test server (seems like a lot of opcodes have changed values).
 Derision: Fixed item Quantity field for Sep 1 patch. Fixed typo in patch .conf file
+Derision: Debug text box now resizes with it's parent form.
 
 ==08/29/2010==
 Derision: Added handling of unencapsulated application packets with flags which were previously being interpreted as unknown opcodes.
