@@ -24,13 +24,13 @@ namespace EQExtractor2.Patches
         override public IdentificationStatus Identify(int OpCode, int Size, PacketDirection Direction)
         {
             if((OpCode == OpManager.OpCodeNameToNumber("OP_ZoneEntry")) && (Direction == PacketDirection.ClientToServer))
-                return IdentificationStatus.Tentative;
-
-            UInt32 OP_SendAATable = OpManager.OpCodeNameToNumber("OP_SendAATable");
-
-            if ((OpCode == OP_SendAATable) && (Direction == PacketDirection.ServerToClient) &&
-                (Size == 120))
                 return IdentificationStatus.Yes;
+
+            //UInt32 OP_SendAATable = OpManager.OpCodeNameToNumber("OP_SendAATable");
+
+            //if ((OpCode == OP_SendAATable) && (Direction == PacketDirection.ServerToClient) &&
+            //    (Size == 120))
+            //    return IdentificationStatus.Yes;
 
             return IdentificationStatus.No;
         }
