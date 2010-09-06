@@ -1715,7 +1715,7 @@ void Mob::AI_Event_Engaged(Mob* attacker, bool iYellForHelp) {
 			{
 				if(!CastToNPC()->GetCombatEvent() && GetHP() > 0)
 				{
-					parse->Event(EVENT_COMBAT, CastToNPC()->GetNPCTypeID(), "1", CastToNPC(), GetTarget());
+					parse->Event(EVENT_COMBAT, CastToNPC()->GetNPCTypeID(), "1", CastToNPC(), attacker);
 					CastToNPC()->SetCombatEvent(true);
 				}
 			}

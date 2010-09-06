@@ -736,6 +736,33 @@ XS(XS_Mob_GetEquipmentColor)
 	XSRETURN(1);
 }
 
+XS(XS_Mob_GetArmorTint); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_GetArmorTint)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Mob::GetArmorTint(THIS, material_slot)");
+	{
+		Mob *		THIS;
+		sint32		RETVAL;
+		dXSTARG;
+		int8		material_slot = (int8)SvUV(ST(1));
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetArmorTint(material_slot);
+		XSprePUSH; PUSHi((IV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
 XS(XS_Mob_IsMoving); /* prototype to pass -Wmissing-prototypes */
 XS(XS_Mob_IsMoving)
 {
@@ -7150,6 +7177,62 @@ XS(XS_Mob_DelGlobal)
 	XSRETURN_EMPTY;
 }
 
+XS(XS_Mob_SetSlotTint); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_SetSlotTint)
+{
+	dXSARGS;
+	if (items != 5)
+		Perl_croak(aTHX_ "Usage: Mob::SetSlotTint(THIS, material_slot, red_tint, green_tint, blue_tint)");
+	{
+		Mob *		THIS;
+		int8		material_slot = (int8)SvIV(ST(1));
+		int8		red_tint = (int8)SvIV(ST(2));
+		int8		green_tint = (int8)SvIV(ST(3));
+		int8		blue_tint = (int8)SvIV(ST(4));
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->SetSlotTint(material_slot, red_tint, green_tint, blue_tint);
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_Mob_WearChange); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_WearChange)
+{
+	dXSARGS;
+	if (items < 3 || items > 4)
+		Perl_croak(aTHX_ "Usage: Mob::WearChange(THIS, material_slot, texture, color)");
+	{
+		Mob *		THIS;
+		int8		material_slot = (int8)SvIV(ST(1));
+		int16		texture = (int16)SvUV(ST(2));
+		uint32		color = 0;
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		if (items > 3) {
+			color = (uint32)SvUV(ST(3));
+		}
+
+		THIS->WearChange(material_slot, texture, color);
+	}
+	XSRETURN_EMPTY;
+}
 
 #ifdef __cplusplus
 extern "C"
@@ -7197,6 +7280,7 @@ XS(boot_Mob)
 		newXSproto(strcpy(buf, "GetEquipment"), XS_Mob_GetEquipment, file, "$$");
 		newXSproto(strcpy(buf, "GetEquipmentMaterial"), XS_Mob_GetEquipmentMaterial, file, "$$");
 		newXSproto(strcpy(buf, "GetEquipmentColor"), XS_Mob_GetEquipmentColor, file, "$$");
+		newXSproto(strcpy(buf, "GetArmorTint"), XS_Mob_GetArmorTint, file, "$$");
 		newXSproto(strcpy(buf, "IsMoving"), XS_Mob_IsMoving, file, "$");
 		newXSproto(strcpy(buf, "GoToBind"), XS_Mob_GoToBind, file, "$");
 		newXSproto(strcpy(buf, "Gate"), XS_Mob_Gate, file, "$");
@@ -7419,6 +7503,8 @@ XS(boot_Mob)
 		newXSproto(strcpy(buf, "SetGlobal"), XS_Mob_SetGlobal, file, "$$$$$;$");
 		newXSproto(strcpy(buf, "TarGlobal"), XS_Mob_TarGlobal, file, "$$$$$$$");
 		newXSproto(strcpy(buf, "DelGlobal"), XS_Mob_DelGlobal, file, "$$");
+		newXSproto(strcpy(buf, "SetSlotTint"), XS_Mob_SetSlotTint, file, "$$$$$");
+		newXSproto(strcpy(buf, "WearChange"), XS_Mob_WearChange, file, "$$$;$");		
 	XSRETURN_YES;
 }
 

@@ -1,5 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==09/06/2010==
+Trevius: Added to Perl Mob: SetSlotTint(material_slot, red_tint, green_tint, blue_tint).
+Trevius: Added to Perl Mob: WearChange(material_slot, texture, color).
+Trevius: Added to Perl Mob: GetArmorTint(material_slot).
+Trevius: Changed EVENT_COMBAT to now export the normal client variables when combat state changes to 1.
+
 ==08/28/2010==
 Derision: Fixed potential buffer overrun in item_struct. NOTE: Linux users may have to increase shmmax.
 Trevius: Added to Perl Mob: SetGlobal(varname, newvalue, options, duration, other=NULL).
