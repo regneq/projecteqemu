@@ -2519,6 +2519,43 @@ void Mob::SendTextureWC(int8 slot, int16 texture)
 	safe_delete(outapp);
 }
 
+void Mob::SetSlotTint(int8 material_slot, int8 red_tint, int8 green_tint, int8 blue_tint)
+{
+	uint32 color;
+	color = (red_tint & 0xFF) << 16;
+	color |= (green_tint & 0xFF) << 8;
+	color |= (blue_tint & 0xFF);
+	color |= (color) ? (0xFF << 24) : 0;
+	armor_tint[material_slot] = color;
+
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_WearChange, sizeof(WearChange_Struct));
+	WearChange_Struct* wc = (WearChange_Struct*)outapp->pBuffer;
+
+	wc->spawn_id = this->GetID();
+	wc->material = GetEquipmentMaterial(material_slot);
+	wc->color.color = color;
+	wc->wear_slot_id = material_slot;
+
+	entity_list.QueueClients(this, outapp);
+	safe_delete(outapp);
+}
+
+void Mob::WearChange(int8 material_slot, int16 texture, uint32 color)
+{
+	armor_tint[material_slot] = color;
+
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_WearChange, sizeof(WearChange_Struct));
+	WearChange_Struct* wc = (WearChange_Struct*)outapp->pBuffer;
+
+	wc->spawn_id = this->GetID();
+	wc->material = texture;
+	wc->color.color = color;
+	wc->wear_slot_id = material_slot;
+
+	entity_list.QueueClients(this, outapp);
+	safe_delete(outapp);
+}
+
 sint32 Mob::GetEquipmentMaterial(int8 material_slot) const
 {
 	const Item_Struct *item;
