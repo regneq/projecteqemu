@@ -88,10 +88,12 @@ bool ZoneServer::SetZone(int32 iZoneID, int32 iInstanceID, bool iStaticZone) {
 
 	if (zn)
 	{
-		strcpy(zone_name, zn);
+		strncpy(zone_name, zn, sizeof(zone_name));
+                zone_name[sizeof(zone_name)-1] = '\0';
 		if( database.GetZoneLongName( (char*)zone_name, &longname, NULL, NULL, NULL, NULL, NULL, NULL ) )
 		{
-			strcpy(long_name, longname);
+			strncpy(long_name, longname, sizeof(long_name));
+                	long_name[sizeof(long_name)-1] = '\0';
 			safe_delete( longname );
 		}
 		else

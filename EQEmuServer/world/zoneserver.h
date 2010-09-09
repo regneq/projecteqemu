@@ -84,7 +84,7 @@ private:
 	bool	authenticated;
 	int32	pNumPlayers;
 	char	compiled[25];
-	char	zone_name[16];
+	char	zone_name[32];
 	char	long_name[256];
 	int32	zoneID;
 	int32	oldZoneID;

@@ -1,6 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==09/08/2010==
+gaeorn: fixes for new stricter version of gcc/glib
+
+==09/08/2010==
 JJ: ChannelMessageSend in Client now cleans the "from" name to allow NPCs to be used as the message sender.
 
 ==09/06/2010==

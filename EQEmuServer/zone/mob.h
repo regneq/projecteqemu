@@ -1133,7 +1133,7 @@ protected:
 	char    name[64];
 	char    orig_name[64];
 	char	clean_name[64];
-	char    lastname[32];
+	char    lastname[64];
 
     bool bEnraged;
     Timer *SpecAttackTimers[SPECATK_MAXNUM];

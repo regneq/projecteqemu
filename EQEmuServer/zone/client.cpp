@@ -1178,11 +1178,11 @@ void Client::QuestJournalledMessage(const char *npcname, const char* message) {
 
        char *dest = &sm->sayer[0];
 
-       sprintf(dest, "%s", OutNPCName);
+       memcpy(dest, OutNPCName, strlen(OutNPCName) + 1);
 
        dest = dest + strlen(OutNPCName) + 13;
 
-       sprintf(dest, "%s", OutMessage);
+       memcpy(dest, OutMessage, strlen(OutMessage) + 1);
 
        QueuePacket(app);
 
