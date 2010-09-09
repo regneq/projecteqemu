@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==09/08/2010==
+JJ: ChannelMessageSend in Client now cleans the "from" name to allow NPCs to be used as the message sender.
+
 ==09/06/2010==
 Trevius: Added to Perl Mob: SetSlotTint(material_slot, red_tint, green_tint, blue_tint).
 Trevius: Added to Perl Mob: WearChange(material_slot, texture, color).
