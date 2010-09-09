@@ -1063,6 +1063,7 @@ void Client::ChannelMessageSend(const char* from, const char* to, int8 chan_num,
 		return;
 	va_list argptr;
 	char buffer[4096];
+	char message_sender[64];
 
 	va_start(argptr, message);
 	vsnprintf(buffer, 4096, message, argptr);
@@ -1075,8 +1076,10 @@ void Client::ChannelMessageSend(const char* from, const char* to, int8 chan_num,
 		strcpy(cm->sender, "ZServer");
 	else if (from[0] == 0)
 		strcpy(cm->sender, "ZServer");
-	else
-		strcpy(cm->sender, from);
+	else {
+		CleanMobName(from, message_sender);
+		strcpy(cm->sender, message_sender);
+	}
 	if (to != 0)
 		strcpy((char *) cm->targetname, to);
 	else if (chan_num == 7)
