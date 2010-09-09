@@ -623,7 +623,7 @@ ENCODE(OP_GuildMemberList) {
 #define SlideStructString(field, str) \
 		{ \
 			int sl = strlen(str); \
-			strcpy(e->field, str); \
+			memcpy(e->field, str, sl+1); \
 			e = (structs::GuildMemberEntry_Struct *) ( ((uint8 *)e) + sl ); \
 			str += sl + 1; \
 		}

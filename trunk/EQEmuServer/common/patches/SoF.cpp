@@ -321,7 +321,7 @@ ENCODE(OP_SendCharInfo) {
 			eq2->level = emu->level[r];
 			eq2->hairstyle = emu->hairstyle[r];
 			eq2->gender = emu->gender[r];
-			strcpy(eq2->name, emu->name[r]);
+			memcpy(eq2->name, emu->name[r], strlen(emu->name[r])+1);
 		}
 		//adjust for name.
 		bufptr += strlen(emu->name[r]);
@@ -1174,7 +1174,7 @@ ENCODE(OP_GuildMemberList) {
 #define SlideStructString(field, str) \
 		{ \
 			int sl = strlen(str); \
-			strcpy(e->field, str); \
+			memcpy(e->field, str, sl+1); \
 			e = (structs::GuildMemberEntry_Struct *) ( ((uint8 *)e) + sl ); \
 			str += sl + 1; \
 		}

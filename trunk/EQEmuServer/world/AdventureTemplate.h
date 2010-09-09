@@ -21,7 +21,7 @@ struct AdventureTemplate
 	float assa_y;
 	float assa_z;
 	float assa_h;
-	char text[512];
+	char text[1024];
 	uint32 duration;
 	uint32 zone_in_time;
 	sint32 win_points;

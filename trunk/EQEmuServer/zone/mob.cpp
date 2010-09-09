@@ -40,6 +40,7 @@ Copyright (C) 2001-2002  EQEMu Development Team (http://eqemu.org)
 #include "worldserver.h"
 #include "QGlobals.h"
 #include <stdio.h>
+#include <limits.h>
 #include <sstream>
 
 extern EntityList entity_list;
@@ -729,7 +730,10 @@ void Mob::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho)
 
 	strcpy(ns->spawn.name, name);
 	if(IsClient())
-		strncpy(ns->spawn.lastName,lastname,sizeof(lastname));
+        {
+		strncpy(ns->spawn.lastName,lastname,sizeof(ns->spawn.lastName));
+                ns->spawn.lastName[sizeof(ns->spawn.lastName)-1] = '\0';
+        }
 	ns->spawn.heading	= FloatToEQ19(heading);
 	ns->spawn.x			= FloatToEQ19(x_pos);//((sint32)x_pos)<<3;
 	ns->spawn.y			= FloatToEQ19(y_pos);//((sint32)y_pos)<<3;
@@ -797,7 +801,8 @@ void Mob::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho)
 
 	ns->spawn.lastName[0] = '\0';
 	
-	strncpy(ns->spawn.lastName, lastname, sizeof(lastname));
+	strncpy(ns->spawn.lastName, lastname, sizeof(ns->spawn.lastName));
+        ns->spawn.lastName[sizeof(ns->spawn.lastName)-1] = '\0';
 
 	for(i = 0; i < MAX_MATERIALS; i++)
 	{
