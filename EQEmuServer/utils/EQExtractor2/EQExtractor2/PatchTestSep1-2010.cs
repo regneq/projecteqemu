@@ -56,37 +56,51 @@ namespace EQExtractor2.Patches
 
         public override void RegisterExplorers()
         {
+            base.RegisterExplorers();
+
             OpManager.RegisterExplorer("OP_CharInventory", ExploreCharInventoryPacket);
         }
          
         public void ExploreCharInventoryPacket(StreamWriter OutputStream, byte[] PacketBuffer)
         {            
-            OutputStream.WriteLine("\r\nExploreCharInventoryPacket Called!\r\n");         
-
             ByteStream Buffer = new ByteStream(PacketBuffer);
 
             UInt32 ItemCount = Buffer.ReadUInt32();
+
             OutputStream.WriteLine("There are {0} items in the inventory.\r\n", ItemCount );
 
             for (int i = 0; i < ItemCount; ++i)
             {
                 ExploreSubItem(OutputStream, ref Buffer);             
-            }            
+            }
+
+            OutputStream.WriteLine("");
         }
 
         void  ExploreSubItem(StreamWriter OutputStream, ref ByteStream Buffer)
-        {
-            int BufferPosition = Buffer.GetPosition();
-            
+        {            
             Buffer.SkipBytes(8);
 
             byte Area = Buffer.ReadByte();
             UInt16 MainSlot = Buffer.ReadUInt16();
-            UInt16 SubSlot = Buffer.ReadUInt16();
+            Int16 SubSlot = Buffer.ReadInt16();
             Buffer.SkipBytes(54);
             string Name = Buffer.ReadString(true);
 
-            OutputStream.WriteLine("Area: {0} Main Slot {1} Sub Slot {2} Name {3}\r\n", Area, MainSlot, SubSlot, Name);
+            string AreaName = "Unknown";
+
+            switch (Area)
+            {
+                case 0:
+                    AreaName = "Personal Inventory";
+                    break;
+                case 1:
+                    AreaName = "Bank";
+                    break;
+                // I think 8 is for Merchant items, and there is likely one for Tribute.
+            }
+
+            OutputStream.WriteLine("Area: {0} {1} Main Slot {2,2} Sub Slot {3,3} Name {4}", Area, AreaName.PadRight(20), MainSlot, SubSlot, Name);
 
             Buffer.ReadString(true);    // Lore
             Buffer.ReadString(true);    // IDFile
@@ -113,7 +127,7 @@ namespace EQExtractor2.Patches
             Buffer.SkipBytes(30);   // Worn Effect Struct
             Buffer.ReadString(true);    // Worn Name
             Buffer.SkipBytes(4);    // unknown6            
-            Buffer.SkipBytes(103);   // Item Quaterary Body Struct - 4 (we want to read the SubLength field at the end)
+            Buffer.SkipBytes(103);   // Item Quaternary Body Struct - 4 (we want to read the SubLength field at the end)
 
             UInt32 SubLengths = Buffer.ReadUInt32();
                         

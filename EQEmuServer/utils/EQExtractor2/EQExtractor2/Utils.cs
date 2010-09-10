@@ -65,6 +65,14 @@ namespace MyUtils
             return Value;
         }
 
+        public Int16 ReadInt16()
+        {
+            Int16 Value = BitConverter.ToInt16(Buffer, BufferPointer);
+
+            BufferPointer += 2;
+
+            return Value;
+        }
         public byte ReadByte()
         {
             return Buffer[BufferPointer++];

@@ -127,8 +127,7 @@ namespace EQExtractor2.OpCodes
                     oc.Explorer = Explorer;
                     return;
                 }
-            }
-            return;
+            }            
         }
     }
 }
