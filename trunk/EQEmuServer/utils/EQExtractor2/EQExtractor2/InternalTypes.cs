@@ -391,6 +391,19 @@ namespace EQExtractor2.InternalTypes
         public UInt32 TargetZoneID;
     };
 
+    struct Item
+    {
+        public UInt32 StackSize;
+        public UInt32 Slot;
+        public UInt32 MerchantSlot;
+        public UInt32 Price;
+        public Int32 Quantity;
+        public string Name;
+        public string Lore;
+        public string IDFile;
+        public UInt32 ID;
+    };
+
     struct MerchantItem
     {
         public MerchantItem(UInt32 ItemID, string Name, UInt32 Slot, int Quantity)

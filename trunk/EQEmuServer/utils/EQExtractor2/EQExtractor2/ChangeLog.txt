@@ -1,5 +1,11 @@
 ﻿EQExtractor2 Changelog. All changes since the 1.0 release.
 
+==09/10/2010==
+Derision: Addded ability to call 'Explorer' methods during Packet Dump for use while figuring out packet formats.
+
+==09/08/2010==
+Derision: Moved item packet decode into a separate method.
+
 ==09/03/2010==
 Derision: Added support for version currently on test server (seems like a lot of opcodes have changed values).
 Derision: Fixed item Quantity field for Sep 1 patch. Fixed typo in patch .conf file

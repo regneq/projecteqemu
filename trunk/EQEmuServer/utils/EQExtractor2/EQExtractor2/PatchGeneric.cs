@@ -32,6 +32,8 @@ namespace EQExtractor2.Patches
 
         virtual public bool Init(string ConfDirectory, ref string ErrorMessage)
         {
+            OpManager = new OpCodeManager();
+
             return false;
         }
 
@@ -61,6 +63,14 @@ namespace EQExtractor2.Patches
         {
             return null;
         }
+
+        virtual public Item DecodeItemPacket(byte[] PacketBuffer)
+        {
+            Item NewItem = new Item();
+
+            return NewItem;
+        }
+
 
         virtual public List<ZonePoint> GetZonePointList()
         {
@@ -140,6 +150,10 @@ namespace EQExtractor2.Patches
             Packets = pm;
         }
 
+        virtual public void RegisterExplorers()
+        {
+        }
+
         public List<byte[]> GetPacketsOfType(string OpCodeName, PacketDirection Direction)
         {
             List<byte[]> ReturnList = new List<byte[]>();
@@ -193,8 +207,15 @@ namespace EQExtractor2.Patches
                 else
                     Direction = "[Client->Server]";
 
-                PacketDumpStream.WriteLine("[OPCode: 0x" + p.OpCode.ToString("x4") + "] " + (OpManager != null ? OpManager.OpCodeToName(p.OpCode) : "OP_Unknown") + " " + Direction + " [Size: " + p.Buffer.Length + "]");
+                OpCode oc = OpManager.GetOpCodeByNumber(p.OpCode);
+
+                string OpCodeName = (oc != null) ? oc.Name : "OP_Unknown";
+
+                PacketDumpStream.WriteLine("[OPCode: 0x" + p.OpCode.ToString("x4") + "] " + OpCodeName + " " + Direction + " [Size: " + p.Buffer.Length + "]");
                 PacketDumpStream.WriteLine(Utils.HexDump(p.Buffer));
+
+                if ((oc != null) && (oc.Explorer != null))
+                    oc.Explorer(PacketDumpStream, p.Buffer);
             }
 
             PacketDumpStream.Close();
