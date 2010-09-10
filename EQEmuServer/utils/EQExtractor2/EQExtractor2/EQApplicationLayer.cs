@@ -88,6 +88,8 @@ namespace EQApplicationLayer
             // If at least one initialises successfully, then return true  to the caller, otherwise return false
             bool AllDecodersFailed = true;
 
+            PatchDecoder.Init(ConfDirectory, ref ErrorMessage);
+
             foreach (PatchSpecficDecoder p in PatchList)
             {
                 if (!p.Init(ConfDirectory, ref ErrorMessage))

@@ -3,8 +3,10 @@
 //
 // 
 using System;
+using System.IO;
 using System.Collections.Generic;
 using EQExtractor2.InternalTypes;
+using EQExtractor2.OpCodes;
 using EQPacket;
 using MyUtils;
 
@@ -25,95 +27,101 @@ namespace EQExtractor2.Patches
         {
             if((OpCode == OpManager.OpCodeNameToNumber("OP_ZoneEntry")) && (Direction == PacketDirection.ClientToServer))
                 return IdentificationStatus.Yes;
-
-            //UInt32 OP_SendAATable = OpManager.OpCodeNameToNumber("OP_SendAATable");
-
-            //if ((OpCode == OP_SendAATable) && (Direction == PacketDirection.ServerToClient) &&
-            //    (Size == 120))
-            //    return IdentificationStatus.Yes;
-
+            
             return IdentificationStatus.No;
+        }                
+
+        override public Item DecodeItemPacket(byte[] PacketBuffer)
+        {
+            ByteStream Buffer = new ByteStream(PacketBuffer);
+
+            Item NewItem = new Item();                      
+
+            NewItem.StackSize = Buffer.ReadUInt32();             // 00
+            Buffer.SkipBytes(4);
+            NewItem.Slot = Buffer.ReadUInt32();                  // 08
+            Buffer.SkipBytes(1);
+            NewItem.MerchantSlot = Buffer.ReadByte();            // 13
+            NewItem.Price = Buffer.ReadUInt32();                 // 14
+            Buffer.SkipBytes(5);
+            NewItem.Quantity = Buffer.ReadInt32();               // 23
+            Buffer.SetPosition(71);
+            NewItem.Name = Buffer.ReadString(true);
+            NewItem.Lore = Buffer.ReadString(true);
+            NewItem.IDFile = Buffer.ReadString(true);
+            NewItem.ID = Buffer.ReadUInt32();
+
+            return NewItem;
         }
 
-        override public MerchantManager GetMerchantData(NPCSpawnList NPCSL)
+        public override void RegisterExplorers()
         {
-            List<EQApplicationPacket> PacketList = Packets.PacketList;
+            OpManager.RegisterExplorer("OP_CharInventory", ExploreCharInventoryPacket);
+        }
+         
+        public void ExploreCharInventoryPacket(StreamWriter OutputStream, byte[] PacketBuffer)
+        {            
+            OutputStream.WriteLine("\r\nExploreCharInventoryPacket Called!\r\n");         
 
-            UInt32 OP_ShopRequest = OpManager.OpCodeNameToNumber("OP_ShopRequest");
+            ByteStream Buffer = new ByteStream(PacketBuffer);
 
-            UInt32 OP_ShopEnd = OpManager.OpCodeNameToNumber("OP_ShopEnd");
+            UInt32 ItemCount = Buffer.ReadUInt32();
+            OutputStream.WriteLine("There are {0} items in the inventory.\r\n", ItemCount );
 
-            UInt32 OP_ItemPacket = OpManager.OpCodeNameToNumber("OP_ItemPacket");
-
-            MerchantManager mm = new MerchantManager();
-
-            for (int i = 0; i < PacketList.Count; ++i)
+            for (int i = 0; i < ItemCount; ++i)
             {
-                EQApplicationPacket p = PacketList[i];
+                ExploreSubItem(OutputStream, ref Buffer);             
+            }            
+        }
 
-                if ((p.Direction == PacketDirection.ServerToClient) && (p.OpCode == OP_ShopRequest))
-                {
-                    ByteStream Buffer = new ByteStream(p.Buffer);
+        void  ExploreSubItem(StreamWriter OutputStream, ref ByteStream Buffer)
+        {
+            int BufferPosition = Buffer.GetPosition();
+            
+            Buffer.SkipBytes(8);
 
-                    UInt32 MerchantSpawnID = Buffer.ReadUInt32();
+            byte Area = Buffer.ReadByte();
+            UInt16 MainSlot = Buffer.ReadUInt16();
+            UInt16 SubSlot = Buffer.ReadUInt16();
+            Buffer.SkipBytes(54);
+            string Name = Buffer.ReadString(true);
 
-                    NPCSpawn npc = NPCSL.GetNPC(MerchantSpawnID);
+            OutputStream.WriteLine("Area: {0} Main Slot {1} Sub Slot {2} Name {3}\r\n", Area, MainSlot, SubSlot, Name);
 
-                    UInt32 NPCTypeID;
+            Buffer.ReadString(true);    // Lore
+            Buffer.ReadString(true);    // IDFile
+            Buffer.SkipBytes(236);  // Item Body Struct
+            Buffer.ReadString(true);    // Charm File
+            Buffer.SkipBytes(64);   // Item Secondary Body Struct
+            Buffer.ReadString(true);    // Filename
+            Buffer.SkipBytes(76);   // Item Tertiary Body Struct
+            Buffer.SkipBytes(30);   // Click Effect Struct
+            Buffer.ReadString(true);    // Clickname
+            Buffer.SkipBytes(4);    // clickunk7
+            Buffer.SkipBytes(30);   // Proc Effect Struct
+            Buffer.ReadString(true);    // Proc Name
+            Buffer.SkipBytes(4);    // unknown5            
+            Buffer.SkipBytes(30);   // Worn Effect Struct
+            Buffer.ReadString(true);    // Worn Name
+            Buffer.SkipBytes(4);    // unknown6
+            Buffer.SkipBytes(30);   // Worn Effect Struct
+            Buffer.ReadString(true);    // Worn Name
+            Buffer.SkipBytes(4);    // unknown6
+            Buffer.SkipBytes(30);   // Worn Effect Struct
+            Buffer.ReadString(true);    // Worn Name
+            Buffer.SkipBytes(4);    // unknown6
+            Buffer.SkipBytes(30);   // Worn Effect Struct
+            Buffer.ReadString(true);    // Worn Name
+            Buffer.SkipBytes(4);    // unknown6            
+            Buffer.SkipBytes(103);   // Item Quaterary Body Struct - 4 (we want to read the SubLength field at the end)
 
-                    if (npc != null)
-                        NPCTypeID = npc.NPCTypeID;
-                    else
-                        NPCTypeID = 0;
-
-                    mm.AddMerchant(MerchantSpawnID);
-
-                    for (int j = i + 1; j < PacketList.Count; ++j)
-                    {
-                        p = PacketList[j];
-
-                        if (p.OpCode == OP_ShopEnd)
-                            break;
-
-                        if (p.OpCode == OP_ItemPacket)
-                        {
-                            Buffer = new ByteStream(p.Buffer);
-
-                            UInt32 StackSize = Buffer.ReadUInt32();             // 00
-
-                            Buffer.SkipBytes(4);
-
-                            UInt32 Slot = Buffer.ReadUInt32();                  // 08
-
-                            Buffer.SkipBytes(1);
-
-                            UInt32 MerchantSlot = Buffer.ReadByte();            // 13
-
-                            UInt32 Price = Buffer.ReadUInt32();                 // 14
-
-                            Buffer.SkipBytes(5);
-
-                            Int32 Quantity = Buffer.ReadInt32();                // 23
-
-                            Buffer.SetPosition(71); // Point to item name
-
-                            string ItemName = Buffer.ReadString(true);
-
-                            string Lore = Buffer.ReadString(true);
-
-                            string IDFile = Buffer.ReadString(true);
-
-                            UInt32 ItemID = Buffer.ReadUInt32();
-
-                            mm.AddMerchantItem(MerchantSpawnID, ItemID, ItemName, MerchantSlot, Quantity);
-                        }
-                    }
-                }
+            UInt32 SubLengths = Buffer.ReadUInt32();
+                        
+            for (int i = 0; i < SubLengths; ++i)
+            {
+                Buffer.SkipBytes(4);
+                ExploreSubItem(OutputStream, ref Buffer);               
             }
-
-            return mm;
         }
     }
-
-
 }

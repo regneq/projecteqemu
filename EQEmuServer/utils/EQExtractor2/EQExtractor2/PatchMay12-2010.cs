@@ -41,6 +41,8 @@ namespace EQExtractor2.Patches
             if (!OpManager.Init(ConfDirectory + "\\" + PatchConfFileName, ref ErrorMessage))
                 return false;
 
+            RegisterExplorers();
+
             return true;
         }
 
@@ -204,37 +206,36 @@ namespace EQExtractor2.Patches
 
                         if (p.OpCode == OP_ItemPacket)
                         {
-                            Buffer = new ByteStream(p.Buffer);
+                            Item NewItem = DecodeItemPacket(p.Buffer);
 
-                            UInt32 StackSize = Buffer.ReadUInt32();
-
-                            Buffer.SkipBytes(4);
-
-                            UInt32 Slot = Buffer.ReadUInt32();
-
-                            UInt32 MerchantSlot = Buffer.ReadUInt32();
-
-                            UInt32 Price = Buffer.ReadUInt32();
-
-                            Int32 Quantity = Buffer.ReadInt32();
-
-                            Buffer.SetPosition(68); // Point to item name
-
-                            string ItemName = Buffer.ReadString(true);
-
-                            string Lore = Buffer.ReadString(true);
-
-                            string IDFile = Buffer.ReadString(true);
-
-                            UInt32 ItemID = Buffer.ReadUInt32();
-                                                        
-                            mm.AddMerchantItem(MerchantSpawnID, ItemID, ItemName, MerchantSlot, Quantity);
+                            mm.AddMerchantItem(MerchantSpawnID, NewItem.ID, NewItem.Name, NewItem.MerchantSlot, NewItem.Quantity);
                         }
                     }
                 }
             }
 
             return mm;
+        }
+
+        override public Item DecodeItemPacket(byte[] PacketBuffer)
+        {
+            ByteStream Buffer = new ByteStream(PacketBuffer);
+
+            Item NewItem = new Item();                        
+
+            NewItem.StackSize = Buffer.ReadUInt32();
+            Buffer.SkipBytes(4);
+            NewItem.Slot = Buffer.ReadUInt32();
+            NewItem.MerchantSlot = Buffer.ReadUInt32();
+            NewItem.Price = Buffer.ReadUInt32();
+            NewItem.Quantity = Buffer.ReadInt32();
+            Buffer.SetPosition(68);
+            NewItem.Name = Buffer.ReadString(true);
+            NewItem.Lore = Buffer.ReadString(true);
+            NewItem.IDFile = Buffer.ReadString(true);
+            NewItem.ID = Buffer.ReadUInt32();         
+
+            return NewItem;
         }
 
         override public List<ZonePoint> GetZonePointList()
