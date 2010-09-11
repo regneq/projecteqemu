@@ -2064,6 +2064,30 @@ XS(XS__botquest)
 	XSRETURN(1);
 }
 
+XS(XS__createBot);
+XS(XS__createBot)
+{
+	dXSARGS;
+	bool		RETVAL;
+	dXSTARG;
+
+	if(items != 6)
+	{
+		Perl_croak(aTHX_ "Usage: createBot(firstname, lastname, level, race, class, gender)");
+	}
+
+	char *firstname = (char *)SvPV_nolen(ST(0));
+	char *lastname = (char *)SvPV_nolen(ST(1));
+	int level = (int) SvIV(ST(2));
+	int race = (int) SvIV(ST(3));
+	int botclass = (int) SvIV(ST(4));
+	int gender = (int) SvIV(ST(5));
+
+	RETVAL = quest_manager.createBot(firstname, lastname, level, race, botclass, gender);
+	XSprePUSH; PUSHu((IV)RETVAL);
+	XSRETURN(1);
+}
+
 #endif //BOTS
 
 XS(XS__taskselector);
@@ -3109,7 +3133,7 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "permarace"), XS__permarace, file);
 		newXS(strcpy(buf, "permagender"), XS__permagender, file);
 		newXS(strcpy(buf, "scribespells"), XS__scribespells, file);
-       	newXS(strcpy(buf, "traindiscs"), XS__traindiscs, file);
+		newXS(strcpy(buf, "traindiscs"), XS__traindiscs, file);
 		newXS(strcpy(buf, "unscribespells"), XS__unscribespells, file);
 		newXS(strcpy(buf, "untraindiscs"), XS__untraindiscs, file);
 		newXS(strcpy(buf, "givecash"), XS__givecash, file);
@@ -3148,21 +3172,21 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "setnextinchpevent"), XS__setnexthpevent, file);
 		newXS(strcpy(buf, "sethp"), XS__sethp, file);
 		newXS(strcpy(buf, "respawn"), XS__respawn, file);
-        newXS(strcpy(buf, "getItemName"), XS_qc_getItemName, file);
-        newXS(strcpy(buf, "ChooseRandom"), XS__ChooseRandom, file);
-        newXS(strcpy(buf, "set_proximity"), XS__set_proximity, file);
-        newXS(strcpy(buf, "clear_proximity"), XS__clear_proximity, file);
-        newXS(strcpy(buf, "setanim"), XS__setanim, file);
-        newXS(strcpy(buf, "showgrid"), XS__showgrid, file);
-        newXS(strcpy(buf, "showpath"), XS__showpath, file);
-        newXS(strcpy(buf, "pathto"), XS__pathto, file);
-        newXS(strcpy(buf, "spawn_condition"), XS__spawn_condition, file);
-        newXS(strcpy(buf, "get_spawn_condition"), XS__get_spawn_condition, file);
-        newXS(strcpy(buf, "toggle_spawn_event"), XS__toggle_spawn_event, file);
-        newXS(strcpy(buf, "has_zone_flag"), XS__has_zone_flag, file);
-        newXS(strcpy(buf, "set_zone_flag"), XS__set_zone_flag, file);
-        newXS(strcpy(buf, "clear_zone_flag"), XS__clear_zone_flag, file);
-        newXS(strcpy(buf, "summonburriedplayercorpse"), XS__summonburriedplayercorpse, file);
+		newXS(strcpy(buf, "getItemName"), XS_qc_getItemName, file);
+		newXS(strcpy(buf, "ChooseRandom"), XS__ChooseRandom, file);
+		newXS(strcpy(buf, "set_proximity"), XS__set_proximity, file);
+		newXS(strcpy(buf, "clear_proximity"), XS__clear_proximity, file);
+		newXS(strcpy(buf, "setanim"), XS__setanim, file);
+		newXS(strcpy(buf, "showgrid"), XS__showgrid, file);
+		newXS(strcpy(buf, "showpath"), XS__showpath, file);
+		newXS(strcpy(buf, "pathto"), XS__pathto, file);
+		newXS(strcpy(buf, "spawn_condition"), XS__spawn_condition, file);
+		newXS(strcpy(buf, "get_spawn_condition"), XS__get_spawn_condition, file);
+		newXS(strcpy(buf, "toggle_spawn_event"), XS__toggle_spawn_event, file);
+		newXS(strcpy(buf, "has_zone_flag"), XS__has_zone_flag, file);
+		newXS(strcpy(buf, "set_zone_flag"), XS__set_zone_flag, file);
+		newXS(strcpy(buf, "clear_zone_flag"), XS__clear_zone_flag, file);
+		newXS(strcpy(buf, "summonburriedplayercorpse"), XS__summonburriedplayercorpse, file);
 		newXS(strcpy(buf, "getplayerburriedcorpsecount"), XS__getplayerburriedcorpsecount, file);
 		newXS(strcpy(buf, "buryplayercorpse"), XS__buryplayercorpse, file);
 		newXS(strcpy(buf, "forcedooropen"), XS__forcedooropen, file);
@@ -3186,6 +3210,7 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "botquest"), XS__botquest, file);
 		newXS(strcpy(buf, "spawnbotcount"), XS__spawnbotcount, file);
 		newXS(strcpy(buf, "createbotcount"), XS__createbotcount, file);
+		newXS(strcpy(buf, "createBot"), XS__createBot, file);
 #endif //BOTS
 
 		newXS(strcpy(buf, "taskselector"), XS__taskselector, file);
@@ -3219,7 +3244,7 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "creategroundobject"), XS__CreateGroundObject, file);
 		newXS(strcpy(buf, "creategroundobjectfrommodel"), XS__CreateGroundObjectFromModel, file);
 		newXS(strcpy(buf, "modifynpcstat"), XS__ModifyNPCStat, file);
-        newXS(strcpy(buf, "collectitems"), XS__collectitems, file);
+		newXS(strcpy(buf, "collectitems"), XS__collectitems, file);
 		newXS(strcpy(buf, "updatespawntimer"), XS__UpdateSpawnTimer, file);
 		newXS(strcpy(buf, "MerchantSetItem"), XS__MerchantSetItem, file);
 		newXS(strcpy(buf, "MerchantCountItem"), XS__MerchantCountItem, file);
