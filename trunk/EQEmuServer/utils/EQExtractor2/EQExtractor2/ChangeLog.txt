@@ -1,6 +1,9 @@
 ﻿EQExtractor2 Changelog. All changes since the 1.0 release.
 
 ==09/10/2010==
+Derision: Identified a few more 'Area' IDs for the new Item slot numbering system.
+
+==09/10/2010==
 Derision: Addded ability to call 'Explorer' methods during Packet Dump for use while figuring out packet formats.
 
 ==09/08/2010==
