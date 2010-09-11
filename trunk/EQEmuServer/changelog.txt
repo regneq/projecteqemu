@@ -8,6 +8,7 @@ wheeljack: Fix for losing items in world containers
 pfyon: quest::createBot()
 Derision: None potions that are potion belt enabled (mod rods etc) should now work from the potion belt when they are inside a bag.
 Derision: Recast timers should now be honoured for clicky items with a single charge (e.g. Modulating Rod).
+gaeorn: more fixes for newer gcc/glib
 
 ==09/08/2010==
 gaeorn: fixes for new stricter version of gcc/glib

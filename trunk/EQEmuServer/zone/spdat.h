@@ -538,9 +538,9 @@ typedef enum  {
 struct SPDat_Spell_Struct
 {
 /* 000 */	int			id;	// not used
-/* 001 */	char		name[46]; // Name of the spell
+/* 001 */	char		name[64]; // Name of the spell
 /* 002 */	char		player_1[32]; // "PLAYER_1"
-/* 003 */	char		teleport_zone[32];	// Teleport zone, pet name summoned, or item summoned
+/* 003 */	char		teleport_zone[64];	// Teleport zone, pet name summoned, or item summoned
 /* 004 */	char		you_cast[64]; // Message when you cast
 /* 005 */	char		other_casts[64]; // Message when other casts
 /* 006 */	char		cast_on_you[64]; // Message when spell is cast on you 
