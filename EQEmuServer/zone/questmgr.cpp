@@ -76,6 +76,10 @@ using namespace std;
 #include "../common/rulesys.h"
 #include "QGlobals.h"
 
+#ifdef BOTS
+#include "bot.h"
+#endif
+
 
 extern Zone* zone;
 extern WorldServer worldserver;
@@ -1706,6 +1710,62 @@ int QuestManager::spawnbotcount() {
 bool QuestManager::botquest()
 {
 	return RuleB(Bots, BotQuest);
+}
+
+bool QuestManager::createBot(const char *name, const char *lastname, uint8 level, uint16 race, uint8 botclass, uint8 gender)
+{
+	std::string TempErrorMessage;
+	int32 MaxBotCreate = RuleI(Bots, CreateBotCount);
+
+	if (initiator && initiator->IsClient())
+	{
+		if(Bot::SpawnedBotCount(initiator->CharacterID(), &TempErrorMessage) >= MaxBotCreate)
+		{
+			initiator->Message(15,"You have the maximum number of bots allowed.");
+			return false;
+		}
+
+		if(!TempErrorMessage.empty())
+		{
+			initiator->Message(13, "Database Error: %s", TempErrorMessage.c_str());
+			return false;
+		}
+
+		NPCType DefaultNPCTypeStruct = Bot::CreateDefaultNPCTypeStructForBot(name, lastname, level, race, botclass, gender);
+		Bot* NewBot = new Bot(DefaultNPCTypeStruct, initiator);
+
+		if(NewBot)
+		{
+			if(!NewBot->IsValidRaceClassCombo()) {
+				initiator->Message(0, "That Race/Class combination cannot be created.");
+				return false;
+			}
+
+			if(!NewBot->IsValidName()) {
+				initiator->Message(0, "%s has invalid characters. You can use only the A-Z, a-z and _ characters in a bot name.", NewBot->GetCleanName());
+				return false;
+			}
+
+			if(!NewBot->IsBotNameAvailable(&TempErrorMessage)) {
+				initiator->Message(0, "The name %s is already being used. Please choose a different name.", NewBot->GetCleanName());
+				return false;
+			}
+
+			if(!TempErrorMessage.empty()) {
+				initiator->Message(13, "Database Error: %s", TempErrorMessage.c_str());
+				return false;
+			}
+
+			// Now that all validation is complete, we can save our newly created bot
+			if(!NewBot->Save())
+			{
+				initiator->Message(0, "Unable to save %s as a bot.", NewBot->GetCleanName());
+			} else
+			{
+				initiator->Message(0, "%s saved as bot %u.", NewBot->GetCleanName(), NewBot->GetBotID());
+			}
+		}
+	}
 }
 
 #endif //BOTS

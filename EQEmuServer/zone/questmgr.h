@@ -231,6 +231,7 @@ public:
 	int createbotcount();
 	int spawnbotcount();
 	bool botquest();
+	bool createBot(const char *name, const char *lastname, uint8 level, uint16 race, uint8 botclass, uint8 gender);
 #endif
 
 protected:
