@@ -21,7 +21,7 @@ using System.Text;
 
 namespace MyUtils
 {
-    class ByteStream 
+    public class ByteStream 
     {
         public ByteStream(byte[] NewBuffer)
         {

@@ -62,10 +62,8 @@ namespace EQExtractor2.Patches
             OpManager.RegisterExplorer("OP_ItemPacket", ExploreItemPacket);
         }
          
-        public void ExploreCharInventoryPacket(StreamWriter OutputStream, byte[] PacketBuffer)
-        {            
-            ByteStream Buffer = new ByteStream(PacketBuffer);
-
+        public void ExploreCharInventoryPacket(StreamWriter OutputStream, ByteStream Buffer)
+        {
             UInt32 ItemCount = Buffer.ReadUInt32();
 
             OutputStream.WriteLine("There are {0} items in the inventory.\r\n", ItemCount );
@@ -78,10 +76,8 @@ namespace EQExtractor2.Patches
             OutputStream.WriteLine("");
         }
 
-        public void ExploreItemPacket(StreamWriter OutputStream, byte[] PacketBuffer)
+        public void ExploreItemPacket(StreamWriter OutputStream, ByteStream Buffer)
         {
-            ByteStream Buffer = new ByteStream(PacketBuffer);
-
             Buffer.SkipBytes(4);    // Skip type field.
 
             ExploreSubItem(OutputStream, ref Buffer);

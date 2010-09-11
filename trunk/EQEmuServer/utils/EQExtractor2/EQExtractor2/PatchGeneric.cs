@@ -215,7 +215,7 @@ namespace EQExtractor2.Patches
                 PacketDumpStream.WriteLine(Utils.HexDump(p.Buffer));
 
                 if ((oc != null) && (oc.Explorer != null))
-                    oc.Explorer(PacketDumpStream, p.Buffer);
+                    oc.Explorer(PacketDumpStream, new ByteStream(p.Buffer));
             }
 
             PacketDumpStream.Close();
