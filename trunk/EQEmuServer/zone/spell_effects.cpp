@@ -1123,6 +1123,9 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Invulnerability");
 #endif
+				if(spell_id==4789) // Touch of the Divine - Divine Save
+					buffs[buffslot].ticsremaining = spells[spell_id].buffduration; // Prevent focus/aa buff extension
+
 				SetInvul(true);
 				break;
 			}
@@ -2825,7 +2828,38 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 
 				break;
 			}
-
+			case SE_DivineSave:
+			{
+#ifdef SPELL_EFFECT_SPAM
+				snprintf(effect_desc, _EDLEN, "Divine Save: %+i", effect_value);
+#endif
+				// Handled with bonuses
+				break;
+			}
+			case SE_Accuracy:
+			{
+#ifdef SPELL_EFFECT_SPAM
+				snprintf(effect_desc, _EDLEN, "Accuracy: %+i", effect_value);
+#endif
+				// Handled with bonuses
+				break;
+			}
+			case SE_Flurry:
+			{
+#ifdef SPELL_EFFECT_SPAM
+				snprintf(effect_desc, _EDLEN, "Flurry: %+i", effect_value);
+#endif
+				// Handled with bonuses
+				break;
+			}
+			case SE_Purify:
+			{
+				// NOT IMPLEMENTED.
+				// A Divine Save casts spell 4789 Touch of the Divine, which contains SE_Purify.
+				// Touch of the Divine is implemented enough to be used.
+				// This just here to remove unknown spell ID message.
+				break;
+			}
 			case SE_ImprovedDamage:
 			case SE_ImprovedHeal:
 			case SE_IncreaseSpellHaste:
@@ -4060,7 +4094,31 @@ sint16 Client::GetFocusEffect(focusType type, int16 spell_id) {
 			}
 		}
 	}
-
+	
+	//Tribute Focus
+	for(int x = TRIBUTE_SLOT_START; x < (TRIBUTE_SLOT_START + MAX_PLAYER_TRIBUTES); ++x)
+	{
+		TempItem = NULL;
+		ItemInst* ins = GetInv().GetItem(x);
+		if (!ins)
+			continue;
+		TempItem = ins->GetItem();
+		if (TempItem && TempItem->Focus.Effect > 0 && TempItem->Focus.Effect != SPELL_UNKNOWN)
+		{
+			Total = CalcFocusEffect(type, TempItem->Focus.Effect, spell_id);
+			if (Total > 0 && realTotal >= 0 && Total > realTotal)
+			{
+				realTotal = Total;
+				UsedItem = TempItem;
+			}
+			else if (Total < 0 && Total < realTotal)
+			{
+				realTotal = Total;
+				UsedItem = TempItem;
+			}
+		}
+	}
+	
 	if (realTotal != 0 && UsedItem && spells[spell_id].buffduration == 0) {
 		Message_StringID(MT_Spells, BEGINS_TO_GLOW, UsedItem->Name);
 	}
@@ -4124,11 +4182,15 @@ bool Mob::TryDeathSave() {
 	bool Result = false;
 
 	int aaClientTOTD = IsClient() ? CastToClient()->GetAA(aaTouchoftheDivine) : -1;
+	int8 SuccessChance = IsClient() ? (1.2 * CastToClient()->GetAA(aaTouchoftheDivine)) : 0;
+	SuccessChance += spellbonuses.DivineSaveChance + itembonuses.DivineSaveChance;
+	int SaveRoll = MakeRandomInt(0, 100);
 
-	if (aaClientTOTD > 0) {
-		int aaChance = (1.2 * CastToClient()->GetAA(aaTouchoftheDivine));
-		
-		if (MakeRandomInt(0,100) < aaChance) {
+	if (SuccessChance > 0)
+	{
+		LogFile->write(EQEMuLog::Debug, "%s chance for a divine save was %i and the roll was %i", GetCleanName(), SuccessChance, SaveRoll);
+		if (SaveRoll <= SuccessChance)
+		{
 			Result = true;
 			/*
 			int touchHealSpellID = 4544;
@@ -4169,28 +4231,29 @@ bool Mob::TryDeathSave() {
 				case 5:
 					touchHealAmount = 1.0;
 					break;
+				default:
+					touchHealAmount = 0.05; // No AA, still get small heal from Divine Save
 			}
 
 			this->Message(0, "Divine power heals your wounds.");
 			SetHP(this->max_hp * touchHealAmount);
 
+			BuffFadeByEffect(SE_DivineSave);
 			// and "Touch of the Divine", an Invulnerability/HoT/Purify effect, only one for all 5 levels
 			SpellOnTarget(4789, this);
 
-			// skip checking for DI fire if this goes off...
-			if (Result == true) {
-				return Result;
-			}
+			return Result;
 		}
 	}
 
 	int buffSlot = GetBuffSlotFromType(SE_DeathSave);
 
-	if(buffSlot >= 0) {
-		int8 SuccessChance = buffs[buffSlot].deathSaveSuccessChance;
+	if(buffSlot >= 0)
+	{
+		SuccessChance = buffs[buffSlot].deathSaveSuccessChance;
 		int8 CasterUnfailingDivinityAARank = buffs[buffSlot].casterAARank;
 		int16 BuffSpellID = buffs[buffSlot].spellid;
-		int SaveRoll = MakeRandomInt(0, 100);
+		SaveRoll = MakeRandomInt(0, 100);
 
 		LogFile->write(EQEMuLog::Debug, "%s chance for a death save was %i and the roll was %i", GetCleanName(), SuccessChance, SaveRoll);
 
@@ -4211,7 +4274,8 @@ bool Mob::TryDeathSave() {
 			// Fade the buff
 			BuffFadeBySlot(buffSlot);
 
-			SetDeathSaveChance(false);
+			if (spellbonuses.DivineSaveChance + itembonuses.DivineSaveChance == 0) // Don't turn this off if we still have Divine Save
+				SetDeathSaveChance(false);
 		}
 		else if (CasterUnfailingDivinityAARank >= 1) {
 			// Roll the virtual dice to see if the target atleast gets a heal out of this
@@ -4223,6 +4287,7 @@ bool Mob::TryDeathSave() {
 			if(SuccessChance >= SaveRoll) {
 				// Yep, target gets a modest heal
 				SetHP(1500);
+				Result = true; // This is technically a save, was giving this heal but still killing you
 			}
 		}
 	}

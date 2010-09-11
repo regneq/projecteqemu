@@ -298,13 +298,31 @@ bool Mob::CheckHitChance(Mob* other, SkillType skillinuse, int Hand)
 
 	//add in our hit chance bonuses if we are using the right skill
 	//does the hit chance cap apply to spell bonuses from disciplines?
-	if(attacker->spellbonuses.HitChanceSkill == 255 || attacker->spellbonuses.HitChanceSkill == skillinuse) {
-		chancetohit += (chancetohit * (attacker->spellbonuses.HitChance / 15.0f) / 100);
-		mlog(COMBAT__TOHIT, "Applied spell melee hit chance %d/15, yeilding %.2f", attacker->spellbonuses.HitChance, chancetohit);
+	float hitBonus = 0;
+	if(attacker->spellbonuses.HitChanceSkill == 255 || attacker->spellbonuses.HitChanceSkill == skillinuse)
+	{
+		hitBonus = (attacker->spellbonuses.HitChance / 15.0f > attacker->spellbonuses.Accuracy) ? attacker->spellbonuses.HitChance / 15.0f : attacker->spellbonuses.Accuracy;
+		chancetohit += chancetohit * hitBonus / 100;
+		mlog(COMBAT__TOHIT, "Applied spell melee hit chance %.2f, yeilding %.2f", hitBonus, chancetohit);
 	}
-	if(attacker->itembonuses.HitChanceSkill == 255 || attacker->itembonuses.HitChanceSkill == skillinuse) {
-		chancetohit += (chancetohit * (attacker->itembonuses.HitChance / 15.0f) / 100);
-		mlog(COMBAT__TOHIT, "Applied item melee hit chance %d/15, yeilding %.2f", attacker->itembonuses.HitChance, chancetohit);
+	else if(attacker->spellbonuses.Accuracy) {
+		hitBonus = attacker->spellbonuses.Accuracy;
+		chancetohit += chancetohit * hitBonus / 100;
+		mlog(COMBAT__TOHIT, "Applied spell melee accuracy chance %.2f, yeilding %.2f", hitBonus, chancetohit);
+	}
+
+	hitBonus = 0;
+	if(attacker->itembonuses.HitChanceSkill == 255 || attacker->itembonuses.HitChanceSkill == skillinuse)
+	{
+		hitBonus = (attacker->itembonuses.HitChance / 15.0f > attacker->itembonuses.Accuracy) ? attacker->itembonuses.HitChance / 15.0f : attacker->itembonuses.Accuracy;
+		chancetohit += chancetohit * hitBonus / 100;
+		mlog(COMBAT__TOHIT, "Applied item melee hit chance %.2f, yeilding %.2f", hitBonus, chancetohit);
+	} 
+	else if(attacker->itembonuses.Accuracy)
+	{
+		hitBonus = attacker->itembonuses.Accuracy;
+		chancetohit += chancetohit * hitBonus / 100;
+		mlog(COMBAT__TOHIT, "Applied item melee accuracy chance %.2f, yeilding %.2f", hitBonus, chancetohit);
 	}
 
 	if (attacker->IsClient()) {

@@ -269,6 +269,9 @@ struct StatBonuses {
 	sint16 ProcChance;			// ProcChance/10 == % increase i
 	sint16 ExtraAttackChance;
 	sint16 DoTShielding;
+	sint16 DivineSaveChance;		// Second Chance
+	sint16 FlurryChance;
+	sint16 Accuracy;		// Works like HitChance but on all skills
 
 	sint8 HundredHands;		//extra haste, stacks with all other haste  i
 	bool MeleeLifetap;  //i
@@ -769,6 +772,7 @@ bool logpos;
 	inline void SetDeathSaveChance(bool hasDeathSaveChance) { m_hasDeathSaveChance = hasDeathSaveChance; }
 	EQApplicationPacket *MakeBuffsPacket(bool for_target = true);
 	void SendBuffsToClient(Client *c);
+	inline Buffs_Struct* GetBuffs() const { return buffs; }
 
 	//effect related
 	sint16 CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id);

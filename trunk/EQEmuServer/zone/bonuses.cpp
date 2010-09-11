@@ -1184,6 +1184,28 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 					newbon->XPRateMod = effect_value;
 				break;
 			}
+			case SE_DivineSave:
+			{
+				if(newbon->DivineSaveChance < effect_value)
+				{
+					newbon->DivineSaveChance = effect_value;
+					SetDeathSaveChance(true);
+				}
+				break;
+			}
+			case SE_Flurry:
+			{
+				if(newbon->FlurryChance < effect_value)
+					newbon->FlurryChance = effect_value;
+				break;
+			}
+			case SE_Accuracy:
+			{
+				if(newbon->Accuracy < effect_value)
+					newbon->Accuracy = effect_value;
+				break;
+			}
+
 				
 		}
 	}

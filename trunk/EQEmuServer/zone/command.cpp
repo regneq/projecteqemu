@@ -265,7 +265,7 @@ int command_init(void) {
 		command_add("appearance","[type] [value] - Send an appearance packet for you or your target",150,command_appearance) ||
 		command_add("charbackup","[list/restore] - Query or restore character backups",150,command_charbackup) ||
 		command_add("nukeitem","[itemid] - Remove itemid from your player target's inventory",150,command_nukeitem) ||
-		command_add("peekinv","[worn/cursor/inv/bank/trade/all] - Print out contents of your player target's inventory",100,command_peekinv) ||
+		command_add("peekinv","[worn/cursor/inv/bank/trade/trib/all] - Print out contents of your player target's inventory",100,command_peekinv) ||
 		command_add("findnpctype","[search criteria] - Search database NPC types",100,command_findnpctype) ||
 		command_add("findzone","[search criteria] - Search database zones",100,command_findzone) ||
 		command_add("fz",NULL,100,command_findzone) ||
@@ -445,7 +445,8 @@ int command_init(void) {
 		command_add("globalview","Lists all qglobals in cache if you were to do a quest with this target.",80,command_globalview) ||
 		command_add("distance","- Reports the distance between you and your target.", 80, command_distance) ||
 		command_add("cvs","- Summary of client versions currently online.", 200, command_cvs) ||
-		command_add("maxskills","Maxes skills for you.", 200, command_max_all_skills)
+		command_add("maxskills","Maxes skills for you.", 200, command_max_all_skills) ||
+		command_add("showbonusstats","[item|spell|all] Shows bonus stats for target from items or spells. Shows both by default.",50, command_showbonusstats)
 		)
 	{
 		command_deinit();
@@ -3121,6 +3122,28 @@ void command_peekinv(Client *c, const Seperator *sep)
 			}
 		}
 	}
+
+	if (bAll || (strcasecmp(sep->arg[1], "trib")==0)) {
+		// Active tribute effect items
+		bFound = true;
+		for (sint16 i=TRIBUTE_SLOT_START; i<(TRIBUTE_SLOT_START + MAX_PLAYER_TRIBUTES); i++) {
+			const ItemInst* inst = client->GetInv().GetItem(i);
+			item = (inst) ? inst->GetItem() : NULL;
+			if (c->GetClientVersion() >= EQClientSoF)
+			{
+				c->Message((item==0), "TributeSlot: %i, Item: %i (%c%06X00000000000000000000000000000000000000000000%s%c)", i,
+				((item==0)?0:item->ID),0x12, ((item==0)?0:item->ID),
+				((item==0)?"null":item->Name), 0x12);
+			}
+			else
+			{
+			c->Message((item==0), "TributeSlot: %i, Item: %i (%c%06X000000000000000000000000000000000000000%s%c)", i,
+				((item==0)?0:item->ID),0x12, ((item==0)?0:item->ID),
+				((item==0)?"null":item->Name), 0x12);
+			}
+		}
+	}
+	
 	if (bAll || (strcasecmp(sep->arg[1], "bank")==0)) {
 		// Bank and shared bank items
 		bFound = true;
@@ -3243,8 +3266,9 @@ void command_peekinv(Client *c, const Seperator *sep)
 		}
 	}
 		
-	if (!bFound) {
-		c->Message(0, "Usage: #peekinv [worn|cursor|inv|bank|trade|all]");
+	if (!bFound)
+	{
+		c->Message(0, "Usage: #peekinv [worn|cursor|inv|bank|trade|trib|all]");
 		c->Message(0, "  Displays a portion of the targetted user's inventory");
 		c->Message(0, "  Caution: 'all' is a lot of information!");
 	}
@@ -10969,5 +10993,32 @@ void command_max_all_skills(Client *c, const Seperator *sep)
 			int max_skill_level = database.GetSkillCap(c->GetClass(), (SkillType)i, c->GetLevel());
 			c->SetSkill((SkillType)i, max_skill_level);
 		}
+	}
+}
+
+void command_showbonusstats(Client *c, const Seperator *sep)
+{
+	if (c->GetTarget() == 0)
+		c->Message(0, "ERROR: No target!");
+	else if (!c->GetTarget()->IsMob() && !c->GetTarget()->IsClient())
+		c->Message(0, "ERROR: Target is not a Mob or Player!");
+	else {
+		bool bAll = false;
+		if(sep->arg[1][0] == '\0' || strcasecmp(sep->arg[1], "all") == 0)
+			bAll = true;
+		if (bAll || (strcasecmp(sep->arg[1], "item")==0)) {
+			c->Message(0, "Target Item Bonuses:");
+			c->Message(0, "  Accuracy: %i%%   Divine Save: %i%%",c->GetTarget()->GetItemBonuses().Accuracy, c->GetTarget()->GetItemBonuses().DivineSaveChance);
+			c->Message(0, "  Flurry: %i%%     HitChance: %i%% (Skill: %i)",c->GetTarget()->GetItemBonuses().FlurryChance, c->GetTarget()->GetItemBonuses().HitChance / 15, c->GetTarget()->GetItemBonuses().HitChanceSkill);
+		}
+		if (bAll || (strcasecmp(sep->arg[1], "spell")==0)) {
+			c->Message(0, "  Target Spell Bonuses:");
+			c->Message(0, "  Accuracy: %i%%   Divine Save: %i%%",c->GetTarget()->GetSpellBonuses().Accuracy, c->GetTarget()->GetSpellBonuses().DivineSaveChance);
+			c->Message(0, "  Flurry: %i%%     HitChance: %i%% (Skill: %i)",c->GetTarget()->GetSpellBonuses().FlurryChance, c->GetTarget()->GetSpellBonuses().HitChance / 15, c->GetTarget()->GetSpellBonuses().HitChanceSkill);
+			int deathsaveslot = c->GetTarget()->GetBuffSlotFromType(SE_DeathSave);
+			int dschance = deathsaveslot >= 0 ? c->GetTarget()->GetBuffs()[deathsaveslot].deathSaveSuccessChance : 0;
+			c->Message(0, "  Death Save: %i%%",dschance);
+		}
+		c->Message(0, "  Effective Casting Level: %i",c->GetTarget()->GetCasterLevel(0));
 	}
 }
