@@ -1126,14 +1126,22 @@ This is hanging on freebsd for me, not sure why...
 
 			counter++;
 			// String fields
-			strcpy(sp[tempid].name, row[1]);
-			strcpy(sp[tempid].player_1, row[2]);
-			strcpy(sp[tempid].teleport_zone, row[3]);
-			strcpy(sp[tempid].you_cast,  row[4]);
-			strcpy(sp[tempid].other_casts, row[5]);
-			strcpy(sp[tempid].cast_on_you, row[6]);
-			strcpy(sp[tempid].cast_on_other, row[7]);
-			strcpy(sp[tempid].spell_fades, row[8]);
+			strncpy(sp[tempid].name, row[1], sizeof(sp[tempid].name));
+                        sp[tempid].name[sizeof(sp[tempid].name)-1] = '\0';
+			strncpy(sp[tempid].player_1, row[2], sizeof(sp[tempid].player_1));
+                        sp[tempid].player_1[sizeof(sp[tempid].player_1)-1] = '\0';
+			strncpy(sp[tempid].teleport_zone, row[3], sizeof(sp[tempid].teleport_zone));
+                        sp[tempid].teleport_zone[sizeof(sp[tempid].teleport_zone)-1] = '\0';
+			strncpy(sp[tempid].you_cast,  row[4], sizeof(sp[tempid].you_cast));
+                        sp[tempid].you_cast[sizeof(sp[tempid].you_cast)-1] = '\0';
+			strncpy(sp[tempid].other_casts, row[5], sizeof(sp[tempid].other_casts));
+                        sp[tempid].other_casts[sizeof(sp[tempid].other_casts)-1] = '\0';
+			strncpy(sp[tempid].cast_on_you, row[6], sizeof(sp[tempid].cast_on_you));
+                        sp[tempid].cast_on_you[sizeof(sp[tempid].cast_on_you)-1] = '\0';
+			strncpy(sp[tempid].cast_on_other, row[7], sizeof(sp[tempid].cast_on_other));
+                        sp[tempid].cast_on_other[sizeof(sp[tempid].cast_on_other)-1] = '\0';
+			strncpy(sp[tempid].spell_fades, row[8], sizeof(sp[tempid].spell_fades));
+                        sp[tempid].spell_fades[sizeof(sp[tempid].spell_fades)-1] = '\0';
 
 			// Numeric fields (everything else)
 			sp[tempid].range=atof(row[9]);
