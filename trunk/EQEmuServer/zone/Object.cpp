@@ -355,8 +355,24 @@ void Object::PutItem(uint8 index, const ItemInst* inst)
 
 void Object::Close() {
 	m_inuse = false;
-	if(user != NULL) {
+	if(user != NULL)
+	{
 		last_user = user;
+		// put any remaining items from the world container back into the player's inventory to avoid item loss
+		//  if they close the container without removing all items
+		ItemInst* container = this->m_inst;
+		if(container != NULL)
+		{
+			for (uint8 i = 0; i < MAX_ITEMS_PER_BAG; i++)
+			{
+				ItemInst* inst = container->PopItem(i);
+				if(inst != NULL)
+				{
+					user->MoveItemToInventory(inst, true);
+				}
+			}
+		}
+
 		user->SetTradeskillObject(NULL);
 	}
 	user = NULL;
