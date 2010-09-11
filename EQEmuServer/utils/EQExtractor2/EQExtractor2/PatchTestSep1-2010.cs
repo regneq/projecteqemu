@@ -59,6 +59,7 @@ namespace EQExtractor2.Patches
             base.RegisterExplorers();
 
             OpManager.RegisterExplorer("OP_CharInventory", ExploreCharInventoryPacket);
+            OpManager.RegisterExplorer("OP_ItemPacket", ExploreItemPacket);
         }
          
         public void ExploreCharInventoryPacket(StreamWriter OutputStream, byte[] PacketBuffer)
@@ -77,6 +78,17 @@ namespace EQExtractor2.Patches
             OutputStream.WriteLine("");
         }
 
+        public void ExploreItemPacket(StreamWriter OutputStream, byte[] PacketBuffer)
+        {
+            ByteStream Buffer = new ByteStream(PacketBuffer);
+
+            Buffer.SkipBytes(4);    // Skip type field.
+
+            ExploreSubItem(OutputStream, ref Buffer);
+
+            OutputStream.WriteLine("");
+        }
+
         void  ExploreSubItem(StreamWriter OutputStream, ref ByteStream Buffer)
         {            
             Buffer.SkipBytes(8);
@@ -86,6 +98,9 @@ namespace EQExtractor2.Patches
             Int16 SubSlot = Buffer.ReadInt16();
             Buffer.SkipBytes(54);
             string Name = Buffer.ReadString(true);
+
+            if (SubSlot >= 0)
+                OutputStream.Write("  ");
 
             string AreaName = "Unknown";
 
@@ -97,7 +112,18 @@ namespace EQExtractor2.Patches
                 case 1:
                     AreaName = "Bank";
                     break;
-                // I think 8 is for Merchant items, and there is likely one for Tribute.
+                case 2:
+                    AreaName = "Shared Bank";
+                    break;
+                case 6:
+                    AreaName = "Personal Tribute";
+                    break;
+                case 7:
+                    AreaName = "Guild Tribute";
+                    break;
+                case 8:
+                    AreaName = "Merchant";
+                    break;                
             }
 
             OutputStream.WriteLine("Area: {0} {1} Main Slot {2,2} Sub Slot {3,3} Name {4}", Area, AreaName.PadRight(20), MainSlot, SubSlot, Name);
