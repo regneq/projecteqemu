@@ -5534,7 +5534,7 @@ void Client::Handle_OP_RecipesFavorite(const EQApplicationPacket *app)
 		snprintf(containers,29, "in (%u,%u)", tsf->object_type, tsf->some_id);
 	}
 
-char *query = 0;
+	char *query = 0;
 	char buf[5500];   //gotta be big enough for 500 IDs
 
 	bool first = true;
@@ -5544,7 +5544,7 @@ char *query = 0;
 	//Assumes item IDs are <10 characters long
 	for(r = 0; r < 500; r++) { 
 		if(tsf->favorite_recipes[r] == 0)
-			break;	//assume the first 0 is the end...
+			continue;
 
 		if(first) {
 			pos += snprintf(pos, 10, "%u", tsf->favorite_recipes[r]);
