@@ -411,9 +411,12 @@ bool Client::Process() {
 						Attack(auto_attack_target, 13, false);
 					}
 				}
-				if (auto_attack_target && GetAA(aaFlurry) > 0) {
-					int32 flurrychance = 0;
-
+				if (auto_attack_target && (GetAA(aaFlurry) > 0 || spellbonuses.FlurryChance > 0 || itembonuses.FlurryChance > 0))
+				{
+					// Assuming Flurry Chance (X) effects = X%
+					// Can any class flurry with tribute?
+					// Is flurry supposed to have a chance even without a successful triple attack?
+					int32 flurrychance = (itembonuses.FlurryChance + spellbonuses.FlurryChance) * 10; 
 					switch (GetAA(aaFlurry)) 
 					{
 					case 1:
