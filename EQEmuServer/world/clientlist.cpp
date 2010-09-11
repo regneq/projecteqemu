@@ -232,6 +232,18 @@ ClientListEntry* ClientList::FindCLEByAccountID(int32 iAccID) {
 	return 0;
 }
 
+ClientListEntry* ClientList::FindCLEByCharacterID(int32 iCharID) {
+	LinkedListIterator<ClientListEntry*> iterator(clientlist);
+ 
+	iterator.Reset();
+	while(iterator.MoreElements()) {
+		if (iterator.GetData()->CharID() == iCharID) {
+			return iterator.GetData();
+		}
+		iterator.Advance();
+	}
+	return 0;
+}
 
 void ClientList::SendCLEList(const sint16& admin, const char* to, WorldTCPConnection* connection, const char* iName) {
 	LinkedListIterator<ClientListEntry*> iterator(clientlist);
@@ -389,12 +401,12 @@ ClientListEntry* ClientList::CheckAuth(const char* iName, const char* iPassword)
 	return 0;
 }
 
-void ClientList::SendOnlineGuildMembers(uint32 FromID, uint32 GuildID, uint16 ZoneID, uint16 InstanceID)
+void ClientList::SendOnlineGuildMembers(uint32 FromID, uint32 GuildID)
 {
 	int PacketLength = 8;
 
-	int Count = 0;
-
+	uint32 Count = 0;
+	ClientListEntry* from = this->FindCLEByCharacterID(FromID);
 	LinkedListIterator<ClientListEntry*> Iterator(clientlist);
 
 	Iterator.Reset();
@@ -434,8 +446,7 @@ void ClientList::SendOnlineGuildMembers(uint32 FromID, uint32 GuildID, uint16 Zo
 
 		Iterator.Advance();
 	}
-	zoneserver_list.SendPacket(ZoneID, InstanceID, pack);
-
+	zoneserver_list.SendPacket(from->zone(), from->instance(), pack);
 	safe_delete(pack);
 }
 

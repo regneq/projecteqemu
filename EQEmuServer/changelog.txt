@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==09/11/2010==
+Vanicae: Fix for guild management window updates
+
 ==09/08/2010==
 gaeorn: fixes for new stricter version of gcc/glib
 

@@ -8872,7 +8872,10 @@ void Client::CompleteConnect()
 		entity_list.SendFindableNPCList(this);
 
 	if(IsInAGuild())
+	{
 		guild_mgr.SendGuildMemberUpdateToWorld(GetName(), GuildID(), zone->GetZoneID(), time(NULL));
+		guild_mgr.RequestOnlineGuildMembers(this->CharacterID(), this->GuildID());
+	}
 
 	/** Request adventure info **/
 	ServerPacket *pack = new ServerPacket(ServerOP_AdventureDataRequest, 64);

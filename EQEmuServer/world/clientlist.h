@@ -37,7 +37,7 @@ public:
 	
 	void	SendWhoAll(int32 fromid,const char* to, sint16 admin, Who_All_Struct* whom, WorldTCPConnection* connection);
 	void	SendFriendsWho(ServerFriendsWho_Struct *FriendsWho, WorldTCPConnection* connection);
-	void	SendOnlineGuildMembers(uint32 FromID, uint32 GuildID, uint16 ZoneID, uint16 InstanceID);
+	void	SendOnlineGuildMembers(uint32 FromID, uint32 GuildID);
 	void	SendClientVersionSummary(const char *Name);
 	void	SendLFGMatches(ServerLFGMatchesRequest_Struct *LFGMatchesRequest);
 	void    ConsoleSendWhoAll(const char* to, sint16 admin, Who_All_Struct* whom, WorldTCPConnection* connection);
@@ -53,7 +53,7 @@ public:
 	ClientListEntry* CheckAuth(int32 id, const char* iKey, int32 ip);
 	ClientListEntry* FindCharacter(const char* name);
 	ClientListEntry* FindCLEByAccountID(int32 iAccID);
-	ClientListEntry* FindCLEByCharacterID(int32 iAccID);
+	ClientListEntry* FindCLEByCharacterID(int32 iCharID);
 	ClientListEntry* GetCLE(int32 iID);
 	void	GetCLEIP(int32 iIP);
 	void	EnforceSessionLimit(int32 iLSAccountID);

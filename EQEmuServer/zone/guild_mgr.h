@@ -92,6 +92,7 @@ public:
 	void RecordInvite(int32 char_id, int32 guild_id, int8 rank);
 	bool VerifyAndClearInvite(int32 char_id, int32 guild_id, int8 rank);
 	void SendGuildMemberUpdateToWorld(const char *MemberName, uint32 GuildID, uint16 ZoneID, uint32 LastSeen);
+	void RequestOnlineGuildMembers(uint32 FromID, uint32 GuildID);
 
 protected:
 	virtual void SendGuildRefresh(int32 guild_id, bool name, bool motd, bool rank, bool relation);
