@@ -970,6 +970,7 @@ public:
 	inline bool GetPendingGuildInvitation() { return PendingGuildInvitation; }
 	void LocateCorpse();
 	void SendTargetCommand(uint32 EntityID);
+	bool	MoveItemToInventory(ItemInst *BInst, bool UpdateClient = false);
 
 protected:
 	friend class Mob;
@@ -983,8 +984,6 @@ protected:
 	bool client_data_loaded;
 
 	sint16	GetFocusEffect(focusType type, int16 spell_id);
-
-	bool	MoveItemToInventory(ItemInst *BInst, bool UpdateClient = false);
 
 	Mob*	bind_sight_target;
 
