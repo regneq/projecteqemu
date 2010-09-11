@@ -455,6 +455,44 @@ void ZoneGuildManager::ProcessWorldPacket(ServerPacket *pack) {
 		}
 		break;
 	}
+	case ServerOP_OnlineGuildMembersResponse:
+		if (ZoneLoaded)
+		{
+			char *Buffer = (char *)pack->pBuffer;
+
+			uint32 FromID = VARSTRUCT_DECODE_TYPE(uint32, Buffer);
+			uint32 Count  = VARSTRUCT_DECODE_TYPE(uint32, Buffer);
+			Client *c = entity_list.GetClientByCharID(FromID);
+			
+			if (!c || !c->IsInAGuild())
+			{
+				_log(GUILDS__ERROR,"Invalid Client or not in guild. ID=%i", FromID);
+				break;
+			}
+			_log(GUILDS__IN_PACKETS,"Processing ServerOP_OnlineGuildMembersResponse");
+			EQApplicationPacket *outapp = new EQApplicationPacket(OP_GuildMemberUpdate, sizeof(GuildMemberUpdate_Struct));
+			GuildMemberUpdate_Struct *gmus = (GuildMemberUpdate_Struct*)outapp->pBuffer;
+			char Name[64];
+			gmus->LastSeen = time(NULL);
+			gmus->InstanceID = 0;
+			gmus->GuildID = c->GuildID();
+			for (int i=0;i<Count;i++)
+			{
+				// Just make the packet once and swap out name/zone and send
+				VARSTRUCT_DECODE_STRING(Name, Buffer);
+				strn0cpy(gmus->MemberName, Name, sizeof(gmus->MemberName));
+				gmus->ZoneID = VARSTRUCT_DECODE_TYPE(uint32, Buffer);
+				_log(GUILDS__OUT_PACKETS,"Sending OP_GuildMemberUpdate to %i. Name=%s ZoneID=%i",FromID,Name,gmus->ZoneID);
+				c->QueuePacket(outapp);
+			}
+			safe_delete(outapp);
+
+		}
+		else
+		{
+			_log(GUILDS__ERROR,"Zone not yet loaded, aborting ServerOP_RequestOnlineGuildMembers");
+		}
+		break;
 	}
 }
 
@@ -467,6 +505,18 @@ void ZoneGuildManager::SendGuildMemberUpdateToWorld(const char *MemberName, uint
 	strn0cpy(sgmus->MemberName, MemberName, sizeof(sgmus->MemberName));
 	sgmus->ZoneID = ZoneID;
 	sgmus->LastSeen = LastSeen;
+	worldserver.SendPacket(pack);
+
+	safe_delete(pack);
+}
+
+void ZoneGuildManager::RequestOnlineGuildMembers(uint32 FromID, uint32 GuildID)
+{
+	ServerPacket* pack = new ServerPacket(ServerOP_RequestOnlineGuildMembers, sizeof(ServerRequestOnlineGuildMembers_Struct));
+	ServerRequestOnlineGuildMembers_Struct *srogm = (ServerRequestOnlineGuildMembers_Struct*)pack->pBuffer;
+ 
+	srogm->FromID = FromID;
+	srogm->GuildID = GuildID;
 	worldserver.SendPacket(pack);
 
 	safe_delete(pack);
