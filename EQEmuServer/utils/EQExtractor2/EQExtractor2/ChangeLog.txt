@@ -2,6 +2,7 @@
 
 ==09/10/2010==
 Derision: Identified a few more 'Area' IDs for the new Item slot numbering system.
+Derision: Explorer methods are now called with the packet payload as a ByteStream rather than byte[]
 
 ==09/10/2010==
 Derision: Addded ability to call 'Explorer' methods during Packet Dump for use while figuring out packet formats.

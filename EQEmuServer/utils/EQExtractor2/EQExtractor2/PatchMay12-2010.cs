@@ -853,10 +853,8 @@ namespace EQExtractor2.Patches
             OpManager.RegisterExplorer("OP_NewZone", ExploreNewZonePacket);
         }
 
-        public void ExploreNewZonePacket(StreamWriter OutputStream, byte[] PacketBuffer)
+        public void ExploreNewZonePacket(StreamWriter OutputStream, ByteStream Buffer)
         {
-            ByteStream Buffer = new ByteStream(PacketBuffer);
-
             Buffer.SetPosition(704);
 
             OutputStream.WriteLine("Zone name is {0}\r\n", Buffer.ReadString(false));
