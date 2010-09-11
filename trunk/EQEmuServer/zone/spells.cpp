@@ -1041,6 +1041,9 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16
 	// this is common to both bard and non bard
 
 	// if this was cast from an inventory slot, check out the item that's there
+
+	sint16 DeleteChargeFromSlot = -1;
+
 	if(IsClient() && ((slot == USE_ITEM_SPELL_SLOT) || (slot == POTION_BELT_SPELL_SLOT))
 		&& inventory_slot != 0xFFFFFFFF)	// 10 is an item
 	{
@@ -1051,7 +1054,7 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16
 			sint16 charges = inst->GetItem()->MaxCharges;
 			if(charges > -1) {	// charged item, expend a charge
 				mlog(SPELLS__CASTING, "Spell %d: Consuming a charge from item %s (%d) which had %d/%d charges.", spell_id, inst->GetItem()->Name, inst->GetItem()->ID, inst->GetCharges(), inst->GetItem()->MaxCharges);
-				CastToClient()->DeleteItemInInventory(inventory_slot, 1, true);
+				DeleteChargeFromSlot = inventory_slot;
 			} else {
 				mlog(SPELLS__CASTING, "Spell %d: Cast from unlimited charge item %s (%d) (%d charges)", spell_id, inst->GetItem()->Name, inst->GetItem()->ID, inst->GetItem()->MaxCharges);
 			}
@@ -1078,6 +1081,9 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16
 		return;
 	}
 
+	if(DeleteChargeFromSlot >= 0)
+		CastToClient()->DeleteItemInInventory(DeleteChargeFromSlot, 1, true);
+	
 	//
 	// solar: at this point the spell has successfully been cast
 	//
