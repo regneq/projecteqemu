@@ -407,6 +407,13 @@ void ClientList::SendOnlineGuildMembers(uint32 FromID, uint32 GuildID)
 
 	uint32 Count = 0;
 	ClientListEntry* from = this->FindCLEByCharacterID(FromID);
+
+	if(!from)
+	{
+		_log(WORLD__CLIENT_ERR,"Invalid client. FromID=%i GuildID=%i", FromID, GuildID);
+		return;
+	}
+
 	LinkedListIterator<ClientListEntry*> Iterator(clientlist);
 
 	Iterator.Reset();
