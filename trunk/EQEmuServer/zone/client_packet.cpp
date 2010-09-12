@@ -366,6 +366,7 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_HideCorpse] = &Client::Handle_OP_HideCorpse;
 	ConnectedOpcodes[OP_TradeBusy] = &Client::Handle_OP_TradeBusy;
 	ConnectedOpcodes[OP_GuildUpdateURLAndChannel] = &Client::Handle_OP_GuildUpdateURLAndChannel;
+	ConnectedOpcodes[OP_GuildStatus] = &Client::Handle_OP_GuildStatus;
 }
 
 int Client::HandlePacket(const EQApplicationPacket *app)
@@ -11264,4 +11265,61 @@ void Client::Handle_OP_GuildUpdateURLAndChannel(const EQApplicationPacket *app)
 	else
 		guild_mgr.SetGuildChannel(GuildID(), guuacs->Text);
 
+}
+
+void Client::Handle_OP_GuildStatus(const EQApplicationPacket *app)
+{
+	if(app->size != sizeof(GuildStatus_Struct))
+	{
+		LogFile->write(EQEMuLog::Debug, "Size mismatch in OP_GuildStatus expected %i got %i",
+		               sizeof(GuildStatus_Struct), app->size);
+
+		DumpPacket(app);
+
+		return;
+	}
+	GuildStatus_Struct *gss = (GuildStatus_Struct*)app->pBuffer;
+
+	Client *c = entity_list.GetClientByName(gss->Name);
+
+	if(!c)
+	{
+		Message_StringID(clientMessageWhite, TARGET_PLAYER_FOR_GUILD_STATUS);
+		return;
+	}
+
+	int32 TargetGuildID = c->GuildID();
+
+	if(TargetGuildID == GUILD_NONE)
+	{
+		Message_StringID(clientMessageWhite, NOT_IN_A_GUILD, c->GetName());
+		return;
+	}
+
+	const char *GuildName = guild_mgr.GetGuildName(TargetGuildID);
+
+	if(!GuildName)
+		return;
+
+	bool IsLeader = guild_mgr.CheckPermission(TargetGuildID, c->GuildRank(), GUILD_PROMOTE);
+	bool IsOfficer = guild_mgr.CheckPermission(TargetGuildID, c->GuildRank(), GUILD_INVITE);
+
+	if((TargetGuildID == GuildID()) && (c != this))
+	{
+		if(IsLeader)
+			Message_StringID(clientMessageWhite, LEADER_OF_YOUR_GUILD, c->GetName());
+		else if(IsOfficer)
+			Message_StringID(clientMessageWhite, OFFICER_OF_YOUR_GUILD, c->GetName());
+		else
+			Message_StringID(clientMessageWhite, MEMBER_OF_YOUR_GUILD, c->GetName());
+
+		return;
+	}
+
+	if(IsLeader)
+		Message_StringID(clientMessageWhite, LEADER_OF_X_GUILD, c->GetName(), GuildName);
+	else if(IsOfficer)
+		Message_StringID(clientMessageWhite, OFFICER_OF_X_GUILD, c->GetName(), GuildName);
+	else
+		Message_StringID(clientMessageWhite, MEMBER_OF_X_GUILD, c->GetName(), GuildName);
 }

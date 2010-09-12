@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==09/12/2010==
+Derision: /guildstatus now works for SoD and UF.
+
 ==09/11/2010==
 Vanicae: Fix for guild management window updates
 wheeljack: Fix for missing tradeskill favorites
