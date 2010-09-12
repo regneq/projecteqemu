@@ -1075,7 +1075,8 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 				
 			case SE_MeleeLifetap:
 			{
-				newbon->MeleeLifetap = true;
+				if(newbon->MeleeLifetap < spells[spell_id].base[i])
+					newbon->MeleeLifetap = spells[spell_id].base[i];
 				break;
 			}
 				

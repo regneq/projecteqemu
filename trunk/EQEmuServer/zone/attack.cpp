@@ -1328,10 +1328,18 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough)
 	//////    Send Attack Damage
 	///////////////////////////////////////////////////////////
 	other->Damage(this, damage, SPELL_UNKNOWN, skillinuse);
-	if(damage > 0 && (spellbonuses.MeleeLifetap || itembonuses.MeleeLifetap)) {
+
+	if(damage > 0 && (spellbonuses.MeleeLifetap || itembonuses.MeleeLifetap))
+	{
+		int lifetap_amt = spellbonuses.MeleeLifetap + itembonuses.MeleeLifetap;
+		if(lifetap_amt > 100)
+			lifetap_amt = 100;
+
+		lifetap_amt = damage * lifetap_amt / 100;
+
 		mlog(COMBAT__DAMAGE, "Melee lifetap healing for %d damage.", damage);
 		//heal self for damage done..
-		HealDamage(damage);
+		HealDamage(lifetap_amt);
 	}
 	
 	//break invis when you attack
