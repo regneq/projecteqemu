@@ -248,6 +248,7 @@
 #define YOU_HEAL					9068	//You have healed %1 for %2 points of damage.
 #define OTHER_HIT_DOT				9072	//%1 has taken %2 damage from your %3.
 #define HIT_NON_MELEE				9073	//%1 hit %2 for %3 points of non-melee damage.
+#define SHAKE_OFF_STUN				9077
 #define STRIKETHROUGH_STRING		9078	//You strike through your opponent's defenses!
 #define NEW_SPELLS_AVAIL			9149	//You have new spells available to you.  Check the merchants near your guild master.
 #define FACE_ACCEPTED				12028	//Facial features accepted.
