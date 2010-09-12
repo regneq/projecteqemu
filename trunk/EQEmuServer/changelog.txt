@@ -4,6 +4,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 Derision: /guildstatus now works for SoD and UF.
 Caryatis: Spells with a Melee Lifetap effect now cap the heal at the percentage specified in the spell data.
 Caryatis: Work on stun resists.
+Vanicae: Fix for potential world crash in online guild-member processing.
 
 ==09/11/2010==
 Vanicae: Fix for guild management window updates
