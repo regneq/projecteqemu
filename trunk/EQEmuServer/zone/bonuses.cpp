@@ -659,6 +659,9 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 			case SE_TotalHP:
 				newbon->HP += base1;
 				break;
+			case SE_StunResist:
+				newbon->StunResist += base1;
+				break;
 		}
 	}
 
