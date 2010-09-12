@@ -274,7 +274,7 @@ struct StatBonuses {
 	sint16 Accuracy;		// Works like HitChance but on all skills
 
 	sint8 HundredHands;		//extra haste, stacks with all other haste  i
-	bool MeleeLifetap;  //i
+	sint8 MeleeLifetap;
 	int XPRateMod;
 
 	sint8	Packrat;	//weight reduction for items, 1 point = 10%
