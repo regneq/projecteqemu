@@ -183,6 +183,9 @@
 #define PLAYER_REGAIN				1394	//You have control of yourself again.
 #define IN_USE						1406	//Someone else is using that.  Try again later.
 #define DUEL_FLED					1408	//%1 has defeated %2 in a duel to the death! %3 has fled like a cowardly dog!
+#define MEMBER_OF_YOUR_GUILD			1429
+#define OFFICER_OF_YOUR_GUILD			1430
+#define LEADER_OF_YOUR_GUILD			1431
 #define RECEIVED_PLATINUM			1452	//You receive %1 Platinum from %2.
 #define RECEIVED_GOLD				1453	//You receive %1 Gold from %2.
 #define RECEIVED_SILVER				1454	//You receive %1 Silver from %2.
@@ -258,6 +261,11 @@
 #define BACKSTAB_STRING				12199	//backstab
 #define BASH_STRING					12201	//bash
 #define GUILD_NOT_MEMBER			12242	//You are not a member of any guild.
+#define MEMBER_OF_X_GUILD			12256
+#define OFFICER_OF_X_GUILD			12257
+#define LEADER_OF_X_GUILD			12258
+#define NOT_IN_A_GUILD				12259
+#define TARGET_PLAYER_FOR_GUILD_STATUS		12260
 #define GROUP_INVITEE_NOT_FOUND			12268	//You must target a player or use /invite <name> to invite someone to your group.
 #define GROUP_INVITEE_SELF			12270	//12270 You cannot invite yourself.
 #define NOT_IN_CONTROL				12368	//You do not have control of yourself right now.

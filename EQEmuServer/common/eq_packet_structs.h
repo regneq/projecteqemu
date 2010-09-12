@@ -3091,6 +3091,12 @@ struct GuildUpdateURLAndChannel_Struct
 /*4176*/
 };
 
+struct GuildStatus_Struct
+{
+/*000*/	char	Name[64];
+/*064*/	uint8	Unknown064[72];
+};
+
 struct GuildDemoteStruct{
 	char	name[64];
 	char	target[64];
