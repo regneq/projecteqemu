@@ -3275,26 +3275,16 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 		}
     	
     	//check stun chances if bashing
-		if (damage > 0 && ((skill_used == BASH || skill_used == KICK && (attacker && attacker->GetLevel() >= 55))))
-		{
+		if (damage > 0 && ((skill_used == BASH || skill_used == KICK && (attacker && attacker->GetLevel() >= 55)) && GetLevel() < 56)) {
 			int stun_resist = itembonuses.StunResist+spellbonuses.StunResist;
-
-			if(IsClient())
-				stun_resist += aabonuses.StunResist;
-
 			if(this->GetBaseRace() == OGRE && this->IsClient() && !attacker->BehindMob(this, attacker->GetX(), attacker->GetY())) {
 				mlog(COMBAT__HITS, "Stun Resisted. Ogres are immune to frontal melee stuns.");
 			} else {
 				if(stun_resist <= 0 || MakeRandomInt(0,99) >= stun_resist) {
-					mlog(COMBAT__HITS, "Stunned. We had %d percent resist chance.", stun_resist);
+					mlog(COMBAT__HITS, "Stunned. We had %d percent resist chance.");
 					Stun(0);
-				}
-				else
-				{
-					if(IsClient())
-						Message_StringID(MT_Stun, SHAKE_OFF_STUN);
-
-					mlog(COMBAT__HITS, "Stun Resisted. We had %d percent resist chance.", stun_resist);
+				} else {
+					mlog(COMBAT__HITS, "Stun Resisted. We had %dpercent resist chance.");
 				}
 			}
 		}

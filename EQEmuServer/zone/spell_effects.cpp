@@ -652,20 +652,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				}
 				else
 				{
-					int stun_resist = itembonuses.StunResist+spellbonuses.StunResist;
-					if(IsClient())
-						stun_resist += aabonuses.StunResist;
-					if(stun_resist <= 0 || MakeRandomInt(0,99) >= stun_resist)
-					{
-						mlog(COMBAT__HITS, "Stunned. We had %d percent resist chance.", stun_resist);
-						Stun(effect_value);
-					} 
-					else {
-						if(IsClient())
-							Message_StringID(MT_Stun, SHAKE_OFF_STUN);
-
-						mlog(COMBAT__HITS, "Stun Resisted. We had %d percent resist chance.", stun_resist);
-					}
+					Stun(effect_value);
 				}
 				break;
 			}
