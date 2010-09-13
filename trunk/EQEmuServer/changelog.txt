@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==09/13/2010==
 JJ: Fix to prevent NPCs using death animation from facing target during EVENT_SAY and EVENT_ITEM
+Derision: Fix for missing tradeskill objects etc in SoF and later clients.
 
 ==09/12/2010==
 Derision: /guildstatus now works for SoD and UF.

@@ -2347,9 +2347,7 @@ struct Object_Struct {
 /*44*/	float	z;					// z coord
 /*48*/	float	x;					// x coord
 /*52*/	float	y;					// y coord
-/*56*/	char	object_name[16];	// Name of object, usually something like IT63_ACTORDEF was [20]
-/*72*/	float	unknown072;			// seems like coords, not always valid, all 0 on most world objects
-/*76*/	float	unknown076;			// seems like coords, not always valid, all 0 on most world objects
+/*56*/	char	object_name[24];	// Name of object, usually something like IT63_ACTORDEF was [20]
 /*80*/	float	unknown080;			// seems like coords, not always valid, all 0 on most world objects
 /*84*/	float	unknown084;			// seems like coords, not always valid, all 0 on most world objects
 /*88*/	uint32	unknown088;			// unique ID?  Maybe for a table that includes the contents?
