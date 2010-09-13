@@ -545,14 +545,16 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 	//do any event-specific stuff...
 	switch (event) {
 		case EVENT_SAY: {
-			npcmob->FaceTarget(mob);
+			if (npcmob->GetAppearance() != eaDead)
+			  npcmob->FaceTarget(mob);
 			ExportVar(packagename.c_str(), "data", objid);
 			ExportVar(packagename.c_str(), "text", data);
 			ExportVar(packagename.c_str(), "langid", extradata);
 			break;
 		}
 		case EVENT_ITEM: {
-			npcmob->FaceTarget(mob);
+			if (npcmob->GetAppearance() != eaDead)
+			  npcmob->FaceTarget(mob);
 			//this is such a hack... why aren't these just set directly..
 			ExportVar(packagename.c_str(), "item1", GetVar("item1", objid).c_str());
 			ExportVar(packagename.c_str(), "item2", GetVar("item2", objid).c_str());

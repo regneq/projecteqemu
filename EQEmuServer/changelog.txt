@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==09/13/2010==
+JJ: Fix to prevent NPCs using death animation from facing target during EVENT_SAY and EVENT_ITEM
+
 ==09/12/2010==
 Derision: /guildstatus now works for SoD and UF.
 Caryatis: Spells with a Melee Lifetap effect now cap the heal at the percentage specified in the spell data.
