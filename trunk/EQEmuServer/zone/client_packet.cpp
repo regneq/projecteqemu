@@ -3121,7 +3121,7 @@ void Client::Handle_OP_MoveItem(const EQApplicationPacket *app)
 	MoveItem_Struct* mi = (MoveItem_Struct*)app->pBuffer;
 	if(spellend_timer.Enabled() && casting_spell_id && !IsBardSong(casting_spell_id))
 	{
-		if(mi->from_slot != mi->to_slot && IsValidSlot(mi->from_slot) && IsValidSlot(mi->to_slot))
+		if(mi->from_slot != mi->to_slot && (mi->from_slot < 30 || mi->from_slot > 39) && IsValidSlot(mi->from_slot) && IsValidSlot(mi->to_slot))
 		{
 			char *detect = NULL;
 			const ItemInst *itm_from = GetInv().GetItem(mi->from_slot);
