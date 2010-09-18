@@ -578,6 +578,18 @@ namespace EQExtractor2.InternalTypes
         public bool HighRes;        
     }
 
+    public class ExplorerSpawnRecord
+    {
+        public ExplorerSpawnRecord(UInt32 ID, string Name)
+        {
+            this.ID = ID;
+            this.Name = Name;
+        }
+
+        public UInt32 ID;
+        public string Name;
+    }
+
     public class Door
     {
         public Door(string Name, float YPos, float XPos, float ZPos, float Heading, UInt32 Incline, Int32 Size, Byte ID, Byte OpenType,

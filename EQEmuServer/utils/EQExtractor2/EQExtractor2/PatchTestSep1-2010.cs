@@ -12,15 +12,13 @@ using MyUtils;
 
 namespace EQExtractor2.Patches
 {
-    class PatchTestSep012010Decoder : PatchMay122010Decoder
+    class PatchTestSep012010Decoder : PatchJuly132010Decoder
     {
         public PatchTestSep012010Decoder()
         {
             Version = "EQ Client Build Date Test Server September 1 2010.";
 
             PatchConfFileName = "patch_Sep01-2010.conf";
-
-            ExpectedPPLength = 26640;
         }
 
         override public IdentificationStatus Identify(int OpCode, int Size, PacketDirection Direction)
@@ -62,7 +60,7 @@ namespace EQExtractor2.Patches
             OpManager.RegisterExplorer("OP_ItemPacket", ExploreItemPacket);
         }
          
-        public void ExploreCharInventoryPacket(StreamWriter OutputStream, ByteStream Buffer)
+        public void ExploreCharInventoryPacket(StreamWriter OutputStream, ByteStream Buffer, PacketDirection Direction)
         {
             UInt32 ItemCount = Buffer.ReadUInt32();
 
@@ -76,7 +74,7 @@ namespace EQExtractor2.Patches
             OutputStream.WriteLine("");
         }
 
-        public void ExploreItemPacket(StreamWriter OutputStream, ByteStream Buffer)
+        public void ExploreItemPacket(StreamWriter OutputStream, ByteStream Buffer, PacketDirection Direction)
         {
             Buffer.SkipBytes(4);    // Skip type field.
 

@@ -1,6 +1,9 @@
 ﻿EQExtractor2 Changelog. All changes since the 1.0 release.
 
-==09/10/2010==
+==09/17/2010==
+Derision: Passed packet direction to Explorers.
+
+==09/11/2010==
 Derision: Identified a few more 'Area' IDs for the new Item slot numbering system.
 Derision: Explorer methods are now called with the packet payload as a ByteStream rather than byte[]
 

@@ -6,6 +6,7 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
+using EQPacket;
 using MyUtils;
 
 namespace EQExtractor2.OpCodes
@@ -25,7 +26,7 @@ namespace EQExtractor2.OpCodes
         }
     }
 
-    public delegate void ExplorerMethod(StreamWriter OutputStream, ByteStream Buffer);
+    public delegate void ExplorerMethod(StreamWriter OutputStream, ByteStream Buffer, PacketDirection Direction);
 
     public class OpCodeManager
     {
