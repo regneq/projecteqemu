@@ -215,7 +215,7 @@ namespace EQExtractor2.Patches
                 PacketDumpStream.WriteLine(Utils.HexDump(p.Buffer));
 
                 if ((oc != null) && (oc.Explorer != null))
-                    oc.Explorer(PacketDumpStream, new ByteStream(p.Buffer));
+                    oc.Explorer(PacketDumpStream, new ByteStream(p.Buffer), p.Direction);
             }
 
             PacketDumpStream.Close();
@@ -237,6 +237,24 @@ namespace EQExtractor2.Patches
 
             return Count;
         }
+
+        protected void AddExplorerSpawn(UInt32 ID, string Name)
+        {
+            ExplorerSpawnRecord e = new ExplorerSpawnRecord(ID, Name);
+
+            ExplorerSpawns.Add(e);
+        }
+
+        protected string FindExplorerSpawn(UInt32 ID)
+        {
+            foreach(ExplorerSpawnRecord s in ExplorerSpawns)
+            {
+                if (s.ID == ID)
+                    return s.Name;
+            }
+
+            return "";
+        }
         
         protected PacketManager Packets;
 
@@ -249,5 +267,7 @@ namespace EQExtractor2.Patches
         protected int PPZoneIDOffset;
 
         protected string PatchConfFileName;
+
+        private List<ExplorerSpawnRecord> ExplorerSpawns = new List<ExplorerSpawnRecord>();
     }
 }
