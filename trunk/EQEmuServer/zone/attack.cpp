@@ -2127,6 +2127,7 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 		entity_list.AddCorpse(corpse, this->GetID());
 
 		entity_list.UnMarkNPC(GetID());
+		entity_list.RemoveNPC(GetID());
 		this->SetID(0);
 		if(killer->GetOwner() != 0 && killer->GetOwner()->IsClient())
 			killer = killer->GetOwner();
