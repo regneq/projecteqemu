@@ -1373,8 +1373,8 @@ void QuestManager::set_proximity(float minx, float maxx, float miny, float maxy,
 void QuestManager::clear_proximity() {
 	if(!owner->IsNPC())
 		return;
-	safe_delete(owner->CastToNPC()->proximity);
 	entity_list.RemoveProximity(owner->GetID());
+	safe_delete(owner->CastToNPC()->proximity);
 }
 
 void QuestManager::setanim(int npc_type, int animnum) {

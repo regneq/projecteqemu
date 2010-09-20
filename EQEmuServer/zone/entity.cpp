@@ -3393,7 +3393,7 @@ bool EntityList::RemoveProximity(int16 delete_npc_id) {
 	while(iterator.MoreElements()) {
 		NPC *d = iterator.GetData();
 		if(d->GetID() == delete_npc_id) {
-			safe_delete(d->proximity);
+			//safe_delete(d->proximity);
 			iterator.RemoveCurrent(false);
 			return true;
 		}
@@ -3415,6 +3415,7 @@ void EntityList::ProcessMove(Client *c, float x, float y, float z) {
 		the proximity, and the new supplied coords are out(in)...
 	*/
 	LinkedListIterator<NPC*> iterator(proximity_list);
+	std::list<int> skip_ids;
 	
 	float last_x = c->ProximityX();
 	float last_y = c->ProximityY();
@@ -3425,6 +3426,28 @@ void EntityList::ProcessMove(Client *c, float x, float y, float z) {
 		NPCProximity *l = d->proximity;
 		if(l == NULL)
 			continue;
+
+		//This is done to address the issue of this code not being reentrant 
+		//because perl can call clear_proximity() while we're still iterating through the list
+		//This causes our list to become invalid but we don't know it.  On GCC it's basic heap 
+		//corruption and it doesn't appear to catch it at all.
+		//MSVC it's a crash with 0xfeeefeee debug address (freed memory off the heap)
+		std::list<int>::iterator iter = skip_ids.begin();
+		bool skip = false;
+		while(iter != skip_ids.end())
+		{
+			if(d->GetID() == (*iter))
+			{
+				skip = true;
+				break;
+			}
+			iter++;
+		}
+
+		if(skip)
+		{
+			continue;
+		}
 		
 		//check both bounding boxes, if either coords pairs
 		//cross a boundary, send the event.
@@ -3444,9 +3467,17 @@ void EntityList::ProcessMove(Client *c, float x, float y, float z) {
 		if(old_in && !new_in) {
 			//we were in the proximity, we are no longer, send event exit
 			parse->Event(EVENT_EXIT, d->GetNPCTypeID(), "", d, c);
+			
+			//Reentrant fix
+			iterator.Reset();
+			skip_ids.push_back(d->GetID());
 		} else if(new_in && !old_in) {
 			//we were not in the proximity, we are now, send enter event
 			parse->Event(EVENT_ENTER, d->GetNPCTypeID(), "", d, c);
+
+			//Reentrant fix
+			iterator.Reset();
+			skip_ids.push_back(d->GetID());
 		}
 	}
 	
