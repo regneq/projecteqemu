@@ -55,7 +55,7 @@ namespace EQExtractor2.Patches
         public override void RegisterExplorers()
         {
             base.RegisterExplorers();
-
+            
             OpManager.RegisterExplorer("OP_CharInventory", ExploreCharInventoryPacket);
             OpManager.RegisterExplorer("OP_ItemPacket", ExploreItemPacket);
         }

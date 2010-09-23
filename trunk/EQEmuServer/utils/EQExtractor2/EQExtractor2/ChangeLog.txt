@@ -1,5 +1,8 @@
 ﻿EQExtractor2 Changelog. All changes since the 1.0 release.
 
+==09/23/2010==
+Derision: Support for 22nd September Test Server client. Don't think I have OP_ShopEnd correct.
+
 ==09/17/2010==
 Derision: Passed packet direction to Explorers.
 

@@ -131,5 +131,23 @@ namespace EQExtractor2.OpCodes
                 }
             }            
         }
+
+        public void UnRegisterExplorer(string Name)
+        {
+            // Designed to be used when a decoder wants to use some of it's base classes explorers, but some need to be UnRegistered
+            // as they are incompatible with the current patch version.
+            // i.e.
+            // base.RegisterExplorers();
+            // UnRegisterExplorer("OP_NotCompatible");
+            //
+            foreach (OpCode oc in OpCodeList)
+            {
+                if (oc.Name == Name)
+                {
+                    oc.Explorer = null;
+                    return;
+                }
+            }
+        }
     }
 }
