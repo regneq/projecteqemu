@@ -178,6 +178,7 @@ public:
 	void BotTradeSwapItem(Client* client, sint16 lootSlot, const ItemInst* inst, const ItemInst* inst_swap, uint32 equipableSlots, std::string* errorMessage, bool swap = true);
 	void BotTradeAddItem(uint32 id, const ItemInst* inst, sint16 charges, uint32 equipableSlots, int16 lootSlot, std::string* errorMessage, bool addToDb = true);
 	void EquipBot(std::string* errorMessage);
+	bool CheckLoreConflict(const Item_Struct* item);
 
 	// Static Class Methods
 	static void SaveBotGroup(Group* botGroup, std::string botGroupName, std::string* errorMessage);

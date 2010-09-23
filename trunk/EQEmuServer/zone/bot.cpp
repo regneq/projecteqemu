@@ -4497,6 +4497,7 @@ void Bot::PerformTradeWithClient(sint16 beginSlotID, sint16 endSlotID, Client* c
 		for(sint16 i=beginSlotID; i<=endSlotID; ++i) {
 			bool BotCanWear = false;
 			bool UpdateClient = false;
+			bool already_returned = false;
 
 			Inventory& clientInventory = client->GetInv();
 			const ItemInst* inst = clientInventory[i];
@@ -4512,7 +4513,7 @@ void Bot::PerformTradeWithClient(sint16 beginSlotID, sint16 endSlotID, Client* c
 			if(inst && this->GetBotOwner() == client->CastToMob()) {
 				std::string TempErrorMessage;
 				const Item_Struct* mWeaponItem = inst->GetItem();
-				if(mWeaponItem && inst->IsEquipable(GetBaseRace(), GetClass()) && (GetLevel() >= mWeaponItem->ReqLevel)) { // Angelox
+				if(mWeaponItem && inst->IsEquipable(GetBaseRace(), GetClass()) && (GetLevel() >= mWeaponItem->ReqLevel) && !CheckLoreConflict(mWeaponItem)) { // Angelox
 					BotCanWear = true;
 					botCanWear[i] = BotCanWear;
 					ItemInst* swap_item = NULL;
@@ -4538,7 +4539,13 @@ void Bot::PerformTradeWithClient(sint16 beginSlotID, sint16 endSlotID, Client* c
 									}
 								}
 								if(j == SLOT_SECONDARY) {
-									if(GetBotItemBySlot(SLOT_PRIMARY)) {
+									if(clientInventory[i]->IsWeapon() && !CanThisClassDualWield()) {
+										ItemInst* remove_item = GetBotItem(SLOT_SECONDARY);
+										BotTradeSwapItem(client, SLOT_SECONDARY, 0, remove_item, remove_item->GetItem()->Slots, &TempErrorMessage, false);
+										botCanWear[i] = 0;
+										already_returned = true;
+									}
+									else if(GetBotItemBySlot(SLOT_PRIMARY)) {
 										ItemInst* remove_item = GetBotItem(SLOT_PRIMARY);
 										if((remove_item->GetItem()->ItemType == ItemType2HS) || (remove_item->GetItem()->ItemType == ItemType2HB) || (remove_item->GetItem()->ItemType == ItemType2HPierce)) {
 											BotTradeSwapItem(client, SLOT_PRIMARY, 0, remove_item, remove_item->GetItem()->Slots, &TempErrorMessage, false);
@@ -4563,14 +4570,6 @@ void Bot::PerformTradeWithClient(sint16 beginSlotID, sint16 endSlotID, Client* c
 										}
 									}
 								}
-								if(j == SLOT_SECONDARY) {
-									if(GetBotItemBySlot(SLOT_PRIMARY)) {
-										ItemInst* remove_item = GetBotItem(SLOT_PRIMARY);
-										if((remove_item->GetItem()->ItemType == ItemType2HS) || (remove_item->GetItem()->ItemType == ItemType2HB) || (remove_item->GetItem()->ItemType == ItemType2HPierce)) {
-											BotTradeSwapItem(client, SLOT_PRIMARY, 0, remove_item, remove_item->GetItem()->Slots, &TempErrorMessage, false);
-										}
-									}
-								}
 								break;
 							}
 						}
@@ -4583,7 +4582,9 @@ void Bot::PerformTradeWithClient(sint16 beginSlotID, sint16 endSlotID, Client* c
 			}
 			if(inst) {
 				if(!botCanWear[i]) {
-					client->PushItemOnCursor(*inst, true);
+					if(!already_returned) {
+						client->PushItemOnCursor(*inst, true);
+					}
 				}
 				client->DeleteItemInInventory(i, 0, UpdateClient);
 			}
@@ -8851,6 +8852,19 @@ void Bot::CalcBotStats(bool showtext) {
 		GetBotOwner()->Message(15, "Level: %i HP: %i AC: %i Mana: %i STR: %i STA: %i DEX: %i AGI: %i INT: %i WIS: %i CHA: %i", GetLevel(), max_hp, AC, max_mana, STR, STA, DEX, AGI, INT, WIS, CHA);
 		GetBotOwner()->Message(15, "Resists-- Magic: %i, Poison: %i, Fire: %i, Cold: %i, Disease: %i.",MR,PR,FR,CR,DR);
 	}
+}
+
+bool Bot::CheckLoreConflict(const Item_Struct* item) {
+	if (!item)
+		return false;
+	if (!(item->LoreFlag))
+		return false;
+
+	if (item->LoreGroup == -1)	// Standard lore items; look everywhere except the shared bank, return the result
+		return (m_inv.HasItem(item->ID, 0, invWhereWorn) != SLOT_INVALID);	
+
+	//If the item has a lore group, we check for other items with the same group and return the result
+	return (m_inv.HasItemByLoreGroup(item->LoreGroup, invWhereWorn) != SLOT_INVALID);
 }
 
 bool Bot::GroupHasClass(Group* group, uint8 classId) {
