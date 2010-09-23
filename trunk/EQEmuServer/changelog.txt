@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==09/23/2010==
+Congdar: Bots can now equip multi slot items in the desired slot. The first available empty slot will get the item.
+
 ==09/13/2010==
 JJ: Fix to prevent NPCs using death animation from facing target during EVENT_SAY and EVENT_ITEM
 Derision: Fix for missing tradeskill objects etc in SoF and later clients.
