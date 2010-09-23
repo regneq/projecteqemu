@@ -37,6 +37,8 @@ namespace EQExtractor2.Patches
             if (!OpManager.Init(ConfDirectory + "\\" + PatchConfFileName, ref ErrorMessage))
                 return false;
 
+            RegisterExplorers();
+
             return true;
         }
 
@@ -751,6 +753,138 @@ namespace EQExtractor2.Patches
                 return "";
 
             return Utils.ReadNullTerminatedString(NewZonePacket[0], 704, 96, false);
+        }
+
+        public override void RegisterExplorers()
+        {
+            OpManager.RegisterExplorer("OP_ZoneEntry", ExploreZoneEntry);         
+            //OpManager.RegisterExplorer("OP_RespawnWindow", ExploreRespawnWindow);
+            //OpManager.RegisterExplorer("OP_ZonePlayerToBind", ExploreZonePlayerToBind);
+            //OpManager.RegisterExplorer("OP_RequestClientZoneChange", ExploreRequestClientZoneChange);
+            //OpManager.RegisterExplorer("OP_DeleteSpawn", ExploreDeleteSpawn);            
+            OpManager.RegisterExplorer("OP_HPUpdate", ExploreHPUpdate);
+
+        }
+
+        public void ExploreZoneEntry(StreamWriter OutputStream, ByteStream Buffer, PacketDirection Direction)
+        {
+            if (Direction != PacketDirection.ServerToClient)
+                return;
+
+            string Name = Buffer.ReadString(false);
+            UInt32 SpawnID = Buffer.ReadUInt32();
+            byte Level = Buffer.ReadByte();
+            Buffer.SkipBytes(4);
+            bool IsNPC = (Buffer.ReadByte() != 0);
+            UInt32 Bitfield = Buffer.ReadUInt32();
+
+            string DestructableString1;
+            string DestructableString2;
+            string DestructableString3;
+            UInt32 DestructableUnk1;
+            UInt32 DestructableUnk2;
+            UInt32 DestructableID1;
+            UInt32 DestructableID2;
+            UInt32 DestructableID3;
+            UInt32 DestructableID4;
+            UInt32 DestructableUnk3;
+            UInt32 DestructableUnk4;
+            UInt32 DestructableUnk5;
+            UInt32 DestructableUnk6;
+            UInt32 DestructableUnk7;
+            UInt32 DestructableUnk8;
+            UInt32 DestructableUnk9;
+            byte DestructableByte;
+
+            Byte OtherData = Buffer.ReadByte();
+
+            Buffer.SkipBytes(8);    // Skip 8 unknown bytes
+
+            DestructableString1 = "";
+            DestructableString2 = "";
+            DestructableString3 = "";
+
+            OutputStream.WriteLine("Spawn Name: {0} ID: {1} Level: {2} {3}\r\n", Name, SpawnID, Level, IsNPC ? "NPC" : "Player");
+
+            if ((OtherData & 1) > 0)
+            {
+                // Destructable Objects.
+
+                DestructableString1 = Buffer.ReadString(false);
+
+                DestructableString2 = Buffer.ReadString(false);
+
+                DestructableString3 = Buffer.ReadString(false);
+
+                DestructableUnk1 = Buffer.ReadUInt32();
+
+                DestructableUnk2 = Buffer.ReadUInt32();
+
+                DestructableID1 = Buffer.ReadUInt32();
+
+                DestructableID2 = Buffer.ReadUInt32();
+
+                DestructableID3 = Buffer.ReadUInt32();
+
+                DestructableID4 = Buffer.ReadUInt32();
+
+                DestructableUnk3 = Buffer.ReadUInt32();
+
+                DestructableUnk4 = Buffer.ReadUInt32();
+
+                DestructableUnk5 = Buffer.ReadUInt32();
+
+                DestructableUnk6 = Buffer.ReadUInt32();
+
+                DestructableUnk7 = Buffer.ReadUInt32();
+
+                DestructableUnk8 = Buffer.ReadUInt32();
+
+                DestructableUnk9 = Buffer.ReadUInt32();
+
+                DestructableByte = Buffer.ReadByte();
+
+                OutputStream.WriteLine("DESTRUCTABLE OBJECT:\r\n");
+                OutputStream.WriteLine(" String1: {0}", DestructableString1);
+                OutputStream.WriteLine(" String2: {0}", DestructableString2);
+                OutputStream.WriteLine(" String3: {0}\r\n", DestructableString3);
+
+                OutputStream.WriteLine(" Unk1: {0,8:x} Unk2: {1,8:x}\r\n ID1 : {2,8:x} ID2 : {3,8:x} ID3 : {4,8:x} ID4 : {5,8:x}\r\n Unk3: {6,8:x} Unk4: {7,8:x} Unk5: {8,8:x} Unk6: {9,8:x}\r\n Unk7: {10,8:x} Unk8: {11,8:x} Unk9: {12,8:x}\r\n UnkByte:    {13,2:x}",
+                          DestructableUnk1, DestructableUnk2, DestructableID1, DestructableID2, DestructableID3, DestructableID4,
+                          DestructableUnk3, DestructableUnk4, DestructableUnk5, DestructableUnk6, DestructableUnk7, DestructableUnk8,
+                          DestructableUnk9, DestructableByte);
+            }
+
+            Buffer.SkipBytes(17);
+
+            byte PropCount = Buffer.ReadByte();
+
+            if (PropCount >= 1)
+            {
+                Buffer.SkipBytes(4);
+
+                for (int j = 1; j < PropCount; ++j)
+                    Buffer.SkipBytes(4);
+            }
+
+            byte HP = Buffer.ReadByte();
+
+            OutputStream.WriteLine("HP% is {0}\r\n", HP);
+
+            AddExplorerSpawn(SpawnID, Name);
+        }
+
+        public void ExploreHPUpdate(StreamWriter OutputStream, ByteStream Buffer, PacketDirection Direction)
+        {
+            UInt32 CurrentHP = Buffer.ReadUInt32();
+            Int32 MaxHP = Buffer.ReadInt32();
+            UInt16 SpawnID = Buffer.ReadUInt16();
+
+            string SpawnName = FindExplorerSpawn(SpawnID);
+
+            OutputStream.WriteLine("Spawn {0} {1} Current HP: {2} Max HP: {3}", SpawnID, SpawnName, CurrentHP, MaxHP);
+
+            OutputStream.WriteLine("");
         }
 
         override public bool DumpAAs(string FileName)

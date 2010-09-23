@@ -201,7 +201,7 @@ namespace EQExtractor2.Patches
                     {
                         p = PacketList[j];
 
-                        if (p.OpCode == OP_ShopEnd)
+                        if ((p.OpCode == OP_ShopEnd) || (p.OpCode == OP_ShopRequest))
                             break;
 
                         if (p.OpCode == OP_ItemPacket)
@@ -858,6 +858,7 @@ namespace EQExtractor2.Patches
             OpManager.RegisterExplorer("OP_RequestClientZoneChange", ExploreRequestClientZoneChange);
             OpManager.RegisterExplorer("OP_DeleteSpawn", ExploreDeleteSpawn);
             OpManager.RegisterExplorer("OP_SpawnAppearance", ExploreSpawnAppearance);
+            OpManager.RegisterExplorer("OP_HPUpdate", ExploreHPUpdate);
             
         }
 
@@ -950,8 +951,21 @@ namespace EQExtractor2.Patches
                           DestructableUnk9, DestructableByte);
             }
 
-            
-            OutputStream.WriteLine("");
+            Buffer.SkipBytes(17);            
+
+            byte PropCount = Buffer.ReadByte();                        
+
+            if (PropCount >= 1)
+            {
+                Buffer.SkipBytes(4);
+
+                for (int j = 1; j < PropCount; ++j)
+                    Buffer.SkipBytes(4);
+            }
+
+            byte HP = Buffer.ReadByte();
+
+            OutputStream.WriteLine("HP% is {0}\r\n", HP);
 
             AddExplorerSpawn(SpawnID, Name);
         }
@@ -967,6 +981,20 @@ namespace EQExtractor2.Patches
 
             OutputStream.WriteLine("");
         }
+
+        public void ExploreHPUpdate(StreamWriter OutputStream, ByteStream Buffer, PacketDirection Direction)
+        {
+            UInt32 CurrentHP = Buffer.ReadUInt32();
+            Int32 MaxHP = Buffer.ReadInt32();
+            UInt16 SpawnID = Buffer.ReadUInt16();            
+            
+            string SpawnName = FindExplorerSpawn(SpawnID);
+
+            OutputStream.WriteLine("Spawn {0} {1} Current HP: {2} Max HP: {3}", SpawnID, SpawnName, CurrentHP, MaxHP);
+
+            OutputStream.WriteLine("");
+        }
+
         public void ExploreNewZonePacket(StreamWriter OutputStream, ByteStream Buffer, PacketDirection Direction)
         {
             Buffer.SetPosition(704);
