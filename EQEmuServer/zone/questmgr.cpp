@@ -1760,12 +1760,15 @@ bool QuestManager::createBot(const char *name, const char *lastname, uint8 level
 			if(!NewBot->Save())
 			{
 				initiator->Message(0, "Unable to save %s as a bot.", NewBot->GetCleanName());
-			} else
+			}
+			else
 			{
 				initiator->Message(0, "%s saved as bot %u.", NewBot->GetCleanName(), NewBot->GetBotID());
+				return true;
 			}
 		}
 	}
+	return false;
 }
 
 #endif //BOTS
