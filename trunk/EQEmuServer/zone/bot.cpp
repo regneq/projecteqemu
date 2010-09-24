@@ -8181,25 +8181,6 @@ bool Bot::DoFinishedSpellGroupTarget(int16 spell_id, Mob* spellTarget, int16 slo
 	return true;
 }
 
-int Bot::CheckStackConflict(int16 spellid1, int caster_level1, int16 spellid2, int caster_level2, Mob* caster1, Mob* caster2) {
-	const SPDat_Spell_Struct &sp1 = spells[spellid1];
-	const SPDat_Spell_Struct &sp2 = spells[spellid2];
-
-	int effect1 = 0;
-	int effect2 = 0;
-
-	for(int i = 0; i < EFFECT_COUNT; i++) {
-		effect1 = sp1.effectid[i];
-		effect2 = sp2.effectid[i];
-		// This is to allow bots to cast heals over the top of regen spells
-		if((effect1 == SE_CurrentHP) && (effect2 == SE_CurrentHP) && !IsDetrimentalSpell(spellid1) && !IsDetrimentalSpell(spellid2)) {
-			return 0;
-		}
-	}
-
-	return Mob::CheckStackConflict(spellid1, caster_level1, spellid2, caster_level2, caster1, caster2);
-}
-
 void Bot::CalcBonuses() {
 	CalcSpellBonuses(&spellbonuses);
 	CalcMaxHP();

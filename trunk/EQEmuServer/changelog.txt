@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==09/24/2010==
+Congdar: Remove obsolete bot code, fix compile warning
+
 ==09/23/2010==
 Congdar: Bots can now equip multi slot items in the desired slot. The first available empty slot will get the item.
 Congdar: Bots now check Lore and Dual Wield with the new multi slot item code.
