@@ -498,6 +498,13 @@ bool ZoneServer::Process() {
 			}
 			break;
 		}
+		case ServerOP_RezzPlayerReject:
+		{
+			char *Recipient = (char *)pack->pBuffer;
+			client_list.SendPacket(Recipient, pack);
+			break;
+		}
+
 		case ServerOP_MultiLineMsg: {
 			ServerMultiLineMsg_Struct* mlm = (ServerMultiLineMsg_Struct*) pack->pBuffer;
 			client_list.SendPacket(mlm->to, pack);

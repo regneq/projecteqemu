@@ -1,5 +1,14 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==09/25/2010==
+Derision: Only one Rez confirmation box is allowed to be up at a time (per character).
+Derision: Enabled Respawn Window for SoF and later clients. Rule disabled by default.
+Derision: Respawn Window only pops-up if a corpse is left (so #gm off to test it).
+
+Optional SQL (and to enable it):
+
+utils/sql/svn/1672_optional_rules_respawn_window.sql
+
 ==09/24/2010==
 Congdar: Remove obsolete bot code, fix compile warning
 

@@ -4539,7 +4539,23 @@ void Client::Handle_OP_InstillDoubt(const EQApplicationPacket *app)
 
 void Client::Handle_OP_RezzAnswer(const EQApplicationPacket *app)
 {
-	OPRezzAnswer(app);
+	const Resurrect_Struct* ra = (const Resurrect_Struct*) app->pBuffer;
+
+	_log(SPELLS__REZ, "Received OP_RezzAnswer from client. Pendingrezzexp is %i, action is %s", 
+		          PendingRezzXP, ra->action ? "ACCEPT" : "DECLINE");
+
+	_pkt(SPELLS__REZ, app);
+
+	OPRezzAnswer(ra->action, ra->spellid, ra->zone_id, ra->instance_id, ra->x, ra->y, ra->z);
+
+	if(ra->action == 1)
+	{
+		EQApplicationPacket* outapp = app->Copy();
+		// Send the OP_RezzComplete to the world server. This finds it's way to the zone that
+		// the rezzed corpse is in to mark the corpse as rezzed.
+		outapp->SetOpcode(OP_RezzComplete);
+		worldserver.RezzPlayer(outapp, 0, OP_RezzComplete);
+	}
 	return;
 }
 
@@ -10585,14 +10601,10 @@ void Client::Handle_OP_RespawnWindow(const EQApplicationPacket *app)
 		DumpPacket(app);
 		return;
 	}
-
-	SendLogoutPackets();
-	GoToBind();
-
-	// TODO: Allow Multiple Choice Selections
-
-	//QueuePacket(outapp);
-	//safe_delete(outapp);
+	char *Buffer = (char *)app->pBuffer;
+	
+	uint32 Option = VARSTRUCT_DECODE_TYPE(uint32, Buffer);
+	HandleRespawnFromHover(Option);
 }
 
 void Client::Handle_OP_GroupUpdate(const EQApplicationPacket *app) 

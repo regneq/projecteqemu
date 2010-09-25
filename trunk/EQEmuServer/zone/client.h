@@ -44,6 +44,7 @@ class Client;
 #include "questmgr.h"
 #include <float.h>
 #include <set>
+#include <string>
 #include "../common/item_struct.h"
 #include "QGlobals.h"
 
@@ -579,7 +580,6 @@ public:
 	bool TradeskillExecute(DBTradeskillRecipe_Struct *spec);
 	void CheckIncreaseTradeskill(sint16 bonusstat, sint16 stat_modifier, float skillup_modifier, uint16 success_modifier, SkillType tradeskill);
 
-	int	pendingrezzexp;
 	void GMKill();
 	inline bool	IsMedding()	const {return medding;}
 	inline int16 GetDuelTarget() const { return duel_target; }
@@ -971,6 +971,11 @@ public:
 	void LocateCorpse();
 	void SendTargetCommand(uint32 EntityID);
 	bool	MoveItemToInventory(ItemInst *BInst, bool UpdateClient = false);
+	void HandleRespawnFromHover(uint32 Option);
+	bool IsHoveringForRespawn() { return RespawnFromHoverTimer.Enabled(); }
+	void SetPendingRezzData(int XP, int16 SpellID, const char *CorpseName) { PendingRezzXP = XP; PendingRezzSpellID = SpellID; PendingRezzCorpseName = CorpseName; }
+	bool IsRezzPending() { return PendingRezzSpellID > 0; }
+	void ClearHover();
 
 protected:
 	friend class Mob;
@@ -1010,7 +1015,7 @@ private:
 	eqFilterMode ClientFilters[_FilterCount];
 	sint32	HandlePacket(const EQApplicationPacket *app);
 	void	OPTGB(const EQApplicationPacket *app);
-	void	OPRezzAnswer(const EQApplicationPacket *app);
+	void	OPRezzAnswer(int32 Action, int32 SpellID, int16 ZoneID, int16 InstanceID, float x, float y, float z);
 	void	OPMemorizeSpell(const EQApplicationPacket *app);
 	void	OPMoveCoin(const EQApplicationPacket* app);
 	void	MoveItemCharges(ItemInst &from, sint16 to_slot, int8 type);
@@ -1171,6 +1176,7 @@ private:
 	Timer	charm_cast_timer;
 	Timer	qglobal_purge_timer;
 	Timer	TrackingTimer;
+	Timer	RespawnFromHoverTimer;
 
 	float	proximity_x;
 	float	proximity_y;
@@ -1243,6 +1249,10 @@ private:
 
 	uint8 HideCorpseMode;
 	bool PendingGuildInvitation;
+	int PendingRezzXP;
+	int16 PendingRezzSpellID;		// Only used for resurrect while hovering.
+	std::string PendingRezzCorpseName;	// Only used for resurrect while hovering.
+
 };
 
 #include "parser.h"

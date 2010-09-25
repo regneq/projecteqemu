@@ -152,7 +152,7 @@ public:
 	Corpse*	GetCorpseByOwner(Client* client);
 	Corpse* GetCorpseByID(int16 id);
 	Corpse* GetCorpseByDBID(int32 dbid);
-	Corpse* GetCorpseByName(char* name);
+	Corpse* GetCorpseByName(const char* name);
 	Object*	GetObjectByID(int16 id);
 	Object*	GetObjectByDBID(int32 id);
 	void RemoveAllCorpsesByCharID(int32 charid);
@@ -368,12 +368,12 @@ public:
 
 	void	DepopAll(int NPCTypeID, bool StartSpawnTimer = true);
 
+	int16   GetFreeID();
 protected:
 	friend class Zone;
 	void	Depop(bool StartSpawnTimer = true);
 
 private:
-	int16   GetFreeID();
 	void	AddToSpawnQueue(int16 entityid, NewSpawn_Struct** app);
 	void	CheckSpawnQueue();
 	
