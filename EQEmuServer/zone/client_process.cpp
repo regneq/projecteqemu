@@ -63,6 +63,8 @@
 #include "../common/rulesys.h"
 #include "StringIDs.h"
 #include "map.h"
+#include <string>
+
 using namespace std;
 
 
@@ -141,7 +143,11 @@ bool Client::Process() {
 		}
 
 		if(dead)
+		{
 			SetHP(-100);
+			if(RespawnFromHoverTimer.Check())
+				HandleRespawnFromHover(0);
+		}
 		
 		if(IsTracking() && (GetClientVersion() >= EQClientSoD) && TrackingTimer.Check())
 			DoTracking();
@@ -1113,28 +1119,21 @@ int8 Client::WithCustomer(int16 NewCustomer){
 	return 0;
 }
 
-void Client::OPRezzAnswer(const EQApplicationPacket* app) {
-
-	const Resurrect_Struct* ra = (const Resurrect_Struct*) app->pBuffer;
-
-	_log(SPELLS__REZ, "Received OP_RezzAnswer from client. Pendingrezzexp is %i, action is %s", 
-		          pendingrezzexp, ra->action ? "ACCEPT" : "DECLINE");
-
-	_pkt(SPELLS__REZ, app);
-
-	if(pendingrezzexp < 0) {
+void Client::OPRezzAnswer(int32 Action, int32 SpellID, int16 ZoneID, int16 InstanceID, float x, float y, float z)
+{
+	if(PendingRezzXP < 0) {
 		// pendingrezexp is set to -1 if we are not expecting an OP_RezzAnswer
 		_log(SPELLS__REZ, "Unexpected OP_RezzAnswer. Ignoring it.");
 		Message(13, "You have already been resurrected.\n");
 		return;
 	}
 
-	if (ra->action == 1) {
+	if (Action == 1) {
 		_log(SPELLS__REZ, "Player %s got a %i Rezz, spellid %i", 
-				  this->name, (int16)spells[ra->spellid].base[0],
-				  ra->spellid);
+				  this->name, (int16)spells[SpellID].base[0],
+				  SpellID);
 		this->BuffFadeAll();
-		int SpellEffectDescNum = GetSpellEffectDescNum(ra->spellid);
+		int SpellEffectDescNum = GetSpellEffectDescNum(SpellID);
 		// Rez spells with Rez effects have this DescNum (first is Titanium, second is 6.2 Client)
 		if((SpellEffectDescNum == 82) || (SpellEffectDescNum == 39067)) {
 			SetMana(0);
@@ -1145,26 +1144,22 @@ void Client::OPRezzAnswer(const EQApplicationPacket* app) {
 			SetMana(GetMaxMana());
 			SetHP(GetMaxHP());
 		}
-		EQApplicationPacket* outapp = app->Copy();
-		// Send the OP_RezzComplete to the world server. This finds it's way to the zone that
-		// the rezzed corpse is in to mark the corpse as rezzed.
-		outapp->SetOpcode(OP_RezzComplete);
-		worldserver.RezzPlayer(outapp,0,OP_RezzComplete);
 		
-		if (ra->spellid != 994) { // Spell 994 is Customer Service 100% Rez.
-			if(ra->spellid != 2168) // Spell 2168 is Reanimate 0% Rez.
-				SetEXP(((int)(GetEXP()+((float)((pendingrezzexp/100)*spells[ra->spellid].base[0])))),
+		if (SpellID != 994) { // Spell 994 is Customer Service 100% Rez.
+			if(SpellID!= 2168) // Spell 2168 is Reanimate 0% Rez.
+				SetEXP(((int)(GetEXP()+((float)((PendingRezzXP / 100) * spells[SpellID].base[0])))),
 				       GetAAXP(),true);
 		}
 		else {
-			SetEXP((GetEXP()+pendingrezzexp), GetAAXP(), true);
+			SetEXP((GetEXP() + PendingRezzXP), GetAAXP(), true);
 		}
-		pendingrezzexp = -1;
 
 		//Was sending the packet back to initiate client zone... 
 		//but that could be abusable, so lets go through proper channels
-		MovePC(ra->zone_id, ra->instance_id, ra->x, ra->y, ra->z, GetHeading(), 0, ZoneSolicited);
+		MovePC(ZoneID, InstanceID, x, y, z, GetHeading(), 0, ZoneSolicited);
 	}
+	PendingRezzXP = -1;
+	PendingRezzSpellID = 0;
 }
 
 void Client::OPTGB(const EQApplicationPacket *app)
@@ -2000,4 +1995,135 @@ void Client::DoTracking()
 	{
 		Message_StringID(MT_Skills, TRACK_AHEAD_AND_TO, m->GetCleanName(), "left");
 	}
+}
+
+void Client::HandleRespawnFromHover(uint32 Option)
+{
+	RespawnFromHoverTimer.Disable();
+
+	if(Option == 1)	// Resurrect
+	{
+		if((PendingRezzXP < 0) || (PendingRezzSpellID == 0))
+		{
+			_log(SPELLS__REZ, "Unexpected Rezz from hover request.");
+			return;
+		}
+		SetHP(GetMaxHP() / 5);
+
+		Corpse* corpse = entity_list.GetCorpseByName(PendingRezzCorpseName.c_str());
+
+		if(corpse)
+		{
+			x_pos = corpse->GetX();
+			y_pos = corpse->GetY();
+			z_pos = corpse->GetZ();
+		}
+
+		EQApplicationPacket* outapp = new EQApplicationPacket(OP_ZonePlayerToBind, sizeof(ZonePlayerToBind_Struct) + 10);
+		ZonePlayerToBind_Struct* gmg = (ZonePlayerToBind_Struct*) outapp->pBuffer;
+		
+		gmg->bind_zone_id = zone->GetZoneID();
+		gmg->x = GetX();
+		gmg->y = GetY();
+		gmg->z = GetZ();
+		gmg->heading = GetHeading();
+		strcpy(gmg->zone_name, "Resurrect");
+
+		FastQueuePacket(&outapp);
+
+		ClearHover();
+		SendHPUpdate();
+		OPRezzAnswer(1, PendingRezzSpellID, zone->GetZoneID(), zone->GetInstanceID(), GetX(), GetY(), GetZ());
+
+		if (corpse && corpse->IsCorpse()) {
+			_log(SPELLS__REZ, "Hover Rez in zone %s for corpse %s",
+					  zone->GetShortName(), PendingRezzCorpseName.c_str());
+
+			_log(SPELLS__REZ, "Found corpse. Marking corpse as rezzed.");
+
+			corpse->Rezzed(true);
+			corpse->CompleteRezz();
+		}
+		return;
+	}
+
+	// Respawn at Bind Point.
+	//
+	if(m_pp.binds[0].zoneId == zone->GetZoneID())
+	{
+		PendingRezzSpellID = 0;
+
+		EQApplicationPacket* outapp = new EQApplicationPacket(OP_ZonePlayerToBind, sizeof(ZonePlayerToBind_Struct) + 14);
+		ZonePlayerToBind_Struct* gmg = (ZonePlayerToBind_Struct*) outapp->pBuffer;
+		
+		gmg->bind_zone_id = m_pp.binds[0].zoneId;
+		gmg->x = m_pp.binds[0].x;
+		gmg->y = m_pp.binds[0].y;
+		gmg->z = m_pp.binds[0].z;
+		gmg->heading = 0;
+		strcpy(gmg->zone_name, "Bind Location");
+
+		FastQueuePacket(&outapp);
+
+		CalcBonuses();
+		SetHP(GetMaxHP());
+		SetMana(GetMaxMana());
+		SetEndurance(GetMaxEndurance());
+
+		x_pos = m_pp.binds[0].x;
+		y_pos = m_pp.binds[0].y;
+		z_pos = m_pp.binds[0].z;
+
+		ClearHover();
+
+		SendHPUpdate();
+
+	}
+	else
+	{
+		if(isgrouped)
+		{
+			Group *g = GetGroup();
+			if(g)
+				g->MemberZoned(this);
+		}
+	
+		Raid* r = entity_list.GetRaidByClient(this);
+
+		if(r)
+			r->MemberZoned(this);
+
+		m_pp.zone_id = m_pp.binds[0].zoneId;
+		m_pp.zoneInstance = 0;
+		database.MoveCharacterToZone(this->CharacterID(), database.GetZoneName(m_pp.zone_id));
+		
+		Save();
+	
+		GoToDeath();
+	}
+}
+
+void Client::ClearHover()
+{
+	// Our Entity ID is currently zero, set in Client::Death
+	SetID(entity_list.GetFreeID());
+
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_ZoneEntry, sizeof(ServerZoneEntry_Struct));
+	ServerZoneEntry_Struct* sze = (ServerZoneEntry_Struct*)outapp->pBuffer;
+
+	FillSpawnStruct(&sze->player,CastToMob());
+
+	sze->player.spawn.NPC = 0;
+	sze->player.spawn.z += 6;	//arbitrary lift, seems to help spawning under zone.
+	
+	entity_list.QueueClients(this, outapp, false);
+	safe_delete(outapp);
+
+	if(IsClient() && CastToClient()->GetClientVersionBit() & BIT_Live)
+	{
+		EQApplicationPacket *outapp = MakeBuffsPacket(false);
+		CastToClient()->FastQueuePacket(&outapp);
+	}
+
+	dead = false;
 }

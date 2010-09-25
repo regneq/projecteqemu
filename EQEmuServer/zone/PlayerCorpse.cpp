@@ -400,11 +400,11 @@ void Corpse::MoveItemToCorpse(Client *client, ItemInst *item, sint16 equipslot)
 			if(interior_item)
 			{
 				AddItem(interior_item->GetItem()->ID, interior_item->GetCharges(), interior_slot, interior_item->GetAugmentItemID(0), interior_item->GetAugmentItemID(1), interior_item->GetAugmentItemID(2), interior_item->GetAugmentItemID(3), interior_item->GetAugmentItemID(4));
-				client->DeleteItemInInventory(interior_slot);
+				client->DeleteItemInInventory(interior_slot, 0, true);
 			}
 		}
 	}
-	client->DeleteItemInInventory(equipslot);
+	client->DeleteItemInInventory(equipslot, 0, true);
 }
 
 // To be called from LoadFromDBData

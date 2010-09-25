@@ -181,6 +181,7 @@
 #define DUEL_ACCEPTED				1384	//%1 has already accepted a duel with someone else.
 #define DUEL_CONSIDERING			1385	//%1 is considering a duel with someone else.
 #define PLAYER_REGAIN				1394	//You have control of yourself again.
+#define REZZ_ALREADY_PENDING			1379	//You were unable to restore the corpse to life, but you may have success with a later attempt.
 #define IN_USE						1406	//Someone else is using that.  Try again later.
 #define DUEL_FLED					1408	//%1 has defeated %2 in a duel to the death! %3 has fled like a cowardly dog!
 #define MEMBER_OF_YOUR_GUILD			1429

@@ -1486,7 +1486,7 @@ void Client::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_
 	SetPet(0);
 	SetHorseId(0);
 	dead = true;
-	dead_timer.Start(5000, true);
+
 
 	if (killerMob != NULL)
 	{
@@ -1516,16 +1516,6 @@ void Client::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_
 	entity_list.RemoveFromTargets(this);
 	hate_list.RemoveEnt(this);
 	
-	if(isgrouped) {
-		Group *g = GetGroup();
-		if(g)
-			g->MemberZoned(this);
-	}
-	
-	Raid* r = entity_list.GetRaidByClient(this);
-	if(r){
-		r->MemberZoned(this);
-	}
 	
 	//remove ourself from all proximities
 	ClearAllProximities();
@@ -1576,7 +1566,9 @@ void Client::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_
 			}
 		}
 	}
-	
+
+	bool LeftCorpse = false;
+
 	// now we apply the exp loss, unmem their spells, and make a corpse
 	// unless they're a GM (or less than lvl 10
 	if(!GetGM())
@@ -1640,6 +1632,8 @@ void Client::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_
 			
 			//send the become corpse packet to everybody else in the zone.
 			entity_list.QueueClients(this, &app2, true);
+
+			LeftCorpse = true;
 		}
 
 //		if(!IsLD())//Todo: make it so an LDed client leaves corpse if its enabled
@@ -1692,13 +1686,36 @@ void Client::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_
 	// from these and overwrite what we set in pp anyway
 	//
 
-	m_pp.zone_id = m_pp.binds[0].zoneId;
-	m_pp.zoneInstance = 0;
-	database.MoveCharacterToZone(this->CharacterID(), database.GetZoneName(m_pp.zone_id));
-		
-	Save();
+	if(LeftCorpse && (GetClientVersionBit() & BIT_SoFAndLater) && RuleB(Character, RespawnFromHover))
+	{
+		RespawnFromHoverTimer.Start(RuleI(Character, RespawnFromHoverTimer) * 1000);
+
+		SendRespawnBinds();
+	}
+	else
+	{
+		if(isgrouped)
+		{
+			Group *g = GetGroup();
+			if(g)
+				g->MemberZoned(this);
+		}
 	
-	GoToDeath();
+		Raid* r = entity_list.GetRaidByClient(this);
+
+		if(r)
+			r->MemberZoned(this);
+
+		dead_timer.Start(5000, true);
+
+		m_pp.zone_id = m_pp.binds[0].zoneId;
+		m_pp.zoneInstance = 0;
+		database.MoveCharacterToZone(this->CharacterID(), database.GetZoneName(m_pp.zone_id));
+		
+		Save();
+	
+		GoToDeath();
+	}
 }
 
 bool NPC::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough)	 // Kaiyodo - base function has changed prototype, need to update overloaded version

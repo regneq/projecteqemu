@@ -545,8 +545,14 @@ void Client::ZonePC(int32 zoneID, int32 instance_id, float x, float y, float z, 
 		if(zm == ZoneToBindPoint) {
 			EQApplicationPacket* outapp = new EQApplicationPacket(OP_ZonePlayerToBind, sizeof(ZonePlayerToBind_Struct) + iZoneNameLength);
 			ZonePlayerToBind_Struct* gmg = (ZonePlayerToBind_Struct*) outapp->pBuffer;
-		
-			gmg->bind_zone_id = zoneID;
+
+			// If we are SoF and later and are respawning from hover, we want the real zone ID, else zero to use the old hack.
+			//
+			if((GetClientVersionBit() & BIT_SoFAndLater) && (!RuleB(Character, RespawnFromHover) || !IsHoveringForRespawn()))
+				gmg->bind_zone_id = 0;
+			else
+				gmg->bind_zone_id = zoneID;
+
 			gmg->x = x;
 			gmg->y = y;
 			gmg->z = z;

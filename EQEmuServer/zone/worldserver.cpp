@@ -657,14 +657,26 @@ void WorldServer::Process() {
 		}
 		case ServerOP_RezzPlayer: {
 			RezzPlayer_Struct* srs = (RezzPlayer_Struct*) pack->pBuffer;
-			if (srs->rezzopcode == OP_RezzRequest){
-                    // The Rezz request has arrived in the zone the player to be rezzed is currently in,
+			if (srs->rezzopcode == OP_RezzRequest)
+			{
+				// The Rezz request has arrived in the zone the player to be rezzed is currently in,
 				// so we send the request to their client which will bring up the confirmation box.
 				Client* client = entity_list.GetClientByName(srs->rez.your_name);
-				if (client){
+				if (client)
+				{
+					if(client->IsRezzPending())
+					{
+						ServerPacket * Response = new ServerPacket(ServerOP_RezzPlayerReject, strlen(srs->rez.rezzer_name) + 1);
+
+						char *Buffer = (char *)Response->pBuffer;
+						sprintf(Buffer, "%s", srs->rez.rezzer_name);
+						worldserver.SendPacket(Response);
+						safe_delete(Response);
+						break;
+					}
 					//pendingrezexp is the amount of XP on the corpse. Setting it to a value >= 0
 					//also serves to inform Client::OPRezzAnswer to expect a packet.
-					client->pendingrezzexp = srs->exp;
+					client->SetPendingRezzData(srs->exp, srs->rez.spellid, srs->rez.corpse_name);
                    			_log(SPELLS__REZ, "OP_RezzRequest in zone %s for %s, spellid:%i", 
 					     zone->GetShortName(), client->GetName(), srs->rez.spellid);
 					EQApplicationPacket* outapp = new EQApplicationPacket(OP_RezzRequest, 
@@ -691,6 +703,17 @@ void WorldServer::Process() {
 				}
 			}
 			
+			break;
+		}
+		case ServerOP_RezzPlayerReject:
+		{
+			char *Rezzer = (char *)pack->pBuffer;
+
+			Client* c = entity_list.GetClientByName(Rezzer);
+
+			if (c)
+				c->Message_StringID(MT_WornOff, REZZ_ALREADY_PENDING);
+
 			break;
 		}
 		case ServerOP_ZoneReboot: {
@@ -1643,11 +1666,12 @@ bool WorldServer::RezzPlayer(EQApplicationPacket* rpack,int32 rezzexp, int16 opc
 	sem->rez = *(Resurrect_Struct*) rpack->pBuffer;
 	sem->exp = rezzexp;
 	bool ret = SendPacket(pack);
-	safe_delete(pack);
 	if (ret)
 		_log(SPELLS__REZ, "Sending player rezz packet to world spellid:%i", sem->rez.spellid);
 	else
 		_log(SPELLS__REZ, "NOT Sending player rezz packet to world");
+
+	safe_delete(pack);
 	return ret;
 }
 

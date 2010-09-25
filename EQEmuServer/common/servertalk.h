@@ -68,7 +68,7 @@
 #define ServerOP_SpawnCondition		0x0034
 #define ServerOP_SpawnEvent			0x0035
 #define ServerOP_SetLaunchName		0x0036
-//#define ServerOP_DeleteGuild		0x0037	//ServerGuildID_Struct
+#define ServerOP_RezzPlayerReject	0x0037
 #define ServerOP_SpawnPlayerCorpse	0x0038
 #define ServerOP_Consent			0x0039
 #define ServerOP_Consent_Response	0x003a

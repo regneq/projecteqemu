@@ -171,7 +171,9 @@ Client::Client(EQStreamInterface* ieqs)
 	charm_class_attacks_timer(3000),
 	charm_cast_timer(3500),
 	qglobal_purge_timer(30000),
-	TrackingTimer(2000)
+	TrackingTimer(2000),
+	RespawnFromHoverTimer(0)
+
 {
 	for(int cf=0; cf < _FilterCount; cf++)
 		ClientFilters[cf] = FilterShow;
@@ -244,7 +246,8 @@ Client::Client(EQStreamInterface* ieqs)
 	// Kaiyodo - initialise haste variable
 	m_tradeskill_object = NULL;
 	delaytimer = false;
-	pendingrezzexp = 1;
+	PendingRezzXP = -1;
+	PendingRezzSpellID = 0;
 	numclients++;
 	// emuerror;
 	UpdateWindowTitle();
@@ -4007,49 +4010,46 @@ void Client::SendRespawnBinds()
 	// Client will respond with a 4 byte packet that includes the number of the selection made
 	//
 
-	int iZoneNameLength = 0;
-	const char*	pShortZoneName = NULL;
-	char* pZoneName = NULL;
 
-	pShortZoneName = database.GetZoneName(m_pp.binds[0].zoneId);
+	const char* BindName = "Bind Location";
+	const char* Resurrect = "Resurrect";
 
-	database.GetZoneLongName(pShortZoneName, &pZoneName);
-	pZoneName = "Bind Location";	// Temp Hack to force Bind Location as the zone name
-	iZoneNameLength = strlen(pZoneName);	// Zone Name Length
+	int PacketLength;
 
-	EQApplicationPacket *outapp = new EQApplicationPacket(OP_RespawnWindow, sizeof(RespawnWindow_Struct) + iZoneNameLength);
-	RespawnWindow_Struct *rws = (RespawnWindow_Struct *)outapp->pBuffer;
+	PacketLength = 17 + (26 * 2) + strlen(BindName) + strlen(Resurrect);	// SoF
 
-	rws->time_remaining = 300000;
-	rws->total_binds = 1;
-	rws->bind_points.bind_number = 0;
-	rws->bind_points.bind_zone_id = m_pp.binds[0].zoneId;
-	rws->bind_points.x = m_pp.binds[0].x;
-	rws->bind_points.y = m_pp.binds[0].y;
-	rws->bind_points.z = m_pp.binds[0].z;
-	rws->bind_points.heading = 0;
-	strncpy(rws->bind_points.bind_zone_name, pZoneName, iZoneNameLength);	// Needs a NULL terminator added
-	rws->bind_points.validity = 0;
-	
-	/*
-	// Second bind_points iteration - Resurrection
-	rws->bind_points.bind_number = 1;
-	rws->bind_points.bind_zone_id = zone->GetZoneID();
-	rws->bind_points.x = GetX();
-	rws->bind_points.y = GetY();
-	rws->bind_points.z = GetZ();
-	rws->bind_points.heading = GetHeading();
-	strcpy(rws->bind_points.bind_zone_name, "Resurrect");
-	rws->bind_points.validity = 1;
-	*/
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_RespawnWindow, PacketLength);
 
-	// TODO: Send Bind/Resurrection Points properly
+	char *Buffer = (char *)outapp->pBuffer;
 
-	_log(NET__ERROR, "Sending Respawn Window to client");
-	_hex(NET__ERROR, outapp->pBuffer, outapp->size);
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);	// Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, RuleI(Character, RespawnFromHoverTimer) * 1000);
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);	// Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2);	// Two options, Bind or Rez
+
+
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);	// Entry 0
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, m_pp.binds[0].zoneId);
+	VARSTRUCT_ENCODE_TYPE(float, Buffer, m_pp.binds[0].x);
+	VARSTRUCT_ENCODE_TYPE(float, Buffer, m_pp.binds[0].y);
+	VARSTRUCT_ENCODE_TYPE(float, Buffer, m_pp.binds[0].z);
+	VARSTRUCT_ENCODE_TYPE(float, Buffer, m_pp.binds[0].heading);
+	VARSTRUCT_ENCODE_STRING(Buffer, BindName);
+	VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);
+
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1);	// Entry 1
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, zone->GetZoneID());
+	VARSTRUCT_ENCODE_TYPE(float, Buffer, GetX());
+	VARSTRUCT_ENCODE_TYPE(float, Buffer, GetY());
+	VARSTRUCT_ENCODE_TYPE(float, Buffer, GetZ());
+	VARSTRUCT_ENCODE_TYPE(float, Buffer, GetHeading());
+	VARSTRUCT_ENCODE_STRING(Buffer, Resurrect);
+	VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 1);
 
 	QueuePacket(outapp);
 	safe_delete(outapp);
+
+	return;
 }
 
 void Client::HandleLDoNOpen(NPC *target)
@@ -4285,7 +4285,7 @@ int	Client::LDoNChest_SkillCheck(NPC *target, int skill)
 
 void Client::SummonAndRezzAllCorpses()
 {
-	pendingrezzexp = -1;
+	PendingRezzXP = -1;
 
 	ServerPacket *Pack = new ServerPacket(ServerOP_DepopAllPlayersCorpses, sizeof(ServerDepopAllPlayersCorpses_Struct));
 

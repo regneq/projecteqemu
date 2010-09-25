@@ -1186,13 +1186,17 @@ void EntityList::SendZoneSpawns(Client* client)
 	iterator.Reset();
 	while(iterator.MoreElements()) {
 		Mob* ent = iterator.GetData();
-		if (!( ent->InZone() ) || (ent->IsClient() && ent->CastToClient()->GMHideMe(client))) {
-			iterator.Advance();
-			continue;
+		if (!( ent->InZone() ) || (ent->IsClient()))
+		{
+			if(ent->CastToClient()->GMHideMe(client) || ent->CastToClient()->IsHoveringForRespawn())
+			{
+				iterator.Advance();
+				continue;
+			}
 		}
 		app = new EQApplicationPacket;
 		iterator.GetData()->CastToMob()->CreateSpawnPacket(app); // TODO: Use zonespawns opcode instead
-        client->QueuePacket(app, true, Client::CLIENT_CONNECTED);
+		client->QueuePacket(app, true, Client::CLIENT_CONNECTED);
 		safe_delete(app);
 		iterator.Advance();
 	}	
@@ -1216,7 +1220,7 @@ void EntityList::SendZoneSpawnsBulk(Client* client)
 		spawn = iterator.GetData();
 		if(spawn && spawn->InZone())
 		{
-			if(spawn->IsClient() && spawn->CastToClient()->GMHideMe(client))
+			if(spawn->IsClient() && (spawn->CastToClient()->GMHideMe(client) || spawn->CastToClient()->IsHoveringForRespawn()))
 				continue;
 			memset(&ns, 0, sizeof(NewSpawn_Struct));
 			spawn->FillSpawnStruct(&ns, client);
@@ -1732,7 +1736,7 @@ Corpse* EntityList::GetCorpseByID(int16 id){
 	return 0;
 }
 
-Corpse* EntityList::GetCorpseByName(char* name){
+Corpse* EntityList::GetCorpseByName(const char* name){
 	LinkedListIterator<Corpse*> iterator(corpse_list);
 	iterator.Reset();
 	while(iterator.MoreElements())

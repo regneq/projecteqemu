@@ -1779,7 +1779,7 @@ ENCODE(OP_ZonePlayerToBind)
 	zph->y = zps->y;
 	zph->z = zps->z;
 	zph->heading = zps->heading;
-	zph->bind_zone_id = 0;
+	zph->bind_zone_id = zps->bind_zone_id;
 	strcpy(zph->zone_name, zps->zone_name);
 
 	zpf->unknown021 = 1;

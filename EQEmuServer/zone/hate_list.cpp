@@ -172,18 +172,21 @@ Mob* HateList::GetClosest(Mob *hater) {
 void HateList::Add(Mob *ent, sint32 in_hate, sint32 in_dam, bool bFrenzy, bool iAddIfNotExist)
 {
 	if(!ent)
-        return;
+        	return;
 
 	if(ent->IsCorpse())
 		return;
 
-    tHateEntry *p = Find(ent);
-    if (p)
-    {
+	if(ent->IsClient() && ent->CastToClient()->IsDead())
+		return;
+
+	tHateEntry *p = Find(ent);
+	if (p)
+	{
 		p->damage+=in_dam;
 		p->hate+=in_hate;
-        p->bFrenzy = bFrenzy;
-    }
+		p->bFrenzy = bFrenzy;
+	}
 	else if (iAddIfNotExist) {
         p = new tHateEntry;
         p->ent = ent;
