@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+
+==09/26/2010==
+WildcardX: Updated bots.sql to catch a couple database object changes that affected bots over the last months.
+
 ==09/25/2010==
 Derision: Only one Rez confirmation box is allowed to be up at a time (per character).
 Derision: Enabled Respawn Window for SoF and later clients. Rule disabled by default.

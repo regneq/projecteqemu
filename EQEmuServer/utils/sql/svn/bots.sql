@@ -51,13 +51,21 @@ CREATE TABLE IF NOT EXISTS `bots` (
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS botinventory (
-  BotInventoryID integer unsigned NOT NULL auto_increment,
-  BotID integer unsigned NOT NULL DEFAULT '0',
-  SlotID integer signed NOT NULL DEFAULT '0',
-  ItemID integer unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (BotInventoryID),
-  KEY FK_botinventory_1 (BotID),
-  CONSTRAINT FK_botinventory_1 FOREIGN KEY (BotID) REFERENCES bots (BotID)
+  `BotInventoryID` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `BotID` int(10) unsigned NOT NULL DEFAULT '0',
+  `SlotID` int(11) NOT NULL DEFAULT '0',
+  `ItemID` int(10) unsigned NOT NULL DEFAULT '0',
+  `charges` tinyint(3) unsigned DEFAULT '0',
+  `color` int(10) unsigned NOT NULL DEFAULT '0',
+  `augslot1` mediumint(7) unsigned NOT NULL DEFAULT '0',
+  `augslot2` mediumint(7) unsigned NOT NULL DEFAULT '0',
+  `augslot3` mediumint(7) unsigned NOT NULL DEFAULT '0',
+  `augslot4` mediumint(7) unsigned NOT NULL DEFAULT '0',
+  `augslot5` mediumint(7) unsigned DEFAULT '0',
+  `instnodrop` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`BotInventoryID`),
+  KEY `FK_botinventory_1` (`BotID`),
+  CONSTRAINT `FK_botinventory_1` FOREIGN KEY (`BotID`) REFERENCES `bots` (`BotID`)
 ) ENGINE=InnoDB;
 
 delete from rule_values where rule_name like 'Bots%' and ruleset_id = 1;
@@ -202,7 +210,8 @@ cm.tribute_enable,
 cm.total_tribute,
 cm.last_tribute,
 cm.banker,
-cm.public_note
+cm.public_note,
+cm.alt
 from guild_members as cm
 union all
 select 'B' as mobtype,
@@ -213,7 +222,8 @@ bm.tribute_enable,
 bm.total_tribute,
 bm.last_tribute,
 bm.banker,
-bm.public_note
+bm.public_note,
+0 as alt
 from botguildmembers as bm;
 
 DROP VIEW IF EXISTS `vwBotCharacterMobs`;
