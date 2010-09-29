@@ -1446,7 +1446,7 @@ void Client::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_
 
 	int exploss;
 
-	mlog(COMBAT__HITS, "Fatal blow dealt by %s with %d damage, spell %d, skill %d", killerMob->GetName(), damage, spell, attack_skill);
+	mlog(COMBAT__HITS, "Fatal blow dealt by %s with %d damage, spell %d, skill %d", killerMob ? killerMob->GetName() : "Unknown", damage, spell, attack_skill);
 	
 	//
 	// #1: Send death packet to everyone
@@ -1587,7 +1587,10 @@ void Client::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_
 
 		//this generates a lot of 'updates' to the client that the client does not need
 		BuffFadeAll();
-		UnmemSpellAll(false);
+		if((GetClientVersionBit() & BIT_SoFAndLater) && RuleB(Character, RespawnFromHover))
+			UnmemSpellAll(true);
+		else
+			UnmemSpellAll(false);
 		
 		if(RuleB(Character, LeaveCorpses) && GetLevel() >= RuleI(Character, DeathItemLossLevel) || RuleB(Character, LeaveNakedCorpses))
 		{
