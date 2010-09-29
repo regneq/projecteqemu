@@ -1,6 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 
+==09/29/2010==
+Derision: Fixed crash in combat logging when a player was DoTted, zoned and then died from the DoT.
+Derision: Spells should no longer land on players with the Respawn Window up (e.g. AE DoTs, Evac spells).
+Derision: The client should now ummem spells on death when the Respawn Window is in use.
+
 ==09/26/2010==
 WildcardX: Updated bots.sql to catch a couple database object changes that affected bots over the last months.
 

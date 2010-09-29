@@ -2721,6 +2721,9 @@ int Mob::CanBuffStack(int16 spellid, int8 caster_level, bool iFailIfOverwrite)
 //
 bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar)
 {
+	if(spelltar && spelltar->IsClient() && spelltar->CastToClient()->IsHoveringForRespawn())
+		return false;
+
 	EQApplicationPacket *action_packet, *message_packet;
 	float spell_effectiveness;
 
