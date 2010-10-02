@@ -11385,7 +11385,7 @@ void Client::Handle_OP_BlockedBuffs(const EQApplicationPacket *app)
 			obbs->SpellID[i] = -1;
 
 		obbs->Pet = bbs->Pet;
-		obbs->Initialise = 0;
+		obbs->Initialise = 1;
 		obbs->Flags = 0x54;
 		obbs->Count = BlockedBuffs->size();
 
