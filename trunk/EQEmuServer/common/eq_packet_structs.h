@@ -4041,7 +4041,8 @@ struct LoadSpellSet_Struct {
 // "Return to Bind Location, please wait..."
 // This can be used to send zone name instead.. On 6.2 client, this is ignored.
 struct ZonePlayerToBind_Struct {
-/*000*/	uint32 bind_zone_id;
+/*000*/	uint16 bind_zone_id;
+/*002*/	uint16 bind_instance_id;
 /*004*/	float x;
 /*008*/	float y;
 /*012*/	float z;
