@@ -1129,9 +1129,10 @@ void Client::OPRezzAnswer(int32 Action, int32 SpellID, int16 ZoneID, int16 Insta
 	}
 
 	if (Action == 1) {
-		_log(SPELLS__REZ, "Player %s got a %i Rezz, spellid %i", 
+		_log(SPELLS__REZ, "Player %s got a %i Rezz, spellid %i in zone%i, instance id %i", 
 				  this->name, (int16)spells[SpellID].base[0],
-				  SpellID);
+				  SpellID, ZoneID, InstanceID);
+
 		this->BuffFadeAll();
 		int SpellEffectDescNum = GetSpellEffectDescNum(SpellID);
 		// Rez spells with Rez effects have this DescNum (first is Titanium, second is 6.2 Client)
@@ -2023,6 +2024,7 @@ void Client::HandleRespawnFromHover(uint32 Option)
 		ZonePlayerToBind_Struct* gmg = (ZonePlayerToBind_Struct*) outapp->pBuffer;
 		
 		gmg->bind_zone_id = zone->GetZoneID();
+		gmg->bind_instance_id = zone->GetInstanceID();
 		gmg->x = GetX();
 		gmg->y = GetY();
 		gmg->z = GetZ();

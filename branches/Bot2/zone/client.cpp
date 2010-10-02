@@ -381,6 +381,16 @@ Client::~Client() {
 		LeaveGroup();
 
 	UpdateWho(2);
+
+	if(IsHoveringForRespawn())
+	{
+		m_pp.zone_id = m_pp.binds[0].zoneId;
+		m_pp.zoneInstance = 0;
+		x_pos = m_pp.binds[0].x;
+		y_pos = m_pp.binds[0].y;
+		z_pos = m_pp.binds[0].z;
+	}
+
 	// we save right now, because the client might be zoning and the world
 	// will need this data right away
 	Save(2); // This fails when database destructor is called first on shutdown

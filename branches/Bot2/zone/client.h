@@ -976,6 +976,8 @@ public:
 	void SetPendingRezzData(int XP, int16 SpellID, const char *CorpseName) { PendingRezzXP = XP; PendingRezzSpellID = SpellID; PendingRezzCorpseName = CorpseName; }
 	bool IsRezzPending() { return PendingRezzSpellID > 0; }
 	void ClearHover();
+	inline bool IsBlockedBuff(sint16 SpellID) { return PlayerBlockedBuffs.find(SpellID) != PlayerBlockedBuffs.end(); }
+	inline bool IsBlockedPetBuff(sint16 SpellID) { return PetBlockedBuffs.find(SpellID) != PetBlockedBuffs.end(); }
 
 protected:
 	friend class Mob;
@@ -1252,6 +1254,9 @@ private:
 	int PendingRezzXP;
 	int16 PendingRezzSpellID;		// Only used for resurrect while hovering.
 	std::string PendingRezzCorpseName;	// Only used for resurrect while hovering.
+
+	std::set<uint32> PlayerBlockedBuffs;
+	std::set<uint32> PetBlockedBuffs;
 
 };
 
