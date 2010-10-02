@@ -261,3 +261,4 @@
 	void Handle_OP_GuildStatus(const EQApplicationPacket *app);
 	void Handle_OP_BlockedBuffs(const EQApplicationPacket *app);
 	void Handle_OP_RemoveBlockedBuffs(const EQApplicationPacket *app);
+	void Handle_OP_ClearBlockedBuffs(const EQApplicationPacket *app);

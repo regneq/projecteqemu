@@ -371,6 +371,7 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_GuildStatus] = &Client::Handle_OP_GuildStatus;
 	ConnectedOpcodes[OP_BlockedBuffs] = &Client::Handle_OP_BlockedBuffs;
 	ConnectedOpcodes[OP_RemoveBlockedBuffs] = &Client::Handle_OP_RemoveBlockedBuffs;
+	ConnectedOpcodes[OP_ClearBlockedBuffs] = &Client::Handle_OP_ClearBlockedBuffs;
 }
 
 int Client::HandlePacket(const EQApplicationPacket *app)
@@ -11355,14 +11356,11 @@ void Client::Handle_OP_BlockedBuffs(const EQApplicationPacket *app)
 		return;
 	}
 
+	std::set<uint32>::iterator Iterator;
+
 	BlockedBuffs_Struct *bbs = (BlockedBuffs_Struct*)app->pBuffer;
 
-	std::set<uint32> *BlockedBuffs;
-
-	if(bbs->Pet)
-		BlockedBuffs = &PetBlockedBuffs;
-	else
-		BlockedBuffs = &PlayerBlockedBuffs;
+	std::set<uint32> *BlockedBuffs = bbs->Pet ? &PetBlockedBuffs : &PlayerBlockedBuffs;
 
 	if(bbs->Initialise == 1)
 	{
@@ -11391,7 +11389,7 @@ void Client::Handle_OP_BlockedBuffs(const EQApplicationPacket *app)
 
 		unsigned int Element = 0;
 
-		std::set<uint32>::iterator Iterator = BlockedBuffs->begin();
+		Iterator = BlockedBuffs->begin();
 
 		while(Iterator != BlockedBuffs->end())
 		{
@@ -11426,7 +11424,7 @@ void Client::Handle_OP_BlockedBuffs(const EQApplicationPacket *app)
 		}
 		obbs->Count = BlockedBuffs->size();
 
-		std::set<uint32>::iterator Iterator = BlockedBuffs->begin();
+		Iterator = BlockedBuffs->begin();
 			
 		unsigned int Element = 0;
 
@@ -11456,14 +11454,9 @@ void Client::Handle_OP_RemoveBlockedBuffs(const EQApplicationPacket *app)
 	}
 	BlockedBuffs_Struct *bbs = (BlockedBuffs_Struct*)app->pBuffer;
 
-	std::set<uint32> *BlockedBuffs;
+	std::set<uint32> *BlockedBuffs = bbs->Pet ? &PetBlockedBuffs : &PlayerBlockedBuffs;
 
 	std::set<uint32> RemovedBuffs;
-
-	if(bbs->Pet)
-		BlockedBuffs = &PetBlockedBuffs;
-	else
-		BlockedBuffs = &PlayerBlockedBuffs;
 
 	if(bbs->Count > 0)
 	{
@@ -11480,7 +11473,7 @@ void Client::Handle_OP_RemoveBlockedBuffs(const EQApplicationPacket *app)
 		obbs->Initialise = 0;
 		obbs->Flags = 0x5a;
 
-		for(unsigned int i = 0; i < BLOCKED_BUFF_COUNT; ++i)
+		for(unsigned int i = 0; i < bbs->Count; ++i)
 		{
 			Iterator = BlockedBuffs->find(bbs->SpellID[i]);
 
@@ -11505,4 +11498,27 @@ void Client::Handle_OP_RemoveBlockedBuffs(const EQApplicationPacket *app)
 
 		FastQueuePacket(&outapp);
 	}
+}
+void Client::Handle_OP_ClearBlockedBuffs(const EQApplicationPacket *app)
+{
+	if(!RuleB(Spells, EnableBlockedBuffs))
+		return;
+
+	if(app->size != 1)
+	{
+		LogFile->write(EQEMuLog::Debug, "Size mismatch in OP_ClearBlockedBuffs expected 1 got %i", app->size);
+
+		DumpPacket(app);
+
+		return;
+	}
+
+	bool Pet = app->pBuffer[0];
+
+	if(Pet)
+		PetBlockedBuffs.clear();
+	else
+		PlayerBlockedBuffs.clear();
+
+	QueuePacket(app);
 }

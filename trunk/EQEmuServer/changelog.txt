@@ -5,6 +5,7 @@ Derision: Players disconnected with the Respawn Window up will now return to bin
 Derision: Players rezzed in an instance via the Respawn Window will no longer zone.
 Derision: Implemented Blocked Buffs.
 Derision: Fixed Blocked Buff spam every time you zone.
+Derision: Implemented OP_ClearBlockedBuffs.
 
 ==09/29/2010==
 Derision: Fixed crash in combat logging when a player was DoTted, zoned and then died from the DoT.
