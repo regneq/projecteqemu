@@ -223,6 +223,7 @@ RULE_INT ( Spells, MaxBuffSlotsNPC, 25)
 RULE_INT ( Spells, MaxSongSlotsNPC, 10)
 RULE_INT ( Spells, MaxDiscSlotsNPC, 1)
 RULE_INT ( Spells, MaxTotalSlotsNPC, 36)
+RULE_BOOL (Spells, EnableBlockedBuffs, true)
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Combat )

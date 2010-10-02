@@ -25,6 +25,7 @@
 #include <zlib.h>
 #include <assert.h>
 #include <sstream>
+#include <set>
 
 #ifdef WIN32
 	#define snprintf	_snprintf
@@ -122,6 +123,7 @@ void MapOpcodes() {
 	ConnectingOpcodes[OP_SendAAStats] = &Client::Handle_Connect_OP_SendAAStats;
 	ConnectingOpcodes[OP_ClientReady] = &Client::Handle_Connect_OP_ClientReady;
 	ConnectingOpcodes[OP_UpdateAA] = &Client::Handle_Connect_OP_UpdateAA;
+	ConnectingOpcodes[OP_BlockedBuffs] = &Client::Handle_OP_BlockedBuffs;
 //temporary hack:
 	ConnectingOpcodes[OP_GetGuildsList] = &Client::Handle_OP_GetGuildsList;
 
@@ -367,6 +369,8 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_TradeBusy] = &Client::Handle_OP_TradeBusy;
 	ConnectedOpcodes[OP_GuildUpdateURLAndChannel] = &Client::Handle_OP_GuildUpdateURLAndChannel;
 	ConnectedOpcodes[OP_GuildStatus] = &Client::Handle_OP_GuildStatus;
+	ConnectedOpcodes[OP_BlockedBuffs] = &Client::Handle_OP_BlockedBuffs;
+	ConnectedOpcodes[OP_RemoveBlockedBuffs] = &Client::Handle_OP_RemoveBlockedBuffs;
 }
 
 int Client::HandlePacket(const EQApplicationPacket *app)
@@ -11334,4 +11338,171 @@ void Client::Handle_OP_GuildStatus(const EQApplicationPacket *app)
 		Message_StringID(clientMessageWhite, OFFICER_OF_X_GUILD, c->GetName(), GuildName);
 	else
 		Message_StringID(clientMessageWhite, MEMBER_OF_X_GUILD, c->GetName(), GuildName);
+}
+
+void Client::Handle_OP_BlockedBuffs(const EQApplicationPacket *app)
+{
+	if(!RuleB(Spells, EnableBlockedBuffs))
+		return;
+
+	if(app->size != sizeof(BlockedBuffs_Struct))
+	{
+		LogFile->write(EQEMuLog::Debug, "Size mismatch in OP_BlockedBuffs expected %i got %i",
+		               sizeof(BlockedBuffs_Struct), app->size);
+
+		DumpPacket(app);
+
+		return;
+	}
+
+	BlockedBuffs_Struct *bbs = (BlockedBuffs_Struct*)app->pBuffer;
+
+	std::set<uint32> *BlockedBuffs;
+
+	if(bbs->Pet)
+		BlockedBuffs = &PetBlockedBuffs;
+	else
+		BlockedBuffs = &PlayerBlockedBuffs;
+
+	if(bbs->Initialise == 1)
+	{
+		BlockedBuffs->clear();
+
+		for(unsigned int i = 0; i < BLOCKED_BUFF_COUNT; ++i)
+		{
+			if((bbs->SpellID[i] > 0) && IsBeneficialSpell(bbs->SpellID[i]))
+			{
+				if(BlockedBuffs->find(bbs->SpellID[i]) == BlockedBuffs->end())
+						BlockedBuffs->insert(bbs->SpellID[i]);
+			}
+		}
+
+		EQApplicationPacket *outapp = new EQApplicationPacket(OP_BlockedBuffs, sizeof(BlockedBuffs_Struct));
+
+		BlockedBuffs_Struct *obbs = (BlockedBuffs_Struct*)outapp->pBuffer;
+
+		for(unsigned int i = 0; i < BLOCKED_BUFF_COUNT; ++i)
+			obbs->SpellID[i] = -1;
+
+		obbs->Pet = bbs->Pet;
+		obbs->Initialise = 0;
+		obbs->Flags = 0x54;
+		obbs->Count = BlockedBuffs->size();
+
+		unsigned int Element = 0;
+
+		std::set<uint32>::iterator Iterator = BlockedBuffs->begin();
+
+		while(Iterator != BlockedBuffs->end())
+		{
+			obbs->SpellID[Element++] = (*Iterator);
+				++Iterator;
+		}
+
+		FastQueuePacket(&outapp);
+		return;
+	}
+
+	if((bbs->Initialise == 0) && (bbs->Count > 0))
+	{
+		EQApplicationPacket *outapp = new EQApplicationPacket(OP_BlockedBuffs, sizeof(BlockedBuffs_Struct));
+
+		BlockedBuffs_Struct *obbs = (BlockedBuffs_Struct*)outapp->pBuffer;
+
+		for(unsigned int i = 0; i < BLOCKED_BUFF_COUNT; ++i)
+			obbs->SpellID[i] = -1;
+
+		obbs->Pet = bbs->Pet;
+		obbs->Initialise = 0;
+		obbs->Flags = 0x54;
+
+		for(unsigned int i = 0; i < BLOCKED_BUFF_COUNT; ++i)
+		{
+			if(!IsBeneficialSpell(bbs->SpellID[i]))
+				continue;
+
+			if((BlockedBuffs->size() < BLOCKED_BUFF_COUNT) && (BlockedBuffs->find(bbs->SpellID[i]) == BlockedBuffs->end()))
+				BlockedBuffs->insert(bbs->SpellID[i]);
+		}
+		obbs->Count = BlockedBuffs->size();
+
+		std::set<uint32>::iterator Iterator = BlockedBuffs->begin();
+			
+		unsigned int Element = 0;
+
+		while(Iterator != BlockedBuffs->end())
+		{
+			obbs->SpellID[Element++] = (*Iterator);
+				++Iterator;
+		}
+
+		FastQueuePacket(&outapp);
+	}
+}
+
+void Client::Handle_OP_RemoveBlockedBuffs(const EQApplicationPacket *app)
+{
+	if(!RuleB(Spells, EnableBlockedBuffs))
+		return;
+
+	if(app->size != sizeof(BlockedBuffs_Struct))
+	{
+		LogFile->write(EQEMuLog::Debug, "Size mismatch in OP_RemoveBlockedBuffs expected %i got %i",
+		               sizeof(BlockedBuffs_Struct), app->size);
+
+		DumpPacket(app);
+
+		return;
+	}
+	BlockedBuffs_Struct *bbs = (BlockedBuffs_Struct*)app->pBuffer;
+
+	std::set<uint32> *BlockedBuffs;
+
+	std::set<uint32> RemovedBuffs;
+
+	if(bbs->Pet)
+		BlockedBuffs = &PetBlockedBuffs;
+	else
+		BlockedBuffs = &PlayerBlockedBuffs;
+
+	if(bbs->Count > 0)
+	{
+		std::set<uint32>::iterator Iterator;
+
+		EQApplicationPacket *outapp = new EQApplicationPacket(OP_RemoveBlockedBuffs, sizeof(BlockedBuffs_Struct));
+
+		BlockedBuffs_Struct *obbs = (BlockedBuffs_Struct*)outapp->pBuffer;
+
+		for(unsigned int i = 0; i < BLOCKED_BUFF_COUNT; ++i)
+			obbs->SpellID[i] = 0;
+
+		obbs->Pet = bbs->Pet;
+		obbs->Initialise = 0;
+		obbs->Flags = 0x5a;
+
+		for(unsigned int i = 0; i < BLOCKED_BUFF_COUNT; ++i)
+		{
+			Iterator = BlockedBuffs->find(bbs->SpellID[i]);
+
+			if(Iterator != BlockedBuffs->end())
+			{
+				RemovedBuffs.insert(bbs->SpellID[i]);
+
+				BlockedBuffs->erase(Iterator);
+			}
+		}
+		obbs->Count = RemovedBuffs.size();
+
+		Iterator = RemovedBuffs.begin();
+			
+		unsigned int Element = 0;
+
+		while(Iterator != RemovedBuffs.end())
+		{
+			obbs->SpellID[Element++] = (*Iterator);
+				++Iterator;
+		}
+
+		FastQueuePacket(&outapp);
+	}
 }

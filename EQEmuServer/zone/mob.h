@@ -1017,6 +1017,9 @@ bool logpos;
 	inline uint8 GetManaPercent() { return (uint8)((float)cur_mana / (float)max_mana * 100.0f); }
 	virtual uint8 GetEndurancePercent() { return 0; }
 
+	inline virtual bool IsBlockedBuff(sint16 SpellID) { return false; }
+	inline virtual bool IsBlockedPetBuff(sint16 SpellID) { return false; }
+
 	void SetGlobal(const char *varname, const char *newvalue, int options, const char *duration, Mob *other = NULL);
 	void TarGlobal(const char *varname, const char *value, const char *duration, int npcid, int charid, int zoneid);
 	void DelGlobal(const char *varname);

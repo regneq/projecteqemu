@@ -2721,8 +2721,27 @@ int Mob::CanBuffStack(int16 spellid, int8 caster_level, bool iFailIfOverwrite)
 //
 bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar)
 {
-	if(spelltar && spelltar->IsClient() && spelltar->CastToClient()->IsHoveringForRespawn())
-		return false;
+	if(spelltar)
+	{
+		if(spelltar->IsClient() && spelltar->CastToClient()->IsHoveringForRespawn())
+			return false;
+
+		if(RuleB(Spells, EnableBlockedBuffs))
+		{
+			if(spelltar->IsBlockedBuff(spell_id))
+			{
+				mlog(SPELLS__BUFFS, "Spell %i not applied to %s as it is a Blocked Buff.", spell_id, spelltar->GetName());
+				return false;
+			}
+
+			if(spelltar->IsPet() && spelltar->GetOwner() && spelltar->GetOwner()->IsBlockedPetBuff(spell_id))
+			{
+				mlog(SPELLS__BUFFS, "Spell %i not applied to %s (%s's pet) as it is a Pet Blocked Buff.", spell_id, spelltar->GetName(),
+						    spelltar->GetOwner()->GetName());
+				return false;
+			}
+		}
+	}
 
 	EQApplicationPacket *action_packet, *message_packet;
 	float spell_effectiveness;
