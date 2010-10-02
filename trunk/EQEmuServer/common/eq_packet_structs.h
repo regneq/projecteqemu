@@ -26,6 +26,7 @@
 //#include "../common/item_struct.h"
 
 static const uint32 BUFF_COUNT = 25;
+static const uint32 BLOCKED_BUFF_COUNT = 20;
 
 #include "eq_constants.h"
 
@@ -525,6 +526,15 @@ struct PetBuff_Struct {
 /*124*/ uint32 ticsremaining[BUFF_COUNT];
 /*224*/ uchar unknown705[20];
 /*244*/ uint32 buffcount;
+};
+
+struct BlockedBuffs_Struct
+{
+/*00*/ sint32 SpellID[BLOCKED_BUFF_COUNT];
+/*80*/ uint32 Count;
+/*84*/ uint8 Pet;
+/*85*/ uint8 Initialise;
+/*86*/ uint16 Flags;
 };
 
 struct ItemNamePacket_Struct {

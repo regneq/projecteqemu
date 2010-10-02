@@ -259,3 +259,5 @@
 	void Handle_OP_TradeBusy(const EQApplicationPacket *app);
 	void Handle_OP_GuildUpdateURLAndChannel(const EQApplicationPacket *app);
 	void Handle_OP_GuildStatus(const EQApplicationPacket *app);
+	void Handle_OP_BlockedBuffs(const EQApplicationPacket *app);
+	void Handle_OP_RemoveBlockedBuffs(const EQApplicationPacket *app);
