@@ -1253,7 +1253,8 @@ struct BecomeCorpse_Struct {
 };
 
 struct ZonePlayerToBind_Struct {
-/*000*/	uint32	bind_zone_id;
+/*000*/	uint16	bind_zone_id;
+/*002*/	uint16	bind_instance_id;
 /*004*/	float	x;
 /*008*/	float	y;
 /*012*/	float	z;
@@ -1267,7 +1268,8 @@ struct ZonePlayerToBind_Struct {
 
 struct ZonePlayerToBindHeader_Struct
 {
-	/*000*/	uint32	bind_zone_id;
+	/*000*/	uint16	bind_zone_id;
+	/*002*/	uint16	bind_instance_id;
 	/*004*/	float	x;
 	/*008*/	float	y;
 	/*012*/	float	z;
