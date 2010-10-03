@@ -2721,25 +2721,30 @@ int Mob::CanBuffStack(int16 spellid, int8 caster_level, bool iFailIfOverwrite)
 //
 bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar)
 {
-	if(spelltar)
+	// well we can't cast a spell on target without a target
+	if(!spelltar)
 	{
-		if(spelltar->IsClient() && spelltar->CastToClient()->IsHoveringForRespawn())
-			return false;
+		mlog(SPELLS__CASTING_ERR, "Unable to apply spell %d without a target", spell_id);
+		Message(13, "SOT: You must have a target for this spell.");
+		return false;
+	}
 
-		if(RuleB(Spells, EnableBlockedBuffs))
+	if(spelltar->IsClient() && spelltar->CastToClient()->IsHoveringForRespawn())
+		return false;
+
+	if(RuleB(Spells, EnableBlockedBuffs))
+	{
+		if(spelltar->IsBlockedBuff(spell_id))
 		{
-			if(spelltar->IsBlockedBuff(spell_id))
-			{
-				mlog(SPELLS__BUFFS, "Spell %i not applied to %s as it is a Blocked Buff.", spell_id, spelltar->GetName());
-				return false;
-			}
+			mlog(SPELLS__BUFFS, "Spell %i not applied to %s as it is a Blocked Buff.", spell_id, spelltar->GetName());
+			return false;
+		}
 
-			if(spelltar->IsPet() && spelltar->GetOwner() && spelltar->GetOwner()->IsBlockedPetBuff(spell_id))
-			{
-				mlog(SPELLS__BUFFS, "Spell %i not applied to %s (%s's pet) as it is a Pet Blocked Buff.", spell_id, spelltar->GetName(),
-						    spelltar->GetOwner()->GetName());
-				return false;
-			}
+		if(spelltar->IsPet() && spelltar->GetOwner() && spelltar->GetOwner()->IsBlockedPetBuff(spell_id))
+		{
+			mlog(SPELLS__BUFFS, "Spell %i not applied to %s (%s's pet) as it is a Pet Blocked Buff.", spell_id, spelltar->GetName(),
+					    spelltar->GetOwner()->GetName());
+			return false;
 		}
 	}
 
@@ -2748,14 +2753,6 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar)
 
 	if(!IsValidSpell(spell_id))
 		return false;
-
-	// well we can't cast a spell on target without a target
-	if(!spelltar)
-	{
-		mlog(SPELLS__CASTING_ERR, "Unable to apply spell %d without a target", spell_id);
-		Message(13, "SOT: You must have a target for this spell.");
-		return false;
-	}
 
 	int16 caster_level = GetCasterLevel(spell_id);
 	
