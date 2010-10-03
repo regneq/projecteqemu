@@ -774,8 +774,7 @@ ENCODE(OP_Track)
 
 	char *Buffer = (char *)in->pBuffer;
 
-	VARSTRUCT_ENCODE_TYPE(uint8, Buffer, EntryCount);
-	VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);
+	VARSTRUCT_ENCODE_TYPE(uint16, Buffer, EntryCount);
 
 	for(int i = 0; i < EntryCount; ++i, ++emu)
 	{
