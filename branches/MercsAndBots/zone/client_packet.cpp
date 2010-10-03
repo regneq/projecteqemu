@@ -372,6 +372,7 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_BlockedBuffs] = &Client::Handle_OP_BlockedBuffs;
 	ConnectedOpcodes[OP_RemoveBlockedBuffs] = &Client::Handle_OP_RemoveBlockedBuffs;
 	ConnectedOpcodes[OP_ClearBlockedBuffs] = &Client::Handle_OP_ClearBlockedBuffs;
+	ConnectedOpcodes[OP_MercenaryDataRequest] = &Client::Handle_OP_MercenaryDataRequest;
 }
 
 int Client::HandlePacket(const EQApplicationPacket *app)
@@ -11522,3 +11523,410 @@ void Client::Handle_OP_ClearBlockedBuffs(const EQApplicationPacket *app)
 
 	QueuePacket(app);
 }
+
+void Client::Handle_OP_MercenaryDataRequest(const EQApplicationPacket *app)
+{
+	// The payload is 4 bytes. The EntityID of the Mercenary Liason which are of class 71.
+	//
+	if(app->size != 4)
+	{
+		LogFile->write(EQEMuLog::Debug, "Size mismatch in OP_MercenaryDataRequest expected 4 got %i", app->size);
+
+		DumpPacket(app);
+
+		return;
+	}
+
+	// Hard coded response for Dark Elf Mercenaries
+	//
+	// 1744 was the size of the live packet. SoD has fewer fields, so the packet we are actually sending here doesn't need
+	// to be that big, but it doesn't matter for now.
+	//
+	// The packet we are constructing here is a copy of a live packet, so some of these DB string IDs will not exist
+	// in the SOD dbstr_us.txt file and therefore will give Unknown DB String IDs in the UI for now.
+	//
+	EQApplicationPacket *outapp = new EQApplicationPacket(OP_MercenaryDataResponse, 1744);
+
+	char *Buffer = (char *)outapp->pBuffer;
+
+	char *Start = Buffer;
+
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Number of Types (Journeyman and Apprentice in this case
+	
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6000100); // DBStringID for Type 0
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6000200); // DBStringID for Type 1
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 24); // Count of Sub-types that follow
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 97); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6000100); // DBStringID of Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6020104); // DBStringID of Sub-Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 4910); // Purchase Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 123); // Upkeep Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 19); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Number of Stances for this Merc
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 445939820); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 96); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6000100); // DBStringID of Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6010103); // DBStringID of Sub-Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 3682); // Purchase Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 92); // Upkeep Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 19); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Number of Stances for this Merc
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 445939820); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 5); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 95); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6000100); // DBStringID of Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6020103); // DBStringID of Sub-Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 3682); // Purchase Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 92); // Upkeep Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 19); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Number of Stances for this Merc
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 445939820); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 94); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6000100); // DBStringID of Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6010102); // DBStringID of Sub-Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2455); // Purchase Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 61); // Upkeep Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 19); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Number of Stances for this Merc
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 445939820); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 5); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 93); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6000100); // DBStringID of Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6020102); // DBStringID of Sub-Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2455); // Purchase Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 61); // Upkeep Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 19); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Number of Stances for this Merc
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 445939820); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 92); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6000100); // DBStringID of Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6010101); // DBStringID of Sub-Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1227); // Purchase Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 31); // Upkeep Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 19); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Number of Stances for this Merc
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 445939820); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 5); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 91); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6000100); // DBStringID of Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6020101); // DBStringID of Sub-Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1227); // Purchase Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 31); // Upkeep Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 19); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Number of Stances for this Merc
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 445939820); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 98); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6000100); // DBStringID of Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6010104); // DBStringID of Sub-Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 4910); // Purchase Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 123); // Upkeep Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 19); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Number of Stances for this Merc
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 445939820); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 5); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 99); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6000100); // DBStringID of Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6020105); // DBStringID of Sub-Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6137); // Purchase Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 153); // Upkeep Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 19); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Number of Stances for this Merc
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 445939820); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 100); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6000100); // DBStringID of Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6010105); // DBStringID of Sub-Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6137); // Purchase Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 153); // Upkeep Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 19); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Number of Stances for this Merc
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 445939820); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 5); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 101); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6000200); // DBStringID of Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6020201); // DBStringID of Sub-Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 12963); // Purchase Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 259); // Upkeep Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 19); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 4); // Number of Stances for this Merc
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 445939820); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 4); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 3); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 3); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 102); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6000200); // DBStringID of Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6010201); // DBStringID of Sub-Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 12963); // Purchase Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 259); // Upkeep Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 19); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 3); // Number of Stances for this Merc
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 445939820); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 5); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1615); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6000100); // DBStringID of Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6040101); // DBStringID of Sub-Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1227); // Purchase Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 31); // Upkeep Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 19); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Number of Stances for this Merc
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 445939820); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1616); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6000100); // DBStringID of Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6040102); // DBStringID of Sub-Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2455); // Purchase Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 61); // Upkeep Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 19); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Number of Stances for this Merc
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 445939820); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1617); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6000100); // DBStringID of Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6040103); // DBStringID of Sub-Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 3682); // Purchase Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 92); // Upkeep Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 19); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Number of Stances for this Merc
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 445939820); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1618); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6000100); // DBStringID of Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6040104); // DBStringID of Sub-Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 4910); // Purchase Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 123); // Upkeep Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 19); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Number of Stances for this Merc
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 445939820); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1619); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6000100); // DBStringID of Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6040105); // DBStringID of Sub-Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6137); // Purchase Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 153); // Upkeep Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 19); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Number of Stances for this Merc
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 445939820); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1620); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6000200); // DBStringID of Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6040201); // DBStringID of Sub-Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 12963); // Purchase Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 259); // Upkeep Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 19); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 3); // Number of Stances for this Merc
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 445939820); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 7); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 3181); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6000100); // DBStringID of Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6120101); // DBStringID of Sub-Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1227); // Purchase Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 31); // Upkeep Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 19); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Number of Stances for this Merc
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 445939820); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 3182); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6000100); // DBStringID of Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6120102); // DBStringID of Sub-Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2455); // Purchase Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 61); // Upkeep Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 19); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Number of Stances for this Merc
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 445939820); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 3183); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6000100); // DBStringID of Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6120103); // DBStringID of Sub-Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 3682); // Purchase Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 92); // Upkeep Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 19); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Number of Stances for this Merc
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 445939820); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 3184); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6000100); // DBStringID of Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6120104); // DBStringID of Sub-Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 4910); // Purchase Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 123); // Upkeep Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 19); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Number of Stances for this Merc
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 445939820); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 3185); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6000100); // DBStringID of Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6120105); // DBStringID of Sub-Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6137); // Purchase Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 153); // Upkeep Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 19); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Number of Stances for this Merc
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 445939820); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 3186); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6000200); // DBStringID of Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 6120201); // DBStringID of Sub-Type
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 12963); // Purchase Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 259); // Upkeep Cost
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 19); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 4); // Number of Stances for this Merc
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 445939820); // Unknown
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 3); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 9); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 7); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 2); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0); // Stance Number
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 1); // Stance DBStringID (1 = Passive, 2 = Balanced etc.
+	DumpPacket(outapp);
+	FastQueuePacket(&outapp);
+}	
