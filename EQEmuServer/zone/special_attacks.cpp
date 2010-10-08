@@ -606,6 +606,14 @@ void Mob::RogueBackstab(Mob* other, bool min_damage)
 		wpn = CastToClient()->GetInv().GetItem(SLOT_PRIMARY);
 		primaryweapondamage = GetWeaponDamage(other, wpn);
 		backstab_dmg = wpn->GetItem()->BackstabDmg;
+		for(int i = 0; i < MAX_AUGMENT_SLOTS; ++i)
+		{
+			ItemInst *aug = wpn->GetAugment(i);
+			if(aug)
+			{
+				backstab_dmg += aug->GetItem()->BackstabDmg;
+			}
+		}
 	}
 	else{
 		primaryweapondamage = (GetLevel()/7)+1; // fallback incase it's a npc without a weapon, 2 dmg at 10, 10 dmg at 65
