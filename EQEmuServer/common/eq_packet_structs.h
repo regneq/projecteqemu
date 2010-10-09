@@ -2377,10 +2377,10 @@ struct Object_Struct {
 /*32*/	float	z;					// z coord
 /*36*/	float	x;					// x coord
 /*40*/	float	y;					// y coord
-/*44*/	char	object_name[20];	// Name of object, usually something like IT63_ACTORDEF
-/*64*/	float	unknown064;			// seems like coords, not always valid, all 0 on most world objects
-/*68*/	float	unknown068;			// seems like coords, not always valid, all 0 on most world objects
-/*72*/	float	unknown072;			// seems like coords, not always valid, all 0 on most world objects
+/*44*/	char	object_name[32];	// Name of object, usually something like IT63_ACTORDEF
+//*64*/	float	unknown064;			// seems like coords, not always valid, all 0 on most world objects
+//*68*/	float	unknown068;			// seems like coords, not always valid, all 0 on most world objects
+//*72*/	float	unknown072;			// seems like coords, not always valid, all 0 on most world objects
 /*76*/	uint32	unknown076;			//
 /*80*/	uint32	object_type;		// Type of object, not directly translated to OP_OpenObject
 /*84*/	uint32	unknown084;			//set to 0xFF

@@ -1,5 +1,13 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==10/09/2010==
+Trevius: Object model names can now use up to 32 characters.
+Trevius: Zone short names can now use up to 32 characters.
+Trevius: Added extra checks before AIYellForHelp call is made to prevent potential issues.
+
+Required SQL:
+utils/sql/svn/1696_modify_zone_and_object_tables.sql
+
 ==10/03/2010==
 Derision: Fixed bug in SoD+ tracking.
 JJ: Removed redundant namespace usage.
