@@ -213,7 +213,8 @@ public:
 
 	float   org_x, org_y, org_z, org_heading;
 	
-	int16	GetMaxDMG() const {return max_dmg;}
+	int32	GetMaxDMG() const {return max_dmg;}
+	int32	GetMinDMG() const {return min_dmg;}
 	bool	IsAnimal() const { return(bodytype == BT_Animal); }
 	int16   GetPetSpellID() const {return pet_spell_id;}
 	void    SetPetSpellID(int16 amt) {pet_spell_id = amt;}

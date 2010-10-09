@@ -99,9 +99,6 @@ Object::Object(const ItemInst* inst, char* name,float max_x,float min_x,float ma
 	
 	// Hardcoded portion for unknown members
 	m_data.unknown024	= 0x7f001194;
-	//m_data.unknown064	= 0;	//0x0000000D;
-	//m_data.unknown068	= 0;	//0x0000001E;
-	//m_data.unknown072	= 0;	//0x000032ED;
 	m_data.unknown076	= 0x0000d5fe;
 	m_data.unknown084	= 0xFFFFFFFF;
 }
@@ -133,9 +130,6 @@ Object::Object(Client* client, const ItemInst* inst)
 
 	// Hardcoded portion for unknown members
 	m_data.unknown024	= 0x7f001194;
-	//m_data.unknown064	= 0;	//0x0000000D;
-	//m_data.unknown068	= 0;	//0x0000001E;
-	//m_data.unknown072	= 0;	//0x000032ED;
 	m_data.unknown076	= 0x0000d5fe;
 	m_data.unknown084	= 0xFFFFFFFF;
 	
@@ -192,9 +186,6 @@ Object::Object(const ItemInst *inst, float x, float y, float z, float heading, i
 
 	// Hardcoded portion for unknown members
 	m_data.unknown024	= 0x7f001194;
-	//m_data.unknown064	= 0;	//0x0000000D;
-	//m_data.unknown068	= 0;	//0x0000001E;
-	//m_data.unknown072	= 0;	//0x000032ED;
 	m_data.unknown076	= 0x0000d5fe;
 	m_data.unknown084	= 0xFFFFFFFF;
 	
@@ -253,9 +244,6 @@ Object::Object(const char *model, float x, float y, float z, float heading, int8
 
 	//Hardcoded portion for unknown members
 	m_data.unknown024	= 0x7f001194;
-	//m_data.unknown064	= 0;	//0x0000000D;
-	//m_data.unknown068	= 0;	//0x0000001E;
-	//m_data.unknown072	= 0;	//0x000032ED;
 	m_data.unknown076	= 0x0000d5fe;
 	m_data.unknown084	= 0xFFFFFFFF;
 

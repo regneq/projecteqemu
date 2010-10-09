@@ -4,6 +4,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 Trevius: Object model names can now use up to 32 characters.
 Trevius: Zone short names can now use up to 32 characters.
 Trevius: Added extra checks before AIYellForHelp call is made to prevent potential issues.
+Secrets: Added Perl Client GetIP() and NPC GetMinDMG() commands.
 
 Required SQL:
 utils/sql/svn/1696_modify_zone_and_object_tables.sql

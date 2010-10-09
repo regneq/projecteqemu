@@ -4589,6 +4589,31 @@ XS(XS_Client_NPCSpawn)
 	XSRETURN_EMPTY;
 }
 
+XS(XS_Client_GetIP); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Client_GetIP)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Client::GetIP(THIS)");
+	{
+		Client *	THIS;
+		int32		RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetIP();
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
 
 #ifdef __cplusplus
 extern "C"
@@ -4779,6 +4804,7 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "SetEndurance"), XS_Client_SetEndurance, file, "$$");
 		newXSproto(strcpy(buf, "SendOPTranslocateConfirm"), XS_Client_SendOPTranslocateConfirm, file, "$$$");
 		newXSproto(strcpy(buf, "NPCSpawn"), XS_Client_NPCSpawn, file, "$$$;$");
+        newXSproto(strcpy(buf, "GetIP"), XS_Client_GetIP, file, "$");
 	XSRETURN_YES;
 }
 
