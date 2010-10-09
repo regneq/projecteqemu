@@ -1971,9 +1971,9 @@ struct Object_Struct {
 /*48*/	float	x;					// x coord
 /*52*/	float	y;					// y coord
 /*56*/	char	object_name[20];	// Name of object, usually something like IT63_ACTORDEF
-/*72*/	float	unknown064;			// seems like coords, not always valid, all 0 on most world objects
-/*76*/	float	unknown068;			// seems like coords, not always valid, all 0 on most world objects
-/*80*/	float	unknown072;			// seems like coords, not always valid, all 0 on most world objects
+//*72*/	float	unknown064;			// seems like coords, not always valid, all 0 on most world objects
+//*76*/	float	unknown068;			// seems like coords, not always valid, all 0 on most world objects
+//*80*/	float	unknown072;			// seems like coords, not always valid, all 0 on most world objects
 /*84*/	uint32	unknown076;			//
 /*88*/	uint32	unknown088;			// 
 /*92*/	uint32	object_type;		// Type of object, not directly translated to OP_OpenObject

@@ -183,8 +183,8 @@ bool Zone::LoadZoneObjects() {
 	
 	uint32 len_query = MakeAnyLenString(&query, "SELECT "
 		"id,zoneid,xpos,ypos,zpos,heading,itemid,charges,objectname,type,icon,"
-		"unknown08,unknown10,unknown20,unknown24,unknown60,unknown64,unknown68,"
-		"unknown72,unknown76 from object where zoneid=%i and version=%u", zoneid, instanceversion);
+		"unknown08,unknown10,unknown20,unknown24,unknown60,unknown76"
+		" from object where zoneid=%i and version=%u", zoneid, instanceversion);
 	
 	if (database.RunQuery(query, len_query, errbuf, &result)) {
 		safe_delete_array(query);
@@ -270,9 +270,9 @@ bool Zone::LoadZoneObjects() {
 			data.unknown024				= (uint32)atoi(row[idx++]);
 //			data.unknown060				= (uint32)atoi(row[idx++]);
 															idx++;
-			data.unknown064				= (uint32)atoi(row[idx++]);
-			data.unknown068				= (uint32)atoi(row[idx++]);
-			data.unknown072				= (uint32)atoi(row[idx++]);
+			//data.unknown064				= (uint32)atoi(row[idx++]);
+			//data.unknown068				= (uint32)atoi(row[idx++]);
+			//data.unknown072				= (uint32)atoi(row[idx++]);
 			data.unknown076				= (uint32)atoi(row[idx++]);
 			data.unknown084				= 0;
 			

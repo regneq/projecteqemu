@@ -912,9 +912,9 @@ ENCODE(OP_GroundSpawn) {
 	OUT(y);
 	OUT(z);
 	OUT_str(object_name);
-	OUT(unknown064);
-	OUT(unknown068);
-	OUT(unknown072);
+	//OUT(unknown064);
+	//OUT(unknown068);
+	//OUT(unknown072);
 	OUT(unknown076);
 	OUT(object_type);
 	OUT(spawn_id);
