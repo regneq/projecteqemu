@@ -3320,7 +3320,7 @@ void Client::Handle_OP_Hide(const EQApplicationPacket *app)
 		SimpleMessage_Struct *msg=(SimpleMessage_Struct *)outapp->pBuffer;
 		msg->color=0x010E;
 		if (!auto_attack && entity_list.Fighting(this)) {
-			if (MakeRandomInt(0, 300) < (int)GetSkill(HIDE)) {
+			if (MakeRandomInt(0, 260) < (int)GetSkill(HIDE)) {
 				msg->string_id=343;
 				entity_list.Evade(this);
 			} else {

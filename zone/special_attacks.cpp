@@ -119,6 +119,8 @@ void Mob::DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, si
 				{
 					hate += item->GetItem()->AC;
 				}
+				const Item_Struct *itm = item->GetItem();
+				hate = hate * (100 + GetFuriousBash(itm->Focus.Effect)) / 100;
 			}
 		}
 	}
@@ -131,14 +133,11 @@ void Mob::DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, si
 		who->MeleeMitigation(this, max_damage, min_damage);
 		ApplyMeleeDamageBonus(skill, max_damage);
 		TryCriticalHit(who, skill, max_damage);
-		if(max_damage > 0)
-		{
-			who->AddToHateList(this, hate);
-		}
-		else
-			who->AddToHateList(this, 0);
 	}
 	who->Damage(this, max_damage, SPELL_UNKNOWN, skill, false);
+
+	if(max_damage >= 0)
+		who->AddToHateList(this, hate);
 	
 	if(max_damage == -3)
 		DoRiposte(who);	
@@ -204,6 +203,7 @@ void Client::OPCombatAbility(const EQApplicationPacket *app) {
 			CheckIncreaseSkill(BASH, GetTarget(), 10);
 			DoAnim(animTailRake);
 
+			sint32 ht = 0;
 			if(GetWeaponDamage(GetTarget(), GetInv().GetItem(SLOT_SECONDARY)) <= 0 &&
 				GetWeaponDamage(GetTarget(), GetInv().GetItem(SLOT_SHOULDER)) <= 0){
 				dmg = -5;
@@ -211,17 +211,18 @@ void Client::OPCombatAbility(const EQApplicationPacket *app) {
 			else{
 				if(!GetTarget()->CheckHitChance(this, BASH, 0)) {
 					dmg = 0;
+					ht = GetBashDamage();
 				}
 				else{
 					if(RuleB(Combat, UseIntervalAC))
-						dmg = GetBashDamage();
+						ht = dmg = GetBashDamage();
 					else
-						dmg = MakeRandomInt(1, GetBashDamage());
+						ht = dmg = MakeRandomInt(1, GetBashDamage());
 
 				}
 			}
 
-			DoSpecialAttackDamage(GetTarget(), BASH, dmg);
+			DoSpecialAttackDamage(GetTarget(), BASH, dmg, 1, ht);
 			ReuseTime = BashReuseTime-1;
 			ReuseTime = (ReuseTime*HasteMod)/100;
 			if(ReuseTime > 0)
@@ -296,22 +297,24 @@ void Client::OPCombatAbility(const EQApplicationPacket *app) {
 				CheckIncreaseSkill(KICK, GetTarget(), 10);
 				DoAnim(animKick);
 
+				sint32 ht = 0;
 				if(GetWeaponDamage(GetTarget(), GetInv().GetItem(SLOT_FEET)) <= 0){
 					dmg = -5;
 				}
 				else{
 					if(!GetTarget()->CheckHitChance(this, KICK, 0)) {
 						dmg = 0;
+						ht = GetKickDamage();
 					}
 					else{
 						if(RuleB(Combat, UseIntervalAC))
-							dmg = GetKickDamage();
+							ht = dmg = GetKickDamage();
 						else
-							dmg = MakeRandomInt(1, GetKickDamage());
+							ht = dmg = MakeRandomInt(1, GetKickDamage());
 					}
 				}
 
-				DoSpecialAttackDamage(GetTarget(), KICK, dmg);
+				DoSpecialAttackDamage(GetTarget(), KICK, dmg, 1, ht);
 				ReuseTime = KickReuseTime-1;
 			}
 			break;
@@ -458,16 +461,21 @@ int Mob::MonkSpecialAttack(Mob* other, int8 unchecked_type)
 		}
 	}
 
+	sint32 ht = 0;
 	if(ndamage == 0){
 		if(other->CheckHitChance(this, skill_type, 0)){
 			if(RuleB(Combat, UseIntervalAC))
-				ndamage = max_dmg;
+				ht = ndamage = max_dmg;
 			else
-				ndamage = MakeRandomInt(min_dmg, max_dmg);
+				ht = ndamage = MakeRandomInt(min_dmg, max_dmg);
+		}
+		else
+		{
+			ht = max_dmg;
 		}
 	}
 	
-	DoSpecialAttackDamage(other, skill_type, ndamage, min_dmg);
+	DoSpecialAttackDamage(other, skill_type, ndamage, min_dmg, ht);
 
 	if(unchecked_type == DRAGON_PUNCH && GetAA(aaDragonPunch) && MakeRandomInt(0, 99) < 25){
 		SpellFinished(904, other);
@@ -606,6 +614,14 @@ void Mob::RogueBackstab(Mob* other, bool min_damage)
 		wpn = CastToClient()->GetInv().GetItem(SLOT_PRIMARY);
 		primaryweapondamage = GetWeaponDamage(other, wpn);
 		backstab_dmg = wpn->GetItem()->BackstabDmg;
+		for(int i = 0; i < MAX_AUGMENT_SLOTS; ++i)
+		{
+			ItemInst *aug = wpn->GetAugment(i);
+			if(aug)
+			{
+				backstab_dmg += aug->GetItem()->BackstabDmg;
+			}
+		}
 	}
 	else{
 		primaryweapondamage = (GetLevel()/7)+1; // fallback incase it's a npc without a weapon, 2 dmg at 10, 10 dmg at 65

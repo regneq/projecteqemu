@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==10/03/2010==
+Derision: Fixed bug in SoD+ tracking.
+JJ: Removed redundant namespace usage.
+
 ==10/02/2010==
 Derision: Players disconnected with the Respawn Window up will now return to bind.
 Derision: Players rezzed in an instance via the Respawn Window will no longer zone.

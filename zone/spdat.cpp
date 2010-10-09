@@ -947,3 +947,32 @@ uint32 GetNimbusEffect(int16 spell_id)
 
 	return 0;
 }
+
+sint32 GetFuriousBash(int16 spell_id)
+{
+	if(!IsValidSpell(spell_id))
+		return 0;
+
+	bool found_effect_limit = false;
+	sint32 mod = 0;
+
+	for(int i = 0; i < EFFECT_COUNT; ++i)
+	{
+		if(spells[spell_id].effectid[i] == SE_SpellHateMod)
+		{
+			mod = spells[spell_id].base[i];
+		}
+		else if(spells[spell_id].effectid[i] == SE_LimitEffect)
+		{
+			if(spells[spell_id].base[i] == 999)
+			{
+				found_effect_limit = true;
+			}
+		}
+	}
+
+	if(found_effect_limit)
+		return mod;
+	else
+		return 0;
+}

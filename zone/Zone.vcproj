@@ -520,6 +520,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\merc.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\mob.cpp"
 				>
 			</File>
@@ -794,6 +798,10 @@
 			</File>
 			<File
 				RelativePath=".\masterentity.h"
+				>
+			</File>
+			<File
+				RelativePath=".\merc.h"
 				>
 			</File>
 			<File
@@ -1097,11 +1105,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\common\patches\SoF.cpp"
+				RelativePath="..\common\patches\SoD.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\common\patches\SoD.cpp"
+				RelativePath="..\common\patches\SoF.cpp"
 				>
 			</File>
 			<File
