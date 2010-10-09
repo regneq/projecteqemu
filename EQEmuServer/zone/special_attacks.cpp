@@ -119,6 +119,8 @@ void Mob::DoSpecialAttackDamage(Mob *who, SkillType skill, sint32 max_damage, si
 				{
 					hate += item->GetItem()->AC;
 				}
+				const Item_Struct *itm = item->GetItem();
+				hate = hate * (100 + GetFuriousBash(itm->Focus.Effect)) / 100;
 			}
 		}
 	}
