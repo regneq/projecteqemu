@@ -814,7 +814,7 @@ XS(XS_NPC_GetMaxDMG)
 		Perl_croak(aTHX_ "Usage: NPC::GetMaxDMG(THIS)");
 	{
 		NPC *		THIS;
-		int16		RETVAL;
+		int32		RETVAL;
 		dXSTARG;
 
 		if (sv_derived_from(ST(0), "NPC")) {
@@ -831,6 +831,33 @@ XS(XS_NPC_GetMaxDMG)
 	}
 	XSRETURN(1);
 }
+
+XS(XS_NPC_GetMinDMG); /* prototype to pass -Wmissing-prototypes */
+XS(XS_NPC_GetMinDMG)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: NPC::GetMinDMG(THIS)");
+	{
+		NPC *        THIS;
+		int32        RETVAL;
+		dXSTARG;
+
+		if (sv_derived_from(ST(0), "NPC")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(NPC *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type NPC");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		RETVAL = THIS->GetMinDMG();
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
 
 XS(XS_NPC_IsAnimal); /* prototype to pass -Wmissing-prototypes */
 XS(XS_NPC_IsAnimal)

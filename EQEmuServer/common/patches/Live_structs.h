@@ -2350,8 +2350,6 @@ struct Object_Struct {
 /*48*/	float	x;					// x coord
 /*52*/	float	y;					// y coord
 /*56*/	char	object_name[32];	// Name of object, usually something like IT63_ACTORDEF was [20]
-//*80*/	float	unknown080;			// seems like coords, not always valid, all 0 on most world objects
-//*84*/	float	unknown084;			// seems like coords, not always valid, all 0 on most world objects
 /*88*/	uint32	unknown088;			// unique ID?  Maybe for a table that includes the contents?
 /*92*/	uint32	object_type;		// Type of object, not directly translated to OP_OpenObject
 /*96*/	uint8	unknown096[4];		// ff ff ff ff

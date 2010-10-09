@@ -1940,9 +1940,6 @@ struct Object_Struct {
 /*36*/	float	x;					// x coord
 /*40*/	float	y;					// y coord
 /*44*/	char	object_name[32];	// Name of object, usually something like IT63_ACTORDEF
-//*64*/	float	unknown064;			// seems like coords, not always valid, all 0 on most world objects
-//*68*/	float	unknown068;			// seems like coords, not always valid, all 0 on most world objects
-//*72*/	float	unknown072;			// seems like coords, not always valid, all 0 on most world objects
 /*76*/	uint32	unknown076;			//
 #ifndef WIN32
 #warning ShowEQ shows an extra field in here...
