@@ -382,13 +382,17 @@ bool Client::Process() {
 			{
 				//you can't see your target	
 			}
-			else if (auto_attack_target->GetHP() > -10) { // -10 so we can watch people bleed in PvP
-				if(CheckAAEffect(aaEffectRampage)){	//Dook- AA Destructive Force- AE attacks for duration
+			else if (auto_attack_target->GetHP() > -10) // -10 so we can watch people bleed in PvP
+			{
+				if(CheckAAEffect(aaEffectRampage))
+				{
 					entity_list.AEAttack(this, 30);
 				} else {
 					Attack(auto_attack_target, 13); 	// Kaiyodo - added attacking hand to arguments
 				}
-				// Kaiyodo - support for double attack. Chance based on formula from Monkly business
+				ItemInst *wpn = GetInv().GetItem(SLOT_PRIMARY);
+				TryWeaponProc(wpn, auto_attack_target, 13);
+				
 				bool tripleAttackSuccess = false;
 				if( auto_attack_target && CanThisClassDoubleAttack() ) {
 					
@@ -522,18 +526,15 @@ bool Client::Process() {
 			}
 		}
 		
-		// Kaiyodo - Check offhand attack timer
 		if(auto_attack && may_use_attacks && auto_attack_target != NULL
 			&& CanThisClassDualWield() && attack_dw_timer.Check()) 
 		{	
 			// Range check
 			if(!CombatRange(auto_attack_target)) {
-				//Message(13,"Your target is too far away, get closer! (dual)");
 				Message_StringID(13,TARGET_TOO_FAR);
 			}
 			// Don't attack yourself
 			else if(auto_attack_target == this) {
-				//Message(13,"Try attacking someone else then yourself! (dual)");
 				Message_StringID(13,TRY_ATTACKING_SOMEONE);
 			}
 			else if (!los_status)
@@ -555,6 +556,8 @@ bool Client::Process() {
 					} else {
 						Attack(auto_attack_target, 14);	// Single attack with offhand
 					}
+					ItemInst *wpn = GetInv().GetItem(SLOT_SECONDARY);
+					TryWeaponProc(wpn, auto_attack_target, 14);
 					
 					if( CanThisClassDoubleAttack() && CheckDoubleAttack()) {
 						if(CheckAAEffect(aaEffectRampage)) {

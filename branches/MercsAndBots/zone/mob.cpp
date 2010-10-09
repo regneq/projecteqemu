@@ -1792,8 +1792,8 @@ void Mob::SetAttackTimer() {
 				//we are a monk, use special delay
 				int speed = (int)(GetMonkHandToHandDelay()*(100.0f+attack_speed)*PermaHaste);
 				// neotokyo: 1200 seemed too much, with delay 10 weapons available
-				if(speed < 800)	//lower bound
-					speed = 800;
+				if(speed < 1000)	//lower bound
+					speed = 1000;
 				TimerToUse->SetAtTrigger(speed, true);	// Hand to hand, delay based on level or epic
 			} else {
 				//not a monk... using fist, regular delay
@@ -1807,8 +1807,8 @@ void Mob::SetAttackTimer() {
 			// Convert weapon delay to timer resolution (milliseconds)
 			//delay * 100
 			int speed = (int)(ItemToUse->Delay*(100.0f+attack_speed)*PermaHaste);
-			if(speed < 800)
-				speed = 800;
+			if(speed < 1000)
+				speed = 1000;
 
 			if(ItemToUse && (ItemToUse->ItemType == ItemTypeBow || ItemToUse->ItemType == ItemTypeThrowing))
 			{
