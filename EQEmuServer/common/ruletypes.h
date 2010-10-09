@@ -280,6 +280,7 @@ RULE_REAL ( Combat, CasterACSoftcapReturn, 0.06)
 RULE_REAL ( Combat, MiscACSoftcapReturn, 0.3)
 RULE_REAL ( Combat, ACthac0Factor, 0.55)
 RULE_REAL ( Combat, ACthac20Factor, 0.55)
+RULE_INT ( Combat, WarriorThreatBonus, 10) //10% more threat invisible modifier.
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( NPC )
