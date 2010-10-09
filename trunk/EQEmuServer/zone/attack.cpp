@@ -1372,18 +1372,6 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough)
 		entity_list.QueueClients(this, outapp, true);
 		safe_delete(outapp);
 	}
-
-	////////////////////////////////////////////////////////////
-	////////  PROC CODE
-	////////  Kaiyodo - Check for proc on weapon based on DEX
-	///////////////////////////////////////////////////////////
-	if(other->GetHP() > -10 && !bRiposte && !IsDead()) {
-		if (RuleB(Combat, ProcTargetOnly)) {
-			if(other == GetTarget())
-				TryWeaponProc(weapon, other, Hand);
-		} else
-			TryWeaponProc(weapon, other, Hand);
-	}
 	
 	if (damage > 0)
 	{
@@ -1960,7 +1948,6 @@ bool NPC::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough)	 // 
 	if (!GetTarget())
 		return true; //We killed them
 	
-	// Kaiyodo - Check for proc on weapon based on DEX
 	if( !bRiposte && other->GetHP() > 0 ) {
 		TryWeaponProc(weapon, other, Hand);	//no weapon
 	}
@@ -2261,6 +2248,10 @@ void Mob::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHel
 	if(other){
 		AddRampage(other);
 		int hatemod = 100 + other->spellbonuses.hatemod + other->itembonuses.hatemod + other->aabonuses.hatemod;
+		if(other->GetClass() == WARRIOR)
+		{
+			hatemod += RuleI(Combat, WarriorThreatBonus);
+		}
 		if(hatemod < 1)
 			hatemod = 1;
 		hate = ((hate * (hatemod))/100);
@@ -3603,6 +3594,10 @@ void Mob::TryWeaponProc(const ItemInst* weapon_g, Mob *on, int16 hand) {
 	int ourlevel = GetLevel();
 	float ProcChance, ProcBonus;
 	GetProcChances(ProcBonus, ProcChance, weapon_g->GetItem()->Delay);
+	if(hand != 13)
+	{
+		ProcChance /= 2;
+	}
 	
 	//do augment procs
 	int r;
@@ -3617,7 +3612,7 @@ void Mob::TryWeaponProc(const ItemInst* weapon_g, Mob *on, int16 hand) {
 		if (IsValidSpell(aug->Proc.Effect) 
 			&& (aug->Proc.Type == ET_CombatProc)) {
 				ProcChance = ProcChance*(100+aug->ProcRate)/100;
-			if (MakeRandomFloat(0, 1) < ProcChance) {	// 255 dex = 0.084 chance of proc. No idea what this number should be really.
+			if (MakeRandomFloat(0, 1) < ProcChance) {
 				if(aug->Proc.Level > ourlevel) {
 					Mob * own = GetOwner();
 					if(own != NULL) {
