@@ -1064,6 +1064,8 @@ This is hanging on freebsd for me, not sure why...
 		sp[tempid].can_mgb=atoi(sep.arg[185]);
 		sp[tempid].dispel_flag = atoi(sep.arg[186]);
 		sp[tempid].NimbusEffect = atoi(sep.arg[193]);
+		sp[tempid].directional_start = (float)atoi(sep.arg[194]);
+		sp[tempid].directional_end = (float)atoi(sep.arg[195]);
 		sp[tempid].AllowRest = atoi(sep.arg[212]);
 	
 		// May crash zone
@@ -1262,6 +1264,8 @@ This is hanging on freebsd for me, not sure why...
 			sp[tempid].can_mgb=atoi(row[185]);
 			sp[tempid].dispel_flag = atoi(row[186]);
 			sp[tempid].NimbusEffect = atoi(row[193]);
+			sp[tempid].directional_start = (float)atoi(row[194]);
+			sp[tempid].directional_end = (float)atoi(row[195]);
 			sp[tempid].AllowRest = atoi(row[212]);
 
 			// May crash zone

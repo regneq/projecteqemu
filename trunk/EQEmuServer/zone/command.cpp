@@ -2603,7 +2603,7 @@ void command_castspell(Client *c, const Seperator *sep)
 			c->Admin() < commandCastSpecials)
 			c->Message(13, "Unable to cast spell.");
 		else if (spellid >= SPDAT_RECORDS)
-			c->Message(0, "Error: #CastSpell: Arguement out of range");
+			c->Message(0, "Error: #CastSpell: Argument out of range");
 		else
 			if (c->GetTarget() == 0)
 				if(c->Admin() >= commandInstacast)

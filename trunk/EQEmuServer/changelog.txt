@@ -5,6 +5,8 @@ Trevius: Object model names can now use up to 32 characters.
 Trevius: Zone short names can now use up to 32 characters.
 Trevius: Added extra checks before AIYellForHelp call is made to prevent potential issues.
 Secrets: Added Perl Client GetIP() and NPC GetMinDMG() commands.
+KLS: Adjust procs: only check once per round now instead of once per hit, this will result in lower proc rates especially for dual wielding classes but this is how it should behave. Adjust your proc per minute rule up if you desire higher proc rates under this change.
+KLS: Directional Cone Spells; still needs a little work as it isn't 100% accurate but it works enough that there's no point in me sitting on it.
 
 Required SQL:
 utils/sql/svn/1696_modify_zone_and_object_tables.sql
