@@ -365,6 +365,7 @@ public:
 	void GetClientList(list<Client*> &c_list);
 	void GetCorpseList(list<Corpse*> &c_list);
 	void GetObjectList(list<Object*> &o_list);
+	void GetTargetsForConeArea(Mob *start, uint32 radius, uint32 height, list<Mob*> &m_list);
 
 	void	DepopAll(int NPCTypeID, bool StartSpawnTimer = true);
 

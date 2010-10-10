@@ -1493,7 +1493,13 @@ bool Mob::DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_ce
 				CastAction = SingleTarget;
 			}
 			break;
-		}		
+		}
+
+		case ST_Directional:
+			CastAction = DirectionalAE;
+			spell_target = NULL;
+			ae_center = NULL;
+			break;
 
 		default:
 		{
@@ -1782,6 +1788,51 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
 			{
 				hate_list.SpellCast(this, spell_id, spells[spell_id].range > spells[spell_id].aoerange ? spells[spell_id].range : spells[spell_id].aoerange);
 			}
+			break;
+		}
+
+		case DirectionalAE:
+		{
+			float angle_start = spells[spell_id].directional_start + (GetHeading() * 360.0f / 256.0f);
+			float angle_end = spells[spell_id].directional_end + (GetHeading() * 360.0f / 256.0f);
+			
+			while(angle_start > 360.0f)
+				angle_start -= 360.0f;
+			
+			while(angle_end > 360.0f)
+				angle_end -= 360.0f;
+
+			list<Mob*> targets_in_range;
+			list<Mob*>::iterator iter;
+			
+			entity_list.GetTargetsForConeArea(this, spells[spell_id].aoerange, spells[spell_id].aoerange / 2, targets_in_range);
+			iter = targets_in_range.begin();
+			while(iter != targets_in_range.end())
+			{
+				float heading_to_target = (CalculateHeadingToTarget((*iter)->GetX(), (*iter)->GetY()) * 360.0f / 256.0f);
+				while(heading_to_target > 360.0f)
+					heading_to_target -= 360.0f;
+
+				if(angle_start > angle_end)
+				{
+					if((heading_to_target >= angle_start && heading_to_target <= 0.0f) ||
+						(heading_to_target >= 0.0f && heading_to_target <= angle_end))
+					{
+						if(CheckLosFN(spell_target))
+							SpellOnTarget(spell_id, spell_target);
+					}
+				}
+				else
+				{
+					if(heading_to_target >= angle_start && heading_to_target <= angle_end)
+					{
+						if(CheckLosFN((*iter)))
+							SpellOnTarget(spell_id, (*iter));
+					}
+				}
+				iter++;
+			}
+
 			break;
 		}
 	}

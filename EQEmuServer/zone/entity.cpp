@@ -4844,3 +4844,35 @@ Mob* EntityList::GetClosestMobByBodyType(Mob* sender, bodyType BodyType)
 	}
 	return ClosestMob;
 }
+
+void EntityList::GetTargetsForConeArea(Mob *start, uint32 radius, uint32 height, list<Mob*> &m_list)
+{
+	LinkedListIterator<Mob*> iterator(mob_list);
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		Mob *ptr = iterator.GetData();
+		if(ptr == start)
+		{
+			iterator.Advance();
+			continue;
+		}
+		sint32 x_diff = ptr->GetX() - start->GetX();
+		sint32 y_diff = ptr->GetY() - start->GetY();
+		sint32 z_diff = ptr->GetZ() - start->GetZ();
+
+		x_diff *= x_diff;
+		y_diff *= y_diff;
+		z_diff *= z_diff;
+
+		if((x_diff + y_diff) <= (radius * radius))
+		{
+			if(z_diff <= (height * height))
+			{
+				m_list.push_back(ptr);
+			}
+		}
+
+		iterator.Advance();
+	}
+}
