@@ -798,6 +798,7 @@ bool logpos;
 	int32 GetHealRate(uint32 amount, Mob *target);
 	sint32 GetVulnerability(sint32 damage, Mob *caster, uint32 spell_id, int32 ticsremaining);
 	sint32 GetSkillDmgTaken(const SkillType skill_used, sint32 damage);
+	void DoKnockback(Mob *caster, uint32 pushback, uint32 pushup);
 
 	static int32 GetAppearanceValue(EmuAppearance iAppearance);
 	void SendAppearancePacket(int32 type, int32 value, bool WholeZone = true, bool iIgnoreSelf = false, Client *specific_target=NULL);

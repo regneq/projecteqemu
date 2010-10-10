@@ -7234,6 +7234,41 @@ XS(XS_Mob_WearChange)
 	XSRETURN_EMPTY;
 }
 
+XS(XS_Mob_DoKnockback); /* prototype to pass -Wmissing-prototypes */
+XS(XS_Mob_DoKnockback)
+{
+	dXSARGS;
+	if (items != 4)
+		Perl_croak(aTHX_ "Usage: Mob::DoKnockback(THIS, caster, pushback, pushup)");
+	{
+		Mob *		THIS;
+		Mob *       caster;
+		int32		pushback = (int16)SvUV(ST(2));
+		int32		pushup = (int16)SvUV(ST(2));
+
+		if (sv_derived_from(ST(0), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Mob");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		if (sv_derived_from(ST(1), "Mob")) {
+			IV tmp = SvIV((SV*)SvRV(ST(1)));
+			caster = INT2PTR(Mob *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "caster is not of type Mob");
+		if(caster == NULL)
+			Perl_croak(aTHX_ "caster is NULL, avoiding crash.");
+
+		THIS->DoKnockback(caster, pushback, pushup);
+	}
+	XSRETURN_EMPTY;
+}
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -7504,7 +7539,8 @@ XS(boot_Mob)
 		newXSproto(strcpy(buf, "TarGlobal"), XS_Mob_TarGlobal, file, "$$$$$$$");
 		newXSproto(strcpy(buf, "DelGlobal"), XS_Mob_DelGlobal, file, "$$");
 		newXSproto(strcpy(buf, "SetSlotTint"), XS_Mob_SetSlotTint, file, "$$$$$");
-		newXSproto(strcpy(buf, "WearChange"), XS_Mob_WearChange, file, "$$$;$");		
+		newXSproto(strcpy(buf, "WearChange"), XS_Mob_WearChange, file, "$$$;$");
+		newXSproto(strcpy(buf, "DoKnockback"), XS_Mob_DoKnockback, file, "$$$$");
 	XSRETURN_YES;
 }
 
