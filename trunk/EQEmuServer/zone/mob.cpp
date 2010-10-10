@@ -3994,3 +3994,42 @@ int Mob::QGVarDuration(const char *fmt)
 
 	return duration;
 }
+
+void Mob::DoKnockback(Mob *caster, uint32 pushback, uint32 pushup)
+{
+	if(IsClient())
+	{
+		CastToClient()->SetKnockBackExemption(true);
+
+		EQApplicationPacket* outapp_push = new EQApplicationPacket(OP_ClientUpdate, sizeof(PlayerPositionUpdateServer_Struct));
+		PlayerPositionUpdateServer_Struct* spu = (PlayerPositionUpdateServer_Struct*)outapp_push->pBuffer;
+						
+		double look_heading = caster->CalculateHeadingToTarget(GetX(), GetY());
+		look_heading /= 256;
+		look_heading *= 360;
+		if(look_heading > 360)
+			look_heading -= 360;
+
+		//x and y are crossed mkay
+		double new_x = pushback * sin(double(look_heading * 3.141592 / 180.0));
+		double new_y = pushback * cos(double(look_heading * 3.141592 / 180.0));
+
+		spu->spawn_id	= GetID();
+		spu->x_pos		= FloatToEQ19(GetX());
+		spu->y_pos		= FloatToEQ19(GetY());
+		spu->z_pos		= FloatToEQ19(GetZ());
+		spu->delta_x	= NewFloatToEQ13(new_x);
+		spu->delta_y	= NewFloatToEQ13(new_y);
+		spu->delta_z	= NewFloatToEQ13(pushup);
+		spu->heading	= FloatToEQ19(GetHeading());
+		spu->padding0002	=0;
+		spu->padding0006	=7;
+		spu->padding0014	=0x7f;
+		spu->padding0018	=0x5df27;
+		spu->animation = 0;
+		spu->delta_heading = NewFloatToEQ13(0);
+		outapp_push->priority = 6;
+		entity_list.QueueClients(this, outapp_push, true);
+		CastToClient()->FastQueuePacket(&outapp_push);
+	}
+}
