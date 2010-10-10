@@ -1810,12 +1810,15 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
 			while(iter != targets_in_range.end())
 			{
 				float heading_to_target = (CalculateHeadingToTarget((*iter)->GetX(), (*iter)->GetY()) * 360.0f / 256.0f);
+				while(heading_to_target < 0.0f)
+					heading_to_target += 360.0f;
+				
 				while(heading_to_target > 360.0f)
 					heading_to_target -= 360.0f;
 
 				if(angle_start > angle_end)
 				{
-					if((heading_to_target >= angle_start && heading_to_target <= 0.0f) ||
+					if((heading_to_target >= angle_start && heading_to_target <= 360.0f) ||
 						(heading_to_target >= 0.0f && heading_to_target <= angle_end))
 					{
 						if(CheckLosFN(spell_target))
