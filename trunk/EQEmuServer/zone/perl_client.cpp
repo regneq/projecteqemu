@@ -4615,6 +4615,34 @@ XS(XS_Client_GetIP)
 	XSRETURN(1);
 }
 
+XS(XS_Client_AddLevelBasedExp);
+XS(XS_Client_AddLevelBasedExp)
+{
+	dXSARGS;
+	if (items < 2 || items > 3 )
+		Perl_croak(aTHX_ "Usage: Client::AddLevelBasedExp(THIS, exp_percentage, max_level=0)");
+	{
+		Client *	THIS;
+		uint8		exp_percentage = (uint8)SvUV(ST(1));
+		uint8		max_level = 0;
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		if (items > 2)
+			max_level = (uint8)SvUV(ST(2));
+
+		THIS->AddLevelBasedExp(exp_percentage, max_level);
+	}
+	XSRETURN_EMPTY;
+}
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -4805,6 +4833,7 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "SendOPTranslocateConfirm"), XS_Client_SendOPTranslocateConfirm, file, "$$$");
 		newXSproto(strcpy(buf, "NPCSpawn"), XS_Client_NPCSpawn, file, "$$$;$");
         newXSproto(strcpy(buf, "GetIP"), XS_Client_GetIP, file, "$");
+		newXSproto(strcpy(buf, "AddLevelBasedExp"), XS_Client_AddLevelBasedExp, file, "$$;$");
 	XSRETURN_YES;
 }
 

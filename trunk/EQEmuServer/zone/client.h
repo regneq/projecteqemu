@@ -454,6 +454,7 @@ public:
 
 	void	AddEXP(uint32 in_add_exp, int8 conlevel = 0xFF, bool resexp = false);
 	void	SetEXP(uint32 set_exp, uint32 set_aaxp, bool resexp=false);
+	void	AddLevelBasedExp(int8 exp_percentage, int8 max_level=0);
 	void	SetLeadershipEXP(uint32 group_exp, uint32 raid_exp);
 	void	AddLeadershipEXP(uint32 group_exp, uint32 raid_exp);
 	void	SendLeadershipEXPUpdate();
