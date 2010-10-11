@@ -619,7 +619,7 @@ bool NPC::Process()
 	}
 	
 	//Handle assists...
-	if(assist_timer.Check() && IsEngaged() && !Charmed() && GetTarget() != NULL && !GetTarget()->IsCorpse()) {
+	if(assist_timer.Check() && IsEngaged() && !Charmed()) {
 		entity_list.AIYellForHelp(this, GetTarget());
 	}
 

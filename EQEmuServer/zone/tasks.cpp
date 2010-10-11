@@ -203,7 +203,7 @@ bool TaskManager::LoadTasks(int SingleTask) {
 			strcpy(Tasks[TaskID]->Reward, row[4]);
 			Tasks[TaskID]->RewardID = atoi(row[5]);
 			Tasks[TaskID]->CashReward = atoi(row[6]);
-			Tasks[TaskID]->XPReward = atoi(row[7]);
+			Tasks[TaskID]->XPReward = (sint32)atoul(row[7]);
 			Tasks[TaskID]->RewardMethod = (TaskMethodType)atoi(row[8]);
 			Tasks[TaskID]->StartZone = atoi(row[9]);
 			Tasks[TaskID]->MinLevel = atoi(row[10]);
@@ -1991,8 +1991,19 @@ void ClientTaskState::RewardTask(Client *c, TaskInformation *Task) {
 		CashMessage += " pieces.";
 		c->Message(15,CashMessage.c_str());
 	}
-	if(Task->XPReward)
-		c->AddEXP(Task->XPReward); 
+	sint32 EXPReward = Task->XPReward;
+	if(EXPReward > 0) {
+		c->AddEXP(EXPReward);
+	}
+	if(EXPReward < 0) {
+		int32 PosReward = EXPReward * -1;
+		// Minimal Level Based Exp Reward Setting is 101 (1% exp at level 1)
+		if (PosReward > 100 && PosReward < 25700) {
+			int8 MaxLevel = int(PosReward / 100);
+			int8 ExpPercent = PosReward - (MaxLevel * 100);
+			c->AddLevelBasedExp(ExpPercent, MaxLevel);
+		}
+	}
 
 	c->SendSound();
 }
