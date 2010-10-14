@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==10/14/2010==
+Trevius: Added Race 502 Boats to be a controllable boat race.
+
 ==10/10/2010==
 Trevius: Added Perl Client AddLevelBasedExp(exp_percentage, max_level=0) command to add experience as a percentage of the client's current level up to the max level entered.
 Trevius: Level based experience percentage rewards for tasks can now be set using a negative value of the max level * 100 + experience percent (IE. -510 for 10% exp up to level 5).

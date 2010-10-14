@@ -7753,7 +7753,7 @@ void Client::Handle_OP_ControlBoat(const EQApplicationPacket *app)
 	if (boat == 0) 
 		return;	// do nothing if the boat isn't valid
 	
-	if(!boat->IsNPC() ||  boat->GetRace() != CONTROLLED_BOAT)
+	if(!boat->IsNPC() ||  (boat->GetRace() != CONTROLLED_BOAT && boat->GetRace() != 502))
 	{
 		char *hacked_string = NULL;
 		MakeAnyLenString(&hacked_string, "OP_Control Boat was sent against %s which is of race %u", boat->GetName(), boat->GetRace());
