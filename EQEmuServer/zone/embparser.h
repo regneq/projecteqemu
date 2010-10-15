@@ -20,8 +20,10 @@ class Seperator;
 
 typedef enum {
 	questDefault = 1,
+	questDefaultByZone,
 	questByName,
 	questTemplate,
+	questTemplateByID,
 	questByID
 } questMode;
 

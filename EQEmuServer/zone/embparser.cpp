@@ -768,21 +768,24 @@ void PerlembParser::ReloadQuests() {
 int PerlembParser::LoadScript(int npcid, const char * zone, Mob* activater)
 {
 	if(!perl)
+	{
 		return(0);
+	}
 
-	//we have allready tried to load this quest...
-	if(hasQuests.count(npcid) == 1) {
+	//we have already tried to load this quest...
+	if(hasQuests.count(npcid) == 1)
+	{
 		return(1);
 	}
 
-	string filename= "quests/", packagename = GetPkgPrefix(npcid);
+	string filename = "quests/", packagename = GetPkgPrefix(npcid);
 	//each package name is of the form qstxxxx where xxxx = npcid (since numbers alone are not valid package names)
 	questMode curmode = questDefault;
 	FILE *tmpf;
-//LogFile->write(EQEMuLog::Debug, "LoadScript(%d, %s):\n", npcid, zone);
+	//LogFile->write(EQEMuLog::Debug, "LoadScript(%d, %s):\n", npcid, zone);
 	if(!npcid || !zone)
 	{
-//LogFile->write(EQEMuLog::Debug, "	default 1");
+		//Load quests/default.pl
 		filename += DEFAULT_QUEST_PREFIX;
 		filename += ".pl";
 		curmode = questDefault;
@@ -804,56 +807,72 @@ int PerlembParser::LoadScript(int npcid, const char * zone, Mob* activater)
 		int count0 = 0;
 		bool filefound = false;
 		tmpf = fopen(filename.c_str(), "r");
-		if(tmpf != NULL) {
+		if(tmpf != NULL)
+		{
 			fclose(tmpf);
 			filefound = true;
 		}
-//LogFile->write(EQEMuLog::Debug, "	tried '%s': %d", filename.c_str(), filefound);
+		//LogFile->write(EQEMuLog::Debug, "	tried '%s': %d", filename.c_str(), filefound);
 
 		tmpname[0] = 0;
 		//if there is no file for the NPC's ID, try for the NPC's name
-		if(! filefound) {
+		if(!filefound)
+		{
 			//revert to just path
 			filename = bnfilename;
 			const NPCType *npct = database.GetNPCType(npcid);
-			if(npct == NULL) {
-//LogFile->write(EQEMuLog::Debug, "	no npc type");
+			if(npct == NULL)
+			{
+				//LogFile->write(EQEMuLog::Debug, "	no npc type");
 				//revert and go on with life
 				filename += itoa(npcid);
 				filename += ".pl";
 				curmode = questByID;
-			} else {
+			}
+			else
+			{
 				//trace out the ` characters, turn into -
-
 				int nlen = strlen(npct->name);
-				if(nlen < 64) {	//just to make sure
+				//just to make sure
+				if(nlen < 64)
+				{
 					int r;
 					//this should get our NULL as well..
-					for(r = 0; r <= nlen; r++) {
+					for(r = 0; r <= nlen; r++)
+					{
 						tmpname[r] = npct->name[r];
 
 						//watch for 00 delimiter
-						if(tmpname[r] == '0') {
+						if(tmpname[r] == '0')
+						{
 							count0++;
-							if(count0 > 1) {	//second '0'
+							//second '0'
+							if(count0 > 1)
+							{
 								//stop before previous 0
 								tmpname[r-1] = '\0';
 								break;
 							}
-						} else {
+						}
+						else
+						{
 							count0 = 0;
 						}
 
 						//rewrite ` to be more file name friendly
 						if(tmpname[r] == '`')
+						{
 							tmpname[r] = '-';
+						}
 
 					}
 					filename += tmpname;
 					filename += ".pl";
 					curmode = questByName;
-				} else {
-//LogFile->write(EQEMuLog::Debug, "	namelen too long");
+				}
+				else
+				{
+					//LogFile->write(EQEMuLog::Debug, "	namelen too long");
 					//revert and go on with life, again
 					filename += itoa(npcid);
 					filename += ".pl";
@@ -862,20 +881,25 @@ int PerlembParser::LoadScript(int npcid, const char * zone, Mob* activater)
 			}
 		}
 
-	#ifdef QUEST_TEMPLATES_BYNAME
-		bool filefound2 = false;
+#ifdef QUEST_TEMPLATES_BYNAME
+
 		tmpf = fopen(filename.c_str(), "r");
-		if(tmpf != NULL) {
+		if(tmpf != NULL)
+		{
 			fclose(tmpf);
-			filefound2 = true;
+			filefound = true;
 		}
-//LogFile->write(EQEMuLog::Debug, "	tried '%s': %d", filename.c_str(), filefound2);
+
+
+		//LogFile->write(EQEMuLog::Debug, "	tried '%s': %d", filename.c_str(), filefound2);
 
 		//if there is no file for the NPC's ID or name,
 		//try for the NPC's name in the templates directory
 		//only works if we have gotten the NPC's name above
-		if(! filefound && ! filefound2) {
-			if(tmpname[0] != 0) {
+		if(!filefound)
+		{
+			if(tmpname[0] != 0)
+			{
 				//revert to just path
 				filename = "quests/";
 				filename += QUEST_TEMPLATES_DIRECTORY;
@@ -883,45 +907,70 @@ int PerlembParser::LoadScript(int npcid, const char * zone, Mob* activater)
 				filename += tmpname;
 				filename += ".pl";
 				curmode = questTemplate;
-//LogFile->write(EQEMuLog::Debug, "	template '%s'", filename.c_str(), filefound2);
-			} else {
-//LogFile->write(EQEMuLog::Debug, "	no template name");
+				//LogFile->write(EQEMuLog::Debug, "	template '%s'", filename.c_str(), filefound2);
+			}
+			else
+			{
+				//LogFile->write(EQEMuLog::Debug, "	no template name");
+				filename = "quests/";
+				filename += QUEST_TEMPLATES_DIRECTORY;
+				filename += "/";
 				filename += itoa(npcid);
 				filename += ".pl";
-				curmode = questDefault;
+				curmode = questTemplateByID;
 			}
 		}
-	#endif	//QUEST_TEMPLATES_BYNAME
+		
+#endif	//QUEST_TEMPLATES_BYNAME
 
 #endif //QUEST_SCRIPTS_BYNAME
 
+		tmpf = fopen(filename.c_str(), "r");
+		if(tmpf != NULL)
+		{
+			fclose(tmpf);
+			filefound = true;
+		}
+		
+		// If by ID, Name or Template wasn't found, load /quests/zone/default.pl
+		if(!filefound)
+		{
+			//Load Default Quests Per Zone quests/zonename/default.pl
+			filename = bnfilename;
+			filename += "default.pl";
+			curmode = questDefaultByZone;
+			//LogFile->write(EQEMuLog::Debug, "LoadScript(%s)", filename.c_str());
+		}
 	}
 
 	//check for existance of quest file before trying to make perl load it.
 	tmpf = fopen(filename.c_str(), "r");
-	if(tmpf == NULL) {
+	if(tmpf == NULL)
+	{
 		//the npc has no qst file, attach the defaults
 		std::string setdefcmd = "$";
-			setdefcmd += packagename;
-			setdefcmd += "::isdefault = 1;";
+		setdefcmd += packagename;
+		setdefcmd += "::isdefault = 1;";
 		perl->eval(setdefcmd.c_str());
 		setdefcmd = "$";
-			setdefcmd += packagename;
-			setdefcmd += "::isloaded = 1;";
+		setdefcmd += packagename;
+		setdefcmd += "::isloaded = 1;";
 		perl->eval(setdefcmd.c_str());
 		hasQuests[npcid] = questDefault;
 		return(1);
-	} else {
+	}
+	else
+	{
 		fclose(tmpf);
 	}
 
-//LogFile->write(EQEMuLog::Debug, "	finally settling on '%s'", filename.c_str());
-//	LogFile->write(EQEMuLog::Status, "Looking for quest file: '%s'", filename.c_str());
+	//LogFile->write(EQEMuLog::Debug, "	finally settling on '%s'", filename.c_str());
+	//	LogFile->write(EQEMuLog::Status, "Looking for quest file: '%s'", filename.c_str());
 
-//  todo: decide whether or not to delete the package to allow for script refreshes w/o restarting the server
-//  remember to guard against deleting the default package, on a similar note... consider deleting packages upon zone change
-//	try { perl->eval(std::string("delete_package(\"").append(packagename).append("\");").c_str()); }
-//	catch(...) {/*perl balked at us trynig to delete a non-existant package... no big deal.*/}
+	//  todo: decide whether or not to delete the package to allow for script refreshes w/o restarting the server
+	//  remember to guard against deleting the default package, on a similar note... consider deleting packages upon zone change
+	//	try { perl->eval(std::string("delete_package(\"").append(packagename).append("\");").c_str()); }
+	//	catch(...) {/*perl balked at us trynig to delete a non-existant package... no big deal.*/}
 
 	try {
 		perl->eval_file(packagename.c_str(), filename.c_str());
@@ -930,20 +979,20 @@ int PerlembParser::LoadScript(int npcid, const char * zone, Mob* activater)
 	{
 		//try to reduce some of the console spam...
 		//todo: tweak this to be more accurate at deciding what to filter (we don't want to gag legit errors)
-//		if(!strstr(err,"No such file or directory"))
-			LogFile->write(EQEMuLog::Quest, "WARNING: error compiling quest file %s: %s (reverting to default questfile)", filename.c_str(), err);
+		//if(!strstr(err,"No such file or directory"))
+		LogFile->write(EQEMuLog::Quest, "WARNING: error compiling quest file %s: %s (reverting to default questfile)", filename.c_str(), err);
 	}
 	//todo: change this to just read eval_file's %cache - duh!
 	if(!isloaded(packagename.c_str()))
 	{
 		//the npc has no qst file, attach the defaults
 		std::string setdefcmd = "$";
-			setdefcmd += packagename;
-			setdefcmd += "::isdefault = 1;";
+		setdefcmd += packagename;
+		setdefcmd += "::isdefault = 1;";
 		perl->eval(setdefcmd.c_str());
 		setdefcmd = "$";
-			setdefcmd += packagename;
-			setdefcmd += "::isloaded = 1;";
+		setdefcmd += packagename;
+		setdefcmd += "::isloaded = 1;";
 		perl->eval(setdefcmd.c_str());
 		curmode = questDefault;
 	}
@@ -1129,8 +1178,9 @@ bool PerlembParser::HasQuestSub(int32 npcid, const char *subname) {
 	sint32 qstID = GetNPCqstID(npcid);
 
 	if (qstID == -1) {
-		if(!LoadScript(npcid, zone->GetShortName()))
+		if(!LoadScript(npcid, zone->GetShortName())) {
 			return(false);
+		}
 	}
 
 	string packagename = GetPkgPrefix(npcid);
