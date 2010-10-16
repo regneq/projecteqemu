@@ -101,7 +101,7 @@ bool Client::CheckLoreConflict(const Item_Struct* item) {
 	return (m_inv.HasItemByLoreGroup(item->LoreGroup, ~invWhereSharedBank) != SLOT_INVALID);
 }
 
-void Client::SummonItem(uint32 item_id, sint8 charges, uint32 aug1, uint32 aug2, uint32 aug3, uint32 aug4, uint32 aug5) {
+void Client::SummonItem(uint32 item_id, sint8 charges, uint32 aug1, uint32 aug2, uint32 aug3, uint32 aug4, uint32 aug5, bool attuned) {
 	const Item_Struct* item = database.GetItem(item_id);
 	
 	if (item == NULL) {
@@ -126,19 +126,64 @@ void Client::SummonItem(uint32 item_id, sint8 charges, uint32 aug1, uint32 aug2,
 			if ((inst->GetCharges()>0))
 				inst->SetCharges(inst->GetCharges());
 			if (aug1) {
-				inst->PutAugment(&database, 1, aug1);
+				const Item_Struct* augitem1 = database.GetItem(aug1);
+				if (augitem1) {
+					if (!CheckLoreConflict(augitem1)) {
+						inst->PutAugment(&database, 0, aug1);
+					}
+					else {
+						Message(0, "You already have a %s (%i) in your inventory!", item->Name, item_id);
+					}
+				}
 			}
 			if (aug2) {
-				inst->PutAugment(&database, 2, aug2);
+				const Item_Struct* augitem2 = database.GetItem(aug2);
+				if (augitem2) {
+					if (!CheckLoreConflict(augitem2)) {
+						inst->PutAugment(&database, 1, aug2);
+					}
+					else {
+						Message(0, "You already have a %s (%i) in your inventory!", item->Name, item_id);
+					}
+				}
 			}
 			if (aug3) {
-				inst->PutAugment(&database, 3, aug3);
+				const Item_Struct* augitem3 = database.GetItem(aug3);
+				if (augitem3) {
+					if (!CheckLoreConflict(augitem3)) {
+						inst->PutAugment(&database, 2, aug3);
+					}
+					else {
+						Message(0, "You already have a %s (%i) in your inventory!", item->Name, item_id);
+					}
+				}
 			}
 			if (aug4) {
-				inst->PutAugment(&database, 4, aug4);
+				const Item_Struct* augitem4 = database.GetItem(aug4);
+				if (augitem4) {
+					if (!CheckLoreConflict(augitem4)) {
+						inst->PutAugment(&database, 3, aug4);
+					}
+					else {
+						Message(0, "You already have a %s (%i) in your inventory!", item->Name, item_id);
+					}
+				}
 			}
 			if (aug5) {
-				inst->PutAugment(&database, 5, aug5);
+				const Item_Struct* augitem5 = database.GetItem(aug5);
+				if (augitem5) {
+					if (!CheckLoreConflict(augitem5)) {
+						inst->PutAugment(&database, 4, aug5);
+					}
+					else {
+						Message(0, "You already have a %s (%i) in your inventory!", item->Name, item_id);
+					}
+				}
+			}
+			if (attuned) {
+				if (inst->GetItem()->Attuneable) {
+					inst->SetInstNoDrop(true);
+				}
 			}
 			//inst->SetCharges(
 			PushItemOnCursor(*inst);

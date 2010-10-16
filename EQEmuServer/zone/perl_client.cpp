@@ -2857,12 +2857,18 @@ XS(XS_Client_SummonItem); /* prototype to pass -Wmissing-prototypes */
 XS(XS_Client_SummonItem)
 {
 	dXSARGS;
-	if (items < 2 || items > 3)
-		Perl_croak(aTHX_ "Usage: Client::SummonItem(THIS, item_id, charges= 0)");
+	if (items < 2 || items > 9)
+		Perl_croak(aTHX_ "Usage: Client::SummonItem(THIS, item_id, charges=0, attune=0, aug1=0, aug2=0, aug3=0, aug4=0, aug5=0)");
 	{
 		Client *		THIS;
 		uint32		item_id = (uint32)SvUV(ST(1));
-		sint8		charges;
+		sint8		charges = 0;
+		bool		attune = false;
+		uint32		aug1 = 0;
+		uint32		aug2 = 0;
+		uint32		aug3 = 0;
+		uint32		aug4 = 0;
+		uint32		aug5 = 0;
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -2873,13 +2879,29 @@ XS(XS_Client_SummonItem)
 		if(THIS == NULL)
 			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
 
-		if (items < 3)
-			charges = 0;
-		else {
+		if (items > 2) {
 			charges = (sint8)SvIV(ST(2));
 		}
+		if (items > 3) {
+			attune = (bool)SvTRUE(ST(3));
+		}
+		if (items > 4) {
+			aug1 = (uint32)SvUV(ST(4));
+		}
+		if (items > 5) {
+			aug2 = (uint32)SvUV(ST(5));
+		}
+		if (items > 6) {
+			aug3 = (uint32)SvUV(ST(6));
+		}
+		if (items > 7) {
+			aug4 = (uint32)SvUV(ST(7));
+		}
+		if (items > 8) {
+			aug5 = (uint32)SvUV(ST(8));
+		}
 
-		THIS->SummonItem(item_id, charges);
+		THIS->SummonItem(item_id, charges, aug1, aug2, aug3, aug4, aug5, attune);
 	}
 	XSRETURN_EMPTY;
 }
@@ -4768,7 +4790,7 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "GetItemIDAt"), XS_Client_GetItemIDAt, file, "$$");
 		newXSproto(strcpy(buf, "GetAugmentIDAt"), XS_Client_GetAugmentIDAt, file, "$$$");
 		newXSproto(strcpy(buf, "DeleteItemInInventory"), XS_Client_DeleteItemInInventory, file, "$$;$$");
-		newXSproto(strcpy(buf, "SummonItem"), XS_Client_SummonItem, file, "$$;$");
+		newXSproto(strcpy(buf, "SummonItem"), XS_Client_SummonItem, file, "$$;$$$$$$$");
 		newXSproto(strcpy(buf, "SetStats"), XS_Client_SetStats, file, "$$$");
 		newXSproto(strcpy(buf, "IncStats"), XS_Client_IncStats, file, "$$$");
 		newXSproto(strcpy(buf, "DropItem"), XS_Client_DropItem, file, "$$");

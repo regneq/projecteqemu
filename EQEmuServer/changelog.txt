@@ -1,5 +1,12 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==10/16/2010==
+Trevius: Added Perl Item IsAttuned() and GetCharges() quest commands.
+Trevius: Added Attune and Aug fields to Client SummonItem(item_id, charges, attune, aug1, aug2, aug3, aug4, aug5)
+
+==10/15/2010==
+Trevius: NPCs can now load a default.pl file from the /quests/zone_short_name/ of the zone they are in.
+
 ==10/14/2010==
 Trevius: Added Race 502 Boats to be a controllable boat race.
 
