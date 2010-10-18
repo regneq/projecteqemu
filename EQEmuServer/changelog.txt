@@ -1,6 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==10/16/2010==
+Trevius: Added optional slot_id field to Client SummonItem(item_id, charges, attune, aug1, aug2, aug3, aug4, aug5, slot_id) - Default is slot 30 (cursor).
+
+==10/16/2010==
 Trevius: Added Perl Item IsAttuned() and GetCharges() quest commands.
 Trevius: Added Attune and Aug fields to Client SummonItem(item_id, charges, attune, aug1, aug2, aug3, aug4, aug5)
 
