@@ -2857,8 +2857,8 @@ XS(XS_Client_SummonItem); /* prototype to pass -Wmissing-prototypes */
 XS(XS_Client_SummonItem)
 {
 	dXSARGS;
-	if (items < 2 || items > 9)
-		Perl_croak(aTHX_ "Usage: Client::SummonItem(THIS, item_id, charges=0, attune=0, aug1=0, aug2=0, aug3=0, aug4=0, aug5=0)");
+	if (items < 2 || items > 10)
+		Perl_croak(aTHX_ "Usage: Client::SummonItem(THIS, item_id, charges=0, attune=0, aug1=0, aug2=0, aug3=0, aug4=0, aug5=0, slot_id=30)");
 	{
 		Client *		THIS;
 		uint32		item_id = (uint32)SvUV(ST(1));
@@ -2869,6 +2869,7 @@ XS(XS_Client_SummonItem)
 		uint32		aug3 = 0;
 		uint32		aug4 = 0;
 		uint32		aug5 = 0;
+		uint16		slot_id = 30;
 
 		if (sv_derived_from(ST(0), "Client")) {
 			IV tmp = SvIV((SV*)SvRV(ST(0)));
@@ -2900,8 +2901,11 @@ XS(XS_Client_SummonItem)
 		if (items > 8) {
 			aug5 = (uint32)SvUV(ST(8));
 		}
+		if (items > 9) {
+			slot_id = (uint16)SvUV(ST(9));
+		}
 
-		THIS->SummonItem(item_id, charges, aug1, aug2, aug3, aug4, aug5, attune);
+		THIS->SummonItem(item_id, charges, aug1, aug2, aug3, aug4, aug5, attune, slot_id);
 	}
 	XSRETURN_EMPTY;
 }
@@ -4790,7 +4794,7 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "GetItemIDAt"), XS_Client_GetItemIDAt, file, "$$");
 		newXSproto(strcpy(buf, "GetAugmentIDAt"), XS_Client_GetAugmentIDAt, file, "$$$");
 		newXSproto(strcpy(buf, "DeleteItemInInventory"), XS_Client_DeleteItemInInventory, file, "$$;$$");
-		newXSproto(strcpy(buf, "SummonItem"), XS_Client_SummonItem, file, "$$;$$$$$$$");
+		newXSproto(strcpy(buf, "SummonItem"), XS_Client_SummonItem, file, "$$;$$$$$$$$");
 		newXSproto(strcpy(buf, "SetStats"), XS_Client_SetStats, file, "$$$");
 		newXSproto(strcpy(buf, "IncStats"), XS_Client_IncStats, file, "$$$");
 		newXSproto(strcpy(buf, "DropItem"), XS_Client_DropItem, file, "$$");

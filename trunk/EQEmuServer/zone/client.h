@@ -683,7 +683,7 @@ public:
 	bool	SwapItem(MoveItem_Struct* move_in);
 	void	PutLootInInventory(sint16 slot_id, const ItemInst &inst, ServerLootItem_Struct** bag_item_data = 0);
 	bool	AutoPutLootInInventory(ItemInst& inst, bool try_worn = false, bool try_cursor = true, ServerLootItem_Struct** bag_item_data = 0);
-	void	SummonItem(uint32 item_id, sint8 charges = 0, uint32 aug1=0, uint32 aug2=0, uint32 aug3=0, uint32 aug4=0, uint32 aug5=0, bool attuned=false);
+	void	SummonItem(uint32 item_id, sint8 charges = 0, uint32 aug1=0, uint32 aug2=0, uint32 aug3=0, uint32 aug4=0, uint32 aug5=0, bool attuned=false, uint16 to_slot=SLOT_CURSOR);
 	void	SetStats(int8 type,sint16 set_val);
 	void	IncStats(int8 type,sint16 increase_val);
 	void	DropItem(sint16 slot_id);

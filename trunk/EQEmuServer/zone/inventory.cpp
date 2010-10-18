@@ -101,7 +101,7 @@ bool Client::CheckLoreConflict(const Item_Struct* item) {
 	return (m_inv.HasItemByLoreGroup(item->LoreGroup, ~invWhereSharedBank) != SLOT_INVALID);
 }
 
-void Client::SummonItem(uint32 item_id, sint8 charges, uint32 aug1, uint32 aug2, uint32 aug3, uint32 aug4, uint32 aug5, bool attuned) {
+void Client::SummonItem(uint32 item_id, sint8 charges, uint32 aug1, uint32 aug2, uint32 aug3, uint32 aug4, uint32 aug5, bool attuned, uint16 to_slot) {
 	const Item_Struct* item = database.GetItem(item_id);
 	
 	if (item == NULL) {
@@ -185,10 +185,17 @@ void Client::SummonItem(uint32 item_id, sint8 charges, uint32 aug1, uint32 aug2,
 					inst->SetInstNoDrop(true);
 				}
 			}
-			//inst->SetCharges(
-			PushItemOnCursor(*inst);
-			// Send item packet to user
-			SendItemPacket(SLOT_CURSOR, inst, ItemPacketSummonItem);
+			if (to_slot == SLOT_CURSOR)
+			{
+				//inst->SetCharges(
+				PushItemOnCursor(*inst);
+				// Send item packet to user
+				SendItemPacket(SLOT_CURSOR, inst, ItemPacketSummonItem);
+			}
+			else
+			{
+				PutItemInInventory(to_slot, *inst, true);
+			}
 			safe_delete(inst);
 		}
 	}
