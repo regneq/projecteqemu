@@ -4729,7 +4729,7 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "SetEXP"), XS_Client_SetEXP, file, "$$$;$");
 		newXSproto(strcpy(buf, "SetBindPoint"), XS_Client_SetBindPoint, file, "$;$$$$");
 		newXSproto(strcpy(buf, "MovePC"), XS_Client_MovePC, file, "$$$$$$");
-		newXSproto(strcpy(buf, "MovePCInstance"), XS_Client_MovePC, file, "$$$$$$$");
+		newXSproto(strcpy(buf, "MovePCInstance"), XS_Client_MovePCInstance, file, "$$$$$$$");
 		newXSproto(strcpy(buf, "ChangeLastName"), XS_Client_ChangeLastName, file, "$$");
 		newXSproto(strcpy(buf, "GetFactionLevel"), XS_Client_GetFactionLevel, file, "$$$$$$$$");
 		newXSproto(strcpy(buf, "SetFactionLevel"), XS_Client_SetFactionLevel, file, "$$$$$$");
