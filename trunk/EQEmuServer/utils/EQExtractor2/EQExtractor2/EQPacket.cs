@@ -86,7 +86,9 @@ namespace EQPacket
         private ushort CryptoFlag = 0;
 
         StreamIdentifier Identifier = null;
-        
+
+        public DateTime LastPacketTime = DateTime.Now;
+
         public List<EQApplicationPacket> PacketList = new List<EQApplicationPacket>();
 
 	    LogHandler Logger = null;
@@ -282,6 +284,20 @@ namespace EQPacket
             if (((CryptoFlag & 4) > 0) && (OpCode != OP_SessionRequest))
                 return;
 
+            if (Direction == PacketDirection.ClientToServer)
+                Debug("Client -> Server");
+            else
+                Debug("Server -> Client");
+
+            Debug("Delta: " + (PacketTime - LastPacketTime));
+
+            TimeSpan Elapsed = PacketTime - LastPacketTime;
+
+            //if (Elapsed.Seconds > 1)
+            //    Debug("*** More than 1 second elapsed ***");
+
+            LastPacketTime = PacketTime;
+
             switch (OpCode)
             {
                 case OP_SessionRequest:
@@ -303,8 +319,8 @@ namespace EQPacket
 
                     ExpectedServerSEQ = 0;
 
-                    CryptoFlag = 0;
-
+                    CryptoFlag = 0;                    
+                    
                     break;
                 }
 
@@ -319,7 +335,7 @@ namespace EQPacket
                 {
                     if (DEBUG)
                     {
-                        Debug("OP_Combined");
+                        Debug("OP_Combined, Direction " + (Direction == PacketDirection.ClientToServer ? "Client->Server" : "Server->Client"));
                         Debug(Utils.HexDump(Payload));
                     }
 
@@ -394,14 +410,14 @@ namespace EQPacket
                     }
                     if (DEBUG)
                     {
-                        Debug("Raw payload is:");
-                        Debug(Utils.HexDump(Payload));
-                        Debug("Uncompressed data is:");
-                        Debug(Utils.HexDump(Uncompressed));
+                        //Debug("Raw payload is:");
+                        //Debug(Utils.HexDump(Payload));
+                        //Debug("Uncompressed data is:");
+                        //Debug(Utils.HexDump(Uncompressed));
                     }
 
                     int Seq = Uncompressed[0] * 256 + Uncompressed[1];
-
+                    Debug("Seq is " + Seq + " Expected " + GetExpectedSeq(Direction));
                     if (Seq != GetExpectedSeq(Direction))
                     {
                         if (Seq > GetExpectedSeq(Direction))

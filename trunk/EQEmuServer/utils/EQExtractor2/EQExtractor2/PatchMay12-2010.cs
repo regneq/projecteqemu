@@ -851,14 +851,15 @@ namespace EQExtractor2.Patches
         public override void RegisterExplorers()
         {
             //OpManager.RegisterExplorer("OP_NewZone", ExploreNewZonePacket);
-            OpManager.RegisterExplorer("OP_ZoneEntry", ExploreZoneEntry);
-            OpManager.RegisterExplorer("OP_PlayerProfile", ExplorePlayerProfile);
-            OpManager.RegisterExplorer("OP_RespawnWindow", ExploreRespawnWindow);
-            OpManager.RegisterExplorer("OP_ZonePlayerToBind", ExploreZonePlayerToBind);
-            OpManager.RegisterExplorer("OP_RequestClientZoneChange", ExploreRequestClientZoneChange);
-            OpManager.RegisterExplorer("OP_DeleteSpawn", ExploreDeleteSpawn);
-            OpManager.RegisterExplorer("OP_SpawnAppearance", ExploreSpawnAppearance);
-            OpManager.RegisterExplorer("OP_HPUpdate", ExploreHPUpdate);
+            //OpManager.RegisterExplorer("OP_ZoneEntry", ExploreZoneEntry);
+            //OpManager.RegisterExplorer("OP_PlayerProfile", ExplorePlayerProfile);
+            //OpManager.RegisterExplorer("OP_RespawnWindow", ExploreRespawnWindow);
+            //OpManager.RegisterExplorer("OP_ZonePlayerToBind", ExploreZonePlayerToBind);
+            //OpManager.RegisterExplorer("OP_RequestClientZoneChange", ExploreRequestClientZoneChange);
+            //OpManager.RegisterExplorer("OP_DeleteSpawn", ExploreDeleteSpawn);
+            //OpManager.RegisterExplorer("OP_SpawnAppearance", ExploreSpawnAppearance);
+            //OpManager.RegisterExplorer("OP_HPUpdate", ExploreHPUpdate);
+            //OpManager.RegisterExplorer("OP_Animation", ExploreAnimation);
             
         }
 
@@ -991,6 +992,19 @@ namespace EQExtractor2.Patches
             string SpawnName = FindExplorerSpawn(SpawnID);
 
             OutputStream.WriteLine("Spawn {0} {1} Current HP: {2} Max HP: {3}", SpawnID, SpawnName, CurrentHP, MaxHP);
+
+            OutputStream.WriteLine("");
+        }
+
+        public void ExploreAnimation(StreamWriter OutputStream, ByteStream Buffer, PacketDirection Direction)
+        {            
+            UInt16 SpawnID = Buffer.ReadUInt16();
+            byte Action = Buffer.ReadByte();
+            byte Value = Buffer.ReadByte();
+
+            string SpawnName = FindExplorerSpawn(SpawnID);
+
+            OutputStream.WriteLine("Spawn {0} {1} Action: {2} Value: {3}", SpawnID, SpawnName, Action, Value);
 
             OutputStream.WriteLine("");
         }

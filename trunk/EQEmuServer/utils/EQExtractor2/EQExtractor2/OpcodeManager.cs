@@ -16,12 +16,14 @@ namespace EQExtractor2.OpCodes
         public UInt32 Value;
         public string Name;
         public ExplorerMethod Explorer;
+        public UInt32 Count;
 
         public OpCode(string inName, UInt32 inValue)
         {
             Name = inName;
             Value = inValue;
             Explorer = null;
+            Count = 0;
 
         }
     }
@@ -118,6 +120,12 @@ namespace EQExtractor2.OpCodes
                     return oc.Value;
             }
             return 0;
+        }
+
+        public void ResetCounts()
+        {
+            foreach (OpCode oc in OpCodeList)            
+                oc.Count = 0;                    
         }
 
         public void RegisterExplorer(string Name, ExplorerMethod Explorer)
