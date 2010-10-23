@@ -83,6 +83,7 @@
     </Compile>
     <Compile Include="InternalTypes.cs" />
     <Compile Include="PatchMay12-2010.cs" />
+    <Compile Include="PatchOct20-2010.cs" />
     <Compile Include="PatchSoD.cs" />
     <Compile Include="PatchJuly13-2010.cs" />
     <Compile Include="PatchTestSep1-2010.cs" />
