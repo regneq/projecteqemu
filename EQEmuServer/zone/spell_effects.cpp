@@ -2626,9 +2626,9 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				//these are considered magical attacks, so we don't need to test that
 				//if they are resistable that's been taken care of, all these discs have a 10000 hit chance so they auto hit, no need to test
 				if(RuleB(Combat, UseIntervalAC))
-					caster->DoSpecialAttackDamage(this, spells[spell_id].skill, tDmg, mDmg);
+					caster->DoSpecialAttackDamage(this, spells[spell_id].skill, tDmg, mDmg, (mDmg / 20));
 				else
-				caster->DoSpecialAttackDamage(this, spells[spell_id].skill, MakeRandomInt(1, tDmg), mDmg);
+					caster->DoSpecialAttackDamage(this, spells[spell_id].skill, MakeRandomInt(1, tDmg), mDmg, (mDmg / 20));
 				break;
 			}
 
