@@ -584,8 +584,8 @@ struct SPDat_Spell_Struct
 /* 121 */	int8		TargetAnim;
 /* 122 */	int32		TravelType;
 /* 123 */	int16		SpellAffectIndex;
-/* 124 */ int spacing124[2];	// 124: high-end Yaulp spells (V, VI, VII, VIII [Rk 1, 2, & 3], & Gallenite's Bark of Fury
-								// 125: Words of the Skeptic
+/* 124 */   int         disallow_sit;	// 124: high-end Yaulp spells (V, VI, VII, VIII [Rk 1, 2, & 3], & Gallenite's Bark of Fury
+/* 125 */   int         spacing125;   // 125: Words of the Skeptic
 /* 126 */	sint8		deities[16];	// Deity check. 201 - 216 per http://www.eqemulator.net/wiki/wikka.php?wakka=DeityList
 										// -1: Restrict to Deity; 1: Restrict to Deity, but only used on non-Live (Test Server "Blessing of ...") spells; 0: Don't restrict
 /* 142 */ int spacing142[2];	// 142: between 0 & 100

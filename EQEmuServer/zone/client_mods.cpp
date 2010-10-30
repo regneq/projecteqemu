@@ -1029,10 +1029,14 @@ sint32 Client::CalcBaseMana()
 	return max_m;
 }
 
-sint32 Client::CalcManaRegen() {
+sint32 Client::CalcManaRegen() 
+{
 	uint8 clevel = GetLevel();
 	sint32 regen = 0;
-	if (IsSitting() || (GetHorseId() != 0)) {		//this should be changed so we dont med while camping, etc...
+	//this should be changed so we dont med while camping, etc...
+	if (IsSitting() || (GetHorseId() != 0)) 
+	{
+		BuffFadeBySitModifier();
 		if(HasSkill(MEDITATE)) {
 			this->medding = true;
 			regen = (((GetSkill(MEDITATE) / 10) + (clevel - (clevel / 4))) / 4) + 4;

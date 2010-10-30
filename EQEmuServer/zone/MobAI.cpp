@@ -2256,6 +2256,19 @@ void NPC::AddSpellToNPCList(sint16 iPriority, sint16 iSpellID, uint16 iType, sin
 	AIspells.push_back(t);
 }
 
+void NPC::RemoveSpellFromNPCList(sint16 spell_id)
+{
+	std::vector<AISpells_Struct>::iterator iter = AIspells.begin();
+	while(iter != AIspells.end())
+	{
+		if((*iter).spellid == spell_id)
+		{
+			iter = AIspells.erase(iter);
+			continue;
+		}
+		iter++;
+	}
+}
 
 DBnpcspells_Struct* ZoneDatabase::GetNPCSpells(int32 iDBSpellsID) {
 	if (iDBSpellsID == 0)

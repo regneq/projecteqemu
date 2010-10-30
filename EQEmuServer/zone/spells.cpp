@@ -3344,6 +3344,28 @@ void Mob::BuffFadeDetrimentalByCaster(Mob *caster)
 	}
 }
 
+void Mob::BuffFadeBySitModifier()
+{
+	bool r_bonus = false;
+	uint32 buff_count = GetMaxTotalSlots();
+	for(uint32 j = 0; j < buff_count; ++j) 
+	{
+		if(buffs[j].spellid != SPELL_UNKNOWN)
+		{
+			if(spells[buffs[j].spellid].disallow_sit)
+			{
+				BuffFadeBySlot(j, false);
+				r_bonus = true;
+			}
+		}
+	}
+
+	if(r_bonus)
+	{
+		CalcBonuses();
+	}
+}
+
 // solar: removes the buff matching spell_id
 void Mob::BuffFadeBySpellID(int16 spell_id)
 {

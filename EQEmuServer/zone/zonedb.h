@@ -127,7 +127,8 @@ public:
 	bool	GetAccountInfoForLogin(int32 account_id, sint16* admin = 0, char* account_name = 0, 
 				int32* lsaccountid = 0, int8* gmspeed = 0, bool* revoked = 0, bool* gmhideme = 0);
 	bool	GetAccountInfoForLogin_result(MYSQL_RES* result, sint16* admin = 0, char* account_name = 0, 
-				int32* lsaccountid = 0, int8* gmspeed = 0, bool* revoked = 0, bool* gmhideme = false);
+				int32* lsaccountid = 0, int8* gmspeed = 0, bool* revoked = 0, bool* gmhideme = false, 
+				uint32* account_creation = 0);
 	bool	GetCharacterInfoForLogin_result(MYSQL_RES* result, uint32* character_id = 0, char* current_zone = 0, 
 				PlayerProfile_Struct* pp = 0, Inventory* inv = 0, ExtendedProfile_Struct *ext = 0, uint32* pplen = 0, 
 				uint32* guilddbid = 0, int8* guildrank = 0, uint8 *class_=  0, uint8 *level = 0, bool *LFP = 0,
