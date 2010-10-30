@@ -1,5 +1,11 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==10/30/2010==
+KLS: Added NPC::AddAISpell() and NPC::RemoveAISpell() to perl NPC object.
+KLS: Added field to limit AAs based on account creation time.
+KLS: Implemented fade on meditate field for spells like the higher yaulp spells (it will fade just before a regen tic).
+JJ: Cleaned up Win32 build locations, moved eqlaunch into build folder, and set project dependencies to guarantee build order in Windows.
+
 ==10/16/2010==
 Trevius: Added optional slot_id field to Client SummonItem(item_id, charges, attune, aug1, aug2, aug3, aug4, aug5, slot_id) - Default is slot 30 (cursor).
 

@@ -109,10 +109,9 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\Release"
-			IntermediateDirectory=".\Release"
+			OutputDirectory=".\../Build"
+			IntermediateDirectory=".\../Build/eqlaunch/Release"
 			ConfigurationType="1"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
@@ -143,10 +142,10 @@
 				StringPooling="true"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
-				PrecompiledHeaderFile=".\Release/eqlaunch.pch"
-				AssemblerListingLocation=".\Release/"
-				ObjectFile=".\Release/"
-				ProgramDataBaseFileName=".\Release/"
+				PrecompiledHeaderFile=".\../Build/eqlaunch/eqlaunch.pch"
+				AssemblerListingLocation=".\../Build/eqlaunch/"
+				ObjectFile=".\../Build/eqlaunch/"
+				ProgramDataBaseFileName=".\../Build/eqlaunch/"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 			/>
@@ -164,11 +163,11 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="zlib.lib wsock32.lib odbc32.lib odbccp32.lib"
-				OutputFile=".\Release/eqlaunch.exe"
+				OutputFile=".\../Build/eqlaunch.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="c:\eqemu\lib"
-				ProgramDatabaseFile=".\Release/eqlaunch.pdb"
+				ProgramDatabaseFile=".\../Build/eqlaunch/eqlaunch.pdb"
 				SubSystem="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -186,7 +185,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Release/eqlaunch.bsc"
+				OutputFile=".\../Build/eqlaunch/eqlaunch.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
