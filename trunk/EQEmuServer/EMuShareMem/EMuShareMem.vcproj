@@ -171,12 +171,12 @@
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="false"
-				ProgramDatabaseFile=".\../Build/EMuShareMem.pdb"
+				ProgramDatabaseFile=".\../Build/EMuShareMem/EMuShareMem.pdb"
 				GenerateMapFile="false"
-				MapFileName="../Build/EMuShareMem.map"
+				MapFileName="../Build/EMuShareMem/EMuShareMem.map"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary=".\../Build/EMuShareMem.lib"
+				ImportLibrary=".\../Build/EMuShareMem/EMuShareMem.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -189,6 +189,7 @@
 			/>
 			<Tool
 				Name="VCBscMakeTool"
+				OutputFile=".\../Build/EMuShareMem/EMuShareMem.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"

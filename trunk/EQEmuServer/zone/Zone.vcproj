@@ -188,6 +188,7 @@
 			/>
 			<Tool
 				Name="VCBscMakeTool"
+				OutputFile=".\../Build/Zone/Zone.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
