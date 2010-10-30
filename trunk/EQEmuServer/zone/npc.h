@@ -306,6 +306,8 @@ public:
 	void NPCSlotTexture(int8 slot, int16 texture);	// Sets new material values for slots
 
 	uint32 GetAdventureTemplate() const { return adventure_template_id; }
+	void AddSpellToNPCList(sint16 iPriority, sint16 iSpellID, uint16 iType, sint16 iManaCost, sint32 iRecastDelay);
+	void RemoveSpellFromNPCList(sint16 spell_id);
 
 protected:
 	
@@ -342,7 +344,6 @@ protected:
 	int32*	pDontCastBefore_casting_spell;
 	std::vector<AISpells_Struct> AIspells;
 	bool HasAISpell;
-	void AddSpellToNPCList(sint16 iPriority, sint16 iSpellID, uint16 iType, sint16 iManaCost, sint32 iRecastDelay);
 	virtual bool AICastSpell(Mob* tar, int8 iChance, int16 iSpellTypes);
 	virtual bool AIDoSpellCast(int8 i, Mob* tar, sint32 mana_cost, int32* oDontDoAgainBefore = 0);
 	

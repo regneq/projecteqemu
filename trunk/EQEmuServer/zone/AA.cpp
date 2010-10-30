@@ -177,6 +177,17 @@ void Client::ActivateAA(aaID activate){
 	if (activate_val == 0){
 		return;
 	}
+
+	if(aa2)
+	{
+		if(aa2->account_time_required)
+		{
+			if((Timer::GetTimeSeconds() + account_creation) < aa2->account_time_required)
+			{
+				return;
+			}
+		}
+	}
 	
 	if(!p_timers.Expired(&database, AATimerID + pTimerAAStart)) 
 	{
@@ -905,6 +916,14 @@ void Client::BuyAA(AA_Action* action){
 		return;
 	}
 	
+	if(aa2->account_time_required)
+	{
+		if((Timer::GetTimeSeconds() - account_creation) < aa2->account_time_required)
+		{
+			return;
+		}
+	}
+
 	int real_cost = aa2->cost + (aa2->cost_inc * cur_level);
 	
 	if(m_pp.aapoints >= real_cost && cur_level < aa2->max_level) {
@@ -1035,6 +1054,14 @@ void Client::SendAA(int32 id, int seq) {
 	int16 classes = saa2->classes;
 	if(!(classes & (1 << GetClass())) && (GetClass()!=BERSERKER || saa2->berserker==0)){
 		return;
+	}
+
+	if(saa2->account_time_required)
+	{
+		if((Timer::GetTimeSeconds() - account_creation) < saa2->account_time_required)
+		{
+			return;
+		}
 	}
 	
 	int size=sizeof(SendAA_Struct)+sizeof(AA_Ability)*saa2->total_abilities;
@@ -1556,7 +1583,8 @@ SendAA_Struct* ZoneDatabase::GetAASkillVars(int32 skill_id)
 				"a.sof_cost_inc, "
 				"a.sof_max_level, "
 				"a.sof_next_skill, "
-				"a.clientver "	// Client Version 0 = None, 1 = All, 2 = Titanium/6.2, 3 = SoF
+				"a.clientver, "	// Client Version 0 = None, 1 = All, 2 = Titanium/6.2, 3 = SoF
+				"a.account_time_required "
 			" FROM altadv_vars a WHERE skill_id=%i", skill_id), errbuf, &result)) {
 			safe_delete_array(query);
 			if (mysql_num_rows(result) == 1) {
@@ -1607,6 +1635,7 @@ SendAA_Struct* ZoneDatabase::GetAASkillVars(int32 skill_id)
 				sendaa->sof_max_level = atoul(row[21]);
 				sendaa->sof_next_skill = atoul(row[22]);
 				sendaa->clientver = atoul(row[23]);
+				sendaa->account_time_required = atoul(row[24]);
 			}
 			mysql_free_result(result);
 		} else {

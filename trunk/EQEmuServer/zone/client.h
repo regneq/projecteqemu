@@ -1107,6 +1107,7 @@ private:
 	int16				BoatID;
 	int16				TrackingID;
 	int16				CustomerID;
+	uint32              account_creation;
 	bool	Trader;
 	bool	Buyer;
 	string	BuyerWelcomeMessage;

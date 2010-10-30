@@ -342,7 +342,7 @@ void ZoneDatabase::UpdateBug(PetitionBug_Struct* bug){
 }
 
 
-bool ZoneDatabase::GetAccountInfoForLogin_result(MYSQL_RES* result, sint16* admin, char* account_name, int32* lsaccountid, int8* gmspeed, bool* revoked,bool* gmhideme) {
+bool ZoneDatabase::GetAccountInfoForLogin_result(MYSQL_RES* result, sint16* admin, char* account_name, int32* lsaccountid, int8* gmspeed, bool* revoked,bool* gmhideme, uint32* account_creation) {
     MYSQL_ROW row;
 	if (mysql_num_rows(result) == 1) {
 		row = mysql_fetch_row(result);
@@ -365,6 +365,9 @@ bool ZoneDatabase::GetAccountInfoForLogin_result(MYSQL_RES* result, sint16* admi
 			*revoked = atoi(row[4]);
 		if(gmhideme)
 			*gmhideme = atoi(row[5]);
+		if(account_creation)
+			*account_creation = atoul(row[6]);
+
 		return true;
 	}
 	else {

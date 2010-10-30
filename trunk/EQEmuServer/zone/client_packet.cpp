@@ -553,7 +553,7 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 	workpt.b1() = DBA_b1_Entity_Client_InfoForLogin;
 	DBAsyncWork* dbaw = new DBAsyncWork(&database, &MTdbafq, workpt, DBAsync::Read);
 	dbaw->AddQuery(1, &query, MakeAnyLenString(&query,
-		"SELECT status,name,lsaccount_id,gmspeed,revoked,hideme FROM account WHERE id=%i",
+		"SELECT status,name,lsaccount_id,gmspeed,revoked,hideme,time_creation FROM account WHERE id=%i",
 		account_id));
 	//DO NOT FORGET TO EDIT ZoneDatabase::GetCharacterInfoForLogin if you change this
 	dbaw->AddQuery(2, &query, MakeAnyLenString(&query,
@@ -7991,7 +7991,7 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 			return false;
 		}
 		if (dbaq->QPT() == 1) {
-			database.GetAccountInfoForLogin_result(result, 0, account_name, &lsaccountid, &gmspeed, &revoked, &gmhideme);
+			database.GetAccountInfoForLogin_result(result, 0, account_name, &lsaccountid, &gmspeed, &revoked, &gmhideme, &account_creation);
 			if(gmhideme)
 			{
 				trackable = false;

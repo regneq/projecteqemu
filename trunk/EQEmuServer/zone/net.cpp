@@ -1007,9 +1007,8 @@ This is hanging on freebsd for me, not sure why...
 		sp[tempid].TargetAnim=atoi(sep.arg[121]);
 		sp[tempid].TravelType=atoi(sep.arg[122]);
 		sp[tempid].SpellAffectIndex=atoi(sep.arg[123]);
-
-		for(y = 0; y < 2;y++)
-			sp[tempid].spacing124[y]=atoi(sep.arg[124+y]);
+		sp[tempid].disallow_sit = atoi(sep.arg[124]);
+		sp[tempid].spacing125=atoi(sep.arg[125]);
 
 		for (y = 0; y < 16; y++)
 			sp[tempid].deities[y]=atoi(sep.arg[126+y]);
@@ -1207,9 +1206,8 @@ This is hanging on freebsd for me, not sure why...
 			sp[tempid].TargetAnim=atoi(row[121]);
 			sp[tempid].TravelType=atoi(row[122]);
 			sp[tempid].SpellAffectIndex=atoi(row[123]);
-
-			for(y = 0; y < 2;y++)
-				sp[tempid].spacing124[y]=atoi(row[124+y]);
+			sp[tempid].disallow_sit=atoi(row[124]);
+			sp[tempid].spacing125=atoi(row[125]);
 
 			for (y = 0; y < 16; y++)
 				sp[tempid].deities[y]=atoi(row[126+y]);

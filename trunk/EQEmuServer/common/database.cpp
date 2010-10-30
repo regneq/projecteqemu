@@ -354,9 +354,9 @@ int32 Database::CreateAccount(const char* name, const char* password, sint16 sta
 	int32 last_insert_id;
 
 	if (password)
-		querylen = MakeAnyLenString(&query, "INSERT INTO account SET name='%s', password='%s', status=%i, lsaccount_id=%i;",name,password,status, lsaccount_id);
+		querylen = MakeAnyLenString(&query, "INSERT INTO account SET name='%s', password='%s', status=%i, lsaccount_id=%i, time_creation=UNIX_TIMESTAMP();",name,password,status, lsaccount_id);
 	else
-		querylen = MakeAnyLenString(&query, "INSERT INTO account SET name='%s', status=%i, lsaccount_id=%i;",name, status, lsaccount_id);
+		querylen = MakeAnyLenString(&query, "INSERT INTO account SET name='%s', status=%i, lsaccount_id=%i, time_creation=UNIX_TIMESTAMP();",name, status, lsaccount_id);
 
 	cerr << "Account Attempting to be created:" << name << " " << (sint16) status << endl;
 	if (!RunQuery(query, querylen, errbuf, 0, 0, &last_insert_id)) {

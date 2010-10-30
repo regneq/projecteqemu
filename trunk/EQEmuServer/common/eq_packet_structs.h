@@ -3970,8 +3970,9 @@ struct SendAA_Struct {
 /*0104*/	int32 sof_max_level;
 /*0108*/	int32 sof_next_skill;
 /*0112*/	int32 clientver;
-/*0116*/	int32 total_abilities;
-/*0120*/	AA_Ability abilities[0];
+/*0016*/	int32 account_time_required;
+/*0120*/	int32 total_abilities;
+/*0124*/	AA_Ability abilities[0];
 };
 
 struct AA_Action {
