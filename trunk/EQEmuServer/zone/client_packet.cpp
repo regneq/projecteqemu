@@ -2018,18 +2018,32 @@ void Client::Handle_OP_ItemVerifyRequest(const EQApplicationPacket *app)
 				{
 					if(GetLevel() >= item->Click.Level2)
 					{
-						CastSpell(item->Click.Effect, target_id, 10, item->CastTime, 0, 0, slot_id);
+						if(((PerlembParser *)parse)->ItemHasQuestSub(p_inst, "EVENT_ITEM_CLICK_CAST"))
+						{
+							//TODO: need to enforce and set recast timers here because the spell may not be cast.
+							((PerlembParser *)parse)->Event(EVENT_ITEM_CLICK_CAST, p_inst->GetID(), "", p_inst, this);
+						}
+						else
+						{
+							CastSpell(item->Click.Effect, target_id, 10, item->CastTime, 0, 0, slot_id);
+						}
 					}
 					else
 					{
-						//Message(0, "You are not sufficient level to use this item.");
 						Message_StringID(13, ITEMS_INSUFFICIENT_LEVEL);
 						return;
 					}					
 				}
 				else
 				{
-					CastSpell(item->Click.Effect, target_id, 10, item->CastTime, 0, 0, slot_id);
+					if(((PerlembParser *)parse)->ItemHasQuestSub(p_inst, "EVENT_ITEM_CLICK_CAST"))
+					{
+						((PerlembParser *)parse)->Event(EVENT_ITEM_CLICK_CAST, p_inst->GetID(), "", p_inst, this);
+					}
+					else
+					{
+						CastSpell(item->Click.Effect, target_id, 10, item->CastTime, 0, 0, slot_id);
+					}
 				}
 			}
 			else
@@ -4372,7 +4386,15 @@ LogFile->write(EQEMuLog::Debug, "OP CastSpell: slot=%d, spell=%d, target=%d, inv
 					{
 						if(GetLevel() >= item->Click.Level2)
 						{
-							CastSpell(item->Click.Effect, castspell->target_id, castspell->slot, item->CastTime, 0, 0, castspell->inventoryslot);
+							ItemInst* p_inst = (ItemInst*)inst;
+							if(((PerlembParser *)parse)->ItemHasQuestSub(p_inst, "EVENT_ITEM_CLICK_CAST"))
+							{
+								((PerlembParser *)parse)->Event(EVENT_ITEM_CLICK_CAST, p_inst->GetID(), "", p_inst, this);
+							}
+							else
+							{
+								CastSpell(item->Click.Effect, castspell->target_id, castspell->slot, item->CastTime, 0, 0, castspell->inventoryslot);
+							}
 						}
 						else
 						{
@@ -4383,7 +4405,15 @@ LogFile->write(EQEMuLog::Debug, "OP CastSpell: slot=%d, spell=%d, target=%d, inv
 					}
 					else
 					{
-						CastSpell(item->Click.Effect, castspell->target_id, castspell->slot, item->CastTime, 0, 0, castspell->inventoryslot);
+						ItemInst* p_inst = (ItemInst*)inst;
+						if(((PerlembParser *)parse)->ItemHasQuestSub(p_inst, "EVENT_ITEM_CLICK_CAST"))
+						{
+							((PerlembParser *)parse)->Event(EVENT_ITEM_CLICK_CAST, p_inst->GetID(), "", p_inst, this);
+						}
+						else
+						{
+							CastSpell(item->Click.Effect, castspell->target_id, castspell->slot, item->CastTime, 0, 0, castspell->inventoryslot);
+						}
 					}
 				}
 				else
