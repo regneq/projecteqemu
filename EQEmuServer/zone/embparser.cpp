@@ -77,7 +77,8 @@ const char *QuestEventSubroutines[_LargestEventID] = {
 	"EVENT_SPELL_EFFECT_TRANSLOCATE_COMPLETE",
 	"EVENT_COMBINE_SUCCESS",
 	"EVENT_COMBINE_FAILURE",
-	"EVENT_ITEM_CLICK"
+	"EVENT_ITEM_CLICK",
+	"EVENT_ITEM_CLICK_CAST"
 };
 
 PerlembParser::PerlembParser(void) : Parser()
@@ -259,7 +260,7 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 				LoadItemScript(iteminst, packagename, itemQuestScale);
 			}
 		}
-		else if (event == EVENT_ITEM_CLICK) {
+		else if (event == EVENT_ITEM_CLICK || event == EVENT_ITEM_CLICK_CAST) {
 			packagename = "script_";
 			packagename += itoa(item->ScriptFileID);
 			if(!isloaded(packagename.c_str())) {
@@ -661,6 +662,7 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 			ExportVar(packagename.c_str(), "itemname", iteminst->GetItem()->Name);
 			break;
 		}
+		case EVENT_ITEM_CLICK_CAST:
 		case EVENT_ITEM_CLICK: {
 			ExportVar(packagename.c_str(), "itemid", objid);
 			ExportVar(packagename.c_str(), "itemname", iteminst->GetItem()->Name);
@@ -1211,6 +1213,37 @@ bool PerlembParser::SpellHasQuestSub(uint32 id, const char *subname)
 		LoadSpellScript(id);
 	
 	return(perl->SubExists(packagename.c_str(), subname));
+}
+
+bool PerlembParser::ItemHasQuestSub(ItemInst *itm, const char *subname)
+{
+	string packagename;
+	const Item_Struct* item = itm->GetItem();
+	if(!item)
+		return false;
+
+	if(strcmp("EVENT_SCALE_CALC", subname) == 0)
+	{
+		packagename = item->CharmFile;
+		if(itemQuestLoaded.count(packagename) == 0)
+			LoadItemScript(itm, packagename, itemQuestScale);
+	}
+	else if(strcmp("EVENT_ITEM_CLICK", subname) == 0 || strcmp("EVENT_ITEM_CLICK_CAST", subname) == 0 )
+	{
+		packagename = "script_";
+		packagename += itoa(item->ScriptFileID);
+		if(itemQuestLoaded.count(packagename) == 0)
+			LoadItemScript(itm, packagename, itemScriptFileID);
+	}
+	else
+	{
+		packagename = "item_";
+		packagename += itoa(item->ID);
+		if(itemQuestLoaded.count(packagename) == 0)
+			LoadItemScript(itm, packagename, itemQuestID);
+	}
+
+	return perl->SubExists(packagename.c_str(), subname);
 }
 
 //utility - return something of the form "qst1234"...

@@ -118,7 +118,8 @@ public:
 	bool HasQuestSub(int32 npcid, const char *subname);
 	bool PlayerHasQuestSub(const char *subname);
 	bool SpellHasQuestSub(uint32 spell_id, const char *subname);
-	
+	bool ItemHasQuestSub(ItemInst *itm, const char *subname);
+
 #ifdef EMBPERL_COMMANDS
 	void ExecCommand(Client *c, Seperator *sep);
 #endif
