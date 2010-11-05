@@ -471,7 +471,7 @@ void Client::AddLevelBasedExp(int8 exp_percentage, int8 max_level) {
 
 	uint32 newexp = GetEXP() + ((GetEXPForLevel(max_level + 1) - GetEXPForLevel(max_level)) * exp_percentage / 100);
 
-	SetEXP(newexp, 0);
+	SetEXP(newexp, GetAAXP());
 }
 
 void Group::SplitExp(uint32 exp, Mob* other) {
