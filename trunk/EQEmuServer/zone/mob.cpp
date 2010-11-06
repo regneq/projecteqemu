@@ -354,6 +354,8 @@ Mob::Mob(const char*   in_name,
 	// hp event
 	nexthpevent = -1;
 	nextinchpevent = -1;
+	lasthpevent = -1;
+	lastinchpevent = -1;
 	
 	fix_pathing = false;
 	TempPets(false);
@@ -847,22 +849,36 @@ void Mob::CreateHPPacket(EQApplicationPacket* app)
 	ds->hp = (int)GetHPRatio();
  
 	// hp event 
-	if ( IsNPC() && ( GetNextHPEvent() > 0 ) ) { 
-		if ( ds->hp < GetNextHPEvent() ) { 
-			int lasthpevent = nexthpevent;
-			parse->Event(EVENT_HP, GetNPCTypeID(), 0, CastToNPC(), NULL);
-			if ( lasthpevent == nexthpevent ) {
+	if ( IsNPC() && ( GetNextHPEvent() > 0 ) )
+	{ 
+		if ( ds->hp < GetNextHPEvent() )
+		{ 
+			if ( lasthpevent == nexthpevent )
+			{
 				SetNextHPEvent(-1);
+				lasthpevent = -1;
+			}
+			else
+			{
+				lasthpevent = nexthpevent;
+				parse->Event(EVENT_HP, GetNPCTypeID(), 0, CastToNPC(), NULL);
 			}
 		} 
 	} 
 
-	if ( IsNPC() && ( GetNextIncHPEvent() > 0 ) ) { 
-		if ( ds->hp > GetNextIncHPEvent() ) { 
-			int lastinchpevent = nextinchpevent;
-			parse->Event(EVENT_HP, GetNPCTypeID(), 0, CastToNPC(), NULL);
-			if ( lastinchpevent == nextinchpevent ) {
+	if ( IsNPC() && ( GetNextIncHPEvent() > 0 ) )
+	{ 
+		if ( ds->hp > GetNextIncHPEvent() )
+		{
+			if ( lastinchpevent == nextinchpevent )
+			{
 				SetNextIncHPEvent(-1);
+				lastinchpevent = -1;
+			}
+			else
+			{
+				lastinchpevent = nextinchpevent;
+				parse->Event(EVENT_HP, GetNPCTypeID(), 0, CastToNPC(), NULL);
 			}
 		} 
  	}   

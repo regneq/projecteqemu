@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==11/06/2010==
+Trevius: Fixed an issue with EVENT_HP that was sending $hpevent with a value of -1 in certain cases.
+
 ==11/04/2010==
 Trevius: Added new Perl Client GetAAExp() quest object.
 Trevius: Corrected the level based Experience quest command and task reward functionality to not affect AA Experience.
