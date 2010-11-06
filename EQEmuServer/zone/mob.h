@@ -1296,6 +1296,8 @@ protected:
 	// hp event
 	int nexthpevent;
 	int nextinchpevent;
+	int lasthpevent;
+	int lastinchpevent;
 
 	//temppet
 	bool hasTempPet;
