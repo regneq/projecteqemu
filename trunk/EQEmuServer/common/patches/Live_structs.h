@@ -472,7 +472,7 @@ struct InterruptCast_Struct
 {
 	int32 spawnid;
 	int32 messageid;
-	//char	message[0];
+	char	message[0];
 };
 
 struct DeleteSpell_Struct

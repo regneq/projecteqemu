@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==11/07/2010==
+Congdar: Fixed OP_InterruptCast for newer clients(SoF, SoD, Live). You'll now see Npc's and other players cast interrupted message properly.
+
 ==11/06/2010==
 Trevius: Fixed an issue with EVENT_HP that was sending $hpevent with a value of -1 in certain cases.
 
