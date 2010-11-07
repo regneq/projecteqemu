@@ -1402,14 +1402,6 @@ ENCODE(OP_CancelTrade) {
 	FINISH_ENCODE();
 }
 
-ENCODE(OP_InterruptCast) {
-	ENCODE_LENGTH_EXACT(InterruptCast_Struct);
-	SETUP_DIRECT_ENCODE(InterruptCast_Struct, structs::InterruptCast_Struct);
-	OUT(spawnid);
-	OUT(messageid);
-	FINISH_ENCODE();
-}
-
 ENCODE(OP_ShopPlayerSell) {
 	ENCODE_LENGTH_EXACT(Merchant_Purchase_Struct);
 	SETUP_DIRECT_ENCODE(Merchant_Purchase_Struct, structs::Merchant_Purchase_Struct);

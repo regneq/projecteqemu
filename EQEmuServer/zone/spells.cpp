@@ -3703,19 +3703,6 @@ float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster)
 		}
 	}
 
-#ifdef EQBOTS
-
-	if(caster && caster->IsBot())
-	{
-		if(IsValidSpell(spell_id))
-		{
-			sint32 focusResist = caster->GetBotFocusEffect(botfocusResistRate, spell_id);
-			resistchance = (resistchance * (100-focusResist) / 100);
-		}
-	}
-
-#endif //EQBOTS
-
 	//Resist chance makes up the upper limit of our partial range
 	//Fullchance makes up the lower limit of our partial range
 	if(!IsFearSpell(spell_id))
