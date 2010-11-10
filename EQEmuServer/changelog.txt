@@ -1,5 +1,16 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==11/10/2010==
+Caryatis: Added support for HealAmt, SpellDmg, Clairvoyance, DS Mitigation, SE_SpellDamageShield, SE_SpellDamage
+Caryatis: Heroics fully supported now(points in brackets are how many Heroics to achieve a gain)
+Caryatis: hInt = For int-based casters, increases mana pool, mana regen(25), and the maximum amount of mana regen a character can have(25).
+Caryatis: hWis = For wis-based casters, increases mana pool, mana regen(25), and the maximum amount of mana regen a character can have(25).
+Caryatis: hStr = Increases endurance pool, endurance regen(25), and the maximum amount of endurance regen a character can have(25). Also increases damage done by melee attacks(10) and improves the bonus granted to armor class while using a shield(2).
+Caryatis: hSta = Increases hit point pool, hit point regen(25), and the maximum amount of hit point regen a character can have(25). Also increases endurance pool, endurance regen(25), and the maximum amount of endurance regen a character can have(25).
+Caryatis: hAgi = Increases endurance pool, endurance regen(25), and the maximum amount of endurance regen a character can have(25). Also increases the chance to dodge an attack(25), grants a bonus to defense skill(10).
+Caryatis: hDex = Increases endurance pool, endurance regen(25), and the maximum amount of endurance regen a character can have(25). Also increases damage done by ranged attacks(1), improves chance to successfully assassinate or headshot(10), and improves the chance to riposte, block, and parry incoming attacks(25).
+Caryatis: hCha = Improves reaction rolls with some NPCs(25) and increases the amount of faction you gain or lose when faction is adjusted(5). 
+
 ==11/07/2010==
 Congdar: Fixed OP_InterruptCast for newer clients(SoF, SoD, Live). You'll now see Npc's and other players cast interrupted message properly.
 

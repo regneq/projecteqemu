@@ -90,6 +90,7 @@ typedef enum {	//focus types
 	focusSpellVulnerability,
 	focusTwincast,
 	focusSympatheticProc,
+	focusSpellDamage,
 } focusType;
 
 enum {
@@ -217,6 +218,7 @@ struct StatBonuses {
 	int		DamageShield; // this is damage done to mobs that attack this
 	DmgShieldType	DamageShieldType;
 	int		SpellDamageShield;
+	int		SpellShield;
 	int		ReverseDamageShield; // this is damage done to the mob when it attacks
 	uint16	ReverseDamageShieldSpellID;
 	DmgShieldType	ReverseDamageShieldType;
@@ -277,7 +279,11 @@ struct StatBonuses {
 	sint8 MeleeLifetap;
 	sint16 HealRate;		// Spell effect that influences effectiveness of heals
 	sint16 MaxHPChange;		// Spell Effect
-	sint16 SkillDmgTaken[HIGHEST_SKILL+1];	// Spell effect
+	sint16 SkillDmgTaken[HIGHEST_SKILL+2];	// All Skills + -1
+	sint32 HealAmt;			// Item Effect
+	sint32 SpellDmg;		// Item Effect
+	sint32 Clairvoyance;	// Item Effect
+	sint16 DSMitigation;	// Item Effect
 	int XPRateMod;
 
 	sint8	Packrat;	//weight reduction for items, 1 point = 10%
@@ -542,7 +548,7 @@ bool logpos;
 	void ApplyMeleeDamageBonus(int16 skill, sint32 &damage);
 	virtual void MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit);
 
-	void	DamageShield(Mob* other);
+	void	DamageShield(Mob* other, bool spell_ds=false);
 	bool	FindBuff(int16 spellid);
 	bool	FindType(int8 type, bool bOffensive = false, int16 threshold = 100);
 	sint8	GetBuffSlotFromType(int16 type);

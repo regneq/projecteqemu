@@ -213,10 +213,9 @@ sint32 Client::LevelRegen()
 }
 
 sint32 Client::CalcHPRegen() {
-	sint32 regen = LevelRegen() + itembonuses.HPRegen + spellbonuses.HPRegen;
+	sint32 regen = LevelRegen() + itembonuses.HPRegen + spellbonuses.HPRegen + (itembonuses.HeroicSTA / 25);
 	//AAs
 	regen += GetAA(aaInnateRegeneration)
-		//+ GetAA(aaInnateRegeneration2) //not currently in the AA table anymore, so why bother?
 		+ GetAA(aaNaturalHealing)
 		+ GetAA(aaBodyAndMindRejuvenation)
 		+ GetAA(aaConvalescence)
@@ -225,6 +224,7 @@ sint32 Client::CalcHPRegen() {
 	regen = (regen * RuleI(Character, HPRegenMultiplier)) / 100;
 	return regen;
 }
+
 sint32 Client::CalcMaxHP() {
 	int32 nd = 10000;
 	max_hp = (CalcBaseHP() + itembonuses.HP);
@@ -837,8 +837,7 @@ sint16 Client::acmod() {
 sint16 Client::CalcAC() {
 
 	// new formula
-	int avoidance = 0;
-	avoidance = (acmod() + ((GetSkill(DEFENSE)*16)/9));
+	int avoidance = (acmod() + ((GetSkill(DEFENSE) + itembonuses.HeroicAGI/10)*16)/9);
 	if (avoidance < 0)
 		avoidance = 0;
 
@@ -846,12 +845,12 @@ sint16 Client::CalcAC() {
 	if (m_pp.class_ == WIZARD || m_pp.class_ == MAGICIAN || m_pp.class_ == NECROMANCER || m_pp.class_ == ENCHANTER) {
 		//something is wrong with this, naked casters have the wrong natural AC
 //		mitigation = (spellbonuses.AC/3) + (GetSkill(DEFENSE)/2) + (itembonuses.AC+1);
-		mitigation = GetSkill(DEFENSE)/4 + (itembonuses.AC+1);
+		mitigation = (GetSkill(DEFENSE) + itembonuses.HeroicAGI/10)/4 + (itembonuses.AC+1);
 		//this might be off by 4..
 		mitigation -= 4;
 	} else {
 //		mitigation = (spellbonuses.AC/4) + (GetSkill(DEFENSE)/3) + ((itembonuses.AC*4)/3);
-		mitigation = GetSkill(DEFENSE)/3 + ((itembonuses.AC*4)/3);
+		mitigation = (GetSkill(DEFENSE) + itembonuses.HeroicAGI/10)/3 + ((itembonuses.AC*4)/3);
 		if(m_pp.class_ == MONK)
 			mitigation += GetLevel() * 13/10;	//the 13/10 might be wrong, but it is close...
 	}
@@ -867,6 +866,16 @@ sint16 Client::CalcAC() {
 			iksarlevel = 25;
 		if (iksarlevel > 0)
 			displayed += iksarlevel * 12 / 10;
+	}
+	
+	// Shield AC bonus for HeroicSTR
+	if(itembonuses.HeroicSTR) {
+		bool equiped = CastToClient()->m_inv.GetItem(14);
+		if(equiped) {
+			uint8 shield = CastToClient()->m_inv.GetItem(14)->GetItem()->ItemType;
+			if(shield == ItemTypeShield) 
+				displayed += itembonuses.HeroicSTR/2;
+		}
 	}
 	
 	//spell AC bonuses are added directly to natural total
@@ -905,6 +914,24 @@ sint32 Client::CalcMaxMana()
 	LogFile->write(EQEMuLog::Debug, "Client::CalcMaxMana() called for %s - returning %d", GetName(), max_mana);
 #endif
 	return max_mana;
+}
+
+sint32 Client::CalcManaRegenCap()
+{
+	sint32 manaregen_cap = 0;
+	switch(GetCasterClass())
+	{
+		case 'I': 
+			manaregen_cap = RuleI(Character, ItemManaRegenCap) + GetAA(aaExpansiveMind) + (itembonuses.HeroicINT / 25);
+			break;
+		case 'W': 
+			manaregen_cap = RuleI(Character, ItemManaRegenCap) + GetAA(aaExpansiveMind) + (itembonuses.HeroicWIS / 25);
+			break;
+	}
+#if EQDEBUG >= 11
+	LogFile->write(EQEMuLog::Debug, "Client::CalcManaRegenCap() called for %s - returning %d", GetName(), manaregen_cap);
+#endif
+	return manaregen_cap;
 }
 
 sint32 Client::CalcBaseMana()
@@ -1044,6 +1071,11 @@ sint32 Client::CalcManaRegen()
 		regen = 2 + spellbonuses.ManaRegen + itembonuses.ManaRegen + (clevel / 5);
 	}
 
+	if(GetCasterClass() == 'I')
+		regen += (itembonuses.HeroicINT / 25);
+	else
+		regen += (itembonuses.HeroicWIS / 25);
+	
 	//AAs
 	regen += GetAA(aaMentalClarity) + GetAA(aaBodyAndMindRejuvenation);
 
@@ -1866,7 +1898,7 @@ sint32 Client::CalcBaseEndurance()
 
 sint32 Client::CalcEnduranceRegen() {
 	sint32 regen = sint32(GetLevel() * 4 / 10) + 2;
-	regen += spellbonuses.EnduranceRegen + itembonuses.EnduranceRegen;
+	regen += spellbonuses.EnduranceRegen + itembonuses.EnduranceRegen + itembonuses.HeroicSTR/25 + itembonuses.HeroicSTA/25 + itembonuses.HeroicDEX/25 + itembonuses.HeroicAGI/25;
 	regen = (regen * RuleI(Character, EnduranceRegenMultiplier)) / 100;
 	return regen;
 }

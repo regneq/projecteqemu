@@ -2899,6 +2899,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			case SE_EffectOnFade:
 			case SE_MaxHPChange:
 			case SE_SympatheticProc:
+			case SE_SpellDamage:
 			{
 				break;
 			}
@@ -4034,6 +4035,13 @@ sint16 Mob::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id) {
 					value = 0;
 				}
 			}
+			break;
+		}
+		case SE_SpellDamage:
+		{
+			if(type == focusSpellDamage)
+				value = focus_spell.base[i];
+
 			break;
 		}
 
