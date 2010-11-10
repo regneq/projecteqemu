@@ -39,6 +39,24 @@ float Client::GetActSpellRange(int16 spell_id, float range)
 	return (range * extrange) / 100;
 }
 
+sint32 Client::Additional_SpellDmg(int16 spell_id) 
+{
+	sint32 spell_dmg = 0;
+	uint32 buff_count = GetMaxTotalSlots();
+	sint16 focus = 0;
+	
+	for (int i=0; i < buff_count; i++) 
+	{
+		if(IsEffectInSpell(buffs[i].spellid, SE_SpellDamage))
+		{
+			focus = CalcFocusEffect(focusSpellDamage, buffs[i].spellid, spell_id);
+			if(focus)
+				spell_dmg += focus;
+		}
+	}
+	return spell_dmg;
+}
+
 sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 	// Important variables:
 	// value: the actual damage after resists, passed from Mob::SpellEffect
@@ -47,7 +65,17 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 	// chance: critital chance %
 	//all of the ordering and stacking in here might be wrong, but I dont care right now.
 	
-	
+	sint16 spell_dmg = 0;
+	// Formula = SpellDmg * (casttime + recastime) / 7; Cant trigger off spell less than 5 levels below and cant cause more dmg than the spell itself.
+	if(this->itembonuses.SpellDmg && spells[spell_id].classes[(GetClass()%16) - 1] >= GetLevel() - 5) {
+		spell_dmg = this->itembonuses.SpellDmg * (spells[spell_id].cast_time + spells[spell_id].recast_time) / 7000;
+		if(spell_dmg > -value)
+			spell_dmg = -value;
+	}
+	// Spell-based SpellDmg adds directly but it restricted by focuses.
+	if(this->spellbonuses.SpellDmg)
+		spell_dmg += this->Additional_SpellDmg(spell_id);
+		
 	sint32 modifier = 100;
 	
 	//Dunno if this makes sense:
@@ -208,25 +236,33 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 			mlog(SPELLS__CRITS, "Attempting spell crit. Spell: %s (%d), Value: %d, Modifier: %d, Chance: %d, Ratio: %d", spells[spell_id].name, spell_id, value, modifier, chance, ratio);
 			if(MakeRandomInt(0,100) <= chance) {
 				modifier += modifier*ratio/100;
-				mlog(SPELLS__CRITS, "Spell crit successful. Final damage modifier: %d, Final Damage: %d", modifier, (value * modifier) / 100);
-				entity_list.MessageClose(this, false, 100, MT_SpellCrits, "%s delivers a critical blast! (%d)", GetName(), ((-value * modifier) / 100));	
+				spell_dmg *= 2;
+				mlog(SPELLS__CRITS, "Spell crit successful. Final damage modifier: %d, Final Damage: %d", modifier, (value * modifier / 100) - spell_dmg);
+				entity_list.MessageClose(this, false, 100, MT_SpellCrits, "%s delivers a critical blast! (%d)", GetName(), (-value * modifier / 100) + spell_dmg);	
 			} else 
-				mlog(SPELLS__CRITS, "Spell crit failed. Final Damage Modifier: %d, Final Damage: %d", modifier, (value * modifier) / 100);
+				mlog(SPELLS__CRITS, "Spell crit failed. Final Damage Modifier: %d, Final Damage: %d", modifier, (value * modifier / 100) - spell_dmg);
 		}
 	}
 	
-	return (value * modifier) / 100;
+	return ((value * modifier / 100) - spell_dmg);
 }
 
 sint32 Client::GetActSpellHealing(int16 spell_id, sint32 value) {
 
 	sint32 modifier = 100;
-
 	modifier += GetFocusEffect(focusImprovedHeal, spell_id);
 	
 	// Instant Heals					
-	if(spells[spell_id].buffduration < 1) {
-		
+	if(spells[spell_id].buffduration < 1) 
+	{
+		sint16 heal_amt = 0;
+		// Formula = HealAmt * (casttime + recastime) / 7; Cant trigger off spell less than 5 levels below and cant heal more than the spell itself.
+		if(this->itembonuses.HealAmt && spells[spell_id].classes[(GetClass()%16) - 1] >= GetLevel() - 5) {
+			heal_amt = this->itembonuses.HealAmt * (spells[spell_id].cast_time + spells[spell_id].recast_time) / 7000;
+			if(heal_amt > value)
+				heal_amt = value;
+		}
+
 		// Check for buffs that affect the healrate of the target
 		value += value * GetHealRate() / 100;
 		if(value < 1)
@@ -306,18 +342,29 @@ sint32 Client::GetActSpellHealing(int16 spell_id, sint32 value) {
 		}
 
 		if(MakeRandomInt(0,100) < chance) {
-			entity_list.MessageClose(this, false, 100, MT_SpellCrits, "%s performs an exceptional heal! (%d)", GetName(), ((value * modifier) / 50));		
-			return (value * modifier) / 50;
+			entity_list.MessageClose(this, false, 100, MT_SpellCrits, "%s performs an exceptional heal! (%d)", GetName(), ((value * modifier / 50) + heal_amt*2));		
+			return (value * modifier / 50) + heal_amt*2;
 		}
 		else{
-			return (value * modifier) / 100;
+			return (value * modifier / 100) + heal_amt;
 		}		
 	}
-	return (value * modifier) / 100;
+	return (value * modifier / 100);
 }
 
 sint32 Client::GetActSpellCost(int16 spell_id, sint32 cost)
 {
+	// Formula = Unknown exact, based off a random percent chance up to mana cost(after focuses) of the cast spell
+	if(this->itembonuses.Clairvoyance && spells[spell_id].classes[(GetClass()%16) - 1] >= GetLevel() - 5)
+	{
+		sint16 mana_back = this->itembonuses.Clairvoyance * MakeRandomInt(1, 100) / 100;
+		// Doesnt generate mana, so best case is a free spell
+		if(mana_back > cost)
+			mana_back = cost;
+			
+		cost -= mana_back;
+	}
+	
 	// This formula was derived from the following resource:
 	// http://www.eqsummoners.com/eq1/specialization-library.html
 	// WildcardX

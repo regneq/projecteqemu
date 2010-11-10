@@ -3128,6 +3128,9 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar)
 			}
 		}
 
+	if(spelltar->spellbonuses.SpellDamageShield)
+		spelltar->DamageShield(this, true);
+		
 	TryTriggerOnCast(spelltar, spell_id);
 	TrySpellTrigger(spelltar, spell_id);
 	TryApplyEffect(spelltar, spell_id);

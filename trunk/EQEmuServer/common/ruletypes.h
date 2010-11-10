@@ -60,6 +60,11 @@ RULE_INT ( Character, ItemDoTShieldingCap, 35)
 RULE_INT ( Character, ItemStunResistCap, 35)
 RULE_INT ( Character, ItemStrikethroughCap, 35)
 RULE_INT ( Character, ItemATKCap, 250)
+RULE_INT ( Character, ItemHealAmtCap, 250)
+RULE_INT ( Character, ItemSpellDmgCap, 250)
+RULE_INT ( Character, ItemClairvoyanceCap, 250)
+RULE_INT ( Character, ItemDSMitigationCap, 50)
+RULE_INT ( Character, ItemEnduranceRegenCap, 15)
 RULE_INT ( Character, SkillUpModifier, 100) //skill ups are at 100%
 RULE_BOOL ( Character, SharedBankPlat, false) //off by default to prevent duping for now
 RULE_BOOL ( Character, BindAnywhere, false)

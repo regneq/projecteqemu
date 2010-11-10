@@ -152,14 +152,16 @@ void Client::CalcItemBonuses(StatBonuses* newbon) {
 			continue;
 		AddItemBonuses(inst, newbon, false, true);
 	}
+	// Caps
+	if(newbon->HPRegen > CalcHPRegenCap())
+		newbon->HPRegen = CalcHPRegenCap();
+
+	if(newbon->ManaRegen > CalcManaRegenCap())
+		newbon->ManaRegen = CalcManaRegenCap();
 	
-	//caps
-	if(newbon->ManaRegen > (RuleI(Character, ItemManaRegenCap) + GetAA(aaExpansiveMind)))
-		newbon->ManaRegen = RuleI(Character, ItemManaRegenCap) + GetAA(aaExpansiveMind);
-	if(newbon->HPRegen > RuleI(Character, ItemHealthRegenCap))
-		newbon->HPRegen = RuleI(Character, ItemHealthRegenCap);
-	
-	
+	if(newbon->EnduranceRegen > CalcEnduranceRegenCap())
+			newbon->EnduranceRegen = CalcEnduranceRegenCap();
+			
 	SetAttackTimer();
 }
 		
@@ -294,12 +296,15 @@ void Client::AddItemBonuses(const ItemInst *inst, StatBonuses* newbon, bool isAu
 	if(newbon->haste < (sint8)item->Haste) {
 		newbon->haste = item->Haste;
 	}
-	if(item->Regen > 0) {
+	if(item->Regen > 0)
 		newbon->HPRegen += item->Regen;
-	}
-	if(item->ManaRegen > 0) {
+
+	if(item->ManaRegen > 0)
 		newbon->ManaRegen += item->ManaRegen;
-	}
+	
+	if(item->EnduranceRegen > 0)
+		newbon->EnduranceRegen += item->EnduranceRegen;
+
 	if(item->Attack > 0) {
 		if((newbon->ATK + item->Attack) > RuleI(Character, ItemATKCap))
 		{
@@ -310,9 +315,6 @@ void Client::AddItemBonuses(const ItemInst *inst, StatBonuses* newbon, bool isAu
 			newbon->ATK += item->Attack;
 		}
 	}
-	if(item->EnduranceRegen > 0){
-		newbon->EnduranceRegen += item->EnduranceRegen;
-	}
 	if(item->DamageShield > 0) {
 		if((newbon->DamageShield + item->DamageShield) > RuleI(Character, ItemDamageShieldCap))
 			newbon->DamageShield = RuleI(Character, ItemDamageShieldCap);
@@ -320,10 +322,10 @@ void Client::AddItemBonuses(const ItemInst *inst, StatBonuses* newbon, bool isAu
 			newbon->DamageShield += item->DamageShield;
 	}
 	if(item->SpellShield > 0) {
-		if((newbon->SpellDamageShield + item->SpellShield) > RuleI(Character, ItemSpellShieldingCap))
-			newbon->SpellDamageShield = RuleI(Character, ItemSpellShieldingCap);
+		if((newbon->SpellShield + item->SpellShield) > RuleI(Character, ItemSpellShieldingCap))
+			newbon->SpellShield = RuleI(Character, ItemSpellShieldingCap);
 		else
-			newbon->SpellDamageShield += item->SpellShield;
+			newbon->SpellShield += item->SpellShield;
 	}
 	if(item->Shielding > 0) {
 		if((newbon->MeleeMitigation + item->Shielding) > RuleI(Character, ItemShieldingCap))
@@ -366,6 +368,32 @@ void Client::AddItemBonuses(const ItemInst *inst, StatBonuses* newbon, bool isAu
 			newbon->DoTShielding = RuleI(Character, ItemDoTShieldingCap);
 		else
 			newbon->DoTShielding += item->DotShielding;
+	}
+	
+	if(item->HealAmt > 0) {
+		if((newbon->HealAmt + item->HealAmt) > RuleI(Character, ItemHealAmtCap))
+			newbon->HealAmt = RuleI(Character, ItemHealAmtCap);
+		else
+			newbon->HealAmt += item->HealAmt;
+	}
+	if(item->SpellDmg > 0) {
+		if((newbon->SpellDmg + item->SpellDmg) > RuleI(Character, ItemSpellDmgCap))
+			newbon->SpellDmg = RuleI(Character, ItemSpellDmgCap);
+		else
+			newbon->SpellDmg += item->SpellDmg;
+	}
+	if(item->Clairvoyance > 0) {
+		if((newbon->Clairvoyance + item->Clairvoyance) > RuleI(Character, ItemClairvoyanceCap))
+			newbon->Clairvoyance = RuleI(Character, ItemClairvoyanceCap);
+		else
+			newbon->Clairvoyance += item->Clairvoyance;
+	}
+	
+	if(item->DSMitigation > 0) {
+		if((newbon->DSMitigation + item->DSMitigation) > RuleI(Character, ItemDSMitigationCap))
+			newbon->DSMitigation = RuleI(Character, ItemDSMitigationCap);
+		else
+			newbon->DSMitigation += item->DSMitigation;
 	}
 	if (item->Worn.Effect>0 && (item->Worn.Type == ET_WornEffect)) { // latent effects
 		ApplySpellsBonuses(item->Worn.Effect, item->Worn.Level, newbon);
@@ -960,7 +988,13 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 				newbon->movementspeed += effect_value;
 				break;
 			}
-
+			
+			case SE_SpellDamageShield:
+			{
+				newbon->SpellDamageShield += effect_value;
+				break;
+			}
+			
 			case SE_DamageShield:
 			{
 				newbon->DamageShield += effect_value;
@@ -969,12 +1003,6 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 				break;
 			}
 			
-			case SE_SpellDamageShield:
-			{
-				newbon->SpellDamageShield += effect_value;
-				break;
-			}
-
 			case SE_ReverseDS:
 			{
 				newbon->ReverseDamageShield += effect_value;
@@ -1226,13 +1254,19 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 			}
 			case SE_SkillDamageTaken:
 			{
-				int index_skill = spells[spell_id].base2[i];
-				if(index_skill == -1)
-					index_skill = 75;
-					
-				newbon->SkillDmgTaken[index_skill] += effect_value;
+				if(spells[spell_id].base2[i] == -1)
+					newbon->SkillDmgTaken[HIGHEST_SKILL+1] += effect_value;
+				else
+					newbon->SkillDmgTaken[spells[spell_id].base2[i]] += effect_value;
 				break;
 			}
+			case SE_SpellDamage:
+			{
+				// Only used for worn effects and to trigger a buff check
+				newbon->SpellDmg += effect_value;
+				break;
+			}
+			
 		}
 	}
 }

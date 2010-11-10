@@ -435,7 +435,7 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage)
 		if (!ghit) {	//if they are not using a garunteed hit discipline
 			bonus = 2.0 + skill/60.0 + (GetDEX()/200);
 			bonus = bonus * (100 + defender->spellbonuses.RiposteChance + defender->itembonuses.RiposteChance) / 100.0f;
-			RollTable[0] = bonus;
+			RollTable[0] = bonus + (itembonuses.HeroicDEX / 25); // 25 heroic = 1%, applies to ripo, parry, block
 		}
 	}
 	
@@ -542,7 +542,7 @@ bool Mob::AvoidDamage(Mob* other, sint32 &damage)
 		if (!ghit) {	//if they are not using a garunteed hit discipline
 			bonus = 2.0 + skill/60.0 + (GetAGI()/200);
 			bonus = bonus * (100 + defender->spellbonuses.DodgeChance + defender->itembonuses.DodgeChance) / 100.0f;
-			RollTable[3] = RollTable[2] + bonus;
+			RollTable[3] = RollTable[2] + bonus - (itembonuses.HeroicDEX / 25) + (itembonuses.HeroicAGI / 25); // Remove the dex as it doesnt count for dodge
 		}
 	}
 	else{
@@ -671,11 +671,11 @@ void Mob::MeleeMitigation(Mob *attacker, sint32 &damage, sint32 minhit)
 		mitigation_rating = 0.0;
 		if(GetClass() == WIZARD || GetClass() == MAGICIAN || GetClass() == NECROMANCER || GetClass() == ENCHANTER)
 		{
-			mitigation_rating = (GetSkill(DEFENSE) / 4.0) + armor + 1;
+			mitigation_rating = ((GetSkill(DEFENSE) + itembonuses.HeroicAGI/10) / 4.0) + armor + 1;
 		}
 		else
 		{
-			mitigation_rating = (GetSkill(DEFENSE) / 3.0) + (armor * 1.333333) + 1;
+			mitigation_rating = ((GetSkill(DEFENSE) + itembonuses.HeroicAGI/10) / 3.0) + (armor * 1.333333) + 1;
 		}
 		mitigation_rating *= 0.847;
 
@@ -1271,7 +1271,7 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough)
 			other->MeleeMitigation(this, damage, min_hit);
 			ApplyMeleeDamageBonus(skillinuse, damage);
 			if(damage > 0)
-				damage += damage * other->GetSkillDmgTaken(skillinuse) / 100;
+				damage += (itembonuses.HeroicSTR / 10) + (damage * other->GetSkillDmgTaken(skillinuse) / 100);
 			TryCriticalHit(other, skillinuse, damage);
 			mlog(COMBAT__DAMAGE, "Final damage after all reductions: %d", damage);
 		}
@@ -1864,7 +1864,7 @@ bool NPC::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough)	 // 
 		if(other->IsClient() && other->CastToClient()->IsSitting()) {
 			mlog(COMBAT__DAMAGE, "Client %s is sitting. Hitting for max damage (%d).", other->GetName(), (max_dmg+eleBane));
 			damage = (max_dmg+eleBane);
-			damage += damage * other->GetSkillDmgTaken(skillinuse) / 100;
+			damage += (itembonuses.HeroicSTR / 10) + (damage * other->GetSkillDmgTaken(skillinuse) / 100);
 
 			mlog(COMBAT__HITS, "Generating hate %d towards %s", hate, GetName());
 			// now add done damage to the hate list
@@ -1877,7 +1877,7 @@ bool NPC::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough)	 // 
 				other->MeleeMitigation(this, damage, min_dmg+eleBane);
 				ApplyMeleeDamageBonus(skillinuse, damage);
 				if(damage > 0)
-					damage += damage * other->GetSkillDmgTaken(skillinuse) / 100;
+					damage += (itembonuses.HeroicSTR / 10) + (damage * other->GetSkillDmgTaken(skillinuse) / 100);
 				TryCriticalHit(other, skillinuse, damage);
 
 				mlog(COMBAT__HITS, "Generating hate %d towards %s", hate, GetName());
@@ -2332,51 +2332,64 @@ void Mob::AddToHateList(Mob* other, sint32 hate, sint32 damage, bool iYellForHel
 // a reverse ds causes damage to the wearer whenever it attack someone
 // given this, a reverse ds must be checked each time the wearer is attacking
 // and not when they're attacked
-void Mob::DamageShield(Mob* attacker) {
-	//a damage shield on a spell is a negative value but on an item it's a positive value so add the spell value and subtract the item value to get the end ds value
-	if(!attacker) return;
+//a damage shield on a spell is a negative value but on an item it's a positive value so add the spell value and subtract the item value to get the end ds value
+void Mob::DamageShield(Mob* attacker, bool spell_ds) {
 
-	int DS = spellbonuses.DamageShield;
-	int rev_ds = attacker->spellbonuses.ReverseDamageShield;
-
+	if(!attacker || this == attacker) 
+		return;
+	
+	int DS = 0;
+	int rev_ds = 0;
+	int16 spellid = 0;
+	
+	if(!spell_ds) 
+	{
+		DS = spellbonuses.DamageShield;
+		rev_ds = attacker->spellbonuses.ReverseDamageShield;
+		
+		if(spellbonuses.DamageShieldSpellID != 0 && spellbonuses.DamageShieldSpellID != SPELL_UNKNOWN)
+			spellid = spellbonuses.DamageShieldSpellID;
+	}
+	else {	
+		DS = spellbonuses.SpellDamageShield;
+		rev_ds = 0;
+		// This ID returns "you are burned", seemed most appropriate for spell DS
+		spellid = 2166;
+	}
+	
 	if(DS == 0 && rev_ds == 0)
 		return;
 	
-	if(this == attacker) //I was crashing when I hit myself with melee with a DS on, not sure why but we shouldn't be reflecting damage onto ourselves anyway really.
-		return;
-	
 	mlog(COMBAT__HITS, "Applying Damage Shield of value %d to %s", DS, attacker->GetName());
-	
-	int16 spellid = SPELL_UNKNOWN;
-	if(spellbonuses.DamageShieldSpellID != 0 && spellbonuses.DamageShieldSpellID != SPELL_UNKNOWN)
-		spellid = spellbonuses.DamageShieldSpellID;
+		
 	//invert DS... spells yield negative values for a true damage shield
 	if(DS < 0) {
-		if (IsClient())
-		{
-			int dsMod = 100;
-			switch (CastToClient()->GetAA(aaCoatofThistles))
-			{
-			case 1:
-				dsMod = 110;
-				break;
-			case 2:
-				dsMod = 115;
-				break;
-			case 3:
-				dsMod = 120;
-				break;
-			case 4:
-				dsMod = 125;
-				break;
-			case 5:
-				dsMod = 130;
-				break;
+		if(!spell_ds)	{
+			if(IsClient()) {
+				int dsMod = 100;
+				switch (CastToClient()->GetAA(aaCoatofThistles))
+				{
+				case 1:
+					dsMod = 110;
+					break;
+				case 2:
+					dsMod = 115;
+					break;
+				case 3:
+					dsMod = 120;
+					break;
+				case 4:
+					dsMod = 125;
+					break;
+				case 5:
+					dsMod = 130;
+					break;
+				}
+				DS = ((DS * dsMod) / 100);
 			}
-
-			DS = ((DS * dsMod) / 100);
+			DS -= itembonuses.DamageShield; //+Damage Shield should only work when you already have a DS spell
+			DS += attacker->itembonuses.DSMitigation;
 		}
-		DS -= itembonuses.DamageShield; //+Damage Shield should only work when you already have a DS spell
 		attacker->Damage(this, -DS, spellid, ABJURE/*hackish*/, false);
 		//we can assume there is a spell now
 		EQApplicationPacket* outapp = new EQApplicationPacket(OP_Damage, sizeof(CombatDamage_Struct));
@@ -2388,7 +2401,7 @@ void Mob::DamageShield(Mob* attacker) {
 		cds->damage = DS;
 		entity_list.QueueCloseClients(this, outapp);
 		safe_delete(outapp);
-	} else {
+	} else if (DS > 0 && !spell_ds) {
 		//we are healing the attacker...
 		attacker->HealDamage(DS);
 		//TODO: send a packet???
@@ -3000,7 +3013,7 @@ sint32 Mob::AffectMagicalDamage(sint32 damage, int16 spell_id, const bool iBuffT
 	else 
 	{
 		// Reduce damage by the Spell Shielding first so that the runes don't take the raw damage.
-		damage -= (damage * this->itembonuses.SpellDamageShield / 100);
+		damage -= (damage * this->itembonuses.SpellShield / 100);
 	
 		// Do runes now.
 		slot = GetBuffSlotFromType(SE_MitigateSpellDamage);

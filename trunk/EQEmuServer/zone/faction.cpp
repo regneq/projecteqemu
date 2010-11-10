@@ -540,6 +540,17 @@ void  Client::SetFactionLevel(int32 char_id, int32 npc_id, int8 char_class, int8
 			// Get the characters current value with that faction
 			current_value = GetCharacterFactionLevel(faction_id[i]);
 			
+			if(this->itembonuses.HeroicCHA) {
+				int faction_mod = itembonuses.HeroicCHA / 5;
+				// If our result isn't truncated, then just do that
+				if(npc_value[i] * faction_mod / 100 != 0) 
+					npc_value[i] += npc_value[i] * faction_mod / 100;
+				// If our result is truncated, then double a mob's value every once and a while to equal what they would have got
+				else {
+					if(MakeRandomInt(0, 100) < faction_mod)
+						npc_value[i] *= 2;
+				}
+			}
 			//figure out their modifier
 			mod = fm.base + fm.class_mod + fm.race_mod + fm.deity_mod;
 			if(mod > MAX_FACTION)

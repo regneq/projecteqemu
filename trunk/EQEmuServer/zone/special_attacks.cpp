@@ -542,7 +542,7 @@ void Mob::TryBackstab(Mob *other) {
 		}
 
 		// solar - chance to assassinate
-		float chance = (10.0+(GetDEX()/10)); //18.5% chance at 85 dex 40% chance at 300 dex
+		int chance = 10 + (GetDEX()/10) + (itembonuses.HeroicDEX/10); //18.5% chance at 85 dex 40% chance at 300 dex
 		if(
 			level >= 60 && // player is 60 or higher
 			other->GetLevel() <= 45 && // mob 45 or under
@@ -869,6 +869,8 @@ void Client::RangedAttack(Mob* other) {
 				else
 					TotalDmg = MakeRandomInt(1, MaxDmg);
 
+				TotalDmg += itembonuses.HeroicDEX; //think this adds like this since archery hits less often than melee
+				
 				int minDmg = 1;
 				if(GetLevel() > 25){
 					//twice, for ammo and weapon
@@ -1895,8 +1897,8 @@ bool Mob::TryHeadShot(Mob* defender, SkillType skillInUse) {
 			if((GetLevelCon(GetLevel(), defender->GetLevel()) == CON_LIGHTBLUE || GetLevelCon(GetLevel(), defender->GetLevel()) == CON_GREEN) && defender->GetLevel() <= 60 && !defender->IsClient()) {
 				// WildcardX: These chance formula's below are arbitrary. If someone has a better formula that is more
 				// consistent with live, feel free to update these.
-				float AttackerChance = 0.20f + ((float)(GetLevel() - 51) * 0.005f);
-				float DefenderChance = (float)MakeRandomFloat(0.00f, 1.00f);
+				int AttackerChance = 20 + ((GetLevel() - 51) / 2) + (itembonuses.HeroicDEX / 10);
+				int DefenderChance = MakeRandomInt(0, 100);
 				if(AttackerChance > DefenderChance) {
 					mlog(COMBAT__ATTACKS, "Landed a headshot: Attacker chance was %f and Defender chance was %f.", AttackerChance, DefenderChance);
 					// WildcardX: At the time I wrote this, there wasnt a string id for something like HEADSHOT_BLOW

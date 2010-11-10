@@ -3310,11 +3310,11 @@ sint16 Mob::GetSkillDmgTaken(const SkillType skill_used)
 	int skilldmg_mod = 0;
 
 	// All skill dmg mod + Skill specific
-	skilldmg_mod += this->itembonuses.SkillDmgTaken[75] + this->spellbonuses.SkillDmgTaken[75] + 
+	skilldmg_mod += this->itembonuses.SkillDmgTaken[HIGHEST_SKILL+1] + this->spellbonuses.SkillDmgTaken[HIGHEST_SKILL+1] + 
 					this->itembonuses.SkillDmgTaken[skill_used] + this->spellbonuses.SkillDmgTaken[skill_used];
 	
-	if(skilldmg_mod < -99)
-		skilldmg_mod = -99;
+	if(skilldmg_mod < -100)
+		skilldmg_mod = -100;
 
 	return skilldmg_mod;
 }

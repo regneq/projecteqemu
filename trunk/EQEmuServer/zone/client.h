@@ -309,6 +309,7 @@ public:
 	sint32			CalcMaxMana();
 	sint32			CalcBaseMana();
 	const sint32&	SetMana(sint32 amount);
+	sint32 			CalcManaRegenCap();
 
 	void	ServerFilter(SetServerFilter_Struct* filter);
 	void	BulkSendTraderInventory(int32 char_id);
@@ -390,6 +391,7 @@ public:
 	inline virtual sint16	GetHeroicCR()	const { return itembonuses.HeroicCR; }
 	inline virtual sint16	GetHeroicCorrup()	const { return itembonuses.HeroicCorrup; }
 
+	sint32 Additional_SpellDmg(int16 spell_id);
 	float GetActSpellRange(int16 spell_id, float range);
 	sint32 GetActSpellDamage(int16 spell_id, sint32 value);
 	sint32 GetActSpellHealing(int16 spell_id, sint32 value);
@@ -425,6 +427,8 @@ public:
 	sint32	CalcEnduranceRegen();	//Calculates endurance regen used in DoEnduranceRegen()
 	sint32	GetEndurance()	const {return cur_end;}	//This gets our current endurance
 	sint32	GetMaxEndurance() const {return max_end;}	//This gets our endurance from the last CalcMaxEndurance() call
+	inline virtual sint32	CalcEnduranceRegenCap()	const { return RuleI(Character, ItemEnduranceRegenCap) + itembonuses.HeroicSTR/25 + itembonuses.HeroicDEX/25 + itembonuses.HeroicAGI/25 + itembonuses.HeroicSTA/25; }
+	inline virtual sint32	CalcHPRegenCap()	const { return RuleI(Character, ItemHealthRegenCap) + itembonuses.HeroicSTA/25; }
 	inline uint8 GetEndurancePercent() { return (uint8)((float)cur_end / (float)max_end * 100.0f); }
 	void SetEndurance(sint32 newEnd);	//This sets the current endurance to the new value
 	void DoEnduranceRegen();	//This Regenerates endurance
