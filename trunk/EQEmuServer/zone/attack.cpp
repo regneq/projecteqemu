@@ -1270,7 +1270,8 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough)
 			other->AvoidDamage(this, damage);
 			other->MeleeMitigation(this, damage, min_hit);
 			ApplyMeleeDamageBonus(skillinuse, damage);
-			damage = GetSkillDmgTaken(skillinuse, damage);
+			if(damage > 0)
+				damage += damage * other->GetSkillDmgTaken(skillinuse) / 100;
 			TryCriticalHit(other, skillinuse, damage);
 			mlog(COMBAT__DAMAGE, "Final damage after all reductions: %d", damage);
 		}
@@ -1863,7 +1864,7 @@ bool NPC::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough)	 // 
 		if(other->IsClient() && other->CastToClient()->IsSitting()) {
 			mlog(COMBAT__DAMAGE, "Client %s is sitting. Hitting for max damage (%d).", other->GetName(), (max_dmg+eleBane));
 			damage = (max_dmg+eleBane);
-			damage = GetSkillDmgTaken(skillinuse, damage);
+			damage += damage * other->GetSkillDmgTaken(skillinuse) / 100;
 
 			mlog(COMBAT__HITS, "Generating hate %d towards %s", hate, GetName());
 			// now add done damage to the hate list
@@ -1875,7 +1876,8 @@ bool NPC::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough)	 // 
 				other->AvoidDamage(this, damage);
 				other->MeleeMitigation(this, damage, min_dmg+eleBane);
 				ApplyMeleeDamageBonus(skillinuse, damage);
-				damage = GetSkillDmgTaken(skillinuse, damage);
+				if(damage > 0)
+					damage += damage * other->GetSkillDmgTaken(skillinuse) / 100;
 				TryCriticalHit(other, skillinuse, damage);
 
 				mlog(COMBAT__HITS, "Generating hate %d towards %s", hate, GetName());
@@ -3283,16 +3285,38 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 		}
     	
     	//check stun chances if bashing
-		if (damage > 0 && ((skill_used == BASH || skill_used == KICK && (attacker && attacker->GetLevel() >= 55)) && GetLevel() < 56)) {
-			int stun_resist = itembonuses.StunResist+spellbonuses.StunResist;
-			if(this->GetBaseRace() == OGRE && this->IsClient() && !attacker->BehindMob(this, attacker->GetX(), attacker->GetY())) {
-				mlog(COMBAT__HITS, "Stun Resisted. Ogres are immune to frontal melee stuns.");
-			} else {
-				if(stun_resist <= 0 || MakeRandomInt(0,99) >= stun_resist) {
-					mlog(COMBAT__HITS, "Stunned. We had %d percent resist chance.");
-					Stun(0);
-				} else {
-					mlog(COMBAT__HITS, "Stun Resisted. We had %dpercent resist chance.");
+		if (damage > 0 && ((skill_used == BASH || skill_used == KICK) && attacker))
+		{
+			// NPCs can stun with their bash/kick as soon as they recieve it.
+			// Clients can stun mobs under level 56 with their bash/kick when they get level 55 or greater.
+			if((attacker->IsNPC()) || (attacker->IsClient() && attacker->GetLevel() >= 55 && GetLevel() < 56))
+			{
+				if (MakeRandomInt(0,99) < (RuleI(Character, NPCBashKickStunChance)) || attacker->IsClient())
+				{
+					int stun_resist = itembonuses.StunResist+spellbonuses.StunResist;
+			
+					if(this->IsClient())
+						stun_resist += aabonuses.StunResist;
+			
+					if(this->GetBaseRace() == OGRE && this->IsClient() && !attacker->BehindMob(this, attacker->GetX(), attacker->GetY())) 
+					{
+						mlog(COMBAT__HITS, "Stun Resisted. Ogres are immune to frontal melee stuns.");
+					}
+					else 
+					{
+						if(stun_resist <= 0 || MakeRandomInt(0,99) >= stun_resist) 
+						{
+							mlog(COMBAT__HITS, "Stunned. We had %d percent resist chance.");
+							Stun(0);
+						} 
+						else 
+						{
+							if(this->IsClient())
+								Message_StringID(MT_Stun, SHAKE_OFF_STUN);
+							
+							mlog(COMBAT__HITS, "Stun Resisted. We had %dpercent resist chance.");
+						}
+					}
 				}
 			}
 		}

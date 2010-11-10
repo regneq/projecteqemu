@@ -659,6 +659,9 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 			case SE_TotalHP:
 				newbon->HP += base1;
 				break;
+			case SE_StunResist:
+				newbon->StunResist += base1;
+				break;
 		}
 	}
 
@@ -1206,8 +1209,30 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 					newbon->Accuracy = effect_value;
 				break;
 			}
-
-				
+			case SE_MaxHPChange:
+			{
+				newbon->MaxHPChange += effect_value;
+				break;
+			}
+			case SE_EndurancePool:
+			{
+				newbon->Endurance += effect_value;
+				break;
+			}
+			case SE_HealRate:
+			{
+				newbon->HealRate += effect_value;
+				break;
+			}
+			case SE_SkillDamageTaken:
+			{
+				int index_skill = spells[spell_id].base2[i];
+				if(index_skill == -1)
+					index_skill = 75;
+					
+				newbon->SkillDmgTaken[index_skill] += effect_value;
+				break;
+			}
 		}
 	}
 }

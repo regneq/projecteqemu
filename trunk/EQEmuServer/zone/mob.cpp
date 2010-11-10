@@ -600,26 +600,20 @@ sint32 Mob::CalcMaxMana() {
 			max_mana = 0;
 			break;
 	}
-
+	if (max_mana < 0) {
+		max_mana = 0;
+	}
+	
 	return max_mana;
 }
 
 sint32 Mob::CalcMaxHP() 
 {
 
-	max_hp = (base_hp  + itembonuses.HP + spellbonuses.HP);
+	max_hp = (base_hp + itembonuses.HP + spellbonuses.HP);
 	
-	int slot = GetBuffSlotFromType(SE_MaxHPChange);
-	if(slot >= 0)
-	{
-		for(int i = 0; i < EFFECT_COUNT; i++)
-		{
-			if (spells[buffs[slot].spellid].effectid[i] == SE_MaxHPChange)
-			{
-				max_hp += max_hp * spells[buffs[slot].spellid].base[i] / 10000;
-			}
-		}
-	}
+	max_hp += max_hp * (spellbonuses.MaxHPChange + itembonuses.MaxHPChange) / 10000;
+	
 	return max_hp;
 }
 
@@ -3311,62 +3305,26 @@ sint32 Mob::GetVulnerability(sint32 damage, Mob *caster, uint32 spell_id, int32 
 	return damage;
 }
 
-sint32 Mob::GetSkillDmgTaken(const SkillType skill_used, sint32 damage)
+sint16 Mob::GetSkillDmgTaken(const SkillType skill_used)
 {
-	if (this->GetTarget())
-	{
-		int slot = this->GetTarget()->GetBuffSlotFromType(SE_SkillDamageTaken);
-		if(slot >= 0)
-		{
-			int spell_id = this->GetTarget()->GetSpellIDFromSlot(slot);
-			if (spell_id)
-			{
-				for(int i = 0; i < EFFECT_COUNT; i++)
-				{
-					if (spells[spell_id].effectid[i] == SE_SkillDamageTaken)
-					{
-						// Check the skill against the spell, or allow all melee skills.
-						if(skill_used == spells[spell_id].base2[i] || spells[spell_id].base2[i] == -1)
-						{
-						damage += damage * spells[spell_id].base[i] / 100;
-						return damage;
-						}
-					}
-				}
-			}
-		}
-	}
-	return damage;
+	int skilldmg_mod = 0;
+
+	// All skill dmg mod + Skill specific
+	skilldmg_mod += this->itembonuses.SkillDmgTaken[75] + this->spellbonuses.SkillDmgTaken[75] + 
+					this->itembonuses.SkillDmgTaken[skill_used] + this->spellbonuses.SkillDmgTaken[skill_used];
+	
+	if(skilldmg_mod < -99)
+		skilldmg_mod = -99;
+
+	return skilldmg_mod;
 }
 
-int32 Mob::GetHealRate(uint32 amount, Mob *target)
+int32 Mob::GetHealRate()
 {
-
-	if(target) {
-		int slot = target->GetBuffSlotFromType(SE_HealRate);
-		if(slot >= 0)
-		{
-			sint32 modify_amount = amount;
-			for(int i = 0; i < EFFECT_COUNT; i++)
-			{
-				if (spells[buffs[slot].spellid].effectid[i] == SE_HealRate)
-				{
-					// if the effect reduces the heal amount below 0, return 0.
-					if(spells[buffs[slot].spellid].base[i] < -100)
-					{
-						amount = 0;
-						break;
-					}
-					else
-					{
-						amount += (modify_amount * spells[buffs[slot].spellid].base[i] / 100);
-						break;
-					}
-				}
-			}
-		}
-	}
-	return amount;
+	if(!this->GetTarget())
+		return 0;
+	
+	return (this->GetTarget()->itembonuses.HealRate + this->GetTarget()->spellbonuses.HealRate);
 }
 
 bool Mob::TryFadeEffect(int slot)

@@ -275,6 +275,9 @@ struct StatBonuses {
 
 	sint8 HundredHands;		//extra haste, stacks with all other haste  i
 	sint8 MeleeLifetap;
+	sint16 HealRate;		// Spell effect that influences effectiveness of heals
+	sint16 MaxHPChange;		// Spell Effect
+	sint16 SkillDmgTaken[HIGHEST_SKILL+1];	// Spell effect
 	int XPRateMod;
 
 	sint8	Packrat;	//weight reduction for items, 1 point = 10%
@@ -796,9 +799,9 @@ bool logpos;
 	void TryTwincast(Mob *caster, Mob *target, uint32 spell_id);
 	void TrySympatheticProc(Mob *target, uint32 spell_id);
 	bool TryFadeEffect(int slot);
-	int32 GetHealRate(uint32 amount, Mob *target);
+	int32 GetHealRate();
 	sint32 GetVulnerability(sint32 damage, Mob *caster, uint32 spell_id, int32 ticsremaining);
-	sint32 GetSkillDmgTaken(const SkillType skill_used, sint32 damage);
+	sint16 GetSkillDmgTaken(const SkillType skill_used);
 	void DoKnockback(Mob *caster, uint32 pushback, uint32 pushup);
 
 	static int32 GetAppearanceValue(EmuAppearance iAppearance);

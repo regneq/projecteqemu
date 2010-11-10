@@ -231,6 +231,7 @@ RULE_REAL ( Combat, BaseCritChance, 0.0 ) //The base crit chance for non warrior
 RULE_REAL ( Combat, WarBerBaseCritChance, 0.03 ) //The base crit chance for warriors and berserkers, only applies to clients
 RULE_REAL ( Combat, BerserkBaseCritChance, 0.06 ) //The bonus base crit chance you get when you're berserk
 RULE_INT ( Combat, NPCBashKickLevel, 6 ) //The level that npcs can KICK/BASH
+RULE_INT ( Combat, NPCBashKickStunChance, 15 ) //Percent chance that a bash/kick will stun
 RULE_REAL ( Combat, ClientBaseCritChance, 0.0 ) //The base crit chance for all clients, this will stack with warrior's/zerker's crit chance.
 RULE_BOOL ( Combat, UseIntervalAC, true)
 RULE_INT ( Combat, PetAttackMagicLevel, 30)

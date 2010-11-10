@@ -219,12 +219,19 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 }
 
 sint32 Client::GetActSpellHealing(int16 spell_id, sint32 value) {
+
 	sint32 modifier = 100;
 
 	modifier += GetFocusEffect(focusImprovedHeal, spell_id);
-						
+	
+	// Instant Heals					
 	if(spells[spell_id].buffduration < 1) {
-		//non-dot
+		
+		// Check for buffs that affect the healrate of the target
+		value += value * GetHealRate() / 100;
+		if(value < 1)
+			return 0;
+		
 		switch(GetAA(aaHealingAdept)) {
 		case 1:
 			modifier += 2;
@@ -263,41 +270,41 @@ sint32 Client::GetActSpellHealing(int16 spell_id, sint32 value) {
 		}
 		chance += GetAA(aaAdvancedHealingGift) * 2;
 
-   if(spells[spell_id].targettype == ST_Tap) {
-   switch(GetAA(aaTheftofLife)) {
-      case 1:
-         chance += 2;
-         break;
-      case 2:
-         chance += 5;
-         break;
-      case 3:
-         chance += 10;
-         break;
-      }
+		if(spells[spell_id].targettype == ST_Tap) {
+			switch(GetAA(aaTheftofLife)) {
+			case 1:
+				chance += 2;
+				break;
+			case 2:
+				chance += 5;
+				break;
+			case 3:
+				chance += 10;
+				break;
+			}
 
-      switch(GetAA(aaAdvancedTheftofLife)) {
-      case 1:
-         chance += 3;
-         break;
-      case 2:
-         chance += 6;
-         break;
-      }
+			switch(GetAA(aaAdvancedTheftofLife)) {
+			case 1:
+				chance += 3;
+				break;
+			case 2:
+				chance += 6;
+				break;
+			}
    
-      switch(GetAA(aaSoulThief)) {
-      case 1:
-         chance += 2;
-         break;
-      case 2:
-         chance += 4;
-         break;
-      case 3:
-         chance += 6;
-         break;
-      }
-   }
-		
+			switch(GetAA(aaSoulThief)) {
+			case 1:
+				chance += 2;
+				break;
+			case 2:
+				chance += 4;
+				break;
+			case 3:
+				chance += 6;
+				break;
+			}
+		}
+
 		if(MakeRandomInt(0,100) < chance) {
 			entity_list.MessageClose(this, false, 100, MT_SpellCrits, "%s performs an exceptional heal! (%d)", GetName(), ((value * modifier) / 50));		
 			return (value * modifier) / 50;
@@ -306,7 +313,6 @@ sint32 Client::GetActSpellHealing(int16 spell_id, sint32 value) {
 			return (value * modifier) / 100;
 		}		
 	}
-					
 	return (value * modifier) / 100;
 }
 
