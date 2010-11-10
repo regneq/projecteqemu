@@ -213,10 +213,8 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				else if(dmg > 0) {
 					//healing spell...
 					if(caster)
-					{
-						dmg = GetHealRate(dmg, caster->GetTarget());
 						dmg = caster->GetActSpellHealing(spell_id, dmg);
-					}
+
 					HealDamage(dmg, caster);
 				}
 
@@ -252,8 +250,6 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 					dmg = -dmg;
 					Damage(caster, dmg, spell_id, spell.skill, false, buffslot, false);
 				} else {
-					if(caster)
-						dmg = GetHealRate(dmg, caster->GetTarget());
 					HealDamage(dmg, caster);
 				}
 				break;
@@ -278,11 +274,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 					val = cap;
 
 				if(val > 0)
-				{
-					if(caster && caster->GetTarget())
-						val = GetHealRate(val, caster->GetTarget());
 					HealDamage(val, caster);
-				}
 
 				break;
 			}
@@ -652,7 +644,21 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				}
 				else
 				{
-					Stun(effect_value);
+					int stun_resist = itembonuses.StunResist+spellbonuses.StunResist; 
+					if(IsClient()) 
+						stun_resist += aabonuses.StunResist;
+
+					if(stun_resist <= 0 || MakeRandomInt(0,99) >= stun_resist) 
+					{ 
+						mlog(COMBAT__HITS, "Stunned. We had %d percent resist chance.", stun_resist);
+						Stun(effect_value); 
+					}
+					else { 
+						if(IsClient()) 
+							Message_StringID(MT_Stun, SHAKE_OFF_STUN);
+							
+						mlog(COMBAT__HITS, "Stun Resisted. We had %d percent resist chance.", stun_resist);
+					}
 				}
 				break;
 			}
@@ -3246,25 +3252,20 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 				effect_value = -effect_value;
 				Damage(caster, effect_value, spell_id, spell.skill, false, i, true);
 			} else if(effect_value > 0) {
-				//healing spell...
-				//healing aggro would go here; removed for now
-				if(caster)
-				{
-					if (caster->GetTarget())
-						effect_value = GetHealRate(effect_value, caster->GetTarget());
- 					effect_value = caster->GetActSpellHealing(spell_id, effect_value);
-				}
+				// Regen spell...
+				effect_value += effect_value * (itembonuses.HealRate + spellbonuses.HealRate) / 100;
 
 				HealDamage(effect_value, caster);
 			}
-
 			break;
 		}
 		case SE_HealOverTime:
 		{
 			effect_value = CalcSpellEffectValue(spell_id, i, caster_level);
-			effect_value = GetHealRate(effect_value, this);
-			//is this affected by stuff like GetActSpellHealing??
+			// Currently returns no change as there are no AAs/working focus that affect HoTs but soon.
+			//if(caster)
+			//	effect_value = caster->GetActSpellHealing(spell_id, effect_value);
+			effect_value += effect_value * (itembonuses.HealRate + spellbonuses.HealRate) / 100;
 			HealDamage(effect_value, caster);
 			//healing aggro would go here; removed for now
 			break;
