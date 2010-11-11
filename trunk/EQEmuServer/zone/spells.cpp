@@ -1067,11 +1067,27 @@ void Mob::CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16
 			return;
 		}
 	}
-
-	if(IsClient()) 
+	if(IsClient()) {
+		uint32 buff_max = GetMaxTotalSlots();
+		for (int buffSlot = 0; buffSlot < buff_max; buffSlot++) {
+			if (buffs[buffSlot].spellid == 0 || buffs[buffSlot].spellid >= SPDAT_RECORDS)
+				continue;
+				
+			if(spells[buffs[buffSlot].spellid].numhits > 0)
+				CheckHitsRemaining(buffSlot, true);
+		}
 		TrySympatheticProc(target, spell_id);
+	}
 
 	TryTwincast(this, target, spell_id);
+
+	if(this->itembonuses.SpellTriggers[0] || this->spellbonuses.SpellTriggers[0])
+		TryTriggerOnCast(spell_id, 0);
+
+	if(IsClient()) {
+		if(this->aabonuses.SpellTriggers[0])
+			TryTriggerOnCast(spell_id, 1);
+	}
 
 	// we're done casting, now try to apply the spell
 	if( !SpellFinished(spell_id, spell_target, slot, mana_used, inventory_slot) )
@@ -3131,7 +3147,6 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar)
 	if(spelltar->spellbonuses.SpellDamageShield)
 		spelltar->DamageShield(this, true);
 		
-	TryTriggerOnCast(spelltar, spell_id);
 	TrySpellTrigger(spelltar, spell_id);
 	TryApplyEffect(spelltar, spell_id);
 
@@ -4857,7 +4872,7 @@ void Mob::BuffModifyDurationBySpellID(int16 spell_id, sint32 newDuration)
 }
 void Mob::UpdateRuneFlags()
 {
-	bool Has_SE_Rune = false, Has_SE_AbsorbMagicAtt = false, Has_SE_NegateAttacks = false, Has_SE_MitigateMeleeDamage = true, Has_SE_MitigateSpellDamage = true;
+	bool Has_SE_Rune = false, Has_SE_AbsorbMagicAtt = false, Has_SE_MitigateMeleeDamage = true, Has_SE_MitigateSpellDamage = true;
 	uint32 buff_count = GetMaxTotalSlots();
 	for (unsigned int i = 0; i < buff_count; ++i)
 	{
@@ -4877,18 +4892,11 @@ void Mob::UpdateRuneFlags()
 						Has_SE_AbsorbMagicAtt = true;
 						break;
 					}
-					case SE_NegateAttacks:
-					{
-						Has_SE_NegateAttacks = true;
-						break;
-					}
-
 					case SE_MitigateMeleeDamage:
 					{
 						Has_SE_MitigateMeleeDamage = true;
 						break;
 					}
-
 					case SE_MitigateSpellDamage:
 					{
 						Has_SE_MitigateSpellDamage = true;
@@ -4902,8 +4910,8 @@ void Mob::UpdateRuneFlags()
 		}
 	}
 
-	SetHasRune(Has_SE_Rune || Has_SE_NegateAttacks);
-	SetHasSpellRune(Has_SE_AbsorbMagicAtt || Has_SE_NegateAttacks);
+	SetHasRune(Has_SE_Rune);
+	SetHasSpellRune(Has_SE_AbsorbMagicAtt);
 	SetHasPartialMeleeRune(Has_SE_MitigateMeleeDamage);
 	SetHasPartialSpellRune(Has_SE_MitigateSpellDamage);
 }

@@ -2915,22 +2915,17 @@ int Mob::GetMonkHandToHandDelay(void)
 
 sint32 Mob::ReduceDamage(sint32 damage)
 {
-	if(damage <= 0 || (!HasRune() && !HasPartialMeleeRune()))
-	{
+	if(damage <= 0)
 		return damage;
-	}
 
 	int slot = GetBuffSlotFromType(SE_NegateAttacks);
-	if(slot >= 0 && buffs[slot].melee_rune > 0)
-	{
-		if(--buffs[slot].melee_rune == 0)
-		{
-			if(!TryFadeEffect(slot))
-				BuffFadeBySlot(slot);
-			UpdateRuneFlags();
-		}
-		return -6;
+	if(slot >= 0) {
+		if(CheckHitsRemaining(slot, false, true))
+			return -6;
 	}
+
+	if(!HasRune() && !HasPartialMeleeRune())
+		return damage;
 
 	slot = GetBuffSlotFromType(SE_MitigateMeleeDamage);
 	if(slot >= 0)
@@ -2993,15 +2988,9 @@ sint32 Mob::AffectMagicalDamage(sint32 damage, int16 spell_id, const bool iBuffT
 
 	// See if we block the spell outright first
 	int slot = GetBuffSlotFromType(SE_NegateAttacks);
-	if(slot >= 0 && buffs[slot].magic_rune > 0)
-	{
-		if(--buffs[slot].melee_rune == 0)
-		{
-			if(!TryFadeEffect(slot))
-				BuffFadeBySlot(slot);
-			UpdateRuneFlags();
-		}
-		return -6;
+	if(slot >= 0) {
+		if(CheckHitsRemaining(slot, false, true))
+			return -6;
 	}
 	
 	// If this is a DoT, use DoT Shielding...
@@ -3171,14 +3160,8 @@ void Mob::CommonDamage(Mob* attacker, sint32 &damage, const int16 spell_id, cons
 		this->DamageShield(attacker);
 		uint32 buff_count = GetMaxTotalSlots();
 		for(uint32 bs = 0; bs < buff_count; bs++){
-			if((buffs[bs].spellid != SPELL_UNKNOWN) && buffs[bs].numhits > 0 && !IsDiscipline(buffs[bs].spellid)){
-				if(buffs[bs].numhits == 1){
-					BuffFadeBySlot(bs, true);
-				}
-				else{
-					buffs[bs].numhits--;
-				}
-			}
+			if((buffs[bs].spellid != SPELL_UNKNOWN) && IsEffectInSpell(buffs[bs].spellid, SE_DamageShield) && spells[buffs[bs].spellid].numhits > 0)
+				CheckHitsRemaining(bs);
 		}		
 	}
 	
@@ -4093,15 +4076,9 @@ void Mob::ApplyMeleeDamageBonus(int16 skill, sint32 &damage){
 	//Rogue sneak attack disciplines make use of this, they are active for one hit
 	uint32 buff_count = GetMaxTotalSlots();
 	for(int bs = 0; bs < buff_count; bs++){
-		if((buffs[bs].spellid != SPELL_UNKNOWN) && buffs[bs].numhits > 0 && IsDiscipline(buffs[bs].spellid)){
-			if(skill == spells[buffs[bs].spellid].skill){
-				if(buffs[bs].numhits == 1){
-					BuffFadeBySlot(bs, true);
-				}
-				else{
-					buffs[bs].numhits--;
-				}
-			}
+		if((buffs[bs].spellid != SPELL_UNKNOWN) && IsEffectInSpell(buffs[bs].spellid, SE_HitChance) && spells[buffs[bs].spellid].numhits > 0){
+			if(skill == spells[buffs[bs].spellid].skill)
+				CheckHitsRemaining(bs);
 		}	
 	}	
 }

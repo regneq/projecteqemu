@@ -43,6 +43,7 @@
 #define DB_LoadSPDat	//load from DB vs spells_us.txt. for now, we're piggybacking NEW_LoadSPDat, so it will take precedence
 
 #define EFFECT_COUNT 12
+#define MAX_SPELL_TRIGGER 12	// One for each slot(only 6 for AA since AA use 2)
 
 const int Z_AGGRO=10;
 
@@ -483,7 +484,7 @@ typedef enum  {
 //#define SE_Unknown345				345	//not used
 //#define SE_Unknown346				346	//not used
 //#define SE_Unknown347				347	//not used
-#define SE_Unknown348				348	//not implemented. looks like a rune based on how many times you cast a spell (cast a spell, decrease by 1. 0 = buff wears off)
+#define SE_LimitManaCost			348	//
 //#define SE_Unknown349				349	//not used
 #define SE_ManaBurn					350	//not implemented. no idea on the calculation
 										//from http://everquest.allakhazam.com/db/spell.html?spell=8452;page=1;howmany=50#m1184016444141306266 for Mana Blaze (base1 = 9000):

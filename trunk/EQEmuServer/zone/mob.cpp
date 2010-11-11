@@ -3094,25 +3094,96 @@ void Mob::SetNimbusEffect(uint32 nimbus_effect)
 	}
 }
 
-
-void Mob::TryTriggerOnCast(Mob *target, uint32 spell_id)
+void Mob::TryTriggerOnCast(uint32 spell_id, bool aa_trigger)
 {
-	if(target == NULL || !IsValidSpell(spell_id))
-	{
+	if(!IsValidSpell(spell_id))
 		return;
-	}
-
-	uint32 buff_count = GetMaxTotalSlots();
-	for(int i = 0; i < buff_count; i++) 
+	
+	if(aa_trigger)
 	{
-		if(IsEffectInSpell(buffs[i].spellid, SE_TriggerOnCast))
+		for(int i = 0; i < MAX_SPELL_TRIGGER; i+=2)
 		{
-			sint32 focus = CalcFocusEffect(focusTriggerOnCast, buffs[i].spellid, spell_id);
-			if(focus == 1)
+			if(this->aabonuses.SpellTriggers[i])
+				TriggerOnCast(this->aabonuses.SpellTriggers[i], spell_id, this->aabonuses.SpellTriggers[i+1]);
+		}
+	}
+	else
+	{
+		if(this->itembonuses.SpellTriggers[0])
+		{
+			for(int i = 0; i < MAX_SPELL_TRIGGER; i++)
 			{
-				if(MakeRandomInt(0, 1000) < spells[buffs[i].spellid].base[0])
+				if(this->itembonuses.SpellTriggers[i])
+					TriggerOnCast(this->itembonuses.SpellTriggers[i], spell_id, 0);
+			}
+		}
+		if(this->spellbonuses.SpellTriggers[0])
+		{
+			for(int i = 0; i < MAX_SPELL_TRIGGER; i++)
+			{
+				if(this->spellbonuses.SpellTriggers[i])
+					TriggerOnCast(this->spellbonuses.SpellTriggers[i], spell_id, 0);
+			}
+		}
+	}
+}
+
+void Mob::TriggerOnCast(uint32 focus_spell, uint32 spell_id, uint8 aa_chance)
+{
+	if(!IsValidSpell(focus_spell) || !IsValidSpell(spell_id))
+		return;
+
+	sint32 focus = 0;
+	if(!aa_chance)
+	{
+		focus = CalcFocusEffect(focusTriggerOnCast, focus_spell, spell_id);
+		if(focus)
+		{
+			for(int i = 0; i < EFFECT_COUNT; i++)
+			{
+				if (spells[focus_spell].effectid[i] == SE_TriggerOnCast)
 				{
-					SpellOnTarget(spells[buffs[i].spellid].base2[0], target);
+					// 100 = 100% chance to proc... seriously KLS :)
+					if(MakeRandomInt(0, 99) < spells[focus_spell].base[i])
+					{
+						if(spells[spells[focus_spell].base2[i]].targettype == ST_Self || spells[spells[focus_spell].base2[i]].targettype == ST_Group)
+						{
+							SpellOnTarget(spells[focus_spell].base2[i], this);
+						}
+						else if (this->GetTarget())
+						{	
+							SpellOnTarget(spells[focus_spell].base2[i], this->GetTarget());
+						}
+						// Take into account the max hit limit
+						uint32 buff_count = GetMaxTotalSlots();
+						for(uint32 bs = 0; bs < buff_count; bs++){
+							if((buffs[bs].spellid != SPELL_UNKNOWN) && IsEffectInSpell(buffs[bs].spellid, SE_TriggerOnCast) && buffs[bs].numhits > 0 && buffs[bs].spellid == focus_spell){
+								if(--buffs[bs].numhits == 0) {
+									if(!TryFadeEffect(bs))
+										BuffFadeBySlot(bs);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	// Innate AA Triggers
+	else
+	{
+		focus = this->CastToClient()->CalcAAFocusEffect(focusTriggerOnCast, focus_spell, spell_id);
+		if(focus)
+		{
+			if(MakeRandomInt(0, 99) < aa_chance)
+			{
+				if(spells[focus_spell].targettype == ST_Self || spells[focus_spell].targettype == ST_Group)
+				{
+					SpellOnTarget(focus_spell, this);
+				}
+				else if (this->GetTarget())
+				{	
+					SpellOnTarget(focus_spell, this->GetTarget());
 				}
 			}
 		}

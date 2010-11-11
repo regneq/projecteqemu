@@ -612,16 +612,6 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 				break;
 			case SE_IncreaseRange:
 				break;
-			case SE_LimitEffect:
-				break;
-			case SE_LimitSpellType:
-				break;
-			case SE_LimitMinDur:
-				break;
-			case SE_LimitInstant:
-				break;
-			case SE_LimitCastTime:
-				break;
 			case SE_MaxHPChange:
 				newbon->MaxHP += base1;
 				break;
@@ -690,9 +680,20 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 			case SE_StunResist:
 				newbon->StunResist += base1;
 				break;
+			case SE_TriggerOnCast:
+				for(int i = 0; i < MAX_SPELL_TRIGGER; i+=2)
+				{
+					if(!newbon->SpellTriggers[i])
+					{
+						// base1 = SpellID to be triggered, base2 = chance to fire
+						newbon->SpellTriggers[i] = base1;
+						newbon->SpellTriggers[i+1] = base2;
+						break;
+					}
+				}
+				break;
 		}
 	}
-
 }
 
 void Mob::CalcSpellBonuses(StatBonuses* newbon)
@@ -1267,6 +1268,18 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 				break;
 			}
 			
+			case SE_TriggerOnCast:
+			{
+				for(int i = 0; i < MAX_SPELL_TRIGGER; i++)
+				{
+					if(!newbon->SpellTriggers[i])
+					{
+						newbon->SpellTriggers[i] = spell_id;
+						break;
+					}
+				}
+				break;
+			}
 		}
 	}
 }
