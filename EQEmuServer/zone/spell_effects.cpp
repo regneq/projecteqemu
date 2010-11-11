@@ -139,6 +139,10 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 	{
 		buffs[buffslot].melee_rune = 0;
 		buffs[buffslot].magic_rune = 0;
+		buffs[buffslot].numhits = 0;
+		if(spells[spell_id].numhits > 0)
+			buffs[buffslot].numhits = spells[spell_id].numhits;
+			
 		if(IsClient() && CastToClient()->GetClientVersionBit() & BIT_Live)
 		{
 			EQApplicationPacket *outapp = MakeBuffsPacket(false);
@@ -176,8 +180,6 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 
 		if(spell_id == SPELL_LAY_ON_HANDS && caster && caster->GetAA(aaImprovedLayOnHands))
 			effect_value = GetMaxHP();
-
-
 
 #ifdef SPELL_EFFECT_SPAM
 		effect_desc[0] = 0;
@@ -990,7 +992,8 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 					(
 						buffs[slot].spellid != SPELL_UNKNOWN &&
 						buffs[slot].durationformula != DF_Permanent &&
-						spells[buffs[slot].spellid].dispel_flag < 1
+						spells[buffs[slot].spellid].dispel_flag < 1 &&
+						!IsDiscipline(buffs[slot].spellid)
 				    )
 				    {
 						BuffFadeBySlot(slot);
@@ -1586,9 +1589,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Melee Negate Attack Rune: %+i", effect_value);
 #endif
-				buffs[buffslot].melee_rune = effect_value;
-				SetHasRune(true);
-				SetHasSpellRune(true);
+				buffs[buffslot].numhits = effect_value;
 				break;				  
 			}
 			case SE_AppraiseLDonChest:
@@ -2884,6 +2885,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			case SE_LimitInstant:
 			case SE_LimitMinLevel:
 			case SE_LimitCastTime:
+			case SE_LimitManaCost:
 			case SE_NoCombatSkills:
 			case SE_TriggerOnCast:
 			case SE_HealRate:
@@ -2903,12 +2905,6 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			{
 				break;
 			}
-			//currently missing effects:
-			//SE_SummonItem2
-			//SE_ReduceSpellHate
-			//SE_NoCombatSkills
-			//SE_CriticalDamageMob
-			//SE_Cloak
 
 			default:
 			{
@@ -3767,6 +3763,206 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 		CalcBonuses();
 }
 
+sint16 Client::CalcAAFocusEffect(focusType type, int16 focus_spell, int16 spell_id) 
+{
+	uint32 slots = 0;
+	uint32 aa_AA = 0;
+	uint32 aa_value = 0;
+	
+	sint32 value = 0;
+	// Iterate through all of the client's AAs
+	for (int i = 0; i < MAX_PP_AA_ARRAY; i++) 
+	{	
+		aa_AA = this->aa[i]->AA;
+		aa_value = this->aa[i]->value;
+		if (aa_AA > 0 || aa_value > 0) 
+		{	
+			slots = zone->GetTotalAALevels(aa_AA);
+			if (slots > 0)
+			for(int j = 1;j <= slots; j++)
+			{
+				switch (aa_effects[aa_AA][j].skill_id)
+				{	
+					case SE_TriggerOnCast:
+						// If focus_spell matches the spell listed in the DB, load these restrictions
+						if(type == focusTriggerOnCast && focus_spell == aa_effects[aa_AA][j].base1)
+							value = CalcAAFocus(type, aa_AA, spell_id);
+					break;
+				}
+			}
+		}
+	}
+	return value;
+}
+
+
+sint16 Client::CalcAAFocus(focusType type, uint32 aa_ID, int16 spell_id) 
+{
+	const SPDat_Spell_Struct &spell = spells[spell_id];
+	
+	sint16 value = 0;
+	int lvlModifier = 100;
+	int lvldiff = 0;
+
+	int32 effect = 0;
+	int32 base1 = 0;
+	int32 base2 = 0;
+	int32 slot = 0;
+
+	std::map<uint32, std::map<uint32, AA_Ability> >::const_iterator find_iter = aa_effects.find(aa_ID);
+	if(find_iter == aa_effects.end())
+	{
+		return 0;
+	}
+
+	for (map<uint32, AA_Ability>::const_iterator iter = aa_effects[aa_ID].begin(); iter != aa_effects[aa_ID].end(); ++iter) 
+	{
+		effect = iter->second.skill_id;
+		base1 = iter->second.base1;
+		base2 = iter->second.base2;
+		slot = iter->second.slot;
+	
+		switch (effect)
+		{
+			case SE_Blank:
+				break;
+			
+			// Limits
+			case SE_LimitResist:
+				if(base1)
+				{
+					if(spell.resisttype != base1)
+						return 0;
+				}
+			break;
+			case SE_LimitInstant:
+				if(spell.buffduration)
+					return 0;
+			break;
+			case SE_LimitMaxLevel:
+				lvldiff = (spell.classes[(GetClass()%16) - 1]) - base1;
+				//every level over cap reduces the effect by base2 percent
+				if(lvldiff > 0)
+				{ 
+					if(base2 > 0)
+					{
+						lvlModifier -= base2*lvldiff;
+						if(lvlModifier < 1)
+							return 0;
+					}
+					else {	
+						return 0;
+					}
+				}
+			break;
+			case SE_LimitMinLevel:
+				if((spell.classes[(GetClass()%16) - 1]) < base1)
+					return 0;
+			break;
+			case SE_LimitCastTime:
+				if (spell.cast_time < base1)
+					return 0;
+			break;
+			case SE_LimitSpell:
+				// Exclude spell(any but this)
+				if(base1 < 0) {	
+					if (spell_id == (base1*-1))
+						return 0;
+				} 
+				else {
+				// Include Spell(only this)
+					if (spell_id != base1)
+						return(0);
+				}
+			break;
+			case SE_LimitMinDur:
+				if (base1 > CalcBuffDuration_formula(GetLevel(), spell.buffdurationformula, spell.buffduration))
+					return(0);
+			break;
+			case SE_LimitEffect:
+				// Exclude effect(any but this)
+				if(base1 < 0) {
+					if(IsEffectInSpell(spell_id,(base1*-1)))
+						return 0;
+				}
+				else {
+					// Include effect(only this)
+					if(!IsEffectInSpell(spell_id,base1)) 
+						return 0;
+				}
+			break;
+			case SE_LimitSpellType:
+				switch(base1)
+				{
+					case 0:
+						if (!IsDetrimentalSpell(spell_id))
+							return 0;
+						break;
+					case 1:
+						if (!IsBeneficialSpell(spell_id))
+							return 0;
+						break;
+				}
+			break;
+			
+			case SE_LimitManaCost:
+				if(spell.mana < base1)
+					return 0;
+			break;
+			
+			case SE_LimitTarget:
+			// Exclude
+			if(base1 < 0){
+				if(-base1 == spell.targettype) 
+					return 0;
+			}
+			// Include
+			else {
+				if(base1 != spell.targettype)
+					return 0;
+			}
+			break;
+			
+			case SE_NoCombatSkills:
+				if(IsDiscipline(spell_id))
+					return 0;
+			break;
+			
+			// Passive Focus Effects
+			case SE_ImprovedDamage:
+			switch (base2)
+			{
+				case 0:
+					if (type == focusImprovedDamage && base1 > value)
+						value = base1;
+				break;
+				case 1:
+					if (type == focusImprovedCritical && base1 > value)
+						value = base1;
+				break;
+				case 2:
+					if (type == focusImprovedUndeadDamage && base1 > value)
+						value = base1;
+				break;
+				case 3:
+					if (type == 10 && base1 > value)
+						value = base1;
+				break;
+			}
+			break;
+			
+			
+			// Unique Focus Effects
+			case SE_TriggerOnCast:
+				if(type == focusTriggerOnCast)
+					value = 1;
+			break;
+	
+		}
+	}
+	return(value*lvlModifier/100);
+}
+
 //given an item/spell's focus ID and the spell being cast, determine the focus ammount, if any
 //assumes that spell_id is not a bard spell and that both ids are valid spell ids
 sint16 Mob::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id) {
@@ -3783,9 +3979,6 @@ sint16 Mob::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id) {
 			break;
 
 		//check limits
-
-		//missing limits:
-		//SE_LimitTarget
 
 		case SE_LimitResist:{
 			if(focus_spell.base[i]){
@@ -3883,8 +4076,29 @@ sint16 Mob::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id) {
 			}
 			break;
 
-
-
+		case SE_LimitManaCost:
+				if(spell.mana < focus_spell.base[i])
+					return 0;
+			break;
+		
+		case SE_LimitTarget:
+			// Exclude
+			if(focus_spell.base[i] < 0){
+				if(-focus_spell.base[i] == spell.targettype)
+					return 0;
+			}
+			// Include
+			else {
+				if(focus_spell.base[i] != spell.targettype)
+					return 0;
+			}
+			break;
+		
+		case SE_NoCombatSkills:
+			if(IsDiscipline(spell_id))
+				return 0;
+			break;
+		
 		//handle effects
 
 		case SE_ImprovedDamage:
@@ -4001,9 +4215,8 @@ sint16 Mob::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id) {
 		case SE_TriggerOnCast:
 		{
 			if(type == focusTriggerOnCast)
-			{
 				value = 1;
-			}
+		
 			break;
 		}
 		case SE_SpellVulnerability:
@@ -4059,6 +4272,7 @@ sint16 Mob::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id) {
 sint16 Client::GetFocusEffect(focusType type, int16 spell_id) {
 	if (IsBardSong(spell_id))
 		return 0;
+	
 	const Item_Struct* TempItem = 0;
 	const Item_Struct* UsedItem = 0;
 	sint16 Total = 0;
@@ -4135,19 +4349,57 @@ sint16 Client::GetFocusEffect(focusType type, int16 spell_id) {
 	//Spell Focus
 	sint16 Total2 = 0;
 	sint16 realTotal2 = 0;
-
-	uint32 buff_count = GetMaxTotalSlots();
-	for (int y = 0; y < buff_count; y++) {
-		int16 focusspellid = buffs[y].spellid;
+	
+	int buff_tracker = -1;
+	int buff_slot = 0;
+	int16 focusspellid  = 0;
+	int16 focusspell_tracker  = 0;
+	uint32 buff_max = GetMaxTotalSlots();
+	for (buff_slot = 0; buff_slot < buff_max; buff_slot++) {
+		focusspellid = buffs[buff_slot].spellid;
 		if (focusspellid == 0 || focusspellid >= SPDAT_RECORDS)
 			continue;
 
 		Total2 = CalcFocusEffect(type, focusspellid, spell_id);
 		if (Total2 > 0 && realTotal2 >= 0 && Total2 > realTotal2) {
 				realTotal2 = Total2;
+				buff_tracker = buff_slot;
+				focusspell_tracker = focusspellid;
 			} else if (Total2 < 0 && Total2 < realTotal2) {
 				realTotal2 = Total2;
+				buff_tracker = buff_slot;
+				focusspell_tracker = focusspellid;
 			}
+	}
+	if(buff_tracker >= 0) {
+		for(int d = 0; d < EFFECT_COUNT; d++) {
+			if(!m_spellHitsLeft[d])
+				m_spellHitsLeft[d] = focusspell_tracker;
+		}
+	}
+	
+	// AA Focus
+	sint16 Total3 = 0;
+	sint16 realTotal3 = 0;
+	
+	uint32 slots = 0;
+	uint32 aa_AA = 0;
+	uint32 aa_value = 0;
+	
+	for (int i = 0; i < MAX_PP_AA_ARRAY; i++) 
+	{
+		aa_AA = this->aa[i]->AA;
+		aa_value = this->aa[i]->value;
+		if (aa_AA < 1 || aa_value < 1) 
+			continue;
+			
+		Total3 = CalcAAFocus(type, aa_AA, spell_id);
+		if (Total3 > 0 && realTotal3 >= 0 && Total3 > realTotal3) {
+			realTotal3 = Total3;
+		} 
+		else if (Total3 < 0 && Total3 < realTotal3) {
+			realTotal3 = Total3;
+		}
 	}
 
 	if(type == focusReagentCost && IsSummonPetSpell(spell_id) && GetAA(aaElementalPact))
@@ -4158,8 +4410,47 @@ sint16 Client::GetFocusEffect(focusType type, int16 spell_id) {
 	//Summon Spells that require reagents are typically imbue type spells, enchant metal, sacrifice and shouldn't be affected
 	//by reagent conservation for obvious reasons.
 	}
+	return realTotal + realTotal2 + realTotal3;
+}
 
-	return realTotal + realTotal2;
+bool Mob::CheckHitsRemaining(uint32 buff_slot, bool when_spell_done, bool negate)
+{
+	// For spells with limited number of casts
+	if(when_spell_done) {
+		uint32 buff_max = GetMaxTotalSlots();
+		for(int d = 0; d < EFFECT_COUNT; d++) {
+			if(!m_spellHitsLeft[d])
+				continue;
+						
+			for (int i = 0; i < buff_max; i++) {
+				if (buffs[i].spellid == 0 || buffs[i].spellid >= SPDAT_RECORDS)
+					continue;
+				
+				if (m_spellHitsLeft[d] == buffs[i].spellid) {
+					if(buffs[i].numhits > 1) {
+						buffs[i].numhits--;
+						return true;
+					}
+					else {
+						if(!TryFadeEffect(i))
+							BuffFadeBySlot(i, true);
+					}
+				}
+			}
+		}
+	}
+	// This is where hit limited DS and other effects are processed
+	else if(spells[buffs[buff_slot].spellid].numhits > 0 || negate)  {
+		if(buffs[buff_slot].numhits > 0) {
+			buffs[buff_slot].numhits--;
+			return true;
+		}
+		else {
+			if(!TryFadeEffect(buff_slot)) 
+				BuffFadeBySlot(buff_slot, true);
+		}
+	}
+	return false;
 }
 
 //for some stupid reason SK procs return theirs one base off...

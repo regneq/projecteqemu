@@ -427,6 +427,20 @@ sint32 Client::GetActSpellCost(int16 spell_id, sint32 cost)
 
 	cost -= (cost * (PercentManaReduction / 100));
 
+	// Gift of Mana - reduces spell cost to 1 mana
+	if(focus_redux >= 100) {
+		uint32 buff_max = GetMaxTotalSlots();
+		for (int buffSlot = 0; buffSlot < buff_max; buffSlot++) {
+			if (buffs[buffSlot].spellid == 0 || buffs[buffSlot].spellid >= SPDAT_RECORDS)
+				continue;
+				
+			if(IsEffectInSpell(buffs[buffSlot].spellid, SE_ReduceManaCost)) {
+				if(CalcFocusEffect(focusManaCost, buffs[buffSlot].spellid, spell_id) == 100)
+					cost = 1;
+			}
+		}
+	}
+	
 	if(cost < 0)
 		cost = 0;
 

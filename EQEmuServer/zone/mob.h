@@ -284,6 +284,7 @@ struct StatBonuses {
 	sint32 SpellDmg;		// Item Effect
 	sint32 Clairvoyance;	// Item Effect
 	sint16 DSMitigation;	// Item Effect
+	uint32 SpellTriggers[MAX_SPELL_TRIGGER];
 	int XPRateMod;
 
 	sint8	Packrat;	//weight reduction for items, 1 point = 10%
@@ -555,6 +556,7 @@ bool logpos;
 	int16	GetSpellIDFromSlot(int8 slot);
 	int		CountDispellableBuffs();
 	bool	HasBuffIcon(Mob* caster, Mob* target, int16 spell_id);
+	bool	CheckHitsRemaining(uint32 buff_slot, bool when_spell_done=false, bool negate=false);
 
 	virtual void MakePet(int16 spell_id, const char* pettype, const char *petname = NULL);
 //	inline void	MakePetType(int16 spell_id, const char* pettype, const char *petname = NULL) { MakePet(spell_id, pettype, petname); }	//for perl
@@ -799,7 +801,8 @@ bool logpos;
 	bool PassCharismaCheck(Mob* caster, Mob* spellTarget, int16 spell_id);
 	bool TryDeathSave();
 	void DoBuffWearOffEffect(uint32 index);
-	void TryTriggerOnCast(Mob *target, uint32 spell_id);
+	void TryTriggerOnCast(uint32 spell_id, bool aa_trigger);
+	void TriggerOnCast(uint32 focus_spell, uint32 spell_id, uint8 aa_chance);
 	void TrySpellTrigger(Mob *target, uint32 spell_id);
 	void TryApplyEffect(Mob *target, uint32 spell_id);
 	void TryTwincast(Mob *caster, Mob *target, uint32 spell_id);
@@ -1318,6 +1321,7 @@ protected:
 	bool m_hasPartialMeleeRune;
 	bool m_hasPartialSpellRune;
 	bool m_hasDeathSaveChance;
+	uint32 m_spellHitsLeft[EFFECT_COUNT]; // Used to track which spells will have their numhits incremented when spell finishes casting
 	int	flymode;
 	int QGVarDuration(const char *fmt);
 	void InsertQuestGlobal(int charid, int npcid, int zoneid, const char *name, const char *value, int expdate);

@@ -670,6 +670,8 @@ public:
 	int32 GetAA(int32 aa_id) const;
 	bool SetAA(int32 aa_id, int32 new_value);
 	inline uint32 GetAAPointsSpent() { return m_pp.aapoints_spent; }
+	sint16 CalcAAFocusEffect(focusType type, int16 focus_spell, int16 spell_id);
+	sint16 CalcAAFocus(focusType type, uint32 aa_ID, int16 spell_id);
 
 	sint16 acmod();
 
