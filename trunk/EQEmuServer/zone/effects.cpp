@@ -63,20 +63,9 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 	// modifier: modifier to damage (from spells & focus effects?)
 	// ratio: % of the modifier to apply (from AAs & natural bonus?)
 	// chance: critital chance %
-	//all of the ordering and stacking in here might be wrong, but I dont care right now.
 	
-	sint16 spell_dmg = 0;
-	// Formula = SpellDmg * (casttime + recastime) / 7; Cant trigger off spell less than 5 levels below and cant cause more dmg than the spell itself.
-	if(this->itembonuses.SpellDmg && spells[spell_id].classes[(GetClass()%16) - 1] >= GetLevel() - 5) {
-		spell_dmg = this->itembonuses.SpellDmg * (spells[spell_id].cast_time + spells[spell_id].recast_time) / 7000;
-		if(spell_dmg > -value)
-			spell_dmg = -value;
-	}
-	// Spell-based SpellDmg adds directly but it restricted by focuses.
-	if(this->spellbonuses.SpellDmg)
-		spell_dmg += this->Additional_SpellDmg(spell_id);
-		
 	sint32 modifier = 100;
+	sint16 spell_dmg = 0;
 	
 	//Dunno if this makes sense:
 	if (spells[spell_id].resisttype > 0)
@@ -111,39 +100,31 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 
 	//spell crits, dont make sense if cast on self.
 	if(tt != ST_Self) {
+		// item SpellDmg bonus
+		// Formula = SpellDmg * (casttime + recastime) / 7; Cant trigger off spell less than 5 levels below and cant cause more dmg than the spell itself.
+		if(this->itembonuses.SpellDmg && spells[spell_id].classes[(GetClass()%16) - 1] >= GetLevel() - 5) {
+			spell_dmg = this->itembonuses.SpellDmg * (spells[spell_id].cast_time + spells[spell_id].recast_time) / 7000;
+			if(spell_dmg > -value)
+				spell_dmg = -value;
+		}
+		// Spell-based SpellDmg adds directly but it restricted by focuses.
+		if(this->spellbonuses.SpellDmg)
+			spell_dmg += this->Additional_SpellDmg(spell_id);
+	
 		int chance = RuleI(Spells, BaseCritChance);
 		sint32 ratio = RuleI(Spells, BaseCritRatio);
 
-		//here's an idea instead of bloating code with unused cases there's this thing called:
-		//case 'default'
-		switch(GetClass())
-		{
-			case WIZARD:
-			{
-				if (GetLevel() >= RuleI(Spells, WizCritLevel)) {
-					chance += RuleI(Spells, WizCritChance);
-					ratio += RuleI(Spells, WizCritRatio);
-				}
-				break;
-			}
-
-			default: 
-				break;
-		}
+		chance += itembonuses.CriticalSpellChance + spellbonuses.CriticalSpellChance + aabonuses.CriticalSpellChance;
+		ratio += itembonuses.SpellCritDmgIncrease + spellbonuses.SpellCritDmgIncrease + aabonuses.SpellCritDmgIncrease;
+		chance += GetFocusEffect(focusImprovedCritical, spell_id);
 		
-		//Normal EQ: no class that has ingenuity has reg spell crit AAs too but people
-		//are free to customize so lets make sure they don't stack oddly.
-		//afaik all ranks provide a 100% bonus in damage on critical
-		switch(GetAA(aaIngenuity))
-		{
-		case 1:
-		case 2:
-		case 3: 
-			if(ratio < 100)
-				ratio = 100;
-			break;
-		default:
-			break;
+		if(GetClass() == WIZARD) {
+			if (GetLevel() >= RuleI(Spells, WizCritLevel)) {
+				chance += RuleI(Spells, WizCritChance);
+				ratio += RuleI(Spells, WizCritRatio);
+			}
+			if(aabonuses.SpellCritDmgIncrease > 0) // wizards get an additional bonus
+				ratio +=  aabonuses.SpellCritDmgIncrease * 1.5; //108%, 115%, 124%, close to Graffe's 207%, 215%, & 225%
 		}
 		
 		//Improved Harm Touch is a guaranteed crit if you have at least one level of SCF.
@@ -152,51 +133,12 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 				chance = 100;
 		} 
 
-		switch (GetAA(aaSpellCastingFury)) //not sure why this was different from Mastery before, both are DD only
-		{
-			case 1:
-				chance += 2;
-				break;
-			case 2:
-				chance += 4; //some reports between 4.5% & 5%, AA description indicates 4%
-				break;
-			case 3:
-				chance += 7;
-				break;
-		}		
-
-		switch (GetAA(aaSpellCastingFuryMastery)) //ratio should carry over from Spell Casting Fury, which is 100% for all ranks
-		{
-		case 1:
-			chance += 3; //10%, Graffe = 9%?
-			break;
-		case 2:
-			chance += 5; //12%, Graffe = 11%?
-			break;
-		case 3:
-			chance += 7; //14%, Graffe = 13%?
-			break;
-		}
-
-		chance += GetAA(aaFuryofMagic) * 2;  //doesn't look like this is used
-		chance += GetAA(aaFuryofMagicMastery) * 2; //doesn't look like this is used
-		chance += GetAA(aaFuryofMagicMastery2) * 2;	//this is the current one used in DB; 16%, 18%, 20%; Graffe guesses 18-19% max
-		chance += GetAA(aaAdvancedFuryofMagicMastery) * 2; //guessing, not much data on it
-
-			
-		if(ratio > 100)		//chance increase and ratio are made up, not confirmed
-			ratio = 100;	
-
-		// Anything that will boost the crit ratio to more than 2x (AA's for example) MUST be after this line, not before	
-
-
 		if(tt == ST_Tap) {
-			
 			if(spells[spell_id].classes[SHADOWKNIGHT-1] >= 254 && spell_id != SPELL_LEECH_TOUCH){
 				if(ratio < 100)	//chance increase and ratio are made up, not confirmed
 					ratio = 100;
 
-				switch (GetAA(aaSoulAbrasion)) //Soul Abrasion
+				switch (GetAA(aaSoulAbrasion))
 				{
 				case 1:
 					modifier += 100;
@@ -208,27 +150,6 @@ sint32 Client::GetActSpellDamage(int16 spell_id, sint32 value) {
 					modifier += 300;
 					break;
 				}
-			}
-		}
-		
-		chance += GetAA(aaIngenuity); //nothing stating it's DD only, so we'll apply to all damage spells
-		
-		chance += GetFocusEffect(focusImprovedCritical, spell_id);
-
-		//crit damage modifiers
-		if (GetClass() == WIZARD) { //wizards get an additional bonus
-			ratio += GetAA(aaDestructiveFury) * 8; //108%, 116%, 124%, close to Graffe's 207%, 215%, & 225%
-		} else {
-			switch (GetAA(aaDestructiveFury)) //not quite linear
-			{
-				case 1:
-					ratio += 4; //104%, Graffe = 103%
-					break;
-				case 2:
-					ratio += 8; //108%, Graffe = 107%
-					break;
-				case 3:
-					ratio += 16; //116%, Graffe = 115%
 			}
 		}
 		
@@ -251,6 +172,7 @@ sint32 Client::GetActSpellHealing(int16 spell_id, sint32 value) {
 
 	sint32 modifier = 100;
 	modifier += GetFocusEffect(focusImprovedHeal, spell_id);
+	int chance = 0;
 	
 	// Instant Heals					
 	if(spells[spell_id].buffduration < 1) 
@@ -267,45 +189,9 @@ sint32 Client::GetActSpellHealing(int16 spell_id, sint32 value) {
 		value += value * GetHealRate() / 100;
 		if(value < 1)
 			return 0;
+			
+		chance += itembonuses.CriticalHealChance + spellbonuses.CriticalHealChance + aabonuses.CriticalHealChance;
 		
-		switch(GetAA(aaHealingAdept)) {
-		case 1:
-			modifier += 2;
-			break;
-		case 2:
-			modifier += 5;
-			break;
-		case 3:
-			modifier += 10;
-			break;
-		}
-		
-		switch(GetAA(aaAdvancedHealingAdept)) {
-		case 1:
-			modifier += 3;
-			break;
-		case 2:
-			modifier += 6;
-			break;
-		case 3:
-			modifier += 9;
-			break;
-		}
-		
-		int chance = 0;
-		switch(GetAA(aaHealingGift)) {
-		case 1:
-			chance = 3;
-			break;
-		case 2:
-			chance = 6;
-			break;
-		case 3:
-			chance = 10;
-			break;
-		}
-		chance += GetAA(aaAdvancedHealingGift) * 2;
-
 		if(spells[spell_id].targettype == ST_Tap) {
 			switch(GetAA(aaTheftofLife)) {
 			case 1:
@@ -341,13 +227,19 @@ sint32 Client::GetActSpellHealing(int16 spell_id, sint32 value) {
 			}
 		}
 
-		if(MakeRandomInt(0,100) < chance) {
+		if(MakeRandomInt(0,99) < chance) {
 			entity_list.MessageClose(this, false, 100, MT_SpellCrits, "%s performs an exceptional heal! (%d)", GetName(), ((value * modifier / 50) + heal_amt*2));		
 			return (value * modifier / 50) + heal_amt*2;
 		}
 		else{
 			return (value * modifier / 100) + heal_amt;
 		}		
+	}
+	// Hots
+	else {
+		chance += itembonuses.CriticalHealChance + spellbonuses.CriticalHealChance + aabonuses.CriticalHealChance;
+		if(MakeRandomInt(0,99) < chance) 
+			return (value * modifier / 50);
 	}
 	return (value * modifier / 100);
 }

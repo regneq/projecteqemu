@@ -1851,7 +1851,6 @@ bool Mob::SpellFinished(int16 spell_id, Mob *spell_target, int16 slot, int16 man
 				}
 				iter++;
 			}
-
 			break;
 		}
 	}
@@ -3008,7 +3007,7 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar)
 	// solar: resist check - every spell can be resisted, beneficial or not
 	// add: ok this isn't true, eqlive's spell data is fucked up, buffs are
 	// not all unresistable, so changing this to only check certain spells
-	if(IsResistableSpell(spell_id))
+	if(IsResistableSpell(spell_id) || MakeRandomInt(0,99) < CalcResistChanceBonus())
 	{
 		spell_effectiveness = spelltar->ResistSpell(spells[spell_id].resisttype, spell_id, this);
 		if(spell_effectiveness < 100)
@@ -3564,6 +3563,7 @@ float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster)
 {
 	int caster_level, target_level, resist;
 	float roll, fullchance, resistchance;
+	int resist_bonuses = CalcResistChanceBonus();
 	
 	if(spell_id != 0 && !IsValidSpell(spell_id))
 	{
@@ -3576,7 +3576,7 @@ float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster)
 		return(0);
 	}
 	
-	if(resist_type == RESIST_NONE) {
+	if(resist_type == RESIST_NONE && MakeRandomInt(0,99) > resist_bonuses) {
 		//unresistable...
 		mlog(SPELLS__RESISTS, "The spell %d is unresistable (type %d)", spell_id, resist_type);
 		return(100);
@@ -3680,11 +3680,9 @@ float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster)
 			resist = tempresist;
 		break;
 	}
-	
-	// solar: I don't know how to calculate this stuff
 	case RESIST_PHYSICAL:
 	default:
-		resist = GetMR();
+		resist = (GetSTA() + GetSTR()) / 2; // seems more logical
 		break;
 	}
 
@@ -3710,8 +3708,8 @@ float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster)
 	//default 0.40: 500 resist = 200% Base resist while 40 resist = 16% resist base.
 	//Set ResistMod lower to require more resist points per percentage point of resistance.
 	resistchance += resist * RuleR(Spells, ResistMod); 
-	resistchance += spellbonuses.ResistSpellChance + itembonuses.ResistSpellChance;
-
+	resistchance += resist_bonuses;
+	
 	if(caster && caster->IsClient())
 	{
 		if(IsValidSpell(spell_id))
@@ -3728,30 +3726,41 @@ float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster)
 	else
 		fullchance = (resistchance * (1 - RuleR(Spells, PartialHitChanceFear))); //default 0.25
 
-	roll = MakeRandomFloat(0, 100);
+	roll = MakeRandomInt(0, 100);
 
 	mlog(SPELLS__RESISTS, "Spell %d: Resist Amount: %d, ResistChance: %.2f, Resist Bonuses: %.2f", 
 		spell_id, resist, resistchance, (spellbonuses.ResistSpellChance + itembonuses.ResistSpellChance));	
 	
-	if (roll > resistchance)
-	{
-		mlog(SPELLS__RESISTS, "Spell %d: Roll of %.2f > resist chance of %.2f, no resist", spell_id, roll, resistchance);
-		return(100);
-	}
-	else
-	{
-		if (roll <= fullchance)
- 		{
-			mlog(SPELLS__RESISTS, "Spell %d: Roll of %.2f <= fullchance %.2f, fully resisted", spell_id, roll, fullchance);
-			return(0);
+	if((MakeRandomInt(0,99) > resist_bonuses)) {
+		if (roll > resistchance) {
+			mlog(SPELLS__RESISTS, "Spell %d: Roll of %.2f > resist chance of %.2f, no resist", spell_id, roll, resistchance);
+			return(100);
 		}
-		else
-		{
-			mlog(SPELLS__RESISTS, "Spell %d: Roll of %.2f > fullchance %.2f, partially resisted, returned %.2f", spell_id, roll, fullchance, (100 * ((roll-fullchance)/(resistchance-fullchance))));
-			//Remove the lower range so it doesn't throw off the proportion.
-			return(100 * ((roll-fullchance)/(resistchance-fullchance)));
+		else {
+			if ((roll <= fullchance))	{
+				mlog(SPELLS__RESISTS, "Spell %d: Roll of %.2f <= fullchance %.2f, fully resisted", spell_id, roll, fullchance);
+				return(0);
+			}
+			else {
+				mlog(SPELLS__RESISTS, "Spell %d: Roll of %.2f > fullchance %.2f, partially resisted, returned %.2f", spell_id, roll, fullchance, (100 * ((roll-fullchance)/(resistchance-fullchance))));
+				//Remove the lower range so it doesn't throw off the proportion.
+				return(100 * ((roll-fullchance)/(resistchance-fullchance)));
+			}
 		}
 	}
+	else {
+		mlog(SPELLS__RESISTS, "Spell %d: Roll of %.2f <= resist_bonuses %.2f, fully resisted", spell_id, roll, resist_bonuses);
+		return(0);
+	}
+}
+
+sint16 Mob::CalcResistChanceBonus()
+{
+	int resistchance = spellbonuses.ResistSpellChance + itembonuses.ResistSpellChance;
+	if(this->IsClient()) 
+		resistchance += aabonuses.ResistSpellChance;
+		
+	return resistchance;
 }
 
 float Mob::GetAOERange(uint16 spell_id) {
@@ -4918,12 +4927,15 @@ void Mob::UpdateRuneFlags()
 
 int Client::GetCurrentBuffSlots() const
 {
-	return 15 + GetAA(aaMysticalAttuning);
+	if(15 + aabonuses.BuffSlotIncrease > 25)
+		return 25;
+	else
+		return 15 + aabonuses.BuffSlotIncrease;
 }
 
 int Client::GetCurrentSongSlots() const
 {
-	return 6 + GetAA(aaMysticalAttuning);
+	return 12; // AAs dont affect this
 }
 
 void Client::InitializeBuffSlots()

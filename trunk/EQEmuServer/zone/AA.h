@@ -39,7 +39,8 @@ typedef enum {
 	aaActionEscape				= 12,
 	aaActionBeastialAlignment	= 13,
 	aaActionLeechTouch			= 14,
-	aaActionProjectIllusion		= 15
+	aaActionProjectIllusion		= 15,
+	aaActionFadingMemories		= 16
 } aaNonspellAction;
 
 //use these for AAs which dont cast spells, yet need effects
@@ -716,7 +717,7 @@ struct AA_SwarmPet {
 };
 
 //assumes that no activatable AA has more than 5 ranks
-#define MAX_AA_ACTION_RANKS 5
+#define MAX_AA_ACTION_RANKS 20
 extern AA_DBAction AA_Actions[aaHighestID][MAX_AA_ACTION_RANKS];	//[aaid][rank]
 extern map<int16, AA_SwarmPet> AA_SwarmPets;	//key=spell_id
 

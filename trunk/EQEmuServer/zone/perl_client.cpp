@@ -4694,6 +4694,72 @@ XS(XS_Client_AddLevelBasedExp)
 	XSRETURN_EMPTY;
 }
 
+XS(XS_Client_IncrementAA); 
+XS(XS_Client_IncrementAA)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Client::IncrementAA(THIS, aaskillid)");
+	{
+		Client *		THIS;
+		int32		aaskillid = SvUV(ST(1));
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+			
+		SendAA_Struct* aa2 = zone->FindAA(aaskillid);
+		
+		if(aa2 == NULL)
+			Perl_croak(aTHX_ "Invalid AA."); 
+	
+		if(THIS->GetAA(aaskillid) == aa2->max_level) 
+			Perl_croak(aTHX_ "AA at Max already."); 
+		
+		THIS->SetAA(aaskillid, THIS->GetAA(aaskillid)+1);
+				
+		THIS->Save();
+
+		THIS->SendAA(aaskillid);
+		THIS->SendAATable();
+		THIS->SendAAStats();
+		THIS->CalcBonuses();
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_Client_GetAALevel);
+XS(XS_Client_GetAALevel)
+{
+	dXSARGS;
+	if (items != 2)
+		Perl_croak(aTHX_ "Usage: Client::GetAALevel(THIS, aaskillid)");
+	{
+		Client *		THIS;
+		int32		RETVAL;
+		dXSTARG;
+		int32		aaskillid = SvUV(ST(1));
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+		
+		RETVAL = THIS->GetAA(aaskillid);
+		XSprePUSH; PUSHu((UV)RETVAL);
+	}
+	XSRETURN(1);
+}
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -4886,6 +4952,8 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "NPCSpawn"), XS_Client_NPCSpawn, file, "$$$;$");
         newXSproto(strcpy(buf, "GetIP"), XS_Client_GetIP, file, "$");
 		newXSproto(strcpy(buf, "AddLevelBasedExp"), XS_Client_AddLevelBasedExp, file, "$$;$");
+		newXSproto(strcpy(buf, "IncrementAA"), XS_Client_IncrementAA, file, "$$");
+		newXSproto(strcpy(buf, "GetAALevel"), XS_Client_GetAALevel, file, "$$");
 	XSRETURN_YES;
 }
 

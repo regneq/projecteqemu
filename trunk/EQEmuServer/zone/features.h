@@ -245,7 +245,7 @@ enum {	//some random constants
 //level is the only valid variable to use
 #define EXP_FORMULA level*level*75*35/10
 
-#define HIGHEST_AA_VALUE 11
+#define HIGHEST_AA_VALUE 35
 
 //Leadership AA experience points
 #define GROUP_EXP_PER_POINT 1000

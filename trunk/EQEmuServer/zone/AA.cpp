@@ -96,7 +96,7 @@ int Client::GetAATimerID(aaID activate)
 
 	if(!aa2)
 	{
-		for(int i = 1;i < 5; ++i)
+		for(int i = 1;i < MAX_AA_ACTION_RANKS; ++i)
 		{
 			int a = activate - i;
 
@@ -158,7 +158,7 @@ void Client::ActivateAA(aaID activate){
 		if(!aa2){
 			int i;
 			int a;
-			for(i=1;i<5;i++){
+			for(i=1;i<MAX_AA_ACTION_RANKS;i++){
 				a = activate - i;
 				if(a <= 0)
 					break;
@@ -236,18 +236,10 @@ void Client::ActivateAA(aaID activate){
 	//figure out our target
 	switch(caa->target) {
 		case aaTargetUser:
-			target_id = GetID();
-			break;
-		case aaTargetCurrent:
-			if(GetTarget() == NULL) {
-				Message_StringID(0, AA_NO_TARGET);	//You must first select a target for this ability!
-				return;
-			}
-			target_id = GetTarget()->GetID();
-			break;
 		case aaTargetGroup:
 			target_id = GetID();
 			break;
+		case aaTargetCurrent:
 		case aaTargetCurrentGroup:
 			if(GetTarget() == NULL) {
 				Message_StringID(0, AA_NO_TARGET);	//You must first select a target for this ability!
@@ -305,6 +297,17 @@ void Client::ActivateAA(aaID activate){
 			if(!CastSpell(caa->spell_id, target_id))
 				return;
 		}
+	}
+	// Check if AA is expendable
+	if (aas_send[activate - activate_val]->special_category == 7)
+	{
+		// Add the AA cost to the extended profile to track overall total
+		m_epp.expended_aa += aas_send[activate]->cost;
+		SetAA(activate, 0);
+		
+		Save();
+		SendAA(activate);
+		SendAATable();
 	}
 }
 
@@ -478,6 +481,11 @@ void Client::HandleAAAction(aaID activate) {
 			EnableAAEffect(aaEffectLeechTouch, 1000);
 			break;
 
+		case aaActionFadingMemories:
+			entity_list.RemoveFromTargets(this);
+			SetInvisible(true);
+			break;
+			
 		default:
 			LogFile->write(EQEMuLog::Error, "Unknown AA nonspell action type %d", caa->action);
 			return;
@@ -485,22 +493,13 @@ void Client::HandleAAAction(aaID activate) {
 	
 	
 	int16 target_id = 0;
-	
 	//figure out our target
 	switch(target) {
 		case aaTargetUser:
-			target_id = GetID();
-			break;
-		case aaTargetCurrent:
-			if(GetTarget() == NULL) {
-				Message_StringID(0, AA_NO_TARGET);	//You must first select a target for this ability!
-				return;
-			}
-			target_id = GetTarget()->GetID();
-			break;
 		case aaTargetGroup:
 			target_id = GetID();
 			break;
+		case aaTargetCurrent:
 		case aaTargetCurrentGroup:
 			if(GetTarget() == NULL) {
 				Message_StringID(0, AA_NO_TARGET);	//You must first select a target for this ability!
@@ -897,7 +896,7 @@ void Client::BuyAA(AA_Action* action){
 		//hunt for a lower level...
 		int i;
 		int a;
-		for(i=1;i<15;i++){
+		for(i=1;i<MAX_AA_ACTION_RANKS;i++){
 			a = action->ability - i;
 			if(a <= 0)
 				break;
@@ -910,6 +909,12 @@ void Client::BuyAA(AA_Action* action){
 	if(aa2 == NULL)
 		return;	//invalid ability...
 	
+	if(aa2->special_category == 1 || aa2->special_category == 2)
+		return; // Not purchasable progression style AAs
+		
+	if(aa2->special_category == 8 && aa2->cost == 0)
+		return; // Not purchasable racial AAs(set a cost to make them purchasable)
+
 	int32 cur_level = GetAA(aa2->id);
 	if((aa2->id + cur_level) != action->ability) { //got invalid AA
 		mlog(AA__ERROR, "Unable to find or match AA %d (found %d + lvl %d)", action->ability, aa2->id, cur_level);
@@ -1044,6 +1049,7 @@ void Client::SendPreviousAA(int32 id, int seq){
 void Client::SendAA(int32 id, int seq) {
 	uint32 value=0;
 	SendAA_Struct* saa2 = NULL;
+	SendAA_Struct* qaa = NULL;
 	if(id==0)
 		saa2 = zone->GetAABySequence(seq);
 	else
@@ -1059,6 +1065,46 @@ void Client::SendAA(int32 id, int seq) {
 	if(saa2->account_time_required)
 	{
 		if((Timer::GetTimeSeconds() - account_creation) < saa2->account_time_required)
+		{
+			return;
+		}
+	}
+
+	// Hide Quest/Progression AAs unless player has been granted the first level using $client->IncrementAA(skill_id).
+	if (saa2->special_category == 1 || saa2->special_category == 2 ) {
+		if(GetAA(saa2->id) == 0)
+			return;
+		// For Quest line AA(demiplane AEs) where only 1 is visible at a time, check to make sure only the highest level obtained is shown
+		if(saa2->aa_expansion > 0) {
+			qaa = zone->FindAA(saa2->id+1);
+			if(qaa && (saa2->aa_expansion == qaa->aa_expansion) && GetAA(qaa->id) > 0)
+				return;
+		}
+	}
+
+/*	Beginning of Shroud AAs, these categories are for Passive and Active Shroud AAs
+	Eventually with a toggle we could have it show player list or shroud list
+	if (saa2->special_category == 3 || saa2->special_category == 4)
+		return;
+*/	
+	// Check for racial/Drakkin blood line AAs
+	if (saa2->special_category == 8)
+	{
+		int32 client_race = this->GetBaseRace();
+		
+		// Drakkin Bloodlines
+		if (saa2->aa_expansion > 522) 
+		{	
+			if (client_race != 522)
+				return; // Check for Drakkin Race
+			
+			int heritage = this->GetDrakkinHeritage() + 523; // 523 = Drakkin Race(522) + Bloodline
+			
+			if (heritage != saa2->aa_expansion)
+				return;
+		}
+		// Racial AAs
+		else if (client_race != saa2->aa_expansion)
 		{
 			return;
 		}
@@ -1138,12 +1184,18 @@ bool Client::SetAA(int32 aa_id, int32 new_value) {
 	for(cur=0;cur < MAX_PP_AA_ARRAY;cur++){
 		if((aa[cur]->value > 1) && ((aa[cur]->AA - aa[cur]->value + 1)== aa_id)){
 			aa[cur]->value = new_value;
-			aa[cur]->AA++;
+			if(new_value > 0)
+				aa[cur]->AA++;
+			else
+				aa[cur]->AA = 0;
 			return true;
 		}
 		else if((aa[cur]->value == 1) && (aa[cur]->AA == aa_id)){
 			aa[cur]->value = new_value;
-			aa[cur]->AA++;
+			if(new_value > 0)
+				aa[cur]->AA++;
+			else
+				aa[cur]->AA = 0;
 			return true;
 		}
 		else if(aa[cur]->AA==0){ //end of list

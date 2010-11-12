@@ -2902,6 +2902,12 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			case SE_MaxHPChange:
 			case SE_SympatheticProc:
 			case SE_SpellDamage:
+			case SE_CriticalSpellChance:
+			case SE_SpellCritChance:
+			case SE_SpellCritDmgIncrease:
+			case SE_CriticalHealChance:
+			case SE_CriticalHealOverTime:
+			case SE_CriticalDoTChance:
 			{
 				break;
 			}
@@ -3238,7 +3244,7 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 							AddToHateList(caster, -effect_value);
 					}
 					effect_value = GetVulnerability(effect_value, caster, spell_id, ticsremaining);
-					TryDotCritical(spell_id, caster, effect_value);
+					caster->TryDotCritical(spell_id, effect_value);
 				}
 				effect_value = effect_value * modifier / 100;
 			}
@@ -3259,9 +3265,8 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 		case SE_HealOverTime:
 		{
 			effect_value = CalcSpellEffectValue(spell_id, i, caster_level);
-			// Currently returns no change as there are no AAs/working focus that affect HoTs but soon.
-			//if(caster)
-			//	effect_value = caster->GetActSpellHealing(spell_id, effect_value);
+			if(caster)
+				effect_value = caster->GetActSpellHealing(spell_id, effect_value);
 			effect_value += effect_value * (itembonuses.HealRate + spellbonuses.HealRate) / 100;
 			HealDamage(effect_value, caster);
 			//healing aggro would go here; removed for now
@@ -3951,6 +3956,12 @@ sint16 Client::CalcAAFocus(focusType type, uint32 aa_ID, int16 spell_id)
 			}
 			break;
 			
+			case SE_ImprovedHeal:
+			if (type == focusImprovedHeal && base1 > value)
+			{
+				value = base1;
+			}
+			break;
 			
 			// Unique Focus Effects
 			case SE_TriggerOnCast:
@@ -4595,51 +4606,19 @@ bool Mob::TryDeathSave() {
 	return Result;
 }
 
-void Mob::TryDotCritical(int16 spell_id, Mob *caster, int &damage)
+void Mob::TryDotCritical(int16 spell_id, int &damage)
 {
-	if(!caster)
-		return;
-
-	float critChance = 0.00f;
-
-	switch(caster->GetAA(aaCriticalAffliction))
-	{
-		case 1:
-			critChance += 0.03f;
-			break;
-		case 2:
-			critChance += 0.06f;
-			break;
-		case 3:
-			critChance += 0.10f;
-			break;
-		default:
-			break;
-	}
-
-	switch (caster->GetAA(aaImprovedCriticalAffliction))
-	{
-		case 1:
-			critChance += 0.03f;
-			break;
-		case 2:
-			critChance += 0.06f;
-			break;
-		case 3:
-			critChance += 0.10f;
-			break;
-		default:
-			break;
-	}
+	int critChance = 0;
+	critChance += itembonuses.CriticalDoTChance + spellbonuses.CriticalDoTChance + aabonuses.CriticalDoTChance;
 
 	// since DOTs are the Necromancer forte, give an innate bonus
 	// however, no chance to crit unless they've trained atleast one level in the AA first
-	if (caster->GetClass() == NECROMANCER && critChance > 0.0f){
-		critChance += 0.05f;
+	if (GetClass() == NECROMANCER && critChance > 0){
+		critChance += 5;
 	}
 
-	if (critChance > 0.0f){
-		if (MakeRandomFloat(0, 1) <= critChance)
+	if (critChance > 0){
+		if (MakeRandomFloat(0, 99) < critChance)
 		{
 			damage *= 2;
 		}
