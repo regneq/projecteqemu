@@ -46,6 +46,7 @@ struct ExtendedProfile_Struct {
 	
 	uint32				aa_effects;
 	uint32				perAA;		//% of exp going to AAs
+	uint32				expended_aa;		// Total of expended AA
 };
 
 #pragma pack()

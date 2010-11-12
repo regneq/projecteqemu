@@ -673,6 +673,7 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 			case SE_SpellSlotIncrease:
 				break;
 			case SE_MysticalAttune:
+				newbon->BuffSlotIncrease += base1;
 				break;
 			case SE_TotalHP:
 				newbon->HP += base1;
@@ -691,6 +692,34 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 						break;
 					}
 				}
+				break;
+			case SE_CriticalSpellChance:
+			case SE_SpellCritChance:
+				newbon->CriticalSpellChance += base1;
+				break;
+
+			case SE_SpellCritDmgIncrease:
+				newbon->SpellCritDmgIncrease += base1;
+				break;
+
+			case SE_ResistSpellChance:
+				newbon->ResistSpellChance += base1;
+				break;
+
+			case SE_CriticalHealChance:
+				newbon->CriticalHealChance += base1;
+				break;
+			
+			case SE_CriticalHealOverTime:
+				newbon->CriticalHealOverTime += base1;
+				break;
+			
+			case SE_CriticalDoTChance:
+				newbon->CriticalDoTChance += base1;
+				break;
+				
+			case SE_CriticalHitChance:
+				newbon->CriticalHitChance += base1;
 				break;
 		}
 	}
@@ -1048,8 +1077,7 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 			*/
 			case SE_CriticalHitChance:
 			{
-				if(newbon->CriticalHitChance < effect_value)
-					newbon->CriticalHitChance = effect_value;
+				newbon->CriticalHitChance += effect_value;
 				break;
 			}
 				
@@ -1129,18 +1157,15 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 				
 			case SE_ResistSpellChance:
 			{
-				if(newbon->ResistSpellChance < effect_value)
-					newbon->ResistSpellChance = effect_value;
+				newbon->ResistSpellChance += effect_value;
 				break;
-			}
-				
+			}	
 			case SE_ResistFearChance:
 			{
 				if(newbon->ResistFearChance < effect_value)
 					newbon->ResistFearChance = effect_value;
 				break;
 			}
-				
  			case SE_HundredHands:
  			{
 				if(IsBeneficialSpell(spell_id)){ //If it's a beneficial spell we switch it cause
@@ -1280,6 +1305,31 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 				}
 				break;
 			}
+			case SE_CriticalSpellChance:
+			case SE_SpellCritChance:
+				newbon->CriticalSpellChance += effect_value;
+				break;
+
+			case SE_SpellCritDmgIncrease:
+				newbon->SpellCritDmgIncrease += effect_value;
+				break;
+
+			case SE_CriticalHealChance:
+				newbon->CriticalHealChance += effect_value;
+				break;
+			
+			case SE_CriticalHealOverTime:
+				newbon->CriticalHealOverTime += effect_value;
+				break;
+				
+			case SE_MitigateDamageShield:
+				newbon->DSMitigation += effect_value;
+				break;
+			
+			case SE_CriticalDoTChance:
+				newbon->CriticalDoTChance += effect_value;
+				break;
+			
 		}
 	}
 }

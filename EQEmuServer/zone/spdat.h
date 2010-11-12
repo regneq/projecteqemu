@@ -291,22 +291,22 @@ typedef enum  {
 #define SE_TemporaryPets			152	// Swarm of Fear III
 #define SE_BalanceHP				153	// Divine Arbitration
 #define SE_DispelDetrimental		154
-//#define SE_Unknown155				155	//not used
+#define SE_SpellCritDmgIncrease		155
 #define SE_IllusionCopy				156	// Deception
 #define SE_SpellDamageShield		157	// Petrad's Protection
 #define SE_Reflect					158
 #define SE_AllStats					159	// Aura of Destruction
 #define SE_MakeDrunk				160
-#define SE_MitigateSpellDamage		161	//not implemented rune type, with max value
-#define SE_MitigateMeleeDamage		162	//not implemented rune type, with max value
+#define SE_MitigateSpellDamage		161	//implemented rune type, with max value
+#define SE_MitigateMeleeDamage		162	//implemented rune type, with max value
 #define SE_NegateAttacks			163
 #define SE_AppraiseLDonChest		164
 #define SE_DisarmLDoNTrap			165
 #define SE_UnlockLDoNChest			166
 #define SE_PetPowerIncrease			167	
-#define SE_MeleeMitigation			168	//not implemented, unlimited for duration
+#define SE_MeleeMitigation			168	//implemented, unlimited for duration
 #define SE_CriticalHitChance		169
-#define SE_SpellCritChance			170	//not implemented, +% to crit
+#define SE_SpellCritChance			170	//implemented, +% to crit
 #define SE_CrippBlowChance			171
 #define SE_AvoidMeleeChance			172
 #define SE_RiposteChance			173
@@ -326,7 +326,7 @@ typedef enum  {
 //#define SE_Unknown187				187	//not used
 #define SE_IncreaseBlockChance		188	//not implemented
 #define SE_CurrentEndurance			189
-#define SE_EndurancePool			190	//not implemented
+#define SE_EndurancePool			190
 #define SE_Amnesia					191	//Amnesia (Silence vs Melee Effect)
 #define SE_Hate2					192	//not implemented
 #define SE_SkillAttack				193
@@ -350,7 +350,7 @@ typedef enum  {
 #define SE_AEMelee					211	//per lucy, not implemented
 #define SE_ProlongedDestruction		212	//per lucy, not implemented
 //#define SE_Unknown213				213	//not used
-#define SE_MaxHPChange 				214	//Grace of the Order, Plague of Hulcror, not implemented
+#define SE_MaxHPChange 				214	//Grace of the Order, Plague of Hulcror
 //#define SE_Unknown215				215	//not used
 #define SE_Accuracy					216	//not implemented
 //#define SE_Unknown217				217	//not used
@@ -394,7 +394,7 @@ typedef enum  {
 //#define SE_Unknown255				255	//not used
 //#define SE_Unknown256				256	//not used
 #define SE_PetDiscipline			257 //aa effect /pet hold
-#define SE_TripleBackstab			258 //not implemented
+#define SE_TripleBackstab			258 //implemented
 #define SE_CombatStability			259 //aa effect
 #define SE_AddInstrumentMod			260
 //#define SE_Unknown261				261	//not used
@@ -422,7 +422,7 @@ typedef enum  {
 //#define SE_Unknown283				283	//not used
 //#define SE_Unknown284				284	//not used
 #define SE_NimbleEvasion			285	//base1 = 100 for max
-#define SE_SpellDamage				286	//not implemented. adds direct spell damage
+#define SE_SpellDamage				286	//implemented. adds direct spell damage
 #define SE_FocusCombatDurationMod	287
 //#define SE_Unknown288				288	//not used
 #define SE_ImprovedSpellEffect		289 //This effect turns into this? base1 = new spell id, happens when spell wears off
@@ -430,7 +430,7 @@ typedef enum  {
 #define SE_Purify					291 //not implemented
 //#define SE_Unknown292				292	//not used
 //#define SE_Unknown293				293	//not used
-#define SE_CriticalSpellChance		294 //not implemented
+#define SE_CriticalSpellChance		294 //implemented
 //#define SE_Unknown295				295	//not used
 #define SE_SpellVulnerability		296	//not implemented, base % increase in incoming spell damage
 #define SE_Empathy					297 //some kind of damage focus effect, maybe defensive?
@@ -455,7 +455,7 @@ typedef enum  {
 //#define SE_Unknown316				316	//not used
 //#define SE_Unknown317				317	//not used
 #define SE_ItemManaRegenCapIncrease	318 //aa effect increases amount of mana regen you can gain via items
-#define SE_CriticalHealOverTimer	319 //not implemented
+#define SE_CriticalHealOverTime		319 //not implemented
 //#define SE_Unknown320				320	//not used
 #define SE_ReduceHate				321 //not implemented
 #define SE_GateToHomeCity			322

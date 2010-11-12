@@ -215,22 +215,22 @@ struct StatBonuses {
 	sint16	CorrupCapMod;
 	sint16	HeroicCorrup;
 	uint16	DamageShieldSpellID;
-	int		DamageShield; // this is damage done to mobs that attack this
+	int		DamageShield;						// this is damage done to mobs that attack this
 	DmgShieldType	DamageShieldType;
 	int		SpellDamageShield;
 	int		SpellShield;
-	int		ReverseDamageShield; // this is damage done to the mob when it attacks
+	int		ReverseDamageShield; 				// this is damage done to the mob when it attacks
 	uint16	ReverseDamageShieldSpellID;
 	DmgShieldType	ReverseDamageShieldType;
 	int		movementspeed;
-	sint8		haste;
+	sint8	haste;
 	sint8	hastetype2;
 	sint8	hastetype3;
-	float	AggroRange; // when calculate just replace original value with this
+	float	AggroRange;							// when calculate just replace original value with this
 	float	AssistRange;
 	sint16	skillmod[HIGHEST_SKILL+1];
 	int		effective_casting_level;
-	int		reflect_chance;	// chance to reflect incoming spell
+	int		reflect_chance;						// chance to reflect incoming spell
 	int16	singingMod;
 	int16	brassMod;
 	int16	percussionMod;
@@ -240,54 +240,56 @@ struct StatBonuses {
 	sint32	EnduranceReduction;
 
 	//PoP effects:
-	sint16   StrikeThrough;          // PoP: Strike Through %
-//	sint16   CombatEffects; //AFAIK: Combat Effects == ProcChance
-//	sint16   Shielding;     //AFAIK, Shielding == MeleeMitigation
-//	sint16   Avoidance;		//AFAIK: Avoidance == AvoidMeleeChance
-//	sint16   Accuracy;      //AFAIK: Accuracy == HitChance
-
+	sint16   StrikeThrough;						// PoP: Strike Through %
 
 	//discipline and PoP effects
 	//everything is a straight percent increase unless noted.
-	sint16 MeleeMitigation;	//i
-	sint16 CriticalHitChance;	//i
-	sint16 CrippBlowChance;
-	sint16 AvoidMeleeChance;	//AvoidMeleeChance/10 == % chance i
-	sint16 RiposteChance;	//i
-	sint16 DodgeChance;		//i
-	sint16 ParryChance;		//i
-	sint16 DualWieldChance;		//i
-	sint16 DoubleAttackChance;	//i
-	sint16 ResistSpellChance;	//i
-	sint16 ResistFearChance;	//i
-	sint16 StunResist;		//i
-	sint16 MeleeSkillCheck;	//i
+	sint16 MeleeMitigation;						//i = Shielding
+	sint16 CriticalHitChance;					//i
+	sint16 CriticalSpellChance;					//i
+	sint16 SpellCritDmgIncrease;				//i
+	sint16 CriticalHealChance;					//i
+	sint16 CriticalHealOverTime;				//i
+	sint16 CriticalDoTChance;					//i
+	sint16 CrippBlowChance;						//
+	sint16 AvoidMeleeChance;					//AvoidMeleeChance/10 == % chance i = Avoidance
+	sint16 RiposteChance;						//i
+	sint16 DodgeChance;							//i
+	sint16 ParryChance;							//i
+	sint16 DualWieldChance;						//i
+	sint16 DoubleAttackChance;					//i
+	sint16 ResistSpellChance;					//i
+	sint16 ResistFearChance;					//i
+	sint16 StunResist;							//i
+	sint16 MeleeSkillCheck;						//i
 	uint8  MeleeSkillCheckSkill;
-	sint16 HitChance;			//HitChance/15 == % increase i
+	sint16 HitChance;							//HitChance/15 == % increase i = Accuracy
 	uint8  HitChanceSkill;
-	sint16 DamageModifier;		//needs to be thought about more and implemented
-	uint8  DamageModifierSkill;
-	sint16 MinDamageModifier;   //i
-	sint16 ProcChance;			// ProcChance/10 == % increase i
+	sint16 DamageModifier;						//i
+	uint8  DamageModifierSkill;					//i
+	sint16 MinDamageModifier;   				//i
+	sint16 ProcChance;							// ProcChance/10 == % increase i = CombatEffects
 	sint16 ExtraAttackChance;
 	sint16 DoTShielding;
-	sint16 DivineSaveChance;		// Second Chance
+	sint16 DivineSaveChance;					// Second Chance
 	sint16 FlurryChance;
-	sint16 Accuracy;		// Works like HitChance but on all skills
+	sint16 Accuracy;							// Works like HitChance but on all skills
 
-	sint8 HundredHands;		//extra haste, stacks with all other haste  i
-	sint8 MeleeLifetap;
-	sint16 HealRate;		// Spell effect that influences effectiveness of heals
-	sint16 MaxHPChange;		// Spell Effect
-	sint16 SkillDmgTaken[HIGHEST_SKILL+2];	// All Skills + -1
-	sint32 HealAmt;			// Item Effect
-	sint32 SpellDmg;		// Item Effect
-	sint32 Clairvoyance;	// Item Effect
-	sint16 DSMitigation;	// Item Effect
-	uint32 SpellTriggers[MAX_SPELL_TRIGGER];
-	int XPRateMod;
-
-	sint8	Packrat;	//weight reduction for items, 1 point = 10%
+	sint8 HundredHands;							//extra haste, stacks with all other haste  i
+	sint8 MeleeLifetap;							//i
+	sint16 HealRate;							// Spell effect that influences effectiveness of heals
+	sint16 MaxHPChange;							// Spell Effect
+	sint16 SkillDmgTaken[HIGHEST_SKILL+2];		// All Skills + -1
+	sint32 HealAmt;								// Item Effect
+	sint32 SpellDmg;							// Item Effect
+	sint32 Clairvoyance;						// Item Effect
+	sint16 DSMitigation;						// Item Effect
+	uint32 SpellTriggers[MAX_SPELL_TRIGGER];	// Innate/Spell/Item Spells that trigger when you cast
+	int XPRateMod;								//i
+	
+	// AAs
+	sint8	Packrat;							//weight reduction for items, 1 point = 10%
+	int8	BuffSlotIncrease;					// Increases number of available buff slots
 };
 
 typedef struct
@@ -795,7 +797,7 @@ bool logpos;
 	inline void Silence(bool newval) { silenced = newval; }
 	void TemporaryPets(int16 spell_id, Mob *target, const char *name_override = NULL, uint32 duration_override = 0);
 	void WakeTheDead(int16 spell_id, Mob *target, uint32 duration);
-	void TryDotCritical(int16 spell_id, Mob *caster, int &damage);
+	void TryDotCritical(int16 spell_id, int &damage);
 	void Spin();
 	void Kill();
 	bool PassCharismaCheck(Mob* caster, Mob* spellTarget, int16 spell_id);
@@ -812,6 +814,7 @@ bool logpos;
 	sint32 GetVulnerability(sint32 damage, Mob *caster, uint32 spell_id, int32 ticsremaining);
 	sint16 GetSkillDmgTaken(const SkillType skill_used);
 	void DoKnockback(Mob *caster, uint32 pushback, uint32 pushup);
+	sint16 CalcResistChanceBonus();
 
 	static int32 GetAppearanceValue(EmuAppearance iAppearance);
 	void SendAppearancePacket(int32 type, int32 value, bool WholeZone = true, bool iIgnoreSelf = false, Client *specific_target=NULL);

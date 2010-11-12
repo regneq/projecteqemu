@@ -493,10 +493,10 @@ bool Client::Save(int8 iCommitNow) {
 	int spentpoints=0;
 	for(int a=0;a < MAX_PP_AA_ARRAY;a++) {
 		int32 points = aa[a]->value;
-		if(points > 20) //sanity check if you want an aa to have over 20 ranks you'll need to up this.
+		if(points > HIGHEST_AA_VALUE) // Unifying this 
 		{
-			aa[a]->value = 20;
-			points = 20;
+			aa[a]->value = HIGHEST_AA_VALUE;
+			points = HIGHEST_AA_VALUE;
 		}
 		if (points > 0) {
 			SendAA_Struct* curAA = zone->FindAA(aa[a]->AA-aa[a]->value+1);
@@ -506,7 +506,7 @@ bool Client::Save(int8 iCommitNow) {
 			}
 		}
 	}
-	m_pp.aapoints_spent = spentpoints;
+	m_pp.aapoints_spent = spentpoints + m_epp.expended_aa;
 
 	if (GetHP() <= 0) {
 		m_pp.cur_hp = GetMaxHP();

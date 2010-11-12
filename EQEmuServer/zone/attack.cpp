@@ -2388,7 +2388,7 @@ void Mob::DamageShield(Mob* attacker, bool spell_ds) {
 				DS = ((DS * dsMod) / 100);
 			}
 			DS -= itembonuses.DamageShield; //+Damage Shield should only work when you already have a DS spell
-			DS += attacker->itembonuses.DSMitigation;
+			DS += attacker->itembonuses.DSMitigation + attacker->spellbonuses.DSMitigation;
 		}
 		attacker->Damage(this, -DS, spellid, ABJURE/*hackish*/, false);
 		//we can assume there is a spell now
@@ -3829,44 +3829,17 @@ void Mob::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 	}
 
 	if(skill == ARCHERY && GetClass() == RANGER && GetSkill(ARCHERY) >= 65){
-		critChance += 0.06f;
+		critChance += 6;
 	}
 
-	switch(GetAA(aaCombatFury))
-	{
-	case 1:
-		critChance += 0.02f;
-		break;
-	case 2:
-		critChance += 0.04f;
-		break;
-	case 3:
-		critChance += 0.07f;
-		break;
-	default:
-		break;
-	}
+	int CritBonus = spellbonuses.CriticalHitChance + itembonuses.CriticalHitChance;
+	if(IsClient())
+		critChance += aabonuses.CriticalHitChance; // These add straight on
 
-	switch(GetAA(aaFuryoftheAges))
-	{
-	case 1:
-		critChance += 0.01f;
-		break;
-	case 2:
-		critChance += 0.03f;
-		break;
-	case 3:
-		critChance += 0.05f;
-		break;
-	default:
-		break;
-	}
+	if(CritBonus > 0 && critChance < 1) //If we have a bonus to crit in items or spells but no actual chance to crit
+		critChance = CritBonus/10 + 1; //Give them a small one so skills and items appear to have some effect.
 
-	float CritBonus = spellbonuses.CriticalHitChance + itembonuses.CriticalHitChance;
-	if(CritBonus > 0.0 && critChance < 0.01) //If we have a bonus to crit in items or spells but no actual chance to crit
-		critChance = 0.01f; //Give them a small one so skills and items appear to have some effect.
-
-	critChance += ((critChance) * (CritBonus) / 100.0f); //crit chance is a % increase to your reg chance
+	critChance += ((critChance) * (CritBonus) / 100); //crit chance is a % increase to your reg chance
 	if(GetAA(aaSlayUndead)){
 		if(defender && defender->GetBodyType() == BT_Undead || defender->GetBodyType() == BT_SummonedUndead || defender->GetBodyType() == BT_Vampire){
 			switch(GetAA(aaSlayUndead)){
@@ -3885,7 +3858,7 @@ void Mob::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 	}
 
 	if(critChance > 0){
-		if(MakeRandomFloat(0, 1) <= critChance)
+		if(MakeRandomInt(0, 99) < critChance)
 		{
 			if (slayUndeadCrit)
 			{
