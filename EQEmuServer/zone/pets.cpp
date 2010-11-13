@@ -529,6 +529,7 @@ void NPC::SetPetState(SpellBuff_Struct *pet_buffs, int32 *items) {
 			buffs[i].poisoncounters		= CalculatePoisonCounters(pet_buffs[i].spellid);
 			buffs[i].diseasecounters	= CalculateDiseaseCounters(pet_buffs[i].spellid);
 			buffs[i].cursecounters		= CalculateCurseCounters(pet_buffs[i].spellid);
+			buffs[i].corruptioncounters	= CalculateCorruptionCounters(pet_buffs[i].spellid);
 			buffs[i].numhits			= spells[pet_buffs[i].spellid].numhits;
 		}
 		else {

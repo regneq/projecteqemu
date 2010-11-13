@@ -221,8 +221,17 @@ sint32 Client::CalcHPRegen() {
 		+ GetAA(aaConvalescence)
 		+ GetAA(aaHealthyAura)
 		+ GroupLeadershipAAHealthRegeneration();
-	regen = (regen * RuleI(Character, HPRegenMultiplier)) / 100;
-	return regen;
+
+	return (regen * RuleI(Character, HPRegenMultiplier) / 100);
+}
+
+sint32 Client::CalcHPRegenCap(bool absolute_cap)
+{
+	int cap = RuleI(Character, ItemHealthRegenCap) + itembonuses.HeroicSTA/25;
+	if(absolute_cap)
+		cap += LevelRegen() + GetAA(aaInnateRegeneration) + GetAA(aaNaturalHealing) + GetAA(aaBodyAndMindRejuvenation)	+ GetAA(aaConvalescence) + GetAA(aaHealthyAura) + GroupLeadershipAAHealthRegeneration() + itembonuses.HeroicSTA/25;
+	
+	return (cap * RuleI(Character, HPRegenMultiplier) / 100);
 }
 
 sint32 Client::CalcMaxHP() {
@@ -916,24 +925,6 @@ sint32 Client::CalcMaxMana()
 	return max_mana;
 }
 
-sint32 Client::CalcManaRegenCap()
-{
-	sint32 manaregen_cap = 0;
-	switch(GetCasterClass())
-	{
-		case 'I': 
-			manaregen_cap = RuleI(Character, ItemManaRegenCap) + GetAA(aaExpansiveMind) + (itembonuses.HeroicINT / 25);
-			break;
-		case 'W': 
-			manaregen_cap = RuleI(Character, ItemManaRegenCap) + GetAA(aaExpansiveMind) + (itembonuses.HeroicWIS / 25);
-			break;
-	}
-#if EQDEBUG >= 11
-	LogFile->write(EQEMuLog::Debug, "Client::CalcManaRegenCap() called for %s - returning %d", GetName(), manaregen_cap);
-#endif
-	return manaregen_cap;
-}
-
 sint32 Client::CalcBaseMana()
 {
 	int WisInt = 0;
@@ -1079,10 +1070,27 @@ sint32 Client::CalcManaRegen()
 	//AAs
 	regen += GetAA(aaMentalClarity) + GetAA(aaBodyAndMindRejuvenation);
 
-	regen = (regen * RuleI(Character, ManaRegenMultiplier)) / 100;
-
-	return regen;
+	return (regen * RuleI(Character, ManaRegenMultiplier) / 100);
 }
+
+sint32 Client::CalcManaRegenCap(bool absolute_cap)
+{
+	sint32 cap = RuleI(Character, ItemManaRegenCap) + GetAA(aaExpansiveMind);
+	switch(GetCasterClass())
+	{
+		case 'I': 
+			cap += (itembonuses.HeroicINT / 25);
+			break;
+		case 'W': 
+			cap += (itembonuses.HeroicWIS / 25);
+			break;
+	}
+	if(absolute_cap)
+		cap += CalcManaRegen() - itembonuses.ManaRegen - GetAA(aaMentalClarity) - GetAA(aaBodyAndMindRejuvenation);
+
+	return (cap * RuleI(Character, ManaRegenMultiplier) / 100);
+}
+
 uint32 Client::CalcCurrentWeight() {
 
 	const Item_Struct* TempItem = 0;
@@ -1719,6 +1727,16 @@ sint16	Client::CalcCR()
 	return(CR);
 }
 
+sint16	Client::CalcCorrup()
+{
+	Corrup = GetBaseCorrup() + itembonuses.Corrup + spellbonuses.Corrup + aabonuses.Corrup;
+	
+	if(Corrup > GetMaxCorrup())
+		Corrup = GetMaxCorrup();
+
+	return(Corrup);
+}
+
 sint16 Client::CalcATK() {
 	ATK = itembonuses.ATK + spellbonuses.ATK + GroupLeadershipAAOffenseEnhancement();
 	return(ATK);
@@ -1899,8 +1917,16 @@ sint32 Client::CalcBaseEndurance()
 sint32 Client::CalcEnduranceRegen() {
 	sint32 regen = sint32(GetLevel() * 4 / 10) + 2;
 	regen += spellbonuses.EnduranceRegen + itembonuses.EnduranceRegen + itembonuses.HeroicSTR/25 + itembonuses.HeroicSTA/25 + itembonuses.HeroicDEX/25 + itembonuses.HeroicAGI/25;
-	regen = (regen * RuleI(Character, EnduranceRegenMultiplier)) / 100;
-	return regen;
+
+	return (regen * RuleI(Character, EnduranceRegenMultiplier) / 100);
+}
+
+sint32 Client::CalcEnduranceRegenCap(bool absolute_cap) {
+	int cap = (RuleI(Character, ItemEnduranceRegenCap) + itembonuses.HeroicSTR/25 + itembonuses.HeroicDEX/25 + itembonuses.HeroicAGI/25 + itembonuses.HeroicSTA/25);
+	if(absolute_cap) 
+		cap += 2 + sint32(GetLevel() * 4 / 10) + spellbonuses.EnduranceRegen + itembonuses.HeroicSTR/25 + itembonuses.HeroicDEX/25 + itembonuses.HeroicAGI/25 + itembonuses.HeroicSTA/25;
+		
+	return (cap * RuleI(Character, EnduranceRegenMultiplier) / 100);
 }
 
 int Client::GetRawACNoShield(int &shield_ac) const

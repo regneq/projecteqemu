@@ -609,6 +609,20 @@ sint32 CalculateCurseCounters(int16 spell_id){
     return Counters;
 }
 
+sint32 CalculateCorruptionCounters(int16 spell_id){
+	if(!IsValidSpell(spell_id))
+		return 0;
+
+	sint32 Counters = 0;
+	for(int i = 0; i < EFFECT_COUNT; i++)
+	{
+		if(spells[spell_id].effectid[i] == SE_CorruptionCounter && spells[spell_id].base[i] > 0){
+			Counters += spells[spell_id].base[i];
+		}
+	}
+    return Counters;
+}
+
 bool IsDisciplineBuff(int16 spell_id)
 {
 	if(!IsValidSpell(spell_id))

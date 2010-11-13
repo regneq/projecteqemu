@@ -79,6 +79,7 @@ RULE_BOOL ( Character, SoDClientUseSoDHPManaEnd, false)	// Setting this to true 
 RULE_BOOL ( Character, UseRaceClassExpBonuses, true)	// Setting this to true will enable Class and Racial experience rate bonuses
 RULE_BOOL ( Character, RespawnFromHover, false)		// Use Respawn window, or not.
 RULE_INT ( Character, RespawnFromHoverTimer, 300)	// Respawn Window countdown timer, in SECONDS
+RULE_BOOL ( Character, UseNewStatsWindow, true) 	// New stats window shows everything
 
 RULE_CATEGORY_END()
 

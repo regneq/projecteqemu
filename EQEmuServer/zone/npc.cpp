@@ -165,6 +165,7 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, float x, float y, float z, float 
     DR = d->DR;
     FR = d->FR;
     PR = d->PR;
+	Corrup = d->Corrup;
 
 	STR = d->STR;
 	STA = d->STA;
@@ -1796,7 +1797,8 @@ void NPC::CalcNPCResists() {
         FR = (GetLevel() * 11)/10;
     if (!PR)
         PR = (GetLevel() * 11)/10;
-
+	if (!Corrup)
+        Corrup = 15;
 	return;
 }
 

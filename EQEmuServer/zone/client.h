@@ -309,7 +309,7 @@ public:
 	sint32			CalcMaxMana();
 	sint32			CalcBaseMana();
 	const sint32&	SetMana(sint32 amount);
-	sint32 			CalcManaRegenCap();
+	sint32 			CalcManaRegenCap(bool absolute_cap=false);
 
 	void	ServerFilter(SetServerFilter_Struct* filter);
 	void	BulkSendTraderInventory(int32 char_id);
@@ -375,7 +375,7 @@ public:
 	inline int8	GetBaseINT()	const { return m_pp.INT; }
 	inline int8	GetBaseAGI()	const { return m_pp.AGI; }
 	inline int8	GetBaseWIS()	const { return m_pp.WIS; }
-	inline int8	GetBaseCorrup()	const { return 0; } // Need to set this in the pp at some point
+	inline int8	GetBaseCorrup()	const { return 15; } // Same for all
 
 	inline virtual sint16	GetHeroicSTR()	const { return itembonuses.HeroicSTR; }
 	inline virtual sint16	GetHeroicSTA()	const { return itembonuses.HeroicSTA; }
@@ -390,7 +390,28 @@ public:
 	inline virtual sint16	GetHeroicPR()	const { return itembonuses.HeroicPR; }
 	inline virtual sint16	GetHeroicCR()	const { return itembonuses.HeroicCR; }
 	inline virtual sint16	GetHeroicCorrup()	const { return itembonuses.HeroicCorrup; }
-
+	// Mod2
+	inline virtual sint16	GetShielding()		const { return itembonuses.MeleeMitigation; }
+	inline virtual sint16	GetSpellShield()	const { return itembonuses.SpellShield; }
+	inline virtual sint16	GetDoTShield()		const { return itembonuses.DoTShielding; }
+	inline virtual sint16	GetStunResist()		const { return itembonuses.StunResist; }
+	inline virtual sint16	GetStrikeThrough()	const { return itembonuses.StrikeThrough; }
+	inline virtual sint16	GetAvoidance()		const { return itembonuses.AvoidMeleeChance; }
+	inline virtual sint16	GetAccuracy()		const { return itembonuses.HitChance; }
+	inline virtual sint16	GetCombatEffects()	const { return itembonuses.ProcChance; }
+	inline virtual sint16	GetDS()				const { return itembonuses.DamageShield; }
+	// Mod3
+	inline virtual sint16	GetHealAmt()		const { return itembonuses.HealAmt; }
+	inline virtual sint16	GetSpellDmg()		const { return itembonuses.SpellDmg; }
+	inline virtual sint16	GetClair()			const { return itembonuses.Clairvoyance; }
+	inline virtual sint16	GetDSMit()			const { return itembonuses.DSMitigation; }
+	
+	inline virtual sint16	GetSingMod()		const { return itembonuses.singingMod; }
+	inline virtual sint16	GetBrassMod()		const { return itembonuses.brassMod; }
+	inline virtual sint16	GetPercMod()		const { return itembonuses.percussionMod; }
+	inline virtual sint16	GetStringMod()		const { return itembonuses.stringedMod; }
+	inline virtual sint16	GetWindMod()		const { return itembonuses.windMod; }
+	
 	sint32 Additional_SpellDmg(int16 spell_id);
 	float GetActSpellRange(int16 spell_id, float range);
 	sint32 GetActSpellDamage(int16 spell_id, sint32 value);
@@ -427,8 +448,8 @@ public:
 	sint32	CalcEnduranceRegen();	//Calculates endurance regen used in DoEnduranceRegen()
 	sint32	GetEndurance()	const {return cur_end;}	//This gets our current endurance
 	sint32	GetMaxEndurance() const {return max_end;}	//This gets our endurance from the last CalcMaxEndurance() call
-	inline virtual sint32	CalcEnduranceRegenCap()	const { return RuleI(Character, ItemEnduranceRegenCap) + itembonuses.HeroicSTR/25 + itembonuses.HeroicDEX/25 + itembonuses.HeroicAGI/25 + itembonuses.HeroicSTA/25; }
-	inline virtual sint32	CalcHPRegenCap()	const { return RuleI(Character, ItemHealthRegenCap) + itembonuses.HeroicSTA/25; }
+	sint32	CalcEnduranceRegenCap(bool absolute_cap=false);	
+	sint32	CalcHPRegenCap(bool absolute_cap=false);
 	inline uint8 GetEndurancePercent() { return (uint8)((float)cur_end / (float)max_end * 100.0f); }
 	void SetEndurance(sint32 newEnd);	//This sets the current endurance to the new value
 	void DoEnduranceRegen();	//This Regenerates endurance
@@ -786,6 +807,7 @@ public:
 	inline bool HasSpellScribed(int spellid) { return (FindSpellBookSlotBySpellID(spellid) != -1 ? true : false); }
 	int16	GetMaxSkillAfterSpecializationRules(SkillType skillid, int16 maxSkill);
 	void	SendPopupToClient(const char *Title, const char *Text, int32 PopupID = 0, int32 Buttons = 0, int32 Duration = 0);
+	void	SendStatWindow(const char *Text, ...);
 	bool	PendingTranslocate;
 	time_t	TranslocateTime;
  	bool	PendingSacrifice;
@@ -1058,6 +1080,7 @@ private:
 	sint16	CalcDR();
 	sint16	CalcPR();
 	sint16	CalcCR();
+	sint16	CalcCorrup();
 	sint32	CalcMaxHP();
 	sint32	CalcBaseHP();
 	sint32	CalcHPRegen();

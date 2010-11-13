@@ -76,6 +76,7 @@ struct NPCType
 	sint16	CR;
 	sint16	PR;
 	sint16	DR;
+	sint16	Corrup;
 	int8	haircolor;
 	int8	beardcolor;
 	int8	eyecolor1;			// the eyecolors always seem to be the same, maybe left and right eye?

@@ -94,6 +94,7 @@ void Client::CalcBonuses()
 	CalcDR();
 	CalcPR();
 	CalcCR();
+	CalcCorrup();
 	
 	CalcMaxHP();
 	CalcMaxMana();
@@ -160,7 +161,7 @@ void Client::CalcItemBonuses(StatBonuses* newbon) {
 		newbon->ManaRegen = CalcManaRegenCap();
 	
 	if(newbon->EnduranceRegen > CalcEnduranceRegenCap())
-			newbon->EnduranceRegen = CalcEnduranceRegenCap();
+		newbon->EnduranceRegen = CalcEnduranceRegenCap();
 			
 	SetAttackTimer();
 }
@@ -608,6 +609,9 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 			case SE_ResistMagic:
 				newbon->MR += base1;
 				break;
+			case SE_ResistCorruption:
+				newbon->Corrup += base1;
+				break;
 			case SE_IncreaseSpellHaste:
 				break;
 			case SE_IncreaseRange:
@@ -663,6 +667,9 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 						break;
 					case 11: //dr
 						newbon->DRCapMod += base1;
+						break;
+					case 12: //corruption
+						newbon->CorrupCapMod += base1;
 						break;
 				}
 				break;
@@ -841,7 +848,12 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 				newbon->HP += effect_value;
 				break;
 			}
-
+			
+			case SE_CurrentMana:
+			{
+				newbon->ManaRegen += CalcSpellEffectValue(spell_id, i, casterlevel);
+				break;
+			}
 			case SE_ManaPool:
 			{
 				newbon->Mana += effect_value;
@@ -962,6 +974,12 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 				break;
 			}
 
+			case SE_ResistCorruption:
+			{
+				newbon->Corrup += effect_value;
+				break;
+			}
+			
 			case SE_RaiseStatCap:
 			{
 				switch(spells[spell_id].base2[i])
@@ -1002,6 +1020,9 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 						break;
 					case 11: //dr
 						newbon->DRCapMod += effect_value;
+						break;
+					case 12: // corruption
+						newbon->CorrupCapMod += effect_value;
 						break;
 				}
 				break;
