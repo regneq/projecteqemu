@@ -70,6 +70,7 @@ E(OP_DzLeaderStatus)
 E(OP_DzJoinExpeditionConfirm)
 E(OP_TargetBuffs)
 E(OP_BuffCreate)
+E(OP_RespondAA)
 //list of packets we need to decode on the way in:
 D(OP_SetServerFilter)
 D(OP_CharacterCreate)
