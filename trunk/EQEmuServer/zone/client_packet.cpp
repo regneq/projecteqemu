@@ -6452,7 +6452,22 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 	if(mypet->GetPetType() == petFamiliar && pet->command != PET_GETLOST)
 		return;
 
-	switch(pet->command) {
+	int32 PetCommand = pet->command;
+
+	// Handle Sit/Stand toggle in UF and later.
+	if(GetClientVersion() >= EQClientLive)	// Need to change EQClientLive to EQClientUnderfoot ...
+	{
+		if(PetCommand == PET_SITDOWN)
+		{
+			if(mypet->GetPetOrder() == SPO_Sit)
+				PetCommand = PET_STANDUP;
+			else
+				PetCommand = PET_SITDOWN;
+		}
+	}
+
+	switch(PetCommand)
+	{
 	case PET_ATTACK: {
 		if (!GetTarget())
 			break;
