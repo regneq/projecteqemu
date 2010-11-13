@@ -3242,10 +3242,13 @@ struct FindPerson_Point {
 	float z;
 };
 
-struct FindPersonRequest_Struct {
-	uint32	unknown000;
-	uint32	npc_id;
-	FindPerson_Point client_pos;
+struct FindPersonRequest_Struct
+{
+/*000*/	uint32	unknown000;
+/*004*/	uint32	npc_id;
+/*008*/	FindPerson_Point client_pos;
+/*020*/	uint32	unknown020;
+/*024*/
 };
 
 //variable length packet of points
