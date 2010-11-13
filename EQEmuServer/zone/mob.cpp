@@ -1088,7 +1088,7 @@ void Mob::ShowStats(Client* client) {
 		/* 23 - Strike 	*/		" %s Strike.: %i / %i<br>" 
 		/* 24 - SR 		*/		" %s Stun Resist: %i / %i" ,
 		/* 01 - Name 	*/		indL, GetName(), GetLastName(),
-		/* 02 - L/C/R 	*/		indP, GetLevel(), indM, GetClass(), indS, indP, GetBaseRace(),
+		/* 02 - L/C/R 	*/		indP, GetClass(), indM, GetLevel(), indS, indP, GetBaseRace(),
 		/* 03 - AC/Atk 	*/		indP, c->GetTotalATK(),
 		/* 04 - Labels 	*/		indP, c->GetAC(), indS, indP, indP,
 		/* 05 - HP 		*/		indP, indP, GetMaxHP(), indS, c->itembonuses.HPRegen, div, c->spellbonuses.HPRegen, div, c->aabonuses.HPRegen, div, c->CalcHPRegen(), div, c->CalcHPRegenCap(true),
