@@ -153,6 +153,7 @@ struct Buffs_Struct {
 	sint32	poisoncounters;
 	sint32	diseasecounters;
 	sint32	cursecounters;
+	sint32	corruptioncounters;
 	bool	persistant_buff;
 	uint32	numhits; //the number of physical hits this buff can take before it fades away, lots of druid armor spells take advantage of this mixed with powerful effects
 	bool	client;  //True if the caster is a client
@@ -650,6 +651,7 @@ bool logpos;
 	inline virtual sint16	GetDR()	const { return DR + itembonuses.DR + spellbonuses.DR; }
 	inline virtual sint16	GetPR()	const { return PR + itembonuses.PR + spellbonuses.PR; }
 	inline virtual sint16	GetCR() const { return CR + itembonuses.CR + spellbonuses.CR; }
+	inline virtual sint16	GetCorrup() const { return Corrup + itembonuses.Corrup + spellbonuses.Corrup; }
 
 	inline StatBonuses GetItemBonuses() const { return itembonuses; }
 	inline StatBonuses GetSpellBonuses() const { return spellbonuses; }

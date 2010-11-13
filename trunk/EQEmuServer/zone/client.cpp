@@ -3609,6 +3609,36 @@ void Client::SendPopupToClient(const char *Title, const char *Text, int32 PopupI
 	safe_delete(outapp);
 }
 
+void Client::SendStatWindow(const char *Text, ...) {
+	va_list argptr;
+	char *buffer = new char[4096];
+
+	va_start(argptr, Text);
+	vsnprintf(buffer, 4096, Text, argptr);
+	va_end(argptr);
+
+	size_t len = strlen(buffer);
+
+	EQApplicationPacket* app = new EQApplicationPacket(OP_OnLevelMessage, sizeof(OnLevelMessage_Struct));
+	OnLevelMessage_Struct* olms=(OnLevelMessage_Struct*)app->pBuffer;
+	
+	if(strlen(Text) > (sizeof(olms->Text)-1))
+		return;
+
+	strcpy(olms->Title, "Stats Window");
+	memcpy(olms->Text, buffer, len+1);
+
+	olms->Buttons = 0;
+	olms->Duration = 0xffffffff;
+	olms->PopupID = 0;
+	olms->unknown4236 = 0x00000000;
+	olms->unknown4240 = 0xffffffff;
+	
+	FastQueuePacket(&app);
+
+	safe_delete_array(buffer);
+}
+
 void Client::KeyRingLoad()
 {
 	char errbuf[MYSQL_ERRMSG_SIZE];

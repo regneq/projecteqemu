@@ -6684,6 +6684,7 @@ void command_npcedit(Client *c, const Seperator *sep)
 		c->Message(0, "#npcedit DR - Sets an NPCs disease resistance");
 		c->Message(0, "#npcedit FR - Sets an NPCs fire resistance");
 		c->Message(0, "#npcedit CR - Sets an NPCs cold resistance");
+		c->Message(0, "#npcedit Corrup - Sets an NPCs corruption resistance");
 		c->Message(0, "#npcedit Seeinvis - Sets an NPCs ability to see invis");   
 		c->Message(0, "#npcedit Seeinvisundead - Sets an NPCs ability to see through invis vs. undead");   
 		c->Message(0, "#npcedit Seehide - Sets an NPCs ability to see through hide");
@@ -6929,8 +6930,17 @@ void command_npcedit(Client *c, const Seperator *sep)
 	{
 		char errbuf[MYSQL_ERRMSG_SIZE];
 		char *query = 0;
-		c->Message(15,"NPCID %u now has a poisen resist of %i",c->GetTarget()->CastToNPC()->GetNPCTypeID(),atoi(sep->arg[2]));
+		c->Message(15,"NPCID %u now has a poison resist of %i",c->GetTarget()->CastToNPC()->GetNPCTypeID(),atoi(sep->arg[2]));
 		database.RunQuery(query, MakeAnyLenString(&query, "update npc_types set PR=%i where id=%i",atoi(sep->argplus[2]),c->GetTarget()->CastToNPC()->GetNPCTypeID()), errbuf);
+		c->LogSQL(query);
+		safe_delete_array(query);
+	}
+	else if ( strcasecmp( sep->arg[1], "Corrup" ) == 0 )
+	{
+		char errbuf[MYSQL_ERRMSG_SIZE];
+		char *query = 0;
+		c->Message(15,"NPCID %u now has a corruption resist of %i",c->GetTarget()->CastToNPC()->GetNPCTypeID(),atoi(sep->arg[2]));
+		database.RunQuery(query, MakeAnyLenString(&query, "update npc_types set corrup=%i where id=%i",atoi(sep->argplus[2]),c->GetTarget()->CastToNPC()->GetNPCTypeID()), errbuf);
 		c->LogSQL(query);
 		safe_delete_array(query);
 	}

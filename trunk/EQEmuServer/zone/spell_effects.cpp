@@ -1937,6 +1937,9 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 					case 11: //dr
 						efstr = "DR";
 						break;
+					case 12: //Corruption
+						efstr = "Corrup";
+						break;
 				}
 				snprintf(effect_desc, _EDLEN, "%s Cap: %+i", efstr, effect_value);
 #endif
@@ -2047,6 +2050,38 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 						else
 						{
 							buffs[j].cursecounters -= effect_value;
+							effect_value = 0;
+							break;
+						}
+					}
+				}
+				break;
+			}
+			
+			case SE_CorruptionCounter:
+			{
+#ifdef SPELL_EFFECT_SPAM
+				snprintf(effect_desc, _EDLEN, "Corruption Counter: %+i", effect_value);
+#endif
+				if (effect_value > 0)
+					buffs[buffslot].corruptioncounters = effect_value;
+				else
+				{
+					effect_value = -effect_value;
+					uint32 buff_count = GetMaxTotalSlots();
+					for (int j=0; j < buff_count; j++) {
+						if (buffs[j].spellid >= (int16)SPDAT_RECORDS)
+							continue;
+						if (buffs[j].corruptioncounters == 0)
+							continue;
+						if (effect_value >= buffs[j].corruptioncounters) {
+							if (caster)
+								caster->Message(MT_Spells,"You have cured your target from %s!",spells[buffs[j].spellid].name);
+							effect_value -= buffs[j].corruptioncounters;
+							buffs[j].corruptioncounters = 0;
+							BuffFadeBySlot(j);
+						} else {
+							buffs[j].corruptioncounters -= effect_value;
 							effect_value = 0;
 							break;
 						}
@@ -3270,14 +3305,6 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 			effect_value += effect_value * (itembonuses.HealRate + spellbonuses.HealRate) / 100;
 			HealDamage(effect_value, caster);
 			//healing aggro would go here; removed for now
-			break;
-		}
-
-		case SE_CurrentMana:
-		{
-			effect_value = CalcSpellEffectValue(spell_id, i, caster_level);
-
-			SetMana(GetMana() + effect_value);
 			break;
 		}
 

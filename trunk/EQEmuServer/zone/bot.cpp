@@ -27,6 +27,7 @@ Bot::Bot(NPCType npcTypeData, Client* botOwner) : NPC(&npcTypeData, 0, 0, 0, 0, 
 	_baseDR = npcTypeData.DR;
 	_baseFR = npcTypeData.FR;
 	_basePR = npcTypeData.PR;
+	_baseCorrup = npcTypeData.Corrup;
 	_baseAC = npcTypeData.AC;
 	_baseSTR = npcTypeData.STR;
 	_baseSTA = npcTypeData.STA;
@@ -81,6 +82,7 @@ Bot::Bot(uint32 botID, uint32 botOwnerCharacterID, uint32 botSpellsID, double to
 	_baseDR = npcTypeData.DR;
 	_baseFR = npcTypeData.FR;
 	_basePR = npcTypeData.PR;
+	_baseCorrup = npcTypeData.Corrup;
 	_baseAC = npcTypeData.AC;
 	_baseSTR = npcTypeData.STR;
 	_baseSTA = npcTypeData.STA;
@@ -249,7 +251,7 @@ bool Bot::IsStanding() {
 	return result;
 }
 
-NPCType Bot::FillNPCTypeStruct(uint32 botSpellsID, std::string botName, std::string botLastName, uint8 botLevel, uint16 botRace, uint8 botClass, uint8 gender, float size, uint32 face, uint32 hairStyle, uint32 hairColor, uint32 eyeColor, uint32 eyeColor2, uint32 beardColor, uint32 beard, uint32 drakkinHeritage, uint32 drakkinTattoo, uint32 drakkinDetails, sint16 mr, sint16 cr, sint16 dr, sint16 fr, sint16 pr, sint16 ac, uint16 str, uint16 sta, uint16 dex, uint16 agi, uint16 _int, uint16 wis, uint16 cha, uint16 attack) {
+NPCType Bot::FillNPCTypeStruct(uint32 botSpellsID, std::string botName, std::string botLastName, uint8 botLevel, uint16 botRace, uint8 botClass, uint8 gender, float size, uint32 face, uint32 hairStyle, uint32 hairColor, uint32 eyeColor, uint32 eyeColor2, uint32 beardColor, uint32 beard, uint32 drakkinHeritage, uint32 drakkinTattoo, uint32 drakkinDetails, sint16 mr, sint16 cr, sint16 dr, sint16 fr, sint16 pr, sint16 corrup, sint16 ac, uint16 str, uint16 sta, uint16 dex, uint16 agi, uint16 _int, uint16 wis, uint16 cha, uint16 attack) {
 	NPCType BotNPCType;
 	int CopyLength = 0;
 
@@ -282,6 +284,7 @@ NPCType Bot::FillNPCTypeStruct(uint32 botSpellsID, std::string botName, std::str
 	BotNPCType.DR = dr;
 	BotNPCType.FR = fr;
 	BotNPCType.PR = pr;
+	BotNPCType.Corrup = corrup;
 	BotNPCType.AC = ac;
 	BotNPCType.STR = str;
 	BotNPCType.STA = sta;
@@ -357,6 +360,7 @@ NPCType Bot::CreateDefaultNPCTypeStructForBot(std::string botName, std::string b
 	Result.DR = 15;
 	Result.PR = 15;
 	Result.CR = 25;
+	Result.Corrup = 15;
 	Result.AC = 12;
 
 	return Result;
@@ -379,6 +383,7 @@ void Bot::GenerateBaseStats() {
 	sint16 DiseaseResist = _baseDR;
 	sint16 PoisonResist = _basePR;
 	sint16 ColdResist = _baseCR;
+	sint16 CorruptionResist = _baseCorrup;
 
 	switch(this->GetClass()) {
 			case 1: // Warrior
@@ -679,6 +684,7 @@ void Bot::GenerateBaseStats() {
 	this->DR = DiseaseResist;
 	this->PR = PoisonResist;
 	this->CR = ColdResist;
+	this->Corrup = CorruptionResist;
 	SetBotSpellID(BotSpellID);
 	this->size = BotSize;
 }
@@ -1112,7 +1118,7 @@ bool Bot::Save() {
 	if(this->GetBotID() == 0) {
 		// New bot record
 		uint32 TempNewBotID = 0;
-		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "INSERT INTO bots (BotOwnerCharacterID, BotSpellsID, Name, LastName, BotLevel, Race, Class, Gender, Size, Face, LuclinHairStyle, LuclinHairColor, LuclinEyeColor, LuclinEyeColor2, LuclinBeardColor, LuclinBeard, DrakkinHeritage, DrakkinTattoo, DrakkinDetails, MR, CR, DR, FR, PR, AC, STR, STA, DEX, AGI, _INT, WIS, CHA, ATK, LastSpawnDate, TotalPlayTime, LastZoneId) VALUES('%u', '%u', '%s', '%s', '%u', '%i', '%i', '%i', '%f', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', NOW(), 0, %i)", this->_botOwnerCharacterID, this->GetBotSpellID(), this->GetCleanName(), this->lastname, this->GetLevel(), GetRace(), GetClass(), GetGender(), GetSize(), this->GetLuclinFace(), this->GetHairStyle(), GetHairColor(), this->GetEyeColor1(), this->GetEyeColor2(), this->GetBeardColor(), this->GetBeard(), this->GetDrakkinHeritage(), this->GetDrakkinTattoo(), this->GetDrakkinDetails(), GetMR(), GetCR(), GetDR(), GetFR(), GetPR(), GetAC(), GetSTR(), GetSTA(), GetDEX(), GetAGI(), GetINT(), GetWIS(), GetCHA(), GetATK(), _lastZoneId), TempErrorMessageBuffer, 0, &affectedRows, &TempNewBotID)) {
+		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "INSERT INTO bots (BotOwnerCharacterID, BotSpellsID, Name, LastName, BotLevel, Race, Class, Gender, Size, Face, LuclinHairStyle, LuclinHairColor, LuclinEyeColor, LuclinEyeColor2, LuclinBeardColor, LuclinBeard, DrakkinHeritage, DrakkinTattoo, DrakkinDetails, MR, CR, DR, FR, PR, Corrup, AC, STR, STA, DEX, AGI, _INT, WIS, CHA, ATK, LastSpawnDate, TotalPlayTime, LastZoneId) VALUES('%u', '%u', '%s', '%s', '%u', '%i', '%i', '%i', '%f', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', '%i', NOW(), 0, %i)", this->_botOwnerCharacterID, this->GetBotSpellID(), this->GetCleanName(), this->lastname, this->GetLevel(), GetRace(), GetClass(), GetGender(), GetSize(), this->GetLuclinFace(), this->GetHairStyle(), GetHairColor(), this->GetEyeColor1(), this->GetEyeColor2(), this->GetBeardColor(), this->GetBeard(), this->GetDrakkinHeritage(), this->GetDrakkinTattoo(), this->GetDrakkinDetails(), GetMR(), GetCR(), GetDR(), GetFR(), GetPR(), GetCorrup(), GetAC(), GetSTR(), GetSTA(), GetDEX(), GetAGI(), GetINT(), GetWIS(), GetCHA(), GetATK(), _lastZoneId), TempErrorMessageBuffer, 0, &affectedRows, &TempNewBotID)) {
 			errorMessage = std::string(TempErrorMessageBuffer);
 		}
 		else {
@@ -1122,7 +1128,7 @@ bool Bot::Save() {
 	}
 	else {
 		// Update existing bot record
-		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "UPDATE bots SET BotOwnerCharacterID = '%u', BotSpellsID = '%u', Name = '%s', LastName = '%s', BotLevel = '%u', Race = '%i', Class = '%i', Gender = '%i', Size = '%f', Face = '%i', LuclinHairStyle = '%i', LuclinHairColor = '%i', LuclinEyeColor = '%i', LuclinEyeColor2 = '%i', LuclinBeardColor = '%i', LuclinBeard = '%i', DrakkinHeritage = '%i', DrakkinTattoo = '%i', DrakkinDetails = '%i', MR = '%i', CR = '%i', DR = '%i', FR = '%i', PR = '%i', AC = '%i', STR = '%i', STA = '%i', DEX = '%i', AGI = '%i', _INT = '%i', WIS = '%i', CHA = '%i', ATK = '%i', LastSpawnDate = NOW(), TotalPlayTime = '%u', LastZoneId = %i WHERE BotID = '%u'", _botOwnerCharacterID, this->GetBotSpellID(), this->GetCleanName(), this->lastname, this->GetLevel(), _baseRace, this->GetClass(), _baseGender, GetSize(), this->GetLuclinFace(), this->GetHairStyle(), GetHairColor(), this->GetEyeColor1(), this->GetEyeColor2(), this->GetBeardColor(), this->GetBeard(), this->GetDrakkinHeritage(), GetDrakkinTattoo(), GetDrakkinDetails(), _baseMR, _baseCR, _baseDR, _baseFR, _basePR, _baseAC, _baseSTR, _baseSTA, _baseDEX, _baseAGI, _baseINT, _baseWIS, _baseCHA, _baseATK, GetTotalPlayTime(), _lastZoneId, GetBotID()), TempErrorMessageBuffer, 0, &affectedRows)) {
+		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "UPDATE bots SET BotOwnerCharacterID = '%u', BotSpellsID = '%u', Name = '%s', LastName = '%s', BotLevel = '%u', Race = '%i', Class = '%i', Gender = '%i', Size = '%f', Face = '%i', LuclinHairStyle = '%i', LuclinHairColor = '%i', LuclinEyeColor = '%i', LuclinEyeColor2 = '%i', LuclinBeardColor = '%i', LuclinBeard = '%i', DrakkinHeritage = '%i', DrakkinTattoo = '%i', DrakkinDetails = '%i', MR = '%i', CR = '%i', DR = '%i', FR = '%i', PR = '%i', Corrup = '%i', AC = '%i', STR = '%i', STA = '%i', DEX = '%i', AGI = '%i', _INT = '%i', WIS = '%i', CHA = '%i', ATK = '%i', LastSpawnDate = NOW(), TotalPlayTime = '%u', LastZoneId = %i WHERE BotID = '%u'", _botOwnerCharacterID, this->GetBotSpellID(), this->GetCleanName(), this->lastname, this->GetLevel(), _baseRace, this->GetClass(), _baseGender, GetSize(), this->GetLuclinFace(), this->GetHairStyle(), GetHairColor(), this->GetEyeColor1(), this->GetEyeColor2(), this->GetBeardColor(), this->GetBeard(), this->GetDrakkinHeritage(), GetDrakkinTattoo(), GetDrakkinDetails(), _baseMR, _baseCR, _baseDR, _baseFR, _basePR, _baseCorrup, _baseAC, _baseSTR, _baseSTA, _baseDEX, _baseAGI, _baseINT, _baseWIS, _baseCHA, _baseATK, GetTotalPlayTime(), _lastZoneId, GetBotID()), TempErrorMessageBuffer, 0, &affectedRows)) {
 			errorMessage = std::string(TempErrorMessageBuffer);
 		}
 		else {
@@ -1193,7 +1199,7 @@ void Bot::SaveBuffs() {
 			else
 				IsPersistent = 0;
 
-			if(!database.RunQuery(Query, MakeAnyLenString(&Query, "INSERT INTO botbuffs (BotId, SpellId, CasterLevel, DurationFormula, TicsRemaining, PoisonCounters, DiseaseCounters, CurseCounters, HitCount, MeleeRune, MagicRune, DeathSaveSuccessChance, CasterAARank, Persistent) VALUES (%u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u);", GetBotID(), buffs[BuffCount].spellid, buffs[BuffCount].casterlevel, buffs[BuffCount].durationformula, buffs[BuffCount].ticsremaining, buffs[BuffCount].poisoncounters, buffs[BuffCount].diseasecounters, buffs[BuffCount].cursecounters, buffs[BuffCount].numhits, buffs[BuffCount].melee_rune, buffs[BuffCount].magic_rune, buffs[BuffCount].deathSaveSuccessChance, buffs[BuffCount].casterAARank, IsPersistent), TempErrorMessageBuffer)) {
+			if(!database.RunQuery(Query, MakeAnyLenString(&Query, "INSERT INTO botbuffs (BotId, SpellId, CasterLevel, DurationFormula, TicsRemaining, PoisonCounters, DiseaseCounters, CurseCounters, CorruptionCounters, HitCount, MeleeRune, MagicRune, DeathSaveSuccessChance, CasterAARank, Persistent) VALUES (%u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u);", GetBotID(), buffs[BuffCount].spellid, buffs[BuffCount].casterlevel, buffs[BuffCount].durationformula, buffs[BuffCount].ticsremaining, buffs[BuffCount].poisoncounters, buffs[BuffCount].diseasecounters, buffs[BuffCount].cursecounters, buffs[BuffCount].corruptioncounters, buffs[BuffCount].numhits, buffs[BuffCount].melee_rune, buffs[BuffCount].magic_rune, buffs[BuffCount].deathSaveSuccessChance, buffs[BuffCount].casterAARank, IsPersistent), TempErrorMessageBuffer)) {
 				errorMessage = std::string(TempErrorMessageBuffer);
 				safe_delete(Query);
 				Query = 0;
@@ -1223,7 +1229,7 @@ void Bot::LoadBuffs() {
 
 	bool BuffsLoaded = false;
 
-	if(!database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT SpellId, CasterLevel, DurationFormula, TicsRemaining, PoisonCounters, DiseaseCounters, CurseCounters, HitCount, MeleeRune, MagicRune, DeathSaveSuccessChance, CasterAARank, Persistent FROM botbuffs WHERE BotId = %u", GetBotID()), TempErrorMessageBuffer, &DatasetResult)) {
+	if(!database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT SpellId, CasterLevel, DurationFormula, TicsRemaining, PoisonCounters, DiseaseCounters, CurseCounters, CorruptionCounters, HitCount, MeleeRune, MagicRune, DeathSaveSuccessChance, CasterAARank, Persistent FROM botbuffs WHERE BotId = %u", GetBotID()), TempErrorMessageBuffer, &DatasetResult)) {
 		errorMessage = std::string(TempErrorMessageBuffer);
 	}
 	else {
@@ -1240,15 +1246,16 @@ void Bot::LoadBuffs() {
 			buffs[BuffCount].poisoncounters = atoi(DataRow[4]);
 			buffs[BuffCount].diseasecounters = atoi(DataRow[5]);
 			buffs[BuffCount].cursecounters = atoi(DataRow[6]);
-			buffs[BuffCount].numhits = atoi(DataRow[7]);
-			buffs[BuffCount].melee_rune = atoi(DataRow[8]);
-			buffs[BuffCount].magic_rune = atoi(DataRow[9]);
-			buffs[BuffCount].deathSaveSuccessChance = atoi(DataRow[10]);
-			buffs[BuffCount].casterAARank = atoi(DataRow[11]);
+			buffs[BuffCount].corruptioncounters = atoi(DataRow[7]);
+			buffs[BuffCount].numhits = atoi(DataRow[8]);
+			buffs[BuffCount].melee_rune = atoi(DataRow[9]);
+			buffs[BuffCount].magic_rune = atoi(DataRow[10]);
+			buffs[BuffCount].deathSaveSuccessChance = atoi(DataRow[11]);
+			buffs[BuffCount].casterAARank = atoi(DataRow[12]);
 
 			bool IsPersistent = false;
 
-			if(atoi(DataRow[12]))
+			if(atoi(DataRow[13]))
 				IsPersistent = true;
 
 			buffs[BuffCount].persistant_buff = IsPersistent;
@@ -3248,13 +3255,13 @@ Bot* Bot::LoadBot(uint32 botID, std::string* errorMessage) {
 		MYSQL_RES* DatasetResult;
 		MYSQL_ROW DataRow;
 
-		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT BotOwnerCharacterID, BotSpellsID, Name, LastName, BotLevel, Race, Class, Gender, Size, Face, LuclinHairStyle, LuclinHairColor, LuclinEyeColor, LuclinEyeColor2, LuclinBeardColor, LuclinBeard, DrakkinHeritage, DrakkinTattoo, DrakkinDetails, MR, CR, DR, FR, PR, AC, STR, STA, DEX, AGI, _INT, WIS, CHA, ATK, BotCreateDate, LastSpawnDate, TotalPlayTime, LastZoneId FROM bots WHERE BotID = '%u'", botID), TempErrorMessageBuffer, &DatasetResult)) {
+		if(!database.RunQuery(Query, MakeAnyLenString(&Query, "SELECT BotOwnerCharacterID, BotSpellsID, Name, LastName, BotLevel, Race, Class, Gender, Size, Face, LuclinHairStyle, LuclinHairColor, LuclinEyeColor, LuclinEyeColor2, LuclinBeardColor, LuclinBeard, DrakkinHeritage, DrakkinTattoo, DrakkinDetails, MR, CR, DR, FR, PR, Corrup, AC, STR, STA, DEX, AGI, _INT, WIS, CHA, ATK, BotCreateDate, LastSpawnDate, TotalPlayTime, LastZoneId FROM bots WHERE BotID = '%u'", botID), TempErrorMessageBuffer, &DatasetResult)) {
 			*errorMessage = std::string(TempErrorMessageBuffer);
 		}
 		else {
 			while(DataRow = mysql_fetch_row(DatasetResult)) {
-				NPCType TempNPCStruct = FillNPCTypeStruct(atoi(DataRow[1]), std::string(DataRow[2]), std::string(DataRow[3]), atoi(DataRow[4]), atoi(DataRow[5]), atoi(DataRow[6]), atoi(DataRow[7]), atof(DataRow[8]), atoi(DataRow[9]), atoi(DataRow[10]), atoi(DataRow[11]), atoi(DataRow[12]), atoi(DataRow[13]), atoi(DataRow[14]), atoi(DataRow[15]), atoi(DataRow[16]), atoi(DataRow[17]), atoi(DataRow[18]), atoi(DataRow[19]), atoi(DataRow[20]), atoi(DataRow[21]), atoi(DataRow[22]), atoi(DataRow[23]), atoi(DataRow[24]), atoi(DataRow[25]), atoi(DataRow[26]), atoi(DataRow[27]), atoi(DataRow[28]), atoi(DataRow[29]), atoi(DataRow[30]), atoi(DataRow[31]), atoi(DataRow[32]));
-				Result = new Bot(botID, atoi(DataRow[0]), atoi(DataRow[1]), atof(DataRow[35]), atoi(DataRow[36]), TempNPCStruct);
+				NPCType TempNPCStruct = FillNPCTypeStruct(atoi(DataRow[1]), std::string(DataRow[2]), std::string(DataRow[3]), atoi(DataRow[4]), atoi(DataRow[5]), atoi(DataRow[6]), atoi(DataRow[7]), atof(DataRow[8]), atoi(DataRow[9]), atoi(DataRow[10]), atoi(DataRow[11]), atoi(DataRow[12]), atoi(DataRow[13]), atoi(DataRow[14]), atoi(DataRow[15]), atoi(DataRow[16]), atoi(DataRow[17]), atoi(DataRow[18]), atoi(DataRow[19]), atoi(DataRow[20]), atoi(DataRow[21]), atoi(DataRow[22]), atoi(DataRow[23]), atoi(DataRow[24]), atoi(DataRow[25]), atoi(DataRow[26]), atoi(DataRow[27]), atoi(DataRow[28]), atoi(DataRow[29]), atoi(DataRow[30]), atoi(DataRow[31]), atoi(DataRow[32]), atoi(DataRow[33]));
+				Result = new Bot(botID, atoi(DataRow[0]), atoi(DataRow[1]), atof(DataRow[36]), atoi(DataRow[37]), TempNPCStruct);
 				break;
 			}
 
@@ -8645,7 +8652,7 @@ void Bot::CalcBotStats(bool showtext) {
 	if(showtext) {
 		GetBotOwner()->Message(15, "Base stats:");
 		GetBotOwner()->Message(15, "Level: %i HP: %i AC: %i Mana: %i STR: %i STA: %i DEX: %i AGI: %i INT: %i WIS: %i CHA: %i", GetLevel(), base_hp, AC, max_mana, STR, STA, DEX, AGI, INT, WIS, CHA);
-		GetBotOwner()->Message(15, "Resists-- Magic: %i, Poison: %i, Fire: %i, Cold: %i, Disease: %i.",MR,PR,FR,CR,DR);
+		GetBotOwner()->Message(15, "Resists-- Magic: %i, Poison: %i, Fire: %i, Cold: %i, Disease: %i, Corruption: %i.",MR,PR,FR,CR,DR,Corrup);
 	}
 
 	// Let's find the items in the bot inventory
@@ -8699,6 +8706,8 @@ void Bot::CalcBotStats(bool showtext) {
 						itembonuses.PR += itemtmp->PR;
 					if(itemtmp->DR != 0)
 						itembonuses.DR += itemtmp->DR;
+					if(itemtmp->SVCorruption != 0)
+						itembonuses.Corrup += itemtmp->SVCorruption;
 					if(itemtmp->Regen != 0)
 						itembonuses.HPRegen += itemtmp->Regen;
 					if(itemtmp->ManaRegen != 0)
@@ -8762,6 +8771,8 @@ void Bot::CalcBotStats(bool showtext) {
 				itembonuses.PR += itemtmp->PR;
 			if(itemtmp->DR != 0)
 				itembonuses.DR += itemtmp->DR;
+			if(itemtmp->SVCorruption != 0)
+				itembonuses.Corrup += itemtmp->SVCorruption;
 			if(itemtmp->Regen != 0)
 				itembonuses.HPRegen += itemtmp->Regen;
 			if(itemtmp->ManaRegen != 0)
@@ -8798,6 +8809,7 @@ void Bot::CalcBotStats(bool showtext) {
 	DR += itembonuses.DR;
 	FR += itembonuses.FR;
 	PR += itembonuses.PR;
+	Corrup += itembonuses.Corrup;
 	AC += itembonuses.AC;
 	STR += itembonuses.STR;
 	STA += itembonuses.STA;
@@ -8813,6 +8825,7 @@ void Bot::CalcBotStats(bool showtext) {
 	DR += spellbonuses.DR;
 	FR += spellbonuses.FR;
 	PR += spellbonuses.PR;
+	Corrup += spellbonuses.Corrup;
 	AC += spellbonuses.AC;
 	STR += spellbonuses.STR;
 	STA += spellbonuses.STA;
@@ -8831,7 +8844,7 @@ void Bot::CalcBotStats(bool showtext) {
 	if(showtext) {
 		GetBotOwner()->Message(15, "I'm updated.");
 		GetBotOwner()->Message(15, "Level: %i HP: %i AC: %i Mana: %i STR: %i STA: %i DEX: %i AGI: %i INT: %i WIS: %i CHA: %i", GetLevel(), max_hp, AC, max_mana, STR, STA, DEX, AGI, INT, WIS, CHA);
-		GetBotOwner()->Message(15, "Resists-- Magic: %i, Poison: %i, Fire: %i, Cold: %i, Disease: %i.",MR,PR,FR,CR,DR);
+		GetBotOwner()->Message(15, "Resists-- Magic: %i, Poison: %i, Fire: %i, Cold: %i, Disease: %i, Corruption: %i.",MR,PR,FR,CR,DR,Corrup);
 	}
 }
 

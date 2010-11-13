@@ -83,7 +83,8 @@ enum RESISTTYPE
 	RESIST_DISEASE = 5,
 	RESIST_CHROMATIC = 6,
 	RESIST_PRISMATIC = 7,
-	RESIST_PHYSICAL = 8	// see Muscle Shock, Back Swing
+	RESIST_PHYSICAL = 8,	// see Muscle Shock, Back Swing
+	RESIST_CORRUPTION = 9	
 };
 
 //Target Type IDs
@@ -699,6 +700,7 @@ int CalcBuffDuration_formula(int level, int formula, int duration);
 sint32 CalculatePoisonCounters(int16 spell_id);
 sint32 CalculateDiseaseCounters(int16 spell_id);
 sint32 CalculateCurseCounters(int16 spell_id);
+sint32 CalculateCorruptionCounters(int16 spell_id);
 bool IsDisciplineBuff(int16 spell_id);
 bool IsDiscipline(int16 spell_id);
 bool IsResurrectionEffects(int16 spell_id);

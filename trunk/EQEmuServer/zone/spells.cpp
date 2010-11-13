@@ -3655,6 +3655,10 @@ float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster)
 		resist = GetDR();
 		break;
 	
+	case RESIST_CORRUPTION:
+		resist = GetCorrup();
+		break;
+	
 	// Hvitrev: Primsatic = average of all resists
 	case RESIST_PRISMATIC:
 		resist = (GetDR()+GetMR()+GetFR()+GetCR()+GetPR())/5;
