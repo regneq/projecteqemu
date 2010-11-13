@@ -3814,8 +3814,8 @@ struct PlayerAA_Struct {						// Is this still used?
 
 struct AATable_Struct {
 /*00*/ sint32	aa_spent;	// Total AAs Spent
-/*04*/ sint32	aa_spent2;	// In Live traces aa_spent2/3 where the same as aa_spent, but they probably have some other meaning.	
-/*08*/ sint32	aa_spent3;
+/*04*/ sint32	aa_assigned;	// Assigned: field in the AA window.
+/*08*/ sint32	aa_spent3;	// Unknown. Same as aa_spent in observed packets.
 /*12*/ sint32	unknown012;
 /*16*/ sint32	unknown016;
 /*20*/ sint32	unknown020;
