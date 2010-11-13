@@ -447,6 +447,26 @@ ENCODE(OP_LeadershipExpUpdate) {
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_RespondAA) {
+	SETUP_DIRECT_ENCODE(AATable_Struct, structs::AATable_Struct);
+
+	eq->aa_spent = emu->aa_spent;
+	eq->aa_spent2 = emu->aa_spent;
+	eq->aa_spent3 = emu->aa_spent;
+	eq->unknown012 = 0;
+	eq->unknown016 = 0;
+	eq->unknown020 = 0;
+
+	for(int i = 0; i < MAX_PP_AA_ARRAY; ++i)
+	{
+		eq->aa_list[i].aa_skill = emu->aa_list[i].aa_skill;
+		eq->aa_list[i].aa_value = emu->aa_list[i].aa_value;
+		eq->aa_list[i].unknown08 = emu->aa_list[i].unknown08;
+	}
+
+	FINISH_ENCODE();
+}
+
 ENCODE(OP_PlayerProfile) {
 	SETUP_DIRECT_ENCODE(PlayerProfile_Struct, structs::PlayerProfile_Struct);
 	

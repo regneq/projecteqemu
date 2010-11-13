@@ -3813,8 +3813,13 @@ struct PlayerAA_Struct {						// Is this still used?
 };
 
 struct AATable_Struct {
-/*00*/ sint32	aa_spent;						// Total AAs Spent
-/*04*/ AA_Skills aa_list[MAX_PP_AA_ARRAY];
+/*00*/ sint32	aa_spent;	// Total AAs Spent
+/*04*/ sint32	aa_spent2;	// In Live traces aa_spent2/3 where the same as aa_spent, but they probably have some other meaning.	
+/*08*/ sint32	aa_spent3;
+/*12*/ sint32	unknown012;
+/*16*/ sint32	unknown016;
+/*20*/ sint32	unknown020;
+/*24*/ AA_Skills aa_list[MAX_PP_AA_ARRAY];
 };
 
 struct Weather_Struct {
