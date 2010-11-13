@@ -1,5 +1,7 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==13/10/2010==
+Derision: Corrected OP_Track for Underfoot/June 8 2010 Client.
 ==11/10/2010==
 Caryatis: Added support for HealAmt, SpellDmg, Clairvoyance, DS Mitigation, SE_SpellDamageShield, SE_SpellDamage
 Caryatis: Heroics fully supported now(points in brackets are how many Heroics to achieve a gain)
