@@ -39,6 +39,14 @@
 #define VARSTRUCT_ENCODE_TYPE(Type, Buffer, Value) { *(Type *)Buffer = Value; Buffer += sizeof(Type); }
 #define VARSTRUCT_SKIP_TYPE(Type, Buffer) Buffer += sizeof(Type);
 
+#define VERIFY_PACKET_LENGTH(OPCode, Packet, StructName) \
+	if(Packet->size != sizeof(StructName)) \
+	{ \
+		LogFile->write(EQEMuLog::Debug, "Size mismatch in " #OPCode " expected %i got %i", sizeof(StructName), Packet->size); \
+		DumpPacket(Packet); \
+		return; \
+	}
+
 // Definitions for WELLRNG
 //
 #define W 32

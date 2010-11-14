@@ -2487,6 +2487,7 @@ ENCODE(OP_BuffCreate)
 	*((uint32*)ptr) = emu->entity_id;
 	ptr += sizeof(uint32);
 	ptr += sizeof(uint32);
+	*((uint8*)ptr) = 1;
 	ptr += sizeof(uchar);
 	*((uint16*)ptr) = emu->count;
 	ptr += sizeof(uint16);

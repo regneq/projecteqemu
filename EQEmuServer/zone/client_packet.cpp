@@ -372,6 +372,7 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_BlockedBuffs] = &Client::Handle_OP_BlockedBuffs;
 	ConnectedOpcodes[OP_RemoveBlockedBuffs] = &Client::Handle_OP_RemoveBlockedBuffs;
 	ConnectedOpcodes[OP_ClearBlockedBuffs] = &Client::Handle_OP_ClearBlockedBuffs;
+	ConnectedOpcodes[OP_BuffRemoveRequest] = &Client::Handle_OP_BuffRemoveRequest;
 }
 
 int Client::HandlePacket(const EQApplicationPacket *app)
@@ -11563,4 +11564,24 @@ void Client::Handle_OP_ClearBlockedBuffs(const EQApplicationPacket *app)
 		PlayerBlockedBuffs.clear();
 
 	QueuePacket(app);
+}
+
+void Client::Handle_OP_BuffRemoveRequest(const EQApplicationPacket *app)
+{
+	// New for Underfoot+
+	//
+	VERIFY_PACKET_LENGTH(OP_BuffRemoveRequest, app, BuffRemoveRequest_Struct);
+
+	BuffRemoveRequest_Struct *brrs = (BuffRemoveRequest_Struct*)app->pBuffer;
+
+	if(brrs->EntityID != GetID())
+		return;
+
+	if(brrs->SlotID > GetMaxTotalSlots())
+		return;
+
+	int16 SpellID = GetSpellIDFromSlot(brrs->SlotID);
+
+	if(SpellID && IsBeneficialSpell(SpellID))
+		BuffFadeBySlot(brrs->SlotID, true);
 }
