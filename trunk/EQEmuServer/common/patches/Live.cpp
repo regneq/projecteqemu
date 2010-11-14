@@ -827,7 +827,7 @@ ENCODE(OP_PetBuffWindow)
 
 	PetBuff_Struct *emu = (PetBuff_Struct *) __emu_buffer;
 
-	int PacketSize = 7 + (emu->buffcount * 13);
+	int PacketSize = 12 + (emu->buffcount * 17);
 
 	in->size = PacketSize;
 
@@ -836,6 +836,8 @@ ENCODE(OP_PetBuffWindow)
 	char *Buffer = (char *)in->pBuffer;
 
 	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->petid);
+	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
+	VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 1);
 	VARSTRUCT_ENCODE_TYPE(uint16, Buffer, emu->buffcount);
 
 	for(unsigned int i = 0; i < BUFF_COUNT; ++i)
@@ -845,13 +847,13 @@ ENCODE(OP_PetBuffWindow)
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, i);
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->spellid[i]);
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->ticsremaining[i]);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);	// This is a string. Name of the caster of the buff.
 		}
 	}
 	VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->buffcount);
 
 	delete[] __emu_buffer;
-
 	dest->FastQueuePacket(&in, ack_req);
 }
 
