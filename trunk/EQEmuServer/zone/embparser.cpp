@@ -78,7 +78,8 @@ const char *QuestEventSubroutines[_LargestEventID] = {
 	"EVENT_COMBINE_SUCCESS",
 	"EVENT_COMBINE_FAILURE",
 	"EVENT_ITEM_CLICK",
-	"EVENT_ITEM_CLICK_CAST"
+	"EVENT_ITEM_CLICK_CAST",
+	"EVENT_GROUP_CHANGE"
 };
 
 PerlembParser::PerlembParser(void) : Parser()
@@ -468,8 +469,6 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 			ExportVar(packagename.c_str(), "mname", npcmob->GetName());
 			ExportVar(packagename.c_str(), "mobid", npcmob->GetID());
 			ExportVar(packagename.c_str(), "mlevel", npcmob->GetLevel());
-			ExportVar(packagename.c_str(), "hpevent", npcmob->GetNextHPEvent());
-			ExportVar(packagename.c_str(), "inchpevent", npcmob->GetNextIncHPEvent());
 			ExportVar(packagename.c_str(), "hpratio",npcmob->GetHPRatio());
 			ExportVar(packagename.c_str(), "x", npcmob->GetX() );
 			ExportVar(packagename.c_str(), "y", npcmob->GetY() );
@@ -579,8 +578,17 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 			break;
 		}
 		case EVENT_HP: {
+			if (extradata == 1) {
+				ExportVar(packagename.c_str(), "hpevent", "-1");
+				ExportVar(packagename.c_str(), "inchpevent", data);
+			}
+			else
+			{
+				ExportVar(packagename.c_str(), "hpevent", data);
+				ExportVar(packagename.c_str(), "inchpevent", "-1");
+			}
 			break;
-		}
+}
 		case EVENT_TIMER: {
 			ExportVar(packagename.c_str(), "timer", data);
 			break;
@@ -666,6 +674,14 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 		case EVENT_ITEM_CLICK: {
 			ExportVar(packagename.c_str(), "itemid", objid);
 			ExportVar(packagename.c_str(), "itemname", iteminst->GetItem()->Name);
+			break;
+		}
+		case EVENT_GROUP_CHANGE: {
+			if(mob && mob->IsClient())
+			{
+				ExportVar(packagename.c_str(), "grouped", mob->IsGrouped());
+				ExportVar(packagename.c_str(), "raided", mob->IsRaidGrouped());
+			}
 			break;
 		}
 		case EVENT_HATE_LIST: {

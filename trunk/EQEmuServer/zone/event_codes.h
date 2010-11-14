@@ -44,6 +44,7 @@ typedef enum {
 	EVENT_COMBINE_FAILURE, //PC failed to combine a recipe
 	EVENT_ITEM_CLICK,	//SoF+ Item Right Clicked from worn or main/top inventory slot
 	EVENT_ITEM_CLICK_CAST,
+	EVENT_GROUP_CHANGE,
 	
 	_LargestEventID
 } QuestEventID;

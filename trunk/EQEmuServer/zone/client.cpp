@@ -5544,6 +5544,24 @@ void Client::CheckLDoNHail(Mob *target)
 		" I'll stay close behind you!");
 }
 
+void Client::MarkSingleCompassLoc(float in_x, float in_y, float in_z, int8 count)
+{
+
+	EQApplicationPacket* outapp = new EQApplicationPacket(OP_DzCompass, sizeof(ExpeditionInfo_Struct) + sizeof(ExpeditionCompassEntry_Struct) * count);
+	ExpeditionCompass_Struct *ecs = (ExpeditionCompass_Struct*)outapp->pBuffer;
+	//ecs->clientid = GetID();
+	ecs->count = count;
+
+	if (count) {
+		ecs->entries[0].x = in_x;
+		ecs->entries[0].y = in_y;
+		ecs->entries[0].z = in_z;
+	}
+
+	FastQueuePacket(&outapp);
+	safe_delete(outapp);
+}
+
 void Client::SendZonePoints()
 {
 	int count = 0;

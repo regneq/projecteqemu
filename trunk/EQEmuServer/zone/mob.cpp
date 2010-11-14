@@ -354,8 +354,6 @@ Mob::Mob(const char*   in_name,
 	// hp event
 	nexthpevent = -1;
 	nextinchpevent = -1;
-	lasthpevent = -1;
-	lastinchpevent = -1;
 	
 	fix_pathing = false;
 	TempPets(false);
@@ -842,65 +840,30 @@ void Mob::CreateHPPacket(EQApplicationPacket* app)
 	// they don't need to know the real hp
 	ds->hp = (int)GetHPRatio();
  
-	// hp event 
-	if ( IsNPC() && ( GetNextHPEvent() > 0 ) )
-	{ 
-		if ( ds->hp < GetNextHPEvent() )
-		{ 
-			if ( lasthpevent == nexthpevent )
-			{
-				SetNextHPEvent(-1);
-				lasthpevent = -1;
-			}
-			else
-			{
-				lasthpevent = nexthpevent;
-				parse->Event(EVENT_HP, GetNPCTypeID(), 0, CastToNPC(), NULL);
-			}
-		} 
-	} 
-
-	if ( IsNPC() && ( GetNextIncHPEvent() > 0 ) )
-	{ 
-		if ( ds->hp > GetNextIncHPEvent() )
-		{
-			if ( lastinchpevent == nextinchpevent )
-			{
-				SetNextIncHPEvent(-1);
-				lastinchpevent = -1;
-			}
-			else
-			{
-				lastinchpevent = nextinchpevent;
-				parse->Event(EVENT_HP, GetNPCTypeID(), 0, CastToNPC(), NULL);
-			}
-		} 
- 	}   
-
-#if 0	// solar: old stuff, leaving while testing changes
-	// we dont give the actual hp of npcs
-	if(IsNPC() || GetMaxHP() > 30000)
+	// hp event
+	if (IsNPC() && (GetNextHPEvent() > 0))
 	{
-		ds->cur_hp = (int)GetHPRatio();
-		ds->max_hp = 100;
-	}
-	else
-	{
-		if(IsClient())
+		if (ds->hp < GetNextHPEvent())
 		{
-			ds->cur_hp = CastToClient()->GetHP() - itembonuses.HP;
-			ds->max_hp = CastToClient()->GetMaxHP() - itembonuses.HP;
-#ifdef SOLAR
-			Message(0, "HP: %d/%d", ds->cur_hp, ds->max_hp);
-#endif
-		}
-		else
-		{
-			ds->cur_hp = GetHP();
-			ds->max_hp = GetMaxHP();
+			char buf[10];
+			snprintf(buf, 9, "%i", GetNextHPEvent());
+			buf[9] = '\0';
+			SetNextHPEvent(-1);
+			parse->Event(EVENT_HP, GetNPCTypeID(), buf, CastToNPC(), NULL, 0);
 		}
 	}
-#endif
+
+	if (IsNPC() && (GetNextIncHPEvent() > 0))
+	{
+		if (ds->hp > GetNextIncHPEvent())
+		{
+			char buf[10];
+			snprintf(buf, 9, "%i", GetNextIncHPEvent());
+			buf[9] = '\0';
+			SetNextIncHPEvent(-1);
+			parse->Event(EVENT_HP, GetNPCTypeID(), buf, CastToNPC(), NULL, 1);
+		}
+	}
 } 
 
 // sends hp update of this mob to people who might care
@@ -4191,4 +4154,24 @@ sint16 Mob::GetCritDmgMob(int16 skill)
 		critDmg_mod = -100;
 
 	return critDmg_mod;
+}
+
+void Mob::SetGrouped(bool v)
+{
+	if(v)
+	{
+		israidgrouped = false;
+	}
+	isgrouped = v;
+	parse->Event(EVENT_GROUP_CHANGE, 0, "", (NPC*)NULL, this->CastToClient());
+}
+
+void Mob::SetRaidGrouped(bool v)
+{
+	if(v)
+	{
+		isgrouped = false;
+	}
+	israidgrouped = v;
+	parse->Event(EVENT_GROUP_CHANGE, 0, "", (NPC*)NULL, this->CastToClient());
 }

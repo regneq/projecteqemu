@@ -980,9 +980,9 @@ bool logpos;
 	inline float GetSpellY() const {return spell_y;}
 	inline float GetSpellZ() const {return spell_z;}
 	inline bool	IsGrouped()	 const { return isgrouped; }
-	void SetGrouped(bool v) { if(v) { israidgrouped = false; } isgrouped = v; }
+	void SetGrouped(bool v);
 	inline bool IsRaidGrouped() const { return israidgrouped; }
-	void SetRaidGrouped(bool v) {  if(v) { isgrouped = false; } israidgrouped = v; }
+	void SetRaidGrouped(bool v);
 
 	bool CheckWillAggro(Mob *mob);
 
@@ -1317,8 +1317,6 @@ protected:
 	// hp event
 	int nexthpevent;
 	int nextinchpevent;
-	int lasthpevent;
-	int lastinchpevent;
 
 	//temppet
 	bool hasTempPet;
