@@ -1479,8 +1479,10 @@ void Client::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_
 
 	if (killerMob != NULL)
 	{
-		if (killerMob->IsNPC())
+		if (killerMob->IsNPC()) {
 			parse->Event(EVENT_SLAY, killerMob->GetNPCTypeID(), 0, killerMob->CastToNPC(), this);
+			killerMob->TrySpellOnKill();
+		}
 		
 		if(killerMob->IsClient() && (IsDueling() || killerMob->CastToClient()->IsDueling())) {
 			SetDueling(false);
@@ -2076,9 +2078,11 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 
 		if(kr)
 		{
-			if(!IsLdonTreasure)
+			if(!IsLdonTreasure) {
 				kr->SplitExp((EXP_FORMULA), this);
-
+				if(kr->IsRaidMember(killerMob->GetName()) || kr->IsRaidMember(killerMob->GetUltimateOwner()->GetName()))
+					killerMob->TrySpellOnKill();
+			}
 			/* Send the EVENT_KILLED_MERIT event for all raid members */
 			for (int i = 0; i < MAX_RAID_MEMBERS; i++) {
 				if (kr->members[i].member != NULL) { // If Group Member is Client
@@ -2090,9 +2094,11 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 		}
 		else if (give_exp_client->IsGrouped() && kg != NULL)
 		{
-			if(!IsLdonTreasure)
+			if(!IsLdonTreasure) {
 				kg->SplitExp((EXP_FORMULA), this);
-
+				if(kg->IsGroupMember(killerMob->GetName()) || kg->IsGroupMember(killerMob->GetUltimateOwner()->GetName()))
+					killerMob->TrySpellOnKill();
+			}
 			/* Send the EVENT_KILLED_MERIT event and update kill tasks
 			 * for all group members */
 			for (int i = 0; i < MAX_GROUP_MEMBERS; i++) {
@@ -2112,8 +2118,10 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 				{
 					if(GetOwner() && GetOwner()->IsClient()){
 					}
-					else{
+					else {
 						give_exp_client->AddEXP((EXP_FORMULA), conlevel); // Pyro: Comment this if NPC death crashes zone
+						if(killerMob->GetID() == give_exp_client->GetID() || killerMob->GetUltimateOwner()->GetID() == give_exp_client->GetID())
+							killerMob->TrySpellOnKill();
 					}
 				}
 			}
@@ -3790,6 +3798,7 @@ void Mob::TryPetCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 
 	if (critChance > 0) {
 		if (MakeRandomFloat(0, 1) <= critChance) {
+			critMod += GetCritDmgMob(skill) * 2; // To account for base crit mod being 200 not 100
 			damage = (damage * critMod) / 100;
             entity_list.MessageClose(this, false, 200, MT_CritMelee, "%s scores a critical hit!(%d)", GetCleanName(), damage);
 		}
@@ -3880,7 +3889,7 @@ void Mob::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 					)
 					critMod += AAdmgmod * 3; //AndMetal: guessing
 			}
-
+			critMod += GetCritDmgMob(skill) * 2; // To account for base crit mod being 200 not 100
 			damage = (damage * critMod) / 100;
 			if(IsClient() && CastToClient()->berserk)
 			{

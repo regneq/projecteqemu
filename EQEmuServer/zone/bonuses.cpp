@@ -728,6 +728,29 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 			case SE_CriticalHitChance:
 				newbon->CriticalHitChance += base1;
 				break;
+				
+			case SE_SpellOnKill:
+				for(int i = 0; i < MAX_SPELL_TRIGGER; i+=2)
+				{
+					if(!newbon->SpellOnKill[i])
+					{
+						// base1 = SpellID to be triggered, base2 = chance to fire
+						newbon->SpellOnKill[i] = base1;
+						newbon->SpellOnKill[i+1] = base2;
+						break;
+					}
+				}
+				break;
+				
+			case SE_CriticalDamageMob:
+			{
+				// base1 = effect value, base2 = skill restrictions(-1 for all)
+				if(base2 == -1)
+					newbon->CritDmgMob[HIGHEST_SKILL+1] += base1;
+				else
+					newbon->CritDmgMob[base2] += base1;
+				break;
+			}
 		}
 	}
 }
@@ -1326,9 +1349,13 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 				}
 				break;
 			}
-			case SE_CriticalSpellChance:
 			case SE_SpellCritChance:
 				newbon->CriticalSpellChance += effect_value;
+				break;
+			
+			case SE_CriticalSpellChance:
+				newbon->CriticalSpellChance += effect_value;
+				newbon->SpellCritDmgIncrease += spells[spell_id].base2[i];
 				break;
 
 			case SE_SpellCritDmgIncrease:
@@ -1350,6 +1377,29 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 			case SE_CriticalDoTChance:
 				newbon->CriticalDoTChance += effect_value;
 				break;
+				
+			case SE_SpellOnKill:
+			{
+				for(int i = 0; i < MAX_SPELL_TRIGGER; i+=2)
+				{
+					if(!newbon->SpellOnKill[i])
+					{
+						// Base2 = Spell to fire | Base1 = % chance
+						newbon->SpellOnKill[i] = spells[spell_id].base2[i];
+						newbon->SpellOnKill[i+1] = effect_value;
+						break;
+					}
+				}
+				break;
+			}
+			case SE_CriticalDamageMob:
+			{
+				if(spells[spell_id].base2[i] == -1)
+					newbon->CritDmgMob[HIGHEST_SKILL+1] += effect_value;
+				else
+					newbon->CritDmgMob[spells[spell_id].base2[i]] += effect_value;
+				break;
+			}
 			
 		}
 	}

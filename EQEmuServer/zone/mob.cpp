@@ -1081,7 +1081,7 @@ void Mob::ShowStats(Client* client) {
 		/* 16 - LineBr 	*/		" <br>"
 		/* 17 - Avd/Hat	*/		" %s Avoidance: %i / %i %s Heal Amt.: %i / %i<br>" 
 		/* 18 - Acc/Sdg	*/		" %s Accuracy: %i / %i %s Spell Dmg.: %i / %i<br>" 
-		/* 19 - CE/Clar	*/		" %s Combat Effects:: %i / %i %s Clair.: %i / %i<br>" 
+		/* 19 - CE/Clar	*/		" %s Combat Effects: %i / %i %s Clair.: %i / %i<br>" 
 		/* 20 - DSd/DSm	*/		" %s DoT Shield.: %i / %i %s DS Mit.: %i / %i<br>" 
 		/* 21 - Shield 	*/		" %s Shielding: %i / %i<br>" 
 		/* 22 - SS	 	*/		" %s Spell Shield.: %i / %i<br>" 
@@ -4148,4 +4148,47 @@ void Mob::DoKnockback(Mob *caster, uint32 pushback, uint32 pushup)
 		entity_list.QueueClients(this, outapp_push, true);
 		CastToClient()->FastQueuePacket(&outapp_push);
 	}
+}
+
+void Mob::TrySpellOnKill()
+{
+	for(int i = 0; i < MAX_SPELL_TRIGGER; i+=2) {
+		if(IsClient() && this->aabonuses.SpellOnKill[0]) {
+			if(this->aabonuses.SpellOnKill[i]) {
+				if(MakeRandomInt(0,99) < this->aabonuses.SpellOnKill[i+1])
+					SpellOnTarget(this->aabonuses.SpellOnKill[i], this);
+			}
+		}
+		else {
+			if(this->itembonuses.SpellOnKill[0]) {
+				if(this->itembonuses.SpellOnKill[i]) {
+					if(MakeRandomInt(0,99) < this->itembonuses.SpellOnKill[i+1]) 
+						SpellOnTarget(this->itembonuses.SpellOnKill[i], this);
+				}
+			}
+			if(this->spellbonuses.SpellOnKill[0]) {
+				if(this->spellbonuses.SpellOnKill[i]) {
+					if(MakeRandomInt(0,99) < this->spellbonuses.SpellOnKill[i+1]) 
+						SpellOnTarget(this->spellbonuses.SpellOnKill[i], this);
+				}
+			}
+		}
+	}
+}
+
+sint16 Mob::GetCritDmgMob(int16 skill)
+{
+	int critDmg_mod = 0;
+
+	// All skill dmg mod + Skill specific
+	critDmg_mod += this->itembonuses.CritDmgMob[HIGHEST_SKILL+1] + this->spellbonuses.CritDmgMob[HIGHEST_SKILL+1] + 
+					this->itembonuses.CritDmgMob[skill] + this->spellbonuses.CritDmgMob[skill];
+	
+	if(IsClient())
+		critDmg_mod += this->aabonuses.CritDmgMob[HIGHEST_SKILL+1] + this->aabonuses.CritDmgMob[skill];
+					
+	if(critDmg_mod < -100)
+		critDmg_mod = -100;
+
+	return critDmg_mod;
 }

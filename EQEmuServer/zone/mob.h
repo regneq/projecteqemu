@@ -286,6 +286,8 @@ struct StatBonuses {
 	sint32 Clairvoyance;						// Item Effect
 	sint16 DSMitigation;						// Item Effect
 	uint32 SpellTriggers[MAX_SPELL_TRIGGER];	// Innate/Spell/Item Spells that trigger when you cast
+	uint32 SpellOnKill[MAX_SPELL_TRIGGER];		// Chance to proc after killing a mob
+	sint16 CritDmgMob[HIGHEST_SKILL+2];			// All Skills + -1
 	int XPRateMod;								//i
 	
 	// AAs
@@ -817,6 +819,8 @@ bool logpos;
 	sint16 GetSkillDmgTaken(const SkillType skill_used);
 	void DoKnockback(Mob *caster, uint32 pushback, uint32 pushup);
 	sint16 CalcResistChanceBonus();
+	void TrySpellOnKill();
+	sint16 GetCritDmgMob(int16 skill);
 
 	static int32 GetAppearanceValue(EmuAppearance iAppearance);
 	void SendAppearancePacket(int32 type, int32 value, bool WholeZone = true, bool iIgnoreSelf = false, Client *specific_target=NULL);
