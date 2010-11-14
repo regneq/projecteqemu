@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==14/10/2010==
 Derision: Underfoot: Buff removal should now work correctly.
+Derision: Underfoot: Fixed Pet Buff window.
 
 ==13/10/2010==
 Derision: Corrected OP_Track for Underfoot/June 8 2010 Client.
