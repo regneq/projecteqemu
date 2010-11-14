@@ -515,6 +515,14 @@ struct SpellBuffFade_Struct {
 /*032*/
 };
 
+// Underfoot & later struct.
+struct BuffRemoveRequest_Struct
+{
+/*00*/ uint32 SlotID;
+/*04*/ uint32 EntityID;
+/*08*/
+ };
+
 struct PetBuff_Struct {
 /*000*/ uint32 petid;
 /*004*/ uint32 spellid[BUFF_COUNT];
