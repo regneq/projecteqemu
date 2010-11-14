@@ -4760,6 +4760,55 @@ XS(XS_Client_GetAALevel)
 	XSRETURN(1);
 }
 
+XS(XS_Client_MarkCompassLoc);
+XS(XS_Client_MarkCompassLoc)
+{
+	dXSARGS;
+	if (items != 4)
+		Perl_croak(aTHX_ "Usage: Client::MarkCompassLoc(THIS, x, y, z)");
+	{
+		Client *	THIS;
+		float		x = SvNV(ST(1));
+		float		y = SvNV(ST(2));
+		float		z = SvNV(ST(3));
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->MarkSingleCompassLoc(x,y,z);
+	}
+	XSRETURN_EMPTY;
+}
+
+XS(XS_Client_ClearCompassMark);
+XS(XS_Client_ClearCompassMark)
+{
+	dXSARGS;
+	if (items != 1)
+		Perl_croak(aTHX_ "Usage: Client::ClearCompassMark(THIS)");
+	{
+		Client *	THIS;
+
+		if (sv_derived_from(ST(0), "Client")) {
+			IV tmp = SvIV((SV*)SvRV(ST(0)));
+			THIS = INT2PTR(Client *,tmp);
+		}
+		else
+			Perl_croak(aTHX_ "THIS is not of type Client");
+		if(THIS == NULL)
+			Perl_croak(aTHX_ "THIS is NULL, avoiding crash.");
+
+		THIS->MarkSingleCompassLoc(0,0,0,0);
+	}
+	XSRETURN_EMPTY;
+}
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -4954,6 +5003,8 @@ XS(boot_Client)
 		newXSproto(strcpy(buf, "AddLevelBasedExp"), XS_Client_AddLevelBasedExp, file, "$$;$");
 		newXSproto(strcpy(buf, "IncrementAA"), XS_Client_IncrementAA, file, "$$");
 		newXSproto(strcpy(buf, "GetAALevel"), XS_Client_GetAALevel, file, "$$");
+		newXSproto(strcpy(buf, "MarkCompassLoc"), XS_Client_MarkCompassLoc, file, "$$$$");
+		newXSproto(strcpy(buf, "ClearCompassMark"), XS_Client_ClearCompassMark, file, "$");
 	XSRETURN_YES;
 }
 

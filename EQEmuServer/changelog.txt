@@ -1,10 +1,14 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
-==14/10/2010==
+==11/14/2010==
 Derision: Underfoot: Buff removal should now work correctly.
 Derision: Underfoot: Fixed Pet Buff window.
+Trevius: Fixed quest::setnextinchpevent().
+Trevius: Added Player EVENT_GROUP_CHANGE that exports variables $grouped and $raided when changes in group or raid status are made
+Trevius: Added Perl Client MarkCompassLoc(x, y, z) and ClearCompassMark().
+Trevius: Minor rewrite to EVENT_HP again to use less variables.
 
-==13/10/2010==
+==11/13/2010==
 Derision: Corrected OP_Track for Underfoot/June 8 2010 Client.
 Derision: Corrected FindPersonRequest_Struct for Underfoot/June 8 2010 Client.
 Derision: Buying AAs seems to work better now for Underfoot/June 8 2010 Client.

@@ -3169,7 +3169,7 @@ EXTERN_C XS(boot_quest)
 		newXS(strcpy(buf, "resume"), XS__resume, file);
 		newXS(strcpy(buf, "addldonpoints"), XS__addldonpoints, file);
 		newXS(strcpy(buf, "setnexthpevent"), XS__setnexthpevent, file);
-		newXS(strcpy(buf, "setnextinchpevent"), XS__setnexthpevent, file);
+		newXS(strcpy(buf, "setnextinchpevent"), XS__setnextinchpevent, file);
 		newXS(strcpy(buf, "sethp"), XS__sethp, file);
 		newXS(strcpy(buf, "respawn"), XS__respawn, file);
 		newXS(strcpy(buf, "getItemName"), XS_qc_getItemName, file);

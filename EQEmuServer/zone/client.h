@@ -973,6 +973,8 @@ public:
 	void HandleLDoNPickLock(NPC *target, int16 skill, int8 type);
 	int	LDoNChest_SkillCheck(NPC *target, int skill);
 
+	void MarkSingleCompassLoc(float in_x, float in_y, float in_z, int8 count=1);
+
 	void CalcItemScale();
 	bool CalcItemScale(int32 slot_x, int32 slot_y);
 	void SummonAndRezzAllCorpses();
