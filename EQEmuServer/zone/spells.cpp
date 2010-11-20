@@ -3007,7 +3007,7 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar)
 	// solar: resist check - every spell can be resisted, beneficial or not
 	// add: ok this isn't true, eqlive's spell data is fucked up, buffs are
 	// not all unresistable, so changing this to only check certain spells
-	if(IsResistableSpell(spell_id) || MakeRandomInt(0,99) < CalcResistChanceBonus())
+	if(IsResistableSpell(spell_id) || (MakeRandomInt(0,99) < CalcResistChanceBonus() && IsDetrimentalSpell(spell_id) && spells[spell_id].dispel_flag == 0))
 	{
 		spell_effectiveness = spelltar->ResistSpell(spells[spell_id].resisttype, spell_id, this);
 		if(spell_effectiveness < 100)
@@ -3686,7 +3686,7 @@ float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster)
 	}
 	case RESIST_PHYSICAL:
 	default:
-		resist = (GetSTA() + GetSTR()) / 2; // seems more logical
+		resist = (GetSTA() + GetSTR()) / 4; // seems more logical
 		break;
 	}
 
