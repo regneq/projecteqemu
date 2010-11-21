@@ -246,7 +246,7 @@ struct StatBonuses {
 	//discipline and PoP effects
 	//everything is a straight percent increase unless noted.
 	sint16 MeleeMitigation;						//i = Shielding
-	sint16 CriticalHitChance;					//i
+	sint16 CriticalHitChance[HIGHEST_SKILL+2];	//i
 	sint16 CriticalSpellChance;					//i
 	sint16 SpellCritDmgIncrease;				//i
 	sint16 CriticalHealChance;					//i
@@ -626,7 +626,7 @@ bool logpos;
 	void SetRunning(bool val) { m_is_running = val; }
 
 	virtual int GetCasterLevel(int16 spell_id);
-	void ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newbon, int16 casterID = 0);
+	void ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newbon, int16 casterID = 0, bool item_bonus = false);
 
 	inline sint32	GetMaxMana()	const { return max_mana; }
 	inline sint32	GetMana()		const { return cur_mana; }
@@ -821,6 +821,7 @@ bool logpos;
 	sint16 CalcResistChanceBonus();
 	void TrySpellOnKill();
 	sint16 GetCritDmgMob(int16 skill);
+	sint16 GetCriticalChanceBonus(int16 skill, bool aa_bonus=false);
 
 	static int32 GetAppearanceValue(EmuAppearance iAppearance);
 	void SendAppearancePacket(int32 type, int32 value, bool WholeZone = true, bool iIgnoreSelf = false, Client *specific_target=NULL);

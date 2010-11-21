@@ -233,12 +233,12 @@ RULE_BOOL (Spells, EnableBlockedBuffs, true)
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Combat )
-RULE_REAL ( Combat, BaseCritChance, 0.0 ) //The base crit chance for non warriors, NOTE: This will apply to NPCs as well
-RULE_REAL ( Combat, WarBerBaseCritChance, 0.03 ) //The base crit chance for warriors and berserkers, only applies to clients
-RULE_REAL ( Combat, BerserkBaseCritChance, 0.06 ) //The bonus base crit chance you get when you're berserk
+RULE_INT ( Combat, MeleeBaseCritChance, 0 ) //The base crit chance for non warriors, NOTE: This will apply to NPCs as well
+RULE_INT ( Combat, WarBerBaseCritChance, 3 ) //The base crit chance for warriors and berserkers, only applies to clients
+RULE_INT ( Combat, BerserkBaseCritChance, 6 ) //The bonus base crit chance you get when you're berserk
 RULE_INT ( Combat, NPCBashKickLevel, 6 ) //The level that npcs can KICK/BASH
 RULE_INT ( Combat, NPCBashKickStunChance, 15 ) //Percent chance that a bash/kick will stun
-RULE_REAL ( Combat, ClientBaseCritChance, 0.0 ) //The base crit chance for all clients, this will stack with warrior's/zerker's crit chance.
+RULE_INT ( Combat, ClientBaseCritChance, 0 ) //The base crit chance for all clients, this will stack with warrior's/zerker's crit chance.
 RULE_BOOL ( Combat, UseIntervalAC, true)
 RULE_INT ( Combat, PetAttackMagicLevel, 30)
 RULE_BOOL ( Combat, EnableFearPathing, true)

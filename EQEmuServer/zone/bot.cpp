@@ -5734,54 +5734,54 @@ void Bot::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 	if(damage < 1) //We can't critical hit if we don't hit.
 		return;
 
-	float critChance = RuleR(Combat, BaseCritChance);
+	int critChance = RuleI(Combat, MeleeBaseCritChance);
 
-	critChance += RuleR(Combat, ClientBaseCritChance);
+	critChance += RuleI(Combat, ClientBaseCritChance);
 
 	uint16 critMod = 200; 
 
 	if(skill == ARCHERY && GetClass() == RANGER && GetSkill(ARCHERY) >= 65){
-		critChance += 0.06f;
+		critChance += 6;
 	}
 
 	if(GetHPRatio() < 30 && GetClass() == BERSERKER) {
-		critChance += RuleR(Combat, BerserkBaseCritChance);
+		critChance += RuleI(Combat, BerserkBaseCritChance);
 		critMod = 400;
 	}
 	else if(GetHPRatio() < 30 && GetClass() == WARRIOR) {
-		critChance += RuleR(Combat, WarBerBaseCritChance);
+		critChance += RuleI(Combat, WarBerBaseCritChance);
 	}
 
 	// Bot AA's for CombatFury and FuryoftheAges
 	if(GetLevel() >= 64) {
-		critChance += 0.12f;
+		critChance += 12;
 	}
 	else if(GetLevel() >= 63) {
-		critChance += 0.10f;
+		critChance += 10;
 	}
 	else if(GetLevel() >= 62) {
-		critChance += 0.08f;
+		critChance += 8;
 	}
 	else if(GetLevel() >= 57) {
-		critChance += 0.07f;
+		critChance += 7;
 	}
 	else if(GetLevel() >= 56) {
-		critChance += 0.04f;
+		critChance += 4;
 	}
 	else if(GetLevel() >= 55) {
-		critChance += 0.02f;
+		critChance += 2;
 	}
 
 	switch(GetAA(aaCombatFury))
 	{
 	case 1:
-		critChance += 0.02f;
+		critChance += 2;
 		break;
 	case 2:
-		critChance += 0.04f;
+		critChance += 4;
 		break;
 	case 3:
-		critChance += 0.07f;
+		critChance += 7;
 		break;
 	default:
 		break;
@@ -5790,23 +5790,25 @@ void Bot::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 	switch(GetAA(aaFuryoftheAges))
 	{
 	case 1:
-		critChance += 0.01f;
+		critChance += 1;
 		break;
 	case 2:
-		critChance += 0.03f;
+		critChance += 3;
 		break;
 	case 3:
-		critChance += 0.05f;
+		critChance += 5;
 		break;
 	default:
 		break;
 	}
 
-	float CritBonus = spellbonuses.CriticalHitChance + itembonuses.CriticalHitChance;
-	if(CritBonus > 0.0 && critChance < 0.01) //If we have a bonus to crit in items or spells but no actual chance to crit
-		critChance = 0.01f; //Give them a small one so skills and items appear to have some effect.
-
-	critChance += ((critChance) * (CritBonus) / 100.0f); //crit chance is a % increase to your reg chance
+	int CritBonus = GetCriticalChanceBonus(skill);
+	if(CritBonus > 0) {
+		if(critChance == 0) //If we have a bonus to crit in items or spells but no actual chance to crit
+			critChance = (CritBonus / 100) + 1; //Give them a small one so skills and items appear to have some effect.
+		else
+			critChance += (critChance * CritBonus / 100); //crit chance is a % increase to your reg chance
+	}
 	if(GetAA(aaSlayUndead)){
 		if(defender && defender->GetBodyType() == BT_Undead || defender->GetBodyType() == BT_SummonedUndead || defender->GetBodyType() == BT_Vampire){
 			switch(GetAA(aaSlayUndead)){
@@ -5840,7 +5842,7 @@ void Bot::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 	}
 
 	if(critChance > 0){
-		if(MakeRandomFloat(0, 1) <= critChance)
+		if(MakeRandomInt(0, 99) < critChance)
 		{
 			if (slayUndeadCrit)
 			{

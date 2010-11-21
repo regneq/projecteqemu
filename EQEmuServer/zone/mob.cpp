@@ -4175,3 +4175,22 @@ void Mob::SetRaidGrouped(bool v)
 	israidgrouped = v;
 	parse->Event(EVENT_GROUP_CHANGE, 0, "", (NPC*)NULL, this->CastToClient());
 }
+
+sint16 Mob::GetCriticalChanceBonus(int16 skill, bool aa_bonus)
+{
+	int critical_chance = 0;
+
+	// All skills + Skill specific
+	if(!aa_bonus) {
+		critical_chance += this->itembonuses.CriticalHitChance[HIGHEST_SKILL+1] + this->spellbonuses.CriticalHitChance[HIGHEST_SKILL+1] + 
+						this->itembonuses.CriticalHitChance[skill] + this->spellbonuses.CriticalHitChance[skill];
+	}
+	else {
+		critical_chance += this->aabonuses.CriticalHitChance[HIGHEST_SKILL+1] + this->aabonuses.CriticalHitChance[skill];
+	}
+	
+	if(critical_chance < -100)
+		critical_chance = -100;
+
+	return critical_chance;
+}
