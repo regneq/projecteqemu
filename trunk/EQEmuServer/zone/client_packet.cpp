@@ -3039,7 +3039,7 @@ void Client::Handle_OP_ItemLinkClick(const EQApplicationPacket *app)
 	if (!item) {
 		if (ivrs->item_id > 500000)
 		{
-			char response[64];
+			char response[65];
 			int sayid = ivrs->item_id - 500000;
 			bool silentsaylink = false;
 
@@ -3062,7 +3062,10 @@ void Client::Handle_OP_ItemLinkClick(const EQApplicationPacket *app)
 					if (mysql_num_rows(result) == 1)
 					{
 						row = mysql_fetch_row(result);
-						strcpy(response, row[0]);
+						if(strlen(row[0]) < 65)
+						{
+							strcpy(response, row[0]);
+						}
 					}
 					mysql_free_result(result);	
 				}
@@ -3074,31 +3077,39 @@ void Client::Handle_OP_ItemLinkClick(const EQApplicationPacket *app)
 				}
 				safe_delete_array(query);
 			}
-			if(this->GetTarget() && this->GetTarget()->IsNPC())
+
+			if(strlen(response) > 0)
 			{
-				if(silentsaylink)
+				if(this->GetTarget() && this->GetTarget()->IsNPC())
 				{
-					parse->Event(EVENT_SAY, this->GetTarget()->GetNPCTypeID(), response, this->GetTarget()->CastToNPC(), this);
+					if(silentsaylink)
+					{
+						parse->Event(EVENT_SAY, this->GetTarget()->GetNPCTypeID(), response, this->GetTarget()->CastToNPC(), this);
+					}
+					else
+					{
+						Message(7, "You say,'%s'",response);
+						this->ChannelMessageReceived(8, 0, 100, response);
+					}
+					return;
 				}
 				else
 				{
-					Message(7, "You say,'%s'",response);
-					this->ChannelMessageReceived(8, 0, 100, response);
+					if(silentsaylink)
+					{
+						Message(13, "Error: Silent Say Links require an NPC target.");
+					}
+					else
+					{
+						Message(7, "You say,'%s'",response);
+						this->ChannelMessageReceived(8, 0, 100, response);
+					}
+					return;
 				}
-				return;
 			}
 			else
 			{
-				if(silentsaylink)
-				{
-					Message(13, "Error: Silent Say Links require an NPC target.");
-				}
-				else
-				{
-					Message(7, "You say,'%s'",response);
-					this->ChannelMessageReceived(8, 0, 100, response);
-				}
-				return;
+				Message(13, "Error: Say Link not found or is too long.");
 			}
 		}
 		else {
