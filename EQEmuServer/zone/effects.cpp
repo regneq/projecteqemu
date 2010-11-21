@@ -186,10 +186,9 @@ sint32 Client::GetActSpellHealing(int16 spell_id, sint32 value) {
 		}
 
 		// Check for buffs that affect the healrate of the target
-		value += value * GetHealRate() / 100;
-		if(value < 1)
-			return 0;
-			
+		if(this->GetTarget())
+			value += value * GetHealRate() / 100;
+		
 		chance += itembonuses.CriticalHealChance + spellbonuses.CriticalHealChance + aabonuses.CriticalHealChance;
 		
 		if(spells[spell_id].targettype == ST_Tap) {
@@ -229,10 +228,10 @@ sint32 Client::GetActSpellHealing(int16 spell_id, sint32 value) {
 
 		if(MakeRandomInt(0,99) < chance) {
 			entity_list.MessageClose(this, false, 100, MT_SpellCrits, "%s performs an exceptional heal! (%d)", GetName(), ((value * modifier / 50) + heal_amt*2));		
-			return (value * modifier / 50) + heal_amt*2;
+			return ((value * modifier / 50) + heal_amt*2);
 		}
 		else{
-			return (value * modifier / 100) + heal_amt;
+			return ((value * modifier / 100) + heal_amt);
 		}		
 	}
 	// Hots
