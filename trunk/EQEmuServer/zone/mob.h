@@ -266,8 +266,7 @@ struct StatBonuses {
 	uint8  MeleeSkillCheckSkill;
 	sint16 HitChance;							//HitChance/15 == % increase i = Accuracy
 	uint8  HitChanceSkill;
-	sint16 DamageModifier;						//i
-	uint8  DamageModifierSkill;					//i
+	sint16 DamageModifier[HIGHEST_SKILL+2];		//i
 	sint16 MinDamageModifier;   				//i
 	sint16 ProcChance;							// ProcChance/10 == % increase i = CombatEffects
 	sint16 ExtraAttackChance;
@@ -288,6 +287,7 @@ struct StatBonuses {
 	uint32 SpellTriggers[MAX_SPELL_TRIGGER];	// Innate/Spell/Item Spells that trigger when you cast
 	uint32 SpellOnKill[MAX_SPELL_TRIGGER];		// Chance to proc after killing a mob
 	sint16 CritDmgMob[HIGHEST_SKILL+2];			// All Skills + -1
+	sint16 SkillReuseTime[HIGHEST_SKILL+1];		// Reduces skill timers
 	int XPRateMod;								//i
 	
 	// AAs
@@ -557,7 +557,7 @@ bool logpos;
 	void	DamageShield(Mob* other, bool spell_ds=false);
 	bool	FindBuff(int16 spellid);
 	bool	FindType(int8 type, bool bOffensive = false, int16 threshold = 100);
-	sint8	GetBuffSlotFromType(int16 type);
+	sint16	GetBuffSlotFromType(int16 type);
 	int16	GetSpellIDFromSlot(int8 slot);
 	int		CountDispellableBuffs();
 	bool	HasBuffIcon(Mob* caster, Mob* target, int16 spell_id);
@@ -821,6 +821,9 @@ bool logpos;
 	sint16 CalcResistChanceBonus();
 	void TrySpellOnKill();
 	sint16 GetCritDmgMob(int16 skill);
+	sint16 GetMeleeDamageMod_SE(int16 skill);
+	sint16 GetCrippBlowChance();
+	sint16 GetSkillReuseTime(int16 skill);
 	sint16 GetCriticalChanceBonus(int16 skill, bool aa_bonus=false);
 
 	static int32 GetAppearanceValue(EmuAppearance iAppearance);

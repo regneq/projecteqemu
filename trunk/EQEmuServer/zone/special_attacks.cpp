@@ -196,6 +196,8 @@ void Client::OPCombatAbility(const EQApplicationPacket *app) {
 	}
 	sint32 dmg = 0;
 
+	sint32 skill_reduction = this->GetSkillReuseTime(ca_atk->m_skill);
+	
 	if ((ca_atk->m_atk == 100) 
 	  && (ca_atk->m_skill == BASH)) {    // SLAM - Bash without a shield equipped
 		if (GetTarget() != this) {
@@ -223,7 +225,7 @@ void Client::OPCombatAbility(const EQApplicationPacket *app) {
 			}
 
 			DoSpecialAttackDamage(GetTarget(), BASH, dmg, 1, ht);
-			ReuseTime = BashReuseTime-1;
+			ReuseTime = BashReuseTime-1-skill_reduction;
 			ReuseTime = (ReuseTime*HasteMod)/100;
 			if(ReuseTime > 0)
 			{
@@ -276,7 +278,7 @@ void Client::OPCombatAbility(const EQApplicationPacket *app) {
 				dmg = 0;
 		}
 
-		ReuseTime = FrenzyReuseTime-1;
+		ReuseTime = FrenzyReuseTime-1-skill_reduction;
 		ReuseTime = (ReuseTime*HasteMod)/100;
 		if(ReuseTime > 0) {
 			p_timers.Start(pTimerCombatAbility, ReuseTime);
@@ -315,17 +317,17 @@ void Client::OPCombatAbility(const EQApplicationPacket *app) {
 				}
 
 				DoSpecialAttackDamage(GetTarget(), KICK, dmg, 1, ht);
-				ReuseTime = KickReuseTime-1;
+				ReuseTime = KickReuseTime-1-skill_reduction;
 			}
 			break;
 		case MONK: {
-			ReuseTime = MonkSpecialAttack(GetTarget(), ca_atk->m_skill) - 1;
+			ReuseTime = MonkSpecialAttack(GetTarget(), ca_atk->m_skill) - 1 - skill_reduction;
 
 			int specl = GetAA(aaTechniqueofMasterWu) * 20;
 			if(specl == 100 || specl > MakeRandomInt(0,100)) {
-				ReuseTime = MonkSpecialAttack(GetTarget(), ca_atk->m_skill) - 1;
+				ReuseTime = MonkSpecialAttack(GetTarget(), ca_atk->m_skill) - 1 - skill_reduction;
 				if(20 > MakeRandomInt(0,100)) {
-					ReuseTime = MonkSpecialAttack(GetTarget(), ca_atk->m_skill) - 1;
+					ReuseTime = MonkSpecialAttack(GetTarget(), ca_atk->m_skill) - 1 - skill_reduction;
 				}
 			}
 
@@ -342,12 +344,12 @@ void Client::OPCombatAbility(const EQApplicationPacket *app) {
 				break;
 			}
 			TryBackstab(GetTarget());
-			ReuseTime = BackstabReuseTime-1;
+			ReuseTime = BackstabReuseTime-1 - skill_reduction;
 			break;
 		}
 		default:
 			//they have no abilities... wtf? make em wait a bit
-			ReuseTime = 9;
+			ReuseTime = 9 - skill_reduction;
 			break;
 	}
 	

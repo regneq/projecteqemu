@@ -54,6 +54,7 @@ sint32 Client::Additional_SpellDmg(int16 spell_id)
 				spell_dmg += focus;
 		}
 	}
+
 	return spell_dmg;
 }
 
@@ -328,6 +329,21 @@ sint32 Client::GetActSpellCost(int16 spell_id, sint32 cost)
 			if(IsEffectInSpell(buffs[buffSlot].spellid, SE_ReduceManaCost)) {
 				if(CalcFocusEffect(focusManaCost, buffs[buffSlot].spellid, spell_id) == 100)
 					cost = 1;
+			}
+		}
+	}
+	
+	if(cost > 1) {
+		int slot = GetBuffSlotFromType(SE_HPToMana);
+		if(slot >= 0) {
+			for (int k = 0; k < EFFECT_COUNT; k++) {
+				if (spells[buffs[slot].spellid].effectid[k] == SE_HPToMana) {
+					int hp_cost = spells[buffs[slot].spellid].base[k] * cost / 100;
+					if(hp_cost) {
+						this->SetHP(GetHP()-hp_cost);
+						cost = 0;
+					}
+				}
 			}
 		}
 	}

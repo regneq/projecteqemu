@@ -316,7 +316,7 @@ typedef enum  {
 #define SE_DualWieldChance			176
 #define SE_DoubleAttackChance		177
 #define SE_MeleeLifetap				178
-#define SE_AllInstrunmentMod		179
+#define SE_AllInstrumentMod			179
 #define SE_ResistSpellChance		180
 #define SE_ResistFearChance			181
 #define SE_HundredHands				182
@@ -440,7 +440,7 @@ typedef enum  {
 #define SE_Doppelganger				300
 //#define SE_Unknown301				301	//not used
 //#define SE_Unknown302				302	//not used
-//#define SE_Unknown303				303	//not used
+#define SE_FF_Damage_Amount			303	//Focus effect for specific spells
 #define SE_OffhandRiposteFail		304 //aa effect, enemy cannot riposte offhand attacks
 #define SE_MitigateDamageShield		305 //not implemented
 #define SE_WakeTheDead2				306 //not implemented
@@ -499,7 +499,7 @@ typedef enum  {
 //#define SE_Unknown357				357	//not used
 #define SE_CurrentManaOnce			358	//not implemented. increase/decrease mana once, like SE_CurrentHPOnce & SE_CurrentEnduranceOnce
 //#define SE_Unknown359				359	//not used
-#define SE_SpellOnKill				360	//not implemented. has a base1 % to cast spell base2 when you kill a "challenging foe" (>= max?)
+#define SE_SpellOnKill				360	//implemented. has a base1 % to cast spell base2 when you kill a "challenging foe" (>= max?)
 #define SE_Unknown361				361	//not sure. looks to be same as SpellOnKill, except for detrimental spells only? Test Proc 2 (9407)
 //#define SE_Unknown362				362	//not used
 //#define SE_Unknown363				363	//not used
@@ -508,8 +508,8 @@ typedef enum  {
 #define SE_Unknown366				366	//not sure. assume it has something to do with Corruption, maybe counters? wasn't implemented until Serpent's Spine, so not a big deal right now. Corr Test 1 (9428)
 #define SE_AddBodyType				367	//not implemented. adds body type of base1 so it can be affected by spells that are limited to that type (Plant, Animal, Undead, etc)
 #define SE_FactionMod				368	//not implemented. increases faction with base1 (faction id, live won't match up w/ ours) by base2
-#define SE_CorruptionCounter		369	//not implemented. wasn't added until Serpent's Spine, so we can't really do much w/ it
-#define SE_ResistCorruption			370	//not implemented. ditto
+#define SE_CorruptionCounter		369	//implemented. wasn't added until Serpent's Spine, so we can't really do much w/ it
+#define SE_ResistCorruption			370	//implemented. ditto
 #define SE_InhibitMeleeAttacks		371 //some type of melee slow
 //#define SE_Unknown372				372	//not used
 #define SE_CastOnWearoff			373 //Casts this spell on target when the buff wears off the target
@@ -523,9 +523,28 @@ typedef enum  {
 //#define SE_Unknown381				381	//not used
 #define SE_BlockDS					382 //something to do with blocking a % of certain ds?
 #define SE_SympatheticProc			383 //focus on items that has chance to proc a spell when you cast
-//#define SE_Unknown384				384	//not used
-//#define SE_Unknown385				385	//not used
+#define SE_Leap						384	//Leap effect, ie stomping leap
+#define SE_LimitSpellGroup			385	//Limits to spell group(ie type 3 reuse reduction augs that are class specific and thus all share s SG)
+#define SE_CastOnCure				387 //Casts a spell when you are cured
+#define SE_Forceful_Rejuv			389 //Refresh spell icons
+#define SE_HealingFocus				392 //Adds or removes healing from spells
+#define SE_HealRate2				393 //Appears to be exactly the same as HealRate except with focus restrictions
+#define SE_AdditionalHeal			396 //Adds/removes healing from specific spells(restricted to spell groups)
+#define SE_SwarmPetDuration			398 //Affects the duration of swarm pets
 #define SE_Twincast					399 //cast 2 spells for every 1
+#define SE_HealFromMana				400 //Drains mana and heals for each point of mana drained
+#define SE_ManaDrainWithDmg			401 //Deals damage based on the amount of mana drained
+#define SE_EndDrainWithDmg			402 //Deals damage for the amount of endurance drained
+#define SE_SetMaxHP					408 //Sets your max hp to a percent of your original
+#define SE_SetMaxMana				409 //Sets your max mana to a percent of your original
+#define SE_SetMaxEnd				410 //Sets your max end to a percent of your original
+#define SE_LimitClass				411 //Limits to spells of a certain class
+#define SE_IncreaseSpellPower		413 //Increases the power of spells(bard only?)
+#define SE_LimitSpellSkill			414 //Limits to a skill of spells(ie wind, evocation)
+#define SE_AddMeleeProc				419 //Adds a proc
+#define SE_GravityEffect			424 //Pulls you towards to the mob at a set pace
+#define SE_LimitToSkill				428 //Only fires when a particular skills is used(ie dodge)
+
 //last effect
 
 #define DF_Permanent		50
@@ -625,6 +644,7 @@ struct SPDat_Spell_Struct
 /* 192 */ int NimbusEffect;
 /* 195 */ float directional_start;
 /* 196 */ float directional_end;
+/* 207 */ int spellgroup;
 /* 212 */ bool AllowRest;
 
 
