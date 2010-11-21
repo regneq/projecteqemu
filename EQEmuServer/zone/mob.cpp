@@ -3426,7 +3426,9 @@ sint16 Mob::GetSkillDmgTaken(const SkillType skill_used)
 
 sint16 Mob::GetHealRate()
 {
-	sint16 heal_rate = this->GetTarget()->itembonuses.HealRate + this->GetTarget()->spellbonuses.HealRate;
+	sint16 heal_rate = 0;
+	if (this->GetTarget())
+		heal_rate = this->GetTarget()->itembonuses.HealRate + this->GetTarget()->spellbonuses.HealRate;
 	
 	if(heal_rate < -99)
 		heal_rate = -99;
