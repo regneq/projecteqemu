@@ -814,7 +814,7 @@ bool logpos;
 	void TryTwincast(Mob *caster, Mob *target, uint32 spell_id);
 	void TrySympatheticProc(Mob *target, uint32 spell_id);
 	bool TryFadeEffect(int slot);
-	int32 GetHealRate();
+	sint16 GetHealRate();
 	sint32 GetVulnerability(sint32 damage, Mob *caster, uint32 spell_id, int32 ticsremaining);
 	sint16 GetSkillDmgTaken(const SkillType skill_used);
 	void DoKnockback(Mob *caster, uint32 pushback, uint32 pushup);

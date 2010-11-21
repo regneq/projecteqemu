@@ -3424,12 +3424,14 @@ sint16 Mob::GetSkillDmgTaken(const SkillType skill_used)
 	return skilldmg_mod;
 }
 
-int32 Mob::GetHealRate()
+sint16 Mob::GetHealRate()
 {
-	if(!this->GetTarget())
-		return 0;
+	sint16 heal_rate = this->GetTarget()->itembonuses.HealRate + this->GetTarget()->spellbonuses.HealRate;
 	
-	return (this->GetTarget()->itembonuses.HealRate + this->GetTarget()->spellbonuses.HealRate);
+	if(heal_rate < -99)
+		heal_rate = -99;
+	
+	return heal_rate;
 }
 
 bool Mob::TryFadeEffect(int slot)
