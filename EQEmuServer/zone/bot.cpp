@@ -7788,11 +7788,13 @@ bool Bot::CastSpell(int16 spell_id, int16 target_id, int16 slot, sint32 cast_tim
 			ZeroCastingVars();
 
 		if(GetClass() != BARD) {
-			if(!IsValidSpell(spell_id) || casting_spell_id || delaytimer || spellend_timer.Enabled() || IsStunned() || IsFeared() || IsMezzed() || IsSilenced()) {
+			if(!IsValidSpell(spell_id) || casting_spell_id || delaytimer || spellend_timer.Enabled() || IsStunned() || IsFeared() || IsMezzed() || (IsSilenced() && !IsDiscipline(spell_id)) || (IsAmnesiad() && IsDiscipline(spell_id))) {
 				mlog(SPELLS__CASTING_ERR, "Spell casting canceled: not able to cast now. Valid? %d, casting %d, waiting? %d, spellend? %d, stunned? %d, feared? %d, mezed? %d, silenced? %d",
 					IsValidSpell(spell_id), casting_spell_id, delaytimer, spellend_timer.Enabled(), IsStunned(), IsFeared(), IsMezzed(), IsSilenced() );
-				if(IsSilenced())
+				if(IsSilenced() && !IsDiscipline(spell_id))
 					Message_StringID(13, SILENCED_STRING);
+				if(IsAmnesiad() && IsDiscipline(spell_id))
+					Message_StringID(13, MELEE_SILENCE);
 				if(casting_spell_id)
 					AI_Event_SpellCastFinished(false, casting_spell_slot);
 				return(false);

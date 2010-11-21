@@ -8810,6 +8810,11 @@ void Client::CompleteConnect()
 						Silence(true);
 						break;
 					}
+				case SE_Amnesia:
+					{
+						Amnesia(true);
+						break;
+					}
 				case SE_DivineAura:
 					{
 					invulnerable = true;

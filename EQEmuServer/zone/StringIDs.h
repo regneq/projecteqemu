@@ -70,7 +70,7 @@
 #define ONLY_ONE_PET				246		//You cannot have more than one pet at a time.
 #define CANNOT_CHARM_YET			248		//Your target is too high of a level for your charm spell.
 #define CANNOT_AFFECT_NPC			251		//That spell can not affect this target NPC.
-#define SUSPEND_MINION_HAS_AGGRO       256             //Your pet is the focus of something's attention.
+#define SUSPEND_MINION_HAS_AGGRO	256		//Your pet is the focus of something's attention.
 #define NO_PET						255		//You do not have a pet.
 #define CORPSE_CANT_SENSE			262		//You cannot sense any corpses for this PC in this zone.
 #define SPELL_NO_HOLD				263		//Your spell did not take hold.
@@ -181,12 +181,12 @@
 #define DUEL_ACCEPTED				1384	//%1 has already accepted a duel with someone else.
 #define DUEL_CONSIDERING			1385	//%1 is considering a duel with someone else.
 #define PLAYER_REGAIN				1394	//You have control of yourself again.
-#define REZZ_ALREADY_PENDING			1379	//You were unable to restore the corpse to life, but you may have success with a later attempt.
+#define REZZ_ALREADY_PENDING		1379	//You were unable to restore the corpse to life, but you may have success with a later attempt.
 #define IN_USE						1406	//Someone else is using that.  Try again later.
 #define DUEL_FLED					1408	//%1 has defeated %2 in a duel to the death! %3 has fled like a cowardly dog!
-#define MEMBER_OF_YOUR_GUILD			1429
-#define OFFICER_OF_YOUR_GUILD			1430
-#define LEADER_OF_YOUR_GUILD			1431
+#define MEMBER_OF_YOUR_GUILD		1429
+#define OFFICER_OF_YOUR_GUILD		1430
+#define LEADER_OF_YOUR_GUILD		1431
 #define RECEIVED_PLATINUM			1452	//You receive %1 Platinum from %2.
 #define RECEIVED_GOLD				1453	//You receive %1 Gold from %2.
 #define RECEIVED_SILVER				1454	//You receive %1 Silver from %2.
@@ -198,7 +198,7 @@
 #define SENSE_CORPSE_DIRECTION		1563	//You sense a corpse in this direction.
 #define SUSPEND_MINION_UNSUSPEND	3267	//%1 tells you, 'I live again...'
 #define SUSPEND_MINION_SUSPEND		3268	//%1 tells you, 'By your command, master.'
-#define ONLY_SUMMONED_PETS		3269	//3269 This effect only works with summoned pets.
+#define ONLY_SUMMONED_PETS			3269	//3269 This effect only works with summoned pets.
 #define SUSPEND_MINION_FIGHTING		3270    //Your pet must be at peace, first.
 #define TRADESKILL_MISSING_ITEM		3455	//You are missing a %1.
 #define TRADESKILL_MISSING_COMPONENTS	3456	//Sorry, but you don't have everything you need for this recipe in your general inventory.
@@ -209,11 +209,12 @@
 #define GAIN_RAIDEXP				5085	//You gained raid experience!
 #define ADVENTURE_COMPLETE			5147	//You received %1 points for successfully completing the adventure.
 #define PET_ATTACKING				5501	//%1 tells you, 'Attacking %2 Master.'
+#define MELEE_SILENCE				5806	//You *CANNOT* use this melee ability, you are suffering from amnesia!
 #define DISCIPLINE_REUSE_MSG		5807	//You can use the ability %1 again in %2 hour(s) %3 minute(s) %4 seconds.
 #define DISCIPLINE_REUSE_MSG2		5808	//You can use the ability %1 again in %2 minute(s) %3 seconds.
 #define AA_NO_TARGET				5825	//You must first select a target for this ability!
 #define GUILD_BANK_CANNOT_DEPOSIT	6097	// Cannot deposit this item.  Containers must be empty, and only one of each LORE and no NO TRADE or TEMPORARY items may be deposited.
-#define GUILD_BANK_FULL			6098	// There is no more room in the Guild Bank.
+#define GUILD_BANK_FULL				6098	// There is no more room in the Guild Bank.
 #define GUILD_BANK_TRANSFERRED		6100	// '%1' transferred to Guild Bank from Deposits.
 #define GUILD_BANK_EMPTY_HANDS		6108	// You must empty your hands to withdraw from the Guild Bank.
 #define GENERIC_STRING				6688	//%1  (used to any basic message)
@@ -269,11 +270,11 @@
 #define LEADER_OF_X_GUILD			12258
 #define NOT_IN_A_GUILD				12259
 #define TARGET_PLAYER_FOR_GUILD_STATUS		12260
-#define GROUP_INVITEE_NOT_FOUND			12268	//You must target a player or use /invite <name> to invite someone to your group.
+#define GROUP_INVITEE_NOT_FOUND		12268	//You must target a player or use /invite <name> to invite someone to your group.
 #define GROUP_INVITEE_SELF			12270	//12270 You cannot invite yourself.
 #define NOT_IN_CONTROL				12368	//You do not have control of yourself right now.
 #define ALREADY_CASTING				12442	//You are already casting a spell!
-#define SENSE_CORPSE_NOT_NAME			12446	//You don't sense any corpses of that name.
+#define SENSE_CORPSE_NOT_NAME		12446	//You don't sense any corpses of that name.
 #define SENSE_CORPSE_NONE			12447	//You don't sense any corpses.
 #define NOT_HOLDING_ITEM			12452	//You are not holding an item!
 #define SENSE_UNDEAD				12471	//You sense undead in this direction.
@@ -284,7 +285,7 @@
 #define INTERRUPT_SPELL_OTHER		12478	//%1's casting is interrupted!
 #define YOU_HIT_NONMELEE			12481	//You were hit by non-melee for %1 damage.
 #define TRACK_LOST_TARGET			12681	//You have lost your tracking target.
-#define TRACK_STRAIGHT_AHEAD			12676
+#define TRACK_STRAIGHT_AHEAD		12676
 #define TRACK_AHEAD_AND_TO			12677
 #define TRACK_TO_THE				12678
 #define TRACK_BEHIND_AND_TO			12679

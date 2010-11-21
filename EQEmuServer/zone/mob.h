@@ -288,6 +288,7 @@ struct StatBonuses {
 	uint32 SpellOnKill[MAX_SPELL_TRIGGER];		// Chance to proc after killing a mob
 	sint16 CritDmgMob[HIGHEST_SKILL+2];			// All Skills + -1
 	sint16 SkillReuseTime[HIGHEST_SKILL+1];		// Reduces skill timers
+	sint16 SkillDamageAmount[HIGHEST_SKILL+2];	// All Skills + -1
 	int XPRateMod;								//i
 	
 	// AAs
@@ -799,6 +800,7 @@ bool logpos;
 	virtual void Stun(int duration);
 	virtual void UnStun();
 	inline void Silence(bool newval) { silenced = newval; }
+	inline void Amnesia(bool newval) { amnesiad = newval; }
 	void TemporaryPets(int16 spell_id, Mob *target, const char *name_override = NULL, uint32 duration_override = 0);
 	void WakeTheDead(int16 spell_id, Mob *target, uint32 duration);
 	void TryDotCritical(int16 spell_id, int &damage);
@@ -825,6 +827,7 @@ bool logpos;
 	sint16 GetCrippBlowChance();
 	sint16 GetSkillReuseTime(int16 skill);
 	sint16 GetCriticalChanceBonus(int16 skill, bool aa_bonus=false);
+	sint16 GetSkillDmgAmt(int16 skill);
 
 	static int32 GetAppearanceValue(EmuAppearance iAppearance);
 	void SendAppearancePacket(int32 type, int32 value, bool WholeZone = true, bool iIgnoreSelf = false, Client *specific_target=NULL);
@@ -883,6 +886,7 @@ bool logpos;
 	inline bool	IsMezzed() const { return mezzed; }
 	inline bool	IsStunned() const { return stunned; }
 	inline bool	IsSilenced() const { return silenced; }
+	inline bool	IsAmnesiad() const { return amnesiad; }
 	inline int16	GetErrorNumber() const {return adverrorinfo;}
 
 	sint32	ReduceDamage(sint32 damage);
@@ -1238,6 +1242,7 @@ protected:
 	bool charmed;	//this isnt fully implemented yet
 	bool rooted;
 	bool silenced;
+	bool amnesiad;
 	bool inWater;	// Set to true or false by Water Detection code if enabled by rules
 //	Timer mezzed_timer;
 	Timer  stunned_timer;

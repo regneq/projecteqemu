@@ -304,6 +304,7 @@ Mob::Mob(const char*   in_name,
 	mezzed = false;
 	stunned = false;
 	silenced = false;
+	amnesiad = false;
 	inWater = false;
     int m;
 	for (m = 0; m < MAX_SHIELDERS; m++)
@@ -4237,4 +4238,35 @@ sint16 Mob::GetSkillReuseTime(int16 skill)
 	int skill_reduction = this->itembonuses.SkillReuseTime[skill] + this->spellbonuses.SkillReuseTime[skill] + this->aabonuses.SkillReuseTime[skill];
 	
 	return skill_reduction;
+}
+
+sint16 Mob::GetSkillDmgAmt(int16 skill)
+{
+	int skill_dmg = 0;
+
+	// All skill dmg + Skill specific
+	skill_dmg += this->itembonuses.SkillDamageAmount[HIGHEST_SKILL+1] + this->spellbonuses.SkillDamageAmount[HIGHEST_SKILL+1] + 
+				this->itembonuses.SkillDamageAmount[skill] + this->spellbonuses.SkillDamageAmount[skill];
+	
+	// Deplete the buff if needed
+	uint32 buff_count = GetMaxTotalSlots();
+	for(int i = 0; i < buff_count; i++) {
+		if((IsEffectInSpell(buffs[i].spellid, SE_SkillDamageAmount)) && spells[buffs[i].spellid].numhits > 0) {
+			for (int j = 0; j < EFFECT_COUNT; j++) {
+				if (spells[buffs[i].spellid].effectid[j] == SE_SkillDamageAmount) {
+					if(spells[buffs[i].spellid].base[j] == -1 || spells[buffs[i].spellid].base[j] == skill) {
+						if(buffs[i].numhits > 0) {
+							buffs[i].numhits--;
+						}
+						else {
+							if(!TryFadeEffect(i)) 
+								BuffFadeBySlot(i, true);
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	return skill_dmg;
 }

@@ -1425,7 +1425,14 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 					newbon->SkillReuseTime[spells[spell_id].base2[i]] = effect_value;
 				break;
 			}
-			
+			case SE_SkillDamageAmount:
+			{
+				if(spells[spell_id].base2[i] == -1)
+					newbon->SkillDamageAmount[HIGHEST_SKILL+1] += effect_value;
+				else
+					newbon->SkillDamageAmount[spells[spell_id].base2[i]] += effect_value;
+				break;
+			}
 		}
 	}
 }

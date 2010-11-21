@@ -190,13 +190,16 @@ bool Mob::CastSpell(int16 spell_id, int16 target_id, int16 slot,
 		IsStunned() ||
 		IsFeared() ||
 		IsMezzed() ||
-		IsSilenced()
+		(IsSilenced() && !IsDiscipline(spell_id)) ||
+		(IsAmnesiad() && IsDiscipline(spell_id))
 	)
 	{
-		mlog(SPELLS__CASTING_ERR, "Spell casting canceled: not able to cast now. Valid? %d, casting %d, waiting? %d, spellend? %d, stunned? %d, feared? %d, mezed? %d, silenced? %d",
-			IsValidSpell(spell_id), casting_spell_id, delaytimer, spellend_timer.Enabled(), IsStunned(), IsFeared(), IsMezzed(), IsSilenced() );
-		if(IsSilenced())
+		mlog(SPELLS__CASTING_ERR, "Spell casting canceled: not able to cast now. Valid? %d, casting %d, waiting? %d, spellend? %d, stunned? %d, feared? %d, mezed? %d, silenced? %d, amnesiad? %d", 
+			IsValidSpell(spell_id), casting_spell_id, delaytimer, spellend_timer.Enabled(), IsStunned(), IsFeared(), IsMezzed(), IsSilenced(), IsAmnesiad() );
+		if(IsSilenced() && !IsDiscipline(spell_id))
 			Message_StringID(13, SILENCED_STRING);
+		if(IsAmnesiad() && IsDiscipline(spell_id))
+			Message_StringID(13, MELEE_SILENCE);
 		if(IsClient())
 			CastToClient()->SendSpellBarEnable(spell_id);
 		if(casting_spell_id && IsNPC())
