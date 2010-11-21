@@ -1269,10 +1269,11 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough)
 		} else {	//we hit, try to avoid it
 			other->AvoidDamage(this, damage);
 			other->MeleeMitigation(this, damage, min_hit);
-			ApplyMeleeDamageBonus(skillinuse, damage);
-			if(damage > 0)
+			if(damage > 0) {
+				ApplyMeleeDamageBonus(skillinuse, damage);
 				damage += (itembonuses.HeroicSTR / 10) + (damage * other->GetSkillDmgTaken(skillinuse) / 100);
-			TryCriticalHit(other, skillinuse, damage);
+				TryCriticalHit(other, skillinuse, damage);
+			}
 			mlog(COMBAT__DAMAGE, "Final damage after all reductions: %d", damage);
 		}
 
@@ -1877,11 +1878,11 @@ bool NPC::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough)	 // 
 			} else {	//hit, check for damage avoidance
 				other->AvoidDamage(this, damage);
 				other->MeleeMitigation(this, damage, min_dmg+eleBane);
-				ApplyMeleeDamageBonus(skillinuse, damage);
-				if(damage > 0)
+				if(damage > 0) {
+					ApplyMeleeDamageBonus(skillinuse, damage);
 					damage += (itembonuses.HeroicSTR / 10) + (damage * other->GetSkillDmgTaken(skillinuse) / 100);
-				TryCriticalHit(other, skillinuse, damage);
-
+					TryCriticalHit(other, skillinuse, damage);
+				}
 				mlog(COMBAT__HITS, "Generating hate %d towards %s", hate, GetName());
 				// now add done damage to the hate list
 				if(damage > 0)
@@ -2932,9 +2933,6 @@ sint32 Mob::ReduceDamage(sint32 damage)
 			return -6;
 	}
 
-	if(!HasRune() && !HasPartialMeleeRune())
-		return damage;
-
 	slot = GetBuffSlotFromType(SE_MitigateMeleeDamage);
 	if(slot >= 0)
 	{
@@ -2981,6 +2979,23 @@ sint32 Mob::ReduceDamage(sint32 damage)
 				BuffFadeBySlot(slot);
 			slot = GetBuffSlotFromType(SE_Rune);
 			UpdateRuneFlags();
+		}
+	}
+	
+	if(damage < 1)
+	{
+		return -6;
+	}
+	
+	slot = GetBuffSlotFromType(SE_ManaAbsorbPercentDamage);
+	if(slot >= 0) {
+		for (int i = 0; i < EFFECT_COUNT; i++) {
+			if (spells[buffs[slot].spellid].effectid[i] == SE_ManaAbsorbPercentDamage) {
+				if(GetMana() > damage * spells[buffs[slot].spellid].base[i] / 100) {
+					damage -= (damage * spells[buffs[slot].spellid].base[i] / 100);
+					SetMana(GetMana() - damage);
+				}
+			}
 		}
 	}
 
@@ -3060,6 +3075,18 @@ sint32 Mob::AffectMagicalDamage(sint32 damage, int16 spell_id, const bool iBuffT
 					BuffFadeBySlot(slot);
 				slot = GetBuffSlotFromType(SE_AbsorbMagicAtt);
 				UpdateRuneFlags();
+			}
+		}
+		
+		slot = GetBuffSlotFromType(SE_ManaAbsorbPercentDamage);
+		if(slot >= 0) {
+			for (int k = 0; k < EFFECT_COUNT; k++) {
+				if (spells[buffs[slot].spellid].effectid[k] == SE_ManaAbsorbPercentDamage) {
+					if(GetMana() > damage * spells[buffs[slot].spellid].base[k] / 100) {
+						damage -= (damage * spells[buffs[slot].spellid].base[k] / 100);
+						SetMana(GetMana() - damage);
+					}
+				}
 			}
 		}
 	}
@@ -3810,9 +3837,6 @@ void Mob::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 {
 	bool slayUndeadCrit = false;
 
-	if(damage < 1) //We can't critical hit if we don't hit.
-		return;
-
 	// decided to branch this into it's own function since it's going to be duplicating a lot of the
 	// code in here, but could lead to some confusion otherwise
 	if (this->IsPet() && this->GetOwner()->IsClient()) {
@@ -3823,11 +3847,16 @@ void Mob::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 	int critChance = RuleI(Combat, BaseCritChance);
 	if(IsClient())
 		critChance += RuleI(Combat, ClientBaseCritChance);
+	
+	// Bonus to crippling blow chance 
+	bool crip_success = false;
+	if(MakeRandomInt(0,99) < GetCrippBlowChance())
+		crip_success = true;
 
 	uint16 critMod = 200; 
-	if((GetClass() == WARRIOR || GetClass() == BERSERKER) && GetLevel() >= 12 && IsClient()) 
+	if(((GetClass() == WARRIOR || GetClass() == BERSERKER) && GetLevel() >= 12 && IsClient()) || crip_success) 
 	{
-		if(CastToClient()->berserk)
+		if(CastToClient()->berserk || crip_success)
 		{
 			critChance += RuleI(Combat, BerserkBaseCritChance);
 			critMod = 400;
@@ -3895,9 +3924,13 @@ void Mob::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 			}
 			critMod += GetCritDmgMob(skill) * 2; // To account for base crit mod being 200 not 100
 			damage = (damage * critMod) / 100;
-			if(IsClient() && CastToClient()->berserk)
+			
+			if(IsClient() && CastToClient()->berserk || crip_success)
 			{
 				entity_list.MessageClose(this, false, 200, MT_CritMelee, "%s lands a crippling blow!(%d)", GetCleanName(), damage);
+				// Crippling blows also have a chance to stun
+				if(MakeRandomInt(0,99) < 50) //improbable to stun every hit
+					defender->Stun(0);
 			}
 
 			else
@@ -4021,23 +4054,20 @@ void Mob::DoRiposte(Mob* defender) {
 }
  
 void Mob::ApplyMeleeDamageBonus(int16 skill, sint32 &damage){
-	if(damage < 1)
-		return;
 
-	if(skill == THROWING)
-	{
-	switch(GetAA(aaThrowingMastery))
-	{
-		case 1:
-			damage = damage * 115/100;
-			break;
-		case 2:
-			damage = damage * 125/100;
-			break;
-		case 3:
-			damage = damage * 150/100;
-			break;
-	}
+	if(skill == THROWING) {
+		switch(GetAA(aaThrowingMastery))
+		{
+			case 1:
+				damage = damage * 115/100;
+				break;
+			case 2:
+				damage = damage * 125/100;
+				break;
+			case 3:
+				damage = damage * 150/100;
+				break;
+		}
 	}
 
 	if(!RuleB(Combat, UseIntervalAC)){
@@ -4050,15 +4080,9 @@ void Mob::ApplyMeleeDamageBonus(int16 skill, sint32 &damage){
 			damage += (damage*dmgbonusmod/10000);
 		}
 	}
-  
-	if(spellbonuses.DamageModifierSkill == skill || spellbonuses.DamageModifierSkill == 255){
-		damage += ((damage * spellbonuses.DamageModifier)/100);
-	}
- 
-	if(itembonuses.DamageModifierSkill == skill || itembonuses.DamageModifierSkill == 255){
-		damage += ((damage * itembonuses.DamageModifier)/100);
-	}
-
+	
+	damage += damage * GetMeleeDamageMod_SE(skill) / 100;
+	
 	//Rogue sneak attack disciplines make use of this, they are active for one hit
 	uint32 buff_count = GetMaxTotalSlots();
 	for(int bs = 0; bs < buff_count; bs++){

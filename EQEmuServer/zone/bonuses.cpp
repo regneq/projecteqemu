@@ -624,8 +624,6 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 				break;
 			case SE_TwoHandBash:
 				break;
-			case SE_ReduceSkillTimer:
-				break;
 			case SE_SetBreathLevel:
 				break;
 			case SE_RaiseStatCap:
@@ -754,6 +752,11 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 					newbon->CritDmgMob[base2] += base1;
 				break;
 			}
+			case SE_ReduceSkillTimer:
+			{
+				newbon->SkillReuseTime[base2] += base1;
+				break;
+			}
 		}
 	}
 }
@@ -877,7 +880,7 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 			
 			case SE_CurrentMana:
 			{
-				newbon->ManaRegen += CalcSpellEffectValue(spell_id, i, casterlevel);
+				newbon->ManaRegen += effect_value;
 				break;
 			}
 			case SE_ManaPool:
@@ -1200,7 +1203,7 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 				break;
 			}
 				
-			case SE_AllInstrunmentMod:
+			case SE_AllInstrumentMod:
 			{
 				if(effect_value > newbon->singingMod)
 					newbon->singingMod = effect_value;
@@ -1259,10 +1262,10 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 				
 			case SE_DamageModifier:
 			{
-				if(newbon->DamageModifier < effect_value) {
-					newbon->DamageModifier = effect_value;
-					newbon->DamageModifierSkill = spells[spell_id].base2[i]==-1?255:spells[spell_id].base2[i];
-				}
+				if(spells[spell_id].base2[i] == -1)
+					newbon->DamageModifier[HIGHEST_SKILL+1] += effect_value;
+				else
+					newbon->DamageModifier[spells[spell_id].base2[i]] += effect_value;
 				break;
 			}
 				
@@ -1414,6 +1417,12 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 					newbon->CritDmgMob[HIGHEST_SKILL+1] += effect_value;
 				else
 					newbon->CritDmgMob[spells[spell_id].base2[i]] += effect_value;
+				break;
+			}
+			case SE_ReduceSkillTimer:
+			{
+				if(newbon->SkillReuseTime[spells[spell_id].base2[i]] < effect_value)
+					newbon->SkillReuseTime[spells[spell_id].base2[i]] = effect_value;
 				break;
 			}
 			

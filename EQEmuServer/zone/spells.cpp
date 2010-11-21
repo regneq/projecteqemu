@@ -2687,6 +2687,7 @@ int Mob::AddBuff(Mob *caster, int16 spell_id, int duration, sint32 level_overrid
 	buffs[emptyslot].diseasecounters = 0;
 	buffs[emptyslot].poisoncounters = 0;
 	buffs[emptyslot].cursecounters = 0;
+	buffs[emptyslot].corruptioncounters = 0;
 	buffs[emptyslot].numhits = spells[spell_id].numhits;
 	buffs[emptyslot].client = caster ? caster->IsClient() : 0;
 
@@ -4561,7 +4562,7 @@ int16 Mob::FindSpell(int16 classp, int16 level, int8 type, int8 spelltype) {
 */
 
 // solar: TODO get rid of this
-sint8 Mob::GetBuffSlotFromType(int16 type) {
+sint16 Mob::GetBuffSlotFromType(int16 type) {
 	uint32 buff_count = GetMaxTotalSlots();
 	for (int i = 0; i < buff_count; i++) {
 		if (buffs[i].spellid != SPELL_UNKNOWN) {

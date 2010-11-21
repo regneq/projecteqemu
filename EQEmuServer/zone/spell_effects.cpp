@@ -2443,7 +2443,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			}
 
 
-			case SE_AllInstrunmentMod:
+			case SE_AllInstrumentMod:
 			{
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "All Instrunments Modifier: %+i", effect_value);
@@ -2589,15 +2589,6 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 					entity_list.AETaunt(caster->CastToClient());
 				break;
 			}
-
-			case SE_ReduceSkillTimer:
-			{
-#ifdef SPELL_EFFECT_SPAM
-				snprintf(effect_desc, _EDLEN, "Reduce Skill Timer: %+i", effect_value);
-#endif
-				if(caster) caster->Message(13, "Reduce Skill Timer not implemented yet");
-			}
-
 
 			case SE_ExtraAttackChance:
 			{
@@ -2945,6 +2936,11 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			case SE_CriticalDoTChance:
 			case SE_SpellOnKill:
 			case SE_CriticalDamageMob:
+			case SE_LimitSpellGroup:
+			case SE_ResistCorruption:
+			case SE_ReduceSkillTimer:
+			case SE_HPToMana:
+			case SE_ManaAbsorbPercentDamage:
 			{
 				break;
 			}
@@ -3962,6 +3958,13 @@ sint16 Client::CalcAAFocus(focusType type, uint32 aa_ID, int16 spell_id)
 					return 0;
 			break;
 			
+			case SE_LimitSpellGroup:
+				if(base1 > 0 && base1 != spell.spellgroup)
+					return 0;
+				else if(base1 < 0 && base1 == spell.spellgroup)
+					return 0;
+			break;
+			
 			// Passive Focus Effects
 			case SE_ImprovedDamage:
 			switch (base2)
@@ -3986,10 +3989,9 @@ sint16 Client::CalcAAFocus(focusType type, uint32 aa_ID, int16 spell_id)
 			break;
 			
 			case SE_ImprovedHeal:
-			if (type == focusImprovedHeal && base1 > value)
-			{
-				value = base1;
-			}
+				if (type == focusImprovedHeal && base1 > value)
+					value = base1;
+
 			break;
 			
 			// Unique Focus Effects
@@ -4123,15 +4125,12 @@ sint16 Mob::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id) {
 		
 		case SE_LimitTarget:
 			// Exclude
-			if(focus_spell.base[i] < 0){
-				if(-focus_spell.base[i] == spell.targettype)
-					return 0;
-			}
+			if((focus_spell.base[i] < 0) && -focus_spell.base[i] == spell.targettype)
+				return 0;
 			// Include
-			else {
-				if(focus_spell.base[i] != spell.targettype)
-					return 0;
-			}
+			else if (focus_spell.base[i] > 0 && focus_spell.base[i] != spell.targettype)
+				return 0;
+
 			break;
 		
 		case SE_NoCombatSkills:
@@ -4139,6 +4138,13 @@ sint16 Mob::CalcFocusEffect(focusType type, int16 focus_id, int16 spell_id) {
 				return 0;
 			break;
 		
+		case SE_LimitSpellGroup:
+				if(focus_spell.base[i] > 0 && focus_spell.base[i] != spell.spellgroup)
+					return 0;
+				else if(focus_spell.base[i] < 0 && focus_spell.base[i] == spell.spellgroup)
+					return 0;
+			break;
+	
 		//handle effects
 
 		case SE_ImprovedDamage:

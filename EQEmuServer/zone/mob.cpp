@@ -4196,3 +4196,43 @@ sint16 Mob::GetCriticalChanceBonus(int16 skill, bool aa_bonus)
 
 	return critical_chance;
 }
+
+sint16 Mob::GetMeleeDamageMod_SE(int16 skill)
+{
+	int dmg_mod = 0;
+
+	// All skill dmg mod + Skill specific
+	dmg_mod += this->itembonuses.DamageModifier[HIGHEST_SKILL+1] + this->spellbonuses.DamageModifier[HIGHEST_SKILL+1] + 
+					this->itembonuses.DamageModifier[skill] + this->spellbonuses.DamageModifier[skill];
+	
+	if(IsClient())
+		dmg_mod += this->aabonuses.DamageModifier[HIGHEST_SKILL+1] + this->aabonuses.DamageModifier[skill];
+					
+	if(dmg_mod < -100)
+		dmg_mod = -100;
+
+	return dmg_mod;
+}
+
+sint16 Mob::GetCrippBlowChance()
+{
+	int crip_chance = 0;
+
+	crip_chance += this->itembonuses.CrippBlowChance + this->spellbonuses.CrippBlowChance + 
+					this->itembonuses.CrippBlowChance + this->spellbonuses.CrippBlowChance;
+	
+	if(IsClient())
+		crip_chance += this->aabonuses.CrippBlowChance + this->aabonuses.CrippBlowChance;
+					
+	if(crip_chance < 0)
+		crip_chance = 0;
+
+	return crip_chance;
+}
+
+sint16 Mob::GetSkillReuseTime(int16 skill)
+{
+	int skill_reduction = this->itembonuses.SkillReuseTime[skill] + this->spellbonuses.SkillReuseTime[skill] + this->aabonuses.SkillReuseTime[skill];
+	
+	return skill_reduction;
+}
