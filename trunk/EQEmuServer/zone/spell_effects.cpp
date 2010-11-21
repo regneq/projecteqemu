@@ -2237,6 +2237,15 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 				snprintf(effect_desc, _EDLEN, "Silence");
 #endif
 				Silence(true);
+				break;
+			}
+			case SE_Amnesia:
+			{
+#ifdef SPELL_EFFECT_SPAM
+				snprintf(effect_desc, _EDLEN, "Amnesia");
+#endif
+				Amnesia(true);
+				break;
 			}
 
 			case SE_Fearless:
@@ -2941,6 +2950,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 			case SE_ReduceSkillTimer:
 			case SE_HPToMana:
 			case SE_ManaAbsorbPercentDamage:
+			case SE_SkillDamageAmount:
 			{
 				break;
 			}
@@ -3575,8 +3585,14 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 			case SE_Silence:
 			{
 				Silence(false);
+				break;
 			}
 
+			case SE_Amnesia:
+			{
+				Amnesia(false);
+				break;
+			}
 
 			case SE_DivineAura:
 			{

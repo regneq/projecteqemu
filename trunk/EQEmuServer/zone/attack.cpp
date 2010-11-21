@@ -1271,7 +1271,7 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough)
 			other->MeleeMitigation(this, damage, min_hit);
 			if(damage > 0) {
 				ApplyMeleeDamageBonus(skillinuse, damage);
-				damage += (itembonuses.HeroicSTR / 10) + (damage * other->GetSkillDmgTaken(skillinuse) / 100);
+				damage += (itembonuses.HeroicSTR / 10) + (damage * other->GetSkillDmgTaken(skillinuse) / 100) + GetSkillDmgAmt(skillinuse);
 				TryCriticalHit(other, skillinuse, damage);
 			}
 			mlog(COMBAT__DAMAGE, "Final damage after all reductions: %d", damage);
@@ -1867,7 +1867,7 @@ bool NPC::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough)	 // 
 		if(other->IsClient() && other->CastToClient()->IsSitting()) {
 			mlog(COMBAT__DAMAGE, "Client %s is sitting. Hitting for max damage (%d).", other->GetName(), (max_dmg+eleBane));
 			damage = (max_dmg+eleBane);
-			damage += (itembonuses.HeroicSTR / 10) + (damage * other->GetSkillDmgTaken(skillinuse) / 100);
+			damage += (itembonuses.HeroicSTR / 10) + (damage * other->GetSkillDmgTaken(skillinuse) / 100) + GetSkillDmgAmt(skillinuse);
 
 			mlog(COMBAT__HITS, "Generating hate %d towards %s", hate, GetName());
 			// now add done damage to the hate list
@@ -1880,7 +1880,7 @@ bool NPC::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough)	 // 
 				other->MeleeMitigation(this, damage, min_dmg+eleBane);
 				if(damage > 0) {
 					ApplyMeleeDamageBonus(skillinuse, damage);
-					damage += (itembonuses.HeroicSTR / 10) + (damage * other->GetSkillDmgTaken(skillinuse) / 100);
+					damage += (itembonuses.HeroicSTR / 10) + (damage * other->GetSkillDmgTaken(skillinuse) / 100) + GetSkillDmgAmt(skillinuse);
 					TryCriticalHit(other, skillinuse, damage);
 				}
 				mlog(COMBAT__HITS, "Generating hate %d towards %s", hate, GetName());
@@ -3774,6 +3774,9 @@ void Mob::TryWeaponProc(const Item_Struct* weapon, Mob *on, int16 hand) {
 
 void Mob::TryPetCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 {
+	if(damage < 1)
+		return;
+		
 	Client *owner = NULL;
 	int critChance = RuleI(Combat, MeleeBaseCritChance);
 	uint16 critMod = 200;
@@ -3835,6 +3838,9 @@ void Mob::TryPetCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 
 void Mob::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 {
+	if(damage < 1)
+		return;
+		
 	bool slayUndeadCrit = false;
 
 	// decided to branch this into it's own function since it's going to be duplicating a lot of the
