@@ -397,7 +397,7 @@ void Client::AddItemBonuses(const ItemInst *inst, StatBonuses* newbon, bool isAu
 			newbon->DSMitigation += item->DSMitigation;
 	}
 	if (item->Worn.Effect>0 && (item->Worn.Type == ET_WornEffect)) { // latent effects
-		ApplySpellsBonuses(item->Worn.Effect, item->Worn.Level, newbon);
+		ApplySpellsBonuses(item->Worn.Effect, item->Worn.Level, newbon, 0, true);
 	}
 	switch(item->BardType)
 	{
@@ -726,7 +726,10 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 				break;
 				
 			case SE_CriticalHitChance:
-				newbon->CriticalHitChance += base1;
+				if(base2 == -1)
+					newbon->CriticalHitChance[HIGHEST_SKILL+1] += base1;
+				else
+					newbon->CriticalHitChance[base2] += base1;
 				break;
 				
 			case SE_SpellOnKill:
@@ -773,7 +776,7 @@ void Mob::CalcSpellBonuses(StatBonuses* newbon)
 	newbon->AC = newbon->AC * 10 / 34;	//ratio determined impirically from client.
 }
 
-void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newbon, int16 casterId)
+void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newbon, int16 casterId, bool item_bonus)
 {
 	int i, effect_value;
 	Mob *caster = NULL;
@@ -1121,7 +1124,20 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 			*/
 			case SE_CriticalHitChance:
 			{
-				newbon->CriticalHitChance += effect_value;
+				// For items,(cleave I, cleave II, etc) only the highest value should apply 
+				if(item_bonus) {
+					if(spells[spell_id].base2[i] == -1 && newbon->CriticalHitChance[HIGHEST_SKILL+1] < effect_value)
+						newbon->CriticalHitChance[HIGHEST_SKILL+1] = effect_value;
+					else if(spells[spell_id].base2[i] != -1 && newbon->CriticalHitChance[spells[spell_id].base2[i]] < effect_value)
+						newbon->CriticalHitChance[spells[spell_id].base2[i]] = effect_value;
+				}
+				// For spells, the effects can add so that minor effects(ie speed of ellowind) are useful.
+				else {
+					if(spells[spell_id].base2[i] == -1)
+						newbon->CriticalHitChance[HIGHEST_SKILL+1] += effect_value;
+					else
+						newbon->CriticalHitChance[spells[spell_id].base2[i]] += effect_value;
+				}
 				break;
 			}
 				

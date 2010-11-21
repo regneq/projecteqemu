@@ -3748,8 +3748,7 @@ void Mob::TryWeaponProc(const Item_Struct* weapon, Mob *on, int16 hand) {
 void Mob::TryPetCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 {
 	Client *owner = NULL;
-	float critChance = RuleR(Combat, BaseCritChance);
-	float CritBonus = spellbonuses.CriticalHitChance + itembonuses.CriticalHitChance;
+	int critChance = RuleI(Combat, MeleeBaseCritChance);
 	uint16 critMod = 200;
 
 	if (damage < 1) //We can't critical hit if we don't hit.
@@ -3775,29 +3774,31 @@ void Mob::TryPetCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 
 	switch (owner->GetAA(aaClass)) {
 	case 1:
-		critChance += 0.04f;
+		critChance += 4;
 		break;
 	case 2:
-		critChance += 0.08f;
+		critChance += 8;
 		break;
 	case 3:
-		critChance += 0.12f;
+		critChance += 12;
 		break;
 	case 4:
-		critChance += 0.16f;
+		critChance += 16;
 		break;
 	case 5:
-		critChance += 0.20f;
+		critChance += 20;
 		break;
 	}
 
-	if(CritBonus > 0.0 && critChance < 0.01) //If we have a bonus to crit in items or spells but no actual chance to crit
-		critChance = 0.01f; //Give them a small one so skills and items appear to have some effect.
- 
-	critChance += ((critChance) * (CritBonus) / 100.0f); //crit chance is a % increase to your reg chance
-
+	int CritBonus = GetCriticalChanceBonus(skill);
+	if(CritBonus > 0) {
+		if(critChance == 0) //If we have a bonus to crit in items or spells but no actual chance to crit
+			critChance = (CritBonus / 100) + 1; //Give them a small one so skills and items appear to have some effect.
+		else
+			critChance += (critChance * CritBonus / 100); //crit chance is a % increase to your reg chance
+	}
 	if (critChance > 0) {
-		if (MakeRandomFloat(0, 1) <= critChance) {
+		if (MakeRandomInt(0, 99) < critChance) {
 			critMod += GetCritDmgMob(skill) * 2; // To account for base crit mod being 200 not 100
 			damage = (damage * critMod) / 100;
             entity_list.MessageClose(this, false, 200, MT_CritMelee, "%s scores a critical hit!(%d)", GetCleanName(), damage);
@@ -3819,21 +3820,21 @@ void Mob::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 		return;
 	}
 
-	float critChance = RuleR(Combat, BaseCritChance);
+	int critChance = RuleI(Combat, BaseCritChance);
 	if(IsClient())
-		critChance += RuleR(Combat, ClientBaseCritChance);
+		critChance += RuleI(Combat, ClientBaseCritChance);
 
 	uint16 critMod = 200; 
 	if((GetClass() == WARRIOR || GetClass() == BERSERKER) && GetLevel() >= 12 && IsClient()) 
 	{
 		if(CastToClient()->berserk)
 		{
-			critChance += RuleR(Combat, BerserkBaseCritChance);
+			critChance += RuleI(Combat, BerserkBaseCritChance);
 			critMod = 400;
 		}
 		else
 		{
-			critChance += RuleR(Combat, WarBerBaseCritChance);
+			critChance += RuleI(Combat, WarBerBaseCritChance);
 		}
 	}
 
@@ -3841,14 +3842,17 @@ void Mob::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 		critChance += 6;
 	}
 
-	int CritBonus = spellbonuses.CriticalHitChance + itembonuses.CriticalHitChance;
+	int CritBonus = GetCriticalChanceBonus(skill);
 	if(IsClient())
-		critChance += aabonuses.CriticalHitChance; // These add straight on
+		critChance += GetCriticalChanceBonus(skill, true); // These add straight on
 
-	if(CritBonus > 0 && critChance < 1) //If we have a bonus to crit in items or spells but no actual chance to crit
-		critChance = CritBonus/10 + 1; //Give them a small one so skills and items appear to have some effect.
-
-	critChance += ((critChance) * (CritBonus) / 100); //crit chance is a % increase to your reg chance
+	if(CritBonus > 0) {
+		if(critChance == 0) //If we have a bonus to crit in items or spells but no actual chance to crit
+			critChance = (CritBonus / 100) + 1; //Give them a small one so skills and items appear to have some effect.
+		else
+			critChance += (critChance * CritBonus / 100); //crit chance is a % increase to your reg chance
+	}
+		
 	if(GetAA(aaSlayUndead)){
 		if(defender && defender->GetBodyType() == BT_Undead || defender->GetBodyType() == BT_SummonedUndead || defender->GetBodyType() == BT_Vampire){
 			switch(GetAA(aaSlayUndead)){

@@ -1,5 +1,12 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==11/20/2010==
+Caryatis: Fix for discs being resisted too much, beneficial spells and resurrection effects will no longer be resistable.
+Caryatis: Fix for CriticalHitChance being calculated incorrectly, leading to massively increased crit rates.
+
+Optional SQL: 1736_optional_sql_feral_swipe
+Required SQL: 1737_required_sql_rule_and_aa_update
+
 ==11/14/2010==
 Derision: Underfoot: Buff removal should now work correctly.
 Derision: Underfoot: Fixed Pet Buff window.
