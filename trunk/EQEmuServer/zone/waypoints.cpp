@@ -143,6 +143,7 @@ void NPC::PauseWandering(int pausetime)
 	// otherwise automatically resume when time is up
 	if (GetGrid() != 0)
 	{
+		DistractedFromGrid = true;
 		mlog(QUESTS__PATHING, "Paused Wandering requested. Grid %d. Resuming in %d ms (0=not until told)", GetGrid(), pausetime);
 		SendPosition();
 		if (pausetime<1)

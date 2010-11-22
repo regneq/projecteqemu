@@ -1311,7 +1311,7 @@ protected:
 	Timer *PathingLOSCheckTimer;
 	Timer *PathingRouteUpdateTimerShort;
 	Timer *PathingRouteUpdateTimerLong;
-	int AggroedAwayFromGrid;
+	bool DistractedFromGrid;
 	int PathingTraversedNodes;
 
 	int32 pDontHealMeBefore;

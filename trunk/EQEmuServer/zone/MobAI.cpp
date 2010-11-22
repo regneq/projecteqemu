@@ -1564,9 +1564,6 @@ void NPC::AI_DoMovement() {
 					
 					mlog(QUESTS__PATHING, "We are departing waypoint %d.", cur_wp);
 
-					if(AggroedAwayFromGrid > 0)
-						--AggroedAwayFromGrid;
-					
 					//if we were under quest control (with no grid), we are done now..
 					if(cur_wp == -2) {
 						mlog(QUESTS__PATHING, "Non-grid quest mob has reached its quest ordered waypoint. Leaving pathing mode.");
@@ -1577,16 +1574,23 @@ void NPC::AI_DoMovement() {
 					if(GetAppearance() != eaStanding)
 						SetAppearance(eaStanding, false);
 					
-					//kick off event_waypoint depart
-					char temp[16]; 
-					sprintf(temp, "%d", cur_wp);
-					parse->Event(EVENT_WAYPOINT_DEPART,this->GetNPCTypeID(), temp, CastToNPC(), NULL); 
-					
 					entity_list.OpenDoorsNear(CastToNPC());
-					//setup our next waypoint, if we are still on our normal grid
-					//remember that the quest event above could have done anything it wanted with our grid
-					if(gridno > 0)
-						CastToNPC()->CalculateNewWaypoint();
+
+					if(!DistractedFromGrid) {
+						//kick off event_waypoint depart
+						char temp[16]; 
+						sprintf(temp, "%d", cur_wp);
+						parse->Event(EVENT_WAYPOINT_DEPART,this->GetNPCTypeID(), temp, CastToNPC(), NULL); 
+					
+						//setup our next waypoint, if we are still on our normal grid
+						//remember that the quest event above could have done anything it wanted with our grid
+						if(gridno > 0) {
+							CastToNPC()->CalculateNewWaypoint();
+						}
+					}
+					else {
+						DistractedFromGrid = false;
+					}
                 } 
             }	// endif (movetimercompleted==true)     
 			else if (!(AIwalking_timer->Enabled()))
@@ -1614,7 +1618,7 @@ void NPC::AI_DoMovement() {
 				} 
 				else
 				{	// not at waypoint yet, so keep moving
-					if(!RuleB(Pathing, AggroReturnToGrid) || !zone->pathing || (AggroedAwayFromGrid == 0))
+					if(!RuleB(Pathing, AggroReturnToGrid) || !zone->pathing || (DistractedFromGrid == 0))
 						CalculateNewPosition2(cur_wp_x, cur_wp_y, cur_wp_z, walksp, true); 
 					else
 					{
@@ -1707,6 +1711,10 @@ void Mob::AI_Event_Engaged(Mob* attacker, bool iYellForHelp) {
 
 	if(IsNPC())
 	{
+		if(CastToNPC()->GetGrid() > 0)
+		{
+			DistractedFromGrid = true;
+		}
 		if(attacker && !attacker->IsCorpse())
 		{
 			//Because sometimes the AIYellForHelp triggers another engaged and then immediately a not engaged
@@ -1748,11 +1756,6 @@ void Mob::AI_Event_NoLongerEngaged() {
 		{
 			parse->Event(EVENT_COMBAT, CastToNPC()->GetNPCTypeID(), "0", CastToNPC(), NULL);
 			CastToNPC()->SetCombatEvent(false);
-		}
-
-		if(CastToNPC()->GetGrid() > 0)
-		{
-			AggroedAwayFromGrid = 2;
 		}
 	}
 }
