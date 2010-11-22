@@ -452,14 +452,17 @@ namespace EQPacket
                         {
                             int Size = 0;
 
-                            if ((Uncompressed[BufferPosition] == 0xff) && (Uncompressed[BufferPosition + 1] == 0x01))
+                            if (Uncompressed[BufferPosition] == 0xff)
                             {
+                                if (Uncompressed[BufferPosition + 1] == 0x01)
+                                    Size = 256 + Uncompressed[BufferPosition + 2];
+                                else
+                                    Size = Uncompressed[BufferPosition + 2];
 
-                                Size = 256 + Uncompressed[BufferPosition + 2];
                                 BufferPosition += 3;
                             }
                             else
-                                Size = Uncompressed[BufferPosition++];
+                                Size = Uncompressed[BufferPosition++];                            
 
                             int AppOpCode = Uncompressed[BufferPosition++] + (Uncompressed[BufferPosition++] * 256);
                             
