@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==11/22/2010==
+JJ: Updated waypoint handling to properly account for aggro and quest engagements. NPCs will no longer skip waypoints when distracted from their grid path when resuming wandering.
+
 ==11/20/2010==
 Caryatis: Fix for discs being resisted too much, beneficial spells and resurrection effects will no longer be resistable.
 Caryatis: Fix for CriticalHitChance being calculated incorrectly, leading to massively increased crit rates.

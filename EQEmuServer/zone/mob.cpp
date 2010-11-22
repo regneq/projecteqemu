@@ -379,7 +379,7 @@ Mob::Mob(const char*   in_name,
 	PathingLOSCheckTimer = new Timer(RuleI(Pathing, LOSCheckFrequency));
 	PathingRouteUpdateTimerShort = new Timer(RuleI(Pathing, RouteUpdateFrequencyShort));
 	PathingRouteUpdateTimerLong = new Timer(RuleI(Pathing, RouteUpdateFrequencyLong));
-	AggroedAwayFromGrid = 0;
+	DistractedFromGrid = false;
 	PathingTraversedNodes = 0;
 	hate_list.SetOwner(this);
 }
