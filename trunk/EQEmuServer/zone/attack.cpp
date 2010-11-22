@@ -3850,7 +3850,7 @@ void Mob::TryCriticalHit(Mob *defender, int16 skill, sint32 &damage)
 		return;
 	}
 
-	int critChance = RuleI(Combat, BaseCritChance);
+	int critChance = RuleI(Combat, MeleeBaseCritChance);
 	if(IsClient())
 		critChance += RuleI(Combat, ClientBaseCritChance);
 	
