@@ -425,7 +425,7 @@ namespace EQExtractor2.Patches
                 NewSpawn.DestructableString2 = "";
                 NewSpawn.DestructableString3 = "";
 
-                if ((OtherData & 1) > 0)
+                if ((OtherData & 3) > 0)
                 {
                     // Destructable Objects. Not handled yet
                     //
