@@ -402,8 +402,17 @@ void Object::HandleAutoCombine(Client* user, const RecipeAutoCombine_Struct* rac
 				safe_delete(outapp);
 				return;
 			}
-			
-			user->DeleteItemInInventory(slot, 1, true);
+
+			const ItemInst* inst = user_inv.GetItem(slot);
+
+			if (inst && !inst->IsStackable())
+			{
+				user->DeleteItemInInventory(slot, 0, true);
+			}
+			else
+			{
+				user->DeleteItemInInventory(slot, 1, true);
+			}
 		}
 	}
 	

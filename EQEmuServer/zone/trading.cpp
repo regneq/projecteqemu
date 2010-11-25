@@ -399,14 +399,14 @@ void Client::FinishTrade(Mob* tradingWith) {
 				const Item_Struct* item2 = database.GetItem(items[i-3000]);
 				// Handle non-quest NPC trading
 				if (item2 && quest_npc == false) {
-					//if it was not a NO DROP item (or if a GM is trading), let the NPC have it
-					if(GetGM() || item2->NoDrop != 0) {
+					// if it was not a NO DROP or Attuned item (or if a GM is trading), let the NPC have it
+					if(GetGM() || (item2->NoDrop != 0 && inst->IsInstNoDrop() == false)) {
 						xy++;
 						if (xy <= 20) {	// 20 items max in an NPC loot table
 							tradingWith->CastToNPC()->AddLootDrop(item2, &tradingWith->CastToNPC()->itemlist, charges[i-3000], true, true);
 						}
 					}
-					// Return NO DROP items being handed into a non-quest NPC if the rule is true
+					// Return NO DROP and Attuned items being handed into a non-quest NPC if the rule is true
 					else if (RuleB(NPC, ReturnNonQuestNoDropItems)) {
 						PushItemOnCursor(*inst, true);
 					}
