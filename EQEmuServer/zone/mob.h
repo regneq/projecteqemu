@@ -224,9 +224,9 @@ struct StatBonuses {
 	uint16	ReverseDamageShieldSpellID;
 	DmgShieldType	ReverseDamageShieldType;
 	int		movementspeed;
-	sint8	haste;
-	sint8	hastetype2;
-	sint8	hastetype3;
+	sint16	haste;
+	sint16	hastetype2;
+	sint16	hastetype3;
 	float	AggroRange;							// when calculate just replace original value with this
 	float	AssistRange;
 	sint16	skillmod[HIGHEST_SKILL+1];
@@ -1337,7 +1337,7 @@ protected:
 	bool m_hasPartialMeleeRune;
 	bool m_hasPartialSpellRune;
 	bool m_hasDeathSaveChance;
-	uint32 m_spellHitsLeft[EFFECT_COUNT]; // Used to track which spells will have their numhits incremented when spell finishes casting
+	uint32 m_spellHitsLeft[38]; // Used to track which spells will have their numhits incremented when spell finishes casting, 38 Buffslots
 	int	flymode;
 	int QGVarDuration(const char *fmt);
 	void InsertQuestGlobal(int charid, int npcid, int zoneid, const char *name, const char *value, int expdate);

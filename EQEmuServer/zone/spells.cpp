@@ -3011,7 +3011,7 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar)
 	// solar: resist check - every spell can be resisted, beneficial or not
 	// add: ok this isn't true, eqlive's spell data is fucked up, buffs are
 	// not all unresistable, so changing this to only check certain spells
-	if(IsResistableSpell(spell_id) || (MakeRandomInt(0,99) < CalcResistChanceBonus() && IsDetrimentalSpell(spell_id) && spells[spell_id].dispel_flag == 0))
+	if(IsResistableSpell(spell_id) || (MakeRandomInt(0,99) < spelltar->CalcResistChanceBonus() && IsDetrimentalSpell(spell_id) && spells[spell_id].dispel_flag == 0))
 	{
 		spell_effectiveness = spelltar->ResistSpell(spells[spell_id].resisttype, spell_id, this);
 		if(spell_effectiveness < 100)
@@ -3147,7 +3147,7 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar)
 			}
 		}
 
-	if(spelltar->spellbonuses.SpellDamageShield)
+	if(spelltar->spellbonuses.SpellDamageShield && IsDetrimentalSpell(spell_id))
 		spelltar->DamageShield(this, true);
 		
 	TrySpellTrigger(spelltar, spell_id);

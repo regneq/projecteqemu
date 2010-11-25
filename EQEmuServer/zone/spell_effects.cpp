@@ -140,8 +140,6 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 		buffs[buffslot].melee_rune = 0;
 		buffs[buffslot].magic_rune = 0;
 		buffs[buffslot].numhits = 0;
-		if(spells[spell_id].numhits > 0)
-			buffs[buffslot].numhits = spells[spell_id].numhits;
 			
 		if(IsClient() && CastToClient()->GetClientVersionBit() & BIT_Live)
 		{
@@ -169,6 +167,9 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 		}
 	}
 
+	if(spells[spell_id].numhits > 0)
+		buffs[buffslot].numhits = spells[spell_id].numhits;
+	
 	// iterate through the effects in the spell
 	for (i = 0; i < EFFECT_COUNT; i++)
 	{
@@ -4433,11 +4434,9 @@ sint16 Client::GetFocusEffect(focusType type, int16 spell_id) {
 				focusspell_tracker = focusspellid;
 			}
 	}
-	if(buff_tracker >= 0) {
-		for(int d = 0; d < EFFECT_COUNT; d++) {
-			if(!m_spellHitsLeft[d])
-				m_spellHitsLeft[d] = focusspell_tracker;
-		}
+	// For effects like gift of mana that only fire once, save the spellid into an array that consists of all available buff slots.
+	if(buff_tracker >= 0 && buffs[buff_tracker].numhits > 0) {
+		m_spellHitsLeft[buff_tracker] = focusspell_tracker;
 	}
 	
 	// AA Focus
@@ -4480,23 +4479,19 @@ bool Mob::CheckHitsRemaining(uint32 buff_slot, bool when_spell_done, bool negate
 	// For spells with limited number of casts
 	if(when_spell_done) {
 		uint32 buff_max = GetMaxTotalSlots();
-		for(int d = 0; d < EFFECT_COUNT; d++) {
+		// Go through all possible saved spells with limited hits, the place in the array is the same as the buff slot
+		for(int d = 0; d < buff_max; d++) {
 			if(!m_spellHitsLeft[d])
 				continue;
-						
-			for (int i = 0; i < buff_max; i++) {
-				if (buffs[i].spellid == 0 || buffs[i].spellid >= SPDAT_RECORDS)
-					continue;
-				
-				if (m_spellHitsLeft[d] == buffs[i].spellid) {
-					if(buffs[i].numhits > 1) {
-						buffs[i].numhits--;
-						return true;
-					}
-					else {
-						if(!TryFadeEffect(i))
-							BuffFadeBySlot(i, true);
-					}
+			// Double check to make sure the saved spell matches the buff in that slot
+			if (m_spellHitsLeft[d] == buffs[d].spellid) {
+				if(buffs[d].numhits > 1) {
+					buffs[d].numhits--;
+					return true;
+				}
+				else {
+					if(!TryFadeEffect(d))
+						BuffFadeBySlot(d, true);
 				}
 			}
 		}

@@ -3,9 +3,20 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==11/24/2010==
 Trevius: The Rule, NPC:ReturnNonQuestNoDropItems, will now also return items that have been Attuned to a character as well as normal NO DROP items if set to true.
 Trevius: Fixed an issue with tradeskill auto-combines.
+Caryatis: Fix for SpellResistChance, Hit-limited focus effects(eg Gift of Mana) & SpellDamageShield(no longer will trigger on beneficial spells).
+Caryatis: Showstats window will not show mana fields if the class does not use mana(to preserve the already shaky alignment).
+Caryatis: (bad_captain) Removed the level bonus granted to standing mana regen, it was not like live and diminished the need to sit or use a horse considerably.
+Caryatis: (bad_captain) Bots have been updated, see forums for complete details(new command: #bot showstats).
+Caryatis: (Secrets) Haste values can exceed 127%(ie Can o' Whoop Ass).
+
+Optional SQL: 1746_optional_sql_bot_manaregen
 
 ==11/22/2010==
 JJ: Updated waypoint handling to properly account for aggro and quest engagements. NPCs will no longer skip waypoints when distracted from their grid path when resuming wandering.
+
+==11/21/2010==
+Caryatis: Implemented SE_SkillDamageAmount & SE_Amnesia(silence vs disciplines), SE_CripplingBlow
+Caryatis: Updated Silence so that is no longer prevents the use of disciplines(like live)
 
 ==11/20/2010==
 Caryatis: Fix for discs being resisted too much, beneficial spells and resurrection effects will no longer be resistable.
