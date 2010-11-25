@@ -1055,11 +1055,11 @@ sint32 Client::CalcManaRegen()
 			CheckIncreaseSkill(MEDITATE, NULL, -5);
 		}
 		else
-			regen = 2 + spellbonuses.ManaRegen + itembonuses.ManaRegen + (clevel / 5);
+			regen = 2 + spellbonuses.ManaRegen + itembonuses.ManaRegen;
 	}
 	else {
 		this->medding = false;
-		regen = 2 + spellbonuses.ManaRegen + itembonuses.ManaRegen + (clevel / 5);
+		regen = 2 + spellbonuses.ManaRegen + itembonuses.ManaRegen;
 	}
 
 	if(GetCasterClass() == 'I')
