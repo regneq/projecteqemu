@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==11/24/2010==
+Trevius: The Rule, NPC:ReturnNonQuestNoDropItems, will now also return items that have been Attuned to a character as well as normal NO DROP items if set to true.
+Trevius: Fixed an issue with tradeskill auto-combines.
+
 ==11/22/2010==
 JJ: Updated waypoint handling to properly account for aggro and quest engagements. NPCs will no longer skip waypoints when distracted from their grid path when resuming wandering.
 
