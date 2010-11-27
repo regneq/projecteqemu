@@ -1,11 +1,11 @@
-#ifndef Live_H_
-#define Live_H_
+#ifndef HoT_H_
+#define HoT_H_
 
 #include "../StructStrategy.h"
 
 class EQStreamIdentifier;
 
-namespace Live {
+namespace HoT {
 	
 	//these are the only public member of this namespace.
 	extern void Register(EQStreamIdentifier &into);
@@ -26,11 +26,11 @@ namespace Live {
 		
 		//magic macro to declare our opcode processors
 		#include "SSDeclare.h"
-		#include "Live_ops.h"
+		#include "HoT_ops.h"
 	};
 	
 };
 
 
 
-#endif /*Live_H_*/
+#endif /*HoT_H_*/

@@ -117,14 +117,16 @@ typedef enum {
 	MQGhost
 } CheatTypes;
 
-#define BIT_Client62	1
-#define BIT_Titanium	2
-#define BIT_SoF		4
-#define BIT_SoD		8
-#define BIT_Live	0x80000000
-#define BIT_SoFAndLater 0xFFFFFFFC
-#define BIT_SoDAndLater	0xFFFFFFF8
-#define BIT_AllClients	0xFFFFFFFF
+#define BIT_Client62		1
+#define BIT_Titanium		2
+#define BIT_SoF			4
+#define BIT_SoD			8
+#define BIT_Underfoot		16
+#define BIT_HoT			32
+#define BIT_SoFAndLater 	0xFFFFFFFC
+#define BIT_SoDAndLater		0xFFFFFFF8
+#define BIT_UnderfootAndLater	0xFFFFFFF0
+#define BIT_AllClients		0xFFFFFFFF
 
 typedef enum {
 	EQClientUnknown = 0,
@@ -132,7 +134,8 @@ typedef enum {
 	EQClientTitanium,
 	EQClientSoF,
 	EQClientSoD,
-	EQClientLive = 255
+	EQClientUnderfoot,
+	EQClientHoT
 } EQClientVersion;
 
 enum {
