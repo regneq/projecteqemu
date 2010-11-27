@@ -1,6 +1,6 @@
 
 #include "../debug.h"
-#include "Live.h"
+#include "HoT.h"
 #include "../opcodemgr.h"
 #include "../logsys.h"
 #include "../EQStreamIdent.h"
@@ -9,15 +9,15 @@
 #include "../eq_packet_structs.h"
 #include "../MiscFunctions.h"
 #include "../Item.h"
-#include "Live_structs.h"
+#include "HoT_structs.h"
 #include "../rulesys.h"
 
 #include <iostream>
 #include <sstream>
 
-namespace Live {
+namespace HoT {
 
-static const char *name = "Live";
+static const char *name = "HoT";
 static OpcodeManager *opcodes = NULL;
 static Strategy struct_strategy;
 
@@ -89,7 +89,7 @@ Strategy::Strategy()
 {
 	//all opcodes default to passthrough.
 	#include "SSRegister.h"
-	#include "Live_ops.h"
+	#include "HoT_ops.h"
 }
 
 std::string Strategy::Describe() const {
@@ -104,65 +104,173 @@ std::string Strategy::Describe() const {
 #include "SSDefine.h"
 
 
-// Converts Titanium Slot IDs to Live Slot IDs for use in Encodes
-static inline int32 TitaniumToLiveSlot(int32 TitaniumSlot) {
-	int32 LiveSlot = 0;
+// Converts Titanium Slot IDs to HoT Slot IDs for use in Encodes
+static inline structs::HoTSlotStruct TitaniumToHoTSlot(int32 TitaniumSlot)
+{
+	structs::HoTSlotStruct HoTSlot;
 
-	if(TitaniumSlot >= 21 && TitaniumSlot <= 50)	// Cursor/Ammo/Power Source and Normal Inventory Slots
+	// Power Source
+	if(TitaniumSlot == 9999)
 	{
-		LiveSlot = TitaniumSlot + 1;
+		HoTSlot.Bank = 0;
+		HoTSlot.MainSlot = 21;
+		HoTSlot.SubSlot = 0xffff;
+
+		return HoTSlot;
 	}
-	else if(TitaniumSlot >= 251 && TitaniumSlot <= 340)		// Bag Slots for Normal Inventory and Cursor 
+
+	// Ammo
+	if(TitaniumSlot == 21)
 	{
-		LiveSlot = TitaniumSlot + 11;
+		HoTSlot.Bank = 0;
+		HoTSlot.MainSlot = 22;
+		HoTSlot.SubSlot = 0xffff;
+
+		return HoTSlot;
 	}
-	else if(TitaniumSlot >= 2031 && TitaniumSlot <= 2270)	// Bank Bag Slots
+
+	if((TitaniumSlot >= 22) && (TitaniumSlot <= 29))
 	{
-		LiveSlot = TitaniumSlot + 1;
+		HoTSlot.Bank = 0;
+		HoTSlot.SubSlot = 0xffff;
+		switch(TitaniumSlot)
+		{
+			case 22:
+				HoTSlot.MainSlot = 23;
+				break;
+			case 23:
+				HoTSlot.MainSlot = 25;
+				break;
+			case 24:
+				HoTSlot.MainSlot = 27;
+				break;
+			case 25:
+				HoTSlot.MainSlot = 29;
+				break;
+			case 26:
+				HoTSlot.MainSlot = 24;
+				break;
+			case 27:
+				HoTSlot.MainSlot = 26;
+				break;
+			case 28:
+				HoTSlot.MainSlot = 28;
+				break;
+			case 29:
+				HoTSlot.MainSlot = 30;
+				break;
+
+			default:	// Shouldn't get here
+				HoTSlot.MainSlot = TitaniumSlot;
+		}
+		//_log(NET__ERROR, "Main Inv TitaniumSlot is %i, HoTSlot is %i, %i", TitaniumSlot, HoTSlot.MainSlot, HoTSlot.SubSlot);
+		return HoTSlot;
 	}
-	else if(TitaniumSlot >= 2531 && TitaniumSlot <= 2550)	// Shared Bank Bag Slots
+
+	if((TitaniumSlot >= 2000) && (TitaniumSlot <= 2023))
 	{
-		LiveSlot = TitaniumSlot + 1;
+		HoTSlot.Bank = 1;
+		HoTSlot.MainSlot = TitaniumSlot - 2000;
+		HoTSlot.SubSlot = 0xffff;
+
+		return HoTSlot;
 	}
-	else if(TitaniumSlot == 9999)	//Unused slot ID to give a place to save Power Slot
+
+	if((TitaniumSlot >= 2031) && (TitaniumSlot <= 2270))
 	{
-		LiveSlot = 21;
+		HoTSlot.Bank = 1;
+		HoTSlot.MainSlot = (TitaniumSlot - 2031) / 10;
+		HoTSlot.SubSlot = (TitaniumSlot - 2031) - (HoTSlot.MainSlot * 10);
+		//_log(NET__ERROR, "Converted bank bag slot %i to %i, %i", TitaniumSlot, HoTSlot.MainSlot, HoTSlot.SubSlot);
+
+		return HoTSlot;
+	}
+
+	HoTSlot.Bank = 0;
+
+	if(TitaniumSlot == 30)
+	{
+		HoTSlot.MainSlot = 33;
+		HoTSlot.SubSlot = 0xffff;
+	}
+	else if((TitaniumSlot >= 251) && (TitaniumSlot <= 260))
+	{
+		HoTSlot.MainSlot = 23;
+		HoTSlot.SubSlot = TitaniumSlot - 251;
+	}
+	else if((TitaniumSlot >= 261) && (TitaniumSlot <= 270))
+	{
+		HoTSlot.MainSlot = 24;
+		HoTSlot.SubSlot = TitaniumSlot - 261;
+	}
+	else if((TitaniumSlot >= 271) && (TitaniumSlot <= 280))
+	{
+		HoTSlot.MainSlot = 25;
+		HoTSlot.SubSlot = TitaniumSlot - 271;
+	}
+	else if((TitaniumSlot >= 281) && (TitaniumSlot <= 290))
+	{
+		HoTSlot.MainSlot = 26;
+		HoTSlot.SubSlot = TitaniumSlot - 281;
+	}
+	else if((TitaniumSlot >= 291) && (TitaniumSlot <= 300))
+	{
+		HoTSlot.MainSlot = 27;
+		HoTSlot.SubSlot = TitaniumSlot - 291;
+	}
+	else if((TitaniumSlot >= 301) && (TitaniumSlot <= 310))
+	{
+		HoTSlot.MainSlot = 28;
+		HoTSlot.SubSlot = TitaniumSlot - 301;
+	}
+	else if((TitaniumSlot >= 311) && (TitaniumSlot <= 320))
+	{
+		HoTSlot.MainSlot = 29;
+		HoTSlot.SubSlot = TitaniumSlot - 311;
+	}
+	else if((TitaniumSlot >= 321) && (TitaniumSlot <= 330))
+	{
+		HoTSlot.MainSlot = 30;
+		HoTSlot.SubSlot = TitaniumSlot - 321;
 	}
 	else
 	{
-		LiveSlot = TitaniumSlot;
-	}	
-	
-	return LiveSlot;
+		HoTSlot.MainSlot = TitaniumSlot;
+		HoTSlot.SubSlot = 0xffff;
+	}
+
+	//_log(NET__ERROR, "HotSlot is %i, HoTSlot is %i, %i", TitaniumSlot, HoTSlot.MainSlot, HoTSlot.SubSlot);
+
+	return HoTSlot;
 }
 
-// Converts Live Slot IDs to Titanium Slot IDs for use in Decodes
-static inline int32 LiveToTitaniumSlot(int32 LiveSlot) {
+// Converts HoT Slot IDs to Titanium Slot IDs for use in Decodes
+static inline int32 HoTToTitaniumSlot(int32 HoTSlot) {
 	int32 TitaniumSlot = 0;
 	
-	if(LiveSlot >= 22 && LiveSlot <= 51)	// Cursor/Ammo/Power Source and Normal Inventory Slots
+	if(HoTSlot >= 22 && HoTSlot <= 51)	// Cursor/Ammo/Power Source and Normal Inventory Slots
 	{
-		TitaniumSlot = LiveSlot - 1;
+		TitaniumSlot = HoTSlot - 1;
 	}
-	else if(LiveSlot >= 262 && LiveSlot <= 351)	// Bag Slots for Normal Inventory and Cursor 
+	else if(HoTSlot >= 262 && HoTSlot <= 351)	// Bag Slots for Normal Inventory and Cursor 
 	{
-		TitaniumSlot = LiveSlot - 11;
+		TitaniumSlot = HoTSlot - 11;
 	}
-	else if(LiveSlot >= 2032 && LiveSlot <= 2271)	// Bank Bag Slots
+	else if(HoTSlot >= 2032 && HoTSlot <= 2271)	// Bank Bag Slots
 	{
-		TitaniumSlot = LiveSlot - 1;
+		TitaniumSlot = HoTSlot - 1;
 	}
-	else if(LiveSlot >= 2532 && LiveSlot <= 2551)	// Shared Bank Bag Slots
+	else if(HoTSlot >= 2532 && HoTSlot <= 2551)	// Shared Bank Bag Slots
 	{
-		TitaniumSlot = LiveSlot - 1;
+		TitaniumSlot = HoTSlot - 1;
 	}
-	else if(LiveSlot == 21)
+	else if(HoTSlot == 21)
 	{
 		TitaniumSlot = 9999;	//Unused slot ID to give a place to save Power Slot
 	}
 	else
 	{
-		TitaniumSlot = LiveSlot;
+		TitaniumSlot = HoTSlot;
 	}
 
 	return TitaniumSlot;
@@ -218,7 +326,7 @@ ENCODE(OP_OpenNewTasksWindow) {
 
 		__eq_AvailableTaskData1->TaskID = __emu_AvailableTaskData1->TaskID;
 		// This next unknown seems to affect the colour of the task title. 0x3f80000 is what I have seen
-		// in Live packets. Changing it to 0x3f000000 makes the title red.
+		// in HoT packets. Changing it to 0x3f000000 makes the title red.
 		__eq_AvailableTaskData1->unknown1 = 0x3f800000; 
 		__eq_AvailableTaskData1->TimeLimit = __emu_AvailableTaskData1->TimeLimit;
 		__eq_AvailableTaskData1->unknown2 = __emu_AvailableTaskData1->unknown2;
@@ -321,7 +429,7 @@ ENCODE(OP_SendCharInfo) {
 			eq2->level = emu->level[r];
 			eq2->hairstyle = emu->hairstyle[r];
 			eq2->gender = emu->gender[r];
-			memcpy(eq2->name, emu->name[r], strlen(emu->name[r])+1);
+			strcpy(eq2->name, emu->name[r]);
 		}
 		//adjust for name.
 		bufptr += strlen(emu->name[r]);
@@ -447,29 +555,9 @@ ENCODE(OP_LeadershipExpUpdate) {
 	FINISH_ENCODE();
 }
 
-ENCODE(OP_RespondAA) {
-	SETUP_DIRECT_ENCODE(AATable_Struct, structs::AATable_Struct);
-
-	eq->aa_spent = emu->aa_spent;
-	eq->aa_assigned = emu->aa_spent;
-	eq->aa_spent3 = emu->aa_spent;
-	eq->unknown012 = 0;
-	eq->unknown016 = 0;
-	eq->unknown020 = 0;
-
-	for(int i = 0; i < MAX_PP_AA_ARRAY; ++i)
-	{
-		eq->aa_list[i].aa_skill = emu->aa_list[i].aa_skill;
-		eq->aa_list[i].aa_value = emu->aa_list[i].aa_value;
-		eq->aa_list[i].unknown08 = emu->aa_list[i].unknown08;
-	}
-
-	FINISH_ENCODE();
-}
-
 ENCODE(OP_PlayerProfile) {
 	SETUP_DIRECT_ENCODE(PlayerProfile_Struct, structs::PlayerProfile_Struct);
-	
+	_log(NET__ERROR, "Player Profile is %i bytes", sizeof(structs::PlayerProfile_Struct));	
 	uint32 r;
 	
 	eq->available_slots=0xffffffff;
@@ -827,7 +915,7 @@ ENCODE(OP_PetBuffWindow)
 
 	PetBuff_Struct *emu = (PetBuff_Struct *) __emu_buffer;
 
-	int PacketSize = 12 + (emu->buffcount * 17);
+	int PacketSize = 7 + (emu->buffcount * 13);
 
 	in->size = PacketSize;
 
@@ -836,8 +924,6 @@ ENCODE(OP_PetBuffWindow)
 	char *Buffer = (char *)in->pBuffer;
 
 	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->petid);
-	VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
-	VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 1);
 	VARSTRUCT_ENCODE_TYPE(uint16, Buffer, emu->buffcount);
 
 	for(unsigned int i = 0; i < BUFF_COUNT; ++i)
@@ -847,13 +933,13 @@ ENCODE(OP_PetBuffWindow)
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, i);
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->spellid[i]);
 			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, emu->ticsremaining[i]);
-			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0);
 			VARSTRUCT_ENCODE_TYPE(uint8, Buffer, 0);	// This is a string. Name of the caster of the buff.
 		}
 	}
 	VARSTRUCT_ENCODE_TYPE(uint8, Buffer, emu->buffcount);
 
 	delete[] __emu_buffer;
+
 	dest->FastQueuePacket(&in, ack_req);
 }
 
@@ -955,6 +1041,7 @@ ENCODE(OP_BazaarSearch)
 ENCODE(OP_NewSpawn) {  ENCODE_FORWARD(OP_ZoneSpawns); }
 ENCODE(OP_ZoneEntry){  ENCODE_FORWARD(OP_ZoneSpawns); }
 ENCODE(OP_ZoneSpawns) {
+	_log(NET__ERROR, "Sending OP_ZoneEntry");
 		//consume the packet
 		EQApplicationPacket *in = *p;
 		*p = NULL;
@@ -989,6 +1076,9 @@ ENCODE(OP_ZoneSpawns) {
 
 			PacketSize += strlen(emu->name);
 			PacketSize += strlen(emu->lastName);
+
+			emu->title[0] = 0;
+			emu->suffix[0] = 0;
 
 			if(strlen(emu->title))
 				PacketSize += strlen(emu->title) + 1;
@@ -1045,7 +1135,7 @@ ENCODE(OP_ZoneSpawns) {
 			Bitfields->showhelm = emu->showhelm;
 			Bitfields->targetable = 1;
 			Bitfields->targetable_with_hotkey = 1;
-			Bitfields->statue = 0;
+			//Bitfields->statue = 0;
 			Bitfields->trader = 0;
 			Bitfields->buyer = 0;
 
@@ -1191,9 +1281,17 @@ ENCODE(OP_ZoneSpawns) {
 			{
 				VARSTRUCT_ENCODE_STRING(Buffer, emu->suffix);
 			}
-			Buffer += 37; // Unknown;
+			//Buffer += 37; // Unknown;
+			//_log(NET__ERROR, "Buffer was %8X", Buffer);
+			//Buffer = (char *) outapp->pBuffer + (PacketSize - 53);
+			//_log(NET__ERROR, "Buffer Now %8X", Buffer);
 
-			//_log(NET__ERROR, "Sending zone spawn for %s", emu->name);
+			Buffer += 9; // Unknown 8 bytes followed by Merc flag
+			VARSTRUCT_ENCODE_STRING(Buffer, "0000000000000000");
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0xffffffff);
+			VARSTRUCT_ENCODE_TYPE(uint32, Buffer, 0xffffffff);
+
+			//_log(NET__ERROR, "Sending zone spawn for %s packet is %i bytes", emu->name, outapp->size);
 			//_hex(NET__ERROR, outapp->pBuffer, outapp->size);
 			dest->FastQueuePacket(&outapp, ack_req);
 	}
@@ -1368,7 +1466,7 @@ ENCODE(OP_GuildMemberList) {
 #define SlideStructString(field, str) \
 		{ \
 			int sl = strlen(str); \
-			memcpy(e->field, str, sl+1); \
+			strcpy(e->field, str); \
 			e = (structs::GuildMemberEntry_Struct *) ( ((uint8 *)e) + sl ); \
 			str += sl + 1; \
 		}
@@ -1423,13 +1521,13 @@ ENCODE(OP_SpawnDoor) {
 		eq[r].state_at_spawn = emu[r].state_at_spawn;
 		eq[r].invert_state = emu[r].invert_state;
 		eq[r].door_param = emu[r].door_param;
-		eq[r].unknown0076 = 0;
-		eq[r].unknown0077 = 1; // Both must be 1 to allow clicking doors
-		eq[r].unknown0078 = 0;
-		eq[r].unknown0079 = 1; // Both must be 1 to allow clicking doors
 		eq[r].unknown0080 = 0;
-		eq[r].unknown0081 = 0;
+		eq[r].unknown0081 = 1; // Both must be 1 to allow clicking doors
 		eq[r].unknown0082 = 0;
+		eq[r].unknown0083 = 1; // Both must be 1 to allow clicking doors
+		eq[r].unknown0084 = 0;
+		eq[r].unknown0085 = 0;
+		eq[r].unknown0086 = 0;
 	}
 	FINISH_ENCODE();
 }
@@ -1485,6 +1583,19 @@ ENCODE(OP_ManaChange) {
 	OUT(stamina);
 	OUT(spell_id);
 	eq->unknown16 = -1; // Self Interrupt/Success = -1, Fizzle = 1, Other Interrupt = 2?
+	FINISH_ENCODE();
+}
+
+ENCODE(OP_RequestClientZoneChange) {
+	ENCODE_LENGTH_EXACT(RequestClientZoneChange_Struct);
+	SETUP_DIRECT_ENCODE(RequestClientZoneChange_Struct, structs::RequestClientZoneChange_Struct);
+	OUT(zone_id);
+	OUT(instance_id);
+	OUT(y);
+	OUT(x);
+	OUT(z);
+	OUT(heading);
+	OUT(type);
 	FINISH_ENCODE();
 }
 
@@ -1671,11 +1782,19 @@ ENCODE(OP_CancelTrade) {
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_InterruptCast) {
+	ENCODE_LENGTH_EXACT(InterruptCast_Struct);
+	SETUP_DIRECT_ENCODE(InterruptCast_Struct, structs::InterruptCast_Struct);
+	OUT(spawnid);
+	OUT(messageid);
+	FINISH_ENCODE();
+}
+
 ENCODE(OP_ShopPlayerSell) {
 	ENCODE_LENGTH_EXACT(Merchant_Purchase_Struct);
 	SETUP_DIRECT_ENCODE(Merchant_Purchase_Struct, structs::Merchant_Purchase_Struct);
 	OUT(npcid);
-	eq->itemslot = TitaniumToLiveSlot(emu->itemslot);
+	//eq->itemslot = TitaniumToHoTSlot(emu->itemslot);	FIXME
 	OUT(quantity);
 	OUT(price);
 	FINISH_ENCODE();
@@ -1684,7 +1803,7 @@ ENCODE(OP_ShopPlayerSell) {
 ENCODE(OP_ApplyPoison) {
 	ENCODE_LENGTH_EXACT(ApplyPoison_Struct);
 	SETUP_DIRECT_ENCODE(ApplyPoison_Struct, structs::ApplyPoison_Struct);
-	eq->inventorySlot = TitaniumToLiveSlot(emu->inventorySlot);
+	//eq->inventorySlot = TitaniumToHoTSlot(emu->inventorySlot);	FIXME
 	OUT(success);
 	FINISH_ENCODE();
 }
@@ -1693,8 +1812,8 @@ ENCODE(OP_DeleteItem) {
 	ENCODE_LENGTH_EXACT(DeleteItem_Struct);
 	SETUP_DIRECT_ENCODE(DeleteItem_Struct, structs::DeleteItem_Struct);
 
-	eq->from_slot = TitaniumToLiveSlot(emu->from_slot);
-	eq->to_slot = TitaniumToLiveSlot(emu->to_slot);
+	//eq->from_slot = TitaniumToHoTSlot(emu->from_slot);	FIXME
+	//eq->to_slot = TitaniumToHoTSlot(emu->to_slot);	FIXME
 	OUT(number_in_stack);
 
 	FINISH_ENCODE();
@@ -1705,8 +1824,8 @@ ENCODE(OP_MoveItem) {
 	ENCODE_LENGTH_EXACT(MoveItem_Struct);
 	SETUP_DIRECT_ENCODE(MoveItem_Struct, structs::MoveItem_Struct);
 
-	eq->from_slot = TitaniumToLiveSlot(emu->from_slot);
-	eq->to_slot = TitaniumToLiveSlot(emu->to_slot);
+	//eq->from_slot = TitaniumToHoTSlot(emu->from_slot);	FIXME
+	//eq->to_slot = TitaniumToHoTSlot(emu->to_slot);	FIXME
 	OUT(number_in_stack);
 
 	FINISH_ENCODE();
@@ -1716,7 +1835,7 @@ ENCODE(OP_ItemVerifyReply) {
 	ENCODE_LENGTH_EXACT(ItemVerifyReply_Struct);
 	SETUP_DIRECT_ENCODE(ItemVerifyReply_Struct, structs::ItemVerifyReply_Struct);
 
-	eq->slot = TitaniumToLiveSlot(emu->slot);
+	//eq->slot = TitaniumToHoTSlot(emu->slot);	FIXME
 	OUT(spell);
 	OUT(target);
 
@@ -1766,7 +1885,7 @@ ENCODE(OP_TributeItem) {
 	ENCODE_LENGTH_EXACT(TributeItem_Struct);
 	SETUP_DIRECT_ENCODE(TributeItem_Struct, structs::TributeItem_Struct);
 
-	eq->slot = TitaniumToLiveSlot(emu->slot);
+	//eq->slot = TitaniumToHoTSlot(emu->slot);	FIXME
 	OUT(quantity);
 	OUT(tribute_master_id);
 	OUT(tribute_points);
@@ -1813,7 +1932,7 @@ ENCODE(OP_ReadBook) {
 	else
 		eq->window = emu->window;
 	OUT(type);
-	eq->invslot = TitaniumToLiveSlot(emu->invslot);
+	//eq->invslot = TitaniumToHoTSlot(emu->invslot);	FIXME
 	strn0cpy(eq->txtfile, emu->booktext, sizeof(eq->txtfile));
 	FINISH_ENCODE();
 }
@@ -1846,7 +1965,7 @@ ENCODE(OP_ZonePlayerToBind)
 	zph->y = zps->y;
 	zph->z = zps->z;
 	zph->heading = zps->heading;
-	zph->bind_zone_id = zps->bind_zone_id;
+	zph->bind_zone_id = 0;
 	zph->bind_instance_id = zps->bind_instance_id;
 	strcpy(zph->zone_name, zps->zone_name);
 
@@ -1875,7 +1994,7 @@ ENCODE(OP_AdventureMerchantSell) {
 
 	eq->unknown000 = 1;
 	OUT(npcid);
-	eq->slot = TitaniumToLiveSlot(emu->slot);
+	//eq->slot = TitaniumToHoTSlot(emu->slot);	FIXME
 	OUT(charges);
 	OUT(sell_price);
 
@@ -2489,7 +2608,6 @@ ENCODE(OP_BuffCreate)
 	*((uint32*)ptr) = emu->entity_id;
 	ptr += sizeof(uint32);
 	ptr += sizeof(uint32);
-	*((uint8*)ptr) = 1;
 	ptr += sizeof(uchar);
 	*((uint16*)ptr) = emu->count;
 	ptr += sizeof(uint16);
@@ -2545,6 +2663,21 @@ ENCODE(OP_BuffCreate)
 	*/
 }
 
+ENCODE(OP_ZoneChange)
+{
+	ENCODE_LENGTH_EXACT(ZoneChange_Struct);
+	SETUP_DIRECT_ENCODE(ZoneChange_Struct, structs::ZoneChange_Struct);
+
+	memcpy(eq->char_name, emu->char_name, sizeof(emu->char_name));
+	OUT(zoneID);
+	OUT(instanceID);
+	OUT(y);
+	OUT(x);
+	OUT(z)
+	OUT(zone_reason);
+	OUT(success);
+	FINISH_ENCODE();
+}
 DECODE(OP_BazaarSearch)
 {
 	char *Buffer = (char *)__packet->pBuffer;
@@ -2610,7 +2743,7 @@ DECODE(OP_AdventureMerchantSell) {
 	SETUP_DIRECT_DECODE(Adventure_Sell_Struct, structs::Adventure_Sell_Struct);
 
 	IN(npcid);
-	emu->slot = LiveToTitaniumSlot(eq->slot);
+	emu->slot = HoTToTitaniumSlot(eq->slot);
 	IN(charges);
 	IN(sell_price);
 
@@ -2622,7 +2755,7 @@ DECODE(OP_ApplyPoison) {
 	DECODE_LENGTH_EXACT(structs::ApplyPoison_Struct);
 	SETUP_DIRECT_DECODE(ApplyPoison_Struct, structs::ApplyPoison_Struct);
 
-	emu->inventorySlot = LiveToTitaniumSlot(eq->inventorySlot);
+	emu->inventorySlot = HoTToTitaniumSlot(eq->inventorySlot);
 	IN(success);
 
 	FINISH_DIRECT_DECODE();
@@ -2632,7 +2765,7 @@ DECODE(OP_ItemVerifyRequest) {
 	DECODE_LENGTH_EXACT(structs::ItemVerifyRequest_Struct);
 	SETUP_DIRECT_DECODE(ItemVerifyRequest_Struct, structs::ItemVerifyRequest_Struct);
 
-	emu->slot = LiveToTitaniumSlot(eq->slot);
+	emu->slot = HoTToTitaniumSlot(eq->slot);
 	IN(target);
 
 	FINISH_DIRECT_DECODE();
@@ -2642,7 +2775,7 @@ DECODE(OP_Consume) {
 	DECODE_LENGTH_EXACT(structs::Consume_Struct);
 	SETUP_DIRECT_DECODE(Consume_Struct, structs::Consume_Struct);
 
-	emu->slot = LiveToTitaniumSlot(eq->slot);
+	emu->slot = HoTToTitaniumSlot(eq->slot);
 	IN(auto_consumed);
 	IN(type);
 
@@ -2662,7 +2795,7 @@ DECODE(OP_CastSpell) {
 		IN(slot);
 	}
 	IN(spell_id);
-	emu->inventoryslot = LiveToTitaniumSlot(eq->inventoryslot);
+	emu->inventoryslot = HoTToTitaniumSlot(eq->inventoryslot);
 	IN(target_id);
 
 	FINISH_DIRECT_DECODE();
@@ -2673,8 +2806,8 @@ DECODE(OP_DeleteItem)
 	DECODE_LENGTH_EXACT(structs::DeleteItem_Struct);
 	SETUP_DIRECT_DECODE(DeleteItem_Struct, structs::DeleteItem_Struct);
 
-	emu->from_slot = LiveToTitaniumSlot(eq->from_slot);
-	emu->to_slot = LiveToTitaniumSlot(eq->to_slot);
+	emu->from_slot = HoTToTitaniumSlot(eq->from_slot);
+	emu->to_slot = HoTToTitaniumSlot(eq->to_slot);
 	IN(number_in_stack);
 
 	FINISH_DIRECT_DECODE();
@@ -2687,8 +2820,8 @@ DECODE(OP_MoveItem)
 
 	_log(NET__ERROR, "Moved item from %u to %u", eq->from_slot, eq->to_slot);
 
-	emu->from_slot = LiveToTitaniumSlot(eq->from_slot);
-	emu->to_slot = LiveToTitaniumSlot(eq->to_slot);
+	emu->from_slot = HoTToTitaniumSlot(eq->from_slot);
+	emu->to_slot = HoTToTitaniumSlot(eq->to_slot);
 	IN(number_in_stack);
 
 	FINISH_DIRECT_DECODE();
@@ -2897,7 +3030,7 @@ DECODE(OP_ShopPlayerSell) {
 	SETUP_DIRECT_DECODE(Merchant_Purchase_Struct, structs::Merchant_Purchase_Struct);
 
 	IN(npcid);
-	emu->itemslot = LiveToTitaniumSlot(eq->itemslot);
+	emu->itemslot = HoTToTitaniumSlot(eq->itemslot);
 	IN(quantity);
 	IN(price);
 
@@ -2952,7 +3085,7 @@ DECODE(OP_TributeItem) {
 	DECODE_LENGTH_EXACT(structs::TributeItem_Struct);
 	SETUP_DIRECT_DECODE(TributeItem_Struct, structs::TributeItem_Struct);
 
-	emu->slot = LiveToTitaniumSlot(eq->slot);
+	emu->slot = HoTToTitaniumSlot(eq->slot);
 	IN(quantity);
 	IN(tribute_master_id);
 	IN(tribute_points);
@@ -2965,7 +3098,7 @@ DECODE(OP_ReadBook) {
 	SETUP_DIRECT_DECODE(BookRequest_Struct, structs::BookRequest_Struct);
 
 	IN(type);
-	emu->invslot = LiveToTitaniumSlot(eq->invslot);
+	emu->invslot = HoTToTitaniumSlot(eq->invslot);
 	emu->window = (uint8) eq->window;
 	strn0cpy(emu->txtfile, eq->txtfile, sizeof(emu->txtfile));
 
@@ -2976,7 +3109,7 @@ DECODE(OP_TradeSkillCombine) {
 	DECODE_LENGTH_EXACT(structs::NewCombine_Struct);
 	SETUP_DIRECT_DECODE(NewCombine_Struct, structs::NewCombine_Struct);
 
-	emu->container_slot = LiveToTitaniumSlot(eq->container_slot);
+	emu->container_slot = HoTToTitaniumSlot(eq->container_slot);
 
 	FINISH_DIRECT_DECODE();
 }
@@ -3042,45 +3175,18 @@ DECODE(OP_EnvDamage) {
 	FINISH_DIRECT_DECODE();
 }
 
-DECODE(OP_PetCommands)
+DECODE(OP_ZoneChange)
 {
-	DECODE_LENGTH_EXACT(structs::PetCommand_Struct);
-	SETUP_DIRECT_DECODE(PetCommand_Struct, structs::PetCommand_Struct);
-
-	switch(eq->command)
-	{
-		case 0x00:
-			emu->command = 0x04;	// Health
-			break;
-		case 0x01:
-			emu->command = 0x10;	// Leader
-			break;
-		case 0x02:
-			emu->command = 0x07;	// Attack
-			break;
-		case 0x04:
-			emu->command = 0x08;	// Follow
-			break;
-		case 0x05:
-			emu->command = 0x05;	// Guard
-			break;
-		case 0x06:
-			emu->command = 0x09;	// Sit. Needs work. This appears to be a toggle between Sit/Stand now.
-			break;
-		case 0x0c:
-			emu->command = 0x0b;	// Taunt
-			break;
-		case 0x1c:
-			emu->command = 0x01;	// Back
-			break;
-		case 0x1d:
-			emu->command = 0x02;	// Leave/Go Away
-			break;
-		default:
-			emu->command = eq->command;
-	}
-	OUT(unknown);
-
+	DECODE_LENGTH_EXACT(structs::ZoneChange_Struct);
+	SETUP_DIRECT_DECODE(ZoneChange_Struct, structs::ZoneChange_Struct);
+	memcpy(emu->char_name, eq->char_name, sizeof(emu->char_name));
+	IN(zoneID);
+	IN(instanceID);
+	IN(y);
+	IN(x);
+	IN(z)
+	IN(zone_reason);
+	IN(success);
 	FINISH_DIRECT_DECODE();
 }
 
@@ -3146,13 +3252,20 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 
 	const Item_Struct *item = inst->GetItem();
 	//_log(NET__ERROR, "Serialize called for: %s", item->Name);
-	Live::structs::ItemSerializationHeader hdr;
+	
+	HoT::structs::ItemSerializationHeader hdr;
+
+	sprintf(hdr.unknown000, "tdm006G0002I1G00");
 	hdr.stacksize = stackable ? charges : 1;
 	hdr.unknown004 = 0;
 
-	sint32 slot_id = TitaniumToLiveSlot(slot_id_in);
+	structs::HoTSlotStruct slot_id = TitaniumToHoTSlot(slot_id_in);
 
-	hdr.slot = (merchant_slot == 0) ? slot_id : merchant_slot;
+	//hdr.slot = (merchant_slot == 0) ? slot_id : merchant_slot;
+	hdr.unknown008 = slot_id.Bank;
+	hdr.main_slot = slot_id.MainSlot;
+	hdr.sub_slot = slot_id.SubSlot;
+	hdr.unknown013 = 0xffff;
 	hdr.price = inst->GetPrice();
 	hdr.merchant_slot = (merchant_slot == 0) ? 1 : inst->GetMerchantCount();
 	hdr.unknown020 = 0;
@@ -3169,8 +3282,13 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	hdr.unknown061 = 0;
 	hdr.unknown062 = 0;
 	hdr.ItemClass = item->ItemClass;
+	hdr.unknowna1 = 0;
+	hdr.unknowna2 = 0;
+	hdr.unknowna3 = 0xffffffff;
+	hdr.unknowna4 = 0;
 
-	ss.write((const char*)&hdr, sizeof(Live::structs::ItemSerializationHeader));
+	ss.write((const char*)&hdr, sizeof(HoT::structs::ItemSerializationHeader));
+
 
 	if(strlen(item->Name) > 0)
 	{
@@ -3202,8 +3320,9 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 		ss.write((const char*)&null_term, sizeof(uint8));
 	}
 
-	Live::structs::ItemBodyStruct ibs;
-	memset(&ibs, 0, sizeof(Live::structs::ItemBodyStruct));
+	//_log(NET__ERROR, "ItemBody struct is %i bytes", sizeof(HoT::structs::ItemBodyStruct));
+	HoT::structs::ItemBodyStruct ibs;
+	memset(&ibs, 0, sizeof(HoT::structs::ItemBodyStruct));
 
 	uint32 adjusted_slots = item->Slots;
 
@@ -3229,6 +3348,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 
 	ibs.id = item->ID;
 	ibs.weight = item->Weight;
+	memset(&ibs.unknownHoT1, 0, sizeof(ibs.unknownHoT1));
 	ibs.norent = item->NoRent;
 	ibs.nodrop = item->NoDrop;
 	ibs.attune = item->Attuneable;
@@ -3309,7 +3429,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	ibs.FactionAmt4 = item->FactionAmt4;
 	ibs.FactionMod4 = item->FactionMod4;
 
-	ss.write((const char*)&ibs, sizeof(Live::structs::ItemBodyStruct));
+	ss.write((const char*)&ibs, sizeof(HoT::structs::ItemBodyStruct));
 
 	//charm text
 	if(strlen(item->CharmFile) > 0)
@@ -3322,8 +3442,9 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 		ss.write((const char*)&null_term, sizeof(uint8));
 	}
 
-	Live::structs::ItemSecondaryBodyStruct isbs;
-	memset(&isbs, 0, sizeof(Live::structs::ItemSecondaryBodyStruct));
+	//_log(NET__ERROR, "ItemBody secondary struct is %i bytes", sizeof(HoT::structs::ItemSecondaryBodyStruct));
+	HoT::structs::ItemSecondaryBodyStruct isbs;
+	memset(&isbs, 0, sizeof(HoT::structs::ItemSecondaryBodyStruct));
 
 	isbs.augtype = item->AugType;
 	isbs.augrestrict = item->AugRestrict;
@@ -3349,7 +3470,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	isbs.book = item->Book;
 	isbs.booktype = item->BookType;
 
-	ss.write((const char*)&isbs, sizeof(Live::structs::ItemSecondaryBodyStruct));
+	ss.write((const char*)&isbs, sizeof(HoT::structs::ItemSecondaryBodyStruct));
 
 	if(strlen(item->Filename) > 0)
 	{
@@ -3361,8 +3482,9 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 		ss.write((const char*)&null_term, sizeof(uint8));
 	}
 
-	Live::structs::ItemTertiaryBodyStruct itbs;
-	memset(&itbs, 0, sizeof(Live::structs::ItemTertiaryBodyStruct));
+	//_log(NET__ERROR, "ItemBody tertiary struct is %i bytes", sizeof(HoT::structs::ItemTertiaryBodyStruct));
+	HoT::structs::ItemTertiaryBodyStruct itbs;
+	memset(&itbs, 0, sizeof(HoT::structs::ItemTertiaryBodyStruct));
 	
 	itbs.loregroup = item->LoreGroup;
 	itbs.artifact = item->ArtifactFlag;
@@ -3383,13 +3505,14 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	itbs.no_transfer = item->NoTransfer;
 	itbs.expendablearrow = item->ExpendableArrow;
 
-	ss.write((const char*)&itbs, sizeof(Live::structs::ItemTertiaryBodyStruct));
+	ss.write((const char*)&itbs, sizeof(HoT::structs::ItemTertiaryBodyStruct));
 
 	// Effect Structures Broken down to allow variable length strings for effect names
 	sint32 effect_unknown = 0;
 
-	Live::structs::ClickEffectStruct ices;
-	memset(&ices, 0, sizeof(Live::structs::ClickEffectStruct));
+	//_log(NET__ERROR, "ItemBody Click effect struct is %i bytes", sizeof(HoT::structs::ClickEffectStruct));
+	HoT::structs::ClickEffectStruct ices;
+	memset(&ices, 0, sizeof(HoT::structs::ClickEffectStruct));
 
 	ices.effect = item->Click.Effect;
 	ices.level2 = item->Click.Level2;
@@ -3400,7 +3523,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	ices.recast = item->RecastDelay;
 	ices.recast_type = item->RecastType;
 
-	ss.write((const char*)&ices, sizeof(Live::structs::ClickEffectStruct));
+	ss.write((const char*)&ices, sizeof(HoT::structs::ClickEffectStruct));
 
 	if(strlen(item->ClickName) > 0)
 	{
@@ -3414,8 +3537,9 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 
 	ss.write((const char*)&effect_unknown, sizeof(sint32));	// clickunk7
 
-	Live::structs::ProcEffectStruct ipes;
-	memset(&ipes, 0, sizeof(Live::structs::ProcEffectStruct));
+	//_log(NET__ERROR, "ItemBody proc effect struct is %i bytes", sizeof(HoT::structs::ProcEffectStruct));
+	HoT::structs::ProcEffectStruct ipes;
+	memset(&ipes, 0, sizeof(HoT::structs::ProcEffectStruct));
 
 	ipes.effect = item->Proc.Effect;
 	ipes.level2 = item->Proc.Level2;
@@ -3423,7 +3547,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	ipes.level = item->Proc.Level;
 	ipes.procrate = item->ProcRate;
 
-	ss.write((const char*)&ipes, sizeof(Live::structs::ProcEffectStruct));
+	ss.write((const char*)&ipes, sizeof(HoT::structs::ProcEffectStruct));
 
 	if(strlen(item->ProcName) > 0)
 	{
@@ -3437,15 +3561,16 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 
 	ss.write((const char*)&effect_unknown, sizeof(sint32));	// unknown5
 
-	Live::structs::WornEffectStruct iwes;
-	memset(&iwes, 0, sizeof(Live::structs::WornEffectStruct));
+	//_log(NET__ERROR, "ItemBody worn effect struct is %i bytes", sizeof(HoT::structs::WornEffectStruct));
+	HoT::structs::WornEffectStruct iwes;
+	memset(&iwes, 0, sizeof(HoT::structs::WornEffectStruct));
 
 	iwes.effect = item->Worn.Effect;
 	iwes.level2 = item->Worn.Level2;
 	iwes.type = item->Worn.Type;
 	iwes.level = item->Worn.Level;
 
-	ss.write((const char*)&iwes, sizeof(Live::structs::WornEffectStruct));
+	ss.write((const char*)&iwes, sizeof(HoT::structs::WornEffectStruct));
 
 	if(strlen(item->WornName) > 0)
 	{
@@ -3459,15 +3584,15 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 
 	ss.write((const char*)&effect_unknown, sizeof(sint32));	// unknown6
 
-	Live::structs::WornEffectStruct ifes;
-	memset(&ifes, 0, sizeof(Live::structs::WornEffectStruct));
+	HoT::structs::WornEffectStruct ifes;
+	memset(&ifes, 0, sizeof(HoT::structs::WornEffectStruct));
 
 	ifes.effect = item->Focus.Effect;
 	ifes.level2 = item->Focus.Level2;
 	ifes.type = item->Focus.Type;
 	ifes.level = item->Focus.Level;
 
-	ss.write((const char*)&ifes, sizeof(Live::structs::WornEffectStruct));
+	ss.write((const char*)&ifes, sizeof(HoT::structs::WornEffectStruct));
 
 	if(strlen(item->FocusName) > 0)
 	{
@@ -3481,15 +3606,15 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 
 	ss.write((const char*)&effect_unknown, sizeof(sint32));	// unknown6
 
-	Live::structs::WornEffectStruct ises;
-	memset(&ises, 0, sizeof(Live::structs::WornEffectStruct));
+	HoT::structs::WornEffectStruct ises;
+	memset(&ises, 0, sizeof(HoT::structs::WornEffectStruct));
 
 	ises.effect = item->Scroll.Effect;
 	ises.level2 = item->Scroll.Level2;
 	ises.type = item->Scroll.Type;
 	ises.level = item->Scroll.Level;
 
-	ss.write((const char*)&ises, sizeof(Live::structs::WornEffectStruct));
+	ss.write((const char*)&ises, sizeof(HoT::structs::WornEffectStruct));
 
 	if(strlen(item->ScrollName) > 0)
 	{
@@ -3504,8 +3629,8 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	ss.write((const char*)&effect_unknown, sizeof(sint32));	// unknown6
 
 	// Bard Effect?
-	Live::structs::WornEffectStruct ibes;
-	memset(&ibes, 0, sizeof(Live::structs::WornEffectStruct));
+	HoT::structs::WornEffectStruct ibes;
+	memset(&ibes, 0, sizeof(HoT::structs::WornEffectStruct));
 
 	ibes.effect = 0xffffffff;
 	ibes.level2 = 0;
@@ -3513,7 +3638,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	ibes.level = 0;
 	//ibes.unknown6 = 0xffffffff;
 
-	ss.write((const char*)&ibes, sizeof(Live::structs::WornEffectStruct));
+	ss.write((const char*)&ibes, sizeof(HoT::structs::WornEffectStruct));
 
 	/*
 	if(strlen(item->BardName) > 0)
@@ -3527,8 +3652,9 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	ss.write((const char*)&effect_unknown, sizeof(sint32));	// unknown6
 	// End of Effects
 
-	Live::structs::ItemQuaternaryBodyStruct iqbs;
-	memset(&iqbs, 0, sizeof(Live::structs::ItemQuaternaryBodyStruct));
+	//_log(NET__ERROR, "ItemBody Quaternary effect struct is %i bytes", sizeof(HoT::structs::ItemQuaternaryBodyStruct));
+	HoT::structs::ItemQuaternaryBodyStruct iqbs;
+	memset(&iqbs, 0, sizeof(HoT::structs::ItemQuaternaryBodyStruct));
 
 	iqbs.scriptfileid = item->ScriptFileID;
 	iqbs.quest_item = item->QuestItemFlag;
@@ -3555,6 +3681,8 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	iqbs.clairvoyance = item->Clairvoyance;
 
 	iqbs.subitem_count = 0;
+
+	memset(&iqbs.unknownHoT, 0, sizeof(iqbs.unknownHoT));
 
 	char *SubSerializations[10];
 
@@ -3585,7 +3713,7 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 		}
 	}
 
-	ss.write((const char*)&iqbs, sizeof(Live::structs::ItemQuaternaryBodyStruct));
+	ss.write((const char*)&iqbs, sizeof(HoT::structs::ItemQuaternaryBodyStruct));
 
 	for(int x = 0; x < 10; ++x) {
 
@@ -3607,4 +3735,4 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	return item_serial;
 }
 
-} //end namespace Live
+} //end namespace HoT

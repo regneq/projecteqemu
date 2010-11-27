@@ -141,7 +141,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 		buffs[buffslot].magic_rune = 0;
 		buffs[buffslot].numhits = 0;
 			
-		if(IsClient() && CastToClient()->GetClientVersionBit() & BIT_Live)
+		if(IsClient() && CastToClient()->GetClientVersionBit() & BIT_UnderfootAndLater)
 		{
 			EQApplicationPacket *outapp = MakeBuffsPacket(false);
 			CastToClient()->FastQueuePacket(&outapp);
@@ -3800,7 +3800,7 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses)
 		safe_delete(outapp);
 	}
 
-	if(IsClient() && CastToClient()->GetClientVersionBit() & BIT_Live)
+	if(IsClient() && CastToClient()->GetClientVersionBit() & BIT_UnderfootAndLater)
 	{
 		EQApplicationPacket *outapp = MakeBuffsPacket(false);
 		CastToClient()->FastQueuePacket(&outapp);

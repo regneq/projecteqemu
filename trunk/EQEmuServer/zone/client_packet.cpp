@@ -516,10 +516,15 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 		ClientVersion = EQClientSoD;
 		ClientVersionBit = BIT_SoD;
 	}
-	else if(StreamDescription == "Patch Live")
+	else if(StreamDescription == "Patch Underfoot")
 	{
-		ClientVersion = EQClientLive;
-		ClientVersionBit = BIT_Live;
+		ClientVersion = EQClientUnderfoot;
+		ClientVersionBit = BIT_Underfoot;
+	}
+	else if(StreamDescription == "Patch HoT")
+	{
+		ClientVersion = EQClientHoT;
+		ClientVersionBit = BIT_HoT;
 	}
 	// Quagmire - Antighost code
 	// tmp var is so the search doesnt find this object
@@ -6467,7 +6472,7 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 	int32 PetCommand = pet->command;
 
 	// Handle Sit/Stand toggle in UF and later.
-	if(GetClientVersion() >= EQClientLive)	// Need to change EQClientLive to EQClientUnderfoot ...
+	if(GetClientVersion() >= EQClientUnderfoot)
 	{
 		if(PetCommand == PET_SITDOWN)
 			if(mypet->GetPetOrder() == SPO_Sit)
@@ -8964,7 +8969,7 @@ void Client::CompleteConnect()
 	worldserver.SendPacket(pack);
 	delete pack;
 
-	if(IsClient() && CastToClient()->GetClientVersionBit() & BIT_Live)
+	if(IsClient() && CastToClient()->GetClientVersionBit() & BIT_UnderfootAndLater)
 	{
 		EQApplicationPacket *outapp = MakeBuffsPacket(false);
 		CastToClient()->FastQueuePacket(&outapp);

@@ -2124,7 +2124,7 @@ void Client::ClearHover()
 	entity_list.QueueClients(this, outapp, false);
 	safe_delete(outapp);
 
-	if(IsClient() && CastToClient()->GetClientVersionBit() & BIT_Live)
+	if(IsClient() && CastToClient()->GetClientVersionBit() & BIT_UnderfootAndLater)
 	{
 		EQApplicationPacket *outapp = MakeBuffsPacket(false);
 		CastToClient()->FastQueuePacket(&outapp);

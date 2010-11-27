@@ -222,7 +222,8 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 
 			string StreamDescription = eqs->Describe();
 
-			if(StreamDescription == "Patch SoF" || StreamDescription == "Patch SoD" || StreamDescription == "Patch Live")
+			if(StreamDescription == "Patch SoF" || StreamDescription == "Patch SoD" || StreamDescription == "Patch Underfoot"
+			   || StreamDescription == "Patch HoT")
 				SoFClient = true;
 
 			LoginInfo_Struct *li=(LoginInfo_Struct *)app->pBuffer;
@@ -717,7 +718,7 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 		}
 		case OP_World_Client_CRC1:
 		case OP_World_Client_CRC2: {
-			// Derision: There is no obvious entry in the CC struct to indicate that the 'Start Tutorial button
+			// There is no obvious entry in the CC struct to indicate that the 'Start Tutorial button
 			// is selected when a character is created. I have observed that in this case, OP_EnterWorld is sent
 			// before OP_World_Client_CRC1. Therefore, if we receive OP_World_Client_CRC1 before OP_EnterWorld,
 			// then 'Start Tutorial' was not chosen.
@@ -734,6 +735,15 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 		case OP_LoginUnknown1:
 		case OP_LoginUnknown2:
 			break;
+
+		case OP_ZoneChange:
+			// HoT sends this to world while zoning and wants it echoed back.
+			if(!eqs->Describe().compare("Patch HoT"))
+			{
+				QueuePacket(app);
+			}
+			break;
+
 
 		default: {
 			clog(WORLD__CLIENT_ERR,"Received unknown EQApplicationPacket");

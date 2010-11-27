@@ -1,5 +1,22 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==11/27/2010==
+Derision: Renamed Live patch to Underfoot.
+Derision: Added basic support for current live patch (HoT).
+
+Note:
+
+HoT support is limited to being able to enter a zone with spawns and items.
+Combat, spells, moving items around, basically anything other than zoning, spawns, initial inventory load and movement will NOT work.
+Note ZoneUnavailable is not implemented, so let at least one dynamic zone finish booting before attempting to enter.
+This support is mainly to allow people to admire HoT zones, full playable HoT support is not planned at this time.
+
+Optional SQL for zone and zonepoint table (thanks to robregen for the collects):
+
+utils/sql/svn/1747_optional_HoT_zone_and_zonepoints.sql
+
+For spawns etc, go to the PEQ logs repo for data collected by robregen.
+
 ==11/24/2010==
 Trevius: The Rule, NPC:ReturnNonQuestNoDropItems, will now also return items that have been Attuned to a character as well as normal NO DROP items if set to true.
 Trevius: Fixed an issue with tradeskill auto-combines.

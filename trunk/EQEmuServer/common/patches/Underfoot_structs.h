@@ -1,7 +1,7 @@
-#ifndef Live_STRUCTS_H_
-#define Live_STRUCTS_H_
+#ifndef Underfoot_STRUCTS_H_
+#define Underfoot_STRUCTS_H_
 
-namespace Live {
+namespace Underfoot {
 	namespace structs {
 
 
@@ -150,7 +150,7 @@ struct CharacterSelectEntry_Struct {
 /*0000*/	uint32 drakkin_heritage;	// Drakkin Heritage
 /*0000*/	uint32 drakkin_tattoo;		// Drakkin Tattoo
 /*0000*/	uint32 drakkin_details;		// Drakkin Details (Facial Spikes)
-/*0000*/	uint8 unknown;				// New field to Live
+/*0000*/	uint8 unknown;				// New field to Underfoot
 
 };
 
@@ -235,7 +235,7 @@ struct Spawn_Struct_Position
 struct Spawn_Struct
 {
 // Note this struct is not used as such, it is here for reference. As the struct is variable sized, the packets
-// are constructed in Live.cpp
+// are constructed in Underfoot.cpp
 //
 /*0000*/ char     name[1];	//name[64];
 /*0000*/ //int8     nullterm1; // hack to null terminate name
@@ -550,8 +550,8 @@ struct SpellBuff_Struct
 /*024*/ uint8 unknown0028[52];
 };
 
-// Not functional yet, but this is what the packet looks like on Live
-struct SpellBuffFade_Struct_Live {
+// Not functional yet, but this is what the packet looks like on Underfoot
+struct SpellBuffFade_Struct_Underfoot {
 /*000*/	uint32 entityid;	// Player id who cast the buff
 /*004*/	int8 slot;
 /*005*/	int8 level;
@@ -678,7 +678,7 @@ struct AA_Array
 {
 	int32 AA;
 	int32 value;
-	int32 unknown08;	// Looks like AA_Array is now 12 bytes in Live
+	int32 unknown08;	// Looks like AA_Array is now 12 bytes in Underfoot
 };
 
 
@@ -755,8 +755,8 @@ struct BindStruct {
 ** OpCode: 0x006a
  */
 static const uint32 MAX_PP_LANGUAGE		= 25; //
-static const uint32 MAX_PP_SPELLBOOK	= 480; // Confirmed 60 pages on Live now
-static const uint32 MAX_PP_MEMSPELL		= 10; //was 9 now 10 on Live
+static const uint32 MAX_PP_SPELLBOOK	= 480; // Confirmed 60 pages on Underfoot now
+static const uint32 MAX_PP_MEMSPELL		= 10; //was 9 now 10 on Underfoot
 static const uint32 MAX_PP_SKILL		= 75;
 static const uint32 MAX_PP_AA_ARRAY		= 300; //was 299
 static const uint32 MAX_GROUP_MEMBERS	= 6;
@@ -809,8 +809,8 @@ sed -e 's/_t//g' -e 's/MAX_AA/MAX_PP_AA_ARRAY/g' \
     -e 's/airRemaining/air_remaining/g' \
  */
 
-// Live May 5 2010 - Size 25312 + 1320
-// Live May 12 2010 - Size 26632
+// Underfoot May 5 2010 - Size 25312 + 1320
+// Underfoot May 12 2010 - Size 26632
 struct PlayerProfile_Struct
 {
 /*00000*/ uint32  checksum;				//
@@ -849,9 +849,9 @@ struct PlayerProfile_Struct
 		/*00320*/ EquipStruct equip_primary; // Equiptment: Main visual
 		/*00332*/ EquipStruct equip_secondary; // Equiptment: Off visual
 		} equip;
-		/*00236*/ EquipStruct equipment[9]; //Live Shows [108] for this part
+		/*00236*/ EquipStruct equipment[9]; //Underfoot Shows [108] for this part
 	 };
-/*00344*/ uint8 unknown00224[168];		// Live Shows [160]
+/*00344*/ uint8 unknown00224[168];		// Underfoot Shows [160]
 /*00512*/ Color_Struct item_tint[9];	// RR GG BB 00
 /*00548*/ AA_Array  aa_array[MAX_PP_AA_ARRAY];	// [3600] AAs 12 bytes each
 /*04148*/ uint32  points;				// Unspent Practice points - RELOCATED???
@@ -907,7 +907,7 @@ struct PlayerProfile_Struct
 /*16884*/ int32   guild_id;            // guildid
 /*16888*/ uint32  birthday;       // character birthday
 /*16892*/ uint32  lastlogin;       // character last save time
-/*16896*/ uint32  account_startdate;       // Date the Account was started - New Field for Live***
+/*16896*/ uint32  account_startdate;       // Date the Account was started - New Field for Underfoot***
 /*16900*/ uint32  timePlayedMin;      // time character played
 /*16904*/ uint8   pvp;                // 1=pvp, 0=not pvp
 /*16905*/ uint8   anon;               // 2=roleplay, 1=anon, 0=not anon
@@ -1846,7 +1846,7 @@ struct Merchant_Sell_Struct {
 /*017*/ int8	Unknown017[3];
 /*020*/	uint32	Unknown020;
 /*024*/	uint32	price;
-/*028*/	uint32	pricehighorderbits;	// It appears the price is 64 bits in Live+
+/*028*/	uint32	pricehighorderbits;	// It appears the price is 64 bits in Underfoot+
 /*032*/
 };
 
@@ -2042,14 +2042,14 @@ struct GroupUpdate2_Struct {
 /*0768*/
 };
 
-struct GroupUpdate_Struct_Live {	// New for Live
+struct GroupUpdate_Struct_Underfoot {	// New for Underfoot
 /*0000*/	int32	groupid;		// Guess - Matches unknown0136 from GroupFollow_Struct
 /*0004*/	int32	totalmembers;	// Guess
 /*0000*/	//int32	leadersname[0];	// Group Leader Name Null Terminated
 /*0008*/	//GroupMembers_Struct groupmembers;
 };
 
-struct GroupMembers_Struct {	// New for Live
+struct GroupMembers_Struct {	// New for Underfoot
 /*0000*/	int32	membernumber;	// Guess - number of member in the group (0 to 5?)
 /*0000*/	//char	membername[0];	// Member Name Null Terminated
 /*0000*/	int8	unknown001[3];	// Seen 0
@@ -2057,7 +2057,7 @@ struct GroupMembers_Struct {	// New for Live
 /*0000*/	int8	unknown002[11];	// Seen 0
 };
 
-struct GroupJoin_Struct_Live {	// New for Live
+struct GroupJoin_Struct_Underfoot {	// New for Underfoot
 /*0000*/	int32	unknown0000;	// Matches unknown0136 from GroupFollow_Struct
 /*0004*/	int32	action;
 /*0008*/	int8	unknown0008[5];	// Seen 0
@@ -2074,7 +2074,7 @@ struct GroupJoin_Struct {
 /*148*/
 };
 
-struct GroupFollow_Struct { // Live Follow Struct
+struct GroupFollow_Struct { // Underfoot Follow Struct
 /*0000*/	char	name1[64];	// inviter
 /*0064*/	char	name2[64];	// invitee
 /*0128*/	int32	unknown0128;	// Seen 0
@@ -3916,7 +3916,7 @@ struct ItemSerializationHeader
 /*056*/	uint32 unknown056; //0
 /*060*/	uint8 unknown060; //0
 /*061*/	uint8 unknown061; //0 - Add Evolving Item struct if this isn't set to 0?
-/*062*/	uint8 unknown062; // New to Live
+/*062*/	uint8 unknown062; // New to Underfoot
 /*063*/	uint8 ItemClass; //0, 1, or 2
 };
 
@@ -4218,6 +4218,6 @@ struct ExpeditionCompass_Struct
 };
 
 	};	//end namespace structs
-};	//end namespace Live
+};	//end namespace Underfoot
 
-#endif /*Live_STRUCTS_H_*/
+#endif /*Underfoot_STRUCTS_H_*/
