@@ -1226,35 +1226,72 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Illusion: race %d", effect_value);
 #endif
-				SendIllusionPacket
-				(
-					spell.base[i],
-					Mob::GetDefaultGender(spell.base[i], GetGender()),
-					spell.base2[i]
-				);
-				if(spell.base[i] == OGRE){
-					SendAppearancePacket(AT_Size, 9);
+				// Gender Illusions
+				if(spell.base[i] == -1) {
+					// Specific Gender Illusions
+					if(spell_id == 1732 || spell_id == 1731) {
+						int specific_gender = -1;
+						// Male
+						if(spell_id == 1732) 
+							specific_gender = 0;
+						// Female
+						else if (spell_id == 1731) 
+							specific_gender = 1;
+						if(specific_gender > -1) {
+							SendIllusionPacket
+							(
+								caster->GetTarget()->GetBaseRace(),
+								specific_gender,
+								caster->GetTarget()->GetTexture()
+							);
+						}
+					}
+					// Change Gender Illusions
+					else {
+						int opposite_gender = 0;
+						if(caster->GetTarget()->GetGender() == 0) 
+							opposite_gender = 1;
+							
+						SendIllusionPacket
+						(
+							caster->GetTarget()->GetRace(),
+							opposite_gender,
+							caster->GetTarget()->GetTexture()
+						);
+					}
 				}
-				else if(spell.base[i] == TROLL){
-					SendAppearancePacket(AT_Size, 8);
-				}
-				else if(spell.base[i] == VAHSHIR || spell.base[i] == BARBARIAN){
-					SendAppearancePacket(AT_Size, 7);
-				}
-				else if(spell.base[i] == HALF_ELF || spell.base[i] == WOOD_ELF || spell.base[i] == DARK_ELF || spell.base[i] == FROGLOK){
-					SendAppearancePacket(AT_Size, 5);
-				}
-				else if(spell.base[i] == DWARF){
-					SendAppearancePacket(AT_Size, 4);
-				}
-				else if(spell.base[i] == HALFLING || spell.base[i] == GNOME){
-					SendAppearancePacket(AT_Size, 3);
-				}
-	                        else if(spell.base[i] == WOLF) {
-                              SendAppearancePacket(AT_Size, 2);
-                        }
-				else{
-					SendAppearancePacket(AT_Size, 6);
+				// Racial Illusions
+				else {
+					SendIllusionPacket
+					(
+						spell.base[i],
+						Mob::GetDefaultGender(spell.base[i], GetGender()),
+						spell.base2[i]
+					);
+					if(spell.base[i] == OGRE){
+						SendAppearancePacket(AT_Size, 9);
+					}
+					else if(spell.base[i] == TROLL){
+						SendAppearancePacket(AT_Size, 8);
+					}
+					else if(spell.base[i] == VAHSHIR || spell.base[i] == BARBARIAN){
+						SendAppearancePacket(AT_Size, 7);
+					}
+					else if(spell.base[i] == HALF_ELF || spell.base[i] == WOOD_ELF || spell.base[i] == DARK_ELF || spell.base[i] == FROGLOK){
+						SendAppearancePacket(AT_Size, 5);
+					}
+					else if(spell.base[i] == DWARF){
+						SendAppearancePacket(AT_Size, 4);
+					}
+					else if(spell.base[i] == HALFLING || spell.base[i] == GNOME){
+						SendAppearancePacket(AT_Size, 3);
+					}
+					else if(spell.base[i] == WOLF) {
+						SendAppearancePacket(AT_Size, 2);
+					}
+					else{
+						SendAppearancePacket(AT_Size, 6);
+					}
 				}
 				for(int x = 0; x < 7; x++){
 					SendWearChange(x);

@@ -757,6 +757,11 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 				newbon->SkillReuseTime[base2] += base1;
 				break;
 			}
+			case SE_Twinproc:
+			{
+				newbon->TwinProc += base1;
+				break;
+			}
 		}
 	}
 }
@@ -1431,6 +1436,11 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 					newbon->SkillDamageAmount[HIGHEST_SKILL+1] += effect_value;
 				else
 					newbon->SkillDamageAmount[spells[spell_id].base2[i]] += effect_value;
+				break;
+			}
+			case SE_Twinproc:
+			{
+				newbon->TwinProc += effect_value;
 				break;
 			}
 		}

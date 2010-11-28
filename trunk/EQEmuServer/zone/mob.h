@@ -289,6 +289,7 @@ struct StatBonuses {
 	sint16 CritDmgMob[HIGHEST_SKILL+2];			// All Skills + -1
 	sint16 SkillReuseTime[HIGHEST_SKILL+1];		// Reduces skill timers
 	sint16 SkillDamageAmount[HIGHEST_SKILL+2];	// All Skills + -1
+	uint16 TwinProc;							// Proc twice
 	int XPRateMod;								//i
 	
 	// AAs
@@ -740,7 +741,7 @@ bool logpos;
 	virtual bool DoCastSpell(int16 spell_id, int16 target_id, int16 slot = 10, sint32 casttime = -1, sint32 mana_cost = -1, int32* oSpellWillFinish = 0, int32 item_slot = 0xFFFFFFFF, uint32 timer = 0xFFFFFFFF, uint32 timer_duration = 0, uint32 type = 0);
 	void CastedSpellFinished(int16 spell_id, int32 target_id, int16 slot, int16 mana_used, int32 inventory_slot = 0xFFFFFFFF);
 	bool SpellFinished(int16 spell_id, Mob *target, int16 slot = 10, int16 mana_used = 0, int32 inventory_slot = 0xFFFFFFFF);
-	virtual bool SpellOnTarget(int16 spell_id, Mob* spelltar);
+	virtual bool SpellOnTarget(int16 spell_id, Mob* spelltar, bool reflect=false);
 	virtual bool SpellEffect(Mob* caster, int16 spell_id, float partial = 100);
 	virtual bool DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_center, CastAction_type &CastAction);
 	virtual bool CheckFizzle(int16 spell_id);
@@ -828,6 +829,7 @@ bool logpos;
 	sint16 GetSkillReuseTime(int16 skill);
 	sint16 GetCriticalChanceBonus(int16 skill, bool aa_bonus=false);
 	sint16 GetSkillDmgAmt(int16 skill);
+	bool TryReflectSpell(uint32 spell_id);
 
 	static int32 GetAppearanceValue(EmuAppearance iAppearance);
 	void SendAppearancePacket(int32 type, int32 value, bool WholeZone = true, bool iIgnoreSelf = false, Client *specific_target=NULL);

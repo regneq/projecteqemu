@@ -2942,10 +2942,25 @@ void Mob::ExecWeaponProc(uint16 spell_id, Mob *on) {
 	// This should work for the majority of weapons.
 	if(spell_id == SPELL_UNKNOWN)
 		return;
-	if ( IsBeneficialSpell(spell_id) )
+		
+	bool twinproc = false;
+	int twinproc_chance = itembonuses.TwinProc + spellbonuses.TwinProc;
+	if(IsClient())
+		twinproc_chance += aabonuses.TwinProc;
+						
+	if(MakeRandomInt(0,99) < twinproc_chance)
+		twinproc = true;
+		
+	if (IsBeneficialSpell(spell_id)) {
 		SpellFinished(spell_id, this, 10, 0);
-	else if(!(on->IsClient() && on->CastToClient()->dead))	//dont proc on dead clients
+		if(twinproc)
+			SpellOnTarget(spell_id, this);
+	}
+	else if(!(on->IsClient() && on->CastToClient()->dead)) { //dont proc on dead clients
 		SpellFinished(spell_id, on, 10, 0);
+		if(twinproc)
+			SpellOnTarget(spell_id, on);
+	}
 }
 
 int32 Mob::GetZoneID() const {
@@ -4324,4 +4339,15 @@ sint16 Mob::GetSkillDmgAmt(int16 skill)
 	}
 	
 	return skill_dmg;
+}
+
+bool Mob::TryReflectSpell(uint32 spell_id)
+{
+	if(!GetTarget())
+		return false;
+		
+	if(MakeRandomInt(0, 99) < (GetTarget()->itembonuses.reflect_chance + GetTarget()->spellbonuses.reflect_chance))
+		return true;
+
+	return false;
 }
