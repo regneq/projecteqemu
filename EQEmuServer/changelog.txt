@@ -3,6 +3,10 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==11/27/2010==
 Derision: Renamed Live patch to Underfoot.
 Derision: Added basic support for current live patch (HoT).
+Caryatis: Reverted Bot changes due to crash issues
+Caryatis: Reverted physical resist changes until we can find a more live-like solution
+Caryatis: Gender Illusions are now functional
+Caryatis: Implemented SE_Twinproc and Reflect spells
 
 Note:
 
@@ -16,6 +20,8 @@ Optional SQL for zone and zonepoint table (thanks to robregen for the collects):
 utils/sql/svn/1747_optional_HoT_zone_and_zonepoints.sql
 
 For spawns etc, go to the PEQ logs repo for data collected by robregen.
+
+Optional SQL: utils/sql/svn/1750_optional_sql_reflect_rule.sql
 
 ==11/24/2010==
 Trevius: The Rule, NPC:ReturnNonQuestNoDropItems, will now also return items that have been Attuned to a character as well as normal NO DROP items if set to true.

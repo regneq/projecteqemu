@@ -2792,7 +2792,7 @@ int Mob::CanBuffStack(int16 spellid, int8 caster_level, bool iFailIfOverwrite)
 // and if you don't want effects just return false.  interrupting here will
 // break stuff
 //
-bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar)
+bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar, bool reflect)
 {
 	// well we can't cast a spell on target without a target
 	if(!spelltar)
@@ -3006,8 +3006,52 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar)
 			return false;
 		}
 	}
-
-
+	// Reflect
+	if(TryReflectSpell(spell_id) && spelltar && !reflect) {
+		int reflect_chance = 0;
+		switch(RuleI(Spells, ReflectType))
+		{
+			case 0:
+				break;
+			
+			case 1:
+			{
+				if(spells[spell_id].targettype == ST_Target) {
+					for(int y = 0; y < 16; y++) {
+						if(spells[spell_id].classes[y] < 255)
+							reflect_chance = 1;
+					}
+				}
+				break;
+			}
+			case 2:
+			{
+				for(int y = 0; y < 16; y++) {
+					if(spells[spell_id].classes[y] < 255)
+						reflect_chance = 1;
+				}
+				break;
+			}
+			case 3:
+			{
+				if(spells[spell_id].targettype == ST_Target) 
+					reflect_chance = 1;
+				
+				break;
+			}
+			case 4:
+				reflect_chance = 1;
+			
+			default:
+				break;
+		}
+		if(reflect_chance) {
+			Message_StringID(MT_Spells, SPELL_REFLECT, GetCleanName(), spelltar->GetCleanName());
+			SpellOnTarget(spell_id, this, true);
+			return false;
+		}
+	}
+	
 	// solar: resist check - every spell can be resisted, beneficial or not
 	// add: ok this isn't true, eqlive's spell data is fucked up, buffs are
 	// not all unresistable, so changing this to only check certain spells
@@ -3152,6 +3196,7 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar)
 		
 	TrySpellTrigger(spelltar, spell_id);
 	TryApplyEffect(spelltar, spell_id);
+	
 
 	if(spell_id == 982)	// Cazic Touch, hehe =P
 	{
@@ -3690,7 +3735,7 @@ float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster)
 	}
 	case RESIST_PHYSICAL:
 	default:
-		resist = (GetSTA() + GetSTR()) / 4; // seems more logical
+		resist = GetMR(); // need something better eventually
 		break;
 	}
 

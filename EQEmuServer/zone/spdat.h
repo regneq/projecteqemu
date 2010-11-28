@@ -535,6 +535,7 @@ typedef enum  {
 #define SE_HealFromMana				400 //Drains mana and heals for each point of mana drained
 #define SE_ManaDrainWithDmg			401 //Deals damage based on the amount of mana drained
 #define SE_EndDrainWithDmg			402 //Deals damage for the amount of endurance drained
+#define SE_Twinproc					405 //Proc twice
 #define SE_SetMaxHP					408 //Sets your max hp to a percent of your original
 #define SE_SetMaxMana				409 //Sets your max mana to a percent of your original
 #define SE_SetMaxEnd				410 //Sets your max end to a percent of your original
