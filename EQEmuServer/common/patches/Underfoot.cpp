@@ -475,7 +475,7 @@ ENCODE(OP_PlayerProfile) {
 	
 	eq->available_slots=0xffffffff;
 	memset(eq->unknown06284, 0xff, sizeof(eq->unknown06284));
-	memset(eq->unknown04396, 0xff, sizeof(eq->unknown04396));
+	memset(eq->unknown07284, 0xff, sizeof(eq->unknown07284));
 	
 //	OUT(checksum);
 	OUT(gender);
@@ -705,10 +705,8 @@ const uint8 bytes[] = {
 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
 };
 
-	memcpy(eq->unknown12864, bytes, sizeof(bytes));
+	memcpy(eq->unknown18020, bytes, sizeof(bytes));
 		
-
-	
 	//set the checksum...
 	CRC32::SetEQChecksum(__packet->pBuffer, sizeof(structs::PlayerProfile_Struct)-4);
 	
