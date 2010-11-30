@@ -3271,8 +3271,8 @@ char* SerializeItem(const ItemInst *inst, sint16 slot_id_in, uint32 *length, uin
 	hdr.unknown020 = 0;
 	hdr.instance_id = (merchant_slot == 0) ? inst->GetSerialNumber() : merchant_slot;
 	hdr.unknown028 = 0;
-	hdr.last_cast_time = ((item->RecastDelay > 1) ? 1212693140 : 0); //(stackable ? ((inst->GetItem()->ItemType == ItemTypePotion) ? 1 : 0) : charges);
-	hdr.charges = charges;
+	hdr.last_cast_time = ((item->RecastDelay > 1) ? 1212693140 : 0);
+	hdr.charges = (stackable ? (item->MaxCharges ? 1 : 0) : charges);
 	hdr.inst_nodrop = inst->IsInstNoDrop() ? 1 : 0;
 	hdr.unknown044 = 0;
 	hdr.unknown048 = 0;

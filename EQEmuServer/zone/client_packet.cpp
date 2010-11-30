@@ -8699,7 +8699,7 @@ void Client::CompleteConnect()
 	}
 	for(uint32 spellInt= 0; spellInt < MAX_PP_SPELLBOOK; spellInt++)
 	{
-		if (m_pp.spell_book[spellInt] < 3 || m_pp.spell_book[spellInt] > 20000)
+		if (m_pp.spell_book[spellInt] < 3 || m_pp.spell_book[spellInt] > 50000)
 			m_pp.spell_book[spellInt] = 0xFFFFFFFF;
 	}
 	//SendAATable();
