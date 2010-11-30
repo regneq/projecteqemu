@@ -3,6 +3,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 ==11/30/2010==
 Trevius: SoF+ - Stacked Potions will no longer show a factor of how many you have remaining in the potion belt.
 Trevius: Increased the max spell ID allowed in the spell book from 20000 to 50000.
+Derision: Underfoot. Corrected PP for LDoN points, Tribute and Leadership AA.  Corrected offset comments/unknown names.
 
 ==11/27/2010==
 Derision: Renamed Live patch to Underfoot.
