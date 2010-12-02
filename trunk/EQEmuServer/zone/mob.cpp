@@ -1020,115 +1020,320 @@ void Mob::ShowStats(Client* client) {
 	if(c && RuleB(Character, UseNewStatsWindow)) {
 		
 		// Define the types of page breaks we need
-		const char indP[] = "&nbsp;&nbsp;";
-		const char indS[] = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+		const char indP[] = "&nbsp;";
+		const char indS[] = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
 		const char indM[] = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
 		const char indL[] = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
 		const char div[] = "&nbsp;&nbsp;|&nbsp;&nbsp;";
 		
+		// Set Class 
+		char class_Name[3];
+		
+		switch(GetClass()) 
+		{
+			case 1:
+				strcpy(class_Name, "WAR");
+				break;
+			case 2:
+				strcpy(class_Name, "CLR");
+				break;
+			case 3:
+				strcpy(class_Name, "PAL");
+				break;
+			case 4:
+				strcpy(class_Name, "RNG");
+				break;
+			case 5:
+				strcpy(class_Name, "SK ");
+				break;
+			case 6:
+				strcpy(class_Name, "DRU");
+				break;
+			case 7:
+				strcpy(class_Name, "MNK");
+				break;
+			case 8:
+				strcpy(class_Name, "BRD");
+				break;
+			case 9:
+				strcpy(class_Name, "ROG");
+				break;
+			case 10:
+				strcpy(class_Name, "SHM");
+				break;
+			case 11:
+				strcpy(class_Name, "NEC");
+				break;
+			case 12:
+				strcpy(class_Name, "WIZ");
+				break;
+			case 13:
+				strcpy(class_Name, "MAG");
+				break;
+			case 14:
+				strcpy(class_Name, "ENC");
+				break;
+			case 15:
+				strcpy(class_Name, "BST");
+				break;
+			case 16:
+				strcpy(class_Name, "BER");
+				break;
+			// non-Player Class
+			default:
+				strcpy(class_Name, "nPC");
+				break;
+		}
+		
+		// HP Spacing
+		char hp_field[7];
+		char hp_spacing[20];
+		
+		int hp_length = sprintf(hp_field, "%d", GetMaxHP());
+		switch(hp_length)
+		{
+			case 1:
+				strcpy(hp_spacing, " . . . . . . ");
+				break;
+			case 2:
+				strcpy(hp_spacing, " . . . . . ");
+				break;
+			case 3:
+				strcpy(hp_spacing, " . . . . ");
+				break;
+			case 4:
+				strcpy(hp_spacing, " . . . ");
+				break;
+			case 5:
+				strcpy(hp_spacing, " . . ");
+				break;
+			case 6:
+				strcpy(hp_spacing, " . ");
+				break;
+		}
+
+		// Mana Spacing
+		char mana_field[7];
+		char mana_spacing[20];
+		if(c->CalcMaxMana() > 0) {
+			int mana_length = sprintf(mana_field, "%d", GetMaxMana());
+			switch(mana_length)
+			{
+				case 1:
+					strcpy(mana_spacing, " . . . . . . ");
+					break;
+				case 2:
+					strcpy(mana_spacing, " . . . . . ");
+					break;
+				case 3:
+					strcpy(mana_spacing, " . . . . ");
+					break;
+				case 4:
+					strcpy(mana_spacing, " . . . ");
+					break;
+				case 5:
+					strcpy(mana_spacing, " . . ");
+					break;
+				case 6:
+					strcpy(mana_spacing, " . ");
+					break;
+			}
+		}
+		
+		// Endurance Spacing
+		char end_field[7];
+		char end_spacing[20];
+		
+		int end_length = sprintf(end_field, "%d", c->GetMaxEndurance());
+		switch(end_length)
+		{
+			case 1:
+				strcpy(end_spacing, " . . . . . . ");
+				break;
+			case 2:
+				strcpy(end_spacing, " . . . . . ");
+				break;
+			case 3:
+				strcpy(end_spacing, " . . . . ");
+				break;
+			case 4:
+				strcpy(end_spacing, " . . . ");
+				break;
+			case 5:
+				strcpy(end_spacing, " . . ");
+				break;
+			case 6:
+				strcpy(end_spacing, " . ");
+				break;
+		}
+			
 		// Caster Window
 		if(c->CalcMaxMana() > 0) {
 			client->SendStatWindow(" "
-			/* 01 - Name 	*/		" %s <c \"#357EC7\"> %s %s</c><br>"
-			/* 02 - L/C/R	*/		" %s Class: %i %s Level: %i %s %s Race: %i<br>"
-			/* 03 - AC/Atk 	*/		" %s ATK: %i<br>"
-			/* 04 - Labels 	*/		" %s AC: %i %s %s %s Items Spells AAs Total Cap<br>"
-			/* 05 - HP	 	*/		" %s HP: %s %i %s %i %s %i %s %i %s %i %s %i<br>"
-			/* 06 - Mana 	*/		" %s Mana: %i %s %i %s %i %s %i %s %i %s %i<br>"
-			/* 07 - End. 	*/		" %s End.: %s %i %s %i %s %i %s %i %s %i %s %i<br>"
-			/* 08 - LineBr 	*/		" <br>"
-			/* 09 - STR/MR 	*/		" %s STR: %i | + %i %s MR: %i | + %i<br>"
-			/* 10 - STA/CR 	*/		" %s STA: %i | + %i %s CR: %i | + %i<br>"
-			/* 11 - AGI/FR 	*/		" %s AGI: %i | + %i %s FR: %i | + %i<br>"
-			/* 12 - DEX/PR 	*/		" %s DEX: %i | + %i %s PR: %i | + %i<br>"
-			/* 13 - INT/DR 	*/		" %s INT: %i | + %i %s DR: %i | + %i<br>"
-			/* 14 - WIS/Cp 	*/		" %s WIS: %i | + %i %s Cp: %i | + %i<br>"
-			/* 15 - CHA/Ph 	*/		" %s CHA: %i | + %i %s Physical: %i<br>" 
-			/* 16 - LineBr 	*/		" <br>"
-			/* 17 - Avd/Hat	*/		" %s Avoidance: %i / %i %s Heal Amt.: %i / %i<br>" 
-			/* 18 - Acc/Sdg	*/		" %s Accuracy: %i / %i %s Spell Dmg.: %i / %i<br>" 
-			/* 19 - CE/Clar	*/		" %s Combat Effects: %i / %i %s Clair.: %i / %i<br>" 
-			/* 20 - DSd/DSm	*/		" %s DoT Shield.: %i / %i %s DS Mit.: %i / %i<br>" 
-			/* 21 - Shield 	*/		" %s Shielding: %i / %i<br>" 
-			/* 22 - SS	 	*/		" %s Spell Shield.: %i / %i<br>" 
-			/* 23 - Strike 	*/		" %s Strike.: %i / %i<br>" 
-			/* 24 - SR 		*/		" %s Stun Resist: %i / %i" ,
-			/* 01 - Name 	*/		indL, GetName(), GetLastName(),
-			/* 02 - L/C/R 	*/		indP, GetClass(), indM, GetLevel(), indS, indP, GetBaseRace(),
-			/* 03 - AC/Atk 	*/		indP, c->GetTotalATK(),
-			/* 04 - Labels 	*/		indP, c->GetAC(), indS, indP, indP,
-			/* 05 - HP 		*/		indP, indP, GetMaxHP(), indS, c->itembonuses.HPRegen, div, c->spellbonuses.HPRegen, div, c->aabonuses.HPRegen, div, c->CalcHPRegen(), div, c->CalcHPRegenCap(true),
-			/* 06 - Mana 	*/		indP, GetMaxMana(), indS, c->itembonuses.ManaRegen, div, c->spellbonuses.ManaRegen, div, c->aabonuses. ManaRegen, div, c->CalcManaRegen(), div, c->CalcManaRegenCap(true), 
-			/* 07 - End. 	*/		indP, indP, c->GetMaxEndurance(), indS, c->itembonuses.EnduranceRegen, div, c->spellbonuses.EnduranceRegen, div, c->aabonuses.EnduranceRegen, div, c->CalcEnduranceRegen(), div, c->CalcEnduranceRegenCap(true), 
-			/* 08 - LineBr 	*/		 
-			/* 09 - STR/MR 	*/		indP, GetSTR(), c->GetHeroicSTR(), indL, GetMR(), c->GetHeroicMR(), 
-			/* 10 - STA/CR 	*/		indP, GetSTA(), c->GetHeroicSTA(), indL, GetCR(), c->GetHeroicCR(), 
-			/* 11 - AGI/FR 	*/		indP, GetAGI(), c->GetHeroicAGI(), indL, GetFR(), c->GetHeroicFR(),
-			/* 12 - DEX/PR 	*/		indP, GetDEX(), c->GetHeroicDEX(), indL, GetPR(), c->GetHeroicPR(),
-			/* 13 - INT/DR 	*/		indP, GetINT(), c->GetHeroicINT(), indL, GetDR(), c->GetHeroicDR(),
-			/* 14 - WIS/Cp 	*/		indP, GetWIS(), c->GetHeroicWIS(), indL, GetCorrup(), c->GetHeroicCorrup(),
-			/* 15 - CHA/Ph 	*/		indP, GetCHA(), c->GetHeroicCHA(), indL, ((GetSTR() + GetSTA()) / 2),
-			/* 16 - LineBr 	*/		 
-			/* 17 - Avd/Hat	*/		indP, c->GetAvoidance(), RuleI(Character, ItemAvoidanceCap), indS, c->GetHealAmt(), RuleI(Character, ItemHealAmtCap),
-			/* 18 - Acc/Sdg	*/		indP, c->GetAccuracy(), RuleI(Character, ItemAccuracyCap), indS, c->GetSpellDmg(), RuleI(Character, ItemSpellDmgCap),
-			/* 19 - CE/Clar	*/		indP, c->GetCombatEffects(), RuleI(Character, ItemCombatEffectsCap), indS, c->GetClair(), RuleI(Character, ItemClairvoyanceCap),
-			/* 20 - DSd/DSm	*/		indP, c->GetDoTShield(), RuleI(Character, ItemDoTShieldingCap), indM, c->GetDSMit(), RuleI(Character, ItemDSMitigationCap),
-			/* 21 - Shield 	*/		indP, c->GetShielding(), RuleI(Character, ItemShieldingCap),
-			/* 22 - SS	 	*/		indP, c->GetSpellShield(), RuleI(Character, ItemSpellShieldingCap),
-			/* 23 - Strike 	*/		indP, c->GetStrikeThrough(), RuleI(Character, ItemStrikethroughCap),
-			/* 24 - SR 		*/		indP, c->GetStunResist(), RuleI(Character, ItemStunResistCap)
+			/* 01 - Name 	*/		" %s <c \"#357EC7\"> %s</c><br>"
+			/* 02 - C/L/R	*/		" %s Class: %s Level: %i Race: %i<br>"
+			/* 02 - LineBr	*/		" <br>"
+			/* 03 - Atk 	*/		" %s ATK: %i - Worn: %i (Cap: %i) - Srvr ATK: %i<br>"
+			/* 04 - AC	 	*/		" %s AC: %i = Mit.: %i + Avoid.: %i<br>"
+			/* 05 - Haste 	*/		" %s Haste: %i (Cap: %i) - Item: %i - Spell: %i - Over: %i<br>"
+			/* 06 - LineBr 	*/		" <br>"
+			/* 07 - Labels 	*/		" %s %s Regen<br>"
+			/* 08 - Labels 	*/		" %s Items | Spells | AAs | Total | Cap<br>"
+			/* 09 - HP	 	*/		" %s HP: %s %s %s %s %s %i %s %i %s %i %s %i %s %i<br>"
+			/* 10 - Mana 	*/		" %s Mana: %s %s %s %i %s %i %s %i %s %i %s %i<br>"
+			/* 11 - End. 	*/		" %s End.: %s %s %s %s %i %s %i %s %i %s %i %s %i<br>"
+			/* 12 - LineBr 	*/		" <br>"
+			/* 13 - STR 	*/		" %s STR: %i | + %i<br>"
+			/* 14 - STA 	*/		" %s STA: %i | + %i<br>"
+			/* 15 - AGI 	*/		" %s AGI: %i | + %i<br>"
+			/* 16 - DEX 	*/		" %s DEX: %i | + %i<br>"
+			/* 17 - INT 	*/		" %s INT: %i | + %i<br>"
+			/* 18 - WIS 	*/		" %s WIS: %i | + %i<br>"
+			/* 19 - CHA 	*/		" %s CHA: %i | + %i<br>" 
+			/* 20 - LineBr 	*/		" <br>"
+			/* 21 - MR	 	*/		" %s MR: %i | + %i<br>"
+			/* 22 - CR	 	*/		" %s CR: %i | + %i<br>"
+			/* 23 - FR	 	*/		" %s FR: %i | + %i<br>"
+			/* 24 - PR	 	*/		" %s PR: %i | + %i<br>"
+			/* 25 - DR	 	*/		" %s DR: %i | + %i<br>"
+			/* 26 - Cp	 	*/		" %s Cp: %i | + %i<br>"
+			/* 27 - LineBr 	*/		" <br>"
+			/* 28 - Avd		*/		" %s Avoidance: %i / %i<br>" 
+			/* 29 - Acc		*/		" %s Accuracy: %i / %i<br>" 
+			/* 30 - CE		*/		" %s Combat Effects: %i / %i<br>" 
+			/* 31 - DSd		*/		" %s DoT Shield.: %i / %i<br>" 
+			/* 32 - Shield 	*/		" %s Shielding: %i / %i<br>" 
+			/* 33 - SS	 	*/		" %s Spell Shield.: %i / %i<br>" 
+			/* 34 - Strike 	*/		" %s Strike.: %i / %i<br>" 
+			/* 35 - SR 		*/		" %s Stun Resist: %i / %i<br>"
+			/* 36 - LineBr 	*/		" <br>"
+			/* 37 - Hat		*/		" %s Heal Amt.: %i / %i<br>" 
+			/* 38 - Sdg		*/		" %s Spell Dmg.: %i / %i<br>" 
+			/* 39 - Clar	*/		" %s Clair.: %i / %i<br>" 
+			/* 40 - DSm		*/		" %s DS Mit.: %i / %i<br>",
+			/* 01 - Name 	*/		indP, GetName(),
+			/* 02 - C/L/R 	*/		indP, class_Name, GetLevel(), GetBaseRace(),
+			/* 03 - Atk 	*/		indP, c->GetTotalATK(), GetATKBonus(), RuleI(Character, ItemATKCap), attackRating,
+			/* 04 - AC	 	*/		indP, c->GetAC(), c->GetACMit(), c->GetACAvoid(),
+			/* 05 - Haste 	*/		indP, GetHaste(), RuleI(Character, HasteCap), c->CalcSpecificHaste(0), c->CalcSpecificHaste(1), c->CalcSpecificHaste(2),
+			/* 06 - LineBr 	*/
+			/* 07 - Labels 	*/		indL, indM,
+			/* 08 - Labels 	*/		indL,
+			/* 09 - HP 		*/		indP, indP, indP, hp_field, hp_spacing, indS, c->itembonuses.HPRegen, div, c->spellbonuses.HPRegen, div, c->aabonuses.HPRegen, div, c->CalcHPRegen(), div, c->CalcHPRegenCap(true),
+			/* 10 - Mana 	*/		indP, mana_field, mana_spacing, indS, c->itembonuses.ManaRegen, div, c->spellbonuses.ManaRegen, div, c->aabonuses. ManaRegen, div, c->CalcManaRegen(), div, c->CalcManaRegenCap(true), 
+			/* 11 - End. 	*/		indP, indP, end_field, end_spacing, indS, c->itembonuses.EnduranceRegen, div, c->spellbonuses.EnduranceRegen, div, c->aabonuses.EnduranceRegen, div, c->CalcEnduranceRegen(), div, c->CalcEnduranceRegenCap(true), 
+			/* 12 - LineBr 	*/		 
+			/* 13 - STR/MR 	*/		indP, GetSTR(), c->GetHeroicSTR(),
+			/* 14 - STA/CR 	*/		indP, GetSTA(), c->GetHeroicSTA(),
+			/* 15 - AGI/FR 	*/		indP, GetAGI(), c->GetHeroicAGI(),
+			/* 16 - DEX/PR 	*/		indP, GetDEX(), c->GetHeroicDEX(),
+			/* 17 - INT/DR 	*/		indP, GetINT(), c->GetHeroicINT(),
+			/* 18 - WIS/Cp 	*/		indP, GetWIS(), c->GetHeroicWIS(),
+			/* 19 - CHA/Ph 	*/		indP, GetCHA(), c->GetHeroicCHA(),
+			/* 20 - LineBr 	*/		 
+			/* 21 - STR/MR 	*/		indP, GetMR(), c->GetHeroicMR(), 
+			/* 22 - STA/CR 	*/		indP, GetCR(), c->GetHeroicCR(), 
+			/* 23 - AGI/FR 	*/		indP, GetFR(), c->GetHeroicFR(),
+			/* 24 - DEX/PR 	*/		indP, GetPR(), c->GetHeroicPR(),
+			/* 25 - INT/DR 	*/		indP, GetDR(), c->GetHeroicDR(),
+			/* 26 - WIS/Cp 	*/		indP, GetCorrup(), c->GetHeroicCorrup(),
+			/* 27 - LineBr 	*/
+			/* 28 - Avd/Hat	*/		indP, c->GetAvoidance(), RuleI(Character, ItemAvoidanceCap),
+			/* 29 - Acc/Sdg	*/		indP, c->GetAccuracy(), RuleI(Character, ItemAccuracyCap),
+			/* 30 - CE/Clar	*/		indP, c->GetCombatEffects(), RuleI(Character, ItemCombatEffectsCap),
+			/* 31 - DSd/DSm	*/		indP, c->GetDoTShield(), RuleI(Character, ItemDoTShieldingCap),
+			/* 32 - Shield 	*/		indP, c->GetShielding(), RuleI(Character, ItemShieldingCap),
+			/* 33 - SS	 	*/		indP, c->GetSpellShield(), RuleI(Character, ItemSpellShieldingCap),
+			/* 34 - Strike 	*/		indP, c->GetStrikeThrough(), RuleI(Character, ItemStrikethroughCap),
+			/* 35 - SR 		*/		indP, c->GetStunResist(), RuleI(Character, ItemStunResistCap),
+			/* 36 - LineBr 	*/
+			/* 37 - Avd/Hat	*/		indP, c->GetHealAmt(), RuleI(Character, ItemHealAmtCap),
+			/* 38 - Acc/Sdg	*/		indP, c->GetSpellDmg(), RuleI(Character, ItemSpellDmgCap),
+			/* 39 - CE/Clar	*/		indP, c->GetClair(), RuleI(Character, ItemClairvoyanceCap),
+			/* 40 - DSd/DSm	*/		indP, c->GetDSMit(), RuleI(Character, ItemDSMitigationCap)
 								);
 		}
 		else {
 			client->SendStatWindow(" "
-			/* 01 - Name 	*/		" %s <c \"#357EC7\"> %s %s</c><br>"
-			/* 02 - L/C/R	*/		" %s Class: %i %s Level: %i %s %s Race: %i<br>"
-			/* 03 - AC/Atk 	*/		" %s ATK: %i<br>"
-			/* 04 - Labels 	*/		" %s AC: %i %s %s %s Items Spells AAs Total Cap<br>"
-			/* 05 - HP	 	*/		" %s HP: %s %i %s %i %s %i %s %i %s %i %s %i<br>"
-			/* 06 - Mana 	*/		" "
-			/* 07 - End. 	*/		" %s End.: %s %i %s %i %s %i %s %i %s %i %s %i<br>"
-			/* 08 - LineBr 	*/		" <br>"
-			/* 09 - STR/MR 	*/		" %s STR: %i | + %i %s MR: %i | + %i<br>"
-			/* 10 - STA/CR 	*/		" %s STA: %i | + %i %s CR: %i | + %i<br>"
-			/* 11 - AGI/FR 	*/		" %s AGI: %i | + %i %s FR: %i | + %i<br>"
-			/* 12 - DEX/PR 	*/		" %s DEX: %i | + %i %s PR: %i | + %i<br>"
-			/* 13 - INT/DR 	*/		" %s INT: %i | + %i %s DR: %i | + %i<br>"
-			/* 14 - WIS/Cp 	*/		" %s WIS: %i | + %i %s Cp: %i | + %i<br>"
-			/* 15 - CHA/Ph 	*/		" %s CHA: %i | + %i %s Physical: %i<br>" 
-			/* 16 - LineBr 	*/		" <br>"
-			/* 17 - Avd/Hat	*/		" %s Avoidance: %i / %i %s Heal Amt.: %i / %i<br>" 
-			/* 18 - Acc/Sdg	*/		" %s Accuracy: %i / %i %s Spell Dmg.: %i / %i<br>" 
-			/* 19 - CE/Clar	*/		" %s Combat Effects: %i / %i %s Clair.: %i / %i<br>" 
-			/* 20 - DSd/DSm	*/		" %s DoT Shield.: %i / %i %s DS Mit.: %i / %i<br>" 
-			/* 21 - Shield 	*/		" %s Shielding: %i / %i<br>" 
-			/* 22 - SS	 	*/		" %s Spell Shield.: %i / %i<br>" 
-			/* 23 - Strike 	*/		" %s Strike.: %i / %i<br>" 
-			/* 24 - SR 		*/		" %s Stun Resist: %i / %i" ,
-			/* 01 - Name 	*/		indL, GetName(), GetLastName(),
-			/* 02 - L/C/R 	*/		indP, GetClass(), indM, GetLevel(), indS, indP, GetBaseRace(),
-			/* 03 - AC/Atk 	*/		indP, c->GetTotalATK(),
-			/* 04 - Labels 	*/		indP, c->GetAC(), indS, indP, indP,
-			/* 05 - HP 		*/		indP, indP, GetMaxHP(), indS, c->itembonuses.HPRegen, div, c->spellbonuses.HPRegen, div, c->aabonuses.HPRegen, div, c->CalcHPRegen(), div, c->CalcHPRegenCap(true),
-			/* 06 - Mana 	*/		//indP, GetMaxMana(), indS, c->itembonuses.ManaRegen, div, c->spellbonuses.ManaRegen, div, c->aabonuses. ManaRegen, div, c->CalcManaRegen(), div, c->CalcManaRegenCap(true), 
-			/* 07 - End. 	*/		indP, indP, c->GetMaxEndurance(), indS, c->itembonuses.EnduranceRegen, div, c->spellbonuses.EnduranceRegen, div, c->aabonuses.EnduranceRegen, div, c->CalcEnduranceRegen(), div, c->CalcEnduranceRegenCap(true), 
-			/* 08 - LineBr 	*/		 
-			/* 09 - STR/MR 	*/		indP, GetSTR(), c->GetHeroicSTR(), indL, GetMR(), c->GetHeroicMR(), 
-			/* 10 - STA/CR 	*/		indP, GetSTA(), c->GetHeroicSTA(), indL, GetCR(), c->GetHeroicCR(), 
-			/* 11 - AGI/FR 	*/		indP, GetAGI(), c->GetHeroicAGI(), indL, GetFR(), c->GetHeroicFR(),
-			/* 12 - DEX/PR 	*/		indP, GetDEX(), c->GetHeroicDEX(), indL, GetPR(), c->GetHeroicPR(),
-			/* 13 - INT/DR 	*/		indP, GetINT(), c->GetHeroicINT(), indL, GetDR(), c->GetHeroicDR(),
-			/* 14 - WIS/Cp 	*/		indP, GetWIS(), c->GetHeroicWIS(), indL, GetCorrup(), c->GetHeroicCorrup(),
-			/* 15 - CHA/Ph 	*/		indP, GetCHA(), c->GetHeroicCHA(), indL, ((GetSTR() + GetSTA()) / 2),
-			/* 16 - LineBr 	*/		 
-			/* 17 - Avd/Hat	*/		indP, c->GetAvoidance(), RuleI(Character, ItemAvoidanceCap), indS, c->GetHealAmt(), RuleI(Character, ItemHealAmtCap),
-			/* 18 - Acc/Sdg	*/		indP, c->GetAccuracy(), RuleI(Character, ItemAccuracyCap), indS, c->GetSpellDmg(), RuleI(Character, ItemSpellDmgCap),
-			/* 19 - CE/Clar	*/		indP, c->GetCombatEffects(), RuleI(Character, ItemCombatEffectsCap), indS, c->GetClair(), RuleI(Character, ItemClairvoyanceCap),
-			/* 20 - DSd/DSm	*/		indP, c->GetDoTShield(), RuleI(Character, ItemDoTShieldingCap), indM, c->GetDSMit(), RuleI(Character, ItemDSMitigationCap),
-			/* 21 - Shield 	*/		indP, c->GetShielding(), RuleI(Character, ItemShieldingCap),
-			/* 22 - SS	 	*/		indP, c->GetSpellShield(), RuleI(Character, ItemSpellShieldingCap),
-			/* 23 - Strike 	*/		indP, c->GetStrikeThrough(), RuleI(Character, ItemStrikethroughCap),
-			/* 24 - SR 		*/		indP, c->GetStunResist(), RuleI(Character, ItemStunResistCap)
+			/* 01 - Name 	*/		" %s <c \"#357EC7\"> %s</c><br>"
+			/* 02 - C/L/R	*/		" %s Class: %s Level: %i Race: %i<br>"
+			/* 02 - LineBr	*/		" <br>"
+			/* 03 - Atk 	*/		" %s ATK: %i - Worn: %i (Cap: %i) - Srvr ATK: %i<br>"
+			/* 04 - AC	 	*/		" %s AC: %i = Mit.: %i + Avoid.: %i<br>"
+			/* 05 - Haste 	*/		" %s Haste: %i (Cap: %i) - Item: %i - Spell: %i - Over: %i<br>"
+			/* 06 - LineBr 	*/		" <br>"
+			/* 07 - Labels 	*/		" %s %s Regen<br>"
+			/* 08 - Labels 	*/		" %s Items | Spells | AAs | Total | Cap<br>"
+			/* 09 - HP	 	*/		" %s HP: %s %s %s %s %s %i %s %i %s %i %s %i %s %i<br>"
+			/* 11 - End. 	*/		" %s End.: %s %s %s %s %i %s %i %s %i %s %i %s %i<br>"
+			/* 12 - LineBr 	*/		" <br>"
+			/* 13 - STR 	*/		" %s STR: %i | + %i<br>"
+			/* 14 - STA 	*/		" %s STA: %i | + %i<br>"
+			/* 15 - AGI 	*/		" %s AGI: %i | + %i<br>"
+			/* 16 - DEX 	*/		" %s DEX: %i | + %i<br>"
+			/* 17 - INT 	*/		" %s INT: %i | + %i<br>"
+			/* 18 - WIS 	*/		" %s WIS: %i | + %i<br>"
+			/* 19 - CHA 	*/		" %s CHA: %i | + %i<br>" 
+			/* 20 - LineBr 	*/		" <br>"
+			/* 21 - MR	 	*/		" %s MR: %i | + %i<br>"
+			/* 22 - CR	 	*/		" %s CR: %i | + %i<br>"
+			/* 23 - FR	 	*/		" %s FR: %i | + %i<br>"
+			/* 24 - PR	 	*/		" %s PR: %i | + %i<br>"
+			/* 25 - DR	 	*/		" %s DR: %i | + %i<br>"
+			/* 26 - Cp	 	*/		" %s Cp: %i | + %i<br>"
+			/* 27 - LineBr 	*/		" <br>"
+			/* 28 - Avd		*/		" %s Avoidance: %i / %i<br>" 
+			/* 29 - Acc		*/		" %s Accuracy: %i / %i<br>" 
+			/* 30 - CE		*/		" %s Combat Effects: %i / %i<br>" 
+			/* 31 - DSd		*/		" %s DoT Shield.: %i / %i<br>" 
+			/* 32 - Shield 	*/		" %s Shielding: %i / %i<br>" 
+			/* 33 - SS	 	*/		" %s Spell Shield.: %i / %i<br>" 
+			/* 34 - Strike 	*/		" %s Strike.: %i / %i<br>" 
+			/* 35 - SR 		*/		" %s Stun Resist: %i / %i<br>"
+			/* 36 - LineBr 	*/		" <br>"
+			/* 37 - Hat		*/		" %s Heal Amt.: %i / %i<br>" 
+			/* 38 - Sdg		*/		" %s Spell Dmg.: %i / %i<br>" 
+			/* 39 - Clar	*/		" %s Clair.: %i / %i<br>" 
+			/* 40 - DSm		*/		" %s DS Mit.: %i / %i<br>",
+			/* 01 - Name 	*/		indP, GetName(),
+			/* 02 - C/L/R 	*/		indP, class_Name, GetLevel(), GetBaseRace(),
+			/* 03 - Atk 	*/		indP, c->GetTotalATK(), GetATKBonus(), RuleI(Character, ItemATKCap), attackRating,
+			/* 04 - AC	 	*/		indP, c->GetAC(), c->GetACMit(), c->GetACAvoid(),
+			/* 05 - Haste 	*/		indP, GetHaste(), RuleI(Character, HasteCap), c->CalcSpecificHaste(0), c->CalcSpecificHaste(1), c->CalcSpecificHaste(2),
+			/* 06 - LineBr 	*/
+			/* 07 - Labels 	*/		indL, indM,
+			/* 08 - Labels 	*/		indL,
+			/* 09 - HP 		*/		indP, indP, indP, hp_field, hp_spacing, indS, c->itembonuses.HPRegen, div, c->spellbonuses.HPRegen, div, c->aabonuses.HPRegen, div, c->CalcHPRegen(), div, c->CalcHPRegenCap(true),
+			/* 11 - End. 	*/		indP, indP, end_field, end_spacing, indS, c->itembonuses.EnduranceRegen, div, c->spellbonuses.EnduranceRegen, div, c->aabonuses.EnduranceRegen, div, c->CalcEnduranceRegen(), div, c->CalcEnduranceRegenCap(true), 
+			/* 12 - LineBr 	*/		 
+			/* 13 - STR/MR 	*/		indP, GetSTR(), c->GetHeroicSTR(),
+			/* 14 - STA/CR 	*/		indP, GetSTA(), c->GetHeroicSTA(),
+			/* 15 - AGI/FR 	*/		indP, GetAGI(), c->GetHeroicAGI(),
+			/* 16 - DEX/PR 	*/		indP, GetDEX(), c->GetHeroicDEX(),
+			/* 17 - INT/DR 	*/		indP, GetINT(), c->GetHeroicINT(),
+			/* 18 - WIS/Cp 	*/		indP, GetWIS(), c->GetHeroicWIS(),
+			/* 19 - CHA/Ph 	*/		indP, GetCHA(), c->GetHeroicCHA(),
+			/* 20 - LineBr 	*/		 
+			/* 21 - STR/MR 	*/		indP, GetMR(), c->GetHeroicMR(), 
+			/* 22 - STA/CR 	*/		indP, GetCR(), c->GetHeroicCR(), 
+			/* 23 - AGI/FR 	*/		indP, GetFR(), c->GetHeroicFR(),
+			/* 24 - DEX/PR 	*/		indP, GetPR(), c->GetHeroicPR(),
+			/* 25 - INT/DR 	*/		indP, GetDR(), c->GetHeroicDR(),
+			/* 26 - WIS/Cp 	*/		indP, GetCorrup(), c->GetHeroicCorrup(),
+			/* 27 - LineBr 	*/
+			/* 28 - Avd/Hat	*/		indP, c->GetAvoidance(), RuleI(Character, ItemAvoidanceCap),
+			/* 29 - Acc/Sdg	*/		indP, c->GetAccuracy(), RuleI(Character, ItemAccuracyCap),
+			/* 30 - CE/Clar	*/		indP, c->GetCombatEffects(), RuleI(Character, ItemCombatEffectsCap),
+			/* 31 - DSd/DSm	*/		indP, c->GetDoTShield(), RuleI(Character, ItemDoTShieldingCap),
+			/* 32 - Shield 	*/		indP, c->GetShielding(), RuleI(Character, ItemShieldingCap),
+			/* 33 - SS	 	*/		indP, c->GetSpellShield(), RuleI(Character, ItemSpellShieldingCap),
+			/* 34 - Strike 	*/		indP, c->GetStrikeThrough(), RuleI(Character, ItemStrikethroughCap),
+			/* 35 - SR 		*/		indP, c->GetStunResist(), RuleI(Character, ItemStunResistCap),
+			/* 36 - LineBr 	*/
+			/* 37 - Avd/Hat	*/		indP, c->GetHealAmt(), RuleI(Character, ItemHealAmtCap),
+			/* 38 - Acc/Sdg	*/		indP, c->GetSpellDmg(), RuleI(Character, ItemSpellDmgCap),
+			/* 39 - CE/Clar	*/		indP, c->GetClair(), RuleI(Character, ItemClairvoyanceCap),
+			/* 40 - DSd/DSm	*/		indP, c->GetDSMit(), RuleI(Character, ItemDSMitigationCap)
 								);
 		}
 	}
@@ -2981,10 +3186,9 @@ int Mob::GetHaste() {
 	} else if(level < 60) {
 		cap = 94;
 	} else {
-		cap = 100;
+		cap = RuleI(Character, HasteCap);
 	}
 	
-
 	if(h > cap) h = cap;
 
 	h += spellbonuses.hastetype3;
@@ -4351,3 +4555,4 @@ bool Mob::TryReflectSpell(uint32 spell_id)
 
 	return false;
 }
+

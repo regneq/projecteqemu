@@ -894,6 +894,32 @@ sint16 Client::CalcAC() {
 	return(AC);
 }
 
+sint16 Client::GetACMit() {
+
+	int mitigation = 0;
+	if (m_pp.class_ == WIZARD || m_pp.class_ == MAGICIAN || m_pp.class_ == NECROMANCER || m_pp.class_ == ENCHANTER) {
+		mitigation = (GetSkill(DEFENSE) + itembonuses.HeroicAGI/10)/4 + (itembonuses.AC+1);
+		mitigation -= 4;
+	} 
+	else {
+		mitigation = (GetSkill(DEFENSE) + itembonuses.HeroicAGI/10)/3 + ((itembonuses.AC*4)/3);
+		if(m_pp.class_ == MONK)
+			mitigation += GetLevel() * 13/10;	//the 13/10 might be wrong, but it is close...
+	}
+
+	return(mitigation*1000/847);
+}
+
+sint16 Client::GetACAvoid() {
+
+	// new formula
+	int avoidance = (acmod() + ((GetSkill(DEFENSE) + itembonuses.HeroicAGI/10)*16)/9);
+	if (avoidance < 0)
+		avoidance = 0;
+
+	return (avoidance*1000/847);	//natural AC
+}
+
 sint32 Client::CalcMaxMana()
 {
 	switch(GetCasterClass())
@@ -1086,7 +1112,7 @@ sint32 Client::CalcManaRegenCap(bool absolute_cap)
 			break;
 	}
 	if(absolute_cap)
-		cap += CalcManaRegen() - itembonuses.ManaRegen - GetAA(aaMentalClarity) - GetAA(aaBodyAndMindRejuvenation);
+		cap += CalcManaRegen() - itembonuses.ManaRegen;
 
 	return (cap * RuleI(Character, ManaRegenMultiplier) / 100);
 }
@@ -1318,10 +1344,9 @@ int Client::CalcHaste() {
 	} else if(level < 60) {
 		cap = 94;
 	} else {
-		cap = 100;
+		cap = RuleI(Character, HasteCap);
 	}
 	
-
 	if(h > cap) h = cap;
 
 	h += spellbonuses.hastetype3;
@@ -1331,6 +1356,25 @@ int Client::CalcHaste() {
 	return(Haste); 
 }
 
+int Client::CalcSpecificHaste(int toggle) {
+	int haste = 0;
+	switch(toggle) 
+	{
+		// Item haste
+		case 0:
+			haste = itembonuses.haste;
+			break;
+		// Spell Haste
+		case 1:
+			haste = spellbonuses.haste + spellbonuses.hastetype2;
+			break;
+		// Overhaste
+		case 2:
+			haste = spellbonuses.hastetype3 + ExtraHaste;
+			break;
+	}
+	return(haste); 
+}
 //The AA multipliers are set to be 5, but were 2 on WR
 //The resistant discipline which I think should be here is implemented
 //in Mob::ResistSpell
