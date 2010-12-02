@@ -3007,7 +3007,7 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar, bool reflect)
 		}
 	}
 	// Reflect
-	if(TryReflectSpell(spell_id) && spelltar && !reflect) {
+	if(TryReflectSpell(spell_id) && spelltar && !reflect && IsDetrimentalSpell(spell_id) && this != spelltar) {
 		int reflect_chance = 0;
 		switch(RuleI(Spells, ReflectType))
 		{

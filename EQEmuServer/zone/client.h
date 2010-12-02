@@ -355,7 +355,7 @@ public:
 	inline virtual sint16	GetPR()	const { return PR; }
 	inline virtual sint16	GetCR()	const { return CR; }
 	inline virtual sint16	GetCorrup()	const { return Corrup; }
-
+	
 	sint16	GetMaxStat() const;
 	sint16	GetMaxResist() const;
 	sint16  GetMaxSTR() const;
@@ -1069,8 +1069,11 @@ private:
 	void	HandleTraderPriceUpdate(const EQApplicationPacket *app);
 
 	sint16    CalcAC();
+	sint16    GetACMit();
+	sint16    GetACAvoid();
 	sint16    CalcATK();
 	int      CalcHaste();
+	int      CalcSpecificHaste(int toggle);
 
 	sint16   CalcSTR();
 	sint16   CalcSTA();
