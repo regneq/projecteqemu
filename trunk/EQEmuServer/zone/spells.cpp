@@ -3613,6 +3613,8 @@ float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster)
 	int caster_level, target_level, resist;
 	float roll, fullchance, resistchance;
 	int resist_bonuses = CalcResistChanceBonus();
+	int fear_resist_bonuses = CalcFearResistChance();
+	int spell_resist_chance = MakeRandomInt(0,99); // Declare this so we don't have to win two rolls for every spell
 	
 	if(spell_id != 0 && !IsValidSpell(spell_id))
 	{
@@ -3625,7 +3627,7 @@ float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster)
 		return(0);
 	}
 	
-	if(resist_type == RESIST_NONE && MakeRandomInt(0,99) > resist_bonuses) {
+	if(resist_type == RESIST_NONE && (spell_resist_chance > resist_bonuses || resist_bonuses == 0)) {
 		//unresistable...
 		mlog(SPELLS__RESISTS, "The spell %d is unresistable (type %d)", spell_id, resist_type);
 		return(100);
@@ -3654,33 +3656,13 @@ float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster)
  		return 0;
 	}
 	
-	//check for buff/item/aa based fear moditifers
-	//still working on this...
+	//check for buff/item/aa based fear modifiers
 	if (spell_id != 0 && IsFearSpell(spell_id)) {
-		sint16 rchance = 0;
-		switch (GetAA(aaFearResistance))
-		{
-			case 1:
-				rchance += 5;
-				break;
-			case 2:
-				rchance += 15;
-				break;
-			case 3:
-				rchance += 25;
-				break;
-		}
-		rchance += itembonuses.ResistFearChance + spellbonuses.ResistFearChance;
-		
-		if(GetAA(aaFearless) || (IsClient() && CastToClient()->CheckAAEffect(aaEffectWarcry)))
-			rchance = 100;
-		
-		//I dont think these should get factored into standard spell resist...
-		if(MakeRandomInt(0, 99) < rchance) {
-			mlog(SPELLS__RESISTS, "Had a %d chance of resisting the fear spell %d, and succeeded.", rchance, spell_id);
+		//Spell resist bonuses apply here as well, I dont think they should stack in this instance though
+		if(MakeRandomInt(0, 99) < fear_resist_bonuses || MakeRandomInt(0, 99) < resist_bonuses) {
+			mlog(SPELLS__RESISTS, "Had a %d chance of resisting the fear spell %d, and succeeded.", fear_resist_bonuses + resist_bonuses, spell_id);
 			return(0);
 		}
-		mlog(SPELLS__RESISTS, "Had a %d chance of resisting the fear spell %d, and failed.", rchance, spell_id);
 	}
 
 	switch(resist_type) {
@@ -3784,7 +3766,7 @@ float Mob::ResistSpell(int8 resist_type, int16 spell_id, Mob *caster)
 	mlog(SPELLS__RESISTS, "Spell %d: Resist Amount: %d, ResistChance: %.2f, Resist Bonuses: %.2f", 
 		spell_id, resist, resistchance, (spellbonuses.ResistSpellChance + itembonuses.ResistSpellChance));	
 	
-	if((MakeRandomInt(0,99) > resist_bonuses)) {
+	if(spell_resist_chance > resist_bonuses || resist_bonuses == 0) {
 		if (roll > resistchance) {
 			mlog(SPELLS__RESISTS, "Spell %d: Roll of %.2f > resist chance of %.2f, no resist", spell_id, roll, resistchance);
 			return(100);
@@ -3812,6 +3794,15 @@ sint16 Mob::CalcResistChanceBonus()
 	int resistchance = spellbonuses.ResistSpellChance + itembonuses.ResistSpellChance;
 	if(this->IsClient()) 
 		resistchance += aabonuses.ResistSpellChance;
+		
+	return resistchance;
+}
+
+sint16 Mob::CalcFearResistChance()
+{
+	int resistchance = spellbonuses.ResistFearChance + itembonuses.ResistFearChance;
+	if(this->IsClient()) 
+		resistchance += aabonuses.ResistFearChance;
 		
 	return resistchance;
 }

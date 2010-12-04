@@ -762,6 +762,11 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 				newbon->TwinProc += base1;
 				break;
 			}
+			case SE_ResistFearChance:
+			{
+				newbon->ResistFearChance += base1; // these should stack
+				break;
+			}
 		}
 	}
 }
@@ -1230,8 +1235,7 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 			}	
 			case SE_ResistFearChance:
 			{
-				if(newbon->ResistFearChance < effect_value)
-					newbon->ResistFearChance = effect_value;
+				newbon->ResistFearChance += effect_value; // these should stack
 				break;
 			}
  			case SE_HundredHands:

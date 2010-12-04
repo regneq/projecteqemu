@@ -822,6 +822,7 @@ bool logpos;
 	sint16 GetSkillDmgTaken(const SkillType skill_used);
 	void DoKnockback(Mob *caster, uint32 pushback, uint32 pushup);
 	sint16 CalcResistChanceBonus();
+	sint16 CalcFearResistChance();
 	void TrySpellOnKill();
 	sint16 GetCritDmgMob(int16 skill);
 	sint16 GetMeleeDamageMod_SE(int16 skill);
