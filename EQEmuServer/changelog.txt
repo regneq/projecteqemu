@@ -1,5 +1,21 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==12/03/2010==
+Caryatis: Fix for SpellResistChance effect.
+
+Required SQL:
+utils/sql/svn/1755_required_sql_fear_resist_aas.sql
+
+==12/01/2010==
+Caryatis: Fix for Reflect Spells and Healing Adept AAs
+Caryatis: Showstats has been updated.
+
+Required SQL:
+utils/sql/svn/1754_required_sql_healing_adept_aa_fix.sql
+
+Optional SQL:
+utils/sql/svn/1753_optional_haste_cap_rule.sql
+
 ==11/30/2010==
 Trevius: SoF+ - Stacked Potions will no longer show a factor of how many you have remaining in the potion belt.
 Trevius: Increased the max spell ID allowed in the spell book from 20000 to 50000.
@@ -26,7 +42,9 @@ utils/sql/svn/1747_optional_HoT_zone_and_zonepoints.sql
 
 For spawns etc, go to the PEQ logs repo for data collected by robregen.
 
-Optional SQL: utils/sql/svn/1750_optional_sql_reflect_rule.sql
+Optional SQL: 
+
+utils/sql/svn/1750_optional_sql_reflect_rule.sql
 
 ==11/24/2010==
 Trevius: The Rule, NPC:ReturnNonQuestNoDropItems, will now also return items that have been Attuned to a character as well as normal NO DROP items if set to true.
@@ -37,7 +55,8 @@ Caryatis: (bad_captain) Removed the level bonus granted to standing mana regen, 
 Caryatis: (bad_captain) Bots have been updated, see forums for complete details(new command: #bot showstats).
 Caryatis: (Secrets) Haste values can exceed 127%(ie Can o' Whoop Ass).
 
-Optional SQL: 1746_optional_sql_bot_manaregen
+Optional SQL: 
+utils/sql/svn/1746_optional_sql_bot_manaregen
 
 ==11/22/2010==
 JJ: Updated waypoint handling to properly account for aggro and quest engagements. NPCs will no longer skip waypoints when distracted from their grid path when resuming wandering.
@@ -49,9 +68,15 @@ Caryatis: Updated Silence so that is no longer prevents the use of disciplines(l
 ==11/20/2010==
 Caryatis: Fix for discs being resisted too much, beneficial spells and resurrection effects will no longer be resistable.
 Caryatis: Fix for CriticalHitChance being calculated incorrectly, leading to massively increased crit rates.
+Caryatis: Fix for Healrate effect
+Caryatis: Implemented ManaAbsorbPercentDamage, ReduceSkillTimer, HpToMana and LimitSpellGroup effects.
+Caryatis: Updated DamageModifier effect to be more robust.
 
-Optional SQL: 1736_optional_sql_feral_swipe
-Required SQL: 1737_required_sql_rule_and_aa_update
+Required SQL: 
+utils/sql/svn/1737_required_sql_rule_and_aa_update
+
+Optional SQL: 
+utils/sql/svn/1736_optional_sql_feral_swipe
 
 ==11/14/2010==
 Derision: Underfoot: Buff removal should now work correctly.
@@ -66,6 +91,29 @@ Derision: Corrected OP_Track for Underfoot/June 8 2010 Client.
 Derision: Corrected FindPersonRequest_Struct for Underfoot/June 8 2010 Client.
 Derision: Buying AAs seems to work better now for Underfoot/June 8 2010 Client.
 Derision: Most Pet commands should now work for Underfoot/June 8 2010 Client.
+Caryatis: Corruption resist is now fully functional
+Caryatis: Showstats has been updated.
+Caryatis: Implemented SpellOnKill and CriticalDamageMob effects.
+Caryatis: Fix for CriticalSpellChance
+
+Required SQL:
+utils/sql/svn/1723_required_sql_corruption.sql
+
+Optional SQL:
+utils/sql/svn/1723_optional_sql_new_stats_window_rule.sql
+
+==11/12/2010
+Caryatis: Implemented CriticalSpellChance, SpellCritChance, SpellcritDmgIncrease, CriticalHealChance, CriticalHealOverTime, CriticalDoTChance, SpellResistChance.
+Caryatis: Migrated some AAs to the bonus system
+Caryatis: Fading Memories is fixed(uses mana, cant use without mana, makes you invis and can use while singing.)
+Caryatis: Support for new types of AAs: Expendable, Quest, Racial/Bloodlines.
+Caryatis: New client object: IncrementAA(skill_id) and GetAALevel(skill_id)
+
+Required SQL:
+utils/sql/svn/1720_required_sql_AA_effects_update.sql
+
+Optional SQL:
+utils/sql/svn/1720_optional_sql_AAs.sql
 
 ==11/10/2010==
 Caryatis: Added support for HealAmt, SpellDmg, Clairvoyance, DS Mitigation, SE_SpellDamageShield, SE_SpellDamage
@@ -77,6 +125,17 @@ Caryatis: hSta = Increases hit point pool, hit point regen(25), and the maximum 
 Caryatis: hAgi = Increases endurance pool, endurance regen(25), and the maximum amount of endurance regen a character can have(25). Also increases the chance to dodge an attack(25), grants a bonus to defense skill(10).
 Caryatis: hDex = Increases endurance pool, endurance regen(25), and the maximum amount of endurance regen a character can have(25). Also increases damage done by ranged attacks(1), improves chance to successfully assassinate or headshot(10), and improves the chance to riposte, block, and parry incoming attacks(25).
 Caryatis: hCha = Improves reaction rolls with some NPCs(25) and increases the amount of faction you gain or lose when faction is adjusted(5). 
+Caryatis: AA Focus revamped to support new effects
+Caryatis: Disciplines will no longer be dispelled
+
+Optional SQL:
+utils/sql/svn/1719_optional_triggerOnCastAAs.sql
+
+==11/09/2010==
+Caryatis: Implemented MaxHPChange, SkillDmgTaken, Endurance Pool and Stun Resist.
+
+Optional SQL: 
+utils/sql/svn/1717_optional_rule_bash_stun_chance.sql
 
 ==11/07/2010==
 Congdar: Fixed OP_InterruptCast for newer clients(SoF, SoD, Live). You'll now see Npc's and other players cast interrupted message properly.
