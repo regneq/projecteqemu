@@ -1,5 +1,8 @@
 ﻿EQExtractor2 Changelog. All changes since the 1.0 release.
 
+==12/08/2010==
+Derision: Added support for client Dec  7 2010 14:04:53
+
 ==11/22/2010==
 Derision: Netcode fix highlighted by live patch supplied by robregen.
 Derision: Handled spawns with otherdata & 2 set the same as otherdata & 1 (destructable object data present), based on live patch supplied
