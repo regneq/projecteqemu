@@ -707,7 +707,7 @@ bool IsTGBCompatibleSpell(int16 spell_id);
 bool IsBardSong(int16 spell_id);
 bool IsEffectInSpell(int16 spellid, int effect);
 bool IsBlankSpellEffect(int16 spellid, int effect_index);
-bool IsValidSpell(int16 spellid);
+bool IsValidSpell(int32 spellid);
 bool IsSummonSpell(int16 spellid);
 bool IsEvacSpell(int16 spellid);
 bool IsDamageSpell(int16 spellid);

@@ -388,6 +388,7 @@ void Client::FinishTrade(Mob* tradingWith) {
 
 		int32 items[4]={0};
 		int8 charges[4]={0};
+		bool attuned[4]={0};
 
 		int xy = tradingWith->CastToNPC()->CountLoot();
 
@@ -396,13 +397,14 @@ void Client::FinishTrade(Mob* tradingWith) {
 			if (inst) {
 				items[i-3000]=inst->GetItem()->ID;
 				charges[i-3000]=inst->GetCharges();
+				attuned[i-3000]=inst->IsInstNoDrop();
 				const Item_Struct* item2 = database.GetItem(items[i-3000]);
 				// Handle non-quest NPC trading
 				if (item2 && quest_npc == false) {
 					// if it was not a NO DROP or Attuned item (or if a GM is trading), let the NPC have it
 					if(GetGM() || (item2->NoDrop != 0 && inst->IsInstNoDrop() == false)) {
 						xy++;
-						if (xy <= 20) {	// 20 items max in an NPC loot table
+						if (xy <= 20) { // 20 items max in an NPC loot table
 							tradingWith->CastToNPC()->AddLootDrop(item2, &tradingWith->CastToNPC()->itemlist, charges[i-3000], true, true);
 						}
 					}
@@ -418,7 +420,7 @@ void Client::FinishTrade(Mob* tradingWith) {
 		if(RuleB(TaskSystem, EnableTaskSystem)) {
 			int Cash = trade->cp + (trade->sp * 10) + (trade->gp * 100) + (trade->pp * 1000);
 			if(UpdateTasksOnDeliver(items, Cash, tradingWith->GetNPCTypeID())) {
-				if(!tradingWith->IsMoving()) 
+				if(!tradingWith->IsMoving())
 					tradingWith->FaceTarget(this);
 			}
 		}
@@ -435,34 +437,39 @@ void Client::FinishTrade(Mob* tradingWith) {
 				snprintf(temp1, 100, "item%d.%d", z+1,tradingWith->GetNPCTypeID());
 				snprintf(temp2, 100, "%d",items[z]);
 				parse->AddVar(temp1,temp2);
-				//			memset(temp1,0x0,100);
-				//			memset(temp2,0x0,100);
+				//					  memset(temp1,0x0,100);
+				//					  memset(temp2,0x0,100);
 				snprintf(temp1, 100, "item%d.charges.%d", z+1,tradingWith->GetNPCTypeID());
 				snprintf(temp2, 100, "%d",charges[z]);
 				parse->AddVar(temp1,temp2);
-				//			memset(temp1,0x0,100);
-				//			memset(temp2,0x0,100);
+				//					  memset(temp1,0x0,100);
+				//					  memset(temp2,0x0,100);
+				snprintf(temp1, 100, "item%d.attuned.%d", z+1,tradingWith->GetNPCTypeID());
+				snprintf(temp2, 100, "%d",attuned[z]);
+				parse->AddVar(temp1,temp2);
+				//					  memset(temp1,0x0,100);
+				//					  memset(temp2,0x0,100);
 			}
 			snprintf(temp1, 100, "copper.%d",tradingWith->GetNPCTypeID());
 			snprintf(temp2, 100, "%i",trade->cp);
 			parse->AddVar(temp1,temp2);
-			//		memset(temp1,0x0,100);
-			//		memset(temp2,0x0,100);
+			//			  memset(temp1,0x0,100);
+			//			  memset(temp2,0x0,100);
 			snprintf(temp1, 100, "silver.%d",tradingWith->GetNPCTypeID());
 			snprintf(temp2, 100, "%i",trade->sp);
 			parse->AddVar(temp1,temp2);
-			//		memset(temp1,0x0,100);
-			//		memset(temp2,0x0,100);
+			//			  memset(temp1,0x0,100);
+			//			  memset(temp2,0x0,100);
 			snprintf(temp1, 100, "gold.%d",tradingWith->GetNPCTypeID());
 			snprintf(temp2, 100, "%i",trade->gp);
 			parse->AddVar(temp1,temp2);
-			//		memset(temp1,0x0,100);
-			//		memset(temp2,0x0,100);
+			//			  memset(temp1,0x0,100);
+			//			  memset(temp2,0x0,100);
 			snprintf(temp1, 100, "platinum.%d",tradingWith->GetNPCTypeID());
 			snprintf(temp2, 100, "%i",trade->pp);
 			parse->AddVar(temp1,temp2);
-			//		memset(temp1,0x0,100);
-			//		memset(temp2,0x0,100);
+			//			  memset(temp1,0x0,100);
+			//			  memset(temp2,0x0,100);
 			parse->Event(EVENT_ITEM, tradingWith->GetNPCTypeID(), NULL, tradingWith->CastToNPC(), this);
 		}
 	}

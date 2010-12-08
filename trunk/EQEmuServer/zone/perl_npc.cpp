@@ -1996,6 +1996,7 @@ XS(boot_NPC)
 		newXSproto(strcpy(buf, "IsOnHatelist"), XS_NPC_IsOnHatelist, file, "$$");
 		newXSproto(strcpy(buf, "SetNPCFactionID"), XS_NPC_SetNPCFactionID, file, "$$");
 		newXSproto(strcpy(buf, "GetMaxDMG"), XS_NPC_GetMaxDMG, file, "$");
+		newXSproto(strcpy(buf, "GetMinDMG"), XS_NPC_GetMinDMG, file, "$");
 		newXSproto(strcpy(buf, "IsAnimal"), XS_NPC_IsAnimal, file, "$");
 		newXSproto(strcpy(buf, "GetPetSpellID"), XS_NPC_GetPetSpellID, file, "$");
 		newXSproto(strcpy(buf, "SetPetSpellID"), XS_NPC_SetPetSpellID, file, "$$");
