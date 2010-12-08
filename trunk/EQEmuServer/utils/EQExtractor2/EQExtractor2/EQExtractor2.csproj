@@ -72,6 +72,7 @@
       <DependentUpon>LogForm.cs</DependentUpon>
     </Compile>
     <Compile Include="OpcodeManager.cs" />
+    <Compile Include="PatchDec7-2010.cs" />
     <Compile Include="PatchGeneric.cs" />
     <Compile Include="EQApplicationLayer.cs" />
     <Compile Include="EQPacket.cs" />
@@ -120,6 +121,9 @@
       <DependentUpon>UserOptions.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="app.config" />
+    <None Include="patch_Dec7-2010.conf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="patch_Sep01-2010.conf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
