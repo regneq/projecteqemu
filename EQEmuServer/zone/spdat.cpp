@@ -460,14 +460,14 @@ bool IsBlankSpellEffect(int16 spellid, int effect_index)
 }
 
 // solar: checks some things about a spell id, to see if we can proceed
-bool IsValidSpell(int16 spellid)
+bool IsValidSpell(int32 spellid)
 {
 	return
 	(
 		spells_loaded &&
 		spellid != 0 &&
 		spellid != 1 &&
-		spellid != 0xFFFF &&
+		spellid != 0xFFFFFFFF &&
 		spellid < SPDAT_RECORDS &&
 		spells[spellid].player_1[0]
 	);

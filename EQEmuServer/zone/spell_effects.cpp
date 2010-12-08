@@ -3889,8 +3889,8 @@ sint16 Client::CalcAAFocus(focusType type, uint32 aa_ID, int16 spell_id)
 	int lvldiff = 0;
 
 	int32 effect = 0;
-	int32 base1 = 0;
-	int32 base2 = 0;
+	sint32 base1 = 0;
+	sint32 base2 = 0;
 	int32 slot = 0;
 
 	std::map<uint32, std::map<uint32, AA_Ability> >::const_iterator find_iter = aa_effects.find(aa_ID);

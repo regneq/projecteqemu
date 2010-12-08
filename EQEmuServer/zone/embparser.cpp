@@ -560,6 +560,14 @@ void PerlembParser::EventCommon(QuestEventID event, int32 objid, const char * da
 			ExportVar(packagename.c_str(), "item2", GetVar("item2", objid).c_str());
 			ExportVar(packagename.c_str(), "item3", GetVar("item3", objid).c_str());
 			ExportVar(packagename.c_str(), "item4", GetVar("item4", objid).c_str());
+			ExportVar(packagename.c_str(), "item1_charges", GetVar("item1.charges", objid).c_str());
+			ExportVar(packagename.c_str(), "item2_charges", GetVar("item2.charges", objid).c_str());
+			ExportVar(packagename.c_str(), "item3_charges", GetVar("item3.charges", objid).c_str());
+			ExportVar(packagename.c_str(), "item4_charges", GetVar("item4.charges", objid).c_str());
+			ExportVar(packagename.c_str(), "item1_attuned", GetVar("item1.attuned", objid).c_str());
+			ExportVar(packagename.c_str(), "item2_attuned", GetVar("item2.attuned", objid).c_str());
+			ExportVar(packagename.c_str(), "item3_attuned", GetVar("item3.attuned", objid).c_str());
+			ExportVar(packagename.c_str(), "item4_attuned", GetVar("item4.attuned", objid).c_str());
 			ExportVar(packagename.c_str(), "copper", GetVar("copper", objid).c_str());
 			ExportVar(packagename.c_str(), "silver", GetVar("silver", objid).c_str());
 			ExportVar(packagename.c_str(), "gold", GetVar("gold", objid).c_str());
