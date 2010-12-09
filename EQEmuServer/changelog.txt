@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==12/09/2010==
+Derision: Updated HoT opcodes following patch.
+
 ==12/07/2010==
 Trevius: Resolved a potential zone crash with memorizing spells.
 Trevius: Added $item1_charges, and $item1_attuned exports for all 4 turn in slots item1-item4 for EVENT_ITEM.
