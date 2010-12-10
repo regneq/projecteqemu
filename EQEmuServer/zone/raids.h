@@ -147,6 +147,7 @@ public:
 	 *  Actual Implementation Stuff
 	 */
 
+	void	RaidMessage_StringID(Mob* sender, int32 type, int32 string_id, const char* message,const char* message2=0,const char* message3=0,const char* message4=0,const char* message5=0,const char* message6=0,const char* message7=0,const char* message8=0,const char* message9=0, int32 distance = 0);
 	void	CastGroupSpell(Mob* caster,uint16 spellid, int32 gid);
 	void	SplitExp(uint32 exp, Mob* other);
 	int32	GetTotalRaidDamage(Mob* other);
