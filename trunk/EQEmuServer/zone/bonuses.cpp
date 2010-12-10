@@ -518,6 +518,10 @@ void Client::CalcAABonuses(StatBonuses* newbon) {
 				ApplyAABonuses(aa_AA, slots, newbon);	//add the bonuses
 		}
 	}
+
+	// Not any other clear place to put this at the moment
+	if(GetAA(aaTouchoftheDivine))
+		this->SetDeathSaveChance(true);
 }
 
 

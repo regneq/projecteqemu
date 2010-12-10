@@ -1157,6 +1157,11 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app)
 			Group *g = client->GetGroup();
 			if(g != NULL) {
 				g->GroupMessage_StringID(client, MT_LootMessages, OTHER_LOOTED_MESSAGE, client->GetName(), link);
+			} else {
+				Raid *r = client->GetRaid();
+				if(r != NULL) {
+					r->RaidMessage_StringID(client, MT_LootMessages, OTHER_LOOTED_MESSAGE, client->GetName(), link);
+				}
 			}
 		}
 		safe_delete_array(link);

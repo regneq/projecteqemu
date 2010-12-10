@@ -1308,6 +1308,18 @@ bool Client::Attack(Mob* other, int Hand, bool bRiposte, bool IsStrikethrough)
 			aaStrikethroughBonus = 6;
 			break;
 		}
+		switch (GetAA(aaTacticalMastery))
+		{
+		case 1:
+			aaStrikethroughBonus = 2;
+			break;
+		case 2:
+			aaStrikethroughBonus = 4;
+			break;
+		case 3:
+			aaStrikethroughBonus = 6;
+			break;
+		}
 		if (((damage < 0) || slippery_attack) && !bRiposte && !IsStrikethrough) { // Hack to still allow Strikethrough chance w/ Slippery Attacks AA
 			if(MakeRandomInt(0, 100) < (itembonuses.StrikeThrough + spellbonuses.StrikeThrough + aaStrikethroughBonus)) {
 				Message_StringID(MT_StrikeThrough, STRIKETHROUGH_STRING); // You strike through your opponents defenses!
