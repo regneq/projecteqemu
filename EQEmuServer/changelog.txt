@@ -6,6 +6,7 @@ gaeorn: fixed casting group spells in a raid
 gaeorn: (vanicae) code support for tactical mastery warrior aa
 gaeorn: (vanicae) code support for touch of the divine cleric aa
 gaeorn: (vanicae) item loot messages when in a raid
+gaeorn: (Wolftousen) fixed spawn variance
 
 ==12/09/2010==
 Derision: Updated HoT opcodes following patch.

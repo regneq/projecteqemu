@@ -106,7 +106,7 @@ int32 Spawn2::resetTimer()
 	int32 rspawn = respawn_ * 1000;
 	
 	if (variance_ != 0) {
-		int var_over_2 = variance_/2;
+		int var_over_2 = (variance_ * 1000) / 2;
 		rspawn = MakeRandomInt(rspawn - var_over_2, rspawn + var_over_2);
 		
 		//put a lower bound on it, not a lot of difference below 100, so set that as the bound.
