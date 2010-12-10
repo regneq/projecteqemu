@@ -124,6 +124,7 @@ public:
 	int32	GetHighestLevel();
 	int32	GetLowestLevel();
 	int32	GetGroup(const char *name);
+	int32	GetGroup(Client *c);
       uint16 GetAvgLevel();
 
 	int32	GetLootType() { return LootType; }

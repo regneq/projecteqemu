@@ -868,11 +868,20 @@ void QuestManager::movegrp(int zoneid, float x, float y, float z) {
 #endif
 	{
 		Group *g = entity_list.GetGroupByClient(initiator);
-       	if (g != NULL){
+       		if (g != NULL){
 			g->TeleportGroup(owner, zoneid, 0, x, y, z, 0.0f);
-		}
-		else {
-			initiator->MovePC(zoneid, x, y, z, 0.0f);
+		} else {
+			Raid *r = entity_list.GetRaidByClient(initiator);
+                        if (r != NULL){
+				int32 gid = r->GetGroup(initiator);
+				if (gid >= 0 && gid < 12) {
+					r->TeleportGroup(initiator->CastToMob(), zoneid, 0, x, y, z, 0.0f, gid);
+				} else {
+					initiator->MovePC(zoneid, x, y, z, 0.0f);
+				}
+                        } else {
+				initiator->MovePC(zoneid, x, y, z, 0.0f);
+                        }
 		}
 	}
 }

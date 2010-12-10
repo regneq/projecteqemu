@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==12/10/2010==
+gaeorn: fixed quest::movegrp to work with raids
+gaeorn: fixed casting group spells in a raid
+
 ==12/09/2010==
 Derision: Updated HoT opcodes following patch.
 
