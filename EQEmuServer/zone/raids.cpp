@@ -340,6 +340,16 @@ int32 Raid::GetGroup(const char *name)
 	return 0xFFFFFFFF;
 }
 
+int32 Raid::GetGroup(Client *c)
+{
+	for(int x = 0; x < MAX_RAID_MEMBERS; x++)
+	{
+		if(members[x].member == c)
+			return members[x].GroupNumber;
+	}
+	return 0xFFFFFFFF;
+}
+
 void Raid::RaidSay(const char *msg, Client *c)
 {
 	if(!c)

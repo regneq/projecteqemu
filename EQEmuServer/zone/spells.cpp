@@ -2963,6 +2963,10 @@ bool Mob::SpellOnTarget(int16 spell_id, Mob* spelltar, bool reflect)
 						!(
 							(entity_list.GetGroupByMob(this) &&
 							entity_list.GetGroupByMob(this)->IsGroupMember(spelltar)) ||
+							(spelltar->IsClient() &&
+							entity_list.GetRaidByMob(this) &&
+							entity_list.GetRaidByMob(this)->GetGroup(this->CastToClient()) ==
+								entity_list.GetRaidByMob(spelltar)->GetGroup(spelltar->CastToClient())) ||
 							(spelltar == GetPet()) //should be able to cast grp spells on self and pet despite grped status.
 						)
 					)
