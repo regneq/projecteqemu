@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==12/11/2010==
 gaeorn: bugfix for quest::movegrp to work with raids
+Derision: UCS Support for Underfoot and later clients
 
 ==12/10/2010==
 gaeorn: fixed quest::movegrp to work with raids

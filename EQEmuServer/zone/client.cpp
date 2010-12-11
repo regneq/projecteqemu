@@ -1060,6 +1060,13 @@ void Client::ChannelMessageReceived(int8 chan_num, int8 language, int8 lang_skil
 		}
 		break;
 	}
+	case 20:
+	{
+		// UCS Relay for Underfoot and later.
+		if(!worldserver.SendChannelMessage(this, 0, chan_num, 0, language, message))
+			Message(0, "Error: World server disconnected");
+		break;
+	}
 	default: {
 		Message(0, "Channel (%i) not implemented",(int16)chan_num);
 	}

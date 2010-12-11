@@ -519,6 +519,8 @@ Client::Client(EQStream *eqs) {
 	GlobalChatLimiterTimer = new Timer(RuleI(Chat, IntervalDurationMS));
 
 	TypeOfConnection = ConnectionTypeUnknown;
+
+	UnderfootOrLater = false;
 }
 
 Client::~Client() {
@@ -694,159 +696,9 @@ void Clientlist::Process() {
 
 				case OP_Mail: {
 
-					const char *PacketBuffer = (const char*)app->pBuffer;
-					
 					string CommandString = (const char*)app->pBuffer;
-
-					if(CommandString.length() == 0)
-						break;
-
-					if(isdigit(CommandString[0])) {
-
-						(*Iterator)->SendChannelMessageByNumber(CommandString);
-
-						break;
-					}
-
-					if(CommandString[0] == '#') {
-
-						(*Iterator)->SendChannelMessage(CommandString);
-
-						break;
-					}
-
-					string Command, Parameters;
-
-					string::size_type Space = CommandString.find_first_of(" ");
-
-					if(Space != string::npos) { 
-
-						Command = CommandString.substr(0, Space);
-
-						string::size_type ParametersStart = CommandString.find_first_not_of(" ", Space);
-
-						if(ParametersStart != string::npos)
-							Parameters = CommandString.substr(ParametersStart);
-					}
-					else
-						Command = CommandString;
-
-					int CommandCode = LookupCommand(Command.c_str());
-
-					switch(CommandCode) {
-
-						case CommandJoin:
-							(*Iterator)->JoinChannels(Parameters);
-							break;
-
-						case CommandLeaveAll:
-							(*Iterator)->LeaveAllChannels();
-							break;
-
-						case CommandLeave:
-							(*Iterator)->LeaveChannels(Parameters);
-							break;
-
-						case CommandListAll:
-							ChannelList->SendAllChannels((*Iterator));
-							break;
-						
-						case CommandList:
-							(*Iterator)->ProcessChannelList(Parameters);
-							break;
-
-						case CommandSet:
-							(*Iterator)->LeaveAllChannels(false);
-							(*Iterator)->JoinChannels(Parameters);
-							break;
-
-						case CommandAnnounce:
-							(*Iterator)->ToggleAnnounce();
-							break;
-
-						case CommandSetOwner:
-							(*Iterator)->SetChannelOwner(Parameters);
-							break;
-
-						case CommandOPList:
-							(*Iterator)->OPList(Parameters);
-							break;
-
-						case CommandInvite:
-							(*Iterator)->ChannelInvite(Parameters);
-							break;
-
-						case CommandGrant:
-							(*Iterator)->ChannelGrantModerator(Parameters);
-							break;
-
-						case CommandModerate:
-							(*Iterator)->ChannelModerate(Parameters);
-							break;
-
-						case CommandVoice:
-							(*Iterator)->ChannelGrantVoice(Parameters);
-							break;
-
-						case CommandKick:
-							(*Iterator)->ChannelKick(Parameters);
-							break;
-
-						case CommandPassword:
-							(*Iterator)->SetChannelPassword(Parameters);
-							break;
-				
-						case CommandToggleInvites:
-							(*Iterator)->ToggleInvites();
-							break;
-
-						case CommandAFK:
-							break;
-
-						case CommandUptime:
-							(*Iterator)->SendUptime();
-							break;
-
-						case CommandGetHeaders:
-							database.SendHeaders((*Iterator));
-							break;
-
-						case CommandGetBody:
-							database.SendBody((*Iterator), atoi(Parameters.c_str()));
-							break;
-
-						case CommandMailTo:
-							ProcessMailTo((*Iterator), Parameters);
-							break;
-
-						case CommandSetMessageStatus:
-							_log(UCS__TRACE, "Set Message Status, Params: %s", Parameters.c_str());
-							ProcessSetMessageStatus(Parameters);
-							break;
-
-						case CommandSelectMailBox:
-						{
-							string::size_type NumStart = Parameters.find_first_of("0123456789");
-						 	(*Iterator)->ChangeMailBox(atoi(Parameters.substr(NumStart).c_str()));
-							break;
-						}
-						case CommandSetMailForwarding:
-							break;
-						
-						case CommandBuddy:
-							RemoveApostrophes(Parameters);
-							ProcessCommandBuddy((*Iterator), Parameters);
-							break;
-
-						case CommandIgnorePlayer:
-							RemoveApostrophes(Parameters);
-							ProcessCommandIgnore((*Iterator), Parameters);
-							break;
-				
-						default:
-							(*Iterator)->SendHelp();
-							_log(UCS__ERROR, "Unhandled OP_Mail command: %s", PacketBuffer);
-					}
+					
+					ProcessOPMailCommand((*Iterator), CommandString);
 
 					break;
 				}
@@ -882,6 +734,161 @@ void Clientlist::Process() {
 
 	}
 
+}
+
+void Clientlist::ProcessOPMailCommand(Client *c, string CommandString)
+{
+
+	if(CommandString.length() == 0)
+		return;
+
+	if(isdigit(CommandString[0]))
+	{
+
+		c->SendChannelMessageByNumber(CommandString);
+
+		return;
+	}
+
+	if(CommandString[0] == '#') {
+
+		c->SendChannelMessage(CommandString);
+
+		return;
+	}
+
+	string Command, Parameters;
+
+	string::size_type Space = CommandString.find_first_of(" ");
+
+	if(Space != string::npos) { 
+
+		Command = CommandString.substr(0, Space);
+
+		string::size_type ParametersStart = CommandString.find_first_not_of(" ", Space);
+
+		if(ParametersStart != string::npos)
+			Parameters = CommandString.substr(ParametersStart);
+	}
+	else
+		Command = CommandString;
+
+	int CommandCode = LookupCommand(Command.c_str());
+
+	switch(CommandCode) {
+
+		case CommandJoin:
+			c->JoinChannels(Parameters);
+			break;
+
+		case CommandLeaveAll:
+			c->LeaveAllChannels();
+			break;
+
+		case CommandLeave:
+			c->LeaveChannels(Parameters);
+			break;
+
+		case CommandListAll:
+			ChannelList->SendAllChannels(c);
+			break;
+		
+		case CommandList:
+			c->ProcessChannelList(Parameters);
+			break;
+
+		case CommandSet:
+			c->LeaveAllChannels(false);
+			c->JoinChannels(Parameters);
+			break;
+
+		case CommandAnnounce:
+			c->ToggleAnnounce();
+			break;
+
+		case CommandSetOwner:
+			c->SetChannelOwner(Parameters);
+			break;
+
+		case CommandOPList:
+			c->OPList(Parameters);
+			break;
+
+		case CommandInvite:
+			c->ChannelInvite(Parameters);
+			break;
+
+		case CommandGrant:
+			c->ChannelGrantModerator(Parameters);
+			break;
+
+		case CommandModerate:
+			c->ChannelModerate(Parameters);
+			break;
+
+		case CommandVoice:
+			c->ChannelGrantVoice(Parameters);
+			break;
+
+		case CommandKick:
+			c->ChannelKick(Parameters);
+			break;
+
+		case CommandPassword:
+			c->SetChannelPassword(Parameters);
+			break;
+
+		case CommandToggleInvites:
+			c->ToggleInvites();
+			break;
+
+		case CommandAFK:
+			break;
+
+		case CommandUptime:
+			c->SendUptime();
+			break;
+
+		case CommandGetHeaders:
+			database.SendHeaders(c);
+			break;
+
+		case CommandGetBody:
+			database.SendBody(c, atoi(Parameters.c_str()));
+			break;
+
+		case CommandMailTo:
+			ProcessMailTo(c, Parameters);
+			break;
+
+		case CommandSetMessageStatus:
+			_log(UCS__TRACE, "Set Message Status, Params: %s", Parameters.c_str());
+			ProcessSetMessageStatus(Parameters);
+			break;
+
+		case CommandSelectMailBox:
+		{
+			string::size_type NumStart = Parameters.find_first_of("0123456789");
+		 	c->ChangeMailBox(atoi(Parameters.substr(NumStart).c_str()));
+			break;
+		}
+		case CommandSetMailForwarding:
+			break;
+		
+		case CommandBuddy:
+			RemoveApostrophes(Parameters);
+			ProcessCommandBuddy(c, Parameters);
+			break;
+
+		case CommandIgnorePlayer:
+			RemoveApostrophes(Parameters);
+			ProcessCommandIgnore(c, Parameters);
+			break;
+
+		default:
+			c->SendHelp();
+			_log(UCS__ERROR, "Unhandled OP_Mail command: %s", CommandString.c_str());
+	}
 }
 
 void Clientlist::CloseAllConnections() {
@@ -1505,6 +1512,9 @@ void Client::SendChannelMessage(string ChannelName, string Message, Client *Send
 
 	int PacketLength = ChannelName.length() + Message.length() + FQSenderName.length() + 3;
 
+	if(UnderfootOrLater)
+		PacketLength += 8;
+
 	EQApplicationPacket *outapp = new EQApplicationPacket(OP_ChannelMessage, PacketLength);
 
 	char *PacketBuffer = (char *)outapp->pBuffer;
@@ -1512,6 +1522,9 @@ void Client::SendChannelMessage(string ChannelName, string Message, Client *Send
 	VARSTRUCT_ENCODE_STRING(PacketBuffer, ChannelName.c_str());
 	VARSTRUCT_ENCODE_STRING(PacketBuffer, FQSenderName.c_str());
 	VARSTRUCT_ENCODE_STRING(PacketBuffer, Message.c_str());
+
+	if(UnderfootOrLater)
+		VARSTRUCT_ENCODE_STRING(PacketBuffer, "SPAM:0:");
 
 	_pkt(UCS__PACKETS, outapp);
 	QueuePacket(outapp);
@@ -2187,7 +2200,14 @@ void Client::SetConnectionType(char c) {
 		case 'S':
 		{
 			TypeOfConnection = ConnectionTypeCombined;
-			_log(UCS__TRACE, "Connection type is Combined (SoF or later client)");
+			_log(UCS__TRACE, "Connection type is Combined (SoF/SoD)");
+			break;
+		}
+		case 'U':
+		{
+			TypeOfConnection = ConnectionTypeCombined;
+			UnderfootOrLater = true;
+			_log(UCS__TRACE, "Connection type is Combined (Underfoot+)");
 			break;
 		}
 		case 'M':

@@ -83,8 +83,35 @@ Client::Client(EQStreamInterface* ieqs)
 	charid = 0;
 	pwaitingforbootup = 0;
 	StartInTutorial = false;
-	SoFClient = false;
+	ClientVersionBit = 0;
 	numclients++;
+
+	string StreamDescription = eqs->Describe();
+
+	if(StreamDescription == "Patch Titanium")
+	{
+		ClientVersionBit = BIT_Titanium;
+	}
+	else if(StreamDescription == "Patch 6.2")
+	{
+		ClientVersionBit = BIT_Client62;
+	}
+	else if(StreamDescription == "Patch SoF")
+	{
+		ClientVersionBit = BIT_SoF;
+	}
+	else if(StreamDescription == "Patch SoD")
+	{
+		ClientVersionBit = BIT_SoD;
+	}
+	else if(StreamDescription == "Patch Underfoot")
+	{
+		ClientVersionBit = BIT_Underfoot;
+	}
+	else if(StreamDescription == "Patch HoT")
+	{
+		ClientVersionBit = BIT_HoT;
+	}
 }
 
 Client::~Client() {
@@ -219,12 +246,6 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 				ret = false;
 				break;
 			}
-
-			string StreamDescription = eqs->Describe();
-
-			if(StreamDescription == "Patch SoF" || StreamDescription == "Patch SoD" || StreamDescription == "Patch Underfoot"
-			   || StreamDescription == "Patch HoT")
-				SoFClient = true;
 
 			LoginInfo_Struct *li=(LoginInfo_Struct *)app->pBuffer;
 
@@ -453,7 +474,6 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 		case OP_CharacterCreateRequest: {
 			// New OpCode in SoF
 			//
-			SoFClient = true;
 			EQApplicationPacket *outapp = new EQApplicationPacket(OP_CharacterCreateRequest, sizeof(SoFCharCreateInfo));
 			memcpy(outapp->pBuffer, &SoFCharCreateInfo, sizeof(SoFCharCreateInfo));
 			QueuePacket(outapp);
@@ -660,7 +680,14 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 
 			database.SetMailKey(charid, GetIP(), MailKey);
 
-			char ConnectionType = (SoFClient ? 'S' : 'C');
+			char ConnectionType;
+
+			if(ClientVersionBit & BIT_UnderfootAndLater)
+				ConnectionType = 'U';
+			else if(ClientVersionBit & BIT_SoFAndLater)
+				ConnectionType = 'S';
+			else
+				ConnectionType = 'C';
 
 			EQApplicationPacket *outapp2 = new EQApplicationPacket(OP_SetChatServer);
 			char buffer[112];
@@ -678,7 +705,7 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 
 			outapp2 = new EQApplicationPacket(OP_SetChatServer2);
 
-			if(!SoFClient)
+			if(ClientVersionBit & BIT_TitaniumAndEarlier)
 				ConnectionType = 'M';
 
 			sprintf(buffer,"%s,%i,%s.%s,%c%08X",
@@ -1200,7 +1227,7 @@ bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 	pp.pvp = database.GetServerType() == 1 ? 1 : 0;
 
 	//If it is an SoF Client and the SoF Start Zone rule is set, send new chars there
-	if(SoFClient && (RuleI(World, SoFStartZoneID) > 0)) {
+	if((ClientVersionBit & BIT_SoFAndLater)  && (RuleI(World, SoFStartZoneID) > 0)) {
 		clog(WORLD__CLIENT,"Found 'SoFStartZoneID' rule setting: %i", (RuleI(World, SoFStartZoneID)));
 		pp.zone_id = (RuleI(World, SoFStartZoneID));
 		if(pp.zone_id)
@@ -1222,7 +1249,7 @@ bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 		}
 		else   // otherwise use normal starting zone logic
 		{
-			if(!SoFClient)
+			if(ClientVersionBit & BIT_TitaniumAndEarlier)
 				database.GetStartZone(&pp, cc);
 			else
 				database.GetStartZoneSoF(&pp, cc);

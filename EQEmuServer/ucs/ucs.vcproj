@@ -193,6 +193,10 @@
 				RelativePath=".\ucsconfig.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\worldserver.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -213,6 +217,10 @@
 			</File>
 			<File
 				RelativePath=".\ucsconfig.h"
+				>
+			</File>
+			<File
+				RelativePath=".\worldserver.h"
 				>
 			</File>
 		</Filter>
@@ -525,6 +533,10 @@
 			</File>
 			<File
 				RelativePath="..\common\unix.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\common\worldconn.cpp"
 				>
 			</File>
 			<File

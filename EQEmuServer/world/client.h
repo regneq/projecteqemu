@@ -85,7 +85,7 @@ private:
 	int32	pwaitingforbootup;
 
 	bool StartInTutorial;
-	bool SoFClient;
+	uint32 ClientVersionBit;
 	bool OPCharCreate(char *name, CharCreate_Struct *cc);
 
 	void SetClassStartingSkills( PlayerProfile_Struct *pp );

@@ -163,6 +163,7 @@
 #define ServerOP_LauncherZoneRequest	0x3001
 #define ServerOP_LauncherZoneStatus		0x3002
 
+#define ServerOP_UCSMessage		0x4000
 /************ PACKET RELATED STRUCT ************/
 class ServerPacket
 {
