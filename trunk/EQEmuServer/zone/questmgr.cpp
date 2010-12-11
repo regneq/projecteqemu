@@ -875,7 +875,7 @@ void QuestManager::movegrp(int zoneid, float x, float y, float z) {
                         if (r != NULL){
 				int32 gid = r->GetGroup(initiator);
 				if (gid >= 0 && gid < 12) {
-					r->TeleportGroup(initiator->CastToMob(), zoneid, 0, x, y, z, 0.0f, gid);
+					r->TeleportGroup(owner, zoneid, 0, x, y, z, 0.0f, gid);
 				} else {
 					initiator->MovePC(zoneid, x, y, z, 0.0f);
 				}
