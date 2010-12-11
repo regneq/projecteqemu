@@ -251,7 +251,7 @@ bool Console::Process() {
 			tcpc = 0;
 		} else if(tcpc->GetPacketMode() == EmuTCPConnection::packetModeUCS)
 		{
-			_log(WORLD__CONSOLE,"New UCS Connection fom from %s:%d", inet_ntoa(in), GetPort());
+			_log(WORLD__CONSOLE,"New UCS Connection from %s:%d", inet_ntoa(in), GetPort());
 			UCSLink.SetConnection(tcpc);
 			tcpc = 0;
 		} else {
