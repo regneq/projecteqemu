@@ -11,7 +11,7 @@ SF= ../common/timer.o ../common/packet_dump.o ../common/races.o ../common/unix.o
    ../common/EQEmuConfig.o WorldConfig.o ../common/XMLParser.o ../common/tinyxml/tinystr.o \
    ../common/tinyxml/tinyxml.o ../common/tinyxml/tinyxmlerror.o ../common/tinyxml/tinyxmlparser.o \
    ../common/BasePacket.o ../common/shareddb.o worlddb.o EQW.o HTTPRequest.o \
-   EQWHTTPHandler.o EQWParser.o perl_EQW.o perl_HTTPRequest.o clientlist.o \
+   EQWHTTPHandler.o EQWParser.o perl_EQW.o perl_HTTPRequest.o clientlist.o ucs.o\
    zonelist.o cliententry.o LauncherList.o LauncherLink.o lfplist.o Adventure.o AdventureManager.o \
    ../common/EQStreamIdent.o ../common/StructStrategy.o LoginServerList.o \
    ../common/EQStreamProxy.o ../common/patches/patches.o \

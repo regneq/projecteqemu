@@ -33,6 +33,7 @@
 #include "wguild_mgr.h"
 #include "lfplist.h"
 #include "AdventureManager.h"
+#include "ucs.h"
 
 extern ClientList client_list;
 extern GroupLFPList LFPGroupList;
@@ -41,6 +42,7 @@ extern ConsoleList console_list;
 extern LoginServerList loginserverlist;
 extern volatile bool RunLoops;
 extern AdventureManager adventure_manager;
+extern UCSConnection UCSLink;
 
 ZoneServer::ZoneServer(EmuTCPConnection* itcpc) 
 : WorldTCPConnection(), tcpc(itcpc), ls_zboot(5000) {
@@ -94,7 +96,7 @@ bool ZoneServer::SetZone(int32 iZoneID, int32 iInstanceID, bool iStaticZone) {
 		{
 			strncpy(long_name, longname, sizeof(long_name));
                 	long_name[sizeof(long_name)-1] = '\0';
-			safe_delete( longname );
+			safe_delete_array( longname );
 		}
 		else
 			strcpy(long_name, "");
@@ -398,6 +400,11 @@ bool ZoneServer::Process() {
 		}
 		case ServerOP_ChannelMessage: {
 			ServerChannelMessage_Struct* scm = (ServerChannelMessage_Struct*) pack->pBuffer;
+			if(scm->chan_num == 20)
+			{
+				UCSLink.SendMessage(scm->from, scm->message);
+				break;
+			}
 			if (scm->chan_num == 7 || scm->chan_num == 14) {
 				if (scm->deliverto[0] == '*') {
 					Console* con = 0;

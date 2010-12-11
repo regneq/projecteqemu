@@ -35,7 +35,7 @@
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				ame="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
@@ -271,6 +271,9 @@
 			<File
 				RelativePath=".\zoneserver.cpp">
 			</File>
+			<File
+				RelativePath=".\ucs.cpp">
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -292,6 +295,9 @@
 			</File>
 			<File
 				RelativePath=".\zoneserver.h">
+			</File>
+			<File
+				RelativePath=".\ucs.h">
 			</File>
 		</Filter>
 		<Filter

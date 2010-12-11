@@ -169,6 +169,7 @@ private:
 	int AttemptedMessages;
 	bool ForceDisconnect;
 	ConnectionType TypeOfConnection;
+	bool UnderfootOrLater;
 };
 
 class Clientlist {
@@ -180,8 +181,10 @@ public:
 	Client *FindCharacter(string CharacterName);
 	void	CheckForStaleConnections(Client *c);
 	Client *IsCharacterOnline(string CharacterName);
+	void ProcessOPMailCommand(Client *c, string CommandString);
 
 private:
+
 	EQStreamFactory *chatsf;
 
 	list<Client*> ClientChatConnections;

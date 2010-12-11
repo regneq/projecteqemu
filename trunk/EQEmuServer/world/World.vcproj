@@ -488,6 +488,10 @@
 				RelativePath=".\zoneserver.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\ucs.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -547,6 +551,10 @@
 			</File>
 			<File
 				RelativePath=".\zoneserver.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ucs.h"
 				>
 			</File>
 		</Filter>
