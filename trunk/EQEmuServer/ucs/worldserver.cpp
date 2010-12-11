@@ -89,10 +89,12 @@ void WorldServer::Process()
 
 				_log(UCS__TRACE, "Player: %s, Sent Message: %s", From, Message.c_str());
 
+				Client *c = CL->FindCharacter(From);
+
+				safe_delete_array(From);
+
 				if(Message.length() < 2)
 					break;
-
-				Client *c = CL->FindCharacter(From);
 
 				if(!c)
 				{
@@ -108,8 +110,6 @@ void WorldServer::Process()
 				{
 					CL->ProcessOPMailCommand(c, Message.substr(1, string::npos));
 				}
-
-				safe_delete_array(From);
 
 				break;
 			}
