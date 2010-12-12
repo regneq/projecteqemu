@@ -249,7 +249,7 @@ sint8 ItemInst::AvailableAugmentSlot(sint32 augtype) const
 	int i;
 	for (i=0;i<5;i++) {
 		if (!GetItem(i)) {
-			if (augtype==-1 || (m_item->AugSlotType[i] && (1<<(m_item->AugSlotType[i]-1) & augtype)))
+			if (augtype==-1 || (m_item->AugSlotType[i] && ((1<<(m_item->AugSlotType[i]-1)) & augtype)))
 				break;
 		}
 
@@ -257,6 +257,23 @@ sint8 ItemInst::AvailableAugmentSlot(sint32 augtype) const
 
 	return (i<5) ? i : -1;
 }
+
+bool ItemInst::AvailableWearSlot(uint32 aug_wear_slots) const
+{
+	if (m_item->ItemClass != ItemClassCommon || !m_item)
+		return false;
+
+	int i;
+	for(i=0; i<22; i++) {
+		if(m_item->Slots & (1<<i)) {
+			if(aug_wear_slots & (1<<i))
+				break;
+		}
+	}
+
+	return (i<22) ? true : false;
+}
+
 uint32 ItemInst::GetAugmentItemID(uint8 slot) const
 {
 uint32 id=0;
