@@ -80,7 +80,7 @@ void Object::HandleAugmentation(Client* user, const AugmentItem_Struct* in_augme
 
 	// Adding augment
 	if (in_augment->augment_slot == -1) {
-		if ((slot=tobe_auged->AvailableAugmentSlot(auged_with->GetAugmentType()))!=-1) {
+		if (((slot=tobe_auged->AvailableAugmentSlot(auged_with->GetAugmentType()))!=-1) && (tobe_auged->AvailableWearSlot(auged_with->GetItem()->Slots))) {
 			tobe_auged->PutAugment(slot,*auged_with);
 			user->PushItemOnCursor(*tobe_auged,true);
 			container->Clear();

@@ -273,6 +273,7 @@ public:
 	// Augements
 	//
 	inline bool IsAugmentable() const { return m_item->AugSlotType[0]!=0; }
+	bool AvailableWearSlot(uint32 aug_wear_slots) const;
 	sint8 AvailableAugmentSlot(sint32 augtype) const;
 	inline sint32 GetAugmentType() const { return m_item->AugType; }
 

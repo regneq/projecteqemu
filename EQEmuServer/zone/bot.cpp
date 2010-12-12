@@ -4517,49 +4517,80 @@ void Bot::PerformTradeWithClient(sint16 beginSlotID, sint16 endSlotID, Client* c
 				UpdateClient = true;
 
 			//EQoffline: will give the items to the bots and change the bot stats
-			if(inst && this->GetBotOwner() == client->CastToMob()) {
+			if(inst && (GetBotOwner() == client->CastToMob()) && !IsEngaged()) {
 				std::string TempErrorMessage;
 				const Item_Struct* mWeaponItem = inst->GetItem();
-				if(mWeaponItem && inst->IsEquipable(GetBaseRace(), GetClass()) && (GetLevel() >= mWeaponItem->ReqLevel) && !CheckLoreConflict(mWeaponItem)) { // Angelox
+				bool failedLoreCheck = false;
+				for(int m=0; m<MAX_AUGMENT_SLOTS; ++m) {
+					ItemInst *itm = inst->GetAugment(m);
+					if(itm)
+					{
+						if(CheckLoreConflict(itm->GetItem())) {
+							failedLoreCheck = true;
+						}
+					}
+				}
+				if(CheckLoreConflict(mWeaponItem)) {
+					failedLoreCheck = true;
+				}
+				if(failedLoreCheck) {
+					Message_StringID(0, DUP_LORE);
+				}
+				if(!failedLoreCheck && mWeaponItem && inst->IsEquipable(GetBaseRace(), GetClass()) && (GetLevel() >= mWeaponItem->ReqLevel)) {
 					BotCanWear = true;
 					botCanWear[i] = BotCanWear;
 					ItemInst* swap_item = NULL;
 
 					const char* equipped[22] = {"Charm", "Left Ear", "Head", "Face", "Right Ear", "Neck", "Shoulders", "Arms", "Back",
-						"Left Wrist", "Right Wrist", "Range", "Hands", "Primary Hand", "Secondary Hand",
-						"Left Finger", "Right Finger", "Chest", "Legs", "Feet", "Waist", "Ammo" };
-
+												"Left Wrist", "Right Wrist", "Range", "Hands", "Primary Hand", "Secondary Hand",
+												"Left Finger", "Right Finger", "Chest", "Legs", "Feet", "Waist", "Ammo" };
 					bool success = false;
 					int how_many_slots = 0;
 					for(int j=0; j<22; ++j) {
 						if((mWeaponItem->Slots & (1 << j))) {
 							how_many_slots++;
-							if(!GetBotItemBySlot(j)) {
-								BotTradeAddItem(mWeaponItem->ID, inst, inst->GetCharges(), mWeaponItem->Slots, j, &TempErrorMessage);
-								success = true;
+							if(!GetBotItem(j)) {
 								if(j == SLOT_PRIMARY) {
 									if((mWeaponItem->ItemType == ItemType2HS) || (mWeaponItem->ItemType == ItemType2HB) || (mWeaponItem->ItemType == ItemType2HPierce)) {
-										if(GetBotItemBySlot(SLOT_SECONDARY)) {
+										if(GetBotItem(SLOT_SECONDARY)) {
 											ItemInst* remove_item = GetBotItem(SLOT_SECONDARY);
 											BotTradeSwapItem(client, SLOT_SECONDARY, 0, remove_item, remove_item->GetItem()->Slots, &TempErrorMessage, false);
 										}
 									}
+									BotTradeAddItem(mWeaponItem->ID, inst, inst->GetCharges(), mWeaponItem->Slots, j, &TempErrorMessage);
+									success = true;
+									break;
 								}
-								if(j == SLOT_SECONDARY) {
-									if(clientInventory[i]->IsWeapon() && !CanThisClassDualWield()) {
-										ItemInst* remove_item = GetBotItem(SLOT_SECONDARY);
-										BotTradeSwapItem(client, SLOT_SECONDARY, 0, remove_item, remove_item->GetItem()->Slots, &TempErrorMessage, false);
-										botCanWear[i] = 0;
-										already_returned = true;
-									}
-									else if(GetBotItemBySlot(SLOT_PRIMARY)) {
-										ItemInst* remove_item = GetBotItem(SLOT_PRIMARY);
-										if((remove_item->GetItem()->ItemType == ItemType2HS) || (remove_item->GetItem()->ItemType == ItemType2HB) || (remove_item->GetItem()->ItemType == ItemType2HPierce)) {
-											BotTradeSwapItem(client, SLOT_PRIMARY, 0, remove_item, remove_item->GetItem()->Slots, &TempErrorMessage, false);
+								else if(j == SLOT_SECONDARY) {
+									if(inst->IsWeapon()) {
+										if(CanThisClassDualWield()) {
+											BotTradeAddItem(mWeaponItem->ID, inst, inst->GetCharges(), mWeaponItem->Slots, j, &TempErrorMessage);
+											success = true;
+										}
+										else {
+											Say("I can't Dual Wield yet.");
+											--how_many_slots;
 										}
 									}
+									else {
+										BotTradeAddItem(mWeaponItem->ID, inst, inst->GetCharges(), mWeaponItem->Slots, j, &TempErrorMessage);
+										success = true;
+									}
+									if(success) {
+										if(GetBotItem(SLOT_PRIMARY)) {
+											ItemInst* remove_item = GetBotItem(SLOT_PRIMARY);
+											if((remove_item->GetItem()->ItemType == ItemType2HS) || (remove_item->GetItem()->ItemType == ItemType2HB) || (remove_item->GetItem()->ItemType == ItemType2HPierce)) {
+												BotTradeSwapItem(client, SLOT_PRIMARY, 0, remove_item, remove_item->GetItem()->Slots, &TempErrorMessage, false);
+											}
+										}
+										break;
+									}
 								}
-								break;
+								else {
+									BotTradeAddItem(mWeaponItem->ID, inst, inst->GetCharges(), mWeaponItem->Slots, j, &TempErrorMessage);
+									success = true;
+									break;
+								}
 							}
 						}
 					}
@@ -4567,31 +4598,79 @@ void Bot::PerformTradeWithClient(sint16 beginSlotID, sint16 endSlotID, Client* c
 						for(int j=0; j<22; ++j) {
 							if((mWeaponItem->Slots & (1 << j))) {
 								swap_item = GetBotItem(j);
-								BotTradeSwapItem(client, j, inst, swap_item, mWeaponItem->Slots, &TempErrorMessage);
-								success = true;
-								if(j == SLOT_PRIMARY) {
-									if((mWeaponItem->ItemType == ItemType2HS) || (mWeaponItem->ItemType == ItemType2HB) || (mWeaponItem->ItemType == ItemType2HPierce)) {
-										if(GetBotItemBySlot(SLOT_SECONDARY)) {
-											ItemInst* remove_item = GetBotItem(SLOT_SECONDARY);
-											BotTradeSwapItem(client, SLOT_SECONDARY, 0, remove_item, remove_item->GetItem()->Slots, &TempErrorMessage, false);
+								failedLoreCheck = false;
+								for(int k=0; k<MAX_AUGMENT_SLOTS; ++k) {
+									ItemInst *itm = swap_item->GetAugment(k);
+									if(itm)
+									{
+										if(client->CheckLoreConflict(itm->GetItem())) {
+											failedLoreCheck = true;
 										}
 									}
 								}
-								break;
+								if(client->CheckLoreConflict(swap_item->GetItem())) {
+									failedLoreCheck = true;
+								}
+								if(!failedLoreCheck) {
+									if(j == SLOT_PRIMARY) {
+										if((mWeaponItem->ItemType == ItemType2HS) || (mWeaponItem->ItemType == ItemType2HB) || (mWeaponItem->ItemType == ItemType2HPierce)) {
+											if(GetBotItem(SLOT_SECONDARY)) {
+												ItemInst* remove_item = GetBotItem(SLOT_SECONDARY);
+												BotTradeSwapItem(client, SLOT_SECONDARY, 0, remove_item, remove_item->GetItem()->Slots, &TempErrorMessage, false);
+											}
+										}
+										BotTradeSwapItem(client, SLOT_PRIMARY, inst, swap_item, mWeaponItem->Slots, &TempErrorMessage);
+										success = true;
+										break;
+									}
+									else if(j == SLOT_SECONDARY) {
+										if(inst->IsWeapon()) {
+											if(CanThisClassDualWield()) {
+												BotTradeSwapItem(client, SLOT_SECONDARY, inst, swap_item, mWeaponItem->Slots, &TempErrorMessage);
+												success = true;
+											}
+											else {
+												botCanWear[i] = false;
+												Say("I can't Dual Wield yet.");
+											}
+										}
+										else {
+											BotTradeSwapItem(client, SLOT_SECONDARY, inst, swap_item, mWeaponItem->Slots, &TempErrorMessage);
+											success = true;
+										}
+										if(success && GetBotItem(SLOT_PRIMARY)) {
+											ItemInst* remove_item = GetBotItem(SLOT_PRIMARY);
+											if((remove_item->GetItem()->ItemType == ItemType2HS) || (remove_item->GetItem()->ItemType == ItemType2HB) || (remove_item->GetItem()->ItemType == ItemType2HPierce)) {
+												BotTradeSwapItem(client, SLOT_PRIMARY, 0, remove_item, remove_item->GetItem()->Slots, &TempErrorMessage, false);
+											}
+										}
+										break;
+									}
+									else {
+										BotTradeSwapItem(client, j, inst, swap_item, mWeaponItem->Slots, &TempErrorMessage);
+										success = true;
+										break;
+									}
+								}
+								else {
+									botCanWear[i] = false;
+									Message_StringID(0, PICK_LORE);
+									break;
+								}
 							}
 						}
 					}
-					if(how_many_slots > 1) {
-						client->Message(300, "If you want this item in a different slot, use #bot inventory remove <slot_id> to clear the spot.");
+					if(success) {
+						if(how_many_slots > 1) {
+							Message(300, "If you want this item in a different slot, use #bot inventory remove <slot_id> to clear the spot.");
+						}
+						CalcBotStats();
 					}
-					CalcBotStats();
 				}
 			}
 			if(inst) {
 				if(!botCanWear[i]) {
-					if(!already_returned) {
-						client->PushItemOnCursor(*inst, true);
-					}
+					client->PushItemOnCursor(*inst, true);
 				}
 				client->DeleteItemInInventory(i, 0, UpdateClient);
 			}
@@ -9375,7 +9454,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 
 					char* itemLink = 0;
 					if((i == 0) || (i == 11) || (i == 13) || (i == 14) || (i == 21)) {
-						if (c->GetClientVersion() == EQClientSoF)
+						if (c->GetClientVersion() >= EQClientSoF)
 						{
 							MakeAnyLenString(&itemLink, "%1X" "%05X" "%05X" "%05X" "%05X" "%05X" "%05X" "%1X" "%04X" "%1X" "%05X" "%08X", 
 								0,
@@ -9411,7 +9490,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 						}
 					}
 					else {
-						if (c->GetClientVersion() == EQClientSoF)
+						if (c->GetClientVersion() >= EQClientSoF)
 						{
 							MakeAnyLenString(&itemLink, "%1X" "%05X" "%05X" "%05X" "%05X" "%05X" "%05X" "%1X" "%04X" "%1X" "%05X" "%08X", 
 								0,
@@ -9472,8 +9551,8 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 				return;
 			}
 			const char* equipped[22] = {"Charm", "Left Ear", "Head", "Face", "Right Ear", "Neck", "Shoulders", "Arms", "Back",
-				"Left Wrist", "Right Wrist", "Range", "Hands", "Primary Hand", "Secondary Hand",
-				"Left Finger", "Right Finger", "Chest", "Legs", "Feet", "Waist", "Ammo" };
+										"Left Wrist", "Right Wrist", "Range", "Hands", "Primary Hand", "Secondary Hand",
+										"Left Finger", "Right Finger", "Chest", "Legs", "Feet", "Waist", "Ammo" };
 
 			const Item_Struct* itm = NULL;
 			const ItemInst* itminst = c->GetTarget()->CastToBot()->GetBotItem(slotId);
@@ -9486,7 +9565,22 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 			}
 
 			// Don't allow the player to remove a lore item they already possess and cause a crash
-			if(!c->CheckLoreConflict(itm)) {
+			bool failedLoreCheck = false;
+			if(itminst) {
+				for(int m=0; m<MAX_AUGMENT_SLOTS; ++m) {
+					ItemInst *itma = itminst->GetAugment(m);
+					if(itma)
+					{
+						if(c->CheckLoreConflict(itma->GetItem())) {
+							failedLoreCheck = true;
+						}
+					}
+				}
+				if(c->CheckLoreConflict(itm)) {
+					failedLoreCheck = true;
+				}
+			}
+			if(!failedLoreCheck) {
 				if(itm) {
 					c->PushItemOnCursor(*itminst, true);
 					Bot *gearbot = c->GetTarget()->CastToBot();
@@ -9567,7 +9661,7 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 				}
 			}
 			else {
-				c->Message(15, "Duplicate Lore item.");
+				c->Message_StringID(0, PICK_LORE);
 			}
 		}
 		return;
