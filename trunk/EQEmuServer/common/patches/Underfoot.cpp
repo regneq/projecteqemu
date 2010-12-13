@@ -3014,7 +3014,10 @@ DECODE(OP_LoadSpellSet)
 	SETUP_DIRECT_DECODE(LoadSpellSet_Struct, structs::LoadSpellSet_Struct);
 
 	for(unsigned int i = 0; i < MAX_PP_MEMSPELL; ++i)
-		emu->spell[i] = eq->spell[i];
+		if(eq->spell[i]==0)
+			emu->spell[i] = 0xFFFFFFFF;
+		else
+			emu->spell[i] = eq->spell[i];
 
 	FINISH_DIRECT_DECODE();
 }
