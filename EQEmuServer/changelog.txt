@@ -2,6 +2,7 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==12/13/2010==
 gaeorn: fixed underfoot to properly handle new packet struct for LoadSpellSet_Struct
+Derision: Underfoot - UCS should now retain /announce setting properly.
 
 ==12/11/2010==
 gaeorn: bugfix for quest::movegrp to work with raids

@@ -803,7 +803,7 @@ void Clientlist::ProcessOPMailCommand(Client *c, string CommandString)
 			break;
 
 		case CommandAnnounce:
-			c->ToggleAnnounce();
+			c->ToggleAnnounce(Parameters);
 			break;
 
 		case CommandSetOwner:
@@ -1532,16 +1532,21 @@ void Client::SendChannelMessage(string ChannelName, string Message, Client *Send
 	safe_delete(outapp);
 }
 
-void Client::ToggleAnnounce() {
+void Client::ToggleAnnounce(string State)
+{
+	if(State == "")
+		Announce = !Announce;
+	else if(State == "on")
+		Announce = true;
+	else
+		Announce = false;
 
 	string Message = "Announcing now ";
 
 	if(Announce) 
-		Message += "off";
-	else
 		Message += "on";
-
-	Announce = !Announce;
+	else
+		Message += "off";
 
 	GeneralChannelMessage(Message);
 }

@@ -103,7 +103,7 @@ public:
 	void SendChannelMessageByNumber(string Message);
 	void SendChannelList();
 	void CloseConnection();
-	void ToggleAnnounce();
+	void ToggleAnnounce(string State);
 	bool IsAnnounceOn() { return (Announce == true); }
 	void AnnounceJoin(ChatChannel *Channel, Client *c);
 	void AnnounceLeave(ChatChannel *Channel, Client *c);
