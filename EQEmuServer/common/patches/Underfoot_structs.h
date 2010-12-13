@@ -3849,8 +3849,9 @@ struct AnnoyingZoneUnknown_Struct {
 };
 
 struct LoadSpellSet_Struct {
-      uint32  spell[MAX_PP_MEMSPELL];      // 0xFFFFFFFF if no action, slot number if to unmem starting at 0
-      uint32 unknown;	//there seems to be an extra field in this packet...
+      uint8  spell[MAX_PP_MEMSPELL];      // 0 if no action
+      uint16 unknown2;	// is this two more spell gems?
+      uint32 unknown;	// there seems to be an extra field in this packet...
 };
 
 struct BlockedBuffs_Struct {

@@ -1,35 +1,23 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==12/13/2010==
+gaeorn: fixed underfoot to properly handle new packet struct for LoadSpellSet_Struct
+
 ==12/11/2010==
-
 gaeorn: bugfix for quest::movegrp to work with raids
-
 Derision: UCS Support for Underfoot and later clients
-
 Congdar: bot item trading fixes for lore, dual wield, augmenting, inspecting
 
-
 ==12/10/2010==
-
 gaeorn: fixed quest::movegrp to work with raids
-
 gaeorn: fixed casting group spells in a raid
-
 gaeorn: (vanicae) code support for tactical mastery warrior aa
-
 gaeorn: (vanicae) code support for touch of the divine cleric aa
-
 gaeorn: (vanicae) item loot messages when in a raid
-
 gaeorn: (Wolftousen) fixed spawn variance
 
-
-
 ==12/09/2010==
-
 Derision: Updated HoT opcodes following patch.
-
-
 
 ==12/07/2010==
 Trevius: Resolved a potential zone crash with memorizing spells.
