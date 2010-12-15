@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==12/15/2010==
+Trevius: Added an extra check for buffs while zoning to make sure it is a valid spell being applied.
+
 ==12/13/2010==
 gaeorn: fixed underfoot to properly handle new packet struct for LoadSpellSet_Struct
 Derision: Underfoot - UCS should now retain /announce setting properly.
