@@ -2878,8 +2878,8 @@ DECODE(OP_GroupCancelInvite)
 }
 
 DECODE(OP_Buff) {
-	DECODE_LENGTH_EXACT(structs::SpellBuffFade_Struct);
-	SETUP_DIRECT_DECODE(SpellBuffFade_Struct, structs::SpellBuffFade_Struct);
+	DECODE_LENGTH_EXACT(structs::SpellBuffFade_Struct_Underfoot);
+	SETUP_DIRECT_DECODE(SpellBuffFade_Struct, structs::SpellBuffFade_Struct_Underfoot);
 	IN(entityid);
 	IN(slot);
 	IN(level);

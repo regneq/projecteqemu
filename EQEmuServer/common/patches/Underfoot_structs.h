@@ -939,7 +939,8 @@ struct PlayerProfile_Struct
 /*19398*/ uint16  zoneInstance;       // Instance id
 /*19400*/ char      groupMembers[MAX_GROUP_MEMBERS][64];// 384 all the members in group, including self
 /*19784*/ char      groupLeader[64];    // Leader of the group ?
-/*19848*/ uint8 unknown19848[544];  // was [348]
+/*19848*/ uint8 unknown19848[540];  // was [348]
+/*20388*/ uint32  entityid;
 /*20392*/ uint32  leadAAActive;       // 0 = leader AA off, 1 = leader AA on
 /*20396*/ uint8 unknown20396[4];
 /*20400*/ sint32  ldon_points_guk;    // Earned GUK points
@@ -949,7 +950,7 @@ struct PlayerProfile_Struct
 /*20416*/ sint32  ldon_points_tak;    // Earned TAK points
 /*20420*/ sint32  ldon_points_available;  // Available LDON points
 /*20424*/ uint32  unknown20424[7];
-/*20452*/ uint32  entityid;		// This may not be correct. It is used for Group Leadership.
+/*20452*/ uint32  unknown20452;
 /*20456*/ uint32  unknown20456;
 /*20460*/ uint8 unknown20460[4];
 /*20464*/ uint32  unknown20464[6];
