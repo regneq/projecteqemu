@@ -8320,10 +8320,8 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 				}
 			}
 
-			if (m_pp.buffs[i].spellid <= (int32)SPDAT_RECORDS && m_pp.buffs[i].spellid != 0
-				&& m_pp.buffs[i].duration > 0
-				&& !IsBardSong(m_pp.buffs[i].spellid)		//bard spells will re-apply if the bard is around
-			) {
+			// bard spells will re-apply if the bard is around
+			if (IsValidSpell(m_pp.buffs[i].spellid) && m_pp.buffs[i].duration > 0 && !IsBardSong(m_pp.buffs[i].spellid)) {
 				if(m_pp.buffs[i].level == 0 || m_pp.buffs[i].level > 100)
 					m_pp.buffs[i].level = 1;
 				if(m_pp.buffs[i].duration < 3)	//make em last till they get in
