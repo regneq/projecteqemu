@@ -4475,7 +4475,7 @@ bool Bot::Bot_Command_Cure(int curetype, int level) {
 
 // Completes a trade with a client bot owner
 void Bot::FinishTrade(Client* client, BotTradeType tradeType) {
-	if(client) {
+	if(client && !client->GetTradeskillObject() && (client->trade->state != Trading)) {
 		if(tradeType == BotTradeClientNormal) {
 			// Items being traded are found in the normal trade window used to trade between a Client and a Client or NPC
 			// Items in this mode are found in slot ids 3000 thru 3003
@@ -9545,6 +9545,9 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 		}		
 		else if(c->GetTarget()->IsBot() && c->GetTarget()->CastToBot()->GetBotOwnerCharacterID() == c->CharacterID())
 		{
+			if(c->GetTradeskillObject() || (c->trade->state == Trading))
+				return;
+
 			int slotId = atoi(sep->arg[3]);
 			if(slotId > 21 || slotId < 0) {
 				c->Message(15, "A bot has 21 slots in its inventory, please choose a slot between 0 and 21.");
