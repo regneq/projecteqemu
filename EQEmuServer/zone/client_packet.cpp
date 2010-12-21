@@ -5418,8 +5418,11 @@ void Client::Handle_OP_ShopPlayerSell(const EQApplicationPacket *app)
 		Message(13,"You seemed to have misplaced that item..");
 		return;
 	}
-	if(mp->quantity > 1 && (sint16)mp->quantity > inst->GetCharges())
-		return;
+	if(mp->quantity > 1)
+	{
+		if((inst->GetCharges() < 0) || (mp->quantity > (uint32)inst->GetCharges()))
+			return;
+	}
 
 	if (!item->NoDrop) {
 		//Message(13,"%s tells you, 'LOL NOPE'", vendor->GetName());
