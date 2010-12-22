@@ -632,7 +632,7 @@ bool Group::IsGroupMember(const char *Name)
 {
 	if(Name)
 		for(uint32 i = 0; i < MAX_GROUP_MEMBERS; i++)
-			if(!strncmp(membername[i], Name, sizeof(membername[0])))
+			if(!strncmp(membername[i], Name, (sizeof(Name) < sizeof(membername[i])) ? sizeof(Name) : sizeof(membername[i])))
 				return true;
 
 	return false;
