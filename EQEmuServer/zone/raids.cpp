@@ -628,13 +628,13 @@ void Raid::GroupBardPulse(Mob* caster, uint16 spellid, int32 gid){
 
 void Raid::TeleportGroup(Mob* sender, int32 zoneID, int16 instance_id, float x, float y, float z, float heading, int32 gid)
 {
-	for(int z = 0; z < MAX_RAID_MEMBERS; z++) 
+	for(int i = 0; i < MAX_RAID_MEMBERS; i++) 
 	{
-		if(members[z].member)
+		if(members[i].member)
 		{
-			if(members[z].GroupNumber == gid)
+			if(members[i].GroupNumber == gid)
 			{
-				members[z].member->MovePC(zoneID, instance_id, x, y, z, heading, 0, ZoneSolicited);
+				members[i].member->MovePC(zoneID, instance_id, x, y, z, heading, 0, ZoneSolicited);
 			}
 		}
 	
@@ -643,11 +643,11 @@ void Raid::TeleportGroup(Mob* sender, int32 zoneID, int16 instance_id, float x, 
 
 void Raid::TeleportRaid(Mob* sender, int32 zoneID, int16 instance_id, float x, float y, float z, float heading)
 {
-	for(int z = 0; z < MAX_RAID_MEMBERS; z++) 
+	for(int i = 0; i < MAX_RAID_MEMBERS; i++) 
 	{
-		if(members[z].member)
+		if(members[i].member)
 		{
-			members[z].member->MovePC(zoneID, instance_id, x, y, z, heading, 0, ZoneSolicited);
+			members[i].member->MovePC(zoneID, instance_id, x, y, z, heading, 0, ZoneSolicited);
 		}
 	}
 }
