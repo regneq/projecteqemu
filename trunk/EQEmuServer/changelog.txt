@@ -2,11 +2,11 @@ EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
 ==12/21/2010==
 Derision: HoT: OP_SendFindableNPCs
+gaeorn: bugfix for quest::movegrp to work with raids. no really, its fixed this time
 
 ==12/15/2010==
 Trevius: Added an extra check for buffs while zoning to make sure it is a valid spell being applied.
 Derision: Underfoot - Fix for /dismount not dispelling horse and Group Leadership fixes (opcode changes).
-
 Congdar: fix for bot trading exploits
 
 ==12/13/2010==
