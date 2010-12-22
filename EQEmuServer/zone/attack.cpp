@@ -2133,7 +2133,7 @@ void NPC::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_ski
 					}
 					else {
 						give_exp_client->AddEXP((EXP_FORMULA), conlevel); // Pyro: Comment this if NPC death crashes zone
-						if(killermob && (killerMob->GetID() == give_exp_client->GetID() || killerMob->GetUltimateOwner()->GetID() == give_exp_client->GetID()))
+						if(killerMob && (killerMob->GetID() == give_exp_client->GetID() || killerMob->GetUltimateOwner()->GetID() == give_exp_client->GetID()))
 							killerMob->TrySpellOnKill();
 					}
 				}
