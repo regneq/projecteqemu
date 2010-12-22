@@ -1528,7 +1528,8 @@ void Client::OPMoveCoin(const EQApplicationPacket* app)
 	// solar: now we actually take it from the from bucket.  if there's an error
 	// with the destination slot, they lose their money
 	*from_bucket -= amount_to_take;
-	assert(*from_bucket >= 0);
+	// why are intentionally inducing a crash here rather than letting the code attempt to stumble on?
+	// assert(*from_bucket >= 0);
 
 	if(to_bucket)
 	{

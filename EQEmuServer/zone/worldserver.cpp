@@ -1562,8 +1562,10 @@ bool WorldServer::SendChannelMessage(Client* from, const char* to, int8 chan_num
 		scm->to[0] = 0;
 		scm->deliverto[0] = '\0';
 	} else {
-		strcpy(scm->to, to);
-		strcpy(scm->deliverto, to);
+		strncpy(scm->to, to, sizeof(scm->to));
+		scm->to[sizeof(scm->to)-1] = 0;
+		strncpy(scm->deliverto, to, sizeof(scm->deliverto));
+		scm->deliverto[sizeof(scm->deliverto)-1] = 0;
 	}
 	scm->noreply = false;
 	scm->chan_num = chan_num;

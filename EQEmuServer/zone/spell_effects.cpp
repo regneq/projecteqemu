@@ -1238,26 +1238,30 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 						else if (spell_id == 1731) 
 							specific_gender = 1;
 						if(specific_gender > -1) {
-							SendIllusionPacket
-							(
-								caster->GetTarget()->GetBaseRace(),
-								specific_gender,
-								caster->GetTarget()->GetTexture()
-							);
+							if(caster && caster->GetTarget()) {
+								SendIllusionPacket
+								(
+									caster->GetTarget()->GetBaseRace(),
+									specific_gender,
+									caster->GetTarget()->GetTexture()
+								);
+							}
 						}
 					}
 					// Change Gender Illusions
 					else {
-						int opposite_gender = 0;
-						if(caster->GetTarget()->GetGender() == 0) 
-							opposite_gender = 1;
+						if(caster && caster->GetTarget()) {
+							int opposite_gender = 0;
+							if(caster->GetTarget()->GetGender() == 0) 
+								opposite_gender = 1;
 							
-						SendIllusionPacket
-						(
-							caster->GetTarget()->GetRace(),
-							opposite_gender,
-							caster->GetTarget()->GetTexture()
-						);
+							SendIllusionPacket
+							(
+								caster->GetTarget()->GetRace(),
+								opposite_gender,
+								caster->GetTarget()->GetTexture()
+							);
+						}
 					}
 				}
 				// Racial Illusions
