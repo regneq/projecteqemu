@@ -691,11 +691,11 @@ typedef enum {
 } ZoneRequestCommands;
 struct LauncherZoneRequest {
 	uint8 command;
-	char short_name[17];
+	char short_name[33];
 };
 
 struct LauncherZoneStatus {
-	char short_name[17];
+	char short_name[33];
 	uint32 start_count;
 	uint8 running;
 };

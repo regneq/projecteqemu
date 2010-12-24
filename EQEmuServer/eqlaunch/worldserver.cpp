@@ -140,7 +140,7 @@ void WorldServer::SendStatus(const char *short_name, uint32 start_count, bool ru
 	ServerPacket* pack = new ServerPacket(ServerOP_LauncherZoneStatus, sizeof(LauncherZoneStatus));
 	LauncherZoneStatus* it =(LauncherZoneStatus*) pack->pBuffer;
 	
-	strn0cpy(it->short_name, short_name, 16);
+	strn0cpy(it->short_name, short_name, 32);
 	it->start_count = start_count;
 	it->running = running?1:0;
 	
