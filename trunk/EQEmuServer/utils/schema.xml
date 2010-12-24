@@ -5240,7 +5240,7 @@
 </TABLE>
 <TABLE ID="4595" Tablename="zone" PrevTableName="" XPos="2018" YPos="1881" TableType="0" TablePrefix="0" nmTable="0" Temporary="0" UseStandardInserts="0" StandardInserts="\n" TableOptions="DelayKeyTblUpdates=0\nPackKeys=0\nRowChecksum=0\nRowFormat=0\nUseRaid=0\nRaidType=0\n" Comments="" Collapsed="0" IsLinkedObject="0" IDLinkedModel="-1" Obj_id_Linked="-1" OrderPos="66" >
 <COLUMNS>
-<COLUMN ID="5706" ColName="short_name" PrevColName="" Pos="1" idDatatype="20" DatatypeParams="(16)" Width="0" Prec="0" PrimaryKey="1" NotNull="1" AutoInc="0" IsForeignKey="0" DefaultValue="" Comments="">
+<COLUMN ID="5706" ColName="short_name" PrevColName="" Pos="1" idDatatype="20" DatatypeParams="(32)" Width="0" Prec="0" PrimaryKey="1" NotNull="1" AutoInc="0" IsForeignKey="0" DefaultValue="" Comments="">
 <OPTIONSELECTED>
 <OPTIONSELECT Value="0" />
 </OPTIONSELECTED>

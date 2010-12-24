@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==12/24/2010==
+Trevius: (Orkim) Zone Short Name restriction fixes.
+
 ==12/21/2010==
 Derision: HoT: OP_SendFindableNPCs
 gaeorn: bugfix for quest::movegrp to work with raids. no really, its fixed this time
