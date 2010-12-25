@@ -21,6 +21,7 @@ E(OP_RespondAA)
 E(OP_DeleteSpawn)
 E(OP_WearChange)
 E(OP_Action)
+E(OP_BecomeTrader)
 
 //list of packets we need to decode on the way in:
 D(OP_SetServerFilter)

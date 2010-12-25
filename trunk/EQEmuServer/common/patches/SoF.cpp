@@ -1918,6 +1918,15 @@ ENCODE(OP_DzJoinExpeditionConfirm)
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_BecomeTrader)
+{
+	ENCODE_LENGTH_EXACT(BecomeTrader_Struct);
+	SETUP_DIRECT_ENCODE(BecomeTrader_Struct, structs::BecomeTrader_Struct);
+	OUT(ID);
+	OUT(Code);
+	FINISH_ENCODE();
+}
+
 DECODE(OP_InspectAnswer) {
 	DECODE_LENGTH_EXACT(structs::InspectResponse_Struct);
 	SETUP_DIRECT_DECODE(InspectResponse_Struct, structs::InspectResponse_Struct);

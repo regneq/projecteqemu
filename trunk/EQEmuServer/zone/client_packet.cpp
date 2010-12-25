@@ -8600,7 +8600,6 @@ bool Client::FinishConnState2(DBAsyncWork* dbaw) {
 	// Zone Spawns Packet
 	entity_list.SendZoneSpawnsBulk(this);
 	entity_list.SendZoneCorpsesBulk(this);
-	entity_list.SendTraders(this);
 	entity_list.SendZonePVPUpdates(this);	//hack until spawn struct is fixed.
 
 
@@ -8883,6 +8882,9 @@ void Client::CompleteConnect()
 		for(x=0;x<8;x++)
 			pet->SendWearChange(x);
 	}
+
+	entity_list.SendTraders(this);
+
 	zoneinpacket_timer.Start();
 
 	if(GetPet()){

@@ -2969,9 +2969,13 @@ struct GetItems_Struct{
 	sint32	Charges[80];
 };
 
-struct BecomeTrader_Struct{
-	int32 ID;
-	int32 Code;
+struct BecomeTrader_Struct
+{
+/*000*/	int32 ID;
+/*004*/	int32 Code;
+/*008*/	char  Name[64];
+/*072*/	int32 Unknown072;	// Observed 0x33,0x91 etc on zone-in, 0x00 when sent for a new trader after zone-in
+/*076*/
 };
 
 struct Trader_ShowItems_Struct{
