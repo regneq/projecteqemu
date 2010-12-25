@@ -2269,9 +2269,10 @@ struct GetItems_Struct{
 	int32	items[80];
 };
 
-struct BecomeTrader_Struct{
-	int32 id;
-	int32 code;
+struct BecomeTrader_Struct
+{
+	int32 ID;
+	int32 Code;
 };
 
 struct Trader_ShowItems_Struct{

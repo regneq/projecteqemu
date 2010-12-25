@@ -1086,6 +1086,15 @@ ENCODE(OP_Action) {
 	FINISH_ENCODE();
 }
 
+ENCODE(OP_BecomeTrader)
+{
+	ENCODE_LENGTH_EXACT(BecomeTrader_Struct);
+	SETUP_DIRECT_ENCODE(BecomeTrader_Struct, structs::BecomeTrader_Struct);
+	OUT(ID);
+	OUT(Code);
+	FINISH_ENCODE();
+}
+
 DECODE(OP_WearChange) {
 	DECODE_LENGTH_EXACT(structs::WearChange_Struct);
 	SETUP_DIRECT_DECODE(WearChange_Struct, structs::WearChange_Struct);

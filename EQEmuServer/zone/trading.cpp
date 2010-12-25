@@ -509,7 +509,10 @@ void Client::Trader_ShowItems(){
 	safe_delete(TraderItems);
 }
 
-void Client::SendTraderPacket(Client* Trader) {
+void Client::SendTraderPacket(Client* Trader)
+{
+	if(!Trader)
+		return;
 
 	EQApplicationPacket* outapp= new EQApplicationPacket(OP_BecomeTrader, sizeof(BecomeTrader_Struct));
 
@@ -518,6 +521,10 @@ void Client::SendTraderPacket(Client* Trader) {
 	bts->Code = BazaarTrader_StartTraderMode;
 
 	bts->ID = Trader->GetID();
+
+	strn0cpy(bts->Name, Trader->GetName(), sizeof(bts->Name));
+
+	bts->Unknown072 = 0x33;
 
 	QueuePacket(outapp);
 
@@ -568,6 +575,8 @@ void Client::Trader_StartTrader() {
 
 	bts->ID = this->GetID();
 
+	strn0cpy(bts->Name, GetName(), sizeof(bts->Name));
+
 	entity_list.QueueClients(this, outapp, false);
 
 	_pkt(TRADING__PACKETS, outapp);
@@ -617,6 +626,8 @@ void Client::Trader_EndTrader() {
 	bts->Code = 0;
 
 	bts->ID = this->GetID();
+
+	strn0cpy(bts->Name, GetName(), sizeof(bts->Name));
 
 	entity_list.QueueClients(this, outapp, false);
 

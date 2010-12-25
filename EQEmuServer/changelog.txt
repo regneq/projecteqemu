@@ -1,5 +1,9 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==12/25/2010==
+Derision: Underfoot: Correct OP_SwapSpell
+Derision: SoD/Underfoot: List of traders in /bazaar dropdown now works.
+
 ==12/24/2010==
 Trevius: (Orkim) Zone Short Name restriction fixes.
 
