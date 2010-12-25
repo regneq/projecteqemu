@@ -1,5 +1,8 @@
 ﻿EQExtractor2 Changelog. All changes since the 1.0 release.
 
+==12/25/2010==
+Derision: Heading appears to be multiplied by 2 in ZonePoint packets.
+
 ==12/21/2010==
 Derision: OP_SendFindableNPCS
 

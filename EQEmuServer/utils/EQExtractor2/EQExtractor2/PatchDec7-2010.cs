@@ -28,5 +28,30 @@ namespace EQExtractor2.Patches
 
             return IdentificationStatus.No;
         }
+
+        public override void RegisterExplorers()
+        {
+            //OpManager.RegisterExplorer("OP_ClientUpdate", ExploreClientUpdate);        
+        }
+
+        public void ExploreClientUpdate(StreamWriter OutputStream, ByteStream Buffer, PacketDirection Direction)
+        {
+            UInt16 SpawnID = Buffer.ReadUInt16();
+            Buffer.SkipBytes(6);
+            float x = Buffer.ReadSingle();
+            float y = Buffer.ReadSingle();
+            Buffer.SkipBytes(12);
+            float z = Buffer.ReadSingle();
+            
+            Buffer.SkipBytes(4);
+            UInt32 Temp = Buffer.ReadUInt32();
+            Temp = Temp & 0x3FFFFF;
+            Temp = Temp >> 10;
+            float heading = Utils.EQ19ToFloat((Int32)(Temp));
+
+            OutputStream.WriteLine("Loc: {0}, {1}, {2}  Heading: {3}", x, y, z, heading);
+
+            OutputStream.WriteLine("");
+        }
     }
 }

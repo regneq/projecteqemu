@@ -269,6 +269,9 @@ namespace EQExtractor2.Patches
 
                 Heading = Buffer.ReadSingle();
 
+                if (Heading != 999)
+                    Heading = Heading / 2;
+
                 ZoneID = Buffer.ReadUInt16();
 
                 Instance = Buffer.ReadUInt16();
