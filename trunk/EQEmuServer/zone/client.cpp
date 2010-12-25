@@ -2343,6 +2343,18 @@ int16 Client::GetMaxSkillAfterSpecializationRules(SkillType skillid, int16 maxSk
 
 		}
 	}
+	switch(skillid)
+	{
+		case TRACKING:
+		{
+			Result += (GetAA(aaAdvancedTracking) * 10);
+			break;
+		}
+
+		default:
+			break;
+	}
+
 	return Result;
 }
 
