@@ -74,7 +74,7 @@ static unsigned int case_3 (void);
 static unsigned int case_4 (void);
 static unsigned int case_5 (void);
 static unsigned int case_6 (void);
-uint32 hash(time_t t, clock_t c);
+uint32 rnd_hash(time_t t, clock_t c);
 void oneseed(const uint32 seed);
 
 void CoutTimestamp(bool ms) {
@@ -396,7 +396,7 @@ int MakeRandomInt(int low, int high)
 	//return (rand()%(high-low+1) + (low));
         if(!WELLRNG_init) {
 		WELLRNG_init = true;
-		oneseed( hash( time(NULL), clock() ) );
+		oneseed( rnd_hash( time(NULL), clock() ) );
 		WELLRNG19937 = case_1;
 	}
 	unsigned int randomnum = ((WELLRNG19937)());
@@ -414,13 +414,13 @@ double MakeRandomFloat(double low, double high)
 	//return (rand() / (double)RAND_MAX * (high - low) + low);
         if(!WELLRNG_init) {
 		WELLRNG_init = true;
-		oneseed( hash( time(NULL), clock() ) );
+		oneseed( rnd_hash( time(NULL), clock() ) );
 		WELLRNG19937 = case_1;
 	}
 	return ((WELLRNG19937)() / (double)0xffffffffUL * (high - low) + low);
 }
 
-uint32 hash( time_t t, clock_t c )
+uint32 rnd_hash( time_t t, clock_t c )
 {
         // Get a uint32 from t and c
         // Better than uint32(x) in case x is floating point in [0,1]
