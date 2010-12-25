@@ -21,7 +21,7 @@
 #include "LoginStructures.h"
 #include "../common/MiscFunctions.h"
 
-extern ErrorLog *log;
+extern ErrorLog *server_log;
 extern LoginServer server;
 
 Client::Client(EQStream *c, ClientVersion v)
@@ -41,7 +41,7 @@ bool Client::Process()
 	{
 		if(server.options.IsTraceOn())
 		{
-			log->Log(log_network, "Application packet recieved from client (size %u)", app->Size());
+			server_log->Log(log_network, "Application packet recieved from client (size %u)", app->Size());
 		}
 
 		if(server.options.IsDumpInPacketsOn())
@@ -55,7 +55,7 @@ bool Client::Process()
 			{
 				if(server.options.IsTraceOn())
 				{
-					log->Log(log_network, "Session ready recieved from client.");
+					server_log->Log(log_network, "Session ready recieved from client.");
 				}
 				Handle_SessionReady((const char*)app->pBuffer, app->Size());
 				break;
@@ -64,13 +64,13 @@ bool Client::Process()
 			{
 				if(app->Size() < 20)
 				{
-					log->Log(log_network_error, "Login recieved but it is too small, discarding.");
+					server_log->Log(log_network_error, "Login recieved but it is too small, discarding.");
 					break;
 				}
 
 				if(server.options.IsTraceOn())
 				{
-					log->Log(log_network, "Login recieved from client.");
+					server_log->Log(log_network, "Login recieved from client.");
 				}
 
 				Handle_Login((const char*)app->pBuffer, app->Size());
@@ -80,7 +80,7 @@ bool Client::Process()
 			{
 				if(server.options.IsTraceOn())
 				{
-					log->Log(log_network, "Server list request recieved from client.");
+					server_log->Log(log_network, "Server list request recieved from client.");
 				}
 
 				SendServerListPacket();
@@ -90,7 +90,7 @@ bool Client::Process()
 			{
 				if(app->Size() < sizeof(PlayEverquestRequest_Struct))
 				{
-					log->Log(log_network_error, "Play recieved but it is too small, discarding.");
+					server_log->Log(log_network_error, "Play recieved but it is too small, discarding.");
 					break;
 				}
 
@@ -101,7 +101,7 @@ bool Client::Process()
 			{
 				char dump[64];
 				app->build_header_dump(dump);
-				log->Log(log_network_error, "Recieved unhandled application packet from the client: %s.", dump);
+				server_log->Log(log_network_error, "Recieved unhandled application packet from the client: %s.", dump);
 			}
 		}
 
@@ -116,20 +116,20 @@ void Client::Handle_SessionReady(const char* data, unsigned int size)
 {
 	if(status != cs_not_sent_session_ready)
 	{
-		log->Log(log_network_error, "Session ready recieved again after already being recieved.");
+		server_log->Log(log_network_error, "Session ready recieved again after already being recieved.");
 		return;
 	}
 
 	if(size < sizeof(unsigned int))
 	{
-		log->Log(log_network_error, "Session ready was too small.");
+		server_log->Log(log_network_error, "Session ready was too small.");
 		return;
 	}
 
 	unsigned int mode = *((unsigned int*)data);
 	if(mode == (unsigned int)LoginMode::lm_from_world)
 	{
-		log->Log(log_network, "Session ready indicated logged in from world(unsupported feature), disconnecting.");
+		server_log->Log(log_network, "Session ready indicated logged in from world(unsupported feature), disconnecting.");
 		connection->Close();
 		return;
 	}
@@ -177,13 +177,13 @@ void Client::Handle_Login(const char* data, unsigned int size)
 {
 	if(status != cs_waiting_for_login)
 	{
-		log->Log(log_network_error, "Login recieved after already having logged in.");
+		server_log->Log(log_network_error, "Login recieved after already having logged in.");
 		return;
 	}
 
 	if((size - 12) % 8 != 0)
 	{
-		log->Log(log_network_error, "Login recieved packet of size: %u, this would cause a block corruption, discarding.", size);
+		server_log->Log(log_network_error, "Login recieved packet of size: %u, this would cause a block corruption, discarding.", size);
 		return;
 	}
 
@@ -204,8 +204,8 @@ void Client::Handle_Login(const char* data, unsigned int size)
 
 	if(server.options.IsTraceOn())
 	{
-		log->Log(log_client, "User: %s", e_user.c_str());
-		log->Log(log_client, "Hash: %s", e_hash.c_str());
+		server_log->Log(log_client, "User: %s", e_user.c_str());
+		server_log->Log(log_client, "Hash: %s", e_hash.c_str());
 	}
 
 	server.eq_crypto->DeleteHeap(e_buffer);
@@ -218,8 +218,8 @@ void Client::Handle_Login(const char* data, unsigned int size)
 
 	if(server.options.IsTraceOn())
 	{
-		log->Log(log_client, "User: %s", e_user.c_str());
-		log->Log(log_client, "Hash: %s", e_hash.c_str());
+		server_log->Log(log_client, "User: %s", e_user.c_str());
+		server_log->Log(log_client, "Hash: %s", e_hash.c_str());
 	}
 
 	_HeapDeleteCharBuffer(e_buffer);
@@ -228,7 +228,7 @@ void Client::Handle_Login(const char* data, unsigned int size)
 	bool result;
 	if(server.db->GetLoginDataFromAccountName(e_user, d_pass_hash, d_account_id) == false)
 	{
-		log->Log(log_client_error, "Error logging in, user %s does not exist in the database.", e_user.c_str());
+		server_log->Log(log_client_error, "Error logging in, user %s does not exist in the database.", e_user.c_str());
 		result = false;
 	}
 	else
@@ -331,7 +331,7 @@ void Client::Handle_Play(const char* data)
 {
 	if(status != cs_logged_in)
 	{
-		log->Log(log_client_error, "Client sent a play request when they either were not logged in, discarding.");
+		server_log->Log(log_client_error, "Client sent a play request when they either were not logged in, discarding.");
 		return;
 	}
 
@@ -341,7 +341,7 @@ void Client::Handle_Play(const char* data)
 
 	if(server.options.IsTraceOn())
 	{
-		log->Log(log_network, "Play recieved from client, server number %u sequence %u.", server_id_in, sequence_in);
+		server_log->Log(log_network, "Play recieved from client, server number %u sequence %u.", server_id_in, sequence_in);
 	}
 
 	this->play_server_id = (unsigned int)play->ServerNumber;
@@ -367,8 +367,8 @@ void Client::SendPlayResponse(EQApplicationPacket *outapp)
 {
 	if(server.options.IsTraceOn())
 	{
-		log->Log(log_network_trace, "Sending play response for %s.", GetAccountName().c_str());
-		log->LogPacket(log_network_trace, (const char*)outapp->pBuffer, outapp->size);
+		server_log->Log(log_network_trace, "Sending play response for %s.", GetAccountName().c_str());
+		server_log->LogPacket(log_network_trace, (const char*)outapp->pBuffer, outapp->size);
 	}
 	connection->QueuePacket(outapp);
 	status = cs_logged_in;

@@ -23,7 +23,7 @@
 #include "ErrorLog.h"
 #include "LoginServer.h"
 
-extern ErrorLog *log;
+extern ErrorLog *server_log;
 extern LoginServer server;
 
 #pragma comment(lib, "libpq.lib")
@@ -34,12 +34,12 @@ DatabasePostgreSQL::DatabasePostgreSQL(string user, string pass, string host, st
 	db = PQsetdbLogin(host.c_str(), port.c_str(), NULL, NULL, name.c_str(), user.c_str(), pass.c_str());
 	if(!db)
 	{
-		log->Log(log_database, "Failed to connect to PostgreSQL Database.");
+		server_log->Log(log_database, "Failed to connect to PostgreSQL Database.");
 	}
 
 	if(PQstatus(db) != CONNECTION_OK)
 	{
-		log->Log(log_database, "Failed to connect to PostgreSQL Database.");
+		server_log->Log(log_database, "Failed to connect to PostgreSQL Database.");
 		PQfinish(db);
 		db = NULL;
 	}
@@ -83,7 +83,7 @@ bool DatabasePostgreSQL::GetLoginDataFromAccountName(string name, string &passwo
 	char *error = PQresultErrorMessage(res);
 	if(strlen(error) > 0)
 	{
-		log->Log(log_database, "Database error in DatabasePostgreSQL::GetLoginDataFromAccountName(): %s", error);
+		server_log->Log(log_database, "Database error in DatabasePostgreSQL::GetLoginDataFromAccountName(): %s", error);
 		PQclear(res);
 		return false;
 	}
@@ -137,7 +137,7 @@ bool DatabasePostgreSQL::GetWorldRegistration(string long_name, string short_nam
 	char *error = PQresultErrorMessage(res);
 	if(strlen(error) > 0)
 	{
-		log->Log(log_database, "Database error in DatabasePostgreSQL::GetWorldRegistration(): %s", error);
+		server_log->Log(log_database, "Database error in DatabasePostgreSQL::GetWorldRegistration(): %s", error);
 		PQclear(res);
 		return false;
 	}
@@ -190,7 +190,7 @@ void DatabasePostgreSQL::UpdateLSAccountData(unsigned int id, string ip_address)
 	char *error = PQresultErrorMessage(res);
 	if(strlen(error) > 0)
 	{
-		log->Log(log_database, "Database error in DatabasePostgreSQL::GetLoginDataFromAccountName(): %s", error);
+		server_log->Log(log_database, "Database error in DatabasePostgreSQL::GetLoginDataFromAccountName(): %s", error);
 	}
 	PQclear(res);
 }
@@ -225,7 +225,7 @@ void DatabasePostgreSQL::UpdateWorldRegistration(unsigned int id, string ip_addr
 	char *error = PQresultErrorMessage(res);
 	if(strlen(error) > 0)
 	{
-		log->Log(log_database, "Database error in DatabasePostgreSQL::GetLoginDataFromAccountName(): %s", error);
+		server_log->Log(log_database, "Database error in DatabasePostgreSQL::GetLoginDataFromAccountName(): %s", error);
 	}
 	PQclear(res);
 }
