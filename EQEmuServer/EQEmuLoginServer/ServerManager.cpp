@@ -21,7 +21,7 @@
 #include "LoginStructures.h"
 #include <stdlib.h>
 
-extern ErrorLog *log;
+extern ErrorLog *server_log;
 extern LoginServer server;
 extern bool run_server;
 
@@ -33,11 +33,11 @@ ServerManager::ServerManager()
 	tcps = new EmuTCPServer(listen_port, true);
 	if(tcps->Open(listen_port, error_buffer))
 	{
-		log->Log(log_network, "ServerManager listening on port %u", listen_port);
+		server_log->Log(log_network, "ServerManager listening on port %u", listen_port);
 	}
 	else
 	{
-		log->Log(log_error, "ServerManager fatal error opening port on %u: %s", listen_port, error_buffer);
+		server_log->Log(log_error, "ServerManager fatal error opening port on %u: %s", listen_port, error_buffer);
 		run_server = false;
 	}
 }
@@ -59,12 +59,12 @@ void ServerManager::Process()
 	{
 		in_addr tmp;
 		tmp.s_addr = tcp_c->GetrIP();
-		log->Log(log_network, "New world server connection from %s:%d", inet_ntoa(tmp), tcp_c->GetrPort());
+		server_log->Log(log_network, "New world server connection from %s:%d", inet_ntoa(tmp), tcp_c->GetrPort());
 		
 		WorldServer *cur = GetServerByAddress(tcp_c->GetrIP());
 		if(cur)
 		{
-			log->Log(log_network, "World server already existed for %s, removing existing connection and updating current.", inet_ntoa(tmp));
+			server_log->Log(log_network, "World server already existed for %s, removing existing connection and updating current.", inet_ntoa(tmp));
 			cur->GetConnection()->Free();
 			cur->SetConnection(tcp_c);
 			cur->Reset();
@@ -81,7 +81,7 @@ void ServerManager::Process()
 	{
 		if((*iter)->Process() == false)
 		{
-			log->Log(log_world, "World server %s had a fatal error and had to be removed from the login.", (*iter)->GetLongName().c_str());
+			server_log->Log(log_world, "World server %s had a fatal error and had to be removed from the login.", (*iter)->GetLongName().c_str());
 			delete (*iter);
 			iter = world_servers.erase(iter);
 		}
@@ -102,7 +102,7 @@ void ServerManager::ProcessDisconnect()
 		{
 			in_addr tmp;
 			tmp.s_addr = c->GetrIP();
-			log->Log(log_network, "World server disconnected from the server, removing server and freeing connection.");
+			server_log->Log(log_network, "World server disconnected from the server, removing server and freeing connection.");
 			c->Free();
 			delete (*iter);
 			iter = world_servers.erase(iter);
@@ -292,7 +292,7 @@ void ServerManager::SendUserToWorldRequest(unsigned int server_id, unsigned int 
 
 	if(!found && server.options.IsTraceOn())
 	{
-		log->Log(log_client_error, "Client requested a user to world but supplied an invalid id of %u.", server_id);
+		server_log->Log(log_client_error, "Client requested a user to world but supplied an invalid id of %u.", server_id);
 	}
 }
 

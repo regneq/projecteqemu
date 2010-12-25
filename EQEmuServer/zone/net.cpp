@@ -1062,6 +1062,8 @@ This is hanging on freebsd for me, not sure why...
 
 		sp[tempid].can_mgb=atoi(sep.arg[185]);
 		sp[tempid].dispel_flag = atoi(sep.arg[186]);
+		sp[tempid].MinResist = atoi(sep.arg[189]);
+		sp[tempid].MaxResist = atoi(sep.arg[190]);
 		sp[tempid].NimbusEffect = atoi(sep.arg[193]);
 		sp[tempid].directional_start = (float)atoi(sep.arg[194]);
 		sp[tempid].directional_end = (float)atoi(sep.arg[195]);
@@ -1262,6 +1264,8 @@ This is hanging on freebsd for me, not sure why...
 
 			sp[tempid].can_mgb=atoi(row[185]);
 			sp[tempid].dispel_flag = atoi(row[186]);
+			sp[tempid].MinResist = atoi(row[189]);
+			sp[tempid].MaxResist = atoi(row[190]);
 			sp[tempid].NimbusEffect = atoi(row[193]);
 			sp[tempid].directional_start = (float)atoi(row[194]);
 			sp[tempid].directional_end = (float)atoi(row[195]);

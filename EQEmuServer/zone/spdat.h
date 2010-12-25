@@ -642,6 +642,8 @@ struct SPDat_Spell_Struct
 /* 181 */ int spacing181[4];
 /* 185 */ int can_mgb;	// 0=no, -1 or 1 = yes
 /* 186 */ int dispel_flag;
+/* 189 */ int MinResist;
+/* 190 */ int MaxResist;
 /* 192 */ int NimbusEffect;
 /* 195 */ float directional_start;
 /* 196 */ float directional_end;
