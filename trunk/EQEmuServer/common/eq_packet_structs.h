@@ -4513,6 +4513,14 @@ struct ExpeditionLeaderSet_Struct
 /*000*/ char leader_name[64];
 };
 
+struct CorpseDrag_Struct
+{
+/*000*/ char CorpseName[64];
+/*064*/ char DraggerName[64];
+/*128*/ uint8 Unknown128[24];
+/*152*/
+};
+
 //old structures live here:
 #include "eq_old_structs.h"
 

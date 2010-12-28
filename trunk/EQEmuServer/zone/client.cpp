@@ -5686,3 +5686,31 @@ void Client::NPCSpawn(NPC *target_npc, const char *identifier, uint32 respawntim
 		return;
 	}
 }
+
+bool Client::IsDraggingCorpse(const char *CorpseName)
+{
+	for(std::list<string>::iterator Iterator = DraggedCorpses.begin(); Iterator != DraggedCorpses.end(); ++Iterator)
+	{
+		if(!strcasecmp((*Iterator).c_str(), CorpseName))
+			return true;
+	}
+
+	return false;
+}
+
+void Client::DragCorpses()
+{
+	for(std::list<string>::iterator Iterator = DraggedCorpses.begin(); Iterator != DraggedCorpses.end(); ++Iterator)
+	{
+		Mob* corpse = entity_list.GetMob((*Iterator).c_str());
+		
+		if(corpse && corpse->IsPlayerCorpse() && (DistNoRootNoZ(*corpse) <= RuleR(Character, DragCorpseDistance)))
+			continue;
+
+		if(!corpse || !corpse->IsPlayerCorpse() || corpse->CastToCorpse()->IsBeingLooted() || !corpse->CastToCorpse()->Summon(this, false, false))
+		{
+			Message_StringID(MT_DefaultText, CORPSEDRAG_STOP);
+			Iterator = DraggedCorpses.erase(Iterator);
+		}
+	}
+}

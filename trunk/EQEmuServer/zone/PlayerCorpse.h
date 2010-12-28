@@ -63,6 +63,7 @@ public:
 	inline void		UnLock()		{ pLocked = false; }
 	inline bool		IsLocked()		{ return pLocked; }
 	inline void		ResetLooter()	{ BeingLootedBy = 0xFFFFFFFF; }
+	inline bool		IsBeingLooted() { return (BeingLootedBy != 0xFFFFFFFF); }
 	inline int32	GetDBID()		{ return dbid; }
 	inline char*	GetOwnerName()	{ return orgname;}
 
@@ -90,7 +91,7 @@ public:
 	void	MakeLootRequestPackets(Client* client, const EQApplicationPacket* app);
 	void	LootItem(Client* client, const EQApplicationPacket* app);
 	void	EndLoot(Client* client, const EQApplicationPacket* app);
-	void	Summon(Client* client, bool spell);
+	bool	Summon(Client* client, bool spell, bool CheckDistance);
 	void	CastRezz(int16 spellid, Mob* Caster);
 	void	CompleteRezz();
 	void	SetPKItem(sint32 id) { pkitem = id; }

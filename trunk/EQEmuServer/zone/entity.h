@@ -153,6 +153,9 @@ public:
 	Corpse* GetCorpseByID(int16 id);
 	Corpse* GetCorpseByDBID(int32 dbid);
 	Corpse* GetCorpseByName(const char* name);
+
+	Client* FindCorpseDragger(const char *CorpseName);
+
 	Object*	GetObjectByID(int16 id);
 	Object*	GetObjectByDBID(int32 id);
 	void RemoveAllCorpsesByCharID(int32 charid);

@@ -203,6 +203,12 @@
 #define TRADESKILL_MISSING_ITEM		3455	//You are missing a %1.
 #define TRADESKILL_MISSING_COMPONENTS	3456	//Sorry, but you don't have everything you need for this recipe in your general inventory.
 #define TRADESKILL_LEARN_RECIPE		3457	//You have learned the recipe %1!
+#define CORPSEDRAG_LIMIT		4061	//You are already dragging as much as you can!
+#define CORPSEDRAG_ALREADY		4062	//You are already dragging %1.
+#define CORPSEDRAG_SOMEONE_ELSE		4063	//Someone else is dragging %1.
+#define CORPSEDRAG_BEGIN		4064	//You begin to drag %1.
+#define CORPSEDRAG_STOPALL		4065	//You stop dragging the corpses.
+#define CORPSEDRAG_STOP			4066	//You stop dragging the corpse.
 #define WHOALL_NO_RESULTS			5029	//There are no players in EverQuest that match those who filters.
 #define PETITION_NO_DELETE			5053	//You do not have a petition in the queue.
 #define PETITION_DELETED			5054	//Your petition was successfully deleted.

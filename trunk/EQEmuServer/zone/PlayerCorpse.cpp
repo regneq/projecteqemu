@@ -1227,19 +1227,25 @@ void Corpse::QueryLoot(Client* to) {
 	to->Message(0, "%i items on %s.", x, this->GetName());
 }
 
-void Corpse::Summon(Client* client,bool spell) {
+bool Corpse::Summon(Client* client, bool spell, bool CheckDistance)
+{
 	int32 dist2 = 10000; // pow(100, 2);
 	if (!spell) {
 		if (this->GetCharID() == client->CharacterID()) {
 			if (IsLocked() && client->Admin() < 100) {
 				client->Message(13, "That corpse is locked by a GM.");
+				return false;
 			}
-			else if (DistNoRootNoZ(*client) <= dist2) {
+			if (!CheckDistance || (DistNoRootNoZ(*client) <= dist2))
+			{
 				GMMove(client->GetX(), client->GetY(), client->GetZ());
 				pIsChanged = true;
 			}
 			else
+			{
 				client->Message(0, "Corpse is too far away.");
+				return false;
+			}
 		}
 		else 
 		{
@@ -1249,7 +1255,7 @@ void Corpse::Summon(Client* client,bool spell) {
 			{
 				if(strcmp(this->GetOwnerName(), itr->c_str()) == 0)
 				{
-					if (DistNoRootNoZ(*client) <= dist2)
+					if (!CheckDistance || (DistNoRootNoZ(*client) <= dist2))
 					{
 						GMMove(client->GetX(), client->GetY(), client->GetZ());
 						pIsChanged = true;
@@ -1257,12 +1263,16 @@ void Corpse::Summon(Client* client,bool spell) {
 					else
 					{
 						client->Message(0, "Corpse is too far away.");
+						return false;
 					}
 					consented = true;
 				}
 			}
 			if(!consented)
+			{
 				client->Message(0, "You do not have permission to move this corpse.");
+				return false;
+			}
 		}
 	}
 	else {
@@ -1270,6 +1280,7 @@ void Corpse::Summon(Client* client,bool spell) {
 		pIsChanged = true;
 	}
 	Save();
+	return true;
 }
 
 void Corpse::CompleteRezz(){
