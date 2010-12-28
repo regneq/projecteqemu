@@ -1792,7 +1792,7 @@ void Client::OPGMSummon(const EQApplicationPacket *app)
 
 	if(st && st->IsCorpse())
 	{
-		st->CastToCorpse()->Summon(this, false);
+		st->CastToCorpse()->Summon(this, false, true);
 	}
 	else
 	{
@@ -1834,7 +1834,7 @@ void Client::OPGMSummon(const EQApplicationPacket *app)
 				//all options have been exhausted
 				//summon our target...
 				if(GetTarget() && GetTarget()->IsCorpse()){
-					GetTarget()->CastToCorpse()->Summon(this, false);
+					GetTarget()->CastToCorpse()->Summon(this, false, true);
 				}
 			}
 		}

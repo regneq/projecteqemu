@@ -601,7 +601,7 @@ XS(XS_Corpse_Summon)
 		if(client == NULL)
 			Perl_croak(aTHX_ "client is NULL, avoiding crash.");
 
-		THIS->Summon(client, spell);
+		THIS->Summon(client, spell, true);
 	}
 	XSRETURN_EMPTY;
 }

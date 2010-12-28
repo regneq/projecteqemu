@@ -31,6 +31,8 @@ RULE_BOOL( Character, UseDeathExpLossMult, false ) //Adjust to use the above mul
 RULE_INT ( Character, CorpseDecayTimeMS, 10800000 )
 RULE_BOOL( Character, LeaveCorpses, true )
 RULE_BOOL( Character, LeaveNakedCorpses, false )
+RULE_INT ( Character, MaxDraggedCorpses, 2 )
+RULE_REAL( Character, DragCorpseDistance, 400) // If the corpse is <= this distance from the player, it won't move
 RULE_REAL( Character, ExpMultiplier, 0.5 )
 RULE_REAL( Character, AAExpMultiplier, 0.5 )
 RULE_REAL( Character, GroupExpMultiplier, 0.5 )

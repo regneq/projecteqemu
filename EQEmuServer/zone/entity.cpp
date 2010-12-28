@@ -4876,3 +4876,20 @@ void EntityList::GetTargetsForConeArea(Mob *start, uint32 radius, uint32 height,
 		iterator.Advance();
 	}
 }
+
+Client* EntityList::FindCorpseDragger(const char *CorpseName)
+{
+	LinkedListIterator<Client*> iterator(client_list); 
+	
+	iterator.Reset(); 
+
+	while(iterator.MoreElements()) 
+	{ 
+		if (iterator.GetData()->IsDraggingCorpse(CorpseName))
+		{
+			return iterator.GetData();
+		}
+		iterator.Advance(); 
+	} 
+	return 0; 
+}

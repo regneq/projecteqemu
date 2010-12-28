@@ -1001,6 +1001,10 @@ public:
 	void ClearHover();
 	inline bool IsBlockedBuff(sint16 SpellID) { return PlayerBlockedBuffs.find(SpellID) != PlayerBlockedBuffs.end(); }
 	inline bool IsBlockedPetBuff(sint16 SpellID) { return PetBlockedBuffs.find(SpellID) != PetBlockedBuffs.end(); }
+	bool IsDraggingCorpse(const char* CorpseName);
+	inline bool IsDraggingCorpse() { return (DraggedCorpses.size() > 0); }
+	void DragCorpses();
+	inline void ClearDraggedCorpses() { DraggedCorpses.clear(); }
 
 protected:
 	friend class Mob;
@@ -1285,6 +1289,7 @@ private:
 
 	std::set<uint32> PlayerBlockedBuffs;
 	std::set<uint32> PetBlockedBuffs;
+	std::list<string> DraggedCorpses;
 
 };
 

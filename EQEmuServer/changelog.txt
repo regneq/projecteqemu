@@ -1,5 +1,8 @@
 EQEMu Changelog (Started on Sept 24, 2003 15:50)
 -------------------------------------------------------
+==12/28/2010==
+Derision: /corpsedrag & /corpsedrop. Optional SQL: utils/sql/svn/1784_optional_corpsedrag_rules.sql
+
 ==12/25/2010==
 Derision: Underfoot: Correct OP_SwapSpell
 Derision: SoD/Underfoot: List of traders in /bazaar dropdown now works.

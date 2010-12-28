@@ -373,6 +373,8 @@ void MapOpcodes() {
 	ConnectedOpcodes[OP_RemoveBlockedBuffs] = &Client::Handle_OP_RemoveBlockedBuffs;
 	ConnectedOpcodes[OP_ClearBlockedBuffs] = &Client::Handle_OP_ClearBlockedBuffs;
 	ConnectedOpcodes[OP_BuffRemoveRequest] = &Client::Handle_OP_BuffRemoveRequest;
+	ConnectedOpcodes[OP_CorpseDrag] = &Client::Handle_OP_CorpseDrag;
+	ConnectedOpcodes[OP_CorpseDrop] = &Client::Handle_OP_CorpseDrop;
 }
 
 int Client::HandlePacket(const EQApplicationPacket *app)
@@ -1171,6 +1173,9 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 				m_DistanceSinceLastPositionCheck = 0.0f;
 			}
 		}
+
+		if(IsDraggingCorpse())
+			DragCorpses();
 	}
 
 	//Lieka:  Check to see if PPU should trigger an update to the rewind position.
@@ -11608,4 +11613,61 @@ void Client::Handle_OP_BuffRemoveRequest(const EQApplicationPacket *app)
 
 	if(SpellID && IsBeneficialSpell(SpellID))
 		BuffFadeBySlot(brrs->SlotID, true);
+}
+
+void Client::Handle_OP_CorpseDrag(const EQApplicationPacket *app)
+{
+	if(DraggedCorpses.size() >= (unsigned int)RuleI(Character, MaxDraggedCorpses))
+	{
+		Message_StringID(13, CORPSEDRAG_LIMIT);
+		return;
+	}
+
+	VERIFY_PACKET_LENGTH(OP_CorpseDrag, app, CorpseDrag_Struct);
+
+	CorpseDrag_Struct *cds = (CorpseDrag_Struct*)app->pBuffer;
+	
+	Mob* corpse = entity_list.GetMob(cds->CorpseName);
+
+	if(!corpse || !corpse->IsPlayerCorpse() || corpse->CastToCorpse()->IsBeingLooted())
+		return;
+
+	Client *c = entity_list.FindCorpseDragger(cds->CorpseName);
+
+	if(c)
+	{
+		if(c == this)
+			Message_StringID(MT_DefaultText, CORPSEDRAG_ALREADY, corpse->GetCleanName());
+		else
+			Message_StringID(MT_DefaultText, CORPSEDRAG_SOMEONE_ELSE, corpse->GetCleanName());
+
+		return;
+	}
+
+	if(!corpse->CastToCorpse()->Summon(this, false, true))
+		return;
+
+	DraggedCorpses.push_back(cds->CorpseName);
+
+	Message_StringID(MT_DefaultText, CORPSEDRAG_BEGIN, cds->CorpseName);
+}
+
+void Client::Handle_OP_CorpseDrop(const EQApplicationPacket *app)
+{
+	if(app->size == 1)
+	{
+		Message_StringID(MT_DefaultText, CORPSEDRAG_STOPALL);
+		ClearDraggedCorpses();
+		return;
+	}
+
+	for(std::list<string>::iterator Iterator = DraggedCorpses.begin(); Iterator != DraggedCorpses.end(); ++Iterator)
+	{
+		if(!strcasecmp((*Iterator).c_str(), (const char *)app->pBuffer))
+		{
+			Message_StringID(MT_DefaultText, CORPSEDRAG_STOP);
+			Iterator = DraggedCorpses.erase(Iterator);
+			return;
+		}
+	}
 }

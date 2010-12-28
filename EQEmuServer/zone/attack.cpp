@@ -1695,6 +1695,8 @@ void Client::Death(Mob* killerMob, sint32 damage, int16 spell, SkillType attack_
 
 	if(LeftCorpse && (GetClientVersionBit() & BIT_SoFAndLater) && RuleB(Character, RespawnFromHover))
 	{
+		ClearDraggedCorpses();
+
 		RespawnFromHoverTimer.Start(RuleI(Character, RespawnFromHoverTimer) * 1000);
 
 		SendRespawnBinds();

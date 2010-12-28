@@ -1596,7 +1596,7 @@ bool Mob::SpellEffect(Mob* caster, int16 spell_id, float partial)
 							else
 								Message_StringID(4, SUMMONING_CORPSE_OTHER, TargetClient->CastToMob()->GetCleanName());
 							
-							corpse->Summon(CastToClient(), true);
+							corpse->Summon(CastToClient(), true, true);
 						}
 						else {
 							// No corpse found in the zone
