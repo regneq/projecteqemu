@@ -356,9 +356,7 @@ bool IsPureNukeSpell(int16 spell_id)
 
 	return
 	(
-		spells[spell_id].effectid[0] == SE_CurrentHP &&
-		spells[spell_id].base[0] < 0 &&
-		effect_count == 1
+		effect_count == 1 && IsEffectInSpell(spell_id, SE_CurrentHP) && spells[spell_id].buffduration == 0
 	);
 }
 
