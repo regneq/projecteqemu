@@ -290,6 +290,7 @@ struct StatBonuses {
 	sint16 SkillReuseTime[HIGHEST_SKILL+1];		// Reduces skill timers
 	sint16 SkillDamageAmount[HIGHEST_SKILL+2];	// All Skills + -1
 	uint16 TwinProc;							// Proc twice
+	uint16 ItemManaRegenCap;					// Increases the amount of mana you have can over the cap(aa effect)
 	int XPRateMod;								//i
 	
 	// AAs

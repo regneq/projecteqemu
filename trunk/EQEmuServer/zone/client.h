@@ -588,6 +588,7 @@ public:
 	void    SetLanguageSkill(int langid, int value);
 	void	SetHoTT(int32 mobid);
 	void	ShowSkillsWindow();
+	void	SendClientStatWindow(Client* client);
 
 	int16	MaxSkill(SkillType skillid, int16 class_, int16 level) const;
 	inline	int16	MaxSkill(SkillType skillid) const { return MaxSkill(skillid, GetClass(), GetLevel()); }
@@ -1086,6 +1087,7 @@ private:
 	sint32	CalcBaseHP();
 	sint32	CalcHPRegen();
 	sint32	CalcManaRegen();
+	sint32	CalcBaseManaRegen();
 	int32	GetClassHPFactor();
 	void DoHPRegen();
 	void DoManaRegen();
