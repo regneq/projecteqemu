@@ -214,13 +214,8 @@ sint32 Client::LevelRegen()
 
 sint32 Client::CalcHPRegen() {
 	sint32 regen = LevelRegen() + itembonuses.HPRegen + spellbonuses.HPRegen + (itembonuses.HeroicSTA / 25);
-	//AAs
-	regen += GetAA(aaInnateRegeneration)
-		+ GetAA(aaNaturalHealing)
-		+ GetAA(aaBodyAndMindRejuvenation)
-		+ GetAA(aaConvalescence)
-		+ GetAA(aaHealthyAura)
-		+ GroupLeadershipAAHealthRegeneration();
+
+	regen += aabonuses.HPRegen + GroupLeadershipAAHealthRegeneration();
 
 	return (regen * RuleI(Character, HPRegenMultiplier) / 100);
 }
@@ -229,7 +224,7 @@ sint32 Client::CalcHPRegenCap(bool absolute_cap)
 {
 	int cap = RuleI(Character, ItemHealthRegenCap) + itembonuses.HeroicSTA/25;
 	if(absolute_cap)
-		cap += LevelRegen() + GetAA(aaInnateRegeneration) + GetAA(aaNaturalHealing) + GetAA(aaBodyAndMindRejuvenation)	+ GetAA(aaConvalescence) + GetAA(aaHealthyAura) + GroupLeadershipAAHealthRegeneration() + itembonuses.HeroicSTA/25;
+		cap += CalcHPRegen() - itembonuses.HPRegen;
 	
 	return (cap * RuleI(Character, HPRegenMultiplier) / 100);
 }
@@ -1066,6 +1061,23 @@ sint32 Client::CalcBaseMana()
 	return max_m;
 }
 
+sint32 Client::CalcBaseManaRegen() 
+{
+	uint8 clevel = GetLevel();
+	sint32 regen = 0;
+	if (IsSitting() || (GetHorseId() != 0)) 
+	{
+		if(HasSkill(MEDITATE))
+			regen = (((GetSkill(MEDITATE) / 10) + (clevel - (clevel / 4))) / 4) + 4;
+		else
+			regen = 2;
+	}
+	else {
+		regen = 2;
+	}
+	return regen;
+}
+
 sint32 Client::CalcManaRegen() 
 {
 	uint8 clevel = GetLevel();
@@ -1094,14 +1106,14 @@ sint32 Client::CalcManaRegen()
 		regen += (itembonuses.HeroicWIS / 25);
 	
 	//AAs
-	regen += GetAA(aaMentalClarity) + GetAA(aaBodyAndMindRejuvenation);
+	regen += aabonuses.ManaRegen;
 
 	return (regen * RuleI(Character, ManaRegenMultiplier) / 100);
 }
 
 sint32 Client::CalcManaRegenCap(bool absolute_cap)
 {
-	sint32 cap = RuleI(Character, ItemManaRegenCap) + GetAA(aaExpansiveMind);
+	sint32 cap = RuleI(Character, ItemManaRegenCap) + aabonuses.ItemManaRegenCap;
 	switch(GetCasterClass())
 	{
 		case 'I': 
@@ -1960,7 +1972,8 @@ sint32 Client::CalcBaseEndurance()
 
 sint32 Client::CalcEnduranceRegen() {
 	sint32 regen = sint32(GetLevel() * 4 / 10) + 2;
-	regen += spellbonuses.EnduranceRegen + itembonuses.EnduranceRegen + itembonuses.HeroicSTR/25 + itembonuses.HeroicSTA/25 + itembonuses.HeroicDEX/25 + itembonuses.HeroicAGI/25;
+	regen += aabonuses.EnduranceRegen + spellbonuses.EnduranceRegen + itembonuses.EnduranceRegen;
+	regen += itembonuses.HeroicSTR/25 + itembonuses.HeroicSTA/25 + itembonuses.HeroicDEX/25 + itembonuses.HeroicAGI/25;
 
 	return (regen * RuleI(Character, EnduranceRegenMultiplier) / 100);
 }
@@ -1968,7 +1981,7 @@ sint32 Client::CalcEnduranceRegen() {
 sint32 Client::CalcEnduranceRegenCap(bool absolute_cap) {
 	int cap = (RuleI(Character, ItemEnduranceRegenCap) + itembonuses.HeroicSTR/25 + itembonuses.HeroicDEX/25 + itembonuses.HeroicAGI/25 + itembonuses.HeroicSTA/25);
 	if(absolute_cap) 
-		cap += 2 + sint32(GetLevel() * 4 / 10) + spellbonuses.EnduranceRegen + itembonuses.HeroicSTR/25 + itembonuses.HeroicDEX/25 + itembonuses.HeroicAGI/25 + itembonuses.HeroicSTA/25;
+		cap += CalcEnduranceRegen() - itembonuses.EnduranceRegen;
 		
 	return (cap * RuleI(Character, EnduranceRegenMultiplier) / 100);
 }

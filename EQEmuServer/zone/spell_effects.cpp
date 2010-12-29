@@ -3341,9 +3341,7 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 				Damage(caster, effect_value, spell_id, spell.skill, false, i, true);
 			} else if(effect_value > 0) {
 				// Regen spell...
-				effect_value += effect_value * (itembonuses.HealRate + spellbonuses.HealRate) / 100;
-
-				HealDamage(effect_value, caster);
+				// handled with bonuses
 			}
 			break;
 		}
@@ -3359,11 +3357,7 @@ void Mob::DoBuffTic(int16 spell_id, int32 ticsremaining, int8 caster_level, Mob*
 		}
 
 		case SE_CurrentEndurance: {
-			if(IsClient()) {
-				effect_value = CalcSpellEffectValue(spell_id, i, caster_level);
-
-				CastToClient()->SetEndurance(CastToClient()->GetEndurance() + effect_value);
-			}
+			// Handled with bonuses
 			break;
 		}
 

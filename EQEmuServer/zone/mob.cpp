@@ -1018,324 +1018,7 @@ void Mob::ShowStats(Client* client) {
 		c = this->CastToClient();
 	
 	if(c && RuleB(Character, UseNewStatsWindow)) {
-		
-		// Define the types of page breaks we need
-		const char indP[] = "&nbsp;";
-		const char indS[] = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-		const char indM[] = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-		const char indL[] = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-		const char div[] = "&nbsp;&nbsp;|&nbsp;&nbsp;";
-		
-		// Set Class 
-		char class_Name[3];
-		
-		switch(GetClass()) 
-		{
-			case 1:
-				strcpy(class_Name, "WAR");
-				break;
-			case 2:
-				strcpy(class_Name, "CLR");
-				break;
-			case 3:
-				strcpy(class_Name, "PAL");
-				break;
-			case 4:
-				strcpy(class_Name, "RNG");
-				break;
-			case 5:
-				strcpy(class_Name, "SK ");
-				break;
-			case 6:
-				strcpy(class_Name, "DRU");
-				break;
-			case 7:
-				strcpy(class_Name, "MNK");
-				break;
-			case 8:
-				strcpy(class_Name, "BRD");
-				break;
-			case 9:
-				strcpy(class_Name, "ROG");
-				break;
-			case 10:
-				strcpy(class_Name, "SHM");
-				break;
-			case 11:
-				strcpy(class_Name, "NEC");
-				break;
-			case 12:
-				strcpy(class_Name, "WIZ");
-				break;
-			case 13:
-				strcpy(class_Name, "MAG");
-				break;
-			case 14:
-				strcpy(class_Name, "ENC");
-				break;
-			case 15:
-				strcpy(class_Name, "BST");
-				break;
-			case 16:
-				strcpy(class_Name, "BER");
-				break;
-			// non-Player Class
-			default:
-				strcpy(class_Name, "nPC");
-				break;
-		}
-		
-		// HP Spacing
-		char hp_field[7];
-		char hp_spacing[20];
-		
-		int hp_length = sprintf(hp_field, "%d", GetMaxHP());
-		switch(hp_length)
-		{
-			case 1:
-				strcpy(hp_spacing, " . . . . . . ");
-				break;
-			case 2:
-				strcpy(hp_spacing, " . . . . . ");
-				break;
-			case 3:
-				strcpy(hp_spacing, " . . . . ");
-				break;
-			case 4:
-				strcpy(hp_spacing, " . . . ");
-				break;
-			case 5:
-				strcpy(hp_spacing, " . . ");
-				break;
-			case 6:
-				strcpy(hp_spacing, " . ");
-				break;
-		}
-
-		// Mana Spacing
-		char mana_field[7];
-		char mana_spacing[20];
-		if(c->CalcMaxMana() > 0) {
-			int mana_length = sprintf(mana_field, "%d", GetMaxMana());
-			switch(mana_length)
-			{
-				case 1:
-					strcpy(mana_spacing, " . . . . . . ");
-					break;
-				case 2:
-					strcpy(mana_spacing, " . . . . . ");
-					break;
-				case 3:
-					strcpy(mana_spacing, " . . . . ");
-					break;
-				case 4:
-					strcpy(mana_spacing, " . . . ");
-					break;
-				case 5:
-					strcpy(mana_spacing, " . . ");
-					break;
-				case 6:
-					strcpy(mana_spacing, " . ");
-					break;
-			}
-		}
-		
-		// Endurance Spacing
-		char end_field[7];
-		char end_spacing[20];
-		
-		int end_length = sprintf(end_field, "%d", c->GetMaxEndurance());
-		switch(end_length)
-		{
-			case 1:
-				strcpy(end_spacing, " . . . . . . ");
-				break;
-			case 2:
-				strcpy(end_spacing, " . . . . . ");
-				break;
-			case 3:
-				strcpy(end_spacing, " . . . . ");
-				break;
-			case 4:
-				strcpy(end_spacing, " . . . ");
-				break;
-			case 5:
-				strcpy(end_spacing, " . . ");
-				break;
-			case 6:
-				strcpy(end_spacing, " . ");
-				break;
-		}
-			
-		// Caster Window
-		if(c->CalcMaxMana() > 0) {
-			client->SendStatWindow(" "
-			/* 01 - Name 	*/		" %s <c \"#357EC7\"> %s</c><br>"
-			/* 02 - C/L/R	*/		" %s Class: %s Level: %i Race: %i<br>"
-			/* 02 - LineBr	*/		" <br>"
-			/* 03 - Atk 	*/		" %s ATK: %i - Worn: %i (Cap: %i) - Srvr ATK: %i<br>"
-			/* 04 - AC	 	*/		" %s AC: %i = Mit.: %i + Avoid.: %i<br>"
-			/* 05 - Haste 	*/		" %s Haste: %i (Cap: %i) - Item: %i - Spell: %i - Over: %i<br>"
-			/* 06 - LineBr 	*/		" <br>"
-			/* 07 - Labels 	*/		" %s %s Regen<br>"
-			/* 08 - Labels 	*/		" %s Items | Spells | AAs | Total | Cap<br>"
-			/* 09 - HP	 	*/		" %s HP: %s %s %s %s %s %i %s %i %s %i %s %i %s %i<br>"
-			/* 10 - Mana 	*/		" %s Mana: %s %s %s %i %s %i %s %i %s %i %s %i<br>"
-			/* 11 - End. 	*/		" %s End.: %s %s %s %s %i %s %i %s %i %s %i %s %i<br>"
-			/* 12 - LineBr 	*/		" <br>"
-			/* 13 - STR 	*/		" %s STR: %i | + %i<br>"
-			/* 14 - STA 	*/		" %s STA: %i | + %i<br>"
-			/* 15 - AGI 	*/		" %s AGI: %i | + %i<br>"
-			/* 16 - DEX 	*/		" %s DEX: %i | + %i<br>"
-			/* 17 - INT 	*/		" %s INT: %i | + %i<br>"
-			/* 18 - WIS 	*/		" %s WIS: %i | + %i<br>"
-			/* 19 - CHA 	*/		" %s CHA: %i | + %i<br>" 
-			/* 20 - LineBr 	*/		" <br>"
-			/* 21 - MR	 	*/		" %s MR: %i | + %i<br>"
-			/* 22 - CR	 	*/		" %s CR: %i | + %i<br>"
-			/* 23 - FR	 	*/		" %s FR: %i | + %i<br>"
-			/* 24 - PR	 	*/		" %s PR: %i | + %i<br>"
-			/* 25 - DR	 	*/		" %s DR: %i | + %i<br>"
-			/* 26 - Cp	 	*/		" %s Cp: %i | + %i<br>"
-			/* 27 - LineBr 	*/		" <br>"
-			/* 28 - Avd		*/		" %s Avoidance: %i / %i<br>" 
-			/* 29 - Acc		*/		" %s Accuracy: %i / %i<br>" 
-			/* 30 - CE		*/		" %s Combat Effects: %i / %i<br>" 
-			/* 31 - DSd		*/		" %s DoT Shield.: %i / %i<br>" 
-			/* 32 - Shield 	*/		" %s Shielding: %i / %i<br>" 
-			/* 33 - SS	 	*/		" %s Spell Shield.: %i / %i<br>" 
-			/* 34 - Strike 	*/		" %s Strike.: %i / %i<br>" 
-			/* 35 - SR 		*/		" %s Stun Resist: %i / %i<br>"
-			/* 36 - LineBr 	*/		" <br>"
-			/* 37 - Hat		*/		" %s Heal Amt.: %i / %i<br>" 
-			/* 38 - Sdg		*/		" %s Spell Dmg.: %i / %i<br>" 
-			/* 39 - Clar	*/		" %s Clair.: %i / %i<br>" 
-			/* 40 - DSm		*/		" %s DS Mit.: %i / %i<br>",
-			/* 01 - Name 	*/		indP, GetName(),
-			/* 02 - C/L/R 	*/		indP, class_Name, GetLevel(), GetBaseRace(),
-			/* 03 - Atk 	*/		indP, c->GetTotalATK(), GetATKBonus(), RuleI(Character, ItemATKCap), attackRating,
-			/* 04 - AC	 	*/		indP, c->GetAC(), c->GetACMit(), c->GetACAvoid(),
-			/* 05 - Haste 	*/		indP, GetHaste(), RuleI(Character, HasteCap), c->CalcSpecificHaste(0), c->CalcSpecificHaste(1), c->CalcSpecificHaste(2),
-			/* 06 - LineBr 	*/
-			/* 07 - Labels 	*/		indL, indM,
-			/* 08 - Labels 	*/		indL,
-			/* 09 - HP 		*/		indP, indP, indP, hp_field, hp_spacing, indS, c->itembonuses.HPRegen, div, c->spellbonuses.HPRegen, div, c->aabonuses.HPRegen, div, c->CalcHPRegen(), div, c->CalcHPRegenCap(true),
-			/* 10 - Mana 	*/		indP, mana_field, mana_spacing, indS, c->itembonuses.ManaRegen, div, c->spellbonuses.ManaRegen, div, c->aabonuses. ManaRegen, div, c->CalcManaRegen(), div, c->CalcManaRegenCap(true), 
-			/* 11 - End. 	*/		indP, indP, end_field, end_spacing, indS, c->itembonuses.EnduranceRegen, div, c->spellbonuses.EnduranceRegen, div, c->aabonuses.EnduranceRegen, div, c->CalcEnduranceRegen(), div, c->CalcEnduranceRegenCap(true), 
-			/* 12 - LineBr 	*/		 
-			/* 13 - STR/MR 	*/		indP, GetSTR(), c->GetHeroicSTR(),
-			/* 14 - STA/CR 	*/		indP, GetSTA(), c->GetHeroicSTA(),
-			/* 15 - AGI/FR 	*/		indP, GetAGI(), c->GetHeroicAGI(),
-			/* 16 - DEX/PR 	*/		indP, GetDEX(), c->GetHeroicDEX(),
-			/* 17 - INT/DR 	*/		indP, GetINT(), c->GetHeroicINT(),
-			/* 18 - WIS/Cp 	*/		indP, GetWIS(), c->GetHeroicWIS(),
-			/* 19 - CHA/Ph 	*/		indP, GetCHA(), c->GetHeroicCHA(),
-			/* 20 - LineBr 	*/		 
-			/* 21 - STR/MR 	*/		indP, GetMR(), c->GetHeroicMR(), 
-			/* 22 - STA/CR 	*/		indP, GetCR(), c->GetHeroicCR(), 
-			/* 23 - AGI/FR 	*/		indP, GetFR(), c->GetHeroicFR(),
-			/* 24 - DEX/PR 	*/		indP, GetPR(), c->GetHeroicPR(),
-			/* 25 - INT/DR 	*/		indP, GetDR(), c->GetHeroicDR(),
-			/* 26 - WIS/Cp 	*/		indP, GetCorrup(), c->GetHeroicCorrup(),
-			/* 27 - LineBr 	*/
-			/* 28 - Avd/Hat	*/		indP, c->GetAvoidance(), RuleI(Character, ItemAvoidanceCap),
-			/* 29 - Acc/Sdg	*/		indP, c->GetAccuracy(), RuleI(Character, ItemAccuracyCap),
-			/* 30 - CE/Clar	*/		indP, c->GetCombatEffects(), RuleI(Character, ItemCombatEffectsCap),
-			/* 31 - DSd/DSm	*/		indP, c->GetDoTShield(), RuleI(Character, ItemDoTShieldingCap),
-			/* 32 - Shield 	*/		indP, c->GetShielding(), RuleI(Character, ItemShieldingCap),
-			/* 33 - SS	 	*/		indP, c->GetSpellShield(), RuleI(Character, ItemSpellShieldingCap),
-			/* 34 - Strike 	*/		indP, c->GetStrikeThrough(), RuleI(Character, ItemStrikethroughCap),
-			/* 35 - SR 		*/		indP, c->GetStunResist(), RuleI(Character, ItemStunResistCap),
-			/* 36 - LineBr 	*/
-			/* 37 - Avd/Hat	*/		indP, c->GetHealAmt(), RuleI(Character, ItemHealAmtCap),
-			/* 38 - Acc/Sdg	*/		indP, c->GetSpellDmg(), RuleI(Character, ItemSpellDmgCap),
-			/* 39 - CE/Clar	*/		indP, c->GetClair(), RuleI(Character, ItemClairvoyanceCap),
-			/* 40 - DSd/DSm	*/		indP, c->GetDSMit(), RuleI(Character, ItemDSMitigationCap)
-								);
-		}
-		else {
-			client->SendStatWindow(" "
-			/* 01 - Name 	*/		" %s <c \"#357EC7\"> %s</c><br>"
-			/* 02 - C/L/R	*/		" %s Class: %s Level: %i Race: %i<br>"
-			/* 02 - LineBr	*/		" <br>"
-			/* 03 - Atk 	*/		" %s ATK: %i - Worn: %i (Cap: %i) - Srvr ATK: %i<br>"
-			/* 04 - AC	 	*/		" %s AC: %i = Mit.: %i + Avoid.: %i<br>"
-			/* 05 - Haste 	*/		" %s Haste: %i (Cap: %i) - Item: %i - Spell: %i - Over: %i<br>"
-			/* 06 - LineBr 	*/		" <br>"
-			/* 07 - Labels 	*/		" %s %s Regen<br>"
-			/* 08 - Labels 	*/		" %s Items | Spells | AAs | Total | Cap<br>"
-			/* 09 - HP	 	*/		" %s HP: %s %s %s %s %s %i %s %i %s %i %s %i %s %i<br>"
-			/* 11 - End. 	*/		" %s End.: %s %s %s %s %i %s %i %s %i %s %i %s %i<br>"
-			/* 12 - LineBr 	*/		" <br>"
-			/* 13 - STR 	*/		" %s STR: %i | + %i<br>"
-			/* 14 - STA 	*/		" %s STA: %i | + %i<br>"
-			/* 15 - AGI 	*/		" %s AGI: %i | + %i<br>"
-			/* 16 - DEX 	*/		" %s DEX: %i | + %i<br>"
-			/* 17 - INT 	*/		" %s INT: %i | + %i<br>"
-			/* 18 - WIS 	*/		" %s WIS: %i | + %i<br>"
-			/* 19 - CHA 	*/		" %s CHA: %i | + %i<br>" 
-			/* 20 - LineBr 	*/		" <br>"
-			/* 21 - MR	 	*/		" %s MR: %i | + %i<br>"
-			/* 22 - CR	 	*/		" %s CR: %i | + %i<br>"
-			/* 23 - FR	 	*/		" %s FR: %i | + %i<br>"
-			/* 24 - PR	 	*/		" %s PR: %i | + %i<br>"
-			/* 25 - DR	 	*/		" %s DR: %i | + %i<br>"
-			/* 26 - Cp	 	*/		" %s Cp: %i | + %i<br>"
-			/* 27 - LineBr 	*/		" <br>"
-			/* 28 - Avd		*/		" %s Avoidance: %i / %i<br>" 
-			/* 29 - Acc		*/		" %s Accuracy: %i / %i<br>" 
-			/* 30 - CE		*/		" %s Combat Effects: %i / %i<br>" 
-			/* 31 - DSd		*/		" %s DoT Shield.: %i / %i<br>" 
-			/* 32 - Shield 	*/		" %s Shielding: %i / %i<br>" 
-			/* 33 - SS	 	*/		" %s Spell Shield.: %i / %i<br>" 
-			/* 34 - Strike 	*/		" %s Strike.: %i / %i<br>" 
-			/* 35 - SR 		*/		" %s Stun Resist: %i / %i<br>"
-			/* 36 - LineBr 	*/		" <br>"
-			/* 37 - Hat		*/		" %s Heal Amt.: %i / %i<br>" 
-			/* 38 - Sdg		*/		" %s Spell Dmg.: %i / %i<br>" 
-			/* 39 - Clar	*/		" %s Clair.: %i / %i<br>" 
-			/* 40 - DSm		*/		" %s DS Mit.: %i / %i<br>",
-			/* 01 - Name 	*/		indP, GetName(),
-			/* 02 - C/L/R 	*/		indP, class_Name, GetLevel(), GetBaseRace(),
-			/* 03 - Atk 	*/		indP, c->GetTotalATK(), GetATKBonus(), RuleI(Character, ItemATKCap), attackRating,
-			/* 04 - AC	 	*/		indP, c->GetAC(), c->GetACMit(), c->GetACAvoid(),
-			/* 05 - Haste 	*/		indP, GetHaste(), RuleI(Character, HasteCap), c->CalcSpecificHaste(0), c->CalcSpecificHaste(1), c->CalcSpecificHaste(2),
-			/* 06 - LineBr 	*/
-			/* 07 - Labels 	*/		indL, indM,
-			/* 08 - Labels 	*/		indL,
-			/* 09 - HP 		*/		indP, indP, indP, hp_field, hp_spacing, indS, c->itembonuses.HPRegen, div, c->spellbonuses.HPRegen, div, c->aabonuses.HPRegen, div, c->CalcHPRegen(), div, c->CalcHPRegenCap(true),
-			/* 11 - End. 	*/		indP, indP, end_field, end_spacing, indS, c->itembonuses.EnduranceRegen, div, c->spellbonuses.EnduranceRegen, div, c->aabonuses.EnduranceRegen, div, c->CalcEnduranceRegen(), div, c->CalcEnduranceRegenCap(true), 
-			/* 12 - LineBr 	*/		 
-			/* 13 - STR/MR 	*/		indP, GetSTR(), c->GetHeroicSTR(),
-			/* 14 - STA/CR 	*/		indP, GetSTA(), c->GetHeroicSTA(),
-			/* 15 - AGI/FR 	*/		indP, GetAGI(), c->GetHeroicAGI(),
-			/* 16 - DEX/PR 	*/		indP, GetDEX(), c->GetHeroicDEX(),
-			/* 17 - INT/DR 	*/		indP, GetINT(), c->GetHeroicINT(),
-			/* 18 - WIS/Cp 	*/		indP, GetWIS(), c->GetHeroicWIS(),
-			/* 19 - CHA/Ph 	*/		indP, GetCHA(), c->GetHeroicCHA(),
-			/* 20 - LineBr 	*/		 
-			/* 21 - STR/MR 	*/		indP, GetMR(), c->GetHeroicMR(), 
-			/* 22 - STA/CR 	*/		indP, GetCR(), c->GetHeroicCR(), 
-			/* 23 - AGI/FR 	*/		indP, GetFR(), c->GetHeroicFR(),
-			/* 24 - DEX/PR 	*/		indP, GetPR(), c->GetHeroicPR(),
-			/* 25 - INT/DR 	*/		indP, GetDR(), c->GetHeroicDR(),
-			/* 26 - WIS/Cp 	*/		indP, GetCorrup(), c->GetHeroicCorrup(),
-			/* 27 - LineBr 	*/
-			/* 28 - Avd/Hat	*/		indP, c->GetAvoidance(), RuleI(Character, ItemAvoidanceCap),
-			/* 29 - Acc/Sdg	*/		indP, c->GetAccuracy(), RuleI(Character, ItemAccuracyCap),
-			/* 30 - CE/Clar	*/		indP, c->GetCombatEffects(), RuleI(Character, ItemCombatEffectsCap),
-			/* 31 - DSd/DSm	*/		indP, c->GetDoTShield(), RuleI(Character, ItemDoTShieldingCap),
-			/* 32 - Shield 	*/		indP, c->GetShielding(), RuleI(Character, ItemShieldingCap),
-			/* 33 - SS	 	*/		indP, c->GetSpellShield(), RuleI(Character, ItemSpellShieldingCap),
-			/* 34 - Strike 	*/		indP, c->GetStrikeThrough(), RuleI(Character, ItemStrikethroughCap),
-			/* 35 - SR 		*/		indP, c->GetStunResist(), RuleI(Character, ItemStunResistCap),
-			/* 36 - LineBr 	*/
-			/* 37 - Avd/Hat	*/		indP, c->GetHealAmt(), RuleI(Character, ItemHealAmtCap),
-			/* 38 - Acc/Sdg	*/		indP, c->GetSpellDmg(), RuleI(Character, ItemSpellDmgCap),
-			/* 39 - CE/Clar	*/		indP, c->GetClair(), RuleI(Character, ItemClairvoyanceCap),
-			/* 40 - DSd/DSm	*/		indP, c->GetDSMit(), RuleI(Character, ItemDSMitigationCap)
-								);
-		}
+		c->SendClientStatWindow(client);
 	}
 	else {
 		if (c) {
@@ -4556,3 +4239,438 @@ bool Mob::TryReflectSpell(uint32 spell_id)
 	return false;
 }
 
+void Client::SendClientStatWindow(Client* client)
+{
+	// Define the types of page breaks we need
+	const char indP[] = "&nbsp;";
+	const char indS[] = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+	const char indM[] = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+	const char indL[] = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+	const char div[] = " | ";
+	
+	Client *c = NULL;
+	if (this->IsClient())
+		c = this->CastToClient();
+	
+	// Set Class 
+	char class_Name[3];
+	switch(this->GetClass()) 
+	{
+		case 1: strcpy(class_Name, "WAR"); break;
+		case 2:	strcpy(class_Name, "CLR"); break;
+		case 3:	strcpy(class_Name, "PAL"); break;
+		case 4:	strcpy(class_Name, "RNG"); break;
+		case 5:	strcpy(class_Name, "SK"); break;
+		case 6:	strcpy(class_Name, "DRU"); break;
+		case 7:	strcpy(class_Name, "MNK"); break;
+		case 8:	strcpy(class_Name, "BRD"); break;
+		case 9:	strcpy(class_Name, "ROG"); break;
+		case 10: strcpy(class_Name, "SHM"); break;
+		case 11: strcpy(class_Name, "NEC"); break;
+		case 12: strcpy(class_Name, "WIZ");	break;
+		case 13: strcpy(class_Name, "MAG"); break;
+		case 14: strcpy(class_Name, "ENC");	break;
+		case 15: strcpy(class_Name, "BST");	break;
+		case 16: strcpy(class_Name, "BER");	break;
+		default: strcpy(class_Name, "nPC");	break; // non-Player Class
+	}
+	// Race
+	char race_Name[12] = "";
+	switch(this->GetBaseRace()) 
+	{
+		case 1: strcpy(race_Name, "Human"); break;
+		case 2:	strcpy(race_Name, "Barbarian"); break;
+		case 3:	strcpy(race_Name, "Erudite"); break;
+		case 4:	strcpy(race_Name, "Wood Elf"); break;
+		case 5:	strcpy(race_Name, "High Elf"); break;
+		case 6:	strcpy(race_Name, "Dark Elf"); break;
+		case 7:	strcpy(race_Name, "Half Elf"); break;
+		case 8:	strcpy(race_Name, "Dwarf"); break;
+		case 9:	strcpy(race_Name, "Troll"); break;
+		case 10: strcpy(race_Name, "Ogre"); break;
+		case 11: strcpy(race_Name, "Halfing"); break;
+		case 12: strcpy(race_Name, "Gnome"); break;
+		case 127: strcpy(race_Name, "Iksar"); break;
+		case 130: strcpy(race_Name, "Vah Shir"); break;
+		case 330: strcpy(race_Name, "Froglok"); break;
+		case 522: strcpy(race_Name, "Drakkin"); break;
+		default: strcpy(race_Name, " "); break;
+	}
+	/////////////////////////////
+	// HP/Mana/Endurance Section
+	/////////////////////////////
+	char HME_row[800] = "";
+	/////////////////////////////
+	// Current HP
+	char cur_hp_field[8];
+	char cur_hp_spacing[20] = "";
+	strcat(HME_row, indP);
+	strcat(HME_row, " H: ");
+	int cur_hp_length = sprintf(cur_hp_field, "%d", GetHP());
+	for(int h = cur_hp_length; h < 8; h++) {
+		strcat(cur_hp_spacing, " .");
+	}
+	strcat(HME_row, cur_hp_spacing); // Add spacing
+	strcat(HME_row, cur_hp_field); // Add HP value to string
+	strcat(HME_row, " / "); // divider
+	// HP total
+	char hp_field[8];
+	sprintf(hp_field, "%d", GetMaxHP());
+	strcat(HME_row, hp_field); // Add HP value to string
+	strcat(HME_row, "<br>"); // END LINE
+	/////////////////////
+	// Current Mana
+	if(c->CalcMaxMana() > 0) {
+		strcat(HME_row, indP);
+		strcat(HME_row, " M: "); // mana
+		char cur_mana_field[8];
+		char cur_mana_spacing[20] = "";
+		int cur_mana_length = sprintf(cur_mana_field, "%d", GetMana());
+		for(int h = cur_mana_length; h < 8; h++) {
+			strcat(cur_mana_spacing, " .");
+		}
+		strcat(HME_row, cur_mana_spacing); // Add spacing
+		strcat(HME_row, cur_mana_field); // Add Mana value to string
+		strcat(HME_row, " / "); // divider
+		// Mana total
+		char mana_field[8];
+		sprintf(mana_field, "%d", GetMaxMana());
+		strcat(HME_row, mana_field); // Add Mana value to string
+		strcat(HME_row, "<br>"); // END LINE
+		
+	}
+	///////////////////
+	// Current Endurance
+	strcat(HME_row, indP);
+	strcat(HME_row, " E: "); // End
+	char cur_end_field[8];
+	char cur_end_spacing[20] = "";
+	int cur_end_length = sprintf(cur_end_field, "%d", GetEndurance());
+	for(int h = cur_end_length; h < 8; h++) {
+		strcat(cur_end_spacing, " .");
+	}
+	strcat(HME_row, cur_end_spacing); // Add spacing
+	strcat(HME_row, cur_end_field); // Add End value to string
+	strcat(HME_row, " / "); // divider
+	// End. total
+	char end_field[8];
+	sprintf(end_field, "%d", c->GetMaxEndurance());
+	strcat(HME_row, end_field); // Add End value to string
+	
+	//////////////////////////////
+	// REGEN FIELDS
+	//////////////////////////////
+	// HP
+	char hp_row[250] = "";
+	
+	// Base HP Regen
+	char base_HPregen_field[5];
+	char base_HPregen_spacing[10] = "";
+	int base_HPregen_length = sprintf(base_HPregen_field, "%d", c->LevelRegen());
+	for(int h = base_HPregen_length; h < 5; h++) {
+		strcat(base_HPregen_spacing, " ."); 
+	}
+	strcat(hp_row, base_HPregen_spacing); // Spacing
+	strcat(hp_row, base_HPregen_field); // Add base HP Regen value to string
+	strcat(hp_row, div); // Divider
+	
+	// Item HP Regen
+	char item_HPregen_field[5];
+	char item_HPregen_spacing[10] = "";
+	int item_HPregen_length = sprintf(item_HPregen_field, "%d", c->itembonuses.HPRegen);
+	for(int h = item_HPregen_length; h < 5; h++) {
+		strcat(item_HPregen_spacing, " ."); 
+	}
+	strcat(hp_row, item_HPregen_spacing); // Spacing
+	strcat(hp_row, item_HPregen_field); // Add item HP Regen value to string
+	strcat(hp_row, div); // Divider
+	
+	// Spell HP Regen
+	char spell_HPregen_field[5];
+	char spell_HPregen_spacing[10] = "";
+	int spell_HPregen_length = sprintf(spell_HPregen_field, "%d", c->spellbonuses.HPRegen);
+	for(int h = spell_HPregen_length; h < 5; h++) {
+		strcat(spell_HPregen_spacing, " ."); 
+	}
+	strcat(hp_row, spell_HPregen_spacing); // Spacing
+	strcat(hp_row, spell_HPregen_field); // Add spell HP Regen value to string
+	strcat(hp_row, div); // Divider
+	
+	// AA HP Regen
+	char aa_HPregen_field[5];
+	char aa_HPregen_spacing[10] = "";
+	int aa_HPregen_length = sprintf(aa_HPregen_field, "%d", c->aabonuses.HPRegen);
+	for(int h = aa_HPregen_length; h < 5; h++) {
+		strcat(aa_HPregen_spacing, " ."); 
+	}
+	strcat(hp_row, aa_HPregen_spacing); // Spacing
+	strcat(hp_row, aa_HPregen_field); // Add AA HP Regen value to string
+	strcat(hp_row, div); // Divider
+	
+	// Total Current HP Regen
+	char total_HPregen_field[5];
+	char total_HPregen_spacing[10] = "";
+	int total_HPregen_length = sprintf(total_HPregen_field, "%d", c->CalcHPRegen());
+	for(int h = total_HPregen_length; h < 5; h++) {
+		strcat(total_HPregen_spacing, " ."); 
+	}
+	strcat(hp_row, total_HPregen_spacing); // Spacing
+	strcat(hp_row, total_HPregen_field); // Add current HP Regen value to string
+	strcat(hp_row, div); // Divider
+	
+	// HP Regen Cap
+	char cap_HPregen_field[5];
+	sprintf(cap_HPregen_field, "%d", c->CalcHPRegenCap(true));
+	strcat(hp_row, cap_HPregen_field); // Add HP Regen cap value to string
+	
+	//////////////////////////////
+	// MANA
+	char mana_row[250] = "";
+	
+	// Base Mana Regen
+	char base_manaregen_field[5];
+	char base_manaregen_spacing[10] = "";
+	int base_manaregen_length = sprintf(base_manaregen_field, "%d", c->CalcBaseManaRegen());
+	for(int h = base_manaregen_length; h < 5; h++) {
+		strcat(base_manaregen_spacing, " ."); 
+	}
+	strcat(mana_row, base_manaregen_spacing); // Spacing
+	strcat(mana_row, base_manaregen_field); // Add base mana Regen value to string
+	strcat(mana_row, div); // Divider
+	
+	// Item Mana Regen
+	char item_manaregen_field[5];
+	char item_manaregen_spacing[10] = "";
+	int item_manaregen_length = sprintf(item_manaregen_field, "%d", c->itembonuses.ManaRegen);
+	for(int h = item_manaregen_length; h < 5; h++) {
+		strcat(item_manaregen_spacing, " ."); 
+	}
+	strcat(mana_row, item_manaregen_spacing); // Spacing
+	strcat(mana_row, item_manaregen_field); // Add item mana Regen value to string
+	strcat(mana_row, div); // Divider
+	
+	// Spell Mana Regen
+	char spell_manaregen_field[5];
+	char spell_manaregen_spacing[10] = "";
+	int spell_manaregen_length = sprintf(spell_manaregen_field, "%d", c->spellbonuses.ManaRegen);
+	for(int h = spell_manaregen_length; h < 5; h++) {
+		strcat(spell_manaregen_spacing, " ."); 
+	}
+	strcat(mana_row, spell_manaregen_spacing); // Spacing
+	strcat(mana_row, spell_manaregen_field); // Add spell mana Regen value to string
+	strcat(mana_row, div); // Divider
+	
+	// AA Mana Regen
+	char aa_manaregen_field[5];
+	char aa_manaregen_spacing[10] = "";
+	int aa_manaregen_length = sprintf(aa_manaregen_field, "%d", c->aabonuses.ManaRegen);
+	for(int h = aa_manaregen_length; h < 5; h++) {
+		strcat(aa_manaregen_spacing, " ."); 
+	}
+	strcat(mana_row, aa_manaregen_spacing); // Spacing
+	strcat(mana_row, aa_manaregen_field); // Add AA mana Regen value to string
+	strcat(mana_row, div); // Divider
+	
+	// Total Current Mana Regen
+	char total_manaregen_field[5];
+	char total_manaregen_spacing[10] = "";
+	int total_manaregen_length = sprintf(total_manaregen_field, "%d", c->CalcManaRegen());
+	for(int h = total_manaregen_length; h < 5; h++) {
+		strcat(total_manaregen_spacing, " ."); 
+	}
+	strcat(mana_row, total_manaregen_spacing); // Spacing
+	strcat(mana_row, total_manaregen_field); // Add current mana Regen value to string
+	strcat(mana_row, div); // Divider
+	
+	// Mana Regen Cap
+	char cap_manaregen_field[5];
+	sprintf(cap_manaregen_field, "%d", c->CalcManaRegenCap(true));
+	strcat(mana_row, cap_manaregen_field); // Add mana Regen cap value to string
+	
+	//////////////////////////////
+	// Endurance
+	char end_row[250] = "";
+	
+	// Base Endurance Regen
+	char base_endregen_field[5];
+	char base_endregen_spacing[10] = "";
+	int base_endregen_length = sprintf(base_endregen_field, "%d", ((GetLevel() * 4 / 10) + 2));
+	for(int h = base_endregen_length; h < 5; h++) {
+		strcat(base_endregen_spacing, " ."); 
+	}
+	strcat(end_row, base_endregen_spacing); // Spacing
+	strcat(end_row, base_endregen_field); // Add base Endurance Regen value to string
+	strcat(end_row, div); // Divider
+	
+	// Item HP Regen
+	char item_endregen_field[5];
+	char item_endregen_spacing[10] = "";
+	int item_endregen_length = sprintf(item_endregen_field, "%d", c->itembonuses.EnduranceRegen);
+	for(int h = item_endregen_length; h < 5; h++) {
+		strcat(item_endregen_spacing, " ."); 
+	}
+	strcat(end_row, item_endregen_spacing); // Spacing
+	strcat(end_row, item_endregen_field); // Add item Endurance Regen value to string
+	strcat(end_row, div); // Divider
+	
+	// Spell Endurance Regen
+	char spell_endregen_field[5];
+	char spell_endregen_spacing[10] = "";
+	int spell_endregen_length = sprintf(spell_endregen_field, "%d", c->spellbonuses.EnduranceRegen);
+	for(int h = spell_endregen_length; h < 5; h++) {
+		strcat(spell_endregen_spacing, " ."); 
+	}
+	strcat(end_row, spell_endregen_spacing); // Spacing
+	strcat(end_row, spell_endregen_field); // Add spell Endurance Regen value to string
+	strcat(end_row, div); // Divider
+	
+	// AA Endurance Regen
+	char aa_endregen_field[5];
+	char aa_endregen_spacing[10] = "";
+	int aa_endregen_length = sprintf(aa_endregen_field, "%d", c->aabonuses.EnduranceRegen);
+	for(int h = aa_endregen_length; h < 5; h++) {
+		strcat(aa_endregen_spacing, " ."); 
+	}
+	strcat(end_row, aa_endregen_spacing); // Spacing
+	strcat(end_row, aa_endregen_field); // Add AA Endurance Regen value to string
+	strcat(end_row, div); // Divider
+	
+	// Total Current Endurance Regen
+	char total_endregen_field[5];
+	char total_endregen_spacing[10] = "";
+	int total_endregen_length = sprintf(total_endregen_field, "%d", c->CalcEnduranceRegen());
+	for(int h = total_endregen_length; h < 5; h++) {
+		strcat(total_endregen_spacing, " ."); 
+	}
+	strcat(end_row, total_endregen_spacing); // Spacing
+	strcat(end_row, total_endregen_field); // Add current Endurance Regen value to string
+	strcat(end_row, div); // Divider
+	
+	// Endurance Regen Cap
+	char cap_endregen_field[5];
+	sprintf(cap_endregen_field, "%d", c->CalcEnduranceRegenCap(true));
+	strcat(end_row, cap_endregen_field); // Add Endurance Regen cap value to string
+		
+	// Rune Total
+	uint32 buff_count = GetMaxTotalSlots();
+	int16 melee_rune_left = 0;
+	int16 magic_rune_left = 0;
+	for (int i=0; i < buff_count; i++) {
+		if (buffs[i].spellid != SPELL_UNKNOWN) {
+			melee_rune_left += buffs[i].melee_rune;
+			magic_rune_left += buffs[i].magic_rune;
+		}
+	}
+		
+	// Creating Final String for Regen Values
+	char regen_fields[800] = "";
+	// HP ROW
+	strcat(regen_fields, indS); 
+	strcat(regen_fields, "H: "); 
+	strcat(regen_fields, hp_row); 
+	strcat(regen_fields, "<br>"); // break
+	// MANA ROW
+	if(c->CalcMaxMana() > 0) {
+		strcat(regen_fields, indS); 
+		strcat(regen_fields, "M: "); 
+		strcat(regen_fields, mana_row);
+		strcat(regen_fields, "<br>"); // break
+	}
+	// END ROW
+	strcat(regen_fields, indS); 
+	strcat(regen_fields, "E: "); 
+	strcat(regen_fields, end_row); 
+	strcat(regen_fields, "<br>"); // break
+	
+	
+	client->SendStatWindow(" "
+			/* 01 - Name 	*/		" %s <c \"#357EC7\"> %s</c><br>"
+			/* 02 - C/L/R	*/		" %s Class: %s Level: %i Race: %s<br>"
+			/* 03 - HP		*/		" %s <br>"
+			/* 04 - MANA	*/		
+			/* 05 - END		*/		
+			/* 06 - LineBr	*/		" <br>"
+			/* 07 - Atk 	*/		" %s ATK: %i - Worn: %i (Cap: %i) - Srvr ATK: %i<br>"
+			/* 08 - AC	 	*/		" %s AC: %i = Mit.: %i + Avoid.: %i<br>"
+			/* 09 - Haste 	*/		" %s Haste: %i (Cap: %i) - Item: %i - Spell: %i - Over: %i<br>"
+			/* 10 - Rune 	*/		" %s Rune: %i | Magic Rune: %i<br>"
+			/* 11 - Labels 	*/		" %s Regen<br>"
+			/* 12 - Labels 	*/		" %s %s %s Base | Items | Spell | A.A.s | Total | Cap<br>"
+			/* 13 - HP	 	*/		" %s "
+			/* 14 - Mana 	*/		
+			/* 15 - End. 	*/		
+			/* 16 - LineBr 	*/		" <br>"
+			/* 17 - STR 	*/		" %s STR: %i | + %i<br>"
+			/* 18 - STA 	*/		" %s STA: %i | + %i<br>"
+			/* 19 - AGI 	*/		" %s AGI: %i | + %i<br>"
+			/* 20 - DEX 	*/		" %s DEX: %i | + %i<br>"
+			/* 21 - INT 	*/		" %s INT: %i | + %i<br>"
+			/* 22 - WIS 	*/		" %s WIS: %i | + %i<br>"
+			/* 23 - CHA 	*/		" %s CHA: %i | + %i<br>" 
+			/* 24 - LineBr 	*/		" <br>"
+			/* 25 - MR	 	*/		" %s MR: %i | + %i<br>"
+			/* 26 - CR	 	*/		" %s CR: %i | + %i<br>"
+			/* 27 - FR	 	*/		" %s FR: %i | + %i<br>"
+			/* 28 - PR	 	*/		" %s PR: %i | + %i<br>"
+			/* 29 - DR	 	*/		" %s DR: %i | + %i<br>"
+			/* 30 - Cp	 	*/		" %s Cp: %i | + %i<br>"
+			/* 31 - LineBr 	*/		" <br>"
+			/* 32 - Avd		*/		" %s Avoidance: %i / %i<br>" 
+			/* 33 - Acc		*/		" %s Accuracy: %i / %i<br>" 
+			/* 34 - CE		*/		" %s Combat Effects: %i / %i<br>" 
+			/* 35 - DSd		*/		" %s DoT Shield.: %i / %i<br>" 
+			/* 36 - Shield 	*/		" %s Shielding: %i / %i<br>" 
+			/* 37 - SS	 	*/		" %s Spell Shield.: %i / %i<br>" 
+			/* 38 - Strike 	*/		" %s Strike.: %i / %i<br>" 
+			/* 39 - SR 		*/		" %s Stun Resist: %i / %i<br>"
+			/* 40 - LineBr 	*/		" <br>"
+			/* 41 - Hat		*/		" %s Heal Amt.: %i / %i<br>" 
+			/* 42 - Sdg		*/		" %s Spell Dmg.: %i / %i<br>" 
+			/* 43 - Clar	*/		" %s Clair.: %i / %i<br>" 
+			/* 44 - DSm		*/		" %s DS Mit.: %i / %i<br>",
+			/* 01 - Name 	*/		indL, GetName(),
+			/* 02 - C/L/R 	*/		indP, class_Name, GetLevel(), race_Name,
+			/* 03 - HP	 	*/		HME_row,
+			/* 04 - MANA 	*/		
+			/* 05 - END 	*/		
+			/* 06 - LineBr 	*/		
+			/* 07 - Atk 	*/		indP, c->GetTotalATK(), GetATKBonus(), RuleI(Character, ItemATKCap), GetATK(),
+			/* 08 - AC	 	*/		indP, c->GetAC(), c->GetACMit(), c->GetACAvoid(),
+			/* 09 - Haste 	*/		indP, GetHaste(), RuleI(Character, HasteCap), c->CalcSpecificHaste(0), c->CalcSpecificHaste(1), c->CalcSpecificHaste(2),
+			/* 10 - Rune 	*/		indP, melee_rune_left, magic_rune_left,
+			/* 11 - Labels 	*/		indL,
+			/* 12 - Labels 	*/		indS, indP, indP,
+			/* 13 - HP 		*/		regen_fields,
+			/* 14 - Mana 	*/		
+			/* 15 - End. 	*/		
+			/* 16 - LineBr 	*/		 
+			/* 17 - STR/MR 	*/		indP, GetSTR(), c->GetHeroicSTR(),
+			/* 18 - STA/CR 	*/		indP, GetSTA(), c->GetHeroicSTA(),
+			/* 19 - AGI/FR 	*/		indP, GetAGI(), c->GetHeroicAGI(),
+			/* 20 - DEX/PR 	*/		indP, GetDEX(), c->GetHeroicDEX(),
+			/* 21 - INT/DR 	*/		indP, GetINT(), c->GetHeroicINT(),
+			/* 22 - WIS/Cp 	*/		indP, GetWIS(), c->GetHeroicWIS(),
+			/* 23 - CHA/Ph 	*/		indP, GetCHA(), c->GetHeroicCHA(),
+			/* 24 - LineBr 	*/		 
+			/* 25 - STR/MR 	*/		indP, GetMR(), c->GetHeroicMR(), 
+			/* 26 - STA/CR 	*/		indP, GetCR(), c->GetHeroicCR(), 
+			/* 27 - AGI/FR 	*/		indP, GetFR(), c->GetHeroicFR(),
+			/* 28 - DEX/PR 	*/		indP, GetPR(), c->GetHeroicPR(),
+			/* 29 - INT/DR 	*/		indP, GetDR(), c->GetHeroicDR(),
+			/* 30 - WIS/Cp 	*/		indP, GetCorrup(), c->GetHeroicCorrup(),
+			/* 31 - LineBr 	*/
+			/* 32 - Avd/Hat	*/		indP, c->GetAvoidance(), RuleI(Character, ItemAvoidanceCap),
+			/* 33 - Acc/Sdg	*/		indP, c->GetAccuracy(), RuleI(Character, ItemAccuracyCap),
+			/* 34 - CE/Clar	*/		indP, c->GetCombatEffects(), RuleI(Character, ItemCombatEffectsCap),
+			/* 35 - DSd/DSm	*/		indP, c->GetDoTShield(), RuleI(Character, ItemDoTShieldingCap),
+			/* 36 - Shield 	*/		indP, c->GetShielding(), RuleI(Character, ItemShieldingCap),
+			/* 37 - SS	 	*/		indP, c->GetSpellShield(), RuleI(Character, ItemSpellShieldingCap),
+			/* 38 - Strike 	*/		indP, c->GetStrikeThrough(), RuleI(Character, ItemStrikethroughCap),
+			/* 39 - SR 		*/		indP, c->GetStunResist(), RuleI(Character, ItemStunResistCap),
+			/* 40 - LineBr 	*/
+			/* 41 - Avd/Hat	*/		indP, c->GetHealAmt(), RuleI(Character, ItemHealAmtCap),
+			/* 42 - Acc/Sdg	*/		indP, c->GetSpellDmg(), RuleI(Character, ItemSpellDmgCap),
+			/* 43 - CE/Clar	*/		indP, c->GetClair(), RuleI(Character, ItemClairvoyanceCap),
+			/* 44 - DSd/DSm	*/		indP, c->GetDSMit(), RuleI(Character, ItemDSMitigationCap)
+								);
+}

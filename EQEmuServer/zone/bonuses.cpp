@@ -569,6 +569,9 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 			case SE_CurrentHP: //regens
 				newbon->HPRegen += base1;
 				break;
+			case SE_CurrentEndurance: 
+				newbon->EnduranceRegen += base1;
+				break;
 			case SE_MovementSpeed:
 				newbon->movementspeed += base1;	//should we let these stack?
 				/*if (base1 > newbon->movementspeed)	//or should we use a total value?
@@ -599,6 +602,10 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 				//handled by client
 				break;
 			case SE_CurrentMana:
+				newbon->ManaRegen += base1;
+				break;
+			case SE_ItemManaRegenCapIncrease:
+				newbon->ItemManaRegenCap += base1;
 				break;
 			case SE_ResistFire:
 				newbon->FR += base1;
@@ -815,7 +822,15 @@ void Mob::ApplySpellsBonuses(int16 spell_id, int8 casterlevel, StatBonuses* newb
 
 		switch (spells[spell_id].effectid[i])
 		{
-
+			case SE_CurrentHP: //regens
+				if(effect_value > 0) {
+					newbon->HPRegen += effect_value;
+				}
+				break;
+			case SE_CurrentEndurance: 
+				newbon->EnduranceRegen += effect_value;
+				break;
+		
 			case SE_ChangeFrenzyRad:
 			{
 				if
